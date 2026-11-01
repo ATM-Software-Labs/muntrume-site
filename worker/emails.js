@@ -444,7 +444,7 @@ export const CAR_LABELS = {
   "mercedesw13": "Mercedes-AMG F1 W13 E Performance"
 };
 const carLabel = (id) => CAR_LABELS[id] || id;
-const refLabel = (ref) => { const s = String(ref || ""); const m = s.match(/^([^/ ]+)(\/| · )(.*)$/); if (!m) return s; const rest = m[3].replace(/^\d\dS\d\//, ""); return `${carLabel(m[1])} · ${rest}`; };
+const refLabel = (ref) => { const s = String(ref || ""); if (CAR_LABELS[s]) return `${CAR_LABELS[s]} · todos los setups`; const m = s.match(/^([^/ ]+)(\/| · )(.*)$/); if (!m) return s; const rest = m[3].replace(/^\d\dS\d\//, ""); return `${carLabel(m[1])} · ${rest}`; };
 
 /** Tabla simple (filas de texto) con estilo de la plantilla. */
 function listBox(head, rows) {
