@@ -1,0 +1,36 @@
+/* Mobile polish (Turno 6): tap targets >=44px, legible text, no iOS input zoom */
+@media (max-width: 1023px) {
+  /* hamburger + header logo */
+  button[onclick="toggleNavDrawer()"] { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+  header a[href="/"], nav a[href="/"] { min-height: 44px; display: inline-flex; align-items: center; }
+  /* footer links */
+  footer a { display: inline-flex; align-items: center; min-height: 44px; padding-left: 2px; padding-right: 2px; }
+  /* form controls: 16px avoids iOS auto-zoom on focus */
+  input:not([type=checkbox]):not([type=radio]):not([type=range]), select, textarea { font-size: 16px !important; min-height: 44px; }
+  input[type=checkbox], input[type=radio] { width: 20px; height: 20px; }
+  label:has(> input[type=checkbox]) { min-height: 44px; display: inline-flex; align-items: center; }
+  /* buttons & pill filters */
+  button:not([data-cell]) { min-height: 44px; }
+  a.inline-flex, a.flex, a.block, a[class*="rounded"] { min-height: 44px; }
+  a.inline-flex, a.flex { align-items: center; }
+  nav[aria-label] a { min-height: 44px; display: inline-flex; align-items: center; }
+  /* tiny labels */
+  .text-\[9px\], .text-\[10px\], .text-\[11px\] { font-size: 12px !important; }
+  /* long words / codes never overflow */
+  code, .font-mono { overflow-wrap: anywhere; }
+  h1, h2, h3 { overflow-wrap: break-word; hyphens: auto; }
+  img, video, iframe { max-width: 100%; }
+}
+@media (max-width: 1023px) and (orientation: landscape) {
+  /* landscape phones: keep hero/header compact */
+  .min-h-screen { min-height: auto !important; }
+}
+/* Tablets / landscape phones (768-1023px): desktop nav does not fit, use the drawer */
+@media (min-width: 768px) and (max-width: 1023px) {
+  header nav.md\:flex { display: none !important; }
+  button[onclick="toggleNavDrawer()"].md\:hidden { display: inline-flex !important; }
+  #mobileDrawer.md\:hidden { display: flex !important; }
+  #mobileBackdrop.md\:hidden { display: block !important; }
+}
+/* drawer must scroll on short landscape screens */
+#mobileDrawer { overflow-y: auto; -webkit-overflow-scrolling: touch; }

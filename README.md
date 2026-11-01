@@ -4,7 +4,7 @@
 
 ### *From Sant Andreu to the world's most prestigious virtual circuits*
 
-![Muntrume Motorsport](https://muntru.me/assets/img/logo.webp)
+![Muntrume Motorsport](https://muntru.me/assets/img/logo.png)
 
 [![Website](https://img.shields.io/badge/Website-muntru.me-16a34a?style=for-the-badge&logo=googlechrome&logoColor=white)](https://muntru.me)
 [![Discord](https://img.shields.io/discord/1188239582865661992?style=for-the-badge&logo=discord&logoColor=white&color=5865F2&label=Discord)](https://discord.gg/ehX6B8JUtE)
@@ -18,33 +18,18 @@
 
 ## 📖 About
 
-**Muntrume Motorsport** is a competitive simracing team founded in **summer 2024** in Sant Andreu, Barcelona. Born from the dream of competing in the legendary **24 Hours of Spa**, the team has rapidly grown into a multi-category operation competing in virtual endurance and sprint championships worldwide.
-
-We combine **raw driving talent**, **data-driven engineering**, and **rigorous telemetry analysis** to push the boundaries of what a simracing team can achieve.
-
-> *"Every race tells a story. We write ours on every lap."*
-
----
-
-## 🏆 Team Stats
-
-| Metric | Value |
-|--------|-------|
-| 🏁 Active Drivers | **4** |
-| 📅 Founded | **Summer 2024** |
-| 📍 Headquarters | **Sant Andreu, Barcelona** |
-| 🎮 Main Platform | **iRacing** |
+**Muntrume Motorsport** is a sim racing team from Sant Andreu, Barcelona, racing on **iRacing**, with a private setup vault for our drivers.
 
 ---
 
 ## 👨‍🏎️ Our Drivers
 
-| Driver | License | Specialty |
-|--------|---------|-----------|
-| ⭐ Alberto Trujillo | Platinum | Endurance & GT3 |
-| 🏆 Mateo Berbis | Gold | Sprint Racing & GT3 |
-| 🥈 Eduardo Chongkan | Silver | Telemetry & GT3 Setup |
-| 🥉 Juanlu Carrillo | Bronze | Mazda MX5 Cup & Development |
+| Driver | Role |
+|--------|------|
+| Alberto Trujillo | Founder · Driver |
+| Mateo Berbis | Driver |
+| Eduardo Chongkan | Driver |
+| Juanlu Carrillo | Driver |
 
 ---
 
@@ -56,10 +41,10 @@ Modern multi-page experience built with performance, responsive design, and dark
 
 | Page | Description |
 |------|-------------|
-| 🏠 [Home](https://muntru.me) | Landing page with team highlights & race calendar |
-| 📖 [About Us](https://muntru.me/about.html) | History and team origins in Sant Andreu |
-| 👥 [Team](https://muntru.me/team.html) | Driver profiles, car garage and specs |
-| 📰 [News](https://muntru.me/news.html) | Simracing daily portal and mini-games |
+| 🏠 [Home](https://muntru.me) | Landing page |
+| 📖 [About Us](https://muntru.me/about.html) | About the team and where to find us |
+| 👥 [Team](https://muntru.me/team.html) | Driver roster |
+| 📰 [News](https://muntru.me/news.html) | Motorsport headlines (RSS) and mini-games |
 | 📞 [Contact](https://muntru.me/contact.html) | Direct inquiry and driver applications (`info@muntru.me`) |
 
 ---
@@ -85,13 +70,12 @@ Modern multi-page experience built with performance, responsive design, and dark
 
 ## 🙌 Join the Team
 
-We're always looking for dedicated drivers and telemetry engineers who share our passion for competitive simracing.
+Interested in racing with us? Get in touch.
 
 ### Requirements
 - ✅ Active iRacing subscription
 - ✅ Force feedback wheel & load-cell pedals
 - ✅ Team player mentality and good communication
-- ✅ Commitment to scheduled endurance events
 
 👉 **Apply through our [Website](https://muntru.me/contact.html) or [Discord](https://discord.gg/ehX6B8JUtE)**
 
@@ -101,7 +85,7 @@ We're always looking for dedicated drivers and telemetry engineers who share our
 
 ### 🏁 *See you at the apex.*
 
-**Muntrume Motorsport © 2024-2026**  
+**Muntrume Motorsport © 2026**  
 *Sant Andreu, Barcelona 🇪🇸*
 
 [Website](https://muntru.me) • [Discord](https://discord.gg/ehX6B8JUtE) • [Contact](https://muntru.me/contact.html)

@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Press Room &amp; Media Wire · Muntrume Motorsport</title>
-  <meta name="description" content="Muntrume Motorsport Press Room & Media Wire - Official team announcements, competitive sim racing news wire, endurance debriefs, and driver reaction training.">
+  <meta name="description" content="Muntrume Motorsport Press Room - team updates and motorsport headlines from public RSS feeds.">
   <link rel="canonical" href="https://muntru.me/news">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Muntrume Motorsport">
   <meta property="og:locale" content="en_US">
   <meta property="og:title" content="Press Room &amp; Media Wire · Muntrume Motorsport">
-  <meta property="og:description" content="Muntrume Motorsport Press Room &amp; Media Wire - Official team announcements, competitive sim racing news wire, endurance debriefs, and driver reaction training.">
+  <meta property="og:description" content="Muntrume Motorsport Press Room - team updates and motorsport headlines from public RSS feeds.">
   <meta property="og:url" content="https://muntru.me/news">
   <meta property="og:image" content="https://muntru.me/assets/img/og-cover.jpg">
   <meta property="og:image:width" content="1200">
@@ -18,7 +18,7 @@
   <meta property="og:image:alt" content="Muntrume Motorsport GT3 car on track">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Press Room &amp; Media Wire · Muntrume Motorsport">
-  <meta name="twitter:description" content="Muntrume Motorsport Press Room &amp; Media Wire - Official team announcements, competitive sim racing news wire, endurance debriefs, and driver reaction training.">
+  <meta name="twitter:description" content="Muntrume Motorsport Press Room - team updates and motorsport headlines from public RSS feeds.">
   <meta name="twitter:image" content="https://muntru.me/assets/img/og-cover.jpg">
   
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32.png">
@@ -40,6 +40,7 @@
 
   <!-- Tailwind CSS CDN with Motorsport Config -->
   <link rel="stylesheet" href="assets/css/tailwind.min.css?v=26s4.6">
+  <link rel="stylesheet" href="/assets/css/mobile.css?v=1">
 
   <style>
     :root {
@@ -374,7 +375,7 @@
         <!-- Live Status Badge -->
         <div class="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full bg-[#161c24] border border-white/10 text-xs text-neutral-300">
           <span class="pulse-dot"></span>
-          <span class="font-medium">iRacing Official Squad</span>
+          <span class="font-medium">iRacing Sim Racing Team</span>
         </div>
 
         <!-- Discord Button -->
@@ -477,7 +478,7 @@
           PRESS ROOM &amp; <span class="text-emerald-400">MEDIA WIRE</span>
         </h1>
         <p class="text-base text-neutral-400 max-w-2xl mx-auto leading-relaxed">
-          Official team announcements, competitive race debriefs, endurance telemetry, and curated global motorsport headlines.
+          Team updates and motorsport headlines from public RSS feeds.
         </p>
       </div>
 
@@ -599,9 +600,9 @@
           <div class="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
             <div class="flex items-center gap-2.5">
               <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <h3 class="text-xs font-bold tracking-wider uppercase text-white">AI Telemetry Brief</h3>
+              <h3 class="text-xs font-bold tracking-wider uppercase text-white">Top Headlines</h3>
             </div>
-            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Live</span>
+            
           </div>
           <div id="aiBriefContent" class="text-xs text-neutral-300 leading-relaxed">
             <div class="loading-skeleton h-3 mb-2 rounded"></div>
@@ -612,30 +613,6 @@
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
             <span>Refresh Briefing</span>
           </button>
-        </div>
-
-        <!-- WIDGET 2: ASK MUNTRUME AI CHAT -->
-        <div class="bg-[#161c24] border border-white/10 rounded-2xl p-6 shadow-lg">
-          <div class="flex items-center gap-2 mb-3 pb-3 border-b border-white/10">
-            <h3 class="text-xs font-bold tracking-wider uppercase text-white">Ask Paddock AI</h3>
-          </div>
-          <p class="text-xs text-neutral-400 mb-3">Ask about vehicle telemetry, driver roster, or recent races.</p>
-          <div id="aiChatMessages" class="space-y-2.5 mb-3 max-h-56 overflow-y-auto text-xs pr-1">
-            <div class="bg-[#0e1217] p-3 rounded-xl border border-white/5 text-neutral-300">
-              <strong class="text-emerald-400">MRT AI:</strong> Telemetry agent online. Ask about squad statistics, active drivers, or live race dispatches.
-            </div>
-          </div>
-          <form onsubmit="handleAIChat(event)" class="flex gap-2">
-            <input 
-              type="text" 
-              id="aiChatInput" 
-              placeholder="Ask anything..." 
-              class="flex-1 bg-[#0e1217] border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500 transition"
-            >
-            <button type="submit" class="bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold px-3.5 py-2 rounded-xl text-xs transition">
-              Send
-            </button>
-          </form>
         </div>
 
         <!-- WIDGET 3: TRENDING STORIES -->
@@ -655,18 +632,14 @@
           <div class="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
             <div class="flex items-center gap-2">
               <span class="pulse-dot"></span>
-              <h3 class="text-xs font-bold tracking-wider uppercase text-white">Squad Telemetry</h3>
+              <h3 class="text-xs font-bold tracking-wider uppercase text-white">The Team</h3>
             </div>
-            <span class="text-[10px] font-semibold text-neutral-400">Official</span>
+            
           </div>
           <div class="space-y-2.5 text-xs">
-            <div class="flex justify-between items-center py-1.5 border-b border-white/5">
-              <span class="text-neutral-400">Active Drivers</span>
-              <span class="text-white font-semibold">4 Drivers</span>
-            </div>
             <div class="flex justify-between items-center py-1.5">
-              <span class="text-neutral-400">Squad Foundation</span>
-              <span class="text-neutral-300">2024 · Barcelona</span>
+              <span class="text-neutral-400">Drivers</span>
+              <span class="text-white font-semibold">4 Drivers</span>
             </div>
           </div>
           <a href="/team" class="mt-4 block text-center py-2.5 rounded-xl bg-[#0e1217] border border-white/10 hover:border-white/20 text-emerald-400 text-xs font-semibold transition">
@@ -680,7 +653,7 @@
             <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.13-.255-.01-.556-.28-.646a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
           </div>
           <h3 class="text-sm font-bold text-white mb-1">Join the Paddock Discord</h3>
-          <p class="text-xs text-neutral-400 mb-4 leading-relaxed">Direct setup downloads, race radio debriefs, and active sim racing community.</p>
+          <p class="text-xs text-neutral-400 mb-4 leading-relaxed">Talk setups and racing with the team.</p>
           <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer" class="block py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold text-xs transition shadow-md">
             Connect to Discord
           </a>
@@ -793,7 +766,7 @@
                   <div class="text-[10px] text-neutral-400 uppercase font-semibold">Score</div>
                 </div>
                 <div class="text-right">
-                  <div class="text-xl font-bold text-white" id="trivia-qnum">1/10</div>
+                  <div class="text-xl font-bold text-white" id="trivia-qnum">1/9</div>
                   <div class="text-[10px] text-neutral-400 uppercase font-semibold">Progress</div>
                 </div>
               </div>
@@ -816,7 +789,7 @@
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
               </div>
               <h4 class="text-2xl font-bold text-white mb-1">Debrief Complete</h4>
-              <p class="text-sm text-neutral-300 mb-6">Final Score: <span id="triviaFinalScore" class="text-emerald-400 font-bold">0</span> / 10</p>
+              <p class="text-sm text-neutral-300 mb-6">Final Score: <span id="triviaFinalScore" class="text-emerald-400 font-bold">0</span> / 9</p>
               <button onclick="initTrivia()" class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold text-xs rounded-xl transition">
                 Restart Quiz
               </button>
@@ -914,7 +887,7 @@
           <img src="/assets/img/logo-sm.webp" alt="" class="h-8 w-auto" width="31" height="32" loading="lazy" decoding="async">
           <div>
             <div class="font-extrabold text-white text-base tracking-tight">MUNTRUME MOTORSPORT</div>
-            <div class="text-xs text-neutral-400">Sant Andreu, Barcelona · Founded 2024</div>
+            <div class="text-xs text-neutral-400">Sant Andreu, Barcelona</div>
           </div>
         </div>
 
@@ -936,7 +909,7 @@
 
       <!-- Copyright & Disclaimer -->
       <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-400">
-        <p>© 2024–2026 Muntrume Motorsport. Virtual Racing Division. All rights reserved.</p>
+        <p>© 2026 Muntrume Motorsport. All rights reserved.</p>
         <p class="text-neutral-400">Sim Racing &amp; Vehicle Engineering on iRacing platform.</p>
       </div>
 
@@ -974,44 +947,7 @@
 
     // Solo despachos propios del equipo. Las noticias externas llegan en vivo desde /api/news
     // (proxy RSS del Worker); si los feeds fallan no se muestra contenido inventado.
-    const BASELINE_NEWS = [
-      {
-        id: "victory-at-24h-spa-virtual",
-        title: "Victory at 24H Spa Virtual: GT3 Class Win for Muntrume",
-        description: "Muntrume Motorsport secures historic endurance victory in the virtual Spa 24 Hours with flawless telemetry execution, zero major incidents, and fastest race lap.",
-        link: "/article?id=victory-at-24h-spa-virtual",
-        pubDate: "2026-07-02T22:00:00Z",
-        source: "Muntrume Motorsport",
-        thumbnail: "assets/img/race1.jpg",
-        autoCategory: "endurance",
-        isBreaking: true,
-        isTeam: true
-      },
-      {
-        id: "new-signing-eduardo-joins-the-team",
-        title: "Driver Roster Update: Eduardo Chongkan Appointed Race Engineer",
-        description: "Eduardo takes charge of kinematic data modeling and telemetry acquisition for our GT3 squad alongside active competition driving in endurance events.",
-        link: "/article?id=new-signing-eduardo-joins-the-team",
-        pubDate: "2026-06-28T10:00:00Z",
-        source: "Muntrume Motorsport",
-        thumbnail: "assets/img/coche2.webp",
-        autoCategory: "team",
-        isBreaking: false,
-        isTeam: true
-      },
-      {
-        id: "high-downforce-testing-at-nurburgring-nordschleife",
-        title: "High-Downforce Testing Completed at Nürburgring Nordschleife",
-        description: "Mateo Berbis and Alberto Trujillo complete intensive 4-hour continuous endurance testing evaluating tire degradation and damper telemetry for upcoming VLN rounds.",
-        link: "/article?id=high-downforce-testing-at-nurburgring-nordschleife",
-        pubDate: "2026-06-20T16:00:00Z",
-        source: "Muntrume Motorsport",
-        thumbnail: "assets/img/coche4.webp",
-        autoCategory: "team",
-        isBreaking: false,
-        isTeam: true
-      }
-    ];
+    const BASELINE_NEWS = [];
 
     // Live external news: server-side RSS proxy on the Muntrume Worker (replaces rss2json)
     const NEWS_API = 'https://muntrume.atrumin16.workers.dev/api/news';
@@ -1063,12 +999,7 @@
         const md = await res.text();
         teamNewsData = parseTeamNewsMarkdown(md);
       } catch (e) {
-        teamNewsData = [
-          { title: "Victory at 24H Spa Virtual: GT3 Class Win", date: "2026-07-02", author: "Alberto Trujillo", category: "Endurance", image: "", content: "Muntrume Motorsport secures historic endurance victory in virtual Spa 24h with flawless telemetry execution." },
-          { title: "Driver Roster Update: Eduardo Chongkan Appointed Race Engineer", date: "2026-06-28", author: "Manager", category: "Roster", image: "", content: "Eduardo takes charge of kinematic data modeling and telemetry acquisition for our GT3 squad." },
-          { title: "High-Downforce Testing at Nürburgring Nordschleife", date: "2026-06-20", author: "Mateo Berbis", category: "Testing", image: "", content: "4-hour continuous endurance simulation completed testing tire compound degradation curves." },
-          { title: "Le Mans Virtual Preparation: Circuit de la Sarthe Practice", date: "2026-06-10", author: "Alberto Trujillo", category: "Endurance", image: "", content: "Our endurance squad is preparing for the 24H Le Mans Virtual with focused practice on the legendary Circuit de la Sarthe." }
-        ];
+        teamNewsData = [];
       }
 
       // Convert team dispatches into news articles with dedicated article URL
@@ -1081,7 +1012,7 @@
           link: `article.html?id=${slug}`,
           pubDate: n.date ? new Date(n.date).toISOString() : new Date().toISOString(),
           source: "Muntrume Motorsport",
-          thumbnail: n.image || (n.category.toLowerCase().includes('endurance') ? 'assets/img/race1.jpg' : 'assets/img/coche1.webp'),
+          thumbnail: n.image || (n.category.toLowerCase().includes('endurance') ? 'assets/img/race1.webp' : 'assets/img/coche1.webp'),
           autoCategory: n.category.toLowerCase().includes('endurance') ? 'endurance' : 'team',
           isBreaking: /victory|win|victoria|historic/i.test(n.title),
           isTeam: true
@@ -1400,7 +1331,7 @@
       const c = document.getElementById('aiBriefContent');
       if (!c || allNews.length === 0) return;
       const top = allNews.slice(0, 3);
-      let brief = `<p class="mb-2 text-neutral-300">Synthesized <strong>${allNews.length} stories</strong> from <strong>${newsSources.length} ${newsSources.length === 1 ? 'source' : 'sources'}</strong>:</p><div class="space-y-1.5 text-neutral-300">`;
+      let brief = `<p class="mb-2 text-neutral-300">Latest of <strong>${allNews.length} stories</strong> from <strong>${newsSources.length} ${newsSources.length === 1 ? 'source' : 'sources'}</strong>:</p><div class="space-y-1.5 text-neutral-300">`;
       top.forEach(a => {
         brief += `<p class="leading-tight"><span class="text-emerald-400 font-bold">•</span> ${esc(a.title.length > 80 ? a.title.substring(0, 80) + '…' : a.title)}</p>`;
       });
@@ -1415,60 +1346,12 @@
       setTimeout(loadAIBrief, 400);
     }
 
-    function handleAIChat(e) {
-      e.preventDefault();
-      const input = document.getElementById('aiChatInput');
-      const messages = document.getElementById('aiChatMessages');
-      const q = input.value.trim();
-      if (!q) return;
-
-      messages.innerHTML += `
-        <div class="bg-[#1c232d] p-2.5 rounded-xl border border-white/10 text-white ml-4 text-right">
-          ${escapeHtml(q)}
-        </div>
-      `;
-      input.value = '';
-
-      const tid = 'bot-' + Date.now();
-      messages.innerHTML += `
-        <div class="bg-[#0e1217] p-2.5 rounded-xl border border-white/5 text-emerald-400 mr-4 flex items-center gap-1.5" id="${tid}">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span>Analyzing team telemetry...</span>
-        </div>
-      `;
-      messages.scrollTop = messages.scrollHeight;
-
-      setTimeout(() => {
-        const el = document.getElementById(tid);
-        if (el) {
-          el.innerHTML = `<strong class="text-emerald-400">MRT AI:</strong> ${escapeHtml(generateLocalAnswer(q))}`;
-          messages.scrollTop = messages.scrollHeight;
-        }
-      }, 700);
-    }
-
     function escapeHtml(t) {
       const d = document.createElement('div');
       d.textContent = t;
       return d.innerHTML;
     }
 
-    function generateLocalAnswer(q) {
-      const lq = q.toLowerCase();
-      if (lq.includes('driver') || lq.includes('roster') || lq.includes('team') || lq.includes('mateo') || lq.includes('alberto')) {
-        return "Muntrume Motorsport driver roster: Alberto Trujillo (Founder & Lead Driver), Mateo Berbis (Sprint Lead), Eduardo Chongkan (Race Engineer), Juanlu Carrillo (Development Driver).";
-      }
-      if (lq.includes('car') || lq.includes('ferrari') || lq.includes('setup')) {
-        return "We field multi-class machinery: Porsche 911 GT3 R, Ferrari 296 GT3, BMW M4 GT3, Ray FF1600 & Mazda MX-5 Cup. Use the AI Race Engineer on the homepage for custom .sto kinematic setups.";
-      }
-      if (lq.includes('irating') || lq.includes('stat')) {
-        return "The team does not publish verified iRating, win or podium figures. For each driver's current official stats, check their iRacing profile.";
-      }
-      if (lq.includes('news') || lq.includes('today')) {
-        return `Current wire has ${allNews.length} aggregated stories. Top dispatch: "${(allNews[0] && allNews[0].title) || 'Syncing'}"`;
-      }
-      return "Query processed. For race calendar dates, check the 2026 Calendar table or join our Discord server at discord.gg/ehX6B8JUtE.";
-    }
 
     // 8. FILTERS & SEARCH EVENT LISTENERS
     document.getElementById('filterButtons').addEventListener('click', (e) => {
@@ -1613,7 +1496,6 @@
       { q: "What does DRS stand for in aerodynamic regulation?", options: ["Drag Reduction System", "Direct Race Steering", "Downforce Recovery System", "Dynamic Rate Stabilizer"], correct: 0 },
       { q: "Which circuit features the iconic 'Eau Rouge - Raidillon' complex?", options: ["Circuit de Spa-Francorchamps", "Autodromo Nazionale Monza", "Suzuka International", "Silverstone Circuit"], correct: 0 },
       { q: "What is the primary objective of Trail Braking?", options: ["Keeping engine temps cold", "Maintaining front-end grip into corner entry", "Reducing brake pad wear", "Locking the rear differential"], correct: 1 },
-      { q: "Which car is NOT in Muntrume's multi-class roster?", options: ["Ferrari 296 GT3", "Mazda MX5", "Porsche 911 GT3 R", "Lawnmower Pro 500"], correct: 3 },
       { q: "What metric does iRating determine on the iRacing service?", options: ["Vehicle speed multiplier", "Driver matchmaking skill rating", "Fuel burn efficiency", "Engine displacement class"], correct: 1 },
       { q: "What is the typical endurance stint length on a GT3 fuel tank in iRacing?", options: ["20 minutes", "60 to 65 minutes", "180 minutes", "10 minutes"], correct: 1 },
       { q: "What telemetry channel measures tire deformation relative to wheel velocity?", options: ["Slip Angle / Slip Ratio", "Pedal potentiometer", "Rocker travel", "Lambda sensor"], correct: 0 },
@@ -1638,7 +1520,7 @@
       triviaAnswered = false;
       const q = triviaQuestions[triviaCurrent];
       document.getElementById('triviaQuestion').textContent = q.q;
-      document.getElementById('trivia-qnum').textContent = `${triviaCurrent + 1}/10`;
+      document.getElementById('trivia-qnum').textContent = `${triviaCurrent + 1}/${triviaQuestions.length}`;
       document.getElementById('triviaNext').classList.add('hidden');
       document.getElementById('triviaOptions').innerHTML = q.options.map((opt, i) => `
         <button class="trivia-option font-medium" onclick="answerTrivia(${i})">${opt}</button>
@@ -1659,7 +1541,7 @@
       buttons.forEach(b => b.disabled = true);
       document.getElementById('trivia-score').textContent = triviaScore;
 
-      if (triviaCurrent < 9) {
+      if (triviaCurrent < triviaQuestions.length - 1) {
         document.getElementById('triviaNext').classList.remove('hidden');
       } else {
         setTimeout(() => {
@@ -1866,7 +1748,7 @@
       const breaking = allNews.filter(n => n.isBreaking);
       if (breaking.length > 0) showBreakingTicker(breaking);
 
-      // 2. Load official team dispatches from markdown file
+      // 2. Load team dispatches from markdown file
       loadTeamNewsFromMD().finally(() => {
         // 3. Attempt background RSS sync without blocking the user
         loadAllNews();

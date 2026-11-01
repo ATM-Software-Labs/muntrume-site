@@ -560,7 +560,7 @@ function showVaultView() {
       if (adminBtn) adminBtn.classList.remove("hidden");
     } else {
       if (roleBadge) {
-        roleBadge.textContent = "Official Driver";
+        roleBadge.textContent = "Driver";
         roleBadge.className = "text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
       }
       if (adminBtn) adminBtn.classList.add("hidden");
@@ -1074,7 +1074,7 @@ function populateAllDropdowns(cars, seasons, weeks, circuits) {
       const opt = document.createElement("option");
       opt.value = s;
       let label = s;
-      if (s === "26S4") label = "2026 Season 4 (Oficial)";
+      if (s === "26S4") label = "2026 Season 4";
       else if (s === "26S3") label = "2026 Season 3";
       else if (s === "26S2") label = "2026 Season 2";
       opt.textContent = label;
@@ -1171,24 +1171,24 @@ function renderFolderFilesHtml(folder) {
     const filePath = formatMtSetupsDisplayPath(folder.car, folder.season, folder.week, folder.circuit, s.filename);
 
     return `
-      <div class="p-3 rounded-xl bg-[#0e1217] border border-white/5 hover:border-emerald-500/30 flex items-center justify-between gap-2 transition group">
-        <div class="min-w-0 flex-1">
+      <div class="p-3 rounded-xl bg-[#0e1217] border border-white/5 hover:border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2 transition group">
+        <div class="min-w-0 flex-1 w-full">
           <div class="flex items-center gap-1.5 mb-0.5">
             <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full border ${badgeColor}">
               ${s.setup_type}
             </span>
-            <span class="text-[10px] text-neutral-500 font-mono">${sizeKb} KB</span>
+            <span class="text-[10px] text-neutral-500 font-mono whitespace-nowrap">${sizeKb} KB</span>
           </div>
-          <div class="text-xs font-semibold text-white truncate group-hover:text-emerald-400 transition" title="${escapeHtml(s.filename)}">
+          <div class="text-xs font-semibold text-white group-hover:text-emerald-400 transition" style="overflow-wrap:anywhere" title="${escapeHtml(s.filename)}">
             ${escapeHtml(s.filename)}
           </div>
         </div>
 
-        <div class="flex items-center gap-1 shrink-0">
+        <div class="flex items-center gap-1 shrink-0 w-full sm:w-auto">
           <button 
             type="button" 
             data-setup-id="${Number(s.id)}" data-folder="${escapeHtml(folder.key)}" onclick="openSetupPreviewById(Number(this.dataset.setupId), this.dataset.folder)" 
-            class="px-2 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 hover:text-cyan-200 font-bold text-[11px] transition flex items-center gap-1" 
+            class="flex-1 sm:flex-none justify-center px-2 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 hover:text-cyan-200 font-bold text-[11px] transition flex items-center gap-1" 
             title="Ver Vista Previa Técnica y Mejores Vueltas en Garage 61"
           >
             <span>👁️ Vista Previa</span>
@@ -1196,15 +1196,15 @@ function renderFolderFilesHtml(folder) {
           <button 
             type="button" 
             data-path="${escapeHtml(filePath)}" onclick="copySetupPath(this.dataset.path)" 
-            class="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white transition" 
-            title="Copiar ruta de iRacing"
+            class="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white transition flex items-center justify-center" style="min-width:44px"
+            title="Copiar ruta de iRacing" aria-label="Copiar ruta de iRacing"
           >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
           </button>
           <button 
             type="button" 
             data-setup-id="${Number(s.id)}" data-filename="${escapeHtml(s.filename)}" onclick="downloadSetup(Number(this.dataset.setupId), this.dataset.filename)" 
-            class="px-2.5 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 hover:text-emerald-300 font-bold text-xs transition flex items-center gap-1" 
+            class="flex-1 sm:flex-none justify-center px-2.5 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 hover:text-emerald-300 font-bold text-xs transition flex items-center gap-1" 
             title="Guardar directamente en su ruta exacta de iRacing"
           >
             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>

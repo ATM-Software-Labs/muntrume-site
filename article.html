@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
   
   <!-- Primary Meta Tags -->
-  <title id="pageTitle">Official Team Dispatch · Muntrume Motorsport</title>
-  <meta name="title" id="metaTitle" content="Official Team Dispatch · Muntrume Motorsport">
-  <meta name="description" id="metaDesc" content="Full race report and official team dispatch from Muntrume Motorsport Virtual Racing Division.">
+  <title id="pageTitle">Team Dispatch · Muntrume Motorsport</title>
+  <meta name="title" id="metaTitle" content="Team Dispatch · Muntrume Motorsport">
+  <meta name="description" id="metaDesc" content="Team dispatch from Muntrume Motorsport.">
   <meta name="author" content="Muntrume Motorsport">
-  <meta name="robots" content="index, follow">
   
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32.png">
@@ -20,13 +20,14 @@
   <!-- Open Graph / Social Media -->
   <meta property="og:type" content="article">
   <meta property="og:site_name" content="Muntrume Motorsport">
-  <meta property="og:title" id="ogTitle" content="Official Team Dispatch · Muntrume Motorsport">
-  <meta property="og:description" id="ogDesc" content="Full race report and official team dispatch from Muntrume Motorsport.">
+  <meta property="og:title" id="ogTitle" content="Team Dispatch · Muntrume Motorsport">
+  <meta property="og:description" id="ogDesc" content="Team dispatch from Muntrume Motorsport.">
   <meta property="og:image" id="ogImage" content="https://muntru.me/assets/img/og-cover.jpg">
   <meta name="twitter:card" content="summary_large_image">
 
   <!-- Tailwind CSS & Fonts -->
   <link rel="stylesheet" href="assets/css/tailwind.min.css?v=26s4.6">
+  <link rel="stylesheet" href="/assets/css/mobile.css?v=1">
   <link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
   <style>
     /* Self-hosted Inter (OFL, assets/fonts/OFL.txt) + metric-matched fallback so the Inter swap doesn't shift layout; one font stack site-wide */
@@ -198,7 +199,7 @@
         <!-- Live Status Badge -->
         <div class="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full bg-[#161c24] border border-white/10 text-xs text-neutral-300">
           <span class="pulse-dot"></span>
-          <span class="font-medium">iRacing Official Squad</span>
+          <span class="font-medium">iRacing Sim Racing Team</span>
         </div>
 
         <!-- Discord Button -->
@@ -275,6 +276,12 @@
         </a>
       </nav>
 
+      <div id="articleNotFound" style="display:none" class="text-center py-16">
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">Dispatch not found</h1>
+        <p class="text-sm text-neutral-400 mb-8">There are no team dispatches published yet, or this link no longer exists.</p>
+        <a href="/news" class="inline-flex items-center justify-center px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold text-sm transition" style="min-height:48px">Go to the Press Room</a>
+      </div>
+      <div id="articleWrap" style="display:none">
       <!-- Article Header -->
       <header class="mb-8">
         <!-- Badges & Reading Meta -->
@@ -282,27 +289,26 @@
           <span id="articleCategoryBadge" class="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold text-[11px] tracking-wider uppercase">
             Team Dispatch
           </span>
-          <span class="text-neutral-400" id="articleDate">July 2, 2026</span>
+          <span class="text-neutral-400" id="articleDate"></span>
           <span class="text-neutral-600">•</span>
           <span class="text-neutral-400" id="articleReadTime">3 min read</span>
-          <span class="text-neutral-600">•</span>
-          <span class="text-neutral-400">Official Release</span>
+          
         </div>
 
         <!-- Main Title -->
         <h1 id="articleTitle" class="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight mb-6">
-          Victory at 24H Spa Virtual: GT3 Class Win for Muntrume
+          Team dispatch
         </h1>
 
         <!-- Author & Dispatch Signature -->
         <div class="flex items-center justify-between gap-4 py-4 border-y border-white/10 text-xs">
           <div class="flex items-center gap-3">
             <div id="authorAvatar" class="w-10 h-10 rounded-full bg-[#1c232d] border border-emerald-500/30 flex items-center justify-center font-extrabold text-emerald-400 text-sm">
-              AT
+              MM
             </div>
             <div>
-              <div class="font-bold text-white text-sm" id="articleAuthor">Alberto Trujillo</div>
-              <div class="text-neutral-400 text-xs" id="authorRole">Lead Driver &amp; Strategist</div>
+              <div class="font-bold text-white text-sm" id="articleAuthor">Muntrume Motorsport</div>
+              <div class="text-neutral-400 text-xs" id="authorRole"></div>
             </div>
           </div>
 
@@ -321,11 +327,11 @@
       <!-- Featured Image Banner -->
       <div class="mb-10 rounded-3xl overflow-hidden bg-[#161c24] border border-white/10 shadow-2xl relative">
         <div class="h-64 sm:h-96 w-full overflow-hidden bg-[#0e1217] relative">
-          <img id="articleImage" src="assets/img/race1.jpg" onerror="this.onerror=null;this.src='assets/img/coche1.webp';" alt="Dispatch cover" class="w-full h-full object-cover">
+          <img id="articleImage" src="assets/img/race1.webp" onerror="this.onerror=null;this.src='assets/img/coche1.webp';" alt="Dispatch cover" class="w-full h-full object-cover">
           <div class="absolute inset-0 bg-gradient-to-t from-[#161c24] via-transparent to-transparent opacity-60"></div>
         </div>
         <div class="p-4 bg-[#161c24] border-t border-white/5 flex items-center justify-between text-[11px] text-neutral-400">
-          <span id="imageCaption">Telemetry Archive · Official Race Debrief</span>
+          <span id="imageCaption"></span>
           <span>Muntrume Motorsport Media</span>
         </div>
       </div>
@@ -344,8 +350,8 @@
             </svg>
           </div>
           <div>
-            <div class="text-xs font-bold text-white tracking-wide uppercase">Verified Squad Transmission</div>
-            <div class="text-[11px] text-neutral-400">Muntrume Motorsport Virtual Racing Division · Sant Andreu, Barcelona</div>
+            <div class="text-xs font-bold text-white tracking-wide uppercase">Muntrume Motorsport</div>
+            <div class="text-[11px] text-neutral-400">Sant Andreu, Barcelona</div>
           </div>
         </div>
 
@@ -361,7 +367,7 @@
         <div class="flex items-center justify-between mb-6">
           <div>
             <h2 class="text-xl font-bold text-white tracking-tight">More Team Dispatches</h2>
-            <p class="text-xs text-neutral-400 mt-0.5">Explore additional competition debriefs and roster bulletins.</p>
+            <p class="text-xs text-neutral-400 mt-0.5">Other posts from the team.</p>
           </div>
           <a href="/news?filter=team" class="text-xs text-emerald-400 hover:text-emerald-300 font-semibold transition">
             View All Dispatches &rarr;
@@ -372,6 +378,7 @@
           <!-- Populated via JavaScript -->
         </div>
       </section>
+      </div>
 
     </div>
   </main>
@@ -389,7 +396,7 @@
           <img src="/assets/img/logo-sm.webp" alt="" class="h-8 w-auto" width="31" height="32" loading="lazy" decoding="async">
           <div>
             <div class="font-extrabold text-white text-base tracking-tight">MUNTRUME MOTORSPORT</div>
-            <div class="text-xs text-neutral-400">Sant Andreu, Barcelona · Founded 2024</div>
+            <div class="text-xs text-neutral-400">Sant Andreu, Barcelona</div>
           </div>
         </div>
 
@@ -411,7 +418,7 @@
 
       <!-- Copyright & Disclaimer -->
       <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-400">
-        <p>© 2024–2026 Muntrume Motorsport. Virtual Racing Division. All rights reserved.</p>
+        <p>© 2026 Muntrume Motorsport. All rights reserved.</p>
         <p class="text-neutral-400">Sim Racing &amp; Vehicle Engineering on iRacing platform.</p>
       </div>
 
@@ -452,87 +459,8 @@
         .replace(/^-+|-+$/g, '');
     }
 
-    // 3. Fallback Team Articles (Guarantees zero blank state if offline)
-    const FALLBACK_DISPATCHES = [
-      {
-        id: "victory-at-24h-spa-virtual",
-        title: "Victory at 24H Spa Virtual: GT3 Class Win",
-        date: "2026-07-02",
-        author: "Alberto Trujillo",
-        category: "Endurance",
-        image: "assets/img/race1.jpg",
-        content: `Muntrume Motorsport has achieved a monumental milestone in virtual endurance racing by securing an outright GT3 Class victory at the prestigious 24 Hours of Spa Virtual.
-
-Facing a grid of over 50 competitive simracing squads and adverse Ardennes weather shifts, our squad delivered a masterclass in telemetry discipline, strategic fuel management, and consistent pace through the treacherous night stints.
-
-### Strategic Highlights & Race Execution
-
-- **P1 Finish in GT3 Class:** Completed 582 flawless laps with a 42-second margin over second position.
-- **Fastest Race Lap:** Recorded during the cool dawn transition at 05:14 UTC.
-- **Zero Major Incidents:** Zero drive-through penalties and pristine bodywork across all 24 hours of racing.
-
-> "Our telemetry preparation leading into race week was the decisive factor. While our competitors struggled with excessive rear tire overheating during the double stints, our kinematic damper setup kept slip angles below 6 degrees throughout the race." — Alberto Trujillo, Lead Driver
-
-The driver rotation between Alberto Trujillo, Mateo Berbis, and Eduardo Chongkan operated with surgical precision during pit stops, maximizing track position and securing our first major 24-hour endurance trophy of the season.`
-      },
-      {
-        id: "new-signing-eduardo-joins-the-team",
-        title: "New Signing: Eduardo Chongkan Joins as Race Engineer",
-        date: "2026-06-28",
-        author: "Team Principal",
-        category: "Roster",
-        image: "assets/img/coche2.webp",
-        content: `Muntrume Motorsport is proud to officially confirm the appointment of Eduardo Chongkan to our official squad roster. Eduardo joins our Barcelona-based virtual division taking on the dual responsibility of Race Engineer and active Endurance Driver.
-
-Bringing deep technical expertise in vehicle telemetry, suspension kinematic geometry, and MoTeC data acquisition, Eduardo will lead data analysis for our multi-class endurance campaigns across iRacing.
-
-### Engineering Responsibilities
-
-- Kinematic data acquisition and tire thermal curve modeling.
-- Real-time pit wall telemetry strategy and fuel consumption delta calculations.
-- Active driver duties in premier endurance championships.
-
-With an iRating exceeding 2,700 and extensive multi-class racing experience, his addition strengthens our squad as we prepare for upcoming endurance specials and official championship rounds.`
-      },
-      {
-        id: "high-downforce-testing-at-nurburgring-nordschleife",
-        title: "High-Downforce Testing at Nürburgring Nordschleife",
-        date: "2026-06-20",
-        author: "Mateo Berbis",
-        category: "Testing",
-        image: "assets/img/coche4.webp",
-        content: `Our engineering division completed a comprehensive 4-hour continuous testing simulation on the legendary Nürburgring Nordschleife to benchmark aerodynamic configurations and damper valving ahead of the upcoming VLN endurance round.
-
-Testing focused on high-speed stability through the Flugplatz and Schwedenkreuz sections, alongside mechanical compliance over the notorious Karussell concrete banking.
-
-### Test Benchmarks & Telemetry Ingestion
-
-- **Telemetry Ingestion Rate:** 360Hz sensor logging covering damper velocities and spring displacement.
-- **Tire Thermal Window:** Optimal operating range sustained between 82°C and 88°C on medium slick compounds.
-- **Aero Map Calibration:** Low-rake aerodynamic trim validated for high-speed stability without compromising mechanical traction in slow sectors.
-
-The data gathered during the session will form the baseline setup file for all team entries in upcoming endurance rounds.`
-      },
-      {
-        id: "le-mans-virtual-preparation",
-        title: "Le Mans Virtual Preparation: Circuit de la Sarthe Practice",
-        date: "2026-06-10",
-        author: "Alberto Trujillo",
-        category: "Endurance",
-        image: "assets/img/coche3.webp",
-        content: `Preparations for the 24 Hours of Le Mans Virtual are officially underway as our endurance drivers took to the 13.6-kilometer Circuit de la Sarthe for intensive aerodynamic and fuel-trim validation.
-
-The primary objective was calibrating low-downforce aero packages to achieve competitive straight-line velocities down the Mulsanne Straight while maintaining confidence through the demanding Porsche Curves.
-
-### Test Focus Areas
-
-- **Lift-and-Coast Fuel Saving:** Evaluating telemetry deltas between early throttle lift versus hard trail-braking to extend stint lengths by up to two laps.
-- **Night Transition Visibility:** Cockpit FOV and virtual lighting adjustments to optimize driver vision during nocturnal stints.
-- **Drafting & Slipstream Efficiency:** Multi-car telemetry testing to determine optimal spacing for clean air passing maneuvers.
-
-With consistent long-run pace established during initial simulations, our focus now shifts toward driver stint handoff rehearsals and qualifying setup refinement.`
-      }
-    ];
+    // 3. Fallback Team Articles (none published yet)
+    const FALLBACK_DISPATCHES = [];
 
     // 4. Markdown Parser for Full Articles
     function parseTeamNewsMarkdown(markdown) {
@@ -653,12 +581,7 @@ With consistent long-run pace established during initial simulations, our focus 
     }
 
     function getAuthorRole(author) {
-      const a = (author || '').toLowerCase();
-      if (a.includes('alberto')) return 'Lead Driver &amp; Squad Director';
-      if (a.includes('mateo')) return 'Endurance Driver &amp; Telemetry Specialist';
-      if (a.includes('eduardo')) return 'Race Engineer &amp; GT3 Driver';
-      if (a.includes('juanlu')) return 'Sprint &amp; Reserve Driver';
-      return 'Official Team Operations';
+      return '';
     }
 
     // 6. Share Functionality
@@ -703,10 +626,15 @@ With consistent long-run pace established during initial simulations, our focus 
         }
       }
 
-      // Default to first/latest article if not found
+      // Not found: show an explicit empty state (no silent fallback to another article)
       if (!activeArticle) {
-        activeArticle = articles[0];
+        document.title = 'Dispatch not found · Muntrume Motorsport';
+        document.getElementById('articleNotFound').style.display = '';
+        return;
       }
+      document.getElementById('articleWrap').style.display = '';
+      const robots = document.querySelector('meta[name="robots"]');
+      if (robots) robots.remove();
 
       // Populate DOM elements
       document.title = `${activeArticle.title} · Muntrume Motorsport`;
@@ -727,12 +655,12 @@ With consistent long-run pace established during initial simulations, our focus 
       document.getElementById('authorRole').innerHTML = getAuthorRole(authorName);
       document.getElementById('authorAvatar').textContent = getAuthorInitials(authorName);
 
-      const coverImg = activeArticle.image || 'assets/img/race1.jpg';
+      const coverImg = activeArticle.image || 'assets/img/race1.webp';
       const imgEl = document.getElementById('articleImage');
       imgEl.onerror = function() { this.onerror = null; this.src = 'assets/img/coche1.webp'; };
       imgEl.src = coverImg;
       imgEl.alt = activeArticle.title;
-      document.getElementById('imageCaption').textContent = `Official Dispatch · ${activeArticle.category} Division`;
+      document.getElementById('imageCaption').textContent = activeArticle.category || '';
 
       // Render Body
       document.getElementById('articleContent').innerHTML = renderMarkdownToHtml(activeArticle.content);
