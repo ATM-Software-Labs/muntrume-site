@@ -6,10 +6,10 @@ const pageDescription = "Meet the four drivers of Muntrume Motorsport, a sim rac
 ---
 
 <Layout title={pageTitle} description={pageDescription}>
-<!-- ========================================================================= -->
+  <!-- ========================================================================= -->
   <!-- 2. HERO: DRIVER ROSTER & SQUAD OVERVIEW                                    -->
   <!-- ========================================================================= -->
-  <section class="pt-28 pb-14 bg-[#0e1217] border-b border-white/10">
+  <section class="pt-24 pb-12 bg-[#0e1217] border-b border-white/10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
       <!-- Top Status Strip -->
@@ -19,14 +19,13 @@ const pageDescription = "Meet the four drivers of Muntrume Motorsport, a sim rac
             <span class="pulse-dot"></span>
             Lineup · 4 Drivers
           </span>
-          
         </div>
         <div class="flex items-center gap-3 text-neutral-400 font-medium">
           <span>Sant Andreu · Barcelona</span>
         </div>
       </div>
 
-      <div class="text-center py-6">
+      <div class="text-center py-4">
         <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-emerald-400 text-xs font-semibold mb-4">
           <span>Team Roster</span>
         </div>
@@ -34,21 +33,20 @@ const pageDescription = "Meet the four drivers of Muntrume Motorsport, a sim rac
           TEAM <span class="text-emerald-400">ROSTER</span>
         </h1>
         <p class="text-sm sm:text-base text-neutral-400 max-w-2xl mx-auto leading-relaxed">
-          The four drivers of Muntrume Motorsport on iRacing. <a href="/pilotos" class="text-emerald-400" style="text-decoration:underline">Pilot profiles</a>
+          The four drivers of Muntrume Motorsport on iRacing. <a href="/pilotos" class="text-emerald-400 hover:text-emerald-300 underline font-semibold">Pilot profiles</a>
         </p>
       </div>
-
 
     </div>
   </section>
 
   <!-- ========================================================================= -->
-  <!-- 3. DRIVERS DIRECTORY (Driver Cards)                              -->
+  <!-- 3. DRIVERS DIRECTORY (Driver Cards)                                       -->
   <!-- ========================================================================= -->
   <section id="drivers" class="py-16 bg-[#0e1217]">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
-      <!-- Controls Toolbar: Search & License Filters -->
+      <!-- Controls Toolbar: Search & Sort -->
       <div class="bg-[#161c24] border border-white/10 rounded-2xl p-4 mb-10 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
         
         <!-- Search -->
@@ -61,7 +59,7 @@ const pageDescription = "Meet the four drivers of Muntrume Motorsport, a sim rac
             id="searchInput" 
             placeholder="Search driver or category..." 
             class="w-full bg-[#0e1217] border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-neutral-400 focus:outline-none focus:border-emerald-500 transition"
-          >
+          />
         </div>
 
         <div id="licenseFilters" hidden></div>
@@ -97,7 +95,7 @@ const pageDescription = "Meet the four drivers of Muntrume Motorsport, a sim rac
 
             <h3 class="text-lg font-bold text-white mb-1">Alberto Trujillo</h3>
             <p class="text-xs text-neutral-400 mb-5 leading-relaxed line-clamp-2">Founder &amp; driver.</p>
-            <a href="/pilot?id=alberto-trujillo" class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 text-xs font-bold rounded-xl transition shadow-sm inline-flex items-center justify-center gap-1.5">
+            <a href="/p/alberto-trujillo/" class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 text-xs font-bold rounded-xl transition shadow-sm inline-flex items-center justify-center gap-1.5">
               <span>Ver Perfil y Telemetría</span>
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </a>
@@ -120,7 +118,7 @@ const pageDescription = "Meet the four drivers of Muntrume Motorsport, a sim rac
 
             <h3 class="text-lg font-bold text-white mb-1">Mateo Berbis</h3>
             <p class="text-xs text-neutral-400 mb-5 leading-relaxed line-clamp-2">Driver.</p>
-            <a href="/pilot?id=mateo-berbis" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-neutral-950 text-xs font-bold rounded-xl transition shadow-sm inline-flex items-center justify-center gap-1.5">
+            <a href="/p/mateo-berbis/" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-neutral-950 text-xs font-bold rounded-xl transition shadow-sm inline-flex items-center justify-center gap-1.5">
               <span>Ver Perfil y Telemetría</span>
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </a>
@@ -143,7 +141,7 @@ const pageDescription = "Meet the four drivers of Muntrume Motorsport, a sim rac
 
             <h3 class="text-lg font-bold text-white mb-1">Eduardo Chongkan</h3>
             <p class="text-xs text-neutral-400 mb-5 leading-relaxed line-clamp-2">Driver.</p>
-            <a href="/pilot?id=eduardo-chongkan" class="w-full py-2.5 bg-slate-200 hover:bg-white text-neutral-950 text-xs font-bold rounded-xl transition shadow-sm inline-flex items-center justify-center gap-1.5">
+            <a href="/p/eduardo-chongkan/" class="w-full py-2.5 bg-slate-200 hover:bg-white text-neutral-950 text-xs font-bold rounded-xl transition shadow-sm inline-flex items-center justify-center gap-1.5">
               <span>Ver Perfil y Telemetría</span>
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </a>
@@ -166,7 +164,7 @@ const pageDescription = "Meet the four drivers of Muntrume Motorsport, a sim rac
 
             <h3 class="text-lg font-bold text-white mb-1">Juanlu Carrillo</h3>
             <p class="text-xs text-neutral-400 mb-5 leading-relaxed line-clamp-2">Driver.</p>
-            <a href="/pilot?id=juanlu-carrillo" class="w-full py-2.5 bg-orange-500 hover:bg-orange-400 text-neutral-950 text-xs font-bold rounded-xl transition shadow-sm inline-flex items-center justify-center gap-1.5">
+            <a href="/p/juanlu-carrillo/" class="w-full py-2.5 bg-orange-500 hover:bg-orange-400 text-neutral-950 text-xs font-bold rounded-xl transition shadow-sm inline-flex items-center justify-center gap-1.5">
               <span>Ver Perfil y Telemetría</span>
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </a>
@@ -182,7 +180,6 @@ const pageDescription = "Meet the four drivers of Muntrume Motorsport, a sim rac
 
     </div>
   </section>
-
 
   <!-- ========================================================================= -->
   <!-- 5. COMMUNITY DISCORD CALLOUT                                              -->
@@ -213,14 +210,13 @@ const pageDescription = "Meet the four drivers of Muntrume Motorsport, a sim rac
         <div class="lg:col-span-6">
           <div class="bg-[#161c24] rounded-2xl p-2.5 border border-white/10 shadow-2xl overflow-hidden">
             <iframe 
-              title="Muntrume Motorsport Discord server widget"
-              loading="lazy"
+              title="Muntrume Motorsport Discord server widget" 
+              loading="lazy" 
               src="https://discord.com/widget?id=1188239582865661992&theme=dark" 
               width="100%" 
               height="380" 
-              allowtransparency="true" 
-              frameborder="0" 
-              sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts">
+              sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+            >
             </iframe>
           </div>
         </div>
@@ -229,205 +225,113 @@ const pageDescription = "Meet the four drivers of Muntrume Motorsport, a sim rac
     </div>
   </section>
 
-  <!-- ========================================================================= -->
-  <!-- 6. DRIVER MODAL (Interactive Athlete Dossier)                             -->
-  <!-- ========================================================================= -->
-  <div id="driverModal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop p-4" onclick="closeModalOutside(event)">
-    <div class="modal-content bg-[#161c24] border border-white/10 rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl">
-      
-      <!-- Modal Header -->
-      <div class="bg-[#1c232d] p-6 border-b border-white/10 relative">
-        <button onclick="closeDriverModal()" class="absolute top-5 right-5 text-neutral-400 hover:text-white p-1 transition" aria-label="Close modal">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-        <div class="flex items-center gap-4">
-          <img id="modal-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" alt="Driver avatar" width="64" height="64" class="w-16 h-16 rounded-full object-cover border-2 border-emerald-400">
-          <div>
-            <h3 id="modal-name" class="text-xl font-bold text-white tracking-tight"></h3>
-            <span id="modal-license" class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold mt-1"></span>
-            <div id="modal-role" class="text-xs text-neutral-400 mt-1"></div>
-          </div>
-        </div>
-      </div>
+  <!-- Component Styles -->
+  <style is:global>
+    /* Driver Card Hover */
+    .driver-card {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .driver-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 16px 32px -10px rgba(0, 0, 0, 0.6);
+    }
+    .driver-card.hidden-card {
+      display: none;
+    }
 
-      <!-- Modal Tabs -->
-      <div class="border-b border-white/10 px-6 flex gap-2 bg-[#161c24]">
-        <button class="tab-btn active" onclick="switchModalTab('stats', this)">Profile</button>
-        <button class="tab-btn" onclick="switchModalTab('bio', this)">Driver Bio</button>
-      </div>
+    /* Filter Buttons */
+    .filter-btn {
+      padding: 0.45rem 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #94a3b8;
+      background: #161c24;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .filter-btn:hover {
+      border-color: rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      background: #1c232d;
+    }
+    .filter-btn.active {
+      background: #10b981;
+      color: #0e1217 !important;
+      font-weight: 700;
+      border-color: #10b981;
+    }
+  </style>
 
-      <!-- Modal Body -->
-      <div class="p-6 text-xs">
-        <!-- Tab 1: Stats -->
-        <div id="tab-stats" class="tab-content active space-y-4">
-          <div class="grid grid-cols-2 gap-3" id="modal-stats"></div>
-        </div>
-
-        <!-- Tab 3: Bio -->
-        <div id="tab-bio" class="tab-content">
-          <div class="bg-[#1c232d] p-5 rounded-xl border border-white/5 text-neutral-300 leading-relaxed text-sm">
-            <p id="modal-bio"></p>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- 7. FOOTER (Unified Motorsport Master Footer)                              -->
-  <!-- ========================================================================= -->
-
-<!-- ========================================================================= -->
-  <!-- JAVASCRIPT: Driver Modal, Search, Sort & Filter Engine                    -->
-  <!-- ========================================================================= -->
+  <!-- Client-side filter & search script -->
   <script is:inline>
-    // 1. Mobile Drawer Controller
-    function toggleNavDrawer() {
-      const drawer = document.getElementById('mobileDrawer');
-      const backdrop = document.getElementById('mobileBackdrop');
-      if (!drawer || !backdrop) return;
-      const isOpen = drawer.classList.contains('open');
-      if (isOpen) {
-        drawer.classList.remove('open');
-        backdrop.classList.remove('open');
-        document.body.style.overflow = '';
-      } else {
-        drawer.classList.add('open');
-        backdrop.classList.add('open');
-        document.body.style.overflow = 'hidden';
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInput = document.getElementById('searchInput');
+      const sortSelect = document.getElementById('sortSelect');
+      const driversGrid = document.getElementById('driversGrid');
+      const noResults = document.getElementById('noResults');
+
+      if (!driversGrid) return;
+
+      let currentSearch = '';
+      let currentSort = 'roster';
+      document.querySelectorAll('.driver-card').forEach((c, i) => { c.dataset.order = String(i); });
+
+      function applyDriverFilters() {
+        const cards = Array.from(document.querySelectorAll('.driver-card'));
+        let visible = 0;
+
+        cards.forEach(c => {
+          const name = (c.dataset.name || '').toLowerCase();
+          const matchSearch = !currentSearch || name.includes(currentSearch.toLowerCase());
+
+          if (matchSearch) {
+            c.classList.remove('hidden-card');
+            visible++;
+          } else {
+            c.classList.add('hidden-card');
+          }
+        });
+
+        if (noResults) {
+          if (visible === 0) noResults.classList.remove('hidden');
+          else noResults.classList.add('hidden');
+        }
+
+        applyDriverSorting();
       }
-    }
 
-    // 2. Driver Modal Controller
-    const driverModal = document.getElementById('driverModal');
+      function applyDriverSorting() {
+        const visibleCards = Array.from(document.querySelectorAll('.driver-card:not(.hidden-card)'));
+        const hiddenCards = Array.from(document.querySelectorAll('.driver-card.hidden-card'));
 
-    function switchModalTab(tabName, btnElement) {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-      btnElement.classList.add('active');
-      document.getElementById(`tab-${tabName}`).classList.add('active');
-    }
+        visibleCards.sort((a, b) => {
+          switch (currentSort) {
+            case 'roster': return Number(a.dataset.order) - Number(b.dataset.order);
+            case 'name-asc': return (a.dataset.name || '').localeCompare(b.dataset.name || '');
+            default: return 0;
+          }
+        });
 
-    function openDriverModal(name, license, role, avatar, licenseClass, stats, bio) {
-      document.getElementById('modal-name').textContent = name;
-      document.getElementById('modal-role').textContent = role;
-      document.getElementById('modal-avatar').src = avatar;
-      document.getElementById('modal-bio').textContent = bio;
+        visibleCards.forEach((c, i) => {
+          const badge = c.querySelector('.rank-badge');
+          if (badge) badge.textContent = `#${i + 1}`;
+          driversGrid.appendChild(c);
+        });
+        hiddenCards.forEach(c => driversGrid.appendChild(c));
+      }
 
-      const licenseEl = document.getElementById('modal-license');
-      licenseEl.textContent = license;
-      licenseEl.className = `${licenseClass} inline-block px-2.5 py-0.5 rounded text-[11px] font-semibold mt-1 border`;
-
-      document.getElementById('modal-stats').innerHTML = `
-        <div class="bg-[#1c232d] p-3 rounded-xl border border-white/5">
-          <div class="text-[10px] text-neutral-400 uppercase font-semibold">Category</div>
-          <div class="text-xs font-semibold text-neutral-200 mt-1">${stats.category}</div>
-        </div>
-        <div class="bg-[#1c232d] p-3 rounded-xl border border-white/5">
-          <div class="text-[10px] text-neutral-400 uppercase font-semibold">Specialty</div>
-          <div class="text-xs font-semibold text-neutral-200 mt-1">${stats.specialty}</div>
-        </div>
-      `;
-
-      // Reset to first tab
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      document.querySelector('.tab-btn').classList.add('active');
-      document.getElementById('tab-stats').classList.add('active');
-
-      driverModal.classList.remove('hidden');
-      driverModal.classList.add('flex');
-    }
-
-
-    function closeDriverModal() {
-      driverModal.classList.add('hidden');
-      driverModal.classList.remove('flex');
-    }
-
-    function closeModalOutside(e) {
-      if (e.target === driverModal) closeDriverModal();
-    }
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeDriverModal();
-    });
-
-    // 3. FILTER, SORT & SEARCH LOGIC
-    const searchInput = document.getElementById('searchInput');
-    const licenseFilters = document.querySelectorAll('#licenseFilters .filter-btn');
-    const sortSelect = document.getElementById('sortSelect');
-    const driversGrid = document.getElementById('driversGrid');
-    const noResults = document.getElementById('noResults');
-
-    let currentFilter = 'all';
-    let currentSearch = '';
-    let currentSort = 'roster';
-    document.querySelectorAll('.driver-card').forEach((c, i) => { c.dataset.order = i; });
-
-    function applyDriverFilters() {
-      const cards = Array.from(document.querySelectorAll('.driver-card'));
-      let visible = 0;
-
-      cards.forEach(c => {
-        const license = c.dataset.license;
-        const name = c.dataset.name.toLowerCase();
-
-        const matchLic = currentFilter === 'all' || license === currentFilter;
-        const matchSearch = !currentSearch || name.includes(currentSearch.toLowerCase());
-
-        if (matchLic && matchSearch) {
-          c.classList.remove('hidden-card');
-          visible++;
-        } else {
-          c.classList.add('hidden-card');
-        }
-      });
-
-      if (visible === 0) noResults.classList.remove('hidden');
-      else noResults.classList.add('hidden');
-
-      applyDriverSorting();
-    }
-
-    function applyDriverSorting() {
-      const visibleCards = Array.from(document.querySelectorAll('.driver-card:not(.hidden-card)'));
-      const hiddenCards = Array.from(document.querySelectorAll('.driver-card.hidden-card'));
-
-      visibleCards.sort((a, b) => {
-        switch (currentSort) {
-          case 'roster': return Number(a.dataset.order) - Number(b.dataset.order);
-          case 'name-asc': return a.dataset.name.localeCompare(b.dataset.name);
-          default: return 0;
-        }
-      });
-
-      visibleCards.forEach((c, i) => {
-        const badge = c.querySelector('.rank-badge');
-        if (badge) badge.textContent = `#${i + 1}`;
-        driversGrid.appendChild(c);
-      });
-      hiddenCards.forEach(c => driversGrid.appendChild(c));
-    }
-
-    searchInput.addEventListener('input', (e) => {
-      currentSearch = e.target.value;
-      applyDriverFilters();
-    });
-
-    licenseFilters.forEach(b => {
-      b.addEventListener('click', () => {
-        licenseFilters.forEach(x => x.classList.remove('active'));
-        b.classList.add('active');
-        currentFilter = b.dataset.filter;
+      searchInput?.addEventListener('input', (e) => {
+        currentSearch = e.target.value;
         applyDriverFilters();
       });
-    });
 
-    sortSelect.addEventListener('change', (e) => {
-      currentSort = e.target.value;
-      applyDriverSorting();
+      sortSelect?.addEventListener('change', (e) => {
+        currentSort = e.target.value;
+        applyDriverSorting();
+      });
     });
   </script>
 </Layout>
