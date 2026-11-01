@@ -1,170 +1,12 @@
-<!DOCTYPE html>
-<html lang="es" class="dark scroll-smooth" data-theme="dark">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Setup Vault · Muntrume Motorsport</title>
-  <meta name="description" content="Portal privado y confidencial de ingeniería, telemetría y setups para pilotos de Muntrume Motorsport.">
-  <meta name="robots" content="noindex, nofollow">
-  <link rel="canonical" href="https://muntru.me/setups">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Muntrume Motorsport">
-  <meta property="og:locale" content="es_ES">
-  <meta property="og:title" content="Setup Vault · Muntrume Motorsport">
-  <meta property="og:description" content="Portal privado y confidencial de ingeniería, telemetría y setups para pilotos de Muntrume Motorsport.">
-  <meta property="og:url" content="https://muntru.me/setups">
-  <meta property="og:image" content="https://muntru.me/assets/img/og-setups.jpg">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Muntrume Motorsport car on track — Setup Vault">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Setup Vault · Muntrume Motorsport">
-  <meta name="twitter:description" content="Portal privado y confidencial de ingeniería, telemetría y setups para pilotos de Muntrume Motorsport.">
-  <meta name="twitter:image" content="https://muntru.me/assets/img/og-setups.jpg">
-  <link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <style>
-    /* Self-hosted Inter (OFL, assets/fonts/OFL.txt) + metric-matched fallback so the Inter swap doesn't shift layout; one font stack site-wide */
-    @font-face { font-family: 'Inter'; font-style: normal; font-weight: 300 900; font-display: swap; src: url(/assets/fonts/inter-latin-ext.woff2) format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
-    @font-face { font-family: 'Inter'; font-style: normal; font-weight: 300 900; font-display: swap; src: url(/assets/fonts/inter-latin.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
-    @font-face { font-family: "Inter Fallback"; src: local("Arial"), local("Liberation Sans"), local("Helvetica"); size-adjust: 107.06%; ascent-override: 90.49%; descent-override: 22.56%; line-gap-override: 0%; }
-    html body, html .font-sans { font-family: 'Inter', 'Inter Fallback', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
-  </style>
+---
+import Layout from '../layouts/Layout.astro';
 
-  <link rel="stylesheet" href="/assets/css/tailwind.min.css?v=m9">
-  <link rel="stylesheet" href="/assets/css/mobile.css?v=m10">
-  <link rel="stylesheet" href="/assets/css/admin.css?v=m10">
+const pageTitle = "Setup Vault · Muntrume Motorsport";
+const pageDescription = "Portal privado y confidencial de ingeniería, telemetría y setups para pilotos de Muntrume Motorsport.";
+---
 
-  <style>
-    :root { color-scheme: dark; }
-    body {
-      background-color: #0e1217;
-      color: #f1f5f9;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      margin: 0;
-      padding: 0;
-      overflow-x: hidden;
-    }
-    .pulse-dot {
-      display: inline-block;
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background-color: #10b981;
-      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-      animation: pulseGreen 2.2s infinite cubic-bezier(0.66, 0, 0, 1);
-    }
-    @keyframes pulseGreen {
-      to { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
-    }
-    #mobileDrawer {
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      transform: translateX(100%);
-    }
-    #mobileDrawer.open { transform: translateX(0); }
-    #mobileBackdrop {
-      transition: opacity 0.3s ease;
-      opacity: 0;
-      pointer-events: none;
-    }
-    #mobileBackdrop.open {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: #0e1217; }
-    ::-webkit-scrollbar-thumb { background: #262e39; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #3a4454; }
-  </style>
-  <script>
-    if (window.location.pathname.endsWith('.html')) {
-      var cleanPath = window.location.pathname.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
-      window.history.replaceState(null, '', (cleanPath || '/') + window.location.search + window.location.hash);
-    }
-  </script>
-  <link rel="icon" href="/favicon.ico" sizes="48x48">
-  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/assets/img/icon-192.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png">
-  <link rel="manifest" href="/site.webmanifest">
-  <meta name="msapplication-TileColor" content="#0e1217">
-  <meta name="msapplication-TileImage" content="/assets/img/mstile-150.png">
-  <meta name="msapplication-config" content="/browserconfig.xml">
-  <meta name="theme-color" content="#0e1217">
-  <script src="/assets/js/vpfix.js?v=m9"></script>
-</head>
-<body class="min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-neutral-950">
-
-  <!-- ========================================================================= -->
-  <!-- 1. TOP NAVIGATION                                                         -->
-  <!-- ========================================================================= -->
-  <header class="fixed top-0 left-0 right-0 z-50 h-16 bg-[#0e1217]/90 backdrop-blur-md border-b border-white/10 transition-all duration-300">
-    <div class="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-      <a href="/" class="flex items-center gap-3 group focus:outline-none">
-        <img src="/assets/img/logo-sm.webp" alt="" class="h-8 w-auto object-contain transition-transform group-hover:scale-105" width="31" height="32" onerror="this.style.display='none'">
-        <div class="flex items-center gap-2">
-          <span class="font-extrabold tracking-tight text-white text-base">MUNTRUME</span>
-          <span class="text-[11px] font-semibold tracking-wider text-emerald-400 uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">VAULT</span>
-        </div>
-      </a>
-
-      <!-- Desktop Navigation -->
-      <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
-        <a href="/" class="text-neutral-400 hover:text-white transition-colors">Overview</a>
-        <a href="/team" class="text-neutral-400 hover:text-white transition-colors">Roster</a>
-        <a href="/news" class="text-neutral-400 hover:text-white transition-colors">Press Room</a>
-        <a href="/about" class="text-neutral-400 hover:text-white transition-colors">Organization</a>
-        <a href="/contact" class="text-neutral-400 hover:text-white transition-colors">Contact</a>
-        <a href="/setups" class="text-emerald-400 font-semibold border-b-2 border-emerald-400 pb-0.5 flex items-center gap-1.5">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-          <span>Setups</span>
-        </a>
-      </nav>
-
-      <!-- Right CTAs -->
-      <div class="flex items-center gap-3">
-        <div class="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400">
-          <span class="pulse-dot"></span>
-          <span class="font-medium">Vault privado del equipo</span>
-        </div>
-
-        <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer" class="hidden sm:inline-flex items-center gap-2 bg-[#161c24] hover:bg-white/10 border border-white/10 text-neutral-300 font-semibold text-xs px-3.5 py-2 rounded-lg transition">
-          <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.13-.255-.01-.556-.28-.646a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
-          <span>Discord</span>
-        </a>
-
-        <!-- Mobile Drawer Button -->
-        <button type="button" onclick="toggleNavDrawer()" class="md:hidden p-2 text-neutral-400 hover:text-white focus:outline-none" aria-label="Abrir menú">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <!-- Mobile Drawer Backdrop -->
-  <div id="mobileBackdrop" onclick="toggleNavDrawer()" class="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm"></div>
-
-  <!-- Mobile Navigation Drawer -->
-  <aside id="mobileDrawer" class="fixed top-0 right-0 bottom-0 w-72 bg-[#161c24] border-l border-white/10 z-50 p-6 flex flex-col justify-between md:hidden">
-    <div>
-      <div class="flex items-center justify-between pb-6 border-b border-white/10 mb-6">
-        <span class="font-extrabold text-white">MUNTRUME</span>
-        <button type="button" onclick="toggleNavDrawer()" class="p-1.5 text-neutral-400 hover:text-white" aria-label="Cerrar menú">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
-      <nav class="space-y-2 text-sm font-medium">
-        <a href="/" class="block px-3 py-2.5 rounded-lg text-neutral-300 hover:text-white hover:bg-white/5">Overview</a>
-        <a href="/team" class="block px-3 py-2.5 rounded-lg text-neutral-300 hover:text-white hover:bg-white/5">Roster</a>
-        <a href="/news" class="block px-3 py-2.5 rounded-lg text-neutral-300 hover:text-white hover:bg-white/5">Press Room</a>
-        <a href="/about" class="block px-3 py-2.5 rounded-lg text-neutral-300 hover:text-white hover:bg-white/5">Organization</a>
-        <a href="/contact" class="block px-3 py-2.5 rounded-lg text-neutral-300 hover:text-white hover:bg-white/5">Contact</a>
-        <a href="/setups" class="block px-3 py-2.5 rounded-lg text-emerald-400 bg-emerald-500/10 font-semibold border border-emerald-500/20">Setups Vault</a>
-      </nav>
-    </div>
-  </aside>
-
-  <!-- ========================================================================= -->
+<Layout title={pageTitle} description={pageDescription}>
+<!-- ========================================================================= -->
   <!-- MAIN CONTAINER                                                            -->
   <!-- ========================================================================= -->
   <main class="flex-grow pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
@@ -1456,23 +1298,10 @@
   <!-- ========================================================================= -->
   <!-- FOOTER                                                                    -->
   <!-- ========================================================================= -->
-  <footer class="border-t border-white/10 bg-[#0e1217] py-8 text-neutral-400 text-xs">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div class="flex items-center gap-2">
-        <span class="font-extrabold text-white">MUNTRUME</span>
-        <span class="text-neutral-600">·</span>
-        <span>Simracing Squad · Sant Andreu, Barcelona</span>
-      </div>
-      <div>
-        <span>Vault Protegido por Token y Base de Datos D1</span>
-      </div>
-    </div>
-  </footer>
 
-  <!-- ========================================================================= -->
+<!-- ========================================================================= -->
   <!-- JAVASCRIPT: LOGICA DE NEGOCIO, AUTENTICACION Y DESCARGAS                  -->
   <!-- ========================================================================= -->
-  <script src="/assets/js/setups.js?v=m9"></script>
-  <script src="/assets/js/vault-auth-admin.js?v=m12"></script>
-</body>
-</html>
+  <script is:inline src="/assets/js/setups.js?v=m9"></script>
+  <script is:inline src="/assets/js/vault-auth-admin.js?v=m12"></script>
+</Layout>

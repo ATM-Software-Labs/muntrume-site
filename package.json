@@ -1,0 +1,20 @@
+{
+  "name": "muntrume-site",
+  "version": "2.0.0",
+  "description": "Muntrume Motorsport official website & setup vault",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atrumin16/muntrume-site.git"
+  },
+  "author": "Muntrume Motorsport (ATM Software Labs)",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "astro": "^5.4.2"
+  }
+}

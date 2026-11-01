@@ -1,39 +1,12 @@
-<!DOCTYPE html>
-<html lang="es" class="dark scroll-smooth" data-theme="dark">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Muntrume Webmail — Servidor Interno de Correo</title>
-  <meta name="description" content="Servidor y cliente de correo interno de Muntrume Motorsport para comunicados de equipo, briefings de carrera y telemetría.">
-  <link rel="canonical" href="https://muntru.me/mail">
-  
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23059669;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%2310b981;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='48' fill='url(%23grad)'/%3E%3Cpath d='M25 70 L25 30 L35 30 L50 50 L65 30 L75 30 L75 70 L65 70 L65 45 L50 65 L35 45 L35 70 Z' fill='white'/%3E%3Ccircle cx='50' cy='50' r='48' fill='none' stroke='white' stroke-width='2'/%3E%3C/svg%3E">
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/tailwind.min.css?v=26s4.6">
+---
+import Layout from '../layouts/Layout.astro';
 
-  <style>
-    :root { color-scheme: dark; }
-    body {
-      background-color: #0b0e13;
-      color: #f1f5f9;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      margin: 0; padding: 0;
-      overflow-x: hidden;
-    }
-    .font-mono { font-family: 'JetBrains Mono', monospace; }
-    .mail-active {
-      background: rgba(16, 185, 129, 0.12) !important;
-      border-left: 3px solid #10b981 !important;
-      color: #ffffff !important;
-    }
-  </style>
-</head>
-<body class="h-screen flex flex-col bg-[#0b0e13] text-neutral-200 overflow-hidden">
+const pageTitle = "Muntrume Webmail — Servidor Interno de Correo";
+const pageDescription = "Servidor y cliente de correo interno de Muntrume Motorsport para comunicados de equipo, briefings de carrera y telemetría.";
+---
 
-  <!-- Top App Bar (Google Workspace / Fastmail style) -->
+<Layout title={pageTitle} description={pageDescription} hideNav={true} hideFooter={true}>
+<!-- Top App Bar (Google Workspace / Fastmail style) -->
   <header class="h-14 bg-[#12161f] border-b border-white/10 flex items-center justify-between px-4 sm:px-6 flex-shrink-0 z-30">
     <div class="flex items-center gap-3">
       <a href="/" class="flex items-center gap-2 group">
@@ -396,7 +369,7 @@
   </div>
 
   <!-- Mail Application Logic -->
-  <script>
+  <script is:inline>
     const INITIAL_EMAILS = [
       {
         id: "msg-001",
@@ -887,5 +860,4 @@ Nos vemos en el canal de voz de Discord.
 
     window.addEventListener("DOMContentLoaded", initMail);
   </script>
-</body>
-</html>
+</Layout>

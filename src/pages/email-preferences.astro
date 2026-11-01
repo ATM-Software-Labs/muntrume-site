@@ -1,57 +1,11 @@
-<!DOCTYPE html>
-<html lang="es" data-theme="dark">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Preferencias de correo · Muntrume Motorsport</title>
-  <meta name="robots" content="noindex, nofollow">
-  <meta name="referrer" content="no-referrer">
-  <meta name="theme-color" content="#0e1217">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src https://muntrume.atrumin16.workers.dev; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; font-src 'self'; base-uri 'none'; form-action 'none'">
-  <link rel="icon" href="/favicon.ico" sizes="48x48">
-  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png">
-  <link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <style>
-    @font-face { font-family: 'Inter'; font-style: normal; font-weight: 300 900; font-display: swap; src: url(/assets/fonts/inter-latin.woff2) format('woff2'); }
-    :root { color-scheme: dark light; --bg:#0e1217; --card:#151b23; --line:#232a35; --ink:#f1f5f9; --muted:#94a3b8; --acc:#10b981; --acc-ink:#04241a; }
-    @media (prefers-color-scheme: light) { :root { --bg:#eef2f5; --card:#fff; --line:#e2e8f0; --ink:#0f172a; --muted:#475569; --acc:#059669; --acc-ink:#fff; } }
-    * { box-sizing: border-box; }
-    html { -webkit-text-size-adjust: 100%; }
-    body { margin:0; min-height:100vh; min-height:100svh; background:var(--bg); color:var(--ink); font:16px/1.55 Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-      display:flex; align-items:flex-start; justify-content:center; padding: max(24px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
-    main { width:100%; max-width:520px; margin-top:4vh; }
-    .brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--ink); font-weight:800; letter-spacing:.3px; margin-bottom:18px; }
-    .brand img { width:36px; height:36px; border-radius:8px; }
-    .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:24px; }
-    h1 { font-size:22px; line-height:1.25; margin:0 0 6px; }
-    p { margin:0 0 14px; color:var(--muted); }
-    .row { display:flex; gap:14px; align-items:flex-start; justify-content:space-between; padding:16px 0; border-top:1px solid var(--line); }
-    .row label { flex:1; cursor:pointer; }
-    .row strong { display:block; color:var(--ink); font-size:16px; }
-    .row span { display:block; color:var(--muted); font-size:14px; }
-    .sw { position:relative; width:52px; height:32px; flex:none; margin-top:2px; }
-    .sw input { position:absolute; inset:0; opacity:0; width:100%; height:100%; margin:0; cursor:pointer; z-index:1; }
-    .sw i { position:absolute; inset:0; border-radius:999px; background:#475569; transition:background .2s; }
-    .sw i::after { content:""; position:absolute; top:4px; left:4px; width:24px; height:24px; border-radius:50%; background:#fff; transition:transform .2s; }
-    .sw input:checked + i { background:var(--acc); }
-    .sw input:checked + i::after { transform:translateX(20px); }
-    .sw input:focus-visible + i { outline:3px solid #34d399; outline-offset:2px; }
-    select { width:100%; font:inherit; font-size:16px; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:var(--bg); color:var(--ink); margin-top:8px; }
-    .btn { display:inline-flex; align-items:center; justify-content:center; min-height:48px; padding:0 22px; border:0; border-radius:10px; background:var(--acc); color:var(--acc-ink); font:inherit; font-weight:700; cursor:pointer; width:100%; margin-top:18px; }
-    .btn.ghost { background:transparent; color:var(--ink); border:1px solid var(--line); }
-    .btn:disabled { opacity:.6; cursor:default; }
-    .note { font-size:13px; color:var(--muted); margin-top:16px; }
-    .msg { border-radius:10px; padding:12px 14px; margin:0 0 16px; font-size:15px; display:none; }
-    .msg.ok { display:block; background:rgba(16,185,129,.12); border:1px solid rgba(16,185,129,.4); color:var(--ink); }
-    .msg.err { display:block; background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.45); color:var(--ink); }
-    a { color:#34d399; }
-    @media (prefers-color-scheme: light) { a { color:#047857; } }
-    [hidden] { display:none !important; }
-  </style>
-  <script src="/assets/js/vpfix.js?v=m9"></script>
-</head>
-<body>
+---
+import Layout from '../layouts/Layout.astro';
+
+const pageTitle = "Preferencias de correo · Muntrume Motorsport";
+const pageDescription = "Muntrume Motorsport";
+---
+
+<Layout title={pageTitle} description={pageDescription}>
 <main>
   <a class="brand" href="/"><img src="/assets/img/logo-64.webp" alt="" width="36" height="36">Muntrume Motorsport</a>
   <div class="card" aria-live="polite">
@@ -77,7 +31,7 @@
     </form>
   </div>
 </main>
-<script>
+<script is:inline>
 (() => {
   const API = "https://muntrume.atrumin16.workers.dev/api/email/prefs";
   const h = new URLSearchParams(location.hash.slice(1));
@@ -134,5 +88,4 @@
   start();
 })();
 </script>
-</body>
-</html>
+</Layout>

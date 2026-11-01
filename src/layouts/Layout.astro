@@ -1,0 +1,188 @@
+---
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  canonical?: string;
+  ogImage?: string;
+  ogType?: string;
+  schemaJson?: any;
+  hideNav?: boolean;
+  hideFooter?: boolean;
+}
+
+const {
+  title = "Muntrume Motorsport — Official Sim Racing Team & Setup Vault",
+  description = "Muntrume Motorsport is an elite iRacing sim racing team based in Barcelona. High-performance setups, engineering, and telemetry.",
+  canonical = Astro.url.href,
+  ogImage = "https://muntru.me/assets/img/og-home.jpg",
+  ogType = "website",
+  schemaJson = null,
+  hideNav = false,
+  hideFooter = false
+} = Astro.props;
+
+const defaultSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SportsTeam",
+      "@id": "https://muntru.me/#org",
+      "name": "Muntrume Motorsport",
+      "url": "https://muntru.me/",
+      "sport": "Sim racing",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://muntru.me/assets/img/icon-512.png",
+        "width": 512,
+        "height": 512
+      },
+      "image": "https://muntru.me/assets/img/og-home.jpg",
+      "location": {
+        "@type": "Place",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Barcelona",
+          "addressRegion": "Catalonia",
+          "addressCountry": "ES"
+        }
+      },
+      "sameAs": [
+        "https://twitch.tv/muntrumemrt",
+        "https://www.youtube.com/@jostrume16gameplays28"
+      ]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://muntru.me/#website",
+      "name": "Muntrume Motorsport",
+      "url": "https://muntru.me/",
+      "inLanguage": "en",
+      "publisher": {
+        "@id": "https://muntru.me/#org"
+      }
+    }
+  ]
+};
+
+const finalSchema = schemaJson || defaultSchema;
+---
+
+<!DOCTYPE html>
+<html lang="es" class="dark scroll-smooth" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonical} />
+
+  <!-- Open Graph / Social Media -->
+  <meta property="og:type" content={ogType} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={canonical} />
+  <meta property="og:image" content={ogImage} />
+  <meta property="og:site_name" content="Muntrume Motorsport" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={ogImage} />
+
+  <!-- Favicons and Webmanifest -->
+  <link rel="icon" href="/favicon.ico" sizes="48x48" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/assets/img/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta name="msapplication-TileColor" content="#0e1217" />
+  <meta name="msapplication-TileImage" content="/assets/img/mstile-150.png" />
+  <meta name="msapplication-config" content="/browserconfig.xml" />
+  <meta name="theme-color" content="#0e1217" />
+
+  <!-- Fonts Preconnect & Stylesheets -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="/assets/css/tailwind.min.css?v=26s4.6" />
+  <link rel="stylesheet" href="/assets/css/muntrume.css?v=26s4.6" />
+  <link rel="stylesheet" href="/assets/css/mobile.css?v=26s4.6" />
+
+  <!-- Embedded Core Dark Aesthetics -->
+  <style is:global>
+    :root { color-scheme: dark; }
+    body {
+      background-color: #0e1217;
+      color: #f1f5f9;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .glass-card {
+      background: rgba(22, 28, 36, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-card-hover:hover {
+      border-color: rgba(16, 185, 129, 0.35);
+      transform: translateY(-2px);
+      transition: all 0.2s ease;
+    }
+    .pulse-dot {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: #10b981;
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+      animation: pulseGreen 2.2s infinite cubic-bezier(0.66, 0, 0, 1);
+    }
+    @keyframes pulseGreen {
+      to {
+        box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+      }
+    }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #0e1217; }
+    ::-webkit-scrollbar-thumb { background: #262e39; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #10b981; }
+  </style>
+
+  <!-- URL Clean Path Normalizer -->
+  <script is:inline>
+    if (window.location.pathname.endsWith('.html')) {
+      var cleanPath = window.location.pathname.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
+      window.history.replaceState(null, '', (cleanPath || '/') + window.location.search + window.location.hash);
+    }
+  </script>
+
+  <!-- Structured SEO Schema -->
+  <script type="application/ld+json" set:html={JSON.stringify(finalSchema)} />
+
+  <!-- Core Scripts -->
+  <script is:inline src="/assets/js/vpfix.js?v=m9"></script>
+  <script is:inline src="/assets/js/i18n.js?v=m11"></script>
+</head>
+<body class="bg-[#0e1217] text-neutral-100 antialiased selection:bg-emerald-500 selection:text-neutral-950 font-sans min-h-screen flex flex-col justify-between">
+  
+  {!hideNav && <Navbar currentPath={Astro.url.pathname} />}
+  
+  <div class={!hideNav ? "pt-16 flex-grow" : "flex-grow"}>
+    <slot />
+  </div>
+
+  {!hideFooter && <Footer />}
+
+</body>
+</html>

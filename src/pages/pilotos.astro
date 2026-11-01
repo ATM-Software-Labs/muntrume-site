@@ -1,0 +1,52 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const pageTitle = "Pilot Profiles · Muntrume Motorsport";
+const pageDescription = "Public profiles of Muntrume Motorsport sim racing drivers on iRacing: team, car class and links.";
+---
+
+<Layout title={pageTitle} description={pageDescription}>
+<main class="pt-28 pb-16 bg-[#0e1217]">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="pilotList">
+        <div class="text-center py-6">
+          <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#161c24] border border-white/10 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-4">
+            <span>Driver profiles</span>
+          </div>
+          <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white mb-4">OUR <span class="text-emerald-400">PILOTS</span></h1>
+          <p class="text-base text-neutral-400 max-w-2xl mx-auto leading-relaxed">Drivers who chose to have a public profile. Every profile is published only with the driver's permission.</p>
+        </div>
+        <div id="pilotGrid" class="pl-grid" aria-live="polite"><p class="pl-empty">Loading…</p></div>
+      </section>
+      <article id="pilotDetail" class="pl-detail" hidden></article>
+    </div>
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- 7. FOOTER (Unified Motorsport Master Footer)                              -->
+  <!-- ========================================================================= -->
+
+<!-- ========================================================================= -->
+  <!-- JAVASCRIPT: Mobile Drawer & AI Historian Chat Engine                      -->
+  <!-- ========================================================================= -->
+  <script is:inline>
+    // 1. Mobile Drawer Controller
+    function toggleNavDrawer() {
+      const drawer = document.getElementById('mobileDrawer');
+      const backdrop = document.getElementById('mobileBackdrop');
+      if (!drawer || !backdrop) return;
+      const isOpen = drawer.classList.contains('open');
+      if (isOpen) {
+        drawer.classList.remove('open');
+        backdrop.classList.remove('open');
+        document.body.style.overflow = '';
+      } else {
+        drawer.classList.add('open');
+        backdrop.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+  </script>
+  <script is:inline src="/assets/js/pilots.js?v=m11" defer></script>
+</Layout>

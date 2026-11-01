@@ -1,0 +1,64 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const pageTitle = "About Us · Muntrume Motorsport";
+const pageDescription = "Muntrume Motorsport - Sim racing team from Sant Andreu, Barcelona, racing on iRacing. Links to our Discord, YouTube and Twitch.";
+---
+
+<Layout title={pageTitle} description={pageDescription}>
+<!-- ========================================================================= -->
+  <!-- 2. HERO: ABOUT                                                           -->
+  <!-- ========================================================================= -->
+  <section class="pt-28 pb-16 bg-[#0e1217]">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center py-6">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#161c24] border border-white/10 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-4">
+          <span>About the team</span>
+        </div>
+        <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white mb-4">
+          ABOUT <span class="text-emerald-400">MUNTRUME</span>
+        </h1>
+        <p class="text-base text-neutral-400 max-w-2xl mx-auto leading-relaxed">
+          Muntrume Motorsport is a sim racing team from Sant Andreu, Barcelona, racing on iRacing. We share a private setup vault with our drivers and talk racing with the community on Discord.
+        </p>
+      </div>
+
+      <h2 class="text-lg font-bold text-white mt-8 mb-4">Where to find us</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+        <a href="/team" class="flex items-center justify-between gap-3 bg-[#161c24] border border-white/10 hover:border-emerald-500/40 rounded-2xl px-5 transition" style="min-height:56px"><span class="text-white font-semibold">Team roster</span><span class="text-emerald-400">&rarr;</span></a>
+        <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between gap-3 bg-[#161c24] border border-white/10 hover:border-emerald-500/40 rounded-2xl px-5 transition" style="min-height:56px"><span class="text-white font-semibold">Discord</span><span class="text-emerald-400">↗</span></a>
+        <a href="https://www.youtube.com/@jostrume16gameplays28" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between gap-3 bg-[#161c24] border border-white/10 hover:border-emerald-500/40 rounded-2xl px-5 transition" style="min-height:56px"><span class="text-white font-semibold">YouTube · @jostrume16gameplays28</span><span class="text-emerald-400">↗</span></a>
+        <a href="https://twitch.tv/muntrumemrt" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between gap-3 bg-[#161c24] border border-white/10 hover:border-emerald-500/40 rounded-2xl px-5 transition" style="min-height:56px"><span class="text-white font-semibold">Twitch · muntrumemrt</span><span class="text-emerald-400">↗</span></a>
+        <a href="/setups" class="flex items-center justify-between gap-3 bg-[#161c24] border border-white/10 hover:border-emerald-500/40 rounded-2xl px-5 transition" style="min-height:56px"><span class="text-white font-semibold">Setup Vault (pilots)</span><span class="text-emerald-400">&rarr;</span></a>
+        <a href="/contact" class="flex items-center justify-between gap-3 bg-[#161c24] border border-white/10 hover:border-emerald-500/40 rounded-2xl px-5 transition" style="min-height:56px"><span class="text-white font-semibold">Contact</span><span class="text-emerald-400">&rarr;</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 7. FOOTER (Unified Motorsport Master Footer)                              -->
+  <!-- ========================================================================= -->
+
+<!-- ========================================================================= -->
+  <!-- JAVASCRIPT: Mobile Drawer & AI Historian Chat Engine                      -->
+  <!-- ========================================================================= -->
+  <script is:inline>
+    // 1. Mobile Drawer Controller
+    function toggleNavDrawer() {
+      const drawer = document.getElementById('mobileDrawer');
+      const backdrop = document.getElementById('mobileBackdrop');
+      if (!drawer || !backdrop) return;
+      const isOpen = drawer.classList.contains('open');
+      if (isOpen) {
+        drawer.classList.remove('open');
+        backdrop.classList.remove('open');
+        document.body.style.overflow = '';
+      } else {
+        drawer.classList.add('open');
+        backdrop.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+  </script>
+</Layout>
