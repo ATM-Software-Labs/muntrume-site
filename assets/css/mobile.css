@@ -36,3 +36,35 @@
 }
 /* drawer must scroll on short landscape screens */
 #mobileDrawer { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+/* ---- iOS Safari hardening (m8) ---- */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body { min-height: 100vh; min-height: 100svh; overflow-x: hidden; overflow-x: clip; }
+/* 100vh on iOS = viewport WITH the toolbar hidden -> hero taller than screen & content hidden behind the toolbar.
+   svh = small viewport (toolbar visible), dvh = dynamic. Fallback to vh where unsupported. */
+@supports (height: 100svh) {
+  .min-h-screen { min-height: 100svh; }
+  .h-screen { height: 100dvh; }
+  .min-h-\[85vh\] { min-height: 85svh; }
+  .max-h-screen { max-height: 100dvh; }
+}
+/* drawer: full dynamic height, respects the home indicator, does not scroll the page behind it */
+#mobileDrawer { height: 100vh; height: 100dvh; padding-bottom: max(1.5rem, env(safe-area-inset-bottom)); overscroll-behavior: contain; }
+/* fixed header: respect landscape notch insets */
+header.fixed { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+footer { padding-bottom: env(safe-area-inset-bottom); }
+/* Safari needs the prefixed property for hyphenation */
+h1, h2, h3 { -webkit-hyphens: auto; }
+/* long URLs / emails / tables never push the layout sideways */
+p, li, td, dd { overflow-wrap: anywhere; }
+table { max-width: 100%; }
+.prose table, #articleContent table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+pre { max-width: 100%; overflow-x: auto; }
+/* no iOS tap flash; touch devices: no sticky hover lift on cards */
+a, button { -webkit-tap-highlight-color: rgba(16,185,129,.18); }
+@media (hover: none) {
+  .event-card:hover, .driver-card:hover, .stat-card:hover, .contact-method:hover, .role-card:hover, .game-card:hover,
+  .group:hover .group-hover\:scale-105 { transform: none !important; }
+}
+/* grid/flex children may shrink below their min-content (prevents overflow from long words in cards) */
+@media (max-width: 767px) { .grid > * { min-width: 0; } }

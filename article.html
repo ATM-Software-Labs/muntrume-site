@@ -22,8 +22,8 @@
   <meta name="twitter:card" content="summary_large_image">
 
   <!-- Tailwind CSS & Fonts -->
-  <link rel="stylesheet" href="assets/css/tailwind.min.css?v=26s4.6">
-  <link rel="stylesheet" href="/assets/css/mobile.css?v=2">
+  <link rel="stylesheet" href="/assets/css/tailwind.min.css?v=m8">
+  <link rel="stylesheet" href="/assets/css/mobile.css?v=m8">
   <link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
   <style>
     /* Self-hosted Inter (OFL, assets/fonts/OFL.txt) + metric-matched fallback so the Inter swap doesn't shift layout; one font stack site-wide */
@@ -32,7 +32,7 @@
     @font-face { font-family: "Inter Fallback"; src: local("Arial"), local("Liberation Sans"), local("Helvetica"); size-adjust: 107.06%; ascent-override: 90.49%; descent-override: 22.56%; line-gap-override: 0%; }
     html body, html .font-sans { font-family: 'Inter', 'Inter Fallback', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
   </style>
-  <link rel="stylesheet" href="assets/css/muntrume.css">
+  <link rel="stylesheet" href="/assets/css/muntrume.css?v=m8">
 
 
   <style>
@@ -335,7 +335,7 @@
       <!-- Featured Image Banner -->
       <div class="mb-10 rounded-3xl overflow-hidden bg-[#161c24] border border-white/10 shadow-2xl relative">
         <div class="h-64 sm:h-96 w-full overflow-hidden bg-[#0e1217] relative">
-          <img id="articleImage" src="assets/img/race1.webp" onerror="this.onerror=null;this.src='assets/img/coche1.webp';" alt="Dispatch cover" width="1600" height="900" class="w-full h-full object-cover">
+          <img id="articleImage" src="/assets/img/race1.webp" onerror="this.onerror=null;this.src='/assets/img/coche1.webp';" alt="Dispatch cover" width="1600" height="900" class="w-full h-full object-cover">
           <div class="absolute inset-0 bg-gradient-to-t from-[#161c24] via-transparent to-transparent opacity-60"></div>
         </div>
         <div class="p-4 bg-[#161c24] border-t border-white/5 flex items-center justify-between text-[11px] text-neutral-400">
@@ -438,8 +438,8 @@
   <!-- ========================================================================= -->
   <script>
     function thumb640(src) {
-      const m = /^assets\/img\/(coche[1-4]|race1)\.(webp|jpg)$/.exec(src || 'assets/img/coche1.webp');
-      return m ? `assets/img/${m[1]}-640.webp` : src;
+      const m = /^assets\/img\/(coche[1-4]|race1)\.(webp|jpg)$/.exec(src || '/assets/img/coche1.webp');
+      return m ? `/assets/img/${m[1]}-640.webp` : src;
     }
 
     // 1. Mobile Drawer Controller
@@ -501,7 +501,7 @@
             date: date || '2026-07-02',
             author: author || 'Muntrume Motorsport',
             category: category || 'General',
-            image: image || 'assets/img/coche1.webp',
+            image: image || '/assets/img/coche1.webp',
             content
           });
         }
@@ -663,9 +663,9 @@
       document.getElementById('authorRole').innerHTML = getAuthorRole(authorName);
       document.getElementById('authorAvatar').textContent = getAuthorInitials(authorName);
 
-      const coverImg = activeArticle.image || 'assets/img/race1.webp';
+      const coverImg = activeArticle.image || '/assets/img/race1.webp';
       const imgEl = document.getElementById('articleImage');
-      imgEl.onerror = function() { this.onerror = null; this.src = 'assets/img/coche1.webp'; };
+      imgEl.onerror = function() { this.onerror = null; this.src = '/assets/img/coche1.webp'; };
       imgEl.src = coverImg;
       imgEl.alt = activeArticle.title;
       document.getElementById('imageCaption').textContent = activeArticle.category || '';
@@ -681,7 +681,7 @@
           <a href="/article?id=${a.id}" class="group block bg-[#161c24] border border-white/10 hover:border-emerald-500/30 rounded-2xl overflow-hidden transition duration-300 shadow-md flex flex-col justify-between">
             <div>
               <div class="h-36 w-full overflow-hidden bg-[#0e1217] relative">
-                <img src="${thumb640(a.image)}" width="640" height="360" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='assets/img/coche1-640.webp';" alt="${a.title}" class="w-full h-full object-cover transition duration-500 group-hover:scale-105 opacity-80 group-hover:opacity-100">
+                <img src="${thumb640(a.image)}" width="640" height="360" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/assets/img/coche1-640.webp';" alt="${a.title}" class="w-full h-full object-cover transition duration-500 group-hover:scale-105 opacity-80 group-hover:opacity-100">
                 <div class="absolute top-3 left-3">
                   <span class="px-2 py-0.5 rounded-full bg-[#0e1217]/80 backdrop-blur-md text-[10px] font-bold text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">
                     ${a.category}
@@ -715,6 +715,6 @@
       loadArticle();
     }
   </script>
-  <script src="assets/js/muntrume.js"></script>
+  <script src="/assets/js/muntrume.js?v=m8"></script>
 </body>
 </html>

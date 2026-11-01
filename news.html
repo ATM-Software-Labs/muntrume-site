@@ -34,8 +34,8 @@
   <!-- Marked for Markdown Parsing -->
 
   <!-- Tailwind CSS CDN with Motorsport Config -->
-  <link rel="stylesheet" href="assets/css/tailwind.min.css?v=26s4.6">
-  <link rel="stylesheet" href="/assets/css/mobile.css?v=2">
+  <link rel="stylesheet" href="/assets/css/tailwind.min.css?v=m8">
+  <link rel="stylesheet" href="/assets/css/mobile.css?v=m8">
 
   <style>
     :root {
@@ -1018,7 +1018,7 @@
           link: `article.html?id=${slug}`,
           pubDate: n.date ? new Date(n.date).toISOString() : new Date().toISOString(),
           source: "Muntrume Motorsport",
-          thumbnail: n.image || (n.category.toLowerCase().includes('endurance') ? 'assets/img/race1.webp' : 'assets/img/coche1.webp'),
+          thumbnail: n.image || (n.category.toLowerCase().includes('endurance') ? '/assets/img/race1.webp' : '/assets/img/coche1.webp'),
           autoCategory: n.category.toLowerCase().includes('endurance') ? 'endurance' : 'team',
           isBreaking: /victory|win|victoria|historic/i.test(n.title),
           isTeam: true
@@ -1207,7 +1207,7 @@
     function cardImg(src) {
       if (!src) return getPlaceholderImg();
       const m = /^assets\/img\/(coche[1-4]|race1)\.(webp|jpg)$/.exec(src);
-      return m ? `assets/img/${m[1]}-640.webp` : src;
+      return m ? `/assets/img/${m[1]}-640.webp` : src;
     }
 
     function cleanDesc(html) {
@@ -1226,7 +1226,7 @@
       return `
         <a href="${href}" ${targetAttr} class="group block relative overflow-hidden rounded-3xl bg-[#161c24] border border-white/10 hover:border-white/20 transition duration-300 shadow-2xl">
           <div class="h-80 sm:h-96 w-full relative overflow-hidden bg-[#0e1217]">
-            <img src="${esc(cardImg(a.thumbnail))}" onerror="this.onerror=null;this.src='assets/img/coche1-640.webp';" alt="" width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="w-full h-full object-cover transition duration-500 group-hover:scale-105 opacity-80 group-hover:opacity-90">
+            <img src="${esc(cardImg(a.thumbnail))}" onerror="this.onerror=null;this.src='/assets/img/coche1-640.webp';" alt="" width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="w-full h-full object-cover transition duration-500 group-hover:scale-105 opacity-80 group-hover:opacity-90">
             <div class="absolute inset-0 bg-gradient-to-t from-[#161c24] via-[#161c24]/70 to-transparent"></div>
           </div>
           <div class="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
@@ -1258,7 +1258,7 @@
         <a href="${href}" ${targetAttr} class="group block bg-[#161c24] border border-white/10 hover:border-white/20 rounded-2xl overflow-hidden transition duration-300 shadow-md flex flex-col justify-between">
           <div>
             <div class="h-44 w-full overflow-hidden bg-[#0e1217] relative">
-              <img src="${esc(cardImg(a.thumbnail))}" onerror="this.onerror=null;this.src='assets/img/coche1-640.webp';" alt="" width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="w-full h-full object-cover transition duration-500 group-hover:scale-105 opacity-80 group-hover:opacity-100">
+              <img src="${esc(cardImg(a.thumbnail))}" onerror="this.onerror=null;this.src='/assets/img/coche1-640.webp';" alt="" width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="w-full h-full object-cover transition duration-500 group-hover:scale-105 opacity-80 group-hover:opacity-100">
               <div class="absolute inset-0 bg-gradient-to-t from-[#161c24] via-transparent to-transparent"></div>
             </div>
             <div class="p-5">

@@ -968,7 +968,7 @@ async function loadCatalog() {
 
   // Cargar SOLO el índice ligero de 24 KB (en vez de 41.530 objetos en RAM)
   try {
-    const idxRes = await fetch("assets/data/catalog_index.json?v=26s4.7");
+    const idxRes = await fetch("/assets/data/catalog_index.json?v=26s4.7");
     if (idxRes.ok) {
       const idxData = await idxRes.json();
       totalVaultSetupsCount = idxData.total_setups || 0;
@@ -1008,12 +1008,12 @@ async function ensureScopeLoadedAndApplyFilters() {
   if (selectedCar) {
     const carSlug = safeCarChunkSlug(selectedCar);
     targetScope = `car:${carSlug}`;
-    fetchUrl = `assets/data/catalog_by_car/${carSlug}.json?v=26s4.7`;
+    fetchUrl = `/assets/data/catalog_by_car/${carSlug}.json?v=26s4.7`;
   } else if (selectedSeason || selectedWeek || selectedCircuit || query) {
     const sn = selectedSeason || "26S4";
     const snSlug = safeCarChunkSlug(sn);
     targetScope = `season:${snSlug}`;
-    fetchUrl = `assets/data/catalog_by_season/${snSlug}.json?v=26s4.7`;
+    fetchUrl = `/assets/data/catalog_by_season/${snSlug}.json?v=26s4.7`;
   }
 
   if (targetScope !== activeLoadedScopeKey) {
