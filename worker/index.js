@@ -9,6 +9,7 @@
  *
  * Secretos (wrangler secret put): JWT_SECRET (obligatorio), RESEND_API_KEY, GROQ_API_KEY,
  * GARAGE61_API_TOKEN (opcional), ADMIN_ALERT_EMAIL/TO_EMAIL y RESEND_FROM_EMAIL (opcionales).
+ * Variable (no secreta): CONTACT_TO_EMAIL = buzón que recibe el formulario de contacto (por defecto info@muntru.me).
  * Nunca se guardan ni se registran contraseñas en claro.
  */
 
@@ -808,21 +809,97 @@ async function handleAI(body, env, ip) {
   return [lastStatus >= 500 ? 502 : lastStatus, { error: "AI service unavailable" }];
 }
 
+// Formulario de contacto (/api/contact). Antispam: honeypot, token firmado con tiempo mínimo
+// de envío, RATE_LIMITER por IP + límites por IP/hora y globales en D1, sin HTML ni saltos de
+// línea en cabeceras. Solo devuelve success cuando Resend acepta el correo.
+const CONTACT_TYPES = {
+  driver_application: "Driver tryout",
+  sponsorship: "Sponsorship",
+  media: "Media / press",
+  telemetry_engineering: "Setup & engineering",
+  general: "General",
+};
+const CONTACT_MIN_MS = 4000;
+const CONTACT_TOKEN_TTL_MS = 6 * 3600 * 1000;
+const CONTACT_PER_IP_HOUR = 5;
+const CONTACT_GLOBAL_HOUR = 30;
+
+function contactTo(env) {
+  return normEmail(env.CONTACT_TO_EMAIL || "info@muntru.me");
+}
+function oneLine(v, max) {
+  return clean(String(v ?? "").replace(/<[^>]*>/g, " ").replace(/[\r\n\t\u2028\u2029]+/g, " ").replace(/\s{2,}/g, " "), max);
+}
+function multiLine(v, max) {
+  return clean(String(v ?? "").replace(/\r\n?/g, "\n").replace(/<[^>]*>/g, "").replace(/\n{4,}/g, "\n\n\n"), max);
+}
+
+async function handleContactToken(env) {
+  if (!env.JWT_SECRET) return [503, { success: false, error: "Contact form temporarily unavailable." }];
+  const now = Date.now();
+  const token = await signToken({ typ: "contact", iat: now, exp: now + CONTACT_TOKEN_TTL_MS, n: b64urlFromBytes(crypto.getRandomValues(new Uint8Array(8))) }, env.JWT_SECRET);
+  return [200, { success: true, token, minMs: CONTACT_MIN_MS }];
+}
+
 async function handleContact(body, env, ip) {
-  if (body.website) return [200, { success: true }];
-  const name = clean(body.name, 100);
-  const email = normEmail(clean(body.email, 254));
-  const type = clean(body.type, 60);
-  const subject = clean(body.subject, 150);
-  const message = clean(body.message, 5000);
-  if (!name || !email || !message) return [400, { success: false, error: "Faltan campos obligatorios (nombre, correo, mensaje)." }];
-  if (!EMAIL_RE.test(email)) return [400, { success: false, error: "Formato de correo no válido." }];
-  if (await rateLimited(`contact:${ip}`, 6, 3600)) return [429, { success: false, error: "Has enviado varios mensajes seguidos. Inténtalo más tarde." }];
-  const to = env.TO_EMAIL || "alberto@trujillomingorance.com";
-  const mailto = `mailto:${to}?subject=${encodeURIComponent(`[Muntrume] ${subject || "Consulta"}`)}&body=${encodeURIComponent(`De: ${name} (${email})\n\n${message}`)}`;
-  const r = await sendEmail(env, { to, replyTo: email, ...contactFormEmail({ name, email, type, subject, message, to }) });
-  if (!r.ok) return [502, { success: false, error: "No se pudo enviar el mensaje ahora mismo.", fallbackMailto: mailto }];
-  return [200, { success: true, id: r.id, message: "Mensaje enviado. Te responderemos lo antes posible." }];
+  const fail = (status, error, extra = {}) => [status, { success: false, error, ...extra }];
+  // Honeypot: los bots rellenan el campo oculto; respondemos como si nada sin enviar.
+  if (clean(body.website, 200) || clean(body.company_url, 200)) return [200, { success: true, ignored: true }];
+
+  const name = oneLine(body.name, 100);
+  const email = normEmail(oneLine(body.email, 254));
+  const typeKey = Object.prototype.hasOwnProperty.call(CONTACT_TYPES, body.type) ? body.type : "general";
+  const subject = oneLine(body.subject, 150);
+  const message = multiLine(body.message, 5000);
+
+  if (name.length < 2) return fail(400, "Please enter your name.", { field: "name" });
+  if (!EMAIL_RE.test(email) || email.length > 254) return fail(400, "Please enter a valid email address.", { field: "email" });
+  if (subject.length < 3) return fail(400, "Please add a short subject (3+ characters).", { field: "subject" });
+  if (message.length < 20) return fail(400, "Your message is too short (20+ characters).", { field: "message" });
+  if (String(body.message || "").length > 5000) return fail(400, "Your message is too long (max 5000 characters).", { field: "message" });
+  if ((message.match(/https?:\/\//gi) || []).length > 3) return fail(400, "Please include at most 3 links.", { field: "message" });
+
+  const tok = await verifyToken(body.token, env.JWT_SECRET || "", "contact");
+  if (!tok) return fail(400, "The form expired. Please reload the page and try again.", { reload: true });
+  if (Date.now() - tok.iat < CONTACT_MIN_MS) return fail(400, "That was quick! Please wait a few seconds and send again.");
+
+  if (await rateLimited(`contact:${ip}`, CONTACT_PER_IP_HOUR, 3600)) return fail(429, "Too many messages in a short time. Please try again later.");
+
+  const db = env.muntrume_vault;
+  const ipHash = (await sha256Hex(`contact-ip:${ip}:${(env.JWT_SECRET || "").slice(0, 8)}`)).slice(0, 32);
+  let rowId = null;
+  if (db) {
+    try {
+      const c = await db.prepare(
+        "SELECT SUM(CASE WHEN ip_hash = ?1 THEN 1 ELSE 0 END) AS mine, COUNT(*) AS total FROM contact_messages WHERE created_at > strftime('%Y-%m-%dT%H:%M:%fZ','now','-1 hour')"
+      ).bind(ipHash).first();
+      if ((c?.mine || 0) >= CONTACT_PER_IP_HOUR) return fail(429, "Too many messages in a short time. Please try again later.");
+      if ((c?.total || 0) >= CONTACT_GLOBAL_HOUR) return fail(503, "The contact form is busy right now. Please email us directly.");
+      const ins = await db.prepare(
+        "INSERT INTO contact_messages (name, email, type, subject, message, ip_hash) VALUES (?1, ?2, ?3, ?4, ?5, ?6)"
+      ).bind(name, email, typeKey, subject, message, ipHash).run();
+      rowId = ins?.meta?.last_row_id ?? null;
+    } catch (e) {
+      console.error("[contact] D1:", e?.message); // seguimos: el correo es lo principal
+    }
+  }
+
+  const to = contactTo(env);
+  const r = await sendEmail(env, {
+    to,
+    replyTo: `${name.replace(/["\\<>,;:]/g, "")} <${email}>`,
+    ...contactFormEmail({ name, email, type: CONTACT_TYPES[typeKey], subject, message, to, receivedAt: new Date() }),
+  });
+  if (db && rowId) {
+    try {
+      await db.prepare("UPDATE contact_messages SET status = ?1, resend_id = ?2, error = ?3 WHERE id = ?4")
+        .bind(r.ok ? "sent" : "failed", r.ok ? r.id || null : null, r.ok ? null : String(r.error || "").slice(0, 300), rowId).run();
+    } catch (e) { console.error("[contact] D1 update:", e?.message); }
+  }
+  if (!r.ok || !r.id) {
+    return fail(502, rowId ? "We saved your message but could not email the team right now. Please also email us directly." : "We could not send your message right now. Please email us directly.", { saved: !!rowId });
+  }
+  return [200, { success: true, id: r.id, message: "Message sent. We will get back to you as soon as possible." }];
 }
 
 // ───────────────────────────── noticias (proxy RSS) ─────────────────────────────
@@ -944,10 +1021,11 @@ const ROUTES = {
   "/api/setups/admin/resend-invite": "admin_resend",
   "/api/setups/admin/set-status": "admin_status",
   "/api/setups/admin/email-preview": "admin_email_preview",
+  "/api/contact": "contact",
 };
 // Los antiguos modos "setup_*" (body.mode) y el admin.html con códigos fijos están retirados.
 const LEGACY_MODE_RE = /^setup_/;
-const NEEDS_DB = new Set(Object.values(ROUTES));
+const NEEDS_DB = new Set(Object.values(ROUTES).filter((r) => r !== "contact"));
 
 export default {
   async fetch(request, env, ctx) {
@@ -964,6 +1042,11 @@ export default {
     if (request.method === "GET" && url.pathname.replace(/\/+$/, "") === "/api/news") {
       try { return await handleNews(request, ctx); }
       catch (err) { console.error("[news]", err?.message); return reply(200, { success: false, items: [], sources: [] }); }
+    }
+    if (request.method === "GET" && url.pathname.replace(/\/+$/, "") === "/api/contact/token") {
+      if (origin && !ALLOWED_ORIGINS.includes(origin)) return reply(403, { error: "Forbidden: Unauthorized origin" });
+      const out = await handleContactToken(env);
+      return reply(out[0], out[1]);
     }
     if (request.method !== "POST") return reply(405, { error: "Method not allowed" });
     if (origin && !ALLOWED_ORIGINS.includes(origin)) return reply(403, { error: "Forbidden: Unauthorized origin" });
@@ -1007,6 +1090,7 @@ export default {
         case "admin_resend": out = await handleAdminResendInvite(request, body, env); break;
         case "admin_status": out = await handleAdminSetStatus(request, body, env); break;
         case "admin_email_preview": out = await handleAdminEmailPreview(request, body, env); break;
+        case "contact": out = await handleContact(body, env, ip); break;
         default:
           if (url.pathname.startsWith("/api/setups/")) return reply(404, { success: false, error: "Ruta no encontrada." });
           if (["ai_chat", "ai_setup", "ask_about"].includes(body.mode)) out = await handleAI(body, env, ip);

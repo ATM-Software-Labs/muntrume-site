@@ -255,27 +255,37 @@ Si no lo has pedido tú, ignora este correo: tu contraseña actual no cambia.${t
 }
 
 /** 6) Formulario de contacto → buzón del equipo */
-export function contactFormEmail({ name, email, type, subject, message, to }) {
-  const subj = `[Muntrume · ${String(type || "Consulta").slice(0, 40)}] ${String(subject || `Mensaje de ${name}`).slice(0, 120)}`;
+export function contactFormEmail({ name, email, type, subject, message, to, receivedAt }) {
+  const oneLine = (v, n) => String(v ?? "").replace(/[\r\n]+/g, " ").slice(0, n);
+  const subj = `[muntru.me · ${oneLine(type || "General", 40)}] ${oneLine(subject || `Mensaje de ${name}`, 120)}`;
+  const when = (receivedAt || new Date()).toLocaleString("es-ES", { timeZone: "Europe/Madrid", dateStyle: "medium", timeStyle: "short" }) + " (hora de Madrid)";
+  const replyUrl = `mailto:${encodeURIComponent(email).replace(/%40/g, "@")}?subject=${encodeURIComponent(`Re: ${oneLine(subject, 120)}`)}`;
   const html = layout({
-    preheader: `${name} te ha escrito desde muntru.me`,
+    preheader: `${oneLine(name, 60)} te ha escrito desde muntru.me: ${oneLine(subject, 80)}`,
     title: "Nuevo mensaje desde muntru.me",
     bodyHtml:
       infoBox([
-        ["Remitente", `${name} <${email}>`],
+        ["Nombre", name],
+        ["Correo", email],
         ["Tipo", type || "General"],
         ["Asunto", subject || "Sin asunto"],
+        ["Recibido", when],
       ]) +
-      `<div style="margin:0 0 18px 0;padding:14px 16px;border-left:4px solid #10b981;background:#f6f8fa;border-radius:8px;font-size:14px;line-height:22px;color:#0f172a;white-space:pre-wrap;">${escapeHtml(message)}</div>`,
-    cta: { url: `mailto:${email}`, label: `Responder a ${String(name).slice(0, 40)}` },
-    footerNote: `Enviado a ${escapeHtml(to)} desde el formulario de contacto.`,
+      `<div style="margin:0 0 18px 0;padding:14px 16px;border-left:4px solid #10b981;background:#f6f8fa;border-radius:8px;font-size:14px;line-height:22px;color:#0f172a;white-space:pre-wrap;word-break:break-word;">${escapeHtml(message)}</div>` +
+      `<p style="margin:0 0 6px 0;font-size:13px;line-height:20px;color:#64748b;">Pulsa «Responder» en tu correo: la respuesta irá directamente a ${escapeHtml(email)}.</p>`,
+    cta: { url: replyUrl, label: `Responder a ${oneLine(name, 40)}` },
+    footerNote: `Enviado a ${escapeHtml(to)} desde el formulario de contacto de muntru.me. El remitente no ha verificado su dirección: no compartas datos sensibles sin confirmarla.`,
   });
   const text = `Nuevo mensaje desde muntru.me
 
-Remitente: ${name} <${email}>
+Nombre: ${name}
+Correo: ${email}
 Tipo: ${type || "General"}
 Asunto: ${subject || "Sin asunto"}
+Recibido: ${when}
 
-${message}${textFooter}`;
+${message}
+
+(Responde a este correo para contestar directamente a ${email}.)${textFooter}`;
   return { subject: subj, html, text };
 }
