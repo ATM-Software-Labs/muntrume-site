@@ -68,3 +68,14 @@ a, button { -webkit-tap-highlight-color: rgba(16,185,129,.18); }
 }
 /* grid/flex children may shrink below their min-content (prevents overflow from long words in cards) */
 @media (max-width: 767px) { .grid > * { min-width: 0; } }
+
+/* t257: foco visible accesible, microinteracciones discretas y jerarquía tipográfica */
+:where(a,button,input,select,textarea,summary,[tabindex]):focus-visible{outline:2px solid #34d399;outline-offset:3px;border-radius:6px}
+h1,h2,h3{text-wrap:balance}
+p{text-wrap:pretty}
+html{-webkit-tap-highlight-color:rgba(16,185,129,.18)}
+.pl-card,.pl-link{transition:border-color .2s,transform .2s,box-shadow .2s,background-color .2s}
+.pl-card:hover,.pl-link:hover{transform:translateY(-2px);box-shadow:0 10px 24px -12px rgba(16,185,129,.45);background-color:#1a222c}
+.pl-card:active,.pl-link:active{transform:translateY(0) scale(.99)}
+.pl-grid{gap:14px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}

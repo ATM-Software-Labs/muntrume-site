@@ -17,6 +17,8 @@
     if (!ym || !/^\d{4}-\d{2}$/.test(ym)) return "";
     try { return new Date(ym + "-15T12:00:00Z").toLocaleDateString(lang(), { month: "long", year: "numeric" }); } catch (e) { return ym; }
   }
+  // URL limpia /p/<alias>/ (páginas generadas en el build); el 404 redirige si aún no se ha regenerado.
+  function profileUrl(slug) { return "/p/" + encodeURIComponent(slug) + "/"; }
   function meta(p) { return [p.team, p.car_class].filter(Boolean).map(esc).join(" · "); }
   function setMeta(title, desc) {
     document.title = title;
@@ -25,7 +27,7 @@
   function renderList(pilots) {
     if (!pilots.length) { grid.innerHTML = '<p class="pl-empty">' + esc(t("No public profiles yet. Pilots appear here once they give permission.")) + "</p>"; return; }
     grid.innerHTML = pilots.map(function (p) {
-      return '<a class="pl-card" href="/pilotos?p=' + encodeURIComponent(p.slug) + '">' + photo(p) +
+      return '<a class="pl-card" href="' + profileUrl(p.slug) + '">' + photo(p) +
         '<span style="min-width:0"><span class="pl-name">' + esc(p.name) + '</span><span class="pl-meta" style="display:block">' + (meta(p) || "&nbsp;") + "</span></span></a>";
     }).join("");
   }
@@ -43,7 +45,16 @@
       (s ? '<p class="pl-since"><span>' + esc(t("Team member since")) + "</span> <span>" + esc(s) + "</span></p>" : "") + "</div>" +
       (links ? '<div class="pl-links">' + links + "</div>" : "");
     setMeta(p.name + " · Muntrume Motorsport", [p.name, p.team, p.car_class].filter(Boolean).join(" · ") + " — Muntrume Motorsport");
-    var c = document.querySelector('link[rel="canonical"]'); if (c) c.href = "https://muntru.me/pilotos?p=" + encodeURIComponent(p.slug);
+    var c = document.querySelector('link[rel="canonical"]'); if (c) c.href = "https://muntru.me" + profileUrl(p.slug);
+    if (!document.querySelector('script[data-person]')) {
+      var ld = { "@context": "https://schema.org", "@type": "Person", name: p.name, url: "https://muntru.me" + profileUrl(p.slug),
+        memberOf: { "@type": "SportsTeam", name: "Muntrume Motorsport", url: "https://muntru.me/" } };
+      if (p.bio) ld.description = p.bio;
+      if (p.photo) ld.image = p.photo;
+      if ((p.links || []).length) ld.sameAs = p.links.map(function (l) { return l.url; });
+      var sc = document.createElement("script"); sc.type = "application/ld+json"; sc.setAttribute("data-person", ""); sc.textContent = JSON.stringify(ld).replace(/</g, "\\u003c");
+      document.head.appendChild(sc);
+    }
   }
   function notFound() {
     list.hidden = true; detail.hidden = false;
@@ -51,7 +62,8 @@
     var r = document.querySelector('meta[name="robots"]') || document.head.appendChild(Object.assign(document.createElement("meta"), { name: "robots" }));
     r.setAttribute("content", "noindex");
   }
-  var slug = new URLSearchParams(location.search).get("p");
+  var pm = location.pathname.match(/^\/p\/([a-z0-9-]{1,40})\/?$/);
+  var slug = window.MM_PILOT_SLUG || (pm && pm[1]) || new URLSearchParams(location.search).get("p");
   if (slug) {
     if (!/^[a-z0-9-]{1,40}$/.test(slug)) { notFound(); return; }
     fetch(API + "/" + slug).then(function (r) { return r.ok ? r.json() : null; })

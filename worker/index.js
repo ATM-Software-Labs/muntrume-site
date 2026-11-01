@@ -1556,7 +1556,7 @@ async function handleAdminUserPublic(request, body, env) {
   await env.muntrume_vault.prepare("UPDATE allowed_users SET public_visible = ?, public_name = ?, public_slug = ?, public_bio = ?, public_links = ? WHERE id = ?")
     .bind(visible, publicName, slug, bio, links.length ? JSON.stringify(links) : null, t.user.id).run();
   await audit(env, s.user.email, visible ? "user.public_on" : "user.public_off", t.user.email, JSON.stringify({ slug, public_name: publicName, links: links.length }));
-  return [200, { success: true, slug, visible: !!visible, url: `${SITE}/pilotos?p=${slug}` }];
+  return [200, { success: true, slug, visible: !!visible, url: `${SITE}/p/${slug}/` }];
 }
 
 // ───────────────────────────── router ─────────────────────────────

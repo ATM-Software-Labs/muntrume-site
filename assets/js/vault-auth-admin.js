@@ -369,13 +369,13 @@
           <label style="display:flex;gap:8px;align-items:center;color:#e2e8f0;font-size:14px"><input type="checkbox" id="admPubOn" ${m.public_visible ? "checked" : ""} ${st === "inactive" ? "disabled" : ""}> Mostrar en la web (solo con permiso del piloto)</label>
           <div class="adm-grid2">
             <div class="adm-field"><label for="admPubName">Nombre o alias público</label><input id="admPubName" maxlength="60" value="${esc(m.public_name || "")}" placeholder="${esc(m.name || "")}"></div>
-            <div class="adm-field"><label for="admPubSlug">URL (muntru.me/pilotos?p=…)</label><input id="admPubSlug" maxlength="40" pattern="[a-z0-9-]*" value="${esc(m.public_slug || "")}" placeholder="auto"></div>
+            <div class="adm-field"><label for="admPubSlug">URL (muntru.me/p/…)</label><input id="admPubSlug" maxlength="40" pattern="[a-z0-9-]*" value="${esc(m.public_slug || "")}" placeholder="auto"></div>
           </div>
           <div class="adm-field"><label for="admPubBio">Bio corta (máx. 280)</label><textarea id="admPubBio" maxlength="280" rows="2">${esc(m.public_bio || "")}</textarea></div>
           <div class="adm-field"><label for="admPubLinks">Enlaces (uno por línea: Texto | https://…)</label><textarea id="admPubLinks" rows="3" placeholder="Twitch | https://twitch.tv/…">${esc(pubLinksText(m.public_links))}</textarea></div>
           <p class="adm-muted" style="margin:0;font-size:12px">Se publica: alias, foto, equipo, clase, bio, enlaces y mes de alta. Nunca el email ni las descargas.</p>
           <div><button type="submit" class="adm-btn adm-btn-primary adm-btn-sm">Guardar perfil público</button> <span id="admPubMsg" class="adm-muted"></span>
-          ${m.public_visible && m.public_slug ? `<a class="adm-btn adm-btn-ghost adm-btn-sm" href="/pilotos?p=${esc(m.public_slug)}" target="_blank" rel="noopener">Ver ↗</a>` : ""}</div>
+          ${m.public_visible && m.public_slug ? `<a class="adm-btn adm-btn-ghost adm-btn-sm" href="/p/${esc(m.public_slug)}/" target="_blank" rel="noopener">Ver ↗</a>` : ""}</div>
         </form>
         <div><h3 class="adm-h3">Acceso</h3><div class="adm-actions">
           ${st !== "inactive" ? `<button type="button" class="adm-btn adm-btn-ghost adm-btn-sm" onclick="confirmResendInvite(${esc(JSON.stringify(m.email))})">✉️ Enviar enlace de acceso</button>` : ""}
@@ -415,7 +415,7 @@
     });
     if (!res.ok || !data.success) { msg.textContent = data.error || "No se pudo guardar."; return; }
     await loadAdminData();
-    showAdminNotice(data.visible ? `Perfil público activo: muntru.me/pilotos?p=${data.slug}` : "Perfil público oculto.", "ok");
+    showAdminNotice(data.visible ? `Perfil público activo: muntru.me/p/${data.slug}/` : "Perfil público oculto.", "ok");
   };
 
   async function toWebp(file) {

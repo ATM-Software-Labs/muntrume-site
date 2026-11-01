@@ -515,7 +515,7 @@ export function setupDigestEmail({ name, tz, team, carClass, season, seasonTotal
       (profile ? `<p class="muted" style="margin:-6px 0 14px 0;font-size:13px;line-height:19px;color:#64748b;">${escapeHtml(profile)}</p>` : "") +
       P(nCars
         ? `Esta temporada (${escapeHtml(season)}) hay setups para los coches que sueles descargar:`
-        : `El Vault tiene <strong>${escapeHtml(seasonTotal)}</strong> setups de la temporada ${escapeHtml(season)}. Estos son los coches con más setups:`) +
+        : `El Vault tiene <strong>${escapeHtml(seasonTotal)}</strong> setups de la temporada ${escapeHtml(season)}.${topCars.length ? " Estos son los coches con más setups:" : ""}`) +
       kpiRow([[String(seasonTotal ?? "—"), `setups ${season}`], ...(nCars ? [[String(nCars), nCars === 1 ? "coche tuyo con setups" : "coches tuyos con setups"]] : [])]) +
       listBox(nCars ? "Para tus coches" : "Más setups esta temporada", (nCars ? forYou : topCars).map((c) => [carLabel(c.car), `${c.n} setups`])) +
       listBox("Tus últimas descargas", recent.slice(0, 3).map((r) => [refLabel(r.ref), fmt(r.at)])) +
@@ -563,7 +563,7 @@ export function eventsBlock(events, tz) {
       <table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr>
         <td bgcolor="#1a73e8" style="border-radius:8px;"><a href="${escapeHtml(ev.gcal)}" target="_blank" rel="noopener" style="display:inline-block;padding:11px 16px;font-size:14px;line-height:18px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:8px;">📅 Añadir a Google Calendar</a></td>
         <td width="8">&nbsp;</td>
-        <td style="border:1px solid #cbd5e1;border-radius:8px;"><a href="${escapeHtml(ev.ics)}" target="_blank" rel="noopener" style="display:inline-block;padding:10px 14px;font-size:14px;line-height:18px;font-weight:700;color:#334155;text-decoration:none;">.ics</a></td>
+        <td style="border:1px solid #cbd5e1;border-radius:8px;"><a class="ink" href="${escapeHtml(ev.ics)}" target="_blank" rel="noopener" style="display:inline-block;padding:10px 14px;font-size:14px;line-height:18px;font-weight:700;color:#334155;text-decoration:none;">.ics</a></td>
       </tr></table>
     </td></tr></table>`).join("");
   return `<p class="muted" style="margin:6px 0 6px 0;font-size:12px;line-height:18px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Próximos eventos del equipo</p>${cards}`;
