@@ -112,8 +112,8 @@
     if (!u || !t) { $("who").textContent = ""; msg("Este enlace no es válido. Abre «Gestionar notificaciones» desde el último correo que te enviamos.", "err"); return; }
     try {
       let j = await call();
-      if (unsub && unsub in labels && j.prefs[unsub]) {
-        j = await call({ [unsub]: false });
+      if (unsub && unsub in labels) {
+        if (j.prefs[unsub]) j = await call({ [unsub]: false });
         $("title").textContent = "Te has dado de baja";
         msg("Ya no recibirás «" + labels[unsub] + "». Puedes volver a activarlo aquí cuando quieras.");
       }
