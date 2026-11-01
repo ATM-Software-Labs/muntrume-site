@@ -12,19 +12,14 @@
   <meta property="og:title" content="Press Room &amp; Media Wire · Muntrume Motorsport">
   <meta property="og:description" content="Muntrume Motorsport Press Room - team updates and motorsport headlines from public RSS feeds.">
   <meta property="og:url" content="https://muntru.me/news">
-  <meta property="og:image" content="https://muntru.me/assets/img/og-cover.jpg">
+  <meta property="og:image" content="https://muntru.me/assets/img/og-news.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Muntrume Motorsport GT3 car on track">
+  <meta property="og:image:alt" content="Muntrume Motorsport car on track — Press Room">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Press Room &amp; Media Wire · Muntrume Motorsport">
   <meta name="twitter:description" content="Muntrume Motorsport Press Room - team updates and motorsport headlines from public RSS feeds.">
-  <meta name="twitter:image" content="https://muntru.me/assets/img/og-cover.jpg">
-  
-  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/assets/img/icon-192.png">
-  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
-  <meta name="theme-color" content="#0e1217">
+  <meta name="twitter:image" content="https://muntru.me/assets/img/og-news.jpg">
   
   <!-- Optimized Google Fonts: Inter -->
   <link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -341,6 +336,17 @@
       window.history.replaceState(null, '', (cleanPath || '/') + window.location.search + window.location.hash);
     }
   </script>
+  <link rel="icon" href="/favicon.ico" sizes="48x48">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/assets/img/icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="msapplication-TileColor" content="#0e1217">
+  <meta name="msapplication-TileImage" content="/assets/img/mstile-150.png">
+  <meta name="msapplication-config" content="/browserconfig.xml">
+  <meta name="theme-color" content="#0e1217">
+  <script type="application/ld+json" data-seo>{"@context":"https://schema.org","@graph":[{"@type":"CollectionPage","name":"Press Room · Muntrume Motorsport","url":"https://muntru.me/news","publisher":{"@id":"https://muntru.me/#org"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://muntru.me/"},{"@type":"ListItem","position":2,"name":"Press Room","item":"https://muntru.me/news"}]}]}</script>
 </head>
 
 <body class="bg-[#0e1217] text-slate-100 antialiased selection:bg-emerald-500 selection:text-neutral-950 font-sans">
@@ -1220,7 +1226,7 @@
       return `
         <a href="${href}" ${targetAttr} class="group block relative overflow-hidden rounded-3xl bg-[#161c24] border border-white/10 hover:border-white/20 transition duration-300 shadow-2xl">
           <div class="h-80 sm:h-96 w-full relative overflow-hidden bg-[#0e1217]">
-            <img src="${esc(cardImg(a.thumbnail))}" onerror="this.onerror=null;this.src='assets/img/coche1-640.webp';" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="w-full h-full object-cover transition duration-500 group-hover:scale-105 opacity-80 group-hover:opacity-90">
+            <img src="${esc(cardImg(a.thumbnail))}" onerror="this.onerror=null;this.src='assets/img/coche1-640.webp';" alt="" width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="w-full h-full object-cover transition duration-500 group-hover:scale-105 opacity-80 group-hover:opacity-90">
             <div class="absolute inset-0 bg-gradient-to-t from-[#161c24] via-[#161c24]/70 to-transparent"></div>
           </div>
           <div class="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
@@ -1252,7 +1258,7 @@
         <a href="${href}" ${targetAttr} class="group block bg-[#161c24] border border-white/10 hover:border-white/20 rounded-2xl overflow-hidden transition duration-300 shadow-md flex flex-col justify-between">
           <div>
             <div class="h-44 w-full overflow-hidden bg-[#0e1217] relative">
-              <img src="${esc(cardImg(a.thumbnail))}" onerror="this.onerror=null;this.src='assets/img/coche1-640.webp';" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="w-full h-full object-cover transition duration-500 group-hover:scale-105 opacity-80 group-hover:opacity-100">
+              <img src="${esc(cardImg(a.thumbnail))}" onerror="this.onerror=null;this.src='assets/img/coche1-640.webp';" alt="" width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="w-full h-full object-cover transition duration-500 group-hover:scale-105 opacity-80 group-hover:opacity-100">
               <div class="absolute inset-0 bg-gradient-to-t from-[#161c24] via-transparent to-transparent"></div>
             </div>
             <div class="p-5">

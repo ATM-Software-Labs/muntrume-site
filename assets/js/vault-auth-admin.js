@@ -28,6 +28,7 @@
     saveSession(currentToken, currentUser, remember);
     if (data.must_change_password) { openChangePasswordModal(); return; }
     showVaultView();
+    try { window.scrollTo({ top: 0, behavior: "instant" }); } catch (e) { window.scrollTo(0, 0); }
     loadCatalog();
   }
 
