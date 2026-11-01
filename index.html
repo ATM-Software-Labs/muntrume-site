@@ -134,6 +134,12 @@
   <meta name="theme-color" content="#0e1217">
   <script type="application/ld+json" data-seo>{"@context":"https://schema.org","@graph":[{"@type":"SportsTeam","@id":"https://muntru.me/#org","name":"Muntrume Motorsport","url":"https://muntru.me/","sport":"Sim racing","logo":{"@type":"ImageObject","url":"https://muntru.me/assets/img/icon-512.png","width":512,"height":512},"image":"https://muntru.me/assets/img/og-home.jpg","location":{"@type":"Place","address":{"@type":"PostalAddress","addressLocality":"Barcelona","addressRegion":"Catalonia","addressCountry":"ES"}},"sameAs":["https://twitch.tv/muntrumemrt","https://www.youtube.com/@jostrume16gameplays28"]},{"@type":"WebSite","@id":"https://muntru.me/#website","name":"Muntrume Motorsport","url":"https://muntru.me/","inLanguage":"en","publisher":{"@id":"https://muntru.me/#org"}}]}</script>
   <script src="/assets/js/vpfix.js?v=m9"></script>
+  <script src="/assets/js/i18n.js?v=m10"></script>
+  <link rel="alternate" hreflang="es" href="https://muntru.me/?lang=es">
+  <link rel="alternate" hreflang="en" href="https://muntru.me/?lang=en">
+  <link rel="alternate" hreflang="ca" href="https://muntru.me/?lang=ca">
+  <link rel="alternate" hreflang="fr" href="https://muntru.me/?lang=fr">
+  <link rel="alternate" hreflang="x-default" href="https://muntru.me/">
 </head>
 
 <body class="bg-[#0e1217] text-neutral-100 antialiased selection:bg-emerald-500 selection:text-neutral-950 font-sans">
@@ -208,6 +214,7 @@
       <nav class="space-y-1.5 text-sm font-medium">
         <a href="/" onclick="toggleNavDrawer()" class="block px-3 py-2.5 rounded-lg text-emerald-400 bg-emerald-500/10 font-semibold border border-emerald-500/20">Overview</a>
         <a href="/team" onclick="toggleNavDrawer()" class="block px-3 py-2.5 rounded-lg text-neutral-300 hover:text-white hover:bg-white/5 transition">Roster</a>
+        <a href="/pilotos" onclick="toggleNavDrawer()" class="block px-3 py-2.5 rounded-lg text-neutral-300 hover:text-white hover:bg-white/5 transition">Pilots</a>
         <a href="/news" onclick="toggleNavDrawer()" class="block px-3 py-2.5 rounded-lg text-neutral-300 hover:text-white hover:bg-white/5 transition">Press Room</a>
         <a href="/about" onclick="toggleNavDrawer()" class="block px-3 py-2.5 rounded-lg text-neutral-300 hover:text-white hover:bg-white/5 transition">Organization</a>
         <a href="/contact" onclick="toggleNavDrawer()" class="block px-3 py-2.5 rounded-lg text-neutral-300 hover:text-white hover:bg-white/5 transition">Contact</a>
@@ -693,6 +700,7 @@
         <div class="flex flex-wrap items-center gap-6 text-sm font-medium">
           <a href="/" class="text-emerald-400 font-semibold transition-colors">Overview</a>
           <a href="/team" class="hover:text-emerald-400 transition-colors">Roster</a>
+          <a href="/pilotos" class="hover:text-emerald-400 transition-colors">Pilots</a>
           <a href="/news" class="hover:text-emerald-400 transition-colors">Press Room</a>
           <a href="/about" class="hover:text-emerald-400 transition-colors">Organization</a>
           <a href="/contact" class="hover:text-emerald-400 transition-colors">Contact</a>
@@ -813,7 +821,7 @@
       if (hudEvent) {
         hudEvent.className = 'text-lg font-bold text-white flex flex-col gap-1';
         hudEvent.innerHTML = last
-          ? `<span>Next calendar TBA</span><span class="text-xs text-neutral-400 font-normal">Last: ${last.name} · ${last.date.slice(0, 10)}</span>`
+          ? `<span>Next calendar TBA</span><span class="text-xs text-neutral-400 font-normal"><span>Last:</span> ${last.name} · ${last.date.slice(0, 10)}</span>`
           : `<span>Next calendar TBA</span>`;
       }
       set('hud-countdown-label', 'Next race');

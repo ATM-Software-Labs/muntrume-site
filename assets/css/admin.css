@@ -74,8 +74,10 @@
 .adm-drawer-head{position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 16px;background:#11161d;border-bottom:1px solid rgba(255,255,255,.08);z-index:1}
 .adm-drawer-body{padding:16px;display:flex;flex-direction:column;gap:18px}
 .adm-field label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#8b949e;margin-bottom:5px}
+.adm-field textarea{width:100%;background:#0b0f14;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:8px 12px;color:#fff;font-size:16px;font-family:inherit;resize:vertical}
+.adm-field textarea:focus{outline:0;border-color:#f59e0b}
 .adm-field input,.adm-field select{width:100%;background:#0b0f14;border:1px solid rgba(255,255,255,.12);border-radius:10px;min-height:40px;padding:0 12px;color:#fff;font-size:16px}
-@media (min-width:768px){.adm-field input,.adm-field select{font-size:14px}}
+@media (min-width:768px){.adm-field input,.adm-field select,.adm-field textarea{font-size:14px}}
 .adm-field input:focus,.adm-field select:focus{outline:0;border-color:#f59e0b}
 .adm-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .adm-actions{display:flex;flex-wrap:wrap;gap:8px}

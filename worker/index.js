@@ -565,7 +565,7 @@ async function handleAdminPanel(request, body, env) {
   const db = env.muntrume_vault;
   const [reqs, members] = await Promise.all([
     db.prepare("SELECT id, name, email, iracing_id, car_category, message, status, created_at, approved_at FROM join_requests ORDER BY CASE status WHEN 'pending' THEN 0 ELSE 1 END, created_at DESC LIMIT 300").all(),
-    db.prepare("SELECT id, email, name, role, status, created_at, must_change_password, last_login_at, team, car_class, photo, CASE WHEN password_hash IS NULL OR password_hash = '' THEN 0 ELSE 1 END AS has_password FROM allowed_users ORDER BY created_at DESC").all(),
+    db.prepare("SELECT id, email, name, role, status, created_at, must_change_password, last_login_at, team, car_class, photo, public_visible, public_name, public_slug, public_bio, public_links, CASE WHEN password_hash IS NULL OR password_hash = '' THEN 0 ELSE 1 END AS has_password FROM allowed_users ORDER BY created_at DESC").all(),
   ]);
   return [200, { success: true, requests: reqs.results || [], members: members.results || [] }];
 }
@@ -1366,6 +1366,73 @@ async function handleNews(request, ctx) {
   return res;
 }
 
+
+// ───────────────────────── perfiles públicos de piloto (opt-in) ─────────────────────────
+// Solo se publican pilotos con status 'active' y public_visible = 1 (lo activa un admin).
+// Nunca se exponen email, id interno, rol, descargas ni setups.
+const PUBLIC_SLUG_RE = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;
+const PUBLIC_COLS = "public_slug AS slug, COALESCE(NULLIF(public_name,''), name) AS name, team, car_class, public_bio AS bio, public_links AS links, substr(created_at,1,7) AS since, CASE WHEN photo IS NULL OR photo = '' THEN 0 ELSE 1 END AS has_photo";
+function slugify(v) {
+  return String(v || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40).replace(/-+$/, "");
+}
+function cleanLinks(raw) {
+  let arr = raw;
+  if (typeof raw === "string") { try { arr = JSON.parse(raw); } catch { arr = []; } }
+  if (!Array.isArray(arr)) return [];
+  const out = [];
+  for (const l of arr.slice(0, 6)) {
+    const label = clean(l && l.label, 30);
+    let u; try { u = new URL(String(l && l.url || "")); } catch { continue; }
+    if (u.protocol !== "https:" || u.username || u.password || !label) continue;
+    out.push({ label, url: u.href.slice(0, 300) });
+  }
+  return out;
+}
+function publicPilot(r) {
+  return { slug: r.slug, name: r.name, team: r.team || null, car_class: r.car_class || null, since: r.since || null,
+    bio: r.bio || null, links: cleanLinks(r.links), photo: r.has_photo ? `${API_ORIGIN}/api/pilots/${r.slug}/photo` : null };
+}
+async function handlePublicPilots(url, env) {
+  const db = env.muntrume_vault;
+  const path = url.pathname.replace(/\/+$/, "").split("/").slice(3); // [slug?, "photo"?]
+  const base = { "Access-Control-Allow-Origin": "*", "X-Content-Type-Options": "nosniff", "Cache-Control": "public, max-age=300" };
+  const json = (st, o, extra = {}) => new Response(JSON.stringify(o), { status: st, headers: { ...base, "Content-Type": "application/json; charset=utf-8", ...extra } });
+  if (!path.length) {
+    const r = await db.prepare(`SELECT ${PUBLIC_COLS} FROM allowed_users WHERE public_visible = 1 AND status = 'active' AND public_slug IS NOT NULL ORDER BY COALESCE(NULLIF(public_name,''), name) COLLATE NOCASE`).all();
+    return json(200, { success: true, pilots: (r.results || []).map(publicPilot) });
+  }
+  const slug = String(path[0] || "").toLowerCase();
+  if (!PUBLIC_SLUG_RE.test(slug) || path.length > 2 || (path[1] && path[1] !== "photo")) return json(404, { success: false, error: "not_found" }, { "Cache-Control": "public, max-age=60" });
+  if (path[1] === "photo") {
+    const row = await db.prepare("SELECT photo FROM allowed_users WHERE public_slug = ? AND public_visible = 1 AND status = 'active'").bind(slug).first();
+    const m = row && String(row.photo || "").match(/^data:(image\/(?:webp|jpeg|png));base64,([A-Za-z0-9+/=]+)$/);
+    if (!m) return new Response("Not found", { status: 404, headers: { ...base, "Cache-Control": "public, max-age=60" } });
+    const bin = Uint8Array.from(atob(m[2]), (c) => c.charCodeAt(0));
+    return new Response(bin, { status: 200, headers: { ...base, "Content-Type": m[1], "Cache-Control": "public, max-age=3600", "Cross-Origin-Resource-Policy": "cross-origin" } });
+  }
+  const row = await db.prepare(`SELECT ${PUBLIC_COLS} FROM allowed_users WHERE public_slug = ? AND public_visible = 1 AND status = 'active'`).bind(slug).first();
+  if (!row) return json(404, { success: false, error: "not_found" }, { "Cache-Control": "public, max-age=60" });
+  return json(200, { success: true, pilot: publicPilot(row) });
+}
+async function handleAdminUserPublic(request, body, env) {
+  const s = await adminSession(request, body, env); if (s.err) return s.err;
+  const t = await adminTarget(env, s, body.email);
+  if (t.error) return t.error;
+  const visible = body.visible ? 1 : 0;
+  const publicName = clean(body.public_name, 60) || null;
+  let slug = slugify(body.slug || publicName || t.user.name);
+  if (!PUBLIC_SLUG_RE.test(slug)) return [400, { success: false, error: "El alias de la URL no es válido (a-z, 0-9 y guiones)." }];
+  const bio = clean(body.bio, 280) || null;
+  const links = cleanLinks(body.links);
+  if (visible && t.user.status !== "active") return [400, { success: false, error: "Solo se pueden publicar pilotos activos." }];
+  const clash = await env.muntrume_vault.prepare("SELECT id FROM allowed_users WHERE public_slug = ? AND id <> ?").bind(slug, t.user.id).first();
+  if (clash) return [409, { success: false, error: "Ese alias de URL ya lo usa otro piloto." }];
+  await env.muntrume_vault.prepare("UPDATE allowed_users SET public_visible = ?, public_name = ?, public_slug = ?, public_bio = ?, public_links = ? WHERE id = ?")
+    .bind(visible, publicName, slug, bio, links.length ? JSON.stringify(links) : null, t.user.id).run();
+  await audit(env, s.user.email, visible ? "user.public_on" : "user.public_off", t.user.email, JSON.stringify({ slug, public_name: publicName, links: links.length }));
+  return [200, { success: true, slug, visible: !!visible, url: `${SITE}/pilotos?p=${slug}` }];
+}
+
 // ───────────────────────────── router ─────────────────────────────
 
 const ROUTES = {
@@ -1391,6 +1458,7 @@ const ROUTES = {
   "/api/setups/admin/user/delete": "admin_user_delete",
   "/api/setups/admin/user/revoke": "admin_user_revoke",
   "/api/setups/admin/user/photo": "admin_user_photo",
+  "/api/setups/admin/user/public": "admin_user_public",
   "/api/setups/admin/user/detail": "admin_user_detail",
   "/api/setups/admin/audit": "admin_audit",
   "/api/setups/admin/stats": "admin_stats",
@@ -1421,6 +1489,11 @@ export default {
       if (origin && !ALLOWED_ORIGINS.includes(origin)) return reply(403, { error: "Forbidden: Unauthorized origin" });
       const out = await handleContactToken(env);
       return reply(out[0], out[1]);
+    }
+    if (request.method === "GET" && /^\/api\/pilots(\/|$)/.test(url.pathname)) {
+      if (!env.muntrume_vault) return reply(503, { success: false });
+      try { return await handlePublicPilots(url, env); }
+      catch (e) { console.error("[pilots]", e?.message); return reply(500, { success: false }); }
     }
     if (url.pathname.replace(/\/+$/, "") === "/api/email/unsubscribe") {
       // RFC 8058 one-click: lo llama el proveedor de correo (Gmail/Yahoo/Apple) sin Origin; solo POST cambia datos.
@@ -1471,6 +1544,7 @@ export default {
         case "admin_user_delete": out = await handleAdminUserDelete(request, body, env); break;
         case "admin_user_revoke": out = await handleAdminRevokeSessions(request, body, env); break;
         case "admin_user_photo": out = await handleAdminUserPhoto(request, body, env); break;
+        case "admin_user_public": out = await handleAdminUserPublic(request, body, env); break;
         case "admin_user_detail": out = await handleAdminUserDetail(request, body, env); break;
         case "admin_audit": out = await handleAdminAudit(request, body, env); break;
         case "admin_stats": out = await handleAdminStats(request, body, env); break;

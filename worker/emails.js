@@ -105,6 +105,18 @@ ${jsonLd ? `<script type="application/ld+json">${JSON.stringify({ "@context": "h
       ${bodyHtml}
     </td></tr>
     ${ctaHtml}
+    ${unsubUrl ? `<tr><td class="px" style="padding:0 32px 22px 32px;font-family:${FONT};">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" class="box" style="background-color:#f6f8fa;border:1px solid #e5eaef;border-radius:12px;">
+        <tr><td style="padding:14px 16px;">
+          <p class="ink" style="margin:0 0 4px 0;font-size:14px;line-height:20px;font-weight:700;color:#0f172a;">¿Demasiados correos?</p>
+          <p class="muted" style="margin:0 0 12px 0;font-size:13px;line-height:19px;color:#64748b;">Elige qué avisos quieres recibir o date de baja con un clic. Los correos de seguridad (códigos de acceso) se siguen enviando.</p>
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr>
+            ${manageUrl ? `<td style="padding:0 8px 6px 0;"><a href="${escapeHtml(manageUrl)}" target="_blank" rel="noopener" class="lnk" style="display:inline-block;padding:9px 14px;border:1px solid #10b981;border-radius:8px;font-size:13px;line-height:16px;font-weight:700;color:#047857;text-decoration:none;">Gestionar preferencias</a></td>` : ""}
+            <td style="padding:0 0 6px 0;"><a href="${escapeHtml(unsubUrl)}" target="_blank" rel="noopener" class="lnk" style="display:inline-block;padding:9px 14px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;line-height:16px;font-weight:700;color:#475569;text-decoration:none;">Darme de baja</a></td>
+          </tr></table>
+        </td></tr>
+      </table>
+    </td></tr>` : ""}
     <tr><td class="px muted sep" style="padding:18px 32px 24px 32px;border-top:1px solid #eef2f5;font-family:${FONT};font-size:12px;line-height:18px;color:#64748b;">
       ${notes}
       <p style="margin:0;">Muntrume Motorsport · Barcelona · <a href="${SITE}" class="lnk" style="color:#047857;text-decoration:underline;">muntru.me</a></p>
@@ -446,6 +458,15 @@ export const CAR_LABELS = {
 const carLabel = (id) => CAR_LABELS[id] || id;
 const refLabel = (ref) => { const s = String(ref || ""); if (CAR_LABELS[s]) return `${CAR_LABELS[s]} · todos los setups`; const m = s.match(/^([^/ ]+)(\/| · )(.*)$/); if (!m) return s; const rest = m[3].replace(/^\d\dS\d\//, ""); return `${carLabel(m[1])} · ${rest}`; };
 
+/** Fila de cifras (solo datos reales que se pasan). */
+function kpiRow(items) {
+  const cells = items.filter(([v]) => v && v !== "undefined").slice(0, 3).map(([v, l]) => `<td class="box" width="${Math.floor(100 / Math.min(3, items.length))}%" style="padding:12px 10px;background-color:#f6f8fa;border:1px solid #e5eaef;border-radius:10px;text-align:center;">
+      <div style="font-size:20px;line-height:24px;font-weight:800;color:#047857;" class="lnk">${escapeHtml(v)}</div>
+      <div class="muted" style="font-size:12px;line-height:16px;color:#64748b;">${escapeHtml(l)}</div></td>`);
+  if (!cells.length) return "";
+  return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:4px 0 18px 0;border-collapse:separate;border-spacing:6px 0;"><tr>${cells.join("")}</tr></table>`;
+}
+
 /** Tabla simple (filas de texto) con estilo de la plantilla. */
 function listBox(head, rows) {
   if (!rows.length) return "";
@@ -463,7 +484,7 @@ function listBox(head, rows) {
 export function setupDigestEmail({ name, tz, team, carClass, season, seasonTotal, forYou = [], topCars = [], recent = [], manageUrl, unsubUrl }) {
   const nCars = forYou.length;
   const subject = nCars
-    ? `${firstName(name)}, hay setups de ${season} para tus ${nCars === 1 ? "coche" : `${nCars} coches`} · Muntrume`
+    ? `${firstName(name)}, hay setups de ${season} ${nCars === 1 ? `para tu ${carLabel(forYou[0].car)}` : `para tus ${nCars} coches`} · Muntrume`
     : `${firstName(name)}, novedades del Setup Vault (${season})`;
   const fmt = (iso) => { try { return new Date(String(iso).replace(" ", "T") + (/[zZ]|[+-]\d\d:?\d\d$/.test(iso) ? "" : "Z")).toLocaleDateString("es-ES", { timeZone: tz || "Europe/Madrid", day: "numeric", month: "short" }); } catch { return ""; } };
   const profile = [team, carClass].filter(Boolean).join(" · ");
@@ -478,6 +499,7 @@ export function setupDigestEmail({ name, tz, team, carClass, season, seasonTotal
       P(nCars
         ? `Esta temporada (${escapeHtml(season)}) hay setups para los coches que sueles descargar:`
         : `El Vault tiene <strong>${escapeHtml(seasonTotal)}</strong> setups de la temporada ${escapeHtml(season)}. Estos son los coches con más setups:`) +
+      kpiRow([[String(seasonTotal ?? "—"), `setups ${season}`], ...(nCars ? [[String(nCars), nCars === 1 ? "coche tuyo con setups" : "coches tuyos con setups"]] : [])]) +
       listBox(nCars ? "Para tus coches" : "Más setups esta temporada", (nCars ? forYou : topCars).map((c) => [carLabel(c.car), `${c.n} setups`])) +
       listBox("Tus últimas descargas", recent.slice(0, 3).map((r) => [refLabel(r.ref), fmt(r.at)])),
     cta: { url: `${SITE}/setups`, label: "Abrir el Setup Vault" },
