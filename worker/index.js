@@ -23,6 +23,7 @@ import {
   contactFormEmail,
   loginCodeEmail,
   setupDigestEmail,
+  teamEventEmail,
 } from "./emails.js";
 
 const SITE = "https://muntru.me";
@@ -200,7 +201,7 @@ async function verifyToken(token, secret, typ) {
 
 // ───────────────────────────── correo (Resend) ─────────────────────────────
 
-async function sendEmail(env, { to, subject, html, text, replyTo, headers }) {
+async function sendEmail(env, { to, subject, html, text, replyTo, headers, attachments }) {
   if (!env.RESEND_API_KEY) return { ok: false, error: "RESEND_API_KEY no configurada" };
   const payload = {
     from: env.RESEND_FROM_EMAIL || "Muntrume Motorsport <muntrume@trujillomingorance.com>",
@@ -211,6 +212,7 @@ async function sendEmail(env, { to, subject, html, text, replyTo, headers }) {
   };
   if (replyTo) payload.reply_to = replyTo;
   if (headers) payload.headers = headers;
+  if (attachments?.length) payload.attachments = attachments;
   const post = (p) =>
     fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -718,14 +720,21 @@ async function handleAdminEmailPreview(request, body, env) {
     reset: () => resetPasswordEmail({ name: sample.name, link: demoLink, expiresMinutes: 60, ...pc }),
     code: () => loginCodeEmail({ name: sample.name, code: "000000", link: `${SITE}/setups#magic=EJEMPLO-NO-VALIDO`, expiresMinutes: 10, ...pc }),
     digest: null,
+    event: null,
   };
   const only = Array.isArray(body.only) ? body.only.filter((k) => k in all).slice(0, 8) : Object.keys(all);
   const results = [];
   for (const k of only) {
     let t, headers;
-    if (k === "digest") { const d = await buildDigest(env, s.user); t = d.mail; headers = d.headers; }
+    let attachments;
+    if (k === "digest") { const d = await buildDigest(env, s.user); t = d.mail; headers = d.headers; attachments = d.attachments; }
+    else if (k === "event") {
+      const d = await buildEventMail(env, s.user);
+      if (!d) { results.push({ key: k, subject: "", ok: false, error: "No hay eventos próximos con fecha en el calendario del equipo." }); continue; }
+      t = d.mail; headers = d.headers; attachments = d.attachments;
+    }
     else t = all[k]();
-    const r = await sendEmail(env, { to, ...t, headers, subject: `[PRUEBA] ${t.subject}` });
+    const r = await sendEmail(env, { to, ...t, headers, attachments, subject: `[PRUEBA] ${t.subject}` });
     results.push({ key: k, subject: t.subject, ok: !!r.ok, error: r.ok ? null : r.error });
   }
   return [200, { success: true, to, results }];
@@ -797,7 +806,9 @@ async function buildDigest(env, user) {
     const r = await db.prepare("SELECT count(*) n FROM setups WHERE season = ? AND car = ?").bind(season, car).first();
     if (r?.n) forYou.push({ car, n: r.n });
   }
+  const events = await upcomingEvents(env, 3);
   const mail = setupDigestEmail({
+    events,
     name: user.name, tz: prefs.tz || "Europe/Madrid", team: user.team, carClass: user.car_class, season,
     seasonTotal: (tot?.n || 0).toLocaleString("es-ES"), forYou, topCars: top.results || [],
     recent: recent.map((r) => ({ at: r.at, ref: r.ref })), manageUrl: links.manageUrl, unsubUrl: links.unsubUrl,
@@ -807,7 +818,122 @@ async function buildDigest(env, user) {
     "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
     "List-Id": "Novedades del Setup Vault <new-setups.muntru.me>",
   };
-  return { mail, headers, enabled: prefs.new_setups };
+  return { mail, headers, enabled: prefs.new_setups, attachments: events.length ? [icsAttachment(events)] : undefined };
+}
+
+/** Correo de evento (lista team_news). Solo con eventos reales de team_events; null si no hay. */
+async function buildEventMail(env, user) {
+  const events = await upcomingEvents(env, 3);
+  if (!events.length) return null;
+  const email = normEmail(user.email);
+  const [prefs, links] = await Promise.all([getPrefs(env, email), prefsLinks(env, email, "team_news")]);
+  const mail = teamEventEmail({ name: user.name, tz: prefs.tz || "Europe/Madrid", events, manageUrl: links.manageUrl, unsubUrl: links.unsubUrl });
+  const headers = {
+    "List-Unsubscribe": `<${links.oneClickUrl}>`,
+    "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    "List-Id": "Noticias del equipo <team-news.muntru.me>",
+  };
+  return { mail, headers, enabled: prefs.team_news, attachments: [icsAttachment(events)] };
+}
+
+// ───────────────────────────── calendario del equipo (team_events) ─────────────────────────────
+
+const EVENT_COLS = "id, title, starts_at, ends_at, track, car_class, url, notes";
+const isoUtc = (d) => new Date(d).toISOString().replace(/\.\d{3}Z$/, "Z");
+const icsStamp = (d) => isoUtc(d).replace(/[-:]/g, "");
+const eventEnd = (ev) => ev.ends_at || isoUtc(new Date(ev.starts_at).getTime() + 2 * 3600e3);
+function eventView(ev) {
+  const end = eventEnd(ev);
+  const loc = [ev.track, "iRacing"].filter(Boolean).join(" · ");
+  const details = [ev.car_class, ev.notes, ev.url].filter(Boolean).join("\n");
+  const q = new URLSearchParams({ action: "TEMPLATE", text: ev.title, dates: `${icsStamp(ev.starts_at)}/${icsStamp(end)}`, details, location: loc });
+  return { id: ev.id, title: ev.title, starts_at: ev.starts_at, ends_at: end, track: ev.track || null, car_class: ev.car_class || null, url: ev.url || null, notes: ev.notes || null,
+    gcal: `https://calendar.google.com/calendar/render?${q.toString()}`, ics: `${API_ORIGIN}/api/events/${ev.id}.ics` };
+}
+async function upcomingEvents(env, limit = 20) {
+  try {
+    const r = await env.muntrume_vault.prepare(`SELECT ${EVENT_COLS} FROM team_events WHERE starts_at >= ? ORDER BY starts_at ASC LIMIT ?`)
+      .bind(isoUtc(Date.now() - 3 * 3600e3), limit).all();
+    return (r.results || []).map(eventView);
+  } catch (e) { console.warn("[events]", e?.message); return []; }
+}
+const icsEsc = (v) => String(v || "").replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+function icsFold(line) {
+  const out = []; let cur = ""; let bytes = 0;
+  for (const ch of line) {
+    const b = enc.encode(ch).length;
+    if (bytes + b > 74) { out.push(cur); cur = " "; bytes = 1; }
+    cur += ch; bytes += b;
+  }
+  out.push(cur); return out.join("\r\n");
+}
+function buildIcs(events, name = "Muntrume Motorsport") {
+  const now = icsStamp(Date.now());
+  const L = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Muntrume Motorsport//Calendario del equipo//ES", "CALSCALE:GREGORIAN", "METHOD:PUBLISH", `X-WR-CALNAME:${icsEsc(name)}`];
+  for (const ev of events) {
+    L.push("BEGIN:VEVENT", `UID:event-${ev.id}@muntru.me`, `DTSTAMP:${now}`, `DTSTART:${icsStamp(ev.starts_at)}`, `DTEND:${icsStamp(ev.ends_at || eventEnd(ev))}`,
+      `SUMMARY:${icsEsc(ev.title)}`, `LOCATION:${icsEsc([ev.track, "iRacing"].filter(Boolean).join(" · "))}`,
+      ...(ev.car_class || ev.notes ? [`DESCRIPTION:${icsEsc([ev.car_class, ev.notes].filter(Boolean).join("\n"))}`] : []),
+      `URL:${ev.url || SITE + "/"}`, "STATUS:CONFIRMED", "TRANSP:OPAQUE", "END:VEVENT");
+  }
+  L.push("END:VCALENDAR");
+  return L.map(icsFold).join("\r\n") + "\r\n";
+}
+function icsAttachment(events) {
+  const bytes = enc.encode(buildIcs(events));
+  let bin = ""; for (const b of bytes) bin += String.fromCharCode(b);
+  return { filename: events.length === 1 ? "evento-muntrume.ics" : "eventos-muntrume.ics", content: btoa(bin), content_type: "text/calendar; charset=utf-8; method=PUBLISH" };
+}
+/** GET públicos: /api/events (JSON próximos), /api/events.ics (feed), /api/events/<id>.ics */
+async function handlePublicEvents(url, env) {
+  const path = url.pathname.replace(/\/+$/, "");
+  const cors = { "Access-Control-Allow-Origin": "*", "Cache-Control": "public, max-age=300", "X-Content-Type-Options": "nosniff" };
+  if (path === "/api/events") return new Response(JSON.stringify({ success: true, events: await upcomingEvents(env, 20) }), { headers: { ...cors, "Content-Type": "application/json; charset=utf-8" } });
+  if (path === "/api/events.ics") {
+    return new Response(buildIcs(await upcomingEvents(env, 50)), { headers: { ...cors, "Content-Type": "text/calendar; charset=utf-8", "Content-Disposition": 'inline; filename="muntrume.ics"' } });
+  }
+  const m = path.match(/^\/api\/events\/(\d{1,9})\.ics$/);
+  if (m) {
+    const row = await env.muntrume_vault.prepare(`SELECT ${EVENT_COLS} FROM team_events WHERE id = ?`).bind(Number(m[1])).first();
+    if (!row) return new Response("Evento no encontrado", { status: 404, headers: { ...cors, "Content-Type": "text/plain; charset=utf-8" } });
+    return new Response(buildIcs([eventView(row)]), { headers: { ...cors, "Content-Type": "text/calendar; charset=utf-8", "Content-Disposition": `attachment; filename="evento-muntrume-${row.id}.ics"` } });
+  }
+  return new Response("Not found", { status: 404, headers: cors });
+}
+/** Admin: listar / guardar / borrar eventos (con auditoría). Las fechas las introduce un admin; no se generan. */
+async function handleAdminEvents(request, body, env) {
+  const s = await adminSession(request, body, env); if (s.err) return s.err;
+  const db = env.muntrume_vault;
+  const admin = s.user?.email || s.email;
+  if (body.op === "delete") {
+    const id = Number(body.id);
+    const row = await db.prepare("SELECT id, title, starts_at FROM team_events WHERE id = ?").bind(id).first();
+    if (!row) return [404, { success: false, error: "Evento no encontrado." }];
+    await db.prepare("DELETE FROM team_events WHERE id = ?").bind(id).run();
+    await audit(env, admin, "event.delete", null, `#${id} ${row.title} @ ${row.starts_at}`);
+  } else if (body.op === "save") {
+    const title = clean(body.title, 120);
+    if (!title) return [400, { success: false, error: "Falta el título." }];
+    const st = new Date(String(body.starts_at || ""));
+    if (isNaN(st) || !/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(String(body.starts_at))) return [400, { success: false, error: "Fecha de inicio no válida." }];
+    if (st.getTime() < Date.now() - 365 * 864e5 || st.getTime() > Date.now() + 3 * 365 * 864e5) return [400, { success: false, error: "La fecha está fuera de rango." }];
+    let en = null;
+    if (body.ends_at) { const e = new Date(String(body.ends_at)); if (isNaN(e) || e <= st || e - st > 72 * 3600e3) return [400, { success: false, error: "La fecha de fin no es válida." }]; en = isoUtc(e); }
+    const link = clean(body.url, 300);
+    if (link && !/^https:\/\/[^\s<>"]+$/i.test(link)) return [400, { success: false, error: "El enlace debe empezar por https://" }];
+    const vals = [title, isoUtc(st), en, clean(body.track, 80) || null, clean(body.car_class, 60) || null, link || null, clean(body.notes, 400) || null];
+    let id = Number(body.id) || 0;
+    if (id) {
+      const r = await db.prepare("UPDATE team_events SET title=?1, starts_at=?2, ends_at=?3, track=?4, car_class=?5, url=?6, notes=?7, updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=?8").bind(...vals, id).run();
+      if (!r.meta?.changes) return [404, { success: false, error: "Evento no encontrado." }];
+    } else {
+      const r = await db.prepare("INSERT INTO team_events (title, starts_at, ends_at, track, car_class, url, notes, created_by) VALUES (?1,?2,?3,?4,?5,?6,?7,?8)").bind(...vals, normEmail(admin)).run();
+      id = r.meta?.last_row_id;
+    }
+    await audit(env, admin, "event.save", null, `#${id} ${title} @ ${vals[1]}`);
+  }
+  const r = await db.prepare(`SELECT ${EVENT_COLS} FROM team_events WHERE starts_at >= ? ORDER BY starts_at ASC LIMIT 100`).bind(isoUtc(Date.now() - 90 * 864e5)).all();
+  return [200, { success: true, events: (r.results || []).map(eventView) }];
 }
 
 /** RFC 8058: POST de un clic desde el cliente de correo (sin cookies ni Origin). */
@@ -1459,6 +1585,7 @@ const ROUTES = {
   "/api/setups/admin/user/revoke": "admin_user_revoke",
   "/api/setups/admin/user/photo": "admin_user_photo",
   "/api/setups/admin/user/public": "admin_user_public",
+  "/api/setups/admin/events": "admin_events",
   "/api/setups/admin/user/detail": "admin_user_detail",
   "/api/setups/admin/audit": "admin_audit",
   "/api/setups/admin/stats": "admin_stats",
@@ -1494,6 +1621,11 @@ export default {
       if (!env.muntrume_vault) return reply(503, { success: false });
       try { return await handlePublicPilots(url, env); }
       catch (e) { console.error("[pilots]", e?.message); return reply(500, { success: false }); }
+    }
+    if (request.method === "GET" && /^\/api\/events(\.ics|\/\d{1,9}\.ics)?\/?$/.test(url.pathname)) {
+      if (!env.muntrume_vault) return reply(503, { success: false });
+      try { return await handlePublicEvents(url, env); }
+      catch (e) { console.error("[events]", e?.message); return reply(500, { success: false }); }
     }
     if (url.pathname.replace(/\/+$/, "") === "/api/email/unsubscribe") {
       // RFC 8058 one-click: lo llama el proveedor de correo (Gmail/Yahoo/Apple) sin Origin; solo POST cambia datos.
@@ -1545,6 +1677,7 @@ export default {
         case "admin_user_revoke": out = await handleAdminRevokeSessions(request, body, env); break;
         case "admin_user_photo": out = await handleAdminUserPhoto(request, body, env); break;
         case "admin_user_public": out = await handleAdminUserPublic(request, body, env); break;
+        case "admin_events": out = await handleAdminEvents(request, body, env); break;
         case "admin_user_detail": out = await handleAdminUserDetail(request, body, env); break;
         case "admin_audit": out = await handleAdminAudit(request, body, env); break;
         case "admin_stats": out = await handleAdminStats(request, body, env); break;

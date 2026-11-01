@@ -213,7 +213,7 @@
   };
 
   // ───────────── Consola Race Control ─────────────
-  const TABS = { members: "Mem", requests: "Req", add: "Add", audit: "Aud", stats: "Sta" };
+  const TABS = { members: "Mem", requests: "Req", add: "Add", audit: "Aud", stats: "Sta", events: "Evt" };
   let currentAdminTab = "members";
   window.openAdminModal = async function () {
     hideAdminNotice();
@@ -238,6 +238,7 @@
     });
     if (tab === "audit") loadAdminAudit();
     if (tab === "stats") loadAdminStats();
+    if (tab === "events") loadAdminEvents();
   };
 
   const origRender = window.renderAdminData;
@@ -321,6 +322,8 @@
     $("admUserDrawer")?.classList.add("hidden");
   };
   const ACTION_LABEL = {
+    "event.save": "Evento guardado",
+    "event.delete": "Evento borrado",
     "request.approve": "Solicitud aprobada", "request.reject": "Solicitud rechazada", "user.add": "Alta directa",
     "user.send_link": "Enlace de acceso enviado", "user.suspend": "Suspendido", "user.reactivate": "Reactivado",
     "user.update": "Datos editados", "user.role_change": "Rol cambiado", "user.delete": "Usuario borrado",
@@ -500,6 +503,43 @@
     box.innerHTML = `<table class="adm-table"><thead><tr><th>Fecha</th><th>Acción</th><th>Usuario</th><th>Admin</th><th>Detalle</th></tr></thead><tbody>${
       rows.map((r) => `<tr style="cursor:default"><td class="adm-muted">${formatAdminDate(r.at)}</td><td style="color:#fff;font-weight:600">${esc(ACTION_LABEL[r.action] || r.action)}</td><td class="adm-email">${esc(r.target || "—")}</td><td class="adm-email adm-col-hide">${esc(r.admin_email)}</td><td class="adm-muted adm-col-hide" style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.detail || "")}">${esc(r.detail || "")}</td></tr>`).join("")
     }</tbody></table>`;
+  };
+
+  // ── Eventos del equipo ──
+  let adminEvents = [];
+  const toLocalInput = (iso) => { if (!iso) return ""; const d = new Date(iso); const p = (n) => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; };
+  const fromLocalInput = (v) => (v ? new Date(v).toISOString() : "");
+  function renderAdminEvents() {
+    const box = $("adminEventsList"); if (!box) return;
+    if (!adminEvents.length) { box.innerHTML = '<div class="adm-empty">No hay eventos. La portada muestra «calendario por anunciar» y los correos no incluyen sección de eventos.</div>'; return; }
+    box.innerHTML = `<div class="adm-list">${adminEvents.map((e) => `<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+      <div><div style="color:#fff;font-weight:700">${esc(e.title)}</div><div class="adm-muted">${esc(new Date(e.starts_at).toLocaleString("es-ES", { dateStyle: "medium", timeStyle: "short" }))}${e.track ? " · " + esc(e.track) : ""}${e.car_class ? " · " + esc(e.car_class) : ""}</div></div>
+      <div style="display:flex;gap:6px"><a class="adm-btn adm-btn-ghost" href="${esc(e.ics)}" target="_blank" rel="noopener">.ics</a><button type="button" class="adm-btn adm-btn-ghost" onclick="editAdminEvent(${Number(e.id)})">Editar</button><button type="button" class="adm-btn adm-btn-ghost" onclick="deleteAdminEvent(${Number(e.id)})">Borrar</button></div></div>`).join("")}</div>`;
+  }
+  async function eventsCall(payload) {
+    const { res, data } = await adminApi("admin/events", payload);
+    const msg = $("evtMsg");
+    if (!res.ok || !data.success) { if (msg) msg.textContent = data.error || "No se pudo completar la acción."; return false; }
+    adminEvents = data.events || []; renderAdminEvents(); return true;
+  }
+  window.loadAdminEvents = () => eventsCall({ op: "list" });
+  window.resetAdminEvent = () => { $("admEventForm")?.reset(); $("evtId").value = ""; };
+  window.editAdminEvent = (id) => {
+    const e = adminEvents.find((x) => x.id === id); if (!e) return;
+    $("evtId").value = e.id; $("evtTitle").value = e.title; $("evtStart").value = toLocalInput(e.starts_at); $("evtEnd").value = toLocalInput(e.ends_at);
+    $("evtTrack").value = e.track || ""; $("evtClass").value = e.car_class || ""; $("evtUrl").value = e.url || ""; $("evtNotes").value = e.notes || "";
+    $("evtTitle").focus();
+  };
+  window.saveAdminEvent = async (ev) => {
+    ev.preventDefault();
+    const ok = await eventsCall({ op: "save", id: Number($("evtId").value) || undefined, title: $("evtTitle").value, starts_at: fromLocalInput($("evtStart").value),
+      ends_at: fromLocalInput($("evtEnd").value) || undefined, track: $("evtTrack").value, car_class: $("evtClass").value, url: $("evtUrl").value, notes: $("evtNotes").value });
+    if (ok) { $("evtMsg").textContent = "Evento guardado."; resetAdminEvent(); }
+  };
+  window.deleteAdminEvent = async (id) => {
+    const e = adminEvents.find((x) => x.id === id);
+    if (!e || !confirm(`¿Borrar «${e.title}»?`)) return;
+    if (await eventsCall({ op: "delete", id })) $("evtMsg").textContent = "Evento borrado.";
   };
 
   // ── Estadísticas ──

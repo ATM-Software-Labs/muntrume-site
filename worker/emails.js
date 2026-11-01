@@ -36,7 +36,9 @@ const hello = (name, tz) => P(`${escapeHtml(greeting(name, tz))}:`);
  */
 const SECURITY_NOTE = "Si no fuiste tú, ignora este correo: no se ha hecho ningún cambio en tu cuenta.";
 const FONT = "Inter,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif";
-function layout({ preheader, title, bodyHtml, cta, footerNote, securityNote = true, manageUrl, unsubUrl, jsonLd }) {
+function layout({ preheader, title, bodyHtml, cta, footerNote, securityNote = true, manageUrl, unsubUrl, jsonLd, tldr }) {
+  const tldrHtml = tldrBox(tldr);
+  const ld = (Array.isArray(jsonLd) ? jsonLd : jsonLd ? [jsonLd] : []).map((o) => `<script type="application/ld+json">${JSON.stringify({ "@context": "http://schema.org", ...o }).replace(/</g, "\\u003c")}</script>`).join("\n");
   const ctaHtml = cta
     ? `<tr><td align="center" class="px" style="padding:6px 32px 26px 32px;">
         <!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${escapeHtml(cta.url)}" style="height:48px;v-text-anchor:middle;width:280px;" arcsize="20%" stroke="f" fillcolor="#10b981"><w:anchorlock/><center style="color:#04241a;font-family:Arial,sans-serif;font-size:15px;font-weight:bold;">${escapeHtml(cta.label)}</center></v:roundrect><![endif]-->
@@ -58,7 +60,7 @@ function layout({ preheader, title, bodyHtml, cta, footerNote, securityNote = tr
 <meta name="color-scheme" content="light dark">
 <meta name="supported-color-schemes" content="light dark">
 <title>${escapeHtml(title)}</title>
-${jsonLd ? `<script type="application/ld+json">${JSON.stringify({ "@context": "http://schema.org", ...jsonLd }).replace(/</g, "\\u003c")}</script>` : ""}
+${ld}
 <style>
   @media only screen and (max-width:600px){
     .container{width:100% !important;}
@@ -100,20 +102,22 @@ ${jsonLd ? `<script type="application/ld+json">${JSON.stringify({ "@context": "h
       </tr></table>
     </td></tr>
     <tr><td style="height:4px;line-height:4px;font-size:0;background-color:#10b981;">&nbsp;</td></tr>
+    ${unsubUrl ? `<tr><td class="px muted" align="right" style="padding:10px 32px 0 32px;font-family:${FONT};font-size:12px;line-height:18px;color:#64748b;">¿No quieres estos avisos? <a href="${escapeHtml(unsubUrl)}" target="_blank" rel="noopener" class="lnk" style="color:#047857;font-weight:700;text-decoration:underline;">Darme de baja</a></td></tr>` : ""}
     <tr><td class="px body" style="padding:30px 32px 6px 32px;font-family:${FONT};color:#0f172a;">
       <h1 class="h1" style="margin:0 0 14px 0;font-size:22px;line-height:29px;font-weight:800;color:#0f172a;">${escapeHtml(title)}</h1>
+      ${tldrHtml}
       ${bodyHtml}
     </td></tr>
     ${ctaHtml}
     ${unsubUrl ? `<tr><td class="px" style="padding:0 32px 22px 32px;font-family:${FONT};">
       <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" class="box" style="background-color:#f6f8fa;border:1px solid #e5eaef;border-radius:12px;">
-        <tr><td style="padding:14px 16px;">
-          <p class="ink" style="margin:0 0 4px 0;font-size:14px;line-height:20px;font-weight:700;color:#0f172a;">¿Demasiados correos?</p>
-          <p class="muted" style="margin:0 0 12px 0;font-size:13px;line-height:19px;color:#64748b;">Elige qué avisos quieres recibir o date de baja con un clic. Los correos de seguridad (códigos de acceso) se siguen enviando.</p>
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr>
-            ${manageUrl ? `<td style="padding:0 8px 6px 0;"><a href="${escapeHtml(manageUrl)}" target="_blank" rel="noopener" class="lnk" style="display:inline-block;padding:9px 14px;border:1px solid #10b981;border-radius:8px;font-size:13px;line-height:16px;font-weight:700;color:#047857;text-decoration:none;">Gestionar preferencias</a></td>` : ""}
-            <td style="padding:0 0 6px 0;"><a href="${escapeHtml(unsubUrl)}" target="_blank" rel="noopener" class="lnk" style="display:inline-block;padding:9px 14px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;line-height:16px;font-weight:700;color:#475569;text-decoration:none;">Darme de baja</a></td>
+        <tr><td style="padding:16px;">
+          <p class="ink" style="margin:0 0 4px 0;font-size:15px;line-height:21px;font-weight:700;color:#0f172a;">¿Demasiados correos?</p>
+          <p class="muted" style="margin:0 0 14px 0;font-size:13px;line-height:19px;color:#64748b;">Un toque y no vuelves a recibir este tipo de aviso. Los correos de seguridad (códigos de acceso) se siguen enviando.</p>
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr>
+            <td align="center" bgcolor="#ffffff" style="border:2px solid #dc2626;border-radius:10px;"><a href="${escapeHtml(unsubUrl)}" target="_blank" rel="noopener" style="display:block;padding:14px 18px;font-size:16px;line-height:20px;font-weight:800;color:#b91c1c;text-decoration:none;border-radius:10px;">Darme de baja con un toque</a></td>
           </tr></table>
+          ${manageUrl ? `<p style="margin:12px 0 0 0;text-align:center;font-size:13px;line-height:19px;"><a href="${escapeHtml(manageUrl)}" target="_blank" rel="noopener" class="lnk" style="color:#047857;font-weight:700;text-decoration:underline;">O elige qué avisos recibir</a></p>` : ""}
         </td></tr>
       </table>
     </td></tr>` : ""}
@@ -132,6 +136,14 @@ ${jsonLd ? `<script type="application/ld+json">${JSON.stringify({ "@context": "h
 </body>
 </html>`;
 }
+
+/** Resumen corto (2-3 frases) al principio del correo, en texto llano. */
+function tldrBox(tldr) {
+  const t = Array.isArray(tldr) ? tldr.filter(Boolean).join(" ") : String(tldr || "");
+  if (!t) return "";
+  return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 16px 0;"><tr><td class="box" style="padding:12px 14px;background-color:#ecfdf5;border-left:4px solid #10b981;border-radius:8px;font-size:14px;line-height:21px;color:#065f46;"><strong>En resumen:</strong> ${escapeHtml(t)}</td></tr></table>`;
+}
+const tldrText = (tldr) => { const t = Array.isArray(tldr) ? tldr.filter(Boolean).join(" ") : String(tldr || ""); return t ? `En resumen: ${t}\n\n` : ""; };
 
 /** Bloque grande con el código de un solo uso. */
 function codeBox(code) {
@@ -481,18 +493,23 @@ function listBox(head, rows) {
  * 8) Novedades del Setup Vault (correo NO esencial → lleva List-Unsubscribe y enlace visible de baja).
  * Todo el contenido sale de datos reales de D1 (setups/descargas del piloto); si no hay datos, se omite la sección.
  */
-export function setupDigestEmail({ name, tz, team, carClass, season, seasonTotal, forYou = [], topCars = [], recent = [], manageUrl, unsubUrl }) {
+export function setupDigestEmail({ name, tz, team, carClass, season, seasonTotal, forYou = [], topCars = [], recent = [], events = [], manageUrl, unsubUrl }) {
   const nCars = forYou.length;
   const subject = nCars
     ? `${firstName(name)}, hay setups de ${season} ${nCars === 1 ? `para tu ${carLabel(forYou[0].car)}` : `para tus ${nCars} coches`} · Muntrume`
     : `${firstName(name)}, novedades del Setup Vault (${season})`;
   const fmt = (iso) => { try { return new Date(String(iso).replace(" ", "T") + (/[zZ]|[+-]\d\d:?\d\d$/.test(iso) ? "" : "Z")).toLocaleDateString("es-ES", { timeZone: tz || "Europe/Madrid", day: "numeric", month: "short" }); } catch { return ""; } };
   const profile = [team, carClass].filter(Boolean).join(" · ");
+  const tldr = [
+    nCars ? `Hay setups de ${season} para ${nCars === 1 ? `tu ${carLabel(forYou[0].car)}` : `${nCars} de tus coches`}.` : `El Vault tiene ${seasonTotal} setups de la temporada ${season}.`,
+    topCars.length && !nCars ? `El coche con más setups es el ${carLabel(topCars[0].car)} (${topCars[0].n}).` : "",
+    events.length ? `Próximo evento del equipo: ${events[0].title}, el ${fmtEventDate(events[0].starts_at, tz)}.` : "",
+  ].filter(Boolean);
   const html = layout({
-    manageUrl, unsubUrl, securityNote: false,
+    manageUrl, unsubUrl, securityNote: false, tldr,
     preheader: nCars ? `${forYou.map((c) => carLabel(c.car)).slice(0, 3).join(", ")}: setups de ${season} listos para descargar.` : `${seasonTotal} setups de ${season} en el Vault.`,
     title: "Novedades del Setup Vault",
-    jsonLd: { "@type": "EmailMessage", description: `Setups de ${season} en el Setup Vault`, potentialAction: { "@type": "ViewAction", url: `${SITE}/setups`, target: `${SITE}/setups`, name: "Abrir el Vault" }, publisher: { "@type": "Organization", name: "Muntrume Motorsport", url: SITE } },
+    jsonLd: [{ "@type": "EmailMessage", description: `Setups de ${season} en el Setup Vault`, potentialAction: { "@type": "ViewAction", url: `${SITE}/setups`, target: `${SITE}/setups`, name: "Abrir el Vault" }, publisher: { "@type": "Organization", name: "Muntrume Motorsport", url: SITE } }, ...eventsLd(events)],
     bodyHtml:
       hello(name, tz) +
       (profile ? `<p class="muted" style="margin:-6px 0 14px 0;font-size:13px;line-height:19px;color:#64748b;">${escapeHtml(profile)}</p>` : "") +
@@ -501,17 +518,18 @@ export function setupDigestEmail({ name, tz, team, carClass, season, seasonTotal
         : `El Vault tiene <strong>${escapeHtml(seasonTotal)}</strong> setups de la temporada ${escapeHtml(season)}. Estos son los coches con más setups:`) +
       kpiRow([[String(seasonTotal ?? "—"), `setups ${season}`], ...(nCars ? [[String(nCars), nCars === 1 ? "coche tuyo con setups" : "coches tuyos con setups"]] : [])]) +
       listBox(nCars ? "Para tus coches" : "Más setups esta temporada", (nCars ? forYou : topCars).map((c) => [carLabel(c.car), `${c.n} setups`])) +
-      listBox("Tus últimas descargas", recent.slice(0, 3).map((r) => [refLabel(r.ref), fmt(r.at)])),
+      listBox("Tus últimas descargas", recent.slice(0, 3).map((r) => [refLabel(r.ref), fmt(r.at)])) +
+      eventsBlock(events, tz),
     cta: { url: `${SITE}/setups`, label: "Abrir el Setup Vault" },
     footerNote: "Recibes este correo porque eres piloto del Setup Vault de Muntrume Motorsport. Puedes elegir qué avisos recibir o darte de baja con un clic.",
   });
   const rows = (nCars ? forYou : topCars).map((c) => `- ${carLabel(c.car)}: ${c.n} setups`).join("\n");
   const rec = recent.slice(0, 3).map((r) => `- ${refLabel(r.ref)} (${fmt(r.at)})`).join("\n");
-  const text = `${greeting(name, tz)}:
+  const text = `${tldrText(tldr)}${greeting(name, tz)}:
 ${profile ? `${profile}\n` : ""}
 ${nCars ? `Esta temporada (${season}) hay setups para los coches que sueles descargar:` : `El Vault tiene ${seasonTotal} setups de la temporada ${season}. Coches con más setups:`}
 ${rows}
-${rec ? `\nTus últimas descargas:\n${rec}\n` : ""}
+${rec ? `\nTus últimas descargas:\n${rec}\n` : ""}${events.length ? `\n${eventsText(events, tz)}` : ""}
 Abrir el Setup Vault: ${SITE}/setups
 
 Recibes este correo porque eres piloto del Setup Vault de Muntrume Motorsport.
@@ -520,5 +538,69 @@ Muntrume Motorsport · ${SITE}
 Gestionar notificaciones: ${manageUrl}
 Darse de baja: ${unsubUrl}
 `;
+  return { subject, html, text };
+}
+
+// ───────────────────────────── Eventos / carreras (solo fechas reales de team_events) ─────────────────────────────
+
+const fmtEventDate = (iso, tz) => {
+  try {
+    const d = new Date(iso); const zone = tz || "Europe/Madrid";
+    const day = d.toLocaleDateString("es-ES", { timeZone: zone, weekday: "short", day: "numeric", month: "short", year: "numeric" });
+    const time = d.toLocaleTimeString("es-ES", { timeZone: zone, hour: "2-digit", minute: "2-digit" });
+    const city = zone.split("/").pop().replace(/_/g, " ");
+    return `${day} · ${time} (hora de ${city})`;
+  } catch { return String(iso); }
+};
+
+/** Tarjetas de evento con «Añadir a Google Calendar» y descarga .ics. ev: {title, starts_at, track, car_class, url, gcal, ics} */
+export function eventsBlock(events, tz) {
+  if (!events || !events.length) return "";
+  const cards = events.map((ev) => `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" class="box" style="margin:0 0 10px 0;background-color:#f6f8fa;border:1px solid #e5eaef;border-radius:12px;"><tr><td style="padding:14px 16px;">
+      <p class="ink" style="margin:0 0 2px 0;font-size:16px;line-height:22px;font-weight:800;color:#0f172a;">${escapeHtml(ev.title)}</p>
+      <p style="margin:0 0 2px 0;font-size:14px;line-height:20px;color:#047857;font-weight:700;" class="lnk">${escapeHtml(fmtEventDate(ev.starts_at, tz))}</p>
+      ${[ev.track, ev.car_class].filter(Boolean).length ? `<p class="muted" style="margin:0 0 12px 0;font-size:13px;line-height:19px;color:#64748b;">${escapeHtml([ev.track, ev.car_class].filter(Boolean).join(" · "))}</p>` : `<div style="height:10px;line-height:10px;font-size:0;">&nbsp;</div>`}
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr>
+        <td bgcolor="#1a73e8" style="border-radius:8px;"><a href="${escapeHtml(ev.gcal)}" target="_blank" rel="noopener" style="display:inline-block;padding:11px 16px;font-size:14px;line-height:18px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:8px;">📅 Añadir a Google Calendar</a></td>
+        <td width="8">&nbsp;</td>
+        <td style="border:1px solid #cbd5e1;border-radius:8px;"><a href="${escapeHtml(ev.ics)}" target="_blank" rel="noopener" style="display:inline-block;padding:10px 14px;font-size:14px;line-height:18px;font-weight:700;color:#334155;text-decoration:none;">.ics</a></td>
+      </tr></table>
+    </td></tr></table>`).join("");
+  return `<p class="muted" style="margin:6px 0 6px 0;font-size:12px;line-height:18px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Próximos eventos del equipo</p>${cards}`;
+}
+export function eventsText(events, tz) {
+  if (!events || !events.length) return "";
+  return "Próximos eventos del equipo:\n" + events.map((ev) => `- ${ev.title} — ${fmtEventDate(ev.starts_at, tz)}${ev.track ? ` · ${ev.track}` : ""}\n  Google Calendar: ${ev.gcal}\n  .ics: ${ev.ics}`).join("\n") + "\n";
+}
+/** schema.org Event (listo para cuando Google apruebe el remitente). */
+export function eventsLd(events) {
+  return (events || []).map((ev) => ({
+    "@type": "Event", name: ev.title, startDate: ev.starts_at, endDate: ev.ends_at,
+    eventStatus: "https://schema.org/EventScheduled", eventAttendanceMode: "https://schema.org/OnlineEventAttendanceMode",
+    location: { "@type": "VirtualLocation", url: ev.url || `${SITE}/` },
+    ...(ev.track ? { description: [ev.track, ev.car_class].filter(Boolean).join(" · ") } : {}),
+    organizer: { "@type": "Organization", name: "Muntrume Motorsport", url: SITE },
+    url: ev.url || `${SITE}/`,
+  }));
+}
+
+/** 9) Aviso de evento/carrera del equipo (lista team_news, no esencial). Solo se genera con eventos reales de D1. */
+export function teamEventEmail({ name, tz, events, manageUrl, unsubUrl }) {
+  const first = events[0];
+  const when = fmtEventDate(first.starts_at, tz);
+  const subject = events.length === 1 ? `${first.title} · ${when.split(" · ")[0]} · Muntrume` : `${events.length} próximos eventos del equipo · Muntrume`;
+  const tldr = events.length === 1
+    ? [`Próximo evento: ${first.title}, el ${when}${first.track ? ` en ${first.track}` : ""}.`, "Puedes añadirlo a tu calendario con un toque."]
+    : [`Hay ${events.length} eventos del equipo próximamente; el primero es ${first.title}, el ${when}.`, "Puedes añadirlos a tu calendario con un toque."];
+  const html = layout({
+    manageUrl, unsubUrl, securityNote: false, tldr,
+    preheader: tldr.join(" "),
+    title: events.length === 1 ? first.title : "Próximos eventos del equipo",
+    jsonLd: eventsLd(events),
+    bodyHtml: hello(name, tz) + eventsBlock(events, tz),
+    cta: { url: `${SITE}/`, label: "Ver en muntru.me" },
+    footerNote: "Recibes este correo porque eres piloto de Muntrume Motorsport y tienes activadas las noticias del equipo.",
+  });
+  const text = `${tldrText(tldr)}${greeting(name, tz)}:\n\n${eventsText(events, tz)}\n--\nMuntrume Motorsport · ${SITE}\nGestionar notificaciones: ${manageUrl}\nDarse de baja: ${unsubUrl}\n`;
   return { subject, html, text };
 }

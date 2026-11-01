@@ -727,8 +727,19 @@
   <!-- ========================================================================= -->
   <script>
     // 1. Confirmed Competition Schedule (Sorted Chronologically)
-    // No verified race calendar is published here; see iRacing's official special events page.
-    const EVENTS = [];
+    // Only real events entered by an admin in Race Control (D1 team_events) are shown; none are hard-coded.
+    let EVENTS = [];
+    const escHtml = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    function loadTeamEvents() {
+      fetch('https://muntrume.atrumin16.workers.dev/api/events', { cache: 'no-store' })
+        .then((r) => r.ok ? r.json() : null)
+        .then((d) => {
+          if (!d || !Array.isArray(d.events) || !d.events.length) return;
+          EVENTS = d.events.map((e) => ({ date: e.starts_at, name: escHtml(e.title), track: escHtml(e.track || 'iRacing'), category: escHtml(e.car_class || '—') }));
+          initCalendarAndHUD();
+        })
+        .catch(() => {});
+    }
 
     // 2. Mobile Drawer Controller
     function toggleNavDrawer() {
@@ -864,6 +875,7 @@
     // Initialize on DOMContentLoaded
     document.addEventListener('DOMContentLoaded', () => {
       initCalendarAndHUD();
+      loadTeamEvents();
     });
   </script>
 </body>

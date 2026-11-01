@@ -853,6 +853,7 @@
           <button type="button" role="tab" id="tabAddBtn" onclick="switchAdminTab('add')" class="adm-tab">➕ Añadir usuario</button>
           <button type="button" role="tab" id="tabAudBtn" onclick="switchAdminTab('audit')" class="adm-tab">🧾 Auditoría</button>
           <button type="button" role="tab" id="tabStaBtn" onclick="switchAdminTab('stats')" class="adm-tab">📊 Estadísticas</button>
+          <button type="button" role="tab" id="tabEvtBtn" onclick="switchAdminTab('events')" class="adm-tab">📅 Eventos</button>
         </nav>
 
         <main class="adm-main">
@@ -927,6 +928,38 @@
               <button type="button" onclick="loadAdminAudit()" class="adm-btn adm-btn-ghost" aria-label="Actualizar">↻</button>
             </div>
             <div id="adminAuditList" class="adm-table-wrap"></div>
+          </section>
+
+          <!-- Eventos del equipo (fechas reales; alimentan la portada, el .ics y los correos) -->
+          <section id="adminTabEvents" class="adm-section hidden">
+            <p class="text-xs text-neutral-400 leading-relaxed mb-4" style="max-width:640px">Añade solo carreras o eventos con fecha <strong class="text-neutral-200">confirmada</strong>. Aparecen en la portada, en el calendario <code>.ics</code> y en los correos con el botón «Añadir a Google Calendar». Hora en tu zona horaria local.</p>
+            <form id="admEventForm" onsubmit="saveAdminEvent(event)" class="space-y-3" style="max-width:560px">
+              <input type="hidden" id="evtId">
+              <div><label for="evtTitle" class="block text-[11px] font-semibold uppercase text-neutral-400 mb-1">Título</label>
+                <input id="evtTitle" required maxlength="120" class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500"></div>
+              <div class="grid grid-cols-2 gap-3">
+                <div><label for="evtStart" class="block text-[11px] font-semibold uppercase text-neutral-400 mb-1">Inicio</label>
+                  <input id="evtStart" type="datetime-local" required class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white"></div>
+                <div><label for="evtEnd" class="block text-[11px] font-semibold uppercase text-neutral-400 mb-1">Fin (opcional)</label>
+                  <input id="evtEnd" type="datetime-local" class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white"></div>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div><label for="evtTrack" class="block text-[11px] font-semibold uppercase text-neutral-400 mb-1">Circuito</label>
+                  <input id="evtTrack" maxlength="80" class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white"></div>
+                <div><label for="evtClass" class="block text-[11px] font-semibold uppercase text-neutral-400 mb-1">Clase</label>
+                  <input id="evtClass" maxlength="60" class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white"></div>
+              </div>
+              <div><label for="evtUrl" class="block text-[11px] font-semibold uppercase text-neutral-400 mb-1">Enlace oficial (https, opcional)</label>
+                <input id="evtUrl" type="url" maxlength="300" class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white"></div>
+              <div><label for="evtNotes" class="block text-[11px] font-semibold uppercase text-neutral-400 mb-1">Notas</label>
+                <input id="evtNotes" maxlength="400" class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white"></div>
+              <div class="flex gap-2">
+                <button type="submit" class="flex-1 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs">Guardar evento</button>
+                <button type="button" onclick="resetAdminEvent()" class="adm-btn adm-btn-ghost">Limpiar</button>
+              </div>
+              <p id="evtMsg" class="text-xs text-neutral-400" role="status"></p>
+            </form>
+            <div id="adminEventsList" class="adm-table-wrap" style="margin-top:18px"></div>
           </section>
 
           <!-- Estadísticas -->
@@ -1397,6 +1430,6 @@
   <!-- JAVASCRIPT: LOGICA DE NEGOCIO, AUTENTICACION Y DESCARGAS                  -->
   <!-- ========================================================================= -->
   <script src="/assets/js/setups.js?v=m9"></script>
-  <script src="/assets/js/vault-auth-admin.js?v=m10"></script>
+  <script src="/assets/js/vault-auth-admin.js?v=m11"></script>
 </body>
 </html>
