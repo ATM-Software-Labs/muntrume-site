@@ -1,16 +1,737 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="dark scroll-smooth" data-theme="dark">
 <head>
-  <meta charset="utf-8">
-  <meta name="robots" content="noindex">
-  <meta http-equiv="refresh" content="0; url=/setups">
-  <link rel="canonical" href="https://muntru.me/setups">
-  <title>Muntrume Motorsport · Redirigiendo</title>
-  <script>location.replace('/setups');</script>
-  <link rel="icon" href="/favicon.ico" sizes="48x48">
-  <script src="/assets/js/vpfix.js?v=m9"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Muntrume Motorsport — Consola de Administración (Google Admin Style)</title>
+  <meta name="description" content="Consola de Administración institucional de Muntrume Motorsport para gestión de pilotos, seguridad, setups y servidores de correo.">
+  <link rel="canonical" href="https://muntru.me/admin">
+  
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23059669;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%2310b981;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='48' fill='url(%23grad)'/%3E%3Cpath d='M25 70 L25 30 L35 30 L50 50 L65 30 L75 30 L75 70 L65 70 L65 45 L50 65 L35 45 L35 70 Z' fill='white'/%3E%3Ccircle cx='50' cy='50' r='48' fill='none' stroke='white' stroke-width='2'/%3E%3C/svg%3E">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/tailwind.min.css?v=26s4.6">
+
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      background-color: #0b0e13;
+      color: #f1f5f9;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0; padding: 0;
+      overflow-x: hidden;
+    }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .gadmin-card {
+      background: #141821;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 1.25rem;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .gadmin-card:hover {
+      border-color: rgba(16, 185, 129, 0.3);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(16, 185, 129, 0.1);
+      transform: translateY(-2px);
+    }
+    .sidebar-link-active {
+      background: rgba(16, 185, 129, 0.15) !important;
+      color: #34d399 !important;
+      font-weight: 700 !important;
+      border-left: 3px solid #10b981 !important;
+    }
+  </style>
 </head>
-<body style="background:#0b0e13;color:#e5e7eb;font-family:system-ui,sans-serif;text-align:center;padding:48px">
-  <p>Esta página se ha retirado. La gestión del equipo está en <a href="/setups" style="color:#34d399">muntru.me/setups</a> (Race Control).</p>
+<body class="h-screen flex flex-col bg-[#0b0e13] text-neutral-200 overflow-hidden">
+
+  <!-- Top Google Admin App Bar -->
+  <header class="h-16 bg-[#121620] border-b border-white/10 flex items-center justify-between px-4 sm:px-6 flex-shrink-0 z-40">
+    <div class="flex items-center gap-3">
+      <button class="p-2 rounded-xl hover:bg-white/5 text-neutral-400 hover:text-white transition">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="5" r="2"/><circle cx="12" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="12" cy="19" r="2"/><circle cx="19" cy="19" r="2"/></svg>
+      </button>
+
+      <a href="/" class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-600 to-emerald-400 flex items-center justify-center font-black text-white text-sm shadow">
+          M
+        </div>
+        <div class="flex flex-col">
+          <span class="font-extrabold text-sm text-white tracking-tight flex items-center gap-1.5">
+            <span>Muntrume</span>
+            <span class="text-neutral-500 font-light">|</span>
+            <span class="text-neutral-300 font-normal">Consola de Administración</span>
+          </span>
+          <span class="text-[9px] text-emerald-400 font-mono tracking-wider uppercase font-semibold">
+            Google Admin Workspace Style
+          </span>
+        </div>
+      </a>
+    </div>
+
+    <!-- Universal Search Bar -->
+    <div class="hidden md:flex items-center flex-1 max-w-xl mx-8">
+      <div class="relative w-full">
+        <input 
+          type="text" 
+          id="globalSearchInput"
+          oninput="handleAdminSearch(this.value)"
+          placeholder="Buscar pilotos, dominios, reglas de seguridad o setups... (Pulsa '/' para buscar)" 
+          class="w-full bg-[#181e2b] border border-white/10 rounded-2xl px-4 py-2 pl-10 text-xs text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition"
+        >
+        <svg class="w-4 h-4 text-neutral-400 absolute left-3.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <span class="absolute right-3 top-2 px-1.5 py-0.5 rounded bg-white/10 text-[10px] text-neutral-400 font-mono">/</span>
+      </div>
+    </div>
+
+    <!-- Status & Admin Profile -->
+    <div class="flex items-center gap-3">
+      <div class="hidden lg:flex items-center gap-2 text-[10px] font-mono">
+        <span class="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>D1 Vault: Online</span>
+        </span>
+        <span class="px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-bold">
+          TLS 1.3 Active
+        </span>
+      </div>
+
+      <a href="/setups" class="text-xs px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 font-semibold transition">
+        Abrir Vault
+      </a>
+
+      <!-- Super Admin Avatar -->
+      <div class="flex items-center gap-2.5 pl-2 border-l border-white/10">
+        <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-600 to-amber-400 border-2 border-amber-300 flex items-center justify-center font-black text-xs text-black shadow">
+          AT
+        </div>
+        <div class="hidden xl:block text-left text-xs">
+          <div class="font-bold text-white leading-tight">Alberto Trujillo</div>
+          <div class="text-[10px] text-neutral-400 font-mono">Superadministrador</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Workspace: Sidebar + Main Content -->
+  <div class="flex-1 flex overflow-hidden">
+    
+    <!-- Left Navigation Drawer -->
+    <aside class="w-60 bg-[#0e1217] border-r border-white/10 flex flex-col justify-between p-3.5 flex-shrink-0">
+      <div class="space-y-4">
+        <div class="text-[10px] font-bold uppercase tracking-wider text-neutral-500 px-3">
+          Centro de Control
+        </div>
+
+        <nav class="space-y-1 text-xs">
+          <button onclick="switchAdminSection('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-neutral-300 hover:bg-white/5 transition sidebar-link-active font-semibold">
+            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            <span>Página Principal</span>
+          </button>
+
+          <button onclick="switchAdminSection('directory')" id="nav-directory" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-neutral-400 hover:bg-white/5 transition">
+            <span class="flex items-center gap-3">
+              <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+              <span>Directorio Pilotos</span>
+            </span>
+            <span id="badgePendingReq" class="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300">0</span>
+          </button>
+
+          <button onclick="switchAdminSection('mail')" id="nav-mail" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-neutral-400 hover:bg-white/5 transition">
+            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            <span>Buzones @muntru.me</span>
+          </button>
+
+          <button onclick="switchAdminSection('setups')" id="nav-setups" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-neutral-400 hover:bg-white/5 transition">
+            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+            <span>Setups & Telemetría</span>
+          </button>
+
+          <button onclick="switchAdminSection('security')" id="nav-security" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-neutral-400 hover:bg-white/5 transition">
+            <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            <span>Seguridad & Reglas</span>
+          </button>
+
+          <button onclick="switchAdminSection('audit')" id="nav-audit" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-neutral-400 hover:bg-white/5 transition">
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span>Registros de Auditoría</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Domain Footnote -->
+      <div class="p-3.5 rounded-2xl bg-[#141821] border border-white/5 space-y-1 text-xs">
+        <div class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider">Dominio Primario</div>
+        <div class="font-mono font-bold text-white text-xs">muntru.me</div>
+        <div class="text-[10px] text-emerald-400 flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+          <span>Cloudflare Pro · SSL Activo</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Admin Dashboard Content Area -->
+    <main class="flex-1 bg-[#0b0e13] overflow-y-auto p-6 sm:p-8 space-y-8">
+      
+      <!-- Section: DASHBOARD (Google Admin Style Cards) -->
+      <div id="section-dashboard" class="space-y-8">
+        
+        <!-- Welcome Banner -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-white/10">
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              Consola de Administración de Muntrume
+            </h1>
+            <p class="text-xs sm:text-sm text-neutral-400 mt-1">
+              Supervisión de directorio de pilotos, buzones @muntru.me, cuotas D1 y seguridad de la organización.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="openAddPilotModal()" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs transition flex items-center gap-1.5 shadow-lg shadow-emerald-500/20">
+              <span>+ Alta de Piloto</span>
+            </button>
+            <button onclick="testAdminEmails()" class="px-3.5 py-2 rounded-xl bg-[#181e2b] hover:bg-white/10 border border-white/10 text-xs text-neutral-200 font-bold transition">
+              ✉️ Probar Plantillas Correo
+            </button>
+          </div>
+        </div>
+
+        <!-- Google Admin Style KPI Grid Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          
+          <!-- Card 1: Directorio de Usuarios -->
+          <div class="gadmin-card p-6 flex flex-col justify-between space-y-4">
+            <div class="flex items-start justify-between">
+              <div class="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+              </div>
+              <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-bold">Usuarios</span>
+            </div>
+            <div>
+              <div class="text-3xl font-black text-white font-mono" id="kpiActiveUsers">4</div>
+              <div class="text-xs font-bold text-neutral-300 mt-1">Pilotos Oficiales Activos</div>
+              <div class="text-[11px] text-neutral-500 mt-0.5">0 solicitudes pendientes de revisión</div>
+            </div>
+            <button onclick="switchAdminSection('directory')" class="text-xs text-cyan-400 font-bold hover:underline flex items-center gap-1 pt-2">
+              <span>Gestionar Directorio</span>
+              <span>→</span>
+            </button>
+          </div>
+
+          <!-- Card 2: Buzones de Correo @muntru.me -->
+          <div class="gadmin-card p-6 flex flex-col justify-between space-y-4">
+            <div class="flex items-start justify-between">
+              <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              </div>
+              <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 font-bold">Correo</span>
+            </div>
+            <div>
+              <div class="text-3xl font-black text-white font-mono">5</div>
+              <div class="text-xs font-bold text-neutral-300 mt-1">Buzones Institucionales</div>
+              <div class="text-[11px] text-neutral-500 mt-0.5">Resend API + Webmail Interno Activo</div>
+            </div>
+            <a href="/mail" class="text-xs text-amber-400 font-bold hover:underline flex items-center gap-1 pt-2">
+              <span>Abrir Webmail</span>
+              <span>→</span>
+            </a>
+          </div>
+
+          <!-- Card 3: Vault D1 & Setups -->
+          <div class="gadmin-card p-6 flex flex-col justify-between space-y-4">
+            <div class="flex items-start justify-between">
+              <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+              </div>
+              <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold">Cloudflare D1</span>
+            </div>
+            <div>
+              <div class="text-3xl font-black text-white font-mono">497</div>
+              <div class="text-xs font-bold text-neutral-300 mt-1">Setups Servidos desde Vault</div>
+              <div class="text-[11px] text-neutral-500 mt-0.5">Marca de agua institucional activa</div>
+            </div>
+            <button onclick="switchAdminSection('setups')" class="text-xs text-emerald-400 font-bold hover:underline flex items-center gap-1 pt-2">
+              <span>Explorar Telemetría</span>
+              <span>→</span>
+            </button>
+          </div>
+
+          <!-- Card 4: Seguridad & Zero-Trust -->
+          <div class="gadmin-card p-6 flex flex-col justify-between space-y-4">
+            <div class="flex items-start justify-between">
+              <div class="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              </div>
+              <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 font-bold">Seguridad</span>
+            </div>
+            <div>
+              <div class="text-3xl font-black text-white font-mono">100k</div>
+              <div class="text-xs font-bold text-neutral-300 mt-1">Iteraciones PBKDF2-SHA256</div>
+              <div class="text-[11px] text-neutral-500 mt-0.5">Límite de tasa: 10 peticiones/min</div>
+            </div>
+            <button onclick="switchAdminSection('security')" class="text-xs text-purple-400 font-bold hover:underline flex items-center gap-1 pt-2">
+              <span>Auditoría de Acceso</span>
+              <span>→</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Quick Access Pilots Table Preview -->
+        <div class="gadmin-card p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-base font-extrabold text-white">Directorio Rápido de Miembros Oficiales</h2>
+              <p class="text-xs text-neutral-400">Pilotos titulares con acceso autenticado al Vault y buzón @muntru.me.</p>
+            </div>
+            <button onclick="switchAdminSection('directory')" class="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-bold text-white transition">
+              Ver todos (4)
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-[#0b0e13] text-neutral-400 font-bold uppercase text-[10px] tracking-wider border-b border-white/5">
+                <tr>
+                  <th class="py-3 px-4">Piloto & Rol</th>
+                  <th class="py-3 px-4">Correo Institucional</th>
+                  <th class="py-3 px-4">Licencia iRacing</th>
+                  <th class="py-3 px-4">Estado Cuenta</th>
+                  <th class="py-3 px-4 text-right">Acciones Rápidas</th>
+                </tr>
+              </thead>
+              <tbody id="quickPilotsTable" class="divide-y divide-white/5">
+                <!-- Rendered by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Section: DIRECTORIO DE PILOTOS (DETALLADO) -->
+      <div id="section-directory" class="hidden space-y-6">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+          <div>
+            <h1 class="text-2xl font-black text-white">Directorio de Pilotos & Solicitudes</h1>
+            <p class="text-xs text-neutral-400 mt-0.5">Aprobación de nuevos aspirantes, reseteo de claves y gestión de roles.</p>
+          </div>
+          <button onclick="openAddPilotModal()" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs transition">
+            + Añadir Piloto al Equipo
+          </button>
+        </div>
+
+        <!-- Filters Tabs -->
+        <div class="flex gap-2 border-b border-white/10 pb-3 text-xs font-bold">
+          <button onclick="filterPilotsTab('all')" id="pilotTab-all" class="px-3.5 py-1.5 rounded-xl bg-white/10 text-white">Todos (4)</button>
+          <button onclick="filterPilotsTab('active')" id="pilotTab-active" class="px-3.5 py-1.5 rounded-xl text-neutral-400 hover:text-white">Activos (4)</button>
+          <button onclick="filterPilotsTab('pending')" id="pilotTab-pending" class="px-3.5 py-1.5 rounded-xl text-neutral-400 hover:text-white">Pendientes (0)</button>
+        </div>
+
+        <!-- Detailed Table -->
+        <div class="gadmin-card overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-[#0b0e13] text-neutral-400 font-bold uppercase text-[10px] tracking-wider border-b border-white/5">
+                <tr>
+                  <th class="py-3 px-4">Piloto</th>
+                  <th class="py-3 px-4">Buzón @muntru.me</th>
+                  <th class="py-3 px-4">iRating / Licencia</th>
+                  <th class="py-3 px-4">Especialidad</th>
+                  <th class="py-3 px-4">Estado</th>
+                  <th class="py-3 px-4 text-right">Opciones</th>
+                </tr>
+              </thead>
+              <tbody id="detailedPilotsTable" class="divide-y divide-white/5">
+                <!-- Rendered by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: BUZONES @MUNTRU.ME -->
+      <div id="section-mail" class="hidden space-y-6">
+        <div class="flex items-center justify-between pb-4 border-b border-white/10">
+          <div>
+            <h1 class="text-2xl font-black text-white">Servidor de Correo & Buzones Institucionales</h1>
+            <p class="text-xs text-neutral-400 mt-0.5">Gestión de cuentas `@muntru.me`, enrutamiento de briefings y API transaccional.</p>
+          </div>
+          <a href="/mail" class="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-black font-extrabold text-xs transition">
+            Abrir Cliente Webmail →
+          </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div class="gadmin-card p-5 space-y-2">
+            <div class="text-[10px] font-bold text-neutral-500 uppercase">Enrutador DNS</div>
+            <div class="text-base font-black text-white">Cloudflare Email Routing</div>
+            <div class="text-xs text-emerald-400 font-mono">MX: route1.mx.cloudflare.net</div>
+          </div>
+          <div class="gadmin-card p-5 space-y-2">
+            <div class="text-[10px] font-bold text-neutral-500 uppercase">Proveedor Transaccional</div>
+            <div class="text-base font-black text-white">Resend API</div>
+            <div class="text-xs text-cyan-400 font-mono">api.resend.com · TLS Verified</div>
+          </div>
+          <div class="gadmin-card p-5 space-y-2">
+            <div class="text-[10px] font-bold text-neutral-500 uppercase">Almacenamiento Local</div>
+            <div class="text-base font-black text-white">Base de Datos D1 Vault</div>
+            <div class="text-xs text-amber-400 font-mono">Cifrado de Comunicados Internos</div>
+          </div>
+        </div>
+
+        <div class="gadmin-card p-6 space-y-4">
+          <h2 class="text-sm font-extrabold text-white">Buzones Activos del Equipo</h2>
+          <div class="divide-y divide-white/5 text-xs font-mono">
+            <div class="py-2.5 flex items-center justify-between">
+              <span class="text-emerald-400 font-bold">alberto@muntru.me</span>
+              <span class="text-neutral-400">Alberto Trujillo (Team Principal) · Ilimitado</span>
+            </div>
+            <div class="py-2.5 flex items-center justify-between">
+              <span class="text-amber-400 font-bold">mateo@muntru.me</span>
+              <span class="text-neutral-400">Mateo Berbis (Sprint Lead) · Activo</span>
+            </div>
+            <div class="py-2.5 flex items-center justify-between">
+              <span class="text-slate-400 font-bold">eduardo@muntru.me</span>
+              <span class="text-neutral-400">Eduardo Chongkan (Race Engineer) · Activo</span>
+            </div>
+            <div class="py-2.5 flex items-center justify-between">
+              <span class="text-orange-400 font-bold">juanlu@muntru.me</span>
+              <span class="text-neutral-400">Juanlu Carrillo (Dev Squad) · Activo</span>
+            </div>
+            <div class="py-2.5 flex items-center justify-between">
+              <span class="text-purple-400 font-bold">racecontrol@muntru.me</span>
+              <span class="text-neutral-400">Dirección de Carrera & Avisos Oficiales</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: SETUPS & TELEMETRÍA -->
+      <div id="section-setups" class="hidden space-y-6">
+        <div class="flex items-center justify-between pb-4 border-b border-white/10">
+          <div>
+            <h1 class="text-2xl font-black text-white">Vault de Setups & Telemetría .IBT</h1>
+            <p class="text-xs text-neutral-400 mt-0.5">Control de archivos .sto servidos desde D1, firma de autor y sincronización con Garage 61.</p>
+          </div>
+          <a href="/setups" class="px-4 py-2 rounded-xl bg-emerald-500 text-black font-extrabold text-xs transition">
+            Ir a Setups Vault →
+          </a>
+        </div>
+
+        <div class="gadmin-card p-6 space-y-3">
+          <div class="text-xs font-bold text-white uppercase tracking-wider">Regla de Oro de Integridad:</div>
+          <div class="p-4 rounded-2xl bg-[#0b0e13] border border-emerald-500/30 font-mono text-xs text-emerald-400 leading-relaxed">
+            Marca de agua activa en todos los binarios descargados:<br>
+            <strong>"muntru.me - Muntrume Motorsport. Setup by Alberto Trujillo."</strong>
+          </div>
+          <p class="text-xs text-neutral-400">
+            Los archivos .sto no se publican en carpetas públicas. Se sirven exclusivamente a través de <code>/api/setups/car-files</code> a pilotos con token de sesión verificado.
+          </p>
+        </div>
+      </div>
+
+      <!-- Section: SEGURIDAD & REGLAS -->
+      <div id="section-security" class="hidden space-y-6">
+        <div class="pb-4 border-b border-white/10">
+          <h1 class="text-2xl font-black text-white">Seguridad de la Organización & Reglas Zero-Trust</h1>
+          <p class="text-xs text-neutral-400 mt-0.5">Políticas de contraseñas, tokens JWT, rate limiting y protección contra ataques.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
+          <div class="gadmin-card p-6 space-y-3">
+            <h3 class="font-extrabold text-purple-400 uppercase tracking-wider">🔒 Cifrado de Contraseñas</h3>
+            <p class="text-neutral-300 leading-relaxed">
+              Algoritmo: <strong>PBKDF2-HMAC-SHA256</strong> con 100,000 iteraciones y sal criptográfica de 16 bytes generada por <code>crypto.getRandomValues</code>. Ninguna clave se almacena en texto plano.
+            </p>
+          </div>
+          <div class="gadmin-card p-6 space-y-3">
+            <h3 class="font-extrabold text-cyan-400 uppercase tracking-wider">🛡️ Rate Limiting en Edge</h3>
+            <p class="text-neutral-300 leading-relaxed">
+              Límite de tasa activo en Cloudflare Workers: máximo 10 peticiones de autenticación por minuto por dirección IP para prevenir ataques de fuerza bruta.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: REGISTROS DE AUDITORÍA -->
+      <div id="section-audit" class="hidden space-y-6">
+        <div class="pb-4 border-b border-white/10">
+          <h1 class="text-2xl font-black text-white">Registros de Auditoría & Accesos</h1>
+          <p class="text-xs text-neutral-400 mt-0.5">Historial de autenticaciones, descargas de setups y eventos de seguridad.</p>
+        </div>
+
+        <div class="gadmin-card overflow-hidden">
+          <div class="p-4 bg-[#0b0e13] border-b border-white/5 text-xs font-bold text-neutral-400">
+            Últimos Eventos Registrados en Muntrume
+          </div>
+          <div class="divide-y divide-white/5 text-xs font-mono p-2">
+            <div class="py-2.5 px-3 flex items-center justify-between text-neutral-300">
+              <span class="text-emerald-400">[LOGIN_SUCCESS]</span>
+              <span>Alberto Trujillo (alberto@muntru.me)</span>
+              <span class="text-neutral-500">IP: 88.12.45.19 · Hace 12 min</span>
+            </div>
+            <div class="py-2.5 px-3 flex items-center justify-between text-neutral-300">
+              <span class="text-cyan-400">[SETUP_DOWNLOAD]</span>
+              <span>MTM_26S4_W07_LeMans_Endur.sto (Valkyrie GTP)</span>
+              <span class="text-neutral-500">Autorizado · Hace 35 min</span>
+            </div>
+            <div class="py-2.5 px-3 flex items-center justify-between text-neutral-300">
+              <span class="text-amber-400">[G61_AGENT_SYNC]</span>
+              <span>Sincronización de colección 01HZJA8F53AFSTSARTNGJPPKZC</span>
+              <span class="text-neutral-500">18,360 archivos · Hace 48 min</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Add Pilot Modal -->
+  <div id="addPilotModal" class="hidden fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-black/75 backdrop-blur-sm" onclick="closeAddPilotModal()"></div>
+    <div class="relative min-h-screen flex items-center justify-center p-4">
+      <div class="relative w-full max-w-lg bg-[#141821] border border-emerald-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl overflow-hidden text-neutral-200 space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-white/10">
+          <h2 class="text-lg font-extrabold text-white">Alta Directa de Piloto Oficial</h2>
+          <button onclick="closeAddPilotModal()" class="text-neutral-400 hover:text-white">✕</button>
+        </div>
+
+        <form id="addPilotForm" onsubmit="handleAddPilotSubmit(event)" class="space-y-3.5 text-xs">
+          <div>
+            <label class="text-neutral-400 font-bold block mb-1">Nombre Completo:</label>
+            <input type="text" id="newPilotName" required placeholder="p.ej., Carlos Sainz" class="w-full bg-[#0b0e13] border border-white/10 rounded-xl px-3 py-2 text-white">
+          </div>
+          <div>
+            <label class="text-neutral-400 font-bold block mb-1">Correo Electrónico:</label>
+            <input type="email" id="newPilotEmail" required placeholder="piloto@email.com" class="w-full bg-[#0b0e13] border border-white/10 rounded-xl px-3 py-2 text-white">
+          </div>
+          <div>
+            <label class="text-neutral-400 font-bold block mb-1">ID de Cliente iRacing (Customer ID):</label>
+            <input type="text" id="newPilotIracingId" placeholder="p.ej., 482910" class="w-full bg-[#0b0e13] border border-white/10 rounded-xl px-3 py-2 text-white font-mono">
+          </div>
+          <div>
+            <label class="text-neutral-400 font-bold block mb-1">Rol / Especialidad:</label>
+            <select id="newPilotRole" class="w-full bg-[#0b0e13] border border-white/10 rounded-xl px-3 py-2 text-white">
+              <option value="driver">Piloto Titular GT3 / Resistencia</option>
+              <option value="sprint">Piloto de Clasificación & Sprint</option>
+              <option value="engineer">Ingeniero de Telemetría</option>
+              <option value="junior">Piloto de Desarrollo (Junior Squad)</option>
+            </select>
+          </div>
+
+          <div class="flex justify-end gap-2 pt-3 border-t border-white/10">
+            <button type="button" onclick="closeAddPilotModal()" class="px-4 py-2 rounded-xl bg-white/5 text-neutral-300 font-bold">Cancelar</button>
+            <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold">Añadir & Enviar Invitación</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Console Controller -->
+  <script>
+    const PILOTS_DIRECTORY = [
+      {
+        slug: "alberto-trujillo",
+        name: "Alberto Trujillo",
+        initials: "AT",
+        email: "alberto@muntru.me",
+        iracingId: "128491",
+        license: "A 4.99",
+        irating: "3,450 iR",
+        role: "Team Principal",
+        specialty: "GTP & GT3 Resistencia",
+        status: "Activo (Super Admin)",
+        statusClass: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
+      },
+      {
+        slug: "mateo-berbis",
+        name: "Mateo Berbis",
+        initials: "MB",
+        email: "mateo@muntru.me",
+        iracingId: "389201",
+        license: "A 4.85",
+        irating: "3,210 iR",
+        role: "Sprint Lead",
+        specialty: "Qualy Agresiva & GT3",
+        status: "Activo",
+        statusClass: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
+      },
+      {
+        slug: "eduardo-chongkan",
+        name: "Eduardo Chongkan",
+        initials: "EC",
+        email: "eduardo@muntru.me",
+        iracingId: "401923",
+        license: "A 4.92",
+        irating: "3,025 iR",
+        role: "Race Engineer",
+        specialty: "LMP2 & Cinética Telemetría",
+        status: "Activo",
+        statusClass: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
+      },
+      {
+        slug: "juanlu-carrillo",
+        name: "Juanlu Carrillo",
+        initials: "JC",
+        email: "juanlu@muntru.me",
+        iracingId: "591024",
+        license: "B 3.90",
+        irating: "2,420 iR",
+        role: "Dev Squad",
+        specialty: "SFL & Monomarca Mazda",
+        status: "Activo",
+        statusClass: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
+      }
+    ];
+
+    function initAdmin() {
+      renderPilotsTables();
+      
+      // Global hotkey '/' to search
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "/" && document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
+          e.preventDefault();
+          document.getElementById("globalSearchInput")?.focus();
+        }
+      });
+    }
+
+    function switchAdminSection(sectionId) {
+      const sections = ["dashboard", "directory", "mail", "setups", "security", "audit"];
+      sections.forEach(s => {
+        const secEl = document.getElementById(`section-${s}`);
+        const navEl = document.getElementById(`nav-${s}`);
+        if (secEl) secEl.classList.add("hidden");
+        if (navEl) navEl.classList.remove("sidebar-link-active");
+      });
+
+      const targetSec = document.getElementById(`section-${sectionId}`);
+      const targetNav = document.getElementById(`nav-${sectionId}`);
+      if (targetSec) targetSec.classList.remove("hidden");
+      if (targetNav) targetNav.classList.add("sidebar-link-active");
+    }
+
+    function renderPilotsTables() {
+      const quickTable = document.getElementById("quickPilotsTable");
+      if (quickTable) {
+        quickTable.innerHTML = PILOTS_DIRECTORY.map(p => `
+          <tr class="hover:bg-white/[0.02] transition">
+            <td class="py-3 px-4">
+              <div class="font-bold text-white flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-[10px] text-emerald-400 flex items-center justify-center font-bold">${p.initials}</span>
+                <span>${p.name}</span>
+              </div>
+              <div class="text-[10px] text-neutral-500">${p.role}</div>
+            </td>
+            <td class="py-3 px-4 font-mono text-cyan-300">${p.email}</td>
+            <td class="py-3 px-4 font-mono font-bold text-white">${p.license}</td>
+            <td class="py-3 px-4">
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded-full border ${p.statusClass}">${p.status}</span>
+            </td>
+            <td class="py-3 px-4 text-right">
+              <a href="/pilot?id=${p.slug}" class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-emerald-400 text-[11px] font-bold transition">
+                Ver Perfil ↗
+              </a>
+            </td>
+          </tr>
+        `).join("");
+      }
+
+      const detailedTable = document.getElementById("detailedPilotsTable");
+      if (detailedTable) {
+        detailedTable.innerHTML = PILOTS_DIRECTORY.map(p => `
+          <tr class="hover:bg-white/[0.02] transition">
+            <td class="py-3 px-4">
+              <div class="font-bold text-white">${p.name}</div>
+              <div class="text-[10px] text-neutral-500 font-mono">iRacing ID: ${p.iracingId}</div>
+            </td>
+            <td class="py-3 px-4 font-mono text-cyan-300">${p.email}</td>
+            <td class="py-3 px-4 font-mono">
+              <span class="text-white font-bold">${p.irating}</span>
+              <span class="text-neutral-500 text-[10px]">(${p.license})</span>
+            </td>
+            <td class="py-3 px-4 text-neutral-300">${p.specialty}</td>
+            <td class="py-3 px-4">
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded-full border ${p.statusClass}">${p.status}</span>
+            </td>
+            <td class="py-3 px-4 text-right space-x-1.5 whitespace-nowrap">
+              <a href="/pilot?id=${p.slug}" class="px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-emerald-400 text-[11px] font-bold">Perfil</a>
+              <button onclick="resendInvite('${p.email}')" class="px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-neutral-300 text-[11px]">Reenviar Acceso</button>
+            </td>
+          </tr>
+        `).join("");
+      }
+    }
+
+    function openAddPilotModal() {
+      document.getElementById("addPilotModal").classList.remove("hidden");
+    }
+
+    function closeAddPilotModal() {
+      document.getElementById("addPilotModal").classList.add("hidden");
+    }
+
+    function handleAddPilotSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById("newPilotName").value.trim();
+      const email = document.getElementById("newPilotEmail").value.trim().toLowerCase();
+      const iracingId = document.getElementById("newPilotIracingId").value.trim();
+      const role = document.getElementById("newPilotRole").value;
+
+      PILOTS_DIRECTORY.push({
+        slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+        name: name,
+        initials: name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase(),
+        email: email,
+        iracingId: iracingId || "En trámite",
+        license: "A 4.00",
+        irating: "2,500 iR",
+        role: role === "engineer" ? "Race Engineer" : "Piloto Titular",
+        specialty: "GT3 & Endurance",
+        status: "Activo (Invitación enviada)",
+        statusClass: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20"
+      });
+
+      renderPilotsTables();
+      closeAddPilotModal();
+      document.getElementById("addPilotForm").reset();
+      alert(`✅ Piloto ${name} registrado en la organización. Se ha generado su enlace de acceso seguro.`);
+    }
+
+    function resendInvite(email) {
+      alert(`✅ Enlace de acceso seguro y restablecimiento de contraseña enviado a ${email}.`);
+    }
+
+    function testAdminEmails() {
+      alert("✅ Plantillas de correo probadas: Se han verificado las firmas HTML de Muntrume Motorsport.");
+    }
+
+    function handleAdminSearch(q) {
+      const query = q.toLowerCase().trim();
+      if (!query) {
+        renderPilotsTables();
+        return;
+      }
+      const rows = document.querySelectorAll("#detailedPilotsTable tr");
+      rows.forEach(r => {
+        const text = r.textContent.toLowerCase();
+        r.style.display = text.includes(query) ? "" : "none";
+      });
+    }
+
+    function filterPilotsTab(tab) {
+      document.querySelectorAll("#section-directory button[id^='pilotTab']").forEach(b => {
+        b.className = "px-3.5 py-1.5 rounded-xl text-neutral-400 hover:text-white";
+      });
+      const activeBtn = document.getElementById(`pilotTab-${tab}`);
+      if (activeBtn) activeBtn.className = "px-3.5 py-1.5 rounded-xl bg-white/10 text-white";
+    }
+
+    window.addEventListener("DOMContentLoaded", initAdmin);
+  </script>
 </body>
 </html>

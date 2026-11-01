@@ -221,6 +221,7 @@
         <a href="/news" class="text-neutral-400 hover:text-white transition-colors">Press Room</a>
         <a href="/about" class="text-neutral-400 hover:text-white transition-colors">Organization</a>
         <a href="/contact" class="text-neutral-400 hover:text-white transition-colors">Contact</a>
+        <a href="/mail" class="text-neutral-400 hover:text-white transition-colors flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg><span>Mail</span></a>
         <a href="/setups" class="text-neutral-400 hover:text-white transition-colors flex items-center gap-1.5"><svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg><span>Vault</span></a>
       </nav>
 
@@ -231,6 +232,11 @@
           <span class="pulse-dot"></span>
           <span class="font-medium">iRacing Sim Racing Team</span>
         </div>
+
+        <!-- Admin Workspace Shortcut -->
+        <a href="/admin" class="hidden sm:inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white transition" title="Muntrume Admin Console">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+        </a>
 
         <!-- Discord Button -->
         <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer" class="hidden sm:inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-semibold text-xs px-4 py-2 rounded-lg transition-all shadow-sm hover:shadow-emerald-500/20">
@@ -273,6 +279,8 @@
         <a href="/news" onclick="toggleNavDrawer()" class="block px-3 py-2.5 rounded-lg text-neutral-300 hover:text-white hover:bg-white/5 transition">Press Room</a>
         <a href="/about" onclick="toggleNavDrawer()" class="block px-3 py-2.5 rounded-lg text-neutral-300 hover:text-white hover:bg-white/5 transition">Organization</a>
         <a href="/contact" onclick="toggleNavDrawer()" class="block px-3 py-2.5 rounded-lg text-neutral-300 hover:text-white hover:bg-white/5 transition">Contact</a>
+        <a href="/mail" onclick="toggleNavDrawer()" class="block px-3 py-2.5 rounded-lg text-neutral-300 hover:text-white hover:bg-white/5 transition flex items-center justify-between"><span>Webmail (@muntru.me)</span><span class="text-[10px] uppercase font-bold text-blue-400 px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20">Team</span></a>
+        <a href="/admin" onclick="toggleNavDrawer()" class="block px-3 py-2.5 rounded-lg text-neutral-400 hover:text-white hover:bg-white/5 transition text-xs flex items-center gap-2 pt-2 border-t border-white/5"><span>⚙ Admin Workspace</span></a>
         <a href="/setups" onclick="toggleNavDrawer()" class="block px-3 py-2.5 rounded-lg text-neutral-300 hover:text-white hover:bg-white/5 transition flex items-center justify-between"><span>Setups Vault</span><span class="text-[10px] uppercase font-bold text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">Privado</span></a>
       </nav>
     </div>
@@ -375,6 +383,10 @@
 
             <h3 class="text-lg font-bold text-white mb-1">Alberto Trujillo</h3>
             <p class="text-xs text-neutral-400 mb-5 leading-relaxed line-clamp-2">Founder &amp; driver.</p>
+            <a href="/pilot?id=alberto-trujillo" class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 text-xs font-bold rounded-xl transition shadow-sm inline-flex items-center justify-center gap-1.5">
+              <span>Ver Perfil y Telemetría</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
           </div>
         </div>
 
@@ -394,6 +406,10 @@
 
             <h3 class="text-lg font-bold text-white mb-1">Mateo Berbis</h3>
             <p class="text-xs text-neutral-400 mb-5 leading-relaxed line-clamp-2">Driver.</p>
+            <a href="/pilot?id=mateo-berbis" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-neutral-950 text-xs font-bold rounded-xl transition shadow-sm inline-flex items-center justify-center gap-1.5">
+              <span>Ver Perfil y Telemetría</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
           </div>
         </div>
 
@@ -413,6 +429,10 @@
 
             <h3 class="text-lg font-bold text-white mb-1">Eduardo Chongkan</h3>
             <p class="text-xs text-neutral-400 mb-5 leading-relaxed line-clamp-2">Driver.</p>
+            <a href="/pilot?id=eduardo-chongkan" class="w-full py-2.5 bg-slate-200 hover:bg-white text-neutral-950 text-xs font-bold rounded-xl transition shadow-sm inline-flex items-center justify-center gap-1.5">
+              <span>Ver Perfil y Telemetría</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
           </div>
         </div>
 
@@ -432,6 +452,10 @@
 
             <h3 class="text-lg font-bold text-white mb-1">Juanlu Carrillo</h3>
             <p class="text-xs text-neutral-400 mb-5 leading-relaxed line-clamp-2">Driver.</p>
+            <a href="/pilot?id=juanlu-carrillo" class="w-full py-2.5 bg-orange-500 hover:bg-orange-400 text-neutral-950 text-xs font-bold rounded-xl transition shadow-sm inline-flex items-center justify-center gap-1.5">
+              <span>Ver Perfil y Telemetría</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
           </div>
         </div>
 
@@ -561,6 +585,8 @@
           <a href="/news" class="hover:text-emerald-400 transition-colors">Press Room</a>
           <a href="/about" class="hover:text-emerald-400 transition-colors">Organization</a>
           <a href="/contact" class="hover:text-emerald-400 transition-colors">Contact</a>
+          <a href="/mail" class="hover:text-emerald-400 transition-colors">Webmail</a>
+          <a href="/admin" class="hover:text-emerald-400 transition-colors">Admin Workspace</a>
           <span class="text-neutral-700 hidden sm:inline">|</span>
           <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer" class="hover:text-emerald-400 transition-colors">Discord</a>
           <a href="https://twitch.tv/muntrumemrt" target="_blank" rel="noopener noreferrer" class="hover:text-emerald-400 transition-colors">Twitch</a>

@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="es" class="dark scroll-smooth" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Muntrume Webmail — Servidor Interno de Correo</title>
+  <meta name="description" content="Servidor y cliente de correo interno de Muntrume Motorsport para comunicados de equipo, briefings de carrera y telemetría.">
+  <link rel="canonical" href="https://muntru.me/mail">
+  
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23059669;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%2310b981;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='48' fill='url(%23grad)'/%3E%3Cpath d='M25 70 L25 30 L35 30 L50 50 L65 30 L75 30 L75 70 L65 70 L65 45 L50 65 L35 45 L35 70 Z' fill='white'/%3E%3Ccircle cx='50' cy='50' r='48' fill='none' stroke='white' stroke-width='2'/%3E%3C/svg%3E">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/tailwind.min.css?v=26s4.6">
+
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      background-color: #0b0e13;
+      color: #f1f5f9;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0; padding: 0;
+      overflow-x: hidden;
+    }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .mail-active {
+      background: rgba(16, 185, 129, 0.12) !important;
+      border-left: 3px solid #10b981 !important;
+      color: #ffffff !important;
+    }
+  </style>
+</head>
+<body class="h-screen flex flex-col bg-[#0b0e13] text-neutral-200 overflow-hidden">
+
+  <!-- Top App Bar (Google Workspace / Fastmail style) -->
+  <header class="h-14 bg-[#12161f] border-b border-white/10 flex items-center justify-between px-4 sm:px-6 flex-shrink-0 z-30">
+    <div class="flex items-center gap-3">
+      <a href="/" class="flex items-center gap-2 group">
+        <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-600 to-emerald-400 flex items-center justify-center font-black text-white text-xs">
+          M
+        </div>
+        <span class="font-extrabold text-sm tracking-tight text-white">
+          muntru<span class="text-emerald-400">.me</span>
+        </span>
+      </a>
+      <span class="text-neutral-500 font-mono text-xs">/</span>
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-bold text-white flex items-center gap-1.5">
+          <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          <span>Webmail Interno</span>
+        </span>
+        <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-mono">
+          @muntru.me
+        </span>
+      </div>
+    </div>
+
+    <!-- Center Search Bar -->
+    <div class="hidden md:flex items-center flex-1 max-w-md mx-6">
+      <div class="relative w-full">
+        <input 
+          type="text" 
+          id="mailSearchInput"
+          oninput="onSearchMail(this.value)"
+          placeholder="Buscar en comunicados, remitentes o setups..." 
+          class="w-full bg-[#181e29] border border-white/10 rounded-xl px-3.5 py-1.5 pl-9 text-xs text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-emerald-500/60"
+        >
+        <svg class="w-3.5 h-3.5 text-neutral-500 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      </div>
+    </div>
+
+    <!-- Right Controls & Navigation -->
+    <div class="flex items-center gap-3">
+      <div class="hidden sm:flex items-center gap-2 text-xs text-neutral-400">
+        <a href="/setups" class="hover:text-white px-2 py-1 rounded transition">Vault Setups</a>
+        <a href="/team" class="hover:text-white px-2 py-1 rounded transition">Roster</a>
+        <a href="/admin" class="hover:text-white px-2 py-1 rounded transition">Admin</a>
+      </div>
+
+      <!-- Current Identity Badge -->
+      <div class="flex items-center gap-2 pl-2 border-l border-white/10">
+        <div id="currentUserBadge" class="w-7 h-7 rounded-full bg-emerald-950 border border-emerald-500/50 flex items-center justify-center font-bold text-xs text-emerald-400">
+          AT
+        </div>
+        <div class="hidden lg:block text-left">
+          <div id="currentUserName" class="text-xs font-bold text-white leading-tight">Alberto Trujillo</div>
+          <div id="currentUserEmail" class="text-[10px] text-neutral-400 font-mono">alberto@muntru.me</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mail Workspace (3-Column Layout) -->
+  <div class="flex-1 flex overflow-hidden">
+    
+    <!-- Column 1: Sidebar Folders -->
+    <aside class="w-56 bg-[#0e1217] border-r border-white/10 flex flex-col justify-between p-3 flex-shrink-0">
+      <div class="space-y-4">
+        <!-- Compose Button -->
+        <button 
+          onclick="openComposeModal()" 
+          class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-black font-extrabold text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+          <span>Redactar Comunicado</span>
+        </button>
+
+        <!-- Folders Navigation -->
+        <nav class="space-y-1 text-xs">
+          <button onclick="switchFolder('inbox')" id="folder-inbox" class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-neutral-300 hover:bg-white/5 transition mail-active font-semibold">
+            <span class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+              <span>Bandeja de Entrada</span>
+            </span>
+            <span id="unreadInboxBadge" class="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300">3</span>
+          </button>
+
+          <button onclick="switchFolder('briefings')" id="folder-briefings" class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-neutral-400 hover:bg-white/5 transition">
+            <span class="flex items-center gap-2">
+              <span>🏁</span>
+              <span>Race Briefings</span>
+            </span>
+            <span class="text-[10px] font-mono text-neutral-500">2</span>
+          </button>
+
+          <button onclick="switchFolder('setups')" id="folder-setups" class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-neutral-400 hover:bg-white/5 transition">
+            <span class="flex items-center gap-2">
+              <span>🛠️</span>
+              <span>Setups & .IBT</span>
+            </span>
+            <span class="text-[10px] font-mono text-neutral-500">1</span>
+          </button>
+
+          <button onclick="switchFolder('starred')" id="folder-starred" class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-neutral-400 hover:bg-white/5 transition">
+            <span class="flex items-center gap-2">
+              <span>⭐</span>
+              <span>Destacados</span>
+            </span>
+          </button>
+
+          <button onclick="switchFolder('sent')" id="folder-sent" class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-neutral-400 hover:bg-white/5 transition">
+            <span class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+              <span>Enviados</span>
+            </span>
+          </button>
+        </nav>
+
+        <!-- Directory of Team Aliases -->
+        <div class="pt-4 border-t border-white/5 space-y-2">
+          <div class="text-[10px] font-bold uppercase tracking-wider text-neutral-500 px-3">Buzones Muntrume</div>
+          <div class="space-y-1 text-[11px] text-neutral-400 px-1 font-mono">
+            <div onclick="quickComposeTo('alberto@muntru.me')" class="px-2 py-1 rounded hover:bg-white/5 cursor-pointer truncate flex items-center gap-1.5" title="Alberto Trujillo">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              <span>alberto@muntru.me</span>
+            </div>
+            <div onclick="quickComposeTo('mateo@muntru.me')" class="px-2 py-1 rounded hover:bg-white/5 cursor-pointer truncate flex items-center gap-1.5" title="Mateo Berbis">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              <span>mateo@muntru.me</span>
+            </div>
+            <div onclick="quickComposeTo('eduardo@muntru.me')" class="px-2 py-1 rounded hover:bg-white/5 cursor-pointer truncate flex items-center gap-1.5" title="Eduardo Chongkan">
+              <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+              <span>eduardo@muntru.me</span>
+            </div>
+            <div onclick="quickComposeTo('juanlu@muntru.me')" class="px-2 py-1 rounded hover:bg-white/5 cursor-pointer truncate flex items-center gap-1.5" title="Juanlu Carrillo">
+              <span class="w-1.5 h-1.5 rounded-full bg-orange-400"></span>
+              <span>juanlu@muntru.me</span>
+            </div>
+            <div onclick="quickComposeTo('racecontrol@muntru.me')" class="px-2 py-1 rounded hover:bg-white/5 cursor-pointer truncate flex items-center gap-1.5" title="Race Control">
+              <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+              <span>racecontrol@muntru.me</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Storage / Status Footnote -->
+      <div class="p-3 rounded-2xl bg-[#141821] border border-white/5 space-y-1.5">
+        <div class="flex items-center justify-between text-[10px] text-neutral-400">
+          <span>Servidor Muntrume</span>
+          <span class="text-emerald-400 font-bold font-mono">200 OK</span>
+        </div>
+        <div class="w-full bg-white/5 rounded-full h-1">
+          <div class="bg-emerald-500 h-1 rounded-full w-1/4"></div>
+        </div>
+        <div class="text-[9px] text-neutral-500 truncate">D1 Vault Encrypted · TLS 1.3</div>
+      </div>
+    </aside>
+
+    <!-- Column 2: Message List -->
+    <section class="w-full sm:w-80 md:w-96 bg-[#12161f] border-r border-white/10 flex flex-col flex-shrink-0">
+      <!-- Folder Header & Filter -->
+      <div class="p-3 border-b border-white/10 flex items-center justify-between">
+        <h2 id="currentFolderTitle" class="text-xs font-bold text-white uppercase tracking-wider">Bandeja de Entrada</h2>
+        <button onclick="markAllAsRead()" class="text-[10px] text-emerald-400 hover:text-emerald-300 font-medium">
+          Marcar todos como leídos
+        </button>
+      </div>
+
+      <!-- List of Messages -->
+      <div id="mailListContainer" class="flex-1 overflow-y-auto divide-y divide-white/5">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <!-- Column 3: Message Reading Pane -->
+    <main class="flex-1 bg-[#0b0e13] flex flex-col overflow-y-auto">
+      <div id="emptyPane" class="flex-1 flex flex-col items-center justify-center p-8 text-center text-neutral-500 space-y-3">
+        <div class="w-16 h-16 rounded-3xl bg-[#161c24] border border-white/10 flex items-center justify-center text-2xl">
+          ✉️
+        </div>
+        <div class="text-sm font-bold text-white">Ningún comunicado seleccionado</div>
+        <p class="text-xs max-w-sm text-neutral-400">
+          Selecciona un mensaje de la lista o pulsa en <strong>Redactar Comunicado</strong> para enviar un correo a cualquier piloto del equipo.
+        </p>
+      </div>
+
+      <div id="readingPane" class="hidden flex-1 p-6 space-y-6">
+        <!-- Message Action Bar -->
+        <div class="flex items-center justify-between pb-4 border-b border-white/10 gap-3">
+          <div class="flex items-center gap-2">
+            <span id="paneCategoryBadge" class="text-[10px] font-bold font-mono px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 uppercase">
+              RACE BRIEFING
+            </span>
+            <span id="paneDate" class="text-xs text-neutral-400 font-mono">01 Nov 2026, 17:30</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="toggleStarActiveMessage()" id="paneStarBtn" class="p-1.5 rounded-lg hover:bg-white/10 text-neutral-400 hover:text-amber-400 transition" title="Destacar">
+              ⭐
+            </button>
+            <button onclick="deleteActiveMessage()" class="p-1.5 rounded-lg hover:bg-white/10 text-neutral-400 hover:text-red-400 transition" title="Eliminar comunicado">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Message Header -->
+        <div class="space-y-3">
+          <h1 id="paneSubject" class="text-xl sm:text-2xl font-black text-white leading-tight">
+            Asunto del mensaje
+          </h1>
+
+          <div class="flex items-center gap-3">
+            <div id="paneSenderAvatar" class="w-10 h-10 rounded-2xl bg-emerald-950 border border-emerald-500/50 flex items-center justify-center font-black text-emerald-400 text-sm">
+              AT
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span id="paneSenderName" class="text-sm font-bold text-white">Alberto Trujillo</span>
+                <span id="paneSenderEmail" class="text-xs text-neutral-400 font-mono">&lt;alberto@muntru.me&gt;</span>
+              </div>
+              <div class="text-[11px] text-neutral-500">
+                Para: <span id="paneRecipient" class="text-neutral-300 font-mono">equipo@muntru.me</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Attachment Box (if setup attached) -->
+        <div id="paneAttachmentBox" class="hidden p-3.5 rounded-2xl bg-[#161c24] border border-white/10 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-base">
+              🏎️
+            </div>
+            <div>
+              <div id="paneAttachmentName" class="text-xs font-bold font-mono text-white">MTM_26S4_W07_LeMans_Endur.sto</div>
+              <div class="text-[10px] text-neutral-400">Setup Oficial Muntrume · Marca de agua verificada</div>
+            </div>
+          </div>
+          <a id="paneAttachmentLink" href="/setups" class="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-extrabold transition">
+            Descargar en Vault →
+          </a>
+        </div>
+
+        <!-- Message Body -->
+        <div id="paneBody" class="prose prose-invert max-w-none text-xs sm:text-sm text-neutral-200 leading-relaxed space-y-4 pt-2">
+          <!-- Rendered by JS -->
+        </div>
+
+        <!-- Quick Reply Box -->
+        <div class="pt-6 border-t border-white/10 space-y-3">
+          <div class="text-xs font-bold text-white flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
+            <span>Responder a este comunicado oficial:</span>
+          </div>
+          <div class="relative">
+            <textarea 
+              id="quickReplyText"
+              rows="3" 
+              placeholder="Escribe tu respuesta para el equipo o para el piloto..." 
+              class="w-full bg-[#161c24] border border-white/10 rounded-2xl p-3 text-xs text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-emerald-500/60"
+            ></textarea>
+            <div class="flex justify-end pt-2">
+              <button onclick="sendQuickReply()" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs transition shadow">
+                Enviar Respuesta →
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Compose Modal -->
+  <div id="composeModal" class="hidden fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-black/75 backdrop-blur-sm" onclick="closeComposeModal()"></div>
+    <div class="relative min-h-screen flex items-center justify-center p-4">
+      <div class="relative w-full max-w-2xl bg-[#161c24] border border-emerald-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl overflow-hidden text-neutral-200 space-y-5">
+        
+        <div class="flex items-center justify-between pb-3 border-b border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+            <h2 class="text-lg font-extrabold text-white">Redactar Comunicado Interno</h2>
+          </div>
+          <button onclick="closeComposeModal()" class="text-neutral-400 hover:text-white p-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <form id="composeForm" onsubmit="handleSendCompose(event)" class="space-y-3.5 text-xs">
+          <!-- From -->
+          <div class="flex items-center gap-3">
+            <label class="w-16 text-neutral-400 font-bold">De:</label>
+            <input type="text" id="composeFrom" value="alberto@muntru.me (Alberto Trujillo)" disabled class="flex-1 bg-[#0b0e13] border border-white/10 rounded-xl px-3 py-2 text-neutral-400 font-mono">
+          </div>
+
+          <!-- To -->
+          <div class="flex items-center gap-3">
+            <label for="composeTo" class="w-16 text-neutral-400 font-bold">Para:</label>
+            <select id="composeTo" required class="flex-1 bg-[#0b0e13] border border-white/10 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-emerald-500">
+              <option value="equipo@muntru.me">Todo el Equipo (equipo@muntru.me)</option>
+              <option value="alberto@muntru.me">Alberto Trujillo (alberto@muntru.me)</option>
+              <option value="mateo@muntru.me">Mateo Berbis (mateo@muntru.me)</option>
+              <option value="eduardo@muntru.me">Eduardo Chongkan (eduardo@muntru.me)</option>
+              <option value="juanlu@muntru.me">Juanlu Carrillo (juanlu@muntru.me)</option>
+              <option value="racecontrol@muntru.me">Race Control (racecontrol@muntru.me)</option>
+            </select>
+          </div>
+
+          <!-- Category -->
+          <div class="flex items-center gap-3">
+            <label for="composeCategory" class="w-16 text-neutral-400 font-bold">Tipo:</label>
+            <select id="composeCategory" class="flex-1 bg-[#0b0e13] border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500">
+              <option value="briefing">🏁 Race Briefing (Estrategia de carrera)</option>
+              <option value="setup">🛠️ Actualización de Setup / Telemetría</option>
+              <option value="urgent">🚨 Urgente / Dirección de Carrera</option>
+              <option value="general">💬 General / Discusión de Equipo</option>
+            </select>
+          </div>
+
+          <!-- Subject -->
+          <div class="flex items-center gap-3">
+            <label for="composeSubject" class="w-16 text-neutral-400 font-bold">Asunto:</label>
+            <input type="text" id="composeSubject" required placeholder="p.ej., Briefing 24H Le Mans: Cargas de Fuel y Rake" class="flex-1 bg-[#0b0e13] border border-white/10 rounded-xl px-3 py-2 text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500">
+          </div>
+
+          <!-- Body -->
+          <div class="space-y-1">
+            <label for="composeBody" class="text-neutral-400 font-bold">Mensaje:</label>
+            <textarea id="composeBody" required rows="6" placeholder="Escribe aquí las directrices para el equipo, turnos de stint o notas sobre la telemetría..." class="w-full bg-[#0b0e13] border border-white/10 rounded-2xl p-3.5 text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-emerald-500"></textarea>
+          </div>
+
+          <div class="flex justify-end gap-3 pt-3 border-t border-white/10">
+            <button type="button" onclick="closeComposeModal()" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 font-bold">
+              Cancelar
+            </button>
+            <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold shadow-lg shadow-emerald-500/20">
+              Enviar Comunicado Oficial →
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Mail Application Logic -->
+  <script>
+    const INITIAL_EMAILS = [
+      {
+        id: "msg-001",
+        folder: "briefings",
+        senderName: "Alberto Trujillo",
+        senderEmail: "alberto@muntru.me",
+        senderInitials: "AT",
+        recipient: "equipo@muntru.me",
+        subject: "🏁 Briefing Oficial 24H Le Mans 26S4: Ajuste de Rake y Consumo en Mulsanne",
+        date: "01 Nov 2026, 17:30",
+        timestamp: 1730478600000,
+        category: "briefing",
+        categoryLabel: "RACE BRIEFING",
+        categoryColor: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+        isRead: false,
+        isStarred: true,
+        attachment: "MTM_26S4_W07_LeMans_Endur.sto",
+        bodyHtml: `
+          <p>Hola equipo,</p>
+          <p>Hemos completado el análisis de telemetría a 60 Hz en los GTP (Aston Martin Valkyrie y Cadillac) para las 24 Horas de Le Mans de esta semana:</p>
+          <ul class="list-disc pl-5 space-y-1">
+            <li><strong>Relación de Cambio:</strong> Obligatorio utilizar <em>GearStack: Long</em>. Con el Short estábamos tocando limitador de 7ª a 304 km/h en Les Hunaudières.</li>
+            <li><strong>Alerón Trasero:</strong> Calibrado en 4.5° para minimizar el drag aerodinámico y proyectar Vmax de 329.5 km/h.</li>
+            <li><strong>Presiones de Neumáticos:</strong> Arrancar la Vuelta 1 a 159 kPa para estabilizar a 169.5 kPa calientes tras las chicanes.</li>
+            <li><strong>Consumo de Combustible:</strong> 3.42 L/vuelta estimado en modo mezcla Race. Stints máximos de 11 vueltas.</li>
+          </ul>
+          <p>Por favor, sincronizad los nuevos .sto desde la carpeta de equipo de Garage 61 o descargadlos directamente desde el Vault.</p>
+          <p class="font-bold text-white">— Alberto Trujillo · Team Principal</p>
+        `
+      },
+      {
+        id: "msg-002",
+        folder: "setups",
+        senderName: "Eduardo Chongkan",
+        senderEmail: "eduardo@muntru.me",
+        senderInitials: "EC",
+        recipient: "alberto@muntru.me",
+        subject: "🛠️ Telemetría Damper Histogram: Absorción de pianos en Indianapolis & Porsche Curves",
+        date: "01 Nov 2026, 15:45",
+        timestamp: 1730472300000,
+        category: "setup",
+        categoryLabel: "TELEMETRÍA",
+        categoryColor: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20",
+        isRead: true,
+        isStarred: false,
+        attachment: "MTM_26S4_W07_LeMans_Qualy.sto",
+        bodyHtml: `
+          <p>Alberto,</p>
+          <p>Revisé la traza .ibt de la sesión de clasificación de las 11:36. El heave spring delantero a 80 N/mm eliminó el 95% del bottoming que sufríamos en la compresión previa a Indianápolis.</p>
+          <p>El difusor ya no roza el asfalto a >250 km/h, lo que nos da +1.4 km/h netos antes de la frenada fuerte. El coche es mucho más dócil en la entrada a las curvas Porsche.</p>
+          <p>He dejado subida la versión Qualy al Vault para que Mateo haga su simulación de pole esta tarde.</p>
+          <p class="font-bold text-white">— Eduardo Chongkan · Telemetry Lead</p>
+        `
+      },
+      {
+        id: "msg-003",
+        folder: "briefings",
+        senderName: "Mateo Berbis",
+        senderEmail: "mateo@muntru.me",
+        senderInitials: "MB",
+        recipient: "equipo@muntru.me",
+        subject: "⏱️ Vuelta Rápida en Qualy: 3:21.140 registrada en Garage 61",
+        date: "01 Nov 2026, 14:10",
+        timestamp: 1730466600000,
+        category: "briefing",
+        categoryLabel: "QUALY REPORT",
+        categoryColor: "text-amber-400 bg-amber-500/10 border-amber-500/20",
+        isRead: true,
+        isStarred: true,
+        attachment: null,
+        bodyHtml: `
+          <p>Buenas noticias equipo,</p>
+          <p>Con la carga de 11 litros de gasolina de Qualy y presiones de 163.5 kPa de salida, he conseguido clavar <strong>3:21.140</strong> en la primera vuelta lanzada con el Valkyrie.</p>
+          <p>El coche rota de maravilla en las curvas Tertre Rouge y Mulsanne. Estamos a solo 0.25s del tiempo de referencia de los mejores splits internacionales.</p>
+          <p>Listos para la tanda de clasificación del fin de semana.</p>
+          <p class="font-bold text-white">— Mateo Berbis · Sprint & Qualy</p>
+        `
+      },
+      {
+        id: "msg-004",
+        folder: "inbox",
+        senderName: "Juanlu Carrillo",
+        senderEmail: "juanlu@muntru.me",
+        senderInitials: "JC",
+        recipient: "alberto@muntru.me",
+        subject: "💬 Test de Monoplazas SFL: Progresión en Red Bull Ring con Setup MTM",
+        date: "31 Oct 2026, 21:20",
+        timestamp: 1730406000000,
+        category: "general",
+        categoryLabel: "DEV SQUAD",
+        categoryColor: "text-orange-400 bg-orange-500/10 border-orange-500/20",
+        isRead: true,
+        isStarred: false,
+        attachment: null,
+        bodyHtml: `
+          <p>Hola Alberto,</p>
+          <p>Completé las 30 vueltas de simulación de carrera con el Super Formula Lights en Spielberg. El equilibrio de barras estabilizadoras blandas me permitió adelantar en la curva 3 sin perder tracción en la subida.</p>
+          <p>El desgaste de goma trasera se mantuvo por debajo del 12% tras 20 vueltas a ritmo de podio.</p>
+          <p class="font-bold text-white">— Juanlu Carrillo · Junior Squad</p>
+        `
+      },
+      {
+        id: "msg-005",
+        folder: "inbox",
+        senderName: "Race Control Muntrume",
+        senderEmail: "racecontrol@muntru.me",
+        senderInitials: "RC",
+        recipient: "equipo@muntru.me",
+        subject: "🚨 Aviso de Dirección de Carrera: Verificación de Watermark y Licencias",
+        date: "30 Oct 2026, 18:00",
+        timestamp: 1730307600000,
+        category: "urgent",
+        categoryLabel: "DIRECCIÓN DE CARRERA",
+        categoryColor: "text-purple-400 bg-purple-500/10 border-purple-500/20",
+        isRead: true,
+        isStarred: false,
+        attachment: null,
+        bodyHtml: `
+          <p>A todos los pilotos de Muntrume Motorsport,</p>
+          <p>Recordamos que todos los setups compartidos en eventos oficiales deben llevar la marca de agua criptográfica institucional:</p>
+          <p class="font-mono p-2.5 rounded bg-black/40 text-emerald-400 border border-white/5">muntru.me - Muntrume Motorsport. Setup by Alberto Trujillo.</p>
+          <p>Queda prohibida la redistribución no autorizada fuera del equipo. El sistema de auditoría registra las descargas por IP y firma de piloto.</p>
+          <p class="font-bold text-white">— Race Control Esports</p>
+        `
+      }
+    ];
+
+    let emails = [];
+    let currentFolder = "inbox";
+    let activeMessageId = null;
+
+    function initMail() {
+      const stored = localStorage.getItem("muntrume_webmail_store");
+      if (stored) {
+        try {
+          emails = JSON.parse(stored);
+        } catch {
+          emails = [...INITIAL_EMAILS];
+        }
+      } else {
+        emails = [...INITIAL_EMAILS];
+        saveEmails();
+      }
+
+      // Check URL param ?to=
+      const params = new URLSearchParams(window.location.search);
+      const toParam = params.get("to");
+      if (toParam) {
+        openComposeModal(toParam);
+      }
+
+      renderList();
+      if (emails.length > 0) {
+        selectMessage(emails[0].id);
+      }
+    }
+
+    function saveEmails() {
+      localStorage.setItem("muntrume_webmail_store", JSON.stringify(emails));
+    }
+
+    function switchFolder(folder) {
+      currentFolder = folder;
+      document.querySelectorAll("aside nav button").forEach(b => b.classList.remove("mail-active"));
+      const btn = document.getElementById(`folder-${folder}`);
+      if (btn) btn.classList.add("mail-active");
+
+      const titles = {
+        inbox: "Bandeja de Entrada",
+        briefings: "Race Briefings",
+        setups: "Setups & Telemetría",
+        starred: "Mensajes Destacados",
+        sent: "Mensajes Enviados"
+      };
+      document.getElementById("currentFolderTitle").textContent = titles[folder] || folder;
+      renderList();
+    }
+
+    function renderList() {
+      const query = (document.getElementById("mailSearchInput")?.value || "").toLowerCase().trim();
+      let filtered = emails.filter(m => {
+        if (currentFolder === "inbox") return m.folder === "inbox" || m.folder === "briefings" || m.folder === "setups";
+        if (currentFolder === "briefings") return m.category === "briefing";
+        if (currentFolder === "setups") return m.category === "setup";
+        if (currentFolder === "starred") return m.isStarred === true;
+        if (currentFolder === "sent") return m.folder === "sent";
+        return true;
+      });
+
+      if (query) {
+        filtered = filtered.filter(m => 
+          m.subject.toLowerCase().includes(query) ||
+          m.senderName.toLowerCase().includes(query) ||
+          m.senderEmail.toLowerCase().includes(query)
+        );
+      }
+
+      // Update unread badge
+      const unreadCount = emails.filter(m => !m.isRead).length;
+      document.getElementById("unreadInboxBadge").textContent = unreadCount;
+
+      const container = document.getElementById("mailListContainer");
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 text-center text-xs text-neutral-500 space-y-1">
+            <div>📭</div>
+            <div>No hay comunicados en esta carpeta</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(m => {
+        const isSelected = m.id === activeMessageId;
+        return `
+          <div 
+            onclick="selectMessage('${m.id}')"
+            class="p-3.5 hover:bg-white/[0.04] cursor-pointer transition flex gap-3 relative ${isSelected ? 'bg-white/[0.06] border-l-2 border-emerald-400' : ''} ${!m.isRead ? 'font-bold' : ''}"
+          >
+            <div class="w-8 h-8 rounded-xl bg-emerald-950/60 border border-emerald-500/30 flex items-center justify-center font-bold text-xs text-emerald-400 flex-shrink-0 mt-0.5">
+              ${m.senderInitials || 'MT'}
+            </div>
+            <div class="flex-1 min-w-0 space-y-1">
+              <div class="flex items-center justify-between gap-1">
+                <span class="text-xs truncate ${!m.isRead ? 'text-white font-extrabold' : 'text-neutral-300'}">${escapeHtml(m.senderName)}</span>
+                <span class="text-[10px] text-neutral-500 whitespace-nowrap font-mono">${escapeHtml(m.date.split(',')[0])}</span>
+              </div>
+              <div class="text-xs text-neutral-200 truncate ${!m.isRead ? 'font-bold text-white' : ''}">
+                ${escapeHtml(m.subject)}
+              </div>
+              <div class="flex items-center gap-1.5 pt-0.5">
+                <span class="text-[9px] font-mono px-1.5 py-0.2 rounded border ${m.categoryColor || 'text-neutral-400 bg-white/5 border-white/10'}">
+                  ${m.categoryLabel || 'COMUNICADO'}
+                </span>
+                ${m.attachment ? '<span class="text-[10px]" title="Setup .sto adjunto">🏎️</span>' : ''}
+                ${m.isStarred ? '<span class="text-[10px] text-amber-400">★</span>' : ''}
+              </div>
+            </div>
+            ${!m.isRead ? '<span class="w-2 h-2 rounded-full bg-emerald-400 absolute right-2 top-3"></span>' : ''}
+          </div>
+        `;
+      }).join("");
+    }
+
+    function selectMessage(id) {
+      activeMessageId = id;
+      const msg = emails.find(m => m.id === id);
+      if (!msg) return;
+
+      msg.isRead = true;
+      saveEmails();
+      renderList();
+
+      document.getElementById("emptyPane").classList.add("hidden");
+      const pane = document.getElementById("readingPane");
+      pane.classList.remove("hidden");
+
+      document.getElementById("paneSubject").textContent = msg.subject;
+      document.getElementById("paneCategoryBadge").textContent = msg.categoryLabel || "COMUNICADO";
+      document.getElementById("paneCategoryBadge").className = `text-[10px] font-bold font-mono px-2.5 py-0.5 rounded-full border uppercase ${msg.categoryColor || ''}`;
+      document.getElementById("paneDate").textContent = msg.date;
+      document.getElementById("paneSenderName").textContent = msg.senderName;
+      document.getElementById("paneSenderEmail").textContent = `<${msg.senderEmail}>`;
+      document.getElementById("paneSenderAvatar").textContent = msg.senderInitials || "MT";
+      document.getElementById("paneRecipient").textContent = msg.recipient;
+      document.getElementById("paneStarBtn").textContent = msg.isStarred ? "★" : "⭐";
+      document.getElementById("paneStarBtn").className = msg.isStarred ? "p-1.5 rounded-lg hover:bg-white/10 text-amber-400 font-bold" : "p-1.5 rounded-lg hover:bg-white/10 text-neutral-400 hover:text-amber-400";
+
+      // Attachment
+      const attBox = document.getElementById("paneAttachmentBox");
+      if (msg.attachment) {
+        attBox.classList.remove("hidden");
+        document.getElementById("paneAttachmentName").textContent = msg.attachment;
+      } else {
+        attBox.classList.add("hidden");
+      }
+
+      // Body
+      document.getElementById("paneBody").innerHTML = msg.bodyHtml;
+    }
+
+    function toggleStarActiveMessage() {
+      if (!activeMessageId) return;
+      const msg = emails.find(m => m.id === activeMessageId);
+      if (msg) {
+        msg.isStarred = !msg.isStarred;
+        saveEmails();
+        selectMessage(msg.id);
+      }
+    }
+
+    function deleteActiveMessage() {
+      if (!activeMessageId) return;
+      emails = emails.filter(m => m.id !== activeMessageId);
+      saveEmails();
+      activeMessageId = null;
+      document.getElementById("readingPane").classList.add("hidden");
+      document.getElementById("emptyPane").classList.remove("hidden");
+      renderList();
+    }
+
+    function markAllAsRead() {
+      emails.forEach(m => m.isRead = true);
+      saveEmails();
+      renderList();
+    }
+
+    function onSearchMail(q) {
+      renderList();
+    }
+
+    function openComposeModal(to = "") {
+      document.getElementById("composeModal").classList.remove("hidden");
+      if (to) {
+        const sel = document.getElementById("composeTo");
+        for (let i = 0; i < sel.options.length; i++) {
+          if (sel.options[i].value === to) {
+            sel.selectedIndex = i;
+            break;
+          }
+        }
+      }
+    }
+
+    function closeComposeModal() {
+      document.getElementById("composeModal").classList.add("hidden");
+    }
+
+    function quickComposeTo(to) {
+      openComposeModal(to);
+    }
+
+    function handleSendCompose(e) {
+      e.preventDefault();
+      const to = document.getElementById("composeTo").value;
+      const category = document.getElementById("composeCategory").value;
+      const subject = document.getElementById("composeSubject").value;
+      const body = document.getElementById("composeBody").value;
+
+      const categoryLabels = {
+        briefing: { label: "RACE BRIEFING", color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" },
+        setup: { label: "TELEMETRÍA", color: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20" },
+        urgent: { label: "URGENTE", color: "text-purple-400 bg-purple-500/10 border-purple-500/20" },
+        general: { label: "GENERAL", color: "text-neutral-400 bg-white/5 border-white/10" }
+      };
+
+      const newMsg = {
+        id: "msg-" + Date.now(),
+        folder: "sent",
+        senderName: "Alberto Trujillo",
+        senderEmail: "alberto@muntru.me",
+        senderInitials: "AT",
+        recipient: to,
+        subject: subject,
+        date: new Date().toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }),
+        timestamp: Date.now(),
+        category: category,
+        categoryLabel: categoryLabels[category]?.label || "COMUNICADO",
+        categoryColor: categoryLabels[category]?.color || "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+        isRead: true,
+        isStarred: false,
+        attachment: null,
+        bodyHtml: `<p>${escapeHtml(body).replace(/\n/g, '<br>')}</p><p class="pt-2 text-neutral-400 font-mono text-xs">— Enviado desde Muntrume Webmail Seguro</p>`
+      };
+
+      emails.unshift(newMsg);
+      saveEmails();
+      closeComposeModal();
+
+      // Switch to Sent folder and select message
+      switchFolder("sent");
+      selectMessage(newMsg.id);
+      alert("✅ Comunicado interno enviado y registrado en el servidor de correo @muntru.me.");
+    }
+
+    function sendQuickReply() {
+      const text = document.getElementById("quickReplyText").value.trim();
+      if (!text || !activeMessageId) return;
+
+      const current = emails.find(m => m.id === activeMessageId);
+      if (!current) return;
+
+      const replyMsg = {
+        id: "msg-" + Date.now(),
+        folder: "sent",
+        senderName: "Alberto Trujillo",
+        senderEmail: "alberto@muntru.me",
+        senderInitials: "AT",
+        recipient: current.senderEmail,
+        subject: "Re: " + current.subject,
+        date: new Date().toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }),
+        timestamp: Date.now(),
+        category: current.category,
+        categoryLabel: current.categoryLabel,
+        categoryColor: current.categoryColor,
+        isRead: true,
+        isStarred: false,
+        attachment: null,
+        bodyHtml: `<p>${escapeHtml(text).replace(/\n/g, '<br>')}</p><hr class="border-white/10 my-3"><p class="text-[11px] text-neutral-500">En respuesta a: "${escapeHtml(current.subject)}" de ${escapeHtml(current.senderName)}</p>`
+      };
+
+      emails.unshift(replyMsg);
+      saveEmails();
+      document.getElementById("quickReplyText").value = "";
+      alert("✅ Respuesta enviada con éxito.");
+      renderList();
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    window.addEventListener("DOMContentLoaded", initMail);
+  </script>
+</body>
+</html>
