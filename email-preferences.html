@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Preferencias de correo · Muntrume Motorsport</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#0e1217">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src https://muntrume.atrumin16.workers.dev; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <link rel="icon" href="/favicon.ico" sizes="48x48">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png">
+  <link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <style>
+    @font-face { font-family: 'Inter'; font-style: normal; font-weight: 300 900; font-display: swap; src: url(/assets/fonts/inter-latin.woff2) format('woff2'); }
+    :root { color-scheme: dark light; --bg:#0e1217; --card:#151b23; --line:#232a35; --ink:#f1f5f9; --muted:#94a3b8; --acc:#10b981; --acc-ink:#04241a; }
+    @media (prefers-color-scheme: light) { :root { --bg:#eef2f5; --card:#fff; --line:#e2e8f0; --ink:#0f172a; --muted:#475569; --acc:#059669; --acc-ink:#fff; } }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body { margin:0; min-height:100vh; min-height:100svh; background:var(--bg); color:var(--ink); font:16px/1.55 Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      display:flex; align-items:flex-start; justify-content:center; padding: max(24px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+    main { width:100%; max-width:520px; margin-top:4vh; }
+    .brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--ink); font-weight:800; letter-spacing:.3px; margin-bottom:18px; }
+    .brand img { width:36px; height:36px; border-radius:8px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:24px; }
+    h1 { font-size:22px; line-height:1.25; margin:0 0 6px; }
+    p { margin:0 0 14px; color:var(--muted); }
+    .row { display:flex; gap:14px; align-items:flex-start; justify-content:space-between; padding:16px 0; border-top:1px solid var(--line); }
+    .row label { flex:1; cursor:pointer; }
+    .row strong { display:block; color:var(--ink); font-size:16px; }
+    .row span { display:block; color:var(--muted); font-size:14px; }
+    .sw { position:relative; width:52px; height:32px; flex:none; margin-top:2px; }
+    .sw input { position:absolute; inset:0; opacity:0; width:100%; height:100%; margin:0; cursor:pointer; z-index:1; }
+    .sw i { position:absolute; inset:0; border-radius:999px; background:#475569; transition:background .2s; }
+    .sw i::after { content:""; position:absolute; top:4px; left:4px; width:24px; height:24px; border-radius:50%; background:#fff; transition:transform .2s; }
+    .sw input:checked + i { background:var(--acc); }
+    .sw input:checked + i::after { transform:translateX(20px); }
+    .sw input:focus-visible + i { outline:3px solid #34d399; outline-offset:2px; }
+    select { width:100%; font:inherit; font-size:16px; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:var(--bg); color:var(--ink); margin-top:8px; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; min-height:48px; padding:0 22px; border:0; border-radius:10px; background:var(--acc); color:var(--acc-ink); font:inherit; font-weight:700; cursor:pointer; width:100%; margin-top:18px; }
+    .btn.ghost { background:transparent; color:var(--ink); border:1px solid var(--line); }
+    .btn:disabled { opacity:.6; cursor:default; }
+    .note { font-size:13px; color:var(--muted); margin-top:16px; }
+    .msg { border-radius:10px; padding:12px 14px; margin:0 0 16px; font-size:15px; display:none; }
+    .msg.ok { display:block; background:rgba(16,185,129,.12); border:1px solid rgba(16,185,129,.4); color:var(--ink); }
+    .msg.err { display:block; background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.45); color:var(--ink); }
+    a { color:#34d399; }
+    @media (prefers-color-scheme: light) { a { color:#047857; } }
+    [hidden] { display:none !important; }
+  </style>
+</head>
+<body>
+<main>
+  <a class="brand" href="/"><img src="/assets/img/logo-64.webp" alt="" width="36" height="36">Muntrume Motorsport</a>
+  <div class="card" aria-live="polite">
+    <h1 id="title">Preferencias de correo</h1>
+    <p id="who">Cargando tus preferencias…</p>
+    <div id="msg" class="msg" role="status"></div>
+    <form id="form" hidden>
+      <div class="row">
+        <label for="new_setups"><strong>Novedades del Setup Vault</strong><span>Setups nuevos de los coches que usas y resumen de la temporada.</span></label>
+        <div class="sw"><input type="checkbox" id="new_setups" role="switch"><i aria-hidden="true"></i></div>
+      </div>
+      <div class="row">
+        <label for="team_news"><strong>Noticias del equipo</strong><span>Resultados, eventos y anuncios de Muntrume Motorsport.</span></label>
+        <div class="sw"><input type="checkbox" id="team_news" role="switch"><i aria-hidden="true"></i></div>
+      </div>
+      <div class="row" style="display:block">
+        <label for="tz"><strong>Tu zona horaria</strong><span>La usamos para saludarte a la hora correcta y mostrar fechas en tu hora local.</span></label>
+        <select id="tz"></select>
+      </div>
+      <button class="btn" type="submit" id="save">Guardar preferencias</button>
+      <button class="btn ghost" type="button" id="all">Darme de baja de todo lo opcional</button>
+      <p class="note">Los correos de seguridad (códigos de acceso, enlaces para crear o cambiar tu contraseña) se envían siempre, porque protegen tu cuenta.</p>
+    </form>
+  </div>
+</main>
+<script>
+(() => {
+  const API = "https://muntrume.atrumin16.workers.dev/api/email/prefs";
+  const h = new URLSearchParams(location.hash.slice(1));
+  const u = h.get("u"), t = h.get("t"), unsub = h.get("unsub");
+  // Quitar el token de la barra de direcciones/historial en cuanto lo leemos.
+  if (location.hash) history.replaceState(null, "", location.pathname);
+  const $ = (id) => document.getElementById(id);
+  const msg = (text, kind) => { const m = $("msg"); m.textContent = text; m.className = "msg " + (kind || "ok"); };
+  const labels = { new_setups: "Novedades del Setup Vault", team_news: "Noticias del equipo" };
+  const browserTz = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { return ""; } })();
+  function fillTz(current) {
+    let zones = [];
+    try { zones = Intl.supportedValuesOf("timeZone"); } catch { zones = ["Europe/Madrid", "Europe/London", "Europe/Paris", "America/New_York", "America/Mexico_City", "America/Argentina/Buenos_Aires", "America/Bogota", "America/Santiago", "UTC"]; }
+    const want = current || browserTz || "Europe/Madrid";
+    if (!zones.includes(want)) zones.unshift(want);
+    $("tz").innerHTML = "";
+    for (const z of zones) { const o = document.createElement("option"); o.value = z; o.textContent = z.replace(/_/g, " ") + (z === browserTz ? " (este dispositivo)" : ""); if (z === want) o.selected = true; $("tz").appendChild(o); }
+  }
+  async function call(set) {
+    const r = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(set ? { u, t, set } : { u, t }) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || !j.success) throw new Error(j.error || "No se pudo conectar. Inténtalo de nuevo.");
+    return j;
+  }
+  function show(j) {
+    $("who").textContent = (j.name ? j.name + ", estos" : "Estos") + " son los avisos que enviamos a " + j.email_masked + ".";
+    $("new_setups").checked = !!j.prefs.new_setups;
+    $("team_news").checked = !!j.prefs.team_news;
+    fillTz(j.prefs.tz);
+    $("form").hidden = false;
+  }
+  async function start() {
+    if (!u || !t) { $("who").textContent = ""; msg("Este enlace no es válido. Abre «Gestionar notificaciones» desde el último correo que te enviamos.", "err"); return; }
+    try {
+      let j = await call();
+      if (unsub && unsub in labels && j.prefs[unsub]) {
+        j = await call({ [unsub]: false });
+        $("title").textContent = "Te has dado de baja";
+        msg("Ya no recibirás «" + labels[unsub] + "». Puedes volver a activarlo aquí cuando quieras.");
+      }
+      show(j);
+    } catch (e) { $("who").textContent = ""; msg(e.message, "err"); }
+  }
+  $("form").addEventListener("submit", async (ev) => {
+    ev.preventDefault(); $("save").disabled = true;
+    try { show(await call({ new_setups: $("new_setups").checked, team_news: $("team_news").checked, tz: $("tz").value })); $("title").textContent = "Preferencias de correo"; msg("Preferencias guardadas."); }
+    catch (e) { msg(e.message, "err"); } finally { $("save").disabled = false; }
+  });
+  $("all").addEventListener("click", async () => {
+    $("all").disabled = true;
+    try { show(await call({ new_setups: false, team_news: false })); msg("Listo: te has dado de baja de todos los correos opcionales."); }
+    catch (e) { msg(e.message, "err"); } finally { $("all").disabled = false; }
+  });
+  start();
+})();
+</script>
+</body>
+</html>

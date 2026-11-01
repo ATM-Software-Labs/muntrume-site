@@ -22,6 +22,7 @@ import {
   resetPasswordEmail,
   contactFormEmail,
   loginCodeEmail,
+  setupDigestEmail,
 } from "./emails.js";
 
 const SITE = "https://muntru.me";
@@ -199,7 +200,7 @@ async function verifyToken(token, secret, typ) {
 
 // ───────────────────────────── correo (Resend) ─────────────────────────────
 
-async function sendEmail(env, { to, subject, html, text, replyTo }) {
+async function sendEmail(env, { to, subject, html, text, replyTo, headers }) {
   if (!env.RESEND_API_KEY) return { ok: false, error: "RESEND_API_KEY no configurada" };
   const payload = {
     from: env.RESEND_FROM_EMAIL || "Muntrume Motorsport <muntrume@trujillomingorance.com>",
@@ -209,6 +210,7 @@ async function sendEmail(env, { to, subject, html, text, replyTo }) {
     text,
   };
   if (replyTo) payload.reply_to = replyTo;
+  if (headers) payload.headers = headers;
   const post = (p) =>
     fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -408,7 +410,7 @@ async function handleCodeRequest(body, env, ip, ctx) {
     "ON CONFLICT(email) DO UPDATE SET code_hash = excluded.code_hash, nonce = excluded.nonce, expires_at = excluded.expires_at, attempts = 0, sent_at = excluded.sent_at"
   ).bind(email, codeHash, nonce, now + CODE_TTL_MS, now).run();
   const magic = await signToken({ typ: "magic", sub: email, n: nonce, exp: now + CODE_TTL_MS }, env.JWT_SECRET);
-  const mail = loginCodeEmail({ name: user.name, code, link: `${SITE}/setups#magic=${magic}`, expiresMinutes: CODE_TTL_MS / 60000 });
+  const mail = loginCodeEmail({ name: user.name, code, link: `${SITE}/setups#magic=${magic}`, expiresMinutes: CODE_TTL_MS / 60000, ...(await personalCtx(env, user.email)) });
   // El envío va en segundo plano para que el tiempo de respuesta no delate si el correo existe.
   const job = sendEmail(env, { to: user.email, ...mail }).then((r) => console.log("[code] enviado:", !!r.ok, r.ok ? r.id : r.error));
   if (ctx && ctx.waitUntil) ctx.waitUntil(job); else await job;
@@ -490,9 +492,10 @@ async function handleForgotPassword(body, env, ip) {
   // Cuenta con contraseña: enlace de restablecimiento de 1 h.
   const firstAccess = !user.password_hash;
   const link = await makeSetPasswordLink(env, user, firstAccess ? INVITE_TTL_MS : RESET_TTL_MS, firstAccess ? "invite" : "reset");
+  const pc = await personalCtx(env, user.email);
   const mail = firstAccess
-    ? approvedLinkEmail({ name: user.name, email: user.email, link, expiresHours: INVITE_TTL_MS / 3600000 })
-    : resetPasswordEmail({ name: user.name, link, expiresMinutes: RESET_TTL_MS / 60000 });
+    ? approvedLinkEmail({ name: user.name, email: user.email, link, expiresHours: INVITE_TTL_MS / 3600000, ...pc })
+    : resetPasswordEmail({ name: user.name, link, expiresMinutes: RESET_TTL_MS / 60000, ...pc });
   const sent = await sendEmail(env, { to: user.email, ...mail });
   console.log("[forgot] enlace", firstAccess ? "invite" : "reset", "enviado:", !!sent.ok, sent.ok ? sent.id : sent.error);
   return generic;
@@ -597,10 +600,10 @@ async function provisionPilot(env, { email, name, method }) {
   let mail;
   let link = null;
   if (method === "temp_password") {
-    mail = approvedTempPasswordEmail({ name: user.name, email: user.email, tempPassword });
+    mail = approvedTempPasswordEmail({ name: user.name, email: user.email, tempPassword, ...(await personalCtx(env, user.email)) });
   } else {
     link = await makeSetPasswordLink(env, user, INVITE_TTL_MS, "invite");
-    mail = approvedLinkEmail({ name: user.name, email: user.email, link, expiresHours: INVITE_TTL_MS / 3600000 });
+    mail = approvedLinkEmail({ name: user.name, email: user.email, link, expiresHours: INVITE_TTL_MS / 3600000, ...(await personalCtx(env, user.email)) });
   }
   return { user, mail, link, tempPassword };
 }
@@ -680,7 +683,7 @@ async function handleAdminResendInvite(request, body, env) {
   const user = await getUser(env, body.email);
   if (!user || user.status !== "active") return [404, { success: false, error: "Piloto no encontrado o inactivo." }];
   const link = await makeSetPasswordLink(env, user, INVITE_TTL_MS, user.password_hash ? "reset" : "invite");
-  const mail = approvedLinkEmail({ name: user.name, email: user.email, link, expiresHours: INVITE_TTL_MS / 3600000 });
+  const mail = approvedLinkEmail({ name: user.name, email: user.email, link, expiresHours: INVITE_TTL_MS / 3600000, ...(await personalCtx(env, user.email)) });
   const sent = await sendEmail(env, { to: user.email, ...mail });
   await audit(env, s.user.email, "user.send_link", user.email, `email_sent=${!!sent.ok}`);
   return [200, { success: true, email_sent: !!sent.ok, email_error: sent.ok ? null : sent.error, set_password_link: link, expires_hours: INVITE_TTL_MS / 3600000 }];
@@ -698,28 +701,144 @@ async function handleAdminSetStatus(request, body, env) {
   return [200, { success: true, status }];
 }
 
-/** Envía todas las plantillas SOLO al correo del admin que lo pide (para revisar el formato). */
+/** Envía las plantillas SOLO al correo del admin que lo pide (para revisar el formato). body.only = ["digest", "code", ...] opcional. */
 async function handleAdminEmailPreview(request, body, env) {
   const s = await requireSession(request, body, env, { admin: true });
   if (s.error) return [s.status, { success: false, error: s.error, code: s.code }];
   const to = s.user.email;
   const demoLink = `${SITE}/setups?setpw=EJEMPLO-ENLACE-NO-VALIDO`;
+  const pc = await personalCtx(env, to);
   const sample = { name: s.user.name || "Piloto", email: to };
-  const templates = [
-    requestReceivedEmail(sample),
-    adminNewRequestEmail({ ...sample, iracing_id: "", car_category: "", message: "(correo de prueba de formato)" }),
-    approvedLinkEmail({ ...sample, link: demoLink, expiresHours: 72 }),
-    approvedTempPasswordEmail({ ...sample, tempPassword: "MTM-EJEM-PLO00-NOVAL" }),
-    rejectedEmail({ name: sample.name, reason: "" }),
-    resetPasswordEmail({ name: sample.name, link: demoLink, expiresMinutes: 60 }),
-    loginCodeEmail({ name: sample.name, code: "000000", link: `${SITE}/setups#magic=EJEMPLO-NO-VALIDO`, expiresMinutes: 10 }),
-  ];
+  const all = {
+    received: () => requestReceivedEmail(sample),
+    admin_request: () => adminNewRequestEmail({ ...sample, iracing_id: "", car_category: "", message: "(correo de prueba de formato)" }),
+    approved: () => approvedLinkEmail({ ...sample, link: demoLink, expiresHours: 72, ...pc }),
+    temp_password: () => approvedTempPasswordEmail({ ...sample, tempPassword: "MTM-EJEM-PLO00-NOVAL", ...pc }),
+    rejected: () => rejectedEmail({ name: sample.name, reason: "" }),
+    reset: () => resetPasswordEmail({ name: sample.name, link: demoLink, expiresMinutes: 60, ...pc }),
+    code: () => loginCodeEmail({ name: sample.name, code: "000000", link: `${SITE}/setups#magic=EJEMPLO-NO-VALIDO`, expiresMinutes: 10, ...pc }),
+    digest: null,
+  };
+  const only = Array.isArray(body.only) ? body.only.filter((k) => k in all).slice(0, 8) : Object.keys(all);
   const results = [];
-  for (const t of templates) {
-    const r = await sendEmail(env, { to, ...t, subject: `[PRUEBA] ${t.subject}` });
-    results.push({ subject: t.subject, ok: !!r.ok, error: r.ok ? null : r.error });
+  for (const k of only) {
+    let t, headers;
+    if (k === "digest") { const d = await buildDigest(env, s.user); t = d.mail; headers = d.headers; }
+    else t = all[k]();
+    const r = await sendEmail(env, { to, ...t, headers, subject: `[PRUEBA] ${t.subject}` });
+    results.push({ key: k, subject: t.subject, ok: !!r.ok, error: r.ok ? null : r.error });
   }
   return [200, { success: true, to, results }];
+}
+
+// ───────────────────────────── preferencias de correo (sin login, enlace firmado) ─────────────────────────────
+
+const API_ORIGIN = "https://muntrume.atrumin16.workers.dev";
+const PREF_LISTS = ["new_setups", "team_news"];
+const prefsSecret = (env) => env.PREFS_SECRET || `${env.JWT_SECRET}|email-prefs`;
+async function prefsToken(env, email) {
+  return (await hmacHex(prefsSecret(env), `email-prefs:v1:${normEmail(email)}`)).slice(0, 40);
+}
+async function prefsVerify(env, u, t) {
+  let email = "";
+  try { email = normEmail(dec.decode(bytesFromB64url(String(u || "").slice(0, 400)))); } catch { return null; }
+  if (!EMAIL_RE.test(email) || !/^[0-9a-f]{40}$/.test(String(t || ""))) return null;
+  const good = await prefsToken(env, email);
+  return timingSafeEqual(enc.encode(good), enc.encode(String(t))) ? email : null;
+}
+async function prefsLinks(env, email, list = "new_setups") {
+  const u = b64urlFromBytes(enc.encode(normEmail(email)));
+  const t = await prefsToken(env, email);
+  return {
+    manageUrl: `${SITE}/email-preferences#u=${u}&t=${t}`,
+    unsubUrl: `${SITE}/email-preferences#u=${u}&t=${t}&unsub=${list}`,
+    oneClickUrl: `${API_ORIGIN}/api/email/unsubscribe?u=${u}&t=${t}&l=${list}`,
+  };
+}
+async function getPrefs(env, email) {
+  let row = null;
+  try { row = await env.muntrume_vault.prepare("SELECT new_setups, team_news, tz, updated_at FROM email_prefs WHERE email = ?").bind(normEmail(email)).first(); } catch {}
+  return { new_setups: row ? !!row.new_setups : true, team_news: row ? !!row.team_news : true, tz: row?.tz || null, updated_at: row?.updated_at || null };
+}
+async function savePrefs(env, email, p) {
+  await env.muntrume_vault.prepare(
+    "INSERT INTO email_prefs (email, new_setups, team_news, tz, updated_at) VALUES (?1, ?2, ?3, ?4, strftime('%Y-%m-%dT%H:%M:%fZ','now')) " +
+    "ON CONFLICT(email) DO UPDATE SET new_setups = ?2, team_news = ?3, tz = ?4, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')"
+  ).bind(normEmail(email), p.new_setups ? 1 : 0, p.team_news ? 1 : 0, p.tz || null).run();
+}
+function validTz(tz) {
+  const v = clean(tz, 64);
+  if (!v) return null;
+  try { new Intl.DateTimeFormat("en", { timeZone: v }); return v; } catch { return null; }
+}
+/** Contexto personal para cualquier correo a un piloto: zona horaria y enlace «Gestionar notificaciones». */
+async function personalCtx(env, email) {
+  try {
+    const [p, l] = await Promise.all([getPrefs(env, email), prefsLinks(env, email)]);
+    return { tz: p.tz || "Europe/Madrid", manageUrl: l.manageUrl };
+  } catch { return { tz: "Europe/Madrid" }; }
+}
+/** Novedades personalizadas (solo datos reales de D1). No se envía automáticamente a nadie. */
+async function buildDigest(env, user) {
+  const db = env.muntrume_vault;
+  const email = normEmail(user.email);
+  const season = (await db.prepare("SELECT season FROM setups GROUP BY season ORDER BY season DESC LIMIT 1").first())?.season || "";
+  const [tot, top, dl, prefs, links] = await Promise.all([
+    db.prepare("SELECT count(*) n FROM setups WHERE season = ?").bind(season).first(),
+    db.prepare("SELECT car, count(*) n FROM setups WHERE season = ? GROUP BY car ORDER BY n DESC LIMIT 5").bind(season).all(),
+    db.prepare("SELECT at, kind, ref FROM download_log WHERE email = ? ORDER BY at DESC LIMIT 50").bind(email).all(),
+    getPrefs(env, email),
+    prefsLinks(env, email, "new_setups"),
+  ]);
+  const recent = dl.results || [];
+  const cars = [...new Set(recent.map((r) => String(r.ref || "").split(/\/| · /)[0].trim()).filter(Boolean))].slice(0, 5);
+  const forYou = [];
+  for (const car of cars) {
+    const r = await db.prepare("SELECT count(*) n FROM setups WHERE season = ? AND car = ?").bind(season, car).first();
+    if (r?.n) forYou.push({ car, n: r.n });
+  }
+  const mail = setupDigestEmail({
+    name: user.name, tz: prefs.tz || "Europe/Madrid", team: user.team, carClass: user.car_class, season,
+    seasonTotal: (tot?.n || 0).toLocaleString("es-ES"), forYou, topCars: top.results || [],
+    recent: recent.map((r) => ({ at: r.at, ref: r.ref })), manageUrl: links.manageUrl, unsubUrl: links.unsubUrl,
+  });
+  const headers = {
+    "List-Unsubscribe": `<${links.oneClickUrl}>`,
+    "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    "List-Id": "Novedades del Setup Vault <new-setups.muntru.me>",
+  };
+  return { mail, headers, enabled: prefs.new_setups };
+}
+
+/** RFC 8058: POST de un clic desde el cliente de correo (sin cookies ni Origin). */
+async function handleOneClickUnsubscribe(url, env) {
+  const email = await prefsVerify(env, url.searchParams.get("u"), url.searchParams.get("t"));
+  if (!email) return [400, { success: false, error: "Enlace no válido." }];
+  const l = url.searchParams.get("l");
+  const p = await getPrefs(env, email);
+  if (l === "all") { p.new_setups = false; p.team_news = false; }
+  else if (PREF_LISTS.includes(l)) p[l] = false;
+  else return [400, { success: false, error: "Lista no válida." }];
+  await savePrefs(env, email, p);
+  console.log("[prefs] baja one-click", l);
+  return [200, { success: true }];
+}
+
+/** Página de preferencias: leer / guardar con el enlace firmado. */
+async function handleEmailPrefs(body, env, ip) {
+  if (await rateLimited(`prefs:${ip}`, 30, 600)) return [429, { success: false, error: "Demasiadas peticiones. Inténtalo en unos minutos." }];
+  const email = await prefsVerify(env, body.u, body.t);
+  if (!email) return [403, { success: false, error: "El enlace no es válido o ha caducado. Usa el último correo que te enviamos." }];
+  const user = await getUser(env, email);
+  const p = await getPrefs(env, email);
+  if (body.set && typeof body.set === "object") {
+    for (const k of PREF_LISTS) if (k in body.set) p[k] = !!body.set[k];
+    if ("tz" in body.set) { const v = validTz(body.set.tz); if (v || body.set.tz === null) p.tz = v; }
+    await savePrefs(env, email, p);
+  }
+  const [local, domain] = email.split("@");
+  return [200, { success: true, email_masked: `${local.slice(0, 2)}${"•".repeat(Math.max(1, Math.min(6, local.length - 2)))}@${domain}`,
+    name: user ? String(user.name || "").split(/\s+/)[0] : null, prefs: { new_setups: p.new_setups, team_news: p.team_news, tz: p.tz }, saved: !!body.set }];
 }
 
 // ───────────────────────────── Race Control: gestión de usuarios ─────────────────────────────
@@ -1275,6 +1394,7 @@ const ROUTES = {
   "/api/setups/admin/user/detail": "admin_user_detail",
   "/api/setups/admin/audit": "admin_audit",
   "/api/setups/admin/stats": "admin_stats",
+  "/api/email/prefs": "email_prefs",
   "/api/contact": "contact",
 };
 // Los antiguos modos "setup_*" (body.mode) y el admin.html con códigos fijos están retirados.
@@ -1301,6 +1421,14 @@ export default {
       if (origin && !ALLOWED_ORIGINS.includes(origin)) return reply(403, { error: "Forbidden: Unauthorized origin" });
       const out = await handleContactToken(env);
       return reply(out[0], out[1]);
+    }
+    if (url.pathname.replace(/\/+$/, "") === "/api/email/unsubscribe") {
+      // RFC 8058 one-click: lo llama el proveedor de correo (Gmail/Yahoo/Apple) sin Origin; solo POST cambia datos.
+      const plain = { ...headers, "Access-Control-Allow-Origin": "*" };
+      if (request.method !== "POST") return new Response("Usa el enlace del correo para gestionar tus avisos: https://muntru.me/email-preferences", { status: 405, headers: { "Content-Type": "text/plain; charset=utf-8", Allow: "POST" } });
+      if (!env.muntrume_vault || !env.JWT_SECRET) return reply(503, { success: false });
+      try { const out = await handleOneClickUnsubscribe(url, env); return new Response(JSON.stringify(out[1]), { status: out[0], headers: plain }); }
+      catch (e) { console.error("[unsub]", e?.message); return reply(500, { success: false }); }
     }
     if (request.method !== "POST") return reply(405, { error: "Method not allowed" });
     if (origin && !ALLOWED_ORIGINS.includes(origin)) return reply(403, { error: "Forbidden: Unauthorized origin" });
@@ -1353,6 +1481,7 @@ export default {
         case "admin_resend": out = await handleAdminResendInvite(request, body, env); break;
         case "admin_status": out = await handleAdminSetStatus(request, body, env); break;
         case "admin_email_preview": out = await handleAdminEmailPreview(request, body, env); break;
+        case "email_prefs": out = await handleEmailPrefs(body, env, ip); break;
         case "contact": out = await handleContact(body, env, ip); break;
         default:
           if (url.pathname.startsWith("/api/setups/")) return reply(404, { success: false, error: "Ruta no encontrada." });

@@ -20,6 +20,15 @@ function firstName(name) {
   return n ? n.split(/\s+/)[0] : "piloto";
 }
 
+/** Saludo según la hora local del piloto (zona guardada en sus preferencias; por defecto Madrid). */
+export function greeting(name, tz) {
+  let h = 12;
+  try { h = Number(new Intl.DateTimeFormat("en-GB", { hour: "numeric", hourCycle: "h23", timeZone: tz || "Europe/Madrid" }).format(new Date())); } catch {}
+  const g = h >= 6 && h < 14 ? "Buenos días" : h >= 14 && h < 21 ? "Buenas tardes" : "Buenas noches";
+  return `${g}, ${firstName(name)}`;
+}
+const hello = (name, tz) => P(`${escapeHtml(greeting(name, tz))}:`);
+
 /**
  * Layout base (Turno 7): una sola plantilla para todos los correos.
  * Tabla centrada de 560px, compatible con Gmail/Outlook/Apple Mail, legible en modo claro y oscuro,
@@ -27,14 +36,15 @@ function firstName(name) {
  */
 const SECURITY_NOTE = "Si no fuiste tú, ignora este correo: no se ha hecho ningún cambio en tu cuenta.";
 const FONT = "Inter,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif";
-function layout({ preheader, title, bodyHtml, cta, footerNote, securityNote = true }) {
+function layout({ preheader, title, bodyHtml, cta, footerNote, securityNote = true, manageUrl, unsubUrl, jsonLd }) {
   const ctaHtml = cta
     ? `<tr><td align="center" class="px" style="padding:6px 32px 26px 32px;">
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr>
-          <td align="center" bgcolor="#10b981" style="border-radius:10px;">
-            <a href="${escapeHtml(cta.url)}" target="_blank" style="display:inline-block;padding:14px 30px;font-family:${FONT};font-size:15px;font-weight:700;color:#04241a;text-decoration:none;border-radius:10px;">${escapeHtml(cta.label)}</a>
-          </td></tr></table>
-        ${cta.hint ? `<p class="muted" style="margin:14px 0 0 0;font-family:${FONT};font-size:12px;line-height:18px;color:#64748b;">${cta.hint}</p>` : ""}
+        <!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${escapeHtml(cta.url)}" style="height:48px;v-text-anchor:middle;width:280px;" arcsize="20%" stroke="f" fillcolor="#10b981"><w:anchorlock/><center style="color:#04241a;font-family:Arial,sans-serif;font-size:15px;font-weight:bold;">${escapeHtml(cta.label)}</center></v:roundrect><![endif]-->
+        <!--[if !mso]><!-- --><table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr>
+          <td align="center" bgcolor="#10b981" class="btn" style="border-radius:10px;">
+            <a href="${escapeHtml(cta.url)}" target="_blank" rel="noopener" class="btn-a" style="display:inline-block;min-width:200px;padding:14px 30px;font-family:${FONT};font-size:16px;line-height:20px;font-weight:700;color:#04241a;text-decoration:none;border-radius:10px;mso-padding-alt:0;">${escapeHtml(cta.label)}</a>
+          </td></tr></table><!--<![endif]-->
+        ${cta.hint ? `<p class="muted" style="margin:14px 0 0 0;font-family:${FONT};font-size:13px;line-height:19px;color:#64748b;">${cta.hint}</p>` : ""}
       </td></tr>`
     : "";
   const notes = [footerNote, securityNote ? escapeHtml(SECURITY_NOTE) : ""].filter(Boolean)
@@ -48,6 +58,7 @@ function layout({ preheader, title, bodyHtml, cta, footerNote, securityNote = tr
 <meta name="color-scheme" content="light dark">
 <meta name="supported-color-schemes" content="light dark">
 <title>${escapeHtml(title)}</title>
+${jsonLd ? `<script type="application/ld+json">${JSON.stringify({ "@context": "http://schema.org", ...jsonLd }).replace(/</g, "\\u003c")}</script>` : ""}
 <style>
   @media only screen and (max-width:600px){
     .container{width:100% !important;}
@@ -64,11 +75,18 @@ function layout({ preheader, title, bodyHtml, cta, footerNote, securityNote = tr
     .box{background-color:#0f141b !important;border-color:#232a35 !important;}
     .code{background-color:#0f141b !important;color:#34d399 !important;border-color:#1f6f52 !important;}
     .sep{border-color:#232a35 !important;}
+    .lnk{color:#34d399 !important;}
   }
+  /* Outlook.com / Outlook apps en modo oscuro */
+  [data-ogsc] .h1,[data-ogsc] .ink{color:#f1f5f9 !important;}
+  [data-ogsc] .body p{color:#cbd5e1 !important;}
+  [data-ogsc] .lnk{color:#34d399 !important;}
+  a[x-apple-data-detectors]{color:inherit !important;text-decoration:none !important;}
 </style>
 </head>
-<body class="bg" style="margin:0;padding:0;background-color:#eef2f5;">
+<body class="bg" style="margin:0;padding:0;background-color:#eef2f5;-webkit-text-size-adjust:100%;">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;mso-hide:all;">${escapeHtml(preheader)}&#8199;&#847;&#8199;&#847;&#8199;&#847;</div>
+<div role="article" aria-roledescription="email" aria-label="${escapeHtml(title)}" lang="es">
 <table role="presentation" class="bg" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#eef2f5">
 <tr><td align="center" style="padding:24px 12px;">
   <table role="presentation" class="container card" width="560" cellspacing="0" cellpadding="0" border="0" style="width:560px;max-width:560px;background-color:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #dfe5eb;">
@@ -89,11 +107,16 @@ function layout({ preheader, title, bodyHtml, cta, footerNote, securityNote = tr
     ${ctaHtml}
     <tr><td class="px muted sep" style="padding:18px 32px 24px 32px;border-top:1px solid #eef2f5;font-family:${FONT};font-size:12px;line-height:18px;color:#64748b;">
       ${notes}
-      <p style="margin:0;">Muntrume Motorsport · <a href="${SITE}" style="color:#059669;text-decoration:none;">muntru.me</a></p>
+      <p style="margin:0;">Muntrume Motorsport · Barcelona · <a href="${SITE}" class="lnk" style="color:#047857;text-decoration:underline;">muntru.me</a></p>
+      ${manageUrl || unsubUrl ? `<p style="margin:8px 0 0 0;">${[
+        manageUrl ? `<a href="${escapeHtml(manageUrl)}" class="lnk" style="color:#047857;text-decoration:underline;">Gestionar notificaciones</a>` : "",
+        unsubUrl ? `<a href="${escapeHtml(unsubUrl)}" class="lnk" style="color:#047857;text-decoration:underline;">Darse de baja de estos correos</a>` : "",
+      ].filter(Boolean).join(" · ")}</p>` : ""}
     </td></tr>
   </table>
 </td></tr>
 </table>
+</div>
 </body>
 </html>`;
 }
@@ -119,7 +142,8 @@ function infoBox(rows) {
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">${tr}</table></td></tr></table>`;
 }
 
-const textFooter = `\n\nSi no fuiste tú, ignora este correo: no se ha hecho ningún cambio en tu cuenta.\n--\nMuntrume Motorsport · ${SITE}\n`;
+const textFooterFor = (manageUrl, unsubUrl) => `\n\nSi no fuiste tú, ignora este correo: no se ha hecho ningún cambio en tu cuenta.\n--\nMuntrume Motorsport · ${SITE}\n${manageUrl ? `Gestionar notificaciones: ${manageUrl}\n` : ""}${unsubUrl ? `Darse de baja: ${unsubUrl}\n` : ""}`;
+const textFooter = textFooterFor();
 
 /** 1) Confirmación al piloto: solicitud recibida */
 export function requestReceivedEmail({ name }) {
@@ -175,13 +199,15 @@ Muntrume Motorsport · ${SITE}
 }
 
 /** 3a) Aprobado · con enlace para crear contraseña (método recomendado) */
-export function approvedLinkEmail({ name, email, link, expiresHours }) {
+export function approvedLinkEmail({ name, email, link, expiresHours, tz, manageUrl }) {
   const subject = "Acceso aprobado · Crea tu contraseña del Setup Vault";
   const html = layout({
+    manageUrl,
     preheader: `Tu acceso está aprobado. El enlace caduca en ${expiresHours} horas.`,
     title: "¡Bienvenido al equipo!",
+    jsonLd: { "@type": "EmailMessage", description: "Crea tu contraseña del Setup Vault", potentialAction: { "@type": "ViewAction", url: link, target: link, name: "Crear contraseña" }, publisher: { "@type": "Organization", name: "Muntrume Motorsport", url: SITE } },
     bodyHtml:
-      P(`Hola ${escapeHtml(firstName(name))},`) +
+      hello(name, tz) +
       P("Control de Carrera ha aprobado tu solicitud. Ya tienes acceso al Setup Vault de Muntrume Motorsport.") +
       infoBox([["Usuario", email], ["Acceso", `${SITE}/setups`]]) +
       P("Para entrar, crea tu contraseña personal con el botón de abajo:"),
@@ -192,7 +218,7 @@ export function approvedLinkEmail({ name, email, link, expiresHours }) {
     },
     footerNote: "Consejo: una vez dentro, usa «Vincular carpeta iRacing» para guardar los setups directamente en Documents\\iRacing\\setups.",
   });
-  const text = `Hola ${firstName(name)},
+  const text = `${greeting(name, tz)}:
 
 Control de Carrera ha aprobado tu solicitud. Ya tienes acceso al Setup Vault de Muntrume Motorsport.
 
@@ -201,25 +227,26 @@ Usuario: ${email}
 Crea tu contraseña personal aquí (enlace personal, de un solo uso, caduca en ${expiresHours} horas):
 ${link}
 
-Si el enlace caduca, usa «¿Olvidaste tu contraseña?» en ${SITE}/setups.${textFooter}`;
+Si el enlace caduca, usa «¿Olvidaste tu contraseña?» en ${SITE}/setups.${textFooterFor(manageUrl)}`;
   return { subject, html, text };
 }
 
 /** 3b) Aprobado · con contraseña temporal (solo si el admin lo elige explícitamente) */
-export function approvedTempPasswordEmail({ name, email, tempPassword }) {
+export function approvedTempPasswordEmail({ name, email, tempPassword, tz, manageUrl }) {
   const subject = "Acceso aprobado · Tu contraseña temporal del Setup Vault";
   const html = layout({
+    manageUrl,
     preheader: "Tu acceso está aprobado. Tendrás que cambiar la contraseña en el primer inicio de sesión.",
     title: "¡Bienvenido al equipo!",
     bodyHtml:
-      P(`Hola ${escapeHtml(firstName(name))},`) +
+      hello(name, tz) +
       P("Control de Carrera ha aprobado tu solicitud. Estas son tus credenciales de acceso:") +
       infoBox([["Usuario", email], ["Contraseña temporal", tempPassword]]) +
       P("En tu primer acceso el sistema te pedirá elegir una contraseña personal. La temporal deja de funcionar en cuanto la cambies."),
     cta: { url: `${SITE}/setups`, label: "Entrar al Setup Vault" },
     footerNote: "Por seguridad, borra este correo después de cambiar la contraseña.",
   });
-  const text = `Hola ${firstName(name)},
+  const text = `${greeting(name, tz)}:
 
 Control de Carrera ha aprobado tu solicitud. Estas son tus credenciales de acceso:
 
@@ -227,7 +254,7 @@ Usuario: ${email}
 Contraseña temporal: ${tempPassword}
 
 Entra en ${SITE}/setups. En tu primer acceso tendrás que elegir una contraseña personal.
-Por seguridad, borra este correo después de cambiarla.${textFooter}`;
+Por seguridad, borra este correo después de cambiarla.${textFooterFor(manageUrl)}`;
   return { subject, html, text };
 }
 
@@ -257,13 +284,15 @@ Muntrume Motorsport · ${SITE}
 }
 
 /** 5) Restablecer / crear contraseña (olvidé mi contraseña o primer acceso) */
-export function resetPasswordEmail({ name, link, expiresMinutes }) {
+export function resetPasswordEmail({ name, link, expiresMinutes, tz, manageUrl }) {
   const subject = "Restablece tu contraseña · Muntrume Setup Vault";
   const html = layout({
+    manageUrl,
     preheader: `Enlace para crear una nueva contraseña. Caduca en ${expiresMinutes} minutos.`,
     title: "Restablecer contraseña",
+    jsonLd: { "@type": "EmailMessage", description: "Restablece tu contraseña del Setup Vault", potentialAction: { "@type": "ViewAction", url: link, target: link, name: "Crear contraseña" }, publisher: { "@type": "Organization", name: "Muntrume Motorsport", url: SITE } },
     bodyHtml:
-      P(`Hola ${escapeHtml(firstName(name))},`) +
+      hello(name, tz) +
       P("Hemos recibido una petición para crear o restablecer la contraseña de tu cuenta del Setup Vault."),
     cta: {
       url: link,
@@ -272,13 +301,13 @@ export function resetPasswordEmail({ name, link, expiresMinutes }) {
     },
     footerNote: "Tu contraseña actual no cambia hasta que elijas una nueva.",
   });
-  const text = `Hola ${firstName(name)},
+  const text = `${greeting(name, tz)}:
 
 Hemos recibido una petición para crear o restablecer la contraseña de tu cuenta del Setup Vault.
 
 Crea tu nueva contraseña aquí (un solo uso, caduca en ${expiresMinutes} minutos):
 ${link}
-Tu contraseña actual no cambia hasta que elijas una nueva.${textFooter}`;
+Tu contraseña actual no cambia hasta que elijas una nueva.${textFooterFor(manageUrl)}`;
   return { subject, html, text };
 }
 
@@ -323,22 +352,151 @@ Muntrume Motorsport · ${SITE}
 }
 
 /** 7) Código de acceso de un solo uso (+ enlace mágico opcional) */
-export function loginCodeEmail({ name, code, link, expiresMinutes }) {
+export function loginCodeEmail({ name, code, link, expiresMinutes, tz, manageUrl }) {
   const subject = `${code} es tu código de acceso · Muntrume Setup Vault`;
   const html = layout({
+    manageUrl,
     preheader: `Tu código de acceso es ${code}. Caduca en ${expiresMinutes} minutos.`,
     title: "Tu código de acceso",
+    jsonLd: link ? { "@type": "EmailMessage", description: `Código de acceso ${code}`, potentialAction: { "@type": "ViewAction", url: link, target: link, name: "Entrar" }, publisher: { "@type": "Organization", name: "Muntrume Motorsport", url: SITE } } : null,
     bodyHtml:
-      P(`Hola ${escapeHtml(firstName(name))},`) +
+      hello(name, tz) +
       P("Usa este código para entrar en el Setup Vault. Es de un solo uso:") +
       codeBox(code) +
       (link ? P("O entra directamente desde este dispositivo con el botón:") : ""),
     cta: link ? { url: link, label: "Entrar al Setup Vault", hint: `El código y el enlace caducan en ${expiresMinutes} minutos y solo funcionan una vez. Nunca te pediremos este código por teléfono ni por chat.` } : null,
   });
-  const text = `Hola ${firstName(name)},
+  const text = `${greeting(name, tz)}:
 
-Tu código de acceso al Setup Vault es: ${code}
+Tu código de acceso al Setup Vault es:\n\n    ${code}\n\n(Código de verificación de Muntrume: ${code})
 ${link ? `\nO entra directamente con este enlace:\n${link}\n` : ""}
-El código${link ? " y el enlace" : ""} caducan en ${expiresMinutes} minutos y solo funcionan una vez. Nunca te pediremos este código por teléfono ni por chat.${textFooter}`;
+El código${link ? " y el enlace" : ""} caducan en ${expiresMinutes} minutos y solo funcionan una vez. Nunca te pediremos este código por teléfono ni por chat.${textFooterFor(manageUrl)}`;
+  return { subject, html, text };
+}
+
+// Nombres legibles de los coches (copiado de assets/js/setups.js; mantener sincronizado).
+export const CAR_LABELS = {
+  "acuraarx06gtp": "Acura ARX-06 GTP",
+  "acuransxevo22gt3": "Acura NSX EVO22 GT3",
+  "amvalkyriegtp": "Aston Martin Valkyrie GTP",
+  "amvantageevogt3": "Aston Martin Vantage EVO GT3",
+  "amvantagegt4": "Aston Martin Vantage GT4",
+  "astonmartin dbr9": "Aston Martin DBR9 GT1",
+  "audi90gto": "Audi 90 GTO",
+  "audir8lmsevo2gt3": "Audi R8 LMS EVO II GT3",
+  "audirs3lmsgen2": "Audi RS 3 LMS Gen 2 TCR",
+  "bmwlmdh": "BMW M Hybrid V8 GTP",
+  "bmwm2csr": "BMW M2 CS Racing",
+  "bmwm2g87": "BMW M2 CS (G87)",
+  "bmwm4evogt4": "BMW M4 EVO GT4",
+  "bmwm4gt3": "BMW M4 GT3",
+  "bmwm8gte": "BMW M8 GTE",
+  "c6r": "Corvette C6.R GT1",
+  "c8rvettegte": "Corvette C8.R GTE",
+  "cadillacvseriesrgtp": "Cadillac V-Series.R GTP",
+  "caterham caterham420r": "Caterham Seven 420R",
+  "caterham caterhamacademy": "Caterham Academy",
+  "chevyvettez06rgt3": "Corvette Z06 GT3.R",
+  "dallaraf3": "Dallara F3",
+  "dallarair18": "Dallara IR-18 Indycar",
+  "dallarap217": "Dallara P217 LMP2",
+  "ferrari296gt3": "Ferrari 296 GT3",
+  "ferrari488gte": "Ferrari 488 GTE",
+  "ferrari499p": "Ferrari 499P Hypercar",
+  "fordgt": "Ford GT GT2",
+  "fordgt2017": "Ford GT GTE 2017",
+  "fordmustanggt3": "Ford Mustang GT3",
+  "fordmustanggt4": "Ford Mustang GT4",
+  "formulair04": "FIA Formula 4 (iR-04)",
+  "formulavee": "Formula Vee",
+  "formulavee formulavee2": "Formula Vee Spec 2",
+  "formulavee formulavee3": "Formula Vee Spec 3",
+  "hondacivictyper": "Honda Civic Type R TCR",
+  "hpdarx01c": "HPD ARX-01c LMP2",
+  "hyundaielantracn7": "Hyundai Elantra N TCR",
+  "hyundaivelostern": "Hyundai Veloster N TCR",
+  "lamborghinievogt3": "Lamborghini Huracán EVO GT3",
+  "ligierjsp320": "Ligier JS P320 LMP3",
+  "mclaren570sgt4": "McLaren 570S GT4",
+  "mclaren720sgt3": "McLaren 720S GT3",
+  "mercedesamgevogt3": "Mercedes-AMG GT3 EVO",
+  "mercedesamggt4": "Mercedes-AMG GT4",
+  "ministock": "Mini Stock",
+  "mx5 cup": "Mazda MX-5 Cup",
+  "mx5 mx52016": "Global Mazda MX-5 2016",
+  "nissangtpzxt": "Nissan GTP ZX-T",
+  "porsche718gt4": "Porsche 718 Cayman GT4",
+  "porsche963gtp": "Porsche 963 GTP",
+  "porsche991rsr": "Porsche 991 RSR GTE",
+  "porsche9922cup": "Porsche 992 Cup (2.0)",
+  "porsche992rgt3": "Porsche 992 GT3 R",
+  "raygr22": "Ray FF1600 (GR22)",
+  "renaultcliocup": "Renault Clio Cup",
+  "specracer": "SCCA Spec Racer Ford",
+  "stockcars2 mustang2019": "NASCAR Cup Mustang 2019",
+  "supercars fordmustanggen3": "Supercars Mustang Gen3",
+  "superformulalights324": "Super Formula Lights 324",
+  "superformulasf23 honda": "Super Formula SF23 Honda",
+  "superformulasf23 toyota": "Super Formula SF23 Toyota",
+  "toyotagr86": "Toyota GR86",
+  "trucks silverado": "NASCAR Craftsman Truck Silverado",
+  "trucks toyotatundra2022": "NASCAR Craftsman Truck Tundra",
+  "mercedesw13": "Mercedes-AMG F1 W13 E Performance"
+};
+const carLabel = (id) => CAR_LABELS[id] || id;
+const refLabel = (ref) => { const s = String(ref || ""); const m = s.match(/^([^/ ]+)(\/| · )(.*)$/); if (!m) return s; const rest = m[3].replace(/^\d\dS\d\//, ""); return `${carLabel(m[1])} · ${rest}`; };
+
+/** Tabla simple (filas de texto) con estilo de la plantilla. */
+function listBox(head, rows) {
+  if (!rows.length) return "";
+  const tr = rows.map(([a, b]) => `<tr>
+      <td class="ink" style="padding:9px 0;border-bottom:1px solid #e5eaef;font-size:14px;line-height:20px;color:#0f172a;font-weight:600;word-break:break-word;">${escapeHtml(a)}</td>
+      <td align="right" style="padding:9px 0 9px 12px;border-bottom:1px solid #e5eaef;font-size:13px;line-height:20px;color:#047857;font-weight:700;white-space:nowrap;">${escapeHtml(b)}</td></tr>`).join("");
+  return `<p class="muted" style="margin:6px 0 6px 0;font-size:12px;line-height:18px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">${escapeHtml(head)}</p>
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" class="box" style="margin:0 0 18px 0;">${tr}</table>`;
+}
+
+/**
+ * 8) Novedades del Setup Vault (correo NO esencial → lleva List-Unsubscribe y enlace visible de baja).
+ * Todo el contenido sale de datos reales de D1 (setups/descargas del piloto); si no hay datos, se omite la sección.
+ */
+export function setupDigestEmail({ name, tz, team, carClass, season, seasonTotal, forYou = [], topCars = [], recent = [], manageUrl, unsubUrl }) {
+  const nCars = forYou.length;
+  const subject = nCars
+    ? `${firstName(name)}, hay setups de ${season} para tus ${nCars === 1 ? "coche" : `${nCars} coches`} · Muntrume`
+    : `${firstName(name)}, novedades del Setup Vault (${season})`;
+  const fmt = (iso) => { try { return new Date(String(iso).replace(" ", "T") + (/[zZ]|[+-]\d\d:?\d\d$/.test(iso) ? "" : "Z")).toLocaleDateString("es-ES", { timeZone: tz || "Europe/Madrid", day: "numeric", month: "short" }); } catch { return ""; } };
+  const profile = [team, carClass].filter(Boolean).join(" · ");
+  const html = layout({
+    manageUrl, unsubUrl, securityNote: false,
+    preheader: nCars ? `${forYou.map((c) => carLabel(c.car)).slice(0, 3).join(", ")}: setups de ${season} listos para descargar.` : `${seasonTotal} setups de ${season} en el Vault.`,
+    title: "Novedades del Setup Vault",
+    jsonLd: { "@type": "EmailMessage", description: `Setups de ${season} en el Setup Vault`, potentialAction: { "@type": "ViewAction", url: `${SITE}/setups`, target: `${SITE}/setups`, name: "Abrir el Vault" }, publisher: { "@type": "Organization", name: "Muntrume Motorsport", url: SITE } },
+    bodyHtml:
+      hello(name, tz) +
+      (profile ? `<p class="muted" style="margin:-6px 0 14px 0;font-size:13px;line-height:19px;color:#64748b;">${escapeHtml(profile)}</p>` : "") +
+      P(nCars
+        ? `Esta temporada (${escapeHtml(season)}) hay setups para los coches que sueles descargar:`
+        : `El Vault tiene <strong>${escapeHtml(seasonTotal)}</strong> setups de la temporada ${escapeHtml(season)}. Estos son los coches con más setups:`) +
+      listBox(nCars ? "Para tus coches" : "Más setups esta temporada", (nCars ? forYou : topCars).map((c) => [carLabel(c.car), `${c.n} setups`])) +
+      listBox("Tus últimas descargas", recent.slice(0, 3).map((r) => [refLabel(r.ref), fmt(r.at)])),
+    cta: { url: `${SITE}/setups`, label: "Abrir el Setup Vault" },
+    footerNote: "Recibes este correo porque eres piloto del Setup Vault de Muntrume Motorsport. Puedes elegir qué avisos recibir o darte de baja con un clic.",
+  });
+  const rows = (nCars ? forYou : topCars).map((c) => `- ${carLabel(c.car)}: ${c.n} setups`).join("\n");
+  const rec = recent.slice(0, 3).map((r) => `- ${refLabel(r.ref)} (${fmt(r.at)})`).join("\n");
+  const text = `${greeting(name, tz)}:
+${profile ? `${profile}\n` : ""}
+${nCars ? `Esta temporada (${season}) hay setups para los coches que sueles descargar:` : `El Vault tiene ${seasonTotal} setups de la temporada ${season}. Coches con más setups:`}
+${rows}
+${rec ? `\nTus últimas descargas:\n${rec}\n` : ""}
+Abrir el Setup Vault: ${SITE}/setups
+
+Recibes este correo porque eres piloto del Setup Vault de Muntrume Motorsport.
+--
+Muntrume Motorsport · ${SITE}
+Gestionar notificaciones: ${manageUrl}
+Darse de baja: ${unsubUrl}
+`;
   return { subject, html, text };
 }
