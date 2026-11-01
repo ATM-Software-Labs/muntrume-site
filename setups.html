@@ -7,12 +7,31 @@
   <meta name="description" content="Portal privado y confidencial de ingeniería, telemetría y setups oficiales para pilotos de Muntrume Motorsport.">
   <meta name="robots" content="noindex, nofollow">
   <link rel="canonical" href="https://muntru.me/setups">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Muntrume Motorsport">
+  <meta property="og:locale" content="es_ES">
+  <meta property="og:title" content="Setup Vault · Muntrume Motorsport">
+  <meta property="og:description" content="Portal privado y confidencial de ingeniería, telemetría y setups oficiales para pilotos de Muntrume Motorsport.">
+  <meta property="og:url" content="https://muntru.me/setups">
+  <meta property="og:image" content="https://muntru.me/assets/img/og-cover.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Muntrume Motorsport GT3 car on track">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Setup Vault · Muntrume Motorsport">
+  <meta name="twitter:description" content="Portal privado y confidencial de ingeniería, telemetría y setups oficiales para pilotos de Muntrume Motorsport.">
+  <meta name="twitter:image" content="https://muntru.me/assets/img/og-cover.jpg">
   
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23059669;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%2310b981;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='48' fill='url(%23grad)'/%3E%3Cpath d='M25 70 L25 30 L35 30 L50 50 L65 30 L75 30 L75 70 L65 70 L65 45 L50 65 L35 45 L35 70 Z' fill='white'/%3E%3Ccircle cx='50' cy='50' r='48' fill='none' stroke='white' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/assets/img/icon-192.png">
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+  <meta name="theme-color" content="#0e1217">
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"></noscript>
 
   <link rel="stylesheet" href="assets/css/tailwind.min.css?v=26s4.6">
 
@@ -72,7 +91,7 @@
   <header class="fixed top-0 left-0 right-0 z-50 h-16 bg-[#0e1217]/90 backdrop-blur-md border-b border-white/10 transition-all duration-300">
     <div class="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
       <a href="/" class="flex items-center gap-3 group focus:outline-none">
-        <img src="assets/img/logo.webp" alt="Muntrume Motorsport" class="h-8 w-auto object-contain transition-transform group-hover:scale-105" width="32" height="32" onerror="this.style.display='none'">
+        <img src="/assets/img/logo-sm.webp" alt="" class="h-8 w-auto object-contain transition-transform group-hover:scale-105" width="31" height="32" onerror="this.style.display='none'">
         <div class="flex items-center gap-2">
           <span class="font-extrabold tracking-tight text-white text-base">MUNTRUME</span>
           <span class="text-[11px] font-semibold tracking-wider text-emerald-400 uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">VAULT</span>
@@ -120,7 +139,7 @@
     <div>
       <div class="flex items-center justify-between pb-6 border-b border-white/10 mb-6">
         <span class="font-extrabold text-white">MUNTRUME</span>
-        <button type="button" onclick="toggleNavDrawer()" class="p-1.5 text-neutral-400 hover:text-white">
+        <button type="button" onclick="toggleNavDrawer()" class="p-1.5 text-neutral-400 hover:text-white" aria-label="Cerrar menú">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
@@ -253,7 +272,7 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
               </div>
               <div>
-                <h3 class="text-sm font-bold text-white">Sincronización Directa 1-Clic con iRacing</h3>
+                <h2 class="text-sm font-bold text-white">Sincronización Directa 1-Clic con iRacing</h2>
                 <p class="text-xs text-neutral-400 mt-0.5 leading-relaxed">
                   Vincula tu carpeta <code class="text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">Documents\iRacing\setups</code> desde el navegador y guarda cada paquete semanal directamente en su carpeta sin descomprimir ZIPs ni mover archivos manualmente.
                 </p>
@@ -265,7 +284,7 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
               </div>
               <div>
-                <h3 class="text-sm font-bold text-white">Paquetes Completos: Qualy 2-Laps, Sprint, Endurance y Lluvia</h3>
+                <h2 class="text-sm font-bold text-white">Paquetes Completos: Qualy 2-Laps, Sprint, Endurance y Lluvia</h2>
                 <p class="text-xs text-neutral-400 mt-0.5 leading-relaxed">
                   Cada circuito incluye variantes agresivas y <strong>Safe</strong>, con cargas de combustible verificadas para clasificación completa y configuraciones específicas de baja carga para circuitos como Le Mans y Monza.
                 </p>
@@ -277,7 +296,7 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
               </div>
               <div>
-                <h3 class="text-sm font-bold text-white">Cobertura Multi-Categoría Oficial</h3>
+                <h2 class="text-sm font-bold text-white">Cobertura Multi-Categoría Oficial</h2>
                 <p class="text-xs text-neutral-400 mt-0.5 leading-relaxed">
                   11 GT3 (Ferrari 296, Porsche 992, McLaren 720S, BMW M4, Mustang, Aston, AMG, Corvette, Huracán, Audi, NSX), los 6 GTP/Hypercar (incluyendo Aston Martin Valkyrie GTP), Dallara P217 LMP2, LMP3, GT4, Porsche Cup y monoplazas.
                 </p>
@@ -341,7 +360,9 @@
                   <button 
                     type="button" 
                     onclick="toggleKeyVisibility()" 
-                    class="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-300 text-xs font-medium"
+                    aria-label="Mostrar u ocultar contraseña"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-300 hover:text-white text-xs font-medium rounded-lg"
+                    style="min-width:44px;min-height:32px"
                   >
                     Ver
                   </button>
@@ -454,7 +475,7 @@
             </form>
 
             <!-- Footer Info -->
-            <div class="mt-6 pt-5 border-t border-white/5 text-center text-[11px] text-neutral-500 leading-relaxed">
+            <div class="mt-6 pt-5 border-t border-white/5 text-center text-[11px] text-neutral-400 leading-relaxed">
               Acceso verificado por Muntrume Motorsport · Sant Andreu, Barcelona
             </div>
           </div>

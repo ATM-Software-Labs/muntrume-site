@@ -825,6 +825,106 @@ async function handleContact(body, env, ip) {
   return [200, { success: true, id: r.id, message: "Mensaje enviado. Te responderemos lo antes posible." }];
 }
 
+// ───────────────────────────── noticias (proxy RSS) ─────────────────────────────
+// Sustituye a rss2json: lee feeds públicos en el servidor, devuelve solo texto plano
+// (sin HTML) y cachea 20 min en el edge. Si un feed falla, simplemente no aporta items.
+const NEWS_FEEDS = [
+  { name: "iRacing Official", url: "https://www.iracing.com/feed/", category: "iracing" },
+  { name: "Traxion.GG", url: "https://www.traxion.gg/tag/iracing/feed/", category: "iracing" },
+  { name: "SimRacer.es", url: "https://simracer.es/feed/", category: "simracing" },
+  { name: "Outlaws Racing", url: "https://outlawsracing.es/feed/", category: "simracing" },
+  { name: "Esports Insider", url: "https://esportsinsider.com/feed", category: "esports",
+    filter: /sim ?racing|iracing|motorsport|formula|\bf1\b|gran turismo|le mans|racing/i },
+  { name: "Motorsport.com", url: "https://www.motorsport.com/rss/all/news/", category: "sport" },
+];
+const NEWS_TTL_S = 1200;
+const NEWS_PER_FEED = 6;
+
+function decodeEntities(s) {
+  return String(s || "")
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
+    .replace(/&#(\d+);/g, (_, n) => { try { return String.fromCodePoint(+n); } catch { return ""; } })
+    .replace(/&#x([0-9a-f]+);/gi, (_, n) => { try { return String.fromCodePoint(parseInt(n, 16)); } catch { return ""; } })
+    .replace(/&quot;/g, '"').replace(/&apos;|&#039;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&");
+}
+function plainText(s, max) {
+  const t = decodeEntities(decodeEntities(s)).replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]*>/g, " ").replace(/[<>]/g, "").replace(/\s+/g, " ").trim();
+  return t.length > max ? t.slice(0, max - 1).trimEnd() + "…" : t;
+}
+function safeUrl(u) {
+  try { const x = new URL(decodeEntities(String(u || "").trim())); return /^https?:$/.test(x.protocol) ? x.href : null; } catch { return null; }
+}
+function tag(block, name) {
+  const m = block.match(new RegExp(`<${name}(?:\\s[^>]*)?>([\\s\\S]*?)</${name}>`, "i"));
+  return m ? m[1] : "";
+}
+function attr(block, re) { const m = block.match(re); return m ? m[1] : null; }
+
+function parseFeed(xml, feed) {
+  const blocks = xml.match(/<item[\s>][\s\S]*?<\/item>/gi) || xml.match(/<entry[\s>][\s\S]*?<\/entry>/gi) || [];
+  const out = [];
+  for (const b of blocks) {
+    const title = plainText(tag(b, "title"), 200);
+    let link = safeUrl(plainText(tag(b, "link"), 600)) || safeUrl(attr(b, /<link[^>]+href="([^"]+)"/i));
+    if (!title || !link) continue;
+    const rawDesc = tag(b, "description") || tag(b, "summary") || tag(b, "content:encoded") || tag(b, "content");
+    const description = plainText(rawDesc, 320);
+    if (feed.filter && !feed.filter.test(title + " " + description)) continue;
+    const dateRaw = plainText(tag(b, "pubDate") || tag(b, "published") || tag(b, "updated") || tag(b, "dc:date"), 60);
+    const d = new Date(dateRaw);
+    const thumbnail = safeUrl(
+      attr(b, /<media:content[^>]+url="([^"]+)"/i) || attr(b, /<media:thumbnail[^>]+url="([^"]+)"/i) ||
+      attr(b, /<enclosure[^>]+url="([^"]+)"[^>]*type="image/i) || attr(b, /<enclosure[^>]+type="image[^"]*"[^>]*url="([^"]+)"/i) ||
+      attr(decodeEntities(tag(b, "content:encoded") + rawDesc), /<img[^>]+src="([^"]+)"/i));
+    out.push({ title, description, link, pubDate: isNaN(d) ? null : d.toISOString(), source: feed.name,
+      thumbnail, autoCategory: feed.category });
+    if (out.length >= NEWS_PER_FEED) break;
+  }
+  return out;
+}
+
+async function fetchFeed(feed) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 5000);
+  try {
+    const r = await fetch(feed.url, { signal: ctrl.signal, redirect: "follow",
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; MuntrumeNews/1.0; +https://muntru.me/news)", Accept: "application/rss+xml, application/atom+xml, application/xml;q=0.9, */*;q=0.5" },
+      cf: { cacheTtl: 600, cacheEverything: true } });
+    if (!r.ok) return { feed, ok: false, status: r.status, items: [] };
+    const xml = (await r.text()).slice(0, 2_000_000);
+    const items = parseFeed(xml, feed);
+    return { feed, ok: items.length > 0, status: r.status, items };
+  } catch (e) {
+    return { feed, ok: false, status: 0, items: [] };
+  } finally { clearTimeout(t); }
+}
+
+let NEWS_MEMO = null; // caché por isolate (caches.default no persiste en *.workers.dev)
+async function handleNews(request, ctx) {
+  if (NEWS_MEMO && Date.now() - NEWS_MEMO.at < NEWS_TTL_S * 1000) return new Response(NEWS_MEMO.body, { status: 200, headers: NEWS_MEMO.headers });
+  const cache = caches.default;
+  const key = new Request(new URL("/api/news?v=1", request.url).href, { method: "GET" });
+  const hit = await cache.match(key);
+  if (hit) return hit;
+  const results = await Promise.all(NEWS_FEEDS.map(fetchFeed));
+  const items = results.flatMap(r => r.items)
+    .sort((a, b) => (b.pubDate ? Date.parse(b.pubDate) : 0) - (a.pubDate ? Date.parse(a.pubDate) : 0));
+  const body = { success: true, updated: new Date().toISOString(),
+    sources: results.map(r => ({ name: r.feed.name, category: r.feed.category, ok: r.ok, count: r.items.length })), items };
+  const okCount = results.filter(r => r.ok).length;
+  const res = new Response(JSON.stringify(body), { status: 200, headers: {
+    "Content-Type": "application/json; charset=utf-8", "Access-Control-Allow-Origin": "*",
+    "X-Content-Type-Options": "nosniff",
+    // Si ningún feed responde, cachear poco para reintentar pronto.
+    "Cache-Control": `public, max-age=${okCount ? 900 : 60}` } });
+  const text = JSON.stringify(body);
+  if (okCount) NEWS_MEMO = { at: Date.now(), body: text, headers: Object.fromEntries(res.headers) };
+  if (ctx && ctx.waitUntil) ctx.waitUntil(cache.put(key, res.clone())); else await cache.put(key, res.clone());
+  return res;
+}
+
 // ───────────────────────────── router ─────────────────────────────
 
 const ROUTES = {
@@ -850,7 +950,7 @@ const LEGACY_MODE_RE = /^setup_/;
 const NEEDS_DB = new Set(Object.values(ROUTES));
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const origin = request.headers.get("Origin") || "";
     const headers = corsHeaders(origin);
     const reply = (status, obj) => new Response(JSON.stringify(obj), { status, headers });
@@ -860,6 +960,10 @@ export default {
     const url = new URL(request.url);
     if (request.method === "GET" && (url.pathname === "/" || url.pathname === "/health")) {
       return reply(200, { status: "healthy", service: "Muntrume Worker Backend" });
+    }
+    if (request.method === "GET" && url.pathname.replace(/\/+$/, "") === "/api/news") {
+      try { return await handleNews(request, ctx); }
+      catch (err) { console.error("[news]", err?.message); return reply(200, { success: false, items: [], sources: [] }); }
     }
     if (request.method !== "POST") return reply(405, { error: "Method not allowed" });
     if (origin && !ALLOWED_ORIGINS.includes(origin)) return reply(403, { error: "Forbidden: Unauthorized origin" });

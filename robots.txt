@@ -1,6 +1,7 @@
 User-agent: *
 Disallow: /setups.html
 Disallow: /admin.html
+Disallow: /admin
 Allow: /
 
 Sitemap: https://muntru.me/sitemap.xml

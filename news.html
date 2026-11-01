@@ -6,16 +6,34 @@
   <title>Press Room &amp; Media Wire · Muntrume Motorsport</title>
   <meta name="description" content="Muntrume Motorsport Press Room & Media Wire - Official team announcements, competitive sim racing news wire, endurance debriefs, and driver reaction training.">
   <link rel="canonical" href="https://muntru.me/news">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Muntrume Motorsport">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:title" content="Press Room &amp; Media Wire · Muntrume Motorsport">
+  <meta property="og:description" content="Muntrume Motorsport Press Room &amp; Media Wire - Official team announcements, competitive sim racing news wire, endurance debriefs, and driver reaction training.">
+  <meta property="og:url" content="https://muntru.me/news">
+  <meta property="og:image" content="https://muntru.me/assets/img/og-cover.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Muntrume Motorsport GT3 car on track">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Press Room &amp; Media Wire · Muntrume Motorsport">
+  <meta name="twitter:description" content="Muntrume Motorsport Press Room &amp; Media Wire - Official team announcements, competitive sim racing news wire, endurance debriefs, and driver reaction training.">
+  <meta name="twitter:image" content="https://muntru.me/assets/img/og-cover.jpg">
   
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23059669;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%2310b981;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='48' fill='url(%23grad)'/%3E%3Cpath d='M25 70 L25 30 L35 30 L50 50 L65 30 L75 30 L75 70 L65 70 L65 45 L50 65 L35 45 L35 70 Z' fill='white'/%3E%3Ccircle cx='50' cy='50' r='48' fill='none' stroke='white' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/assets/img/icon-192.png">
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+  <meta name="theme-color" content="#0e1217">
   
   <!-- Optimized Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"></noscript>
   
   <!-- Marked for Markdown Parsing -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
   <!-- Tailwind CSS CDN with Motorsport Config -->
   <link rel="stylesheet" href="assets/css/tailwind.min.css?v=26s4.6">
@@ -331,7 +349,7 @@
       
       <!-- Brand Logo -->
       <a href="/" class="flex items-center gap-3 group focus:outline-none">
-        <img src="assets/img/logo.webp" alt="Muntrume Motorsport" class="h-8 w-auto object-contain transition-transform group-hover:scale-105" width="32" height="32">
+        <img src="/assets/img/logo-sm.webp" alt="" class="h-8 w-auto object-contain transition-transform group-hover:scale-105" width="31" height="32">
         <div class="flex items-center gap-2">
           <span class="font-extrabold tracking-tight text-white text-base">MUNTRUME</span>
           <span class="text-emerald-400 font-semibold text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">MOTORSPORT</span>
@@ -381,7 +399,7 @@
     <div>
       <div class="flex items-center justify-between pb-4 border-b border-white/10 mb-6">
         <div class="flex items-center gap-2">
-          <img src="assets/img/logo.webp" alt="Logo" class="h-6 w-auto">
+          <img src="/assets/img/logo-sm.webp" alt="" class="h-6 w-auto" width="23" height="24" loading="lazy" decoding="async">
           <span class="font-bold text-white text-sm">MUNTRUME</span>
         </div>
         <button onclick="toggleNavDrawer()" class="p-1 text-neutral-400 hover:text-white" aria-label="Close menu">
@@ -890,7 +908,7 @@
         
         <!-- Brand & Location -->
         <div class="flex items-center gap-3.5">
-          <img src="assets/img/logo.webp" alt="Logo" class="h-8 w-auto" width="32" height="32">
+          <img src="/assets/img/logo-sm.webp" alt="" class="h-8 w-auto" width="31" height="32" loading="lazy" decoding="async">
           <div>
             <div class="font-extrabold text-white text-base tracking-tight">MUNTRUME MOTORSPORT</div>
             <div class="text-xs text-neutral-400">Sant Andreu, Barcelona · Founded 2024</div>
@@ -951,6 +969,8 @@
         .replace(/^-+|-+$/g, '');
     }
 
+    // Solo despachos propios del equipo. Las noticias externas llegan en vivo desde /api/news
+    // (proxy RSS del Worker); si los feeds fallan no se muestra contenido inventado.
     const BASELINE_NEWS = [
       {
         id: "victory-at-24h-spa-virtual",
@@ -965,16 +985,6 @@
         isTeam: true
       },
       {
-        title: "iRacing 2026 Season 3 Build: Dynamic Weather & Tire Compound Overhaul",
-        description: "The latest simulation update introduces next-generation wet track drying lines, advanced temperature dissipation curves, and aero balance adjustments across GT3 machinery.",
-        link: "https://www.iracing.com/news/",
-        pubDate: "2026-07-01T15:00:00Z",
-        source: "iRacing Official",
-        thumbnail: "assets/img/coche1.webp",
-        autoCategory: "iracing",
-        isBreaking: true
-      },
-      {
         id: "new-signing-eduardo-joins-the-team",
         title: "Driver Roster Update: Eduardo Chongkan Appointed Race Engineer",
         description: "Eduardo takes charge of kinematic data modeling and telemetry acquisition for our GT3 squad alongside active competition driving in endurance events.",
@@ -987,26 +997,6 @@
         isTeam: true
       },
       {
-        title: "ESL R1 Virtual Championship: Factory Squads Prepare for Season Showdown",
-        description: "Top simracing esports squads gear up for high-intensity sprint battles with manufacturer prestige and substantial prize pools on the line.",
-        link: "https://esportsinsider.com/",
-        pubDate: "2026-06-27T18:30:00Z",
-        source: "Esports Insider",
-        thumbnail: "assets/img/race1.jpg",
-        autoCategory: "esports",
-        isBreaking: false
-      },
-      {
-        title: "24 Hours of Le Mans: Hypercar Battle Reaches Thrilling Climax",
-        description: "Prototype endurance mastery pushed to the absolute limit around the legendary 13.6-kilometer Circuit de la Sarthe in one of the closest finishes on record.",
-        link: "https://www.motorsport.com/",
-        pubDate: "2026-06-25T14:15:00Z",
-        source: "Motorsport.com",
-        thumbnail: "assets/img/coche3.webp",
-        autoCategory: "sport",
-        isBreaking: false
-      },
-      {
         id: "high-downforce-testing-at-nurburgring-nordschleife",
         title: "High-Downforce Testing Completed at Nürburgring Nordschleife",
         description: "Mateo Berbis and Alberto Trujillo complete intensive 4-hour continuous endurance testing evaluating tire degradation and damper telemetry for upcoming VLN rounds.",
@@ -1017,91 +1007,14 @@
         autoCategory: "team",
         isBreaking: false,
         isTeam: true
-      },
-      {
-        title: "Direct Drive FFB Evolution: 360Hz Telemetry Ingestion Analysis",
-        description: "Technical evaluation of force feedback fidelity, steering shaft resonance, and how high-frequency tire slip telemetry improves driver reaction time.",
-        link: "https://simracer.es/",
-        pubDate: "2026-06-19T11:20:00Z",
-        source: "SimRacer.es",
-        thumbnail: "assets/img/coche2.webp",
-        autoCategory: "simracing",
-        isBreaking: false
-      },
-      {
-        title: "GT World Challenge Europe: Record 60-Car Grid Set for Endurance Cup",
-        description: "Fierce multi-manufacturer competition confirmed as GT3 powerhouses descend on Europe premier circuits with factory-backed driver lineups.",
-        link: "https://www.motorsport.com/",
-        pubDate: "2026-06-18T13:45:00Z",
-        source: "Motorsport.com",
-        thumbnail: "assets/img/coche1.webp",
-        autoCategory: "sport",
-        isBreaking: false
-      },
-      {
-        title: "Porsche TAG Heuer Esports Supercup: Qualifying Cut-Off Looms",
-        description: "One-make 911 GT3 Cup sim competition intensifies as championship contenders fight for crucial points heading into the season finale.",
-        link: "https://dotesports.com/",
-        pubDate: "2026-06-16T17:10:00Z",
-        source: "Dot Esports",
-        thumbnail: "assets/img/race1.jpg",
-        autoCategory: "esports",
-        isBreaking: false
-      },
-      {
-        title: "Next-Gen Haptic Pedals & Motion Platforms: Telemetry Integration Guide",
-        description: "How active pedal brake transducers and motion actuators replicate ABS vibration, locking thresholds, and curb rumble in competitive sim environments.",
-        link: "https://www.xataka.com/",
-        pubDate: "2026-06-14T09:30:00Z",
-        source: "Xataka Tech",
-        thumbnail: "assets/img/coche3.webp",
-        autoCategory: "tech",
-        isBreaking: false
-      },
-      {
-        title: "Load Cell Braking Curves: Master Cylinder Pressure vs Travel",
-        description: "Engineering breakdown on optimizing brake pedal elastometers and progressive resistance for maximum trail-braking control in virtual endurance racing.",
-        link: "https://outlawsracing.es/",
-        pubDate: "2026-06-12T12:00:00Z",
-        source: "Outlaws Racing",
-        thumbnail: "assets/img/coche4.webp",
-        autoCategory: "simracing",
-        isBreaking: false
       }
     ];
 
-    // Primary RSS Feed endpoints for live background sync
-    const RSS_FEEDS = {
-      iracing: [
-        { name: 'iRacing Official', url: 'https://www.iracing.com/feed/', category: 'iracing' },
-        { name: 'Traxion.GG iRacing', url: 'https://www.traxion.gg/tag/iracing/feed/', category: 'iracing' }
-      ],
-      simracing: [
-        { name: 'SimRacer.es', url: 'https://simracer.es/feed/', category: 'simracing' },
-        { name: 'Outlaws Racing', url: 'https://outlawsracing.es/feed/', category: 'simracing' }
-      ],
-      esports: [
-        { name: 'Esports Insider', url: 'https://esportsinsider.com/feed', category: 'esports' },
-        { name: 'Dot Esports', url: 'https://dotesports.com/feed', category: 'esports' }
-      ],
-      sport: [
-        { name: 'Motorsport.com', url: 'https://www.motorsport.com/rss/news/', category: 'sport' }
-      ]
-    };
-
-    const FEED_RESOLVER = 'https://api.rss2json.com/v1/api.json?rss_url=';
+    // Live external news: server-side RSS proxy on the Muntrume Worker (replaces rss2json)
+    const NEWS_API = 'https://muntrume.atrumin16.workers.dev/api/news';
     let allNews = [...BASELINE_NEWS];
-    let newsSources = [
-      { name: 'Muntrume Motorsport', category: 'team' },
-      { name: 'iRacing Official', category: 'iracing' },
-      { name: 'Traxion.GG', category: 'iracing' },
-      { name: 'SimRacer.es', category: 'simracing' },
-      { name: 'Outlaws Racing', category: 'simracing' },
-      { name: 'Esports Insider', category: 'esports' },
-      { name: 'Dot Esports', category: 'esports' },
-      { name: 'Motorsport.com', category: 'sport' },
-      { name: 'Xataka Tech', category: 'tech' }
-    ];
+    let newsSources = [{ name: 'Muntrume Motorsport', category: 'team' }];
+    let liveFeedStatus = 'pending'; // pending | ok | offline
     let currentFilter = 'all';
     let currentSearch = '';
     let lastUpdateTime = new Date();
@@ -1174,7 +1087,8 @@
 
       // Merge into allNews, prioritizing team articles
       const existingTitles = new Set(teamArticles.map(a => a.title.toLowerCase()));
-      allNews = [...teamArticles, ...allNews.filter(a => !existingTitles.has(a.title.toLowerCase()))]
+      // The markdown dispatches supersede the hard-coded team baseline (avoids duplicated stories)
+      allNews = [...teamArticles, ...allNews.filter(a => !(teamArticles.length && a.isTeam) && !existingTitles.has(a.title.toLowerCase()))]
         .sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
 
       document.getElementById('articleCount').textContent = `${allNews.length} Articles`;
@@ -1188,82 +1102,77 @@
       loadAIBrief();
     }
 
-    // 4. FEED FETCHING & PARSING
-    async function fetchRSSFeed(feed) {
+    // 4. LIVE FEED (Worker proxy, plain-text items, cached at the edge)
+    async function fetchLiveNews() {
+      const controller = new AbortController();
+      const tid = setTimeout(() => controller.abort(), 8000);
       try {
-        const controller = new AbortController();
-        const tid = setTimeout(() => controller.abort(), 2500);
-        const response = await fetch(FEED_RESOLVER + encodeURIComponent(feed.url), { signal: controller.signal });
-        clearTimeout(tid);
-        if (!response.ok) return [];
-        const data = await response.json();
-        if (data.status !== 'ok' || !Array.isArray(data.items)) return [];
-        return data.items.slice(0, 5).map(item => ({
-          title: item.title,
-          description: item.description || item.content || '',
-          link: item.link,
-          pubDate: item.pubDate,
-          source: feed.name,
-          thumbnail: extractImage(item),
-          autoCategory: feed.category,
-          isBreaking: false
-        }));
-      } catch (error) { return []; }
+        const res = await fetch(NEWS_API, { signal: controller.signal });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        if (!data || !Array.isArray(data.items)) throw new Error('bad payload');
+        return data;
+      } finally { clearTimeout(tid); }
     }
 
-    function extractImage(item) {
-      if (item.thumbnail) return item.thumbnail;
-      if (item.enclosure && item.enclosure.link) return item.enclosure.link;
-      const content = item.content || item.description || '';
-      const m = content.match(/<img[^>]+src="([^"]+)"/);
-      if (m) return m[1];
-      return null;
+    function safeLink(u) {
+      if (typeof u !== 'string') return '#';
+      if (u.startsWith('/article') || u.startsWith('article.html')) return u;
+      try { const x = new URL(u); return /^https?:$/.test(x.protocol) ? x.href : '#'; } catch (e) { return '#'; }
     }
 
     async function loadAllNews() {
       const loadingEl = document.getElementById('loadingState');
       const featuredEl = document.getElementById('featuredGrid');
-      
+      const errorEl = document.getElementById('errorState');
       try {
-        const feedList = [
-          ...RSS_FEEDS.iracing,
-          ...RSS_FEEDS.simracing,
-          ...RSS_FEEDS.esports,
-          ...RSS_FEEDS.sport
-        ];
-        
-        const feedResults = await Promise.allSettled(feedList.map(f => fetchRSSFeed(f)));
-        const liveItems = [];
-        feedResults.forEach(res => {
-          if (res.status === 'fulfilled' && Array.isArray(res.value)) {
-            liveItems.push(...res.value);
-          }
-        });
-
-        if (liveItems.length > 0) {
-          const existingTitles = new Set(allNews.map(a => a.title.toLowerCase()));
-          const newUnique = liveItems.filter(item => !existingTitles.has(item.title.toLowerCase()));
-          if (newUnique.length > 0) {
-            allNews = [...allNews, ...newUnique].sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
-          }
-        }
-
+        const data = await fetchLiveNews();
+        const liveItems = data.items
+          .filter(i => i && i.title && i.link)
+          .map(i => ({
+            title: String(i.title), description: String(i.description || ''), link: safeLink(i.link),
+            pubDate: i.pubDate || null, source: String(i.source || ''), thumbnail: i.thumbnail || null,
+            autoCategory: (i.autoCategory !== 'esports' && /e-?sports/i.test(i.title)) ? 'esports' : (i.autoCategory || 'sport'),
+            isBreaking: false
+          }));
+        const okSources = (data.sources || []).filter(s => s.ok);
+        newsSources = [{ name: 'Muntrume Motorsport', category: 'team' }, ...okSources];
+        const teamOnly = allNews.filter(a => a.isTeam);
+        const teamTitles = new Set(teamOnly.map(a => a.title.toLowerCase()));
+        allNews = [...teamOnly, ...liveItems.filter(i => !teamTitles.has(i.title.toLowerCase()))]
+          .sort((a, b) => new Date(b.pubDate || 0) - new Date(a.pubDate || 0));
+        liveFeedStatus = liveItems.length ? 'ok' : 'offline';
+      } catch (err) {
+        liveFeedStatus = 'offline';
+      } finally {
         lastUpdateTime = new Date();
         document.getElementById('articleCount').textContent = `${allNews.length} Articles`;
         document.getElementById('sourceCount').textContent = `${newsSources.length} Sources`;
-
         const breaking = allNews.filter(n => n.isBreaking);
         if (breaking.length > 0) showBreakingTicker(breaking);
-
         renderAllSections();
         renderTrending();
         loadAIBrief();
-      } catch (err) {
-        console.warn('[News Wire] Background sync completed with baseline fallback active.');
-      } finally {
+        renderFeedNotice();
         if (loadingEl) loadingEl.classList.add('hidden');
+        if (errorEl) errorEl.classList.add('hidden');
         if (featuredEl) featuredEl.classList.remove('hidden');
       }
+    }
+
+    function renderFeedNotice() {
+      let el = document.getElementById('feedNotice');
+      const host = document.getElementById('featuredGrid');
+      if (!host) return;
+      if (liveFeedStatus !== 'offline') { if (el) el.remove(); return; }
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'feedNotice';
+        el.setAttribute('role', 'status');
+        el.className = 'flex items-center justify-between gap-3 px-4 py-3 rounded-xl bg-[#161c24] border border-white/10 text-xs text-neutral-300';
+        host.prepend(el);
+      }
+      el.innerHTML = '<span>External racing feeds are temporarily unavailable &mdash; showing team dispatches only.</span><button type="button" onclick="loadAllNews()" class="shrink-0 text-emerald-400 font-semibold hover:text-emerald-300">Retry</button>';
     }
 
     function showBreakingTicker(items) {
@@ -1312,7 +1221,7 @@
       }
 
       if (filtered.length === 0) {
-        document.getElementById('mainFeatured').innerHTML = '<div class="text-center py-12 bg-[#161c24] rounded-2xl border border-white/10 text-xs text-neutral-400">No dispatches match current criteria.</div>';
+        document.getElementById('mainFeatured').innerHTML = '<div class="text-center py-12 bg-[#161c24] rounded-2xl border border-white/10 text-xs text-neutral-400"><p class="text-sm font-semibold text-white mb-1">No stories match this filter</p><p>Try another category or clear the search box.</p></div>';
         document.getElementById('sideStories').innerHTML = '';
         document.getElementById('secondaryGrid').innerHTML = '';
         return;
@@ -1328,7 +1237,7 @@
       if (!container) return;
       const esports = allNews.filter(n => n.autoCategory === 'esports').slice(0, 4);
       if (esports.length === 0) {
-        container.innerHTML = '<div class="col-span-full text-center py-6 text-neutral-400 text-xs">No esports dispatches currently available.</div>';
+        container.innerHTML = `<div class="col-span-full text-center py-8 rounded-2xl bg-[#161c24] border border-white/10 text-neutral-400 text-xs">${liveFeedStatus === 'pending' ? 'Loading esports headlines…' : 'No sim racing esports headlines in the live feeds right now.'}</div>`;
         return;
       }
       container.innerHTML = esports.map(renderSecondaryCard).join('');
@@ -1339,7 +1248,7 @@
       if (!container) return;
       const sport = allNews.filter(n => n.autoCategory === 'sport').slice(0, 4);
       if (sport.length === 0) {
-        container.innerHTML = '<div class="col-span-full text-center py-6 text-neutral-400 text-xs">No motorsport dispatches currently available.</div>';
+        container.innerHTML = `<div class="col-span-full text-center py-8 rounded-2xl bg-[#161c24] border border-white/10 text-neutral-400 text-xs">${liveFeedStatus === 'pending' ? 'Loading motorsport headlines…' : 'Motorsport headlines are temporarily unavailable.'}</div>`;
         return;
       }
       container.innerHTML = sport.map(renderSecondaryCard).join('');
@@ -1348,6 +1257,17 @@
     // 6. CARD TEMPLATES (Modern Clean Motorsport Aesthetic)
     function getPlaceholderImg() {
       return 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="500"%3E%3Crect fill="%23161c24" width="800" height="500"/%3E%3Ctext x="50%25" y="45%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="bold" fill="%2310b981"%3EMUNTRUME MOTORSPORT%3C/text%3E%3Ctext x="50%25" y="58%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%2394a3b8"%3ERacing Dispatch%3C/text%3E%3C/svg%3E';
+    }
+
+    function esc(t) {
+      return String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    // Local images: use the lightweight 640px card variants
+    function cardImg(src) {
+      if (!src) return getPlaceholderImg();
+      const m = /^assets\/img\/(coche[1-4]|race1)\.(webp|jpg)$/.exec(src);
+      return m ? `assets/img/${m[1]}-640.webp` : src;
     }
 
     function cleanDesc(html) {
@@ -1362,23 +1282,24 @@
       const isInternal = (a.link || '').startsWith('/article');
       const targetAttr = isInternal ? '' : 'target="_blank" rel="noopener noreferrer"';
       const ctaText = isInternal ? 'Read Full Team Dispatch &rarr;' : 'Read Full Story &rarr;';
+      const href = esc(safeLink(a.link));
       return `
-        <a href="${a.link}" ${targetAttr} class="group block relative overflow-hidden rounded-3xl bg-[#161c24] border border-white/10 hover:border-white/20 transition duration-300 shadow-2xl">
+        <a href="${href}" ${targetAttr} class="group block relative overflow-hidden rounded-3xl bg-[#161c24] border border-white/10 hover:border-white/20 transition duration-300 shadow-2xl">
           <div class="h-80 sm:h-96 w-full relative overflow-hidden bg-[#0e1217]">
-            <img src="${a.thumbnail || getPlaceholderImg()}" onerror="this.onerror=null;this.src='assets/img/coche1.webp';" alt="" class="w-full h-full object-cover transition duration-500 group-hover:scale-105 opacity-80 group-hover:opacity-90">
+            <img src="${esc(cardImg(a.thumbnail))}" onerror="this.onerror=null;this.src='assets/img/coche1-640.webp';" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="w-full h-full object-cover transition duration-500 group-hover:scale-105 opacity-80 group-hover:opacity-90">
             <div class="absolute inset-0 bg-gradient-to-t from-[#161c24] via-[#161c24]/70 to-transparent"></div>
           </div>
           <div class="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
             <div class="flex items-center gap-2.5 mb-3 flex-wrap text-xs">
               ${a.isBreaking ? '<span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold text-[10px] tracking-wider uppercase">Breaking</span>' : ''}
-              <span class="px-2.5 py-0.5 rounded-full bg-[#1c232d] text-neutral-300 border border-white/10 text-[11px] font-medium">${a.source}</span>
+              <span class="px-2.5 py-0.5 rounded-full bg-[#1c232d] text-neutral-300 border border-white/10 text-[11px] font-medium">${esc(a.source)}</span>
               <span class="text-neutral-400 text-xs">${formatDate(a.pubDate)}</span>
             </div>
             <h3 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-2 group-hover:text-emerald-400 transition-colors leading-tight">
-              ${a.title}
+              ${esc(a.title)}
             </h3>
             <p class="text-neutral-300 text-xs sm:text-sm line-clamp-2 mb-4 max-w-3xl leading-relaxed">
-              ${cleanDesc(a.description).substring(0, 240)}...
+              ${esc(cleanDesc(a.description).substring(0, 240))}
             </p>
             <div class="inline-flex items-center gap-2 text-emerald-400 font-semibold text-xs group-hover:translate-x-1 transition-transform">
               <span>${ctaText}</span>
@@ -1392,23 +1313,24 @@
       const isInternal = (a.link || '').startsWith('/article');
       const targetAttr = isInternal ? '' : 'target="_blank" rel="noopener noreferrer"';
       const ctaText = isInternal ? 'Read Full Team Dispatch &rarr;' : 'Read Story &rarr;';
+      const href = esc(safeLink(a.link));
       return `
-        <a href="${a.link}" ${targetAttr} class="group block bg-[#161c24] border border-white/10 hover:border-white/20 rounded-2xl overflow-hidden transition duration-300 shadow-md flex flex-col justify-between">
+        <a href="${href}" ${targetAttr} class="group block bg-[#161c24] border border-white/10 hover:border-white/20 rounded-2xl overflow-hidden transition duration-300 shadow-md flex flex-col justify-between">
           <div>
             <div class="h-44 w-full overflow-hidden bg-[#0e1217] relative">
-              <img src="${a.thumbnail || getPlaceholderImg()}" onerror="this.onerror=null;this.src='assets/img/coche1.webp';" alt="" class="w-full h-full object-cover transition duration-500 group-hover:scale-105 opacity-80 group-hover:opacity-100">
+              <img src="${esc(cardImg(a.thumbnail))}" onerror="this.onerror=null;this.src='assets/img/coche1-640.webp';" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="w-full h-full object-cover transition duration-500 group-hover:scale-105 opacity-80 group-hover:opacity-100">
               <div class="absolute inset-0 bg-gradient-to-t from-[#161c24] via-transparent to-transparent"></div>
             </div>
             <div class="p-5">
               <div class="flex items-center gap-2 mb-2 text-[11px]">
-                <span class="px-2 py-0.5 rounded-md bg-[#1c232d] text-neutral-300 border border-white/5 font-medium">${a.source}</span>
+                <span class="px-2 py-0.5 rounded-md bg-[#1c232d] text-neutral-300 border border-white/5 font-medium">${esc(a.source)}</span>
                 <span class="text-neutral-400">${formatDate(a.pubDate)}</span>
               </div>
-              <h4 class="font-bold text-white text-sm sm:text-base line-clamp-2 mb-2 group-hover:text-emerald-400 transition-colors">
-                ${a.title}
-              </h4>
+              <h3 class="font-bold text-white text-sm sm:text-base line-clamp-2 mb-2 group-hover:text-emerald-400 transition-colors">
+                ${esc(a.title)}
+              </h3>
               <p class="text-neutral-400 text-xs line-clamp-2 leading-relaxed">
-                ${cleanDesc(a.description).substring(0, 110)}...
+                ${esc(cleanDesc(a.description).substring(0, 110))}
               </p>
             </div>
           </div>
@@ -1425,18 +1347,19 @@
       const isInternal = (a.link || '').startsWith('/article');
       const targetAttr = isInternal ? '' : 'target="_blank" rel="noopener noreferrer"';
       const ctaText = isInternal ? 'Read Full Team Dispatch &rarr;' : 'Read Story &rarr;';
+      const href = esc(safeLink(a.link));
       return `
-        <a href="${a.link}" ${targetAttr} class="group block p-5 rounded-2xl bg-[#161c24] border border-white/10 hover:border-white/20 transition duration-300 shadow-sm flex flex-col justify-between">
+        <a href="${href}" ${targetAttr} class="group block p-5 rounded-2xl bg-[#161c24] border border-white/10 hover:border-white/20 transition duration-300 shadow-sm flex flex-col justify-between">
           <div>
             <div class="flex items-center gap-2 mb-2.5 text-[11px]">
-              <span class="px-2 py-0.5 rounded-md bg-[#1c232d] text-neutral-300 border border-white/5 font-medium">${a.source}</span>
+              <span class="px-2 py-0.5 rounded-md bg-[#1c232d] text-neutral-300 border border-white/5 font-medium">${esc(a.source)}</span>
               <span class="text-neutral-400">${formatDate(a.pubDate)}</span>
             </div>
-            <h4 class="font-bold text-white text-sm sm:text-base line-clamp-2 mb-2 group-hover:text-emerald-400 transition-colors">
-              ${a.title}
-            </h4>
+            <h3 class="font-bold text-white text-sm sm:text-base line-clamp-2 mb-2 group-hover:text-emerald-400 transition-colors">
+              ${esc(a.title)}
+            </h3>
             <p class="text-neutral-400 text-xs line-clamp-2 mb-3 leading-relaxed">
-              ${cleanDesc(a.description).substring(0, 100)}...
+              ${esc(cleanDesc(a.description).substring(0, 100))}
             </p>
           </div>
           <div class="text-emerald-400 text-xs font-semibold flex items-center gap-1 group-hover:translate-x-1 transition-transform pt-2">
@@ -1458,11 +1381,11 @@
         const isInternal = (a.link || '').startsWith('/article');
         const targetAttr = isInternal ? '' : 'target="_blank" rel="noopener noreferrer"';
         return `
-          <a href="${a.link}" ${targetAttr} class="flex gap-3 items-start py-2.5 border-b border-white/5 last:border-0 hover:pl-1 transition-all group">
+          <a href="${esc(safeLink(a.link))}" ${targetAttr} class="flex gap-3 items-start py-2.5 border-b border-white/5 last:border-0 hover:pl-1 transition-all group">
             <span class="text-emerald-400 font-bold text-sm">#0${i + 1}</span>
             <div class="min-w-0 flex-1">
-              <h5 class="text-xs font-semibold text-neutral-200 line-clamp-2 group-hover:text-emerald-400 transition-colors">${a.title}</h5>
-              <div class="text-[10px] text-neutral-400 mt-1">${a.source} • ${formatDate(a.pubDate)}</div>
+              <h3 class="text-xs font-semibold text-neutral-200 line-clamp-2 group-hover:text-emerald-400 transition-colors">${esc(a.title)}</h3>
+              <div class="text-[10px] text-neutral-400 mt-1">${esc(a.source)} • ${formatDate(a.pubDate)}</div>
             </div>
           </a>
         `;
@@ -1474,9 +1397,9 @@
       const c = document.getElementById('aiBriefContent');
       if (!c || allNews.length === 0) return;
       const top = allNews.slice(0, 3);
-      let brief = `<p class="mb-2 text-neutral-300">Synthesized <strong>${allNews.length} feeds</strong> across <strong>${newsSources.length} racing channels</strong>:</p><div class="space-y-1.5 text-neutral-300">`;
+      let brief = `<p class="mb-2 text-neutral-300">Synthesized <strong>${allNews.length} stories</strong> from <strong>${newsSources.length} ${newsSources.length === 1 ? 'source' : 'sources'}</strong>:</p><div class="space-y-1.5 text-neutral-300">`;
       top.forEach(a => {
-        brief += `<p class="leading-tight"><span class="text-emerald-400 font-bold">•</span> ${a.title.substring(0, 80)}...</p>`;
+        brief += `<p class="leading-tight"><span class="text-emerald-400 font-bold">•</span> ${esc(a.title.length > 80 ? a.title.substring(0, 80) + '…' : a.title)}</p>`;
       });
       brief += '</div>';
       c.innerHTML = brief;
