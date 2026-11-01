@@ -646,6 +646,49 @@
         </div>
       </div>
 
+      <!-- Category Pills & MMT Standard Bar -->
+      <div class="bg-[#161c24] border border-white/10 rounded-2xl p-4 sm:p-5 shadow-lg space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Categoría Rápida</span>
+            <span class="text-[10px] text-neutral-400">· Filtrado directo en 1 clic</span>
+          </div>
+          <div class="text-[11px] font-mono text-neutral-400">
+            Estándar Oficial: <code class="text-emerald-400 font-bold">MMT_[MODELO]_[CIRCUITO]_[SESIÓN]</code>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-2 text-xs font-semibold">
+          <button type="button" id="catPill-all" onclick="selectMmtCategory('all')" class="mmt-cat-pill px-3 py-1.5 rounded-xl bg-emerald-500 text-neutral-950 font-bold transition">Todas las Categorías</button>
+          <button type="button" id="catPill-gtp" onclick="selectMmtCategory('gtp')" class="mmt-cat-pill px-3 py-1.5 rounded-xl bg-[#0e1217] text-neutral-300 hover:text-white border border-white/5 hover:border-emerald-500/30 transition">⚡ GTP / Hypercars</button>
+          <button type="button" id="catPill-gt3" onclick="selectMmtCategory('gt3')" class="mmt-cat-pill px-3 py-1.5 rounded-xl bg-[#0e1217] text-neutral-300 hover:text-white border border-white/5 hover:border-emerald-500/30 transition">🏁 GT3 Pro</button>
+          <button type="button" id="catPill-gt4" onclick="selectMmtCategory('gt4')" class="mmt-cat-pill px-3 py-1.5 rounded-xl bg-[#0e1217] text-neutral-300 hover:text-white border border-white/5 hover:border-emerald-500/30 transition">⏱️ GT4 Series</button>
+          <button type="button" id="catPill-formulas" onclick="selectMmtCategory('formulas')" class="mmt-cat-pill px-3 py-1.5 rounded-xl bg-[#0e1217] text-neutral-300 hover:text-white border border-white/5 hover:border-emerald-500/30 transition">🚀 Fórmulas & LMP</button>
+          <button type="button" id="catPill-mx5" onclick="selectMmtCategory('mx5')" class="mmt-cat-pill px-3 py-1.5 rounded-xl bg-[#0e1217] text-neutral-300 hover:text-white border border-white/5 hover:border-emerald-500/30 transition">🏎️ Mazda MX-5</button>
+          <button type="button" id="catPill-cup" onclick="selectMmtCategory('cup')" class="mmt-cat-pill px-3 py-1.5 rounded-xl bg-[#0e1217] text-neutral-300 hover:text-white border border-white/5 hover:border-emerald-500/30 transition">🏆 Cup & TCR</button>
+        </div>
+
+        <!-- Quick Tags for Search -->
+        <div class="pt-2 border-t border-white/5 flex flex-wrap items-center gap-1.5 text-[11px] text-neutral-400">
+          <span class="text-neutral-500">Búsqueda rápida MMT:</span>
+          <button type="button" onclick="quickSearchMmt('VALK')" class="px-2 py-0.5 rounded-md bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-300 transition font-mono">VALK</button>
+          <button type="button" onclick="quickSearchMmt('720')" class="px-2 py-0.5 rounded-md bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-300 transition font-mono">720</button>
+          <button type="button" onclick="quickSearchMmt('F296')" class="px-2 py-0.5 rounded-md bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-300 transition font-mono">F296</button>
+          <button type="button" onclick="quickSearchMmt('P911')" class="px-2 py-0.5 rounded-md bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-300 transition font-mono">P911</button>
+          <button type="button" onclick="quickSearchMmt('M4')" class="px-2 py-0.5 rounded-md bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-300 transition font-mono">M4</button>
+          <button type="button" onclick="quickSearchMmt('MX5')" class="px-2 py-0.5 rounded-md bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-300 transition font-mono">MX5</button>
+          <button type="button" onclick="quickSearchMmt('SFL')" class="px-2 py-0.5 rounded-md bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-300 transition font-mono">SFL</button>
+          <button type="button" onclick="quickSearchMmt('LMS')" class="px-2 py-0.5 rounded-md bg-white/5 hover:bg-cyan-500/20 hover:text-cyan-300 transition font-mono">LMS</button>
+          <button type="button" onclick="quickSearchMmt('SPA')" class="px-2 py-0.5 rounded-md bg-white/5 hover:bg-cyan-500/20 hover:text-cyan-300 transition font-mono">SPA</button>
+          <button type="button" onclick="quickSearchMmt('MNZ')" class="px-2 py-0.5 rounded-md bg-white/5 hover:bg-cyan-500/20 hover:text-cyan-300 transition font-mono">MNZ</button>
+          <button type="button" onclick="quickSearchMmt('SEB')" class="px-2 py-0.5 rounded-md bg-white/5 hover:bg-cyan-500/20 hover:text-cyan-300 transition font-mono">SEB</button>
+          <button type="button" onclick="quickSearchMmt('END')" class="px-2 py-0.5 rounded-md bg-white/5 hover:bg-amber-500/20 hover:text-amber-300 transition font-mono">END</button>
+          <button type="button" onclick="quickSearchMmt('Q')" class="px-2 py-0.5 rounded-md bg-white/5 hover:bg-purple-500/20 hover:text-purple-300 transition font-mono">Q</button>
+          <button type="button" onclick="quickSearchMmt('R')" class="px-2 py-0.5 rounded-md bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-300 transition font-mono">R</button>
+          <button type="button" onclick="quickSearchMmt('')" class="px-2 py-0.5 rounded-md bg-red-500/10 hover:bg-red-500/20 text-red-400 transition font-mono">Limpiar</button>
+        </div>
+      </div>
+
       <!-- Search & Filters Toolbar -->
       <div class="bg-[#161c24] border border-white/10 rounded-2xl p-4 sm:p-5 shadow-lg space-y-4">
         

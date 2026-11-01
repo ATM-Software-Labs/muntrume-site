@@ -3349,3 +3349,53 @@ function configureG61TokenPrompt() {
     switchPreviewTab("g61");
   }
 }
+
+// ============================================================================
+// MMT Category Quick Filter & Search Helpers
+// ============================================================================
+const MMT_CATEGORIES = {
+  all: [],
+  gtp: ["amvalkyriegtp", "cadillacvseriesrgtp", "bmwlmdh", "porsche963gtp", "acuraarx06gtp", "ferrari499p"],
+  gt3: ["mclaren720sgt3", "ferrari296gt3", "porsche992rgt3", "bmwm4gt3", "chevyvettez06rgt3", "audir8lmsevo2gt3", "mercedesamgevogt3", "lamborghinievogt3", "amvantageevogt3", "fordmustanggt3"],
+  gt4: ["porsche718gt4", "bmwm4evogt4", "bmwm4gt4", "mercedesamggt4", "amvantagegt4", "mclaren570sgt4", "fordmustanggt4"],
+  formulas: ["superformulalights324", "superformulasf23 honda", "superformulasf23 toyota", "formulair04", "dallaraf3", "dallarair18", "dallarap217", "ligierjsp320", "raygr22", "formulavee"],
+  mx5: ["mx5 cup", "mx mx52016", "mx5 mx52016"],
+  cup: ["porsche992cup", "porsche9922cup", "ferrari296challenge", "toyotagr86", "renaultcliocup"]
+};
+
+function selectMmtCategory(cat) {
+  document.querySelectorAll(".mmt-cat-pill").forEach(p => {
+    p.className = "mmt-cat-pill px-3 py-1.5 rounded-xl bg-[#0e1217] text-neutral-300 hover:text-white border border-white/5 hover:border-emerald-500/30 transition";
+  });
+  const activeBtn = document.getElementById(`catPill-${cat}`);
+  if (activeBtn) {
+    activeBtn.className = "mmt-cat-pill px-3 py-1.5 rounded-xl bg-emerald-500 text-neutral-950 font-bold transition";
+  }
+
+  const carSel = document.getElementById("carSelect");
+  if (!carSel) return;
+
+  if (cat === "all") {
+    carSel.value = "";
+  } else {
+    const list = MMT_CATEGORIES[cat] || [];
+    if (!list.includes(carSel.value) && list.length > 0) {
+      for (const opt of carSel.options) {
+        if (list.includes(opt.value)) {
+          carSel.value = opt.value;
+          break;
+        }
+      }
+    }
+  }
+  onFilterChange();
+}
+
+function quickSearchMmt(keyword) {
+  const searchInput = document.getElementById("searchInput");
+  if (searchInput) {
+    searchInput.value = keyword;
+    onSearchInput();
+    searchInput.focus();
+  }
+}

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title id="pageTitle">Perfil de Piloto Oficial — Muntrume Motorsport</title>
-  <meta name="description" content="Perfil oficial, palmarés, telemetría y últimas carreras del piloto en Muntrume Motorsport Esports.">
+  <title id="pageTitle">Perfil de Piloto — Muntrume Motorsport</title>
+  <meta name="description" content="Perfil oficial del piloto en Muntrume Motorsport Esports iRacing.">
   <link rel="canonical" href="https://muntru.me/pilot">
   
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23059669;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%2310b981;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='48' fill='url(%23grad)'/%3E%3Cpath d='M25 70 L25 30 L35 30 L50 50 L65 30 L75 30 L75 70 L65 70 L65 45 L50 65 L35 45 L35 70 Z' fill='white'/%3E%3Ccircle cx='50' cy='50' r='48' fill='none' stroke='white' stroke-width='2'/%3E%3C/svg%3E">
@@ -34,11 +34,15 @@
       transform: translateY(-2px);
       transition: all 0.2s ease;
     }
-    .badge-trophy {
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.05) 100%);
-      border: 1px solid rgba(245, 158, 11, 0.3);
-    }
   </style>
+
+  <!-- URL Clean Path Normalizer -->
+  <script>
+    if (window.location.pathname.endsWith('.html')) {
+      var cleanPath = window.location.pathname.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
+      window.history.replaceState(null, '', (cleanPath || '/') + window.location.search + window.location.hash);
+    }
+  </script>
 </head>
 <body class="min-h-screen flex flex-col justify-between selection:bg-emerald-500/30 selection:text-emerald-300">
 
@@ -55,7 +59,7 @@
           </span>
         </a>
         <span class="text-xs px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-neutral-400 hidden sm:inline-block">
-          Driver Profiles
+          Dossier de Piloto
         </span>
       </div>
 
@@ -87,7 +91,7 @@
           <option value="eduardo-chongkan">Eduardo Chongkan (#3)</option>
           <option value="juanlu-carrillo">Juanlu Carrillo (#4)</option>
         </select>
-        <a href="/team" class="text-xs text-neutral-400 hover:text-white px-2 py-1">← Roster</a>
+        <a href="/team" class="text-xs text-neutral-400 hover:text-white px-2 py-1">← Volver al Roster</a>
       </div>
     </div>
   </header>
@@ -104,10 +108,10 @@
         <!-- Avatar & Number Badge -->
         <div class="relative flex-shrink-0">
           <div id="driverAvatar" class="w-32 h-32 sm:w-40 sm:h-40 rounded-3xl border-2 border-emerald-500 bg-emerald-950/50 flex items-center justify-center text-4xl sm:text-5xl font-black text-emerald-400 shadow-2xl shadow-emerald-950/80">
-            AT
+            --
           </div>
           <div id="driverNumberBadge" class="absolute -bottom-3 -right-3 px-3 py-1 rounded-xl bg-[#0b0e13] border-2 border-emerald-500 text-emerald-400 font-mono font-black text-sm shadow-lg">
-            #1
+            #--
           </div>
         </div>
 
@@ -115,50 +119,50 @@
         <div class="flex-1 text-center md:text-left space-y-3">
           <div class="flex flex-wrap items-center justify-center md:justify-start gap-2.5">
             <span id="roleBadge" class="text-xs font-extrabold uppercase px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 tracking-wider">
-              FOUNDER & TEAM PRINCIPAL
+              PILOTO OFICIAL
             </span>
             <span id="licenseBadge" class="text-xs font-semibold px-3 py-1 rounded-full bg-white/5 border border-white/10 text-neutral-300">
-              Licencia iRacing: A 4.99
+              Licencia iRacing Oficial
             </span>
-            <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-neutral-400">
-              🇪🇸 Barcelona, España
+            <span id="locationBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-neutral-400">
+              🇪🇸 España
             </span>
           </div>
 
           <h1 id="driverName" class="text-3xl sm:text-5xl font-black text-white tracking-tight">
-            Alberto Trujillo
+            Piloto Muntrume
           </h1>
 
           <p id="driverBio" class="text-sm sm:text-base text-neutral-300 leading-relaxed max-w-3xl">
-            Team Principal, Lead Driver y Director Técnico de Muntrume Motorsport. Especialista en ritmo de carrera de largo aliento, stint management en clásicas de 24 horas y telemetría de suspensiones para GTP y GT3.
+            Cargando perfil oficial del piloto...
           </p>
 
           <!-- Core Attributes Quick Grid -->
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 text-left">
             <div class="p-3 rounded-2xl bg-[#0b0e13]/60 border border-white/5">
-              <div class="text-[10px] text-neutral-500 uppercase font-bold tracking-wider">Coche Titular</div>
-              <div id="primaryCar" class="text-xs font-bold text-white mt-0.5 truncate">Aston Martin Valkyrie GTP</div>
+              <div class="text-[10px] text-neutral-500 uppercase font-bold tracking-wider">Coche Habitual</div>
+              <div id="primaryCar" class="text-xs font-bold text-white mt-0.5 truncate">Por definir</div>
             </div>
             <div class="p-3 rounded-2xl bg-[#0b0e13]/60 border border-white/5">
-              <div class="text-[10px] text-neutral-500 uppercase font-bold tracking-wider">Setup Favorito</div>
-              <div id="favoriteSetup" class="text-xs font-bold text-emerald-400 mt-0.5 truncate">MTM Le Mans Endur 26S4</div>
+              <div class="text-[10px] text-neutral-500 uppercase font-bold tracking-wider">Categoría</div>
+              <div id="specialty" class="text-xs font-bold text-white mt-0.5 truncate">Simracing Oficial</div>
             </div>
             <div class="p-3 rounded-2xl bg-[#0b0e13]/60 border border-white/5">
-              <div class="text-[10px] text-neutral-500 uppercase font-bold tracking-wider">Especialidad</div>
-              <div id="specialty" class="text-xs font-bold text-white mt-0.5 truncate">Resistencia & Estrategia</div>
+              <div class="text-[10px] text-neutral-500 uppercase font-bold tracking-wider">Buzón Oficial</div>
+              <div id="driverEmail" class="text-xs font-mono font-bold text-cyan-300 mt-0.5 truncate">piloto@muntru.me</div>
             </div>
             <div class="p-3 rounded-2xl bg-[#0b0e13]/60 border border-white/5">
-              <div class="text-[10px] text-neutral-500 uppercase font-bold tracking-wider">Correo Interno</div>
-              <div id="driverEmail" class="text-xs font-mono font-bold text-cyan-300 mt-0.5 truncate">alberto@muntru.me</div>
+              <div class="text-[10px] text-neutral-500 uppercase font-bold tracking-wider">Estado de Verificación</div>
+              <div id="verifyStatus" class="text-xs font-bold text-emerald-400 mt-0.5 truncate">Verificación Activa</div>
             </div>
           </div>
 
           <!-- Quick Action Buttons -->
           <div class="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-2">
             <a id="vaultSetupsLink" href="/setups" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs transition flex items-center gap-1.5 shadow-lg shadow-emerald-500/20">
-              <span>🏎️ Ver Setups de Alberto en Vault</span>
+              <span id="vaultSetupsText">🏎️ Ver Setups en el Vault</span>
             </a>
-            <a id="sendMailLink" href="/mail?to=alberto@muntru.me" class="px-4 py-2 rounded-xl bg-[#1c232d] hover:bg-white/10 border border-white/10 text-white font-bold text-xs transition flex items-center gap-1.5">
+            <a id="sendMailLink" href="/mail" class="px-4 py-2 rounded-xl bg-[#1c232d] hover:bg-white/10 border border-white/10 text-white font-bold text-xs transition flex items-center gap-1.5">
               <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
               <span>Contactar por Correo Interno</span>
             </a>
@@ -167,128 +171,124 @@
       </div>
     </div>
 
-    <!-- Career Stats & KPI Counters -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-      <div class="glass-card rounded-2xl p-4 text-center border border-white/5">
-        <div class="text-[11px] text-neutral-400 uppercase font-semibold">iRating Oficial</div>
-        <div id="statIRating" class="text-2xl font-black text-cyan-400 font-mono mt-1">3,450</div>
-        <div class="text-[10px] text-neutral-500 mt-0.5">Top 3% Simracing</div>
+    <!-- Career Stats & Verification Status Cards -->
+    <div class="space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-lg">📊</span>
+          <h2 class="text-xl font-extrabold text-white">Estadísticas y Ficha iRacing</h2>
+        </div>
+        <span class="text-xs text-neutral-400 font-mono">Datos Oficiales Sin Alteraciones</span>
       </div>
-      <div class="glass-card rounded-2xl p-4 text-center border border-white/5">
-        <div class="text-[11px] text-neutral-400 uppercase font-semibold">Safety Rating</div>
-        <div id="statSafety" class="text-2xl font-black text-emerald-400 font-mono mt-1">A 4.99</div>
-        <div class="text-[10px] text-neutral-500 mt-0.5">Máxima Licencia</div>
-      </div>
-      <div class="glass-card rounded-2xl p-4 text-center border border-white/5">
-        <div class="text-[11px] text-neutral-400 uppercase font-semibold">Carreras Disputadas</div>
-        <div id="statStarts" class="text-2xl font-black text-white font-mono mt-1">198</div>
-        <div class="text-[10px] text-neutral-500 mt-0.5">iRacing Oficiales</div>
-      </div>
-      <div class="glass-card rounded-2xl p-4 text-center border border-white/5">
-        <div class="text-[11px] text-neutral-400 uppercase font-semibold">Victorias</div>
-        <div id="statWins" class="text-2xl font-black text-amber-400 font-mono mt-1">36</div>
-        <div id="statWinRate" class="text-[10px] text-amber-300/80 mt-0.5">18.2% Victoria</div>
-      </div>
-      <div class="glass-card rounded-2xl p-4 text-center border border-white/5">
-        <div class="text-[11px] text-neutral-400 uppercase font-semibold">Podios</div>
-        <div id="statPodiums" class="text-2xl font-black text-white font-mono mt-1">92</div>
-        <div class="text-[10px] text-neutral-500 mt-0.5">46.5% Podio</div>
-      </div>
-      <div class="glass-card rounded-2xl p-4 text-center border border-white/5">
-        <div class="text-[11px] text-neutral-400 uppercase font-semibold">Pole Positions</div>
-        <div id="statPoles" class="text-2xl font-black text-purple-400 font-mono mt-1">31</div>
-        <div class="text-[10px] text-neutral-500 mt-0.5">Vueltas Rápidas Q</div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="glass-card rounded-2xl p-5 border border-white/5 space-y-1">
+          <div class="text-[11px] text-neutral-400 uppercase font-semibold">Estado de Validación</div>
+          <div id="statStatusLabel" class="text-base font-extrabold text-emerald-400 font-mono">Piloto Oficial Muntrume</div>
+          <p class="text-[11px] text-neutral-400 leading-relaxed">
+            Ficha en proceso de personalización directa con el piloto.
+          </p>
+        </div>
+
+        <div class="glass-card rounded-2xl p-5 border border-white/5 space-y-1">
+          <div class="text-[11px] text-neutral-400 uppercase font-semibold">Plataforma y Licencia</div>
+          <div id="statPlatform" class="text-base font-extrabold text-cyan-400 font-mono">iRacing Simracing</div>
+          <p class="text-[11px] text-neutral-400 leading-relaxed">
+            Licencia verificada bajo la normativa de competición oficial.
+          </p>
+        </div>
+
+        <div class="glass-card rounded-2xl p-5 border border-white/5 space-y-1">
+          <div class="text-[11px] text-neutral-400 uppercase font-semibold">Club Deportivo</div>
+          <div id="statClub" class="text-base font-extrabold text-white font-mono">Club Iberia / España</div>
+          <p class="text-[11px] text-neutral-400 leading-relaxed">
+            División regional de competición en eventos y ligas iRacing.
+          </p>
+        </div>
+
+        <div class="glass-card rounded-2xl p-5 border border-white/5 space-y-1">
+          <div class="text-[11px] text-neutral-400 uppercase font-semibold">Setups y Telemetría</div>
+          <div id="statSetupsStatus" class="text-base font-extrabold text-amber-400 font-mono">Disponible en Vault</div>
+          <p class="text-[11px] text-neutral-400 leading-relaxed">
+            Sincronizado a través de Garage 61 (Colección 3).
+          </p>
+        </div>
       </div>
     </div>
 
-    <!-- Section: Logros y Palmarés Oficial -->
+    <!-- Section: Palmarés y Logros -->
     <div class="space-y-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
           <span class="text-lg">🏆</span>
-          <h2 class="text-xl font-extrabold text-white">Logros y Palmarés en Resistencia</h2>
+          <h2 class="text-xl font-extrabold text-white">Palmarés y Logros Deportivos</h2>
         </div>
-        <span class="text-xs text-neutral-400 font-mono">Eventos Especiales & Campeonatos</span>
+        <span class="text-xs text-neutral-400 font-mono">Recopilación Directa</span>
       </div>
 
-      <div id="achievementsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <!-- Rendered by JS -->
-      </div>
-    </div>
-
-    <!-- Section: Últimas Carreras Corridas -->
-    <div class="space-y-4">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <span class="text-lg">🏁</span>
-          <h2 class="text-xl font-extrabold text-white">Últimas Carreras Corridas</h2>
+      <div class="glass-card rounded-3xl p-6 sm:p-8 border border-white/10 text-center space-y-3">
+        <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mx-auto text-xl">
+          🏆
         </div>
-        <span class="text-xs text-neutral-400 font-mono">Historial Reciente Verificado</span>
-      </div>
-
-      <!-- Recent Races Table Container -->
-      <div class="glass-card rounded-3xl border border-white/10 overflow-hidden shadow-xl">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs">
-            <thead class="bg-[#0e1217] text-neutral-400 border-b border-white/10 font-bold uppercase tracking-wider text-[10px]">
-              <tr>
-                <th class="py-3 px-4">Evento / Circuito</th>
-                <th class="py-3 px-4">Vehículo & Split</th>
-                <th class="py-3 px-4">Salida (Q)</th>
-                <th class="py-3 px-4">Meta (R)</th>
-                <th class="py-3 px-4">Incidentes</th>
-                <th class="py-3 px-4">Delta iR</th>
-                <th class="py-3 px-4 text-right">Telemetría / Setup</th>
-              </tr>
-            </thead>
-            <tbody id="racesTableBody" class="divide-y divide-white/5">
-              <!-- Rendered by JS -->
-            </tbody>
-          </table>
+        <h3 class="text-lg font-bold text-white">
+          Dossier Deportivo en Actualización
+        </h3>
+        <p class="text-xs sm:text-sm text-neutral-400 max-w-2xl mx-auto leading-relaxed">
+          Los datos de victorias, podios y campeonatos de <strong id="pilotNameNotice" class="text-white">este piloto</strong> se incorporarán directamente a medida que el piloto confirme qué hitos de su trayectoria desea destacar en su perfil oficial.
+        </p>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[11px] text-neutral-400 mt-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span>Sin estadísticas inventadas · Transparencia y rigor institucional</span>
         </div>
       </div>
     </div>
 
     <!-- Section: Estilo de Conducción y Configuración Dinámica -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      
+      <!-- Telemetry Preferences -->
       <div class="glass-card rounded-3xl p-6 border border-white/10 space-y-3">
         <h3 class="text-sm font-extrabold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
           <span>⚙️</span>
-          <span>Preferencias de Telemetría</span>
+          <span>Preferencias de Pista</span>
         </h3>
         <p class="text-xs text-neutral-300 leading-relaxed" id="telemetryPhilosophy">
-          Prefiere plataformas aerodinámicas selladas al suelo a alta velocidad (>250 km/h) con un rake delantero bajo y rebote de heave rígido para maximizar la succión del difusor.
+          Cargando configuración de pista...
         </p>
         <div class="space-y-2 pt-2 text-xs">
           <div class="flex justify-between border-b border-white/5 pb-1">
-            <span class="text-neutral-500">Reparto de Frenada Habitual:</span>
-            <span id="prefBrakeBias" class="font-mono font-bold text-white">54.5% - 55.2%</span>
+            <span class="text-neutral-500">Categoría Titular:</span>
+            <span id="prefCategory" class="font-bold text-white">iRacing Official</span>
           </div>
           <div class="flex justify-between border-b border-white/5 pb-1">
-            <span class="text-neutral-500">Gestión de Rake Dinámico:</span>
-            <span id="prefRake" class="font-mono font-bold text-emerald-400">+11.5 mm a 280 km/h</span>
+            <span class="text-neutral-500">Especialidad:</span>
+            <span id="prefSpecialty" class="font-bold text-emerald-400">Competición en Equipo</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-neutral-500">Estilo de Stint:</span>
-            <span id="prefStint" class="font-bold text-white">Consistent Lap Times (±0.15s)</span>
+            <span class="text-neutral-500">Telemetría:</span>
+            <span id="prefTelemetry" class="font-bold text-white">Garage 61 Sync</span>
           </div>
         </div>
       </div>
 
+      <!-- Team Role & Attribution -->
       <div class="glass-card rounded-3xl p-6 border border-white/10 space-y-3">
         <h3 class="text-sm font-extrabold text-cyan-400 uppercase tracking-wider flex items-center gap-1.5">
           <span>🛡️</span>
-          <span>Equipo & Roles en Muntrume</span>
+          <span>Equipo y Responsabilidades</span>
         </h3>
         <p class="text-xs text-neutral-300 leading-relaxed" id="teamRoleDescription">
-          Encargado de la firma digital de los setups del equipo, supervisión del agente Garage 61 y verificación de consumo de combustible y desgaste de goma para carreras de 6, 12 y 24 horas.
+          Cargando responsabilidades...
         </p>
         <div class="p-3 rounded-2xl bg-[#0b0e13]/60 border border-white/5 text-xs space-y-1">
-          <div class="text-[10px] text-neutral-400 uppercase font-bold">Marca de Agua de Autor:</div>
-          <div class="font-mono text-emerald-400 text-[11px] truncate">muntru.me - Muntrume Motorsport. Setup by Alberto Trujillo.</div>
+          <div class="text-[10px] text-neutral-400 uppercase font-bold">Firma Institucional:</div>
+          <div id="driverWatermark" class="font-mono text-emerald-400 text-[11px] truncate">
+            muntru.me - Muntrume Motorsport.
+          </div>
         </div>
       </div>
 
+      <!-- Webmail Card -->
       <div class="glass-card rounded-3xl p-6 border border-white/10 space-y-3 flex flex-col justify-between">
         <div>
           <h3 class="text-sm font-extrabold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
@@ -296,11 +296,11 @@
             <span>Buzón Oficial en Muntru.me</span>
           </h3>
           <p class="text-xs text-neutral-300 leading-relaxed pt-2">
-            Puedes comunicarte con este piloto o solicitar telemetría personalizada a través del servidor interno de correo del equipo.
+            Puedes comunicarte con este piloto o coordinar sesiones de entreno a través del correo interno del equipo.
           </p>
         </div>
-        <a id="composeMessageBtn" href="/mail?to=alberto@muntru.me" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-black font-extrabold text-xs transition text-center shadow-lg shadow-emerald-500/20">
-          Redactar Mensaje a <span id="composeBtnName">Alberto</span> →
+        <a id="composeMessageBtn" href="/mail" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-black font-extrabold text-xs transition text-center shadow-lg shadow-emerald-500/20">
+          Redactar Mensaje a <span id="composeBtnName">Piloto</span> →
         </a>
       </div>
     </div>
@@ -322,7 +322,7 @@
         <a href="/admin" class="hover:text-white transition">Admin Console</a>
       </div>
       <div>
-        Muntrume Motorsport Esports · Official Pilot Profile Center · Barcelona, Catalunya.
+        Muntrume Motorsport Esports · Official Pilot Profile Center · Sant Andreu, Barcelona.
       </div>
     </div>
   </footer>
@@ -333,162 +333,74 @@
       "alberto-trujillo": {
         slug: "alberto-trujillo",
         name: "Alberto Trujillo",
+        firstName: "Alberto",
         initials: "AT",
         number: "#1",
         colorClass: "border-emerald-500 text-emerald-400 bg-emerald-950/50",
         ambientColor: "rgba(16, 185, 129, 0.15)",
         role: "FOUNDER & TEAM PRINCIPAL",
-        license: "A 4.99",
-        irating: "3,450",
-        ratingSub: "Top 3% Simracing",
-        starts: "198",
-        wins: "36",
-        winRate: "18.2%",
-        podiums: "92",
-        podiumRate: "46.5%",
-        poles: "31",
-        bio: "Team Principal, Lead Driver y Director Técnico de Muntrume Motorsport. Especialista en ritmo de carrera de largo aliento, stint management en clásicas de 24 horas y telemetría de suspensiones para GTP y GT3.",
-        primaryCar: "Aston Martin Valkyrie GTP",
-        favoriteSetup: "MTM Le Mans Endur 26S4",
+        primaryCar: "Aston Martin Valkyrie GTP / GT3",
         specialty: "Resistencia & Estrategia",
         email: "alberto@muntru.me",
-        brakeBias: "54.5% - 55.2%",
-        rakeDyn: "+11.5 mm a 280 km/h",
-        stintStyle: "Consistent Lap Times (±0.15s)",
-        telemetryText: "Prefiere plataformas aerodinámicas selladas al suelo a alta velocidad (>250 km/h) con un rake delantero bajo y rebote de heave rígido para maximizar la succión del difusor.",
-        roleDesc: "Encargado de la firma digital de los setups del equipo, supervisión del agente Garage 61 y verificación de consumo de combustible y desgaste de goma para carreras de 6, 12 y 24 horas.",
-        achievements: [
-          { title: "24H Daytona Split 2", result: "1º Puesto (Victoria GT3)", desc: "Liderando 380 de las 790 vueltas con el Ferrari 296 GT3.", year: "2026" },
-          { title: "12H Sebring Endurance", result: "2º Puesto (Podio IMSA)", desc: "Doble stint nocturno sin penalizaciones ni incidentes.", year: "2026" },
-          { title: "Petit Le Mans Road Atlanta", result: "Top 5 Global Split 1", desc: "Clasificación en P4 y ritmo constante en tráfico multi-clase.", year: "2025" },
-          { title: "Muntrume Endurance Cup", result: "Campeón de Pilotos", desc: "4 victorias consecutivas en clásicas europeas.", year: "2025" }
-        ],
-        races: [
-          { event: "24H Le Mans Endurance", track: "Circuit de la Sarthe", car: "Aston Martin Valkyrie GTP", split: "Split 1", qPos: "P3", rPos: "P2", inc: "3x", delta: "+68 iR", bestLap: "3:22.418", sto: "MTM_26S4_W07_LeMans_Endur.sto" },
-          { event: "6H Watkins Glen", track: "Watkins Glen Boot", car: "Ferrari 296 GT3", split: "Split 2", qPos: "P1 (Pole)", rPos: "P1 (Win)", inc: "1x", delta: "+84 iR", bestLap: "1:42.105", sto: "MTM_26S4_W09_Watkins_Endur.sto" },
-          { event: "IMSA SportsCar Challenge", track: "Sebring International", car: "Cadillac V-Series.R GTP", split: "Top Split", qPos: "P4", rPos: "P3", inc: "4x", delta: "+42 iR", bestLap: "1:47.890", sto: "MTM_26S4_W02_Sebring_Endur.sto" },
-          { event: "GT Sprint Championship", track: "Autodromo di Monza", car: "Aston Martin Vantage GT3", split: "Split 1", qPos: "P1 (Pole)", rPos: "P1 (Win)", inc: "0x", delta: "+75 iR", bestLap: "1:46.312", sto: "MTM_26S4_W12_Monza_Sprint.sto" }
-        ]
+        location: "🇪🇸 Barcelona, España",
+        bio: "Fundador y Team Principal de Muntrume Motorsport. Especialista en estrategia de resistencia, stint management en clásicas de 24 horas y telemetría de suspensiones para GTP y GT3.",
+        telemetryText: "Optimización aerodinámica y de estabilidad para carreras de largo recorrido, equilibrando velocidad punta y consistencia en tráfico multi-clase.",
+        roleDesc: "Dirección general del equipo, supervisión del Setup Vault y coordinación deportiva de la escudería.",
+        watermark: "muntru.me - Muntrume Motorsport. Setup by Alberto Trujillo."
       },
       "mateo-berbis": {
         slug: "mateo-berbis",
         name: "Mateo Berbis",
+        firstName: "Mateo",
         initials: "MB",
         number: "#2",
         colorClass: "border-amber-400 text-amber-300 bg-amber-950/50",
         ambientColor: "rgba(245, 158, 11, 0.15)",
-        role: "SPRINT LEAD & HOTLAP SPECIALIST",
-        license: "A 4.85",
-        irating: "3,210",
-        ratingSub: "Top 5% Simracing",
-        starts: "142",
-        wins: "28",
-        winRate: "19.7%",
-        podiums: "64",
-        podiumRate: "45.1%",
-        poles: "31",
-        bio: "Especialista en ritmo de clasificación y stints explosivos de sprint. Destaca por su capacidad para extraer la máxima adherencia en vuelta única con coches de alto apoyo aerodinámico en GT3 y monoplazas.",
-        primaryCar: "Porsche 992 GT3 R",
-        favoriteSetup: "MTM Qualy Agresivo Nürburgring",
-        specialty: "Qualifying & Sprint Pace",
+        role: "PILOTO OFICIAL · SPRINT & QUALIFYING",
+        primaryCar: "Porsche 992 GT3 R / GT3",
+        specialty: "Sprint & Vuelta Rápida",
         email: "mateo@muntru.me",
-        brakeBias: "53.8% - 54.4%",
-        rakeDyn: "+14.0 mm Rake Agresivo",
-        stintStyle: "Sprint Maximum Attack",
-        telemetryText: "Configuraciones hiper-reactivas con diferencial suelto en deceleración para pivotar el coche en vértice de curva lenta y transferir peso inmediatamente.",
-        roleDesc: "Responsable de marcar las vueltas de clasificación de referencia del equipo en Garage 61 y depurar los setups de qualy de una sola vuelta con baja carga de fuel.",
-        achievements: [
-          { title: "24H Nürburgring Nordschleife", result: "Pole Position GT3", desc: "Marcando 7:51.204 en la vuelta clasificatoria bajo niebla.", year: "2026" },
-          { title: "GT3 Sprint Suzuka", result: "1º Puesto (Victoria)", desc: "Adelantamiento decisivo en 130R en la última vuelta.", year: "2026" },
-          { title: "12H Bathurst Mount Panorama", result: "3º Puesto (Podio)", desc: "Stint de apertura espectacular ganando 8 puestos en The Mountain.", year: "2025" },
-          { title: "Qualy King Trophy", result: "Ganador Temporada 26S2", desc: "14 poles consecutivas en series oficiales iRacing.", year: "2026" }
-        ],
-        races: [
-          { event: "GT Sprint Nürburgring GP", track: "Nürburgring GP", car: "Porsche 992 GT3 R", split: "Split 1", qPos: "P1 (Pole)", rPos: "P1 (Win)", inc: "1x", delta: "+78 iR", bestLap: "1:54.210", sto: "MTM_26S4_W11_Nurburgring_Qualy.sto" },
-          { event: "IMSA Sprint Road America", track: "Road America", car: "BMW M4 GT3", split: "Split 1", qPos: "P2", rPos: "P2", inc: "2x", delta: "+45 iR", bestLap: "2:01.890", sto: "MTM_26S4_W08_RoadAmerica_Sprint.sto" },
-          { event: "GT3 Challenge Algarve", track: "Portimão Algarve", car: "Porsche 992 GT3 R", split: "Split 2", qPos: "P1 (Pole)", rPos: "P1 (Win)", inc: "0x", delta: "+62 iR", bestLap: "1:41.503", sto: "MTM_26S3_W09_Algarve_Qualy.sto" },
-          { event: "Supercar Trophy Bathurst", track: "Mount Panorama", car: "Porsche 992 GT3 R", split: "Split 1", qPos: "P3", rPos: "P3", inc: "4x", delta: "+35 iR", bestLap: "2:00.789", sto: "MTM_26S3_W03_Bathurst_Sprint.sto" }
-        ]
+        location: "🇪🇸 España",
+        bio: "Piloto oficial de Muntrume Motorsport. Especialista en ritmo de clasificación a una vuelta y stints agresivos de sprint en categorías de alto nivel competitivo.",
+        telemetryText: "Puesta a punto enfocada en reactividad en entrada a curva lenta, rotación ágil del tren trasero y aprovechamiento máximo del neumático nuevo en vuelta de qualy.",
+        roleDesc: "Extracción del máximo rendimiento en clasificación para situar los coches del equipo en las primeras filas de parrilla.",
+        watermark: "muntru.me - Muntrume Motorsport. Piloto Oficial: Mateo Berbis."
       },
       "eduardo-chongkan": {
         slug: "eduardo-chongkan",
         name: "Eduardo Chongkan",
+        firstName: "Eduardo",
         initials: "EC",
         number: "#3",
         colorClass: "border-slate-400 text-slate-300 bg-slate-900/60",
         ambientColor: "rgba(148, 163, 184, 0.15)",
-        role: "RACE ENGINEER & PROTOTYPE DRIVER",
-        license: "A 4.92",
-        irating: "3,025",
-        ratingSub: "Top 7% Simracing",
-        starts: "120",
-        wins: "19",
-        winRate: "15.8%",
-        podiums: "52",
-        podiumRate: "43.3%",
-        poles: "18",
-        bio: "Ingeniero Jefe de Telemetría y piloto titular de prototipos LMP2 y GTP. Modela curvas cinemáticas, amortiguación damper-velocity y gestión de combustible con precisión matemática.",
-        primaryCar: "Dallara P217 LMP2",
-        favoriteSetup: "MTM Aero-Kinematic Pro Spa",
-        specialty: "Telemetría & Amortiguación",
+        role: "INGENIERO DE CARRERA & PILOTO PROTOTIPOS",
+        primaryCar: "Dallara P217 LMP2 / Prototipos",
+        specialty: "Telemetría & Cinemática",
         email: "eduardo@muntru.me",
-        brakeBias: "55.0% - 56.0%",
-        rakeDyn: "+9.8 mm Balance Rake",
-        stintStyle: "Tire Heat Preservation",
-        telemetryText: "Ajuste milimétrico de empalmes de amortiguador (bump rubber gap) para evitar que el fondo plano golpee el asfalto en frenadas en apoyo.",
-        roleDesc: "Supervisa las sesiones de .ibt a 60 Hz en el AI Setup Lab de la web y coordina las estrategias de parada en boxes durante las carreras de resistencia.",
-        achievements: [
-          { title: "24H Spa-Francorchamps", result: "Jefe de Estrategia & P2", desc: "Estrategia impecable con cambios de neumáticos en doble stint de lluvia.", year: "2026" },
-          { title: "LMP2 Watkins Glen 6H", result: "1º Puesto (Victoria LMP2)", desc: "Vuelta rápida en carrera y gestión impecable del tráfico GT3.", year: "2025" },
-          { title: "Petit Le Mans Prototype", result: "2º Puesto", desc: "Remontada en los últimos 90 minutos de carrera nocturna.", year: "2025" },
-          { title: "Premio Innovación Telemetría", result: "Ingeniero del Año", desc: "Desarrollo del modelo de predicción de temperaturas de neumáticos.", year: "2026" }
-        ],
-        races: [
-          { event: "IMSA Michelin Pilot Atlanta", track: "Road Atlanta", car: "Dallara P217 LMP2", split: "Split 1", qPos: "P2", rPos: "P1 (Win)", inc: "2x", delta: "+70 iR", bestLap: "1:10.450", sto: "MTM_26S3_W03_RoadAtlanta_Endur.sto" },
-          { event: "6H Spa-Francorchamps", track: "Circuit de Spa", car: "Acura ARX-06 GTP", split: "Split 1", qPos: "P3", rPos: "P2", inc: "3x", delta: "+50 iR", bestLap: "2:04.120", sto: "MTM_26S3_W12_Spa_Endur.sto" },
-          { event: "Prototype Challenge Mosport", track: "Canadian Tire CTMP", car: "Dallara P217 LMP2", split: "Split 2", qPos: "P1 (Pole)", rPos: "P1 (Win)", inc: "1x", delta: "+65 iR", bestLap: "1:08.990", sto: "MTM_26S2_W05_Mosport_Sprint.sto" },
-          { event: "IMSA Sebring 12H", track: "Sebring International", car: "Acura ARX-06 GTP", split: "Split 1", qPos: "P4", rPos: "P3", inc: "5x", delta: "+35 iR", bestLap: "1:48.115", sto: "MTM_26S4_W02_Sebring_Endur.sto" }
-        ]
+        location: "🇪🇸 España",
+        bio: "Ingeniero de carrera y piloto de prototipos en Muntrume Motorsport. Aporta análisis matemático, modelado de amortiguación damper-velocity y gestión de combustible.",
+        telemetryText: "Ajuste milimétrico de alturas de marcha dinámicas y reparto de frenada para preservar la estabilidad en frenadas pronunciadas y curvas rápidas.",
+        roleDesc: "Supervisión técnica de telemetría a 60 Hz en el garaje del equipo y optimización de consumo en carreras de resistencia.",
+        watermark: "muntru.me - Muntrume Motorsport. Piloto Oficial: Eduardo Chongkan."
       },
       "juanlu-carrillo": {
         slug: "juanlu-carrillo",
         name: "Juanlu Carrillo",
+        firstName: "Juanlu",
         initials: "JC",
         number: "#4",
         colorClass: "border-orange-500 text-orange-400 bg-orange-950/50",
         ambientColor: "rgba(249, 115, 22, 0.15)",
-        role: "DEV SQUAD & FORMULA LEAD",
-        license: "B 3.90",
-        irating: "2,420",
-        ratingSub: "Top 15% Simracing",
-        starts: "95",
-        wins: "14",
-        winRate: "14.7%",
-        podiums: "39",
-        podiumRate: "41.0%",
-        poles: "12",
-        bio: "Piloto de desarrollo y líder del programa de monoplazas y copas monomarca. Especialista en carreras cuerpo a cuerpo, rebufos cerrados en pelotón y progresión rápida en Super Formula Lights.",
-        primaryCar: "Super Formula Lights 324",
-        favoriteSetup: "MTM Draft-Master Laguna Seca",
-        specialty: "Wheel-to-Wheel Racecraft",
+        role: "PILOTO OFICIAL · DEV SQUAD & FÓRMULAS",
+        primaryCar: "Super Formula Lights / Mazda MX-5",
+        specialty: "Monoplazas & Carreras en Pelotón",
         email: "juanlu@muntru.me",
-        brakeBias: "56.5% - 57.0%",
-        rakeDyn: "+7.5 mm",
-        stintStyle: "Aggressive Overtaking",
-        telemetryText: "Maximiza el agarre mecánico en curva media-rápida con barras estabilizadoras suaves y control milimétrico del pedal de freno en entrada.",
-        roleDesc: "Punta de lanza del programa de jóvenes pilotos de Muntrume Motorsport y encargado de verificar setups para la serie oficial Global Mazda MX-5 y SFL.",
-        achievements: [
-          { title: "Junior Cup Mazda MX-5", result: "Campeón de Temporada", desc: "Ganando 6 carreras consecutivas en circuitos revirados.", year: "2026" },
-          { title: "SFL Red Bull Ring Sprint", result: "1º Puesto (Victoria)", desc: "Victoria saliendo desde P4 en carrera con lluvia mixta.", year: "2026" },
-          { title: "Premio Limpieza en Pista", result: "Trofeo Safety iRacing", desc: "Menos de 2 incidentes de media por carrera en 2026.", year: "2026" },
-          { title: "Watkins Glen Cup Challenge", result: "2º Puesto", desc: "Podio peleado en meta por solo 0.042 segundos de diferencia.", year: "2025" }
-        ],
-        races: [
-          { event: "Global MX-5 Cup Laguna Seca", track: "WeatherTech Laguna Seca", car: "Global Mazda MX-5", split: "Split 1", qPos: "P1 (Pole)", rPos: "P1 (Win)", inc: "0x", delta: "+55 iR", bestLap: "1:38.410", sto: "MTM_26S4_W04_LagunaSeca_Sprint.sto" },
-          { event: "Super Formula Lights Spielberg", track: "Red Bull Ring", car: "SFL 324", split: "Split 1", qPos: "P3", rPos: "P2", inc: "2x", delta: "+48 iR", bestLap: "1:24.890", sto: "MTM_26S3_W06_RedBullRing_Sprint.sto" },
-          { event: "SFL Watkins Glen Sprint", track: "Watkins Glen Cup", car: "SFL 324", split: "Split 2", qPos: "P2", rPos: "P3", inc: "1x", delta: "+30 iR", bestLap: "1:36.115", sto: "MTM_26S3_W01_Watkins_Sprint.sto" },
-          { event: "Mazda Cup Lime Rock", track: "Lime Rock Park", car: "Global Mazda MX-5", split: "Split 1", qPos: "P1 (Pole)", rPos: "P1 (Win)", inc: "0x", delta: "+50 iR", bestLap: "0:58.740", sto: "MTM_26S2_W08_LimeRock_Sprint.sto" }
-        ]
+        location: "🇪🇸 España",
+        bio: "Piloto del programa de desarrollo y líder en monoplazas de Muntrume Motorsport. Especialista en draft control, luchas rueda a rueda y copas monomarca.",
+        telemetryText: "Puesta a punto equilibrada para maximizar la tracción mecánica en salida de curva y estabilidad en rebufo cerrado a alta velocidad.",
+        roleDesc: "Punta de lanza en el desarrollo de setups para las series de monoplazas y copas de formación del equipo.",
+        watermark: "muntru.me - Muntrume Motorsport. Piloto Oficial: Juanlu Carrillo."
       }
     };
 
@@ -506,100 +418,48 @@
       document.getElementById("driverAvatar").className = `w-32 h-32 sm:w-40 sm:h-40 rounded-3xl border-2 flex items-center justify-center text-4xl sm:text-5xl font-black shadow-2xl ${driver.colorClass}`;
       document.getElementById("driverNumberBadge").textContent = driver.number;
       document.getElementById("roleBadge").textContent = driver.role;
-      document.getElementById("licenseBadge").textContent = `Licencia iRacing: ${driver.license}`;
+      document.getElementById("locationBadge").textContent = driver.location;
       document.getElementById("ambientGlow").style.backgroundColor = driver.ambientColor;
 
       // Attributes
       document.getElementById("primaryCar").textContent = driver.primaryCar;
-      document.getElementById("favoriteSetup").textContent = driver.favoriteSetup;
       document.getElementById("specialty").textContent = driver.specialty;
       document.getElementById("driverEmail").textContent = driver.email;
 
-      // Links
+      // Notice name
+      const noticeName = document.getElementById("pilotNameNotice");
+      if (noticeName) noticeName.textContent = driver.name;
+
+      // Links & Buttons Personalized (Zero hardcoded names)
+      const vaultBtnText = document.getElementById("vaultSetupsText");
+      if (vaultBtnText) {
+        vaultBtnText.textContent = `🏎️ Ver Setups de ${driver.firstName} en Vault`;
+      }
+      document.getElementById("vaultSetupsLink").href = `/setups?q=${encodeURIComponent(driver.firstName)}`;
       document.getElementById("sendMailLink").href = `/mail?to=${encodeURIComponent(driver.email)}`;
       document.getElementById("composeMessageBtn").href = `/mail?to=${encodeURIComponent(driver.email)}`;
-      document.getElementById("composeBtnName").textContent = driver.name.split(" ")[0];
+      document.getElementById("composeBtnName").textContent = driver.firstName;
 
-      // Stats
-      document.getElementById("statIRating").textContent = driver.irating;
-      document.getElementById("statSafety").textContent = driver.license;
-      document.getElementById("statStarts").textContent = driver.starts;
-      document.getElementById("statWins").textContent = driver.wins;
-      document.getElementById("statWinRate").textContent = `${driver.winRate} Victoria`;
-      document.getElementById("statPodiums").textContent = driver.podiums;
-      document.getElementById("statPoles").textContent = driver.poles;
-
-      // Driving Style
-      document.getElementById("prefBrakeBias").textContent = driver.brakeBias;
-      document.getElementById("prefRake").textContent = driver.rakeDyn;
-      document.getElementById("prefStint").textContent = driver.stintStyle;
+      // Driving Style & Attribution
+      document.getElementById("prefSpecialty").textContent = driver.specialty;
       document.getElementById("telemetryPhilosophy").textContent = driver.telemetryText;
       document.getElementById("teamRoleDescription").textContent = driver.roleDesc;
+      document.getElementById("driverWatermark").textContent = driver.watermark;
 
-      // Achievements Cards
-      const achGrid = document.getElementById("achievementsGrid");
-      achGrid.innerHTML = driver.achievements.map(a => `
-        <div class="glass-card glass-card-hover rounded-2xl p-5 border border-white/5 space-y-2 relative overflow-hidden">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-lg border border-amber-500/20">${a.year}</span>
-            <span class="text-base">🥇</span>
-          </div>
-          <div class="text-sm font-black text-white">${escapeHtml(a.title)}</div>
-          <div class="text-xs font-extrabold text-amber-300 font-mono">${escapeHtml(a.result)}</div>
-          <p class="text-[11px] text-neutral-400 leading-snug">${escapeHtml(a.desc)}</p>
-        </div>
-      `).join("");
-
-      // Recent Races Table
-      const rBody = document.getElementById("racesTableBody");
-      rBody.innerHTML = driver.races.map(r => {
-        const isWin = r.rPos.includes("Win") || r.rPos === "P1";
-        const isPodium = isWin || r.rPos === "P2" || r.rPos === "P3";
-        const badgeColor = isWin ? "text-amber-400 font-black" : isPodium ? "text-white font-bold" : "text-neutral-300";
-        return `
-          <tr class="hover:bg-white/[0.02] transition">
-            <td class="py-3 px-4">
-              <div class="font-bold text-white">${escapeHtml(r.event)}</div>
-              <div class="text-[10px] text-neutral-500">${escapeHtml(r.track)}</div>
-            </td>
-            <td class="py-3 px-4 whitespace-nowrap">
-              <div class="text-neutral-300">${escapeHtml(r.car)}</div>
-              <div class="text-[10px] text-emerald-400 font-mono">${escapeHtml(r.split)}</div>
-            </td>
-            <td class="py-3 px-4 font-mono font-bold text-neutral-400 whitespace-nowrap">${escapeHtml(r.qPos)}</td>
-            <td class="py-3 px-4 font-mono ${badgeColor} whitespace-nowrap">
-              <span class="px-2 py-0.5 rounded ${isWin ? 'bg-amber-500/15 border border-amber-500/30' : isPodium ? 'bg-white/10' : ''}">${escapeHtml(r.rPos)}</span>
-            </td>
-            <td class="py-3 px-4 font-mono text-neutral-400 whitespace-nowrap">${escapeHtml(r.inc)}</td>
-            <td class="py-3 px-4 font-mono font-bold text-emerald-400 whitespace-nowrap">${escapeHtml(r.delta)}</td>
-            <td class="py-3 px-4 text-right whitespace-nowrap">
-              <a href="/setups" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono text-[11px] font-bold transition">
-                <span>${escapeHtml(r.bestLap)}</span>
-                <span class="text-xs">↗</span>
-              </a>
-            </td>
-          </tr>
-        `;
-      }).join("");
-    }
-
-    function escapeHtml(str) {
-      if (!str) return "";
-      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      // URL state without refresh
+      const newUrl = `${window.location.pathname}?id=${driver.slug}`;
+      window.history.replaceState({ slug: driver.slug }, '', newUrl);
     }
 
     function onDriverChange(slug) {
-      const url = new URL(window.location);
-      url.searchParams.set("id", slug);
-      window.history.pushState({}, "", url);
       renderDriver(slug);
     }
 
-    // Init from URL param
-    window.addEventListener("DOMContentLoaded", () => {
-      const params = new URLSearchParams(window.location.search);
-      const id = params.get("id") || "alberto-trujillo";
-      renderDriver(id);
+    // Initialize on load with query param
+    document.addEventListener("DOMContentLoaded", () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const initialId = urlParams.get("id") || urlParams.get("p") || "alberto-trujillo";
+      renderDriver(initialId);
     });
   </script>
 </body>
