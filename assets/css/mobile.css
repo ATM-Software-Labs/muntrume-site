@@ -1,5 +1,6 @@
-/* Mobile polish (Turno 6): tap targets >=44px, legible text, no iOS input zoom */
-@media (max-width: 1023px) {
+/* Mobile/tablet polish (Turno 6): tap targets >=44px, legible text, no iOS input zoom.
+   Applies to narrow screens AND to any touch device (iPad landscape 1024-1366px). */
+@media (max-width: 1023px), (pointer: coarse) {
   /* hamburger + header logo */
   button[onclick="toggleNavDrawer()"] { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
   header a[href="/"], nav a[href="/"] { min-height: 44px; display: inline-flex; align-items: center; }
@@ -25,8 +26,9 @@
   /* landscape phones: keep hero/header compact */
   .min-h-screen { min-height: auto !important; }
 }
-/* Tablets / landscape phones (768-1023px): desktop nav does not fit, use the drawer */
-@media (min-width: 768px) and (max-width: 1023px) {
+/* Tablets / landscape phones (768-1199px, incl. iPad landscape): desktop nav does not fit, use the drawer */
+@media (min-width: 768px) and (max-width: 1199px) {
+  header .hidden.lg\:flex.rounded-full { display: none !important; }
   header nav.md\:flex { display: none !important; }
   button[onclick="toggleNavDrawer()"].md\:hidden { display: inline-flex !important; }
   #mobileDrawer.md\:hidden { display: flex !important; }
