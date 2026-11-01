@@ -37,6 +37,7 @@
 
   <link rel="stylesheet" href="assets/css/tailwind.min.css?v=26s4.6">
   <link rel="stylesheet" href="/assets/css/mobile.css?v=2">
+  <link rel="stylesheet" href="/assets/css/admin.css?v=t7">
 
   <style>
     :root { color-scheme: dark; }
@@ -389,6 +390,32 @@
               >
                 <span id="loginBtnText">Entrar al Vault &rarr;</span>
               </button>
+              <div class="flex items-center gap-3 pt-1 text-[11px] text-neutral-500" aria-hidden="true"><span class="flex-1 h-px bg-white/10"></span>o<span class="flex-1 h-px bg-white/10"></span></div>
+              <button type="button" onclick="showCodeLogin()" class="w-full py-3 rounded-xl bg-[#0e1217] hover:bg-white/5 border border-white/15 text-white font-semibold text-sm transition flex items-center justify-center gap-2">
+                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                Entrar con código por email
+              </button>
+            </form>
+
+            <!-- FORM 1b: ACCESO SIN CONTRASEÑA (código de 6 dígitos por email) -->
+            <form id="codeLoginForm" onsubmit="handleCodeLoginSubmit(event)" class="space-y-4 hidden" novalidate>
+              <p class="text-xs text-neutral-400 leading-relaxed">Te enviamos un <strong class="text-neutral-200">código de 6 dígitos</strong> (válido 10 minutos, un solo uso) al correo con el que estás autorizado. Tu contraseña sigue funcionando igual.</p>
+              <div>
+                <label for="codeEmail" class="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-1.5">Correo Electrónico de Piloto</label>
+                <input type="email" id="codeEmail" required maxlength="254" autocomplete="email" placeholder="tu.correo@ejemplo.com" class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500 transition">
+              </div>
+              <div id="codeStep2" class="hidden">
+                <label for="codeInput" class="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-1.5">Código de 6 dígitos</label>
+                <input type="text" id="codeInput" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="••••••" class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-3 text-2xl tracking-[0.5em] text-center font-mono text-white placeholder-neutral-600 focus:outline-none focus:border-emerald-500 transition">
+                <div class="flex items-center justify-between mt-2 text-xs">
+                  <span class="text-neutral-500" id="codeHint">Revisa también la carpeta de spam.</span>
+                  <button type="button" id="codeResendBtn" onclick="requestLoginCode(true)" class="text-emerald-400 hover:text-emerald-300 font-semibold disabled:text-neutral-500 disabled:cursor-not-allowed" disabled>Reenviar</button>
+                </div>
+              </div>
+              <div id="codeInfo" class="hidden p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs leading-relaxed" role="status"></div>
+              <div id="codeError" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs leading-relaxed" role="alert"></div>
+              <button type="submit" id="codeSubmitBtn" class="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-neutral-950 font-bold text-sm transition">Enviarme el código</button>
+              <button type="button" onclick="hideCodeLogin()" class="w-full text-xs text-neutral-400 hover:text-white py-2">&larr; Entrar con contraseña</button>
             </form>
 
             <!-- FORM 2: SOLICITUD DE INGRESO (REQUEST TO JOIN) -->
@@ -795,59 +822,74 @@
 
     </div>
 
-    <!-- ADMIN MODAL (Race Control) -->
-    <div id="adminModal" class="hidden fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="adminModalTitle">
-      <div class="fixed inset-0 bg-black/75 backdrop-blur-sm" onclick="closeAdminModal()"></div>
-      <div class="relative min-h-screen flex items-center justify-center p-4">
-        <div class="relative w-full max-w-3xl bg-[#161c24] border border-amber-500/30 rounded-3xl p-5 sm:p-8 shadow-2xl overflow-hidden text-neutral-200">
-          <div class="flex items-center justify-between pb-4 border-b border-white/10 mb-5 gap-3">
-            <div class="flex items-center gap-2.5">
-              <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
-              <h2 id="adminModalTitle" class="text-lg sm:text-xl font-extrabold text-white">Race Control · Gestión de Pilotos</h2>
-            </div>
-            <div class="flex items-center gap-2">
-              <button type="button" onclick="sendEmailPreview()" id="emailPreviewBtn" class="hidden sm:inline-flex px-3 py-1.5 rounded-lg bg-[#0e1217] hover:bg-white/10 border border-white/10 text-[11px] font-semibold text-neutral-300" title="Envía todas las plantillas de correo, marcadas como [PRUEBA], solo a tu propio correo de admin">✉️ Probar correos</button>
-              <button type="button" onclick="closeAdminModal()" class="text-neutral-400 hover:text-white p-1 rounded-lg" aria-label="Cerrar">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-              </button>
+    <!-- ADMIN CONSOLE (Race Control) — estilo consola de administración -->
+    <div id="adminModal" class="hidden adm-root" role="dialog" aria-modal="true" aria-labelledby="adminModalTitle">
+      <div class="adm-shell">
+        <header class="adm-top">
+          <div class="adm-brand">
+            <img src="assets/img/logo-64.webp" width="32" height="32" alt="" class="adm-logo">
+            <div>
+              <h2 id="adminModalTitle">Race Control</h2>
+              <p class="adm-sub">Consola de administración · Setup Vault</p>
             </div>
           </div>
+          <div class="adm-top-actions">
+            <button type="button" onclick="sendEmailPreview()" id="emailPreviewBtn" class="adm-btn adm-btn-ghost" title="Envía todas las plantillas de correo, marcadas como [PRUEBA], solo a tu propio correo de admin">✉️ <span class="adm-hide-sm">Probar correos</span></button>
+            <button type="button" onclick="closeAdminModal()" class="adm-icon-btn" aria-label="Cerrar consola">
+              <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+        </header>
 
+        <nav class="adm-nav" role="tablist" aria-label="Secciones de Race Control">
+          <button type="button" role="tab" id="tabMemBtn" onclick="switchAdminTab('members')" class="adm-tab">👥 Usuarios <span class="adm-count" id="adminMembersCount">0</span></button>
+          <button type="button" role="tab" id="tabReqBtn" onclick="switchAdminTab('requests')" class="adm-tab">📨 Solicitudes <span class="adm-count adm-count-warn" id="adminPendingCount">0</span></button>
+          <button type="button" role="tab" id="tabAddBtn" onclick="switchAdminTab('add')" class="adm-tab">➕ Añadir usuario</button>
+          <button type="button" role="tab" id="tabAudBtn" onclick="switchAdminTab('audit')" class="adm-tab">🧾 Auditoría</button>
+          <button type="button" role="tab" id="tabStaBtn" onclick="switchAdminTab('stats')" class="adm-tab">📊 Estadísticas</button>
+        </nav>
+
+        <main class="adm-main">
           <div id="adminNotice" class="hidden mb-4 p-3 rounded-xl text-xs"></div>
 
-          <!-- Tabs -->
-          <div class="flex p-1 bg-[#0e1217] rounded-xl border border-white/10 mb-5 text-[11px] sm:text-xs font-semibold">
-            <button type="button" id="tabReqBtn" onclick="switchAdminTab('requests')" class="flex-1 py-2 rounded-lg bg-[#161c24] text-amber-400 shadow">
-              Solicitudes (<span id="adminPendingCount">0</span> pend.)
-            </button>
-            <button type="button" id="tabMemBtn" onclick="switchAdminTab('members')" class="flex-1 py-2 rounded-lg text-neutral-400 hover:text-white">
-              Pilotos (<span id="adminMembersCount">0</span>)
-            </button>
-            <button type="button" id="tabAddBtn" onclick="switchAdminTab('add')" class="flex-1 py-2 rounded-lg text-neutral-400 hover:text-white">
-              + Alta directa
-            </button>
-          </div>
+          <!-- Usuarios -->
+          <section id="adminTabMembers" class="adm-section">
+            <div class="adm-toolbar">
+              <div class="adm-search">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z"/></svg>
+                <input type="search" id="admUserSearch" oninput="renderAdminMembers()" placeholder="Buscar por nombre, correo, equipo o clase" aria-label="Buscar usuarios">
+              </div>
+              <select id="admStatusFilter" onchange="renderAdminMembers()" aria-label="Filtrar por estado" class="adm-select">
+                <option value="all">Todos los estados</option>
+                <option value="active">Activos</option>
+                <option value="pending">Pendientes de contraseña</option>
+                <option value="inactive">Suspendidos</option>
+              </select>
+              <select id="admRoleFilter" onchange="renderAdminMembers()" aria-label="Filtrar por rol" class="adm-select">
+                <option value="all">Todos los roles</option>
+                <option value="driver">Pilotos</option>
+                <option value="admin">Admins</option>
+              </select>
+              <button type="button" onclick="loadAdminData()" class="adm-btn adm-btn-ghost" aria-label="Actualizar">↻</button>
+            </div>
+            <div id="adminMembersList" class="adm-table-wrap"></div>
+          </section>
 
-          <!-- Tab Content 1: Solicitudes -->
-          <div id="adminTabRequests" class="space-y-3">
-            <div class="flex flex-wrap gap-1.5 text-[11px] font-semibold" id="adminReqFilters">
+          <!-- Solicitudes -->
+          <section id="adminTabRequests" class="adm-section hidden">
+            <div class="flex flex-wrap gap-1.5 text-[11px] font-semibold mb-3" id="adminReqFilters">
               <button type="button" data-filter="pending" onclick="setAdminRequestFilter('pending')" class="px-2.5 py-1 rounded-full border border-white/10">Pendientes</button>
               <button type="button" data-filter="approved" onclick="setAdminRequestFilter('approved')" class="px-2.5 py-1 rounded-full border border-white/10">Aprobadas</button>
               <button type="button" data-filter="rejected" onclick="setAdminRequestFilter('rejected')" class="px-2.5 py-1 rounded-full border border-white/10">Rechazadas</button>
               <button type="button" data-filter="all" onclick="setAdminRequestFilter('all')" class="px-2.5 py-1 rounded-full border border-white/10">Todas</button>
               <button type="button" onclick="loadAdminData()" class="ml-auto px-2.5 py-1 rounded-full border border-white/10 text-neutral-400 hover:text-white">↻ Actualizar</button>
             </div>
-            <div id="adminRequestsList" class="space-y-3 max-h-[26rem] overflow-y-auto pr-1"></div>
-          </div>
+            <div id="adminRequestsList" class="space-y-3"></div>
+          </section>
 
-          <!-- Tab Content 2: Miembros -->
-          <div id="adminTabMembers" class="hidden">
-            <div id="adminMembersList" class="space-y-2 max-h-[28rem] overflow-y-auto pr-1"></div>
-          </div>
-
-          <!-- Tab Content 3: Alta Directa -->
-          <div id="adminTabAdd" class="hidden space-y-4">
-            <p class="text-xs text-neutral-400 leading-relaxed">Da de alta a un piloto sin solicitud previa. Por defecto recibe un <strong class="text-neutral-200">enlace personal (72 h)</strong> para crear su contraseña; nadie más la conoce.</p>
+          <!-- Alta directa -->
+          <section id="adminTabAdd" class="adm-section hidden" style="max-width:560px">
+            <p class="text-xs text-neutral-400 leading-relaxed mb-4">Da de alta a un piloto sin solicitud previa. Por defecto recibe un <strong class="text-neutral-200">enlace personal (72 h)</strong> para crear su contraseña; también podrá entrar con un código por email. Nadie más conoce su contraseña.</p>
             <form onsubmit="handleManualAdd(event)" class="space-y-3">
               <div>
                 <label for="manualName" class="block text-[11px] font-semibold uppercase text-neutral-400 mb-1">Nombre del piloto</label>
@@ -867,7 +909,51 @@
                 Revisar y autorizar
               </button>
             </form>
-          </div>
+          </section>
+
+          <!-- Auditoría -->
+          <section id="adminTabAudit" class="adm-section hidden">
+            <div class="adm-toolbar">
+              <div class="adm-search">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z"/></svg>
+                <input type="search" id="admAuditSearch" oninput="renderAdminAudit()" placeholder="Filtrar por acción, admin o usuario" aria-label="Filtrar auditoría">
+              </div>
+              <button type="button" onclick="loadAdminAudit()" class="adm-btn adm-btn-ghost" aria-label="Actualizar">↻</button>
+            </div>
+            <div id="adminAuditList" class="adm-table-wrap"></div>
+          </section>
+
+          <!-- Estadísticas -->
+          <section id="adminTabStats" class="adm-section hidden">
+            <div id="adminStatsBody"></div>
+          </section>
+        </main>
+      </div>
+
+      <!-- Panel lateral de usuario -->
+      <div id="admUserBackdrop" class="adm-drawer-backdrop hidden" onclick="closeAdminUser()"></div>
+      <aside id="admUserDrawer" class="adm-drawer hidden" role="dialog" aria-modal="true" aria-labelledby="admUserTitle">
+        <div id="admUserBody"></div>
+      </aside>
+    </div>
+
+    <!-- VERIFICACIÓN POR CÓDIGO (re-autenticación para Race Control) -->
+    <div id="reauthModal" class="hidden fixed inset-0 overflow-y-auto" style="z-index:80" role="dialog" aria-modal="true" aria-labelledby="reauthTitle">
+      <div class="fixed inset-0 bg-black/80 backdrop-blur-sm" onclick="closeReauth()"></div>
+      <div class="relative min-h-screen flex items-center justify-center p-4">
+        <div class="relative w-full max-w-md bg-[#161c24] border border-amber-500/30 rounded-3xl p-6 shadow-2xl text-neutral-200">
+          <h3 id="reauthTitle" class="text-base font-extrabold text-white">Confirma que eres tú</h3>
+          <p class="text-xs text-neutral-400 mt-2 leading-relaxed">Race Control exige verificar tu identidad con un código enviado a <strong id="reauthEmail" class="text-neutral-200"></strong>. La verificación dura 1 hora.</p>
+          <form onsubmit="handleReauthSubmit(event)" class="mt-4 space-y-3" novalidate>
+            <input type="text" id="reauthCode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="••••••" class="hidden w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-3 text-2xl text-center font-mono text-white focus:outline-none focus:border-amber-500" style="letter-spacing:.5em" aria-label="Código de 6 dígitos">
+            <div id="reauthInfo" class="hidden p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs" role="status"></div>
+            <div id="reauthError" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs" role="alert"></div>
+            <div class="flex flex-col-reverse sm:flex-row gap-2">
+              <button type="button" onclick="closeReauth()" class="w-full sm:flex-1 py-2.5 rounded-xl bg-[#0e1217] hover:bg-white/10 border border-white/10 text-xs font-bold text-white">Cancelar</button>
+              <button type="submit" id="reauthBtn" class="w-full sm:flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-neutral-950 font-bold text-xs">Enviarme el código</button>
+            </div>
+            <button type="button" id="reauthResend" onclick="requestReauthCode()" class="hidden w-full text-[11px] text-amber-300 hover:text-amber-200 disabled:text-neutral-500" disabled>Reenviar código</button>
+          </form>
         </div>
       </div>
     </div>
@@ -1304,6 +1390,7 @@
   <!-- ========================================================================= -->
   <!-- JAVASCRIPT: LOGICA DE NEGOCIO, AUTENTICACION Y DESCARGAS                  -->
   <!-- ========================================================================= -->
-  <script src="assets/js/setups.js?v=t6m"></script>
+  <script src="assets/js/setups.js?v=t7"></script>
+  <script src="assets/js/vault-auth-admin.js?v=t7"></script>
 </body>
 </html>

@@ -21,6 +21,7 @@ import {
   rejectedEmail,
   resetPasswordEmail,
   contactFormEmail,
+  loginCodeEmail,
 } from "./emails.js";
 
 const SITE = "https://muntru.me";
@@ -38,6 +39,12 @@ const INVITE_TTL_MS = 72 * 3600 * 1000;
 const RESET_TTL_MS = 60 * 60 * 1000;
 const MIN_PASSWORD = 10;
 const PBKDF2_ITERATIONS = 100000; // máximo soportado por Workers
+const CODE_TTL_MS = 10 * 60 * 1000;      // código por email: 10 min
+const CODE_MAX_ATTEMPTS = 5;             // después se invalida
+const CODE_COOLDOWN_MS = 60 * 1000;      // reenvío como mínimo cada 60 s
+const ADMIN_REAUTH_MS = 60 * 60 * 1000;  // panel admin: verificación por código en la última hora
+const DOWNLOADS_PER_HOUR = 1500;         // archivos por piloto y hora
+const PHOTO_MAX_CHARS = 90000;           // foto de perfil (data URL WebP) ~65 KB
 const EMAIL_RE = /^[^\s@<>"']{1,64}@[^\s@<>"']{1,190}\.[a-z]{2,24}$/i;
 
 // ───────────────────────────── utilidades ─────────────────────────────
@@ -50,7 +57,13 @@ function corsHeaders(origin) {
     "Access-Control-Max-Age": "86400",
     "Content-Type": "application/json; charset=utf-8",
     "X-Content-Type-Options": "nosniff",
-    "Cache-Control": "no-store",
+    "Cache-Control": "no-store, private",
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "no-referrer",
+    "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'",
+    "Cross-Origin-Resource-Policy": "same-site",
+    "Permissions-Policy": "interest-cohort=()",
     Vary: "Origin",
   };
 }
@@ -80,6 +93,19 @@ function timingSafeEqual(a, b) {
 async function sha256Hex(text) {
   const d = new Uint8Array(await crypto.subtle.digest("SHA-256", enc.encode(String(text))));
   return [...d].map((x) => x.toString(16).padStart(2, "0")).join("");
+}
+async function hmacHex(secret, text) {
+  const k = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const d = new Uint8Array(await crypto.subtle.sign("HMAC", k, enc.encode(String(text))));
+  return [...d].map((x) => x.toString(16).padStart(2, "0")).join("");
+}
+function randomCode6() {
+  // muestreo por rechazo: distribución uniforme 000000-999999
+  const buf = new Uint32Array(1);
+  for (;;) {
+    crypto.getRandomValues(buf);
+    if (buf[0] < 4294000000) return String(buf[0] % 1000000).padStart(6, "0");
+  }
 }
 function normEmail(e) {
   return String(e || "").trim().toLowerCase();
@@ -248,7 +274,7 @@ async function rateLimited(key, max, windowSec) {
 
 // ───────────────────────────── helpers de sesión ─────────────────────────────
 
-async function issueSession(env, user) {
+async function issueSession(env, user, opts = {}) {
   const now = Date.now();
   const token = await signToken(
     {
@@ -258,13 +284,20 @@ async function issueSession(env, user) {
       role: user.role || "driver",
       mcp: user.must_change_password ? 1 : 0,
       fp: await passwordFingerprint(user.password_hash),
+      sv: user.session_version || 0,
+      amr: opts.amr || "pwd",
+      cv: opts.codeVerified ? now : opts.cv || 0,
       iat: now,
       exp: now + SESSION_TTL_MS,
     },
     env.JWT_SECRET
   );
+  try {
+    await env.muntrume_vault.prepare("UPDATE allowed_users SET last_login_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?").bind(user.id).run();
+  } catch (e) { console.warn("[session] last_login:", e?.message); }
   return {
     token,
+    admin_verified_until: opts.codeVerified ? now + ADMIN_REAUTH_MS : null,
     user: { email: user.email, name: user.name, role: user.role || "driver" },
     must_change_password: !!user.must_change_password,
   };
@@ -273,7 +306,7 @@ async function issueSession(env, user) {
 async function getUser(env, email) {
   return env.muntrume_vault
     .prepare(
-      "SELECT id, email, name, role, status, password_hash, must_change_password, created_at FROM allowed_users WHERE lower(email) = ?"
+      "SELECT id, email, name, role, status, password_hash, must_change_password, created_at, session_version, last_login_at, team, car_class FROM allowed_users WHERE lower(email) = ?"
     )
     .bind(normEmail(email))
     .first();
@@ -294,9 +327,13 @@ async function requireSession(request, body, env, opts = {}) {
     return { error: "Tu acceso al Vault no está activo.", status: 401 };
   if ((await passwordFingerprint(user.password_hash)) !== payload.fp)
     return { error: "Tu contraseña ha cambiado. Vuelve a iniciar sesión.", status: 401 };
+  if ((user.session_version || 0) !== (payload.sv || 0))
+    return { error: "Tu sesión se ha cerrado. Vuelve a iniciar sesión.", status: 401 };
   if (user.must_change_password && !opts.allowPendingChange)
     return { error: "Debes cambiar tu contraseña antes de continuar.", status: 403, code: "must_change_password" };
   if (opts.admin && user.role !== "admin") return { error: "Solo Race Control (admins).", status: 403 };
+  if (opts.admin && !(payload.cv && Date.now() - payload.cv < ADMIN_REAUTH_MS))
+    return { error: "Por seguridad, confirma tu identidad con un código enviado a tu correo.", status: 403, code: "reauth_required" };
   return { user, payload };
 }
 
@@ -347,9 +384,81 @@ async function handleLogin(body, env, ip) {
   return [200, { success: true, ...(await issueSession(env, user)) }];
 }
 
+// ─────────────── acceso sin contraseña: código de 6 dígitos (+ enlace mágico) ───────────────
+
+const CODE_GENERIC = { success: true, message: "Si el correo pertenece a un piloto autorizado, recibirás un código en unos segundos. Revisa también la carpeta de spam.", cooldown_s: CODE_COOLDOWN_MS / 1000 };
+
+async function handleCodeRequest(body, env, ip, ctx) {
+  const email = normEmail(body.email);
+  if (!EMAIL_RE.test(email)) return [400, { success: false, error: "Introduce un correo válido." }];
+  const generic = [200, CODE_GENERIC];
+  // Mismo mensaje para correos desconocidos, limitados o en enfriamiento: no se revela si la cuenta existe.
+  if ((await rateLimited(`code:ip:${ip}`, 10, 3600)) || (await rateLimited(`code:em:${email}`, 6, 3600))) return generic;
+  const db = env.muntrume_vault;
+  const user = await getUser(env, email);
+  if (!user || user.status !== "active") return generic;
+  const now = Date.now();
+  const prev = await db.prepare("SELECT sent_at FROM login_codes WHERE email = ?").bind(email).first();
+  if (prev && now - prev.sent_at < CODE_COOLDOWN_MS) return generic;
+  const code = randomCode6();
+  const nonce = b64urlFromBytes(crypto.getRandomValues(new Uint8Array(16)));
+  const codeHash = await hmacHex(env.JWT_SECRET, `login-code:${email}:${nonce}:${code}`);
+  await db.prepare(
+    "INSERT INTO login_codes (email, code_hash, nonce, expires_at, attempts, sent_at) VALUES (?, ?, ?, ?, 0, ?) " +
+    "ON CONFLICT(email) DO UPDATE SET code_hash = excluded.code_hash, nonce = excluded.nonce, expires_at = excluded.expires_at, attempts = 0, sent_at = excluded.sent_at"
+  ).bind(email, codeHash, nonce, now + CODE_TTL_MS, now).run();
+  const magic = await signToken({ typ: "magic", sub: email, n: nonce, exp: now + CODE_TTL_MS }, env.JWT_SECRET);
+  const mail = loginCodeEmail({ name: user.name, code, link: `${SITE}/setups#magic=${magic}`, expiresMinutes: CODE_TTL_MS / 60000 });
+  // El envío va en segundo plano para que el tiempo de respuesta no delate si el correo existe.
+  const job = sendEmail(env, { to: user.email, ...mail }).then((r) => console.log("[code] enviado:", !!r.ok, r.ok ? r.id : r.error));
+  if (ctx && ctx.waitUntil) ctx.waitUntil(job); else await job;
+  return generic;
+}
+
+async function handleCodeVerify(body, env, ip) {
+  const db = env.muntrume_vault;
+  const bad = [401, { success: false, error: "Código incorrecto o caducado. Solicita uno nuevo si lo necesitas." }];
+  if (await rateLimited(`verify:ip:${ip}`, 30, 600)) return [429, { success: false, error: "Demasiados intentos. Espera unos minutos." }];
+  const now = Date.now();
+  let email, row;
+  if (body.magic) {
+    const t = await verifyToken(String(body.magic), env.JWT_SECRET, "magic");
+    if (!t) return [401, { success: false, error: "El enlace no es válido o ha caducado. Pide un código nuevo." }];
+    email = normEmail(t.sub);
+    row = await db.prepare("SELECT code_hash, nonce, expires_at, attempts FROM login_codes WHERE email = ?").bind(email).first();
+    if (!row || row.expires_at < now || !timingSafeEqual(enc.encode(row.nonce), enc.encode(String(t.n))))
+      return [401, { success: false, error: "Este enlace ya se ha usado o ha caducado. Pide un código nuevo." }];
+  } else {
+    email = normEmail(body.email);
+    const code = String(body.code || "").replace(/\D/g, "");
+    if (!EMAIL_RE.test(email) || code.length !== 6) return [400, { success: false, error: "Introduce el código de 6 dígitos." }];
+    row = await db.prepare("SELECT code_hash, nonce, expires_at, attempts FROM login_codes WHERE email = ?").bind(email).first();
+    if (!row) return bad;
+    if (row.expires_at < now || row.attempts >= CODE_MAX_ATTEMPTS) {
+      await db.prepare("DELETE FROM login_codes WHERE email = ?").bind(email).run();
+      return bad;
+    }
+    await db.prepare("UPDATE login_codes SET attempts = attempts + 1 WHERE email = ?").bind(email).run();
+    const h = await hmacHex(env.JWT_SECRET, `login-code:${email}:${row.nonce}:${code}`);
+    if (!timingSafeEqual(enc.encode(h), enc.encode(row.code_hash))) {
+      if (row.attempts + 1 >= CODE_MAX_ATTEMPTS) {
+        await db.prepare("DELETE FROM login_codes WHERE email = ?").bind(email).run();
+        return [401, { success: false, error: "Demasiados intentos fallidos. Solicita un código nuevo.", code: "code_locked" }];
+      }
+      return bad;
+    }
+  }
+  // un solo uso
+  const del = await db.prepare("DELETE FROM login_codes WHERE email = ? AND nonce = ?").bind(email, row.nonce).run();
+  if (!del.meta?.changes) return bad;
+  const user = await getUser(env, email);
+  if (!user || user.status !== "active") return bad;
+  return [200, { success: true, ...(await issueSession(env, user, { amr: body.magic ? "magic" : "code", codeVerified: true })) }];
+}
+
 async function handleChangePassword(request, body, env) {
   const s = await requireSession(request, body, env, { allowPendingChange: true });
-  if (s.error) return [s.status, { success: false, error: s.error }];
+  if (s.error) return [s.status, { success: false, error: s.error, code: s.code }];
   const pw = String(body.new_password || "");
   const err = passwordProblem(pw, s.user.email);
   if (err) return [400, { success: false, error: err }];
@@ -359,7 +468,7 @@ async function handleChangePassword(request, body, env) {
     .bind(hash, s.user.id)
     .run();
   const user = { ...s.user, password_hash: hash, must_change_password: 0 };
-  return [200, { success: true, message: "Contraseña actualizada.", ...(await issueSession(env, user)) }];
+  return [200, { success: true, message: "Contraseña actualizada.", ...(await issueSession(env, user, { amr: s.payload.amr, cv: s.payload.cv })) }];
 }
 
 function passwordProblem(pw, email) {
@@ -449,11 +558,11 @@ async function handleRequestJoin(body, env, ip) {
 
 async function handleAdminPanel(request, body, env) {
   const s = await requireSession(request, body, env, { admin: true });
-  if (s.error) return [s.status, { success: false, error: s.error }];
+  if (s.error) return [s.status, { success: false, error: s.error, code: s.code }];
   const db = env.muntrume_vault;
   const [reqs, members] = await Promise.all([
     db.prepare("SELECT id, name, email, iracing_id, car_category, message, status, created_at, approved_at FROM join_requests ORDER BY CASE status WHEN 'pending' THEN 0 ELSE 1 END, created_at DESC LIMIT 300").all(),
-    db.prepare("SELECT id, email, name, role, status, created_at, must_change_password, CASE WHEN password_hash IS NULL OR password_hash = '' THEN 0 ELSE 1 END AS has_password FROM allowed_users ORDER BY created_at DESC").all(),
+    db.prepare("SELECT id, email, name, role, status, created_at, must_change_password, last_login_at, team, car_class, photo, CASE WHEN password_hash IS NULL OR password_hash = '' THEN 0 ELSE 1 END AS has_password FROM allowed_users ORDER BY created_at DESC").all(),
   ]);
   return [200, { success: true, requests: reqs.results || [], members: members.results || [] }];
 }
@@ -498,7 +607,7 @@ async function provisionPilot(env, { email, name, method }) {
 
 async function handleAdminApprove(request, body, env) {
   const s = await requireSession(request, body, env, { admin: true });
-  if (s.error) return [s.status, { success: false, error: s.error }];
+  if (s.error) return [s.status, { success: false, error: s.error, code: s.code }];
   const db = env.muntrume_vault;
   const method = body.method === "temp_password" ? "temp_password" : "link";
   const notify = body.send_email !== false;
@@ -534,6 +643,7 @@ async function handleAdminApprove(request, body, env) {
   }
 
   const sent = notify ? await sendEmail(env, { to: user.email, ...mail }) : { ok: false, error: "Envío desactivado por el admin" };
+  await audit(env, s.user.email, requestId ? "request.approve" : "user.add", user.email, `method=${method} email_sent=${!!sent.ok}`);
   return [200, {
     success: true,
     method,
@@ -549,13 +659,14 @@ async function handleAdminApprove(request, body, env) {
 
 async function handleAdminReject(request, body, env) {
   const s = await requireSession(request, body, env, { admin: true });
-  if (s.error) return [s.status, { success: false, error: s.error }];
+  if (s.error) return [s.status, { success: false, error: s.error, code: s.code }];
   const db = env.muntrume_vault;
   const id = parseInt(body.request_id || body.id, 10);
   const jr = id ? await db.prepare("SELECT id, name, email, status FROM join_requests WHERE id = ?").bind(id).first() : null;
   if (!jr) return [404, { success: false, error: "Solicitud no encontrada." }];
   if (jr.status !== "pending") return [409, { success: false, error: "Solo se pueden rechazar solicitudes pendientes." }];
   await db.prepare("UPDATE join_requests SET status = 'rejected', assigned_password = NULL WHERE id = ?").bind(id).run();
+  await audit(env, s.user.email, "request.reject", jr.email, body.notify ? "notified" : null);
   let sent = { ok: false, error: null };
   if (body.notify) {
     sent = await sendEmail(env, { to: jr.email, ...rejectedEmail({ name: jr.name, reason: clean(body.reason, 500) }) });
@@ -565,30 +676,32 @@ async function handleAdminReject(request, body, env) {
 
 async function handleAdminResendInvite(request, body, env) {
   const s = await requireSession(request, body, env, { admin: true });
-  if (s.error) return [s.status, { success: false, error: s.error }];
+  if (s.error) return [s.status, { success: false, error: s.error, code: s.code }];
   const user = await getUser(env, body.email);
   if (!user || user.status !== "active") return [404, { success: false, error: "Piloto no encontrado o inactivo." }];
   const link = await makeSetPasswordLink(env, user, INVITE_TTL_MS, user.password_hash ? "reset" : "invite");
   const mail = approvedLinkEmail({ name: user.name, email: user.email, link, expiresHours: INVITE_TTL_MS / 3600000 });
   const sent = await sendEmail(env, { to: user.email, ...mail });
+  await audit(env, s.user.email, "user.send_link", user.email, `email_sent=${!!sent.ok}`);
   return [200, { success: true, email_sent: !!sent.ok, email_error: sent.ok ? null : sent.error, set_password_link: link, expires_hours: INVITE_TTL_MS / 3600000 }];
 }
 
 async function handleAdminSetStatus(request, body, env) {
   const s = await requireSession(request, body, env, { admin: true });
-  if (s.error) return [s.status, { success: false, error: s.error }];
+  if (s.error) return [s.status, { success: false, error: s.error, code: s.code }];
   const email = normEmail(body.email);
-  const status = body.status === "active" ? "active" : "inactive";
+  const status = body.status === "active" ? "active" : "inactive"; // inactive = suspendido
   if (email === normEmail(s.user.email)) return [400, { success: false, error: "No puedes desactivar tu propia cuenta." }];
-  const r = await env.muntrume_vault.prepare("UPDATE allowed_users SET status = ? WHERE lower(email) = ?").bind(status, email).run();
+  const r = await env.muntrume_vault.prepare(`UPDATE allowed_users SET status = ?${status === "inactive" ? ", session_version = session_version + 1" : ""} WHERE lower(email) = ?`).bind(status, email).run();
   if (!r.meta?.changes) return [404, { success: false, error: "Piloto no encontrado." }];
+  await audit(env, s.user.email, status === "active" ? "user.reactivate" : "user.suspend", email, null);
   return [200, { success: true, status }];
 }
 
 /** Envía todas las plantillas SOLO al correo del admin que lo pide (para revisar el formato). */
 async function handleAdminEmailPreview(request, body, env) {
   const s = await requireSession(request, body, env, { admin: true });
-  if (s.error) return [s.status, { success: false, error: s.error }];
+  if (s.error) return [s.status, { success: false, error: s.error, code: s.code }];
   const to = s.user.email;
   const demoLink = `${SITE}/setups?setpw=EJEMPLO-ENLACE-NO-VALIDO`;
   const sample = { name: s.user.name || "Piloto", email: to };
@@ -599,6 +712,7 @@ async function handleAdminEmailPreview(request, body, env) {
     approvedTempPasswordEmail({ ...sample, tempPassword: "MTM-EJEM-PLO00-NOVAL" }),
     rejectedEmail({ name: sample.name, reason: "" }),
     resetPasswordEmail({ name: sample.name, link: demoLink, expiresMinutes: 60 }),
+    loginCodeEmail({ name: sample.name, code: "000000", link: `${SITE}/setups#magic=EJEMPLO-NO-VALIDO`, expiresMinutes: 10 }),
   ];
   const results = [];
   for (const t of templates) {
@@ -608,7 +722,132 @@ async function handleAdminEmailPreview(request, body, env) {
   return [200, { success: true, to, results }];
 }
 
+// ───────────────────────────── Race Control: gestión de usuarios ─────────────────────────────
+
+async function audit(env, admin, action, target, detail) {
+  try {
+    await env.muntrume_vault.prepare("INSERT INTO admin_audit (admin_email, action, target, detail) VALUES (?, ?, ?, ?)")
+      .bind(normEmail(admin), action, target ? normEmail(target).slice(0, 254) : null, detail ? String(detail).slice(0, 500) : null).run();
+  } catch (e) { console.warn("[audit]", e?.message); }
+}
+
+async function adminTarget(env, s, email, { notSelf } = {}) {
+  const user = await getUser(env, email);
+  if (!user) return { error: [404, { success: false, error: "Usuario no encontrado." }] };
+  if (notSelf && normEmail(user.email) === normEmail(s.user.email)) return { error: [400, { success: false, error: "No puedes hacer esto sobre tu propia cuenta." }] };
+  return { user };
+}
+
+async function adminSession(request, body, env) {
+  const s = await requireSession(request, body, env, { admin: true });
+  return s.error ? { err: [s.status, { success: false, error: s.error, code: s.code }] } : s;
+}
+
+async function handleAdminUserUpdate(request, body, env) {
+  const s = await adminSession(request, body, env); if (s.err) return s.err;
+  const t = await adminTarget(env, s, body.email);
+  if (t.error) return t.error;
+  const name = clean(body.name, 80) || t.user.name;
+  const team = clean(body.team, 80) || null;
+  const carClass = clean(body.car_class, 80) || null;
+  const role = body.role === "admin" ? "admin" : body.role === "driver" ? "driver" : t.user.role;
+  if (normEmail(t.user.email) === normEmail(s.user.email) && role !== "admin") return [400, { success: false, error: "No puedes quitarte el rol de admin." }];
+  const roleChanged = role !== t.user.role;
+  await env.muntrume_vault.prepare(
+    `UPDATE allowed_users SET name = ?, team = ?, car_class = ?, role = ?${roleChanged ? ", session_version = session_version + 1" : ""} WHERE id = ?`
+  ).bind(name, team, carClass, role, t.user.id).run();
+  await audit(env, s.user.email, roleChanged ? "user.role_change" : "user.update", t.user.email, JSON.stringify({ name, team, car_class: carClass, role }));
+  return [200, { success: true }];
+}
+
+async function handleAdminUserDelete(request, body, env) {
+  const s = await adminSession(request, body, env); if (s.err) return s.err;
+  const t = await adminTarget(env, s, body.email, { notSelf: true });
+  if (t.error) return t.error;
+  if (normEmail(body.confirm) !== normEmail(t.user.email)) return [400, { success: false, error: "Escribe el correo del usuario para confirmar el borrado." }];
+  const db = env.muntrume_vault;
+  await db.batch([
+    db.prepare("DELETE FROM allowed_users WHERE id = ?").bind(t.user.id),
+    db.prepare("DELETE FROM login_codes WHERE email = ?").bind(normEmail(t.user.email)),
+  ]);
+  await audit(env, s.user.email, "user.delete", t.user.email, null);
+  return [200, { success: true }];
+}
+
+async function handleAdminRevokeSessions(request, body, env) {
+  const s = await adminSession(request, body, env); if (s.err) return s.err;
+  const t = await adminTarget(env, s, body.email);
+  if (t.error) return t.error;
+  await env.muntrume_vault.prepare("UPDATE allowed_users SET session_version = session_version + 1 WHERE id = ?").bind(t.user.id).run();
+  await audit(env, s.user.email, "user.revoke_sessions", t.user.email, null);
+  return [200, { success: true, self: normEmail(t.user.email) === normEmail(s.user.email) }];
+}
+
+async function handleAdminUserPhoto(request, body, env) {
+  const s = await adminSession(request, body, env); if (s.err) return s.err;
+  const t = await adminTarget(env, s, body.email);
+  if (t.error) return t.error;
+  let photo = null;
+  if (body.photo) {
+    photo = String(body.photo);
+    if (!/^data:image\/(webp|jpeg|png);base64,[A-Za-z0-9+/=]+$/.test(photo)) return [400, { success: false, error: "Formato de imagen no válido." }];
+    if (photo.length > PHOTO_MAX_CHARS) return [413, { success: false, error: "La foto es demasiado grande (máx. ~65 KB tras comprimir)." }];
+  }
+  await env.muntrume_vault.prepare("UPDATE allowed_users SET photo = ? WHERE id = ?").bind(photo, t.user.id).run();
+  await audit(env, s.user.email, photo ? "user.photo_set" : "user.photo_remove", t.user.email, photo ? `${photo.length} chars` : null);
+  return [200, { success: true }];
+}
+
+async function handleAdminUserDetail(request, body, env) {
+  const s = await adminSession(request, body, env); if (s.err) return s.err;
+  const email = normEmail(body.email);
+  const db = env.muntrume_vault;
+  const [dl, au] = await Promise.all([
+    db.prepare("SELECT at, kind, ref, files FROM download_log WHERE email = ? ORDER BY at DESC LIMIT 50").bind(email).all(),
+    db.prepare("SELECT at, admin_email, action, detail FROM admin_audit WHERE target = ? ORDER BY at DESC LIMIT 30").bind(email).all(),
+  ]);
+  return [200, { success: true, downloads: dl.results || [], audit: au.results || [] }];
+}
+
+async function handleAdminAudit(request, body, env) {
+  const s = await adminSession(request, body, env); if (s.err) return s.err;
+  const { results } = await env.muntrume_vault.prepare("SELECT at, admin_email, action, target, detail FROM admin_audit ORDER BY at DESC LIMIT 200").all();
+  return [200, { success: true, audit: results || [] }];
+}
+
+async function handleAdminStats(request, body, env) {
+  const s = await adminSession(request, body, env); if (s.err) return s.err;
+  const db = env.muntrume_vault;
+  const [tot, bySeason, files, dl7, topCars, users] = await Promise.all([
+    db.prepare("SELECT count(*) n, count(DISTINCT car) cars, count(DISTINCT circuit) circuits, coalesce(sum(size_bytes),0) bytes FROM setups").first(),
+    db.prepare("SELECT season, count(*) n FROM setups GROUP BY season ORDER BY season DESC").all(),
+    db.prepare("SELECT count(*) n, count(DISTINCT car) cars FROM setup_files").first(),
+    db.prepare("SELECT count(*) events, coalesce(sum(files),0) files, count(DISTINCT email) users FROM download_log WHERE at >= strftime('%Y-%m-%dT%H:%M:%fZ','now','-7 days')").first(),
+    db.prepare("SELECT car, count(*) n FROM setups GROUP BY car ORDER BY n DESC LIMIT 8").all(),
+    db.prepare("SELECT count(*) total, sum(status='active') active, sum(role='admin') admins, sum(last_login_at >= strftime('%Y-%m-%dT%H:%M:%fZ','now','-30 days')) active30 FROM allowed_users").first(),
+  ]);
+  return [200, { success: true, setups: tot, by_season: bySeason.results || [], car_files: files, downloads_7d: dl7, top_cars: topCars.results || [], users }];
+}
+
+// Registro de descargas (quién, cuándo, qué) + límite por piloto y hora.
+async function downloadGuard(env, user) {
+  const r = await env.muntrume_vault.prepare(
+    "SELECT coalesce(sum(files),0) n FROM download_log WHERE email = ? AND at >= strftime('%Y-%m-%dT%H:%M:%fZ','now','-1 hour')"
+  ).bind(normEmail(user.email)).first();
+  return (r?.n || 0) >= DOWNLOADS_PER_HOUR;
+}
+function logDownload(env, ctx, user, kind, ref, files, ip) {
+  const job = (async () => {
+    const ipHash = (await hmacHex(env.JWT_SECRET, `dl-ip:${ip}`)).slice(0, 24);
+    await env.muntrume_vault.prepare("INSERT INTO download_log (email, kind, ref, files, ip_hash) VALUES (?, ?, ?, ?, ?)")
+      .bind(normEmail(user.email), kind, String(ref || "").slice(0, 300), files, ipHash).run();
+  })().catch((e) => console.warn("[dl-log]", e?.message));
+  if (ctx && ctx.waitUntil) ctx.waitUntil(job);
+}
+const DL_LIMIT = [429, { success: false, error: "Has alcanzado el límite de descargas por hora. Inténtalo más tarde." }];
+
 // ───────────────────────────── Garage 61 ─────────────────────────────
+
 
 const normAlnum = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
 
@@ -632,7 +871,7 @@ async function g61Get(path, token, params) {
 
 async function handleG61Laps(request, body, env) {
   const s = await requireSession(request, body, env);
-  if (s.error) return [s.status, { success: false, error: s.error }];
+  if (s.error) return [s.status, { success: false, error: s.error, code: s.code }];
 
   const userToken = clean(request.headers.get("X-G61-Token") || body.g61_token, 300);
   const token = userToken || env.GARAGE61_API_TOKEN || "";
@@ -721,21 +960,24 @@ async function handleCatalog(request, body, env) {
   }];
 }
 
-async function handleDownload(request, body, env) {
+async function handleDownload(request, body, env, ctx, ip) {
   const s = await requireSession(request, body, env);
   if (s.error) return [s.status, { success: false, error: s.error, code: s.code }];
+  if (await downloadGuard(env, s.user)) return DL_LIMIT;
   if (!body.id) return [400, { success: false, error: "ID de setup no especificado." }];
   const setup = await env.muntrume_vault
     .prepare("SELECT filename, car, season, week, circuit, content_base64 FROM setups WHERE id = ?")
     .bind(body.id)
     .first();
   if (!setup?.content_base64) return [404, { success: false, error: "Setup no encontrado en el vault." }];
+  logDownload(env, ctx, s.user, "setup", `${setup.car}/${setup.season}/${setup.filename}`, 1, ip);
   return [200, { success: true, ...setup }];
 }
 
-async function handleDownloadBatch(request, body, env) {
+async function handleDownloadBatch(request, body, env, ctx, ip) {
   const s = await requireSession(request, body, env);
   if (s.error) return [s.status, { success: false, error: s.error, code: s.code }];
+  if (await downloadGuard(env, s.user)) return DL_LIMIT;
   const cols = "id, filename, car, season, week, circuit, setup_type, size_bytes, content_base64";
   let setups = [];
   if (Array.isArray(body.ids) && body.ids.length) {
@@ -753,15 +995,17 @@ async function handleDownloadBatch(request, body, env) {
       .all();
     setups = results || [];
   }
+  if (setups.length) logDownload(env, ctx, s.user, "batch", setups.length === 1 ? setups[0].filename : `${setups[0].car} · ${setups[0].circuit || ""} (${setups.length})`, setups.length, ip);
   return [200, { success: true, count: setups.length, setups }];
 }
 
 // Archivos .sto privados (tabla setup_files): solo pilotos con sesión. Sustituye a los
 // antiguos assets/data/cars/<coche>.json públicos de GitHub Pages.
 const CAR_SLUG_RE = /^[a-z0-9_-]{1,64}$/;
-async function handleCarFiles(request, body, env) {
+async function handleCarFiles(request, body, env, ctx, ip) {
   const s = await requireSession(request, body, env);
   if (s.error) return [s.status, { success: false, error: s.error, code: s.code }];
+  if (await downloadGuard(env, s.user)) return DL_LIMIT;
   const car = String(body.car || "").trim().toLowerCase().replace(/[^a-z0-9_-]/g, "_");
   if (!CAR_SLUG_RE.test(car)) return [400, { success: false, error: "Coche no válido." }];
   const { results } = await env.muntrume_vault
@@ -770,6 +1014,7 @@ async function handleCarFiles(request, body, env) {
     .all();
   const files = {};
   for (const r of results || []) files[r.filename] = r.content_base64;
+  if (results?.length) logDownload(env, ctx, s.user, "car_files", car, results.length, ip);
   return [200, { success: true, car, count: Object.keys(files).length, files }];
 }
 
@@ -1021,6 +1266,15 @@ const ROUTES = {
   "/api/setups/admin/resend-invite": "admin_resend",
   "/api/setups/admin/set-status": "admin_status",
   "/api/setups/admin/email-preview": "admin_email_preview",
+  "/api/setups/code/request": "code_request",
+  "/api/setups/code/verify": "code_verify",
+  "/api/setups/admin/user/update": "admin_user_update",
+  "/api/setups/admin/user/delete": "admin_user_delete",
+  "/api/setups/admin/user/revoke": "admin_user_revoke",
+  "/api/setups/admin/user/photo": "admin_user_photo",
+  "/api/setups/admin/user/detail": "admin_user_detail",
+  "/api/setups/admin/audit": "admin_audit",
+  "/api/setups/admin/stats": "admin_stats",
   "/api/contact": "contact",
 };
 // Los antiguos modos "setup_*" (body.mode) y el admin.html con códigos fijos están retirados.
@@ -1080,9 +1334,18 @@ export default {
         case "set_password": out = await handleSetPassword(body, env); break;
         case "request_join": out = await handleRequestJoin(body, env, ip); break;
         case "catalog": out = await handleCatalog(request, body, env); break;
-        case "download": out = await handleDownload(request, body, env); break;
-        case "download_batch": out = await handleDownloadBatch(request, body, env); break;
-        case "car_files": out = await handleCarFiles(request, body, env); break;
+        case "download": out = await handleDownload(request, body, env, ctx, ip); break;
+        case "download_batch": out = await handleDownloadBatch(request, body, env, ctx, ip); break;
+        case "car_files": out = await handleCarFiles(request, body, env, ctx, ip); break;
+        case "code_request": out = await handleCodeRequest(body, env, ip, ctx); break;
+        case "code_verify": out = await handleCodeVerify(body, env, ip); break;
+        case "admin_user_update": out = await handleAdminUserUpdate(request, body, env); break;
+        case "admin_user_delete": out = await handleAdminUserDelete(request, body, env); break;
+        case "admin_user_revoke": out = await handleAdminRevokeSessions(request, body, env); break;
+        case "admin_user_photo": out = await handleAdminUserPhoto(request, body, env); break;
+        case "admin_user_detail": out = await handleAdminUserDetail(request, body, env); break;
+        case "admin_audit": out = await handleAdminAudit(request, body, env); break;
+        case "admin_stats": out = await handleAdminStats(request, body, env); break;
         case "g61": out = await handleG61Laps(request, body, env); break;
         case "admin_panel": out = await handleAdminPanel(request, body, env); break;
         case "admin_approve": out = await handleAdminApprove(request, body, env); break;

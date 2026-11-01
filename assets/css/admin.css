@@ -1,0 +1,101 @@
+/* Race Control — consola de administración (estilo Google Admin, tema oscuro) */
+.adm-root{position:fixed;inset:0;z-index:55;background:#0b0f14;color:#d4d4d8;overflow:hidden;font-size:14px}
+.adm-root.hidden{display:none}
+.adm-shell{display:flex;flex-direction:column;height:100%;height:100dvh}
+.adm-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 20px;border-bottom:1px solid rgba(255,255,255,.08);background:#11161d}
+.adm-brand{display:flex;align-items:center;gap:12px;min-width:0}
+.adm-brand h2{margin:0;font-size:17px;font-weight:800;color:#fff;line-height:1.2}
+.adm-logo{width:32px;height:32px;border-radius:8px}
+.adm-sub{margin:0;font-size:12px;color:#8b949e}
+.adm-top-actions{display:flex;align-items:center;gap:8px}
+.adm-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 14px;border-radius:10px;font-weight:700;font-size:13px;border:1px solid transparent;cursor:pointer;transition:background .15s,border-color .15s;white-space:nowrap}
+.adm-btn:disabled{opacity:.5;cursor:not-allowed}
+.adm-btn-ghost{background:#161c24;border-color:rgba(255,255,255,.12);color:#e5e7eb}
+.adm-btn-ghost:hover{background:#1d2530}
+.adm-btn-primary{background:#10b981;color:#06110c}
+.adm-btn-primary:hover{background:#34d399}
+.adm-btn-warn{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.35);color:#fcd34d}
+.adm-btn-danger{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.4);color:#fca5a5}
+.adm-btn-danger:hover{background:rgba(239,68,68,.22)}
+.adm-btn-sm{min-height:34px;padding:0 10px;font-size:12px}
+.adm-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:10px;color:#9ca3af;background:transparent;border:0;cursor:pointer}
+.adm-icon-btn:hover{background:rgba(255,255,255,.06);color:#fff}
+.adm-nav{display:flex;gap:4px;padding:0 16px;border-bottom:1px solid rgba(255,255,255,.08);background:#11161d;overflow-x:auto;scrollbar-width:none}
+.adm-nav::-webkit-scrollbar{display:none}
+.adm-tab{position:relative;display:inline-flex;align-items:center;gap:6px;padding:12px 12px;min-height:44px;font-size:13px;font-weight:600;color:#9ca3af;background:none;border:0;cursor:pointer;white-space:nowrap}
+.adm-tab:hover{color:#fff}
+.adm-tab.active{color:#fbbf24}
+.adm-tab.active::after{content:"";position:absolute;left:8px;right:8px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:#fbbf24}
+.adm-count{font-size:11px;font-weight:800;padding:1px 7px;border-radius:999px;background:rgba(255,255,255,.08);color:#d1d5db}
+.adm-count-warn{background:rgba(245,158,11,.18);color:#fcd34d}
+.adm-main{flex:1;overflow-y:auto;padding:20px;-webkit-overflow-scrolling:touch}
+.adm-section{max-width:1200px;margin:0 auto}
+.adm-section.hidden{display:none}
+.adm-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;align-items:center}
+.adm-search{flex:1 1 260px;display:flex;align-items:center;gap:8px;background:#161c24;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:0 12px;min-height:40px;color:#8b949e}
+.adm-search:focus-within{border-color:#f59e0b}
+.adm-search input{flex:1;background:none;border:0;outline:0;color:#fff;font-size:16px;min-width:0}
+@media (min-width:768px){.adm-search input{font-size:14px}}
+.adm-select{background:#161c24;border:1px solid rgba(255,255,255,.1);border-radius:10px;min-height:40px;padding:0 10px;color:#e5e7eb;font-size:13px}
+.adm-table-wrap{background:#11161d;border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:hidden}
+.adm-table{width:100%;border-collapse:collapse}
+.adm-table th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#8b949e;font-weight:700;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.08);background:#0f141a}
+.adm-table td{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle;font-size:13px}
+.adm-table tr:last-child td{border-bottom:0}
+.adm-table tbody tr{cursor:pointer}
+.adm-table tbody tr:hover{background:rgba(255,255,255,.03)}
+.adm-user{display:flex;align-items:center;gap:10px;min-width:0}
+.adm-avatar{flex:none;width:36px;height:36px;border-radius:50%;object-fit:cover;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#06110c;background:#34d399}
+.adm-avatar-lg{width:72px;height:72px;font-size:26px}
+.adm-name{color:#fff;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adm-email{color:#8b949e;font-size:12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adm-badge{display:inline-block;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.adm-b-admin{background:rgba(245,158,11,.18);color:#fcd34d}
+.adm-b-driver{background:rgba(16,185,129,.12);color:#6ee7b7}
+.adm-b-active{background:rgba(16,185,129,.12);color:#6ee7b7}
+.adm-b-pending{background:rgba(245,158,11,.14);color:#fcd34d}
+.adm-b-inactive{background:rgba(239,68,68,.14);color:#fca5a5}
+.adm-muted{color:#8b949e;font-size:12px}
+.adm-empty{padding:40px 16px;text-align:center;color:#8b949e;font-size:13px}
+.adm-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.adm-card{background:#11161d;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px}
+.adm-card .k{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#8b949e;font-weight:700}
+.adm-card .v{font-size:26px;font-weight:800;color:#fff;margin-top:4px}
+.adm-card .s{font-size:12px;color:#8b949e;margin-top:2px}
+.adm-bars{display:flex;flex-direction:column;gap:8px}
+.adm-bar{display:grid;grid-template-columns:minmax(90px,200px) 1fr auto;gap:10px;align-items:center;font-size:12px}
+.adm-bar .t{height:8px;border-radius:4px;background:rgba(255,255,255,.06);overflow:hidden}
+.adm-bar .t span{display:block;height:100%;background:#10b981;border-radius:4px}
+.adm-h3{font-size:13px;font-weight:800;color:#fff;margin:0 0 10px}
+/* panel lateral */
+.adm-drawer-backdrop{position:fixed;inset:0;z-index:56;background:rgba(0,0,0,.55)}
+.adm-drawer-backdrop.hidden,.adm-drawer.hidden{display:none}
+.adm-drawer{position:fixed;top:0;right:0;bottom:0;z-index:57;width:min(480px,100%);background:#11161d;border-left:1px solid rgba(255,255,255,.1);overflow-y:auto;box-shadow:-20px 0 40px rgba(0,0,0,.4);-webkit-overflow-scrolling:touch}
+.adm-drawer-head{position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 16px;background:#11161d;border-bottom:1px solid rgba(255,255,255,.08);z-index:1}
+.adm-drawer-body{padding:16px;display:flex;flex-direction:column;gap:18px}
+.adm-field label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#8b949e;margin-bottom:5px}
+.adm-field input,.adm-field select{width:100%;background:#0b0f14;border:1px solid rgba(255,255,255,.12);border-radius:10px;min-height:40px;padding:0 12px;color:#fff;font-size:16px}
+@media (min-width:768px){.adm-field input,.adm-field select{font-size:14px}}
+.adm-field input:focus,.adm-field select:focus{outline:0;border-color:#f59e0b}
+.adm-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.adm-actions{display:flex;flex-wrap:wrap;gap:8px}
+.adm-list{display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.08);border-radius:12px;overflow:hidden}
+.adm-list>div{padding:8px 12px;font-size:12px;border-bottom:1px solid rgba(255,255,255,.05)}
+.adm-list>div:last-child{border-bottom:0}
+.adm-danger-zone{border:1px solid rgba(239,68,68,.3);border-radius:12px;padding:12px;background:rgba(239,68,68,.04)}
+/* móvil: la tabla pasa a filas apiladas */
+@media (max-width:767px){
+.adm-toolbar .adm-select{flex:1 1 0;min-width:0;font-size:16px}
+  .adm-top{padding:8px 12px}
+  .adm-sub,.adm-hide-sm{display:none}
+  .adm-main{padding:12px}
+  .adm-nav{padding:0 6px}
+  .adm-table thead{display:none}
+  .adm-table,.adm-table tbody,.adm-table tr,.adm-table td{display:block;width:100%}
+  .adm-table tr{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.06)}
+  .adm-table td{padding:2px 0;border:0}
+  .adm-table td.adm-col-hide{display:none}
+  .adm-table td.adm-col-meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding-left:46px}
+  .adm-grid2{grid-template-columns:1fr}
+  .adm-bar{grid-template-columns:110px 1fr auto}
+}
