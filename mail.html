@@ -78,14 +78,19 @@
         <a href="/admin" class="hover:text-white px-2 py-1 rounded transition">Admin</a>
       </div>
 
-      <!-- Current Identity Badge -->
-      <div class="flex items-center gap-2 pl-2 border-l border-white/10">
+      <!-- Pilot Identity Switcher -->
+      <div class="flex items-center gap-2 pl-3 border-l border-white/10">
         <div id="currentUserBadge" class="w-7 h-7 rounded-full bg-emerald-950 border border-emerald-500/50 flex items-center justify-center font-bold text-xs text-emerald-400">
           AT
         </div>
-        <div class="hidden lg:block text-left">
-          <div id="currentUserName" class="text-xs font-bold text-white leading-tight">Alberto Trujillo</div>
-          <div id="currentUserEmail" class="text-[10px] text-neutral-400 font-mono">alberto@muntru.me</div>
+        <div class="text-left">
+          <label for="identitySelect" class="sr-only">Cambiar identidad activa</label>
+          <select id="identitySelect" onchange="switchIdentity(this.value)" class="bg-[#181e29] border border-white/10 hover:border-emerald-500/50 text-xs text-white rounded-lg px-2 py-1 font-semibold focus:outline-none focus:ring-1 focus:ring-emerald-500">
+            <option value="alberto@muntru.me">Alberto Trujillo (alberto@muntru.me)</option>
+            <option value="mateo@muntru.me">Mateo Berbis (mateo@muntru.me)</option>
+            <option value="eduardo@muntru.me">Eduardo Chongkan (eduardo@muntru.me)</option>
+            <option value="juanlu@muntru.me">Juanlu Carrillo (juanlu@muntru.me)</option>
+          </select>
         </div>
       </div>
     </div>
@@ -321,6 +326,19 @@
         </div>
 
         <form id="composeForm" onsubmit="handleSendCompose(event)" class="space-y-3.5 text-xs">
+          <!-- Quick Templates Bar -->
+          <div class="p-2.5 rounded-xl bg-[#161c24] border border-white/10 flex flex-wrap items-center gap-2">
+            <span class="text-neutral-400 font-bold uppercase text-[10px] tracking-wider">Plantillas oficiales:</span>
+            <button type="button" onclick="applyQuickTemplate('briefing')" class="px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 text-[11px] font-bold transition">
+              🏁 Race Briefing
+            </button>
+            <button type="button" onclick="applyQuickTemplate('setup')" class="px-2.5 py-1 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/30 text-cyan-400 border border-cyan-500/30 text-[11px] font-bold transition">
+              🏎️ Setup MMT Verificado
+            </button>
+            <button type="button" onclick="applyQuickTemplate('training')" class="px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-[11px] font-bold transition">
+              ⏱️ Convocatoria Entreno
+            </button>
+          </div>
           <!-- From -->
           <div class="flex items-center gap-3">
             <label class="w-16 text-neutral-400 font-bold">De:</label>
@@ -506,6 +524,75 @@
       }
     ];
 
+    const PILOTS_ROSTER = {
+      "alberto@muntru.me": { name: "Alberto Trujillo", email: "alberto@muntru.me", initials: "AT", role: "Team Principal & Telemetry Lead" },
+      "mateo@muntru.me": { name: "Mateo Berbis", email: "mateo@muntru.me", initials: "MB", role: "Piloto Oficial · Sprint & Qualy" },
+      "eduardo@muntru.me": { name: "Eduardo Chongkan", email: "eduardo@muntru.me", initials: "EC", role: "Ingeniero de Carrera & Prototipos" },
+      "juanlu@muntru.me": { name: "Juanlu Carrillo", email: "juanlu@muntru.me", initials: "JC", role: "Piloto Oficial · Monoplazas" }
+    };
+    let currentPilot = PILOTS_ROSTER["alberto@muntru.me"];
+
+    function switchIdentity(email) {
+      if (PILOTS_ROSTER[email]) {
+        currentPilot = PILOTS_ROSTER[email];
+        document.getElementById("currentUserBadge").textContent = currentPilot.initials;
+        document.getElementById("identitySelect").value = email;
+        const composeFrom = document.getElementById("composeFrom");
+        if (composeFrom) composeFrom.value = `${currentPilot.email} (${currentPilot.name})`;
+        localStorage.setItem("muntrume_active_pilot", email);
+      }
+    }
+
+    function applyQuickTemplate(type) {
+      const subjectInput = document.getElementById("composeSubject");
+      const bodyInput = document.getElementById("composeBody");
+      const catSelect = document.getElementById("composeCategory");
+
+      if (type === "briefing") {
+        catSelect.value = "briefing";
+        subjectInput.value = "🏁 Race Briefing Oficial: Le Mans / IMSA — Estrategia de Stints y Combustible";
+        bodyInput.value = `Hola equipo,
+
+Comparto la hoja de ruta técnica para la próxima cita:
+- Circuito: Circuit de la Sarthe / Le Mans
+- Coche: Aston Martin Valkyrie GTP
+- Carga de Combustible Qualy: 16.5 L (suficiente para 2 vueltas lanzadas + out-lap)
+- Carga de Combustible Carrera: 62.4 L por stint
+- Relación de marchas: GearStack Long (345+ km/h en Mulsanne)
+
+Por favor, confirmad asistencia y turnos de stint.
+
+— ${currentPilot.name} · ${currentPilot.role}`;
+      } else if (type === "setup") {
+        catSelect.value = "setup";
+        subjectInput.value = "🏎️ Setup Verificado MMT: Aston Martin Valkyrie GTP [MMT_VALK_LMS_Q2 / R]";
+        bodyInput.value = `Equipo,
+
+Ya tenéis disponible en el Setup Vault (y sincronizado en Garage 61) el setup oficial verificado:
+- Coche: Aston Martin Valkyrie GTP
+- Versión: MMT_VALK_LMS_Q2_SAFE
+- Aero: Alerón 4.5° de baja carga
+- Balance: Tracción optimizada en curvas Porsche
+
+Descarga directa en: https://muntru.me/setups
+
+— ${currentPilot.name}`;
+      } else if (type === "training") {
+        catSelect.value = "general";
+        subjectInput.value = "⏱️ Convocatoria: Sesión Oficial de Entrenamientos y Práctica de Pit-Stops";
+        bodyInput.value = `Buenas a todos,
+
+Convocamos sesión privada de entreno para poner a punto las paradas en boxes y relevos de piloto:
+- Día / Hora: Jueves 21:30 CEST
+- Servidor: Muntrume Motorsport Practice Server
+- Sesión: Outlap + 3 stints completos de ritmo de carrera
+
+Nos vemos en el canal de voz de Discord.
+
+— ${currentPilot.name}`;
+      }
+    }
+
     let emails = [];
     let currentFolder = "inbox";
     let activeMessageId = null;
@@ -523,8 +610,14 @@
         saveEmails();
       }
 
-      // Check URL param ?to=
+      // Check URL params (?as=, ?from=, ?to=)
       const params = new URLSearchParams(window.location.search);
+      const asParam = params.get("as") || params.get("from") || localStorage.getItem("muntrume_active_pilot");
+      if (asParam) {
+        const foundKey = Object.keys(PILOTS_ROSTER).find(k => k === asParam || k.startsWith(asParam.split("-")[0]));
+        if (foundKey) switchIdentity(foundKey);
+      }
+
       const toParam = params.get("to");
       if (toParam) {
         openComposeModal(toParam);
@@ -728,9 +821,9 @@
       const newMsg = {
         id: "msg-" + Date.now(),
         folder: "sent",
-        senderName: "Alberto Trujillo",
-        senderEmail: "alberto@muntru.me",
-        senderInitials: "AT",
+        senderName: currentPilot.name,
+        senderEmail: currentPilot.email,
+        senderInitials: currentPilot.initials,
         recipient: to,
         subject: subject,
         date: new Date().toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }),
@@ -764,9 +857,9 @@
       const replyMsg = {
         id: "msg-" + Date.now(),
         folder: "sent",
-        senderName: "Alberto Trujillo",
-        senderEmail: "alberto@muntru.me",
-        senderInitials: "AT",
+        senderName: currentPilot.name,
+        senderEmail: currentPilot.email,
+        senderInitials: currentPilot.initials,
         recipient: current.senderEmail,
         subject: "Re: " + current.subject,
         date: new Date().toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }),

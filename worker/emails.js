@@ -604,3 +604,76 @@ export function teamEventEmail({ name, tz, events, manageUrl, unsubUrl }) {
   const text = `${tldrText(tldr)}${greeting(name, tz)}:\n\n${eventsText(events, tz)}\n--\nMuntrume Motorsport · ${SITE}\nGestionar notificaciones: ${manageUrl}\nDarse de baja: ${unsubUrl}\n`;
   return { subject, html, text };
 }
+
+/** 10) Race Briefing oficial de carrera / sesión para pilotos de Muntrume. */
+export function raceBriefingEmail({ name, tz, eventTitle, track, carClass, sessionDate, fuelPerLap, stintLaps, tyreCompound, weatherSummary, setupUrl, notes, manageUrl, unsubUrl }) {
+  const subject = `🏁 Briefing Oficial: ${eventTitle || "Próxima Carrera"} · ${track || "iRacing"} · Muntrume`;
+  const tldr = [
+    `Briefing de carrera para ${eventTitle || "evento oficial"} en ${track || "pista"}.`,
+    `Estrategia recomendada: ${stintLaps ? `${stintLaps} vueltas por stint` : "consistencia"} | Combustible: ${fuelPerLap || "estándar"}.`,
+  ];
+  const body = hello(name, tz) +
+    P(`Se ha publicado el briefing táctico y la hoja de ruta de ingeniería para el próximo evento de competición de <strong>Muntrume Motorsport</strong>.`) +
+    `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" class="box" style="margin:16px 0;background-color:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;">
+      <tr><td style="padding:16px 20px;">
+        <p style="margin:0 0 6px 0;font-size:11px;font-weight:800;letter-spacing:1px;color:#059669;text-transform:uppercase;">HOJA TÁCTICA DE INGENIERÍA</p>
+        <p class="ink" style="margin:0 0 8px 0;font-size:17px;font-weight:800;color:#0f172a;">${escapeHtml(eventTitle)} · ${escapeHtml(track)}</p>
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="font-size:13px;line-height:20px;">
+          ${sessionDate ? `<tr><td style="padding:4px 0;color:#64748b;width:120px;">Fecha y Hora:</td><td class="ink" style="padding:4px 0;font-weight:700;color:#0f172a;">${escapeHtml(sessionDate)}</td></tr>` : ""}
+          ${carClass ? `<tr><td style="padding:4px 0;color:#64748b;">Categoría / Coche:</td><td class="ink" style="padding:4px 0;font-weight:700;color:#0f172a;">${escapeHtml(carClass)}</td></tr>` : ""}
+          ${stintLaps ? `<tr><td style="padding:4px 0;color:#64748b;">Ventana de Stint:</td><td class="ink" style="padding:4px 0;font-weight:700;color:#059669;">${escapeHtml(stintLaps)} vueltas máx</td></tr>` : ""}
+          ${fuelPerLap ? `<tr><td style="padding:4px 0;color:#64748b;">Consumo Estimado:</td><td class="ink" style="padding:4px 0;font-weight:700;color:#0f172a;">${escapeHtml(fuelPerLap)} L/vuelta</td></tr>` : ""}
+          ${tyreCompound ? `<tr><td style="padding:4px 0;color:#64748b;">Neumáticos:</td><td class="ink" style="padding:4px 0;font-weight:700;color:#0f172a;">${escapeHtml(tyreCompound)}</td></tr>` : ""}
+          ${weatherSummary ? `<tr><td style="padding:4px 0;color:#64748b;">Meteorología:</td><td class="ink" style="padding:4px 0;font-weight:700;color:#0f172a;">${escapeHtml(weatherSummary)}</td></tr>` : ""}
+        </table>
+      </td></tr>
+    </table>` +
+    (notes ? `<div style="margin:16px 0;padding:14px 18px;border-left:3px solid #10b981;background-color:#f0fdf4;border-radius:0 8px 8px 0;"><p style="margin:0;font-size:13px;line-height:20px;color:#166534;"><strong>Instrucciones de Dirección Deportiva:</strong><br>${escapeHtml(notes).replace(/\n/g, "<br>")}</p></div>` : "");
+
+  const html = layout({
+    manageUrl, unsubUrl, securityNote: false, tldr,
+    preheader: tldr.join(" "),
+    title: `Briefing: ${eventTitle || "Evento Oficial"}`,
+    bodyHtml: body,
+    cta: setupUrl ? { url: setupUrl, label: "🏎️ Descargar Setup en Vault" } : { url: `${SITE}/setups`, label: "Abrir Setup Vault" },
+    footerNote: "Recibes este comunicado interno de dirección deportiva como piloto oficial de Muntrume Motorsport.",
+  });
+  const text = `${tldrText(tldr)}${greeting(name, tz)}:\n\nBriefing Oficial: ${eventTitle} (${track})\nFecha: ${sessionDate || "Próximamente"}\nStints: ${stintLaps || "--"}\nConsumo: ${fuelPerLap || "--"}\n\n${notes ? `Instrucciones:\n${notes}\n\n` : ""}Setup en Vault: ${setupUrl || `${SITE}/setups`}\n--\nMuntrume Motorsport · ${SITE}\n`;
+  return { subject, html, text };
+}
+
+/** 11) Notificación de nuevo setup oficial verificado en el Vault. */
+export function setupReleaseEmail({ name, tz, carName, circuit, sessionType, setupName, wingAngle, fuelLiters, notes, downloadUrl, manageUrl, unsubUrl }) {
+  const subject = `🏎️ Nuevo Setup Oficial: ${carName} · ${circuit} (${sessionType || "Race"}) · Muntrume`;
+  const tldr = [
+    `Nuevo setup verificado disponible: ${setupName || carName} para ${circuit}.`,
+    `Aero: ${wingAngle || "Óptima"} | Combustible: ${fuelLiters ? `${fuelLiters} L` : "Ver ficha"}.`,
+  ];
+  const body = hello(name, tz) +
+    P(`El departamento de ingeniería de <strong>Muntrume Motorsport</strong> ha validado y publicado un nuevo setup oficial en el Vault:`) +
+    `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" class="box" style="margin:16px 0;background-color:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;">
+      <tr><td style="padding:16px 20px;">
+        <span style="display:inline-block;padding:2px 8px;font-size:10px;font-weight:800;letter-spacing:1px;background-color:#d1fae5;color:#065f46;border-radius:6px;text-transform:uppercase;">SETUP VERIFICADO MMT</span>
+        <p class="ink" style="margin:8px 0 4px 0;font-size:16px;font-weight:800;color:#0f172a;font-family:monospace;">${escapeHtml(setupName)}</p>
+        <p class="muted" style="margin:0 0 12px 0;font-size:13px;color:#64748b;">${escapeHtml(carName)} · ${escapeHtml(circuit)} · Sesión: ${escapeHtml(sessionType || "General")}</p>
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="font-size:13px;line-height:20px;">
+          ${wingAngle ? `<tr><td style="padding:3px 0;color:#64748b;width:130px;">Carga Alerón:</td><td class="ink" style="padding:3px 0;font-weight:700;color:#0f172a;">${escapeHtml(wingAngle)}</td></tr>` : ""}
+          ${fuelLiters ? `<tr><td style="padding:3px 0;color:#64748b;">Carga Gasolina:</td><td class="ink" style="padding:3px 0;font-weight:700;color:#059669;">${escapeHtml(fuelLiters)} L</td></tr>` : ""}
+          <tr><td style="padding:3px 0;color:#64748b;">Ingeniero:</td><td class="ink" style="padding:3px 0;font-weight:700;color:#0f172a;">Alberto Trujillo (Lead Telemetry Engineer)</td></tr>
+        </table>
+      </td></tr>
+    </table>` +
+    (notes ? `<div style="margin:16px 0;padding:12px 16px;background-color:#f1f5f9;border-left:3px solid #0284c7;border-radius:0 8px 8px 0;"><p style="margin:0;font-size:12px;line-height:18px;color:#334155;"><strong>Notas de telemetría y comportamiento:</strong><br>${escapeHtml(notes)}</p></div>` : "");
+
+  const html = layout({
+    manageUrl, unsubUrl, securityNote: false, tldr,
+    preheader: tldr.join(" "),
+    title: `Nuevo Setup: ${setupName}`,
+    bodyHtml: body,
+    cta: { url: downloadUrl || `${SITE}/setups`, label: "📥 Abrir e Instalar desde el Vault" },
+    footerNote: "Recibes este aviso porque tienes activadas las notificaciones de nuevos setups en tu perfil de piloto.",
+  });
+  const text = `${tldrText(tldr)}${greeting(name, tz)}:\n\nNuevo Setup: ${setupName}\nCoche: ${carName}\nCircuito: ${circuit}\n${notes ? `Notas: ${notes}\n` : ""}
+Descarga: ${downloadUrl || `${SITE}/setups`}\n--\nMuntrume Motorsport · ${SITE}\n`;
+  return { subject, html, text };
+}
