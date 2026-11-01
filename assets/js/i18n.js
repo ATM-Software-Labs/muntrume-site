@@ -27,7 +27,7 @@
   if (lang !== "en") {
     root.classList.add("i18n-wait");
     var st = document.createElement("style"); st.id = "i18n-wait-css";
-    st.textContent = "html.i18n-wait body{opacity:0}html body{transition:opacity .12s}";
+    st.textContent = "html.i18n-wait body{opacity:0}";
     document.head.appendChild(st);
     setTimeout(function () { root.classList.remove("i18n-wait"); }, 1200);
   }
