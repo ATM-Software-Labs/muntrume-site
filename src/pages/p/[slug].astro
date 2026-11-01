@@ -1,15 +1,25 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 
+interface PilotData {
+  slug: string;
+  name: string;
+  role?: string;
+  team?: string;
+  car_class?: string;
+  bio?: string;
+  photo?: string;
+}
+
 export async function getStaticPaths() {
-  const fallbackPilots = [
-    { slug: "alberto-trujillo", name: "Alberto Trujillo", role: "Founder · Driver", team: "Muntrume Motorsport", car_class: "GTP / GT3", bio: "Sim racer & vehicle dynamics specialist." },
-    { slug: "mateo-berbis", name: "Mateo Berbis", role: "Driver", team: "Muntrume Motorsport", car_class: "GT3", bio: "Endurance & sprint racing driver." },
-    { slug: "eduardo-chongkan", name: "Eduardo Chongkan", role: "Driver", team: "Muntrume Motorsport", car_class: "GT3 / GTP", bio: "Telemetry & consistency driver." },
-    { slug: "juanlu-carrillo", name: "Juanlu Carrillo", role: "Driver", team: "Muntrume Motorsport", car_class: "GT3", bio: "Sim racer & endurance driver." }
+  const fallbackPilots: PilotData[] = [
+    { slug: "alberto-trujillo", name: "Alberto Trujillo", role: "Founder · Driver", team: "Muntrume Motorsport", car_class: "GTP / GT3", bio: "Sim racer & vehicle dynamics specialist.", photo: "" },
+    { slug: "mateo-berbis", name: "Mateo Berbis", role: "Driver", team: "Muntrume Motorsport", car_class: "GT3", bio: "Endurance & sprint racing driver.", photo: "" },
+    { slug: "eduardo-chongkan", name: "Eduardo Chongkan", role: "Driver", team: "Muntrume Motorsport", car_class: "GT3 / GTP", bio: "Telemetry & consistency driver.", photo: "" },
+    { slug: "juanlu-carrillo", name: "Juanlu Carrillo", role: "Driver", team: "Muntrume Motorsport", car_class: "GT3", bio: "Sim racer & endurance driver.", photo: "" }
   ];
 
-  let pilots = fallbackPilots;
+  let pilots: PilotData[] = fallbackPilots;
   try {
     const res = await fetch("https://muntrume.atrumin16.workers.dev/api/pilots", {
       headers: { "User-Agent": "muntrume-astro-build" }
@@ -31,7 +41,7 @@ export async function getStaticPaths() {
 }
 
 const { slug } = Astro.params;
-const { pilot } = Astro.props;
+const { pilot } = Astro.props as { pilot: PilotData };
 
 const pageTitle = `${pilot.name} · Muntrume Motorsport`;
 const pageDescription = [pilot.name, pilot.team, pilot.car_class].filter(Boolean).join(" · ") + (pilot.bio ? ` — ${pilot.bio}` : " — Muntrume Motorsport");

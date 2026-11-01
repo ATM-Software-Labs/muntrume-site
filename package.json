@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "check": "astro check",
     "preview": "astro preview"
   },
   "repository": {
@@ -15,6 +16,10 @@
   "author": "Muntrume Motorsport (ATM Software Labs)",
   "license": "UNLICENSED",
   "dependencies": {
-    "astro": "^5.4.2"
+    "astro": "^7.4.4"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "typescript": "^5.9.3"
   }
 }

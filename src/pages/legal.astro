@@ -1,0 +1,90 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const pageTitle = "Aviso Legal, Privacidad y Términos Institucionales · Muntrume Motorsport";
+const pageDescription = "Marco institucional, gobernanza de datos (RGPD), términos de acceso al Setup Vault y política de privacidad de Muntrume Motorsport.";
+---
+
+<Layout title={pageTitle} description={pageDescription}>
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-neutral-300 space-y-12">
+    
+    <!-- Header -->
+    <div class="border-b border-white/10 pb-8 space-y-3">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider">
+        Gobernanza Institucional &amp; RGPD
+      </div>
+      <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight">Aviso Legal y Política de Privacidad</h1>
+      <p class="text-sm text-neutral-400">Última actualización: Noviembre de 2026 · Sant Andreu, Barcelona</p>
+    </div>
+
+    <!-- Section 1: Identificación -->
+    <section class="space-y-4">
+      <h2 class="text-xl font-bold text-white flex items-center gap-2">
+        <span class="text-emerald-400">1.</span> Información Institucional
+      </h2>
+      <p class="text-sm leading-relaxed">
+        El portal web <strong class="text-white">muntru.me</strong> y su plataforma de telemetría y setup vault son operados por el equipo de competición virtual <strong class="text-white">Muntrume Motorsport</strong>, con sede deportiva en Sant Andreu (Barcelona, Cataluña, España).
+      </p>
+      <p class="text-sm leading-relaxed">
+        Correo electrónico de contacto y asuntos legales: <a href="mailto:info@muntru.me" class="text-emerald-400 hover:text-emerald-300 underline font-mono">info@muntru.me</a>
+      </p>
+    </section>
+
+    <!-- Section 2: Protección de Datos (RGPD) -->
+    <section class="space-y-4">
+      <h2 class="text-xl font-bold text-white flex items-center gap-2">
+        <span class="text-emerald-400">2.</span> Protección de Datos Personales (RGPD y LOPDGDD)
+      </h2>
+      <p class="text-sm leading-relaxed">
+        En cumplimiento del Reglamento General de Protección de Datos (Reglamento UE 2016/679) y la Ley Orgánica 3/2018 (LOPDGDD), se informa a los usuarios y miembros:
+      </p>
+      <ul class="list-disc pl-5 space-y-2 text-sm text-neutral-300">
+        <li><strong class="text-white">Finalidad del tratamiento:</strong> Gestión de acreditaciones, autenticación en el Setup Vault, comunicaciones institucionales (briefings de carrera) y publicación autorizada de perfiles deportivos en el directorio de pilotos.</li>
+        <li><strong class="text-white">Base jurídica:</strong> Consentimiento del interesado y relación contractual o deportiva con la organización.</li>
+        <li><strong class="text-white">Conservación de datos:</strong> Los datos se conservarán mientras el piloto mantenga su vinculación activa con la estructura deportiva o hasta la solicitud expresa de baja.</li>
+        <li><strong class="text-white">Ejercicio de derechos (ARCO+):</strong> Puedes solicitar el acceso, rectificación, supresión o limitación de tus datos en cualquier momento enviando un correo a <code class="text-emerald-400 bg-white/5 px-2 py-0.5 rounded">info@muntru.me</code> con el asunto <strong class="text-white">PRIVACY</strong>.</li>
+      </ul>
+    </section>
+
+    <!-- Section 3: Setup Vault y Propiedad Intelectual -->
+    <section class="space-y-4">
+      <h2 class="text-xl font-bold text-white flex items-center gap-2">
+        <span class="text-emerald-400">3.</span> Términos de Uso del Setup Vault y Telemetría
+      </h2>
+      <p class="text-sm leading-relaxed">
+        El acceso al área privada del <em>Setup Vault</em> está estrictamente reservado a pilotos oficiales verificados de Muntrume Motorsport.
+      </p>
+      <div class="glass-card rounded-2xl p-5 border border-white/10 space-y-2 text-xs text-neutral-300">
+        <p><strong class="text-emerald-400 font-bold">Confidencialidad:</strong> Los archivos de setup (<code class="text-white font-mono">.sto</code>), análisis de telemetría y estrategias de carrera constituyen desarrollo técnico propio del equipo.</p>
+        <p><strong class="text-white font-bold">Uso individual:</strong> Queda terminantemente prohibida la redistribución pública o comercial de dichos archivos sin autorización por escrito de la dirección del equipo.</p>
+      </div>
+    </section>
+
+    <!-- Section 4: Cookies y Almacenamiento Local -->
+    <section class="space-y-4">
+      <h2 class="text-xl font-bold text-white flex items-center gap-2">
+        <span class="text-emerald-400">4.</span> Política de Cookies y Almacenamiento Local
+      </h2>
+      <p class="text-sm leading-relaxed">
+        Este sitio web <strong class="text-white">NO utiliza cookies de seguimiento publicitario ni comercializa datos personales</strong> con terceros.
+      </p>
+      <p class="text-sm leading-relaxed">
+        Únicamente se emplean mecanismos técnicos estrictamente necesarios (<code class="text-emerald-400 font-mono">localStorage</code> y <code class="text-emerald-400 font-mono">sessionStorage</code>) para preservar la sesión autenticada del piloto en el Vault y recordar la preferencia de idioma o tema de interfaz.
+      </p>
+    </section>
+
+    <!-- Section 5: Seguridad y Ciberdefensa -->
+    <section class="space-y-4">
+      <h2 class="text-xl font-bold text-white flex items-center gap-2">
+        <span class="text-emerald-400">5.</span> Compromiso de Seguridad y Divulgación Responsable
+      </h2>
+      <p class="text-sm leading-relaxed">
+        La infraestructura de muntru.me opera bajo arquitectura Zero-Trust en Cloudflare Workers y D1 con cifrado en tránsito (TLS 1.3) y firma criptográfica de sesiones.
+      </p>
+      <p class="text-sm leading-relaxed">
+        Si detectas cualquier fallo de seguridad, consulta nuestra política de divulgación responsable en <a href="/SECURITY" class="text-emerald-400 hover:text-emerald-300 underline font-semibold">SECURITY.md</a>.
+      </p>
+    </section>
+
+  </div>
+</Layout>

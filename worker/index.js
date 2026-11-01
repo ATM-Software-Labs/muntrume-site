@@ -1605,8 +1605,25 @@ export default {
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers });
     RATE_LIMITER = env.RATE_LIMITER || null;
     const url = new URL(request.url);
-    if (request.method === "GET" && (url.pathname === "/" || url.pathname === "/health")) {
-      return reply(200, { status: "healthy", service: "Muntrume Worker Backend" });
+    if (request.method === "GET" && (url.pathname === "/" || url.pathname === "/health" || url.pathname === "/api/health")) {
+      let dbStatus = "unconfigured";
+      if (env.muntrume_vault) {
+        try {
+          await env.muntrume_vault.prepare("SELECT 1").first();
+          dbStatus = "connected";
+        } catch {
+          dbStatus = "degraded";
+        }
+      }
+      return reply(200, {
+        status: dbStatus === "degraded" ? "degraded" : "healthy",
+        service: "Muntrume Motorsport Setup Vault & Edge API",
+        version: "2.0.0",
+        timestamp: new Date().toISOString(),
+        database: dbStatus,
+        rate_limiter: env.RATE_LIMITER ? "active" : "disabled",
+        security: "Zero-Trust Ed25519/HMAC · Strict CSP"
+      });
     }
     if (request.method === "GET" && url.pathname.replace(/\/+$/, "") === "/api/news") {
       try { return await handleNews(request, ctx); }
