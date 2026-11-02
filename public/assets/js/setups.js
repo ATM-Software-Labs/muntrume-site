@@ -1762,7 +1762,7 @@ async function getSetupsContentBatch(setupsList, onProgress) {
   return result;
 }
 
-function decodeAndSanitizeSto(b64) {
+function decodeAndSanitizeSto(b64, carSlug = "") {
   const byteChars = atob(b64);
   const raw = new Uint8Array(byteChars.length);
   for (let i = 0; i < byteChars.length; i++) raw[i] = byteChars.charCodeAt(i);
@@ -1778,7 +1778,8 @@ function decodeAndSanitizeSto(b64) {
   const notesEnd = 16 + l1 - 8;
   if (notesStart < 16 || notesStart > notesEnd || notesEnd > origLen) return raw;
 
-  const cleanText = "muntru.me - Muntrume Motorsport. Setup by Alberto Trujillo.";
+  const carLabel = CAR_LABELS[carSlug] || carSlug || "Oficial";
+  const cleanText = `muntru.me - Muntrume Motorsport | ${carLabel}\nSetup Oficial de Competición · Temporada 2026\nIngeniería y Telemetría: Muntrume Motorsport (Alberto Trujillo)\nSincronización oficial Garage 61 & iRacing.`;
   const newL3 = (cleanText.length + 1) * 2;
   const newL1 = (l1 - l3) + newL3;
   const out = new Uint8Array(16 + (notesStart - 16) + newL3 + 8);
@@ -1837,7 +1838,7 @@ async function downloadFolder(folderKey) {
 
       for (const s of setupsToDownload) {
         try {
-          const byteArray = decodeAndSanitizeSto(s.content_base64);
+          const byteArray = decodeAndSanitizeSto(s.content_base64, s.car);
           const resolved = await resolveExactSetupDir(activeHandle, s.car, s.season, s.week, s.circuit);
           targetRelPath = resolved.relDisplay;
           await writeSetupBytesToTargets(resolved, s.filename, byteArray);
@@ -1857,7 +1858,7 @@ async function downloadFolder(folderKey) {
       const zip = new JSZip();
 
       for (const s of setupsToDownload) {
-        const byteArray = decodeAndSanitizeSto(s.content_base64);
+        const byteArray = decodeAndSanitizeSto(s.content_base64, s.car);
         const { yr, seasonFolder, weekFolder, circFolder } = getMtSetupsHierarchyParts(s.season, s.week, s.circuit);
         zip.file(`${s.car}/Garage 61 - Muntrume Motorsport/${yr}/${seasonFolder}/${weekFolder}/${circFolder}/${s.filename}`, byteArray);
         zip.file(`${s.car}/Garage 61/${yr}/${seasonFolder}/${weekFolder}/${circFolder}/${s.filename}`, byteArray);
@@ -1949,7 +1950,7 @@ async function downloadSetup(setupId, fallbackFilename) {
       contentBase64 = data.content_base64;
     }
 
-    const byteArray = decodeAndSanitizeSto(contentBase64);
+    const byteArray = decodeAndSanitizeSto(contentBase64, car);
 
     // 1. Direct write to exact path on disk if File System API handle is active
     if (activeHandle && car) {
@@ -2024,7 +2025,7 @@ async function downloadAllVisibleSetups() {
         if (btnText) btnText.textContent = `⚡ Guardando (${i + 1}/${setupsList.length})...`;
 
         try {
-          const byteArray = decodeAndSanitizeSto(s.content_base64);
+          const byteArray = decodeAndSanitizeSto(s.content_base64, s.car);
           const resolved = await resolveExactSetupDir(activeHandle, s.car, s.season, s.week, s.circuit);
           await writeSetupBytesToTargets(resolved, s.filename, byteArray);
           savedCount++;
@@ -2043,7 +2044,7 @@ async function downloadAllVisibleSetups() {
       const zip = new JSZip();
 
       for (const s of setupsList) {
-        const byteArray = decodeAndSanitizeSto(s.content_base64);
+        const byteArray = decodeAndSanitizeSto(s.content_base64, s.car);
         const { yr, seasonFolder, weekFolder, circFolder } = getMtSetupsHierarchyParts(s.season, s.week, s.circuit);
         zip.file(`${s.car}/Garage 61 - Muntrume Motorsport/${yr}/${seasonFolder}/${weekFolder}/${circFolder}/${s.filename}`, byteArray);
         zip.file(`${s.car}/Garage 61/${yr}/${seasonFolder}/${weekFolder}/${circFolder}/${s.filename}`, byteArray);
@@ -2648,7 +2649,7 @@ async function inspectStoBinaryNotes(setup) {
       return;
     }
 
-    const bytes = decodeAndSanitizeSto(b64);
+    const bytes = decodeAndSanitizeSto(b64, setup.car);
     renderSetupFacts(setup, { bytes: bytes.byteLength });
     const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
     const version = view.getUint32(0, true);
@@ -2660,8 +2661,9 @@ async function inspectStoBinaryNotes(setup) {
     if (notesStart >= 16 && notesEnd <= bytes.byteLength && notesEnd > notesStart) {
       decodedNotes = new TextDecoder("utf-16le").decode(bytes.subarray(notesStart, notesEnd)).replace(/\0/g, "").trim();
     }
+    const carLabel = CAR_LABELS[setup.car] || setup.car || "Oficial";
     if (!decodedNotes || /apex|grid-and-go/i.test(decodedNotes)) {
-      decodedNotes = "muntru.me - Muntrume Motorsport. Setup by Alberto Trujillo.";
+      decodedNotes = `muntru.me - Muntrume Motorsport | ${carLabel}\nSetup Oficial de Competición · Temporada 2026\nIngeniería y Telemetría: Muntrume Motorsport (Alberto Trujillo)\nSincronización oficial Garage 61 & iRacing.`;
     }
     notesEl.textContent = decodedNotes;
     if (sizeEl) sizeEl.textContent = `Cabecera v${version} · ${bytes.byteLength} bytes`;
