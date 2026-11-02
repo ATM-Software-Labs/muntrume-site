@@ -72,340 +72,256 @@ const pageDescription = "Portal privado y confidencial de ingeniería, telemetr�
 
 
     <!-- ======================================================================= -->
-    <!-- VIEW A: LANDING PAGE & GATEWAY DE ACCESO PRIVADO                        -->
+    <!-- HERO HEADER: MUNTRUME SETUP VAULT                                       -->
     <!-- ======================================================================= -->
-    <div id="authGate" class="py-4 sm:py-8 space-y-12">
-
-      <!-- 1. HERO SPLIT: LANDING VALUE PROPOSITION + LOGIN/JOIN PORTAL -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-
-        <!-- Left Column (7 cols): Setups Landing Hero & Features -->
-        <div class="lg:col-span-7 space-y-6 pt-2">
-          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold text-emerald-400">
-            <span class="pulse-dot"></span>
-            <span>Temporada 2026 Season 4 · Guardado directo en tu carpeta de iRacing</span>
+    <div class="mb-6 rounded-3xl bg-gradient-to-b from-[#161c24] to-[#0e1217] border border-white/10 p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+      <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600"></div>
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div class="space-y-2">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold text-emerald-400">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>Temporada 2026 Season 4 · Repositorio Oficial de Competición</span>
           </div>
-
-          <div class="space-y-3">
-            <h1 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-[1.1]">
-              SETUPS DE COMPETICIÓN. <br>
-              <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-emerald-300 to-teal-200">
-                LISTOS PARA GANAR EN PISTA.
-              </span>
-            </h1>
-            <p class="text-sm sm:text-base text-neutral-300 leading-relaxed max-w-2xl">
-              Accede al repositorio privado de <strong>Muntrume Motorsport</strong> con más de <strong>41.000 setups</strong> para iRacing. Paquetes semanales de clasificación, carrera y lluvia, que puedes guardar directamente en tu carpeta de setups.
-            </p>
-          </div>
-
-          <!-- Live Stats Strip -->
-          <div class="grid grid-cols-3 gap-3 sm:gap-4 pt-1">
-            <div class="bg-[#161c24] border border-white/10 rounded-2xl p-4">
-              <div class="text-2xl sm:text-3xl font-black text-white">105</div>
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-emerald-400 mt-0.5">Coches Activos</div>
-              <div class="text-[11px] text-neutral-400 mt-0.5 hidden sm:block">GT3 · GTP · LMP2 · GT4 · Cup</div>
-            </div>
-            <div class="bg-[#161c24] border border-white/10 rounded-2xl p-4">
-              <div class="text-2xl sm:text-3xl font-black text-emerald-400">41.016</div>
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-white mt-0.5">Setups .sto</div>
-              <div class="text-[11px] text-neutral-400 mt-0.5 hidden sm:block">5 temporadas · 25S4–26S4</div>
-            </div>
-            <div class="bg-[#161c24] border border-white/10 rounded-2xl p-4">
-              <div class="text-2xl sm:text-3xl font-black text-white">127</div>
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-emerald-400 mt-0.5">Circuitos</div>
-              <div class="text-[11px] text-neutral-400 mt-0.5 hidden sm:block">Calendario W01 a W13</div>
-            </div>
-          </div>
-
-          <!-- Key Engineering Pillars -->
-          <div class="space-y-3 pt-2">
-            <div class="bg-[#161c24]/80 border border-white/10 rounded-2xl p-4 flex items-start gap-3.5">
-              <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
-              </div>
-              <div>
-                <h2 class="text-sm font-bold text-white">Guardado directo en tu carpeta de iRacing</h2>
-                <p class="text-xs text-neutral-400 mt-0.5 leading-relaxed">
-                  Vincula tu carpeta <code class="text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">Documents\iRacing\setups</code> desde el navegador y guarda cada paquete semanal directamente en su carpeta sin descomprimir ZIPs ni mover archivos manualmente.
-                </p>
-              </div>
-            </div>
-
-            <div class="bg-[#161c24]/80 border border-white/10 rounded-2xl p-4 flex items-start gap-3.5">
-              <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-              </div>
-              <div>
-                <h2 class="text-sm font-bold text-white">Paquetes por sesión: Qualy, Race y Lluvia</h2>
-                <p class="text-xs text-neutral-400 mt-0.5 leading-relaxed">
-                  Cada semana incluye las variantes de sesión disponibles en el catálogo (Qualy, Race y Wet), listas para descargar o guardar en tu carpeta.
-                </p>
-              </div>
-            </div>
-
-            <div class="bg-[#161c24]/80 border border-white/10 rounded-2xl p-4 flex items-start gap-3.5">
-              <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-              </div>
-              <div>
-                <h2 class="text-sm font-bold text-white">Cobertura multi-categoría</h2>
-                <p class="text-xs text-neutral-400 mt-0.5 leading-relaxed">
-                  11 GT3 (Ferrari 296, Porsche 992, McLaren 720S, BMW M4, Mustang, Aston, AMG, Corvette, Huracán, Audi, NSX), los 6 GTP/Hypercar (incluyendo Aston Martin Valkyrie GTP), Dallara P217 LMP2, LMP3, GT4, Porsche Cup y monoplazas.
-                </p>
-              </div>
-            </div>
-          </div>
+          <h1 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+            MUNTRUME SETUP VAULT
+          </h1>
+          <p class="text-xs sm:text-sm text-neutral-300 max-w-2xl leading-relaxed">
+            Más de <strong class="text-white">41.000 setups</strong> para <strong class="text-white">105 vehículos</strong> de iRacing. Paquetes completos por semana, circuito y meteorología con guardado directo en tu simulador.
+          </p>
         </div>
 
-        <!-- Right Column (5 cols): Login & Request Access Card -->
-        <div class="lg:col-span-5 w-full">
-          <div class="bg-[#161c24] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600"></div>
-
-            <div class="mb-5">
-              <div class="text-xs font-bold uppercase tracking-wider text-emerald-400">Portal de Pilotos</div>
-              <h2 class="text-xl font-extrabold text-white mt-0.5">Acceder al Setup Vault</h2>
-            </div>
-
-            <!-- Mode Tabs -->
-            <div class="flex p-1 bg-[#0e1217] rounded-xl border border-white/10 mb-6 text-xs font-semibold">
-              <button type="button" id="tabLoginBtn" onclick="switchTab('login')" class="flex-1 py-2 rounded-lg bg-[#161c24] text-white shadow transition">
-                Acceso Pilotos
-              </button>
-              <button type="button" id="tabJoinBtn" onclick="switchTab('join')" class="flex-1 py-2 rounded-lg text-neutral-400 hover:text-white transition">
-                Solicitar Acceso
-              </button>
-            </div>
-
-            <!-- FORM 1: ACCESO PILOTOS (correo + contraseña personal) -->
-            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
-              <div>
-                <label for="loginEmail" class="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-1.5">
-                  Correo Electrónico de Piloto
-                </label>
-                <input 
-                  type="email" 
-                  id="loginEmail" 
-                  required 
-                  autocomplete="email"
-                  placeholder="tu.correo@ejemplo.com"
-                  class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500 transition"
-                >
-              </div>
-
-              <div>
-                <div class="flex items-center justify-between mb-1.5">
-                  <label for="loginKey" class="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
-                    Contraseña
-                  </label>
-                  <button type="button" onclick="openForgotPasswordModal()" class="text-[11px] text-emerald-400 hover:text-emerald-300 font-semibold">¿Primer acceso u olvidaste tu contraseña?</button>
-                </div>
-                <div class="relative">
-                  <input 
-                    type="password" 
-                    id="loginKey" 
-                    required 
-                    autocomplete="current-password"
-                    placeholder="Tu contraseña personal"
-                    style="padding-right:64px"
-                    class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500 transition"
-                  >
-                  <button 
-                    type="button" 
-                    onclick="toggleKeyVisibility()" 
-                    aria-label="Mostrar u ocultar contraseña"
-                    class="absolute text-neutral-300 hover:text-white text-xs font-medium rounded-lg"
-                    style="position:absolute;right:6px;top:50%;transform:translateY(-50%);min-width:48px;min-height:44px"
-                  >
-                    Ver
-                  </button>
-                </div>
-              </div>
-
-              <div class="flex items-center justify-between pt-1 text-xs">
-                <label class="flex items-center gap-2 cursor-pointer select-none text-neutral-400 hover:text-neutral-300">
-                  <input type="checkbox" id="rememberMe" checked class="w-3.5 h-3.5 rounded bg-[#0e1217] border-white/20 text-emerald-500 focus:ring-0 focus:ring-offset-0">
-                  <span>Mantener sesión iniciada</span>
-                </label>
-              </div>
-
-              <div id="loginError" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs leading-relaxed"></div>
-
-              <button 
-                type="submit" 
-                id="loginSubmitBtn"
-                class="w-full mt-2 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold text-sm transition shadow-lg hover:shadow-emerald-500/20 flex items-center justify-center gap-2"
-              >
-                <span id="loginBtnText">Entrar al Vault &rarr;</span>
-              </button>
-              <div class="flex items-center gap-3 pt-1 text-[11px] text-neutral-500" aria-hidden="true"><span class="flex-1 h-px bg-white/10"></span>o<span class="flex-1 h-px bg-white/10"></span></div>
-              <button type="button" onclick="showCodeLogin()" class="w-full py-3 rounded-xl bg-[#0e1217] hover:bg-white/5 border border-white/15 text-white font-semibold text-sm transition flex items-center justify-center gap-2 cursor-pointer">
-                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                Entrar con código por email
-              </button>
-              <button type="button" onclick="enterGuestPreview()" class="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 hover:text-white font-medium text-xs transition flex items-center justify-center gap-2 cursor-pointer">
-                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                <span>Explorar Catálogo (Modo Vista Previa) &rarr;</span>
-              </button>
-            </form>
-
-            <!-- FORM 1b: ACCESO SIN CONTRASEÑA (código de 6 dígitos por email) -->
-            <form id="codeLoginForm" onsubmit="handleCodeLoginSubmit(event)" class="space-y-4 hidden" novalidate>
-              <p class="text-xs text-neutral-400 leading-relaxed">Te enviamos un <strong class="text-neutral-200">código de 6 dígitos</strong> (válido 10 minutos, un solo uso) al correo con el que estás autorizado. Tu contraseña sigue funcionando igual.</p>
-              <div>
-                <label for="codeEmail" class="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-1.5">Correo Electrónico de Piloto</label>
-                <input type="email" id="codeEmail" required maxlength="254" autocomplete="email" placeholder="tu.correo@ejemplo.com" class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500 transition">
-              </div>
-              <div id="codeStep2" class="hidden">
-                <label for="codeInput" class="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-1.5">Código de 6 dígitos</label>
-                <input type="text" id="codeInput" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="••••••" class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-3 text-2xl tracking-[0.5em] text-center font-mono text-white placeholder-neutral-600 focus:outline-none focus:border-emerald-500 transition">
-                <div class="flex items-center justify-between mt-2 text-xs">
-                  <span class="text-neutral-500" id="codeHint">Revisa también la carpeta de spam.</span>
-                  <button type="button" id="codeResendBtn" onclick="requestLoginCode(true)" class="text-emerald-400 hover:text-emerald-300 font-semibold disabled:text-neutral-500 disabled:cursor-not-allowed" disabled>Reenviar</button>
-                </div>
-              </div>
-              <div id="codeInfo" class="hidden p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs leading-relaxed" role="status"></div>
-              <div id="codeError" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs leading-relaxed" role="alert"></div>
-              <button type="submit" id="codeSubmitBtn" class="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-neutral-950 font-bold text-sm transition">Enviarme el código</button>
-              <button type="button" onclick="hideCodeLogin()" class="w-full text-xs text-neutral-400 hover:text-white py-2">&larr; Entrar con contraseña</button>
-            </form>
-
-            <!-- FORM 2: SOLICITUD DE INGRESO (REQUEST TO JOIN) -->
-            <form id="joinForm" onsubmit="handleJoinRequest(event)" class="space-y-4 hidden">
-              <div>
-                <label for="reqName" class="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-1.5">
-                  Nombre de Piloto / iRacing Name
-                </label>
-                <input 
-                  type="text" 
-                  id="reqName" 
-                  required 
-                  maxlength="80"
-                  autocomplete="name"
-                  placeholder="Ej. Carlos Sainz"
-                  class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500 transition"
-                >
-              </div>
-
-              <div>
-                <label for="reqEmail" class="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-1.5">
-                  Correo Electrónico
-                </label>
-                <input 
-                  type="email" 
-                  id="reqEmail" 
-                  required 
-                  maxlength="254"
-                  autocomplete="email"
-                  placeholder="tu.correo@ejemplo.com"
-                  class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500 transition"
-                >
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label for="reqIracingId" class="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-1.5">
-                    iRacing Customer ID (Opcional)
-                  </label>
-                  <input 
-                    type="text" 
-                    id="reqIracingId" 
-                    placeholder="Ej. 654321"
-                    class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500 transition"
-                  >
-                </div>
-                <div>
-                  <label for="reqCategory" class="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-1.5">
-                    Coche / Categoría
-                  </label>
-                  <input 
-                    type="text" 
-                    id="reqCategory" 
-                    placeholder="Ej. GT3 / Ferrari 296, GTP"
-                    class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500 transition"
-                  >
-                </div>
-              </div>
-
-              <div>
-                <label for="reqMessage" class="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-1.5">
-                  Mensaje para Control de Carrera (Opcional)
-                </label>
-                <textarea 
-                  id="reqMessage" 
-                  rows="2"
-                  maxlength="1000"
-                  placeholder="Indica tu perfil de Garage 61, disponibilidad para carreras de resistencia o recomendación de compañero..."
-                  class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500 transition"
-                ></textarea>
-              </div>
-
-              <div class="hidden" aria-hidden="true">
-                <label for="reqWebsite">No rellenar</label>
-                <input type="text" id="reqWebsite" name="website" tabindex="-1" autocomplete="off">
-              </div>
-
-              <div id="joinFeedback" class="hidden p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs leading-relaxed"></div>
-              <div id="joinError" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs leading-relaxed"></div>
-
-              <button 
-                type="submit" 
-                id="joinSubmitBtn"
-                class="w-full mt-2 py-3.5 rounded-xl bg-[#0e1217] hover:bg-white/10 border border-emerald-500/30 text-emerald-400 font-bold text-sm transition flex items-center justify-center gap-2"
-              >
-                <span id="joinBtnText">Enviar solicitud a Control de Carrera &rarr;</span>
-              </button>
-            </form>
-
-            <!-- Footer Info -->
-            <div class="mt-6 pt-5 border-t border-white/5 text-center text-[11px] text-neutral-400 leading-relaxed">
-              Acceso verificado por Muntrume Motorsport · Sant Andreu, Barcelona
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- 2. HOW IT WORKS IN 3 STEPS (LANDING SHOWCASE) -->
-      <div class="border-t border-white/10 pt-10">
-        <div class="text-center max-w-2xl mx-auto mb-8">
-          <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Flujo de Trabajo Directo</span>
-          <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-1">De la Web a tu Garaje de iRacing en 3 Pasos</h2>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <div class="bg-[#161c24] border border-white/10 rounded-2xl p-6 relative">
-            <div class="w-8 h-8 rounded-lg bg-emerald-500 text-neutral-950 font-black text-sm flex items-center justify-center mb-4">1</div>
-            <h3 class="text-base font-bold text-white">Vincula tu Carpeta iRacing</h3>
-            <p class="text-xs text-neutral-400 mt-1.5 leading-relaxed">
-              Al entrar al Vault, pulsa <strong>"📁 Vincular Carpeta iRacing"</strong> y selecciona <code class="text-emerald-400">Documents\iRacing\setups</code>. Solo necesitas hacerlo una vez.
-            </p>
-          </div>
-
-          <div class="bg-[#161c24] border border-white/10 rounded-2xl p-6 relative">
-            <div class="w-8 h-8 rounded-lg bg-emerald-500 text-neutral-950 font-black text-sm flex items-center justify-center mb-4">2</div>
-            <h3 class="text-base font-bold text-white">Elige Coche, Semana o Circuito</h3>
-            <p class="text-xs text-neutral-400 mt-1.5 leading-relaxed">
-              Filtra al instante entre los 105 vehículos, 127 circuitos y las semanas W01–W13 de las 5 temporadas del catálogo (2025 Season 4 a <strong>2026 Season 4</strong>).
-            </p>
-          </div>
-
-          <div class="bg-[#161c24] border border-white/10 rounded-2xl p-6 relative">
-            <div class="w-8 h-8 rounded-lg bg-emerald-500 text-neutral-950 font-black text-sm flex items-center justify-center mb-4">3</div>
-            <h3 class="text-base font-bold text-white">Guarda la Carpeta en 1 Clic</h3>
-            <p class="text-xs text-neutral-400 mt-1.5 leading-relaxed">
-              Pulsa <strong>"⚡ Guardar Carpeta"</strong> y tendrás todos los setups (<code class="text-neutral-300">Qualy, Race, Wet</code>) listos dentro de iRacing bajo <code class="text-emerald-400">Garage 61 - Muntrume Motorsport</code>.
-            </p>
-          </div>
+        <div class="flex flex-wrap items-center gap-3 shrink-0">
+          <button 
+            type="button" 
+            onclick="openAuthModal('login')" 
+            class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs transition flex items-center gap-2 shadow-lg shadow-emerald-500/20 cursor-pointer"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+            <span>Acceso Piloto Oficial</span>
+          </button>
+          <button 
+            type="button" 
+            onclick="openAuthModal('join')" 
+            class="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 hover:text-white font-bold text-xs transition cursor-pointer"
+          >
+            Solicitar Acceso
+          </button>
         </div>
       </div>
-
     </div>
 
     <!-- ======================================================================= -->
-    <!-- VIEW B: SETUP VAULT PRIVADO (Una vez autenticado)                       -->
+    <!-- MODAL DE ACCESO / LOGIN DE PILOTOS                                      -->
     <!-- ======================================================================= -->
-    <div id="vaultDashboard" class="hidden space-y-6">
+    <div id="authModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div id="authGate" class="relative w-full max-w-lg bg-[#161c24] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl overflow-hidden my-8">
+        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600"></div>
+        <button type="button" onclick="closeAuthModal()" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-neutral-400 hover:text-white transition cursor-pointer" aria-label="Cerrar ventana">
+          ✕
+        </button>
+
+        <div class="mb-5 pr-8">
+          <div class="text-xs font-bold uppercase tracking-wider text-emerald-400">Portal de Pilotos</div>
+          <h2 class="text-xl font-extrabold text-white mt-0.5">Acceder al Setup Vault</h2>
+          <p class="text-xs text-neutral-400 mt-1">Inicia sesión con tu cuenta oficial para sincronizar directamente en tu carpeta de iRacing.</p>
+        </div>
+
+        <!-- Mode Tabs -->
+        <div class="flex p-1 bg-[#0e1217] rounded-xl border border-white/10 mb-6 text-xs font-semibold">
+          <button type="button" id="tabLoginBtn" onclick="switchTab('login')" class="flex-1 py-2 rounded-lg bg-[#161c24] text-white shadow transition cursor-pointer">
+            Acceso Pilotos
+          </button>
+          <button type="button" id="tabJoinBtn" onclick="switchTab('join')" class="flex-1 py-2 rounded-lg text-neutral-400 hover:text-white transition cursor-pointer">
+            Solicitar Acceso
+          </button>
+        </div>
+
+        <!-- FORM 1: ACCESO PILOTOS (correo + contraseña personal) -->
+        <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+          <div>
+            <label for="loginEmail" class="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-1.5">
+              Correo Electrónico de Piloto
+            </label>
+            <input 
+              type="email" 
+              id="loginEmail" 
+              required 
+              autocomplete="email"
+              placeholder="tu.correo@ejemplo.com"
+              class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500 transition"
+            >
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label for="loginKey" class="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
+                Contraseña
+              </label>
+              <button type="button" onclick="openForgotPasswordModal()" class="text-[11px] text-emerald-400 hover:text-emerald-300 font-semibold cursor-pointer">¿Primer acceso u olvidaste tu contraseña?</button>
+            </div>
+            <div class="relative">
+              <input 
+                type="password" 
+                id="loginKey" 
+                required 
+                autocomplete="current-password"
+                placeholder="Tu contraseña personal"
+                style="padding-right:64px"
+                class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500 transition"
+              >
+              <button 
+                type="button" 
+                onclick="toggleKeyVisibility()" 
+                aria-label="Mostrar u ocultar contraseña"
+                class="absolute text-neutral-300 hover:text-white text-xs font-medium rounded-lg cursor-pointer"
+                style="position:absolute;right:6px;top:50%;transform:translateY(-50%);min-width:48px;min-height:44px"
+              >
+                Ver
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-1 text-xs">
+            <label class="flex items-center gap-2 cursor-pointer select-none text-neutral-400 hover:text-neutral-300">
+              <input type="checkbox" id="rememberMe" checked class="w-3.5 h-3.5 rounded bg-[#0e1217] border-white/20 text-emerald-500 focus:ring-0 focus:ring-offset-0">
+              <span>Mantener sesión iniciada</span>
+            </label>
+          </div>
+
+          <div id="loginError" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs leading-relaxed"></div>
+
+          <button 
+            type="submit" 
+            id="loginSubmitBtn"
+            class="w-full mt-2 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold text-sm transition shadow-lg hover:shadow-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <span id="loginBtnText">Entrar al Vault &rarr;</span>
+          </button>
+          <div class="flex items-center gap-3 pt-1 text-[11px] text-neutral-500" aria-hidden="true"><span class="flex-1 h-px bg-white/10"></span>o<span class="flex-1 h-px bg-white/10"></span></div>
+          <button type="button" onclick="showCodeLogin()" class="w-full py-3 rounded-xl bg-[#0e1217] hover:bg-white/5 border border-white/15 text-white font-semibold text-sm transition flex items-center justify-center gap-2 cursor-pointer">
+            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            Entrar con código por email
+          </button>
+          <button type="button" onclick="closeAuthModal()" class="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 hover:text-white font-medium text-xs transition flex items-center justify-center gap-2 cursor-pointer">
+            <span>Continuar Explorando Catálogo &rarr;</span>
+          </button>
+        </form>
+
+        <!-- FORM 1b: ACCESO SIN CONTRASEÑA (código de 6 dígitos por email) -->
+        <form id="codeLoginForm" onsubmit="handleCodeLoginSubmit(event)" class="space-y-4 hidden" novalidate>
+          <p class="text-xs text-neutral-400 leading-relaxed">Te enviamos un <strong class="text-neutral-200">código de 6 dígitos</strong> (válido 10 minutos, un solo uso) al correo con el que estás autorizado. Tu contraseña sigue funcionando igual.</p>
+          <div>
+            <label for="codeEmail" class="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-1.5">Correo Electrónico de Piloto</label>
+            <input type="email" id="codeEmail" required maxlength="254" autocomplete="email" placeholder="tu.correo@ejemplo.com" class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500 transition">
+          </div>
+          <div id="codeStep2" class="hidden">
+            <label for="codeInput" class="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-1.5">Código de 6 dígitos</label>
+            <input type="text" id="codeInput" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="••••••" class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-3 text-2xl tracking-[0.5em] text-center font-mono text-white placeholder-neutral-600 focus:outline-none focus:border-emerald-500 transition">
+            <div class="flex items-center justify-between mt-2 text-xs">
+              <span class="text-neutral-500" id="codeHint">Revisa también la carpeta de spam.</span>
+              <button type="button" id="codeResendBtn" onclick="requestLoginCode(true)" class="text-emerald-400 hover:text-emerald-300 font-semibold disabled:text-neutral-500 disabled:cursor-not-allowed cursor-pointer" disabled>Reenviar</button>
+            </div>
+          </div>
+          <div id="codeInfo" class="hidden p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs leading-relaxed" role="status"></div>
+          <div id="codeError" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs leading-relaxed" role="alert"></div>
+          <button type="submit" id="codeSubmitBtn" class="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-neutral-950 font-bold text-sm transition cursor-pointer">Enviarme el código</button>
+          <button type="button" onclick="hideCodeLogin()" class="w-full text-xs text-neutral-400 hover:text-white py-2 cursor-pointer">&larr; Entrar con contraseña</button>
+        </form>
+
+        <!-- FORM 2: SOLICITUD DE INGRESO (REQUEST TO JOIN) -->
+        <form id="joinForm" onsubmit="handleJoinRequest(event)" class="space-y-4 hidden">
+          <div>
+            <label for="reqName" class="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-1.5">
+              Nombre de Piloto / iRacing Name
+            </label>
+            <input 
+              type="text" 
+              id="reqName" 
+              required 
+              maxlength="80"
+              autocomplete="name"
+              placeholder="Ej. Carlos Sainz"
+              class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500 transition"
+            >
+          </div>
+
+          <div>
+            <label for="reqEmail" class="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-1.5">
+              Correo Electrónico
+            </label>
+            <input 
+              type="email" 
+              id="reqEmail" 
+              required 
+              maxlength="254"
+              autocomplete="email"
+              placeholder="tu.correo@ejemplo.com"
+              class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500 transition"
+            >
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label for="reqIracingId" class="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-1.5">
+                iRacing Customer ID (Opcional)
+              </label>
+              <input 
+                type="text" 
+                id="reqIracingId" 
+                placeholder="Ej. 654321"
+                class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500 transition"
+              >
+            </div>
+            <div>
+              <label for="reqCategory" class="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-1.5">
+                Coche / Categoría
+              </label>
+              <input 
+                type="text" 
+                id="reqCategory" 
+                placeholder="Ej. GT3 / Ferrari 296, GTP"
+                class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500 transition"
+              >
+            </div>
+          </div>
+
+          <div>
+            <label for="reqMessage" class="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-1.5">
+              Mensaje para Control de Carrera (Opcional)
+            </label>
+            <textarea 
+              id="reqMessage" 
+              rows="2"
+              maxlength="1000"
+              placeholder="Indica tu perfil de Garage 61, disponibilidad para carreras de resistencia o recomendación de compañero..."
+              class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500 transition"
+            ></textarea>
+          </div>
+
+          <div class="hidden" aria-hidden="true">
+            <label for="reqWebsite">No rellenar</label>
+            <input type="text" id="reqWebsite" name="website" tabindex="-1" autocomplete="off">
+          </div>
+
+          <div id="joinFeedback" class="hidden p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs leading-relaxed"></div>
+          <div id="joinError" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs leading-relaxed"></div>
+
+          <button 
+            type="submit" 
+            id="joinSubmitBtn"
+            class="w-full mt-2 py-3.5 rounded-xl bg-[#0e1217] hover:bg-white/10 border border-emerald-500/30 text-emerald-400 font-bold text-sm transition flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <span id="joinBtnText">Enviar Solicitud a Carrera &rarr;</span>
+          </button>
+        </form>
+
+      </div>
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- VIEW B: SETUP VAULT PRIVADO                                             -->
+    <!-- ======================================================================= -->
+    <div id="vaultDashboard" class="space-y-6">
       
       <!-- Top Session Bar -->
       <div class="bg-[#161c24] border border-white/10 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
@@ -417,10 +333,10 @@ const pageDescription = "Portal privado y confidencial de ingeniería, telemetr�
             <div class="flex items-center gap-2">
               <span class="pulse-dot"></span>
               <span class="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Sesión activa</span>
-              <span id="userRoleBadge" class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-white/10 text-neutral-300">Driver</span>
+              <span id="userRoleBadge" class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-white/10 text-neutral-300">Catálogo Abierto</span>
             </div>
             <div class="text-white font-extrabold text-sm sm:text-base tracking-tight" id="userEmailDisplay">
-              piloto@muntrume.com
+              105 Coches · 41.016 Setups
             </div>
           </div>
         </div>
@@ -428,9 +344,18 @@ const pageDescription = "Portal privado y confidencial de ingeniería, telemetr�
         <div class="flex flex-wrap items-center gap-2.5 self-end sm:self-auto">
           <button 
             type="button" 
+            id="authGateOpenBtn"
+            onclick="openAuthModal('login')" 
+            class="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs transition flex items-center gap-1.5 shadow-lg shadow-emerald-500/20 cursor-pointer"
+          >
+            🔑 Acceso Piloto
+          </button>
+
+          <button 
+            type="button" 
             id="linkFolderBtn"
             onclick="toggleLinkDirectory()" 
-            class="px-3.5 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-xs font-bold text-emerald-400 transition flex items-center gap-1.5 shadow"
+            class="px-3.5 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-xs font-bold text-emerald-400 transition flex items-center gap-1.5 shadow cursor-pointer"
             title="Vincular tu carpeta Documents\iRacing\setups para guardar directamente los setups en su destino"
           >
             <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
@@ -441,7 +366,7 @@ const pageDescription = "Portal privado y confidencial de ingeniería, telemetr�
             type="button" 
             id="adminPanelBtn"
             onclick="openAdminModal()" 
-            class="hidden px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-xs font-bold text-amber-400 transition flex items-center gap-1.5 shadow"
+            class="hidden px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-xs font-bold text-amber-400 transition flex items-center gap-1.5 shadow cursor-pointer"
             title="Panel de Control de Carrera / Administrador"
           >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
@@ -451,7 +376,7 @@ const pageDescription = "Portal privado y confidencial de ingeniería, telemetr�
           <button 
             type="button" 
             onclick="refreshCatalog()"
-            class="px-3.5 py-2 rounded-xl bg-[#0e1217] hover:bg-white/10 border border-white/10 text-xs font-semibold text-neutral-300 transition flex items-center gap-1.5"
+            class="px-3.5 py-2 rounded-xl bg-[#0e1217] hover:bg-white/10 border border-white/10 text-xs font-semibold text-neutral-300 transition flex items-center gap-1.5 cursor-pointer"
             title="Recargar catálogo de setups"
           >
             <svg class="w-3.5 h-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
@@ -460,8 +385,9 @@ const pageDescription = "Portal privado y confidencial de ingeniería, telemetr�
           
           <button 
             type="button" 
+            id="logoutBtn"
             onclick="handleLogout()" 
-            class="px-3.5 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-xs font-semibold text-red-400 transition"
+            class="hidden px-3.5 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-xs font-semibold text-red-400 transition cursor-pointer"
           >
             Desconectar
           </button>

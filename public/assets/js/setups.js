@@ -130,9 +130,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  showAuthGate();
+  // DEFAULT GUEST EXPLORER: Always show full catalog immediately!
+  currentUser = { email: "105 Coches · 41.016 setups", role: "guest" };
+  showVaultView();
+  loadCatalog();
+
   if (window.location.hash === "#join" || urlParams.get("mode") === "join") {
-    switchTab("join");
+    openAuthModal("join");
+  } else if (window.location.hash === "#login" || urlParams.get("mode") === "login") {
+    openAuthModal("login");
   }
 });
 
@@ -532,46 +538,71 @@ function handleLogout() {
   showAuthGate();
 }
 
+function openAuthModal(tab = "login") {
+  const modal = document.getElementById("authModal");
+  if (modal) {
+    modal.classList.remove("hidden");
+    switchTab(tab);
+  }
+}
+window.openAuthModal = openAuthModal;
+
+function closeAuthModal() {
+  const modal = document.getElementById("authModal");
+  if (modal) modal.classList.add("hidden");
+}
+window.closeAuthModal = closeAuthModal;
+
 function showAuthGate() {
-  document.getElementById("authGate")?.classList.remove("hidden");
-  document.getElementById("vaultDashboard")?.classList.add("hidden");
+  openAuthModal("login");
 }
 
 function enterGuestPreview() {
-  currentUser = { email: "invitado@muntru.me", role: "guest" };
+  closeAuthModal();
+  currentUser = { email: "105 Coches · 41.016 setups", role: "guest" };
   showVaultView();
   loadCatalog();
 }
 window.enterGuestPreview = enterGuestPreview;
 
 function showVaultView() {
-  document.getElementById("authGate")?.classList.add("hidden");
+  const authModal = document.getElementById("authModal");
+  if (authModal) authModal.classList.add("hidden");
   document.getElementById("vaultDashboard")?.classList.remove("hidden");
   if (currentUser) {
     const emailDisp = document.getElementById("userEmailDisplay");
-    if (emailDisp) emailDisp.textContent = currentUser.email;
-
     const roleBadge = document.getElementById("userRoleBadge");
     const adminBtn = document.getElementById("adminPanelBtn");
+    const authBtn = document.getElementById("authGateOpenBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
 
     if (currentUser.role === 'admin') {
+      if (emailDisp) emailDisp.textContent = currentUser.email;
       if (roleBadge) {
         roleBadge.textContent = "⚡ Race Control Admin";
         roleBadge.className = "text-[10px] uppercase font-black px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm";
       }
       if (adminBtn) adminBtn.classList.remove("hidden");
+      if (authBtn) authBtn.classList.add("hidden");
+      if (logoutBtn) logoutBtn.classList.remove("hidden");
     } else if (currentUser.role === 'guest') {
+      if (emailDisp) emailDisp.textContent = "105 Coches · 41.016 Setups";
       if (roleBadge) {
-        roleBadge.textContent = "Modo Vista Previa";
-        roleBadge.className = "text-[10px] uppercase font-bold px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 shadow-sm";
+        roleBadge.textContent = "Catálogo Abierto";
+        roleBadge.className = "text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
       }
       if (adminBtn) adminBtn.classList.add("hidden");
+      if (authBtn) authBtn.classList.remove("hidden");
+      if (logoutBtn) logoutBtn.classList.add("hidden");
     } else {
+      if (emailDisp) emailDisp.textContent = currentUser.email;
       if (roleBadge) {
         roleBadge.textContent = "Official Driver";
         roleBadge.className = "text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
       }
       if (adminBtn) adminBtn.classList.add("hidden");
+      if (authBtn) authBtn.classList.add("hidden");
+      if (logoutBtn) logoutBtn.classList.remove("hidden");
     }
   }
 }
@@ -1067,7 +1098,7 @@ function populateAllDropdowns(cars, seasons, weeks, circuits) {
   // 1. Coches (64)
   if (carSel) {
     const curVal = carSel.value;
-    carSel.innerHTML = '<option value="">Todos los Coches (64)</option>';
+    carSel.innerHTML = `<option value="">Todos los Coches (${cars.length})</option>`;
     cars.forEach(c => {
       const opt = document.createElement("option");
       opt.value = c;
@@ -1118,7 +1149,7 @@ function populateAllDropdowns(cars, seasons, weeks, circuits) {
   // 4. Circuitos (50/61)
   if (circSel) {
     const curVal = circSel.value;
-    circSel.innerHTML = '<option value="">Todos los Circuitos (61)</option>';
+    circSel.innerHTML = `<option value="">Todos los Circuitos (${circuits.length})</option>`;
     circuits.forEach(c => {
       const opt = document.createElement("option");
       opt.value = c;
@@ -1819,8 +1850,12 @@ function decodeAndSanitizeSto(b64, carSlug = "") {
 // ==========================================
 async function downloadFolder(folderKey) {
   if (currentUser && currentUser.role === 'guest') {
-    alert("Estás en modo Vista Previa. Para descargar y sincronizar setups en tu iRacing, inicia sesión con tu cuenta oficial de piloto.");
-    showAuthGate();
+    openAuthModal('login');
+    const err = document.getElementById("loginError");
+    if (err) {
+      err.textContent = "Inicia sesión con tu cuenta de piloto para guardar y sincronizar setups en tu carpeta de iRacing.";
+      err.classList.remove("hidden");
+    }
     return;
   }
 
@@ -2013,8 +2048,12 @@ async function downloadSetup(setupId, fallbackFilename) {
 // Descargar todos los setups del circuito o vista actual (de una sola vez en su ruta exacta)
 async function downloadAllVisibleSetups() {
   if (currentUser && currentUser.role === 'guest') {
-    alert("Estás en modo Vista Previa. Para descargar y sincronizar setups en tu iRacing, inicia sesión con tu cuenta oficial de piloto.");
-    showAuthGate();
+    openAuthModal('login');
+    const err = document.getElementById("loginError");
+    if (err) {
+      err.textContent = "Inicia sesión con tu cuenta de piloto para guardar y sincronizar setups en tu carpeta de iRacing.";
+      err.classList.remove("hidden");
+    }
     return;
   }
 

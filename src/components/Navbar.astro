@@ -28,19 +28,19 @@ const isActive = (path: string) => {
     <!-- Desktop Navigation Links -->
     <nav class="hidden md:flex items-center gap-3 lg:gap-5 xl:gap-6 text-xs lg:text-sm font-medium whitespace-nowrap">
       <a href="/" class={`transition-colors border-b-2 pb-0.5 ${isActive('/') ? 'text-emerald-400 font-semibold border-emerald-400' : 'text-neutral-400 hover:text-white border-transparent'}`}>
-        Overview
+        Inicio
       </a>
       <a href="/team" class={`transition-colors border-b-2 pb-0.5 ${isActive('/team') ? 'text-emerald-400 font-semibold border-emerald-400' : 'text-neutral-400 hover:text-white border-transparent'}`}>
-        Drivers
+        Pilotos
       </a>
       <a href="/news" class={`transition-colors border-b-2 pb-0.5 ${isActive('/news') ? 'text-emerald-400 font-semibold border-emerald-400' : 'text-neutral-400 hover:text-white border-transparent'}`}>
-        Press Room
+        Noticias
       </a>
       <a href="/about" class={`transition-colors border-b-2 pb-0.5 ${isActive('/about') ? 'text-emerald-400 font-semibold border-emerald-400' : 'text-neutral-400 hover:text-white border-transparent'}`}>
-        Organization
+        Equipo
       </a>
       <a href="/contact" class={`transition-colors border-b-2 pb-0.5 ${isActive('/contact') ? 'text-emerald-400 font-semibold border-emerald-400' : 'text-neutral-400 hover:text-white border-transparent'}`}>
-        Contact
+        Contacto
       </a>
       <a href="/mail" class={`transition-colors border-b-2 pb-0.5 flex items-center gap-1.5 ${isActive('/mail') ? 'text-emerald-400 font-semibold border-emerald-400' : 'text-neutral-400 hover:text-white border-transparent'}`}>
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
@@ -96,19 +96,19 @@ const isActive = (path: string) => {
     </div>
     <nav class="space-y-1.5 text-sm font-medium">
       <a href="/" onclick="toggleNavDrawer(false)" class={`block px-3 py-2.5 rounded-lg transition ${isActive('/') ? 'text-emerald-400 bg-emerald-500/10 font-semibold border border-emerald-500/20' : 'text-neutral-300 hover:text-white hover:bg-white/5'}`}>
-        Overview
+        Inicio
       </a>
       <a href="/team" onclick="toggleNavDrawer(false)" class={`block px-3 py-2.5 rounded-lg transition ${isActive('/team') ? 'text-emerald-400 bg-emerald-500/10 font-semibold border border-emerald-500/20' : 'text-neutral-300 hover:text-white hover:bg-white/5'}`}>
-        Drivers
+        Pilotos
       </a>
       <a href="/news" onclick="toggleNavDrawer(false)" class={`block px-3 py-2.5 rounded-lg transition ${isActive('/news') ? 'text-emerald-400 bg-emerald-500/10 font-semibold border border-emerald-500/20' : 'text-neutral-300 hover:text-white hover:bg-white/5'}`}>
-        Press Room
+        Noticias
       </a>
       <a href="/about" onclick="toggleNavDrawer(false)" class={`block px-3 py-2.5 rounded-lg transition ${isActive('/about') ? 'text-emerald-400 bg-emerald-500/10 font-semibold border border-emerald-500/20' : 'text-neutral-300 hover:text-white hover:bg-white/5'}`}>
-        Organization
+        Equipo
       </a>
       <a href="/contact" onclick="toggleNavDrawer(false)" class={`block px-3 py-2.5 rounded-lg transition ${isActive('/contact') ? 'text-emerald-400 bg-emerald-500/10 font-semibold border border-emerald-500/20' : 'text-neutral-300 hover:text-white hover:bg-white/5'}`}>
-        Contact
+        Contacto
       </a>
       <a href="/mail" onclick="toggleNavDrawer(false)" class={`block px-3 py-2.5 rounded-lg transition flex items-center justify-between ${isActive('/mail') ? 'text-emerald-400 bg-emerald-500/10 font-semibold border border-emerald-500/20' : 'text-neutral-300 hover:text-white hover:bg-white/5'}`}>
         <span>Webmail Corporativo</span>
@@ -119,7 +119,7 @@ const isActive = (path: string) => {
         <span class="text-[10px] uppercase font-bold text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">Privado</span>
       </a>
       <a href="/admin" onclick="toggleNavDrawer(false)" class={`block px-3 py-2.5 rounded-lg transition flex items-center justify-between ${isActive('/admin') ? 'text-emerald-400 bg-emerald-500/10 font-semibold border border-emerald-500/20' : 'text-neutral-300 hover:text-white hover:bg-white/5'}`}>
-        <span>Admin Console</span>
+        <span>Consola de Administración</span>
         <span class="text-[10px] uppercase font-bold text-neutral-400 px-2 py-0.5 rounded-full bg-white/5 border border-white/10">Staff</span>
       </a>
     </nav>
@@ -156,3 +156,9 @@ const isActive = (path: string) => {
     if (e.key === 'Escape') toggleNavDrawer(false);
   });
 </script>
+
+<style>
+  nav a.border-transparent {
+    border-color: transparent !important;
+  }
+</style>

@@ -5,33 +5,40 @@ const pageTitle = "Corporate Webmail & Telemetry Comms · Muntrume Motorsport";
 const pageDescription = "Embedded corporate webmail client and institutional telemetry communications portal for Muntrume Motorsport drivers, engineering and staff.";
 ---
 
-<Layout title={pageTitle} description={pageDescription} hideFooter={true}>
+<Layout title={pageTitle} description={pageDescription} hideNav={true} hideFooter={true}>
   <!-- ========================================================================= -->
   <!-- FULL-VIEWPORT GMAIL-STYLE WEBMAIL APPLICATION                             -->
   <!-- ========================================================================= -->
-  <div class="h-screen pt-16 flex flex-col bg-[#090d12] text-neutral-200 overflow-hidden select-none font-sans">
+  <div class="h-screen flex flex-col bg-[#090d12] text-neutral-200 overflow-hidden select-none font-sans">
     
     <!-- ======================================================================= -->
     <!-- 1. UNIFIED APP TOP TOOLBAR (SINGLE HEADER, ZERO VERTICAL BLOAT)         -->
     <!-- ======================================================================= -->
     <header class="h-14 sm:h-16 px-3 sm:px-6 bg-[#12171f] border-b border-white/10 flex items-center justify-between gap-2 sm:gap-4 shrink-0 z-20">
       
-      <!-- Left: Mobile Menu + App Identity -->
-      <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+      <!-- Left: Mobile Menu + App Identity + Back Link -->
+      <div class="flex items-center gap-2.5 sm:gap-4 shrink-0">
         <button id="toggle-sidebar-mobile" class="md:hidden p-2 rounded-xl bg-white/5 border border-white/10 text-neutral-300 hover:text-white" aria-label="Abrir carpetas">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
         </button>
 
-        <div class="flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
-          <span class="font-extrabold text-white text-sm sm:text-base tracking-tight">@muntru.me</span>
-          <span class="hidden sm:inline-block px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-mono text-[10px] font-bold">
-            Webmail
-          </span>
-          <span class="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-neutral-400 font-mono text-[10px]">
-            ⚡ Cloudflare + Brevo Relay
-          </span>
-        </div>
+        <a href="/" class="flex items-center gap-2.5 hover:opacity-90 transition group" title="Volver a la portada de Muntrume Motorsport">
+          <img src="/assets/img/logo-sm.webp" alt="Muntrume" class="h-7 w-auto object-contain transition-transform group-hover:scale-105" width="28" height="28" />
+          <span class="font-extrabold text-white text-sm sm:text-base tracking-tight">MUNTRUME</span>
+          <span class="text-neutral-500 text-xs hidden sm:inline">/</span>
+          <span class="text-emerald-400 font-mono text-xs font-bold hidden sm:inline">Webmail</span>
+        </a>
+
+        <!-- Quick Site Navigation Links -->
+        <nav class="hidden lg:flex items-center gap-1 pl-3 border-l border-white/10 text-xs">
+          <a href="/" class="px-2.5 py-1 rounded-lg text-neutral-400 hover:text-white hover:bg-white/5 transition font-medium">Inicio</a>
+          <a href="/team" class="px-2.5 py-1 rounded-lg text-neutral-400 hover:text-white hover:bg-white/5 transition font-medium">Pilotos</a>
+          <a href="/news" class="px-2.5 py-1 rounded-lg text-neutral-400 hover:text-white hover:bg-white/5 transition font-medium">Noticias</a>
+          <a href="/setups" class="px-2.5 py-1 rounded-lg text-neutral-400 hover:text-emerald-400 hover:bg-white/5 transition flex items-center gap-1 font-semibold">
+            <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            <span>Vault</span>
+          </a>
+        </nav>
       </div>
 
       <!-- Center: Search Input Bar -->
@@ -703,7 +710,7 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
   @media (max-width: 767px) {
     #mail-sidebar {
       position: fixed !important;
-      top: 7.5rem !important;
+      top: 3.5rem !important;
       bottom: 0 !important;
       left: 0 !important;
       width: 17rem !important;
