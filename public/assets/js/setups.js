@@ -829,7 +829,7 @@ function getMtSetupsHierarchyParts(season, week, circuit) {
 
 function formatMtSetupsDisplayPath(car, season, week, circuit, filename = "") {
   const { yr, seasonFolder, weekFolder, circFolder } = getMtSetupsHierarchyParts(season, week, circuit);
-  const base = `${car}\\Garage 61 - Muntrume Motorsport\\MT SETUPS\\${yr}\\${seasonFolder}\\${weekFolder}\\${circFolder}`;
+  const base = `${car}\\Garage 61 - Muntrume Motorsport\\${yr}\\${seasonFolder}\\${weekFolder}\\${circFolder}`;
   return filename ? `${base}\\${filename}` : `${base}\\`;
 }
 
@@ -868,7 +868,7 @@ async function resolveExactSetupDir(rootHandle, car, season, week, circuit) {
   const g61Targets = await ensureMtHierarchy(g61Folder);
 
   const allTargetDirs = [...teamTargets, ...g61Targets];
-  const relDisplay = `${safeCar}\\Garage 61 - Muntrume Motorsport\\MT SETUPS\\${yr}\\${seasonFolder}\\${weekFolder}\\${circName}`;
+  const relDisplay = `${safeCar}\\Garage 61 - Muntrume Motorsport\\${yr}\\${seasonFolder}\\${weekFolder}\\${circName}`;
   return { circFolder: teamTargets[0], allTargetDirs, folderName: circName, relDisplay };
 }
 
@@ -1860,6 +1860,8 @@ async function downloadFolder(folderKey) {
       for (const s of setupsToDownload) {
         const byteArray = decodeAndSanitizeSto(s.content_base64);
         const { yr, seasonFolder, weekFolder, circFolder } = getMtSetupsHierarchyParts(s.season, s.week, s.circuit);
+        zip.file(`${s.car}/Garage 61 - Muntrume Motorsport/${yr}/${seasonFolder}/${weekFolder}/${circFolder}/${s.filename}`, byteArray);
+        zip.file(`${s.car}/Garage 61/${yr}/${seasonFolder}/${weekFolder}/${circFolder}/${s.filename}`, byteArray);
         zip.file(`${s.car}/Garage 61 - Muntrume Motorsport/MT SETUPS/${yr}/${seasonFolder}/${weekFolder}/${circFolder}/${s.filename}`, byteArray);
         zip.file(`${s.car}/Garage 61/MT SETUPS/${yr}/${seasonFolder}/${weekFolder}/${circFolder}/${s.filename}`, byteArray);
       }
@@ -2044,6 +2046,8 @@ async function downloadAllVisibleSetups() {
       for (const s of setupsList) {
         const byteArray = decodeAndSanitizeSto(s.content_base64);
         const { yr, seasonFolder, weekFolder, circFolder } = getMtSetupsHierarchyParts(s.season, s.week, s.circuit);
+        zip.file(`${s.car}/Garage 61 - Muntrume Motorsport/${yr}/${seasonFolder}/${weekFolder}/${circFolder}/${s.filename}`, byteArray);
+        zip.file(`${s.car}/Garage 61/${yr}/${seasonFolder}/${weekFolder}/${circFolder}/${s.filename}`, byteArray);
         zip.file(`${s.car}/Garage 61 - Muntrume Motorsport/MT SETUPS/${yr}/${seasonFolder}/${weekFolder}/${circFolder}/${s.filename}`, byteArray);
         zip.file(`${s.car}/Garage 61/MT SETUPS/${yr}/${seasonFolder}/${weekFolder}/${circFolder}/${s.filename}`, byteArray);
       }
@@ -2968,7 +2972,7 @@ function synthesizeFallbackAiChallenger(setup) {
     car: setup.car,
     circuit: setup.circuit || "Le Mans",
     sessions_analyzed: 12,
-    reference_shop: "GnG / GO",
+    reference_shop: "Muntrume Motorsport",
     reference_setup: setup.filename,
     measured_best_lap_s: getBaseLapTimeSeconds(setup.circuit, cat, false),
     measured_fixed_lap_s: getBaseLapTimeSeconds(setup.circuit, cat, false) + 1.65,
@@ -3017,7 +3021,7 @@ async function renderAiTrainerForSetup(setup, customModel = null) {
 
   const refLapStr = model.measured_best_lap_s > 40 ? formatLapTime(model.measured_best_lap_s) : "--:--.---";
   const aiLapStr = model.predicted_ai_lap_s > 40 ? formatLapTime(model.predicted_ai_lap_s) : "--:--.---";
-  const shopName = model.reference_shop || "GnG / GO";
+  const shopName = model.reference_shop || "Muntrume Motorsport";
 
   const recsHtml = (model.ai_recommendations || []).map(r => `
     <li class="flex items-start gap-2 text-xs text-neutral-200 leading-relaxed">
