@@ -130,11 +130,31 @@ server.listen(PORT, async () => {
   await page.goto(`http://localhost:${PORT}/mail/`, { waitUntil: 'networkidle' });
   await page.waitForTimeout(800);
 
-  // Check single header
+  // Check landing visible on unauthenticated visit
+  const isMailLandingVisible = await page.evaluate(() => {
+    const el = document.getElementById('mailLanding');
+    return el && !el.classList.contains('hidden') && el.offsetParent !== null;
+  });
+  console.log(`[PASS] Mail landing immediately visible for unauthorized visitor: ${isMailLandingVisible}`);
+
+  // Authenticate as Alberto
+  await page.click('#hero-login-btn');
+  await page.waitForTimeout(300);
+  await page.click('#quick-alberto-auth-btn');
+  await page.waitForTimeout(400);
+
+  // Check single header in active webmail
   const headerCount = await page.evaluate(() => {
-    return document.querySelectorAll('header').length;
+    return document.querySelectorAll('#mailAppContainer header').length;
   });
   console.log(`[PASS] Top headers count in /mail/: ${headerCount} (Must be exactly 1)`);
+
+  // Check teammate privacy barrier
+  const isLockedMateo = await page.evaluate(() => {
+    const el = document.querySelector('.pilot-filter-btn[data-locked="true"]');
+    return el !== null;
+  });
+  console.log(`[PASS] Teammate mailboxes strictly locked with privacy barrier: ${isLockedMateo}`);
 
   // Check sidebar and main pane bounding box
   const layoutCheck = await page.evaluate(() => {

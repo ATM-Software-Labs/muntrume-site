@@ -1358,7 +1358,6 @@ async function handleMailSend(body, env, ip) {
   const subject = String(body.subject || "").trim();
   const content = String(body.body || body.content || body.text || "").trim();
   const fromRaw = String(body.from || "alberto.muntrume@trujillomingorance.com").trim().toLowerCase();
-  const fromName = String(body.fromName || "Alberto Trujillo · Muntrume Motorsport").trim();
 
   if (!to || !EMAIL_RE.test(to)) {
     return fail(400, "Destinatario no válido.");
@@ -1370,19 +1369,36 @@ async function handleMailSend(body, env, ip) {
     return fail(400, "El contenido del mensaje no puede estar vacío.");
   }
 
-  // Sender email formatted under verified domain trujillomingorance.com
+  // Friendly sender identity (Esports Simracing Team)
   let senderEmail = "alberto.muntrume@trujillomingorance.com";
-  if (fromRaw.includes("@")) {
-    const userPart = fromRaw.split("@")[0].replace(/[^a-z0-9._-]/g, "");
-    const pilot = userPart.includes("muntrume") ? userPart : `${userPart}.muntrume`;
-    senderEmail = `${pilot}@trujillomingorance.com`;
+  let friendlyName = "Alberto de Muntrume";
+  let pilotInitials = "AT";
+
+  if (fromRaw.includes("mateo")) {
+    senderEmail = "mateo.muntrume@trujillomingorance.com";
+    friendlyName = "Mateo de Muntrume";
+    pilotInitials = "MB";
+  } else if (fromRaw.includes("eduardo")) {
+    senderEmail = "eduardo.muntrume@trujillomingorance.com";
+    friendlyName = "Eduardo de Muntrume";
+    pilotInitials = "EC";
+  } else if (fromRaw.includes("juanlu")) {
+    senderEmail = "juanlu.muntrume@trujillomingorance.com";
+    friendlyName = "Juanlu de Muntrume";
+    pilotInitials = "JC";
+  } else if (fromRaw.includes("admin")) {
+    senderEmail = "admin.muntrume@trujillomingorance.com";
+    friendlyName = "Race Control";
+    pilotInitials = "RC";
+  } else if (body.fromName && !body.fromName.includes("· Muntrume Motorsport") && !body.fromName.includes("ALBERTO")) {
+    friendlyName = String(body.fromName).trim();
+    pilotInitials = friendlyName.substring(0, 2).toUpperCase();
   }
 
-  const formattedSender = `${fromName} <${senderEmail}>`;
+  const formattedSender = `${friendlyName} <${senderEmail}>`;
   const replyTo = senderEmail;
 
-  // Luxury Dark Responsive HTML Email Template for Muntrume Motorsport
-  const pilotInitials = escMail(senderEmail.split("@")[0].substring(0, 2).toUpperCase());
+  // Modern Esports Simracing Email Template (Friendly & Clean)
   const html = `
     <!DOCTYPE html>
     <html lang="es">
@@ -1391,78 +1407,73 @@ async function handleMailSend(body, env, ip) {
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>${escMail(subject)}</title>
     </head>
-    <body style="margin:0;padding:0;background-color:#090d12;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#f1f5f9;-webkit-font-smoothing:antialiased;">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#090d12;padding:32px 12px;">
+    <body style="margin:0;padding:0;background-color:#0b0e14;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#f1f5f9;-webkit-font-smoothing:antialiased;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#0b0e14;padding:32px 12px;">
         <tr>
           <td align="center">
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:620px;background-color:#161c24;border:1px solid rgba(255,255,255,0.1);border-radius:24px;overflow:hidden;box-shadow:0 25px 50px -12px rgba(0,0,0,0.75);">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:580px;background-color:#131722;border:1px solid rgba(255,255,255,0.08);border-radius:20px;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,0.6);">
               
-              <!-- Gradient top accent -->
+              <!-- Racing Green Accent Line -->
               <tr>
-                <td style="height:4px;background:linear-gradient(90deg,#10b981 0%,#34d399 50%,#059669 100%);"></td>
+                <td style="height:3px;background:linear-gradient(90deg,#10b981 0%,#34d399 50%,#059669 100%);"></td>
               </tr>
 
               <!-- Header Bar -->
               <tr>
-                <td style="padding:24px 32px;background-color:#12171f;border-bottom:1px solid rgba(255,255,255,0.08);">
+                <td style="padding:20px 28px;background-color:#0e121a;border-bottom:1px solid rgba(255,255,255,0.06);">
                   <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                     <tr>
                       <td align="left" style="vertical-align:middle;">
-                        <span style="font-size:18px;font-weight:900;letter-spacing:-0.5px;color:#ffffff;display:inline-block;vertical-align:middle;">MUNTRUME</span>
-                        <span style="color:#10b981;font-weight:800;font-size:10px;margin-left:8px;padding:3px 8px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);border-radius:6px;letter-spacing:1px;text-transform:uppercase;vertical-align:middle;display:inline-block;">TELEMETRY &amp; COMMS</span>
+                        <span style="font-size:16px;font-weight:900;letter-spacing:-0.3px;color:#ffffff;display:inline-block;vertical-align:middle;">🏎️ MUNTRUME</span>
+                        <span style="color:#10b981;font-weight:800;font-size:11px;margin-left:8px;padding:3px 8px;background:rgba(16,185,129,0.12);border-radius:6px;letter-spacing:0.5px;text-transform:uppercase;vertical-align:middle;display:inline-block;">Simracing Team</span>
                       </td>
                       <td align="right" style="vertical-align:middle;">
-                        <span style="font-size:11px;font-family:monospace;color:#94a3b8;background:rgba(255,255,255,0.05);padding:4px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);">iRacing Team</span>
+                        <span style="font-size:11px;color:#94a3b8;font-family:monospace;">iRacing &bull; GT3</span>
                       </td>
                     </tr>
                   </table>
                 </td>
               </tr>
 
-              <!-- Subject & Sender Card -->
+              <!-- Sender Info & Subject -->
               <tr>
-                <td style="padding:32px 32px 16px 32px;">
-                  <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#10b981;margin-bottom:8px;">Mensaje Oficial de Escudería</div>
-                  <h1 style="margin:0 0 20px 0;font-size:22px;font-weight:900;color:#ffffff;line-height:1.35;letter-spacing:-0.3px;">${escMail(subject)}</h1>
-                  
-                  <!-- Sender Pill Card -->
-                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#0e1217;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:12px 16px;">
+                <td style="padding:28px 28px 12px 28px;">
+                  <table role="presentation" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
                     <tr>
-                      <td width="38" style="vertical-align:middle;">
-                        <div style="width:34px;height:34px;background-color:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.35);border-radius:10px;color:#34d399;font-weight:900;font-size:12px;text-align:center;line-height:34px;font-family:monospace;">
+                      <td width="36" style="vertical-align:middle;">
+                        <div style="width:34px;height:34px;background-color:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);border-radius:10px;color:#34d399;font-weight:800;font-size:12px;text-align:center;line-height:34px;font-family:monospace;">
                           ${pilotInitials}
                         </div>
                       </td>
-                      <td style="vertical-align:middle;padding-left:12px;">
-                        <div style="font-size:13px;font-weight:800;color:#ffffff;">${escMail(fromName)}</div>
-                        <div style="font-size:11px;font-family:monospace;color:#10b981;">${escMail(senderEmail)}</div>
-                      </td>
-                      <td align="right" style="vertical-align:middle;">
-                        <span style="font-size:10px;font-weight:700;color:#34d399;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.25);border-radius:20px;padding:3px 8px;font-family:monospace;">&check; DKIM &amp; SPF</span>
+                      <td style="vertical-align:middle;padding-left:10px;">
+                        <div style="font-size:14px;font-weight:700;color:#ffffff;">${escMail(friendlyName)}</div>
+                        <div style="font-size:11px;color:#10b981;font-family:monospace;">${escMail(senderEmail)}</div>
                       </td>
                     </tr>
                   </table>
+
+                  <h1 style="margin:0 0 16px 0;font-size:20px;font-weight:800;color:#ffffff;line-height:1.35;letter-spacing:-0.2px;">${escMail(subject)}</h1>
                 </td>
               </tr>
 
               <!-- Message Body -->
               <tr>
-                <td style="padding:16px 32px 28px 32px;">
-                  <div style="background-color:#12171f;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:24px;font-size:14px;line-height:1.75;color:#cbd5e1;white-space:pre-line;">${escMail(content)}</div>
+                <td style="padding:0 28px 24px 28px;">
+                  <div style="background-color:#181e2b;border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:22px;font-size:14px;line-height:1.75;color:#e2e8f0;white-space:pre-line;">${escMail(content)}</div>
                 </td>
               </tr>
 
-              <!-- Action Buttons Strip -->
+              <!-- Quick Team Links -->
               <tr>
-                <td style="padding:0 32px 28px 32px;">
+                <td style="padding:0 28px 24px 28px;">
                   <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                     <tr>
-                      <td align="center">
-                        <a href="https://muntru.me/setups" target="_blank" style="display:inline-block;padding:12px 24px;background-color:#10b981;color:#090d12;font-weight:900;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;text-decoration:none;border-radius:12px;box-shadow:0 10px 20px -5px rgba(16,185,129,0.4);margin-right:10px;">
-                          Acceder al Setup Vault &rarr;
+                      <td align="left">
+                        <a href="https://muntru.me/setups" target="_blank" style="display:inline-block;padding:10px 20px;background-color:#10b981;color:#0b0e14;font-weight:800;font-size:12px;text-decoration:none;border-radius:10px;margin-right:8px;">
+                          Setup Vault &rarr;
                         </a>
-                        <a href="https://discord.gg/ehX6B8JUtE" target="_blank" style="display:inline-block;padding:12px 20px;background-color:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:#ffffff;font-weight:700;font-size:12px;text-decoration:none;border-radius:12px;">
-                          Discord Oficial
+                        <a href="https://discord.gg/ehX6B8JUtE" target="_blank" style="display:inline-block;padding:10px 18px;background-color:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#e2e8f0;font-weight:600;font-size:12px;text-decoration:none;border-radius:10px;">
+                          Discord
                         </a>
                       </td>
                     </tr>
@@ -1470,19 +1481,15 @@ async function handleMailSend(body, env, ip) {
                 </td>
               </tr>
 
-              <!-- Footer -->
+              <!-- Clean Esports Footer -->
               <tr>
-                <td style="padding:24px 32px;background-color:#0e1217;border-top:1px solid rgba(255,255,255,0.08);font-size:11px;color:#64748b;line-height:1.6;">
+                <td style="padding:20px 28px;background-color:#0e121a;border-top:1px solid rgba(255,255,255,0.06);font-size:11px;color:#64748b;line-height:1.5;">
                   <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                     <tr>
                       <td>
-                        <div style="color:#94a3b8;font-weight:700;">Muntrume Motorsport &middot; Sim Racing Team</div>
-                        <div style="color:#475569;margin-top:2px;">Barcelona, España &middot; Portal oficial de telemetría y comunicaciones</div>
-                        <div style="margin-top:8px;font-size:10px;color:#334155;">
-                          Cifrado TLS 1.3 &middot; Dominio verificado trujillomingorance.com &middot; Entregado vía Cloudflare &amp; Resend
-                        </div>
+                        <span style="color:#94a3b8;font-weight:600;">Muntrume Motorsport</span> &middot; Simracing Team
                       </td>
-                      <td align="right" style="vertical-align:bottom;">
+                      <td align="right">
                         <a href="https://muntru.me" style="color:#10b981;text-decoration:none;font-weight:700;">muntru.me</a>
                       </td>
                     </tr>
@@ -1498,26 +1505,43 @@ async function handleMailSend(body, env, ip) {
     </html>
   `;
 
-  const sent = await sendEmail(env, {
-    to,
-    subject,
-    html,
-    text: content,
-    from: formattedSender,
-    replyTo
-  });
+  // Despacho primario: Resend (@trujillomingorance.com verificado)
+  if (env.RESEND_API_KEY) {
+    try {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${env.RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: formattedSender,
+          to: [to],
+          reply_to: replyTo,
+          subject: subject,
+          text: content,
+          html: html,
+        }),
+      });
 
-  if (!sent.ok) {
-    return fail(500, sent.error || "No se pudo entregar el correo.");
+      const resData = await res.json().catch(() => ({}));
+      if (res.ok && resData.id) {
+        return [200, {
+          success: true,
+          id: resData.id,
+          from: formattedSender,
+          to: to,
+          provider: "Resend Verified Relay (trujillomingorance.com)"
+        }];
+      } else {
+        console.warn("[mail-resend-warn]", res.status, resData);
+      }
+    } catch (err) {
+      console.error("[mail-resend-err]", err);
+    }
   }
 
-  return [200, {
-    success: true,
-    id: sent.id,
-    from: formattedSender,
-    to,
-    provider: "Resend Verified Relay (trujillomingorance.com)"
-  }];
+  return fail(502, "No se pudo despachar el correo a través del relay.");
 }
 
 async function handleContact(body, env, ip) {
@@ -1787,7 +1811,95 @@ const ROUTES = {
 const LEGACY_MODE_RE = /^setup_/;
 const NEEDS_DB = new Set(Object.values(ROUTES).filter((r) => r !== "contact"));
 
+
+async function handleMailInbox(request, env) {
+  if (!env.muntrume_vault) return [503, { success: false, error: "Database not available", messages: [] }];
+  const url = new URL(request.url);
+  const mailbox = (url.searchParams.get("mailbox") || "all").toLowerCase().trim();
+
+  try {
+    let rows = [];
+    if (mailbox === "all") {
+      const res = await env.muntrume_vault.prepare(`
+        SELECT id, folder, sender_email, sender_name, recipient_email, subject, snippet, body, date_str, timestamp, starred, unread, attachment_name, attachment_size
+        FROM webmail_messages
+        ORDER BY timestamp DESC
+        LIMIT 100
+      `).all();
+      rows = res.results || [];
+    } else {
+      const prefix = mailbox.split("@")[0].split(".")[0];
+      const res = await env.muntrume_vault.prepare(`
+        SELECT id, folder, sender_email, sender_name, recipient_email, subject, snippet, body, date_str, timestamp, starred, unread, attachment_name, attachment_size
+        FROM webmail_messages
+        WHERE recipient_email LIKE ? OR recipient_email LIKE ?
+        ORDER BY timestamp DESC
+        LIMIT 100
+      `).bind(`%${prefix}%`, `%${mailbox}%`).all();
+      rows = res.results || [];
+    }
+    return [200, { success: true, messages: rows }];
+  } catch (err) {
+    console.error("[mail-inbox]", err);
+    return [500, { success: false, error: err.message, messages: [] }];
+  }
+}
+
 export default {
+  async email(message, env, ctx) {
+    try {
+      const from = message.from;
+      const to = message.to;
+      const subject = message.headers.get("subject") || "(Sin asunto)";
+      const messageId = message.headers.get("message-id") || `msg-${Date.now()}`;
+
+      let bodyText = "";
+      try {
+        const rawBuf = await new Response(message.raw).text();
+        const match = rawBuf.match(/Content-Type:\s*text\/plain[^\r\n]*\r?\n(?:\r?\n|[\s\S]*?\r?\n\r?\n)([\s\S]*?)(?=\r?\n--|$)/i);
+        if (match && match[1]) {
+          bodyText = match[1].trim();
+        } else {
+          const splitPos = rawBuf.indexOf("\r\n\r\n");
+          if (splitPos !== -1) {
+            bodyText = rawBuf.slice(splitPos + 4).trim();
+          } else {
+            bodyText = rawBuf.slice(0, 5000);
+          }
+        }
+      } catch (e) {
+        bodyText = `Mensaje recibido de ${from}`;
+      }
+
+      bodyText = bodyText.slice(0, 10000);
+      const snippet = bodyText.replace(/\s+/g, ' ').slice(0, 100);
+      const now = Date.now();
+      const dateStr = new Date(now).toLocaleString("es-ES", { timeZone: "Europe/Madrid", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+
+      if (env.muntrume_vault) {
+        await env.muntrume_vault.prepare(`
+          INSERT OR REPLACE INTO webmail_messages
+          (id, folder, sender_email, sender_name, recipient_email, subject, snippet, body, date_str, timestamp, starred, unread)
+          VALUES (?, 'inbox', ?, ?, ?, ?, ?, ?, ?, ?, 0, 1)
+        `).bind(
+          messageId,
+          from,
+          from.split('@')[0],
+          to,
+          subject,
+          snippet,
+          bodyText,
+          dateStr,
+          now
+        ).run();
+      }
+
+      // Reenvío al buzón personal de Alberto (atrumin16@gmail.com) para que lo reciba también en Gmail
+      await message.forward("atrumin16@gmail.com");
+    } catch (err) {
+      console.error("[email-worker-error]", err);
+    }
+  },
   async fetch(request, env, ctx) {
     const origin = request.headers.get("Origin") || "";
     const headers = corsHeaders(origin);
@@ -1815,6 +1927,11 @@ export default {
         rate_limiter: env.RATE_LIMITER ? "active" : "disabled",
         security: "Zero-Trust Ed25519/HMAC · Strict CSP"
       });
+    }
+        if (request.method === "GET" && url.pathname.replace(/\/+$/, "") === "/api/mail/inbox") {
+      if (origin && !isAllowedOrigin(origin)) return reply(403, { error: "Forbidden: Unauthorized origin" });
+      const out = await handleMailInbox(request, env);
+      return reply(out[0], out[1]);
     }
     if (request.method === "GET" && url.pathname.replace(/\/+$/, "") === "/api/news") {
       try { return await handleNews(request, ctx); }
