@@ -159,6 +159,8 @@ function thumb640(src) {
     }
 
     // 6. Share Functionality
+    window.shareArticle = shareArticle;
+    window.toggleNavDrawer = toggleNavDrawer;
     function shareArticle() {
       const url = window.location.href;
       if (navigator.clipboard) {

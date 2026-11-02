@@ -186,7 +186,15 @@
           .map(i => ({
             title: String(i.title), description: String(i.description || ''), link: safeLink(i.link),
             pubDate: i.pubDate || null, source: String(i.source || ''), thumbnail: i.thumbnail || null,
-            autoCategory: (i.autoCategory !== 'esports' && /e-?sports/i.test(i.title)) ? 'esports' : (i.autoCategory || 'sport'),
+            autoCategory: (() => {
+            const text = ((i.title || '') + ' ' + (i.description || '')).toLowerCase();
+            if (/hardware|fanatec|moza|cockpit|wheel|simagic|rig|pedal|direct drive|vrs|asetek|thrustmaster|logitech|rtx|gpu|vr|headset|chassis/i.test(text)) return 'tech';
+            if (/iracing/i.test(text)) return 'iracing';
+            if (/endurance|le mans|24h|nurburgring|spa|bathurst|wec|imsa|daytona/i.test(text)) return 'endurance';
+            if (/esports|e-sports|championship|tournament|league|cup|pesc/i.test(text)) return 'esports';
+            if (/sim\s*racing|simulator|acc|assetto|automobilista|rf2|rfactor|rennsport/i.test(text)) return 'simracing';
+            return i.autoCategory || 'sport';
+          })(),
             isBreaking: false
           }));
         const okSources = (data.sources || []).filter(s => s.ok);
@@ -249,21 +257,23 @@
       let filtered = allNews;
       if (currentFilter !== 'all') {
         if (currentFilter === 'breaking') {
-          filtered = allNews.filter(n => n.isBreaking);
+          filtered = allNews.filter(n => n.isBreaking || /breaking|urgent|anuncio|update|oficial|patch|release|ganador|victoria|pole/i.test(n.title + ' ' + (n.description || '')));
+          if (filtered.length === 0) filtered = allNews.slice(0, 4);
         } else if (currentFilter === 'team') {
-          filtered = allNews.filter(n => n.isTeam || n.autoCategory === 'team');
+          filtered = allNews.filter(n => n.isTeam || n.autoCategory === 'team' || /muntrume|equipo|piloto|driver|setup/i.test(n.source + ' ' + n.title));
         } else if (currentFilter === 'iracing') {
-          filtered = allNews.filter(n => n.autoCategory === 'iracing' || /iracing/i.test(n.title + ' ' + n.description));
+          filtered = allNews.filter(n => n.autoCategory === 'iracing' || /iracing/i.test(n.title + ' ' + (n.description || '')));
         } else if (currentFilter === 'endurance') {
-          filtered = allNews.filter(n => n.autoCategory === 'endurance' || /endurance|spa|le mans|24h|nurburgring/i.test(n.title + ' ' + n.description));
+          filtered = allNews.filter(n => n.autoCategory === 'endurance' || /endurance|spa|le mans|24h|nurburgring|daytona|bathurst|wec|imsa/i.test(n.title + ' ' + (n.description || '')));
         } else if (currentFilter === 'simracing') {
-          filtered = allNews.filter(n => n.autoCategory === 'simracing');
+          filtered = allNews.filter(n => n.autoCategory === 'simracing' || /sim\s*racing|simulator|iracing|acc|assetto|automobilista|rf2|rfactor|rennsport/i.test(n.title + ' ' + (n.description || '')));
         } else if (currentFilter === 'esports') {
-          filtered = allNews.filter(n => n.autoCategory === 'esports');
+          filtered = allNews.filter(n => n.autoCategory === 'esports' || /esports|e-sports|championship|tournament|league|cup|series|qualifying|supercars|pesc|world championship/i.test(n.title + ' ' + (n.description || '')));
         } else if (currentFilter === 'sport') {
-          filtered = allNews.filter(n => n.autoCategory === 'sport');
+          filtered = allNews.filter(n => n.autoCategory === 'sport' || /f1|formula|wec|imsa|gt3|gt4|fia|motorsport|racing|nascar|indycar/i.test(n.title + ' ' + (n.description || '')));
         } else if (currentFilter === 'tech') {
-          filtered = allNews.filter(n => n.autoCategory === 'tech');
+          filtered = allNews.filter(n => n.autoCategory === 'tech' || /hardware|tech|fanatec|moza|cockpit|wheel|simagic|rig|pedal|dd|direct drive|heusinkveld|vrs|asetek|thrustmaster|logitech|gpu|nvidia|rtx|display|monitor|setup|telemetr/i.test(n.title + ' ' + (n.description || '')));
+          if (filtered.length === 0) filtered = allNews.filter(n => n.isTeam || /setup|telemetr|ingenier/i.test(n.title + ' ' + (n.description || '')));
         } else {
           filtered = allNews.filter(n => n.autoCategory === currentFilter);
         }
@@ -896,3 +906,18 @@
     } else {
       initNewsSystem();
     }
+
+    // Expose all interactive functions to global window scope
+    window.toggleNavDrawer = toggleNavDrawer;
+    window.loadAllNews = loadAllNews;
+    window.refreshAIBrief = refreshAIBrief;
+    window.toggleGames = toggleGames;
+    window.selectGame = selectGame;
+    window.initWordSearch = initWordSearch;
+    window.initTrivia = initTrivia;
+    window.answerTrivia = answerTrivia;
+    window.nextTrivia = nextTrivia;
+    window.resetReaction = resetReaction;
+    window.handleReactionClick = handleReactionClick;
+    window.initMemory = initMemory;
+    window.flipMemory = flipMemory;

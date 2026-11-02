@@ -21,6 +21,8 @@
     }
 
     // 2. FAQ Accordion Toggle
+    window.toggleNavDrawer = toggleNavDrawer;
+    window.toggleFaq = toggleFaq;
     function toggleFaq(btn) {
       const card = btn.closest('.faq-card');
       const answer = card.querySelector('.faq-answer');
