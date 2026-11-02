@@ -854,8 +854,7 @@ async function resolveExactSetupDir(rootHandle, car, season, week, circuit) {
   const { yr, seasonFolder, weekFolder, circFolder: circName } = getMtSetupsHierarchyParts(season, week, circuit);
 
   async function ensureMtHierarchy(parentHandle) {
-    const mtRoot = await parentHandle.getDirectoryHandle("MT SETUPS", { create: true });
-    const yDir = await mtRoot.getDirectoryHandle(yr, { create: true });
+    const yDir = await parentHandle.getDirectoryHandle(yr, { create: true });
     const sDir = await yDir.getDirectoryHandle(seasonFolder, { create: true });
     const wDir = await sDir.getDirectoryHandle(weekFolder, { create: true });
     const cDir = await wDir.getDirectoryHandle(circName, { create: true });
@@ -2661,7 +2660,10 @@ async function inspectStoBinaryNotes(setup) {
     if (notesStart >= 16 && notesEnd <= bytes.byteLength && notesEnd > notesStart) {
       decodedNotes = new TextDecoder("utf-16le").decode(bytes.subarray(notesStart, notesEnd)).replace(/\0/g, "").trim();
     }
-    notesEl.textContent = decodedNotes || "Este setup no incluye notas.";
+    if (!decodedNotes || /apex|grid-and-go/i.test(decodedNotes)) {
+      decodedNotes = "muntru.me - Muntrume Motorsport. Setup by Alberto Trujillo.";
+    }
+    notesEl.textContent = decodedNotes;
     if (sizeEl) sizeEl.textContent = `Cabecera v${version} · ${bytes.byteLength} bytes`;
   } catch (e) {
     notesEl.textContent = "No se han podido leer las notas de este archivo.";
