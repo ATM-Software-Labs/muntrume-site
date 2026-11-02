@@ -7,7 +7,7 @@
     "dev": "astro dev",
     "css": "tailwindcss -i ./src/styles/tailwind.css -o ./public/assets/css/tailwind.min.css --minify",
     "compress": "node scripts/compress-html.mjs",
-    "build": "tailwindcss -i ./src/styles/tailwind.css -o ./public/assets/css/tailwind.min.css --minify && astro build && node scripts/compress-html.mjs",
+    "build": "astro build && node scripts/compress-html.mjs",
     "check": "astro check",
     "preview": "astro preview"
   },
@@ -22,6 +22,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.12",
+    "@tailwindcss/cli": "^4.3.3",
     "html-minifier-terser": "^7.2.0",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3"
