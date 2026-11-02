@@ -1824,7 +1824,7 @@ function decodeAndSanitizeSto(b64, carSlug = "") {
   if (notesStart < 16 || notesStart > notesEnd || notesEnd > origLen) return raw;
 
   const carLabel = CAR_LABELS[carSlug] || carSlug || "Oficial";
-  const cleanText = `muntru.me - Muntrume Motorsport | ${carLabel}\nSetup Oficial de Competición · Temporada 2026\nIngeniería y Telemetría: Muntrume Motorsport (Alberto Trujillo)\nSincronización oficial Garage 61 & iRacing.`;
+  const cleanText = `muntru.me - Muntrume Motorsport | Setup by Alberto Trujillo`;
   const newL3 = (cleanText.length + 1) * 2;
   const newL1 = (l1 - l3) + newL3;
   const out = new Uint8Array(16 + (notesStart - 16) + newL3 + 8);
@@ -1952,8 +1952,12 @@ async function downloadFolder(folderKey) {
 // Download single setup (Direct to exact iRacing folder path, or exact-path package)
 async function downloadSetup(setupId, fallbackFilename) {
   if (currentUser && currentUser.role === 'guest') {
-    alert("Estás en modo Vista Previa. Para descargar setups en tu iRacing, inicia sesión con tu cuenta oficial de piloto.");
-    showAuthGate();
+    openAuthModal('login');
+    const err = document.getElementById('loginError');
+    if (err) {
+      err.textContent = 'Inicia sesión con tu cuenta de piloto para descargar y guardar setups en tu carpeta de iRacing.';
+      err.classList.remove('hidden');
+    }
     return;
   }
 
@@ -2730,7 +2734,7 @@ async function inspectStoBinaryNotes(setup) {
     }
     const carLabel = CAR_LABELS[setup.car] || setup.car || "Oficial";
     if (!decodedNotes || /apex|grid-and-go/i.test(decodedNotes)) {
-      decodedNotes = `muntru.me - Muntrume Motorsport | ${carLabel}\nSetup Oficial de Competición · Temporada 2026\nIngeniería y Telemetría: Muntrume Motorsport (Alberto Trujillo)\nSincronización oficial Garage 61 & iRacing.`;
+      decodedNotes = `muntru.me - Muntrume Motorsport | Setup by Alberto Trujillo`;
     }
     notesEl.textContent = decodedNotes;
     if (sizeEl) sizeEl.textContent = `Cabecera v${version} · ${bytes.byteLength} bytes`;
