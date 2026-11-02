@@ -30,7 +30,44 @@
 
     // Solo despachos propios del equipo. Las noticias externas llegan en vivo desde /api/news
     // (proxy RSS del Worker); si los feeds fallan no se muestra contenido inventado.
-    const BASELINE_NEWS = [];
+    const BASELINE_NEWS = [
+      {
+        id: 'dispatch-26s4-lemans',
+        title: '🏁 Despacho Oficial 24H Le Mans 26S4: Setup Valkyrie GTP y Telemetría de Mulsanne',
+        description: 'Análisis de telemetría a 60 Hz para prototipos GTP en Les Hunaudières. Calibración de alerón a 4.5° y gestión de consumo de 3.42 L/vuelta.',
+        link: '/setups',
+        pubDate: new Date().toISOString(),
+        source: 'Muntrume Engineering',
+        thumbnail: '/assets/img/coche1-640.webp',
+        autoCategory: 'team',
+        isBreaking: true,
+        isTeam: true
+      },
+      {
+        id: 'dispatch-gt3-spa',
+        title: '🛠️ Calibración de Amortiguadores para Eau Rouge & Raidillon en GT3',
+        description: 'Actualización del setup para Ferrari 296 y Porsche 992 GT3 R en Spa-Francorchamps con control de balance en cambios de compresión rápida.',
+        link: '/setups',
+        pubDate: new Date(Date.now() - 86400000).toISOString(),
+        source: 'Muntrume Motorsport',
+        thumbnail: '/assets/img/coche2-640.webp',
+        autoCategory: 'team',
+        isBreaking: false,
+        isTeam: true
+      },
+      {
+        id: 'dispatch-roster-sfl',
+        title: '🏎️ Temporada Super Formula Lights: Juanlu Carrillo al frente del programa de monoplazas',
+        description: 'Inicio de los entrenamientos oficiales en Suzuka y Motegi para el campeonato de monoplazas de alta carga aerodinámica.',
+        link: '/team',
+        pubDate: new Date(Date.now() - 172800000).toISOString(),
+        source: 'Muntrume Drivers',
+        thumbnail: '/assets/img/race1-640.webp',
+        autoCategory: 'team',
+        isBreaking: false,
+        isTeam: true
+      }
+    ];
 
     // Live external news: server-side RSS proxy on the Muntrume Worker (replaces rss2json)
     const NEWS_API = 'https://muntrume.atrumin16.workers.dev/api/news';
@@ -42,7 +79,7 @@
     let lastUpdateTime = new Date();
 
     // 3. TEAM DISPATCH NEWS (Markdown & Fallbacks)
-    const TEAM_NEWS_FILE = 'noticias-equipo.md';
+    const TEAM_NEWS_FILE = '/noticias-equipo.md';
     let teamNewsData = [];
 
     function parseTeamNewsMarkdown(markdown) {
@@ -437,20 +474,28 @@
 
 
     // 8. FILTERS & SEARCH EVENT LISTENERS
-    document.getElementById('filterButtons').addEventListener('click', (e) => {
-      const btn = e.target.closest('.filter-btn');
-      if (btn) {
-        document.querySelectorAll('#filterButtons .filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentFilter = btn.dataset.filter;
-        renderTopStories();
+    function setupNewsListeners() {
+      const filterBtns = document.getElementById('filterButtons');
+      if (filterBtns) {
+        filterBtns.addEventListener('click', (e) => {
+          const btn = e.target.closest('.filter-btn');
+          if (btn) {
+            document.querySelectorAll('#filterButtons .filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = btn.dataset.filter || 'all';
+            renderTopStories();
+          }
+        });
       }
-    });
 
-    document.getElementById('searchInput').addEventListener('input', (e) => {
-      currentSearch = e.target.value;
-      renderTopStories();
-    });
+      const searchInput = document.getElementById('searchInput');
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          currentSearch = e.target.value;
+          renderTopStories();
+        });
+      }
+    }
 
     function toggleGames() {
       const section = document.getElementById('gamesSection');
@@ -814,6 +859,7 @@
     }
 
     function initNewsSystem() {
+      setupNewsListeners();
       updateSystemTime();
       setInterval(updateSystemTime, 1000);
       selectGame('wordsearch');

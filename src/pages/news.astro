@@ -458,5 +458,125 @@ const pageDescription = "Muntrume Motorsport Press Room - team updates and motor
 <!-- ========================================================================= -->
   <!-- JAVASCRIPT: News Wire Engine, Feed Parsing, Mini-Games                    -->
   <!-- ========================================================================= -->
-  <script is:inline src="/assets/js/news.js?v=26s4.6" defer></script>
+  <!-- ========================================================================= -->
+  <!-- 7. STYLES: Filter Buttons, Loading Shimmer & Mini-Games                   -->
+  <!-- ========================================================================= -->
+  <style is:global>
+    /* Ticker text scroll animation */
+    @keyframes scrollTicker {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .scrolling-ticker {
+      display: inline-block;
+      white-space: nowrap;
+      animation: scrollTicker 40s linear infinite;
+    }
+    .scrolling-ticker:hover {
+      animation-play-state: paused;
+    }
+
+    /* Filter Buttons */
+    .filter-btn {
+      padding: 0.45rem 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #94a3b8;
+      background: #161c24;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+    .filter-btn:hover {
+      border-color: rgba(255, 255, 255, 0.3);
+      color: #ffffff;
+      background: #1c232d;
+    }
+    .filter-btn.active {
+      background: #10b981 !important;
+      color: #0e1217 !important;
+      font-weight: 700;
+      border-color: #10b981 !important;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+    }
+
+    /* Skeleton Loading */
+    .loading-skeleton {
+      background: linear-gradient(90deg, #161c24 25%, #1c232d 50%, #161c24 75%);
+      background-size: 200% 100%;
+      animation: skeletonWave 1.8s infinite;
+    }
+    @keyframes skeletonWave {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Word search styles */
+    .wordsearch-grid {
+      display: grid;
+      gap: 4px;
+      user-select: none;
+      background: #0e1217;
+      padding: 10px;
+      border-radius: 0.75rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .ws-cell {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #161c24;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      border-radius: 6px;
+      color: #cbd5e1;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .ws-cell:hover {
+      background: #1c232d;
+      color: #34d399;
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+    .ws-cell.selecting {
+      background: #10b981;
+      color: #0e1217;
+      transform: scale(1.06);
+      border-color: #34d399;
+    }
+    .ws-cell.found {
+      background: #059669;
+      color: #ffffff;
+      border-color: #34d399;
+      animation: foundPop 0.3s ease;
+    }
+    @keyframes foundPop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+    .game-card-btn {
+      transition: all 0.2s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: #161c24;
+    }
+    .game-card-btn:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+    .game-card-btn.selected {
+      background: #1c232d;
+      border-color: #10b981;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+    }
+  </style>
+
+  <script is:inline src="/assets/js/news.js?v=26s4.7" defer></script>
 </Layout>

@@ -1,48 +1,62 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-const pageTitle = "Contact · Muntrume Motorsport";
-const pageDescription = "Contact Muntrume Motorsport - Sim racing team from Sant Andreu, Barcelona. Driver applications, setup vault questions, press and general inquiries.";
+const pageTitle = "Contact & Headquarters · Muntrume Motorsport";
+const pageDescription = "Contact Muntrume Motorsport - Sim racing team from Sant Andreu, Barcelona. Driver applications, setup vault questions, press and sponsorships.";
 ---
 
 <Layout title={pageTitle} description={pageDescription}>
-<!-- ========================================================================= -->
+  <!-- ========================================================================= -->
   <!-- 2. HERO: COMMUNICATIONS & HEADQUARTERS                                    -->
   <!-- ========================================================================= -->
   <section class="pt-28 pb-12 bg-[#0e1217] border-b border-white/10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
-      <div class="text-center py-6">
-        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#161c24] border border-white/10 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-4">
-          <span>Contact</span>
+      <!-- Top Status Strip -->
+      <div class="flex flex-wrap items-center justify-between gap-4 pb-4 mb-8 border-b border-white/10 text-xs">
+        <div class="flex items-center gap-3">
+          <span class="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-semibold uppercase flex items-center gap-2">
+            <span class="pulse-dot"></span>
+            Direct Communications Gateway
+          </span>
         </div>
-        <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white mb-4">
+        <div class="flex items-center gap-3 text-neutral-400 font-medium">
+          <span>Sant Andreu · Barcelona · CET</span>
+        </div>
+      </div>
+
+      <div class="text-center py-4">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-emerald-400 text-xs font-semibold mb-4">
+          <span>Official Dispatch</span>
+        </div>
+        <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white mb-4">
           GET IN <span class="text-emerald-400">TOUCH</span>
         </h1>
-        <p class="text-base text-neutral-400 max-w-2xl mx-auto leading-relaxed">
-          Driver applications, questions about the setup vault, press or anything else: send us a message and we will reply by email.
+        <p class="text-sm sm:text-base text-neutral-400 max-w-2xl mx-auto leading-relaxed">
+          Driver tryout applications, questions regarding the setup vault, media inquiries, or commercial partnerships. We respond directly by email.
         </p>
       </div>
 
-      <!-- Quick Metrics Strip -->
+      <!-- Quick Metrics Strip (Balanced Heights) -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
         
-        <div class="bg-[#161c24] border border-white/10 rounded-2xl p-5 shadow-md">
-          <div class="text-xs text-neutral-400 uppercase font-semibold">Email</div>
-          <a href="mailto:info@muntru.me" class="text-sm font-bold text-white mt-1 block truncate hover:text-emerald-400">info@muntru.me</a>
+        <div class="bg-[#161c24] border border-white/10 rounded-2xl p-5 shadow-md flex flex-col justify-between">
+          <div class="text-xs text-neutral-400 uppercase font-semibold">Institutional Email</div>
+          <a href="mailto:info@muntru.me" class="text-sm font-bold text-white mt-2 block truncate hover:text-emerald-400 transition font-mono">info@muntru.me</a>
+          <span class="text-[11px] text-neutral-500 mt-1">Average reply: &lt; 24h</span>
         </div>
 
-        <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer" class="bg-[#161c24] border border-white/10 hover:border-white/20 rounded-2xl p-5 shadow-md transition group block">
-          <div class="text-xs text-neutral-400 uppercase font-semibold">Discord</div>
-          <div class="text-sm font-bold text-white mt-1 group-hover:text-emerald-400 transition">discord.gg/ehX6B8JUtE</div>
+        <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer" class="bg-[#161c24] border border-white/10 hover:border-emerald-500/30 rounded-2xl p-5 shadow-md transition group flex flex-col justify-between">
+          <div class="text-xs text-neutral-400 uppercase font-semibold">Live Discord Server</div>
+          <div class="text-sm font-bold text-white mt-2 group-hover:text-emerald-400 transition font-mono">discord.gg/ehX6B8JUtE</div>
+          <span class="text-[11px] text-emerald-400 mt-1 font-medium">Active Community &bull; Online</span>
         </a>
 
-        <div class="bg-[#161c24] border border-white/10 rounded-2xl p-5 shadow-md">
-          <div class="text-xs text-neutral-400 uppercase font-semibold">Based in</div>
-          <div class="text-sm font-bold text-white mt-1">Sant Andreu, Barcelona</div>
-          <div class="text-[11px] text-neutral-400 mt-1">Catalonia · CET</div>
+        <div class="bg-[#161c24] border border-white/10 rounded-2xl p-5 shadow-md flex flex-col justify-between">
+          <div class="text-xs text-neutral-400 uppercase font-semibold">Headquarters</div>
+          <div class="text-sm font-bold text-white mt-2">Sant Andreu, Barcelona</div>
+          <span class="text-[11px] text-neutral-500 mt-1">Catalonia, Spain · CET</span>
         </div>
-
 
       </div>
 
@@ -50,23 +64,22 @@ const pageDescription = "Contact Muntrume Motorsport - Sim racing team from Sant
   </section>
 
   <!-- ========================================================================= -->
-  <!-- 3. CONTACT FORM & FAQ SECTION                                             -->
+  <!-- 3. CONTACT FORM & FAQ SECTION (Balanced Grid)                             -->
   <!-- ========================================================================= -->
   <section id="contact-form" class="py-16 bg-[#0e1217]">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
         
         <!-- FORM COLUMN (7 Cols) -->
-        <div class="lg:col-span-7 space-y-6">
-          
+        <div class="lg:col-span-7">
           <div class="bg-[#161c24] border border-white/10 rounded-3xl p-6 sm:p-10 shadow-2xl">
             
             <div class="pb-6 mb-6 border-b border-white/10">
-              <h2 class="text-xl font-bold text-white tracking-tight">
-                Send us a message
+              <h2 class="text-2xl font-black text-white tracking-tight">
+                Send us a Message
               </h2>
-              <p class="text-xs text-neutral-400 mt-1">Your message goes straight to the team inbox. We reply by email.</p>
+              <p class="text-xs text-neutral-400 mt-1">Directly delivers to the team principal and race coordinators.</p>
             </div>
 
             <form id="contactForm" class="space-y-5 text-xs" novalidate>
@@ -104,16 +117,16 @@ const pageDescription = "Contact Muntrume Motorsport - Sim racing team from Sant
               <!-- Inquiry Type & Subject -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label for="type" class="block text-neutral-400 mb-1.5 font-semibold uppercase tracking-wider text-[11px]">Inquiry Type *</label>
+                  <label for="type" class="block text-neutral-400 mb-1.5 font-semibold uppercase tracking-wider text-[11px]">Inquiry Category *</label>
                   <select 
                     id="type" 
                     name="type"
                     class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition text-sm"
                   >
                     <option value="driver_application">Driver Tryout &amp; Recruitment</option>
-                    <option value="sponsorship">Sponsorship &amp; Partnerships</option>
-                    <option value="media">Media &amp; Press Inquiries</option>
-                    <option value="telemetry_engineering">Setups &amp; Engineering</option>
+                    <option value="sponsorship">Sponsorship &amp; Commercial Partnerships</option>
+                    <option value="media">Media &amp; Press Requests</option>
+                    <option value="telemetry_engineering">Setups &amp; Telemetry Engineering</option>
                     <option value="general">General Support &amp; Community</option>
                   </select>
                 </div>
@@ -124,7 +137,7 @@ const pageDescription = "Contact Muntrume Motorsport - Sim racing team from Sant
                     type="text" 
                     id="subject" 
                     name="subject" required minlength="3" maxlength="150" 
-                    placeholder="e.g. Driver application"
+                    placeholder="e.g. Driver tryout for 26S4"
                     class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500 transition text-sm"
                   >
                 </div>
@@ -132,75 +145,106 @@ const pageDescription = "Contact Muntrume Motorsport - Sim racing team from Sant
 
               <!-- Message Body -->
               <div>
-                <label for="message" class="block text-neutral-400 mb-1.5 font-semibold uppercase tracking-wider text-[11px]">Message Content (Include iRating &amp; Experience if applying) *</label>
+                <label for="message" class="block text-neutral-400 mb-1.5 font-semibold uppercase tracking-wider text-[11px]">Message Content (Include iRating &amp; Sim Experience if applying) *</label>
                 <textarea 
                   id="message" 
                   name="message"
                   rows="6" 
                   required minlength="20" maxlength="5000" 
-                  placeholder="Tell us about your inquiry or your sim racing experience..."
+                  placeholder="Tell us about your inquiry, your iRacing customer ID, primary car classes or proposed partnership..."
                   class="w-full bg-[#0e1217] border border-white/10 rounded-xl p-4 text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500 transition leading-relaxed resize-y text-sm"
                 ></textarea>
               </div>
 
               <!-- Submit Button & Feedback Status -->
-              <div class="pt-2">
+              <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <button 
                   type="submit" 
                   id="submitBtn" 
-                  class="w-full sm:w-auto px-8 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold text-sm rounded-xl transition shadow-md hover:shadow-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer"
+                  class="w-full sm:w-auto px-8 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold text-xs uppercase tracking-wider rounded-xl transition shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <span id="submitText">Send message &rarr;</span>
+                  <span id="submitText">Submit Message &rarr;</span>
                 </button>
+                <span class="text-[11px] text-neutral-400">Protected by Cloudflare SSL &amp; Turnstile</span>
               </div>
 
-              <div id="formFeedback" class="hidden p-5 rounded-2xl text-xs" role="status" aria-live="polite"></div>
+              <div id="formFeedback" class="hidden p-4 rounded-xl text-xs" role="status" aria-live="polite"></div>
 
-              <p class="text-[11px] text-neutral-400">Prefer your own email app? Write to us directly at <a id="directMail" class="underline text-neutral-300 hover:text-white" href="mailto:info@muntru.me">info@muntru.me</a> or reach us on <a class="underline text-neutral-300 hover:text-white" href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer">Discord</a>.</p>
+              <p class="text-[11px] text-neutral-400 pt-2 border-t border-white/5">
+                Prefer direct email? Write to us at <a class="underline text-emerald-400 hover:text-emerald-300 font-mono" href="mailto:info@muntru.me">info@muntru.me</a> or join our official voice channels on <a class="underline text-emerald-400 hover:text-emerald-300" href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer">Discord</a>.
+              </p>
 
             </form>
 
           </div>
-
         </div>
 
-        <!-- FAQ COLUMN (5 Cols) -->
+        <!-- RIGHT SIDE: ACCORDION FAQS & HEADQUARTERS CARD (5 Cols) -->
         <div class="lg:col-span-5 space-y-4">
           
-          <div class="pb-2 mb-2">
-            <h3 class="text-sm font-bold tracking-wider uppercase text-white">Frequently Asked Questions</h3>
+          <div class="pb-2">
+            <h3 class="text-xs font-bold tracking-wider uppercase text-neutral-400">Frequently Asked Questions</h3>
           </div>
 
           <!-- FAQ Item 1 -->
           <div class="faq-card bg-[#161c24] border border-white/10 rounded-2xl overflow-hidden transition-colors shadow-sm">
-            <button class="w-full text-left p-5 font-bold text-sm text-white flex items-center justify-between gap-3 focus:outline-none" onclick="toggleFaq(this)">
-              <span>How can I join Muntrume Motorsport as a driver?</span>
+            <button class="w-full text-left p-4 sm:p-5 font-bold text-xs sm:text-sm text-white flex items-center justify-between gap-3 focus:outline-none" onclick="toggleFaq(this)">
+              <span>How can I apply to join Muntrume Motorsport as a driver?</span>
               <span class="faq-icon text-emerald-400 text-base transition-transform font-bold">+</span>
             </button>
-            <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300 px-5 pb-0 text-neutral-400 text-xs leading-relaxed">
-              <p class="pb-5">Send us a message with the form above (choose "Driver Tryout &amp; Recruitment") or say hello on our Discord.</p>
+            <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300 px-4 sm:px-5 pb-0 text-neutral-400 text-xs leading-relaxed">
+              <p class="pb-4">Submit a message with category "Driver Tryout &amp; Recruitment" specifying your iRacing name, customer ID, current iRating/Safety Rating, and preferred car classes (GTP, GT3, SFL). You can also introduce yourself in our Discord welcome channel.</p>
             </div>
           </div>
 
-          <!-- FAQ Item 5 -->
+          <!-- FAQ Item 2 -->
           <div class="faq-card bg-[#161c24] border border-white/10 rounded-2xl overflow-hidden transition-colors shadow-sm">
-            <button class="w-full text-left p-5 font-bold text-sm text-white flex items-center justify-between gap-3 focus:outline-none" onclick="toggleFaq(this)">
+            <button class="w-full text-left p-4 sm:p-5 font-bold text-xs sm:text-sm text-white flex items-center justify-between gap-3 focus:outline-none" onclick="toggleFaq(this)">
+              <span>What telemetry and setup data does the Vault provide?</span>
+              <span class="faq-icon text-emerald-400 text-base transition-transform font-bold">+</span>
+            </button>
+            <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300 px-4 sm:px-5 pb-0 text-neutral-400 text-xs leading-relaxed">
+              <p class="pb-4">The Setup Vault includes over 41,000 telemetry-calibrated .sto files for iRacing, including 632 active configurations for the Aston Martin Valkyrie GTP, Ferrari 296 GT3, Porsche 992 GT3 R, Cadillac GTP, and Super Formula Lights.</p>
+            </div>
+          </div>
+
+          <!-- FAQ Item 3 -->
+          <div class="faq-card bg-[#161c24] border border-white/10 rounded-2xl overflow-hidden transition-colors shadow-sm">
+            <button class="w-full text-left p-4 sm:p-5 font-bold text-xs sm:text-sm text-white flex items-center justify-between gap-3 focus:outline-none" onclick="toggleFaq(this)">
+              <span>How can brands or sponsors collaborate with the team?</span>
+              <span class="faq-icon text-emerald-400 text-base transition-transform font-bold">+</span>
+            </button>
+            <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300 px-4 sm:px-5 pb-0 text-neutral-400 text-xs leading-relaxed">
+              <p class="pb-4">We collaborate with sim racing hardware manufacturers, software companies, and regional sponsors for car liveries, Twitch broadcast integration, and official team apparel. Choose "Sponsorship &amp; Commercial Partnerships" in the form.</p>
+            </div>
+          </div>
+
+          <!-- FAQ Item 4 -->
+          <div class="faq-card bg-[#161c24] border border-white/10 rounded-2xl overflow-hidden transition-colors shadow-sm">
+            <button class="w-full text-left p-4 sm:p-5 font-bold text-xs sm:text-sm text-white flex items-center justify-between gap-3 focus:outline-none" onclick="toggleFaq(this)">
               <span>What is the fastest way to get in touch?</span>
               <span class="faq-icon text-emerald-400 text-base transition-transform font-bold">+</span>
             </button>
-            <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300 px-5 pb-0 text-neutral-400 text-xs leading-relaxed">
-              <p class="pb-5">Discord is usually the quickest. For anything that needs a written reply, use the form or email info@muntru.me.</p>
+            <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300 px-4 sm:px-5 pb-0 text-neutral-400 text-xs leading-relaxed">
+              <p class="pb-4">For urgent race coordination or technical support, Discord is the fastest channel. For formal partnership agreements or driver registrations, use this form or email info@muntru.me.</p>
             </div>
           </div>
 
-          <!-- Direct Discord Widget Callout -->
-          <div class="pt-4">
-            <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer" class="block p-5 rounded-2xl bg-[#161c24] border border-white/10 hover:border-white/20 transition text-center group shadow-lg">
-              <div class="text-xs font-bold text-white group-hover:text-emerald-400 transition mb-1">
-                Prefer chat?
+          <!-- Headquarters Summary Card -->
+          <div class="p-6 rounded-2xl bg-[#161c24] border border-white/10 space-y-3 shadow-lg">
+            <div class="flex items-center justify-between pb-3 border-b border-white/10">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="font-bold text-white text-xs uppercase tracking-wider">Race Operations Center</span>
               </div>
-              <div class="text-xs text-neutral-400">Join our Discord &rarr;</div>
-            </a>
+              <span class="text-[10px] font-mono text-emerald-400 font-bold">Active</span>
+            </div>
+            <div class="text-xs text-neutral-300 space-y-1.5">
+              <p><strong class="text-white">Entity:</strong> Muntrume Motorsport Esports</p>
+              <p><strong class="text-white">Base:</strong> Sant Andreu, 08030 Barcelona, Catalonia (ES)</p>
+              <p><strong class="text-white">Operating Hours:</strong> Mon &ndash; Sun &bull; 09:00 &ndash; 23:00 CET</p>
+              <p><strong class="text-white">Telemetry Stack:</strong> 60 Hz MoTeC i2 Pro &bull; Garage 61 Sync</p>
+            </div>
           </div>
 
         </div>
@@ -210,13 +254,8 @@ const pageDescription = "Contact Muntrume Motorsport - Sim racing team from Sant
     </div>
   </section>
 
-
   <!-- ========================================================================= -->
-  <!-- 5. FOOTER (Unified Motorsport Master Footer)                              -->
-  <!-- ========================================================================= -->
-
-<!-- ========================================================================= -->
   <!-- JAVASCRIPT: Form Controller & FAQ Accordion Engine                        -->
   <!-- ========================================================================= -->
-  <script is:inline src="/assets/js/contact.js?v=26s4.6" defer></script>
+  <script is:inline src="/assets/js/contact.js?v=26s4.7" defer></script>
 </Layout>

@@ -1,51 +1,105 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 
-interface PilotData {
+interface DriverProfile {
   slug: string;
+  number: string;
   name: string;
-  role?: string;
-  team?: string;
-  car_class?: string;
-  bio?: string;
-  photo?: string;
+  badge: string;
+  badgeColor: string;
+  role: string;
+  team: string;
+  categories: string[];
+  focus: string;
+  hardware: string;
+  competitions: string[];
+  bio: string;
+  email: string;
+  initials: string;
 }
 
-export async function getStaticPaths() {
-  const fallbackPilots: PilotData[] = [
-    { slug: "alberto-trujillo", name: "Alberto Trujillo", role: "Founder · Driver", team: "Muntrume Motorsport", car_class: "GTP / GT3", bio: "Sim racer & vehicle dynamics specialist.", photo: "" },
-    { slug: "mateo-berbis", name: "Mateo Berbis", role: "Driver", team: "Muntrume Motorsport", car_class: "GT3", bio: "Endurance & sprint racing driver.", photo: "" },
-    { slug: "eduardo-chongkan", name: "Eduardo Chongkan", role: "Driver", team: "Muntrume Motorsport", car_class: "GT3 / GTP", bio: "Telemetry & consistency driver.", photo: "" },
-    { slug: "juanlu-carrillo", name: "Juanlu Carrillo", role: "Driver", team: "Muntrume Motorsport", car_class: "GT3", bio: "Sim racer & endurance driver.", photo: "" }
-  ];
-
-  let pilots: PilotData[] = fallbackPilots;
-  try {
-    const res = await fetch("https://muntrume.atrumin16.workers.dev/api/pilots", {
-      headers: { "User-Agent": "muntrume-astro-build" }
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.success && Array.isArray(data.pilots) && data.pilots.length > 0) {
-        pilots = data.pilots;
-      }
-    }
-  } catch (err) {
-    console.warn("Could not reach pilots API during build, using verified roster fallbacks.");
+const DRIVERS: Record<string, DriverProfile> = {
+  "alberto-trujillo": {
+    slug: "alberto-trujillo",
+    number: "#1",
+    name: "Alberto Trujillo",
+    badge: "FOUNDER & TEAM PRINCIPAL",
+    badgeColor: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+    role: "Team Principal · Setup Engineer & Telemetry",
+    team: "Muntrume Motorsport",
+    categories: ["GTP (Aston Martin Valkyrie)", "GTP (Cadillac V-Series.R)", "GT3 (Ferrari 296)", "GT3 (Porsche 992)"],
+    focus: "Vehicle Dynamics, Telemetry Analysis & Endurance Race Strategy",
+    hardware: "Direct Drive 25Nm · Loadcell Hydraulic · Triple Screen Sim Rig",
+    competitions: ["iRacing 24H Le Mans", "24H Spa-Francorchamps", "Sebring 12H", "IMSA Michelin Endurance"],
+    bio: "Fundador y Team Principal de Muntrume Motorsport. Lidera el desarrollo de telemetría a 60 Hz, arquitecturas base de amortiguadores y las estrategias de carrera para las competiciones de resistencia en prototipos GTP y GT3.",
+    email: "alberto@muntru.me",
+    initials: "AT"
+  },
+  "mateo-berbis": {
+    slug: "mateo-berbis",
+    number: "#2",
+    name: "Mateo Berbis",
+    badge: "OFFICIAL DRIVER",
+    badgeColor: "text-amber-400 bg-amber-500/10 border-amber-500/20",
+    role: "Lead Qualifying & Sprint Driver",
+    team: "Muntrume Motorsport",
+    categories: ["GT3 (Ferrari 296 GT3)", "GT3 (BMW M4 GT3)", "Sprint Challenge"],
+    focus: "One-Lap Qualifying Speed, Apex Precision & Overtaking Execution",
+    hardware: "Direct Drive · Loadcell Pedals · Ultrawide Curved Setup",
+    competitions: ["GT3 Sprint Series", "Bathurst 12H", "Watkins Glen 6H", "VRS GT Challenge"],
+    bio: "Piloto oficial de velocidad pura y clasificación en Muntrume Motorsport. Especialista en vuelta rápida bajo presión, frenadas tardías y gestión quirúrgica del tráfico en parrillas de alta competitividad.",
+    email: "mateo@muntru.me",
+    initials: "MB"
+  },
+  "eduardo-chongkan": {
+    slug: "eduardo-chongkan",
+    number: "#3",
+    name: "Eduardo Chongkan",
+    badge: "DRIVER & RACE ENGINEER",
+    badgeColor: "text-slate-300 bg-slate-500/15 border-slate-400/30",
+    role: "Race Engineer & Prototype Pilot",
+    team: "Muntrume Motorsport",
+    categories: ["GTP (Cadillac V-Series.R)", "LMP2 Prototype", "GT3 (Porsche 992 GT3 R)"],
+    focus: "Damper Velocity Curves, Tire Degradation & Stint Consistency",
+    hardware: "Direct Drive Pro · Inverted Hydraulic Pedals · Dedicated Telemetry Dash",
+    competitions: ["Petit Le Mans", "24H Nürburgring Nordschleife", "Glen 6H", "Global Endurance Series"],
+    bio: "Ingeniero de pista y piloto de resistencia. Especialista en curvas de amortiguación, optimización de desgaste de neumáticos y mantenimiento de ritmos constantes vuelta tras vuelta en relevos triples.",
+    email: "eduardo@muntru.me",
+    initials: "EC"
+  },
+  "juanlu-carrillo": {
+    slug: "juanlu-carrillo",
+    number: "#4",
+    name: "Juanlu Carrillo",
+    badge: "OFFICIAL DRIVER",
+    badgeColor: "text-orange-400 bg-orange-500/10 border-orange-500/20",
+    role: "Single-Seater & Formula Specialist",
+    team: "Muntrume Motorsport",
+    categories: ["Super Formula Lights (SFL)", "FIA Formula 4", "GT3 Endurance"],
+    focus: "High-Downforce Aero Balance, Single-Seater Race Craft & Wheel-to-Wheel Combat",
+    hardware: "Direct Drive · Dual Clutch F1 Wheel · Loadcell Pedals",
+    competitions: ["Super Formula Lights Championship", "FIA F4 Regional", "24H Daytona", "Formula Sprint"],
+    bio: "Especialista en monoplazas y alta carga aerodinámica. Su precisión milimétrica en curvas rápidas y su capacidad de defensa cuerpo a cuerpo aportan versatilidad competitiva al equipo en circuitos internacionales.",
+    email: "juanlu@muntru.me",
+    initials: "JC"
   }
+};
 
-  return pilots.map((p) => ({
-    params: { slug: p.slug },
-    props: { pilot: p }
-  }));
+export function getStaticPaths() {
+  return [
+    { params: { slug: "alberto-trujillo" } },
+    { params: { slug: "mateo-berbis" } },
+    { params: { slug: "eduardo-chongkan" } },
+    { params: { slug: "juanlu-carrillo" } }
+  ];
 }
 
 const { slug } = Astro.params;
-const { pilot } = Astro.props as { pilot: PilotData };
+const driver = DRIVERS[slug as string] || DRIVERS["alberto-trujillo"];
 
-const pageTitle = `${pilot.name} · Muntrume Motorsport`;
-const pageDescription = [pilot.name, pilot.team, pilot.car_class].filter(Boolean).join(" · ") + (pilot.bio ? ` — ${pilot.bio}` : " — Muntrume Motorsport");
-const pageUrl = `https://muntru.me/p/${slug}/`;
+const pageTitle = `${driver.name} (${driver.number}) · Official Driver Profile — Muntrume Motorsport`;
+const pageDescription = `${driver.name} (${driver.number}), ${driver.role} en Muntrume Motorsport. Categorías: ${driver.categories.join(", ")}.`;
+const pageUrl = `https://muntru.me/p/${driver.slug}/`;
 
 const personSchema = {
   "@context": "https://schema.org",
@@ -59,10 +113,9 @@ const personSchema = {
     {
       "@type": "Person",
       "@id": `${pageUrl}#person`,
-      "name": pilot.name,
+      "name": driver.name,
       "url": pageUrl,
-      ...(pilot.photo ? { "image": pilot.photo } : {}),
-      ...(pilot.bio ? { "description": pilot.bio } : {}),
+      "description": driver.bio,
       "memberOf": {
         "@type": "SportsTeam",
         "name": "Muntrume Motorsport",
@@ -74,64 +127,138 @@ const personSchema = {
 ---
 
 <Layout title={pageTitle} description={pageDescription} canonical={pageUrl} schemaJson={personSchema}>
-  <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
-    <!-- Back button -->
-    <div class="mb-8">
-      <a href="/pilotos" class="inline-flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 font-medium transition-colors">
-        <span aria-hidden="true">←</span>
-        <span>All pilots</span>
-      </a>
-    </div>
+  <main class="pt-28 pb-16 bg-[#0e1217]">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      
+      <!-- Breadcrumb & Back Navigation -->
+      <div class="flex items-center justify-between gap-4 pb-4 border-b border-white/10 text-xs">
+        <nav class="flex items-center gap-2 text-neutral-400" aria-label="Breadcrumb">
+          <a href="/" class="hover:text-white transition">Overview</a>
+          <span>/</span>
+          <a href="/team" class="hover:text-white transition">Drivers</a>
+          <span>/</span>
+          <span class="text-emerald-400 font-semibold">{driver.name}</span>
+        </nav>
+        <a href="/team" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#161c24] border border-white/10 text-neutral-300 hover:text-white hover:border-white/20 transition">
+          <span>&larr;</span>
+          <span>Back to Drivers</span>
+        </a>
+      </div>
 
-    <!-- Pilot Detail Container -->
-    <article id="pilotDetail" class="pl-detail">
-      <div class="glass-card rounded-2xl p-6 sm:p-10 border border-white/10 relative overflow-hidden">
-        <div class="flex flex-col md:flex-row items-center md:items-start gap-8">
+      <!-- Main Driver Hero Card -->
+      <div class="glass-card rounded-3xl p-6 sm:p-10 border border-white/10 relative overflow-hidden shadow-2xl">
+        <div class="flex flex-col md:flex-row items-center md:items-start gap-8 relative z-10">
           
-          <!-- Avatar / Photo -->
-          <div class="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl overflow-hidden bg-neutral-900 border-2 border-emerald-500/30 shadow-xl flex-shrink-0 flex items-center justify-center">
-            {pilot.photo ? (
-              <img src={pilot.photo} alt={pilot.name} class="w-full h-full object-cover" />
-            ) : (
-              <div class="w-full h-full bg-gradient-to-br from-emerald-950 to-neutral-900 flex items-center justify-center text-emerald-400 font-black text-4xl">
-                {pilot.name.charAt(0)}
-              </div>
-            )}
+          <!-- Avatar Initial Circle with Number Badge -->
+          <div class="relative flex-shrink-0">
+            <div class="w-32 h-32 sm:w-40 sm:h-40 rounded-3xl border-2 border-emerald-500 bg-emerald-950/60 flex items-center justify-center text-4xl sm:text-5xl font-black text-emerald-400 shadow-2xl">
+              {driver.initials}
+            </div>
+            <div class="absolute -bottom-3 -right-3 px-3.5 py-1 rounded-xl bg-[#0b0e13] border-2 border-emerald-400 text-emerald-400 font-mono font-black text-base shadow-lg">
+              {driver.number}
+            </div>
           </div>
 
-          <!-- Bio & Credentials -->
-          <div class="flex-grow text-center md:text-left space-y-4">
-            <div>
-              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-2">
-                {pilot.role || "Official Driver"}
-              </div>
-              <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight">{pilot.name}</h1>
-              <p class="text-neutral-400 text-sm mt-1">{pilot.team || "Muntrume Motorsport"} · {pilot.car_class || "GT3 / GTP"}</p>
+          <!-- Driver Identity & Role Header -->
+          <div class="flex-1 text-center md:text-left space-y-4">
+            <div class="flex flex-wrap items-center justify-center md:justify-start gap-2.5">
+              <span class={`text-[11px] font-mono font-bold uppercase tracking-wider px-3 py-1 rounded-full border ${driver.badgeColor}`}>
+                {driver.badge}
+              </span>
+              <span class="text-[11px] font-semibold px-3 py-1 rounded-full bg-white/5 border border-white/10 text-neutral-300">
+                iRacing Official Squad
+              </span>
+              <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-neutral-400">
+                Sant Andreu, Barcelona
+              </span>
             </div>
 
-            {pilot.bio && (
-              <p class="text-neutral-300 text-base max-w-2xl leading-relaxed">{pilot.bio}</p>
-            )}
+            <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight">
+              {driver.name}
+            </h1>
 
-            <!-- Active Setups & Telemetry Quick Link -->
-            <div class="pt-4 flex flex-wrap items-center justify-center md:justify-start gap-3">
-              <a href="/setups" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold text-sm transition-all shadow-lg shadow-emerald-500/20">
+            <p class="text-sm sm:text-base text-neutral-300 leading-relaxed max-w-3xl">
+              {driver.bio}
+            </p>
+
+            <!-- Action CTAs -->
+            <div class="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-3">
+              <a href="/setups" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-emerald-500/20">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                <span>Access Team Setups</span>
+                <span>Acceder a Setups del Equipo</span>
               </a>
-              <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-semibold text-sm border border-white/10 transition-all">
-                <span>Contact via Discord</span>
+              <a href={`mailto:${driver.email}`} class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-semibold text-xs border border-white/10 transition-all font-mono">
+                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                <span>{driver.email}</span>
+              </a>
+              <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 font-semibold text-xs border border-white/10 transition-all">
+                <span>Discord</span>
               </a>
             </div>
           </div>
 
         </div>
       </div>
-    </article>
-  </section>
 
-  <script is:inline define:vars={{ pilotSlug: slug }}>
-    window.MM_PILOT_SLUG = pilotSlug;
-  </script>
-  <script is:inline src="/assets/js/pilots.js"></script>
+      <!-- Driver Technical Specs & Telemetry Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <!-- Spec Card 1: Categories -->
+        <div class="p-6 rounded-2xl bg-[#161c24] border border-white/10 space-y-4 shadow-lg">
+          <div class="flex items-center justify-between pb-3 border-b border-white/10">
+            <h2 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span>Categorías &amp; Coches</span>
+            </h2>
+            <span class="text-[10px] font-mono text-emerald-400 font-bold">iRacing</span>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            {driver.categories.map((cat) => (
+              <span class="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-neutral-200 font-medium">
+                {cat}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <!-- Spec Card 2: Technical Focus -->
+        <div class="p-6 rounded-2xl bg-[#161c24] border border-white/10 space-y-4 shadow-lg">
+          <div class="flex items-center justify-between pb-3 border-b border-white/10">
+            <h2 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+              <span>Especialidad Técnica</span>
+            </h2>
+            <span class="text-[10px] font-mono text-cyan-400 font-bold">Telemetría</span>
+          </div>
+          <p class="text-xs text-neutral-300 leading-relaxed font-mono">
+            {driver.focus}
+          </p>
+          <div class="pt-2 text-[11px] text-neutral-500 font-mono">
+            Hardware: {driver.hardware}
+          </div>
+        </div>
+
+        <!-- Spec Card 3: Competitions -->
+        <div class="p-6 rounded-2xl bg-[#161c24] border border-white/10 space-y-4 shadow-lg md:col-span-2 lg:col-span-1">
+          <div class="flex items-center justify-between pb-3 border-b border-white/10">
+            <h2 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+              <span>Competiciones Destacadas</span>
+            </h2>
+            <span class="text-[10px] font-mono text-amber-400 font-bold">Endurance</span>
+          </div>
+          <ul class="space-y-1.5 text-xs text-neutral-300">
+            {driver.competitions.map((comp) => (
+              <li class="flex items-center gap-2">
+                <span class="text-emerald-400 font-bold">•</span>
+                <span>{comp}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
 </Layout>

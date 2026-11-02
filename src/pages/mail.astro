@@ -1,287 +1,290 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-const pageTitle = "Webmail & Comunicaciones Corporativas — Muntrume Motorsport";
-const pageDescription = "Portal institucional de correo electrónico y canales oficiales de comunicación de Muntrume Motorsport (@muntru.me).";
+const pageTitle = "Corporate Webmail & Communications · Muntrume Motorsport";
+const pageDescription = "Institutional communications portal and official @muntru.me verified email directory for Muntrume Motorsport drivers, engineering and media.";
 ---
 
 <Layout title={pageTitle} description={pageDescription}>
-  <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 space-y-12">
-    
-    <!-- Hero / Status Header -->
-    <div class="glass-card rounded-3xl p-6 sm:p-10 border border-white/10 space-y-6 relative overflow-hidden">
-      <div class="absolute -top-24 -right-24 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-        <div class="space-y-3">
-          <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider">
-            <span class="pulse-dot"></span>
-            <span>Infraestructura Institucional @muntru.me</span>
-          </div>
-          <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight">
-            Webmail &amp; Comunicaciones
-          </h1>
-          <p class="text-sm sm:text-base text-neutral-300 max-w-2xl leading-relaxed">
-            Plataforma corporativa de correo electrónico y canales oficiales de comunicación de Muntrume Motorsport para pilotos, dirección deportiva y prensa.
-          </p>
-        </div>
-
-        <div class="flex flex-wrap md:flex-col items-start md:items-end gap-2 text-[11px] font-mono">
-          <span class="px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-semibold flex items-center gap-1.5">
-            <span>🛡️ Cloudflare Enterprise MX</span>
-          </span>
-          <span class="px-3 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-semibold">
-            DMARC Strict (p=reject) 100%
-          </span>
-          <span class="px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-neutral-300">
-            DKIM 2048-bit · TLS 1.3
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Official Webmail Access Card -->
-    <section class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+  <!-- ========================================================================= -->
+  <!-- 2. HERO: COMMUNICATIONS & WEBMAIL PORTAL                                  -->
+  <!-- ========================================================================= -->
+  <section class="pt-28 pb-12 bg-[#0e1217] border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
-      <!-- Primary Access -->
-      <div class="lg:col-span-7 glass-card rounded-3xl p-6 sm:p-8 border border-emerald-500/30 flex flex-col justify-between space-y-6 bg-gradient-to-br from-[#161c24] to-[#12161f]">
-        <div class="space-y-4">
-          <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-2xl text-emerald-400">
-            📫
-          </div>
-          <div class="space-y-1">
-            <h2 class="text-2xl font-black text-white tracking-tight">Acceso a Buzón de Pilotos y Staff</h2>
-            <p class="text-xs text-neutral-400">Inicio de sesión oficial seguro para titulares de cuenta @muntru.me.</p>
-          </div>
-          <p class="text-xs sm:text-sm text-neutral-300 leading-relaxed">
-            El acceso al buzón institucional se realiza a través de la pasarela autenticada con cifrado de extremo a extremo y verificación en dos pasos (2FA). Ninguna credencial ni mensaje privado se almacena en el cliente público de esta web.
-          </p>
+      <!-- Top Status Strip -->
+      <div class="flex flex-wrap items-center justify-between gap-4 pb-4 mb-8 border-b border-white/10 text-xs">
+        <div class="flex items-center gap-3">
+          <span class="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-semibold uppercase flex items-center gap-2">
+            <span class="pulse-dot"></span>
+            Institutional Domain · @muntru.me
+          </span>
         </div>
-
-        <div class="pt-4 space-y-3">
-          <a 
-            href="https://mail.google.com" 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            class="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 text-neutral-950 font-black text-xs uppercase tracking-wider transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 group"
-          >
-            <span>Iniciar Sesión en Webmail Corporativo</span>
-            <span class="group-hover:translate-x-1 transition-transform">↗</span>
-          </a>
-          <p class="text-[11px] text-neutral-500 text-center font-mono">
-            Redirección directa y segura a Google Workspace / Servidor de Correo Oficial
-          </p>
+        <div class="flex items-center gap-3 text-neutral-400 font-medium font-mono text-[11px]">
+          <span>TLS 1.3 · Cloudflare Enterprise MX · DMARC Strict 100%</span>
         </div>
       </div>
 
-      <!-- External Inquiries & Public Contact -->
-      <div class="lg:col-span-5 glass-card rounded-3xl p-6 sm:p-8 border border-white/10 flex flex-col justify-between space-y-6">
-        <div class="space-y-4">
-          <div class="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl text-cyan-400">
-            💬
-          </div>
-          <div class="space-y-1">
-            <h2 class="text-2xl font-black text-white tracking-tight">Contacto Externo y Prensa</h2>
-            <p class="text-xs text-neutral-400">Para patrocinadores, medios y solicitudes de prueba.</p>
-          </div>
-          <p class="text-xs sm:text-sm text-neutral-300 leading-relaxed">
-            Si no eres piloto registrado o no dispones de un buzón institucional corporativo, puedes remitir tu consulta a través de nuestro formulario de contacto cifrado.
-          </p>
+      <div class="text-center py-4">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-emerald-400 text-xs font-semibold mb-4">
+          <span>Official Communications</span>
         </div>
-
-        <div class="pt-4 space-y-3">
-          <a 
-            href="/contact" 
-            class="w-full py-3.5 px-6 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-white font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2"
-          >
-            <span>Ir al Formulario de Contacto</span>
-            <span>&rarr;</span>
-          </a>
-          <p class="text-[11px] text-neutral-500 text-center">
-            Respuesta promedio: &lt; 24 horas laborables
-          </p>
-        </div>
+        <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white mb-4">
+          WEBMAIL &amp; <span class="text-emerald-400">COMMS</span>
+        </h1>
+        <p class="text-sm sm:text-base text-neutral-400 max-w-2xl mx-auto leading-relaxed">
+          Secure communications portal and institutional email gateway for Muntrume Motorsport drivers, sporting directors, engineering, and verified press.
+        </p>
       </div>
 
-    </section>
+    </div>
+  </section>
 
-    <!-- Technical Setup & Device Configuration Guide -->
-    <section class="space-y-6">
-      <div class="flex items-center justify-between border-b border-white/10 pb-4">
-        <div class="flex items-center gap-2.5">
-          <span class="text-xl">⚙️</span>
-          <h2 class="text-xl font-black text-white tracking-tight">Configuración en Dispositivos (Pilotos &amp; Staff)</h2>
-        </div>
-        <span class="text-xs font-mono text-neutral-500">Parámetros IMAP / SMTP</span>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Incoming Server -->
-        <div class="p-6 rounded-2xl bg-[#161c24] border border-white/10 space-y-4">
-          <div class="flex items-center justify-between">
-            <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-              <span>Servidor de Entrada (IMAP)</span>
-            </h3>
-            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold">SSL / TLS</span>
-          </div>
-
-          <div class="space-y-2 text-xs font-mono">
-            <div class="flex justify-between py-2 border-b border-white/5">
-              <span class="text-neutral-400">Servidor:</span>
-              <span class="text-white font-bold">imap.gmail.com</span>
-            </div>
-            <div class="flex justify-between py-2 border-b border-white/5">
-              <span class="text-neutral-400">Puerto:</span>
-              <span class="text-emerald-400 font-bold">993</span>
-            </div>
-            <div class="flex justify-between py-2 border-b border-white/5">
-              <span class="text-neutral-400">Seguridad:</span>
-              <span class="text-white">SSL / TLS obligatorio</span>
-            </div>
-            <div class="flex justify-between py-2">
-              <span class="text-neutral-400">Usuario:</span>
-              <span class="text-neutral-300">nombre@muntru.me</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Outgoing Server -->
-        <div class="p-6 rounded-2xl bg-[#161c24] border border-white/10 space-y-4">
-          <div class="flex items-center justify-between">
-            <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
-              <span>Servidor de Salida (SMTP)</span>
-            </h3>
-            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-bold">STARTTLS / SSL</span>
-          </div>
-
-          <div class="space-y-2 text-xs font-mono">
-            <div class="flex justify-between py-2 border-b border-white/5">
-              <span class="text-neutral-400">Servidor:</span>
-              <span class="text-white font-bold">smtp.gmail.com</span>
-            </div>
-            <div class="flex justify-between py-2 border-b border-white/5">
-              <span class="text-neutral-400">Puerto:</span>
-              <span class="text-cyan-400 font-bold">465 (SSL) ó 587 (TLS)</span>
-            </div>
-            <div class="flex justify-between py-2 border-b border-white/5">
-              <span class="text-neutral-400">Autenticación:</span>
-              <span class="text-white">Requerida (Mismas credenciales)</span>
-            </div>
-            <div class="flex justify-between py-2">
-              <span class="text-neutral-400">Usuario:</span>
-              <span class="text-neutral-300">nombre@muntru.me</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Verified Directory of Team Inboxes -->
-    <section class="space-y-6">
-      <div class="flex items-center justify-between border-b border-white/10 pb-4">
-        <div class="flex items-center gap-2.5">
-          <span class="text-xl">📇</span>
-          <h2 class="text-xl font-black text-white tracking-tight">Directorio Oficial de Buzones Verificados</h2>
-        </div>
-        <span class="text-xs font-mono text-emerald-400">@muntru.me</span>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  <!-- ========================================================================= -->
+  <!-- 3. ACCESS GATEWAYS & PROTOCOLS                                            -->
+  <!-- ========================================================================= -->
+  <section class="py-16 bg-[#0e1217]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      
+      <!-- Top Action Gateways (2 Columns) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
         
-        <!-- Alberto Trujillo -->
-        <div class="p-5 rounded-2xl bg-[#161c24] border border-white/10 space-y-3 hover:border-emerald-500/40 transition">
-          <div class="flex items-center justify-between">
-            <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold">FOUNDER</span>
-            <span class="text-xs text-neutral-500 font-mono">#1</span>
+        <!-- Primary Access Card -->
+        <div class="lg:col-span-7 bg-[#161c24] border border-emerald-500/30 rounded-3xl p-6 sm:p-8 flex flex-col justify-between space-y-6 shadow-2xl">
+          <div class="space-y-4">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-2xl text-emerald-400">
+              📫
+            </div>
+            <div class="space-y-1">
+              <h2 class="text-2xl font-black text-white tracking-tight">Drivers &amp; Staff Mailbox Gateway</h2>
+              <p class="text-xs text-neutral-400">Secure sign-in for registered @muntru.me account holders.</p>
+            </div>
+            <p class="text-xs sm:text-sm text-neutral-300 leading-relaxed">
+              Driver and engineering mailboxes are secured via multi-factor authentication (2FA) and end-to-end transport encryption. No passwords or private messages are ever stored or processed in the client layer of this public website.
+            </p>
           </div>
-          <div>
-            <h3 class="text-base font-bold text-white">Alberto Trujillo</h3>
-            <p class="text-xs text-neutral-400">Team Principal &amp; Telemetría</p>
+
+          <div class="pt-4 space-y-3">
+            <a 
+              href="https://mail.google.com" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              class="w-full py-3.5 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-extrabold text-xs uppercase tracking-wider transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 group"
+            >
+              <span>Sign In to Institutional Webmail</span>
+              <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+            </a>
+            <p class="text-[11px] text-neutral-500 text-center font-mono">
+              Direct and encrypted redirection to official mail server gateway
+            </p>
           </div>
-          <a href="mailto:alberto@muntru.me" class="block w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-cyan-300 font-mono text-center transition">
-            alberto@muntru.me ✉️
-          </a>
         </div>
 
-        <!-- Mateo Berbis -->
-        <div class="p-5 rounded-2xl bg-[#161c24] border border-white/10 space-y-3 hover:border-amber-500/40 transition">
-          <div class="flex items-center justify-between">
-            <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 font-bold">DRIVER</span>
-            <span class="text-xs text-neutral-500 font-mono">#2</span>
+        <!-- External Inquiries & Public Press -->
+        <div class="lg:col-span-5 bg-[#161c24] border border-white/10 rounded-3xl p-6 sm:p-8 flex flex-col justify-between space-y-6 shadow-xl">
+          <div class="space-y-4">
+            <div class="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl text-emerald-400">
+              💬
+            </div>
+            <div class="space-y-1">
+              <h2 class="text-2xl font-black text-white tracking-tight">External Inquiries &amp; Press</h2>
+              <p class="text-xs text-neutral-400">For sponsorships, tryouts, partnerships and media.</p>
+            </div>
+            <p class="text-xs sm:text-sm text-neutral-300 leading-relaxed">
+              If you do not hold an internal team mailbox, submit your inquiry through our encrypted contact dispatch form. Your message is delivered straight to the team directors.
+            </p>
           </div>
-          <div>
-            <h3 class="text-base font-bold text-white">Mateo Berbis</h3>
-            <p class="text-xs text-neutral-400">Piloto Oficial · Sprint &amp; Qualy</p>
-          </div>
-          <a href="mailto:mateo@muntru.me" class="block w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-cyan-300 font-mono text-center transition">
-            mateo@muntru.me ✉️
-          </a>
-        </div>
 
-        <!-- Eduardo Chongkan -->
-        <div class="p-5 rounded-2xl bg-[#161c24] border border-white/10 space-y-3 hover:border-slate-500/40 transition">
-          <div class="flex items-center justify-between">
-            <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-slate-500/15 text-slate-300 font-bold">DRIVER</span>
-            <span class="text-xs text-neutral-500 font-mono">#3</span>
+          <div class="pt-4 space-y-3">
+            <a 
+              href="/contact" 
+              class="w-full py-3.5 px-6 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2"
+            >
+              <span>Go to Contact Dispatch</span>
+              <span>&rarr;</span>
+            </a>
+            <p class="text-[11px] text-neutral-500 text-center">
+              Average response time: &lt; 24 business hours
+            </p>
           </div>
-          <div>
-            <h3 class="text-base font-bold text-white">Eduardo Chongkan</h3>
-            <p class="text-xs text-neutral-400">Ingeniero de Carrera &amp; Prototipos</p>
-          </div>
-          <a href="mailto:eduardo@muntru.me" class="block w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-cyan-300 font-mono text-center transition">
-            eduardo@muntru.me ✉️
-          </a>
-        </div>
-
-        <!-- Juanlu Carrillo -->
-        <div class="p-5 rounded-2xl bg-[#161c24] border border-white/10 space-y-3 hover:border-orange-500/40 transition">
-          <div class="flex items-center justify-between">
-            <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-orange-500/10 text-orange-400 font-bold">DRIVER</span>
-            <span class="text-xs text-neutral-500 font-mono">#4</span>
-          </div>
-          <div>
-            <h3 class="text-base font-bold text-white">Juanlu Carrillo</h3>
-            <p class="text-xs text-neutral-400">Piloto Oficial · Monoplazas &amp; SFL</p>
-          </div>
-          <a href="mailto:juanlu@muntru.me" class="block w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-cyan-300 font-mono text-center transition">
-            juanlu@muntru.me ✉️
-          </a>
-        </div>
-
-        <!-- Race Control -->
-        <div class="p-5 rounded-2xl bg-[#161c24] border border-white/10 space-y-3 hover:border-purple-500/40 transition">
-          <div class="flex items-center justify-between">
-            <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 font-bold">RACE CONTROL</span>
-            <span class="text-xs text-neutral-500 font-mono">STAFF</span>
-          </div>
-          <div>
-            <h3 class="text-base font-bold text-white">Race Operations</h3>
-            <p class="text-xs text-neutral-400">Dirección de Carrera &amp; Gobernanza</p>
-          </div>
-          <a href="mailto:admin@muntru.me" class="block w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-cyan-300 font-mono text-center transition">
-            admin@muntru.me ✉️
-          </a>
-        </div>
-
-        <!-- General & Press -->
-        <div class="p-5 rounded-2xl bg-[#161c24] border border-white/10 space-y-3 hover:border-emerald-500/40 transition">
-          <div class="flex items-center justify-between">
-            <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-white/5 text-neutral-300 font-bold">GENERAL</span>
-            <span class="text-xs text-neutral-500 font-mono">MEDIA</span>
-          </div>
-          <div>
-            <h3 class="text-base font-bold text-white">Prensa &amp; Patrocinios</h3>
-            <p class="text-xs text-neutral-400">Atención a Medios &amp; Partners</p>
-          </div>
-          <a href="mailto:info@muntru.me" class="block w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-cyan-300 font-mono text-center transition">
-            info@muntru.me ✉️
-          </a>
         </div>
 
       </div>
-    </section>
 
-  </main>
+      <!-- Device Configuration (IMAP / SMTP) -->
+      <div class="space-y-6">
+        <div class="flex items-center justify-between border-b border-white/10 pb-4">
+          <div class="flex items-center gap-2.5">
+            <h2 class="text-lg font-bold text-white tracking-tight">Device Configuration Parameters (Drivers &amp; Staff)</h2>
+          </div>
+          <span class="text-xs font-mono text-neutral-500">IMAP / SMTP Protocols</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Incoming IMAP -->
+          <div class="p-6 rounded-2xl bg-[#161c24] border border-white/10 space-y-4 shadow-lg">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                <span>Incoming Mail Server (IMAP)</span>
+              </h3>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold">SSL / TLS</span>
+            </div>
+            <div class="space-y-2 text-xs font-mono">
+              <div class="flex justify-between py-2 border-b border-white/5">
+                <span class="text-neutral-400">Server Host:</span>
+                <span class="text-white font-bold">imap.gmail.com</span>
+              </div>
+              <div class="flex justify-between py-2 border-b border-white/5">
+                <span class="text-neutral-400">Port:</span>
+                <span class="text-emerald-400 font-bold">993</span>
+              </div>
+              <div class="flex justify-between py-2 border-b border-white/5">
+                <span class="text-neutral-400">Security:</span>
+                <span class="text-white">SSL / TLS Required</span>
+              </div>
+              <div class="flex justify-between py-2">
+                <span class="text-neutral-400">Username:</span>
+                <span class="text-neutral-300">driver@muntru.me</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Outgoing SMTP -->
+          <div class="p-6 rounded-2xl bg-[#161c24] border border-white/10 space-y-4 shadow-lg">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                <span>Outgoing Mail Server (SMTP)</span>
+              </h3>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold">STARTTLS / SSL</span>
+            </div>
+            <div class="space-y-2 text-xs font-mono">
+              <div class="flex justify-between py-2 border-b border-white/5">
+                <span class="text-neutral-400">Server Host:</span>
+                <span class="text-white font-bold">smtp.gmail.com</span>
+              </div>
+              <div class="flex justify-between py-2 border-b border-white/5">
+                <span class="text-neutral-400">Port:</span>
+                <span class="text-emerald-400 font-bold">465 (SSL) or 587 (TLS)</span>
+              </div>
+              <div class="flex justify-between py-2 border-b border-white/5">
+                <span class="text-neutral-400">Authentication:</span>
+                <span class="text-white">Required (Same credentials)</span>
+              </div>
+              <div class="flex justify-between py-2">
+                <span class="text-neutral-400">Username:</span>
+                <span class="text-neutral-300">driver@muntru.me</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Verified Team Directory -->
+      <div class="space-y-6">
+        <div class="flex items-center justify-between border-b border-white/10 pb-4">
+          <div class="flex items-center gap-2.5">
+            <h2 class="text-lg font-bold text-white tracking-tight">Verified Institutional Directory (@muntru.me)</h2>
+          </div>
+          <span class="text-xs font-mono text-emerald-400">6 Verified Inboxes</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          
+          <!-- Alberto Trujillo -->
+          <div class="p-5 rounded-2xl bg-[#161c24] border border-white/10 space-y-3 hover:border-emerald-500/40 transition">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold">FOUNDER</span>
+              <span class="text-xs text-neutral-500 font-mono">#1</span>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-white">Alberto Trujillo</h3>
+              <p class="text-xs text-neutral-400">Team Principal &amp; Telemetry</p>
+            </div>
+            <a href="mailto:alberto@muntru.me" class="block w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-emerald-400 font-mono text-center transition">
+              alberto@muntru.me ✉️
+            </a>
+          </div>
+
+          <!-- Mateo Berbis -->
+          <div class="p-5 rounded-2xl bg-[#161c24] border border-white/10 space-y-3 hover:border-amber-500/40 transition">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 font-bold">DRIVER</span>
+              <span class="text-xs text-neutral-500 font-mono">#2</span>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-white">Mateo Berbis</h3>
+              <p class="text-xs text-neutral-400">Official Driver · Sprint &amp; Qualy</p>
+            </div>
+            <a href="mailto:mateo@muntru.me" class="block w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-emerald-400 font-mono text-center transition">
+              mateo@muntru.me ✉️
+            </a>
+          </div>
+
+          <!-- Eduardo Chongkan -->
+          <div class="p-5 rounded-2xl bg-[#161c24] border border-white/10 space-y-3 hover:border-slate-400/40 transition">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-slate-500/15 text-slate-300 font-bold">DRIVER</span>
+              <span class="text-xs text-neutral-500 font-mono">#3</span>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-white">Eduardo Chongkan</h3>
+              <p class="text-xs text-neutral-400">Race Engineer &amp; Prototypes</p>
+            </div>
+            <a href="mailto:eduardo@muntru.me" class="block w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-emerald-400 font-mono text-center transition">
+              eduardo@muntru.me ✉️
+            </a>
+          </div>
+
+          <!-- Juanlu Carrillo -->
+          <div class="p-5 rounded-2xl bg-[#161c24] border border-white/10 space-y-3 hover:border-orange-500/40 transition">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-orange-500/10 text-orange-400 font-bold">DRIVER</span>
+              <span class="text-xs text-neutral-500 font-mono">#4</span>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-white">Juanlu Carrillo</h3>
+              <p class="text-xs text-neutral-400">Official Driver · SFL &amp; Formula</p>
+            </div>
+            <a href="mailto:juanlu@muntru.me" class="block w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-emerald-400 font-mono text-center transition">
+              juanlu@muntru.me ✉️
+            </a>
+          </div>
+
+          <!-- Race Operations -->
+          <div class="p-5 rounded-2xl bg-[#161c24] border border-white/10 space-y-3 hover:border-purple-500/40 transition">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 font-bold">OPERATIONS</span>
+              <span class="text-xs text-neutral-500 font-mono">STAFF</span>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-white">Race Operations</h3>
+              <p class="text-xs text-neutral-400">Governance &amp; Competition Desk</p>
+            </div>
+            <a href="mailto:admin@muntru.me" class="block w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-emerald-400 font-mono text-center transition">
+              admin@muntru.me ✉️
+            </a>
+          </div>
+
+          <!-- General Press & Partnerships -->
+          <div class="p-5 rounded-2xl bg-[#161c24] border border-white/10 space-y-3 hover:border-emerald-500/40 transition">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-white/5 text-neutral-300 font-bold">PRESS</span>
+              <span class="text-xs text-neutral-500 font-mono">MEDIA</span>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-white">Press &amp; Partnerships</h3>
+              <p class="text-xs text-neutral-400">Media Desk &amp; Commercial Relations</p>
+            </div>
+            <a href="mailto:info@muntru.me" class="block w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-emerald-400 font-mono text-center transition">
+              info@muntru.me ✉️
+            </a>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
 </Layout>
