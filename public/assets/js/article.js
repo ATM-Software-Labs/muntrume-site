@@ -8,22 +8,7 @@ function thumb640(src) {
       return m ? `/assets/img/${m[1]}-640.webp` : src;
     }
 
-    // 1. Mobile Drawer Controller
-    function toggleNavDrawer() {
-      const drawer = document.getElementById('mobileDrawer');
-      const backdrop = document.getElementById('mobileBackdrop');
-      if (!drawer || !backdrop) return;
-      const isOpen = drawer.classList.contains('open');
-      if (isOpen) {
-        drawer.classList.remove('open');
-        backdrop.classList.remove('open');
-        document.body.style.overflow = '';
-      } else {
-        drawer.classList.add('open');
-        backdrop.classList.add('open');
-        document.body.style.overflow = 'hidden';
-      }
-    }
+    
 
     // 2. Slug Helper
     function slugify(text) {
@@ -160,7 +145,6 @@ function thumb640(src) {
 
     // 6. Share Functionality
     window.shareArticle = shareArticle;
-    window.toggleNavDrawer = toggleNavDrawer;
     function shareArticle() {
       const url = window.location.href;
       if (navigator.clipboard) {

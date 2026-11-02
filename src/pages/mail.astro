@@ -86,7 +86,7 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
         </button>
 
         <!-- Quick Compose Button -->
-        <button id="open-compose-header-btn" class="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider transition shadow-lg shadow-emerald-500/20 shrink-0">
+        <button id="open-compose-header-btn" class="md:hidden inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider transition shadow-lg shadow-emerald-500/20 shrink-0 cursor-pointer">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
           <span class="hidden sm:inline">Redactar</span>
         </button>
@@ -97,7 +97,7 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
     <!-- ======================================================================= -->
     <!-- 2. APP MAIN WORKSPACE (SIDEBAR + CONTENT SPLIT)                         -->
     <!-- ======================================================================= -->
-    <div class="flex-1 flex overflow-hidden relative">
+    <div id="mail-app-workspace" class="flex-1 flex overflow-hidden relative">
       
       <!-- MOBILE SIDEBAR BACKDROP -->
       <div id="sidebar-backdrop" class="hidden md:hidden fixed inset-0 bg-black/70 z-30 backdrop-blur-xs"></div>
@@ -166,6 +166,10 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
           <div class="pt-3 border-t border-white/10 space-y-2">
             <span class="text-[10px] uppercase font-mono tracking-wider text-neutral-400 font-bold px-3">Filtrar por Piloto</span>
             <div class="space-y-1 text-xs">
+              <button class="pilot-filter-btn w-full text-left px-3 py-1.5 rounded-lg text-neutral-300 hover:text-white hover:bg-white/5 transition flex items-center justify-between cursor-pointer" data-pilot-email="all">
+                <span class="truncate">🏎️ Todos los buzones</span>
+                <span class="text-[10px] font-mono text-emerald-400 font-bold">ALL</span>
+              </button>
               <button class="pilot-filter-btn w-full text-left px-3 py-1.5 rounded-lg text-neutral-300 hover:text-white hover:bg-white/5 transition flex items-center justify-between" data-pilot-email="alberto@muntru.me">
                 <span class="truncate">🟢 Alberto Trujillo</span>
                 <span class="text-[10px] font-mono text-neutral-500">#1</span>
@@ -202,7 +206,7 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
       </aside>
 
       <!-- B. MAIN EMAIL DISPLAY WORKSPACE -->
-      <main class="flex-1 flex flex-col min-w-0 bg-[#12171f] overflow-hidden">
+      <main id="mail-main-pane" class="flex-1 flex flex-col min-w-0 bg-[#12171f] overflow-hidden">
         
         <!-- SUB-HEADER: CATEGORY FILTER PILLS & STATUS -->
         <div class="px-3 sm:px-6 py-2.5 bg-[#161c24] border-b border-white/10 flex items-center justify-between gap-3 shrink-0">
@@ -641,6 +645,23 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
 <!-- 6. GLOBAL CSS STYLING FOR GMAIL CLIENT                                    -->
 <!-- ========================================================================= -->
 <style is:global>
+  #mail-app-workspace {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow: hidden !important;
+    position: relative !important;
+    flex: 1 1 0% !important;
+    width: 100% !important;
+  }
+  #mail-main-pane {
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    background-color: #12171f !important;
+  }
+
   /* Desktop styles (md and above: >= 768px) */
   @media (min-width: 768px) {
     #mail-sidebar {
@@ -648,10 +669,32 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
       inset: auto !important;
       transform: none !important;
       z-index: 10 !important;
-      width: 16rem !important;
+      width: 17rem !important;
+      min-width: 17rem !important;
+      max-width: 17rem !important;
       display: flex !important;
+      flex-direction: column !important;
+      justify-content: space-between !important;
+      flex-shrink: 0 !important;
+      background-color: #0e1217 !important;
+      border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
     }
     #sidebar-backdrop {
+      display: none !important;
+    }
+    #toggle-sidebar-mobile {
+      display: none !important;
+    }
+    #open-compose-header-btn {
+      display: none !important;
+    }
+    .mail-row-desktop {
+      display: flex !important;
+      align-items: center !important;
+      gap: 0.75rem !important;
+      width: 100% !important;
+    }
+    .mail-row-mobile {
       display: none !important;
     }
   }
@@ -660,19 +703,47 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
   @media (max-width: 767px) {
     #mail-sidebar {
       position: fixed !important;
-      top: 4rem !important;
+      top: 7.5rem !important;
       bottom: 0 !important;
       left: 0 !important;
-      width: 16rem !important;
+      width: 17rem !important;
       z-index: 50 !important;
       transform: translateX(-100%);
-      transition: transform 0.2s ease-in-out !important;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: space-between !important;
+      background-color: #0e1217 !important;
+      border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75);
     }
     #mail-sidebar.open {
       transform: translateX(0) !important;
     }
+    #sidebar-backdrop {
+      position: fixed !important;
+      inset: 0 !important;
+      background: rgba(0, 0, 0, 0.75) !important;
+      backdrop-filter: blur(4px) !important;
+      z-index: 40 !important;
+    }
+    #sidebar-backdrop.hidden {
+      display: none !important;
+    }
+    #open-compose-header-btn {
+      display: inline-flex !important;
+    }
+    .mail-row-desktop {
+      display: none !important;
+    }
+    .mail-row-mobile {
+      display: block !important;
+    }
   }
 
+  .folder-btn {
+    cursor: pointer;
+  }
   .folder-btn.active {
     background: rgba(16, 185, 129, 0.15) !important;
     color: #34d399 !important;
@@ -680,6 +751,7 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
   }
   .mail-row {
     transition: background-color 0.15s ease;
+    cursor: pointer;
   }
   .mail-row:hover {
     background-color: rgba(255, 255, 255, 0.04);
@@ -687,10 +759,16 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
   .mail-row.unread {
     background-color: rgba(16, 185, 129, 0.04);
   }
+  .category-pill {
+    cursor: pointer;
+  }
   .category-pill.active {
-    background: rgba(16, 185, 129, 0.2);
-    color: #34d399;
-    border-color: rgba(16, 185, 129, 0.4);
+    background: rgba(16, 185, 129, 0.2) !important;
+    color: #34d399 !important;
+    border-color: rgba(16, 185, 129, 0.4) !important;
+  }
+  .pilot-filter-btn {
+    cursor: pointer;
   }
   .no-scrollbar::-webkit-scrollbar {
     display: none;
@@ -1033,9 +1111,9 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
           <div class="mail-row ${msg.unread ? 'unread' : ''} p-3 sm:px-5 sm:py-3 cursor-pointer select-none" data-msg-id="${msg.id}">
             
             <!-- DESKTOP ROW (md+) -->
-            <div class="hidden md:flex items-center gap-3">
+            <div class="mail-row-desktop">
               <!-- Star Toggle -->
-              <button class="star-toggle p-1 text-sm ${isStarred} transition shrink-0" data-star-id="${msg.id}" title="Destacar">
+              <button class="star-toggle cursor-pointer p-1 text-sm ${isStarred} transition shrink-0" data-star-id="${msg.id}" title="Destacar">
                 ★
               </button>
 
@@ -1047,7 +1125,7 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
               </div>
 
               <!-- Sender Name -->
-              <div class="w-40 truncate text-xs ${isUnread} shrink-0">
+              <div class="w-36 truncate text-xs ${isUnread} shrink-0">
                 ${msg.sender.name}
               </div>
 
@@ -1056,20 +1134,20 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
                 <span class="truncate text-xs ${msg.unread ? 'font-bold text-white' : 'text-neutral-200'}">
                   ${msg.subject}
                 </span>
-                <span class="text-neutral-500 text-xs truncate max-w-sm">
+                <span class="text-neutral-400 text-xs truncate max-w-sm">
                   - ${msg.snippet}
                 </span>
                 ${hasSetup}
               </div>
 
               <!-- Date -->
-              <div class="text-[11px] font-mono text-neutral-400 shrink-0 text-right w-24">
+              <div class="text-[11px] font-mono text-neutral-400 shrink-0 text-right w-20">
                 ${msg.date}
               </div>
             </div>
 
             <!-- MOBILE ROW (< md) -->
-            <div class="md:hidden space-y-1.5">
+            <div class="mail-row-mobile space-y-1.5">
               <div class="flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2 min-w-0">
                   <button class="star-toggle text-sm ${isStarred} shrink-0" data-star-id="${msg.id}">

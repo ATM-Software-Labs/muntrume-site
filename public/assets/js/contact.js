@@ -3,25 +3,9 @@
  * Institutional Client Engine
  */
 
-// 1. Mobile Drawer Controller
-    function toggleNavDrawer() {
-      const drawer = document.getElementById('mobileDrawer');
-      const backdrop = document.getElementById('mobileBackdrop');
-      if (!drawer || !backdrop) return;
-      const isOpen = drawer.classList.contains('open');
-      if (isOpen) {
-        drawer.classList.remove('open');
-        backdrop.classList.remove('open');
-        document.body.style.overflow = '';
-      } else {
-        drawer.classList.add('open');
-        backdrop.classList.add('open');
-        document.body.style.overflow = 'hidden';
-      }
-    }
+
 
     // 2. FAQ Accordion Toggle
-    window.toggleNavDrawer = toggleNavDrawer;
     window.toggleFaq = toggleFaq;
     function toggleFaq(btn) {
       const card = btn.closest('.faq-card');

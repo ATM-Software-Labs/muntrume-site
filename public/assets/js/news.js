@@ -3,22 +3,7 @@
  * Institutional Client Engine
  */
 
-// 1. Mobile Drawer Controller
-    function toggleNavDrawer() {
-      const drawer = document.getElementById('mobileDrawer');
-      const backdrop = document.getElementById('mobileBackdrop');
-      if (!drawer || !backdrop) return;
-      const isOpen = drawer.classList.contains('open');
-      if (isOpen) {
-        drawer.classList.remove('open');
-        backdrop.classList.remove('open');
-        document.body.style.overflow = '';
-      } else {
-        drawer.classList.add('open');
-        backdrop.classList.add('open');
-        document.body.style.overflow = 'hidden';
-      }
-    }
+
 
     // 2. SLUG HELPER & CURATED BASELINE DISPATCHES
     function slugify(text) {
@@ -908,7 +893,6 @@
     }
 
     // Expose all interactive functions to global window scope
-    window.toggleNavDrawer = toggleNavDrawer;
     window.loadAllNews = loadAllNews;
     window.refreshAIBrief = refreshAIBrief;
     window.toggleGames = toggleGames;

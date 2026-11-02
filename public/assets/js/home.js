@@ -16,18 +16,7 @@
           initCalendarAndHUD();
         })
         .catch(() => {});
-    }
-
-    // 2. Mobile Drawer Controller
-    function toggleNavDrawer() {
-      const drawer = document.getElementById('mobileDrawer');
-      const backdrop = document.getElementById('mobileBackdrop');
-      if (!drawer || !backdrop) return;
-      const isOpen = drawer.classList.contains('open');
-      drawer.classList.toggle('open', !isOpen);
-      backdrop.classList.toggle('open', !isOpen);
-      document.body.style.overflow = !isOpen ? 'hidden' : '';
-    }
+    }
 
     // 3. Render Calendar Table & Find Next Event
     function initCalendarAndHUD() {

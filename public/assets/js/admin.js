@@ -201,4 +201,11 @@ const PILOTS_DIRECTORY = [
       if (activeBtn) activeBtn.className = "px-3.5 py-1.5 rounded-xl bg-white/10 text-white";
     }
 
+    window.switchAdminSection = switchAdminSection;
+    window.openAddPilotModal = openAddPilotModal;
+    window.closeAddPilotModal = closeAddPilotModal;
+    window.testAdminEmails = testAdminEmails;
+    window.filterPilotsTab = filterPilotsTab;
+    window.handleAdminSearch = handleAdminSearch;
+    window.resendInvite = resendInvite;
     window.addEventListener("DOMContentLoaded", initAdmin);

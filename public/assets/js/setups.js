@@ -199,12 +199,7 @@ function toggleKeyVisibility() {
   input.type = input.type === "password" ? "text" : "password";
 }
 
-function toggleNavDrawer() {
-  const drawer = document.getElementById("mobileDrawer");
-  const backdrop = document.getElementById("mobileBackdrop");
-  drawer.classList.toggle("open");
-  backdrop.classList.toggle("open");
-}
+
 
 // Authentication
 async function handleLogin(e) {
