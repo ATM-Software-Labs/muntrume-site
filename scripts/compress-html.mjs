@@ -9,15 +9,14 @@ const rootDir = path.dirname(__dirname);
 const siteDir = path.join(rootDir, '_site');
 
 const minifierOptions = {
-  collapseWhitespace: true,
-  conservativeCollapse: false,
+  collapseWhitespace: false, // Preserve exact spacing between tags, buttons and spans to prevent UI collisions
   removeComments: true,
   removeRedundantAttributes: true,
   removeScriptTypeAttributes: true,
   removeStyleLinkTypeAttributes: true,
   useShortDoctype: true,
-  minifyCSS: true,
-  minifyJS: true,
+  minifyCSS: false, // Astro/Vite already minifies CSS cleanly
+  minifyJS: false,  // Preserve inline script literals and avoid Terser edge-case mangling
   keepClosingSlash: true
 };
 

@@ -11,13 +11,9 @@
   input:not([type=checkbox]):not([type=radio]):not([type=range]), select, textarea { font-size: 16px !important; min-height: 44px; }
   input[type=checkbox], input[type=radio] { width: 20px; height: 20px; }
   label:has(> input[type=checkbox]) { min-height: 44px; display: inline-flex; align-items: center; }
-  /* buttons & pill filters */
-  button:not([data-cell]):not(header button) { min-height: 44px; }
-  a.inline-flex:not(header a), a.flex:not(header a), a.block:not(header a), a[class*="rounded"]:not(header a) { min-height: 44px; }
-  a.inline-flex:not(header a), a.flex:not(header a) { align-items: center; }
-  nav[aria-label] a { min-height: 44px; display: inline-flex; align-items: center; }
-  /* tiny labels */
-  .text-\[9px\], .text-\[10px\], .text-\[11px\] { font-size: 12px !important; }
+  /* Primary touch action buttons */
+  .btn-touch, .primary-cta { min-height: 44px; display: inline-flex; align-items: center; }
+  nav[aria-label] a { min-height: 40px; display: inline-flex; align-items: center; }
   /* long words / codes never overflow */
   code, .font-mono { overflow-wrap: anywhere; }
   h1, h2, h3 { overflow-wrap: break-word; hyphens: auto; }

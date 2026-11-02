@@ -480,8 +480,12 @@
         filterBtns.addEventListener('click', (e) => {
           const btn = e.target.closest('.filter-btn');
           if (btn) {
-            document.querySelectorAll('#filterButtons .filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+            document.querySelectorAll('#filterButtons .filter-btn').forEach(b => {
+              b.classList.remove('active', 'bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/30');
+              b.classList.add('text-neutral-400', 'bg-white/5', 'border-white/10');
+            });
+            btn.classList.add('active', 'bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/30');
+            btn.classList.remove('text-neutral-400', 'bg-white/5', 'border-white/10');
             currentFilter = btn.dataset.filter || 'all';
             renderTopStories();
           }
