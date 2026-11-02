@@ -95,20 +95,11 @@ p {
 
 /* Navigation Header */
 header {
-  background-color: var(--header-bg) !important;
-  border-bottom: 1px solid var(--border-color) !important;
-  backdrop-filter: blur(14px) !important;
-  -webkit-backdrop-filter: blur(14px) !important;
+  background-color: var(--header-bg);
+  border-bottom: 1px solid var(--border-color);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   transition: background-color 0.25s ease, border-color 0.25s ease;
-}
-
-header a:not(.bg-green-600):not(.bg-green-700) {
-  color: var(--text-secondary);
-  transition: color 0.2s ease;
-}
-
-header a:not(.bg-green-600):not(.bg-green-700):hover {
-  color: var(--accent-green) !important;
 }
 
 /* ===== UNIVERSAL CARDS & CONTAINERS ===== */

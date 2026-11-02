@@ -10,10 +10,8 @@
   input:not([type=checkbox]):not([type=radio]):not([type=range]), select, textarea { font-size: 16px !important; min-height: 44px; }
   input[type=checkbox], input[type=radio] { width: 20px; height: 20px; }
   label:has(> input[type=checkbox]) { min-height: 44px; display: inline-flex; align-items: center; }
-  /* buttons & pill filters */
-  button:not([data-cell]) { min-height: 44px; }
-  a.inline-flex, a.flex, a.block, a[class*="rounded"] { min-height: 44px; }
-  a.inline-flex, a.flex { align-items: center; }
+  /* Primary action buttons on mobile */
+  .btn-primary, .btn-secondary, button[type="submit"], .btn-action { min-height: 44px; }
   nav[aria-label] a { min-height: 44px; display: inline-flex; align-items: center; }
   /* tiny labels */
   .text-\[9px\], .text-\[10px\], .text-\[11px\] { font-size: 12px !important; }
@@ -25,14 +23,6 @@
 @media (max-width: 1023px) and (orientation: landscape) {
   /* landscape phones: keep hero/header compact */
   .min-h-screen { min-height: auto !important; }
-}
-/* Tablets / landscape phones (768-1199px, incl. iPad landscape): desktop nav does not fit, use the drawer */
-@media (min-width: 768px) and (max-width: 1199px) {
-  header .hidden.lg\:flex.rounded-full { display: none !important; }
-  header nav.md\:flex { display: none !important; }
-  button[onclick="toggleNavDrawer()"].md\:hidden { display: inline-flex !important; }
-  #mobileDrawer.md\:hidden { display: flex !important; }
-  #mobileBackdrop.md\:hidden { display: block !important; }
 }
 /* drawer must scroll on short landscape screens */
 #mobileDrawer { overflow-y: auto; -webkit-overflow-scrolling: touch; }

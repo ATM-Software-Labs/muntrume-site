@@ -1,0 +1,72 @@
+/**
+ * 🏁 Muntrume Motorsport · email-preferences.js
+ * Pilot and subscriber email preferences controller
+ */
+(() => {
+  const API = "https://muntrume.atrumin16.workers.dev/api/email/prefs";
+  const h = new URLSearchParams(location.hash.slice(1));
+  const u = h.get("u"), t = h.get("t"), unsub = h.get("unsub");
+  // Clear token from URL bar/history immediately after reading
+  if (location.hash) history.replaceState(null, "", location.pathname);
+  const $ = (id) => document.getElementById(id);
+  const msg = (text, kind) => { const m = $("msg"); m.textContent = text; m.className = "msg " + (kind || "ok"); };
+  const labels = { new_setups: "Novedades del Setup Vault", team_news: "Noticias del equipo" };
+  const browserTz = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { return ""; } })();
+  
+  function fillTz(current) {
+    let zones = [];
+    try { zones = Intl.supportedValuesOf("timeZone"); } catch { zones = ["Europe/Madrid", "Europe/London", "Europe/Paris", "America/New_York", "America/Mexico_City", "America/Argentina/Buenos_Aires", "America/Bogota", "America/Santiago", "UTC"]; }
+    const want = current || browserTz || "Europe/Madrid";
+    if (!zones.includes(want)) zones.unshift(want);
+    $("tz").innerHTML = "";
+    for (const z of zones) { 
+      const o = document.createElement("option"); 
+      o.value = z; 
+      o.textContent = z.replace(/_/g, " ") + (z === browserTz ? " (este dispositivo)" : ""); 
+      if (z === want) o.selected = true; 
+      $("tz").appendChild(o); 
+    }
+  }
+
+  async function call(set) {
+    const r = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(set ? { u, t, set } : { u, t }) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || !j.success) throw new Error(j.error || "No se pudo conectar. Inténtalo de nuevo.");
+    return j;
+  }
+
+  function show(j) {
+    $("who").textContent = (j.name ? j.name + ", estos" : "Estos") + " son los avisos que enviamos a " + j.email_masked + ".";
+    $("new_setups").checked = !!j.prefs.new_setups;
+    $("team_news").checked = !!j.prefs.team_news;
+    fillTz(j.prefs.tz);
+    $("form").hidden = false;
+  }
+
+  async function start() {
+    if (!u || !t) { $("who").textContent = ""; msg("Este enlace no es válido. Abre «Gestionar notificaciones» desde el último correo que te enviamos.", "err"); return; }
+    try {
+      let j = await call();
+      if (unsub && unsub in labels) {
+        if (j.prefs[unsub]) j = await call({ [unsub]: false });
+        $("title").textContent = "Te has dado de baja";
+        msg("Ya no recibirás «" + labels[unsub] + "». Puedes volver a activarlo aquí cuando quieras.");
+      }
+      show(j);
+    } catch (e) { $("who").textContent = ""; msg(e.message, "err"); }
+  }
+
+  $("form")?.addEventListener("submit", async (ev) => {
+    ev.preventDefault(); $("save").disabled = true;
+    try { show(await call({ new_setups: $("new_setups").checked, team_news: $("team_news").checked, tz: $("tz").value })); $("title").textContent = "Preferencias de correo"; msg("Preferencias guardadas."); }
+    catch (e) { msg(e.message, "err"); } finally { $("save").disabled = false; }
+  });
+
+  $("all")?.addEventListener("click", async () => {
+    $("all").disabled = true;
+    try { show(await call({ new_setups: false, team_news: false })); msg("Listo: te has dado de baja de todos los correos opcionales."); }
+    catch (e) { msg(e.message, "err"); } finally { $("all").disabled = false; }
+  });
+
+  start();
+})();
