@@ -207,7 +207,7 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
             <span>DKIM &amp; SPF 100% Verified</span>
           </div>
-          <div>Cifrado TLS 1.3 / Brevo SMTP</div>
+          <div class="truncate text-[10px]">Relay: Resend (trujillomingorance.com)</div>
         </div>
 
       </aside>
@@ -367,11 +367,12 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
       <div class="flex items-center gap-3 border-b border-white/10 pb-2 text-xs">
         <span class="text-neutral-400 w-12 font-mono">De:</span>
         <select id="compose-from" class="flex-1 bg-transparent text-emerald-400 font-bold focus:outline-none cursor-pointer">
-          <option value="alberto@muntru.me">Alberto Trujillo &lt;alberto@muntru.me&gt;</option>
-          <option value="mateo@muntru.me">Mateo Berbis &lt;mateo@muntru.me&gt;</option>
-          <option value="eduardo@muntru.me">Eduardo Chongkan &lt;eduardo@muntru.me&gt;</option>
-          <option value="juanlu@muntru.me">Juanlu Carrillo &lt;juanlu@muntru.me&gt;</option>
-          <option value="admin@muntru.me">Race Control &lt;admin@muntru.me&gt;</option>
+          <option value="alberto.muntrume@trujillomingorance.com">Alberto Trujillo &lt;alberto.muntrume@trujillomingorance.com&gt;</option>
+          <option value="mateo.muntrume@trujillomingorance.com">Mateo Berbis &lt;mateo.muntrume@trujillomingorance.com&gt;</option>
+          <option value="eduardo.muntrume@trujillomingorance.com">Eduardo Chongkan &lt;eduardo.muntrume@trujillomingorance.com&gt;</option>
+          <option value="juanlu.muntrume@trujillomingorance.com">Juanlu Carrillo &lt;juanlu.muntrume@trujillomingorance.com&gt;</option>
+          <option value="admin.muntrume@trujillomingorance.com">Race Control &lt;admin.muntrume@trujillomingorance.com&gt;</option>
+          <option value="muntrume@trujillomingorance.com">Muntrume General &lt;muntrume@trujillomingorance.com&gt;</option>
         </select>
       </div>
 
@@ -1026,6 +1027,12 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
       if (msg.account && msg.account === activeMailbox) return true;
       if (msg.sender && msg.sender.email === activeMailbox) return true;
       if (msg.recipients && (msg.recipients.includes(activeMailbox) || msg.recipients.toLowerCase().includes("todos"))) return true;
+
+      // Cruce de piloto (ej. 'alberto' coincide con alberto@muntru.me y alberto.muntrume@trujillomingorance.com)
+      const actPrefix = activeMailbox.split("@")[0].split(".")[0].toLowerCase();
+      const accPrefix = (msg.account || "").split("@")[0].split(".")[0].toLowerCase();
+      const sndPrefix = (msg.sender?.email || "").split("@")[0].split(".")[0].toLowerCase();
+      if (actPrefix && (actPrefix === accPrefix || actPrefix === sndPrefix)) return true;
       return false;
     }
 
@@ -1553,11 +1560,31 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
         if (sendMailSubmitBtn) sendMailSubmitBtn.disabled = true;
 
         const brevoKey = localStorage.getItem(LS_BREVO_KEY) || "";
-        let sentSuccessfully = false;
+        let sentLive = false;
+        let relayDetail = "Resend Relay";
 
         try {
-          if (brevoKey) {
-            // Direct Brevo REST API v3 dispatch
+          // 1. Despacho en servidor seguro mediante Cloudflare Worker + Resend (@trujillomingorance.com verificado)
+          const workerRes = await fetch("https://muntrume.atrumin16.workers.dev/api/mail/send", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              from: fromEmail,
+              fromName: `${fromEmail.split("@")[0].toUpperCase()} · Muntrume Motorsport`,
+              to: toEmail,
+              subject: subject,
+              body: bodyContent
+            })
+          });
+
+          const workerData = await workerRes.json().catch(() => ({}));
+          if (workerRes.ok && workerData.success) {
+            sentLive = true;
+            relayDetail = workerData.provider || "Resend Relay";
+          } else if (brevoKey) {
+            // 2. Fallback secundario a Brevo API si el usuario configuró clave personal
             const res = await fetch("https://api.brevo.com/v3/smtp/email", {
               method: "POST",
               headers: {
@@ -1575,13 +1602,13 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
                 textContent: bodyContent
               })
             });
-
             if (res.ok) {
-              sentSuccessfully = true;
+              sentLive = true;
+              relayDetail = "Brevo SMTP Relay";
             }
           }
         } catch (err) {
-          console.warn("Brevo API error, recording to sent mailbox:", err);
+          console.warn("Error en relay de correo, archivando en buzón local:", err);
         }
 
         // Record message in sent folder
@@ -1620,8 +1647,8 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
         if (sendBtnText) sendBtnText.textContent = "Enviar";
         if (sendMailSubmitBtn) sendMailSubmitBtn.disabled = false;
 
-        if (sentSuccessfully) {
-          showToast("Correo enviado con éxito vía Brevo SMTP");
+        if (sentLive) {
+          showToast(`✓ Correo real entregado con éxito a ${toEmail} vía ${relayDetail}`);
         } else {
           showToast("Mensaje registrado y archivado en Enviados");
         }

@@ -201,10 +201,10 @@ async function verifyToken(token, secret, typ) {
 
 // ───────────────────────────── correo (Resend) ─────────────────────────────
 
-async function sendEmail(env, { to, subject, html, text, replyTo, headers, attachments }) {
+async function sendEmail(env, { to, subject, html, text, replyTo, from, headers, attachments }) {
   if (!env.RESEND_API_KEY) return { ok: false, error: "RESEND_API_KEY no configurada" };
   const payload = {
-    from: env.RESEND_FROM_EMAIL || "Muntrume Motorsport <muntrume@trujillomingorance.com>",
+    from: from || env.RESEND_FROM_EMAIL || "Muntrume Motorsport <muntrume@trujillomingorance.com>",
     to: Array.isArray(to) ? to : [to],
     subject,
     html,
@@ -1331,6 +1331,97 @@ async function handleContactToken(env) {
   return [200, { success: true, token, minMs: CONTACT_MIN_MS }];
 }
 
+
+function escMail(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+async function handleMailSend(body, env, ip) {
+  const fail = (status, error) => [status, { success: false, error }];
+  if (await rateLimited(`mailsend:${ip}`, 30, 3600)) {
+    return fail(429, "Límite de envíos alcanzado (30 correos/hora). Inténtalo más tarde.");
+  }
+
+  const to = String(body.to || "").trim();
+  const subject = String(body.subject || "").trim();
+  const content = String(body.body || body.content || body.text || "").trim();
+  const fromRaw = String(body.from || "alberto.muntrume@trujillomingorance.com").trim().toLowerCase();
+  const fromName = String(body.fromName || "Alberto Trujillo · Muntrume Motorsport").trim();
+
+  if (!to || !EMAIL_RE.test(to)) {
+    return fail(400, "Destinatario no válido.");
+  }
+  if (!subject) {
+    return fail(400, "El asunto del correo no puede estar vacío.");
+  }
+  if (!content) {
+    return fail(400, "El contenido del mensaje no puede estar vacío.");
+  }
+
+  // Sender email formatted under verified domain trujillomingorance.com
+  let senderEmail = "alberto.muntrume@trujillomingorance.com";
+  if (fromRaw.includes("@")) {
+    const userPart = fromRaw.split("@")[0].replace(/[^a-z0-9._-]/g, "");
+    const pilot = userPart.includes("muntrume") ? userPart : `${userPart}.muntrume`;
+    senderEmail = `${pilot}@trujillomingorance.com`;
+  }
+
+  const formattedSender = `${fromName} <${senderEmail}>`;
+  const replyTo = senderEmail;
+
+  // Dark Luxury HTML email template for Muntrume Motorsport
+  const html = `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head><meta charset="UTF-8"></head>
+    <body style="margin:0;padding:24px 12px;background-color:#090d12;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#f1f5f9;">
+      <div style="max-width:600px;margin:0 auto;background-color:#161c24;border:1px solid rgba(255,255,255,0.1);border-radius:20px;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,0.6);">
+        <div style="height:3px;background:linear-gradient(90deg,#10b981,#34d399,#059669);"></div>
+        <div style="padding:22px 28px;border-bottom:1px solid rgba(255,255,255,0.08);background-color:#12171f;">
+          <span style="font-size:16px;font-weight:900;letter-spacing:-0.5px;color:#ffffff;">MUNTRUME</span>
+          <span style="color:#10b981;font-weight:700;font-size:11px;margin-left:6px;letter-spacing:1px;text-transform:uppercase;">Comms &middot; Telemetry</span>
+        </div>
+        <div style="padding:28px;font-size:14px;line-height:1.6;color:#e2e8f0;">
+          <div style="font-size:18px;font-weight:800;color:#ffffff;margin-bottom:16px;">${escMail(subject)}</div>
+          <div style="white-space:pre-line;color:#cbd5e1;line-height:1.7;">${escMail(content)}</div>
+        </div>
+        <div style="padding:20px 28px;background-color:#0e1217;border-top:1px solid rgba(255,255,255,0.08);font-size:11px;color:#64748b;line-height:1.5;">
+          <div style="color:#10b981;font-weight:700;margin-bottom:4px;">&check; Cifrado TLS &middot; DKIM &amp; SPF 100% Verificado</div>
+          <div>Mensaje institucional enviado por <strong>${escMail(fromName)}</strong> (<a href="mailto:${escMail(senderEmail)}" style="color:#10b981;text-decoration:none;">${escMail(senderEmail)}</a>).</div>
+          <div style="margin-top:6px;color:#475569;">Muntrume Motorsport &copy; 2026 &middot; Barcelona, España &middot; <a href="https://muntru.me" style="color:#10b981;text-decoration:none;">muntru.me</a></div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const sent = await sendEmail(env, {
+    to,
+    subject,
+    html,
+    text: content,
+    from: formattedSender,
+    replyTo
+  });
+
+  if (!sent.ok) {
+    return fail(500, sent.error || "No se pudo entregar el correo.");
+  }
+
+  return [200, {
+    success: true,
+    id: sent.id,
+    from: formattedSender,
+    to,
+    provider: "Resend Verified Relay (trujillomingorance.com)"
+  }];
+}
+
 async function handleContact(body, env, ip) {
   const fail = (status, error, extra = {}) => [status, { success: false, error, ...extra }];
   // Honeypot: los bots rellenan el campo oculto; respondemos como si nada sin enviar.
@@ -1591,6 +1682,8 @@ const ROUTES = {
   "/api/setups/admin/stats": "admin_stats",
   "/api/email/prefs": "email_prefs",
   "/api/contact": "contact",
+  "/api/mail/send": "mail_send",
+  "/api/setups/mail/send": "mail_send",
 };
 // Los antiguos modos "setup_*" (body.mode) y el admin.html con códigos fijos están retirados.
 const LEGACY_MODE_RE = /^setup_/;
@@ -1707,6 +1800,7 @@ export default {
         case "admin_email_preview": out = await handleAdminEmailPreview(request, body, env); break;
         case "email_prefs": out = await handleEmailPrefs(body, env, ip); break;
         case "contact": out = await handleContact(body, env, ip); break;
+        case "mail_send": out = await handleMailSend(body, env, ip); break;
         default:
           if (url.pathname.startsWith("/api/setups/")) return reply(404, { success: false, error: "Ruta no encontrada." });
           if (["ai_chat", "ai_setup", "ask_about"].includes(body.mode)) out = await handleAI(body, env, ip);
