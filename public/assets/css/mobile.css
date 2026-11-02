@@ -1,17 +1,20 @@
 /* Mobile/tablet polish (Turno 6): tap targets >=44px, legible text, no iOS input zoom.
    Applies to narrow screens AND to any touch device (iPad landscape 1024-1366px). */
 @media (max-width: 1023px), (pointer: coarse) {
-  /* hamburger + header logo */
-  button[onclick="toggleNavDrawer()"] { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
-  header a[href="/"], nav a[href="/"] { min-height: 44px; display: inline-flex; align-items: center; }
+  /* hamburger + header controls */
+  #navDrawerOpenBtn, button[onclick*="toggleNavDrawer"] { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+  /* Header links stay compact and aligned */
+  header a, header nav a { min-height: auto !important; }
   /* footer links */
   footer a { display: inline-flex; align-items: center; min-height: 44px; padding-left: 2px; padding-right: 2px; }
   /* form controls: 16px avoids iOS auto-zoom on focus */
   input:not([type=checkbox]):not([type=radio]):not([type=range]), select, textarea { font-size: 16px !important; min-height: 44px; }
   input[type=checkbox], input[type=radio] { width: 20px; height: 20px; }
   label:has(> input[type=checkbox]) { min-height: 44px; display: inline-flex; align-items: center; }
-  /* Primary action buttons on mobile */
-  .btn-primary, .btn-secondary, button[type="submit"], .btn-action { min-height: 44px; }
+  /* buttons & pill filters */
+  button:not([data-cell]):not(header button) { min-height: 44px; }
+  a.inline-flex:not(header a), a.flex:not(header a), a.block:not(header a), a[class*="rounded"]:not(header a) { min-height: 44px; }
+  a.inline-flex:not(header a), a.flex:not(header a) { align-items: center; }
   nav[aria-label] a { min-height: 44px; display: inline-flex; align-items: center; }
   /* tiny labels */
   .text-\[9px\], .text-\[10px\], .text-\[11px\] { font-size: 12px !important; }
@@ -24,6 +27,7 @@
   /* landscape phones: keep hero/header compact */
   .min-h-screen { min-height: auto !important; }
 }
+
 /* drawer must scroll on short landscape screens */
 #mobileDrawer { overflow-y: auto; -webkit-overflow-scrolling: touch; }
 

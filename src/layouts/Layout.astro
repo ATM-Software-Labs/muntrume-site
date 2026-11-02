@@ -116,7 +116,6 @@ const finalSchema = schemaJson || defaultSchema;
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet" />
 
   <link rel="stylesheet" href="/assets/css/tailwind.min.css?v=26s4.6" />
-  <link rel="stylesheet" href="/assets/css/muntrume.css?v=26s4.6" />
   <link rel="stylesheet" href="/assets/css/mobile.css?v=26s4.6" />
 
   <!-- Embedded Core Dark Aesthetics -->
@@ -154,6 +153,45 @@ const finalSchema = schemaJson || defaultSchema;
       to {
         box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
       }
+    }
+    /* Mobile Navigation Drawer & Backdrop */
+    #mobileDrawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 18rem;
+      max-width: 85vw;
+      background-color: #161c24;
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 60;
+      box-shadow: -10px 0 30px rgba(0, 0, 0, 0.7);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transform: translateX(100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 1.5rem;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    #mobileDrawer.open {
+      transform: translateX(0) !important;
+    }
+    #mobileBackdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 55;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    #mobileBackdrop.open {
+      opacity: 1 !important;
+      pointer-events: auto !important;
     }
     ::-webkit-scrollbar { width: 8px; }
     ::-webkit-scrollbar-track { background: #0e1217; }

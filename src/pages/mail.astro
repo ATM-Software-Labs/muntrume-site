@@ -1,335 +1,287 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-const pageTitle = "Muntrume Webmail & Comunicaciones — Portal Oficial";
-const pageDescription = "Portal institucional y pasarela segura de comunicaciones de Muntrume Motorsport para pilotos, briefings de carrera y telemetría.";
+const pageTitle = "Webmail & Comunicaciones Corporativas — Muntrume Motorsport";
+const pageDescription = "Portal institucional de correo electrónico y canales oficiales de comunicación de Muntrume Motorsport (@muntru.me).";
 ---
 
 <Layout title={pageTitle} description={pageDescription}>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12 space-y-8">
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 space-y-12">
     
-    <!-- Top Security & Infrastructure Status Banner -->
-    <div class="p-4 sm:p-5 rounded-2xl glass-card border border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-      <div class="flex items-center gap-3.5">
-        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-black text-lg">
-          M
-        </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-base sm:text-lg font-black text-white tracking-tight">Muntrume Secure Communications Gate</h1>
-            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-bold">
-              @muntru.me
-            </span>
-          </div>
-          <p class="text-xs text-neutral-400">Infraestructura de correo institucional cifrada con TLS 1.3, SPF, DKIM, DMARC y DNSSEC.</p>
-        </div>
-      </div>
+    <!-- Hero / Status Header -->
+    <div class="glass-card rounded-3xl p-6 sm:p-10 border border-white/10 space-y-6 relative overflow-hidden">
+      <div class="absolute -top-24 -right-24 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-      <div class="flex flex-wrap items-center gap-2 text-[10px] font-mono">
-        <span class="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold flex items-center gap-1.5">
-          <span class="pulse-dot"></span>
-          <span>Cloudflare MX: Activo</span>
-        </span>
-        <span class="px-2.5 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-bold">
-          DMARC: Strict 100%
-        </span>
-        <span class="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-neutral-300">
-          Ed25519 Signed
-        </span>
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+        <div class="space-y-3">
+          <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider">
+            <span class="pulse-dot"></span>
+            <span>Infraestructura Institucional @muntru.me</span>
+          </div>
+          <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight">
+            Webmail &amp; Comunicaciones
+          </h1>
+          <p class="text-sm sm:text-base text-neutral-300 max-w-2xl leading-relaxed">
+            Plataforma corporativa de correo electrónico y canales oficiales de comunicación de Muntrume Motorsport para pilotos, dirección deportiva y prensa.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap md:flex-col items-start md:items-end gap-2 text-[11px] font-mono">
+          <span class="px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-semibold flex items-center gap-1.5">
+            <span>🛡️ Cloudflare Enterprise MX</span>
+          </span>
+          <span class="px-3 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-semibold">
+            DMARC Strict (p=reject) 100%
+          </span>
+          <span class="px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-neutral-300">
+            DKIM 2048-bit · TLS 1.3
+          </span>
+        </div>
       </div>
     </div>
 
-    <!-- Security Gate (Locked View: Shown when not authenticated) -->
-    <div id="mailAuthGate" class="glass-card rounded-3xl p-6 sm:p-12 border border-white/10 max-w-2xl mx-auto text-center space-y-6">
-      <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-600/20 to-emerald-400/10 border border-emerald-500/30 flex items-center justify-center text-3xl mx-auto shadow-lg shadow-emerald-500/10">
-        🛡️
-      </div>
-
-      <div class="space-y-2">
-        <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">Acceso Restringido a Pilotos y Staff</h2>
-        <p class="text-xs sm:text-sm text-neutral-400 max-w-md mx-auto leading-relaxed">
-          Los comunicados internos, briefings de stint y telemetría de carrera requieren validación de credenciales oficiales del equipo.
-        </p>
-      </div>
-
-      <!-- Authentication Form -->
-      <form id="mailLoginForm" onsubmit="handleMailLogin(event)" class="space-y-4 max-w-md mx-auto text-left">
-        <div>
-          <label for="authPilotEmail" class="block text-xs font-bold text-neutral-300 mb-1.5">Buzón Oficial Muntrume</label>
-          <select id="authPilotEmail" required class="w-full bg-[#121620] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono">
-            <option value="alberto@muntru.me">Alberto Trujillo (alberto@muntru.me)</option>
-            <option value="mateo@muntru.me">Mateo Berbis (mateo@muntru.me)</option>
-            <option value="eduardo@muntru.me">Eduardo Chongkan (eduardo@muntru.me)</option>
-            <option value="juanlu@muntru.me">Juanlu Carrillo (juanlu@muntru.me)</option>
-            <option value="admin@muntru.me">Race Control &amp; Staff (admin@muntru.me)</option>
-          </select>
-        </div>
-
-        <div>
-          <label for="authPasscode" class="block text-xs font-bold text-neutral-300 mb-1.5">Código de Acceso / PIN de Piloto</label>
-          <div class="relative">
-            <input 
-              type="password" 
-              id="authPasscode" 
-              required 
-              placeholder="Introduce tu clave de piloto o PIN institucional..." 
-              class="w-full bg-[#121620] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500 font-mono"
-            />
-          </div>
-          <p id="authErrorMsg" class="hidden text-xs text-rose-400 font-semibold mt-1.5">Clave no válida. Contacta con Race Control si olvidaste tu PIN.</p>
-        </div>
-
-        <button 
-          type="submit" 
-          class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 text-neutral-950 font-black text-xs uppercase tracking-wider transition shadow-lg shadow-emerald-500/20"
-        >
-          Desbloquear Consola de Comunicados →
-        </button>
-      </form>
-
-      <!-- Institutional Email Guidance & Official Links -->
-      <div class="pt-6 border-t border-white/10 grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
-        <a 
-          href="https://mail.google.com" 
-          target="_blank" 
-          rel="noopener noreferrer" 
-          class="p-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition block group"
-        >
-          <div class="text-xs font-bold text-white group-hover:text-emerald-400 flex items-center justify-between">
-            <span>Webmail Corporativo ↗</span>
-            <span class="text-[10px] text-neutral-500">Google Workspace</span>
-          </div>
-          <p class="text-[11px] text-neutral-400 mt-1">Acceso directo a tu cliente IMAP / Webmail oficial.</p>
-        </a>
-
-        <a 
-          href="/contact" 
-          class="p-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition block group"
-        >
-          <div class="text-xs font-bold text-white group-hover:text-emerald-400 flex items-center justify-between">
-            <span>Contacto Externo →</span>
-            <span class="text-[10px] text-neutral-500">Público</span>
-          </div>
-          <p class="text-[11px] text-neutral-400 mt-1">Envía solicitudes de patrocinio, pruebas o prensa.</p>
-        </a>
-      </div>
-    </div>
-
-    <!-- Authenticated Mail Workspace (Hidden by default, shown after auth) -->
-    <div id="mailWorkspace" class="hidden glass-card rounded-3xl border border-white/10 overflow-hidden shadow-2xl">
+    <!-- Official Webmail Access Card -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
       
-      <!-- Top App Bar in Authenticated Mode -->
-      <div class="h-14 bg-[#12161f] border-b border-white/10 flex items-center justify-between px-4 sm:px-6 flex-shrink-0">
-        <div class="flex items-center gap-3">
-          <span class="text-xs font-bold text-white flex items-center gap-1.5">
-            <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-            <span>Bandeja Interna de Telemetría</span>
-          </span>
-          <span id="activeMailBadge" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-            alberto@muntru.me
-          </span>
-        </div>
-
-        <div class="flex items-center gap-3">
-          <button onclick="handleMailLogout()" class="text-xs px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-300 font-semibold transition">
-            Cerrar Sesión 🔒
-          </button>
-        </div>
-      </div>
-
-      <!-- 3-Column Layout -->
-      <div class="flex flex-col md:flex-row h-[680px]">
-        
-        <!-- Sidebar Folders -->
-        <aside class="w-full md:w-56 bg-[#0e1217] border-r border-white/10 p-3 flex flex-col justify-between flex-shrink-0">
-          <div class="space-y-4">
-            <button 
-              onclick="openComposeModal()" 
-              class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-black font-extrabold text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
-              <span>Redactar Comunicado</span>
-            </button>
-
-            <nav class="space-y-1 text-xs">
-              <button onclick="switchFolder('inbox')" id="folder-inbox" class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-neutral-300 hover:bg-white/5 transition font-semibold mail-active">
-                <span class="flex items-center gap-2">
-                  <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
-                  <span>Bandeja de Entrada</span>
-                </span>
-                <span id="unreadInboxBadge" class="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300">3</span>
-              </button>
-
-              <button onclick="switchFolder('briefings')" id="folder-briefings" class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-neutral-400 hover:bg-white/5 transition">
-                <span class="flex items-center gap-2">
-                  <span>🏁</span>
-                  <span>Race Briefings</span>
-                </span>
-                <span class="text-[10px] font-mono text-neutral-500">2</span>
-              </button>
-
-              <button onclick="switchFolder('setups')" id="folder-setups" class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-neutral-400 hover:bg-white/5 transition">
-                <span class="flex items-center gap-2">
-                  <span>🛠️</span>
-                  <span>Setups &amp; .IBT</span>
-                </span>
-                <span class="text-[10px] font-mono text-neutral-500">1</span>
-              </button>
-
-              <button onclick="switchFolder('sent')" id="folder-sent" class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-neutral-400 hover:bg-white/5 transition">
-                <span class="flex items-center gap-2">
-                  <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
-                  <span>Enviados</span>
-                </span>
-              </button>
-            </nav>
+      <!-- Primary Access -->
+      <div class="lg:col-span-7 glass-card rounded-3xl p-6 sm:p-8 border border-emerald-500/30 flex flex-col justify-between space-y-6 bg-gradient-to-br from-[#161c24] to-[#12161f]">
+        <div class="space-y-4">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-2xl text-emerald-400">
+            📫
           </div>
-
-          <div class="p-3 rounded-2xl bg-[#141821] border border-white/5 space-y-1 text-[10px] text-neutral-400 font-mono">
-            <div class="flex items-center justify-between">
-              <span>Buzón Verificado</span>
-              <span class="text-emerald-400 font-bold">ACTIVO</span>
-            </div>
-            <div class="text-[9px] text-neutral-500 truncate">D1 Vault Encrypted · TLS 1.3</div>
-          </div>
-        </aside>
-
-        <!-- Message List -->
-        <section class="w-full md:w-80 bg-[#12161f] border-r border-white/10 flex flex-col flex-shrink-0">
-          <div class="p-3 border-b border-white/10 flex items-center justify-between">
-            <h2 id="currentFolderTitle" class="text-xs font-bold text-white uppercase tracking-wider">Bandeja de Entrada</h2>
-            <button onclick="markAllAsRead()" class="text-[10px] text-emerald-400 hover:text-emerald-300 font-medium">
-              Marcar leídos
-            </button>
-          </div>
-
-          <div id="mailListContainer" class="flex-1 overflow-y-auto divide-y divide-white/5">
-            <!-- Rendered by JS -->
-          </div>
-        </section>
-
-        <!-- Reading Pane -->
-        <main class="flex-1 bg-[#0b0e13] flex flex-col overflow-y-auto">
-          <div id="emptyPane" class="flex-1 flex flex-col items-center justify-center p-8 text-center text-neutral-500 space-y-3">
-            <div class="w-16 h-16 rounded-3xl bg-[#161c24] border border-white/10 flex items-center justify-center text-2xl">
-              ✉️
-            </div>
-            <div class="text-sm font-bold text-white">Ningún comunicado seleccionado</div>
-            <p class="text-xs max-w-sm text-neutral-400">
-              Selecciona un mensaje de la lista o pulsa en <strong>Redactar Comunicado</strong> para enviar un comunicado a los pilotos.
-            </p>
-          </div>
-
-          <div id="readingPane" class="hidden flex-1 p-6 space-y-6">
-            <div class="flex items-center justify-between pb-4 border-b border-white/10 gap-3">
-              <div class="flex items-center gap-2">
-                <span id="paneCategoryBadge" class="text-[10px] font-bold font-mono px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 uppercase">
-                  RACE BRIEFING
-                </span>
-                <span id="paneDate" class="text-xs text-neutral-400 font-mono">01 Nov 2026, 17:30</span>
-              </div>
-              <button onclick="deleteActiveMessage()" class="p-1.5 rounded-lg hover:bg-white/10 text-neutral-400 hover:text-red-400 transition" title="Eliminar comunicado">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-              </button>
-            </div>
-
-            <div class="space-y-3">
-              <h3 id="paneSubject" class="text-xl sm:text-2xl font-black text-white leading-tight">
-                Asunto del mensaje
-              </h3>
-              <div class="flex items-center gap-3">
-                <div id="paneSenderAvatar" class="w-10 h-10 rounded-2xl bg-emerald-950 border border-emerald-500/50 flex items-center justify-center font-black text-emerald-400 text-sm">
-                  AT
-                </div>
-                <div>
-                  <div class="flex items-center gap-2">
-                    <span id="paneSenderName" class="text-sm font-bold text-white">Alberto Trujillo</span>
-                    <span id="paneSenderEmail" class="text-xs text-neutral-400 font-mono">&lt;alberto@muntru.me&gt;</span>
-                  </div>
-                  <div class="text-[11px] text-neutral-500">
-                    Para: <span id="paneRecipient" class="text-neutral-300 font-mono">equipo@muntru.me</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div id="paneAttachmentBox" class="hidden p-3.5 rounded-2xl bg-[#161c24] border border-white/10 flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-base">
-                  🏎️
-                </div>
-                <div>
-                  <div id="paneAttachmentName" class="text-xs font-bold font-mono text-white">MTM_26S4_W07_LeMans_Endur.sto</div>
-                  <div class="text-[10px] text-neutral-400">Setup Oficial Muntrume · Marca de agua verificada</div>
-                </div>
-              </div>
-              <a href="/setups" class="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-extrabold transition">
-                Descargar en Vault →
-              </a>
-            </div>
-
-            <div id="paneBody" class="prose prose-invert max-w-none text-xs sm:text-sm text-neutral-200 leading-relaxed space-y-4 pt-2">
-              <!-- Rendered by JS -->
-            </div>
-          </div>
-        </main>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- Compose Modal -->
-  <div id="composeModal" class="hidden fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
-    <div class="fixed inset-0 bg-black/75 backdrop-blur-sm" onclick="closeComposeModal()"></div>
-    <div class="relative min-h-screen flex items-center justify-center p-4">
-      <div class="relative w-full max-w-2xl bg-[#161c24] border border-emerald-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl overflow-hidden text-neutral-200 space-y-5">
-        
-        <div class="flex items-center justify-between pb-3 border-b border-white/10">
-          <div class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-            <h2 class="text-lg font-extrabold text-white">Redactar Comunicado Interno</h2>
-          </div>
-          <button onclick="closeComposeModal()" class="text-neutral-400 hover:text-white p-1">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-          </button>
-        </div>
-
-        <form id="composeForm" onsubmit="handleSendCompose(event)" class="space-y-3.5 text-xs">
-          <div class="flex items-center gap-3">
-            <label for="composeTo" class="w-16 text-neutral-400 font-bold">Para:</label>
-            <select id="composeTo" required class="flex-1 bg-[#0b0e13] border border-white/10 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-emerald-500">
-              <option value="equipo@muntru.me">Todo el Equipo (equipo@muntru.me)</option>
-              <option value="alberto@muntru.me">Alberto Trujillo (alberto@muntru.me)</option>
-              <option value="mateo@muntru.me">Mateo Berbis (mateo@muntru.me)</option>
-              <option value="eduardo@muntru.me">Eduardo Chongkan (eduardo@muntru.me)</option>
-              <option value="juanlu@muntru.me">Juanlu Carrillo (juanlu@muntru.me)</option>
-              <option value="racecontrol@muntru.me">Race Control (racecontrol@muntru.me)</option>
-            </select>
-          </div>
-
-          <div class="flex items-center gap-3">
-            <label for="composeSubject" class="w-16 text-neutral-400 font-bold">Asunto:</label>
-            <input type="text" id="composeSubject" required placeholder="p.ej., Briefing 24H Le Mans: Cargas de Fuel y Rake" class="flex-1 bg-[#0b0e13] border border-white/10 rounded-xl px-3 py-2 text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500">
-          </div>
-
           <div class="space-y-1">
-            <label for="composeBody" class="text-neutral-400 font-bold">Mensaje:</label>
-            <textarea id="composeBody" required rows="6" placeholder="Escribe aquí las directrices para el equipo, turnos de stint o notas sobre la telemetría..." class="w-full bg-[#0b0e13] border border-white/10 rounded-2xl p-3.5 text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-emerald-500"></textarea>
+            <h2 class="text-2xl font-black text-white tracking-tight">Acceso a Buzón de Pilotos y Staff</h2>
+            <p class="text-xs text-neutral-400">Inicio de sesión oficial seguro para titulares de cuenta @muntru.me.</p>
+          </div>
+          <p class="text-xs sm:text-sm text-neutral-300 leading-relaxed">
+            El acceso al buzón institucional se realiza a través de la pasarela autenticada con cifrado de extremo a extremo y verificación en dos pasos (2FA). Ninguna credencial ni mensaje privado se almacena en el cliente público de esta web.
+          </p>
+        </div>
+
+        <div class="pt-4 space-y-3">
+          <a 
+            href="https://mail.google.com" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 text-neutral-950 font-black text-xs uppercase tracking-wider transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 group"
+          >
+            <span>Iniciar Sesión en Webmail Corporativo</span>
+            <span class="group-hover:translate-x-1 transition-transform">↗</span>
+          </a>
+          <p class="text-[11px] text-neutral-500 text-center font-mono">
+            Redirección directa y segura a Google Workspace / Servidor de Correo Oficial
+          </p>
+        </div>
+      </div>
+
+      <!-- External Inquiries & Public Contact -->
+      <div class="lg:col-span-5 glass-card rounded-3xl p-6 sm:p-8 border border-white/10 flex flex-col justify-between space-y-6">
+        <div class="space-y-4">
+          <div class="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl text-cyan-400">
+            💬
+          </div>
+          <div class="space-y-1">
+            <h2 class="text-2xl font-black text-white tracking-tight">Contacto Externo y Prensa</h2>
+            <p class="text-xs text-neutral-400">Para patrocinadores, medios y solicitudes de prueba.</p>
+          </div>
+          <p class="text-xs sm:text-sm text-neutral-300 leading-relaxed">
+            Si no eres piloto registrado o no dispones de un buzón institucional corporativo, puedes remitir tu consulta a través de nuestro formulario de contacto cifrado.
+          </p>
+        </div>
+
+        <div class="pt-4 space-y-3">
+          <a 
+            href="/contact" 
+            class="w-full py-3.5 px-6 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-white font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2"
+          >
+            <span>Ir al Formulario de Contacto</span>
+            <span>&rarr;</span>
+          </a>
+          <p class="text-[11px] text-neutral-500 text-center">
+            Respuesta promedio: &lt; 24 horas laborables
+          </p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Technical Setup & Device Configuration Guide -->
+    <section class="space-y-6">
+      <div class="flex items-center justify-between border-b border-white/10 pb-4">
+        <div class="flex items-center gap-2.5">
+          <span class="text-xl">⚙️</span>
+          <h2 class="text-xl font-black text-white tracking-tight">Configuración en Dispositivos (Pilotos &amp; Staff)</h2>
+        </div>
+        <span class="text-xs font-mono text-neutral-500">Parámetros IMAP / SMTP</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Incoming Server -->
+        <div class="p-6 rounded-2xl bg-[#161c24] border border-white/10 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span>Servidor de Entrada (IMAP)</span>
+            </h3>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold">SSL / TLS</span>
           </div>
 
-          <div class="flex justify-end gap-3 pt-3 border-t border-white/10">
-            <button type="button" onclick="closeComposeModal()" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 font-bold">
-              Cancelar
-            </button>
-            <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold shadow-lg shadow-emerald-500/20">
-              Enviar Comunicado Oficial →
-            </button>
+          <div class="space-y-2 text-xs font-mono">
+            <div class="flex justify-between py-2 border-b border-white/5">
+              <span class="text-neutral-400">Servidor:</span>
+              <span class="text-white font-bold">imap.gmail.com</span>
+            </div>
+            <div class="flex justify-between py-2 border-b border-white/5">
+              <span class="text-neutral-400">Puerto:</span>
+              <span class="text-emerald-400 font-bold">993</span>
+            </div>
+            <div class="flex justify-between py-2 border-b border-white/5">
+              <span class="text-neutral-400">Seguridad:</span>
+              <span class="text-white">SSL / TLS obligatorio</span>
+            </div>
+            <div class="flex justify-between py-2">
+              <span class="text-neutral-400">Usuario:</span>
+              <span class="text-neutral-300">nombre@muntru.me</span>
+            </div>
           </div>
-        </form>
+        </div>
+
+        <!-- Outgoing Server -->
+        <div class="p-6 rounded-2xl bg-[#161c24] border border-white/10 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+              <span>Servidor de Salida (SMTP)</span>
+            </h3>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-bold">STARTTLS / SSL</span>
+          </div>
+
+          <div class="space-y-2 text-xs font-mono">
+            <div class="flex justify-between py-2 border-b border-white/5">
+              <span class="text-neutral-400">Servidor:</span>
+              <span class="text-white font-bold">smtp.gmail.com</span>
+            </div>
+            <div class="flex justify-between py-2 border-b border-white/5">
+              <span class="text-neutral-400">Puerto:</span>
+              <span class="text-cyan-400 font-bold">465 (SSL) ó 587 (TLS)</span>
+            </div>
+            <div class="flex justify-between py-2 border-b border-white/5">
+              <span class="text-neutral-400">Autenticación:</span>
+              <span class="text-white">Requerida (Mismas credenciales)</span>
+            </div>
+            <div class="flex justify-between py-2">
+              <span class="text-neutral-400">Usuario:</span>
+              <span class="text-neutral-300">nombre@muntru.me</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Verified Directory of Team Inboxes -->
+    <section class="space-y-6">
+      <div class="flex items-center justify-between border-b border-white/10 pb-4">
+        <div class="flex items-center gap-2.5">
+          <span class="text-xl">📇</span>
+          <h2 class="text-xl font-black text-white tracking-tight">Directorio Oficial de Buzones Verificados</h2>
+        </div>
+        <span class="text-xs font-mono text-emerald-400">@muntru.me</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        
+        <!-- Alberto Trujillo -->
+        <div class="p-5 rounded-2xl bg-[#161c24] border border-white/10 space-y-3 hover:border-emerald-500/40 transition">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold">FOUNDER</span>
+            <span class="text-xs text-neutral-500 font-mono">#1</span>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white">Alberto Trujillo</h3>
+            <p class="text-xs text-neutral-400">Team Principal &amp; Telemetría</p>
+          </div>
+          <a href="mailto:alberto@muntru.me" class="block w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-cyan-300 font-mono text-center transition">
+            alberto@muntru.me ✉️
+          </a>
+        </div>
+
+        <!-- Mateo Berbis -->
+        <div class="p-5 rounded-2xl bg-[#161c24] border border-white/10 space-y-3 hover:border-amber-500/40 transition">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 font-bold">DRIVER</span>
+            <span class="text-xs text-neutral-500 font-mono">#2</span>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white">Mateo Berbis</h3>
+            <p class="text-xs text-neutral-400">Piloto Oficial · Sprint &amp; Qualy</p>
+          </div>
+          <a href="mailto:mateo@muntru.me" class="block w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-cyan-300 font-mono text-center transition">
+            mateo@muntru.me ✉️
+          </a>
+        </div>
+
+        <!-- Eduardo Chongkan -->
+        <div class="p-5 rounded-2xl bg-[#161c24] border border-white/10 space-y-3 hover:border-slate-500/40 transition">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-slate-500/15 text-slate-300 font-bold">DRIVER</span>
+            <span class="text-xs text-neutral-500 font-mono">#3</span>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white">Eduardo Chongkan</h3>
+            <p class="text-xs text-neutral-400">Ingeniero de Carrera &amp; Prototipos</p>
+          </div>
+          <a href="mailto:eduardo@muntru.me" class="block w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-cyan-300 font-mono text-center transition">
+            eduardo@muntru.me ✉️
+          </a>
+        </div>
+
+        <!-- Juanlu Carrillo -->
+        <div class="p-5 rounded-2xl bg-[#161c24] border border-white/10 space-y-3 hover:border-orange-500/40 transition">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-orange-500/10 text-orange-400 font-bold">DRIVER</span>
+            <span class="text-xs text-neutral-500 font-mono">#4</span>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white">Juanlu Carrillo</h3>
+            <p class="text-xs text-neutral-400">Piloto Oficial · Monoplazas &amp; SFL</p>
+          </div>
+          <a href="mailto:juanlu@muntru.me" class="block w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-cyan-300 font-mono text-center transition">
+            juanlu@muntru.me ✉️
+          </a>
+        </div>
+
+        <!-- Race Control -->
+        <div class="p-5 rounded-2xl bg-[#161c24] border border-white/10 space-y-3 hover:border-purple-500/40 transition">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 font-bold">RACE CONTROL</span>
+            <span class="text-xs text-neutral-500 font-mono">STAFF</span>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white">Race Operations</h3>
+            <p class="text-xs text-neutral-400">Dirección de Carrera &amp; Gobernanza</p>
+          </div>
+          <a href="mailto:admin@muntru.me" class="block w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-cyan-300 font-mono text-center transition">
+            admin@muntru.me ✉️
+          </a>
+        </div>
+
+        <!-- General & Press -->
+        <div class="p-5 rounded-2xl bg-[#161c24] border border-white/10 space-y-3 hover:border-emerald-500/40 transition">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-white/5 text-neutral-300 font-bold">GENERAL</span>
+            <span class="text-xs text-neutral-500 font-mono">MEDIA</span>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white">Prensa &amp; Patrocinios</h3>
+            <p class="text-xs text-neutral-400">Atención a Medios &amp; Partners</p>
+          </div>
+          <a href="mailto:info@muntru.me" class="block w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-cyan-300 font-mono text-center transition">
+            info@muntru.me ✉️
+          </a>
+        </div>
 
       </div>
-    </div>
-  </div>
+    </section>
 
-  <script is:inline src="/assets/js/mail.js?v=26s4.7" defer></script>
+  </main>
 </Layout>
