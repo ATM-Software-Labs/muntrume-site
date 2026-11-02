@@ -2,34 +2,104 @@
 import Layout from '../layouts/Layout.astro';
 
 const pageTitle = "Preferencias de correo · Muntrume Motorsport";
-const pageDescription = "Muntrume Motorsport";
+const pageDescription = "Gestiona las notificaciones y suscripciones por correo de Muntrume Motorsport.";
 ---
 
 <Layout title={pageTitle} description={pageDescription}>
-<main>
-  <a class="brand" href="/"><img src="/assets/img/logo-64.webp" alt="" width="36" height="36">Muntrume Motorsport</a>
-  <div class="card" aria-live="polite">
-    <h1 id="title">Preferencias de correo</h1>
-    <p id="who">Cargando tus preferencias…</p>
-    <div id="msg" class="msg" role="status"></div>
-    <form id="form" hidden>
-      <div class="row">
-        <label for="new_setups"><strong>Novedades del Setup Vault</strong><span>Setups nuevos de los coches que usas y resumen de la temporada.</span></label>
-        <div class="sw"><input type="checkbox" id="new_setups" role="switch"><i aria-hidden="true"></i></div>
+  <main class="min-h-screen bg-[#0e1217] text-neutral-200 flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8 pt-24 pb-16">
+    <div class="max-w-xl w-full space-y-6">
+      
+      <!-- Brand Header -->
+      <div class="text-center">
+        <a href="/" class="inline-flex items-center gap-3 group focus:outline-none mb-2">
+          <img src="/assets/img/logo-sm.webp" alt="Muntrume Motorsport" class="h-10 w-auto object-contain transition-transform group-hover:scale-105" width="40" height="40" />
+          <div class="text-left">
+            <span class="font-extrabold tracking-tight text-white text-lg block leading-tight">MUNTRUME</span>
+            <span class="text-[10px] font-semibold tracking-wider text-emerald-400 uppercase">MOTORSPORT</span>
+          </div>
+        </a>
       </div>
-      <div class="row">
-        <label for="team_news"><strong>Noticias del equipo</strong><span>Resultados, eventos y anuncios de Muntrume Motorsport.</span></label>
-        <div class="sw"><input type="checkbox" id="team_news" role="switch"><i aria-hidden="true"></i></div>
+
+      <!-- Main Card -->
+      <div class="bg-[#161c24] border border-white/10 rounded-3xl p-6 sm:p-10 shadow-2xl space-y-6 relative overflow-hidden" aria-live="polite">
+        <div class="border-b border-white/10 pb-5">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-2">
+            <span>⚙️ Centro de Notificaciones</span>
+          </div>
+          <h1 id="title" class="text-2xl sm:text-3xl font-black text-white tracking-tight">Preferencias de correo</h1>
+          <p id="who" class="text-xs text-neutral-400 mt-1 leading-relaxed">Cargando tus preferencias…</p>
+        </div>
+
+        <!-- Dynamic Message Box -->
+        <div id="msg" class="msg hidden p-4 rounded-xl border text-xs leading-relaxed" role="status"></div>
+
+        <!-- Preferences Form -->
+        <form id="form" class="space-y-5" hidden>
+          <div class="space-y-4">
+            
+            <!-- Switch 1: Setups -->
+            <label class="flex items-start justify-between gap-4 p-4 rounded-2xl bg-[#0e1217] border border-white/5 hover:border-white/10 transition cursor-pointer group">
+              <div class="space-y-0.5">
+                <span class="text-sm font-bold text-white group-hover:text-emerald-400 transition block">Novedades del Setup Vault</span>
+                <span class="text-xs text-neutral-400 block leading-relaxed">Setups nuevos de los coches que usas y resumen de la temporada.</span>
+              </div>
+              <input type="checkbox" id="new_setups" role="switch" class="mt-1 w-5 h-5 accent-emerald-500 rounded cursor-pointer" />
+            </label>
+
+            <!-- Switch 2: Team News -->
+            <label class="flex items-start justify-between gap-4 p-4 rounded-2xl bg-[#0e1217] border border-white/5 hover:border-white/10 transition cursor-pointer group">
+              <div class="space-y-0.5">
+                <span class="text-sm font-bold text-white group-hover:text-emerald-400 transition block">Noticias del equipo</span>
+                <span class="text-xs text-neutral-400 block leading-relaxed">Resultados, eventos y anuncios oficiales de Muntrume Motorsport.</span>
+              </div>
+              <input type="checkbox" id="team_news" role="switch" class="mt-1 w-5 h-5 accent-emerald-500 rounded cursor-pointer" />
+            </label>
+
+            <!-- Timezone Select -->
+            <div class="p-4 rounded-2xl bg-[#0e1217] border border-white/5 space-y-2">
+              <label for="tz" class="block">
+                <span class="text-sm font-bold text-white block">Tu zona horaria</span>
+                <span class="text-xs text-neutral-400 block leading-relaxed">La usamos para saludarte a la hora correcta y mostrar fechas en tu hora local.</span>
+              </label>
+              <select id="tz" class="w-full bg-[#161c24] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 transition cursor-pointer"></select>
+            </div>
+
+          </div>
+
+          <!-- Buttons -->
+          <div class="space-y-2.5 pt-2">
+            <button class="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider transition shadow-lg shadow-emerald-500/20 cursor-pointer disabled:opacity-50" type="submit" id="save">
+              Guardar preferencias
+            </button>
+            <button class="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-400 hover:text-white font-medium text-xs transition cursor-pointer disabled:opacity-50" type="button" id="all">
+              Darme de baja de todo lo opcional
+            </button>
+          </div>
+
+          <p class="text-[11px] text-neutral-500 leading-relaxed text-center pt-2 border-t border-white/5">
+            🔒 Los correos de seguridad (códigos de acceso, enlaces para crear o cambiar tu contraseña) se envían siempre, porque protegen tu cuenta.
+          </p>
+        </form>
+
       </div>
-      <div class="row" style="display:block">
-        <label for="tz"><strong>Tu zona horaria</strong><span>La usamos para saludarte a la hora correcta y mostrar fechas en tu hora local.</span></label>
-        <select id="tz"></select>
-      </div>
-      <button class="btn" type="submit" id="save">Guardar preferencias</button>
-      <button class="btn ghost" type="button" id="all">Darme de baja de todo lo opcional</button>
-      <p class="note">Los correos de seguridad (códigos de acceso, enlaces para crear o cambiar tu contraseña) se envían siempre, porque protegen tu cuenta.</p>
-    </form>
-  </div>
-</main>
-<script is:inline src="/assets/js/email-preferences.js?v=26s4.7" defer></script>
+    </div>
+  </main>
+
+  <style>
+    /* Styling for dynamic JS msg box */
+    .msg.ok {
+      display: block !important;
+      background-color: rgba(16, 185, 129, 0.1) !important;
+      border-color: rgba(16, 185, 129, 0.3) !important;
+      color: #34d399 !important;
+    }
+    .msg.err {
+      display: block !important;
+      background-color: rgba(239, 68, 68, 0.1) !important;
+      border-color: rgba(239, 68, 68, 0.3) !important;
+      color: #f87171 !important;
+    }
+  </style>
+
+  <script is:inline src="/assets/js/email-preferences.js?v=26s4.7" defer></script>
 </Layout>

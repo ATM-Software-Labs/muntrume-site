@@ -6,21 +6,23 @@ const pageDescription = "This page does not exist. Head back to Muntrume Motorsp
 ---
 
 <Layout title={pageTitle} description={pageDescription}>
-<main class="bg-[#0e1217] flex items-center" style="padding-top:8rem;padding-bottom:6rem;min-height:70vh">
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#161c24] border border-white/10 text-xs text-neutral-300 font-semibold mb-6">
-        <span class="w-2 h-2 rounded-full" style="background:#f59e0b"></span> Error 404 · Off track
+  <main class="bg-[#0e1217] flex items-center pt-32 pb-24 min-h-[70vh]">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#161c24] border border-white/10 text-xs text-neutral-300 font-semibold mb-2">
+        <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+        <span>Error 404 · Fuera de Pista</span>
       </div>
-      <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white mb-4">Wrong turn at the chicane</h1>
-      <p class="text-base text-neutral-400 max-w-xl mx-auto leading-relaxed mb-10">The page you were looking for doesn&rsquo;t exist or has moved. Rejoin the racing line from one of these:</p>
-      <div class="flex flex-wrap items-center justify-center gap-3 text-sm font-semibold">
-        <a href="/" class="px-5 py-3 rounded-xl bg-emerald-500 text-neutral-950 hover:bg-emerald-400 transition">Back to Overview</a>
-        <a href="/news" class="px-5 py-3 rounded-xl bg-[#161c24] border border-white/10 text-white hover:border-emerald-500/40 transition">Press Room</a>
-        <a href="/team" class="px-5 py-3 rounded-xl bg-[#161c24] border border-white/10 text-white hover:border-emerald-500/40 transition">Roster</a>
-        <a href="/contact" class="px-5 py-3 rounded-xl bg-[#161c24] border border-white/10 text-white hover:border-emerald-500/40 transition">Contact</a>
+      <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white">Salida de pista en la chicane</h1>
+      <p class="text-base text-neutral-400 max-w-xl mx-auto leading-relaxed">
+        La página que buscas no existe o ha cambiado de trazada. Vuelve a incorporarte a la trazada oficial desde aquí:
+      </p>
+      <div class="flex flex-wrap items-center justify-center gap-3 text-sm font-semibold pt-4">
+        <a href="/" class="px-5 py-3 rounded-xl bg-emerald-500 text-neutral-950 font-bold hover:bg-emerald-400 transition shadow-lg shadow-emerald-500/20">Inicio</a>
+        <a href="/setups" class="px-5 py-3 rounded-xl bg-[#161c24] border border-emerald-500/30 text-emerald-400 hover:border-emerald-500 hover:bg-emerald-500/10 transition">Setup Vault</a>
+        <a href="/team" class="px-5 py-3 rounded-xl bg-[#161c24] border border-white/10 text-white hover:border-emerald-500/40 transition">Pilotos</a>
+        <a href="/news" class="px-5 py-3 rounded-xl bg-[#161c24] border border-white/10 text-white hover:border-emerald-500/40 transition">Noticias</a>
+        <a href="/contact" class="px-5 py-3 rounded-xl bg-[#161c24] border border-white/10 text-white hover:border-emerald-500/40 transition">Contacto</a>
       </div>
     </div>
   </main>
-
-
 </Layout>

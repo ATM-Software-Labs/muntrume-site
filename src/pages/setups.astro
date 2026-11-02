@@ -166,7 +166,7 @@ const pageDescription = "Portal privado y confidencial de ingeniería, telemetr�
                 required 
                 autocomplete="current-password"
                 placeholder="Tu contraseña personal"
-                style="padding-right:64px"
+                
                 class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500 transition"
               >
               <button 
@@ -174,7 +174,7 @@ const pageDescription = "Portal privado y confidencial de ingeniería, telemetr�
                 onclick="toggleKeyVisibility()" 
                 aria-label="Mostrar u ocultar contraseña"
                 class="absolute text-neutral-300 hover:text-white text-xs font-medium rounded-lg cursor-pointer"
-                style="position:absolute;right:6px;top:50%;transform:translateY(-50%);min-width:48px;min-height:44px"
+                class="absolute right-1.5 top-1/2 -translate-y-1/2 min-w-[48px] min-h-[44px] text-neutral-400 hover:text-white transition flex items-center justify-center rounded-lg"
               >
                 Ver
               </button>
@@ -711,7 +711,7 @@ const pageDescription = "Portal privado y confidencial de ingeniería, telemetr�
           </section>
 
           <!-- Alta directa -->
-          <section id="adminTabAdd" class="adm-section hidden" style="max-width:560px">
+          <section id="adminTabAdd" class="adm-section hidden max-w-xl">
             <p class="text-xs text-neutral-400 leading-relaxed mb-4">Da de alta a un piloto sin solicitud previa. Por defecto recibe un <strong class="text-neutral-200">enlace personal (72 h)</strong> para crear su contraseña; también podrá entrar con un código por email. Nadie más conoce su contraseña.</p>
             <form onsubmit="handleManualAdd(event)" class="space-y-3">
               <div>
@@ -748,8 +748,8 @@ const pageDescription = "Portal privado y confidencial de ingeniería, telemetr�
 
           <!-- Eventos del equipo (fechas reales; alimentan la portada, el .ics y los correos) -->
           <section id="adminTabEvents" class="adm-section hidden">
-            <p class="text-xs text-neutral-400 leading-relaxed mb-4" style="max-width:640px">Añade solo carreras o eventos con fecha <strong class="text-neutral-200">confirmada</strong>. Aparecen en la portada, en el calendario <code>.ics</code> y en los correos con el botón «Añadir a Google Calendar». Hora en tu zona horaria local.</p>
-            <form id="admEventForm" onsubmit="saveAdminEvent(event)" class="space-y-3" style="max-width:560px">
+            <p class="text-xs text-neutral-400 leading-relaxed mb-4 max-w-2xl">Añade solo carreras o eventos con fecha <strong class="text-neutral-200">confirmada</strong>. Aparecen en la portada, en el calendario <code>.ics</code> y en los correos con el botón «Añadir a Google Calendar». Hora en tu zona horaria local.</p>
+            <form id="admEventForm" onsubmit="saveAdminEvent(event)" class="space-y-3 max-w-xl">
               <input type="hidden" id="evtId">
               <div><label for="evtTitle" class="block text-[11px] font-semibold uppercase text-neutral-400 mb-1">Título</label>
                 <input id="evtTitle" required maxlength="120" class="w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500"></div>
@@ -775,7 +775,7 @@ const pageDescription = "Portal privado y confidencial de ingeniería, telemetr�
               </div>
               <p id="evtMsg" class="text-xs text-neutral-400" role="status"></p>
             </form>
-            <div id="adminEventsList" class="adm-table-wrap" style="margin-top:18px"></div>
+            <div id="adminEventsList" class="adm-table-wrap mt-4.5"></div>
           </section>
 
           <!-- Estadísticas -->
@@ -793,14 +793,14 @@ const pageDescription = "Portal privado y confidencial de ingeniería, telemetr�
     </div>
 
     <!-- VERIFICACIÓN POR CÓDIGO (re-autenticación para Race Control) -->
-    <div id="reauthModal" class="hidden fixed inset-0 overflow-y-auto" style="z-index:80" role="dialog" aria-modal="true" aria-labelledby="reauthTitle">
+    <div id="reauthModal" class="hidden fixed inset-0 overflow-y-auto z-[80]" role="dialog" aria-modal="true" aria-labelledby="reauthTitle">
       <div class="fixed inset-0 bg-black/80 backdrop-blur-sm" onclick="closeReauth()"></div>
       <div class="relative min-h-screen flex items-center justify-center p-4">
         <div class="relative w-full max-w-md bg-[#161c24] border border-amber-500/30 rounded-3xl p-6 shadow-2xl text-neutral-200">
           <h3 id="reauthTitle" class="text-base font-extrabold text-white">Confirma que eres tú</h3>
           <p class="text-xs text-neutral-400 mt-2 leading-relaxed">Race Control exige verificar tu identidad con un código enviado a <strong id="reauthEmail" class="text-neutral-200"></strong>. La verificación dura 1 hora.</p>
           <form onsubmit="handleReauthSubmit(event)" class="mt-4 space-y-3" novalidate>
-            <input type="text" id="reauthCode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="••••••" class="hidden w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-3 text-2xl text-center font-mono text-white focus:outline-none focus:border-amber-500" style="letter-spacing:.5em" aria-label="Código de 6 dígitos">
+            <input type="text" id="reauthCode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="••••••" class="hidden w-full bg-[#0e1217] border border-white/10 rounded-xl px-4 py-3 text-2xl text-center font-mono text-white focus:outline-none focus:border-amber-500 tracking-[0.5em]" aria-label="Código de 6 dígitos">
             <div id="reauthInfo" class="hidden p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs" role="status"></div>
             <div id="reauthError" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs" role="alert"></div>
             <div class="flex flex-col-reverse sm:flex-row gap-2">
