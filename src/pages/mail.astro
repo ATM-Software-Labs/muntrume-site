@@ -821,72 +821,123 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
   </div>
 
   <!-- ========================================================================= -->
-  <!-- MAIL AUTH LOGIN MODAL                                                     -->
+  <!-- STRICT ZERO-TRUST PILOT AUTHENTICATION MODAL                              -->
   <!-- ========================================================================= -->
-  <div id="mail-auth-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-[#161c24] border border-white/15 rounded-3xl max-w-md w-full p-6 sm:p-8 space-y-6 shadow-2xl relative">
+  <div id="mail-auth-modal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-[#141923] border border-white/15 rounded-3xl max-w-md w-full p-6 sm:p-8 space-y-5 shadow-2xl relative">
+      
+      <!-- Modal Header -->
       <div class="flex items-center justify-between border-b border-white/10 pb-4">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-xl">
-            🏎️
+          <div class="w-10 h-10 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-xl">
+            🔒
           </div>
           <div>
-            <h3 class="text-base font-bold text-white">Acceso a Buzón de Piloto</h3>
-            <p class="text-xs text-neutral-400">Identifícate con tu cuenta oficial de escudería.</p>
+            <h3 class="text-base font-bold text-white">Verificación de Identidad de Piloto</h3>
+            <p class="text-xs text-neutral-400">Acceso restringido para Alberto Trujillo y miembros autorizados.</p>
           </div>
         </div>
-        <button id="close-mail-auth-btn" class="p-1 rounded-lg text-neutral-400 hover:text-white transition cursor-pointer">
+        <button id="close-mail-auth-btn" class="p-1.5 rounded-lg text-neutral-400 hover:text-white transition cursor-pointer" aria-label="Cerrar modal">
           ✕
         </button>
       </div>
 
-      <form id="mail-auth-form" class="space-y-4">
+      <!-- Auth Method Selector Tabs -->
+      <div class="flex rounded-xl bg-[#0b0e14] p-1 border border-white/10 text-xs font-semibold">
+        <button type="button" id="tab-code-btn" class="flex-1 py-1.5 rounded-lg bg-emerald-500 text-neutral-950 font-bold transition">
+          Código 2FA por Email
+        </button>
+        <button type="button" id="tab-pass-btn" class="flex-1 py-1.5 rounded-lg text-neutral-400 hover:text-white transition">
+          Contraseña del Vault
+        </button>
+      </div>
+
+      <!-- METHOD 1: 2FA CODE FORM (Cryptographic One-Time Code via Resend & Cloudflare Worker) -->
+      <form id="auth-code-form" class="space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-neutral-300 mb-1 font-mono">Correo de Piloto o Socio</label>
+          <label class="block text-xs font-semibold text-neutral-300 mb-1 font-mono">Correo Oficial del Piloto</label>
           <input 
             type="email" 
-            id="mail-auth-email" 
+            id="code-auth-email" 
             required 
-            placeholder="alberto@muntru.me o tu email" 
-            class="w-full px-4 py-2.5 rounded-xl bg-[#0e1217] border border-white/10 text-white font-mono text-xs focus:outline-none focus:border-emerald-500"
+            placeholder="atrumin16@gmail.com o tu email registrado" 
+            class="w-full px-4 py-2.5 rounded-xl bg-[#0b0e14] border border-white/10 text-white font-mono text-xs focus:outline-none focus:border-emerald-500 transition"
           />
+          <p class="text-[10px] text-neutral-400 mt-1">
+            Se enviará un código de verificación criptográfico de 6 dígitos de un solo uso.
+          </p>
         </div>
 
-        <div>
-          <label class="block text-xs font-semibold text-neutral-300 mb-1 font-mono">Contraseña de Acceso</label>
+        <div id="code-step-2" class="hidden space-y-2">
+          <label class="block text-xs font-semibold text-emerald-400 mb-1 font-mono">Introduce el código de 6 dígitos</label>
           <input 
-            type="password" 
-            id="mail-auth-password" 
-            placeholder="Introduce tu contraseña del Vault" 
-            class="w-full px-4 py-2.5 rounded-xl bg-[#0e1217] border border-white/10 text-white font-mono text-xs focus:outline-none focus:border-emerald-500"
+            type="text" 
+            id="code-auth-input" 
+            maxlength="6" 
+            inputmode="numeric" 
+            pattern="[0-9]{6}" 
+            placeholder="123456" 
+            class="w-full px-4 py-3 rounded-xl bg-[#0b0e14] border border-emerald-500/50 text-white font-mono text-xl text-center tracking-[0.3em] focus:outline-none focus:border-emerald-400"
           />
+          <div class="flex items-center justify-between text-[11px] text-neutral-400">
+            <span>Válido durante 10 minutos</span>
+            <button type="button" id="resend-code-btn" class="text-emerald-400 hover:underline">Reenviar código</button>
+          </div>
         </div>
 
-        <div id="mail-auth-error" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs"></div>
+        <div id="code-auth-error" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/25 text-red-400 text-xs"></div>
+        <div id="code-auth-success" class="hidden p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs"></div>
 
         <button 
           type="submit" 
-          id="mail-auth-submit-btn" 
+          id="code-submit-btn" 
           class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider transition shadow-lg shadow-emerald-500/20 cursor-pointer"
         >
-          Entrar al Buzón
+          Solicitar Código 2FA &rarr;
         </button>
-
-        <!-- Quick Alberto Admin Bypass for local session -->
-        <div class="pt-2 border-t border-white/5 text-center">
-          <button 
-            type="button" 
-            id="quick-alberto-auth-btn" 
-            class="text-[11px] text-emerald-400 hover:underline font-mono cursor-pointer"
-          >
-            ⚡ Acceso Rápido Fundador (Alberto Trujillo)
-          </button>
-        </div>
       </form>
+
+      <!-- METHOD 2: PASSWORD FORM (PBKDF2-SHA256 Authenticated against D1) -->
+      <form id="auth-pass-form" class="hidden space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-neutral-300 mb-1 font-mono">Correo Registrado</label>
+          <input 
+            type="email" 
+            id="pass-auth-email" 
+            placeholder="atrumin16@gmail.com" 
+            class="w-full px-4 py-2.5 rounded-xl bg-[#0b0e14] border border-white/10 text-white font-mono text-xs focus:outline-none focus:border-emerald-500 transition"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-neutral-300 mb-1 font-mono">Contraseña de Piloto / Vault</label>
+          <input 
+            type="password" 
+            id="pass-auth-password" 
+            placeholder="Introduce tu contraseña" 
+            class="w-full px-4 py-2.5 rounded-xl bg-[#0b0e14] border border-white/10 text-white font-mono text-xs focus:outline-none focus:border-emerald-500 transition"
+          />
+        </div>
+
+        <div id="pass-auth-error" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/25 text-red-400 text-xs"></div>
+
+        <button 
+          type="submit" 
+          id="pass-submit-btn" 
+          class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider transition shadow-lg shadow-emerald-500/20 cursor-pointer"
+        >
+          Verificar Credenciales &rarr;
+        </button>
+      </form>
+
+      <div class="pt-2 text-center text-[10px] text-neutral-500 font-mono">
+        Autenticación segura con cifrado PBKDF2 y HMAC-SHA256 &middot; Muntrume Vault
+      </div>
+
     </div>
   </div>
 
-  <!-- Toast Notification Feedback -->
+  <!-- Toast Notification Feedback -->  <!-- Toast Notification Feedback -->
   <div id="mail-toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-3 rounded-2xl bg-[#161c24] border border-emerald-500/40 text-white text-xs font-bold shadow-2xl flex items-center gap-3 transition-all duration-300 pointer-events-none opacity-0 translate-y-4 z-50">
     <span id="toast-icon">✓</span>
     <span id="toast-message">Notificación</span>
@@ -1537,7 +1588,30 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
       if (inlineReplyBody) inlineReplyBody.value = "";
       if (detailRecipients) detailRecipients.textContent = msg.recipients;
       if (detailDate) detailDate.textContent = msg.date;
-      if (detailBody) detailBody.textContent = msg.body;
+      if (detailBody) {
+        const raw = String(msg.body || "");
+        const lines = raw.split("\n");
+        let htmlOut = "";
+        let inQuote = false;
+        lines.forEach(l => {
+          const trimmed = l.trim();
+          if (trimmed.startsWith(">") || /^(El|On|El mar|El lun|El mié|El jue|El vie|El sáb|El dom) .+ (escribió|wrote):/i.test(trimmed)) {
+            if (!inQuote) {
+              htmlOut += '<div class="pl-3.5 my-2.5 border-l-2 border-emerald-500/40 text-neutral-400 text-xs italic bg-white/[0.02] py-2 px-2 rounded-r-lg font-mono leading-relaxed">';
+              inQuote = true;
+            }
+            htmlOut += escMail(l) + "<br>";
+          } else {
+            if (inQuote) {
+              htmlOut += '</div>';
+              inQuote = false;
+            }
+            htmlOut += escMail(l) + "<br>";
+          }
+        });
+        if (inQuote) htmlOut += '</div>';
+        detailBody.innerHTML = htmlOut || "<span class='text-neutral-500'>(Mensaje vacío)</span>";
+      }
 
       if (detailStarBtn) {
         detailStarBtn.textContent = msg.starred ? "⭐ Destacado" : "☆ Destacar";
@@ -2158,7 +2232,7 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
 
     
     // =========================================================================
-    // AUTHENTICATION & ACCESS GATE CONTROLLER
+    // AUTHENTICATION & ACCESS GATE CONTROLLER (ZERO-TRUST SECURITY)
     // =========================================================================
     const mailLanding = document.getElementById("mailLanding");
     const mailAppContainer = document.getElementById("mailAppContainer");
@@ -2166,14 +2240,29 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
     const landingLoginBtn = document.getElementById("landing-login-btn");
     const heroLoginBtn = document.getElementById("hero-login-btn");
     const closeMailAuthBtn = document.getElementById("close-mail-auth-btn");
-    const mailAuthForm = document.getElementById("mail-auth-form");
-    const mailAuthEmail = document.getElementById("mail-auth-email");
-    const mailAuthPassword = document.getElementById("mail-auth-password");
-    const mailAuthError = document.getElementById("mail-auth-error");
-    const mailAuthSubmitBtn = document.getElementById("mail-auth-submit-btn");
-    const quickAlbertoAuthBtn = document.getElementById("quick-alberto-auth-btn");
     const logoutBtn = document.getElementById("logout-btn");
     const sessionPilotName = document.getElementById("session-pilot-name");
+
+    // Modal Tabs
+    const tabCodeBtn = document.getElementById("tab-code-btn");
+    const tabPassBtn = document.getElementById("tab-pass-btn");
+    const authCodeForm = document.getElementById("auth-code-form");
+    const authPassForm = document.getElementById("auth-pass-form");
+
+    // 2FA Code Elements
+    const codeAuthEmail = document.getElementById("code-auth-email");
+    const codeStep2 = document.getElementById("code-step-2");
+    const codeAuthInput = document.getElementById("code-auth-input");
+    const codeSubmitBtn = document.getElementById("code-submit-btn");
+    const codeAuthError = document.getElementById("code-auth-error");
+    const codeAuthSuccess = document.getElementById("code-auth-success");
+    const resendCodeBtn = document.getElementById("resend-code-btn");
+
+    // Password Elements
+    const passAuthEmail = document.getElementById("pass-auth-email");
+    const passAuthPassword = document.getElementById("pass-auth-password");
+    const passSubmitBtn = document.getElementById("pass-submit-btn");
+    const passAuthError = document.getElementById("pass-auth-error");
 
     function getLoggedInUser() {
       try {
@@ -2185,7 +2274,8 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
 
     function checkAuth() {
       const user = getLoggedInUser();
-      if (user && (user.email || user.role)) {
+      const token = localStorage.getItem("mrt_vault_token") || sessionStorage.getItem("mrt_vault_token");
+      if (user && token && (user.email || user.role)) {
         if (mailLanding) mailLanding.classList.add("hidden");
         if (mailAppContainer) {
           mailAppContainer.classList.remove("hidden");
@@ -2207,63 +2297,174 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
 
     function openMailAuthModal() {
       if (mailAuthModal) mailAuthModal.classList.remove("hidden");
-      if (mailAuthEmail) mailAuthEmail.focus();
+      if (codeAuthEmail) codeAuthEmail.focus();
     }
 
     function closeMailAuthModal() {
       if (mailAuthModal) mailAuthModal.classList.add("hidden");
-      if (mailAuthError) mailAuthError.classList.add("hidden");
-      if (mailAuthForm) mailAuthForm.reset();
+      if (codeAuthError) codeAuthError.classList.add("hidden");
+      if (codeAuthSuccess) codeAuthSuccess.classList.add("hidden");
+      if (passAuthError) passAuthError.classList.add("hidden");
+      if (codeStep2) codeStep2.classList.add("hidden");
+      if (authCodeForm) authCodeForm.reset();
+      if (authPassForm) authPassForm.reset();
+      if (codeSubmitBtn) codeSubmitBtn.textContent = "Solicitar Código 2FA →";
     }
 
     if (landingLoginBtn) landingLoginBtn.addEventListener("click", openMailAuthModal);
     if (heroLoginBtn) heroLoginBtn.addEventListener("click", openMailAuthModal);
     if (closeMailAuthBtn) closeMailAuthBtn.addEventListener("click", closeMailAuthModal);
 
-    if (quickAlbertoAuthBtn) {
-      quickAlbertoAuthBtn.addEventListener("click", () => {
-        const albertoUser = {
-          email: "alberto@muntru.me",
-          name: "Alberto Trujillo",
-          role: "admin",
-          verified: true
-        };
-        localStorage.setItem("mrt_vault_user", JSON.stringify(albertoUser));
-        localStorage.setItem("mrt_vault_token", "session_founder_alberto");
-        closeMailAuthModal();
-        checkAuth();
-        showToast("✓ Sesión iniciada como Alberto Trujillo (Admin)");
-        renderMailList();
-        fetchRemoteInbox();
+    // Tab Switching
+    if (tabCodeBtn && tabPassBtn) {
+      tabCodeBtn.addEventListener("click", () => {
+        tabCodeBtn.classList.add("bg-emerald-500", "text-neutral-950", "font-bold");
+        tabCodeBtn.classList.remove("text-neutral-400");
+        tabPassBtn.classList.remove("bg-emerald-500", "text-neutral-950", "font-bold");
+        tabPassBtn.classList.add("text-neutral-400");
+        authCodeForm.classList.remove("hidden");
+        authPassForm.classList.add("hidden");
+      });
+
+      tabPassBtn.addEventListener("click", () => {
+        tabPassBtn.classList.add("bg-emerald-500", "text-neutral-950", "font-bold");
+        tabPassBtn.classList.remove("text-neutral-400");
+        tabCodeBtn.classList.remove("bg-emerald-500", "text-neutral-950", "font-bold");
+        tabCodeBtn.classList.add("text-neutral-400");
+        authPassForm.classList.remove("hidden");
+        authCodeForm.classList.add("hidden");
       });
     }
 
-    if (logoutBtn) {
-      logoutBtn.addEventListener("click", () => {
-        localStorage.removeItem("mrt_vault_user");
-        localStorage.removeItem("mrt_vault_token");
-        sessionStorage.removeItem("mrt_vault_user");
-        sessionStorage.removeItem("mrt_vault_token");
-        checkAuth();
-        showToast("Sesión cerrada");
-      });
-    }
-
-    if (mailAuthForm) {
-      mailAuthForm.addEventListener("submit", async (e) => {
+    // 1. 2FA Code Form Submission
+    if (authCodeForm) {
+      authCodeForm.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const email = mailAuthEmail ? mailAuthEmail.value.trim() : "";
-        const password = mailAuthPassword ? mailAuthPassword.value : "";
+        const email = codeAuthEmail ? codeAuthEmail.value.trim() : "";
         if (!email) return;
 
-        if (mailAuthSubmitBtn) {
-          mailAuthSubmitBtn.disabled = true;
-          mailAuthSubmitBtn.textContent = "Verificando...";
+        if (codeAuthError) codeAuthError.classList.add("hidden");
+        if (codeAuthSuccess) codeAuthSuccess.classList.add("hidden");
+
+        // STEP 1: Request code
+        if (codeStep2 && codeStep2.classList.contains("hidden")) {
+          if (codeSubmitBtn) {
+            codeSubmitBtn.disabled = true;
+            codeSubmitBtn.textContent = "Enviando código...";
+          }
+
+          try {
+            const res = await fetch("https://muntrume.atrumin16.workers.dev/api/setups/code/request", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email })
+            });
+            const data = await res.json().catch(() => ({}));
+
+            if (res.ok && data.success) {
+              codeStep2.classList.remove("hidden");
+              if (codeAuthSuccess) {
+                codeAuthSuccess.textContent = data.message || "✓ Código de 6 dígitos enviado a tu correo.";
+                codeAuthSuccess.classList.remove("hidden");
+              }
+              if (codeSubmitBtn) codeSubmitBtn.textContent = "Verificar y Entrar al Buzón →";
+              if (codeAuthInput) {
+                codeAuthInput.focus();
+              }
+            } else {
+              if (codeAuthError) {
+                codeAuthError.textContent = data.error || "No se pudo enviar el código. Verifica que el correo esté autorizado.";
+                codeAuthError.classList.remove("hidden");
+              }
+            }
+          } catch (err) {
+            if (codeAuthError) {
+              codeAuthError.textContent = "Error de conexión con el servidor de autenticación.";
+              codeAuthError.classList.remove("hidden");
+            }
+          } finally {
+            if (codeSubmitBtn) codeSubmitBtn.disabled = false;
+          }
+          return;
         }
-        if (mailAuthError) mailAuthError.classList.add("hidden");
+
+        // STEP 2: Verify code
+        const code = codeAuthInput ? codeAuthInput.value.replace(/\D/g, "") : "";
+        if (code.length !== 6) {
+          if (codeAuthError) {
+            codeAuthError.textContent = "El código debe tener exactamente 6 dígitos numéricos.";
+            codeAuthError.classList.remove("hidden");
+          }
+          return;
+        }
+
+        if (codeSubmitBtn) {
+          codeSubmitBtn.disabled = true;
+          codeSubmitBtn.textContent = "Verificando...";
+        }
 
         try {
-          // Check credentials with Cloudflare Worker Vault Auth
+          const res = await fetch("https://muntrume.atrumin16.workers.dev/api/setups/code/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, code })
+          });
+          const data = await res.json().catch(() => ({}));
+
+          if (res.ok && data.success) {
+            localStorage.setItem("mrt_vault_user", JSON.stringify(data.user || { email, role: "admin", name: "Alberto Trujillo" }));
+            localStorage.setItem("mrt_vault_token", data.token || "session_verified");
+            closeMailAuthModal();
+            checkAuth();
+            showToast(`✓ Identidad 100% verificada. Bienvenido Alberto`);
+            renderMailList();
+            fetchRemoteInbox();
+          } else {
+            if (codeAuthError) {
+              codeAuthError.textContent = data.error || "Código incorrecto o caducado. Solicita uno nuevo.";
+              codeAuthError.classList.remove("hidden");
+            }
+          }
+        } catch (err) {
+          if (codeAuthError) {
+            codeAuthError.textContent = "Error al verificar el código con el servidor.";
+            codeAuthError.classList.remove("hidden");
+          }
+        } finally {
+          if (codeSubmitBtn) codeSubmitBtn.disabled = false;
+        }
+      });
+    }
+
+    if (resendCodeBtn) {
+      resendCodeBtn.addEventListener("click", () => {
+        if (codeStep2) codeStep2.classList.add("hidden");
+        if (codeSubmitBtn) codeSubmitBtn.textContent = "Solicitar Código 2FA →";
+        if (authCodeForm) authCodeForm.requestSubmit();
+      });
+    }
+
+    // 2. Password Form Submission
+    if (authPassForm) {
+      authPassForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = passAuthEmail ? passAuthEmail.value.trim() : "";
+        const password = passAuthPassword ? passAuthPassword.value : "";
+        if (!email || !password) {
+          if (passAuthError) {
+            passAuthError.textContent = "Introduce correo y contraseña.";
+            passAuthError.classList.remove("hidden");
+          }
+          return;
+        }
+
+        if (passSubmitBtn) {
+          passSubmitBtn.disabled = true;
+          passSubmitBtn.textContent = "Autenticando...";
+        }
+        if (passAuthError) passAuthError.classList.add("hidden");
+
+        try {
           const res = await fetch("https://muntrume.atrumin16.workers.dev/api/setups/auth", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -2276,44 +2477,43 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
             if (data.token) localStorage.setItem("mrt_vault_token", data.token);
             closeMailAuthModal();
             checkAuth();
-            showToast(`✓ Bienvenido ${data.user?.name || email}`);
+            showToast(`✓ Acceso concedido: ${data.user?.name || email}`);
             renderMailList();
             fetchRemoteInbox();
           } else {
-            // Check if Alberto founder login shortcut
-            if (email.toLowerCase().includes("alberto") || email.toLowerCase().includes("atrumin16")) {
-              const albertoUser = { email: "alberto@muntru.me", name: "Alberto Trujillo", role: "admin" };
-              localStorage.setItem("mrt_vault_user", JSON.stringify(albertoUser));
-              closeMailAuthModal();
-              checkAuth();
-              showToast("✓ Sesión iniciada como Alberto Trujillo");
-              renderMailList();
-              fetchRemoteInbox();
-            } else {
-              if (mailAuthError) {
-                mailAuthError.textContent = data.error || "Credenciales no válidas. Revisa correo y contraseña.";
-                mailAuthError.classList.remove("hidden");
-              }
+            if (passAuthError) {
+              passAuthError.textContent = data.error || "Credenciales no válidas. Comprueba correo y contraseña.";
+              passAuthError.classList.remove("hidden");
             }
           }
         } catch (err) {
-          // Network fallback for team testing
-          const albertoUser = { email: email, name: email.split("@")[0].toUpperCase(), role: "member" };
-          localStorage.setItem("mrt_vault_user", JSON.stringify(albertoUser));
-          closeMailAuthModal();
-          checkAuth();
-          showToast(`✓ Acceso concedido (${email})`);
-          renderMailList();
+          if (passAuthError) {
+            passAuthError.textContent = "Error conectando con el servidor de autenticación.";
+            passAuthError.classList.remove("hidden");
+          }
         } finally {
-          if (mailAuthSubmitBtn) {
-            mailAuthSubmitBtn.disabled = false;
-            mailAuthSubmitBtn.textContent = "Entrar al Buzón";
+          if (passSubmitBtn) {
+            passSubmitBtn.disabled = false;
+            passSubmitBtn.textContent = "Verificar Credenciales →";
           }
         }
       });
     }
 
+    // Logout
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", () => {
+        localStorage.removeItem("mrt_vault_user");
+        localStorage.removeItem("mrt_vault_token");
+        sessionStorage.removeItem("mrt_vault_user");
+        sessionStorage.removeItem("mrt_vault_token");
+        checkAuth();
+        showToast("Sesión cerrada");
+      });
+    }
+
     // =========================================================================
+    // INBOUND REAL EMAILS REMOTE SYNC// =========================================================================
     // INBOUND REAL EMAILS REMOTE SYNC (Cloudflare Worker -> D1)
     // =========================================================================
     async function fetchRemoteInbox() {

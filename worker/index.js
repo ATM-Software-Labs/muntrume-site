@@ -1,3 +1,4 @@
+import PostalMime from "postal-mime";
 /**
  * 🏁 Muntrume Motorsport · Cloudflare Worker (API de muntru.me)
  *
@@ -1850,52 +1851,61 @@ export default {
     try {
       const from = message.from;
       const to = message.to;
-      const subject = message.headers.get("subject") || "(Sin asunto)";
+      const rawBuffer = await new Response(message.raw).arrayBuffer();
+      
+      const parser = new PostalMime();
+      const parsed = await parser.parse(rawBuffer);
+
+      const subject = parsed.subject || message.headers.get("subject") || "(Sin asunto)";
       const messageId = message.headers.get("message-id") || `msg-${Date.now()}`;
-
-      let bodyText = "";
-      try {
-        const rawBuf = await new Response(message.raw).text();
-        const match = rawBuf.match(/Content-Type:\s*text\/plain[^\r\n]*\r?\n(?:\r?\n|[\s\S]*?\r?\n\r?\n)([\s\S]*?)(?=\r?\n--|$)/i);
-        if (match && match[1]) {
-          bodyText = match[1].trim();
-        } else {
-          const splitPos = rawBuf.indexOf("\r\n\r\n");
-          if (splitPos !== -1) {
-            bodyText = rawBuf.slice(splitPos + 4).trim();
-          } else {
-            bodyText = rawBuf.slice(0, 5000);
-          }
-        }
-      } catch (e) {
-        bodyText = `Mensaje recibido de ${from}`;
+      const senderName = parsed.from?.name || from.split("@")[0];
+      
+      let cleanBody = (parsed.text || "").trim();
+      if (!cleanBody && parsed.html) {
+        cleanBody = parsed.html.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+                               .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+                               .replace(/<[^>]+>/g, ' ')
+                               .replace(/\s+/g, ' ')
+                               .trim();
       }
+      if (!cleanBody) cleanBody = "Mensaje recibido sin contenido de texto.";
 
-      bodyText = bodyText.slice(0, 10000);
-      const snippet = bodyText.replace(/\s+/g, ' ').slice(0, 100);
+      const snippet = cleanBody.replace(/\s+/g, " ").slice(0, 100);
       const now = Date.now();
       const dateStr = new Date(now).toLocaleString("es-ES", { timeZone: "Europe/Madrid", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+
+      let attachName = null;
+      let attachSize = null;
+      if (Array.isArray(parsed.attachments) && parsed.attachments.length > 0) {
+        attachName = parsed.attachments[0].filename || "adjunto.sto";
+        const bytes = parsed.attachments[0].content?.byteLength || 1024;
+        attachSize = `${(bytes / 1024).toFixed(1)} KB`;
+      }
 
       if (env.muntrume_vault) {
         await env.muntrume_vault.prepare(`
           INSERT OR REPLACE INTO webmail_messages
-          (id, folder, sender_email, sender_name, recipient_email, subject, snippet, body, date_str, timestamp, starred, unread)
-          VALUES (?, 'inbox', ?, ?, ?, ?, ?, ?, ?, ?, 0, 1)
+          (id, folder, sender_email, sender_name, recipient_email, subject, snippet, body, date_str, timestamp, starred, unread, attachment_name, attachment_size)
+          VALUES (?, 'inbox', ?, ?, ?, ?, ?, ?, ?, ?, 0, 1, ?, ?)
         `).bind(
           messageId,
           from,
-          from.split('@')[0],
+          senderName,
           to,
           subject,
           snippet,
-          bodyText,
+          cleanBody,
           dateStr,
-          now
+          now,
+          attachName,
+          attachSize
         ).run();
       }
 
-      // Reenvío al buzón personal de Alberto (atrumin16@gmail.com) para que lo reciba también en Gmail
-      await message.forward("atrumin16@gmail.com");
+      // Reenvío al buzón personal de Alberto (si el remitente no es su propio Gmail)
+      if (from.toLowerCase() !== "atrumin16@gmail.com") {
+        await message.forward("atrumin16@gmail.com");
+      }
     } catch (err) {
       console.error("[email-worker-error]", err);
     }

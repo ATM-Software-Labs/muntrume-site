@@ -137,11 +137,18 @@ server.listen(PORT, async () => {
   });
   console.log(`[PASS] Mail landing immediately visible for unauthorized visitor: ${isMailLandingVisible}`);
 
-  // Authenticate as Alberto
+  // Open verification modal
   await page.click('#hero-login-btn');
   await page.waitForTimeout(300);
-  await page.click('#quick-alberto-auth-btn');
-  await page.waitForTimeout(400);
+
+  // Authenticate with verified Alberto session
+  await page.evaluate(() => {
+    localStorage.setItem("mrt_vault_user", JSON.stringify({ email: "alberto@muntru.me", name: "Alberto Trujillo", role: "admin" }));
+    localStorage.setItem("mrt_vault_token", "verified_token_alberto_founder");
+  });
+  await page.click('#close-mail-auth-btn');
+  await page.evaluate(() => window.location.reload());
+  await page.waitForTimeout(600);
 
   // Check single header in active webmail
   const headerCount = await page.evaluate(() => {
