@@ -67,12 +67,39 @@ server.listen(PORT, async () => {
   await page.goto(`http://localhost:${PORT}/setups/`, { waitUntil: 'networkidle' });
   await page.waitForTimeout(1000);
 
-  // Check if vaultDashboard is visible
+  // 1. Verify vaultLanding is visible on initial load for unauthorized visitor
+  const isLandingVisible = await page.evaluate(() => {
+    const el = document.getElementById('vaultLanding');
+    return el && !el.classList.contains('hidden') && el.offsetParent !== null;
+  });
+  console.log(`[PASS] Vault landing immediately visible for unauthorized visitor: ${isLandingVisible}`);
+
+  // 2. Verify vaultDashboard is hidden until authorized
+  const isVaultHidden = await page.evaluate(() => {
+    const el = document.getElementById('vaultDashboard');
+    return el && el.classList.contains('hidden');
+  });
+  console.log(`[PASS] Vault dashboard hidden by default: ${isVaultHidden}`);
+
+  // 3. Test opening Auth Modal from landing
+  await page.click('button:has-text("Acceso Piloto Oficial")');
+  await page.waitForTimeout(300);
+  const isAuthModalOpen = await page.evaluate(() => {
+    const el = document.getElementById('authModal');
+    return el && !el.classList.contains('hidden');
+  });
+  console.log(`[PASS] Auth Modal opened on click: ${isAuthModalOpen}`);
+
+  // 4. Enter guest preview mode from modal
+  await page.locator('#authModal button[onclick*="enterGuestPreview"]').click();
+  await page.waitForTimeout(600);
+
+  // 5. Verify vaultDashboard is now visible in guest preview
   const isVaultVisible = await page.evaluate(() => {
     const el = document.getElementById('vaultDashboard');
     return el && !el.classList.contains('hidden') && el.offsetParent !== null;
   });
-  console.log(`[PASS] Vault dashboard immediately visible: ${isVaultVisible}`);
+  console.log(`[PASS] Vault dashboard visible in preview mode: ${isVaultVisible}`);
 
   // Check car options count
   const carCount = await page.evaluate(() => {
@@ -96,24 +123,6 @@ server.listen(PORT, async () => {
     };
   });
   console.log(`[PASS] Metric stats:`, metrics);
-
-  // Test opening Auth Modal
-  await page.click('button:has-text("Acceso Piloto")');
-  await page.waitForTimeout(300);
-  const isAuthModalOpen = await page.evaluate(() => {
-    const el = document.getElementById('authModal');
-    return el && !el.classList.contains('hidden');
-  });
-  console.log(`[PASS] Auth Modal opened on click: ${isAuthModalOpen}`);
-
-  // Close modal
-  await page.click('button:has-text("Continuar Explorando Catálogo")');
-  await page.waitForTimeout(300);
-  const isAuthModalClosed = await page.evaluate(() => {
-    const el = document.getElementById('authModal');
-    return el && el.classList.contains('hidden');
-  });
-  console.log(`[PASS] Auth Modal closed cleanly: ${isAuthModalClosed}`);
 
   await page.screenshot({ path: 'scripts/screenshot_setups_verified.png' });
 

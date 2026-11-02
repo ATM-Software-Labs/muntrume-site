@@ -130,10 +130,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // DEFAULT GUEST EXPLORER: Always show full catalog immediately!
-  currentUser = { email: "105 Coches · 41.016 setups", role: "guest" };
-  showVaultView();
-  loadCatalog();
+  // DEFAULT: Display landing page until user enters authorized!
+  showLandingView();
 
   if (window.location.hash === "#join" || urlParams.get("mode") === "join") {
     openAuthModal("join");
@@ -535,7 +533,7 @@ function handleLogout() {
   localStorage.removeItem("mrt_vault_user");
   sessionStorage.removeItem("mrt_vault_token");
   sessionStorage.removeItem("mrt_vault_user");
-  showAuthGate();
+  showLandingView();
 }
 
 function openAuthModal(tab = "login") {
@@ -553,13 +551,36 @@ function closeAuthModal() {
 }
 window.closeAuthModal = closeAuthModal;
 
+function showLandingView() {
+  const landing = document.getElementById("vaultLanding");
+  const dashboard = document.getElementById("vaultDashboard");
+  const authModal = document.getElementById("authModal");
+  const compatBanner = document.getElementById("browserCompatBanner");
+  const reconnectBanner = document.getElementById("savedFolderReconnectBanner");
+
+  if (authModal) authModal.classList.add("hidden");
+  if (landing) landing.classList.remove("hidden");
+  if (dashboard) dashboard.classList.add("hidden");
+  if (compatBanner) compatBanner.classList.add("hidden");
+  if (reconnectBanner) reconnectBanner.classList.add("hidden");
+}
+window.showLandingView = showLandingView;
+
+function openCodeLoginFromLanding() {
+  openAuthModal("login");
+  if (typeof window.showCodeLogin === "function") {
+    window.showCodeLogin();
+  }
+}
+window.openCodeLoginFromLanding = openCodeLoginFromLanding;
+
 function showAuthGate() {
   openAuthModal("login");
 }
 
 function enterGuestPreview() {
   closeAuthModal();
-  currentUser = { email: "105 Coches · 41.016 setups", role: "guest" };
+  currentUser = { email: "105 Coches · 41.509 setups", role: "guest" };
   showVaultView();
   loadCatalog();
 }
@@ -568,7 +589,15 @@ window.enterGuestPreview = enterGuestPreview;
 function showVaultView() {
   const authModal = document.getElementById("authModal");
   if (authModal) authModal.classList.add("hidden");
-  document.getElementById("vaultDashboard")?.classList.remove("hidden");
+
+  const landing = document.getElementById("vaultLanding");
+  const dashboard = document.getElementById("vaultDashboard");
+  if (landing) landing.classList.add("hidden");
+  if (dashboard) dashboard.classList.remove("hidden");
+
+  // Re-evaluar navegadores compatibles solo cuando el vaultDashboard está activo
+  detectBrowserAndRestoreHandle();
+
   if (currentUser) {
     const emailDisp = document.getElementById("userEmailDisplay");
     const roleBadge = document.getElementById("userRoleBadge");
@@ -586,18 +615,18 @@ function showVaultView() {
       if (authBtn) authBtn.classList.add("hidden");
       if (logoutBtn) logoutBtn.classList.remove("hidden");
     } else if (currentUser.role === 'guest') {
-      if (emailDisp) emailDisp.textContent = "105 Coches · 41.016 Setups";
+      if (emailDisp) emailDisp.textContent = "105 Coches · 41.509 Setups";
       if (roleBadge) {
-        roleBadge.textContent = "Catálogo Abierto";
+        roleBadge.textContent = "Vista Previa Catálogo";
         roleBadge.className = "text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
       }
       if (adminBtn) adminBtn.classList.add("hidden");
       if (authBtn) authBtn.classList.remove("hidden");
-      if (logoutBtn) logoutBtn.classList.add("hidden");
+      if (logoutBtn) logoutBtn.classList.remove("hidden");
     } else {
       if (emailDisp) emailDisp.textContent = currentUser.email;
       if (roleBadge) {
-        roleBadge.textContent = "Official Driver";
+        roleBadge.textContent = "Piloto Oficial";
         roleBadge.className = "text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
       }
       if (adminBtn) adminBtn.classList.add("hidden");
