@@ -537,6 +537,13 @@ function showAuthGate() {
   document.getElementById("vaultDashboard")?.classList.add("hidden");
 }
 
+function enterGuestPreview() {
+  currentUser = { email: "invitado@muntru.me", role: "guest" };
+  showVaultView();
+  loadCatalog();
+}
+window.enterGuestPreview = enterGuestPreview;
+
 function showVaultView() {
   document.getElementById("authGate")?.classList.add("hidden");
   document.getElementById("vaultDashboard")?.classList.remove("hidden");
@@ -553,6 +560,12 @@ function showVaultView() {
         roleBadge.className = "text-[10px] uppercase font-black px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm";
       }
       if (adminBtn) adminBtn.classList.remove("hidden");
+    } else if (currentUser.role === 'guest') {
+      if (roleBadge) {
+        roleBadge.textContent = "Modo Vista Previa";
+        roleBadge.className = "text-[10px] uppercase font-bold px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 shadow-sm";
+      }
+      if (adminBtn) adminBtn.classList.add("hidden");
     } else {
       if (roleBadge) {
         roleBadge.textContent = "Official Driver";
@@ -729,6 +742,12 @@ function copyVaultUrlForChrome() {
 }
 
 async function toggleLinkDirectory() {
+  if (currentUser && currentUser.role === 'guest') {
+    alert("Estás en modo Vista Previa. Para vincular tu carpeta local de iRacing y sincronizar setups, inicia sesión con tu cuenta de piloto.");
+    showAuthGate();
+    return;
+  }
+
   if (!('showDirectoryPicker' in window)) {
     openBrowserCompatModal();
     return;
@@ -962,7 +981,7 @@ async function loadCatalog() {
 
   // Cargar SOLO el índice ligero de 24 KB (en vez de 41.530 objetos en RAM)
   try {
-    const idxRes = await fetch("assets/data/catalog_index.json?v=26s4.7");
+    const idxRes = await fetch("/assets/data/catalog_index.json?v=26s4.8");
     if (idxRes.ok) {
       const idxData = await idxRes.json();
       totalVaultSetupsCount = idxData.total_setups || 0;
@@ -1002,12 +1021,12 @@ async function ensureScopeLoadedAndApplyFilters() {
   if (selectedCar) {
     const carSlug = safeCarChunkSlug(selectedCar);
     targetScope = `car:${carSlug}`;
-    fetchUrl = `assets/data/catalog_by_car/${carSlug}.json?v=26s4.7`;
+    fetchUrl = `/assets/data/catalog_by_car/${carSlug}.json?v=26s4.8`;
   } else if (selectedSeason || selectedWeek || selectedCircuit || query) {
     const sn = selectedSeason || "26S4";
     const snSlug = safeCarChunkSlug(sn);
     targetScope = `season:${snSlug}`;
-    fetchUrl = `assets/data/catalog_by_season/${snSlug}.json?v=26s4.7`;
+    fetchUrl = `/assets/data/catalog_by_season/${snSlug}.json?v=26s4.8`;
   }
 
   if (targetScope !== activeLoadedScopeKey) {
@@ -1799,6 +1818,12 @@ function decodeAndSanitizeSto(b64, carSlug = "") {
 // 1-CLICK COMPLETE FOLDER DOWNLOAD (EXACT IRACING PATH)
 // ==========================================
 async function downloadFolder(folderKey) {
+  if (currentUser && currentUser.role === 'guest') {
+    alert("Estás en modo Vista Previa. Para descargar y sincronizar setups en tu iRacing, inicia sesión con tu cuenta oficial de piloto.");
+    showAuthGate();
+    return;
+  }
+
   const folder = currentFoldersMap[folderKey];
   if (!folder || !folder.setups || folder.setups.length === 0) {
     alert("No hay setups en esta carpeta.");
@@ -1857,8 +1882,6 @@ async function downloadFolder(folderKey) {
         const { yr, seasonFolder, weekFolder, circFolder } = getMtSetupsHierarchyParts(s.season, s.week, s.circuit);
         zip.file(`${s.car}/Garage 61 - Muntrume Motorsport/${yr}/${seasonFolder}/${weekFolder}/${circFolder}/${s.filename}`, byteArray);
         zip.file(`${s.car}/Garage 61/${yr}/${seasonFolder}/${weekFolder}/${circFolder}/${s.filename}`, byteArray);
-        zip.file(`${s.car}/Garage 61 - Muntrume Motorsport/MT SETUPS/${yr}/${seasonFolder}/${weekFolder}/${circFolder}/${s.filename}`, byteArray);
-        zip.file(`${s.car}/Garage 61/MT SETUPS/${yr}/${seasonFolder}/${weekFolder}/${circFolder}/${s.filename}`, byteArray);
       }
       zip.file("Instalar_en_Ruta_iRacing.bat", buildExactPathInstallerBat());
 
@@ -1893,6 +1916,12 @@ async function downloadFolder(folderKey) {
 
 // Download single setup (Direct to exact iRacing folder path, or exact-path package)
 async function downloadSetup(setupId, fallbackFilename) {
+  if (currentUser && currentUser.role === 'guest') {
+    alert("Estás en modo Vista Previa. Para descargar setups en tu iRacing, inicia sesión con tu cuenta oficial de piloto.");
+    showAuthGate();
+    return;
+  }
+
   try {
     // Request / restore directory handle immediately on user click so it saves in exact path
     const activeHandle = await ensureDirectoryHandleForDownload();
@@ -1983,6 +2012,12 @@ async function downloadSetup(setupId, fallbackFilename) {
 
 // Descargar todos los setups del circuito o vista actual (de una sola vez en su ruta exacta)
 async function downloadAllVisibleSetups() {
+  if (currentUser && currentUser.role === 'guest') {
+    alert("Estás en modo Vista Previa. Para descargar y sincronizar setups en tu iRacing, inicia sesión con tu cuenta oficial de piloto.");
+    showAuthGate();
+    return;
+  }
+
   if (!currentlyFilteredSetups || currentlyFilteredSetups.length === 0) {
     alert("No hay setups visibles para descargar con los filtros actuales.");
     return;
@@ -2043,8 +2078,6 @@ async function downloadAllVisibleSetups() {
         const { yr, seasonFolder, weekFolder, circFolder } = getMtSetupsHierarchyParts(s.season, s.week, s.circuit);
         zip.file(`${s.car}/Garage 61 - Muntrume Motorsport/${yr}/${seasonFolder}/${weekFolder}/${circFolder}/${s.filename}`, byteArray);
         zip.file(`${s.car}/Garage 61/${yr}/${seasonFolder}/${weekFolder}/${circFolder}/${s.filename}`, byteArray);
-        zip.file(`${s.car}/Garage 61 - Muntrume Motorsport/MT SETUPS/${yr}/${seasonFolder}/${weekFolder}/${circFolder}/${s.filename}`, byteArray);
-        zip.file(`${s.car}/Garage 61/MT SETUPS/${yr}/${seasonFolder}/${weekFolder}/${circFolder}/${s.filename}`, byteArray);
       }
       zip.file("Instalar_en_Ruta_iRacing.bat", buildExactPathInstallerBat());
 
@@ -2921,7 +2954,7 @@ let aiSetupLabCache = null;
 async function ensureAiSetupLabLoaded() {
   if (aiSetupLabCache !== null) return aiSetupLabCache;
   try {
-    const res = await fetch("assets/data/ai_setup_lab.json?v=26s4.8");
+    const res = await fetch("/assets/data/ai_setup_lab.json?v=26s4.8");
     if (res.ok) {
       aiSetupLabCache = await res.json();
     } else {

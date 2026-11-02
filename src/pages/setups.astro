@@ -239,9 +239,13 @@ const pageDescription = "Portal privado y confidencial de ingeniería, telemetr�
                 <span id="loginBtnText">Entrar al Vault &rarr;</span>
               </button>
               <div class="flex items-center gap-3 pt-1 text-[11px] text-neutral-500" aria-hidden="true"><span class="flex-1 h-px bg-white/10"></span>o<span class="flex-1 h-px bg-white/10"></span></div>
-              <button type="button" onclick="showCodeLogin()" class="w-full py-3 rounded-xl bg-[#0e1217] hover:bg-white/5 border border-white/15 text-white font-semibold text-sm transition flex items-center justify-center gap-2">
+              <button type="button" onclick="showCodeLogin()" class="w-full py-3 rounded-xl bg-[#0e1217] hover:bg-white/5 border border-white/15 text-white font-semibold text-sm transition flex items-center justify-center gap-2 cursor-pointer">
                 <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                 Entrar con código por email
+              </button>
+              <button type="button" onclick="enterGuestPreview()" class="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 hover:text-white font-medium text-xs transition flex items-center justify-center gap-2 cursor-pointer">
+                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                <span>Explorar Catálogo (Modo Vista Previa) &rarr;</span>
               </button>
             </form>
 
