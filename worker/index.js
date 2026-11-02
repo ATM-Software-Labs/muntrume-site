@@ -51,9 +51,16 @@ const EMAIL_RE = /^[^\s@<>"']{1,64}@[^\s@<>"']{1,190}\.[a-z]{2,24}$/i;
 
 // ───────────────────────────── utilidades ─────────────────────────────
 
+function isAllowedOrigin(origin) {
+  if (!origin) return false;
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+  if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return true;
+  return false;
+}
+
 function corsHeaders(origin) {
   return {
-    "Access-Control-Allow-Origin": ALLOWED_ORIGINS.includes(origin) ? origin : SITE,
+    "Access-Control-Allow-Origin": isAllowedOrigin(origin) ? origin : SITE,
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, X-Requested-With, Authorization, X-G61-Token",
     "Access-Control-Max-Age": "86400",
@@ -1374,28 +1381,119 @@ async function handleMailSend(body, env, ip) {
   const formattedSender = `${fromName} <${senderEmail}>`;
   const replyTo = senderEmail;
 
-  // Dark Luxury HTML email template for Muntrume Motorsport
+  // Luxury Dark Responsive HTML Email Template for Muntrume Motorsport
+  const pilotInitials = escMail(senderEmail.split("@")[0].substring(0, 2).toUpperCase());
   const html = `
     <!DOCTYPE html>
     <html lang="es">
-    <head><meta charset="UTF-8"></head>
-    <body style="margin:0;padding:24px 12px;background-color:#090d12;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#f1f5f9;">
-      <div style="max-width:600px;margin:0 auto;background-color:#161c24;border:1px solid rgba(255,255,255,0.1);border-radius:20px;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,0.6);">
-        <div style="height:3px;background:linear-gradient(90deg,#10b981,#34d399,#059669);"></div>
-        <div style="padding:22px 28px;border-bottom:1px solid rgba(255,255,255,0.08);background-color:#12171f;">
-          <span style="font-size:16px;font-weight:900;letter-spacing:-0.5px;color:#ffffff;">MUNTRUME</span>
-          <span style="color:#10b981;font-weight:700;font-size:11px;margin-left:6px;letter-spacing:1px;text-transform:uppercase;">Comms &middot; Telemetry</span>
-        </div>
-        <div style="padding:28px;font-size:14px;line-height:1.6;color:#e2e8f0;">
-          <div style="font-size:18px;font-weight:800;color:#ffffff;margin-bottom:16px;">${escMail(subject)}</div>
-          <div style="white-space:pre-line;color:#cbd5e1;line-height:1.7;">${escMail(content)}</div>
-        </div>
-        <div style="padding:20px 28px;background-color:#0e1217;border-top:1px solid rgba(255,255,255,0.08);font-size:11px;color:#64748b;line-height:1.5;">
-          <div style="color:#10b981;font-weight:700;margin-bottom:4px;">&check; Cifrado TLS &middot; DKIM &amp; SPF 100% Verificado</div>
-          <div>Mensaje institucional enviado por <strong>${escMail(fromName)}</strong> (<a href="mailto:${escMail(senderEmail)}" style="color:#10b981;text-decoration:none;">${escMail(senderEmail)}</a>).</div>
-          <div style="margin-top:6px;color:#475569;">Muntrume Motorsport &copy; 2026 &middot; Barcelona, España &middot; <a href="https://muntru.me" style="color:#10b981;text-decoration:none;">muntru.me</a></div>
-        </div>
-      </div>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${escMail(subject)}</title>
+    </head>
+    <body style="margin:0;padding:0;background-color:#090d12;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#f1f5f9;-webkit-font-smoothing:antialiased;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#090d12;padding:32px 12px;">
+        <tr>
+          <td align="center">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:620px;background-color:#161c24;border:1px solid rgba(255,255,255,0.1);border-radius:24px;overflow:hidden;box-shadow:0 25px 50px -12px rgba(0,0,0,0.75);">
+              
+              <!-- Gradient top accent -->
+              <tr>
+                <td style="height:4px;background:linear-gradient(90deg,#10b981 0%,#34d399 50%,#059669 100%);"></td>
+              </tr>
+
+              <!-- Header Bar -->
+              <tr>
+                <td style="padding:24px 32px;background-color:#12171f;border-bottom:1px solid rgba(255,255,255,0.08);">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="left" style="vertical-align:middle;">
+                        <span style="font-size:18px;font-weight:900;letter-spacing:-0.5px;color:#ffffff;display:inline-block;vertical-align:middle;">MUNTRUME</span>
+                        <span style="color:#10b981;font-weight:800;font-size:10px;margin-left:8px;padding:3px 8px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);border-radius:6px;letter-spacing:1px;text-transform:uppercase;vertical-align:middle;display:inline-block;">TELEMETRY &amp; COMMS</span>
+                      </td>
+                      <td align="right" style="vertical-align:middle;">
+                        <span style="font-size:11px;font-family:monospace;color:#94a3b8;background:rgba(255,255,255,0.05);padding:4px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);">iRacing Team</span>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- Subject & Sender Card -->
+              <tr>
+                <td style="padding:32px 32px 16px 32px;">
+                  <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#10b981;margin-bottom:8px;">Mensaje Oficial de Escudería</div>
+                  <h1 style="margin:0 0 20px 0;font-size:22px;font-weight:900;color:#ffffff;line-height:1.35;letter-spacing:-0.3px;">${escMail(subject)}</h1>
+                  
+                  <!-- Sender Pill Card -->
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#0e1217;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:12px 16px;">
+                    <tr>
+                      <td width="38" style="vertical-align:middle;">
+                        <div style="width:34px;height:34px;background-color:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.35);border-radius:10px;color:#34d399;font-weight:900;font-size:12px;text-align:center;line-height:34px;font-family:monospace;">
+                          ${pilotInitials}
+                        </div>
+                      </td>
+                      <td style="vertical-align:middle;padding-left:12px;">
+                        <div style="font-size:13px;font-weight:800;color:#ffffff;">${escMail(fromName)}</div>
+                        <div style="font-size:11px;font-family:monospace;color:#10b981;">${escMail(senderEmail)}</div>
+                      </td>
+                      <td align="right" style="vertical-align:middle;">
+                        <span style="font-size:10px;font-weight:700;color:#34d399;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.25);border-radius:20px;padding:3px 8px;font-family:monospace;">&check; DKIM &amp; SPF</span>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- Message Body -->
+              <tr>
+                <td style="padding:16px 32px 28px 32px;">
+                  <div style="background-color:#12171f;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:24px;font-size:14px;line-height:1.75;color:#cbd5e1;white-space:pre-line;">${escMail(content)}</div>
+                </td>
+              </tr>
+
+              <!-- Action Buttons Strip -->
+              <tr>
+                <td style="padding:0 32px 28px 32px;">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="center">
+                        <a href="https://muntru.me/setups" target="_blank" style="display:inline-block;padding:12px 24px;background-color:#10b981;color:#090d12;font-weight:900;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;text-decoration:none;border-radius:12px;box-shadow:0 10px 20px -5px rgba(16,185,129,0.4);margin-right:10px;">
+                          Acceder al Setup Vault &rarr;
+                        </a>
+                        <a href="https://discord.gg/ehX6B8JUtE" target="_blank" style="display:inline-block;padding:12px 20px;background-color:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:#ffffff;font-weight:700;font-size:12px;text-decoration:none;border-radius:12px;">
+                          Discord Oficial
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- Footer -->
+              <tr>
+                <td style="padding:24px 32px;background-color:#0e1217;border-top:1px solid rgba(255,255,255,0.08);font-size:11px;color:#64748b;line-height:1.6;">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td>
+                        <div style="color:#94a3b8;font-weight:700;">Muntrume Motorsport &middot; Sim Racing Team</div>
+                        <div style="color:#475569;margin-top:2px;">Barcelona, España &middot; Portal oficial de telemetría y comunicaciones</div>
+                        <div style="margin-top:8px;font-size:10px;color:#334155;">
+                          Cifrado TLS 1.3 &middot; Dominio verificado trujillomingorance.com &middot; Entregado vía Cloudflare &amp; Resend
+                        </div>
+                      </td>
+                      <td align="right" style="vertical-align:bottom;">
+                        <a href="https://muntru.me" style="color:#10b981;text-decoration:none;font-weight:700;">muntru.me</a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+            </table>
+          </td>
+        </tr>
+      </table>
     </body>
     </html>
   `;
@@ -1723,7 +1821,7 @@ export default {
       catch (err) { console.error("[news]", err?.message); return reply(200, { success: false, items: [], sources: [] }); }
     }
     if (request.method === "GET" && url.pathname.replace(/\/+$/, "") === "/api/contact/token") {
-      if (origin && !ALLOWED_ORIGINS.includes(origin)) return reply(403, { error: "Forbidden: Unauthorized origin" });
+      if (origin && !isAllowedOrigin(origin)) return reply(403, { error: "Forbidden: Unauthorized origin" });
       const out = await handleContactToken(env);
       return reply(out[0], out[1]);
     }
@@ -1746,7 +1844,7 @@ export default {
       catch (e) { console.error("[unsub]", e?.message); return reply(500, { success: false }); }
     }
     if (request.method !== "POST") return reply(405, { error: "Method not allowed" });
-    if (origin && !ALLOWED_ORIGINS.includes(origin)) return reply(403, { error: "Forbidden: Unauthorized origin" });
+    if (origin && !isAllowedOrigin(origin)) return reply(403, { error: "Forbidden: Unauthorized origin" });
 
     let body;
     try {

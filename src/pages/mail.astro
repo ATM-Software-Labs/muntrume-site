@@ -326,15 +326,69 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
             </button>
           </div>
 
-          <!-- Reply Box Prompt -->
-          <div class="p-4 sm:p-5 rounded-2xl bg-[#141a23] border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div class="text-xs text-neutral-400">
-              ¿Deseas enviar telemetría de respuesta o notas de ingeniero para la próxima sesión?
+          <!-- ENHANCED INLINE QUICK REPLY COMPONENT -->
+          <div class="p-5 sm:p-6 rounded-2xl bg-[#141a23] border border-white/10 space-y-4 shadow-xl">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/5 pb-3">
+              <div class="flex items-center gap-2.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="text-xs font-bold text-white uppercase tracking-wider font-mono">Respuesta Rápida de Telemetría &amp; Comms</span>
+              </div>
+              <div class="text-[11px] text-neutral-400 font-mono">
+                Para: <span id="inline-reply-target" class="text-emerald-400 font-bold"></span>
+              </div>
             </div>
-            <button id="detail-reply-bottom-btn" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 shrink-0">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
-              <span>Responder</span>
-            </button>
+
+            <!-- Quick Telemetry & Strategy Preset Buttons -->
+            <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
+              <span class="text-[10px] text-neutral-500 font-mono uppercase tracking-wider">Plantillas:</span>
+              <button type="button" class="reply-preset-btn px-2.5 py-1 rounded-lg bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-400 hover:border-emerald-500/30 border border-white/10 transition text-neutral-300 font-medium cursor-pointer" data-text="Setup revisado y aprobado para la sesión de práctica. Telemetría de referencia OK.">
+                ✓ Setup Aprobado
+              </button>
+              <button type="button" class="reply-preset-btn px-2.5 py-1 rounded-lg bg-white/5 hover:bg-amber-500/20 hover:text-amber-400 hover:border-amber-500/30 border border-white/10 transition text-neutral-300 font-medium cursor-pointer" data-text="Ajuste aplicado: Subir presiones en frío 0.5 PSI en eje delantero y balance de frenada a 54.2%.">
+                ⚙️ Ajuste de Presiones
+              </button>
+              <button type="button" class="reply-preset-btn px-2.5 py-1 rounded-lg bg-white/5 hover:bg-cyan-500/20 hover:text-cyan-400 hover:border-cyan-500/30 border border-white/10 transition text-neutral-300 font-medium cursor-pointer" data-text="Log de MoTeC i2 Pro descargado. La velocidad punta y trazada en el sector rápido están en el percentil esperado.">
+                📊 MoTeC Validado
+              </button>
+              <button type="button" class="reply-preset-btn px-2.5 py-1 rounded-lg bg-white/5 hover:bg-purple-500/20 hover:text-purple-400 hover:border-purple-500/30 border border-white/10 transition text-neutral-300 font-medium cursor-pointer" data-text="Recibido por Race Control. Confirmado el stint en la hoja de cronometraje oficial.">
+                🏁 Confirmado
+              </button>
+            </div>
+
+            <!-- Textarea -->
+            <div>
+              <textarea 
+                id="inline-reply-body" 
+                rows="3" 
+                placeholder="Escribe tu respuesta de telemetría o estrategia aquí..." 
+                class="w-full p-3.5 rounded-xl bg-[#0e1217] border border-white/10 text-white placeholder-neutral-500 text-xs leading-relaxed focus:outline-none focus:border-emerald-500/50 transition resize-none font-sans"
+              ></textarea>
+            </div>
+
+            <!-- Inline Reply Footer Actions -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+              <div class="flex items-center gap-2 text-xs text-neutral-400 font-mono">
+                <span class="text-[10px] text-neutral-500">De:</span>
+                <span id="inline-reply-sender" class="text-emerald-400 font-bold truncate max-w-[220px]">alberto.muntrume@trujillomingorance.com</span>
+                <span class="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-[9px] font-bold">&check; DKIM</span>
+              </div>
+
+              <div class="flex items-center gap-2 self-end sm:self-auto">
+                <button type="button" id="inline-reply-popout-btn" class="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 text-xs font-semibold transition cursor-pointer flex items-center gap-1.5" title="Abrir en ventana grande">
+                  <span>⛶</span>
+                  <span>Expandir</span>
+                </button>
+                <button 
+                  type="button" 
+                  id="inline-reply-send-btn" 
+                  class="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider transition shadow-lg shadow-emerald-500/20 flex items-center gap-2 cursor-pointer"
+                >
+                  <span id="inline-reply-spinner" class="hidden w-3.5 h-3.5 border-2 border-neutral-950 border-t-transparent rounded-full animate-spin"></span>
+                  <span id="inline-reply-send-text">Enviar Respuesta</span>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                </button>
+              </div>
+            </div>
           </div>
 
         </div>
@@ -418,6 +472,23 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
           placeholder="Briefing, Telemetría o Asunto de carrera" 
           class="flex-1 bg-transparent text-white placeholder-neutral-500 focus:outline-none font-bold text-xs"
         />
+      </div>
+
+      <!-- Subject Presets Chips -->
+      <div class="flex flex-wrap items-center gap-1.5 py-0.5 text-[11px] text-neutral-400 font-mono">
+        <span class="text-[10px] text-neutral-500">Etiquetas:</span>
+        <button type="button" class="subject-preset-btn px-2 py-0.5 rounded-md bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-400 border border-white/10 transition cursor-pointer" data-prefix="🏁 [Briefing Spa 24H] ">
+          + Spa 24H
+        </button>
+        <button type="button" class="subject-preset-btn px-2 py-0.5 rounded-md bg-white/5 hover:bg-cyan-500/20 hover:text-cyan-400 border border-white/10 transition cursor-pointer" data-prefix="📊 [MoTeC Telemetry] ">
+          + Telemetría
+        </button>
+        <button type="button" class="subject-preset-btn px-2 py-0.5 rounded-md bg-white/5 hover:bg-amber-500/20 hover:text-amber-400 border border-white/10 transition cursor-pointer" data-prefix="⚙️ [Setup .STO Homologado] ">
+          + Setup .STO
+        </button>
+        <button type="button" class="subject-preset-btn px-2 py-0.5 rounded-md bg-white/5 hover:bg-purple-500/20 hover:text-purple-400 border border-white/10 transition cursor-pointer" data-prefix="⏱️ [Estrategia de Stints] ">
+          + Estrategia
+        </button>
       </div>
 
       <!-- Setup Attachment toggle/input -->
@@ -999,13 +1070,27 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
     const mailSidebar = document.getElementById("mail-sidebar");
     const sidebarBackdrop = document.getElementById("sidebar-backdrop");
 
+    const PILOT_SENDER_MAP = {
+      "alberto@muntru.me": "alberto.muntrume@trujillomingorance.com",
+      "mateo@muntru.me": "mateo.muntrume@trujillomingorance.com",
+      "eduardo@muntru.me": "eduardo.muntrume@trujillomingorance.com",
+      "juanlu@muntru.me": "juanlu.muntrume@trujillomingorance.com",
+      "admin@muntru.me": "admin.muntrume@trujillomingorance.com",
+      "all": "alberto.muntrume@trujillomingorance.com"
+    };
+
+    function syncComposeSender(mailbox) {
+      const verified = PILOT_SENDER_MAP[mailbox] || "alberto.muntrume@trujillomingorance.com";
+      if (composeFrom) composeFrom.value = verified;
+      const inlineReplySender = document.getElementById("inline-reply-sender");
+      if (inlineReplySender) inlineReplySender.textContent = verified;
+    }
+
     // Synchronize initial mailbox selector value
     if (driverSelector) {
       driverSelector.value = activeMailbox;
     }
-    if (composeFrom && activeMailbox !== "all") {
-      composeFrom.value = activeMailbox;
-    }
+    syncComposeSender(activeMailbox);
 
     // Show Toast Function
     function showToast(msg, isSuccess = true) {
@@ -1037,6 +1122,17 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
     }
 
     // Update Counters
+        // Helper: Team Colors for Pilot Initials
+    function getPilotColor(email) {
+      const e = (email || "").toLowerCase();
+      if (e.includes("alberto")) return { bg: "bg-emerald-500/15", border: "border-emerald-500/35", text: "text-emerald-400" };
+      if (e.includes("mateo")) return { bg: "bg-amber-500/15", border: "border-amber-500/35", text: "text-amber-400" };
+      if (e.includes("eduardo")) return { bg: "bg-cyan-500/15", border: "border-cyan-500/35", text: "text-cyan-400" };
+      if (e.includes("juanlu")) return { bg: "bg-orange-500/15", border: "border-orange-500/35", text: "text-orange-400" };
+      if (e.includes("admin")) return { bg: "bg-purple-500/15", border: "border-purple-500/35", text: "text-purple-400" };
+      return { bg: "bg-white/10", border: "border-white/20", text: "text-neutral-300" };
+    }
+
     function updateCounters() {
       const activeMsgs = messages.filter(matchesActiveMailbox);
 
@@ -1112,6 +1208,7 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
       let html = "";
       filtered.forEach(msg => {
         const isUnread = msg.unread ? "unread font-bold text-white" : "text-neutral-300";
+        const pilotTheme = getPilotColor(msg.sender.email);
         const unreadIndicator = msg.unread ? `<span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>` : "";
         const isStarred = msg.starred ? "text-amber-400" : "text-neutral-600 hover:text-neutral-400";
         const hasSetup = msg.attachment ? `
@@ -1133,8 +1230,8 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
 
               ${unreadIndicator}
 
-              <!-- Sender Avatar -->
-              <div class="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center font-bold text-emerald-400 text-xs shrink-0 font-mono">
+              <!-- Sender Avatar with Pilot Identity Colors -->
+              <div class="w-8 h-8 rounded-xl ${pilotTheme.bg} border ${pilotTheme.border} flex items-center justify-center font-bold ${pilotTheme.text} text-xs shrink-0 font-mono">
                 ${msg.sender.initials || "MU"}
               </div>
 
@@ -1168,7 +1265,7 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
                     ★
                   </button>
                   ${unreadIndicator}
-                  <div class="w-6 h-6 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center font-bold text-emerald-400 text-[10px] shrink-0 font-mono">
+                  <div class="w-6 h-6 rounded-lg ${pilotTheme.bg} border ${pilotTheme.border} flex items-center justify-center font-bold ${pilotTheme.text} text-[10px] shrink-0 font-mono">
                     ${msg.sender.initials || "MU"}
                   </div>
                   <span class="text-xs font-bold text-white truncate">
@@ -1248,7 +1345,22 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
       if (detailSubject) detailSubject.textContent = msg.subject;
       if (detailSenderName) detailSenderName.textContent = msg.sender.name;
       if (detailSenderEmail) detailSenderEmail.textContent = `<${msg.sender.email}>`;
-      if (detailAvatar) detailAvatar.textContent = msg.sender.initials || "MU";
+      if (detailAvatar) {
+        detailAvatar.textContent = msg.sender.initials || "MU";
+        const pCol = getPilotColor(msg.sender.email);
+        detailAvatar.className = `w-11 h-11 rounded-2xl ${pCol.bg} border ${pCol.border} flex items-center justify-center font-bold ${pCol.text} text-sm shrink-0 font-mono`;
+      }
+
+      // Configure Inline Quick Reply Target and Active Sender
+      const inlineReplyTarget = document.getElementById("inline-reply-target");
+      const inlineReplySender = document.getElementById("inline-reply-sender");
+      const inlineReplyBody = document.getElementById("inline-reply-body");
+      if (inlineReplyTarget) inlineReplyTarget.textContent = `${msg.sender.name} <${msg.sender.email}>`;
+      if (inlineReplySender) {
+        const verifiedSender = (composeFrom && composeFrom.value) ? composeFrom.value : "alberto.muntrume@trujillomingorance.com";
+        inlineReplySender.textContent = verifiedSender;
+      }
+      if (inlineReplyBody) inlineReplyBody.value = "";
       if (detailRecipients) detailRecipients.textContent = msg.recipients;
       if (detailDate) detailDate.textContent = msg.date;
       if (detailBody) detailBody.textContent = msg.body;
@@ -1343,6 +1455,149 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
     if (replyTopBtn) replyTopBtn.addEventListener("click", setupReply);
     if (replyBottomBtn) replyBottomBtn.addEventListener("click", setupReply);
 
+        // =========================================================================
+    // INLINE QUICK REPLY & COMPOSE PRESETS CONTROLLER
+    // =========================================================================
+    // 1. Compose Modal Subject Presets
+    document.querySelectorAll(".subject-preset-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const prefix = btn.dataset.prefix;
+        if (composeSubject) {
+          const current = composeSubject.value.trim();
+          if (!current.includes(prefix)) {
+            composeSubject.value = prefix + current;
+          }
+          composeSubject.focus();
+        }
+      });
+    });
+
+    // 2. Inline Reply Template Presets
+    document.querySelectorAll(".reply-preset-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const text = btn.dataset.text;
+        const inlineReplyBody = document.getElementById("inline-reply-body");
+        if (inlineReplyBody) {
+          const current = inlineReplyBody.value.trim();
+          if (current) {
+            inlineReplyBody.value = current + "\n" + text;
+          } else {
+            inlineReplyBody.value = text;
+          }
+          inlineReplyBody.focus();
+        }
+      });
+    });
+
+    // 3. Inline Reply Popout (Expand to Full Modal)
+    const inlineReplyPopoutBtn = document.getElementById("inline-reply-popout-btn");
+    if (inlineReplyPopoutBtn) {
+      inlineReplyPopoutBtn.addEventListener("click", () => {
+        if (!activeMessageId) return;
+        const msg = messages.find(m => m.id === activeMessageId);
+        if (!msg) return;
+        const inlineReplyBody = document.getElementById("inline-reply-body");
+        const replyText = inlineReplyBody ? inlineReplyBody.value.trim() : "";
+        openComposeModal({
+          to: msg.sender.email,
+          subject: msg.subject.startsWith("Re:") ? msg.subject : `Re: ${msg.subject}`,
+          body: replyText || `\n\n--- El ${msg.date}, ${msg.sender.name} escribió:\n> ` + (msg.body || "").replace(/\n/g, "\n> ")
+        });
+      });
+    }
+
+    // 4. Inline Reply Direct Send
+    const inlineReplySendBtn = document.getElementById("inline-reply-send-btn");
+    if (inlineReplySendBtn) {
+      inlineReplySendBtn.addEventListener("click", async () => {
+        if (!activeMessageId) return;
+        const msg = messages.find(m => m.id === activeMessageId);
+        if (!msg) return;
+
+        const inlineReplyBody = document.getElementById("inline-reply-body");
+        const bodyContent = inlineReplyBody ? inlineReplyBody.value.trim() : "";
+        if (!bodyContent) {
+          showToast("Escribe un mensaje de respuesta antes de enviar", false);
+          if (inlineReplyBody) inlineReplyBody.focus();
+          return;
+        }
+
+        const inlineReplySpinner = document.getElementById("inline-reply-spinner");
+        const inlineReplySendText = document.getElementById("inline-reply-send-text");
+        const fromEmail = (composeFrom && composeFrom.value) ? composeFrom.value : "alberto.muntrume@trujillomingorance.com";
+        const toEmail = msg.sender.email;
+        const subject = msg.subject.startsWith("Re:") ? msg.subject : `Re: ${msg.subject}`;
+
+        if (inlineReplySpinner) inlineReplySpinner.classList.remove("hidden");
+        if (inlineReplySendText) inlineReplySendText.textContent = "Despachando...";
+        inlineReplySendBtn.disabled = true;
+
+        let sentLive = false;
+        let relayDetail = "Resend Relay";
+
+        try {
+          const workerRes = await fetch("https://muntrume.atrumin16.workers.dev/api/mail/send", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              from: fromEmail,
+              fromName: `${fromEmail.split("@")[0].toUpperCase()} · Muntrume Motorsport`,
+              to: toEmail,
+              subject: subject,
+              body: bodyContent
+            })
+          });
+
+          const workerData = await workerRes.json().catch(() => ({}));
+          if (workerRes.ok && workerData.success) {
+            sentLive = true;
+            relayDetail = workerData.provider || "Resend Relay";
+          }
+        } catch (err) {
+          console.warn("Error enviando respuesta mediante Cloudflare Worker:", err);
+        }
+
+        // Add to sent messages archive
+        const sentMessage = {
+          id: "sent-" + Date.now(),
+          folder: "sent",
+          is_briefing: subject.toLowerCase().includes("briefing") || subject.toLowerCase().includes("setup"),
+          unread: false,
+          starred: false,
+          account: fromEmail,
+          sender: {
+            name: fromEmail.split("@")[0].toUpperCase(),
+            email: fromEmail,
+            initials: fromEmail.substring(0, 2).toUpperCase(),
+            role: "Driver / Team"
+          },
+          recipients: toEmail,
+          subject: subject,
+          snippet: bodyContent.substring(0, 80) + "...",
+          body: bodyContent,
+          date: "Ahora",
+          timestamp: Date.now(),
+          tags: ["Respuesta", "Enviado"],
+          attachment: null
+        };
+
+        messages.unshift(sentMessage);
+        saveMessages();
+
+        if (inlineReplyBody) inlineReplyBody.value = "";
+        if (inlineReplySpinner) inlineReplySpinner.classList.add("hidden");
+        if (inlineReplySendText) inlineReplySendText.textContent = "Enviar Respuesta";
+        inlineReplySendBtn.disabled = false;
+
+        if (sentLive) {
+          showToast(`✓ Respuesta oficial enviada a ${toEmail} vía ${relayDetail}`);
+        } else {
+          showToast("Respuesta registrada y archivada en Enviados");
+        }
+        updateCounters();
+      });
+    }
+
     // Download simulated .sto setup file
     const downloadSetupBtn = document.getElementById("download-setup-btn");
     if (downloadSetupBtn) {
@@ -1410,7 +1665,7 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
         activeMailbox = pilotEmail;
         localStorage.setItem(LS_ACTIVE_ACCOUNT, activeMailbox);
         if (driverSelector) driverSelector.value = pilotEmail;
-        if (composeFrom) composeFrom.value = pilotEmail;
+        syncComposeSender(pilotEmail);
         showToast(`Buzón activo: ${pilotEmail}`);
         closeMobileSidebar();
         backToList();
@@ -1455,7 +1710,7 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
         const val = e.target.value;
         activeMailbox = val;
         localStorage.setItem(LS_ACTIVE_ACCOUNT, activeMailbox);
-        if (composeFrom && val !== "all") composeFrom.value = val;
+        syncComposeSender(val);
         showToast(`Buzón activo: ${val === "all" ? "Todos los buzones" : val}`);
         backToList();
       });
@@ -1545,7 +1800,7 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
       composeForm.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        const fromEmail = composeFrom ? composeFrom.value : "alberto@muntru.me";
+        const fromEmail = (composeFrom && composeFrom.value) ? composeFrom.value : "alberto.muntrume@trujillomingorance.com";
         const toEmail = composeTo ? composeTo.value.trim() : "";
         const subject = composeSubject ? composeSubject.value.trim() : "";
         const bodyContent = composeBody ? composeBody.value.trim() : "";
