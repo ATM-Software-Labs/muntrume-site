@@ -1,0 +1,17 @@
+{
+  "$schema": "https://antigravity.google/schema/config.json",
+  "project": "muntrume-site",
+  "ecosystem": "ATM Software Labs",
+  "engine": "Astro 5 + Cloudflare Workers",
+  "verification": {
+    "build": "npm run build",
+    "test": "node scripts/e2e-verify.mjs",
+    "deploy_worker": "cd worker && npx wrangler deploy",
+    "deploy_site": "git push origin main"
+  },
+  "domains": {
+    "site": "https://muntru.me",
+    "api": "https://muntrume.atrumin16.workers.dev",
+    "mail_relay": "trujillomingorance.com"
+  }
+}
