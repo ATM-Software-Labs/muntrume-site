@@ -7,7 +7,7 @@ const pageDescription = "Meet the four official drivers of Muntrume Motorsport, 
 
 <Layout title={pageTitle} description={pageDescription}>
   <!-- ========================================================================= -->
-  <!-- 2. HERO: DRIVER ROSTER & SQUAD OVERVIEW                                    -->
+  <!-- 1. HERO: DRIVER ROSTER & SQUAD OVERVIEW                                    -->
   <!-- ========================================================================= -->
   <section class="pt-28 pb-12 bg-[#0e1217] border-b border-white/10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -15,25 +15,28 @@ const pageDescription = "Meet the four official drivers of Muntrume Motorsport, 
       <!-- Top Status Strip -->
       <div class="flex flex-wrap items-center justify-between gap-4 pb-4 mb-8 border-b border-white/10 text-xs">
         <div class="flex items-center gap-3">
-          <span class="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-semibold uppercase flex items-center gap-2">
-            <span class="pulse-dot"></span>
+          <span class="px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-semibold uppercase flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
             Official Lineup · 4 Drivers
           </span>
+          <span class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-neutral-300 font-mono text-[11px]">
+            iRacing Esports Division
+          </span>
         </div>
-        <div class="flex items-center gap-3 text-neutral-400 font-medium">
-          <span>Sant Andreu · Barcelona</span>
+        <div class="flex items-center gap-3 text-neutral-400 font-mono text-xs">
+          <span>Sant Andreu · Barcelona, CAT</span>
         </div>
       </div>
 
-      <div class="text-center py-4">
-        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-emerald-400 text-xs font-semibold mb-4">
-          <span>Team Roster</span>
+      <div class="text-center py-6 max-w-3xl mx-auto">
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-emerald-400 text-xs font-semibold mb-4">
+          <span>🏁 Competition Roster</span>
         </div>
-        <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white mb-4">
+        <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white mb-4">
           TEAM <span class="text-emerald-400">DRIVERS</span>
         </h1>
-        <p class="text-sm sm:text-base text-neutral-400 max-w-2xl mx-auto leading-relaxed">
-          The four official drivers of Muntrume Motorsport competing in endurance prototypes and GT championships on iRacing.
+        <p class="text-sm sm:text-base text-neutral-400 leading-relaxed">
+          Los cuatro pilotos oficiales de Muntrume Motorsport en activo para las competiciones de resistencia en prototipos GTP, GT3 y campeonatos de monoplazas en iRacing.
         </p>
       </div>
 
@@ -41,215 +44,299 @@ const pageDescription = "Meet the four official drivers of Muntrume Motorsport, 
   </section>
 
   <!-- ========================================================================= -->
-  <!-- 3. DRIVERS DIRECTORY (Driver Cards)                                       -->
+  <!-- 2. DRIVERS DIRECTORY: SPACIOUS LUXURY MOTORSPORT CARDS                     -->
   <!-- ========================================================================= -->
   <section id="drivers" class="py-16 bg-[#0e1217]">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
       
-      <!-- Controls Toolbar: Search & Sort -->
-      <div class="bg-[#161c24] border border-white/10 rounded-2xl p-4 mb-10 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
-        
-        <!-- Search -->
-        <div class="relative w-full md:w-80">
-          <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-          </svg>
-          <input 
-            type="text" 
-            id="searchInput" 
-            placeholder="Search driver, car or category..." 
-            class="w-full bg-[#0e1217] border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-neutral-400 focus:outline-none focus:border-emerald-500 transition"
-          />
+      <!-- Category Filter Pills (Generous, Touch-Friendly) -->
+      <div class="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-white/10">
+        <div class="flex flex-wrap items-center gap-2" id="rosterFilterTabs">
+          <button data-filter="all" class="team-filter-pill active px-4 py-2 rounded-xl text-xs font-bold transition bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+            Todos los Pilotos (4)
+          </button>
+          <button data-filter="gtp" class="team-filter-pill px-4 py-2 rounded-xl text-xs font-semibold transition text-neutral-400 hover:text-white bg-white/5 border border-white/10 hover:border-white/20">
+            GTP Prototypes
+          </button>
+          <button data-filter="gt3" class="team-filter-pill px-4 py-2 rounded-xl text-xs font-semibold transition text-neutral-400 hover:text-white bg-white/5 border border-white/10 hover:border-white/20">
+            GT3 Endurance
+          </button>
+          <button data-filter="formula" class="team-filter-pill px-4 py-2 rounded-xl text-xs font-semibold transition text-neutral-400 hover:text-white bg-white/5 border border-white/10 hover:border-white/20">
+            Monoplazas &amp; SFL
+          </button>
         </div>
 
-        <div id="licenseFilters" hidden></div>
-
-        <!-- Sort Select -->
-        <div class="w-full md:w-auto flex items-center gap-2 text-xs text-neutral-400 font-medium">
-          <span class="whitespace-nowrap">Sort:</span>
-          <select id="sortSelect" aria-label="Sort drivers" class="bg-[#0e1217] border border-white/10 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-emerald-500">
-            <option value="roster">Roster order</option>
-            <option value="name-asc">Name (A-Z)</option>
-          </select>
+        <div class="text-xs font-mono text-neutral-500">
+          Plantilla Homologada 2026
         </div>
-
       </div>
 
-      <!-- Drivers Grid (4 Drivers) -->
-      <h2 class="sr-only">Official Driver Roster</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="driversGrid">
+      <!-- Drivers Grid (Spacious 2 Columns on Laptop / Tablet, 4 Columns on XL) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8" id="driversGrid">
         
         <!-- DRIVER 1: Alberto Trujillo -->
-        <div class="driver-card bg-[#161c24] border border-white/10 rounded-2xl p-6 text-center relative overflow-hidden flex flex-col justify-between shadow-xl hover:border-emerald-500/40 transition duration-300" data-license="all" data-name="Alberto Trujillo">
-          <div>
-            <div class="flex items-center justify-between mb-4">
-              <span class="text-xs text-neutral-400 font-bold rank-badge">#1</span>
-              <span class="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 uppercase tracking-wider">FOUNDER</span>
+        <article class="driver-card bg-[#161c24] border border-emerald-500/30 rounded-3xl p-6 sm:p-7 flex flex-col justify-between shadow-2xl relative overflow-hidden group hover:border-emerald-500 transition-all duration-300" data-categories="gtp gt3">
+          <div class="space-y-5">
+            <!-- Top Card Header: Number & Role Badge -->
+            <div class="flex items-center justify-between">
+              <span class="text-lg font-black text-white font-mono">#1</span>
+              <span class="text-[10px] font-bold px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 uppercase tracking-wider">
+                FOUNDER
+              </span>
             </div>
             
-            <div class="relative inline-block mb-4">
-              <div class="w-24 h-24 rounded-full border-2 border-emerald-500 bg-emerald-950/60 flex items-center justify-center mx-auto shadow-xl font-extrabold text-2xl text-emerald-400">
-                AT
+            <!-- Driver Avatar -->
+            <div class="text-center pt-2">
+              <div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-950/60 border-2 border-emerald-500/40 flex items-center justify-center mx-auto shadow-xl group-hover:scale-105 group-hover:border-emerald-400 transition-all">
+                <span class="font-black text-3xl text-emerald-400 tracking-wider font-mono">AT</span>
+              </div>
+              <h2 class="text-xl font-black text-white mt-4 tracking-tight">Alberto Trujillo</h2>
+              <p class="text-xs text-emerald-400 font-bold uppercase tracking-wider mt-1">Team Principal &amp; Telemetría</p>
+            </div>
+
+            <!-- Bio / Specialty -->
+            <p class="text-xs text-neutral-300 leading-relaxed text-center min-h-[48px]">
+              Especialista en dinámica vehicular, análisis de telemetría a 60 Hz y estrategia en pruebas de resistencia de 24 horas.
+            </p>
+            
+            <!-- Hardware Specs Strip -->
+            <div class="p-3 rounded-xl bg-white/5 border border-white/5 text-[11px] font-mono text-neutral-400 space-y-1">
+              <div class="flex justify-between">
+                <span>Coches:</span>
+                <span class="text-white font-bold">Valkyrie GTP / Ferrari 296</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Rig:</span>
+                <span class="text-emerald-400">Direct Drive 25Nm + Loadcell</span>
               </div>
             </div>
 
-            <h3 class="text-lg font-bold text-white mb-1">Alberto Trujillo</h3>
-            <p class="text-xs text-emerald-400 font-semibold mb-2">Team Principal &amp; Telemetría</p>
-            <p class="text-xs text-neutral-400 mb-4 leading-relaxed line-clamp-2">Especialista en prototipos GTP (Valkyrie, Cadillac) y telemetría de resistencia a 60 Hz.</p>
-            
-            <div class="flex flex-wrap justify-center gap-1.5 mb-5">
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-neutral-300 border border-white/5">GTP</span>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-neutral-300 border border-white/5">GT3</span>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-neutral-300 border border-white/5">24H Le Mans</span>
+            <!-- Category Pills -->
+            <div class="flex flex-wrap justify-center gap-1.5 pt-1">
+              <span class="text-[10px] font-mono px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">GTP Prototype</span>
+              <span class="text-[10px] font-mono px-2.5 py-1 rounded-lg bg-white/5 text-neutral-300 border border-white/10">GT3 Endurance</span>
+              <span class="text-[10px] font-mono px-2.5 py-1 rounded-lg bg-white/5 text-neutral-300 border border-white/10">24H Le Mans</span>
             </div>
           </div>
 
-          <a href="/p/alberto-trujillo/" class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 text-xs font-bold rounded-xl transition shadow-sm inline-flex items-center justify-center gap-1.5">
-            <span>Ver Perfil y Telemetría</span>
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-          </a>
-        </div>
+          <!-- Bottom Action Button -->
+          <div class="pt-6">
+            <a href="/p/alberto-trujillo/" class="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 text-xs font-black uppercase tracking-wider rounded-xl transition shadow-lg shadow-emerald-500/20 inline-flex items-center justify-center gap-2">
+              <span>Ver Ficha y Telemetría</span>
+              <span class="text-base">&rarr;</span>
+            </a>
+          </div>
+        </article>
 
         <!-- DRIVER 2: Mateo Berbis -->
-        <div class="driver-card bg-[#161c24] border border-white/10 rounded-2xl p-6 text-center relative overflow-hidden flex flex-col justify-between shadow-xl hover:border-amber-500/40 transition duration-300" data-license="all" data-name="Mateo Berbis">
-          <div>
-            <div class="flex items-center justify-between mb-4">
-              <span class="text-xs text-neutral-400 font-bold rank-badge">#2</span>
-              <span class="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 uppercase tracking-wider">DRIVER</span>
+        <article class="driver-card bg-[#161c24] border border-amber-500/30 rounded-3xl p-6 sm:p-7 flex flex-col justify-between shadow-2xl relative overflow-hidden group hover:border-amber-400 transition-all duration-300" data-categories="gt3">
+          <div class="space-y-5">
+            <!-- Top Card Header: Number & Role Badge -->
+            <div class="flex items-center justify-between">
+              <span class="text-lg font-black text-white font-mono">#2</span>
+              <span class="text-[10px] font-bold px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 uppercase tracking-wider">
+                DRIVER
+              </span>
             </div>
 
-            <div class="relative inline-block mb-4">
-              <div class="w-24 h-24 rounded-full border-2 border-amber-400 bg-amber-950/60 flex items-center justify-center mx-auto shadow-xl font-extrabold text-2xl text-amber-300">
-                MB
+            <!-- Driver Avatar -->
+            <div class="text-center pt-2">
+              <div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-950/60 border-2 border-amber-400/40 flex items-center justify-center mx-auto shadow-xl group-hover:scale-105 group-hover:border-amber-300 transition-all">
+                <span class="font-black text-3xl text-amber-300 tracking-wider font-mono">MB</span>
+              </div>
+              <h2 class="text-xl font-black text-white mt-4 tracking-tight">Mateo Berbis</h2>
+              <p class="text-xs text-amber-400 font-bold uppercase tracking-wider mt-1">Lead Sprint &amp; Qualy Driver</p>
+            </div>
+
+            <!-- Bio / Specialty -->
+            <p class="text-xs text-neutral-300 leading-relaxed text-center min-h-[48px]">
+              Piloto de velocidad pura y clasificación. Especialista en vuelta rápida bajo presión, frenadas al límite y tráfico en parrillas GT3.
+            </p>
+            
+            <!-- Hardware Specs Strip -->
+            <div class="p-3 rounded-xl bg-white/5 border border-white/5 text-[11px] font-mono text-neutral-400 space-y-1">
+              <div class="flex justify-between">
+                <span>Coches:</span>
+                <span class="text-white font-bold">Ferrari 296 GT3 / M4 GT3</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Rig:</span>
+                <span class="text-amber-400">Direct Drive + Ultrawide Curved</span>
               </div>
             </div>
 
-            <h3 class="text-lg font-bold text-white mb-1">Mateo Berbis</h3>
-            <p class="text-xs text-amber-400 font-semibold mb-2">Lead Sprint &amp; Qualy Driver</p>
-            <p class="text-xs text-neutral-400 mb-4 leading-relaxed line-clamp-2">Especialista en vuelta rápida de clasificación, frenadas al límite y ritmo en GT3.</p>
-            
-            <div class="flex flex-wrap justify-center gap-1.5 mb-5">
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-neutral-300 border border-white/5">Ferrari 296</span>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-neutral-300 border border-white/5">BMW M4</span>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-neutral-300 border border-white/5">Sprint GT3</span>
+            <!-- Category Pills -->
+            <div class="flex flex-wrap justify-center gap-1.5 pt-1">
+              <span class="text-[10px] font-mono px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-300 border border-amber-500/20">GT3 Sprint</span>
+              <span class="text-[10px] font-mono px-2.5 py-1 rounded-lg bg-white/5 text-neutral-300 border border-white/10">Bathurst 12H</span>
+              <span class="text-[10px] font-mono px-2.5 py-1 rounded-lg bg-white/5 text-neutral-300 border border-white/10">Qualy Speed</span>
             </div>
           </div>
 
-          <a href="/p/mateo-berbis/" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-neutral-950 text-xs font-bold rounded-xl transition shadow-sm inline-flex items-center justify-center gap-1.5">
-            <span>Ver Perfil y Telemetría</span>
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-          </a>
-        </div>
+          <!-- Bottom Action Button -->
+          <div class="pt-6">
+            <a href="/p/mateo-berbis/" class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-neutral-950 text-xs font-black uppercase tracking-wider rounded-xl transition shadow-lg shadow-amber-500/20 inline-flex items-center justify-center gap-2">
+              <span>Ver Ficha y Telemetría</span>
+              <span class="text-base">&rarr;</span>
+            </a>
+          </div>
+        </article>
 
         <!-- DRIVER 3: Eduardo Chongkan -->
-        <div class="driver-card bg-[#161c24] border border-white/10 rounded-2xl p-6 text-center relative overflow-hidden flex flex-col justify-between shadow-xl hover:border-slate-400/40 transition duration-300" data-license="all" data-name="Eduardo Chongkan">
-          <div>
-            <div class="flex items-center justify-between mb-4">
-              <span class="text-xs text-neutral-400 font-bold rank-badge">#3</span>
-              <span class="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-500/15 border border-slate-400/30 text-slate-300 uppercase tracking-wider">DRIVER</span>
+        <article class="driver-card bg-[#161c24] border border-slate-500/30 rounded-3xl p-6 sm:p-7 flex flex-col justify-between shadow-2xl relative overflow-hidden group hover:border-slate-300 transition-all duration-300" data-categories="gtp gt3">
+          <div class="space-y-5">
+            <!-- Top Card Header: Number & Role Badge -->
+            <div class="flex items-center justify-between">
+              <span class="text-lg font-black text-white font-mono">#3</span>
+              <span class="text-[10px] font-bold px-3 py-1 rounded-full bg-slate-500/15 border border-slate-400/30 text-slate-300 uppercase tracking-wider">
+                DRIVER
+              </span>
             </div>
 
-            <div class="relative inline-block mb-4">
-              <div class="w-24 h-24 rounded-full border-2 border-slate-400 bg-slate-800/60 flex items-center justify-center mx-auto shadow-xl font-extrabold text-2xl text-slate-300">
-                EC
+            <!-- Driver Avatar -->
+            <div class="text-center pt-2">
+              <div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-900/60 border-2 border-slate-400/40 flex items-center justify-center mx-auto shadow-xl group-hover:scale-105 group-hover:border-slate-200 transition-all">
+                <span class="font-black text-3xl text-slate-200 tracking-wider font-mono">EC</span>
+              </div>
+              <h2 class="text-xl font-black text-white mt-4 tracking-tight">Eduardo Chongkan</h2>
+              <p class="text-xs text-slate-300 font-bold uppercase tracking-wider mt-1">Race Engineer &amp; Prototipos</p>
+            </div>
+
+            <!-- Bio / Specialty -->
+            <p class="text-xs text-neutral-300 leading-relaxed text-center min-h-[48px]">
+              Ingeniero de pista y piloto de prototipos. Especializado en curvas de amortiguación, desgaste de gomas y ritmo en stints largos.
+            </p>
+            
+            <!-- Hardware Specs Strip -->
+            <div class="p-3 rounded-xl bg-white/5 border border-white/5 text-[11px] font-mono text-neutral-400 space-y-1">
+              <div class="flex justify-between">
+                <span>Coches:</span>
+                <span class="text-white font-bold">Cadillac GTP / Dallara P217</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Rig:</span>
+                <span class="text-slate-300">Direct Drive + Hydraulic Pedals</span>
               </div>
             </div>
 
-            <h3 class="text-lg font-bold text-white mb-1">Eduardo Chongkan</h3>
-            <p class="text-xs text-slate-300 font-semibold mb-2">Race Engineer &amp; Prototipos</p>
-            <p class="text-xs text-neutral-400 mb-4 leading-relaxed line-clamp-2">Optimización de curvas de amortiguación, desgaste de gomas y ritmo en stints largos.</p>
-            
-            <div class="flex flex-wrap justify-center gap-1.5 mb-5">
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-neutral-300 border border-white/5">LMP2</span>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-neutral-300 border border-white/5">Cadillac GTP</span>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-neutral-300 border border-white/5">Nürburgring</span>
+            <!-- Category Pills -->
+            <div class="flex flex-wrap justify-center gap-1.5 pt-1">
+              <span class="text-[10px] font-mono px-2.5 py-1 rounded-lg bg-slate-500/10 text-slate-300 border border-slate-400/20">LMP2 Prototype</span>
+              <span class="text-[10px] font-mono px-2.5 py-1 rounded-lg bg-white/5 text-neutral-300 border border-white/10">Cadillac GTP</span>
+              <span class="text-[10px] font-mono px-2.5 py-1 rounded-lg bg-white/5 text-neutral-300 border border-white/10">Nürburgring 24H</span>
             </div>
           </div>
 
-          <a href="/p/eduardo-chongkan/" class="w-full py-2.5 bg-slate-200 hover:bg-white text-neutral-950 text-xs font-bold rounded-xl transition shadow-sm inline-flex items-center justify-center gap-1.5">
-            <span>Ver Perfil y Telemetría</span>
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-          </a>
-        </div>
+          <!-- Bottom Action Button -->
+          <div class="pt-6">
+            <a href="/p/eduardo-chongkan/" class="w-full py-3 bg-slate-200 hover:bg-white text-neutral-950 text-xs font-black uppercase tracking-wider rounded-xl transition shadow-lg shadow-white/10 inline-flex items-center justify-center gap-2">
+              <span>Ver Ficha y Telemetría</span>
+              <span class="text-base">&rarr;</span>
+            </a>
+          </div>
+        </article>
 
         <!-- DRIVER 4: Juanlu Carrillo -->
-        <div class="driver-card bg-[#161c24] border border-white/10 rounded-2xl p-6 text-center relative overflow-hidden flex flex-col justify-between shadow-xl hover:border-orange-500/40 transition duration-300" data-license="all" data-name="Juanlu Carrillo">
-          <div>
-            <div class="flex items-center justify-between mb-4">
-              <span class="text-xs text-neutral-400 font-bold rank-badge">#4</span>
-              <span class="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-orange-500/15 border border-orange-500/30 text-orange-400 uppercase tracking-wider">DRIVER</span>
+        <article class="driver-card bg-[#161c24] border border-orange-500/30 rounded-3xl p-6 sm:p-7 flex flex-col justify-between shadow-2xl relative overflow-hidden group hover:border-orange-400 transition-all duration-300" data-categories="formula gt3">
+          <div class="space-y-5">
+            <!-- Top Card Header: Number & Role Badge -->
+            <div class="flex items-center justify-between">
+              <span class="text-lg font-black text-white font-mono">#4</span>
+              <span class="text-[10px] font-bold px-3 py-1 rounded-full bg-orange-500/15 border border-orange-500/30 text-orange-400 uppercase tracking-wider">
+                DRIVER
+              </span>
             </div>
 
-            <div class="relative inline-block mb-4">
-              <div class="w-24 h-24 rounded-full border-2 border-orange-500 bg-orange-950/60 flex items-center justify-center mx-auto shadow-xl font-extrabold text-2xl text-orange-400">
-                JC
+            <!-- Driver Avatar -->
+            <div class="text-center pt-2">
+              <div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-orange-500/20 to-orange-950/60 border-2 border-orange-500/40 flex items-center justify-center mx-auto shadow-xl group-hover:scale-105 group-hover:border-orange-300 transition-all">
+                <span class="font-black text-3xl text-orange-400 tracking-wider font-mono">JC</span>
+              </div>
+              <h2 class="text-xl font-black text-white mt-4 tracking-tight">Juanlu Carrillo</h2>
+              <p class="text-xs text-orange-400 font-bold uppercase tracking-wider mt-1">Monoplazas &amp; Formula Specialist</p>
+            </div>
+
+            <!-- Bio / Specialty -->
+            <p class="text-xs text-neutral-300 leading-relaxed text-center min-h-[48px]">
+              Especialista en monoplazas de alta carga aerodinámica, batallas cuerpo a cuerpo y gestión de tráfico en Super Formula Lights.
+            </p>
+            
+            <!-- Hardware Specs Strip -->
+            <div class="p-3 rounded-xl bg-white/5 border border-white/5 text-[11px] font-mono text-neutral-400 space-y-1">
+              <div class="flex justify-between">
+                <span>Coches:</span>
+                <span class="text-white font-bold">SFL 324 / FIA Formula 4</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Rig:</span>
+                <span class="text-orange-400">Direct Drive Pro + Formula Wheel</span>
               </div>
             </div>
 
-            <h3 class="text-lg font-bold text-white mb-1">Juanlu Carrillo</h3>
-            <p class="text-xs text-orange-400 font-semibold mb-2">Monoplazas &amp; Formula Specialist</p>
-            <p class="text-xs text-neutral-400 mb-4 leading-relaxed line-clamp-2">Especialista en monoplazas de alta carga aerodinámica, batallas rueda a rueda y SFL.</p>
-            
-            <div class="flex flex-wrap justify-center gap-1.5 mb-5">
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-neutral-300 border border-white/5">SFL</span>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-neutral-300 border border-white/5">FIA F4</span>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-neutral-300 border border-white/5">Daytona 24H</span>
+            <!-- Category Pills -->
+            <div class="flex flex-wrap justify-center gap-1.5 pt-1">
+              <span class="text-[10px] font-mono px-2.5 py-1 rounded-lg bg-orange-500/10 text-orange-300 border border-orange-500/20">Super Formula Lights</span>
+              <span class="text-[10px] font-mono px-2.5 py-1 rounded-lg bg-white/5 text-neutral-300 border border-white/10">FIA F4</span>
+              <span class="text-[10px] font-mono px-2.5 py-1 rounded-lg bg-white/5 text-neutral-300 border border-white/10">Daytona 24H</span>
             </div>
           </div>
 
-          <a href="/p/juanlu-carrillo/" class="w-full py-2.5 bg-orange-500 hover:bg-orange-400 text-neutral-950 text-xs font-bold rounded-xl transition shadow-sm inline-flex items-center justify-center gap-1.5">
-            <span>Ver Perfil y Telemetría</span>
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-          </a>
-        </div>
+          <!-- Bottom Action Button -->
+          <div class="pt-6">
+            <a href="/p/juanlu-carrillo/" class="w-full py-3 bg-orange-500 hover:bg-orange-400 text-neutral-950 text-xs font-black uppercase tracking-wider rounded-xl transition shadow-lg shadow-orange-500/20 inline-flex items-center justify-center gap-2">
+              <span>Ver Ficha y Telemetría</span>
+              <span class="text-base">&rarr;</span>
+            </a>
+          </div>
+        </article>
 
-      </div>
-
-      <!-- No Results Message -->
-      <div id="noResults" class="hidden text-center py-12 text-sm text-neutral-500 bg-[#161c24] rounded-2xl border border-white/10 mt-8">
-        No drivers match current filter query.
       </div>
 
     </div>
   </section>
 
   <!-- ========================================================================= -->
-  <!-- 5. COMMUNITY DISCORD CALLOUT                                              -->
+  <!-- 3. COMMUNITY DISCORD CALLOUT & TEAM COLLABORATION                         -->
   <!-- ========================================================================= -->
   <section id="discord" class="py-16 bg-[#0e1217] border-t border-white/10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-[#141a23] border border-white/10 rounded-3xl p-8 sm:p-12 shadow-2xl">
         
-        <div class="lg:col-span-6 space-y-4">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-emerald-400 text-xs font-semibold">
-            <span>Community</span>
+        <div class="lg:col-span-7 space-y-4">
+          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
+            <span>🏁 Official Communications</span>
           </div>
-          <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Connect With <span class="text-emerald-400">the Team</span>
+          <h2 class="text-3xl sm:text-4xl font-black text-white tracking-tight">
+            Canales de Voz y <span class="text-emerald-400">Telemetría en Vivo</span>
           </h2>
-          <p class="text-sm text-neutral-400 leading-relaxed">
-            Join the Muntrume Motorsport Discord to talk setups and racing with the team.
+          <p class="text-sm text-neutral-300 leading-relaxed max-w-xl">
+            Únete al canal oficial de Discord de Muntrume Motorsport para compartir telemetrías en tiempo real con los pilotos, debatir estrategias de carrera y seguir las retransmisiones oficiales.
           </p>
-          <div class="pt-2">
-            <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-extrabold text-xs uppercase tracking-wider px-6 py-3.5 rounded-xl transition shadow-lg shadow-emerald-500/20">
-              <span>Join Race Comms on Discord</span>
-              <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.13-.255-.01-.556-.28-.646a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+          <div class="pt-3 flex flex-wrap items-center gap-4">
+            <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider px-6 py-3.5 rounded-xl transition shadow-lg shadow-emerald-500/20">
+              <span>Unirse a Discord Oficial</span>
+              <span class="text-base">&rarr;</span>
+            </a>
+            <a href="/mail" class="inline-flex items-center gap-2 px-5 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-xs uppercase tracking-wider transition">
+              <span>Buzón Institucional Webmail</span>
             </a>
           </div>
         </div>
 
-        <div class="lg:col-span-6">
-          <div class="bg-[#161c24] border border-white/10 rounded-2xl p-6 shadow-xl space-y-4">
-            <div class="flex items-center justify-between pb-4 border-b border-white/10">
-              <div class="flex items-center gap-3">
-                <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span class="font-bold text-white text-sm">Discord Server Status</span>
-              </div>
-              <span class="text-xs text-emerald-400 font-mono">Online</span>
+        <div class="lg:col-span-5 bg-[#0e1217] border border-white/10 rounded-2xl p-6 space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-white/10">
+            <div class="flex items-center gap-3">
+              <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="font-bold text-white text-xs uppercase tracking-wider">Race Operations Center</span>
             </div>
-            <p class="text-xs text-neutral-300 leading-relaxed">
-              Discusión de telemetría en tiempo real, anuncios de carreras, retransmisiones en directo y canales de voz para sesiones de iRacing.
-            </p>
+            <span class="text-[11px] text-emerald-400 font-mono font-bold">Activo 24/7</span>
+          </div>
+          <p class="text-xs text-neutral-400 leading-relaxed">
+            Ingeniería de datos a 60 Hz en MoTeC i2 Pro, sincronización directa con Garage 61 y briefings de carrera cifrados para el equipo.
+          </p>
+          <div class="pt-2 flex items-center justify-between text-[11px] font-mono text-neutral-500 border-t border-white/5">
+            <span>Servidor: Muntrume Discord</span>
+            <span class="text-neutral-300 font-bold">4 Pilotos Oficiales</span>
           </div>
         </div>
 
@@ -258,78 +345,40 @@ const pageDescription = "Meet the four official drivers of Muntrume Motorsport, 
   </section>
 
   <!-- ========================================================================= -->
-  <!-- JAVASCRIPT: Filter, Search & Sorting Controller                           -->
+  <!-- 4. JAVASCRIPT: Category Filter Controller                                 -->
   <!-- ========================================================================= -->
   <script is:inline>
-    function setupDriverFilters() {
-      const searchInput = document.getElementById('searchInput');
-      const sortSelect = document.getElementById('sortSelect');
-      const driversGrid = document.getElementById('driversGrid');
-      const noResults = document.getElementById('noResults');
-      if (!searchInput || !driversGrid) return;
+    function setupRosterFilters() {
+      const pills = document.querySelectorAll('.team-filter-pill');
+      const cards = document.querySelectorAll('.driver-card');
+      if (!pills.length || !cards.length) return;
 
-      let currentSearch = '';
-      let currentSort = 'roster';
-      document.querySelectorAll('.driver-card').forEach((c, i) => { c.dataset.order = i; });
+      pills.forEach(pill => {
+        pill.addEventListener('click', () => {
+          pills.forEach(p => {
+            p.classList.remove('active', 'bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/30');
+            p.classList.add('text-neutral-400', 'bg-white/5', 'border-white/10');
+          });
+          pill.classList.add('active', 'bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/30');
+          pill.classList.remove('text-neutral-400', 'bg-white/5', 'border-white/10');
 
-      function applyDriverFilters() {
-        const cards = Array.from(document.querySelectorAll('.driver-card'));
-        let visible = 0;
-
-        cards.forEach(c => {
-          const name = (c.dataset.name || '').toLowerCase();
-          const matchSearch = !currentSearch || name.includes(currentSearch.toLowerCase());
-
-          if (matchSearch) {
-            c.style.display = '';
-            visible++;
-          } else {
-            c.style.display = 'none';
-          }
+          const filter = pill.dataset.filter;
+          cards.forEach(card => {
+            if (filter === 'all') {
+              card.style.display = '';
+            } else {
+              const cats = (card.dataset.categories || '').toLowerCase();
+              card.style.display = cats.includes(filter) ? '' : 'none';
+            }
+          });
         });
-
-        if (noResults) {
-          if (visible === 0) noResults.classList.remove('hidden');
-          else noResults.classList.add('hidden');
-        }
-
-        applyDriverSorting();
-      }
-
-      function applyDriverSorting() {
-        const visibleCards = Array.from(document.querySelectorAll('.driver-card')).filter(c => c.style.display !== 'none');
-        visibleCards.sort((a, b) => {
-          switch (currentSort) {
-            case 'roster': return Number(a.dataset.order) - Number(b.dataset.order);
-            case 'name-asc': return (a.dataset.name || '').localeCompare(b.dataset.name || '');
-            default: return 0;
-          }
-        });
-
-        visibleCards.forEach((c, i) => {
-          const badge = c.querySelector('.rank-badge');
-          if (badge) badge.textContent = `#${i + 1}`;
-          driversGrid.appendChild(c);
-        });
-      }
-
-      searchInput.addEventListener('input', (e) => {
-        currentSearch = e.target.value;
-        applyDriverFilters();
       });
-
-      if (sortSelect) {
-        sortSelect.addEventListener('change', (e) => {
-          currentSort = e.target.value;
-          applyDriverSorting();
-        });
-      }
     }
 
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', setupDriverFilters);
+      document.addEventListener('DOMContentLoaded', setupRosterFilters);
     } else {
-      setupDriverFilters();
+      setupRosterFilters();
     }
   </script>
 </Layout>

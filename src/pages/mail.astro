@@ -1,64 +1,34 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-const pageTitle = "Webmail & Telemetry Comms · Muntrume Motorsport";
+const pageTitle = "Corporate Webmail & Telemetry Comms · Muntrume Motorsport";
 const pageDescription = "Embedded corporate webmail client and institutional telemetry communications portal for Muntrume Motorsport drivers, engineering and staff.";
 ---
 
 <Layout title={pageTitle} description={pageDescription}>
   <!-- ========================================================================= -->
-  <!-- 1. HERO HEADER: WEBMAIL WORKSPACE & SYSTEM STATUS                         -->
+  <!-- 1. COMPACT HERO BAR (NO EXCESSIVE VERTICAL BLOAT)                         -->
   <!-- ========================================================================= -->
-  <section class="pt-28 pb-6 bg-[#0e1217] border-b border-white/10">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <section class="pt-24 pb-4 bg-[#0e1217] border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
       
-      <!-- Top Status Strip -->
-      <div class="flex flex-wrap items-center justify-between gap-4 pb-4 mb-4 border-b border-white/10 text-xs">
-        <div class="flex items-center gap-3">
-          <span class="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-semibold uppercase flex items-center gap-2">
+      <!-- Top Status & Driver Identity Strip -->
+      <div class="flex flex-wrap items-center justify-between gap-3 py-2">
+        <div class="flex items-center gap-2.5">
+          <span class="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold uppercase text-[11px] flex items-center gap-2">
             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            Institutional Domain · @muntru.me
+            @muntru.me Webmail
           </span>
-          <span class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-mono text-[11px]">
+          <span class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-neutral-400 font-mono text-[11px]">
             ⚡ Cloudflare Edge + Brevo Relay
           </span>
         </div>
-        <div class="flex items-center gap-3 text-neutral-400 font-medium font-mono text-[11px]">
-          <span class="text-emerald-400 flex items-center gap-1">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-            TLS 1.3 Strict
-          </span>
-          <span class="text-neutral-600">|</span>
-          <span>DMARC 100% Pass</span>
-          <span class="text-neutral-600">|</span>
-          <button id="open-settings-btn" class="text-emerald-400 hover:text-emerald-300 underline font-sans transition">
-            Configuración Brevo
-          </button>
-        </div>
-      </div>
 
-      <!-- Header Title & Active Identity Selector -->
-      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 py-2">
-        <div>
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-emerald-400 text-xs font-semibold mb-2">
-            <span>🏁 Muntrume Team Mail Client</span>
-          </div>
-          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white">
-            CORP <span class="text-emerald-400">WEBMAIL</span>
-          </h1>
-          <p class="text-xs sm:text-sm text-neutral-400 mt-1">
-            Gestión interna de briefings de carrera, telemetrías y setups sin salir de la plataforma oficial.
-          </p>
-        </div>
-
-        <!-- Identity Switcher Dropdown -->
-        <div class="bg-[#161c24] border border-white/10 rounded-2xl p-2.5 flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center font-bold text-emerald-400 text-sm shadow-inner" id="active-avatar">
-            AT
-          </div>
-          <div class="text-left pr-2">
-            <div class="text-[10px] uppercase font-mono tracking-wider text-neutral-400 font-bold">Buzón Activo</div>
-            <select id="driver-account-selector" class="bg-transparent text-white font-bold text-xs focus:outline-none cursor-pointer">
+        <!-- Identity Selector & Settings -->
+        <div class="flex items-center gap-2 text-xs">
+          <div class="bg-[#161c24] border border-white/10 rounded-xl px-2.5 py-1.5 flex items-center gap-2">
+            <span class="text-[10px] uppercase font-mono tracking-wider text-neutral-400 font-bold hidden sm:inline">Buzón:</span>
+            <select id="driver-account-selector" class="bg-transparent text-emerald-400 font-bold text-xs focus:outline-none cursor-pointer">
               <option value="alberto@muntru.me" selected>Alberto Trujillo (alberto@muntru.me)</option>
               <option value="mateo@muntru.me">Mateo Berbis (mateo@muntru.me)</option>
               <option value="eduardo@muntru.me">Eduardo Chongkan (eduardo@muntru.me)</option>
@@ -66,6 +36,11 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
               <option value="admin@muntru.me">Race Control (admin@muntru.me)</option>
             </select>
           </div>
+
+          <button id="open-settings-btn" title="Configurar Brevo API" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 hover:text-white transition flex items-center gap-1.5 font-sans font-bold">
+            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <span class="hidden md:inline">Brevo API</span>
+          </button>
         </div>
       </div>
 
@@ -75,18 +50,18 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
   <!-- ========================================================================= -->
   <!-- 2. GMAIL-STYLE EMBEDDED WEBMAIL APP CONTAINER                             -->
   <!-- ========================================================================= -->
-  <section class="py-6 bg-[#090d12] min-h-[750px]">
-    <div class="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
+  <section class="py-4 sm:py-6 bg-[#090d12]">
+    <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
       
       <!-- Main Webmail Card UI -->
-      <div class="bg-[#12171f] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col min-h-[680px]">
+      <div class="bg-[#12171f] border border-white/10 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[740px] max-h-[85vh]">
         
         <!-- TOP APP TOOLBAR -->
-        <div class="p-3 sm:p-4 bg-[#161c24] border-b border-white/10 flex flex-wrap items-center justify-between gap-3">
+        <header class="p-3 sm:p-4 bg-[#161c24] border-b border-white/10 flex items-center justify-between gap-3 shrink-0">
           
           <!-- Mobile Sidebar Toggle & Search Bar -->
-          <div class="flex items-center gap-3 flex-1 min-w-[260px]">
-            <button id="toggle-sidebar-mobile" class="md:hidden p-2 rounded-xl bg-white/5 border border-white/10 text-neutral-300 hover:text-white" aria-label="Abrir carpetas">
+          <div class="flex items-center gap-2.5 flex-1 min-w-0">
+            <button id="toggle-sidebar-mobile" class="md:hidden p-2 rounded-xl bg-white/5 border border-white/10 text-neutral-300 hover:text-white shrink-0" aria-label="Abrir carpetas">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
             </button>
 
@@ -99,39 +74,42 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
                 type="text" 
                 id="mail-search-input" 
                 placeholder="Buscar en correos, setups .sto, telemetrías o pilotos..." 
-                class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#0e1217] border border-white/10 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500/50 transition font-sans"
+                class="w-full pl-10 pr-4 py-2 sm:py-2.5 rounded-xl bg-[#0e1217] border border-white/10 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500/50 transition font-sans"
               />
             </div>
           </div>
 
-          <!-- Quick Actions & Status -->
-          <div class="flex items-center gap-2">
-            <button id="refresh-mailbox-btn" title="Actualizar buzón" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 hover:text-emerald-400 transition">
+          <!-- Quick Actions & Compose -->
+          <div class="flex items-center gap-2 shrink-0">
+            <button id="refresh-mailbox-btn" title="Actualizar buzón" class="p-2 sm:p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 hover:text-emerald-400 transition">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
             </button>
-            <button id="open-compose-header-btn" class="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-emerald-500/20">
+            <button id="open-compose-header-btn" class="inline-flex items-center gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider transition shadow-lg shadow-emerald-500/20 shrink-0">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-              <span>Redactar</span>
+              <span class="hidden sm:inline">Redactar</span>
             </button>
           </div>
 
-        </div>
+        </header>
 
-        <!-- APP BODY (SIDEBAR + MESSAGE LIST / DETAIL VIEW) -->
+        <!-- APP BODY (SIDEBAR + MAIN CONTENT VIEW) -->
         <div class="flex-1 flex overflow-hidden relative">
           
+          <!-- MOBILE BACKDROP -->
+          <div id="sidebar-backdrop" class="hidden md:hidden fixed inset-0 bg-black/60 z-20 backdrop-blur-xs"></div>
+
           <!-- LEFT SIDEBAR (GMAIL FOLDERS) -->
-          <aside id="mail-sidebar" class="w-64 bg-[#131922] border-r border-white/10 flex flex-col justify-between shrink-0 transition-transform duration-200 z-20 absolute inset-y-0 left-0 md:relative md:translate-x-0 -translate-x-full">
+          <aside id="mail-sidebar" class="w-64 bg-[#131922] border-r border-white/10 flex flex-col justify-between shrink-0 transition-transform duration-200 z-30 absolute inset-y-0 left-0 md:relative md:translate-x-0 -translate-x-full overflow-y-auto">
             <div class="p-4 space-y-4">
               <!-- Compose Button (Prominent Gmail Style) -->
-              <button id="open-compose-btn" class="w-full py-3.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 group">
+              <button id="open-compose-btn" class="w-full py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider transition shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 group">
                 <svg class="w-4 h-4 group-hover:rotate-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                <span>Redactar Mensaje</span>
+                <span>Nuevo Mensaje</span>
               </button>
 
               <!-- Folder Nav Links -->
               <nav class="space-y-1" id="folders-nav">
-                <button data-folder="inbox" class="folder-btn active w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition">
+                <button data-folder="inbox" class="folder-btn active w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition">
                   <div class="flex items-center gap-3">
                     <span class="text-base">📥</span>
                     <span>Bandeja de entrada</span>
@@ -181,17 +159,17 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
 
               <!-- Quick Tag Filters -->
               <div class="pt-4 border-t border-white/10 space-y-2">
-                <div class="text-[10px] font-mono uppercase tracking-wider text-neutral-500 font-bold px-2">Etiquetas de Carrera</div>
+                <div class="text-[10px] font-mono uppercase tracking-wider text-neutral-500 font-bold px-2">Categorías de Carrera</div>
                 <div class="flex flex-col gap-1 text-xs">
-                  <button data-tag="strategy" class="tag-filter text-left px-3 py-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-white/5 flex items-center gap-2">
+                  <button data-tag="estrategia" class="tag-filter text-left px-3 py-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-white/5 flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-blue-400"></span>
                     <span>Estrategia &amp; Stints</span>
                   </button>
-                  <button data-tag="telemetry" class="tag-filter text-left px-3 py-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-white/5 flex items-center gap-2">
+                  <button data-tag="telemetría" class="tag-filter text-left px-3 py-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-white/5 flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
                     <span>Telemetría MoTeC</span>
                   </button>
-                  <button data-tag="governance" class="tag-filter text-left px-3 py-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-white/5 flex items-center gap-2">
+                  <button data-tag="oficial" class="tag-filter text-left px-3 py-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-white/5 flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-purple-400"></span>
                     <span>Comisarios &amp; Reglas</span>
                   </button>
@@ -200,7 +178,7 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
             </div>
 
             <!-- Sidebar Bottom: Storage Meter & Edge Relay -->
-            <div class="p-4 bg-[#0e1217] border-t border-white/10 space-y-3">
+            <div class="p-4 bg-[#0e1217] border-t border-white/10 space-y-2.5 shrink-0">
               <div class="flex justify-between items-center text-[10px] font-mono text-neutral-400">
                 <span>Almacenamiento Vault</span>
                 <span class="text-emerald-400 font-bold">1.4 GB / 15 GB</span>
@@ -213,7 +191,7 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
                   <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                   Relay Online
                 </span>
-                <span id="brevo-badge" class="px-1.5 py-0.5 rounded bg-white/5 text-neutral-400">Brevo v3</span>
+                <span class="px-1.5 py-0.5 rounded bg-white/5 text-neutral-400">TLS 1.3</span>
               </div>
             </div>
           </aside>
@@ -222,21 +200,21 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
           <main class="flex-1 flex flex-col bg-[#0e1217] overflow-hidden min-w-0">
             
             <!-- FILTER TABS & BULK ACTIONS STRIP -->
-            <div class="px-4 py-2.5 bg-[#141a23] border-b border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div class="px-3 sm:px-4 py-2.5 bg-[#141a23] border-b border-white/10 flex flex-wrap items-center justify-between gap-2.5 text-xs shrink-0">
               
               <!-- Tab Pills -->
-              <div class="flex items-center gap-1.5" id="category-tabs">
-                <button data-filter="all" class="category-pill active px-3 py-1.5 rounded-lg font-bold text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+              <div class="flex flex-wrap items-center gap-1.5" id="category-tabs">
+                <button data-filter="all" class="category-pill active px-3 py-1 rounded-lg font-bold text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                   Todos
                 </button>
-                <button data-filter="unread" class="category-pill px-3 py-1.5 rounded-lg font-medium text-xs text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent">
+                <button data-filter="unread" class="category-pill px-3 py-1 rounded-lg font-medium text-xs text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent">
                   No leídos
                 </button>
-                <button data-filter="has_setup" class="category-pill px-3 py-1.5 rounded-lg font-medium text-xs text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent flex items-center gap-1.5">
+                <button data-filter="has_setup" class="category-pill px-3 py-1 rounded-lg font-medium text-xs text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent flex items-center gap-1.5">
                   <span>Con Setups</span>
                   <span class="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400 text-[10px] font-mono">.sto</span>
                 </button>
-                <button data-filter="starred" class="category-pill px-3 py-1.5 rounded-lg font-medium text-xs text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent">
+                <button data-filter="starred" class="category-pill px-3 py-1 rounded-lg font-medium text-xs text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent">
                   ⭐ Destacados
                 </button>
               </div>
@@ -247,18 +225,18 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
               </div>
             </div>
 
-            <!-- EMAIL LIST VIEW (GMAIL ROWS) -->
+            <!-- EMAIL LIST VIEW (RESPONSIVE NON-SQUASHED ROWS) -->
             <div id="email-list-container" class="flex-1 overflow-y-auto divide-y divide-white/5">
               <!-- Dynamically populated rows -->
             </div>
 
             <!-- EMAIL DETAIL READING PANE (HIDDEN BY DEFAULT) -->
-            <div id="email-detail-container" class="flex-1 overflow-y-auto hidden flex-col p-4 sm:p-6 bg-[#0e1217]">
+            <div id="email-detail-container" class="flex-1 overflow-y-auto hidden flex-col p-4 sm:p-7 bg-[#0e1217]">
               <!-- Toolbar back button -->
-              <div class="flex items-center justify-between pb-4 mb-6 border-b border-white/10">
-                <button id="back-to-list-btn" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-neutral-300 hover:text-white transition">
+              <div class="flex items-center justify-between pb-4 mb-6 border-b border-white/10 shrink-0">
+                <button id="back-to-list-btn" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-neutral-300 hover:text-white transition">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                  <span>Volver a la bandeja</span>
+                  <span>Volver al buzón</span>
                 </button>
 
                 <div class="flex items-center gap-2">
@@ -268,78 +246,79 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
                   <button id="detail-delete-btn" class="p-2 rounded-xl bg-white/5 hover:bg-red-500/20 text-neutral-400 hover:text-red-400 transition" title="Mover a papelera">
                     🗑️
                   </button>
-                  <button id="detail-reply-top-btn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-400 text-xs font-bold transition">
+                  <button id="detail-reply-top-btn" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-400 text-xs font-bold transition">
                     <span>↩️ Responder</span>
                   </button>
                 </div>
               </div>
 
               <!-- Detail Header -->
-              <div class="space-y-4 mb-6">
+              <div class="space-y-4 mb-6 shrink-0">
                 <div class="flex flex-wrap items-center gap-2" id="detail-tags">
                   <!-- Badges inserted here -->
                 </div>
 
-                <h2 id="detail-subject" class="text-xl sm:text-2xl font-black text-white tracking-tight">
+                <h2 id="detail-subject" class="text-xl sm:text-2xl font-black text-white tracking-tight leading-snug">
                   <!-- Subject inserted here -->
                 </h2>
 
-                <div class="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-[#161c24] border border-white/10">
-                  <div class="flex items-center gap-3">
-                    <div id="detail-avatar" class="w-11 h-11 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center font-bold text-emerald-400 text-sm">
+                <!-- Sender Info Card -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-[#161c24] border border-white/10">
+                  <div class="flex items-center gap-3.5">
+                    <div id="detail-avatar" class="w-11 h-11 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center font-bold text-emerald-400 text-sm shrink-0 font-mono">
                       --
                     </div>
                     <div>
-                      <div class="flex items-center gap-2">
+                      <div class="flex flex-wrap items-center gap-2">
                         <span id="detail-sender-name" class="font-bold text-sm text-white"></span>
                         <span id="detail-sender-email" class="text-xs font-mono text-emerald-400"></span>
                         <span class="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-mono text-[9px] font-bold">
                           ✓ DKIM Verified
                         </span>
                       </div>
-                      <div class="text-[11px] text-neutral-400 font-mono mt-0.5">
+                      <div class="text-[11px] text-neutral-400 font-mono mt-1">
                         Para: <span id="detail-recipients" class="text-neutral-300"></span>
                       </div>
                     </div>
                   </div>
 
-                  <div class="text-right">
-                    <div id="detail-date" class="text-xs font-mono text-neutral-400"></div>
-                    <div class="text-[10px] font-mono text-neutral-500 mt-0.5">Cifrado TLS 1.3 / Brevo SMTP Relay</div>
+                  <div class="sm:text-right text-left text-xs font-mono text-neutral-400 border-t sm:border-t-0 pt-2 sm:pt-0 border-white/5">
+                    <div id="detail-date" class="font-semibold text-neutral-300"></div>
+                    <div class="text-[10px] text-neutral-500 mt-0.5">Cifrado TLS 1.3 / Brevo SMTP Relay</div>
                   </div>
                 </div>
               </div>
 
               <!-- Message Body -->
-              <div id="detail-body" class="p-6 rounded-2xl bg-[#131922] border border-white/10 text-neutral-200 text-sm leading-relaxed space-y-4 font-sans whitespace-pre-line mb-6">
+              <div id="detail-body" class="p-6 sm:p-8 rounded-2xl bg-[#131922] border border-white/10 text-neutral-200 text-sm leading-relaxed space-y-4 font-sans whitespace-pre-line mb-6 shadow-inner">
                 <!-- Rich body text -->
               </div>
 
               <!-- Attachment Card (if present) -->
-              <div id="detail-attachment-box" class="hidden mb-6 p-4 rounded-2xl bg-[#161c24] border border-amber-500/30 flex items-center justify-between gap-4">
+              <div id="detail-attachment-box" class="hidden mb-6 p-4 sm:p-5 rounded-2xl bg-[#161c24] border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-xl font-mono font-bold">
+                  <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-xl font-mono font-bold shrink-0">
                     ⚙️
                   </div>
-                  <div>
-                    <div id="attachment-name" class="text-xs font-bold text-white font-mono">setup_spa_v3.sto</div>
+                  <div class="min-w-0">
+                    <div id="attachment-name" class="text-xs font-bold text-white font-mono truncate">setup_spa_v3.sto</div>
                     <div id="attachment-meta" class="text-[11px] text-neutral-400">Archivo de Setup Oficial Assetto Corsa Competizione / iRacing · 14 KB</div>
                   </div>
                 </div>
-                <button id="download-setup-btn" class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs uppercase tracking-wider transition flex items-center gap-2">
+                <button id="download-setup-btn" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 font-black text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 shrink-0">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                   <span>Descargar .STO</span>
                 </button>
               </div>
 
               <!-- Reply Action Box -->
-              <div class="p-4 rounded-2xl bg-[#141a23] border border-white/10 flex items-center justify-between">
+              <div class="p-4 sm:p-5 rounded-2xl bg-[#141a23] border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div class="text-xs text-neutral-400">
-                  ¿Deseas enviar telemetría de respuesta o notas de ingeniero?
+                  ¿Deseas enviar telemetría de respuesta o notas de ingeniero para la próxima sesión?
                 </div>
-                <button id="detail-reply-bottom-btn" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold text-xs uppercase tracking-wider transition flex items-center gap-2">
+                <button id="detail-reply-bottom-btn" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 shrink-0">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
-                  <span>Responder a este correo</span>
+                  <span>Responder</span>
                 </button>
               </div>
 
@@ -354,11 +333,11 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
   </section>
 
   <!-- ========================================================================= -->
-  <!-- 3. FLOATING GMAIL COMPOSE MODAL (BOTTOM-RIGHT)                             -->
+  <!-- 3. GMAIL FLOATING COMPOSE WINDOW (KEYBOARD-SAFE & RESPONSIVE)             -->
   <!-- ========================================================================= -->
-  <div id="compose-modal" class="hidden fixed bottom-4 right-4 sm:right-6 w-[94vw] sm:w-[540px] max-w-[94vw] bg-[#161c24] border border-emerald-500/40 rounded-2xl shadow-2xl z-50 overflow-hidden flex-col">
+  <div id="compose-modal" class="hidden fixed inset-x-2 bottom-2 sm:inset-x-auto sm:right-6 sm:bottom-6 sm:w-[540px] max-h-[92vh] bg-[#161c24] border border-emerald-500/40 rounded-2xl sm:rounded-3xl shadow-2xl z-50 overflow-hidden flex-col">
     <!-- Compose Header -->
-    <div class="px-4 py-3 bg-[#1c2430] border-b border-white/10 flex items-center justify-between">
+    <div class="px-4 py-3 bg-[#1c2430] border-b border-white/10 flex items-center justify-between shrink-0">
       <div class="flex items-center gap-2">
         <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
         <span class="font-bold text-xs text-white uppercase tracking-wider">Nuevo Mensaje de Carrera</span>
@@ -371,9 +350,9 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
     </div>
 
     <!-- Compose Form -->
-    <form id="compose-form" class="p-4 space-y-3 flex-1 flex flex-col">
+    <form id="compose-form" class="p-4 space-y-3 flex-1 flex flex-col overflow-y-auto">
       <!-- Sender selection -->
-      <div class="flex items-center gap-2 text-xs border-b border-white/5 pb-2">
+      <div class="flex items-center gap-2 text-xs border-b border-white/5 pb-2 shrink-0">
         <span class="text-neutral-400 w-12 font-mono">De:</span>
         <select id="compose-from" class="flex-1 bg-transparent text-emerald-400 font-bold focus:outline-none cursor-pointer">
           <option value="alberto@muntru.me">Alberto Trujillo &lt;alberto@muntru.me&gt;</option>
@@ -385,7 +364,7 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
       </div>
 
       <!-- Recipient (Para) with quick chips -->
-      <div class="space-y-1.5 border-b border-white/5 pb-2">
+      <div class="space-y-1.5 border-b border-white/5 pb-2 shrink-0">
         <div class="flex items-center gap-2 text-xs">
           <span class="text-neutral-400 w-12 font-mono">Para:</span>
           <input 
@@ -397,7 +376,7 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
           />
         </div>
         <!-- Quick recipient chips -->
-        <div class="flex flex-wrap gap-1 pl-14">
+        <div class="flex flex-wrap gap-1 pl-12">
           <button type="button" data-chip="alberto@muntru.me" class="driver-chip px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-neutral-300 font-mono text-[10px]">
             + Alberto
           </button>
@@ -417,7 +396,7 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
       </div>
 
       <!-- Subject -->
-      <div class="flex items-center gap-2 text-xs border-b border-white/5 pb-2">
+      <div class="flex items-center gap-2 text-xs border-b border-white/5 pb-2 shrink-0">
         <span class="text-neutral-400 w-12 font-mono">Asunto:</span>
         <input 
           type="text" 
@@ -429,15 +408,15 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
       </div>
 
       <!-- Setup Attachment toggle/input -->
-      <div class="flex items-center justify-between py-1 text-xs text-neutral-400 font-mono">
+      <div class="flex items-center justify-between py-1 text-xs text-neutral-400 font-mono shrink-0">
         <div class="flex items-center gap-2">
-          <span>Adjuntar Telemetría / Setup:</span>
-          <label class="cursor-pointer px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/20 transition text-[10px]">
-            <span>Examinar (.sto / .motec / .pdf)</span>
+          <span class="text-[11px]">Adjuntar Setup:</span>
+          <label class="cursor-pointer px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/20 transition text-[10px] font-bold">
+            <span>Examinar (.sto / .motec)</span>
             <input type="file" id="compose-file-input" class="hidden" accept=".sto,.motec,.ld,.ldx,.pdf,.csv,.json" />
           </label>
         </div>
-        <span id="compose-file-name" class="text-neutral-500 truncate max-w-[150px]">Ninguno</span>
+        <span id="compose-file-name" class="text-neutral-500 truncate max-w-[140px] text-[10px]">Ninguno</span>
       </div>
 
       <!-- Message Text Area -->
@@ -446,15 +425,15 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
           id="compose-body" 
           required 
           placeholder="Escribe el reporte de carrera, telemetría o estrategia aquí..." 
-          class="w-full h-full p-2.5 rounded-xl bg-[#0e1217] border border-white/10 text-white placeholder-neutral-600 focus:outline-none focus:border-emerald-500/50 text-xs leading-relaxed resize-none font-sans"
+          class="w-full h-full p-3 rounded-xl bg-[#0e1217] border border-white/10 text-white placeholder-neutral-600 focus:outline-none focus:border-emerald-500/50 text-xs leading-relaxed resize-none font-sans"
         ></textarea>
       </div>
 
       <!-- Actions & Send -->
-      <div class="flex items-center justify-between pt-2">
+      <div class="flex items-center justify-between pt-2 shrink-0">
         <div class="flex items-center gap-2 text-[10px] font-mono text-neutral-400">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-          <span>Cloudflare Edge + Brevo Relay</span>
+          <span>Brevo Relay Ready</span>
         </div>
 
         <div class="flex items-center gap-2">
@@ -487,7 +466,7 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
             ⚙️
           </div>
           <div>
-            <h3 class="text-base font-bold text-white">Configuración de Brevo API &amp; Cloudflare Relay</h3>
+            <h3 class="text-base font-bold text-white">Configuración Brevo API &amp; Cloudflare Relay</h3>
             <p class="text-[11px] text-neutral-400">Parámetros de entrega y autenticación SMTP / REST v3</p>
           </div>
         </div>
@@ -544,104 +523,104 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
   </div>
 
   <!-- ========================================================================= -->
-  <!-- 5. VERIFIED INSTITUTIONAL DIRECTORY & IMAP/SMTP FALLBACK                  -->
+  <!-- 5. VERIFIED INSTITUTIONAL DIRECTORY                                       -->
   <!-- ========================================================================= -->
   <section class="py-12 bg-[#0e1217] border-t border-white/10">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
       
       <!-- Directory Heading -->
       <div class="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
         <div>
           <h2 class="text-xl font-black text-white tracking-tight">Directorio Institucional Verificado (@muntru.me)</h2>
-          <p class="text-xs text-neutral-400">Direcciones verificadas y canónicas del equipo para comunicaciones oficiales.</p>
+          <p class="text-xs text-neutral-400">Buzones canónicos del equipo para comunicaciones oficiales y telemetría.</p>
         </div>
         <span class="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono font-bold">
           5 Buzones Activos
         </span>
       </div>
 
-      <!-- Directory Cards Grid -->
+      <!-- Directory Cards Grid (Spacious 3 Columns) -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <!-- Alberto -->
-        <div class="p-4 rounded-2xl bg-[#161c24] border border-white/10 flex items-center justify-between">
-          <div>
+        <div class="p-4 rounded-2xl bg-[#161c24] border border-white/10 flex items-center justify-between gap-3">
+          <div class="min-w-0">
             <div class="flex items-center gap-2">
-              <span class="font-bold text-white text-sm">Alberto Trujillo</span>
-              <span class="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold">FOUNDER</span>
+              <span class="font-bold text-white text-sm truncate">Alberto Trujillo</span>
+              <span class="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold shrink-0">FOUNDER</span>
             </div>
-            <div class="text-xs font-mono text-emerald-400">alberto@muntru.me</div>
+            <div class="text-xs font-mono text-emerald-400 truncate">alberto@muntru.me</div>
           </div>
-          <button data-quick-compose="alberto@muntru.me" class="quick-compose-btn px-3 py-1.5 rounded-xl bg-white/5 hover:bg-emerald-500 hover:text-neutral-950 text-xs font-bold transition">
+          <button data-quick-compose="alberto@muntru.me" class="quick-compose-btn px-3 py-1.5 rounded-xl bg-white/5 hover:bg-emerald-500 hover:text-neutral-950 text-xs font-bold transition shrink-0">
             Escribir ✉️
           </button>
         </div>
 
         <!-- Mateo -->
-        <div class="p-4 rounded-2xl bg-[#161c24] border border-white/10 flex items-center justify-between">
-          <div>
+        <div class="p-4 rounded-2xl bg-[#161c24] border border-white/10 flex items-center justify-between gap-3">
+          <div class="min-w-0">
             <div class="flex items-center gap-2">
-              <span class="font-bold text-white text-sm">Mateo Berbis</span>
-              <span class="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 font-bold">DRIVER #2</span>
+              <span class="font-bold text-white text-sm truncate">Mateo Berbis</span>
+              <span class="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 font-bold shrink-0">DRIVER #2</span>
             </div>
-            <div class="text-xs font-mono text-emerald-400">mateo@muntru.me</div>
+            <div class="text-xs font-mono text-emerald-400 truncate">mateo@muntru.me</div>
           </div>
-          <button data-quick-compose="mateo@muntru.me" class="quick-compose-btn px-3 py-1.5 rounded-xl bg-white/5 hover:bg-emerald-500 hover:text-neutral-950 text-xs font-bold transition">
+          <button data-quick-compose="mateo@muntru.me" class="quick-compose-btn px-3 py-1.5 rounded-xl bg-white/5 hover:bg-emerald-500 hover:text-neutral-950 text-xs font-bold transition shrink-0">
             Escribir ✉️
           </button>
         </div>
 
         <!-- Eduardo -->
-        <div class="p-4 rounded-2xl bg-[#161c24] border border-white/10 flex items-center justify-between">
-          <div>
+        <div class="p-4 rounded-2xl bg-[#161c24] border border-white/10 flex items-center justify-between gap-3">
+          <div class="min-w-0">
             <div class="flex items-center gap-2">
-              <span class="font-bold text-white text-sm">Eduardo Chongkan</span>
-              <span class="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 font-bold">DRIVER #3</span>
+              <span class="font-bold text-white text-sm truncate">Eduardo Chongkan</span>
+              <span class="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 font-bold shrink-0">DRIVER #3</span>
             </div>
-            <div class="text-xs font-mono text-emerald-400">eduardo@muntru.me</div>
+            <div class="text-xs font-mono text-emerald-400 truncate">eduardo@muntru.me</div>
           </div>
-          <button data-quick-compose="eduardo@muntru.me" class="quick-compose-btn px-3 py-1.5 rounded-xl bg-white/5 hover:bg-emerald-500 hover:text-neutral-950 text-xs font-bold transition">
+          <button data-quick-compose="eduardo@muntru.me" class="quick-compose-btn px-3 py-1.5 rounded-xl bg-white/5 hover:bg-emerald-500 hover:text-neutral-950 text-xs font-bold transition shrink-0">
             Escribir ✉️
           </button>
         </div>
 
         <!-- Juanlu -->
-        <div class="p-4 rounded-2xl bg-[#161c24] border border-white/10 flex items-center justify-between">
-          <div>
+        <div class="p-4 rounded-2xl bg-[#161c24] border border-white/10 flex items-center justify-between gap-3">
+          <div class="min-w-0">
             <div class="flex items-center gap-2">
-              <span class="font-bold text-white text-sm">Juanlu Carrillo</span>
-              <span class="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-400 font-bold">DRIVER #4</span>
+              <span class="font-bold text-white text-sm truncate">Juanlu Carrillo</span>
+              <span class="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-400 font-bold shrink-0">DRIVER #4</span>
             </div>
-            <div class="text-xs font-mono text-emerald-400">juanlu@muntru.me</div>
+            <div class="text-xs font-mono text-emerald-400 truncate">juanlu@muntru.me</div>
           </div>
-          <button data-quick-compose="juanlu@muntru.me" class="quick-compose-btn px-3 py-1.5 rounded-xl bg-white/5 hover:bg-emerald-500 hover:text-neutral-950 text-xs font-bold transition">
+          <button data-quick-compose="juanlu@muntru.me" class="quick-compose-btn px-3 py-1.5 rounded-xl bg-white/5 hover:bg-emerald-500 hover:text-neutral-950 text-xs font-bold transition shrink-0">
             Escribir ✉️
           </button>
         </div>
 
         <!-- Race Ops -->
-        <div class="p-4 rounded-2xl bg-[#161c24] border border-white/10 flex items-center justify-between">
-          <div>
+        <div class="p-4 rounded-2xl bg-[#161c24] border border-white/10 flex items-center justify-between gap-3">
+          <div class="min-w-0">
             <div class="flex items-center gap-2">
-              <span class="font-bold text-white text-sm">Race Operations</span>
-              <span class="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 font-bold">CONTROL</span>
+              <span class="font-bold text-white text-sm truncate">Race Operations</span>
+              <span class="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 font-bold shrink-0">CONTROL</span>
             </div>
-            <div class="text-xs font-mono text-emerald-400">admin@muntru.me</div>
+            <div class="text-xs font-mono text-emerald-400 truncate">admin@muntru.me</div>
           </div>
-          <button data-quick-compose="admin@muntru.me" class="quick-compose-btn px-3 py-1.5 rounded-xl bg-white/5 hover:bg-emerald-500 hover:text-neutral-950 text-xs font-bold transition">
+          <button data-quick-compose="admin@muntru.me" class="quick-compose-btn px-3 py-1.5 rounded-xl bg-white/5 hover:bg-emerald-500 hover:text-neutral-950 text-xs font-bold transition shrink-0">
             Escribir ✉️
           </button>
         </div>
 
         <!-- Info / Press -->
-        <div class="p-4 rounded-2xl bg-[#161c24] border border-white/10 flex items-center justify-between">
-          <div>
+        <div class="p-4 rounded-2xl bg-[#161c24] border border-white/10 flex items-center justify-between gap-3">
+          <div class="min-w-0">
             <div class="flex items-center gap-2">
-              <span class="font-bold text-white text-sm">Media &amp; Press Desk</span>
-              <span class="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-white/10 text-neutral-300 font-bold">PUBLIC</span>
+              <span class="font-bold text-white text-sm truncate">Media Desk</span>
+              <span class="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-white/10 text-neutral-300 font-bold shrink-0">PUBLIC</span>
             </div>
-            <div class="text-xs font-mono text-emerald-400">info@muntru.me</div>
+            <div class="text-xs font-mono text-emerald-400 truncate">info@muntru.me</div>
           </div>
-          <button data-quick-compose="info@muntru.me" class="quick-compose-btn px-3 py-1.5 rounded-xl bg-white/5 hover:bg-emerald-500 hover:text-neutral-950 text-xs font-bold transition">
+          <button data-quick-compose="info@muntru.me" class="quick-compose-btn px-3 py-1.5 rounded-xl bg-white/5 hover:bg-emerald-500 hover:text-neutral-950 text-xs font-bold transition shrink-0">
             Escribir ✉️
           </button>
         </div>
@@ -664,15 +643,10 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
     transition: background-color 0.15s ease;
   }
   .mail-row:hover {
-    background-color: rgba(255, 255, 255, 0.035);
+    background-color: rgba(255, 255, 255, 0.04);
   }
   .mail-row.unread {
-    background-color: rgba(16, 185, 129, 0.03);
-    font-weight: 600;
-  }
-  .mail-row.unread .mail-subject {
-    color: #ffffff;
-    font-weight: 700;
+    background-color: rgba(16, 185, 129, 0.04);
   }
   .category-pill.active {
     background: rgba(16, 185, 129, 0.2);
@@ -787,7 +761,7 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
     ];
 
     // Local Storage Keys
-    const LS_KEY = "muntrume_webmail_messages_v1";
+    const LS_KEY = "muntrume_webmail_messages_v2";
     const LS_BREVO_KEY = "muntrume_brevo_api_key";
 
     // State
@@ -828,7 +802,6 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
     const draftsCounter = document.getElementById("drafts-counter");
     const searchInput = document.getElementById("mail-search-input");
     const driverSelector = document.getElementById("driver-account-selector");
-    const activeAvatar = document.getElementById("active-avatar");
     const toast = document.getElementById("mail-toast");
     const toastIcon = document.getElementById("toast-icon");
     const toastMessage = document.getElementById("toast-message");
@@ -878,7 +851,7 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
       if (draftsCounter) draftsCounter.textContent = draftsCount;
     }
 
-    // Filter and Render Mail List
+    // Filter and Render Mail List (Spacious Desktop & Clean 2-Line Mobile)
     function renderMailList() {
       updateCounters();
 
@@ -922,7 +895,7 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
 
       if (filtered.length === 0) {
         emailListContainer.innerHTML = `
-          <div class="py-16 px-4 text-center space-y-3">
+          <div class="py-20 px-4 text-center space-y-3">
             <div class="text-4xl">📬</div>
             <div class="text-white font-bold text-sm">No hay mensajes en esta vista</div>
             <p class="text-neutral-500 text-xs max-w-sm mx-auto">No se encontraron correos que coincidan con los filtros o la carpeta seleccionada.</p>
@@ -933,7 +906,8 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
 
       let html = "";
       filtered.forEach(msg => {
-        const isUnread = msg.unread ? "unread" : "";
+        const isUnread = msg.unread ? "unread font-bold text-white" : "text-neutral-300";
+        const unreadIndicator = msg.unread ? `<span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>` : "";
         const isStarred = msg.starred ? "text-amber-400" : "text-neutral-600 hover:text-neutral-400";
         const hasSetup = msg.attachment ? `
           <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-mono shrink-0">
@@ -943,37 +917,75 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
         ` : "";
 
         html += `
-          <div class="mail-row ${isUnread} flex items-center gap-3 px-3 sm:px-4 py-3 cursor-pointer select-none" data-msg-id="${msg.id}">
-            <!-- Star Button -->
-            <button class="star-toggle p-1 text-xs ${isStarred} transition shrink-0" data-star-id="${msg.id}" title="Destacar">
-              ★
-            </button>
+          <div class="mail-row ${msg.unread ? 'unread' : ''} p-3.5 sm:px-5 sm:py-3.5 cursor-pointer select-none" data-msg-id="${msg.id}">
+            
+            <!-- DESKTOP LAYOUT (md+) -->
+            <div class="hidden md:flex items-center gap-3">
+              <!-- Star Button -->
+              <button class="star-toggle p-1 text-sm ${isStarred} transition shrink-0" data-star-id="${msg.id}" title="Destacar">
+                ★
+              </button>
 
-            <!-- Sender Avatar -->
-            <div class="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center font-bold text-emerald-400 text-xs shrink-0 font-mono">
-              ${msg.sender.initials || "MU"}
+              ${unreadIndicator}
+
+              <!-- Sender Avatar -->
+              <div class="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center font-bold text-emerald-400 text-xs shrink-0 font-mono">
+                ${msg.sender.initials || "MU"}
+              </div>
+
+              <!-- Sender Name -->
+              <div class="w-40 truncate text-xs ${isUnread} shrink-0">
+                ${msg.sender.name}
+              </div>
+
+              <!-- Subject & Snippet -->
+              <div class="flex-1 min-w-0 flex items-center gap-2 overflow-hidden">
+                <span class="truncate text-xs ${msg.unread ? 'font-bold text-white' : 'text-neutral-200'}">
+                  ${msg.subject}
+                </span>
+                <span class="text-neutral-500 text-xs truncate max-w-sm">
+                  - ${msg.snippet}
+                </span>
+                ${hasSetup}
+              </div>
+
+              <!-- Date -->
+              <div class="text-[11px] font-mono text-neutral-400 shrink-0 text-right w-24">
+                ${msg.date}
+              </div>
             </div>
 
-            <!-- Sender Name -->
-            <div class="w-28 sm:w-36 truncate text-xs font-bold text-neutral-200 shrink-0">
-              ${msg.sender.name}
-            </div>
+            <!-- MOBILE / TABLET LAYOUT (< md) - SPACIOUS 2 LINES -->
+            <div class="md:hidden space-y-1.5">
+              <!-- Line 1: Sender & Date -->
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2 min-w-0">
+                  <button class="star-toggle text-sm ${isStarred} shrink-0" data-star-id="${msg.id}">
+                    ★
+                  </button>
+                  ${unreadIndicator}
+                  <div class="w-6 h-6 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center font-bold text-emerald-400 text-[10px] shrink-0 font-mono">
+                    ${msg.sender.initials || "MU"}
+                  </div>
+                  <span class="text-xs font-bold text-white truncate">
+                    ${msg.sender.name}
+                  </span>
+                </div>
+                
+                <div class="flex items-center gap-1.5 shrink-0">
+                  ${hasSetup}
+                  <span class="text-[10px] font-mono text-neutral-400">
+                    ${msg.date}
+                  </span>
+                </div>
+              </div>
 
-            <!-- Subject & Snippet -->
-            <div class="flex-1 min-w-0 flex items-center gap-2">
-              <span class="mail-subject truncate text-xs text-neutral-300">
+              <!-- Line 2: Subject & Snippet (Full Mobile Width!) -->
+              <div class="text-xs ${msg.unread ? 'font-bold text-white' : 'text-neutral-300'} truncate pl-6">
                 ${msg.subject}
-              </span>
-              <span class="text-neutral-600 hidden md:inline text-xs truncate max-w-[280px]">
-                - ${msg.snippet}
-              </span>
-              ${hasSetup}
+              </div>
             </div>
 
-            <!-- Date -->
-            <div class="text-[11px] font-mono text-neutral-400 shrink-0">
-              ${msg.date}
-            </div>
           </div>
         `;
       });
@@ -983,7 +995,6 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
       // Attach row click listeners
       emailListContainer.querySelectorAll(".mail-row").forEach(row => {
         row.addEventListener("click", (e) => {
-          // If clicked star, toggle star
           if (e.target.closest(".star-toggle")) {
             const id = e.target.closest(".star-toggle").dataset.starId;
             toggleStar(id);
@@ -1012,14 +1023,12 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
 
       activeMessageId = id;
 
-      // Mark as read
       if (msg.unread) {
         msg.unread = false;
         saveMessages();
         updateCounters();
       }
 
-      // Populate Detail View
       const detailSubject = document.getElementById("detail-subject");
       const detailSenderName = document.getElementById("detail-sender-name");
       const detailSenderEmail = document.getElementById("detail-sender-email");
@@ -1045,7 +1054,6 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
         detailStarBtn.textContent = msg.starred ? "⭐ Destacado" : "☆ Destacar";
       }
 
-      // Tags
       if (detailTags) {
         let tagHtml = "";
         if (msg.tags && msg.tags.length > 0) {
@@ -1056,7 +1064,6 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
         detailTags.innerHTML = tagHtml;
       }
 
-      // Attachment box
       if (msg.attachment && detailAttachmentBox) {
         detailAttachmentBox.classList.remove("hidden");
         if (attachmentName) attachmentName.textContent = msg.attachment.name;
@@ -1065,7 +1072,6 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
         detailAttachmentBox.classList.add("hidden");
       }
 
-      // Switch pane display
       if (emailListContainer) emailListContainer.classList.add("hidden");
       if (emailDetailContainer) {
         emailDetailContainer.classList.remove("hidden");
@@ -1086,11 +1092,9 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
       renderMailList();
     }
 
-    // Attach back button
     const backBtn = document.getElementById("back-to-list-btn");
     if (backBtn) backBtn.addEventListener("click", backToList);
 
-    // Star inside detail
     const detailStarBtn = document.getElementById("detail-star-btn");
     if (detailStarBtn) {
       detailStarBtn.addEventListener("click", () => {
@@ -1104,7 +1108,6 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
       });
     }
 
-    // Delete inside detail
     const detailDeleteBtn = document.getElementById("detail-delete-btn");
     if (detailDeleteBtn) {
       detailDeleteBtn.addEventListener("click", () => {
@@ -1141,7 +1144,6 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
       });
     }
 
-    // Quick Reply Buttons inside Detail
     function setupReply() {
       const msg = messages.find(m => m.id === activeMessageId);
       if (!msg) return;
@@ -1166,13 +1168,31 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
         btn.classList.add("active");
         currentFolder = btn.dataset.folder;
         backToList();
-        // Close mobile drawer if open
-        const sidebar = document.getElementById("mail-sidebar");
-        if (sidebar && window.innerWidth < 768) {
-          sidebar.classList.add("-translate-x-full");
-        }
+        
+        // Close mobile drawer
+        closeMobileSidebar();
       });
     });
+
+    // Mobile Sidebar Drawer Management
+    const mobileToggle = document.getElementById("toggle-sidebar-mobile");
+    const mailSidebar = document.getElementById("mail-sidebar");
+    const sidebarBackdrop = document.getElementById("sidebar-backdrop");
+
+    function openMobileSidebar() {
+      if (mailSidebar) mailSidebar.classList.remove("-translate-x-full");
+      if (sidebarBackdrop) sidebarBackdrop.classList.remove("hidden");
+    }
+
+    function closeMobileSidebar() {
+      if (mailSidebar && window.innerWidth < 768) {
+        mailSidebar.classList.add("-translate-x-full");
+      }
+      if (sidebarBackdrop) sidebarBackdrop.classList.add("hidden");
+    }
+
+    if (mobileToggle) mobileToggle.addEventListener("click", openMobileSidebar);
+    if (sidebarBackdrop) sidebarBackdrop.addEventListener("click", closeMobileSidebar);
 
     // Category pills
     const categoryPills = document.querySelectorAll(".category-pill");
@@ -1195,10 +1215,10 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
           searchQuery = tag;
           renderMailList();
         }
+        closeMobileSidebar();
       });
     });
 
-    // Search input listener
     if (searchInput) {
       searchInput.addEventListener("input", (e) => {
         searchQuery = e.target.value.trim();
@@ -1206,7 +1226,6 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
       });
     }
 
-    // Refresh button
     const refreshBtn = document.getElementById("refresh-mailbox-btn");
     if (refreshBtn) {
       refreshBtn.addEventListener("click", () => {
@@ -1215,35 +1234,18 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
           refreshBtn.classList.remove("animate-spin");
           renderMailList();
           showToast("Buzón sincronizado con Cloudflare Relay");
-        }, 600);
+        }, 500);
       });
     }
 
-    // Mobile Sidebar Toggle
-    const mobileToggle = document.getElementById("toggle-sidebar-mobile");
-    const mailSidebar = document.getElementById("mail-sidebar");
-    if (mobileToggle && mailSidebar) {
-      mobileToggle.addEventListener("click", () => {
-        mailSidebar.classList.toggle("-translate-x-full");
-      });
-    }
-
-    // Driver Switcher dropdown
     if (driverSelector) {
       driverSelector.addEventListener("change", (e) => {
         const val = e.target.value;
-        if (activeAvatar) {
-          const initials = val.split("@")[0].substring(0, 2).toUpperCase();
-          activeAvatar.textContent = initials;
-        }
-        if (composeFrom) {
-          composeFrom.value = val;
-        }
-        showToast(`Buzón activo cambiado a ${val}`);
+        if (composeFrom) composeFrom.value = val;
+        showToast(`Buzón activo: ${val}`);
       });
     }
 
-    // Quick Compose from directory buttons
     document.querySelectorAll(".quick-compose-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         const targetEmail = btn.dataset.quickCompose;
@@ -1282,21 +1284,20 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
     const closeComposeBtn = document.getElementById("close-compose-btn");
     const discardComposeBtn = document.getElementById("discard-compose-btn");
 
-    if (openComposeBtn) openComposeBtn.addEventListener("click", () => openComposeModal());
+    if (openComposeBtn) openComposeBtn.addEventListener("click", () => {
+      closeMobileSidebar();
+      openComposeModal();
+    });
     if (openComposeHeaderBtn) openComposeHeaderBtn.addEventListener("click", () => openComposeModal());
     if (closeComposeBtn) closeComposeBtn.addEventListener("click", closeComposeModal);
     if (discardComposeBtn) discardComposeBtn.addEventListener("click", closeComposeModal);
 
-    // Recipient chips
     document.querySelectorAll(".driver-chip").forEach(chip => {
       chip.addEventListener("click", () => {
-        if (composeTo) {
-          composeTo.value = chip.dataset.chip;
-        }
+        if (composeTo) composeTo.value = chip.dataset.chip;
       });
     });
 
-    // File input handler
     if (composeFileInput && composeFileName) {
       composeFileInput.addEventListener("change", (e) => {
         if (e.target.files && e.target.files[0]) {
@@ -1309,7 +1310,6 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
       });
     }
 
-    // Send Mail Submission via Cloudflare Pages Function + Brevo API
     if (composeForm) {
       composeForm.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -1324,7 +1324,6 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
           return;
         }
 
-        // UI loading state
         if (sendBtnSpinner) sendBtnSpinner.classList.remove("hidden");
         if (sendBtnText) sendBtnText.textContent = "Enviando...";
         if (sendMailSubmitBtn) sendMailSubmitBtn.disabled = true;
@@ -1332,7 +1331,6 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
         const brevoKey = localStorage.getItem(LS_BREVO_KEY) || "";
 
         try {
-          // Send request to Cloudflare Pages Functions (/api/mail/send)
           const response = await fetch("/api/mail/send", {
             method: "POST",
             headers: {
@@ -1351,7 +1349,6 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
 
           const data = await response.json();
 
-          // Add message to local sent folder
           const sentMessage = {
             id: "sent-" + Date.now(),
             folder: "sent",
@@ -1380,7 +1377,6 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
 
           messages.unshift(sentMessage);
           saveMessages();
-
           closeComposeModal();
 
           if (data.simulated) {
@@ -1390,13 +1386,10 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
           }
 
           updateCounters();
-          if (currentFolder === "sent") {
-            renderMailList();
-          }
+          if (currentFolder === "sent") renderMailList();
 
         } catch (err) {
           console.error("Error al enviar email:", err);
-          // Even if server is in static mock mode, record sent mail locally
           const fallbackSent = {
             id: "sent-" + Date.now(),
             folder: "sent",
@@ -1419,7 +1412,7 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
           messages.unshift(fallbackSent);
           saveMessages();
           closeComposeModal();
-          showToast("Mensaje procesado y guardado en Enviados");
+          showToast("Mensaje guardado en Enviados");
           updateCounters();
         } finally {
           if (sendBtnSpinner) sendBtnSpinner.classList.add("hidden");
@@ -1430,7 +1423,7 @@ const pageDescription = "Embedded corporate webmail client and institutional tel
     }
 
     // =========================================================================
-    // BREVO API KEY SETTINGS MODAL
+    // BREVO SETTINGS MODAL
     // =========================================================================
     const openSettingsBtn = document.getElementById("open-settings-btn");
     const closeSettingsBtn = document.getElementById("close-settings-modal-btn");
