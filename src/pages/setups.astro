@@ -559,7 +559,7 @@ const pageDescription = "Portal privado y confidencial de ingeniería, telemetr�
           </div>
         </div>
 
-        <div class="flex flex-wrap gap-2 text-xs font-semibold">
+        <div class="flex items-center gap-2 text-xs font-semibold overflow-x-auto pb-1.5 no-scrollbar -mx-1 px-1">
           <button type="button" id="catPill-all" onclick="selectMmtCategory('all')" class="mmt-cat-pill px-3 py-1.5 rounded-xl bg-emerald-500 text-neutral-950 font-bold transition">Todas las Categorías</button>
           <button type="button" id="catPill-gtp" onclick="selectMmtCategory('gtp')" class="mmt-cat-pill px-3 py-1.5 rounded-xl bg-[#0e1217] text-neutral-300 hover:text-white border border-white/5 hover:border-emerald-500/30 transition">⚡ GTP / Hypercars</button>
           <button type="button" id="catPill-gt3" onclick="selectMmtCategory('gt3')" class="mmt-cat-pill px-3 py-1.5 rounded-xl bg-[#0e1217] text-neutral-300 hover:text-white border border-white/5 hover:border-emerald-500/30 transition">🏁 GT3 Pro</button>
@@ -570,7 +570,7 @@ const pageDescription = "Portal privado y confidencial de ingeniería, telemetr�
         </div>
 
         <!-- Quick Tags for Search -->
-        <div class="pt-2 border-t border-white/5 flex flex-wrap items-center gap-1.5 text-[11px] text-neutral-400">
+        <div class="pt-2 border-t border-white/5 flex items-center gap-1.5 text-[11px] text-neutral-400 overflow-x-auto pb-1.5 no-scrollbar flex-nowrap sm:flex-wrap">
           <span class="text-neutral-500">Búsqueda rápida MMT:</span>
           <button type="button" onclick="quickSearchMmt('VALK')" class="px-2 py-0.5 rounded-md bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-300 transition font-mono">VALK</button>
           <button type="button" onclick="quickSearchMmt('720')" class="px-2 py-0.5 rounded-md bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-300 transition font-mono">720</button>
@@ -608,11 +608,11 @@ const pageDescription = "Portal privado y confidencial de ingeniería, telemetr�
           </div>
 
           <!-- Type Selector Buttons -->
-          <div class="flex p-1 bg-[#0e1217] rounded-xl border border-white/10 text-xs font-semibold shrink-0">
-            <button type="button" onclick="setTypeFilter('All')" id="btnTypeAll" class="px-3 py-1.5 rounded-lg bg-[#161c24] text-white shadow">Todos</button>
-            <button type="button" onclick="setTypeFilter('Race')" id="btnTypeRace" class="px-3 py-1.5 rounded-lg text-neutral-400 hover:text-white">Carrera (R)</button>
-            <button type="button" onclick="setTypeFilter('Qualy')" id="btnTypeQualy" class="px-3 py-1.5 rounded-lg text-neutral-400 hover:text-white">Clasif (Q)</button>
-            <button type="button" onclick="setTypeFilter('Wet')" id="btnTypeWet" class="px-3 py-1.5 rounded-lg text-neutral-400 hover:text-white">Lluvia</button>
+          <div class="flex p-1 bg-[#0e1217] rounded-xl border border-white/10 text-xs font-semibold shrink-0 overflow-x-auto max-w-full">
+            <button type="button" onclick="setTypeFilter('All')" id="btnTypeAll" class="flex-1 sm:flex-initial text-center px-2.5 sm:px-3 py-1.5 rounded-lg bg-[#161c24] text-white shadow whitespace-nowrap">Todos</button>
+            <button type="button" onclick="setTypeFilter('Race')" id="btnTypeRace" class="flex-1 sm:flex-initial text-center px-2.5 sm:px-3 py-1.5 rounded-lg text-neutral-400 hover:text-white whitespace-nowrap"><span class="sm:hidden">R</span><span class="hidden sm:inline">Carrera (R)</span></button>
+            <button type="button" onclick="setTypeFilter('Qualy')" id="btnTypeQualy" class="flex-1 sm:flex-initial text-center px-2.5 sm:px-3 py-1.5 rounded-lg text-neutral-400 hover:text-white whitespace-nowrap"><span class="sm:hidden">Q</span><span class="hidden sm:inline">Clasif (Q)</span></button>
+            <button type="button" onclick="setTypeFilter('Wet')" id="btnTypeWet" class="flex-1 sm:flex-initial text-center px-2.5 sm:px-3 py-1.5 rounded-lg text-neutral-400 hover:text-white whitespace-nowrap"><span class="sm:hidden">Wet</span><span class="hidden sm:inline">Lluvia</span></button>
           </div>
         </div>
 

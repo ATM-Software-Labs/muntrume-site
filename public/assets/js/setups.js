@@ -1,3 +1,8 @@
+function isMobileDevice() {
+  if (typeof navigator === "undefined") return false;
+  return /Android|iPhone|iPad|iPod|Mobile|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || "") || (typeof window !== "undefined" && window.innerWidth < 768);
+}
+
 /**
  * Muntrume Motorsport - Setup Vault System
  * Direct iRacing File System Sync & Cloudflare D1 Catalog
@@ -1589,23 +1594,24 @@ function renderVisibleSlice() {
             </div>
 
             <!-- Folder Action Buttons -->
-            <div class="flex flex-wrap items-center gap-2 shrink-0 self-end md:self-auto">
+            <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0 justify-stretch sm:justify-end shrink-0">
               <button 
                 type="button" 
                 data-folder="${escapeHtml(folder.key)}" onclick="openFolderPreview(this.dataset.folder)" 
-                class="px-3 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-xs font-bold text-cyan-300 hover:text-cyan-200 transition flex items-center gap-1.5"
+                class="flex-1 sm:flex-initial min-h-[40px] px-3 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-xs font-bold text-cyan-300 hover:text-cyan-200 transition flex items-center justify-center gap-1.5"
                 title="Ver Vista Previa Técnica del Setup y Mejores Vueltas en Garage 61"
               >
-                <span>🏆 Vista Previa & Vueltas G61</span>
+                <span>🏆 Vista Previa</span><span class="hidden md:inline">&nbsp;& Vueltas G61</span>
               </button>
 
               <button 
                 type="button" 
+                id="folder-toggle-btn-${folder.key}"
                 data-folder="${escapeHtml(folder.key)}" onclick="toggleFolderFiles(this.dataset.folder)" 
-                class="px-3 py-2 rounded-xl bg-[#0e1217] hover:bg-white/10 border border-white/10 text-xs font-semibold text-neutral-300 transition flex items-center gap-1.5"
+                class="flex-1 sm:flex-initial min-h-[40px] px-3 py-2 rounded-xl bg-[#0e1217] hover:bg-white/10 border border-white/10 text-xs font-semibold text-neutral-300 transition flex items-center justify-center gap-1.5"
                 title="Ver o plegar lista de setups de esta carpeta"
               >
-                <span id="folder-toggle-text-${folder.key}">${isExpanded ? `Plegar Setups (${folder.setups.length})` : `📂 Ver Setups (${folder.setups.length})`}</span>
+                <span id="folder-toggle-text-${folder.key}">${isExpanded ? `Plegar (${folder.setups.length})` : `📂 Setups (${folder.setups.length})`}</span>
                 <svg id="folder-toggle-icon-${folder.key}" class="w-3.5 h-3.5 transition-transform ${isExpanded ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
               </button>
 
@@ -1613,11 +1619,11 @@ function renderVisibleSlice() {
                 type="button" 
                 id="btn-download-folder-${folder.key}"
                 data-folder="${escapeHtml(folder.key)}" onclick="downloadFolder(this.dataset.folder)" 
-                class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs transition flex items-center gap-1.5 shadow-lg shadow-emerald-500/20"
+                class="w-full sm:w-auto min-h-[40px] px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs transition flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/20"
                 title="Guardar todos los ${folder.setups.length} setups de esta carpeta directamente en su ruta exacta de iRacing"
               >
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                <span id="btn-download-folder-text-${folder.key}">⚡ Guardar Carpeta en Ruta (${folder.setups.length})</span>
+                <span id="btn-download-folder-text-${folder.key}">⚡ Guardar (${folder.setups.length})</span><span class="hidden lg:inline">&nbsp;en Ruta</span>
               </button>
             </div>
           </div>
@@ -1963,7 +1969,7 @@ async function downloadFolder(folderKey) {
       document.body.removeChild(link);
 
       showDownloadToast(`📥 Descargado con ruta exacta + auto-instalador: ${zipFilename}`);
-      if (!('showDirectoryPicker' in window)) {
+      if (!('showDirectoryPicker' in window) && !isMobileDevice()) {
         openBrowserCompatModal();
       }
       return;
@@ -2068,7 +2074,7 @@ async function downloadSetup(setupId, fallbackFilename) {
     document.body.removeChild(link);
 
     showDownloadToast(`📥 Descargado: ${filename}`);
-    if (!('showDirectoryPicker' in window)) {
+    if (!('showDirectoryPicker' in window) && !isMobileDevice()) {
       openBrowserCompatModal();
     }
   } catch (err) {
@@ -2166,7 +2172,7 @@ async function downloadAllVisibleSetups() {
       document.body.removeChild(link);
 
       showDownloadToast(`📥 Descargado ZIP con ruta exacta (${setupsList.length} setups)`);
-      if (!('showDirectoryPicker' in window)) {
+      if (!('showDirectoryPicker' in window) && !isMobileDevice()) {
         openBrowserCompatModal();
       }
       return;
@@ -2745,7 +2751,7 @@ async function inspectStoBinaryNotes(setup) {
     const compositeKey = `${setup.car}/${setup.filename}`;
     const b64 = localBase64Cache[compositeKey] || localBase64Cache[setup.filename];
     if (!b64) {
-      notesEl.textContent = "No se ha podido cargar el archivo para leer sus notas.";
+      notesEl.textContent = "muntru.me - Muntrume Motorsport | Setup by Alberto Trujillo";
       return;
     }
 
@@ -2768,7 +2774,7 @@ async function inspectStoBinaryNotes(setup) {
     notesEl.textContent = decodedNotes;
     if (sizeEl) sizeEl.textContent = `Cabecera v${version} · ${bytes.byteLength} bytes`;
   } catch (e) {
-    notesEl.textContent = "No se han podido leer las notas de este archivo.";
+    notesEl.textContent = "muntru.me - Muntrume Motorsport | Setup by Alberto Trujillo";
   } finally {
     freeTemporaryBase64Memory();
   }
@@ -2915,7 +2921,16 @@ async function renderG61LapsForSetup(setup) {
     });
     data = await res.json().catch(() => ({}));
     if (seq !== g61RequestSeq) return; // el usuario ya abrió otro setup
-    if (res.status === 401) { closeSetupPreviewModal(); handleAuthFailure(res, data); return; }
+    if (res.status === 401) {
+      setG61Badge("Solo pilotos", "muted");
+      renderG61EmptyState(
+        "Tiempos de Garage 61 (Acceso Pilotos)",
+        "Inicia sesión con tu cuenta de piloto de Muntrume para ver las telemetrías y mejores vueltas de Garage 61 vinculadas a este setup.",
+        false
+      );
+      if (countBadge) countBadge.textContent = "—";
+      return;
+    }
   } catch (e) {
     if (seq !== g61RequestSeq) return;
     data = { status: "error" };
@@ -3506,4 +3521,30 @@ function quickSearchMmt(keyword) {
     onSearchInput();
     searchInput.focus();
   }
+}
+
+
+// Explicit window exports for rock-solid global event handlers
+if (typeof window !== "undefined") {
+  window.openFolderPreview = openFolderPreview;
+  window.openSetupPreviewById = openSetupPreviewById;
+  window.openSetupPreview = openSetupPreview;
+  window.closeSetupPreviewModal = closeSetupPreviewModal;
+  window.switchPreviewTab = switchPreviewTab;
+  window.toggleFolderFiles = toggleFolderFiles;
+  window.downloadFolder = downloadFolder;
+  window.downloadSetup = downloadSetup;
+  window.downloadAllVisibleSetups = downloadAllVisibleSetups;
+  window.selectMmtCategory = selectMmtCategory;
+  window.quickSearchMmt = quickSearchMmt;
+  window.setTypeFilter = setTypeFilter;
+  window.onSearchInput = onSearchInput;
+  window.onFilterChange = onFilterChange;
+  window.configureG61TokenPrompt = configureG61TokenPrompt;
+  window.openBrowserCompatModal = openBrowserCompatModal;
+  window.closeBrowserCompatModal = closeBrowserCompatModal;
+  window.copyBraveFlagUrl = copyBraveFlagUrl;
+  window.copyVaultUrlForChrome = copyVaultUrlForChrome;
+  window.toggleLinkDirectory = toggleLinkDirectory;
+  window.copySetupPath = copySetupPath;
 }
