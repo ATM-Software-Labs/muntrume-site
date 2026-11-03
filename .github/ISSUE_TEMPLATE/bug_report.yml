@@ -1,0 +1,47 @@
+name: 🐛 Reporte de Error (Bug Report)
+description: Reportar un fallo o comportamiento anómalo en la plataforma
+title: "[BUG]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por reportar un error en el portal de **Muntrume Motorsport**.
+        *Si es una vulnerabilidad de seguridad, por favor revisa [SECURITY.md](SECURITY.md) y repórtalo en privado.*
+  - type: input
+    id: url
+    attributes:
+      label: URL o Página afectada
+      description: Ejemplo /setups, /mail, /team
+      placeholder: https://muntru.me/setups
+    validations:
+      required: true
+  - type: dropdown
+    id: device
+    attributes:
+      label: Dispositivo / Navegador
+      options:
+        - "Móvil (iOS Safari)"
+        - "Móvil (Android Chrome)"
+        - "Escritorio (Chrome / Edge)"
+        - "Escritorio (Brave / Firefox)"
+        - "Otro"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Pasos para reproducir el problema
+      placeholder: |
+        1. Ir a /setups
+        2. Seleccionar categoría GT3
+        3. Pulsar en Vista Previa
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Comportamiento esperado
+      placeholder: El modal debe mostrar los datos del setup sin cerrarse.
+    validations:
+      required: true

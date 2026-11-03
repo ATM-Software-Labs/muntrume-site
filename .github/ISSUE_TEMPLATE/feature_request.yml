@@ -1,0 +1,23 @@
+name: 💡 Propuesta de Mejora (Feature Request)
+description: Proponer una nueva funcionalidad para pilotos o telemetría
+title: "[FEAT]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Propón una mejora para el ecosistema de **Muntrume Motorsport** (Setup Vault, Webmail, Telemetría).
+  - type: textarea
+    id: problem
+    attributes:
+      label: ¿Qué necesidad o problema busca resolver?
+      placeholder: Breve descripción de la necesidad del equipo.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solución propuesta
+      placeholder: Cómo imaginas la funcionalidad y flujo de uso.
+    validations:
+      required: true
