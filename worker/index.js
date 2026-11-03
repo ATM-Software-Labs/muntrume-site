@@ -1902,9 +1902,10 @@ export default {
         ).run();
       }
 
-      // Reenvío al buzón personal de Alberto (si el remitente no es su propio Gmail)
-      if (from.toLowerCase() !== "atrumin16@gmail.com") {
-        await message.forward("atrumin16@gmail.com");
+      // Reenvío al buzón del administrador (si el remitente no es el propio buzón)
+      const forwardTarget = env.BACKUP_FORWARD_EMAIL || env.ADMIN_ALERT_EMAIL || env.ADMIN_EMAIL;
+      if (forwardTarget && from.toLowerCase() !== forwardTarget.toLowerCase()) {
+        await message.forward(forwardTarget);
       }
     } catch (err) {
       console.error("[email-worker-error]", err);
