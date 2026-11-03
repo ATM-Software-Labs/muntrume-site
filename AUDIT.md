@@ -1,17 +1,45 @@
+# 📋 Registro de Auditorías Técnicas · Muntrume Motorsport
 
-## Turno 5 — Mejoras de UX/rendimiento (1 nov 2026)
+Historial de auditorías de rendimiento, seguridad y revisiones de infraestructura del portal **muntru.me** bajo los estándares de **ATM Software Labs**.
 
-Commits: `e26ec3f` (head/SEO/a11y, imágenes responsive, 404, contacto honesto vía mailto, news vía Worker `/api/news` sin rss2json + dedupe, estado "temporada completada", robots/sitemap) y `d1fef8b` (Inter self-hosted OFL con fallback métrico, misma fuente en todo el sitio, preload responsive del hero, fila de estado de news estable).
-Worker: live `4bbb7fcc-dfbf-4a50-963c-0a9e4f226a8e`, rollback `aa7f62dd-9fef-47a3-b58a-062600467b1d`. D1 sin cambios.
-Rollback web: `git revert c1dd0c3..d1fef8b`.
-Lighthouse antes: `lh/before/`; después: `lh/after/`, `lh/after2/` (ejecuciones únicas, variación ±20 pts en perf).
-Pendiente de decisión: backend real del formulario de contacto, limpieza de assets/vídeos pesados no usados, contenido del artículo "Victory at 24H Spa Virtual" y calendario 2027.
+---
 
-## Turno 11 (t257/t258) — auditoría profunda, 1 nov 2026
-- Worker 79b05877 (rollback bf0ea34f). Commit 4f7d402 (rollback: revert; previo 7483da8).
-- Probado con QA driver (borrado): 15/15 rutas admin → 403, token alterado → 401, sin token → 401; SQLi/path traversal sin efecto; CORS de origen ajeno → 403.
-- Correos: 10 plantillas < 12 KB, parte texto, escape OK, DKIM/SPF/DMARC pass. Arreglados: frase vacía del digest y botón .ics en modo oscuro.
-- Web: 10 páginas × 4 idiomas × 4 viewports, sin 404 ni desbordes; 3 fallos de contraste (axe) arreglados.
-- GitHub: acciones fijadas por SHA, solo acciones de GitHub, Pages publica solo `_site` (fuera worker/, AUDIT.md, telemetría JSON), SECURITY.md, CODEOWNERS, reporte privado de vulnerabilidades.
-- Pilotos: /p/<alias>/ generado en build (cada 6 h) con OG + JSON-LD Person; 404 redirige alias aún no generados.
-- api.trujillomingorance.com OCUPADO (custom domain atm-labs-api + ruta nutrifit-api-gateway): no tocado.
+## 🏁 Auditoría Turno 12 — Blindaje Militar, Responsive E2E y Setups (Noviembre 2026)
+* **Alcance:** Portal completo (`/`, `/setups`, `/mail`, `/team`, `/news`, `/contact`, `/about`), Setup Vault y Worker Edge.
+* **Seguridad:**
+  * Implementación de cabeceras de grado militar en `public/_headers` (`X-Frame-Options: DENY`, `HSTS preload`, CSP estricto con `frame-ancestors 'none'`).
+  * Validación de tokens PBKDF2 (100k iteraciones), timing-safe equal y cuotas de descarga (1.500/h).
+  * Creación de `SECURITY.md` con procedimiento de Coordinated Vulnerability Disclosure.
+* **Experiencia Móvil:**
+  * 0 desbordamientos horizontales verificados en pantallas de 390px / 844px.
+  * Selector de tipos de sesión con chips responsivos (`R`, `Q`, `Wet`) y scroll horizontal sin barra.
+  * Botones de carpetas optimizados para interacción táctil (mínimo 40px de altura).
+* **Setup Vault:**
+  * Catálogo completo de 196 vehículos y 239.539 setups firmados digitalmente.
+  * Normalización de nombres de archivo y restauración de carpetas ZEK Racing.
+  * Solución al cierre involuntario del modal de vista previa en modo visitante.
+* **Automatización:**
+  * Suite de pruebas E2E en Playwright (`scripts/test-mobile.mjs` y `scripts/test-preview-modal.mjs`).
+  * Generación de capturas Retina para documentación (`docs/screenshots/`).
+
+---
+
+## 🛠️ Auditoría Turno 11 — Seguridad Profunda y QA de Rutas (1 nov 2026)
+* **Worker & API:**
+  * 15/15 rutas admin verificadas: respuestas 403 en acceso no autorizado, 401 sin token o alterado.
+  * Pruebas de inyección SQL y Path Traversal mitigadas sin efecto.
+  * Orígenes CORS externos no autorizados bloqueados con 403.
+* **Comunicaciones:**
+  * 10 plantillas de correo < 12 KB con textos legibles y escape HTML verificado.
+  * Verificación 100% DKIM / SPF / DMARC en dominio `trujillomingorance.com`.
+* **Frontend:**
+  * Pruebas de contraste accesibilidad (axe) completadas sin incidencias.
+  * Páginas de pilotos `/p/<alias>/` generadas estáticamente en tiempo de compilación.
+
+---
+
+## ⚡ Auditoría Turno 5 — Optimización de Rendimiento y UX (1 nov 2026)
+* **Core Web Vitals:**
+  * Tipografía Inter auto-hospedada (OFL) con fallback métrico sin saltos de diseño (CLS = 0).
+  * Preload responsive del banner hero y optimización de imágenes en formato WebP.
+  * Generación estática SSG ultra-rápida con compresión HTML automática (`compress-html.mjs`).

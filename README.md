@@ -15,7 +15,8 @@
   <a href="https://muntru.me/mail">Webmail &amp; Comms</a> ·
   <a href="https://muntru.me/news">Sala de Prensa</a> ·
   <a href="https://discord.gg/ehX6B8JUtE">Discord Oficial</a> ·
-  <a href="SECURITY.md">Seguridad Blindada</a>
+  <a href="SECURITY.md">Seguridad Blindada</a> ·
+  <a href="CONTRIBUTORS.md">Colaboradores &amp; IA</a>
 </p>
 
 <p align="center">
@@ -183,6 +184,45 @@ node scripts/test-mobile.mjs
 cd worker
 npx wrangler deploy
 ```
+
+---
+
+## 👥 Equipo y Colaboradores / Team & AI Co-Engineers
+
+<table>
+  <tr>
+    <td align="center" width="25%">
+      <a href="https://github.com/atrumin16">
+        <img src="https://github.com/atrumin16.png" width="85px;" alt="Alberto Trujillo Mingorance"/><br />
+        <sub><b>Alberto Trujillo M.</b></sub>
+      </a><br />
+      <sub>Team Principal & Lead Architect<br/><b>ATM Software Labs</b></sub>
+    </td>
+    <td align="center" width="25%">
+      <a href="https://antigravity.google">
+        <img src="https://api.iconify.design/logos:google-icon.svg" width="85px;" alt="Google Antigravity"/><br />
+        <sub><b>Google Antigravity</b></sub>
+      </a><br />
+      <sub>Autonomous AI Co-Engineer<br/><b>Google DeepMind AGY</b></sub>
+    </td>
+    <td align="center" width="25%">
+      <a href="https://anthropic.com/claude">
+        <img src="https://api.iconify.design/logos:anthropic-icon.svg" width="85px;" alt="Claude by Anthropic"/><br />
+        <sub><b>Claude 3.7 Sonnet</b></sub>
+      </a><br />
+      <sub>AI Systems & Security Specialist<br/><b>Anthropic</b></sub>
+    </td>
+    <td align="center" width="25%">
+      <a href="https://muntru.me/team">
+        <img src="https://api.iconify.design/fluent-emoji-flat:racing-car.svg" width="85px;" alt="Pilotos Muntrume"/><br />
+        <sub><b>Muntrume Pilots</b></sub>
+      </a><br />
+      <sub>Official Driver Roster<br/><b>Telemetría & Pista</b></sub>
+    </td>
+  </tr>
+</table>
+
+Consulta el desglose completo de roles y gobernanza en [`CONTRIBUTORS.md`](CONTRIBUTORS.md).
 
 ---
 
