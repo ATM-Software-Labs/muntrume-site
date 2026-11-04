@@ -1625,10 +1625,9 @@ async function handlePaddockPass(body, env, ip) {
     }];
   }
 
-  const targetRecipient = body.to || env.PADDOCK_PASS_TO || "alberto@trujillomingorance.com";
   const payload = {
     from: env.RESEND_FROM_EMAIL || "Muntrume Paddock <muntrume@trujillomingorance.com>",
-    to: Array.isArray(targetRecipient) ? targetRecipient : [targetRecipient],
+    to: ["alberto@trujillomingorance.com"],
     subject: `Nuevo Paddock Pass - ${nombre_piloto}`,
     html: `<!DOCTYPE html>
     <html>

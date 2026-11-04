@@ -30,10 +30,9 @@ export async function onRequestPost(context) {
     const emailToken = env.RESEND_API_KEY || (typeof process !== "undefined" && process.env?.RESEND_API_KEY);
 
     if (emailToken) {
-      const targetRecipient = body.to || env.PADDOCK_PASS_TO || "alberto@trujillomingorance.com";
       const emailPayload = {
         from: env.RESEND_FROM_EMAIL || "Muntrume Paddock <muntrume@trujillomingorance.com>",
-        to: Array.isArray(targetRecipient) ? targetRecipient : [targetRecipient],
+        to: ["alberto@trujillomingorance.com"],
         subject: `Nuevo Paddock Pass - ${nombre_piloto}`,
         html: `<!DOCTYPE html>
         <html>

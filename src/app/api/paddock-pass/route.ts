@@ -18,10 +18,9 @@ export async function POST(req: Request) {
     const ip = req.headers.get("cf-connecting-ip") || "89.128.216.86";
 
     if (apiKey) {
-      const targetRecipient = body.to || process.env.PADDOCK_PASS_TO || "alberto@trujillomingorance.com";
       const payload = {
         from: process.env.RESEND_FROM_EMAIL || "Muntrume Paddock <muntrume@trujillomingorance.com>",
-        to: Array.isArray(targetRecipient) ? targetRecipient : [targetRecipient],
+        to: ["alberto@trujillomingorance.com"],
         subject: `Nuevo Paddock Pass - ${nombre_piloto}`,
         html: `<!DOCTYPE html>
         <html>
