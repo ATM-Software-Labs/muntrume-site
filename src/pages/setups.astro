@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import PrivateAreaHeader from '../components/PrivateAreaHeader.astro';
 
 const pageTitle = "Setup Vault iRacing | 239.539 Setups, Telemetría y Vueltas G61 · Muntrume";
 const pageDescription = "Catálogo oficial con más de 239.000 setups (.sto) para iRacing en 196 vehículos. Descarga directa en ruta, variantes Qualy, Race, Wet y telemetría Garage 61.";
@@ -10,6 +11,7 @@ const pageDescription = "Catálogo oficial con más de 239.000 setups (.sto) par
   <!-- MAIN CONTAINER                                                            -->
   <!-- ========================================================================= -->
   <main class="flex-grow pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+    <PrivateAreaHeader activeTab="setups" />
 
     <!-- ======================================================================= -->
     <!-- AVISO AUTOMÁTICO DE NAVEGADOR (Brave / Firefox / Sin File System API)   -->

@@ -1,151 +1,114 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import PrivateAreaHeader from '../components/PrivateAreaHeader.astro';
 
 const pageTitle = "Webmail Corporativo y Comunicaciones de Telemetría · Muntrume";
 const pageDescription = "Portal institucional de comunicaciones y correo seguro de escudería para pilotos e ingenieros de pista de Muntrume Motorsport.";
 ---
 
-<Layout title={pageTitle} description={pageDescription} hideNav={true} hideFooter={true}>
-  <!-- ========================================================================= -->
-  <!-- FULL-VIEWPORT GMAIL-STYLE WEBMAIL APPLICATION                             -->
-  <!-- ========================================================================= -->
-  <div class="h-screen flex flex-col bg-[#090d12] text-neutral-200 overflow-hidden select-none font-sans">
-  <!-- ========================================================================= -->
-  <!-- VIEW A: TEAM COMMS LANDING GATE (UNAUTHENTICATED)                       -->
-  <!-- ========================================================================= -->
-  <div id="mailLanding" class="flex-1 overflow-y-auto bg-[#090d12] flex flex-col justify-between p-4 sm:p-8 lg:p-12 z-10">
+<Layout title={pageTitle} description={pageDescription}>
+  <main class="flex-grow pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full select-none font-sans">
     
-    <!-- Top mini bar -->
-    <header class="flex items-center justify-between max-w-6xl w-full mx-auto pb-6 border-b border-white/10 shrink-0">
-      <a href="/" class="flex items-center gap-3 hover:opacity-90 transition">
-        <img src="/assets/img/logo-sm.webp" alt="Muntrume" class="h-8 w-auto object-contain" width="32" height="32" />
-        <span class="font-extrabold text-white text-base tracking-tight">MUNTRUME</span>
-        <span class="text-neutral-500 text-xs">/</span>
-        <span class="text-emerald-400 font-mono text-xs font-bold">Comms &middot; Webmail</span>
-      </a>
+    <!-- Unified Hub Área Privada Header -->
+    <PrivateAreaHeader activeTab="mail" />
 
-      <div class="flex items-center gap-2">
-        <a href="/setups" class="px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 text-xs font-semibold transition">
-          Setup Vault
-        </a>
-        <button type="button" id="landing-login-btn" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider transition shadow-lg shadow-emerald-500/20 cursor-pointer">
-          Acceso Piloto
-        </button>
-      </div>
-    </header>
+    <!-- ========================================================================= -->
+    <!-- VIEW A: TEAM COMMS LANDING GATE (UNAUTHENTICATED)                         -->
+    <!-- ========================================================================= -->
+    <div id="mailLanding" class="rounded-3xl bg-gradient-to-b from-[#161c24] via-[#12171f] to-[#0e1217] border border-white/10 p-6 sm:p-10 lg:p-12 shadow-2xl relative overflow-hidden text-center space-y-6">
+      <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600"></div>
+      <div class="absolute -top-24 -left-24 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-24 -right-24 w-72 h-72 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-    <!-- Hero Section -->
-    <main class="max-w-4xl w-full mx-auto py-10 sm:py-14 text-center space-y-6 my-auto">
-      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-xs font-semibold text-emerald-400">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span>Buzón Privado de Escudería &middot; Acceso Restringido</span>
-      </div>
-
-      <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight">
-        MUNTRUME <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500">TEAM COMMS</span>
-      </h1>
-
-      <p class="text-sm sm:text-base text-neutral-400 max-w-2xl mx-auto leading-relaxed">
-        Portal confidencial de mensajería, telemetría y coordinación de carrera entre los pilotos de <strong class="text-white">Muntrume Motorsport</strong>. Cada piloto dispone de su propio buzón protegido y privado.
-      </p>
-
-      <!-- CTA Buttons -->
-      <div class="flex flex-wrap items-center justify-center gap-3.5 pt-3">
-        <button 
-          type="button" 
-          id="hero-login-btn"
-          class="px-7 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs sm:text-sm uppercase tracking-wider transition flex items-center gap-2.5 shadow-xl shadow-emerald-500/25 cursor-pointer"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
-          <span>Iniciar Sesión de Piloto</span>
-        </button>
-        <a 
-          href="/setups" 
-          class="px-6 py-3.5 rounded-2xl bg-[#161c24] hover:bg-white/10 border border-white/15 text-white font-bold text-xs sm:text-sm transition flex items-center gap-2"
-        >
-          <span>Ir al Setup Vault</span>
-        </a>
-      </div>
-
-      <!-- Security & Features 3-Card Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-8 text-left">
-        <div class="p-5 rounded-2xl bg-[#12171f] border border-white/10 space-y-2">
-          <div class="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-sm font-bold">
-            🔒
-          </div>
-          <h3 class="text-sm font-bold text-white">Privacidad Estricta</h3>
-          <p class="text-xs text-neutral-400 leading-relaxed">
-            Cada piloto accede exclusivamente a su buzón personal. Nadie ajeno puede leer ni filtrar comunicaciones privadas de compañeros.
-          </p>
+      <div class="relative max-w-3xl mx-auto space-y-5">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-xs font-semibold text-emerald-400">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>Buzón Privado de Escudería · Acceso Restringido</span>
         </div>
 
-        <div class="p-5 rounded-2xl bg-[#12171f] border border-white/10 space-y-2">
-          <div class="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 text-sm font-bold">
-            🏎️
-          </div>
-          <h3 class="text-sm font-bold text-white">Telemetría y .STO</h3>
-          <p class="text-xs text-neutral-400 leading-relaxed">
-            Descarga e intercambio directo de archivos de setup Assetto Corsa / iRacing y logs de MoTeC i2 Pro en un clic.
-          </p>
-        </div>
+        <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight">
+          MUNTRUME <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500">TEAM COMMS</span>
+        </h1>
 
-        <div class="p-5 rounded-2xl bg-[#12171f] border border-white/10 space-y-2">
-          <div class="w-8 h-8 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-sm font-bold">
-            ✉️
-          </div>
-          <h3 class="text-sm font-bold text-white">Entrega Verificada</h3>
-          <p class="text-xs text-neutral-400 leading-relaxed">
-            Relay con dominio propio trujillomingorance.com, soporte DKIM y enrutamiento bidireccional mediante Cloudflare.
-          </p>
-        </div>
-      </div>
+        <p class="text-sm sm:text-base text-neutral-300 max-w-2xl mx-auto leading-relaxed">
+          Portal confidencial de mensajería, telemetría y coordinación de carrera entre los pilotos de <strong class="text-white">Muntrume Motorsport</strong>. Cada piloto dispone de su propio buzón protegido y privado.
+        </p>
 
-    </main>
-
-    <!-- Footer -->
-    <footer class="text-center text-xs text-neutral-500 py-4 border-t border-white/5 shrink-0">
-      Muntrume Motorsport &copy; 2026 &middot; Simracing Team &middot; Barcelona, España &middot; <a href="/" class="text-emerald-400 hover:underline">muntru.me</a>
-    </footer>
-
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- VIEW B: AUTHENTICATED WEBMAIL APP                                         -->
-  <!-- ========================================================================= -->
-  <div id="mailAppContainer" class="hidden flex-1 flex flex-col overflow-hidden">
-
-    
-    <!-- ======================================================================= -->
-    <!-- 1. UNIFIED APP TOP TOOLBAR (SINGLE HEADER, ZERO VERTICAL BLOAT)         -->
-    <!-- ======================================================================= -->
-    <header class="h-14 sm:h-16 px-3 sm:px-6 bg-[#12171f] border-b border-white/10 flex items-center justify-between gap-2 sm:gap-4 shrink-0 z-20">
-      
-      <!-- Left: Mobile Menu + App Identity + Back Link -->
-      <div class="flex items-center gap-2.5 sm:gap-4 shrink-0">
-        <button id="toggle-sidebar-mobile" class="md:hidden p-2 rounded-xl bg-white/5 border border-white/10 text-neutral-300 hover:text-white" aria-label="Abrir carpetas">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-        </button>
-
-        <a href="/" class="flex items-center gap-2.5 hover:opacity-90 transition group" title="Volver a la portada de Muntrume Motorsport">
-          <img src="/assets/img/logo-sm.webp" alt="Muntrume" class="h-7 w-auto object-contain transition-transform group-hover:scale-105" width="28" height="28" />
-          <span class="font-extrabold text-white text-sm sm:text-base tracking-tight">MUNTRUME</span>
-          <span class="text-neutral-500 text-xs hidden sm:inline">/</span>
-          <span class="text-emerald-400 font-mono text-xs font-bold hidden sm:inline">Webmail</span>
-        </a>
-
-        <!-- Quick Site Navigation Links -->
-        <nav class="hidden lg:flex items-center gap-1 pl-3 border-l border-white/10 text-xs">
-          <a href="/" class="px-2.5 py-1 rounded-lg text-neutral-400 hover:text-white hover:bg-white/5 transition font-medium">Inicio</a>
-          <a href="/team" class="px-2.5 py-1 rounded-lg text-neutral-400 hover:text-white hover:bg-white/5 transition font-medium">Pilotos</a>
-          <a href="/news" class="px-2.5 py-1 rounded-lg text-neutral-400 hover:text-white hover:bg-white/5 transition font-medium">Noticias</a>
-          <a href="/setups" class="px-2.5 py-1 rounded-lg text-neutral-400 hover:text-emerald-400 hover:bg-white/5 transition flex items-center gap-1 font-semibold">
-            <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-            <span>Vault</span>
+        <!-- CTA Buttons -->
+        <div class="flex flex-wrap items-center justify-center gap-3.5 pt-3">
+          <button 
+            type="button" 
+            id="hero-login-btn"
+            class="px-7 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs sm:text-sm uppercase tracking-wider transition flex items-center gap-2.5 shadow-xl shadow-emerald-500/25 cursor-pointer"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+            <span>Iniciar Sesión de Piloto</span>
+          </button>
+          <a 
+            href="/setups" 
+            class="px-6 py-3.5 rounded-2xl bg-[#161c24] hover:bg-white/10 border border-white/15 text-white font-bold text-xs sm:text-sm transition flex items-center gap-2"
+          >
+            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            <span>Ir al Setup Vault</span>
           </a>
-        </nav>
-      </div>
+        </div>
 
-      <!-- Center: Search Input Bar -->
+        <!-- Security & Features 3-Card Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 text-left">
+          <div class="p-5 rounded-2xl bg-[#12171f] border border-white/10 space-y-2">
+            <div class="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-sm font-bold">
+              🔒
+            </div>
+            <h3 class="text-sm font-bold text-white">Privacidad Estricta</h3>
+            <p class="text-xs text-neutral-400 leading-relaxed">
+              Cada piloto accede exclusivamente a su buzón personal. Nadie ajeno puede leer ni filtrar comunicaciones privadas de compañeros.
+            </p>
+          </div>
+
+          <div class="p-5 rounded-2xl bg-[#12171f] border border-white/10 space-y-2">
+            <div class="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 text-sm font-bold">
+              ⚡
+            </div>
+            <h3 class="text-sm font-bold text-white">Telemetría y .STO</h3>
+            <p class="text-xs text-neutral-400 leading-relaxed">
+              Descarga e intercambio directo de archivos de setup Assetto Corsa / iRacing y logs de MoTeC i2 Pro en un clic.
+            </p>
+          </div>
+
+          <div class="p-5 rounded-2xl bg-[#12171f] border border-white/10 space-y-2">
+            <div class="w-8 h-8 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-sm font-bold">
+              🛡️
+            </div>
+            <h3 class="text-sm font-bold text-white">Entrega Verificada</h3>
+            <p class="text-xs text-neutral-400 leading-relaxed">
+              Relay con dominio propio trujillomingorance.com, soporte DKIM y enrutamiento bidireccional mediante Cloudflare.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW B: AUTHENTICATED WEBMAIL APP                                         -->
+    <!-- ========================================================================= -->
+    <div id="mailAppContainer" class="hidden rounded-2xl border border-white/10 bg-[#0e1217] shadow-2xl flex flex-col overflow-hidden min-h-[640px] h-[calc(100vh-210px)]">
+
+      <!-- 1. UNIFIED APP TOP TOOLBAR -->
+      <header class="h-14 sm:h-16 px-3 sm:px-6 bg-[#12171f] border-b border-white/10 flex items-center justify-between gap-2 sm:gap-4 shrink-0 z-20">
+        
+        <!-- Left: Mobile Menu + App Identity -->
+        <div class="flex items-center gap-2.5 sm:gap-3 shrink-0">
+          <button id="toggle-sidebar-mobile" class="md:hidden p-2 rounded-xl bg-white/5 border border-white/10 text-neutral-300 hover:text-white" aria-label="Abrir carpetas">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold text-white text-sm sm:text-base tracking-tight">BUZÓN OFICIAL</span>
+            <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Cifrado D1</span>
+          </div>
+        </div>
+<!-- Center: Search Input Bar -->
       <div class="flex-1 max-w-xl mx-1 sm:mx-4">
         <div class="relative w-full">
           <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-500">
@@ -319,7 +282,7 @@ const pageDescription = "Portal institucional de comunicaciones y correo seguro 
       </aside>
 
       <!-- B. MAIN EMAIL DISPLAY WORKSPACE -->
-      <main id="mail-main-pane" class="flex-1 flex flex-col min-w-0 bg-[#12171f] overflow-hidden">
+      <section id="mail-main-pane" class="flex-1 flex flex-col min-w-0 bg-[#12171f] overflow-hidden">
         
         <!-- SUB-HEADER: CATEGORY FILTER PILLS & STATUS -->
         <div class="px-3 sm:px-6 py-2.5 bg-[#161c24] border-b border-white/10 flex items-center justify-between gap-3 shrink-0">
@@ -498,13 +461,8 @@ const pageDescription = "Portal institucional de comunicaciones y correo seguro 
           </div>
 
         </div>
-
-      </main>
-
+      </section>
     </div>
-
-  </div>
-
   </div><!-- /mailAppContainer -->
 
   <!-- ========================================================================= -->
@@ -943,6 +901,7 @@ const pageDescription = "Portal institucional de comunicaciones y correo seguro 
     <span id="toast-message">Notificación</span>
   </div>
 
+</main>
 </Layout>
 
 <!-- ========================================================================= -->
@@ -2296,6 +2255,7 @@ const pageDescription = "Portal institucional de comunicaciones y correo seguro 
     }
 
     function openMailAuthModal() {
+      window.openMailAuthModal = openMailAuthModal;
       if (mailAuthModal) mailAuthModal.classList.remove("hidden");
       if (codeAuthEmail) codeAuthEmail.focus();
     }

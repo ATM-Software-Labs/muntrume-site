@@ -42,14 +42,41 @@ const isActive = (path: string) => {
       <a href="/contact" class={`transition-colors border-b-2 pb-0.5 ${isActive('/contact') ? 'text-emerald-400 font-semibold border-emerald-400' : 'text-neutral-400 hover:text-white border-transparent'}`}>
         Contacto
       </a>
-      <a href="/mail" class={`transition-colors border-b-2 pb-0.5 flex items-center gap-1.5 ${isActive('/mail') ? 'text-emerald-400 font-semibold border-emerald-400' : 'text-neutral-400 hover:text-white border-transparent'}`}>
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-        <span>Mail</span>
-      </a>
-      <a href="/setups" class={`transition-colors border-b-2 pb-0.5 flex items-center gap-1.5 ${isActive('/setup') ? 'text-emerald-400 font-semibold border-emerald-400' : 'text-neutral-400 hover:text-white border-transparent'}`}>
-        <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-        <span>Vault</span>
-      </a>
+      <!-- Área Privada con dropdown hover y acceso rápido -->
+      <div class="relative group">
+        <a 
+          href="/setups" 
+          class={`px-3 py-1.5 rounded-xl border flex items-center gap-2 transition-all duration-200 text-xs font-bold ${
+            isActive('/setups') || isActive('/mail') 
+              ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300 shadow-sm shadow-emerald-500/10' 
+              : 'bg-[#161c24] border-white/10 text-neutral-300 hover:text-white hover:border-emerald-500/30'
+          }`}
+        >
+          <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          <span>Área Privada</span>
+          <span class="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">Pilotos</span>
+        </a>
+
+        <!-- Dropdown con accesos directos -->
+        <div class="absolute right-0 top-full pt-2 w-60 hidden group-hover:block transition-all z-50">
+          <div class="rounded-2xl bg-[#0e1217] border border-white/10 shadow-2xl p-2 space-y-1">
+            <a href="/setups" class={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition ${isActive('/setups') ? 'bg-emerald-500/15 text-emerald-400' : 'text-neutral-300 hover:text-white hover:bg-white/5'}`}>
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              <div>
+                <div class="font-bold text-white">Setup Vault & FTP</div>
+                <div class="text-[10px] text-neutral-400 font-normal">239k setups y telemetría</div>
+              </div>
+            </a>
+            <a href="/mail" class={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition mt-1 ${isActive('/mail') ? 'bg-emerald-500/15 text-emerald-400' : 'text-neutral-300 hover:text-white hover:bg-white/5'}`}>
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              <div>
+                <div class="font-bold text-white">Webmail de Escudería</div>
+                <div class="text-[10px] text-neutral-400 font-normal">Buzón confidencial de pilotos</div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
     </nav>
 
     <!-- Right CTAs -->
@@ -110,14 +137,29 @@ const isActive = (path: string) => {
       <a href="/contact" onclick="toggleNavDrawer(false)" class={`block px-3 py-2.5 rounded-lg transition ${isActive('/contact') ? 'text-emerald-400 bg-emerald-500/10 font-semibold border border-emerald-500/20' : 'text-neutral-300 hover:text-white hover:bg-white/5'}`}>
         Contacto
       </a>
-      <a href="/mail" onclick="toggleNavDrawer(false)" class={`block px-3 py-2.5 rounded-lg transition flex items-center justify-between ${isActive('/mail') ? 'text-emerald-400 bg-emerald-500/10 font-semibold border border-emerald-500/20' : 'text-neutral-300 hover:text-white hover:bg-white/5'}`}>
-        <span>Webmail Corporativo</span>
-        <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-white/5 text-emerald-400 border border-emerald-500/20">@muntru.me</span>
-      </a>
-      <a href="/setups" onclick="toggleNavDrawer(false)" class={`block px-3 py-2.5 rounded-lg transition flex items-center justify-between ${isActive('/setup') ? 'text-emerald-400 bg-emerald-500/10 font-semibold border border-emerald-500/20' : 'text-neutral-300 hover:text-white hover:bg-white/5'}`}>
-        <span>Setup Vault</span>
-        <span class="text-[10px] uppercase font-bold text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">Privado</span>
-      </a>
+      <!-- Área Privada Group -->
+      <div class="pt-3 pb-1">
+        <div class="text-[10px] font-mono uppercase tracking-wider text-neutral-400 px-3 mb-2 flex items-center gap-1.5 font-bold">
+          <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          <span>Área Privada de Escudería</span>
+        </div>
+        <div class="space-y-1 bg-[#12171f] p-1.5 rounded-xl border border-white/5">
+          <a href="/setups" onclick="toggleNavDrawer(false)" class={`block px-3 py-2.5 rounded-lg transition flex items-center justify-between ${isActive('/setups') ? 'text-emerald-400 bg-emerald-500/10 font-semibold border border-emerald-500/20' : 'text-neutral-300 hover:text-white hover:bg-white/5'}`}>
+            <div class="flex items-center gap-2">
+              <span class="text-emerald-400">⚡</span>
+              <span>Setup Vault & FTP</span>
+            </div>
+            <span class="text-[9px] uppercase font-bold text-emerald-400 px-1.5 py-0.5 rounded bg-emerald-500/10">.sto</span>
+          </a>
+          <a href="/mail" onclick="toggleNavDrawer(false)" class={`block px-3 py-2.5 rounded-lg transition flex items-center justify-between ${isActive('/mail') ? 'text-emerald-400 bg-emerald-500/10 font-semibold border border-emerald-500/20' : 'text-neutral-300 hover:text-white hover:bg-white/5'}`}>
+            <div class="flex items-center gap-2">
+              <span class="text-emerald-400">✉️</span>
+              <span>Webmail Corporativo</span>
+            </div>
+            <span class="text-[9px] font-mono text-emerald-400 px-1.5 py-0.5 rounded bg-emerald-500/10">@muntru.me</span>
+          </a>
+        </div>
+      </div>
       <a href="/admin" onclick="toggleNavDrawer(false)" class={`block px-3 py-2.5 rounded-lg transition flex items-center justify-between ${isActive('/admin') ? 'text-emerald-400 bg-emerald-500/10 font-semibold border border-emerald-500/20' : 'text-neutral-300 hover:text-white hover:bg-white/5'}`}>
         <span>Consola de Administración</span>
         <span class="text-[10px] uppercase font-bold text-neutral-400 px-2 py-0.5 rounded-full bg-white/5 border border-white/10">Staff</span>

@@ -1,0 +1,195 @@
+---
+interface Props {
+  activeTab: 'setups' | 'mail';
+}
+
+const { activeTab } = Astro.props;
+---
+
+<!-- ========================================================================= -->
+<!-- HUB UNIFICADO: ÁREA PRIVADA DE ESCUDERÍA                                  -->
+<!-- ========================================================================= -->
+<section class="mb-6 p-3 sm:p-4 rounded-2xl bg-[#161c24] border border-white/10 shadow-xl">
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+    
+    <!-- Left: Section Title & Tab Navigation -->
+    <div class="flex flex-wrap items-center gap-2.5 sm:gap-3">
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 shrink-0">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-xs font-black tracking-wider uppercase">Área Privada</span>
+      </div>
+
+      <!-- Navigation Tabs: Setups vs Mail -->
+      <nav class="flex items-center p-1 bg-[#0e1217] rounded-xl border border-white/10 text-xs font-bold" aria-label="Navegación Área Privada">
+        <a 
+          href="/setups" 
+          class={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition ${activeTab === 'setups' ? 'bg-[#161c24] text-emerald-400 shadow-sm border border-emerald-500/30' : 'text-neutral-400 hover:text-white border border-transparent'}`}
+          title="Repositorio oficial con 239.539 setups para 196 vehículos y explorador FTP"
+        >
+          <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          <span>⚡ Setup Vault & FTP</span>
+        </a>
+        <a 
+          href="/mail" 
+          class={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition ${activeTab === 'mail' ? 'bg-[#161c24] text-emerald-400 shadow-sm border border-emerald-500/30' : 'text-neutral-400 hover:text-white border border-transparent'}`}
+          title="Webmail institucional cifrado para pilotos y dirección de equipo"
+        >
+          <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          <span>✉️ Webmail de Escudería</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Right: Synchronized Pilot State & Session Status -->
+    <div id="privateAreaPilotSync" class="flex flex-wrap items-center gap-2 text-xs">
+      <!-- Loading placeholder rendered before client script hydrates -->
+      <div id="privatePilotLoadingPlaceholder" class="flex items-center gap-2 text-neutral-400 text-xs py-1">
+        <span class="w-2 h-2 rounded-full bg-neutral-600 animate-ping"></span>
+        <span>Verificando credenciales de escudería...</span>
+      </div>
+
+      <!-- Authenticated State -->
+      <div id="privatePilotAuthenticatedState" class="hidden flex-wrap items-center gap-2">
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#0e1217] border border-white/10 text-xs">
+          <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
+          <span class="text-neutral-400 font-medium">Piloto:</span>
+          <span id="privatePilotEmailLabel" class="font-bold text-white font-mono truncate max-w-[160px] sm:max-w-[220px]">piloto@muntru.me</span>
+          <span id="privatePilotRoleBadge" class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Oficial</span>
+        </div>
+        <button 
+          type="button" 
+          onclick="window.logoutPrivateArea()" 
+          class="px-3 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-300 font-bold text-xs transition flex items-center gap-1.5 cursor-pointer"
+          title="Cerrar sesión en toda el Área Privada"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          <span>Salir</span>
+        </button>
+      </div>
+
+      <!-- Guest Preview State -->
+      <div id="privatePilotGuestState" class="hidden flex-wrap items-center gap-2">
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-xs text-cyan-300">
+          <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+          <span class="font-bold">Vista Previa Invitado</span>
+          <span class="text-neutral-400 hidden sm:inline">(Acceso Lectura)</span>
+        </div>
+        <button 
+          type="button" 
+          onclick="window.triggerPrivateAreaLogin()" 
+          class="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs transition shadow-sm cursor-pointer"
+        >
+          Acceso Piloto Oficial
+        </button>
+      </div>
+
+      <!-- Unauthenticated State -->
+      <div id="privatePilotUnauthenticatedState" class="hidden flex-wrap items-center gap-2">
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs text-neutral-400">
+          <svg class="w-3.5 h-3.5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          <span>Acceso Restringido</span>
+        </div>
+        <button 
+          type="button" 
+          onclick="window.triggerPrivateAreaLogin()" 
+          class="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider transition shadow-sm shadow-emerald-500/20 cursor-pointer"
+        >
+          Iniciar Sesión
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<script is:inline>
+  function syncPrivateAreaAuth() {
+    var rawUser = localStorage.getItem("mrt_vault_user") || sessionStorage.getItem("mrt_vault_user");
+    var rawToken = localStorage.getItem("mrt_vault_token") || sessionStorage.getItem("mrt_vault_token");
+
+    // Replicate across both storages for 100% session persistence between pages & tabs
+    if (rawToken && rawUser) {
+      try {
+        localStorage.setItem("mrt_vault_token", rawToken);
+        localStorage.setItem("mrt_vault_user", rawUser);
+        sessionStorage.setItem("mrt_vault_token", rawToken);
+        sessionStorage.setItem("mrt_vault_user", rawUser);
+      } catch (e) {}
+    }
+
+    var loading = document.getElementById("privatePilotLoadingPlaceholder");
+    var authState = document.getElementById("privatePilotAuthenticatedState");
+    var guestState = document.getElementById("privatePilotGuestState");
+    var unauthState = document.getElementById("privatePilotUnauthenticatedState");
+
+    if (loading) loading.classList.add("hidden");
+
+    var user = null;
+    if (rawUser) {
+      try { user = JSON.parse(rawUser); } catch (e) {}
+    }
+
+    if (user && rawToken && user.role !== "guest") {
+      if (authState) authState.classList.remove("hidden");
+      if (guestState) guestState.classList.add("hidden");
+      if (unauthState) unauthState.classList.add("hidden");
+
+      var emailLabel = document.getElementById("privatePilotEmailLabel");
+      var roleBadge = document.getElementById("privatePilotRoleBadge");
+      if (emailLabel) emailLabel.textContent = user.name || user.email || "Piloto Oficial";
+      if (roleBadge) {
+        if (user.role === "admin") {
+          roleBadge.textContent = "Admin";
+          roleBadge.className = "text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20";
+        } else {
+          roleBadge.textContent = "Piloto";
+          roleBadge.className = "text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+        }
+      }
+    } else if (user && user.role === "guest") {
+      if (authState) authState.classList.add("hidden");
+      if (guestState) guestState.classList.remove("hidden");
+      if (unauthState) unauthState.classList.add("hidden");
+    } else {
+      if (authState) authState.classList.add("hidden");
+      if (guestState) guestState.classList.add("hidden");
+      if (unauthState) unauthState.classList.remove("hidden");
+    }
+  }
+
+  function logoutPrivateArea() {
+    try {
+      localStorage.removeItem("mrt_vault_user");
+      localStorage.removeItem("mrt_vault_token");
+      sessionStorage.removeItem("mrt_vault_user");
+      sessionStorage.removeItem("mrt_vault_token");
+      window.dispatchEvent(new Event("muntrume-auth-change"));
+    } catch (e) {}
+
+    // If setups has handleLogout, execute it
+    if (typeof window.handleLogout === "function") {
+      window.handleLogout();
+    } else {
+      window.location.reload();
+    }
+  }
+
+  function triggerPrivateAreaLogin() {
+    if (typeof window.openAuthModal === "function") {
+      window.openAuthModal("login");
+    } else if (typeof window.openMailAuthModal === "function") {
+      window.openMailAuthModal();
+    } else {
+      window.location.href = "/setups#login";
+    }
+  }
+
+  window.syncPrivateAreaAuth = syncPrivateAreaAuth;
+  window.logoutPrivateArea = logoutPrivateArea;
+  window.triggerPrivateAreaLogin = triggerPrivateAreaLogin;
+
+  document.addEventListener("DOMContentLoaded", syncPrivateAreaAuth);
+  window.addEventListener("storage", syncPrivateAreaAuth);
+  window.addEventListener("muntrume-auth-change", syncPrivateAreaAuth);
+</script>

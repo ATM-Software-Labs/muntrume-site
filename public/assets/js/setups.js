@@ -538,6 +538,7 @@ function handleLogout() {
   localStorage.removeItem("mrt_vault_user");
   sessionStorage.removeItem("mrt_vault_token");
   sessionStorage.removeItem("mrt_vault_user");
+  window.dispatchEvent(new Event("muntrume-auth-change"));
   showLandingView();
 }
 
@@ -3672,5 +3673,7 @@ if (typeof window !== "undefined") {
   window.copyVaultUrlForChrome = copyVaultUrlForChrome;
   window.toggleLinkDirectory = toggleLinkDirectory;
   window.copySetupPath = copySetupPath;
+  window.handleLogout = handleLogout;
+  window.saveSession = saveSession;
   window.setViewMode = setViewMode;
 }
