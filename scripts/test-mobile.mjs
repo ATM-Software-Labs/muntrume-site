@@ -79,7 +79,8 @@ page.on('pageerror', err => {
 
 async function checkPage(pathname) {
   console.log(`\n=== CHECKING MOBILE: ${pathname} ===`);
-  await page.goto(`http://localhost:${PORT}${pathname}`, { waitUntil: 'networkidle' });
+  await page.goto(`http://localhost:${PORT}${pathname}`, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(500);
 
   // 1. Check horizontal scroll / overflow
   const overflow = await page.evaluate(() => {

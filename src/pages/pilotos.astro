@@ -1,43 +1,50 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import StatsGrid from '../components/StatsGrid.astro';
-import HelmetAvatar from '../components/HelmetAvatar.astro';
 
 const pageTitle = "Pilotos Oficiales de Sim Racing | Plantilla iRacing — Muntrume Motorsport";
-const pageDescription = "Alineación oficial de 4 pilotos de Muntrume Motorsport en iRacing: Alberto Trujillo, Mateo Berbis, Eduardo Chongkan y Juanlu Carrillo. Temporada 2026 Oficial.";
+const pageDescription = "Plantilla unificada de 4 pilotos de Muntrume Motorsport en iRacing: Alberto Trujillo, Mateo Berbis, Eduardo Chongkan y Juanlu Carrillo. Datos de telemetría y licencias en vivo.";
 
-export const OFFICIAL_DRIVERS = [
+export const INITIAL_DRIVERS = [
   {
-    num: "#01",
+    dorsal: "#01",
     name: "Alberto Trujillo",
-    role: "Team Principal & Telemetry",
-    bio: "Especialista en telemetría a 60Hz, arquitectura de suspensión y dinámicas de chasis.",
-    season: "Temporada 2026 - Oficial",
-    slug: "alberto-trujillo"
+    cust_id: "993381",
+    slug: "alberto-trujillo",
+    flag: "🇪🇸",
+    country: "Spain",
+    helmet_url: "https://members-ng.iracing.com/member/GetHelmetImage?custId=993381",
+    is_paddock: false
   },
   {
-    num: "#02",
+    dorsal: "#02",
     name: "Mateo Berbis",
-    role: "Endurance & GT3 Driver",
-    bio: "Especialista en tandas largas de resistencia y gestión de desgaste de neumáticos GT3.",
-    season: "Temporada 2026 - Oficial",
-    slug: "mateo-berbis"
+    cust_id: "1134615",
+    slug: "mateo-berbis",
+    flag: "🇪🇸",
+    country: "Spain",
+    helmet_url: "https://members-ng.iracing.com/member/GetHelmetImage?custId=1134615",
+    is_paddock: false
   },
   {
-    num: "#03",
+    dorsal: "#03",
     name: "Eduardo Chongkan",
-    role: "Prototype & Formula Driver",
-    bio: "Análisis de alta carga aerodinámica en prototipos GTP/LMP2 y monoplazas.",
-    season: "Temporada 2026 - Oficial",
-    slug: "eduardo-chongkan"
+    cust_id: "1076585",
+    slug: "eduardo-chongkan",
+    flag: "🇪🇸",
+    country: "Spain",
+    helmet_url: "https://members-ng.iracing.com/member/GetHelmetImage?custId=1076585",
+    is_paddock: false
   },
   {
-    num: "#04",
+    dorsal: "#04",
     name: "Juanlu Carrillo",
-    role: "Touring & Cup Driver",
-    bio: "Especialista en combate cuerpo a cuerpo, trazadas en turismos y copas monomarca.",
-    season: "Temporada 2026 - Oficial",
-    slug: "juanlu-carrillo"
+    cust_id: null,
+    slug: "juanlu-carrillo",
+    flag: "🇪🇸",
+    country: "Spain",
+    helmet_url: null,
+    is_paddock: true
   }
 ];
 ---
@@ -45,9 +52,9 @@ export const OFFICIAL_DRIVERS = [
 <Layout title={pageTitle} description={pageDescription}>
   <main class="pt-24 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
     
-    <!-- Header Hero -->
+    <!-- Header Hero Minimalista -->
     <section class="text-center max-w-3xl mx-auto space-y-4 pt-6">
-      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#121A17] border border-[#1E2A26] text-xs font-mono text-[#00E699]">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#121A17] border border-[#1E2A26] text-xs font-mono text-[#00E699]">
         <span class="w-2 h-2 rounded-full bg-[#00E699] animate-pulse"></span>
         <span>PLANTILLA OFICIAL &bull; TEMPORADA 2026</span>
       </div>
@@ -55,56 +62,101 @@ export const OFFICIAL_DRIVERS = [
         PILOTOS <span class="text-[#00E699]">DEL EQUIPO</span>
       </h1>
       <p class="text-sm sm:text-base text-[#8B9A8F] leading-relaxed max-w-xl mx-auto">
-        Alineación oficial de Muntrume Motorsport para iRacing. Pilotos multidisciplinares para GT3, prototipos GTP y monoplazas.
+        Alineación igualitaria de Muntrume Motorsport para iRacing. Datos de telemetría y licencias sincronizados desde la API oficial.
       </p>
     </section>
 
-    <!-- Drivers Cards Container (Grid de 4 en desktop, swipe horizontal suave en móvil) -->
+    <!-- 4 Cards Juntas en Grid de 4 columnas desktop, 1 columna swipe mobile -->
     <section>
       <div class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar pb-6 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:overflow-visible gap-4 sm:gap-6" id="driversListContainer">
-        {OFFICIAL_DRIVERS.map(d => (
-          <article class="driver-card snap-center shrink-0 w-[85vw] sm:w-auto p-6 rounded-2xl bg-[#121A17] border border-[#1E2A26] hover:border-[#00E699]/60 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden">
-            
-            <!-- Small green indicator dot top right -->
+        {INITIAL_DRIVERS.map(d => (
+          <article 
+            class="driver-card snap-center shrink-0 w-[85vw] sm:w-auto p-5 sm:p-6 rounded-2xl bg-[#121A17] border border-[#1E2A26] hover:border-[#00E699]/60 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
+            data-custid={d.cust_id || ""}
+            data-dorsal={d.dorsal}
+            style="min-height: 290px;"
+          >
+            <!-- Indicador sutil arriba a la derecha -->
             <span class="absolute top-4 right-4 w-1.5 h-1.5 rounded-full bg-[#00E699] opacity-80 group-hover:scale-125 transition-transform"></span>
 
             <div>
-              <!-- Top: Number in small green -->
-              <div class="flex items-center justify-between pb-3 border-b border-[#1E2A26] mb-4">
-                <span class="text-xs font-mono font-bold text-[#00E699] tracking-wider">{d.num}</span>
-                <span class="text-[10px] font-mono text-[#8B9A8F] uppercase">{d.season}</span>
+              <!-- Header: #01 mono 12px verde #00E699 -->
+              <div class="flex items-center justify-between pb-3 border-b border-[#1E2A26] mb-3.5">
+                <span class="font-mono text-xs font-bold text-[#00E699] tracking-wider">
+                  {d.dorsal}
+                </span>
+                <span class="text-[10px] font-mono uppercase text-[#8B9A8F] tracking-widest status-badge">
+                  {d.is_paddock ? "En el Paddock" : "Oficial 2026"}
+                </span>
               </div>
 
-              <!-- Center: Helmet Avatar Placeholder -->
-              <div class="mb-4">
-                <HelmetAvatar driverNumber={d.num} />
+              <!-- Nombre + DATOS al lado como pills: Alberto Trujillo [🇪🇸] [3912 iR] [A 4.99] -->
+              <div class="space-y-1">
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <h2 class="text-base sm:text-lg font-bold text-white group-hover:text-[#00E699] transition-colors tracking-tight font-display">
+                    {d.name}
+                  </h2>
+
+                  <!-- Pill Bandera (la bandera es solo una pill más) -->
+                  <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-[#1E2A26] text-[10px] font-mono text-neutral-200 border border-white/5" title="Spain">
+                    {d.flag}
+                  </span>
+
+                  <!-- Contenedor dinámico de pills para iR, Licencia y Categoría -->
+                  <span class="live-pills inline-flex flex-wrap items-center gap-1.5"></span>
+                </div>
+
+                <!-- Subtítulo: Piloto Muntrume Motorsport - Sant Andreu, BCN 10px uppercase #8B9A8F -->
+                <p class="text-[10px] font-mono uppercase tracking-wider text-[#8B9A8F]">
+                  Piloto Muntrume Motorsport &middot; Sant Andreu, BCN
+                </p>
               </div>
 
-              <!-- Bottom: Real Name & Real Role -->
-              <h2 class="text-xl font-bold text-white group-hover:text-[#00E699] transition-colors font-display tracking-tight">
-                {d.name}
-              </h2>
-              <div class="text-[11px] font-mono uppercase tracking-wider text-[#8B9A8F] mt-1 font-semibold">
-                {d.role}
+              <!-- Centro: Casco real iRacing 80x80px fondo #1E2A26 rounded 12px. Hover scale 1.1 + glow verde -->
+              <div class="my-5 flex items-center justify-center">
+                <div class="w-20 h-20 rounded-xl bg-[#1E2A26] border border-[#2A3A34] overflow-hidden flex items-center justify-center relative group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(0,230,153,0.35)] transition-all duration-300 helmet-container">
+                  {d.helmet_url ? (
+                    <>
+                      <img 
+                        src={d.helmet_url} 
+                        alt={`Casco de ${d.name}`} 
+                        class="w-full h-full object-contain p-1 helmet-img"
+                        loading="lazy"
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                      />
+                      <svg class="w-12 h-12 text-[#00E699] hidden fallback-helmet" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M26 56 C24 38 34 20 54 18 C74 16 82 32 82 48 C82 60 76 74 68 78 C60 82 46 82 36 80 C30 79 27 70 26 56 Z" fill="#121A17" stroke="#00E699" stroke-width="2.5" stroke-linejoin="round"/>
+                        <path d="M32 44 C42 42 66 43 78 48 C77 56 73 62 64 64 C48 64 35 62 31 52 C30 48 31 45 32 44 Z" fill="#050807" stroke="#00E699" stroke-width="1.5"/>
+                        <path d="M38 48 C48 46 64 47 74 51" stroke="#00E699" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="34" cy="50" r="2" fill="#00E699"/>
+                        <path d="M36 68 L48 68" stroke="#00E699" stroke-width="1.5" stroke-linecap="round"/>
+                      </svg>
+                    </>
+                  ) : (
+                    <svg class="w-12 h-12 text-[#00E699]" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M26 56 C24 38 34 20 54 18 C74 16 82 32 82 48 C82 60 76 74 68 78 C60 82 46 82 36 80 C30 79 27 70 26 56 Z" fill="#121A17" stroke="#00E699" stroke-width="2.5" stroke-linejoin="round"/>
+                      <path d="M32 44 C42 42 66 43 78 48 C77 56 73 62 64 64 C48 64 35 62 31 52 C30 48 31 45 32 44 Z" fill="#050807" stroke="#00E699" stroke-width="1.5"/>
+                      <path d="M38 48 C48 46 64 47 74 51" stroke="#00E699" stroke-width="2" stroke-linecap="round"/>
+                      <circle cx="34" cy="50" r="2" fill="#00E699"/>
+                      <path d="M36 68 L48 68" stroke="#00E699" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                  )}
+                </div>
               </div>
-
-              <!-- 1-line Real Description -->
-              <p class="text-xs text-[#8B9A8F] leading-relaxed mt-3 pt-3 border-t border-[#1E2A26]">
-                {d.bio}
-              </p>
             </div>
 
-            <!-- Profile Link -->
-            <div class="pt-4 mt-4 border-t border-[#1E2A26] flex items-center justify-between">
-              <span class="text-[10px] font-mono text-[#8B9A8F] uppercase">iRacing Driver</span>
-              <a 
-                href={`/p/${d.slug}`} 
-                class="text-xs font-mono font-bold text-[#00E699] hover:underline flex items-center gap-1 group-hover:translate-x-0.5 transition-transform"
-                title={`Ver ficha oficial de ${d.name}`}
-              >
-                <span>Ficha</span>
-                <span>&rarr;</span>
-              </a>
+            <!-- Footer: Más usado o En el Paddock -->
+            <div class="pt-3 border-t border-[#1E2A26] text-[11px] font-mono text-[#8B9A8F] card-footer">
+              {d.is_paddock ? (
+                <div class="flex items-center justify-between text-neutral-400">
+                  <span>En el Paddock</span>
+                  <span class="text-[10px] text-[#00E699] uppercase font-bold">Fundador</span>
+                </div>
+              ) : (
+                <div class="truncate text-neutral-400 default-footer-msg">
+                  Temporada 2026 &middot; iRacing
+                </div>
+              )}
             </div>
 
           </article>
@@ -112,10 +164,77 @@ export const OFFICIAL_DRIVERS = [
       </div>
     </section>
 
-    <!-- Stats Grid Integration (Single Source of Truth) -->
+    <!-- Stats Grid Integration -->
     <section class="pt-4">
       <StatsGrid />
     </section>
 
   </main>
 </Layout>
+
+<!-- Script de hidratación asíncrona sin parpadeo desde /api/drivers -->
+<script is:inline>
+  window.addEventListener('load', function() {
+    // Si estamos en entorno estático local sin backend de Worker, omitir fetch para evitar 404
+    if (window.location.port === '8099') return;
+
+    var API_URL = window.location.hostname === 'muntru.me' || window.location.hostname.endsWith('muntru.me')
+      ? '/api/drivers'
+      : 'https://muntrume.atrumin16.workers.dev/api/drivers';
+
+    var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timer = controller ? setTimeout(function() { controller.abort(); }, 2500) : null;
+
+    fetch(API_URL, { signal: controller ? controller.signal : undefined })
+      .then(function(res) {
+        if (timer) clearTimeout(timer);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function(drivers) {
+        if (!Array.isArray(drivers) || !drivers.length) return;
+
+        drivers.forEach(function(driver) {
+          var card = document.querySelector('article[data-dorsal="' + driver.dorsal + '"]');
+          if (!card) return;
+
+          // 1. Inyectar pills de telemetría real
+          var pillsContainer = card.querySelector('.live-pills');
+          if (pillsContainer) {
+            var html = '';
+            if (driver.irating) {
+              html += '<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-[#1E2A26] text-[10px] font-mono font-bold text-[#00E699] border border-[#00E699]/30">' + driver.irating + ' iR</span>';
+            }
+            if (driver.license) {
+              html += '<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-[#1E2A26] text-[10px] font-mono text-neutral-200 border border-white/5">' + driver.license + '</span>';
+            }
+            if (driver.fav_category) {
+              html += '<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-[#1E2A26] text-[10px] font-mono text-[#8B9A8F] border border-white/5">' + driver.fav_category + '</span>';
+            }
+            pillsContainer.innerHTML = html;
+          }
+
+          // 2. Actualizar casco si la API provee helmet_url
+          if (driver.helmet_url) {
+            var helmetImg = card.querySelector('.helmet-img');
+            if (helmetImg) {
+              helmetImg.src = driver.helmet_url;
+            }
+          }
+
+          // 3. Actualizar footer si la API devuelve coche más usado
+          var footer = card.querySelector('.card-footer');
+          if (footer && driver.most_used) {
+            var footerText = 'Más usado: <span class="text-white font-semibold">' + driver.most_used.car + '</span> &middot; <span class="text-[#00E699] font-bold">' + driver.most_used.pct + '%</span>';
+            if (driver.fav_car && driver.fav_car !== driver.most_used.car) {
+              footerText += ' | Fav: ' + driver.fav_car;
+            }
+            footer.innerHTML = '<div class="truncate text-[11px] font-mono text-[#8B9A8F]">' + footerText + '</div>';
+          }
+        });
+      })
+      .catch(function() {
+        if (timer) clearTimeout(timer);
+      });
+  });
+</script>

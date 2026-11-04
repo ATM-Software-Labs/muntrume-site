@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 export interface MostUsedCar {
   car: string;
@@ -8,12 +8,17 @@ export interface MostUsedCar {
 export interface DriverData {
   dorsal: string;
   name: string;
+  cust_id?: string | number | null;
   irating: number | null;
   license: string | null;
-  fav_car: string | null;
-  fav_category: string | null;
-  most_used: MostUsedCar | null;
-  last_race: string | null;
+  country?: string;
+  flag?: string;
+  flag_code?: string;
+  helmet_url?: string | null;
+  fav_category?: string | null;
+  most_used?: MostUsedCar | null;
+  fav_car?: string | null;
+  last_race?: string | null;
   is_founder?: boolean;
   status?: string;
 }
@@ -24,84 +29,135 @@ export interface DriverCardProps {
 }
 
 export const DriverCard: React.FC<DriverCardProps> = ({ driver, className = "" }) => {
+  const [imgError, setImgError] = useState(false);
   const hasLiveStats = driver.irating !== null && driver.irating !== undefined;
-  const isPaddockOnly = !driver.irating && driver.status === "En el Paddock";
+  const isPaddock = !driver.irating && (driver.status === "En el Paddock" || !driver.cust_id);
+  const flagIcon = driver.flag || "🇪🇸";
 
   return (
     <article
       className={`relative p-5 sm:p-6 rounded-2xl bg-[#121A17] border border-[#1E2A26] hover:border-[#00E699]/60 transition-all duration-300 flex flex-col justify-between group overflow-hidden ${className}`}
-      style={{ minHeight: "220px" }}
+      style={{ minHeight: "260px" }}
     >
-      {/* Indicador de estado sutil arriba a la derecha */}
-      <span
-        className={`absolute top-4 right-4 w-1.5 h-1.5 rounded-full ${
-          hasLiveStats ? "bg-[#00E699] opacity-80 group-hover:scale-125" : "bg-[#8B9A8F]/60"
-        } transition-transform`}
-      />
-
       <div>
-        {/* Cabecera de la card: Dorsal + Badge igualitario */}
+        {/* Header: #01 en mono 12px verde #00E699 */}
         <div className="flex items-center justify-between pb-3 border-b border-[#1E2A26] mb-4">
-          <span className="text-xs font-mono font-bold text-[#00E699] tracking-wider">
+          <span className="font-mono text-xs font-bold text-[#00E699] tracking-wider">
             {driver.dorsal}
           </span>
-          <span className="text-[10px] font-mono text-[#8B9A8F] uppercase tracking-wider">
-            {isPaddockOnly ? "En el Paddock" : "Piloto Muntrume Motorsport"}
+          <span className="text-[10px] font-mono uppercase text-[#8B9A8F] tracking-widest">
+            {isPaddock ? "En el Paddock" : "Oficial 2026"}
           </span>
         </div>
 
-        {/* Nombre del Piloto - Diseño idéntico para los 4 */}
-        <h3 className="text-xl font-bold text-white group-hover:text-[#00E699] transition-colors tracking-tight font-display">
-          {driver.name}
-        </h3>
-        <p className="text-[11px] font-mono uppercase tracking-wider text-[#8B9A8F] mt-0.5">
-          Piloto Muntrume Motorsport
-        </p>
+        {/* Nombre + DATOS al lado como pills: Alberto Trujillo [🇪🇸] [3912 iR] [A 4.99] [GT3] */}
+        <div className="space-y-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <h3 className="text-base sm:text-lg font-bold text-white group-hover:text-[#00E699] transition-colors tracking-tight font-display">
+              {driver.name}
+            </h3>
 
-        {/* Fila de Pills: [3912 iR] [A 4.99] [GT3] */}
-        <div className="flex flex-wrap items-center gap-1.5 mt-3.5">
-          {hasLiveStats ? (
-            <>
-              {/* Pill iRating LIVE */}
-              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-[#00E699]/15 text-[#00E699] border border-[#00E699]/30">
+            {/* Pill Bandera (solo una pill más al lado) */}
+            <span
+              className="inline-flex items-center px-1.5 py-0.5 rounded bg-[#1E2A26] text-[10px] font-mono text-neutral-200 border border-white/5"
+              title={driver.country || "Spain"}
+            >
+              {flagIcon}
+            </span>
+
+            {/* Pill iRating LIVE */}
+            {hasLiveStats && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-[#1E2A26] text-[10px] font-mono font-bold text-[#00E699] border border-[#00E699]/30">
                 {driver.irating} iR
               </span>
+            )}
 
-              {/* Pill Licencia Oficial */}
-              {driver.license && (
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-mono font-medium bg-[#080C0A] text-neutral-200 border border-[#1E2A26]">
-                  Licencia {driver.license}
-                </span>
-              )}
+            {/* Pill Licencia Oficial */}
+            {driver.license && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-[#1E2A26] text-[10px] font-mono text-neutral-300 border border-white/5">
+                {driver.license}
+              </span>
+            )}
 
-              {/* Pill Categoría Favorita */}
-              {(driver.fav_category || driver.most_used?.car) && (
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-mono text-[#8B9A8F] bg-[#080C0A] border border-[#1E2A26]">
-                  {driver.fav_category || "Sports Car / GT3"}
-                </span>
-              )}
-            </>
-          ) : (
-            /* Si no hay datos de iRacing o está en el Paddock, nunca inventar */
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-mono text-[#8B9A8F] bg-[#080C0A] border border-[#1E2A26]">
-              {isPaddockOnly ? "En el Paddock &middot; iRacing Inactivo" : "Telemetría Offline &middot; -"}
-            </span>
-          )}
+            {/* Pill Categoría */}
+            {driver.fav_category && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-[#1E2A26] text-[10px] font-mono text-[#8B9A8F] border border-white/5">
+                {driver.fav_category}
+              </span>
+            )}
+          </div>
+
+          {/* Subtítulo: Todos "Piloto Muntrume Motorsport - Sant Andreu, BCN" 10px uppercase #8B9A8F */}
+          <p className="text-[10px] font-mono uppercase tracking-wider text-[#8B9A8F]">
+            Piloto Muntrume Motorsport &middot; Sant Andreu, BCN
+          </p>
+        </div>
+
+        {/* Centro: Casco real iRacing 80x80px con fondo #1E2A26 rounded 12px. Hover scale 1.1 + glow verde */}
+        <div className="my-5 flex items-center justify-center">
+          <div className="w-20 h-20 rounded-xl bg-[#1E2A26] border border-[#2A3A34] overflow-hidden flex items-center justify-center relative group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(0,230,153,0.3)] transition-all duration-300">
+            {driver.helmet_url && !imgError ? (
+              <img
+                src={driver.helmet_url}
+                alt={`Casco oficial de ${driver.name}`}
+                className="w-full h-full object-contain p-1"
+                onError={() => setImgError(true)}
+                loading="lazy"
+              />
+            ) : (
+              /* Casco genérico vector verde #00E699 si helmet_url es null o falla */
+              <svg
+                className="w-12 h-12 text-[#00E699]"
+                viewBox="0 0 100 100"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M26 56 C24 38 34 20 54 18 C74 16 82 32 82 48 C82 60 76 74 68 78 C60 82 46 82 36 80 C30 79 27 70 26 56 Z"
+                  fill="#121A17"
+                  stroke="#00E699"
+                  strokeWidth="2.5"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M32 44 C42 42 66 43 78 48 C77 56 73 62 64 64 C48 64 35 62 31 52 C30 48 31 45 32 44 Z"
+                  fill="#050807"
+                  stroke="#00E699"
+                  strokeWidth="1.5"
+                />
+                <path
+                  d="M38 48 C48 46 64 47 74 51"
+                  stroke="#00E699"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <circle cx="34" cy="50" r="2" fill="#00E699" />
+                <path d="M36 68 L48 68" stroke="#00E699" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Pie de la card: Coche más usado o última actividad */}
-      <div className="pt-3.5 mt-4 border-t border-[#1E2A26] flex items-center justify-between text-[11px] font-mono text-[#8B9A8F]">
+      {/* Footer: Más usado / Fav o En el Paddock */}
+      <div className="pt-3 border-t border-[#1E2A26] text-[11px] font-mono text-[#8B9A8F]">
         {driver.most_used ? (
-          <span className="truncate" title={`Coche más usado: ${driver.most_used.car} (${driver.most_used.pct}%)`}>
-            Uso: <span className="text-neutral-300 font-semibold">{driver.most_used.car}</span> ({driver.most_used.pct}%)
-          </span>
+          <div className="truncate">
+            <span className="text-neutral-400">Más usado:</span>{" "}
+            <span className="text-white font-semibold">{driver.most_used.car}</span> &middot;{" "}
+            <span className="text-[#00E699] font-bold">{driver.most_used.pct}%</span>
+            {driver.fav_car && driver.fav_car !== driver.most_used.car && (
+              <span className="text-neutral-400"> | Fav: {driver.fav_car}</span>
+            )}
+          </div>
+        ) : isPaddock ? (
+          <div className="flex items-center justify-between text-neutral-400">
+            <span>En el Paddock</span>
+            <span className="text-[10px] text-[#00E699] uppercase">Fundador</span>
+          </div>
         ) : (
-          <span>Temporada 2026 &middot; iRacing</span>
+          <div className="text-neutral-400">Temporada 2026 &middot; iRacing</div>
         )}
-        <span className="text-xs text-[#00E699] font-bold group-hover:translate-x-0.5 transition-transform shrink-0 ml-2">
-          &rarr;
-        </span>
       </div>
     </article>
   );

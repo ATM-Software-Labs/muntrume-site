@@ -1781,7 +1781,7 @@ const DRIVERS_ROSTER_CONFIG = [
   { dorsal: "#01", name: "Alberto Trujillo", key: "ID_ALBERTO", defaultId: "993381", is_founder: true },
   { dorsal: "#02", name: "Mateo Berbis", key: "ID_MATEO", defaultId: "1134615", is_founder: false },
   { dorsal: "#03", name: "Eduardo Chongkan", key: "ID_EDUARDO", defaultId: "1076585", is_founder: false },
-  { dorsal: "#04", name: "Juanlu Carrillo", key: null, defaultId: null, is_founder: false, is_paddock: true }
+  { dorsal: "#04", name: "Juanlu Carrillo", key: null, defaultId: null, is_founder: true, is_paddock: true }
 ];
 
 async function getOrRenewIRacingSession(env) {
@@ -2040,13 +2040,18 @@ async function handleDriversLive(request, env, origin) {
         driversOutput.push({
           dorsal: config.dorsal,
           name: config.name,
+          cust_id: null,
           irating: null,
           license: null,
-          fav_car: null,
+          country: "Spain",
+          flag: "🇪🇸",
+          flag_code: "ES",
+          helmet_url: null,
           fav_category: null,
           most_used: null,
+          fav_car: null,
           last_race: null,
-          is_founder: config.is_founder,
+          is_founder: true,
           status: "En el Paddock"
         });
         continue;
@@ -2069,11 +2074,16 @@ async function handleDriversLive(request, env, origin) {
       driversOutput.push({
         dorsal: config.dorsal,
         name: config.name,
+        cust_id: custId,
         irating,
         license,
-        fav_car,
+        country: "Spain",
+        flag: "🇪🇸",
+        flag_code: "ES",
+        helmet_url: `https://members-ng.iracing.com/member/GetHelmetImage?custId=${custId}`,
         fav_category,
         most_used,
+        fav_car,
         last_race,
         is_founder: config.is_founder,
         status: irating ? "Activo" : "Registrado"
@@ -2124,11 +2134,16 @@ async function handleDriversLive(request, env, origin) {
     const safeFallback = DRIVERS_ROSTER_CONFIG.map(d => ({
       dorsal: d.dorsal,
       name: d.name,
+      cust_id: d.defaultId || null,
       irating: null,
       license: null,
-      fav_car: null,
+      country: "Spain",
+      flag: "🇪🇸",
+      flag_code: "ES",
+      helmet_url: d.defaultId ? `https://members-ng.iracing.com/member/GetHelmetImage?custId=${d.defaultId}` : null,
       fav_category: null,
       most_used: null,
+      fav_car: null,
       last_race: null,
       is_founder: d.is_founder,
       status: d.is_paddock ? "En el Paddock" : "Offline"
