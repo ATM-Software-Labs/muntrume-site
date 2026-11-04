@@ -3705,4 +3705,10 @@ if (typeof window !== "undefined") {
   window.handleForgotPasswordSubmit = handleForgotPassword;
   window.openForgotPasswordModal = openForgotPasswordModal;
   window.closeForgotPasswordModal = closeForgotPasswordModal;
+  window.handleSetPassword = handleSetPassword;
+  window.openSetPasswordModal = openSetPasswordModal;
+  window.closeSetPasswordModal = closeSetPasswordModal;
+  window.handleChangePassword = handleChangePassword;
+  window.openChangePasswordModal = openChangePasswordModal;
+  window.closeChangePasswordModal = closeChangePasswordModal;
 }

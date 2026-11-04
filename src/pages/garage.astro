@@ -517,6 +517,62 @@ const pageDescription = "Engineering, setups .STO validados y telemetría Garage
     </div>
   </div>
 
+  <!-- Set / Reset Password Modal (?setpw=TOKEN) -->
+  <div id="setPasswordModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+    <div class="w-full max-w-md p-6 sm:p-8 rounded-2xl bg-[#121A17] border border-[#1E2A26] shadow-2xl space-y-4 font-mono text-xs">
+      <div class="flex items-center justify-between pb-3 border-b border-[#1E2A26]">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-[#00E699]"></span>
+          <span class="text-white font-bold uppercase tracking-wider">Crea tu Contraseña</span>
+        </div>
+        <button type="button" onclick="closeSetPasswordModal()" class="text-[#8B9A8F] hover:text-white p-1">✕</button>
+      </div>
+      <p id="setPwIntro" class="text-[#8B9A8F] leading-relaxed">Comprobando enlace…</p>
+      <form id="setPasswordForm" onsubmit="handleSetPasswordSubmit(event)" class="hidden space-y-4">
+        <div>
+          <label for="setPwNew" class="block text-[11px] text-[#8B9A8F] uppercase mb-1">Nueva Contraseña</label>
+          <input type="password" id="setPwNew" required minlength="10" maxlength="128" placeholder="Mínimo 10 caracteres" class="w-full px-4 py-2.5 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white focus:outline-none focus:border-[#00E699]" />
+        </div>
+        <div>
+          <label for="setPwConfirm" class="block text-[11px] text-[#8B9A8F] uppercase mb-1">Confirmar Contraseña</label>
+          <input type="password" id="setPwConfirm" required minlength="10" maxlength="128" placeholder="Repite la contraseña" class="w-full px-4 py-2.5 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white focus:outline-none focus:border-[#00E699]" />
+        </div>
+        <button type="submit" id="setPwBtn" class="w-full py-3 rounded-xl bg-[#00E699] hover:bg-[#00c985] text-neutral-950 font-black uppercase tracking-wider transition cursor-pointer">
+          Guardar y Entrar al Vault &rarr;
+        </button>
+      </form>
+      <div id="setPwError" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs"></div>
+    </div>
+  </div>
+
+  <!-- Change Password Modal (Mandatory update) -->
+  <div id="changePasswordModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+    <div class="w-full max-w-md p-6 sm:p-8 rounded-2xl bg-[#121A17] border border-[#1E2A26] shadow-2xl space-y-4 font-mono text-xs">
+      <div class="flex items-center justify-between pb-3 border-b border-[#1E2A26]">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-[#00E699]"></span>
+          <span class="text-white font-bold uppercase tracking-wider">Actualizar Contraseña</span>
+        </div>
+        <button type="button" onclick="closeChangePasswordModal()" class="text-[#8B9A8F] hover:text-white p-1">✕</button>
+      </div>
+      <p class="text-[#8B9A8F] leading-relaxed">Por seguridad, debes elegir una nueva contraseña permanente para tu cuenta:</p>
+      <form id="changePasswordForm" onsubmit="handleChangePasswordSubmit(event)" class="space-y-4">
+        <div>
+          <label for="newPassInput" class="block text-[11px] text-[#8B9A8F] uppercase mb-1">Nueva Contraseña</label>
+          <input type="password" id="newPassInput" required minlength="10" maxlength="128" placeholder="Mínimo 10 caracteres" class="w-full px-4 py-2.5 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white focus:outline-none focus:border-[#00E699]" />
+        </div>
+        <div>
+          <label for="confirmPassInput" class="block text-[11px] text-[#8B9A8F] uppercase mb-1">Confirmar Contraseña</label>
+          <input type="password" id="confirmPassInput" required minlength="10" maxlength="128" placeholder="Repite la contraseña" class="w-full px-4 py-2.5 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white focus:outline-none focus:border-[#00E699]" />
+        </div>
+        <div id="changePassError" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs"></div>
+        <button type="submit" id="changePassBtn" class="w-full py-3 rounded-xl bg-[#00E699] hover:bg-[#00c985] text-neutral-950 font-black uppercase tracking-wider transition cursor-pointer">
+          Actualizar y Continuar &rarr;
+        </button>
+      </form>
+    </div>
+  </div>
+
   <script is:inline src="/assets/js/setups.js?v=26s5.0"></script>
 
   <script is:inline>
@@ -619,6 +675,22 @@ const pageDescription = "Engineering, setups .STO validados y telemetría Garage
     window.handleForgotPasswordSubmit = function(e) {
       if (typeof window.handleForgotPassword === 'function') return window.handleForgotPassword(e);
       e.preventDefault();
+    };
+    window.handleSetPasswordSubmit = function(e) {
+      if (typeof window.handleSetPassword === 'function') return window.handleSetPassword(e);
+      e.preventDefault();
+    };
+    window.handleChangePasswordSubmit = function(e) {
+      if (typeof window.handleChangePassword === 'function') return window.handleChangePassword(e);
+      e.preventDefault();
+    };
+    window.closeSetPasswordModal = function() {
+      var modal = document.getElementById('setPasswordModal');
+      if (modal) modal.classList.add('hidden');
+    };
+    window.closeChangePasswordModal = function() {
+      var modal = document.getElementById('changePasswordModal');
+      if (modal) modal.classList.add('hidden');
     };
 
     // Check URL parameters for tab

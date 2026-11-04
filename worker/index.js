@@ -362,7 +362,7 @@ async function makeSetPasswordLink(env, user, ttlMs, purpose) {
     },
     env.JWT_SECRET
   );
-  return `${SITE}/setups?setpw=${token}`;
+  return `${SITE}/garage?setpw=${token}`;
 }
 
 // ───────────────────────────── handlers ─────────────────────────────
@@ -422,7 +422,7 @@ async function handleCodeRequest(body, env, ip, ctx) {
     "ON CONFLICT(email) DO UPDATE SET code_hash = excluded.code_hash, nonce = excluded.nonce, expires_at = excluded.expires_at, attempts = 0, sent_at = excluded.sent_at"
   ).bind(email, codeHash, nonce, now + CODE_TTL_MS, now).run();
   const magic = await signToken({ typ: "magic", sub: email, n: nonce, exp: now + CODE_TTL_MS }, env.JWT_SECRET);
-  const mail = loginCodeEmail({ name: user.name, code, link: `${SITE}/setups#magic=${magic}`, expiresMinutes: CODE_TTL_MS / 60000, ...(await personalCtx(env, user.email)) });
+  const mail = loginCodeEmail({ name: user.name, code, link: `${SITE}/garage#magic=${magic}`, expiresMinutes: CODE_TTL_MS / 60000, ...(await personalCtx(env, user.email)) });
   // El envío va en segundo plano para que el tiempo de respuesta no delate si el correo existe.
   const job = sendEmail(env, { to: user.email, ...mail }).then((r) => console.log("[code] enviado:", !!r.ok, r.ok ? r.id : r.error));
   if (ctx && ctx.waitUntil) ctx.waitUntil(job); else await job;
@@ -718,7 +718,7 @@ async function handleAdminEmailPreview(request, body, env) {
   const s = await requireSession(request, body, env, { admin: true });
   if (s.error) return [s.status, { success: false, error: s.error, code: s.code }];
   const to = s.user.email;
-  const demoLink = `${SITE}/setups?setpw=EJEMPLO-ENLACE-NO-VALIDO`;
+  const demoLink = `${SITE}/garage?setpw=EJEMPLO-ENLACE-NO-VALIDO`;
   const pc = await personalCtx(env, to);
   const sample = { name: s.user.name || "Piloto", email: to };
   const all = {
@@ -728,7 +728,7 @@ async function handleAdminEmailPreview(request, body, env) {
     temp_password: () => approvedTempPasswordEmail({ ...sample, tempPassword: "MTM-EJEM-PLO00-NOVAL", ...pc }),
     rejected: () => rejectedEmail({ name: sample.name, reason: "" }),
     reset: () => resetPasswordEmail({ name: sample.name, link: demoLink, expiresMinutes: 60, ...pc }),
-    code: () => loginCodeEmail({ name: sample.name, code: "000000", link: `${SITE}/setups#magic=EJEMPLO-NO-VALIDO`, expiresMinutes: 10, ...pc }),
+    code: () => loginCodeEmail({ name: sample.name, code: "000000", link: `${SITE}/garage#magic=EJEMPLO-NO-VALIDO`, expiresMinutes: 10, ...pc }),
     digest: null,
     event: null,
   };

@@ -1,3 +1,4 @@
 ---
-return Astro.redirect('/garage', 301);
+const url = new URL(Astro.request.url);
+return Astro.redirect('/garage' + (url.search || '') + (url.hash || ''), 301);
 ---
