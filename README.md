@@ -1,102 +1,153 @@
+Aquí tienes el README DEFINITIVO, ya con fotos, estructura limpia para el usuario y todo detallado. Es la versión que usan los equipos grandes.
+
+Solo tienes que crear la carpeta `docs/screenshots/` y meter ahí las 7 capturas que me pasaste con estos nombres.
+
+Copia y pega esto entero:
+
 # MUNTRUME MOTORSPORT
 ### Sant Andreu, Barcelona — iRacing Sim Racing Team
 
-> PRECISION RACING. ENGINEERED TO WIN.
+> **PRECISION RACING. ENGINEERED TO WIN.**
 
-Muntrume Motorsport es una escudería independiente de sim racing con base en Sant Andreu, Barcelona. Compite en iRacing en GTP, GT3 Endurance y monoplazas.
+Escudería independiente de iRacing con base en Sant Andreu, Barcelona. 4 pilotos oficiales, 196 coches y 239.539 setups validados con telemetría Garage 61 y MoTeC i2 Pro.
 
-**Production:** [muntru.me](https://muntru.me) | **Garage:** [muntru.me/garage](https://muntru.me/garage) | **Paddock:** [muntru.me/paddock](https://muntru.me/paddock) | **Discord:** [discord.gg/ehX6B8JUtE](https://discord.gg/ehX6B8JUtE)
+**[ Web - muntru.me ](https://muntru.me) | [ Garage Access ](https://muntru.me/garage) | [ Paddock ](https://muntru.me/paddock) | [ Discord ](https://discord.gg/ehX6B8JUtE)**
 
 ---
 
-### Official Lineup — 4 Pilotos
+### Platform Showcase
 
-| # | Piloto | Rol |
-| :--- | :--- | :--- |
-| **#1** | **Alberto Trujillo** | Team Principal & Telemetría |
-| **#2** | **Mateo Berbis** | Lead Sprint & Qualy Driver |
-| **#3** | **Eduardo Chongkan** | Race Engineer & Prototipos |
-| **#4** | **Juanlu Carrillo** | Monoplazas & Formula Specialist |
+<p align="center">
+  <img src="docs/screenshots/home-hero.png" width="100%" alt="Muntrume Home - Precision Racing" />
+</p>
+
+<p align="center">
+  <em>Home — Hero limpio, stats unificados y acceso directo al Garage</em>
+</p>
+
+---
+
+### Official Lineup 2026
+
+4 pilotos homologados para GTP, GT3 Endurance y Monoplazas.
+
+<p align="center">
+  <img src="docs/screenshots/pilotos-equipo.png" width="100%" alt="Pilotos del Equipo - 4 Drivers" />
+</p>
+
+| # | Piloto | Rol | Especialidad |
+| :--- | :--- | :--- | :--- |
+| **#1** | **Alberto Trujillo** | Team Principal & Telemetría | Dinámica vehicular, análisis 60Hz |
+| **#2** | **Mateo Berbis** | Lead Sprint & Qualy | Vuelta rápida, clasificación |
+| **#3** | **Eduardo Chongkan** | Race Engineer & Prototipos | Curvas rápidas, resistencia |
+| **#4** | **Juanlu Carrillo** | Monoplazas Specialist | Alta carga aerodinámica, Formula |
 
 ---
 
 ### Estructura: Paddock + Garage
 
-Ya no hay 7 páginas separadas. Todo el proyecto son 2 conceptos:
+Hemos simplificado 7 páginas en 2 conceptos.
 
-**1. MUNTRUME PADDOCK — `/paddock`**
-El club. Público. Donde entra la comunidad, patrocinadores y nuevos pilotos.
-- Manifiesto del equipo
-- Canales oficiales: Discord, YouTube @jostrume18gameplays28, Twitch muntrumemrt
-- Request Paddock Pass (formulario de ingreso)
+#### 1. MUNTRUME PADDOCK — El Club (Público)
 
-**2. MUNTRUME GARAGE — `/garage`**
-El área privada. Solo para pilotos oficiales. Login único.
-- **Box #1: Setup Vault** — Catálogo oficial de setups .STO
-- **Box #2: Comms & Telemetry** — Buzón privado + logs MoTeC i2 Pro + Garage 61
-- **Box #3: Race Center** — Briefings, estrategia y calendario
+<p align="center">
+  <img src="docs/screenshots/about-muntrume.png" width="48%" alt="About Muntrume - Canales Oficiales" />
+  <img src="docs/screenshots/contacto-oficial.png" width="48%" alt="Contacto Oficial - Paddock Pass" />
+</p>
 
-Un solo botón en toda la web: `GARAGE ACCESS`.
+Donde entra todo el mundo. Manifiesto del equipo, canales oficiales y solicitud de ingreso.
+
+- **Discord:** Radio oficial del equipo
+- **YouTube:** @jostrume18gameplays28 — Onboards y análisis
+- **Twitch:** muntrumemrt — Live stints
+- **Request Paddock Pass:** Formulario de ingreso en /paddock
+
+#### 2. MUNTRUME GARAGE — Área Privada (Solo Pilotos)
+
+<p align="center">
+  <img src="docs/screenshots/setup-vault.png" width="100%" alt="Muntrume Setup Vault - 41k Setups" />
+</p>
+
+<p align="center">
+  <em>Setup Vault — 239.539 setups con guardado en 1 clic en Documents\iRacing\setups</em>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/team-comms.png" width="100%" alt="Team Comms - Buzón Privado" />
+</p>
+
+<p align="center">
+  <em>Team Comms — Buzón privado, telemetría .STO y MoTeC i2 Pro</em>
+</p>
+
+**Box #1: Setup Vault**
+196 coches oficiales, 239.539 .STO firmados `muntru.me - Setup by Alberto Trujillo`. Variantes Q, R, Endurance y Wet. Guardado directo en 1 clic.
+
+**Box #2: Comms & Telemetry**
+Buzón privado con identidad verificada `alberto.muntrume@trujillomingorance.com`. Intercambio de logs MoTeC y archivos .STO. Mailbox isolation entre pilotos.
+
+**Box #3: Race Center**
+Briefings, estrategia y calendario de especiales de iRacing.
 
 ---
 
-### Garage Capabilities
-
-- **196 coches / 239,539 setups** oficiales de iRacing (GT3, GTP Hypercars, LMP2, LMP3, GT4, TCR, F1). Todos firmados: `muntru.me - Muntrume Motorsport | Setup by Alberto Trujillo`.
-- **1-Click Sync:** Guardado directo en `Documents\iRacing\setups\[car]` con File System Access API en desktop. En móvil, descarga limpia de .STO y .zip.
-- **Session Variants:** Qualy (Q), Race (R), Endurance, Wet incluidos por coche/circuito.
-- **Preview Técnico:** Header binario del .STO, parámetros del coche y leaderboard de Garage 61.
-- **Verified Comms:** Identidad verificada `Alberto de Muntrume <alberto.muntrume@trujillomingorance.com>` con DKIM/SPF/DMARC via Resend + Cloudflare Email Routing.
+### Press Room & Media Wire
 
 <p align="center">
-  <img src="docs/screenshots/mobile-home.png" width="30%" alt="Home Mobile" />
-  <img src="docs/screenshots/mobile-setups.png" width="30%" alt="Garage Mobile" />
-  <img src="docs/screenshots/mobile-preview-modal.png" width="30%" alt="Preview Mobile" />
+  <img src="docs/screenshots/press-room.png" width="100%" alt="Press Room & Media Wire" />
+</p>
+
+Wire en vivo conectado a RSS públicos de iRacing, Sim Racing y Motorsport. Team updates y titulares oficiales.
+
+---
+
+### Mobile First — 100% Responsive
+
+Diseñado para 375px, 390px y 412px. 40px touch targets, scroll chips y cero overflow.
+
+<p align="center">
+  <img src="docs/screenshots/mobile-home.png" width="30%" alt="Mobile Home" />
+  <img src="docs/screenshots/mobile-setups.png" width="30%" alt="Mobile Setup Vault" />
+  <img src="docs/screenshots/mobile-preview-modal.png" width="30%" alt="Mobile Preview Modal" />
 </p>
 
 ---
 
-### Tech Stack
+### ¿Cómo empiezo?
 
-| Layer | Technology |
+**Si eres fan:**
+1. Entra al Paddock en Discord: discord.gg/ehX6B8JUtE
+2. Sigue el calendario en muntru.me
+
+**Si quieres ser piloto:**
+1. Ve a muntru.me/paddock
+2. Rellena Request Paddock Pass con tu nombre, email de iRacing e iRating
+3. Te respondemos en < 24h con test de ritmo
+
+**Si ya eres piloto oficial:**
+1. Ve a muntru.me/garage
+2. GARAGE ACCESS con tu email de piloto
+3. Acceso total a Vault + Comms + Telemetry
+
+---
+
+<details>
+<summary><b>Technical Stack (para devs)</b></summary>
+
+| Layer | Tech |
 | :--- | :--- |
-| Frontend | Astro 5 + Tailwind CSS 4 — SSG minificado |
-| Edge | Cloudflare Workers — Auth Zero-Trust + Webhooks |
-| Database | Cloudflare D1 — `muntrume_vault` |
-| Email | Cloudflare Email Routing + Resend API + PostalMime |
+| Frontend | Astro 5 + Tailwind 4 — SSG |
+| Edge | Cloudflare Workers — Zero-Trust |
+| DB | Cloudflare D1 — muntrume_vault |
+| Email | Cloudflare Email Routing + Resend + PostalMime |
 | Hosting | GitHub Pages Edge CDN |
-| QA | Playwright E2E — Test de responsive 375/390/412px |
+| QA | Playwright E2E Mobile Audit |
 
-**Arquitectura:**
+Arquitectura: GitHub Pages -> Cloudflare Worker (Auth + Mail) -> D1 + Email Routing. Zero-Trust: PBKDF2 100k + HMAC 2FA 10m + HSTS preload + CSP frame-ancestors none.
 
-```
-https://muntru.me (GitHub Pages)
-        |
-        v
-Cloudflare Worker (muntrume.atrumin16.workers.dev)
-- PBKDF2 Auth + HMAC 2FA
-- PostalMime Decoder
-- Security Headers (HSTS preload, DENY, nosniff, CSP frame-ancestors 'none')
-        |
-        +--> D1 (muntrume_vault)
-        +--> Email Routing
-```
+</details>
 
 ---
 
-### Security
-
-Zero-Trust por diseño. Mailbox isolation entre pilotos. 2FA de un solo uso con validez de 10 min. Ver detalles completos en SECURITY.md.
-
-### Domain Portability
-
-100% domain-agnostic. Para migrar de `muntru.me` a otro dominio:
-
-1. Cambia `public/CNAME`
-2. Apunta tu CNAME a `atrumin16.github.io`
-
-Canonicals, OG tags y sitemap se adaptan automáticamente. El Worker ya permite `*.trujillomingorance.com` y `muntru.me`.
-
----
-
-**Muntrume Motorsport © 2026 — Sant Andreu, Barcelona, CAT — muntru.me — iRacing Sim Racing Team**
+**Muntrume Motorsport © 2026 — SimRacing Team — Sant Andreu, Barcelona, CAT — muntru.me**
+**iRacing Sim Racing Team — GT3 Endurance | Prototypes GTP | Single-Seater — Discord: ehX6B8JUtE**
