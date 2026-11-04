@@ -222,12 +222,10 @@ const DRIVERS = PILOTOS.map(p => {
   window.addEventListener('load', function() {
     if (window.location.port === '8099') return;
 
-    var API_URL = window.location.hostname === 'muntru.me' || window.location.hostname.endsWith('muntru.me')
-      ? '/api/drivers'
-      : 'https://muntrume.atrumin16.workers.dev/api/drivers';
+    var API_URL = 'https://muntrume.atrumin16.workers.dev/api/drivers';
 
     var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-    var timer = controller ? setTimeout(function() { controller.abort(); }, 2500) : null;
+    var timer = controller ? setTimeout(function() { controller.abort(); }, 4000) : null;
 
     fetch(API_URL, { signal: controller ? controller.signal : undefined })
       .then(function(res) {
