@@ -161,6 +161,31 @@ Diseñado para 375px, 390px y 412px. 40px touch targets, scroll chips y cero ove
 
 ---
 
+### Muntrume Live iRacing API (muntrume-api)
+
+Worker seguro de Cloudflare para conectar con la iRacing Data API oficial con sistema anti-baneo (cache D1 con TTL de 6h, máximo 4 llamadas cada 360 min y token de autenticación reusado por 20h).
+
+#### Despliegue en Cloudflare (0 Riesgo):
+1. Ve a **Cloudflare Dashboard > Workers & Pages > muntrume-api > Settings > Variables > Encrypt**.
+2. Añade los secretos encriptados:
+   - `IRACING_EMAIL` = Email de la cuenta principal de iRacing de Alberto Trujillo
+   - `IRACING_PASSWORD` = Contraseña de la cuenta de iRacing
+3. Añade las variables de entorno para los pilotos:
+   - `ID_ALBERTO` = `993381`
+   - `ID_MATEO` = `1134615`
+   - `ID_EDUARDO` = `1076585`
+4. Ejecuta el esquema D1 para la tabla de caché:
+   ```bash
+   wrangler d1 execute muntrume_vault --file=worker/schema.sql
+   ```
+5. Despliega el Worker:
+   ```bash
+   wrangler deploy
+   ```
+Listo. 0 riesgo de baneo ni exposición de credenciales.
+
+---
+
 <details>
 <summary><b>Technical Stack (para devs)</b></summary>
 

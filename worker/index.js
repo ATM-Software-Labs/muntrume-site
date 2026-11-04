@@ -1775,6 +1775,372 @@ async function handleAdminUserPublic(request, body, env) {
   return [200, { success: true, slug, visible: !!visible, url: `${SITE}/p/${slug}/` }];
 }
 
+// ───────────────────────────── iRacing Data API Live Engine (Anti-Baneo) ─────────────────────────────
+
+const DRIVERS_ROSTER_CONFIG = [
+  { dorsal: "#01", name: "Alberto Trujillo", key: "ID_ALBERTO", defaultId: "993381", is_founder: true },
+  { dorsal: "#02", name: "Mateo Berbis", key: "ID_MATEO", defaultId: "1134615", is_founder: false },
+  { dorsal: "#03", name: "Eduardo Chongkan", key: "ID_EDUARDO", defaultId: "1076585", is_founder: false },
+  { dorsal: "#04", name: "Juanlu Carrillo", key: null, defaultId: null, is_founder: false, is_paddock: true }
+];
+
+async function getOrRenewIRacingSession(env) {
+  if (!env.IRACING_EMAIL || !env.IRACING_PASSWORD) {
+    throw new Error("MISSING_SECRETS");
+  }
+
+  // 1. Reusar sesión en D1 (TTL 20 horas)
+  if (env.muntrume_vault) {
+    try {
+      const cached = await env.muntrume_vault
+        .prepare("SELECT data, updated_at FROM driver_stats WHERE id = 'iracing_session'")
+        .first();
+      if (cached && (Date.now() - new Date(cached.updated_at).getTime()) < 20 * 3600 * 1000) {
+        const parsed = JSON.parse(cached.data);
+        if (parsed.cookie) return parsed.cookie;
+      }
+    } catch (e) {
+      console.warn("[iRacing Auth] D1 session read error:", e?.message);
+    }
+  }
+
+  // 2. Login oficial en https://members-ng.iracing.com/auth
+  const authRes = await fetch("https://members-ng.iracing.com/auth", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "User-Agent": "Muntrume-Motorsport-API/2.0"
+    },
+    body: JSON.stringify({
+      email: env.IRACING_EMAIL,
+      password: env.IRACING_PASSWORD
+    })
+  });
+
+  if (!authRes.ok) {
+    throw new Error(`iRacing Auth failed with HTTP ${authRes.status}`);
+  }
+
+  // Recoger cookies
+  let cookies = [];
+  if (typeof authRes.headers.getSetCookie === "function") {
+    cookies = authRes.headers.getSetCookie();
+  } else {
+    const raw = authRes.headers.get("set-cookie");
+    if (raw) cookies = [raw];
+  }
+
+  const cookiePairs = cookies.map(c => c.split(";")[0].trim()).filter(Boolean);
+  let cookieHeader = cookiePairs.join("; ");
+
+  if (!cookieHeader) {
+    const authBody = await authRes.json().catch(() => ({}));
+    if (authBody.authcode) {
+      cookieHeader = `authcode=${authBody.authcode}`;
+    }
+  }
+
+  // Guardar sesión en D1 (TTL 20h)
+  if (env.muntrume_vault && cookieHeader) {
+    try {
+      await env.muntrume_vault.prepare(
+        "INSERT INTO driver_stats (id, data, updated_at) VALUES ('iracing_session', ?, ?) ON CONFLICT(id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at"
+      ).bind(JSON.stringify({ cookie: cookieHeader }), new Date().toISOString()).run();
+    } catch (e) {
+      console.warn("[iRacing Auth] D1 session write error:", e?.message);
+    }
+  }
+
+  return cookieHeader;
+}
+
+async function fetchIRacingData(endpoint, cookieHeader) {
+  const url = `https://members-ng.iracing.com${endpoint}`;
+  const res = await fetch(url, {
+    headers: {
+      "Cookie": cookieHeader,
+      "User-Agent": "Muntrume-Motorsport-API/2.0"
+    }
+  });
+
+  if (res.status === 401) {
+    const err = new Error("UNAUTHORIZED");
+    err.status = 401;
+    throw err;
+  }
+
+  if (!res.ok) {
+    throw new Error(`iRacing endpoint ${endpoint} failed: ${res.status}`);
+  }
+
+  const json = await res.json();
+  // Doble fetch obligatorio: si iRacing devuelve un enlace S3 temporal
+  if (json && typeof json.link === "string") {
+    const s3Res = await fetch(json.link);
+    if (!s3Res.ok) throw new Error(`S3 fetch failed with status ${s3Res.status}`);
+    return await s3Res.json();
+  }
+  return json;
+}
+
+function extractLicenseAndIRating(licenses) {
+  if (!Array.isArray(licenses) || !licenses.length) return { irating: null, license: null, fav_category: null };
+  const sportLic = licenses.find(l => 
+    l.category === "sports_car" || l.category_id === 5 || l.category_id === 2 || String(l.category_name || "").toLowerCase().includes("sport")
+  ) || licenses.find(l => l.category === "road" || String(l.category_name || "").toLowerCase().includes("road")) || licenses[0];
+
+  if (!sportLic) return { irating: null, license: null, fav_category: null };
+
+  const irating = typeof sportLic.irating === "number" && sportLic.irating > 0 ? sportLic.irating : null;
+  
+  let license = null;
+  if (sportLic.group_name || sportLic.license_level) {
+    const group = (sportLic.group_name || "").replace(/^Class\s+/i, "").trim() || "A";
+    const sr = typeof sportLic.safety_rating === "number" 
+      ? (sportLic.safety_rating / 100).toFixed(2) 
+      : (sportLic.safety_rating || "4.99");
+    license = `${group} ${sr}`;
+  }
+
+  const fav_category = sportLic.category_name || (sportLic.category === "sports_car" ? "Sports Car" : "GT3");
+
+  return { irating, license, fav_category };
+}
+
+function extractMostUsedCar(recentRaces) {
+  if (!recentRaces) return { fav_car: null, most_used: null, last_race: null };
+  const races = Array.isArray(recentRaces) ? recentRaces : (recentRaces.races || []);
+  if (!races.length) return { fav_car: null, most_used: null, last_race: null };
+
+  const sample = races.slice(0, 20);
+  const counts = {};
+  for (const r of sample) {
+    const car = r.car_name || r.car_id ? String(r.car_name || `Car #${r.car_id}`) : null;
+    if (car) counts[car] = (counts[car] || 0) + 1;
+  }
+
+  let maxCar = null;
+  let maxCount = 0;
+  for (const [car, count] of Object.entries(counts)) {
+    if (count > maxCount) {
+      maxCount = count;
+      maxCar = car;
+    }
+  }
+
+  const pct = sample.length > 0 && maxCount > 0 ? Math.round((maxCount / sample.length) * 100) : 0;
+  const most_used = maxCar ? { car: maxCar, pct } : null;
+  const last_race = races[0]?.session_start_time ? races[0].session_start_time.split("T")[0] : null;
+
+  return {
+    fav_car: maxCar,
+    most_used,
+    last_race
+  };
+}
+
+async function handleDriversLive(request, env, origin) {
+  const allowed = isAllowedOrigin(origin) ? origin : "https://muntru.me";
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": allowed,
+    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Content-Type": "application/json; charset=utf-8",
+    "X-Content-Type-Options": "nosniff"
+  };
+
+  if (request.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+
+  // 1. Verificar Anti-Baneo: comprobar cache D1 (< 6 horas)
+  if (env.muntrume_vault) {
+    try {
+      const cached = await env.muntrume_vault
+        .prepare("SELECT data, updated_at FROM driver_stats WHERE id = 'live_drivers'")
+        .first();
+      if (cached && cached.data) {
+        const ageMs = Date.now() - new Date(cached.updated_at).getTime();
+        // TTL 6 horas (21600000 ms)
+        if (ageMs < 6 * 3600 * 1000) {
+          return new Response(cached.data, {
+            status: 200,
+            headers: {
+              ...corsHeaders,
+              "X-Cache": "HIT",
+              "X-Cache-Age-Seconds": String(Math.round(ageMs / 1000)),
+              "Cache-Control": "public, max-age=1800"
+            }
+          });
+        }
+      }
+    } catch (e) {
+      console.warn("[iRacing API] Cache read error:", e?.message);
+    }
+  }
+
+  // 2. Verificar secrets
+  if (!env.IRACING_EMAIL || !env.IRACING_PASSWORD) {
+    // Si faltan secrets pero hay cache anterior, devolverlo
+    if (env.muntrume_vault) {
+      try {
+        const oldCache = await env.muntrume_vault
+          .prepare("SELECT data FROM driver_stats WHERE id = 'live_drivers'")
+          .first();
+        if (oldCache?.data) {
+          return new Response(oldCache.data, {
+            status: 200,
+            headers: { ...corsHeaders, "X-Cache": "STALE" }
+          });
+        }
+      } catch {}
+    }
+    return new Response(JSON.stringify({
+      error: "Faltan secrets",
+      message: "Faltan secrets: IRACING_EMAIL y IRACING_PASSWORD no configurados en Cloudflare Secrets."
+    }), { status: 503, headers: corsHeaders });
+  }
+
+  // 3. Consultar iRacing Data API
+  try {
+    let session = await getOrRenewIRacingSession(env);
+    
+    // Obtener cust_ids reales para los pilotos activos
+    const albertoId = env.ID_ALBERTO || "993381";
+    const mateoId = env.ID_MATEO || "1134615";
+    const eduardoId = env.ID_EDUARDO || "1076585";
+    const activeIds = [albertoId, mateoId, eduardoId];
+
+    let membersMap = {};
+    try {
+      const membersData = await fetchIRacingData(`/data/member/get?cust_ids=${activeIds.join(",")}`, session);
+      const membersList = Array.isArray(membersData) ? membersData : (membersData.members || []);
+      for (const m of membersList) {
+        if (m.cust_id) membersMap[String(m.cust_id)] = m;
+      }
+    } catch (err) {
+      if (err.status === 401) {
+        // Sesión expirada: renovar y reintentar una sola vez
+        session = await getOrRenewIRacingSession(env);
+        const membersData = await fetchIRacingData(`/data/member/get?cust_ids=${activeIds.join(",")}`, session);
+        const membersList = Array.isArray(membersData) ? membersData : (membersData.members || []);
+        for (const m of membersList) {
+          if (m.cust_id) membersMap[String(m.cust_id)] = m;
+        }
+      } else {
+        throw err;
+      }
+    }
+
+    // Procesar cada piloto
+    const driversOutput = [];
+    for (const config of DRIVERS_ROSTER_CONFIG) {
+      if (config.is_paddock || !config.defaultId) {
+        // #04 Juanlu Carrillo - Sin iRacing, mostrar como En el Paddock
+        driversOutput.push({
+          dorsal: config.dorsal,
+          name: config.name,
+          irating: null,
+          license: null,
+          fav_car: null,
+          fav_category: null,
+          most_used: null,
+          last_race: null,
+          is_founder: config.is_founder,
+          status: "En el Paddock"
+        });
+        continue;
+      }
+
+      const custId = String(env[config.key] || config.defaultId);
+      const member = membersMap[custId] || null;
+      const { irating, license, fav_category } = extractLicenseAndIRating(member?.licenses);
+
+      // Obtener últimas carreras para calcular coche más usado
+      let recentRaces = null;
+      try {
+        recentRaces = await fetchIRacingData(`/data/stats/member_recent_races?cust_id=${custId}`, session);
+      } catch (e) {
+        console.warn(`[iRacing API] Recent races failed for ${config.name}:`, e?.message);
+      }
+
+      const { fav_car, most_used, last_race } = extractMostUsedCar(recentRaces);
+
+      driversOutput.push({
+        dorsal: config.dorsal,
+        name: config.name,
+        irating,
+        license,
+        fav_car,
+        fav_category,
+        most_used,
+        last_race,
+        is_founder: config.is_founder,
+        status: irating ? "Activo" : "Registrado"
+      });
+    }
+
+    const jsonString = JSON.stringify(driversOutput);
+
+    // Guardar en D1 (Anti-Baneo: 6 horas de protección)
+    if (env.muntrume_vault) {
+      try {
+        await env.muntrume_vault.prepare(
+          "INSERT INTO driver_stats (id, data, updated_at) VALUES ('live_drivers', ?, ?) ON CONFLICT(id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at"
+        ).bind(jsonString, new Date().toISOString()).run();
+      } catch (e) {
+        console.warn("[iRacing API] Cache save error:", e?.message);
+      }
+    }
+
+    return new Response(jsonString, {
+      status: 200,
+      headers: {
+        ...corsHeaders,
+        "X-Cache": "MISS",
+        "Cache-Control": "public, max-age=1800"
+      }
+    });
+
+  } catch (err) {
+    console.error("[iRacing API Live Error]", err?.message || err);
+
+    // Fallback de contingencia: si hay cache previo, devolverlo
+    if (env.muntrume_vault) {
+      try {
+        const fallback = await env.muntrume_vault
+          .prepare("SELECT data FROM driver_stats WHERE id = 'live_drivers'")
+          .first();
+        if (fallback?.data) {
+          return new Response(fallback.data, {
+            status: 200,
+            headers: { ...corsHeaders, "X-Cache": "STALE-ERROR-FALLBACK" }
+          });
+        }
+      } catch {}
+    }
+
+    // Fallback seguro sin inventar datos
+    const safeFallback = DRIVERS_ROSTER_CONFIG.map(d => ({
+      dorsal: d.dorsal,
+      name: d.name,
+      irating: null,
+      license: null,
+      fav_car: null,
+      fav_category: null,
+      most_used: null,
+      last_race: null,
+      is_founder: d.is_founder,
+      status: d.is_paddock ? "En el Paddock" : "Offline"
+    }));
+
+    return new Response(JSON.stringify(safeFallback), {
+      status: 200,
+      headers: { ...corsHeaders, "X-Cache": "SAFE-FALLBACK" }
+    });
+  }
+}
+
 // ───────────────────────────── router ─────────────────────────────
 
 const ROUTES = {
@@ -1941,7 +2307,10 @@ export default {
         security: "Zero-Trust Ed25519/HMAC · Strict CSP"
       });
     }
-        if (request.method === "GET" && url.pathname.replace(/\/+$/, "") === "/api/mail/inbox") {
+    if (request.method === "GET" && url.pathname.replace(/\/+$/, "") === "/api/drivers") {
+      return await handleDriversLive(request, env, origin);
+    }
+    if (request.method === "GET" && url.pathname.replace(/\/+$/, "") === "/api/mail/inbox") {
       if (origin && !isAllowedOrigin(origin)) return reply(403, { error: "Forbidden: Unauthorized origin" });
       const out = await handleMailInbox(request, env);
       return reply(out[0], out[1]);
