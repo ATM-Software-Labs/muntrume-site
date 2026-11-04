@@ -6,20 +6,20 @@ export const metadata = {
   description: "Alineación oficial de 4 pilotos de Muntrume Motorsport en iRacing."
 };
 
-const OFFICIAL_DRIVERS: DriverData[] = [
+const INITIAL_DRIVERS: DriverData[] = [
   {
     dorsal: "#1",
     name: "Alberto Trujillo",
     badge: "FOUNDER",
     role: "Team Principal & Telemetry",
     cust_id: "993381",
-    irating: 3912,
-    license: "A 4.99",
+    irating: null,
+    license: null,
     flag: "🇪🇸 ES",
     fav_category: "GT3 Pro",
     helmet_url: "https://members-ng.iracing.com/member/GetHelmetImage?custId=993381",
-    most_used: { car: "Porsche 911 GT3 R (992)", pct: 42 },
-    fav_car: "Ferrari 296 GT3",
+    most_used: null,
+    fav_car: null,
     initials: "AT"
   },
   {
@@ -28,13 +28,13 @@ const OFFICIAL_DRIVERS: DriverData[] = [
     badge: "DRIVER",
     role: "Endurance & GT3 Driver",
     cust_id: "1134615",
-    irating: 3241,
-    license: "B 3.21",
+    irating: null,
+    license: null,
     flag: "🇪🇸 ES",
     fav_category: "GT3 Endurance",
     helmet_url: "https://members-ng.iracing.com/member/GetHelmetImage?custId=1134615",
-    most_used: { car: "Ferrari 296 GT3", pct: 38 },
-    fav_car: "Ferrari 296 GT3",
+    most_used: null,
+    fav_car: null,
     initials: "MB"
   },
   {
@@ -43,12 +43,13 @@ const OFFICIAL_DRIVERS: DriverData[] = [
     badge: "DRIVER",
     role: "Prototype & Formula Driver",
     cust_id: "1076585",
-    irating: 3720,
-    license: "A 4.90",
+    irating: null,
+    license: null,
     flag: "🇪🇸 ES",
     fav_category: "Prototipos GTP",
     helmet_url: "https://members-ng.iracing.com/member/GetHelmetImage?custId=1076585",
-    most_used: { car: "Cadillac V-Series.R GTP", pct: 50 },
+    most_used: null,
+    fav_car: null,
     initials: "EC"
   },
   {
@@ -67,7 +68,26 @@ const OFFICIAL_DRIVERS: DriverData[] = [
   }
 ];
 
-export default function PilotosPage() {
+export default async function PilotosPage() {
+  let drivers = INITIAL_DRIVERS;
+
+  try {
+    // Sincronización con el Cloudflare Worker seguro
+    const apiUrl = process.env.NODE_ENV === "development"
+      ? "http://localhost:8787/api/drivers"
+      : "https://muntrume.atrumin16.workers.dev/api/drivers";
+
+    const res = await fetch(apiUrl, { next: { revalidate: 21600 } });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length) {
+        drivers = data;
+      }
+    }
+  } catch {
+    // Fallback seguro: datos iniciales sin inventar números
+  }
+
   return (
     <main className="min-h-screen bg-[#0E1211] text-[#F5F5F5] pt-20 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
       <section className="text-center max-w-3xl mx-auto space-y-3.5 pt-4">
@@ -85,7 +105,7 @@ export default function PilotosPage() {
 
       <section>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {OFFICIAL_DRIVERS.map((driver) => (
+          {drivers.map((driver) => (
             <DriverCard key={driver.dorsal} driver={driver} />
           ))}
         </div>

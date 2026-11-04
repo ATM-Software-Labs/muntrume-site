@@ -2,15 +2,15 @@ import React, { useState, useEffect, useRef } from "react";
 
 export interface LangOption {
   code: string;
-  flag?: string;
-  icon?: string;
+  flag: string;
   label: string;
+  icon?: string;
 }
 
 export const LANGS: LangOption[] = [
   { code: "EN", flag: "🇬🇧", label: "EN" },
   { code: "ES", flag: "🇪🇸", label: "ES" },
-  { code: "CA", icon: "/flags/senyera.png", label: "CA" }
+  { code: "CA", flag: "🔴🟡", label: "CA", icon: "/flags/senyera.png" }
 ];
 
 export const LanguageSwitcher: React.FC = () => {
@@ -54,11 +54,7 @@ export const LanguageSwitcher: React.FC = () => {
         aria-haspopup="true"
         aria-expanded={open}
       >
-        {current.icon ? (
-          <img src={current.icon} alt="Senyera CAT" className="w-4 h-3 object-contain rounded-xs" />
-        ) : (
-          <span className="text-sm leading-none">{current.flag}</span>
-        )}
+        <span className="text-sm leading-none">{current.flag}</span>
         <span className="font-semibold text-neutral-200">{current.label}</span>
         <svg
           className={`w-3 h-3 text-[#9AA8A3] transition-transform ${open ? "rotate-180" : ""}`}
@@ -83,11 +79,7 @@ export const LanguageSwitcher: React.FC = () => {
                   : "text-neutral-300 hover:bg-white/5 hover:text-white"
               }`}
             >
-              {lang.icon ? (
-                <img src={lang.icon} alt="Senyera" className="w-4 h-3 object-contain rounded-xs" />
-              ) : (
-                <span className="text-sm leading-none">{lang.flag}</span>
-              )}
+              <span className="text-sm leading-none">{lang.flag}</span>
               <span>{lang.label}</span>
             </button>
           ))}
