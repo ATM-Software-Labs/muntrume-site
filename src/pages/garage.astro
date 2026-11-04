@@ -553,6 +553,73 @@ const pageDescription = "Engineering, setups .STO validados y telemetría Garage
     }
     window.switchGarageTab = switchGarageTab;
 
+    // Auth modal tabs (login vs join request)
+    function switchAuthTab(tab) {
+      var loginForm = document.getElementById('loginForm');
+      var joinForm = document.getElementById('joinForm');
+      var tabLoginBtn = document.getElementById('tabLoginBtn');
+      var tabJoinBtn = document.getElementById('tabJoinBtn');
+
+      if (tab === 'login') {
+        if (loginForm) loginForm.classList.remove('hidden');
+        if (joinForm) joinForm.classList.add('hidden');
+        if (tabLoginBtn) {
+          tabLoginBtn.classList.add('bg-[#121A17]', 'text-[#00E699]', 'font-bold');
+          tabLoginBtn.classList.remove('text-[#8B9A8F]');
+        }
+        if (tabJoinBtn) {
+          tabJoinBtn.classList.remove('bg-[#121A17]', 'text-[#00E699]', 'font-bold');
+          tabJoinBtn.classList.add('text-[#8B9A8F]');
+        }
+      } else if (tab === 'join') {
+        if (joinForm) joinForm.classList.remove('hidden');
+        if (loginForm) loginForm.classList.add('hidden');
+        if (tabJoinBtn) {
+          tabJoinBtn.classList.add('bg-[#121A17]', 'text-[#00E699]', 'font-bold');
+          tabJoinBtn.classList.remove('text-[#8B9A8F]');
+        }
+        if (tabLoginBtn) {
+          tabLoginBtn.classList.remove('bg-[#121A17]', 'text-[#00E699]', 'font-bold');
+          tabLoginBtn.classList.add('text-[#8B9A8F]');
+        }
+      }
+    }
+    window.switchAuthTab = switchAuthTab;
+    window.switchTab = switchAuthTab;
+
+    // Direct modal bridges and handlers
+    window.openAuthModal = window.openAuthModal || function(tab) {
+      var modal = document.getElementById('authModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        switchAuthTab(tab || 'login');
+      }
+    };
+    window.closeAuthModal = window.closeAuthModal || function() {
+      var modal = document.getElementById('authModal');
+      if (modal) modal.classList.add('hidden');
+    };
+    window.openForgotPasswordModal = window.openForgotPasswordModal || function() {
+      var modal = document.getElementById('forgotPasswordModal');
+      if (modal) modal.classList.remove('hidden');
+    };
+    window.closeForgotPasswordModal = window.closeForgotPasswordModal || function() {
+      var modal = document.getElementById('forgotPasswordModal');
+      if (modal) modal.classList.add('hidden');
+    };
+    window.handleLoginSubmit = function(e) {
+      if (typeof window.handleLogin === 'function') return window.handleLogin(e);
+      e.preventDefault();
+    };
+    window.handleJoinSubmit = function(e) {
+      if (typeof window.handleJoinRequest === 'function') return window.handleJoinRequest(e);
+      e.preventDefault();
+    };
+    window.handleForgotPasswordSubmit = function(e) {
+      if (typeof window.handleForgotPassword === 'function') return window.handleForgotPassword(e);
+      e.preventDefault();
+    };
+
     // Check URL parameters for tab
     document.addEventListener('DOMContentLoaded', function() {
       var p = new URLSearchParams(window.location.search);

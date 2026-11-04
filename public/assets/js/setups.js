@@ -187,20 +187,32 @@ function switchTab(mode) {
   const tabJoinBtn = document.getElementById("tabJoinBtn");
 
   if (mode === "login") {
-    loginForm.classList.remove("hidden");
-    joinForm.classList.add("hidden");
-    tabLoginBtn.classList.add("bg-[#161c24]", "text-white", "shadow");
-    tabLoginBtn.classList.remove("text-neutral-400");
-    tabJoinBtn.classList.remove("bg-[#161c24]", "text-white", "shadow");
-    tabJoinBtn.classList.add("text-neutral-400");
+    if (loginForm) loginForm.classList.remove("hidden");
+    if (joinForm) joinForm.classList.add("hidden");
+    if (tabLoginBtn) {
+      tabLoginBtn.classList.add("bg-[#121A17]", "text-[#00E699]", "font-bold");
+      tabLoginBtn.classList.remove("text-[#8B9A8F]");
+    }
+    if (tabJoinBtn) {
+      tabJoinBtn.classList.remove("bg-[#121A17]", "text-[#00E699]", "font-bold");
+      tabJoinBtn.classList.add("text-[#8B9A8F]");
+    }
   } else {
-    loginForm.classList.add("hidden");
-    joinForm.classList.remove("hidden");
-    tabJoinBtn.classList.add("bg-[#161c24]", "text-white", "shadow");
-    tabJoinBtn.classList.remove("text-neutral-400");
-    tabLoginBtn.classList.remove("bg-[#161c24]", "text-white", "shadow");
-    tabLoginBtn.classList.add("text-neutral-400");
+    if (loginForm) loginForm.classList.add("hidden");
+    if (joinForm) joinForm.classList.remove("hidden");
+    if (tabJoinBtn) {
+      tabJoinBtn.classList.add("bg-[#121A17]", "text-[#00E699]", "font-bold");
+      tabJoinBtn.classList.remove("text-[#8B9A8F]");
+    }
+    if (tabLoginBtn) {
+      tabLoginBtn.classList.remove("bg-[#121A17]", "text-[#00E699]", "font-bold");
+      tabLoginBtn.classList.add("text-[#8B9A8F]");
+    }
   }
+}
+
+function switchAuthTab(mode) {
+  return switchTab(mode);
 }
 
 function toggleKeyVisibility() {
@@ -3676,4 +3688,14 @@ if (typeof window !== "undefined") {
   window.handleLogout = handleLogout;
   window.saveSession = saveSession;
   window.setViewMode = setViewMode;
+  window.switchTab = switchTab;
+  window.switchAuthTab = switchAuthTab;
+  window.handleLogin = handleLogin;
+  window.handleLoginSubmit = handleLogin;
+  window.handleJoinRequest = handleJoinRequest;
+  window.handleJoinSubmit = handleJoinRequest;
+  window.handleForgotPassword = handleForgotPassword;
+  window.handleForgotPasswordSubmit = handleForgotPassword;
+  window.openForgotPasswordModal = openForgotPasswordModal;
+  window.closeForgotPasswordModal = closeForgotPasswordModal;
 }
