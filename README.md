@@ -1,123 +1,61 @@
-# Muntrume Motorsport
+# MUNTRUME MOTORSPORT
+### Sant Andreu, Barcelona — 【entity-iRacing¦canonical_name=iRacing】 Sim Racing Team
 
-Official sim racing team platform, confidential iRacing setup vault (196 cars, 239,539 setups), raw FTP directory explorer, Garage 61 telemetry integration, and secure driver communications under the ATM Software Labs ecosystem.
+Precision Racing. Engineered to Win.
 
-[Production Site](https://muntru.me) | [Setup Vault](https://muntru.me/setups) | [Driver Webmail](https://muntru.me/mail) | [Official Discord](https://discord.gg/ehX6B8JUtE) | [Security Policy](SECURITY.md)
-
----
-
-## Overview
-
-Muntrume Motorsport is an independent iRacing team based in Barcelona, Spain. The platform provides drivers with automated setup distribution directly into local iRacing directories, Garage 61 lap telemetry analysis, an integrated raw FTP repository, and a zero-trust institutional webmail client.
-
-- 196 official iRacing vehicles supported across GT3, GTP Hypercars, LMP2, LMP3, and Formula series.
-- 239,539 digitally signed `.sto` setup files with official watermarks (`muntru.me - Muntrume Motorsport | Setup by Alberto Trujillo`).
-- Complete integration of team archives: ZEK Racing (Garage 61 and FTP), MT_SETUPS, and normalized legacy collections.
-- Zero-Trust edge architecture deployed on Cloudflare Workers, Cloudflare D1, and GitHub Pages.
+**[muntru.me](https://muntru.me) — [Garage Access](https://muntru.me/garage) — [Paddock](https://muntru.me/paddock) — [【entity-Discord¦canonical_name=Discord】](https://discord.gg/ehX6B8JUtE)**
 
 ---
 
-## Mobile Interface Showcase
+### The Team
 
-The platform is engineered with a mobile-first responsive layout (375px, 390px, 412px viewports) featuring touch-friendly 40px interaction targets, horizontal scroll chips, and zero overflow.
+Escudería independiente de 【entity-iRacing¦canonical_name=iRacing】 basada en Barcelona. 4 pilotos oficiales. Ingeniería, telemetría y setups para resistencia.
 
-<p align="center">
-  <img src="docs/screenshots/mobile-home.png" width="31%" alt="Mobile Home View" />
-  &nbsp;
-  <img src="docs/screenshots/mobile-setups.png" width="31%" alt="Mobile Setup Vault" />
-  &nbsp;
-  <img src="docs/screenshots/mobile-preview-modal.png" width="31%" alt="Mobile Preview Modal" />
-</p>
+- **Alberto Trujillo** — Team Principal & Telemetry
+- **Mateo Berbis** — Lead Sprint & Qualy
+- **Eduardo Chongkan** — Race Engineer & Prototipos
+- **Juanlu Carrillo** — Monoplazas & Formula Specialist
 
----
+### What is Muntrume?
 
-## Core Capabilities
+Un solo sitio para todo el equipo:
 
-### Setup Vault & FTP Directory Explorer
-- Raw FTP Directory Browser: Integrated web-based FTP directory view (`ftp://vault.muntrume.internal/setups/`) for direct inspection, sorting, and stream-downloading of `.sto` files.
-- Direct File System Sync: Injects setups directly into `Documents\iRacing\setups\[car]` using the File System Access API on desktop browsers.
-- Adaptive Mobile Downloads: Automatically provides clean `.sto` and zip package downloads without desktop configuration prompts.
-- Session Variants: Multi-file setup packages including Qualy (Q), Race (R), Endurance (Endur), and Wet presets.
-- Technical Preview Modal: Displays binary setup header notes, vehicle parameters, and Garage 61 team leaderboards.
+**1. Muntrume Paddock** — El club. Donde entra la comunidad. 【entity-Discord¦canonical_name=Discord】, onboard, roster.
+**2. Muntrume Garage** — El área privada. Solo pilotos oficiales.
+   - `Box #1: Setup Vault` — 239k setups .STO validados
+   - `Box #2: Comms & Telemetry` — Mail privado + logs MoTeC i2 Pro + Garage 61
+   - `Box #3: Race Center` — Briefings y calendario
 
-### Institutional Webmail (`/mail`)
-- Dedicated corporate client for team principals, drivers, and track engineers.
-- Verified sender identity: `Alberto de Muntrume <alberto.muntrume@trujillomingorance.com>`.
-- Inbound and outbound routing via Cloudflare Email Routing with PostalMime multipart parsing.
-- Persistent message storage in Cloudflare D1 database.
+No hay 7 páginas. Hay Paddock y Garage.
 
-### Zero-Trust Security
-- PBKDF2-SHA256 password derivation with 100,000 iterations.
-- One-Time 2FA authentication codes signed via HMAC-SHA256 (10-minute validity, constant-time verification).
-- Strict HTTP headers: strict HSTS with preload, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, and CSP with `frame-ancestors 'none'`.
-- Driver mailbox isolation preventing unauthorized cross-account access.
+### Garage Features
 
----
+- **1-Click Sync:** Guarda directo en `Documents\iRacing\setups\[car]` con File System Access API. Sin zips.
+- **Mobile Ready:** Descarga limpia de .STO en móvil (375px / 390px / 412px tested).
+- **196 cars / 239,539 setups** — GT3, GTP, LMP2, LMP3, Formula. Firmados `muntru.me - Setup by Alberto Trujillo`.
+- **Verified Comms:** `alberto.muntrume@trujillomingorance.com` vía Cloudflare Email Routing + Resend (DKIM/SPF/DMARC).
 
-## Technical Stack
+### Tech Stack
 
-| Layer | Technology | Function |
-| :--- | :--- | :--- |
-| Frontend | Astro 5 + Tailwind CSS 4 | Static site generation (SSG) with optimized assets and minified HTML. |
-| Edge API | Cloudflare Workers (`worker/index.js`) | Zero-Trust authentication, telemetry relay, and email webhooks. |
-| Database | Cloudflare D1 (`muntrume_vault`) | Setup catalog metadata, authorized roster, and email messages. |
-| Email Relay | Resend API + Cloudflare Email Routing | Verified DKIM, SPF, and DMARC dispatch under `trujillomingorance.com`. |
-| Web Hosting | GitHub Pages Edge CDN | High-availability global static delivery. |
-| Testing | Playwright E2E Suite (`scripts/test-mobile.mjs`) | Headless cross-route responsive audit and interaction testing. |
-| Standards | ATM Software Labs Engineering Standards | Architectural hygiene, surgical changes, and high-performance SimOps. |
+| Layer | Stack |
+| :--- | :--- |
+| Site | Astro 5 + Tailwind 4 — SSG |
+| Edge | Cloudflare Workers — Zero-Trust Auth |
+| DB | Cloudflare D1 (muntrume_vault) |
+| Mail | Cloudflare Email Routing + PostalMime |
+| Host | GitHub Pages Edge CDN |
 
----
 
-## System Architecture
+### Quick Start
 
-```
-                       +-------------------------------+
-                       |       https://muntru.me       |
-                       |      (GitHub Pages Edge)      |
-                       +---------------+---------------+
-                                       |
-                         Static Astro SSG Pages
-                 (/, /setups, /mail, /news, /team, /p/*)
-                                       |
-                        REST / JSON-RPC Requests
-                                       v
-                       +-------------------------------+
-                       |      Cloudflare Worker        |
-                       | (muntrume.atrumin16.workers)  |
-                       +---------------+---------------+
-                       | PBKDF2-100k Authentication    |
-                       | HMAC-SHA256 2FA Engine        |
-                       | PostalMime Email Decoder      |
-                       | Strict Security Headers       |
-                       +-------+---------------+-------+
-                               |               |
-                               v               v
-                     +------------------+ +-------------------+
-                     |  Cloudflare D1   | | Cloudflare Email  |
-                     | (muntrume_vault) | |      Routing      |
-                     +------------------+ +-------------------+
-```
+1. Entra al Paddock: [【entity-discord¦canonical_name=Discord】.gg/ehX6B8JUtE](https://discord.gg/ehX6B8JUtE)
+2. Pilotos: Garage Access con tu email de piloto.
+3. ¿Quieres unirte? Request Paddock Pass en `/paddock`.
+
+### Security
+
+Zero-Trust: PBKDF2 + HMAC 2FA (10m), HSTS preload, CSP `frame-ancestors 'none'`, mailbox isolation. Ver `SECURITY.md`.
 
 ---
 
-## Domain Portability
-
-The platform is engineered to be fully domain-agnostic. If the primary domain `muntru.me` expires or is transitioned to an alternate domain or subdomain (such as `muntrume.trujillomingorance.com`), migration requires only updating the CNAME host without changing application code:
-
-1. Update `public/CNAME` to the designated hostname (e.g., `muntrume.trujillomingorance.com`).
-2. Point your DNS provider's CNAME record to `atrumin16.github.io`.
-
-All canonical URLs, Schema.org structured data, Open Graph tags, and sitemaps automatically adapt through dynamic site resolution. The Cloudflare Worker CORS policy already permits `*.trujillomingorance.com` and `muntru.me` origins.
-
----
-
-## Official Lineup
-
-- Alberto Trujillo - Team Principal & Driver
-- Mateo Berbis - Endurance & GT3 Driver
-- Eduardo Chongkan - Prototype & Formula Driver
-- Juanlu Carrillo - Touring & Cup Driver
-
----
-
-Muntrume Motorsport (c) 2026. Sant Andreu, Barcelona.
+**Muntrume Motorsport © 2026 — Sant Andreu, Barcelona — muntru.me**
