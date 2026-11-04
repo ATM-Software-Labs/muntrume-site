@@ -31,8 +31,10 @@ const defaultSchema = {
       "@type": "SportsTeam",
       "@id": "https://muntru.me/#org",
       "name": "Muntrume Motorsport",
+      "alternateName": ["Muntrume", "MRT Sim Racing", "Muntrume Racing Team"],
       "url": "https://muntru.me/",
-      "sport": "Sim racing",
+      "sport": "Sim Racing (iRacing)",
+      "description": "Escudería oficial de sim racing de Barcelona compitiendo en iRacing. Repositorio de más de 239.000 setups (.sto) y telemetría Garage 61.",
       "logo": {
         "@type": "ImageObject",
         "url": "https://muntru.me/assets/img/icon-512.png",
@@ -42,16 +44,39 @@ const defaultSchema = {
       "image": "https://muntru.me/assets/img/og-home.jpg",
       "location": {
         "@type": "Place",
+        "name": "Sede Central Muntrume Motorsport",
         "address": {
           "@type": "PostalAddress",
-          "addressLocality": "Barcelona",
-          "addressRegion": "Catalonia",
+          "addressLocality": "Sant Andreu, Barcelona",
+          "addressRegion": "Cataluña",
           "addressCountry": "ES"
         }
       },
+      "founder": {
+        "@type": "Person",
+        "name": "Alberto Trujillo Mingorance",
+        "url": "https://muntru.me/p/alberto-trujillo"
+      },
+      "member": [
+        { "@type": "Person", "name": "Alberto Trujillo Mingorance", "jobTitle": "Team Principal & Driver", "url": "https://muntru.me/p/alberto-trujillo" },
+        { "@type": "Person", "name": "Mateo Berbis", "jobTitle": "Official Driver", "url": "https://muntru.me/p/mateo-berbis" },
+        { "@type": "Person", "name": "Eduardo Chongkan", "jobTitle": "Official Driver", "url": "https://muntru.me/p/eduardo-chongkan" },
+        { "@type": "Person", "name": "Juanlu Carrillo", "jobTitle": "Official Driver", "url": "https://muntru.me/p/juanlu-carrillo" }
+      ],
+      "knowsAbout": [
+        "iRacing",
+        "Sim Racing",
+        "Setups iRacing",
+        "Telemetría Garage 61",
+        "GT3 Endurance",
+        "GTP Hypercars",
+        "Motorsport Engineering"
+      ],
       "sameAs": [
+        "https://discord.gg/ehX6B8JUtE",
         "https://twitch.tv/muntrumemrt",
-        "https://www.youtube.com/@jostrume16gameplays28"
+        "https://www.youtube.com/@jostrume16gameplays28",
+        "https://github.com/atrumin16/muntrume-site"
       ]
     },
     {
@@ -59,9 +84,14 @@ const defaultSchema = {
       "@id": "https://muntru.me/#website",
       "name": "Muntrume Motorsport",
       "url": "https://muntru.me/",
-      "inLanguage": "en",
+      "inLanguage": ["es-ES", "en-US"],
       "publisher": {
         "@id": "https://muntru.me/#org"
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://muntru.me/setups?search={search_term_string}",
+        "query-input": "required name=search_term_string"
       }
     }
   ]
@@ -82,6 +112,9 @@ const finalSchema = schemaJson || defaultSchema;
   
   <title>{title}</title>
   <meta name="description" content={description} />
+  <meta name="keywords" content="setups iracing, telemetria iracing, muntrume motorsport, setups garage 61, descargar setups iracing, iracing setups gratis, sim racing barcelona, setups gt3, setups gtp, iracing setup vault" />
+  <meta name="author" content="Muntrume Motorsport · Alberto Trujillo Mingorance" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
   <link rel="canonical" href={canonical} />
 
   <!-- Open Graph / Social Media -->
@@ -91,9 +124,13 @@ const finalSchema = schemaJson || defaultSchema;
   <meta property="og:url" content={canonical} />
   <meta property="og:image" content={ogImage} />
   <meta property="og:site_name" content="Muntrume Motorsport" />
+  <meta property="og:locale" content="es_ES" />
+  <meta property="og:locale:alternate" content="en_US" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@muntrumemrt" />
+  <meta name="twitter:creator" content="@atrumin16" />
   <meta name="twitter:title" content={title} />
   <meta name="twitter:description" content={description} />
   <meta name="twitter:image" content={ogImage} />
