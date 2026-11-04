@@ -46,11 +46,10 @@ export default function DriverDetailPage({ params }: { params: { slug: string } 
                 height={120}
                 className="w-full h-full object-contain p-2"
               />
-            ) : (
-              <div className="font-mono font-bold text-3xl text-[#00E699]">
-                {driver.initials || "JC"}
-              </div>
-            )}
+            ) : null}
+            <div className={`w-full h-full ${driver.helmet_url ? "hidden" : "flex"} items-center justify-center font-mono font-bold text-3xl text-[#00E699]`}>
+              {driver.initials || "JC"}
+            </div>
           </div>
 
           <div className="space-y-2">

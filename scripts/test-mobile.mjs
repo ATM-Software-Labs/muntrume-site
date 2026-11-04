@@ -32,6 +32,17 @@ const server = http.createServer((req, res) => {
   let reqPath = decodeURIComponent(req.url.split('?')[0]);
   if (reqPath === '/') reqPath = '/index.html';
   
+  if (reqPath.startsWith('/api/helmet')) {
+    res.writeHead(200, { 'Content-Type': 'image/svg+xml' });
+    res.end('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="#1E2A26"/></svg>');
+    return;
+  }
+  if (reqPath.startsWith('/api/drivers')) {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end('[]');
+    return;
+  }
+
   let filePath = path.join(SERVE_DIR, reqPath);
   if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
     filePath = path.join(filePath, 'index.html');

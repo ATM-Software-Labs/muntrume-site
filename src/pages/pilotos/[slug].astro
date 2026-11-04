@@ -48,14 +48,21 @@ const licenseDefault = driver.license;
         <!-- Casco Grande 120px -->
         <div class="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-[#1E2A26] border border-[#242E2C] flex items-center justify-center overflow-hidden shrink-0 shadow-lg relative">
           {driver.helmet_url ? (
-            <img
-              src={driver.helmet_url}
-              alt={`Casco de ${driver.fullName}`}
-              width={120}
-              height={120}
-              class="w-full h-full object-contain p-2"
-              loading="lazy"
-            />
+            <>
+              <img
+                id="heroHelmetImg"
+                src={driver.helmet_url}
+                alt={`Casco de ${driver.fullName}`}
+                width={120}
+                height={120}
+                class="w-full h-full object-contain p-2"
+                loading="lazy"
+                onerror="this.style.display='none'; if (this.nextElementSibling) this.nextElementSibling.style.display='flex';"
+              />
+              <div class="w-full h-full hidden items-center justify-center font-mono font-bold text-3xl text-[#00E699]">
+                {driver.initials || "JC"}
+              </div>
+            </>
           ) : (
             <div class="font-mono font-bold text-3xl text-[#00E699]">
               {driver.initials || "JC"}
@@ -82,16 +89,16 @@ const licenseDefault = driver.license;
 
           <!-- Pills row: [🇪🇸 ES] [iR] [Lic] -->
           <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
-            <span class="inline-flex items-center px-2 py-0.5 rounded bg-[#242E2C] text-xs font-mono text-neutral-200">
+            <span id="liveFlagPill" class="inline-flex items-center px-2 py-0.5 rounded bg-[#242E2C] text-xs font-mono text-neutral-200">
               {driver.flag} {driver.flag_code}
             </span>
             {iratingDefault && (
-              <span class="inline-flex items-center px-2 py-0.5 rounded bg-[#242E2C] text-xs font-mono font-bold text-[#00E699] border border-[#00E699]/30">
+              <span id="liveIrPill" class="inline-flex items-center px-2 py-0.5 rounded bg-[#242E2C] text-xs font-mono font-bold text-[#00E699] border border-[#00E699]/30">
                 {iratingDefault}
               </span>
             )}
             {licenseDefault && (
-              <span class="inline-flex items-center px-2 py-0.5 rounded bg-[#242E2C] text-xs font-mono text-neutral-300">
+              <span id="liveLicPill" class="inline-flex items-center px-2 py-0.5 rounded bg-[#242E2C] text-xs font-mono text-neutral-300">
                 {licenseDefault}
               </span>
             )}
@@ -364,4 +371,36 @@ const licenseDefault = driver.license;
     }
   }
   window.switchDriverTab = switchDriverTab;
+
+  // Live Stats Hydration
+  (function() {
+    var slug = window.location.pathname.replace(/\/+$/, "").split("/").pop();
+    if (!slug) return;
+    fetch('/api/drivers?slug=' + encodeURIComponent(slug))
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(data) {
+        if (!data) return;
+        var d = Array.isArray(data) ? data.find(function(x) { return x.slug === slug; }) : data;
+        if (!d) return;
+        var irEl = document.getElementById('liveIrPill');
+        var licEl = document.getElementById('liveLicPill');
+        var flagEl = document.getElementById('liveFlagPill');
+        var imgEl = document.getElementById('heroHelmetImg');
+
+        if (irEl && d.irating) {
+          var formatted = d.irating_formatted || (Math.round(d.irating / 100) / 10) + 'k';
+          irEl.innerText = formatted.endsWith('iR') ? formatted : formatted + ' iR';
+        }
+        if (licEl && d.license) {
+          licEl.innerText = d.license;
+        }
+        if (flagEl && d.flag && d.flag_code) {
+          flagEl.innerText = d.flag + ' ' + d.flag_code;
+        }
+        if (imgEl && d.helmet_url && imgEl.getAttribute('src') !== d.helmet_url) {
+          imgEl.src = d.helmet_url;
+        }
+      })
+      .catch(function() {});
+  })();
 </script>

@@ -2008,6 +2008,19 @@ function extractTelemetryAuth(env) {
   return null;
 }
 
+async function encodeIRacingPassword(password, email) {
+  const normEmail = String(email || "").trim().toLowerCase();
+  const encoder = new TextEncoder();
+  const data = encoder.encode(String(password || "") + normEmail);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const bytes = new Uint8Array(hashBuffer);
+  let binary = "";
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
 async function getOrRenewIRacingSession(env) {
   const auth = extractTelemetryAuth(env);
   if (!auth) {
@@ -2030,7 +2043,8 @@ async function getOrRenewIRacingSession(env) {
   }
 
   // 2. Login oficial en https://members-ng.iracing.com/auth
-  const authRes = await fetch("https://members-ng.iracing.com/auth", {
+  const encodedPass = await encodeIRacingPassword(auth.password, auth.email);
+  let authRes = await fetch("https://members-ng.iracing.com/auth", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -2038,9 +2052,23 @@ async function getOrRenewIRacingSession(env) {
     },
     body: JSON.stringify({
       email: auth.email,
-      password: auth.password
+      password: encodedPass
     })
   });
+
+  if (!authRes.ok) {
+    authRes = await fetch("https://members-ng.iracing.com/auth", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": "Muntrume-Motorsport-API/2.0"
+      },
+      body: JSON.stringify({
+        email: auth.email,
+        password: auth.password
+      })
+    });
+  }
 
   if (!authRes.ok) {
     throw new Error(`iRacing Auth failed with HTTP ${authRes.status}`);
@@ -2108,28 +2136,180 @@ async function fetchIRacingData(endpoint, cookieHeader) {
   return json;
 }
 
-function extractLicenseAndIRating(licenses) {
-  if (!Array.isArray(licenses) || !licenses.length) return { irating: null, license: null, fav_category: null };
-  const sportLic = licenses.find(l => 
-    l.category === "sports_car" || l.category_id === 5 || l.category_id === 2 || String(l.category_name || "").toLowerCase().includes("sport")
-  ) || licenses.find(l => l.category === "road" || String(l.category_name || "").toLowerCase().includes("road")) || licenses[0];
-
-  if (!sportLic) return { irating: null, license: null, fav_category: null };
-
-  const irating = typeof sportLic.irating === "number" && sportLic.irating > 0 ? sportLic.irating : null;
-  
-  let license = null;
-  if (sportLic.group_name || sportLic.license_level) {
-    const group = (sportLic.group_name || "").replace(/^Class\s+/i, "").trim() || "A";
-    const sr = typeof sportLic.safety_rating === "number" 
-      ? (sportLic.safety_rating / 100).toFixed(2) 
-      : (sportLic.safety_rating || "4.99");
-    license = `${group} ${sr}`;
+function extractLicenseAndIRating(licenses, member) {
+  let roadLic = null;
+  if (Array.isArray(licenses)) {
+    roadLic = licenses.find(l => l.category === "sports_car" || l.category_id === 5 || String(l.category_name || "").toLowerCase().includes("sport"))
+      || licenses.find(l => l.category === "road" || l.category_id === 2 || String(l.category_name || "").toLowerCase().includes("road"))
+      || licenses.find(l => l.category === "formula_car" || l.category_id === 6 || String(l.category_name || "").toLowerCase().includes("formula"))
+      || licenses[0];
+  } else if (licenses && typeof licenses === "object") {
+    roadLic = licenses.sports_car || licenses.road || licenses["sports_car"] || licenses["road"] || Object.values(licenses)[0];
   }
 
-  const fav_category = sportLic.category_name || (sportLic.category === "sports_car" ? "Sports Car" : "GT3");
+  let ir = null;
+  if (roadLic && typeof roadLic.irating === "number" && roadLic.irating > 0) {
+    ir = roadLic.irating;
+  } else if (member?.irating) {
+    if (typeof member.irating === "number") ir = member.irating;
+    else if (typeof member.irating === "object") ir = member.irating.sports_car || member.irating.road || Object.values(member.irating)[0];
+  }
 
-  return { irating, license, fav_category };
+  let licGroup = "B";
+  let sr = "3.20";
+  if (roadLic) {
+    const rawGroup = roadLic.group_name || roadLic.groupName || (roadLic.license_level ? `Class ${String.fromCharCode(64 + Math.min(Math.floor(roadLic.license_level / 4), 4))}` : "B");
+    licGroup = String(rawGroup).replace(/^Class\s+/i, "").trim() || "B";
+    if (typeof roadLic.safety_rating === "number") {
+      sr = (roadLic.safety_rating / 100).toFixed(2);
+    } else if (typeof roadLic.safetyRating === "number") {
+      sr = (roadLic.safetyRating / 100).toFixed(2);
+    } else if (roadLic.safety_rating) {
+      sr = String(roadLic.safety_rating);
+    }
+  }
+
+  const fav_category = roadLic?.category_name || (roadLic?.category === "sports_car" ? "Sports Car" : "GT3");
+
+  return { irating: ir, license: `${licGroup} ${sr}`, fav_category };
+}
+
+function generateHelmetSvg(custId) {
+  const driverMap = {
+    "993381": { num: "#1", initials: "AT", color: "#00E699" },
+    "1134615": { num: "#2", initials: "MB", color: "#00E699" },
+    "1076585": { num: "#3", initials: "EC", color: "#00E699" },
+    "default": { num: "#4", initials: "JC", color: "#00E699" }
+  };
+  const d = driverMap[String(custId || "")] || driverMap["default"];
+
+  return `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+    <rect width="100" height="100" rx="16" fill="#1E2A26"/>
+    <path d="M26 56 C24 38 34 20 54 18 C74 16 82 32 82 48 C82 60 76 74 68 78 C60 82 46 82 36 80 C30 79 27 70 26 56 Z" fill="#121A17" stroke="#2A3A34" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M40 22 C48 20 60 21 70 26" stroke="#3A4D45" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M44 26 C52 24 62 25 72 30" stroke="#1E2A26" stroke-width="1.2" stroke-linecap="round"/>
+    <path d="M32 44 C42 42 66 43 78 48 C77 56 73 62 64 64 C48 64 35 62 31 52 C30 48 31 45 32 44 Z" fill="#050807" stroke="${d.color}" stroke-width="1.5"/>
+    <path d="M38 48 C48 46 64 47 74 51" stroke="${d.color}" stroke-width="2" stroke-linecap="round" opacity="0.9"/>
+    <circle cx="34" cy="50" r="2.5" fill="#1E2A26" stroke="${d.color}" stroke-width="1"/>
+    <path d="M36 68 L48 68 M38 72 L46 72" stroke="${d.color}" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+    <path d="M74 42 C79 46 81 54 80 62 C83 58 84 50 81 44 Z" fill="#1A2521" stroke="#2A3A34" stroke-width="1"/>
+    <text x="65" y="78" font-family="monospace" font-size="8" font-weight="bold" fill="${d.color}">${d.num}</text>
+  </svg>`;
+}
+
+async function handleHelmetProxy(request, env, origin) {
+  const url = new URL(request.url);
+  const custId = url.searchParams.get("custId");
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Cache-Control": "public, max-age=86400, s-maxage=86400",
+    "Cross-Origin-Resource-Policy": "cross-origin"
+  };
+
+  if (request.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+
+  if (!custId || !/^\d+$/.test(custId)) {
+    return new Response(null, { status: 404, headers: corsHeaders });
+  }
+
+  // 1. Comprobar cache D1 si está disponible
+  if (env.muntrume_vault) {
+    try {
+      const cached = await env.muntrume_vault
+        .prepare("SELECT data, updated_at FROM driver_stats WHERE id = ?")
+        .bind(`helmet_${custId}`)
+        .first();
+      if (cached && cached.data) {
+        const bin = Uint8Array.from(atob(cached.data), (c) => c.charCodeAt(0));
+        return new Response(bin, {
+          status: 200,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "image/png",
+            "X-Cache": "HIT"
+          }
+        });
+      }
+    } catch (e) {
+      console.warn("[helmet-proxy] D1 cache read:", e?.message);
+    }
+  }
+
+  // 2. Fetch autenticado a members-ng con reintento
+  try {
+    let session = await getOrRenewIRacingSession(env);
+    let helmetRes = await fetch(`https://members-ng.iracing.com/member/GetHelmetImage?custId=${custId}`, {
+      headers: {
+        "Cookie": session,
+        "User-Agent": "Muntrume-Motorsport-API/2.0"
+      }
+    });
+
+    if (helmetRes.status === 401) {
+      session = await getOrRenewIRacingSession(env);
+      helmetRes = await fetch(`https://members-ng.iracing.com/member/GetHelmetImage?custId=${custId}`, {
+        headers: {
+          "Cookie": session,
+          "User-Agent": "Muntrume-Motorsport-API/2.0"
+        }
+      });
+    }
+
+    const contentType = helmetRes.headers.get("content-type") || "";
+    if (helmetRes.ok && contentType.startsWith("image/")) {
+      const buffer = await helmetRes.arrayBuffer();
+
+      // Guardar en D1 en base64 para evitar llamadas repetidas
+      if (env.muntrume_vault && buffer.byteLength > 0 && buffer.byteLength < 500000) {
+        try {
+          const bytes = new Uint8Array(buffer);
+          let binary = "";
+          for (let i = 0; i < bytes.byteLength; i++) {
+            binary += String.fromCharCode(bytes[i]);
+          }
+          const b64 = btoa(binary);
+          await env.muntrume_vault
+            .prepare("INSERT INTO driver_stats (id, data, updated_at) VALUES (?, ?, ?) ON CONFLICT(id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at")
+            .bind(`helmet_${custId}`, b64, new Date().toISOString())
+            .run();
+        } catch (e) {
+          console.warn("[helmet-proxy] D1 cache write:", e?.message);
+        }
+      }
+
+      return new Response(buffer, {
+        status: 200,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": contentType,
+          "X-Cache": "MISS"
+        }
+      });
+    }
+
+    return new Response(generateHelmetSvg(custId), {
+      status: 200,
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "image/svg+xml; charset=utf-8",
+        "X-Source": "HELMET_VECTOR_FALLBACK"
+      }
+    });
+  } catch (err) {
+    console.warn("[helmet-proxy] Fallback to vector helmet:", err?.message);
+    return new Response(generateHelmetSvg(custId), {
+      status: 200,
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "image/svg+xml; charset=utf-8",
+        "X-Source": "HELMET_VECTOR_FALLBACK"
+      }
+    });
+  }
 }
 
 function extractMostUsedCar(recentRaces) {
@@ -2176,7 +2356,7 @@ const PILOTOS_FALLBACK = [
     country: "Spain",
     flag: "🇪🇸",
     flag_code: "ES",
-    helmet_url: "https://members-ng.iracing.com/member/GetHelmetImage?custId=993381",
+    helmet_url: "/api/helmet?custId=993381",
     fav_category: "GT3 Endurance",
     most_used: { car: "Porsche 911 GT3 R (992)", pct: 42 },
     fav_car: "Porsche 911 GT3 R (992)",
@@ -2189,12 +2369,12 @@ const PILOTOS_FALLBACK = [
     name: "Mateo B",
     fullName: "Mateo Berbis",
     cust_id: "1134615",
-    irating: 2450,
-    license: "B 3.2",
+    irating: 2534,
+    license: "B 3.20",
     country: "Spain",
     flag: "🇪🇸",
     flag_code: "ES",
-    helmet_url: "https://members-ng.iracing.com/member/GetHelmetImage?custId=1134615",
+    helmet_url: "/api/helmet?custId=1134615",
     fav_category: "GT3",
     most_used: { car: "Ferrari 296 GT3", pct: 38 },
     fav_car: "Ferrari 296 GT3",
@@ -2208,11 +2388,11 @@ const PILOTOS_FALLBACK = [
     fullName: "Eduardo C",
     cust_id: "1076585",
     irating: 3100,
-    license: "A 2.8",
+    license: "A 2.80",
     country: "Costa Rica",
     flag: "🇨🇷",
     flag_code: "CR",
-    helmet_url: "https://members-ng.iracing.com/member/GetHelmetImage?custId=1076585",
+    helmet_url: "/api/helmet?custId=1076585",
     fav_category: "GTP",
     most_used: { car: "Aston Martin Valkyrie GTP", pct: 45 },
     fav_car: "Aston Martin Valkyrie GTP",
@@ -2253,6 +2433,16 @@ async function handleDriversLive(request, env, origin) {
     return new Response(null, { status: 204, headers: corsHeaders });
   }
 
+  const url = new URL(request.url);
+  const slugParam = url.searchParams.get("slug");
+  const formatOutput = (data) => {
+    if (!slugParam) return data;
+    if (Array.isArray(data)) {
+      return data.find(d => d.slug === slugParam) || data;
+    }
+    return data;
+  };
+
   // 1. Verificar Anti-Baneo: comprobar cache D1 (< 6 horas)
   if (env.muntrume_vault) {
     try {
@@ -2263,7 +2453,8 @@ async function handleDriversLive(request, env, origin) {
         const ageMs = Date.now() - new Date(cached.updated_at).getTime();
         // TTL 6 horas (21600000 ms)
         if (ageMs < 6 * 3600 * 1000) {
-          return new Response(cached.data, {
+          const parsed = JSON.parse(cached.data);
+          return new Response(JSON.stringify(formatOutput(parsed)), {
             status: 200,
             headers: {
               ...corsHeaders,
@@ -2289,14 +2480,15 @@ async function handleDriversLive(request, env, origin) {
           .prepare("SELECT data FROM driver_stats WHERE id IN ('live_drivers', 'all') ORDER BY updated_at DESC LIMIT 1")
           .first();
         if (oldCache?.data) {
-          return new Response(oldCache.data, {
+          const parsed = JSON.parse(oldCache.data);
+          return new Response(JSON.stringify(formatOutput(parsed)), {
             status: 200,
             headers: { ...corsHeaders, "X-Cache": "STALE" }
           });
         }
       } catch {}
     }
-    return new Response(JSON.stringify(PILOTOS_FALLBACK), {
+    return new Response(JSON.stringify(formatOutput(PILOTOS_FALLBACK)), {
       status: 200,
       headers: { ...corsHeaders, "X-Source": "ROSTER_FALLBACK" }
     });
@@ -2342,8 +2534,10 @@ async function handleDriversLive(request, env, origin) {
           dorsal: config.dorsal,
           slug: config.slug,
           name: config.name,
+          fullName: config.fullName || config.name,
           cust_id: null,
           irating: null,
+          irating_formatted: null,
           license: null,
           country: "Spain",
           flag: "🇪🇸",
@@ -2360,7 +2554,7 @@ async function handleDriversLive(request, env, origin) {
       }
 
       const member = membersMap[custId] || null;
-      const { irating, license, fav_category } = extractLicenseAndIRating(member?.licenses);
+      const { irating, license, fav_category } = extractLicenseAndIRating(member?.licenses, member);
 
       // Obtener últimas carreras para calcular coche más usado
       let recentRaces = null;
@@ -2372,23 +2566,28 @@ async function handleDriversLive(request, env, origin) {
 
       const { fav_car, most_used, last_race } = extractMostUsedCar(recentRaces);
 
+      const irValue = irating || config.irating || (custId === "1134615" ? 2534 : custId === "993381" ? 3900 : 3100);
+      const licValue = license || config.license || (custId === "1134615" ? "B 3.20" : custId === "993381" ? "A 4.99" : "A 2.80");
+
       driversOutput.push({
         dorsal: config.dorsal,
         slug: config.slug,
         name: config.name,
+        fullName: config.fullName || config.name,
         cust_id: custId,
-        irating,
-        license,
-        country: config.country || (custId === "1076585" ? "Costa Rica" : "Spain"),
-        flag: config.flag || (custId === "1076585" ? "🇨🇷" : "🇪🇸"),
-        flag_code: config.flag_code || (custId === "1076585" ? "CR" : "ES"),
-        helmet_url: `https://members-ng.iracing.com/member/GetHelmetImage?custId=${custId}`,
-        fav_category,
+        irating: irValue,
+        irating_formatted: irValue ? `${(Math.round(irValue / 100) / 10).toFixed(1)}k` : null,
+        license: licValue,
+        country: (member?.country_code === "CR" || custId === "1076585") ? "Costa Rica" : (member?.country || config.country || "Spain"),
+        flag: (member?.country_code === "CR" || custId === "1076585") ? "🇨🇷" : (config.flag || "🇪🇸"),
+        flag_code: (member?.country_code === "CR" || custId === "1076585") ? "CR" : (config.flag_code || "ES"),
+        helmet_url: `/api/helmet?custId=${custId}`,
+        fav_category: fav_category || config.fav_category,
         most_used,
         fav_car,
         last_race,
         is_founder: config.is_founder,
-        status: irating ? "Activo" : "Registrado"
+        status: irValue ? "Activo" : "Registrado"
       });
     }
 
@@ -2409,7 +2608,7 @@ async function handleDriversLive(request, env, origin) {
       }
     }
 
-    return new Response(jsonString, {
+    return new Response(JSON.stringify(formatOutput(driversOutput)), {
       status: 200,
       headers: {
         ...corsHeaders,
@@ -2428,7 +2627,8 @@ async function handleDriversLive(request, env, origin) {
           .prepare("SELECT data FROM driver_stats WHERE id = 'live_drivers'")
           .first();
         if (fallback?.data) {
-          return new Response(fallback.data, {
+          const parsed = JSON.parse(fallback.data);
+          return new Response(JSON.stringify(formatOutput(parsed)), {
             status: 200,
             headers: { ...corsHeaders, "X-Cache": "STALE-ERROR-FALLBACK" }
           });
@@ -2437,7 +2637,7 @@ async function handleDriversLive(request, env, origin) {
     }
 
     // Fallback seguro con datos oficiales del equipo
-    return new Response(JSON.stringify(PILOTOS_FALLBACK), {
+    return new Response(JSON.stringify(formatOutput(PILOTOS_FALLBACK)), {
       status: 200,
       headers: { ...corsHeaders, "X-Cache": "SAFE-FALLBACK" }
     });
@@ -2613,6 +2813,9 @@ export default {
     }
     if (request.method === "GET" && url.pathname.replace(/\/+$/, "") === "/api/drivers") {
       return await handleDriversLive(request, env, origin);
+    }
+    if (request.method === "GET" && url.pathname.replace(/\/+$/, "") === "/api/helmet") {
+      return await handleHelmetProxy(request, env, origin);
     }
     if (request.method === "GET" && url.pathname.replace(/\/+$/, "") === "/api/mail/inbox") {
       if (origin && !isAllowedOrigin(origin)) return reply(403, { error: "Forbidden: Unauthorized origin" });

@@ -36,7 +36,11 @@ export async function GET(request: Request) {
     };
   });
 
-  return new Response(JSON.stringify(responseData), { status: 200, headers });
+  const url = new URL(request.url);
+  const slug = url.searchParams.get("slug");
+  const dataToReturn = slug ? responseData.find((d) => d.slug === slug) || responseData : responseData;
+
+  return new Response(JSON.stringify(dataToReturn), { status: 200, headers });
 }
 
 export async function OPTIONS() {
