@@ -8,7 +8,8 @@ const { currentPath = Astro.url.pathname } = Astro.props;
 // Helper para active state
 const isInicio = currentPath === '/' || currentPath === '/index.html' || currentPath === '';
 const isPilotos = currentPath.startsWith('/pilotos') || currentPath.startsWith('/team') || currentPath.startsWith('/p/');
-const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('/about') || currentPath.startsWith('/contact') || currentPath.startsWith('/news');
+const isNews = currentPath.startsWith('/news') || currentPath.startsWith('/noticias') || currentPath.startsWith('/article');
+const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('/about') || currentPath.startsWith('/contact');
 ---
 
 <!-- Header en 1 sola línea (h-14, bg #0E1211, border-b #1A2120, sticky top-0 z-50) -->
@@ -28,8 +29,8 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
     </span>
   </a>
 
-  <!-- Centro: Nav flex gap-8: INICIO + PILOTOS + PADDOCK (1 línea, centrado absoluto) -->
-  <nav class="hidden md:flex gap-8 absolute left-1/2 -translate-x-1/2 text-xs font-mono uppercase tracking-wider">
+  <!-- Centro: Nav flex gap-6 lg:gap-8: INICIO + PILOTOS + NOTICIAS + PADDOCK (1 línea, centrado absoluto) -->
+  <nav class="hidden md:flex gap-6 lg:gap-8 absolute left-1/2 -translate-x-1/2 text-xs font-mono uppercase tracking-wider">
     <a 
       href="/" 
       class={`py-1 transition-colors ${isInicio ? 'text-[#00E699] font-bold border-b-2 border-[#00E699]' : 'text-[#9AA8A3] hover:text-white'}`}
@@ -41,6 +42,12 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
       class={`py-1 transition-colors ${isPilotos ? 'text-[#00E699] font-bold border-b-2 border-[#00E699]' : 'text-[#9AA8A3] hover:text-white'}`}
     >
       PILOTOS
+    </a>
+    <a 
+      href="/news" 
+      class={`py-1 transition-colors ${isNews ? 'text-[#00E699] font-bold border-b-2 border-[#00E699]' : 'text-[#9AA8A3] hover:text-white'}`}
+    >
+      NOTICIAS
     </a>
     <a 
       href="/paddock" 
@@ -147,6 +154,9 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
       </a>
       <a href="/pilotos" class={`px-3 py-2 rounded-xl transition ${isPilotos ? 'bg-[#00E699]/10 text-[#00E699] font-bold' : 'text-[#9AA8A3] hover:bg-white/5 hover:text-white'}`}>
         Pilotos
+      </a>
+      <a href="/news" class={`px-3 py-2 rounded-xl transition ${isNews ? 'bg-[#00E699]/10 text-[#00E699] font-bold' : 'text-[#9AA8A3] hover:bg-white/5 hover:text-white'}`}>
+        Noticias
       </a>
       <a href="/paddock" class={`px-3 py-2 rounded-xl transition ${isPaddock ? 'bg-[#00E699]/10 text-[#00E699] font-bold' : 'text-[#9AA8A3] hover:bg-white/5 hover:text-white'}`}>
         Paddock
