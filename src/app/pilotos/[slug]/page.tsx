@@ -19,8 +19,8 @@ export default function DriverDetailPage({ params }: { params: { slug: string } 
   const driver = PILOTOS.find((x) => x.slug === params.slug) || PILOTOS[0];
 
   const hasLiveStats = driver.cust_id !== null;
-  const irating = driver.cust_id === 993381 ? "3.9k iR" : driver.cust_id === 1134615 ? "3.4k iR" : driver.cust_id === 1076585 ? "3.7k iR" : null;
-  const license = driver.cust_id ? "A 4.99" : null;
+  const irating = driver.irating ? `${Math.round(driver.irating / 100) / 10}k iR` : null;
+  const license = driver.license;
 
   return (
     <main className="min-h-screen bg-[#0E1211] text-[#F5F5F5] pt-16 pb-20 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">

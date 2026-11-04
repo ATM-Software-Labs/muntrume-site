@@ -9,20 +9,6 @@ export const metadata = {
 
 export default function PilotosPage() {
   const drivers = PILOTOS.map((p) => {
-    let irating: number | null = null;
-    let license: string | null = null;
-
-    if (p.cust_id === 993381) {
-      irating = 3912;
-      license = "A 4.99";
-    } else if (p.cust_id === 1134615) {
-      irating = 3410;
-      license = "A 4.85";
-    } else if (p.cust_id === 1076585) {
-      irating = 3720;
-      license = "A 4.90";
-    }
-
     return {
       slug: p.slug,
       dorsal: p.dorsal,
@@ -31,8 +17,8 @@ export default function PilotosPage() {
       badge: p.badge,
       role: p.role,
       cust_id: p.cust_id,
-      irating,
-      license,
+      irating: p.irating,
+      license: p.license,
       flag: `${p.flag} ${p.flag_code}`,
       fav_category: p.fav_category,
       helmet_url: p.helmet_url,

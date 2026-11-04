@@ -2,44 +2,20 @@
 import Layout from '../layouts/Layout.astro';
 import StatsGrid from '../components/StatsGrid.astro';
 import HelmetAvatar from '../components/HelmetAvatar.astro';
+import { PILOTOS } from '../lib/pilotos';
 
 const pageTitle = "Muntrume Motorsport | Precision Racing. Engineered to Win. — iRacing Team";
 const pageDescription = "Escudería de Sant Andreu con 239k setups y telemetría Garage 61 para iRacing. Pilotos oficiales, setup vault automatizado y canal de radio.";
 
-const drivers = [
-  {
-    num: "#01",
-    name: "Alberto Trujillo",
-    role: "Team Principal & Telemetry",
-    bio: "Especialista en telemetría a 60Hz, arquitectura de suspensión y dinámicas de chasis.",
-    season: "Temporada 2026 - Oficial",
-    slug: "alberto-trujillo"
-  },
-  {
-    num: "#02",
-    name: "Mateo Berbis",
-    role: "Endurance & GT3 Driver",
-    bio: "Especialista en tandas largas de resistencia y gestión de desgaste de neumáticos GT3.",
-    season: "Temporada 2026 - Oficial",
-    slug: "mateo-berbis"
-  },
-  {
-    num: "#03",
-    name: "Eduardo Chongkan",
-    role: "Prototype & Formula Driver",
-    bio: "Análisis de alta carga aerodinámica en prototipos GTP/LMP2 y monoplazas.",
-    season: "Temporada 2026 - Oficial",
-    slug: "eduardo-chongkan"
-  },
-  {
-    num: "#04",
-    name: "Juanlu Carrillo",
-    role: "Touring & Cup Driver",
-    bio: "Especialista en combate cuerpo a cuerpo, trazadas en turismos y copas monomarca.",
-    season: "Temporada 2026 - Oficial",
-    slug: "juanlu-carrillo"
-  }
-];
+const drivers = PILOTOS.map(p => ({
+  num: p.dorsal,
+  name: p.fullName,
+  role: p.role,
+  bio: p.bio || "",
+  season: "Temporada 2026 - Oficial",
+  slug: p.slug,
+  helmet_url: p.helmet_url
+}));
 ---
 
 <Layout title={pageTitle} description={pageDescription}>
@@ -133,7 +109,7 @@ const drivers = [
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
       {drivers.map(d => (
         <a 
-          href={`/p/${d.slug}`} 
+          href={`/pilotos/${d.slug}`} 
           class="group p-5 rounded-2xl bg-[#121A17] border border-[#1E2A26] hover:border-[#00E699]/60 transition-all duration-300 flex flex-col justify-between space-y-4 relative overflow-hidden"
         >
           <!-- Small green indicator dot top right -->

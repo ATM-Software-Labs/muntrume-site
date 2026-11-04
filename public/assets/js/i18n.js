@@ -76,22 +76,7 @@
     if (sel.explicit) { var cn = document.querySelector('link[rel="canonical"]'); if (cn && !/[?&]lang=/.test(cn.href)) cn.href = cn.href + (cn.href.indexOf("?") < 0 ? "?" : "&") + "lang=" + lang; }
   }
   function picker() {
-    if (document.getElementById("langSel")) return;
-    var opts = Object.keys(LANGS).map(function (k) { return '<option value="' + k + '"' + (k === lang ? " selected" : "") + ">" + k.toUpperCase() + " · " + LANGS[k] + "</option>"; }).join("");
-    var lbl = (dict && dict["Language"]) || (lang === "en" ? "Language" : "Idioma");
-    var css = "background:#161c24;color:#e5e5e5;border:1px solid rgba(255,255,255,.12);border-radius:8px;font:600 12px/1 Inter,system-ui,sans-serif;height:36px;padding:0 4px;cursor:pointer;width:54px";
-    function make(id, full) {
-      var s = document.createElement("select");
-      s.id = id; s.setAttribute("aria-label", lbl); s.setAttribute("data-no-i18n", ""); s.innerHTML = opts;
-      s.style.cssText = css + (full ? ";max-width:none;width:100%;height:40px;font-size:14px" : "");
-      if (!full) for (var i = 0; i < s.options.length; i++) { s.options[i].textContent = s.options[i].value.toUpperCase(); s.options[i].title = LANGS[s.options[i].value]; }
-      s.addEventListener("change", function () { window.muntruI18n.set(s.value); });
-      return s;
-    }
-    var hdr = document.querySelector("header div.flex.items-center.gap-3") || document.querySelector("header");
-    if (hdr) { var s1 = make("langSel"); hdr.insertBefore(s1, hdr.firstChild); }
-    var drawer = document.querySelector("#mobileDrawer nav");
-    if (drawer) { var wrap = document.createElement("div"); wrap.style.cssText = "padding:10px 3px 0"; wrap.appendChild(make("langSelDrawer", true)); drawer.parentNode.insertBefore(wrap, drawer.nextSibling); }
+    // Selector unico vive en Navbar / Header
   }
   function apply() {
     head(); walk(document.body); picker();

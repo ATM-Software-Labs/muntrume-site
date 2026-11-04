@@ -26,8 +26,8 @@ export const Header: React.FC<HeaderProps> = ({ currentPath = "/" }) => {
         </span>
       </a>
 
-      {/* Centro: Nav flex gap-8 (1 línea, centrado) */}
-      <nav className="hidden md:flex items-center gap-8 text-xs font-mono uppercase tracking-wider">
+      {/* Centro: Nav flex gap-8 (1 línea, centrado absoluto) */}
+      <nav className="hidden md:flex gap-8 absolute left-1/2 -translate-x-1/2 text-xs font-mono uppercase tracking-wider">
         <a
           href="/"
           className={`py-1 transition-colors ${

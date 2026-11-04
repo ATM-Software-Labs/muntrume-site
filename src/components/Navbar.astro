@@ -28,8 +28,8 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
     </span>
   </a>
 
-  <!-- Centro: Nav flex gap-8: INICIO + PILOTOS + PADDOCK (1 línea, centrado) -->
-  <nav class="hidden md:flex items-center gap-8 text-xs font-mono uppercase tracking-wider">
+  <!-- Centro: Nav flex gap-8: INICIO + PILOTOS + PADDOCK (1 línea, centrado absoluto) -->
+  <nav class="hidden md:flex gap-8 absolute left-1/2 -translate-x-1/2 text-xs font-mono uppercase tracking-wider">
     <a 
       href="/" 
       class={`py-1 transition-colors ${isInicio ? 'text-[#00E699] font-bold border-b-2 border-[#00E699]' : 'text-[#9AA8A3] hover:text-white'}`}
@@ -51,7 +51,7 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
   </nav>
 
   <!-- Der: Radio Discord punto verde pulse + LanguageSwitcher + GARAGE ACCESS bg #00E699 rounded-full -->
-  <div class="flex items-center gap-2 sm:gap-3.5 shrink-0">
+  <div class="flex items-center gap-3 sm:gap-4 shrink-0">
     
     <!-- Radio Discord (Desktop) -->
     <a 

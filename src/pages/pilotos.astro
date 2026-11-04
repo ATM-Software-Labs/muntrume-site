@@ -7,8 +7,8 @@ const pageTitle = "Pilotos del Equipo | Alineación Oficial iRacing — Muntrume
 const pageDescription = "Alineación oficial de 4 pilotos de Muntrume Motorsport en iRacing: Alberto Trujillo, Mateo Berbis, Eduardo Chongkan y Juanlu Carrillo. División de Esports, Sant Andreu, Barcelona.";
 
 const DRIVERS = PILOTOS.map(p => {
-  const iratingDefault = p.cust_id === 993381 ? "3.9k iR" : p.cust_id === 1134615 ? "3.4k iR" : p.cust_id === 1076585 ? "3.7k iR" : null;
-  const licenseDefault = p.cust_id ? "A 4.99" : null;
+  const iratingDefault = p.irating ? `${Math.round(p.irating / 100) / 10}k iR` : null;
+  const licenseDefault = p.license;
   const category = p.slug === 'albertot' ? 'gt3 gtp' : p.slug === 'mateob' ? 'gt3' : p.slug === 'eduardoc' ? 'gtp formula' : 'formula';
   const categoryLabel = p.fav_category;
   const is_paddock = p.cust_id === null;

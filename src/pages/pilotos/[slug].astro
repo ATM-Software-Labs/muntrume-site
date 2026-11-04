@@ -15,8 +15,8 @@ const pageTitle = `${driver.fullName} (${driver.dorsal}) · Piloto Oficial — M
 const pageDescription = `${driver.fullName}, ${driver.role} en Muntrume Motorsport. Ficha oficial, estadísticas en vivo iRacing, telemetría y setups validados.`;
 const pageUrl = `https://muntru.me/pilotos/${driver.slug}/`;
 
-const iratingDefault = driver.cust_id === 993381 ? "3.9k iR" : driver.cust_id === 1134615 ? "3.4k iR" : driver.cust_id === 1076585 ? "3.7k iR" : null;
-const licenseDefault = driver.cust_id ? "A 4.99" : null;
+const iratingDefault = driver.irating ? `${Math.round(driver.irating / 100) / 10}k iR` : null;
+const licenseDefault = driver.license;
 ---
 
 <Layout title={pageTitle} description={pageDescription} canonical={pageUrl}>
