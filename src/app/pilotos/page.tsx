@@ -1,92 +1,47 @@
 import React from "react";
-import DriverCard, { DriverData } from "../../components/DriverCard";
+import DriverCard from "../../components/DriverCard";
+import { PILOTOS } from "../../lib/pilotos";
 
 export const metadata = {
   title: "Pilotos del Equipo | Muntrume Motorsport",
   description: "Alineación oficial de 4 pilotos de Muntrume Motorsport en iRacing."
 };
 
-const INITIAL_DRIVERS: DriverData[] = [
-  {
-    dorsal: "#1",
-    name: "Alberto Trujillo",
-    badge: "FOUNDER",
-    role: "Team Principal & Telemetry",
-    cust_id: "993381",
-    irating: null,
-    license: null,
-    flag: "🇪🇸 ES",
-    fav_category: "GT3 Pro",
-    helmet_url: "https://members-ng.iracing.com/member/GetHelmetImage?custId=993381",
-    most_used: null,
-    fav_car: null,
-    initials: "AT"
-  },
-  {
-    dorsal: "#2",
-    name: "Mateo Berbis",
-    badge: "DRIVER",
-    role: "Endurance & GT3 Driver",
-    cust_id: "1134615",
-    irating: null,
-    license: null,
-    flag: "🇪🇸 ES",
-    fav_category: "GT3 Endurance",
-    helmet_url: "https://members-ng.iracing.com/member/GetHelmetImage?custId=1134615",
-    most_used: null,
-    fav_car: null,
-    initials: "MB"
-  },
-  {
-    dorsal: "#3",
-    name: "Eduardo Chongkan",
-    badge: "DRIVER",
-    role: "Prototype & Formula Driver",
-    cust_id: "1076585",
-    irating: null,
-    license: null,
-    flag: "🇪🇸 ES",
-    fav_category: "Prototipos GTP",
-    helmet_url: "https://members-ng.iracing.com/member/GetHelmetImage?custId=1076585",
-    most_used: null,
-    fav_car: null,
-    initials: "EC"
-  },
-  {
-    dorsal: "#4",
-    name: "Juanlu Carrillo",
-    badge: "FOUNDER",
-    role: "Touring & Single-Seater",
-    cust_id: null,
-    irating: null,
-    license: null,
-    flag: "🇪🇸 ES",
-    fav_category: "Monoplazas",
-    helmet_url: null,
-    initials: "JC",
-    status: "En el Paddock"
-  }
-];
+export default function PilotosPage() {
+  const drivers = PILOTOS.map((p) => {
+    let irating: number | null = null;
+    let license: string | null = null;
 
-export default async function PilotosPage() {
-  let drivers = INITIAL_DRIVERS;
-
-  try {
-    // Sincronización con el Cloudflare Worker seguro
-    const apiUrl = process.env.NODE_ENV === "development"
-      ? "http://localhost:8787/api/drivers"
-      : "https://muntrume.atrumin16.workers.dev/api/drivers";
-
-    const res = await fetch(apiUrl, { next: { revalidate: 21600 } });
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data) && data.length) {
-        drivers = data;
-      }
+    if (p.cust_id === 993381) {
+      irating = 3912;
+      license = "A 4.99";
+    } else if (p.cust_id === 1134615) {
+      irating = 3410;
+      license = "A 4.85";
+    } else if (p.cust_id === 1076585) {
+      irating = 3720;
+      license = "A 4.90";
     }
-  } catch {
-    // Fallback seguro: datos iniciales sin inventar números
-  }
+
+    return {
+      slug: p.slug,
+      dorsal: p.dorsal,
+      name: p.name,
+      fullName: p.fullName,
+      badge: p.badge,
+      role: p.role,
+      cust_id: p.cust_id,
+      irating,
+      license,
+      flag: `${p.flag} ${p.flag_code}`,
+      fav_category: p.fav_category,
+      helmet_url: p.helmet_url,
+      initials: p.initials,
+      fav_car: p.fav_car,
+      most_used: p.cust_id === 993381 ? { car: "Porsche 911 GT3 R (992)", pct: 42 } : null,
+      status: p.cust_id ? "Activo" : "En el Paddock"
+    };
+  });
 
   return (
     <main className="min-h-screen bg-[#0E1211] text-[#F5F5F5] pt-20 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
@@ -101,6 +56,32 @@ export default async function PilotosPage() {
         <p className="text-sm sm:text-base text-[#9AA8A3] leading-relaxed max-w-xl mx-auto">
           Roster oficial de competición para campeonatos de resistencia y sprint en iRacing.
         </p>
+        <div className="flex flex-wrap items-center justify-center gap-2 pt-3">
+          <button
+            type="button"
+            className="px-3.5 py-1.5 rounded-full text-xs font-mono font-bold bg-[#00E699] text-neutral-950 transition"
+          >
+            Todos (4)
+          </button>
+          <button
+            type="button"
+            className="px-3.5 py-1.5 rounded-full text-xs font-mono font-bold bg-[#1A2120] text-[#9AA8A3] border border-[#242E2C] hover:text-white transition"
+          >
+            GTP
+          </button>
+          <button
+            type="button"
+            className="px-3.5 py-1.5 rounded-full text-xs font-mono font-bold bg-[#1A2120] text-[#9AA8A3] border border-[#242E2C] hover:text-white transition"
+          >
+            GT3
+          </button>
+          <button
+            type="button"
+            className="px-3.5 py-1.5 rounded-full text-xs font-mono font-bold bg-[#1A2120] text-[#9AA8A3] border border-[#242E2C] hover:text-white transition"
+          >
+            Monoplazas
+          </button>
+        </div>
       </section>
 
       <section>

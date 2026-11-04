@@ -1694,6 +1694,34 @@ async function handleNews(request, ctx) {
   const results = await Promise.all(NEWS_FEEDS.map(fetchFeed));
   const items = results.flatMap(r => r.items)
     .sort((a, b) => (b.pubDate ? Date.parse(b.pubDate) : 0) - (a.pubDate ? Date.parse(a.pubDate) : 0));
+
+  const url = new URL(request.url);
+  const driverParam = url.searchParams.get("driver");
+  if (driverParam) {
+    const dLower = driverParam.toLowerCase();
+    const filtered = items.filter(it => {
+      const txt = `${it.title || ""} ${it.summary || ""}`.toLowerCase();
+      if (dLower === "albertot" || dLower.includes("alberto")) return txt.includes("alberto") || txt.includes("gt3") || txt.includes("porsche");
+      if (dLower === "mateob" || dLower.includes("mateo")) return txt.includes("mateo") || txt.includes("gt3") || txt.includes("ferrari");
+      if (dLower === "eduardoc" || dLower.includes("eduardo")) return txt.includes("eduardo") || txt.includes("gtp") || txt.includes("valkyrie");
+      if (dLower === "juanluc" || dLower.includes("juanlu")) return txt.includes("juanlu") || txt.includes("formula") || txt.includes("monoplaza");
+      return txt.includes(dLower);
+    });
+    return new Response(JSON.stringify({
+      success: true,
+      driver: driverParam,
+      count: filtered.length,
+      items: filtered.length ? filtered : items.slice(0, 5)
+    }), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "public, max-age=600"
+      }
+    });
+  }
+
   const body = { success: true, updated: new Date().toISOString(),
     sources: results.map(r => ({ name: r.feed.name, category: r.feed.category, ok: r.ok, count: r.items.length })), items };
   const okCount = results.filter(r => r.ok).length;
@@ -1957,7 +1985,7 @@ async function handleDriversLive(request, env, origin) {
   if (env.muntrume_vault) {
     try {
       const cached = await env.muntrume_vault
-        .prepare("SELECT data, updated_at FROM driver_stats WHERE id = 'live_drivers'")
+        .prepare("SELECT data, updated_at FROM driver_stats WHERE id IN ('live_drivers', 'all') ORDER BY updated_at DESC LIMIT 1")
         .first();
       if (cached && cached.data) {
         const ageMs = Date.now() - new Date(cached.updated_at).getTime();
@@ -2095,9 +2123,13 @@ async function handleDriversLive(request, env, origin) {
     // Guardar en D1 (Anti-Baneo: 6 horas de protección)
     if (env.muntrume_vault) {
       try {
+        const nowIso = new Date().toISOString();
         await env.muntrume_vault.prepare(
           "INSERT INTO driver_stats (id, data, updated_at) VALUES ('live_drivers', ?, ?) ON CONFLICT(id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at"
-        ).bind(jsonString, new Date().toISOString()).run();
+        ).bind(jsonString, nowIso).run();
+        await env.muntrume_vault.prepare(
+          "INSERT INTO driver_stats (id, data, updated_at) VALUES ('all', ?, ?) ON CONFLICT(id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at"
+        ).bind(jsonString, nowIso).run();
       } catch (e) {
         console.warn("[iRacing API] Cache save error:", e?.message);
       }

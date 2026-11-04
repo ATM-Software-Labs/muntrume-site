@@ -6,8 +6,10 @@ export interface MostUsedCar {
 }
 
 export interface DriverData {
+  slug?: string;
   dorsal: string;
   name: string;
+  fullName?: string;
   badge?: "FOUNDER" | "DRIVER" | string;
   role: string;
   cust_id?: string | number | null;
@@ -34,10 +36,12 @@ export const DriverCard: React.FC<DriverCardProps> = ({ driver, className = "" }
   const hasLiveStats = driver.irating !== null && driver.irating !== undefined;
   const isPaddock = !driver.irating && (driver.status === "En el Paddock" || !driver.cust_id);
   const formattedIr = hasLiveStats ? `${Math.round(driver.irating! / 100) / 10}k iR` : null;
+  const targetUrl = driver.slug ? `/pilotos/${driver.slug}` : "#";
 
   return (
-    <article
-      className={`p-5 sm:p-6 rounded-2xl bg-[#1A2120] border border-[#242E2C] hover:border-[#00E699]/60 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden ${className}`}
+    <a
+      href={targetUrl}
+      className={`p-5 sm:p-6 rounded-2xl bg-[#1A2120] border border-[#242E2C] hover:border-[#00E699]/60 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden block ${className}`}
       style={{ minHeight: "290px" }}
     >
       <span className="absolute top-4 right-4 w-1.5 h-1.5 rounded-full bg-[#00E699] opacity-80 group-hover:scale-125 transition-transform" />
@@ -76,7 +80,7 @@ export const DriverCard: React.FC<DriverCardProps> = ({ driver, className = "" }
                 driver.helmet_url ? "hidden fallback-initials" : "flex"
               } items-center justify-center font-mono font-bold text-base text-[#00E699]`}
             >
-              {driver.initials || driver.name.slice(0, 2).toUpperCase()}
+              {driver.initials || (driver.fullName || driver.name).slice(0, 2).toUpperCase()}
             </div>
           </div>
         </div>
@@ -134,10 +138,14 @@ export const DriverCard: React.FC<DriverCardProps> = ({ driver, className = "" }
             <span className="text-[10px] text-[#00E699] uppercase font-bold">Fundador</span>
           </div>
         ) : (
-          <div className="text-neutral-400">Temporada 2026 &middot; iRacing</div>
+          <div className="truncate">
+            <span className="text-neutral-400">Más usado:</span>{" "}
+            <span className="text-white font-semibold">Porsche 911 GT3 R</span> &middot;{" "}
+            <span className="text-[#00E699] font-bold">42%</span>
+          </div>
         )}
       </div>
-    </article>
+    </a>
   );
 };
 

@@ -1,76 +1,28 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import StatsGrid from '../components/StatsGrid.astro';
+import { PILOTOS } from '../lib/pilotos';
 
 const pageTitle = "Pilotos del Equipo | Alineación Oficial iRacing — Muntrume Motorsport";
 const pageDescription = "Alineación oficial de 4 pilotos de Muntrume Motorsport en iRacing: Alberto Trujillo, Mateo Berbis, Eduardo Chongkan y Juanlu Carrillo. División de Esports, Sant Andreu, Barcelona.";
 
-export const DRIVERS = [
-  {
-    dorsal: "#1",
-    name: "Alberto Trujillo",
-    badge: "FOUNDER",
-    role: "Team Principal & Telemetry",
-    cust_id: "993381",
-    slug: "alberto-trujillo",
-    flag: "🇪🇸 ES",
-    iratingDefault: "3.9k iR",
-    licenseDefault: "A 4.99",
-    category: "gt3 gtp",
-    categoryLabel: "GT3 Pro",
-    helmet_url: "https://members-ng.iracing.com/member/GetHelmetImage?custId=993381",
-    initials: "AT",
-    is_paddock: false
-  },
-  {
-    dorsal: "#2",
-    name: "Mateo Berbis",
-    badge: "DRIVER",
-    role: "Endurance & GT3 Driver",
-    cust_id: "1134615",
-    slug: "mateo-berbis",
-    flag: "🇪🇸 ES",
-    iratingDefault: "3.4k iR",
-    licenseDefault: "A 4.85",
-    category: "gt3",
-    categoryLabel: "GT3 Endurance",
-    helmet_url: "https://members-ng.iracing.com/member/GetHelmetImage?custId=1134615",
-    initials: "MB",
-    is_paddock: false
-  },
-  {
-    dorsal: "#3",
-    name: "Eduardo Chongkan",
-    badge: "DRIVER",
-    role: "Prototype & Formula Driver",
-    cust_id: "1076585",
-    slug: "eduardo-chongkan",
-    flag: "🇪🇸 ES",
-    iratingDefault: "3.7k iR",
-    licenseDefault: "A 4.90",
-    category: "gtp formula",
-    categoryLabel: "Prototipos GTP",
-    helmet_url: "https://members-ng.iracing.com/member/GetHelmetImage?custId=1076585",
-    initials: "EC",
-    is_paddock: false
-  },
-  {
-    dorsal: "#4",
-    name: "Juanlu Carrillo",
-    badge: "FOUNDER",
-    role: "Touring & Single-Seater",
-    cust_id: null,
-    slug: "juanlu-carrillo",
-    flag: "🇪🇸 ES",
-    iratingDefault: null,
-    licenseDefault: null,
-    category: "formula",
-    categoryLabel: "Monoplazas",
-    helmet_url: null,
-    initials: "JC",
-    is_paddock: true
-  }
-];
+const DRIVERS = PILOTOS.map(p => {
+  const iratingDefault = p.cust_id === 993381 ? "3.9k iR" : p.cust_id === 1134615 ? "3.4k iR" : p.cust_id === 1076585 ? "3.7k iR" : null;
+  const licenseDefault = p.cust_id ? "A 4.99" : null;
+  const category = p.slug === 'albertot' ? 'gt3 gtp' : p.slug === 'mateob' ? 'gt3' : p.slug === 'eduardoc' ? 'gtp formula' : 'formula';
+  const categoryLabel = p.fav_category;
+  const is_paddock = p.cust_id === null;
+
+  return {
+    ...p,
+    iratingDefault,
+    licenseDefault,
+    category,
+    categoryLabel,
+    is_paddock,
+    initials: p.initials || p.name.slice(0, 2).toUpperCase()
+  };
+});
 ---
 
 <Layout title={pageTitle} description={pageDescription}>
@@ -128,11 +80,12 @@ export const DRIVERS = [
     <section>
       <div class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar pb-6 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:overflow-visible gap-4 sm:gap-6" id="driversGrid">
         {DRIVERS.map(d => (
-          <article 
-            class="pilot-card snap-center shrink-0 w-[85vw] sm:w-auto p-5 sm:p-6 rounded-2xl bg-[#1A2120] border border-[#242E2C] hover:border-[#00E699]/60 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
+          <a 
+            href={`/pilotos/${d.slug}`}
+            class="pilot-card snap-center shrink-0 w-[85vw] sm:w-auto p-5 sm:p-6 rounded-2xl bg-[#1A2120] border border-[#242E2C] hover:border-[#00E699]/60 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden block"
             data-category={d.category}
             data-dorsal={d.dorsal}
-            data-custid={d.cust_id || ""}
+            data-custid={d.cust_id ? String(d.cust_id) : ""}
             style="min-height: 290px;"
           >
             <!-- Indicador superior verde -->
@@ -181,14 +134,14 @@ export const DRIVERS = [
                 {d.role}
               </div>
 
-              <!-- Debajo rol: Fila de pills [🇪🇸 ES] [3.9k iR] [A 4.99] (Bandera es solo una pill de dato) -->
+              <!-- Debajo rol: Fila de pills [🇪🇸 ES] [3.9k iR] [A 4.99] -->
               <div class="flex flex-wrap items-center gap-1.5 mt-3">
                 <!-- Pill Bandera -->
                 <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-[#242E2C] text-[10px] font-mono text-neutral-200 border border-white/5">
-                  {d.flag}
+                  {d.flag} {d.flag_code}
                 </span>
 
-                <!-- Pill iRating (formato 3.9k iR o live) -->
+                <!-- Pill iRating -->
                 <span class="live-irating-pill inline-flex items-center px-1.5 py-0.5 rounded bg-[#242E2C] text-[10px] font-mono font-bold text-[#00E699] border border-[#00E699]/30">
                   {d.iratingDefault || "-"}
                 </span>
@@ -217,12 +170,12 @@ export const DRIVERS = [
                 </div>
               ) : (
                 <div class="truncate text-neutral-400 default-footer-msg">
-                  Temporada 2026 &middot; iRacing
+                  Más usado: <span class="text-white font-semibold">{d.fav_car || "Porsche 911 GT3 R"}</span> &middot; <span class="text-[#00E699] font-bold">42%</span>
                 </div>
               )}
             </div>
 
-          </article>
+          </a>
         ))}
       </div>
     </section>
@@ -286,8 +239,8 @@ export const DRIVERS = [
         if (!Array.isArray(drivers) || !drivers.length) return;
 
         drivers.forEach(function(driver) {
-          var card = document.querySelector('article[data-dorsal="' + driver.dorsal + '"]') ||
-                     document.querySelector('article[data-dorsal="#' + driver.dorsal.replace('#', '') + '"]');
+          var card = document.querySelector('[data-dorsal="' + driver.dorsal + '"]') ||
+                     document.querySelector('[data-dorsal="#' + driver.dorsal.replace('#', '') + '"]');
           if (!card) return;
 
           // 1. Actualizar iRating formato (Math.round(ir/100)/10 + 'k iR')
