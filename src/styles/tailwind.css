@@ -1,14 +1,15 @@
 @import "tailwindcss";
-@source "../**/*.{astro,html,js,ts}";
+@source "../**/*.{astro,html,js,ts,tsx}";
 @source "../../public/**/*.js";
 
 @theme {
-  --color-brand-bg: #080C0A;
-  --color-brand-surface: #121A17;
-  --color-brand-card: #121A17;
-  --color-brand-border: #1E2A26;
+  --color-brand-bg: #0E1211;
+  --color-brand-surface: #1A2120;
+  --color-brand-card: #1A2120;
+  --color-brand-border: #242E2C;
   --color-brand-accent: #00E699;
-  --color-brand-muted: #8B9A8F;
+  --color-brand-muted: #9AA8A3;
+  --color-brand-text: #F5F5F5;
 
   --font-display: 'Space Grotesk', system-ui, sans-serif;
   --font-sans: 'Inter', system-ui, sans-serif;
