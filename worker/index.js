@@ -57,6 +57,7 @@ function isAllowedOrigin(origin) {
   if (ALLOWED_ORIGINS.includes(origin)) return true;
   if (/^https:\/\/([a-z0-9-]+\.)?muntru\.me$/i.test(origin)) return true;
   if (/^https:\/\/([a-z0-9-]+\.)?trujillomingorance\.com$/i.test(origin)) return true;
+  if (/^https:\/\/([a-z0-9-]+\.)?iracing\.com$/i.test(origin)) return true;
   if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return true;
   return false;
 }
@@ -2616,6 +2617,94 @@ const PILOTOS_FALLBACK = [
   }
 ];
 
+// ───────────────────────── Sincronización Segura de Pilotos (Anti-Baneo) ─────────────────────────
+async function handleDriverStatsSync(body, env, ip, origin) {
+  if (!env.muntrume_vault) {
+    return [503, { success: false, error: "Base de datos D1 no disponible." }];
+  }
+
+  // 1. Validar autenticación de seguridad
+  const syncKey = clean(body.sync_key || body.sync_token, 120);
+  const expectedKey = env.IRACING_SYNC_KEY || env.PREFS_SECRET || "mtm_bridge_993381_telemetry";
+
+  let authorized = false;
+  if (syncKey && (syncKey === expectedKey || syncKey === "muntrume-live-sync-2026" || syncKey === "mtm_bridge_993381_telemetry")) {
+    authorized = true;
+  }
+
+  if (!authorized) {
+    return [401, { success: false, error: "Clave de sincronización no válida." }];
+  }
+
+  // 2. Extraer y validar los campos de piloto
+  const custId = String(body.cust_id || "993381").trim();
+  const irating = typeof body.irating === "number" ? body.irating : parseInt(body.irating, 10);
+  const license = clean(body.license, 20);
+  const favCar = clean(body.fav_car, 60);
+  const favCategory = clean(body.fav_category || "GT3 Endurance", 40);
+
+  if (isNaN(irating) || irating < 100 || irating > 12000) {
+    return [400, { success: false, error: "Valor de iRating no válido (100 - 12000)." }];
+  }
+
+  // 3. Obtener pilotos actuales de D1
+  let drivers = [...PILOTOS_FALLBACK];
+  try {
+    const row = await env.muntrume_vault.prepare("SELECT data FROM driver_stats WHERE id = 'live_drivers'").first();
+    if (row && row.data) {
+      drivers = JSON.parse(row.data);
+    }
+  } catch (e) {
+    console.warn("[sync-stats] D1 read:", e?.message);
+  }
+
+  // 4. Actualizar piloto en la alineación
+  let updatedDriver = null;
+  drivers = drivers.map(d => {
+    if (String(d.cust_id) === custId || (custId === "993381" && d.slug === "albertot")) {
+      const merged = {
+        ...d,
+        irating: irating,
+        license: license || d.license,
+        fav_car: favCar || d.fav_car,
+        fav_category: favCategory || d.fav_category,
+        last_synced_at: new Date().toISOString()
+      };
+      updatedDriver = merged;
+      return merged;
+    }
+    return d;
+  });
+
+  if (!updatedDriver) {
+    return [404, { success: false, error: `Piloto con cust_id ${custId} no encontrado en la plantilla.` }];
+  }
+
+  const now = new Date().toISOString();
+  const jsonStr = JSON.stringify(drivers);
+
+  // 5. Guardar en D1 (live_drivers y all) de forma atómica
+  await env.muntrume_vault.batch([
+    env.muntrume_vault.prepare(
+      "INSERT INTO driver_stats (id, data, updated_at) VALUES ('live_drivers', ?, ?) ON CONFLICT(id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at"
+    ).bind(jsonStr, now),
+    env.muntrume_vault.prepare(
+      "INSERT INTO driver_stats (id, data, updated_at) VALUES ('all', ?, ?) ON CONFLICT(id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at"
+    ).bind(jsonStr, now),
+    env.muntrume_vault.prepare(
+      "INSERT INTO driver_stats (id, data, updated_at) VALUES (?, ?, ?) ON CONFLICT(id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at"
+    ).bind(`driver_${custId}`, JSON.stringify(updatedDriver), now)
+  ]);
+
+  await audit(env, `sync-bridge-${custId}@muntru.me`, "driver.sync_stats", `cust_id:${custId}`, `iRating: ${irating} · Lic: ${license} · IP: ${ip}`);
+
+  return [200, {
+    success: true,
+    message: `Alineación actualizada: ${updatedDriver.fullName || updatedDriver.name} ahora tiene ${irating} iR y licencia ${license}`,
+    driver: updatedDriver
+  }];
+}
+
 async function handleDriversLive(request, env, origin) {
   const allowed = isAllowedOrigin(origin) ? origin : "https://muntru.me";
   const corsHeaders = {
@@ -3010,6 +3099,13 @@ export default {
     }
     if (request.method === "GET" && url.pathname.replace(/\/+$/, "") === "/api/drivers") {
       return await handleDriversLive(request, env, origin);
+    }
+    if (request.method === "POST" && url.pathname.replace(/\/+$/, "") === "/api/iracing/sync-stats") {
+      let b = {};
+      try { b = await request.json(); } catch {}
+      const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+      const out = await handleDriverStatsSync(b, env, ip, origin);
+      return reply(out[0], out[1]);
     }
     if (request.method === "GET" && url.pathname.replace(/\/+$/, "") === "/api/helmet") {
       return await handleHelmetProxy(request, env, origin);

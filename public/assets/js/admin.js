@@ -71,7 +71,7 @@ const PILOTS_DIRECTORY = [
     }
 
     function switchAdminSection(sectionId) {
-      const sections = ["dashboard", "directory", "mail", "setups", "security", "audit"];
+      const sections = ["dashboard", "directory", "mail", "setups", "security", "audit", "iracing-sync"];
       sections.forEach(s => {
         const secEl = document.getElementById(`section-${s}`);
         const navEl = document.getElementById(`nav-${s}`);

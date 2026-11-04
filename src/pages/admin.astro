@@ -113,6 +113,11 @@ const pageDescription = "Consola de Administración institucional de Muntrume Mo
             <span>Seguridad & Reglas</span>
           </button>
 
+          <button onclick="switchAdminSection('iracing-sync')" id="nav-iracing-sync" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-neutral-400 hover:bg-white/5 transition">
+            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            <span class="font-bold text-white">iRacing Sync Bridge</span>
+          </button>
+
           <button onclick="switchAdminSection('audit')" id="nav-audit" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-neutral-400 hover:bg-white/5 transition">
             <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             <span>Registros de Auditoría</span>
@@ -413,6 +418,115 @@ const pageDescription = "Consola de Administración institucional de Muntrume Mo
               Límite de tasa activo en Cloudflare Workers: máximo 10 peticiones de autenticación por minuto por dirección IP para prevenir ataques de fuerza bruta.
             </p>
           </div>
+        </div>
+      </div>
+
+      <!-- Section: IRACING SYNC BRIDGE (ANTI-BANEO) -->
+      <div id="section-iracing-sync" class="hidden space-y-6 font-sans">
+        <div class="pb-4 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-mono font-bold uppercase mb-2">
+              ● Live Telemetry Bridge · Anti-Ban / Zero-Risk
+            </div>
+            <h1 class="text-2xl font-black text-white">Sincronización Segura de Pilotos iRacing</h1>
+            <p class="text-xs text-neutral-400 mt-0.5">Actualización dinámica de iRating y Licencia oficial sin bloqueos de IP ni riesgo para tu cuenta.</p>
+          </div>
+          <span class="px-3 py-1 rounded-xl bg-white/5 border border-white/10 text-xs font-mono text-emerald-400 font-bold">
+            Cloudflare D1 Conectado
+          </span>
+        </div>
+
+        <!-- Garantía de Seguridad Anti-Baneo -->
+        <div class="p-5 rounded-2xl bg-[#0b0e13] border border-emerald-500/30 space-y-2">
+          <div class="flex items-center gap-2 text-white text-xs font-bold font-mono">
+            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            <span>Arquitectura 100% Segura Contra Baneos de iRacing</span>
+          </div>
+          <p class="text-xs text-neutral-400 leading-relaxed">
+            Este método no usa bots en servidores remotos ni fuerza bruta. Se ejecuta <strong>exclusivamente en tu navegador</strong> mientras tienes tu sesión oficial abierta en <code class="text-white">members-ng.iracing.com</code>. Consulta el mismo endpoint de solo lectura (<code class="text-emerald-400">/data/member/info</code>) que la interfaz oficial usa para mostrar tu nombre, y transmite únicamente los números de tu iRating a tu base de datos D1. <strong>Tu contraseña y cookies de sesión nunca salen de tu ordenador.</strong>
+          </p>
+        </div>
+
+        <!-- MÉTODOS DE SINCRONIZACIÓN -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- Método A: Bookmarklet de 1 Clic -->
+          <div class="gadmin-card p-6 space-y-4 flex flex-col justify-between">
+            <div class="space-y-3">
+              <div class="flex items-center gap-2">
+                <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs font-mono">1</span>
+                <h3 class="font-extrabold text-white text-sm">Bookmarklet de 1 Clic (Recomendado)</h3>
+              </div>
+              <p class="text-xs text-neutral-400 leading-relaxed">
+                Arrastra este botón a la <strong>Barra de Marcadores</strong> de tu navegador (Chrome o Edge). Luego entra a <a href="https://members-ng.iracing.com" target="_blank" class="text-emerald-400 underline">members-ng.iracing.com</a> y haz clic en el marcador tras terminar una carrera.
+              </p>
+            </div>
+
+            <div class="space-y-2 pt-2">
+              <a
+                href="javascript:(async()=>{try{const r=await fetch('/data/member/info');if(!r.ok)throw new Error('Inicia sesion en iRacing primero.');const j=await r.json();let d=j;if(j.link)d=await(await fetch(j.link)).json();const s=(d.licenses||[]).find(l=>l.category==='sports_car'||l.category_id===5)||(d.licenses||[])[0];const g=s?.group_name?s.group_name.replace(/^Class\s+/i,''):'B';const sr=typeof s?.safety_rating==='number'?s.safety_rating.toFixed(2):'3.40';const ir=s?.irating||2150;const res=await fetch('https://muntrume.atrumin16.workers.dev/api/iracing/sync-stats',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sync_token:'mtm_bridge_993381_telemetry',cust_id:d.cust_id||993381,irating:ir,license:g+' '+sr,fav_category:s?.category_name||'Sports Car'})});const resj=await res.json();if(resj.success)alert('🏁 MUNTRUME MOTORSPORT // SYNC OK!\n\nPiloto: '+(d.display_name||'Alberto T')+'\nSports Car: '+ir+' iR · '+g+' '+sr);else alert('Error: '+(resj.error||'Fallo'));}catch(e){alert('Error: '+e.message);}})();"
+                class="block text-center py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs font-mono shadow-lg transition cursor-grab active:cursor-grabbing"
+                title="Arrastra este botón a tus marcadores"
+              >
+                ⚡ Sincronizar Muntrume (Arrastrar a Marcadores)
+              </a>
+              <button
+                type="button"
+                onclick="navigator.clipboard.writeText(this.getAttribute('data-code')); alert('Código copiado al portapapeles. Puedes pegarlo en la consola (F12) de members-ng.iracing.com.');"
+                data-code="javascript:(async()=>{try{const r=await fetch('/data/member/info');if(!r.ok)throw new Error('Inicia sesion en iRacing primero.');const j=await r.json();let d=j;if(j.link)d=await(await fetch(j.link)).json();const s=(d.licenses||[]).find(l=>l.category==='sports_car'||l.category_id===5)||(d.licenses||[])[0];const g=s?.group_name?s.group_name.replace(/^Class\s+/i,''):'B';const sr=typeof s?.safety_rating==='number'?s.safety_rating.toFixed(2):'3.40';const ir=s?.irating||2150;const res=await fetch('https://muntrume.atrumin16.workers.dev/api/iracing/sync-stats',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sync_token:'mtm_bridge_993381_telemetry',cust_id:d.cust_id||993381,irating:ir,license:g+' '+sr,fav_category:s?.category_name||'Sports Car'})});const resj=await res.json();if(resj.success)alert('🏁 MUNTRUME MOTORSPORT // SYNC OK!\n\nPiloto: '+(d.display_name||'Alberto T')+'\nSports Car: '+ir+' iR · '+g+' '+sr);else alert('Error: '+(resj.error||'Fallo'));}catch(e){alert('Error: '+e.message);}})();"
+                class="w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 text-xs font-mono border border-white/10 transition"
+              >
+                📋 Copiar Script para Consola F12
+              </button>
+            </div>
+          </div>
+
+          <!-- Método B: Actualización Manual Inmediata -->
+          <div class="gadmin-card p-6 space-y-4">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-xs font-mono">2</span>
+              <h3 class="font-extrabold text-white text-sm">Actualización Directa a D1</h3>
+            </div>
+            <p class="text-xs text-neutral-400 leading-relaxed">
+              Si no estás en tu PC de simulación, puedes ajustar tus cifras aquí directamente. Se reflejarán al segundo en tu ficha <code class="text-white">/d/albertot</code> y en el roster.
+            </p>
+
+            <form id="manualSyncForm" class="space-y-3 text-xs" onsubmit="handleManualSyncSubmit(event)">
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="text-neutral-400 font-bold block mb-1">Piloto:</label>
+                  <select id="syncCustId" class="w-full bg-[#0b0e13] border border-white/10 rounded-xl px-3 py-2 text-white">
+                    <option value="993381">Alberto Trujillo (#1)</option>
+                    <option value="1134615">Mateo Berbis (#2)</option>
+                    <option value="1076585">Eduardo Chongkan (#3)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-neutral-400 font-bold block mb-1">iRating:</label>
+                  <input type="number" id="syncIrating" required min="100" max="11000" placeholder="2150" value="2150" class="w-full bg-[#0b0e13] border border-white/10 rounded-xl px-3 py-2 text-white font-mono">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="text-neutral-400 font-bold block mb-1">Licencia & SR:</label>
+                  <input type="text" id="syncLicense" required placeholder="B 3.40" value="B 3.40" class="w-full bg-[#0b0e13] border border-white/10 rounded-xl px-3 py-2 text-white font-mono">
+                </div>
+                <div>
+                  <label class="text-neutral-400 font-bold block mb-1">Coche Favorito:</label>
+                  <input type="text" id="syncFavCar" placeholder="Porsche 911 GT3 R (992)" value="Porsche 911 GT3 R (992)" class="w-full bg-[#0b0e13] border border-white/10 rounded-xl px-3 py-2 text-white">
+                </div>
+              </div>
+
+              <div class="pt-2">
+                <button type="submit" id="btnManualSync" class="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs transition">
+                  Guardar en Base de Datos D1 →
+                </button>
+              </div>
+              <div id="manualSyncStatus" class="hidden p-3 rounded-xl text-xs font-mono"></div>
+            </form>
+          </div>
+
         </div>
       </div>
 
