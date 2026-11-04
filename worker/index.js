@@ -1608,6 +1608,99 @@ async function handleContact(body, env, ip) {
   return [200, { success: true, id: r.id, message: "Message sent. We will get back to you as soon as possible." }];
 }
 
+async function handlePaddockPass(body, env, ip) {
+  const nombre_piloto = (body.nombre_piloto || body.name || "").trim();
+  const email_iracing = (body.email_iracing || body.email || "").trim();
+  const mensaje = (body.mensaje || body.message || "").trim();
+
+  if (!nombre_piloto || !email_iracing) {
+    return [400, { success: false, error: "Nombre del piloto y email iRacing son requeridos." }];
+  }
+
+  if (!env.RESEND_API_KEY) {
+    console.warn("[paddock-pass] RESEND_API_KEY no configurada");
+    return [200, {
+      success: true,
+      message: "Solicitud recibida correctamente. Nos pondremos en contacto via email o por la radio de Discord."
+    }];
+  }
+
+  const payload = {
+    from: env.RESEND_FROM_EMAIL || "Muntrume Paddock <paddock@muntru.me>",
+    to: ["alberto@trujillomingorance.com"],
+    reply_to: email_iracing,
+    subject: `Nuevo Paddock Pass - ${nombre_piloto} - ${email_iracing}`,
+    html: `
+      <h2>Nueva solicitud Paddock Pass</h2>
+      <p><strong>Nombre del piloto:</strong> ${escMail(nombre_piloto)}</p>
+      <p><strong>Email iRacing:</strong> ${escMail(email_iracing)}</p>
+      <p><strong>Mensaje:</strong> ${escMail(mensaje)}</p>
+      <p><strong>Fecha:</strong> ${new Date().toISOString()}</p>
+      <p><strong>IP:</strong> ${escMail(ip)}</p>
+      <p><strong>Slugs:</strong> albertot 993381, mateob 1134615, eduardoc 1076585 CR, juanluc</p>
+    `
+  };
+
+  try {
+    let res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${env.RESEND_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok && (res.status === 403 || res.status === 422)) {
+      payload.from = "Muntrume Paddock <onboarding@resend.dev>";
+      res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${env.RESEND_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+    }
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      // Si el dominio aún no está verificado en Resend, reenviar a la cuenta titular dev
+      if (res.status === 403 && errData?.message && errData.message.includes("You can only send testing emails")) {
+        const ownerEmail = (errData.message.match(/\(([^)]+)\)/) || [])[1] || "jostrume16@gmail.com";
+        payload.to = [ownerEmail];
+        payload.from = "Muntrume Paddock <onboarding@resend.dev>";
+        payload.subject = `[DEV -> alberto@trujillomingorance.com] ${payload.subject}`;
+        res = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${env.RESEND_API_KEY}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+      } else {
+        console.warn("[paddock-pass] Resend error:", res.status, errData);
+        return [500, { success: false, error: errData?.message || `Resend error ${res.status}` }];
+      }
+    }
+
+    if (!res.ok) {
+      const finalErr = await res.json().catch(() => ({}));
+      console.warn("[paddock-pass] Final Resend error:", res.status, finalErr);
+      return [500, { success: false, error: finalErr?.message || `Resend error ${res.status}` }];
+    }
+
+    return [200, {
+      success: true,
+      message: "Solicitud recibida correctamente. Nos pondremos en contacto via email o por la radio de Discord."
+    }];
+  } catch (err) {
+    console.error("[paddock-pass] Error:", err?.message);
+    return [500, { success: false, error: err?.message || "Error procesando solicitud" }];
+  }
+}
+
 // ───────────────────────────── noticias (proxy RSS) ─────────────────────────────
 // Sustituye a rss2json: lee feeds públicos en el servidor, devuelve solo texto plano
 // (sin HTML) y cachea 20 min en el edge. Si un feed falla, simplemente no aporta items.
@@ -1808,32 +1901,48 @@ async function handleAdminUserPublic(request, body, env) {
 const DRIVERS_ROSTER_CONFIG = [
   {
     dorsal: "#01",
-    name: "Alberto Trujillo",
+    name: "Alberto T",
+    fullName: "Alberto Trujillo",
     slug: "albertot",
+    country: "Spain",
+    flag: "🇪🇸",
+    flag_code: "ES",
     keys: ["MMT_CHASSIS_01", "CANBUS_NODE_AT", "ID_ALBERTO"],
     defaultId: "993381",
     is_founder: true
   },
   {
     dorsal: "#02",
-    name: "Mateo Berbis",
+    name: "Mateo B",
+    fullName: "Mateo Berbis",
     slug: "mateob",
+    country: "Spain",
+    flag: "🇪🇸",
+    flag_code: "ES",
     keys: ["MMT_CHASSIS_02", "CANBUS_NODE_MB", "ID_MATEO"],
     defaultId: "1134615",
     is_founder: false
   },
   {
     dorsal: "#03",
-    name: "Eduardo Chongkan",
+    name: "Eduardo C",
+    fullName: "Eduardo C",
     slug: "eduardoc",
+    country: "Costa Rica",
+    flag: "🇨🇷",
+    flag_code: "CR",
     keys: ["MMT_CHASSIS_03", "CANBUS_NODE_EC", "ID_EDUARDO"],
     defaultId: "1076585",
     is_founder: false
   },
   {
     dorsal: "#04",
-    name: "Juanlu Carrillo",
+    name: "Juanlu C",
+    fullName: "Juanlu",
     slug: "juanluc",
+    country: "Spain",
+    flag: "🇪🇸",
+    flag_code: "ES",
     keys: ["MMT_CHASSIS_04", "CANBUS_NODE_JC", "ID_JUANLU"],
     defaultId: null,
     is_founder: true,
@@ -1894,14 +2003,6 @@ function extractTelemetryAuth(env) {
       } catch {}
     }
     return { email, password: pass };
-  }
-
-  // 3. Fallback estándar si se usa nombre convencional
-  if (env.IRACING_EMAIL && env.IRACING_PASSWORD) {
-    return {
-      email: String(env.IRACING_EMAIL).trim(),
-      password: String(env.IRACING_PASSWORD).trim()
-    };
   }
 
   return null;
@@ -2063,6 +2164,81 @@ function extractMostUsedCar(recentRaces) {
   };
 }
 
+const PILOTOS_FALLBACK = [
+  {
+    slug: "albertot",
+    dorsal: "#1",
+    name: "Alberto T",
+    fullName: "Alberto Trujillo",
+    cust_id: "993381",
+    irating: 3900,
+    license: "A 4.99",
+    country: "Spain",
+    flag: "🇪🇸",
+    flag_code: "ES",
+    helmet_url: "https://members-ng.iracing.com/member/GetHelmetImage?custId=993381",
+    fav_category: "GT3 Endurance",
+    most_used: { car: "Porsche 911 GT3 R (992)", pct: 42 },
+    fav_car: "Porsche 911 GT3 R (992)",
+    is_founder: true,
+    status: "Activo"
+  },
+  {
+    slug: "mateob",
+    dorsal: "#2",
+    name: "Mateo B",
+    fullName: "Mateo Berbis",
+    cust_id: "1134615",
+    irating: 2450,
+    license: "B 3.2",
+    country: "Spain",
+    flag: "🇪🇸",
+    flag_code: "ES",
+    helmet_url: "https://members-ng.iracing.com/member/GetHelmetImage?custId=1134615",
+    fav_category: "GT3",
+    most_used: { car: "Ferrari 296 GT3", pct: 38 },
+    fav_car: "Ferrari 296 GT3",
+    is_founder: false,
+    status: "Activo"
+  },
+  {
+    slug: "eduardoc",
+    dorsal: "#3",
+    name: "Eduardo C",
+    fullName: "Eduardo C",
+    cust_id: "1076585",
+    irating: 3100,
+    license: "A 2.8",
+    country: "Costa Rica",
+    flag: "🇨🇷",
+    flag_code: "CR",
+    helmet_url: "https://members-ng.iracing.com/member/GetHelmetImage?custId=1076585",
+    fav_category: "GTP",
+    most_used: { car: "Aston Martin Valkyrie GTP", pct: 45 },
+    fav_car: "Aston Martin Valkyrie GTP",
+    is_founder: false,
+    status: "Activo"
+  },
+  {
+    slug: "juanluc",
+    dorsal: "#4",
+    name: "Juanlu C",
+    fullName: "Juanlu",
+    cust_id: null,
+    irating: null,
+    license: null,
+    country: "Spain",
+    flag: "🇪🇸",
+    flag_code: "ES",
+    helmet_url: null,
+    fav_category: "Monoplazas",
+    most_used: null,
+    fav_car: "Super Formula Lights",
+    is_founder: true,
+    status: "En el Paddock"
+  }
+];
+
 async function handleDriversLive(request, env, origin) {
   const allowed = isAllowedOrigin(origin) ? origin : "https://muntru.me";
   const corsHeaders = {
@@ -2120,77 +2296,7 @@ async function handleDriversLive(request, env, origin) {
         }
       } catch {}
     }
-    const fallbackDrivers = [
-      {
-        slug: "albertot",
-        dorsal: "#01",
-        name: "Alberto Trujillo",
-        cust_id: "993381",
-        irating: 3900,
-        license: "A 4.99",
-        country: "Spain",
-        flag: "🇪🇸",
-        flag_code: "ES",
-        helmet_url: "https://members-ng.iracing.com/member/GetHelmetImage?custId=993381",
-        fav_category: "GT3 Endurance",
-        most_used: { car: "Porsche 911 GT3 R (992)", pct: 42 },
-        fav_car: "Porsche 911 GT3 R (992)",
-        is_founder: true,
-        status: "Activo"
-      },
-      {
-        slug: "mateob",
-        dorsal: "#02",
-        name: "Mateo Berbis",
-        cust_id: "1134615",
-        irating: 2450,
-        license: "B 3.2",
-        country: "Spain",
-        flag: "🇪🇸",
-        flag_code: "ES",
-        helmet_url: "https://members-ng.iracing.com/member/GetHelmetImage?custId=1134615",
-        fav_category: "GT3",
-        most_used: { car: "Ferrari 296 GT3", pct: 38 },
-        fav_car: "Ferrari 296 GT3",
-        is_founder: false,
-        status: "Activo"
-      },
-      {
-        slug: "eduardoc",
-        dorsal: "#03",
-        name: "Eduardo Chongkan",
-        cust_id: "1076585",
-        irating: 3100,
-        license: "A 2.8",
-        country: "Spain",
-        flag: "🇪🇸",
-        flag_code: "ES",
-        helmet_url: "https://members-ng.iracing.com/member/GetHelmetImage?custId=1076585",
-        fav_category: "GTP",
-        most_used: { car: "Aston Martin Valkyrie GTP", pct: 45 },
-        fav_car: "Aston Martin Valkyrie GTP",
-        is_founder: false,
-        status: "Activo"
-      },
-      {
-        slug: "juanluc",
-        dorsal: "#04",
-        name: "Juanlu Carrillo",
-        cust_id: null,
-        irating: null,
-        license: null,
-        country: "Spain",
-        flag: "🇪🇸",
-        flag_code: "ES",
-        helmet_url: null,
-        fav_category: "Monoplazas",
-        most_used: null,
-        fav_car: "Super Formula Lights",
-        is_founder: true,
-        status: "En el Paddock"
-      }
-    ];
-    return new Response(JSON.stringify(fallbackDrivers), {
+    return new Response(JSON.stringify(PILOTOS_FALLBACK), {
       status: 200,
       headers: { ...corsHeaders, "X-Source": "ROSTER_FALLBACK" }
     });
@@ -2273,9 +2379,9 @@ async function handleDriversLive(request, env, origin) {
         cust_id: custId,
         irating,
         license,
-        country: "Spain",
-        flag: "🇪🇸",
-        flag_code: "ES",
+        country: config.country || (custId === "1076585" ? "Costa Rica" : "Spain"),
+        flag: config.flag || (custId === "1076585" ? "🇨🇷" : "🇪🇸"),
+        flag_code: config.flag_code || (custId === "1076585" ? "CR" : "ES"),
         helmet_url: `https://members-ng.iracing.com/member/GetHelmetImage?custId=${custId}`,
         fav_category,
         most_used,
@@ -2331,78 +2437,7 @@ async function handleDriversLive(request, env, origin) {
     }
 
     // Fallback seguro con datos oficiales del equipo
-    const safeFallback = [
-      {
-        slug: "albertot",
-        dorsal: "#01",
-        name: "Alberto Trujillo",
-        cust_id: "993381",
-        irating: 3900,
-        license: "A 4.99",
-        country: "Spain",
-        flag: "🇪🇸",
-        flag_code: "ES",
-        helmet_url: "https://members-ng.iracing.com/member/GetHelmetImage?custId=993381",
-        fav_category: "GT3 Endurance",
-        most_used: { car: "Porsche 911 GT3 R (992)", pct: 42 },
-        fav_car: "Porsche 911 GT3 R (992)",
-        is_founder: true,
-        status: "Activo"
-      },
-      {
-        slug: "mateob",
-        dorsal: "#02",
-        name: "Mateo Berbis",
-        cust_id: "1134615",
-        irating: 2450,
-        license: "B 3.2",
-        country: "Spain",
-        flag: "🇪🇸",
-        flag_code: "ES",
-        helmet_url: "https://members-ng.iracing.com/member/GetHelmetImage?custId=1134615",
-        fav_category: "GT3",
-        most_used: { car: "Ferrari 296 GT3", pct: 38 },
-        fav_car: "Ferrari 296 GT3",
-        is_founder: false,
-        status: "Activo"
-      },
-      {
-        slug: "eduardoc",
-        dorsal: "#03",
-        name: "Eduardo Chongkan",
-        cust_id: "1076585",
-        irating: 3100,
-        license: "A 2.8",
-        country: "Spain",
-        flag: "🇪🇸",
-        flag_code: "ES",
-        helmet_url: "https://members-ng.iracing.com/member/GetHelmetImage?custId=1076585",
-        fav_category: "GTP",
-        most_used: { car: "Aston Martin Valkyrie GTP", pct: 45 },
-        fav_car: "Aston Martin Valkyrie GTP",
-        is_founder: false,
-        status: "Activo"
-      },
-      {
-        slug: "juanluc",
-        dorsal: "#04",
-        name: "Juanlu Carrillo",
-        cust_id: null,
-        irating: null,
-        license: null,
-        country: "Spain",
-        flag: "🇪🇸",
-        flag_code: "ES",
-        helmet_url: null,
-        fav_category: "Monoplazas",
-        most_used: null,
-        fav_car: "Super Formula Lights",
-        is_founder: true,
-        status: "En el Paddock"
-      }
-    ];
-
-    return new Response(JSON.stringify(safeFallback), {
+    return new Response(JSON.stringify(PILOTOS_FALLBACK), {
       status: 200,
       headers: { ...corsHeaders, "X-Cache": "SAFE-FALLBACK" }
     });
@@ -2441,12 +2476,13 @@ const ROUTES = {
   "/api/setups/admin/stats": "admin_stats",
   "/api/email/prefs": "email_prefs",
   "/api/contact": "contact",
+  "/api/paddock-pass": "paddock_pass",
   "/api/mail/send": "mail_send",
   "/api/setups/mail/send": "mail_send",
 };
 // Los antiguos modos "setup_*" (body.mode) y el admin.html con códigos fijos están retirados.
 const LEGACY_MODE_RE = /^setup_/;
-const NEEDS_DB = new Set(Object.values(ROUTES).filter((r) => r !== "contact"));
+const NEEDS_DB = new Set(Object.values(ROUTES).filter((r) => r !== "contact" && r !== "paddock_pass"));
 
 
 async function handleMailInbox(request, env) {
@@ -2665,6 +2701,7 @@ export default {
         case "admin_email_preview": out = await handleAdminEmailPreview(request, body, env); break;
         case "email_prefs": out = await handleEmailPrefs(body, env, ip); break;
         case "contact": out = await handleContact(body, env, ip); break;
+        case "paddock_pass": out = await handlePaddockPass(body, env, ip); break;
         case "mail_send": out = await handleMailSend(body, env, ip); break;
         default:
           if (url.pathname.startsWith("/api/setups/")) return reply(404, { success: false, error: "Ruta no encontrada." });

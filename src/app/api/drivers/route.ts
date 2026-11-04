@@ -26,6 +26,7 @@ export async function GET(request: Request) {
       cust_id: p.cust_id,
       irating: p.irating,
       license: p.license,
+      country: p.country || "Spain",
       flag: p.flag,
       flag_code: p.flag_code,
       helmet_url: p.helmet_url,

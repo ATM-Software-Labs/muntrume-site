@@ -6,6 +6,7 @@ export interface Piloto {
   fullName: string;
   role: string;
   badge: 'FOUNDER' | 'DRIVER';
+  country?: string;
   flag: string;
   flag_code: string;
   fav_category: string;
@@ -26,6 +27,7 @@ export const PILOTOS: Piloto[] = [
     fullName: 'Alberto Trujillo',
     role: 'TEAM PRINCIPAL & TELEMETRÍA',
     badge: 'FOUNDER',
+    country: 'Spain',
     flag: '🇪🇸',
     flag_code: 'ES',
     fav_category: 'GT3 Endurance',
@@ -44,6 +46,7 @@ export const PILOTOS: Piloto[] = [
     fullName: 'Mateo Berbis',
     role: 'GT3 ENDURANCE',
     badge: 'DRIVER',
+    country: 'Spain',
     flag: '🇪🇸',
     flag_code: 'ES',
     fav_category: 'GT3',
@@ -62,8 +65,9 @@ export const PILOTOS: Piloto[] = [
     fullName: 'Eduardo C',
     role: 'PROTOTIPOS GTP',
     badge: 'DRIVER',
-    flag: '🇪🇸',
-    flag_code: 'ES',
+    country: 'Costa Rica',
+    flag: '🇨🇷',
+    flag_code: 'CR',
     fav_category: 'GTP',
     helmet_url: 'https://members-ng.iracing.com/member/GetHelmetImage?custId=1076585',
     irating: 3100,
@@ -80,6 +84,7 @@ export const PILOTOS: Piloto[] = [
     fullName: 'Juanlu',
     role: 'MONOPLAZAS',
     badge: 'DRIVER',
+    country: 'Spain',
     flag: '🇪🇸',
     flag_code: 'ES',
     fav_category: 'Monoplazas',

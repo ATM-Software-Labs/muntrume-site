@@ -153,6 +153,8 @@ const channels = [
           <div id="paddockPassSuccess" class="hidden p-4 rounded-xl bg-[#00E699]/10 border border-[#00E699]/30 text-xs font-mono text-[#00E699] text-center">
             Solicitud recibida correctamente. Nos pondremos en contacto vía email o por la radio de Discord.
           </div>
+          <div id="paddockPassError" class="hidden p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-xs font-mono text-red-400 text-center">
+          </div>
         </form>
 
       </div>
@@ -167,17 +169,63 @@ const channels = [
 </Layout>
 
 <script is:inline>
-  function handlePaddockPass(e) {
-    e.preventDefault();
+  async function handlePaddockPass(e) {
+    if (e && e.preventDefault) e.preventDefault();
     var btn = document.getElementById('paddockSubmitBtn');
     var success = document.getElementById('paddockPassSuccess');
-    if (btn && success) {
-      btn.classList.add('opacity-50', 'pointer-events-none');
-      btn.innerText = 'Enviando...';
-      setTimeout(function() {
+    var errBox = document.getElementById('paddockPassError');
+    var nameInput = document.getElementById('driverNameInput');
+    var emailInput = document.getElementById('driverEmailInput');
+    var msgInput = document.getElementById('driverMessageInput');
+
+    if (!btn || !nameInput || !emailInput || !msgInput) return;
+
+    var payload = {
+      nombre_piloto: nameInput.value.trim(),
+      email_iracing: emailInput.value.trim(),
+      mensaje: msgInput.value.trim()
+    };
+
+    if (!payload.nombre_piloto || !payload.email_iracing) return;
+
+    btn.disabled = true;
+    btn.classList.add('opacity-50', 'pointer-events-none');
+    btn.innerText = 'Enviando...';
+    if (errBox) errBox.classList.add('hidden');
+
+    try {
+      var res = await fetch('/api/paddock-pass', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok && res.status === 404) {
+        res = await fetch('https://muntrume.atrumin16.workers.dev/api/paddock-pass', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      }
+
+      var data = await res.json().catch(function() { return {}; });
+      if (res.ok && (data.success || data.message)) {
         btn.classList.add('hidden');
-        success.classList.remove('hidden');
-      }, 700);
+        if (success) {
+          success.innerText = data.message || 'Solicitud recibida correctamente. Nos pondremos en contacto vía email o por la radio de Discord.';
+          success.classList.remove('hidden');
+        }
+      } else {
+        throw new Error(data.error || 'Error al enviar la solicitud.');
+      }
+    } catch (err) {
+      if (errBox) {
+        errBox.innerText = err.message || 'Error de conexión. Inténtalo de nuevo o contáctanos por Discord.';
+        errBox.classList.remove('hidden');
+      }
+      btn.disabled = false;
+      btn.classList.remove('opacity-50', 'pointer-events-none');
+      btn.innerHTML = '<span>Enviar Solicitud de Paddock Pass</span> <span>&rarr;</span>';
     }
   }
 </script>
