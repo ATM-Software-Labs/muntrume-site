@@ -1,6 +1,6 @@
 # Muntrume Motorsport
 
-Official sim racing team platform, confidential iRacing setup vault (196 cars, 239,539 setups), Garage 61 telemetry integration, and secure driver communications under the ATM Software Labs ecosystem.
+Official sim racing team platform, confidential iRacing setup vault (196 cars, 239,539 setups), raw FTP directory explorer, Garage 61 telemetry integration, and secure driver communications under the ATM Software Labs ecosystem.
 
 [Production Site](https://muntru.me) | [Setup Vault](https://muntru.me/setups) | [Driver Webmail](https://muntru.me/mail) | [Official Discord](https://discord.gg/ehX6B8JUtE) | [Security Policy](SECURITY.md)
 
@@ -8,7 +8,7 @@ Official sim racing team platform, confidential iRacing setup vault (196 cars, 2
 
 ## Overview
 
-Muntrume Motorsport is an independent iRacing team based in Barcelona, Spain. The platform provides drivers with automated setup distribution directly into local iRacing directories, Garage 61 lap telemetry analysis, and a zero-trust institutional webmail client.
+Muntrume Motorsport is an independent iRacing team based in Barcelona, Spain. The platform provides drivers with automated setup distribution directly into local iRacing directories, Garage 61 lap telemetry analysis, an integrated raw FTP repository, and a zero-trust institutional webmail client.
 
 - 196 official iRacing vehicles supported across GT3, GTP Hypercars, LMP2, LMP3, and Formula series.
 - 239,539 digitally signed `.sto` setup files with official watermarks (`muntru.me - Muntrume Motorsport | Setup by Alberto Trujillo`).
@@ -33,9 +33,10 @@ The platform is engineered with a mobile-first responsive layout (375px, 390px, 
 
 ## Core Capabilities
 
-### Setup Vault
-- Direct File System Sync: Injects setups into `Documents\iRacing\setups\[car]` using the File System Access API on desktop browsers.
-- Adaptive Mobile Downloads: Automatically provides clean `.sto` or zip package downloads without desktop configuration prompts.
+### Setup Vault & FTP Directory Explorer
+- Raw FTP Directory Browser: Integrated web-based FTP directory view (`ftp://vault.muntrume.internal/setups/`) for direct inspection, sorting, and stream-downloading of `.sto` files.
+- Direct File System Sync: Injects setups directly into `Documents\iRacing\setups\[car]` using the File System Access API on desktop browsers.
+- Adaptive Mobile Downloads: Automatically provides clean `.sto` and zip package downloads without desktop configuration prompts.
 - Session Variants: Multi-file setup packages including Qualy (Q), Race (R), Endurance (Endur), and Wet presets.
 - Technical Preview Modal: Displays binary setup header notes, vehicle parameters, and Garage 61 team leaderboards.
 
@@ -48,7 +49,7 @@ The platform is engineered with a mobile-first responsive layout (375px, 390px, 
 ### Zero-Trust Security
 - PBKDF2-SHA256 password derivation with 100,000 iterations.
 - One-Time 2FA authentication codes signed via HMAC-SHA256 (10-minute validity, constant-time verification).
-- Military-grade HTTP headers: strict HSTS with preload, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, and CSP with `frame-ancestors 'none'`.
+- Strict HTTP headers: strict HSTS with preload, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, and CSP with `frame-ancestors 'none'`.
 - Driver mailbox isolation preventing unauthorized cross-account access.
 
 ---
@@ -63,7 +64,7 @@ The platform is engineered with a mobile-first responsive layout (375px, 390px, 
 | Email Relay | Resend API + Cloudflare Email Routing | Verified DKIM, SPF, and DMARC dispatch under `trujillomingorance.com`. |
 | Web Hosting | GitHub Pages Edge CDN | High-availability global static delivery. |
 | Testing | Playwright E2E Suite (`scripts/test-mobile.mjs`) | Headless cross-route responsive audit and interaction testing. |
-| Governance | Google Antigravity (AGY 2.0) | Automated verification workflows and ATM Software Labs standards. |
+| Standards | ATM Software Labs Engineering Standards | Architectural hygiene, surgical changes, and high-performance SimOps. |
 
 ---
 
@@ -99,67 +100,14 @@ The platform is engineered with a mobile-first responsive layout (375px, 390px, 
 
 ---
 
-## Domain Portability and Migration Guide
+## Domain Portability
 
-The platform is designed to be fully domain-agnostic. If the primary domain `muntru.me` expires or moves to an alternate domain or subdomain (such as `muntrume.trujillomingorance.com`), migration takes less than 2 minutes without code changes:
+The platform is engineered to be fully domain-agnostic. If the primary domain `muntru.me` expires or is transitioned to an alternate domain or subdomain (such as `muntrume.trujillomingorance.com`), migration requires only updating the CNAME host without changing application code:
 
-1. Update the CNAME file:
-   Replace the content of `public/CNAME` with the target host:
-   ```bash
-   echo "muntrume.trujillomingorance.com" > public/CNAME
-   ```
+1. Update `public/CNAME` to the designated hostname (e.g., `muntrume.trujillomingorance.com`).
+2. Point your DNS provider's CNAME record to `atrumin16.github.io`.
 
-2. Set the build environment variable (optional, defaults to `https://muntru.me`):
-   ```bash
-   export SITE_URL="https://muntrume.trujillomingorance.com"
-   ```
-
-3. Rebuild and publish:
-   ```bash
-   npm run build
-   git add public/CNAME
-   git commit -m "chore: migrate domain to muntrume.trujillomingorance.com"
-   git push origin main
-   ```
-
-4. Configure DNS:
-   Add a CNAME record in your DNS provider (Cloudflare or registrar) pointing the new domain/subdomain to `atrumin16.github.io`.
-
-All canonical URLs, Schema.org structured data, Open Graph tags, and sitemaps automatically adapt through dynamic `Astro.site` resolution. The Cloudflare Worker CORS policy already permits `*.trujillomingorance.com` and `muntru.me` origins.
-
----
-
-## Development and Verification
-
-### Prerequisites
-- Node.js 20+ or 22+
-- npm 10+
-- Wrangler CLI (`npx wrangler`) for edge worker management
-
-### Local Setup
-```bash
-# Clone repository
-git clone https://github.com/atrumin16/muntrume-site.git
-cd muntrume-site
-
-# Install dependencies
-npm install
-
-# Start local Astro development server
-npm run dev
-
-# Compile production bundle and compress HTML
-npm run build
-
-# Run Playwright automated mobile E2E test suite
-node scripts/test-mobile.mjs
-```
-
-### Worker Deployment
-```bash
-cd worker
-npx wrangler deploy
-```
+All canonical URLs, Schema.org structured data, Open Graph tags, and sitemaps automatically adapt through dynamic site resolution. The Cloudflare Worker CORS policy already permits `*.trujillomingorance.com` and `muntru.me` origins.
 
 ---
 

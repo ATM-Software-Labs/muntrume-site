@@ -1218,19 +1218,25 @@ function setViewMode(mode) {
   currentViewMode = mode;
   const foldersBtn = document.getElementById("viewModeFoldersBtn");
   const listBtn = document.getElementById("viewModeListBtn");
+  const ftpBtn = document.getElementById("viewModeFtpBtn");
   const toggleAllBtn = document.getElementById("toggleAllFoldersBtn");
+
+  [foldersBtn, listBtn, ftpBtn].forEach(btn => {
+    btn?.classList.remove("bg-[#161c24]", "text-emerald-400", "shadow");
+    btn?.classList.add("text-neutral-400");
+  });
 
   if (mode === "folders") {
     foldersBtn?.classList.add("bg-[#161c24]", "text-emerald-400", "shadow");
     foldersBtn?.classList.remove("text-neutral-400");
-    listBtn?.classList.remove("bg-[#161c24]", "text-emerald-400", "shadow");
-    listBtn?.classList.add("text-neutral-400");
     toggleAllBtn?.classList.remove("hidden");
-  } else {
+  } else if (mode === "list") {
     listBtn?.classList.add("bg-[#161c24]", "text-emerald-400", "shadow");
     listBtn?.classList.remove("text-neutral-400");
-    foldersBtn?.classList.remove("bg-[#161c24]", "text-emerald-400", "shadow");
-    foldersBtn?.classList.add("text-neutral-400");
+    toggleAllBtn?.classList.add("hidden");
+  } else if (mode === "ftp") {
+    ftpBtn?.classList.add("bg-[#161c24]", "text-emerald-400", "shadow");
+    ftpBtn?.classList.remove("text-neutral-400");
     toggleAllBtn?.classList.add("hidden");
   }
 
@@ -1637,6 +1643,125 @@ function renderVisibleSlice() {
         </div>
       `;
     }).join("");
+    return;
+  }
+
+  // ========================================================
+  // VIEW MODE 3: EXPLORADOR FTP RAW (Directorio Directo de Setups)
+  // ========================================================
+  if (currentViewMode === "ftp") {
+    const listLimit = visibleFoldersLimit * 2;
+    const slice = currentlyFilteredSetups.slice(0, listLimit);
+    const remaining = currentlyFilteredSetups.length - slice.length;
+
+    if (loadMoreWrap) {
+      if (remaining > 0) {
+        loadMoreWrap.classList.remove("hidden");
+        if (loadMoreText) loadMoreText.textContent = `Mostrar más archivos FTP (${remaining.toLocaleString()} restantes)`;
+      } else {
+        loadMoreWrap.classList.add("hidden");
+      }
+    }
+
+    grid.className = "space-y-3 font-mono";
+
+    const rowsHtml = slice.map((s, idx) => {
+      const carName = CAR_LABELS[s.car] || s.car;
+      const sizeKb = (s.size_bytes / 1024).toFixed(1);
+      const destinationPath = formatMtSetupsDisplayPath(s.car, s.season, s.week, s.circuit, s.filename);
+
+      let badgeColor = "text-emerald-400 bg-emerald-500/10 border-emerald-500/30";
+      if (s.setup_type === "Qualy") badgeColor = "text-purple-400 bg-purple-500/10 border-purple-500/30";
+      if (s.setup_type === "Wet") badgeColor = "text-sky-400 bg-sky-500/10 border-sky-500/30";
+
+      return `
+        <tr class="border-b border-white/5 hover:bg-white/[0.03] transition text-xs">
+          <td class="py-2.5 px-3 text-neutral-500 select-none">${String(idx + 1).padStart(3, '0')}</td>
+          <td class="py-2.5 px-3">
+            <span class="px-1.5 py-0.5 rounded text-[10px] uppercase font-bold border ${badgeColor}">
+              ${escapeHtml(s.setup_type)}
+            </span>
+          </td>
+          <td class="py-2.5 px-3 font-semibold text-white truncate max-w-[220px] sm:max-w-[320px]" title="${escapeHtml(s.filename)}">
+            <span class="text-emerald-400">.sto</span> ${escapeHtml(s.filename)}
+            <div class="text-[10px] text-neutral-500 truncate mt-0.5" title="iRacing\\${destinationPath}">
+              ${escapeHtml(destinationPath)}
+            </div>
+          </td>
+          <td class="py-2.5 px-3 text-neutral-300 hidden md:table-cell truncate max-w-[160px]" title="${escapeHtml(carName)}">
+            ${escapeHtml(carName)}
+          </td>
+          <td class="py-2.5 px-3 text-neutral-300 hidden sm:table-cell truncate max-w-[150px]" title="${escapeHtml(s.circuit)}">
+            ${escapeHtml(s.circuit)}
+          </td>
+          <td class="py-2.5 px-3 text-right text-neutral-400 font-mono text-[11px] whitespace-nowrap">
+            ${sizeKb} KB
+          </td>
+          <td class="py-2.5 px-3 text-right whitespace-nowrap">
+            <div class="inline-flex items-center gap-1">
+              <button 
+                type="button" 
+                data-setup-id="${Number(s.id)}" onclick="openSetupPreviewById(Number(this.dataset.setupId), '')" 
+                class="px-2 py-1 rounded-md bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] font-bold transition"
+                title="Vista previa técnica y telemetría"
+              >
+                Telemetría
+              </button>
+              <button 
+                type="button" 
+                data-path="${escapeHtml(destinationPath)}" onclick="copySetupPath(this.dataset.path)" 
+                class="p-1 rounded-md bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white transition"
+                title="Copiar ruta de iRacing"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+              </button>
+              <button 
+                type="button" 
+                data-setup-id="${Number(s.id)}" data-filename="${escapeHtml(s.filename)}" onclick="downloadSetup(Number(this.dataset.setupId), this.dataset.filename)" 
+                class="px-2 py-1 rounded-md bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold text-[10px] transition"
+                title="Descargar archivo .sto"
+              >
+                Descargar
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    grid.innerHTML = `
+      <div class="bg-[#161c24] border border-white/10 rounded-2xl overflow-hidden shadow-xl">
+        <div class="p-3 sm:p-4 bg-[#0e1217] border-b border-white/10 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="font-bold text-white tracking-wide">ftp://vault.muntrume.internal/setups/</span>
+          </div>
+          <div class="text-[11px] text-neutral-400 flex items-center gap-3">
+            <span>MODO: <strong class="text-emerald-400">READ-ONLY STREAM</strong></span>
+            <span>FORMATO: <strong class="text-white">RAW .STO</strong></span>
+            <span>TOTAL: <strong class="text-white">${currentlyFilteredSetups.length.toLocaleString()}</strong></span>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-white/10 bg-[#0e1217]/50 text-[10px] text-neutral-400 uppercase tracking-wider">
+                <th class="py-2 px-3 w-10">#</th>
+                <th class="py-2 px-3 w-16">Tipo</th>
+                <th class="py-2 px-3">Archivo / Destino iRacing</th>
+                <th class="py-2 px-3 hidden md:table-cell">Vehículo</th>
+                <th class="py-2 px-3 hidden sm:table-cell">Circuito</th>
+                <th class="py-2 px-3 text-right">Tamaño</th>
+                <th class="py-2 px-3 text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5 font-mono">
+              ${rowsHtml}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
     return;
   }
 
@@ -3547,4 +3672,5 @@ if (typeof window !== "undefined") {
   window.copyVaultUrlForChrome = copyVaultUrlForChrome;
   window.toggleLinkDirectory = toggleLinkDirectory;
   window.copySetupPath = copySetupPath;
+  window.setViewMode = setViewMode;
 }

@@ -686,7 +686,7 @@ const pageDescription = "Catálogo oficial con más de 239.000 setups (.sto) par
             <span>carpetas</span>
           </div>
 
-          <!-- View Switcher (Carpetas vs Lista) -->
+          <!-- View Switcher (Carpetas vs Lista vs Explorador FTP) -->
           <div class="flex p-0.5 bg-[#0e1217] rounded-xl border border-white/10 text-xs font-semibold">
             <button 
               type="button" 
@@ -707,6 +707,16 @@ const pageDescription = "Catálogo oficial con más de 239.000 setups (.sto) par
             >
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
               <span>🗂️ Lista</span>
+            </button>
+            <button 
+              type="button" 
+              id="viewModeFtpBtn" 
+              onclick="setViewMode('ftp')" 
+              class="px-2.5 py-1 rounded-lg text-neutral-400 hover:text-white flex items-center gap-1.5 transition font-mono text-[11px]"
+              title="Explorador Directo FTP / Archivo de Setups"
+            >
+              <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              <span>⚡ FTP</span>
             </button>
           </div>
 
