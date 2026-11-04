@@ -2,7 +2,7 @@
 
 Official sim racing team platform, confidential iRacing setup vault (196 cars, 239,539 setups), Garage 61 telemetry integration, and secure driver communications under the ATM Software Labs ecosystem.
 
-[Production Site](https://muntru.me) | [Setup Vault](https://muntru.me/setups) | [Driver Webmail](https://muntru.me/mail) | [Official Discord](https://discord.gg/ehX6B8JUtE) | [Security Policy](SECURITY.md) | [Contributors](CONTRIBUTORS.md)
+[Production Site](https://muntru.me) | [Setup Vault](https://muntru.me/setups) | [Driver Webmail](https://muntru.me/mail) | [Official Discord](https://discord.gg/ehX6B8JUtE) | [Security Policy](SECURITY.md)
 
 ---
 
@@ -163,15 +163,13 @@ npx wrangler deploy
 
 ---
 
-## Team and AI Contributors
+## Official Lineup
 
-- Alberto Trujillo Mingorance (`@atrumin16`) - Team Principal, Lead Architect & Driver (ATM Software Labs)
-- Google Antigravity (AGY 2.0 / Google DeepMind) - Autonomous Agentic Co-Engineer
-- Claude 3.7 Sonnet (Anthropic) - Systems & Security Architecture Specialist
-- Team Drivers: Mateo Berbis, Eduardo Chongkan, Juanlu Carrillo - Track Testing and Telemetry Validation
-
-Detailed role breakdowns and engineering rules are available in [CONTRIBUTORS.md](CONTRIBUTORS.md) and [SECURITY.md](SECURITY.md).
+- Alberto Trujillo - Team Principal & Driver
+- Mateo Berbis - Endurance & GT3 Driver
+- Eduardo Chongkan - Prototype & Formula Driver
+- Juanlu Carrillo - Touring & Cup Driver
 
 ---
 
-Muntrume Motorsport (c) 2026. ATM Software Labs Ecosystem.
+Muntrume Motorsport (c) 2026. Sant Andreu, Barcelona.
