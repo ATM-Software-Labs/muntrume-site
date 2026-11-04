@@ -5,7 +5,7 @@
 
 Escudería independiente de iRacing con base en Sant Andreu, Barcelona. 4 pilotos oficiales, 196 coches y 239.539 setups validados con telemetría Garage 61 y MoTeC i2 Pro.
 
-**[ Web - muntru.me ](https://muntru.me) | [ Garage Access ](https://muntru.me/garage) | [ Paddock ](https://muntru.me/paddock) | [ Discord ](https://discord.gg/ehX6B8JUtE)**
+**[ Web Oficial — muntru.me ](https://muntru.me) | [ Garage Access ](https://muntru.me/garage) | [ Paddock Pass ](https://muntru.me/paddock) | [ Discord ](https://discord.gg/ehX6B8JUtE)**
 
 ---
 
@@ -23,24 +23,24 @@ Escudería independiente de iRacing con base en Sant Andreu, Barcelona. 4 piloto
 
 ### Official Lineup 2026
 
-4 pilotos homologados para GTP, GT3 Endurance y Monoplazas.
+4 pilotos homologados para GTP, GT3 Endurance y Monoplazas en campeonatos oficiales de iRacing.
 
 <p align="center">
   <img src="docs/screenshots/pilotos-equipo.png" width="100%" alt="Pilotos del Equipo - 4 Drivers" />
 </p>
 
-| # | Piloto | Rol | Especialidad |
-| :--- | :--- | :--- | :--- |
-| **#1** | **Alberto Trujillo** | Team Principal & Telemetría | Dinámica vehicular, análisis 60Hz |
-| **#2** | **Mateo Berbis** | Lead Sprint & Qualy | Vuelta rápida, clasificación |
-| **#3** | **Eduardo Chongkan** | Race Engineer & Prototipos | Curvas rápidas, resistencia |
-| **#4** | **Juanlu Carrillo** | Monoplazas Specialist | Alta carga aerodinámica, Formula |
+| # | Piloto | Rol | Especialidad | Ficha |
+| :--- | :--- | :--- | :--- | :--- |
+| **#1** | **Alberto Trujillo** | Team Principal & Telemetría | Dinámica vehicular, análisis 60Hz | [/pilotos/albertot](https://muntru.me/pilotos/albertot) |
+| **#2** | **Mateo Berbis** | Lead Sprint & Qualy | Vuelta rápida, clasificación | [/pilotos/mateob](https://muntru.me/pilotos/mateob) |
+| **#3** | **Eduardo Chongkan** | Race Engineer & Prototipos | Curvas rápidas, resistencia GTP | [/pilotos/eduardoc](https://muntru.me/pilotos/eduardoc) |
+| **#4** | **Juanlu Carrillo** | Monoplazas Specialist | Alta carga aerodinámica, SFL & F4 | [/pilotos/juanluc](https://muntru.me/pilotos/juanluc) |
 
 ---
 
 ### Estructura: Paddock + Garage
 
-Hemos simplificado 7 páginas en 2 conceptos.
+Hemos simplificado la plataforma en dos conceptos esenciales:
 
 #### 1. MUNTRUME PADDOCK — El Club (Público)
 
@@ -49,17 +49,17 @@ Hemos simplificado 7 páginas en 2 conceptos.
   <img src="docs/screenshots/contacto-oficial.png" width="48%" alt="Contacto Oficial - Paddock Pass" />
 </p>
 
-Donde entra todo el mundo. Manifiesto del equipo, canales oficiales y solicitud de ingreso.
+Canales públicos, manifiesto de competición y solicitudes de ingreso al equipo.
 
-- **Discord:** Radio oficial del equipo
-- **YouTube:** @jostrume18gameplays28 — Onboards y análisis
-- **Twitch:** muntrumemrt — Live stints
-- **Request Paddock Pass:** Formulario de ingreso en /paddock
+- **Discord:** Radio oficial de carrera y boxes
+- **YouTube:** [@jostrume18gameplays28](https://youtube.com/@jostrume18gameplays28) — Onboards y telemetría
+- **Twitch:** [muntrumemrt](https://twitch.tv/muntrumemrt) — Live stints de 24 horas
+- **Paddock Pass:** Formulario oficial de pruebas en `/paddock`
 
-#### 2. MUNTRUME GARAGE — Área Privada (Solo Pilotos)
+#### 2. MUNTRUME GARAGE — Área de Ingeniería (Privada)
 
 <p align="center">
-  <img src="docs/screenshots/setup-vault.png" width="100%" alt="Muntrume Setup Vault - 41k Setups" />
+  <img src="docs/screenshots/setup-vault.png" width="100%" alt="Muntrume Setup Vault" />
 </p>
 
 <p align="center">
@@ -71,53 +71,48 @@ Donde entra todo el mundo. Manifiesto del equipo, canales oficiales y solicitud 
 </p>
 
 <p align="center">
-  <em>Team Comms — Buzón privado, telemetría .STO y MoTeC i2 Pro</em>
+  <em>Team Comms — Buzón privado cifrado, telemetría .STO y análisis MoTeC i2 Pro</em>
 </p>
 
-La central de ingeniería del equipo.
-
-- **Setup Vault:** 239.539 setups organizados por temporada, semana y circuito
-- **Guardado 1-Click:** Directo a tu carpeta local `Documents\iRacing\setups\[coche]\...` sin mover archivos a mano
-- **Telemetría Garage 61:** Vueltas rápidas, referencias de frenada y deltas
-- **Team Comms:** Buzón privado y cifrado para cada piloto de la escudería
-- **Single Sign-On:** Un solo login para Vault + Comms + Telemetría
+La central de operaciones de la escudería:
+- **Setup Vault:** 239.539 configuraciones ordenadas por temporada, coche y circuito
+- **Sincronización 1-Click:** Escritura local directa a `Documents\iRacing\setups\` sin descargar zips
+- **Telemetría Garage 61:** Deltas de tiempo, referencias de frenada y huella térmica de neumáticos
+- **Team Comms:** Comunicaciones internas seguras para pilotos oficiales
 
 ---
 
 ### Stats Unificados
 
-4 números fijos en toda la web. Una sola fuente de verdad.
+Una única fuente de verdad validada en toda la plataforma:
 
-| Stat | Número | Detalle |
+| Métrica | Registro | Detalle Técnico |
 | :--- | :--- | :--- |
-| **Setups Certificados** | **239.539** | Firmados con marca oficial MMT, telemetría y variantes Q/R/Wet |
-| **Vehículos iRacing** | **196** | GT3, GTP Hypercars, LMP2, LMP3, Formula, MX-5 y TCR |
-| **Circuitos Calibrados** | **127** | Laser-scanned con datos de clima y goma en pista |
-| **Pilotos Oficiales** | **4** | Plantilla cerrada con dorsales #1, #2, #3 y #4 |
+| **Setups Certificados** | **239.539** | Firmados con telemetría oficial y variantes Q / R / Wet |
+| **Vehículos iRacing** | **196** | GT3, GTP Hypercars, LMP2, LMP3, Formula y Cup |
+| **Circuitos Calibrados** | **127** | Escaneados por láser con datos climáticos y evolución de pista |
+| **Pilotos Oficiales** | **4** | Alineación cerrada con dorsales `#1`, `#2`, `#3` y `#4` |
 
 ---
 
 ### Funciones Pro del Garage
 
 #### Guardado Directo a iRacing en 1 Clic
-
-El sistema usa la **File System Access API** del navegador para escribir directamente en tu disco local.
+Integración nativa con la **File System Access API** del navegador:
 
 ```
-Tu Click en muntru.me
-  -> File System API
-    -> Documents\iRacing\setups\[coche]\Garage 61 - Muntrume Motorsport\...
-      -> Archivo .STO listo en el simulador
+Click en muntru.me
+  ↳ File System Access API
+    ↳ Documents\iRacing\setups\[coche]\Garage 61 - Muntrume Motorsport\...
+      ↳ Archivo .STO listo en el simulador al instante
 ```
 
-Sin descomprimir zips, sin copiar y pegar carpetas, sin reiniciar iRacing.
+Sin descomprimir archivos, sin copiar y pegar carpetas y sin reiniciar iRacing.
 
-#### Variantes de Setup por Carrera
-
-Cada combo de coche + circuito incluye:
-- **Qualy (Q):** Máxima carga, mapa motor agresivo, combustible para 2 vueltas
-- **Race (R):** Balance estable, desgaste de neumáticos optimizado, tanque lleno
-- **Wet:** Altura aumentada, mapa de acelerador suave, presiones de lluvia
+#### Variantes de Setup por Competición
+- **Qualy (Q):** Máxima carga aerodinámica, mapa motor agresivo y combustible para 2 vueltas.
+- **Race (R):** Balance estable, preservación de goma en stint largo y tanque completo.
+- **Wet:** Altura aumentada, mapa suave de acelerador y presiones adaptadas a agua.
 
 ---
 
@@ -127,13 +122,13 @@ Cada combo de coche + circuito incluye:
   <img src="docs/screenshots/press-room.png" width="100%" alt="Press Room & Media Wire" />
 </p>
 
-Wire en vivo conectado a RSS públicos de iRacing, Sim Racing y Motorsport. Team updates y titulares oficiales.
+Wire de noticias en vivo conectado a fuentes oficiales de iRacing, Sim Racing y Motorsport internacional.
 
 ---
 
 ### Mobile First — 100% Responsive
 
-Diseñado para 375px, 390px y 412px. 40px touch targets, scroll chips y cero overflow.
+Optimizado para pantallas móviles (375px, 390px, 412px) con áreas táctiles de 44px, cero desbordamiento horizontal y rendimiento extremo.
 
 <p align="center">
   <img src="docs/screenshots/mobile-home.png" width="30%" alt="Mobile Home" />
@@ -143,66 +138,13 @@ Diseñado para 375px, 390px y 412px. 40px touch targets, scroll chips y cero ove
 
 ---
 
-### ¿Cómo empiezo?
+### ¿Cómo unirse?
 
-**Si eres fan:**
-1. Entra al Paddock en Discord: discord.gg/ehX6B8JUtE
-2. Sigue el calendario en muntru.me
-
-**Si quieres ser piloto:**
-1. Ve a muntru.me/paddock
-2. Rellena Request Paddock Pass con tu nombre, email de iRacing e iRating
-3. Te respondemos en < 24h con test de ritmo
-
-**Si ya eres piloto oficial:**
-1. Ve a muntru.me/garage
-2. GARAGE ACCESS con tu email de piloto
-3. Acceso total a Vault + Comms + Telemetry
+- **Si eres aficionado:** Sigue los onboards en YouTube y la radio en [Discord](https://discord.gg/ehX6B8JUtE).
+- **Si quieres solicitar pruebas:** Accede a [muntru.me/paddock](https://muntru.me/paddock) y completa tu solicitud con tu iRating y experiencia.
+- **Si eres piloto oficial:** Ingresa directamente desde [muntru.me/garage](https://muntru.me/garage) con tus credenciales de equipo.
 
 ---
 
-### Muntrume Live iRacing API (muntrume-api)
-
-Worker seguro de Cloudflare para conectar con la iRacing Data API oficial con sistema anti-baneo (cache D1 con TTL de 6h, máximo 4 llamadas cada 360 min y token de autenticación reusado por 20h).
-
-#### Despliegue en Cloudflare (0 Riesgo):
-1. Ve a **Cloudflare Dashboard > Workers & Pages > muntrume-api > Settings > Variables > Encrypt**.
-2. Añade los secretos encriptados:
-   - `IRACING_EMAIL` = Email de la cuenta principal de iRacing de Alberto Trujillo
-   - `IRACING_PASSWORD` = Contraseña de la cuenta de iRacing
-3. Añade las variables de entorno para los pilotos:
-   - `ID_ALBERTO` = `993381`
-   - `ID_MATEO` = `1134615`
-   - `ID_EDUARDO` = `1076585`
-4. Ejecuta el esquema D1 para la tabla de caché:
-   ```bash
-   wrangler d1 execute muntrume_vault --file=worker/schema.sql
-   ```
-5. Despliega el Worker:
-   ```bash
-   wrangler deploy
-   ```
-Listo. 0 riesgo de baneo ni exposición de credenciales.
-
----
-
-<details>
-<summary><b>Technical Stack (para devs)</b></summary>
-
-| Layer | Tech |
-| :--- | :--- |
-| Frontend | Astro 5 + Tailwind 4 — SSG |
-| Edge | Cloudflare Workers — Zero-Trust |
-| DB | Cloudflare D1 — muntrume_vault |
-| Email | Cloudflare Email Routing + Resend + PostalMime |
-| Hosting | GitHub Pages Edge CDN |
-| QA | Playwright E2E Mobile Audit |
-
-Arquitectura: GitHub Pages -> Cloudflare Worker (Auth + Mail) -> D1 + Email Routing. Zero-Trust: PBKDF2 100k + HMAC 2FA 10m + HSTS preload + CSP frame-ancestors none.
-
-</details>
-
----
-
-**Muntrume Motorsport © 2026 — SimRacing Team — Sant Andreu, Barcelona, CAT — muntru.me**
-**iRacing Sim Racing Team — GT3 Endurance | Prototypes GTP | Single-Seater — Discord: ehX6B8JUtE**
+**Muntrume Motorsport © 2026 — SimRacing Team — Sant Andreu, Barcelona, CAT — [muntru.me](https://muntru.me)**  
+*iRacing Sim Racing Team — GT3 Endurance · Prototypes GTP · Single-Seater*
