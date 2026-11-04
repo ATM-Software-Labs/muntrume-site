@@ -1,11 +1,11 @@
 # MUNTRUME MOTORSPORT
-### Sant Andreu, Barcelona — 【entity-iRacing¦canonical_name=iRacing】 Sim Racing Team
+### Sant Andreu, Barcelona — iRacing Sim Racing Team
 
 > PRECISION RACING. ENGINEERED TO WIN.
 
-Muntrume Motorsport es una escudería independiente de sim racing con base en Sant Andreu, Barcelona. Compite en 【entity-iRacing¦canonical_name=iRacing】 en GTP, GT3 Endurance y monoplazas.
+Muntrume Motorsport es una escudería independiente de sim racing con base en Sant Andreu, Barcelona. Compite en iRacing en GTP, GT3 Endurance y monoplazas.
 
-**Production:** [muntru.me](https://muntru.me) | **Garage:** [muntru.me/garage](https://muntru.me/garage) | **Paddock:** [muntru.me/paddock](https://muntru.me/paddock) | **【entity-Discord¦canonical_name=Discord】:** [【entity-discord¦canonical_name=Discord】.gg/ehX6B8JUtE](https://discord.gg/ehX6B8JUtE)
+**Production:** [muntru.me](https://muntru.me) | **Garage:** [muntru.me/garage](https://muntru.me/garage) | **Paddock:** [muntru.me/paddock](https://muntru.me/paddock) | **Discord:** [discord.gg/ehX6B8JUtE](https://discord.gg/ehX6B8JUtE)
 
 ---
 
@@ -27,7 +27,7 @@ Ya no hay 7 páginas separadas. Todo el proyecto son 2 conceptos:
 **1. MUNTRUME PADDOCK — `/paddock`**
 El club. Público. Donde entra la comunidad, patrocinadores y nuevos pilotos.
 - Manifiesto del equipo
-- Canales oficiales: 【entity-Discord¦canonical_name=Discord】, YouTube @jostrume18gameplays28, 【entity-Twitch¦canonical_name=Twitch】 muntrumemrt
+- Canales oficiales: Discord, YouTube @jostrume18gameplays28, Twitch muntrumemrt
 - Request Paddock Pass (formulario de ingreso)
 
 **2. MUNTRUME GARAGE — `/garage`**
@@ -42,7 +42,7 @@ Un solo botón en toda la web: `GARAGE ACCESS`.
 
 ### Garage Capabilities
 
-- **196 coches / 239,539 setups** oficiales de 【entity-iRacing¦canonical_name=iRacing】 (GT3, GTP Hypercars, LMP2, LMP3, GT4, TCR, F1). Todos firmados: `muntru.me - Muntrume Motorsport | Setup by Alberto Trujillo`.
+- **196 coches / 239,539 setups** oficiales de iRacing (GT3, GTP Hypercars, LMP2, LMP3, GT4, TCR, F1). Todos firmados: `muntru.me - Muntrume Motorsport | Setup by Alberto Trujillo`.
 - **1-Click Sync:** Guardado directo en `Documents\iRacing\setups\[car]` con File System Access API en desktop. En móvil, descarga limpia de .STO y .zip.
 - **Session Variants:** Qualy (Q), Race (R), Endurance, Wet incluidos por coche/circuito.
 - **Preview Técnico:** Header binario del .STO, parámetros del coche y leaderboard de Garage 61.
@@ -68,3 +68,35 @@ Un solo botón en toda la web: `GARAGE ACCESS`.
 | QA | Playwright E2E — Test de responsive 375/390/412px |
 
 **Arquitectura:**
+
+```
+https://muntru.me (GitHub Pages)
+        |
+        v
+Cloudflare Worker (muntrume.atrumin16.workers.dev)
+- PBKDF2 Auth + HMAC 2FA
+- PostalMime Decoder
+- Security Headers (HSTS preload, DENY, nosniff, CSP frame-ancestors 'none')
+        |
+        +--> D1 (muntrume_vault)
+        +--> Email Routing
+```
+
+---
+
+### Security
+
+Zero-Trust por diseño. Mailbox isolation entre pilotos. 2FA de un solo uso con validez de 10 min. Ver detalles completos en SECURITY.md.
+
+### Domain Portability
+
+100% domain-agnostic. Para migrar de `muntru.me` a otro dominio:
+
+1. Cambia `public/CNAME`
+2. Apunta tu CNAME a `atrumin16.github.io`
+
+Canonicals, OG tags y sitemap se adaptan automáticamente. El Worker ya permite `*.trujillomingorance.com` y `muntru.me`.
+
+---
+
+**Muntrume Motorsport © 2026 — Sant Andreu, Barcelona, CAT — muntru.me — iRacing Sim Racing Team**
