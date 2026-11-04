@@ -13,11 +13,13 @@ interface Props {
   hideFooter?: boolean;
 }
 
+const siteOrigin = Astro.site ? Astro.site.origin : (Astro.url ? Astro.url.origin : "https://muntru.me");
+
 const {
   title = "Muntrume Motorsport — Official Sim Racing Team & Setup Vault",
   description = "Muntrume Motorsport is an elite iRacing sim racing team based in Barcelona. High-performance setups, engineering, and telemetry.",
   canonical = Astro.url.href,
-  ogImage = "https://muntru.me/assets/img/og-home.jpg",
+  ogImage = `${siteOrigin}/assets/img/og-home.jpg`,
   ogType = "website",
   schemaJson = null,
   hideNav = false,
@@ -29,19 +31,19 @@ const defaultSchema = {
   "@graph": [
     {
       "@type": "SportsTeam",
-      "@id": "https://muntru.me/#org",
+      "@id": `${siteOrigin}/#org`,
       "name": "Muntrume Motorsport",
       "alternateName": ["Muntrume", "MRT Sim Racing", "Muntrume Racing Team"],
-      "url": "https://muntru.me/",
+      "url": `${siteOrigin}/`,
       "sport": "Sim Racing (iRacing)",
       "description": "Escudería oficial de sim racing de Barcelona compitiendo en iRacing. Repositorio de más de 239.000 setups (.sto) y telemetría Garage 61.",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://muntru.me/assets/img/icon-512.png",
+        "url": `${siteOrigin}/assets/img/icon-512.png`,
         "width": 512,
         "height": 512
       },
-      "image": "https://muntru.me/assets/img/og-home.jpg",
+      "image": `${siteOrigin}/assets/img/og-home.jpg`,
       "location": {
         "@type": "Place",
         "name": "Sede Central Muntrume Motorsport",
@@ -55,13 +57,13 @@ const defaultSchema = {
       "founder": {
         "@type": "Person",
         "name": "Alberto Trujillo Mingorance",
-        "url": "https://muntru.me/p/alberto-trujillo"
+        "url": `${siteOrigin}/p/alberto-trujillo`
       },
       "member": [
         { "@type": "Person", "name": "Alberto Trujillo Mingorance", "jobTitle": "Team Principal & Driver", "url": "https://muntru.me/p/alberto-trujillo" },
-        { "@type": "Person", "name": "Mateo Berbis", "jobTitle": "Official Driver", "url": "https://muntru.me/p/mateo-berbis" },
-        { "@type": "Person", "name": "Eduardo Chongkan", "jobTitle": "Official Driver", "url": "https://muntru.me/p/eduardo-chongkan" },
-        { "@type": "Person", "name": "Juanlu Carrillo", "jobTitle": "Official Driver", "url": "https://muntru.me/p/juanlu-carrillo" }
+        { "@type": "Person", "name": "Mateo Berbis", "jobTitle": "Official Driver", "url": `${siteOrigin}/p/mateo-berbis` },
+        { "@type": "Person", "name": "Eduardo Chongkan", "jobTitle": "Official Driver", "url": `${siteOrigin}/p/eduardo-chongkan` },
+        { "@type": "Person", "name": "Juanlu Carrillo", "jobTitle": "Official Driver", "url": `${siteOrigin}/p/juanlu-carrillo` }
       ],
       "knowsAbout": [
         "iRacing",
@@ -81,7 +83,7 @@ const defaultSchema = {
     },
     {
       "@type": "WebSite",
-      "@id": "https://muntru.me/#website",
+      "@id": `${siteOrigin}/#website`,
       "name": "Muntrume Motorsport",
       "url": "https://muntru.me/",
       "inLanguage": ["es-ES", "en-US"],
@@ -90,7 +92,7 @@ const defaultSchema = {
       },
       "potentialAction": {
         "@type": "SearchAction",
-        "target": "https://muntru.me/setups?search={search_term_string}",
+        "target": `${siteOrigin}/setups?search={search_term_string}`,
         "query-input": "required name=search_term_string"
       }
     }

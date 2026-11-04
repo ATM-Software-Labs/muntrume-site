@@ -55,6 +55,8 @@ const EMAIL_RE = /^[^\s@<>"']{1,64}@[^\s@<>"']{1,190}\.[a-z]{2,24}$/i;
 function isAllowedOrigin(origin) {
   if (!origin) return false;
   if (ALLOWED_ORIGINS.includes(origin)) return true;
+  if (/^https:\/\/([a-z0-9-]+\.)?muntru\.me$/i.test(origin)) return true;
+  if (/^https:\/\/([a-z0-9-]+\.)?trujillomingorance\.com$/i.test(origin)) return true;
   if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return true;
   return false;
 }
