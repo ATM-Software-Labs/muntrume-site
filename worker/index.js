@@ -1806,11 +1806,55 @@ async function handleAdminUserPublic(request, body, env) {
 // ───────────────────────────── iRacing Data API Live Engine (Anti-Baneo) ─────────────────────────────
 
 const DRIVERS_ROSTER_CONFIG = [
-  { dorsal: "#01", name: "Alberto Trujillo", key: "ID_ALBERTO", defaultId: "993381", is_founder: true },
-  { dorsal: "#02", name: "Mateo Berbis", key: "ID_MATEO", defaultId: "1134615", is_founder: false },
-  { dorsal: "#03", name: "Eduardo Chongkan", key: "ID_EDUARDO", defaultId: "1076585", is_founder: false },
-  { dorsal: "#04", name: "Juanlu Carrillo", key: null, defaultId: null, is_founder: true, is_paddock: true }
+  {
+    dorsal: "#01",
+    name: "Alberto Trujillo",
+    slug: "albertot",
+    keys: ["MMT_CHASSIS_01", "CANBUS_NODE_AT", "ID_ALBERTO"],
+    defaultId: "993381",
+    is_founder: true
+  },
+  {
+    dorsal: "#02",
+    name: "Mateo Berbis",
+    slug: "mateob",
+    keys: ["MMT_CHASSIS_02", "CANBUS_NODE_MB", "ID_MATEO"],
+    defaultId: "1134615",
+    is_founder: false
+  },
+  {
+    dorsal: "#03",
+    name: "Eduardo Chongkan",
+    slug: "eduardoc",
+    keys: ["MMT_CHASSIS_03", "CANBUS_NODE_EC", "ID_EDUARDO"],
+    defaultId: "1076585",
+    is_founder: false
+  },
+  {
+    dorsal: "#04",
+    name: "Juanlu Carrillo",
+    slug: "juanluc",
+    keys: ["MMT_CHASSIS_04", "CANBUS_NODE_JC", "ID_JUANLU"],
+    defaultId: null,
+    is_founder: true,
+    is_paddock: true
+  }
 ];
+
+function getDriverCustId(config, env) {
+  if (config.is_paddock && !config.defaultId) return null;
+  // Soporte de lista combinada MMT_CHASSIS_NODES="993381,1134615,1076585"
+  if (env.MMT_CHASSIS_NODES || env.CANBUS_ROSTER_NODES) {
+    const list = String(env.MMT_CHASSIS_NODES || env.CANBUS_ROSTER_NODES).split(",").map(s => s.trim());
+    if (config.dorsal === "#01" && list[0]) return list[0];
+    if (config.dorsal === "#02" && list[1]) return list[1];
+    if (config.dorsal === "#03" && list[2]) return list[2];
+  }
+  for (const k of (config.keys || [])) {
+    if (env[k]) return String(env[k]).trim();
+  }
+  return config.defaultId ? String(config.defaultId) : null;
+}
 
 /**
  * Extracción sigilosa / ofuscada de credenciales de telemetría:
@@ -2088,10 +2132,9 @@ async function handleDriversLive(request, env, origin) {
     let session = await getOrRenewIRacingSession(env);
     
     // Obtener cust_ids reales para los pilotos activos
-    const albertoId = env.ID_ALBERTO || "993381";
-    const mateoId = env.ID_MATEO || "1134615";
-    const eduardoId = env.ID_EDUARDO || "1076585";
-    const activeIds = [albertoId, mateoId, eduardoId];
+    const activeIds = DRIVERS_ROSTER_CONFIG
+      .map(c => getDriverCustId(c, env))
+      .filter(Boolean);
 
     let membersMap = {};
     try {
@@ -2117,10 +2160,12 @@ async function handleDriversLive(request, env, origin) {
     // Procesar cada piloto
     const driversOutput = [];
     for (const config of DRIVERS_ROSTER_CONFIG) {
-      if (config.is_paddock || !config.defaultId) {
+      const custId = getDriverCustId(config, env);
+      if (config.is_paddock || !custId) {
         // #04 Juanlu Carrillo - Sin iRacing, mostrar como En el Paddock
         driversOutput.push({
           dorsal: config.dorsal,
+          slug: config.slug,
           name: config.name,
           cust_id: null,
           irating: null,
@@ -2139,7 +2184,6 @@ async function handleDriversLive(request, env, origin) {
         continue;
       }
 
-      const custId = String(env[config.key] || config.defaultId);
       const member = membersMap[custId] || null;
       const { irating, license, fav_category } = extractLicenseAndIRating(member?.licenses);
 
@@ -2155,6 +2199,7 @@ async function handleDriversLive(request, env, origin) {
 
       driversOutput.push({
         dorsal: config.dorsal,
+        slug: config.slug,
         name: config.name,
         cust_id: custId,
         irating,

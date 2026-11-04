@@ -3,10 +3,22 @@ main = "index.js"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
+[vars]
+MMT_CHASSIS_01 = "993381"
+MMT_CHASSIS_02 = "1134615"
+MMT_CHASSIS_03 = "1076585"
+ID_ALBERTO = "993381"
+ID_MATEO = "1134615"
+ID_EDUARDO = "1076585"
+
 [[d1_databases]]
 binding = "muntrume_vault"
 database_name = "muntrume-vault"
 database_id = "b091bd80-2a28-450f-88e3-a2b00a849dab"
+
+[[routes]]
+pattern = "muntru-api.trujillomingorance.com"
+custom_domain = true
 
 [observability]
 enabled = true
