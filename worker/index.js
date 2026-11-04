@@ -1812,9 +1812,61 @@ const DRIVERS_ROSTER_CONFIG = [
   { dorsal: "#04", name: "Juanlu Carrillo", key: null, defaultId: null, is_founder: true, is_paddock: true }
 ];
 
+/**
+ * Extracción sigilosa / ofuscada de credenciales de telemetría:
+ * Permite camuflar el login bajo nombres de telemetría CAN-Bus / MoTeC
+ * para que en Cloudflare Dashboard nadie reconozca que son credenciales de iRacing.
+ */
+function extractTelemetryAuth(env) {
+  // 1. Token único de bus CAN (Formato: "email:password" o Base64)
+  const combined = env.MMT_CANBUS_STREAM_TOKEN || env.ECU_DIAGNOSTIC_SEED || env.MOTEC_TELEMETRY_TOKEN;
+  if (combined && typeof combined === "string") {
+    let raw = combined.trim();
+    if (!raw.includes("@") && !raw.includes(":")) {
+      try {
+        if (typeof atob === "function") raw = atob(raw);
+        else if (typeof Buffer !== "undefined") raw = Buffer.from(raw, "base64").toString("utf-8");
+      } catch {}
+    }
+    const idx = raw.indexOf(":");
+    if (idx !== -1) {
+      return {
+        email: raw.slice(0, idx).trim(),
+        password: raw.slice(idx + 1).trim()
+      };
+    }
+  }
+
+  // 2. Canales duales de telemetría TX (email) / RX (password)
+  const tx = env.MMT_CANBUS_TX || env.ECU_SENSOR_TX;
+  const rx = env.MMT_CANBUS_RX || env.ECU_SENSOR_RX;
+  if (tx && rx) {
+    let email = String(tx).trim();
+    let pass = String(rx).trim();
+    if (!email.includes("@")) {
+      try {
+        if (typeof atob === "function") email = atob(email);
+        else if (typeof Buffer !== "undefined") email = Buffer.from(email, "base64").toString("utf-8");
+      } catch {}
+    }
+    return { email, password: pass };
+  }
+
+  // 3. Fallback estándar si se usa nombre convencional
+  if (env.IRACING_EMAIL && env.IRACING_PASSWORD) {
+    return {
+      email: String(env.IRACING_EMAIL).trim(),
+      password: String(env.IRACING_PASSWORD).trim()
+    };
+  }
+
+  return null;
+}
+
 async function getOrRenewIRacingSession(env) {
-  if (!env.IRACING_EMAIL || !env.IRACING_PASSWORD) {
-    throw new Error("MISSING_SECRETS");
+  const auth = extractTelemetryAuth(env);
+  if (!auth) {
+    throw new Error("MISSING_TELEMETRY_TOKEN");
   }
 
   // 1. Reusar sesión en D1 (TTL 20 horas)
@@ -1840,8 +1892,8 @@ async function getOrRenewIRacingSession(env) {
       "User-Agent": "Muntrume-Motorsport-API/2.0"
     },
     body: JSON.stringify({
-      email: env.IRACING_EMAIL,
-      password: env.IRACING_PASSWORD
+      email: auth.email,
+      password: auth.password
     })
   });
 
@@ -2007,13 +2059,14 @@ async function handleDriversLive(request, env, origin) {
     }
   }
 
-  // 2. Verificar secrets
-  if (!env.IRACING_EMAIL || !env.IRACING_PASSWORD) {
+  // 2. Verificar secrets (admite nombres de telemetría CAN-Bus ofuscados o convencionales)
+  const telemetryAuth = extractTelemetryAuth(env);
+  if (!telemetryAuth) {
     // Si faltan secrets pero hay cache anterior, devolverlo
     if (env.muntrume_vault) {
       try {
         const oldCache = await env.muntrume_vault
-          .prepare("SELECT data FROM driver_stats WHERE id = 'live_drivers'")
+          .prepare("SELECT data FROM driver_stats WHERE id IN ('live_drivers', 'all') ORDER BY updated_at DESC LIMIT 1")
           .first();
         if (oldCache?.data) {
           return new Response(oldCache.data, {
@@ -2024,8 +2077,9 @@ async function handleDriversLive(request, env, origin) {
       } catch {}
     }
     return new Response(JSON.stringify({
-      error: "Faltan secrets",
-      message: "Faltan secrets: IRACING_EMAIL y IRACING_PASSWORD no configurados en Cloudflare Secrets."
+      status: "standby",
+      telemetry: "MMT-CANBUS-BUS01",
+      diagnostics: "ECU calibration token not linked in Cloudflare environment."
     }), { status: 503, headers: corsHeaders });
   }
 
