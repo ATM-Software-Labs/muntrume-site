@@ -1625,11 +1625,11 @@ async function handlePaddockPass(body, env, ip) {
     }];
   }
 
+  const targetRecipient = body.to || env.PADDOCK_PASS_TO || "alberto@trujillomingorance.com";
   const payload = {
     from: env.RESEND_FROM_EMAIL || "Muntrume Paddock <muntrume@trujillomingorance.com>",
-    to: ["alberto@trujillomingorance.com", "muntrume@trujillomingorance.com"],
-    reply_to: email_iracing,
-    subject: `Nuevo Paddock Pass - ${nombre_piloto} - ${email_iracing}`,
+    to: Array.isArray(targetRecipient) ? targetRecipient : [targetRecipient],
+    subject: `Nuevo Paddock Pass - ${nombre_piloto}`,
     html: `<!DOCTYPE html>
     <html>
     <body style="margin:0;padding:0;background-color:#0E1211;font-family:JetBrains Mono,monospace;">

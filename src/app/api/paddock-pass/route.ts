@@ -18,11 +18,11 @@ export async function POST(req: Request) {
     const ip = req.headers.get("cf-connecting-ip") || "89.128.216.86";
 
     if (apiKey) {
+      const targetRecipient = body.to || process.env.PADDOCK_PASS_TO || "alberto@trujillomingorance.com";
       const payload = {
         from: process.env.RESEND_FROM_EMAIL || "Muntrume Paddock <muntrume@trujillomingorance.com>",
-        to: ["alberto@trujillomingorance.com", "muntrume@trujillomingorance.com"],
-        reply_to: email_iracing,
-        subject: `Nuevo Paddock Pass - ${nombre_piloto} - ${email_iracing}`,
+        to: Array.isArray(targetRecipient) ? targetRecipient : [targetRecipient],
+        subject: `Nuevo Paddock Pass - ${nombre_piloto}`,
         html: `<!DOCTYPE html>
         <html>
         <body style="margin:0;padding:0;background-color:#0E1211;font-family:JetBrains Mono,monospace;">
