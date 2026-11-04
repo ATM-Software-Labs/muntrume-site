@@ -1727,13 +1727,13 @@ async function handlePaddockPass(body, env, ip) {
 // Sustituye a rss2json: lee feeds públicos en el servidor, devuelve solo texto plano
 // (sin HTML) y cachea 20 min en el edge. Si un feed falla, simplemente no aporta items.
 const NEWS_FEEDS = [
-  { name: "iRacing Official", url: "https://www.iracing.com/feed/", category: "iracing" },
-  { name: "Traxion.GG", url: "https://www.traxion.gg/tag/iracing/feed/", category: "iracing" },
-  { name: "SimRacer.es", url: "https://simracer.es/feed/", category: "simracing" },
-  { name: "Outlaws Racing", url: "https://outlawsracing.es/feed/", category: "simracing" },
-  { name: "Esports Insider", url: "https://esportsinsider.com/feed", category: "esports",
+  { name: "iRacing Official", url: "https://www.iracing.com/feed/", category: "iracing", domain: "iracing.com" },
+  { name: "Traxion.GG", url: "https://www.traxion.gg/tag/iracing/feed/", category: "iracing", domain: "traxion.gg" },
+  { name: "SimRacer.es", url: "https://simracer.es/feed/", category: "simracing", domain: "simracer.es" },
+  { name: "Outlaws Racing", url: "https://outlawsracing.es/feed/", category: "simracing", domain: "outlawsracing.es" },
+  { name: "Esports Insider", url: "https://esportsinsider.com/feed", category: "esports", domain: "esportsinsider.com",
     filter: /sim ?racing|iracing|motorsport|formula|\bf1\b|gran turismo|le mans|racing/i },
-  { name: "Motorsport.com", url: "https://www.motorsport.com/rss/all/news/", category: "sport" },
+  { name: "Motorsport.com", url: "https://www.motorsport.com/rss/all/news/", category: "sport", domain: "motorsport.com" },
 ];
 const NEWS_TTL_S = 1200;
 const NEWS_PER_FEED = 6;
@@ -1760,6 +1760,26 @@ function tag(block, name) {
 }
 function attr(block, re) { const m = block.match(re); return m ? m[1] : null; }
 
+function makeDispatchSlug(title, domain, link) {
+  const normTitle = slugify(title).slice(0, 45);
+  const normDomain = String(domain || "source").replace(/^www\./, "").split(".")[0];
+  let hash = 0;
+  const s = String(link || title);
+  for (let i = 0; i < s.length; i++) hash = ((hash << 5) - hash + s.charCodeAt(i)) | 0;
+  const hex = Math.abs(hash).toString(36).slice(0, 6);
+  return `${normDomain}-${normTitle}-${hex}`.replace(/-+/g, "-");
+}
+
+function makeContextNote(sourceName, title, category) {
+  if (category === "iracing" || /iracing/i.test(title)) {
+    return "Despacho relevante para el programa oficial de Muntrume Motorsport en iRacing. Análisis de físicas, actualización de neumáticos o eventos aplicables a nuestras series de competición.";
+  }
+  if (/gt3|ferrari|porsche|gtp|hypercar|lemans|endurance/i.test(title)) {
+    return "Novedad técnica de interés directo para los ingenieros y pilotos de GT3 y resistencia de Muntrume Motorsport. Seguimiento de normativas BoP y balance de chasis.";
+  }
+  return `Resumen técnico agregado de ${sourceName}. Monitorizado por el equipo de telemetría y Race Control de Muntrume Motorsport como referencia competitiva en el sim racing.`;
+}
+
 function parseFeed(xml, feed) {
   const blocks = xml.match(/<item[\s>][\s\S]*?<\/item>/gi) || xml.match(/<entry[\s>][\s\S]*?<\/entry>/gi) || [];
   const out = [];
@@ -1768,7 +1788,8 @@ function parseFeed(xml, feed) {
     let link = safeUrl(plainText(tag(b, "link"), 600)) || safeUrl(attr(b, /<link[^>]+href="([^"]+)"/i));
     if (!title || !link) continue;
     const rawDesc = tag(b, "description") || tag(b, "summary") || tag(b, "content:encoded") || tag(b, "content");
-    const description = plainText(rawDesc, 320);
+    // Cumplimiento estricto de copyright / LPI Art. 32: max 160 caracteres
+    const description = plainText(rawDesc, 160);
     if (feed.filter && !feed.filter.test(title + " " + description)) continue;
     const dateRaw = plainText(tag(b, "pubDate") || tag(b, "published") || tag(b, "updated") || tag(b, "dc:date"), 60);
     const d = new Date(dateRaw);
@@ -1776,8 +1797,20 @@ function parseFeed(xml, feed) {
       attr(b, /<media:content[^>]+url="([^"]+)"/i) || attr(b, /<media:thumbnail[^>]+url="([^"]+)"/i) ||
       attr(b, /<enclosure[^>]+url="([^"]+)"[^>]*type="image/i) || attr(b, /<enclosure[^>]+type="image[^"]*"[^>]*url="([^"]+)"/i) ||
       attr(decodeEntities(tag(b, "content:encoded") + rawDesc), /<img[^>]+src="([^"]+)"/i));
-    out.push({ title, description, link, pubDate: isNaN(d) ? null : d.toISOString(), source: feed.name,
-      thumbnail, autoCategory: feed.category });
+    const slug = makeDispatchSlug(title, feed.domain, link);
+    const contextNote = makeContextNote(feed.name, title, feed.category);
+    out.push({
+      title,
+      description,
+      link,
+      pubDate: isNaN(d) ? null : d.toISOString(),
+      source: feed.name,
+      sourceDomain: feed.domain,
+      slug,
+      contextNote,
+      thumbnail,
+      autoCategory: feed.category
+    });
     if (out.length >= NEWS_PER_FEED) break;
   }
   return out;
@@ -1788,7 +1821,10 @@ async function fetchFeed(feed) {
   const t = setTimeout(() => ctrl.abort(), 5000);
   try {
     const r = await fetch(feed.url, { signal: ctrl.signal, redirect: "follow",
-      headers: { "User-Agent": "Mozilla/5.0 (compatible; MuntrumeNews/1.0; +https://muntru.me/news)", Accept: "application/rss+xml, application/atom+xml, application/xml;q=0.9, */*;q=0.5" },
+      headers: {
+        "User-Agent": "MuntrumeBot/1.0 (+https://muntru.me/legal/fuentes; contact@muntrume.com)",
+        Accept: "application/rss+xml, application/atom+xml, application/xml;q=0.9, */*;q=0.5"
+      },
       cf: { cacheTtl: 600, cacheEverything: true } });
     if (!r.ok) return { feed, ok: false, status: r.status, items: [] };
     const xml = (await r.text()).slice(0, 2_000_000);
@@ -1799,16 +1835,60 @@ async function fetchFeed(feed) {
   } finally { clearTimeout(t); }
 }
 
-let NEWS_MEMO = null; // caché por isolate (caches.default no persiste en *.workers.dev)
-async function handleNews(request, ctx) {
+let NEWS_MEMO = null;
+async function handleNews(request, env, ctx) {
   if (NEWS_MEMO && Date.now() - NEWS_MEMO.at < NEWS_TTL_S * 1000) return new Response(NEWS_MEMO.body, { status: 200, headers: NEWS_MEMO.headers });
   const cache = caches.default;
-  const key = new Request(new URL("/api/news?v=1", request.url).href, { method: "GET" });
+  const key = new Request(new URL("/api/news?v=2", request.url).href, { method: "GET" });
   const hit = await cache.match(key);
   if (hit) return hit;
+
+  let removedSlugs = new Set();
+  let removedUrls = new Set();
+  if (env && env.muntrume_vault) {
+    try {
+      const removedRows = await env.muntrume_vault.prepare("SELECT slug, url_original FROM external_dispatches WHERE status = 'removed'").all();
+      removedSlugs = new Set((removedRows.results || []).map(r => r.slug).filter(Boolean));
+      removedUrls = new Set((removedRows.results || []).map(r => r.url_original).filter(Boolean));
+    } catch (e) {
+      console.warn("[news-removed-check]", e?.message);
+    }
+  }
+
   const results = await Promise.all(NEWS_FEEDS.map(fetchFeed));
-  const items = results.flatMap(r => r.items)
+  let items = results.flatMap(r => r.items)
+    .filter(it => !removedSlugs.has(it.slug) && !removedUrls.has(it.link))
     .sort((a, b) => (b.pubDate ? Date.parse(b.pubDate) : 0) - (a.pubDate ? Date.parse(a.pubDate) : 0));
+
+  // Ingesta legal asíncrona a D1 external_dispatches
+  if (env && env.muntrume_vault && items.length > 0) {
+    const saveTask = (async () => {
+      try {
+        const now = new Date().toISOString();
+        for (const it of items) {
+          const id = `disp_${it.slug}`;
+          await env.muntrume_vault.prepare(`
+            INSERT INTO external_dispatches (
+              id, slug, title_original, excerpt_short, context_note, url_original,
+              source_name, source_domain, published_at, image_url_original,
+              is_external, created_at, status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, 'active')
+            ON CONFLICT(slug) DO UPDATE SET
+              published_at = excluded.published_at,
+              title_original = excluded.title_original,
+              excerpt_short = excluded.excerpt_short
+            WHERE status != 'removed'
+          `).bind(
+            id, it.slug, it.title, it.description, it.contextNote, it.link,
+            it.source, it.sourceDomain || "", it.pubDate || now, it.thumbnail || null, now
+          ).run();
+        }
+      } catch (dbErr) {
+        console.warn("[news-d1-sync]", dbErr?.message);
+      }
+    })();
+    if (ctx && ctx.waitUntil) ctx.waitUntil(saveTask);
+  }
 
   const url = new URL(request.url);
   const driverParam = url.searchParams.get("driver");
@@ -1849,6 +1929,101 @@ async function handleNews(request, ctx) {
   if (okCount) NEWS_MEMO = { at: Date.now(), body: text, headers: Object.fromEntries(res.headers) };
   if (ctx && ctx.waitUntil) ctx.waitUntil(cache.put(key, res.clone())); else await cache.put(key, res.clone());
   return res;
+}
+
+// ───────────────────────── Sala de Prensa: Despachos y Takedown Legal ─────────────────────────
+async function handleDispatchesRoute(request, env, origin) {
+  const baseHeaders = {
+    ...corsHeaders(origin),
+    "Cache-Control": "public, max-age=300"
+  };
+  if (!env.muntrume_vault) {
+    return new Response(JSON.stringify({ success: false, error: "Database unavailable" }), { status: 503, headers: baseHeaders });
+  }
+
+  const url = new URL(request.url);
+  const cleanPath = url.pathname.replace(/\/+$/, "");
+  const parts = cleanPath.split("/").filter(Boolean); // ["api", "dispatches", slug?]
+
+  if (parts.length === 2) {
+    try {
+      const rows = await env.muntrume_vault.prepare(
+        "SELECT id, slug, title_original, excerpt_short, context_note, url_original, source_name, source_domain, published_at, image_url_original, status FROM external_dispatches WHERE status = 'active' ORDER BY published_at DESC LIMIT 50"
+      ).all();
+      return new Response(JSON.stringify({ success: true, dispatches: rows.results || [] }), { status: 200, headers: baseHeaders });
+    } catch (e) {
+      return new Response(JSON.stringify({ success: false, error: e?.message }), { status: 500, headers: baseHeaders });
+    }
+  }
+
+  const slug = parts[2];
+  if (!slug) {
+    return new Response(JSON.stringify({ success: false, error: "Missing slug" }), { status: 400, headers: baseHeaders });
+  }
+
+  try {
+    const row = await env.muntrume_vault.prepare(
+      "SELECT id, slug, title_original, excerpt_short, context_note, url_original, source_name, source_domain, published_at, image_url_original, status FROM external_dispatches WHERE slug = ?"
+    ).bind(slug).first();
+
+    if (!row) {
+      return new Response(JSON.stringify({ success: false, error: "not_found" }), { status: 404, headers: baseHeaders });
+    }
+
+    if (row.status === "removed") {
+      return new Response(JSON.stringify({
+        success: false,
+        error: "gone",
+        message: "Contenido retirado a petición del titular de derechos conforme al Art. 32 LPI / DMCA."
+      }), {
+        status: 410,
+        headers: {
+          ...baseHeaders,
+          "Cache-Control": "public, max-age=86400"
+        }
+      });
+    }
+
+    return new Response(JSON.stringify({ success: true, dispatch: row }), { status: 200, headers: baseHeaders });
+  } catch (e) {
+    return new Response(JSON.stringify({ success: false, error: e?.message }), { status: 500, headers: baseHeaders });
+  }
+}
+
+async function handleDispatchTakedown(body, env, ip) {
+  if (!env.muntrume_vault) return [503, { success: false, error: "Base de datos no disponible." }];
+  const url = clean(body.url || body.url_original, 600);
+  const slug = clean(body.slug, 80);
+  const reason = clean(body.reason || "Petición de retirada de contenido titular Art. 32 LPI / DMCA", 300);
+  const email = clean(body.email, 120);
+
+  if (!url && !slug) {
+    return [400, { success: false, error: "Debes indicar la URL o el identificador del despacho a retirar." }];
+  }
+
+  try {
+    let res;
+    if (slug) {
+      res = await env.muntrume_vault.prepare(
+        "UPDATE external_dispatches SET status = 'removed' WHERE slug = ?"
+      ).bind(slug).run();
+    } else {
+      res = await env.muntrume_vault.prepare(
+        "UPDATE external_dispatches SET status = 'removed' WHERE url_original = ? OR url_original LIKE ?"
+      ).bind(url, `${url}%`).run();
+    }
+
+    await audit(env, email || "legal-notice@muntru.me", "dispatch.takedown", url || slug, `IP: ${ip} · Motivo: ${reason}`);
+
+    return [200, {
+      success: true,
+      message: "El despacho ha sido retirado inmediatamente de la web y de la sala de prensa.",
+      changes: res?.meta?.changes || 0
+    }];
+  } catch (e) {
+    console.error("[takedown-error]", e?.message);
+    return [500, { success: false, error: "Error procesando la solicitud de retirada." }];
+  }
 }
 
 
@@ -2373,8 +2548,8 @@ const PILOTOS_FALLBACK = [
     name: "Alberto T",
     fullName: "Alberto Trujillo",
     cust_id: "993381",
-    irating: 3900,
-    license: "A 4.99",
+    irating: 2150,
+    license: "B 3.40",
     country: "Spain",
     flag: "🇪🇸",
     flag_code: "ES",
@@ -2844,8 +3019,19 @@ export default {
       const out = await handleMailInbox(request, env);
       return reply(out[0], out[1]);
     }
+    if (request.method === "GET" && /^\/api\/dispatches(\/|$)/.test(url.pathname)) {
+      return await handleDispatchesRoute(request, env, origin);
+    }
+    if ((request.method === "POST" && url.pathname.replace(/\/+$/, "") === "/api/dispatches/takedown") ||
+        (request.method === "DELETE" && url.pathname.replace(/\/+$/, "") === "/api/dispatches")) {
+      let b = {};
+      try { b = await request.json(); } catch {}
+      const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+      const out = await handleDispatchTakedown(b, env, ip);
+      return reply(out[0], out[1]);
+    }
     if (request.method === "GET" && url.pathname.replace(/\/+$/, "") === "/api/news") {
-      try { return await handleNews(request, ctx); }
+      try { return await handleNews(request, env, ctx); }
       catch (err) { console.error("[news]", err?.message); return reply(200, { success: false, items: [], sources: [] }); }
     }
     if (request.method === "GET" && url.pathname.replace(/\/+$/, "") === "/api/contact/token") {

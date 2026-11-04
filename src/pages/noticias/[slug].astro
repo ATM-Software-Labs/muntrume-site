@@ -1,0 +1,207 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+export async function getStaticPaths() {
+  try {
+    const res = await fetch('https://muntrume.atrumin16.workers.dev/api/dispatches');
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.dispatches) && data.dispatches.length > 0) {
+        return data.dispatches.map((d: any) => ({
+          params: { slug: d.slug },
+          props: { dispatch: d }
+        }));
+      }
+    }
+  } catch (e) {
+    console.warn('[noticias-ssg] API fetch failed during build:', e);
+  }
+
+  // Fallback slug si el build corre offline
+  return [
+    {
+      params: { slug: 'iracing-season-update-26s4' },
+      props: {
+        dispatch: {
+          slug: 'iracing-season-update-26s4',
+          title_original: 'iRacing 2026 Season Update: GT3 BoP and Tire Model v8',
+          excerpt_short: 'Official release notes for the new GT3 Balance of Performance and improved dynamic tire carcass compliance in endurance events.',
+          context_note: 'Despacho técnico analizado por el departamento de ingeniería y competición de Muntrume Motorsport para eventos de resistencia.',
+          url_original: 'https://www.iracing.com/feed/',
+          source_name: 'iRacing Official',
+          source_domain: 'iracing.com',
+          published_at: new Date().toISOString(),
+          image_url_original: null
+        }
+      }
+    }
+  ];
+}
+
+interface Props {
+  dispatch: any;
+}
+
+const { dispatch } = Astro.props as Props;
+const { slug } = Astro.params;
+
+const title = dispatch?.title_original || 'Despacho Técnico · Muntrume Motorsport';
+const pageTitle = `${title} · Sala de Prensa Muntrume`;
+const pageDescription = dispatch?.excerpt_short || 'Resumen de actualidad en sim racing y competición de resistencia agregado vía RSS público.';
+const urlOriginal = dispatch?.url_original || 'https://muntru.me';
+const sourceName = dispatch?.source_name || 'Fuente Oficial';
+const excerpt = dispatch?.excerpt_short || '';
+const contextNote = dispatch?.context_note || 'Despacho técnico monitorizado por Muntrume Motorsport para análisis de telemetría y ritmo de carrera.';
+const pubDate = dispatch?.published_at ? new Date(dispatch.published_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+const imageUrl = dispatch?.image_url_original;
+---
+
+<Layout title={pageTitle} description={pageDescription} canonical={urlOriginal}>
+  <!-- Metas SEO legales obligatorios -->
+  <Fragment slot="head">
+    <link rel="canonical" href={urlOriginal} />
+    <meta name="robots" content="noindex, follow" />
+  </Fragment>
+
+  <main class="min-h-screen bg-[#0E1211] text-[#F5F5F5] pt-20 pb-20 selection:bg-[#00E699] selection:text-black">
+    <div id="dispatchContainer" class="max-w-3xl mx-auto px-4 sm:px-6 space-y-8">
+      
+      <!-- Top nav -->
+      <div class="flex items-center justify-between text-xs font-mono pb-2 border-b border-[#242E2C]">
+        <nav class="flex items-center gap-2 text-[#9AA8A3]">
+          <a href="/" class="hover:text-white transition">Inicio</a>
+          <span>/</span>
+          <a href="/news" class="hover:text-[#00E699] transition">Media Wire</a>
+          <span>/</span>
+          <span class="text-[#00E699] truncate max-w-[200px]">{sourceName}</span>
+        </nav>
+        <a 
+          href="/news" 
+          class="inline-flex items-center gap-1 text-[#9AA8A3] hover:text-white transition"
+        >
+          <span>&larr;</span>
+          <span>Sala de Prensa</span>
+        </a>
+      </div>
+
+      <!-- Badge superior: Vía [Nombre Fuente] • [Fecha Original] -->
+      <div class="flex flex-wrap items-center gap-2 text-xs font-mono">
+        <span class="px-2.5 py-1 rounded bg-[#1A2120] text-[#00E699] border border-[#242E2C] font-semibold">
+          Vía <a href={urlOriginal} target="_blank" rel="noopener noreferrer" class="underline hover:text-white">{sourceName}</a>
+        </span>
+        {pubDate && <span class="text-[#9AA8A3]">• {pubDate}</span>}
+        <span class="px-2 py-0.5 rounded bg-[#121A17] text-[#7A8A87] border border-[#1E2A26] text-[10px] uppercase font-semibold">
+          Despacho Agregado
+        </span>
+      </div>
+
+      <!-- H1: Título Original -->
+      <h1 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+        {title}
+      </h1>
+
+      <!-- Imagen de portada con caption (sin alojar en servidor propio) -->
+      {imageUrl && (
+        <figure class="rounded-2xl overflow-hidden border border-[#242E2C] bg-[#1A2120] relative">
+          <img
+            src={imageUrl}
+            alt={title}
+            referrerpolicy="no-referrer"
+            loading="lazy"
+            class="w-full max-h-[420px] object-cover opacity-90 hover:opacity-100 transition"
+          />
+          <figcaption class="p-3 text-[11px] font-mono text-[#7A8A87] bg-[#0E1211]/80 border-t border-[#242E2C]">
+            Fotografía e imagen vía {sourceName}
+          </figcaption>
+        </figure>
+      )}
+
+      <!-- Cuerpo: SOLO el excerpt de 150 caracteres + párrafo propio de contexto -->
+      <div class="space-y-6 text-[#BAC5C1] text-base leading-relaxed bg-[#1A2120] p-6 sm:p-8 rounded-2xl border border-[#242E2C]">
+        <div>
+          <h2 class="text-xs font-mono uppercase tracking-wider text-[#7A8A87] mb-2 font-semibold">Resumen de la noticia</h2>
+          <p class="text-white text-base sm:text-lg font-medium italic border-l-2 border-[#00E699] pl-4 py-1">
+            "{excerpt}"
+          </p>
+        </div>
+
+        <div class="pt-4 border-t border-[#242E2C]">
+          <h2 class="text-xs font-mono uppercase tracking-wider text-[#00E699] mb-2 font-semibold">Contexto Muntrume Motorsport</h2>
+          <p class="text-sm sm:text-base text-[#9AA8A3]">
+            {contextNote}
+          </p>
+        </div>
+      </div>
+
+      <!-- CTA grande y obligatorio: Botón verde hacia url_original -->
+      <div class="pt-2 text-center sm:text-left">
+        <a
+          href={urlOriginal}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center justify-center gap-3 w-full sm:w-auto px-8 py-4 rounded-xl bg-[#00E699] text-black font-bold font-mono text-sm sm:text-base hover:bg-[#00c985] shadow-lg shadow-[#00E699]/15 hover:shadow-[#00E699]/30 transition transform hover:-translate-y-0.5"
+        >
+          <span>Leer noticia completa en {sourceName}</span>
+          <span class="text-lg">&rarr;</span>
+        </a>
+        <p class="text-[11px] font-mono text-[#7A8A87] mt-2">
+          Enlace directo al artículo original en {sourceName} (se abre en nueva ventana).
+        </p>
+      </div>
+
+      <!-- Bloque legal de atribución obligatorio -->
+      <div class="p-5 rounded-xl bg-[#121A17] border border-[#242E2C] text-xs font-mono text-[#7A8A87] space-y-2 mt-12">
+        <div class="flex items-center gap-2 text-[#9AA8A3] font-semibold">
+          <svg class="w-4 h-4 text-[#00E699]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>Aviso Legal y Atribución Editorial</span>
+        </div>
+        <p>
+          Este contenido es un resumen técnico agregado vía RSS público con fines informativos y de cita (Art. 32 LPI / Directiva UE 2019/790). La noticia original fue publicada por <strong>{sourceName}</strong> y todos los derechos pertenecen a sus respectivos autores.
+        </p>
+        <p>
+          Fuente original: <a href={urlOriginal} target="_blank" rel="noopener noreferrer" class="text-[#00E699] underline break-all">{urlOriginal}</a>
+        </p>
+        <div class="pt-2 flex flex-wrap items-center gap-4 text-[11px] text-[#9AA8A3]">
+          <a href="/legal/fuentes" class="hover:text-white underline">Directorio de Fuentes y Contacto 24h</a>
+          <span>•</span>
+          <a href="/legal/retirada" class="hover:text-white underline">Solicitar Retirada Inmediata (Takedown)</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Contenedor 410 en caso de retirada en vivo -->
+    <div id="takedownAlert" class="hidden max-w-md mx-auto p-8 rounded-2xl bg-[#1A2120] border border-[#242E2C] text-center space-y-4 my-16 font-mono">
+      <div class="w-12 h-12 rounded-full bg-red-500/10 text-red-400 mx-auto flex items-center justify-center font-bold text-xl border border-red-500/20">
+        410
+      </div>
+      <h2 class="text-xl font-bold text-white">Contenido Retirado</h2>
+      <p class="text-xs text-[#9AA8A3] leading-relaxed">
+        Este despacho ha sido retirado permanentemente a petición del titular de derechos conforme a la normativa legal (Art. 32 LPI / DMCA).
+      </p>
+      <div class="pt-4">
+        <a href="/news" class="inline-block px-4 py-2 rounded-xl bg-[#242E2C] hover:bg-[#2F3C3A] text-xs text-white transition">
+          &larr; Volver a la Sala de Prensa
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <script define:vars={{ slug }}>
+    // Verificación en vivo en caso de takedown reciente
+    if (slug) {
+      fetch('https://muntrume.atrumin16.workers.dev/api/dispatches/' + slug)
+        .then(function(r) {
+          if (r.status === 410) {
+            var c = document.getElementById('dispatchContainer');
+            var a = document.getElementById('takedownAlert');
+            if (c) c.style.display = 'none';
+            if (a) a.classList.remove('hidden');
+          }
+        })
+        .catch(function() {});
+    }
+  </script>
+</Layout>

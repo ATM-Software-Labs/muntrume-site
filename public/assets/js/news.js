@@ -320,18 +320,25 @@
     }
 
     function cleanDesc(html) {
-      return (html || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+      const plain = (html || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+      return plain.length > 160 ? plain.substring(0, 157) + '…' : plain;
     }
 
     function formatDate(d) {
-      try { return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); } catch (e) { return ''; }
+      try { return new Date(d).toLocaleDateString('es-ES', { month: 'short', day: 'numeric', year: 'numeric' }); } catch (e) { return ''; }
+    }
+
+    function resolveNewsUrl(a) {
+      if (a.slug) return '/noticias/' + a.slug;
+      if (a.link && (a.link.startsWith('/') || a.link.startsWith('http'))) return a.link;
+      return safeLink(a.link);
     }
 
     function renderFeaturedCard(a) {
-      const isInternal = (a.link || '').startsWith('/article');
+      const href = esc(resolveNewsUrl(a));
+      const isInternal = href.startsWith('/') && !href.startsWith('//');
       const targetAttr = isInternal ? '' : 'target="_blank" rel="noopener noreferrer"';
-      const ctaText = isInternal ? 'Read Full Team Dispatch &rarr;' : 'Read Full Story &rarr;';
-      const href = esc(safeLink(a.link));
+      const ctaText = isInternal ? (a.isTeam ? 'Leer Despacho Oficial &rarr;' : 'Leer Noticia y Contexto &rarr;') : 'Leer Noticia en ' + esc(a.source) + ' &rarr;';
       return `
         <a href="${href}" ${targetAttr} class="group block relative overflow-hidden rounded-3xl bg-[#161c24] border border-white/10 hover:border-white/20 transition duration-300 shadow-2xl">
           <div class="h-80 sm:h-96 w-full relative overflow-hidden bg-[#0e1217]">
@@ -348,7 +355,7 @@
               ${esc(a.title)}
             </h3>
             <p class="text-neutral-300 text-xs sm:text-sm line-clamp-2 mb-4 max-w-3xl leading-relaxed">
-              ${esc(cleanDesc(a.description).substring(0, 240))}
+              ${esc(cleanDesc(a.description))}
             </p>
             <div class="inline-flex items-center gap-2 text-emerald-400 font-semibold text-xs group-hover:translate-x-1 transition-transform">
               <span>${ctaText}</span>
@@ -359,10 +366,10 @@
     }
 
     function renderSideCard(a) {
-      const isInternal = (a.link || '').startsWith('/article');
+      const href = esc(resolveNewsUrl(a));
+      const isInternal = href.startsWith('/') && !href.startsWith('//');
       const targetAttr = isInternal ? '' : 'target="_blank" rel="noopener noreferrer"';
-      const ctaText = isInternal ? 'Read Full Team Dispatch &rarr;' : 'Read Story &rarr;';
-      const href = esc(safeLink(a.link));
+      const ctaText = isInternal ? (a.isTeam ? 'Leer Despacho &rarr;' : 'Ver Noticia &rarr;') : 'Leer en ' + esc(a.source) + ' &rarr;';
       return `
         <a href="${href}" ${targetAttr} class="group block bg-[#161c24] border border-white/10 hover:border-white/20 rounded-2xl overflow-hidden transition duration-300 shadow-md flex flex-col justify-between">
           <div>
@@ -379,7 +386,7 @@
                 ${esc(a.title)}
               </h3>
               <p class="text-neutral-400 text-xs line-clamp-2 leading-relaxed">
-                ${esc(cleanDesc(a.description).substring(0, 110))}
+                ${esc(cleanDesc(a.description))}
               </p>
             </div>
           </div>
@@ -393,10 +400,10 @@
     }
 
     function renderSecondaryCard(a) {
-      const isInternal = (a.link || '').startsWith('/article');
+      const href = esc(resolveNewsUrl(a));
+      const isInternal = href.startsWith('/') && !href.startsWith('//');
       const targetAttr = isInternal ? '' : 'target="_blank" rel="noopener noreferrer"';
-      const ctaText = isInternal ? 'Read Full Team Dispatch &rarr;' : 'Read Story &rarr;';
-      const href = esc(safeLink(a.link));
+      const ctaText = isInternal ? (a.isTeam ? 'Leer Despacho &rarr;' : 'Ver Noticia &rarr;') : 'Leer en ' + esc(a.source) + ' &rarr;';
       return `
         <a href="${href}" ${targetAttr} class="group block p-5 rounded-2xl bg-[#161c24] border border-white/10 hover:border-white/20 transition duration-300 shadow-sm flex flex-col justify-between">
           <div>
@@ -408,7 +415,7 @@
               ${esc(a.title)}
             </h3>
             <p class="text-neutral-400 text-xs line-clamp-2 mb-3 leading-relaxed">
-              ${esc(cleanDesc(a.description).substring(0, 100))}
+              ${esc(cleanDesc(a.description))}
             </p>
           </div>
           <div class="text-emerald-400 text-xs font-semibold flex items-center gap-1 group-hover:translate-x-1 transition-transform pt-2">

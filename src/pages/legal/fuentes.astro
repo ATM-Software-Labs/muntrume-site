@@ -1,0 +1,200 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const pageTitle = "Directorio de Fuentes y Política de Agregación Legal · Muntrume Motorsport";
+const pageDescription = "Relación transparente de fuentes RSS públicas, política editorial y procedimiento de exclusión en 24 horas conforme al Art. 32 LPI.";
+const pageUrl = "https://muntru.me/legal/fuentes";
+
+const FEEDS = [
+  {
+    name: "iRacing Official",
+    domain: "iracing.com",
+    url: "https://www.iracing.com",
+    feed: "https://www.iracing.com/feed/",
+    category: "Físicas, Temporadas y Comunicados Oficiales"
+  },
+  {
+    name: "SimRacer.es",
+    domain: "simracer.es",
+    url: "https://simracer.es",
+    feed: "https://simracer.es/feed/",
+    category: "Actualidad Sim Racing y Competición en España"
+  },
+  {
+    name: "Motorsport.com",
+    domain: "motorsport.com",
+    url: "https://www.motorsport.com",
+    feed: "https://www.motorsport.com/rss/all/news/",
+    category: "Automovilismo Internacional, GT3 y Resistencia"
+  },
+  {
+    name: "Outlaws Racing",
+    domain: "outlawsracing.es",
+    url: "https://outlawsracing.es",
+    feed: "https://outlawsracing.es/feed/",
+    category: "Campeonatos Comunitarios y Crónicas de Carrera"
+  },
+  {
+    name: "Traxion.GG",
+    domain: "traxion.gg",
+    url: "https://www.traxion.gg",
+    feed: "https://www.traxion.gg/tag/iracing/feed/",
+    category: "Guías, Hardware y Análisis de Simulación"
+  },
+  {
+    name: "Esports Insider",
+    domain: "esportsinsider.com",
+    url: "https://esportsinsider.com",
+    feed: "https://esportsinsider.com/feed",
+    category: "Industria y Ecosistema de Deportes Electrónicos"
+  }
+];
+---
+
+<Layout title={pageTitle} description={pageDescription} canonical={pageUrl}>
+  <main class="min-h-screen bg-[#0E1211] text-[#F5F5F5] pt-24 pb-20 selection:bg-[#00E699] selection:text-black">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 space-y-12">
+      
+      <!-- Breadcrumb -->
+      <nav class="flex items-center gap-2 text-xs font-mono text-[#9AA8A3]">
+        <a href="/" class="hover:text-white transition">Inicio</a>
+        <span>/</span>
+        <a href="/news" class="hover:text-[#00E699] transition">Media Wire</a>
+        <span>/</span>
+        <span class="text-[#00E699] font-bold">Fuentes RSS y Política Legal</span>
+      </nav>
+
+      <!-- Header -->
+      <div class="space-y-4 border-b border-[#242E2C] pb-8">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded bg-[#1A2120] text-[#00E699] border border-[#242E2C] text-xs font-mono font-semibold">
+          <span class="w-2 h-2 rounded-full bg-[#00E699] animate-pulse"></span>
+          TRANSPARENCIA EDITORIAL &amp; LPI ART. 32
+        </div>
+        <h1 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
+          Directorio de Fuentes y Política de Agregación
+        </h1>
+        <p class="text-base text-[#9AA8A3] leading-relaxed">
+          En Muntrume Motorsport respetamos estrictamente los derechos de autor y la propiedad intelectual de los medios de comunicación y creadores de contenido. Esta página detalla los canales RSS públicos agregados y los mecanismos de exclusión inmediata.
+        </p>
+      </div>
+
+      <!-- Compromisos Legales Obligatorios -->
+      <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="p-6 rounded-2xl bg-[#1A2120] border border-[#242E2C] space-y-3">
+          <div class="text-[#00E699] font-mono text-sm font-bold">01 // SIN COPIA ÍNTEGRA</div>
+          <h2 class="text-white font-bold text-base">Sin Texto Completo</h2>
+          <p class="text-xs text-[#9AA8A3] leading-relaxed">
+            Nunca almacenamos ni reproducimos el cuerpo de los artículos. Únicamente se indexa un extracto de cortesía de menos de 160 caracteres proporcionado en el feed público.
+          </p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-[#1A2120] border border-[#242E2C] space-y-3">
+          <div class="text-[#00E699] font-mono text-sm font-bold">02 // CANONICAL A ORIGEN</div>
+          <h2 class="text-white font-bold text-base">Atribución y Tráfico</h2>
+          <p class="text-xs text-[#9AA8A3] leading-relaxed">
+            Cada ficha enlaza obligatoriamente al artículo original mediante <code class="text-white">rel="canonical"</code> y <code class="text-white">noindex</code>, transfiriendo el 100% de la autoridad SEO y tráfico al autor.
+          </p>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-[#1A2120] border border-[#242E2C] space-y-3">
+          <div class="text-[#00E699] font-mono text-sm font-bold">03 // EXCLUSIÓN &lt; 24H</div>
+          <h2 class="text-white font-bold text-base">Baja Sin Trámites</h2>
+          <p class="text-xs text-[#9AA8A3] leading-relaxed">
+            Cualquier medio puede solicitar el cese de agregación de su RSS o la retirada inmediata de un enlace sin justificación ni coste alguno en menos de 24 horas.
+          </p>
+        </div>
+      </section>
+
+      <!-- Tabla de Fuentes Públicas -->
+      <section class="space-y-6">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-bold text-white tracking-tight font-mono">
+            Fuentes Indexadas Activas
+          </h2>
+          <span class="text-xs font-mono text-[#00E699] bg-[#121A17] border border-[#242E2C] px-2.5 py-1 rounded">
+            User-Agent: MuntrumeBot/1.0
+          </span>
+        </div>
+
+        <div class="rounded-2xl border border-[#242E2C] bg-[#1A2120] overflow-hidden">
+          <table class="w-full text-left text-xs font-mono">
+            <thead class="bg-[#121A17] text-[#7A8A87] border-b border-[#242E2C]">
+              <tr>
+                <th class="p-4 font-semibold">MEDIO / FUENTE</th>
+                <th class="p-4 font-semibold hidden sm:table-cell">DOMINIO</th>
+                <th class="p-4 font-semibold">TEMÁTICA</th>
+                <th class="p-4 font-semibold text-right">ENLACE ORIGINAL</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#242E2C] text-[#BAC5C1]">
+              {FEEDS.map(f => (
+                <tr class="hover:bg-[#1E2625] transition">
+                  <td class="p-4 font-bold text-white">
+                    {f.name}
+                  </td>
+                  <td class="p-4 text-[#7A8A87] hidden sm:table-cell">
+                    {f.domain}
+                  </td>
+                  <td class="p-4 text-[#9AA8A3]">
+                    {f.category}
+                  </td>
+                  <td class="p-4 text-right">
+                    <a
+                      href={f.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="text-[#00E699] hover:underline"
+                    >
+                      Visitar Web &rarr;
+                    </a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Contacto de Retirada y Opt-Out -->
+      <section class="p-8 rounded-3xl bg-[#121A17] border border-[#242E2C] space-y-6">
+        <div class="space-y-2">
+          <h2 class="text-2xl font-bold text-white tracking-tight">
+            ¿Deseas retirar tu medio o un artículo específico?
+          </h2>
+          <p class="text-sm text-[#9AA8A3] leading-relaxed">
+            Disponemos de dos vías rápidas para atender cualquier notificación de titulares de derechos o directores editoriales:
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+          <div class="p-5 rounded-2xl bg-[#1A2120] border border-[#242E2C] space-y-3">
+            <h3 class="font-bold text-white text-sm font-mono">1. Retirada Inmediata Automatizada</h3>
+            <p class="text-xs text-[#9AA8A3]">
+              Introduce la URL de la noticia en nuestro formulario DMCA y el despacho se despublicará al instante devolviendo código HTTP 410 Gone.
+            </p>
+            <a
+              href="/legal/retirada"
+              class="inline-block px-4 py-2 rounded-xl bg-[#00E699] text-black font-bold text-xs font-mono hover:bg-[#00c985] transition"
+            >
+              Formulario de Retirada (DMCA) &rarr;
+            </a>
+          </div>
+
+          <div class="p-5 rounded-2xl bg-[#1A2120] border border-[#242E2C] space-y-3">
+            <h3 class="font-bold text-white text-sm font-mono">2. Correo de Contacto Directo</h3>
+            <p class="text-xs text-[#9AA8A3]">
+              Escríbenos directamente solicitando el bloqueo permanente de tu feed o dominio. Respuesta garantizada en menos de 24 horas.
+            </p>
+            <a
+              href="mailto:alberto@trujillomingorance.com?subject=Retirada%20de%20Feed%20Muntrume"
+              class="inline-block px-4 py-2 rounded-xl bg-[#242E2C] hover:bg-[#2F3C3A] text-white font-bold text-xs font-mono transition"
+            >
+              alberto@trujillomingorance.com &rarr;
+            </a>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</Layout>

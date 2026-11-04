@@ -32,8 +32,8 @@ export const PILOTOS: Piloto[] = [
     flag_code: 'ES',
     fav_category: 'GT3 Endurance',
     helmet_url: 'https://muntrume.atrumin16.workers.dev/api/helmet?custId=993381',
-    irating: 3900,
-    license: 'A 4.99',
+    irating: 2150,
+    license: 'B 3.40',
     bio: 'Team Principal y director técnico de Muntrume Motorsport. Especialista en dinámica de vehículos, telemetría a 60 Hz y estrategias de carrera para eventos de resistencia.',
     fav_car: 'Porsche 911 GT3 R (992)',
     initials: 'AT'

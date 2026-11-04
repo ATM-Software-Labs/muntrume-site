@@ -1,0 +1,178 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const pageTitle = "Procedimiento de Retirada de Contenidos (Takedown / DMCA) · Muntrume Motorsport";
+const pageDescription = "Formulario de retirada inmediata para titulares de derechos conforme al Art. 32 LPI y normativa DMCA.";
+const pageUrl = "https://muntru.me/legal/retirada";
+---
+
+<Layout title={pageTitle} description={pageDescription} canonical={pageUrl}>
+  <main class="min-h-screen bg-[#0E1211] text-[#F5F5F5] pt-24 pb-20 selection:bg-[#00E699] selection:text-black">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 space-y-10">
+      
+      <!-- Breadcrumb -->
+      <nav class="flex items-center gap-2 text-xs font-mono text-[#9AA8A3]">
+        <a href="/" class="hover:text-white transition">Inicio</a>
+        <span>/</span>
+        <a href="/news" class="hover:text-[#00E699] transition">Media Wire</a>
+        <span>/</span>
+        <a href="/legal/fuentes" class="hover:text-white transition">Fuentes</a>
+        <span>/</span>
+        <span class="text-[#00E699] font-bold">Retirada Inmediata</span>
+      </nav>
+
+      <!-- Header -->
+      <div class="space-y-3 border-b border-[#242E2C] pb-6">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded bg-[#1A2120] text-red-400 border border-red-500/20 text-xs font-mono font-semibold">
+          <span>●</span>
+          <span>TAKEDOWN &amp; AVISO DE RETIRADA INMEDIATA</span>
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+          Formulario de Despublicación Inmediata
+        </h1>
+        <p class="text-sm text-[#9AA8A3] leading-relaxed">
+          Si eres el autor, medio o titular de derechos de un artículo referenciado en nuestra sala de prensa y deseas que sea despublicado, completa el siguiente formulario. La retirada de nuestra base de datos es instantánea.
+        </p>
+      </div>
+
+      <!-- Formulario interactivo -->
+      <form id="takedownForm" class="p-6 sm:p-8 rounded-3xl bg-[#1A2120] border border-[#242E2C] space-y-6 shadow-xl">
+        
+        <div class="space-y-2">
+          <label for="articleUrl" class="block text-xs font-mono uppercase text-[#BAC5C1] font-semibold">
+            URL del artículo a retirar <span class="text-red-400">*</span>
+          </label>
+          <input
+            type="url"
+            id="articleUrl"
+            required
+            placeholder="https://muntru.me/noticias/... o URL de la fuente original"
+            class="w-full px-4 py-3 rounded-xl bg-[#0E1211] border border-[#242E2C] text-white placeholder-[#7A8A87] text-sm font-mono focus:outline-none focus:border-[#00E699] transition"
+          />
+          <p class="text-[11px] font-mono text-[#7A8A87]">
+            Puedes introducir tanto la URL interna de muntru.me como el enlace de la fuente original externa.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="space-y-2">
+            <label for="claimantName" class="block text-xs font-mono uppercase text-[#BAC5C1] font-semibold">
+              Nombre o Medio Titular <span class="text-red-400">*</span>
+            </label>
+            <input
+              type="text"
+              id="claimantName"
+              required
+              placeholder="Ej. Redacción SimRacer / Motorsport"
+              class="w-full px-4 py-3 rounded-xl bg-[#0E1211] border border-[#242E2C] text-white placeholder-[#7A8A87] text-sm font-mono focus:outline-none focus:border-[#00E699] transition"
+            />
+          </div>
+
+          <div class="space-y-2">
+            <label for="claimantEmail" class="block text-xs font-mono uppercase text-[#BAC5C1] font-semibold">
+              Email de Contacto <span class="text-red-400">*</span>
+            </label>
+            <input
+              type="email"
+              id="claimantEmail"
+              required
+              placeholder="redaccion@tudominio.com"
+              class="w-full px-4 py-3 rounded-xl bg-[#0E1211] border border-[#242E2C] text-white placeholder-[#7A8A87] text-sm font-mono focus:outline-none focus:border-[#00E699] transition"
+            />
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <label for="takedownReason" class="block text-xs font-mono uppercase text-[#BAC5C1] font-semibold">
+            Motivo de la Notificación
+          </label>
+          <select
+            id="takedownReason"
+            class="w-full px-4 py-3 rounded-xl bg-[#0E1211] border border-[#242E2C] text-white text-sm font-mono focus:outline-none focus:border-[#00E699] transition"
+          >
+            <option value="Titular de derechos solicita retirada conforme al Art. 32 LPI">Titular de derechos solicita retirada conforme al Art. 32 LPI</option>
+            <option value="Notificación de infracción de copyright (DMCA)">Notificación de infracción de copyright (DMCA)</option>
+            <option value="Solicitud de exclusión permanente del feed RSS">Solicitud de exclusión permanente del feed RSS</option>
+            <option value="Error o contenido desactualizado en la fuente">Error o contenido desactualizado en la fuente</option>
+          </select>
+        </div>
+
+        <div class="pt-2">
+          <button
+            type="submit"
+            id="submitBtn"
+            class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-mono font-bold text-sm transition flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-red-500/20"
+          >
+            <span>Ejecutar Retirada Inmediata</span>
+            <span>&rarr;</span>
+          </button>
+        </div>
+
+        <!-- Banner de estado -->
+        <div id="statusBanner" class="hidden p-4 rounded-xl font-mono text-xs leading-relaxed"></div>
+      </form>
+
+      <!-- Garantía legal -->
+      <div class="p-6 rounded-2xl bg-[#121A17] border border-[#242E2C] text-xs font-mono text-[#7A8A87] space-y-2">
+        <div class="font-bold text-[#BAC5C1]">Garantía de Cumplimiento Inmediato</div>
+        <p>
+          Al enviar esta solicitud, el sistema marca el despacho como <code class="text-white">status = 'removed'</code> en nuestro repositorio de base de datos Edge. A partir de ese instante, la URL devuelve un encabezado <code class="text-white">HTTP 410 Gone</code> y queda excluida permanentemente de las llamadas a la sala de prensa y de cualquier reindexación futura.
+        </p>
+      </div>
+
+    </div>
+  </main>
+
+  <script is:inline>
+    const form = document.getElementById('takedownForm');
+    const btn = document.getElementById('submitBtn');
+    const banner = document.getElementById('statusBanner');
+
+    if (form) {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        btn.disabled = true;
+        btn.innerHTML = '<span>Procesando retirada...</span>';
+        banner.className = 'hidden';
+
+        const rawUrl = document.getElementById('articleUrl').value.trim();
+        const email = document.getElementById('claimantEmail').value.trim();
+        const reason = document.getElementById('takedownReason').value;
+
+        // Extraer slug si es url interna
+        let slug = null;
+        const match = rawUrl.match(/\/noticias\/([a-z0-9-]+)/i) || rawUrl.match(/\/news\/([a-z0-9-]+)/i);
+        if (match) slug = match[1];
+
+        try {
+          const res = await fetch('https://muntrume.atrumin16.workers.dev/api/dispatches/takedown', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              url: rawUrl,
+              slug: slug,
+              email: email,
+              reason: reason
+            })
+          });
+
+          const data = await res.json();
+          if (res.ok && data.success) {
+            banner.className = 'p-4 rounded-xl font-mono text-xs leading-relaxed bg-emerald-500/10 border border-emerald-500/30 text-emerald-400';
+            banner.innerHTML = `<strong>Éxito:</strong> ${data.message || 'El contenido ha sido retirado inmediatamente.'} La URL devolverá a partir de ahora HTTP 410 Gone.`;
+            form.reset();
+          } else {
+            banner.className = 'p-4 rounded-xl font-mono text-xs leading-relaxed bg-red-500/10 border border-red-500/30 text-red-400';
+            banner.innerHTML = `<strong>Error:</strong> ${data.error || 'No se pudo completar la solicitud. Por favor contacta a alberto@trujillomingorance.com'}`;
+          }
+        } catch (err) {
+          banner.className = 'p-4 rounded-xl font-mono text-xs leading-relaxed bg-red-500/10 border border-red-500/30 text-red-400';
+          banner.innerHTML = '<strong>Error de red:</strong> No se pudo contactar con el servicio de retirada. Contacta a alberto@trujillomingorance.com para asistencia directa.';
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = '<span>Ejecutar Retirada Inmediata</span> <span>&rarr;</span>';
+        }
+      });
+    }
+  </script>
+</Layout>
