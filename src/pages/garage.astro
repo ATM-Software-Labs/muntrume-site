@@ -1,0 +1,563 @@
+---
+import Layout from '../layouts/Layout.astro';
+import StatsBar from '../components/StatsBar.astro';
+
+const pageTitle = "Muntrume Garage | Setups .STO, Telemetría y Acceso Piloto Oficial — iRacing";
+const pageDescription = "Engineering, setups .STO validados y telemetría Garage 61 / MoTeC para pilotos oficiales. Guardado directo en Documents\\iRacing\\setups en 1 clic.";
+---
+
+<Layout title={pageTitle} description={pageDescription}>
+  <main class="pt-24 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 select-none font-sans">
+    
+    <!-- ======================================================================= -->
+    <!-- 1. MINIMALIST HERO (Centrado, estilo Notion / Linear para ingenieros)   -->
+    <!-- ======================================================================= -->
+    <section class="text-center max-w-3xl mx-auto space-y-4 pt-4">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#121A17] border border-[#1E2A26] text-xs font-mono text-[#00E699]">
+        <span class="w-2 h-2 rounded-full bg-[#00E699] animate-pulse"></span>
+        <span>GARAGE ACCESS &bull; PRIVATE PADDOCK</span>
+      </div>
+
+      <h1 class="text-4xl sm:text-6xl font-extrabold text-white tracking-tight font-display">
+        MUNTRUME <span class="text-[#00E699]">GARAGE</span>
+      </h1>
+
+      <p class="text-sm sm:text-base text-[#8B9A8F] leading-relaxed max-w-2xl mx-auto">
+        Telemetría oficial y setups .STO validados. Guardado directo en <code class="text-neutral-200 font-mono">Documents\iRacing\setups</code> en 1 clic.
+      </p>
+
+      <!-- 2 Botones Primarios -->
+      <div class="flex flex-wrap items-center justify-center gap-3.5 pt-2">
+        <button 
+          type="button" 
+          onclick="openAuthModal('login')" 
+          class="px-6 py-3 rounded-xl bg-[#00E699] hover:bg-[#00c985] text-neutral-950 font-black text-xs uppercase tracking-wider transition shadow-lg shadow-[#00E699]/20 cursor-pointer flex items-center gap-2"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          <span>Acceso Piloto Oficial</span>
+        </button>
+
+        <button 
+          type="button" 
+          onclick="enterGuestPreview()" 
+          class="px-6 py-3 rounded-xl bg-[#121A17] hover:bg-white/5 border border-[#1E2A26] text-white font-bold text-xs uppercase tracking-wider transition flex items-center gap-2 cursor-pointer"
+        >
+          <span>Explorar Catálogo</span>
+          <span class="text-[#00E699]">&rarr;</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- 2. REUSABLE STATS BAR (Single Source of Truth: 239k, 196, 74, 4)        -->
+    <!-- ======================================================================= -->
+    <section>
+      <StatsBar />
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- 3. GUARDADO DIRECTO EN 3 PASOS VISUALES                                 -->
+    <!-- ======================================================================= -->
+    <section class="paddock-card p-6 sm:p-8 space-y-5 bg-[#121A17] border border-[#1E2A26]">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#1E2A26]">
+        <div>
+          <div class="text-[10px] font-mono uppercase tracking-widest text-[#00E699]">FLUJO DE TRABAJO AUTOMATIZADO</div>
+          <h2 class="text-xl sm:text-2xl font-bold text-white font-display">Inyección Directa en Simulador</h2>
+        </div>
+        <div class="flex items-center gap-2 text-xs font-mono text-[#8B9A8F]">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#00E699]"></span>
+          <span>File System Access API &bull; 0.0ms Latencia</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Paso 01 -->
+        <div class="p-4 rounded-xl bg-[#080C0A] border border-[#1E2A26] space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono text-[#00E699] font-bold">PASO 01</span>
+            <span class="text-xs text-[#8B9A8F] font-mono">01/03</span>
+          </div>
+          <h3 class="text-sm font-bold text-white font-display">Conectar Carpeta Local</h3>
+          <p class="text-xs text-[#8B9A8F] leading-relaxed">
+            Vincula una sola vez tu directorio <code class="text-neutral-300 font-mono">Documents\iRacing\setups</code> con autorización de lectura y escritura.
+          </p>
+        </div>
+
+        <!-- Paso 02 -->
+        <div class="p-4 rounded-xl bg-[#080C0A] border border-[#1E2A26] space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono text-[#00E699] font-bold">PASO 02</span>
+            <span class="text-xs text-[#8B9A8F] font-mono">02/03</span>
+          </div>
+          <h3 class="text-sm font-bold text-white font-display">Seleccionar Setup .STO</h3>
+          <p class="text-xs text-[#8B9A8F] leading-relaxed">
+            Filtra por coche, circuito y variante (Qualy, Carrera o Lluvia). Revisa telemetría y deltas antes de descargar.
+          </p>
+        </div>
+
+        <!-- Paso 03 -->
+        <div class="p-4 rounded-xl bg-[#080C0A] border border-[#1E2A26] space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono text-[#00E699] font-bold">PASO 03</span>
+            <span class="text-xs text-[#8B9A8F] font-mono">03/03</span>
+          </div>
+          <h3 class="text-sm font-bold text-white font-display">Inyección Instantánea</h3>
+          <p class="text-xs text-[#8B9A8F] leading-relaxed">
+            El archivo se guarda en la subcarpeta exacta del coche sin descomprimir ni arrastrar ficheros manualmente.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- 4. PESTAÑAS DE ACCESO AL GARAGE: BOX #01 / BOX #02 / BOX #03           -->
+    <!-- ======================================================================= -->
+    <section class="space-y-6">
+      
+      <!-- Toolbar de Pestañas -->
+      <div class="flex flex-wrap items-center justify-between gap-3 p-2 rounded-2xl bg-[#121A17] border border-[#1E2A26]">
+        
+        <div class="flex items-center gap-1.5 p-1 bg-[#080C0A] rounded-xl border border-[#1E2A26] text-xs font-mono font-bold" id="garageTabs">
+          <button 
+            type="button" 
+            onclick="switchGarageTab('setups')" 
+            id="tabBtnSetups" 
+            class="px-3.5 py-2 rounded-lg bg-[#121A17] text-[#00E699] border border-[#00E699]/40 shadow transition cursor-pointer"
+          >
+            BOX #01 &middot; SETUPS &amp; FTP
+          </button>
+          <button 
+            type="button" 
+            onclick="switchGarageTab('telemetry')" 
+            id="tabBtnTelemetry" 
+            class="px-3.5 py-2 rounded-lg text-[#8B9A8F] hover:text-white transition cursor-pointer"
+          >
+            BOX #02 &middot; TELEMETRY G61
+          </button>
+          <button 
+            type="button" 
+            onclick="switchGarageTab('comms')" 
+            id="tabBtnComms" 
+            class="px-3.5 py-2 rounded-lg text-[#8B9A8F] hover:text-white transition cursor-pointer"
+          >
+            BOX #03 &middot; COMMS &amp; BRIEFINGS
+          </button>
+        </div>
+
+        <!-- Estado de Sesión Sincronizada -->
+        <div class="flex items-center gap-2 text-xs font-mono">
+          <div id="userEmailDisplay" class="text-white font-bold truncate max-w-[180px]">Invitado</div>
+          <span id="userRoleBadge" class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-[#1E2A26] text-[#8B9A8F]">Catálogo Abierto</span>
+          <button 
+            type="button" 
+            id="logoutBtn" 
+            onclick="handleLogout()" 
+            class="hidden text-neutral-400 hover:text-red-400 ml-1 p-1 text-xs transition" 
+            title="Cerrar sesión"
+          >
+            Salir
+          </button>
+          <button 
+            type="button" 
+            id="authBtn" 
+            onclick="openAuthModal('login')" 
+            class="px-3 py-1 rounded-lg bg-[#00E699] text-neutral-950 font-black text-xs transition cursor-pointer"
+          >
+            Acceso Piloto
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ===================================================================== -->
+      <!-- PESTAÑA 1: SETUPS (.STO) & EXPLORADOR RAW FTP                         -->
+      <!-- ===================================================================== -->
+      <div id="garageSectionSetups" class="space-y-6">
+        
+        <!-- Category Quick Pills -->
+        <div class="paddock-card p-4 space-y-3 bg-[#121A17] border border-[#1E2A26]">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono">
+            <span class="text-[#00E699] font-bold uppercase tracking-wider">Filtro de Categoría Rápido</span>
+            <span class="text-[#8B9A8F]">MMT_[VEHÍCULO]_[CIRCUITO]_[TIPO]</span>
+          </div>
+
+          <div class="flex items-center gap-2 text-xs font-mono font-semibold overflow-x-auto pb-1 no-scrollbar">
+            <button type="button" id="catPill-all" onclick="selectMmtCategory('all')" class="mmt-cat-pill px-3 py-1.5 rounded-xl bg-[#00E699] text-neutral-950 font-bold transition">Todas las Categorías</button>
+            <button type="button" id="catPill-gtp" onclick="selectMmtCategory('gtp')" class="mmt-cat-pill px-3 py-1.5 rounded-xl bg-[#080C0A] text-neutral-300 hover:text-white border border-[#1E2A26] transition">GTP / Hypercars</button>
+            <button type="button" id="catPill-gt3" onclick="selectMmtCategory('gt3')" class="mmt-cat-pill px-3 py-1.5 rounded-xl bg-[#080C0A] text-neutral-300 hover:text-white border border-[#1E2A26] transition">GT3 Pro</button>
+            <button type="button" id="catPill-gt4" onclick="selectMmtCategory('gt4')" class="mmt-cat-pill px-3 py-1.5 rounded-xl bg-[#080C0A] text-neutral-300 hover:text-white border border-[#1E2A26] transition">GT4 Series</button>
+            <button type="button" id="catPill-formulas" onclick="selectMmtCategory('formulas')" class="mmt-cat-pill px-3 py-1.5 rounded-xl bg-[#080C0A] text-neutral-300 hover:text-white border border-[#1E2A26] transition">Fórmulas &amp; LMP</button>
+            <button type="button" id="catPill-cup" onclick="selectMmtCategory('cup')" class="mmt-cat-pill px-3 py-1.5 rounded-xl bg-[#080C0A] text-neutral-300 hover:text-white border border-[#1E2A26] transition">Porsche Cup &amp; MX-5</button>
+          </div>
+        </div>
+
+        <!-- Search Toolbar + FTP View Switcher -->
+        <div class="paddock-card p-4 space-y-4 bg-[#121A17] border border-[#1E2A26]">
+          <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+            
+            <!-- Search Input -->
+            <div class="relative flex-1">
+              <svg class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8B9A8F]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <input 
+                type="text" 
+                id="searchInput" 
+                oninput="onSearchInput()"
+                placeholder="Buscar setup por circuito (Spa, Monza...), coche (Porsche 992, Ferrari 296...), tipo (Q, R)..."
+                class="w-full bg-[#080C0A] border border-[#1E2A26] rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-[#8B9A8F] focus:outline-none focus:border-[#00E699] font-mono transition"
+              >
+            </div>
+
+            <!-- View Switcher (Carpetas vs Lista vs FTP) -->
+            <div class="flex p-1 bg-[#080C0A] rounded-xl border border-[#1E2A26] text-xs font-mono font-bold">
+              <button 
+                type="button" 
+                id="viewModeFoldersBtn" 
+                onclick="setViewMode('folders')" 
+                class="px-3 py-1.5 rounded-lg bg-[#121A17] text-[#00E699] shadow"
+              >
+                Carpetas
+              </button>
+              <button 
+                type="button" 
+                id="viewModeListBtn" 
+                onclick="setViewMode('list')" 
+                class="px-3 py-1.5 rounded-lg text-[#8B9A8F] hover:text-white"
+              >
+                Lista
+              </button>
+              <button 
+                type="button" 
+                id="viewModeFtpBtn" 
+                onclick="setViewMode('ftp')" 
+                class="px-3 py-1.5 rounded-lg text-[#8B9A8F] hover:text-white"
+              >
+                ⚡ FTP Raw
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Dynamic Setups Container Rendered by setups.js -->
+        <div id="setupsContainer" class="min-h-[300px]">
+          <div id="setupsLoading" class="p-12 text-center text-xs font-mono text-[#8B9A8F] space-y-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#00E699] animate-ping inline-block"></span>
+            <div>Cargando base de datos oficial de setups...</div>
+          </div>
+          <div id="setupsGrid" class="space-y-4"></div>
+          
+          <div id="loadMoreContainer" class="hidden text-center py-6">
+            <button 
+              type="button" 
+              onclick="loadMoreFolders()" 
+              class="px-6 py-2.5 rounded-xl bg-[#121A17] hover:bg-white/5 border border-[#1E2A26] text-xs font-mono text-white transition cursor-pointer"
+            >
+              <span id="loadMoreBtnText">Mostrar más archivos</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===================================================================== -->
+      <!-- PESTAÑA 2: TELEMETRÍA GARAGE 61 & MOTEC                               -->
+      <!-- ===================================================================== -->
+      <div id="garageSectionTelemetry" class="hidden space-y-6">
+        <div class="paddock-card p-6 sm:p-8 bg-[#121A17] border border-[#1E2A26] space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#1E2A26]">
+            <div>
+              <div class="text-[10px] font-mono text-[#00E699] uppercase tracking-widest font-bold">TELEMETRÍA OFICIAL EN TIEMPO REAL</div>
+              <h2 class="text-2xl font-bold text-white font-display">Integración Garage 61 &bull; Muntrume Team</h2>
+            </div>
+            <a 
+              href="https://garage61.net" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              class="text-xs font-mono text-[#00E699] hover:underline flex items-center gap-1"
+            >
+              <span>Abrir Garage 61 Portal</span>
+              <span>&rarr;</span>
+            </a>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="p-4 rounded-xl bg-[#080C0A] border border-[#1E2A26]">
+              <div class="text-[10px] font-mono text-[#8B9A8F]">PULSO DE DATOS</div>
+              <div class="text-xl font-extrabold text-white font-display mt-1">60 Hz Sync</div>
+              <div class="text-xs text-[#8B9A8F] mt-1">Telemetría de acelerador, freno y suspensión sincronizada vuelta a vuelta.</div>
+            </div>
+            <div class="p-4 rounded-xl bg-[#080C0A] border border-[#1E2A26]">
+              <div class="text-[10px] font-mono text-[#8B9A8F]">CIRCUITOS REGISTRADOS</div>
+              <div class="text-xl font-extrabold text-[#00E699] font-display mt-1">74 Circuitos</div>
+              <div class="text-xs text-[#8B9A8F] mt-1">Tiempos de referencia clasificados por temperatura de pista y clima.</div>
+            </div>
+            <div class="p-4 rounded-xl bg-[#080C0A] border border-[#1E2A26]">
+              <div class="text-[10px] font-mono text-[#8B9A8F]">EXPORTACIÓN MOTEC</div>
+              <div class="text-xl font-extrabold text-white font-display mt-1">i2 Pro Ready</div>
+              <div class="text-xs text-[#8B9A8F] mt-1">Compatibilidad con plantillas oficiales MoTeC para ingenieros de pista.</div>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-[#080C0A] border border-[#1E2A26] flex items-center justify-between text-xs font-mono">
+            <span class="text-neutral-300">Vinculación de Token Garage 61</span>
+            <button 
+              type="button" 
+              onclick="configureG61TokenPrompt()" 
+              class="px-4 py-2 rounded-xl bg-[#121A17] hover:bg-white/5 border border-[#1E2A26] text-white font-bold transition"
+            >
+              Configurar Token Personal &rarr;
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================================================================== -->
+      <!-- PESTAÑA 3: COMMS, BRIEFINGS & CORREO VERIFICADO                       -->
+      <!-- ===================================================================== -->
+      <div id="garageSectionComms" class="hidden space-y-6">
+        <div class="paddock-card p-6 sm:p-8 bg-[#121A17] border border-[#1E2A26] space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#1E2A26]">
+            <div>
+              <div class="flex items-center gap-2 text-[10px] font-mono text-[#00E699] uppercase tracking-widest font-bold">
+                <span class="w-2 h-2 rounded-full bg-[#00E699]"></span>
+                <span>COMUNICACIONES CONFIDENCIALES DE ESCUDERÍA</span>
+              </div>
+              <h2 class="text-2xl font-bold text-white font-display">Canal de Pilotos &bull; Muntrume Team Comms</h2>
+            </div>
+            <!-- Dominio verificado con check verde -->
+            <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#00E699]/10 border border-[#00E699]/30 text-[#00E699] text-xs font-mono font-bold">
+              <svg class="w-4 h-4 text-[#00E699]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              <span>trujillomingorance.com (Verificado)</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="p-5 rounded-xl bg-[#080C0A] border border-[#1E2A26] space-y-2">
+              <div class="text-xs font-mono font-bold text-[#00E699]">BUZÓN OFICIAL DE PILOTO</div>
+              <p class="text-xs text-[#8B9A8F] leading-relaxed">
+                Cada piloto homologado dispone de su cuenta corporativa oficial (ej. <code class="text-neutral-300">alberto.muntrume@trujillomingorance.com</code>) con entrega DKIM y SPF 100% verificada.
+              </p>
+            </div>
+            <div class="p-5 rounded-xl bg-[#080C0A] border border-[#1E2A26] space-y-2">
+              <div class="text-xs font-mono font-bold text-[#00E699]">BRIEFINGS DE RESISTENCIA</div>
+              <p class="text-xs text-[#8B9A8F] leading-relaxed">
+                Estrategia de stints, consumo de combustible por vuelta, previsión meteorológica y asignación de dorsales para las 24 Horas de iRacing.
+              </p>
+            </div>
+          </div>
+
+          <div class="p-5 rounded-xl bg-[#080C0A] border border-[#1E2A26] flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <div class="text-sm font-bold text-white font-display">Acceso al Cliente Completo de Correo</div>
+              <div class="text-xs text-[#8B9A8F] font-mono">Autenticación Zero-Trust con cifrado PBKDF2 y HMAC-SHA256</div>
+            </div>
+            <button 
+              type="button" 
+              onclick="openAuthModal('login')" 
+              class="px-5 py-2.5 rounded-xl bg-[#00E699] hover:bg-[#00c985] text-neutral-950 font-black text-xs uppercase tracking-wider transition shadow cursor-pointer"
+            >
+              Iniciar Sesión de Piloto
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- 5. TOAST MINIMALISTA PARA BRAVE BROWSER (Esquina Inferior Derecha)      -->
+    <!-- ======================================================================= -->
+    <div 
+      id="browserCompatBanner" 
+      class="hidden fixed bottom-6 right-6 max-w-sm z-50 p-4 rounded-2xl bg-[#121A17] border border-[#1E2A26] shadow-2xl text-xs font-mono space-y-2 transition-all duration-300"
+    >
+      <div class="flex items-center justify-between">
+        <span class="text-[#00E699] font-bold">Brave Browser Detectado</span>
+        <button type="button" onclick="document.getElementById('browserCompatBanner').classList.add('hidden')" class="text-[#8B9A8F] hover:text-white p-1">✕</button>
+      </div>
+      <p class="text-[#8B9A8F] text-[11px] leading-relaxed">
+        El guardado directo en carpetas de iRacing requiere habilitar el permiso local en Brave o usar Microsoft Edge/Chrome.
+      </p>
+      <div class="flex items-center gap-2 pt-1">
+        <button type="button" onclick="openBrowserCompatModal()" class="text-[#00E699] hover:underline font-bold text-[11px]">
+          Cómo activarlo &rarr;
+        </button>
+      </div>
+    </div>
+
+    <!-- Hidden compat elements for setups.js bindings -->
+    <div id="vaultLanding" class="hidden"></div>
+    <div id="vaultDashboard" class="block"></div>
+    <div id="savedFolderReconnectBanner" class="hidden"></div>
+    <div id="toggleAllFoldersBtn" class="hidden"></div>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- MODALS (Autenticación, Vista Previa Técnica, Recuperación)                 -->
+  <!-- ========================================================================= -->
+  <div id="authModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div class="w-full max-w-md p-6 sm:p-8 rounded-2xl bg-[#121A17] border border-[#1E2A26] shadow-2xl space-y-5">
+      <div class="flex items-center justify-between pb-3 border-b border-[#1E2A26]">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-[#00E699]"></span>
+          <span class="text-xs font-mono font-bold text-white uppercase">Acceso Piloto Oficial</span>
+        </div>
+        <button type="button" onclick="closeAuthModal()" class="text-[#8B9A8F] hover:text-white p-1">✕</button>
+      </div>
+
+      <div class="flex p-1 bg-[#080C0A] rounded-xl border border-[#1E2A26] text-xs font-mono">
+        <button type="button" id="tabLoginBtn" onclick="switchAuthTab('login')" class="flex-1 py-1.5 rounded-lg bg-[#121A17] text-[#00E699] font-bold">Identificarse</button>
+        <button type="button" id="tabJoinBtn" onclick="switchAuthTab('join')" class="flex-1 py-1.5 rounded-lg text-[#8B9A8F] hover:text-white">Solicitar Ingreso</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-[11px] font-mono text-[#8B9A8F] uppercase mb-1">Correo Registrado</label>
+          <input type="email" id="loginEmail" required placeholder="tu-email@dominio.com" class="w-full px-4 py-2.5 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699]" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-mono text-[#8B9A8F] uppercase mb-1">Contraseña o Código 2FA</label>
+          <input type="password" id="loginKey" required placeholder="Contraseña de piloto" class="w-full px-4 py-2.5 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699]" />
+        </div>
+        <div class="flex items-center justify-between text-[11px] font-mono text-[#8B9A8F]">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" id="rememberMe" checked class="rounded border-[#1E2A26] bg-[#080C0A] text-[#00E699]" />
+            <span>Recordar sesión</span>
+          </label>
+          <button type="button" onclick="openForgotPasswordModal()" class="text-[#00E699] hover:underline">¿Olvidaste tu clave?</button>
+        </div>
+        <div id="loginError" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-mono"></div>
+        <button type="submit" id="loginSubmitBtn" class="w-full py-3 rounded-xl bg-[#00E699] hover:bg-[#00c985] text-neutral-950 font-black text-xs uppercase tracking-wider transition shadow cursor-pointer">
+          <span id="loginBtnText">Verificar Credenciales &rarr;</span>
+        </button>
+      </form>
+
+      <!-- Join Form -->
+      <form id="joinForm" onsubmit="handleJoinSubmit(event)" class="hidden space-y-3">
+        <div>
+          <label class="block text-[11px] font-mono text-[#8B9A8F] uppercase mb-1">Nombre Completo</label>
+          <input type="text" id="reqName" required placeholder="Nombre de piloto" class="w-full px-4 py-2 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699]" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-mono text-[#8B9A8F] uppercase mb-1">Correo Electrónico</label>
+          <input type="email" id="reqEmail" required placeholder="tu-email@iracing.com" class="w-full px-4 py-2 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699]" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-mono text-[#8B9A8F] uppercase mb-1">iRacing Customer ID</label>
+          <input type="text" id="reqIracingId" required placeholder="p. ej. 123456" class="w-full px-4 py-2 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699]" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-mono text-[#8B9A8F] uppercase mb-1">Categoría Principal</label>
+          <input type="text" id="reqCategory" required placeholder="GT3, GTP, Cup..." class="w-full px-4 py-2 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699]" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-mono text-[#8B9A8F] uppercase mb-1">Mensaje para el Equipo</label>
+          <textarea id="reqMessage" rows="2" placeholder="Experiencia en simracing..." class="w-full px-4 py-2 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699] resize-none"></textarea>
+        </div>
+        <div id="joinError" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-mono"></div>
+        <button type="submit" id="joinSubmitBtn" class="w-full py-2.5 rounded-xl bg-[#00E699] hover:bg-[#00c985] text-neutral-950 font-black text-xs uppercase tracking-wider transition cursor-pointer">
+          Enviar Solicitud al Director de Equipo
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Preview Modal & Browser Compat Modal Placeholders for setups.js -->
+  <div id="previewModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+    <div class="w-full max-w-2xl p-6 rounded-2xl bg-[#121A17] border border-[#1E2A26] shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-[#1E2A26]">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-[#00E699]"></span>
+          <span id="previewModalTitle" class="text-xs font-mono font-bold text-white">Vista Previa Técnica del Setup</span>
+        </div>
+        <button type="button" onclick="closeSetupPreviewModal()" class="text-[#8B9A8F] hover:text-white p-1">✕</button>
+      </div>
+      <div id="previewModalBody" class="font-mono text-xs text-[#8B9A8F] max-h-[60vh] overflow-y-auto space-y-3">
+        Cargando datos del setup...
+      </div>
+    </div>
+  </div>
+
+  <!-- Browser Compat Help Modal -->
+  <div id="browserCompatModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+    <div class="w-full max-w-lg p-6 rounded-2xl bg-[#121A17] border border-[#1E2A26] shadow-2xl space-y-4 font-mono text-xs">
+      <div class="flex items-center justify-between pb-3 border-b border-[#1E2A26]">
+        <span class="text-white font-bold">Instrucciones File System Access</span>
+        <button type="button" onclick="closeBrowserCompatModal()" class="text-[#8B9A8F] hover:text-white">✕</button>
+      </div>
+      <p class="text-[#8B9A8F]">
+        Para habilitar la descarga directa en tu carpeta de iRacing desde Brave:
+      </p>
+      <ol class="list-decimal list-inside space-y-1 text-neutral-300">
+        <li>Abre <code class="text-[#00E699]">brave://flags</code> en una pestaña.</li>
+        <li>Busca <code class="text-white">File System Access API</code> y actívalo.</li>
+        <li>Reinicia el navegador y vuelve a Muntrume Garage.</li>
+      </ol>
+      <div class="pt-2">
+        <button type="button" onclick="closeBrowserCompatModal()" class="w-full py-2 rounded-xl bg-[#00E699] text-neutral-950 font-bold">Entendido</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Forgot Password Modal -->
+  <div id="forgotPasswordModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div class="w-full max-w-md p-6 rounded-2xl bg-[#121A17] border border-[#1E2A26] shadow-2xl space-y-4 font-mono text-xs">
+      <div class="flex items-center justify-between pb-3 border-b border-[#1E2A26]">
+        <span class="text-white font-bold">Recuperar Acceso</span>
+        <button type="button" onclick="closeForgotPasswordModal()" class="text-[#8B9A8F] hover:text-white">✕</button>
+      </div>
+      <p class="text-[#8B9A8F]">Introduce tu correo registrado para recibir un enlace de restablecimiento.</p>
+      <input type="email" id="forgotEmail" placeholder="tu-email@dominio.com" class="w-full px-4 py-2 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white focus:outline-none focus:border-[#00E699]" />
+      <div id="forgotError" class="hidden text-red-400"></div>
+      <div id="forgotFeedback" class="hidden text-[#00E699]"></div>
+      <button type="button" id="forgotSubmitBtn" onclick="handleForgotPasswordSubmit(event)" class="w-full py-2.5 rounded-xl bg-[#00E699] text-neutral-950 font-bold">Enviar Enlace</button>
+    </div>
+  </div>
+
+  <script is:inline src="/assets/js/setups.js?v=26s5.0"></script>
+
+  <script is:inline>
+    function switchGarageTab(tab) {
+      var btnSetups = document.getElementById('tabBtnSetups');
+      var btnTelemetry = document.getElementById('tabBtnTelemetry');
+      var btnComms = document.getElementById('tabBtnComms');
+
+      var secSetups = document.getElementById('garageSectionSetups');
+      var secTelemetry = document.getElementById('garageSectionTelemetry');
+      var secComms = document.getElementById('garageSectionComms');
+
+      [btnSetups, btnTelemetry, btnComms].forEach(function(b) {
+        b.classList.remove('bg-[#121A17]', 'text-[#00E699]', 'border', 'border-[#00E699]/40', 'shadow');
+        b.classList.add('text-[#8B9A8F]');
+      });
+
+      if (secSetups) secSetups.classList.add('hidden');
+      if (secTelemetry) secTelemetry.classList.add('hidden');
+      if (secComms) secComms.classList.add('hidden');
+
+      if (tab === 'setups') {
+        btnSetups.classList.add('bg-[#121A17]', 'text-[#00E699]', 'border', 'border-[#00E699]/40', 'shadow');
+        btnSetups.classList.remove('text-[#8B9A8F]');
+        if (secSetups) secSetups.classList.remove('hidden');
+      } else if (tab === 'telemetry') {
+        btnTelemetry.classList.add('bg-[#121A17]', 'text-[#00E699]', 'border', 'border-[#00E699]/40', 'shadow');
+        btnTelemetry.classList.remove('text-[#8B9A8F]');
+        if (secTelemetry) secTelemetry.classList.remove('hidden');
+      } else if (tab === 'comms') {
+        btnComms.classList.add('bg-[#121A17]', 'text-[#00E699]', 'border', 'border-[#00E699]/40', 'shadow');
+        btnComms.classList.remove('text-[#8B9A8F]');
+        if (secComms) secComms.classList.remove('hidden');
+      }
+    }
+    window.switchGarageTab = switchGarageTab;
+
+    // Check URL parameters for tab
+    document.addEventListener('DOMContentLoaded', function() {
+      var p = new URLSearchParams(window.location.search);
+      if (p.get('tab') === 'telemetry') switchGarageTab('telemetry');
+      if (p.get('tab') === 'comms') switchGarageTab('comms');
+    });
+  </script>
+</Layout>

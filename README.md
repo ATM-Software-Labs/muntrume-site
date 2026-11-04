@@ -1,9 +1,3 @@
-Aquí tienes el README DEFINITIVO, ya con fotos, estructura limpia para el usuario y todo detallado. Es la versión que usan los equipos grandes.
-
-Solo tienes que crear la carpeta `docs/screenshots/` y meter ahí las 7 capturas que me pasaste con estos nombres.
-
-Copia y pega esto entero:
-
 # MUNTRUME MOTORSPORT
 ### Sant Andreu, Barcelona — iRacing Sim Racing Team
 
@@ -80,14 +74,50 @@ Donde entra todo el mundo. Manifiesto del equipo, canales oficiales y solicitud 
   <em>Team Comms — Buzón privado, telemetría .STO y MoTeC i2 Pro</em>
 </p>
 
-**Box #1: Setup Vault**
-196 coches oficiales, 239.539 .STO firmados `muntru.me - Setup by Alberto Trujillo`. Variantes Q, R, Endurance y Wet. Guardado directo en 1 clic.
+La central de ingeniería del equipo.
 
-**Box #2: Comms & Telemetry**
-Buzón privado con identidad verificada `alberto.muntrume@trujillomingorance.com`. Intercambio de logs MoTeC y archivos .STO. Mailbox isolation entre pilotos.
+- **Setup Vault:** 239.539 setups organizados por temporada, semana y circuito
+- **Guardado 1-Click:** Directo a tu carpeta local `Documents\iRacing\setups\[coche]\...` sin mover archivos a mano
+- **Telemetría Garage 61:** Vueltas rápidas, referencias de frenada y deltas
+- **Team Comms:** Buzón privado y cifrado para cada piloto de la escudería
+- **Single Sign-On:** Un solo login para Vault + Comms + Telemetría
 
-**Box #3: Race Center**
-Briefings, estrategia y calendario de especiales de iRacing.
+---
+
+### Stats Unificados
+
+4 números fijos en toda la web. Una sola fuente de verdad.
+
+| Stat | Número | Detalle |
+| :--- | :--- | :--- |
+| **Setups Certificados** | **239.539** | Firmados con marca oficial MMT, telemetría y variantes Q/R/Wet |
+| **Vehículos iRacing** | **196** | GT3, GTP Hypercars, LMP2, LMP3, Formula, MX-5 y TCR |
+| **Circuitos Calibrados** | **74** | Laser-scanned con datos de clima y goma en pista |
+| **Pilotos Oficiales** | **4** | Plantilla cerrada con dorsales #1, #2, #3 y #4 |
+
+---
+
+### Funciones Pro del Garage
+
+#### Guardado Directo a iRacing en 1 Clic
+
+El sistema usa la **File System Access API** del navegador para escribir directamente en tu disco local.
+
+```
+Tu Click en muntru.me
+  -> File System API
+    -> Documents\iRacing\setups\[coche]\Garage 61 - Muntrume Motorsport\...
+      -> Archivo .STO listo en el simulador
+```
+
+Sin descomprimir zips, sin copiar y pegar carpetas, sin reiniciar iRacing.
+
+#### Variantes de Setup por Carrera
+
+Cada combo de coche + circuito incluye:
+- **Qualy (Q):** Máxima carga, mapa motor agresivo, combustible para 2 vueltas
+- **Race (R):** Balance estable, desgaste de neumáticos optimizado, tanque lleno
+- **Wet:** Altura aumentada, mapa de acelerador suave, presiones de lluvia
 
 ---
 

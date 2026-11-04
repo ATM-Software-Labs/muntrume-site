@@ -16,8 +16,8 @@ interface Props {
 const siteOrigin = Astro.site ? Astro.site.origin : (Astro.url ? Astro.url.origin : "https://muntru.me");
 
 const {
-  title = "Muntrume Motorsport — Official Sim Racing Team & Setup Vault",
-  description = "Muntrume Motorsport is an elite iRacing sim racing team based in Barcelona. High-performance setups, engineering, and telemetry.",
+  title = "Muntrume Motorsport | iRacing Sim Racing Team Barcelona - Setup Vault & Telemetry",
+  description = "Equipo de sim racing de Sant Andreu, Barcelona. 239k setups .STO, telemetría Garage 61 y 4 pilotos oficiales en iRacing.",
   canonical = Astro.url.href,
   ogImage = `${siteOrigin}/assets/img/og-home.jpg`,
   ogType = "website",
@@ -36,7 +36,7 @@ const defaultSchema = {
       "alternateName": ["Muntrume", "MRT Sim Racing", "Muntrume Racing Team"],
       "url": `${siteOrigin}/`,
       "sport": "Sim Racing (iRacing)",
-      "description": "Escudería oficial de sim racing de Barcelona compitiendo en iRacing. Repositorio de más de 239.000 setups (.sto) y telemetría Garage 61.",
+      "description": "Equipo oficial de sim racing de Sant Andreu, Barcelona. 239k setups .STO, telemetría Garage 61 y 4 pilotos oficiales en iRacing.",
       "logo": {
         "@type": "ImageObject",
         "url": `${siteOrigin}/assets/img/icon-512.png`,
@@ -60,7 +60,7 @@ const defaultSchema = {
         "url": `${siteOrigin}/p/alberto-trujillo`
       },
       "member": [
-        { "@type": "Person", "name": "Alberto Trujillo Mingorance", "jobTitle": "Team Principal & Driver", "url": "https://muntru.me/p/alberto-trujillo" },
+        { "@type": "Person", "name": "Alberto Trujillo Mingorance", "jobTitle": "Team Principal & Driver", "url": `${siteOrigin}/p/alberto-trujillo` },
         { "@type": "Person", "name": "Mateo Berbis", "jobTitle": "Official Driver", "url": `${siteOrigin}/p/mateo-berbis` },
         { "@type": "Person", "name": "Eduardo Chongkan", "jobTitle": "Official Driver", "url": `${siteOrigin}/p/eduardo-chongkan` },
         { "@type": "Person", "name": "Juanlu Carrillo", "jobTitle": "Official Driver", "url": `${siteOrigin}/p/juanlu-carrillo` }
@@ -89,11 +89,6 @@ const defaultSchema = {
       "inLanguage": ["es-ES", "en-US"],
       "publisher": {
         "@id": "https://muntru.me/#org"
-      },
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": `${siteOrigin}/setups?search={search_term_string}`,
-        "query-input": "required name=search_term_string"
       }
     }
   ]
@@ -109,7 +104,7 @@ const finalSchema = schemaJson || defaultSchema;
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="X-Content-Type-Options" content="nosniff" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; frame-src 'self' https://discord.com https://*.discord.com; connect-src 'self' https://muntrume.atrumin16.workers.dev https://api.garage61.net https://api.brevo.com;" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; frame-src 'self' https://discord.com https://*.discord.com; connect-src 'self' https://muntrume.atrumin16.workers.dev https://api.garage61.net https://api.brevo.com;" />
   <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=()" />
   
   <title>{title}</title>
@@ -144,59 +139,52 @@ const finalSchema = schemaJson || defaultSchema;
   <link rel="icon" type="image/png" sizes="192x192" href="/assets/img/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
-  <meta name="msapplication-TileColor" content="#0e1217" />
-  <meta name="msapplication-TileImage" content="/assets/img/mstile-150.png" />
-  <meta name="msapplication-config" content="/browserconfig.xml" />
-  <meta name="theme-color" content="#0e1217" />
+  <meta name="msapplication-TileColor" content="#080C0A" />
+  <meta name="theme-color" content="#080C0A" />
 
-  <!-- Fonts Preconnect & Stylesheets -->
+  <!-- Fonts Preconnect & Google Fonts (Inter + Space Grotesk + JetBrains Mono) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="/assets/css/tailwind.min.css?v=26s4.6" />
-  <link rel="stylesheet" href="/assets/css/mobile.css?v=26s4.6" />
+  <link rel="stylesheet" href="/assets/css/tailwind.min.css?v=26s5.0" />
+  <link rel="stylesheet" href="/assets/css/mobile.css?v=26s5.0" />
 
-  <!-- Embedded Core Dark Aesthetics -->
+  <!-- Core Dark Racing System CSS -->
   <style is:global>
-    :root { color-scheme: dark; }
+    :root {
+      color-scheme: dark;
+      --bg-paddock: #080C0A;
+      --surface-card: #121A17;
+      --border-card: #1E2A26;
+      --accent-paddock: #00E699;
+      --text-muted: #8B9A8F;
+    }
     body {
-      background-color: #0e1217;
+      background-color: #080C0A;
       color: #f1f5f9;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Inter', system-ui, sans-serif;
       margin: 0;
       padding: 0;
       overflow-x: hidden;
     }
+    h1, h2, h3, h4, .font-display {
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+    }
     .font-mono { font-family: 'JetBrains Mono', monospace; }
-    .line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
-    .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-    .glass-card {
-      background: rgba(22, 28, 36, 0.85);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+    
+    /* Modern Racing Card Glow & Hover */
+    .paddock-card {
+      background-color: #121A17;
+      border: 1px solid #1E2A26;
+      border-radius: 16px;
+      transition: all 0.25s ease-out;
     }
-    .glass-card-hover:hover {
-      border-color: rgba(16, 185, 129, 0.35);
-      transform: translateY(-2px);
-      transition: all 0.2s ease;
+    .paddock-card:hover {
+      border-color: rgba(0, 230, 153, 0.5);
+      box-shadow: 0 0 24px rgba(0, 230, 153, 0.08);
     }
-    .pulse-dot {
-      display: inline-block;
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background-color: #10b981;
-      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-      animation: pulseGreen 2.2s infinite cubic-bezier(0.66, 0, 0, 1);
-    }
-    @keyframes pulseGreen {
-      to {
-        box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
-      }
-    }
-    /* Mobile Navigation Drawer & Backdrop */
+
     #mobileDrawer {
       position: fixed;
       top: 0;
@@ -204,10 +192,10 @@ const finalSchema = schemaJson || defaultSchema;
       bottom: 0;
       width: 18rem;
       max-width: 85vw;
-      background-color: #161c24;
-      border-left: 1px solid rgba(255, 255, 255, 0.1);
+      background-color: #080C0A;
+      border-left: 1px solid #1E2A26;
       z-index: 60;
-      box-shadow: -10px 0 30px rgba(0, 0, 0, 0.7);
+      box-shadow: -10px 0 30px rgba(0, 0, 0, 0.8);
       transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       transform: translateX(100%);
       display: flex;
@@ -223,7 +211,7 @@ const finalSchema = schemaJson || defaultSchema;
     #mobileBackdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.8);
+      background: rgba(0, 0, 0, 0.85);
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
       z-index: 55;
@@ -236,9 +224,9 @@ const finalSchema = schemaJson || defaultSchema;
       pointer-events: auto !important;
     }
     ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: #0e1217; }
-    ::-webkit-scrollbar-thumb { background: #262e39; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #10b981; }
+    ::-webkit-scrollbar-track { background: #080C0A; }
+    ::-webkit-scrollbar-thumb { background: #1E2A26; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #00E699; }
   </style>
 
   <!-- URL Clean Path Normalizer -->
@@ -256,11 +244,21 @@ const finalSchema = schemaJson || defaultSchema;
   <script is:inline src="/assets/js/vpfix.js?v=m9"></script>
   <script is:inline src="/assets/js/i18n.js?v=m11"></script>
 </head>
-<body class="bg-[#0e1217] text-neutral-100 antialiased selection:bg-emerald-500 selection:text-neutral-950 font-sans min-h-screen flex flex-col justify-between">
+<body class="bg-[#080C0A] text-neutral-100 antialiased selection:bg-[#00E699] selection:text-neutral-950 font-sans min-h-screen flex flex-col justify-between relative">
   
+  <!-- Subtle MoTeC Telemetry Waveform & Circuit Trace Background (3.5% opacity) -->
+  <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-[0.035]" aria-hidden="true">
+    <svg class="w-full h-full object-cover" viewBox="0 0 1440 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M120 400 C 180 280, 320 220, 500 240 C 650 260, 720 180, 850 160 C 980 140, 1150 220, 1260 340 C 1370 460, 1340 680, 1200 760 C 1050 840, 920 780, 800 800 C 680 820, 560 740, 420 720 C 260 700, 140 620, 100 520 Z" stroke="#00E699" stroke-width="1.5" stroke-dasharray="6 6" />
+      <path d="M 0 350 Q 120 310, 240 370 T 480 320 T 720 400 T 960 300 T 1200 360 T 1440 310" stroke="#00E699" stroke-width="1.5" />
+      <path d="M 0 550 Q 140 500, 280 580 T 560 520 T 840 610 T 1120 490 T 1440 560" stroke="#00E699" stroke-width="1.2" />
+      <path d="M 0 750 Q 160 720, 320 770 T 640 710 T 960 780 T 1280 730 T 1440 760" stroke="#00E699" stroke-width="1" stroke-dasharray="4 8" />
+    </svg>
+  </div>
+
   {!hideNav && <Navbar currentPath={Astro.url.pathname} />}
   
-  <div class="flex-grow">
+  <div class="flex-grow relative z-10">
     <slot />
   </div>
 

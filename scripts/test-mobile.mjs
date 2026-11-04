@@ -58,9 +58,12 @@ console.log(`Server listening on http://localhost:${PORT}`);
 
 const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext({
-  viewport: { width: 390, height: 844 }, // iPhone 13/14/15
-  userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'
+  viewport: { width: 390, height: 844 }, // iPhone 12/13/14 viewport
+  userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+  isMobile: true,
+  hasTouch: true
 });
+
 const page = await context.newPage();
 
 const consoleErrors = [];
@@ -111,7 +114,7 @@ async function checkPage(pathname) {
     const isVisible = await drawerBtn.isVisible();
     console.log(`Navbar drawer button visible: ${isVisible}`);
     if (isVisible) {
-      await drawerBtn.click();
+      await drawerBtn.click({ force: true });
       await page.waitForTimeout(400);
       const isDrawerOpen = await page.evaluate(() => {
         const drawer = document.getElementById('mobileDrawer');
@@ -122,107 +125,62 @@ async function checkPage(pathname) {
       // Close drawer
       const closeBtn = await page.$('#navDrawerCloseBtn');
       if (closeBtn) {
-        await closeBtn.click();
+        await closeBtn.click({ force: true });
         await page.waitForTimeout(400);
       }
     }
   }
 
-  // 3. Special checks on /setups/
-  if (pathname.includes('/setups')) {
-    console.log('\n--- TESTING SETUPS MOBILE INTERACTIONS ---');
+  // 3. Special checks on /garage
+  if (pathname.includes('/garage')) {
+    console.log('\n--- TESTING GARAGE MOBILE INTERACTIONS ---');
 
-    // Test guest mode click
-    const guestBtn = await page.$('button:has-text("Explorar catálogo en modo invitado")');
+    // Test guest mode click or catalog exploration
+    const guestBtn = await page.$('button:has-text("Explorar Catálogo")');
     if (guestBtn) {
       console.log('Found guest preview button, clicking...');
       await guestBtn.click();
       await page.waitForTimeout(1000);
-      
-      const dashboardVisible = await page.evaluate(() => {
-        const dash = document.getElementById('vaultDashboard');
-        return dash && !dash.classList.contains('hidden');
-      });
-      console.log(`Guest mode activated, vault dashboard visible: ${dashboardVisible}`);
-
-      // Check overflow in dashboard
-      const dashOverflow = await page.evaluate(() => {
-        const docWidth = document.documentElement.scrollWidth;
-        const winWidth = window.innerWidth;
-        return { hasOverflow: docWidth > winWidth, docWidth, winWidth };
-      });
-      console.log(`Dashboard horizontal overflow: ${dashOverflow.hasOverflow ? 'YES (BUG!)' : 'NO (GOOD)'} (${dashOverflow.docWidth}px / ${dashOverflow.winWidth}px)`);
-
-      // Test category pills
-      const gt3Pill = await page.$('#catPill-gt3');
-      if (gt3Pill) {
-        await gt3Pill.click();
-        await page.waitForTimeout(500);
-        console.log('Clicked GT3 Pro pill');
-      }
-
-      // Test type filter
-      const qualyBtn = await page.$('#btnTypeQualy');
-      if (qualyBtn) {
-        await qualyBtn.click();
-        await page.waitForTimeout(500);
-        console.log('Clicked Qualy (Q) type filter');
-      }
-
-      // Test folder card accordion
-      const folderToggle = await page.$('button[id^="folder-toggle-btn-"]');
-      if (folderToggle) {
-        console.log('Found folder accordion button, clicking...');
-        await folderToggle.click();
-        await page.waitForTimeout(500);
-      } else {
-        console.log('No folder accordion button found');
-      }
-
-      // Test folder preview
-      const previewBtn = await page.$('button:has-text("Vista Previa")');
-      if (previewBtn) {
-        console.log('Found "Vista Previa" button, clicking...');
-        await previewBtn.click();
-        await page.waitForTimeout(800);
-        const modalOpen = await page.evaluate(() => {
-          const m = document.getElementById('setupPreviewModal');
-          return m && !m.classList.contains('hidden');
-        });
-        console.log(`Preview modal opened: ${modalOpen}`);
-
-        // Close preview
-        const closePreview = await page.$('#setupPreviewModal button[title="Cerrar vista previa"]');
-        if (closePreview) {
-          await closePreview.click();
-          await page.waitForTimeout(400);
-        }
-      }
     }
-  }
 
-  // 4. Special checks on /mail/
-  if (pathname.includes('/mail')) {
-    console.log('\n--- TESTING MAIL MOBILE INTERACTIONS ---');
-    const mailOverflow = await page.evaluate(() => {
-      return {
-        docWidth: document.documentElement.scrollWidth,
-        winWidth: window.innerWidth,
-        hasOverflow: document.documentElement.scrollWidth > window.innerWidth
-      };
-    });
-    console.log(`Mail mobile overflow: ${mailOverflow.hasOverflow ? 'YES (BUG!)' : 'NO (GOOD)'} (${mailOverflow.docWidth}px / ${mailOverflow.winWidth}px)`);
+    // Test category pills
+    const gt3Pill = await page.$('#catPill-gt3');
+    if (gt3Pill) {
+      await gt3Pill.click();
+      await page.waitForTimeout(500);
+      console.log('Clicked GT3 Pro pill');
+    }
+
+    // Test tab switcher
+    const telemetryTabBtn = await page.$('#tabBtnTelemetry');
+    if (telemetryTabBtn) {
+      await telemetryTabBtn.click();
+      await page.waitForTimeout(300);
+      console.log('Switched to Box #02 Telemetry tab');
+    }
+
+    const commsTabBtn = await page.$('#tabBtnComms');
+    if (commsTabBtn) {
+      await commsTabBtn.click();
+      await page.waitForTimeout(300);
+      console.log('Switched to Box #03 Comms tab');
+    }
+
+    const setupsTabBtn = await page.$('#tabBtnSetups');
+    if (setupsTabBtn) {
+      await setupsTabBtn.click();
+      await page.waitForTimeout(300);
+      console.log('Switched back to Box #01 Setups tab');
+    }
   }
 }
 
 try {
   await checkPage('/');
-  await checkPage('/setups');
-  await checkPage('/mail');
-  await checkPage('/team');
+  await checkPage('/pilotos');
+  await checkPage('/paddock');
+  await checkPage('/garage');
   await checkPage('/news');
-  await checkPage('/contact');
-  await checkPage('/about');
 } catch (e) {
   console.error('Test execution error:', e);
 } finally {

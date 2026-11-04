@@ -1,3 +1,16 @@
 @import "tailwindcss";
 @source "../**/*.{astro,html,js,ts}";
 @source "../../public/**/*.js";
+
+@theme {
+  --color-brand-bg: #080C0A;
+  --color-brand-surface: #121A17;
+  --color-brand-card: #121A17;
+  --color-brand-border: #1E2A26;
+  --color-brand-accent: #00E699;
+  --color-brand-muted: #8B9A8F;
+
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}

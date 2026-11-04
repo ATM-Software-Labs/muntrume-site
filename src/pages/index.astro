@@ -1,186 +1,174 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import StatsBar from '../components/StatsBar.astro';
 
-const pageTitle = "Muntrume Motorsport | Setups iRacing, Telemetría y Escudería Sim Racing Oficial";
-const pageDescription = "Escudería oficial de sim racing de Barcelona compitiendo en iRacing. Repositorio de más de 239.000 setups (.sto), telemetría Garage 61, plantilla de pilotos y comunidad Discord.";
+const pageTitle = "Muntrume Motorsport | Precision Racing. Engineered to Win. — iRacing Team";
+const pageDescription = "Escudería de Sant Andreu con 239k setups y telemetría Garage 61 para iRacing. Pilotos oficiales, setup vault automatizado y canal de radio.";
+
+const drivers = [
+  {
+    name: "Alberto Trujillo",
+    slug: "alberto-trujillo",
+    role: "Team Principal & GT3 Driver",
+    car: "Porsche 911 GT3 R (992)",
+    num: "#01",
+    rating: "3.9k iR · Licencia A",
+    tags: ["GT3 Specialist", "VRS 24h", "Setup Architect"]
+  },
+  {
+    name: "Mateo Berbis",
+    slug: "mateo-berbis",
+    role: "Endurance & GT3 Driver",
+    car: "Ferrari 296 GT3",
+    num: "#02",
+    rating: "3.4k iR · Licencia A",
+    tags: ["Endurance Pro", "Telemetry Lead", "Night Stints"]
+  },
+  {
+    name: "Eduardo Chongkan",
+    slug: "eduardo-chongkan",
+    role: "Prototype & Formula Driver",
+    car: "Cadillac V-Series.R GTP",
+    num: "#03",
+    rating: "3.7k iR · Licencia A",
+    tags: ["Hypercar GTP", "Super Formula", "Qualy Pace"]
+  },
+  {
+    name: "Juanlu Carrillo",
+    slug: "juanlu-carrillo",
+    role: "Touring & Cup Driver",
+    car: "Porsche 992 Cup",
+    num: "#04",
+    rating: "3.2k iR · Licencia A",
+    tags: ["Cup Series", "Close Racing", "TBR SimOps"]
+  }
+];
 ---
 
 <Layout title={pageTitle} description={pageDescription}>
-<!-- ========================================================================= -->
-  <!-- 2. HERO FULLSCREEN (Modern Motorsport Luxury)                             -->
+  
   <!-- ========================================================================= -->
-  <section id="overview" class="relative min-h-[85vh] lg:min-h-screen flex items-center justify-center overflow-hidden pt-16">
+  <!-- 1. HERO MINIMALISTA (Estilo Mercedes-AMG F1 + Linear.app)                 -->
+  <!-- ========================================================================= -->
+  <section class="relative min-h-[85vh] lg:min-h-[92vh] flex items-center justify-center pt-24 pb-16 overflow-hidden">
     
-    <!-- Background Image with High Quality Cover -->
-    <img 
-      src="/assets/img/hero-bg.webp" 
-      srcset="/assets/img/hero-bg-960.webp 960w, /assets/img/hero-bg.webp 1920w"
-      sizes="100vw"
-      width="1920" height="1080"
-      alt="Muntrume Motorsport Virtual Racing Squad at Le Mans" 
-      class="absolute inset-0 w-full h-full object-cover object-[70%_center] sm:object-center select-none pointer-events-none"
-      fetchpriority="high"
-      decoding="async"
-    >
-    
-    <!-- Seamless Gradient Overlays (Smooth transition to #0e1217) -->
-    <div class="absolute inset-0 bg-gradient-to-t from-[#0e1217] via-[#0e1217]/70 to-transparent z-10"></div>
-    <div class="absolute inset-0 bg-gradient-to-r from-[#0e1217] via-[#0e1217]/85 sm:via-[#0e1217]/65 to-transparent z-10"></div>
-    <div class="absolute inset-0 bg-gradient-to-b from-[#0e1217]/90 via-transparent to-transparent h-28 z-10"></div>
+    <!-- Hero Background Image (Low contrast overlay) -->
+    <div class="absolute inset-0 z-0">
+      <img 
+        src="/assets/img/hero-bg.webp" 
+        alt="Muntrume Motorsport Track Action" 
+        class="w-full h-full object-cover object-center opacity-25 filter grayscale contrast-125 select-none pointer-events-none"
+        fetchpriority="high"
+        decoding="async"
+      />
+      <div class="absolute inset-0 bg-gradient-to-t from-[#080C0A] via-[#080C0A]/80 to-[#080C0A]/40"></div>
+    </div>
 
-    <!-- Hero Content Container -->
-    <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 relative z-20 py-12 lg:py-20">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+    <!-- Hero Content Container (12-Column Grid) -->
+    <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
         
-        <!-- Left Column: Mission & Headline -->
+        <!-- Left: Headline & Claim -->
         <div class="lg:col-span-7 space-y-6">
           
-          <!-- Event Status Pill -->
-          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#161c24]/90 border border-white/10 backdrop-blur-md text-xs">
-            <span class="pulse-dot"></span>
-            <span class="text-neutral-300 font-medium" id="hero-live-badge">Escudería Oficial iRacing · Barcelona, España</span>
+          <div class="inline-flex items-center gap-2.5 px-3 py-1 rounded-full bg-[#121A17] border border-[#1E2A26] text-xs font-mono text-[#8B9A8F]">
+            <span class="w-2 h-2 rounded-full bg-[#00E699] animate-pulse"></span>
+            <span>MUNTRUME MOTORSPORT &middot; SANT ANDREU, BCN</span>
           </div>
 
           <!-- Main Title -->
-          <div class="space-y-2">
-            <div class="text-xs sm:text-sm tracking-widest text-emerald-400 uppercase font-bold">
-              Sim Racing &amp; Setups
-            </div>
-            <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.08]">
-              PRECISION RACING. <br>
-              <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-emerald-300 to-teal-200">
-                ENGINEERED TO WIN.
-              </span>
-            </h1>
-          </div>
+          <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.05] font-display">
+            PRECISION RACING. <br />
+            <span class="text-[#00E699]">ENGINEERED TO WIN.</span>
+          </h1>
 
-          <!-- Technical Subtitle -->
-          <p class="text-sm sm:text-base text-neutral-300 max-w-xl font-normal leading-relaxed">
-            Muntrume Motorsport es una escudería de sim racing de Barcelona con presencia en iRacing. Desarrollamos un repositorio confidencial de ingeniería con más de 239.000 setups (.sto), telemetría oficial de Garage 61 y plantilla de pilotos.
+          <!-- Concise Subtitle (12 words) -->
+          <p class="text-base sm:text-lg text-[#8B9A8F] max-w-xl font-normal leading-relaxed">
+            Escudería de Sant Andreu con 239k setups y telemetría Garage 61 para iRacing.
           </p>
 
-          <!-- Multi-Class Spec Chips -->
-          <div class="flex flex-wrap gap-2 text-xs">
-            <span class="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-neutral-300 font-medium">GT3 Endurance</span>
-            <span class="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-neutral-300 font-medium">Prototypes (GTP)</span>
-            <span class="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-neutral-300 font-medium">Single-Seater</span>
-            <span class="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-neutral-300 font-medium">Mazda MX-5 Cup</span>
-          </div>
-
-                    <!-- Action Buttons -->
-          <div class="flex flex-wrap gap-3 pt-2">
-            <a href="/setups" class="inline-flex items-center gap-2.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-extrabold text-xs uppercase tracking-wider px-5 py-3 rounded-lg transition-all shadow-lg hover:shadow-emerald-500/20">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-              </svg>
-              <span>Setup Vault (239.539 Setups · 196 Coches)</span>
+          <!-- 2 Primary CTAs -->
+          <div class="flex flex-wrap items-center gap-4 pt-3">
+            <a 
+              href="/garage" 
+              class="inline-flex items-center gap-2.5 bg-[#00E699] hover:bg-[#00c985] text-neutral-950 font-black text-xs sm:text-sm uppercase tracking-wider px-6 py-3.5 rounded-xl transition-all shadow-lg hover:shadow-[#00E699]/20"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              <span>Setup Vault (239k)</span>
             </a>
-            <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2.5 bg-white/10 hover:bg-white/15 text-white border border-white/15 font-semibold text-xs uppercase tracking-wider px-5 py-3 rounded-lg transition-all">
-              <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.13-.255-.01-.556-.28-.646a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/>
-              </svg>
+            
+            <a 
+              href="https://discord.gg/ehX6B8JUtE" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              class="inline-flex items-center gap-2.5 bg-transparent hover:bg-white/5 text-white border border-[#1E2A26] hover:border-[#00E699] font-bold text-xs sm:text-sm uppercase tracking-wider px-6 py-3.5 rounded-xl transition-all"
+            >
+              <span class="w-2 h-2 rounded-full bg-[#00E699]"></span>
               <span>Unirse a la Radio en Discord</span>
             </a>
-            <a href="/team" class="inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20 font-semibold text-xs uppercase tracking-wider px-5 py-3 rounded-lg transition-all">
-              <span>Plantilla de Pilotos</span>
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-              </svg>
-            </a>
           </div>
 
         </div>
 
-        <!-- Right Column: Next Race & Season Overview Card -->
-        <div class="lg:col-span-5" id="hud">
-          <div class="bg-[#161c24] border border-white/10 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-sm">
+        <!-- Right: Single Team Status Widget (Mercedes-AMG F1 style) -->
+        <div class="lg:col-span-5">
+          <div class="paddock-card p-6 space-y-5 bg-[#121A17] border border-[#1E2A26] rounded-2xl shadow-2xl">
             
-            <!-- Top Bar -->
-            <div class="bg-[#1c232d] px-5 py-3 border-b border-white/10 flex items-center justify-between text-xs">
-              <div class="flex items-center gap-2 text-neutral-300 font-semibold">
-                <span id="hud-status-label">Race Calendar</span>
+            <div class="flex items-center justify-between pb-4 border-b border-[#1E2A26]">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-[#00E699] animate-pulse"></span>
+                <span class="text-xs font-mono uppercase tracking-widest text-[#8B9A8F]">Paddock Telemetry Live</span>
               </div>
-              <div class="flex items-center gap-2 text-emerald-400 font-medium" id="hud-status-wrap">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" id="hud-status-dot"></span>
-                <span id="hud-status-badge">Loading</span>
+              <span class="text-[11px] font-mono text-[#00E699] font-bold">iRacing Official</span>
+            </div>
+
+            <!-- Squad & Next Race Specs -->
+            <div class="grid grid-cols-2 gap-3 pb-4 border-b border-[#1E2A26]">
+              <div class="p-3 rounded-xl bg-[#080C0A] border border-[#1E2A26]">
+                <div class="text-[10px] font-mono uppercase text-[#8B9A8F]">Pilotos Activos</div>
+                <div class="text-xl font-extrabold text-white font-display mt-0.5">4 <span class="text-xs font-normal text-[#00E699]">Pilotos</span></div>
+              </div>
+
+              <div class="p-3 rounded-xl bg-[#080C0A] border border-[#1E2A26]">
+                <div class="text-[10px] font-mono uppercase text-[#8B9A8F]">Setups .STO</div>
+                <div class="text-xl font-extrabold text-[#00E699] font-display mt-0.5">239.539</div>
+              </div>
+
+              <div class="p-3 rounded-xl bg-[#080C0A] border border-[#1E2A26]">
+                <div class="text-[10px] font-mono uppercase text-[#8B9A8F]">Próximo Desafío</div>
+                <div class="text-sm font-bold text-white mt-0.5 truncate">24h Nürburgring</div>
+              </div>
+
+              <div class="p-3 rounded-xl bg-[#080C0A] border border-[#1E2A26]">
+                <div class="text-[10px] font-mono uppercase text-[#8B9A8F]">Telemetría Engine</div>
+                <div class="text-sm font-bold text-[#00E699] mt-0.5 truncate">Garage 61 Sync</div>
               </div>
             </div>
 
-            <!-- Card Body -->
-            <div class="p-6 space-y-5">
-              
-              <!-- Next Event & Circuit -->
-              <div class="pb-4 border-b border-white/10">
-                <div class="text-[11px] uppercase tracking-wider text-neutral-400 mb-1 font-medium">Event &amp; Circuit</div>
-                <div class="text-lg font-bold text-white flex items-center justify-between" id="hud-next-event">
-                  <span>—</span>
+            <!-- Countdown Timer Row -->
+            <div>
+              <div class="flex items-center justify-between text-xs text-[#8B9A8F] mb-2 font-mono">
+                <span>Cuenta Regresiva Próximo Evento</span>
+                <span class="text-white font-bold">Special Events</span>
+              </div>
+              <div class="grid grid-cols-4 gap-2 text-center font-mono">
+                <div class="bg-[#080C0A] border border-[#1E2A26] p-2.5 rounded-xl">
+                  <div class="text-lg font-black text-white font-display">14</div>
+                  <div class="text-[9px] uppercase text-[#8B9A8F]">DÍAS</div>
+                </div>
+                <div class="bg-[#080C0A] border border-[#1E2A26] p-2.5 rounded-xl">
+                  <div class="text-lg font-black text-white font-display">08</div>
+                  <div class="text-[9px] uppercase text-[#8B9A8F]">HRS</div>
+                </div>
+                <div class="bg-[#080C0A] border border-[#1E2A26] p-2.5 rounded-xl">
+                  <div class="text-lg font-black text-white font-display">24</div>
+                  <div class="text-[9px] uppercase text-[#8B9A8F]">MIN</div>
+                </div>
+                <div class="bg-[#080C0A] border border-[#1E2A26] p-2.5 rounded-xl">
+                  <div class="text-lg font-black text-[#00E699] font-display">52</div>
+                  <div class="text-[9px] uppercase text-[#8B9A8F]">SEG</div>
                 </div>
               </div>
-
-              <!-- Metrics 2x2 Grid -->
-              <div class="grid grid-cols-2 gap-3 pb-4 border-b border-white/10">
-                <div class="bg-[#1c232d]/70 p-3.5 rounded-xl border border-white/5">
-                  <div class="text-[11px] uppercase text-neutral-400 font-medium">Active Squad</div>
-                  <div class="text-xl font-bold text-white mt-0.5">4 <span class="text-xs font-normal text-emerald-400">Drivers</span></div>
-                </div>
-
-                <div class="bg-[#1c232d]/70 p-3.5 rounded-xl border border-white/5">
-                  <div class="text-[11px] uppercase text-neutral-400 font-medium">Setup Vault</div>
-                  <div class="text-xl font-bold text-emerald-400 mt-0.5">239.539 <span class="text-xs font-normal text-neutral-400">setups</span></div>
-                  <div class="text-[11px] text-neutral-400 mt-0.5">196 coches · 127 circuitos</div>
-                </div>
-
-                <div class="bg-[#1c232d]/70 p-3.5 rounded-xl border border-white/5">
-                  <div class="text-[11px] uppercase text-neutral-400 font-medium">Platform &amp; Base</div>
-                  <div class="text-sm font-semibold text-white mt-1 flex items-center gap-1.5">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                    <span>iRacing</span>
-                  </div>
-                  <div class="text-[11px] text-neutral-400 mt-0.5">Barcelona, ESP</div>
-                </div>
-
-                <div class="bg-[#1c232d]/70 p-3.5 rounded-xl border border-white/5">
-                  <div class="text-[11px] uppercase text-neutral-400 font-medium">Competition Class</div>
-                  <div class="text-sm font-semibold text-white mt-1">Community</div>
-                  <div class="text-[11px] text-neutral-400 mt-0.5"><a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer" class="text-emerald-400">Discord</a></div>
-                </div>
-              </div>
-
-              <!-- Live Countdown To Race -->
-              <div>
-                <div class="flex items-center justify-between text-xs text-neutral-400 mb-2.5 font-medium">
-                  <span id="hud-countdown-label">Next race</span>
-                  <span class="text-emerald-400 font-semibold" id="hud-target-date">—</span>
-                </div>
-                <div class="grid grid-cols-4 gap-2.5 text-center" id="hud-countdown">
-                  <div class="bg-[#1c232d] border border-white/10 p-3 rounded-xl">
-                    <div class="text-xl font-extrabold text-white" id="cd-days">--</div>
-                    <div class="text-[10px] uppercase text-neutral-400 font-medium mt-0.5">Days</div>
-                  </div>
-                  <div class="bg-[#1c232d] border border-white/10 p-3 rounded-xl">
-                    <div class="text-xl font-extrabold text-white" id="cd-hours">--</div>
-                    <div class="text-[10px] uppercase text-neutral-400 font-medium mt-0.5">Hours</div>
-                  </div>
-                  <div class="bg-[#1c232d] border border-white/10 p-3 rounded-xl">
-                    <div class="text-xl font-extrabold text-white" id="cd-mins">--</div>
-                    <div class="text-[10px] uppercase text-neutral-400 font-medium mt-0.5">Mins</div>
-                  </div>
-                  <div class="bg-[#1c232d] border border-white/10 p-3 rounded-xl">
-                    <div class="text-xl font-extrabold text-white" id="cd-secs">--</div>
-                    <div class="text-[10px] uppercase text-neutral-400 font-medium mt-0.5">Secs</div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-
-            <!-- Bottom Action Link -->
-            <div class="bg-[#1c232d]/60 px-6 py-3 border-t border-white/10 flex items-center justify-between text-xs">
-              <span class="text-neutral-400">Official calendar</span>
-              <a href="https://www.iracing.com/special-events/" target="_blank" rel="noopener noreferrer" class="text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1.5 transition min-h-[44px]">
-                <span>iRacing special events</span>
-                <span>↗</span>
-              </a>
             </div>
 
           </div>
@@ -188,390 +176,169 @@ const pageDescription = "Escudería oficial de sim racing de Barcelona compitien
 
       </div>
     </div>
-
   </section>
 
   <!-- ========================================================================= -->
-  <!-- 3. TEAM METRICS RIBBON (Clean, Athletic & Minimalist)                     -->
+  <!-- 2. REUSABLE UNIFIED STATS BAR (Single Source of Truth)                    -->
   <!-- ========================================================================= -->
-  <section class="border-y border-white/10 bg-[#161c24]/60 backdrop-blur-sm py-10">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-        
-        <div class="p-2 border-r border-white/10 last:border-none">
-          <div class="text-3xl sm:text-5xl font-extrabold text-white">4</div>
-          <div class="text-xs text-neutral-400 uppercase tracking-wider font-semibold mt-1.5">Pilotos Oficiales</div>
-        </div>
-
-        <div class="p-2 border-r border-white/10 last:border-none">
-          <div class="text-3xl sm:text-5xl font-extrabold text-emerald-400">239.539</div>
-          <div class="text-xs text-neutral-400 uppercase tracking-wider font-semibold mt-1.5">Setups en el Vault</div>
-        </div>
-
-        <div class="p-2 border-r border-white/10 last:border-none">
-          <div class="text-3xl sm:text-5xl font-extrabold text-white">196</div>
-          <div class="text-xs text-neutral-400 uppercase tracking-wider font-semibold mt-1.5">Coches Oficiales</div>
-        </div>
-
-        <div class="p-2">
-          <div class="text-3xl sm:text-5xl font-extrabold text-emerald-400">127</div>
-          <div class="text-xs text-neutral-400 uppercase tracking-wider font-semibold mt-1.5">Circuitos iRacing</div>
-        </div>
-
-      </div>
-    </div>
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <StatsBar />
   </section>
 
   <!-- ========================================================================= -->
-  <!-- 3B. ENGINEERING & TELEMETRY PILLARS (Modern Motorsport Showcase)          -->
+  <!-- 3. PILOTOS OFICIALES GRID (Clean Monochrome Racing Cards)                 -->
   <!-- ========================================================================= -->
-  <section class="py-20 bg-[#0b0e14] border-b border-white/10 relative">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      
-      <div class="text-center max-w-3xl mx-auto mb-14 space-y-3">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-          <span>Ingeniería &amp; Rendimiento</span>
-        </div>
-        <h2 class="text-3xl sm:text-5xl font-black text-white tracking-tight">
-          Tecnología de Competición para iRacing
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10 pb-4 border-b border-[#1E2A26]">
+      <div>
+        <div class="text-[11px] font-mono uppercase tracking-widest text-[#00E699] mb-1">PLANTILLA OFICIAL &bull; 2026</div>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white font-display tracking-tight">
+          Pilotos del Equipo
         </h2>
-        <p class="text-neutral-400 text-sm sm:text-base leading-relaxed">
-          Diseñado bajo los estándares de ingeniería de ATM Software Labs para maximizar el ritmo en carrera, la consistencia y la telemetría en cada curva.
-        </p>
       </div>
+      <a href="/pilotos" class="text-xs font-mono font-bold text-[#8B9A8F] hover:text-[#00E699] transition flex items-center gap-1.5">
+        <span>Ver Roster Completo</span>
+        <span>&rarr;</span>
+      </a>
+    </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        
-        <!-- Pillar 1: Setup Vault -->
-        <div class="bg-[#141923] border border-white/10 hover:border-emerald-500/40 rounded-3xl p-6 transition duration-300 shadow-xl flex flex-col justify-between group">
-          <div class="space-y-4">
-            <div class="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-2xl text-emerald-400 group-hover:scale-110 transition-transform">
-              🏎️
+    <!-- 4 Drivers Minimal Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {drivers.map(d => (
+        <a href={`/p/${d.slug}`} class="group paddock-card p-5 flex flex-col justify-between space-y-4">
+          <div>
+            <div class="flex items-center justify-between text-xs font-mono mb-3">
+              <span class="text-[#00E699] font-bold">{d.num}</span>
+              <span class="text-[#8B9A8F] text-[10px] uppercase">{d.rating}</span>
             </div>
-            <h3 class="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors">
-              Setup Vault Automatizado
-            </h3>
-            <p class="text-xs text-neutral-400 leading-relaxed">
-              Catálogo masivo con <strong>239.539 setups .sto</strong> para 196 vehículos. Inyección directa con <em>File System Access API</em> en tu carpeta local de iRacing.
-            </p>
-          </div>
-          <div class="pt-6 border-t border-white/5 mt-6">
-            <a href="/setups" class="text-xs font-semibold text-emerald-400 hover:text-emerald-300 flex items-center gap-1.5 transition">
-              <span>Explorar setups</span>
-              <span>&rarr;</span>
-            </a>
-          </div>
-        </div>
-
-        <!-- Pillar 2: Garage 61 Telemetry -->
-        <div class="bg-[#141923] border border-white/10 hover:border-cyan-500/40 rounded-3xl p-6 transition duration-300 shadow-xl flex flex-col justify-between group">
-          <div class="space-y-4">
-            <div class="w-12 h-12 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-2xl text-cyan-400 group-hover:scale-110 transition-transform">
-              📊
+            
+            <div class="w-full aspect-[4/3] rounded-xl bg-[#080C0A] border border-[#1E2A26] overflow-hidden mb-3 relative flex items-center justify-center">
+              <svg class="w-16 h-16 text-[#8B9A8F]/40 group-hover:text-[#00E699]/70 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <div class="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-[#080C0A]/90 text-[10px] font-mono text-neutral-300 border border-[#1E2A26]">
+                {d.car}
+              </div>
             </div>
-            <h3 class="text-lg font-bold text-white group-hover:text-cyan-400 transition-colors">
-              Telemetría Garage 61
-            </h3>
-            <p class="text-xs text-neutral-400 leading-relaxed">
-              Integración nativa con la API oficial de Garage 61. Consulta vueltas rápidas, delta por sectores y referencias reales de nuestros pilotos en vivo.
-            </p>
-          </div>
-          <div class="pt-6 border-t border-white/5 mt-6">
-            <a href="/setups" class="text-xs font-semibold text-cyan-400 hover:text-cyan-300 flex items-center gap-1.5 transition">
-              <span>Ver telemetría</span>
-              <span>&rarr;</span>
-            </a>
-          </div>
-        </div>
 
-        <!-- Pillar 3: Zero-Trust Security & Comms -->
-        <div class="bg-[#141923] border border-white/10 hover:border-purple-500/40 rounded-3xl p-6 transition duration-300 shadow-xl flex flex-col justify-between group">
-          <div class="space-y-4">
-            <div class="w-12 h-12 rounded-2xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-2xl text-purple-400 group-hover:scale-110 transition-transform">
-              🛡️
+            <h3 class="text-lg font-bold text-white group-hover:text-[#00E699] transition-colors font-display">
+              {d.name}
+            </h3>
+            <div class="text-[11px] font-mono uppercase text-[#8B9A8F] mt-0.5">
+              {d.role}
             </div>
-            <h3 class="text-lg font-bold text-white group-hover:text-purple-400 transition-colors">
-              Seguridad Zero-Trust
-            </h3>
-            <p class="text-xs text-neutral-400 leading-relaxed">
-              Cifrado PBKDF2-100k, 2FA criptográfico, aislamiento estricto de telemetría y cliente institucional de Webmail bajo dominio <code class="text-purple-300">@trujillomingorance.com</code>.
-            </p>
           </div>
-          <div class="pt-6 border-t border-white/5 mt-6">
-            <a href="/mail" class="text-xs font-semibold text-purple-400 hover:text-purple-300 flex items-center gap-1.5 transition">
-              <span>Buzón institucional</span>
-              <span>&rarr;</span>
-            </a>
-          </div>
-        </div>
 
-        <!-- Pillar 4: Multiclass Squad -->
-        <div class="bg-[#141923] border border-white/10 hover:border-amber-500/40 rounded-3xl p-6 transition duration-300 shadow-xl flex flex-col justify-between group">
-          <div class="space-y-4">
-            <div class="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-2xl text-amber-400 group-hover:scale-110 transition-transform">
-              🏁
-            </div>
-            <h3 class="text-lg font-bold text-white group-hover:text-amber-400 transition-colors">
-              Competición Multiclase
-            </h3>
-            <p class="text-xs text-neutral-400 leading-relaxed">
-              Presencia en las principales series oficiales de iRacing: GT3 IMSA, Hypercars GTP (Valkyrie, 499P, 963), Prototipos LMP2/LMP3 y fórmulas monoplaza.
-            </p>
+          <div class="pt-3 border-t border-[#1E2A26] flex flex-wrap gap-1.5">
+            {d.tags.map(t => (
+              <span class="text-[9px] font-mono px-2 py-0.5 rounded-full bg-[#080C0A] text-[#8B9A8F] border border-[#1E2A26]">
+                {t}
+              </span>
+            ))}
           </div>
-          <div class="pt-6 border-t border-white/5 mt-6">
-            <a href="/team" class="text-xs font-semibold text-amber-400 hover:text-amber-300 flex items-center gap-1.5 transition">
-              <span>Ver alineación</span>
-              <span>&rarr;</span>
-            </a>
-          </div>
-        </div>
-
-      </div>
-
+        </a>
+      ))}
     </div>
   </section>
 
   <!-- ========================================================================= -->
-  <!-- 4. SQUAD SPOTLIGHT & MACHINERY (Consolidated Teaser -> team.html)          -->
+  <!-- 4. TECNOLOGÍA: 3 PILARES DEL GARAGE                                      -->
   <!-- ========================================================================= -->
-  <section id="squad-spotlight" class="py-20 bg-[#0e1217] relative">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="text-center max-w-2xl mx-auto mb-12 space-y-2">
+      <div class="text-xs font-mono uppercase tracking-widest text-[#00E699]">INGENIERÍA SIMRACING</div>
+      <h2 class="text-3xl sm:text-4xl font-extrabold text-white font-display tracking-tight">
+        Ecosistema Muntrume Garage
+      </h2>
+      <p class="text-xs sm:text-sm text-[#8B9A8F] leading-relaxed">
+        Herramientas de competición desarrolladas bajo los estándares de ingeniería de ATM Software Labs.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       
-      <!-- Section Header -->
-      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12 pb-6 border-b border-white/10">
+      <!-- Box #01: Setup Vault & Raw FTP -->
+      <div class="paddock-card p-6 flex flex-col justify-between space-y-4">
         <div>
-          <span class="text-xs uppercase tracking-wider text-emerald-400 font-semibold">El Equipo</span>
-          <h2 class="text-3xl sm:text-4xl font-extrabold text-white mt-1">Nuestros Pilotos</h2>
-        </div>
-        <div>
-          <a href="/team" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-semibold text-xs transition shadow-md">
-            <span>Ver Plantilla Completa</span>
-            <span>&rarr;</span>
-          </a>
-        </div>
-      </div>
-
-      <!-- Athlete Roster Teaser Banner -->
-      <div class="bg-gradient-to-r from-[#161c24] via-[#1c232d] to-[#161c24] border border-white/10 rounded-3xl p-8 sm:p-10 shadow-2xl mb-12">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          
-          <div class="lg:col-span-7 space-y-4">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider">
-              <span>iRacing</span>
-            </div>
-            <h3 class="text-2xl sm:text-3xl font-extrabold text-white">
-              Cuatro pilotos, una misma pasión en pista.
-            </h3>
-            <div class="flex flex-wrap gap-4 pt-2">
-              <a href="/team" class="inline-flex items-center gap-2 text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition">
-                <span>Ver perfiles de pilotos</span>
-                <span>&rarr;</span>
-              </a>
-            </div>
-          </div>
-
-          <div class="lg:col-span-5">
-            <div class="grid grid-cols-2 gap-3.5">
-              <!-- Alberto -->
-              <a href="/team" class="group bg-[#0e1217]/80 hover:bg-[#0e1217] border border-white/10 hover:border-emerald-500/40 p-4 rounded-2xl transition duration-300 block">
-                <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500/60 flex items-center justify-center font-bold text-emerald-400 text-xs group-hover:scale-105 transition-transform">AT</div>
-                  <div class="min-w-0">
-                    <div class="font-bold text-white text-xs leading-tight group-hover:text-emerald-400 transition-colors">Alberto Trujillo</div>
-                    <div class="text-[11px] text-emerald-400 font-medium">Founder</div>
-                  </div>
-                </div>
-              </a>
-              <!-- Mateo -->
-              <a href="/team" class="group bg-[#0e1217]/80 hover:bg-[#0e1217] border border-white/10 hover:border-amber-500/40 p-4 rounded-2xl transition duration-300 block">
-                <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-full bg-amber-500/20 border border-amber-500/60 flex items-center justify-center font-bold text-amber-400 text-xs group-hover:scale-105 transition-transform">MB</div>
-                  <div class="min-w-0">
-                    <div class="font-bold text-white text-xs leading-tight group-hover:text-amber-400 transition-colors">Mateo Berbis</div>
-                    <div class="text-[11px] text-amber-400 font-medium">Driver</div>
-                  </div>
-                </div>
-              </a>
-              <!-- Eduardo -->
-              <a href="/team" class="group bg-[#0e1217]/80 hover:bg-[#0e1217] border border-white/10 hover:border-slate-400/40 p-4 rounded-2xl transition duration-300 block">
-                <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-full bg-slate-500/20 border border-slate-400/60 flex items-center justify-center font-bold text-slate-300 text-xs group-hover:scale-105 transition-transform">EC</div>
-                  <div class="min-w-0">
-                    <div class="font-bold text-white text-xs leading-tight group-hover:text-slate-200 transition-colors">Eduardo Chongkan</div>
-                    <div class="text-[11px] text-slate-300 font-medium">Driver</div>
-                  </div>
-                </div>
-              </a>
-              <!-- Juanlu -->
-              <a href="/team" class="group bg-[#0e1217]/80 hover:bg-[#0e1217] border border-white/10 hover:border-orange-500/40 p-4 rounded-2xl transition duration-300 block">
-                <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-full bg-orange-500/20 border border-orange-500/60 flex items-center justify-center font-bold text-orange-400 text-xs group-hover:scale-105 transition-transform">JC</div>
-                  <div class="min-w-0">
-                    <div class="font-bold text-white text-xs leading-tight group-hover:text-orange-400 transition-colors">Juanlu Carrillo</div>
-                    <div class="text-[11px] text-orange-400 font-medium">Driver</div>
-                  </div>
-                </div>
-              </a>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-
-  <!-- ========================================================================= -->
-  <!-- 5B. MUNTRUME SETUP VAULT LANDING SECTION (41,016 .sto Setups)   -->
-  <!-- ========================================================================= -->
-  <section id="setups-vault" class="py-20 bg-[#0e1217] border-t border-white/10 relative overflow-hidden">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-      <div class="bg-gradient-to-br from-[#161c24] via-[#1c232d] to-[#161c24] border border-emerald-500/25 rounded-3xl p-8 sm:p-12 shadow-2xl relative overflow-hidden">
-        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600"></div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-
-          <!-- Left Column: Setup Vault Pitch -->
-          <div class="lg:col-span-7 space-y-6">
-            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold text-emerald-400 uppercase tracking-wider">
-              <span class="pulse-dot"></span>
-              <span>Temporada 2026 Season 4</span>
-            </div>
-
-            <div class="space-y-2">
-              <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
-                Muntrume Setup Vault
-              </h2>
-              <p class="text-sm sm:text-base text-neutral-300 leading-relaxed max-w-2xl">
-                Nuestro repositorio de setups de competición para <strong>iRacing</strong> con <strong>239.539 configuraciones <code class="text-emerald-400">.sto</code></strong> distribuidas en <strong>196 coches</strong> y <strong>127 circuitos</strong>. Vincula tu carpeta <code class="text-emerald-400">Documents\iRacing\setups</code> y guarda cada semana directamente en ella.
-              </p>
-            </div>
-
-            <!-- Feature Chips -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div class="bg-[#0e1217]/80 border border-white/10 rounded-2xl p-4 flex items-start gap-3">
-                <span class="text-emerald-400 font-bold text-base">⚡</span>
-                <div>
-                  <div class="font-bold text-white">Guardado directo en tu carpeta</div>
-                  <div class="text-neutral-400 mt-0.5">Guarda la carpeta de la semana directamente en <code class="text-emerald-400">Garage 61 - Muntrume Motorsport</code>.</div>
-                </div>
-              </div>
-              <div class="bg-[#0e1217]/80 border border-white/10 rounded-2xl p-4 flex items-start gap-3">
-                <span class="text-emerald-400 font-bold text-base">🏁</span>
-                <div>
-                  <div class="font-bold text-white">Qualy, Race y Wet</div>
-                  <div class="text-neutral-400 mt-0.5">Variantes por tipo de sesión según el catálogo de cada semana.</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- CTAs -->
-            <div class="flex flex-wrap items-center gap-3 pt-1">
-              <a href="/setups" class="inline-flex items-center gap-2.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-extrabold text-xs uppercase tracking-wider px-6 py-3.5 rounded-xl transition-all shadow-lg hover:shadow-emerald-500/20">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                <span>Entrar al Setup Vault &rarr;</span>
-              </a>
-              <a href="/setups#join" class="inline-flex items-center gap-2 bg-[#0e1217] hover:bg-white/10 text-emerald-400 border border-emerald-500/30 font-bold text-xs uppercase tracking-wider px-6 py-3.5 rounded-xl transition-all">
-                <span>Solicitar Acceso de Piloto</span>
-              </a>
-            </div>
-          </div>
-
-          <!-- Right Column: Vault Stats & Active Categories Card -->
-          <div class="lg:col-span-5">
-            <div class="bg-[#0e1217] border border-white/10 rounded-2xl p-6 space-y-5 shadow-xl">
-              <div class="flex items-center justify-between pb-3 border-b border-white/10">
-                <span class="text-xs font-bold uppercase tracking-wider text-neutral-400">Estado del repositorio</span>
-                
-              </div>
-
-              <div class="grid grid-cols-3 gap-2 text-center">
-                <div class="bg-[#161c24] border border-white/5 rounded-xl p-3.5">
-                  <div class="text-2xl font-black text-white">196</div>
-                  <div class="text-[10px] uppercase text-neutral-400 font-semibold mt-0.5">Coches</div>
-                </div>
-                <div class="bg-[#161c24] border border-white/5 rounded-xl p-3.5">
-                  <div class="font-black text-emerald-400 text-lg sm:text-2xl leading-8">239.539</div>
-                  <div class="text-[10px] uppercase text-neutral-400 font-semibold mt-0.5">Setups</div>
-                </div>
-                <div class="bg-[#161c24] border border-white/5 rounded-xl p-3.5">
-                  <div class="text-2xl font-black text-white">127</div>
-                  <div class="text-[10px] uppercase text-neutral-400 font-semibold mt-0.5">Circuitos</div>
-                </div>
-              </div>
-
-              <div class="space-y-2 text-xs">
-                <div class="flex items-center justify-between gap-3 py-2 px-3 rounded-lg bg-[#161c24] border border-white/5">
-                  <span class="text-white font-semibold">GT3 Sprint &amp; IMSA Endurance</span>
-                  <span class="text-emerald-400 font-mono font-bold whitespace-nowrap">GT3 · IMSA</span>
-                </div>
-                <div class="flex items-center justify-between gap-3 py-2 px-3 rounded-lg bg-[#161c24] border border-white/5">
-                  <span class="text-white font-semibold">GTP Hypercar (Valkyrie, 499P, 963, ARX, BMW, Caddy)</span>
-                  <span class="text-emerald-400 font-mono font-bold whitespace-nowrap">GTP</span>
-                </div>
-                <div class="flex items-center justify-between gap-3 py-2 px-3 rounded-lg bg-[#161c24] border border-white/5">
-                  <span class="text-white font-semibold">Prototipos LMP2 (P217) &amp; LMP3 (JS P320)</span>
-                  <span class="text-emerald-400 font-mono font-bold whitespace-nowrap">LMP</span>
-                </div>
-                <div class="flex items-center justify-between gap-3 py-2 px-3 rounded-lg bg-[#161c24] border border-white/5">
-                  <span class="text-white font-semibold">GT4, Porsche Cup, Ferrari Challenge, F4, SF23</span>
-                  <span class="text-emerald-400 font-mono font-bold whitespace-nowrap">Cup · F</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-
-  <!-- ========================================================================= -->
-  <!-- 7. COMMUNITY & DISCORD (Clean Luxury Banner)                              -->
-  <!-- ========================================================================= -->
-  <section class="py-16 bg-[#161c24]/50 border-t border-white/10">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="bg-gradient-to-r from-[#161c24] via-[#1c232d] to-[#161c24] border border-white/10 rounded-3xl p-8 lg:p-12 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl">
-        
-        <div class="space-y-3 max-w-xl">
-          <div class="inline-flex items-center gap-2 text-emerald-400 text-xs font-semibold uppercase tracking-wider">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>Comunidad</span>
-          </div>
-          <h2 class="text-2xl sm:text-4xl font-extrabold text-white">Únete a la Radio del Equipo en Discord</h2>
-          <p class="text-sm text-neutral-400 leading-relaxed">
-            Comenta setups, telemetrías y carreras con los pilotos oficiales y la comunidad de iRacing.
+          <div class="text-xs font-mono font-bold text-[#00E699] mb-2">BOX #01 &middot; SETUPS &amp; FTP</div>
+          <h3 class="text-xl font-bold text-white font-display">Setup Vault Automatizado</h3>
+          <p class="text-xs text-[#8B9A8F] mt-2 leading-relaxed">
+            239.539 setups firmados digitalmente. Descarga e inyección directa en <code class="text-white font-mono">Documents\iRacing\setups</code> con explorador FTP integrado.
           </p>
-          <div class="flex flex-wrap items-center gap-4 text-xs text-neutral-400 pt-2 font-medium">
-            <span>• Canales de voz y telemetría</span>
-            <span>• Asistencia y dudas de setups</span>
-          </div>
         </div>
-
-        <div>
-          <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold text-sm px-7 py-4 rounded-xl transition-all shadow-xl hover:scale-105">
-            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
-              <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.13-.255-.01-.556-.28-.646a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/>
-            </svg>
-            <span>Entrar a la Radio en Discord</span>
-          </a>
-        </div>
-
+        <a href="/garage" class="text-xs font-mono font-bold text-[#00E699] hover:underline flex items-center gap-1.5 pt-4 border-t border-[#1E2A26]">
+          <span>Entrar al Garage</span>
+          <span>&rarr;</span>
+        </a>
       </div>
+
+      <!-- Box #02: Telemetría Garage 61 -->
+      <div class="paddock-card p-6 flex flex-col justify-between space-y-4">
+        <div>
+          <div class="text-xs font-mono font-bold text-[#00E699] mb-2">BOX #02 &middot; TELEMETRY</div>
+          <h3 class="text-xl font-bold text-white font-display">Telemetría Garage 61</h3>
+          <p class="text-xs text-[#8B9A8F] mt-2 leading-relaxed">
+            Sincronización directa con los servidores de Garage 61. Análisis de mejores vueltas, deltas de acelerador/freno y tiempos de referencia.
+          </p>
+        </div>
+        <a href="/garage" class="text-xs font-mono font-bold text-[#00E699] hover:underline flex items-center gap-1.5 pt-4 border-t border-[#1E2A26]">
+          <span>Ver Métricas</span>
+          <span>&rarr;</span>
+        </a>
+      </div>
+
+      <!-- Box #03: Paddock & Comms -->
+      <div class="paddock-card p-6 flex flex-col justify-between space-y-4">
+        <div>
+          <div class="text-xs font-mono font-bold text-[#00E699] mb-2">BOX #03 &middot; COMMS &amp; RADIO</div>
+          <h3 class="text-xl font-bold text-white font-display">Paddock &amp; Canales</h3>
+          <p class="text-xs text-[#8B9A8F] mt-2 leading-relaxed">
+            Coordinación de carrera privada para pilotos oficiales con enrutamiento seguro bajo dominio <code class="text-white font-mono">trujillomingorance.com</code>.
+          </p>
+        </div>
+        <a href="/paddock" class="text-xs font-mono font-bold text-[#00E699] hover:underline flex items-center gap-1.5 pt-4 border-t border-[#1E2A26]">
+          <span>Ver Paddock</span>
+          <span>&rarr;</span>
+        </a>
+      </div>
+
     </div>
   </section>
 
   <!-- ========================================================================= -->
-  <!-- 8. FOOTER (Clean Luxury Motorsport Footer)                                -->
+  <!-- 5. CALL TO ACTION: DISCORD PADDOCK RADIO                                  -->
   <!-- ========================================================================= -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="paddock-card p-8 sm:p-12 text-center relative overflow-hidden bg-gradient-to-b from-[#121A17] to-[#080C0A]">
+      <div class="max-w-2xl mx-auto space-y-4 relative z-10">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#080C0A] border border-[#1E2A26] text-xs font-mono text-[#00E699]">
+          <span class="w-2 h-2 rounded-full bg-[#00E699] animate-pulse"></span>
+          <span>CANAL DE RADIO Y TELEMETRÍA</span>
+        </div>
+        <h2 class="text-3xl sm:text-5xl font-black text-white font-display tracking-tight">
+          ÚNETE A LA RADIO DE MUNTRUME
+        </h2>
+        <p class="text-xs sm:text-sm text-[#8B9A8F] leading-relaxed">
+          Comunidad de pilotos, ingenieros de pista y aficionados al sim racing en iRacing. Acceso libre al canal general y debates de telemetría.
+        </p>
+        <div class="pt-4 flex flex-wrap justify-center gap-4">
+          <a 
+            href="https://discord.gg/ehX6B8JUtE" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="px-7 py-3.5 rounded-xl bg-[#00E699] hover:bg-[#00c985] text-neutral-950 font-black text-xs uppercase tracking-wider transition shadow-lg shadow-[#00E699]/20"
+          >
+            Conectar con Discord
+          </a>
+          <a 
+            href="/paddock" 
+            class="px-7 py-3.5 rounded-xl bg-[#080C0A] hover:bg-white/5 border border-[#1E2A26] text-white font-bold text-xs uppercase tracking-wider transition"
+          >
+            Request Paddock Pass
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<!-- ========================================================================= -->
-  <!-- JAVASCRIPT: High-Speed HUD, Countdown, Calendar & Setup Engine            -->
-  <!-- ========================================================================= -->
-  <script is:inline src="/assets/js/home.js?v=26s4.6" defer></script>
 </Layout>
