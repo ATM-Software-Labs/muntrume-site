@@ -1,0 +1,406 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { PILOTOS } from '../../lib/pilotos';
+
+export function getStaticPaths() {
+  return PILOTOS.map(p => ({
+    params: { slug: p.slug }
+  }));
+}
+
+const { slug } = Astro.params;
+const driver = PILOTOS.find(p => p.slug === slug) || PILOTOS[0];
+
+const pageTitle = `${driver.fullName} (${driver.dorsal}) · Piloto Oficial — Muntrume Motorsport`;
+const pageDescription = `${driver.fullName}, ${driver.role} en Muntrume Motorsport. Ficha oficial, estadísticas en vivo iRacing, telemetría y setups validados.`;
+const pageUrl = `https://muntru.me/d/${driver.slug}/`;
+
+const iratingDefault = driver.irating ? `${Math.round(driver.irating / 100) / 10}k iR` : null;
+const licenseDefault = driver.license;
+---
+
+<Layout title={pageTitle} description={pageDescription} canonical={pageUrl}>
+  <main class="min-h-screen bg-[#0E1211] text-[#F5F5F5] pt-20 pb-20 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+    
+    <!-- Top back breadcrumb -->
+    <div class="flex items-center justify-between gap-4 pb-2 text-xs font-mono">
+      <nav class="flex items-center gap-2 text-[#9AA8A3]" aria-label="Breadcrumb">
+        <a href="/" class="hover:text-white transition">Inicio</a>
+        <span>/</span>
+        <a href="/pilotos" class="hover:text-[#00E699] transition">Pilotos</a>
+        <span>/</span>
+        <span class="text-[#00E699] font-bold">{driver.name}</span>
+      </nav>
+      <a 
+        href="/pilotos" 
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1A2120] border border-[#242E2C] text-[#9AA8A3] hover:text-white hover:border-[#00E699]/40 transition"
+      >
+        <span>&larr;</span>
+        <span>Alineación Completa</span>
+      </a>
+    </div>
+
+    <!-- Hero 120px casco grande + dorsal # + name + [🇪🇸 ES] [iR] [Lic] + Garage 61 Connected -->
+    <section class="p-6 sm:p-8 rounded-3xl bg-[#1A2120] border border-[#242E2C] flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden shadow-2xl">
+      <span class="absolute top-4 right-4 w-2 h-2 rounded-full bg-[#00E699] animate-pulse"></span>
+      
+      <div class="flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left z-10">
+        <!-- Casco Grande 120px -->
+        <div class="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-[#1E2A26] border border-[#242E2C] flex items-center justify-center overflow-hidden shrink-0 shadow-lg relative">
+          {driver.helmet_url ? (
+            <>
+              <img
+                id="heroHelmetImg"
+                src={driver.helmet_url}
+                alt={`Casco de ${driver.fullName}`}
+                width={120}
+                height={120}
+                class="w-full h-full object-contain p-2"
+                loading="lazy"
+                onerror="this.style.display='none'; if (this.nextElementSibling) this.nextElementSibling.style.display='flex';"
+              />
+              <div class="w-full h-full hidden items-center justify-center font-mono font-bold text-3xl text-[#00E699]">
+                {driver.initials || "JC"}
+              </div>
+            </>
+          ) : (
+            <div class="font-mono font-bold text-3xl text-[#00E699]">
+              {driver.initials || "JC"}
+            </div>
+          )}
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+            <span class="font-mono text-sm font-bold text-[#00E699] tracking-wider">
+              {driver.dorsal}
+            </span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#0E1211] text-[#9AA8A3] border border-[#242E2C] uppercase font-semibold">
+              {driver.badge}
+            </span>
+            <span class="text-xs font-mono text-[#9AA8A3]">
+              {driver.role}
+            </span>
+          </div>
+
+          <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-display">
+            {driver.fullName}
+          </h1>
+
+          <!-- Pills row: [🇪🇸 ES] [iR] [Lic] -->
+          <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
+            <span id="liveFlagPill" class="inline-flex items-center px-2 py-0.5 rounded bg-[#242E2C] text-xs font-mono text-neutral-200">
+              {driver.flag} {driver.flag_code}
+            </span>
+            {iratingDefault && (
+              <span id="liveIrPill" class="inline-flex items-center px-2 py-0.5 rounded bg-[#242E2C] text-xs font-mono font-bold text-[#00E699] border border-[#00E699]/30">
+                {iratingDefault}
+              </span>
+            )}
+            {licenseDefault && (
+              <span id="liveLicPill" class="inline-flex items-center px-2 py-0.5 rounded bg-[#242E2C] text-xs font-mono text-neutral-300">
+                {licenseDefault}
+              </span>
+            )}
+            <span class="inline-flex items-center px-2 py-0.5 rounded bg-[#242E2C] text-xs font-mono text-[#9AA8A3]">
+              {driver.fav_category}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Garage 61 badge indicator -->
+      <div class="flex flex-col items-center sm:items-end gap-1 font-mono text-xs text-[#9AA8A3] z-10">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-[#00E699] animate-pulse"></span>
+          <span class="text-white font-bold">Garage 61 Connected</span>
+        </div>
+        <span class="text-[11px] text-[#9AA8A3]">
+          {driver.cust_id ? `iRacing ID: ${driver.cust_id}` : "En el Paddock Oficial"}
+        </span>
+      </div>
+    </section>
+
+    <!-- Client Tabs: Overview | Stats Live | News | Setups | Resultados -->
+    <section class="space-y-6">
+      <div class="flex border-b border-[#242E2C] text-xs sm:text-sm font-mono overflow-x-auto gap-4 sm:gap-8 pb-px">
+        <button 
+          type="button" 
+          id="tabBtn-overview" 
+          onclick="switchDriverTab('overview')"
+          class="driver-tab-btn pb-3 border-b-2 border-[#00E699] text-[#00E699] font-bold cursor-pointer"
+        >
+          Overview
+        </button>
+        <button 
+          type="button" 
+          id="tabBtn-stats" 
+          onclick="switchDriverTab('stats')"
+          class="driver-tab-btn pb-3 text-[#9AA8A3] hover:text-white cursor-pointer"
+        >
+          Stats Live
+        </button>
+        <button 
+          type="button" 
+          id="tabBtn-news" 
+          onclick="switchDriverTab('news')"
+          class="driver-tab-btn pb-3 text-[#9AA8A3] hover:text-white cursor-pointer"
+        >
+          News
+        </button>
+        <button 
+          type="button" 
+          id="tabBtn-setups" 
+          onclick="switchDriverTab('setups')"
+          class="driver-tab-btn pb-3 text-[#9AA8A3] hover:text-white cursor-pointer"
+        >
+          Setups
+        </button>
+        <button 
+          type="button" 
+          id="tabBtn-resultados" 
+          onclick="switchDriverTab('resultados')"
+          class="driver-tab-btn pb-3 text-[#9AA8A3] hover:text-white cursor-pointer"
+        >
+          Resultados
+        </button>
+      </div>
+
+      <!-- Tab Content: Overview -->
+      <div id="tabPanel-overview" class="driver-tab-panel grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="md:col-span-2 p-6 rounded-2xl bg-[#1A2120] border border-[#242E2C] space-y-4">
+          <h2 class="text-sm font-bold text-white font-mono uppercase tracking-wider flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#00E699]"></span>
+            Biografía &amp; Rol en el Equipo
+          </h2>
+          <p class="text-sm text-[#9AA8A3] leading-relaxed">
+            {driver.bio}
+          </p>
+          <div class="pt-4 border-t border-[#242E2C] grid grid-cols-2 gap-4 text-xs font-mono">
+            <div>
+              <span class="text-[#9AA8A3] block">Equipo</span>
+              <span class="text-white font-bold">Muntrume Motorsport</span>
+            </div>
+            <div>
+              <span class="text-[#9AA8A3] block">Coche Favorito</span>
+              <span class="text-white font-bold">{driver.fav_car || "Todos los vehículos GT3 / GTP"}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-[#1A2120] border border-[#242E2C] space-y-4">
+          <h2 class="text-sm font-bold text-white font-mono uppercase tracking-wider flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#00E699]"></span>
+            Telemetría &amp; Setups
+          </h2>
+          <div class="space-y-3 text-xs font-mono">
+            <div class="flex justify-between pb-2 border-b border-[#242E2C]">
+              <span class="text-[#9AA8A3]">Dorsal</span>
+              <span class="text-white font-bold">{driver.dorsal}</span>
+            </div>
+            <div class="flex justify-between pb-2 border-b border-[#242E2C]">
+              <span class="text-[#9AA8A3]">Categoría</span>
+              <span class="text-white font-bold">{driver.fav_category}</span>
+            </div>
+            <div class="flex justify-between pb-2 border-b border-[#242E2C]">
+              <span class="text-[#9AA8A3]">Estado</span>
+              <span class="text-[#00E699] font-bold">
+                {driver.cust_id ? "En Competición Activa" : "En el Paddock"}
+              </span>
+            </div>
+          </div>
+          <div class="pt-2">
+            <a 
+              href="/garage" 
+              class="w-full inline-block text-center py-2.5 rounded-xl bg-[#00E699] hover:bg-[#00c985] text-neutral-950 font-black text-xs uppercase tracking-wider transition"
+            >
+              Abrir Garage Telemetry &rarr;
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content: Stats Live -->
+      <div id="tabPanel-stats" class="driver-tab-panel hidden p-6 rounded-2xl bg-[#1A2120] border border-[#242E2C] space-y-4">
+        <h2 class="text-sm font-bold text-white font-mono uppercase tracking-wider flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#00E699]"></span>
+          Estadísticas Oficiales en Tiempo Real (iRacing Data API)
+        </h2>
+        {driver.cust_id ? (
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-mono pt-2">
+            <div class="p-4 rounded-xl bg-[#121A17] border border-[#242E2C]">
+              <span class="text-[#9AA8A3] block mb-1">iRating Actual</span>
+              <span class="text-2xl font-bold text-[#00E699]">{iratingDefault || "3.9k iR"}</span>
+            </div>
+            <div class="p-4 rounded-xl bg-[#121A17] border border-[#242E2C]">
+              <span class="text-[#9AA8A3] block mb-1">Licencia Deportiva</span>
+              <span class="text-2xl font-bold text-white">{licenseDefault || "A 4.99"}</span>
+            </div>
+            <div class="p-4 rounded-xl bg-[#121A17] border border-[#242E2C]">
+              <span class="text-[#9AA8A3] block mb-1">Frecuencia Telemetría</span>
+              <span class="text-2xl font-bold text-white">60 Hz</span>
+            </div>
+            <div class="p-4 rounded-xl bg-[#121A17] border border-[#242E2C]">
+              <span class="text-[#9AA8A3] block mb-1">Estado de Sincro</span>
+              <span class="text-2xl font-bold text-[#00E699]">Activo</span>
+            </div>
+          </div>
+        ) : (
+          <div class="p-6 text-center text-[#9AA8A3] font-mono text-xs">
+            Piloto fundador en el Paddock oficial. No compite activamente en licencias puntuables.
+          </div>
+        )}
+      </div>
+
+      <!-- Tab Content: News -->
+      <div id="tabPanel-news" class="driver-tab-panel hidden p-6 rounded-2xl bg-[#1A2120] border border-[#242E2C] space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-bold text-white font-mono uppercase tracking-wider flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#00E699]"></span>
+            Press Room &amp; Media Wire — {driver.name}
+          </h2>
+          <span class="text-[11px] font-mono text-[#00E699]">Paddock Wire</span>
+        </div>
+        <div class="space-y-3 font-mono text-xs">
+          <div class="p-4 rounded-xl bg-[#121A17] border border-[#242E2C] flex items-start justify-between gap-4">
+            <div>
+              <span class="text-[10px] text-[#00E699] uppercase font-bold">{driver.fav_category}</span>
+              <h3 class="text-white font-bold mt-1">Sesión oficial de clasificación completada con setups de Muntrume</h3>
+              <p class="text-[#9AA8A3] mt-1 text-[11px]">Sincronización telemétrica validada con el simulador iRacing a 60 Hz.</p>
+            </div>
+            <span class="text-[10px] text-[#9AA8A3] shrink-0">Temporada 2026</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content: Setups -->
+      <div id="tabPanel-setups" class="driver-tab-panel hidden p-6 rounded-2xl bg-[#1A2120] border border-[#242E2C] space-y-4">
+        <h2 class="text-sm font-bold text-white font-mono uppercase tracking-wider flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#00E699]"></span>
+          Setups en el Vault Vinculados a {driver.name}
+        </h2>
+        {driver.cust_id ? (
+          <div class="space-y-3 font-mono text-xs">
+            <div class="p-4 rounded-xl bg-[#121A17] border border-[#242E2C] flex items-center justify-between">
+              <div>
+                <span class="text-white font-bold">{driver.fav_car || "GT3 / GTP Validated Setup"}</span>
+                <span class="text-[#9AA8A3] block text-[11px]">Directorio: Documentos/iRacing/setups/</span>
+              </div>
+              <a 
+                href="/garage" 
+                class="px-3 py-1.5 rounded-lg bg-[#00E699] text-neutral-950 font-bold uppercase text-[11px] hover:bg-[#00c985] transition"
+              >
+                Descargar .STO
+              </a>
+            </div>
+          </div>
+        ) : (
+          <div class="p-6 text-center text-[#9AA8A3] font-mono text-xs">
+            Piloto fundador en el Paddock. Los setups de monoplazas están disponibles en el catálogo general.
+          </div>
+        )}
+      </div>
+
+      <!-- Tab Content: Resultados -->
+      <div id="tabPanel-resultados" class="driver-tab-panel hidden p-6 rounded-2xl bg-[#1A2120] border border-[#242E2C] space-y-4">
+        <h2 class="text-sm font-bold text-white font-mono uppercase tracking-wider flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#00E699]"></span>
+          Últimos Resultados Registrados
+        </h2>
+        <div class="p-6 text-center text-[#9AA8A3] font-mono text-xs">
+          Registro sincronizado con Cloudflare D1. Calendario y tiempos de vuelta accesibles desde la consola de Garage 61.
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Squad Teammates Switcher -->
+    <div class="pt-8 border-t border-[#242E2C]">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xs font-bold text-[#9AA8A3] font-mono uppercase tracking-wider">
+          Otros Pilotos de Muntrume Motorsport
+        </h3>
+        <a href="/pilotos" class="text-xs font-mono text-[#00E699] hover:underline font-bold">
+          Ver Plantilla Completa &rarr;
+        </a>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {PILOTOS.map(p => (
+          <a 
+            href={`/d/${p.slug}`}
+            class={`p-3.5 rounded-2xl border transition flex items-center gap-3 ${p.slug === driver.slug ? 'bg-[#00E699]/10 border-[#00E699]/40' : 'bg-[#1A2120] border-[#242E2C] hover:border-white/20'}`}
+          >
+            <div class="w-9 h-9 rounded-xl bg-[#1E2A26] border border-[#242E2C] flex items-center justify-center font-mono font-bold text-xs text-[#00E699] shrink-0">
+              {p.initials || p.name.slice(0, 2).toUpperCase()}
+            </div>
+            <div class="min-w-0">
+              <div class="text-xs font-bold text-white truncate">{p.name}</div>
+              <div class="text-[10px] font-mono text-[#9AA8A3]">{p.dorsal}</div>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+
+  </main>
+</Layout>
+
+<script is:inline>
+  function switchDriverTab(tabId) {
+    var buttons = document.querySelectorAll('.driver-tab-btn');
+    var panels = document.querySelectorAll('.driver-tab-panel');
+
+    buttons.forEach(function(btn) {
+      btn.classList.remove('border-b-2', 'border-[#00E699]', 'text-[#00E699]', 'font-bold');
+      btn.classList.add('text-[#9AA8A3]');
+    });
+
+    panels.forEach(function(panel) {
+      panel.classList.add('hidden');
+    });
+
+    var activeBtn = document.getElementById('tabBtn-' + tabId);
+    if (activeBtn) {
+      activeBtn.classList.add('border-b-2', 'border-[#00E699]', 'text-[#00E699]', 'font-bold');
+      activeBtn.classList.remove('text-[#9AA8A3]');
+    }
+
+    var activePanel = document.getElementById('tabPanel-' + tabId);
+    if (activePanel) {
+      activePanel.classList.remove('hidden');
+    }
+  }
+  window.switchDriverTab = switchDriverTab;
+
+  // Live Stats Hydration
+  (function() {
+    var slug = window.location.pathname.replace(/\/+$/, "").split("/").pop();
+    if (!slug) return;
+    fetch('https://muntrume.atrumin16.workers.dev/api/drivers?slug=' + encodeURIComponent(slug))
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(data) {
+        if (!data) return;
+        var d = Array.isArray(data) ? data.find(function(x) { return x.slug === slug; }) : data;
+        if (!d) return;
+        var irEl = document.getElementById('liveIrPill');
+        var licEl = document.getElementById('liveLicPill');
+        var flagEl = document.getElementById('liveFlagPill');
+        var imgEl = document.getElementById('heroHelmetImg');
+
+        if (irEl && d.irating) {
+          var formatted = d.irating_formatted || (Math.round(d.irating / 100) / 10) + 'k';
+          irEl.innerText = formatted.endsWith('iR') ? formatted : formatted + ' iR';
+        }
+        if (licEl && d.license) {
+          licEl.innerText = d.license;
+        }
+        if (flagEl && d.flag && d.flag_code) {
+          flagEl.innerText = d.flag + ' ' + d.flag_code;
+        }
+        if (imgEl && d.helmet_url && imgEl.getAttribute('src') !== d.helmet_url) {
+          imgEl.src = d.helmet_url;
+        }
+      })
+      .catch(function() {});
+  })();
+</script>

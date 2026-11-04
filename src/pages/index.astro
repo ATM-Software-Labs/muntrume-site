@@ -23,45 +23,47 @@ const drivers = PILOTOS.map(p => ({
   <!-- ========================================================================= -->
   <!-- 1. HERO MINIMALISTA CENTRADO (Linear.app + Mercedes-AMG F1)               -->
   <!-- ========================================================================= -->
-  <section class="relative min-h-[80vh] flex flex-col items-center justify-center pt-28 pb-16 text-center overflow-hidden">
+  <section class="relative min-h-[85vh] flex flex-col items-center justify-center pt-24 pb-12 sm:pt-28 sm:pb-16 text-center overflow-hidden">
     
-    <!-- Hero Background Image (Low contrast subtle overlay) -->
-    <div class="absolute inset-0 z-0">
+    <!-- Hero Background Image (High clarity track action with responsive gradient) -->
+    <div class="absolute inset-0 z-0 overflow-hidden">
       <img 
         src="/assets/img/hero-bg.webp" 
         alt="Muntrume Motorsport Track Action" 
-        class="w-full h-full object-cover object-center opacity-15 filter grayscale contrast-125 select-none pointer-events-none"
+        class="w-full h-full object-cover object-center opacity-40 sm:opacity-30 filter saturate-125 contrast-115 select-none pointer-events-none scale-105 transition-transform duration-1000"
         fetchpriority="high"
         decoding="async"
       />
-      <div class="absolute inset-0 bg-gradient-to-t from-[#080C0A] via-[#080C0A]/85 to-[#080C0A]/60"></div>
+      <!-- Racing dark gradient: ensures contrast for text while keeping track and car clearly visible -->
+      <div class="absolute inset-0 bg-gradient-to-t from-[#080C0A] via-[#080C0A]/70 to-[#080C0A]/35"></div>
+      <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-[#080C0A]/30 to-[#080C0A]/80"></div>
     </div>
 
     <!-- Centered Hero Content with Generous Negative Space -->
-    <div class="max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 relative z-10 space-y-8">
+    <div class="max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 relative z-10 space-y-6 sm:space-y-8">
       
       <!-- Team Origin Pill -->
-      <div class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[#121A17] border border-[#1E2A26] text-xs font-mono text-[#8B9A8F]">
+      <div class="inline-flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-full bg-[#121A17]/90 border border-[#1E2A26] text-[11px] sm:text-xs font-mono text-[#8B9A8F] shadow-md backdrop-blur-sm">
         <span class="w-2 h-2 rounded-full bg-[#00E699] animate-pulse"></span>
         <span>MUNTRUME MOTORSPORT &middot; SANT ANDREU, BCN</span>
       </div>
 
-      <!-- Main Massive Headline (72px Space Grotesk Bold, Tight Tracking) -->
-      <h1 class="text-5xl sm:text-7xl lg:text-[76px] font-extrabold tracking-tight text-white leading-[1.04] font-display max-w-4xl mx-auto">
+      <!-- Main Massive Headline (Responsive typography for mobile & desktop) -->
+      <h1 class="text-3xl sm:text-6xl lg:text-[76px] font-extrabold tracking-tight text-white leading-[1.08] font-display max-w-4xl mx-auto">
         PRECISION RACING. <br />
         <span class="text-[#00E699]">ENGINEERED TO WIN.</span>
       </h1>
 
       <!-- Concise Subtitle (Max 2 lines) -->
-      <p class="text-base sm:text-lg text-[#8B9A8F] max-w-2xl mx-auto font-normal leading-relaxed">
+      <p class="text-sm sm:text-lg text-[#8B9A8F] max-w-2xl mx-auto font-normal leading-relaxed px-2">
         Escudería de sim racing con base en Barcelona. 239k setups certificados y telemetría Garage 61 para iRacing.
       </p>
 
       <!-- 2 CTAs: 1 Primary Green, 1 Ghost Bordered -->
-      <div class="flex flex-wrap items-center justify-center gap-4 pt-4">
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-2 sm:pt-4 w-full sm:w-auto px-4 sm:px-0">
         <a 
           href="/garage" 
-          class="inline-flex items-center gap-2.5 bg-[#00E699] hover:bg-[#00c985] text-neutral-950 font-black text-xs sm:text-sm uppercase tracking-wider px-7 py-3.5 rounded-xl transition-all shadow-lg hover:shadow-[#00E699]/20"
+          class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-[#00E699] hover:bg-[#00c985] text-neutral-950 font-black text-xs sm:text-sm uppercase tracking-wider px-7 py-3.5 rounded-xl transition-all shadow-lg hover:shadow-[#00E699]/20"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
           <span>SETUP VAULT (239K)</span>
@@ -71,11 +73,32 @@ const drivers = PILOTOS.map(p => ({
           href="https://discord.gg/ehX6B8JUtE" 
           target="_blank" 
           rel="noopener noreferrer" 
-          class="inline-flex items-center gap-2.5 bg-transparent hover:bg-white/5 text-white border border-[#1E2A26] hover:border-[#00E699] font-bold text-xs sm:text-sm uppercase tracking-wider px-7 py-3.5 rounded-xl transition-all"
+          class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-transparent hover:bg-white/5 text-white border border-[#1E2A26] hover:border-[#00E699] font-bold text-xs sm:text-sm uppercase tracking-wider px-7 py-3.5 rounded-xl transition-all"
         >
           <span class="w-2 h-2 rounded-full bg-[#00E699]"></span>
           <span>UNIRSE A LA RADIO EN DISCORD</span>
         </a>
+      </div>
+
+      <!-- Hero Official Livery Car Showcase (prominent & crisp on both mobile and desktop) -->
+      <div class="pt-4 sm:pt-8 max-w-xl mx-auto w-full px-2">
+        <div class="relative rounded-2xl bg-gradient-to-b from-[#16201C]/80 to-[#0C1210]/95 border border-[#00E699]/30 p-2.5 sm:p-4 backdrop-blur-md shadow-[0_12px_45px_rgba(0,230,153,0.12)]">
+          <div class="flex items-center justify-between text-[10px] sm:text-xs font-mono text-[#9AA8A3] pb-2 border-b border-[#1E2A26]">
+            <span class="flex items-center gap-1.5 text-[#00E699] font-bold">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#00E699] animate-pulse"></span>
+              PORSCHE 911 GT3 R (992)
+            </span>
+            <span>2026 LIVERY &middot; #1 MRT</span>
+          </div>
+          <div class="relative mt-2 rounded-xl overflow-hidden aspect-[16/9] bg-[#0A0E0D]">
+            <img 
+              src="/assets/img/coche1.webp" 
+              alt="Porsche 911 GT3 R Muntrume Livery" 
+              class="w-full h-full object-cover object-center select-none"
+              loading="eager"
+            />
+          </div>
+        </div>
       </div>
 
     </div>
@@ -109,7 +132,7 @@ const drivers = PILOTOS.map(p => ({
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
       {drivers.map(d => (
         <a 
-          href={`/pilotos/${d.slug}`} 
+          href={`/d/${d.slug}`} 
           class="group p-5 rounded-2xl bg-[#121A17] border border-[#1E2A26] hover:border-[#00E699]/60 transition-all duration-300 flex flex-col justify-between space-y-4 relative overflow-hidden"
         >
           <!-- Small green indicator dot top right -->

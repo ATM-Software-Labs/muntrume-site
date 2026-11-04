@@ -5,7 +5,7 @@
 
 Escudería independiente de iRacing con base en Sant Andreu, Barcelona. 4 pilotos oficiales, 196 coches y 239.539 setups validados con telemetría Garage 61 y MoTeC i2 Pro.
 
-**[ Web Oficial — muntru.me ](https://muntru.me) | [ Garage Access ](https://muntru.me/garage) | [ Paddock Pass ](https://muntru.me/paddock) | [ Discord ](https://discord.gg/ehX6B8JUtE)**
+**[ Web Oficial — muntru.me ](https://muntru.me) | [ Garage Access ](https://muntru.me/garage) | [ Paddock Pass ](https://muntru.me/paddock) | [ Discord ](https://discord.gg/ehX6B8JUtE) | [ Muntrume AI ](https://ai.trujillomingorance.com/)**
 
 ---
 
@@ -29,12 +29,12 @@ Escudería independiente de iRacing con base en Sant Andreu, Barcelona. 4 piloto
   <img src="docs/screenshots/pilotos-equipo.png" width="100%" alt="Pilotos del Equipo - 4 Drivers" />
 </p>
 
-| # | Piloto | Rol | Especialidad | Ficha |
+| # | Piloto | Rol | Especialidad | Ficha Oficial |
 | :--- | :--- | :--- | :--- | :--- |
-| **#1** | **Alberto Trujillo** | Team Principal & Telemetría | Dinámica vehicular, análisis 60Hz | [/pilotos/albertot](https://muntru.me/pilotos/albertot) |
-| **#2** | **Mateo Berbis** | Lead Sprint & Qualy | Vuelta rápida, clasificación | [/pilotos/mateob](https://muntru.me/pilotos/mateob) |
-| **#3** | **Eduardo Chongkan** | Race Engineer & Prototipos | Curvas rápidas, resistencia GTP | [/pilotos/eduardoc](https://muntru.me/pilotos/eduardoc) |
-| **#4** | **Juanlu Carrillo** | Monoplazas Specialist | Alta carga aerodinámica, SFL & F4 | [/pilotos/juanluc](https://muntru.me/pilotos/juanluc) |
+| **#1** | **Alberto Trujillo** | Team Principal & Telemetría | Dinámica vehicular, análisis 60Hz | [/d/albertot](https://muntru.me/d/albertot) |
+| **#2** | **Mateo Berbis** | Lead Sprint & Qualy | Vuelta rápida, clasificación | [/d/mateob](https://muntru.me/d/mateob) |
+| **#3** | **Eduardo Chongkan** | Race Engineer & Prototipos | Curvas rápidas, resistencia GTP | [/d/eduardoc](https://muntru.me/d/eduardoc) |
+| **#4** | **Juanlu Carrillo** | Monoplazas Specialist | Alta carga aerodinámica, SFL & F4 | [/d/juanluc](https://muntru.me/d/juanluc) |
 
 ---
 
@@ -51,9 +51,9 @@ Hemos simplificado la plataforma en dos conceptos esenciales:
 
 Canales públicos, manifiesto de competición y solicitudes de ingreso al equipo.
 
-- **Discord:** Radio oficial de carrera y boxes
-- **YouTube:** [@jostrume18gameplays28](https://youtube.com/@jostrume18gameplays28) — Onboards y telemetría
-- **Twitch:** [muntrumemrt](https://twitch.tv/muntrumemrt) — Live stints de 24 horas
+- **Discord:** Radio oficial de carrera, boxes y briefings de stint
+- **Garage 61:** Telemetría en tiempo real y deltas a 60 Hz en [garage61.net/app/teams/muntrume](https://garage61.net/app/teams/muntrume)
+- **Muntrume AI Copilot:** Inteligencia artificial oficial del equipo vía [ai.trujillomingorance.com](https://ai.trujillomingorance.com/)
 - **Paddock Pass:** Formulario oficial de pruebas en `/paddock`
 
 #### 2. MUNTRUME GARAGE — Área de Ingeniería (Privada)
@@ -116,6 +116,15 @@ Sin descomprimir archivos, sin copiar y pegar carpetas y sin reiniciar iRacing.
 
 ---
 
+### Muntrume AI Copilot (ai.trujillomingorance.com)
+
+Widget flotante inteligente conectado a la IA oficial de ingeniería de Muntrume:
+- **Inferencia en streaming en el Edge:** Respuestas inmediatas en vivo mediante SSE (`Server-Sent Events`).
+- **Asistente de reglajes y telemetría:** Consultas rápidas sobre setups óptimos por coche/circuito, presiones y meteorología.
+- **Acceso Directo:** [ai.trujillomingorance.com](https://ai.trujillomingorance.com/)
+
+---
+
 ### Press Room & Media Wire
 
 <p align="center">
@@ -128,7 +137,7 @@ Wire de noticias en vivo conectado a fuentes oficiales de iRacing, Sim Racing y 
 
 ### Mobile First — 100% Responsive
 
-Optimizado para pantallas móviles (375px, 390px, 412px) con áreas táctiles de 44px, cero desbordamiento horizontal y rendimiento extremo.
+Optimizado para pantallas móviles (375px, 390px, 412px) con áreas táctiles de 44px, selector de tema oscuro/claro, soporte multi-idioma (ES, EN, CA) con detección automática de navegador y cero desbordamiento horizontal.
 
 <p align="center">
   <img src="docs/screenshots/mobile-home.png" width="30%" alt="Mobile Home" />
@@ -140,9 +149,20 @@ Optimizado para pantallas móviles (375px, 390px, 412px) con áreas táctiles de
 
 ### ¿Cómo unirse?
 
-- **Si eres aficionado:** Sigue los onboards en YouTube y la radio en [Discord](https://discord.gg/ehX6B8JUtE).
-- **Si quieres solicitar pruebas:** Accede a [muntru.me/paddock](https://muntru.me/paddock) y completa tu solicitud con tu iRating y experiencia.
+- **Si eres simracer o aficionado:** Conéctate a la radio y telemetría en [Discord](https://discord.gg/ehX6B8JUtE) y compara vueltas en [Garage 61](https://garage61.net/app/teams/muntrume).
+- **Si quieres solicitar pruebas:** Accede a [muntru.me/paddock](https://muntru.me/paddock) y completa tu solicitud con tu iRating y categoría favorita.
 - **Si eres piloto oficial:** Ingresa directamente desde [muntru.me/garage](https://muntru.me/garage) con tus credenciales de equipo.
+
+---
+
+### Contributors
+
+| Contributor | Profile & Contributions | Focus Area |
+| :--- | :--- | :--- |
+| **[@atrumin16](https://github.com/atrumin16)** (Alberto Trujillo Mingorance) | Founder, Team Principal & Lead Simracer | Vehicle dynamics, iRacing telemetry & project lead |
+| **[@AlbertoTrujillo1](https://github.com/AlbertoTrujillo1)** (Alberto Trujillo) | Core Maintainer & Operations | Setup Vault curation & system engineering |
+| **Claude / Antigravity** ([Google DeepMind](https://deepmind.google)) | Advanced Agentic AI Pair Programmer | Cloudflare D1 telemetry cache, mobile optimization, i18n & chatbot engineering |
+| **[@dependabot[bot]](https://github.com/apps/dependabot)** | Automated Dependency Guard | Automated security audits & package updates |
 
 ---
 

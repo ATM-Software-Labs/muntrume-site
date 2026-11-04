@@ -69,3 +69,65 @@ html{-webkit-tap-highlight-color:rgba(16,185,129,.18)}
 .pl-card:active,.pl-link:active{transform:translateY(0) scale(.99)}
 .pl-grid{gap:14px}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+
+/* ========================================================================= */
+/* MUNTRUME LIGHT THEME STYLING                                              */
+/* ========================================================================= */
+html.light body,
+html[data-theme="light"] body {
+  background-color: #F3F5F4 !important;
+  color: #121A17 !important;
+}
+
+html.light header,
+html[data-theme="light"] header,
+html.light footer,
+html[data-theme="light"] footer {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8E5 !important;
+}
+
+html.light .bg-\[\#0E1211\],
+html.light .bg-\[\#080C0A\],
+html.light .bg-\[\#0A0E0D\],
+html.light .bg-\[\#0C1210\],
+html.light .bg-\[\#0E1513\],
+html.light .bg-\[\#0A0F0D\] {
+  background-color: #FFFFFF !important;
+}
+
+html.light .bg-\[\#1A2120\],
+html.light .bg-\[\#121A17\],
+html.light .bg-\[\#141E1A\],
+html.light .bg-\[\#16201C\],
+html.light .bg-\[\#1E2A26\],
+html.light .bg-\[\#161c24\] {
+  background-color: #F8FAF9 !important;
+}
+
+html.light .border-\[\#1A2120\],
+html.light .border-\[\#1E2A26\],
+html.light .border-\[\#242E2C\],
+html.light .border-\[\#1C2523\],
+html.light .border-\[\#2A3331\] {
+  border-color: #E2E8E5 !important;
+}
+
+html.light .text-white,
+html.light .text-\[\#F5F5F5\],
+html.light .text-\[\#E0E6E4\] {
+  color: #0E1412 !important;
+}
+
+html.light .text-\[\#9AA8A3\],
+html.light .text-\[\#8B9A8F\],
+html.light .text-neutral-300,
+html.light .text-neutral-400 {
+  color: #4A5854 !important;
+}
+
+html.light #mobileDrawer {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8E5 !important;
+}

@@ -15,15 +15,13 @@ export const Footer: React.FC = () => {
       <div className="flex items-center gap-4 sm:gap-6 text-[12px] text-[#9AA8A3] whitespace-nowrap overflow-x-auto py-0.5">
         <a href="/pilotos" className="hover:text-white transition-colors">Pilotos</a>
         <span className="text-[#242E2C]">&middot;</span>
+        <a href="/news" className="hover:text-white transition-colors">Noticias</a>
+        <span className="text-[#242E2C]">&middot;</span>
         <a href="/paddock" className="hover:text-white transition-colors">Paddock</a>
         <span className="text-[#242E2C]">&middot;</span>
         <a href="/garage" className="hover:text-white transition-colors">Garage Access</a>
         <span className="text-[#242E2C]">&middot;</span>
         <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Discord</a>
-        <span className="text-[#242E2C]">&middot;</span>
-        <a href="https://www.youtube.com/@jostrume16gameplays28" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">YouTube</a>
-        <span className="text-[#242E2C]">&middot;</span>
-        <a href="https://twitch.tv/muntrumemrt" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Twitch</a>
       </div>
 
       {/* Right: Punto verde parpadeante + Garage 61 Connected · 4 Drivers Active */}

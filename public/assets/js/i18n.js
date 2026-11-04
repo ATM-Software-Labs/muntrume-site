@@ -9,8 +9,8 @@
     try {
       var q = new URLSearchParams(location.search).get("lang");
       if (q && LANGS[q]) { localStorage.setItem(KEY, q); return { lang: q, explicit: true }; }
-      var s = localStorage.getItem(KEY);
-      if (s && LANGS[s]) return { lang: s, explicit: false };
+      var s = localStorage.getItem("muntrume_lang") || localStorage.getItem(KEY);
+      if (s) { s = s.toLowerCase(); if (LANGS[s]) return { lang: s, explicit: false }; }
     } catch (e) {}
     var nav = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || "es"]);
     for (var i = 0; i < nav.length; i++) {

@@ -72,6 +72,18 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
       <span class="text-[11px]">Radio Discord</span>
     </a>
 
+    <!-- Theme Switcher (Dark / Light) -->
+    <button
+      type="button"
+      id="themeToggleBtn"
+      class="flex items-center justify-center w-8 h-8 rounded-lg bg-[#1A2120] hover:bg-[#242E2C] border border-[#242E2C] hover:border-[#00E699]/40 text-[#9AA8A3] hover:text-white transition-all cursor-pointer focus:outline-none shrink-0"
+      title="Cambiar tema (Oscuro / Claro)"
+      aria-label="Cambiar tema"
+    >
+      <svg id="themeSunIcon" class="w-4 h-4 hidden text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+      <svg id="themeMoonIcon" class="w-4 h-4 text-[#00E699]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+    </button>
+
     <!-- Language Switcher con ES 🇪🇸, EN 🇬🇧 y CA con senyera real -->
     <div class="relative inline-block text-left" id="langSwitcherContainer">
       <button 
@@ -172,14 +184,57 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
       <span>Radio Discord</span>
       <span class="w-2 h-2 rounded-full bg-[#00E699] animate-pulse"></span>
     </a>
+    <div class="flex items-center justify-between pt-2">
+      <span class="text-xs font-mono text-[#9AA8A3]">Tema</span>
+      <button
+        type="button"
+        id="themeToggleBtnMobile"
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1A2120] border border-[#242E2C] text-xs font-mono text-white cursor-pointer"
+      >
+        <span id="themeMobileLabel">Modo Oscuro</span>
+      </button>
+    </div>
   </div>
 </div>
 
 <div id="mobileBackdrop"></div>
 
 <script is:inline>
+  // Theme Switcher Logic
+  function applyThemeUI(theme) {
+    var isLight = theme === 'light';
+    var sun = document.getElementById('themeSunIcon');
+    var moon = document.getElementById('themeMoonIcon');
+    var mobileLabel = document.getElementById('themeMobileLabel');
+    if (sun) sun.classList.toggle('hidden', !isLight);
+    if (moon) moon.classList.toggle('hidden', isLight);
+    if (mobileLabel) mobileLabel.textContent = isLight ? 'Modo Claro ☀️' : 'Modo Oscuro 🌙';
+  }
+
+  function toggleTheme() {
+    var isCurrentlyLight = document.documentElement.classList.contains('light');
+    var nextTheme = isCurrentlyLight ? 'dark' : 'light';
+    if (nextTheme === 'light') {
+      document.documentElement.classList.add('light');
+      document.documentElement.classList.remove('dark');
+      document.documentElement.setAttribute('data-theme', 'light');
+    } else {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+    try { localStorage.setItem('muntrume_theme', nextTheme); } catch (e) {}
+    applyThemeUI(nextTheme);
+  }
+
+  var themeBtn = document.getElementById('themeToggleBtn');
+  var themeBtnMobile = document.getElementById('themeToggleBtnMobile');
+  if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
+  if (themeBtnMobile) themeBtnMobile.addEventListener('click', toggleTheme);
+  applyThemeUI(document.documentElement.classList.contains('light') ? 'light' : 'dark');
+
   // Language Switcher Logic
-  function setLanguage(code) {
+  function setLanguage(code, triggerI18n) {
     var label = document.getElementById('currentLangLabel');
     var emoji = document.getElementById('currentFlagEmoji');
     var senyera = document.getElementById('currentSenyeraImg');
@@ -201,13 +256,18 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
 
     try {
       localStorage.setItem('muntrume_lang', code);
+      localStorage.setItem('mm_lang', code.toLowerCase());
       document.documentElement.lang = code.toLowerCase();
     } catch (e) {}
 
     if (dropdown) dropdown.classList.add('hidden');
+
+    if (triggerI18n !== false && window.muntruI18n && typeof window.muntruI18n.set === 'function') {
+      window.muntruI18n.set(code.toLowerCase());
+    }
   }
 
-  // Init Language Switcher on Load
+  // Init Language Switcher on Load (Checks saved preference, otherwise detects browser default)
   (function initLang() {
     var btn = document.getElementById('langSwitcherBtn');
     var dropdown = document.getElementById('langDropdown');
@@ -222,11 +282,29 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
     }
 
     try {
-      var saved = localStorage.getItem('muntrume_lang');
-      if (saved && (saved === 'EN' || saved === 'CA' || saved === 'ES')) {
-        setLanguage(saved);
+      var saved = localStorage.getItem('muntrume_lang') || localStorage.getItem('mm_lang');
+      if (saved) {
+        var s = saved.toUpperCase();
+        if (s === 'EN' || s === 'CA' || s === 'ES') {
+          setLanguage(s, false);
+          return;
+        }
       }
     } catch (e) {}
+
+    // Auto-detect browser language
+    try {
+      var nav = (navigator.language || (navigator.languages && navigator.languages[0]) || 'es').toLowerCase();
+      if (nav.startsWith('ca') || nav === 'val') {
+        setLanguage('CA', false);
+      } else if (nav.startsWith('en')) {
+        setLanguage('EN', false);
+      } else {
+        setLanguage('ES', false);
+      }
+    } catch (err) {
+      setLanguage('ES', false);
+    }
   })();
 
   // Mobile Drawer Logic

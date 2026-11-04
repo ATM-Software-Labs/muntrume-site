@@ -1,0 +1,12 @@
+---
+import { PILOTOS } from '../../lib/pilotos';
+
+export function getStaticPaths() {
+  return PILOTOS.map(p => ({
+    params: { slug: p.slug }
+  }));
+}
+
+const { slug } = Astro.params;
+return Astro.redirect(`/d/${slug}`, 301);
+---

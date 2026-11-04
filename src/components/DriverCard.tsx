@@ -36,7 +36,7 @@ export const DriverCard: React.FC<DriverCardProps> = ({ driver, className = "" }
   const hasLiveStats = driver.irating !== null && driver.irating !== undefined;
   const isPaddock = !driver.irating && (driver.status === "En el Paddock" || !driver.cust_id);
   const formattedIr = hasLiveStats ? `${Math.round(driver.irating! / 100) / 10}k iR` : null;
-  const targetUrl = driver.slug ? `/pilotos/${driver.slug}` : "#";
+  const targetUrl = driver.slug ? `/d/${driver.slug}` : "#";
 
   return (
     <a
