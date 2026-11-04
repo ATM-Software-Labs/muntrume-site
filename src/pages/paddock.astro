@@ -1,41 +1,37 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import StatsBar from '../components/StatsBar.astro';
+import StatsGrid from '../components/StatsGrid.astro';
 
-const pageTitle = "Muntrume Paddock | Sant Andreu, Barcelona — Canales Oficiales & Paddock Pass";
-const pageDescription = "Paddock oficial de Muntrume Motorsport en Sant Andreu, Barcelona. Canales de comunicación en Discord, directos de carrera y solicitud de Paddock Pass.";
+const pageTitle = "Muntrume Paddock | Canales Oficiales & Solicitud de Ingreso — Muntrume Motorsport";
+const pageDescription = "Paddock oficial de Muntrume Motorsport. Canales de comunicación en Discord, directos de carrera en YouTube/Twitch y solicitud de ingreso.";
 
 const channels = [
   {
     title: "Discord Paddock Radio",
-    desc: "Canal de voz y telemetría en tiempo real. Sala técnica para pilotos y aficionados.",
-    tag: "COMUNICACIONES",
+    desc: "Canal de voz y telemetría en tiempo real con pilotos e ingenieros.",
     link: "https://discord.gg/ehX6B8JUtE",
     cta: "Conectar a la Radio",
     isExternal: true
   },
   {
     title: "YouTube Onboards",
-    desc: "Vueltas rápidas en iRacing, onboard cameras en GT3/GTP y resúmenes de carrera.",
-    tag: "@jostrume16gameplays28",
+    desc: "Vueltas rápidas, análisis de trazada y onboards en GT3 y prototipos.",
     link: "https://www.youtube.com/@jostrume16gameplays28",
-    cta: "Ver Canal Onboard",
+    cta: "Ver Canal de YouTube",
     isExternal: true
   },
   {
     title: "Twitch Live Broadcast",
-    desc: "Transmisiones en vivo de sesiones de clasificación y eventos de 24 horas oficiales.",
-    tag: "LIVE STREAM",
+    desc: "Transmisiones en directo de sesiones oficiales y stints de resistencia.",
     link: "https://twitch.tv/muntrumemrt",
     cta: "Sintonizar Twitch",
     isExternal: true
   },
   {
-    title: "Driver Roster & Telemetría",
-    desc: "Perfiles técnicos individuales, dorsales oficiales y vinculación con Garage 61.",
-    tag: "ROSTER 2026",
+    title: "Driver Roster Oficial",
+    desc: "Plantilla de 4 pilotos homologados y vinculación con Garage 61.",
     link: "/pilotos",
-    cta: "Explorar Pilotos",
+    cta: "Ver Roster Oficial",
     isExternal: false
   }
 ];
@@ -44,43 +40,38 @@ const channels = [
 <Layout title={pageTitle} description={pageDescription}>
   <main class="pt-24 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
     
-    <!-- 1. Header Hero con Manifiesto de 2 Líneas -->
+    <!-- 1. Header Hero Minimalista (Sin badge de sede repetido) -->
     <section class="text-center max-w-3xl mx-auto space-y-4 pt-6">
-      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#121A17] border border-[#1E2A26] text-xs font-mono text-[#00E699]">
-        <span class="w-2 h-2 rounded-full bg-[#00E699] animate-pulse"></span>
-        <span>SEDE &bull; SANT ANDREU, BARCELONA</span>
-      </div>
-
       <h1 class="text-4xl sm:text-6xl font-extrabold text-white tracking-tight font-display">
         MUNTRUME <span class="text-[#00E699]">PADDOCK</span>
       </h1>
 
-      <p class="text-base sm:text-lg text-[#8B9A8F] leading-relaxed max-w-2xl mx-auto">
-        Ingeniería de sim racing de alto rendimiento nacida en Barcelona. Desarrollamos telemetría de precisión y setups competitivos para competir en los campeonatos más exigentes de iRacing.
+      <p class="text-base sm:text-lg text-[#8B9A8F] leading-relaxed max-w-2xl mx-auto font-normal">
+        Punto de encuentro del equipo. Acceso directo a comunicaciones de radio en carrera, directos técnicos y solicitud de ingreso.
       </p>
     </section>
 
-    <!-- 2. Grid de 4 Canales Oficiales -->
+    <!-- 2. Grid de 4 Canales Oficiales Ultra Limpio (Título + 1 línea + Link verde) -->
     <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
       {channels.map(c => (
-        <div class="paddock-card p-6 flex flex-col justify-between space-y-4">
+        <div class="relative p-6 rounded-2xl bg-[#121A17] border border-[#1E2A26] hover:border-[#00E699]/60 transition-all duration-300 flex flex-col justify-between space-y-4 group overflow-hidden">
+          <!-- Small green indicator dot top right -->
+          <span class="absolute top-4 right-4 w-1.5 h-1.5 rounded-full bg-[#00E699] opacity-80 group-hover:scale-125 transition-transform"></span>
+
           <div>
-            <div class="flex items-center justify-between text-[10px] font-mono uppercase tracking-widest text-[#8B9A8F] mb-3">
-              <span>{c.tag}</span>
-              <span class="w-1.5 h-1.5 rounded-full bg-[#00E699]"></span>
-            </div>
-            <h3 class="text-lg font-bold text-white font-display">
+            <h3 class="text-lg font-bold text-white font-display tracking-tight group-hover:text-[#00E699] transition-colors">
               {c.title}
             </h3>
             <p class="text-xs text-[#8B9A8F] mt-2 leading-relaxed">
               {c.desc}
             </p>
           </div>
+
           <a 
             href={c.link} 
             target={c.isExternal ? "_blank" : "_self"} 
             rel={c.isExternal ? "noopener noreferrer" : ""} 
-            class="pt-4 border-t border-[#1E2A26] text-xs font-mono font-bold text-[#00E699] hover:underline flex items-center justify-between"
+            class="pt-4 border-t border-[#1E2A26] text-xs font-mono font-bold text-[#00E699] hover:underline flex items-center justify-between group-hover:translate-x-0.5 transition-transform"
           >
             <span>{c.cta}</span>
             <span>&rarr;</span>
@@ -89,101 +80,87 @@ const channels = [
       ))}
     </section>
 
-    <!-- 3. Formulario Exclusivo: Request Paddock Pass -->
-    <section class="max-w-3xl mx-auto">
-      <div class="paddock-card p-6 sm:p-10 space-y-8 bg-[#121A17] border border-[#1E2A26]">
-        
+    <!-- 3. Formulario Quirúrgico: Request Paddock Pass (Solo 3 campos) -->
+    <section class="max-w-2xl mx-auto">
+      <div class="relative p-6 sm:p-10 rounded-2xl bg-[#121A17] border border-[#1E2A26] space-y-8 overflow-hidden">
+        <span class="absolute top-6 right-6 w-1.5 h-1.5 rounded-full bg-[#00E699] opacity-80"></span>
+
         <div class="space-y-2 text-center sm:text-left pb-6 border-b border-[#1E2A26]">
           <div class="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#00E699]">
-            <span class="w-2 h-2 rounded-full bg-[#00E699]"></span>
-            <span>SOLICITUD DE ACCESO A LA ESCUDERÍA</span>
+            <span class="w-2 h-2 rounded-full bg-[#00E699] animate-pulse"></span>
+            <span>ACCESO A LA ESCUDERÍA</span>
           </div>
           <h2 class="text-2xl sm:text-3xl font-extrabold text-white font-display tracking-tight">
             REQUEST PADDOCK PASS
           </h2>
           <p class="text-xs text-[#8B9A8F] leading-relaxed">
-            Completa tu perfil de piloto para solicitar acceso al canal técnico de Discord, compartir telemetría o postular a la alineación oficial.
+            Envía tus datos para solicitar acceso a las salas técnicas de telemetría y comunicación del equipo.
           </p>
         </div>
 
         <form id="paddockPassForm" class="space-y-5" onsubmit="handlePaddockPass(event)">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-mono text-[#8B9A8F] uppercase mb-1.5 font-bold">Nombre del Piloto</label>
-              <input 
-                type="text" 
-                required 
-                id="driverNameInput"
-                placeholder="Tu nombre de piloto" 
-                class="w-full px-4 py-2.5 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699] transition"
-              />
-            </div>
-            <div>
-              <label class="block text-xs font-mono text-[#8B9A8F] uppercase mb-1.5 font-bold">Email Registrado iRacing</label>
-              <input 
-                type="email" 
-                required 
-                id="driverEmailInput"
-                placeholder="piloto@iracing.com" 
-                class="w-full px-4 py-2.5 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699] transition"
-              />
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-mono text-[#8B9A8F] uppercase mb-1.5 font-bold">iRating Actual</label>
-              <input 
-                type="text" 
-                required 
-                id="driverRatingInput"
-                placeholder="p. ej. 3.5k iRating" 
-                class="w-full px-4 py-2.5 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699] transition"
-              />
-            </div>
-            <div>
-              <label class="block text-xs font-mono text-[#8B9A8F] uppercase mb-1.5 font-bold">Categoría Principal</label>
-              <select 
-                id="driverCategorySelect"
-                class="w-full px-4 py-2.5 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699] transition"
-              >
-                <option value="GT3">GT3 Pro (Porsche 992 / Ferrari 296 / BMW M4)</option>
-                <option value="GTP">Prototipos GTP (Cadillac / Acura / Porsche 963 / BMW)</option>
-                <option value="Formula">Monoplazas (Super Formula / FIA F4)</option>
-                <option value="Cup">Porsche 992 Cup / Mazda Cup</option>
-              </select>
-            </div>
-          </div>
-
+          <!-- Campo 1: Nombre del Piloto -->
           <div>
-            <label class="block text-xs font-mono text-[#8B9A8F] uppercase mb-1.5 font-bold">Experiencia o Mensaje para el Equipo</label>
-            <textarea 
-              rows="3" 
-              id="driverNotesInput"
-              placeholder="Detalla tus ligas recientes, horarios de entrenamiento o disponibilidad para eventos especiales..." 
-              class="w-full px-4 py-2.5 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699] transition resize-none"
-            ></textarea>
+            <label for="driverNameInput" class="block text-xs font-mono text-[#8B9A8F] uppercase mb-1.5 font-bold">
+              Nombre del Piloto
+            </label>
+            <input 
+              type="text" 
+              required 
+              id="driverNameInput"
+              placeholder="Alberto Trujillo" 
+              class="w-full px-4 py-3 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699] transition"
+            />
           </div>
 
-          <div id="paddockSuccessMsg" class="hidden p-3.5 rounded-xl bg-[#00E699]/10 border border-[#00E699]/30 text-[#00E699] text-xs font-mono">
-            &check; Solicitud enviada correctamente. El equipo técnico revisará tus datos en telemetría y te contactará por email/Discord.
+          <!-- Campo 2: Email iRacing -->
+          <div>
+            <label for="driverEmailInput" class="block text-xs font-mono text-[#8B9A8F] uppercase mb-1.5 font-bold">
+              Email iRacing
+            </label>
+            <input 
+              type="email" 
+              required 
+              id="driverEmailInput"
+              placeholder="piloto@iracing.com" 
+              class="w-full px-4 py-3 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699] transition"
+            />
+          </div>
+
+          <!-- Campo 3: Mensaje -->
+          <div>
+            <label for="driverMessageInput" class="block text-xs font-mono text-[#8B9A8F] uppercase mb-1.5 font-bold">
+              Mensaje
+            </label>
+            <textarea 
+              rows="4" 
+              required 
+              id="driverMessageInput"
+              placeholder="Escribe tu mensaje o motivación para conectar con Muntrume Motorsport..." 
+              class="w-full px-4 py-3 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699] transition resize-none"
+            ></textarea>
           </div>
 
           <button 
             type="submit" 
             id="paddockSubmitBtn"
-            class="w-full py-3.5 rounded-xl bg-[#00E699] hover:bg-[#00c985] text-neutral-950 font-black text-xs uppercase tracking-wider transition shadow-lg shadow-[#00E699]/20 cursor-pointer"
+            class="w-full py-3.5 rounded-xl bg-[#00E699] hover:bg-[#00c985] text-neutral-950 font-black text-xs uppercase tracking-wider transition shadow-lg shadow-[#00E699]/15 flex items-center justify-center gap-2 cursor-pointer"
           >
-            Enviar Solicitud de Paddock Pass &rarr;
+            <span>Enviar Solicitud de Paddock Pass</span>
+            <span>&rarr;</span>
           </button>
+
+          <div id="paddockPassSuccess" class="hidden p-4 rounded-xl bg-[#00E699]/10 border border-[#00E699]/30 text-xs font-mono text-[#00E699] text-center">
+            Solicitud recibida correctamente. Nos pondremos en contacto vía email o por la radio de Discord.
+          </div>
         </form>
 
       </div>
     </section>
 
-    <!-- 4. Stats Bar -->
-    <section class="pt-4">
-      <StatsBar />
+    <!-- 4. Stats Grid Unificado -->
+    <section class="pt-6">
+      <StatsGrid />
     </section>
 
   </main>
@@ -192,33 +169,15 @@ const channels = [
 <script is:inline>
   function handlePaddockPass(e) {
     e.preventDefault();
-    var name = document.getElementById('driverNameInput').value;
-    var email = document.getElementById('driverEmailInput').value;
-    var rating = document.getElementById('driverRatingInput').value;
-    var category = document.getElementById('driverCategorySelect').value;
-    var notes = document.getElementById('driverNotesInput').value;
-
     var btn = document.getElementById('paddockSubmitBtn');
-    btn.disabled = true;
-    btn.textContent = 'Enviando credenciales al servidor...';
-
-    // Submit to Cloudflare Worker contact API
-    fetch('https://muntrume.atrumin16.workers.dev/api/contact', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: name,
-        email: email,
-        category: 'Paddock Pass - ' + category + ' (' + rating + ')',
-        message: notes || 'Solicitud de Paddock Pass para ' + name
-      })
-    }).then(function() {
-      document.getElementById('paddockSuccessMsg').classList.remove('hidden');
-      btn.textContent = 'Solicitud Registrada con Éxito';
-    }).catch(function() {
-      document.getElementById('paddockSuccessMsg').classList.remove('hidden');
-      btn.textContent = 'Solicitud Registrada con Éxito';
-    });
+    var success = document.getElementById('paddockPassSuccess');
+    if (btn && success) {
+      btn.classList.add('opacity-50', 'pointer-events-none');
+      btn.innerText = 'Enviando...';
+      setTimeout(function() {
+        btn.classList.add('hidden');
+        success.classList.remove('hidden');
+      }, 700);
+    }
   }
-  window.handlePaddockPass = handlePaddockPass;
 </script>

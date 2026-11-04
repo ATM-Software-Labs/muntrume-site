@@ -1,0 +1,82 @@
+---
+interface Props {
+  className?: string;
+  driverNumber?: string;
+}
+
+const { className = "w-full aspect-[4/3]", driverNumber } = Astro.props;
+---
+
+<div class={`relative rounded-xl bg-[#080C0A] border border-[#1E2A26] overflow-hidden flex items-center justify-center group-hover:border-[#00E699]/40 transition-colors ${className}`}>
+  <!-- Subtle background grid lines inside avatar frame -->
+  <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#00E699_1px,transparent_1px)] [background-size:12px_12px]"></div>
+
+  <!-- Motorsport Racing Helmet (Arai / Bell Full-Face Style) -->
+  <svg class="w-24 h-24 sm:w-28 sm:h-28 text-neutral-300 relative z-10 transition-transform duration-300 group-hover:scale-105" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Helmet Outer Shell (Matte Carbon / Dark Slate) -->
+    <path 
+      d="M26 56 C24 38 34 20 54 18 C74 16 82 32 82 48 C82 60 76 74 68 78 C60 82 46 82 36 80 C30 79 27 70 26 56 Z" 
+      fill="#121A17" 
+      stroke="#2A3A34" 
+      stroke-width="2.5" 
+      stroke-linejoin="round"
+    />
+    
+    <!-- Helmet Crown Aero Ridge -->
+    <path 
+      d="M40 22 C48 20 60 21 70 26" 
+      stroke="#3A4D45" 
+      stroke-width="1.8" 
+      stroke-linecap="round"
+    />
+    <path 
+      d="M44 26 C52 24 62 25 72 30" 
+      stroke="#1E2A26" 
+      stroke-width="1.2" 
+      stroke-linecap="round"
+    />
+
+    <!-- Visor Eye-Port & Shield (Dark Iridium with #00E699 Specular Trace) -->
+    <path 
+      d="M32 44 C42 42 66 43 78 48 C77 56 73 62 64 64 C48 64 35 62 31 52 C30 48 31 45 32 44 Z" 
+      fill="#050807" 
+      stroke="#00E699" 
+      stroke-width="1.5"
+    />
+    
+    <!-- Visor Tint Reflection Wave (Green Telemetry Glare) -->
+    <path 
+      d="M38 48 C48 46 64 47 74 51" 
+      stroke="#00E699" 
+      stroke-width="2" 
+      stroke-linecap="round" 
+      class="opacity-80 group-hover:opacity-100 transition-opacity"
+    />
+
+    <!-- Visor Pivot Screw / Hinge Post -->
+    <circle cx="34" cy="50" r="2.5" fill="#1E2A26" stroke="#00E699" stroke-width="1" />
+    
+    <!-- Chin Bar & Front Intake Vents -->
+    <path 
+      d="M36 68 L48 68 M38 72 L46 72" 
+      stroke="#00E699" 
+      stroke-width="1.5" 
+      stroke-linecap="round" 
+      class="opacity-60"
+    />
+
+    <!-- Helmet Rear Spoiler / Diffuser -->
+    <path 
+      d="M74 42 C79 46 81 54 80 62 C83 58 84 50 81 44 Z" 
+      fill="#1A2521" 
+      stroke="#2A3A34" 
+      stroke-width="1"
+    />
+  </svg>
+
+  {driverNumber && (
+    <div class="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-[#121A17]/90 border border-[#1E2A26] text-[10px] font-mono font-bold text-[#00E699]">
+      {driverNumber}
+    </div>
+  )}
+</div>

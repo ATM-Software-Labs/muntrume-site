@@ -92,7 +92,7 @@ La central de ingeniería del equipo.
 | :--- | :--- | :--- |
 | **Setups Certificados** | **239.539** | Firmados con marca oficial MMT, telemetría y variantes Q/R/Wet |
 | **Vehículos iRacing** | **196** | GT3, GTP Hypercars, LMP2, LMP3, Formula, MX-5 y TCR |
-| **Circuitos Calibrados** | **74** | Laser-scanned con datos de clima y goma en pista |
+| **Circuitos Calibrados** | **127** | Laser-scanned con datos de clima y goma en pista |
 | **Pilotos Oficiales** | **4** | Plantilla cerrada con dorsales #1, #2, #3 y #4 |
 
 ---

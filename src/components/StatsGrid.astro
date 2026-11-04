@@ -1,0 +1,56 @@
+---
+interface Props {
+  className?: string;
+}
+
+const { className = "" } = Astro.props;
+
+export const OFFICIAL_STATS = [
+  {
+    number: "239.539",
+    label: "Setups Certificados",
+    detail: "100% .STO con telemetría",
+    tag: "iRacing Vault"
+  },
+  {
+    number: "196",
+    label: "Vehículos Soportados",
+    detail: "GT3, GTP, LMP2 y Monoplazas",
+    tag: "Flota Oficial"
+  },
+  {
+    number: "127",
+    label: "Circuitos Calibrados",
+    detail: "Trazados Laser-Scanned",
+    tag: "Base de Datos"
+  },
+  {
+    number: "4",
+    label: "Pilotos Oficiales",
+    detail: "Dorsales #01, #02, #03, #04",
+    tag: "Plantilla Oficial"
+  }
+];
+---
+
+<div class={`grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 ${className}`}>
+  {OFFICIAL_STATS.map((s) => (
+    <div class="relative group p-4 sm:p-5 rounded-2xl bg-[#121A17] border border-[#1E2A26] hover:border-[#00E699]/60 transition-all duration-300 flex flex-col justify-between overflow-hidden">
+      <div class="flex items-center justify-between gap-2 mb-3">
+        <span class="text-[10px] font-mono uppercase tracking-widest text-[#8B9A8F]">{s.tag}</span>
+        <span class="w-1.5 h-1.5 rounded-full bg-[#00E699] opacity-80 group-hover:scale-125 transition-transform"></span>
+      </div>
+      <div>
+        <div class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight font-display mb-1">
+          {s.number}
+        </div>
+        <div class="text-xs font-bold text-neutral-200">
+          {s.label}
+        </div>
+        <div class="text-[11px] text-[#8B9A8F] font-mono mt-0.5 truncate">
+          {s.detail}
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
