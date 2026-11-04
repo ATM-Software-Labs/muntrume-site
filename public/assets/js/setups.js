@@ -423,23 +423,23 @@ async function handleSetPassword(e) {
 
 // Driver Join Request
 async function handleJoinRequest(e) {
-  e.preventDefault();
-  const name = document.getElementById("reqName").value.trim();
-  const email = document.getElementById("reqEmail").value.trim();
-  const iracing_id = document.getElementById("reqIracingId").value.trim();
-  const car_category = document.getElementById("reqCategory").value.trim();
-  const message = document.getElementById("reqMessage").value.trim();
+  if (e && e.preventDefault) e.preventDefault();
+  const name = document.getElementById("reqName")?.value.trim() || "";
+  const email = document.getElementById("reqEmail")?.value.trim() || "";
+  const iracing_id = document.getElementById("reqIracingId")?.value.trim() || "";
+  const car_category = document.getElementById("reqCategory")?.value.trim() || "";
+  const message = document.getElementById("reqMessage")?.value.trim() || "";
   const website = document.getElementById("reqWebsite")?.value || "";
 
   const feedback = document.getElementById("joinFeedback");
   const errorDiv = document.getElementById("joinError");
   const submitBtn = document.getElementById("joinSubmitBtn");
-  const btnText = document.getElementById("joinBtnText");
+  const btnText = document.getElementById("joinBtnText") || submitBtn;
 
-  feedback.classList.add("hidden");
-  errorDiv.classList.add("hidden");
-  submitBtn.disabled = true;
-  btnText.textContent = "Enviando…";
+  if (feedback) feedback.classList.add("hidden");
+  if (errorDiv) errorDiv.classList.add("hidden");
+  if (submitBtn) submitBtn.disabled = true;
+  if (btnText) btnText.textContent = "Enviando…";
 
   try {
     const res = await fetch(`${API_BASE}/api/setups/request-join`, {
@@ -450,22 +450,29 @@ async function handleJoinRequest(e) {
 
     const data = await res.json().catch(() => ({}));
     if (res.ok && data.success) {
-      feedback.innerHTML = `
-        <div class="font-bold text-white mb-0.5">${data.duplicate ? "ℹ️ Solicitud ya registrada" : "✅ Solicitud enviada"}</div>
-        <div>${escapeHtml(data.message || "Hemos recibido tu solicitud.")}</div>
-      `;
-      feedback.classList.remove("hidden");
-      document.getElementById("joinForm").reset();
+      if (feedback) {
+        feedback.innerHTML = `
+          <div class="font-bold text-white mb-0.5">${data.duplicate ? "ℹ️ Solicitud ya registrada" : "✅ Solicitud enviada"}</div>
+          <div>${escapeHtml(data.message || "Hemos recibido tu solicitud.")}</div>
+        `;
+        feedback.classList.remove("hidden");
+      }
+      const form = document.getElementById("joinForm");
+      if (form) form.reset();
     } else {
-      errorDiv.textContent = data.error || "Error al enviar la solicitud.";
-      errorDiv.classList.remove("hidden");
+      if (errorDiv) {
+        errorDiv.textContent = data.error || "Error al enviar la solicitud.";
+        errorDiv.classList.remove("hidden");
+      }
     }
   } catch (err) {
-    errorDiv.textContent = "Error de conexión con el servidor.";
-    errorDiv.classList.remove("hidden");
+    if (errorDiv) {
+      errorDiv.textContent = "Error de conexión con el servidor.";
+      errorDiv.classList.remove("hidden");
+    }
   } finally {
-    submitBtn.disabled = false;
-    btnText.textContent = "Enviar solicitud a Control de Carrera →";
+    if (submitBtn) submitBtn.disabled = false;
+    if (btnText) btnText.textContent = "Solicitar Acceso al Garage →";
   }
 }
 

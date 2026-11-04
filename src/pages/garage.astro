@@ -434,31 +434,32 @@ const pageDescription = "Engineering, setups .STO validados y telemetría Garage
         </button>
       </form>
 
-      <!-- Join Form -->
-      <form id="joinForm" onsubmit="handleJoinSubmit(event)" class="hidden space-y-3">
+      <!-- Join Form (Simplificado & Sin Bloqueos) -->
+      <form id="joinForm" onsubmit="handleJoinSubmit(event)" class="hidden space-y-3.5">
+        <p class="text-[11px] font-mono text-[#8B9A8F] leading-relaxed">
+          ¿Quieres acceso al Garage para setups y telemetría? Déjanos tu nombre y email de iRacing:
+        </p>
         <div>
-          <label class="block text-[11px] font-mono text-[#8B9A8F] uppercase mb-1">Nombre Completo</label>
-          <input type="text" id="reqName" required placeholder="Nombre de piloto" class="w-full px-4 py-2 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699]" />
+          <label class="block text-[11px] font-mono text-[#8B9A8F] uppercase mb-1">Nombre de Piloto</label>
+          <input type="text" id="reqName" required placeholder="Tu nombre o nick de piloto" class="w-full px-4 py-2.5 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699]" />
         </div>
         <div>
-          <label class="block text-[11px] font-mono text-[#8B9A8F] uppercase mb-1">Correo Electrónico</label>
-          <input type="email" id="reqEmail" required placeholder="tu-email@iracing.com" class="w-full px-4 py-2 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699]" />
+          <label class="block text-[11px] font-mono text-[#8B9A8F] uppercase mb-1">Correo Electrónico (iRacing)</label>
+          <input type="email" id="reqEmail" required placeholder="tu-email@dominio.com" class="w-full px-4 py-2.5 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699]" />
         </div>
         <div>
-          <label class="block text-[11px] font-mono text-[#8B9A8F] uppercase mb-1">iRacing Customer ID</label>
-          <input type="text" id="reqIracingId" required placeholder="p. ej. 123456" class="w-full px-4 py-2 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699]" />
+          <label class="block text-[11px] font-mono text-[#8B9A8F] uppercase mb-1">Mensaje o Categoría (Opcional)</label>
+          <textarea id="reqMessage" rows="2" placeholder="Coche principal, setups que buscas o dudas..." class="w-full px-4 py-2 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699] resize-none"></textarea>
         </div>
-        <div>
-          <label class="block text-[11px] font-mono text-[#8B9A8F] uppercase mb-1">Categoría Principal</label>
-          <input type="text" id="reqCategory" required placeholder="GT3, GTP, Cup..." class="w-full px-4 py-2 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699]" />
-        </div>
-        <div>
-          <label class="block text-[11px] font-mono text-[#8B9A8F] uppercase mb-1">Mensaje para el Equipo</label>
-          <textarea id="reqMessage" rows="2" placeholder="Experiencia en simracing..." class="w-full px-4 py-2 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699] resize-none"></textarea>
-        </div>
+        <input type="hidden" id="reqIracingId" value="" />
+        <input type="hidden" id="reqCategory" value="" />
+        <input type="hidden" id="reqWebsite" value="" />
+
+        <div id="joinFeedback" class="hidden p-3 rounded-xl bg-[#00E699]/10 border border-[#00E699]/30 text-[#00E699] text-xs font-mono"></div>
         <div id="joinError" class="hidden p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-mono"></div>
-        <button type="submit" id="joinSubmitBtn" class="w-full py-2.5 rounded-xl bg-[#00E699] hover:bg-[#00c985] text-neutral-950 font-black text-xs uppercase tracking-wider transition cursor-pointer">
-          Enviar Solicitud al Director de Equipo
+
+        <button type="submit" id="joinSubmitBtn" class="w-full py-3 rounded-xl bg-[#00E699] hover:bg-[#00c985] text-neutral-950 font-black text-xs uppercase tracking-wider transition cursor-pointer">
+          <span id="joinBtnText">Solicitar Acceso al Garage &rarr;</span>
         </button>
       </form>
     </div>
