@@ -267,9 +267,10 @@ const DRIVERS = PILOTOS.map(p => {
           // 4. Actualizar footer coche más usado
           var footer = card.querySelector('.card-footer');
           if (footer && driver.most_used) {
-            var text = 'Más usado: <span class="text-white font-semibold">' + driver.most_used.car + '</span> &middot; <span class="text-[#00E699] font-bold">' + driver.most_used.pct + '%</span>';
+            var esc = function (v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]; }); };
+            var text = 'Más usado: <span class="text-white font-semibold">' + esc(driver.most_used.car) + '</span> &middot; <span class="text-[#00E699] font-bold">' + esc(driver.most_used.pct) + '%</span>';
             if (driver.fav_car && driver.fav_car !== driver.most_used.car) {
-              text += ' | Fav: ' + driver.fav_car;
+              text += ' | Fav: ' + esc(driver.fav_car);
             }
             footer.innerHTML = '<div class="truncate text-[11px] font-mono text-[#9AA8A3]">' + text + '</div>';
           }

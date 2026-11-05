@@ -2001,6 +2001,10 @@ async function handleDispatchTakedown(body, env, ip) {
   if (!url && !slug) {
     return [400, { success: false, error: "Debes indicar la URL o el identificador del despacho a retirar." }];
   }
+  // t259: una retirada = un despacho concreto (sin comodines LIKE), con límite por IP.
+  if (await rateLimited(`takedown:${ip}`, 5, 3600)) return [429, { success: false, error: "Demasiadas solicitudes. Escribe a alberto@trujillomingorance.com." }];
+  if (slug && !/^[a-z0-9-]{3,80}$/.test(slug)) return [400, { success: false, error: "Identificador no válido." }];
+  if (!slug && !/^https?:\/\/[^\s]{8,}$/i.test(url)) return [400, { success: false, error: "Indica la URL completa del artículo original." }];
 
   try {
     let res;
@@ -2010,8 +2014,8 @@ async function handleDispatchTakedown(body, env, ip) {
       ).bind(slug).run();
     } else {
       res = await env.muntrume_vault.prepare(
-        "UPDATE external_dispatches SET status = 'removed' WHERE url_original = ? OR url_original LIKE ?"
-      ).bind(url, `${url}%`).run();
+        "UPDATE external_dispatches SET status = 'removed' WHERE url_original = ?"
+      ).bind(url).run();
     }
 
     await audit(env, email || "legal-notice@muntru.me", "dispatch.takedown", url || slug, `IP: ${ip} · Motivo: ${reason}`);
@@ -2624,12 +2628,15 @@ async function handleDriverStatsSync(body, env, ip, origin) {
   }
 
   // 1. Validar autenticación de seguridad
-  const syncKey = clean(body.sync_key || body.sync_token, 120);
-  const expectedKey = env.IRACING_SYNC_KEY || env.PREFS_SECRET || "mtm_bridge_993381_telemetry";
-
+  // t259: sin claves fijas en el código (eran públicas en el repo). Solo el secreto IRACING_SYNC_KEY.
+  const syncKey = clean(body.sync_key || body.sync_token, 200);
+  const expectedKey = String(env.IRACING_SYNC_KEY || "");
+  if (await rateLimited(`sync:${ip}`, 30, 3600)) return [429, { success: false, error: "Demasiadas sincronizaciones." }];
   let authorized = false;
-  if (syncKey && (syncKey === expectedKey || syncKey === "muntrume-live-sync-2026" || syncKey === "mtm_bridge_993381_telemetry")) {
-    authorized = true;
+  if (syncKey && expectedKey.length >= 24 && syncKey.length === expectedKey.length) {
+    let diff = 0;
+    for (let i = 0; i < syncKey.length; i++) diff |= syncKey.charCodeAt(i) ^ expectedKey.charCodeAt(i);
+    authorized = diff === 0;
   }
 
   if (!authorized) {
@@ -2638,10 +2645,12 @@ async function handleDriverStatsSync(body, env, ip, origin) {
 
   // 2. Extraer y validar los campos de piloto
   const custId = String(body.cust_id || "993381").trim();
+  if (!/^\d{1,10}$/.test(custId)) return [400, { success: false, error: "cust_id no válido." }];
   const irating = typeof body.irating === "number" ? body.irating : parseInt(body.irating, 10);
-  const license = clean(body.license, 20);
-  const favCar = clean(body.fav_car, 60);
-  const favCategory = clean(body.fav_category || "GT3 Endurance", 40);
+  const noTags = (v) => v.replace(/[<>"'`&]/g, "");
+  const license = noTags(clean(body.license, 20));
+  const favCar = noTags(clean(body.fav_car, 60));
+  const favCategory = noTags(clean(body.fav_category || "GT3 Endurance", 40));
 
   if (isNaN(irating) || irating < 100 || irating > 12000) {
     return [400, { success: false, error: "Valor de iRating no válido (100 - 12000)." }];
@@ -3112,6 +3121,10 @@ export default {
     }
     if (request.method === "GET" && url.pathname.replace(/\/+$/, "") === "/api/mail/inbox") {
       if (origin && !isAllowedOrigin(origin)) return reply(403, { error: "Forbidden: Unauthorized origin" });
+      // t259: el buzón solo es visible para Race Control (antes era público).
+      const s = await requireSession(request, {}, env);
+      if (s.error) return reply(s.status, { success: false, error: s.error, messages: [] });
+      if (s.user.role !== "admin") return reply(403, { success: false, error: "Solo Race Control (admins).", messages: [] });
       const out = await handleMailInbox(request, env);
       return reply(out[0], out[1]);
     }
@@ -3209,7 +3222,13 @@ export default {
         case "email_prefs": out = await handleEmailPrefs(body, env, ip); break;
         case "contact": out = await handleContact(body, env, ip); break;
         case "paddock_pass": out = await handlePaddockPass(body, env, ip); break;
-        case "mail_send": out = await handleMailSend(body, env, ip); break;
+        case "mail_send": {
+          // t259: envío solo con sesión de admin (antes era un relay abierto).
+          const ms = await requireSession(request, body, env);
+          if (ms.error) { out = [ms.status, { success: false, error: ms.error }]; break; }
+          if (ms.user.role !== "admin") { out = [403, { success: false, error: "Solo Race Control (admins)." }]; break; }
+          out = await handleMailSend(body, env, ip); break;
+        }
         default:
           if (url.pathname.startsWith("/api/setups/")) return reply(404, { success: false, error: "Ruta no encontrada." });
           if (["ai_chat", "ai_setup", "ask_about"].includes(body.mode)) out = await handleAI(body, env, ip);
