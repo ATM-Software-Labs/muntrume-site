@@ -18,8 +18,8 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
   <!-- Izq: Logo tortuga 24px + MUNTRUME text bold -->
   <a href="/" class="flex items-center gap-2.5 group focus:outline-none shrink-0" title="Muntrume Motorsport - Sant Andreu, Barcelona">
     <img 
-      src="/assets/img/logo-sm.webp" 
-      alt="Muntrume" 
+      src="/assets/img/logo-48.webp" 
+      alt="" 
       class="h-6 w-6 object-contain transition-transform group-hover:scale-105" 
       width="24" 
       height="24" 
@@ -90,8 +90,10 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
         type="button" 
         id="langSwitcherBtn" 
         class="flex items-center gap-1.5 bg-[#1A2120] hover:bg-[#242E2C] border border-[#242E2C] hover:border-[#00E699]/40 rounded-lg px-2.5 py-1.5 text-[12px] font-mono text-white transition-all cursor-pointer focus:outline-none"
-        aria-label="Seleccionar idioma"
+        title="Idioma / Language"
+        aria-haspopup="true"
       >
+        <span class="sr-only">Idioma</span>
         <span id="currentLangIcon" class="flex items-center">
           <img src="/flags/senyera.png" alt="Senyera" class="w-4 h-3 object-contain rounded-xs hidden" id="currentSenyeraImg" />
           <span id="currentFlagEmoji">🇪🇸</span>
@@ -150,10 +152,10 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
   <div class="space-y-6">
     <div class="flex items-center justify-between pb-4 border-b border-[#242E2C]">
       <div class="flex items-center gap-2">
-        <img src="/assets/img/logo-sm.webp" alt="Muntrume" class="h-6 w-auto" width="24" height="24" />
+        <img src="/assets/img/logo-48.webp" alt="" class="h-6 w-auto" width="24" height="24" />
         <span class="font-extrabold text-white text-sm font-display tracking-tight">MUNTRUME</span>
       </div>
-      <button type="button" id="navDrawerCloseBtn" class="p-1 text-[#9AA8A3] hover:text-white rounded-lg focus:outline-none">
+      <button type="button" id="navDrawerCloseBtn" aria-label="Cerrar menú" class="p-1 text-[#9AA8A3] hover:text-white rounded-lg focus:outline-none">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
         </svg>
