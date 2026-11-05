@@ -186,29 +186,11 @@ function switchTab(mode) {
   const tabLoginBtn = document.getElementById("tabLoginBtn");
   const tabJoinBtn = document.getElementById("tabJoinBtn");
 
-  if (mode === "login") {
-    if (loginForm) loginForm.classList.remove("hidden");
-    if (joinForm) joinForm.classList.add("hidden");
-    if (tabLoginBtn) {
-      tabLoginBtn.classList.add("bg-[#121A17]", "text-[#00E699]", "font-bold");
-      tabLoginBtn.classList.remove("text-[#8B9A8F]");
-    }
-    if (tabJoinBtn) {
-      tabJoinBtn.classList.remove("bg-[#121A17]", "text-[#00E699]", "font-bold");
-      tabJoinBtn.classList.add("text-[#8B9A8F]");
-    }
-  } else {
-    if (loginForm) loginForm.classList.add("hidden");
-    if (joinForm) joinForm.classList.remove("hidden");
-    if (tabJoinBtn) {
-      tabJoinBtn.classList.add("bg-[#121A17]", "text-[#00E699]", "font-bold");
-      tabJoinBtn.classList.remove("text-[#8B9A8F]");
-    }
-    if (tabLoginBtn) {
-      tabLoginBtn.classList.remove("bg-[#121A17]", "text-[#00E699]", "font-bold");
-      tabLoginBtn.classList.add("text-[#8B9A8F]");
-    }
-  }
+  var login = mode !== "join";
+  if (loginForm) loginForm.classList.toggle("hidden", !login);
+  if (joinForm) joinForm.classList.toggle("hidden", login);
+  if (tabLoginBtn) tabLoginBtn.classList.toggle("is-on", login);
+  if (tabJoinBtn) tabJoinBtn.classList.toggle("is-on", !login);
 }
 
 function switchAuthTab(mode) {
@@ -408,7 +390,7 @@ async function handleSetPassword(e) {
       document.getElementById("setPasswordForm").reset();
       showVaultView();
       await loadCatalog();
-      showDownloadToast("✅ Contraseña guardada. ¡Bienvenido al Vault!");
+      showDownloadToast("Contraseña guardada", "success");
     } else {
       errorDiv.textContent = data.error || "No se pudo guardar la contraseña.";
       errorDiv.classList.remove("hidden");
@@ -532,7 +514,7 @@ async function handleChangePassword(e) {
       closeChangePasswordModal();
       showVaultView();
       await loadCatalog();
-      showDownloadToast("✅ Contraseña actualizada correctamente. ¡Bienvenido!");
+      showDownloadToast("Contraseña actualizada", "success");
     } else if (res.status === 401) {
       closeChangePasswordModal();
       handleAuthFailure(res, data);
@@ -633,8 +615,8 @@ function showVaultView() {
     if (currentUser.role === 'admin') {
       if (emailDisp) emailDisp.textContent = currentUser.email;
       if (roleBadge) {
-        roleBadge.textContent = "⚡ Race Control Admin";
-        roleBadge.className = "text-[10px] uppercase font-black px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm";
+        roleBadge.textContent = "Race Control";
+        roleBadge.className = "g-badge is-admin";
       }
       if (adminBtn) adminBtn.classList.remove("hidden");
       if (authBtn) authBtn.classList.add("hidden");
@@ -642,8 +624,8 @@ function showVaultView() {
     } else if (currentUser.role === 'guest') {
       if (emailDisp) emailDisp.textContent = "105 Coches · 41.509 Setups";
       if (roleBadge) {
-        roleBadge.textContent = "Vista Previa Catálogo";
-        roleBadge.className = "text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+        roleBadge.textContent = "Vista previa";
+        roleBadge.className = "g-badge is-guest";
       }
       if (adminBtn) adminBtn.classList.add("hidden");
       if (authBtn) authBtn.classList.remove("hidden");
@@ -651,8 +633,8 @@ function showVaultView() {
     } else {
       if (emailDisp) emailDisp.textContent = currentUser.email;
       if (roleBadge) {
-        roleBadge.textContent = "Piloto Oficial";
-        roleBadge.className = "text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+        roleBadge.textContent = "Piloto";
+        roleBadge.className = "g-badge is-pilot";
       }
       if (adminBtn) adminBtn.classList.add("hidden");
       if (authBtn) authBtn.classList.add("hidden");
@@ -711,58 +693,61 @@ async function clearDirHandleFromIdb() {
   } catch (e) {}
 }
 
-async function detectBrowserAndRestoreHandle() {
-  const supportsFS = 'showDirectoryPicker' in window;
+const FS_NOTICE_KEY = "mm_fs_notice_dismissed";
+
+function fsPickerAvailable() {
+  return typeof window.showDirectoryPicker === "function";
+}
+
+function fsNoticeDismissed() {
+  try { return localStorage.getItem(FS_NOTICE_KEY) === "1"; } catch (e) { return false; }
+}
+
+async function syncFsAccessNotice(forceShow) {
+  const el = document.getElementById("fsAccessNotice");
+  if (!el) return;
+  const supportsFS = fsPickerAvailable();
   let isBrave = false;
   try {
     if (navigator.brave && typeof navigator.brave.isBrave === "function") {
       isBrave = await navigator.brave.isBrave();
     }
   } catch (e) {}
-
-  const ua = navigator.userAgent || "";
-  let browserName = "tu navegador actual";
-  if (isBrave) browserName = "Brave Browser";
-  else if (ua.includes("Firefox")) browserName = "Mozilla Firefox";
-  else if (ua.includes("Edg/")) browserName = "Microsoft Edge";
-  else if (ua.includes("Chrome/")) browserName = "Google Chrome";
-  else if (ua.includes("Safari/")) browserName = "Safari";
-
-  detectedBrowserInfo = { isBrave, supportsFS, name: browserName };
-
-  const banner = document.getElementById("browserCompatBanner");
-  const titleEl = document.getElementById("browserCompatBannerTitle");
-  const badgeEl = document.getElementById("browserCompatDetectedBadge");
-  const descEl = document.getElementById("browserCompatBannerDesc");
-  const modalSub = document.getElementById("browserModalSubtitle");
-  const metricStatus = document.getElementById("metricDirectStatus");
-
-  if (!supportsFS) {
-    banner?.classList.remove("hidden");
-    if (isBrave) {
-      if (titleEl) titleEl.textContent = "🦁 Estás en Brave Browser: El guardado directo en carpetas está desactivado por defecto";
-      if (badgeEl) badgeEl.textContent = "Brave Detectado";
-      if (descEl) {
-        descEl.innerHTML = 'Brave bloquea de fábrica el acceso a <code class="text-emerald-400 font-mono">Documents\\iRacing\\setups</code>. Pulsa <strong>"🚀 Abrir en Microsoft Edge"</strong> para guardar directo sin configurar nada, o pulsa <strong>"🦁 Cómo activarlo en Brave"</strong> (tarda 10 segundos en <code class="text-amber-300 font-mono">brave://flags/#file-system-access-api</code>).';
-      }
-      if (modalSub) modalSub.textContent = "Brave Browser detectado · Activa File System Access API o abre con Edge/Chrome";
-    } else {
-      if (titleEl) titleEl.textContent = `⚠️ ${browserName} no soporta guardado directo en carpetas de iRacing`;
-      if (badgeEl) badgeEl.textContent = `${browserName} no compatible con Direct Sync`;
-      if (descEl) {
-        descEl.innerHTML = `Para que todos los setups se descarguen automáticamente en su ruta exacta (<code class="text-emerald-400 font-mono">Documents\\iRacing\\setups\\&lt;coche&gt;\\...</code>), debes abrir esta página con <strong>Microsoft Edge</strong> o <strong>Google Chrome</strong>.`;
-      }
-      if (modalSub) modalSub.textContent = `${browserName} no incluye File System Access API · Abre con Microsoft Edge o Google Chrome`;
-    }
-    if (metricStatus) {
-      metricStatus.textContent = isBrave ? "Activar en Brave / Edge" : "Abrir con Edge/Chrome";
-      metricStatus.className = "text-sm font-black text-amber-400 mt-1 cursor-pointer underline";
-      metricStatus.onclick = () => openBrowserCompatModal();
-    }
+  detectedBrowserInfo = { isBrave, supportsFS, name: isBrave ? "Brave" : "navegador" };
+  if (supportsFS) {
+    el.hidden = true;
     return;
   }
+  if (!forceShow && fsNoticeDismissed()) {
+    el.hidden = true;
+    const status = document.getElementById("metricDirectStatus");
+    if (status && !iracingDirHandle) status.textContent = "Solo descarga de archivo";
+    return;
+  }
+  const braveBox = document.getElementById("fsNoticeBrave");
+  const otherBox = document.getElementById("fsNoticeOther");
+  if (braveBox) braveBox.hidden = !isBrave;
+  if (otherBox) otherBox.hidden = isBrave;
+  el.hidden = false;
+  const status = document.getElementById("metricDirectStatus");
+  if (status && !iracingDirHandle) status.textContent = "Solo descarga de archivo";
+}
 
-  // If File System Access API IS supported, check if we have a saved handle in IndexedDB
+function dismissFsAccessNotice() {
+  try { localStorage.setItem(FS_NOTICE_KEY, "1"); } catch (e) {}
+  const el = document.getElementById("fsAccessNotice");
+  if (el) el.hidden = true;
+}
+
+async function detectBrowserAndRestoreHandle() {
+  if (!fsPickerAvailable()) {
+    await syncFsAccessNotice(false);
+    return;
+  }
+  detectedBrowserInfo = { isBrave: false, supportsFS: true, name: "navegador" };
+  const fsNote = document.getElementById("fsAccessNotice");
+  if (fsNote) fsNote.hidden = true;
+
   const savedHandle = await loadDirHandleFromIdb();
   if (savedHandle) {
     try {
@@ -780,6 +765,7 @@ async function detectBrowserAndRestoreHandle() {
       }
     } catch (e) {}
   }
+  if (!iracingDirHandle) updateLinkDirectoryUI(false);
 }
 
 async function reconnectSavedDirectory() {
@@ -793,7 +779,7 @@ async function reconnectSavedDirectory() {
       savedPendingDirHandle = null;
       document.getElementById("savedFolderReconnectBanner")?.classList.add("hidden");
       updateLinkDirectoryUI(true, iracingDirHandle.name);
-      showDownloadToast(`✅ Reconectado a carpeta iRacing: ${iracingDirHandle.name}`);
+      showDownloadToast("Carpeta reconectada", "success", iracingDirHandle.name);
     }
   } catch (e) {
     toggleLinkDirectory();
@@ -801,39 +787,45 @@ async function reconnectSavedDirectory() {
 }
 
 function openBrowserCompatModal() {
-  document.getElementById("browserCompatModal")?.classList.remove("hidden");
+  syncFsAccessNotice(true).then(function () {
+    const el = document.getElementById("fsAccessNotice");
+    const details = el && el.querySelector("details");
+    if (details) details.open = true;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (el && el.scrollIntoView) el.scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+  });
 }
 
 function closeBrowserCompatModal() {
-  document.getElementById("browserCompatModal")?.classList.add("hidden");
+  dismissFsAccessNotice();
 }
 
 function copyBraveFlagUrl() {
   const flagUrl = "brave://flags/#file-system-access-api";
-  navigator.clipboard.writeText(flagUrl).then(() => {
-    showDownloadToast("📋 Copiado: brave://flags/#file-system-access-api — Pégalo en una pestaña nueva de Brave y pon Enabled");
-    alert("✅ Copiado al portapapeles:\n\nbrave://flags/#file-system-access-api\n\n1. Abre una pestaña nueva en Brave y pégalo arriba.\n2. Pon 'File System Access API' en Enabled.\n3. Pulsa Relaunch abajo a la derecha.");
-  }).catch(() => {
-    prompt("Copia y pega esta dirección en la barra de Brave:", flagUrl);
-  });
+  const ok = function () { showDownloadToast("Dirección copiada", "success"); };
+  const fail = function () { showDownloadToast("No se pudo copiar. Selecciona la dirección del aviso.", "warning"); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(flagUrl).then(ok).catch(fail);
+  } else fail();
 }
 
 function copyVaultUrlForChrome() {
-  const url = "https://muntru.me/setups";
-  navigator.clipboard.writeText(url).then(() => {
-    showDownloadToast("📋 URL copiada: https://muntru.me/setups");
-    alert("✅ Enlace copiado: https://muntru.me/setups\n\nPégalo en Google Chrome o Microsoft Edge para guardar directamente en tu carpeta Documents\\iRacing\\setups.");
-  });
+  const url = "https://muntru.me/garage";
+  const ok = function () { showDownloadToast("Enlace copiado", "success"); };
+  const fail = function () { showDownloadToast("No se pudo copiar el enlace.", "warning"); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(ok).catch(fail);
+  } else fail();
 }
 
 async function toggleLinkDirectory() {
   if (currentUser && currentUser.role === 'guest') {
-    alert("Estás en modo Vista Previa. Para vincular tu carpeta local de iRacing y sincronizar setups, inicia sesión con tu cuenta de piloto.");
+    showDownloadToast("Entra con tu cuenta de piloto para vincular la carpeta.", "warning");
     showAuthGate();
     return;
   }
 
-  if (!('showDirectoryPicker' in window)) {
+  if (!fsPickerAvailable()) {
     openBrowserCompatModal();
     return;
   }
@@ -857,7 +849,7 @@ async function toggleLinkDirectory() {
         savedPendingDirHandle = null;
         document.getElementById("savedFolderReconnectBanner")?.classList.add("hidden");
         updateLinkDirectoryUI(true, iracingDirHandle.name);
-        showDownloadToast(`✅ Carpeta vinculada: ${iracingDirHandle.name}`);
+        showDownloadToast("Carpeta vinculada", "success", iracingDirHandle.name);
         return;
       }
     } catch (e) {}
@@ -873,11 +865,11 @@ async function toggleLinkDirectory() {
     await saveDirHandleToIdb(iracingDirHandle);
     document.getElementById("savedFolderReconnectBanner")?.classList.add("hidden");
     updateLinkDirectoryUI(true, iracingDirHandle.name);
-    showDownloadToast(`✅ Carpeta vinculada: ${iracingDirHandle.name}`);
+    showDownloadToast("Carpeta vinculada", "success", iracingDirHandle.name);
   } catch (err) {
     if (err.name !== 'AbortError') {
       console.error("DirectoryPicker error:", err);
-      alert("No se pudo acceder a la carpeta: " + err.message);
+      showDownloadToast("No se pudo acceder a la carpeta", "error", err.message);
     }
   }
 }
@@ -885,7 +877,7 @@ async function toggleLinkDirectory() {
 // Smart auto-connection on download so every file lands in its exact path
 async function ensureDirectoryHandleForDownload() {
   if (iracingDirHandle) return iracingDirHandle;
-  if (!('showDirectoryPicker' in window)) return null;
+  if (!(fsPickerAvailable())) return null;
 
   if (savedPendingDirHandle) {
     try {
@@ -1004,23 +996,19 @@ function buildExactPathInstallerBat() {
 }
 
 function updateLinkDirectoryUI(linked, folderName = "") {
-  const btn = document.getElementById("linkFolderBtn");
   const text = document.getElementById("linkFolderText");
   const metricStatus = document.getElementById("metricDirectStatus");
-
-  if (linked) {
-    if (btn) btn.className = "px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 border border-emerald-400 text-xs font-black text-neutral-950 transition flex items-center gap-1.5 shadow-lg shadow-emerald-500/20";
-    if (text) text.textContent = `⚡ iRacing Direct: ${folderName || 'Vinculado'}`;
-    if (metricStatus) {
-      metricStatus.textContent = "Sincronizado";
-      metricStatus.className = "text-2xl font-black text-emerald-400 mt-1";
-    }
-  } else {
-    if (btn) btn.className = "px-3.5 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-xs font-bold text-emerald-400 transition flex items-center gap-1.5 shadow";
-    if (text) text.textContent = "📁 Vincular Carpeta iRacing";
-    if (metricStatus && ('showDirectoryPicker' in window)) {
-      metricStatus.textContent = "Listo";
-      metricStatus.className = "text-2xl font-black text-emerald-400 mt-1";
+  if (text) text.textContent = linked ? "Carpeta vinculada" : "Vincular carpeta de iRacing";
+  if (metricStatus) {
+    if (linked && folderName) {
+      metricStatus.textContent = folderName;
+      metricStatus.setAttribute("data-no-i18n", "");
+    } else if (fsPickerAvailable()) {
+      metricStatus.textContent = "Listo para vincular";
+      metricStatus.removeAttribute("data-no-i18n");
+    } else {
+      metricStatus.textContent = "Solo descarga de archivo";
+      metricStatus.removeAttribute("data-no-i18n");
     }
   }
   applyFilters();
@@ -1043,7 +1031,7 @@ function unpackCompactRows(rows) {
 }
 
 async function loadCatalog() {
-  const skeleton = document.getElementById("loadingSkeleton");
+  const skeleton = document.getElementById("loadingSkeleton") || document.getElementById("setupsLoading");
   const grid = document.getElementById("setupsGrid");
   skeleton?.classList.remove("hidden");
   if (grid) grid.innerHTML = "";
@@ -1241,22 +1229,16 @@ function setViewMode(mode) {
   const ftpBtn = document.getElementById("viewModeFtpBtn");
   const toggleAllBtn = document.getElementById("toggleAllFoldersBtn");
 
-  [foldersBtn, listBtn, ftpBtn].forEach(btn => {
-    btn?.classList.remove("bg-[#161c24]", "text-emerald-400", "shadow");
-    btn?.classList.add("text-neutral-400");
-  });
+  [foldersBtn, listBtn, ftpBtn].forEach(btn => btn?.classList.remove("is-on"));
 
   if (mode === "folders") {
-    foldersBtn?.classList.add("bg-[#161c24]", "text-emerald-400", "shadow");
-    foldersBtn?.classList.remove("text-neutral-400");
+    foldersBtn?.classList.add("is-on");
     toggleAllBtn?.classList.remove("hidden");
   } else if (mode === "list") {
-    listBtn?.classList.add("bg-[#161c24]", "text-emerald-400", "shadow");
-    listBtn?.classList.remove("text-neutral-400");
+    listBtn?.classList.add("is-on");
     toggleAllBtn?.classList.add("hidden");
   } else if (mode === "ftp") {
-    ftpBtn?.classList.add("bg-[#161c24]", "text-emerald-400", "shadow");
-    ftpBtn?.classList.remove("text-neutral-400");
+    ftpBtn?.classList.add("is-on");
     toggleAllBtn?.classList.add("hidden");
   }
 
@@ -1351,7 +1333,7 @@ function toggleAllFolderAccordions() {
   allFoldersExpanded = !allFoldersExpanded;
   const toggleBtnText = document.getElementById("toggleAllFoldersText");
   if (toggleBtnText) {
-    toggleBtnText.textContent = allFoldersExpanded ? "Plegar Todo" : "Desplegar Todo";
+    toggleBtnText.textContent = allFoldersExpanded ? "Plegar todo" : "Desplegar todo";
   }
 
   const visibleFolders = currentOrderedFolders.slice(0, visibleFoldersLimit);
@@ -1550,7 +1532,7 @@ function renderVisibleSlice() {
   // VIEW MODE 1: CARPETAS (Paginado + Lazy Render sin lag)
   // ========================================================
   if (currentViewMode === "folders") {
-    grid.className = "space-y-4";
+    grid.className = "g-setups";
     const slice = currentOrderedFolders.slice(0, visibleFoldersLimit);
     const remaining = currentOrderedFolders.length - slice.length;
 
@@ -1683,7 +1665,7 @@ function renderVisibleSlice() {
       }
     }
 
-    grid.className = "space-y-3 font-mono";
+    grid.className = "g-setups g-setups--ftp";
 
     const rowsHtml = slice.map((s, idx) => {
       const carName = CAR_LABELS[s.car] || s.car;
@@ -1801,7 +1783,7 @@ function renderVisibleSlice() {
     }
   }
 
-  grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3";
+  grid.className = "g-setups g-setups--list";
   grid.innerHTML = slice.map(s => {
     const carName = CAR_LABELS[s.car] || s.car;
     const sizeKb = (s.size_bytes / 1024).toFixed(1);
@@ -2041,7 +2023,7 @@ async function downloadFolder(folderKey) {
 
   const folder = currentFoldersMap[folderKey];
   if (!folder || !folder.setups || folder.setups.length === 0) {
-    alert("No hay setups en esta carpeta.");
+    showDownloadToast("No hay setups en esta carpeta", "warning");
     return;
   }
 
@@ -2061,7 +2043,7 @@ async function downloadFolder(folderKey) {
     });
 
     if (!setupsToDownload || setupsToDownload.length === 0) {
-      alert("No se pudieron obtener los archivos de la carpeta.");
+      showDownloadToast("No se pudieron obtener los archivos de la carpeta.");
       return;
     }
 
@@ -2083,7 +2065,7 @@ async function downloadFolder(folderKey) {
         }
       }
 
-      showDownloadToast(`✅ Guardados ${saved}/${setupsToDownload.length} setups en Documents\\iRacing\\setups\\${targetRelPath}`);
+      showDownloadToast("Setups guardados", "success", saved + "/" + setupsToDownload.length);
       return;
     }
 
@@ -2113,15 +2095,12 @@ async function downloadFolder(folderKey) {
       link.click();
       document.body.removeChild(link);
 
-      showDownloadToast(`📥 Descargado con ruta exacta + auto-instalador: ${zipFilename}`);
-      if (!('showDirectoryPicker' in window) && !isMobileDevice()) {
-        openBrowserCompatModal();
-      }
+      showDownloadToast("Archivo descargado", "info", zipFilename);
       return;
     }
   } catch (err) {
     console.error("Error descargando carpeta:", err);
-    alert("Error al descargar la carpeta completa.");
+    showDownloadToast("Error al descargar la carpeta completa.");
   } finally {
     freeTemporaryBase64Memory();
     if (btn) btn.disabled = false;
@@ -2181,7 +2160,7 @@ async function downloadSetup(setupId, fallbackFilename) {
       const data = await res.json().catch(() => ({}));
       if (handleAuthFailure(res, data)) return;
       if (!res.ok || !data.success || !data.content_base64) {
-        alert(data.error || "No se pudo obtener el archivo de setup.");
+        showDownloadToast(data.error || "No se pudo obtener el archivo de setup.");
         return;
       }
 
@@ -2202,7 +2181,7 @@ async function downloadSetup(setupId, fallbackFilename) {
         const relDisplay = resolved.relDisplay;
         await writeSetupBytesToTargets(resolved, filename, byteArray);
 
-        showDownloadToast(`✅ Guardado en su ruta: setups\\${relDisplay}\\${filename}`);
+        showDownloadToast("Setup guardado", "success", filename);
         return;
       } catch (fsErr) {
         console.warn("Fallo escribiendo directo en disco:", fsErr);
@@ -2218,12 +2197,9 @@ async function downloadSetup(setupId, fallbackFilename) {
     link.click();
     document.body.removeChild(link);
 
-    showDownloadToast(`📥 Descargado: ${filename}`);
-    if (!('showDirectoryPicker' in window) && !isMobileDevice()) {
-      openBrowserCompatModal();
-    }
+    showDownloadToast("Archivo descargado", "info", filename);
   } catch (err) {
-    alert("Error de conexión al descargar setup.");
+    showDownloadToast("Error de conexión al descargar setup.");
   } finally {
     freeTemporaryBase64Memory();
   }
@@ -2242,7 +2218,7 @@ async function downloadAllVisibleSetups() {
   }
 
   if (!currentlyFilteredSetups || currentlyFilteredSetups.length === 0) {
-    alert("No hay setups visibles para descargar con los filtros actuales.");
+    showDownloadToast("No hay setups con este filtro", "warning");
     return;
   }
 
@@ -2264,7 +2240,7 @@ async function downloadAllVisibleSetups() {
     });
 
     if (!setupsList || setupsList.length === 0) {
-      alert("No se pudieron obtener los setups en lote.");
+      showDownloadToast("No se pudieron obtener los setups en lote.");
       return;
     }
 
@@ -2287,7 +2263,7 @@ async function downloadAllVisibleSetups() {
         }
       }
 
-      showDownloadToast(`✅ ¡${savedCount} setups guardados directamente en su ruta exacta de iRacing!`);
+      showDownloadToast("Setups guardados", "success", String(savedCount));
       return;
     }
 
@@ -2316,15 +2292,12 @@ async function downloadAllVisibleSetups() {
       link.click();
       document.body.removeChild(link);
 
-      showDownloadToast(`📥 Descargado ZIP con ruta exacta (${setupsList.length} setups)`);
-      if (!('showDirectoryPicker' in window) && !isMobileDevice()) {
-        openBrowserCompatModal();
-      }
+      showDownloadToast("Archivo descargado", "info", String(setupsList.length));
       return;
     }
   } catch (err) {
     console.error("Error en descarga por lote:", err);
-    alert("Error de conexión al descargar lote de setups.");
+    showDownloadToast("Error de conexión al descargar lote de setups.");
   } finally {
     freeTemporaryBase64Memory();
     if (btn) btn.disabled = false;
@@ -2336,21 +2309,23 @@ async function downloadAllVisibleSetups() {
 function copySetupPath(relativePath) {
   const fullPath = `Documents\\iRacing\\setups\\${relativePath}`;
   navigator.clipboard.writeText(fullPath).then(() => {
-    showDownloadToast(`📋 Ruta copiada al portapapeles`);
+    showDownloadToast("Ruta copiada", "success");
   }).catch(() => {
     prompt("Copia la ruta de iRacing:", fullPath);
   });
 }
 
-function showDownloadToast(msg) {
-  const toast = document.getElementById("downloadFeedback");
-  const toastText = document.getElementById("downloadFeedbackText");
-  if (toast && toastText) {
-    toastText.textContent = msg;
-    toast.classList.remove("hidden");
-    setTimeout(() => {
-      toast.classList.add("hidden");
-    }, 4000);
+function showDownloadToast(msg, severity, detail) {
+  var raw = String(msg || "");
+  var text = raw.replace(/^(?:✅|📥|📋|🧠|⚡|⚠️|🦁)+\s*/u, "").trim();
+  var sev = severity || ((/no se pudo|error|fallo/i.test(text)) ? "error" : (/guardad|vinculad|copiad|actualizad|reconect|bienvenido/i.test(text) ? "success" : "info"));
+  if (window.muntruNotice) {
+    window.muntruNotice.show({
+      severity: sev,
+      title: text,
+      message: detail ? String(detail) : "",
+      translateMessage: false
+    });
   }
 }
 
@@ -2388,20 +2363,15 @@ async function adminApi(path, payload) {
 }
 
 function showAdminNotice(text, kind) {
-  const el = document.getElementById("adminNotice");
-  if (!el) return;
-  const styles = {
-    ok: "bg-emerald-500/10 border border-emerald-500/20 text-emerald-300",
-    warn: "bg-amber-500/10 border border-amber-500/20 text-amber-300",
-    error: "bg-red-500/10 border border-red-500/20 text-red-400"
-  };
-  el.className = `mb-4 p-3 rounded-xl text-xs ${styles[kind] || styles.ok}`;
-  el.textContent = text;
-  el.classList.remove("hidden");
+  const map = { ok: "success", warn: "warning", error: "error" };
+  if (window.muntruNotice) {
+    window.muntruNotice.show({ severity: map[kind] || "info", title: String(text || ""), source: "admin" });
+    return;
+  }
 }
 
 function hideAdminNotice() {
-  document.getElementById("adminNotice")?.classList.add("hidden");
+  window.muntruNotice?.dismissSource("admin");
 }
 
 async function openAdminModal() {
@@ -2787,7 +2757,7 @@ Una vez dentro, pulsa «Vincular carpeta iRacing» y elige Documentos\\iRacing\\
 Muntrume Motorsport · Control de Carrera`;
 
   navigator.clipboard.writeText(template).then(() => {
-    showDownloadToast("📋 Mensaje copiado al portapapeles");
+    showDownloadToast("Mensaje copiado", "success");
   }).catch(() => {
     prompt("Copia el mensaje:", template);
   });
@@ -3588,10 +3558,10 @@ async function handleLiveIbtUpload(event) {
 
     if (badge) badge.textContent = `✅ .IBT Analizado: ${setupShort}`;
     await renderAiTrainerForSetup(currentPreviewSetup || { car: liveModel.car, circuit: trackName, filename: setupShort }, liveModel);
-    showDownloadToast(`🧠 Telemetría .IBT procesada a 60 Hz: ${setupShort} (${vmaxKmh} km/h)`);
+    showDownloadToast("Telemetría leída", "info", setupShort);
   } catch (err) {
     console.error("Error procesando .ibt en vivo:", err);
-    alert("No se pudo analizar el archivo .ibt: " + err.message);
+    showDownloadToast("No se pudo leer el archivo de telemetría", "error", err.message);
   } finally {
     event.target.value = "";
   }
@@ -3632,13 +3602,9 @@ const MMT_CATEGORIES = {
 };
 
 function selectMmtCategory(cat) {
-  document.querySelectorAll(".mmt-cat-pill").forEach(p => {
-    p.className = "mmt-cat-pill px-3 py-1.5 rounded-xl bg-[#0e1217] text-neutral-300 hover:text-white border border-white/5 hover:border-emerald-500/30 transition";
-  });
+  document.querySelectorAll(".mmt-cat-pill").forEach(p => p.classList.remove("is-on"));
   const activeBtn = document.getElementById(`catPill-${cat}`);
-  if (activeBtn) {
-    activeBtn.className = "mmt-cat-pill px-3 py-1.5 rounded-xl bg-emerald-500 text-neutral-950 font-bold transition";
-  }
+  if (activeBtn) activeBtn.classList.add("is-on");
 
   const carSel = document.getElementById("carSelect");
   if (!carSel) return;
@@ -3687,6 +3653,7 @@ if (typeof window !== "undefined") {
   window.onFilterChange = onFilterChange;
   window.configureG61TokenPrompt = configureG61TokenPrompt;
   window.openBrowserCompatModal = openBrowserCompatModal;
+  window.dismissFsAccessNotice = dismissFsAccessNotice;
   window.closeBrowserCompatModal = closeBrowserCompatModal;
   window.copyBraveFlagUrl = copyBraveFlagUrl;
   window.copyVaultUrlForChrome = copyVaultUrlForChrome;

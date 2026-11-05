@@ -109,7 +109,7 @@ const pageUrl = "https://muntru.me/legal/retirada";
         </div>
 
         <!-- Banner de estado -->
-        <div id="statusBanner" class="hidden p-4 rounded-xl font-mono text-xs leading-relaxed"></div>
+        <div id="statusBanner" hidden></div>
       </form>
 
       <!-- Garantía legal -->
@@ -133,7 +133,8 @@ const pageUrl = "https://muntru.me/legal/retirada";
         e.preventDefault();
         btn.disabled = true;
         btn.innerHTML = '<span>Procesando retirada...</span>';
-        banner.className = 'hidden';
+        banner.hidden = true;
+        banner.replaceChildren();
 
         const rawUrl = document.getElementById('articleUrl').value.trim();
         const email = document.getElementById('claimantEmail').value.trim();
@@ -158,16 +159,13 @@ const pageUrl = "https://muntru.me/legal/retirada";
 
           const data = await res.json();
           if (res.ok && data.success) {
-            banner.className = 'p-4 rounded-xl font-mono text-xs leading-relaxed bg-emerald-500/10 border border-emerald-500/30 text-emerald-400';
-            banner.innerHTML = `<strong>Éxito:</strong> ${data.message || 'El contenido ha sido retirado inmediatamente.'} La URL devolverá a partir de ahora HTTP 410 Gone.`;
+            window.muntruNotice.show({ inline: banner, severity: "success", title: "Contenido retirado", message: data.message || "La URL devolverá HTTP 410 Gone.", translateMessage: !data.message, dismissible: false, source: "takedown" });
             form.reset();
           } else {
-            banner.className = 'p-4 rounded-xl font-mono text-xs leading-relaxed bg-red-500/10 border border-red-500/30 text-red-400';
-            banner.innerHTML = `<strong>Error:</strong> ${data.error || 'No se pudo completar la solicitud. Por favor contacta a alberto@trujillomingorance.com'}`;
+            window.muntruNotice.show({ inline: banner, severity: "error", title: "No se pudo retirar el contenido", message: data.error || "Escribe a alberto@trujillomingorance.com.", translateMessage: !data.error, dismissible: false, source: "takedown" });
           }
         } catch (err) {
-          banner.className = 'p-4 rounded-xl font-mono text-xs leading-relaxed bg-red-500/10 border border-red-500/30 text-red-400';
-          banner.innerHTML = '<strong>Error de red:</strong> No se pudo contactar con el servicio de retirada. Contacta a alberto@trujillomingorance.com para asistencia directa.';
+          window.muntruNotice.show({ inline: banner, severity: "error", title: "Sin conexión", message: "No se pudo contactar con el servicio de retirada. Escribe a alberto@trujillomingorance.com.", dismissible: false, source: "takedown" });
         } finally {
           btn.disabled = false;
           btn.innerHTML = '<span>Ejecutar Retirada Inmediata</span> <span>&rarr;</span>';

@@ -168,7 +168,7 @@ const finalSchema = schemaJson || defaultSchema;
 
   <link rel="stylesheet" href="/assets/css/tailwind.min.css?v=26s5.0" />
   <link rel="stylesheet" href="/assets/css/mobile.css?v=t263" />
-  <link rel="stylesheet" href="/assets/css/racing.css?v=t269" />
+  <link rel="stylesheet" href="/assets/css/racing.css?v=t272" />
 
   <!-- Core Dark Racing System CSS -->
   <style is:global>
@@ -262,7 +262,7 @@ const finalSchema = schemaJson || defaultSchema;
 
   <!-- Core Scripts -->
   <script is:inline src="/assets/js/vpfix.js?v=m9"></script>
-  <script is:inline src="/assets/js/i18n.js?v=t264"></script>
+  <script is:inline src="/assets/js/i18n.js?v=t272"></script>
 </head>
 <body class="bg-[#080C0A] text-neutral-100 antialiased selection:bg-[#00E699] selection:text-neutral-950 font-sans min-h-screen flex flex-col justify-between relative">
   
@@ -279,12 +279,14 @@ const finalSchema = schemaJson || defaultSchema;
   {!hideNav && <Navbar currentPath={Astro.url.pathname} />}
   
   <main id="main-content" tabindex="-1" class="flex-grow relative z-10">
+    <div id="muntruNoticeStack" class="m-notice-stack" hidden></div>
     <slot />
   </main>
 
   {!hideFooter && <Footer />}
   <MuntrumeChatbot />
 
+  <script is:inline src="/assets/js/notices.js?v=t272"></script>
   <script src="/assets/js/motion.js?v=t269" defer></script>
 </body>
 </html>
