@@ -9,7 +9,18 @@
   // Clear token from URL bar/history immediately after reading
   if (location.hash) history.replaceState(null, "", location.pathname);
   const $ = (id) => document.getElementById(id);
-  const msg = (text, kind) => { const m = $("msg"); m.textContent = text; m.className = "msg " + (kind || "ok"); };
+  const msg = (text, kind) => {
+    const map = { ok: "success", err: "error", error: "error", warn: "warning" };
+    const host = $("msg");
+    if (!host) return;
+    host.className = "";
+    host.hidden = false;
+    if (window.muntruNotice) {
+      window.muntruNotice.show({ inline: host, severity: map[kind] || "success", title: text, dismissible: false, source: "email-prefs" });
+    } else {
+      host.textContent = text;
+    }
+  };
   const labels = { new_setups: "Novedades del Setup Vault", team_news: "Noticias del equipo" };
   const browserTz = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { return ""; } })();
   
