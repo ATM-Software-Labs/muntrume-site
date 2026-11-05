@@ -443,7 +443,7 @@ const pageDescription = "Consola de Administración institucional de Muntrume Mo
             <span>Arquitectura 100% Segura Contra Baneos de iRacing</span>
           </div>
           <p class="text-xs text-neutral-400 leading-relaxed">
-            Este método no usa bots en servidores remotos ni fuerza bruta. Se ejecuta <strong>exclusivamente en tu navegador</strong> mientras tienes tu sesión oficial abierta en <code class="text-white">members-ng.iracing.com</code>. Consulta el mismo endpoint de solo lectura (<code class="text-emerald-400">/data/member/info</code>) que la interfaz oficial usa para mostrar tu nombre, y transmite únicamente los números de tu iRating a tu base de datos D1. <strong>Tu contraseña y cookies de sesión nunca salen de tu ordenador.</strong>
+            Este método no usa bots en servidores remotos ni fuerza bruta. Se ejecuta <strong>exclusivamente en tu navegador</strong> mientras tienes tu sesión oficial abierta en <code class="text-white">members-ng.iracing.com</code>. Consulta los endpoints de solo lectura (<code class="text-emerald-400">/data/member/info</code>, <code class="text-emerald-400">/data/stats/member_recent_races</code>, <code class="text-emerald-400">/data/car/get</code>) con tu propia sesión y envía a D1 tu iRating, licencia y últimas carreras reales. Si iRacing no devuelve datos, no se envía nada. <strong>Tu contraseña y cookies de sesión nunca salen de tu ordenador.</strong>
           </p>
         </div>
 
@@ -464,7 +464,7 @@ const pageDescription = "Consola de Administración institucional de Muntrume Mo
 
             <div class="space-y-2 pt-2">
               <a
-                href="javascript:(async()=>{try{const r=await fetch('/data/member/info');if(!r.ok)throw new Error('Inicia sesion en iRacing primero.');const j=await r.json();let d=j;if(j.link)d=await(await fetch(j.link)).json();const s=(d.licenses||[]).find(l=>l.category==='sports_car'||l.category_id===5)||(d.licenses||[])[0];const g=s?.group_name?s.group_name.replace(/^Class\s+/i,''):'B';const sr=typeof s?.safety_rating==='number'?s.safety_rating.toFixed(2):'3.40';const ir=s?.irating||2150;const res=await fetch('https://muntrume.atrumin16.workers.dev/api/iracing/sync-stats',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sync_token:(localStorage.mtmSync||(localStorage.mtmSync=prompt('Clave IRACING_SYNC_KEY (se guarda solo en este navegador)')||'')),cust_id:d.cust_id||993381,irating:ir,license:g+' '+sr,fav_category:s?.category_name||'Sports Car'})});const resj=await res.json();if(resj.success)alert('🏁 MUNTRUME MOTORSPORT // SYNC OK!\n\nPiloto: '+(d.display_name||'Alberto T')+'\nSports Car: '+ir+' iR · '+g+' '+sr);else alert('Error: '+(resj.error||'Fallo'));}catch(e){alert('Error: '+e.message);}})();"
+                href="javascript:(async()=>{try{const g=async u=>{const r=await fetch(u,{credentials:'include'});if(!r.ok)throw new Error('Inicia sesion en members-ng.iracing.com ('+r.status+')');const j=await r.json();return j&&j.link?(await fetch(j.link)).json():j};const d=await g('/data/member/info');const s=(d.licenses||[]).find(l=>l.category==='sports_car')||(d.licenses||[])[0];if(!s||!(s.irating>0))throw new Error('iRacing no devolvio iRating: no se envia nada.');const cars={};try{(await g('/data/car/get')).forEach(c=>cars[c.car_id]=c)}catch(e){};let races=[];try{races=((await g('/data/stats/member_recent_races?cust_id='+d.cust_id)).races||[]).slice(0,10).map(r=>({date:r.session_start_time,series:r.series_name,track:r.track&&r.track.track_name?(r.track.track_name+(r.track.config_name?' · '+r.track.config_name:'')):null,car:(cars[r.car_id]||{}).car_name||null,start:r.start_position+1,finish:r.finish_position+1,incidents:r.incidents,irating_change:(r.newi_rating>0&&r.oldi_rating>0)?r.newi_rating-r.oldi_rating:null,category:((cars[r.car_id]||{}).categories||[])[0]||null,subsession_id:r.subsession_id}))}catch(e){};const k=localStorage.mtmSync||(localStorage.mtmSync=prompt('Clave IRACING_SYNC_KEY (se guarda solo en este navegador)')||'');const res=await fetch('https://muntrume.atrumin16.workers.dev/api/iracing/sync-stats',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sync_key:k,cust_id:String(d.cust_id),irating:s.irating,license:String(s.group_name||'').replace(/^Class\s+/i,'')+' '+Number(s.safety_rating).toFixed(2),license_category:s.category_name||null,recent_races:races})});const o=await res.json();alert(o.success?'Muntrume: datos reales enviados ('+races.length+' carreras).':'Error: '+(o.error||res.status))}catch(e){alert('Error: '+e.message)}})();"
                 class="block text-center py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs font-mono shadow-lg transition cursor-grab active:cursor-grabbing"
                 title="Arrastra este botón a tus marcadores"
               >
@@ -473,7 +473,7 @@ const pageDescription = "Consola de Administración institucional de Muntrume Mo
               <button
                 type="button"
                 onclick="navigator.clipboard.writeText(this.getAttribute('data-code')); alert('Código copiado al portapapeles. Puedes pegarlo en la consola (F12) de members-ng.iracing.com.');"
-                data-code="javascript:(async()=>{try{const r=await fetch('/data/member/info');if(!r.ok)throw new Error('Inicia sesion en iRacing primero.');const j=await r.json();let d=j;if(j.link)d=await(await fetch(j.link)).json();const s=(d.licenses||[]).find(l=>l.category==='sports_car'||l.category_id===5)||(d.licenses||[])[0];const g=s?.group_name?s.group_name.replace(/^Class\s+/i,''):'B';const sr=typeof s?.safety_rating==='number'?s.safety_rating.toFixed(2):'3.40';const ir=s?.irating||2150;const res=await fetch('https://muntrume.atrumin16.workers.dev/api/iracing/sync-stats',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sync_token:(localStorage.mtmSync||(localStorage.mtmSync=prompt('Clave IRACING_SYNC_KEY (se guarda solo en este navegador)')||'')),cust_id:d.cust_id||993381,irating:ir,license:g+' '+sr,fav_category:s?.category_name||'Sports Car'})});const resj=await res.json();if(resj.success)alert('🏁 MUNTRUME MOTORSPORT // SYNC OK!\n\nPiloto: '+(d.display_name||'Alberto T')+'\nSports Car: '+ir+' iR · '+g+' '+sr);else alert('Error: '+(resj.error||'Fallo'));}catch(e){alert('Error: '+e.message);}})();"
+                data-code="javascript:(async()=>{try{const g=async u=>{const r=await fetch(u,{credentials:'include'});if(!r.ok)throw new Error('Inicia sesion en members-ng.iracing.com ('+r.status+')');const j=await r.json();return j&&j.link?(await fetch(j.link)).json():j};const d=await g('/data/member/info');const s=(d.licenses||[]).find(l=>l.category==='sports_car')||(d.licenses||[])[0];if(!s||!(s.irating>0))throw new Error('iRacing no devolvio iRating: no se envia nada.');const cars={};try{(await g('/data/car/get')).forEach(c=>cars[c.car_id]=c)}catch(e){};let races=[];try{races=((await g('/data/stats/member_recent_races?cust_id='+d.cust_id)).races||[]).slice(0,10).map(r=>({date:r.session_start_time,series:r.series_name,track:r.track&&r.track.track_name?(r.track.track_name+(r.track.config_name?' · '+r.track.config_name:'')):null,car:(cars[r.car_id]||{}).car_name||null,start:r.start_position+1,finish:r.finish_position+1,incidents:r.incidents,irating_change:(r.newi_rating>0&&r.oldi_rating>0)?r.newi_rating-r.oldi_rating:null,category:((cars[r.car_id]||{}).categories||[])[0]||null,subsession_id:r.subsession_id}))}catch(e){};const k=localStorage.mtmSync||(localStorage.mtmSync=prompt('Clave IRACING_SYNC_KEY (se guarda solo en este navegador)')||'');const res=await fetch('https://muntrume.atrumin16.workers.dev/api/iracing/sync-stats',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sync_key:k,cust_id:String(d.cust_id),irating:s.irating,license:String(s.group_name||'').replace(/^Class\s+/i,'')+' '+Number(s.safety_rating).toFixed(2),license_category:s.category_name||null,recent_races:races})});const o=await res.json();alert(o.success?'Muntrume: datos reales enviados ('+races.length+' carreras).':'Error: '+(o.error||res.status))}catch(e){alert('Error: '+e.message)}})();"
                 class="w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 text-xs font-mono border border-white/10 transition"
               >
                 📋 Copiar Script para Consola F12
@@ -481,50 +481,18 @@ const pageDescription = "Consola de Administración institucional de Muntrume Mo
             </div>
           </div>
 
-          <!-- Método B: Actualización Manual Inmediata -->
+          <!-- Método B (t266): vincular el ID de iRacing. Ya no se pueden teclear cifras a mano: solo datos reales. -->
           <div class="gadmin-card p-6 space-y-4">
             <div class="flex items-center gap-2">
               <span class="w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-xs font-mono">2</span>
-              <h3 class="font-extrabold text-white text-sm">Actualización Directa a D1</h3>
+              <h3 class="font-extrabold text-white text-sm">ID de iRacing de cada piloto</h3>
             </div>
             <p class="text-xs text-neutral-400 leading-relaxed">
-              Si no estás en tu PC de simulación, puedes ajustar tus cifras aquí directamente. Se reflejarán al segundo en tu ficha <code class="text-white">/d/albertot</code> y en el roster.
+              Las cifras ya no se escriben a mano. Vincula aquí el <strong>cust_id</strong> de iRacing (admin: cualquier piloto; piloto: solo su ficha). Las estadísticas llegan de la API oficial de iRacing o del puente; si no hay datos reales, la web muestra «Sin datos».
             </p>
-
-            <form id="manualSyncForm" class="space-y-3 text-xs" onsubmit="handleManualSyncSubmit(event)">
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label class="text-neutral-400 font-bold block mb-1">Piloto:</label>
-                  <select id="syncCustId" class="w-full bg-[#0b0e13] border border-white/10 rounded-xl px-3 py-2 text-white">
-                    <option value="993381">Alberto Trujillo (#1)</option>
-                    <option value="1134615">Mateo Berbis (#2)</option>
-                    <option value="1076585">Eduardo Chongkan (#3)</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="text-neutral-400 font-bold block mb-1">iRating:</label>
-                  <input type="number" id="syncIrating" required min="100" max="11000" placeholder="2150" value="2150" class="w-full bg-[#0b0e13] border border-white/10 rounded-xl px-3 py-2 text-white font-mono">
-                </div>
-              </div>
-
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label class="text-neutral-400 font-bold block mb-1">Licencia & SR:</label>
-                  <input type="text" id="syncLicense" required placeholder="B 3.40" value="B 3.40" class="w-full bg-[#0b0e13] border border-white/10 rounded-xl px-3 py-2 text-white font-mono">
-                </div>
-                <div>
-                  <label class="text-neutral-400 font-bold block mb-1">Coche Favorito:</label>
-                  <input type="text" id="syncFavCar" placeholder="Porsche 911 GT3 R (992)" value="Porsche 911 GT3 R (992)" class="w-full bg-[#0b0e13] border border-white/10 rounded-xl px-3 py-2 text-white">
-                </div>
-              </div>
-
-              <div class="pt-2">
-                <button type="submit" id="btnManualSync" class="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs transition">
-                  Guardar en Base de Datos D1 →
-                </button>
-              </div>
-              <div id="manualSyncStatus" class="hidden p-3 rounded-xl text-xs font-mono"></div>
-            </form>
+            <button type="button" id="driverIdsLoad" class="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-200 text-xs font-bold border border-white/10">Cargar fichas</button>
+            <div id="driverIdsPanel" class="space-y-1"></div>
+            <p id="driverIdsMsg" class="text-xs font-mono" role="status"></p>
           </div>
 
         </div>
@@ -541,23 +509,7 @@ const pageDescription = "Consola de Administración institucional de Muntrume Mo
           <div class="p-4 bg-[#0b0e13] border-b border-white/5 text-xs font-bold text-neutral-400">
             Últimos Eventos Registrados en Muntrume
           </div>
-          <div class="divide-y divide-white/5 text-xs font-mono p-2">
-            <div class="py-2.5 px-3 flex items-center justify-between text-neutral-300">
-              <span class="text-emerald-400">[LOGIN_SUCCESS]</span>
-              <span>Alberto Trujillo (alberto@muntru.me)</span>
-              <span class="text-neutral-500">IP: oculta · Hace 12 min</span>
-            </div>
-            <div class="py-2.5 px-3 flex items-center justify-between text-neutral-300">
-              <span class="text-cyan-400">[SETUP_DOWNLOAD]</span>
-              <span>MTM_26S4_W07_LeMans_Endur.sto (Valkyrie GTP)</span>
-              <span class="text-neutral-500">Autorizado · Hace 35 min</span>
-            </div>
-            <div class="py-2.5 px-3 flex items-center justify-between text-neutral-300">
-              <span class="text-amber-400">[G61_AGENT_SYNC]</span>
-              <span>Sincronización de colección 01HZJA8F53AFSTSARTNGJPPKZC</span>
-              <span class="text-neutral-500">18,360 archivos · Hace 48 min</span>
-            </div>
-          </div>
+          <div class="text-xs font-mono p-4 text-neutral-400">El registro real de auditoría está en Race Control (Garage → Admin → Auditoría). Aquí no se muestran entradas de ejemplo.</div>
         </div>
       </div>
 
@@ -607,5 +559,6 @@ const pageDescription = "Consola de Administración institucional de Muntrume Mo
   </div>
 
   <!-- Admin Console Controller -->
-  <script is:inline src="/assets/js/admin.js?v=26s4.7"></script>
+  <script is:inline src="/assets/js/admin.js?v=t266"></script>
+  <script is:inline src="/assets/js/driver-ids.js?v=t266"></script>
 </Layout>

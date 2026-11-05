@@ -1,283 +1,46 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import StatsGrid from '../components/StatsGrid.astro';
+import HelmetAvatar from '../components/HelmetAvatar.astro';
 import { PILOTOS } from '../lib/pilotos';
 
-const pageTitle = "Pilotos del Equipo | Alineación Oficial iRacing — Muntrume Motorsport";
-const pageDescription = "Alineación oficial de 4 pilotos de Muntrume Motorsport en iRacing: Alberto Trujillo, Mateo Berbis, Eduardo Chongkan y Juanlu Carrillo. División de Esports, Sant Andreu, Barcelona.";
-
-const DRIVERS = PILOTOS.map(p => {
-  const iratingDefault = p.irating ? `${Math.round(p.irating / 100) / 10}k iR` : null;
-  const licenseDefault = p.license;
-  const category = p.slug === 'albertot' ? 'gt3 gtp' : p.slug === 'mateob' ? 'gt3' : p.slug === 'eduardoc' ? 'gtp formula' : 'formula';
-  const categoryLabel = p.fav_category;
-  const is_paddock = p.cust_id === null;
-
-  return {
-    ...p,
-    iratingDefault,
-    licenseDefault,
-    category,
-    categoryLabel,
-    is_paddock,
-    initials: p.initials || p.name.slice(0, 2).toUpperCase()
-  };
-});
+const pageTitle = "Pilotos | Muntrume Motorsport — iRacing";
+const pageDescription = "Plantilla oficial de Muntrume Motorsport en iRacing. Estadísticas reales de iRacing por piloto: iRating, licencia, coche favorito y categoría.";
 ---
 
 <Layout title={pageTitle} description={pageDescription}>
-  <main class="pt-20 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-    
-    <!-- Header Hero con estructura exacta de las capturas -->
-    <section class="text-center max-w-3xl mx-auto space-y-3.5 pt-4">
-      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1A2120] border border-[#242E2C] text-xs font-mono text-[#00E699]">
-        <span class="w-2 h-2 rounded-full bg-[#00E699] animate-pulse"></span>
-        <span>ALINEACI&Oacute;N OFICIAL &bull; 4 PILOTOS &bull; iRACING ESPORTS DIVISION &bull; SANT ANDREU, BCN</span>
+  <section class="r-section" style="border-top:0;padding-top:clamp(112px,14vw,160px)" aria-labelledby="plTitle">
+    <div class="r-wrap">
+      <div class="r-head">
+        <div>
+          <p class="r-kicker">Plantilla 2026</p>
+          <h1 id="plTitle" class="r-h2">Pilotos</h1>
+          <p class="r-lead">Cuatro pilotos oficiales compitiendo en iRacing. Las estadísticas se publican solo cuando proceden de iRacing; si no hay datos verificados se indica «Sin datos».</p>
+        </div>
       </div>
-
-      <h1 class="text-4xl sm:text-6xl font-extrabold text-white tracking-tight font-display">
-        PILOTOS <span class="text-[#00E699]">DEL EQUIPO</span>
-      </h1>
-      
-      <p class="text-sm sm:text-base text-[#9AA8A3] leading-relaxed max-w-xl mx-auto">
-        Roster oficial de competición para campeonatos de resistencia y sprint en iRacing.
-      </p>
-
-      <!-- Filtros: Todos los Pilotos (4) | Prototipos GTP | GT3 Endurance | Monoplazas -->
-      <div class="flex flex-wrap items-center justify-center gap-2 pt-3">
-        <button 
-          type="button" 
-          onclick="filterPilots('all')" 
-          class="pilot-filter-btn active px-3.5 py-1.5 rounded-full text-xs font-mono font-bold bg-[#00E699] text-neutral-950 transition cursor-pointer"
-        >
-          Todos los Pilotos (4)
-        </button>
-        <button 
-          type="button" 
-          onclick="filterPilots('gtp')" 
-          class="pilot-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold bg-[#1A2120] hover:bg-white/5 border border-[#242E2C] text-[#9AA8A3] hover:text-white transition cursor-pointer"
-        >
-          Prototipos GTP
-        </button>
-        <button 
-          type="button" 
-          onclick="filterPilots('gt3')" 
-          class="pilot-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold bg-[#1A2120] hover:bg-white/5 border border-[#242E2C] text-[#9AA8A3] hover:text-white transition cursor-pointer"
-        >
-          GT3 Endurance
-        </button>
-        <button 
-          type="button" 
-          onclick="filterPilots('formula')" 
-          class="pilot-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold bg-[#1A2120] hover:bg-white/5 border border-[#242E2C] text-[#9AA8A3] hover:text-white transition cursor-pointer"
-        >
-          Monoplazas
-        </button>
-      </div>
-    </section>
-
-    <!-- Grid de 4 Cards Iguales #1 #2 #3 #4 con FOUNDER/DRIVER badge -->
-    <section>
-      <div class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar pb-6 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:overflow-visible gap-4 sm:gap-6" id="driversGrid">
-        {DRIVERS.map(d => (
-          <a 
-            href={`/d/${d.slug}`}
-            class="pilot-card snap-center shrink-0 w-[85vw] sm:w-auto p-5 sm:p-6 rounded-2xl bg-[#1A2120] border border-[#242E2C] hover:border-[#00E699]/60 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden block"
-            data-category={d.category}
-            data-dorsal={d.dorsal}
-            data-custid={d.cust_id ? String(d.cust_id) : ""}
-            style="min-height: 290px;"
-          >
-            <!-- Indicador superior verde -->
-            <span class="absolute top-4 right-4 w-1.5 h-1.5 rounded-full bg-[#00E699] opacity-80 group-hover:scale-125 transition-transform"></span>
-
-            <div>
-              <!-- Header Card: #1 + FOUNDER / DRIVER badge -->
-              <div class="flex items-center justify-between pb-3 border-b border-[#242E2C] mb-4">
-                <span class="font-mono text-xs font-bold text-[#00E699] tracking-wider">{d.dorsal}</span>
-                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#0E1211] text-[#9AA8A3] border border-[#242E2C] uppercase tracking-wider font-semibold">
-                  {d.badge}
-                </span>
-              </div>
-
-              <!-- Centro: Casco real iRacing 64x64 / 80x80 fondo #1E2A26 rounded. Si null (Juanlu) muestra JC -->
-              <div class="my-4 flex items-center justify-center">
-                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-[#1E2A26] border border-[#242E2C] overflow-hidden flex items-center justify-center relative group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(0,230,153,0.3)] transition-all duration-300">
-                  {d.helmet_url ? (
-                    <>
-                      <img 
-                        src={d.helmet_url} 
-                        alt={`Casco de ${d.name}`} 
-                        class="w-full h-full object-contain p-1 helmet-img"
-                        loading="lazy"
-                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-                      />
-                      <div class="w-full h-full hidden items-center justify-center font-mono font-bold text-base text-[#00E699]">
-                        {d.initials}
-                      </div>
-                    </>
-                  ) : (
-                    <div class="w-full h-full flex items-center justify-center font-mono font-bold text-lg text-[#00E699]">
-                      {d.initials}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <!-- Nombre del Piloto -->
-              <h2 class="text-lg font-bold text-white group-hover:text-[#00E699] transition-colors tracking-tight font-display">
-                {d.name}
-              </h2>
-              
-              <!-- Rol Oficial -->
-              <div class="text-[11px] font-mono uppercase tracking-wider text-[#9AA8A3] mt-0.5">
-                {d.role}
-              </div>
-
-              <!-- Debajo rol: Fila de pills [🇪🇸 ES] [3.9k iR] [A 4.99] -->
-              <div class="flex flex-wrap items-center gap-1.5 mt-3">
-                <!-- Pill Bandera -->
-                <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-[#242E2C] text-[10px] font-mono text-neutral-200 border border-white/5">
-                  {d.flag} {d.flag_code}
-                </span>
-
-                <!-- Pill iRating -->
-                <span class="live-irating-pill inline-flex items-center px-1.5 py-0.5 rounded bg-[#242E2C] text-[10px] font-mono font-bold text-[#00E699] border border-[#00E699]/30">
-                  {d.iratingDefault || "-"}
-                </span>
-
-                <!-- Pill Licencia -->
-                {d.licenseDefault ? (
-                  <span class="live-license-pill inline-flex items-center px-1.5 py-0.5 rounded bg-[#242E2C] text-[10px] font-mono text-neutral-300 border border-white/5">
-                    {d.licenseDefault}
-                  </span>
-                ) : null}
-
-                <!-- Pill Categoría -->
-                <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-[#242E2C] text-[10px] font-mono text-[#9AA8A3] border border-white/5">
-                  {d.categoryLabel}
-                </span>
-              </div>
-
+      <div class="r-grid">
+        {PILOTOS.map(p => (
+          <a href={`/d/${p.slug}`} class="r-card" data-driver={p.slug}>
+            <div class="r-card__top">
+              <span class="r-card__num" aria-hidden="true">{p.dorsal.replace('#','')}</span>
+              <span class="r-card__flag">{p.flag_code} · {p.country}</span>
+              <HelmetAvatar driverNumber={p.dorsal} className="w-full h-full" />
             </div>
-
-            <!-- Footer: Más usado o En el Paddock -->
-            <div class="pt-3.5 mt-4 border-t border-[#242E2C] text-[11px] font-mono text-[#9AA8A3] card-footer">
-              {d.is_paddock ? (
-                <div class="flex items-center justify-between text-neutral-400">
-                  <span>En el Paddock</span>
-                  <span class="text-[10px] text-[#00E699] uppercase font-bold">Fundador</span>
-                </div>
-              ) : (
-                <div class="truncate text-neutral-400 default-footer-msg">
-                  Más usado: <span class="text-white font-semibold">{d.fav_car || "Porsche 911 GT3 R"}</span> &middot; <span class="text-[#00E699] font-bold">42%</span>
-                </div>
-              )}
+            <div class="r-card__body">
+              <span class="r-card__role">{p.badge === 'FOUNDER' ? 'Fundador · ' : ''}{p.role}</span>
+              <h2 class="r-card__name">{p.fullName}</h2>
+              {p.bio && <p style="margin:0;color:var(--r-muted);font-size:14px;line-height:1.55">{p.bio}</p>}
             </div>
-
+            <div class="r-card__stats">
+              <div>iRating<strong data-f="irating" class="r-nodata">Sin datos</strong></div>
+              <div>Licencia<strong data-f="license" class="r-nodata">Sin datos</strong></div>
+              <div style="border-left:0;border-top:1px solid var(--r-line)">Coche favorito<strong data-f="fav_car" class="r-nodata" style="font-size:16px">Sin datos</strong></div>
+              <div style="border-top:1px solid var(--r-line)">Categoría principal<strong data-f="top_category" class="r-nodata" style="font-size:16px">Sin datos</strong></div>
+            </div>
           </a>
         ))}
       </div>
-    </section>
-
-    <!-- Stats Grid Unificado -->
-    <section class="pt-4">
-      <StatsGrid />
-    </section>
-
-  </main>
+      <p class="r-meta" id="driversSource" style="margin-top:16px">Fuente: iRacing (API oficial o puente del equipo). Sin datos verificados todavía.</p>
+    </div>
+  </section>
+  <script is:inline src="/assets/js/home-r.js?v=t265" defer></script>
 </Layout>
-
-<script is:inline>
-  // Filtro de categorías
-  function filterPilots(cat) {
-    var buttons = document.querySelectorAll('.pilot-filter-btn');
-    buttons.forEach(function(btn) {
-      btn.classList.remove('active', 'bg-[#00E699]', 'text-neutral-950');
-      btn.classList.add('bg-[#1A2120]', 'text-[#9AA8A3]');
-    });
-
-    var eventTarget = window.event ? window.event.target : null;
-    if (eventTarget) {
-      eventTarget.classList.add('active', 'bg-[#00E699]', 'text-neutral-950');
-      eventTarget.classList.remove('bg-[#1A2120]', 'text-[#9AA8A3]');
-    }
-
-    var cards = document.querySelectorAll('.pilot-card');
-    cards.forEach(function(card) {
-      if (cat === 'all') {
-        card.style.display = 'flex';
-      } else {
-        var cardCat = card.getAttribute('data-category') || '';
-        if (cardCat.indexOf(cat) !== -1) {
-          card.style.display = 'flex';
-        } else {
-          card.style.display = 'none';
-        }
-      }
-    });
-  }
-
-  // Hidratación en vivo desde /api/drivers (sin bloquear en local estático)
-  window.addEventListener('load', function() {
-    if (window.location.port === '8099') return;
-
-    var API_URL = 'https://muntrume.atrumin16.workers.dev/api/drivers';
-
-    var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-    var timer = controller ? setTimeout(function() { controller.abort(); }, 4000) : null;
-
-    fetch(API_URL, { signal: controller ? controller.signal : undefined })
-      .then(function(res) {
-        if (timer) clearTimeout(timer);
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        return res.json();
-      })
-      .then(function(drivers) {
-        if (!Array.isArray(drivers) || !drivers.length) return;
-
-        drivers.forEach(function(driver) {
-          var card = document.querySelector('[data-dorsal="' + driver.dorsal + '"]') ||
-                     document.querySelector('[data-dorsal="#' + driver.dorsal.replace('#', '') + '"]');
-          if (!card) return;
-
-          // 1. Actualizar iRating formato (Math.round(ir/100)/10 + 'k iR')
-          if (driver.irating) {
-            var irPill = card.querySelector('.live-irating-pill');
-            if (irPill) {
-              var formattedIr = (Math.round(driver.irating / 100) / 10) + 'k iR';
-              irPill.textContent = formattedIr;
-            }
-          }
-
-          // 2. Actualizar Licencia
-          if (driver.license) {
-            var licPill = card.querySelector('.live-license-pill');
-            if (licPill) {
-              licPill.textContent = driver.license;
-            }
-          }
-
-          // 3. Actualizar Casco
-          if (driver.helmet_url) {
-            var helmetImg = card.querySelector('.helmet-img');
-            if (helmetImg) helmetImg.src = driver.helmet_url;
-          }
-
-          // 4. Actualizar footer coche más usado
-          var footer = card.querySelector('.card-footer');
-          if (footer && driver.most_used) {
-            var esc = function (v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]; }); };
-            var text = 'Más usado: <span class="text-white font-semibold">' + esc(driver.most_used.car) + '</span> &middot; <span class="text-[#00E699] font-bold">' + esc(driver.most_used.pct) + '%</span>';
-            if (driver.fav_car && driver.fav_car !== driver.most_used.car) {
-              text += ' | Fav: ' + esc(driver.fav_car);
-            }
-            footer.innerHTML = '<div class="truncate text-[11px] font-mono text-[#9AA8A3]">' + text + '</div>';
-          }
-        });
-      })
-      .catch(function() {
-        if (timer) clearTimeout(timer);
-      });
-  });
-</script>

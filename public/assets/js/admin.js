@@ -3,63 +3,29 @@
  * Institutional Client Engine
  */
 
-const PILOTS_DIRECTORY = [
-      {
-        slug: "alberto-trujillo",
-        name: "Alberto Trujillo",
-        initials: "AT",
-        email: "alberto@muntru.me",
-        iracingId: "128491",
-        license: "A 4.99",
-        irating: "3,450 iR",
-        role: "Team Principal",
-        specialty: "GTP & GT3 Resistencia",
-        status: "Activo (Super Admin)",
-        statusClass: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
-      },
-      {
-        slug: "mateo-berbis",
-        name: "Mateo Berbis",
-        initials: "MB",
-        email: "mateo@muntru.me",
-        iracingId: "389201",
-        license: "A 4.85",
-        irating: "3,210 iR",
-        role: "Sprint Lead",
-        specialty: "Qualy Agresiva & GT3",
-        status: "Activo",
-        statusClass: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
-      },
-      {
-        slug: "eduardo-chongkan",
-        name: "Eduardo Chongkan",
-        initials: "EC",
-        email: "eduardo@muntru.me",
-        iracingId: "401923",
-        license: "A 4.92",
-        irating: "3,025 iR",
-        role: "Race Engineer",
-        specialty: "LMP2 & Cinética Telemetría",
-        status: "Activo",
-        statusClass: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
-      },
-      {
-        slug: "juanlu-carrillo",
-        name: "Juanlu Carrillo",
-        initials: "JC",
-        email: "juanlu@muntru.me",
-        iracingId: "591024",
-        license: "B 3.90",
-        irating: "2,420 iR",
-        role: "Dev Squad",
-        specialty: "SFL & Monomarca Mazda",
-        status: "Activo",
-        statusClass: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
-      }
-    ];
+// t265: sin datos de ejemplo. La plantilla y sus cifras llegan de /api/drivers (solo datos reales; si no hay → «Sin datos»).
+let PILOTS_DIRECTORY = [];
+const SIN = "Sin datos";
+const escA = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+function loadPilotsDirectory() {
+  fetch("https://muntrume.atrumin16.workers.dev/api/drivers", { cache: "no-store" })
+    .then((r) => (r.ok ? r.json() : []))
+    .then((list) => {
+      PILOTS_DIRECTORY = (Array.isArray(list) ? list : []).map((d) => ({
+        slug: d.slug, name: escA(d.fullName || d.name), initials: escA((d.fullName || d.name || "?").split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase()),
+        email: "—", iracingId: d.cust_id ? escA(d.cust_id) : SIN,
+        license: d.license ? escA(d.license) : SIN, irating: d.irating ? `${d.irating} iR` : SIN,
+        role: d.is_founder ? "Fundador" : "Piloto", specialty: d.top_category ? escA(d.top_category.name) : SIN,
+        status: d.updated_at ? `Datos: ${escA(d.source || "")} · ${new Date(d.updated_at).toLocaleDateString("es-ES")}` : SIN,
+        statusClass: d.updated_at ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" : "text-neutral-400 bg-white/5 border-white/10",
+      }));
+      renderPilotsTables();
+    })
+    .catch(() => {});
+}
 
     function initAdmin() {
-      renderPilotsTables();
+      loadPilotsDirectory();
       
       // Global hotkey '/' to search
       window.addEventListener("keydown", (e) => {
@@ -103,7 +69,7 @@ const PILOTS_DIRECTORY = [
               <span class="text-[10px] font-mono px-2 py-0.5 rounded-full border ${p.statusClass}">${p.status}</span>
             </td>
             <td class="py-3 px-4 text-right">
-              <a href="/pilot?id=${p.slug}" class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-emerald-400 text-[11px] font-bold transition">
+              <a href="/d/${p.slug}" class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-emerald-400 text-[11px] font-bold transition">
                 Ver Perfil ↗
               </a>
             </td>
@@ -129,7 +95,7 @@ const PILOTS_DIRECTORY = [
               <span class="text-[10px] font-mono px-2 py-0.5 rounded-full border ${p.statusClass}">${p.status}</span>
             </td>
             <td class="py-3 px-4 text-right space-x-1.5 whitespace-nowrap">
-              <a href="/pilot?id=${p.slug}" class="px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-emerald-400 text-[11px] font-bold">Perfil</a>
+              <a href="/d/${p.slug}" class="px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-emerald-400 text-[11px] font-bold">Perfil</a>
               <button onclick="resendInvite('${p.email}')" class="px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-neutral-300 text-[11px]">Reenviar Acceso</button>
             </td>
           </tr>
@@ -157,11 +123,11 @@ const PILOTS_DIRECTORY = [
         name: name,
         initials: name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase(),
         email: email,
-        iracingId: iracingId || "En trámite",
-        license: "A 4.00",
-        irating: "2,500 iR",
+        iracingId: iracingId || SIN,
+        license: SIN,
+        irating: SIN,
         role: role === "engineer" ? "Race Engineer" : "Piloto Titular",
-        specialty: "GT3 & Endurance",
+        specialty: SIN,
         status: "Activo (Invitación enviada)",
         statusClass: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20"
       });

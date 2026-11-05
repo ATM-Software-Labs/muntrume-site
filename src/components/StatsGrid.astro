@@ -1,35 +1,17 @@
 ---
+import catalog from '../../public/assets/data/catalog_index.json';
 interface Props {
   className?: string;
 }
 
 const { className = "" } = Astro.props;
 
+// t265: cifras calculadas en build desde el catálogo real (public/assets/data/catalog_index.json).
 export const OFFICIAL_STATS = [
-  {
-    number: "239.539",
-    label: "Setups Certificados",
-    detail: "100% .STO con telemetría",
-    tag: "iRacing Vault"
-  },
-  {
-    number: "196",
-    label: "Vehículos Soportados",
-    detail: "GT3, GTP, LMP2 y Monoplazas",
-    tag: "Flota Oficial"
-  },
-  {
-    number: "127",
-    label: "Circuitos Calibrados",
-    detail: "Trazados Laser-Scanned",
-    tag: "Base de Datos"
-  },
-  {
-    number: "4",
-    label: "Pilotos Oficiales",
-    detail: "Dorsales #01, #02, #03, #04",
-    tag: "Plantilla Oficial"
-  }
+  { number: catalog.total_setups.toLocaleString('es-ES'), label: "Setups en el catálogo", detail: "Archivos .STO", tag: "Setup Vault" },
+  { number: String(catalog.cars.length), label: "Vehículos con setups", detail: "Según el catálogo", tag: "Coches" },
+  { number: String(catalog.circuits.length), label: "Circuitos con setups", detail: "Según el catálogo", tag: "Circuitos" },
+  { number: "4", label: "Pilotos Oficiales", detail: "Dorsales #1, #2, #3, #4", tag: "Plantilla" }
 ];
 ---
 

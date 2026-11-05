@@ -18,7 +18,7 @@ const siteOrigin = Astro.site ? Astro.site.origin : (Astro.url ? Astro.url.origi
 
 const {
   title = "Muntrume Motorsport | iRacing Sim Racing Team Barcelona - Setup Vault & Telemetry",
-  description = "Equipo de sim racing de Sant Andreu, Barcelona. 239k setups .STO, telemetría Garage 61 y 4 pilotos oficiales en iRacing.",
+  description = "Equipo de sim racing de Sant Andreu, Barcelona. más de 41.000 setups .STO y 4 pilotos oficiales en iRacing.",
   canonical = Astro.url.href,
   ogImage = `${siteOrigin}/assets/img/og-home.jpg`,
   ogType = "website",
@@ -37,7 +37,7 @@ const defaultSchema = {
       "alternateName": ["Muntrume", "MRT Sim Racing", "Muntrume Racing Team"],
       "url": `${siteOrigin}/`,
       "sport": "Sim Racing (iRacing)",
-      "description": "Equipo oficial de sim racing de Sant Andreu, Barcelona. 239k setups .STO, telemetría Garage 61 y 4 pilotos oficiales en iRacing.",
+      "description": "Equipo oficial de sim racing de Sant Andreu, Barcelona. más de 41.000 setups .STO y 4 pilotos oficiales en iRacing.",
       "logo": {
         "@type": "ImageObject",
         "url": `${siteOrigin}/assets/img/icon-512.png`,
@@ -70,8 +70,7 @@ const defaultSchema = {
         "iRacing",
         "Sim Racing",
         "Setups iRacing",
-        "Telemetría Garage 61",
-        "GT3 Endurance",
+                "GT3 Endurance",
         "GTP Hypercars",
         "Motorsport Engineering"
       ],
@@ -163,11 +162,13 @@ const finalSchema = schemaJson || defaultSchema;
   <!-- Fonts: self-hosted (latin + latin-ext, font-display: swap) — sin terceros ni CSS bloqueante externo -->
   <link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="/assets/fonts/SpaceGrotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="stylesheet" href="/assets/fonts/fonts.css?v=t259" />
+  <link rel="preload" href="/assets/fonts/BarlowCondensed-800-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/assets/fonts/fonts.css?v=t264" />
   <slot name="head" />
 
   <link rel="stylesheet" href="/assets/css/tailwind.min.css?v=26s5.0" />
   <link rel="stylesheet" href="/assets/css/mobile.css?v=t263" />
+  <link rel="stylesheet" href="/assets/css/racing.css?v=t264" />
 
   <!-- Core Dark Racing System CSS -->
   <style is:global>
@@ -261,7 +262,7 @@ const finalSchema = schemaJson || defaultSchema;
 
   <!-- Core Scripts -->
   <script is:inline src="/assets/js/vpfix.js?v=m9"></script>
-  <script is:inline src="/assets/js/i18n.js?v=m12"></script>
+  <script is:inline src="/assets/js/i18n.js?v=t264"></script>
 </head>
 <body class="bg-[#080C0A] text-neutral-100 antialiased selection:bg-[#00E699] selection:text-neutral-950 font-sans min-h-screen flex flex-col justify-between relative">
   

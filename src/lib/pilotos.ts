@@ -1,3 +1,7 @@
+/**
+ * t265: solo identidad. Las estadísticas (iRating, licencia, coche favorito, categoría, carreras)
+ * NO se escriben aquí: llegan en vivo desde /api/drivers (iRacing Data API o puente) o se muestra «Sin datos».
+ */
 export interface Piloto {
   slug: string;
   cust_id: number | null;
@@ -9,12 +13,8 @@ export interface Piloto {
   country?: string;
   flag: string;
   flag_code: string;
-  fav_category: string;
   helmet_url: string | null;
-  irating: number | null;
-  license: string | null;
   bio?: string;
-  fav_car?: string;
   initials?: string;
 }
 
@@ -30,12 +30,8 @@ export const PILOTOS: Piloto[] = [
     country: 'Spain',
     flag: '🇪🇸',
     flag_code: 'ES',
-    fav_category: 'GT3 Endurance',
     helmet_url: 'https://muntrume.atrumin16.workers.dev/api/helmet?custId=993381',
-    irating: 2150,
-    license: 'B 3.40',
     bio: 'Team Principal y director técnico de Muntrume Motorsport. Especialista en dinámica de vehículos, telemetría a 60 Hz y estrategias de carrera para eventos de resistencia.',
-    fav_car: 'Porsche 911 GT3 R (992)',
     initials: 'AT'
   },
   {
@@ -49,12 +45,8 @@ export const PILOTOS: Piloto[] = [
     country: 'Spain',
     flag: '🇪🇸',
     flag_code: 'ES',
-    fav_category: 'GT3',
     helmet_url: 'https://muntrume.atrumin16.workers.dev/api/helmet?custId=1134615',
-    irating: 2534,
-    license: 'B 3.20',
     bio: 'Piloto oficial de GT3 en campeonatos de resistencia y sprint. Especialista en ritmo de carrera continuo, consistencia y gestión de tráfico en stint largo.',
-    fav_car: 'Ferrari 296 GT3',
     initials: 'MB'
   },
   {
@@ -68,12 +60,8 @@ export const PILOTOS: Piloto[] = [
     country: 'Costa Rica',
     flag: '🇨🇷',
     flag_code: 'CR',
-    fav_category: 'GTP',
     helmet_url: 'https://muntrume.atrumin16.workers.dev/api/helmet?custId=1076585',
-    irating: 3100,
-    license: 'A 2.80',
     bio: 'Especialista en prototipos híbridos GTP e IMSA. Enfoque en recuperación de energía, balance aerodinámico y frenada de alta precisión.',
-    fav_car: 'Aston Martin Valkyrie GTP',
     initials: 'EC'
   },
   {
@@ -87,12 +75,8 @@ export const PILOTOS: Piloto[] = [
     country: 'Spain',
     flag: '🇪🇸',
     flag_code: 'ES',
-    fav_category: 'Monoplazas',
     helmet_url: null,
-    irating: null,
-    license: null,
     bio: 'Fundador y piloto de monoplazas en Muntrume Motorsport. Enfoque en trazado de vértices y desarrollo técnico de setup.',
-    fav_car: 'Super Formula Lights',
     initials: 'JC'
   }
 ];
