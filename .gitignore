@@ -1,7 +1,6 @@
 # Environment & Secrets (NEVER COMMIT)
 .env
 .env.*
-!.env.example
 .dev.vars
 .dev.vars.*
 
@@ -30,3 +29,14 @@ _site/
 # Astro build cache
 .astro/
 dist/
+
+# Backend privado (vive en atrumin16/muntrume-worker-private)
+worker/
+functions/
+wrangler.toml
+wrangler.jsonc
+wrangler.json
+migrations/
+*.sql
+AUDIT.md
+*.map
