@@ -131,3 +131,8 @@ html.light #mobileDrawer {
   background-color: #FFFFFF !important;
   border-color: #E2E8E5 !important;
 }
+
+/* t260 · contraste en tema claro (Lighthouse color-contrast) */
+html.light .text-neutral-200, [data-theme="light"] .text-neutral-200 { color: #1f2a27 !important; }
+html.light .text-\[\#00E699\], [data-theme="light"] .text-\[\#00E699\] { color: #00704a !important; }
+html.light .bg-\[\#242E2C\], [data-theme="light"] .bg-\[\#242E2C\] { background-color: #e3ebe8 !important; color: #1f2a27 !important; }
