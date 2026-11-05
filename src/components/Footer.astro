@@ -1,11 +1,16 @@
 ---
+const year = new Date().getFullYear();
 ---
 <footer class="r-footer">
   <div class="r-wrap">
     <div class="r-footer__grid">
-      <div style="display:grid;gap:12px;align-content:start">
-        <span class="r-footer__brand">Muntrume<br />Motorsport</span>
-        <span style="font-size:13px;color:#A3B0AC">Equipo de sim racing · Sant Andreu, Barcelona</span>
+      <div style="display:grid;gap:14px;align-content:start">
+        <a href="/" class="r-lockup">
+          <img src="/assets/img/logo-64.webp" width="44" height="44" alt="" loading="lazy" decoding="async" />
+          <span class="r-lockup__txt"><b>Muntrume</b><small>Motorsport</small></span>
+        </a>
+        <span style="font-size:13px;color:#A3B0AC">Equipo de sim racing en iRacing · Barcelona (España)</span>
+        <span class="r-footer__id">Titular: Alberto Trujillo · <a href="mailto:info@muntru.me">info@muntru.me</a></span>
       </div>
       <nav aria-label="Equipo">
         <h2>Equipo</h2>
@@ -13,16 +18,16 @@
       </nav>
       <nav aria-label="Pilotos">
         <h2>Área de pilotos</h2>
-        <ul><li><a href="/garage">Garage · Setup Vault</a></li><li><a href="/mail">Webmail</a></li><li><a href="/email-preferences">Preferencias de email</a></li></ul>
+        <ul><li><a href="/garage">Garage · Setup Vault</a></li><li><a href="/mail">Webmail</a></li><li><a href="/email-preferences">Preferencias de email</a></li><li><a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer">Discord</a></li><li><a href="https://garage61.net/app/teams/muntrume" target="_blank" rel="noopener noreferrer">Garage 61</a></li></ul>
       </nav>
-      <nav aria-label="Comunidad">
-        <h2>Comunidad</h2>
-        <ul><li><a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer">Discord</a></li><li><a href="https://garage61.net/app/teams/muntrume" target="_blank" rel="noopener noreferrer">Garage 61</a></li></ul>
+      <nav aria-label="Información legal">
+        <h2>Información legal</h2>
+        <ul><li><a href="/aviso-legal">Aviso legal</a></li><li><a href="/privacidad">Política de privacidad</a></li><li><a href="/cookies">Política de cookies</a></li><li><a href="/legal/retirada">Retirada de contenido (DMCA)</a></li><li><a href="/legal/fuentes">Fuentes</a></li></ul>
       </nav>
     </div>
     <div class="r-footer__legal">
-      <span>&copy; 2026 Muntrume Motorsport · <a href="/" style="font-size:12px;padding:0">muntru.me</a></span>
-      <span><a href="/legal" style="font-size:12px;padding:0">Aviso legal</a> · <a href="/legal/retirada" style="font-size:12px;padding:0">Retirada de contenido (DMCA)</a> · <a href="/legal/fuentes" style="font-size:12px;padding:0">Fuentes</a></span>
+      <span>&copy; {year} Muntrume Motorsport <span>· Todos los derechos reservados</span></span>
+      <span>Sin cookies publicitarias ni de analítica · <a href="/cookies" style="font-size:12px;padding:0">Más información</a></span>
     </div>
   </div>
 </footer>
