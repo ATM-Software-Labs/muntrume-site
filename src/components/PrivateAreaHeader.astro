@@ -58,7 +58,7 @@ const { activeTab } = Astro.props;
         </div>
         <button 
           type="button" 
-          onclick="window.logoutPrivateArea()" 
+          data-pa-action="logout" 
           class="px-3 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-300 font-bold text-xs transition flex items-center gap-1.5 cursor-pointer"
           title="Cerrar sesión en toda el Área Privada"
         >
@@ -76,7 +76,7 @@ const { activeTab } = Astro.props;
         </div>
         <button 
           type="button" 
-          onclick="window.triggerPrivateAreaLogin()" 
+          data-pa-action="login" 
           class="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs transition shadow-sm cursor-pointer"
         >
           Acceso Piloto Oficial
@@ -91,7 +91,7 @@ const { activeTab } = Astro.props;
         </div>
         <button 
           type="button" 
-          onclick="window.triggerPrivateAreaLogin()" 
+          data-pa-action="login" 
           class="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider transition shadow-sm shadow-emerald-500/20 cursor-pointer"
         >
           Iniciar Sesión
@@ -192,4 +192,5 @@ const { activeTab } = Astro.props;
   document.addEventListener("DOMContentLoaded", syncPrivateAreaAuth);
   window.addEventListener("storage", syncPrivateAreaAuth);
   window.addEventListener("muntrume-auth-change", syncPrivateAreaAuth);
+  document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-pa-action]'); if (!b) return; var a = b.getAttribute('data-pa-action'); if (a === 'logout' && window.logoutPrivateArea) window.logoutPrivateArea(); else if (a === 'login' && window.triggerPrivateAreaLogin) window.triggerPrivateAreaLogin(); });
 </script>

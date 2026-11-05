@@ -109,19 +109,19 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
         id="langDropdown" 
         class="hidden absolute right-0 mt-1 w-28 rounded-lg bg-[#1A2120] border border-[#242E2C] shadow-2xl py-1 z-50"
       >
-        <button type="button" onclick="setLanguage('ES')" class="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-mono text-neutral-300 hover:bg-white/5 hover:text-white cursor-pointer">
+        <button type="button" data-set-lang="ES" class="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-mono text-neutral-300 hover:bg-white/5 hover:text-white cursor-pointer">
           <span class="text-sm leading-none">🇪🇸</span>
           <span>ES</span>
         </button>
-        <button type="button" onclick="setLanguage('EN')" class="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-mono text-neutral-300 hover:bg-white/5 hover:text-white cursor-pointer">
+        <button type="button" data-set-lang="EN" class="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-mono text-neutral-300 hover:bg-white/5 hover:text-white cursor-pointer">
           <span class="text-sm leading-none">🇬🇧</span>
           <span>EN</span>
         </button>
-        <button type="button" onclick="setLanguage('CA')" class="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-mono text-neutral-300 hover:bg-white/5 hover:text-white cursor-pointer">
+        <button type="button" data-set-lang="CA" class="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-mono text-neutral-300 hover:bg-white/5 hover:text-white cursor-pointer">
           <img src="/flags/senyera.png" alt="Senyera" class="w-4 h-3 object-contain rounded-xs" />
           <span>CA</span>
         </button>
-        <button type="button" onclick="setLanguage('FR')" class="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-mono text-neutral-300 hover:bg-white/5 hover:text-white cursor-pointer">
+        <button type="button" data-set-lang="FR" class="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-mono text-neutral-300 hover:bg-white/5 hover:text-white cursor-pointer">
           <span class="text-sm leading-none">🇫🇷</span>
           <span>Français</span>
         </button>
@@ -240,6 +240,7 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
   applyThemeUI(document.documentElement.classList.contains('light') ? 'light' : 'dark');
 
   // Language Switcher Logic
+  document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-set-lang]'); if (b) setLanguage(b.getAttribute('data-set-lang')); });
   function setLanguage(code, triggerI18n) {
     var label = document.getElementById('currentLangLabel');
     var emoji = document.getElementById('currentFlagEmoji');

@@ -168,7 +168,7 @@ const finalSchema = schemaJson || defaultSchema;
 
   <link rel="stylesheet" href="/assets/css/tailwind.min.css?v=26s5.0" />
   <link rel="stylesheet" href="/assets/css/mobile.css?v=t263" />
-  <link rel="stylesheet" href="/assets/css/racing.css?v=t264" />
+  <link rel="stylesheet" href="/assets/css/racing.css?v=t268" />
 
   <!-- Core Dark Racing System CSS -->
   <style is:global>
@@ -278,9 +278,9 @@ const finalSchema = schemaJson || defaultSchema;
 
   {!hideNav && <Navbar currentPath={Astro.url.pathname} />}
   
-  <div class="flex-grow relative z-10">
+  <main id="main-content" tabindex="-1" class="flex-grow relative z-10">
     <slot />
-  </div>
+  </main>
 
   {!hideFooter && <Footer />}
   <MuntrumeChatbot />

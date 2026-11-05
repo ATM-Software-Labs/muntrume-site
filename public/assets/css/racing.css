@@ -103,3 +103,12 @@ header .font-display,nav .font-display{font-family:var(--r-display)!important;le
 .r-figs strong{text-transform:none;color:var(--r-text)}.r-figs strong.r-h3{font-size:22px;line-height:1.1}.r-figs span{text-transform:none;letter-spacing:0}
 html.light footer.r-footer,html[data-theme="light"] footer.r-footer{background-color:#0B0F0E!important;border-color:var(--r-accent)!important}
 html.light .r-section,html[data-theme="light"] .r-section{background:var(--r-bg)}html[data-theme="light"] .r-section--alt{background:var(--r-bg-2)}
+
+/* t268: tipografía coherente en páginas heredadas (setups, contacto, noticias, legal, correo) */
+:where(#main-content) :where(h1,h2){font-family:var(--r-display);font-weight:800;letter-spacing:.01em;text-transform:uppercase;line-height:1.02}
+:where(#main-content) :where(h3){font-family:var(--r-display);font-weight:600;letter-spacing:.02em}
+:where(#main-content) :where(p,li){text-wrap:pretty}
+:where(#main-content) :where(h1,h2,h3){text-wrap:balance}
+#main-content:focus{outline:none}
+.r-table td,.r-table th{font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){.r-card,.r-btn{transition:none}.r-card:hover{transform:none}}
