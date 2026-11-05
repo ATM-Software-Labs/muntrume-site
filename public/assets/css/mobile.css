@@ -139,3 +139,6 @@ html.light .bg-\[\#242E2C\], [data-theme="light"] .bg-\[\#242E2C\] { background-
 
 /* t262: evita scroll horizontal por el menú lateral fuera de pantalla */
 html,body{overflow-x:clip}
+/* t263: el menú cerrado no deja asomar su sombra ni es enfocable */
+#mobileDrawer:not(.open){box-shadow:none!important;visibility:hidden;transition:transform .3s cubic-bezier(.4,0,.2,1),visibility 0s linear .3s}
+#mobileDrawer.open{visibility:visible}

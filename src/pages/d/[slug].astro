@@ -24,7 +24,7 @@ const licenseDefault = driver.license;
     
     <!-- Top back breadcrumb -->
     <div class="flex items-center justify-between gap-4 pb-2 text-xs font-mono">
-      <nav class="flex items-center gap-2 text-[#9AA8A3]" aria-label="Breadcrumb">
+      <nav class="flex items-center gap-2 text-[#9AA8A3] min-w-0 whitespace-nowrap overflow-hidden" aria-label="Breadcrumb">
         <a href="/" class="hover:text-white transition">Inicio</a>
         <span>/</span>
         <a href="/pilotos" class="hover:text-[#00E699] transition">Pilotos</a>
@@ -33,7 +33,7 @@ const licenseDefault = driver.license;
       </nav>
       <a 
         href="/pilotos" 
-        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1A2120] border border-[#242E2C] text-[#9AA8A3] hover:text-white hover:border-[#00E699]/40 transition"
+        class="hidden sm:inline-flex shrink-0 items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1A2120] border border-[#242E2C] text-[#9AA8A3] hover:text-white hover:border-[#00E699]/40 transition"
       >
         <span>&larr;</span>
         <span>Alineación Completa</span>

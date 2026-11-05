@@ -121,6 +121,10 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
           <img src="/flags/senyera.png" alt="Senyera" class="w-4 h-3 object-contain rounded-xs" />
           <span>CA</span>
         </button>
+        <button type="button" onclick="setLanguage('FR')" class="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-mono text-neutral-300 hover:bg-white/5 hover:text-white cursor-pointer">
+          <span class="text-sm leading-none">🇫🇷</span>
+          <span>Français</span>
+        </button>
       </div>
     </div>
 
@@ -246,10 +250,10 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
       if (emoji) emoji.classList.add('hidden');
       if (senyera) senyera.classList.remove('hidden');
       if (label) label.textContent = 'CA';
-    } else if (code === 'EN') {
+    } else if (code === 'EN' || code === 'FR') {
       if (senyera) senyera.classList.add('hidden');
-      if (emoji) { emoji.classList.remove('hidden'); emoji.textContent = '🇬🇧'; }
-      if (label) label.textContent = 'EN';
+      if (emoji) { emoji.classList.remove('hidden'); emoji.textContent = code === 'FR' ? '🇫🇷' : '🇬🇧'; }
+      if (label) label.textContent = code;
     } else {
       if (senyera) senyera.classList.add('hidden');
       if (emoji) { emoji.classList.remove('hidden'); emoji.textContent = '🇪🇸'; }
@@ -284,10 +288,14 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
     }
 
     try {
+      var q = (new URLSearchParams(location.search).get('lang') || '').toUpperCase();
+      if (q === 'EN' || q === 'CA' || q === 'ES' || q === 'FR') { setLanguage(q, false); return; }
+    } catch (e) {}
+    try {
       var saved = localStorage.getItem('muntrume_lang') || localStorage.getItem('mm_lang');
       if (saved) {
         var s = saved.toUpperCase();
-        if (s === 'EN' || s === 'CA' || s === 'ES') {
+        if (s === 'EN' || s === 'CA' || s === 'ES' || s === 'FR') {
           setLanguage(s, false);
           return;
         }
@@ -301,6 +309,8 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
         setLanguage('CA', false);
       } else if (nav.startsWith('en')) {
         setLanguage('EN', false);
+      } else if (nav.startsWith('fr')) {
+        setLanguage('FR', false);
       } else {
         setLanguage('ES', false);
       }

@@ -3,7 +3,7 @@
 (function () {
   "use strict";
   var LANGS = { es: "Español", en: "English", ca: "Català", fr: "Français" };
-  var KEY = "mm_lang", V = "m10";
+  var KEY = "mm_lang", V = "m12";
   var root = document.documentElement;
   function pick() {
     try {
@@ -23,8 +23,8 @@
   }
   var sel = pick(), lang = sel.lang, dict = null;
   root.lang = lang;
-  // Evita el parpadeo de texto sin traducir (máx. 1,2 s) salvo en inglés, cuyo diccionario es mínimo.
-  if (lang !== "en") {
+  // Evita el parpadeo de texto sin traducir (máx. 1,2 s) en todos los idiomas.
+  if (true) {
     root.classList.add("i18n-wait");
     var st = document.createElement("style"); st.id = "i18n-wait-css";
     st.textContent = "html.i18n-wait body{opacity:0}";
