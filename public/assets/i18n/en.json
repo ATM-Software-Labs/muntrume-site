@@ -469,5 +469,14 @@
 "El servicio todavía no responde.": "The service is not responding yet.",
 "No se pudo descargar": "Could not download",
 "El servidor no adjuntó el archivo.": "The server did not attach a file.",
-"Descarga lista": "Download ready"
+"Descarga lista": "Download ready",
+"La sesión ha caducado": "The session has expired",
+"Vuelve a entrar.": "Sign in again.",
+"Sesión no válida o caducada. Vuelve a iniciar sesión.": "Invalid or expired session. Sign in again.",
+"Demasiadas peticiones": "Too many requests",
+"Espera un momento y vuelve a intentarlo.": "Wait a moment and try again.",
+"El montador no responde": "The builder is not responding",
+"Prueba otra vez dentro de un momento.": "Try again in a moment.",
+"Revisa coche, circuito y sesiones.": "Check the car, the track and the sessions.",
+"El servicio no ha devuelto un setup.": "The service did not return a setup."
 }

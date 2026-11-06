@@ -1,8 +1,8 @@
-/* Montador de setups. Contrato visto en el cliente: POST JSON con Bearer,
-   igual que /api/setups/download. El Worker público aún responde
-   "Ruta no encontrada" en /api/setups/ai/build; el cuerpo usa los nombres
-   del encargo (mode, car, track, sessions) y también circuit / setup_types,
-   que es el vocabulario del catálogo. */
+/* Montador de setups. POST JSON con el mismo Bearer que el vault.
+   El Worker (muntrume.atrumin16.workers.dev) ya no responde «Ruta no encontrada»:
+   sin sesión devuelve 401 {success:false, error}. 400, 429 y 5xx se muestran
+   con el texto del servidor si viene en error/message. El cuerpo sigue
+   mode, car, track, sessions y también circuit / setup_types. */
 (function () {
   "use strict";
   var API = "https://muntrume.atrumin16.workers.dev";
@@ -154,8 +154,50 @@
     var dl = $("builderDownload");
     if (dl) dl.hidden = !(sources && sources.length);
   }
+  function plainError(data) {
+    var err = data && (data.error || data.message || data.detail);
+    if (Array.isArray(err)) {
+      err = err.map(function (item) {
+        if (typeof item === "string") return item;
+        return (item && (item.message || item.msg)) || "";
+      }).filter(Boolean).join(" ");
+    }
+    if (err && typeof err === "object") err = err.message || err.msg || "";
+    err = String(err || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    return err.length > 240 ? err.slice(0, 240) : err;
+  }
+  function fail(status, data, download) {
+    var msg = plainError(data);
+    if (status === 401) {
+      notice("error", "La sesión ha caducado", msg || "Vuelve a entrar.");
+      if (window.openAuthModal) window.openAuthModal("login");
+      return;
+    }
+    if (status === 429) {
+      notice("warning", "Demasiadas peticiones", msg || "Espera un momento y vuelve a intentarlo.");
+      return;
+    }
+    if (status >= 500) {
+      notice("error", "El montador no responde", msg || "Prueba otra vez dentro de un momento.");
+      return;
+    }
+    if (download) {
+      notice("error", "No se pudo descargar", msg || "El servidor no adjuntó el archivo.");
+      return;
+    }
+    if (status === 400) {
+      notice("warning", "No se pudo montar el setup", msg || "Revisa coche, circuito y sesiones.");
+      return;
+    }
+    notice("error", "No se pudo montar el setup", msg || "El servicio no ha devuelto un setup.");
+  }
+  function unwrap(data) {
+    var extra = data && data.result && typeof data.result === "object" ? data.result : null;
+    return extra ? Object.assign({}, data, extra) : (data || {});
+  }
   function readAnswer(data) {
-    var text = data.markdown || data.answer || data.result || "";
+    data = unwrap(data);
+    var text = data.markdown || data.answer || (typeof data.result === "string" ? data.result : "") || "";
     var sources = Array.isArray(data.sources) ? data.sources : [];
     last = { text: text, sources: sources, body: payload() };
     if (!sources.length) {
@@ -170,6 +212,8 @@
     var decoder = new TextDecoder();
     var buf = "";
     var acc = "";
+    var sources = [];
+    var failed = false;
     var out = $("builderAnswer");
     if (out) { out.hidden = false; out.textContent = ""; }
     while (true) {
@@ -185,12 +229,21 @@
         if (!raw || raw === "[DONE]") return;
         try {
           var json = JSON.parse(raw);
-          acc += json.content || "";
+          if (json.error && !json.content && !json.markdown) { fail(res.status || 400, json); failed = true; return; }
+          if (Array.isArray(json.sources)) sources = json.sources;
+          if (typeof json.markdown === "string") acc = json.markdown;
+          else if (typeof json.answer === "string" && !json.content) acc = json.answer;
+          else acc += json.content || json.delta || "";
         } catch (e) { acc += raw; }
       });
-      if (out) out.innerHTML = markdown(acc);
+      if (out && !failed) out.innerHTML = markdown(acc);
     }
-    last = { text: acc, sources: [], body: payload() };
+    if (failed) return;
+    last = { text: acc, sources: sources, body: payload() };
+    renderSources(sources);
+    var dl = $("builderDownload");
+    if (dl) dl.hidden = !sources.length;
+    if (!sources.length) notice("warning", "No hay un setup que coincida", "No se adjunta ningún archivo.");
   }
   async function build(ev) {
     ev.preventDefault();
@@ -209,16 +262,17 @@
         body: JSON.stringify(body)
       });
       var type = res.headers.get("content-type") || "";
+      if (type.indexOf("text/html") >= 0) { fail(res.status || 502, {}); return; }
       if (type.indexOf("text/event-stream") >= 0 && res.ok && res.body) {
         await readStream(res);
         return;
       }
-      var data = await res.json().catch(function () { return {}; });
-      if (res.status === 401) { notice("error", "La sesión ha caducado", "Vuelve a entrar."); if (window.openAuthModal) window.openAuthModal("login"); return; }
-      if (!res.ok || data.success === false) {
-        notice("error", "No se pudo montar el setup", data.error || "El servicio todavía no responde.");
-        return;
-      }
+      var data = {};
+      if (type.indexOf("json") >= 0) data = await res.json().catch(function () { return {}; });
+      else if (!res.ok) { fail(res.status || 502, {}); return; }
+      else data = await res.json().catch(function () { return {}; });
+      var bodyText = data.markdown || data.answer || (typeof data.result === "string" ? data.result : "");
+      if (!res.ok || (data.success === false && !bodyText)) { fail(res.ok ? 400 : res.status, data); return; }
       readAnswer(data);
     } catch (e) {
       notice("error", "Sin conexión", "No se pudo contactar con el montador.");
@@ -249,12 +303,11 @@
         body: JSON.stringify({ ids: ids, sources: last.sources, car: last.body.car, track: last.body.track, circuit: last.body.circuit, sessions: last.body.sessions })
       });
       var type = res.headers.get("content-type") || "";
-      if (type.indexOf("application/json") >= 0) {
-        var data = await res.json().catch(function () { return {}; });
-        notice("error", "No se pudo descargar", data.error || "El servidor no adjuntó el archivo.");
+      if (type.indexOf("json") >= 0 || !res.ok) {
+        var data = type.indexOf("json") >= 0 ? await res.json().catch(function () { return {}; }) : {};
+        fail(res.ok ? 400 : res.status, data, true);
         return;
       }
-      if (!res.ok) { notice("error", "No se pudo descargar", "Respuesta " + res.status + "."); return; }
       var blob = await res.blob();
       var a = document.createElement("a");
       a.href = URL.createObjectURL(blob);

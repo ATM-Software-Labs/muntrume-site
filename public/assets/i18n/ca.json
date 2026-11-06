@@ -710,5 +710,14 @@
 "El servicio todavía no responde.": "El servei encara no respon.",
 "No se pudo descargar": "No s’ha pogut descarregar",
 "El servidor no adjuntó el archivo.": "El servidor no ha adjuntat el fitxer.",
-"Descarga lista": "Descàrrega a punt"
+"Descarga lista": "Descàrrega a punt",
+"La sesión ha caducado": "La sessió ha caducat",
+"Vuelve a entrar.": "Torna a entrar.",
+"Sesión no válida o caducada. Vuelve a iniciar sesión.": "Sessió no vàlida o caducada. Torna a iniciar la sessió.",
+"Demasiadas peticiones": "Massa peticions",
+"Espera un momento y vuelve a intentarlo.": "Espera un moment i torna-ho a provar.",
+"El montador no responde": "El muntador no respon",
+"Prueba otra vez dentro de un momento.": "Torna-ho a provar d’aquí a un moment.",
+"Revisa coche, circuito y sesiones.": "Revisa el cotxe, el circuit i les sessions.",
+"El servicio no ha devuelto un setup.": "El servei no ha retornat cap setup."
 }

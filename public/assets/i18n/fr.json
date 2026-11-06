@@ -708,5 +708,14 @@
 "El servicio todavía no responde.": "Le service ne répond pas encore.",
 "No se pudo descargar": "Téléchargement impossible",
 "El servidor no adjuntó el archivo.": "Le serveur n’a pas joint de fichier.",
-"Descarga lista": "Téléchargement prêt"
+"Descarga lista": "Téléchargement prêt",
+"La sesión ha caducado": "La session a expiré",
+"Vuelve a entrar.": "Reconnecte-toi.",
+"Sesión no válida o caducada. Vuelve a iniciar sesión.": "Session invalide ou expirée. Reconnecte-toi.",
+"Demasiadas peticiones": "Trop de requêtes",
+"Espera un momento y vuelve a intentarlo.": "Attends un moment et réessaie.",
+"El montador no responde": "Le monteur ne répond pas",
+"Prueba otra vez dentro de un momento.": "Réessaie dans un moment.",
+"Revisa coche, circuito y sesiones.": "Vérifie la voiture, le circuit et les sessions.",
+"El servicio no ha devuelto un setup.": "Le service n’a pas renvoyé de setup."
 }

@@ -30,7 +30,7 @@ export const PILOTOS: Piloto[] = [
     country: 'Spain',
     flag: '🇪🇸',
     flag_code: 'ES',
-    helmet_url: '/assets/img/helmet-alberto.webp',
+    helmet_url: '/img/helmets/albertot.webp',
     bio: 'Team Principal y director técnico de Muntrume Motorsport. Especialista en dinámica de vehículos, telemetría a 60 Hz y estrategias de carrera para eventos de resistencia.',
     initials: 'AT'
   },
@@ -45,7 +45,7 @@ export const PILOTOS: Piloto[] = [
     country: 'Spain',
     flag: '🇪🇸',
     flag_code: 'ES',
-    helmet_url: '/assets/img/helmet-mateo.webp',
+    helmet_url: '/img/helmets/mateob.webp',
     bio: 'Piloto oficial de GT3 en campeonatos de resistencia y sprint. Especialista en ritmo de carrera continuo, consistencia y gestión de tráfico en stint largo.',
     initials: 'MB'
   },
@@ -60,7 +60,7 @@ export const PILOTOS: Piloto[] = [
     country: 'Costa Rica',
     flag: '🇨🇷',
     flag_code: 'CR',
-    helmet_url: '/assets/img/helmet-eduardo.webp',
+    helmet_url: '/img/helmets/eduardoc.webp',
     bio: 'Especialista en prototipos híbridos GTP e IMSA. Enfoque en recuperación de energía, balance aerodinámico y frenada de alta precisión.',
     initials: 'EC'
   }
