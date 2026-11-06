@@ -236,3 +236,27 @@ html[data-theme="light"]{--m-warn:#8A5A00;--m-err:#B42318}
   .g-steps,.g-filters{grid-template-columns:1fr}
   .g-hero{padding-top:88px}
 }
+
+/* t273: licencias de iRacing (sin logotipos ni arte de iRacing) */
+.lics{display:grid;gap:12px;grid-template-columns:repeat(5,minmax(0,1fr))}
+.lics--compact{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.lic{background:var(--r-surface);border:1px solid var(--r-line);border-top:3px solid var(--lic,var(--r-accent));border-radius:var(--r-radius);padding:12px;display:grid;gap:8px;min-width:0}
+.lics--compact .lic{padding:8px;gap:4px}
+.lic__cat{margin:0;font:600 11px/1.2 var(--r-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--r-text)}
+.lic__class{margin:0;font:800 18px/1 var(--r-display);letter-spacing:.04em;text-transform:uppercase}
+.lics--compact .lic__class{font-size:13px}
+.lic__stats{display:grid;gap:4px;margin:0}
+.lic__stats div{display:flex;justify-content:space-between;gap:8px;font-size:13px}
+.lics--compact .lic__stats div{font-size:11px}
+.lic__stats dt{margin:0;color:var(--r-muted);font:600 10px/1.3 var(--r-mono);letter-spacing:.08em;text-transform:uppercase}
+.lic__stats dd{margin:0;font-variant-numeric:tabular-nums;font-weight:700}
+.g-pass{display:flex;gap:8px;align-items:center}
+.g-pass input{flex:1;min-width:0}
+.g-pass__toggle{min-height:44px;padding:0 12px;border:1px solid var(--r-line);background:transparent;color:var(--r-text);font:700 12px/1 var(--r-display);letter-spacing:.06em;text-transform:uppercase;border-radius:var(--r-radius);cursor:pointer}
+.g-setup-card{background:var(--r-surface);border:1px solid var(--r-line);border-radius:var(--r-radius);padding:16px;display:grid;gap:10px}
+.g-setup-card h3{margin:0;font:800 26px/1 var(--r-display);text-transform:uppercase}
+.g-setup-meta{display:flex;flex-wrap:wrap;gap:8px 16px;margin:0;color:var(--r-muted);font-size:13px}
+.g-setup-meta strong{color:var(--r-text);font-weight:700}
+.g-setup-actions{display:flex;flex-wrap:wrap;gap:8px}
+@media (max-width:900px){.lics{grid-template-columns:repeat(2,minmax(0,1fr))}.lics--compact{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:420px){.lics,.lics--compact{grid-template-columns:1fr}}

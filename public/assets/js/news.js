@@ -40,18 +40,6 @@
         isBreaking: false,
         isTeam: true
       },
-      {
-        id: 'dispatch-roster-sfl',
-        title: '🏎️ Temporada Super Formula Lights: Juanlu Carrillo al frente del programa de monoplazas',
-        description: 'Inicio de los entrenamientos oficiales en Suzuka y Motegi para el campeonato de monoplazas de alta carga aerodinámica.',
-        link: '/team',
-        pubDate: new Date(Date.now() - 172800000).toISOString(),
-        source: 'Muntrume Drivers',
-        thumbnail: '/assets/img/race1-640.webp',
-        autoCategory: 'team',
-        isBreaking: false,
-        isTeam: true
-      }
     ];
 
     // Live external news: server-side RSS proxy on the Muntrume Worker (replaces rss2json)
@@ -635,7 +623,7 @@
       { q: "What telemetry channel measures tire deformation relative to wheel velocity?", options: ["Slip Angle / Slip Ratio", "Pedal potentiometer", "Rocker travel", "Lambda sensor"], correct: 0 },
       { q: "In what Barcelona district is Muntrume Motorsport headquarters located?", options: ["Sant Andreu", "Eixample", "Gràcia", "Sants"], correct: 0 },
       { q: "What happens during aerodynamic pitch sensitivity on a GT3 car?", options: ["Brake fluid boils", "Center of pressure shifts between axles under braking", "Rear wing detaches", "Tire pressure drops"], correct: 1 },
-      { q: "Who founded Muntrume Motorsport?", options: ["Alberto Trujillo", "Mateo Berbis", "Eduardo Chongkan", "Juanlu Carrillo"], correct: 0 }
+      { q: "Who founded Muntrume Motorsport?", options: ["Alberto Trujillo", "Mateo Berbis", "Eduardo Chongkan", "Un patrocinador externo"], correct: 0 }
     ];
 
     let triviaCurrent = 0, triviaScore = 0, triviaAnswered = false, triviaQuestions = [];

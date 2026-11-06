@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import HelmetAvatar from '../components/HelmetAvatar.astro';
 import { PILOTOS } from '../lib/pilotos';
+import { licenciaPrincipal, formatoIr } from '../lib/licencias';
 import catalog from '../../public/assets/data/catalog_index.json';
 
 const pageTitle = "Muntrume Motorsport | Equipo de sim racing en iRacing — Barcelona";
@@ -62,8 +63,8 @@ const figs = [
               <h3 class="r-card__name">{p.fullName}</h3>
             </div>
             <div class="r-card__stats">
-              <div>iRating<strong data-f="irating" class="r-nodata">Sin datos</strong></div>
-              <div>Licencia<strong data-f="license" class="r-nodata">Sin datos</strong></div>
+              <div>iRating Sports Car<strong data-f="irating">{licenciaPrincipal(p.slug)?.irating != null ? formatoIr(licenciaPrincipal(p.slug)!.irating) : "Sin datos"}</strong></div>
+              <div>Licencia<strong data-f="license">{licenciaPrincipal(p.slug) ? `${licenciaPrincipal(p.slug)!.classLabel} ${licenciaPrincipal(p.slug)!.sr}` : "Sin datos"}</strong></div>
             </div>
           </a>
         ))}
@@ -119,5 +120,5 @@ const figs = [
     </div>
   </section>
 
-  <script is:inline src="/assets/js/home-r.js?v=t265" defer></script>
+  <script is:inline src="/assets/js/home-r.js?v=t273" defer></script>
 </Layout>

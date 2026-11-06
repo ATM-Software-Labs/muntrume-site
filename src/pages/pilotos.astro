@@ -1,10 +1,12 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import HelmetAvatar from '../components/HelmetAvatar.astro';
+import Licencias from '../components/Licencias.astro';
 import { PILOTOS } from '../lib/pilotos';
+import { licenciaPrincipal, formatoIr, LICENCE_UPDATED_LABEL } from '../lib/licencias';
 
 const pageTitle = "Pilotos | Muntrume Motorsport — iRacing";
-const pageDescription = "Plantilla oficial de Muntrume Motorsport en iRacing. Estadísticas reales de iRacing por piloto: iRating, licencia, coche favorito y categoría.";
+const pageDescription = `Plantilla de Muntrume Motorsport: ${PILOTOS.map(p => p.fullName).join(", ")}. Licencias de iRacing del ${LICENCE_UPDATED_LABEL}. El coche favorito y las últimas carreras solo se publican cuando los envía iRacing.`;
 ---
 
 <Layout title={pageTitle} description={pageDescription}>
@@ -14,7 +16,7 @@ const pageDescription = "Plantilla oficial de Muntrume Motorsport en iRacing. Es
         <div>
           <p class="r-kicker">Plantilla 2026</p>
           <h1 id="plTitle" class="r-h2">Pilotos</h1>
-          <p class="r-lead">Cuatro pilotos oficiales compitiendo en iRacing. Las estadísticas se publican solo cuando proceden de iRacing; si no hay datos verificados se indica «Sin datos».</p>
+          <p class="r-lead">{PILOTOS.length} pilotos oficiales en iRacing. Las licencias son la instantánea del {LICENCE_UPDATED_LABEL}. Si la API trae datos más nuevos, sustituyen a esa instantánea. Coche favorito y últimas carreras: sin datos hasta que iRacing los envíe.</p>
         </div>
       </div>
       <div class="r-grid">
@@ -31,16 +33,19 @@ const pageDescription = "Plantilla oficial de Muntrume Motorsport en iRacing. Es
               {p.bio && <p style="margin:0;color:var(--r-muted);font-size:14px;line-height:1.55">{p.bio}</p>}
             </div>
             <div class="r-card__stats">
-              <div>iRating<strong data-f="irating" class="r-nodata">Sin datos</strong></div>
-              <div>Licencia<strong data-f="license" class="r-nodata">Sin datos</strong></div>
+              <div>iRating Sports Car<strong data-f="irating">{licenciaPrincipal(p.slug)?.irating != null ? formatoIr(licenciaPrincipal(p.slug)!.irating) : "Sin datos"}</strong></div>
+              <div>Licencia<strong data-f="license">{licenciaPrincipal(p.slug) ? `${licenciaPrincipal(p.slug)!.classLabel} ${licenciaPrincipal(p.slug)!.sr}` : "Sin datos"}</strong></div>
               <div style="border-left:0;border-top:1px solid var(--r-line)">Coche favorito<strong data-f="fav_car" class="r-nodata" style="font-size:16px">Sin datos</strong></div>
               <div style="border-top:1px solid var(--r-line)">Categoría principal<strong data-f="top_category" class="r-nodata" style="font-size:16px">Sin datos</strong></div>
+            </div>
+            <div style="padding:0 12px 16px">
+              <Licencias slug={p.slug} compact />
             </div>
           </a>
         ))}
       </div>
-      <p class="r-meta" id="driversSource" style="margin-top:16px">Fuente: iRacing (API oficial o puente del equipo). Sin datos verificados todavía.</p>
+      <p class="r-meta" id="driversSource" style="margin-top:16px">Actualizado: {LICENCE_UPDATED_LABEL}. Fuente: licencias de miembro de iRacing. Coche favorito y carreras siguen en «Sin datos».</p>
     </div>
   </section>
-  <script is:inline src="/assets/js/home-r.js?v=t265" defer></script>
+  <script is:inline src="/assets/js/home-r.js?v=t273" defer></script>
 </Layout>
