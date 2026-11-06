@@ -98,64 +98,102 @@ const channels = [
           </p>
         </div>
 
-        <form id="paddockPassForm" class="space-y-5" onsubmit="handlePaddockPass(event)">
+        <form id="paddockPassForm" class="space-y-5" onsubmit="handlePaddockPass(event)" novalidate>
           <!-- Campo 1: Nombre del Piloto -->
           <div>
-            <label for="driverNameInput" class="block text-xs font-mono text-[#8B9A8F] uppercase mb-1.5 font-bold">
-              Nombre del Piloto
-            </label>
+            <div class="flex items-center justify-between mb-1.5">
+              <label for="driverNameInput" class="block text-xs font-mono text-[#8B9A8F] uppercase font-bold">
+                Nombre del Piloto
+              </label>
+              <span id="nameValidationHint" class="text-[10px] font-mono text-neutral-500">Requerido</span>
+            </div>
             <input 
               type="text" 
               required 
               id="driverNameInput"
               placeholder="Alberto Trujillo" 
-              class="w-full px-4 py-3 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699] transition"
+              class="w-full px-4 py-3 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00ff88] transition-all duration-200"
             />
           </div>
 
           <!-- Campo 2: Email iRacing -->
           <div>
-            <label for="driverEmailInput" class="block text-xs font-mono text-[#8B9A8F] uppercase mb-1.5 font-bold">
-              Email iRacing
-            </label>
+            <div class="flex items-center justify-between mb-1.5">
+              <label for="driverEmailInput" class="block text-xs font-mono text-[#8B9A8F] uppercase font-bold">
+                Email iRacing
+              </label>
+              <span id="emailValidationHint" class="text-[10px] font-mono text-neutral-500">Formato válido</span>
+            </div>
             <input 
               type="email" 
               required 
               id="driverEmailInput"
               placeholder="piloto@iracing.com" 
-              class="w-full px-4 py-3 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699] transition"
+              class="w-full px-4 py-3 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00ff88] transition-all duration-200"
             />
           </div>
 
           <!-- Campo 3: Mensaje -->
           <div>
-            <label for="driverMessageInput" class="block text-xs font-mono text-[#8B9A8F] uppercase mb-1.5 font-bold">
-              Mensaje
-            </label>
+            <div class="flex items-center justify-between mb-1.5">
+              <label for="driverMessageInput" class="block text-xs font-mono text-[#8B9A8F] uppercase font-bold">
+                Mensaje de Motivación
+              </label>
+              <span id="msgCharCounter" class="text-[11px] font-mono text-[#8B9A8F] transition-colors">
+                Mínimo 50 caracteres / Actuales: <strong id="msgCharCurrent" class="text-white">0</strong>
+              </span>
+            </div>
             <textarea 
               rows="4" 
               required 
+              minlength="50"
               id="driverMessageInput"
-              placeholder="Escribe tu mensaje o motivación para conectar con Muntrume Motorsport..." 
-              class="w-full px-4 py-3 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699] transition resize-none"
+              placeholder="Describe tu experiencia en iRacing, categoría actual, coches habituales y objetivos en resistencia para conectar con Muntrume Motorsport..." 
+              class="w-full px-4 py-3 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00ff88] transition-all duration-200 resize-none"
             ></textarea>
+            <div class="w-full h-1 bg-[#080C0A] rounded-full overflow-hidden mt-1.5 border border-[#1E2A26]/60">
+              <div id="msgProgressFill" class="h-full bg-[#00ff88] transition-all duration-200" style="width: 0%"></div>
+            </div>
           </div>
 
           <button 
             type="submit" 
             id="paddockSubmitBtn"
-            class="w-full py-3.5 rounded-xl bg-[#00E699] hover:bg-[#00c985] text-neutral-950 font-black text-xs uppercase tracking-wider transition shadow-lg shadow-[#00E699]/15 flex items-center justify-center gap-2 cursor-pointer"
+            disabled
+            class="w-full py-3.5 rounded-xl bg-[#00ff88] hover:bg-[#00E699] text-neutral-950 font-black text-xs uppercase tracking-wider transition-all duration-200 shadow-lg shadow-[#00ff88]/15 flex items-center justify-center gap-2 cursor-not-allowed opacity-50"
           >
-            <span>Enviar Solicitud de Paddock Pass</span>
-            <span>&rarr;</span>
+            <span id="paddockBtnText">Enviar Solicitud de Paddock Pass</span>
+            <span id="paddockBtnArrow">&rarr;</span>
+            <svg id="paddockBtnSpinner" class="hidden animate-spin h-4 w-4 text-neutral-950" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
           </button>
 
-          <div id="paddockPassSuccess" class="hidden p-4 rounded-xl bg-[#00E699]/10 border border-[#00E699]/30 text-xs font-mono text-[#00E699] text-center">
-            Solicitud recibida correctamente. Nos pondremos en contacto vía email o por la radio de Discord.
-          </div>
           <div id="paddockPassError" class="hidden p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-xs font-mono text-red-400 text-center">
           </div>
         </form>
+
+        <!-- Estado de éxito con efecto Confeti Digital -->
+        <div id="paddockPassSuccess" class="hidden relative p-8 rounded-2xl bg-[#080C0A] border border-[#00ff88]/50 text-center space-y-4 overflow-hidden shadow-[0_0_30px_rgba(0,255,136,0.15)]">
+          <div id="paddockConfettiHost" class="pointer-events-none absolute inset-0 overflow-hidden"></div>
+          <div class="relative z-10 w-14 h-14 rounded-full bg-[#00ff88]/15 border border-[#00ff88] flex items-center justify-center mx-auto text-[#00ff88] shadow-[0_0_20px_rgba(0,255,136,0.3)]">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <div class="relative z-10 space-y-1.5">
+            <span class="inline-block px-2.5 py-0.5 rounded-full bg-[#00ff88]/15 text-[#00ff88] font-mono text-[10px] font-bold uppercase tracking-widest">
+              CREDENCIAL REGISTRADA
+            </span>
+            <h3 class="text-lg sm:text-xl font-extrabold text-white font-display">
+              Pase de Paddock solicitado con éxito. El copiloto te contactará por Discord
+            </h3>
+            <p id="paddockSuccessDetail" class="text-xs font-mono text-[#8B9A8F]">
+              Tus datos de telemetría e ingreso han sido transmitidos a dirección de carrera.
+            </p>
+          </div>
+        </div>
 
       </div>
     </section>
@@ -169,9 +207,154 @@ const channels = [
 </Layout>
 
 <script is:inline>
+  (function initPaddockValidation() {
+    var nameInput = document.getElementById('driverNameInput');
+    var emailInput = document.getElementById('driverEmailInput');
+    var msgInput = document.getElementById('driverMessageInput');
+    var submitBtn = document.getElementById('paddockSubmitBtn');
+    var charCurrent = document.getElementById('msgCharCurrent');
+    var charCounter = document.getElementById('msgCharCounter');
+    var progressFill = document.getElementById('msgProgressFill');
+    var nameHint = document.getElementById('nameValidationHint');
+    var emailHint = document.getElementById('emailValidationHint');
+
+    if (!nameInput || !emailInput || !msgInput || !submitBtn) return;
+
+    var touched = { name: false, email: false, msg: false };
+
+    function isValidEmail(v) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+    }
+
+    function applyFieldStyle(el, valid, isTouched) {
+      el.classList.remove(
+        'border-[#1E2A26]',
+        'border-[#00ff88]',
+        'shadow-[0_0_12px_rgba(0,255,136,0.2)]',
+        'border-red-500/80',
+        'shadow-[0_0_12px_rgba(239,68,68,0.2)]'
+      );
+      if (!isTouched && el.value.trim() === '') {
+        el.classList.add('border-[#1E2A26]');
+        return;
+      }
+      if (valid) {
+        el.classList.add('border-[#00ff88]', 'shadow-[0_0_12px_rgba(0,255,136,0.2)]');
+      } else {
+        el.classList.add('border-red-500/80', 'shadow-[0_0_12px_rgba(239,68,68,0.2)]');
+      }
+    }
+
+    function validateForm() {
+      var nameVal = nameInput.value.trim();
+      var emailVal = emailInput.value.trim();
+      var msgLen = msgInput.value.trim().length;
+
+      var nameOk = nameVal.length >= 3;
+      var emailOk = isValidEmail(emailVal);
+      var msgOk = msgLen >= 50;
+
+      applyFieldStyle(nameInput, nameOk, touched.name);
+      applyFieldStyle(emailInput, emailOk, touched.email);
+      applyFieldStyle(msgInput, msgOk, touched.msg);
+
+      if (nameHint) {
+        if (!touched.name && !nameVal) {
+          nameHint.textContent = 'Requerido';
+          nameHint.className = 'text-[10px] font-mono text-neutral-500';
+        } else if (nameOk) {
+          nameHint.textContent = '✓ Piloto verificado';
+          nameHint.className = 'text-[10px] font-mono text-[#00ff88]';
+        } else {
+          nameHint.textContent = 'Mínimo 3 caracteres';
+          nameHint.className = 'text-[10px] font-mono text-red-400';
+        }
+      }
+
+      if (emailHint) {
+        if (!touched.email && !emailVal) {
+          emailHint.textContent = 'Formato válido';
+          emailHint.className = 'text-[10px] font-mono text-neutral-500';
+        } else if (emailOk) {
+          emailHint.textContent = '✓ Email válido';
+          emailHint.className = 'text-[10px] font-mono text-[#00ff88]';
+        } else {
+          emailHint.textContent = 'Introduce un email válido';
+          emailHint.className = 'text-[10px] font-mono text-red-400';
+        }
+      }
+
+      if (charCurrent) charCurrent.textContent = String(msgLen);
+      if (progressFill) {
+        var pct = Math.min(100, Math.round((msgLen / 50) * 100));
+        progressFill.style.width = pct + '%';
+        progressFill.className = msgOk
+          ? 'h-full bg-[#00ff88] transition-all duration-200 shadow-[0_0_8px_#00ff88]'
+          : 'h-full bg-amber-400 transition-all duration-200';
+      }
+      if (charCounter) {
+        charCounter.className = msgOk
+          ? 'text-[11px] font-mono text-[#00ff88] transition-colors'
+          : (touched.msg && msgLen > 0 ? 'text-[11px] font-mono text-red-400 transition-colors' : 'text-[11px] font-mono text-[#8B9A8F] transition-colors');
+      }
+
+      var allValid = nameOk && emailOk && msgOk;
+      submitBtn.disabled = !allValid;
+      if (allValid) {
+        submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        submitBtn.classList.add('cursor-pointer', 'hover:shadow-[0_0_24px_rgba(0,255,136,0.35)]');
+      } else {
+        submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        submitBtn.classList.remove('cursor-pointer', 'hover:shadow-[0_0_24px_rgba(0,255,136,0.35)]');
+      }
+      return allValid;
+    }
+
+    nameInput.addEventListener('input', function() { touched.name = true; validateForm(); });
+    nameInput.addEventListener('blur', function() { touched.name = true; validateForm(); });
+    emailInput.addEventListener('input', function() { touched.email = true; validateForm(); });
+    emailInput.addEventListener('blur', function() { touched.email = true; validateForm(); });
+    msgInput.addEventListener('input', function() { touched.msg = true; validateForm(); });
+    msgInput.addEventListener('blur', function() { touched.msg = true; validateForm(); });
+  })();
+
+  function spawnDigitalConfetti() {
+    var host = document.getElementById('paddockConfettiHost');
+    if (!host) return;
+    host.innerHTML = '';
+    var colors = ['#00ff88', '#00E699', '#34d399', '#ffffff'];
+    for (var i = 0; i < 28; i++) {
+      var dot = document.createElement('span');
+      var size = 4 + Math.round(Math.random() * 6);
+      dot.style.position = 'absolute';
+      dot.style.width = size + 'px';
+      dot.style.height = size + 'px';
+      dot.style.borderRadius = i % 2 === 0 ? '999px' : '2px';
+      dot.style.background = colors[i % colors.length];
+      dot.style.left = Math.round(Math.random() * 96) + '%';
+      dot.style.top = '-10px';
+      dot.style.opacity = '0.9';
+      dot.style.boxShadow = '0 0 8px rgba(0,255,136,0.6)';
+      dot.style.transition = 'transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 1.2s ease';
+      host.appendChild(dot);
+      (function(el) {
+        requestAnimationFrame(function() {
+          var dy = 90 + Math.round(Math.random() * 140);
+          var dx = -40 + Math.round(Math.random() * 80);
+          el.style.transform = 'translate(' + dx + 'px, ' + dy + 'px) rotate(' + Math.round(Math.random() * 360) + 'deg)';
+          el.style.opacity = '0';
+        });
+      })(dot);
+    }
+  }
+
   async function handlePaddockPass(e) {
     if (e && e.preventDefault) e.preventDefault();
+    var form = document.getElementById('paddockPassForm');
     var btn = document.getElementById('paddockSubmitBtn');
+    var btnText = document.getElementById('paddockBtnText');
+    var btnArrow = document.getElementById('paddockBtnArrow');
+    var btnSpinner = document.getElementById('paddockBtnSpinner');
     var success = document.getElementById('paddockPassSuccess');
     var errBox = document.getElementById('paddockPassError');
     var nameInput = document.getElementById('driverNameInput');
@@ -186,11 +369,15 @@ const channels = [
       mensaje: msgInput.value.trim()
     };
 
-    if (!payload.nombre_piloto || !payload.email_iracing) return;
+    if (payload.nombre_piloto.length < 3 || payload.mensaje.length < 50 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email_iracing)) {
+      return;
+    }
 
     btn.disabled = true;
-    btn.classList.add('opacity-50', 'pointer-events-none');
-    btn.innerText = 'Enviando...';
+    btn.classList.add('opacity-75', 'pointer-events-none');
+    if (btnText) btnText.textContent = 'Procesando telemetría de ingreso...';
+    if (btnArrow) btnArrow.classList.add('hidden');
+    if (btnSpinner) btnSpinner.classList.remove('hidden');
     if (errBox) errBox.classList.add('hidden');
 
     try {
@@ -210,10 +397,10 @@ const channels = [
 
       var data = await res.json().catch(function() { return {}; });
       if (res.ok && (data.success || data.message)) {
-        btn.classList.add('hidden');
+        if (form) form.classList.add('hidden');
         if (success) {
-          success.innerText = data.message || 'Solicitud recibida correctamente. Nos pondremos en contacto vía email o por la radio de Discord.';
           success.classList.remove('hidden');
+          spawnDigitalConfetti();
         }
       } else {
         throw new Error(data.error || 'Error al enviar la solicitud.');
@@ -224,8 +411,10 @@ const channels = [
         errBox.classList.remove('hidden');
       }
       btn.disabled = false;
-      btn.classList.remove('opacity-50', 'pointer-events-none');
-      btn.innerHTML = '<span>Enviar Solicitud de Paddock Pass</span> <span>&rarr;</span>';
+      btn.classList.remove('opacity-75', 'pointer-events-none');
+      if (btnText) btnText.textContent = 'Enviar Solicitud de Paddock Pass';
+      if (btnArrow) btnArrow.classList.remove('hidden');
+      if (btnSpinner) btnSpinner.classList.add('hidden');
     }
   }
 </script>

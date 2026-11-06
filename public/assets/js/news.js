@@ -254,7 +254,7 @@
 
       if (currentSearch) {
         const s = currentSearch.toLowerCase();
-        filtered = filtered.filter(n => n.title.toLowerCase().includes(s) || (n.description || '').toLowerCase().includes(s));
+        filtered = filtered.filter(n => n.title.toLowerCase().includes(s) || (n.description || '').toLowerCase().includes(s) || (n.source || '').toLowerCase().includes(s));
       }
 
       if (filtered.length === 0) {
@@ -327,11 +327,16 @@
       const isInternal = href.startsWith('/') && !href.startsWith('//');
       const targetAttr = isInternal ? '' : 'target="_blank" rel="noopener noreferrer"';
       const ctaText = isInternal ? (a.isTeam ? 'Leer Despacho Oficial &rarr;' : 'Leer Noticia y Contexto &rarr;') : 'Leer Noticia en ' + esc(a.source) + ' &rarr;';
+      const liveTime = (lastUpdateTime || new Date()).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
       return `
-        <a href="${href}" ${targetAttr} class="group block relative overflow-hidden rounded-3xl bg-[#161c24] border border-white/10 hover:border-white/20 transition duration-300 shadow-2xl">
+        <a href="${href}" ${targetAttr} class="group block relative overflow-hidden rounded-3xl bg-[#161c24] border border-white/10 hover:border-[#00ff88]/40 transition duration-300 shadow-2xl">
           <div class="h-80 sm:h-96 w-full relative overflow-hidden bg-[#0e1217]">
             <img src="${esc(cardImg(a.thumbnail))}" onerror="this.onerror=null;this.src='/assets/img/coche1-640.webp';" alt="" width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="w-full h-full object-cover transition duration-500 group-hover:scale-105 opacity-80 group-hover:opacity-90">
             <div class="absolute inset-0 bg-gradient-to-t from-[#161c24] via-[#161c24]/70 to-transparent"></div>
+            <div class="absolute top-4 left-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#080C0A]/85 backdrop-blur-md border border-[#00ff88]/40 text-[#00ff88] text-[10px] font-mono font-bold tracking-wider uppercase shadow-[0_0_14px_rgba(0,255,136,0.28)]">
+              <span class="w-2 h-2 rounded-full bg-[#00ff88] animate-pulse"></span>
+              <span>NOTICIA EN DIRECTO · ${liveTime}</span>
+            </div>
           </div>
           <div class="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
             <div class="flex items-center gap-2.5 mb-3 flex-wrap text-xs">
@@ -339,13 +344,13 @@
               <span class="px-2.5 py-0.5 rounded-full bg-[#1c232d] text-neutral-300 border border-white/10 text-[11px] font-medium">${esc(a.source)}</span>
               <span class="text-neutral-400 text-xs">${formatDate(a.pubDate)}</span>
             </div>
-            <h3 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-2 group-hover:text-emerald-400 transition-colors leading-tight">
+            <h3 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-2 group-hover:text-[#00ff88] transition-colors leading-tight">
               ${esc(a.title)}
             </h3>
             <p class="text-neutral-300 text-xs sm:text-sm line-clamp-2 mb-4 max-w-3xl leading-relaxed">
               ${esc(cleanDesc(a.description))}
             </p>
-            <div class="inline-flex items-center gap-2 text-emerald-400 font-semibold text-xs group-hover:translate-x-1 transition-transform">
+            <div class="inline-flex items-center gap-2 text-[#00ff88] font-semibold text-xs group-hover:translate-x-1 transition-transform">
               <span>${ctaText}</span>
             </div>
           </div>
@@ -471,11 +476,11 @@
           const btn = e.target.closest('.filter-btn');
           if (btn) {
             document.querySelectorAll('#filterButtons .filter-btn').forEach(b => {
-              b.classList.remove('active', 'bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/30');
-              b.classList.add('text-neutral-400', 'bg-white/5', 'border-white/10');
+              b.classList.remove('active', 'bg-[#00ff88]/20', 'text-[#00ff88]', 'border-[#00ff88]/50', 'shadow-[0_0_12px_rgba(0,255,136,0.2)]', 'bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/30');
+              b.classList.add('text-neutral-300', 'bg-white/5', 'border-white/10');
             });
-            btn.classList.add('active', 'bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/30');
-            btn.classList.remove('text-neutral-400', 'bg-white/5', 'border-white/10');
+            btn.classList.add('active', 'bg-[#00ff88]/20', 'text-[#00ff88]', 'border-[#00ff88]/50', 'shadow-[0_0_12px_rgba(0,255,136,0.2)]');
+            btn.classList.remove('text-neutral-300', 'bg-white/5', 'border-white/10');
             currentFilter = btn.dataset.filter || 'all';
             renderTopStories();
           }

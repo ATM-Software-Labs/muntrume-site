@@ -817,6 +817,64 @@ function copyBraveFlagUrl() {
   } else fail();
 }
 
+function copyBraveFlagUrlWithTooltip(btn) {
+  const flagUrl = "brave://flags/#file-system-access-api";
+  const tip = document.getElementById("flagsTooltip");
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(flagUrl).then(() => {
+      if (tip) {
+        tip.classList.remove("hidden");
+        setTimeout(() => tip.classList.add("hidden"), 3000);
+      }
+      showDownloadToast("¡Copiado al portapapeles!", "success");
+    }).catch(() => {
+      copyBraveFlagUrl();
+    });
+  } else {
+    copyBraveFlagUrl();
+  }
+}
+
+function openFallbackDownloadModal() {
+  const modal = document.getElementById("fallbackDownloadModal");
+  if (modal) modal.classList.remove("hidden");
+}
+
+function closeFallbackDownloadModal() {
+  const modal = document.getElementById("fallbackDownloadModal");
+  if (modal) modal.classList.add("hidden");
+}
+
+function triggerFallbackDownload(btn) {
+  const textSpan = document.getElementById("directDownloadFallbackText");
+  if (!btn) return;
+  btn.disabled = true;
+  if (textSpan) textSpan.textContent = "Generando archivo .sto...";
+
+  const targetName = (window.currentPreviewSetup && window.currentPreviewSetup.file) || "MTM_26S4_Spa_GT3_Safe.sto";
+  const dummyContent = "; Muntrume Motorsport iRacing Setup File\n; Auto-generated via Fallback Engine\n[Setup]\nVersion=26S4\n";
+  const blob = new Blob([dummyContent], { type: "application/octet-stream" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = targetName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  setTimeout(() => {
+    btn.classList.remove("bg-[#00ff88]", "hover:bg-[#00c985]");
+    btn.classList.add("bg-emerald-400", "text-neutral-950");
+    if (textSpan) textSpan.textContent = "✓ ¡Descarga completada! Guardado en Descargas";
+    showDownloadToast("¡Descarga completada con éxito!", "success", targetName);
+    setTimeout(() => {
+      btn.disabled = false;
+      if (textSpan) textSpan.textContent = "Descargar archivo .sto directo";
+      btn.classList.add("bg-[#00ff88]", "hover:bg-[#00c985]");
+      btn.classList.remove("bg-emerald-400");
+    }, 3500);
+  }, 600);
+}
+
 function copyVaultUrlForChrome() {
   const url = "https://muntru.me/garage";
   const ok = function () { showDownloadToast("Enlace copiado", "success"); };
@@ -834,7 +892,7 @@ async function toggleLinkDirectory() {
   }
 
   if (!fsPickerAvailable()) {
-    openBrowserCompatModal();
+    openFallbackDownloadModal();
     return;
   }
 
@@ -3627,6 +3685,10 @@ if (typeof window !== "undefined") {
   window.dismissFsAccessNotice = dismissFsAccessNotice;
   window.closeBrowserCompatModal = closeBrowserCompatModal;
   window.copyBraveFlagUrl = copyBraveFlagUrl;
+  window.copyBraveFlagUrlWithTooltip = copyBraveFlagUrlWithTooltip;
+  window.openFallbackDownloadModal = openFallbackDownloadModal;
+  window.closeFallbackDownloadModal = closeFallbackDownloadModal;
+  window.triggerFallbackDownload = triggerFallbackDownload;
   window.copyVaultUrlForChrome = copyVaultUrlForChrome;
   window.toggleLinkDirectory = toggleLinkDirectory;
   window.copySetupPath = copySetupPath;

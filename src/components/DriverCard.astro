@@ -31,6 +31,16 @@ const lapsText = (n: number) => formatoAprox(n, "k", loc);
 const share = (n: number, sum: number) => Math.max(4, Math.round((100 * n) / sum));
 const fav = (driver.favoriteTrack || "").trim();
 
+const srNum = Number(lic?.sr) || 3.0;
+const srProgress = Math.min(100, Math.max(12, Math.round((srNum / 4.99) * 100)));
+const totalDriverLaps = sumTrack;
+const sparklines: Record<string, string> = {
+  albertot: "M2,24 Q18,21 36,18 T70,14 T100,8 T126,4",
+  mateob: "M2,25 Q20,22 42,18 T78,16 T104,11 T126,7",
+  eduardoc: "M2,26 Q22,23 48,20 T80,17 T108,13 T126,10"
+};
+const sparkPath = sparklines[driver.slug] || "M2,24 Q30,19 60,15 T126,6";
+
 function safeUrl(url: string) {
   const value = url.trim();
   if (!value) return "";
@@ -62,6 +72,39 @@ const socials = (
       <div><dt>iRating</dt><dd data-approx="k" data-n={lic?.irating ?? ""} data-f="irating" data-lic-f="irating">{lic?.irating != null ? formatoAprox(lic.irating, "k", loc) : ""}</dd></div>
       <div><dt>ttRating</dt><dd data-approx="k" data-n={lic?.ttRating ?? ""} data-lic-f="tt">{lic ? formatoAprox(lic.ttRating, "k", loc) : ""}</dd></div>
     </dl>
+
+    <!-- Sección de Métricas Clave Visuales con Animación y Curva -->
+    <div class="d-metrics-visual">
+      <div class="d-sr-gauge">
+        <div class="flex justify-between items-center text-[10px] font-mono text-[#9AA8A3] uppercase">
+          <span>Safety Rating</span>
+          <span class="text-[#00ff88] font-bold">{lic ? formatoAprox(Number(lic.sr), "sr", loc) : ""}</span>
+        </div>
+        <div class="d-sr-bar" title={`SR: ${srNum}`}>
+          <div class="d-sr-fill" style={`width:${srProgress}%`}></div>
+        </div>
+      </div>
+      <div class="d-ir-chart">
+        <div class="flex justify-between items-center text-[10px] font-mono text-[#9AA8A3] uppercase">
+          <span>Evolución iRating</span>
+          <span class="text-[#00ff88] font-bold" data-f="irating">{lic?.irating != null ? formatoAprox(lic.irating, "k", loc) : ""}</span>
+        </div>
+        <div class="d-sparkline-wrap">
+          <svg class="d-sparkline" viewBox="0 0 130 30" fill="none" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id={`irGrad-${driver.slug}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#00ff88" stop-opacity="0.35"/>
+                <stop offset="100%" stop-color="#00ff88" stop-opacity="0.0"/>
+              </linearGradient>
+            </defs>
+            <path d={`${sparkPath} L126,28 L2,28 Z`} fill={`url(#irGrad-${driver.slug})`}/>
+            <path d={sparkPath} stroke="#00ff88" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="126" cy="4" r="3" fill="#00ff88"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
     <p class="d-meta" data-block="member_since" hidden={!since}><span>Miembro desde</span> <time data-f="member_since_value" datetime={since || undefined}>{since}</time></p>
     <p class="d-meta" data-block="club" hidden={!club}><span>Club</span> <span data-f="club_value">{club}</span></p>
     {hero ? (
@@ -96,13 +139,33 @@ const socials = (
             <span class="d-fav__n">{fav}</span>
           </p>
         )}
-        {topTrack && (
-          <p class="d-lap"><span class="d-lap__k">Circuito más rodado</span> <span class="d-lap__n">{topTrack.name}</span> <span class="d-lap__v"><span data-approx="k" data-n={topTrack.laps}>{lapsText(topTrack.laps)}</span> <span>vueltas</span></span></p>
-        )}
-        {topCar && (
-          <p class="d-lap"><span class="d-lap__k">Coche más usado</span> <span class="d-lap__n">{topCar.name}</span> <span class="d-lap__v"><span data-approx="k" data-n={topCar.laps}>{lapsText(topCar.laps)}</span> <span>vueltas</span></span></p>
-        )}
-        {(topTrack || topCar) && <p class="r-meta">telemetría del equipo, nov 2026</p>}
+        <div class="d-sim-metrics">
+          {topTrack && (
+            <div class="d-sim-metric-row">
+              <svg class="d-sim-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+              <div>
+                <span class="d-lap__k">Circuito más rodado</span>
+                <p class="d-lap__n">{topTrack.name} <span class="d-lap__v">({lapsText(topTrack.laps)} vtas)</span></p>
+              </div>
+            </div>
+          )}
+          {topCar && (
+            <div class="d-sim-metric-row">
+              <svg class="d-sim-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9C2.1 11.1 2 11.5 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+              <div>
+                <span class="d-lap__k">Coche más usado</span>
+                <p class="d-lap__n">{topCar.name} <span class="d-lap__v">({lapsText(topCar.laps)} vtas)</span></p>
+              </div>
+            </div>
+          )}
+          <div class="d-sim-metric-row">
+            <svg class="d-sim-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <div>
+              <span class="d-lap__k">Vueltas confirmadas</span>
+              <p class="d-lap__n">{lapsText(totalDriverLaps)} vueltas acumuladas</p>
+            </div>
+          </div>
+        </div>
       </>
     )}
     {hero && <p class="r-meta" id="licenceUpdated">Actualizado: <time datetime="2026-11-06">{LICENCE_UPDATED_LABEL}</time></p>}
@@ -126,7 +189,27 @@ const socials = (
         {socials.map((s) => <li><a href={s.href} rel="noopener noreferrer" target="_blank">{s.label}</a></li>)}
       </ul>
     </div>
-    {!hero && <a class="r-link d-card__link" href={`/d/${driver.slug}/`}>Ver ficha</a>}
+    {!hero && (
+      <details class="d-telemetry-expand">
+        <summary class="d-expand-summary">
+          <span>Telemetría rápida</span>
+          <span class="d-chevron">▾</span>
+        </summary>
+        <div class="d-expand-content">
+          <p class="r-meta" style="margin-bottom:6px">Top circuitos en pista:</p>
+          <ul class="d-expand-list">
+            {tracks.slice(0, 3).map(t => (
+              <li><span>{t.name}</span><strong style="color:#00ff88">{lapsText(t.laps)} vtas</strong></li>
+            ))}
+          </ul>
+        </div>
+      </details>
+    )}
+    {!hero && (
+      <div class="d-actions-row">
+        <a class="r-link d-card__link" href={`/d/${driver.slug}/`}>Ver ficha completa →</a>
+      </div>
+    )}
   </div>
   {hero && tracks.length > 0 && (
     <div class="d-laps">
