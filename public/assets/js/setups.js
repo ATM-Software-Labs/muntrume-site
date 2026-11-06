@@ -18,7 +18,10 @@ let allFoldersExpanded = false;
 let currentFoldersMap = {};
 let currentOrderedFolders = [];
 let visibleFoldersLimit = 24;
-const FOLDERS_PAGE_SIZE = 24;
+function foldersPageSize() {
+  return window.matchMedia("(max-width: 700px)").matches ? 4 : 12;
+}
+const FOLDERS_PAGE_SIZE = 12;
 let initialIndexRows = [];
 let activeLoadedScopeKey = 'index';
 let totalVaultSetupsCount = 0;
@@ -645,6 +648,7 @@ function showVaultView() {
       if (logoutBtn) logoutBtn.classList.remove("hidden");
     }
   }
+  if (window.muntruBuilderSync) window.muntruBuilderSync();
 }
 
 // ==========================================
@@ -1249,61 +1253,60 @@ function setViewMode(mode) {
   renderSetups(currentlyFilteredSetups);
 }
 
-function renderFolderFilesHtml(folder) {
-  const isDirectLinked = !!iracingDirHandle;
-  const folderSubName = `${folder.season} ${folder.week} ${folder.circuit.replace(/\s+/g, '')}`;
-  return folder.setups.map(s => {
-    const sizeKb = (s.size_bytes / 1024).toFixed(1);
-    let badgeColor = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
-    if (s.setup_type === "Qualy") badgeColor = "bg-purple-500/10 text-purple-400 border-purple-500/20";
-    if (s.setup_type === "Wet") badgeColor = "bg-sky-500/10 text-sky-400 border-sky-500/20";
+const STO_TYPE_ORDER = ["Race", "Qualy", "Wet", "Other"];
+const STO_TYPE_LABEL = { Race: "Carrera", Qualy: "Clasificación", Wet: "Lluvia", Other: "Otros" };
 
-    const filePath = formatMtSetupsDisplayPath(folder.car, folder.season, folder.week, folder.circuit, s.filename);
-
-    return `
-      <div class="p-3 rounded-xl bg-[#0e1217] border border-white/5 hover:border-emerald-500/30 flex items-center justify-between gap-2 transition group">
-        <div class="min-w-0 flex-1">
-          <div class="flex items-center gap-1.5 mb-0.5">
-            <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full border ${badgeColor}">
-              ${s.setup_type}
-            </span>
-            <span class="text-[10px] text-neutral-500 font-mono">${sizeKb} KB</span>
-          </div>
-          <div class="text-xs font-semibold text-white truncate group-hover:text-emerald-400 transition" title="${escapeHtml(s.filename)}">
-            ${escapeHtml(s.filename)}
-          </div>
-        </div>
-
-        <div class="flex items-center gap-1 shrink-0">
-          <button 
-            type="button" 
-            data-setup-id="${Number(s.id)}" data-folder="${escapeHtml(folder.key)}" onclick="openSetupPreviewById(Number(this.dataset.setupId), this.dataset.folder)" 
-            class="px-2 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 hover:text-cyan-200 font-bold text-[11px] transition flex items-center gap-1" 
-            title="Ver Vista Previa Técnica y Mejores Vueltas en Garage 61"
-          >
-            <span>👁️ Vista Previa</span>
-          </button>
-          <button 
-            type="button" 
-            data-path="${escapeHtml(filePath)}" onclick="copySetupPath(this.dataset.path)" 
-            class="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white transition" 
-            title="Copiar ruta de iRacing"
-          >
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
-          </button>
-          <button 
-            type="button" 
-            data-setup-id="${Number(s.id)}" data-filename="${escapeHtml(s.filename)}" onclick="downloadSetup(Number(this.dataset.setupId), this.dataset.filename)" 
-            class="px-2.5 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 hover:text-emerald-300 font-bold text-xs transition flex items-center gap-1" 
-            title="Guardar directamente en su ruta exacta de iRacing"
-          >
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-            <span>${isDirectLinked ? 'Guardar' : 'En su Ruta'}</span>
-          </button>
-        </div>
+function stoFileRow(s, folder) {
+  const sizeKb = (s.size_bytes / 1024).toFixed(1);
+  const filePath = formatMtSetupsDisplayPath(folder.car, folder.season, folder.week, folder.circuit, s.filename);
+  const type = STO_TYPE_LABEL[s.setup_type] ? s.setup_type : "Other";
+  return `
+    <li class="sto-row">
+      <p class="sto-name" title="${escapeHtml(s.filename)}">${escapeHtml(s.filename)}</p>
+      <p class="sto-meta"><span class="sto-type sto-type--${type}">${STO_TYPE_LABEL[type]}</span><span class="sto-size">${sizeKb} KB</span></p>
+      <div class="sto-actions">
+        <button type="button" class="sto-icon" data-setup-id="${Number(s.id)}" data-folder="${escapeHtml(folder.key)}" onclick="openSetupPreviewById(Number(this.dataset.setupId), this.dataset.folder)" aria-label="Vista previa">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+        <button type="button" class="sto-icon" data-path="${escapeHtml(filePath)}" onclick="copySetupPath(this.dataset.path)" aria-label="Copiar ruta">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>
+        </button>
+        <button type="button" class="sto-icon sto-icon--go" data-setup-id="${Number(s.id)}" data-filename="${escapeHtml(s.filename)}" onclick="downloadSetup(Number(this.dataset.setupId), this.dataset.filename)" aria-label="Guardar setup">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 4v12m0 0l-4-4m4 4l4-4M5 20h14"/></svg>
+        </button>
       </div>
-    `;
+    </li>`;
+}
+
+function renderFolderFilesHtml(folder) {
+  const groups = {};
+  folder.setups.forEach((s) => {
+    const type = STO_TYPE_LABEL[s.setup_type] ? s.setup_type : "Other";
+    (groups[type] || (groups[type] = [])).push(s);
+  });
+  return STO_TYPE_ORDER.filter((type) => groups[type] && groups[type].length).map((type) => {
+    const all = groups[type];
+    const head = all.slice(0, 3);
+    const moreId = `more-${folder.key}-${type}`;
+    const more = all.slice(3);
+    return `
+      <section class="sto-group">
+        <h4 class="sto-group__title">${STO_TYPE_LABEL[type]} <span>${all.length}</span></h4>
+        <ul class="sto-list">${head.map((s) => stoFileRow(s, folder)).join("")}</ul>
+        ${more.length ? `<ul class="sto-list" id="${moreId}" hidden>${more.map((s) => stoFileRow(s, folder)).join("")}</ul>
+        <button type="button" class="sto-more" aria-controls="${moreId}" aria-expanded="false" data-label="Ver todos (${all.length})" onclick="toggleSetupGroup(this)">Ver todos (${all.length})</button>` : ""}
+      </section>`;
   }).join("");
+}
+
+function toggleSetupGroup(btn) {
+  const more = document.getElementById(btn.getAttribute("aria-controls"));
+  if (!more) return;
+  const open = more.hasAttribute("hidden");
+  if (open) more.removeAttribute("hidden");
+  else more.setAttribute("hidden", "");
+  btn.setAttribute("aria-expanded", open ? "true" : "false");
+  btn.textContent = open ? "Ver menos" : btn.getAttribute("data-label");
 }
 
 function toggleFolderFiles(folderKey) {
@@ -1324,11 +1327,15 @@ function toggleFolderFiles(folderKey) {
       innerGrid.dataset.rendered = "1";
     }
     container.classList.remove("hidden");
-    if (text) text.textContent = `Plegar Setups (${count})`;
+    if (text) text.textContent = "Plegar";
+    const toggleBtn = document.getElementById(`folder-toggle-btn-${folderKey}`);
+    if (toggleBtn) { toggleBtn.setAttribute("aria-expanded", "true"); toggleBtn.setAttribute("aria-label", "Plegar setups"); }
     if (icon) icon.classList.add("rotate-180");
   } else {
     container.classList.add("hidden");
-    if (text) text.textContent = `📂 Ver Setups (${count})`;
+    if (text) text.textContent = String(count);
+    const toggleBtn = document.getElementById(`folder-toggle-btn-${folderKey}`);
+    if (toggleBtn) { toggleBtn.setAttribute("aria-expanded", "false"); toggleBtn.setAttribute("aria-label", "Ver setups"); }
     if (icon) icon.classList.remove("rotate-180");
   }
 }
@@ -1424,7 +1431,7 @@ function applyFilters() {
   const selectedWeek = document.getElementById("weekSelect")?.value || "";
   const selectedCircuit = document.getElementById("circuitSelect")?.value || "";
 
-  visibleFoldersLimit = FOLDERS_PAGE_SIZE;
+  visibleFoldersLimit = foldersPageSize();
 
   const filtered = allSetups.filter(s => {
     if (selectedCar && s.car !== selectedCar) return false;
@@ -1477,7 +1484,7 @@ function applyFilters() {
 }
 
 function loadMoreFolders() {
-  visibleFoldersLimit += FOLDERS_PAGE_SIZE;
+  visibleFoldersLimit += foldersPageSize();
   renderVisibleSlice();
 }
 
@@ -1489,7 +1496,7 @@ function setupInfiniteScrollObserver() {
       if (entry.isIntersecting) {
         const total = currentViewMode === "folders" ? currentOrderedFolders.length : currentlyFilteredSetups.length;
         if (visibleFoldersLimit < total) {
-          visibleFoldersLimit += FOLDERS_PAGE_SIZE;
+          visibleFoldersLimit += foldersPageSize();
           renderVisibleSlice();
         }
       }
@@ -1552,7 +1559,10 @@ function renderVisibleSlice() {
       const carLabel = CAR_LABELS[folder.car] || folder.car;
       const folderSubName = `${folder.season} ${folder.week} ${folder.circuit.replace(/\s+/g, '')}`;
       const destinationPath = formatMtSetupsDisplayPath(folder.car, folder.season, folder.week, folder.circuit);
-      const isExpanded = allFoldersExpanded || folder === slice[0];
+      const isExpanded = !!allFoldersExpanded;
+      const pathParts = String(destinationPath).split("\\").filter(Boolean);
+      const pathShort = pathParts.slice(-2).join("\\");
+      const pathFull = "Documents\\iRacing\\setups\\" + destinationPath;
 
       const typeSummary = [];
       if (folder.typesCount.Race > 0) typeSummary.push(`<span class="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${folder.typesCount.Race} Carrera</span>`);
@@ -1563,7 +1573,7 @@ function renderVisibleSlice() {
 
       return `
         <article class="g-setup-card" id="folder-card-${folder.key}">
-          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div class="g-folder-head">
             <div class="min-w-0">
               <h3>${escapeHtml(folder.circuit)}</h3>
               <p class="g-setup-meta">
@@ -1573,40 +1583,26 @@ function renderVisibleSlice() {
                 <span>${folder.setups.length} setups</span>
               </p>
               <div class="g-setup-meta">${typeSummary.join(" ")}</div>
-              <p class="r-meta" style="margin:6px 0 0" title="Documents\\iRacing\\setups\\${destinationPath}">Documents\\iRacing\\setups\\${escapeHtml(destinationPath)}</p>
+              <details class="sto-path">
+                <summary title="${escapeHtml(pathFull)}">…\\${escapeHtml(pathShort)}</summary>
+                <p>${escapeHtml(pathFull)}</p>
+                <button type="button" class="sto-icon" data-path="${escapeHtml(destinationPath)}" onclick="copySetupPath(this.dataset.path)" aria-label="Copiar ruta completa">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>
+                </button>
+              </details>
             </div>
 
-            <!-- Folder Action Buttons -->
-            <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0 justify-stretch sm:justify-end shrink-0">
-              <button 
-                type="button" 
-                data-folder="${escapeHtml(folder.key)}" onclick="openFolderPreview(this.dataset.folder)" 
-                class="flex-1 sm:flex-initial min-h-[40px] px-3 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-xs font-bold text-cyan-300 hover:text-cyan-200 transition flex items-center justify-center gap-1.5"
-                title="Ver Vista Previa Técnica del Setup y Mejores Vueltas en Garage 61"
-              >
-                <span>🏆 Vista Previa</span><span class="hidden md:inline">&nbsp;& Vueltas G61</span>
+            <div class="g-folder-actions">
+              <button type="button" class="sto-icon" data-folder="${escapeHtml(folder.key)}" onclick="openFolderPreview(this.dataset.folder)" aria-label="Vista previa de la carpeta">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                <span class="sto-label">Vista previa</span>
               </button>
-
-              <button 
-                type="button" 
-                id="folder-toggle-btn-${folder.key}"
-                data-folder="${escapeHtml(folder.key)}" onclick="toggleFolderFiles(this.dataset.folder)" 
-                class="flex-1 sm:flex-initial min-h-[40px] px-3 py-2 rounded-xl bg-[#0e1217] hover:bg-white/10 border border-white/10 text-xs font-semibold text-neutral-300 transition flex items-center justify-center gap-1.5"
-                title="Ver o plegar lista de setups de esta carpeta"
-              >
-                <span id="folder-toggle-text-${folder.key}">${isExpanded ? `Plegar (${folder.setups.length})` : `📂 Setups (${folder.setups.length})`}</span>
-                <svg id="folder-toggle-icon-${folder.key}" class="w-3.5 h-3.5 transition-transform ${isExpanded ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              <button type="button" class="sto-icon" id="folder-toggle-btn-${folder.key}" data-folder="${escapeHtml(folder.key)}" onclick="toggleFolderFiles(this.dataset.folder)" aria-expanded="${isExpanded ? "true" : "false"}" aria-label="${isExpanded ? "Plegar setups" : "Ver setups"}">
+                <span id="folder-toggle-text-${folder.key}">${isExpanded ? "Plegar" : folder.setups.length}</span>
               </button>
-
-              <button 
-                type="button" 
-                id="btn-download-folder-${folder.key}"
-                data-folder="${escapeHtml(folder.key)}" onclick="downloadFolder(this.dataset.folder)" 
-                class="w-full sm:w-auto min-h-[40px] px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs transition flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/20"
-                title="Guardar todos los ${folder.setups.length} setups de esta carpeta directamente en su ruta exacta de iRacing"
-              >
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                <span id="btn-download-folder-text-${folder.key}">⚡ Guardar (${folder.setups.length})</span><span class="hidden lg:inline">&nbsp;en Ruta</span>
+              <button type="button" class="sto-icon sto-icon--go" id="btn-download-folder-${folder.key}" data-folder="${escapeHtml(folder.key)}" onclick="downloadFolder(this.dataset.folder)" aria-label="Guardar la carpeta">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 4v12m0 0l-4-4m4 4l4-4M5 20h14"/></svg>
+                <span class="sto-label" id="btn-download-folder-text-${folder.key}">Guardar ${folder.setups.length}</span>
               </button>
             </div>
           </div>

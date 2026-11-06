@@ -1,51 +1,32 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import HelmetAvatar from '../components/HelmetAvatar.astro';
-import Licencias from '../components/Licencias.astro';
+import LicenciaSports from '../components/LicenciaSports.astro';
 import { PILOTOS } from '../lib/pilotos';
-import { licenciaPrincipal, formatoIr, LICENCE_UPDATED_LABEL } from '../lib/licencias';
+import { LICENCE_UPDATED_LABEL } from '../lib/licencias';
 
 const pageTitle = "Pilotos | Muntrume Motorsport — iRacing";
-const pageDescription = `Plantilla de Muntrume Motorsport: ${PILOTOS.map(p => p.fullName).join(", ")}. Licencias de iRacing del ${LICENCE_UPDATED_LABEL}. El coche favorito y las últimas carreras solo se publican cuando los envía iRacing.`;
+const pageDescription = `Plantilla de Muntrume Motorsport: ${PILOTOS.map(p => p.fullName).join(", ")}. Licencia Sports Car aproximada, actualizada el ${LICENCE_UPDATED_LABEL}.`;
 ---
 
-<Layout title={pageTitle} description={pageDescription}>
+<Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/pilotos/">
   <section class="r-section" style="border-top:0;padding-top:clamp(112px,14vw,160px)" aria-labelledby="plTitle">
     <div class="r-wrap">
       <div class="r-head">
         <div>
           <p class="r-kicker">Plantilla 2026</p>
           <h1 id="plTitle" class="r-h2">Pilotos</h1>
-          <p class="r-lead">{PILOTOS.length} pilotos oficiales en iRacing. Las licencias son la instantánea del {LICENCE_UPDATED_LABEL}. Si la API trae datos más nuevos, sustituyen a esa instantánea. Coche favorito y últimas carreras: sin datos hasta que iRacing los envíe.</p>
+          <p class="r-lead">{PILOTOS.length} pilotos oficiales. Solo se muestra la licencia Sports Car, con cifras aproximadas. Actualizado: {LICENCE_UPDATED_LABEL}.</p>
         </div>
       </div>
       <div class="r-grid">
         {PILOTOS.map(p => (
-          <a href={`/d/${p.slug}`} class="r-card" data-driver={p.slug}>
-            <div class="r-card__top">
-              <span class="r-card__num" aria-hidden="true">{p.dorsal.replace('#','')}</span>
-              <span class="r-card__flag">{p.flag_code} · {p.country}</span>
-              <HelmetAvatar driverNumber={p.dorsal} className="w-full h-full" />
-            </div>
-            <div class="r-card__body">
-              <span class="r-card__role">{p.badge === 'FOUNDER' ? 'Fundador · ' : ''}{p.role}</span>
-              <h2 class="r-card__name">{p.fullName}</h2>
-              {p.bio && <p style="margin:0;color:var(--r-muted);font-size:14px;line-height:1.55">{p.bio}</p>}
-            </div>
-            <div class="r-card__stats">
-              <div>iRating Sports Car<strong data-f="irating">{licenciaPrincipal(p.slug)?.irating != null ? formatoIr(licenciaPrincipal(p.slug)!.irating) : "Sin datos"}</strong></div>
-              <div>Licencia<strong data-f="license">{licenciaPrincipal(p.slug) ? `${licenciaPrincipal(p.slug)!.classLabel} ${licenciaPrincipal(p.slug)!.sr}` : "Sin datos"}</strong></div>
-              <div style="border-left:0;border-top:1px solid var(--r-line)">Coche favorito<strong data-f="fav_car" class="r-nodata" style="font-size:16px">Sin datos</strong></div>
-              <div style="border-top:1px solid var(--r-line)">Categoría principal<strong data-f="top_category" class="r-nodata" style="font-size:16px">Sin datos</strong></div>
-            </div>
-            <div style="padding:0 12px 16px">
-              <Licencias slug={p.slug} compact />
-            </div>
+          <a href={`/d/${p.slug}/`} class="r-card sc-card" data-driver={p.slug}>
+            <LicenciaSports slug={p.slug} name={p.fullName} helmet={p.helmet_url} kicker={`${p.dorsal} · ${p.role}`} heading="h2" />
           </a>
         ))}
       </div>
-      <p class="r-meta" id="driversSource" style="margin-top:16px">Actualizado: {LICENCE_UPDATED_LABEL}. Fuente: licencias de miembro de iRacing. Coche favorito y carreras siguen en «Sin datos».</p>
+      <p class="r-meta" id="driversSource" style="margin-top:16px">Actualizado: {LICENCE_UPDATED_LABEL}. Sports Car, cifras aproximadas. El coche favorito y las carreras siguen en «Sin datos».</p>
     </div>
   </section>
-  <script is:inline src="/assets/js/home-r.js?v=t273" defer></script>
+  <script is:inline src="/assets/js/home-r.js?v=t276" defer></script>
 </Layout>

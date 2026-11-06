@@ -260,3 +260,43 @@ html[data-theme="light"]{--m-warn:#8A5A00;--m-err:#B42318}
 .g-setup-actions{display:flex;flex-wrap:wrap;gap:8px}
 @media (max-width:900px){.lics{grid-template-columns:repeat(2,minmax(0,1fr))}.lics--compact{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:420px){.lics,.lics--compact{grid-template-columns:1fr}}
+.sc-block{display:grid;grid-template-columns:minmax(120px,180px) 1fr;gap:16px;align-items:center;background:var(--r-surface);border:1px solid var(--r-line);border-radius:var(--r-radius);padding:16px}
+.sc-block__name{margin:0;font:800 clamp(28px,4vw,40px)/.95 var(--r-display);text-transform:uppercase}
+.sc-badge{display:inline-flex;margin:8px 0 0;padding:6px 10px;background:#1E4F93;color:#fff;font:800 18px/1 var(--r-display);letter-spacing:.08em;text-transform:uppercase}
+.sc-nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0 0}
+.sc-nums div{display:grid;gap:2px}
+.sc-nums dt{margin:0;color:var(--r-muted);font:600 10px/1.2 var(--r-mono);letter-spacing:.1em;text-transform:uppercase}
+.sc-nums dd{margin:0;font:800 22px/1 var(--r-display);font-variant-numeric:tabular-nums}
+.driver-helmet{width:100%;height:auto;display:block;object-fit:contain}
+a.sc-card{display:block;text-decoration:none;color:inherit}
+a.sc-card .sc-block{height:100%;border:0;padding:0;background:transparent;grid-template-columns:1fr}
+a.sc-card .driver-helmet{max-height:220px;margin:0 auto}
+.g-chip{min-height:44px;padding:0 14px;border:1px solid var(--r-line);background:transparent;color:var(--r-text);border-radius:var(--r-radius);font:700 14px/1 var(--r-display);letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.g-chip[aria-pressed="true"]{background:var(--r-accent);color:var(--r-accent-ink);border-color:var(--r-accent)}
+.g-chip:focus-visible,.builder-md a:focus-visible{outline:2px solid var(--r-accent);outline-offset:2px}
+.builder-md{display:grid;gap:10px;font-family:var(--r-sans);font-size:15px;line-height:1.55}
+.builder-md h2,.builder-md h3{font-family:var(--r-display);text-transform:uppercase;margin:12px 0 0}
+.builder-md p,.builder-md li{margin:0}
+.builder-md ul,.builder-md ol{margin:0;padding-left:1.2em;display:grid;gap:4px}
+.builder-md code{font-family:var(--r-mono);font-size:.9em}
+.builder-sources{display:flex;flex-wrap:wrap;gap:8px}
+@media (max-width:640px){.sc-block{grid-template-columns:1fr}.sc-nums{grid-template-columns:1fr}}
+.sto-row{display:grid;gap:6px;padding:10px 0;border-top:1px solid var(--r-line)}
+.sto-name{margin:0;font-weight:700;line-height:1.35;overflow-wrap:anywhere}
+.sto-meta{display:flex;align-items:center;gap:8px;margin:0;color:var(--r-muted);font-size:12px}
+.sto-size{white-space:nowrap}
+.sto-type{font:700 11px/1 var(--r-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--r-accent)}
+.sto-actions,.g-folder-actions{display:flex;flex-wrap:nowrap;gap:8px;align-items:center;scroll-margin-bottom:120px}
+.sto-icon{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 10px;border:1px solid var(--r-line);background:transparent;color:var(--r-text);border-radius:var(--r-radius);cursor:pointer}
+.sto-icon svg{width:20px;height:20px;flex:none}
+.sto-icon--go{background:var(--r-accent);color:var(--r-accent-ink);border-color:transparent}
+.sto-icon:focus-visible,.sto-more:focus-visible{outline:2px solid var(--r-accent);outline-offset:2px}
+.sto-group{margin-top:12px}
+.sto-group__title{margin:0 0 4px;font:800 16px/1 var(--r-display);letter-spacing:.06em;text-transform:uppercase}
+.sto-list{list-style:none;margin:0;padding:0}
+.sto-more{min-height:44px;margin-top:4px;padding:0 12px;border:0;background:transparent;color:var(--r-accent);font:700 14px/1 var(--r-display);letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.sto-path{margin:8px 0 0}
+.sto-path summary{cursor:pointer;color:var(--r-muted);font:600 12px/1.4 var(--r-mono);min-height:44px;display:flex;align-items:center}
+.sto-path p{margin:0 0 8px;overflow-wrap:anywhere;font:500 12px/1.4 var(--r-mono)}
+#setupsContainer{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
+@media (max-width:700px){.sto-label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}}

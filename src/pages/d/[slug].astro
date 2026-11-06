@@ -1,9 +1,9 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import HelmetAvatar from '../../components/HelmetAvatar.astro';
-import Licencias from '../../components/Licencias.astro';
+import LicenciaSports from '../../components/LicenciaSports.astro';
 import { PILOTOS } from '../../lib/pilotos';
-import { licenciaPrincipal, formatoIr, LICENCE_UPDATED_LABEL, LICENCE_SOURCE } from '../../lib/licencias';
+import { licenciaPrincipal, LICENCE_UPDATED_LABEL } from '../../lib/licencias';
+import { formatoAprox, localeDeIdioma } from '../../lib/formato-licencia.js';
 
 export function getStaticPaths() {
   return PILOTOS.map(p => ({ params: { slug: p.slug } }));
@@ -13,8 +13,9 @@ const { slug } = Astro.params;
 const driver = PILOTOS.find(p => p.slug === slug) || PILOTOS[0];
 const principal = licenciaPrincipal(driver.slug);
 const pageTitle = `${driver.fullName} (${driver.dorsal}) · Piloto — Muntrume Motorsport`;
+const loc = localeDeIdioma("es");
 const pageDescription = principal
-  ? `${driver.fullName}, ${driver.role} en Muntrume Motorsport. Sports Car: ${principal.classLabel} ${principal.sr}${principal.irating != null ? `, iRating ${formatoIr(principal.irating)}` : ""}. Instantánea de licencias del ${LICENCE_UPDATED_LABEL}.`
+  ? `${driver.fullName}, ${driver.role} en Muntrume Motorsport. Sports Car ${principal.classLabel}, SR ${formatoAprox(Number(principal.sr), "sr", loc)}, iRating ${formatoAprox(principal.irating, "k", loc)}. Actualizado: ${LICENCE_UPDATED_LABEL}.`
   : `${driver.fullName}, ${driver.role} en Muntrume Motorsport.`;
 const pageUrl = `https://muntru.me/d/${driver.slug}/`;
 const personSchema = {
@@ -45,38 +46,17 @@ const personSchema = {
   <section class="r-section" style="border-top:0;padding-top:clamp(104px,13vw,150px);padding-bottom:40px" aria-labelledby="dTitle" data-driver={driver.slug} id="driverRoot">
     <div class="r-wrap">
       <nav class="r-meta" aria-label="Breadcrumb" style="margin-bottom:24px"><a href="/" style="color:inherit">Inicio</a> / <a href="/pilotos" style="color:inherit">Pilotos</a> / <span style="color:var(--r-text)">{driver.fullName}</span></nav>
-      <div class="r-cols" style="align-items:center">
-        <div style="display:grid;gap:16px">
-          <p class="r-kicker">{driver.dorsal} · {driver.badge === 'FOUNDER' ? 'Fundador' : 'Piloto oficial'} · {driver.flag_code}</p>
-          <h1 id="dTitle" class="r-h1" style="font-size:clamp(48px,9vw,112px)">{driver.fullName}</h1>
-          <p class="r-card__role" style="font-size:13px">{driver.role}</p>
-          {driver.bio && <p class="r-lead">{driver.bio}</p>}
-        </div>
-        <div class="r-card" style="aspect-ratio:4/3;max-width:420px;width:100%;justify-self:end">
-          <div class="r-card__top" style="aspect-ratio:auto;height:100%;border:0">
-            <span class="r-card__num" aria-hidden="true" style="font-size:120px">{driver.dorsal.replace('#','')}</span>
-            <HelmetAvatar driverNumber={driver.dorsal} className="w-full h-full" />
-          </div>
-        </div>
-      </div>
+      <LicenciaSports slug={driver.slug} name={driver.fullName} helmet={driver.helmet_url} heading="h1" headingId="dTitle" eagerHelmet kicker={`${driver.dorsal} · ${driver.badge === 'FOUNDER' ? 'Fundador' : 'Piloto oficial'} · ${driver.flag_code}`} />
+      {driver.bio && <p class="r-lead" style="margin-top:20px">{driver.bio}</p>}
     </div>
   </section>
 
-  <section class="r-section r-section--alt" aria-labelledby="sTitle">
-    <div class="r-wrap" style="display:grid;gap:24px">
+  <section class="r-section r-section--alt" aria-labelledby="racesTitle">
+    <div class="r-wrap" style="display:grid;gap:16px">
       <div class="r-head" style="margin-bottom:0">
-        <div><p class="r-kicker">iRacing</p><h2 id="sTitle" class="r-h2">Estadísticas</h2></div>
-        <p class="r-meta" id="dSource">Actualizado: {LICENCE_UPDATED_LABEL}. Fuente: {LICENCE_SOURCE}.</p>
+        <div><p class="r-kicker">iRacing</p><h2 id="racesTitle" class="r-h3">Últimas 5 carreras</h2></div>
+        <p class="r-meta" id="dSource">Coche favorito y últimas carreras: sin datos hasta que iRacing los envíe.</p>
       </div>
-      <h3 class="r-h3">Licencias por categoría</h3>
-      <Licencias slug={driver.slug} />
-      <div class="r-figs">
-        <div>iRating Sports Car<strong class="r-num" data-f="irating">{principal?.irating != null ? formatoIr(principal.irating) : "Sin datos"}</strong></div>
-        <div>Licencia Sports Car<strong class="r-h3" data-f="license">{principal ? `${principal.classLabel} ${principal.sr}` : "Sin datos"}</strong></div>
-        <div>Coche favorito<strong class="r-h3 r-nodata" data-f="fav_car">Sin datos</strong><span data-f="fav_car_n"></span></div>
-        <div>Categoría principal<strong class="r-h3 r-nodata" data-f="top_category">Sin datos</strong><span data-f="top_category_n"></span></div>
-      </div>
-      <h3 class="r-h3" style="margin-top:24px">Últimas 5 carreras</h3>
       <div class="r-scroll" id="racesWrap" hidden>
         <table class="r-table">
           <caption class="r-meta" style="text-align:left;padding-bottom:8px">Resultados oficiales de iRacing (sesiones públicas).</caption>
@@ -95,5 +75,5 @@ const personSchema = {
     </div>
   </section>
 
-  <script is:inline src="/assets/js/driver-page.js?v=t273" defer></script>
+  <script is:inline src="/assets/js/driver-page.js?v=t276" defer></script>
 </Layout>

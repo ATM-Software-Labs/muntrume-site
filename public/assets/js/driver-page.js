@@ -3,6 +3,24 @@
   var root = document.getElementById('driverRoot'); if (!root) return;
   var slug = root.getAttribute('data-driver');
   var lang = document.documentElement.lang || 'es';
+  function loc() { return window.muntruLocale ? window.muntruLocale(document.documentElement.lang || lang) : "es-ES"; }
+  function approx(el, kind, value) {
+    if (!el || !window.muntruFormato || value == null || value === "") return;
+    el.setAttribute("data-n", String(value));
+    el.setAttribute("data-approx", kind);
+    el.textContent = window.muntruFormato(value, kind, loc());
+    el.classList.remove("r-nodata");
+  }
+  function reformatApprox() {
+    if (!window.muntruFormato) return;
+    root.querySelectorAll("[data-approx][data-n]").forEach(function (el) {
+      var raw = el.getAttribute("data-n");
+      if (raw === "") return;
+      el.textContent = window.muntruFormato(raw, el.getAttribute("data-approx"), loc());
+    });
+  }
+  document.addEventListener("muntru:i18n", reformatApprox);
+  reformatApprox();
   var esc = function (v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var set = function (f, val) { var el = document.querySelector('[data-f="' + f + '"]'); if (el && val != null && val !== '') { el.textContent = val; el.classList.remove('r-nodata'); } };
   function parseLic(s) {
@@ -14,13 +32,15 @@
     if (!lic || !lic.category) return;
     var card = root.querySelector('[data-lic="' + lic.category + '"]');
     if (!card) return;
-    if (lic.class_label || lic.classLabel) card.querySelector('[data-lic-f="class"]').textContent = lic.class_label || lic.classLabel;
-    if (lic.sr != null && lic.sr !== "") card.querySelector('[data-lic-f="sr"]').textContent = Number(lic.sr).toFixed(2);
+    if (lic.class_label || lic.classLabel) {
+      var cls = card.querySelector('[data-lic-f="class"]');
+      if (cls) cls.textContent = lic.class_label || lic.classLabel;
+    }
+    if (lic.sr != null && lic.sr !== "") approx(card.querySelector('[data-lic-f="sr"]'), "sr", lic.sr);
     var ir = card.querySelector('[data-lic-f="irating"]');
     if (ir && lic.irating === null) { ir.textContent = "Sin iRating"; ir.classList.add("r-nodata"); }
-    else if (ir && lic.irating > 0) { ir.textContent = Number(lic.irating).toLocaleString(lang); ir.classList.remove("r-nodata"); }
-    var tt = card.querySelector('[data-lic-f="tt"]');
-    if (tt && (lic.tt_rating > 0 || lic.ttRating > 0)) tt.textContent = Number(lic.tt_rating || lic.ttRating).toLocaleString(lang);
+    else if (ir && lic.irating > 0) approx(ir, "k", lic.irating);
+    if (lic.tt_rating > 0 || lic.ttRating > 0) approx(card.querySelector('[data-lic-f="tt"]'), "k", lic.tt_rating || lic.ttRating);
   }
   fetch('https://muntrume.atrumin16.workers.dev/api/drivers?slug=' + encodeURIComponent(slug)).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
     if (!d) return;
@@ -30,8 +50,7 @@
       licenses.push({ category: "sports_car", class_label: parsed && parsed.classLabel, sr: parsed && parsed.sr, irating: d.irating > 0 ? d.irating : undefined });
     }
     licenses.forEach(paintLic);
-    if (d.irating > 0) set('irating', Number(d.irating).toLocaleString(lang));
-    set('license', d.license);
+    if (d.irating > 0) approx(root.querySelector('[data-f="irating"]'), "k", d.irating);
     if (d.fav_car && d.fav_car.name) { set('fav_car', d.fav_car.name); set('fav_car_n', d.fav_car.count + ' de ' + d.fav_car.sample + ' carreras'); }
     if (d.top_category && d.top_category.name) { set('top_category', d.top_category.name); set('top_category_n', d.top_category.count + ' de ' + d.top_category.sample + ' carreras'); }
     if (d.updated_at) document.getElementById('dSource').textContent = 'Fuente: ' + (d.source || 'iRacing') + ' · actualizado ' + new Date(d.updated_at).toLocaleString(lang, { dateStyle: 'medium', timeStyle: 'short' });

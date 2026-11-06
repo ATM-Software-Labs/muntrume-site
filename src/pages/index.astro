@@ -1,8 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import HelmetAvatar from '../components/HelmetAvatar.astro';
+import LicenciaSports from '../components/LicenciaSports.astro';
 import { PILOTOS } from '../lib/pilotos';
-import { licenciaPrincipal, formatoIr } from '../lib/licencias';
 import catalog from '../../public/assets/data/catalog_index.json';
 
 const pageTitle = "Muntrume Motorsport | Equipo de sim racing en iRacing — Barcelona";
@@ -52,24 +51,12 @@ const figs = [
       </div>
       <div class="r-grid">
         {PILOTOS.map(p => (
-          <a href={`/d/${p.slug}`} class="r-card" data-driver={p.slug}>
-            <div class="r-card__top">
-              <span class="r-card__num" aria-hidden="true">{p.dorsal.replace('#','')}</span>
-              <span class="r-card__flag">{p.flag_code}</span>
-              <HelmetAvatar driverNumber={p.dorsal} className="w-full h-full" />
-            </div>
-            <div class="r-card__body">
-              <span class="r-card__role">{p.role}</span>
-              <h3 class="r-card__name">{p.fullName}</h3>
-            </div>
-            <div class="r-card__stats">
-              <div>iRating Sports Car<strong data-f="irating">{licenciaPrincipal(p.slug)?.irating != null ? formatoIr(licenciaPrincipal(p.slug)!.irating) : "Sin datos"}</strong></div>
-              <div>Licencia<strong data-f="license">{licenciaPrincipal(p.slug) ? `${licenciaPrincipal(p.slug)!.classLabel} ${licenciaPrincipal(p.slug)!.sr}` : "Sin datos"}</strong></div>
-            </div>
+          <a href={`/d/${p.slug}/`} class="r-card sc-card" data-driver={p.slug}>
+            <LicenciaSports slug={p.slug} name={p.fullName} helmet={p.helmet_url} kicker={p.role} heading="h3" />
           </a>
         ))}
       </div>
-      <p class="r-meta" id="driversSource" style="margin-top:16px">Estadísticas: solo datos reales de iRacing. Si no hay datos verificados se indica «Sin datos».</p>
+      <p class="r-meta" id="driversSource" style="margin-top:16px">Sports Car, cifras aproximadas. Actualizado: 6 nov 2026. Coche favorito y carreras: sin datos.</p>
     </div>
   </section>
 
@@ -120,5 +107,5 @@ const figs = [
     </div>
   </section>
 
-  <script is:inline src="/assets/js/home-r.js?v=t273" defer></script>
+  <script is:inline src="/assets/js/home-r.js?v=t276" defer></script>
 </Layout>

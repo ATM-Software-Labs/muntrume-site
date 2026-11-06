@@ -121,6 +121,7 @@ const figs = [
           <button type="button" role="tab" aria-selected="true" aria-controls="garageSectionSetups" id="tabBtnSetups" class="is-on" onclick="switchGarageTab('setups')">Setups</button>
           <button type="button" role="tab" aria-selected="false" aria-controls="garageSectionTelemetry" id="tabBtnTelemetry" onclick="switchGarageTab('telemetry')">Telemetría</button>
           <button type="button" role="tab" aria-selected="false" aria-controls="garageSectionComms" id="tabBtnComms" onclick="switchGarageTab('comms')">Comunicación</button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="garageSectionBuilder" id="tabBtnBuilder" onclick="switchGarageTab('builder')">Montador</button>
         </div>
         <div class="g-session">
           <span id="userEmailDisplay">Invitado</span>
@@ -215,6 +216,52 @@ const figs = [
             <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="openAuthModal('login')">Entrar</button>
             <a class="r-btn r-btn--sm" href="/mail">Webmail</a>
           </div>
+        </div>
+      </div>
+
+      <div id="garageSectionBuilder" class="hidden" role="tabpanel" aria-labelledby="tabBtnBuilder" hidden>
+        <div class="g-panel" id="builderPanel">
+          <div>
+            <p class="r-kicker">Área de piloto</p>
+            <h2 class="r-h3" id="builderTitle">Montador de setups</h2>
+            <p>Pide una combinación del catálogo. La respuesta usa los setups del equipo. Garage 61 no permite subir un setup desde aquí.</p>
+          </div>
+          <div id="builderGate">
+            <p class="r-meta">Entra con tu cuenta de piloto para usar el montador.</p>
+            <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="openAuthModal('login')">Acceso de piloto</button>
+          </div>
+          <form id="builderForm" hidden>
+            <div class="g-filters">
+              <div class="g-field">
+                <label for="builderCar">Coche del catálogo</label>
+                <select id="builderCar"><option value="">Elegir coche</option></select>
+              </div>
+              <div class="g-field">
+                <label for="builderCarText">O escribe el coche</label>
+                <input id="builderCarText" type="text" autocomplete="off" placeholder="Ferrari 296 GT3" />
+              </div>
+              <div class="g-field">
+                <label for="builderTrack">Circuito del catálogo</label>
+                <select id="builderTrack"><option value="">Elegir circuito</option></select>
+              </div>
+              <div class="g-field">
+                <label for="builderTrackText">O escribe el circuito</label>
+                <input id="builderTrackText" type="text" autocomplete="off" placeholder="Spa" />
+              </div>
+            </div>
+            <div id="builderSessions" role="group" aria-label="Sesiones" style="display:flex;flex-wrap:wrap;gap:8px">
+              <button type="button" class="g-chip" data-session="qualy" aria-pressed="true">Qualy</button>
+              <button type="button" class="g-chip" data-session="race" aria-pressed="true">Carrera</button>
+              <button type="button" class="g-chip" data-session="wet" aria-pressed="false">Mojado</button>
+              <button type="button" class="g-chip" data-session="endurance" aria-pressed="false">Endurance</button>
+            </div>
+            <div class="g-actions">
+              <button type="submit" id="builderSubmit" class="r-btn r-btn--primary r-btn--sm">Pedir setups</button>
+              <button type="button" id="builderDownload" class="r-btn r-btn--sm" hidden>Descargar</button>
+            </div>
+            <div id="builderAnswer" class="builder-md" hidden aria-live="polite"></div>
+            <div id="builderSources" class="builder-sources"></div>
+          </form>
         </div>
       </div>
 
@@ -360,7 +407,8 @@ const figs = [
     </div>
   </div>
 
-  <script is:inline src="/assets/js/setups.js?v=t273"></script>
+  <script is:inline src="/assets/js/setups.js?v=t276"></script>
+  <script is:inline src="/assets/js/setup-builder.js?v=t276" defer></script>
   <script is:inline>
     window.togglePassword = function (id, btn) {
       var input = document.getElementById(id);
@@ -377,10 +425,11 @@ const figs = [
       var map = {
         setups: ["tabBtnSetups", "garageSectionSetups"],
         telemetry: ["tabBtnTelemetry", "garageSectionTelemetry"],
-        comms: ["tabBtnComms", "garageSectionComms"]
+        comms: ["tabBtnComms", "garageSectionComms"],
+        builder: ["tabBtnBuilder", "garageSectionBuilder"]
       };
-      var buttons = ["tabBtnSetups", "tabBtnTelemetry", "tabBtnComms"].map(function (id) { return document.getElementById(id); });
-      var sections = ["garageSectionSetups", "garageSectionTelemetry", "garageSectionComms"].map(function (id) { return document.getElementById(id); });
+      var buttons = ["tabBtnSetups", "tabBtnTelemetry", "tabBtnComms", "tabBtnBuilder"].map(function (id) { return document.getElementById(id); });
+      var sections = ["garageSectionSetups", "garageSectionTelemetry", "garageSectionComms", "garageSectionBuilder"].map(function (id) { return document.getElementById(id); });
       var chosen = map[tab] || map.setups;
       buttons.forEach(function (b) {
         if (!b) return;
@@ -456,6 +505,7 @@ const figs = [
       var p = new URLSearchParams(window.location.search);
       if (p.get("tab") === "telemetry") switchGarageTab("telemetry");
       if (p.get("tab") === "comms") switchGarageTab("comms");
+      if (p.get("tab") === "builder") switchGarageTab("builder");
     });
   </script>
 </Layout>

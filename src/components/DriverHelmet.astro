@@ -1,0 +1,39 @@
+---
+interface Props {
+  name: string;
+  src?: string | null;
+  eager?: boolean;
+}
+const FALLBACK = "/img/helmets/albertot.webp";
+const { name, src, eager = false } = Astro.props;
+const href = src && src.startsWith("/img/helmets/") ? src : FALLBACK;
+const retina = href.replace(/\.webp$/, "@2x.webp");
+---
+<img
+  class="driver-helmet"
+  src={href}
+  srcset={`${href} 256w, ${retina} 512w`}
+  sizes="180px"
+  alt={`Casco de ${name}`}
+  width="256"
+  height="256"
+  loading={eager ? "eager" : "lazy"}
+  decoding="async"
+  data-fallback={FALLBACK}
+  data-fallback-2x="/img/helmets/albertot@2x.webp"
+/>
+<script is:inline>
+if (!window.__mmHelmetFallback) {
+  window.__mmHelmetFallback = true;
+  document.addEventListener("error", function (ev) {
+    var img = ev.target;
+    if (!img || !img.getAttribute || img.dataset.fell) return;
+    if (!img.classList.contains("driver-helmet")) return;
+    img.dataset.fell = "1";
+    var one = img.getAttribute("data-fallback");
+    var two = img.getAttribute("data-fallback-2x");
+    img.src = one;
+    img.srcset = one + " 256w, " + two + " 512w";
+  }, true);
+}
+</script>
