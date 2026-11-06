@@ -1,7 +1,9 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import HelmetAvatar from '../../components/HelmetAvatar.astro';
+import Licencias from '../../components/Licencias.astro';
 import { PILOTOS } from '../../lib/pilotos';
+import { licenciaPrincipal, formatoIr, LICENCE_UPDATED_LABEL, LICENCE_SOURCE } from '../../lib/licencias';
 
 export function getStaticPaths() {
   return PILOTOS.map(p => ({ params: { slug: p.slug } }));
@@ -9,12 +11,37 @@ export function getStaticPaths() {
 
 const { slug } = Astro.params;
 const driver = PILOTOS.find(p => p.slug === slug) || PILOTOS[0];
+const principal = licenciaPrincipal(driver.slug);
 const pageTitle = `${driver.fullName} (${driver.dorsal}) · Piloto — Muntrume Motorsport`;
-const pageDescription = `${driver.fullName}, ${driver.role} en Muntrume Motorsport. Ficha del piloto con sus últimas carreras de iRacing, coche favorito y categoría principal.`;
+const pageDescription = principal
+  ? `${driver.fullName}, ${driver.role} en Muntrume Motorsport. Sports Car: ${principal.classLabel} ${principal.sr}${principal.irating != null ? `, iRating ${formatoIr(principal.irating)}` : ""}. Instantánea de licencias del ${LICENCE_UPDATED_LABEL}.`
+  : `${driver.fullName}, ${driver.role} en Muntrume Motorsport.`;
 const pageUrl = `https://muntru.me/d/${driver.slug}/`;
+const personSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://muntru.me/" },
+        { "@type": "ListItem", "position": 2, "name": "Pilotos", "item": "https://muntru.me/pilotos/" },
+        { "@type": "ListItem", "position": 3, "name": driver.fullName, "item": pageUrl }
+      ]
+    },
+    {
+      "@type": "Person",
+      "@id": `${pageUrl}#person`,
+      "name": driver.fullName,
+      "jobTitle": driver.role,
+      "url": pageUrl,
+      "memberOf": { "@id": "https://muntru.me/#org" },
+      "nationality": driver.country || undefined
+    }
+  ]
+};
 ---
 
-<Layout title={pageTitle} description={pageDescription} canonical={pageUrl}>
+<Layout title={pageTitle} description={pageDescription} canonical={pageUrl} schemaJson={personSchema}>
   <section class="r-section" style="border-top:0;padding-top:clamp(104px,13vw,150px);padding-bottom:40px" aria-labelledby="dTitle" data-driver={driver.slug} id="driverRoot">
     <div class="r-wrap">
       <nav class="r-meta" aria-label="Breadcrumb" style="margin-bottom:24px"><a href="/" style="color:inherit">Inicio</a> / <a href="/pilotos" style="color:inherit">Pilotos</a> / <span style="color:var(--r-text)">{driver.fullName}</span></nav>
@@ -39,11 +66,13 @@ const pageUrl = `https://muntru.me/d/${driver.slug}/`;
     <div class="r-wrap" style="display:grid;gap:24px">
       <div class="r-head" style="margin-bottom:0">
         <div><p class="r-kicker">iRacing</p><h2 id="sTitle" class="r-h2">Estadísticas</h2></div>
-        <p class="r-meta" id="dSource">Fuente: iRacing · Sin datos verificados todavía.</p>
+        <p class="r-meta" id="dSource">Actualizado: {LICENCE_UPDATED_LABEL}. Fuente: {LICENCE_SOURCE}.</p>
       </div>
+      <h3 class="r-h3">Licencias por categoría</h3>
+      <Licencias slug={driver.slug} />
       <div class="r-figs">
-        <div>iRating<strong class="r-num r-nodata" data-f="irating">Sin datos</strong></div>
-        <div>Licencia<strong class="r-num r-nodata" data-f="license">Sin datos</strong></div>
+        <div>iRating Sports Car<strong class="r-num" data-f="irating">{principal?.irating != null ? formatoIr(principal.irating) : "Sin datos"}</strong></div>
+        <div>Licencia Sports Car<strong class="r-h3" data-f="license">{principal ? `${principal.classLabel} ${principal.sr}` : "Sin datos"}</strong></div>
         <div>Coche favorito<strong class="r-h3 r-nodata" data-f="fav_car">Sin datos</strong><span data-f="fav_car_n"></span></div>
         <div>Categoría principal<strong class="r-h3 r-nodata" data-f="top_category">Sin datos</strong><span data-f="top_category_n"></span></div>
       </div>
@@ -66,5 +95,5 @@ const pageUrl = `https://muntru.me/d/${driver.slug}/`;
     </div>
   </section>
 
-  <script is:inline src="/assets/js/driver-page.js?v=t266" defer></script>
+  <script is:inline src="/assets/js/driver-page.js?v=t273" defer></script>
 </Layout>

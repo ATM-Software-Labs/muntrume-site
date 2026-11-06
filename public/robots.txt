@@ -1,7 +1,8 @@
 User-agent: *
-Disallow: /setups.html
-Disallow: /admin.html
-Disallow: /admin
 Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /email-preferences
+Disallow: /email-preferences/
 
 Sitemap: https://muntru.me/sitemap.xml

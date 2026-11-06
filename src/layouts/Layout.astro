@@ -2,6 +2,7 @@
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
 import MuntrumeChatbot from '../components/MuntrumeChatbot.astro';
+import { PILOTOS } from '../lib/pilotos';
 
 interface Props {
   title?: string;
@@ -12,20 +13,39 @@ interface Props {
   schemaJson?: any;
   hideNav?: boolean;
   hideFooter?: boolean;
+  noindex?: boolean;
 }
 
 const siteOrigin = Astro.site ? Astro.site.origin : (Astro.url ? Astro.url.origin : "https://muntru.me");
 
 const {
   title = "Muntrume Motorsport | iRacing Sim Racing Team Barcelona - Setup Vault & Telemetry",
-  description = "Equipo de sim racing de Sant Andreu, Barcelona. más de 41.000 setups .STO y 4 pilotos oficiales en iRacing.",
+  description = `Equipo de sim racing de Sant Andreu, Barcelona. Más de 41.000 setups .STO y ${PILOTOS.length} pilotos oficiales en iRacing.`,
   canonical = Astro.url.href,
   ogImage = `${siteOrigin}/assets/img/og-home.jpg`,
   ogType = "website",
   schemaJson = null,
   hideNav = false,
-  hideFooter = false
+  hideFooter = false,
+  noindex = false
 } = Astro.props;
+
+function hreflangSet(href: string) {
+  let base = href;
+  try {
+    const u = new URL(href, "https://muntru.me");
+    u.searchParams.delete("lang");
+    u.hash = "";
+    base = u.toString();
+  } catch { /* usa el href tal cual */ }
+  const alt = (lang: string) => {
+    const u = new URL(base);
+    if (lang !== "es") u.searchParams.set("lang", lang);
+    return u.toString();
+  };
+  return { es: alt("es"), en: alt("en"), ca: alt("ca"), fr: alt("fr") };
+}
+const langs = hreflangSet(canonical);
 
 const defaultSchema = {
   "@context": "https://schema.org",
@@ -37,7 +57,7 @@ const defaultSchema = {
       "alternateName": ["Muntrume", "MRT Sim Racing", "Muntrume Racing Team"],
       "url": `${siteOrigin}/`,
       "sport": "Sim Racing (iRacing)",
-      "description": "Equipo oficial de sim racing de Sant Andreu, Barcelona. más de 41.000 setups .STO y 4 pilotos oficiales en iRacing.",
+      "description": `Equipo de sim racing de Sant Andreu, Barcelona. Más de 41.000 setups .STO y ${PILOTOS.length} pilotos oficiales en iRacing.`,
       "logo": {
         "@type": "ImageObject",
         "url": `${siteOrigin}/assets/img/icon-512.png`,
@@ -58,14 +78,14 @@ const defaultSchema = {
       "founder": {
         "@type": "Person",
         "name": "Alberto Trujillo Mingorance",
-        "url": `${siteOrigin}/p/alberto-trujillo`
+        "url": `${siteOrigin}/d/albertot/`
       },
-      "member": [
-        { "@type": "Person", "name": "Alberto Trujillo Mingorance", "jobTitle": "Team Principal & Driver", "url": `${siteOrigin}/p/alberto-trujillo` },
-        { "@type": "Person", "name": "Mateo Berbis", "jobTitle": "Official Driver", "url": `${siteOrigin}/p/mateo-berbis` },
-        { "@type": "Person", "name": "Eduardo Chongkan", "jobTitle": "Official Driver", "url": `${siteOrigin}/p/eduardo-chongkan` },
-        { "@type": "Person", "name": "Juanlu Carrillo", "jobTitle": "Official Driver", "url": `${siteOrigin}/p/juanlu-carrillo` }
-      ],
+      "member": PILOTOS.map((p) => ({
+        "@type": "Person",
+        "name": p.fullName,
+        "jobTitle": p.role,
+        "url": `${siteOrigin}/d/${p.slug}/`
+      })),
       "knowsAbout": [
         "iRacing",
         "Sim Racing",
@@ -86,7 +106,7 @@ const defaultSchema = {
       "@id": `${siteOrigin}/#website`,
       "name": "Muntrume Motorsport",
       "url": "https://muntru.me/",
-      "inLanguage": ["es-ES", "en-US"],
+      "inLanguage": ["es-ES", "en-US", "ca-ES", "fr-FR"],
       "publisher": {
         "@id": "https://muntru.me/#org"
       }
@@ -127,18 +147,25 @@ const finalSchema = schemaJson || defaultSchema;
   <meta name="description" content={description} />
   <meta name="keywords" content="setups iracing, telemetria iracing, muntrume motorsport, setups garage 61, descargar setups iracing, iracing setups gratis, sim racing barcelona, setups gt3, setups gtp, iracing setup vault" />
   <meta name="author" content="Muntrume Motorsport · Alberto Trujillo Mingorance" />
-  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-  <link rel="canonical" href={canonical} />
+  <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"} />
+  <link rel="canonical" href={langs.es} />
+  <link rel="alternate" hreflang="es" href={langs.es} />
+  <link rel="alternate" hreflang="en" href={langs.en} />
+  <link rel="alternate" hreflang="ca" href={langs.ca} />
+  <link rel="alternate" hreflang="fr" href={langs.fr} />
+  <link rel="alternate" hreflang="x-default" href={langs.es} />
 
   <!-- Open Graph / Social Media -->
   <meta property="og:type" content={ogType} />
   <meta property="og:title" content={title} />
   <meta property="og:description" content={description} />
-  <meta property="og:url" content={canonical} />
+  <meta property="og:url" content={langs.es} />
   <meta property="og:image" content={ogImage} />
   <meta property="og:site_name" content="Muntrume Motorsport" />
   <meta property="og:locale" content="es_ES" />
   <meta property="og:locale:alternate" content="en_US" />
+  <meta property="og:locale:alternate" content="ca_ES" />
+  <meta property="og:locale:alternate" content="fr_FR" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
@@ -168,7 +195,7 @@ const finalSchema = schemaJson || defaultSchema;
 
   <link rel="stylesheet" href="/assets/css/tailwind.min.css?v=26s5.0" />
   <link rel="stylesheet" href="/assets/css/mobile.css?v=t263" />
-  <link rel="stylesheet" href="/assets/css/racing.css?v=t272" />
+  <link rel="stylesheet" href="/assets/css/racing.css?v=t273" />
 
   <!-- Core Dark Racing System CSS -->
   <style is:global>
@@ -262,7 +289,7 @@ const finalSchema = schemaJson || defaultSchema;
 
   <!-- Core Scripts -->
   <script is:inline src="/assets/js/vpfix.js?v=m9"></script>
-  <script is:inline src="/assets/js/i18n.js?v=t272"></script>
+  <script is:inline src="/assets/js/i18n.js?v=t273"></script>
 </head>
 <body class="bg-[#080C0A] text-neutral-100 antialiased selection:bg-[#00E699] selection:text-neutral-950 font-sans min-h-screen flex flex-col justify-between relative">
   

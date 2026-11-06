@@ -57,24 +57,6 @@ const DRIVERS_DATA = {
     telemetryText: "Ajuste milimétrico de alturas de marcha dinámicas y reparto de frenada para preservar la estabilidad en frenadas pronunciadas y curvas rápidas.",
     roleDesc: "Supervisión técnica de telemetría a 60 Hz en el garaje del equipo y optimización de consumo en carreras de resistencia.",
     watermark: "muntru.me - Muntrume Motorsport. Piloto Oficial: Eduardo Chongkan."
-  },
-  "juanlu-carrillo": {
-    slug: "juanlu-carrillo",
-    name: "Juanlu Carrillo",
-    firstName: "Juanlu",
-    initials: "JC",
-    number: "#4",
-    colorClass: "border-orange-500 text-orange-400 bg-orange-950/50",
-    ambientColor: "rgba(249, 115, 22, 0.15)",
-    role: "PILOTO OFICIAL · DEV SQUAD & FÓRMULAS",
-    primaryCar: "Super Formula Lights / Mazda MX-5",
-    specialty: "Monoplazas & Carreras en Pelotón",
-    email: "juanlu@muntru.me",
-    location: "🇪🇸 España",
-    bio: "Piloto del programa de desarrollo y líder en monoplazas de Muntrume Motorsport. Especialista en draft control, luchas rueda a rueda y copas monomarca.",
-    telemetryText: "Puesta a punto equilibrada para maximizar la tracción mecánica en salida de curva y estabilidad en rebufo cerrado a alta velocidad.",
-    roleDesc: "Punta de lanza en el desarrollo de setups para las series de monoplazas y copas de formación del equipo.",
-    watermark: "muntru.me - Muntrume Motorsport. Piloto Oficial: Juanlu Carrillo."
   }
 };
 

@@ -1,0 +1,28 @@
+---
+import { licenciasDe, formatoIr, LICENCE_UPDATED_LABEL, type Licence } from "../lib/licencias";
+
+interface Props {
+  slug: string;
+  compact?: boolean;
+}
+
+const { slug, compact = false } = Astro.props;
+const items = licenciasDe(slug);
+---
+
+{items.length > 0 && (
+  <div class={compact ? "lics lics--compact" : "lics"} data-lic-root={slug}>
+    {items.map((lic: Licence) => (
+      <article class="lic" data-lic={lic.category} style={`--lic:${lic.color}`}>
+        <p class="lic__cat">{lic.label}</p>
+        <p class="lic__class" data-lic-f="class">{lic.classLabel}</p>
+        <dl class="lic__stats">
+          <div><dt>SR</dt><dd data-lic-f="sr">{lic.sr}</dd></div>
+          <div><dt>iRating</dt><dd data-lic-f="irating" class={lic.irating == null ? "r-nodata" : ""}>{formatoIr(lic.irating)}</dd></div>
+          {!compact && <div><dt>ttRating</dt><dd data-lic-f="tt">{lic.ttRating.toLocaleString("es-ES")}</dd></div>}
+        </dl>
+      </article>
+    ))}
+  </div>
+)}
+{!compact && <p class="r-meta" data-lic-updated>Actualizado: {LICENCE_UPDATED_LABEL}</p>}

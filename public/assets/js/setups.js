@@ -216,6 +216,7 @@ async function handleLogin(e) {
 
   errorDiv.classList.add("hidden");
   submitBtn.disabled = true;
+  submitBtn.setAttribute("aria-busy", "true");
   btnText.textContent = "Verificando…";
 
   try {
@@ -243,6 +244,8 @@ async function handleLogin(e) {
     } else {
       errorDiv.textContent = data.error || "No se pudo verificar la credencial.";
       errorDiv.classList.remove("hidden");
+      document.getElementById("loginKey")?.setAttribute("aria-invalid", "true");
+      document.getElementById("loginEmail")?.setAttribute("aria-invalid", "true");
       if (data.code === "no_password") {
         const fe = document.getElementById("forgotEmail");
         if (fe) fe.value = email;
@@ -253,7 +256,8 @@ async function handleLogin(e) {
     errorDiv.classList.remove("hidden");
   } finally {
     submitBtn.disabled = false;
-    btnText.textContent = "Entrar al Vault →";
+    submitBtn.removeAttribute("aria-busy");
+    btnText.textContent = "Entrar";
   }
 }
 
@@ -1391,25 +1395,14 @@ function groupSetupsIntoFolders(setups) {
     }
   }
 
-  // Sort folders: Season desc (26S4 first), Active Week W07 (Le Mans / COTA) first, Valkyrie GTP first, then Car/Week
+  const sortMode = (typeof document !== "undefined" && document.getElementById("setupSort")?.value) || "season";
   const folders = Object.values(foldersMap).sort((a, b) => {
-    if (a.season !== b.season) return b.season.localeCompare(a.season);
-    const aIsW07 = a.season === "26S4" && a.week === "W07" ? 1 : 0;
-    const bIsW07 = b.season === "26S4" && b.week === "W07" ? 1 : 0;
-    if (aIsW07 !== bIsW07) return bIsW07 - aIsW07;
-    const aIsValk = a.car === "amvalkyriegtp" ? 1 : 0;
-    const bIsValk = b.car === "amvalkyriegtp" ? 1 : 0;
-    if (aIsValk !== bIsValk) return bIsValk - aIsValk;
     const carA = (CAR_LABELS[a.car] || a.car).toLowerCase();
     const carB = (CAR_LABELS[b.car] || b.car).toLowerCase();
-    if (carA !== carB) return carA.localeCompare(carB);
-    if (a.week !== b.week) {
-      if (a.week.startsWith("W") && b.week.startsWith("W")) return a.week.localeCompare(b.week);
-      if (a.week.startsWith("W")) return -1;
-      if (b.week.startsWith("W")) return 1;
-      return a.week.localeCompare(b.week);
-    }
-    return a.circuit.localeCompare(b.circuit);
+    if (sortMode === "car") return carA.localeCompare(carB) || a.circuit.localeCompare(b.circuit);
+    if (sortMode === "circuit") return a.circuit.localeCompare(b.circuit) || carA.localeCompare(carB);
+    if (sortMode === "week") return b.season.localeCompare(a.season) || a.week.localeCompare(b.week) || a.circuit.localeCompare(b.circuit);
+    return b.season.localeCompare(a.season) || b.week.localeCompare(a.week) || a.circuit.localeCompare(b.circuit);
   });
 
   return { folders, foldersMap };
@@ -1448,6 +1441,16 @@ function applyFilters() {
       if (!hay.includes(query)) return false;
     }
     return true;
+  });
+
+  const sortMode = document.getElementById("setupSort")?.value || "season";
+  filtered.sort((a, b) => {
+    const carA = (CAR_LABELS[a.car] || a.car).toLowerCase();
+    const carB = (CAR_LABELS[b.car] || b.car).toLowerCase();
+    if (sortMode === "car") return carA.localeCompare(carB) || a.circuit.localeCompare(b.circuit);
+    if (sortMode === "circuit") return a.circuit.localeCompare(b.circuit) || carA.localeCompare(carB);
+    if (sortMode === "week") return b.season.localeCompare(a.season) || a.week.localeCompare(b.week);
+    return b.season.localeCompare(a.season) || b.week.localeCompare(a.week) || a.circuit.localeCompare(b.circuit);
   });
 
   currentlyFilteredSetups = filtered;
@@ -1559,46 +1562,18 @@ function renderVisibleSlice() {
       const filesHtml = isExpanded ? renderFolderFilesHtml(folder) : "";
 
       return `
-        <div class="bg-[#161c24] border border-white/10 hover:border-emerald-500/40 rounded-2xl p-4 sm:p-5 transition shadow-lg space-y-3" id="folder-card-${folder.key}">
-          <!-- Folder Top Bar -->
+        <article class="g-setup-card" id="folder-card-${folder.key}">
           <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
-            <div class="flex items-start gap-3 min-w-0">
-              <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
-              </div>
-
-              <div class="min-w-0">
-                <div class="flex flex-wrap items-center gap-2">
-                  <h3 class="text-base font-extrabold text-white tracking-tight flex items-center gap-1.5">
-                    <span>🏁</span>
-                    <span>${escapeHtml(folder.circuit)}</span>
-                  </h3>
-                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    ${escapeHtml(folder.season)} · ${escapeHtml(folder.week)}
-                  </span>
-                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/5 text-neutral-300 border border-white/10">
-                    📁 ${folder.setups.length} setups
-                  </span>
-                </div>
-
-                <div class="flex flex-wrap items-center gap-1.5 text-xs text-neutral-400 mt-1">
-                  <span class="font-semibold text-neutral-200">${escapeHtml(carLabel)}</span>
-                  <span class="text-neutral-600">›</span>
-                  <span class="text-neutral-400">${escapeHtml(folder.season)}</span>
-                  <span class="text-neutral-600">›</span>
-                  <span class="text-neutral-400">${escapeHtml(folder.week)}</span>
-                  <span class="text-neutral-600">›</span>
-                  <span class="text-emerald-400 font-medium">${escapeHtml(folder.circuit)}</span>
-                  <div class="hidden sm:inline-flex items-center gap-1 ml-2">
-                    ${typeSummary.join(" ")}
-                  </div>
-                </div>
-
-                <div class="mt-2 text-[10px] text-neutral-500 font-mono truncate flex items-center gap-1.5" title="Documents\\iRacing\\setups\\${destinationPath}">
-                  <svg class="w-3 h-3 text-emerald-500/70 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                  <span class="truncate">Documents\\iRacing\\setups\\${escapeHtml(destinationPath)}</span>
-                </div>
-              </div>
+            <div class="min-w-0">
+              <h3>${escapeHtml(folder.circuit)}</h3>
+              <p class="g-setup-meta">
+                <span>Coche <strong>${escapeHtml(carLabel)}</strong></span>
+                <span>Temporada <strong>${escapeHtml(folder.season)}</strong></span>
+                <span>Semana <strong>${escapeHtml(folder.week)}</strong></span>
+                <span>${folder.setups.length} setups</span>
+              </p>
+              <div class="g-setup-meta">${typeSummary.join(" ")}</div>
+              <p class="r-meta" style="margin:6px 0 0" title="Documents\\iRacing\\setups\\${destinationPath}">Documents\\iRacing\\setups\\${escapeHtml(destinationPath)}</p>
             </div>
 
             <!-- Folder Action Buttons -->
@@ -1642,7 +1617,7 @@ function renderVisibleSlice() {
               ${filesHtml}
             </div>
           </div>
-        </div>
+        </article>
       `;
     }).join("");
     return;
@@ -1736,7 +1711,7 @@ function renderVisibleSlice() {
         <div class="p-3 sm:p-4 bg-[#0e1217] border-b border-white/10 flex flex-wrap items-center justify-between gap-2 text-xs">
           <div class="flex items-center gap-2">
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span class="font-bold text-white tracking-wide">ftp://vault.muntrume.internal/setups/</span>
+            <span class="font-bold text-white tracking-wide">Archivos .sto</span>
           </div>
           <div class="text-[11px] text-neutral-400 flex items-center gap-3">
             <span>MODO: <strong class="text-emerald-400">READ-ONLY STREAM</strong></span>

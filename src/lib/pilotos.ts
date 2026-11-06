@@ -53,8 +53,8 @@ export const PILOTOS: Piloto[] = [
     slug: 'eduardoc',
     cust_id: 1076585,
     dorsal: '#3',
-    name: 'Eduardo C',
-    fullName: 'Eduardo C',
+    name: 'Eduardo',
+    fullName: 'Eduardo Chongkan',
     role: 'PROTOTIPOS GTP',
     badge: 'DRIVER',
     country: 'Costa Rica',
@@ -63,20 +63,5 @@ export const PILOTOS: Piloto[] = [
     helmet_url: 'https://muntrume.atrumin16.workers.dev/api/helmet?custId=1076585',
     bio: 'Especialista en prototipos híbridos GTP e IMSA. Enfoque en recuperación de energía, balance aerodinámico y frenada de alta precisión.',
     initials: 'EC'
-  },
-  {
-    slug: 'juanluc',
-    cust_id: null,
-    dorsal: '#4',
-    name: 'Juanlu C',
-    fullName: 'Juanlu',
-    role: 'MONOPLAZAS',
-    badge: 'DRIVER',
-    country: 'Spain',
-    flag: '🇪🇸',
-    flag_code: 'ES',
-    helmet_url: null,
-    bio: 'Fundador y piloto de monoplazas en Muntrume Motorsport. Enfoque en trazado de vértices y desarrollo técnico de setup.',
-    initials: 'JC'
   }
 ];

@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import catalog from '../../public/assets/data/catalog_index.json';
+import { PILOTOS } from '../lib/pilotos';
 
 const pageTitle = "Garage | Muntrume Motorsport — Setup Vault";
 const pageDescription = "Setup Vault de Muntrume Motorsport: setups .STO por coche, circuito y temporada. La descarga exige cuenta de piloto. Si el archivo se guarda en tu carpeta, no se sube.";
@@ -9,7 +10,7 @@ const figs = [
   { n: fmt(catalog.total_setups), l: "Setups en el catálogo" },
   { n: String(catalog.cars.length), l: "Coches" },
   { n: String(catalog.circuits.length), l: "Circuitos" },
-  { n: "4", l: "Pilotos" },
+  { n: String(PILOTOS.length), l: "Pilotos" },
 ];
 ---
 
@@ -162,6 +163,15 @@ const figs = [
             <label class="visually-hidden" for="searchInput" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Buscar setups</label>
             <input id="searchInput" class="g-search" type="search" oninput="onSearchInput()" placeholder="Buscar por circuito, coche o tipo" />
           </div>
+          <div class="g-field" style="min-width:160px">
+            <label for="setupSort">Orden</label>
+            <select id="setupSort" onchange="onFilterChange()">
+              <option value="season">Temporada</option>
+              <option value="circuit">Circuito</option>
+              <option value="car">Coche</option>
+              <option value="week">Semana</option>
+            </select>
+          </div>
           <div class="g-views" aria-label="Vista del catálogo">
             <button type="button" id="viewModeFoldersBtn" class="is-on" onclick="setViewMode('folders')">Carpetas</button>
             <button type="button" id="viewModeListBtn" onclick="setViewMode('list')">Lista</button>
@@ -173,7 +183,7 @@ const figs = [
         <div id="setupsContainer">
           <p id="setupsLoading" class="r-empty">Pulsa «Ver catálogo» o entra con tu cuenta para cargar los setups.</p>
           <div id="setupsGrid" class="g-setups"></div>
-          <p id="emptyState" class="r-empty hidden">Ningún setup coincide con el filtro.</p>
+          <p id="emptyState" class="r-empty hidden">Ningún setup coincide. Prueba otro coche, circuito o temporada.</p>
           <div id="loadMoreContainer" class="hidden" style="text-align:center">
             <button type="button" class="r-btn r-btn--sm" onclick="loadMoreFolders()"><span id="loadMoreBtnText">Mostrar más</span></button>
           </div>
@@ -243,7 +253,10 @@ const figs = [
         </div>
         <div class="g-field">
           <label for="loginKey">Contraseña</label>
-          <input type="password" id="loginKey" required autocomplete="current-password" placeholder="Contraseña de piloto" />
+          <div class="g-pass">
+            <input type="password" id="loginKey" required autocomplete="current-password" placeholder="Contraseña de piloto" />
+            <button type="button" class="g-pass__toggle" aria-controls="loginKey" aria-pressed="false" onclick="togglePassword('loginKey', this)">Mostrar</button>
+          </div>
         </div>
         <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:center">
           <label class="g-check" for="rememberMe"><input type="checkbox" id="rememberMe" checked /> Recordar sesión</label>
@@ -347,8 +360,16 @@ const figs = [
     </div>
   </div>
 
-  <script is:inline src="/assets/js/setups.js?v=t272"></script>
+  <script is:inline src="/assets/js/setups.js?v=t273"></script>
   <script is:inline>
+    window.togglePassword = function (id, btn) {
+      var input = document.getElementById(id);
+      if (!input || !btn) return;
+      var show = input.type === "password";
+      input.type = show ? "text" : "password";
+      btn.textContent = show ? "Ocultar" : "Mostrar";
+      btn.setAttribute("aria-pressed", show ? "true" : "false");
+    };
     function setOn(btns, active) {
       btns.forEach(function (b) { if (b) b.classList.toggle("is-on", b === active); });
     }
