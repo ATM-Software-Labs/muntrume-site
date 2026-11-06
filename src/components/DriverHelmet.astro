@@ -1,39 +1,50 @@
 ---
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+
 interface Props {
+  slug: string;
   name: string;
-  src?: string | null;
   eager?: boolean;
 }
-const FALLBACK = "/img/helmets/albertot.webp";
-const { name, src, eager = false } = Astro.props;
-const href = src && src.startsWith("/img/helmets/") ? src : FALLBACK;
-const retina = href.replace(/\.webp$/, "@2x.webp");
----
-<img
-  class="driver-helmet"
-  src={href}
-  srcset={`${href} 256w, ${retina} 512w`}
-  sizes="180px"
-  alt={`Casco de ${name}`}
-  width="256"
-  height="256"
-  loading={eager ? "eager" : "lazy"}
-  decoding="async"
-  data-fallback={FALLBACK}
-  data-fallback-2x="/img/helmets/albertot@2x.webp"
-/>
-<script is:inline>
-if (!window.__mmHelmetFallback) {
-  window.__mmHelmetFallback = true;
-  document.addEventListener("error", function (ev) {
-    var img = ev.target;
-    if (!img || !img.getAttribute || img.dataset.fell) return;
-    if (!img.classList.contains("driver-helmet")) return;
-    img.dataset.fell = "1";
-    var one = img.getAttribute("data-fallback");
-    var two = img.getAttribute("data-fallback-2x");
-    img.src = one;
-    img.srcset = one + " 256w, " + two + " 512w";
-  }, true);
+const { slug, name, eager = false } = Astro.props;
+const dir = join(process.cwd(), "public/img/helmets");
+
+function webpSize(file: string) {
+  const b = readFileSync(file);
+  const kind = b.toString("ascii", 12, 16);
+  if (kind === "VP8X") return { w: 1 + b.readUIntLE(24, 3), h: 1 + b.readUIntLE(27, 3) };
+  if (kind === "VP8L") {
+    const bits = b.readUInt32LE(21);
+    return { w: (bits & 0x3fff) + 1, h: ((bits >> 14) & 0x3fff) + 1 };
+  }
+  if (kind === "VP8 ") return { w: b.readUInt16LE(26) & 0x3fff, h: b.readUInt16LE(28) & 0x3fff };
+  return { w: 168, h: 180 };
 }
-</script>
+function pngSize(file: string) {
+  const b = readFileSync(file);
+  return { w: b.readUInt32BE(16), h: b.readUInt32BE(20) };
+}
+
+const chosen = existsSync(join(dir, `${slug}.webp`)) || existsSync(join(dir, `${slug}.png`)) ? slug : "albertot";
+const pngFile = join(dir, `${chosen}.png`);
+const webpFile = join(dir, `${chosen}.webp`);
+const hasPng = existsSync(pngFile);
+const dim = hasPng ? pngSize(pngFile) : webpSize(webpFile);
+const webp = `/img/helmets/${chosen}.webp`;
+const png = `/img/helmets/${chosen}.png`;
+---
+<picture class="driver-helmet-picture">
+  {hasPng && <source type="image/png" srcset={`${png} ${dim.w}w`} sizes="168px" />}
+  <img
+    class="driver-helmet"
+    src={webp}
+    srcset={`${webp} ${dim.w}w`}
+    sizes="168px"
+    alt={`Casco de ${name}`}
+    width={dim.w}
+    height={dim.h}
+    loading={eager ? "eager" : "lazy"}
+    decoding="async"
+  />
+</picture>

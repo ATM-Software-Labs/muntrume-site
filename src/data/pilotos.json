@@ -1,0 +1,63 @@
+{
+  "updated": "2026-11-06",
+  "updatedLabel": "6 nov 2026",
+  "drivers": [
+    {
+      "slug": "albertot",
+      "custId": 993381,
+      "number": "#1",
+      "shortName": "Alberto T",
+      "fullName": "Alberto Trujillo",
+      "role": "Team Principal y telemetría",
+      "badge": "FOUNDER",
+      "country": "España",
+      "countryCode": "ES",
+      "flag": "🇪🇸",
+      "bio": "",
+      "favouriteCars": [],
+      "favouriteSeries": [],
+      "achievements": [],
+      "socials": { "twitch": "", "youtube": "", "instagram": "", "x": "" },
+      "memberSince": "",
+      "club": ""
+    },
+    {
+      "slug": "mateob",
+      "custId": 1134615,
+      "number": "#2",
+      "shortName": "Mateo B",
+      "fullName": "Mateo Berbis",
+      "role": "Resistencia GT3",
+      "badge": "DRIVER",
+      "country": "España",
+      "countryCode": "ES",
+      "flag": "🇪🇸",
+      "bio": "",
+      "favouriteCars": [],
+      "favouriteSeries": [],
+      "achievements": [],
+      "socials": { "twitch": "", "youtube": "", "instagram": "", "x": "" },
+      "memberSince": "",
+      "club": ""
+    },
+    {
+      "slug": "eduardoc",
+      "custId": 1076585,
+      "number": "#3",
+      "shortName": "Eduardo",
+      "fullName": "Eduardo Chongkan",
+      "role": "Prototipos GTP",
+      "badge": "DRIVER",
+      "country": "Costa Rica",
+      "countryCode": "CR",
+      "flag": "🇨🇷",
+      "bio": "",
+      "favouriteCars": [],
+      "favouriteSeries": [],
+      "achievements": [],
+      "socials": { "twitch": "", "youtube": "", "instagram": "", "x": "" },
+      "memberSince": "",
+      "club": ""
+    }
+  ]
+}

@@ -73,10 +73,17 @@ Requiere **Node.js 24** (el mismo que usa CI).
 - Cada *push* a `main` ejecuta `astro check`, construye el sitio y lo publica en GitHub Pages.
 - Para volver atrás: `git revert <commit>` y *push*; Pages vuelve a desplegar la versión anterior.
 
+## Cascos
+
+Los cascos de la plantilla están en `public/img/helmets/<slug>.webp` (albertot, mateob, eduardoc). Salen de las capturas de licencia a su resolución nativa, con el fondo quitado: no se amplían.
+
+Para sustituirlos por un PNG transparente de más resolución, deja el archivo en `public/img/helmets/<slug>.png`. La ficha usa el PNG si existe y, si no, el WebP. El escenario (brillo y sombra) es CSS, así que el PNG nuevo hereda la misma presentación. Un piloto sin archivo usa el casco de Alberto.
+
 ## Estructura
 
 ```
 src/
+  data/         plantilla editable (src/data/pilotos.json)
   pages/        rutas (inicio, pilotos, noticias, legal, garage…)
   components/   navegación, asistente IA y piezas comunes
   layouts/      plantilla base (SEO, CSP, tema)
