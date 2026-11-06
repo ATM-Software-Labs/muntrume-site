@@ -15,6 +15,8 @@ export interface Socials {
 export interface LapStat {
   name: string;
   laps: number;
+  timeOnTrack?: string;
+  incidentsPerLap?: number;
 }
 
 export interface Piloto {

@@ -4,6 +4,7 @@ import DriverCard from '../../components/DriverCard.astro';
 import { PILOTOS, LICENCE_UPDATED_LABEL } from '../../lib/pilotos';
 import { licenciaPrincipal } from '../../lib/licencias';
 import { formatoAprox, localeDeIdioma } from '../../lib/formato-licencia.js';
+import catalog from '../../../public/assets/data/catalog_index.json';
 
 export function getStaticPaths() {
   return PILOTOS.map(p => ({ params: { slug: p.slug } }));
@@ -22,12 +23,63 @@ const ogImage = `https://muntru.me/assets/img/og/${driver.slug}.webp`;
 const index = Math.max(0, PILOTOS.findIndex((p) => p.slug === driver.slug));
 const prev = PILOTOS[(index + PILOTOS.length - 1) % PILOTOS.length];
 const next = PILOTOS[(index + 1) % PILOTOS.length];
+
 const mates = PILOTOS.map((p) => {
   const row = licenciaPrincipal(p.slug);
-  return { driver: p, sr: row ? Number(row.sr) : 0, ir: row?.irating ?? 0 };
+  const laps = (p.topTracks || []).reduce((acc, t) => acc + t.laps, 0);
+  return {
+    driver: p,
+    sr: row ? Number(row.sr) : 0,
+    ir: row?.irating ?? 0,
+    tt: row?.ttRating ?? 0,
+    laps,
+  };
 }).filter((row) => row.sr > 0 || row.ir > 0);
-const maxSr = Math.max(...mates.map((row) => row.sr), 1);
-const maxIr = Math.max(...mates.map((row) => row.ir), 1);
+
+const selfRow = mates.find((m) => m.driver.slug === driver.slug) || mates[0];
+const avgSr = mates.length ? Number((mates.reduce((s, r) => s + r.sr, 0) / mates.length).toFixed(2)) : 0;
+const avgIr = mates.length ? Math.round(mates.reduce((s, r) => s + r.ir, 0) / mates.length) : 0;
+const avgLaps = mates.length ? Math.round(mates.reduce((s, r) => s + r.laps, 0) / mates.length) : 0;
+const maxSr = Math.max(...mates.map((row) => row.sr), avgSr, 1);
+const maxIr = Math.max(...mates.map((row) => row.ir), avgIr, 1);
+const maxLaps = Math.max(...mates.map((row) => row.laps), avgLaps, 1);
+
+const CAR_SLUG_MAP: Record<string, string> = {
+  "Ford Mustang GT3": "fordmustanggt3",
+  "Ferrari 296 GT3": "ferrari296gt3",
+  "McLaren 720S GT3 EVO": "mclaren720sgt3",
+  "BMW M4 GT3": "bmwm4gt3",
+  "Porsche 911 GT3 R (992)": "porsche992rgt3",
+  "Ferrari 499P": "ferrari499p",
+  "Porsche 911 GT3 Cup (992)": "porsche992cup",
+  "Acura NSX GT3 EVO 22": "acuransxevo22gt3",
+  "BMW M4 GT4": "bmwm4gt4",
+  "McLaren 570S GT4": "mclaren570sgt4",
+};
+
+type CatalogRow = [number, string, string, string, string, string, string, number];
+const allRows = (catalog.initial_rows || []) as CatalogRow[];
+
+const driverSetups = (driver.topCars || []).map((carItem) => {
+  const carKey = CAR_SLUG_MAP[carItem.name] || "";
+  const matching = allRows.filter((r) => r[1] === carKey);
+  const tracks = Array.from(new Set(matching.map((r) => r[4]))).slice(0, 3);
+  const sampleFiles = matching.slice(0, 3).map((r) => ({
+    season: r[2],
+    week: r[3],
+    track: r[4],
+    file: r[5],
+    type: r[6],
+  }));
+  return {
+    carName: carItem.name,
+    carKey,
+    laps: carItem.laps,
+    tracks,
+    sampleFiles,
+  };
+});
+
 const personSchema = {
   "@context": "https://schema.org",
   "@graph": [
@@ -62,14 +114,16 @@ const personSchema = {
 ---
 
 <Layout title={pageTitle} description={pageDescription} canonical={pageUrl} ogImage={ogImage} schemaJson={personSchema}>
-  <section class="r-section" style="border-top:0;padding-top:clamp(104px,13vw,150px);padding-bottom:40px" aria-labelledby="dTitle" data-driver={driver.slug} id="driverRoot">
+  <section class="r-section" style="border-top:0;padding-top:clamp(96px,12vw,144px);padding-bottom:40px" aria-labelledby="dTitle" data-driver={driver.slug} id="driverRoot">
     <div class="r-wrap">
       <nav class="r-meta" aria-label="Migas" style="margin-bottom:16px"><a href="/" style="color:inherit">Inicio</a> / <a href="/pilotos" style="color:inherit">Pilotos</a> / <span style="color:var(--r-text)">{driver.fullName}</span></nav>
       <nav class="d-tabs" aria-label="Secciones">
         <a href="#resumen">Resumen</a>
         <a href="#circuitos">Circuitos</a>
         <a href="#coches">Coches</a>
-        <a href="#eventos" id="eventosTab" hidden>Próximos eventos</a>
+        <a href="#setups">Setups</a>
+        <a href="#comparativa">Comparativa</a>
+        <a href="#eventos" id="eventosTab">Próximos eventos</a>
       </nav>
       <DriverCard driver={driver} heading="h1" headingId="dTitle" hero />
       <div class="d-tools">
@@ -78,23 +132,107 @@ const personSchema = {
           <a href={`/d/${next.slug}/`}>{next.fullName} →</a>
         </nav>
         <div class="d-share">
+          <button type="button" id="nativeShare">Compartir ficha</button>
           <button type="button" id="copyLink">Copiar enlace</button>
-          <button type="button" id="nativeShare" hidden>Compartir</button>
-          <p id="copyStatus" role="status"></p>
+          <p id="copyStatus" class="r-meta" role="status" aria-live="polite"></p>
         </div>
       </div>
-      {mates.length > 1 && (
-        <section class="d-compare d-reveal" aria-labelledby="compareTitle">
+
+      {driverSetups.length > 0 && (
+        <section class="d-setups d-reveal" id="setups" aria-labelledby="setupsTitle">
+          <div class="d-section-head">
+            <div>
+              <h2 id="setupsTitle" class="d-block__title">Setups asociados al piloto</h2>
+              <p class="r-meta">Configuraciones del Setup Vault para los coches habituales de {driver.name}.</p>
+            </div>
+            <a href="/garage" class="r-link">Abrir Setup Vault →</a>
+          </div>
+          <div class="d-setups__grid">
+            {driverSetups.map((item) => (
+              <article class="d-setup-card">
+                <div class="d-setup-card__top">
+                  <h3 class="d-setup-card__title">{item.carName}</h3>
+                  <span class="r-meta"><span data-approx="k" data-n={item.laps}>{formatoAprox(item.laps, "k", loc)}</span> <span>vueltas</span></span>
+                </div>
+                {item.sampleFiles.length > 0 ? (
+                  <ul class="d-setup-card__files">
+                    {item.sampleFiles.map((f) => (
+                      <li>
+                        <span class="sto-type">{f.type}</span>
+                        <code>{f.file}</code>
+                        <span class="r-meta">{f.season} · {f.track}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p class="r-meta">Disponible en el catálogo general del Setup Vault ({item.carKey || "GT"}).</p>
+                )}
+                <a class="r-link d-setup-card__cta" href={item.carKey ? `/garage?car=${encodeURIComponent(item.carKey)}` : "/garage"}>
+                  Ver setups de {item.carName}
+                </a>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {mates.length > 1 && selfRow && (
+        <section class="d-compare d-reveal" id="comparativa" aria-labelledby="compareTitle">
           <h2 id="compareTitle" class="d-block__title">Comparar con el equipo</h2>
-          <p class="r-meta">Sports Car, cifras aproximadas.</p>
+          <p class="r-meta">Sports Car, cifras aproximadas frente al promedio de Muntrume Motorsport.</p>
+
+          <div class="d-vs-grid">
+            <div class="d-vs-card">
+              <span class="d-vs-card__label">iRating (Sports Car)</span>
+              <div class="d-vs-row">
+                <span>{driver.name}</span>
+                <strong data-approx="k" data-n={selfRow.ir}>{formatoAprox(selfRow.ir, "k", loc)}</strong>
+              </div>
+              <span class="d-mini" aria-hidden="true"><span style={`width:${Math.round((100 * selfRow.ir) / maxIr)}%`}></span></span>
+              <div class="d-vs-row d-vs-row--avg">
+                <span>Media Muntrume</span>
+                <strong data-approx="k" data-n={avgIr}>{formatoAprox(avgIr, "k", loc)}</strong>
+              </div>
+              <span class="d-mini d-mini--muted" aria-hidden="true"><span style={`width:${Math.round((100 * avgIr) / maxIr)}%`}></span></span>
+            </div>
+
+            <div class="d-vs-card">
+              <span class="d-vs-card__label">Safety Rating (SR)</span>
+              <div class="d-vs-row">
+                <span>{driver.name}</span>
+                <strong data-approx="sr" data-n={selfRow.sr}>{formatoAprox(selfRow.sr, "sr", loc)}</strong>
+              </div>
+              <span class="d-mini" aria-hidden="true"><span style={`width:${Math.round((100 * selfRow.sr) / maxSr)}%`}></span></span>
+              <div class="d-vs-row d-vs-row--avg">
+                <span>Media Muntrume</span>
+                <strong data-approx="sr" data-n={avgSr}>{formatoAprox(avgSr, "sr", loc)}</strong>
+              </div>
+              <span class="d-mini d-mini--muted" aria-hidden="true"><span style={`width:${Math.round((100 * avgSr) / maxSr)}%`}></span></span>
+            </div>
+
+            <div class="d-vs-card">
+              <span class="d-vs-card__label">Volumen (Top 5 circuitos)</span>
+              <div class="d-vs-row">
+                <span>{driver.name}</span>
+                <strong data-approx="k" data-n={selfRow.laps}>{formatoAprox(selfRow.laps, "k", loc)}</strong>
+              </div>
+              <span class="d-mini" aria-hidden="true"><span style={`width:${Math.round((100 * selfRow.laps) / maxLaps)}%`}></span></span>
+              <div class="d-vs-row d-vs-row--avg">
+                <span>Media Muntrume</span>
+                <strong data-approx="k" data-n={avgLaps}>{formatoAprox(avgLaps, "k", loc)}</strong>
+              </div>
+              <span class="d-mini d-mini--muted" aria-hidden="true"><span style={`width:${Math.round((100 * avgLaps) / maxLaps)}%`}></span></span>
+            </div>
+          </div>
+
           <ul class="d-compare__list">
             {mates.map((row) => (
               <li class:list={[row.driver.slug === driver.slug && "is-self"]}>
                 <span>{row.driver.fullName}</span>
                 <span class="d-mini" aria-hidden="true"><span style={`width:${Math.round((100 * row.sr) / maxSr)}%`}></span></span>
-                <span>SR {formatoAprox(row.sr, "sr", loc)}</span>
+                <span>SR <span data-approx="sr" data-n={row.sr}>{formatoAprox(row.sr, "sr", loc)}</span></span>
                 <span class="d-mini" aria-hidden="true"><span style={`width:${Math.round((100 * row.ir) / maxIr)}%`}></span></span>
-                <span>iRating {row.ir ? formatoAprox(row.ir, "k", loc) : ""}</span>
+                <span>iRating <span data-approx="k" data-n={row.ir}>{row.ir ? formatoAprox(row.ir, "k", loc) : ""}</span></span>
               </li>
             ))}
           </ul>
@@ -103,10 +241,16 @@ const personSchema = {
     </div>
   </section>
 
-  <section class="r-section r-section--alt" id="eventos" hidden aria-labelledby="eventosTitle">
+  <section class="r-section r-section--alt" id="eventos" aria-labelledby="eventosTitle">
     <div class="r-wrap" style="display:grid;gap:12px">
-      <h2 id="eventosTitle" class="r-h3">Próximos eventos</h2>
-      <ul class="r-list" id="driverEvents"></ul>
+      <div class="d-section-head">
+        <div>
+          <p class="r-kicker">Temporada</p>
+          <h2 id="eventosTitle" class="r-h3">Próximos eventos</h2>
+        </div>
+      </div>
+      <ul class="r-list" id="driverEvents" hidden></ul>
+      <p class="r-empty" id="driverEventsEmpty">No hay próximos eventos confirmados en Race Control para este piloto.</p>
     </div>
   </section>
 
@@ -132,20 +276,26 @@ const personSchema = {
     </div>
   </section>
 
-  <script is:inline src="/assets/js/driver-page.js?v=t283" defer></script>
+  <script is:inline src="/assets/js/driver-page.js?v=t284" defer></script>
   <script is:inline>
     (function () {
       var url = location.href;
       var copy = document.getElementById("copyLink");
       var native = document.getElementById("nativeShare");
       var status = document.getElementById("copyStatus");
-      if (native && navigator.share) native.hidden = false;
-      if (copy) copy.addEventListener("click", function () {
+      function copyFallback() {
         var done = function () { if (status) status.textContent = "Enlace copiado"; };
-        if (navigator.clipboard) navigator.clipboard.writeText(url).then(done);
-      });
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(done).catch(function () {});
+        }
+      }
+      if (copy) copy.addEventListener("click", copyFallback);
       if (native) native.addEventListener("click", function () {
-        navigator.share({ title: document.title, url: url }).catch(function () {});
+        if (navigator.share) {
+          navigator.share({ title: document.title, url: url }).catch(function () {});
+        } else {
+          copyFallback();
+        }
       });
     })();
   </script>

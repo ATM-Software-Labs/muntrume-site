@@ -70,6 +70,7 @@
   }
   fetch(API + '/api/drivers').then(function (r) { return r.ok ? r.json() : []; }).then(function (list) {
     var latest = null;
+    var irSum = 0, irCount = 0;
     (Array.isArray(list) ? list : []).forEach(function (d) {
       var card = document.querySelector('[data-driver="' + d.slug + '"]');
       if (!card) return;
@@ -79,7 +80,11 @@
         licenses.push({ category: "sports_car", class_label: parsed && parsed.classLabel, sr: parsed && parsed.sr, irating: d.irating > 0 ? d.irating : undefined });
       }
       licenses.forEach(function (lic) { paintLic(card, lic); });
-      if (d.irating > 0) approx(card.querySelector('[data-f="irating"]'), "k", d.irating);
+      if (d.irating > 0) {
+        approx(card.querySelector('[data-f="irating"]'), "k", d.irating);
+        irSum += Number(d.irating);
+        irCount += 1;
+      }
       if (d.fav_car && d.fav_car.name) showList(card, "cars", [d.fav_car.name]);
       if (d.top_category && d.top_category.name) showList(card, "series", [d.top_category.name]);
       if (d.bio) showText(card, "bio", d.bio);
@@ -87,6 +92,9 @@
       showMeta(card, "club", d.club || d.club_name);
       if (d.updated_at && (!latest || d.updated_at > latest)) latest = d.updated_at;
     });
+    if (irCount > 0) {
+      approx(document.getElementById('teamAvgIr'), 'k', Math.round(irSum / irCount));
+    }
     if (latest) {
       var stamp = document.querySelector("#licenceUpdated time");
       if (stamp) {

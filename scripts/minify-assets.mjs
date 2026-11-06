@@ -1,8 +1,9 @@
 // Minifica el JS público ya copiado a _site (quita comentarios internos; sin source maps).
 import { readdir, readFile, writeFile, rm } from "node:fs/promises";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { minify } from "terser";
-const dir = new URL("../_site/assets/js/", import.meta.url).pathname;
+const dir = fileURLToPath(new URL("../_site/assets/js/", import.meta.url));
 let before = 0, after = 0;
 for (const f of await readdir(dir)) {
   const p = join(dir, f);

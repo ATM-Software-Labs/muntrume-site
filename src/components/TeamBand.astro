@@ -1,15 +1,19 @@
 ---
 import catalog from "../../public/assets/data/catalog_index.json";
 import { PILOTOS } from "../lib/pilotos";
+import { licenciaPrincipal } from "../lib/licencias";
 import { formatoAprox, localeDeIdioma } from "../lib/formato-licencia.js";
 
 const laps = PILOTOS.reduce((sum, driver) => sum + driver.topTracks.reduce((inner, item) => inner + item.laps, 0), 0);
+const irRows = PILOTOS.map((d) => licenciaPrincipal(d.slug)?.irating ?? 0).filter((n) => n > 0);
+const avgIr = irRows.length ? Math.round(irRows.reduce((a, b) => a + b, 0) / irRows.length) : 0;
 const loc = localeDeIdioma("es");
 const setups = catalog.total_setups.toLocaleString("es-ES");
 ---
 <section class="d-band d-reveal" aria-label="Cifras del equipo">
-  <div><strong>{PILOTOS.length}</strong><span>Pilotos</span></div>
-  <div><strong>{formatoAprox(laps, "k", loc)}</strong><span>Vueltas, top 5 por piloto</span></div>
+  <div><strong>{PILOTOS.length}</strong><span>Pilotos en activo</span></div>
+  <div><strong data-approx="k" data-n={laps}>{formatoAprox(laps, "k", loc)}</strong><span>Vueltas, top 5 por piloto</span></div>
+  <div><strong id="teamAvgIr" data-approx="k" data-n={avgIr}>{formatoAprox(avgIr, "k", loc)}</strong><span>iRating medio Sports Car</span></div>
   <div><strong>{setups}</strong><span>Setups en el catálogo</span></div>
   <div id="nextEventStat" hidden><strong data-next-title></strong><time data-next-when></time><span>Próximo evento</span></div>
 </section>

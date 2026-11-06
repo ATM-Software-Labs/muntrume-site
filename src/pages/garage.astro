@@ -418,9 +418,6 @@ const figs = [
       btn.textContent = show ? "Ocultar" : "Mostrar";
       btn.setAttribute("aria-pressed", show ? "true" : "false");
     };
-    function setOn(btns, active) {
-      btns.forEach(function (b) { if (b) b.classList.toggle("is-on", b === active); });
-    }
     function switchGarageTab(tab) {
       var map = {
         setups: ["tabBtnSetups", "garageSectionSetups"],

@@ -64,21 +64,48 @@ const socials = (
     </dl>
     <p class="d-meta" data-block="member_since" hidden={!since}><span>Miembro desde</span> <time data-f="member_since_value" datetime={since || undefined}>{since}</time></p>
     <p class="d-meta" data-block="club" hidden={!club}><span>Club</span> <span data-f="club_value">{club}</span></p>
-    {fav && (
-      <p class="d-fav">
-        <svg class="d-star" viewBox="0 0 24 24" width="16" height="16" role="img" aria-label="Circuito favorito"><path fill="currentColor" d="M12 2.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.2 6.8 18.6l1-5.8L3.6 8.7l5.8-.8z"/></svg>
-        <span class="d-fav__k" aria-hidden="true">Circuito favorito</span>
-        <span class="d-fav__n">{fav}</span>
-      </p>
+    {hero ? (
+      <div class="d-track-cards">
+        {fav && (
+          <div class="d-track-card d-track-card--fav">
+            <p class="d-fav">
+              <svg class="d-star" viewBox="0 0 24 24" width="16" height="16" role="img" aria-label="Circuito favorito"><path fill="currentColor" d="M12 2.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.2 6.8 18.6l1-5.8L3.6 8.7l5.8-.8z"/></svg>
+              <span class="d-fav__k">Circuito favorito</span>
+              <span class="d-fav__n" data-f="favorite_track">{fav}</span>
+            </p>
+            <p class="r-meta">Elección personal del piloto</p>
+          </div>
+        )}
+        {topTrack && (
+          <div class="d-track-card">
+            <p class="d-lap">
+              <span class="d-lap__k">Circuito más rodado</span>
+              <span class="d-lap__n" data-f="top_track_name">{topTrack.name}</span>
+              <span class="d-lap__v"><span data-approx="k" data-n={topTrack.laps} data-f="top_track_laps">{lapsText(topTrack.laps)}</span> <span>vueltas</span></span>
+            </p>
+            <p class="r-meta">Volumen confirmado en pista</p>
+          </div>
+        )}
+      </div>
+    ) : (
+      <>
+        {fav && (
+          <p class="d-fav">
+            <svg class="d-star" viewBox="0 0 24 24" width="16" height="16" role="img" aria-label="Circuito favorito"><path fill="currentColor" d="M12 2.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.2 6.8 18.6l1-5.8L3.6 8.7l5.8-.8z"/></svg>
+            <span class="d-fav__k">Circuito favorito</span>
+            <span class="d-fav__n">{fav}</span>
+          </p>
+        )}
+        {topTrack && (
+          <p class="d-lap"><span class="d-lap__k">Circuito más rodado</span> <span class="d-lap__n">{topTrack.name}</span> <span class="d-lap__v"><span data-approx="k" data-n={topTrack.laps}>{lapsText(topTrack.laps)}</span> <span>vueltas</span></span></p>
+        )}
+        {topCar && (
+          <p class="d-lap"><span class="d-lap__k">Coche más usado</span> <span class="d-lap__n">{topCar.name}</span> <span class="d-lap__v"><span data-approx="k" data-n={topCar.laps}>{lapsText(topCar.laps)}</span> <span>vueltas</span></span></p>
+        )}
+        {(topTrack || topCar) && <p class="r-meta">telemetría del equipo, nov 2026</p>}
+      </>
     )}
-    {!hero && topTrack && (
-      <p class="d-lap"><span class="d-lap__k">Circuito más rodado</span> <span class="d-lap__n">{topTrack.name}</span> <span class="d-lap__v">{lapsText(topTrack.laps)} <span>vueltas</span></span></p>
-    )}
-    {!hero && topCar && (
-      <p class="d-lap"><span class="d-lap__k">Coche más usado</span> <span class="d-lap__n">{topCar.name}</span> <span class="d-lap__v">{lapsText(topCar.laps)} <span>vueltas</span></span></p>
-    )}
-    {!hero && (topTrack || topCar) && <p class="r-meta">telemetría del equipo, nov 2026</p>}
-    {hero && <p class="r-meta" id="licenceUpdated">Actualizado: {LICENCE_UPDATED_LABEL}</p>}
+    {hero && <p class="r-meta" id="licenceUpdated">Actualizado: <time datetime="2026-11-06">{LICENCE_UPDATED_LABEL}</time></p>}
     <div class="d-block" data-block="bio" hidden={!bio}>
       <p class="d-bio" data-f="bio">{bio}</p>
     </div>
@@ -103,28 +130,32 @@ const socials = (
   </div>
   {hero && tracks.length > 0 && (
     <div class="d-laps">
-<section id="circuitos" aria-labelledby={`${driver.slug}-tracks`}>
-          <h2 id={`${driver.slug}-tracks`} class="d-block__title">Circuitos más rodados</h2>
-        <ol class="d-bars">
+      <section id="circuitos" aria-labelledby={`${driver.slug}-tracks`}>
+        <h2 id={`${driver.slug}-tracks`} class="d-block__title">Circuitos más rodados</h2>
+        <ol class="d-bars" data-telemetry-tracks={driver.slug}>
           {tracks.map((item) => (
-            <li>
+            <li data-track={item.name}>
               <span class="d-bars__name">{item.name}</span>
-              <span class="d-bars__val">{lapsText(item.laps)} <span>vueltas</span></span>
+              <span class="d-bars__val">
+                <span data-approx="k" data-n={item.laps}>{lapsText(item.laps)}</span> <span>vueltas</span>
+                {item.timeOnTrack ? ` · ${item.timeOnTrack}` : ""}
+                {item.incidentsPerLap != null ? ` · ${item.incidentsPerLap}x/vta` : ""}
+              </span>
               <span class="d-bars__share">{share(item.laps, sumTrack)}% <span>del top 5</span></span>
-                <span class="d-bar" aria-hidden="true"><span style={`width:${share(item.laps, sumTrack)}%`}></span></span>
+              <span class="d-bar" aria-hidden="true"><span style={`width:${share(item.laps, sumTrack)}%`}></span></span>
             </li>
           ))}
         </ol>
       </section>
-<section id="coches" aria-labelledby={`${driver.slug}-cars`}>
-          <h2 id={`${driver.slug}-cars`} class="d-block__title">Coches más usados</h2>
-        <ol class="d-bars">
+      <section id="coches" aria-labelledby={`${driver.slug}-cars`}>
+        <h2 id={`${driver.slug}-cars`} class="d-block__title">Coches habituales</h2>
+        <ol class="d-bars" data-telemetry-cars={driver.slug}>
           {usedCars.map((item) => (
-            <li>
+            <li data-car={item.name}>
               <span class="d-bars__name">{item.name}</span>
-              <span class="d-bars__val">{lapsText(item.laps)} <span>vueltas</span></span>
+              <span class="d-bars__val"><span data-approx="k" data-n={item.laps}>{lapsText(item.laps)}</span> <span>vueltas</span></span>
               <span class="d-bars__share">{share(item.laps, sumCar)}% <span>del top 5</span></span>
-                <span class="d-bar" aria-hidden="true"><span style={`width:${share(item.laps, sumCar)}%`}></span></span>
+              <span class="d-bar" aria-hidden="true"><span style={`width:${share(item.laps, sumCar)}%`}></span></span>
             </li>
           ))}
         </ol>
