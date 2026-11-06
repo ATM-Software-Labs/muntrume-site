@@ -18,6 +18,16 @@ const pageDescription = principal
   ? `${driver.fullName}, ${driver.role} en Muntrume Motorsport. Sports Car ${principal.classLabel}, SR ${formatoAprox(Number(principal.sr), "sr", loc)}, iRating ${formatoAprox(principal.irating, "k", loc)}. Actualizado: ${LICENCE_UPDATED_LABEL}.`
   : `${driver.fullName}, ${driver.role} en Muntrume Motorsport.`;
 const pageUrl = `https://muntru.me/d/${driver.slug}/`;
+const ogImage = `https://muntru.me/assets/img/og/${driver.slug}.webp`;
+const index = Math.max(0, PILOTOS.findIndex((p) => p.slug === driver.slug));
+const prev = PILOTOS[(index + PILOTOS.length - 1) % PILOTOS.length];
+const next = PILOTOS[(index + 1) % PILOTOS.length];
+const mates = PILOTOS.map((p) => {
+  const row = licenciaPrincipal(p.slug);
+  return { driver: p, sr: row ? Number(row.sr) : 0, ir: row?.irating ?? 0 };
+}).filter((row) => row.sr > 0 || row.ir > 0);
+const maxSr = Math.max(...mates.map((row) => row.sr), 1);
+const maxIr = Math.max(...mates.map((row) => row.ir), 1);
 const personSchema = {
   "@context": "https://schema.org",
   "@graph": [
@@ -36,17 +46,67 @@ const personSchema = {
       "jobTitle": driver.role,
       "url": pageUrl,
       "memberOf": { "@id": "https://muntru.me/#org" },
-      "nationality": driver.country || undefined
+      "nationality": driver.country || undefined,
+      "image": ogImage
+    },
+    {
+      "@type": "SportsTeam",
+      "@id": "https://muntru.me/#org",
+      "name": "Muntrume Motorsport",
+      "sport": "Sim Racing (iRacing)",
+      "url": "https://muntru.me/",
+      "athlete": { "@id": `${pageUrl}#person` }
     }
   ]
 };
 ---
 
-<Layout title={pageTitle} description={pageDescription} canonical={pageUrl} schemaJson={personSchema}>
+<Layout title={pageTitle} description={pageDescription} canonical={pageUrl} ogImage={ogImage} schemaJson={personSchema}>
   <section class="r-section" style="border-top:0;padding-top:clamp(104px,13vw,150px);padding-bottom:40px" aria-labelledby="dTitle" data-driver={driver.slug} id="driverRoot">
     <div class="r-wrap">
-      <nav class="r-meta" aria-label="Migas" style="margin-bottom:24px"><a href="/" style="color:inherit">Inicio</a> / <a href="/pilotos" style="color:inherit">Pilotos</a> / <span style="color:var(--r-text)">{driver.fullName}</span></nav>
+      <nav class="r-meta" aria-label="Migas" style="margin-bottom:16px"><a href="/" style="color:inherit">Inicio</a> / <a href="/pilotos" style="color:inherit">Pilotos</a> / <span style="color:var(--r-text)">{driver.fullName}</span></nav>
+      <nav class="d-tabs" aria-label="Secciones">
+        <a href="#resumen">Resumen</a>
+        <a href="#circuitos">Circuitos</a>
+        <a href="#coches">Coches</a>
+        <a href="#eventos" id="eventosTab" hidden>Próximos eventos</a>
+      </nav>
       <DriverCard driver={driver} heading="h1" headingId="dTitle" hero />
+      <div class="d-tools">
+        <nav class="d-pager" aria-label="Otros pilotos">
+          <a href={`/d/${prev.slug}/`}>← {prev.fullName}</a>
+          <a href={`/d/${next.slug}/`}>{next.fullName} →</a>
+        </nav>
+        <div class="d-share">
+          <button type="button" id="copyLink">Copiar enlace</button>
+          <button type="button" id="nativeShare" hidden>Compartir</button>
+          <p id="copyStatus" role="status"></p>
+        </div>
+      </div>
+      {mates.length > 1 && (
+        <section class="d-compare d-reveal" aria-labelledby="compareTitle">
+          <h2 id="compareTitle" class="d-block__title">Comparar con el equipo</h2>
+          <p class="r-meta">Sports Car, cifras aproximadas.</p>
+          <ul class="d-compare__list">
+            {mates.map((row) => (
+              <li class:list={[row.driver.slug === driver.slug && "is-self"]}>
+                <span>{row.driver.fullName}</span>
+                <span class="d-mini" aria-hidden="true"><span style={`width:${Math.round((100 * row.sr) / maxSr)}%`}></span></span>
+                <span>SR {formatoAprox(row.sr, "sr", loc)}</span>
+                <span class="d-mini" aria-hidden="true"><span style={`width:${Math.round((100 * row.ir) / maxIr)}%`}></span></span>
+                <span>iRating {row.ir ? formatoAprox(row.ir, "k", loc) : ""}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </div>
+  </section>
+
+  <section class="r-section r-section--alt" id="eventos" hidden aria-labelledby="eventosTitle">
+    <div class="r-wrap" style="display:grid;gap:12px">
+      <h2 id="eventosTitle" class="r-h3">Próximos eventos</h2>
+      <ul class="r-list" id="driverEvents"></ul>
     </div>
   </section>
 
@@ -72,5 +132,21 @@ const personSchema = {
     </div>
   </section>
 
-  <script is:inline src="/assets/js/driver-page.js?v=t280" defer></script>
+  <script is:inline src="/assets/js/driver-page.js?v=t283" defer></script>
+  <script is:inline>
+    (function () {
+      var url = location.href;
+      var copy = document.getElementById("copyLink");
+      var native = document.getElementById("nativeShare");
+      var status = document.getElementById("copyStatus");
+      if (native && navigator.share) native.hidden = false;
+      if (copy) copy.addEventListener("click", function () {
+        var done = function () { if (status) status.textContent = "Enlace copiado"; };
+        if (navigator.clipboard) navigator.clipboard.writeText(url).then(done);
+      });
+      if (native) native.addEventListener("click", function () {
+        navigator.share({ title: document.title, url: url }).catch(function () {});
+      });
+    })();
+  </script>
 </Layout>

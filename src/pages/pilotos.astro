@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import DriverCard from '../components/DriverCard.astro';
+import TeamBand from '../components/TeamBand.astro';
 import { PILOTOS, LICENCE_UPDATED_LABEL } from '../lib/pilotos';
 
 const pageTitle = "Pilotos | Muntrume Motorsport — iRacing";
@@ -15,9 +16,10 @@ const pageDescription = `Plantilla de Muntrume Motorsport: ${PILOTOS.map(p => p.
           <p class="r-kicker">Plantilla 2026</p>
           <h1 id="plTitle" class="r-h2">Pilotos</h1>
           <p class="r-lead">{PILOTOS.length} pilotos oficiales. Licencia Sports Car, cifras aproximadas.</p>
-          <p class="r-meta" id="licenceUpdated">Actualizado: {LICENCE_UPDATED_LABEL}</p>
+<p class="r-meta" id="licenceUpdated">Actualizado: {LICENCE_UPDATED_LABEL}</p>
         </div>
       </div>
+      <TeamBand />
       <div class="d-grid">
         {PILOTOS.map(p => (
           <DriverCard driver={p} heading="h2" />
@@ -25,5 +27,5 @@ const pageDescription = `Plantilla de Muntrume Motorsport: ${PILOTOS.map(p => p.
       </div>
     </div>
   </section>
-  <script is:inline src="/assets/js/home-r.js?v=t280" defer></script>
+  <script is:inline src="/assets/js/home-r.js?v=t283" defer></script>
 </Layout>

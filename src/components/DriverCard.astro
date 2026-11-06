@@ -25,9 +25,11 @@ const tracks = driver.topTracks || [];
 const usedCars = driver.topCars || [];
 const topTrack = tracks[0];
 const topCar = usedCars[0];
-const maxTrack = tracks.reduce((m, item) => Math.max(m, item.laps), 1);
-const maxCar = usedCars.reduce((m, item) => Math.max(m, item.laps), 1);
+const sumTrack = tracks.reduce((m, item) => m + item.laps, 0) || 1;
+const sumCar = usedCars.reduce((m, item) => m + item.laps, 0) || 1;
 const lapsText = (n: number) => formatoAprox(n, "k", loc);
+const share = (n: number, sum: number) => Math.max(4, Math.round((100 * n) / sum));
+const fav = (driver.favoriteTrack || "").trim();
 
 function safeUrl(url: string) {
   const value = url.trim();
@@ -47,7 +49,7 @@ const socials = (
   ] as const
 ).map(([key, label]) => ({ key, label, href: safeUrl(driver.socials[key]) })).filter((s) => s.href);
 ---
-<article class:list={["d-card", hero && "d-hero"]} data-driver={driver.slug} data-lic="sports_car">
+<article class:list={["d-card", "d-reveal", hero && "d-hero"]} data-driver={driver.slug} data-lic="sports_car" id={hero ? "resumen" : undefined}>
   <div class="d-stage" data-team={driver.slug}>
     <DriverHelmet slug={driver.slug} name={driver.fullName} eager={hero} />
   </div>
@@ -62,6 +64,13 @@ const socials = (
     </dl>
     <p class="d-meta" data-block="member_since" hidden={!since}><span>Miembro desde</span> <time data-f="member_since_value" datetime={since || undefined}>{since}</time></p>
     <p class="d-meta" data-block="club" hidden={!club}><span>Club</span> <span data-f="club_value">{club}</span></p>
+    {fav && (
+      <p class="d-fav">
+        <svg class="d-star" viewBox="0 0 24 24" width="16" height="16" role="img" aria-label="Circuito favorito"><path fill="currentColor" d="M12 2.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.2 6.8 18.6l1-5.8L3.6 8.7l5.8-.8z"/></svg>
+        <span class="d-fav__k" aria-hidden="true">Circuito favorito</span>
+        <span class="d-fav__n">{fav}</span>
+      </p>
+    )}
     {!hero && topTrack && (
       <p class="d-lap"><span class="d-lap__k">Circuito más rodado</span> <span class="d-lap__n">{topTrack.name}</span> <span class="d-lap__v">{lapsText(topTrack.laps)} <span>vueltas</span></span></p>
     )}
@@ -94,26 +103,28 @@ const socials = (
   </div>
   {hero && tracks.length > 0 && (
     <div class="d-laps">
-      <section aria-labelledby={`${driver.slug}-tracks`}>
-        <h2 id={`${driver.slug}-tracks`} class="d-block__title">Circuitos más rodados</h2>
+<section id="circuitos" aria-labelledby={`${driver.slug}-tracks`}>
+          <h2 id={`${driver.slug}-tracks`} class="d-block__title">Circuitos más rodados</h2>
         <ol class="d-bars">
           {tracks.map((item) => (
             <li>
               <span class="d-bars__name">{item.name}</span>
               <span class="d-bars__val">{lapsText(item.laps)} <span>vueltas</span></span>
-              <span class="d-bar" aria-hidden="true"><span style={`width:${Math.round((100 * item.laps) / maxTrack)}%`}></span></span>
+              <span class="d-bars__share">{share(item.laps, sumTrack)}% <span>del top 5</span></span>
+                <span class="d-bar" aria-hidden="true"><span style={`width:${share(item.laps, sumTrack)}%`}></span></span>
             </li>
           ))}
         </ol>
       </section>
-      <section aria-labelledby={`${driver.slug}-cars`}>
-        <h2 id={`${driver.slug}-cars`} class="d-block__title">Coches más usados</h2>
+<section id="coches" aria-labelledby={`${driver.slug}-cars`}>
+          <h2 id={`${driver.slug}-cars`} class="d-block__title">Coches más usados</h2>
         <ol class="d-bars">
           {usedCars.map((item) => (
             <li>
               <span class="d-bars__name">{item.name}</span>
               <span class="d-bars__val">{lapsText(item.laps)} <span>vueltas</span></span>
-              <span class="d-bar" aria-hidden="true"><span style={`width:${Math.round((100 * item.laps) / maxCar)}%`}></span></span>
+              <span class="d-bars__share">{share(item.laps, sumCar)}% <span>del top 5</span></span>
+                <span class="d-bar" aria-hidden="true"><span style={`width:${share(item.laps, sumCar)}%`}></span></span>
             </li>
           ))}
         </ol>

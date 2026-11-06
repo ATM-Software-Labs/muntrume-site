@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import DriverCard from '../components/DriverCard.astro';
+import TeamBand from '../components/TeamBand.astro';
 import { PILOTOS, LICENCE_UPDATED_LABEL } from '../lib/pilotos';
 import catalog from '../../public/assets/data/catalog_index.json';
 
@@ -50,6 +51,7 @@ const figs = [
         <a href="/pilotos" class="r-link">Ver plantilla</a>
       </div>
       <p class="r-meta" id="licenceUpdated">Actualizado: {LICENCE_UPDATED_LABEL}</p>
+      <TeamBand />
       <div class="d-grid">
         {PILOTOS.map(p => (
           <DriverCard driver={p} heading="h3" />
@@ -105,5 +107,5 @@ const figs = [
     </div>
   </section>
 
-  <script is:inline src="/assets/js/home-r.js?v=t280" defer></script>
+  <script is:inline src="/assets/js/home-r.js?v=t283" defer></script>
 </Layout>

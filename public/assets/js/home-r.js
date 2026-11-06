@@ -108,6 +108,20 @@
       var dt = new Date(e.starts_at);
       return '<li><div class="r-row"><span class="r-meta">' + esc(dt.toLocaleDateString(lang, { day: '2-digit', month: 'short', year: 'numeric' })) + '<br>' + esc(dt.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' })) + '</span><span><span class="r-h3">' + esc(e.title) + '</span><br><span class="r-meta">' + esc(e.track || 'iRacing') + '</span></span><span class="r-meta">' + esc(e.car_class || '') + '</span></div></li>';
     }).join('');
-    ul.hidden = false; document.getElementById('calEmpty').hidden = true;
+    ul.hidden = false;
+    var empty = document.getElementById('calEmpty');
+    if (empty) empty.hidden = true;
+    var stat = document.getElementById('nextEventStat');
+    if (stat && ev[0] && ev[0].title) {
+      var title = stat.querySelector('[data-next-title]');
+      var when = stat.querySelector('[data-next-when]');
+      if (title) title.textContent = ev[0].title;
+      if (when && ev[0].starts_at) {
+        var dt = new Date(ev[0].starts_at);
+        when.dateTime = ev[0].starts_at;
+        when.textContent = dt.toLocaleDateString(lang, { day: '2-digit', month: 'short' });
+      }
+      stat.hidden = false;
+    }
   }).catch(function () {});
 })();

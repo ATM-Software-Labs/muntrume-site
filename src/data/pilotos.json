@@ -20,6 +20,7 @@
       "socials": { "twitch": "", "youtube": "", "instagram": "", "x": "" },
       "memberSince": "",
       "club": "",
+      "favoriteTrack": "Le Mans (24 Heures du Mans)",
       "topTracks": [
         { "name": "Daytona (Road Course)", "laps": 2800 },
         { "name": "Watkins Glen (Boot)", "laps": 2400 },
@@ -53,6 +54,7 @@
       "socials": { "twitch": "", "youtube": "", "instagram": "", "x": "" },
       "memberSince": "",
       "club": "",
+      "favoriteTrack": "Imola",
       "topTracks": [
         { "name": "Daytona (Road Course)", "laps": 1500 },
         { "name": "Watkins Glen (Boot)", "laps": 1300 },
@@ -86,6 +88,7 @@
       "socials": { "twitch": "", "youtube": "", "instagram": "", "x": "" },
       "memberSince": "",
       "club": "",
+      "favoriteTrack": "Nürburgring Combined",
       "topTracks": [
         { "name": "Daytona (Road Course)", "laps": 2000 },
         { "name": "Spa-Francorchamps (GP Pits)", "laps": 2000 },

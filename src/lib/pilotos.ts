@@ -36,6 +36,7 @@ export interface Piloto {
   socials: Socials;
   memberSince: string;
   club: string;
+  favoriteTrack: string;
   topTracks: LapStat[];
   topCars: LapStat[];
   initials?: string;
@@ -65,6 +66,7 @@ export const PILOTOS: Piloto[] = data.drivers.map((d) => ({
   socials: { ...EMPTY_SOCIALS, ...(d.socials || {}) },
   memberSince: d.memberSince || "",
   club: d.club || "",
+  favoriteTrack: d.favoriteTrack || "",
   topTracks: d.topTracks || [],
   topCars: d.topCars || [],
 }));

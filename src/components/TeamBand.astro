@@ -1,0 +1,15 @@
+---
+import catalog from "../../public/assets/data/catalog_index.json";
+import { PILOTOS } from "../lib/pilotos";
+import { formatoAprox, localeDeIdioma } from "../lib/formato-licencia.js";
+
+const laps = PILOTOS.reduce((sum, driver) => sum + driver.topTracks.reduce((inner, item) => inner + item.laps, 0), 0);
+const loc = localeDeIdioma("es");
+const setups = catalog.total_setups.toLocaleString("es-ES");
+---
+<section class="d-band d-reveal" aria-label="Cifras del equipo">
+  <div><strong>{PILOTOS.length}</strong><span>Pilotos</span></div>
+  <div><strong>{formatoAprox(laps, "k", loc)}</strong><span>Vueltas, top 5 por piloto</span></div>
+  <div><strong>{setups}</strong><span>Setups en el catálogo</span></div>
+  <div id="nextEventStat" hidden><strong data-next-title></strong><time data-next-when></time><span>Próximo evento</span></div>
+</section>

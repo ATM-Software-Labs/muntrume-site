@@ -104,4 +104,19 @@
     var wrap = document.getElementById('racesWrap');
     if (wrap) wrap.hidden = false;
   }).catch(function () {});
+  fetch('https://muntrume.atrumin16.workers.dev/api/events').then(function (r) { return r.ok ? r.json() : null; }).then(function (payload) {
+    var now = Date.now();
+    var ev = (payload && Array.isArray(payload.events) ? payload.events : []).filter(function (e) { return e && e.starts_at && new Date(e.starts_at).getTime() >= now - 36e5 * 6; })
+      .sort(function (a, b) { return new Date(a.starts_at) - new Date(b.starts_at); }).slice(0, 5);
+    var list = document.getElementById('driverEvents');
+    var section = document.getElementById('eventos');
+    var tab = document.getElementById('eventosTab');
+    if (!ev.length || !list || !section) return;
+    list.innerHTML = ev.map(function (e) {
+      var dt = new Date(e.starts_at);
+      return '<li><span class="r-meta">' + esc(dt.toLocaleDateString(lang, { day: '2-digit', month: 'short', year: 'numeric' })) + '</span> ' + esc(e.title || '') + (e.track ? ' · ' + esc(e.track) : '') + '</li>';
+    }).join('');
+    section.hidden = false;
+    if (tab) tab.hidden = false;
+  }).catch(function () {});
 })();
