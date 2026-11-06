@@ -64,8 +64,8 @@ const figs = [
               <div class="p-2.5 rounded-lg bg-[#0E1513] border border-[#1E2A26] flex flex-wrap items-center justify-between gap-2 font-mono text-[11px]">
                 <code class="text-[#00ff88] select-all">brave://flags/#file-system-access-api</code>
                 <div class="relative inline-block">
-                  <button type="button" id="copyFlagsBtn" onclick="copyBraveFlagUrlWithTooltip(this)" class="px-3 py-1.5 rounded-md bg-[#00ff88]/15 hover:bg-[#00ff88]/25 text-[#00ff88] font-bold border border-[#00ff88]/40 transition flex items-center gap-1.5 cursor-pointer">
-                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  <button type="button" id="copyFlagsBtn" onclick="copyBraveFlagUrlWithTooltip(this)" class="r-btn r-btn--sm" style="border-color:#00E699;color:#00E699;min-height:34px;padding:0 12px">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;flex-shrink:0"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                     <span>Copiar ruta de flags</span>
                   </button>
                   <span id="flagsTooltip" class="hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1 text-[10px] font-mono font-bold bg-[#00ff88] text-neutral-950 rounded shadow-md whitespace-nowrap animate-bounce">
@@ -434,8 +434,8 @@ const figs = [
           <span>MÉTODO: DESCARGA DIRECTA .STO</span>
           <span class="text-[#00ff88] font-bold">100% COMPATIBLE</span>
         </div>
-        <button type="button" id="directDownloadFallbackBtn" onclick="triggerFallbackDownload(this)" class="w-full py-3.5 px-4 rounded-xl bg-[#00ff88] hover:bg-[#00c985] text-neutral-950 font-black text-xs uppercase tracking-wider transition shadow-lg shadow-[#00ff88]/20 flex items-center justify-center gap-2 cursor-pointer">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <button type="button" id="directDownloadFallbackBtn" onclick="triggerFallbackDownload(this)" class="r-btn r-btn--primary" style="width:100%;justify-content:center">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:16px;height:16px;flex-shrink:0"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           <span id="directDownloadFallbackText">Descargar archivo .sto directo</span>
         </button>
       </div>
@@ -446,8 +446,8 @@ const figs = [
     </div>
   </div>
 
-  <script is:inline src="/assets/js/setups.js?v=t276"></script>
-  <script is:inline src="/assets/js/setup-builder.js?v=t276" defer></script>
+  <script is:inline src="/assets/js/setups.js?v=t286"></script>
+  <script is:inline src="/assets/js/setup-builder.js?v=t286" defer></script>
   <script is:inline>
     window.togglePassword = function (id, btn) {
       var input = document.getElementById(id);

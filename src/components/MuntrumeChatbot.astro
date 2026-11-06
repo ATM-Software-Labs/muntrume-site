@@ -14,7 +14,7 @@
   </button>
 </div>
 <script is:inline>
-(function(){var b=document.getElementById('chatbotLaunchBtn');if(!b)return;var p;function load(){return p||(p=import('/assets/js/chat-widget.js?v=t262'))}
+(function(){var b=document.getElementById('chatbotLaunchBtn');if(!b)return;var p;function load(){return p||(p=import('/assets/js/chat-widget.js?v=t286'))}
 b.addEventListener('pointerenter',load,{once:true});b.addEventListener('focus',load,{once:true});
 b.addEventListener('click',function(){b.setAttribute('aria-busy','true');load().then(function(m){b.removeAttribute('aria-busy');m.open(b)}).catch(function(){b.removeAttribute('aria-busy');p=null;location.href='https://discord.gg/ehX6B8JUtE'})});})();
 </script>

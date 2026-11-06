@@ -96,16 +96,16 @@ const pageDescription = "Últimas noticias de Muntrume Motorsport en iRacing, cr
               </div>
             </div>
 
-            <!-- Filter Pills con Brillo Sutil en Hover -->
+            <!-- Filter Pills -->
             <div class="flex flex-wrap gap-2 pt-2 border-t border-white/10" id="filterButtons">
-              <button class="filter-btn active px-3.5 py-2 rounded-xl text-xs font-bold transition bg-[#00ff88]/20 text-[#00ff88] border border-[#00ff88]/40 shadow-[0_0_12px_rgba(0,255,136,0.2)] cursor-pointer" data-filter="all">Todos</button>
-              <button class="filter-btn px-3.5 py-2 rounded-xl text-xs font-semibold transition text-neutral-300 hover:text-[#00ff88] bg-white/5 border border-white/10 hover:border-[#00ff88]/50 hover:shadow-[0_0_12px_rgba(0,255,136,0.3)] cursor-pointer" data-filter="endurance">Resistencia</button>
-              <button class="filter-btn px-3.5 py-2 rounded-xl text-xs font-semibold transition text-neutral-300 hover:text-[#00ff88] bg-white/5 border border-white/10 hover:border-[#00ff88]/50 hover:shadow-[0_0_12px_rgba(0,255,136,0.3)] cursor-pointer" data-filter="iracing">iRacing</button>
-              <button class="filter-btn px-3.5 py-2 rounded-xl text-xs font-semibold transition text-neutral-300 hover:text-[#00ff88] bg-white/5 border border-white/10 hover:border-[#00ff88]/50 hover:shadow-[0_0_12px_rgba(0,255,136,0.3)] cursor-pointer" data-filter="simracing">Sim Racing</button>
-              <button class="filter-btn px-3.5 py-2 rounded-xl text-xs font-semibold transition text-neutral-300 hover:text-[#00ff88] bg-white/5 border border-white/10 hover:border-[#00ff88]/50 hover:shadow-[0_0_12px_rgba(0,255,136,0.3)] cursor-pointer" data-filter="esports">Esports</button>
-              <button class="filter-btn px-3.5 py-2 rounded-xl text-xs font-semibold transition text-neutral-300 hover:text-[#00ff88] bg-white/5 border border-white/10 hover:border-[#00ff88]/50 hover:shadow-[0_0_12px_rgba(0,255,136,0.3)] cursor-pointer" data-filter="sport">Motor</button>
-              <button class="filter-btn px-3.5 py-2 rounded-xl text-xs font-semibold transition text-neutral-300 hover:text-[#00ff88] bg-white/5 border border-white/10 hover:border-[#00ff88]/50 hover:shadow-[0_0_12px_rgba(0,255,136,0.3)] cursor-pointer" data-filter="tech">Hardware</button>
-              <button class="filter-btn px-3.5 py-2 rounded-xl text-xs font-semibold transition text-neutral-300 hover:text-[#00ff88] bg-white/5 border border-white/10 hover:border-[#00ff88]/50 hover:shadow-[0_0_12px_rgba(0,255,136,0.3)] cursor-pointer" data-filter="team">Equipo</button>
+              <button class="filter-btn active" data-filter="all">Todos</button>
+              <button class="filter-btn" data-filter="endurance">Resistencia</button>
+              <button class="filter-btn" data-filter="iracing">iRacing</button>
+              <button class="filter-btn" data-filter="simracing">Sim Racing</button>
+              <button class="filter-btn" data-filter="esports">Esports</button>
+              <button class="filter-btn" data-filter="sport">Motor</button>
+              <button class="filter-btn" data-filter="tech">Hardware</button>
+              <button class="filter-btn" data-filter="team">Equipo</button>
             </div>
 
           </div>
@@ -570,9 +570,10 @@ const pageDescription = "Últimas noticias de Muntrume Motorsport en iRacing, cr
       line-height: 1;
     }
     .filter-btn:hover {
-      border-color: rgba(255, 255, 255, 0.3);
+      border-color: rgba(16, 185, 129, 0.5);
       color: #ffffff;
       background: #1c232d;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
     }
     .filter-btn.active {
       background: #10b981 !important;
@@ -655,5 +656,5 @@ const pageDescription = "Últimas noticias de Muntrume Motorsport en iRacing, cr
     }
   </style>
 
-  <script is:inline src="/assets/js/news.js?v=26s4.8"></script>
+  <script is:inline src="/assets/js/news.js?v=26s5.2"></script>
 </Layout>
