@@ -1,0 +1,11 @@
+---
+interface Props {
+  name: string;
+  src?: string | null;
+  eager?: boolean;
+}
+const FALLBACK = "/assets/img/helmet-alberto.webp";
+const { name, src, eager = false } = Astro.props;
+const href = src && src.startsWith("/") ? src : FALLBACK;
+---
+<img class="driver-helmet" src={href} alt={`Casco de ${name}`} width="480" height="560" loading={eager ? "eager" : "lazy"} decoding="async" />

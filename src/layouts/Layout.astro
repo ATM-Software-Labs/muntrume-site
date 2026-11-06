@@ -3,6 +3,7 @@ import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
 import MuntrumeChatbot from '../components/MuntrumeChatbot.astro';
 import { PILOTOS } from '../lib/pilotos';
+import { formatoAprox, localeDeIdioma } from '../lib/formato-licencia.js';
 
 interface Props {
   title?: string;
@@ -195,7 +196,7 @@ const finalSchema = schemaJson || defaultSchema;
 
   <link rel="stylesheet" href="/assets/css/tailwind.min.css?v=26s5.0" />
   <link rel="stylesheet" href="/assets/css/mobile.css?v=t263" />
-  <link rel="stylesheet" href="/assets/css/racing.css?v=t273" />
+  <link rel="stylesheet" href="/assets/css/racing.css?v=t275" />
 
   <!-- Core Dark Racing System CSS -->
   <style is:global>
@@ -289,7 +290,8 @@ const finalSchema = schemaJson || defaultSchema;
 
   <!-- Core Scripts -->
   <script is:inline src="/assets/js/vpfix.js?v=m9"></script>
-  <script is:inline src="/assets/js/i18n.js?v=t273"></script>
+  <script is:inline set:html={`window.muntruFormato=${formatoAprox.toString()};window.muntruLocale=${localeDeIdioma.toString()};`}></script>
+  <script is:inline src="/assets/js/i18n.js?v=t275"></script>
 </head>
 <body class="bg-[#080C0A] text-neutral-100 antialiased selection:bg-[#00E699] selection:text-neutral-950 font-sans min-h-screen flex flex-col justify-between relative">
   

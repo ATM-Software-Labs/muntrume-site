@@ -4,6 +4,24 @@
   var API = 'https://muntrume.atrumin16.workers.dev';
   var esc = function (v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var lang = (document.documentElement.lang || 'es');
+  function loc() { return window.muntruLocale ? window.muntruLocale(document.documentElement.lang || lang) : "es-ES"; }
+  function approx(el, kind, value) {
+    if (!el || !window.muntruFormato || value == null || value === "") return;
+    el.setAttribute("data-n", String(value));
+    el.setAttribute("data-approx", kind);
+    el.textContent = window.muntruFormato(value, kind, loc());
+    el.classList.remove("r-nodata");
+  }
+  function reformatApprox() {
+    if (!window.muntruFormato) return;
+    document.querySelectorAll("[data-approx][data-n]").forEach(function (el) {
+      var raw = el.getAttribute("data-n");
+      if (raw === "") return;
+      el.textContent = window.muntruFormato(raw, el.getAttribute("data-approx"), loc());
+    });
+  }
+  document.addEventListener("muntru:i18n", reformatApprox);
+  reformatApprox();
   function parseLic(s) {
     var m = String(s || "").match(/^(Class\s+[A-D]|Rookie)\s+([0-9]+(?:\.[0-9]+)?)/i);
     if (!m) return null;
@@ -18,21 +36,12 @@
       var c = card.querySelector('[data-lic-f="class"]');
       if (c) c.textContent = lic.class_label || lic.classLabel;
     }
-    if (lic.sr != null && lic.sr !== "") {
-      var sr = card.querySelector('[data-lic-f="sr"]');
-      if (sr) sr.textContent = Number(lic.sr).toFixed(2);
-    }
+    if (lic.sr != null && lic.sr !== "") approx(card.querySelector('[data-lic-f="sr"]'), "sr", lic.sr);
     if (lic.irating === null) {
       var empty = card.querySelector('[data-lic-f="irating"]');
       if (empty) { empty.textContent = "Sin iRating"; empty.classList.add("r-nodata"); }
-    } else if (lic.irating > 0) {
-      var ir = card.querySelector('[data-lic-f="irating"]');
-      if (ir) { ir.textContent = Number(lic.irating).toLocaleString(lang); ir.classList.remove("r-nodata"); }
-    }
-    if (lic.tt_rating > 0 || lic.ttRating > 0) {
-      var tt = card.querySelector('[data-lic-f="tt"]');
-      if (tt) tt.textContent = Number(lic.tt_rating || lic.ttRating).toLocaleString(lang);
-    }
+    } else if (lic.irating > 0) approx(card.querySelector('[data-lic-f="irating"]'), "k", lic.irating);
+    if (lic.tt_rating > 0 || lic.ttRating > 0) approx(card.querySelector('[data-lic-f="tt"]'), "k", lic.tt_rating || lic.ttRating);
   }
   fetch(API + '/api/drivers').then(function (r) { return r.ok ? r.json() : []; }).then(function (list) {
     var latest = null, source = null;
@@ -45,8 +54,7 @@
         licenses.push({ category: "sports_car", class_label: parsed && parsed.classLabel, sr: parsed && parsed.sr, irating: d.irating > 0 ? d.irating : undefined });
       }
       licenses.forEach(function (lic) { paintLic(card, lic); });
-      if (d.irating > 0) { var a = card.querySelector('[data-f="irating"]'); if (a) { a.textContent = Number(d.irating).toLocaleString(lang); a.classList.remove('r-nodata'); } }
-      if (d.license) { var b = card.querySelector('[data-f="license"]'); if (b) { b.textContent = d.license; b.classList.remove('r-nodata'); } }
+      if (d.irating > 0) approx(card.querySelector('[data-f="irating"]'), "k", d.irating);
       var fc = card.querySelector('[data-f="fav_car"]'); if (fc && d.fav_car && d.fav_car.name) { fc.textContent = d.fav_car.name; fc.classList.remove('r-nodata'); }
       var tc = card.querySelector('[data-f="top_category"]'); if (tc && d.top_category && d.top_category.name) { tc.textContent = d.top_category.name; tc.classList.remove('r-nodata'); }
       if (d.updated_at && (!latest || d.updated_at > latest)) { latest = d.updated_at; source = d.source; }
