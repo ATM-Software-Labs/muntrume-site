@@ -28,9 +28,37 @@
     if (!m) return null;
     return { classLabel: /^rookie/i.test(m[1]) ? "Rookie" : m[1].replace(/\s+/g, " ").replace(/^class/i, "Class"), sr: Number(m[2]).toFixed(2) };
   }
+  function showList(block, items) {
+    var box = root.querySelector('[data-block="' + block + '"]');
+    var ul = box && box.querySelector("ul");
+    var names = (items || []).map(function (item) { return String(item || "").trim(); }).filter(Boolean);
+    if (!ul || !names.length) return;
+    ul.replaceChildren.apply(ul, names.map(function (name) {
+      var li = document.createElement("li");
+      li.textContent = name;
+      return li;
+    }));
+    box.hidden = false;
+  }
+  function showText(block, value) {
+    var box = root.querySelector('[data-block="' + block + '"]');
+    var slot = box && box.querySelector("[data-f]");
+    var text = String(value || "").trim();
+    if (!box || !slot || !text) return;
+    slot.textContent = text;
+    box.hidden = false;
+  }
+  function showMeta(block, value) {
+    var box = root.querySelector('[data-block="' + block + '"]');
+    var slot = root.querySelector('[data-f="' + block + '_value"]');
+    var text = String(value || "").trim();
+    if (!box || !slot || !text) return;
+    slot.textContent = text;
+    box.hidden = false;
+  }
   function paintLic(lic) {
     if (!lic || !lic.category) return;
-    var card = root.querySelector('[data-lic="' + lic.category + '"]');
+    var card = root.getAttribute("data-lic") === lic.category ? root : root.querySelector('[data-lic="' + lic.category + '"]');
     if (!card) return;
     if (lic.class_label || lic.classLabel) {
       var cls = card.querySelector('[data-lic-f="class"]');
@@ -38,8 +66,7 @@
     }
     if (lic.sr != null && lic.sr !== "") approx(card.querySelector('[data-lic-f="sr"]'), "sr", lic.sr);
     var ir = card.querySelector('[data-lic-f="irating"]');
-    if (ir && lic.irating === null) { ir.textContent = "Sin iRating"; ir.classList.add("r-nodata"); }
-    else if (ir && lic.irating > 0) approx(ir, "k", lic.irating);
+    if (ir && lic.irating > 0) approx(ir, "k", lic.irating);
     if (lic.tt_rating > 0 || lic.ttRating > 0) approx(card.querySelector('[data-lic-f="tt"]'), "k", lic.tt_rating || lic.ttRating);
   }
   fetch('https://muntrume.atrumin16.workers.dev/api/drivers?slug=' + encodeURIComponent(slug)).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
@@ -51,17 +78,30 @@
     }
     licenses.forEach(paintLic);
     if (d.irating > 0) approx(root.querySelector('[data-f="irating"]'), "k", d.irating);
-    if (d.fav_car && d.fav_car.name) { set('fav_car', d.fav_car.name); set('fav_car_n', d.fav_car.count + ' de ' + d.fav_car.sample + ' carreras'); }
-    if (d.top_category && d.top_category.name) { set('top_category', d.top_category.name); set('top_category_n', d.top_category.count + ' de ' + d.top_category.sample + ' carreras'); }
-    if (d.updated_at) document.getElementById('dSource').textContent = 'Fuente: ' + (d.source || 'iRacing') + ' · actualizado ' + new Date(d.updated_at).toLocaleString(lang, { dateStyle: 'medium', timeStyle: 'short' });
+    if (d.fav_car && d.fav_car.name) showList("cars", [d.fav_car.name]);
+    if (d.top_category && d.top_category.name) showList("series", [d.top_category.name]);
+    if (d.bio) showText("bio", d.bio);
+    showMeta("member_since", d.member_since || d.memberSince);
+    showMeta("club", d.club || d.club_name);
+    if (d.updated_at) {
+      var stamp = document.querySelector("#licenceUpdated time");
+      var when = new Date(d.updated_at);
+      if (stamp && !isNaN(when.getTime())) {
+        stamp.dateTime = d.updated_at;
+        stamp.textContent = when.toLocaleDateString(loc(), { day: "numeric", month: "short", year: "numeric" });
+      }
+    }
     var races = Array.isArray(d.recent_races) ? d.recent_races.slice(0, 5) : [];
     if (!races.length) return;
+    var racesSection = document.getElementById("racesSection");
+    if (racesSection) racesSection.hidden = false;
     var dash = '<span class="r-nodata">—</span>';
     document.getElementById('racesBody').innerHTML = races.map(function (r) {
       var ch = r.irating_change;
       var chs = (ch == null) ? dash : '<span class="' + (ch >= 0 ? 'r-up' : 'r-down') + '">' + (ch > 0 ? '+' : '') + ch + '</span>';
       return '<tr><td class="r-meta">' + (r.date ? esc(new Date(r.date).toLocaleDateString(lang, { day: '2-digit', month: 'short', year: 'numeric' })) : dash) + '</td><td>' + (esc(r.series) || dash) + '</td><td>' + (esc(r.track) || dash) + '</td><td>' + (esc(r.car) || dash) + '</td><td class="num">' + (r.start != null ? 'P' + r.start : '—') + ' → ' + (r.finish != null ? '<strong>P' + r.finish + '</strong>' : '—') + '</td><td class="num">' + (r.incidents != null ? r.incidents + 'x' : '—') + '</td><td class="num">' + chs + '</td></tr>';
     }).join('');
-    document.getElementById('racesWrap').hidden = false; document.getElementById('racesEmpty').hidden = true;
+    var wrap = document.getElementById('racesWrap');
+    if (wrap) wrap.hidden = false;
   }).catch(function () {});
 })();

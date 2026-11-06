@@ -1,0 +1,124 @@
+---
+import DriverHelmet from "./DriverHelmet.astro";
+import { formatoAprox, localeDeIdioma } from "../lib/formato-licencia.js";
+import { licenciaPrincipal } from "../lib/licencias";
+import { LICENCE_UPDATED_LABEL, type Piloto } from "../lib/pilotos";
+
+interface Props {
+  driver: Piloto;
+  heading?: "h1" | "h2" | "h3";
+  headingId?: string;
+  hero?: boolean;
+}
+const { driver, heading = "h2", headingId, hero = false } = Astro.props;
+const Tag = heading;
+const BlockTag = hero ? "h2" : "h3";
+const lic = licenciaPrincipal(driver.slug);
+const loc = localeDeIdioma("es");
+const bio = driver.bio.trim();
+const cars = driver.favouriteCars.map((s) => s.trim()).filter(Boolean);
+const series = driver.favouriteSeries.map((s) => s.trim()).filter(Boolean);
+const achievements = driver.achievements.map((s) => s.trim()).filter(Boolean);
+const since = driver.memberSince.trim();
+const club = driver.club.trim();
+const tracks = driver.topTracks || [];
+const usedCars = driver.topCars || [];
+const topTrack = tracks[0];
+const topCar = usedCars[0];
+const maxTrack = tracks.reduce((m, item) => Math.max(m, item.laps), 1);
+const maxCar = usedCars.reduce((m, item) => Math.max(m, item.laps), 1);
+const lapsText = (n: number) => formatoAprox(n, "k", loc);
+
+function safeUrl(url: string) {
+  const value = url.trim();
+  if (!value) return "";
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol === "https:" || parsed.protocol === "http:") return parsed.href;
+  } catch { /* vacío */ }
+  return "";
+}
+const socials = (
+  [
+    ["twitch", "Twitch"],
+    ["youtube", "YouTube"],
+    ["instagram", "Instagram"],
+    ["x", "X"],
+  ] as const
+).map(([key, label]) => ({ key, label, href: safeUrl(driver.socials[key]) })).filter((s) => s.href);
+---
+<article class:list={["d-card", hero && "d-hero"]} data-driver={driver.slug} data-lic="sports_car">
+  <div class="d-stage" data-team={driver.slug}>
+    <DriverHelmet slug={driver.slug} name={driver.fullName} eager={hero} />
+  </div>
+  <div class="d-card__body">
+    <p class="d-kicker"><span class="d-flag" aria-hidden="true">{driver.flag}</span> <span>{driver.country}</span> · <span>{driver.role}</span></p>
+    <Tag class="d-name" id={headingId}><span class="d-num">{driver.dorsal}</span> {driver.fullName}</Tag>
+    {lic && <p class="sc-badge"><span data-lic-f="class">{lic.classLabel}</span></p>}
+    <dl class="d-stats">
+      <div><dt>SR</dt><dd data-approx="sr" data-n={lic?.sr ?? ""} data-lic-f="sr">{lic ? formatoAprox(Number(lic.sr), "sr", loc) : ""}</dd></div>
+      <div><dt>iRating</dt><dd data-approx="k" data-n={lic?.irating ?? ""} data-f="irating" data-lic-f="irating">{lic?.irating != null ? formatoAprox(lic.irating, "k", loc) : ""}</dd></div>
+      <div><dt>ttRating</dt><dd data-approx="k" data-n={lic?.ttRating ?? ""} data-lic-f="tt">{lic ? formatoAprox(lic.ttRating, "k", loc) : ""}</dd></div>
+    </dl>
+    <p class="d-meta" data-block="member_since" hidden={!since}><span>Miembro desde</span> <time data-f="member_since_value" datetime={since || undefined}>{since}</time></p>
+    <p class="d-meta" data-block="club" hidden={!club}><span>Club</span> <span data-f="club_value">{club}</span></p>
+    {!hero && topTrack && (
+      <p class="d-lap"><span class="d-lap__k">Circuito más rodado</span> <span class="d-lap__n">{topTrack.name}</span> <span class="d-lap__v">{lapsText(topTrack.laps)} <span>vueltas</span></span></p>
+    )}
+    {!hero && topCar && (
+      <p class="d-lap"><span class="d-lap__k">Coche más usado</span> <span class="d-lap__n">{topCar.name}</span> <span class="d-lap__v">{lapsText(topCar.laps)} <span>vueltas</span></span></p>
+    )}
+    {!hero && (topTrack || topCar) && <p class="r-meta">telemetría del equipo, nov 2026</p>}
+    {hero && <p class="r-meta" id="licenceUpdated">Actualizado: {LICENCE_UPDATED_LABEL}</p>}
+    <div class="d-block" data-block="bio" hidden={!bio}>
+      <p class="d-bio" data-f="bio">{bio}</p>
+    </div>
+    <div class="d-block" data-block="cars" hidden={!cars.length}>
+      <BlockTag class="d-block__title">Coches</BlockTag>
+      <ul data-list="cars">{cars.map((item) => <li>{item}</li>)}</ul>
+    </div>
+    <div class="d-block" data-block="series" hidden={!series.length}>
+      <BlockTag class="d-block__title">Series</BlockTag>
+      <ul data-list="series">{series.map((item) => <li>{item}</li>)}</ul>
+    </div>
+    <div class="d-block" data-block="achievements" hidden={!achievements.length}>
+      <BlockTag class="d-block__title">Logros</BlockTag>
+      <ul data-list="achievements">{achievements.map((item) => <li>{item}</li>)}</ul>
+    </div>
+    <div class="d-block" data-block="socials" hidden={!socials.length}>
+      <ul class="d-socials">
+        {socials.map((s) => <li><a href={s.href} rel="noopener noreferrer" target="_blank">{s.label}</a></li>)}
+      </ul>
+    </div>
+    {!hero && <a class="r-link d-card__link" href={`/d/${driver.slug}/`}>Ver ficha</a>}
+  </div>
+  {hero && tracks.length > 0 && (
+    <div class="d-laps">
+      <section aria-labelledby={`${driver.slug}-tracks`}>
+        <h2 id={`${driver.slug}-tracks`} class="d-block__title">Circuitos más rodados</h2>
+        <ol class="d-bars">
+          {tracks.map((item) => (
+            <li>
+              <span class="d-bars__name">{item.name}</span>
+              <span class="d-bars__val">{lapsText(item.laps)} <span>vueltas</span></span>
+              <span class="d-bar" aria-hidden="true"><span style={`width:${Math.round((100 * item.laps) / maxTrack)}%`}></span></span>
+            </li>
+          ))}
+        </ol>
+      </section>
+      <section aria-labelledby={`${driver.slug}-cars`}>
+        <h2 id={`${driver.slug}-cars`} class="d-block__title">Coches más usados</h2>
+        <ol class="d-bars">
+          {usedCars.map((item) => (
+            <li>
+              <span class="d-bars__name">{item.name}</span>
+              <span class="d-bars__val">{lapsText(item.laps)} <span>vueltas</span></span>
+              <span class="d-bar" aria-hidden="true"><span style={`width:${Math.round((100 * item.laps) / maxCar)}%`}></span></span>
+            </li>
+          ))}
+        </ol>
+      </section>
+      <p class="r-meta d-laps__src">telemetría del equipo, nov 2026</p>
+    </div>
+  )}
+</article>

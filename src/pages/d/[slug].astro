@@ -1,8 +1,8 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import LicenciaSports from '../../components/LicenciaSports.astro';
-import { PILOTOS } from '../../lib/pilotos';
-import { licenciaPrincipal, LICENCE_UPDATED_LABEL } from '../../lib/licencias';
+import DriverCard from '../../components/DriverCard.astro';
+import { PILOTOS, LICENCE_UPDATED_LABEL } from '../../lib/pilotos';
+import { licenciaPrincipal } from '../../lib/licencias';
 import { formatoAprox, localeDeIdioma } from '../../lib/formato-licencia.js';
 
 export function getStaticPaths() {
@@ -45,17 +45,15 @@ const personSchema = {
 <Layout title={pageTitle} description={pageDescription} canonical={pageUrl} schemaJson={personSchema}>
   <section class="r-section" style="border-top:0;padding-top:clamp(104px,13vw,150px);padding-bottom:40px" aria-labelledby="dTitle" data-driver={driver.slug} id="driverRoot">
     <div class="r-wrap">
-      <nav class="r-meta" aria-label="Breadcrumb" style="margin-bottom:24px"><a href="/" style="color:inherit">Inicio</a> / <a href="/pilotos" style="color:inherit">Pilotos</a> / <span style="color:var(--r-text)">{driver.fullName}</span></nav>
-      <LicenciaSports slug={driver.slug} name={driver.fullName} helmet={driver.helmet_url} heading="h1" headingId="dTitle" eagerHelmet kicker={`${driver.dorsal} · ${driver.badge === 'FOUNDER' ? 'Fundador' : 'Piloto oficial'} · ${driver.flag_code}`} />
-      {driver.bio && <p class="r-lead" style="margin-top:20px">{driver.bio}</p>}
+      <nav class="r-meta" aria-label="Migas" style="margin-bottom:24px"><a href="/" style="color:inherit">Inicio</a> / <a href="/pilotos" style="color:inherit">Pilotos</a> / <span style="color:var(--r-text)">{driver.fullName}</span></nav>
+      <DriverCard driver={driver} heading="h1" headingId="dTitle" hero />
     </div>
   </section>
 
-  <section class="r-section r-section--alt" aria-labelledby="racesTitle">
+  <section class="r-section r-section--alt" id="racesSection" hidden aria-labelledby="racesTitle">
     <div class="r-wrap" style="display:grid;gap:16px">
       <div class="r-head" style="margin-bottom:0">
         <div><p class="r-kicker">iRacing</p><h2 id="racesTitle" class="r-h3">Últimas 5 carreras</h2></div>
-        <p class="r-meta" id="dSource">Coche favorito y últimas carreras: sin datos hasta que iRacing los envíe.</p>
       </div>
       <div class="r-scroll" id="racesWrap" hidden>
         <table class="r-table">
@@ -64,7 +62,6 @@ const personSchema = {
           <tbody id="racesBody"></tbody>
         </table>
       </div>
-      <p class="r-empty" id="racesEmpty">Sin datos. Las carreras aparecerán aquí cuando el equipo sincronice los resultados oficiales de iRacing.</p>
     </div>
   </section>
 
@@ -75,5 +72,5 @@ const personSchema = {
     </div>
   </section>
 
-  <script is:inline src="/assets/js/driver-page.js?v=t276" defer></script>
+  <script is:inline src="/assets/js/driver-page.js?v=t280" defer></script>
 </Layout>

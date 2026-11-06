@@ -28,23 +28,48 @@
     var label = /^rookie/i.test(m[1]) ? "Rookie" : m[1].replace(/\s+/g, " ").replace(/^class/i, "Class");
     return { classLabel: label, sr: Number(m[2]).toFixed(2) };
   }
+  function showList(card, block, items) {
+    var root = card.querySelector('[data-block="' + block + '"]');
+    var ul = root && root.querySelector("ul");
+    var names = (items || []).map(function (item) { return String(item || "").trim(); }).filter(Boolean);
+    if (!ul || !names.length) return;
+    ul.replaceChildren.apply(ul, names.map(function (name) {
+      var li = document.createElement("li");
+      li.textContent = name;
+      return li;
+    }));
+    root.hidden = false;
+  }
+  function showText(card, block, value) {
+    var root = card.querySelector('[data-block="' + block + '"]');
+    var slot = root && root.querySelector("[data-f]");
+    var text = String(value || "").trim();
+    if (!root || !slot || !text) return;
+    slot.textContent = text;
+    root.hidden = false;
+  }
+  function showMeta(card, block, value) {
+    var root = card.querySelector('[data-block="' + block + '"]');
+    var slot = card.querySelector('[data-f="' + block + '_value"]');
+    var text = String(value || "").trim();
+    if (!root || !slot || !text) return;
+    slot.textContent = text;
+    root.hidden = false;
+  }
   function paintLic(root, lic) {
     if (!root || !lic || !lic.category) return;
-    var card = root.querySelector('[data-lic="' + lic.category + '"]');
+    var card = root.getAttribute("data-lic") === lic.category ? root : root.querySelector('[data-lic="' + lic.category + '"]');
     if (!card) return;
     if (lic.class_label || lic.classLabel) {
       var c = card.querySelector('[data-lic-f="class"]');
       if (c) c.textContent = lic.class_label || lic.classLabel;
     }
     if (lic.sr != null && lic.sr !== "") approx(card.querySelector('[data-lic-f="sr"]'), "sr", lic.sr);
-    if (lic.irating === null) {
-      var empty = card.querySelector('[data-lic-f="irating"]');
-      if (empty) { empty.textContent = "Sin iRating"; empty.classList.add("r-nodata"); }
-    } else if (lic.irating > 0) approx(card.querySelector('[data-lic-f="irating"]'), "k", lic.irating);
+    if (lic.irating > 0) approx(card.querySelector('[data-lic-f="irating"]'), "k", lic.irating);
     if (lic.tt_rating > 0 || lic.ttRating > 0) approx(card.querySelector('[data-lic-f="tt"]'), "k", lic.tt_rating || lic.ttRating);
   }
   fetch(API + '/api/drivers').then(function (r) { return r.ok ? r.json() : []; }).then(function (list) {
-    var latest = null, source = null;
+    var latest = null;
     (Array.isArray(list) ? list : []).forEach(function (d) {
       var card = document.querySelector('[data-driver="' + d.slug + '"]');
       if (!card) return;
@@ -55,13 +80,22 @@
       }
       licenses.forEach(function (lic) { paintLic(card, lic); });
       if (d.irating > 0) approx(card.querySelector('[data-f="irating"]'), "k", d.irating);
-      var fc = card.querySelector('[data-f="fav_car"]'); if (fc && d.fav_car && d.fav_car.name) { fc.textContent = d.fav_car.name; fc.classList.remove('r-nodata'); }
-      var tc = card.querySelector('[data-f="top_category"]'); if (tc && d.top_category && d.top_category.name) { tc.textContent = d.top_category.name; tc.classList.remove('r-nodata'); }
-      if (d.updated_at && (!latest || d.updated_at > latest)) { latest = d.updated_at; source = d.source; }
+      if (d.fav_car && d.fav_car.name) showList(card, "cars", [d.fav_car.name]);
+      if (d.top_category && d.top_category.name) showList(card, "series", [d.top_category.name]);
+      if (d.bio) showText(card, "bio", d.bio);
+      showMeta(card, "member_since", d.member_since || d.memberSince);
+      showMeta(card, "club", d.club || d.club_name);
+      if (d.updated_at && (!latest || d.updated_at > latest)) latest = d.updated_at;
     });
     if (latest) {
-      var s = document.getElementById('driversSource');
-      if (s) s.textContent = 'Fuente: ' + (source || 'iRacing') + ' · actualizado ' + new Date(latest).toLocaleString(lang, { dateStyle: 'medium', timeStyle: 'short' });
+      var stamp = document.querySelector("#licenceUpdated time");
+      if (stamp) {
+        var when = new Date(latest);
+        if (!isNaN(when.getTime())) {
+          stamp.dateTime = latest;
+          stamp.textContent = when.toLocaleDateString(loc(), { day: "numeric", month: "short", year: "numeric" });
+        }
+      }
     }
   }).catch(function () {});
   fetch(API + '/api/events').then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {

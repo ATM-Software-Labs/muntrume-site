@@ -1,8 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import LicenciaSports from '../components/LicenciaSports.astro';
-import { PILOTOS } from '../lib/pilotos';
-import { LICENCE_UPDATED_LABEL } from '../lib/licencias';
+import DriverCard from '../components/DriverCard.astro';
+import { PILOTOS, LICENCE_UPDATED_LABEL } from '../lib/pilotos';
 
 const pageTitle = "Pilotos | Muntrume Motorsport — iRacing";
 const pageDescription = `Plantilla de Muntrume Motorsport: ${PILOTOS.map(p => p.fullName).join(", ")}. Licencia Sports Car aproximada, actualizada el ${LICENCE_UPDATED_LABEL}.`;
@@ -15,18 +14,16 @@ const pageDescription = `Plantilla de Muntrume Motorsport: ${PILOTOS.map(p => p.
         <div>
           <p class="r-kicker">Plantilla 2026</p>
           <h1 id="plTitle" class="r-h2">Pilotos</h1>
-          <p class="r-lead">{PILOTOS.length} pilotos oficiales. Solo se muestra la licencia Sports Car, con cifras aproximadas. Actualizado: {LICENCE_UPDATED_LABEL}.</p>
+          <p class="r-lead">{PILOTOS.length} pilotos oficiales. Licencia Sports Car, cifras aproximadas.</p>
+          <p class="r-meta" id="licenceUpdated">Actualizado: {LICENCE_UPDATED_LABEL}</p>
         </div>
       </div>
-      <div class="r-grid">
+      <div class="d-grid">
         {PILOTOS.map(p => (
-          <a href={`/d/${p.slug}/`} class="r-card sc-card" data-driver={p.slug}>
-            <LicenciaSports slug={p.slug} name={p.fullName} helmet={p.helmet_url} kicker={`${p.dorsal} · ${p.role}`} heading="h2" />
-          </a>
+          <DriverCard driver={p} heading="h2" />
         ))}
       </div>
-      <p class="r-meta" id="driversSource" style="margin-top:16px">Actualizado: {LICENCE_UPDATED_LABEL}. Sports Car, cifras aproximadas. El coche favorito y las carreras siguen en «Sin datos».</p>
     </div>
   </section>
-  <script is:inline src="/assets/js/home-r.js?v=t276" defer></script>
+  <script is:inline src="/assets/js/home-r.js?v=t280" defer></script>
 </Layout>
