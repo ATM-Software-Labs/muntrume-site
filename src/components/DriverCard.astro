@@ -21,6 +21,13 @@ const series = driver.favouriteSeries.map((s) => s.trim()).filter(Boolean);
 const achievements = driver.achievements.map((s) => s.trim()).filter(Boolean);
 const since = driver.memberSince.trim();
 const club = driver.club.trim();
+const tracks = driver.topTracks || [];
+const usedCars = driver.topCars || [];
+const topTrack = tracks[0];
+const topCar = usedCars[0];
+const maxTrack = tracks.reduce((m, item) => Math.max(m, item.laps), 1);
+const maxCar = usedCars.reduce((m, item) => Math.max(m, item.laps), 1);
+const lapsText = (n: number) => formatoAprox(n, "k", loc);
 
 function safeUrl(url: string) {
   const value = url.trim();
@@ -55,6 +62,13 @@ const socials = (
     </dl>
     <p class="d-meta" data-block="member_since" hidden={!since}><span>Miembro desde</span> <time data-f="member_since_value" datetime={since || undefined}>{since}</time></p>
     <p class="d-meta" data-block="club" hidden={!club}><span>Club</span> <span data-f="club_value">{club}</span></p>
+    {!hero && topTrack && (
+      <p class="d-lap"><span class="d-lap__k">Circuito más rodado</span> <span class="d-lap__n">{topTrack.name}</span> <span class="d-lap__v">{lapsText(topTrack.laps)} <span>vueltas</span></span></p>
+    )}
+    {!hero && topCar && (
+      <p class="d-lap"><span class="d-lap__k">Coche más usado</span> <span class="d-lap__n">{topCar.name}</span> <span class="d-lap__v">{lapsText(topCar.laps)} <span>vueltas</span></span></p>
+    )}
+    {!hero && (topTrack || topCar) && <p class="r-meta">telemetría del equipo, nov 2026</p>}
     {hero && <p class="r-meta" id="licenceUpdated">Actualizado: {LICENCE_UPDATED_LABEL}</p>}
     <div class="d-block" data-block="bio" hidden={!bio}>
       <p class="d-bio" data-f="bio">{bio}</p>
@@ -78,4 +92,33 @@ const socials = (
     </div>
     {!hero && <a class="r-link d-card__link" href={`/d/${driver.slug}/`}>Ver ficha</a>}
   </div>
+  {hero && tracks.length > 0 && (
+    <div class="d-laps">
+      <section aria-labelledby={`${driver.slug}-tracks`}>
+        <h2 id={`${driver.slug}-tracks`} class="d-block__title">Circuitos más rodados</h2>
+        <ol class="d-bars">
+          {tracks.map((item) => (
+            <li>
+              <span class="d-bars__name">{item.name}</span>
+              <span class="d-bars__val">{lapsText(item.laps)} <span>vueltas</span></span>
+              <span class="d-bar" aria-hidden="true"><span style={`width:${Math.round((100 * item.laps) / maxTrack)}%`}></span></span>
+            </li>
+          ))}
+        </ol>
+      </section>
+      <section aria-labelledby={`${driver.slug}-cars`}>
+        <h2 id={`${driver.slug}-cars`} class="d-block__title">Coches más usados</h2>
+        <ol class="d-bars">
+          {usedCars.map((item) => (
+            <li>
+              <span class="d-bars__name">{item.name}</span>
+              <span class="d-bars__val">{lapsText(item.laps)} <span>vueltas</span></span>
+              <span class="d-bar" aria-hidden="true"><span style={`width:${Math.round((100 * item.laps) / maxCar)}%`}></span></span>
+            </li>
+          ))}
+        </ol>
+      </section>
+      <p class="r-meta d-laps__src">telemetría del equipo, nov 2026</p>
+    </div>
+  )}
 </article>

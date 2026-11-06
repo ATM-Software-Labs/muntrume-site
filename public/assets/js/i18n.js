@@ -3,7 +3,7 @@
 (function () {
   "use strict";
   var LANGS = { es: "Español", en: "English", ca: "Català", fr: "Français" };
-  var KEY = "mm_lang", V = "t280";
+  var KEY = "mm_lang", V = "t281";
   var root = document.documentElement;
   function pick() {
     try {
