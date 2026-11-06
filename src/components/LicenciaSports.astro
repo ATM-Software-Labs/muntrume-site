@@ -6,19 +6,18 @@ import { licenciaPrincipal, LICENCE_UPDATED_LABEL } from "../lib/licencias";
 interface Props {
   slug: string;
   name: string;
-  helmet?: string | null;
   heading?: "h1" | "h2" | "h3";
   headingId?: string;
   kicker?: string;
   eagerHelmet?: boolean;
 }
-const { slug, name, helmet, heading = "h2", headingId, kicker, eagerHelmet = false } = Astro.props;
+const { slug, name, heading = "h2", headingId, kicker, eagerHelmet = false } = Astro.props;
 const lic = licenciaPrincipal(slug);
 const loc = localeDeIdioma("es");
 const Tag = heading;
 ---
 <article class="sc-block" data-lic="sports_car" data-driver-lic={slug}>
-  <DriverHelmet name={name} src={helmet} eager={eagerHelmet} />
+  <DriverHelmet slug={slug} name={name} eager={eagerHelmet} />
   <div class="sc-block__body">
     {kicker && <p class="r-kicker">{kicker}</p>}
     <Tag class="sc-block__name" id={headingId}>{name}</Tag>
