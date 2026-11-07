@@ -21,14 +21,12 @@ const licenses = licenciasDe(slug);
     <p class="r-meta">Hover over the curve to inspect session ratings</p>
   </div>
 
-  <!-- Filter Bar: Categories (Left) + Dual Toggle iRating / Safety Rating (Right) -->
+  <!-- Filter Bar: Permanently Locked Sports Car Category (Left) + Dual Toggle iRating / Safety Rating (Right) -->
   <div class="d-ratings__toolbar">
-    <div class="d-ratings__cats" role="tablist" aria-label="iRacing License Category">
-      <button type="button" role="tab" aria-selected="false" class="d-rcat-btn" data-rcat="oval">Oval</button>
-      <button type="button" role="tab" aria-selected="true" class="d-rcat-btn is-active" data-rcat="sports_car">Sports Car</button>
-      <button type="button" role="tab" aria-selected="false" class="d-rcat-btn" data-rcat="formula">Formula Car</button>
-      <button type="button" role="tab" aria-selected="false" class="d-rcat-btn" data-rcat="dirt_oval">Dirt Oval</button>
-      <button type="button" role="tab" aria-selected="false" class="d-rcat-btn" data-rcat="dirt_road">Dirt Road</button>
+    <div class="d-ratings__cats" aria-label="iRacing License Category">
+      <span class="d-rcat-btn is-active" data-rcat="sports_car" aria-current="true" style="cursor:default">
+        Sports Car · Official Category
+      </span>
     </div>
 
     <div class="d-ratings__metrics" role="group" aria-label="Chart Metric">
@@ -42,15 +40,15 @@ const licenses = licenciasDe(slug);
     <!-- Quick Summary KPIs -->
     <div class="d-ratings__kpis">
       <div>
-        <span class="d-ratings__kpi-label" data-rkpi-current-label>Current iRating</span>
+        <span class="d-ratings__kpi-label" data-rkpi-current-label>Current Sports Car iRating</span>
         <strong class="d-ratings__kpi-val" data-rkpi-current>—</strong>
       </div>
       <div>
-        <span class="d-ratings__kpi-label">All-Time Peak</span>
+        <span class="d-ratings__kpi-label">All-Time Sports Car Peak</span>
         <strong class="d-ratings__kpi-val d-ratings__kpi-val--peak" data-rkpi-peak>—</strong>
       </div>
       <div>
-        <span class="d-ratings__kpi-label">Category License</span>
+        <span class="d-ratings__kpi-label">Sports Car License</span>
         <strong class="d-ratings__kpi-val" data-rkpi-lic>—</strong>
       </div>
     </div>
@@ -68,7 +66,7 @@ const licenses = licenciasDe(slug);
         width="860"
         height="300"
         fill="none"
-         aria-label={`Evolución histórica de ratings de ${driverName}`}
+        aria-label={`Historical Sports Car rating evolution for ${driverName}`}
         role="img"
       >
         <defs>
@@ -335,7 +333,7 @@ const licenses = licenciasDe(slug);
         }, activeCoords[0]);
         var licObj = getLicInfo(currentCat);
 
-        if (kpiCurrentLabel) kpiCurrentLabel.textContent = isIr ? 'Current iRating' : 'Current Safety Rating';
+        if (kpiCurrentLabel) kpiCurrentLabel.textContent = isIr ? 'Current Sports Car iRating' : 'Current Safety Rating';
         if (kpiCurrent) kpiCurrent.textContent = isIr ? lastPt.val.toLocaleString('en-US') : Number(lastPt.val).toFixed(2);
         if (kpiPeak) {
           kpiPeak.textContent = (isIr ? peakPt.val.toLocaleString('en-US') : Number(peakPt.val).toFixed(2)) + ' · ' + peakPt.label;
@@ -402,18 +400,6 @@ const licenses = licenciasDe(slug);
           if (e.touches && e.touches[0]) handlePointerMove(e.touches[0].clientX);
         }, { passive: true });
       }
-
-      catBtns.forEach(function (btn) {
-        btn.addEventListener('click', function () {
-          currentCat = btn.getAttribute('data-rcat') || 'sports_car';
-          catBtns.forEach(function (b) {
-            var active = b === btn;
-            b.classList.toggle('is-active', active);
-            b.setAttribute('aria-selected', active ? 'true' : 'false');
-          });
-          renderChart();
-        });
-      });
 
       metricBtns.forEach(function (btn) {
         btn.addEventListener('click', function () {

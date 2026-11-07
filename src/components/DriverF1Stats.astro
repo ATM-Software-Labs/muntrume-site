@@ -24,31 +24,26 @@ const attributes = [
   {
     key: "pace",
     label: "PACE",
-    sub: "Qualifying & Peak Lap Velocity",
     val: f1.pace,
   },
   {
     key: "awareness",
     label: "AWARENESS",
-    sub: "Safety Rating & Incident Avoidance",
     val: f1.awareness,
   },
   {
     key: "racecraft",
     label: "RACECRAFT",
-    sub: "Multi-class Traffic & Stint Execution",
     val: f1.racecraft,
   },
   {
     key: "experience",
     label: "EXPERIENCE",
-    sub: "Weighted Road Hours on Track",
     val: f1.experience,
   },
   {
     key: "overall",
     label: "OVERALL RATING",
-    sub: "Asymptotic iRating Index (1.5k = 40 · 12k = 97 · Cap < 99)",
     val: f1.overall,
     isOverall: true,
   },
@@ -57,7 +52,7 @@ const attributes = [
 
 <section
   class="d-f1 d-reveal"
-  id="f1-ratings"
+  id="mti-ratings"
   aria-labelledby={`f1Title-${driver.slug}`}
   data-f1-root={driver.slug}
   data-f1-ir={currentIr}
@@ -67,32 +62,33 @@ const attributes = [
 >
   <div class="d-section-head">
     <div>
-      <p class="r-kicker">EA Sports F1 25 Telemetry Index</p>
-      <h2 id={`f1Title-${driver.slug}`} class="d-block__title">Driver Performance Ratings (1–98)</h2>
-      <p class="r-meta">
-        Asymptotic logarithmic calibration: <strong>1,500 iR = 40 OVR</strong> · <strong>12,000 iR = 97 OVR</strong> · Hard ceiling <code>Math.min(98, ...)</code> (&lt; 99).
-      </p>
+      <p class="r-kicker">Muntrume Telemetry Index (MTI)</p>
+      <h2 id={`f1Title-${driver.slug}`} class="d-block__title">Driver Performance Ratings</h2>
     </div>
-    <span class="d-f1__formula-pill">OVR = min(98, 40 + 57 · ln(iR/1500)/ln(8))</span>
+    <span class="d-f1__formula-pill">SPORTS CAR · VERIFIED TELEMETRY</span>
   </div>
 
-  <div class="d-f1__grid">
+  <div class="d-f1__grid grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
     <!-- Left Card: Overall Rating Shield -->
-    <div class="d-f1__ovr-card">
+    <div class="d-f1__ovr-card lg:col-span-4 flex flex-col justify-between">
       <div class="d-f1__ovr-top">
         <span class="d-f1__ovr-tag">OVERALL RATING</span>
         <span class="d-f1__ovr-num-badge">{driver.dorsal}</span>
       </div>
-      <div class="d-f1__ovr-score-wrap">
-        <strong class="d-f1__ovr-score" data-f1-val="overall">{f1.overall}</strong>
-        <span class="d-f1__ovr-max">/ 98 MAX</span>
+      <div class="d-f1__ovr-center my-auto py-4 text-center">
+        <div class="d-f1__ovr-score-wrap justify-center">
+          <strong class="d-f1__ovr-score" data-f1-val="overall">{f1.overall}</strong>
+        </div>
+        <span class="block text-[11px] font-mono uppercase tracking-widest text-[#A3B0AC] mt-1">
+          Muntrume Telemetry Index
+        </span>
+        <div class="d-f1__ovr-bar mt-4" aria-hidden="true">
+          <span data-f1-bar="overall" style={`width:${f1.overall}%`}></span>
+        </div>
       </div>
-      <div class="d-f1__ovr-bar" aria-hidden="true">
-        <span data-f1-bar="overall" style={`width:${f1.overall}%`}></span>
-      </div>
-      <div class="d-f1__ovr-meta">
+      <div class="d-f1__ovr-meta text-center">
         <div>
-          <span>Base iRating</span>
+          <span>Sports Car iR</span>
           <strong data-f1-meta="ir">{currentIr.toLocaleString("en-US")}</strong>
         </div>
         <div>
@@ -100,21 +96,18 @@ const attributes = [
           <strong data-f1-meta="sr">A {currentSr.toFixed(2)}</strong>
         </div>
         <div>
-          <span>Road Hours</span>
+          <span>Sports Car Hours</span>
           <strong>{trackHours.toFixed(1)} h</strong>
         </div>
       </div>
     </div>
 
-    <!-- Right Card: 5 Progress Attribute Bars -->
-    <div class="d-f1__bars-card">
+    <!-- Right Card: 5 Minimalist Progress Attribute Bars -->
+    <div class="d-f1__bars-card lg:col-span-8 flex flex-col justify-between">
       {attributes.map((attr) => (
         <div class:list={["d-f1__row", attr.isOverall && "d-f1__row--overall"]}>
           <div class="d-f1__row-head">
-            <div>
-              <span class="d-f1__attr-name">{attr.label}</span>
-              <span class="d-f1__attr-sub">{attr.sub}</span>
-            </div>
+            <span class="d-f1__attr-name">{attr.label}</span>
             <strong class="d-f1__attr-val" data-f1-val={attr.key}>{attr.val}</strong>
           </div>
           <div class="d-f1__track" role="progressbar" aria-label={attr.label} aria-valuemin={1} aria-valuemax={98} aria-valuenow={attr.val}>
