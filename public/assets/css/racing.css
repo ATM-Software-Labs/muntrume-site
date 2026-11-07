@@ -7,7 +7,7 @@
   --r-max:1280px; --r-gutter:clamp(16px,4vw,32px); --r-radius:12px;
   --r-s1:8px; --r-s2:16px; --r-s3:24px; --r-s4:40px; --r-s5:64px; --r-s6:clamp(56px,9vw,112px);
 }
-html[data-theme="light"]{
+html[data-theme="light"], html.light {
   --r-bg:#F4F5F3; --r-bg-2:#FFFFFF; --r-surface:#FFFFFF; --r-line:#D9DEDB; --r-line-2:#C4CCC8;
   --r-text:#0B0F0E; --r-muted:#4A5652; --r-accent:#007A50; --r-accent-ink:#FFFFFF;
 }
@@ -86,14 +86,14 @@ html[data-theme="light"] .r-down{color:#B42318}
 
 /* Footer institucional */
 .r-footer{background:#050707;color:#C9D2CF;border-top:3px solid var(--r-accent);position:relative;z-index:10}
-html[data-theme="light"] .r-footer{background:#0B0F0E}
+html[data-theme="light"] .r-footer, html.light .r-footer{background:#0B0F0E}
 .r-footer .r-wrap{padding-top:56px;padding-bottom:28px;display:grid;gap:40px}
 .r-footer__grid{display:grid;gap:32px;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr))}
 .r-footer h2{font:600 11px/1 var(--r-mono);letter-spacing:.18em;text-transform:uppercase;color:#8E9C97;margin:0 0 14px}
 .r-footer ul{list-style:none;margin:0;padding:0;display:grid;gap:2px}
-.r-footer a{color:#E6ECEA;text-decoration:none;font-size:14px;display:inline-block;padding:6px 0}
-.r-footer a:hover{color:#00E699}
-.r-footer__brand{font:800 34px/.9 var(--r-display);text-transform:uppercase;color:#fff}
+.r-footer a{color:#E6ECEA !important;text-decoration:none;font-size:14px;display:inline-block;padding:6px 0}
+.r-footer a:hover{color:var(--r-accent) !important}
+.r-footer__brand{font:800 34px/.9 var(--r-display);text-transform:uppercase;color:#fff !important}
 .r-footer__legal{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;border-top:1px solid #1E2725;padding-top:20px;font:500 12px/1.5 var(--r-mono);color:#8E9C97}
 
 /* Navbar: tipografía institucional */
@@ -101,7 +101,6 @@ header .font-display,nav .font-display{font-family:var(--r-display)!important;le
 @media (prefers-reduced-motion:reduce){.r-card,.r-btn{transition:none}.r-card:hover{transform:none}}
 .r-card__top > div{border:0!important;border-radius:0!important;background:transparent!important}
 .r-figs strong{text-transform:none;color:var(--r-text)}.r-figs strong.r-h3{font-size:22px;line-height:1.1}.r-figs span{text-transform:none;letter-spacing:0}
-html.light footer.r-footer,html[data-theme="light"] footer.r-footer{background-color:#0B0F0E!important;border-color:var(--r-accent)!important}
 html.light .r-section,html[data-theme="light"] .r-section{background:var(--r-bg)}html[data-theme="light"] .r-section--alt{background:var(--r-bg-2)}
 
 /* t268: tipografía coherente en páginas heredadas (setups, contacto, noticias, legal, correo) */

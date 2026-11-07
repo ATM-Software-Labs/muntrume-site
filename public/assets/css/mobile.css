@@ -81,53 +81,57 @@ html[data-theme="light"] body {
 }
 
 html.light header,
-html[data-theme="light"] header,
-html.light footer,
-html[data-theme="light"] footer {
+html[data-theme="light"] header {
   background-color: #FFFFFF !important;
   border-color: #E2E8E5 !important;
 }
 
-html.light .bg-\[\#0E1211\],
-html.light .bg-\[\#080C0A\],
-html.light .bg-\[\#0A0E0D\],
-html.light .bg-\[\#0C1210\],
-html.light .bg-\[\#0E1513\],
-html.light .bg-\[\#0A0F0D\] {
+html.light .bg-\[\#0E1211\], [data-theme="light"] .bg-\[\#0E1211\],
+html.light .bg-\[\#080C0A\], [data-theme="light"] .bg-\[\#080C0A\],
+html.light .bg-\[\#0A0E0D\], [data-theme="light"] .bg-\[\#0A0E0D\],
+html.light .bg-\[\#0C1210\], [data-theme="light"] .bg-\[\#0C1210\],
+html.light .bg-\[\#0E1513\], [data-theme="light"] .bg-\[\#0E1513\],
+html.light .bg-\[\#0A0F0D\], [data-theme="light"] .bg-\[\#0A0F0D\] {
   background-color: #FFFFFF !important;
 }
 
-html.light .bg-\[\#1A2120\],
-html.light .bg-\[\#121A17\],
-html.light .bg-\[\#141E1A\],
-html.light .bg-\[\#16201C\],
-html.light .bg-\[\#1E2A26\],
-html.light .bg-\[\#161c24\] {
+html.light .bg-\[\#1A2120\], [data-theme="light"] .bg-\[\#1A2120\],
+html.light .bg-\[\#121A17\], [data-theme="light"] .bg-\[\#121A17\],
+html.light .bg-\[\#101514\], [data-theme="light"] .bg-\[\#101514\],
+html.light .bg-\[\#141E1A\], [data-theme="light"] .bg-\[\#141E1A\],
+html.light .bg-\[\#16201C\], [data-theme="light"] .bg-\[\#16201C\],
+html.light .bg-\[\#1E2A26\], [data-theme="light"] .bg-\[\#1E2A26\],
+html.light .bg-\[\#161c24\], [data-theme="light"] .bg-\[\#161c24\],
+html.light .bg-\[\#0e1217\], [data-theme="light"] .bg-\[\#0e1217\] {
   background-color: #F8FAF9 !important;
 }
 
-html.light .border-\[\#1A2120\],
-html.light .border-\[\#1E2A26\],
-html.light .border-\[\#242E2C\],
-html.light .border-\[\#1C2523\],
-html.light .border-\[\#2A3331\] {
+html.light .border-\[\#1A2120\], [data-theme="light"] .border-\[\#1A2120\],
+html.light .border-\[\#1E2A26\], [data-theme="light"] .border-\[\#1E2A26\],
+html.light .border-\[\#242E2C\], [data-theme="light"] .border-\[\#242E2C\],
+html.light .border-\[\#232C2A\], [data-theme="light"] .border-\[\#232C2A\],
+html.light .border-\[\#1C2523\], [data-theme="light"] .border-\[\#1C2523\],
+html.light .border-\[\#2A3331\], [data-theme="light"] .border-\[\#2A3331\],
+html.light .border-white\/10, [data-theme="light"] .border-white\/10 {
   border-color: #E2E8E5 !important;
 }
 
-html.light .text-white,
-html.light .text-\[\#F5F5F5\],
-html.light .text-\[\#E0E6E4\] {
+html.light :not(footer):not(.r-footer):not(.r-hero) > .text-white,
+[data-theme="light"] :not(footer):not(.r-footer):not(.r-hero) > .text-white,
+html.light .text-\[\#F5F5F5\], [data-theme="light"] .text-\[\#F5F5F5\],
+html.light .text-\[\#E0E6E4\], [data-theme="light"] .text-\[\#E0E6E4\] {
   color: #0E1412 !important;
 }
 
-html.light .text-\[\#9AA8A3\],
-html.light .text-\[\#8B9A8F\],
-html.light .text-neutral-300,
-html.light .text-neutral-400 {
+html.light .text-\[\#9AA8A3\], [data-theme="light"] .text-\[\#9AA8A3\],
+html.light .text-\[\#8B9A8F\], [data-theme="light"] .text-\[\#8B9A8F\],
+html.light .text-\[\#A3B0AC\], [data-theme="light"] .text-\[\#A3B0AC\],
+html.light .text-neutral-300, [data-theme="light"] .text-neutral-300,
+html.light .text-neutral-400, [data-theme="light"] .text-neutral-400 {
   color: #4A5854 !important;
 }
 
-html.light #mobileDrawer {
+html.light #mobileDrawer, [data-theme="light"] #mobileDrawer {
   background-color: #FFFFFF !important;
   border-color: #E2E8E5 !important;
 }
