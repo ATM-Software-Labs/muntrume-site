@@ -155,23 +155,31 @@ const socials = (
       <!-- 2. FAVORITE TRACK & MOST DRIVEN TRACK: Symmetrical 2-Column Grid -->
       <div class="d-track-cards">
         {fav && (
-          <div class="d-track-card d-track-card--fav">
-            <p class="d-fav">
-              <svg class="d-star" viewBox="0 0 24 24" width="16" height="16" role="img" aria-label="Favorite track"><path fill="currentColor" d="M12 2.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.2 6.8 18.6l1-5.8L3.6 8.7l5.8-.8z"/></svg>
-              <span class="d-fav__k">Favorite Track</span>
-              <span class="d-fav__n" data-f="favorite_track">{fav}</span>
-            </p>
-            <p class="r-meta">Driver's personal choice</p>
+          <div class="d-track-card">
+            <div class="flex items-center gap-2">
+              <span class="p-1.5 rounded-lg bg-[var(--r-bg)] border border-[var(--r-line)] text-amber-500 shrink-0">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 2.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.2 6.8 18.6l1-5.8L3.6 8.7l5.8-.8z"/></svg>
+              </span>
+              <span class="text-[10px] font-mono font-semibold uppercase tracking-wider text-[var(--r-muted)]">Favorite Track</span>
+            </div>
+            <div class="my-1">
+              <h3 class="font-sans font-bold text-lg text-[var(--r-text)] leading-tight" data-f="favorite_track">{fav}</h3>
+            </div>
+            <p class="text-xs font-mono text-[var(--r-muted)]">Driver's personal choice</p>
           </div>
         )}
         {topTrack && (
           <div class="d-track-card">
-            <p class="d-lap">
-              <span class="d-lap__k">Most Driven Sports Car Track</span>
-              <span class="d-lap__n" data-f="top_track_name">{topTrack.name}</span>
-              <span class="d-lap__v"><span data-approx="h" data-n={topTrack.hours} data-f="top_track_hours">{hoursText(topTrack.hours)}</span> <span>on track</span></span>
-            </p>
-            <p class="r-meta">Weighted by average lap time</p>
+            <div class="flex items-center gap-2">
+              <span class="p-1.5 rounded-lg bg-[var(--r-bg)] border border-[var(--r-line)] text-[var(--r-accent)] shrink-0">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </span>
+              <span class="text-[10px] font-mono font-semibold uppercase tracking-wider text-[var(--r-muted)]">Most Driven Sports Car Track</span>
+            </div>
+            <div class="my-1">
+              <h3 class="font-sans font-bold text-lg text-[var(--r-text)] leading-tight" data-f="top_track_name">{topTrack.name}</h3>
+            </div>
+            <p class="text-xs font-mono text-[var(--r-muted)]"><span class="font-bold text-[var(--r-text)]" data-approx="h" data-n={topTrack.hours} data-f="top_track_hours">{hoursText(topTrack.hours)}</span> on track · Weighted by average lap time</p>
           </div>
         )}
       </div>

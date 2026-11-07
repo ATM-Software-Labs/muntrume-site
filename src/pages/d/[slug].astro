@@ -125,7 +125,13 @@ const personSchema = {
 <Layout title={pageTitle} description={pageDescription} canonical={pageUrl} ogImage={ogImage} schemaJson={personSchema}>
   <section class="r-section" style="border-top:0;padding-top:clamp(88px,10vw,120px);padding-bottom:40px" aria-labelledby="dTitle" data-driver={driver.slug} id="driverRoot">
     <div class="r-wrap max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-      <nav class="r-meta" aria-label="Breadcrumb" style="margin-bottom:14px"><a href="/" style="color:inherit">Home</a> / <a href="/drivers" style="color:inherit">Drivers</a> / <span style="color:var(--r-text)">{driver.fullName}</span></nav>
+      <nav class="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[var(--r-muted)] mb-4" aria-label="Breadcrumb">
+        <a href="/" class="hover:text-[var(--r-text)] transition-colors">Home</a>
+        <span class="opacity-40">/</span>
+        <a href="/drivers" class="hover:text-[var(--r-text)] transition-colors">Drivers</a>
+        <span class="opacity-40">/</span>
+        <span class="text-[var(--r-accent)] font-bold">{driver.fullName}</span>
+      </nav>
       <nav class="d-tabs" aria-label="Profile Sections">
         <a href="#resumen">Overview</a>
         <a href="#mti-ratings">Performance Index</a>

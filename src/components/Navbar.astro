@@ -72,7 +72,7 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
         href="https://discord.gg/ehX6B8JUtE"
         target="_blank"
         rel="noopener noreferrer"
-        class="hidden xl:inline-flex items-center gap-2 min-h-[40px] text-xs font-mono text-[var(--r-muted)] hover:text-[var(--r-text)] px-3 py-2 rounded-xl border border-[var(--r-line)] hover:border-[var(--r-accent)] bg-[var(--r-bg-2)] transition whitespace-nowrap shrink-0"
+        class="hidden xl:inline-flex items-center gap-2 min-h-[40px] text-xs font-mono text-[var(--r-muted)] hover:text-[var(--r-text)] px-3 py-2 rounded-xl border border-[var(--r-line)] hover:border-[var(--r-accent)] bg-[var(--r-bg)] transition whitespace-nowrap shrink-0"
         title="Official Team Radio on Discord"
       >
         <span class="w-2 h-2 rounded-full bg-[var(--r-accent)] animate-pulse shrink-0"></span>
@@ -83,7 +83,7 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
       <button
         type="button"
         id="themeToggleBtn"
-        class="flex items-center justify-center w-10 h-10 rounded-xl bg-[var(--r-bg-2)] hover:bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-[var(--r-muted)] hover:text-[var(--r-text)] transition-all cursor-pointer focus:outline-none shrink-0"
+        class="flex items-center justify-center w-10 h-10 rounded-xl bg-[var(--r-bg)] hover:bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-[var(--r-muted)] hover:text-[var(--r-text)] transition-all cursor-pointer focus:outline-none shrink-0"
         title="Toggle theme (Dark / Light)"
         aria-label="Toggle theme"
       >
@@ -96,7 +96,7 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
         <button
           type="button"
           id="langSwitcherBtn"
-          class="flex items-center gap-1.5 min-h-[40px] bg-[var(--r-bg-2)] hover:bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] rounded-xl px-3 py-2 text-xs font-mono text-[var(--r-text)] transition-all cursor-pointer focus:outline-none"
+          class="flex items-center gap-1.5 min-h-[40px] bg-[var(--r-bg)] hover:bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] rounded-xl px-3 py-2 text-xs font-mono text-[var(--r-text)] transition-all cursor-pointer focus:outline-none"
           title="Language / Idioma"
           aria-haspopup="true"
         >
@@ -115,19 +115,19 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
           id="langDropdown"
           class="hidden absolute right-0 mt-1 w-28 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] shadow-2xl py-1 z-50"
         >
-          <button type="button" data-set-lang="EN" class="w-full flex items-center gap-2 px-3 py-2 text-xs font-mono text-[var(--r-text)] hover:bg-[var(--r-bg-2)] cursor-pointer">
+          <button type="button" data-set-lang="EN" class="w-full flex items-center gap-2 px-3 py-2 text-xs font-mono text-[var(--r-text)] hover:bg-[var(--r-bg)] cursor-pointer">
             <span class="text-sm leading-none">🇬🇧</span>
             <span>EN</span>
           </button>
-          <button type="button" data-set-lang="ES" class="w-full flex items-center gap-2 px-3 py-2 text-xs font-mono text-[var(--r-text)] hover:bg-[var(--r-bg-2)] cursor-pointer">
+          <button type="button" data-set-lang="ES" class="w-full flex items-center gap-2 px-3 py-2 text-xs font-mono text-[var(--r-text)] hover:bg-[var(--r-bg)] cursor-pointer">
             <span class="text-sm leading-none">🇪🇸</span>
             <span>ES</span>
           </button>
-          <button type="button" data-set-lang="CA" class="w-full flex items-center gap-2 px-3 py-2 text-xs font-mono text-[var(--r-text)] hover:bg-[var(--r-bg-2)] cursor-pointer">
+          <button type="button" data-set-lang="CA" class="w-full flex items-center gap-2 px-3 py-2 text-xs font-mono text-[var(--r-text)] hover:bg-[var(--r-bg)] cursor-pointer">
             <img src="/flags/senyera.png" alt="Senyera" width="16" height="12" class="w-4 h-3 object-contain rounded-xs" />
             <span>CA</span>
           </button>
-          <button type="button" data-set-lang="FR" class="w-full flex items-center gap-2 px-3 py-2 text-xs font-mono text-[var(--r-text)] hover:bg-[var(--r-bg-2)] cursor-pointer">
+          <button type="button" data-set-lang="FR" class="w-full flex items-center gap-2 px-3 py-2 text-xs font-mono text-[var(--r-text)] hover:bg-[var(--r-bg)] cursor-pointer">
             <span class="text-sm leading-none">🇫🇷</span>
             <span>FR</span>
           </button>
@@ -139,13 +139,13 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
         <a
           href="/drivers/albertot/"
           id="navAdminBadge"
-          class="hidden lg:inline-flex items-center gap-2 min-h-[40px] px-3 py-2 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] text-xs font-mono text-[var(--r-text)] hover:border-[var(--r-accent)] transition whitespace-nowrap"
+          class="hidden lg:inline-flex items-center gap-2 min-h-[40px] px-3 py-2 rounded-xl bg-[var(--r-bg)] border border-[var(--r-line)] text-xs font-mono text-[var(--r-text)] hover:border-[var(--r-accent)] transition whitespace-nowrap"
           title="Team Principal & Administrator — atrumin16@gmail.com"
         >
           <span class="w-2 h-2 rounded-full bg-[var(--r-accent)] shrink-0"></span>
           <span id="navSessionHandle" class="font-bold text-[var(--r-accent)]">atrumin16</span>
           <span class="text-[var(--r-muted)]">·</span>
-          <span id="navSessionLabel" class="font-medium text-[var(--r-text)]">Alberto Trujillo</span>
+          <span id="navSessionLabel" class="font-medium text-[var(--r-text)]">Principal</span>
         </a>
         <a
           href="/admin"
@@ -158,7 +158,7 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
         <button
           type="button"
           id="navLogoutBtn"
-          class="inline-flex items-center min-h-[40px] px-3 py-2 rounded-xl bg-[var(--r-bg-2)] hover:bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-rose-500/50 text-xs font-mono text-[var(--r-muted)] hover:text-rose-500 transition cursor-pointer whitespace-nowrap"
+          class="inline-flex items-center min-h-[40px] px-3 py-2 rounded-xl bg-[var(--r-bg)] hover:bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-rose-500/50 text-xs font-mono text-[var(--r-muted)] hover:text-rose-500 transition cursor-pointer whitespace-nowrap"
         >
           Log out
         </button>
@@ -177,7 +177,7 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
       <button
         type="button"
         id="navDrawerOpenBtn"
-        class="md:hidden flex items-center justify-center w-10 h-10 text-[var(--r-muted)] hover:text-[var(--r-text)] bg-[var(--r-bg-2)] border border-[var(--r-line)] rounded-xl transition focus:outline-none shrink-0"
+        class="md:hidden flex items-center justify-center w-10 h-10 text-[var(--r-muted)] hover:text-[var(--r-text)] bg-[var(--r-bg)] border border-[var(--r-line)] rounded-xl transition focus:outline-none shrink-0"
         aria-label="Open Navigation Menu"
       >
         <svg width="20" height="20" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -447,18 +447,21 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
           sessionBox.classList.add('flex');
         }
         if (mobileAdminBox) mobileAdminBox.classList.remove('hidden');
-        if (garageAccessBtn) garageAccessBtn.style.display = 'none';
+        if (garageAccessBtn) {
+          garageAccessBtn.style.setProperty('display', 'none', 'important');
+          garageAccessBtn.classList.add('hidden');
+        }
 
         if (isAdmin) {
           if (sessionHandle) sessionHandle.textContent = 'atrumin16';
-          if (sessionLabel) sessionLabel.textContent = 'Alberto Trujillo (#16)';
+          if (sessionLabel) sessionLabel.textContent = 'Principal';
           if (adminBadge) adminBadge.href = '/drivers/albertot/';
           if (raceControlBtn) {
             raceControlBtn.classList.remove('hidden');
             raceControlBtn.classList.add('inline-flex');
           }
           if (mobileHandle) mobileHandle.textContent = 'atrumin16 · #16';
-          if (mobileLabel) mobileLabel.textContent = 'Alberto Trujillo (Team Principal & Admin)';
+          if (mobileLabel) mobileLabel.textContent = 'Team Principal & Admin';
           if (mobileRaceControlBtn) mobileRaceControlBtn.classList.remove('hidden');
         } else {
           var handle = email.split('@')[0];
