@@ -52,8 +52,6 @@ const CAR_SLUG_MAP: Record<string, string> = {
   "McLaren 720S GT3 EVO": "mclaren720sgt3",
   "BMW M4 GT3": "bmwm4gt3",
   "Porsche 911 GT3 R (992)": "porsche992rgt3",
-  "Aston Martin Valkyrie AMR Pro GTP": "amvalkyriegtp",
-  "Ferrari 499P": "ferrari499p",
   "Mercedes-AMG GT3 2020": "mercedesamgevogt3",
   "Porsche 911 GT3 Cup (992)": "porsche992cup",
   "Acura NSX GT3 EVO 22": "acuransxevo22gt3",
@@ -127,8 +125,8 @@ const personSchema = {
         <a href="#resumen">Overview</a>
         <a href="#f1-ratings">F1 25 Ratings</a>
         <a href="#ratings">Driver Ratings</a>
-        <a href="#circuitos">Road Circuits</a>
-        <a href="#coches">Cars</a>
+        <a href="#circuitos">Sports Car Circuits</a>
+        <a href="#coches">Sports Cars</a>
         <a href="#setups">Setups</a>
         <a href="#comparativa">Team Comparison</a>
         <a href="#eventos" id="eventosTab">Upcoming Events</a>
@@ -221,7 +219,7 @@ const personSchema = {
             </div>
 
             <div class="d-vs-card">
-              <span class="d-vs-card__label">Road Hours on Track</span>
+              <span class="d-vs-card__label">Sports Car Hours on Track</span>
               <div class="d-vs-row">
                 <span>{driver.name}</span>
                 <strong data-approx="h" data-n={selfRow.hours}>{formatoAprox(selfRow.hours, "h", loc)}</strong>
@@ -267,11 +265,11 @@ const personSchema = {
   <section class="r-section r-section--alt" id="racesSection" hidden aria-labelledby="racesTitle">
     <div class="r-wrap" style="display:grid;gap:16px">
       <div class="r-head" style="margin-bottom:0">
-        <div><p class="r-kicker">iRacing</p><h2 id="racesTitle" class="r-h3">Latest 5 Road Races</h2></div>
+        <div><p class="r-kicker">iRacing</p><h2 id="racesTitle" class="r-h3">Latest 5 Sports Car Races</h2></div>
       </div>
       <div class="r-scroll" id="racesWrap" hidden>
         <table class="r-table">
-          <caption class="r-meta" style="text-align:left;padding-bottom:8px">Official iRacing public session results (Road only).</caption>
+          <caption class="r-meta" style="text-align:left;padding-bottom:8px">Official iRacing public session results (Sports Car only).</caption>
           <thead><tr><th scope="col">Date</th><th scope="col">Series</th><th scope="col">Circuit</th><th scope="col">Car</th><th scope="col" class="num">Start → Finish</th><th scope="col" class="num">Inc.</th><th scope="col" class="num">ΔiR</th></tr></thead>
           <tbody id="racesBody"></tbody>
         </table>
@@ -286,7 +284,7 @@ const personSchema = {
     </div>
   </section>
 
-  <script is:inline src="/assets/js/driver-page.js?v=t292" defer></script>
+  <script is:inline src="/assets/js/driver-page.js?v=t294" defer></script>
   <script is:inline>
     (function () {
       var url = location.href;

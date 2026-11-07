@@ -85,17 +85,18 @@
         irSum += Number(d.irating);
         irCount += 1;
       }
-      if (d.role) {
+      if (d.role && !/\bgtp\b/i.test(d.role)) {
         var roleEl = card.querySelector('[data-f="role"]');
         if (roleEl) roleEl.textContent = d.role;
       }
       if (d.specialty) {
         var specEl = card.querySelector('[data-f="specialty"]');
-        if (specEl) specEl.textContent = d.specialty;
+        var cleanSpec = String(d.specialty).replace(/\bGTP\b/gi, "Multiclass").replace(/Multiclass\s+Endurance\s+Endurance/gi, "Multiclass Endurance");
+        if (specEl) specEl.textContent = cleanSpec;
       }
-      if (d.fav_car && d.fav_car.name) showList(card, "cars", [d.fav_car.name]);
-      if (d.top_category && d.top_category.name) showList(card, "series", [d.top_category.name]);
-      if (d.bio) showText(card, "bio", d.bio);
+      if (d.fav_car && d.fav_car.name && !/\b(gtp|hypercar|lmdh|lmp|499p|valkyrie)\b/i.test(d.fav_car.name)) showList(card, "cars", [d.fav_car.name]);
+      if (d.top_category && d.top_category.name && !/\b(gtp|oval|formula|dirt)\b/i.test(d.top_category.name)) showList(card, "series", [d.top_category.name]);
+      if (d.bio) showText(card, "bio", String(d.bio).replace(/\bGTP\b/gi, "Multiclass"));
       showMeta(card, "member_since", d.member_since || d.memberSince);
       showMeta(card, "club", d.club || d.club_name);
       if (d.updated_at && (!latest || d.updated_at > latest)) latest = d.updated_at;

@@ -1,8 +1,8 @@
 /**
- * Official Roster & Time-Based Road Telemetry + EA Sports F1 25 Asymptotic Rating Engine.
+ * Official Roster & Time-Based Sports Car Telemetry + EA Sports F1 25 Asymptotic Rating Engine.
  * Source data: src/data/pilotos.json.
  * Strict rules:
- *  1. Complete exclusion of Oval, Speedway and Roval tracks (only Road, street and combined endurance circuits).
+ *  1. Exclusive Sports Car category filtering (GT3, GT4, Porsche Cup, Touring Endurance). Zero GTP/Hypercar/Formula/Oval/Dirt noise.
  *  2. Weighted Hours on Track calculation based on circuit length and average lap time.
  *  3. Dynamic role & specialty read directly from each driver's configuration object.
  *  4. EA Sports F1 25 Rating Engine (1-98, strictly < 99):
@@ -111,15 +111,15 @@ export function computeF1DriverStats(
 }
 
 /**
- * Strict Road filter: excludes any track classified as Oval, Speedway or Roval,
- * keeping only Road, street and combined endurance circuits (including Daytona Road Course / Indy Road Course).
+ * Strict Sports Car circuit filter: excludes any track classified as Oval, Speedway, Roval or Dirt,
+ * keeping only Road, street and combined endurance circuits (including Daytona Road Course).
  */
 export function isRoadTrack(name: string, category?: string): boolean {
   const clean = String(name || "").trim();
   if (!clean || clean === "..." || clean === "…") return false;
-  if (category && /oval|dirt/i.test(category) && !/road/i.test(category)) return false;
+  if (category && /oval|dirt|formula/i.test(category) && !/sports\s*car|road/i.test(category)) return false;
 
-  if (/\b(oval|roval|superspeedway|tri-oval|short\s*track|dirt\s*oval|legends\s*oval)\b/i.test(clean)) {
+  if (/\b(oval|roval|superspeedway|tri-oval|short\s*track|dirt\s*oval|legends\s*oval|rallycross|dirt)\b/i.test(clean)) {
     return false;
   }
 
@@ -131,6 +131,32 @@ export function isRoadTrack(name: string, category?: string): boolean {
     /\b(talladega|martinsville|bristol|darlington|richmond|pocono|michigan|dover|phoenix|las\s*vegas\s*motor|kansas\s*speedway|texas\s*motor|atlanta\s*motor|chicagoland|kentucky|gateway|nashville\s*superspeedway|new\s*hampshire|north\s*wilkesboro|rockingham|usa\s*international|lanier|langley|oxford\s*plains|stafford|thompson|south\s*boston|irwindale|iowa|lucas\s*oil|auto\s*club|eldora|knoxville|volusia)\b/i.test(clean) &&
     !/\broad(\s*course)?\b/i.test(clean)
   ) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Strict Sports Car vehicle filter: keeps exclusively GT3, GT4, Porsche Cup, GTE and Touring Endurance cars.
+ * Explicitly excludes GTP/Hypercar/LMDh/LMP prototypes, Formula/Single-seaters, Oval/NASCAR and Dirt vehicles.
+ */
+export function isSportsCarVehicle(carName: string): boolean {
+  const clean = String(carName || "").trim();
+  if (!clean || clean === "..." || clean === "…") return false;
+
+  // Exclude GTP / Hypercar / LMDh / LMP prototypes
+  if (/\b(gtp|lmdh|hypercar|499p|valkyrie|963|arx-06|v-series|m\s*hybrid|lmp1|lmp2|lmp3|p217|js\s*p320|sr10|radical)\b/i.test(clean)) {
+    return false;
+  }
+
+  // Exclude Formula / Single-seaters
+  if (/\b(formula|f1|f2|f3|f4|super\s*formula|sf23|indycar|ir18|dallara\s*f|w12|w13|skip\s*barber|ff1600|formula\s*vee|usf2000|indy\s*pro)\b/i.test(clean)) {
+    return false;
+  }
+
+  // Exclude Oval / NASCAR / Dirt / Rallycross
+  if (/\b(nascar|stock\s*car|truck|sprint\s*car|midget|late\s*model|legends|modified|rallycross|beetle|pro\s*2|pro\s*4)\b/i.test(clean)) {
     return false;
   }
 
@@ -181,13 +207,10 @@ export function estimateTrackLapSeconds(trackName: string): number {
 
 export function estimateCarLapFactor(carName: string): number {
   const clean = String(carName || "").trim();
-  if (/\b(gtp|lmdh|hypercar|499p|valkyrie|963|arx-06|v-series|m\s*hybrid|lmp2|p217)\b/i.test(clean)) {
-    return 0.9;
-  }
   if (/\b(gt4|tcr|gr86|mx-5|clio)\b/i.test(clean)) {
     return 1.08;
   }
-  return 1.0;
+  return 1.0; // GT3 / Cup baseline
 }
 
 export function cleanTrackDisplayName(name: string): string {
@@ -210,21 +233,22 @@ export function computeCarHours(carName: string, laps: number, driverAvgLapSec =
 }
 
 function deriveDynamicSpecialty(role: string, explicitSpecialty: string | undefined, cars: Array<{ name: string }>): string {
-  if (explicitSpecialty && explicitSpecialty.trim()) return explicitSpecialty.trim();
+  if (explicitSpecialty && explicitSpecialty.trim()) {
+    return explicitSpecialty.replace(/\bGTP\s*&?\s*/gi, "").trim();
+  }
   const carNames = cars.map((c) => c.name).join(" ");
-  const hasGtp = /499p|gtp|valkyrie|963/i.test(carNames);
   const hasGt3 = /gt3/i.test(carNames);
   const hasGt4 = /gt4/i.test(carNames);
-  if (hasGtp && hasGt3) return "GT3 & GTP Endurance";
-  if (hasGt3 && hasGt4) return "Multiclass Endurance GT3 / GT4";
+  if (hasGt3 && hasGt4) return "GT3 & GT4 Endurance";
   if (hasGt3) return "GT3 Endurance & Sprint";
-  return role || "Sports Car Road";
+  return role || "Sports Car Endurance";
 }
 
 export const LICENCE_UPDATED = data.updated;
 export const LICENCE_UPDATED_LABEL = data.updatedLabel;
 
 export const PILOTOS: Piloto[] = data.drivers.map((d) => {
+  // 1. Strict Sports Car Road tracks + weighted hours on track
   const roadTracks: LapStat[] = (d.topTracks || [])
     .filter((t) => isRoadTrack(t.name) && Number(t.laps) > 0)
     .map((t) => {
@@ -246,8 +270,9 @@ export const PILOTOS: Piloto[] = data.drivers.map((d) => {
   const totalTrackSeconds = roadTracks.reduce((acc, t) => acc + t.laps * (t.lapSeconds || 105), 0);
   const weightedAvgLapSec = totalTrackSeconds > 0 ? totalTrackSeconds / totalTrackLaps : 108;
 
-  const roadCars: LapStat[] = (d.topCars || [])
-    .filter((c) => c && c.name && !/\b(nascar|stock\s*car|truck|sprint\s*car|midg|late\s*model)\b/i.test(c.name) && Number(c.laps) > 0)
+  // 2. Strict Sports Car vehicles (GT3, GT4, Cup) — excludes GTP/Formula/Oval/Dirt
+  const sportsCars: LapStat[] = (d.topCars || [])
+    .filter((c) => c && c.name && isSportsCarVehicle(c.name) && Number(c.laps) > 0)
     .map((c) => {
       const cleanName = cleanTrackDisplayName(c.name);
       const hours = computeCarHours(cleanName, c.laps, weightedAvgLapSec);
@@ -262,9 +287,9 @@ export const PILOTOS: Piloto[] = data.drivers.map((d) => {
     .sort((a, b) => b.hours - a.hours);
 
   const totalTrackHours = Math.round(roadTracks.reduce((acc, t) => acc + t.hours, 0) * 10) / 10;
-  const totalCarHours = Math.round(roadCars.reduce((acc, c) => acc + c.hours, 0) * 10) / 10;
-  const dynamicRole = (d.role || "").trim() || deriveDynamicSpecialty("", (d as any).specialty, roadCars);
-  const dynamicSpecialty = deriveDynamicSpecialty(dynamicRole, (d as any).specialty, roadCars);
+  const totalCarHours = Math.round(sportsCars.reduce((acc, c) => acc + c.hours, 0) * 10) / 10;
+  const dynamicRole = (d.role || "").trim() || deriveDynamicSpecialty("", (d as any).specialty, sportsCars);
+  const dynamicSpecialty = deriveDynamicSpecialty(dynamicRole, (d as any).specialty, sportsCars);
 
   return {
     slug: d.slug,
@@ -280,7 +305,7 @@ export const PILOTOS: Piloto[] = data.drivers.map((d) => {
     flag_code: d.countryCode,
     helmet_url: `/img/helmets/${d.slug}.webp`,
     bio: d.bio || "",
-    favouriteCars: d.favouriteCars || [],
+    favouriteCars: (d.favouriteCars || []).filter(isSportsCarVehicle),
     favouriteSeries: d.favouriteSeries || [],
     achievements: d.achievements || [],
     socials: { ...EMPTY_SOCIALS, ...(d.socials || {}) },
@@ -288,7 +313,7 @@ export const PILOTOS: Piloto[] = data.drivers.map((d) => {
     club: d.club || "",
     favoriteTrack: d.favoriteTrack || "",
     topTracks: roadTracks,
-    topCars: roadCars,
+    topCars: sportsCars,
     totalTrackHours,
     totalCarHours,
   };

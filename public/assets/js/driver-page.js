@@ -31,6 +31,19 @@
     if (/\bspeedway\b/i.test(clean) && !/\broad(\s*course)?\b/i.test(clean)) return false;
     return true;
   }
+  function isSportsCarVehicle(carName) {
+    var clean = String(carName || "").trim();
+    if (!clean) return false;
+    if (/\b(gtp|hypercar|lmdh|lmp[123]?|hpd|arx-0[1-6]|963|499p|valkyrie|v-series\.r|m\s*hybrid\s*v8|sc63|a424)\b/i.test(clean)) return false;
+    if (/\b(formula|super\s*formula|sf23|f[1234]|ir-04|ir18|dallara\s*f3|dallara\s*ir|indy|lotus\s*49|lotus\s*79|skip\s*barber|ray\s*ff1600|vee|usf\s*2000|pro\s*2000)\b/i.test(clean)) return false;
+    if (/\b(nascar|stock\s*car|arca|sprint\s*car|midget|late\s*model|modified|legends|street\s*stock|silver\s*crown|dirt|rallycross|irx|beetle|pro\s*[24]\s*truck)\b/i.test(clean)) return false;
+    return true;
+  }
+  function sanitizeSpecialty(s) {
+    var clean = String(s || "").trim();
+    if (!clean) return "";
+    return clean.replace(/\bGTP\b/gi, "Multiclass").replace(/Multiclass\s+Endurance\s+Endurance/gi, "Multiclass Endurance");
+  }
   document.querySelectorAll("[data-toggle-bars]").forEach(function (btn) {
     btn.addEventListener("click", function () {
       var listId = btn.getAttribute("data-toggle-bars");
@@ -39,7 +52,7 @@
       var expanded = btn.getAttribute("aria-expanded") === "true";
       var nextState = !expanded;
       var totalCount = btn.getAttribute("data-total-count") || "";
-      var unit = btn.getAttribute("data-label-unit") || "elementos";
+      var unit = btn.getAttribute("data-label-unit") || "items";
       listEl.querySelectorAll('[data-extra-bar="true"]').forEach(function (li) {
         li.hidden = !nextState;
       });
@@ -47,7 +60,7 @@
       btn.setAttribute("aria-expanded", nextState ? "true" : "false");
       btn.textContent = nextState
         ? "Show Top 5 ▴"
-        : "View all (" + totalCount + " " + unit + ") ▾";
+        : "View full list (" + totalCount + " " + unit + ") ▾";
     });
   });
   function parseLic(s) {
@@ -104,8 +117,8 @@
       licenses.push({ category: "sports_car", class_label: parsed && parsed.classLabel, sr: parsed && parsed.sr, irating: d.irating > 0 ? d.irating : undefined });
     }
     licenses.forEach(paintLic);
-    if (d.role) set("role", d.role);
-    if (d.specialty) set("specialty", d.specialty);
+    if (d.role && !/\bgtp\b/i.test(d.role)) set("role", d.role);
+    if (d.specialty) set("specialty", sanitizeSpecialty(d.specialty));
     if (d.irating > 0) {
       approx(root.querySelector('[data-f="irating"]'), "k", d.irating);
       if (typeof window.muntruComputeAsymptoticRating === "function") {
@@ -115,9 +128,9 @@
         document.dispatchEvent(new CustomEvent("muntrume:driver-live-stats", { detail: { slug: slug, irating: d.irating } }));
       } catch (e) {}
     }
-    if (d.fav_car && d.fav_car.name) showList("cars", [d.fav_car.name]);
-    if (d.top_category && d.top_category.name) showList("series", [d.top_category.name]);
-    if (d.bio) showText("bio", d.bio);
+    if (d.fav_car && d.fav_car.name && isSportsCarVehicle(d.fav_car.name)) showList("cars", [d.fav_car.name]);
+    if (d.top_category && d.top_category.name && !/\b(gtp|oval|formula|dirt)\b/i.test(d.top_category.name)) showList("series", [d.top_category.name]);
+    if (d.bio) showText("bio", sanitizeSpecialty(d.bio));
     showMeta("member_since", d.member_since || d.memberSince);
     showMeta("club", d.club || d.club_name);
     if (d.updated_at) {
@@ -129,7 +142,7 @@
       }
     }
     var races = (Array.isArray(d.recent_races) ? d.recent_races : []).filter(function (r) {
-      return isRoadTrack(r && r.track, r && r.category);
+      return isRoadTrack(r && r.track, r && r.category) && (!r || !r.car || isSportsCarVehicle(r.car));
     }).slice(0, 5);
     if (!races.length) return;
     var racesSection = document.getElementById("racesSection");
