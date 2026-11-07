@@ -3,7 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import StatsGrid from '../components/StatsGrid.astro';
 
 const pageTitle = "Paddock | Muntrume Motorsport";
-const pageDescription = "Official Muntrume Motorsport Paddock. Connect to Discord Race Radio, Garage 61 Team Telemetry, Setup Vault (.STO), Driver Roster, and request your Paddock Pass.";
+const pageDescription = "Official Muntrume Motorsport Paddock. High-resolution gallery, competition fleet specs, team routine, Discord Radio, Garage 61 Telemetry, and Paddock Pass access.";
 
 const channels = [
   {
@@ -35,34 +35,209 @@ const channels = [
     isExternal: false
   }
 ];
+
+const galleryItems = [
+  {
+    id: "g1",
+    title: "Aston Martin Valkyrie GTP",
+    subtitle: "Les Hunaudières · 24H Le Mans",
+    category: "cars",
+    tag: "GTP Hypercar",
+    img: "/assets/img/coche1.webp",
+    thumb: "/assets/img/coche1-640.webp",
+    desc: "Alerón a 4.5° y telemetría a 60 Hz en la recta de Mulsanne. Consumo calibrado a 3.42 L/vuelta para 24 horas de resistencia."
+  },
+  {
+    id: "g2",
+    title: "Ferrari 296 GT3",
+    subtitle: "Raidillon & Eau Rouge · Spa-Francorchamps",
+    category: "cars",
+    tag: "GT3 Endurance",
+    img: "/assets/img/coche2.webp",
+    thumb: "/assets/img/coche2-640.webp",
+    desc: "V6 Twin-Turbo de 600 CV con reparto de frenada optimizado para el paso por Eau Rouge y compresión de suspensión en Raidillon."
+  },
+  {
+    id: "g3",
+    title: "Batalla en Pista GT3 & Multiclase",
+    subtitle: "Curva 1 · Nürburgring Combined",
+    category: "track",
+    tag: "Track Action",
+    img: "/assets/img/race1.webp",
+    thumb: "/assets/img/race1-640.webp",
+    desc: "Pack de GT3s negociando la frenada de la primera curva en carrera de resistencia multiclase bajo condiciones cambiantes."
+  },
+  {
+    id: "g4",
+    title: "Ford Mustang GT3 V8",
+    subtitle: "Horseshoe & Infield · Daytona Road Course",
+    category: "cars",
+    tag: "GT3 Roar",
+    img: "/assets/img/coche3.webp",
+    thumb: "/assets/img/coche3-640.webp",
+    desc: "5.4L Coyote V8 con barras estabilizadoras duras y carga aero para mantener la trazada en los peraltes de Daytona."
+  },
+  {
+    id: "g5",
+    title: "McLaren 720S GT3 EVO",
+    subtitle: "Flugplatz & Schwedenkreuz · Nordschleife",
+    category: "cars",
+    tag: "Sprint & GT3",
+    img: "/assets/img/coche4.webp",
+    thumb: "/assets/img/coche4-640.webp",
+    desc: "Chasis de fibra de carbono monocasco y aerodinámica optimizada para estabilidad en saltos y baches del Infierno Verde."
+  },
+  {
+    id: "g6",
+    title: "Stint Nocturno y Ocaso en Le Mans",
+    subtitle: "Circuit de la Sarthe · Le Mans Sunset",
+    category: "track",
+    tag: "24H Endurance",
+    img: "/assets/img/hero-bg.webp",
+    thumb: "/assets/img/hero-bg-640.webp",
+    desc: "Momento crítico de caída de temperatura de pista. Gestión de presiones en caliente y doble stint de neumáticos en oscuridad total."
+  },
+  {
+    id: "g7",
+    title: "Centro de Telemetría & Pit Wall",
+    subtitle: "Puesto de Ingeniería en Directo · Garage 61",
+    category: "tech",
+    tag: "Pit Wall",
+    img: "/assets/img/og-team.jpg",
+    thumb: "/assets/img/og-team.jpg",
+    desc: "Monitorización en tiempo real de deltas de sector, temperaturas de goma exterior/central/interior y cálculo de combustible de repostaje."
+  },
+  {
+    id: "g8",
+    title: "Librea Oficial Muntrume Motorsport 2026",
+    subtitle: "Diseño Aerodinámico & Identidad Corporativa",
+    category: "tech",
+    tag: "Team Livery",
+    img: "/assets/img/og-cover.jpg",
+    thumb: "/assets/img/og-cover.jpg",
+    desc: "Colores corporativos negro carbón, verde esmeralda neón y plata en carrocería de competición para la temporada 2026."
+  },
+  {
+    id: "g9",
+    title: "Laboratorio .STO & Banco de Reglajes",
+    subtitle: "Más de 41.000 Setups Certificados",
+    category: "tech",
+    tag: "Setup Lab",
+    img: "/assets/img/og-setups.jpg",
+    thumb: "/assets/img/og-setups.jpg",
+    desc: "Banco de datos de suspensiones, alineaciones de caída, convergencia y alturas de pilotaje sincronizados con el simulador iRacing."
+  }
+];
+
+const technicalFleet = [
+  {
+    name: "Aston Martin Valkyrie GTP",
+    classTag: "IMSA GTP · Hypercar",
+    power: "1,000+ CV",
+    engine: "6.5L V12 Cosworth Atmospheric",
+    weight: "1,030 kg",
+    topSpeed: "340+ km/h",
+    series: "IMSA Esports & 24H Global",
+    setupCar: "Aston Martin Valkyrie",
+    img: "/assets/img/coche1-640.webp"
+  },
+  {
+    name: "Ferrari 296 GT3",
+    classTag: "GT3 · Endurance",
+    power: "600 CV",
+    engine: "3.0L V6 120° Twin-Turbo",
+    weight: "1,250 kg",
+    topSpeed: "295 km/h",
+    series: "GT Endurance Series & IMSA",
+    setupCar: "Ferrari 296 GT3",
+    img: "/assets/img/coche2-640.webp"
+  },
+  {
+    name: "Ford Mustang GT3",
+    classTag: "GT3 · V8 Roar",
+    power: "550+ CV",
+    engine: "5.4L Coyote V8 Naturally Aspirated",
+    weight: "1,265 kg",
+    topSpeed: "292 km/h",
+    series: "IMSA GTD Pro & 12H Sebring",
+    setupCar: "Ford Mustang GT3",
+    img: "/assets/img/coche3-640.webp"
+  },
+  {
+    name: "McLaren 720S GT3 EVO",
+    classTag: "GT3 · Aero Sprint",
+    power: "590 CV",
+    engine: "4.0L V8 M840T Twin-Turbo",
+    weight: "1,245 kg",
+    topSpeed: "296 km/h",
+    series: "Global Endurance & Nürburgring 24H",
+    setupCar: "McLaren 720S GT3 EVO",
+    img: "/assets/img/coche4-640.webp"
+  }
+];
+
+const paddockSchedule = [
+  {
+    day: "Miércoles",
+    time: "21:00 UTC",
+    title: "Briefing Técnico & Calibración de Setups",
+    desc: "Análisis de telemetría de la semana con Garage 61, comparación de deltas y descarga de perfiles .STO para la prueba del fin de semana.",
+    badge: "Ingeniería"
+  },
+  {
+    day: "Viernes",
+    time: "20:30 UTC",
+    title: "Práctica Oficial de Stints y Tráfico Multiclase",
+    desc: "Simulación de doble stint con degradación de neumáticos, consumo de combustible y gestión de tráfico con prototipos y GT4.",
+    badge: "Track Test"
+  },
+  {
+    day: "Sábado",
+    time: "14:00 UTC",
+    title: "Sesión Oficial de Carrera (IMSA / Endurance)",
+    desc: "Competición oficial con radio de Discord en vivo, copiloto virtual y relevos cronometrados entre pilotos del equipo.",
+    badge: "Race Day"
+  },
+  {
+    day: "Domingo",
+    time: "19:00 UTC",
+    title: "Debriefing & Análisis Post-Carrera MTI",
+    desc: "Revisión de incidentes, evolución de iRating/SR en Muntrume Telemetry Index y archivo de logs de rendimiento.",
+    badge: "Debrief"
+  }
+];
 ---
 
 <Layout title={pageTitle} description={pageDescription}>
-  <div class="pt-24 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
+  <div class="pt-24 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-20">
     
-    <!-- 1. Header Hero Minimalista (Sin badge de sede repetido) -->
+    <!-- 1. Header Hero Minimalista con Tokens Semánticos -->
     <section class="text-center max-w-3xl mx-auto space-y-4 pt-6">
-      <h1 class="text-4xl sm:text-6xl font-extrabold text-white tracking-tight font-display">
-        MUNTRUME <span class="text-[#00E699]">PADDOCK</span>
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--r-surface)] border border-[var(--r-accent)]/40 text-[var(--r-accent)] text-xs font-mono uppercase tracking-wider">
+        <span class="w-2 h-2 rounded-full bg-[var(--r-accent)] animate-pulse"></span>
+        <span>PADDOCK &amp; TEAM HQ · SANT ANDREU, BARCELONA</span>
+      </div>
+
+      <h1 class="text-4xl sm:text-6xl font-extrabold text-[var(--r-text)] tracking-tight font-display uppercase">
+        MUNTRUME <span class="text-[var(--r-accent)]">PADDOCK</span>
       </h1>
 
-      <p class="text-base sm:text-lg text-[#8B9A8F] leading-relaxed max-w-2xl mx-auto font-normal">
-        Punto de encuentro del equipo. Acceso directo a comunicaciones de radio en carrera, directos técnicos y solicitud de ingreso.
+      <p class="text-base sm:text-lg text-[var(--r-muted)] leading-relaxed max-w-2xl mx-auto font-normal">
+        Punto de encuentro del equipo. Acceso directo a comunicaciones de radio en carrera, directos técnicos, galería oficial de competición y solicitud de ingreso.
       </p>
     </section>
 
-    <!-- 2. Grid de 4 Canales Oficiales Ultra Limpio (Título + 1 línea + Link verde) -->
+    <!-- 2. Grid de 4 Canales Oficiales Ultra Limpio -->
     <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
       {channels.map(c => (
-        <div class="relative p-6 rounded-2xl bg-[#121A17] border border-[#1E2A26] hover:border-[#00E699]/60 transition-all duration-300 flex flex-col justify-between space-y-4 group overflow-hidden">
-          <!-- Small green indicator dot top right -->
-          <span class="absolute top-4 right-4 w-1.5 h-1.5 rounded-full bg-[#00E699] opacity-80 group-hover:scale-125 transition-transform"></span>
+        <div class="relative p-6 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-300 flex flex-col justify-between space-y-4 group overflow-hidden shadow-sm">
+          <span class="absolute top-4 right-4 w-2 h-2 rounded-full bg-[var(--r-accent)] opacity-80 group-hover:scale-125 transition-transform"></span>
 
           <div>
-            <h3 class="text-lg font-bold text-white font-display tracking-tight group-hover:text-[#00E699] transition-colors">
+            <h3 class="text-lg font-bold text-[var(--r-text)] font-display tracking-tight group-hover:text-[var(--r-accent)] transition-colors">
               {c.title}
             </h3>
-            <p class="text-xs text-[#8B9A8F] mt-2 leading-relaxed">
+            <p class="text-xs text-[var(--r-muted)] mt-2 leading-relaxed">
               {c.desc}
             </p>
           </div>
@@ -71,7 +246,7 @@ const channels = [
             href={c.link} 
             target={c.isExternal ? "_blank" : "_self"} 
             rel={c.isExternal ? "noopener noreferrer" : ""} 
-            class="pt-4 border-t border-[#1E2A26] text-xs font-mono font-bold text-[#00E699] hover:underline flex items-center justify-between group-hover:translate-x-0.5 transition-transform"
+            class="pt-4 border-t border-[var(--r-line)] text-xs font-mono font-bold text-[var(--r-accent)] hover:underline flex items-center justify-between group-hover:translate-x-0.5 transition-transform"
           >
             <span>{c.cta}</span>
             <span>&rarr;</span>
@@ -80,20 +255,220 @@ const channels = [
       ))}
     </section>
 
-    <!-- 3. Formulario Quirúrgico: Request Paddock Pass (Solo 3 campos) -->
-    <section class="max-w-2xl mx-auto">
-      <div class="relative p-6 sm:p-10 rounded-2xl bg-[#121A17] border border-[#1E2A26] space-y-8 overflow-hidden">
-        <span class="absolute top-6 right-6 w-1.5 h-1.5 rounded-full bg-[#00E699] opacity-80"></span>
+    <!-- 3. GALERÍA OFICIAL DEL PADDOCK & GARAJE (FOTOS & LIGHTBOX) -->
+    <section id="gallery" class="space-y-8 pt-4">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-[var(--r-line)]">
+        <div>
+          <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--r-accent)] mb-1">
+            <span class="w-2 h-2 rounded-full bg-[var(--r-accent)]"></span>
+            <span>GALERÍA DE COMPETICIÓN</span>
+          </div>
+          <h2 class="text-2xl sm:text-4xl font-extrabold text-[var(--r-text)] font-display tracking-tight">
+            PADDOCK &amp; TRACK GALLERY
+          </h2>
+          <p class="text-xs sm:text-sm text-[var(--r-muted)] mt-1 max-w-xl">
+            Imágenes de alta resolución de la flota de competición, batallas en pista, sesiones nocturnas y banco de telemetría.
+          </p>
+        </div>
 
-        <div class="space-y-2 text-center sm:text-left pb-6 border-b border-[#1E2A26]">
-          <div class="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#00E699]">
-            <span class="w-2 h-2 rounded-full bg-[#00E699] animate-pulse"></span>
+        <!-- Filter Pills -->
+        <div class="flex flex-wrap items-center gap-2" id="galleryFilterBar">
+          <button type="button" class="gallery-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition cursor-pointer bg-[var(--r-accent)] text-[var(--r-accent-ink)] border border-[var(--r-accent)]" data-filter="all">
+            TODAS (9)
+          </button>
+          <button type="button" class="gallery-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition cursor-pointer bg-[var(--r-surface)] text-[var(--r-muted)] border border-[var(--r-line)] hover:border-[var(--r-accent)]" data-filter="cars">
+            COCHES &amp; GT3
+          </button>
+          <button type="button" class="gallery-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition cursor-pointer bg-[var(--r-surface)] text-[var(--r-muted)] border border-[var(--r-line)] hover:border-[var(--r-accent)]" data-filter="track">
+            CARRERA &amp; PISTA
+          </button>
+          <button type="button" class="gallery-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition cursor-pointer bg-[var(--r-surface)] text-[var(--r-muted)] border border-[var(--r-line)] hover:border-[var(--r-accent)]" data-filter="tech">
+            PIT WALL &amp; TECH
+          </button>
+        </div>
+      </div>
+
+      <!-- Photo Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="paddockGalleryGrid">
+        {galleryItems.map(item => (
+          <div 
+            class="gallery-item group relative rounded-2xl overflow-hidden bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-300 shadow-md flex flex-col justify-between cursor-pointer"
+            data-category={item.category}
+            data-img={item.img}
+            data-title={item.title}
+            data-subtitle={item.subtitle}
+            data-tag={item.tag}
+            data-desc={item.desc}
+          >
+            <!-- Image Frame -->
+            <div class="relative w-full aspect-video overflow-hidden bg-[var(--r-bg-2)]">
+              <img 
+                src={item.thumb} 
+                alt={item.title} 
+                width="640" 
+                height="360" 
+                loading="lazy" 
+                decoding="async" 
+                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-[var(--r-surface)] via-transparent to-transparent opacity-80 group-hover:opacity-60 transition-opacity"></div>
+              
+              <!-- Tag Pill Top Left -->
+              <span class="absolute top-3 left-3 px-2.5 py-0.5 rounded-full bg-[var(--r-surface)]/90 backdrop-blur-xs border border-[var(--r-line)] text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase tracking-wider">
+                {item.tag}
+              </span>
+
+              <!-- Zoom Icon Top Right -->
+              <div class="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-1 group-hover:translate-y-0 duration-200">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/></svg>
+              </div>
+            </div>
+
+            <!-- Content Body -->
+            <div class="p-5 flex-1 flex flex-col justify-between space-y-3">
+              <div>
+                <span class="block text-[11px] font-mono text-[var(--r-muted)] mb-1 uppercase tracking-wider">
+                  {item.subtitle}
+                </span>
+                <h3 class="text-base font-bold text-[var(--r-text)] tracking-tight group-hover:text-[var(--r-accent)] transition-colors line-clamp-1">
+                  {item.title}
+                </h3>
+                <p class="text-xs text-[var(--r-muted)] mt-1.5 line-clamp-2 leading-relaxed">
+                  {item.desc}
+                </p>
+              </div>
+
+              <div class="pt-3 border-t border-[var(--r-line)] flex items-center justify-between text-xs font-mono text-[var(--r-accent)] font-semibold">
+                <span>Ampliar en HD</span>
+                <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- 4. FLOTA DE COMPETICIÓN (TECHNICAL FLEET SPECS) -->
+    <section id="fleet" class="space-y-8 pt-4">
+      <div class="pb-4 border-b border-[var(--r-line)]">
+        <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--r-accent)] mb-1">
+          <span class="w-2 h-2 rounded-full bg-[var(--r-accent)]"></span>
+          <span>MAQUINARIA OFICIAL</span>
+        </div>
+        <h2 class="text-2xl sm:text-4xl font-extrabold text-[var(--r-text)] font-display tracking-tight">
+          TECHNICAL COMPETITION FLEET
+        </h2>
+        <p class="text-xs sm:text-sm text-[var(--r-muted)] mt-1 max-w-xl">
+          Vehículos oficiales homologados para los campeonatos de resistencia multiclase y series GT3/GTP en iRacing.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {technicalFleet.map(car => (
+          <div class="p-6 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-300 flex flex-col sm:flex-row gap-6 shadow-sm">
+            <div class="w-full sm:w-48 h-36 rounded-xl overflow-hidden bg-[var(--r-bg-2)] shrink-0 border border-[var(--r-line)]">
+              <img src={car.img} alt={car.name} width="640" height="360" loading="lazy" decoding="async" class="w-full h-full object-cover" />
+            </div>
+
+            <div class="flex-1 flex flex-col justify-between space-y-3">
+              <div>
+                <div class="flex items-center justify-between gap-2 mb-1">
+                  <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-[var(--r-accent)] px-2 py-0.5 rounded bg-[var(--r-accent)]/10">
+                    {car.classTag}
+                  </span>
+                  <span class="text-xs font-mono text-[var(--r-muted)]">{car.series}</span>
+                </div>
+                <h3 class="text-lg font-bold text-[var(--r-text)] font-display tracking-tight">
+                  {car.name}
+                </h3>
+              </div>
+
+              <!-- Technical Specs Grid -->
+              <div class="grid grid-cols-2 gap-2 text-xs font-mono pt-2 border-t border-[var(--r-line)]">
+                <div>
+                  <span class="text-[10px] text-[var(--r-muted)] uppercase block">Potencia</span>
+                  <strong class="text-[var(--r-text)]">{car.power}</strong>
+                </div>
+                <div>
+                  <span class="text-[10px] text-[var(--r-muted)] uppercase block">Vel. Máxima</span>
+                  <strong class="text-[var(--r-text)]">{car.topSpeed}</strong>
+                </div>
+                <div class="col-span-2">
+                  <span class="text-[10px] text-[var(--r-muted)] uppercase block">Propulsor</span>
+                  <span class="text-[var(--r-text)] text-[11px] truncate block">{car.engine}</span>
+                </div>
+              </div>
+
+              <div class="pt-2">
+                <a 
+                  href={`/garage?car=${encodeURIComponent(car.setupCar)}`} 
+                  class="text-xs font-mono font-bold text-[var(--r-accent)] hover:underline flex items-center justify-between"
+                >
+                  <span>Ver Setups Certificados en Vault</span>
+                  <span>&rarr;</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- 5. HORARIOS & RUTINA DEL PADDOCK (PADDOCK SCHEDULE & BRIEFINGS) -->
+    <section id="schedule" class="space-y-8 pt-4">
+      <div class="pb-4 border-b border-[var(--r-line)]">
+        <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--r-accent)] mb-1">
+          <span class="w-2 h-2 rounded-full bg-[var(--r-accent)]"></span>
+          <span>RUTINA DE EQUIPO</span>
+        </div>
+        <h2 class="text-2xl sm:text-4xl font-extrabold text-[var(--r-text)] font-display tracking-tight">
+          WEEKEND SCHEDULE &amp; RACE ROUTINE
+        </h2>
+        <p class="text-xs sm:text-sm text-[var(--r-muted)] mt-1 max-w-xl">
+          Horarios oficiales de las sesiones de telemetría en Garage 61, prácticas de tráfico y carreras de resistencia.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {paddockSchedule.map(s => (
+          <div class="p-6 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] flex flex-col justify-between space-y-4">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="px-2.5 py-0.5 rounded-md bg-[var(--r-bg-2)] border border-[var(--r-line)] text-xs font-mono font-bold text-[var(--r-accent)]">
+                  {s.day}
+                </span>
+                <span class="text-[11px] font-mono text-[var(--r-muted)]">{s.time}</span>
+              </div>
+              <h3 class="text-sm font-bold text-[var(--r-text)] mt-2">
+                {s.title}
+              </h3>
+              <p class="text-xs text-[var(--r-muted)] mt-2 leading-relaxed">
+                {s.desc}
+              </p>
+            </div>
+            <div class="pt-3 border-t border-[var(--r-line)] flex items-center gap-2 text-[11px] font-mono text-[var(--r-muted)]">
+              <span class="w-1.5 h-1.5 rounded-full bg-[var(--r-accent)]"></span>
+              <span>Canal: {s.badge}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- 6. Formulario Quirúrgico: Request Paddock Pass -->
+    <section class="max-w-2xl mx-auto pt-4">
+      <div class="relative p-6 sm:p-10 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] space-y-8 overflow-hidden shadow-lg">
+        <span class="absolute top-6 right-6 w-2 h-2 rounded-full bg-[var(--r-accent)] opacity-80"></span>
+
+        <div class="space-y-2 text-center sm:text-left pb-6 border-b border-[var(--r-line)]">
+          <div class="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--r-accent)]">
+            <span class="w-2 h-2 rounded-full bg-[var(--r-accent)] animate-pulse"></span>
             <span>ACCESO A LA ESCUDERÍA</span>
           </div>
-          <h2 class="text-2xl sm:text-3xl font-extrabold text-white font-display tracking-tight">
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-[var(--r-text)] font-display tracking-tight">
             REQUEST PADDOCK PASS
           </h2>
-          <p class="text-xs text-[#8B9A8F] leading-relaxed">
+          <p class="text-xs text-[var(--r-muted)] leading-relaxed">
             Envía tus datos para solicitar acceso a las salas técnicas de telemetría y comunicación del equipo.
           </p>
         </div>
@@ -101,7 +476,7 @@ const channels = [
         <form id="paddockPassForm" class="space-y-5" onsubmit="handlePaddockPass(event)" novalidate>
           <!-- Campo 1: Nombre del Piloto -->
           <div>
-            <label for="driverNameInput" class="block text-xs font-mono text-[#8B9A8F] uppercase mb-1.5 font-bold">
+            <label for="driverNameInput" class="block text-xs font-mono text-[var(--r-muted)] uppercase mb-1.5 font-bold">
               Nombre del Piloto
             </label>
             <input 
@@ -109,13 +484,13 @@ const channels = [
               required 
               id="driverNameInput"
               placeholder="Alberto Trujillo" 
-              class="w-full px-4 py-3 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699] transition"
+              class="w-full px-4 py-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] text-[var(--r-text)] text-xs font-mono focus:outline-none focus:border-[var(--r-accent)] transition"
             />
           </div>
 
           <!-- Campo 2: Email iRacing -->
           <div>
-            <label for="driverEmailInput" class="block text-xs font-mono text-[#8B9A8F] uppercase mb-1.5 font-bold">
+            <label for="driverEmailInput" class="block text-xs font-mono text-[var(--r-muted)] uppercase mb-1.5 font-bold">
               Email iRacing
             </label>
             <input 
@@ -123,17 +498,17 @@ const channels = [
               required 
               id="driverEmailInput"
               placeholder="piloto@iracing.com" 
-              class="w-full px-4 py-3 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699] transition"
+              class="w-full px-4 py-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] text-[var(--r-text)] text-xs font-mono focus:outline-none focus:border-[var(--r-accent)] transition"
             />
           </div>
 
           <!-- Campo 3: Mensaje -->
           <div>
             <div class="flex items-center justify-between mb-1.5">
-              <label for="driverMessageInput" class="block text-xs font-mono text-[#8B9A8F] uppercase font-bold">
+              <label for="driverMessageInput" class="block text-xs font-mono text-[var(--r-muted)] uppercase font-bold">
                 Mensaje
               </label>
-              <span id="msgCharCounter" class="text-[11px] font-mono text-[#8B9A8F]">
+              <span id="msgCharCounter" class="text-[11px] font-mono text-[var(--r-muted)]">
                 <span id="msgCharCurrent">0</span> / 50 caracteres mín.
               </span>
             </div>
@@ -143,20 +518,20 @@ const channels = [
               minlength="50"
               id="driverMessageInput"
               placeholder="Escribe tu mensaje o motivación para conectar con Muntrume Motorsport..." 
-              class="w-full px-4 py-3 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs font-mono focus:outline-none focus:border-[#00E699] transition resize-none"
+              class="w-full px-4 py-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] text-[var(--r-text)] text-xs font-mono focus:outline-none focus:border-[var(--r-accent)] transition resize-none"
             ></textarea>
           </div>
 
           <button 
             type="submit" 
             id="paddockSubmitBtn"
-            class="w-full py-3.5 rounded-xl bg-[#00E699] hover:bg-[#00c985] text-neutral-950 font-black text-xs uppercase tracking-wider transition shadow-lg shadow-[#00E699]/15 flex items-center justify-center gap-2 cursor-pointer"
+            class="w-full py-3.5 rounded-xl bg-[var(--r-accent)] hover:opacity-90 text-[var(--r-accent-ink)] font-black text-xs uppercase tracking-wider transition shadow-lg shadow-[var(--r-accent)]/15 flex items-center justify-center gap-2 cursor-pointer"
           >
             <span id="paddockBtnText">Enviar Solicitud de Paddock Pass</span>
             <span id="paddockBtnArrow">&rarr;</span>
           </button>
 
-          <div id="paddockPassSuccess" class="hidden relative p-5 rounded-xl bg-[#00E699]/10 border border-[#00E699]/30 text-xs font-mono text-[#00E699] text-center overflow-hidden">
+          <div id="paddockPassSuccess" class="hidden relative p-5 rounded-xl bg-[var(--r-accent)]/10 border border-[var(--r-accent)]/30 text-xs font-mono text-[var(--r-accent)] text-center overflow-hidden">
             <div id="paddockConfettiHost" class="pointer-events-none absolute inset-0 overflow-hidden"></div>
             <span class="relative z-10 font-bold">Pase de Paddock solicitado con éxito. El copiloto te contactará por Discord.</span>
           </div>
@@ -167,15 +542,129 @@ const channels = [
       </div>
     </section>
 
-    <!-- 4. Stats Grid Unificado -->
-    <section class="pt-6">
+    <!-- 7. Stats Grid Unificado -->
+    <section class="pt-4">
       <StatsGrid />
     </section>
 
   </div>
+
+  <!-- LIGHTBOX MODAL DIALOG (ACCESSIBLE FULL RESOLUTION PREVIEW) -->
+  <div id="paddockLightbox" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden items-center justify-center p-4 sm:p-8" role="dialog" aria-modal="true" aria-labelledby="lightboxTitle">
+    <div class="relative max-w-5xl w-full bg-[var(--r-surface)] border border-[var(--r-line)] rounded-2xl overflow-hidden shadow-2xl flex flex-col" id="lightboxCard">
+      <!-- Close Button -->
+      <button type="button" id="lightboxCloseBtn" class="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center transition focus:outline-none cursor-pointer" aria-label="Cerrar vista previa">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+      </button>
+
+      <!-- Lightbox Image Frame -->
+      <div class="relative bg-black flex items-center justify-center max-h-[65vh] overflow-hidden">
+        <img id="lightboxImg" src="" alt="" class="w-full h-auto max-h-[65vh] object-contain transition duration-300" />
+      </div>
+
+      <!-- Lightbox Footer Info -->
+      <div class="p-6 bg-[var(--r-surface)] border-t border-[var(--r-line)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+            <span id="lightboxTag" class="px-2.5 py-0.5 rounded-full bg-[var(--r-accent)]/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase tracking-wider"></span>
+            <span id="lightboxSubtitle" class="text-xs font-mono text-[var(--r-muted)]"></span>
+          </div>
+          <h3 id="lightboxTitle" class="text-lg sm:text-xl font-bold text-[var(--r-text)] tracking-tight"></h3>
+          <p id="lightboxDesc" class="text-xs text-[var(--r-muted)] mt-1 max-w-2xl leading-relaxed"></p>
+        </div>
+
+        <a id="lightboxFullBtn" href="" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 rounded-xl bg-[var(--r-bg-2)] hover:bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono font-bold text-[var(--r-text)] hover:text-[var(--r-accent)] transition shrink-0">
+          Abrir Original HD &rarr;
+        </a>
+      </div>
+    </div>
+  </div>
 </Layout>
 
 <script is:inline>
+  // 1. Gallery Filtering & Lightbox Interactions
+  (function initPaddockGallery() {
+    var filterBtns = document.querySelectorAll('.gallery-filter-btn');
+    var items = document.querySelectorAll('.gallery-item');
+    var lightbox = document.getElementById('paddockLightbox');
+    var closeBtn = document.getElementById('lightboxCloseBtn');
+    var lbImg = document.getElementById('lightboxImg');
+    var lbTitle = document.getElementById('lightboxTitle');
+    var lbSubtitle = document.getElementById('lightboxSubtitle');
+    var lbTag = document.getElementById('lightboxTag');
+    var lbDesc = document.getElementById('lightboxDesc');
+    var lbFullBtn = document.getElementById('lightboxFullBtn');
+
+    // Filtering
+    filterBtns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var filter = btn.getAttribute('data-filter');
+        filterBtns.forEach(function(b) {
+          b.className = 'gallery-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition cursor-pointer bg-[var(--r-surface)] text-[var(--r-muted)] border border-[var(--r-line)] hover:border-[var(--r-accent)]';
+        });
+        btn.className = 'gallery-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition cursor-pointer bg-[var(--r-accent)] text-[var(--r-accent-ink)] border border-[var(--r-accent)]';
+
+        items.forEach(function(item) {
+          var cat = item.getAttribute('data-category');
+          if (filter === 'all' || cat === filter) {
+            item.style.display = 'flex';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      });
+    });
+
+    // Open Lightbox
+    items.forEach(function(item) {
+      item.addEventListener('click', function() {
+        var imgUrl = item.getAttribute('data-img');
+        var title = item.getAttribute('data-title');
+        var subtitle = item.getAttribute('data-subtitle');
+        var tag = item.getAttribute('data-tag');
+        var desc = item.getAttribute('data-desc');
+
+        if (lbImg) {
+          lbImg.src = imgUrl;
+          lbImg.alt = title;
+        }
+        if (lbTitle) lbTitle.textContent = title;
+        if (lbSubtitle) lbSubtitle.textContent = subtitle;
+        if (lbTag) lbTag.textContent = tag;
+        if (lbDesc) lbDesc.textContent = desc;
+        if (lbFullBtn) lbFullBtn.href = imgUrl;
+
+        if (lightbox) {
+          lightbox.classList.remove('hidden');
+          lightbox.classList.add('flex');
+          document.body.style.overflow = 'hidden';
+        }
+      });
+    });
+
+    function closeLightbox() {
+      if (lightbox) {
+        lightbox.classList.add('hidden');
+        lightbox.classList.remove('flex');
+        document.body.style.overflow = '';
+      }
+    }
+
+    if (closeBtn) closeBtn.addEventListener('click', closeLightbox);
+    if (lightbox) {
+      lightbox.addEventListener('click', function(e) {
+        if (e.target === lightbox) closeLightbox();
+      });
+    }
+
+    window.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && lightbox && !lightbox.classList.contains('hidden')) {
+        closeLightbox();
+      }
+    });
+  })();
+
+  // 2. Form Validation & Submissions
   (function initPaddockValidation() {
     var nameInput = document.getElementById('driverNameInput');
     var emailInput = document.getElementById('driverEmailInput');
@@ -190,7 +679,7 @@ const channels = [
     }
 
     function setBorder(el, valid, empty) {
-      el.style.borderColor = empty ? '#1E2A26' : (valid ? '#00E699' : '#ef4444');
+      el.style.borderColor = empty ? 'var(--r-line)' : (valid ? 'var(--r-accent)' : '#ef4444');
     }
 
     nameInput.addEventListener('input', function() {
@@ -207,7 +696,7 @@ const channels = [
       var len = msgInput.value.trim().length;
       if (charCurrent) charCurrent.textContent = String(len);
       if (charCounter) {
-        charCounter.style.color = len >= 50 ? '#00E699' : '#8B9A8F';
+        charCounter.style.color = len >= 50 ? 'var(--r-accent)' : 'var(--r-muted)';
       }
       setBorder(msgInput, len >= 50, len === 0);
     });

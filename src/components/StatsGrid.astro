@@ -17,19 +17,19 @@ export const OFFICIAL_STATS = [
 
 <div class={`grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 ${className}`}>
   {OFFICIAL_STATS.map((s) => (
-    <div class="relative group p-4 sm:p-5 rounded-2xl bg-[#121A17] border border-[#1E2A26] hover:border-[#00E699]/60 transition-all duration-300 flex flex-col justify-between overflow-hidden">
+    <div class="relative group p-4 sm:p-5 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-300 flex flex-col justify-between overflow-hidden">
       <div class="flex items-center justify-between gap-2 mb-3">
-        <span class="text-[10px] font-mono uppercase tracking-widest text-[#8B9A8F]">{s.tag}</span>
-        <span class="w-1.5 h-1.5 rounded-full bg-[#00E699] opacity-80 group-hover:scale-125 transition-transform"></span>
+        <span class="text-[10px] font-mono uppercase tracking-widest text-[var(--r-muted)]">{s.tag}</span>
+        <span class="w-1.5 h-1.5 rounded-full bg-[var(--r-accent)] opacity-80 group-hover:scale-125 transition-transform"></span>
       </div>
       <div>
-        <div class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight font-display mb-1">
+        <div class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[var(--r-text)] tracking-tight font-display mb-1">
           {s.number}
         </div>
-        <div class="text-xs font-bold text-neutral-200">
+        <div class="text-xs font-bold text-[var(--r-text)]">
           {s.label}
         </div>
-        <div class="text-[11px] text-[#8B9A8F] font-mono mt-0.5 truncate">
+        <div class="text-[11px] text-[var(--r-muted)] font-mono mt-0.5 truncate">
           {s.detail}
         </div>
       </div>
