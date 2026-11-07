@@ -1,25 +1,173 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import fs from 'node:fs';
+import path from 'node:path';
+
+function slugify(text: string) {
+  return (text || '').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function renderMarkdownToHtml(md: string) {
+  if (!md) return '';
+  const lines = md.split(/\r?\n/);
+  let html = '';
+  let inList = false;
+
+  const formatInline = (text: string) => {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\*\*(.+?)\*\*/g, '<strong class="text-white font-bold">$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em class="italic text-neutral-200">$1</em>')
+      .replace(/`(.+?)`/g, '<code class="px-1.5 py-0.5 rounded bg-[#161C1A] text-[#00E699] font-mono text-xs border border-[#00E699]/20">$1</code>');
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+
+    if (!line) {
+      if (inList) { html += '</ul>'; inList = false; }
+      continue;
+    }
+
+    if (line.startsWith('### ')) {
+      if (inList) { html += '</ul>'; inList = false; }
+      html += `<h3 class="text-lg font-bold text-white mt-6 mb-2 tracking-tight">${formatInline(line.substring(4))}</h3>`;
+      continue;
+    }
+    if (line.startsWith('## ')) {
+      if (inList) { html += '</ul>'; inList = false; }
+      html += `<h2 class="text-xl sm:text-2xl font-bold text-white mt-8 mb-3 tracking-tight border-b border-[#242E2C] pb-2">${formatInline(line.substring(3))}</h2>`;
+      continue;
+    }
+    if (line.startsWith('> ')) {
+      if (inList) { html += '</ul>'; inList = false; }
+      html += `<blockquote class="p-4 my-5 border-l-4 border-[#00E699] bg-[#121A17] rounded-r-xl text-neutral-200 italic leading-relaxed">${formatInline(line.substring(2))}</blockquote>`;
+      continue;
+    }
+    if (line.startsWith('- ') || line.startsWith('* ')) {
+      if (!inList) { html += '<ul class="space-y-2 my-4 list-disc list-inside text-neutral-300">'; inList = true; }
+      html += `<li class="leading-relaxed">${formatInline(line.substring(2))}</li>`;
+      continue;
+    }
+
+    if (inList) { html += '</ul>'; inList = false; }
+    html += `<p class="leading-relaxed text-neutral-300 my-3 text-base">${formatInline(line)}</p>`;
+  }
+
+  if (inList) html += '</ul>';
+  return html;
+}
+
+function getAuthorInitials(name: string) {
+  if (!name) return 'MM';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return name.substring(0, 2).toUpperCase();
+}
+
+function getAuthorRole(author: string) {
+  const a = (author || '').toLowerCase();
+  if (a.includes('trujillo')) return 'Fundador & Ingeniero de Telemetría (#16)';
+  if (a.includes('berbis')) return 'Piloto Oficial GT3 & Resistencia (#1)';
+  if (a.includes('chongkan')) return 'Piloto Oficial GT3 & Resistencia (#22)';
+  if (a.includes('engineering') || a.includes('ingenier')) return 'Laboratorio de Puesta a Punto y Telemetría';
+  return 'Muntrume Motorsport Official';
+}
 
 export async function getStaticPaths() {
+  function slugify(text) {
+    return (text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  }
+  const paths: any[] = [];
+  const seenSlugs = new Set<string>();
+
+  // 1. Cargar noticias oficiales de equipo desde public/noticias-equipo.md
+  try {
+    const mdPath = path.resolve('./public/noticias-equipo.md');
+    if (fs.existsSync(mdPath)) {
+      const rawMd = fs.readFileSync(mdPath, 'utf8');
+      const blocks = rawMd.split(/^---\s*$/m).filter(b => b.trim().length > 0);
+      blocks.forEach(block => {
+        const lines = block.trim().split(/\r?\n/);
+        let title = '', date = '', author = '', category = 'General', image = '', contentLines: string[] = [];
+        const titleLine = lines.find(l => /^#\s+/.test(l));
+        if (titleLine) title = titleLine.replace(/^#\s+/, '').trim();
+        lines.forEach(l => {
+          const trimmed = l.trim();
+          const match = trimmed.match(/^\*\*(Date|Fecha|Author|Autor|Category|Categor[ií]a|Image|Imagen):\*\*\s*(.+)$/i);
+          if (match) {
+            const key = match[1].toLowerCase();
+            const value = match[2].trim();
+            if (key.includes('fecha') || key === 'date') date = value;
+            else if (key.includes('autor') || key === 'author') author = value;
+            else if (key.includes('categor') || key === 'category') category = value;
+            else if (key.includes('imagen') || key === 'image') image = value;
+          } else if (!/^#\s+/.test(trimmed) && trimmed.length > 0) {
+            contentLines.push(trimmed);
+          }
+        });
+
+        if (title) {
+          const slug = slugify(title);
+          seenSlugs.add(slug);
+          const fullContent = contentLines.join('\n');
+          const firstPara = contentLines.find(l => !l.startsWith('#') && !l.startsWith('-') && !l.startsWith('>')) || '';
+
+          paths.push({
+            params: { slug },
+            props: {
+              dispatch: {
+                slug,
+                title_original: title,
+                excerpt_short: firstPara.length > 200 ? firstPara.substring(0, 197) + '...' : firstPara,
+                context_note: 'Despacho institucional emitido por la dirección técnica de Muntrume Motorsport.',
+                body_markdown: fullContent,
+                url_original: `https://muntru.me/noticias/${slug}`,
+                source_name: 'Muntrume Motorsport',
+                source_domain: 'muntru.me',
+                published_at: date || '2026-11-01',
+                image_url_original: image || '/assets/img/race1.webp',
+                author: author || 'Muntrume Motorsport',
+                category: category || 'General',
+                isTeam: true
+              }
+            }
+          });
+        }
+      });
+    }
+  } catch (err) {
+    console.warn('[noticias-ssg] Error leyendo noticias-equipo.md:', err);
+  }
+
+  // 2. Cargar despachos externos desde el Worker API
   try {
     const res = await fetch('https://muntrume.atrumin16.workers.dev/api/dispatches');
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data.dispatches) && data.dispatches.length > 0) {
-        return data.dispatches.map((d: any) => ({
-          params: { slug: d.slug },
-          props: { dispatch: d }
-        }));
+        data.dispatches.forEach((d: any) => {
+          if (!seenSlugs.has(d.slug)) {
+            seenSlugs.add(d.slug);
+            paths.push({
+              params: { slug: d.slug },
+              props: { dispatch: { ...d, isTeam: false } }
+            });
+          }
+        });
       }
     }
   } catch (e) {
     console.warn('[noticias-ssg] API fetch failed during build:', e);
   }
 
-  // Fallback slug si el build corre offline
-  return [
-    {
+  if (paths.length === 0) {
+    paths.push({
       params: { slug: 'iracing-season-update-26s4' },
       props: {
         dispatch: {
@@ -31,11 +179,14 @@ export async function getStaticPaths() {
           source_name: 'iRacing Official',
           source_domain: 'iracing.com',
           published_at: new Date().toISOString(),
-          image_url_original: null
+          image_url_original: null,
+          isTeam: false
         }
       }
-    }
-  ];
+    });
+  }
+
+  return paths;
 }
 
 interface Props {
@@ -45,163 +196,288 @@ interface Props {
 const { dispatch } = Astro.props as Props;
 const { slug } = Astro.params;
 
+const isTeam = Boolean(dispatch?.isTeam);
 const title = dispatch?.title_original || 'Despacho Técnico · Muntrume Motorsport';
-const pageTitle = `${title} · Sala de Prensa Muntrume`;
-const pageDescription = dispatch?.excerpt_short || 'Resumen de actualidad en sim racing y competición de resistencia agregado vía RSS público.';
-const urlOriginal = dispatch?.url_original || 'https://muntru.me';
-const sourceName = dispatch?.source_name || 'Fuente Oficial';
+const pageTitle = isTeam ? `${title} · Muntrume Motorsport` : `${title} · Sala de Prensa Muntrume`;
+const pageDescription = dispatch?.excerpt_short || 'Noticias oficiales y técnica de simracing de Muntrume Motorsport.';
+const urlOriginal = isTeam ? `https://muntru.me/noticias/${slug}` : (dispatch?.url_original || 'https://muntru.me');
+const sourceName = dispatch?.source_name || (isTeam ? 'Muntrume Motorsport' : 'Fuente Oficial');
 const excerpt = dispatch?.excerpt_short || '';
 const contextNote = dispatch?.context_note || 'Despacho técnico monitorizado por Muntrume Motorsport para análisis de telemetría y ritmo de carrera.';
 const pubDate = dispatch?.published_at ? new Date(dispatch.published_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
-const imageUrl = dispatch?.image_url_original;
+const imageUrl = dispatch?.image_url_original || (isTeam ? '/assets/img/coche1.webp' : null);
+const authorName = dispatch?.author || 'Muntrume Motorsport';
+const authorRole = getAuthorRole(authorName);
+const authorInitials = getAuthorInitials(authorName);
+const category = dispatch?.category || 'Despacho Oficial';
+const bodyHtml = isTeam ? renderMarkdownToHtml(dispatch?.body_markdown || '') : '';
 ---
 
 <Layout title={pageTitle} description={pageDescription} canonical={urlOriginal}>
-  <!-- Metas SEO legales obligatorios -->
+  
   <Fragment slot="head">
     <link rel="canonical" href={urlOriginal} />
-    <meta name="robots" content="noindex, follow" />
+    {isTeam ? (
+      <>
+        <meta name="robots" content="index, follow" />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        {imageUrl && <meta property="og:image" content={imageUrl} />}
+        <meta property="og:url" content={urlOriginal} />
+        <meta property="og:type" content="article" />
+      </>
+    ) : (
+      <meta name="robots" content="noindex, follow" />
+    )}
   </Fragment>
 
   <div class="min-h-screen bg-[#0E1211] text-[#F5F5F5] pt-20 pb-20 selection:bg-[#00E699] selection:text-black">
     <div id="dispatchContainer" class="max-w-3xl mx-auto px-4 sm:px-6 space-y-8">
       
-      <!-- Top nav -->
+      
       <div class="flex items-center justify-between text-xs font-mono pb-2 border-b border-[#242E2C]">
         <nav class="flex items-center gap-2 text-[#9AA8A3]">
           <a href="/" class="hover:text-white transition">Inicio</a>
           <span>/</span>
-          <a href="/news" class="hover:text-[#00E699] transition">Media Wire</a>
+          <a href="/news" class="hover:text-[#00E699] transition">Sala de Prensa</a>
           <span>/</span>
-          <span class="text-[#00E699] truncate max-w-[200px]">{sourceName}</span>
+          <span class="text-[#00E699] truncate max-w-[200px]">{category}</span>
         </nav>
         <a 
           href="/news" 
           class="inline-flex items-center gap-1 text-[#9AA8A3] hover:text-white transition"
         >
           <span>&larr;</span>
-          <span>Sala de Prensa</span>
+          <span>Volver a Noticias</span>
         </a>
       </div>
 
-      <!-- Badge superior: Vía [Nombre Fuente] • [Fecha Original] -->
-      <div class="flex flex-wrap items-center gap-2 text-xs font-mono">
-        <span class="px-2.5 py-1 rounded bg-[#1A2120] text-[#00E699] border border-[#242E2C] font-semibold">
-          Vía <a href={urlOriginal} target="_blank" rel="noopener noreferrer" class="underline hover:text-white">{sourceName}</a>
-        </span>
-        {pubDate && <span class="text-[#9AA8A3]">• {pubDate}</span>}
-        <span class="px-2 py-0.5 rounded bg-[#121A17] text-[#7A8A87] border border-[#1E2A26] text-[10px] uppercase font-semibold">
-          Despacho Agregado
-        </span>
-      </div>
+      {isTeam ? (
+        
+        
+        
+        <article class="space-y-8">
+          
+          <div class="flex flex-wrap items-center gap-2 text-xs font-mono">
+            <span class="px-2.5 py-1 rounded bg-[#1A2120] text-[#00E699] border border-[#00E699]/30 font-semibold uppercase tracking-wider flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-[#00E699] animate-pulse"></span>
+              <span>Despacho Oficial · Muntrume</span>
+            </span>
+            <span class="px-2 py-0.5 rounded bg-[#121A17] text-[#BAC5C1] border border-[#1E2A26] uppercase font-semibold">
+              {category}
+            </span>
+            {pubDate && <span class="text-[#9AA8A3]">• {pubDate}</span>}
+          </div>
 
-      <!-- H1: Título Original -->
-      <h1 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
-        {title}
-      </h1>
+          
+          <h1 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+            {title}
+          </h1>
 
-      <!-- Imagen de portada con caption (sin alojar en servidor propio) -->
-      {imageUrl && (
-        <figure class="rounded-2xl overflow-hidden border border-[#242E2C] bg-[#1A2120] relative">
-          <img
-            src={imageUrl}
-            alt={title}
-            referrerpolicy="no-referrer"
-            loading="lazy"
-            class="w-full max-h-[420px] object-cover opacity-90 hover:opacity-100 transition"
-          />
-          <figcaption class="p-3 text-[11px] font-mono text-[#7A8A87] bg-[#0E1211]/80 border-t border-[#242E2C]">
-            Fotografía e imagen vía {sourceName}
-          </figcaption>
-        </figure>
+          
+          <div class="flex items-center justify-between gap-4 py-4 border-y border-[#242E2C] text-xs">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-[#1A2120] border border-[#00E699]/40 flex items-center justify-center font-extrabold text-[#00E699] text-sm">
+                {authorInitials}
+              </div>
+              <div>
+                <div class="font-bold text-white text-sm">{authorName}</div>
+                <div class="text-[#9AA8A3] text-xs">{authorRole}</div>
+              </div>
+            </div>
+
+            <button 
+              id="teamShareBtn" 
+              onclick="if(navigator.clipboard){navigator.clipboard.writeText(window.location.href);var t=document.getElementById('teamShareText');if(t){t.textContent='¡Enlace Copiado!';setTimeout(()=>t.textContent='Compartir',2000);}}"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1A2120] border border-[#242E2C] hover:border-[#00E699]/40 text-[#BAC5C1] hover:text-white transition text-xs font-mono cursor-pointer"
+            >
+              <svg class="w-3.5 h-3.5 text-[#00E699]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+              </svg>
+              <span id="teamShareText">Compartir</span>
+            </button>
+          </div>
+
+          
+          {imageUrl && (
+            <figure class="rounded-2xl overflow-hidden border border-[#242E2C] bg-[#1A2120] relative shadow-2xl">
+              <img
+                src={imageUrl}
+                alt={title}
+                loading="eager"
+                decoding="async"
+                class="w-full max-h-[460px] object-cover"
+              />
+              <figcaption class="p-3 text-[11px] font-mono text-[#7A8A87] bg-[#0E1211]/90 border-t border-[#242E2C] flex items-center justify-between">
+                <span>Fotografía oficial · {category} · Muntrume Motorsport</span>
+                <span class="text-[#00E699]">iRacing Official Series</span>
+              </figcaption>
+            </figure>
+          )}
+
+          
+          <div class="space-y-4 text-[#BAC5C1] text-base leading-relaxed bg-[#141A18] p-6 sm:p-8 rounded-2xl border border-[#242E2C]">
+            <div set:html={bodyHtml} />
+          </div>
+
+          
+          <div class="p-6 rounded-2xl bg-[#1A2120] border border-[#242E2C] space-y-4">
+            <div class="flex items-center gap-2 text-white font-bold font-mono text-sm">
+              <span class="text-[#00E699]">⚡</span>
+              <span>Recursos Técnicos y Telemetría del Equipo</span>
+            </div>
+            <p class="text-xs text-[#9AA8A3] leading-relaxed">
+              Consulta las configuraciones .STO verificadas para esta prueba o compara tus vueltas con la telemetría a 60 Hz registrada por nuestros ingenieros:
+            </p>
+            <div class="flex flex-wrap gap-3 pt-2">
+              <a 
+                href="/garage" 
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#00E699] text-black font-bold font-mono text-xs hover:bg-[#00c985] transition"
+              >
+                <span>📂 Sincronizar Setup Vault</span>
+                <span>&rarr;</span>
+              </a>
+              <a 
+                href="https://garage61.net/app/teams/muntrume" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#242E2C] text-white hover:border-[#00E699]/40 border border-transparent font-mono text-xs transition"
+              >
+                <span>📊 Telemetría Garage 61</span>
+                <span>&nearr;</span>
+              </a>
+              <a 
+                href="/paddock" 
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#121A17] text-[#BAC5C1] hover:text-white border border-[#242E2C] font-mono text-xs transition"
+              >
+                <span>🏎️ Paddock &amp; Discord</span>
+                <span>&rarr;</span>
+              </a>
+            </div>
+          </div>
+        </article>
+      ) : (
+        
+        
+        
+        <article class="space-y-8">
+          <div class="flex flex-wrap items-center gap-2 text-xs font-mono">
+            <span class="px-2.5 py-1 rounded bg-[#1A2120] text-[#00E699] border border-[#242E2C] font-semibold">
+              Vía <a href={urlOriginal} target="_blank" rel="noopener noreferrer" class="underline hover:text-white">{sourceName}</a>
+            </span>
+            {pubDate && <span class="text-[#9AA8A3]">• {pubDate}</span>}
+            <span class="px-2 py-0.5 rounded bg-[#121A17] text-[#7A8A87] border border-[#1E2A26] text-[10px] uppercase font-semibold">
+              Despacho Agregado
+            </span>
+          </div>
+
+          <h1 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+            {title}
+          </h1>
+
+          {imageUrl && (
+            <figure class="rounded-2xl overflow-hidden border border-[#242E2C] bg-[#1A2120] relative">
+              <img
+                src={imageUrl}
+                alt={title}
+                referrerpolicy="no-referrer"
+                loading="lazy"
+                class="w-full max-h-[420px] object-cover opacity-90 hover:opacity-100 transition"
+              />
+              <figcaption class="p-3 text-[11px] font-mono text-[#7A8A87] bg-[#0E1211]/80 border-t border-[#242E2C]">
+                Fotografía e imagen vía {sourceName}
+              </figcaption>
+            </figure>
+          )}
+
+          <div class="space-y-6 text-[#BAC5C1] text-base leading-relaxed bg-[#1A2120] p-6 sm:p-8 rounded-2xl border border-[#242E2C]">
+            <div>
+              <h2 class="text-xs font-mono uppercase tracking-wider text-[#7A8A87] mb-2 font-semibold">Resumen de la noticia</h2>
+              <p class="text-white text-base sm:text-lg font-medium italic border-l-2 border-[#00E699] pl-4 py-1">
+                "{excerpt}"
+              </p>
+            </div>
+
+            <div class="pt-4 border-t border-[#242E2C]">
+              <h2 class="text-xs font-mono uppercase tracking-wider text-[#00E699] mb-2 font-semibold">Contexto Muntrume Motorsport</h2>
+              <p class="text-sm sm:text-base text-[#9AA8A3]">
+                {contextNote}
+              </p>
+            </div>
+          </div>
+
+          <div class="pt-2 text-center sm:text-left">
+            <a
+              href={urlOriginal}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center justify-center gap-3 w-full sm:w-auto px-8 py-4 rounded-xl bg-[#00E699] text-black font-bold font-mono text-sm sm:text-base hover:bg-[#00c985] shadow-lg shadow-[#00E699]/15 hover:shadow-[#00E699]/30 transition transform hover:-translate-y-0.5"
+            >
+              <span>Leer noticia completa en {sourceName}</span>
+              <span class="text-lg">&rarr;</span>
+            </a>
+            <p class="text-[11px] font-mono text-[#7A8A87] mt-2">
+              Enlace directo al artículo original en {sourceName} (se abre en nueva ventana).
+            </p>
+          </div>
+
+          <div class="p-5 rounded-xl bg-[#121A17] border border-[#242E2C] text-xs font-mono text-[#7A8A87] space-y-2 mt-12">
+            <div class="flex items-center gap-2 text-[#9AA8A3] font-semibold">
+              <svg class="w-4 h-4 text-[#00E699]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Aviso Legal y Atribución Editorial</span>
+            </div>
+            <p>
+              Este contenido es un resumen técnico agregado vía RSS público con fines informativos y de cita (Art. 32 LPI / Directiva UE 2019/790). La noticia original fue publicada por <strong>{sourceName}</strong> y todos los derechos pertenecen a sus respectivos autores.
+            </p>
+            <p>
+              Fuente original: <a href={urlOriginal} target="_blank" rel="noopener noreferrer" class="text-[#00E699] underline break-all">{urlOriginal}</a>
+            </p>
+            <div class="pt-2 flex flex-wrap items-center gap-4 text-[11px] text-[#9AA8A3]">
+              <a href="/legal/fuentes" class="hover:text-white underline">Directorio de Fuentes y Contacto 24h</a>
+              <span>•</span>
+              <a href="/legal/retirada" class="hover:text-white underline">Solicitar Retirada Inmediata (Takedown)</a>
+            </div>
+          </div>
+        </article>
       )}
 
-      <!-- Cuerpo: SOLO el excerpt de 150 caracteres + párrafo propio de contexto -->
-      <div class="space-y-6 text-[#BAC5C1] text-base leading-relaxed bg-[#1A2120] p-6 sm:p-8 rounded-2xl border border-[#242E2C]">
-        <div>
-          <h2 class="text-xs font-mono uppercase tracking-wider text-[#7A8A87] mb-2 font-semibold">Resumen de la noticia</h2>
-          <p class="text-white text-base sm:text-lg font-medium italic border-l-2 border-[#00E699] pl-4 py-1">
-            "{excerpt}"
-          </p>
-        </div>
-
-        <div class="pt-4 border-t border-[#242E2C]">
-          <h2 class="text-xs font-mono uppercase tracking-wider text-[#00E699] mb-2 font-semibold">Contexto Muntrume Motorsport</h2>
-          <p class="text-sm sm:text-base text-[#9AA8A3]">
-            {contextNote}
-          </p>
-        </div>
-      </div>
-
-      <!-- CTA grande y obligatorio: Botón verde hacia url_original -->
-      <div class="pt-2 text-center sm:text-left">
-        <a
-          href={urlOriginal}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="inline-flex items-center justify-center gap-3 w-full sm:w-auto px-8 py-4 rounded-xl bg-[#00E699] text-black font-bold font-mono text-sm sm:text-base hover:bg-[#00c985] shadow-lg shadow-[#00E699]/15 hover:shadow-[#00E699]/30 transition transform hover:-translate-y-0.5"
-        >
-          <span>Leer noticia completa en {sourceName}</span>
-          <span class="text-lg">&rarr;</span>
-        </a>
-        <p class="text-[11px] font-mono text-[#7A8A87] mt-2">
-          Enlace directo al artículo original en {sourceName} (se abre en nueva ventana).
-        </p>
-      </div>
-
-      <!-- Bloque legal de atribución obligatorio -->
-      <div class="p-5 rounded-xl bg-[#121A17] border border-[#242E2C] text-xs font-mono text-[#7A8A87] space-y-2 mt-12">
-        <div class="flex items-center gap-2 text-[#9AA8A3] font-semibold">
-          <svg class="w-4 h-4 text-[#00E699]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span>Aviso Legal y Atribución Editorial</span>
-        </div>
-        <p>
-          Este contenido es un resumen técnico agregado vía RSS público con fines informativos y de cita (Art. 32 LPI / Directiva UE 2019/790). La noticia original fue publicada por <strong>{sourceName}</strong> y todos los derechos pertenecen a sus respectivos autores.
-        </p>
-        <p>
-          Fuente original: <a href={urlOriginal} target="_blank" rel="noopener noreferrer" class="text-[#00E699] underline break-all">{urlOriginal}</a>
-        </p>
-        <div class="pt-2 flex flex-wrap items-center gap-4 text-[11px] text-[#9AA8A3]">
-          <a href="/legal/fuentes" class="hover:text-white underline">Directorio de Fuentes y Contacto 24h</a>
-          <span>•</span>
-          <a href="/legal/retirada" class="hover:text-white underline">Solicitar Retirada Inmediata (Takedown)</a>
-        </div>
-      </div>
-
     </div>
 
-    <!-- Contenedor 410 en caso de retirada en vivo -->
-    <div id="takedownAlert" class="hidden max-w-md mx-auto p-8 rounded-2xl bg-[#1A2120] border border-[#242E2C] text-center space-y-4 my-16 font-mono">
-      <div class="w-12 h-12 rounded-full bg-red-500/10 text-red-400 mx-auto flex items-center justify-center font-bold text-xl border border-red-500/20">
-        410
+    
+    {!isTeam && (
+      <div id="takedownAlert" class="hidden max-w-md mx-auto p-8 rounded-2xl bg-[#1A2120] border border-[#242E2C] text-center space-y-4 my-16 font-mono">
+        <div class="w-12 h-12 rounded-full bg-red-500/10 text-red-400 mx-auto flex items-center justify-center font-bold text-xl border border-red-500/20">
+          410
+        </div>
+        <h2 class="text-xl font-bold text-white">Contenido Retirado</h2>
+        <p class="text-xs text-[#9AA8A3] leading-relaxed">
+          Este despacho ha sido retirado permanentemente a petición del titular de derechos conforme a la normativa legal (Art. 32 LPI / DMCA).
+        </p>
+        <div class="pt-4">
+          <a href="/news" class="inline-block px-4 py-2 rounded-xl bg-[#242E2C] hover:bg-[#2F3C3A] text-xs text-white transition">
+            &larr; Volver a la Sala de Prensa
+          </a>
+        </div>
       </div>
-      <h2 class="text-xl font-bold text-white">Contenido Retirado</h2>
-      <p class="text-xs text-[#9AA8A3] leading-relaxed">
-        Este despacho ha sido retirado permanentemente a petición del titular de derechos conforme a la normativa legal (Art. 32 LPI / DMCA).
-      </p>
-      <div class="pt-4">
-        <a href="/news" class="inline-block px-4 py-2 rounded-xl bg-[#242E2C] hover:bg-[#2F3C3A] text-xs text-white transition">
-          &larr; Volver a la Sala de Prensa
-        </a>
-      </div>
-    </div>
+    )}
   </div>
 
-  <script define:vars={{ slug }}>
-    // Verificación en vivo en caso de takedown reciente
-    if (slug) {
-      fetch('https://muntrume.atrumin16.workers.dev/api/dispatches/' + slug)
-        .then(function(r) {
-          if (r.status === 410) {
-            var c = document.getElementById('dispatchContainer');
-            var a = document.getElementById('takedownAlert');
-            if (c) c.style.display = 'none';
-            if (a) a.classList.remove('hidden');
-          }
-        })
-        .catch(function() {});
-    }
-  </script>
+  {!isTeam && (
+    <script define:vars={{ slug }}>
+      if (slug) {
+        fetch('https://muntrume.atrumin16.workers.dev/api/dispatches/' + slug)
+          .then(function(r) {
+            if (r.status === 410) {
+              var c = document.getElementById('dispatchContainer');
+              var a = document.getElementById('takedownAlert');
+              if (c) c.style.display = 'none';
+              if (a) a.classList.remove('hidden');
+            }
+          })
+          .catch(function() {});
+      }
+    </script>
+  )}
 </Layout>

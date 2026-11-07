@@ -140,7 +140,12 @@ function thumb640(src) {
     }
 
     function getAuthorRole(author) {
-      return '';
+      const a = (author || '').toLowerCase();
+      if (a.includes('trujillo')) return 'Fundador &amp; Ingeniero de Telemetría (#16)';
+      if (a.includes('berbis')) return 'Piloto Oficial GT3 &amp; Resistencia (#1)';
+      if (a.includes('chongkan')) return 'Piloto Oficial GT3 &amp; Resistencia (#22)';
+      if (a.includes('engineering') || a.includes('ingenier')) return 'Laboratorio de Puesta a Punto y Telemetría';
+      return 'Muntrume Motorsport Official';
     }
 
     // 6. Share Functionality
@@ -163,7 +168,7 @@ function thumb640(src) {
       let articles = [...FALLBACK_DISPATCHES];
 
       try {
-        const res = await fetch('noticias-equipo.md?t=' + Date.now(), { cache: 'no-store' });
+        const res = await fetch('/noticias-equipo.md?t=' + Date.now(), { cache: 'no-store' });
         if (res.ok) {
           const md = await res.text();
           const parsed = parseTeamNewsMarkdown(md);
