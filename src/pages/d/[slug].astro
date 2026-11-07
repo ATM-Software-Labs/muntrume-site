@@ -1,7 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import DriverCard from '../../components/DriverCard.astro';
-import { PILOTOS, LICENCE_UPDATED_LABEL } from '../../lib/pilotos';
+import { PILOTOS, LICENCE_UPDATED_LABEL, isRoadTrack } from '../../lib/pilotos';
 import { licenciaPrincipal } from '../../lib/licencias';
 import { formatoAprox, localeDeIdioma } from '../../lib/formato-licencia.js';
 import catalog from '../../../public/assets/data/catalog_index.json';
@@ -16,7 +16,7 @@ const principal = licenciaPrincipal(driver.slug);
 const pageTitle = `${driver.fullName} (${driver.dorsal}) · Piloto — Muntrume Motorsport`;
 const loc = localeDeIdioma("es");
 const pageDescription = principal
-  ? `${driver.fullName}, ${driver.role} en Muntrume Motorsport. Sports Car ${principal.classLabel}, SR ${formatoAprox(Number(principal.sr), "sr", loc)}, iRating ${formatoAprox(principal.irating, "k", loc)}. Actualizado: ${LICENCE_UPDATED_LABEL}.`
+  ? `${driver.fullName}, ${driver.role} (${driver.specialty}) en Muntrume Motorsport. Sports Car ${principal.classLabel}, SR ${formatoAprox(Number(principal.sr), "sr", loc)}, iRating ${formatoAprox(principal.irating, "k", loc)}. Actualizado: ${LICENCE_UPDATED_LABEL}.`
   : `${driver.fullName}, ${driver.role} en Muntrume Motorsport.`;
 const pageUrl = `https://muntru.me/d/${driver.slug}/`;
 const ogImage = `https://muntru.me/assets/img/og/${driver.slug}.webp`;
@@ -26,23 +26,23 @@ const next = PILOTOS[(index + 1) % PILOTOS.length];
 
 const mates = PILOTOS.map((p) => {
   const row = licenciaPrincipal(p.slug);
-  const laps = (p.topTracks || []).reduce((acc, t) => acc + t.laps, 0);
+  const hours = p.totalTrackHours || (p.topTracks || []).reduce((acc, t) => acc + t.hours, 0);
   return {
     driver: p,
     sr: row ? Number(row.sr) : 0,
     ir: row?.irating ?? 0,
     tt: row?.ttRating ?? 0,
-    laps,
+    hours,
   };
 }).filter((row) => row.sr > 0 || row.ir > 0);
 
 const selfRow = mates.find((m) => m.driver.slug === driver.slug) || mates[0];
 const avgSr = mates.length ? Number((mates.reduce((s, r) => s + r.sr, 0) / mates.length).toFixed(2)) : 0;
 const avgIr = mates.length ? Math.round(mates.reduce((s, r) => s + r.ir, 0) / mates.length) : 0;
-const avgLaps = mates.length ? Math.round(mates.reduce((s, r) => s + r.laps, 0) / mates.length) : 0;
+const avgHours = mates.length ? Number((mates.reduce((s, r) => s + r.hours, 0) / mates.length).toFixed(1)) : 0;
 const maxSr = Math.max(...mates.map((row) => row.sr), avgSr, 1);
 const maxIr = Math.max(...mates.map((row) => row.ir), avgIr, 1);
-const maxLaps = Math.max(...mates.map((row) => row.laps), avgLaps, 1);
+const maxHours = Math.max(...mates.map((row) => row.hours), avgHours, 1);
 
 const CAR_SLUG_MAP: Record<string, string> = {
   "Ford Mustang GT3": "fordmustanggt3",
@@ -50,11 +50,15 @@ const CAR_SLUG_MAP: Record<string, string> = {
   "McLaren 720S GT3 EVO": "mclaren720sgt3",
   "BMW M4 GT3": "bmwm4gt3",
   "Porsche 911 GT3 R (992)": "porsche992rgt3",
+  "Aston Martin Valkyrie AMR Pro GTP": "amvalkyriegtp",
   "Ferrari 499P": "ferrari499p",
+  "Mercedes-AMG GT3 2020": "mercedesamgevogt3",
   "Porsche 911 GT3 Cup (992)": "porsche992cup",
   "Acura NSX GT3 EVO 22": "acuransxevo22gt3",
+  "Porsche 718 Cayman GT4 Clubsport": "porsche718gt4",
   "BMW M4 GT4": "bmwm4gt4",
   "McLaren 570S GT4": "mclaren570sgt4",
+  "Aston Martin Vantage GT4": "amvantagegt4",
 };
 
 type CatalogRow = [number, string, string, string, string, string, string, number];
@@ -62,7 +66,7 @@ const allRows = (catalog.initial_rows || []) as CatalogRow[];
 
 const driverSetups = (driver.topCars || []).map((carItem) => {
   const carKey = CAR_SLUG_MAP[carItem.name] || "";
-  const matching = allRows.filter((r) => r[1] === carKey);
+  const matching = allRows.filter((r) => r[1] === carKey && isRoadTrack(r[4]));
   const tracks = Array.from(new Set(matching.map((r) => r[4]))).slice(0, 3);
   const sampleFiles = matching.slice(0, 3).map((r) => ({
     season: r[2],
@@ -74,7 +78,7 @@ const driverSetups = (driver.topCars || []).map((carItem) => {
   return {
     carName: carItem.name,
     carKey,
-    laps: carItem.laps,
+    hours: carItem.hours,
     tracks,
     sampleFiles,
   };
@@ -152,7 +156,7 @@ const personSchema = {
               <article class="d-setup-card">
                 <div class="d-setup-card__top">
                   <h3 class="d-setup-card__title">{item.carName}</h3>
-                  <span class="r-meta"><span data-approx="k" data-n={item.laps}>{formatoAprox(item.laps, "k", loc)}</span> <span>vueltas</span></span>
+                  <span class="r-meta"><span data-approx="h" data-n={item.hours}>{formatoAprox(item.hours, "h", loc)}</span> <span>en pista</span></span>
                 </div>
                 {item.sampleFiles.length > 0 ? (
                   <ul class="d-setup-card__files">
@@ -211,17 +215,17 @@ const personSchema = {
             </div>
 
             <div class="d-vs-card">
-              <span class="d-vs-card__label">Volumen (Top 5 circuitos)</span>
+              <span class="d-vs-card__label">Tiempo en pista Road</span>
               <div class="d-vs-row">
                 <span>{driver.name}</span>
-                <strong data-approx="k" data-n={selfRow.laps}>{formatoAprox(selfRow.laps, "k", loc)}</strong>
+                <strong data-approx="h" data-n={selfRow.hours}>{formatoAprox(selfRow.hours, "h", loc)}</strong>
               </div>
-              <span class="d-mini" aria-hidden="true"><span style={`width:${Math.round((100 * selfRow.laps) / maxLaps)}%`}></span></span>
+              <span class="d-mini" aria-hidden="true"><span style={`width:${Math.round((100 * selfRow.hours) / maxHours)}%`}></span></span>
               <div class="d-vs-row d-vs-row--avg">
                 <span>Media Muntrume</span>
-                <strong data-approx="k" data-n={avgLaps}>{formatoAprox(avgLaps, "k", loc)}</strong>
+                <strong data-approx="h" data-n={avgHours}>{formatoAprox(avgHours, "h", loc)}</strong>
               </div>
-              <span class="d-mini d-mini--muted" aria-hidden="true"><span style={`width:${Math.round((100 * avgLaps) / maxLaps)}%`}></span></span>
+              <span class="d-mini d-mini--muted" aria-hidden="true"><span style={`width:${Math.round((100 * avgHours) / maxHours)}%`}></span></span>
             </div>
           </div>
 
@@ -276,7 +280,7 @@ const personSchema = {
     </div>
   </section>
 
-  <script is:inline src="/assets/js/driver-page.js?v=t284" defer></script>
+  <script is:inline src="/assets/js/driver-page.js?v=t288" defer></script>
   <script is:inline>
     (function () {
       var url = location.href;

@@ -17,6 +17,10 @@ export function formatoAprox(value, kind, locale) {
     var sr = Math.round(n * 10) / 10;
     return "≈" + sr.toLocaleString(loc, opt);
   }
+  if (kind === "h") {
+    var hrs = Math.round(n * 10) / 10;
+    return (hrs >= 100 ? Math.round(hrs).toLocaleString(loc) : hrs.toLocaleString(loc, opt)) + " h";
+  }
   var miles = Math.round((n / 1000) * 10) / 10;
   return "≈" + miles.toLocaleString(loc, opt) + "k";
 }

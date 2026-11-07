@@ -1,6 +1,6 @@
 {
-  "updated": "2026-11-06",
-  "updatedLabel": "6 nov 2026",
+  "updated": "2026-11-07",
+  "updatedLabel": "7 nov 2026",
   "drivers": [
     {
       "slug": "albertot",
@@ -8,7 +8,8 @@
       "number": "#1",
       "shortName": "Alberto T",
       "fullName": "Alberto Trujillo",
-      "role": "Team Principal y telemetría",
+      "role": "Team Principal y Telemetría",
+      "specialty": "GT3 & GTP Endurance · Ingeniería de Pista",
       "badge": "FOUNDER",
       "country": "España",
       "countryCode": "ES",
@@ -24,16 +25,25 @@
       "topTracks": [
         { "name": "Daytona (Road Course)", "laps": 2800 },
         { "name": "Watkins Glen (Boot)", "laps": 2400 },
-        { "name": "Daytona (Oval)", "laps": 2100 },
         { "name": "Monza (GP)", "laps": 1700 },
-        { "name": "Road Atlanta (Full Course)", "laps": 1600 }
+        { "name": "Road Atlanta (Full Course)", "laps": 1600 },
+        { "name": "Spa-Francorchamps (GP Pits)", "laps": 1450 },
+        { "name": "Le Mans (Circuit de la Sarthe)", "laps": 920 },
+        { "name": "Sebring (International)", "laps": 1150 },
+        { "name": "Imola (GP)", "laps": 980 },
+        { "name": "Road America (Full Course)", "laps": 840 },
+        { "name": "Nürburgring Combined", "laps": 260 },
+        { "name": "Interlagos (GP)", "laps": 720 }
       ],
       "topCars": [
         { "name": "Ford Mustang GT3", "laps": 3100 },
         { "name": "Ferrari 296 GT3", "laps": 3000 },
         { "name": "McLaren 720S GT3 EVO", "laps": 2900 },
         { "name": "BMW M4 GT3", "laps": 2100 },
-        { "name": "Porsche 911 GT3 R (992)", "laps": 1900 }
+        { "name": "Porsche 911 GT3 R (992)", "laps": 1900 },
+        { "name": "Aston Martin Valkyrie AMR Pro GTP", "laps": 950 },
+        { "name": "Ferrari 499P", "laps": 780 },
+        { "name": "Mercedes-AMG GT3 2020", "laps": 640 }
       ]
     },
     {
@@ -43,6 +53,7 @@
       "shortName": "Mateo B",
       "fullName": "Mateo Berbis",
       "role": "Resistencia GT3",
+      "specialty": "Endurance & Sprint GT3",
       "badge": "DRIVER",
       "country": "España",
       "countryCode": "ES",
@@ -59,15 +70,23 @@
         { "name": "Daytona (Road Course)", "laps": 1500 },
         { "name": "Watkins Glen (Boot)", "laps": 1300 },
         { "name": "Imola (GP)", "laps": 700 },
-        { "name": "Road America (2008) (Full Course)", "laps": 600 },
-        { "name": "Spa-Francorchamps (GP Pits)", "laps": 600 }
+        { "name": "Road America (Full Course)", "laps": 600 },
+        { "name": "Spa-Francorchamps (GP Pits)", "laps": 600 },
+        { "name": "Monza (GP)", "laps": 540 },
+        { "name": "Sebring (International)", "laps": 480 },
+        { "name": "Road Atlanta (Full Course)", "laps": 450 },
+        { "name": "Le Mans (Circuit de la Sarthe)", "laps": 310 },
+        { "name": "Mount Panorama", "laps": 360 }
       ],
       "topCars": [
         { "name": "Porsche 911 GT3 R (992)", "laps": 1500 },
         { "name": "Ferrari 296 GT3", "laps": 1200 },
         { "name": "Ferrari 499P", "laps": 800 },
         { "name": "Porsche 911 GT3 Cup (992)", "laps": 800 },
-        { "name": "Acura NSX GT3 EVO 22", "laps": 700 }
+        { "name": "Acura NSX GT3 EVO 22", "laps": 700 },
+        { "name": "BMW M4 GT3", "laps": 520 },
+        { "name": "McLaren 720S GT3 EVO", "laps": 430 },
+        { "name": "Porsche 718 Cayman GT4 Clubsport", "laps": 340 }
       ]
     },
     {
@@ -76,7 +95,8 @@
       "number": "#3",
       "shortName": "Eduardo",
       "fullName": "Eduardo Chongkan",
-      "role": "Prototipos GTP",
+      "role": "Resistencia GT3 y GT4",
+      "specialty": "Endurance Multiclase GT3 / GT4",
       "badge": "DRIVER",
       "country": "Costa Rica",
       "countryCode": "CR",
@@ -90,18 +110,26 @@
       "club": "",
       "favoriteTrack": "Nürburgring Combined",
       "topTracks": [
-        { "name": "Daytona (Road Course)", "laps": 2000 },
         { "name": "Spa-Francorchamps (GP Pits)", "laps": 2000 },
+        { "name": "Daytona (Road Course)", "laps": 2000 },
         { "name": "Watkins Glen (Boot)", "laps": 1500 },
+        { "name": "Sebring (International)", "laps": 1200 },
         { "name": "Laguna Seca (Full Course)", "laps": 1300 },
-        { "name": "Sebring (International)", "laps": 1200 }
+        { "name": "Nürburgring Combined", "laps": 340 },
+        { "name": "Road Atlanta (Full Course)", "laps": 980 },
+        { "name": "Monza (GP)", "laps": 860 },
+        { "name": "Road America (Full Course)", "laps": 740 },
+        { "name": "Imola (GP)", "laps": 680 }
       ],
       "topCars": [
         { "name": "Ferrari 296 GT3", "laps": 4400 },
         { "name": "BMW M4 GT4", "laps": 3300 },
         { "name": "McLaren 720S GT3 EVO", "laps": 1900 },
         { "name": "BMW M4 GT3", "laps": 1800 },
-        { "name": "McLaren 570S GT4", "laps": 1400 }
+        { "name": "McLaren 570S GT4", "laps": 1400 },
+        { "name": "Porsche 911 GT3 R (992)", "laps": 920 },
+        { "name": "Mercedes-AMG GT3 2020", "laps": 680 },
+        { "name": "Aston Martin Vantage GT4", "laps": 510 }
       ]
     }
   ]

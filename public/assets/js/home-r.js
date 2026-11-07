@@ -85,6 +85,14 @@
         irSum += Number(d.irating);
         irCount += 1;
       }
+      if (d.role) {
+        var roleEl = card.querySelector('[data-f="role"]');
+        if (roleEl) roleEl.textContent = d.role;
+      }
+      if (d.specialty) {
+        var specEl = card.querySelector('[data-f="specialty"]');
+        if (specEl) specEl.textContent = d.specialty;
+      }
       if (d.fav_car && d.fav_car.name) showList(card, "cars", [d.fav_car.name]);
       if (d.top_category && d.top_category.name) showList(card, "series", [d.top_category.name]);
       if (d.bio) showText(card, "bio", d.bio);

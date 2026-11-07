@@ -23,6 +23,33 @@
   reformatApprox();
   var esc = function (v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var set = function (f, val) { var el = document.querySelector('[data-f="' + f + '"]'); if (el && val != null && val !== '') { el.textContent = val; el.classList.remove('r-nodata'); } };
+  function isRoadTrack(name, category) {
+    var clean = String(name || "").trim();
+    if (!clean) return true;
+    if (category && /oval|dirt/i.test(category) && !/road/i.test(category)) return false;
+    if (/\b(oval|roval|superspeedway|tri-oval|short\s*track|dirt\s*oval)\b/i.test(clean)) return false;
+    if (/\bspeedway\b/i.test(clean) && !/\broad(\s*course)?\b/i.test(clean)) return false;
+    return true;
+  }
+  document.querySelectorAll("[data-toggle-bars]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var listId = btn.getAttribute("data-toggle-bars");
+      var listEl = listId ? document.getElementById(listId) : null;
+      if (!listEl) return;
+      var expanded = btn.getAttribute("aria-expanded") === "true";
+      var nextState = !expanded;
+      var totalCount = btn.getAttribute("data-total-count") || "";
+      var unit = btn.getAttribute("data-label-unit") || "elementos";
+      listEl.querySelectorAll('[data-extra-bar="true"]').forEach(function (li) {
+        li.hidden = !nextState;
+      });
+      listEl.classList.toggle("is-expanded", nextState);
+      btn.setAttribute("aria-expanded", nextState ? "true" : "false");
+      btn.textContent = nextState
+        ? "Mostrar resumen (Top 5) ▴"
+        : "Ver lista completa (" + totalCount + " " + unit + ") ▾";
+    });
+  });
   function parseLic(s) {
     var m = String(s || "").match(/^(Class\s+[A-D]|Rookie)\s+([0-9]+(?:\.[0-9]+)?)/i);
     if (!m) return null;
@@ -77,6 +104,8 @@
       licenses.push({ category: "sports_car", class_label: parsed && parsed.classLabel, sr: parsed && parsed.sr, irating: d.irating > 0 ? d.irating : undefined });
     }
     licenses.forEach(paintLic);
+    if (d.role) set("role", d.role);
+    if (d.specialty) set("specialty", d.specialty);
     if (d.irating > 0) approx(root.querySelector('[data-f="irating"]'), "k", d.irating);
     if (d.fav_car && d.fav_car.name) showList("cars", [d.fav_car.name]);
     if (d.top_category && d.top_category.name) showList("series", [d.top_category.name]);
@@ -91,7 +120,9 @@
         stamp.textContent = when.toLocaleDateString(loc(), { day: "numeric", month: "short", year: "numeric" });
       }
     }
-    var races = Array.isArray(d.recent_races) ? d.recent_races.slice(0, 5) : [];
+    var races = (Array.isArray(d.recent_races) ? d.recent_races : []).filter(function (r) {
+      return isRoadTrack(r && r.track, r && r.category);
+    }).slice(0, 5);
     if (!races.length) return;
     var racesSection = document.getElementById("racesSection");
     if (racesSection) racesSection.hidden = false;

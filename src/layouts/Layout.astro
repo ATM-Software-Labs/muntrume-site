@@ -194,9 +194,9 @@ const finalSchema = schemaJson || defaultSchema;
   <link rel="stylesheet" href="/assets/fonts/fonts.css?v=t264" />
   <slot name="head" />
 
-  <link rel="stylesheet" href="/assets/css/tailwind.min.css?v=26s5.2" />
-  <link rel="stylesheet" href="/assets/css/mobile.css?v=t264" />
-  <link rel="stylesheet" href="/assets/css/racing.css?v=t286" />
+  <link rel="stylesheet" href="/assets/css/tailwind.min.css?v=26s5.3" />
+  <link rel="stylesheet" href="/assets/css/mobile.css?v=t265" />
+  <link rel="stylesheet" href="/assets/css/racing.css?v=t288" />
 
   <!-- Core Dark Racing System CSS -->
   <style is:global>
@@ -307,7 +307,7 @@ const finalSchema = schemaJson || defaultSchema;
 
   {!hideNav && <Navbar currentPath={Astro.url.pathname} />}
   
-  <main id="main-content" tabindex="-1" class="flex-grow relative z-10">
+  <main id="main-content" tabindex="-1" class="flex-grow relative z-10 max-w-full overflow-x-hidden">
     <div id="muntruNoticeStack" class="m-notice-stack" hidden></div>
     <slot />
   </main>
