@@ -6,6 +6,7 @@ const pageDescription = "Official Muntrume Motorsport Race Control & Administrat
 ---
 
 <Layout title={pageTitle} description={pageDescription} hideNav={true} hideFooter={true} noindex={true}>
+<div class="race-control-console flex-1 flex flex-col min-h-screen bg-[#0b0e13] text-neutral-100">
 <!-- Top Google Admin App Bar -->
   <header class="h-16 bg-[#121620] border-b border-white/10 flex items-center justify-between px-4 sm:px-6 flex-shrink-0 z-40">
     <div class="flex items-center gap-3">
@@ -561,4 +562,78 @@ const pageDescription = "Official Muntrume Motorsport Race Control & Administrat
   <!-- Admin Console Controller -->
   <script is:inline src="/assets/js/admin.js?v=t266"></script>
   <script is:inline src="/assets/js/driver-ids.js?v=t266"></script>
+</div>
+
+<style>
+  .race-control-console,
+  html.light .race-control-console,
+  html[data-theme="light"] .race-control-console {
+    color-scheme: dark !important;
+    background-color: #0b0e13 !important;
+    color: #F2F5F4 !important;
+  }
+  .race-control-console h1,
+  .race-control-console h2,
+  .race-control-console h3,
+  html.light .race-control-console h1,
+  html.light .race-control-console h2,
+  html.light .race-control-console h3,
+  html[data-theme="light"] .race-control-console h1,
+  html[data-theme="light"] .race-control-console h2,
+  html[data-theme="light"] .race-control-console h3 {
+    color: #FFFFFF !important;
+    font-family: 'Space Grotesk', system-ui, sans-serif !important;
+  }
+  .race-control-console .text-white,
+  html.light .race-control-console .text-white,
+  html[data-theme="light"] .race-control-console .text-white {
+    color: #FFFFFF !important;
+  }
+  .race-control-console .text-neutral-200,
+  html.light .race-control-console .text-neutral-200,
+  html[data-theme="light"] .race-control-console .text-neutral-200 {
+    color: #E2E8F0 !important;
+  }
+  .race-control-console .text-neutral-300,
+  html.light .race-control-console .text-neutral-300,
+  html[data-theme="light"] .race-control-console .text-neutral-300 {
+    color: #CBD5E1 !important;
+  }
+  .race-control-console .text-neutral-400,
+  .race-control-console p,
+  html.light .race-control-console .text-neutral-400,
+  html.light .race-control-console p,
+  html[data-theme="light"] .race-control-console .text-neutral-400,
+  html[data-theme="light"] .race-control-console p {
+    color: #94A3B8 !important;
+  }
+  .race-control-console .text-neutral-500,
+  html.light .race-control-console .text-neutral-500,
+  html[data-theme="light"] .race-control-console .text-neutral-500 {
+    color: #64748B !important;
+  }
+  .race-control-console .gadmin-card {
+    background: #111622 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .race-control-console .gadmin-card:hover {
+    border-color: rgba(0, 230, 153, 0.25) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+  .race-control-console table th,
+  html.light .race-control-console table th,
+  html[data-theme="light"] .race-control-console table th {
+    color: #94A3B8 !important;
+    background: #0d121b !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.06em !important;
+  }
+  .race-control-console table td,
+  html.light .race-control-console table td,
+  html[data-theme="light"] .race-control-console table td {
+    color: #F1F5F9 !important;
+  }
+</style>
 </Layout>

@@ -29,8 +29,9 @@ html.light #mmChat,[data-theme="light"] #mmChat{--bg:#fff;--hd:#f2f6f4;--bd:#d4d
 #mmChat :focus-visible{outline:2px solid var(--ac);outline-offset:2px}
 #mmChat .log{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.75rem;overscroll-behavior:contain;scroll-behavior:smooth}
 #mmChat .m{max-width:88%;padding:.65rem .85rem;border-radius:.9rem;white-space:pre-wrap;word-break:break-word}
-#mmChat .a{align-self:flex-start;background:var(--bot);border:1px solid var(--bd);border-top-left-radius:.2rem;box-shadow:0 4px 12px rgba(0,0,0,.25)}
-#mmChat .u{align-self:flex-end;background:var(--ac);color:var(--acTx);font-weight:600;border-top-right-radius:.2rem;box-shadow:0 4px 14px rgba(0,255,136,.25)}
+#mmChat .a{align-self:flex-start;background:var(--bot)!important;color:var(--tx)!important;border:1px solid var(--bd)!important;border-top-left-radius:.2rem;box-shadow:0 4px 12px rgba(0,0,0,.25)}
+#mmChat .a strong,#mmChat .a b{color:var(--tx)!important;font-weight:700}
+#mmChat .u{align-self:flex-end;background:var(--ac)!important;color:var(--acTx)!important;font-weight:600;border-top-right-radius:.2rem;box-shadow:0 4px 14px rgba(0,255,136,.25)}
 #mmChat .e{align-self:stretch;max-width:none;background:#2a0f0d;border:1px solid #ef4444;color:#fca5a5;font-size:.85rem}
 #mmChat .typing-box{display:flex;align-items:center;gap:.5rem;color:var(--ac);font-size:.8rem;font-family:monospace;letter-spacing:.03em}
 #mmChat .dots-neon{display:inline-flex;gap:4px;vertical-align:middle}
@@ -38,9 +39,9 @@ html.light #mmChat,[data-theme="light"] #mmChat{--bg:#fff;--hd:#f2f6f4;--bd:#d4d
 #mmChat .dots-neon i:nth-child(2){animation-delay:.15s}#mmChat .dots-neon i:nth-child(3){animation-delay:.3s}
 @keyframes mmb{0%,80%,100%{opacity:.25;transform:scale(0.8)}40%{opacity:1;transform:scale(1.2)}}
 @media (prefers-reduced-motion:reduce){#mmChat .dots-neon i{animation:none}}
-#mmChat .chips{display:flex;gap:.4rem;padding:.5rem .75rem;overflow-x:auto;border-top:1px solid var(--bd);background:var(--hd)}
-#mmChat .chips button{white-space:nowrap;font-size:.78rem;padding:.35rem .7rem;border-radius:999px;border:1px solid var(--bd);background:var(--bot);color:var(--tx);transition:all .2s}
-#mmChat .chips button:hover{border-color:var(--ac);color:var(--ac);box-shadow:0 0 8px rgba(0,255,136,.2)}
+#mmChat .chips{display:flex;gap:.4rem;padding:.5rem .75rem;overflow-x:auto;border-top:1px solid var(--bd)!important;background:var(--hd)!important}
+#mmChat .chips button{white-space:nowrap;font-size:.78rem;padding:.35rem .7rem;border-radius:999px;border:1px solid var(--bd)!important;background:var(--bot)!important;color:var(--tx)!important;transition:all .2s}
+#mmChat .chips button:hover{border-color:var(--ac)!important;color:var(--ac)!important;box-shadow:0 0 8px rgba(0,255,136,.2)}
 #mmChat form{display:flex;gap:.5rem;padding:.6rem .75rem calc(.6rem + env(safe-area-inset-bottom));border-top:1px solid var(--bd);background:var(--hd)}
 #mmChat input{flex:1;min-width:0;font-size:16px;padding:.6rem .8rem;border-radius:.75rem;border:1px solid var(--bd);background:var(--in);color:var(--tx)}
 #mmChat input:focus{border-color:var(--ac);box-shadow:0 0 10px rgba(0,255,136,.15);outline:none}

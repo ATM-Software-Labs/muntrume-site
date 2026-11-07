@@ -110,18 +110,18 @@ html.light .border-white\/10, [data-theme="light"] .border-white\/10 {
   border-color: #E2E8E5 !important;
 }
 
-html.light :not(footer):not(.r-footer):not(.r-hero) > .text-white,
-[data-theme="light"] :not(footer):not(.r-footer):not(.r-hero) > .text-white,
-html.light .text-\[\#F5F5F5\], [data-theme="light"] .text-\[\#F5F5F5\],
-html.light .text-\[\#E0E6E4\], [data-theme="light"] .text-\[\#E0E6E4\] {
+html.light :not(footer):not(.r-footer):not(.r-hero):not(.race-control-console):not(.race-control-console *) > .text-white,
+[data-theme="light"] :not(footer):not(.r-footer):not(.r-hero):not(.race-control-console):not(.race-control-console *) > .text-white,
+html.light :not(.race-control-console):not(.race-control-console *) .text-\[\#F5F5F5\], [data-theme="light"] :not(.race-control-console):not(.race-control-console *) .text-\[\#F5F5F5\],
+html.light :not(.race-control-console):not(.race-control-console *) .text-\[\#E0E6E4\], [data-theme="light"] :not(.race-control-console):not(.race-control-console *) .text-\[\#E0E6E4\] {
   color: #0E1412 !important;
 }
 
-html.light .text-\[\#9AA8A3\], [data-theme="light"] .text-\[\#9AA8A3\],
-html.light .text-\[\#8B9A8F\], [data-theme="light"] .text-\[\#8B9A8F\],
-html.light .text-\[\#A3B0AC\], [data-theme="light"] .text-\[\#A3B0AC\],
-html.light .text-neutral-300, [data-theme="light"] .text-neutral-300,
-html.light .text-neutral-400, [data-theme="light"] .text-neutral-400 {
+html.light :not(.race-control-console):not(.race-control-console *) .text-\[\#9AA8A3\], [data-theme="light"] :not(.race-control-console):not(.race-control-console *) .text-\[\#9AA8A3\],
+html.light :not(.race-control-console):not(.race-control-console *) .text-\[\#8B9A8F\], [data-theme="light"] :not(.race-control-console):not(.race-control-console *) .text-\[\#8B9A8F\],
+html.light :not(.race-control-console):not(.race-control-console *) .text-\[\#A3B0AC\], [data-theme="light"] :not(.race-control-console):not(.race-control-console *) .text-\[\#A3B0AC\],
+html.light :not(.race-control-console):not(.race-control-console *) .text-neutral-300, [data-theme="light"] :not(.race-control-console):not(.race-control-console *) .text-neutral-300,
+html.light :not(.race-control-console):not(.race-control-console *) .text-neutral-400, [data-theme="light"] :not(.race-control-console):not(.race-control-console *) .text-neutral-400 {
   color: #4A5854 !important;
 }
 
@@ -131,9 +131,9 @@ html.light #mobileDrawer, [data-theme="light"] #mobileDrawer {
 }
 
 /* t260 · contraste en tema claro (Lighthouse color-contrast) */
-html.light .text-neutral-200, [data-theme="light"] .text-neutral-200 { color: #1f2a27 !important; }
-html.light .text-\[\#00E699\], [data-theme="light"] .text-\[\#00E699\] { color: #00704a !important; }
-html.light .bg-\[\#242E2C\], [data-theme="light"] .bg-\[\#242E2C\] { background-color: #e3ebe8 !important; color: #1f2a27 !important; }
+html.light :not(.race-control-console):not(.race-control-console *) .text-neutral-200, [data-theme="light"] :not(.race-control-console):not(.race-control-console *) .text-neutral-200 { color: #1f2a27 !important; }
+html.light :not(.race-control-console):not(.race-control-console *) .text-\[\#00E699\], [data-theme="light"] :not(.race-control-console):not(.race-control-console *) .text-\[\#00E699\] { color: #00704a !important; }
+html.light :not(.race-control-console):not(.race-control-console *) .bg-\[\#242E2C\], [data-theme="light"] :not(.race-control-console):not(.race-control-console *) .bg-\[\#242E2C\] { background-color: #e3ebe8 !important; color: #1f2a27 !important; }
 
 /* t262: evita scroll horizontal por el menú lateral fuera de pantalla */
 html,body{overflow-x:clip}
