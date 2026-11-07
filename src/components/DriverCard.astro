@@ -76,7 +76,8 @@ const socials = (
     <>
       <!-- 1. HERO HEADER CARD: Symmetrical 12-Col Grid, Vertically & Horizontally Centered -->
       <div class="d-hero-card grid grid-cols-1 lg:grid-cols-12 items-center gap-6 lg:gap-8 p-6 sm:p-8 rounded-2xl bg-[#141A19] border border-[#232C2A]">
-        <div class="d-stage lg:col-span-4 flex items-center justify-center w-full h-[220px] sm:h-[240px] rounded-xl bg-[#101514] border border-[#232C2A] p-4" data-team={driver.slug}>
+        <div class="d-stage lg:col-span-4 relative flex items-center justify-center w-full h-[230px] sm:h-[250px] rounded-xl bg-[#101514] border border-[#232C2A] p-4" data-team={driver.slug}>
+          <span class="d-stage-dorsal" aria-label={`Official Number ${driver.dorsal}`}>{driver.dorsal}</span>
           <DriverHelmet slug={driver.slug} name={driver.fullName} eager={true} />
         </div>
 
@@ -88,8 +89,9 @@ const socials = (
               <span>·</span>
               <span data-f="role">{driver.role}</span>
             </p>
-            <Tag class="d-name text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight" id={headingId}>
-              <span class="d-num">{driver.dorsal}</span> {driver.fullName}
+            <Tag class="d-name flex flex-wrap items-center justify-center lg:justify-start gap-3 text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight" id={headingId}>
+              <span class="d-num-pill">{driver.dorsal}</span>
+              <span>{driver.fullName}</span>
             </Tag>
           </div>
 
@@ -101,20 +103,25 @@ const socials = (
             {driver.specialty && <span class="d-specialty-pill" data-f="specialty">{driver.specialty}</span>}
           </div>
 
-          <dl class="d-stats grid grid-cols-3 gap-4 w-full pt-3 pb-3 border-y border-[#232C2A] text-center lg:text-left">
-            <div class="flex flex-col justify-end">
+          <dl class="d-stats d-stats--hero grid grid-cols-2 sm:grid-cols-4 gap-4 w-full py-3.5 border-y border-[#232C2A] text-center lg:text-left">
+            <div class="flex flex-col justify-between">
+              <dt>Official Dorsal</dt>
+              <dd class="text-[#00E699]">{driver.dorsal}</dd>
+              <span class="text-[10px] font-mono text-[#9AA8A3] mt-0.5">Muntrume Roster</span>
+            </div>
+            <div class="flex flex-col justify-between">
               <dt>Safety Rating (SR)</dt>
               <dd data-approx="sr" data-n={lic?.sr ?? ""} data-lic-f="sr">{lic ? formatoAprox(Number(lic.sr), "sr", loc) : ""}</dd>
               <span class="d-sr-bar mx-auto lg:mx-0 w-full max-w-[96px]" aria-hidden="true"><span class="d-sr-fill" style={`width:${srProgress}%`}></span></span>
             </div>
-            <div class="flex flex-col justify-end">
+            <div class="flex flex-col justify-between">
               <dt>Sports Car iRating</dt>
               <dd data-approx="k" data-n={lic?.irating ?? ""} data-f="irating" data-lic-f="irating">{lic?.irating != null ? formatoAprox(lic.irating, "k", loc) : ""}</dd>
               <svg class="d-sparkline mx-auto lg:mx-0" viewBox="0 0 130 24" width="68" height="12" fill="none" preserveAspectRatio="none" aria-hidden="true">
                 <path d={sparkPath} stroke="#00E699" stroke-width="2" stroke-linecap="round"/>
               </svg>
             </div>
-            <div class="flex flex-col justify-end">
+            <div class="flex flex-col justify-between">
               <dt>Sports Car Hours</dt>
               <dd data-approx="h" data-n={sumTrackHours}>{hoursText(sumTrackHours)}</dd>
               <span class="text-[10px] font-mono text-[#9AA8A3] mt-0.5">Garage 61</span>
@@ -274,7 +281,8 @@ const socials = (
   ) : (
     <>
       <!-- OVERVIEW GRID CARD (!hero): Equal Height Flex Column with Bottom-Aligned CTA -->
-      <div class="d-stage w-full" data-team={driver.slug}>
+      <div class="d-stage relative w-full" data-team={driver.slug}>
+        <span class="d-stage-dorsal" aria-label={`Official Number ${driver.dorsal}`}>{driver.dorsal}</span>
         <DriverHelmet slug={driver.slug} name={driver.fullName} eager={false} />
       </div>
 
@@ -285,8 +293,9 @@ const socials = (
             <span class="d-flag" aria-hidden="true">{driver.flag}</span>
             <span>{driver.country}</span> · <span data-f="role">{driver.role}</span>
           </p>
-          <Tag class="d-name text-center sm:text-left" id={headingId}>
-            <span class="d-num">{driver.dorsal}</span> {driver.fullName}
+          <Tag class="d-name flex items-center justify-center sm:justify-start gap-2 text-center sm:text-left" id={headingId}>
+            <span class="d-num-pill d-num-pill--sm">{driver.dorsal}</span>
+            <span>{driver.fullName}</span>
           </Tag>
           <div class="d-badges-row justify-center sm:justify-start">
             {lic && <p class="sc-badge m-0"><span data-lic-f="class">{lic.classLabel}</span></p>}

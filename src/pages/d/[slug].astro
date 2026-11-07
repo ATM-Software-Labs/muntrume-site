@@ -150,34 +150,42 @@ const personSchema = {
         <section class="d-setups d-reveal" id="setups" aria-labelledby="setupsTitle">
           <div class="d-section-head">
             <div>
+              <p class="r-kicker">Setup Vault · Sports Car</p>
               <h2 id="setupsTitle" class="d-block__title">Driver Setups (.STO)</h2>
-              <p class="r-meta">Setup Vault configurations for {driver.name}'s primary race cars.</p>
+              <p class="r-meta">Setup Vault configurations for {driver.name}'s primary Sports Cars.</p>
             </div>
             <a href="/garage" class="r-link">Open Setup Vault →</a>
           </div>
-          <div class="d-setups__grid">
+          <div class="d-setups__grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch">
             {driverSetups.map((item) => (
-              <article class="d-setup-card">
-                <div class="d-setup-card__top">
-                  <h3 class="d-setup-card__title">{item.carName}</h3>
-                  <span class="r-meta"><span data-approx="h" data-n={item.hours}>{formatoAprox(item.hours, "h", loc)}</span> <span>on track</span></span>
+              <article class="d-setup-card flex flex-col justify-between h-full">
+                <div class="d-setup-card__content flex flex-col gap-3">
+                  <div class="d-setup-card__top">
+                    <h3 class="d-setup-card__title">{item.carName}</h3>
+                    <span class="d-setup-card__hours"><span data-approx="h" data-n={item.hours}>{formatoAprox(item.hours, "h", loc)}</span> on track</span>
+                  </div>
+                  {item.sampleFiles.length > 0 ? (
+                    <ul class="d-setup-card__files">
+                      {item.sampleFiles.map((f) => (
+                        <li>
+                          <div class="d-setup-file__row">
+                            <span class="sto-type">{f.type}</span>
+                            <code title={f.file}>{f.file}</code>
+                          </div>
+                          <span class="d-setup-file__meta">{f.season} · {f.track}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p class="r-meta">Available in the general Setup Vault catalog ({item.carKey || "GT"}).</p>
+                  )}
                 </div>
-                {item.sampleFiles.length > 0 ? (
-                  <ul class="d-setup-card__files">
-                    {item.sampleFiles.map((f) => (
-                      <li>
-                        <span class="sto-type">{f.type}</span>
-                        <code>{f.file}</code>
-                        <span class="r-meta">{f.season} · {f.track}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p class="r-meta">Available in the general Setup Vault catalog ({item.carKey || "GT"}).</p>
-                )}
-                <a class="r-link d-setup-card__cta" href={item.carKey ? `/garage?car=${encodeURIComponent(item.carKey)}` : "/garage"}>
-                  Browse {item.carName} setups
-                </a>
+                <div class="d-setup-card__footer">
+                  <a class="r-link d-setup-card__cta" href={item.carKey ? `/garage?car=${encodeURIComponent(item.carKey)}` : "/garage"}>
+                    <span>Browse {item.carName} setups</span>
+                    <span aria-hidden="true">→</span>
+                  </a>
+                </div>
               </article>
             ))}
           </div>
