@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import DriverCard from '../../components/DriverCard.astro';
+import DriverRatingsChart from '../../components/DriverRatingsChart.astro';
 import { PILOTOS, LICENCE_UPDATED_LABEL, isRoadTrack } from '../../lib/pilotos';
 import { licenciaPrincipal } from '../../lib/licencias';
 import { formatoAprox, localeDeIdioma } from '../../lib/formato-licencia.js';
@@ -123,6 +124,7 @@ const personSchema = {
       <nav class="r-meta" aria-label="Migas" style="margin-bottom:16px"><a href="/" style="color:inherit">Inicio</a> / <a href="/pilotos" style="color:inherit">Pilotos</a> / <span style="color:var(--r-text)">{driver.fullName}</span></nav>
       <nav class="d-tabs" aria-label="Secciones">
         <a href="#resumen">Resumen</a>
+        <a href="#ratings">Driver ratings</a>
         <a href="#circuitos">Circuitos</a>
         <a href="#coches">Coches</a>
         <a href="#setups">Setups</a>
@@ -130,6 +132,7 @@ const personSchema = {
         <a href="#eventos" id="eventosTab">Próximos eventos</a>
       </nav>
       <DriverCard driver={driver} heading="h1" headingId="dTitle" hero />
+      <DriverRatingsChart slug={driver.slug} driverName={driver.fullName} />
       <div class="d-tools">
         <nav class="d-pager" aria-label="Otros pilotos">
           <a href={`/d/${prev.slug}/`}>← {prev.fullName}</a>

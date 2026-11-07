@@ -1,0 +1,433 @@
+---
+import { getDriverRatingHistory } from "../lib/rating-history";
+import { licenciasDe } from "../lib/licencias";
+
+interface Props {
+  slug: string;
+  driverName: string;
+}
+
+const { slug, driverName } = Astro.props;
+const historyData = getDriverRatingHistory(slug);
+const licenses = licenciasDe(slug);
+---
+
+<section class="d-ratings d-reveal" id="ratings" aria-labelledby="ratingsTitle" data-ratings-root={slug}>
+  <div class="d-section-head">
+    <div>
+      <p class="r-kicker">Telemetría Histórica · Garage 61 &amp; iRacing</p>
+      <h2 id="ratingsTitle" class="d-block__title">Driver ratings · Evolución de iRating</h2>
+    </div>
+    <p class="r-meta">Pasa el cursor sobre la curva para inspeccionar cada sesión</p>
+  </div>
+
+  <!-- Barra de filtros: Categorías (Izquierda) + Selector Dual iRating / Safety Rating (Derecha) -->
+  <div class="d-ratings__toolbar">
+    <div class="d-ratings__cats" role="tablist" aria-label="Categoría de licencia iRacing">
+      <button type="button" role="tab" aria-selected="false" class="d-rcat-btn" data-rcat="oval">Oval</button>
+      <button type="button" role="tab" aria-selected="true" class="d-rcat-btn is-active" data-rcat="sports_car">Sports Car</button>
+      <button type="button" role="tab" aria-selected="false" class="d-rcat-btn" data-rcat="formula">Formula Car</button>
+      <button type="button" role="tab" aria-selected="false" class="d-rcat-btn" data-rcat="dirt_oval">Dirt Oval</button>
+      <button type="button" role="tab" aria-selected="false" class="d-rcat-btn" data-rcat="dirt_road">Dirt Road</button>
+    </div>
+
+    <div class="d-ratings__metrics" role="group" aria-label="Métrica del gráfico">
+      <button type="button" class="d-rmetric-btn is-active" data-rmetric="irating" aria-pressed="true">iRating</button>
+      <button type="button" class="d-rmetric-btn" data-rmetric="sr" aria-pressed="false">Safety Rating</button>
+    </div>
+  </div>
+
+  <!-- Tarjeta del Gráfico Temporal -->
+  <div class="d-ratings__card">
+    <!-- Resumen rápido de la categoría seleccionada -->
+    <div class="d-ratings__kpis">
+      <div>
+        <span class="d-ratings__kpi-label" data-rkpi-current-label>iRating Actual</span>
+        <strong class="d-ratings__kpi-val" data-rkpi-current>—</strong>
+      </div>
+      <div>
+        <span class="d-ratings__kpi-label">Máximo Histórico (Peak)</span>
+        <strong class="d-ratings__kpi-val d-ratings__kpi-val--peak" data-rkpi-peak>—</strong>
+      </div>
+      <div>
+        <span class="d-ratings__kpi-label">Licencia Categoría</span>
+        <strong class="d-ratings__kpi-val" data-rkpi-lic>—</strong>
+      </div>
+    </div>
+
+    <!-- Lienzo SVG Interactivo con Tooltip -->
+    <div class="d-ratings__stage" data-chart-stage>
+      <div class="d-ratings__tooltip" data-chart-tooltip hidden>
+        <span class="d-ratings__tooltip-dot" data-chart-tooltip-dot></span>
+        <span data-chart-tooltip-text>8 Jul 2025 - 3359</span>
+      </div>
+
+      <svg
+        class="d-ratings__svg"
+        viewBox="0 0 860 300"
+        width="860"
+        height="300"
+        fill="none"
+         aria-label={`Evolución histórica de ratings de ${driverName}`}
+        role="img"
+      >
+        <defs>
+          <linearGradient id={`ratingAreaGrad-${slug}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.32" data-grad-stop1 />
+            <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.0" data-grad-stop2 />
+          </linearGradient>
+        </defs>
+
+        <!-- Rejilla horizontal y etiquetas del eje Y -->
+        <g data-chart-grid></g>
+
+        <!-- Etiquetas temporales del eje X -->
+        <g data-chart-xaxis></g>
+
+        <!-- Área bajo la curva -->
+        <path data-chart-area fill={`url(#ratingAreaGrad-${slug})`} d="" />
+
+        <!-- Línea principal de evolución -->
+        <path data-chart-line stroke="#38bdf8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="" />
+
+        <!-- Puntos de datos -->
+        <g data-chart-points></g>
+
+        <!-- Guía vertical interactiva (Hover Crosshair) -->
+        <line
+          data-chart-crosshair
+          x1="0"
+          y1="20"
+          x2="0"
+          y2="255"
+          stroke="rgba(255,255,255,0.28)"
+          stroke-width="1"
+          stroke-dasharray="4 4"
+          visibility="hidden"
+        />
+
+        <!-- Punto activo resaltado en hover -->
+        <circle
+          data-chart-active-dot
+          cx="0"
+          cy="0"
+          r="5.5"
+          fill="#080C0A"
+          stroke="#38bdf8"
+          stroke-width="3"
+          visibility="hidden"
+        />
+
+        <!-- Superficie interactiva para ratón y pantallas táctiles -->
+        <rect
+          data-chart-hit
+          x="56"
+          y="16"
+          width="784"
+          height="242"
+          fill="transparent"
+          style="cursor:crosshair"
+        />
+      </svg>
+    </div>
+  </div>
+
+  <script is:inline define:vars={{ historyData, licenses, slug }}>
+    (function initDriverRatingsChart() {
+      var root = document.querySelector('[data-ratings-root="' + slug + '"]');
+      if (!root) return;
+
+      var catBtns = root.querySelectorAll('[data-rcat]');
+      var metricBtns = root.querySelectorAll('[data-rmetric]');
+      var gridG = root.querySelector('[data-chart-grid]');
+      var xAxisG = root.querySelector('[data-chart-xaxis]');
+      var areaPath = root.querySelector('[data-chart-area]');
+      var linePath = root.querySelector('[data-chart-line]');
+      var pointsG = root.querySelector('[data-chart-points]');
+      var crosshair = root.querySelector('[data-chart-crosshair]');
+      var activeDot = root.querySelector('[data-chart-active-dot]');
+      var hitRect = root.querySelector('[data-chart-hit]');
+      var tooltip = root.querySelector('[data-chart-tooltip]');
+      var tooltipText = root.querySelector('[data-chart-tooltip-text]');
+      var tooltipDot = root.querySelector('[data-chart-tooltip-dot]');
+      var stop1 = root.querySelector('[data-grad-stop1]');
+      var stop2 = root.querySelector('[data-grad-stop2]');
+
+      var kpiCurrentLabel = root.querySelector('[data-rkpi-current-label]');
+      var kpiCurrent = root.querySelector('[data-rkpi-current]');
+      var kpiPeak = root.querySelector('[data-rkpi-peak]');
+      var kpiLic = root.querySelector('[data-rkpi-lic]');
+
+      var currentCat = 'sports_car';
+      var currentMetric = 'irating'; // 'irating' | 'sr'
+      var activeCoords = [];
+
+      var PAD_LEFT = 58;
+      var PAD_RIGHT = 22;
+      var PAD_TOP = 22;
+      var PAD_BOTTOM = 42;
+      var W = 860;
+      var H = 300;
+      var PLOT_W = W - PAD_LEFT - PAD_RIGHT;
+      var PLOT_H = H - PAD_TOP - PAD_BOTTOM;
+
+      function createSvgEl(tag, attrs) {
+        var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+        for (var k in attrs) {
+          if (Object.prototype.hasOwnProperty.call(attrs, k)) {
+            el.setAttribute(k, String(attrs[k]));
+          }
+        }
+        return el;
+      }
+
+      function getLicInfo(cat) {
+        for (var i = 0; i < (licenses || []).length; i++) {
+          if (licenses[i].category === cat) return licenses[i];
+        }
+        return null;
+      }
+
+      function renderChart() {
+        var series = (historyData && historyData[currentCat]) ? historyData[currentCat] : [];
+        if (!series.length) return;
+
+        var isIr = currentMetric === 'irating';
+        var strokeColor = isIr ? '#38bdf8' : '#00E699';
+
+        if (stop1) stop1.setAttribute('stop-color', strokeColor);
+        if (stop2) stop2.setAttribute('stop-color', strokeColor);
+        if (linePath) linePath.setAttribute('stroke', strokeColor);
+        if (activeDot) activeDot.setAttribute('stroke', strokeColor);
+        if (tooltipDot) tooltipDot.style.background = strokeColor;
+
+        var yMin = 0;
+        var yMax = isIr ? 3500 : 5.0;
+        if (isIr) {
+          var maxVal = 0;
+          for (var i = 0; i < series.length; i++) {
+            if (series[i].irating > maxVal) maxVal = series[i].irating;
+          }
+          if (maxVal > 3400) yMax = 4000;
+        }
+
+        // 1. Renderizar eje Y y líneas de rejilla
+        gridG.innerHTML = '';
+        var yTicks = isIr
+          ? (yMax > 3500 ? [0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000] : [0, 500, 1000, 1500, 2000, 2500, 3000, 3500])
+          : [0, 1.0, 2.0, 3.0, 4.0, 4.99];
+
+        yTicks.forEach(function (val) {
+          var ratio = (val - yMin) / (yMax - yMin);
+          var y = Math.round((PAD_TOP + PLOT_H * (1 - ratio)) * 10) / 10;
+
+          var line = createSvgEl('line', {
+            x1: PAD_LEFT,
+            y1: y,
+            x2: W - PAD_RIGHT,
+            y2: y,
+            stroke: val === 0 ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.07)',
+            'stroke-width': '1',
+            'stroke-dasharray': val === 0 ? '' : '3 4'
+          });
+          gridG.appendChild(line);
+
+          var label = createSvgEl('text', {
+            x: PAD_LEFT - 10,
+            y: y + 4,
+            'text-anchor': 'end',
+            fill: '#8E9B95',
+            'font-family': 'JetBrains Mono, monospace',
+            'font-size': '11'
+          });
+          label.textContent = isIr ? val.toLocaleString('en-US') : val.toFixed(2);
+          gridG.appendChild(label);
+        });
+
+        // 2. Calcular coordenadas X / Y por fecha
+        var tStart = new Date(series[0].date).getTime();
+        var tEnd = new Date(series[series.length - 1].date).getTime();
+        var tSpan = Math.max(1, tEnd - tStart);
+
+        activeCoords = series.map(function (pt, idx) {
+          var t = new Date(pt.date).getTime();
+          var xRatio = series.length === 1 ? 0.5 : (t - tStart) / tSpan;
+          var val = isIr ? pt.irating : pt.sr;
+          var yRatio = Math.max(0, Math.min(1, (val - yMin) / (yMax - yMin)));
+          var x = Math.round((PAD_LEFT + PLOT_W * xRatio) * 10) / 10;
+          var y = Math.round((PAD_TOP + PLOT_H * (1 - yRatio)) * 10) / 10;
+          return {
+            x: x,
+            y: y,
+            date: pt.date,
+            label: pt.label,
+            val: val,
+            formattedVal: isIr ? String(Math.round(val)) : Number(val).toFixed(2),
+            idx: idx
+          };
+        });
+
+        // 3. Renderizar marcas temporales del eje X (2024, Jul 2024, 2025, Jul 2025, 2026, Nov 2026)
+        xAxisG.innerHTML = '';
+        var xTicks = [
+          { date: '2024-01-15', text: '2024' },
+          { date: '2024-07-01', text: 'Jul 2024' },
+          { date: '2025-01-01', text: '2025' },
+          { date: '2025-07-01', text: 'Jul 2025' },
+          { date: '2026-01-01', text: '2026' },
+          { date: '2026-07-01', text: 'Jul 2026' },
+          { date: '2026-11-06', text: 'Nov 2026' }
+        ];
+        xTicks.forEach(function (tk) {
+          var t = new Date(tk.date).getTime();
+          var ratio = Math.max(0, Math.min(1, (t - tStart) / tSpan));
+          var x = Math.round((PAD_LEFT + PLOT_W * ratio) * 10) / 10;
+          var tickLine = createSvgEl('line', {
+            x1: x,
+            y1: PAD_TOP + PLOT_H,
+            x2: x,
+            y2: PAD_TOP + PLOT_H + 5,
+            stroke: 'rgba(255,255,255,0.2)',
+            'stroke-width': '1'
+          });
+          xAxisG.appendChild(tickLine);
+
+          var txt = createSvgEl('text', {
+            x: x,
+            y: PAD_TOP + PLOT_H + 22,
+            'text-anchor': ratio < 0.05 ? 'start' : (ratio > 0.95 ? 'end' : 'middle'),
+            fill: '#8E9B95',
+            'font-family': 'JetBrains Mono, monospace',
+            'font-size': '11'
+          });
+          txt.textContent = tk.text;
+          xAxisG.appendChild(txt);
+        });
+
+        // 4. Construir path de línea y área
+        var dLine = activeCoords.map(function (c, i) {
+          return (i === 0 ? 'M' : 'L') + c.x + ',' + c.y;
+        }).join(' ');
+        var baseY = PAD_TOP + PLOT_H;
+        var dArea = dLine + ' L' + activeCoords[activeCoords.length - 1].x + ',' + baseY + ' L' + activeCoords[0].x + ',' + baseY + ' Z';
+
+        linePath.setAttribute('d', dLine);
+        areaPath.setAttribute('d', dArea);
+
+        // 5. Puntos en cada nodo
+        pointsG.innerHTML = '';
+        activeCoords.forEach(function (c) {
+          var dot = createSvgEl('circle', {
+            cx: c.x,
+            cy: c.y,
+            r: '3.2',
+            fill: '#080C0A',
+            stroke: strokeColor,
+            'stroke-width': '2'
+          });
+          pointsG.appendChild(dot);
+        });
+
+        // 6. Actualizar KPIs superiores
+        var lastPt = activeCoords[activeCoords.length - 1];
+        var peakPt = activeCoords.reduce(function (best, cur) {
+          return cur.val > best.val ? cur : best;
+        }, activeCoords[0]);
+        var licObj = getLicInfo(currentCat);
+
+        if (kpiCurrentLabel) kpiCurrentLabel.textContent = isIr ? 'iRating Actual' : 'Safety Rating Actual';
+        if (kpiCurrent) kpiCurrent.textContent = isIr ? lastPt.val.toLocaleString('es-ES') : Number(lastPt.val).toFixed(2);
+        if (kpiPeak) {
+          kpiPeak.textContent = (isIr ? peakPt.val.toLocaleString('es-ES') : Number(peakPt.val).toFixed(2)) + ' · ' + peakPt.label;
+        }
+        if (kpiLic) {
+          kpiLic.textContent = licObj ? (licObj.classLabel + ' · SR ' + licObj.sr) : 'Rookie · SR 2.50';
+        }
+
+        hideTooltip();
+      }
+
+      function showPointTooltip(pt) {
+        if (!pt || !tooltip || !tooltipText || !crosshair || !activeDot) return;
+        crosshair.setAttribute('x1', String(pt.x));
+        crosshair.setAttribute('x2', String(pt.x));
+        crosshair.setAttribute('visibility', 'visible');
+
+        activeDot.setAttribute('cx', String(pt.x));
+        activeDot.setAttribute('cy', String(pt.y));
+        activeDot.setAttribute('visibility', 'visible');
+
+        tooltipText.textContent = pt.label + ' - ' + pt.formattedVal;
+        tooltip.hidden = false;
+
+        var leftPct = (pt.x / W) * 100;
+        var topPct = (pt.y / H) * 100;
+        tooltip.style.left = Math.min(86, Math.max(14, leftPct)) + '%';
+        tooltip.style.top = Math.max(8, topPct - 6) + '%';
+      }
+
+      function hideTooltip() {
+        if (crosshair) crosshair.setAttribute('visibility', 'hidden');
+        if (activeDot) activeDot.setAttribute('visibility', 'hidden');
+        if (tooltip) tooltip.hidden = true;
+      }
+
+      function handlePointerMove(clientX) {
+        if (!activeCoords.length || !hitRect) return;
+        var svgEl = hitRect.ownerSVGElement;
+        if (!svgEl) return;
+        var rect = svgEl.getBoundingClientRect();
+        var relX = ((clientX - rect.left) / rect.width) * W;
+        var nearest = activeCoords[0];
+        var minDist = Math.abs(relX - nearest.x);
+        for (var i = 1; i < activeCoords.length; i++) {
+          var d = Math.abs(relX - activeCoords[i].x);
+          if (d < minDist) {
+            minDist = d;
+            nearest = activeCoords[i];
+          }
+        }
+        showPointTooltip(nearest);
+      }
+
+      if (hitRect) {
+        hitRect.addEventListener('mousemove', function (e) {
+          handlePointerMove(e.clientX);
+        });
+        hitRect.addEventListener('mouseleave', hideTooltip);
+        hitRect.addEventListener('touchstart', function (e) {
+          if (e.touches && e.touches[0]) handlePointerMove(e.touches[0].clientX);
+        }, { passive: true });
+        hitRect.addEventListener('touchmove', function (e) {
+          if (e.touches && e.touches[0]) handlePointerMove(e.touches[0].clientX);
+        }, { passive: true });
+      }
+
+      catBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          currentCat = btn.getAttribute('data-rcat') || 'sports_car';
+          catBtns.forEach(function (b) {
+            var active = b === btn;
+            b.classList.toggle('is-active', active);
+            b.setAttribute('aria-selected', active ? 'true' : 'false');
+          });
+          renderChart();
+        });
+      });
+
+      metricBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          currentMetric = btn.getAttribute('data-rmetric') || 'irating';
+          metricBtns.forEach(function (b) {
+            var active = b === btn;
+            b.classList.toggle('is-active', active);
+            b.setAttribute('aria-pressed', active ? 'true' : 'false');
+          });
+          renderChart();
+        });
+      });
+
+      renderChart();
+    })();
+  </script>
+</section>
