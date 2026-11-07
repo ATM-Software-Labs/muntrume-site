@@ -33,7 +33,7 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
         height="32"
       />
       <span class="font-extrabold tracking-[.06em] text-[var(--r-text)] text-sm sm:text-base font-display uppercase whitespace-nowrap leading-none">
-        MUNTRUME <span class="text-[var(--r-accent)]">MOTORSPORT</span>
+        MUNTRUME<span class="hidden min-[380px]:inline"> <span class="text-[var(--r-accent)]">MOTORSPORT</span></span>
       </span>
     </a>
 
@@ -168,7 +168,7 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
       <a
         href="/garage"
         id="navGarageAccessBtn"
-        class="max-[480px]:hidden inline-flex items-center gap-1.5 min-h-[40px] bg-[var(--r-accent)] hover:opacity-90 text-[var(--r-accent-ink)] font-black text-xs font-mono uppercase tracking-wider px-4 py-2 rounded-xl transition-all shadow-md whitespace-nowrap shrink-0"
+        class="hidden lg:inline-flex items-center gap-1.5 min-h-[40px] bg-[var(--r-accent)] hover:opacity-90 text-[var(--r-accent-ink)] font-black text-xs font-mono uppercase tracking-wider px-4 py-2 rounded-xl transition-all shadow-md whitespace-nowrap shrink-0"
       >
         <span>GARAGE ACCESS</span>
       </a>
@@ -191,12 +191,12 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
 <!-- Mobile Drawer Navigation -->
 <div id="mobileDrawer">
   <div class="space-y-6">
-    <div class="flex items-center justify-between pb-4 border-b border-[#242E2C]">
+    <div class="flex items-center justify-between pb-4 border-b border-[var(--r-line)]">
       <div class="flex items-center gap-2" data-no-i18n>
         <img src="/assets/img/logo-48.webp" alt="" class="h-6 w-auto" width="24" height="24" />
-        <span class="font-extrabold text-white text-sm font-display tracking-tight uppercase">MUNTRUME <span class="text-[#00E699]">MOTORSPORT</span></span>
+        <span class="font-extrabold text-[var(--r-text)] text-sm font-display tracking-tight uppercase">MUNTRUME <span class="text-[var(--r-accent)]">MOTORSPORT</span></span>
       </div>
-      <button type="button" id="navDrawerCloseBtn" aria-label="Close menu" class="p-1 text-[#9AA8A3] hover:text-white rounded-lg focus:outline-none">
+      <button type="button" id="navDrawerCloseBtn" aria-label="Close menu" class="p-1 text-[var(--r-muted)] hover:text-[var(--r-text)] rounded-lg focus:outline-none">
         <svg width="24" height="24" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
         </svg>
@@ -204,58 +204,58 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
     </div>
 
     <nav class="flex flex-col space-y-2.5 font-mono text-sm uppercase">
-      <a href="/" class={`px-3 py-2 rounded-xl transition ${isHome ? 'bg-[#00E699]/10 text-[#00E699] font-bold' : 'text-[#9AA8A3] hover:bg-white/5 hover:text-white'}`}>
+      <a href="/" class={`px-3 py-2 rounded-xl transition ${isHome ? 'bg-[var(--r-accent)]/10 text-[var(--r-accent)] font-bold' : 'text-[var(--r-muted)] hover:bg-[var(--r-bg-2)] hover:text-[var(--r-text)]'}`}>
         Home
       </a>
-      <a href="/drivers" class={`px-3 py-2 rounded-xl transition ${isDrivers ? 'bg-[#00E699]/10 text-[#00E699] font-bold' : 'text-[#9AA8A3] hover:bg-white/5 hover:text-white'}`}>
+      <a href="/drivers" class={`px-3 py-2 rounded-xl transition ${isDrivers ? 'bg-[var(--r-accent)]/10 text-[var(--r-accent)] font-bold' : 'text-[var(--r-muted)] hover:bg-[var(--r-bg-2)] hover:text-[var(--r-text)]'}`}>
         Drivers
       </a>
-      <a href="/news" class={`px-3 py-2 rounded-xl transition ${isNews ? 'bg-[#00E699]/10 text-[#00E699] font-bold' : 'text-[#9AA8A3] hover:bg-white/5 hover:text-white'}`}>
+      <a href="/news" class={`px-3 py-2 rounded-xl transition ${isNews ? 'bg-[var(--r-accent)]/10 text-[var(--r-accent)] font-bold' : 'text-[var(--r-muted)] hover:bg-[var(--r-bg-2)] hover:text-[var(--r-text)]'}`}>
         News
       </a>
-      <a href="/paddock" class={`px-3 py-2 rounded-xl transition ${isPaddock ? 'bg-[#00E699]/10 text-[#00E699] font-bold' : 'text-[#9AA8A3] hover:bg-white/5 hover:text-white'}`}>
+      <a href="/paddock" class={`px-3 py-2 rounded-xl transition ${isPaddock ? 'bg-[var(--r-accent)]/10 text-[var(--r-accent)] font-bold' : 'text-[var(--r-muted)] hover:bg-[var(--r-bg-2)] hover:text-[var(--r-text)]'}`}>
         Paddock
       </a>
-      <a href="/ai" class="px-3 py-2 rounded-xl text-[#9AA8A3] hover:bg-white/5 hover:text-white transition">
+      <a href="/ai" class="px-3 py-2 rounded-xl text-[var(--r-muted)] hover:bg-[var(--r-bg-2)] hover:text-[var(--r-text)] transition">
         AI Copilot
       </a>
-      <a href="/setup-builder" class="px-3 py-2 rounded-xl text-[#9AA8A3] hover:bg-white/5 hover:text-white transition">
+      <a href="/setup-builder" class="px-3 py-2 rounded-xl text-[var(--r-muted)] hover:bg-[var(--r-bg-2)] hover:text-[var(--r-text)] transition">
         Setup Builder
       </a>
-      <a href="/communications" class="px-3 py-2 rounded-xl text-[#9AA8A3] hover:bg-white/5 hover:text-white transition">
+      <a href="/communications" class="px-3 py-2 rounded-xl text-[var(--r-muted)] hover:bg-[var(--r-bg-2)] hover:text-[var(--r-text)] transition">
         Communications &amp; Webmail
       </a>
-      <a href="/garage" class="px-3 py-2.5 rounded-xl bg-[#00E699] text-neutral-950 font-bold text-center transition">
+      <a href="/garage" class="px-3 py-2.5 rounded-xl bg-[var(--r-accent)] text-[var(--r-accent-ink)] font-bold text-center transition">
         Garage Access
       </a>
-      <div id="mobileAdminBox" class="hidden pt-2 mt-2 border-t border-[#242E2C] space-y-2">
-        <div class="px-3 py-2 rounded-xl bg-[#141B19] border border-[#00E699]/40 text-xs font-mono">
-          <div class="font-bold text-[#00E699]" id="mobileSessionHandle">atrumin16 · #16</div>
-          <div class="text-[11px] text-neutral-300" id="mobileSessionLabel">Alberto Trujillo (Team Principal)</div>
+      <div id="mobileAdminBox" class="hidden pt-2 mt-2 border-t border-[var(--r-line)] space-y-2">
+        <div class="px-3 py-2 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] text-xs font-mono">
+          <div class="font-bold text-[var(--r-accent)]" id="mobileSessionHandle">atrumin16 · #16</div>
+          <div class="text-[11px] text-[var(--r-muted)]" id="mobileSessionLabel">Alberto Trujillo (Team Principal)</div>
         </div>
-        <a id="mobileRaceControlBtn" href="/admin" class="hidden block px-3 py-2.5 rounded-xl bg-[#00E699] text-neutral-950 font-black text-center tracking-wider transition shadow-[0_0_16px_rgba(0,230,153,0.28)]">
+        <a id="mobileRaceControlBtn" href="/admin" class="hidden block px-3 py-2.5 rounded-xl bg-[var(--r-accent)] text-[var(--r-accent-ink)] font-black text-center tracking-wider transition shadow-[0_0_16px_rgba(0,230,153,0.28)]">
           RACE CONTROL
         </a>
-        <button type="button" id="mobileLogoutBtn" class="w-full px-3 py-2 rounded-xl bg-[#1A2120] border border-[#242E2C] text-xs font-mono text-neutral-300 hover:text-white text-center cursor-pointer">
+        <button type="button" id="mobileLogoutBtn" class="w-full px-3 py-2 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] text-xs font-mono text-[var(--r-muted)] hover:text-[var(--r-text)] text-center cursor-pointer">
           Log out
         </button>
       </div>
     </nav>
   </div>
 
-  <div class="pt-6 border-t border-[#242E2C] space-y-3">
-    <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between text-xs font-mono text-[#9AA8A3] hover:text-white">
+  <div class="pt-6 border-t border-[var(--r-line)] space-y-3">
+    <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between text-xs font-mono text-[var(--r-muted)] hover:text-[var(--r-text)]">
       <span>Discord Radio</span>
-      <span class="w-2 h-2 rounded-full bg-[#00E699] animate-pulse"></span>
+      <span class="w-2 h-2 rounded-full bg-[var(--r-accent)] animate-pulse"></span>
     </a>
     <div class="flex items-center justify-between pt-2">
-      <span class="text-xs font-mono text-[#9AA8A3]">Theme</span>
+      <span class="text-xs font-mono text-[var(--r-muted)]">Theme</span>
       <button
         type="button"
         id="themeToggleBtnMobile"
-        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1A2120] border border-[#242E2C] text-xs font-mono text-white cursor-pointer"
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--r-bg-2)] border border-[var(--r-line)] text-xs font-mono text-[var(--r-text)] cursor-pointer"
       >
-        <span id="themeMobileLabel">Dark Mode</span>
+        <span id="themeMobileLabel">Switch to Light ☀️</span>
       </button>
     </div>
   </div>
@@ -269,9 +269,12 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
     var sun = document.getElementById('themeSunIcon');
     var moon = document.getElementById('themeMoonIcon');
     var mobileLabel = document.getElementById('themeMobileLabel');
-    if (sun) sun.classList.toggle('hidden', !isLight);
-    if (moon) moon.classList.toggle('hidden', isLight);
-    if (mobileLabel) mobileLabel.textContent = isLight ? 'Light Mode ☀️' : 'Dark Mode 🌙';
+    var btn = document.getElementById('themeToggleBtn');
+    // Display the target theme action: in dark mode show Sun (to switch to light), in light mode show Moon (to switch to dark)
+    if (sun) sun.classList.toggle('hidden', isLight);
+    if (moon) moon.classList.toggle('hidden', !isLight);
+    if (btn) btn.setAttribute('title', isLight ? 'Switch to Dark Mode' : 'Switch to Light Mode');
+    if (mobileLabel) mobileLabel.textContent = isLight ? 'Switch to Dark 🌙' : 'Switch to Light ☀️';
   }
 
   function toggleTheme() {
@@ -444,7 +447,7 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
           sessionBox.classList.add('flex');
         }
         if (mobileAdminBox) mobileAdminBox.classList.remove('hidden');
-        if (garageAccessBtn) garageAccessBtn.classList.add('hidden');
+        if (garageAccessBtn) garageAccessBtn.style.display = 'none';
 
         if (isAdmin) {
           if (sessionHandle) sessionHandle.textContent = 'atrumin16';
@@ -479,8 +482,7 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
           raceControlBtn.classList.remove('inline-flex');
         }
         if (garageAccessBtn) {
-          if (onGaragePage) garageAccessBtn.classList.add('hidden');
-          else garageAccessBtn.classList.remove('hidden');
+          garageAccessBtn.style.display = onGaragePage ? 'none' : '';
         }
         if (mobileAdminBox) mobileAdminBox.classList.add('hidden');
       }
