@@ -331,7 +331,7 @@
         <a href="${href}" ${targetAttr} class="group block relative overflow-hidden rounded-3xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-line-2)] transition duration-300 shadow-2xl">
           <div class="h-80 sm:h-96 w-full relative overflow-hidden bg-[var(--r-bg-2)]">
             <img src="${esc(cardImg(a.thumbnail))}" onerror="this.onerror=null;this.src='/assets/img/coche1-640.webp';" alt="" width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="w-full h-full object-cover transition duration-500 group-hover:scale-105 opacity-80 group-hover:opacity-90">
-            <div class="absolute inset-0 bg-gradient-to-t from-[var(--r-surface)] via-[var(--r-surface)]/70 to-transparent"></div>
+            <div class="absolute inset-0" style="background: linear-gradient(to top, var(--r-surface) 0%, var(--r-surface) 55%, transparent 100%);"></div>
           </div>
           <div class="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
             <div class="flex items-center gap-2.5 mb-3 flex-wrap text-xs">
@@ -418,18 +418,18 @@
       if (!container) return;
       const trending = allNews.slice(0, 5);
       if (trending.length === 0) {
-        container.innerHTML = '<p class="text-xs text-neutral-400">No trending intel.</p>';
+        container.innerHTML = '<p class="text-xs text-[var(--r-muted)]">No trending intel.</p>';
         return;
       }
       container.innerHTML = trending.map((a, i) => {
         const isInternal = (a.link || '').startsWith('/article');
         const targetAttr = isInternal ? '' : 'target="_blank" rel="noopener noreferrer"';
         return `
-          <a href="${esc(safeLink(a.link))}" ${targetAttr} class="flex gap-3 items-start py-2.5 border-b border-white/5 last:border-0 hover:pl-1 transition-all group">
-            <span class="text-emerald-400 font-bold text-sm">#0${i + 1}</span>
+          <a href="${esc(safeLink(a.link))}" ${targetAttr} class="flex gap-3 items-start py-2.5 border-b border-[var(--r-line)] last:border-0 hover:pl-1 transition-all group">
+            <span class="text-[var(--r-accent)] font-bold text-sm">#0${i + 1}</span>
             <div class="min-w-0 flex-1">
-              <h3 class="text-xs font-semibold text-neutral-200 line-clamp-2 group-hover:text-emerald-400 transition-colors">${esc(a.title)}</h3>
-              <div class="text-[10px] text-neutral-400 mt-1">${esc(a.source)} • ${formatDate(a.pubDate)}</div>
+              <h3 class="text-xs font-semibold text-[var(--r-text)] line-clamp-2 group-hover:text-[var(--r-accent)] transition-colors">${esc(a.title)}</h3>
+              <div class="text-[10px] text-[var(--r-muted)] mt-1">${esc(a.source)} • ${formatDate(a.pubDate)}</div>
             </div>
           </a>
         `;
@@ -441,9 +441,9 @@
       const c = document.getElementById('aiBriefContent');
       if (!c || allNews.length === 0) return;
       const top = allNews.slice(0, 3);
-      let brief = `<p class="mb-2 text-neutral-300">Latest of <strong>${allNews.length} stories</strong> from <strong>${newsSources.length} ${newsSources.length === 1 ? 'source' : 'sources'}</strong>:</p><div class="space-y-1.5 text-neutral-300">`;
+      let brief = `<p class="mb-2 text-[var(--r-text)]">Latest of <strong>${allNews.length} stories</strong> from <strong>${newsSources.length} ${newsSources.length === 1 ? 'source' : 'sources'}</strong>:</p><div class="space-y-1.5 text-[var(--r-text)]">`;
       top.forEach(a => {
-        brief += `<p class="leading-tight"><span class="text-emerald-400 font-bold">•</span> ${esc(a.title.length > 80 ? a.title.substring(0, 80) + '…' : a.title)}</p>`;
+        brief += `<p class="leading-tight"><span class="text-[var(--r-accent)] font-bold">•</span> ${esc(a.title.length > 80 ? a.title.substring(0, 80) + '…' : a.title)}</p>`;
       });
       brief += '</div>';
       c.innerHTML = brief;
@@ -790,8 +790,8 @@
             <div class="memory-back font-bold text-xs">MRT</div>
             <div class="memory-front">
               <div class="text-center px-1">
-                <div class="inline-block text-xs font-mono font-bold tracking-widest px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 mb-1">${card.code}</div>
-                <div class="text-[11px] font-semibold text-neutral-200 truncate">${card.name}</div>
+                <div class="inline-block text-xs font-mono font-bold tracking-widest px-2 py-0.5 rounded bg-[var(--r-accent)]/15 text-[var(--r-accent)] border border-[var(--r-accent)]/30 mb-1">${card.code}</div>
+                <div class="text-[11px] font-semibold text-[var(--r-text)] truncate">${card.name}</div>
               </div>
             </div>
           </div>

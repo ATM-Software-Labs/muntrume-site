@@ -9,8 +9,8 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
 <!-- ========================================================================= -->
   <!-- 2. BREAKING TICKER (Clean Marquee)                                        -->
   <!-- ========================================================================= -->
-  <div id="breakingBanner" class="fixed top-16 left-0 right-0 z-40 bg-[#161c24]/95 backdrop-blur-md border-b border-white/10 text-neutral-300 text-xs py-2 px-4 flex items-center gap-3 overflow-hidden hidden">
-    <div class="flex items-center gap-2 flex-shrink-0 bg-emerald-500/15 text-emerald-400 px-2.5 py-0.5 rounded-full border border-emerald-500/30 text-[11px] font-semibold uppercase tracking-wider">
+  <div id="breakingBanner" class="fixed top-16 left-0 right-0 z-40 bg-[var(--r-surface)]/95 backdrop-blur-md border-b border-[var(--r-line)] text-[var(--r-text)] text-xs py-2 px-4 flex items-center gap-3 overflow-hidden hidden">
+    <div class="flex items-center gap-2 flex-shrink-0 bg-[var(--r-accent)]/15 text-[var(--r-accent)] px-2.5 py-0.5 rounded-full border border-[var(--r-accent)]/30 text-[11px] font-semibold uppercase tracking-wider">
       <span class="pulse-dot"></span>
       <span>LATEST DISPATCH</span>
     </div>
@@ -112,10 +112,10 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
 
           <!-- Loading Skeleton (Hidden by default since static articles are pre-rendered) -->
           <div id="loadingState" class="hidden space-y-4">
-            <div class="loading-skeleton h-96 rounded-2xl border border-white/10"></div>
+            <div class="loading-skeleton h-96 rounded-2xl border border-[var(--r-line)]"></div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="loading-skeleton h-48 rounded-2xl border border-white/10"></div>
-              <div class="loading-skeleton h-48 rounded-2xl border border-white/10"></div>
+              <div class="loading-skeleton h-48 rounded-2xl border border-[var(--r-line)]"></div>
+              <div class="loading-skeleton h-48 rounded-2xl border border-[var(--r-line)]"></div>
             </div>
           </div>
 
@@ -125,7 +125,7 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
               <a href="/setups" class="group block relative overflow-hidden rounded-3xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-line-2)] transition duration-300 shadow-2xl">
                 <div class="h-80 sm:h-96 w-full relative overflow-hidden bg-[var(--r-bg-2)]">
                   <img src="/assets/img/coche1-640.webp" alt="Despacho Oficial 24H Le Mans" width="640" height="360" loading="eager" decoding="async" class="w-full h-full object-cover transition duration-500 group-hover:scale-105 opacity-80 group-hover:opacity-90" />
-                  <div class="absolute inset-0 bg-gradient-to-t from-[var(--r-surface)] via-[var(--r-surface)]/70 to-transparent"></div>
+                  <div class="absolute inset-0" style="background: linear-gradient(to top, var(--r-surface) 0%, var(--r-surface) 55%, transparent 100%);"></div>
                 </div>
                 <div class="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
                   <div class="flex items-center gap-2.5 mb-3 flex-wrap text-xs">
@@ -182,7 +182,7 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
             <div class="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 mx-auto flex items-center justify-center mb-4 font-bold text-xl">!</div>
             <h3 class="text-lg font-bold text-[var(--r-text)] mb-1">Feed Sync Offline</h3>
             <p class="text-[var(--r-muted)] mb-5 text-xs">Connection to news feeds timed out. Tap retry to reconnect:</p>
-            <button onclick="loadAllNews()" class="bg-[var(--r-accent)] hover:opacity-90 text-neutral-950 font-semibold py-2.5 px-6 rounded-xl text-xs transition shadow-md">
+            <button onclick="loadAllNews()" class="bg-[var(--r-accent)] hover:opacity-90 text-[var(--r-accent-ink)] font-semibold py-2.5 px-6 rounded-xl text-xs transition shadow-md">
               Retry Sync
             </button>
           </div>
@@ -281,7 +281,7 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
           </div>
           <h3 class="text-sm font-bold text-[var(--r-text)] mb-1">Join the Paddock Discord</h3>
           <p class="text-xs text-[var(--r-muted)] mb-4 leading-relaxed">Talk setups and racing with the team.</p>
-          <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer" class="block py-2.5 px-4 rounded-xl bg-[var(--r-accent)] hover:opacity-90 text-neutral-950 font-bold text-xs transition shadow-md">
+          <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer" class="block py-2.5 px-4 rounded-xl bg-[var(--r-accent)] hover:opacity-90 text-[var(--r-accent-ink)] font-bold text-xs transition shadow-md">
             Connect to Discord
           </a>
         </div>
@@ -405,7 +405,7 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
                 <div id="triviaOptions" class="space-y-3"></div>
               </div>
               <div class="text-center">
-                <button id="triviaNext" onclick="nextTrivia()" class="hidden px-6 py-2.5 bg-[var(--r-accent)] hover:opacity-90 text-neutral-950 font-bold text-xs rounded-xl transition">
+                <button id="triviaNext" onclick="nextTrivia()" class="hidden px-6 py-2.5 bg-[var(--r-accent)] hover:opacity-90 text-[var(--r-accent-ink)] font-bold text-xs rounded-xl transition">
                   Next Question &rarr;
                 </button>
               </div>
@@ -417,7 +417,7 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
               </div>
               <h4 class="text-2xl font-bold text-[var(--r-text)] mb-1">Debrief Complete</h4>
               <p class="text-sm text-[var(--r-text)] mb-6">Final Score: <span id="triviaFinalScore" class="text-[var(--r-accent)] font-bold">0</span> / 9</p>
-              <button onclick="initTrivia()" class="px-5 py-2.5 bg-[var(--r-accent)] hover:opacity-90 text-neutral-950 font-bold text-xs rounded-xl transition">
+              <button onclick="initTrivia()" class="px-5 py-2.5 bg-[var(--r-accent)] hover:opacity-90 text-[var(--r-accent-ink)] font-bold text-xs rounded-xl transition">
                 Restart Quiz
               </button>
             </div>
@@ -451,7 +451,7 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
               <button 
                 id="reactionBtn" 
                 onclick="handleReactionClick()" 
-                class="px-8 py-3.5 bg-[var(--r-accent)] hover:opacity-90 text-neutral-950 font-extrabold text-sm rounded-xl transition shadow-md active:scale-95"
+                class="px-8 py-3.5 bg-[var(--r-accent)] hover:opacity-90 text-[var(--r-accent-ink)] font-extrabold text-sm rounded-xl transition shadow-md active:scale-95"
               >
                 Initiate Sequence
               </button>
@@ -488,7 +488,7 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
               </div>
               <h4 class="text-xl font-bold text-[var(--r-text)] mb-1">All Circuits Identified</h4>
               <p class="text-xs text-[var(--r-text)] mb-4">Completed in <span id="memoryFinalMoves" class="text-[var(--r-accent)] font-bold">0</span> moves.</p>
-              <button onclick="initMemory()" class="px-5 py-2.5 bg-[var(--r-accent)] hover:opacity-90 text-neutral-950 font-bold text-xs rounded-xl transition">
+              <button onclick="initMemory()" class="px-5 py-2.5 bg-[var(--r-accent)] hover:opacity-90 text-[var(--r-accent-ink)] font-bold text-xs rounded-xl transition">
                 Play Again
               </button>
             </div>
@@ -577,7 +577,7 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
     }
     .filter-btn.active {
       background: var(--r-accent) !important;
-      color: #0E1412 !important;
+      color: var(--r-accent-ink) !important;
       font-weight: 700;
       border-color: var(--r-accent) !important;
       box-shadow: 0 0 12px var(--r-accent-glow);
@@ -625,13 +625,13 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
     }
     .ws-cell.selecting {
       background: var(--r-accent);
-      color: #0e1217;
+      color: var(--r-accent-ink);
       transform: scale(1.06);
       border-color: var(--r-accent);
     }
     .ws-cell.found {
       background: var(--r-accent);
-      color: #0e1217;
+      color: var(--r-accent-ink);
       border-color: var(--r-accent);
       animation: foundPop 0.3s ease;
     }
@@ -656,5 +656,5 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
     }
   </style>
 
-  <script is:inline src="/assets/js/news.js?v=26s5.2"></script>
+  <script is:inline src="/assets/js/news.js?v=26s5.3"></script>
 </Layout>

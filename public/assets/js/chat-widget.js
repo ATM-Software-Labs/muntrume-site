@@ -20,7 +20,7 @@ const CSS = `
 html.light #mmChat,[data-theme="light"] #mmChat{--bg:#fff;--hd:#f2f6f4;--bd:#d4dfda;--tx:#1f2a27;--mu:#4c5c57;--bot:#eef3f1;--ac:#00704a;--acTx:#fff;--in:#fff}
 #mmChat[hidden]{display:none}
 #mmChat header{display:flex;align-items:center;gap:.6rem;padding:.75rem 1rem;background:var(--hd);border-bottom:1px solid var(--bd)}
-#mmChat header b{font-size:.85rem;letter-spacing:.02em;color:#fff}#mmChat header small{display:block;color:var(--mu);font-size:.72rem}
+#mmChat header b{font-size:.85rem;letter-spacing:.02em;color:var(--tx)}#mmChat header small{display:block;color:var(--mu);font-size:.72rem}
 #mmChat header a{color:var(--ac);text-decoration:none}
 #mmChat .ic{margin-left:auto;display:flex;gap:.25rem}
 #mmChat button{font:inherit;cursor:pointer}
@@ -38,7 +38,7 @@ html.light #mmChat,[data-theme="light"] #mmChat{--bg:#fff;--hd:#f2f6f4;--bd:#d4d
 #mmChat .dots-neon i:nth-child(2){animation-delay:.15s}#mmChat .dots-neon i:nth-child(3){animation-delay:.3s}
 @keyframes mmb{0%,80%,100%{opacity:.25;transform:scale(0.8)}40%{opacity:1;transform:scale(1.2)}}
 @media (prefers-reduced-motion:reduce){#mmChat .dots-neon i{animation:none}}
-#mmChat .chips{display:flex;gap:.4rem;padding:.5rem .75rem;overflow-x:auto;border-top:1px solid var(--bd);background:#080C0A}
+#mmChat .chips{display:flex;gap:.4rem;padding:.5rem .75rem;overflow-x:auto;border-top:1px solid var(--bd);background:var(--hd)}
 #mmChat .chips button{white-space:nowrap;font-size:.78rem;padding:.35rem .7rem;border-radius:999px;border:1px solid var(--bd);background:var(--bot);color:var(--tx);transition:all .2s}
 #mmChat .chips button:hover{border-color:var(--ac);color:var(--ac);box-shadow:0 0 8px rgba(0,255,136,.2)}
 #mmChat form{display:flex;gap:.5rem;padding:.6rem .75rem calc(.6rem + env(safe-area-inset-bottom));border-top:1px solid var(--bd);background:var(--hd)}
@@ -50,12 +50,12 @@ html.light #mmChat,[data-theme="light"] #mmChat{--bg:#fff;--hd:#f2f6f4;--bd:#d4d
 .sr-only-mm{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 /* Step cards format for markdown tables */
 .mm-step-grid{display:grid;gap:.5rem;margin:.5rem 0;width:100%}
-.mm-step-card{background:#0b0f0e;border:1px solid #1E2A26;border-left:3px solid #00ff88;border-radius:.5rem;padding:.6rem .75rem;display:grid;gap:.3rem;box-shadow:0 4px 12px rgba(0,0,0,.35)}
-.mm-step-badge{font:700 10px/1 monospace;letter-spacing:.1em;text-transform:uppercase;color:#00ff88;background:rgba(0,255,136,.1);padding:3px 6px;border-radius:4px;display:inline-block;width:fit-content}
-.mm-step-title{font-weight:700;color:#fff;font-size:.85rem}
+.mm-step-card{background:var(--bot);border:1px solid var(--bd);border-left:3px solid var(--ac);border-radius:.5rem;padding:.6rem .75rem;display:grid;gap:.3rem;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.mm-step-badge{font:700 10px/1 monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--ac);background:rgba(0,255,136,.1);padding:3px 6px;border-radius:4px;display:inline-block;width:fit-content}
+.mm-step-title{font-weight:700;color:var(--tx);font-size:.85rem}
 .mm-step-kv{display:grid;grid-template-columns:auto 1fr;gap:.25rem .6rem;font-size:.78rem;color:var(--mu);margin-top:.2rem}
-.mm-step-kv dt{color:#9AA8A3;font-family:monospace}
-.mm-step-kv dd{margin:0;color:#E0E6E4;font-weight:600}
+.mm-step-kv dt{color:var(--mu);font-family:monospace}
+.mm-step-kv dd{margin:0;color:var(--tx);font-weight:600}
 @media (max-width:640px){#mmChat{inset:0;width:100%;height:100dvh;border-radius:0;border:0;padding-top:env(safe-area-inset-top)}#mmChat .log{padding-left:max(1rem,env(safe-area-inset-left));padding-right:max(1rem,env(safe-area-inset-right))}}
 `;
 let root, log, input, sendBtn, live, chips, launcher, t, history = [], streaming = false, stamps = [], ctrl;
@@ -67,11 +67,11 @@ function add(cls, text) { const m = el('div', { class: 'm ' + cls }, text); log.
 function formatInline(container, text) {
   (text || '').split('**').forEach((part, i) => {
     if (i % 2 === 1) {
-      container.appendChild(el('strong', { style: 'color:#fff' }, part));
+      container.appendChild(el('strong', { style: 'color:var(--tx);font-weight:700' }, part));
     } else {
       part.split('`').forEach((codePart, j) => {
         if (j % 2 === 1) {
-          container.appendChild(el('code', { style: 'background:#050807;color:#00ff88;padding:2px 5px;border-radius:4px;font-family:monospace;font-size:0.85em' }, codePart));
+          container.appendChild(el('code', { style: 'background:var(--hd);color:var(--ac);padding:2px 5px;border-radius:4px;font-family:monospace;font-size:0.85em' }, codePart));
         } else {
           container.appendChild(document.createTextNode(codePart));
         }

@@ -8,25 +8,25 @@ const pageDescription = "Full-screen Muntrume AI Copilot powered by Trujillo AI 
 <Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/ai">
   <section class="pt-20 pb-12 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 max-w-full overflow-x-hidden">
     <!-- Cabecera técnica de Muntrume AI -->
-    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-[#1E2A26]">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-[var(--r-line)]">
       <div class="space-y-2">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#121A17] border border-[#00E699]/40 text-[#00E699] text-[11px] font-mono uppercase tracking-wider">
-          <span class="w-2 h-2 rounded-full bg-[#00E699] animate-pulse"></span>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--r-surface)] border border-[var(--r-accent)]/40 text-[var(--r-accent)] text-[11px] font-mono uppercase tracking-wider">
+          <span class="w-2 h-2 rounded-full bg-[var(--r-accent)] animate-pulse"></span>
           <span>TRUJILLO AI ENGINE · GROQ LPU STREAMING</span>
         </div>
-        <h1 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight font-display uppercase">
-          MUNTRUME <span class="text-[#00E699]">AI</span> COPILOT
+        <h1 class="text-3xl sm:text-5xl font-extrabold text-[var(--r-text)] tracking-tight font-display uppercase">
+          MUNTRUME <span class="text-[var(--r-accent)]">AI</span> COPILOT
         </h1>
-        <p class="text-xs sm:text-sm text-[#9AA8A3] max-w-2xl leading-relaxed">
+        <p class="text-xs sm:text-sm text-[var(--r-muted)] max-w-2xl leading-relaxed">
           Ingeniero de pista virtual de Muntrume Motorsport. Consulta reglajes aerodinámicos y mecánicos para Sports Car (GT3 y GT4), interpretación de telemetría en Garage 61 o estrategia de stints en resistencia multiclase.
         </p>
       </div>
 
       <div class="flex flex-wrap items-center gap-2.5 shrink-0">
-        <a href="/garage" class="px-3.5 py-2 rounded-xl bg-[#121A17] border border-[#1E2A26] hover:border-[#00E699]/60 text-xs font-mono text-neutral-200 hover:text-[#00E699] transition">
+        <a href="/garage" class="px-3.5 py-2 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono text-[var(--r-text)] hover:text-[var(--r-accent)] transition">
           Abrir Setup Vault (.STO) &rarr;
         </a>
-        <button type="button" id="aiFullResetBtn" class="px-3.5 py-2 rounded-xl bg-[#121A17] border border-[#1E2A26] hover:border-[#00E699]/60 text-xs font-mono text-[#9AA8A3] hover:text-white transition cursor-pointer">
+        <button type="button" id="aiFullResetBtn" class="px-3.5 py-2 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono text-[var(--r-muted)] hover:text-[var(--r-text)] transition cursor-pointer">
           Reiniciar sesión
         </button>
       </div>
@@ -36,75 +36,75 @@ const pageDescription = "Full-screen Muntrume AI Copilot powered by Trujillo AI 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
       <!-- Columna lateral de modos y consultas rápidas -->
       <aside class="lg:col-span-4 space-y-4">
-        <div class="p-5 rounded-2xl bg-[#121A17] border border-[#1E2A26] space-y-3">
-          <p class="text-[11px] font-mono uppercase tracking-widest text-[#00E699] font-bold">Módulos de Ingeniería</p>
+        <div class="p-5 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] space-y-3">
+          <p class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)] font-bold">Módulos de Ingeniería</p>
           <div class="space-y-2" id="aiTopicButtons">
-            <button type="button" data-prompt="Dame una guía paso a paso para corregir subviraje en entrada y sobreviraje en salida en un GT3 en Spa-Francorchamps." class="w-full text-left p-3 rounded-xl bg-[#080C0A] border border-[#1E2A26] hover:border-[#00E699] transition group cursor-pointer">
-              <span class="block text-xs font-bold text-white group-hover:text-[#00E699]">Balance Mecánico y Aero GT3</span>
-              <span class="block text-[11px] text-[#9AA8A3] font-mono mt-0.5">Subviraje, barras, alturas y alerón</span>
+            <button type="button" data-prompt="Dame una guía paso a paso para corregir subviraje en entrada y sobreviraje en salida en un GT3 en Spa-Francorchamps." class="w-full text-left p-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition group cursor-pointer">
+              <span class="block text-xs font-bold text-[var(--r-text)] group-hover:text-[var(--r-accent)]">Balance Mecánico y Aero GT3</span>
+              <span class="block text-[11px] text-[var(--r-muted)] font-mono mt-0.5">Subviraje, barras, alturas y alerón</span>
             </button>
-            <button type="button" data-prompt="¿Qué canales de telemetría debo analizar en Garage 61 para ganar décimas en frenada (trail braking) en Le Mans o Watkins Glen?" class="w-full text-left p-3 rounded-xl bg-[#080C0A] border border-[#1E2A26] hover:border-[#00E699] transition group cursor-pointer">
-              <span class="block text-xs font-bold text-white group-hover:text-[#00E699]">Telemetría Garage 61 (60 Hz)</span>
-              <span class="block text-[11px] text-[#9AA8A3] font-mono mt-0.5">Trail braking, slip angle y deltas</span>
+            <button type="button" data-prompt="¿Qué canales de telemetría debo analizar en Garage 61 para ganar décimas en frenada (trail braking) en Le Mans o Watkins Glen?" class="w-full text-left p-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition group cursor-pointer">
+              <span class="block text-xs font-bold text-[var(--r-text)] group-hover:text-[var(--r-accent)]">Telemetría Garage 61 (60 Hz)</span>
+              <span class="block text-[11px] text-[var(--r-muted)] font-mono mt-0.5">Trail braking, slip angle y deltas</span>
             </button>
-            <button type="button" data-prompt="¿Cómo gestionamos presiones en frío, combustible y doble stint de neumáticos en una carrera de resistencia de 24h en iRacing?" class="w-full text-left p-3 rounded-xl bg-[#080C0A] border border-[#1E2A26] hover:border-[#00E699] transition group cursor-pointer">
-              <span class="block text-xs font-bold text-white group-hover:text-[#00E699]">Estrategia Endurance 24H</span>
-              <span class="block text-[11px] text-[#9AA8A3] font-mono mt-0.5">Presiones, consumo y relevos</span>
+            <button type="button" data-prompt="¿Cómo gestionamos presiones en frío, combustible y doble stint de neumáticos en una carrera de resistencia de 24h en iRacing?" class="w-full text-left p-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition group cursor-pointer">
+              <span class="block text-xs font-bold text-[var(--r-text)] group-hover:text-[var(--r-accent)]">Estrategia Endurance 24H</span>
+              <span class="block text-[11px] text-[var(--r-muted)] font-mono mt-0.5">Presiones, consumo y relevos</span>
             </button>
-            <button type="button" data-prompt="¿Cuáles son los requisitos y pasos para unirme como piloto oficial a Muntrume Motorsport?" class="w-full text-left p-3 rounded-xl bg-[#080C0A] border border-[#1E2A26] hover:border-[#00E699] transition group cursor-pointer">
-              <span class="block text-xs font-bold text-white group-hover:text-[#00E699]">Ingreso al Paddock Muntrume</span>
-              <span class="block text-[11px] text-[#9AA8A3] font-mono mt-0.5">Requisitos, Discord y Paddock Pass</span>
+            <button type="button" data-prompt="¿Cuáles son los requisitos y pasos para unirme como piloto oficial a Muntrume Motorsport?" class="w-full text-left p-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition group cursor-pointer">
+              <span class="block text-xs font-bold text-[var(--r-text)] group-hover:text-[var(--r-accent)]">Ingreso al Paddock Muntrume</span>
+              <span class="block text-[11px] text-[var(--r-muted)] font-mono mt-0.5">Requisitos, Discord y Paddock Pass</span>
             </button>
           </div>
         </div>
 
-        <div class="p-5 rounded-2xl bg-[#121A17] border border-[#1E2A26] space-y-2 text-xs">
+        <div class="p-5 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] space-y-2 text-xs">
           <div class="flex items-center justify-between font-mono text-[11px]">
-            <span class="text-[#9AA8A3]">MOTOR INFERENCIA</span>
-            <span class="text-[#00E699] font-bold">Groq LPU · Streaming</span>
+            <span class="text-[var(--r-muted)]">MOTOR INFERENCIA</span>
+            <span class="text-[var(--r-accent)] font-bold">Groq LPU · Streaming</span>
           </div>
           <div class="flex items-center justify-between font-mono text-[11px]">
-            <span class="text-[#9AA8A3]">ESPECIALIDAD</span>
-            <span class="text-white">Road · GT3 / GTP / GT4</span>
+            <span class="text-[var(--r-muted)]">ESPECIALIDAD</span>
+            <span class="text-[var(--r-text)]">Road · GT3 / GTP / GT4</span>
           </div>
           <div class="flex items-center justify-between font-mono text-[11px]">
-            <span class="text-[#9AA8A3]">CATÁLOGO VINCULADO</span>
-            <span class="text-white">+41.000 Setups .STO</span>
+            <span class="text-[var(--r-muted)]">CATÁLOGO VINCULADO</span>
+            <span class="text-[var(--r-text)]">+41.000 Setups .STO</span>
           </div>
         </div>
       </aside>
 
       <!-- Consola Principal de Chat -->
-      <div class="lg:col-span-8 flex flex-col rounded-2xl bg-[#080C0A] border border-[#1E2A26] shadow-2xl overflow-hidden min-h-[540px] max-h-[75vh]">
+      <div class="lg:col-span-8 flex flex-col rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] shadow-2xl overflow-hidden min-h-[540px] max-h-[75vh]">
         <!-- Barra de estado de la consola -->
-        <div class="px-5 py-3.5 bg-[#0E1513] border-b border-[#1E2A26] flex items-center justify-between gap-3">
+        <div class="px-5 py-3.5 bg-[var(--r-bg-2)] border-b border-[var(--r-line)] flex items-center justify-between gap-3">
           <div class="flex items-center gap-2.5">
-            <span class="w-2.5 h-2.5 rounded-full bg-[#00E699]"></span>
-            <span class="text-xs font-mono font-bold text-white uppercase tracking-wider">Canal de Radio Ingeniería · Muntrume AI</span>
+            <span class="w-2.5 h-2.5 rounded-full bg-[var(--r-accent)]"></span>
+            <span class="text-xs font-mono font-bold text-[var(--r-text)] uppercase tracking-wider">Canal de Radio Ingeniería · Muntrume AI</span>
           </div>
-          <span class="text-[11px] font-mono text-[#9AA8A3]" id="aiFullStatus">Listo en pista</span>
+          <span class="text-[11px] font-mono text-[var(--r-muted)]" id="aiFullStatus">Listo en pista</span>
         </div>
 
         <!-- Historial de mensajes -->
         <div id="aiFullLog" class="flex-1 overflow-y-auto p-5 space-y-4 scroll-smooth" role="log" aria-live="polite">
-          <div class="max-w-[88%] p-4 rounded-2xl rounded-tl-xs bg-[#0E1513] border border-[#1E2A26] text-sm text-neutral-200 leading-relaxed">
-            ¡Hola! Soy <strong class="text-white">Muntrume AI</strong>, copiloto e ingeniero de pista de Muntrume Motorsport conectado sobre <strong class="text-[#00E699]">Groq LPU</strong>. ¿En qué circuito Road (Le Mans, Spa, Nürburgring, Watkins Glen, Imola...) o con qué coche estás trabajando hoy?
+          <div class="max-w-[88%] p-4 rounded-2xl rounded-tl-xs bg-[var(--r-bg-2)] border border-[var(--r-line)] text-sm text-[var(--r-text)] leading-relaxed">
+            ¡Hola! Soy <strong class="text-[var(--r-text)]">Muntrume AI</strong>, copiloto e ingeniero de pista de Muntrume Motorsport conectado sobre <strong class="text-[var(--r-accent)]">Groq LPU</strong>. ¿En qué circuito Road (Le Mans, Spa, Nürburgring, Watkins Glen, Imola...) o con qué coche estás trabajando hoy?
           </div>
         </div>
 
         <!-- Barra de entrada -->
-        <form id="aiFullForm" class="p-4 bg-[#0E1513] border-t border-[#1E2A26] flex items-center gap-3" autocomplete="off">
+        <form id="aiFullForm" class="p-4 bg-[var(--r-bg-2)] border-t border-[var(--r-line)] flex items-center gap-3" autocomplete="off">
           <input
             type="text"
             id="aiFullInput"
             maxlength="500"
             placeholder="Pregunta sobre reglajes GT3/GTP, presiones, telemetría en Garage 61 o circuitos Road..."
-            class="flex-1 min-w-0 px-4 py-3 rounded-xl bg-[#080C0A] border border-[#1E2A26] text-white text-xs sm:text-sm font-mono focus:outline-none focus:border-[#00E699] transition"
+            class="flex-1 min-w-0 px-4 py-3 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] text-[var(--r-text)] text-xs sm:text-sm font-mono focus:outline-none focus:border-[var(--r-accent)] transition"
           />
           <button
             type="submit"
             id="aiFullSendBtn"
-            class="px-5 py-3 rounded-xl bg-[#00E699] hover:bg-[#00c985] text-neutral-950 font-black text-xs font-mono uppercase tracking-wider transition cursor-pointer shrink-0"
+            class="px-5 py-3 rounded-xl bg-[var(--r-accent)] hover:opacity-90 text-[var(--r-accent-ink)] font-black text-xs font-mono uppercase tracking-wider transition cursor-pointer shrink-0"
           >
             Enviar &rarr;
           </button>
@@ -141,14 +141,14 @@ const pageDescription = "Full-screen Muntrume AI Copilot powered by Trujillo AI 
       String(text || '').split('**').forEach(function (part, i) {
         if (i % 2 === 1) {
           var b = document.createElement('strong');
-          b.className = 'text-white font-bold';
+          b.className = 'text-[var(--r-text)] font-bold';
           b.textContent = part;
           container.appendChild(b);
         } else {
           part.split('`').forEach(function (codePart, j) {
             if (j % 2 === 1) {
               var c = document.createElement('code');
-              c.className = 'px-1.5 py-0.5 rounded bg-[#050807] text-[#00E699] font-mono text-xs';
+              c.className = 'px-1.5 py-0.5 rounded bg-[var(--r-surface)] text-[var(--r-accent)] font-mono text-xs';
               c.textContent = codePart;
               container.appendChild(c);
             } else {
@@ -189,16 +189,16 @@ const pageDescription = "Full-screen Muntrume AI Copilot powered by Trujillo AI 
           if (parsed) {
             var grid = createEl('div', 'grid gap-2.5 my-2');
             parsed.rows.forEach(function (row, idx) {
-              var card = createEl('div', 'p-3 rounded-xl bg-[#080C0A] border border-[#1E2A26] border-l-2 border-l-[#00E699] space-y-1');
-              var badge = createEl('span', 'inline-block text-[10px] font-mono font-bold uppercase text-[#00E699] bg-[#00E699]/10 px-2 py-0.5 rounded', 'PASO ' + (idx + 1));
-              var ttl = createEl('div', 'font-bold text-white text-xs sm:text-sm');
+              var card = createEl('div', 'p-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] border-l-2 border-l-[var(--r-accent)] space-y-1');
+              var badge = createEl('span', 'inline-block text-[10px] font-mono font-bold uppercase text-[var(--r-accent)] bg-[var(--r-accent)]/10 px-2 py-0.5 rounded', 'PASO ' + (idx + 1));
+              var ttl = createEl('div', 'font-bold text-[var(--r-text)] text-xs sm:text-sm');
               formatInline(ttl, row[0] || ('Ajuste ' + (idx + 1)));
               card.appendChild(badge);
               card.appendChild(ttl);
               for (var c = 1; c < row.length; c++) {
-                var kv = createEl('div', 'text-xs text-[#9AA8A3] font-mono');
+                var kv = createEl('div', 'text-xs text-[var(--r-muted)] font-mono');
                 kv.textContent = (parsed.headers[c] || ('Parámetro ' + c)) + ': ';
-                var val = createEl('span', 'text-neutral-200 font-sans');
+                var val = createEl('span', 'text-[var(--r-text)] font-sans');
                 formatInline(val, row[c]);
                 kv.appendChild(val);
                 card.appendChild(kv);
@@ -223,8 +223,8 @@ const pageDescription = "Full-screen Muntrume AI Copilot powered by Trujillo AI 
       var bubble = createEl(
         'div',
         isUser
-          ? 'ml-auto max-w-[85%] p-3.5 rounded-2xl rounded-tr-xs bg-[#00E699] text-neutral-950 font-semibold text-sm'
-          : 'max-w-[88%] p-4 rounded-2xl rounded-tl-xs bg-[#0E1513] border border-[#1E2A26] text-sm text-neutral-200 leading-relaxed',
+          ? 'ml-auto max-w-[85%] p-3.5 rounded-2xl rounded-tr-xs bg-[var(--r-accent)] text-[var(--r-accent-ink)] font-semibold text-sm'
+          : 'max-w-[88%] p-4 rounded-2xl rounded-tl-xs bg-[var(--r-bg-2)] border border-[var(--r-line)] text-sm text-[var(--r-text)] leading-relaxed',
         text
       );
       log.appendChild(bubble);
@@ -240,7 +240,7 @@ const pageDescription = "Full-screen Muntrume AI Copilot powered by Trujillo AI 
       appendMessage('user', text);
 
       var botBubble = appendMessage('assistant', '');
-      botBubble.innerHTML = '<span class="inline-flex items-center gap-2 font-mono text-xs text-[#00E699]"><span class="w-2 h-2 rounded-full bg-[#00E699] animate-ping"></span>Trujillo AI procesando en Groq LPU...</span>';
+      botBubble.innerHTML = '<span class="inline-flex items-center gap-2 font-mono text-xs text-[var(--r-accent)]"><span class="w-2 h-2 rounded-full bg-[var(--r-accent)] animate-ping"></span>Trujillo AI procesando en Groq LPU...</span>';
       streaming = true;
       sendBtn.disabled = true;
       if (statusEl) statusEl.textContent = 'Recibiendo telemetría...';
