@@ -61,191 +61,304 @@ const socials = (
   ] as const
 ).map(([key, label]) => ({ key, label, href: safeUrl(driver.socials[key]) })).filter((s) => s.href);
 ---
-<article class:list={["d-card", "d-reveal", hero && "d-hero"]} data-driver={driver.slug} data-lic="sports_car" id={hero ? "resumen" : undefined}>
-  <div class="d-stage" data-team={driver.slug}>
-    <DriverHelmet slug={driver.slug} name={driver.fullName} eager={hero} />
-  </div>
-  <div class="d-card__body">
-    <p class="d-kicker">
-      <span class="d-flag" aria-hidden="true">{driver.flag}</span>
-      <span>{driver.country}</span> · <span data-f="role">{driver.role}</span>
-    </p>
-    <Tag class="d-name" id={headingId}><span class="d-num">{driver.dorsal}</span> {driver.fullName}</Tag>
-    <div class="d-badges-row">
-      {lic && <p class="sc-badge"><span data-lic-f="class">{lic.classLabel}</span></p>}
-      <span class="d-ovr-pill" title="EA Sports F1 25 Asymptotic Rating (1.5k=40 · 12k=97 · Cap <99)">OVR <strong data-f="ovr">{ovrScore}</strong></span>
-      {driver.specialty && <span class="d-specialty-pill" data-f="specialty">{driver.specialty}</span>}
-    </div>
-    <dl class="d-stats">
-      <div>
-        <dt>SR</dt>
-        <dd data-approx="sr" data-n={lic?.sr ?? ""} data-lic-f="sr">{lic ? formatoAprox(Number(lic.sr), "sr", loc) : ""}</dd>
-        <span class="d-sr-bar" aria-hidden="true"><span class="d-sr-fill" style={`width:${srProgress}%`}></span></span>
-      </div>
-      <div>
-        <dt>iRating</dt>
-        <dd data-approx="k" data-n={lic?.irating ?? ""} data-f="irating" data-lic-f="irating">{lic?.irating != null ? formatoAprox(lic.irating, "k", loc) : ""}</dd>
-        <svg class="d-sparkline" viewBox="0 0 130 24" width="68" height="12" fill="none" preserveAspectRatio="none" aria-hidden="true">
-          <path d={sparkPath} stroke="#00E699" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <div>
-        <dt>Sports Car Hours</dt>
-        <dd data-approx="h" data-n={sumTrackHours}>{hoursText(sumTrackHours)}</dd>
-      </div>
-    </dl>
-    {hero ? (
-      <>
-        <p class="d-meta" data-block="member_since" hidden={!since}><span>Member since</span> <time data-f="member_since_value" datetime={since || undefined}>{since}</time></p>
-        <p class="d-meta" data-block="club" hidden={!club}><span>Club</span> <span data-f="club_value">{club}</span></p>
-        <div class="d-track-cards">
-          {fav && (
-            <div class="d-track-card d-track-card--fav">
-              <p class="d-fav">
-                <svg class="d-star" viewBox="0 0 24 24" width="16" height="16" role="img" aria-label="Favorite track"><path fill="currentColor" d="M12 2.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.2 6.8 18.6l1-5.8L3.6 8.7l5.8-.8z"/></svg>
-                <span class="d-fav__k">Favorite Track</span>
-                <span class="d-fav__n" data-f="favorite_track">{fav}</span>
-              </p>
-              <p class="r-meta">Driver's personal choice</p>
+<article
+  class:list={[
+    "d-reveal",
+    hero
+      ? "d-hero-wrap w-full space-y-6"
+      : "d-card flex flex-col justify-between h-full w-full rounded-xl bg-[#141A19] border border-[#232C2A] overflow-hidden",
+  ]}
+  data-driver={driver.slug}
+  data-lic="sports_car"
+  id={hero ? "resumen" : undefined}
+>
+  {hero ? (
+    <>
+      <!-- 1. HERO HEADER CARD: Symmetrical 12-Col Grid, Vertically & Horizontally Centered -->
+      <div class="d-hero-card grid grid-cols-1 lg:grid-cols-12 items-center gap-6 lg:gap-8 p-6 sm:p-8 rounded-2xl bg-[#141A19] border border-[#232C2A]">
+        <div class="d-stage lg:col-span-4 flex items-center justify-center w-full h-[220px] sm:h-[240px] rounded-xl bg-[#101514] border border-[#232C2A] p-4" data-team={driver.slug}>
+          <DriverHelmet slug={driver.slug} name={driver.fullName} eager={true} />
+        </div>
+
+        <div class="lg:col-span-8 flex flex-col justify-center items-center lg:items-start text-center lg:text-left gap-4 min-w-0 w-full">
+          <div class="space-y-2 w-full">
+            <p class="d-kicker flex flex-wrap items-center justify-center lg:justify-start gap-1.5">
+              <span class="d-flag" aria-hidden="true">{driver.flag}</span>
+              <span>{driver.country}</span>
+              <span>·</span>
+              <span data-f="role">{driver.role}</span>
+            </p>
+            <Tag class="d-name text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight" id={headingId}>
+              <span class="d-num">{driver.dorsal}</span> {driver.fullName}
+            </Tag>
+          </div>
+
+          <div class="d-badges-row flex flex-wrap items-center justify-center lg:justify-start gap-2.5">
+            {lic && <p class="sc-badge m-0"><span data-lic-f="class">{lic.classLabel}</span></p>}
+            <span class="d-ovr-pill" title="EA Sports F1 25 Asymptotic Rating (1.5k=40 · 12k=97 · Cap <99)">
+              OVR <strong data-f="ovr">{ovrScore}</strong>
+            </span>
+            {driver.specialty && <span class="d-specialty-pill" data-f="specialty">{driver.specialty}</span>}
+          </div>
+
+          <dl class="d-stats grid grid-cols-3 gap-4 w-full pt-3 pb-3 border-y border-[#232C2A] text-center lg:text-left">
+            <div class="flex flex-col justify-end">
+              <dt>Safety Rating (SR)</dt>
+              <dd data-approx="sr" data-n={lic?.sr ?? ""} data-lic-f="sr">{lic ? formatoAprox(Number(lic.sr), "sr", loc) : ""}</dd>
+              <span class="d-sr-bar mx-auto lg:mx-0 w-full max-w-[96px]" aria-hidden="true"><span class="d-sr-fill" style={`width:${srProgress}%`}></span></span>
             </div>
-          )}
-          {topTrack && (
-            <div class="d-track-card">
-              <p class="d-lap">
-                <span class="d-lap__k">Most Driven Sports Car Track</span>
-                <span class="d-lap__n" data-f="top_track_name">{topTrack.name}</span>
-                <span class="d-lap__v"><span data-approx="h" data-n={topTrack.hours} data-f="top_track_hours">{hoursText(topTrack.hours)}</span> <span>on track</span></span>
-              </p>
-              <p class="r-meta">Weighted by average lap time</p>
+            <div class="flex flex-col justify-end">
+              <dt>Sports Car iRating</dt>
+              <dd data-approx="k" data-n={lic?.irating ?? ""} data-f="irating" data-lic-f="irating">{lic?.irating != null ? formatoAprox(lic.irating, "k", loc) : ""}</dd>
+              <svg class="d-sparkline mx-auto lg:mx-0" viewBox="0 0 130 24" width="68" height="12" fill="none" preserveAspectRatio="none" aria-hidden="true">
+                <path d={sparkPath} stroke="#00E699" stroke-width="2" stroke-linecap="round"/>
+              </svg>
             </div>
-          )}
+            <div class="flex flex-col justify-end">
+              <dt>Sports Car Hours</dt>
+              <dd data-approx="h" data-n={sumTrackHours}>{hoursText(sumTrackHours)}</dd>
+              <span class="text-[10px] font-mono text-[#9AA8A3] mt-0.5">Garage 61</span>
+            </div>
+          </dl>
+
+          <div class="flex flex-wrap items-center justify-center lg:justify-between gap-3 w-full text-xs font-mono text-[#9AA8A3]">
+            <div class="flex flex-wrap items-center justify-center lg:justify-start gap-4">
+              <span data-block="member_since" hidden={!since}>
+                Member since <strong class="text-white" data-f="member_since_value">{since}</strong>
+              </span>
+              <span data-block="club" hidden={!club}>
+                Club: <strong class="text-white" data-f="club_value">{club}</strong>
+              </span>
+              <span id="licenceUpdated">
+                Updated: <time class="text-white" datetime="2026-11-07">{LICENCE_UPDATED_LABEL}</time>
+              </span>
+            </div>
+            {socials.length > 0 && (
+              <ul class="d-socials flex items-center gap-3 m-0 p-0 list-none" data-block="socials">
+                {socials.map((s) => (
+                  <li>
+                    <a href={s.href} rel="noopener noreferrer" target="_blank" class="px-2.5 py-1 rounded bg-[#101514] border border-[#232C2A] hover:border-[#00E699] text-xs font-mono text-white transition">
+                      {s.label} ↗
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
-        <p class="r-meta" id="licenceUpdated">Updated: <time datetime="2026-11-07">{LICENCE_UPDATED_LABEL}</time></p>
-        <div class="d-block" data-block="bio" hidden={!bio}>
-          <p class="d-bio" data-f="bio">{bio}</p>
-        </div>
-        <div class="d-block" data-block="cars" hidden={!cars.length}>
-          <BlockTag class="d-block__title">Sports Cars</BlockTag>
-          <ul data-list="cars">{cars.map((item) => <li>{item}</li>)}</ul>
-        </div>
-        <div class="d-block" data-block="series" hidden={!series.length}>
-          <BlockTag class="d-block__title">Series</BlockTag>
-          <ul data-list="series">{series.map((item) => <li>{item}</li>)}</ul>
-        </div>
-        <div class="d-block" data-block="achievements" hidden={!achievements.length}>
-          <BlockTag class="d-block__title">Achievements</BlockTag>
-          <ul data-list="achievements">{achievements.map((item) => <li>{item}</li>)}</ul>
-        </div>
-        <div class="d-block" data-block="socials" hidden={!socials.length}>
-          <ul class="d-socials">
-            {socials.map((s) => <li><a href={s.href} rel="noopener noreferrer" target="_blank">{s.label}</a></li>)}
-          </ul>
-        </div>
-      </>
-    ) : (
-      <div class="d-compact-tracks">
+      </div>
+
+      <!-- 2. FAVORITE TRACK & MOST DRIVEN TRACK: Symmetrical 2-Column Grid -->
+      <div class="d-track-cards grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
         {fav && (
-          <p class="d-fav">
-            <svg class="d-star" viewBox="0 0 24 24" width="14" height="14" role="img" aria-label="Favorite track"><path fill="currentColor" d="M12 2.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.2 6.8 18.6l1-5.8L3.6 8.7l5.8-.8z"/></svg>
-            <span class="d-fav__k">Favorite:</span>
-            <span class="d-fav__n">{fav}</span>
-          </p>
+          <div class="d-track-card d-track-card--fav p-4 sm:p-5 rounded-xl bg-[#141A19] border border-[#00E699]/60 flex flex-col justify-between gap-1">
+            <p class="d-fav">
+              <svg class="d-star" viewBox="0 0 24 24" width="16" height="16" role="img" aria-label="Favorite track"><path fill="currentColor" d="M12 2.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.2 6.8 18.6l1-5.8L3.6 8.7l5.8-.8z"/></svg>
+              <span class="d-fav__k">Favorite Track</span>
+              <span class="d-fav__n" data-f="favorite_track">{fav}</span>
+            </p>
+            <p class="r-meta m-0">Driver's personal choice</p>
+          </div>
         )}
         {topTrack && (
-          <p class="d-lap">
-            <span class="d-lap__k">Most Driven:</span>
-            <span class="d-lap__n">{topTrack.name}</span>
-            <span class="d-lap__v">(<span data-approx="h" data-n={topTrack.hours}>{hoursText(topTrack.hours)}</span>)</span>
-          </p>
+          <div class="d-track-card p-4 sm:p-5 rounded-xl bg-[#141A19] border border-[#232C2A] flex flex-col justify-between gap-1">
+            <p class="d-lap">
+              <span class="d-lap__k">Most Driven Sports Car Track</span>
+              <span class="d-lap__n" data-f="top_track_name">{topTrack.name}</span>
+              <span class="d-lap__v"><span data-approx="h" data-n={topTrack.hours} data-f="top_track_hours">{hoursText(topTrack.hours)}</span> <span>on track</span></span>
+            </p>
+            <p class="r-meta m-0">Weighted by average lap time</p>
+          </div>
         )}
       </div>
-    )}
-    {!hero && (
-      <details class="d-telemetry-expand">
-        <summary class="d-expand-summary">
-          <span>Sports Car Circuits ({tracks.length})</span>
-          <span class="d-chevron">▾</span>
-        </summary>
-        <div class="d-expand-content">
-          <ul class="d-expand-list">
-            {tracks.map((t) => (
-              <li>
-                <span>{t.name}</span>
-                <strong style="color:#00E699" data-approx="h" data-n={t.hours}>{hoursText(t.hours)}</strong>
-              </li>
-            ))}
+
+      <!-- 3. BIO, SPORTS CARS & SERIES: Symmetrical 3-Column Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+        <div class="d-block p-5 rounded-xl bg-[#141A19] border border-[#232C2A] content-start" data-block="bio" hidden={!bio}>
+          <BlockTag class="d-block__title text-base mb-1">Driver Profile</BlockTag>
+          <p class="d-bio text-sm text-[#A3B0AC] leading-relaxed" data-f="bio">{bio}</p>
+          {achievements.length > 0 && (
+            <div class="mt-3 pt-3 border-t border-[#232C2A]" data-block="achievements">
+              <span class="block text-[11px] font-mono uppercase tracking-wider text-[#00E699] mb-1">Highlights</span>
+              <ul class="text-xs text-[#F2F5F4] space-y-1 pl-4" data-list="achievements">
+                {achievements.map((item) => <li>{item}</li>)}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        <div class="d-block p-5 rounded-xl bg-[#141A19] border border-[#232C2A] content-start" data-block="cars" hidden={!cars.length}>
+          <BlockTag class="d-block__title text-base mb-1">Primary Sports Cars</BlockTag>
+          <ul class="text-sm text-[#F2F5F4] space-y-1.5 pl-4" data-list="cars">
+            {cars.map((item) => <li>{item}</li>)}
           </ul>
         </div>
-      </details>
-    )}
-    {!hero && (
-      <div class="d-actions-row">
-        <a class="r-link d-card__link" href={`/drivers/${driver.slug}/`}>View full profile →</a>
+
+        <div class="d-block p-5 rounded-xl bg-[#141A19] border border-[#232C2A] content-start" data-block="series" hidden={!series.length}>
+          <BlockTag class="d-block__title text-base mb-1">Official Series</BlockTag>
+          <ul class="text-sm text-[#F2F5F4] space-y-1.5 pl-4" data-list="series">
+            {series.map((item) => <li>{item}</li>)}
+          </ul>
+        </div>
       </div>
-    )}
-  </div>
-  {hero && tracks.length > 0 && (
-    <div class="d-laps">
-      <section id="circuitos" aria-labelledby={`${driver.slug}-tracks`} class="d-bars-panel">
-        <div class="d-bars-head">
-          <h2 id={`${driver.slug}-tracks`} class="d-block__title">Sports Car Circuits (Hours on track)</h2>
-          <span class="r-meta">{tracks.length} circuits · Sports Car only</span>
+
+      <!-- 4. TELEMETRY BARS: Symmetrical 2-Column Grid for Circuits & Cars -->
+      {tracks.length > 0 && (
+        <div class="d-laps grid grid-cols-1 lg:grid-cols-2 gap-6 w-full p-6 rounded-2xl bg-[#141A19] border border-[#232C2A]">
+          <section id="circuitos" aria-labelledby={`${driver.slug}-tracks`} class="d-bars-panel">
+            <div class="d-bars-head">
+              <h2 id={`${driver.slug}-tracks`} class="d-block__title">Sports Car Circuits (Hours on track)</h2>
+              <span class="r-meta">{tracks.length} circuits · Sports Car only</span>
+            </div>
+            <ol class="d-bars" data-telemetry-tracks={driver.slug} id={`tracksList-${driver.slug}`}>
+              {tracks.map((item, idx) => (
+                <li data-track={item.name} data-extra-bar={idx >= 5 ? "true" : undefined} hidden={idx >= 5}>
+                  <span class="d-bars__name">{item.name}</span>
+                  <span class="d-bars__val">
+                    <span data-approx="h" data-n={item.hours}>{hoursText(item.hours)}</span> <span>on track</span>
+                    {item.incidentsPerLap != null ? ` · ${item.incidentsPerLap}x/lap` : ""}
+                  </span>
+                  <span class="d-bars__share">{share(item.hours, sumTrackHours)}% <span>of total</span></span>
+                  <span class="d-bar" aria-hidden="true"><span style={`width:${barWidth(item.hours, maxTrackHours)}%`}></span></span>
+                </li>
+              ))}
+            </ol>
+            {tracks.length > 5 && (
+              <button
+                type="button"
+                class="d-bars-toggle"
+                data-toggle-bars={`tracksList-${driver.slug}`}
+                data-total-count={tracks.length}
+                data-label-unit="Sports Car circuits"
+                aria-expanded="false"
+              >
+                View full list ({tracks.length} Sports Car circuits) ▾
+              </button>
+            )}
+          </section>
+
+          <section id="coches" aria-labelledby={`${driver.slug}-cars`} class="d-bars-panel">
+            <div class="d-bars-head">
+              <h2 id={`${driver.slug}-cars`} class="d-block__title">Sports Cars (Hours on track)</h2>
+              <span class="r-meta">{usedCars.length} Sports Cars · Garage 61</span>
+            </div>
+            <ol class="d-bars" data-telemetry-cars={driver.slug} id={`carsList-${driver.slug}`}>
+              {usedCars.map((item, idx) => (
+                <li data-car={item.name} data-extra-bar={idx >= 5 ? "true" : undefined} hidden={idx >= 5}>
+                  <span class="d-bars__name">{item.name}</span>
+                  <span class="d-bars__val"><span data-approx="h" data-n={item.hours}>{hoursText(item.hours)}</span> <span>on track</span></span>
+                  <span class="d-bars__share">{share(item.hours, sumCarHours)}% <span>of total</span></span>
+                  <span class="d-bar" aria-hidden="true"><span style={`width:${barWidth(item.hours, maxCarHours)}%`}></span></span>
+                </li>
+              ))}
+            </ol>
+            {usedCars.length > 5 && (
+              <button
+                type="button"
+                class="d-bars-toggle"
+                data-toggle-bars={`carsList-${driver.slug}`}
+                data-total-count={usedCars.length}
+                data-label-unit="Sports Cars"
+                aria-expanded="false"
+              >
+                View full list ({usedCars.length} Sports Cars) ▾
+              </button>
+            )}
+          </section>
+          <p class="r-meta d-laps__src lg:col-span-2 m-0 pt-2 border-t border-[#232C2A]">
+            Sports Car telemetry weighted by average circuit lap time on Garage 61 · GTP/Formula/Ovals excluded · Nov 2026
+          </p>
         </div>
-        <ol class="d-bars" data-telemetry-tracks={driver.slug} id={`tracksList-${driver.slug}`}>
-          {tracks.map((item, idx) => (
-            <li data-track={item.name} data-extra-bar={idx >= 5 ? "true" : undefined} hidden={idx >= 5}>
-              <span class="d-bars__name">{item.name}</span>
-              <span class="d-bars__val">
-                <span data-approx="h" data-n={item.hours}>{hoursText(item.hours)}</span> <span>on track</span>
-                {item.incidentsPerLap != null ? ` · ${item.incidentsPerLap}x/lap` : ""}
-              </span>
-              <span class="d-bars__share">{share(item.hours, sumTrackHours)}% <span>of total</span></span>
-              <span class="d-bar" aria-hidden="true"><span style={`width:${barWidth(item.hours, maxTrackHours)}%`}></span></span>
-            </li>
-          ))}
-        </ol>
-        {tracks.length > 5 && (
-          <button
-            type="button"
-            class="d-bars-toggle"
-            data-toggle-bars={`tracksList-${driver.slug}`}
-            data-total-count={tracks.length}
-            data-label-unit="Sports Car circuits"
-            aria-expanded="false"
-          >
-            View full list ({tracks.length} Sports Car circuits) ▾
-          </button>
-        )}
-      </section>
-      <section id="coches" aria-labelledby={`${driver.slug}-cars`} class="d-bars-panel">
-        <div class="d-bars-head">
-          <h2 id={`${driver.slug}-cars`} class="d-block__title">Sports Cars (Hours on track)</h2>
-          <span class="r-meta">{usedCars.length} Sports Cars · Garage 61</span>
+      )}
+    </>
+  ) : (
+    <>
+      <!-- OVERVIEW GRID CARD (!hero): Equal Height Flex Column with Bottom-Aligned CTA -->
+      <div class="d-stage w-full" data-team={driver.slug}>
+        <DriverHelmet slug={driver.slug} name={driver.fullName} eager={false} />
+      </div>
+
+      <div class="d-card__body flex flex-col justify-between flex-1 p-5 gap-4">
+        <!-- Top Group: Centered/Balanced Header + Badges + 3-Column Stats -->
+        <div class="flex flex-col gap-2.5">
+          <p class="d-kicker text-center sm:text-left truncate">
+            <span class="d-flag" aria-hidden="true">{driver.flag}</span>
+            <span>{driver.country}</span> · <span data-f="role">{driver.role}</span>
+          </p>
+          <Tag class="d-name text-center sm:text-left" id={headingId}>
+            <span class="d-num">{driver.dorsal}</span> {driver.fullName}
+          </Tag>
+          <div class="d-badges-row justify-center sm:justify-start">
+            {lic && <p class="sc-badge m-0"><span data-lic-f="class">{lic.classLabel}</span></p>}
+            <span class="d-ovr-pill" title="EA Sports F1 25 Asymptotic Rating (1.5k=40 · 12k=97 · Cap <99)">
+              OVR <strong data-f="ovr">{ovrScore}</strong>
+            </span>
+            {driver.specialty && <span class="d-specialty-pill" data-f="specialty">{driver.specialty}</span>}
+          </div>
+
+          <dl class="d-stats">
+            <div>
+              <dt>SR</dt>
+              <dd data-approx="sr" data-n={lic?.sr ?? ""} data-lic-f="sr">{lic ? formatoAprox(Number(lic.sr), "sr", loc) : ""}</dd>
+              <span class="d-sr-bar" aria-hidden="true"><span class="d-sr-fill" style={`width:${srProgress}%`}></span></span>
+            </div>
+            <div>
+              <dt>iRating</dt>
+              <dd data-approx="k" data-n={lic?.irating ?? ""} data-f="irating" data-lic-f="irating">{lic?.irating != null ? formatoAprox(lic.irating, "k", loc) : ""}</dd>
+              <svg class="d-sparkline" viewBox="0 0 130 24" width="68" height="12" fill="none" preserveAspectRatio="none" aria-hidden="true">
+                <path d={sparkPath} stroke="#00E699" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div>
+              <dt>Sports Car Hours</dt>
+              <dd data-approx="h" data-n={sumTrackHours}>{hoursText(sumTrackHours)}</dd>
+            </div>
+          </dl>
         </div>
-        <ol class="d-bars" data-telemetry-cars={driver.slug} id={`carsList-${driver.slug}`}>
-          {usedCars.map((item, idx) => (
-            <li data-car={item.name} data-extra-bar={idx >= 5 ? "true" : undefined} hidden={idx >= 5}>
-              <span class="d-bars__name">{item.name}</span>
-              <span class="d-bars__val"><span data-approx="h" data-n={item.hours}>{hoursText(item.hours)}</span> <span>on track</span></span>
-              <span class="d-bars__share">{share(item.hours, sumCarHours)}% <span>of total</span></span>
-              <span class="d-bar" aria-hidden="true"><span style={`width:${barWidth(item.hours, maxCarHours)}%`}></span></span>
-            </li>
-          ))}
-        </ol>
-        {usedCars.length > 5 && (
-          <button
-            type="button"
-            class="d-bars-toggle"
-            data-toggle-bars={`carsList-${driver.slug}`}
-            data-total-count={usedCars.length}
-            data-label-unit="Sports Cars"
-            aria-expanded="false"
-          >
-            View full list ({usedCars.length} Sports Cars) ▾
-          </button>
-        )}
-      </section>
-      <p class="r-meta d-laps__src">Sports Car telemetry weighted by average circuit lap time on Garage 61 · GTP/Formula/Ovals excluded · Nov 2026</p>
-    </div>
+
+        <!-- Bottom Group: Compact Tracks + Expandable Circuits + Aligned Full Profile Button -->
+        <div class="flex flex-col gap-2.5 mt-auto pt-1">
+          <div class="d-compact-tracks">
+            {fav && (
+              <p class="d-fav">
+                <svg class="d-star" viewBox="0 0 24 24" width="14" height="14" role="img" aria-label="Favorite track"><path fill="currentColor" d="M12 2.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.2 6.8 18.6l1-5.8L3.6 8.7l5.8-.8z"/></svg>
+                <span class="d-fav__k">Favorite Track</span>
+                <span class="d-fav__n truncate">{fav}</span>
+              </p>
+            )}
+            {topTrack && (
+              <p class="d-lap">
+                <span class="d-lap__k">Most Driven ({hoursText(topTrack.hours)})</span>
+                <span class="d-lap__n truncate">{topTrack.name}</span>
+              </p>
+            )}
+          </div>
+
+          <details class="d-telemetry-expand">
+            <summary class="d-expand-summary">
+              <span>Sports Car Circuits ({tracks.length})</span>
+              <span class="d-chevron">▾</span>
+            </summary>
+            <div class="d-expand-content">
+              <ul class="d-expand-list">
+                {tracks.map((t) => (
+                  <li>
+                    <span>{t.name}</span>
+                    <strong style="color:#00E699" data-approx="h" data-n={t.hours}>{hoursText(t.hours)}</strong>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </details>
+
+          <div class="d-actions-row pt-2 border-t border-[#232C2A]">
+            <a class="r-link d-card__link w-full justify-between" href={`/drivers/${driver.slug}/`}>
+              <span>VIEW FULL PROFILE</span>
+              <span aria-hidden="true">→</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </>
   )}
 </article>

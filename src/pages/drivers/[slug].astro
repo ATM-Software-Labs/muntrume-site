@@ -118,9 +118,9 @@ const personSchema = {
 ---
 
 <Layout title={pageTitle} description={pageDescription} canonical={pageUrl} ogImage={ogImage} schemaJson={personSchema}>
-  <section class="r-section" style="border-top:0;padding-top:clamp(96px,12vw,144px);padding-bottom:40px" aria-labelledby="dTitle" data-driver={driver.slug} id="driverRoot">
-    <div class="r-wrap">
-      <nav class="r-meta" aria-label="Breadcrumb" style="margin-bottom:16px"><a href="/" style="color:inherit">Home</a> / <a href="/drivers" style="color:inherit">Drivers</a> / <span style="color:var(--r-text)">{driver.fullName}</span></nav>
+  <section class="r-section" style="border-top:0;padding-top:clamp(88px,10vw,120px);padding-bottom:40px" aria-labelledby="dTitle" data-driver={driver.slug} id="driverRoot">
+    <div class="r-wrap max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+      <nav class="r-meta" aria-label="Breadcrumb" style="margin-bottom:14px"><a href="/" style="color:inherit">Home</a> / <a href="/drivers" style="color:inherit">Drivers</a> / <span style="color:var(--r-text)">{driver.fullName}</span></nav>
       <nav class="d-tabs" aria-label="Profile Sections">
         <a href="#resumen">Overview</a>
         <a href="#f1-ratings">F1 25 Ratings</a>
@@ -250,7 +250,7 @@ const personSchema = {
   </section>
 
   <section class="r-section r-section--alt" id="eventos" aria-labelledby="eventosTitle">
-    <div class="r-wrap" style="display:grid;gap:12px">
+    <div class="r-wrap max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full" style="display:grid;gap:12px">
       <div class="d-section-head">
         <div>
           <p class="r-kicker">Season</p>
@@ -263,7 +263,7 @@ const personSchema = {
   </section>
 
   <section class="r-section r-section--alt" id="racesSection" hidden aria-labelledby="racesTitle">
-    <div class="r-wrap" style="display:grid;gap:16px">
+    <div class="r-wrap max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full" style="display:grid;gap:16px">
       <div class="r-head" style="margin-bottom:0">
         <div><p class="r-kicker">iRacing</p><h2 id="racesTitle" class="r-h3">Latest 5 Sports Car Races</h2></div>
       </div>
@@ -278,13 +278,13 @@ const personSchema = {
   </section>
 
   <section class="r-section" aria-label="More drivers">
-    <div class="r-wrap" style="display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center">
+    <div class="r-wrap max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full" style="display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center">
       <a href="/drivers" class="r-link">← Full Driver Roster</a>
       <a href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer" class="r-btn r-btn--primary">Official Team Telemetry on Garage 61 ↗</a>
     </div>
   </section>
 
-  <script is:inline src="/assets/js/driver-page.js?v=t294" defer></script>
+  <script is:inline src="/assets/js/driver-page.js?v=t295" defer></script>
   <script is:inline>
     (function () {
       var url = location.href;

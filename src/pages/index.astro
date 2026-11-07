@@ -43,7 +43,7 @@ const figs = [
 
   <!-- 2 · DRIVERS -->
   <section class="r-section" aria-labelledby="driversTitle">
-    <div class="r-wrap">
+    <div class="r-wrap max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
       <div class="r-head">
         <div>
           <p class="r-kicker">Official Roster 2026</p>
@@ -51,9 +51,9 @@ const figs = [
         </div>
         <a href="/drivers" class="r-link">View Full Roster →</a>
       </div>
-      <p class="r-meta" id="licenceUpdated">Updated: <time datetime="2026-11-07">{LICENCE_UPDATED_LABEL}</time></p>
+      <p class="r-meta" id="licenceUpdated" style="margin-bottom:14px">Updated: <time datetime="2026-11-07">{LICENCE_UPDATED_LABEL}</time></p>
       <TeamBand />
-      <div class="d-grid">
+      <div class="d-grid grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch w-full">
         {PILOTOS.map(p => (
           <DriverCard driver={p} heading="h3" />
         ))}
@@ -109,5 +109,5 @@ const figs = [
     </div>
   </section>
 
-  <script is:inline src="/assets/js/home-r.js?v=t294" defer></script>
+  <script is:inline src="/assets/js/home-r.js?v=t295" defer></script>
 </Layout>

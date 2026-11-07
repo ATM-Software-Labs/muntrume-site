@@ -9,9 +9,9 @@ const pageDescription = `Official driver roster of Muntrume Motorsport: ${PILOTO
 ---
 
 <Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/drivers/">
-  <section class="r-section" style="border-top:0;padding-top:clamp(74px,7.5vw,94px);padding-bottom:32px" aria-labelledby="plTitle">
-    <div class="r-wrap">
-      <div class="r-head" style="margin-bottom:14px">
+  <section class="r-section" style="border-top:0;padding-top:clamp(80px,8vw,104px);padding-bottom:40px" aria-labelledby="plTitle">
+    <div class="r-wrap max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+      <div class="r-head" style="margin-bottom:16px">
         <div>
           <p class="r-kicker">Official Roster 2026 · Sports Car, GT3, GT4 &amp; Multiclass Endurance</p>
           <h1 id="plTitle" class="r-h2">Drivers</h1>
@@ -20,12 +20,12 @@ const pageDescription = `Official driver roster of Muntrume Motorsport: ${PILOTO
         </div>
       </div>
       <TeamBand />
-      <div class="d-grid">
+      <div class="d-grid grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch w-full">
         {PILOTOS.map(p => (
           <DriverCard driver={p} heading="h2" />
         ))}
       </div>
     </div>
   </section>
-  <script is:inline src="/assets/js/home-r.js?v=t294" defer></script>
+  <script is:inline src="/assets/js/home-r.js?v=t295" defer></script>
 </Layout>

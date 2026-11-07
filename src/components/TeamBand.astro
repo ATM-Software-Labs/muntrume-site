@@ -10,10 +10,26 @@ const avgIr = irRows.length ? Math.round(irRows.reduce((a, b) => a + b, 0) / irR
 const loc = localeDeIdioma("en");
 const setups = catalog.total_setups.toLocaleString("en-US");
 ---
-<section class="d-band d-reveal" aria-label="Team Telemetry Figures">
-  <div><strong>{PILOTOS.length}</strong><span>Active Drivers</span></div>
-  <div><strong data-approx="h" data-n={totalHours}>{formatoAprox(totalHours, "h", loc)}</strong><span>Road Hours on Track (Garage 61)</span></div>
-  <div><strong id="teamAvgIr" data-approx="k" data-n={avgIr}>{formatoAprox(avgIr, "k", loc)}</strong><span>Avg Sports Car iRating</span></div>
-  <div><strong>{setups}</strong><span>Setups in the Vault</span></div>
-  <div id="nextEventStat" hidden><strong data-next-title></strong><time data-next-when></time><span>Next Event</span></div>
+<section class="d-band d-reveal grid grid-cols-2 lg:grid-cols-4 gap-4 w-full mb-6" aria-label="Team Telemetry Figures">
+  <div class="rounded-xl border border-[#232C2A] bg-[#101514] p-4 flex flex-col justify-center gap-1">
+    <strong class="text-2xl font-extrabold text-white">{PILOTOS.length}</strong>
+    <span class="text-xs font-mono text-[#A3B0AC]">Active Drivers</span>
+  </div>
+  <div class="rounded-xl border border-[#232C2A] bg-[#101514] p-4 flex flex-col justify-center gap-1">
+    <strong class="text-2xl font-extrabold text-white" data-approx="h" data-n={totalHours}>{formatoAprox(totalHours, "h", loc)}</strong>
+    <span class="text-xs font-mono text-[#A3B0AC]">Sports Car Hours (Garage 61)</span>
+  </div>
+  <div class="rounded-xl border border-[#232C2A] bg-[#101514] p-4 flex flex-col justify-center gap-1">
+    <strong class="text-2xl font-extrabold text-white" id="teamAvgIr" data-approx="k" data-n={avgIr}>{formatoAprox(avgIr, "k", loc)}</strong>
+    <span class="text-xs font-mono text-[#A3B0AC]">Avg Sports Car iRating</span>
+  </div>
+  <div class="rounded-xl border border-[#232C2A] bg-[#101514] p-4 flex flex-col justify-center gap-1">
+    <strong class="text-2xl font-extrabold text-white">{setups}</strong>
+    <span class="text-xs font-mono text-[#A3B0AC]">Setups in the Vault</span>
+  </div>
+  <div id="nextEventStat" class="rounded-xl border border-[#232C2A] bg-[#101514] p-4 flex flex-col justify-center gap-1" hidden>
+    <strong data-next-title></strong>
+    <time data-next-when></time>
+    <span>Next Event</span>
+  </div>
 </section>
