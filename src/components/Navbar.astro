@@ -133,9 +133,40 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
       </div>
     </div>
 
+    <!-- Active Session / Admin Race Control Bar (Desktop) -->
+    <div id="navSessionBox" class="hidden items-center gap-2 shrink-0">
+      <a
+        href="/drivers/albertot/"
+        id="navAdminBadge"
+        class="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#141B19] border border-[#00E699]/40 text-[11px] font-mono text-white hover:border-[#00E699] transition whitespace-nowrap"
+        title="Team Principal & Administrator — atrumin16@gmail.com"
+      >
+        <span class="w-1.5 h-1.5 rounded-full bg-[#00E699]"></span>
+        <span id="navSessionHandle" class="font-bold text-[#00E699]">atrumin16</span>
+        <span class="text-[#9AA8A3]">·</span>
+        <span id="navSessionLabel" class="text-neutral-200">Alberto Trujillo</span>
+      </a>
+      <a
+        href="/admin"
+        id="navRaceControlBtn"
+        class="hidden items-center gap-1.5 bg-[#00E699] hover:bg-[#00c985] text-neutral-950 font-black text-xs font-mono uppercase tracking-wider px-3.5 py-1.5 rounded-full transition-all shadow-[0_0_18px_rgba(0,230,153,0.28)] whitespace-nowrap shrink-0"
+        title="Open Race Control Admin Console"
+      >
+        <span>RACE CONTROL</span>
+      </a>
+      <button
+        type="button"
+        id="navLogoutBtn"
+        class="inline-flex items-center px-2.5 py-1.5 rounded-lg bg-[#1A2120] hover:bg-[#242E2C] border border-[#242E2C] hover:border-rose-500/50 text-[11px] font-mono text-[#9AA8A3] hover:text-white transition cursor-pointer whitespace-nowrap"
+      >
+        Log out
+      </button>
+    </div>
+
     <!-- GARAGE ACCESS Pill Button -->
     <a
       href="/garage"
+      id="navGarageAccessBtn"
       class="max-[480px]:hidden inline-flex items-center gap-1.5 bg-[#00E699] hover:bg-[#00c985] text-neutral-950 font-black text-xs font-mono uppercase tracking-wider px-3.5 sm:px-4 py-1.5 rounded-full transition-all shadow-md hover:shadow-[#00E699]/20 whitespace-nowrap shrink-0"
     >
       <span>GARAGE ACCESS</span>
@@ -195,6 +226,18 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
       <a href="/garage" class="px-3 py-2.5 rounded-xl bg-[#00E699] text-neutral-950 font-bold text-center transition">
         Garage Access
       </a>
+      <div id="mobileAdminBox" class="hidden pt-2 mt-2 border-t border-[#242E2C] space-y-2">
+        <div class="px-3 py-2 rounded-xl bg-[#141B19] border border-[#00E699]/40 text-xs font-mono">
+          <div class="font-bold text-[#00E699]" id="mobileSessionHandle">atrumin16 · #16</div>
+          <div class="text-[11px] text-neutral-300" id="mobileSessionLabel">Alberto Trujillo (Team Principal)</div>
+        </div>
+        <a id="mobileRaceControlBtn" href="/admin" class="hidden block px-3 py-2.5 rounded-xl bg-[#00E699] text-neutral-950 font-black text-center tracking-wider transition shadow-[0_0_16px_rgba(0,230,153,0.28)]">
+          RACE CONTROL
+        </a>
+        <button type="button" id="mobileLogoutBtn" class="w-full px-3 py-2 rounded-xl bg-[#1A2120] border border-[#242E2C] text-xs font-mono text-neutral-300 hover:text-white text-center cursor-pointer">
+          Log out
+        </button>
+      </div>
     </nav>
   </div>
 
@@ -347,5 +390,122 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
     if (openBtn) openBtn.addEventListener('click', open);
     if (closeBtn) closeBtn.addEventListener('click', close);
     if (backdrop) backdrop.addEventListener('click', close);
+  })();
+
+  (function initGlobalAuthHeader() {
+    var ADMIN_EMAIL = 'atrumin16@gmail.com';
+
+    function getActiveUser() {
+      try {
+        var rawUser = localStorage.getItem('mrt_vault_user') || sessionStorage.getItem('mrt_vault_user');
+        var savedEmail = (localStorage.getItem('muntrume_user_email') || '').trim().toLowerCase();
+        var authState = localStorage.getItem('muntrume_auth_state') || '';
+        if (rawUser) {
+          var parsed = JSON.parse(rawUser);
+          if (parsed && parsed.role !== 'guest' && parsed.email) {
+            return parsed;
+          }
+        }
+        if (authState === 'authenticated' && savedEmail) {
+          return {
+            email: savedEmail,
+            role: savedEmail === ADMIN_EMAIL ? 'admin' : 'driver',
+            name: savedEmail === ADMIN_EMAIL ? 'Alberto Trujillo' : savedEmail.split('@')[0]
+          };
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    function syncNavbarSession() {
+      var user = getActiveUser();
+      var email = user && user.email ? String(user.email).trim().toLowerCase() : '';
+      var isAuth = Boolean(email);
+      var isAdmin = isAuth && (email === ADMIN_EMAIL || user.role === 'admin');
+
+      var sessionBox = document.getElementById('navSessionBox');
+      var adminBadge = document.getElementById('navAdminBadge');
+      var sessionHandle = document.getElementById('navSessionHandle');
+      var sessionLabel = document.getElementById('navSessionLabel');
+      var raceControlBtn = document.getElementById('navRaceControlBtn');
+      var garageAccessBtn = document.getElementById('navGarageAccessBtn');
+      var mobileAdminBox = document.getElementById('mobileAdminBox');
+      var mobileHandle = document.getElementById('mobileSessionHandle');
+      var mobileLabel = document.getElementById('mobileSessionLabel');
+      var mobileRaceControlBtn = document.getElementById('mobileRaceControlBtn');
+
+      if (isAuth) {
+        if (sessionBox) {
+          sessionBox.classList.remove('hidden');
+          sessionBox.classList.add('flex');
+        }
+        if (mobileAdminBox) mobileAdminBox.classList.remove('hidden');
+
+        if (isAdmin) {
+          if (sessionHandle) sessionHandle.textContent = 'atrumin16';
+          if (sessionLabel) sessionLabel.textContent = 'Alberto Trujillo (#16)';
+          if (adminBadge) adminBadge.href = '/drivers/albertot/';
+          if (raceControlBtn) {
+            raceControlBtn.classList.remove('hidden');
+            raceControlBtn.classList.add('inline-flex');
+          }
+          if (garageAccessBtn) garageAccessBtn.classList.add('hidden');
+          if (mobileHandle) mobileHandle.textContent = 'atrumin16 · #16';
+          if (mobileLabel) mobileLabel.textContent = 'Alberto Trujillo (Team Principal & Admin)';
+          if (mobileRaceControlBtn) mobileRaceControlBtn.classList.remove('hidden');
+        } else {
+          var handle = email.split('@')[0];
+          if (sessionHandle) sessionHandle.textContent = handle;
+          if (sessionLabel) sessionLabel.textContent = user.name || 'Official Driver';
+          if (raceControlBtn) {
+            raceControlBtn.classList.add('hidden');
+            raceControlBtn.classList.remove('inline-flex');
+          }
+          if (garageAccessBtn) garageAccessBtn.classList.remove('hidden');
+          if (mobileHandle) mobileHandle.textContent = handle;
+          if (mobileLabel) mobileLabel.textContent = user.name || 'Official Driver';
+          if (mobileRaceControlBtn) mobileRaceControlBtn.classList.add('hidden');
+        }
+      } else {
+        if (sessionBox) {
+          sessionBox.classList.add('hidden');
+          sessionBox.classList.remove('flex');
+        }
+        if (raceControlBtn) {
+          raceControlBtn.classList.add('hidden');
+          raceControlBtn.classList.remove('inline-flex');
+        }
+        if (garageAccessBtn) garageAccessBtn.classList.remove('hidden');
+        if (mobileAdminBox) mobileAdminBox.classList.add('hidden');
+      }
+    }
+
+    function globalLogout() {
+      if (typeof window.handleLogout === 'function') {
+        window.handleLogout();
+        syncNavbarSession();
+        return;
+      }
+      try {
+        localStorage.removeItem('mrt_vault_token');
+        localStorage.removeItem('mrt_vault_user');
+        localStorage.removeItem('muntrume_user_email');
+        localStorage.removeItem('muntrume_auth_state');
+        localStorage.removeItem('muntrume_is_admin');
+        sessionStorage.removeItem('mrt_vault_token');
+        sessionStorage.removeItem('mrt_vault_user');
+      } catch (e) {}
+      syncNavbarSession();
+      window.dispatchEvent(new Event('muntrume-auth-change'));
+    }
+
+    var navLogout = document.getElementById('navLogoutBtn');
+    var mobileLogout = document.getElementById('mobileLogoutBtn');
+    if (navLogout) navLogout.addEventListener('click', globalLogout);
+    if (mobileLogout) mobileLogout.addEventListener('click', globalLogout);
+
+    window.addEventListener('muntrume-auth-change', syncNavbarSession);
+    window.addEventListener('storage', syncNavbarSession);
+    syncNavbarSession();
   })();
 </script>

@@ -1,8 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-const pageTitle = "Muntrume Motorsport — Consola de Administración (Google Admin Style)";
-const pageDescription = "Consola de Administración institucional de Muntrume Motorsport para gestión de pilotos, seguridad, setups y servidores de correo.";
+const pageTitle = "Race Control | Muntrume Motorsport";
+const pageDescription = "Official Muntrume Motorsport Race Control & Administration Console for driver roster management, security rules, Setup Vault, and mail routing.";
 ---
 
 <Layout title={pageTitle} description={pageDescription} hideNav={true} hideFooter={true} noindex={true}>
@@ -21,10 +21,10 @@ const pageDescription = "Consola de Administración institucional de Muntrume Mo
           <span class="font-extrabold text-sm text-white tracking-tight flex items-center gap-1.5">
             <span>Muntrume</span>
             <span class="text-neutral-500 font-light">|</span>
-            <span class="text-neutral-300 font-normal">Consola de Administración</span>
+            <span class="text-neutral-300 font-normal">Race Control</span>
           </span>
           <span class="text-[9px] text-emerald-400 font-mono tracking-wider uppercase font-semibold">
-            Google Admin Workspace Style
+            Team Principal &amp; Administration Console
           </span>
         </div>
       </a>
@@ -37,7 +37,7 @@ const pageDescription = "Consola de Administración institucional de Muntrume Mo
           type="text" 
           id="globalSearchInput"
           oninput="handleAdminSearch(this.value)"
-          placeholder="Buscar pilotos, dominios, reglas de seguridad o setups... (Pulsa '/' para buscar)" 
+          placeholder="Search drivers, domains, security rules, or setups... (Press '/' to focus)" 
           class="w-full bg-[#181e2b] border border-white/10 rounded-2xl px-4 py-2 pl-10 text-xs text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition"
         >
         <svg class="w-4 h-4 text-neutral-400 absolute left-3.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -57,18 +57,18 @@ const pageDescription = "Consola de Administración institucional de Muntrume Mo
         </span>
       </div>
 
-      <a href="/setups" class="text-xs px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 font-semibold transition">
-        Abrir Vault
+      <a href="/garage" class="text-xs px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 font-semibold transition">
+        Open Garage Vault
       </a>
 
       <!-- Super Admin Avatar -->
       <div class="flex items-center gap-2.5 pl-2 border-l border-white/10">
-        <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-600 to-amber-400 border-2 border-amber-300 flex items-center justify-center font-black text-xs text-black shadow">
-          AT
+        <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-emerald-600 to-emerald-400 border-2 border-emerald-300 flex items-center justify-center font-black font-mono text-xs text-black shadow">
+          #16
         </div>
         <div class="hidden xl:block text-left text-xs">
-          <div class="font-bold text-white leading-tight">Alberto Trujillo</div>
-          <div class="text-[10px] text-neutral-400 font-mono">Superadministrador</div>
+          <div class="font-bold text-white leading-tight">Alberto Trujillo <span class="font-mono text-emerald-400">(atrumin16)</span></div>
+          <div class="text-[10px] text-neutral-400 font-mono">atrumin16@gmail.com · Team Principal &amp; Admin</div>
         </div>
       </div>
     </div>

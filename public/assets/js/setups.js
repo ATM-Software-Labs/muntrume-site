@@ -122,14 +122,18 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // Restore stored session (se valida contra el servidor en loadCatalog)
+  // Restore stored session (localStorage persistence + strict atrumin16@gmail.com admin rule)
   const savedToken = getStoredSession("mrt_vault_token");
   const savedUser = getStoredSession("mrt_vault_user");
+  const savedEmail = localStorage.getItem("muntrume_user_email") || "";
+  const savedAuthState = localStorage.getItem("muntrume_auth_state") || "";
 
-  if (savedToken && savedUser) {
-    currentToken = savedToken;
+  if ((savedToken && savedUser) || (savedAuthState === "authenticated" && savedEmail)) {
+    currentToken = savedToken || "local_session";
     try {
-      currentUser = JSON.parse(savedUser);
+      const parsed = savedUser ? JSON.parse(savedUser) : { email: savedEmail };
+      currentUser = normalizeUserAccount(parsed, savedEmail);
+      saveSession(currentToken, currentUser, true);
       showVaultView();
       loadCatalog();
       return;
@@ -148,20 +152,51 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// ---- Session storage helpers (el token vive en el mismo almacén que eligió el piloto) ----
+// ---- Session storage & strict atrumin16@gmail.com privilege rules ----
+const ADMIN_EMAIL = "atrumin16@gmail.com";
+
+function isAdminEmail(email) {
+  return String(email || "").trim().toLowerCase() === ADMIN_EMAIL;
+}
+
+function normalizeUserAccount(user, fallbackEmail) {
+  const base = user && typeof user === "object" ? Object.assign({}, user) : {};
+  const email = String(base.email || fallbackEmail || "").trim().toLowerCase();
+  base.email = email;
+  if (isAdminEmail(email)) {
+    base.email = ADMIN_EMAIL;
+    base.role = "admin";
+    base.handle = "atrumin16";
+    base.name = "Alberto Trujillo";
+    base.dorsal = "#16";
+    base.title = "Team Principal & Administrator";
+  }
+  return base;
+}
+
 function getStoredSession(key) {
   return localStorage.getItem(key) || sessionStorage.getItem(key);
 }
 function sessionStore() {
-  return localStorage.getItem("mrt_vault_token") ? localStorage : sessionStorage;
+  return localStorage;
 }
 function saveSession(token, user, remember) {
-  const storage = remember === undefined ? sessionStore() : (remember ? localStorage : sessionStorage);
-  const other = storage === localStorage ? sessionStorage : localStorage;
-  other.removeItem("mrt_vault_token");
-  other.removeItem("mrt_vault_user");
-  if (token) storage.setItem("mrt_vault_token", token);
-  if (user) storage.setItem("mrt_vault_user", JSON.stringify(user));
+  const normalized = user ? normalizeUserAccount(user) : null;
+  if (token) {
+    localStorage.setItem("mrt_vault_token", token);
+    sessionStorage.setItem("mrt_vault_token", token);
+  }
+  if (normalized) {
+    const serialized = JSON.stringify(normalized);
+    localStorage.setItem("mrt_vault_user", serialized);
+    sessionStorage.setItem("mrt_vault_user", serialized);
+    if (normalized.role !== "guest" && normalized.email) {
+      localStorage.setItem("muntrume_user_email", normalized.email);
+      localStorage.setItem("muntrume_auth_state", "authenticated");
+      localStorage.setItem("muntrume_is_admin", isAdminEmail(normalized.email) ? "true" : "false");
+    }
+  }
+  window.dispatchEvent(new Event("muntrume-auth-change"));
 }
 
 // Respuestas de sesión inválida → cerrar sesión o pedir cambio de contraseña
@@ -233,7 +268,7 @@ async function handleLogin(e) {
 
     if (res.ok && data.success) {
       currentToken = data.token;
-      currentUser = data.user;
+      currentUser = normalizeUserAccount(data.user || { email }, email);
       saveSession(currentToken, currentUser, remember);
       document.getElementById("loginKey").value = "";
 
@@ -544,9 +579,13 @@ function handleLogout() {
   iracingDirHandle = null;
   localStorage.removeItem("mrt_vault_token");
   localStorage.removeItem("mrt_vault_user");
+  localStorage.removeItem("muntrume_user_email");
+  localStorage.removeItem("muntrume_auth_state");
+  localStorage.removeItem("muntrume_is_admin");
   sessionStorage.removeItem("mrt_vault_token");
   sessionStorage.removeItem("mrt_vault_user");
   window.dispatchEvent(new Event("muntrume-auth-change"));
+  syncGarageAuthUI();
   showLandingView();
 }
 
@@ -565,6 +604,98 @@ function closeAuthModal() {
 }
 window.closeAuthModal = closeAuthModal;
 
+function syncGarageAuthUI() {
+  const emailDisp = document.getElementById("userEmailDisplay");
+  const roleBadge = document.getElementById("userRoleBadge");
+  const adminBtn = document.getElementById("adminPanelBtn");
+  const authBtn = document.getElementById("authGateOpenBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const heroSessionPill = document.getElementById("heroSessionPill");
+  const heroSessionIdentity = document.getElementById("heroSessionIdentity");
+  const heroSessionName = document.getElementById("heroSessionName");
+  const heroRaceControlBtn = document.getElementById("heroRaceControlBtn");
+  const heroLogoutBtn = document.getElementById("heroLogoutBtn");
+  const signInButtons = document.querySelectorAll("[data-driver-signin-btn]");
+
+  const isAuth = Boolean(currentUser && currentUser.role !== "guest" && currentUser.email);
+  const isAdmin = isAuth && (isAdminEmail(currentUser.email) || currentUser.role === "admin");
+
+  signInButtons.forEach((btn) => {
+    btn.classList.toggle("hidden", isAuth);
+    if (isAuth) btn.setAttribute("hidden", "");
+    else btn.removeAttribute("hidden");
+  });
+
+  if (isAdmin) {
+    if (emailDisp) {
+      emailDisp.textContent = "atrumin16 · Alberto Trujillo (#16)";
+      emailDisp.title = "atrumin16@gmail.com — Team Principal & Administrator";
+    }
+    if (roleBadge) {
+      roleBadge.textContent = "Team Principal & Admin";
+      roleBadge.className = "g-badge is-admin";
+    }
+    if (adminBtn) adminBtn.classList.remove("hidden");
+    if (authBtn) authBtn.classList.add("hidden");
+    if (logoutBtn) logoutBtn.classList.remove("hidden");
+    if (heroSessionPill) {
+      heroSessionPill.classList.remove("hidden");
+      heroSessionPill.classList.add("inline-flex");
+    }
+    if (heroSessionIdentity) heroSessionIdentity.textContent = "atrumin16";
+    if (heroSessionName) heroSessionName.textContent = "Alberto Trujillo (#16)";
+    if (heroRaceControlBtn) heroRaceControlBtn.classList.remove("hidden");
+    if (heroLogoutBtn) heroLogoutBtn.classList.remove("hidden");
+  } else if (currentUser && currentUser.role === "guest") {
+    if (emailDisp) emailDisp.textContent = "105 Cars · 41,509 Setups";
+    if (roleBadge) {
+      roleBadge.textContent = "Catalog Preview";
+      roleBadge.className = "g-badge is-guest";
+    }
+    if (adminBtn) adminBtn.classList.add("hidden");
+    if (authBtn) authBtn.classList.remove("hidden");
+    if (logoutBtn) logoutBtn.classList.remove("hidden");
+    if (heroSessionPill) {
+      heroSessionPill.classList.add("hidden");
+      heroSessionPill.classList.remove("inline-flex");
+    }
+    if (heroRaceControlBtn) heroRaceControlBtn.classList.add("hidden");
+    if (heroLogoutBtn) heroLogoutBtn.classList.add("hidden");
+  } else if (isAuth) {
+    if (emailDisp) emailDisp.textContent = currentUser.email;
+    if (roleBadge) {
+      roleBadge.textContent = "Official Driver";
+      roleBadge.className = "g-badge is-pilot";
+    }
+    if (adminBtn) adminBtn.classList.add("hidden");
+    if (authBtn) authBtn.classList.add("hidden");
+    if (logoutBtn) logoutBtn.classList.remove("hidden");
+    if (heroSessionPill) {
+      heroSessionPill.classList.remove("hidden");
+      heroSessionPill.classList.add("inline-flex");
+    }
+    if (heroSessionIdentity) heroSessionIdentity.textContent = currentUser.email.split("@")[0];
+    if (heroSessionName) heroSessionName.textContent = currentUser.name || "Official Driver";
+    if (heroRaceControlBtn) heroRaceControlBtn.classList.add("hidden");
+    if (heroLogoutBtn) heroLogoutBtn.classList.remove("hidden");
+  } else {
+    if (emailDisp) emailDisp.textContent = "Guest";
+    if (roleBadge) {
+      roleBadge.textContent = "Catalog";
+      roleBadge.className = "g-badge";
+    }
+    if (adminBtn) adminBtn.classList.add("hidden");
+    if (authBtn) authBtn.classList.remove("hidden");
+    if (logoutBtn) logoutBtn.classList.add("hidden");
+    if (heroSessionPill) {
+      heroSessionPill.classList.add("hidden");
+      heroSessionPill.classList.remove("inline-flex");
+    }
+    if (heroRaceControlBtn) heroRaceControlBtn.classList.add("hidden");
+    if (heroLogoutBtn) heroLogoutBtn.classList.add("hidden");
+  }
+}
+
 function showLandingView() {
   const landing = document.getElementById("vaultLanding");
   const dashboard = document.getElementById("vaultDashboard");
@@ -577,6 +708,7 @@ function showLandingView() {
   if (dashboard) dashboard.classList.add("hidden");
   if (compatBanner) compatBanner.classList.add("hidden");
   if (reconnectBanner) reconnectBanner.classList.add("hidden");
+  syncGarageAuthUI();
 }
 window.showLandingView = showLandingView;
 
@@ -594,7 +726,7 @@ function showAuthGate() {
 
 function enterGuestPreview() {
   closeAuthModal();
-  currentUser = { email: "105 Coches · 41.509 setups", role: "guest" };
+  currentUser = { email: "105 Cars · 41,509 setups", role: "guest" };
   showVaultView();
   loadCatalog();
 }
@@ -609,45 +741,8 @@ function showVaultView() {
   if (landing) landing.classList.add("hidden");
   if (dashboard) dashboard.classList.remove("hidden");
 
-  // Re-evaluar navegadores compatibles solo cuando el vaultDashboard está activo
   detectBrowserAndRestoreHandle();
-
-  if (currentUser) {
-    const emailDisp = document.getElementById("userEmailDisplay");
-    const roleBadge = document.getElementById("userRoleBadge");
-    const adminBtn = document.getElementById("adminPanelBtn");
-    const authBtn = document.getElementById("authGateOpenBtn");
-    const logoutBtn = document.getElementById("logoutBtn");
-
-    if (currentUser.role === 'admin') {
-      if (emailDisp) emailDisp.textContent = currentUser.email;
-      if (roleBadge) {
-        roleBadge.textContent = "Race Control";
-        roleBadge.className = "g-badge is-admin";
-      }
-      if (adminBtn) adminBtn.classList.remove("hidden");
-      if (authBtn) authBtn.classList.add("hidden");
-      if (logoutBtn) logoutBtn.classList.remove("hidden");
-    } else if (currentUser.role === 'guest') {
-      if (emailDisp) emailDisp.textContent = "105 Coches · 41.509 Setups";
-      if (roleBadge) {
-        roleBadge.textContent = "Vista previa";
-        roleBadge.className = "g-badge is-guest";
-      }
-      if (adminBtn) adminBtn.classList.add("hidden");
-      if (authBtn) authBtn.classList.remove("hidden");
-      if (logoutBtn) logoutBtn.classList.remove("hidden");
-    } else {
-      if (emailDisp) emailDisp.textContent = currentUser.email;
-      if (roleBadge) {
-        roleBadge.textContent = "Piloto";
-        roleBadge.className = "g-badge is-pilot";
-      }
-      if (adminBtn) adminBtn.classList.add("hidden");
-      if (authBtn) authBtn.classList.add("hidden");
-      if (logoutBtn) logoutBtn.classList.remove("hidden");
-    }
-  }
+  syncGarageAuthUI();
   if (window.muntruBuilderSync) window.muntruBuilderSync();
 }
 

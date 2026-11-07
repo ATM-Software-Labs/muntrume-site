@@ -20,10 +20,18 @@ const figs = [
       <p class="r-kicker">Setup Vault &amp; Team HQ</p>
       <h1 id="garageTitle" class="r-h2">Garage</h1>
       <p class="r-lead">Official .STO setups organized by car, circuit, and season. Driver account required for downloads. Files write directly to your local iRacing folder.</p>
-      <div class="g-actions">
-        <button type="button" class="r-btn r-btn--primary" onclick="openAuthModal('login')">Driver Sign In</button>
+      <div class="g-actions" id="garageHeroActions">
+        <button type="button" id="heroAuthBtn" data-driver-signin-btn class="r-btn r-btn--primary" onclick="openAuthModal('login')">Driver Sign In</button>
+        <div id="heroSessionPill" class="hidden items-center gap-2.5 px-3.5 py-2 rounded-xl bg-[#101514] border border-[#00E699]/40 text-xs font-mono text-white">
+          <span class="w-2 h-2 rounded-full bg-[#00E699]"></span>
+          <span id="heroSessionIdentity" class="font-bold text-[#00E699]">atrumin16</span>
+          <span class="text-[#A3B0AC]">·</span>
+          <span id="heroSessionName">Alberto Trujillo (#16)</span>
+        </div>
+        <a id="heroRaceControlBtn" href="/admin" class="r-btn r-btn--primary hidden" style="box-shadow:0 0 22px rgba(0,230,153,.28)">RACE CONTROL</a>
         <button type="button" class="r-btn" onclick="enterGuestPreview()">Browse Catalog</button>
         <a href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer" class="r-btn">Garage 61 Telemetry ↗</a>
+        <button type="button" id="heroLogoutBtn" class="r-btn hidden" onclick="handleLogout()">Log out</button>
       </div>
       <div class="r-figs">
         {figs.map((f) => (<div><strong class="r-num">{f.n}</strong>{f.l}</div>))}
@@ -133,11 +141,12 @@ const figs = [
           <button type="button" role="tab" aria-selected="false" aria-controls="garageSectionComms" id="tabBtnComms" onclick="switchGarageTab('comms')">Communications</button>
           <button type="button" role="tab" aria-selected="false" aria-controls="garageSectionBuilder" id="tabBtnBuilder" onclick="switchGarageTab('builder')">Setup Builder</button>
         </div>
-        <div class="g-session">
-          <span id="userEmailDisplay">Guest</span>
+        <div class="g-session" id="garageSessionToolbar">
+          <span id="userEmailDisplay" class="font-mono text-xs font-semibold">Guest</span>
           <span id="userRoleBadge" class="g-badge">Catalog</span>
-          <button type="button" id="logoutBtn" class="r-link hidden" onclick="handleLogout()">Sign Out</button>
-          <button type="button" id="authBtn" class="r-btn r-btn--primary r-btn--sm" onclick="openAuthModal('login')">Driver Sign In</button>
+          <a id="adminPanelBtn" href="/admin" class="r-btn r-btn--primary r-btn--sm hidden" style="box-shadow:0 0 18px rgba(0,230,153,.28)">RACE CONTROL</a>
+          <button type="button" id="logoutBtn" class="r-link hidden" onclick="handleLogout()">Log out</button>
+          <button type="button" id="authGateOpenBtn" data-driver-signin-btn class="r-btn r-btn--primary r-btn--sm" onclick="openAuthModal('login')">Driver Sign In</button>
         </div>
       </div>
 
@@ -231,7 +240,7 @@ const figs = [
           <div class="g-actions">
             <a class="r-btn r-btn--primary r-btn--sm" href="https://mail.trujillomingorance.com" target="_blank" rel="noopener noreferrer">Open Corporate Webmail (mail.trujillomingorance.com) ↗</a>
             <a class="r-btn r-btn--sm" href="/communications">Open Internal Driver Inbox →</a>
-            <button type="button" class="r-btn r-btn--sm" onclick="openAuthModal('login')">Driver Sign In</button>
+            <button type="button" id="commsAuthBtn" data-driver-signin-btn class="r-btn r-btn--sm" onclick="openAuthModal('login')">Driver Sign In</button>
           </div>
         </div>
       </div>
@@ -246,7 +255,7 @@ const figs = [
             </div>
             <a class="r-link" href="/setup-builder">Open Full-Screen Builder →</a>
           </div>
-          <div id="builderGate">
+          <div id="builderGate" data-driver-signin-btn>
             <p class="r-meta">Sign in with your driver account to download assembled .sto packages.</p>
             <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="openAuthModal('login')">Driver Sign In</button>
           </div>
@@ -500,8 +509,8 @@ const figs = [
     </div>
   </div>
 
-  <script is:inline src="/assets/js/setups.js?v=t292"></script>
-  <script is:inline src="/assets/js/setup-builder.js?v=t292" defer></script>
+  <script is:inline src="/assets/js/setups.js?v=t299"></script>
+  <script is:inline src="/assets/js/setup-builder.js?v=t299" defer></script>
   <script is:inline>
     window.togglePassword = function (id, btn) {
       var input = document.getElementById(id);
