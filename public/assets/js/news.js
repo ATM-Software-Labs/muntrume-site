@@ -204,7 +204,7 @@
         el = document.createElement('div');
         el.id = 'feedNotice';
         el.setAttribute('role', 'status');
-        el.className = 'flex items-center justify-between gap-3 px-4 py-3 rounded-xl bg-[#161c24] border border-white/10 text-xs text-neutral-300';
+        el.className = 'flex items-center justify-between gap-3 px-4 py-3 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] text-xs text-[var(--r-text)]';
         host.prepend(el);
       }
       el.innerHTML = '<span>External racing feeds are temporarily unavailable &mdash; showing team dispatches only.</span><button type="button" onclick="loadAllNews()" class="shrink-0 text-emerald-400 font-semibold hover:text-emerald-300">Retry</button>';
@@ -258,7 +258,7 @@
       }
 
       if (filtered.length === 0) {
-        document.getElementById('mainFeatured').innerHTML = '<div class="text-center py-12 bg-[#161c24] rounded-2xl border border-white/10 text-xs text-neutral-400"><p class="text-sm font-semibold text-white mb-1">No stories match this filter</p><p>Try another category or clear the search box.</p></div>';
+        document.getElementById('mainFeatured').innerHTML = '<div class="text-center py-12 bg-[var(--r-surface)] rounded-2xl border border-[var(--r-line)] text-xs text-[var(--r-muted)]"><p class="text-sm font-semibold text-[var(--r-text)] mb-1">No stories match this filter</p><p>Try another category or clear the search box.</p></div>';
         document.getElementById('sideStories').innerHTML = '';
         document.getElementById('secondaryGrid').innerHTML = '';
         return;
@@ -274,7 +274,7 @@
       if (!container) return;
       const esports = allNews.filter(n => n.autoCategory === 'esports').slice(0, 4);
       if (esports.length === 0) {
-        container.innerHTML = `<div class="col-span-full text-center py-8 rounded-2xl bg-[#161c24] border border-white/10 text-neutral-400 text-xs">${liveFeedStatus === 'pending' ? 'Loading esports headlines…' : 'No sim racing esports headlines in the live feeds right now.'}</div>`;
+        container.innerHTML = `<div class="col-span-full text-center py-8 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] text-[var(--r-muted)] text-xs">${liveFeedStatus === 'pending' ? 'Loading esports headlines…' : 'No sim racing esports headlines in the live feeds right now.'}</div>`;
         return;
       }
       container.innerHTML = esports.map(renderSecondaryCard).join('');
@@ -285,7 +285,7 @@
       if (!container) return;
       const sport = allNews.filter(n => n.autoCategory === 'sport').slice(0, 4);
       if (sport.length === 0) {
-        container.innerHTML = `<div class="col-span-full text-center py-8 rounded-2xl bg-[#161c24] border border-white/10 text-neutral-400 text-xs">${liveFeedStatus === 'pending' ? 'Loading motorsport headlines…' : 'Motorsport headlines are temporarily unavailable.'}</div>`;
+        container.innerHTML = `<div class="col-span-full text-center py-8 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] text-[var(--r-muted)] text-xs">${liveFeedStatus === 'pending' ? 'Loading motorsport headlines…' : 'Motorsport headlines are temporarily unavailable.'}</div>`;
         return;
       }
       container.innerHTML = sport.map(renderSecondaryCard).join('');
@@ -328,24 +328,24 @@
       const targetAttr = isInternal ? '' : 'target="_blank" rel="noopener noreferrer"';
       const ctaText = isInternal ? (a.isTeam ? 'Leer Despacho Oficial &rarr;' : 'Leer Noticia y Contexto &rarr;') : 'Leer Noticia en ' + esc(a.source) + ' &rarr;';
       return `
-        <a href="${href}" ${targetAttr} class="group block relative overflow-hidden rounded-3xl bg-[#161c24] border border-white/10 hover:border-white/20 transition duration-300 shadow-2xl">
-          <div class="h-80 sm:h-96 w-full relative overflow-hidden bg-[#0e1217]">
+        <a href="${href}" ${targetAttr} class="group block relative overflow-hidden rounded-3xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-line-2)] transition duration-300 shadow-2xl">
+          <div class="h-80 sm:h-96 w-full relative overflow-hidden bg-[var(--r-bg-2)]">
             <img src="${esc(cardImg(a.thumbnail))}" onerror="this.onerror=null;this.src='/assets/img/coche1-640.webp';" alt="" width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="w-full h-full object-cover transition duration-500 group-hover:scale-105 opacity-80 group-hover:opacity-90">
-            <div class="absolute inset-0 bg-gradient-to-t from-[#161c24] via-[#161c24]/70 to-transparent"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-[var(--r-surface)] via-[var(--r-surface)]/70 to-transparent"></div>
           </div>
           <div class="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
             <div class="flex items-center gap-2.5 mb-3 flex-wrap text-xs">
-              ${a.isBreaking ? '<span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold text-[10px] tracking-wider uppercase">Breaking</span>' : ''}
-              <span class="px-2.5 py-0.5 rounded-full bg-[#1c232d] text-neutral-300 border border-white/10 text-[11px] font-medium">${esc(a.source)}</span>
-              <span class="text-neutral-400 text-xs">${formatDate(a.pubDate)}</span>
+              ${a.isBreaking ? '<span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-[var(--r-accent)] border border-emerald-500/30 font-bold text-[10px] tracking-wider uppercase">Breaking</span>' : ''}
+              <span class="px-2.5 py-0.5 rounded-full bg-[var(--r-bg-2)] text-[var(--r-text)] border border-[var(--r-line)] text-[11px] font-medium">${esc(a.source)}</span>
+              <span class="text-[var(--r-muted)] text-xs">${formatDate(a.pubDate)}</span>
             </div>
-            <h3 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-2 group-hover:text-emerald-400 transition-colors leading-tight">
+            <h3 class="text-2xl sm:text-3xl font-extrabold text-[var(--r-text)] tracking-tight mb-2 group-hover:text-[var(--r-accent)] transition-colors leading-tight">
               ${esc(a.title)}
             </h3>
-            <p class="text-neutral-300 text-xs sm:text-sm line-clamp-2 mb-4 max-w-3xl leading-relaxed">
+            <p class="text-[var(--r-text)] text-xs sm:text-sm line-clamp-2 mb-4 max-w-3xl leading-relaxed">
               ${esc(cleanDesc(a.description))}
             </p>
-            <div class="inline-flex items-center gap-2 text-emerald-400 font-semibold text-xs group-hover:translate-x-1 transition-transform">
+            <div class="inline-flex items-center gap-2 text-[var(--r-accent)] font-semibold text-xs group-hover:translate-x-1 transition-transform">
               <span>${ctaText}</span>
             </div>
           </div>
@@ -359,27 +359,27 @@
       const targetAttr = isInternal ? '' : 'target="_blank" rel="noopener noreferrer"';
       const ctaText = isInternal ? (a.isTeam ? 'Leer Despacho &rarr;' : 'Ver Noticia &rarr;') : 'Leer en ' + esc(a.source) + ' &rarr;';
       return `
-        <a href="${href}" ${targetAttr} class="group block bg-[#161c24] border border-white/10 hover:border-white/20 rounded-2xl overflow-hidden transition duration-300 shadow-md flex flex-col justify-between">
+        <a href="${href}" ${targetAttr} class="group block bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-line-2)] rounded-2xl overflow-hidden transition duration-300 shadow-md flex flex-col justify-between">
           <div>
-            <div class="h-44 w-full overflow-hidden bg-[#0e1217] relative">
+            <div class="h-44 w-full overflow-hidden bg-[var(--r-bg-2)] relative">
               <img src="${esc(cardImg(a.thumbnail))}" onerror="this.onerror=null;this.src='/assets/img/coche1-640.webp';" alt="" width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="w-full h-full object-cover transition duration-500 group-hover:scale-105 opacity-80 group-hover:opacity-100">
-              <div class="absolute inset-0 bg-gradient-to-t from-[#161c24] via-transparent to-transparent"></div>
+              <div class="absolute inset-0 bg-gradient-to-t from-[var(--r-surface)] via-transparent to-transparent"></div>
             </div>
             <div class="p-5">
               <div class="flex items-center gap-2 mb-2 text-[11px]">
-                <span class="px-2 py-0.5 rounded-md bg-[#1c232d] text-neutral-300 border border-white/5 font-medium">${esc(a.source)}</span>
-                <span class="text-neutral-400">${formatDate(a.pubDate)}</span>
+                <span class="px-2 py-0.5 rounded-md bg-[var(--r-bg-2)] text-[var(--r-text)] border border-[var(--r-line)] font-medium">${esc(a.source)}</span>
+                <span class="text-[var(--r-muted)]">${formatDate(a.pubDate)}</span>
               </div>
-              <h3 class="font-bold text-white text-sm sm:text-base line-clamp-2 mb-2 group-hover:text-emerald-400 transition-colors">
+              <h3 class="font-bold text-[var(--r-text)] text-sm sm:text-base line-clamp-2 mb-2 group-hover:text-[var(--r-accent)] transition-colors">
                 ${esc(a.title)}
               </h3>
-              <p class="text-neutral-400 text-xs line-clamp-2 leading-relaxed">
+              <p class="text-[var(--r-muted)] text-xs line-clamp-2 leading-relaxed">
                 ${esc(cleanDesc(a.description))}
               </p>
             </div>
           </div>
           <div class="px-5 pb-5 pt-0">
-            <span class="text-emerald-400 text-xs font-semibold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+            <span class="text-[var(--r-accent)] text-xs font-semibold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
               <span>${ctaText}</span>
             </span>
           </div>
@@ -393,20 +393,20 @@
       const targetAttr = isInternal ? '' : 'target="_blank" rel="noopener noreferrer"';
       const ctaText = isInternal ? (a.isTeam ? 'Leer Despacho &rarr;' : 'Ver Noticia &rarr;') : 'Leer en ' + esc(a.source) + ' &rarr;';
       return `
-        <a href="${href}" ${targetAttr} class="group block p-5 rounded-2xl bg-[#161c24] border border-white/10 hover:border-white/20 transition duration-300 shadow-sm flex flex-col justify-between">
+        <a href="${href}" ${targetAttr} class="group block p-5 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-line-2)] transition duration-300 shadow-sm flex flex-col justify-between">
           <div>
             <div class="flex items-center gap-2 mb-2.5 text-[11px]">
-              <span class="px-2 py-0.5 rounded-md bg-[#1c232d] text-neutral-300 border border-white/5 font-medium">${esc(a.source)}</span>
-              <span class="text-neutral-400">${formatDate(a.pubDate)}</span>
+              <span class="px-2 py-0.5 rounded-md bg-[var(--r-bg-2)] text-[var(--r-text)] border border-[var(--r-line)] font-medium">${esc(a.source)}</span>
+              <span class="text-[var(--r-muted)]">${formatDate(a.pubDate)}</span>
             </div>
-            <h3 class="font-bold text-white text-sm sm:text-base line-clamp-2 mb-2 group-hover:text-emerald-400 transition-colors">
+            <h3 class="font-bold text-[var(--r-text)] text-sm sm:text-base line-clamp-2 mb-2 group-hover:text-[var(--r-accent)] transition-colors">
               ${esc(a.title)}
             </h3>
-            <p class="text-neutral-400 text-xs line-clamp-2 mb-3 leading-relaxed">
+            <p class="text-[var(--r-muted)] text-xs line-clamp-2 mb-3 leading-relaxed">
               ${esc(cleanDesc(a.description))}
             </p>
           </div>
-          <div class="text-emerald-400 text-xs font-semibold flex items-center gap-1 group-hover:translate-x-1 transition-transform pt-2">
+          <div class="text-[var(--r-accent)] text-xs font-semibold flex items-center gap-1 group-hover:translate-x-1 transition-transform pt-2">
             <span>${ctaText}</span>
           </div>
         </a>

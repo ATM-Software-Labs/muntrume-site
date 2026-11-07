@@ -8,16 +8,16 @@ const pageDescription = "Official Team Communications Hub, Corporate Webmail (ma
 <Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/communications">
   <section class="pt-24 pb-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 max-w-full overflow-x-hidden">
     <!-- Top Header -->
-    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-[#1E2A26]">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-[var(--r-line)]">
       <div class="space-y-2">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#121A17] border border-[#00E699]/40 text-[#00E699] text-[11px] font-mono uppercase tracking-wider">
-          <span class="w-2 h-2 rounded-full bg-[#00E699] animate-pulse"></span>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--r-surface)] border border-[var(--r-accent)] text-[var(--r-accent)] text-[11px] font-mono uppercase tracking-wider">
+          <span class="w-2 h-2 rounded-full bg-[var(--r-accent)] animate-pulse"></span>
           <span>TEAM HQ · COMMUNICATIONS &amp; WEBMAIL</span>
         </div>
-        <h1 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight font-display uppercase">
-          TEAM <span class="text-[#00E699]">COMMUNICATIONS</span>
+        <h1 class="text-3xl sm:text-5xl font-extrabold text-[var(--r-text)] tracking-tight font-display uppercase">
+          TEAM <span class="text-[var(--r-accent)]">COMMUNICATIONS</span>
         </h1>
-        <p class="text-xs sm:text-sm text-[#9AA8A3] max-w-2xl leading-relaxed">
+        <p class="text-xs sm:text-sm text-[var(--r-muted)] max-w-2xl leading-relaxed">
           Corporate Webmail access, endurance race briefings, and internal driver mailbox synchronized with your active Garage session.
         </p>
       </div>
@@ -27,14 +27,14 @@ const pageDescription = "Official Team Communications Hub, Corporate Webmail (ma
           href="https://mail.trujillomingorance.com"
           target="_blank"
           rel="noopener noreferrer"
-          class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#00E699] hover:bg-[#00c985] text-neutral-950 font-black text-xs font-mono uppercase tracking-wider transition shadow-lg shadow-[#00E699]/15"
+          class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--r-accent)] hover:opacity-90 text-neutral-950 font-black text-xs font-mono uppercase tracking-wider transition shadow-lg"
         >
           <span>Corporate Webmail</span>
           <span>↗</span>
         </a>
         <a
           href="/garage"
-          class="px-3.5 py-2.5 rounded-xl bg-[#121A17] border border-[#1E2A26] hover:border-[#00E699]/60 text-xs font-mono text-neutral-200 hover:text-[#00E699] transition"
+          class="px-3.5 py-2.5 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono text-[var(--r-text)] hover:text-[var(--r-accent)] transition"
         >
           ← Back to Garage
         </a>
@@ -42,19 +42,19 @@ const pageDescription = "Official Team Communications Hub, Corporate Webmail (ma
     </div>
 
     <!-- Active Garage Session Bar -->
-    <div class="p-4 sm:p-5 rounded-2xl bg-[#121A17] border border-[#1E2A26] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div class="p-4 sm:p-5 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div class="flex items-center gap-3">
         <span id="commsStatusDot" class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
         <div>
-          <p class="text-xs font-mono uppercase tracking-wider text-[#9AA8A3]">Garage Session Status</p>
-          <p class="text-sm font-bold text-white" id="commsSessionIdentity">Checking active Garage credentials...</p>
+          <p class="text-xs font-mono uppercase tracking-wider text-[var(--r-muted)]">Garage Session Status</p>
+          <p class="text-sm font-bold text-[var(--r-text)]" id="commsSessionIdentity">Checking active Garage credentials...</p>
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-2.5">
         <a
           href="/garage"
           id="commsLoginBtn"
-          class="px-3.5 py-2 rounded-xl bg-[#00E699] hover:bg-[#00c985] text-neutral-950 font-black text-xs font-mono uppercase tracking-wider transition"
+          class="px-3.5 py-2 rounded-xl bg-[var(--r-accent)] hover:opacity-90 text-neutral-950 font-black text-xs font-mono uppercase tracking-wider transition"
         >
           Sign In via Garage
         </a>
@@ -62,7 +62,7 @@ const pageDescription = "Official Team Communications Hub, Corporate Webmail (ma
           href="https://mail.trujillomingorance.com"
           target="_blank"
           rel="noopener noreferrer"
-          class="px-3.5 py-2 rounded-xl bg-[#080C0A] border border-[#1E2A26] hover:border-[#00E699] text-xs font-mono text-[#00E699] transition"
+          class="px-3.5 py-2 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono text-[var(--r-accent)] transition"
         >
           mail.trujillomingorance.com ↗
         </a>
@@ -73,27 +73,27 @@ const pageDescription = "Official Team Communications Hub, Corporate Webmail (ma
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
       <!-- Left Column: Direct Channels (4 Cols) -->
       <aside class="lg:col-span-4 space-y-4">
-        <div class="p-5 rounded-2xl bg-[#121A17] border border-[#1E2A26] space-y-4">
-          <span class="text-[11px] font-mono uppercase tracking-widest text-[#00E699] font-bold">Corporate Mail Server</span>
-          <h2 class="text-lg font-extrabold text-white font-display">Corporate Webmail</h2>
-          <p class="text-xs text-[#9AA8A3] leading-relaxed">
-            Direct encrypted access to the official corporate mail server (<code class="text-[#00E699]">mail.trujillomingorance.com</code>) for team principals, engineers, and official drivers.
+        <div class="p-5 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] space-y-4">
+          <span class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)] font-bold">Corporate Mail Server</span>
+          <h2 class="text-lg font-extrabold text-[var(--r-text)] font-display">Corporate Webmail</h2>
+          <p class="text-xs text-[var(--r-muted)] leading-relaxed">
+            Direct encrypted access to the official corporate mail server (<code class="text-[var(--r-accent)]">mail.trujillomingorance.com</code>) for team principals, engineers, and official drivers.
           </p>
           <a
             href="https://mail.trujillomingorance.com"
             target="_blank"
             rel="noopener noreferrer"
-            class="w-full py-3 px-4 rounded-xl bg-[#00E699] hover:bg-[#00c985] text-neutral-950 font-black text-xs font-mono uppercase tracking-wider transition flex items-center justify-center gap-2"
+            class="w-full py-3 px-4 rounded-xl bg-[var(--r-accent)] hover:opacity-90 text-neutral-950 font-black text-xs font-mono uppercase tracking-wider transition flex items-center justify-center gap-2"
           >
             <span>Launch Corporate Webmail</span>
             <span>↗</span>
           </a>
         </div>
 
-        <div class="p-5 rounded-2xl bg-[#121A17] border border-[#1E2A26] space-y-4">
+        <div class="p-5 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] space-y-4">
           <span class="text-[11px] font-mono uppercase tracking-widest text-[#38bdf8] font-bold">Live Race Control</span>
-          <h2 class="text-lg font-extrabold text-white font-display">Discord Race Radio &amp; Garage 61</h2>
-          <p class="text-xs text-[#9AA8A3] leading-relaxed">
+          <h2 class="text-lg font-extrabold text-[var(--r-text)] font-display">Discord Race Radio &amp; Garage 61</h2>
+          <p class="text-xs text-[var(--r-muted)] leading-relaxed">
             Real-time voice channels for endurance driver swaps, spotter calls, and 60 Hz Garage 61 telemetry comparison.
           </p>
           <div class="grid gap-2">
@@ -101,86 +101,86 @@ const pageDescription = "Official Team Communications Hub, Corporate Webmail (ma
               href="https://discord.gg/ehX6B8JUtE"
               target="_blank"
               rel="noopener noreferrer"
-              class="py-2.5 px-3.5 rounded-xl bg-[#080C0A] border border-[#1E2A26] hover:border-[#00E699] text-xs font-mono text-white flex items-center justify-between transition"
+              class="py-2.5 px-3.5 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono text-[var(--r-text)] flex items-center justify-between transition"
             >
               <span>Discord Team Radio</span>
-              <span class="text-[#00E699]">Connect ↗</span>
+              <span class="text-[var(--r-accent)]">Connect ↗</span>
             </a>
             <a
               href="https://garage61.net/app/teams/muntrume-motorsport"
               target="_blank"
               rel="noopener noreferrer"
-              class="py-2.5 px-3.5 rounded-xl bg-[#080C0A] border border-[#1E2A26] hover:border-[#00E699] text-xs font-mono text-white flex items-center justify-between transition"
+              class="py-2.5 px-3.5 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono text-[var(--r-text)] flex items-center justify-between transition"
             >
               <span>Garage 61 Team Telemetry</span>
-              <span class="text-[#00E699]">Open ↗</span>
+              <span class="text-[var(--r-accent)]">Open ↗</span>
             </a>
           </div>
         </div>
       </aside>
 
       <!-- Right Column: Internal Driver Inbox & Briefings (8 Cols) -->
-      <div class="lg:col-span-8 rounded-2xl bg-[#121A17] border border-[#1E2A26] p-5 sm:p-6 space-y-5">
-        <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-[#1E2A26]">
+      <div class="lg:col-span-8 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] p-5 sm:p-6 space-y-5">
+        <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-[var(--r-line)]">
           <div>
-            <span class="text-[11px] font-mono uppercase tracking-widest text-[#00E699] font-bold">Internal Driver Inbox</span>
-            <h2 class="text-xl font-extrabold text-white font-display">Race Engineering &amp; Strategy Dispatches</h2>
+            <span class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)] font-bold">Internal Driver Inbox</span>
+            <h2 class="text-xl font-extrabold text-[var(--r-text)] font-display">Race Engineering &amp; Strategy Dispatches</h2>
           </div>
-          <span id="commsInboxBadge" class="px-2.5 py-1 rounded-full bg-[#080C0A] border border-[#1E2A26] text-[11px] font-mono text-[#00E699]">
+          <span id="commsInboxBadge" class="px-2.5 py-1 rounded-full bg-[var(--r-bg-2)] border border-[var(--r-line)] text-[11px] font-mono text-[var(--r-accent)]">
             3 Official Briefings
           </span>
         </div>
 
         <div class="space-y-3" id="commsDispatchesList">
-          <article class="p-4 rounded-xl bg-[#080C0A] border border-[#1E2A26] hover:border-[#00E699]/50 transition space-y-2">
+          <article class="p-4 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition space-y-2">
             <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono">
-              <span class="text-[#00E699] font-bold uppercase">[ENDURANCE BRIEFING · 26S4]</span>
-              <span class="text-[#9AA8A3]">From: Alberto Trujillo (Team Principal &amp; Telemetry)</span>
+              <span class="text-[var(--r-accent)] font-bold uppercase">[ENDURANCE BRIEFING · 26S4]</span>
+              <span class="text-[var(--r-muted)]">From: Alberto Trujillo (Team Principal &amp; Telemetry)</span>
             </div>
-            <h3 class="text-sm sm:text-base font-bold text-white">
+            <h3 class="text-sm sm:text-base font-bold text-[var(--r-text)]">
               Le Mans &amp; Spa-Francorchamps Sports Car Setup Baseline Updated in Vault
             </h3>
-            <p class="text-xs text-[#9AA8A3] leading-relaxed">
+            <p class="text-xs text-[var(--r-muted)] leading-relaxed">
               Updated high-efficiency downforce and damper packs for Ford Mustang GT3, Ferrari 296 GT3, Porsche 992 GT3 R, and Porsche 718 Cayman GT4 are now live in the Setup Vault. Sync your local iRacing folder or use the Setup Builder before qualifying.
             </p>
             <div class="pt-1 flex flex-wrap gap-3 text-xs font-mono">
-              <a href="/garage" class="text-[#00E699] hover:underline">Open Setup Vault →</a>
+              <a href="/garage" class="text-[var(--r-accent)] hover:underline">Open Setup Vault →</a>
               <a href="/setup-builder" class="text-[#38bdf8] hover:underline">Open Setup Builder →</a>
             </div>
           </article>
 
-          <article class="p-4 rounded-xl bg-[#080C0A] border border-[#1E2A26] hover:border-[#00E699]/50 transition space-y-2">
+          <article class="p-4 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition space-y-2">
             <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono">
               <span class="text-[#38bdf8] font-bold uppercase">[TELEMETRY PROTOCOL · GARAGE 61]</span>
-              <span class="text-[#9AA8A3]">From: Race Engineering</span>
+              <span class="text-[var(--r-muted)]">From: Race Engineering</span>
             </div>
-            <h3 class="text-sm sm:text-base font-bold text-white">
+            <h3 class="text-sm sm:text-base font-bold text-[var(--r-text)]">
               Official Garage 61 Team Link &amp; Road Hours Weighting Active
             </h3>
-            <p class="text-xs text-[#9AA8A3] leading-relaxed">
+            <p class="text-xs text-[var(--r-muted)] leading-relaxed">
               All driver profiles now filter strictly for Road circuits (excluding Ovals/Speedways) and compute real Hours on Track weighted by circuit lap time. Ensure your Garage 61 agent is running during practice stints.
             </p>
             <div class="pt-1 flex flex-wrap gap-3 text-xs font-mono">
-              <a href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer" class="text-[#00E699] hover:underline">
+              <a href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer" class="text-[var(--r-accent)] hover:underline">
                 garage61.net/app/teams/muntrume-motorsport ↗
               </a>
-              <a href="/drivers" class="text-neutral-300 hover:underline">View Driver Profiles →</a>
+              <a href="/drivers" class="text-[var(--r-muted)] hover:underline">View Driver Profiles →</a>
             </div>
           </article>
 
-          <article class="p-4 rounded-xl bg-[#080C0A] border border-[#1E2A26] hover:border-[#00E699]/50 transition space-y-2">
+          <article class="p-4 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition space-y-2">
             <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono">
-              <span class="text-emerald-400 font-bold uppercase">[CORPORATE WEBMAIL · DIRECT ACCESS]</span>
-              <span class="text-[#9AA8A3]">From: Systems &amp; IT</span>
+              <span class="text-[var(--r-accent)] font-bold uppercase">[CORPORATE WEBMAIL · DIRECT ACCESS]</span>
+              <span class="text-[var(--r-muted)]">From: Systems &amp; IT</span>
             </div>
-            <h3 class="text-sm sm:text-base font-bold text-white">
+            <h3 class="text-sm sm:text-base font-bold text-[var(--r-text)]">
               Direct Corporate Mail Access via mail.trujillomingorance.com
             </h3>
-            <p class="text-xs text-[#9AA8A3] leading-relaxed">
-              Official team mailboxes are accessible directly via <code class="text-[#00E699]">https://mail.trujillomingorance.com</code>. Your Garage session remains active across Setup Vault, Setup Builder, and Communications.
+            <p class="text-xs text-[var(--r-muted)] leading-relaxed">
+              Official team mailboxes are accessible directly via <code class="text-[var(--r-accent)]">https://mail.trujillomingorance.com</code>. Your Garage session remains active across Setup Vault, Setup Builder, and Communications.
             </p>
             <div class="pt-1">
-              <a href="https://mail.trujillomingorance.com" target="_blank" rel="noopener noreferrer" class="text-xs font-mono text-[#00E699] hover:underline">
+              <a href="https://mail.trujillomingorance.com" target="_blank" rel="noopener noreferrer" class="text-xs font-mono text-[var(--r-accent)] hover:underline">
                 Open Corporate Webmail ↗
               </a>
             </div>

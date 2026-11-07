@@ -8,16 +8,16 @@ const pageDescription = "Dynamic iRacing Setup Builder by Muntrume Motorsport. S
 <Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/setup-builder">
   <section class="pt-24 pb-16 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 max-w-full overflow-x-hidden">
     <!-- Top Header -->
-    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-[#1E2A26]">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-[var(--r-line)]">
       <div class="space-y-2">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#121A17] border border-[#00E699]/40 text-[#00E699] text-[11px] font-mono uppercase tracking-wider">
-          <span class="w-2 h-2 rounded-full bg-[#00E699] animate-pulse"></span>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--r-surface)] border border-[var(--r-accent)] text-[var(--r-accent)] text-[11px] font-mono uppercase tracking-wider">
+          <span class="w-2 h-2 rounded-full bg-[var(--r-accent)] animate-pulse"></span>
           <span>DYNAMIC .STO ASSEMBLER · 41,016 SETUPS</span>
         </div>
-        <h1 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight font-display uppercase">
-          DYNAMIC <span class="text-[#00E699]">SETUP BUILDER</span>
+        <h1 class="text-3xl sm:text-5xl font-extrabold text-[var(--r-text)] tracking-tight font-display uppercase">
+          DYNAMIC <span class="text-[var(--r-accent)]">SETUP BUILDER</span>
         </h1>
-        <p class="text-xs sm:text-sm text-[#9AA8A3] max-w-2xl leading-relaxed">
+        <p class="text-xs sm:text-sm text-[var(--r-muted)] max-w-2xl leading-relaxed">
           Combine catalog vehicles and Road circuits with free-text overrides to assemble tailored qualifying, race, wet, and endurance setup packages.
         </p>
       </div>
@@ -25,13 +25,13 @@ const pageDescription = "Dynamic iRacing Setup Builder by Muntrume Motorsport. S
       <div class="flex flex-wrap items-center gap-2.5 shrink-0">
         <a
           href="/garage"
-          class="px-3.5 py-2.5 rounded-xl bg-[#121A17] border border-[#1E2A26] hover:border-[#00E699]/60 text-xs font-mono text-neutral-200 hover:text-[#00E699] transition"
+          class="px-3.5 py-2.5 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono text-[var(--r-text)] hover:text-[var(--r-accent)] transition"
         >
           ← Back to Garage Vault
         </a>
         <a
           href="/ai"
-          class="px-3.5 py-2.5 rounded-xl bg-[#121A17] border border-[#1E2A26] hover:border-[#00E699]/60 text-xs font-mono text-[#00E699] transition"
+          class="px-3.5 py-2.5 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono text-[var(--r-accent)] transition"
         >
           Open AI Copilot →
         </a>
@@ -39,10 +39,10 @@ const pageDescription = "Dynamic iRacing Setup Builder by Muntrume Motorsport. S
     </div>
 
     <!-- Main Symmetrical Setup Builder Card -->
-    <div class="g-panel p-6 sm:p-8 rounded-2xl bg-[#121A17] border border-[#1E2A26] space-y-6" id="builderPanel">
-      <div id="builderGate" class="p-4 rounded-xl bg-[#080C0A] border border-[#1E2A26] flex flex-wrap items-center justify-between gap-3">
-        <div class="flex items-center gap-2.5 text-xs font-mono text-[#9AA8A3]">
-          <span class="w-2 h-2 rounded-full bg-[#00E699]"></span>
+    <div class="g-panel p-6 sm:p-8 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] space-y-6" id="builderPanel">
+      <div id="builderGate" class="p-4 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5 text-xs font-mono text-[var(--r-muted)]">
+          <span class="w-2 h-2 rounded-full bg-[var(--r-accent)]"></span>
           <span>Sign in with your official driver account in the Garage to download assembled <code>.sto</code> packages directly.</span>
         </div>
         <a href="/garage" class="r-btn r-btn--primary r-btn--sm">Driver Sign In</a>
