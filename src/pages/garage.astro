@@ -22,16 +22,15 @@ const figs = [
       <p class="r-lead">Official .STO setups organized by car, circuit, and season. Driver account required for downloads. Files write directly to your local iRacing folder.</p>
       <div class="g-actions" id="garageHeroActions">
         <button type="button" id="heroAuthBtn" data-driver-signin-btn class="r-btn r-btn--primary" onclick="openAuthModal('login')">Driver Sign In</button>
-        <div id="heroSessionPill" class="hidden items-center gap-2.5 px-3.5 py-2 rounded-xl bg-[#101514] border border-[#00E699]/40 text-xs font-mono text-white">
-          <span class="w-2 h-2 rounded-full bg-[#00E699]"></span>
-          <span id="heroSessionIdentity" class="font-bold text-[#00E699]">atrumin16</span>
-          <span class="text-[#A3B0AC]">·</span>
+        <div id="heroSessionPill" class="hidden items-center gap-2.5 px-4 py-2.5 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] text-xs font-mono text-[var(--r-text)]">
+          <span class="w-2 h-2 rounded-full bg-[var(--r-accent)] shrink-0"></span>
+          <span id="heroSessionIdentity" class="font-bold text-[var(--r-accent)]">atrumin16</span>
+          <span class="text-[var(--r-muted)]">·</span>
           <span id="heroSessionName">Alberto Trujillo (#16)</span>
         </div>
         <a id="heroRaceControlBtn" href="/admin" class="r-btn r-btn--primary hidden" style="box-shadow:0 0 22px rgba(0,230,153,.28)">RACE CONTROL</a>
         <button type="button" class="r-btn" onclick="enterGuestPreview()">Browse Catalog</button>
         <a href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer" class="r-btn">Garage 61 Telemetry ↗</a>
-        <button type="button" id="heroLogoutBtn" class="r-btn hidden" onclick="handleLogout()">Log out</button>
       </div>
       <div class="r-figs">
         {figs.map((f) => (<div><strong class="r-num">{f.n}</strong>{f.l}</div>))}
