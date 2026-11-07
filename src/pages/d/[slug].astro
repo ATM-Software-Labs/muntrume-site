@@ -68,7 +68,12 @@ const driverSetups = (driver.topCars || []).map((carItem) => {
   const carKey = CAR_SLUG_MAP[carItem.name] || "";
   const matching = allRows.filter((r) => r[1] === carKey && isRoadTrack(r[4]));
   const tracks = Array.from(new Set(matching.map((r) => r[4]))).slice(0, 3);
-  const sampleFiles = matching.slice(0, 3).map((r) => ({
+  const qualyRow = matching.find((r) => String(r[6]).toLowerCase() === "qualy" && !String(r[5]).includes("Safe"));
+  const endurRow = matching.find((r) => String(r[6]).toLowerCase() === "race" && String(r[5]).includes("Endur") && !String(r[5]).includes("Safe"));
+  const sprintRow = matching.find((r) => String(r[6]).toLowerCase() === "race" && String(r[5]).includes("Sprint") && !String(r[5]).includes("Safe"));
+  const picked = [qualyRow, endurRow, sprintRow].filter((r): r is CatalogRow => Boolean(r));
+  const finalRows = picked.length === 3 ? picked : matching.slice(0, 3);
+  const sampleFiles = finalRows.map((r) => ({
     season: r[2],
     week: r[3],
     track: r[4],
@@ -169,7 +174,7 @@ const personSchema = {
                       {item.sampleFiles.map((f) => (
                         <li>
                           <div class="d-setup-file__row">
-                            <span class="sto-type">{f.type}</span>
+                            <span class="sto-type" data-type={String(f.type || "").toUpperCase()}>{f.type}</span>
                             <code title={f.file}>{f.file}</code>
                           </div>
                           <span class="d-setup-file__meta">{f.season} · {f.track}</span>

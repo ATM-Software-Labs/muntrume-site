@@ -68,25 +68,23 @@ const attributes = [
     <span class="d-f1__formula-pill">SPORTS CAR · VERIFIED TELEMETRY</span>
   </div>
 
-  <div class="d-f1__grid grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+  <div class="d-f1__grid">
     <!-- Left Card: Overall Rating Shield -->
-    <div class="d-f1__ovr-card lg:col-span-4 flex flex-col justify-between">
+    <div class="d-f1__ovr-card">
       <div class="d-f1__ovr-top">
         <span class="d-f1__ovr-tag">OVERALL RATING</span>
         <span class="d-f1__ovr-num-badge">{driver.dorsal}</span>
       </div>
-      <div class="d-f1__ovr-center my-auto py-4 text-center">
-        <div class="d-f1__ovr-score-wrap justify-center">
+      <div class="d-f1__ovr-center">
+        <div class="d-f1__ovr-score-wrap">
           <strong class="d-f1__ovr-score" data-f1-val="overall">{f1.overall}</strong>
         </div>
-        <span class="block text-[11px] font-mono uppercase tracking-widest text-[#A3B0AC] mt-1">
-          Muntrume Telemetry Index
-        </span>
-        <div class="d-f1__ovr-bar mt-4" aria-hidden="true">
+        <span class="d-f1__ovr-sub">Muntrume Telemetry Index</span>
+        <div class="d-f1__ovr-bar" aria-hidden="true">
           <span data-f1-bar="overall" style={`width:${f1.overall}%`}></span>
         </div>
       </div>
-      <div class="d-f1__ovr-meta text-center">
+      <div class="d-f1__ovr-meta">
         <div>
           <span>Sports Car iR</span>
           <strong data-f1-meta="ir">{currentIr.toLocaleString("en-US")}</strong>
@@ -103,7 +101,7 @@ const attributes = [
     </div>
 
     <!-- Right Card: 5 Minimalist Progress Attribute Bars -->
-    <div class="d-f1__bars-card lg:col-span-8 flex flex-col justify-between">
+    <div class="d-f1__bars-card">
       {attributes.map((attr) => (
         <div class:list={["d-f1__row", attr.isOverall && "d-f1__row--overall"]}>
           <div class="d-f1__row-head">
