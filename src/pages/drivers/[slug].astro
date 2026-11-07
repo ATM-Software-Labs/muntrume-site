@@ -1,0 +1,312 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import DriverCard from '../../components/DriverCard.astro';
+import DriverF1Stats from '../../components/DriverF1Stats.astro';
+import DriverRatingsChart from '../../components/DriverRatingsChart.astro';
+import { PILOTOS, LICENCE_UPDATED_LABEL, isRoadTrack } from '../../lib/pilotos';
+import { licenciaPrincipal } from '../../lib/licencias';
+import { formatoAprox, localeDeIdioma } from '../../lib/formato-licencia.js';
+import catalog from '../../../public/assets/data/catalog_index.json';
+
+export function getStaticPaths() {
+  return PILOTOS.map(p => ({ params: { slug: p.slug } }));
+}
+
+const { slug } = Astro.params;
+const driver = PILOTOS.find(p => p.slug === slug) || PILOTOS[0];
+const principal = licenciaPrincipal(driver.slug);
+const pageTitle = `${driver.fullName} (${driver.dorsal}) | Drivers | Muntrume Motorsport`;
+const loc = localeDeIdioma("en");
+const pageDescription = principal
+  ? `${driver.fullName}, ${driver.role} (${driver.specialty}) at Muntrume Motorsport. Sports Car ${principal.classLabel}, SR ${formatoAprox(Number(principal.sr), "sr", loc)}, iRating ${formatoAprox(principal.irating, "k", loc)}. Updated: ${LICENCE_UPDATED_LABEL}.`
+  : `${driver.fullName}, ${driver.role} at Muntrume Motorsport.`;
+const pageUrl = `https://muntru.me/drivers/${driver.slug}/`;
+const ogImage = `https://muntru.me/assets/img/og/${driver.slug}.webp`;
+const index = Math.max(0, PILOTOS.findIndex((p) => p.slug === driver.slug));
+const prev = PILOTOS[(index + PILOTOS.length - 1) % PILOTOS.length];
+const next = PILOTOS[(index + 1) % PILOTOS.length];
+
+const mates = PILOTOS.map((p) => {
+  const row = licenciaPrincipal(p.slug);
+  const hours = p.totalTrackHours || (p.topTracks || []).reduce((acc, t) => acc + t.hours, 0);
+  return {
+    driver: p,
+    sr: row ? Number(row.sr) : 0,
+    ir: row?.irating ?? 0,
+    tt: row?.ttRating ?? 0,
+    hours,
+  };
+}).filter((row) => row.sr > 0 || row.ir > 0);
+
+const selfRow = mates.find((m) => m.driver.slug === driver.slug) || mates[0];
+const avgSr = mates.length ? Number((mates.reduce((s, r) => s + r.sr, 0) / mates.length).toFixed(2)) : 0;
+const avgIr = mates.length ? Math.round(mates.reduce((s, r) => s + r.ir, 0) / mates.length) : 0;
+const avgHours = mates.length ? Number((mates.reduce((s, r) => s + r.hours, 0) / mates.length).toFixed(1)) : 0;
+const maxSr = Math.max(...mates.map((row) => row.sr), avgSr, 1);
+const maxIr = Math.max(...mates.map((row) => row.ir), avgIr, 1);
+const maxHours = Math.max(...mates.map((row) => row.hours), avgHours, 1);
+
+const CAR_SLUG_MAP: Record<string, string> = {
+  "Ford Mustang GT3": "fordmustanggt3",
+  "Ferrari 296 GT3": "ferrari296gt3",
+  "McLaren 720S GT3 EVO": "mclaren720sgt3",
+  "BMW M4 GT3": "bmwm4gt3",
+  "Porsche 911 GT3 R (992)": "porsche992rgt3",
+  "Aston Martin Valkyrie AMR Pro GTP": "amvalkyriegtp",
+  "Ferrari 499P": "ferrari499p",
+  "Mercedes-AMG GT3 2020": "mercedesamgevogt3",
+  "Porsche 911 GT3 Cup (992)": "porsche992cup",
+  "Acura NSX GT3 EVO 22": "acuransxevo22gt3",
+  "Porsche 718 Cayman GT4 Clubsport": "porsche718gt4",
+  "BMW M4 GT4": "bmwm4gt4",
+  "McLaren 570S GT4": "mclaren570sgt4",
+  "Aston Martin Vantage GT4": "amvantagegt4",
+};
+
+type CatalogRow = [number, string, string, string, string, string, string, number];
+const allRows = (catalog.initial_rows || []) as CatalogRow[];
+
+const driverSetups = (driver.topCars || []).map((carItem) => {
+  const carKey = CAR_SLUG_MAP[carItem.name] || "";
+  const matching = allRows.filter((r) => r[1] === carKey && isRoadTrack(r[4]));
+  const tracks = Array.from(new Set(matching.map((r) => r[4]))).slice(0, 3);
+  const sampleFiles = matching.slice(0, 3).map((r) => ({
+    season: r[2],
+    week: r[3],
+    track: r[4],
+    file: r[5],
+    type: r[6],
+  }));
+  return {
+    carName: carItem.name,
+    carKey,
+    hours: carItem.hours,
+    tracks,
+    sampleFiles,
+  };
+});
+
+const personSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://muntru.me/" },
+        { "@type": "ListItem", "position": 2, "name": "Drivers", "item": "https://muntru.me/drivers/" },
+        { "@type": "ListItem", "position": 3, "name": driver.fullName, "item": pageUrl }
+      ]
+    },
+    {
+      "@type": "Person",
+      "@id": `${pageUrl}#person`,
+      "name": driver.fullName,
+      "jobTitle": driver.role,
+      "url": pageUrl,
+      "memberOf": { "@id": "https://muntru.me/#org" },
+      "nationality": driver.country || undefined,
+      "image": ogImage
+    },
+    {
+      "@type": "SportsTeam",
+      "@id": "https://muntru.me/#org",
+      "name": "Muntrume Motorsport",
+      "sport": "Sim Racing (iRacing)",
+      "url": "https://muntru.me/",
+      "athlete": { "@id": `${pageUrl}#person` }
+    }
+  ]
+};
+---
+
+<Layout title={pageTitle} description={pageDescription} canonical={pageUrl} ogImage={ogImage} schemaJson={personSchema}>
+  <section class="r-section" style="border-top:0;padding-top:clamp(96px,12vw,144px);padding-bottom:40px" aria-labelledby="dTitle" data-driver={driver.slug} id="driverRoot">
+    <div class="r-wrap">
+      <nav class="r-meta" aria-label="Breadcrumb" style="margin-bottom:16px"><a href="/" style="color:inherit">Home</a> / <a href="/drivers" style="color:inherit">Drivers</a> / <span style="color:var(--r-text)">{driver.fullName}</span></nav>
+      <nav class="d-tabs" aria-label="Profile Sections">
+        <a href="#resumen">Overview</a>
+        <a href="#f1-ratings">F1 25 Ratings</a>
+        <a href="#ratings">Driver Ratings</a>
+        <a href="#circuitos">Road Circuits</a>
+        <a href="#coches">Cars</a>
+        <a href="#setups">Setups</a>
+        <a href="#comparativa">Team Comparison</a>
+        <a href="#eventos" id="eventosTab">Upcoming Events</a>
+      </nav>
+      <DriverCard driver={driver} heading="h1" headingId="dTitle" hero />
+      <DriverF1Stats driver={driver} />
+      <DriverRatingsChart slug={driver.slug} driverName={driver.fullName} />
+      <div class="d-tools">
+        <nav class="d-pager" aria-label="Other drivers">
+          <a href={`/drivers/${prev.slug}/`}>← {prev.fullName}</a>
+          <a href={`/drivers/${next.slug}/`}>{next.fullName} →</a>
+        </nav>
+        <div class="d-share">
+          <button type="button" id="nativeShare">Share profile</button>
+          <button type="button" id="copyLink">Copy link</button>
+          <p id="copyStatus" class="r-meta" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+
+      {driverSetups.length > 0 && (
+        <section class="d-setups d-reveal" id="setups" aria-labelledby="setupsTitle">
+          <div class="d-section-head">
+            <div>
+              <h2 id="setupsTitle" class="d-block__title">Driver Setups (.STO)</h2>
+              <p class="r-meta">Setup Vault configurations for {driver.name}'s primary race cars.</p>
+            </div>
+            <a href="/garage" class="r-link">Open Setup Vault →</a>
+          </div>
+          <div class="d-setups__grid">
+            {driverSetups.map((item) => (
+              <article class="d-setup-card">
+                <div class="d-setup-card__top">
+                  <h3 class="d-setup-card__title">{item.carName}</h3>
+                  <span class="r-meta"><span data-approx="h" data-n={item.hours}>{formatoAprox(item.hours, "h", loc)}</span> <span>on track</span></span>
+                </div>
+                {item.sampleFiles.length > 0 ? (
+                  <ul class="d-setup-card__files">
+                    {item.sampleFiles.map((f) => (
+                      <li>
+                        <span class="sto-type">{f.type}</span>
+                        <code>{f.file}</code>
+                        <span class="r-meta">{f.season} · {f.track}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p class="r-meta">Available in the general Setup Vault catalog ({item.carKey || "GT"}).</p>
+                )}
+                <a class="r-link d-setup-card__cta" href={item.carKey ? `/garage?car=${encodeURIComponent(item.carKey)}` : "/garage"}>
+                  Browse {item.carName} setups
+                </a>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {mates.length > 1 && selfRow && (
+        <section class="d-compare d-reveal" id="comparativa" aria-labelledby="compareTitle">
+          <h2 id="compareTitle" class="d-block__title">Team Telemetry Comparison</h2>
+          <p class="r-meta">Sports Car metrics compared against the Muntrume Motorsport team average.</p>
+
+          <div class="d-vs-grid">
+            <div class="d-vs-card">
+              <span class="d-vs-card__label">iRating (Sports Car)</span>
+              <div class="d-vs-row">
+                <span>{driver.name}</span>
+                <strong data-approx="k" data-n={selfRow.ir}>{formatoAprox(selfRow.ir, "k", loc)}</strong>
+              </div>
+              <span class="d-mini" aria-hidden="true"><span style={`width:${Math.round((100 * selfRow.ir) / maxIr)}%`}></span></span>
+              <div class="d-vs-row d-vs-row--avg">
+                <span>Muntrume Avg</span>
+                <strong data-approx="k" data-n={avgIr}>{formatoAprox(avgIr, "k", loc)}</strong>
+              </div>
+              <span class="d-mini d-mini--muted" aria-hidden="true"><span style={`width:${Math.round((100 * avgIr) / maxIr)}%`}></span></span>
+            </div>
+
+            <div class="d-vs-card">
+              <span class="d-vs-card__label">Safety Rating (SR)</span>
+              <div class="d-vs-row">
+                <span>{driver.name}</span>
+                <strong data-approx="sr" data-n={selfRow.sr}>{formatoAprox(selfRow.sr, "sr", loc)}</strong>
+              </div>
+              <span class="d-mini" aria-hidden="true"><span style={`width:${Math.round((100 * selfRow.sr) / maxSr)}%`}></span></span>
+              <div class="d-vs-row d-vs-row--avg">
+                <span>Muntrume Avg</span>
+                <strong data-approx="sr" data-n={avgSr}>{formatoAprox(avgSr, "sr", loc)}</strong>
+              </div>
+              <span class="d-mini d-mini--muted" aria-hidden="true"><span style={`width:${Math.round((100 * avgSr) / maxSr)}%`}></span></span>
+            </div>
+
+            <div class="d-vs-card">
+              <span class="d-vs-card__label">Road Hours on Track</span>
+              <div class="d-vs-row">
+                <span>{driver.name}</span>
+                <strong data-approx="h" data-n={selfRow.hours}>{formatoAprox(selfRow.hours, "h", loc)}</strong>
+              </div>
+              <span class="d-mini" aria-hidden="true"><span style={`width:${Math.round((100 * selfRow.hours) / maxHours)}%`}></span></span>
+              <div class="d-vs-row d-vs-row--avg">
+                <span>Muntrume Avg</span>
+                <strong data-approx="h" data-n={avgHours}>{formatoAprox(avgHours, "h", loc)}</strong>
+              </div>
+              <span class="d-mini d-mini--muted" aria-hidden="true"><span style={`width:${Math.round((100 * avgHours) / maxHours)}%`}></span></span>
+            </div>
+          </div>
+
+          <ul class="d-compare__list">
+            {mates.map((row) => (
+              <li class:list={[row.driver.slug === driver.slug && "is-self"]}>
+                <span>{row.driver.fullName}</span>
+                <span class="d-mini" aria-hidden="true"><span style={`width:${Math.round((100 * row.sr) / maxSr)}%`}></span></span>
+                <span>SR <span data-approx="sr" data-n={row.sr}>{formatoAprox(row.sr, "sr", loc)}</span></span>
+                <span class="d-mini" aria-hidden="true"><span style={`width:${Math.round((100 * row.ir) / maxIr)}%`}></span></span>
+                <span>iRating <span data-approx="k" data-n={row.ir}>{row.ir ? formatoAprox(row.ir, "k", loc) : ""}</span></span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </div>
+  </section>
+
+  <section class="r-section r-section--alt" id="eventos" aria-labelledby="eventosTitle">
+    <div class="r-wrap" style="display:grid;gap:12px">
+      <div class="d-section-head">
+        <div>
+          <p class="r-kicker">Season</p>
+          <h2 id="eventosTitle" class="r-h3">Upcoming Events</h2>
+        </div>
+      </div>
+      <ul class="r-list" id="driverEvents" hidden></ul>
+      <p class="r-empty" id="driverEventsEmpty">No upcoming events scheduled in Race Control for this driver.</p>
+    </div>
+  </section>
+
+  <section class="r-section r-section--alt" id="racesSection" hidden aria-labelledby="racesTitle">
+    <div class="r-wrap" style="display:grid;gap:16px">
+      <div class="r-head" style="margin-bottom:0">
+        <div><p class="r-kicker">iRacing</p><h2 id="racesTitle" class="r-h3">Latest 5 Road Races</h2></div>
+      </div>
+      <div class="r-scroll" id="racesWrap" hidden>
+        <table class="r-table">
+          <caption class="r-meta" style="text-align:left;padding-bottom:8px">Official iRacing public session results (Road only).</caption>
+          <thead><tr><th scope="col">Date</th><th scope="col">Series</th><th scope="col">Circuit</th><th scope="col">Car</th><th scope="col" class="num">Start → Finish</th><th scope="col" class="num">Inc.</th><th scope="col" class="num">ΔiR</th></tr></thead>
+          <tbody id="racesBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="r-section" aria-label="More drivers">
+    <div class="r-wrap" style="display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center">
+      <a href="/drivers" class="r-link">← Full Driver Roster</a>
+      <a href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer" class="r-btn r-btn--primary">Official Team Telemetry on Garage 61 ↗</a>
+    </div>
+  </section>
+
+  <script is:inline src="/assets/js/driver-page.js?v=t292" defer></script>
+  <script is:inline>
+    (function () {
+      var url = location.href;
+      var copy = document.getElementById("copyLink");
+      var native = document.getElementById("nativeShare");
+      var status = document.getElementById("copyStatus");
+      function copyFallback() {
+        var done = function () { if (status) status.textContent = "Link copied"; };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(done).catch(function () {});
+        }
+      }
+      if (copy) copy.addEventListener("click", copyFallback);
+      if (native) native.addEventListener("click", function () {
+        if (navigator.share) {
+          navigator.share({ title: document.title, url: url }).catch(function () {});
+        } else {
+          copyFallback();
+        }
+      });
+    })();
+  </script>
+</Layout>

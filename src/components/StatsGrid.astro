@@ -1,17 +1,17 @@
 ---
 import catalog from '../../public/assets/data/catalog_index.json';
+import { PILOTOS } from '../lib/pilotos';
 interface Props {
   className?: string;
 }
 
 const { className = "" } = Astro.props;
 
-// t265: cifras calculadas en build desde el catálogo real (public/assets/data/catalog_index.json).
 export const OFFICIAL_STATS = [
-  { number: catalog.total_setups.toLocaleString('es-ES'), label: "Setups en el catálogo", detail: "Archivos .STO", tag: "Setup Vault" },
-  { number: String(catalog.cars.length), label: "Vehículos con setups", detail: "Según el catálogo", tag: "Coches" },
-  { number: String(catalog.circuits.length), label: "Circuitos con setups", detail: "Según el catálogo", tag: "Circuitos" },
-  { number: "4", label: "Pilotos Oficiales", detail: "Dorsales #1, #2, #3, #4", tag: "Plantilla" }
+  { number: catalog.total_setups.toLocaleString('en-US'), label: "Setups in the Vault", detail: "Certified .STO files", tag: "Setup Vault" },
+  { number: String(catalog.cars.length), label: "Supported Cars", detail: "GT3, GTP, GT4 & Formula", tag: "Cars" },
+  { number: String(catalog.circuits.length), label: "Calibrated Circuits", detail: "Road & Endurance tracks", tag: "Circuits" },
+  { number: String(PILOTOS.length), label: "Official Drivers", detail: "Numbers #1, #2, #3", tag: "Roster" }
 ];
 ---
 

@@ -1,0 +1,31 @@
+---
+import Layout from '../layouts/Layout.astro';
+import DriverCard from '../components/DriverCard.astro';
+import TeamBand from '../components/TeamBand.astro';
+import { PILOTOS, LICENCE_UPDATED_LABEL } from '../lib/pilotos';
+
+const pageTitle = "Drivers | Muntrume Motorsport";
+const pageDescription = `Official driver roster of Muntrume Motorsport: ${PILOTOS.map(p => p.fullName).join(", ")}. Sports Car license, Road telemetry hours, and EA Sports F1 25 performance ratings.`;
+---
+
+<Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/drivers/">
+  <section class="r-section" style="border-top:0;padding-top:clamp(112px,14vw,160px)" aria-labelledby="plTitle">
+    <div class="r-wrap">
+      <div class="r-head">
+        <div>
+          <p class="r-kicker">Official Roster 2026</p>
+          <h1 id="plTitle" class="r-h2">Drivers</h1>
+          <p class="r-lead">{PILOTOS.length} official drivers. Sports Car license &amp; Road telemetry hours weighted by lap time.</p>
+          <p class="r-meta" id="licenceUpdated">Updated: <time datetime="2026-11-07">{LICENCE_UPDATED_LABEL}</time></p>
+        </div>
+      </div>
+      <TeamBand />
+      <div class="d-grid">
+        {PILOTOS.map(p => (
+          <DriverCard driver={p} heading="h2" />
+        ))}
+      </div>
+    </div>
+  </section>
+  <script is:inline src="/assets/js/home-r.js?v=t292" defer></script>
+</Layout>

@@ -1,10 +1,12 @@
 /**
- * Identidad y motor de métricas en pista (Time-Based Road Telemetry) de la plantilla.
- * El archivo fuente es src/data/pilotos.json.
- * Reglas estrictas:
- *  1. Exclusión total de trazados Oval, Speedway y Roval (solo circuitos Road, urbanos y combinados de resistencia).
- *  2. Cálculo ponderado de horas reales en pista (Hours on track) según longitud y tiempo medio por vuelta de cada circuito.
- *  3. Roles y especialidades leídos dinámicamente del objeto de configuración de cada piloto.
+ * Official Roster & Time-Based Road Telemetry + EA Sports F1 25 Asymptotic Rating Engine.
+ * Source data: src/data/pilotos.json.
+ * Strict rules:
+ *  1. Complete exclusion of Oval, Speedway and Roval tracks (only Road, street and combined endurance circuits).
+ *  2. Weighted Hours on Track calculation based on circuit length and average lap time.
+ *  3. Dynamic role & specialty read directly from each driver's configuration object.
+ *  4. EA Sports F1 25 Rating Engine (1-98, strictly < 99):
+ *     Asymptotic logarithmic curve calibrated at 1,500 iRating = 40 and 12,000 iRating = 97, hard-capped via Math.min(98, ...).
  */
 import data from "../data/pilotos.json";
 
@@ -22,6 +24,14 @@ export interface LapStat {
   lapSeconds?: number;
   timeOnTrack?: string;
   incidentsPerLap?: number;
+}
+
+export interface F1DriverStats {
+  overall: number;
+  pace: number;
+  awareness: number;
+  racecraft: number;
+  experience: number;
 }
 
 export interface Piloto {
@@ -55,36 +65,78 @@ export interface Piloto {
 const EMPTY_SOCIALS: Socials = { twitch: "", youtube: "", instagram: "", x: "" };
 
 /**
- * Filtro estricto Road: excluye cualquier trazado clasificado como Oval, Speedway o Roval,
- * conservando únicamente trazados Road, urbanos y combinados de resistencia (incluyendo Daytona Road Course / Indy Road Course).
+ * Asymptotic / logarithmic iRating -> EA Sports F1 25 Rating (1 to 98, strictly < 99).
+ * Mathematical calibration:
+ *  - Baseline: 1,500 iRating === 40
+ *  - Reference ceiling: 12,000 iRating === 97
+ *  - Strict upper cap: Math.min(98, ...) so it NEVER reaches or exceeds 99.
+ */
+export function computeAsymptoticRating(irating: number): number {
+  const safeIr = Math.max(100, Number(irating) || 1500);
+  const raw =
+    safeIr >= 1500
+      ? 40 + 57 * (Math.log(safeIr / 1500) / Math.log(12000 / 1500))
+      : Math.max(1, 40 * (safeIr / 1500));
+  return Math.min(98, Math.max(1, Math.round(raw)));
+}
+
+/**
+ * Computes the 5 EA Sports F1 25 attributes (PACE, AWARENESS, RACECRAFT, EXPERIENCE, OVERALL RATING),
+ * each strictly bounded to [1, 98] via Math.min(98, ...).
+ */
+export function computeF1DriverStats(
+  irating: number,
+  sr = 3.0,
+  trackHours = 100,
+  peakIrating?: number
+): F1DriverStats {
+  const overall = computeAsymptoticRating(irating);
+  const peakBase = computeAsymptoticRating(Math.max(irating, peakIrating || irating));
+  const safeSr = Math.min(4.99, Math.max(1.0, Number(sr) || 3.0));
+  const srNorm = (safeSr - 1.0) / 3.99; // 0..1
+  const expBoost = Math.min(18, Math.log1p(Math.max(0, trackHours)) * 2.8);
+
+  const pace = Math.min(98, Math.max(1, Math.round(peakBase + 2)));
+  const awareness = Math.min(98, Math.max(1, Math.round(overall * 0.72 + srNorm * 26)));
+  const racecraft = Math.min(98, Math.max(1, Math.round(overall * 0.86 + srNorm * 12)));
+  const experience = Math.min(98, Math.max(1, Math.round(overall * 0.78 + expBoost)));
+
+  return {
+    overall: Math.min(98, overall),
+    pace,
+    awareness,
+    racecraft,
+    experience,
+  };
+}
+
+/**
+ * Strict Road filter: excludes any track classified as Oval, Speedway or Roval,
+ * keeping only Road, street and combined endurance circuits (including Daytona Road Course / Indy Road Course).
  */
 export function isRoadTrack(name: string, category?: string): boolean {
   const clean = String(name || "").trim();
   if (!clean || clean === "..." || clean === "…") return false;
   if (category && /oval|dirt/i.test(category) && !/road/i.test(category)) return false;
 
-  // Excluir cualquier variante explícita de Oval o Roval (incluso dentro de Daytona/Charlotte/Homestead)
   if (/\b(oval|roval|superspeedway|tri-oval|short\s*track|dirt\s*oval|legends\s*oval)\b/i.test(clean)) {
     return false;
   }
 
-  // Si menciona Speedway pero NO especifica Road Course, excluir
   if (/\bspeedway\b/i.test(clean) && !/\broad(\s*course)?\b/i.test(clean)) {
     return false;
   }
 
-  // Excluir óvalos puros de NASCAR / ARCA / Indy Oval por nombre propio
-  if (/\b(talladega|martinsville|bristol|darlington|richmond|pocono|michigan|dover|phoenix|las\s*vegas\s*motor|kansas\s*speedway|texas\s*motor|atlanta\s*motor|chicagoland|kentucky|gateway|nashville\s*superspeedway|new\s*hampshire|north\s*wilkesboro|rockingham|usa\s*international|lanier|langley|oxford\s*plains|stafford|thompson|south\s*boston|irwindale|iowa|lucas\s*oil|auto\s*club|eldora|knoxville|volusia)\b/i.test(clean) && !/\broad(\s*course)?\b/i.test(clean)) {
+  if (
+    /\b(talladega|martinsville|bristol|darlington|richmond|pocono|michigan|dover|phoenix|las\s*vegas\s*motor|kansas\s*speedway|texas\s*motor|atlanta\s*motor|chicagoland|kentucky|gateway|nashville\s*superspeedway|new\s*hampshire|north\s*wilkesboro|rockingham|usa\s*international|lanier|langley|oxford\s*plains|stafford|thompson|south\s*boston|irwindale|iowa|lucas\s*oil|auto\s*club|eldora|knoxville|volusia)\b/i.test(clean) &&
+    !/\broad(\s*course)?\b/i.test(clean)
+  ) {
     return false;
   }
 
   return true;
 }
 
-/**
- * Tiempo medio por vuelta estimado en segundos (referencia GT3 / Endurance Road) para ponderar horas reales en pista.
- * Garantiza que circuitos largos como Nürburgring Combined (~8m25s) o Le Mans (~3m52s) reflejen su peso real frente a trazados cortos.
- */
 const TRACK_LAP_SECONDS_RULES: Array<[RegExp, number]> = [
   [/n[uü]rburgring\s*combined|nordschleife|24h\s*n[uü]rburgring/i, 505],
   [/le\s*mans|sarthe/i, 232],
@@ -124,18 +176,18 @@ export function estimateTrackLapSeconds(trackName: string): number {
   for (const [pattern, secs] of TRACK_LAP_SECONDS_RULES) {
     if (pattern.test(clean)) return secs;
   }
-  return 105; // Promedio estándar en circuito Road GP (~1m45s)
+  return 105;
 }
 
 export function estimateCarLapFactor(carName: string): number {
   const clean = String(carName || "").trim();
   if (/\b(gtp|lmdh|hypercar|499p|valkyrie|963|arx-06|v-series|m\s*hybrid|lmp2|p217)\b/i.test(clean)) {
-    return 0.9; // Prototipos completan vuelta en menor tiempo pero en stints largos de resistencia
+    return 0.9;
   }
   if (/\b(gt4|tcr|gr86|mx-5|clio)\b/i.test(clean)) {
     return 1.08;
   }
-  return 1.0; // GT3 / Cup baseline
+  return 1.0;
 }
 
 export function cleanTrackDisplayName(name: string): string {
@@ -164,8 +216,8 @@ function deriveDynamicSpecialty(role: string, explicitSpecialty: string | undefi
   const hasGt3 = /gt3/i.test(carNames);
   const hasGt4 = /gt4/i.test(carNames);
   if (hasGtp && hasGt3) return "GT3 & GTP Endurance";
-  if (hasGt3 && hasGt4) return "Endurance Multiclase GT3 / GT4";
-  if (hasGt3) return "Sprint & Endurance GT3";
+  if (hasGt3 && hasGt4) return "Multiclass Endurance GT3 / GT4";
+  if (hasGt3) return "GT3 Endurance & Sprint";
   return role || "Sports Car Road";
 }
 
@@ -173,7 +225,6 @@ export const LICENCE_UPDATED = data.updated;
 export const LICENCE_UPDATED_LABEL = data.updatedLabel;
 
 export const PILOTOS: Piloto[] = data.drivers.map((d) => {
-  // 1. Filtrado estricto Road + cálculo de horas reales en pista por circuito
   const roadTracks: LapStat[] = (d.topTracks || [])
     .filter((t) => isRoadTrack(t.name) && Number(t.laps) > 0)
     .map((t) => {
@@ -185,7 +236,7 @@ export const PILOTOS: Piloto[] = data.drivers.map((d) => {
         laps: t.laps,
         hours,
         lapSeconds,
-        timeOnTrack: `${hours.toLocaleString("es-ES", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} h`,
+        timeOnTrack: `${hours.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} h`,
       };
     })
     .filter((t) => t.hours >= 0.5)
@@ -195,7 +246,6 @@ export const PILOTOS: Piloto[] = data.drivers.map((d) => {
   const totalTrackSeconds = roadTracks.reduce((acc, t) => acc + t.laps * (t.lapSeconds || 105), 0);
   const weightedAvgLapSec = totalTrackSeconds > 0 ? totalTrackSeconds / totalTrackLaps : 108;
 
-  // 2. Filtrado y cálculo de horas reales en pista por coche
   const roadCars: LapStat[] = (d.topCars || [])
     .filter((c) => c && c.name && !/\b(nascar|stock\s*car|truck|sprint\s*car|midg|late\s*model)\b/i.test(c.name) && Number(c.laps) > 0)
     .map((c) => {
@@ -205,7 +255,7 @@ export const PILOTOS: Piloto[] = data.drivers.map((d) => {
         name: cleanName,
         laps: c.laps,
         hours,
-        timeOnTrack: `${hours.toLocaleString("es-ES", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} h`,
+        timeOnTrack: `${hours.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} h`,
       };
     })
     .filter((c) => c.hours >= 0.5)

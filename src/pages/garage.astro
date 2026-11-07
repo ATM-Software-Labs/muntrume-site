@@ -3,26 +3,27 @@ import Layout from '../layouts/Layout.astro';
 import catalog from '../../public/assets/data/catalog_index.json';
 import { PILOTOS } from '../lib/pilotos';
 
-const pageTitle = "Garage | Muntrume Motorsport — Setup Vault";
-const pageDescription = "Setup Vault de Muntrume Motorsport: setups .STO por coche, circuito y temporada. La descarga exige cuenta de piloto. Si el archivo se guarda en tu carpeta, no se sube.";
-const fmt = (n: number) => n.toLocaleString('es-ES');
+const pageTitle = "Garage | Muntrume Motorsport";
+const pageDescription = "Muntrume Motorsport Setup Vault: over 41,000 .STO setups by car, circuit, and season, plus Garage 61 telemetry, Team Communications, and Dynamic Setup Builder.";
+const fmt = (n: number) => n.toLocaleString('en-US');
 const figs = [
-  { n: fmt(catalog.total_setups), l: "Setups en el catálogo" },
-  { n: String(catalog.cars.length), l: "Coches" },
-  { n: String(catalog.circuits.length), l: "Circuitos" },
-  { n: String(PILOTOS.length), l: "Pilotos" },
+  { n: fmt(catalog.total_setups), l: "Setups in the Vault" },
+  { n: String(catalog.cars.length), l: "Supported Cars" },
+  { n: String(catalog.circuits.length), l: "Calibrated Circuits" },
+  { n: String(PILOTOS.length), l: "Official Drivers" },
 ];
 ---
 
 <Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/garage">
   <section class="r-section g-hero" aria-labelledby="garageTitle">
     <div class="r-wrap">
-      <p class="r-kicker">Setup Vault</p>
+      <p class="r-kicker">Setup Vault &amp; Team HQ</p>
       <h1 id="garageTitle" class="r-h2">Garage</h1>
-      <p class="r-lead">Setups .STO del equipo, por coche, circuito y temporada. Descargar exige cuenta de piloto. El archivo se queda en tu ordenador.</p>
+      <p class="r-lead">Official .STO setups organized by car, circuit, and season. Driver account required for downloads. Files write directly to your local iRacing folder.</p>
       <div class="g-actions">
-        <button type="button" class="r-btn r-btn--primary" onclick="openAuthModal('login')">Acceso de piloto</button>
-        <button type="button" class="r-btn" onclick="enterGuestPreview()">Ver catálogo</button>
+        <button type="button" class="r-btn r-btn--primary" onclick="openAuthModal('login')">Driver Sign In</button>
+        <button type="button" class="r-btn" onclick="enterGuestPreview()">Browse Catalog</button>
+        <a href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer" class="r-btn">Garage 61 Telemetry ↗</a>
       </div>
       <div class="r-figs">
         {figs.map((f) => (<div><strong class="r-num">{f.n}</strong>{f.l}</div>))}
@@ -126,17 +127,17 @@ const figs = [
   <section class="r-section" aria-labelledby="vaultTitle">
     <div class="r-wrap" style="display:grid;gap:var(--r-s3)">
       <div class="g-toolbar">
-        <div class="g-tabs" id="garageTabs" role="tablist" aria-label="Secciones del Garage">
+        <div class="g-tabs" id="garageTabs" role="tablist" aria-label="Garage Sections">
           <button type="button" role="tab" aria-selected="true" aria-controls="garageSectionSetups" id="tabBtnSetups" class="is-on" onclick="switchGarageTab('setups')">Setups</button>
-          <button type="button" role="tab" aria-selected="false" aria-controls="garageSectionTelemetry" id="tabBtnTelemetry" onclick="switchGarageTab('telemetry')">Telemetría</button>
-          <button type="button" role="tab" aria-selected="false" aria-controls="garageSectionComms" id="tabBtnComms" onclick="switchGarageTab('comms')">Comunicación</button>
-          <button type="button" role="tab" aria-selected="false" aria-controls="garageSectionBuilder" id="tabBtnBuilder" onclick="switchGarageTab('builder')">Montador</button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="garageSectionTelemetry" id="tabBtnTelemetry" onclick="switchGarageTab('telemetry')">Telemetry</button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="garageSectionComms" id="tabBtnComms" onclick="switchGarageTab('comms')">Communications</button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="garageSectionBuilder" id="tabBtnBuilder" onclick="switchGarageTab('builder')">Setup Builder</button>
         </div>
         <div class="g-session">
-          <span id="userEmailDisplay">Invitado</span>
-          <span id="userRoleBadge" class="g-badge">Catálogo</span>
-          <button type="button" id="logoutBtn" class="r-link hidden" onclick="handleLogout()">Salir</button>
-          <button type="button" id="authBtn" class="r-btn r-btn--primary r-btn--sm" onclick="openAuthModal('login')">Acceso de piloto</button>
+          <span id="userEmailDisplay">Guest</span>
+          <span id="userRoleBadge" class="g-badge">Catalog</span>
+          <button type="button" id="logoutBtn" class="r-link hidden" onclick="handleLogout()">Sign Out</button>
+          <button type="button" id="authBtn" class="r-btn r-btn--primary r-btn--sm" onclick="openAuthModal('login')">Driver Sign In</button>
         </div>
       </div>
 
@@ -204,69 +205,122 @@ const figs = [
         <div class="g-panel">
           <div class="g-panel__head">
             <div>
-              <p class="r-kicker">Datos</p>
-              <h2 class="r-h3">Telemetría</h2>
+              <p class="r-kicker">60 Hz Data &amp; Laps</p>
+              <h2 class="r-h3">Garage 61 Official Team Telemetry</h2>
             </div>
-            <a class="r-link" href="https://garage61.net/app/teams/muntrume" target="_blank" rel="noopener noreferrer">Abrir Garage 61</a>
+            <a class="r-btn r-btn--primary r-btn--sm" href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer">Open Garage 61 Team Hub ↗</a>
           </div>
-          <p>Las vueltas del equipo se consultan en Garage 61. El token personal se guarda solo en este navegador y se usa para leer vueltas.</p>
-          <button type="button" class="r-btn r-btn--sm" onclick="configureG61TokenPrompt()">Configurar token de Garage 61</button>
+          <p>Official Muntrume Motorsport lap telemetry, sector deltas, and fuel data are hosted on Garage 61 (<code style="color:#00E699">garage61.net/app/teams/muntrume-motorsport</code>). Direct access is always guaranteed below, and you can optionally link your personal Garage 61 API token in this browser.</p>
+          <div class="g-actions">
+            <a class="r-btn r-btn--primary r-btn--sm" href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer">Launch Muntrume Motorsport on Garage 61 ↗</a>
+            <button type="button" class="r-btn r-btn--sm" onclick="configureG61TokenPrompt()">Configure Personal Garage 61 Token</button>
+          </div>
         </div>
       </div>
 
       <div id="garageSectionComms" class="hidden" role="tabpanel" aria-labelledby="tabBtnComms" hidden>
         <div class="g-panel">
-          <div>
-            <p class="r-kicker">Equipo</p>
-            <h2 class="r-h3">Comunicación</h2>
+          <div class="g-panel__head">
+            <div>
+              <p class="r-kicker">Team HQ &amp; Mail</p>
+              <h2 class="r-h3">Communications &amp; Corporate Webmail</h2>
+            </div>
+            <a class="r-btn r-btn--primary r-btn--sm" href="https://mail.trujillomingorance.com" target="_blank" rel="noopener noreferrer">Corporate Webmail ↗</a>
           </div>
-          <p>Briefings de resistencia, estrategia y correo del equipo. El buzón de piloto se abre con la misma cuenta del Garage.</p>
+          <p>Endurance race briefings, stint strategy dispatches, and official corporate email (<code style="color:#00E699">mail.trujillomingorance.com</code>). The internal driver mailbox syncs automatically with your active Garage session.</p>
           <div class="g-actions">
-            <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="openAuthModal('login')">Entrar</button>
-            <a class="r-btn r-btn--sm" href="/mail">Webmail</a>
+            <a class="r-btn r-btn--primary r-btn--sm" href="https://mail.trujillomingorance.com" target="_blank" rel="noopener noreferrer">Open Corporate Webmail (mail.trujillomingorance.com) ↗</a>
+            <a class="r-btn r-btn--sm" href="/communications">Open Internal Driver Inbox →</a>
+            <button type="button" class="r-btn r-btn--sm" onclick="openAuthModal('login')">Driver Sign In</button>
           </div>
         </div>
       </div>
 
       <div id="garageSectionBuilder" class="hidden" role="tabpanel" aria-labelledby="tabBtnBuilder" hidden>
         <div class="g-panel" id="builderPanel">
-          <div>
-            <p class="r-kicker">Área de piloto</p>
-            <h2 class="r-h3" id="builderTitle">Montador de setups</h2>
-            <p>Pide una combinación del catálogo. La respuesta usa los setups del equipo. Garage 61 no permite subir un setup desde aquí.</p>
+          <div class="g-panel__head">
+            <div>
+              <p class="r-kicker">Dynamic .STO Assembler</p>
+              <h2 class="r-h3" id="builderTitle">Setup Builder</h2>
+              <p>Select a vehicle and Road circuit from the catalog or type a custom combination across Qualy, Race, Wet, and Endurance sessions.</p>
+            </div>
+            <a class="r-link" href="/setup-builder">Open Full-Screen Builder →</a>
           </div>
           <div id="builderGate">
-            <p class="r-meta">Entra con tu cuenta de piloto para usar el montador.</p>
-            <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="openAuthModal('login')">Acceso de piloto</button>
+            <p class="r-meta">Sign in with your driver account to download assembled .sto packages.</p>
+            <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="openAuthModal('login')">Driver Sign In</button>
           </div>
-          <form id="builderForm" hidden>
-            <div class="g-filters">
-              <div class="g-field">
-                <label for="builderCar">Coche del catálogo</label>
-                <select id="builderCar"><option value="">Elegir coche</option></select>
+          <form id="builderForm">
+            <div class="sb-grid">
+              <div class="sb-col">
+                <div class="sb-col__head">
+                  <span class="sb-col__step">01</span>
+                  <div>
+                    <h3 class="sb-col__title">Vehicle Selection</h3>
+                    <p class="sb-col__sub">Catalog dropdown or free-text model</p>
+                  </div>
+                </div>
+                <div class="g-field">
+                  <label for="builderCar">Catalog Car</label>
+                  <select id="builderCar"><option value="">Select car from catalog...</option></select>
+                </div>
+                <div class="g-field">
+                  <label for="builderCarText">Or type car name</label>
+                  <input id="builderCarText" type="text" autocomplete="off" placeholder="e.g. Ferrari 296 GT3, Mustang GT3" />
+                </div>
               </div>
-              <div class="g-field">
-                <label for="builderCarText">O escribe el coche</label>
-                <input id="builderCarText" type="text" autocomplete="off" placeholder="Ferrari 296 GT3" />
-              </div>
-              <div class="g-field">
-                <label for="builderTrack">Circuito del catálogo</label>
-                <select id="builderTrack"><option value="">Elegir circuito</option></select>
-              </div>
-              <div class="g-field">
-                <label for="builderTrackText">O escribe el circuito</label>
-                <input id="builderTrackText" type="text" autocomplete="off" placeholder="Spa" />
+              <div class="sb-col">
+                <div class="sb-col__head">
+                  <span class="sb-col__step">02</span>
+                  <div>
+                    <h3 class="sb-col__title">Road Circuit Selection</h3>
+                    <p class="sb-col__sub">Catalog dropdown or free-text track</p>
+                  </div>
+                </div>
+                <div class="g-field">
+                  <label for="builderTrack">Catalog Circuit</label>
+                  <select id="builderTrack"><option value="">Select circuit from catalog...</option></select>
+                </div>
+                <div class="g-field">
+                  <label for="builderTrackText">Or type circuit name</label>
+                  <input id="builderTrackText" type="text" autocomplete="off" placeholder="e.g. Spa-Francorchamps, Le Mans" />
+                </div>
               </div>
             </div>
-            <div id="builderSessions" role="group" aria-label="Sesiones" style="display:flex;flex-wrap:wrap;gap:8px">
-              <button type="button" class="g-chip" data-session="qualy" aria-pressed="true">Qualy</button>
-              <button type="button" class="g-chip" data-session="race" aria-pressed="true">Carrera</button>
-              <button type="button" class="g-chip" data-session="wet" aria-pressed="false">Mojado</button>
-              <button type="button" class="g-chip" data-session="endurance" aria-pressed="false">Endurance</button>
+            <div class="sb-sessions-box">
+              <div class="sb-col__head" style="margin-bottom:10px">
+                <span class="sb-col__step">03</span>
+                <div>
+                  <h3 class="sb-col__title">Setup Session Types</h3>
+                  <p class="sb-col__sub">Select session configurations (Qualy, Race, Wet, Endurance)</p>
+                </div>
+              </div>
+              <div id="builderSessions" class="sb-sessions-grid" role="group" aria-label="Sessions">
+                <button type="button" class="g-chip sb-chip" data-session="qualy" aria-pressed="true">
+                  <span class="sb-chip__dot"></span>
+                  <span class="sb-chip__name">Qualy</span>
+                  <span class="sb-chip__meta">Low fuel · Peak grip</span>
+                </button>
+                <button type="button" class="g-chip sb-chip" data-session="race" aria-pressed="true">
+                  <span class="sb-chip__dot"></span>
+                  <span class="sb-chip__name">Race</span>
+                  <span class="sb-chip__meta">Full tank · Race pace</span>
+                </button>
+                <button type="button" class="g-chip sb-chip" data-session="wet" aria-pressed="false">
+                  <span class="sb-chip__dot"></span>
+                  <span class="sb-chip__name">Wet</span>
+                  <span class="sb-chip__meta">Rain tyres · Wet balance</span>
+                </button>
+                <button type="button" class="g-chip sb-chip" data-session="endurance" aria-pressed="false">
+                  <span class="sb-chip__dot"></span>
+                  <span class="sb-chip__name">Endurance</span>
+                  <span class="sb-chip__meta">Multi-stint · Tyre life</span>
+                </button>
+              </div>
             </div>
             <div class="g-actions">
-              <button type="submit" id="builderSubmit" class="r-btn r-btn--primary r-btn--sm">Pedir setups</button>
-              <button type="button" id="builderDownload" class="r-btn r-btn--sm" hidden>Descargar</button>
+              <button type="submit" id="builderSubmit" class="r-btn r-btn--primary r-btn--sm">Build Setups →</button>
+              <button type="button" id="builderDownload" class="r-btn r-btn--sm" hidden>Download .STO</button>
             </div>
             <div id="builderAnswer" class="builder-md" hidden aria-live="polite"></div>
             <div id="builderSources" class="builder-sources"></div>
@@ -446,8 +500,8 @@ const figs = [
     </div>
   </div>
 
-  <script is:inline src="/assets/js/setups.js?v=t286"></script>
-  <script is:inline src="/assets/js/setup-builder.js?v=t286" defer></script>
+  <script is:inline src="/assets/js/setups.js?v=t292"></script>
+  <script is:inline src="/assets/js/setup-builder.js?v=t292" defer></script>
   <script is:inline>
     window.togglePassword = function (id, btn) {
       var input = document.getElementById(id);

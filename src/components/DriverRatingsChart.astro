@@ -15,15 +15,15 @@ const licenses = licenciasDe(slug);
 <section class="d-ratings d-reveal" id="ratings" aria-labelledby="ratingsTitle" data-ratings-root={slug}>
   <div class="d-section-head">
     <div>
-      <p class="r-kicker">Telemetría Histórica · Garage 61 &amp; iRacing</p>
-      <h2 id="ratingsTitle" class="d-block__title">Driver ratings · Evolución de iRating</h2>
+      <p class="r-kicker">Historical Telemetry · Garage 61 &amp; iRacing</p>
+      <h2 id="ratingsTitle" class="d-block__title">Driver Ratings · Historical Evolution</h2>
     </div>
-    <p class="r-meta">Pasa el cursor sobre la curva para inspeccionar cada sesión</p>
+    <p class="r-meta">Hover over the curve to inspect session ratings</p>
   </div>
 
-  <!-- Barra de filtros: Categorías (Izquierda) + Selector Dual iRating / Safety Rating (Derecha) -->
+  <!-- Filter Bar: Categories (Left) + Dual Toggle iRating / Safety Rating (Right) -->
   <div class="d-ratings__toolbar">
-    <div class="d-ratings__cats" role="tablist" aria-label="Categoría de licencia iRacing">
+    <div class="d-ratings__cats" role="tablist" aria-label="iRacing License Category">
       <button type="button" role="tab" aria-selected="false" class="d-rcat-btn" data-rcat="oval">Oval</button>
       <button type="button" role="tab" aria-selected="true" class="d-rcat-btn is-active" data-rcat="sports_car">Sports Car</button>
       <button type="button" role="tab" aria-selected="false" class="d-rcat-btn" data-rcat="formula">Formula Car</button>
@@ -31,26 +31,26 @@ const licenses = licenciasDe(slug);
       <button type="button" role="tab" aria-selected="false" class="d-rcat-btn" data-rcat="dirt_road">Dirt Road</button>
     </div>
 
-    <div class="d-ratings__metrics" role="group" aria-label="Métrica del gráfico">
+    <div class="d-ratings__metrics" role="group" aria-label="Chart Metric">
       <button type="button" class="d-rmetric-btn is-active" data-rmetric="irating" aria-pressed="true">iRating</button>
       <button type="button" class="d-rmetric-btn" data-rmetric="sr" aria-pressed="false">Safety Rating</button>
     </div>
   </div>
 
-  <!-- Tarjeta del Gráfico Temporal -->
+  <!-- Time-Series Chart Card -->
   <div class="d-ratings__card">
-    <!-- Resumen rápido de la categoría seleccionada -->
+    <!-- Quick Summary KPIs -->
     <div class="d-ratings__kpis">
       <div>
-        <span class="d-ratings__kpi-label" data-rkpi-current-label>iRating Actual</span>
+        <span class="d-ratings__kpi-label" data-rkpi-current-label>Current iRating</span>
         <strong class="d-ratings__kpi-val" data-rkpi-current>—</strong>
       </div>
       <div>
-        <span class="d-ratings__kpi-label">Máximo Histórico (Peak)</span>
+        <span class="d-ratings__kpi-label">All-Time Peak</span>
         <strong class="d-ratings__kpi-val d-ratings__kpi-val--peak" data-rkpi-peak>—</strong>
       </div>
       <div>
-        <span class="d-ratings__kpi-label">Licencia Categoría</span>
+        <span class="d-ratings__kpi-label">Category License</span>
         <strong class="d-ratings__kpi-val" data-rkpi-lic>—</strong>
       </div>
     </div>
@@ -335,10 +335,10 @@ const licenses = licenciasDe(slug);
         }, activeCoords[0]);
         var licObj = getLicInfo(currentCat);
 
-        if (kpiCurrentLabel) kpiCurrentLabel.textContent = isIr ? 'iRating Actual' : 'Safety Rating Actual';
-        if (kpiCurrent) kpiCurrent.textContent = isIr ? lastPt.val.toLocaleString('es-ES') : Number(lastPt.val).toFixed(2);
+        if (kpiCurrentLabel) kpiCurrentLabel.textContent = isIr ? 'Current iRating' : 'Current Safety Rating';
+        if (kpiCurrent) kpiCurrent.textContent = isIr ? lastPt.val.toLocaleString('en-US') : Number(lastPt.val).toFixed(2);
         if (kpiPeak) {
-          kpiPeak.textContent = (isIr ? peakPt.val.toLocaleString('es-ES') : Number(peakPt.val).toFixed(2)) + ' · ' + peakPt.label;
+          kpiPeak.textContent = (isIr ? peakPt.val.toLocaleString('en-US') : Number(peakPt.val).toFixed(2)) + ' · ' + peakPt.label;
         }
         if (kpiLic) {
           kpiLic.textContent = licObj ? (licObj.classLabel + ' · SR ' + licObj.sr) : 'Rookie · SR 2.50';

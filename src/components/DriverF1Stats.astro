@@ -1,0 +1,179 @@
+---
+import { computeF1DriverStats, type Piloto } from "../lib/pilotos";
+import { licenciaPrincipal } from "../lib/licencias";
+import { getDriverRatingHistory } from "../lib/rating-history";
+
+interface Props {
+  driver: Piloto;
+}
+
+const { driver } = Astro.props;
+const lic = licenciaPrincipal(driver.slug);
+const history = getDriverRatingHistory(driver.slug);
+const sportsCarHistory = history.sports_car || [];
+const peakIr = sportsCarHistory.length
+  ? Math.max(...sportsCarHistory.map((p) => p.irating))
+  : lic?.irating || 1500;
+const currentIr = lic?.irating || 1500;
+const currentSr = Number(lic?.sr) || 3.0;
+const trackHours = driver.totalTrackHours || 100;
+
+const f1 = computeF1DriverStats(currentIr, currentSr, trackHours, peakIr);
+
+const attributes = [
+  {
+    key: "pace",
+    label: "PACE",
+    sub: "Qualifying & Peak Lap Velocity",
+    val: f1.pace,
+  },
+  {
+    key: "awareness",
+    label: "AWARENESS",
+    sub: "Safety Rating & Incident Avoidance",
+    val: f1.awareness,
+  },
+  {
+    key: "racecraft",
+    label: "RACECRAFT",
+    sub: "Multi-class Traffic & Stint Execution",
+    val: f1.racecraft,
+  },
+  {
+    key: "experience",
+    label: "EXPERIENCE",
+    sub: "Weighted Road Hours on Track",
+    val: f1.experience,
+  },
+  {
+    key: "overall",
+    label: "OVERALL RATING",
+    sub: "Asymptotic iRating Index (1.5k = 40 · 12k = 97 · Cap < 99)",
+    val: f1.overall,
+    isOverall: true,
+  },
+];
+---
+
+<section
+  class="d-f1 d-reveal"
+  id="f1-ratings"
+  aria-labelledby={`f1Title-${driver.slug}`}
+  data-f1-root={driver.slug}
+  data-f1-ir={currentIr}
+  data-f1-sr={currentSr}
+  data-f1-hours={trackHours}
+  data-f1-peak={peakIr}
+>
+  <div class="d-section-head">
+    <div>
+      <p class="r-kicker">EA Sports F1 25 Telemetry Index</p>
+      <h2 id={`f1Title-${driver.slug}`} class="d-block__title">Driver Performance Ratings (1–98)</h2>
+      <p class="r-meta">
+        Asymptotic logarithmic calibration: <strong>1,500 iR = 40 OVR</strong> · <strong>12,000 iR = 97 OVR</strong> · Hard ceiling <code>Math.min(98, ...)</code> (&lt; 99).
+      </p>
+    </div>
+    <span class="d-f1__formula-pill">OVR = min(98, 40 + 57 · ln(iR/1500)/ln(8))</span>
+  </div>
+
+  <div class="d-f1__grid">
+    <!-- Left Card: Overall Rating Shield -->
+    <div class="d-f1__ovr-card">
+      <div class="d-f1__ovr-top">
+        <span class="d-f1__ovr-tag">OVERALL RATING</span>
+        <span class="d-f1__ovr-num-badge">{driver.dorsal}</span>
+      </div>
+      <div class="d-f1__ovr-score-wrap">
+        <strong class="d-f1__ovr-score" data-f1-val="overall">{f1.overall}</strong>
+        <span class="d-f1__ovr-max">/ 98 MAX</span>
+      </div>
+      <div class="d-f1__ovr-bar" aria-hidden="true">
+        <span data-f1-bar="overall" style={`width:${f1.overall}%`}></span>
+      </div>
+      <div class="d-f1__ovr-meta">
+        <div>
+          <span>Base iRating</span>
+          <strong data-f1-meta="ir">{currentIr.toLocaleString("en-US")}</strong>
+        </div>
+        <div>
+          <span>Safety Rating</span>
+          <strong data-f1-meta="sr">A {currentSr.toFixed(2)}</strong>
+        </div>
+        <div>
+          <span>Road Hours</span>
+          <strong>{trackHours.toFixed(1)} h</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Card: 5 Progress Attribute Bars -->
+    <div class="d-f1__bars-card">
+      {attributes.map((attr) => (
+        <div class:list={["d-f1__row", attr.isOverall && "d-f1__row--overall"]}>
+          <div class="d-f1__row-head">
+            <div>
+              <span class="d-f1__attr-name">{attr.label}</span>
+              <span class="d-f1__attr-sub">{attr.sub}</span>
+            </div>
+            <strong class="d-f1__attr-val" data-f1-val={attr.key}>{attr.val}</strong>
+          </div>
+          <div class="d-f1__track" role="progressbar" aria-label={attr.label} aria-valuemin={1} aria-valuemax={98} aria-valuenow={attr.val}>
+            <span class="d-f1__fill" data-f1-bar={attr.key} style={`width:${attr.val}%`}></span>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script is:inline>
+  (function initF1AsymptoticEngine() {
+    function computeAsymptoticRating(irating) {
+      var safeIr = Math.max(100, Number(irating) || 1500);
+      var raw = safeIr >= 1500
+        ? 40 + 57 * (Math.log(safeIr / 1500) / Math.log(12000 / 1500))
+        : Math.max(1, 40 * (safeIr / 1500));
+      return Math.min(98, Math.max(1, Math.round(raw)));
+    }
+
+    function computeF1Stats(irating, sr, trackHours, peakIr) {
+      var overall = computeAsymptoticRating(irating);
+      var peakBase = computeAsymptoticRating(Math.max(irating, peakIr || irating));
+      var safeSr = Math.min(4.99, Math.max(1.0, Number(sr) || 3.0));
+      var srNorm = (safeSr - 1.0) / 3.99;
+      var expBoost = Math.min(18, Math.log1p(Math.max(0, Number(trackHours) || 0)) * 2.8);
+
+      return {
+        overall: Math.min(98, overall),
+        pace: Math.min(98, Math.max(1, Math.round(peakBase + 2))),
+        awareness: Math.min(98, Math.max(1, Math.round(overall * 0.72 + srNorm * 26))),
+        racecraft: Math.min(98, Math.max(1, Math.round(overall * 0.86 + srNorm * 12))),
+        experience: Math.min(98, Math.max(1, Math.round(overall * 0.78 + expBoost)))
+      };
+    }
+
+    window.muntruComputeAsymptoticRating = computeAsymptoticRating;
+    window.muntruComputeF1Stats = computeF1Stats;
+
+    document.addEventListener("muntrume:driver-live-stats", function (ev) {
+      var d = (ev && ev.detail) || {};
+      var root = document.querySelector('[data-f1-root="' + d.slug + '"]');
+      if (!root || !(d.irating > 0)) return;
+      var sr = d.sr || Number(root.getAttribute("data-f1-sr")) || 3.0;
+      var hours = Number(root.getAttribute("data-f1-hours")) || 100;
+      var peak = Math.max(Number(d.irating), Number(root.getAttribute("data-f1-peak")) || 1500);
+      var stats = computeF1Stats(d.irating, sr, hours, peak);
+
+      ["overall", "pace", "awareness", "racecraft", "experience"].forEach(function (k) {
+        root.querySelectorAll('[data-f1-val="' + k + '"]').forEach(function (el) {
+          el.textContent = String(stats[k]);
+        });
+        root.querySelectorAll('[data-f1-bar="' + k + '"]').forEach(function (el) {
+          el.style.width = stats[k] + "%";
+        });
+      });
+      var irMeta = root.querySelector('[data-f1-meta="ir"]');
+      if (irMeta) irMeta.textContent = Number(d.irating).toLocaleString("en-US");
+    });
+  })();
+</script>

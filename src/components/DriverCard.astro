@@ -2,7 +2,7 @@
 import DriverHelmet from "./DriverHelmet.astro";
 import { formatoAprox, localeDeIdioma } from "../lib/formato-licencia.js";
 import { licenciaPrincipal } from "../lib/licencias";
-import { LICENCE_UPDATED_LABEL, type Piloto } from "../lib/pilotos";
+import { LICENCE_UPDATED_LABEL, computeAsymptoticRating, type Piloto } from "../lib/pilotos";
 
 interface Props {
   driver: Piloto;
@@ -14,7 +14,7 @@ const { driver, heading = "h2", headingId, hero = false } = Astro.props;
 const Tag = heading;
 const BlockTag = hero ? "h2" : "h3";
 const lic = licenciaPrincipal(driver.slug);
-const loc = localeDeIdioma("es");
+const loc = localeDeIdioma("en");
 const bio = driver.bio.trim();
 const cars = driver.favouriteCars.map((s) => s.trim()).filter(Boolean);
 const series = driver.favouriteSeries.map((s) => s.trim()).filter(Boolean);
@@ -35,6 +35,7 @@ const fav = (driver.favoriteTrack || "").trim();
 
 const srNum = Number(lic?.sr) || 3.0;
 const srProgress = Math.min(100, Math.max(12, Math.round((srNum / 4.99) * 100)));
+const ovrScore = computeAsymptoticRating(lic?.irating || 1500);
 const sparklines: Record<string, string> = {
   albertot: "M2,20 Q28,17 55,14 T95,9 T126,4",
   mateob: "M2,21 Q30,18 60,14 T98,10 T126,6",
@@ -48,7 +49,7 @@ function safeUrl(url: string) {
   try {
     const parsed = new URL(value);
     if (parsed.protocol === "https:" || parsed.protocol === "http:") return parsed.href;
-  } catch { /* vacío */ }
+  } catch { /* empty */ }
   return "";
 }
 const socials = (
@@ -72,6 +73,7 @@ const socials = (
     <Tag class="d-name" id={headingId}><span class="d-num">{driver.dorsal}</span> {driver.fullName}</Tag>
     <div class="d-badges-row">
       {lic && <p class="sc-badge"><span data-lic-f="class">{lic.classLabel}</span></p>}
+      <span class="d-ovr-pill" title="EA Sports F1 25 Asymptotic Rating (1.5k=40 · 12k=97 · Cap <99)">OVR <strong data-f="ovr">{ovrScore}</strong></span>
       {driver.specialty && <span class="d-specialty-pill" data-f="specialty">{driver.specialty}</span>}
     </div>
     <dl class="d-stats">
@@ -88,32 +90,32 @@ const socials = (
         </svg>
       </div>
       <div>
-        <dt>Horas Road</dt>
+        <dt>Road Hours</dt>
         <dd data-approx="h" data-n={sumTrackHours}>{hoursText(sumTrackHours)}</dd>
       </div>
     </dl>
-    <p class="d-meta" data-block="member_since" hidden={!since}><span>Miembro desde</span> <time data-f="member_since_value" datetime={since || undefined}>{since}</time></p>
+    <p class="d-meta" data-block="member_since" hidden={!since}><span>Member since</span> <time data-f="member_since_value" datetime={since || undefined}>{since}</time></p>
     <p class="d-meta" data-block="club" hidden={!club}><span>Club</span> <span data-f="club_value">{club}</span></p>
     {hero ? (
       <div class="d-track-cards">
         {fav && (
           <div class="d-track-card d-track-card--fav">
             <p class="d-fav">
-              <svg class="d-star" viewBox="0 0 24 24" width="16" height="16" role="img" aria-label="Circuito favorito"><path fill="currentColor" d="M12 2.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.2 6.8 18.6l1-5.8L3.6 8.7l5.8-.8z"/></svg>
-              <span class="d-fav__k">Circuito favorito</span>
+              <svg class="d-star" viewBox="0 0 24 24" width="16" height="16" role="img" aria-label="Favorite track"><path fill="currentColor" d="M12 2.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.2 6.8 18.6l1-5.8L3.6 8.7l5.8-.8z"/></svg>
+              <span class="d-fav__k">Favorite Track</span>
               <span class="d-fav__n" data-f="favorite_track">{fav}</span>
             </p>
-            <p class="r-meta">Elección personal del piloto</p>
+            <p class="r-meta">Driver's personal choice</p>
           </div>
         )}
         {topTrack && (
           <div class="d-track-card">
             <p class="d-lap">
-              <span class="d-lap__k">Circuito Road con más horas</span>
+              <span class="d-lap__k">Most Driven Road Track</span>
               <span class="d-lap__n" data-f="top_track_name">{topTrack.name}</span>
-              <span class="d-lap__v"><span data-approx="h" data-n={topTrack.hours} data-f="top_track_hours">{hoursText(topTrack.hours)}</span> <span>en pista</span></span>
+              <span class="d-lap__v"><span data-approx="h" data-n={topTrack.hours} data-f="top_track_hours">{hoursText(topTrack.hours)}</span> <span>on track</span></span>
             </p>
-            <p class="r-meta">Ponderado por tiempo medio de vuelta</p>
+            <p class="r-meta">Weighted by average lap time</p>
           </div>
         )}
       </div>
@@ -121,26 +123,26 @@ const socials = (
       <>
         {fav && (
           <p class="d-fav">
-            <svg class="d-star" viewBox="0 0 24 24" width="16" height="16" role="img" aria-label="Circuito favorito"><path fill="currentColor" d="M12 2.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.2 6.8 18.6l1-5.8L3.6 8.7l5.8-.8z"/></svg>
-            <span class="d-fav__k">Circuito favorito</span>
+            <svg class="d-star" viewBox="0 0 24 24" width="16" height="16" role="img" aria-label="Favorite track"><path fill="currentColor" d="M12 2.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.2 6.8 18.6l1-5.8L3.6 8.7l5.8-.8z"/></svg>
+            <span class="d-fav__k">Favorite Track</span>
             <span class="d-fav__n">{fav}</span>
           </p>
         )}
         {topTrack && (
           <p class="d-lap">
-            <span class="d-lap__k">Circuito Road con más horas</span>
+            <span class="d-lap__k">Most Driven Road Track</span>
             <span class="d-lap__n">{topTrack.name}</span>
-            <span class="d-lap__v"><span data-approx="h" data-n={topTrack.hours}>{hoursText(topTrack.hours)}</span> <span>en pista</span></span>
+            <span class="d-lap__v"><span data-approx="h" data-n={topTrack.hours}>{hoursText(topTrack.hours)}</span> <span>on track</span></span>
           </p>
         )}
       </>
     )}
-    {hero && <p class="r-meta" id="licenceUpdated">Actualizado: <time datetime="2026-11-07">{LICENCE_UPDATED_LABEL}</time></p>}
+    {hero && <p class="r-meta" id="licenceUpdated">Updated: <time datetime="2026-11-07">{LICENCE_UPDATED_LABEL}</time></p>}
     <div class="d-block" data-block="bio" hidden={!bio}>
       <p class="d-bio" data-f="bio">{bio}</p>
     </div>
     <div class="d-block" data-block="cars" hidden={!cars.length}>
-      <BlockTag class="d-block__title">Coches</BlockTag>
+      <BlockTag class="d-block__title">Cars</BlockTag>
       <ul data-list="cars">{cars.map((item) => <li>{item}</li>)}</ul>
     </div>
     <div class="d-block" data-block="series" hidden={!series.length}>
@@ -148,7 +150,7 @@ const socials = (
       <ul data-list="series">{series.map((item) => <li>{item}</li>)}</ul>
     </div>
     <div class="d-block" data-block="achievements" hidden={!achievements.length}>
-      <BlockTag class="d-block__title">Logros</BlockTag>
+      <BlockTag class="d-block__title">Achievements</BlockTag>
       <ul data-list="achievements">{achievements.map((item) => <li>{item}</li>)}</ul>
     </div>
     <div class="d-block" data-block="socials" hidden={!socials.length}>
@@ -159,7 +161,7 @@ const socials = (
     {!hero && (
       <details class="d-telemetry-expand">
         <summary class="d-expand-summary">
-          <span>Desglose Road ({tracks.length} circuitos)</span>
+          <span>Road Breakdown ({tracks.length} circuits)</span>
           <span class="d-chevron">▾</span>
         </summary>
         <div class="d-expand-content">
@@ -176,7 +178,7 @@ const socials = (
     )}
     {!hero && (
       <div class="d-actions-row">
-        <a class="r-link d-card__link" href={`/d/${driver.slug}/`}>Ver ficha completa →</a>
+        <a class="r-link d-card__link" href={`/drivers/${driver.slug}/`}>View full profile →</a>
       </div>
     )}
   </div>
@@ -184,18 +186,18 @@ const socials = (
     <div class="d-laps">
       <section id="circuitos" aria-labelledby={`${driver.slug}-tracks`} class="d-bars-panel">
         <div class="d-bars-head">
-          <h2 id={`${driver.slug}-tracks`} class="d-block__title">Circuitos Road (Horas en pista)</h2>
-          <span class="r-meta">{tracks.length} trazados · Solo Road</span>
+          <h2 id={`${driver.slug}-tracks`} class="d-block__title">Road Circuits (Hours on track)</h2>
+          <span class="r-meta">{tracks.length} circuits · Road only</span>
         </div>
         <ol class="d-bars" data-telemetry-tracks={driver.slug} id={`tracksList-${driver.slug}`}>
           {tracks.map((item, idx) => (
             <li data-track={item.name} data-extra-bar={idx >= 5 ? "true" : undefined} hidden={idx >= 5}>
               <span class="d-bars__name">{item.name}</span>
               <span class="d-bars__val">
-                <span data-approx="h" data-n={item.hours}>{hoursText(item.hours)}</span> <span>en pista</span>
-                {item.incidentsPerLap != null ? ` · ${item.incidentsPerLap}x/vta` : ""}
+                <span data-approx="h" data-n={item.hours}>{hoursText(item.hours)}</span> <span>on track</span>
+                {item.incidentsPerLap != null ? ` · ${item.incidentsPerLap}x/lap` : ""}
               </span>
-              <span class="d-bars__share">{share(item.hours, sumTrackHours)}% <span>del total</span></span>
+              <span class="d-bars__share">{share(item.hours, sumTrackHours)}% <span>of total</span></span>
               <span class="d-bar" aria-hidden="true"><span style={`width:${barWidth(item.hours, maxTrackHours)}%`}></span></span>
             </li>
           ))}
@@ -206,24 +208,24 @@ const socials = (
             class="d-bars-toggle"
             data-toggle-bars={`tracksList-${driver.slug}`}
             data-total-count={tracks.length}
-            data-label-unit="circuitos Road"
+            data-label-unit="Road circuits"
             aria-expanded="false"
           >
-            Ver lista completa ({tracks.length} circuitos Road) ▾
+            View all ({tracks.length} Road circuits) ▾
           </button>
         )}
       </section>
       <section id="coches" aria-labelledby={`${driver.slug}-cars`} class="d-bars-panel">
         <div class="d-bars-head">
-          <h2 id={`${driver.slug}-cars`} class="d-block__title">Coches habituales (Horas en pista)</h2>
-          <span class="r-meta">{usedCars.length} unidades · Garage 61</span>
+          <h2 id={`${driver.slug}-cars`} class="d-block__title">Primary Cars (Hours on track)</h2>
+          <span class="r-meta">{usedCars.length} cars · Garage 61</span>
         </div>
         <ol class="d-bars" data-telemetry-cars={driver.slug} id={`carsList-${driver.slug}`}>
           {usedCars.map((item, idx) => (
             <li data-car={item.name} data-extra-bar={idx >= 5 ? "true" : undefined} hidden={idx >= 5}>
               <span class="d-bars__name">{item.name}</span>
-              <span class="d-bars__val"><span data-approx="h" data-n={item.hours}>{hoursText(item.hours)}</span> <span>en pista</span></span>
-              <span class="d-bars__share">{share(item.hours, sumCarHours)}% <span>del total</span></span>
+              <span class="d-bars__val"><span data-approx="h" data-n={item.hours}>{hoursText(item.hours)}</span> <span>on track</span></span>
+              <span class="d-bars__share">{share(item.hours, sumCarHours)}% <span>of total</span></span>
               <span class="d-bar" aria-hidden="true"><span style={`width:${barWidth(item.hours, maxCarHours)}%`}></span></span>
             </li>
           ))}
@@ -234,14 +236,14 @@ const socials = (
             class="d-bars-toggle"
             data-toggle-bars={`carsList-${driver.slug}`}
             data-total-count={usedCars.length}
-            data-label-unit="coches"
+            data-label-unit="cars"
             aria-expanded="false"
           >
-            Ver lista completa ({usedCars.length} coches) ▾
+            View all ({usedCars.length} cars) ▾
           </button>
         )}
       </section>
-      <p class="r-meta d-laps__src">Telemetría Road ponderada por tiempo de vuelta en Garage 61 · Óvalos excluidos · nov 2026</p>
+      <p class="r-meta d-laps__src">Road telemetry weighted by average circuit lap time on Garage 61 · Ovals excluded · Nov 2026</p>
     </div>
   )}
 </article>

@@ -20,8 +20,8 @@ interface Props {
 const siteOrigin = Astro.site ? Astro.site.origin : (Astro.url ? Astro.url.origin : "https://muntru.me");
 
 const {
-  title = "Muntrume Motorsport | iRacing Sim Racing Team Barcelona - Setup Vault & Telemetry",
-  description = `Equipo de sim racing de Sant Andreu, Barcelona. Más de 41.000 setups .STO y ${PILOTOS.length} pilotos oficiales en iRacing.`,
+  title = "Muntrume Motorsport | Official iRacing Sim Racing Team — Setup Vault & Telemetry",
+  description = `Official iRacing sim racing team based in Sant Andreu, Barcelona. Over 41,000 .STO setups, Garage 61 telemetry, and ${PILOTOS.length} official drivers.`,
   canonical = Astro.url.href,
   ogImage = `${siteOrigin}/assets/img/og-home.jpg`,
   ogType = "website",
@@ -38,13 +38,13 @@ function hreflangSet(href: string) {
     u.searchParams.delete("lang");
     u.hash = "";
     base = u.toString();
-  } catch { /* usa el href tal cual */ }
+  } catch { /* keep href as is */ }
   const alt = (lang: string) => {
     const u = new URL(base);
-    if (lang !== "es") u.searchParams.set("lang", lang);
+    if (lang !== "en") u.searchParams.set("lang", lang);
     return u.toString();
   };
-  return { es: alt("es"), en: alt("en"), ca: alt("ca"), fr: alt("fr") };
+  return { en: alt("en"), es: alt("es"), ca: alt("ca"), fr: alt("fr") };
 }
 const langs = hreflangSet(canonical);
 
@@ -58,7 +58,7 @@ const defaultSchema = {
       "alternateName": ["Muntrume", "MRT Sim Racing", "Muntrume Racing Team"],
       "url": `${siteOrigin}/`,
       "sport": "Sim Racing (iRacing)",
-      "description": `Equipo de sim racing de Sant Andreu, Barcelona. Más de 41.000 setups .STO y ${PILOTOS.length} pilotos oficiales en iRacing.`,
+      "description": `Official iRacing sim racing team based in Sant Andreu, Barcelona. Over 41,000 .STO setups and ${PILOTOS.length} official drivers.`,
       "logo": {
         "@type": "ImageObject",
         "url": `${siteOrigin}/assets/img/icon-512.png`,
@@ -68,36 +68,36 @@ const defaultSchema = {
       "image": `${siteOrigin}/assets/img/og-home.jpg`,
       "location": {
         "@type": "Place",
-        "name": "Sede Central Muntrume Motorsport",
+        "name": "Muntrume Motorsport HQ",
         "address": {
-          "@type": "PostalAddress",
+          "type": "PostalAddress",
           "addressLocality": "Sant Andreu, Barcelona",
-          "addressRegion": "Cataluña",
+          "addressRegion": "Catalonia",
           "addressCountry": "ES"
         }
       },
       "founder": {
         "@type": "Person",
         "name": "Alberto Trujillo Mingorance",
-        "url": `${siteOrigin}/d/albertot/`
+        "url": `${siteOrigin}/drivers/albertot/`
       },
       "member": PILOTOS.map((p) => ({
         "@type": "Person",
         "name": p.fullName,
         "jobTitle": p.role,
-        "url": `${siteOrigin}/d/${p.slug}/`
+        "url": `${siteOrigin}/drivers/${p.slug}/`
       })),
       "knowsAbout": [
         "iRacing",
         "Sim Racing",
-        "Setups iRacing",
-                "GT3 Endurance",
+        "iRacing Setups",
+        "GT3 Endurance",
         "GTP Hypercars",
         "Motorsport Engineering"
       ],
       "sameAs": [
         "https://discord.gg/ehX6B8JUtE",
-        "https://garage61.net/app/teams/muntrume",
+        "https://garage61.net/app/teams/muntrume-motorsport",
         "https://ai.trujillomingorance.com",
         "https://github.com/atrumin16/muntrume-site"
       ]
@@ -107,7 +107,7 @@ const defaultSchema = {
       "@id": `${siteOrigin}/#website`,
       "name": "Muntrume Motorsport",
       "url": "https://muntru.me/",
-      "inLanguage": ["es-ES", "en-US", "ca-ES", "fr-FR"],
+      "inLanguage": ["en-US", "es-ES", "ca-ES", "fr-FR"],
       "publisher": {
         "@id": "https://muntru.me/#org"
       }
@@ -119,7 +119,7 @@ const finalSchema = schemaJson || defaultSchema;
 ---
 
 <!DOCTYPE html>
-<html lang="es" class="dark scroll-smooth" data-theme="dark">
+<html lang="en" class="dark scroll-smooth max-w-full overflow-x-hidden" data-theme="dark">
 <head>
   <script is:inline>
     (function() {
@@ -146,25 +146,25 @@ const finalSchema = schemaJson || defaultSchema;
   
   <title>{title}</title>
   <meta name="description" content={description} />
-  <meta name="keywords" content="setups iracing, telemetria iracing, muntrume motorsport, setups garage 61, descargar setups iracing, iracing setups gratis, sim racing barcelona, setups gt3, setups gtp, iracing setup vault" />
+  <meta name="keywords" content="iracing setups, iracing telemetry, muntrume motorsport, garage 61 setups, download iracing setups, free iracing setups, sim racing barcelona, gt3 setups, gtp setups, iracing setup vault" />
   <meta name="author" content="Muntrume Motorsport · Alberto Trujillo Mingorance" />
   <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"} />
-  <link rel="canonical" href={langs.es} />
-  <link rel="alternate" hreflang="es" href={langs.es} />
+  <link rel="canonical" href={langs.en} />
   <link rel="alternate" hreflang="en" href={langs.en} />
+  <link rel="alternate" hreflang="es" href={langs.es} />
   <link rel="alternate" hreflang="ca" href={langs.ca} />
   <link rel="alternate" hreflang="fr" href={langs.fr} />
-  <link rel="alternate" hreflang="x-default" href={langs.es} />
+  <link rel="alternate" hreflang="x-default" href={langs.en} />
 
   <!-- Open Graph / Social Media -->
   <meta property="og:type" content={ogType} />
   <meta property="og:title" content={title} />
   <meta property="og:description" content={description} />
-  <meta property="og:url" content={langs.es} />
+  <meta property="og:url" content={langs.en} />
   <meta property="og:image" content={ogImage} />
   <meta property="og:site_name" content="Muntrume Motorsport" />
-  <meta property="og:locale" content="es_ES" />
-  <meta property="og:locale:alternate" content="en_US" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:locale:alternate" content="es_ES" />
   <meta property="og:locale:alternate" content="ca_ES" />
   <meta property="og:locale:alternate" content="fr_FR" />
 
@@ -194,9 +194,9 @@ const finalSchema = schemaJson || defaultSchema;
   <link rel="stylesheet" href="/assets/fonts/fonts.css?v=t264" />
   <slot name="head" />
 
-  <link rel="stylesheet" href="/assets/css/tailwind.min.css?v=26s5.3" />
+  <link rel="stylesheet" href="/assets/css/tailwind.min.css?v=26s5.4" />
   <link rel="stylesheet" href="/assets/css/mobile.css?v=t265" />
-  <link rel="stylesheet" href="/assets/css/racing.css?v=t290" />
+  <link rel="stylesheet" href="/assets/css/racing.css?v=t292" />
 
   <!-- Core Dark Racing System CSS -->
   <style is:global>
@@ -291,9 +291,9 @@ const finalSchema = schemaJson || defaultSchema;
   <!-- Core Scripts -->
   <script is:inline src="/assets/js/vpfix.js?v=m9"></script>
   <script is:inline set:html={`window.muntruFormato=${formatoAprox.toString()};window.muntruLocale=${localeDeIdioma.toString()};`}></script>
-  <script is:inline src="/assets/js/i18n.js?v=t284"></script>
+  <script is:inline src="/assets/js/i18n.js?v=t292"></script>
 </head>
-<body class="bg-[#080C0A] text-neutral-100 antialiased selection:bg-[#00E699] selection:text-neutral-950 font-sans min-h-screen flex flex-col justify-between relative">
+<body class="bg-[#080C0A] text-neutral-100 antialiased selection:bg-[#00E699] selection:text-neutral-950 font-sans min-h-screen flex flex-col justify-between relative max-w-full overflow-x-hidden">
   
   <!-- Subtle MoTeC Telemetry Waveform & Circuit Trace Background (3.5% opacity) -->
   <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-[0.035]" aria-hidden="true">

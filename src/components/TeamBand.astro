@@ -7,13 +7,13 @@ import { formatoAprox, localeDeIdioma } from "../lib/formato-licencia.js";
 const totalHours = Math.round(PILOTOS.reduce((sum, driver) => sum + driver.totalTrackHours, 0) * 10) / 10;
 const irRows = PILOTOS.map((d) => licenciaPrincipal(d.slug)?.irating ?? 0).filter((n) => n > 0);
 const avgIr = irRows.length ? Math.round(irRows.reduce((a, b) => a + b, 0) / irRows.length) : 0;
-const loc = localeDeIdioma("es");
-const setups = catalog.total_setups.toLocaleString("es-ES");
+const loc = localeDeIdioma("en");
+const setups = catalog.total_setups.toLocaleString("en-US");
 ---
-<section class="d-band d-reveal" aria-label="Cifras del equipo">
-  <div><strong>{PILOTOS.length}</strong><span>Pilotos en activo</span></div>
-  <div><strong data-approx="h" data-n={totalHours}>{formatoAprox(totalHours, "h", loc)}</strong><span>Horas en pista Road (Garage 61)</span></div>
-  <div><strong id="teamAvgIr" data-approx="k" data-n={avgIr}>{formatoAprox(avgIr, "k", loc)}</strong><span>iRating medio Sports Car</span></div>
-  <div><strong>{setups}</strong><span>Setups en el catálogo</span></div>
-  <div id="nextEventStat" hidden><strong data-next-title></strong><time data-next-when></time><span>Próximo evento</span></div>
+<section class="d-band d-reveal" aria-label="Team Telemetry Figures">
+  <div><strong>{PILOTOS.length}</strong><span>Active Drivers</span></div>
+  <div><strong data-approx="h" data-n={totalHours}>{formatoAprox(totalHours, "h", loc)}</strong><span>Road Hours on Track (Garage 61)</span></div>
+  <div><strong id="teamAvgIr" data-approx="k" data-n={avgIr}>{formatoAprox(avgIr, "k", loc)}</strong><span>Avg Sports Car iRating</span></div>
+  <div><strong>{setups}</strong><span>Setups in the Vault</span></div>
+  <div id="nextEventStat" hidden><strong data-next-title></strong><time data-next-when></time><span>Next Event</span></div>
 </section>

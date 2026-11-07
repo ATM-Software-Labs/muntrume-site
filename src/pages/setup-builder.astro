@@ -1,0 +1,142 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const pageTitle = "Setup Builder | Muntrume Motorsport";
+const pageDescription = "Dynamic iRacing Setup Builder by Muntrume Motorsport. Select a car and Road circuit from the 41,000+ .STO Vault or type a custom combination across Qualy, Race, Wet, and Endurance sessions.";
+---
+
+<Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/setup-builder">
+  <section class="pt-24 pb-16 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 max-w-full overflow-x-hidden">
+    <!-- Top Header -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-[#1E2A26]">
+      <div class="space-y-2">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#121A17] border border-[#00E699]/40 text-[#00E699] text-[11px] font-mono uppercase tracking-wider">
+          <span class="w-2 h-2 rounded-full bg-[#00E699] animate-pulse"></span>
+          <span>DYNAMIC .STO ASSEMBLER · 41,016 SETUPS</span>
+        </div>
+        <h1 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight font-display uppercase">
+          DYNAMIC <span class="text-[#00E699]">SETUP BUILDER</span>
+        </h1>
+        <p class="text-xs sm:text-sm text-[#9AA8A3] max-w-2xl leading-relaxed">
+          Combine catalog vehicles and Road circuits with free-text overrides to assemble tailored qualifying, race, wet, and endurance setup packages.
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+        <a
+          href="/garage"
+          class="px-3.5 py-2.5 rounded-xl bg-[#121A17] border border-[#1E2A26] hover:border-[#00E699]/60 text-xs font-mono text-neutral-200 hover:text-[#00E699] transition"
+        >
+          ← Back to Garage Vault
+        </a>
+        <a
+          href="/ai"
+          class="px-3.5 py-2.5 rounded-xl bg-[#121A17] border border-[#1E2A26] hover:border-[#00E699]/60 text-xs font-mono text-[#00E699] transition"
+        >
+          Open AI Copilot →
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Symmetrical Setup Builder Card -->
+    <div class="g-panel p-6 sm:p-8 rounded-2xl bg-[#121A17] border border-[#1E2A26] space-y-6" id="builderPanel">
+      <div id="builderGate" class="p-4 rounded-xl bg-[#080C0A] border border-[#1E2A26] flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5 text-xs font-mono text-[#9AA8A3]">
+          <span class="w-2 h-2 rounded-full bg-[#00E699]"></span>
+          <span>Sign in with your official driver account in the Garage to download assembled <code>.sto</code> packages directly.</span>
+        </div>
+        <a href="/garage" class="r-btn r-btn--primary r-btn--sm">Driver Sign In</a>
+      </div>
+
+      <form id="builderForm" class="space-y-6">
+        <!-- Symmetrical 2x2 Grid: Car Select + Car Free Text | Circuit Select + Circuit Free Text -->
+        <div class="sb-grid">
+          <!-- Column 1: Vehicle Selection -->
+          <div class="sb-col">
+            <div class="sb-col__head">
+              <span class="sb-col__step">01</span>
+              <div>
+                <h2 class="sb-col__title">Vehicle Selection</h2>
+                <p class="sb-col__sub">Choose from the 105 Vault cars or type a model</p>
+              </div>
+            </div>
+            <div class="g-field">
+              <label for="builderCar">Catalog Car</label>
+              <select id="builderCar"><option value="">Select car from catalog...</option></select>
+            </div>
+            <div class="g-field">
+              <label for="builderCarText">Or type car name (Free text)</label>
+              <input id="builderCarText" type="text" autocomplete="off" placeholder="e.g. Ferrari 296 GT3, Mustang GT3, Valkyrie GTP" />
+            </div>
+          </div>
+
+          <!-- Column 2: Road Circuit Selection -->
+          <div class="sb-col">
+            <div class="sb-col__head">
+              <span class="sb-col__step">02</span>
+              <div>
+                <h2 class="sb-col__title">Road Circuit Selection</h2>
+                <p class="sb-col__sub">Choose from the 127 calibrated tracks or type a circuit</p>
+              </div>
+            </div>
+            <div class="g-field">
+              <label for="builderTrack">Catalog Circuit</label>
+              <select id="builderTrack"><option value="">Select circuit from catalog...</option></select>
+            </div>
+            <div class="g-field">
+              <label for="builderTrackText">Or type circuit name (Free text)</label>
+              <input id="builderTrackText" type="text" autocomplete="off" placeholder="e.g. Spa-Francorchamps, Le Mans, Watkins Glen" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 03: Structured Session Type Selectors (Qualy, Race, Wet, Endurance) -->
+        <div class="sb-sessions-box">
+          <div class="sb-col__head" style="margin-bottom:12px">
+            <span class="sb-col__step">03</span>
+            <div>
+              <h2 class="sb-col__title">Setup Session Types</h2>
+              <p class="sb-col__sub">Toggle one or more session configurations to include in the build</p>
+            </div>
+          </div>
+          <div id="builderSessions" class="sb-sessions-grid" role="group" aria-label="Setup Session Types">
+            <button type="button" class="g-chip sb-chip" data-session="qualy" aria-pressed="true">
+              <span class="sb-chip__dot"></span>
+              <span class="sb-chip__name">Qualy</span>
+              <span class="sb-chip__meta">Low fuel · Peak grip</span>
+            </button>
+            <button type="button" class="g-chip sb-chip" data-session="race" aria-pressed="true">
+              <span class="sb-chip__dot"></span>
+              <span class="sb-chip__name">Race</span>
+              <span class="sb-chip__meta">Full tank · Consistent balance</span>
+            </button>
+            <button type="button" class="g-chip sb-chip" data-session="wet" aria-pressed="false">
+              <span class="sb-chip__dot"></span>
+              <span class="sb-chip__name">Wet</span>
+              <span class="sb-chip__meta">Rain tyres · Softened ARB</span>
+            </button>
+            <button type="button" class="g-chip sb-chip" data-session="endurance" aria-pressed="false">
+              <span class="sb-chip__dot"></span>
+              <span class="sb-chip__name">Endurance</span>
+              <span class="sb-chip__meta">Multi-stint · Tyre life</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Submit & Download Actions -->
+        <div class="g-actions" style="justify-content:space-between;padding-top:8px;border-top:1px solid var(--r-line)">
+          <span class="r-meta">Powered by Muntrume Setup Vault &amp; Trujillo AI Engineering</span>
+          <div style="display:flex;flex-wrap:wrap;gap:10px">
+            <button type="submit" id="builderSubmit" class="r-btn r-btn--primary">Build Setup Package →</button>
+            <button type="button" id="builderDownload" class="r-btn" hidden>Download .STO Package</button>
+          </div>
+        </div>
+
+        <div id="builderAnswer" class="builder-md" hidden aria-live="polite"></div>
+        <div id="builderSources" class="builder-sources"></div>
+      </form>
+    </div>
+  </section>
+
+  <script is:inline src="/assets/js/setup-builder.js?v=t292" defer></script>
+</Layout>

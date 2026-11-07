@@ -5,14 +5,14 @@ import TeamBand from '../components/TeamBand.astro';
 import { PILOTOS, LICENCE_UPDATED_LABEL } from '../lib/pilotos';
 import catalog from '../../public/assets/data/catalog_index.json';
 
-const pageTitle = "Muntrume Motorsport | Equipo de sim racing en iRacing — Barcelona";
-const pageDescription = "Muntrume Motorsport: equipo de sim racing de Sant Andreu (Barcelona) en iRacing. Pilotos oficiales, calendario, Setup Vault con más de 41.000 setups y sala de prensa.";
-const fmt = (n: number) => n.toLocaleString('es-ES');
+const pageTitle = "Muntrume Motorsport | Official iRacing Sim Racing Team — Barcelona";
+const pageDescription = "Muntrume Motorsport: official iRacing sim racing team based in Sant Andreu, Barcelona. Official drivers, race calendar, Setup Vault with over 41,000 .STO setups, Garage 61 telemetry, and press room.";
+const fmt = (n: number) => n.toLocaleString('en-US');
 const figs = [
-  { n: String(PILOTOS.length), l: "Pilotos oficiales" },
-  { n: fmt(catalog.total_setups), l: "Setups en el catálogo" },
-  { n: String(catalog.cars.length), l: "Coches" },
-  { n: String(catalog.circuits.length), l: "Circuitos" },
+  { n: String(PILOTOS.length), l: "Official Drivers" },
+  { n: fmt(catalog.total_setups), l: "Setups in the Vault" },
+  { n: String(catalog.cars.length), l: "Supported Cars" },
+  { n: String(catalog.circuits.length), l: "Calibrated Circuits" },
 ];
 ---
 
@@ -28,11 +28,12 @@ const figs = [
     </picture>
     <div class="r-wrap">
       <p class="r-kicker">Muntrume Motorsport · Sant Andreu, Barcelona</p>
-      <h1 id="heroTitle" class="r-h1">Sim racing con método.</h1>
-      <p class="r-lead">Equipo de sim racing en iRacing. Preparación, setups y trabajo de equipo para competir en GT3, prototipos y resistencia.</p>
+      <h1 id="heroTitle" class="r-h1">Engineering-driven sim racing.</h1>
+      <p class="r-lead">Official iRacing endurance and sprint team. Telemetry analysis, .STO setup engineering, and coordinated teamwork across GT3, GTP prototypes, and endurance events.</p>
       <div class="r-hero__cta">
-        <a href="/pilotos" class="r-btn r-btn--primary">Conoce a los pilotos</a>
-        <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer" class="r-btn r-btn--ghost">Únete en Discord</a>
+        <a href="/drivers" class="r-btn r-btn--primary">Meet the Drivers</a>
+        <a href="/garage" class="r-btn r-btn--ghost">Enter Setup Vault</a>
+        <a href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer" class="r-btn r-btn--ghost">Garage 61 Telemetry ↗</a>
       </div>
       <div class="r-hero__meta">
         {figs.map(f => (<div><strong>{f.n}</strong>{f.l}</div>))}
@@ -40,17 +41,17 @@ const figs = [
     </div>
   </section>
 
-  <!-- 2 · PILOTOS -->
+  <!-- 2 · DRIVERS -->
   <section class="r-section" aria-labelledby="driversTitle">
     <div class="r-wrap">
       <div class="r-head">
         <div>
-          <p class="r-kicker">Plantilla 2026</p>
-          <h2 id="driversTitle" class="r-h2">Pilotos</h2>
+          <p class="r-kicker">Official Roster 2026</p>
+          <h2 id="driversTitle" class="r-h2">Drivers</h2>
         </div>
-        <a href="/pilotos" class="r-link">Ver plantilla</a>
+        <a href="/drivers" class="r-link">View Full Roster →</a>
       </div>
-      <p class="r-meta" id="licenceUpdated">Actualizado: <time datetime="2026-11-06">{LICENCE_UPDATED_LABEL}</time></p>
+      <p class="r-meta" id="licenceUpdated">Updated: <time datetime="2026-11-07">{LICENCE_UPDATED_LABEL}</time></p>
       <TeamBand />
       <div class="d-grid">
         {PILOTOS.map(p => (
@@ -60,52 +61,53 @@ const figs = [
     </div>
   </section>
 
-  <!-- 3 · CALENDARIO (solo eventos reales de Race Control) -->
+  <!-- 3 · CALENDAR -->
   <section class="r-section r-section--alt" aria-labelledby="calTitle">
     <div class="r-wrap">
       <div class="r-head">
         <div>
-          <p class="r-kicker">Temporada</p>
-          <h2 id="calTitle" class="r-h2">Calendario</h2>
+          <p class="r-kicker">Season</p>
+          <h2 id="calTitle" class="r-h2">Race Calendar</h2>
         </div>
       </div>
       <ul class="r-list" id="calList" hidden></ul>
-      <p class="r-empty" id="calEmpty">No hay próximos eventos publicados. El calendario se actualiza desde Race Control.</p>
+      <p class="r-empty" id="calEmpty">No upcoming events published yet. The calendar syncs automatically from Race Control.</p>
     </div>
   </section>
 
-  <!-- 4 · EL EQUIPO / VALORES -->
+  <!-- 4 · THE TEAM / METHODOLOGY -->
   <section class="r-section" aria-labelledby="aboutTitle">
     <div class="r-wrap">
       <div class="r-head">
         <div>
-          <p class="r-kicker">El equipo</p>
-          <h2 id="aboutTitle" class="r-h2">Quiénes somos</h2>
-          <p class="r-lead">Un equipo de amigos de Sant Andreu y Costa Rica que compite en iRacing con la organización de un equipo profesional: preparación, datos y comunicación en carrera.</p>
+          <p class="r-kicker">The Team</p>
+          <h2 id="aboutTitle" class="r-h2">Who We Are</h2>
+          <p class="r-lead">A racing squad from Sant Andreu (Barcelona) and Costa Rica competing on iRacing with professional engineering methodology: setup preparation, verified telemetry data, and live race communications.</p>
         </div>
       </div>
       <div class="r-cols">
-        <div class="r-value"><h3 class="r-h3">Preparación</h3><p>Setups organizados por coche, circuito y temporada en el Setup Vault del equipo, accesible solo para pilotos.</p></div>
-        <div class="r-value"><h3 class="r-h3">Datos</h3><p>Las cifras de los pilotos se publican solo cuando vienen de iRacing. Nada inventado, nada estimado.</p></div>
-        <div class="r-value"><h3 class="r-h3">Equipo</h3><p>Comunicación por radio en Discord, estrategia compartida y relevos coordinados en carreras de resistencia.</p></div>
+        <div class="r-value"><h3 class="r-h3">Preparation</h3><p>Over 41,000 .STO setups organized by car, circuit, and season in the team Setup Vault and Dynamic Setup Builder.</p></div>
+        <div class="r-value"><h3 class="r-h3">Telemetry Data</h3><p>Road-only telemetry metrics weighted by real hours on track and verified iRacing licenses via Garage 61.</p></div>
+        <div class="r-value"><h3 class="r-h3">Teamwork</h3><p>Live Discord race radio, shared fuel &amp; tyre stint strategies, and coordinated driver swaps in 24h endurance races.</p></div>
       </div>
     </div>
   </section>
 
-  <!-- 5 · PRENSA / CONTACTO -->
+  <!-- 5 · PRESS ROOM & CONTACT -->
   <section class="r-section r-section--alt" aria-labelledby="pressTitle">
     <div class="r-wrap r-cols" style="align-items:end">
       <div style="display:grid;gap:16px">
-        <p class="r-kicker">Prensa</p>
-        <h2 id="pressTitle" class="r-h2">Sala de prensa</h2>
-        <p class="r-lead">Crónicas, comunicados y novedades del equipo.</p>
+        <p class="r-kicker">Media</p>
+        <h2 id="pressTitle" class="r-h2">Press Room &amp; AI Copilot</h2>
+        <p class="r-lead">Race dispatches, motorsport news wire, and our Groq LPU race engineering AI Copilot.</p>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:12px">
-        <a href="/news" class="r-btn r-btn--primary">Ver noticias</a>
-        <a href="/contact" class="r-btn" style="border-color:var(--r-line-2);color:var(--r-text)">Contacto</a>
+        <a href="/news" class="r-btn r-btn--primary">Press Room</a>
+        <a href="/ai" class="r-btn" style="border-color:var(--r-line-2);color:var(--r-text)">AI Copilot</a>
+        <a href="/paddock" class="r-btn" style="border-color:var(--r-line-2);color:var(--r-text)">Paddock</a>
       </div>
     </div>
   </section>
 
-  <script is:inline src="/assets/js/home-r.js?v=t288" defer></script>
+  <script is:inline src="/assets/js/home-r.js?v=t292" defer></script>
 </Layout>

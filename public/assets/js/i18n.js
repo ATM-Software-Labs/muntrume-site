@@ -1,9 +1,9 @@
-/* Muntrume i18n: traducción en el navegador con diccionarios propios (assets/i18n/*.json).
-   Idioma: ?lang= → localStorage → navigator.languages → es. Sin servicios de terceros. */
+/* Muntrume i18n: browser dictionary translation (assets/i18n/*.json).
+   Default language: English (en). Explicit ?lang= or localStorage overrides. */
 (function () {
   "use strict";
-  var LANGS = { es: "Español", en: "English", ca: "Català", fr: "Français" };
-  var KEY = "mm_lang", V = "t284";
+  var LANGS = { en: "English", es: "Español", ca: "Català", fr: "Français" };
+  var KEY = "mm_lang", V = "t291";
   var root = document.documentElement;
   function pick() {
     try {
@@ -12,24 +12,16 @@
       var s = localStorage.getItem("muntrume_lang") || localStorage.getItem(KEY);
       if (s) { s = s.toLowerCase(); if (LANGS[s]) return { lang: s, explicit: false }; }
     } catch (e) {}
-    var nav = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || "es"]);
-    for (var i = 0; i < nav.length; i++) {
-      var p = String(nav[i] || "").toLowerCase().split("-")[0];
-      if (LANGS[p]) return { lang: p, explicit: false };
-      if (p === "gl" || p === "eu") return { lang: "es", explicit: false };
-      if (p === "oc") return { lang: "ca", explicit: false };
-    }
-    return { lang: "es", explicit: false };
+    return { lang: "en", explicit: false };
   }
   var sel = pick(), lang = sel.lang, dict = null;
   root.lang = lang;
-  // Evita el parpadeo de texto sin traducir (máx. 1,2 s) en todos los idiomas.
-  if (true) {
+  if (lang !== "en") {
     root.classList.add("i18n-wait");
     var st = document.createElement("style"); st.id = "i18n-wait-css";
     st.textContent = "html.i18n-wait body{opacity:0}";
     document.head.appendChild(st);
-    setTimeout(function () { root.classList.remove("i18n-wait"); }, 1200);
+    setTimeout(function () { root.classList.remove("i18n-wait"); }, 800);
   }
   var SKIP = { SCRIPT: 1, STYLE: 1, NOSCRIPT: 1, TEXTAREA: 1, CODE: 1, PRE: 1, svg: 1 };
   var ATTRS = ["placeholder", "aria-label", "title", "alt"];

@@ -46,8 +46,8 @@
       listEl.classList.toggle("is-expanded", nextState);
       btn.setAttribute("aria-expanded", nextState ? "true" : "false");
       btn.textContent = nextState
-        ? "Mostrar resumen (Top 5) ▴"
-        : "Ver lista completa (" + totalCount + " " + unit + ") ▾";
+        ? "Show Top 5 ▴"
+        : "View all (" + totalCount + " " + unit + ") ▾";
     });
   });
   function parseLic(s) {
@@ -106,7 +106,15 @@
     licenses.forEach(paintLic);
     if (d.role) set("role", d.role);
     if (d.specialty) set("specialty", d.specialty);
-    if (d.irating > 0) approx(root.querySelector('[data-f="irating"]'), "k", d.irating);
+    if (d.irating > 0) {
+      approx(root.querySelector('[data-f="irating"]'), "k", d.irating);
+      if (typeof window.muntruComputeAsymptoticRating === "function") {
+        set("ovr", String(window.muntruComputeAsymptoticRating(d.irating)));
+      }
+      try {
+        document.dispatchEvent(new CustomEvent("muntrume:driver-live-stats", { detail: { slug: slug, irating: d.irating } }));
+      } catch (e) {}
+    }
     if (d.fav_car && d.fav_car.name) showList("cars", [d.fav_car.name]);
     if (d.top_category && d.top_category.name) showList("series", [d.top_category.name]);
     if (d.bio) showText("bio", d.bio);

@@ -5,72 +5,77 @@ interface Props {
 
 const { currentPath = Astro.url.pathname } = Astro.props;
 
-// Helper para active state
-const isInicio = currentPath === '/' || currentPath === '/index.html' || currentPath === '';
-const isPilotos = currentPath.startsWith('/pilotos') || currentPath.startsWith('/team') || currentPath.startsWith('/p/');
+const isHome = currentPath === '/' || currentPath === '/index.html' || currentPath === '';
+const isDrivers =
+  currentPath.startsWith('/drivers') ||
+  currentPath.startsWith('/pilotos') ||
+  currentPath.startsWith('/d/') ||
+  currentPath.startsWith('/team') ||
+  currentPath.startsWith('/p/');
 const isNews = currentPath.startsWith('/news') || currentPath.startsWith('/noticias') || currentPath.startsWith('/article');
 const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('/about') || currentPath.startsWith('/contact');
 ---
 
-<!-- Header en 1 sola línea (h-14, bg #0E1211, border-b #1A2120, sticky top-0 z-50) -->
-<header class="w-full h-14 bg-[#0E1211] border-b border-[#1A2120] sticky top-0 z-50 px-4 sm:px-8 flex items-center justify-between select-none">
-  
-  <!-- Izq: Logo tortuga 24px + MUNTRUME text bold -->
-  <a href="/" class="flex items-center gap-2.5 group focus:outline-none shrink-0" title="Muntrume Motorsport - Sant Andreu, Barcelona">
-    <img 
-      src="/assets/img/logo-64.webp" 
-      alt="" 
-      class="h-8 w-8 object-contain transition-transform group-hover:scale-105" 
-      width="32" 
-      height="32" 
+<header class="w-full h-14 bg-[#0E1211] border-b border-[#1A2120] sticky top-0 z-50 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4 select-none max-w-full">
+  <!-- Left: Official Logo + Clean Full MUNTRUME MOTORSPORT Lockup -->
+  <a
+    href="/"
+    data-no-i18n
+    class="flex items-center gap-2.5 group focus:outline-none shrink-0"
+    title="Muntrume Motorsport — Official iRacing Team"
+  >
+    <img
+      src="/assets/img/logo-64.webp"
+      alt="Muntrume Motorsport"
+      class="h-8 w-8 object-contain transition-transform group-hover:scale-105 shrink-0"
+      width="32"
+      height="32"
     />
-    <span class="grid leading-none">
-      <span class="font-extrabold tracking-[.06em] text-white text-base font-display uppercase">Muntrume</span>
-      <span class="font-mono text-[9px] tracking-[.32em] text-[#00E699] uppercase mt-0.5">Motorsport</span>
+    <span class="font-extrabold tracking-[.06em] text-white text-sm sm:text-base font-display uppercase whitespace-nowrap leading-none">
+      MUNTRUME <span class="text-[#00E699]">MOTORSPORT</span>
     </span>
   </a>
 
-  <!-- Centro: Nav flex gap-6 lg:gap-8: INICIO + PILOTOS + NOTICIAS + PADDOCK (1 línea, centrado absoluto) -->
-  <nav class="hidden md:flex gap-6 lg:gap-8 absolute left-1/2 -translate-x-1/2 text-xs font-mono uppercase tracking-wider">
-    <a 
-      href="/" 
-      class={`py-1 transition-colors ${isInicio ? 'text-[#00E699] font-bold border-b-2 border-[#00E699]' : 'text-[#9AA8A3] hover:text-white'}`}
+  <!-- Center: Navigation Links (Home, Drivers, News, Paddock) — Flex aligned without overlap -->
+  <nav class="hidden md:flex items-center gap-5 lg:gap-8 text-xs font-mono uppercase tracking-wider shrink-0" aria-label="Main Navigation">
+    <a
+      href="/"
+      class={`py-1 transition-colors whitespace-nowrap ${isHome ? 'text-[#00E699] font-bold border-b-2 border-[#00E699]' : 'text-[#9AA8A3] hover:text-white'}`}
     >
-      INICIO
+      Home
     </a>
-    <a 
-      href="/pilotos" 
-      class={`py-1 transition-colors ${isPilotos ? 'text-[#00E699] font-bold border-b-2 border-[#00E699]' : 'text-[#9AA8A3] hover:text-white'}`}
+    <a
+      href="/drivers"
+      class={`py-1 transition-colors whitespace-nowrap ${isDrivers ? 'text-[#00E699] font-bold border-b-2 border-[#00E699]' : 'text-[#9AA8A3] hover:text-white'}`}
     >
-      PILOTOS
+      Drivers
     </a>
-    <a 
-      href="/news" 
-      class={`py-1 transition-colors ${isNews ? 'text-[#00E699] font-bold border-b-2 border-[#00E699]' : 'text-[#9AA8A3] hover:text-white'}`}
+    <a
+      href="/news"
+      class={`py-1 transition-colors whitespace-nowrap ${isNews ? 'text-[#00E699] font-bold border-b-2 border-[#00E699]' : 'text-[#9AA8A3] hover:text-white'}`}
     >
-      NOTICIAS
+      News
     </a>
-    <a 
-      href="/paddock" 
-      class={`py-1 transition-colors ${isPaddock ? 'text-[#00E699] font-bold border-b-2 border-[#00E699]' : 'text-[#9AA8A3] hover:text-white'}`}
+    <a
+      href="/paddock"
+      class={`py-1 transition-colors whitespace-nowrap ${isPaddock ? 'text-[#00E699] font-bold border-b-2 border-[#00E699]' : 'text-[#9AA8A3] hover:text-white'}`}
     >
-      PADDOCK
+      Paddock
     </a>
   </nav>
 
-  <!-- Der: Radio Discord punto verde pulse + LanguageSwitcher + GARAGE ACCESS bg #00E699 rounded-full -->
-  <div class="flex items-center gap-2 sm:gap-4 shrink-0">
-    
-    <!-- Radio Discord (Desktop) -->
-    <a 
-      href="https://discord.gg/ehX6B8JUtE" 
-      target="_blank" 
-      rel="noopener noreferrer" 
-      class="hidden lg:inline-flex items-center gap-2 text-xs font-mono text-[#9AA8A3] hover:text-white px-2.5 py-1 rounded-lg border border-transparent hover:border-[#242E2C] transition"
-      title="Radio Oficial del Equipo en Discord"
+  <!-- Right: Discord Radio + Theme Toggle + Language Switcher (EN Default) + GARAGE ACCESS -->
+  <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+    <!-- Discord Radio Indicator (Desktop) -->
+    <a
+      href="https://discord.gg/ehX6B8JUtE"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="hidden xl:inline-flex items-center gap-2 text-xs font-mono text-[#9AA8A3] hover:text-white px-2.5 py-1 rounded-lg border border-[#242E2C]/70 hover:border-[#00E699]/40 bg-[#141B19] transition whitespace-nowrap shrink-0"
+      title="Official Team Radio on Discord"
     >
-      <span class="w-2 h-2 rounded-full bg-[#00E699] animate-pulse"></span>
-      <span class="text-[11px]">Radio Discord</span>
+      <span class="w-2 h-2 rounded-full bg-[#00E699] animate-pulse shrink-0"></span>
+      <span class="text-[11px]">Discord Radio</span>
     </a>
 
     <!-- Theme Switcher (Dark / Light) -->
@@ -78,77 +83,75 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
       type="button"
       id="themeToggleBtn"
       class="flex items-center justify-center w-8 h-8 rounded-lg bg-[#1A2120] hover:bg-[#242E2C] border border-[#242E2C] hover:border-[#00E699]/40 text-[#9AA8A3] hover:text-white transition-all cursor-pointer focus:outline-none shrink-0"
-      title="Cambiar tema (Oscuro / Claro)"
-      aria-label="Cambiar tema"
+      title="Toggle theme (Dark / Light)"
+      aria-label="Toggle theme"
     >
-      <svg id="themeSunIcon" class="w-4 h-4 hidden text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-      <svg id="themeMoonIcon" class="w-4 h-4 text-[#00E699]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+      <svg id="themeSunIcon" width="16" height="16" class="w-4 h-4 hidden text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+      <svg id="themeMoonIcon" width="16" height="16" class="w-4 h-4 text-[#00E699]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
     </button>
 
-    <!-- Language Switcher con ES 🇪🇸, EN 🇬🇧 y CA con senyera real -->
-    <div class="relative inline-block text-left" id="langSwitcherContainer">
-      <button 
-        type="button" 
-        id="langSwitcherBtn" 
+    <!-- Language Switcher (Default: EN 🇬🇧) -->
+    <div class="relative inline-block text-left shrink-0" id="langSwitcherContainer">
+      <button
+        type="button"
+        id="langSwitcherBtn"
         class="flex items-center gap-1.5 bg-[#1A2120] hover:bg-[#242E2C] border border-[#242E2C] hover:border-[#00E699]/40 rounded-lg px-2.5 py-1.5 text-[12px] font-mono text-white transition-all cursor-pointer focus:outline-none"
-        title="Idioma / Language"
+        title="Language / Idioma"
         aria-haspopup="true"
       >
-        <span class="sr-only">Idioma</span>
+        <span class="sr-only">Language</span>
         <span id="currentLangIcon" class="flex items-center">
-          <img src="/flags/senyera.png" alt="Senyera" class="w-4 h-3 object-contain rounded-xs hidden" id="currentSenyeraImg" />
-          <span id="currentFlagEmoji">🇪🇸</span>
+          <img src="/flags/senyera.png" alt="Senyera" width="16" height="12" class="w-4 h-3 object-contain rounded-xs hidden" id="currentSenyeraImg" />
+          <span id="currentFlagEmoji">🇬🇧</span>
         </span>
-        <span id="currentLangLabel" class="font-semibold text-neutral-200">ES</span>
-        <svg class="w-3 h-3 text-[#9AA8A3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <span id="currentLangLabel" class="font-semibold text-neutral-200">EN</span>
+        <svg width="12" height="12" class="w-3 h-3 text-[#9AA8A3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
 
-      <!-- Dropdown -->
-      <div 
-        id="langDropdown" 
+      <div
+        id="langDropdown"
         class="hidden absolute right-0 mt-1 w-28 rounded-lg bg-[#1A2120] border border-[#242E2C] shadow-2xl py-1 z-50"
       >
-        <button type="button" data-set-lang="ES" class="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-mono text-neutral-300 hover:bg-white/5 hover:text-white cursor-pointer">
-          <span class="text-sm leading-none">🇪🇸</span>
-          <span>ES</span>
-        </button>
         <button type="button" data-set-lang="EN" class="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-mono text-neutral-300 hover:bg-white/5 hover:text-white cursor-pointer">
           <span class="text-sm leading-none">🇬🇧</span>
           <span>EN</span>
         </button>
+        <button type="button" data-set-lang="ES" class="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-mono text-neutral-300 hover:bg-white/5 hover:text-white cursor-pointer">
+          <span class="text-sm leading-none">🇪🇸</span>
+          <span>ES</span>
+        </button>
         <button type="button" data-set-lang="CA" class="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-mono text-neutral-300 hover:bg-white/5 hover:text-white cursor-pointer">
-          <img src="/flags/senyera.png" alt="Senyera" class="w-4 h-3 object-contain rounded-xs" />
+          <img src="/flags/senyera.png" alt="Senyera" width="16" height="12" class="w-4 h-3 object-contain rounded-xs" />
           <span>CA</span>
         </button>
         <button type="button" data-set-lang="FR" class="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-mono text-neutral-300 hover:bg-white/5 hover:text-white cursor-pointer">
           <span class="text-sm leading-none">🇫🇷</span>
-          <span>Français</span>
+          <span>FR</span>
         </button>
       </div>
     </div>
 
-    <!-- GARAGE ACCESS rounded-full -->
-    <a 
-      href="/garage" 
-      class="max-[440px]:hidden inline-flex items-center gap-1.5 bg-[#00E699] hover:bg-[#00c985] text-neutral-950 font-black text-xs font-mono uppercase tracking-wider px-3.5 sm:px-4 py-1.5 rounded-full transition-all shadow-md hover:shadow-[#00E699]/20 shrink-0"
+    <!-- GARAGE ACCESS Pill Button -->
+    <a
+      href="/garage"
+      class="max-[480px]:hidden inline-flex items-center gap-1.5 bg-[#00E699] hover:bg-[#00c985] text-neutral-950 font-black text-xs font-mono uppercase tracking-wider px-3.5 sm:px-4 py-1.5 rounded-full transition-all shadow-md hover:shadow-[#00E699]/20 whitespace-nowrap shrink-0"
     >
       <span>GARAGE ACCESS</span>
     </a>
 
-    <!-- Mobile Drawer Trigger Button -->
-    <button 
-      type="button" 
-      id="navDrawerOpenBtn" 
-      class="md:hidden p-1.5 text-[#9AA8A3] hover:text-white bg-[#1A2120] border border-[#242E2C] rounded-lg transition focus:outline-none shrink-0" 
-      aria-label="Abrir Menú de Navegación"
+    <!-- Mobile Drawer Trigger -->
+    <button
+      type="button"
+      id="navDrawerOpenBtn"
+      class="md:hidden p-1.5 text-[#9AA8A3] hover:text-white bg-[#1A2120] border border-[#242E2C] rounded-lg transition focus:outline-none shrink-0"
+      aria-label="Open Navigation Menu"
     >
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg width="20" height="20" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
       </svg>
     </button>
-
   </div>
 </header>
 
@@ -156,31 +159,40 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
 <div id="mobileDrawer">
   <div class="space-y-6">
     <div class="flex items-center justify-between pb-4 border-b border-[#242E2C]">
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2" data-no-i18n>
         <img src="/assets/img/logo-48.webp" alt="" class="h-6 w-auto" width="24" height="24" />
-        <span class="font-extrabold text-white text-sm font-display tracking-tight">MUNTRUME</span>
+        <span class="font-extrabold text-white text-sm font-display tracking-tight uppercase">MUNTRUME <span class="text-[#00E699]">MOTORSPORT</span></span>
       </div>
-      <button type="button" id="navDrawerCloseBtn" aria-label="Cerrar menú" class="p-1 text-[#9AA8A3] hover:text-white rounded-lg focus:outline-none">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <button type="button" id="navDrawerCloseBtn" aria-label="Close menu" class="p-1 text-[#9AA8A3] hover:text-white rounded-lg focus:outline-none">
+        <svg width="24" height="24" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
     </div>
 
-    <nav class="flex flex-col space-y-3 font-mono text-sm uppercase">
-      <a href="/" class={`px-3 py-2 rounded-xl transition ${isInicio ? 'bg-[#00E699]/10 text-[#00E699] font-bold' : 'text-[#9AA8A3] hover:bg-white/5 hover:text-white'}`}>
-        Inicio
+    <nav class="flex flex-col space-y-2.5 font-mono text-sm uppercase">
+      <a href="/" class={`px-3 py-2 rounded-xl transition ${isHome ? 'bg-[#00E699]/10 text-[#00E699] font-bold' : 'text-[#9AA8A3] hover:bg-white/5 hover:text-white'}`}>
+        Home
       </a>
-      <a href="/pilotos" class={`px-3 py-2 rounded-xl transition ${isPilotos ? 'bg-[#00E699]/10 text-[#00E699] font-bold' : 'text-[#9AA8A3] hover:bg-white/5 hover:text-white'}`}>
-        Pilotos
+      <a href="/drivers" class={`px-3 py-2 rounded-xl transition ${isDrivers ? 'bg-[#00E699]/10 text-[#00E699] font-bold' : 'text-[#9AA8A3] hover:bg-white/5 hover:text-white'}`}>
+        Drivers
       </a>
       <a href="/news" class={`px-3 py-2 rounded-xl transition ${isNews ? 'bg-[#00E699]/10 text-[#00E699] font-bold' : 'text-[#9AA8A3] hover:bg-white/5 hover:text-white'}`}>
-        Noticias
+        News
       </a>
       <a href="/paddock" class={`px-3 py-2 rounded-xl transition ${isPaddock ? 'bg-[#00E699]/10 text-[#00E699] font-bold' : 'text-[#9AA8A3] hover:bg-white/5 hover:text-white'}`}>
         Paddock
       </a>
-      <a href="/garage" class="px-3 py-2 rounded-xl bg-[#00E699] text-neutral-950 font-bold transition">
+      <a href="/ai" class="px-3 py-2 rounded-xl text-[#9AA8A3] hover:bg-white/5 hover:text-white transition">
+        AI Copilot
+      </a>
+      <a href="/setup-builder" class="px-3 py-2 rounded-xl text-[#9AA8A3] hover:bg-white/5 hover:text-white transition">
+        Setup Builder
+      </a>
+      <a href="/communications" class="px-3 py-2 rounded-xl text-[#9AA8A3] hover:bg-white/5 hover:text-white transition">
+        Communications &amp; Webmail
+      </a>
+      <a href="/garage" class="px-3 py-2.5 rounded-xl bg-[#00E699] text-neutral-950 font-bold text-center transition">
         Garage Access
       </a>
     </nav>
@@ -188,17 +200,17 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
 
   <div class="pt-6 border-t border-[#242E2C] space-y-3">
     <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between text-xs font-mono text-[#9AA8A3] hover:text-white">
-      <span>Radio Discord</span>
+      <span>Discord Radio</span>
       <span class="w-2 h-2 rounded-full bg-[#00E699] animate-pulse"></span>
     </a>
     <div class="flex items-center justify-between pt-2">
-      <span class="text-xs font-mono text-[#9AA8A3]">Tema</span>
+      <span class="text-xs font-mono text-[#9AA8A3]">Theme</span>
       <button
         type="button"
         id="themeToggleBtnMobile"
         class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1A2120] border border-[#242E2C] text-xs font-mono text-white cursor-pointer"
       >
-        <span id="themeMobileLabel">Modo Oscuro</span>
+        <span id="themeMobileLabel">Dark Mode</span>
       </button>
     </div>
   </div>
@@ -207,7 +219,6 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
 <div id="mobileBackdrop"></div>
 
 <script is:inline>
-  // Theme Switcher Logic
   function applyThemeUI(theme) {
     var isLight = theme === 'light';
     var sun = document.getElementById('themeSunIcon');
@@ -215,7 +226,7 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
     var mobileLabel = document.getElementById('themeMobileLabel');
     if (sun) sun.classList.toggle('hidden', !isLight);
     if (moon) moon.classList.toggle('hidden', isLight);
-    if (mobileLabel) mobileLabel.textContent = isLight ? 'Modo Claro ☀️' : 'Modo Oscuro 🌙';
+    if (mobileLabel) mobileLabel.textContent = isLight ? 'Light Mode ☀️' : 'Dark Mode 🌙';
   }
 
   function toggleTheme() {
@@ -240,8 +251,11 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
   if (themeBtnMobile) themeBtnMobile.addEventListener('click', toggleTheme);
   applyThemeUI(document.documentElement.classList.contains('light') ? 'light' : 'dark');
 
-  // Language Switcher Logic
-  document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-set-lang]'); if (b) setLanguage(b.getAttribute('data-set-lang')); });
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-set-lang]');
+    if (b) setLanguage(b.getAttribute('data-set-lang'));
+  });
+
   function setLanguage(code, triggerI18n) {
     var label = document.getElementById('currentLangLabel');
     var emoji = document.getElementById('currentFlagEmoji');
@@ -252,14 +266,15 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
       if (emoji) emoji.classList.add('hidden');
       if (senyera) senyera.classList.remove('hidden');
       if (label) label.textContent = 'CA';
-    } else if (code === 'EN' || code === 'FR') {
+    } else if (code === 'ES' || code === 'FR') {
       if (senyera) senyera.classList.add('hidden');
-      if (emoji) { emoji.classList.remove('hidden'); emoji.textContent = code === 'FR' ? '🇫🇷' : '🇬🇧'; }
+      if (emoji) { emoji.classList.remove('hidden'); emoji.textContent = code === 'FR' ? '🇫🇷' : '🇪🇸'; }
       if (label) label.textContent = code;
     } else {
+      code = 'EN';
       if (senyera) senyera.classList.add('hidden');
-      if (emoji) { emoji.classList.remove('hidden'); emoji.textContent = '🇪🇸'; }
-      if (label) label.textContent = 'ES';
+      if (emoji) { emoji.classList.remove('hidden'); emoji.textContent = '🇬🇧'; }
+      if (label) label.textContent = 'EN';
     }
 
     try {
@@ -275,7 +290,6 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
     }
   }
 
-  // Init Language Switcher on Load (Checks saved preference, otherwise detects browser default)
   (function initLang() {
     var btn = document.getElementById('langSwitcherBtn');
     var dropdown = document.getElementById('langDropdown');
@@ -304,24 +318,10 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
       }
     } catch (e) {}
 
-    // Auto-detect browser language
-    try {
-      var nav = (navigator.language || (navigator.languages && navigator.languages[0]) || 'es').toLowerCase();
-      if (nav.startsWith('ca') || nav === 'val') {
-        setLanguage('CA', false);
-      } else if (nav.startsWith('en')) {
-        setLanguage('EN', false);
-      } else if (nav.startsWith('fr')) {
-        setLanguage('FR', false);
-      } else {
-        setLanguage('ES', false);
-      }
-    } catch (err) {
-      setLanguage('ES', false);
-    }
+    // Global default: English (EN)
+    setLanguage('EN', false);
   })();
 
-  // Mobile Drawer Logic
   (function initDrawer() {
     var openBtn = document.getElementById('navDrawerOpenBtn');
     var closeBtn = document.getElementById('navDrawerCloseBtn');

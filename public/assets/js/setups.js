@@ -3007,7 +3007,7 @@ async function openSetupPreview(setupId, filename, car, circuit, season, week, s
   inspectStoBinaryNotes(matchObj);
 
   const extLink = document.getElementById("g61ExternalSearchLink");
-  if (extLink) extLink.href = "https://garage61.net/app/laps";
+  if (extLink) extLink.href = "https://garage61.net/app/teams/muntrume-motorsport";
 
   // Render Garage 61 Best Laps table (and check optional live API token)
   await renderG61LapsForSetup(matchObj);
@@ -3037,7 +3037,10 @@ function renderG61EmptyState(title, detail, showTokenButton) {
       <td colspan="6" class="py-10 px-4 text-center">
         <div class="text-sm font-bold text-white">${escapeHtml(title)}</div>
         <div class="text-[11px] text-neutral-400 mt-1 max-w-md mx-auto leading-relaxed">${escapeHtml(detail)}</div>
-        ${showTokenButton ? `<button type="button" onclick="configureG61TokenPrompt()" class="mt-3 px-3 py-1.5 rounded-xl bg-[#161c24] hover:bg-white/10 border border-white/10 text-[11px] font-semibold text-neutral-300">🔑 Usar mi token de Garage 61</button>` : ""}
+        <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
+          <a href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer" class="px-3.5 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/35 text-[11px] font-bold text-emerald-400">↗ Open Muntrume Motorsport on Garage 61</a>
+          ${showTokenButton ? `<button type="button" onclick="configureG61TokenPrompt()" class="px-3 py-1.5 rounded-xl bg-[#161c24] hover:bg-white/10 border border-white/10 text-[11px] font-semibold text-neutral-300">🔑 Use Personal Garage 61 Token</button>` : ""}
+        </div>
       </td>
     </tr>`;
 }

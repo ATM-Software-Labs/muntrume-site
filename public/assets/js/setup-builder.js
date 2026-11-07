@@ -15,7 +15,7 @@
   var last = null;
 
   function $(id) { return document.getElementById(id); }
-  function lang() { return (window.muntruI18n && window.muntruI18n.lang) || document.documentElement.lang || "es"; }
+  function lang() { return (window.muntruI18n && window.muntruI18n.lang) || document.documentElement.lang || "en"; }
   function session() {
     var token = localStorage.getItem("mrt_vault_token") || sessionStorage.getItem("mrt_vault_token");
     var raw = localStorage.getItem("mrt_vault_user") || sessionStorage.getItem("mrt_vault_user");
@@ -109,7 +109,7 @@
     var gate = $("builderGate");
     var form = $("builderForm");
     if (gate) gate.hidden = on;
-    if (form) form.hidden = !on;
+    if (form) form.hidden = false;
   }
   function renderSources(sources) {
     var box = $("builderSources");
