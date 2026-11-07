@@ -3,7 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import StatsGrid from '../components/StatsGrid.astro';
 
 const pageTitle = "Paddock | Muntrume Motorsport";
-const pageDescription = "Official Muntrume Motorsport Paddock. High-resolution gallery, competition fleet specs, team routine, Discord Radio, Garage 61 Telemetry, and Paddock Pass access.";
+const pageDescription = "Official Muntrume Motorsport Paddock. High-resolution gallery, competition fleet specs, social media hub, sim rig hardware, team routine, Discord Radio, and Paddock Pass access.";
 
 const channels = [
   {
@@ -11,28 +11,95 @@ const channels = [
     desc: "Live voice and telemetry channel with official drivers and race engineers.",
     link: "https://discord.gg/ehX6B8JUtE",
     cta: "Connect to Radio",
-    isExternal: true
+    isExternal: true,
+    icon: "discord"
   },
   {
     title: "Garage 61 Telemetry",
     desc: "60 Hz telemetry, lap comparisons, and real-time sector deltas with the team.",
     link: "https://garage61.net/app/teams/muntrume-motorsport",
     cta: "Open Official Telemetry",
-    isExternal: true
+    isExternal: true,
+    icon: "garage61"
   },
   {
     title: "Setup Vault (.STO)",
     desc: "Over 41,000 iRacing configurations ready to sync to your local folder.",
     link: "/garage",
     cta: "Enter Setup Vault",
-    isExternal: false
+    isExternal: false,
+    icon: "vault"
   },
   {
     title: "Official Driver Roster",
     desc: "Official iRacing Road roster with F1 25 ratings and Garage 61 telemetry.",
     link: "/drivers",
     cta: "View Official Roster",
-    isExternal: false
+    isExternal: false,
+    icon: "roster"
+  }
+];
+
+const socialLinks = [
+  {
+    name: "Discord Paddock",
+    handle: "Muntrume Radio",
+    desc: "Canal oficial de voz en carrera, salas técnicas de telemetría y sala de espera para pilotos aspirantes.",
+    link: "https://discord.gg/ehX6B8JUtE",
+    cta: "Entrar a Discord",
+    badge: "Voz & Telemetría",
+    icon: "discord",
+    color: "#5865F2"
+  },
+  {
+    name: "Garage 61",
+    handle: "Muntrume Motorsport",
+    desc: "Perfil oficial de escudería en Garage 61 con análisis de vueltas a 60 Hz y comparación de deltas por sector.",
+    link: "https://garage61.net/app/teams/muntrume-motorsport",
+    cta: "Abrir Telemetría",
+    badge: "60 Hz Live",
+    icon: "garage61",
+    color: "#00E699"
+  },
+  {
+    name: "YouTube",
+    handle: "@MuntrumeMotorsport",
+    desc: "Retransmisiones oficiales de carreras de resistencia de 24h, vueltas rápidas on-board y análisis de setups.",
+    link: "https://www.youtube.com",
+    cta: "Ver Canal",
+    badge: "Onboards HD",
+    icon: "youtube",
+    color: "#FF0000"
+  },
+  {
+    name: "Twitch",
+    handle: "MuntrumeLive",
+    desc: "Directos multiclase desde el habitáculo, stint radio con ingenieros de pista y sesiones de práctica.",
+    link: "https://www.twitch.tv",
+    cta: "Seguir Directos",
+    badge: "Cockpit Live",
+    icon: "twitch",
+    color: "#9146FF"
+  },
+  {
+    name: "X / Twitter",
+    handle: "@MuntrumeRT",
+    desc: "Despachos oficiales del equipo, resultados en directo, sanciones de carrera y partes meteorológicos.",
+    link: "https://x.com",
+    cta: "Seguir en X",
+    badge: "Actualidad",
+    icon: "x",
+    color: "#1DA1F2"
+  },
+  {
+    name: "Instagram",
+    handle: "@muntrumems",
+    desc: "Fotografía del paddock, libreas corporativas de la temporada 2026, cascos y momentos del equipo.",
+    link: "https://www.instagram.com",
+    cta: "Ver Galería",
+    badge: "Lifestyle",
+    icon: "instagram",
+    color: "#E1306C"
   }
 ];
 
@@ -132,9 +199,9 @@ const galleryItems = [
 const technicalFleet = [
   {
     name: "Aston Martin Valkyrie GTP",
-    classTag: "IMSA GTP · Hypercar",
+    classTag: "IMSA GTP",
     power: "1,000+ CV",
-    engine: "6.5L V12 Cosworth Atmospheric",
+    engine: "6.5L V12 Cosworth",
     weight: "1,030 kg",
     topSpeed: "340+ km/h",
     series: "IMSA Esports & 24H Global",
@@ -143,20 +210,20 @@ const technicalFleet = [
   },
   {
     name: "Ferrari 296 GT3",
-    classTag: "GT3 · Endurance",
+    classTag: "GT3 Endurance",
     power: "600 CV",
-    engine: "3.0L V6 120° Twin-Turbo",
+    engine: "3.0L V6 Twin-Turbo",
     weight: "1,250 kg",
     topSpeed: "295 km/h",
-    series: "GT Endurance Series & IMSA",
+    series: "GT Endurance & IMSA",
     setupCar: "Ferrari 296 GT3",
     img: "/assets/img/coche2-640.webp"
   },
   {
     name: "Ford Mustang GT3",
-    classTag: "GT3 · V8 Roar",
+    classTag: "GT3 V8 Roar",
     power: "550+ CV",
-    engine: "5.4L Coyote V8 Naturally Aspirated",
+    engine: "5.4L Coyote V8 Atmosférico",
     weight: "1,265 kg",
     topSpeed: "292 km/h",
     series: "IMSA GTD Pro & 12H Sebring",
@@ -165,14 +232,41 @@ const technicalFleet = [
   },
   {
     name: "McLaren 720S GT3 EVO",
-    classTag: "GT3 · Aero Sprint",
+    classTag: "GT3 Aero Sprint",
     power: "590 CV",
     engine: "4.0L V8 M840T Twin-Turbo",
     weight: "1,245 kg",
     topSpeed: "296 km/h",
-    series: "Global Endurance & Nürburgring 24H",
+    series: "Global Endurance & Nürburgring",
     setupCar: "McLaren 720S GT3 EVO",
     img: "/assets/img/coche4-640.webp"
+  }
+];
+
+const simHardware = [
+  {
+    category: "Wheelbase",
+    title: "Direct Drive 15 - 25 Nm",
+    specs: "Simucube 2 Pro / Fanatec DD+",
+    detail: "Fuerza y fidelidad 1:1 sin latencia para sentir el ángulo de deriva (slip angle), pianos y pérdida de adherencia en el eje delantero."
+  },
+  {
+    category: "Pedalera",
+    title: "Célula de Carga 100 - 200 kg",
+    specs: "Heusinkveld / Load Cell Hidráulico",
+    detail: "Frenada por memoria muscular de presión. Permite modular el trail braking en curvas lentas sin bloquear las ruedas traseras."
+  },
+  {
+    category: "Display & VR",
+    title: "Triple Pantalla 144Hz / VR",
+    specs: "3x 32\" 1440p / Crystal Light",
+    detail: "Campo de visión (FOV) 180° geométricamente exacto para medir referencias de vértice, salida de curva y coches adyacentes."
+  },
+  {
+    category: "Háptica",
+    title: "Telemetría Táctil y Chasis",
+    specs: "Transductores 50W + LFE SimHub",
+    detail: "Vibración por frecuencias de motor, activación de ABS/TC y compresión de suspensión enviadas directamente al cockpit."
   }
 ];
 
@@ -213,7 +307,7 @@ const paddockSchedule = [
     
     <!-- 1. Header Hero Minimalista con Tokens Semánticos -->
     <section class="text-center max-w-3xl mx-auto space-y-4 pt-6">
-      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--r-surface)] border border-[var(--r-accent)]/40 text-[var(--r-accent)] text-xs font-mono uppercase tracking-wider">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[var(--r-surface)] border border-[var(--r-accent)]/40 text-[var(--r-accent)] text-xs font-mono uppercase tracking-wider">
         <span class="w-2 h-2 rounded-full bg-[var(--r-accent)] animate-pulse"></span>
         <span>PADDOCK &amp; TEAM HQ · SANT ANDREU, BARCELONA</span>
       </div>
@@ -227,17 +321,33 @@ const paddockSchedule = [
       </p>
     </section>
 
-    <!-- 2. Grid de 4 Canales Oficiales Ultra Limpio -->
+    <!-- 2. Grid de 4 Canales Oficiales con Iconos Integrados -->
     <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
       {channels.map(c => (
         <div class="relative p-6 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-300 flex flex-col justify-between space-y-4 group overflow-hidden shadow-sm">
-          <span class="absolute top-4 right-4 w-2 h-2 rounded-full bg-[var(--r-accent)] opacity-80 group-hover:scale-125 transition-transform"></span>
+          <div class="flex items-center justify-between">
+            <div class="w-10 h-10 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] flex items-center justify-center text-[var(--r-accent)] group-hover:scale-110 transition-transform">
+              {c.icon === 'discord' && (
+                <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.13-.255-.01-.556-.28-.646a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+              )}
+              {c.icon === 'garage61' && (
+                <svg class="w-5 h-5 fill-none stroke-current" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+              )}
+              {c.icon === 'vault' && (
+                <svg class="w-5 h-5 fill-none stroke-current" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+              )}
+              {c.icon === 'roster' && (
+                <svg class="w-5 h-5 fill-none stroke-current" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+              )}
+            </div>
+            <span class="w-2 h-2 rounded-full bg-[var(--r-accent)] opacity-80 group-hover:scale-125 transition-transform"></span>
+          </div>
 
           <div>
             <h3 class="text-lg font-bold text-[var(--r-text)] font-display tracking-tight group-hover:text-[var(--r-accent)] transition-colors">
               {c.title}
             </h3>
-            <p class="text-xs text-[var(--r-muted)] mt-2 leading-relaxed">
+            <p class="text-xs text-[var(--r-muted)] mt-1.5 leading-relaxed">
               {c.desc}
             </p>
           </div>
@@ -255,7 +365,163 @@ const paddockSchedule = [
       ))}
     </section>
 
-    <!-- 3. GALERÍA OFICIAL DEL PADDOCK & GARAJE (FOTOS & LIGHTBOX) -->
+    <!-- 3. NUEVA SECCIÓN: REDES SOCIALES & CANALES OFICIALES DE LA ESCUDERÍA -->
+    <section id="social-hub" class="space-y-8 pt-4">
+      <div class="pb-4 border-b border-[var(--r-line)] flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--r-accent)] mb-1">
+            <span class="w-2 h-2 rounded-full bg-[var(--r-accent)]"></span>
+            <span>COMMUNITY &amp; SOCIAL HUBS</span>
+          </div>
+          <h2 class="text-2xl sm:text-4xl font-extrabold text-[var(--r-text)] font-display tracking-tight">
+            OFFICIAL TEAM CHANNELS
+          </h2>
+          <p class="text-xs sm:text-sm text-[var(--r-muted)] mt-1 max-w-xl">
+            Sigue a Muntrume Motorsport en las plataformas de emisión en directo, análisis de telemetría y redes sociales.
+          </p>
+        </div>
+        <span class="text-xs font-mono text-[var(--r-muted)]">6 Canales Activos</span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {socialLinks.map(s => (
+          <a 
+            href={s.link} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="group p-5 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-300 flex flex-col justify-between space-y-4 shadow-sm hover:shadow-md"
+          >
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] flex items-center justify-center text-[var(--r-text)] group-hover:text-[var(--r-accent)] transition-colors">
+                  {s.icon === 'discord' && (
+                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.13-.255-.01-.556-.28-.646a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+                  )}
+                  {s.icon === 'garage61' && (
+                    <svg class="w-5 h-5 fill-none stroke-current" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                  )}
+                  {s.icon === 'youtube' && (
+                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                  )}
+                  {s.icon === 'twitch' && (
+                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
+                  )}
+                  {s.icon === 'x' && (
+                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                  )}
+                  {s.icon === 'instagram' && (
+                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                  )}
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-[var(--r-text)] group-hover:text-[var(--r-accent)] transition-colors">
+                    {s.name}
+                  </h3>
+                  <span class="text-xs font-mono text-[var(--r-muted)]">{s.handle}</span>
+                </div>
+              </div>
+              <span class="px-2 py-0.5 rounded-full bg-[var(--r-bg-2)] border border-[var(--r-line)] text-[10px] font-mono text-[var(--r-accent)] font-semibold shrink-0">
+                {s.badge}
+              </span>
+            </div>
+
+            <p class="text-xs text-[var(--r-muted)] leading-relaxed">
+              {s.desc}
+            </p>
+
+            <div class="pt-3 border-t border-[var(--r-line)] flex items-center justify-between text-xs font-mono text-[var(--r-accent)] font-bold">
+              <span>{s.cta}</span>
+              <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <!-- 4. FLOTA DE COMPETICIÓN (REDiseñada en tarjetas verticales sin deformación) -->
+    <section id="fleet" class="space-y-8 pt-4">
+      <div class="pb-4 border-b border-[var(--r-line)]">
+        <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--r-accent)] mb-1">
+          <span class="w-2 h-2 rounded-full bg-[var(--r-accent)]"></span>
+          <span>MAQUINARIA OFICIAL</span>
+        </div>
+        <h2 class="text-2xl sm:text-4xl font-extrabold text-[var(--r-text)] font-display tracking-tight">
+          TECHNICAL COMPETITION FLEET
+        </h2>
+        <p class="text-xs sm:text-sm text-[var(--r-muted)] mt-1 max-w-xl">
+          Vehículos oficiales homologados para los campeonatos de resistencia multiclase y series GT3/GTP en iRacing.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {technicalFleet.map(car => (
+          <div class="rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-300 overflow-hidden shadow-sm flex flex-col justify-between group">
+            <!-- Full-width Aspect Image -->
+            <div class="relative w-full aspect-video overflow-hidden bg-[var(--r-bg-2)] border-b border-[var(--r-line)]">
+              <img 
+                src={car.img} 
+                alt={car.name} 
+                width="640" 
+                height="360" 
+                loading="lazy" 
+                decoding="async" 
+                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+              />
+              <div class="absolute top-3 left-3">
+                <span class="px-2.5 py-0.5 rounded-full bg-[var(--r-surface)]/90 backdrop-blur-xs border border-[var(--r-line)] text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase tracking-wider">
+                  {car.classTag}
+                </span>
+              </div>
+            </div>
+
+            <!-- Content Body -->
+            <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
+              <div>
+                <span class="text-[11px] font-mono text-[var(--r-muted)] uppercase tracking-wider block mb-1">
+                  {car.series}
+                </span>
+                <h3 class="text-lg font-bold text-[var(--r-text)] font-display tracking-tight leading-snug">
+                  {car.name}
+                </h3>
+                <p class="text-xs text-[var(--r-muted)] font-mono mt-1 truncate">
+                  {car.engine}
+                </p>
+              </div>
+
+              <!-- 2x2 Clean Metrics Grid -->
+              <div class="grid grid-cols-2 gap-2 text-xs font-mono pt-3 border-t border-[var(--r-line)]">
+                <div class="p-2.5 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)]">
+                  <span class="text-[9px] text-[var(--r-muted)] uppercase block font-semibold">Potencia</span>
+                  <strong class="text-[var(--r-text)] text-xs font-bold block mt-0.5">{car.power}</strong>
+                </div>
+                <div class="p-2.5 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)]">
+                  <span class="text-[9px] text-[var(--r-muted)] uppercase block font-semibold">Vel. Máx</span>
+                  <strong class="text-[var(--r-text)] text-xs font-bold block mt-0.5">{car.topSpeed}</strong>
+                </div>
+                <div class="p-2.5 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)]">
+                  <span class="text-[9px] text-[var(--r-muted)] uppercase block font-semibold">Peso</span>
+                  <strong class="text-[var(--r-text)] text-xs font-bold block mt-0.5">{car.weight}</strong>
+                </div>
+                <div class="p-2.5 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)]">
+                  <span class="text-[9px] text-[var(--r-muted)] uppercase block font-semibold">Categoría</span>
+                  <strong class="text-[var(--r-accent)] text-xs font-bold block mt-0.5 truncate">{car.classTag}</strong>
+                </div>
+              </div>
+
+              <a 
+                href={`/garage?car=${encodeURIComponent(car.setupCar)}`} 
+                class="w-full py-2.5 px-3 rounded-xl bg-[var(--r-bg-2)] hover:bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono font-bold text-[var(--r-accent)] transition flex items-center justify-between text-center"
+              >
+                <span>Setups en Vault</span>
+                <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+              </a>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- 5. GALERÍA OFICIAL DEL PADDOCK & GARAJE (FOTOS & LIGHTBOX) -->
     <section id="gallery" class="space-y-8 pt-4">
       <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-[var(--r-line)]">
         <div>
@@ -348,73 +614,50 @@ const paddockSchedule = [
       </div>
     </section>
 
-    <!-- 4. FLOTA DE COMPETICIÓN (TECHNICAL FLEET SPECS) -->
-    <section id="fleet" class="space-y-8 pt-4">
+    <!-- 6. SIM RIG & HARDWARE DEL PADDOCK (NUEVA SECCIÓN DE EQUIPAMIENTO) -->
+    <section id="hardware" class="space-y-8 pt-4">
       <div class="pb-4 border-b border-[var(--r-line)]">
         <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--r-accent)] mb-1">
           <span class="w-2 h-2 rounded-full bg-[var(--r-accent)]"></span>
-          <span>MAQUINARIA OFICIAL</span>
+          <span>HARDWARE &amp; SIMULADORES</span>
         </div>
         <h2 class="text-2xl sm:text-4xl font-extrabold text-[var(--r-text)] font-display tracking-tight">
-          TECHNICAL COMPETITION FLEET
+          PADDOCK SIM RIG SPECIFICATIONS
         </h2>
         <p class="text-xs sm:text-sm text-[var(--r-muted)] mt-1 max-w-xl">
-          Vehículos oficiales homologados para los campeonatos de resistencia multiclase y series GT3/GTP en iRacing.
+          Configuraciones de periféricos, bases direct drive y células de carga empleadas por los pilotos de Muntrume Motorsport.
         </p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {technicalFleet.map(car => (
-          <div class="p-6 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-300 flex flex-col sm:flex-row gap-6 shadow-sm">
-            <div class="w-full sm:w-48 h-36 rounded-xl overflow-hidden bg-[var(--r-bg-2)] shrink-0 border border-[var(--r-line)]">
-              <img src={car.img} alt={car.name} width="640" height="360" loading="lazy" decoding="async" class="w-full h-full object-cover" />
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {simHardware.map(h => (
+          <div class="p-6 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] flex flex-col justify-between space-y-4 shadow-sm">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="px-2 py-0.5 rounded bg-[var(--r-accent)]/10 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase tracking-wider">
+                  {h.category}
+                </span>
+              </div>
+              <h3 class="text-base font-bold text-[var(--r-text)] font-display tracking-tight">
+                {h.title}
+              </h3>
+              <p class="text-xs font-mono text-[var(--r-accent)] mt-1 font-semibold">
+                {h.specs}
+              </p>
+              <p class="text-xs text-[var(--r-muted)] mt-2 leading-relaxed">
+                {h.detail}
+              </p>
             </div>
-
-            <div class="flex-1 flex flex-col justify-between space-y-3">
-              <div>
-                <div class="flex items-center justify-between gap-2 mb-1">
-                  <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-[var(--r-accent)] px-2 py-0.5 rounded bg-[var(--r-accent)]/10">
-                    {car.classTag}
-                  </span>
-                  <span class="text-xs font-mono text-[var(--r-muted)]">{car.series}</span>
-                </div>
-                <h3 class="text-lg font-bold text-[var(--r-text)] font-display tracking-tight">
-                  {car.name}
-                </h3>
-              </div>
-
-              <!-- Technical Specs Grid -->
-              <div class="grid grid-cols-2 gap-2 text-xs font-mono pt-2 border-t border-[var(--r-line)]">
-                <div>
-                  <span class="text-[10px] text-[var(--r-muted)] uppercase block">Potencia</span>
-                  <strong class="text-[var(--r-text)]">{car.power}</strong>
-                </div>
-                <div>
-                  <span class="text-[10px] text-[var(--r-muted)] uppercase block">Vel. Máxima</span>
-                  <strong class="text-[var(--r-text)]">{car.topSpeed}</strong>
-                </div>
-                <div class="col-span-2">
-                  <span class="text-[10px] text-[var(--r-muted)] uppercase block">Propulsor</span>
-                  <span class="text-[var(--r-text)] text-[11px] truncate block">{car.engine}</span>
-                </div>
-              </div>
-
-              <div class="pt-2">
-                <a 
-                  href={`/garage?car=${encodeURIComponent(car.setupCar)}`} 
-                  class="text-xs font-mono font-bold text-[var(--r-accent)] hover:underline flex items-center justify-between"
-                >
-                  <span>Ver Setups Certificados en Vault</span>
-                  <span>&rarr;</span>
-                </a>
-              </div>
+            <div class="pt-3 border-t border-[var(--r-line)] flex items-center gap-2 text-[10px] font-mono text-[var(--r-muted)] uppercase">
+              <span class="w-1.5 h-1.5 rounded-full bg-[var(--r-accent)]"></span>
+              <span>iRacing Homologated</span>
             </div>
           </div>
         ))}
       </div>
     </section>
 
-    <!-- 5. HORARIOS & RUTINA DEL PADDOCK (PADDOCK SCHEDULE & BRIEFINGS) -->
+    <!-- 7. HORARIOS & RUTINA DEL PADDOCK (PADDOCK SCHEDULE & BRIEFINGS) -->
     <section id="schedule" class="space-y-8 pt-4">
       <div class="pb-4 border-b border-[var(--r-line)]">
         <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--r-accent)] mb-1">
@@ -455,7 +698,7 @@ const paddockSchedule = [
       </div>
     </section>
 
-    <!-- 6. Formulario Quirúrgico: Request Paddock Pass -->
+    <!-- 8. Formulario Quirúrgico: Request Paddock Pass -->
     <section class="max-w-2xl mx-auto pt-4">
       <div class="relative p-6 sm:p-10 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] space-y-8 overflow-hidden shadow-lg">
         <span class="absolute top-6 right-6 w-2 h-2 rounded-full bg-[var(--r-accent)] opacity-80"></span>
@@ -542,7 +785,7 @@ const paddockSchedule = [
       </div>
     </section>
 
-    <!-- 7. Stats Grid Unificado -->
+    <!-- 9. Stats Grid Unificado -->
     <section class="pt-4">
       <StatsGrid />
     </section>
