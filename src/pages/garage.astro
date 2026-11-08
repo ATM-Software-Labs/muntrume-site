@@ -554,15 +554,20 @@ const figs = [
         <div id="previewVariantButtons" class="flex flex-wrap gap-1.5"></div>
       </div>
 
-      <!-- Pestañas del Inspector -->
+      <!-- Pestañas del Inspector (Minimalista) -->
       <div class="g-tabs" role="tablist">
-        <button type="button" id="previewTabSpecsBtn" class="is-on" onclick="switchPreviewTab('specs')">Ficha Técnica &amp; BoP Tech</button>
-        <button type="button" id="previewTabG61Btn" onclick="switchPreviewTab('g61')">Tiempos Garage 61 (<span id="previewG61CountBadge">—</span>)</button>
-        <button type="button" id="previewTabAiBtn" onclick="switchPreviewTab('ai')">🧠 MMT AI Pro Trainer</button>
+        <button type="button" id="previewTabAiBtn" class="is-on" onclick="switchPreviewTab('ai')">⚡ Setup &amp; Telemetría</button>
+        <button type="button" id="previewTabSpecsBtn" onclick="switchPreviewTab('specs')">Ficha &amp; Escrutinio</button>
+        <button type="button" id="previewTabG61Btn" onclick="switchPreviewTab('g61')">Garage 61 (<span id="previewG61CountBadge">—</span>)</button>
       </div>
 
-      <!-- Tab 1: Ficha Técnica, BoP Tech & Notas Binarias .STO -->
-      <div id="previewTabSpecs" class="space-y-4">
+      <!-- Tab 1: Setup & Telemetría (Principal, Minimalista) -->
+      <div id="previewTabAi" class="space-y-3 max-w-full overflow-hidden">
+        <div id="previewAiTrainerContent" class="space-y-3 max-w-full overflow-hidden"></div>
+      </div>
+
+      <!-- Tab 2: Ficha Técnica, BoP Tech & Notas Binarias .STO -->
+      <div id="previewTabSpecs" class="hidden space-y-4">
         <div id="previewSpecsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
         <div class="p-3.5 rounded-xl bg-[var(--r-bg)] border border-[var(--r-line)] space-y-1.5">
           <div class="flex items-center justify-between gap-2 text-[11px] font-mono text-[var(--r-muted)]">
@@ -573,7 +578,7 @@ const figs = [
         </div>
       </div>
 
-      <!-- Tab 2: Vueltas Reales Garage 61 -->
+      <!-- Tab 3: Vueltas Reales Garage 61 -->
       <div id="previewTabG61" class="hidden space-y-3">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <div class="flex items-center gap-2">
@@ -600,21 +605,6 @@ const figs = [
             <tbody id="previewG61LapsTableBody"></tbody>
           </table>
         </div>
-      </div>
-
-      <!-- Tab 3: MMT AI Pro Setup Trainer -->
-      <div id="previewTabAi" class="hidden space-y-3">
-        <div class="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-[var(--r-bg)] border border-[var(--r-line)]">
-          <div>
-            <div class="text-xs font-bold text-[var(--r-accent)] font-mono uppercase">Ingeniero Virtual MMT AI Pro · Analizador .IBT 60 Hz</div>
-            <div id="aiTrainerStatusBadge" class="text-[11px] text-[var(--r-muted)]">Comparativa de parámetros frente a iRacing Fixed y setups comerciales</div>
-          </div>
-          <label class="r-btn r-btn--sm cursor-pointer" style="border-color:var(--r-accent);color:var(--r-accent)">
-            <span>📂 Subir telemetría .IBT</span>
-            <input type="file" accept=".ibt" class="hidden" onchange="handleLiveIbtUpload(event)" />
-          </label>
-        </div>
-        <div id="previewAiTrainerContent" class="space-y-3 max-w-full overflow-hidden"></div>
       </div>
     </div>
   </div>
