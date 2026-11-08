@@ -15,9 +15,9 @@ function renderMarkdownToHtml(md: string) {
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
-      .replace(/\*\*(.+?)\*\*/g, '<strong class="text-white font-bold">$1</strong>')
-      .replace(/\*(.+?)\*/g, '<em class="italic text-neutral-200">$1</em>')
-      .replace(/`(.+?)`/g, '<code class="px-1.5 py-0.5 rounded bg-[#161C1A] text-[#00E699] font-mono text-xs border border-[#00E699]/20">$1</code>');
+      .replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold text-[var(--r-text)]">$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em class="italic text-[var(--r-muted)]">$1</em>')
+      .replace(/`(.+?)`/g, '<code class="px-1.5 py-0.5 rounded bg-[var(--r-bg-2)] text-[var(--r-accent)] font-mono text-xs border border-[var(--r-line)]">$1</code>');
   };
 
   for (let i = 0; i < lines.length; i++) {
@@ -30,27 +30,27 @@ function renderMarkdownToHtml(md: string) {
 
     if (line.startsWith('### ')) {
       if (inList) { html += '</ul>'; inList = false; }
-      html += `<h3 class="text-lg font-bold text-white mt-6 mb-2 tracking-tight">${formatInline(line.substring(4))}</h3>`;
+      html += `<h3 class="text-lg sm:text-xl font-extrabold text-[var(--r-text)] mt-8 mb-3 tracking-tight font-display flex items-center gap-2"><span class="text-[var(--r-accent)]">▸</span>${formatInline(line.substring(4))}</h3>`;
       continue;
     }
     if (line.startsWith('## ')) {
       if (inList) { html += '</ul>'; inList = false; }
-      html += `<h2 class="text-xl sm:text-2xl font-bold text-white mt-8 mb-3 tracking-tight border-b border-[#242E2C] pb-2">${formatInline(line.substring(3))}</h2>`;
+      html += `<h2 class="text-xl sm:text-2xl font-extrabold text-[var(--r-text)] mt-10 mb-4 tracking-tight border-b border-[var(--r-line)] pb-3 font-display">${formatInline(line.substring(3))}</h2>`;
       continue;
     }
     if (line.startsWith('> ')) {
       if (inList) { html += '</ul>'; inList = false; }
-      html += `<blockquote class="p-4 my-5 border-l-4 border-[#00E699] bg-[#121A17] rounded-r-xl text-neutral-200 italic leading-relaxed">${formatInline(line.substring(2))}</blockquote>`;
+      html += `<blockquote class="p-4 sm:p-5 my-6 border-l-4 border-[var(--r-accent)] bg-[var(--r-bg-2)] rounded-r-2xl text-[var(--r-text)] italic leading-relaxed shadow-sm">${formatInline(line.substring(2))}</blockquote>`;
       continue;
     }
     if (line.startsWith('- ') || line.startsWith('* ')) {
-      if (!inList) { html += '<ul class="space-y-2 my-4 list-disc list-inside text-neutral-300">'; inList = true; }
-      html += `<li class="leading-relaxed">${formatInline(line.substring(2))}</li>`;
+      if (!inList) { html += '<ul class="space-y-2.5 my-5 list-none text-[var(--r-text)] pl-1">'; inList = true; }
+      html += `<li class="flex items-start gap-2.5 leading-relaxed"><span class="text-[var(--r-accent)] font-bold mt-1 select-none">▪</span><span class="flex-1">${formatInline(line.substring(2))}</span></li>`;
       continue;
     }
 
     if (inList) { html += '</ul>'; inList = false; }
-    html += `<p class="leading-relaxed text-neutral-300 my-3 text-base">${formatInline(line)}</p>`;
+    html += `<p class="leading-relaxed text-[var(--r-text)] opacity-95 my-4 text-base sm:text-[16.5px]">${formatInline(line)}</p>`;
   }
 
   if (inList) html += '</ul>';
@@ -204,7 +204,12 @@ const authorName = dispatch?.author || 'Muntrume Motorsport';
 const authorRole = getAuthorRole(authorName);
 const authorInitials = getAuthorInitials(authorName);
 const category = dispatch?.category || 'Despacho Oficial';
-const bodyHtml = isTeam ? renderMarkdownToHtml(dispatch?.body_markdown || '') : '';
+const bodyMarkdown = dispatch?.body_markdown || '';
+const bodyHtml = isTeam ? renderMarkdownToHtml(bodyMarkdown) : '';
+
+// Estimated Reading Time and Word Count
+const wordCount = ((bodyMarkdown || '') + ' ' + (dispatch?.excerpt_short || '')).trim().split(/\s+/).filter(Boolean).length;
+const readTimeMinutes = Math.max(1, Math.ceil(wordCount / 200));
 ---
 
 <Layout title={pageTitle} description={pageDescription} canonical={urlOriginal}>
@@ -225,21 +230,26 @@ const bodyHtml = isTeam ? renderMarkdownToHtml(dispatch?.body_markdown || '') : 
     )}
   </Fragment>
 
-  <div class="min-h-screen bg-[#0E1211] text-[#F5F5F5] pt-20 pb-20 selection:bg-[#00E699] selection:text-black">
+  <div class="min-h-screen bg-[var(--r-bg)] text-[var(--r-text)] pt-20 pb-20 selection:bg-[var(--r-accent)] selection:text-[var(--r-accent-ink)] transition-colors duration-200">
     <div id="dispatchContainer" class="max-w-3xl mx-auto px-4 sm:px-6 space-y-8">
       
-      
-      <div class="flex items-center justify-between text-xs font-mono pb-2 border-b border-[#242E2C]">
-        <nav class="flex items-center gap-2 text-[#9AA8A3]">
-          <a href="/" class="hover:text-white transition">Inicio</a>
+      <!-- Breadcrumb & Back Navigation -->
+      <div class="flex items-center justify-between text-xs font-mono pb-3 border-b border-[var(--r-line)]">
+        <nav class="flex items-center gap-2 text-[var(--r-muted)]">
+          <a href="/" class="hover:text-[var(--r-text)] transition flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+            </svg>
+            <span>Inicio</span>
+          </a>
           <span>/</span>
-          <a href="/news" class="hover:text-[#00E699] transition">Sala de Prensa</a>
+          <a href="/news" class="hover:text-[var(--r-accent)] transition">Sala de Prensa</a>
           <span>/</span>
-          <span class="text-[#00E699] truncate max-w-[200px]">{category}</span>
+          <span class="text-[var(--r-accent)] font-semibold truncate max-w-[200px]">{category}</span>
         </nav>
         <a 
           href="/news" 
-          class="inline-flex items-center gap-1 text-[#9AA8A3] hover:text-white transition"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--r-bg-2)] border border-[var(--r-line)] text-[var(--r-muted)] hover:text-[var(--r-text)] hover:border-[var(--r-accent)] transition font-mono shadow-sm"
         >
           <span>&larr;</span>
           <span>Volver a Noticias</span>
@@ -247,86 +257,115 @@ const bodyHtml = isTeam ? renderMarkdownToHtml(dispatch?.body_markdown || '') : 
       </div>
 
       {isTeam ? (
-        
-        
-        
         <article class="space-y-8">
           
+          <!-- Badges & Reading Meta -->
           <div class="flex flex-wrap items-center gap-2 text-xs font-mono">
-            <span class="px-2.5 py-1 rounded bg-[#1A2120] text-[#00E699] border border-[#00E699]/30 font-semibold uppercase tracking-wider flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-[#00E699] animate-pulse"></span>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--r-accent)]/15 text-[var(--r-accent)] border border-[var(--r-accent)]/30 font-bold uppercase tracking-wider text-[11px]">
+              <span class="w-2 h-2 rounded-full bg-[var(--r-accent)] animate-pulse"></span>
               <span>Despacho Oficial · Muntrume</span>
             </span>
-            <span class="px-2 py-0.5 rounded bg-[#121A17] text-[#BAC5C1] border border-[#1E2A26] uppercase font-semibold">
-              {category}
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--r-bg-2)] text-[var(--r-muted)] border border-[var(--r-line)] uppercase font-semibold text-[11px] shadow-sm">
+              <svg class="w-3.5 h-3.5 text-[var(--r-accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+              <span>{category}</span>
             </span>
-            {pubDate && <span class="text-[#9AA8A3]">• {pubDate}</span>}
+            {pubDate && (
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--r-bg-2)] text-[var(--r-muted)] border border-[var(--r-line)] text-[11px] shadow-sm">
+                <svg class="w-3.5 h-3.5 text-[var(--r-accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span>{pubDate}</span>
+              </span>
+            )}
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--r-bg-2)] text-[var(--r-muted)] border border-[var(--r-line)] text-[11px] shadow-sm">
+              <svg class="w-3.5 h-3.5 text-[var(--r-accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>{readTimeMinutes} min de lectura</span>
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--r-bg-2)] text-[var(--r-muted)] border border-[var(--r-line)] text-[11px] shadow-sm">
+              <svg class="w-3.5 h-3.5 text-[var(--r-accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span>{wordCount} palabras</span>
+            </span>
           </div>
 
-          
-          <h1 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+          <!-- Main Title -->
+          <h1 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-[var(--r-text)] tracking-tight leading-[1.18] font-display">
             {title}
           </h1>
 
-          
-          <div class="flex items-center justify-between gap-4 py-4 border-y border-[#242E2C] text-xs">
+          <!-- Author & Meta bar -->
+          <div class="flex flex-wrap sm:flex-nowrap items-center justify-between gap-4 py-4 border-y border-[var(--r-line)] text-xs">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full bg-[#1A2120] border border-[#00E699]/40 flex items-center justify-center font-extrabold text-[#00E699] text-sm">
+              <div class="w-11 h-11 rounded-full bg-[var(--r-bg-2)] border border-[var(--r-accent)]/40 flex items-center justify-center font-extrabold text-[var(--r-accent)] text-sm shadow-sm">
                 {authorInitials}
               </div>
               <div>
-                <div class="font-bold text-white text-sm">{authorName}</div>
-                <div class="text-[#9AA8A3] text-xs">{authorRole}</div>
+                <div class="font-bold text-[var(--r-text)] text-sm sm:text-base flex items-center gap-2">
+                  <span>{authorName}</span>
+                  <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-[var(--r-accent)]/15 text-[var(--r-accent)] border border-[var(--r-accent)]/30">Oficial MMT</span>
+                </div>
+                <div class="text-[var(--r-muted)] text-xs mt-0.5 flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5 text-[var(--r-accent)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                  <span>{authorRole}</span>
+                </div>
               </div>
             </div>
 
             <button 
               id="teamShareBtn" 
               onclick="if(navigator.clipboard){navigator.clipboard.writeText(window.location.href);var t=document.getElementById('teamShareText');if(t){t.textContent='¡Enlace Copiado!';setTimeout(()=>t.textContent='Compartir',2000);}}"
-              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1A2120] border border-[#242E2C] hover:border-[#00E699]/40 text-[#BAC5C1] hover:text-white transition text-xs font-mono cursor-pointer"
+              class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-[var(--r-text)] hover:text-[var(--r-accent)] transition text-xs font-mono font-semibold cursor-pointer shadow-sm ml-auto sm:ml-0"
+              title="Compartir este despacho técnico"
             >
-              <svg class="w-3.5 h-3.5 text-[#00E699]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4 text-[var(--r-accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
               </svg>
               <span id="teamShareText">Compartir</span>
             </button>
           </div>
 
-          
+          <!-- Featured Image -->
           {imageUrl && (
-            <figure class="rounded-2xl overflow-hidden border border-[#242E2C] bg-[#1A2120] relative shadow-2xl">
+            <figure class="rounded-2xl overflow-hidden border border-[var(--r-line)] bg-[var(--r-surface)] relative shadow-lg">
               <img
                 src={imageUrl}
                 alt={title}
                 loading="eager"
                 decoding="async"
-                class="w-full max-h-[460px] object-cover"
+                class="w-full max-h-[480px] object-cover"
               />
-              <figcaption class="p-3 text-[11px] font-mono text-[#7A8A87] bg-[#0E1211]/90 border-t border-[#242E2C] flex items-center justify-between">
+              <figcaption class="p-3 text-[11px] font-mono text-[var(--r-muted)] bg-[var(--r-surface)]/95 border-t border-[var(--r-line)] flex items-center justify-between">
                 <span>Fotografía oficial · {category} · Muntrume Motorsport</span>
-                <span class="text-[#00E699]">iRacing Official Series</span>
+                <span class="text-[var(--r-accent)] font-semibold">iRacing Official Series</span>
               </figcaption>
             </figure>
           )}
 
-          
-          <div class="space-y-4 text-[#BAC5C1] text-base leading-relaxed bg-[#141A18] p-6 sm:p-8 rounded-2xl border border-[#242E2C]">
-            <div set:html={bodyHtml} />
+          <!-- Article Content Card (Theme-Adaptive for Light & Dark Mode) -->
+          <div class="space-y-4 text-[var(--r-text)] text-base sm:text-[17px] leading-relaxed bg-[var(--r-surface)] p-6 sm:p-10 rounded-2xl border border-[var(--r-line)] shadow-sm">
+            <div class="article-prose" set:html={bodyHtml} />
           </div>
 
-          
-          <div class="p-6 rounded-2xl bg-[#1A2120] border border-[#242E2C] space-y-4">
-            <div class="flex items-center gap-2 text-white font-bold font-mono text-sm">
-              <span class="text-[#00E699]">⚡</span>
+          <!-- Resources & Links Card -->
+          <div class="p-6 sm:p-8 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] space-y-4 shadow-sm">
+            <div class="flex items-center gap-2 text-[var(--r-text)] font-bold font-mono text-sm sm:text-base">
+              <span class="text-[var(--r-accent)]">⚡</span>
               <span>Recursos Técnicos y Telemetría del Equipo</span>
             </div>
-            <p class="text-xs text-[#9AA8A3] leading-relaxed">
+            <p class="text-xs sm:text-sm text-[var(--r-muted)] leading-relaxed">
               Consulta las configuraciones .STO verificadas para esta prueba o compara tus vueltas con la telemetría a 60 Hz registrada por nuestros ingenieros:
             </p>
             <div class="flex flex-wrap gap-3 pt-2">
               <a 
                 href="/garage" 
-                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#00E699] text-black font-bold font-mono text-xs hover:bg-[#00c985] transition"
+                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--r-accent)] text-[var(--r-accent-ink)] font-bold font-mono text-xs hover:brightness-110 shadow-sm transition"
               >
                 <span>📂 Sincronizar Setup Vault</span>
                 <span>&rarr;</span>
@@ -335,14 +374,14 @@ const bodyHtml = isTeam ? renderMarkdownToHtml(dispatch?.body_markdown || '') : 
                 href="https://garage61.net/app/teams/muntrume" 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#242E2C] text-white hover:border-[#00E699]/40 border border-transparent font-mono text-xs transition"
+                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--r-bg-2)] text-[var(--r-text)] hover:border-[var(--r-accent)] border border-[var(--r-line)] font-mono text-xs transition shadow-sm"
               >
                 <span>📊 Telemetría Garage 61</span>
                 <span>&nearr;</span>
               </a>
               <a 
                 href="/paddock" 
-                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#121A17] text-[#BAC5C1] hover:text-white border border-[#242E2C] font-mono text-xs transition"
+                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--r-bg-2)] text-[var(--r-text)] hover:border-[var(--r-accent)] border border-[var(--r-line)] font-mono text-xs transition shadow-sm"
               >
                 <span>🏎️ Paddock &amp; Discord</span>
                 <span>&rarr;</span>
@@ -351,50 +390,50 @@ const bodyHtml = isTeam ? renderMarkdownToHtml(dispatch?.body_markdown || '') : 
           </div>
         </article>
       ) : (
-        
-        
-        
         <article class="space-y-8">
           <div class="flex flex-wrap items-center gap-2 text-xs font-mono">
-            <span class="px-2.5 py-1 rounded bg-[#1A2120] text-[#00E699] border border-[#242E2C] font-semibold">
-              Vía <a href={urlOriginal} target="_blank" rel="noopener noreferrer" class="underline hover:text-white">{sourceName}</a>
+            <span class="px-2.5 py-1 rounded bg-[var(--r-bg-2)] text-[var(--r-accent)] border border-[var(--r-line)] font-semibold shadow-sm">
+              Vía <a href={urlOriginal} target="_blank" rel="noopener noreferrer" class="underline hover:text-[var(--r-text)]">{sourceName}</a>
             </span>
-            {pubDate && <span class="text-[#9AA8A3]">• {pubDate}</span>}
-            <span class="px-2 py-0.5 rounded bg-[#121A17] text-[#7A8A87] border border-[#1E2A26] text-[10px] uppercase font-semibold">
+            {pubDate && <span class="text-[var(--r-muted)]">• {pubDate}</span>}
+            <span class="px-2.5 py-1 rounded bg-[var(--r-bg-2)] text-[var(--r-muted)] border border-[var(--r-line)] text-[10px] uppercase font-semibold shadow-sm">
               Despacho Agregado
+            </span>
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[var(--r-bg-2)] text-[var(--r-muted)] border border-[var(--r-line)] text-[10px] shadow-sm">
+              ⏱️ {readTimeMinutes} min de lectura
             </span>
           </div>
 
-          <h1 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+          <h1 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-[var(--r-text)] tracking-tight leading-[1.18] font-display">
             {title}
           </h1>
 
           {imageUrl && (
-            <figure class="rounded-2xl overflow-hidden border border-[#242E2C] bg-[#1A2120] relative">
+            <figure class="rounded-2xl overflow-hidden border border-[var(--r-line)] bg-[var(--r-surface)] relative shadow-lg">
               <img
                 src={imageUrl}
                 alt={title}
                 referrerpolicy="no-referrer"
                 loading="lazy"
-                class="w-full max-h-[420px] object-cover opacity-90 hover:opacity-100 transition"
+                class="w-full max-h-[440px] object-cover opacity-95 hover:opacity-100 transition"
               />
-              <figcaption class="p-3 text-[11px] font-mono text-[#7A8A87] bg-[#0E1211]/80 border-t border-[#242E2C]">
+              <figcaption class="p-3 text-[11px] font-mono text-[var(--r-muted)] bg-[var(--r-surface)]/95 border-t border-[var(--r-line)]">
                 Fotografía e imagen vía {sourceName}
               </figcaption>
             </figure>
           )}
 
-          <div class="space-y-6 text-[#BAC5C1] text-base leading-relaxed bg-[#1A2120] p-6 sm:p-8 rounded-2xl border border-[#242E2C]">
+          <div class="space-y-6 text-[var(--r-text)] text-base leading-relaxed bg-[var(--r-surface)] p-6 sm:p-8 rounded-2xl border border-[var(--r-line)] shadow-sm">
             <div>
-              <h2 class="text-xs font-mono uppercase tracking-wider text-[#7A8A87] mb-2 font-semibold">Resumen de la noticia</h2>
-              <p class="text-white text-base sm:text-lg font-medium italic border-l-2 border-[#00E699] pl-4 py-1">
+              <h2 class="text-xs font-mono uppercase tracking-wider text-[var(--r-muted)] mb-2 font-semibold">Resumen de la noticia</h2>
+              <p class="text-[var(--r-text)] text-base sm:text-lg font-medium italic border-l-3 border-[var(--r-accent)] pl-4 py-1.5 bg-[var(--r-bg-2)] rounded-r-xl">
                 "{excerpt}"
               </p>
             </div>
 
-            <div class="pt-4 border-t border-[#242E2C]">
-              <h2 class="text-xs font-mono uppercase tracking-wider text-[#00E699] mb-2 font-semibold">Contexto Muntrume Motorsport</h2>
-              <p class="text-sm sm:text-base text-[#9AA8A3]">
+            <div class="pt-4 border-t border-[var(--r-line)]">
+              <h2 class="text-xs font-mono uppercase tracking-wider text-[var(--r-accent)] mb-2 font-semibold">Contexto Muntrume Motorsport</h2>
+              <p class="text-sm sm:text-base text-[var(--r-muted)] leading-relaxed">
                 {contextNote}
               </p>
             </div>
@@ -405,19 +444,19 @@ const bodyHtml = isTeam ? renderMarkdownToHtml(dispatch?.body_markdown || '') : 
               href={urlOriginal}
               target="_blank"
               rel="noopener noreferrer"
-              class="inline-flex items-center justify-center gap-3 w-full sm:w-auto px-8 py-4 rounded-xl bg-[#00E699] text-black font-bold font-mono text-sm sm:text-base hover:bg-[#00c985] shadow-lg shadow-[#00E699]/15 hover:shadow-[#00E699]/30 transition transform hover:-translate-y-0.5"
+              class="inline-flex items-center justify-center gap-3 w-full sm:w-auto px-8 py-4 rounded-xl bg-[var(--r-accent)] text-[var(--r-accent-ink)] font-bold font-mono text-sm sm:text-base hover:brightness-110 shadow-lg shadow-[var(--r-accent)]/15 transition transform hover:-translate-y-0.5"
             >
               <span>Leer noticia completa en {sourceName}</span>
               <span class="text-lg">&rarr;</span>
             </a>
-            <p class="text-[11px] font-mono text-[#7A8A87] mt-2">
+            <p class="text-[11px] font-mono text-[var(--r-muted)] mt-2">
               Enlace directo al artículo original en {sourceName} (se abre en nueva ventana).
             </p>
           </div>
 
-          <div class="p-5 rounded-xl bg-[#121A17] border border-[#242E2C] text-xs font-mono text-[#7A8A87] space-y-2 mt-12">
-            <div class="flex items-center gap-2 text-[#9AA8A3] font-semibold">
-              <svg class="w-4 h-4 text-[#00E699]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="p-5 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] text-xs font-mono text-[var(--r-muted)] space-y-2 mt-12 shadow-sm">
+            <div class="flex items-center gap-2 text-[var(--r-text)] font-semibold">
+              <svg class="w-4 h-4 text-[var(--r-accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <span>Aviso Legal y Atribución Editorial</span>
@@ -426,12 +465,12 @@ const bodyHtml = isTeam ? renderMarkdownToHtml(dispatch?.body_markdown || '') : 
               Este contenido es un resumen técnico agregado vía RSS público con fines informativos y de cita (Art. 32 LPI / Directiva UE 2019/790). La noticia original fue publicada por <strong>{sourceName}</strong> y todos los derechos pertenecen a sus respectivos autores.
             </p>
             <p>
-              Fuente original: <a href={urlOriginal} target="_blank" rel="noopener noreferrer" class="text-[#00E699] underline break-all">{urlOriginal}</a>
+              Fuente original: <a href={urlOriginal} target="_blank" rel="noopener noreferrer" class="text-[var(--r-accent)] underline break-all">{urlOriginal}</a>
             </p>
-            <div class="pt-2 flex flex-wrap items-center gap-4 text-[11px] text-[#9AA8A3]">
-              <a href="/legal/fuentes" class="hover:text-white underline">Directorio de Fuentes y Contacto 24h</a>
+            <div class="pt-2 flex flex-wrap items-center gap-4 text-[11px] text-[var(--r-muted)]">
+              <a href="/legal/fuentes" class="hover:text-[var(--r-text)] underline">Directorio de Fuentes y Contacto 24h</a>
               <span>•</span>
-              <a href="/legal/retirada" class="hover:text-white underline">Solicitar Retirada Inmediata (Takedown)</a>
+              <a href="/legal/retirada" class="hover:text-[var(--r-text)] underline">Solicitar Retirada Inmediata (Takedown)</a>
             </div>
           </div>
         </article>
@@ -439,18 +478,17 @@ const bodyHtml = isTeam ? renderMarkdownToHtml(dispatch?.body_markdown || '') : 
 
     </div>
 
-    
     {!isTeam && (
-      <div id="takedownAlert" class="hidden max-w-md mx-auto p-8 rounded-2xl bg-[#1A2120] border border-[#242E2C] text-center space-y-4 my-16 font-mono">
-        <div class="w-12 h-12 rounded-full bg-red-500/10 text-red-400 mx-auto flex items-center justify-center font-bold text-xl border border-red-500/20">
+      <div id="takedownAlert" class="hidden max-w-md mx-auto p-8 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] text-center space-y-4 my-16 font-mono text-[var(--r-text)] shadow-sm">
+        <div class="w-12 h-12 rounded-full bg-red-500/10 text-red-500 mx-auto flex items-center justify-center font-bold text-xl border border-red-500/20">
           410
         </div>
-        <h2 class="text-xl font-bold text-white">Contenido Retirado</h2>
-        <p class="text-xs text-[#9AA8A3] leading-relaxed">
+        <h2 class="text-xl font-bold text-[var(--r-text)]">Contenido Retirado</h2>
+        <p class="text-xs text-[var(--r-muted)] leading-relaxed">
           Este despacho ha sido retirado permanentemente a petición del titular de derechos conforme a la normativa legal (Art. 32 LPI / DMCA).
         </p>
         <div class="pt-4">
-          <a href="/news" class="inline-block px-4 py-2 rounded-xl bg-[#242E2C] hover:bg-[#2F3C3A] text-xs text-white transition">
+          <a href="/news" class="inline-block px-4 py-2 rounded-xl bg-[var(--r-bg-2)] hover:border-[var(--r-accent)] border border-[var(--r-line)] text-xs text-[var(--r-text)] transition shadow-sm">
             &larr; Volver a la Sala de Prensa
           </a>
         </div>

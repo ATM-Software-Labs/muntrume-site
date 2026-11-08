@@ -3912,19 +3912,19 @@ async function renderAiTrainerForSetup(setup, customModel = null) {
     gainVsFixed = Number((gainVsFixed + 0.16).toFixed(2));
     targetVmax = Number((targetVmax + 0.9).toFixed(1));
     stabilityScore = 90;
-    tierBadge = `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-red-500/20 text-red-300 border border-red-500/40">🔴 ESPORT [E] · Superagresivo</span>`;
-    tierSub = `🛡️ <strong class="text-red-300">Exigente:</strong> Mínimo drag en recta y plataforma rígida. Requiere precisión milimétrica en pianos. ⚡ <strong class="text-red-300">Punta:</strong> +${(targetVmax - model.measured_vmax_kmh).toFixed(1)} km/h en recta.`;
+    tierBadge = `<span class="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-red-500/20 text-red-300 border border-red-500/40">🔴 ESPORT [E] · Nivel Pro</span>`;
+    tierSub = `🏆 <strong class="text-red-300">Piloto Pro:</strong> Mínimo drag en recta y plataforma rígida al límite reglamentario. Exige máxima precisión en pianos. ⚡ <strong class="text-red-300">Vmax:</strong> +${(targetVmax - model.measured_vmax_kmh).toFixed(1)} km/h en recta.`;
   } else if (tier === "safe") {
     gainVsShop = Number((Math.max(0.20, gainVsShop - 0.14)).toFixed(2));
     gainVsFixed = Number((gainVsFixed - 0.14).toFixed(2));
     targetVmax = Number((targetVmax - 0.5).toFixed(1));
     stabilityScore = 99;
-    tierBadge = `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">🟢 SAFE [S] · Máxima Estabilidad</span>`;
-    tierSub = `🛡️ <strong class="text-emerald-300">Blindado:</strong> Alturas elevadas anti-fondo en compresiones, amortiguación HS absorbente para pianos y cero Failed Tech.`;
+    tierBadge = `<span class="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">🟢 SAFE [S] · Principiante / Iniciación</span>`;
+    tierSub = `🛡️ <strong class="text-emerald-300">Piloto Principiante / Iniciación:</strong> Máxima tolerancia a errores y baches, alturas anti-fondo en compresiones de 3G y amortiguación HS absorbente para pianos. Cero trompos.`;
   } else {
     stabilityScore = 96;
-    tierBadge = `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">🟡 NORMAL · Mejor Ratio Velocidad / Seguridad</span>`;
-    tierSub = `🛡️ <strong class="text-amber-300">Seguro:</strong> Alturas con margen de escrutinio reglamentario. ⚡ <strong class="text-cyan-300">Rápido:</strong> 170 kPa calientes Vuelta 1 + rotación limpia en ápice.`;
+    tierBadge = `<span class="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">🟡 NORMAL · Piloto Avanzado</span>`;
+    tierSub = `⭐ <strong class="text-amber-300">Piloto Avanzado:</strong> El mejor ratio velocidad / seguridad. Alturas con margen de escrutinio. ⚡ <strong class="text-cyan-300">Rápido:</strong> 170 kPa calientes Vuelta 1 + rotación limpia en ápice.`;
   }
 
   const baseLap = model.measured_best_lap_s;
@@ -3933,10 +3933,10 @@ async function renderAiTrainerForSetup(setup, customModel = null) {
   const aiLapStr = aiLapSec > 40 ? formatLapTime(aiLapSec) : "--:--.---";
 
   const tierHeaderRec = tier === "esport"
-    ? `🔴 CONFIGURACIÓN ESPORT [E] (SUPERAGRESIVA): Alerón optimizado para mínima resistencia aerodinámica (+${(targetVmax - model.measured_vmax_kmh).toFixed(1)} km/h), alturas de carrocería al límite reglamentario y diferencial de 10 caras / 110 Nm para tracción instantánea en salida. Requiere manos expertas y evitar bordillos cortantes.`
+    ? `🔴 CONFIGURACIÓN ESPORT [E] (NIVEL PRO): Alerón optimizado para mínima resistencia aerodinámica (+${(targetVmax - model.measured_vmax_kmh).toFixed(1)} km/h), alturas al límite reglamentario y diferencial reactivo (10 caras / 110 Nm). Diseñado para pilotos Pro que buscan la última décima en hotlap y saben atacar el vértice con precisión quirúrgica.`
     : (tier === "safe"
-      ? `🟢 CONFIGURACIÓN SAFE [S] (MÁXIMA ESTABILIDAD): Alturas estáticas con margen holgado (+1.5 mm Del / +2.0 mm Tras), amortiguación de compresión rápida (HS Comp) suavizada (-3 clics) para absorber pianos agresivos y Bump Rubber Gap ampliado para eliminar topes en compresiones de 3G.`
-      : `🟡 CONFIGURACIÓN NORMAL (MEJOR RATIO VELOCIDAD / SEGURIDAD - ESTÁNDAR): El equilibrio óptimo de Muntrume Motorsport. Combina velocidad punta en recta de ${targetVmax} km/h con tracción predecible, presiones calientes estabilizadas en 170 kPa y control de trail-braking.`);
+      ? `🟢 CONFIGURACIÓN SAFE [S] (NIVEL PRINCIPIANTE / INICIACIÓN): Alturas sobreelevadas (+1.5 mm Del / +2.0 mm Tras), amortiguadores HS Comp suavizados (-3 clics) para tragar bordillos y baches, y diferencial progresivo anti-latigazos. El setup más seguro y perdonador para quienes están empezando a competir o para circuitos implacables como Nordschleife.`
+      : `🟡 CONFIGURACIÓN NORMAL (NIVEL AVANZADO - ESTÁNDAR MTM): El equilibrio óptimo de Muntrume Motorsport para pilotos avanzados. Combina velocidad punta de ${targetVmax} km/h en recta con tracción predecible, presiones calientes estabilizadas en 170 kPa y control de trail-braking.`);
 
   const allRecs = [tierHeaderRec, ...(model.ai_recommendations || [])];
   const recsHtml = allRecs.map(r => `
@@ -4060,20 +4060,20 @@ async function renderAiTrainerForSetup(setup, customModel = null) {
         <div class="inline-flex p-1 rounded-xl bg-black/50 border border-white/10 gap-1" role="group">
           <button type="button" onclick="setAiSetupTier('esport')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${tier === 'esport' ? 'bg-red-500/25 text-red-300 border border-red-500/50 shadow-md shadow-red-500/20' : 'text-neutral-400 hover:text-white'}">
             <span>🔴 Esport</span>
-            <span class="text-[9px] font-mono px-1.5 py-0.5 rounded font-black bg-red-500/25 text-red-300 border border-red-500/30">E</span>
+            <span class="text-[9px] font-mono px-1.5 py-0.5 rounded font-black bg-red-500/25 text-red-300 border border-red-500/30">E · Pro</span>
           </button>
           <button type="button" onclick="setAiSetupTier('normal')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${tier === 'normal' ? 'bg-amber-500/25 text-amber-300 border border-amber-500/50 shadow-md shadow-amber-500/20' : 'text-neutral-400 hover:text-white'}">
             <span>🟡 Normal</span>
-            <span class="text-[9px] font-mono px-1.5 py-0.5 rounded text-neutral-400 bg-white/5 border border-white/10">(sin letra)</span>
+            <span class="text-[9px] font-mono px-1.5 py-0.5 rounded font-semibold text-amber-300 bg-amber-500/15 border border-amber-500/30">Avanzado</span>
           </button>
           <button type="button" onclick="setAiSetupTier('safe')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${tier === 'safe' ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-500/50 shadow-md shadow-emerald-500/20' : 'text-neutral-400 hover:text-white'}">
             <span>🟢 Safe</span>
-            <span class="text-[9px] font-mono px-1.5 py-0.5 rounded font-black bg-emerald-500/25 text-emerald-300 border border-emerald-500/30">S</span>
+            <span class="text-[9px] font-mono px-1.5 py-0.5 rounded font-black bg-emerald-500/25 text-emerald-300 border border-emerald-500/30">S · Principiante</span>
           </button>
         </div>
       </div>
       <div class="text-[11px] text-neutral-400 font-mono">
-        ${tier === 'esport' ? '⚡ [E] Superagresivo: Máxima velocidad punta y rotación aguda' : (tier === 'safe' ? '🛡️ [S] Seguro: Máxima tolerancia a pianos, compresión y 0 trompos' : '⭐ [Normal] Ratio Óptimo: Ritmo de carrera y consistencia')}
+        ${tier === 'esport' ? '🏆 [E] Nivel Pro: Superagresivo para hotlap y top-split' : (tier === 'safe' ? '🛡️ [S] Principiante / Iniciación: Máxima estabilidad y 0 trompos' : '⭐ [Normal] Piloto Avanzado: El balance de oro entre velocidad y seguridad')}
       </div>
     </div>
 
