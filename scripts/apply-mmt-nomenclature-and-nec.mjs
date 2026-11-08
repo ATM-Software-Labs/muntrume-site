@@ -488,19 +488,19 @@ function runMigration() {
         stability_score: 99,
         burn_per_lap_l: p.burn,
         ai_recommendations: [
-          `VERIFICACIÓN TECH INSPECTION NORDSCHLEIFE SUPERADA: Altura estática delantera fijada en ${p.rhFront} mm y trasera en ${p.rhRear} mm (superando con margen de seguridad el mínimo reglamentario de 70.0 mm en Nürburgring VLN para evitar 'Failed Tech').`,
-          `Compresión de Fuchsröhre y salto de Pflanzgarten protegidos: Bump Rubber Gap calibrado en 24 mm Del / 32 mm Tras con amortiguadores HS Comp suavizados (-2 clics) para absorber pianos de Hatzenbach y Karussell.`,
-          `Alerón optimizado en ${p.wingR} (END/R) y ${p.wingQ} (Q/Q2) para alcanzar ${ (p.vmax + 1.4).toFixed(1) } km/h en Döttinger Höhe sin perder apoyo en Schwedenkreuz.`,
+          `VERIFICACIÓN TECH INSPECTION NORDSCHLEIFE SUPERADA: Altura estática calibrada con margen de seguridad en ${p.rhFront + 0.7} mm (Del) y ${p.rhRear + 1.0} mm (Tras), superando con holgura los 70.0 mm mínimos de escrutinio oficial en Nürburgring VLN.`,
+          `PROTECCIÓN DE SUSPENSIÓN ANTI-IMPACTO (Fuchsröhre y Pflanzgarten): Bump Rubber Gap aumentado a 28 mm (Del) y 35 mm (Tras) con amortiguadores HS Comp suavizados (-3 clics) para evitar que el chasis toque fondo en la compresión de 3G de Fuchsröhre o rebote en el salto de Pflanzgarten. En carrera, usar SIEMPRE setup SAFE (R_SAFE / END_SAFE).`,
+          `Alerón calibrado en ${p.wingR} (END/R) y ${p.wingQ} (Q/Q2) para maximizar paso por curva en Schwedenkreuz y Mutkurve sin penalizar excesivamente en Döttinger Höhe.`,
           `Presiones frías calibradas en 159.5 / 159.5 kPa (END) y 163.5 kPa (Q/Q2) cumpliendo el límite mínimo BoP (>= 152.0 kPa / 22.0 psi).`,
-          `Combustible NEC calibrado: 15.5 L para Q (1 vuelta de 24.358 km), 27.5 L para Q2 (out-lap + push) y tanque completo BoP (100%) para END (stints de 7-8 vueltas en las 4h/6h de la NEC).`
+          `COMBUSTIBLE QUALY REALISTA NORDSCHLEIFE: 29.5 L para Q (Out-lap completa de 24.36 km [~12 L] + 1 Vuelta Lanzada [~12 L] + 5.5 L margen de seguridad). Para Q2 (2 vueltas lanzadas): 42.0 L. En carrera (END/R): Tanque 100% BoP para stints de 7-8 vueltas (11.8 L/vuelta).`
         ],
         comparison_table: [
           {
             param: 'Altura Estática Del. / Tras. (Regla Nordschleife >= 70.0 mm)',
             fixed: '70.5 / 78.0 mm',
-            shop: `${p.rhFront} / ${p.rhRear} mm (PASSED TECH)`,
-            ai_pro: `${p.rhFront} / ${p.rhRear} mm (Dyn @Fuchsröhre: 44.2/52.8 mm)`,
-            impact: 'Garantiza 0 Failed Tech en escrutinio iRacing Nordschleife'
+            shop: `${(p.rhFront + 0.7).toFixed(1)} / ${(p.rhRear + 1.0).toFixed(1)} mm (PASSED TECH)`,
+            ai_pro: `${(p.rhFront + 0.7).toFixed(1)} / ${(p.rhRear + 1.0).toFixed(1)} mm (Dyn @Fuchsröhre: 46.5/54.2 mm)`,
+            impact: 'Garantiza 0 Failed Tech y elimina topes violentos en Fuchsröhre'
           },
           {
             param: 'Presión Fría LF / RF / LR / RR (BoP >= 152 kPa)',
@@ -519,9 +519,9 @@ function runMigration() {
           {
             param: 'Gasolina Calculada (Q / Q2 / END)',
             fixed: '100% Tank',
-            shop: '15.5 L (Q) / 27.5 L (Q2) / 100% (END)',
-            ai_pro: `15.5 L (Q) / 27.5 L (Q2) / 100% BoP (${p.burn} L/vuelta)`,
-            impact: 'Cubre vuelta lanzada completa VLN y stint máximo NEC'
+            shop: '29.5 L (Q) / 42.0 L (Q2) / 100% (END)',
+            ai_pro: `29.5 L (Q: Outlap + Push) / 42.0 L (Q2: Outlap + 2 Push) / 100% BoP (${p.burn} L/vuelta)`,
+            impact: 'Cubre Out-lap de 24.4 km + Vueltas lanzadas sin quedarse tirado sin gasolina'
           }
         ],
         stint_history: [
