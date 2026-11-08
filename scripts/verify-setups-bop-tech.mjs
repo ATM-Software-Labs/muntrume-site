@@ -42,7 +42,7 @@ function checkBoPAndTech(row) {
 }
 
 function testStoBinaryIntegrity() {
-  const notesText = 'MUNTRUME MOTORSPORT [26S4] · MTM MEGASETUP™ | Developed by Alberto Trujillo | muntru.me';
+  const notesText = 'MUNTRUME MOTORSPORT [26S4] · MTM MEGASETUP™ | Muntrume Motorsport by Alberto Trujillo | muntru.me';
   const payloadSize = 1024;
   const l3 = (notesText.length + 1) * 2;
   const l2 = 64;

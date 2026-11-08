@@ -788,7 +788,7 @@ function updateMmtSimulator() {
       { label: "Presiones en Frío (iRacing 26S4)", val: pressure },
       { label: "Carga de Combustible", val: fuel },
       { label: "Caídas & Convergencia (Camber/Toe)", val: "Del: -3.4° · Tras: -2.6° (Dentro de límite BoP)" },
-      { label: "Firma Binaria UTF-16LE", val: "muntru.me - Muntrume Motorsport | Setup by Alberto Trujillo" },
+      { label: "Firma Binaria UTF-16LE", val: "Muntrume Motorsport by Alberto Trujillo | muntru.me" },
       { label: "Resultado Escrutinio iRacing", val: "✓ PASS TECH (0 Failed Tech)" }
     ];
 

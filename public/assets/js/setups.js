@@ -374,7 +374,7 @@ Aero & Chassis: Positive Dynamic Rake (+12.5mm) | Pressures: 170 kPa hot | ${tec
 Drivetrain: Differential 8 faces / 80 Nm | Brake Bias: 52.5% - 53.5%
 Digital Signature: [MTM-PRO-SEC-26S4] · 0 Failed Tech
 Telemetry: garage61.net/app/teams/muntrume-motorsport
-Developed by Alberto Trujillo | muntru.me`;
+Muntrume Motorsport by Alberto Trujillo | muntru.me`;
 }
 
 function validateSetupBoPAndTech(setup) {
@@ -2709,7 +2709,7 @@ function decodeAndSanitizeSto(b64, carSlug = "", setupOrFilename = null) {
 
   const cleanText = (typeof generateModernStoNotes === "function")
     ? generateModernStoNotes(setupOrFilename || carSlug, carSlug)
-    : "MUNTRUME MOTORSPORT [26S4] · MTM MEGASETUP™ | Developed by Alberto Trujillo | muntru.me";
+    : "MUNTRUME MOTORSPORT [26S4] · MTM MEGASETUP™ | Muntrume Motorsport by Alberto Trujillo | muntru.me";
   const newL3 = (cleanText.length + 1) * 2;
   const newL1 = (l1 - l3) + newL3;
   const trailingLen = raw.length - notesEnd;
