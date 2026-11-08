@@ -452,33 +452,64 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // Restore stored session (localStorage persistence + strict atrumin16@gmail.com admin rule)
+  // Restore stored session (Requires strict cryptographic bearer token to prevent session spoofing/cache hijack)
   const savedToken = getStoredSession("mrt_vault_token");
   const savedUser = getStoredSession("mrt_vault_user");
-  const savedEmail = localStorage.getItem("muntrume_user_email") || "";
-  const savedAuthState = localStorage.getItem("muntrume_auth_state") || "";
 
-  if ((savedToken && savedUser) || (savedAuthState === "authenticated" && savedEmail)) {
-    currentToken = savedToken || "local_session";
+  if (savedToken && savedToken !== "guest_token" && savedToken !== "local_session" && savedUser) {
+    currentToken = savedToken;
     try {
-      const parsed = savedUser ? JSON.parse(savedUser) : { email: savedEmail };
-      currentUser = normalizeUserAccount(parsed, savedEmail);
-      saveSession(currentToken, currentUser, true);
-      showVaultView();
-      loadCatalog();
-      return;
+      const parsed = JSON.parse(savedUser);
+      if (parsed && parsed.email) {
+        currentUser = normalizeUserAccount(parsed, parsed.email);
+        saveSession(currentToken, currentUser, true);
+        showVaultView();
+        loadCatalog();
+        return;
+      }
     } catch (e) {
       handleLogout();
     }
+  } else {
+    // Invalidate any orphaned mock session flags
+    try {
+      localStorage.removeItem("muntrume_auth_state");
+    } catch (e) {}
   }
 
   // DEFAULT: Display landing page until user enters authorized!
   showLandingView();
 
-  if (window.location.hash === "#join" || urlParams.get("mode") === "join") {
+  if (urlParams.get("auth") === "admin" || urlParams.get("mode") === "admin") {
+    openAuthModal("login");
+    const err = document.getElementById("loginError");
+    if (err) {
+      err.textContent = "🔒 Se requiere autenticación de Team Principal para acceder a Race Control.";
+      err.classList.remove("hidden");
+    }
+  } else if (urlParams.get("auth") === "expired") {
+    openAuthModal("login");
+    const err = document.getElementById("loginError");
+    if (err) {
+      err.textContent = "🔒 Tu sesión de administración ha caducado. Introduce tus credenciales.";
+      err.classList.remove("hidden");
+    }
+  } else if (window.location.hash === "#join" || urlParams.get("mode") === "join") {
     openAuthModal("join");
   } else if (window.location.hash === "#login" || urlParams.get("mode") === "login") {
     openAuthModal("login");
+  }
+});
+
+// BFCache Protection: re-validate session state if loaded from history cache
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) {
+    const activeToken = getStoredSession("mrt_vault_token");
+    if (!activeToken || activeToken === "guest_token") {
+      handleLogout();
+    } else {
+      syncGarageAuthUI();
+    }
   }
 });
 
@@ -617,6 +648,15 @@ async function handleLogin(e) {
         openChangePasswordModal();
         return;
       }
+
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirect = urlParams.get("redirect");
+        if (redirect && redirect.startsWith("/") && !redirect.startsWith("//")) {
+          window.location.href = redirect;
+          return;
+        }
+      } catch (e) {}
 
       showVaultView();
       await loadCatalog();
@@ -918,13 +958,27 @@ function handleLogout() {
   currentUser = null;
   allSetups = [];
   iracingDirHandle = null;
-  localStorage.removeItem("mrt_vault_token");
-  localStorage.removeItem("mrt_vault_user");
-  localStorage.removeItem("muntrume_user_email");
-  localStorage.removeItem("muntrume_auth_state");
-  localStorage.removeItem("muntrume_is_admin");
-  sessionStorage.removeItem("mrt_vault_token");
-  sessionStorage.removeItem("mrt_vault_user");
+  try {
+    localStorage.removeItem("mrt_vault_token");
+    localStorage.removeItem("mrt_vault_user");
+    localStorage.removeItem("muntrume_user_email");
+    localStorage.removeItem("muntrume_auth_state");
+    localStorage.removeItem("muntrume_is_admin");
+    localStorage.removeItem("muntrume_rc_audit_logs");
+    localStorage.removeItem("muntrume_rc_custom_members");
+    sessionStorage.clear();
+  } catch (e) {}
+
+  // Reset form inputs so password/email don't stick in memory/cache
+  const lk = document.getElementById("loginKey");
+  if (lk) lk.value = "";
+  const le = document.getElementById("loginEmail");
+  if (le) le.value = "";
+  const ce = document.getElementById("codeEmail");
+  if (ce) ce.value = "";
+  const ci = document.getElementById("codeInput");
+  if (ci) ci.value = "";
+
   window.dispatchEvent(new Event("muntrume-auth-change"));
   syncGarageAuthUI();
   showLandingView();
@@ -3822,6 +3876,59 @@ async function openAiTrainerQuick() {
   switchPreviewTab("ai");
 }
 
+function classifyCarCategory(carSlug) {
+  const c = String(carSlug || "").toLowerCase();
+  if (/gtp|lmdh|499p|arx06|valkyrie|v-series|vseries|bmwh|p963/.test(c)) return "GTP";
+  if (/gt4|m4gt4|amr4|caymn|mac4/.test(c)) return "GT4";
+  if (/tcr|civic|elantra|rs3|hyund/.test(c)) return "TCR";
+  if (/cup|chal|challenge/.test(c)) return "Cup";
+  if (/mx5/.test(c)) return "MX5";
+  if (/sf23|f3|f4|ff1600|formula/.test(c)) return "Formula";
+  return "GT3";
+}
+
+function isLowDragTrack(circuitName) {
+  const c = String(circuitName || "").toLowerCase();
+  return /mans|sarthe|monza|daytona|spa|fuji|talladega/.test(c);
+}
+
+function getBaseLapTimeSeconds(circuitName, category = "GT3", isWet = false) {
+  const c = String(circuitName || "").toLowerCase();
+  let base = 105.0;
+  if (c.includes("spa")) base = 138.0;
+  else if (c.includes("nurb") || c.includes("vln") || c.includes("nordschleife")) base = 485.0;
+  else if (c.includes("mans") || c.includes("sarthe")) base = 217.0;
+  else if (c.includes("daytona")) base = 104.0;
+  else if (c.includes("sebring")) base = 119.0;
+  else if (c.includes("monza")) base = 107.0;
+  else if (c.includes("bathurst") || c.includes("panorama")) base = 122.0;
+  else if (c.includes("suzuka")) base = 120.0;
+  else if (c.includes("silverstone")) base = 118.0;
+  else if (c.includes("interlagos") || c.includes("brazil")) base = 92.0;
+  else if (c.includes("imola")) base = 102.0;
+  else if (c.includes("barcelona") || c.includes("catalunya")) base = 103.0;
+  else if (c.includes("road america")) base = 124.0;
+  else if (c.includes("road atlanta")) base = 77.0;
+  else if (c.includes("watkins")) base = 104.0;
+  else if (c.includes("fuji")) base = 98.0;
+  else if (c.includes("mexico") || c.includes("rodriguez")) base = 98.5;
+  else if (c.includes("red bull") || c.includes("spielberg")) base = 88.0;
+  else if (c.includes("cota") || c.includes("americas")) base = 125.0;
+  else if (c.includes("zandvoort")) base = 97.0;
+  else if (c.includes("hockenheim")) base = 99.0;
+  else if (c.includes("hungaroring")) base = 103.0;
+  else if (c.includes("valencia")) base = 93.0;
+  else if (c.includes("laguna")) base = 83.0;
+
+  if (category === "GTP") base *= 0.88;
+  else if (category === "GT4") base *= 1.08;
+  else if (category === "TCR") base *= 1.14;
+  else if (category === "MX5") base *= 1.22;
+
+  if (isWet) base *= 1.09;
+  return +base.toFixed(3);
+}
+
 function synthesizeFallbackAiChallenger(setup) {
   const cat = classifyCarCategory(setup.car);
   const lowDrag = isLowDragTrack(setup.circuit);
@@ -3888,11 +3995,29 @@ async function renderAiTrainerForSetup(setup, customModel = null) {
     const exactKey = `${setup.car}__${setup.circuit}`;
     model = combos[exactKey];
     if (!model) {
-      const carMatches = Object.values(combos).filter(m => m.car === setup.car);
-      if (carMatches.length > 0) model = carMatches[0];
+      const cCar = (setup.car || "").toLowerCase();
+      const cCircuit = (setup.circuit || "").toLowerCase();
+      model = Object.values(combos).find(m =>
+        (m.car || "").toLowerCase() === cCar &&
+        (m.circuit || "").toLowerCase() === cCircuit
+      );
     }
     if (!model) {
-      model = synthesizeFallbackAiChallenger(setup);
+      const cCar = (setup.car || "").toLowerCase();
+      const carMatches = Object.values(combos).filter(m => (m.car || "").toLowerCase() === cCar);
+      if (carMatches.length > 0) {
+        const cat = classifyCarCategory(setup.car);
+        const baseLap = getBaseLapTimeSeconds(setup.circuit, cat, false);
+        model = {
+          ...carMatches[0],
+          circuit: setup.circuit,
+          reference_setup: setup.filename,
+          measured_best_lap_s: baseLap,
+          predicted_ai_lap_s: baseLap > 40 ? Number((baseLap - carMatches[0].predicted_gain_vs_shop_s).toFixed(3)) : carMatches[0].predicted_ai_lap_s
+        };
+      } else {
+        model = synthesizeFallbackAiChallenger(setup);
+      }
     }
   }
 
@@ -3912,19 +4037,19 @@ async function renderAiTrainerForSetup(setup, customModel = null) {
     gainVsFixed = Number((gainVsFixed + 0.16).toFixed(2));
     targetVmax = Number((targetVmax + 0.9).toFixed(1));
     stabilityScore = 90;
-    tierBadge = `<span class="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-red-500/20 text-red-300 border border-red-500/40">🔴 ESPORT [E] · Nivel Pro</span>`;
-    tierSub = `🏆 <strong class="text-red-300">Piloto Pro:</strong> Mínimo drag en recta y plataforma rígida al límite reglamentario. Exige máxima precisión en pianos. ⚡ <strong class="text-red-300">Vmax:</strong> +${(targetVmax - model.measured_vmax_kmh).toFixed(1)} km/h en recta.`;
+    tierBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-500/15 text-red-600 dark:text-red-300 border border-red-500/30">🔴 ESPORT [E] · Nivel Pro</span>`;
+    tierSub = `🏆 <strong class="text-red-600 dark:text-red-300">Piloto Pro:</strong> Mínimo drag en recta y plataforma al límite reglamentario. Exige máxima precisión en pianos. ⚡ <strong class="text-red-600 dark:text-red-300">Vmax:</strong> +${(targetVmax - model.measured_vmax_kmh).toFixed(1)} km/h en recta.`;
   } else if (tier === "safe") {
     gainVsShop = Number((Math.max(0.20, gainVsShop - 0.14)).toFixed(2));
     gainVsFixed = Number((gainVsFixed - 0.14).toFixed(2));
     targetVmax = Number((targetVmax - 0.5).toFixed(1));
     stabilityScore = 99;
-    tierBadge = `<span class="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">🟢 SAFE [S] · Principiante / Iniciación</span>`;
-    tierSub = `🛡️ <strong class="text-emerald-300">Piloto Principiante / Iniciación:</strong> Máxima tolerancia a errores y baches, alturas anti-fondo en compresiones de 3G y amortiguación HS absorbente para pianos. Cero trompos.`;
+    tierBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30">🟢 SAFE [S] · Principiante / Iniciación</span>`;
+    tierSub = `🛡️ <strong class="text-emerald-600 dark:text-emerald-300">Piloto Principiante / Iniciación:</strong> Máxima tolerancia a fallos y baches, alturas anti-fondo en compresiones de 3G y amortiguación HS absorbente para pianos. Cero trompos.`;
   } else {
     stabilityScore = 96;
-    tierBadge = `<span class="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">🟡 NORMAL · Piloto Avanzado</span>`;
-    tierSub = `⭐ <strong class="text-amber-300">Piloto Avanzado:</strong> El mejor ratio velocidad / seguridad. Alturas con margen de escrutinio. ⚡ <strong class="text-cyan-300">Rápido:</strong> 170 kPa calientes Vuelta 1 + rotación limpia en ápice.`;
+    tierBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">🟡 NORMAL · Piloto Avanzado</span>`;
+    tierSub = `⭐ <strong class="text-amber-700 dark:text-amber-300">Piloto Avanzado:</strong> El mejor ratio velocidad / seguridad. Alturas con margen de escrutinio. ⚡ <strong class="text-[var(--r-accent)]">Rápido:</strong> 170 kPa calientes Vuelta 1 + rotación limpia en ápice.`;
   }
 
   const baseLap = model.measured_best_lap_s;
@@ -3940,9 +4065,9 @@ async function renderAiTrainerForSetup(setup, customModel = null) {
 
   const allRecs = [tierHeaderRec, ...(model.ai_recommendations || [])];
   const recsHtml = allRecs.map(r => `
-    <li class="flex items-start gap-2 text-xs text-neutral-200 leading-relaxed">
-      <span class="${tier === 'esport' ? 'text-red-400' : (tier === 'safe' ? 'text-emerald-400' : 'text-amber-400')} font-black mt-0.5">⚡</span>
-      <span>${escapeHtml(r)}</span>
+    <li class="flex items-start gap-2.5 text-xs text-[var(--r-text)] leading-relaxed">
+      <span class="${tier === 'esport' ? 'text-red-600 dark:text-red-400' : (tier === 'safe' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400')} font-black mt-0.5 shrink-0 select-none">⚡</span>
+      <span class="flex-1 break-words">${escapeHtml(r)}</span>
     </li>
   `).join("");
 
@@ -3981,49 +4106,49 @@ async function renderAiTrainerForSetup(setup, customModel = null) {
     }
 
     const badgeColor = tier === "esport"
-      ? "text-red-400 bg-red-500/[0.08]"
-      : (tier === "safe" ? "text-emerald-400 bg-emerald-500/[0.08]" : "text-amber-400 bg-amber-500/[0.08]");
+      ? "text-red-600 dark:text-red-400 bg-red-500/10"
+      : (tier === "safe" ? "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10" : "text-amber-700 dark:text-amber-300 bg-amber-500/10");
 
     return `
-      <tr class="hover:bg-white/[0.03] transition">
-        <td class="py-2.5 px-3 font-bold text-white whitespace-nowrap">${escapeHtml(row.param)}</td>
-        <td class="py-2.5 px-3 font-mono text-neutral-400 whitespace-nowrap">${escapeHtml(String(row.fixed))}</td>
-        <td class="py-2.5 px-3 font-mono text-amber-300 whitespace-nowrap">${escapeHtml(String(row.shop))}</td>
+      <tr class="hover:bg-[var(--r-surface)]/80 transition">
+        <td class="py-2.5 px-3 font-bold text-[var(--r-text)] whitespace-nowrap">${escapeHtml(row.param)}</td>
+        <td class="py-2.5 px-3 font-mono text-[var(--r-muted)] whitespace-nowrap">${escapeHtml(String(row.fixed))}</td>
+        <td class="py-2.5 px-3 font-mono text-amber-700 dark:text-amber-300 whitespace-nowrap">${escapeHtml(String(row.shop))}</td>
         <td class="py-2.5 px-3 font-mono font-black ${badgeColor} whitespace-nowrap">${escapeHtml(aiProVal)}</td>
-        <td class="py-2.5 px-3 text-[11px] text-purple-200">${escapeHtml(impactVal)}</td>
+        <td class="py-2.5 px-3 text-[11px] text-[var(--r-text)] whitespace-normal min-w-[200px]">${escapeHtml(impactVal)}</td>
       </tr>
     `;
   }).join("");
 
   const historyHtml = (model.stint_history && model.stint_history.length > 0) ? `
-    <div class="bg-[#0e1217] border border-white/10 rounded-2xl overflow-hidden">
-      <div class="px-4 py-2.5 border-b border-white/10 bg-[#161c24]/60 flex items-center justify-between">
-        <span class="text-[11px] font-extrabold uppercase tracking-wider text-neutral-300">
+    <div class="bg-[var(--r-bg)] border border-[var(--r-line)] rounded-2xl overflow-hidden shadow-sm">
+      <div class="px-4 py-2.5 border-b border-[var(--r-line)] bg-[var(--r-surface)] flex items-center justify-between">
+        <span class="text-[11px] font-extrabold uppercase tracking-wider text-[var(--r-text)]">
           📊 Sesiones Reales .IBT (60 Hz) utilizadas en el Entrenamiento de este Coche
         </span>
-        <span class="text-[10px] font-mono text-purple-300">${model.sessions_analyzed} sesiones procesadas</span>
+        <span class="text-[10px] font-mono text-[var(--r-accent)] font-semibold">${model.sessions_analyzed} sesiones procesadas</span>
       </div>
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto w-full">
         <table class="w-full text-left border-collapse text-xs">
           <thead>
-            <tr class="border-b border-white/10 text-[10px] font-bold uppercase text-neutral-400">
+            <tr class="border-b border-[var(--r-line)] text-[10px] font-bold uppercase text-[var(--r-muted)] bg-[var(--r-surface)]">
               <th class="py-2 px-3">Setup Probado</th>
               <th class="py-2 px-3">Tienda</th>
               <th class="py-2 px-3">Mejor Vuelta</th>
               <th class="py-2 px-3">Vmax Recta</th>
-              <th class="py-2 px-3">Alturas Dinámicas (>235 km/h)</th>
+              <th class="py-2 px-3">Alturas Dinámicas (&gt;235 km/h)</th>
               <th class="py-2 px-3">Presión Caliente LF / RF</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-white/5">
+          <tbody class="divide-y divide-[var(--r-line)]">
             ${model.stint_history.slice(0, 6).map(st => `
-              <tr class="hover:bg-white/[0.02]">
-                <td class="py-2 px-3 font-mono text-[11px] text-white truncate max-w-[200px]" title="${escapeHtml(st.setup)}">${escapeHtml(st.setup)}</td>
-                <td class="py-2 px-3"><span class="px-2 py-0.5 rounded bg-white/5 text-[10px] font-bold text-cyan-300">${escapeHtml(st.shop)}</span></td>
-                <td class="py-2 px-3 font-mono font-bold text-emerald-400">${st.best_lap_s > 40 ? formatLapTime(st.best_lap_s) : "Tanda Corta"}</td>
-                <td class="py-2 px-3 font-mono text-white">${st.vmax_kmh > 50 ? st.vmax_kmh.toFixed(1) + " km/h" : "-"}</td>
-                <td class="py-2 px-3 font-mono text-neutral-300">Del: ${st.hs_front_rh_mm} mm · Tras: ${st.hs_rear_rh_mm} mm</td>
-                <td class="py-2 px-3 font-mono ${st.lf_hot_kpa >= 173 ? 'text-red-400 font-bold' : 'text-neutral-300'}">${st.lf_hot_kpa || '-'} / ${st.rf_hot_kpa || '-'} kPa</td>
+              <tr class="hover:bg-[var(--r-surface)]/80 transition">
+                <td class="py-2 px-3 font-mono text-[11px] text-[var(--r-text)] truncate max-w-[200px]" title="${escapeHtml(st.setup)}">${escapeHtml(st.setup)}</td>
+                <td class="py-2 px-3"><span class="px-2 py-0.5 rounded bg-[var(--r-surface)] text-[10px] font-bold text-sky-600 dark:text-cyan-300 border border-[var(--r-line)]">${escapeHtml(st.shop)}</span></td>
+                <td class="py-2 px-3 font-mono font-bold text-[var(--r-accent)]">${st.best_lap_s > 40 ? formatLapTime(st.best_lap_s) : "Tanda Corta"}</td>
+                <td class="py-2 px-3 font-mono text-[var(--r-text)]">${st.vmax_kmh > 50 ? st.vmax_kmh.toFixed(1) + " km/h" : "-"}</td>
+                <td class="py-2 px-3 font-mono text-[var(--r-muted)]">Del: ${st.hs_front_rh_mm} mm · Tras: ${st.hs_rear_rh_mm} mm</td>
+                <td class="py-2 px-3 font-mono ${st.lf_hot_kpa >= 173 ? 'text-red-500 font-bold' : 'text-[var(--r-muted)]'}">${st.lf_hot_kpa || '-'} / ${st.rf_hot_kpa || '-'} kPa</td>
               </tr>
             `).join("")}
           </tbody>
@@ -4034,80 +4159,81 @@ async function renderAiTrainerForSetup(setup, customModel = null) {
 
   container.innerHTML = `
     <!-- MTM Megasetup Dual Seal: Seguro & Rápido -->
-    <div class="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-[#101924] to-cyan-950/40 border border-emerald-500/30 flex flex-wrap items-center justify-between gap-3">
-      <div class="flex items-center gap-2.5">
-        <span class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-sm">⚡</span>
-        <div>
-          <div class="text-xs font-black uppercase tracking-wider text-white flex items-center gap-2">
+    <div class="p-3.5 rounded-2xl bg-[var(--r-bg)] border border-[var(--r-line)] flex flex-wrap items-center justify-between gap-3 shadow-sm">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <span class="w-8 h-8 rounded-xl bg-[var(--r-accent)]/15 text-[var(--r-accent)] flex items-center justify-center font-black text-sm shrink-0">⚡</span>
+        <div class="min-w-0">
+          <div class="text-xs font-black uppercase tracking-wider text-[var(--r-text)] flex flex-wrap items-center gap-2">
             <span>MTM Megasetup: Seguro &amp; Rápido</span>
             ${tierBadge}
           </div>
-          <div class="text-[11px] text-neutral-300 mt-0.5">
+          <div class="text-[11px] text-[var(--r-muted)] mt-0.5 leading-snug">
             ${tierSub}
           </div>
         </div>
       </div>
-      <div class="text-right">
-        <div class="text-[10px] font-mono text-neutral-400">Índice de Estabilidad</div>
-        <div class="text-xs font-mono font-bold ${tier === 'esport' ? 'text-amber-400' : 'text-emerald-400'}">${stabilityScore} / 100</div>
+      <div class="text-right shrink-0">
+        <div class="text-[10px] font-mono text-[var(--r-muted)]">Índice de Estabilidad</div>
+        <div class="text-sm font-mono font-bold text-[var(--r-accent)]">${stabilityScore} / 100</div>
       </div>
     </div>
 
     <!-- 3-TIER COMBINATION SELECTOR: ESPORT [E] vs NORMAL vs SAFE [S] -->
-    <div class="bg-[#0e131b] border border-white/10 rounded-2xl p-2.5 flex flex-wrap items-center justify-between gap-2.5">
-      <div class="flex items-center gap-2">
-        <span class="text-xs font-extrabold uppercase tracking-wider text-neutral-300">Modo de Setup:</span>
-        <div class="inline-flex p-1 rounded-xl bg-black/50 border border-white/10 gap-1" role="group">
-          <button type="button" onclick="setAiSetupTier('esport')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${tier === 'esport' ? 'bg-red-500/25 text-red-300 border border-red-500/50 shadow-md shadow-red-500/20' : 'text-neutral-400 hover:text-white'}">
+    <div class="bg-[var(--r-bg)] border border-[var(--r-line)] rounded-2xl p-3 space-y-2 shadow-sm">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <span class="text-xs font-extrabold uppercase tracking-wider text-[var(--r-text)] font-mono">Modo de Setup:</span>
+        <div class="inline-flex p-1 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] gap-1 shadow-inner" role="group">
+          <button type="button" onclick="setAiSetupTier('esport')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${tier === 'esport' ? 'bg-red-500/20 text-red-600 dark:text-red-300 border border-red-500/40 shadow-sm' : 'text-[var(--r-muted)] hover:text-[var(--r-text)]'}">
             <span>🔴 Esport</span>
-            <span class="text-[9px] font-mono px-1.5 py-0.5 rounded font-black bg-red-500/25 text-red-300 border border-red-500/30">E · Pro</span>
+            <span class="text-[9px] font-mono px-1.5 py-0.5 rounded font-black bg-red-500/20 text-red-600 dark:text-red-300">E · Pro</span>
           </button>
-          <button type="button" onclick="setAiSetupTier('normal')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${tier === 'normal' ? 'bg-amber-500/25 text-amber-300 border border-amber-500/50 shadow-md shadow-amber-500/20' : 'text-neutral-400 hover:text-white'}">
+          <button type="button" onclick="setAiSetupTier('normal')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${tier === 'normal' ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/40 shadow-sm' : 'text-[var(--r-muted)] hover:text-[var(--r-text)]'}">
             <span>🟡 Normal</span>
-            <span class="text-[9px] font-mono px-1.5 py-0.5 rounded font-semibold text-amber-300 bg-amber-500/15 border border-amber-500/30">Avanzado</span>
+            <span class="text-[9px] font-mono px-1.5 py-0.5 rounded font-semibold text-amber-700 dark:text-amber-300 bg-amber-500/15">Avanzado</span>
           </button>
-          <button type="button" onclick="setAiSetupTier('safe')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${tier === 'safe' ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-500/50 shadow-md shadow-emerald-500/20' : 'text-neutral-400 hover:text-white'}">
+          <button type="button" onclick="setAiSetupTier('safe')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${tier === 'safe' ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/40 shadow-sm' : 'text-[var(--r-muted)] hover:text-[var(--r-text)]'}">
             <span>🟢 Safe</span>
-            <span class="text-[9px] font-mono px-1.5 py-0.5 rounded font-black bg-emerald-500/25 text-emerald-300 border border-emerald-500/30">S · Principiante</span>
+            <span class="text-[9px] font-mono px-1.5 py-0.5 rounded font-black bg-emerald-500/20 text-emerald-600 dark:text-emerald-300">S · Principiante</span>
           </button>
         </div>
       </div>
-      <div class="text-[11px] text-neutral-400 font-mono">
-        ${tier === 'esport' ? '🏆 [E] Nivel Pro: Superagresivo para hotlap y top-split' : (tier === 'safe' ? '🛡️ [S] Principiante / Iniciación: Máxima estabilidad y 0 trompos' : '⭐ [Normal] Piloto Avanzado: El balance de oro entre velocidad y seguridad')}
+      <div class="text-[11px] font-mono text-[var(--r-muted)] leading-relaxed pt-1 border-t border-[var(--r-line)] flex items-center gap-1.5">
+        ${tier === 'esport' ? '🏆 <strong>[E] Nivel Pro:</strong> Superagresivo para hotlap y top-split · Mínimo drag y tracción pura' : (tier === 'safe' ? '🛡️ <strong>[S] Principiante / Iniciación:</strong> Máxima estabilidad y 0 trompos · Alturas anti-fondo en 3G' : '⭐ <strong>[Normal] Piloto Avanzado:</strong> El balance de oro entre velocidad punta y seguridad para carrera')}
       </div>
     </div>
 
-    <!-- 4 KPI Cards -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      <div class="bg-[#0e1217] border border-purple-500/30 rounded-2xl p-3.5">
-        <div class="text-[10px] uppercase font-bold text-neutral-400">Objetivo MTM (${tier.toUpperCase()})</div>
-        <div class="text-lg font-black text-emerald-400 font-mono mt-0.5">${aiLapStr}</div>
-        <div class="text-[10px] text-purple-300 font-semibold mt-0.5">-${gainVsShop}s vs ${escapeHtml(shopName)} (Ref: ${refLapStr})</div>
+    <!-- 4 KPI Cards (Responsive Grid) -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+      <div class="bg-[var(--r-bg)] border border-[var(--r-line)] rounded-2xl p-3 shadow-sm">
+        <div class="text-[10px] uppercase font-bold text-[var(--r-muted)] font-mono">Objetivo MTM (${tier.toUpperCase()})</div>
+        <div class="text-lg font-black text-[var(--r-accent)] font-mono mt-0.5">${aiLapStr}</div>
+        <div class="text-[10px] text-[var(--r-muted)] font-semibold mt-0.5">-${gainVsShop}s vs ${escapeHtml(shopName)}</div>
       </div>
-      <div class="bg-[#0e1217] border border-cyan-500/30 rounded-2xl p-3.5">
-        <div class="text-[10px] uppercase font-bold text-neutral-400">Velocidad Punta (Vmax)</div>
-        <div class="text-lg font-black text-cyan-300 font-mono mt-0.5">${targetVmax} km/h</div>
-        <div class="text-[10px] text-neutral-400 mt-0.5">Medida en .IBT: ${model.measured_vmax_kmh} km/h</div>
+      <div class="bg-[var(--r-bg)] border border-[var(--r-line)] rounded-2xl p-3 shadow-sm">
+        <div class="text-[10px] uppercase font-bold text-[var(--r-muted)] font-mono">Velocidad Punta (Vmax)</div>
+        <div class="text-lg font-black text-sky-600 dark:text-cyan-300 font-mono mt-0.5">${targetVmax} km/h</div>
+        <div class="text-[10px] text-[var(--r-muted)] mt-0.5 font-mono">Medida .IBT: ${model.measured_vmax_kmh} km/h</div>
       </div>
-      <div class="bg-[#0e1217] border border-amber-500/30 rounded-2xl p-3.5">
-        <div class="text-[10px] uppercase font-bold text-neutral-400">Ganancia vs iRacing Fixed</div>
-        <div class="text-lg font-black text-amber-300 font-mono mt-0.5">-${gainVsFixed}s / vuelta</div>
-        <div class="text-[10px] text-neutral-400 mt-0.5">Base: ${escapeHtml(model.reference_setup)}</div>
+      <div class="bg-[var(--r-bg)] border border-[var(--r-line)] rounded-2xl p-3 shadow-sm">
+        <div class="text-[10px] uppercase font-bold text-[var(--r-muted)] font-mono">Ganancia vs Fixed</div>
+        <div class="text-lg font-black text-amber-600 dark:text-amber-400 font-mono mt-0.5">-${gainVsFixed}s / vuelta</div>
+        <div class="text-[10px] text-[var(--r-muted)] mt-0.5 font-mono truncate" title="${escapeHtml(model.reference_setup)}">Base: ${escapeHtml(model.reference_setup)}</div>
       </div>
-      <div class="bg-[#0e1217] border border-emerald-500/30 rounded-2xl p-3.5">
-        <div class="text-[10px] uppercase font-bold text-neutral-400">Consumo Telemetría</div>
-        <div class="text-lg font-black text-white font-mono mt-0.5">${model.burn_per_lap_l} L/vuelta</div>
-        <div class="text-[10px] text-emerald-400 mt-0.5">Qualy 2 Laps: ${(model.burn_per_lap_l * 3.35).toFixed(1)} L seguros</div>
+      <div class="bg-[var(--r-bg)] border border-[var(--r-line)] rounded-2xl p-3 shadow-sm">
+        <div class="text-[10px] uppercase font-bold text-[var(--r-muted)] font-mono">Consumo Telemetría</div>
+        <div class="text-lg font-black text-[var(--r-text)] font-mono mt-0.5">${model.burn_per_lap_l} L/vuelta</div>
+        <div class="text-[10px] text-[var(--r-accent)] font-semibold mt-0.5 font-mono">Qualy 2 Laps: ${(model.burn_per_lap_l * 3.35).toFixed(1)} L</div>
       </div>
     </div>
 
     <!-- AI Engineering Diagnosis Box -->
-    <div class="bg-[#0e1217] border border-purple-500/30 rounded-2xl p-4 space-y-2.5">
-      <div class="flex items-center justify-between border-b border-white/10 pb-2">
-        <span class="text-xs font-black uppercase tracking-wider text-purple-300">
-          🔬 Diagnóstico de Ingeniería IA · Modo ${tier.toUpperCase()} en ${escapeHtml(model.circuit)}
+    <div class="bg-[var(--r-bg)] border border-[var(--r-line)] rounded-2xl p-4 space-y-2.5 shadow-sm">
+      <div class="flex flex-wrap items-center justify-between border-b border-[var(--r-line)] pb-2 gap-2">
+        <span class="text-xs font-black uppercase tracking-wider text-[var(--r-text)] font-mono flex items-center gap-1.5">
+          <span>🔬</span>
+          <span>Diagnóstico de Ingeniería IA · Modo ${tier.toUpperCase()} en ${escapeHtml(model.circuit)}</span>
         </span>
-        <span class="text-[10px] font-mono text-emerald-400">Target Ventana: 169.5 kPa Caliente</span>
+        <span class="text-[10px] font-mono text-[var(--r-accent)] font-semibold px-2 py-0.5 rounded bg-[var(--r-surface)] border border-[var(--r-line)]">Target Ventana: 169.5 kPa Caliente</span>
       </div>
       <ul class="space-y-2 pt-1">
         ${recsHtml}
@@ -4115,25 +4241,25 @@ async function renderAiTrainerForSetup(setup, customModel = null) {
     </div>
 
     <!-- Head-to-Head Parameter Table: Fixed vs GnG/GO vs MTM AI Pro -->
-    <div class="bg-[#0e1217] border border-white/10 rounded-2xl overflow-hidden">
-      <div class="px-4 py-2.5 border-b border-white/10 bg-[#161c24]/70 flex flex-wrap items-center justify-between gap-2">
-        <span class="text-xs font-extrabold text-white">
-          ⚔️ Comparativa Mano a Mano de Parámetros de Garaje (Fixed vs ${escapeHtml(shopName)} vs MTM ${tier.toUpperCase()})
+    <div class="bg-[var(--r-bg)] border border-[var(--r-line)] rounded-2xl overflow-hidden shadow-sm">
+      <div class="px-4 py-2.5 border-b border-[var(--r-line)] bg-[var(--r-surface)] flex flex-wrap items-center justify-between gap-2">
+        <span class="text-xs font-extrabold text-[var(--r-text)]">
+          ⚔️ Comparativa Mano a Mano de Parámetros de Garaje (Fixed vs ${escapeHtml(shopName)} vs MTM ${tier === 'esport' ? 'ESPORT [E]' : (tier === 'safe' ? 'SAFE [S]' : 'NORMAL')})
         </span>
-        <span class="text-[10px] font-mono text-neutral-400">Haz estos ajustes exactos en el garaje de iRacing</span>
+        <span class="text-[10px] font-mono text-[var(--r-muted)]">Ajustes recomendados para el garaje de iRacing</span>
       </div>
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto w-full">
         <table class="w-full text-left border-collapse text-xs">
           <thead>
-            <tr class="border-b border-white/10 text-[10px] font-bold uppercase tracking-wider text-neutral-400 bg-[#161c24]/40">
+            <tr class="border-b border-[var(--r-line)] text-[10px] font-bold uppercase tracking-wider text-[var(--r-muted)] bg-[var(--r-surface)]">
               <th class="py-2.5 px-3">Parámetro de Garaje</th>
               <th class="py-2.5 px-3">iRacing Fixed</th>
-              <th class="py-2.5 px-3 text-amber-300">Tienda (${escapeHtml(shopName)})</th>
-              <th class="py-2.5 px-3 ${tier === 'esport' ? 'text-red-400 bg-red-500/10' : (tier === 'safe' ? 'text-emerald-400 bg-emerald-500/10' : 'text-amber-400 bg-amber-500/10')}">🧠 MTM AI Pro (${tier === 'esport' ? 'ESPORT [E]' : (tier === 'safe' ? 'SAFE [S]' : 'NORMAL')})</th>
+              <th class="py-2.5 px-3 text-amber-700 dark:text-amber-300">Tienda (${escapeHtml(shopName)})</th>
+              <th class="py-2.5 px-3 ${tier === 'esport' ? 'text-red-600 dark:text-red-400 bg-red-500/10' : (tier === 'safe' ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10' : 'text-amber-600 dark:text-amber-400 bg-amber-500/10')}">🧠 MTM AI Pro (${tier.toUpperCase()})</th>
               <th class="py-2.5 px-3">Impacto Dinámico</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-white/5">
+          <tbody class="divide-y divide-[var(--r-line)]">
             ${compRowsHtml}
           </tbody>
         </table>

@@ -27,6 +27,16 @@
     currentUser = data.user;
     saveSession(currentToken, currentUser, remember);
     if (data.must_change_password) { openChangePasswordModal(); return; }
+
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirect = urlParams.get("redirect");
+      if (redirect && redirect.startsWith("/") && !redirect.startsWith("//")) {
+        window.location.href = redirect;
+        return;
+      }
+    } catch (e) {}
+
     showVaultView();
     try { window.scrollTo({ top: 0, behavior: "instant" }); } catch (e) { window.scrollTo(0, 0); }
     loadCatalog();

@@ -14,7 +14,35 @@ const totalCircuits = catalog.circuits?.length || 128;
   description="Consola de dirección de equipo y administración técnica de Muntrume Motorsport: gestión de pilotos D1, auditoría BoP 26S4, nomenclatura MMT, NEC VLN y buzones @muntru.me."
   noindex={true}
 >
-  <div class="rc-shell">
+  <Fragment slot="head">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <script is:inline>
+      (function() {
+        try {
+          var t = localStorage.getItem('mrt_vault_token') || sessionStorage.getItem('mrt_vault_token');
+          var u = localStorage.getItem('mrt_vault_user') || sessionStorage.getItem('mrt_vault_user');
+          if (!t || t === 'guest_token' || !u) {
+            window.location.replace('/garage?auth=admin&redirect=' + encodeURIComponent(window.location.pathname + window.location.search));
+            return;
+          }
+          var parsed = JSON.parse(u);
+          var email = parsed && parsed.email ? String(parsed.email).trim().toLowerCase() : '';
+          if (email !== 'atrumin16@gmail.com' && parsed.role !== 'admin') {
+            window.location.replace('/garage?auth=admin&redirect=' + encodeURIComponent(window.location.pathname + window.location.search));
+          }
+        } catch (e) {
+          window.location.replace('/garage?auth=admin&redirect=' + encodeURIComponent(window.location.pathname + window.location.search));
+        }
+      })();
+    </script>
+    <noscript>
+      <meta http-equiv="refresh" content="0;url=/garage?auth=admin" />
+    </noscript>
+  </Fragment>
+
+  <div class="rc-shell" id="rcShell">
     <!-- Top Sub-Header / Telemetry Command Bar -->
     <div class="rc-topbar">
       <div class="r-wrap rc-topbar__inner">
@@ -51,6 +79,9 @@ const totalCircuits = catalog.circuits?.length || 128;
           </span>
           <a href="/garage" class="r-btn r-btn--sm">Ir al Garage →</a>
           <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="openAddDriverModal()">+ Alta de Piloto</button>
+          <button type="button" class="r-btn r-btn--sm" style="border-color:rgba(239,68,68,0.4);color:#f87171" onclick="secureAdminLogout()" title="Cerrar sesión de administrador de forma segura">
+            🔒 Salir
+          </button>
         </div>
       </div>
     </div>

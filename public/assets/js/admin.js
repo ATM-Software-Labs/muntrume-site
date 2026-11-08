@@ -163,6 +163,56 @@ function getAdminToken() {
   }
 }
 
+function verifyAdminSession() {
+  const token = getAdminToken();
+  if (!token || token === "guest_token") {
+    secureAdminLogout("unauthorized");
+    return false;
+  }
+  let user = null;
+  try {
+    const rawUser = localStorage.getItem("mrt_vault_user") || sessionStorage.getItem("mrt_vault_user");
+    user = rawUser ? JSON.parse(rawUser) : null;
+  } catch {}
+
+  const email = (user && user.email ? String(user.email) : (localStorage.getItem("muntrume_user_email") || "")).trim().toLowerCase();
+  const isAdmin = Boolean(user && (email === "atrumin16@gmail.com" || user.role === "admin"));
+
+  if (!isAdmin) {
+    secureAdminLogout("unauthorized");
+    return false;
+  }
+  return true;
+}
+
+function secureAdminLogout(reason) {
+  try {
+    localStorage.removeItem("mrt_vault_token");
+    localStorage.removeItem("mrt_vault_user");
+    localStorage.removeItem("muntrume_user_email");
+    localStorage.removeItem("muntrume_auth_state");
+    localStorage.removeItem("muntrume_is_admin");
+    localStorage.removeItem("muntrume_rc_audit_logs");
+    localStorage.removeItem("muntrume_rc_custom_members");
+    sessionStorage.clear();
+  } catch {}
+
+  const shell = document.getElementById("rcShell") || document.querySelector(".rc-shell");
+  if (shell) shell.innerHTML = "";
+
+  const dest = reason === "unauthorized"
+    ? "/garage?auth=admin&redirect=" + encodeURIComponent(window.location.pathname)
+    : reason === "invalid_token"
+    ? "/garage?auth=expired&redirect=" + encodeURIComponent(window.location.pathname)
+    : "/garage?logged_out=1";
+
+  try {
+    window.location.replace(dest);
+  } catch {
+    window.location.href = dest;
+  }
+}
+
 function loadLocalCustomMembers() {
   try {
     const raw = localStorage.getItem("muntrume_rc_custom_members");
@@ -297,7 +347,8 @@ async function refreshRaceControlData() {
     if (m && m.email) byEmail.set(m.email.toLowerCase(), { ...byEmail.get(m.email.toLowerCase()), ...m });
   });
 
-  // 2. Try fetching live D1 admin overview if token is available
+  // 2. Strict Session Verification + Live D1 Admin Overview
+  if (!verifyAdminSession()) return;
   const token = getAdminToken();
   if (token) {
     try {
@@ -309,6 +360,10 @@ async function refreshRaceControlData() {
         },
         body: JSON.stringify({})
       });
+      if (res.status === 401 || res.status === 403) {
+        secureAdminLogout("invalid_token");
+        return;
+      }
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data.members)) {
@@ -1001,6 +1056,7 @@ function exportAuditLogsCsv() {
 // INITIALIZATION & GLOBAL SHORTCUTS
 // ============================================================================
 document.addEventListener("DOMContentLoaded", () => {
+  if (!verifyAdminSession()) return;
   initDefaultAuditLogs();
   updateMmtSimulator();
   refreshRaceControlData();
@@ -1032,7 +1088,23 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+// Hardened BFCache protection & Visibility checks
+window.addEventListener("pageshow", (event) => {
+  if (!verifyAdminSession()) return;
+  if (event.persisted) {
+    refreshRaceControlData();
+  }
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    verifyAdminSession();
+  }
+});
+
 if (typeof window !== "undefined") {
+  window.verifyAdminSession = verifyAdminSession;
+  window.secureAdminLogout = secureAdminLogout;
   window.switchAdminTab = switchAdminTab;
   window.refreshRaceControlData = refreshRaceControlData;
   window.filterDirectory = filterDirectory;
