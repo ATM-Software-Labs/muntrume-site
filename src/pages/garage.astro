@@ -29,7 +29,7 @@ const figs = [
           <span id="heroSessionName">Alberto Trujillo (#16)</span>
         </div>
         <a id="heroRaceControlBtn" href="/admin" class="r-btn r-btn--primary hidden" style="box-shadow:0 0 22px rgba(0,230,153,.28)">RACE CONTROL</a>
-        <button type="button" class="r-btn" onclick="enterGuestPreview()">Browse Catalog</button>
+        <button type="button" class="r-btn" onclick="openAuthModal('login')">Acceso Pilotos</button>
         <a href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer" class="r-btn">Garage 61 Telemetry ↗</a>
       </div>
       <div class="r-figs">
@@ -158,6 +158,25 @@ const figs = [
           </div>
         </div>
 
+        <!-- Muro de Autenticación para Invitados / No autenticados -->
+        <div id="vaultAuthGateWall" class="p-8 sm:p-12 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] text-center space-y-5 my-2 shadow-sm">
+          <div class="w-14 h-14 mx-auto rounded-2xl bg-[var(--r-bg-2)] border border-[var(--r-line)] flex items-center justify-center text-[var(--r-accent)] shadow-xs">
+            <svg class="w-7 h-7 fill-none stroke-current" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          </div>
+          <div class="max-w-md mx-auto space-y-2">
+            <h3 class="text-xl sm:text-2xl font-extrabold text-[var(--r-text)] font-display uppercase tracking-tight">Acceso Privado para Pilotos</h3>
+            <p class="text-xs sm:text-sm text-[var(--r-muted)] leading-relaxed">
+              El Setup Vault de Muntrume Motorsport y los paquetes semanales de la NEC están reservados a miembros autenticados. Inicia sesión con tu cuenta de piloto para ver y descargar setups (.STO).
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <button type="button" class="r-btn r-btn--primary" onclick="openAuthModal('login')">Iniciar Sesión de Piloto</button>
+            <button type="button" class="r-btn" onclick="openAuthModal('join')">Solicitar Ingreso al Equipo</button>
+          </div>
+        </div>
+
+        <!-- Contenido Completo del Catálogo (Solo para pilotos autenticados) -->
+        <div id="vaultSetupsContent" class="hidden space-y-4">
         <!-- Apartado Dedicado NEC (Nürburgring Combined Gesamtstrecke VLN) + Guía Oficial Nomenclatura MMT -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div class="g-panel" style="padding:18px;border-left:3px solid var(--r-accent)">
@@ -287,7 +306,6 @@ const figs = [
         <div class="flex flex-wrap items-center justify-between gap-3 py-1">
           <p class="r-meta" style="margin:0"><span id="visibleFoldersCount">0</span> carpetas · <span id="visibleSetupsCount">0</span> setups verificados BoP (<span id="selectedBatchCount">0</span> seleccionados)</p>
           <div class="flex flex-wrap items-center gap-2">
-            <button type="button" class="r-btn r-btn--sm" onclick="openAiTrainerQuick()" style="border-color:var(--r-accent);color:var(--r-accent)">🧠 Inspector &amp; AI Lab</button>
             <button type="button" id="downloadBatchBtn" class="r-btn r-btn--primary r-btn--sm" onclick="downloadAllVisibleSetups()">
               <span id="downloadBatchBtnText">Descargar visibles (.sto)</span>
             </button>
@@ -301,6 +319,7 @@ const figs = [
             <button type="button" class="r-btn r-btn--sm" onclick="loadMoreFolders()"><span id="loadMoreBtnText">Mostrar más</span></button>
           </div>
         </div>
+        </div> <!-- /vaultSetupsContent -->
       </div>
 
       <div id="garageSectionTelemetry" class="hidden" role="tabpanel" aria-labelledby="tabBtnTelemetry" hidden>

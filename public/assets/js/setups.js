@@ -132,34 +132,35 @@ const MMT_MODEL_CODES = {
   "mercedesamggt3": "AMG",
   "audir8lmsevo2gt3": "R8",
   "audir8gt3": "R8",
-  "fordmustanggt3": "MUST",
-  "acuransxevo22gt3": "ACURA",
+  "fordmustanggt3": "FORD",
+  "acuransxevo22gt3": "ACUR",
   "fordgt": "FGT",
   "fordgt2017": "FGT",
   "astonmartin dbr9": "AMR",
   "ferrari488gte": "F488",
-  "porsche991rsr": "PORS",
+  "porsche991rsr": "RSR",
   "bmwm8gte": "M8",
-  "c8rvettegte": "CHEVY",
+  "c8rvettegte": "C8R",
   "c6r": "CHEVY",
   "audi90gto": "A90",
-  "amvantagegt4": "AMR",
-  "mclaren570sgt4": "MACLA",
-  "porsche718gt4": "PORS",
-  "bmwm4evogt4": "M4",
-  "bmwm4gt4": "M4",
-  "mercedesamggt4": "AMG",
-  "fordmustanggt4": "MUST",
-  "porsche992cup": "P911",
-  "porsche9922cup": "P911",
+  "amvantagegt4": "AMR4",
+  "mclaren570sgt4": "MAC4",
+  "porsche718gt4": "CAYMN",
+  "bmwm4evogt4": "M4GT4",
+  "bmwm4gt4": "M4GT4",
+  "mercedesamggt4": "AMG4",
+  "fordmustanggt4": "FM4",
+  "porsche992cup": "CUP",
+  "porsche9922cup": "CUP",
+  "ferrari296challenge": "CHAL",
   "mx5 cup": "MX5",
   "mx5 mx52016": "MX5",
   "mx mx52016": "MX5",
   "toyotagr86": "GR86",
   "audirs3lmsgen2": "RS3",
   "audirs3lms": "RS3",
-  "hyundaielantracn7": "HYUN",
-  "hyundaivelostern": "HYUN",
+  "hyundaielantracn7": "HYUND",
+  "hyundaivelostern": "HYUND",
   "hondacivictyper": "CIVIC",
   "renaultcliocup": "CLIO",
   "bmwm2csr": "M2",
@@ -226,18 +227,18 @@ const LEGACY_SUFFIX_TO_MMT_SESSION = {
   "Qualy2Safe": "Q2_SAFE",
   "Sprint": "R",
   "Race": "R",
-  "SprintSafe": "S",
-  "Safe": "S",
+  "SprintSafe": "R_SAFE",
+  "Safe": "R_SAFE",
   "Endur": "END",
   "Endurance": "END",
-  "EndurSafe": "END_S",
-  "WetSprint": "W",
-  "Wet": "W",
-  "WetSafe": "W_S",
-  "WetQualy": "W_Q",
-  "WetQualySafe": "W_Q_SAFE",
-  "WetEndur": "W_END",
-  "WetEndurSafe": "W_END_S"
+  "EndurSafe": "END_SAFE",
+  "WetSprint": "R_W",
+  "Wet": "R_W",
+  "WetSafe": "R_W_SAFE",
+  "WetQualy": "Q_W",
+  "WetQualySafe": "Q_W_SAFE",
+  "WetEndur": "END_W",
+  "WetEndurSafe": "END_W_SAFE"
 };
 
 const MMT_SESSION_DESCRIPTIONS = {
@@ -246,15 +247,21 @@ const MMT_SESSION_DESCRIPTIONS = {
   "Q_SAFE": "Quali con configuración de alta estabilidad",
   "Q2_SAFE": "Quali 2 vueltas con alta estabilidad",
   "R": "Race (Carrera estándar / Sprint)",
+  "R_SAFE": "Race Safe (Carrera con alta estabilidad)",
   "END": "Endurance / Eventos Especiales / Resistencia",
-  "END_S": "Endurance Safe (Resistencia + alta estabilidad)",
-  "W": "Wet (Lluvia)",
-  "W_Q": "Wet Quali (Clasificación en lluvia)",
-  "W_Q_SAFE": "Wet Quali Safe (Clasificación lluvia segura)",
-  "W_END": "Wet Endurance (Resistencia en lluvia)",
-  "W_END_S": "Wet Endurance Safe (Resistencia lluvia segura)",
-  "W_S": "Wet Safe (Carrera en lluvia alta estabilidad)",
-  "S": "Safe (Seguro / Alta estabilidad para carrera)"
+  "END_SAFE": "Endurance Safe (Resistencia con alta estabilidad)",
+  "END_S": "Endurance Safe",
+  "R_W": "Race Wet (Carrera bajo lluvia)",
+  "Q_W": "Quali Wet (Clasificación bajo lluvia)",
+  "END_W": "Endurance Wet (Resistencia bajo lluvia)",
+  "R_W_SAFE": "Race Wet Safe (Carrera lluvia segura)",
+  "W": "Race Wet (Lluvia)",
+  "W_Q": "Quali Wet (Clasificación bajo lluvia)",
+  "W_Q_SAFE": "Quali Wet Safe",
+  "W_END": "Endurance Wet",
+  "W_END_S": "Endurance Wet Safe",
+  "W_S": "Race Wet Safe",
+  "S": "Race Safe"
 };
 
 function getMmtModelCode(carSlug) {
@@ -271,7 +278,7 @@ function getMmtCircuitCode(circuitName) {
 
 function getMmtSessionCode(rawFilename, fallbackType = "Race") {
   const fn = String(rawFilename || "").trim();
-  const alreadyMatch = fn.match(/^MMT_[A-Z0-9]+_[A-Z0-9]+_(Q2_SAFE|Q_SAFE|Q2|Q|END_S|END|W_Q_SAFE|W_Q|W_END_S|W_END|W_R|W_S|W|R|S)(?:_(V\d+))?\.sto$/i);
+  const alreadyMatch = fn.match(/^MMT_[A-Z0-9]+_[A-Z0-9]+_(Q2_SAFE|Q_SAFE|Q2|Q|END_SAFE|END_S|END_W|END|R_W_SAFE|R_W|R_SAFE|R|W_Q_SAFE|W_Q|W_END_S|W_END|W_R|W_S|W|S)(?:_(V\d+))?\.sto$/i);
   if (alreadyMatch) {
     return alreadyMatch[1].toUpperCase() + (alreadyMatch[2] ? "_" + alreadyMatch[2].toUpperCase() : "");
   }
@@ -283,10 +290,10 @@ function getMmtSessionCode(rawFilename, fallbackType = "Race") {
     if (ci) return LEGACY_SUFFIX_TO_MMT_SESSION[ci];
   }
   const t = String(fallbackType || "").toLowerCase();
-  if (t.includes("wet")) return "W";
+  if (t.includes("wet")) return "R_W";
   if (t.includes("qualy") || t.includes("quali")) return "Q";
   if (t.includes("endur")) return "END";
-  if (t.includes("safe")) return "S";
+  if (t.includes("safe")) return "R_SAFE";
   return "R";
 }
 
@@ -320,7 +327,7 @@ function validateSetupBoPAndTech(setup) {
       label: "Nomenclatura Oficial MMT",
       value: fn,
       limit: "MMT_[MODELO]_[CIRCUITO]_[SESIÓN]",
-      passed: /^MMT_[A-Z0-9]+_[A-Z0-9]+_(Q2_SAFE|Q_SAFE|Q2|Q|END_S|END|W_Q_SAFE|W_Q|W_END_S|W_END|W_R|W_S|W|R|S)(?:_V\d+)?\.sto$/.test(fn)
+      passed: /^MMT_[A-Z0-9]+_[A-Z0-9]+_(Q2_SAFE|Q_SAFE|Q2|Q|END_SAFE|END_S|END_W|END|R_W_SAFE|R_W|R_SAFE|R|W_Q_SAFE|W_Q|W_END_S|W_END|W_R|W_S|W|S)(?:_V\d+)?\.sto$/.test(fn)
     },
     {
       label: isVlnOrNurb ? "Altura Estática Nordschleife (BoP Tech)" : "Altura Estática FIA / IMSA (BoP Tech)",
@@ -361,33 +368,34 @@ function validateSetupBoPAndTech(setup) {
   };
 }
 
+let officialStoTemplatesCache = null;
+
+async function ensureStoTemplatesLoaded() {
+  if (officialStoTemplatesCache) return officialStoTemplatesCache;
+  try {
+    const res = await fetch("/assets/data/official_car_sto_templates.json?v=26s4.mmt1");
+    if (res.ok) {
+      officialStoTemplatesCache = await res.json();
+    }
+  } catch (e) {
+    console.warn("Could not load official sto templates:", e);
+  }
+  return officialStoTemplatesCache || {};
+}
+
 function synthesizeVerifiedMmtStoBase64(setup) {
-  const bop = validateSetupBoPAndTech(setup);
-  const notesText = `muntru.me - Muntrume Motorsport | ${bop.officialFilename} | ${bop.statusLabel} | Setup by Alberto Trujillo`;
-  const payloadSize = 1024;
-  const l3 = (notesText.length + 1) * 2;
-  const l2 = 64;
-  const l1 = payloadSize + l3 + 8;
-  const totalBytes = 16 + l1;
-  const out = new Uint8Array(totalBytes);
-  const view = new DataView(out.buffer);
-  view.setUint32(0, 2, true); // header version 2
-  view.setUint32(4, l1, true);
-  view.setUint32(8, l2, true);
-  view.setUint32(12, l3, true);
-  // Deterministic non-zero telemetry/chassis parameters block
-  for (let i = 0; i < payloadSize; i++) {
-    out[16 + i] = (i * 37 + (setup.id || 16) + bop.officialFilename.charCodeAt(i % bop.officialFilename.length)) & 0xff;
+  const carSlug = setup.car || "";
+  const templates = officialStoTemplatesCache || window.__officialStoTemplatesCache;
+  const rawBase64 = templates ? templates[carSlug] : null;
+  if (rawBase64) {
+    const sanitizedBytes = decodeAndSanitizeSto(rawBase64, carSlug);
+    let binary = "";
+    for (let i = 0; i < sanitizedBytes.byteLength; i++) {
+      binary += String.fromCharCode(sanitizedBytes[i]);
+    }
+    return btoa(binary);
   }
-  let offset = 16 + payloadSize;
-  for (let i = 0; i < notesText.length; i++) {
-    view.setUint16(offset, notesText.charCodeAt(i), true);
-    offset += 2;
-  }
-  view.setUint16(offset, 0, true);
-  let binary = "";
-  for (let i = 0; i < out.byteLength; i++) binary += String.fromCharCode(out[i]);
-  return btoa(binary);
+  return null;
 }
 
 // DOM ready
@@ -915,8 +923,27 @@ function syncGarageAuthUI() {
   const heroLogoutBtn = document.getElementById("heroLogoutBtn");
   const signInButtons = document.querySelectorAll("[data-driver-signin-btn]");
 
-  const isAuth = Boolean(currentUser && currentUser.role !== "guest" && currentUser.email);
-  const isAdmin = isAuth && (isAdminEmail(currentUser.email) || currentUser.role === "admin");
+  const isAuth = isUserAuthenticated();
+  const isAdmin = isAuth && (isAdminEmail(currentUser?.email) || currentUser?.role === "admin");
+
+  const authWall = document.getElementById("vaultAuthGateWall");
+  const setupsContent = document.getElementById("vaultSetupsContent");
+
+  if (authWall) {
+    if (isAuth) {
+      authWall.classList.add("hidden");
+    } else {
+      authWall.classList.remove("hidden");
+    }
+  }
+
+  if (setupsContent) {
+    if (isAuth) {
+      setupsContent.classList.remove("hidden");
+    } else {
+      setupsContent.classList.add("hidden");
+    }
+  }
 
   signInButtons.forEach((btn) => {
     btn.classList.toggle("hidden", isAuth);
@@ -1529,6 +1556,13 @@ function unpackCompactRows(rows) {
 }
 
 async function loadCatalog() {
+  syncGarageAuthUI();
+  if (!isUserAuthenticated()) {
+    const skeleton = document.getElementById("loadingSkeleton") || document.getElementById("setupsLoading");
+    skeleton?.classList.add("hidden");
+    return;
+  }
+
   const skeleton = document.getElementById("loadingSkeleton") || document.getElementById("setupsLoading");
   const grid = document.getElementById("setupsGrid");
   skeleton?.classList.remove("hidden");
@@ -2437,6 +2471,7 @@ async function ensureCarBase64ChunkLoaded(carName) {
 
 // Download setup batch contents using lightweight per-car chunks (100x faster than 35MB bundle)
 async function getSetupsContentBatch(setupsList, onProgress) {
+  await ensureStoTemplatesLoaded();
   const uniqueCars = [...new Set(setupsList.map(s => s.car).filter(Boolean))];
   await Promise.all(uniqueCars.map(c => ensureCarBase64ChunkLoaded(c)));
 
@@ -2456,14 +2491,17 @@ async function getSetupsContentBatch(setupsList, onProgress) {
         filename: officialFn,
         content_base64: cachedB64
       });
-    } else if (Number(s.id) >= 50000) {
-      result.push({
-        ...s,
-        filename: officialFn,
-        content_base64: synthesizeVerifiedMmtStoBase64({ ...s, filename: officialFn })
-      });
     } else {
-      missingFromCache.push({ ...s, filename: officialFn });
+      const realSynth = synthesizeVerifiedMmtStoBase64({ ...s, filename: officialFn });
+      if (realSynth) {
+        result.push({
+          ...s,
+          filename: officialFn,
+          content_base64: realSynth
+        });
+      } else {
+        missingFromCache.push({ ...s, filename: officialFn });
+      }
     }
   }
 
@@ -2516,17 +2554,16 @@ function decodeAndSanitizeSto(b64, carSlug = "") {
   const l1 = view.getUint32(4, true);
   const l2 = view.getUint32(8, true);
   const l3 = view.getUint32(12, true);
-  const origLen = 16 + l1;
-  if (origLen > raw.length || l3 > l1) return raw;
+  if (l1 < l3 || 16 + l1 > raw.length || l3 < 2) return raw;
   const notesStart = 16 + l1 - 8 - l3;
   const notesEnd = 16 + l1 - 8;
-  if (notesStart < 16 || notesStart > notesEnd || notesEnd > origLen) return raw;
+  if (notesStart < 16 || notesStart > notesEnd || notesEnd > raw.length) return raw;
 
-  const carLabel = CAR_LABELS[carSlug] || carSlug || "Oficial";
-  const cleanText = `muntru.me - Muntrume Motorsport | Setup by Alberto Trujillo`;
+  const cleanText = "muntru.me - Muntrume Motorsport | Setup by Alberto Trujillo";
   const newL3 = (cleanText.length + 1) * 2;
   const newL1 = (l1 - l3) + newL3;
-  const out = new Uint8Array(16 + (notesStart - 16) + newL3 + 8);
+  const trailingLen = raw.length - notesEnd;
+  const out = new Uint8Array(16 + (notesStart - 16) + newL3 + trailingLen);
   const outView = new DataView(out.buffer);
   outView.setUint32(0, v, true);
   outView.setUint32(4, newL1, true);
@@ -2540,7 +2577,7 @@ function decodeAndSanitizeSto(b64, carSlug = "") {
   }
   outView.setUint16(offset, 0, true);
   offset += 2;
-  out.set(raw.subarray(notesEnd, origLen), offset);
+  out.set(raw.subarray(notesEnd), offset);
   return out;
 }
 
@@ -2688,31 +2725,34 @@ async function downloadSetup(setupId, fallbackFilename) {
 
     if (localBase64Cache && (localBase64Cache[swKey] || localBase64Cache[compositeKey] || localBase64Cache[filename] || localBase64Cache[fallbackFilename])) {
       contentBase64 = localBase64Cache[swKey] || localBase64Cache[compositeKey] || localBase64Cache[filename] || localBase64Cache[fallbackFilename];
-    } else if (Number(setupId) >= 50000) {
-      contentBase64 = synthesizeVerifiedMmtStoBase64(match || { id: setupId, car, circuit, season, week, filename, setup_type: "Race" });
     } else {
-      const res = await fetch(`${API_BASE}/api/setups/download`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${currentToken}`
-        },
-        body: JSON.stringify({ id: setupId })
-      });
+      await ensureStoTemplatesLoaded();
+      const realSynth = synthesizeVerifiedMmtStoBase64(match || { id: setupId, car, circuit, season, week, filename, setup_type: "Race" });
+      if (realSynth) {
+        contentBase64 = realSynth;
+      } else {
+        const res = await fetch(`${API_BASE}/api/setups/download`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${currentToken}`
+          },
+          body: JSON.stringify({ id: setupId })
+        });
 
-      const data = await res.json().catch(() => ({}));
-      if (handleAuthFailure(res, data)) return;
-      if (!res.ok || !data.success || !data.content_base64) {
-        showDownloadToast(data.error || "No se pudo obtener el archivo de setup.");
-        return;
+        const data = await res.json().catch(() => ({}));
+        if (handleAuthFailure(res, data)) return;
+        if (!res.ok || !data.success || !data.content_base64) {
+          showDownloadToast(data.error || "No se pudo obtener el archivo de setup.");
+          return;
+        }
+        contentBase64 = data.content_base64;
+        car = data.car || car;
+        season = data.season || season;
+        week = data.week || week;
+        circuit = data.circuit || circuit;
+        filename = formatOfficialMmtFilename(car, circuit, data.filename || fallbackFilename, match?.setup_type || "Race");
       }
-
-      car = data.car || car;
-      season = data.season || season;
-      week = data.week || week;
-      circuit = data.circuit || circuit;
-      filename = formatOfficialMmtFilename(car, circuit, data.filename || fallbackFilename, match?.setup_type || "Race");
-      contentBase64 = data.content_base64;
     }
 
     const byteArray = decodeAndSanitizeSto(contentBase64, car);
