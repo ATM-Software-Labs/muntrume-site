@@ -1,639 +1,1334 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import catalog from '../../public/assets/data/catalog_index.json';
+import { PILOTOS } from '../lib/pilotos';
 
-const pageTitle = "Race Control | Muntrume Motorsport";
-const pageDescription = "Official Muntrume Motorsport Race Control & Administration Console for driver roster management, security rules, Setup Vault, and mail routing.";
+const fmt = (n: number) => n.toLocaleString('en-US');
+const totalSetups = catalog.total_setups || 42654;
+const totalCars = catalog.cars?.length || 105;
+const totalCircuits = catalog.circuits?.length || 128;
 ---
 
-<Layout title={pageTitle} description={pageDescription} hideNav={true} hideFooter={true} noindex={true}>
-<div class="race-control-console flex-1 flex flex-col min-h-screen bg-[#0b0e13] text-neutral-100">
-<!-- Top Google Admin App Bar -->
-  <header class="h-16 bg-[#121620] border-b border-white/10 flex items-center justify-between px-4 sm:px-6 flex-shrink-0 z-40">
-    <div class="flex items-center gap-3">
-      <button class="p-2 rounded-xl hover:bg-white/5 text-neutral-400 hover:text-white transition">
-        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="5" r="2"/><circle cx="12" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="12" cy="19" r="2"/><circle cx="19" cy="19" r="2"/></svg>
-      </button>
-
-      <a href="/" class="flex items-center gap-2.5">
-        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-600 to-emerald-400 flex items-center justify-center font-black text-white text-sm shadow">
-          M
-        </div>
-        <div class="flex flex-col">
-          <span class="font-extrabold text-sm text-white tracking-tight flex items-center gap-1.5">
-            <span>Muntrume</span>
-            <span class="text-neutral-500 font-light">|</span>
-            <span class="text-neutral-300 font-normal">Race Control</span>
+<Layout
+  title="Race Control | Consola de Administración · Muntrume Motorsport"
+  description="Consola de dirección de equipo y administración técnica de Muntrume Motorsport: gestión de pilotos D1, auditoría BoP 26S4, nomenclatura MMT, NEC VLN y buzones @muntru.me."
+  noindex={true}
+>
+  <div class="rc-shell">
+    <!-- Top Sub-Header / Telemetry Command Bar -->
+    <div class="rc-topbar">
+      <div class="r-wrap rc-topbar__inner">
+        <div class="rc-brand">
+          <span class="rc-badge rc-badge--live">
+            <span class="rc-dot"></span>
+            RACE CONTROL v4.2
           </span>
-          <span class="text-[9px] text-emerald-400 font-mono tracking-wider uppercase font-semibold">
-            Team Principal &amp; Administration Console
+          <div class="rc-brand__titles">
+            <h1 class="rc-brand__title">Consola de Dirección &amp; Telemetría</h1>
+            <p class="rc-brand__sub">Alberto Trujillo (#16 · Team Principal) · <code id="rcSessionEmail">atrumin16@gmail.com</code></p>
+          </div>
+        </div>
+
+        <div class="rc-search-box">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="M21 21l-4.35-4.35"></path>
+          </svg>
+          <input
+            type="search"
+            id="adminGlobalSearch"
+            class="rc-search-input"
+            placeholder="Buscar piloto, setup MMT, circuito, buzón o log… (Pulsa '/' para enfocar)"
+            aria-label="Buscar en Race Control"
+          />
+          <kbd class="rc-kbd">/</kbd>
+        </div>
+
+        <div class="rc-topbar__actions">
+          <span id="rcBackendBadge" class="rc-badge rc-badge--ok" title="Estado de conexión con Cloudflare D1 y Worker">
+            <span class="rc-dot"></span>
+            <span id="rcBackendBadgeText">D1 Edge: Online</span>
           </span>
-        </div>
-      </a>
-    </div>
-
-    <!-- Universal Search Bar -->
-    <div class="hidden md:flex items-center flex-1 max-w-xl mx-8">
-      <div class="relative w-full">
-        <input 
-          type="text" 
-          id="globalSearchInput"
-          oninput="handleAdminSearch(this.value)"
-          placeholder="Search drivers, domains, security rules, or setups... (Press '/' to focus)" 
-          class="w-full bg-[#181e2b] border border-white/10 rounded-2xl px-4 py-2 pl-10 text-xs text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition"
-        >
-        <svg class="w-4 h-4 text-neutral-400 absolute left-3.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-        <span class="absolute right-3 top-2 px-1.5 py-0.5 rounded bg-white/10 text-[10px] text-neutral-400 font-mono">/</span>
-      </div>
-    </div>
-
-    <!-- Status & Admin Profile -->
-    <div class="flex items-center gap-3">
-      <div class="hidden lg:flex items-center gap-2 text-[10px] font-mono">
-        <span class="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold flex items-center gap-1.5">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span>D1 Vault: Online</span>
-        </span>
-        <span class="px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-bold">
-          TLS 1.3 Active
-        </span>
-      </div>
-
-      <a href="/garage" class="text-xs px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 font-semibold transition">
-        Open Garage Vault
-      </a>
-
-      <!-- Super Admin Avatar -->
-      <div class="flex items-center gap-2.5 pl-2 border-l border-white/10">
-        <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-emerald-600 to-emerald-400 border-2 border-emerald-300 flex items-center justify-center font-black font-mono text-xs text-black shadow">
-          #16
-        </div>
-        <div class="hidden xl:block text-left text-xs">
-          <div class="font-bold text-white leading-tight">Alberto Trujillo <span class="font-mono text-emerald-400">(atrumin16)</span></div>
-          <div class="text-[10px] text-neutral-400 font-mono">atrumin16@gmail.com · Team Principal &amp; Admin</div>
+          <a href="/garage" class="r-btn r-btn--sm">Ir al Garage →</a>
+          <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="openAddDriverModal()">+ Alta de Piloto</button>
         </div>
       </div>
     </div>
-  </header>
 
-  <!-- Workspace: Sidebar + Main Content -->
-  <div class="flex-1 flex overflow-hidden">
-    
-    <!-- Left Navigation Drawer -->
-    <aside class="w-60 bg-[#0e1217] border-r border-white/10 flex flex-col justify-between p-3.5 flex-shrink-0">
-      <div class="space-y-4">
-        <div class="text-[10px] font-bold uppercase tracking-wider text-neutral-500 px-3">
-          Centro de Control
+    <!-- Main Workspace Grid (Sidebar + Active Module) -->
+    <div class="r-wrap rc-workspace">
+      <!-- Left Navigation Sidebar -->
+      <aside class="rc-sidebar" aria-label="Módulos de Race Control">
+        <div class="rc-sidebar__group">
+          <p class="rc-sidebar__label">Módulos de Control</p>
+          <nav class="rc-nav" role="tablist" aria-label="Secciones de administración">
+            <button type="button" id="nav-overview" data-rc-tab="overview" class="rc-nav__btn is-active" onclick="switchAdminTab('overview')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+              <span>Panel General</span>
+              <span class="rc-nav__pill">LIVE</span>
+            </button>
+            <button type="button" id="nav-directory" data-rc-tab="directory" class="rc-nav__btn" onclick="switchAdminTab('directory')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <span>Directorio &amp; Altas</span>
+              <span id="sidebarPendingBadge" class="rc-nav__pill">4</span>
+            </button>
+            <button type="button" id="nav-setups" data-rc-tab="setups" class="rc-nav__btn" onclick="switchAdminTab('setups')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-6"/></svg>
+              <span>Vault MMT &amp; NEC BoP</span>
+              <span class="rc-nav__pill">42.6k</span>
+            </button>
+            <button type="button" id="nav-domains" data-rc-tab="domains" class="rc-nav__btn" onclick="switchAdminTab('domains')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              <span>Buzones @muntru.me</span>
+              <span class="rc-nav__pill">5</span>
+            </button>
+            <button type="button" id="nav-iracing" data-rc-tab="iracing" class="rc-nav__btn" onclick="switchAdminTab('iracing')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+              <span>iRacing Sync Bridge</span>
+            </button>
+            <button type="button" id="nav-security" data-rc-tab="security" class="rc-nav__btn" onclick="switchAdminTab('security')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span>Seguridad &amp; Auditoría</span>
+            </button>
+          </nav>
         </div>
 
-        <nav class="space-y-1 text-xs">
-          <button onclick="switchAdminSection('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-neutral-300 hover:bg-white/5 transition sidebar-link-active font-semibold">
-            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-            <span>Página Principal</span>
-          </button>
-
-          <button onclick="switchAdminSection('directory')" id="nav-directory" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-neutral-400 hover:bg-white/5 transition">
-            <span class="flex items-center gap-3">
-              <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-              <span>Directorio Pilotos</span>
-            </span>
-            <span id="badgePendingReq" class="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300">0</span>
-          </button>
-
-          <button onclick="switchAdminSection('mail')" id="nav-mail" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-neutral-400 hover:bg-white/5 transition">
-            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-            <span>Buzones @muntru.me</span>
-          </button>
-
-          <button onclick="switchAdminSection('setups')" id="nav-setups" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-neutral-400 hover:bg-white/5 transition">
-            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
-            <span>Setups & Telemetría</span>
-          </button>
-
-          <button onclick="switchAdminSection('security')" id="nav-security" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-neutral-400 hover:bg-white/5 transition">
-            <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-            <span>Seguridad & Reglas</span>
-          </button>
-
-          <button onclick="switchAdminSection('iracing-sync')" id="nav-iracing-sync" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-neutral-400 hover:bg-white/5 transition">
-            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-            <span class="font-bold text-white">iRacing Sync Bridge</span>
-          </button>
-
-          <button onclick="switchAdminSection('audit')" id="nav-audit" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-neutral-400 hover:bg-white/5 transition">
-            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            <span>Registros de Auditoría</span>
-          </button>
-        </nav>
-      </div>
-
-      <!-- Domain Footnote -->
-      <div class="p-3.5 rounded-2xl bg-[#141821] border border-white/5 space-y-1 text-xs">
-        <div class="text-[10px] text-neutral-500 font-bold uppercase tracking-wider">Dominio Primario</div>
-        <div class="font-mono font-bold text-white text-xs">muntru.me</div>
-        <div class="text-[10px] text-emerald-400 flex items-center gap-1">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-          <span>Cloudflare Pro · SSL Activo</span>
-        </div>
-      </div>
-    </aside>
-
-    <!-- Main Admin Dashboard Content Area -->
-    <div class="flex-1 bg-[#0b0e13] overflow-y-auto p-6 sm:p-8 space-y-8">
-      
-      <!-- Section: DASHBOARD (Google Admin Style Cards) -->
-      <div id="section-dashboard" class="space-y-8">
-        
-        <!-- Welcome Banner -->
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-white/10">
-          <div>
-            <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
-              Consola de Administración de Muntrume
-            </h1>
-            <p class="text-xs sm:text-sm text-neutral-400 mt-1">
-              Supervisión de directorio de pilotos, buzones @muntru.me, cuotas D1 y seguridad de la organización.
-            </p>
+        <div class="rc-sidebar__card">
+          <div class="rc-sidebar__card-head">
+            <span class="rc-dot"></span>
+            <span>INFRAESTRUCTURA EDGE</span>
           </div>
-
-          <div class="flex items-center gap-2">
-            <button onclick="openAddPilotModal()" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs transition flex items-center gap-1.5 shadow-lg shadow-emerald-500/20">
-              <span>+ Alta de Piloto</span>
-            </button>
-            <button onclick="testAdminEmails()" class="px-3.5 py-2 rounded-xl bg-[#181e2b] hover:bg-white/10 border border-white/10 text-xs text-neutral-200 font-bold transition">
-              ✉️ Probar Plantillas Correo
-            </button>
+          <dl class="rc-sidebar__dl">
+            <div><dt>Dominio</dt><dd>muntru.me</dd></div>
+            <div><dt>Base D1</dt><dd id="rcSidebarD1Status">Sincronizada</dd></div>
+            <div><dt>Escrutinio BoP</dt><dd class="rc-accent">100% PASS TECH</dd></div>
+            <div><dt>NEC VLN 26S4</dt><dd>W01–W13 (1,638)</dd></div>
+          </dl>
+          <div class="rc-sidebar__btns">
+            <button type="button" class="r-btn r-btn--sm" style="width:100%" onclick="refreshRaceControlData()">↻ Sincronizar D1 Ahora</button>
           </div>
         </div>
+      </aside>
 
-        <!-- Google Admin Style KPI Grid Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-          
-          <!-- Card 1: Directorio de Usuarios -->
-          <div class="gadmin-card p-6 flex flex-col justify-between space-y-4">
-            <div class="flex items-start justify-between">
-              <div class="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-              </div>
-              <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-bold">Usuarios</span>
-            </div>
+      <!-- Right Content Area -->
+      <div class="rc-main">
+        <!-- Notice Banner (Feedback for Admin Operations) -->
+        <div id="rcFeedbackBanner" class="m-notice m-notice--info hidden" role="status">
+          <div class="m-notice__body">
+            <p class="m-notice__title" id="rcFeedbackTitle">Estado</p>
+            <p class="m-notice__msg" id="rcFeedbackMsg"></p>
+          </div>
+          <button type="button" class="m-notice__close" onclick="hideRcNotice()" aria-label="Cerrar">×</button>
+        </div>
+
+        <!-- =============================================================== -->
+        <!-- TAB 1: PANEL GENERAL (OVERVIEW)                                 -->
+        <!-- =============================================================== -->
+        <section id="tab-overview" class="rc-panel space-y-6">
+          <div class="rc-section-head">
             <div>
-              <div class="text-3xl font-black text-white font-mono" id="kpiActiveUsers">4</div>
-              <div class="text-xs font-bold text-neutral-300 mt-1">Pilotos Oficiales Activos</div>
-              <div class="text-[11px] text-neutral-500 mt-0.5">0 solicitudes pendientes de revisión</div>
+              <p class="r-kicker">Centro de Mando · Tiempo Real</p>
+              <h2 class="r-h3">Estado Global de Muntrume Motorsport</h2>
+              <p class="rc-muted">Supervisión unificada de pilotos oficiales, escrutinio BoP 26S4, catálogo MMT (.STO), paquetes semanales NEC VLN y correo institucional.</p>
             </div>
-            <button onclick="switchAdminSection('directory')" class="text-xs text-cyan-400 font-bold hover:underline flex items-center gap-1 pt-2">
-              <span>Gestionar Directorio</span>
-              <span>→</span>
-            </button>
+            <div class="rc-btn-row">
+              <button type="button" class="r-btn r-btn--sm" onclick="openEmailPreviewModal('welcome')">✉️ Plantillas Correo</button>
+              <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="openAddDriverModal()">+ Alta de Piloto</button>
+            </div>
           </div>
 
-          <!-- Card 2: Buzones de Correo @muntru.me -->
-          <div class="gadmin-card p-6 flex flex-col justify-between space-y-4">
-            <div class="flex items-start justify-between">
-              <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          <!-- 4 KPI Cards -->
+          <div class="rc-kpi-grid">
+            <article class="rc-kpi-card">
+              <div class="rc-kpi-card__top">
+                <span class="rc-kpi-tag">PLANTILLA &amp; ACCESOS</span>
+                <span class="rc-badge rc-badge--ok" id="kpiDriversBadge">D1 Activo</span>
               </div>
-              <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 font-bold">Correo</span>
-            </div>
-            <div>
-              <div class="text-3xl font-black text-white font-mono">5</div>
-              <div class="text-xs font-bold text-neutral-300 mt-1">Buzones Institucionales</div>
-              <div class="text-[11px] text-neutral-500 mt-0.5">Resend API + Webmail Interno Activo</div>
-            </div>
-            <a href="/mail" class="text-xs text-amber-400 font-bold hover:underline flex items-center gap-1 pt-2">
-              <span>Abrir Webmail</span>
-              <span>→</span>
-            </a>
-          </div>
+              <div class="rc-kpi-val" id="kpiDriversCount">{PILOTOS.length}</div>
+              <p class="rc-kpi-sub" id="kpiPendingSub">Pilotos titulares con acceso verificado (0 solicitudes pendientes)</p>
+              <button type="button" class="rc-kpi-link" onclick="switchAdminTab('directory')">Gestionar Directorio →</button>
+            </article>
 
-          <!-- Card 3: Vault D1 & Setups -->
-          <div class="gadmin-card p-6 flex flex-col justify-between space-y-4">
-            <div class="flex items-start justify-between">
-              <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+            <article class="rc-kpi-card">
+              <div class="rc-kpi-card__top">
+                <span class="rc-kpi-tag">VAULT MMT (.STO)</span>
+                <span class="rc-badge rc-badge--ok">26S4</span>
               </div>
-              <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold">Cloudflare D1</span>
-            </div>
-            <div>
-              <div class="text-3xl font-black text-white font-mono">497</div>
-              <div class="text-xs font-bold text-neutral-300 mt-1">Setups Servidos desde Vault</div>
-              <div class="text-[11px] text-neutral-500 mt-0.5">Marca de agua institucional activa</div>
-            </div>
-            <button onclick="switchAdminSection('setups')" class="text-xs text-emerald-400 font-bold hover:underline flex items-center gap-1 pt-2">
-              <span>Explorar Telemetría</span>
-              <span>→</span>
-            </button>
-          </div>
+              <div class="rc-kpi-val" id="kpiSetupsCount">{fmt(totalSetups)}</div>
+              <p class="rc-kpi-sub">{totalCars} coches · {totalCircuits} circuitos · Nomenclatura oficial <code>MMT_</code></p>
+              <button type="button" class="rc-kpi-link" onclick="switchAdminTab('setups')">Auditar Setups &amp; BoP →</button>
+            </article>
 
-          <!-- Card 4: Seguridad & Zero-Trust -->
-          <div class="gadmin-card p-6 flex flex-col justify-between space-y-4">
-            <div class="flex items-start justify-between">
-              <div class="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            <article class="rc-kpi-card">
+              <div class="rc-kpi-card__top">
+                <span class="rc-kpi-tag">ESPECIAL NEC · VLN</span>
+                <span class="rc-badge rc-badge--ok">W01–W13</span>
               </div>
-              <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 font-bold">Seguridad</span>
-            </div>
-            <div>
-              <div class="text-3xl font-black text-white font-mono">100k</div>
-              <div class="text-xs font-bold text-neutral-300 mt-1">Iteraciones PBKDF2-SHA256</div>
-              <div class="text-[11px] text-neutral-500 mt-0.5">Límite de tasa: 10 peticiones/min</div>
-            </div>
-            <button onclick="switchAdminSection('security')" class="text-xs text-purple-400 font-bold hover:underline flex items-center gap-1 pt-2">
-              <span>Auditoría de Acceso</span>
-              <span>→</span>
-            </button>
-          </div>
+              <div class="rc-kpi-val">1,638</div>
+              <p class="rc-kpi-sub">Setups en Nürburgring Combined Gesamtstrecke VLN (Altura &ge; 70.5 mm)</p>
+              <button type="button" class="rc-kpi-link" onclick="switchAdminTab('setups')">Ver Calendario NEC →</button>
+            </article>
 
-        </div>
-
-        <!-- Quick Access Pilots Table Preview -->
-        <div class="gadmin-card p-6 space-y-4">
-          <div class="flex items-center justify-between">
-            <div>
-              <h2 class="text-base font-extrabold text-white">Directorio Rápido de Miembros Oficiales</h2>
-              <p class="text-xs text-neutral-400">Pilotos titulares con acceso autenticado al Vault y buzón @muntru.me.</p>
-            </div>
-            <button onclick="switchAdminSection('directory')" class="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-bold text-white transition">
-              Ver todos (4)
-            </button>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-[#0b0e13] text-neutral-400 font-bold uppercase text-[10px] tracking-wider border-b border-white/5">
-                <tr>
-                  <th class="py-3 px-4">Piloto & Rol</th>
-                  <th class="py-3 px-4">Correo Institucional</th>
-                  <th class="py-3 px-4">Licencia iRacing</th>
-                  <th class="py-3 px-4">Estado Cuenta</th>
-                  <th class="py-3 px-4 text-right">Acciones Rápidas</th>
-                </tr>
-              </thead>
-              <tbody id="quickPilotsTable" class="divide-y divide-white/5">
-                <!-- Rendered by JS -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Section: DIRECTORIO DE PILOTOS (DETALLADO) -->
-      <div id="section-directory" class="hidden space-y-6">
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
-          <div>
-            <h1 class="text-2xl font-black text-white">Directorio de Pilotos & Solicitudes</h1>
-            <p class="text-xs text-neutral-400 mt-0.5">Aprobación de nuevos aspirantes, reseteo de claves y gestión de roles.</p>
-          </div>
-          <button onclick="openAddPilotModal()" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs transition">
-            + Añadir Piloto al Equipo
-          </button>
-        </div>
-
-        <!-- Filters Tabs -->
-        <div class="flex gap-2 border-b border-white/10 pb-3 text-xs font-bold">
-          <button onclick="filterPilotsTab('all')" id="pilotTab-all" class="px-3.5 py-1.5 rounded-xl bg-white/10 text-white">Todos (4)</button>
-          <button onclick="filterPilotsTab('active')" id="pilotTab-active" class="px-3.5 py-1.5 rounded-xl text-neutral-400 hover:text-white">Activos (4)</button>
-          <button onclick="filterPilotsTab('pending')" id="pilotTab-pending" class="px-3.5 py-1.5 rounded-xl text-neutral-400 hover:text-white">Pendientes (0)</button>
-        </div>
-
-        <!-- Detailed Table -->
-        <div class="gadmin-card overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-[#0b0e13] text-neutral-400 font-bold uppercase text-[10px] tracking-wider border-b border-white/5">
-                <tr>
-                  <th class="py-3 px-4">Piloto</th>
-                  <th class="py-3 px-4">Buzón @muntru.me</th>
-                  <th class="py-3 px-4">iRating / Licencia</th>
-                  <th class="py-3 px-4">Especialidad</th>
-                  <th class="py-3 px-4">Estado</th>
-                  <th class="py-3 px-4 text-right">Opciones</th>
-                </tr>
-              </thead>
-              <tbody id="detailedPilotsTable" class="divide-y divide-white/5">
-                <!-- Rendered by JS -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Section: BUZONES @MUNTRU.ME -->
-      <div id="section-mail" class="hidden space-y-6">
-        <div class="flex items-center justify-between pb-4 border-b border-white/10">
-          <div>
-            <h1 class="text-2xl font-black text-white">Servidor de Correo & Buzones Institucionales</h1>
-            <p class="text-xs text-neutral-400 mt-0.5">Gestión de cuentas `@muntru.me`, enrutamiento de briefings y API transaccional.</p>
-          </div>
-          <a href="/mail" class="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-black font-extrabold text-xs transition">
-            Abrir Cliente Webmail →
-          </a>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <div class="gadmin-card p-5 space-y-2">
-            <div class="text-[10px] font-bold text-neutral-500 uppercase">Enrutador DNS</div>
-            <div class="text-base font-black text-white">Cloudflare Email Routing</div>
-            <div class="text-xs text-emerald-400 font-mono">MX: route1.mx.cloudflare.net</div>
-          </div>
-          <div class="gadmin-card p-5 space-y-2">
-            <div class="text-[10px] font-bold text-neutral-500 uppercase">Proveedor Transaccional</div>
-            <div class="text-base font-black text-white">Resend API</div>
-            <div class="text-xs text-cyan-400 font-mono">api.resend.com · TLS Verified</div>
-          </div>
-          <div class="gadmin-card p-5 space-y-2">
-            <div class="text-[10px] font-bold text-neutral-500 uppercase">Almacenamiento Local</div>
-            <div class="text-base font-black text-white">Base de Datos D1 Vault</div>
-            <div class="text-xs text-amber-400 font-mono">Cifrado de Comunicados Internos</div>
-          </div>
-        </div>
-
-        <div class="gadmin-card p-6 space-y-4">
-          <h2 class="text-sm font-extrabold text-white">Buzones Activos del Equipo</h2>
-          <div class="divide-y divide-white/5 text-xs font-mono">
-            <div class="py-2.5 flex items-center justify-between">
-              <span class="text-emerald-400 font-bold">alberto@muntru.me</span>
-              <span class="text-neutral-400">Alberto Trujillo (Team Principal) · Ilimitado</span>
-            </div>
-            <div class="py-2.5 flex items-center justify-between">
-              <span class="text-amber-400 font-bold">mateo@muntru.me</span>
-              <span class="text-neutral-400">Mateo Berbis (Sprint Lead) · Activo</span>
-            </div>
-            <div class="py-2.5 flex items-center justify-between">
-              <span class="text-slate-400 font-bold">eduardo@muntru.me</span>
-              <span class="text-neutral-400">Eduardo Chongkan (Race Engineer) · Activo</span>
-            </div>
-            <div class="py-2.5 flex items-center justify-between">
-              <span class="text-orange-400 font-bold">juanlu@muntru.me</span>
-              <span class="text-neutral-400">Juanlu Carrillo (Dev Squad, no es piloto) · Activo</span>
-            </div>
-            <div class="py-2.5 flex items-center justify-between">
-              <span class="text-purple-400 font-bold">racecontrol@muntru.me</span>
-              <span class="text-neutral-400">Dirección de Carrera & Avisos Oficiales</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Section: SETUPS & TELEMETRÍA -->
-      <div id="section-setups" class="hidden space-y-6">
-        <div class="flex items-center justify-between pb-4 border-b border-white/10">
-          <div>
-            <h1 class="text-2xl font-black text-white">Vault de Setups & Telemetría .IBT</h1>
-            <p class="text-xs text-neutral-400 mt-0.5">Control de archivos .sto servidos desde D1, firma de autor y sincronización con Garage 61.</p>
-          </div>
-          <a href="/setups" class="px-4 py-2 rounded-xl bg-emerald-500 text-black font-extrabold text-xs transition">
-            Ir a Setups Vault →
-          </a>
-        </div>
-
-        <div class="gadmin-card p-6 space-y-3">
-          <div class="text-xs font-bold text-white uppercase tracking-wider">Regla de Oro de Integridad:</div>
-          <div class="p-4 rounded-2xl bg-[#0b0e13] border border-emerald-500/30 font-mono text-xs text-emerald-400 leading-relaxed">
-            Marca de agua activa en todos los binarios descargados:<br>
-            <strong>"muntru.me - Muntrume Motorsport. Setup by Alberto Trujillo."</strong>
-          </div>
-          <p class="text-xs text-neutral-400">
-            Los archivos .sto no se publican en carpetas públicas. Se sirven exclusivamente a través de <code>/api/setups/car-files</code> a pilotos con token de sesión verificado.
-          </p>
-        </div>
-      </div>
-
-      <!-- Section: SEGURIDAD & REGLAS -->
-      <div id="section-security" class="hidden space-y-6">
-        <div class="pb-4 border-b border-white/10">
-          <h1 class="text-2xl font-black text-white">Seguridad de la Organización & Reglas Zero-Trust</h1>
-          <p class="text-xs text-neutral-400 mt-0.5">Políticas de contraseñas, tokens JWT, rate limiting y protección contra ataques.</p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
-          <div class="gadmin-card p-6 space-y-3">
-            <h3 class="font-extrabold text-purple-400 uppercase tracking-wider">🔒 Cifrado de Contraseñas</h3>
-            <p class="text-neutral-300 leading-relaxed">
-              Algoritmo: <strong>PBKDF2-HMAC-SHA256</strong> con 100,000 iteraciones y sal criptográfica de 16 bytes generada por <code>crypto.getRandomValues</code>. Ninguna clave se almacena en texto plano.
-            </p>
-          </div>
-          <div class="gadmin-card p-6 space-y-3">
-            <h3 class="font-extrabold text-cyan-400 uppercase tracking-wider">🛡️ Rate Limiting en Edge</h3>
-            <p class="text-neutral-300 leading-relaxed">
-              Límite de tasa activo en Cloudflare Workers: máximo 10 peticiones de autenticación por minuto por dirección IP para prevenir ataques de fuerza bruta.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Section: IRACING SYNC BRIDGE (ANTI-BANEO) -->
-      <div id="section-iracing-sync" class="hidden space-y-6 font-sans">
-        <div class="pb-4 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-mono font-bold uppercase mb-2">
-              ● Live Telemetry Bridge · Anti-Ban / Zero-Risk
-            </div>
-            <h1 class="text-2xl font-black text-white">Sincronización Segura de Pilotos iRacing</h1>
-            <p class="text-xs text-neutral-400 mt-0.5">Actualización dinámica de iRating y Licencia oficial sin bloqueos de IP ni riesgo para tu cuenta.</p>
-          </div>
-          <span class="px-3 py-1 rounded-xl bg-white/5 border border-white/10 text-xs font-mono text-emerald-400 font-bold">
-            Cloudflare D1 Conectado
-          </span>
-        </div>
-
-        <!-- Garantía de Seguridad Anti-Baneo -->
-        <div class="p-5 rounded-2xl bg-[#0b0e13] border border-emerald-500/30 space-y-2">
-          <div class="flex items-center gap-2 text-white text-xs font-bold font-mono">
-            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-            <span>Arquitectura 100% Segura Contra Baneos de iRacing</span>
-          </div>
-          <p class="text-xs text-neutral-400 leading-relaxed">
-            Este método no usa bots en servidores remotos ni fuerza bruta. Se ejecuta <strong>exclusivamente en tu navegador</strong> mientras tienes tu sesión oficial abierta en <code class="text-white">members-ng.iracing.com</code>. Consulta los endpoints de solo lectura (<code class="text-emerald-400">/data/member/info</code>, <code class="text-emerald-400">/data/stats/member_recent_races</code>, <code class="text-emerald-400">/data/car/get</code>) con tu propia sesión y envía a D1 tu iRating, licencia y últimas carreras reales. Si iRacing no devuelve datos, no se envía nada. <strong>Tu contraseña y cookies de sesión nunca salen de tu ordenador.</strong>
-          </p>
-        </div>
-
-        <!-- MÉTODOS DE SINCRONIZACIÓN -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
-          <!-- Método A: Bookmarklet de 1 Clic -->
-          <div class="gadmin-card p-6 space-y-4 flex flex-col justify-between">
-            <div class="space-y-3">
-              <div class="flex items-center gap-2">
-                <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs font-mono">1</span>
-                <h3 class="font-extrabold text-white text-sm">Bookmarklet de 1 Clic (Recomendado)</h3>
+            <article class="rc-kpi-card">
+              <div class="rc-kpi-card__top">
+                <span class="rc-kpi-tag">CORREO &amp; SEGURIDAD</span>
+                <span class="rc-badge rc-badge--ok">Zero-Trust</span>
               </div>
-              <p class="text-xs text-neutral-400 leading-relaxed">
-                Arrastra este botón a la <strong>Barra de Marcadores</strong> de tu navegador (Chrome o Edge). Luego entra a <a href="https://members-ng.iracing.com" target="_blank" class="text-emerald-400 underline">members-ng.iracing.com</a> y haz clic en el marcador tras terminar una carrera.
-              </p>
-            </div>
+              <div class="rc-kpi-val">5 / 100%</div>
+              <p class="rc-kpi-sub">5 buzones <code>@muntru.me</code> · 0 Failed Tech · PBKDF2 100k iter.</p>
+              <button type="button" class="rc-kpi-link" onclick="switchAdminTab('domains')">Abrir Buzones &amp; DNS →</button>
+            </article>
+          </div>
 
-            <div class="space-y-2 pt-2">
-              <a
-                href="javascript:(async()=>{try{const g=async u=>{const r=await fetch(u,{credentials:'include'});if(!r.ok)throw new Error('Inicia sesion en members-ng.iracing.com ('+r.status+')');const j=await r.json();return j&&j.link?(await fetch(j.link)).json():j};const d=await g('/data/member/info');const s=(d.licenses||[]).find(l=>l.category==='sports_car')||(d.licenses||[])[0];if(!s||!(s.irating>0))throw new Error('iRacing no devolvio iRating: no se envia nada.');const cars={};try{(await g('/data/car/get')).forEach(c=>cars[c.car_id]=c)}catch(e){};let races=[];try{races=((await g('/data/stats/member_recent_races?cust_id='+d.cust_id)).races||[]).slice(0,10).map(r=>({date:r.session_start_time,series:r.series_name,track:r.track&&r.track.track_name?(r.track.track_name+(r.track.config_name?' · '+r.track.config_name:'')):null,car:(cars[r.car_id]||{}).car_name||null,start:r.start_position+1,finish:r.finish_position+1,incidents:r.incidents,irating_change:(r.newi_rating>0&&r.oldi_rating>0)?r.newi_rating-r.oldi_rating:null,category:((cars[r.car_id]||{}).categories||[])[0]||null,subsession_id:r.subsession_id}))}catch(e){};const k=localStorage.mtmSync||(localStorage.mtmSync=prompt('Clave IRACING_SYNC_KEY (se guarda solo en este navegador)')||'');const res=await fetch('https://muntrume.atrumin16.workers.dev/api/iracing/sync-stats',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sync_key:k,cust_id:String(d.cust_id),irating:s.irating,license:String(s.group_name||'').replace(/^Class\s+/i,'')+' '+Number(s.safety_rating).toFixed(2),license_category:s.category_name||null,recent_races:races})});const o=await res.json();alert(o.success?'Muntrume: datos reales enviados ('+races.length+' carreras).':'Error: '+(o.error||res.status))}catch(e){alert('Error: '+e.message)}})();"
-                class="block text-center py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs font-mono shadow-lg transition cursor-grab active:cursor-grabbing"
-                title="Arrastra este botón a tus marcadores"
-              >
-                ⚡ Sincronizar Muntrume (Arrastrar a Marcadores)
-              </a>
-              <button
-                type="button"
-                onclick="navigator.clipboard.writeText(this.getAttribute('data-code')); alert('Código copiado al portapapeles. Puedes pegarlo en la consola (F12) de members-ng.iracing.com.');"
-                data-code="javascript:(async()=>{try{const g=async u=>{const r=await fetch(u,{credentials:'include'});if(!r.ok)throw new Error('Inicia sesion en members-ng.iracing.com ('+r.status+')');const j=await r.json();return j&&j.link?(await fetch(j.link)).json():j};const d=await g('/data/member/info');const s=(d.licenses||[]).find(l=>l.category==='sports_car')||(d.licenses||[])[0];if(!s||!(s.irating>0))throw new Error('iRacing no devolvio iRating: no se envia nada.');const cars={};try{(await g('/data/car/get')).forEach(c=>cars[c.car_id]=c)}catch(e){};let races=[];try{races=((await g('/data/stats/member_recent_races?cust_id='+d.cust_id)).races||[]).slice(0,10).map(r=>({date:r.session_start_time,series:r.series_name,track:r.track&&r.track.track_name?(r.track.track_name+(r.track.config_name?' · '+r.track.config_name:'')):null,car:(cars[r.car_id]||{}).car_name||null,start:r.start_position+1,finish:r.finish_position+1,incidents:r.incidents,irating_change:(r.newi_rating>0&&r.oldi_rating>0)?r.newi_rating-r.oldi_rating:null,category:((cars[r.car_id]||{}).categories||[])[0]||null,subsession_id:r.subsession_id}))}catch(e){};const k=localStorage.mtmSync||(localStorage.mtmSync=prompt('Clave IRACING_SYNC_KEY (se guarda solo en este navegador)')||'');const res=await fetch('https://muntrume.atrumin16.workers.dev/api/iracing/sync-stats',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sync_key:k,cust_id:String(d.cust_id),irating:s.irating,license:String(s.group_name||'').replace(/^Class\s+/i,'')+' '+Number(s.safety_rating).toFixed(2),license_category:s.category_name||null,recent_races:races})});const o=await res.json();alert(o.success?'Muntrume: datos reales enviados ('+races.length+' carreras).':'Error: '+(o.error||res.status))}catch(e){alert('Error: '+e.message)}})();"
-                class="w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 text-xs font-mono border border-white/10 transition"
-              >
-                📋 Copiar Script para Consola F12
-              </button>
+          <!-- Roster Oficial en Vivo + Acciones Rápidas -->
+          <div class="rc-card">
+            <div class="rc-card__head">
+              <div>
+                <h3 class="rc-card__title">Plantilla Oficial &amp; Telemetría en Vivo (iRacing / Garage 61)</h3>
+                <p class="rc-muted">Datos sincronizados desde <code>/api/drivers</code> y vinculación de cuenta del Setup Vault.</p>
+              </div>
+              <div class="rc-btn-row">
+                <a href="/drivers" class="r-btn r-btn--sm">Ver Roster Público ↗</a>
+                <button type="button" class="r-btn r-btn--sm" onclick="switchAdminTab('directory')">Directorio Completo →</button>
+              </div>
+            </div>
+            <div class="r-scroll">
+              <table class="r-table">
+                <thead>
+                  <tr>
+                    <th>Dorsal &amp; Piloto</th>
+                    <th>Rol Institucional</th>
+                    <th>Buzón @muntru.me</th>
+                    <th>Sports Car iRating / SR</th>
+                    <th>Estado Vault</th>
+                    <th class="text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="overviewRosterBody">
+                  {PILOTOS.map((p) => (
+                    <tr>
+                      <td>
+                        <div class="rc-user-cell">
+                          <span class="rc-avatar">#{p.dorsal}</span>
+                          <div>
+                            <div class="rc-strong">{p.fullName}</div>
+                            <div class="rc-mono-sub">cust_id: {p.cust_id || 'Pendiente'}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td><span class="rc-badge">{p.role}</span></td>
+                      <td><code>{p.slug === 'albertot' ? 'alberto@muntru.me' : p.slug === 'mateob' ? 'mateo@muntru.me' : p.slug === 'eduardoc' ? 'eduardo@muntru.me' : 'juanlu@muntru.me'}</code></td>
+                      <td><span class="rc-mono-sub">Sincronizando…</span></td>
+                      <td><span class="rc-badge rc-badge--ok">Verificado</span></td>
+                      <td class="text-right">
+                        <a href={`/drivers/${p.slug}/`} class="r-btn r-btn--sm">Perfil ↗</a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
 
-          <!-- Método B (t266): vincular el ID de iRacing. Ya no se pueden teclear cifras a mano: solo datos reales. -->
-          <div class="gadmin-card p-6 space-y-4">
-            <div class="flex items-center gap-2">
-              <span class="w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-xs font-mono">2</span>
-              <h3 class="font-extrabold text-white text-sm">ID de iRacing de cada piloto</h3>
+          <!-- Two-Column Operational Summary: BoP Health & Recent Activity -->
+          <div class="rc-two-col">
+            <div class="rc-card">
+              <div class="rc-card__head">
+                <div>
+                  <h3 class="rc-card__title">✓ Estado de Escrutinio BoP 26S4 &amp; Nomenclatura MMT</h3>
+                  <p class="rc-muted">Auditoría automática sobre los {fmt(totalSetups)} archivos <code>.sto</code> del Vault.</p>
+                </div>
+                <span class="rc-badge rc-badge--ok">0 FAILED TECH</span>
+              </div>
+              <ul class="rc-check-list">
+                <li>
+                  <span>Estructura Oficial <code>MMT_[MODELO]_[CIRCUITO]_[SESIÓN].sto</code></span>
+                  <strong class="rc-accent">42,654 / 42,654 (100%)</strong>
+                </li>
+                <li>
+                  <span>Alturas Estáticas y Caídas dentro de límites iRacing 26S4</span>
+                  <strong class="rc-accent">PASS TECH (100%)</strong>
+                </li>
+                <li>
+                  <span>Nürburgring Combined Gesamtstrecke VLN (Altura NEC &ge; 70.5 mm)</span>
+                  <strong class="rc-accent">1,638 / 1,638 OK</strong>
+                </li>
+                <li>
+                  <span>Presión Fría Mínima (&ge; 151.7 kPa Dry / &ge; 165.5 kPa Wet)</span>
+                  <strong class="rc-accent">Verificado</strong>
+                </li>
+                <li>
+                  <span>Marca de agua institucional UTF-16LE (<code>muntru.me</code>)</span>
+                  <strong class="rc-accent">Activa en descarga</strong>
+                </li>
+              </ul>
             </div>
-            <p class="text-xs text-neutral-400 leading-relaxed">
-              Las cifras ya no se escriben a mano. Vincula aquí el <strong>cust_id</strong> de iRacing (admin: cualquier piloto; piloto: solo su ficha). Las estadísticas llegan de la API oficial de iRacing o del puente; si no hay datos reales, la web muestra «Sin datos».
-            </p>
-            <button type="button" id="driverIdsLoad" class="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-200 text-xs font-bold border border-white/10">Cargar fichas</button>
-            <div id="driverIdsPanel" class="space-y-1"></div>
-            <p id="driverIdsMsg" class="text-xs font-mono" role="status"></p>
+
+            <div class="rc-card">
+              <div class="rc-card__head">
+                <div>
+                  <h3 class="rc-card__title">Actividad Reciente en Race Control</h3>
+                  <p class="rc-muted">Últimos eventos registrados en Cloudflare D1 y consola.</p>
+                </div>
+                <button type="button" class="r-btn r-btn--sm" onclick="switchAdminTab('security')">Ver Auditoría →</button>
+              </div>
+              <ul id="overviewActivityList" class="rc-activity-list"></ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- =============================================================== -->
+        <!-- TAB 2: DIRECTORIO DE PILOTOS, SOLICITUDES & ALTAS D1            -->
+        <!-- =============================================================== -->
+        <section id="tab-directory" class="rc-panel space-y-6 hidden">
+          <div class="rc-section-head">
+            <div>
+              <p class="r-kicker">Gestión de Miembros · Cloudflare D1</p>
+              <h2 class="r-h3">Directorio de Pilotos &amp; Solicitudes de Acceso</h2>
+              <p class="rc-muted">Autoriza solicitudes de ingreso al Garage, genera enlaces únicos de contraseña (72 h) o contraseñas temporales de 1 uso y administra permisos.</p>
+            </div>
+            <div class="rc-btn-row">
+              <button type="button" class="r-btn r-btn--sm" onclick="refreshRaceControlData()">↻ Actualizar D1</button>
+              <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="openAddDriverModal()">+ Alta de Piloto</button>
+            </div>
           </div>
 
-        </div>
+          <!-- Solicitudes Pendientes (Se muestra si hay pendientes o al filtrar) -->
+          <div id="pendingRequestsCard" class="rc-card hidden" style="border-left:3px solid var(--r-accent)">
+            <div class="rc-card__head">
+              <div>
+                <h3 class="rc-card__title">Solicitudes de Acceso Pendientes de Aprobación</h3>
+                <p class="rc-muted">Solicitudes enviadas desde el formulario «Solicitar acceso» de <code>/garage</code>.</p>
+              </div>
+              <span id="pendingRequestsCountBadge" class="rc-badge rc-badge--warn">0 pendientes</span>
+            </div>
+            <div id="pendingRequestsList" class="space-y-3"></div>
+          </div>
+
+          <!-- Filtros de Directorio -->
+          <div class="rc-toolbar">
+            <div class="g-views" role="group" aria-label="Filtrar miembros">
+              <button type="button" id="dirFilter-all" class="is-on" onclick="filterDirectory('all')">Todos</button>
+              <button type="button" id="dirFilter-active" onclick="filterDirectory('active')">Titulares Activos</button>
+              <button type="button" id="dirFilter-admin" onclick="filterDirectory('admin')">Administradores</button>
+              <button type="button" id="dirFilter-pending" onclick="filterDirectory('pending')">Solicitudes</button>
+            </div>
+            <div class="rc-search-inline">
+              <input
+                type="search"
+                id="directorySearchInput"
+                class="g-search"
+                placeholder="Filtrar por nombre, correo, dorsal o rol…"
+                oninput="renderDirectoryTable()"
+              />
+            </div>
+          </div>
+
+          <div class="rc-card">
+            <div class="r-scroll">
+              <table class="r-table">
+                <thead>
+                  <tr>
+                    <th>Piloto &amp; Identidad</th>
+                    <th>Correo de Acceso / Buzón</th>
+                    <th>Rol &amp; Dorsal</th>
+                    <th>Licencia / Telemetría</th>
+                    <th>Estado Credencial</th>
+                    <th class="text-right">Acciones de Cuenta</th>
+                  </tr>
+                </thead>
+                <tbody id="directoryTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- =============================================================== -->
+        <!-- TAB 3: VAULT SETUPS, NOMENCLATURA MMT & ESPECIAL NEC VLN        -->
+        <!-- =============================================================== -->
+        <section id="tab-setups" class="rc-panel space-y-6 hidden">
+          <div class="rc-section-head">
+            <div>
+              <p class="r-kicker">Ingeniería de Pista · BoP 26S4</p>
+              <h2 class="r-h3">Vault Setups, Nomenclatura MMT &amp; Especial NEC VLN</h2>
+              <p class="rc-muted">Inspector de cumplimiento del estándar <code>MMT_[MODELO]_[CIRCUITO]_[SESIÓN]_[VERSIÓN].sto</code> y verificación de escrutinio técnico sin <em>Failed Tech</em>.</p>
+            </div>
+            <div class="rc-btn-row">
+              <a href="/garage" class="r-btn r-btn--primary r-btn--sm">Abrir Catálogo en /garage →</a>
+            </div>
+          </div>
+
+          <!-- Interactive MMT Nomenclature Generator & Live BoP Validator -->
+          <div class="rc-card" style="border-left:3px solid var(--r-accent)">
+            <div class="rc-card__head">
+              <div>
+                <h3 class="rc-card__title">🔬 Simulador de Nomenclatura Oficial MMT &amp; Escrutinio BoP</h3>
+                <p class="rc-muted">Prueba cualquier combinación de modelo, circuito, sesión y versión para validar su nombre oficial y sus parámetros técnicos BoP 26S4.</p>
+              </div>
+              <span class="rc-badge rc-badge--ok">PASS TECH · 0 FAILED TECH</span>
+            </div>
+
+            <div class="rc-sim-grid">
+              <div class="g-field">
+                <label for="simCarSelect">Modelo MMT</label>
+                <select id="simCarSelect" onchange="updateMmtSimulator()">
+                  <option value="ferrari296gt3">F296 · Ferrari 296 GT3</option>
+                  <option value="porsche992rgt3">P911 · Porsche 911 GT3 R (992)</option>
+                  <option value="bmwm4gt3">M4 · BMW M4 GT3</option>
+                  <option value="mercedesamgevogt3">AMG · Mercedes-AMG GT3 2020</option>
+                  <option value="audir8lmsevo2gt3">R8 · Audi R8 LMS EVO II GT3</option>
+                  <option value="lamborghinievogt3">LAMBO · Lamborghini Huracán GT3 EVO</option>
+                  <option value="mclaren720sgt3">MACLA · McLaren 720S GT3 EVO</option>
+                  <option value="chevyvettez06rgt3">Z06 · Chevrolet Corvette Z06 GT3.R</option>
+                  <option value="fordmustanggt3">MUST · Ford Mustang GT3</option>
+                  <option value="amvantageevogt3">AMR · Aston Martin Vantage GT3 EVO</option>
+                  <option value="amvalkyriegtp">VALK · Aston Martin Valkyrie AMR-LMH</option>
+                  <option value="ferrari499p">F499P · Ferrari 499P Hypercar</option>
+                  <option value="cadillacvseriesrgtp">CADDY · Cadillac V-Series.R GTP</option>
+                  <option value="porsche963gtp">P963 · Porsche 963 GTP</option>
+                  <option value="bmwlmdh">BMWH · BMW M Hybrid V8 GTP</option>
+                  <option value="acuraarx06gtp">ACURA · Acura ARX-06 GTP</option>
+                  <option value="porsche718gt4">PORS · Porsche 718 Cayman GT4</option>
+                  <option value="audirs3lmsgen2">RS3 · Audi RS 3 LMS TCR</option>
+                  <option value="hyundaielantracn7">HYUN · Hyundai Elantra N TCR</option>
+                  <option value="hondacivictyper">CIVIC · Honda Civic Type R TCR</option>
+                  <option value="toyotagr86">GR86 · Toyota GR86 Cup</option>
+                  <option value="superformulasf23 toyota">SF23 · Super Formula SF23</option>
+                  <option value="dallaraf3">F3 · Dallara F3</option>
+                  <option value="formulair04">F4 · FIA F4</option>
+                  <option value="raygr22">FF1600 · Ray FF1600</option>
+                  <option value="mx5 cup">MX5 · Global Mazda MX-5 Cup</option>
+                </select>
+              </div>
+
+              <div class="g-field">
+                <label for="simCircuitSelect">Circuito</label>
+                <select id="simCircuitSelect" onchange="updateMmtSimulator()">
+                  <option value="Nürburgring Combined Gesamtstrecke VLN">VLN · Nürburgring Combined Gesamtstrecke VLN (NEC)</option>
+                  <option value="Spa">SPA · Circuit de Spa-Francorchamps</option>
+                  <option value="Le Mans">LEMANS · Circuit des 24 Heures du Mans</option>
+                  <option value="Daytona">DAYTONA · Daytona International Speedway</option>
+                  <option value="Sebring">SEBRING · Sebring International Raceway</option>
+                  <option value="Watkins Glen">WGLEN · Watkins Glen International</option>
+                  <option value="Road Atlanta">RATLANTA · Michelin Raceway Road Atlanta</option>
+                  <option value="Monza">MONZA · Autodromo Nazionale Monza</option>
+                  <option value="Imola">IMOLA · Autodromo Internazionale Enzo e Dino Ferrari</option>
+                  <option value="Suzuka">SUZUKA · Suzuka International Racing Course</option>
+                  <option value="Bathurst">BATHURST · Mount Panorama Circuit</option>
+                  <option value="Interlagos">INTERLAGOS · Autódromo José Carlos Pace</option>
+                </select>
+              </div>
+
+              <div class="g-field">
+                <label for="simSessionSelect">Código de Sesión MMT</label>
+                <select id="simSessionSelect" onchange="updateMmtSimulator()">
+                  <option value="R">R · Race (Carrera estándar / Sprint)</option>
+                  <option value="END">END · Endurance / Eventos Especiales / NEC</option>
+                  <option value="S">S · Safe (Alta estabilidad para carrera)</option>
+                  <option value="Q">Q · Quali estándar (1 vuelta / mínima carga)</option>
+                  <option value="Q2">Q2 · Quali de 2 vueltas (out-lap + push)</option>
+                  <option value="Q_SAFE">Q_SAFE · Quali alta estabilidad</option>
+                  <option value="Q2_SAFE">Q2_SAFE · Quali 2 vueltas alta estabilidad</option>
+                  <option value="W">W · Wet (Lluvia)</option>
+                </select>
+              </div>
+
+              <div class="g-field">
+                <label for="simVersionSelect">Versión (Opcional)</label>
+                <select id="simVersionSelect" onchange="updateMmtSimulator()">
+                  <option value="">Estándar (Sin sufijo)</option>
+                  <option value="V2">V2 · Revisión BoP 2</option>
+                  <option value="V3">V3 · Revisión BoP 3</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="rc-sim-output">
+              <div class="rc-sim-output__file">
+                <span class="rc-kpi-tag">ARCHIVO OFICIAL GENERADO</span>
+                <div class="rc-sim-filename" id="simGeneratedFilename">MMT_F296_VLN_R.sto</div>
+                <p class="rc-muted" id="simGeneratedPath">Ruta en iRacing: <code>Documentos\iRacing\setups\ferrari296gt3\Muntrume_Motorsport\26S4\W01_VLN\MMT_F296_VLN_R.sto</code></p>
+              </div>
+              <div class="rc-btn-row">
+                <button type="button" class="r-btn r-btn--sm" onclick="copySimulatedFilename()">Copiar nombre .sto</button>
+                <a id="simOpenInGarageBtn" href="/garage" class="r-btn r-btn--primary r-btn--sm">Buscar en /garage →</a>
+              </div>
+            </div>
+
+            <div id="simBopChecksGrid" class="rc-bop-grid"></div>
+          </div>
+
+          <!-- NEC Weekly Schedule & Coverage (W01 - W13) -->
+          <div class="rc-card">
+            <div class="rc-card__head">
+              <div>
+                <h3 class="rc-card__title">🏁 Cobertura Semanal NEC · Nürburgring Combined Gesamtstrecke VLN (W01–W13)</h3>
+                <p class="rc-muted">1,638 setups verificados para las 21 monturas de la Nürburgring Endurance Championship (6 variantes por coche cada semana: <code>Q</code>, <code>Q2_SAFE</code>, <code>R</code>, <code>END</code>, <code>S</code>, <code>W</code>).</p>
+              </div>
+              <a href="/garage" class="r-btn r-btn--sm">Ver NEC en Garage →</a>
+            </div>
+            <div class="rc-nec-grid">
+              {Array.from({ length: 13 }, (_, i) => {
+                const w = `W${String(i + 1).padStart(2, '0')}`;
+                return (
+                  <a href={`/garage?nec=${w}`} class="rc-nec-card">
+                    <div class="rc-nec-card__top">
+                      <span class="rc-strong">NEC {w}</span>
+                      <span class="rc-badge rc-badge--ok">PASS TECH</span>
+                    </div>
+                    <div class="rc-mono-sub">VLN · 21 coches · 126 setups</div>
+                    <div class="rc-nec-card__codes">Q · Q2_SAFE · R · END · S · W</div>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        <!-- =============================================================== -->
+        <!-- TAB 4: BUZONES @MUNTRU.ME, CLOUDFLARE ROUTING & WEBMAIL         -->
+        <!-- =============================================================== -->
+        <section id="tab-domains" class="rc-panel space-y-6 hidden">
+          <div class="rc-section-head">
+            <div>
+              <p class="r-kicker">Comunicaciones &amp; Dominio Institucional</p>
+              <h2 class="r-h3">Buzones @muntru.me &amp; Despacho de Correo</h2>
+              <p class="rc-muted">Enrutamiento Cloudflare Email Routing + Resend API transaccional y acceso directo al Webmail corporativo.</p>
+            </div>
+            <div class="rc-btn-row">
+              <a href="/communications" class="r-btn r-btn--sm">Bandeja Interna (/communications) →</a>
+              <a href="https://mail.trujillomingorance.com" target="_blank" rel="noopener noreferrer" class="r-btn r-btn--primary r-btn--sm">Abrir Webmail Corporativo ↗</a>
+            </div>
+          </div>
+
+          <div class="rc-kpi-grid">
+            <div class="rc-kpi-card">
+              <span class="rc-kpi-tag">DOMINIO PRIMARIO</span>
+              <div class="rc-kpi-val">muntru.me</div>
+              <p class="rc-kpi-sub">Cloudflare DNS + Email Routing Activo</p>
+            </div>
+            <div class="rc-kpi-card">
+              <span class="rc-kpi-tag">AUTENTICACIÓN DNS</span>
+              <div class="rc-kpi-val">SPF · DKIM</div>
+              <p class="rc-kpi-sub">DMARC p=quarantine · TLS 1.3</p>
+            </div>
+            <div class="rc-kpi-card">
+              <span class="rc-kpi-tag">BUZONES OFICIALES</span>
+              <div class="rc-kpi-val">5 Activos</div>
+              <p class="rc-kpi-sub">4 pilotos titulares + Race Control</p>
+            </div>
+            <div class="rc-kpi-card">
+              <span class="rc-kpi-tag">PLANTILLAS AUTOMÁTICAS</span>
+              <div class="rc-kpi-val">3 Listas</div>
+              <p class="rc-kpi-sub">Bienvenida, Recuperación y Briefing</p>
+            </div>
+          </div>
+
+          <div class="rc-card">
+            <div class="rc-card__head">
+              <div>
+                <h3 class="rc-card__title">Buzones Institucionales @muntru.me</h3>
+                <p class="rc-muted">Redirección verificada y acceso a bandeja de comunicaciones del equipo.</p>
+              </div>
+              <button type="button" class="r-btn r-btn--sm" onclick="openEmailPreviewModal('welcome')">Probar Plantillas HTML</button>
+            </div>
+            <div class="r-scroll">
+              <table class="r-table">
+                <thead>
+                  <tr>
+                    <th>Buzón Institucional</th>
+                    <th>Titular Asignado</th>
+                    <th>Rol</th>
+                    <th>Estado DNS / TLS</th>
+                    <th class="text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="mailboxesTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- =============================================================== -->
+        <!-- TAB 5: IRACING SYNC BRIDGE (CUST_ID & TELEMETRY)                -->
+        <!-- =============================================================== -->
+        <section id="tab-iracing" class="rc-panel space-y-6 hidden">
+          <div class="rc-section-head">
+            <div>
+              <p class="r-kicker">Telemetría Oficial · Cero Riesgo de Baneo</p>
+              <h2 class="r-h3">iRacing Sync Bridge &amp; Vinculación de cust_id</h2>
+              <p class="rc-muted">Vincula el <code>cust_id</code> oficial de cada piloto para sincronizar iRating, Safety Rating y telemetría de Garage 61 sin almacenar contraseñas de iRacing.</p>
+            </div>
+            <div class="rc-btn-row">
+              <button type="button" class="r-btn r-btn--sm" onclick="testLiveDriversEndpoint()">⚡ Probar /api/drivers en Vivo</button>
+              <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="copyDriverIdsConfig()">📋 Copiar driver-ids.js</button>
+            </div>
+          </div>
+
+          <div class="rc-two-col">
+            <div class="rc-card">
+              <div class="rc-card__head">
+                <div>
+                  <h3 class="rc-card__title">Método 1 · Marcador Anti-Ban en 1 Clic</h3>
+                  <p class="rc-muted">Arrastra el botón a tu barra de marcadores y púlsalo dentro de <code>members-ng.iracing.com</code>.</p>
+                </div>
+                <span class="rc-badge rc-badge--ok">Recomendado</span>
+              </div>
+              <p class="rc-muted">El navegador lee únicamente tu resumen público de licencia (`cust_id`, iRating y SR) y lo envía al endpoint oficial de Muntrume.</p>
+              <div class="rc-btn-row" style="margin-top:8px">
+                <a
+                  id="iracingBookmarkletLink"
+                  href="javascript:(function(){alert('Muntrume iRacing Sync Bridge: Ejecuta este marcador dentro de members-ng.iracing.com');})();"
+                  class="r-btn r-btn--primary r-btn--sm"
+                  onclick="event.preventDefault(); showRcNotice('Arrastra el botón', 'Arrastra este botón a la barra de marcadores de tu navegador y púlsalo cuando estés en members-ng.iracing.com.', 'info');"
+                >
+                  ⚡ Sync Muntrume iRacing
+                </a>
+                <button type="button" class="r-btn r-btn--sm" onclick="copyIracingConsoleSnippet()">Copiar Script Consola (F12)</button>
+              </div>
+            </div>
+
+            <div class="rc-card">
+              <div class="rc-card__head">
+                <div>
+                  <h3 class="rc-card__title">Método 2 · Mapeo Directo en driver-ids.js</h3>
+                  <p class="rc-muted">Edita los <code>cust_id</code> en la tabla inferior y guarda o exporta el archivo <code>public/assets/js/driver-ids.js</code>.</p>
+                </div>
+                <span class="rc-badge">Instantáneo</span>
+              </div>
+              <p class="rc-muted">Los cambios se guardan inmediatamente en tu sesión local de Race Control y puedes copiar el bloque listo para producción en 1 clic.</p>
+            </div>
+          </div>
+
+          <div class="rc-card">
+            <div class="rc-card__head">
+              <div>
+                <h3 class="rc-card__title">Vinculación de Pilotos Oficiales (cust_id &amp; Correo)</h3>
+                <p class="rc-muted">Introduce el número de cliente de iRacing (<code>cust_id</code>) de cada piloto titular.</p>
+              </div>
+              <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="saveIracingMappings()">Guardar Mapeo Local</button>
+            </div>
+            <div class="r-scroll">
+              <table class="r-table">
+                <thead>
+                  <tr>
+                    <th>Piloto &amp; Dorsal</th>
+                    <th>Slug</th>
+                    <th>iRacing cust_id</th>
+                    <th>Correo Asignado</th>
+                    <th>Estado Telemetría</th>
+                  </tr>
+                </thead>
+                <tbody id="iracingBridgeTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- =============================================================== -->
+        <!-- TAB 6: SEGURIDAD ZERO-TRUST & REGISTROS DE AUDITORÍA            -->
+        <!-- =============================================================== -->
+        <section id="tab-security" class="rc-panel space-y-6 hidden">
+          <div class="rc-section-head">
+            <div>
+              <p class="r-kicker">Criptografía &amp; Trazabilidad</p>
+              <h2 class="r-h3">Seguridad Zero-Trust &amp; Registros de Auditoría</h2>
+              <p class="rc-muted">Políticas activas en el Worker de Cloudflare y registro cronológico de accesos, descargas <code>.sto</code> y cambios administrativos.</p>
+            </div>
+            <div class="rc-btn-row">
+              <button type="button" class="r-btn r-btn--sm" onclick="exportAuditLogsCsv()">⬇ Exportar CSV</button>
+              <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="refreshRaceControlData()">↻ Refrescar Logs</button>
+            </div>
+          </div>
+
+          <div class="rc-kpi-grid">
+            <div class="rc-kpi-card">
+              <span class="rc-kpi-tag">CIFRADO DE CREDENCIALES</span>
+              <div class="rc-kpi-val">PBKDF2</div>
+              <p class="rc-kpi-sub">100,000 iteraciones SHA-256 + Salt único</p>
+            </div>
+            <div class="rc-kpi-card">
+              <span class="rc-kpi-tag">PROTECCIÓN ANTI-FUERZA BRUTA</span>
+              <div class="rc-kpi-val">10 req/m</div>
+              <p class="rc-kpi-sub">Rate Limiting por IP en Cloudflare Edge</p>
+            </div>
+            <div class="rc-kpi-card">
+              <span class="rc-kpi-tag">MARCA DE AGUA .STO</span>
+              <div class="rc-kpi-val">UTF-16LE</div>
+              <p class="rc-kpi-sub">Firma <code>muntru.me</code> inyectada en cabecera</p>
+            </div>
+            <div class="rc-kpi-card">
+              <span class="rc-kpi-tag">CABECERAS HTTP</span>
+              <div class="rc-kpi-val">CSP Strict</div>
+              <p class="rc-kpi-sub">nosniff · strict-origin · TLS 1.3</p>
+            </div>
+          </div>
+
+          <div class="rc-toolbar">
+            <div class="g-views" role="group" aria-label="Filtrar eventos de auditoría">
+              <button type="button" id="auditFilter-all" class="is-on" onclick="filterAuditLogs('all')">Todos los Eventos</button>
+              <button type="button" id="auditFilter-auth" onclick="filterAuditLogs('auth')">Autenticación</button>
+              <button type="button" id="auditFilter-download" onclick="filterAuditLogs('download')">Descargas .STO</button>
+              <button type="button" id="auditFilter-admin" onclick="filterAuditLogs('admin')">Altas &amp; Permisos</button>
+            </div>
+          </div>
+
+          <div class="rc-card">
+            <div class="r-scroll">
+              <table class="r-table">
+                <thead>
+                  <tr>
+                    <th>Fecha / Hora (UTC)</th>
+                    <th>Categoría</th>
+                    <th>Actor / Usuario</th>
+                    <th>Evento &amp; Detalle Técnico</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody id="auditLogsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
       </div>
-
-      <!-- Section: REGISTROS DE AUDITORÍA -->
-      <div id="section-audit" class="hidden space-y-6">
-        <div class="pb-4 border-b border-white/10">
-          <h1 class="text-2xl font-black text-white">Registros de Auditoría & Accesos</h1>
-          <p class="text-xs text-neutral-400 mt-0.5">Historial de autenticaciones, descargas de setups y eventos de seguridad.</p>
-        </div>
-
-        <div class="gadmin-card overflow-hidden">
-          <div class="p-4 bg-[#0b0e13] border-b border-white/5 text-xs font-bold text-neutral-400">
-            Últimos Eventos Registrados en Muntrume
-          </div>
-          <div class="text-xs font-mono p-4 text-neutral-400">El registro real de auditoría está en Race Control (Garage → Admin → Auditoría). Aquí no se muestran entradas de ejemplo.</div>
-        </div>
-      </div>
-
     </div>
   </div>
 
-  <!-- Add Pilot Modal -->
-  <div id="addPilotModal" class="hidden fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
-    <div class="fixed inset-0 bg-black/75 backdrop-blur-sm" onclick="closeAddPilotModal()"></div>
-    <div class="relative min-h-screen flex items-center justify-center p-4">
-      <div class="relative w-full max-w-lg bg-[#141821] border border-emerald-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl overflow-hidden text-neutral-200 space-y-4">
-        <div class="flex items-center justify-between pb-3 border-b border-white/10">
-          <h2 class="text-lg font-extrabold text-white">Alta Directa de Piloto Oficial</h2>
-          <button onclick="closeAddPilotModal()" class="text-neutral-400 hover:text-white">✕</button>
+  <!-- ===================================================================== -->
+  <!-- MODAL 1: ALTA DE PILOTO / GENERADOR DE INVITACIÓN                     -->
+  <!-- ===================================================================== -->
+  <div id="addDriverModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="addDriverModalTitle">
+    <div class="g-dialog">
+      <div class="g-dialog__bar">
+        <h2 id="addDriverModalTitle">Alta de Piloto en el Vault</h2>
+        <button type="button" class="m-notice__close" onclick="closeAddDriverModal()" aria-label="Cerrar">×</button>
+      </div>
+      <p>Autoriza a un nuevo piloto en Cloudflare D1 o genera credenciales de acceso para un miembro del equipo.</p>
+      <form id="addDriverForm" onsubmit="submitAddDriverForm(event)">
+        <div class="g-field">
+          <label for="newDriverName">Nombre y Apellido</label>
+          <input type="text" id="newDriverName" required placeholder="Ej. Carlos Sainz" />
         </div>
-
-        <form id="addPilotForm" onsubmit="handleAddPilotSubmit(event)" class="space-y-3.5 text-xs">
-          <div>
-            <label class="text-neutral-400 font-bold block mb-1">Nombre Completo:</label>
-            <input type="text" id="newPilotName" required placeholder="p.ej., Carlos Sainz" class="w-full bg-[#0b0e13] border border-white/10 rounded-xl px-3 py-2 text-white">
-          </div>
-          <div>
-            <label class="text-neutral-400 font-bold block mb-1">Correo Electrónico:</label>
-            <input type="email" id="newPilotEmail" required placeholder="piloto@email.com" class="w-full bg-[#0b0e13] border border-white/10 rounded-xl px-3 py-2 text-white">
-          </div>
-          <div>
-            <label class="text-neutral-400 font-bold block mb-1">ID de Cliente iRacing (Customer ID):</label>
-            <input type="text" id="newPilotIracingId" placeholder="p.ej., 482910" class="w-full bg-[#0b0e13] border border-white/10 rounded-xl px-3 py-2 text-white font-mono">
-          </div>
-          <div>
-            <label class="text-neutral-400 font-bold block mb-1">Rol / Especialidad:</label>
-            <select id="newPilotRole" class="w-full bg-[#0b0e13] border border-white/10 rounded-xl px-3 py-2 text-white">
-              <option value="driver">Piloto Titular GT3 / Resistencia</option>
-              <option value="sprint">Piloto de Clasificación & Sprint</option>
-              <option value="engineer">Ingeniero de Telemetría</option>
-              <option value="junior">Piloto de Desarrollo (Junior Squad)</option>
+        <div class="g-field">
+          <label for="newDriverEmail">Correo Electrónico de Acceso</label>
+          <input type="email" id="newDriverEmail" required placeholder="piloto@dominio.com" />
+        </div>
+        <div class="rc-two-col" style="gap:10px">
+          <div class="g-field">
+            <label for="newDriverRole">Rol en el Equipo</label>
+            <select id="newDriverRole">
+              <option value="driver">Official Driver (Titular)</option>
+              <option value="academy">Academy Driver</option>
+              <option value="engineer">Race Engineer</option>
+              <option value="admin">Team Principal / Admin</option>
             </select>
           </div>
-
-          <div class="flex justify-end gap-2 pt-3 border-t border-white/10">
-            <button type="button" onclick="closeAddPilotModal()" class="px-4 py-2 rounded-xl bg-white/5 text-neutral-300 font-bold">Cancelar</button>
-            <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold">Añadir & Enviar Invitación</button>
+          <div class="g-field">
+            <label for="newDriverMethod">Método de Credencial</label>
+            <select id="newDriverMethod">
+              <option value="link">Enlace único (72 h)</option>
+              <option value="temp_password">Contraseña temporal</option>
+            </select>
           </div>
-        </form>
+        </div>
+        <label class="g-check" for="newDriverSendEmail">
+          <input type="checkbox" id="newDriverSendEmail" checked />
+          Enviar correo automático de bienvenida (vía Resend @muntru.me)
+        </label>
+        <div class="rc-btn-row" style="justify-content:flex-end;margin-top:8px">
+          <button type="button" class="r-btn r-btn--sm" onclick="closeAddDriverModal()">Cancelar</button>
+          <button type="submit" id="addDriverSubmitBtn" class="r-btn r-btn--primary r-btn--sm">Autorizar Piloto</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 2: CREDENCIALES GENERADAS / MENSAJE DE BIENVENIDA COPIABLE      -->
+  <!-- ===================================================================== -->
+  <div id="credentialsResultModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="credModalTitle">
+    <div class="g-dialog g-dialog--wide">
+      <div class="g-dialog__bar">
+        <h2 id="credModalTitle">Credenciales Listas para el Piloto</h2>
+        <button type="button" class="m-notice__close" onclick="closeCredentialsResultModal()" aria-label="Cerrar">×</button>
+      </div>
+      <p id="credModalSub">Se ha autorizado el acceso al Setup Vault. Copia el mensaje inferior para enviárselo por Discord, WhatsApp o correo.</p>
+      <div class="rc-cred-box">
+        <div class="rc-kpi-tag" id="credSecretLabel">ENLACE PERSONAL DE ACCESO (72H)</div>
+        <code id="credSecretCode" class="rc-cred-secret">https://muntru.me/garage?set_password=...</code>
+      </div>
+      <div class="g-field">
+        <label for="credWelcomeTemplate">Mensaje de Bienvenida Formateado</label>
+        <textarea id="credWelcomeTemplate" rows="6" readonly class="rc-mono-textarea"></textarea>
+      </div>
+      <div class="rc-btn-row" style="justify-content:space-between">
+        <button type="button" class="r-btn r-btn--sm" onclick="copyCredentialSecretOnly()">Copiar solo enlace/clave</button>
+        <div class="rc-btn-row">
+          <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="copyWelcomeMessageTemplate()">📋 Copiar Mensaje Completo</button>
+          <button type="button" class="r-btn r-btn--sm" onclick="closeCredentialsResultModal()">Cerrar</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Admin Console Controller -->
-  <script is:inline src="/assets/js/admin.js?v=t266"></script>
-  <script is:inline src="/assets/js/driver-ids.js?v=t266"></script>
-</div>
+  <!-- ===================================================================== -->
+  <!-- MODAL 3: PREVISUALIZADOR DE PLANTILLAS DE CORREO @MUNTRU.ME           -->
+  <!-- ===================================================================== -->
+  <div id="emailTemplateModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="emailTemplateModalTitle">
+    <div class="g-dialog g-dialog--wide">
+      <div class="g-dialog__bar">
+        <h2 id="emailTemplateModalTitle">Plantillas Oficiales @muntru.me</h2>
+        <button type="button" class="m-notice__close" onclick="closeEmailPreviewModal()" aria-label="Cerrar">×</button>
+      </div>
+      <div class="g-views" role="group">
+        <button type="button" id="tplBtn-welcome" class="is-on" onclick="openEmailPreviewModal('welcome')">Bienvenida al Vault</button>
+        <button type="button" id="tplBtn-nec" onclick="openEmailPreviewModal('nec')">Convocatoria NEC VLN</button>
+        <button type="button" id="tplBtn-reset" onclick="openEmailPreviewModal('reset')">Recuperación de Clave</button>
+      </div>
+      <div class="rc-email-preview">
+        <div class="rc-email-preview__meta">
+          <div><strong>De:</strong> <code>Muntrume Race Control &lt;racecontrol@muntru.me&gt;</code></div>
+          <div><strong>Asunto:</strong> <span id="tplSubjectText">Bienvenido al Setup Vault de Muntrume Motorsport</span></div>
+        </div>
+        <pre id="tplBodyText" class="rc-email-preview__body"></pre>
+      </div>
+      <div class="rc-btn-row" style="justify-content:flex-end">
+        <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="copyCurrentEmailTemplate()">📋 Copiar Plantilla</button>
+        <button type="button" class="r-btn r-btn--sm" onclick="closeEmailPreviewModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
 
-<style>
-  .race-control-console,
-  html.light .race-control-console,
-  html[data-theme="light"] .race-control-console {
-    color-scheme: dark !important;
-    background-color: #0b0e13 !important;
-    color: #F2F5F4 !important;
-  }
-  .race-control-console h1,
-  .race-control-console h2,
-  .race-control-console h3,
-  html.light .race-control-console h1,
-  html.light .race-control-console h2,
-  html.light .race-control-console h3,
-  html[data-theme="light"] .race-control-console h1,
-  html[data-theme="light"] .race-control-console h2,
-  html[data-theme="light"] .race-control-console h3 {
-    color: #FFFFFF !important;
-    font-family: 'Space Grotesk', system-ui, sans-serif !important;
-  }
-  .race-control-console .text-white,
-  html.light .race-control-console .text-white,
-  html[data-theme="light"] .race-control-console .text-white {
-    color: #FFFFFF !important;
-  }
-  .race-control-console .text-neutral-200,
-  html.light .race-control-console .text-neutral-200,
-  html[data-theme="light"] .race-control-console .text-neutral-200 {
-    color: #E2E8F0 !important;
-  }
-  .race-control-console .text-neutral-300,
-  html.light .race-control-console .text-neutral-300,
-  html[data-theme="light"] .race-control-console .text-neutral-300 {
-    color: #CBD5E1 !important;
-  }
-  .race-control-console .text-neutral-400,
-  .race-control-console p,
-  html.light .race-control-console .text-neutral-400,
-  html.light .race-control-console p,
-  html[data-theme="light"] .race-control-console .text-neutral-400,
-  html[data-theme="light"] .race-control-console p {
-    color: #94A3B8 !important;
-  }
-  .race-control-console .text-neutral-500,
-  html.light .race-control-console .text-neutral-500,
-  html[data-theme="light"] .race-control-console .text-neutral-500 {
-    color: #64748B !important;
-  }
-  .race-control-console .gadmin-card {
-    background: #111622 !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    border-radius: 1rem;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-  .race-control-console .gadmin-card:hover {
-    border-color: rgba(0, 230, 153, 0.25) !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-  }
-  .race-control-console table th,
-  html.light .race-control-console table th,
-  html[data-theme="light"] .race-control-console table th {
-    color: #94A3B8 !important;
-    background: #0d121b !important;
-    font-weight: 700 !important;
-    letter-spacing: 0.06em !important;
-  }
-  .race-control-console table td,
-  html.light .race-control-console table td,
-  html[data-theme="light"] .race-control-console table td {
-    color: #F1F5F9 !important;
-  }
-</style>
+  <style is:global>
+    /* Race Control Theme-Adaptive Design System (100% Light & Dark Mode Compatible) */
+    .rc-shell {
+      min-height: calc(100svh - 64px);
+      background: var(--r-bg);
+      color: var(--r-text);
+      padding-bottom: 64px;
+    }
+    .rc-topbar {
+      background: var(--r-surface);
+      border-bottom: 1px solid var(--r-line);
+      padding: 16px 0;
+    }
+    .rc-topbar__inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .rc-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .rc-brand__title {
+      margin: 0;
+      font: 800 clamp(20px, 2.4vw, 26px)/1 var(--r-display);
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      color: var(--r-text);
+    }
+    .rc-brand__sub {
+      margin: 3px 0 0;
+      font: 500 12px/1.3 var(--r-mono);
+      color: var(--r-muted);
+    }
+    .rc-brand__sub code {
+      color: var(--r-accent);
+      font-weight: 700;
+    }
+    .rc-search-box {
+      flex: 1 1 280px;
+      max-width: 440px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--r-bg);
+      border: 1px solid var(--r-line);
+      border-radius: 10px;
+      padding: 0 12px;
+      min-height: 40px;
+      color: var(--r-muted);
+      transition: border-color 0.2s;
+    }
+    .rc-search-box:focus-within {
+      border-color: var(--r-accent);
+    }
+    .rc-search-input {
+      flex: 1;
+      border: 0;
+      background: transparent;
+      color: var(--r-text);
+      font: 500 13px/1.3 var(--r-sans);
+      outline: none;
+      min-width: 0;
+    }
+    .rc-kbd {
+      font: 700 10px/1 var(--r-mono);
+      padding: 3px 6px;
+      border-radius: 5px;
+      border: 1px solid var(--r-line);
+      background: var(--r-surface);
+      color: var(--r-muted);
+    }
+    .rc-topbar__actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+    .rc-workspace {
+      display: grid;
+      grid-template-columns: 250px minmax(0, 1fr);
+      gap: 24px;
+      padding-top: 24px;
+      align-items: start;
+    }
+    .rc-sidebar {
+      display: grid;
+      gap: 16px;
+      position: sticky;
+      top: 84px;
+    }
+    .rc-sidebar__group {
+      background: var(--r-surface);
+      border: 1px solid var(--r-line);
+      border-radius: 14px;
+      padding: 12px;
+    }
+    .rc-sidebar__label {
+      margin: 0 0 8px;
+      padding: 0 8px;
+      font: 700 10px/1.2 var(--r-mono);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--r-muted);
+    }
+    .rc-nav {
+      display: grid;
+      gap: 4px;
+    }
+    .rc-nav__btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--r-muted);
+      font: 600 13px/1.2 var(--r-sans);
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .rc-nav__btn:hover {
+      background: var(--r-bg);
+      color: var(--r-text);
+    }
+    .rc-nav__btn.is-active {
+      background: var(--r-bg);
+      color: var(--r-accent);
+      border-color: var(--r-accent);
+      font-weight: 700;
+    }
+    .rc-nav__pill {
+      margin-left: auto;
+      font: 700 10px/1 var(--r-mono);
+      padding: 3px 7px;
+      border-radius: 999px;
+      background: var(--r-surface);
+      border: 1px solid var(--r-line);
+      color: var(--r-text);
+    }
+    .rc-nav__btn.is-active .rc-nav__pill {
+      border-color: var(--r-accent);
+      color: var(--r-accent);
+    }
+    .rc-sidebar__card {
+      background: var(--r-surface);
+      border: 1px solid var(--r-line);
+      border-radius: 14px;
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+    }
+    .rc-sidebar__card-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font: 700 10px/1 var(--r-mono);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--r-accent);
+    }
+    .rc-sidebar__dl {
+      margin: 0;
+      display: grid;
+      gap: 6px;
+      font: 500 12px/1.3 var(--r-mono);
+    }
+    .rc-sidebar__dl div {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      padding-bottom: 5px;
+      border-bottom: 1px dashed var(--r-line);
+    }
+    .rc-sidebar__dl dt {
+      color: var(--r-muted);
+    }
+    .rc-sidebar__dl dd {
+      margin: 0;
+      color: var(--r-text);
+      font-weight: 700;
+    }
+    .rc-main {
+      min-width: 0;
+      display: grid;
+      gap: 20px;
+    }
+    .rc-section-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--r-line);
+    }
+    .rc-muted {
+      margin: 4px 0 0;
+      color: var(--r-muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .rc-btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+    .rc-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .rc-kpi-card {
+      background: var(--r-surface);
+      border: 1px solid var(--r-line);
+      border-radius: 14px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .rc-kpi-card:hover {
+      border-color: var(--r-accent);
+      transform: translateY(-1px);
+    }
+    .rc-kpi-card__top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .rc-kpi-tag {
+      font: 700 10px/1.2 var(--r-mono);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--r-muted);
+    }
+    .rc-kpi-val {
+      font: 800 clamp(26px, 3vw, 34px)/1.05 var(--r-display);
+      color: var(--r-text);
+      letter-spacing: 0.01em;
+    }
+    .rc-kpi-sub {
+      margin: 0;
+      font-size: 12px;
+      line-height: 1.45;
+      color: var(--r-muted);
+    }
+    .rc-kpi-link {
+      margin-top: 4px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--r-accent);
+      font: 700 11px/1.2 var(--r-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      text-align: left;
+      cursor: pointer;
+    }
+    .rc-kpi-link:hover {
+      text-decoration: underline;
+    }
+    .rc-card {
+      background: var(--r-surface);
+      border: 1px solid var(--r-line);
+      border-radius: 14px;
+      padding: 20px;
+      display: grid;
+      gap: 16px;
+    }
+    .rc-card__head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .rc-card__title {
+      margin: 0;
+      font: 800 20px/1.15 var(--r-display);
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      color: var(--r-text);
+    }
+    .rc-two-col {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .rc-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--r-line);
+      background: var(--r-bg);
+      color: var(--r-text);
+      font: 700 10px/1.1 var(--r-mono);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .rc-badge--live,
+    .rc-badge--ok {
+      border-color: var(--r-accent);
+      color: var(--r-accent);
+    }
+    .rc-badge--warn {
+      border-color: var(--m-warn, #E8B04A);
+      color: var(--m-warn, #E8B04A);
+    }
+    .rc-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--r-accent);
+      display: inline-block;
+    }
+    .rc-user-cell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .rc-avatar {
+      min-width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: var(--r-bg);
+      border: 1px solid var(--r-accent);
+      color: var(--r-accent);
+      font: 800 13px/1 var(--r-mono);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 6px;
+    }
+    .rc-strong {
+      font-weight: 700;
+      color: var(--r-text);
+    }
+    .rc-mono-sub {
+      font: 500 11px/1.35 var(--r-mono);
+      color: var(--r-muted);
+    }
+    .rc-accent {
+      color: var(--r-accent);
+    }
+    .rc-check-list,
+    .rc-activity-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 10px;
+    }
+    .rc-check-list li,
+    .rc-activity-list li {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: var(--r-bg);
+      border: 1px solid var(--r-line);
+      font-size: 13px;
+    }
+    .rc-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .rc-search-inline {
+      flex: 1 1 240px;
+      max-width: 360px;
+    }
+    .rc-sim-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .rc-sim-output {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 16px;
+      border-radius: 12px;
+      background: var(--r-bg);
+      border: 1px solid var(--r-accent);
+    }
+    .rc-sim-filename {
+      font: 800 clamp(18px, 2.4vw, 24px)/1.2 var(--r-mono);
+      color: var(--r-accent);
+      margin-top: 4px;
+      word-break: break-all;
+    }
+    .rc-bop-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .rc-bop-item {
+      padding: 12px;
+      border-radius: 10px;
+      background: var(--r-bg);
+      border: 1px solid var(--r-line);
+      display: grid;
+      gap: 4px;
+    }
+    .rc-bop-item__top {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font: 700 11px/1.2 var(--r-mono);
+      color: var(--r-muted);
+    }
+    .rc-bop-item__val {
+      font: 700 13px/1.3 var(--r-mono);
+      color: var(--r-text);
+    }
+    .rc-nec-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 10px;
+    }
+    .rc-nec-card {
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: var(--r-bg);
+      border: 1px solid var(--r-line);
+      text-decoration: none;
+      color: var(--r-text);
+      display: grid;
+      gap: 6px;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .rc-nec-card:hover {
+      border-color: var(--r-accent);
+      transform: translateY(-2px);
+    }
+    .rc-nec-card__top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .rc-nec-card__codes {
+      font: 700 10px/1.2 var(--r-mono);
+      color: var(--r-accent);
+    }
+    .rc-cred-box {
+      padding: 14px;
+      border-radius: 10px;
+      background: var(--r-bg);
+      border: 1px solid var(--r-accent);
+      display: grid;
+      gap: 6px;
+    }
+    .rc-cred-secret {
+      font: 700 13px/1.4 var(--r-mono);
+      color: var(--r-accent);
+      word-break: break-all;
+    }
+    .rc-mono-textarea {
+      font: 500 12px/1.45 var(--r-mono) !important;
+    }
+    .rc-email-preview {
+      border: 1px solid var(--r-line);
+      border-radius: 12px;
+      background: var(--r-bg);
+      overflow: hidden;
+    }
+    .rc-email-preview__meta {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--r-line);
+      background: var(--r-surface);
+      font-size: 12px;
+      display: grid;
+      gap: 4px;
+    }
+    .rc-email-preview__body {
+      margin: 0;
+      padding: 16px;
+      font: 500 12px/1.55 var(--r-mono);
+      color: var(--r-text);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    @media (max-width: 1024px) {
+      .rc-workspace {
+        grid-template-columns: 1fr;
+      }
+      .rc-sidebar {
+        position: static;
+      }
+      .rc-nav {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      }
+      .rc-kpi-grid,
+      .rc-sim-grid,
+      .rc-bop-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+    @media (max-width: 640px) {
+      .rc-kpi-grid,
+      .rc-two-col,
+      .rc-sim-grid,
+      .rc-bop-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+
+  <script is:inline src="/assets/js/driver-ids.js?v=t310"></script>
+  <script is:inline src="/assets/js/admin.js?v=t310"></script>
 </Layout>

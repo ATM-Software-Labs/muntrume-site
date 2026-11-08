@@ -1671,11 +1671,14 @@ function populateAllDropdowns(cars, seasons, weeks, circuits) {
 }
 
 function setTypeFilter(type) {
-  currentTypeFilter = type;
+  currentTypeFilter = !type ? "All" : type;
+  const map = { All: "typeAll", Race: "typeRace", Qualy: "typeQualy", Wet: "typeWet" };
   ["All", "Race", "Qualy", "Wet"].forEach(t => {
+    const pillBtn = document.getElementById(map[t]);
+    if (pillBtn) pillBtn.classList.toggle("is-on", t === currentTypeFilter);
     const btn = document.getElementById(`btnType${t}`);
     if (btn) {
-      if (t === type) {
+      if (t === currentTypeFilter) {
         btn.classList.add("bg-[#161c24]", "text-white", "shadow");
         btn.classList.remove("text-neutral-400");
       } else {
@@ -1685,6 +1688,23 @@ function setTypeFilter(type) {
     }
   });
   applyFilters();
+}
+
+function resetGarageFilters() {
+  const carSel = document.getElementById("carSelect");
+  const seasonSel = document.getElementById("seasonSelect");
+  const weekSel = document.getElementById("weekSelect");
+  const circSel = document.getElementById("circuitSelect");
+  const searchInput = document.getElementById("searchInput");
+  if (carSel) carSel.value = "";
+  if (seasonSel) seasonSel.value = "";
+  if (weekSel) weekSel.value = "";
+  if (circSel) circSel.value = "";
+  if (searchInput) searchInput.value = "";
+  document.querySelectorAll(".mmt-cat-pill").forEach(p => p.classList.remove("is-on"));
+  document.getElementById("catPill-all")?.classList.add("is-on");
+  setTypeFilter("All");
+  onFilterChange();
 }
 
 // Switch between 'folders' view and 'list' view
@@ -3296,30 +3316,30 @@ function renderSetupFacts(setup, binaryInfo) {
     ["Tamaño", formatBytes(binaryInfo?.bytes || setup.size_bytes) || "—"]
   ];
   grid.innerHTML = `
-    <div class="md:col-span-2 bg-[#0e1217] border border-white/10 rounded-2xl p-4">
-      <div class="text-xs font-extrabold text-emerald-400 uppercase tracking-wider mb-3">Datos del archivo &amp; Nomenclatura MMT</div>
+    <div class="md:col-span-2 bg-[var(--r-bg)] border border-[var(--r-line)] rounded-xl p-4">
+      <div class="text-xs font-extrabold text-[var(--r-accent)] uppercase tracking-wider mb-3 font-mono">Datos del archivo &amp; Nomenclatura MMT</div>
       <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-xs">
         ${facts.map(([k, v]) => `
-          <div class="flex justify-between gap-3 border-b border-white/5 pb-1.5">
-            <dt class="text-neutral-500">${escapeHtml(k)}</dt>
-            <dd class="text-white font-mono text-right break-all">${escapeHtml(v || "—")}</dd>
+          <div class="flex justify-between gap-3 border-b border-[var(--r-line)] pb-1.5">
+            <dt class="text-[var(--r-muted)]">${escapeHtml(k)}</dt>
+            <dd class="text-[var(--r-text)] font-mono font-bold text-right break-all">${escapeHtml(v || "—")}</dd>
           </div>`).join("")}
       </dl>
     </div>
-    <div class="md:col-span-2 bg-[#0b1411] border border-emerald-500/30 rounded-2xl p-4">
+    <div class="md:col-span-2 bg-[var(--r-bg)] border border-[var(--r-accent)] rounded-xl p-4">
       <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-        <div class="text-xs font-extrabold text-emerald-400 uppercase tracking-wider">✓ Verificación Escrutinio Técnico iRacing (BoP &amp; No Failed Tech)</div>
-        <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 font-mono text-[10px] font-bold">${escapeHtml(bop.statusLabel)}</span>
+        <div class="text-xs font-extrabold text-[var(--r-accent)] uppercase tracking-wider font-mono">✓ Verificación Escrutinio Técnico iRacing (BoP &amp; No Failed Tech)</div>
+        <span class="px-2.5 py-0.5 rounded-full bg-[var(--r-surface)] border border-[var(--r-accent)] text-[var(--r-accent)] font-mono text-[10px] font-bold">${escapeHtml(bop.statusLabel)}</span>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
         ${bop.checks.map(c => `
-          <div class="p-2.5 rounded-xl bg-black/30 border border-white/5 flex flex-col gap-1">
+          <div class="p-2.5 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] flex flex-col gap-1">
             <div class="flex items-center justify-between gap-2">
-              <span class="text-neutral-400 font-semibold">${escapeHtml(c.label)}</span>
-              <span class="text-emerald-400 font-mono font-bold text-[10px]">✓ OK</span>
+              <span class="text-[var(--r-muted)] font-semibold">${escapeHtml(c.label)}</span>
+              <span class="text-[var(--r-accent)] font-mono font-bold text-[10px]">✓ OK</span>
             </div>
-            <div class="text-white font-mono text-[11px]">${escapeHtml(c.value)}</div>
-            <div class="text-neutral-500 font-mono text-[10px]">${escapeHtml(c.limit)}</div>
+            <div class="text-[var(--r-text)] font-mono font-bold text-[11px]">${escapeHtml(c.value)}</div>
+            <div class="text-[var(--r-muted)] font-mono text-[10px]">${escapeHtml(c.limit)}</div>
           </div>`).join("")}
       </div>
     </div>`;
@@ -3603,22 +3623,18 @@ function switchPreviewTab(tab) {
 
   [specsTab, g61Tab, aiTab].forEach(el => el?.classList.add("hidden"));
   [specsBtn, g61Btn, aiBtn].forEach(btn => {
-    btn?.classList.remove("bg-[#161c24]", "text-emerald-400", "text-purple-300", "shadow");
-    btn?.classList.add("text-neutral-400");
+    btn?.classList.remove("is-on", "bg-[#161c24]", "text-emerald-400", "text-purple-300", "shadow");
   });
 
   if (tab === "g61") {
     g61Tab?.classList.remove("hidden");
-    g61Btn?.classList.add("bg-[#161c24]", "text-emerald-400", "shadow");
-    g61Btn?.classList.remove("text-neutral-400");
+    g61Btn?.classList.add("is-on");
   } else if (tab === "ai") {
     aiTab?.classList.remove("hidden");
-    aiBtn?.classList.add("bg-[#161c24]", "text-purple-300", "shadow");
-    aiBtn?.classList.remove("text-neutral-400");
+    aiBtn?.classList.add("is-on");
   } else {
     specsTab?.classList.remove("hidden");
-    specsBtn?.classList.add("bg-[#161c24]", "text-emerald-400", "shadow");
-    specsBtn?.classList.remove("text-neutral-400");
+    specsBtn?.classList.add("is-on");
   }
 }
 
@@ -4162,6 +4178,9 @@ if (typeof window !== "undefined") {
   window.validateSetupBoPAndTech = validateSetupBoPAndTech;
   window.quickSearchMmt = quickSearchMmt;
   window.setTypeFilter = setTypeFilter;
+  window.resetGarageFilters = resetGarageFilters;
+  window.openAiTrainerQuick = openAiTrainerQuick;
+  window.handleLiveIbtUpload = handleLiveIbtUpload;
   window.onSearchInput = onSearchInput;
   window.onFilterChange = onFilterChange;
   window.configureG61TokenPrompt = configureG61TokenPrompt;

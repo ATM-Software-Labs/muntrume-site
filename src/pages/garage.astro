@@ -270,14 +270,29 @@ const figs = [
               <option value="week">Semana</option>
             </select>
           </div>
+          <div class="g-views" aria-label="Tipo de sesión">
+            <button type="button" id="typeAll" class="is-on" onclick="setTypeFilter('')">Todos</button>
+            <button type="button" id="typeRace" onclick="setTypeFilter('Race')">Race / End</button>
+            <button type="button" id="typeQualy" onclick="setTypeFilter('Qualy')">Qualy</button>
+            <button type="button" id="typeWet" onclick="setTypeFilter('Wet')">Wet</button>
+          </div>
           <div class="g-views" aria-label="Vista del catálogo">
             <button type="button" id="viewModeFoldersBtn" class="is-on" onclick="setViewMode('folders')">Carpetas</button>
             <button type="button" id="viewModeListBtn" onclick="setViewMode('list')">Lista</button>
             <button type="button" id="viewModeFtpBtn" onclick="setViewMode('ftp')">Archivos</button>
           </div>
           <button type="button" id="toggleAllFoldersBtn" class="r-btn r-btn--sm" onclick="toggleAllFolderAccordions()"><span id="toggleAllFoldersText">Desplegar todo</span></button>
+          <button type="button" class="r-btn r-btn--sm" onclick="resetGarageFilters()" title="Restablecer todos los filtros">Limpiar filtros</button>
         </div>
-        <p class="r-meta" style="margin:0"><span id="visibleFoldersCount">0</span> carpetas · <span id="visibleSetupsCount">0</span> setups</p>
+        <div class="flex flex-wrap items-center justify-between gap-3 py-1">
+          <p class="r-meta" style="margin:0"><span id="visibleFoldersCount">0</span> carpetas · <span id="visibleSetupsCount">0</span> setups verificados BoP (<span id="selectedBatchCount">0</span> seleccionados)</p>
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" class="r-btn r-btn--sm" onclick="openAiTrainerQuick()" style="border-color:var(--r-accent);color:var(--r-accent)">🧠 Inspector &amp; AI Lab</button>
+            <button type="button" id="downloadBatchBtn" class="r-btn r-btn--primary r-btn--sm" onclick="downloadAllVisibleSetups()">
+              <span id="downloadBatchBtnText">Descargar visibles (.sto)</span>
+            </button>
+          </div>
+        </div>
         <div id="setupsContainer">
           <p id="setupsLoading" class="r-empty">Pulsa «Ver catálogo» o entra con tu cuenta para cargar los setups.</p>
           <div id="setupsGrid" class="g-setups"></div>
@@ -486,13 +501,97 @@ const figs = [
     </div>
   </div>
 
-  <div id="previewModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="previewModalTitle">
-    <div class="g-dialog g-dialog--wide">
-      <div class="g-dialog__bar">
-        <h2 id="previewModalTitle">Vista del setup</h2>
-        <button type="button" class="m-notice__close" onclick="closeSetupPreviewModal()" aria-label="Cerrar">×</button>
+  <!-- Modal Inspector Oficial de Setup (.STO), BoP Tech Check, Garage 61 & AI Lab -->
+  <div id="setupPreviewModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="previewSetupTitle">
+    <div class="g-dialog g-dialog--wide" style="width:min(940px,100%);max-height:min(92svh,880px);padding:22px">
+      <div class="flex flex-wrap items-start justify-between gap-3 pb-3 border-b border-[var(--r-line)]">
+        <div class="space-y-1 min-w-0">
+          <div class="flex flex-wrap items-center gap-2">
+            <span id="previewTypeBadge" class="text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full border border-[var(--r-accent)] text-[var(--r-accent)]">Race</span>
+            <span id="previewSeasonWeekBadge" class="text-[11px] font-mono text-[var(--r-muted)] px-2 py-0.5 rounded border border-[var(--r-line)] bg-[var(--r-bg)]">26S4 · W01</span>
+            <span class="text-[10px] font-mono font-bold text-[var(--r-accent)] px-2 py-0.5 rounded border border-[var(--r-accent)] bg-[var(--r-bg)]">✓ PASS TECH · BOP OK</span>
+          </div>
+          <h2 id="previewSetupTitle" class="font-mono font-extrabold text-lg sm:text-xl text-[var(--r-text)] break-all" style="margin:4px 0 0;text-transform:none">MMT_F296_SPA_R.sto</h2>
+          <p class="text-xs font-mono text-[var(--r-muted)]" style="margin:0">
+            <strong id="previewCarName" class="text-[var(--r-text)]">Ferrari 296 GT3</strong> · <span id="previewCircuitName">🏁 Spa-Francorchamps</span>
+          </p>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <button type="button" id="previewDownloadBtn" class="r-btn r-btn--primary r-btn--sm">
+            <span id="previewDownloadBtnText">Descargar .sto</span>
+          </button>
+          <button type="button" class="m-notice__close" onclick="closeSetupPreviewModal()" aria-label="Cerrar">×</button>
+        </div>
       </div>
-      <div id="previewModalBody">Cargando el setup…</div>
+
+      <!-- Selector de variantes hermanas en la misma carpeta -->
+      <div id="previewVariantSelectorWrap" class="hidden py-2 border-b border-[var(--r-line)]">
+        <div class="text-[10px] font-mono uppercase tracking-wider text-[var(--r-muted)] mb-1.5">Variantes de la carpeta (MMT Pack):</div>
+        <div id="previewVariantButtons" class="flex flex-wrap gap-1.5"></div>
+      </div>
+
+      <!-- Pestañas del Inspector -->
+      <div class="g-tabs" role="tablist">
+        <button type="button" id="previewTabSpecsBtn" class="is-on" onclick="switchPreviewTab('specs')">Ficha Técnica &amp; BoP Tech</button>
+        <button type="button" id="previewTabG61Btn" onclick="switchPreviewTab('g61')">Tiempos Garage 61 (<span id="previewG61CountBadge">—</span>)</button>
+        <button type="button" id="previewTabAiBtn" onclick="switchPreviewTab('ai')">🧠 MMT AI Pro Trainer</button>
+      </div>
+
+      <!-- Tab 1: Ficha Técnica, BoP Tech & Notas Binarias .STO -->
+      <div id="previewTabSpecs" class="space-y-4">
+        <div id="previewSpecsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+        <div class="p-3.5 rounded-xl bg-[var(--r-bg)] border border-[var(--r-line)] space-y-1.5">
+          <div class="flex items-center justify-between gap-2 text-[11px] font-mono text-[var(--r-muted)]">
+            <span class="uppercase font-bold text-[var(--r-accent)]">Notas incrustadas en binario (.STO UTF-16LE)</span>
+            <span id="previewBinarySizeInfo"></span>
+          </div>
+          <pre id="previewStoNotesText" class="text-xs font-mono text-[var(--r-text)] whitespace-pre-wrap break-words m-0">muntru.me - Muntrume Motorsport | Setup by Alberto Trujillo</pre>
+        </div>
+      </div>
+
+      <!-- Tab 2: Vueltas Reales Garage 61 -->
+      <div id="previewTabG61" class="hidden space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-mono font-bold uppercase text-[var(--r-text)]">Telemetría Oficial Garage 61</span>
+            <span id="g61LiveStatusBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full border border-[var(--r-line)] text-[var(--r-muted)]">Consultando…</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" class="r-btn r-btn--sm" onclick="configureG61TokenPrompt()">🔑 Token Garage 61</button>
+            <a id="g61ExternalSearchLink" href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer" class="r-btn r-btn--primary r-btn--sm">Abrir Garage 61 ↗</a>
+          </div>
+        </div>
+        <div class="r-scroll border border-[var(--r-line)] rounded-xl bg-[var(--r-bg)]">
+          <table class="r-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Piloto</th>
+                <th>Tiempo</th>
+                <th>Fecha</th>
+                <th>Condiciones</th>
+                <th class="text-right">Telemetría</th>
+              </tr>
+            </thead>
+            <tbody id="previewG61LapsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 3: MMT AI Pro Setup Trainer -->
+      <div id="previewTabAi" class="hidden space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-[var(--r-bg)] border border-[var(--r-line)]">
+          <div>
+            <div class="text-xs font-bold text-[var(--r-accent)] font-mono uppercase">Ingeniero Virtual MMT AI Pro · Analizador .IBT 60 Hz</div>
+            <div id="aiTrainerStatusBadge" class="text-[11px] text-[var(--r-muted)]">Comparativa de parámetros frente a iRacing Fixed y setups comerciales</div>
+          </div>
+          <label class="r-btn r-btn--sm cursor-pointer" style="border-color:var(--r-accent);color:var(--r-accent)">
+            <span>📂 Subir telemetría .IBT</span>
+            <input type="file" accept=".ibt" class="hidden" onchange="handleLiveIbtUpload(event)" />
+          </label>
+        </div>
+        <div id="previewAiTrainerContent" class="space-y-3"></div>
+      </div>
     </div>
   </div>
 
@@ -683,6 +782,13 @@ const figs = [
       if (p.get("tab") === "telemetry") switchGarageTab("telemetry");
       if (p.get("tab") === "comms") switchGarageTab("comms");
       if (p.get("tab") === "builder") switchGarageTab("builder");
+      var necWeek = p.get("nec");
+      var qSearch = p.get("q");
+      if (necWeek !== null && typeof window.filterNecSetups === "function") {
+        setTimeout(function () { window.filterNecSetups(necWeek); }, 350);
+      } else if (qSearch && typeof window.quickSearchMmt === "function") {
+        setTimeout(function () { window.quickSearchMmt(qSearch); }, 350);
+      }
     });
   </script>
 </Layout>

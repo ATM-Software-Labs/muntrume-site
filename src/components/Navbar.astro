@@ -6,6 +6,10 @@ interface Props {
 const { currentPath = Astro.url.pathname } = Astro.props;
 
 const isHome = currentPath === '/' || currentPath === '/index.html' || currentPath === '';
+const isGarage =
+  currentPath.startsWith('/garage') ||
+  currentPath.startsWith('/setups') ||
+  currentPath.startsWith('/setup-builder');
 const isDrivers =
   currentPath.startsWith('/drivers') ||
   currentPath.startsWith('/pilotos') ||
@@ -14,6 +18,7 @@ const isDrivers =
   currentPath.startsWith('/p/');
 const isNews = currentPath.startsWith('/news') || currentPath.startsWith('/noticias') || currentPath.startsWith('/article');
 const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('/about') || currentPath.startsWith('/contact');
+const isRaceControl = currentPath.startsWith('/admin');
 ---
 
 <header class="w-full h-16 bg-[var(--r-surface)] border-b border-[var(--r-line)] sticky top-0 z-50 select-none max-w-full flex items-center transition-colors">
@@ -37,13 +42,20 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
       </span>
     </a>
 
-    <!-- Center: Navigation Links (Home, Drivers, News, Paddock) — Flex aligned without overlap -->
-    <nav class="hidden md:flex items-center gap-5 lg:gap-8 text-xs font-mono uppercase tracking-wider shrink-0" aria-label="Main Navigation">
+    <!-- Center: Navigation Links (Home, Garage, Drivers, News, Paddock) — Flex aligned without overlap -->
+    <nav class="hidden md:flex items-center gap-5 lg:gap-7 text-xs font-mono uppercase tracking-wider shrink-0" aria-label="Main Navigation">
       <a
         href="/"
         class={`py-1 transition-colors whitespace-nowrap ${isHome ? 'text-[var(--r-accent)] font-bold border-b-2 border-[var(--r-accent)]' : 'text-[var(--r-muted)] hover:text-[var(--r-text)]'}`}
       >
         Home
+      </a>
+      <a
+        href="/garage"
+        class={`py-1 inline-flex items-center gap-1.5 transition-colors whitespace-nowrap ${isGarage ? 'text-[var(--r-accent)] font-bold border-b-2 border-[var(--r-accent)]' : 'text-[var(--r-muted)] hover:text-[var(--r-text)]'}`}
+      >
+        <span class="w-1.5 h-1.5 rounded-full bg-[var(--r-accent)]"></span>
+        <span>Garage</span>
       </a>
       <a
         href="/drivers"
@@ -139,18 +151,19 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
         <a
           href="/drivers/albertot/"
           id="navAdminBadge"
-          class="hidden lg:inline-flex items-center gap-2 min-h-[40px] px-3 py-2 rounded-xl bg-[var(--r-bg)] border border-[var(--r-line)] text-xs font-mono text-[var(--r-text)] hover:border-[var(--r-accent)] transition whitespace-nowrap"
+          style="background:var(--r-bg);color:var(--r-text);border-color:var(--r-line)"
+          class="hidden xl:inline-flex items-center gap-2 min-h-[40px] px-3 py-2 rounded-xl border text-xs font-mono hover:border-[var(--r-accent)] transition whitespace-nowrap"
           title="Team Principal & Administrator — atrumin16@gmail.com"
         >
           <span class="w-2 h-2 rounded-full bg-[var(--r-accent)] shrink-0"></span>
           <span id="navSessionHandle" class="font-bold text-[var(--r-accent)]">atrumin16</span>
           <span class="text-[var(--r-muted)]">·</span>
-          <span id="navSessionLabel" class="font-medium text-[var(--r-text)]">Principal</span>
+          <span id="navSessionLabel" style="color:var(--r-text)" class="font-semibold">Principal</span>
         </a>
         <a
           href="/admin"
           id="navRaceControlBtn"
-          class="hidden items-center gap-1.5 min-h-[40px] bg-[var(--r-accent)] hover:opacity-90 text-[var(--r-accent-ink)] font-black text-xs font-mono uppercase tracking-wider px-3.5 py-2 rounded-xl transition-all shadow-md whitespace-nowrap shrink-0"
+          class={`hidden items-center gap-1.5 min-h-[40px] font-black text-xs font-mono uppercase tracking-wider px-3.5 py-2 rounded-xl transition-all whitespace-nowrap shrink-0 ${isRaceControl ? 'bg-[var(--r-text)] text-[var(--r-bg)]' : 'bg-[var(--r-accent)] hover:opacity-90 text-[var(--r-accent-ink)] shadow-md'}`}
           title="Open Race Control Admin Console"
         >
           <span>RACE CONTROL</span>
@@ -158,19 +171,20 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
         <button
           type="button"
           id="navLogoutBtn"
-          class="inline-flex items-center min-h-[40px] px-3 py-2 rounded-xl bg-[var(--r-bg)] hover:bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-rose-500/50 text-xs font-mono text-[var(--r-muted)] hover:text-rose-500 transition cursor-pointer whitespace-nowrap"
+          style="background:var(--r-bg);color:var(--r-muted);border-color:var(--r-line)"
+          class="inline-flex items-center min-h-[40px] px-3 py-2 rounded-xl border hover:border-rose-500/50 text-xs font-mono hover:text-rose-500 transition cursor-pointer whitespace-nowrap"
         >
           Log out
         </button>
       </div>
 
-      <!-- GARAGE ACCESS Button - Only shown when user is NOT authenticated -->
+      <!-- GARAGE ACCESS Button - Always visible on desktop for 1-click access to /garage -->
       <a
         href="/garage"
         id="navGarageAccessBtn"
-        class="hidden lg:inline-flex items-center gap-1.5 min-h-[40px] bg-[var(--r-accent)] hover:opacity-90 text-[var(--r-accent-ink)] font-black text-xs font-mono uppercase tracking-wider px-4 py-2 rounded-xl transition-all shadow-md whitespace-nowrap shrink-0"
+        class={`hidden lg:inline-flex items-center gap-1.5 min-h-[40px] font-black text-xs font-mono uppercase tracking-wider px-3.5 py-2 rounded-xl transition-all whitespace-nowrap shrink-0 ${isGarage ? 'bg-[var(--r-bg)] text-[var(--r-accent)] border border-[var(--r-accent)]' : 'bg-[var(--r-accent)] hover:opacity-90 text-[var(--r-accent-ink)] shadow-md'}`}
       >
-        <span>GARAGE ACCESS</span>
+        <span>GARAGE VAULT</span>
       </a>
 
       <!-- Mobile Drawer Trigger - Min 40x40px touch target -->
@@ -439,8 +453,6 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
       var mobileLabel = document.getElementById('mobileSessionLabel');
       var mobileRaceControlBtn = document.getElementById('mobileRaceControlBtn');
 
-      var onGaragePage = window.location.pathname.startsWith('/garage') || window.location.pathname.startsWith('/setups');
-
       if (isAuth) {
         if (sessionBox) {
           sessionBox.classList.remove('hidden');
@@ -448,8 +460,9 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
         }
         if (mobileAdminBox) mobileAdminBox.classList.remove('hidden');
         if (garageAccessBtn) {
-          garageAccessBtn.style.setProperty('display', 'none', 'important');
-          garageAccessBtn.classList.add('hidden');
+          garageAccessBtn.style.removeProperty('display');
+          garageAccessBtn.classList.remove('hidden');
+          garageAccessBtn.classList.add('lg:inline-flex');
         }
 
         if (isAdmin) {
@@ -485,7 +498,9 @@ const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('
           raceControlBtn.classList.remove('inline-flex');
         }
         if (garageAccessBtn) {
-          garageAccessBtn.style.display = onGaragePage ? 'none' : '';
+          garageAccessBtn.style.removeProperty('display');
+          garageAccessBtn.classList.remove('hidden');
+          garageAccessBtn.classList.add('lg:inline-flex');
         }
         if (mobileAdminBox) mobileAdminBox.classList.add('hidden');
       }
