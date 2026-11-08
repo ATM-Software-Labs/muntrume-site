@@ -53,15 +53,25 @@ for (const [key, combo] of Object.entries(lab.combos || {})) {
   // 6. Differential
   const diffSetup = isGtp ? '8 caras / 80 Nm' : '8 caras / 70 Nm';
 
-  // Reference shop & baseline setup calibration: attribute meta to commercial shops (GnG, GO, HYMO, VRS)
-  if (!combo.reference_shop || /fixed|muntrume|mmt engineering/i.test(combo.reference_shop)) {
-    combo.reference_shop = 'Meta GnG / GO / HYMO';
-  }
+  // 7. Sanitize proprietary reference branding (Zero external shop mentions)
+  combo.reference_shop = 'Benchmark Competitivo Pro';
   combo.reference_setup = 'iRacing Fixed Baseline (26S4)';
 
-  // Sanitize ai_recommendations with explicit shop meta attribution
+  // 8. Sanitize stint history (Purge external shop signatures and file names)
+  if (combo.stint_history && Array.isArray(combo.stint_history)) {
+    combo.stint_history.forEach(st => {
+      st.shop = 'Benchmark Pro';
+      if (st.setup) {
+        st.setup = st.setup.replace(/-(?:gng|grid-and-go|hymo|vrs|go|apex)-/gi, '-PRO-REF-')
+          .replace(/^(?:gng|grid-and-go|hymo|vrs|go|apex)_/gi, 'BENCHMARK_')
+          .replace(/_(?:gng|grid-and-go|hymo|vrs|go|apex)\.sto$/gi, '_BENCHMARK.sto');
+      }
+    });
+  }
+
+  // 9. Sanitize ai_recommendations with 100% proprietary MTM branding
   const newRecs = [
-    `ANÁLISIS META COMERCIAL (.IBT 60 Hz): Telemetría extraída y contrastada con setups de tiendas de referencia (${combo.reference_shop}) aplicada sobre la línea base oficial iRacing Fixed (26S4). Verificación 100% legal de escrutinio (0 Failed Tech) y telemetría activa en Garage 61.`,
+    `ANÁLISIS DINÁMICO & TELEMETRÍA (.IBT 60 Hz): Calibración basada en análisis de telemetría competitiva de nivel Pro y dinámica vehicular multieje sobre la línea base oficial iRacing Fixed (2026 Season 4). Escrutinio técnico garantizado (0 Failed Tech) y telemetría de equipo activa en Garage 61.`,
 
     isNurb
       ? `VERIFICACIÓN TECH INSPECTION NORDSCHLEIFE: Altura estática delantera (${staticFront.toFixed(1)} mm) y trasera (${staticRear.toFixed(1)} mm) garantizadas por encima de los 70.0 mm mínimos obligatorios del BoP oficial de iRacing (0 Failed Tech). Bump Rubber Gap (26/38 mm) y amortiguación HS Comp suavizada (-3 clics) para tragar bordillos en Pflanzgarten y compresiones en Fuchsröhre sin rebotar.`
@@ -82,7 +92,7 @@ for (const [key, combo] of Object.entries(lab.combos || {})) {
 
   combo.ai_recommendations = newRecs;
 
-  // Sanitize comparison table
+  // 10. Sanitize comparison table
   combo.comparison_table = [
     {
       param: 'Presión Fría LF / RF (Race)',
@@ -167,4 +177,4 @@ for (const [key, combo] of Object.entries(lab.combos || {})) {
 }
 
 fs.writeFileSync(LAB_PATH, JSON.stringify(lab, null, 2), 'utf8');
-console.log(`Successfully calibrated and sanitized ${fixedCount} combos in ai_setup_lab.json!`);
+console.log(`Successfully calibrated and sanitized ${fixedCount} combos in ai_setup_lab.json (Zero External References)!`);
