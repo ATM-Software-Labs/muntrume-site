@@ -6,7 +6,7 @@ const INDEX_PATH = path.join(DATA_DIR, 'catalog_index.json');
 const BY_SEASON_DIR = path.join(DATA_DIR, 'catalog_by_season');
 const BY_CAR_DIR = path.join(DATA_DIR, 'catalog_by_car');
 
-const MMT_REGEX = /^MMT_([A-Z0-9]+)_([A-Z0-9]+)_(Q2_SAFE|Q_SAFE|Q2|Q|END_S|END|W_Q_SAFE|W_Q|W_END_S|W_END|W_R|W_S|W|R|S)(?:_(V\d+))?\.sto$/;
+const MMT_REGEX = /^MMT_([A-Z0-9]+)_([A-Z0-9]+)_((?:Q2|Q|R|END|W|W_Q|W_END|W_R|R_W)(?:_(?:E|S|SAFE))?|Q2_SAFE|Q_SAFE|R_SAFE|END_SAFE|R_W_SAFE|W_Q_SAFE|W_END_S|END_S|W_S|S|E)(?:_(V\d+))?\.sto$/i;
 
 function checkBoPAndTech(row) {
   const [id, car, season, week, circuit, fn, setupType, size] = row;

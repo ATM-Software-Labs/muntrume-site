@@ -208,7 +208,7 @@ export const LEGACY_SUFFIX_TO_MMT_SESSION = {
 export function getMmtSessionCode(rawFilename, fallbackType = 'Race') {
   const fn = String(rawFilename || '').trim();
   // Check if already in official MMT format: MMT_[MODELO]_[CIRCUITO]_[SESION](_V[0-9]+)?.sto
-  const alreadyMatch = fn.match(/^MMT_[A-Z0-9]+_[A-Z0-9]+_(Q2_SAFE|Q_SAFE|Q2|Q|END_S|END|W_Q_SAFE|W_Q|W_END_S|W_END|W_R|W_S|W|R|S)(?:_(V\d+))?\.sto$/i);
+  const alreadyMatch = fn.match(/^MMT_[A-Z0-9]+_[A-Z0-9]+_((?:Q2|Q|R|END|W|W_Q|W_END|W_R|R_W)(?:_(?:E|S|SAFE))?|Q2_SAFE|Q_SAFE|R_SAFE|END_SAFE|R_W_SAFE|W_Q_SAFE|W_END_S|END_S|W_S|S|E)(?:_(V\d+))?\.sto$/i);
   if (alreadyMatch) {
     return alreadyMatch[1].toUpperCase() + (alreadyMatch[2] ? '_' + alreadyMatch[2].toUpperCase() : '');
   }

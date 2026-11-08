@@ -222,46 +222,76 @@ const MMT_CIRCUIT_OVERRIDES = {
 
 const LEGACY_SUFFIX_TO_MMT_SESSION = {
   "Qualy": "Q",
+  "QualyEsport": "Q_E",
+  "QualySafe": "Q_S",
   "Qualy2": "Q2",
-  "QualySafe": "Q_SAFE",
-  "Qualy2Safe": "Q2_SAFE",
+  "Qualy2Esport": "Q2_E",
+  "Qualy2Safe": "Q2_S",
   "Sprint": "R",
   "Race": "R",
-  "SprintSafe": "R_SAFE",
-  "Safe": "R_SAFE",
+  "SprintEsport": "R_E",
+  "RaceEsport": "R_E",
+  "Esport": "R_E",
+  "Sport": "R_E",
+  "E": "R_E",
+  "SprintSafe": "R_S",
+  "Safe": "R_S",
+  "S": "R_S",
   "Endur": "END",
   "Endurance": "END",
-  "EndurSafe": "END_SAFE",
+  "EndurEsport": "END_E",
+  "EndurSafe": "END_S",
   "WetSprint": "R_W",
   "Wet": "R_W",
-  "WetSafe": "R_W_SAFE",
+  "WetEsport": "R_W_E",
+  "WetSafe": "R_W_S",
   "WetQualy": "Q_W",
-  "WetQualySafe": "Q_W_SAFE",
+  "WetQualyEsport": "Q_W_E",
+  "WetQualySafe": "Q_W_S",
   "WetEndur": "END_W",
-  "WetEndurSafe": "END_W_SAFE"
+  "WetEndurEsport": "END_W_E",
+  "WetEndurSafe": "END_W_S"
 };
 
 const MMT_SESSION_DESCRIPTIONS = {
-  "Q": "Quali estándar (1 vuelta / mínima carga)",
-  "Q2": "Quali de 2 vueltas (out-lap + push)",
-  "Q_SAFE": "Quali con configuración de alta estabilidad",
-  "Q2_SAFE": "Quali 2 vueltas con alta estabilidad",
-  "R": "Race (Carrera estándar / Sprint)",
-  "R_SAFE": "Race Safe (Carrera con alta estabilidad)",
-  "END": "Endurance / Eventos Especiales / Resistencia",
-  "END_SAFE": "Endurance Safe (Resistencia con alta estabilidad)",
-  "END_S": "Endurance Safe",
-  "R_W": "Race Wet (Carrera bajo lluvia)",
-  "Q_W": "Quali Wet (Clasificación bajo lluvia)",
-  "END_W": "Endurance Wet (Resistencia bajo lluvia)",
-  "R_W_SAFE": "Race Wet Safe (Carrera lluvia segura)",
-  "W": "Race Wet (Lluvia)",
+  "Q": "Quali estándar (1 vuelta / mínima carga - Normal)",
+  "Q_E": "Quali Esport [E] (Superagresivo / Hotlap)",
+  "Q_S": "Quali Safe [S] (Alta estabilidad)",
+  "Q_SAFE": "Quali Safe [S] (Alta estabilidad)",
+  "Q2": "Quali de 2 vueltas (out-lap + push - Normal)",
+  "Q2_E": "Quali 2 vueltas Esport [E]",
+  "Q2_S": "Quali 2 vueltas Safe [S]",
+  "Q2_SAFE": "Quali 2 vueltas Safe [S]",
+  "R": "Race (Carrera estándar / Sprint - Normal)",
+  "R_E": "Race Esport [E] (Superagresiva / Top-Split)",
+  "R_S": "Race Safe [S] (Carrera con alta estabilidad)",
+  "R_SAFE": "Race Safe [S] (Carrera con alta estabilidad)",
+  "END": "Endurance / Eventos Especiales (Normal)",
+  "END_E": "Endurance Esport [E]",
+  "END_S": "Endurance Safe [S] (Resistencia con alta estabilidad)",
+  "END_SAFE": "Endurance Safe [S] (Resistencia con alta estabilidad)",
+  "R_W": "Race Wet (Carrera bajo lluvia - Normal)",
+  "R_W_E": "Race Wet Esport [E]",
+  "R_W_S": "Race Wet Safe [S]",
+  "R_W_SAFE": "Race Wet Safe [S]",
+  "Q_W": "Quali Wet (Clasificación bajo lluvia - Normal)",
+  "Q_W_E": "Quali Wet Esport [E]",
+  "Q_W_S": "Quali Wet Safe [S]",
+  "END_W": "Endurance Wet (Resistencia bajo lluvia - Normal)",
+  "END_W_E": "Endurance Wet Esport [E]",
+  "END_W_S": "Endurance Wet Safe [S]",
+  "W": "Race Wet (Lluvia - Normal)",
+  "W_E": "Race Wet Esport [E]",
+  "W_S": "Race Wet Safe [S]",
   "W_Q": "Quali Wet (Clasificación bajo lluvia)",
-  "W_Q_SAFE": "Quali Wet Safe",
+  "W_Q_E": "Quali Wet Esport [E]",
+  "W_Q_S": "Quali Wet Safe [S]",
+  "W_Q_SAFE": "Quali Wet Safe [S]",
   "W_END": "Endurance Wet",
-  "W_END_S": "Endurance Wet Safe",
-  "W_S": "Race Wet Safe",
-  "S": "Race Safe"
+  "W_END_E": "Endurance Wet Esport [E]",
+  "W_END_S": "Endurance Wet Safe [S]",
+  "S": "Race Safe [S]",
+  "E": "Race Esport [E]"
 };
 
 function getMmtModelCode(carSlug) {
@@ -278,9 +308,11 @@ function getMmtCircuitCode(circuitName) {
 
 function getMmtSessionCode(rawFilename, fallbackType = "Race") {
   const fn = String(rawFilename || "").trim();
-  const alreadyMatch = fn.match(/^MMT_[A-Z0-9]+_[A-Z0-9]+_(Q2_SAFE|Q_SAFE|Q2|Q|END_SAFE|END_S|END_W|END|R_W_SAFE|R_W|R_SAFE|R|W_Q_SAFE|W_Q|W_END_S|W_END|W_R|W_S|W|S)(?:_(V\d+))?\.sto$/i);
+  const alreadyMatch = fn.match(/^MMT_[A-Z0-9]+_[A-Z0-9]+_((?:Q2|Q|R|END|W|W_Q|W_END|W_R|R_W)(?:_(?:E|S|SAFE))?|Q2_SAFE|Q_SAFE|R_SAFE|END_SAFE|R_W_SAFE|W_Q_SAFE|W_END_S|END_S|W_S|S|E)(?:_(V\d+))?\.sto$/i);
   if (alreadyMatch) {
-    return alreadyMatch[1].toUpperCase() + (alreadyMatch[2] ? "_" + alreadyMatch[2].toUpperCase() : "");
+    const rawCode = alreadyMatch[1].toUpperCase();
+    const normalizedCode = rawCode.replace(/_SAFE$/, "_S");
+    return normalizedCode + (alreadyMatch[2] ? "_" + alreadyMatch[2].toUpperCase() : "");
   }
   const sfxMatch = fn.match(/_([^_]+)\.sto$/i);
   if (sfxMatch) {
@@ -290,10 +322,13 @@ function getMmtSessionCode(rawFilename, fallbackType = "Race") {
     if (ci) return LEGACY_SUFFIX_TO_MMT_SESSION[ci];
   }
   const t = String(fallbackType || "").toLowerCase();
-  if (t.includes("wet")) return "R_W";
-  if (t.includes("qualy") || t.includes("quali")) return "Q";
-  if (t.includes("endur")) return "END";
-  if (t.includes("safe")) return "R_SAFE";
+  const isEsport = t.includes("esport") || t.includes("sport");
+  const isSafe = t.includes("safe");
+  if (t.includes("wet")) return isEsport ? "R_W_E" : (isSafe ? "R_W_S" : "R_W");
+  if (t.includes("qualy") || t.includes("quali")) return isEsport ? "Q_E" : (isSafe ? "Q_S" : "Q");
+  if (t.includes("endur")) return isEsport ? "END_E" : (isSafe ? "END_S" : "END");
+  if (isEsport) return "R_E";
+  if (isSafe) return "R_S";
   return "R";
 }
 
@@ -3877,14 +3912,14 @@ async function renderAiTrainerForSetup(setup, customModel = null) {
     gainVsFixed = Number((gainVsFixed + 0.16).toFixed(2));
     targetVmax = Number((targetVmax + 0.9).toFixed(1));
     stabilityScore = 90;
-    tierBadge = `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-red-500/20 text-red-300 border border-red-500/40">🔴 ESPORT · Superagresivo</span>`;
+    tierBadge = `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-red-500/20 text-red-300 border border-red-500/40">🔴 ESPORT [E] · Superagresivo</span>`;
     tierSub = `🛡️ <strong class="text-red-300">Exigente:</strong> Mínimo drag en recta y plataforma rígida. Requiere precisión milimétrica en pianos. ⚡ <strong class="text-red-300">Punta:</strong> +${(targetVmax - model.measured_vmax_kmh).toFixed(1)} km/h en recta.`;
   } else if (tier === "safe") {
     gainVsShop = Number((Math.max(0.20, gainVsShop - 0.14)).toFixed(2));
     gainVsFixed = Number((gainVsFixed - 0.14).toFixed(2));
     targetVmax = Number((targetVmax - 0.5).toFixed(1));
     stabilityScore = 99;
-    tierBadge = `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">🟢 SAFE · Máxima Estabilidad</span>`;
+    tierBadge = `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">🟢 SAFE [S] · Máxima Estabilidad</span>`;
     tierSub = `🛡️ <strong class="text-emerald-300">Blindado:</strong> Alturas elevadas anti-fondo en compresiones, amortiguación HS absorbente para pianos y cero Failed Tech.`;
   } else {
     stabilityScore = 96;
@@ -3898,10 +3933,10 @@ async function renderAiTrainerForSetup(setup, customModel = null) {
   const aiLapStr = aiLapSec > 40 ? formatLapTime(aiLapSec) : "--:--.---";
 
   const tierHeaderRec = tier === "esport"
-    ? `🔴 CONFIGURACIÓN ESPORT (SUPERAGRESIVA): Alerón optimizado para mínima resistencia aerodinámica (+${(targetVmax - model.measured_vmax_kmh).toFixed(1)} km/h), alturas de carrocería al límite reglamentario y diferencial de 10 caras / 110 Nm para tracción instantánea en salida. Requiere manos expertas y evitar bordillos cortantes.`
+    ? `🔴 CONFIGURACIÓN ESPORT [E] (SUPERAGRESIVA): Alerón optimizado para mínima resistencia aerodinámica (+${(targetVmax - model.measured_vmax_kmh).toFixed(1)} km/h), alturas de carrocería al límite reglamentario y diferencial de 10 caras / 110 Nm para tracción instantánea en salida. Requiere manos expertas y evitar bordillos cortantes.`
     : (tier === "safe"
-      ? `🟢 CONFIGURACIÓN SAFE (MÁXIMA ESTABILIDAD): Alturas estáticas con margen holgado (+1.5 mm Del / +2.0 mm Tras), amortiguación de compresión rápida (HS Comp) suavizada (-3 clics) para absorber pianos agresivos y Bump Rubber Gap ampliado para eliminar topes en compresiones de 3G.`
-      : `🟡 CONFIGURACIÓN NORMAL (MEJOR RATIO VELOCIDAD / SEGURIDAD): El equilibrio óptimo de Muntrume Motorsport. Combina velocidad punta en recta de ${targetVmax} km/h con tracción predecible, presiones calientes estabilizadas en 170 kPa y control de trail-braking.`);
+      ? `🟢 CONFIGURACIÓN SAFE [S] (MÁXIMA ESTABILIDAD): Alturas estáticas con margen holgado (+1.5 mm Del / +2.0 mm Tras), amortiguación de compresión rápida (HS Comp) suavizada (-3 clics) para absorber pianos agresivos y Bump Rubber Gap ampliado para eliminar topes en compresiones de 3G.`
+      : `🟡 CONFIGURACIÓN NORMAL (MEJOR RATIO VELOCIDAD / SEGURIDAD - ESTÁNDAR): El equilibrio óptimo de Muntrume Motorsport. Combina velocidad punta en recta de ${targetVmax} km/h con tracción predecible, presiones calientes estabilizadas en 170 kPa y control de trail-braking.`);
 
   const allRecs = [tierHeaderRec, ...(model.ai_recommendations || [])];
   const recsHtml = allRecs.map(r => `
@@ -4018,27 +4053,27 @@ async function renderAiTrainerForSetup(setup, customModel = null) {
       </div>
     </div>
 
-    <!-- 3-TIER COMBINATION SELECTOR: ESPORT vs NORMAL vs SAFE -->
+    <!-- 3-TIER COMBINATION SELECTOR: ESPORT [E] vs NORMAL vs SAFE [S] -->
     <div class="bg-[#0e131b] border border-white/10 rounded-2xl p-2.5 flex flex-wrap items-center justify-between gap-2.5">
       <div class="flex items-center gap-2">
         <span class="text-xs font-extrabold uppercase tracking-wider text-neutral-300">Modo de Setup:</span>
         <div class="inline-flex p-1 rounded-xl bg-black/50 border border-white/10 gap-1" role="group">
           <button type="button" onclick="setAiSetupTier('esport')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${tier === 'esport' ? 'bg-red-500/25 text-red-300 border border-red-500/50 shadow-md shadow-red-500/20' : 'text-neutral-400 hover:text-white'}">
             <span>🔴 Esport</span>
-            <span class="text-[9px] font-mono px-1 py-0.2 rounded bg-red-500/20 text-red-300">Hotlap</span>
+            <span class="text-[9px] font-mono px-1.5 py-0.5 rounded font-black bg-red-500/25 text-red-300 border border-red-500/30">E</span>
           </button>
           <button type="button" onclick="setAiSetupTier('normal')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${tier === 'normal' ? 'bg-amber-500/25 text-amber-300 border border-amber-500/50 shadow-md shadow-amber-500/20' : 'text-neutral-400 hover:text-white'}">
             <span>🟡 Normal</span>
-            <span class="text-[9px] font-mono px-1 py-0.2 rounded bg-amber-500/20 text-amber-300">Mejor Ratio</span>
+            <span class="text-[9px] font-mono px-1.5 py-0.5 rounded text-neutral-400 bg-white/5 border border-white/10">(sin letra)</span>
           </button>
           <button type="button" onclick="setAiSetupTier('safe')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${tier === 'safe' ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-500/50 shadow-md shadow-emerald-500/20' : 'text-neutral-400 hover:text-white'}">
             <span>🟢 Safe</span>
-            <span class="text-[9px] font-mono px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-300">Resistencia</span>
+            <span class="text-[9px] font-mono px-1.5 py-0.5 rounded font-black bg-emerald-500/25 text-emerald-300 border border-emerald-500/30">S</span>
           </button>
         </div>
       </div>
       <div class="text-[11px] text-neutral-400 font-mono">
-        ${tier === 'esport' ? '⚡ Máxima velocidad punta y rotación aguda' : (tier === 'safe' ? '🛡️ Máxima tolerancia a pianos y 0 trompos' : '⭐ Balance oro: ritmo de carrera y seguridad')}
+        ${tier === 'esport' ? '⚡ [E] Superagresivo: Máxima velocidad punta y rotación aguda' : (tier === 'safe' ? '🛡️ [S] Seguro: Máxima tolerancia a pianos, compresión y 0 trompos' : '⭐ [Normal] Ratio Óptimo: Ritmo de carrera y consistencia')}
       </div>
     </div>
 
@@ -4094,7 +4129,7 @@ async function renderAiTrainerForSetup(setup, customModel = null) {
               <th class="py-2.5 px-3">Parámetro de Garaje</th>
               <th class="py-2.5 px-3">iRacing Fixed</th>
               <th class="py-2.5 px-3 text-amber-300">Tienda (${escapeHtml(shopName)})</th>
-              <th class="py-2.5 px-3 ${tier === 'esport' ? 'text-red-400 bg-red-500/10' : (tier === 'safe' ? 'text-emerald-400 bg-emerald-500/10' : 'text-amber-400 bg-amber-500/10')}">🧠 MTM AI Pro (${tier.toUpperCase()})</th>
+              <th class="py-2.5 px-3 ${tier === 'esport' ? 'text-red-400 bg-red-500/10' : (tier === 'safe' ? 'text-emerald-400 bg-emerald-500/10' : 'text-amber-400 bg-amber-500/10')}">🧠 MTM AI Pro (${tier === 'esport' ? 'ESPORT [E]' : (tier === 'safe' ? 'SAFE [S]' : 'NORMAL')})</th>
               <th class="py-2.5 px-3">Impacto Dinámico</th>
             </tr>
           </thead>
