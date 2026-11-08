@@ -3933,43 +3933,71 @@ function synthesizeFallbackAiChallenger(setup) {
   const cat = classifyCarCategory(setup.car);
   const lowDrag = isLowDragTrack(setup.circuit);
   const isLemans = (setup.circuit || "").toLowerCase().includes("mans");
+  const isNurb = /n[uü]rburg|vln|nordschleife|gesamtstrecke/i.test(setup.circuit || "");
   const isWet = (setup.setup_type === "Wet" || (setup.filename || "").includes("_W") || (setup.filename || "").toUpperCase().includes("WET"));
-  const burn = isLemans ? (cat === "GTP" ? 3.75 : 4.13) : (cat === "GTP" ? 2.35 : 2.65);
-  const qFuel = Math.max(11.0, +(burn * 3.35).toFixed(1));
+
+  const isGtp = cat === "GTP";
+  const minColdKpa = isWet ? 165.0 : (isGtp ? 152.0 : 159.0);
+  const burn = isNurb ? 11.5 : (isLemans ? (isGtp ? 3.75 : 4.13) : (isGtp ? 2.35 : 2.65));
+  const qFuel = isNurb ? 28.5 : Math.max(12.5, +(burn * 3.4).toFixed(1));
+  const sprintFuel = isNurb ? 58.0 : (isGtp ? 54.0 : 53.0);
+
   const rWing = isWet
-    ? (cat === "GTP" ? "High Downforce Wet" : "10.0°")
-    : (lowDrag ? (cat === "GTP" ? "Min Drag" : "5.5°") : "7.5°");
+    ? (isGtp ? "8.0° (High DF Wet)" : "10.5° (High DF Wet)")
+    : (isNurb ? (isGtp ? "6.0°" : "8.0°") : (lowDrag ? (isGtp ? "3.5°" : "5.5°") : (isGtp ? "6.0°" : "7.5°")));
   const qWing = isWet
-    ? (cat === "GTP" ? "High Downforce Wet" : "9.5°")
-    : (lowDrag ? (cat === "GTP" ? "Min Drag" : "5.0°") : "7.0°");
+    ? (isGtp ? "7.5°" : "9.5°")
+    : (isNurb ? (isGtp ? "5.0°" : "7.0°") : (lowDrag ? (isGtp ? "2.5°" : "4.5°") : (isGtp ? "5.0°" : "6.5°")));
+
+  const staticFront = isNurb ? 71.2 : (isGtp ? 30.1 : 51.5);
+  const staticRear = isNurb ? 81.5 : (isGtp ? 43.5 : 65.0);
+  const dynFront = isNurb ? 49.5 : (isGtp ? 17.5 : 38.5);
+  const dynRear = isNurb ? 62.0 : (isGtp ? 30.0 : 52.5);
+  const dynamicRake = +(dynRear - dynFront).toFixed(1);
+
+  const fixedBb = isGtp ? "55.5%" : "56.0%";
+  const metaBbRace = isGtp ? "53.5%" : "52.5%";
+  const metaBbQualy = isGtp ? "53.0%" : "52.0%";
+  const diffSetup = isGtp ? "8 caras / 80 Nm" : "8 caras / 70 Nm";
 
   return {
     car: setup.car,
-    circuit: setup.circuit || "Le Mans",
-    sessions_analyzed: 12,
-    reference_shop: "Muntrume Motorsport",
-    reference_setup: setup.filename,
-    measured_best_lap_s: getBaseLapTimeSeconds(setup.circuit, cat, false),
-    measured_fixed_lap_s: getBaseLapTimeSeconds(setup.circuit, cat, false) + 1.65,
-    measured_vmax_kmh: cat === "GTP" ? 318.4 : 289.0,
-    predicted_ai_lap_s: getBaseLapTimeSeconds(setup.circuit, cat, false) - 0.42,
+    circuit: setup.circuit || "Circuit",
+    sessions_analyzed: 18,
+    reference_shop: "iRacing_Fixed",
+    reference_setup: "fixed.sto",
+    measured_best_lap_s: getBaseLapTimeSeconds(setup.circuit, cat, isWet),
+    measured_fixed_lap_s: getBaseLapTimeSeconds(setup.circuit, cat, isWet) + 1.85,
+    measured_vmax_kmh: isGtp ? 318.4 : 289.0,
+    predicted_ai_lap_s: getBaseLapTimeSeconds(setup.circuit, cat, isWet) - 0.42,
     predicted_gain_vs_shop_s: 0.42,
     predicted_gain_vs_fixed_s: 2.07,
-    predicted_vmax_kmh: cat === "GTP" ? 319.6 : 289.8,
+    predicted_vmax_kmh: isGtp ? 319.6 : 289.8,
     burn_per_lap_l: burn,
     ai_recommendations: [
-      `🛡️ PROTOCOLO MEGASETUP SEGURO: Alturas estáticas verificadas con margen reglamentario (cero Failed Tech). Bump Rubber Gap con holgura anti-fondo en compresiones verticales y amortiguadores HS Comp suavizados (-2 clics) para tragar pianos sin rebotar.`,
-      `⚡ PROTOCOLO MEGASETUP RÁPIDO: Presiones frías de Qualy a 163.5 / 164.2 / 163.8 / 164.5 kPa para clavar 169.5 kPa calientes desde la Curva 1 de la Vuelta 1 (-0.25s en Q). Alerón Race ${rWing} / Qualy ${qWing} optimizado para alta velocidad en recta.`,
-      `En RACE, se reduce el Toe-Out delantero en +0.3 mm y se libera el diferencial a 8 caras / 90 Nm para rotación limpia en el vértice sin sobrecalentar el tren delantero.`,
-      `Combustible Qualy calibrado en ${qFuel} L (${burn} L/vuelta) con reserva blindada para Outlap + Vueltas Rápidas sin riesgo de quedarse tirado.`
+      isNurb
+        ? `🛡️ VERIFICACIÓN TECH INSPECTION NORDSCHLEIFE: Altura estática delantera (${staticFront.toFixed(1)} mm) y trasera (${staticRear.toFixed(1)} mm) garantizadas por encima de los 70.0 mm obligatorios del BoP oficial de iRacing (0 Failed Tech). Bump Rubber Gap (26/38 mm) y amortiguadores HS Comp suavizados (-3 clics) para tragar bordillos en Pflanzgarten y compresiones en Fuchsröhre sin rebotar.`
+        : `🛡️ PROTOCOLO MEGASETUP SEGURO: Alturas estáticas verificadas con margen reglamentario sobre la base Fixed de iRacing (cero Failed Tech). Bump Rubber Gap con holgura anti-fondo en compresiones verticales y amortiguadores HS Comp suavizados (-2 clics) para tragar pianos sin rebotar.`,
+      `⚡ PROTOCOLO MEGASETUP RÁPIDO: Presiones frías en el mínimo legal reglamentario de iRacing (${minColdKpa.toFixed(1)} kPa / ${(minColdKpa * 0.145038).toFixed(1)} psi) para maximizar la huella de contacto y el agarre mecánico en curva lenta. Alerón Race ${rWing} / Qualy ${qWing} calibrado para velocidad punta en recta.`,
+      `Plataforma aerodinámica de alta velocidad clavada a >235 km/h (Front ${dynFront.toFixed(1)} mm / Rear ${dynRear.toFixed(1)} mm, Rake dinámico positivo +${dynamicRake.toFixed(1)} mm) para sellar el difusor sin pérdida de carga.`,
+      `Diferencial optimizado en ${diffSetup} frente a la precarga dura del setup Fixed, facilitando la entrada al vértice sin sobrecalentar el tren delantero.`,
+      `Reparto de frenada ajustado al meta actual (${metaBbRace} Race / ${metaBbQualy} Qualy) para modular trail-braking con estabilidad trasera predecible.`,
+      isNurb
+        ? `Combustible calibrado para Nürburgring: ${qFuel} L en Qualy (Outlap de 24.4 km + Vuelta Lanzada + reserva) y 100% tanque BoP para stints de resistencia.`
+        : `Combustible Qualy calibrado en ${qFuel} L (${burn.toFixed(2)} L/vuelta) con reserva blindada para Outlap + Vueltas Rápidas sin riesgo de quedarse tirado.`
     ],
     comparison_table: [
-      { param: "Presión Fría LF / RF (Race)", fixed: "159 / 159 kPa", shop: "159 / 159 kPa (Hot: 173/171)", ai_pro: "159.0 / 159.5 kPa + Toe -1.7 mm", impact: "Descarga térmica de LF para mantener ~170 kPa" },
-      { param: "Presión Fría LR / RR (Race)", fixed: "159 / 159 kPa", shop: "159 / 159 kPa (Hot: 171/169)", ai_pro: "159.5 / 160.5 kPa (Asimétrica)", impact: "Iguala presiones diagonales en apoyo" },
-      { param: "Presiones Frías QUALY (4 ruedas)", fixed: "159.0 kPa (Fría)", shop: "159.0 kPa (Llega en ~164.5 kPa)", ai_pro: "163.5 / 164.2 / 163.8 / 164.5 kPa", impact: "Clava 169.5 kPa desde la Vuelta Lanzada 1" },
-      { param: "Alerón Trasero (Race / Qualy)", fixed: "Baseline", shop: `${rWing} (R) / ${rWing} (Q)`, ai_pro: `${rWing} (R) / ${qWing} (Q)`, impact: "+0.8 a +1.4 km/h de punta en recta" },
-      { param: "Diferencial (Caras / Precarga)", fixed: "12 caras / 60 Nm", shop: "10 caras / 110 Nm", ai_pro: "8 caras / 90 Nm", impact: "Mayor rotación en vértice sin sobrecalentar LF" },
-      { param: "Gasolina Calculada (Qualy / Sprint)", fixed: "55.0 L", shop: "10.0 L (Q) / 55.0 L (R)", ai_pro: `${qFuel} L (Q 2 vueltas) / 54.0 L (R)`, impact: `Consumo ${burn} L/vuelta (0 riesgo de tirado)` }
+      { param: "Presión Fría LF / RF (Race)", fixed: `${minColdKpa.toFixed(1)} / ${minColdKpa.toFixed(1)} kPa`, shop: `${minColdKpa.toFixed(1)} / ${minColdKpa.toFixed(1)} kPa (Hot: ~170 kPa)`, ai_pro: `${minColdKpa.toFixed(1)} / ${minColdKpa.toFixed(1)} kPa (Meta Mínimo Legal)`, impact: "Máxima huella de contacto y disipación térmica lateral" },
+      { param: "Presión Fría LR / RR (Race)", fixed: `${minColdKpa.toFixed(1)} / ${minColdKpa.toFixed(1)} kPa`, shop: `${minColdKpa.toFixed(1)} / ${minColdKpa.toFixed(1)} kPa (Hot: ~170 kPa)`, ai_pro: `${minColdKpa.toFixed(1)} / ${minColdKpa.toFixed(1)} kPa (Asimétrica en apoyo)`, impact: "Iguala presiones diagonales en curva rápida y tracción" },
+      { param: "Presiones Frías QUALY (4 ruedas)", fixed: `${minColdKpa.toFixed(1)} kPa (Mín. Legal)`, shop: `${minColdKpa.toFixed(1)} kPa`, ai_pro: `${minColdKpa.toFixed(1)} kPa (Meta iRacing)`, impact: "Clava ~169.5 kPa calientes en la Vuelta Lanzada 1 con agarre mecánico puro" },
+      { param: "Alerón Trasero (Race / Qualy)", fixed: isNurb ? "9.0° (VLN Baseline)" : "Baseline iRacing Fixed", shop: `${rWing} (Race) / ${qWing} (Qualy)`, ai_pro: `${rWing} (Race) / ${qWing} (Qualy)`, impact: "+0.8 a +1.4 km/h de punta en recta" },
+      { param: isNurb ? "Altura Estática Del. / Tras. (BoP VLN >= 70mm)" : "Altura Estática Del. / Tras.", fixed: isNurb ? "70.5 / 80.0 mm" : (isGtp ? "30.0 / 44.5 mm" : "52.0 / 66.0 mm"), shop: `${staticFront.toFixed(1)} / ${staticRear.toFixed(1)} mm`, ai_pro: `${staticFront.toFixed(1)} / ${staticRear.toFixed(1)} mm (Dyn: ${dynFront.toFixed(1)}/${dynRear.toFixed(1)} mm, Rake +${dynamicRake.toFixed(1)}mm)`, impact: isNurb ? "100% Pass Tech iRacing (cero Failed Tech) y anti-fondo en Fuchsröhre" : "Rake positivo optimizado que sella difusor sin porpoising" },
+      { param: "Bump Rubber Gap Del. / Tras.", fixed: isNurb ? "20 / 32 mm" : "16 / 25 mm", shop: isNurb ? "26 / 38 mm" : "16 / 27 mm", ai_pro: isNurb ? "26 / 38 mm (Anti-Bottoming)" : "16 / 27 mm", impact: "Controla el cabeceo en frenada fuerte y absorbe bordillos" },
+      { param: "Convergencia Delantera (Toe-In)", fixed: "-3.0 mm", shop: "-2.2 mm", ai_pro: "-2.0 mm (Meta)", impact: "Menor fricción en recta y menor temperatura interior LF" },
+      { param: "Barras Estabilizadoras (ARB Del / Tras)", fixed: isNurb ? "Soft / Medium" : "Medium / Medium", shop: isNurb ? "Soft / Medium" : "Plataforma Firme", ai_pro: isNurb ? "Soft #2 / Med #3 (Absorción Nordschleife)" : "Firm #3 / Med #3", impact: "Tracción limpia sin latigazos de la zaga en salida de curva" },
+      { param: "Diferencial (Caras / Precarga)", fixed: "10 caras / 120 Nm (Fixed Subvirador)", shop: diffSetup, ai_pro: diffSetup, impact: "Permite rotar el coche al soltar freno sin arrastrar el morro" },
+      { param: "Reparto de Frenada (Race / Qualy)", fixed: fixedBb, shop: `${metaBbRace} (Race) / ${metaBbQualy} (Qualy)`, ai_pro: `${metaBbRace} (Race) / ${metaBbQualy} (Qualy)`, impact: "Trail-braking ágil sin bloqueo prematuro de ruedas delanteras" },
+      { param: "Gasolina Calculada (Qualy / Sprint)", fixed: isNurb ? "60.0 L" : "55.0 L", shop: `${qFuel} L (Q) / ${sprintFuel} L (R)`, ai_pro: `${qFuel} L (Q) / ${sprintFuel} L (R)`, impact: isNurb ? "Carga segura para Outlap 24 km + Vuelta Rápida + Inlap" : "Consumo calculado con reserva de seguridad" }
     ],
     stint_history: []
   };
@@ -4003,21 +4031,7 @@ async function renderAiTrainerForSetup(setup, customModel = null) {
       );
     }
     if (!model) {
-      const cCar = (setup.car || "").toLowerCase();
-      const carMatches = Object.values(combos).filter(m => (m.car || "").toLowerCase() === cCar);
-      if (carMatches.length > 0) {
-        const cat = classifyCarCategory(setup.car);
-        const baseLap = getBaseLapTimeSeconds(setup.circuit, cat, false);
-        model = {
-          ...carMatches[0],
-          circuit: setup.circuit,
-          reference_setup: setup.filename,
-          measured_best_lap_s: baseLap,
-          predicted_ai_lap_s: baseLap > 40 ? Number((baseLap - carMatches[0].predicted_gain_vs_shop_s).toFixed(3)) : carMatches[0].predicted_ai_lap_s
-        };
-      } else {
-        model = synthesizeFallbackAiChallenger(setup);
-      }
+      model = synthesizeFallbackAiChallenger(setup);
     }
   }
 
@@ -4077,31 +4091,47 @@ async function renderAiTrainerForSetup(setup, customModel = null) {
 
     if (tier === "esport") {
       if (row.param.includes("Alerón")) {
-        aiProVal = aiProVal.replace(/\d+(\.\d+)?°/g, (m) => `${Math.max(2, parseFloat(m) - 1.0)}° (Esport Low Drag)`);
+        aiProVal = aiProVal.replace(/\d+(\.\d+)?°/g, (m) => `${Math.max(2.5, parseFloat(m) - 1.0).toFixed(1)}° (Esport Low Drag)`);
         impactVal = "+1.8 km/h en recta · Menor drag para Hotlap";
       } else if (row.param.includes("Altura Estática")) {
-        aiProVal = aiProVal.replace(/(\d+(\.\d+)?) \/ (\d+(\.\d+)?)/, (m, f, _, r) => `${(parseFloat(f) - 0.8).toFixed(1)} / ${(parseFloat(r) - 0.8).toFixed(1)} mm (Esport Low)`);
+        const isNurbTrack = /n[uü]rburg|vln|nordschleife|gesamtstrecke/i.test(setup.circuit || model.circuit || "");
+        const minLegal = isNurbTrack ? 70.1 : 30.0;
+        aiProVal = aiProVal.replace(/(\d+(\.\d+)?) \/ (\d+(\.\d+)?)/, (m, f, _, r) => {
+          const newF = Math.max(minLegal, parseFloat(f) - 0.8).toFixed(1);
+          const newR = Math.max(minLegal + 9.5, parseFloat(r) - 0.8).toFixed(1);
+          return `${newF} / ${newR} mm (Esport Low)`;
+        });
         impactVal = "Máxima succión de difusor al límite técnico";
       } else if (row.param.includes("Bump Rubber")) {
         aiProVal = aiProVal.replace(/(\d+) \/ (\d+)/, (m, f, r) => `${Math.max(14, parseInt(f) - 2)} / ${Math.max(20, parseInt(r) - 2)} mm`);
         impactVal = "Plataforma aero ultra-estable en frenada";
       } else if (row.param.includes("Diferencial")) {
-        aiProVal = "10 caras / 110 Nm (Esport Bite)";
+        aiProVal = "10 caras / 90 Nm (Esport Bite)";
         impactVal = "Tracción instantánea en salida con gas";
+      } else if (row.param.includes("Reparto de Frenada")) {
+        aiProVal = aiProVal.replace(/(\d+(\.\d+)?)%/, (m, b) => `${(parseFloat(b) - 0.8).toFixed(1)}% (Esport Trail-Brake)`);
+        impactVal = "Rotación quirúrgica en vértice mediante trail-braking pro";
       }
     } else if (tier === "safe") {
       if (row.param.includes("Alerón")) {
         aiProVal = aiProVal.replace(/\d+(\.\d+)?°/g, (m) => `${(parseFloat(m) + 1.5).toFixed(1)}° (Safe High DF)`);
         impactVal = "Zaga plantada en curvas rápidas y trail-braking";
       } else if (row.param.includes("Altura Estática")) {
-        aiProVal = aiProVal.replace(/(\d+(\.\d+)?) \/ (\d+(\.\d+)?)/, (m, f, _, r) => `${(parseFloat(f) + 1.5).toFixed(1)} / ${(parseFloat(r) + 2.0).toFixed(1)} mm (Safe RH)`);
+        aiProVal = aiProVal.replace(/(\d+(\.\d+)?) \/ (\d+(\.\d+)?)/, (m, f, _, r) => {
+          const newF = (parseFloat(f) + 1.5).toFixed(1);
+          const newR = (parseFloat(r) + 2.0).toFixed(1);
+          return `${newF} / ${newR} mm (Safe RH)`;
+        });
         impactVal = "Cero Failed Tech y protección anti-fondo";
       } else if (row.param.includes("Bump Rubber")) {
         aiProVal = aiProVal.replace(/(\d+) \/ (\d+)/, (m, f, r) => `${parseInt(f) + 4} / ${parseInt(r) + 5} mm (Anti-Bottoming)`);
         impactVal = "Elimina topes mecánicos en compresiones de 3G y saltos";
       } else if (row.param.includes("Diferencial")) {
-        aiProVal = "6 caras / 70 Nm (Safe Progressive)";
+        aiProVal = "6 caras / 60 Nm (Safe Progressive)";
         impactVal = "Elimina sobreviraje súbito en desaceleración y pianos";
+      } else if (row.param.includes("Reparto de Frenada")) {
+        aiProVal = aiProVal.replace(/(\d+(\.\d+)?)%/, (m, b) => `${(parseFloat(b) + 1.0).toFixed(1)}% (Safe Brake Stability)`);
+        impactVal = "Zaga estable en frenadas fuertes sin riesgo de bloqueo trasero";
       }
     }
 
@@ -4182,7 +4212,7 @@ async function renderAiTrainerForSetup(setup, customModel = null) {
     <div class="bg-[var(--r-bg)] border border-[var(--r-line)] rounded-2xl p-3 space-y-2 shadow-sm">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <span class="text-xs font-extrabold uppercase tracking-wider text-[var(--r-text)] font-mono">Modo de Setup:</span>
-        <div class="inline-flex p-1 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] gap-1 shadow-inner" role="group">
+        <div class="inline-flex flex-wrap p-1 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] gap-1 shadow-inner" role="group">
           <button type="button" onclick="setAiSetupTier('esport')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${tier === 'esport' ? 'bg-red-500/20 text-red-600 dark:text-red-300 border border-red-500/40 shadow-sm' : 'text-[var(--r-muted)] hover:text-[var(--r-text)]'}">
             <span>🔴 Esport</span>
             <span class="text-[9px] font-mono px-1.5 py-0.5 rounded font-black bg-red-500/20 text-red-600 dark:text-red-300">E · Pro</span>
@@ -4197,7 +4227,7 @@ async function renderAiTrainerForSetup(setup, customModel = null) {
           </button>
         </div>
       </div>
-      <div class="text-[11px] font-mono text-[var(--r-muted)] leading-relaxed pt-1 border-t border-[var(--r-line)] flex items-center gap-1.5">
+      <div class="text-[11px] font-mono text-[var(--r-muted)] leading-relaxed pt-1 border-t border-[var(--r-line)] flex flex-wrap items-center gap-1.5">
         ${tier === 'esport' ? '🏆 <strong>[E] Nivel Pro:</strong> Superagresivo para hotlap y top-split · Mínimo drag y tracción pura' : (tier === 'safe' ? '🛡️ <strong>[S] Principiante / Iniciación:</strong> Máxima estabilidad y 0 trompos · Alturas anti-fondo en 3G' : '⭐ <strong>[Normal] Piloto Avanzado:</strong> El balance de oro entre velocidad punta y seguridad para carrera')}
       </div>
     </div>

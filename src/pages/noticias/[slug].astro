@@ -349,7 +349,7 @@ const readTimeMinutes = Math.max(1, Math.ceil(wordCount / 200));
           )}
 
           <!-- Article Content Card (Theme-Adaptive for Light & Dark Mode) -->
-          <div class="space-y-4 text-[var(--r-text)] text-base sm:text-[17px] leading-relaxed bg-[var(--r-surface)] p-6 sm:p-10 rounded-2xl border border-[var(--r-line)] shadow-sm">
+          <div class="article-content-card space-y-4 p-6 sm:p-10 rounded-2xl shadow-sm">
             <div class="article-prose" set:html={bodyHtml} />
           </div>
 
@@ -512,4 +512,64 @@ const readTimeMinutes = Math.max(1, Math.ceil(wordCount / 200));
       }
     </script>
   )}
+
+  <style is:global>
+    .article-content-card {
+      background-color: var(--r-surface, #141A19);
+      border: 1px solid var(--r-line, #1F2926);
+      color: var(--r-text, #F2F5F4);
+      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+    html.light .article-content-card,
+    html[data-theme="light"] .article-content-card {
+      background-color: #FFFFFF !important;
+      border-color: #D9DEDB !important;
+      color: #0B0F0E !important;
+    }
+    html.dark .article-content-card,
+    html[data-theme="dark"] .article-content-card {
+      background-color: #141A19 !important;
+      border-color: #1F2926 !important;
+      color: #F2F5F4 !important;
+    }
+
+    .article-prose {
+      color: inherit;
+    }
+    .article-prose p {
+      color: inherit;
+      line-height: 1.75;
+    }
+    html.light .article-prose p,
+    html[data-theme="light"] .article-prose p {
+      color: #1A2120 !important;
+    }
+    html.light .article-prose strong,
+    html[data-theme="light"] .article-prose strong {
+      color: #0B0F0E !important;
+    }
+    html.light .article-prose em,
+    html[data-theme="light"] .article-prose em {
+      color: #4A5652 !important;
+    }
+    html.light .article-prose h2,
+    html[data-theme="light"] .article-prose h2,
+    html.light .article-prose h3,
+    html[data-theme="light"] .article-prose h3 {
+      color: #0B0F0E !important;
+      border-color: #D9DEDB !important;
+    }
+    html.light .article-prose blockquote,
+    html[data-theme="light"] .article-prose blockquote {
+      background-color: #F4F5F3 !important;
+      color: #1A2120 !important;
+      border-color: #007A50 !important;
+    }
+    html.light .article-prose code,
+    html[data-theme="light"] .article-prose code {
+      background-color: #F4F5F3 !important;
+      color: #007A50 !important;
+      border-color: #D9DEDB !important;
+    }
+  </style>
 </Layout>
