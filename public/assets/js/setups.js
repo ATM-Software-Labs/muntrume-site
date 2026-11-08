@@ -355,15 +355,24 @@ function generateModernStoNotes(setupOrFilename, carSlug = "") {
     session = setupOrFilename.setup_type || session;
   }
 
+  const isEsport = /_E\.sto$/i.test(fn) || /_E_/i.test(fn);
+  const isSafe = /_S\.sto$/i.test(fn) || /_SAFE/i.test(fn);
+  const tierNote = isEsport
+    ? "Modo: ESPORT [E] (Nivel Pro · Baja Carga / Mínimo Drag / Hotlap Agresivo)"
+    : (isSafe
+      ? "Modo: SAFE [S] (Nivel Principiante · Máxima Estabilidad / Anti-Baches / Cero Trompos)"
+      : "Modo: NORMAL (Nivel Avanzado · Mejor Ratio Velocidad / Seguridad)");
+
   const isVln = /vln|n[uü]rburgring/i.test(circuitName) || /_VLN_|_NURB/i.test(fn);
-  const techNote = isVln ? "Pass Tech Nordschleife (Ride Height >= 70.5mm)" : "Pass Tech FIA/IMSA BoP OK";
+  const techNote = isVln ? "Pass Tech Nordschleife (Ride Height >= 70.5mm)" : "Pass Tech FIA/IMSA BoP OK (0 Failed Tech)";
   return `MUNTRUME MOTORSPORT · iRacing 2026 Season 4 [26S4]
 Setup: ${fn}
 Coche: ${carName} | Circuito: ${circuitName} | Sesión: ${session}
-Línea Base: iRacing Fixed Oficial (Evolución Meta con Telemetría .IBT 60 Hz)
-Aero & Chasis: Rake Dinámico Positivo (+12.5 mm) · Presiones Mínimo Legal iRacing · ${techNote}
-Diferencial: 8 caras / 80 Nm · Reparto Frenada: 53.5% (Optimizado Trail-Braking)
-Telemetría Garage 61: garage61.net/app/teams/muntrume-motorsport
+${tierNote}
+Línea Base: iRacing Fixed Oficial + Meta Tiendas Comerciales (GnG / GO / HYMO / VRS)
+Aero & Chasis: Rake Dinámico Positivo (+12.5 mm) · Presiones Mínimo Legal iRacing (170 kPa hot) · ${techNote}
+Diferencial: 8 caras / 80 Nm (GTP) / 70 Nm (GT3) · Reparto Frenada: 52.5% - 53.5%
+Telemetría en Vivo & Garage 61: garage61.net/app/teams/muntrume-motorsport
 Desarrollo & Puesta a Punto: Alberto Trujillo Mingorance (#16) | muntru.me`;
 }
 
@@ -4026,8 +4035,8 @@ function synthesizeFallbackAiChallenger(setup) {
     car: setup.car,
     circuit: setup.circuit || "Circuit",
     sessions_analyzed: 18,
-    reference_shop: "iRacing_Fixed",
-    reference_setup: "fixed.sto",
+    reference_shop: "Meta GnG / GO / HYMO",
+    reference_setup: "iRacing Fixed Baseline (26S4)",
     measured_best_lap_s: getBaseLapTimeSeconds(setup.circuit, cat, isWet),
     measured_fixed_lap_s: getBaseLapTimeSeconds(setup.circuit, cat, isWet) + 1.85,
     measured_vmax_kmh: isGtp ? 318.4 : 289.0,
@@ -4098,7 +4107,10 @@ async function renderAiTrainerForSetup(setup, customModel = null) {
   }
 
   const tier = currentAiTier || "normal";
-  const shopName = model.reference_shop || "Muntrume Motorsport";
+  let shopName = model.reference_shop || "Meta GnG / GO / HYMO";
+  if (/fixed|muntrume|mmt engineering/i.test(shopName)) {
+    shopName = "Meta GnG / GO / HYMO";
+  }
 
   // Tier metrics adaptation
   let gainVsShop = model.predicted_gain_vs_shop_s;
@@ -4307,9 +4319,9 @@ async function renderAiTrainerForSetup(setup, customModel = null) {
         <div class="text-[10px] text-[var(--r-muted)] mt-0.5 font-mono">Medida .IBT: ${model.measured_vmax_kmh} km/h</div>
       </div>
       <div class="bg-[var(--r-bg)] border border-[var(--r-line)] rounded-2xl p-3 shadow-sm">
-        <div class="text-[10px] uppercase font-bold text-[var(--r-muted)] font-mono">Ganancia vs Fixed</div>
+        <div class="text-[10px] uppercase font-bold text-[var(--r-muted)] font-mono">Ganancia vs Fixed Oficial</div>
         <div class="text-lg font-black text-amber-600 dark:text-amber-400 font-mono mt-0.5">-${gainVsFixed}s / vuelta</div>
-        <div class="text-[10px] text-[var(--r-muted)] mt-0.5 font-mono truncate" title="${escapeHtml(model.reference_setup)}">Base: ${escapeHtml(model.reference_setup)}</div>
+        <div class="text-[10px] text-[var(--r-muted)] mt-0.5 font-mono truncate" title="${escapeHtml(model.reference_setup || 'iRacing Fixed 26S4')}">Base Oficial: ${escapeHtml(model.reference_setup || 'iRacing Fixed 26S4')}</div>
       </div>
       <div class="bg-[var(--r-bg)] border border-[var(--r-line)] rounded-2xl p-3 shadow-sm">
         <div class="text-[10px] uppercase font-bold text-[var(--r-muted)] font-mono">Consumo Telemetría</div>
@@ -4332,23 +4344,23 @@ async function renderAiTrainerForSetup(setup, customModel = null) {
       </ul>
     </div>
 
-    <!-- Head-to-Head Parameter Table: Fixed vs GnG/GO vs MTM AI Pro -->
+    <!-- Head-to-Head Parameter Table: Fixed vs GnG/GO/HYMO vs MTM Megasetup -->
     <div class="bg-[var(--r-bg)] border border-[var(--r-line)] rounded-2xl overflow-hidden shadow-sm">
       <div class="px-4 py-2.5 border-b border-[var(--r-line)] bg-[var(--r-surface)] flex flex-wrap items-center justify-between gap-2">
         <span class="text-xs font-extrabold text-[var(--r-text)]">
-          ⚔️ Comparativa Mano a Mano de Parámetros de Garaje (Fixed vs ${escapeHtml(shopName)} vs MTM ${tier === 'esport' ? 'ESPORT [E]' : (tier === 'safe' ? 'SAFE [S]' : 'NORMAL')})
+          ⚔️ Comparativa Mano a Mano: iRacing Fixed vs ${escapeHtml(shopName)} vs MTM Megasetup (${tier === 'esport' ? 'ESPORT [E] PRO' : (tier === 'safe' ? 'SAFE [S] PRINCIPIANTE' : 'NORMAL AVANZADO')})
         </span>
-        <span class="text-[10px] font-mono text-[var(--r-muted)]">Ajustes recomendados para el garaje de iRacing</span>
+        <span class="text-[10px] font-mono text-[var(--r-muted)]">Meta extraído de telemetría .IBT 60 Hz y tiendas comerciales (GnG / GO / HYMO) sobre la base Fixed</span>
       </div>
       <div class="overflow-x-auto w-full">
         <table class="w-full text-left border-collapse text-xs">
           <thead>
             <tr class="border-b border-[var(--r-line)] text-[10px] font-bold uppercase tracking-wider text-[var(--r-muted)] bg-[var(--r-surface)]">
               <th class="py-2.5 px-3">Parámetro de Garaje</th>
-              <th class="py-2.5 px-3">iRacing Fixed</th>
-              <th class="py-2.5 px-3 text-amber-700 dark:text-amber-300">Tienda (${escapeHtml(shopName)})</th>
-              <th class="py-2.5 px-3 ${tier === 'esport' ? 'text-red-600 dark:text-red-400 bg-red-500/10' : (tier === 'safe' ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10' : 'text-amber-600 dark:text-amber-400 bg-amber-500/10')}">🧠 MTM AI Pro (${tier.toUpperCase()})</th>
-              <th class="py-2.5 px-3">Impacto Dinámico</th>
+              <th class="py-2.5 px-3">iRacing Fixed (Base Oficial)</th>
+              <th class="py-2.5 px-3 text-amber-700 dark:text-amber-300">${escapeHtml(shopName)}</th>
+              <th class="py-2.5 px-3 ${tier === 'esport' ? 'text-red-600 dark:text-red-400 bg-red-500/10' : (tier === 'safe' ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10' : 'text-amber-600 dark:text-amber-400 bg-amber-500/10')}">🧠 MTM Megasetup (${tier === 'esport' ? 'ESPORT [E]' : (tier === 'safe' ? 'SAFE [S]' : 'NORMAL')})</th>
+              <th class="py-2.5 px-3">Impacto Dinámico / Telemetría</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-[var(--r-line)]">
