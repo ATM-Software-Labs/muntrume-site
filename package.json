@@ -7,7 +7,7 @@
     "dev": "astro dev",
     "css": "tailwindcss -i ./src/styles/tailwind.css -o ./public/assets/css/tailwind.min.css --minify",
     "compress": "node scripts/compress-html.mjs",
-    "build": "npm run css && astro build && node scripts/minify-assets.mjs && node scripts/compress-html.mjs",
+    "build": "npm run css && astro build && node scripts/generate-sitemap.mjs && node scripts/minify-assets.mjs && node scripts/compress-html.mjs",
     "check": "astro check",
     "preview": "astro preview"
   },

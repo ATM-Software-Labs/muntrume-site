@@ -3,8 +3,8 @@ import Layout from '../layouts/Layout.astro';
 import catalog from '../../public/assets/data/catalog_index.json';
 import { PILOTOS } from '../lib/pilotos';
 
-const pageTitle = "Garage | Muntrume Motorsport";
-const pageDescription = "Muntrume Motorsport Setup Vault: over 41,000 .STO setups by car, circuit, and season, plus Garage 61 telemetry, Team Communications, and Dynamic Setup Builder.";
+const pageTitle = "Mejores Setups para iRacing (2026 Season 4) · +42,600 Archivos .STO & Telemetría | Muntrume Motorsport";
+const pageDescription = "Descarga los mejores setups para iRacing (2026 Season 4). El Setup Vault más completo con más de 42,600 configuraciones .STO para 105 coches (GT3, GTP, TCR, GT4, Cup). Modos Esport [E], Normal y Safe [S] con 0 Failed Tech y telemetría Garage 61.";
 const fmt = (n: number) => n.toLocaleString('en-US');
 const figs = [
   { n: fmt(catalog.total_setups), l: "Setups in the Vault" },
@@ -12,14 +12,106 @@ const figs = [
   { n: String(catalog.circuits.length), l: "Calibrated Circuits" },
   { n: String(PILOTOS.length), l: "Official Drivers" },
 ];
+
+const garageSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://muntru.me/garage/#app",
+      "name": "Muntrume iRacing Setup Vault & Telemetry Hub",
+      "applicationCategory": "GameApplication",
+      "operatingSystem": "Windows 10, Windows 11",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "EUR",
+        "availability": "https://schema.org/InStock"
+      },
+      "description": "Catálogo y optimizador de más de 42,600 setups oficiales .STO para iRacing (2026 Season 4). BoP legal, 0 Failed Tech, telemetría a 60 Hz y sincronización con Garage 61."
+    },
+    {
+      "@type": "Dataset",
+      "@id": "https://muntru.me/garage/#dataset",
+      "name": "Catálogo Oficial de Setups iRacing 2026 (Muntrume Motorsport)",
+      "description": "Base de datos telemétrica de 42,654 configuraciones .STO optimizadas para 105 coches de iRacing.",
+      "license": "https://muntru.me/legal",
+      "isAccessibleForFree": true,
+      "creator": {
+        "@type": "Organization",
+        "name": "Muntrume Motorsport",
+        "url": "https://muntru.me"
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://muntru.me/garage/#breadcrumbs",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Inicio",
+          "item": "https://muntru.me/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Mejores Setups para iRacing",
+          "item": "https://muntru.me/garage"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://muntru.me/garage/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "¿Dónde descargar los mejores setups para iRacing en 2026?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "En el Setup Vault de Muntrume Motorsport (muntru.me/garage) dispones de más de 42,600 setups .STO actualizados para la Temporada 4 de 2026, verificados con 0 Failed Tech, telemetría a 60 Hz e integración directa con Garage 61."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Cómo instalar un archivo de setup .sto en iRacing?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Copia el archivo .sto descargado en la carpeta de tu ordenador 'Documentos\\iRacing\\setups\\[nombre_del_coche]\\'. Al entrar en la sesión de iRacing, abre el Garage, pulsa 'My Setups' y selecciona el archivo."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Qué diferencia hay entre los modos Esport [E], Normal y Safe [S]?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "El modo Esport [E] está calibrado para clasificación y pilotos pro con mínimo drag aerodinámico y diferencial reactivo. El modo Normal es el equilibrio perfecto para carrera con presiones calientes estabilizadas en 170 kPa. El modo Safe [S] ofrece máxima estabilidad, alturas sobreelevadas anti-fondo y tolerancia total a bordillos para evitar trompos."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Son legales los setups de Muntrume ante la inspección técnica de iRacing?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sí, el 100% de los setups superan el escrutinio técnico (Pass Tech BoP) con 0 Failed Tech, respetando las presiones mínimas obligatorias (152 kPa GTP / 159 kPa GT3) y la altura mínima de 70.0 mm en Nürburgring Nordschleife."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Cómo se sincroniza la telemetría con Garage 61?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Al rodar en iRacing con el agente de Garage 61 en segundo plano, tus vueltas y canales telemétricos (frenada, acelerador, alturas y presiones) se sincronizan automáticamente con el equipo Muntrume Motorsport en garage61.net/app/teams/muntrume-motorsport."
+          }
+        }
+      ]
+    }
+  ]
+};
 ---
 
-<Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/garage">
-  <Fragment slot="head">
-    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-  </Fragment>
+<Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/garage" schemaJson={garageSchema}>
   <section class="r-section g-hero" aria-labelledby="garageTitle">
     <div class="r-wrap">
       <p class="r-kicker">Setup Vault &amp; Team HQ</p>
@@ -469,6 +561,146 @@ const figs = [
         <p class="g-links"><a class="r-link" href="/aviso-legal">Aviso legal</a><a class="r-link" href="/privacidad">Privacidad</a></p>
         <p class="r-meta">Este texto es informativo y no constituye asesoramiento jurídico.</p>
       </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN SEO AVANZADO: GUÍA DE MEJORES SETUPS IRACING 2026 & FAQ HUB -->
+  <section class="r-section bg-[var(--r-bg)] border-t border-[var(--r-line)] py-14" aria-labelledby="seoHubTitle">
+    <div class="r-wrap space-y-12 max-w-5xl mx-auto">
+      
+      <!-- Encabezado de Autoridad SEO -->
+      <div class="text-center space-y-3">
+        <p class="text-xs font-mono uppercase tracking-widest text-[var(--r-accent)] font-bold">Guía de Ingeniería Telemétrica · iRacing 2026 Season 4</p>
+        <h2 id="seoHubTitle" class="text-2xl sm:text-3xl font-extrabold text-[var(--r-text)] tracking-tight">
+          Los Mejores Setups para iRacing: Rendimiento, Seguridad &amp; Telemetría
+        </h2>
+        <p class="text-sm text-[var(--r-muted)] max-w-2xl mx-auto leading-relaxed">
+          Accede a más de 42,600 configuraciones <strong class="text-[var(--r-text)]">.STO</strong> verificadas en pista a 60 Hz. Cumplimiento estricto de Balance of Performance (BoP), cero Failed Tech y calibración para todos los circuitos y categorías del simulador.
+        </p>
+      </div>
+
+      <!-- 3 Pilares Técnicos -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="p-4 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] space-y-2">
+          <div class="text-base font-bold text-[var(--r-text)] flex items-center gap-2">
+            <span>🛡️</span><span>0 Failed Tech Garantizado</span>
+          </div>
+          <p class="text-xs text-[var(--r-muted)] leading-relaxed">
+            Alturas estáticas escrupulosamente legales. En circuitos implacables como <strong class="text-[var(--r-text)]">Nürburgring Nordschleife</strong>, garantizamos alturas de más de 70.0 mm obligatorias por el BoP de iRacing, evitando descalificaciones en escrutinio.
+          </p>
+        </div>
+        <div class="p-4 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] space-y-2">
+          <div class="text-base font-bold text-[var(--r-text)] flex items-center gap-2">
+            <span>⚡</span><span>Ventana Térmica 170 kPa</span>
+          </div>
+          <p class="text-xs text-[var(--r-muted)] leading-relaxed">
+            Presiones frías fijadas en el mínimo reglamentario (152 kPa GTP / 159 kPa GT3) calculadas para clavar exactamente <strong class="text-[var(--r-text)]">~169.5-170.5 kPa en caliente</strong> en la vuelta 1, maximizando la huella de contacto sin degradación prematura.
+          </p>
+        </div>
+        <div class="p-4 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] space-y-2">
+          <div class="text-base font-bold text-[var(--r-text)] flex items-center gap-2">
+            <span>🏎️</span><span>Rake Dinámico &amp; Difusor</span>
+          </div>
+          <p class="text-xs text-[var(--r-muted)] leading-relaxed">
+            Geometría de suspensión con rake positivo optimizado (+12.5 mm a alta velocidad) que sella el difusor contra el asfalto a más de 235 km/h, eliminando el porpoising en compresiones y maximizando la velocidad punta.
+          </p>
+        </div>
+      </div>
+
+      <!-- Categorías y Coches Soportados -->
+      <div class="p-5 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] space-y-4">
+        <h3 class="text-sm font-bold uppercase tracking-wider font-mono text-[var(--r-accent)]">
+          Categorías de Coches y Especialidades
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+          <div class="space-y-1">
+            <div class="font-bold text-[var(--r-text)]">GT3 Series</div>
+            <div class="text-[11px] text-[var(--r-muted)] leading-snug">
+              Ferrari 296 GT3, Porsche 992 GT3 R, BMW M4 GT3, Mercedes-AMG GT3 Evo, McLaren 720S GT3 Evo, Corvette Z06 GT3.R, Aston Martin Vantage GT3 Evo, Mustang GT3, Audi R8 LMS Evo II.
+            </div>
+          </div>
+          <div class="space-y-1">
+            <div class="font-bold text-[var(--r-text)]">GTP / Hypercar</div>
+            <div class="text-[11px] text-[var(--r-muted)] leading-snug">
+              BMW M Hybrid V8, Porsche 963, Cadillac V-Series.R, Acura ARX-06, Ferrari 499P, Aston Martin Valkyrie GTP. Mapas híbridos y control de tracción optimizados.
+            </div>
+          </div>
+          <div class="space-y-1">
+            <div class="font-bold text-[var(--r-text)]">Prototipos &amp; GT4</div>
+            <div class="text-[11px] text-[var(--r-muted)] leading-snug">
+              Dallara P217 LMP2, Ligier JS P320 LMP3, Porsche 718 Cayman GT4, BMW M4 GT4, Aston Martin Vantage GT4, McLaren 570S GT4.
+            </div>
+          </div>
+          <div class="space-y-1">
+            <div class="font-bold text-[var(--r-text)]">Fórmula &amp; Copas</div>
+            <div class="text-[11px] text-[var(--r-muted)] leading-snug">
+              Super Formula SF23, Formula 4, Super Formula Lights, Porsche 992 Cup, Mazda MX-5 Cup, TCR (Audi, Honda, Hyundai).
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Guía de Instalación Paso a Paso -->
+      <div class="p-5 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] space-y-3">
+        <h3 class="text-sm font-bold uppercase tracking-wider font-mono text-[var(--r-text)]">
+          Cómo Instalar Setups .STO en iRacing Paso a Paso
+        </h3>
+        <ol class="list-decimal list-inside space-y-1.5 text-xs text-[var(--r-muted)] leading-relaxed">
+          <li>Descarga el archivo <code class="px-1.5 py-0.5 rounded bg-[var(--r-bg)] text-[var(--r-accent)] font-mono">.sto</code> desde el Setup Vault o utiliza la vinculación de carpeta local para sincronización con 1 clic.</li>
+          <li>Copia el archivo en la ruta de tu PC: <code class="px-1.5 py-0.5 rounded bg-[var(--r-bg)] text-[var(--r-text)] font-mono">Documentos\\iRacing\\setups\\[nombre_del_coche]\\</code>.</li>
+          <li>Entra a la sesión oficial de iRacing, abre la pestaña <strong class="text-[var(--r-text)]">Garage</strong>, pulsa <strong class="text-[var(--r-text)]">My Setups</strong> y cárgalo directamente.</li>
+          <li>Verifica que la inspección técnica indique <strong class="text-emerald-400 font-mono">Pass Tech</strong> antes de salir a pista.</li>
+        </ol>
+      </div>
+
+      <!-- Preguntas Frecuentes (FAQ Accordion Indexable) -->
+      <div class="space-y-3">
+        <h3 class="text-sm font-bold uppercase tracking-wider font-mono text-[var(--r-text)]">
+          Preguntas Frecuentes sobre Setups para iRacing
+        </h3>
+        <div class="space-y-2">
+          <details class="p-3.5 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] text-xs group cursor-pointer">
+            <summary class="font-bold text-[var(--r-text)] flex items-center justify-between select-none">
+              <span>¿Dónde descargar los mejores setups para iRacing en 2026?</span>
+              <span class="text-[var(--r-muted)] group-open:rotate-180 transition-transform">▼</span>
+            </summary>
+            <p class="text-[var(--r-muted)] leading-relaxed mt-2 pt-2 border-t border-[var(--r-line)]">
+              En el Setup Vault de Muntrume Motorsport (muntru.me/garage) tienes a tu disposición más de 42,600 configuraciones .STO actualizadas para la Temporada 4 de 2026, verificadas en telemetría a 60 Hz y con sincronización directa con Garage 61.
+            </p>
+          </details>
+
+          <details class="p-3.5 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] text-xs group cursor-pointer">
+            <summary class="font-bold text-[var(--r-text)] flex items-center justify-between select-none">
+              <span>¿Qué diferencia hay entre los modos Esport [E], Normal y Safe [S]?</span>
+              <span class="text-[var(--r-muted)] group-open:rotate-180 transition-transform">▼</span>
+            </summary>
+            <p class="text-[var(--r-muted)] leading-relaxed mt-2 pt-2 border-t border-[var(--r-line)]">
+              El modo <strong class="text-red-400">Esport [E]</strong> está ajustado para clasificación y pilotos avanzados, priorizando mínimo drag aerodinámico y diferencial reactivo. El modo <strong class="text-amber-400">Normal</strong> es el estándar equilibrado para carrera con control de trail-braking. El modo <strong class="text-emerald-400">Safe [S]</strong> aporta alturas sobreelevadas y amortiguadores absorbentes para novatos o circuitos difíciles sin riesgo de trompos.
+            </p>
+          </details>
+
+          <details class="p-3.5 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] text-xs group cursor-pointer">
+            <summary class="font-bold text-[var(--r-text)] flex items-center justify-between select-none">
+              <span>¿Por qué todos los setups de Muntrume garantizan 0 Failed Tech?</span>
+              <span class="text-[var(--r-muted)] group-open:rotate-180 transition-transform">▼</span>
+            </summary>
+            <p class="text-[var(--r-muted)] leading-relaxed mt-2 pt-2 border-t border-[var(--r-line)]">
+              Porque cada setup pasa una rigurosa auditoría de escrutinio técnico en el simulador. Respetamos las presiones mínimas legales de 2026 (152.0 kPa GTP / 159.0 kPa GT3) y las alturas mínimas obligatorias de más de 70.0 mm en Nürburgring Nordschleife / VLN.
+            </p>
+          </details>
+
+          <details class="p-3.5 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] text-xs group cursor-pointer">
+            <summary class="font-bold text-[var(--r-text)] flex items-center justify-between select-none">
+              <span>¿Cómo se integra la telemetría con Garage 61?</span>
+              <span class="text-[var(--r-muted)] group-open:rotate-180 transition-transform">▼</span>
+            </summary>
+            <p class="text-[var(--r-muted)] leading-relaxed mt-2 pt-2 border-t border-[var(--r-line)]">
+              Al rodar en iRacing con el cliente de Garage 61 activo, tus vueltas, temperaturas de neumáticos, frenada y aceleración se sincronizan automáticamente con el equipo Muntrume Motorsport en <a href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer" class="text-[var(--r-accent)] underline">garage61.net/app/teams/muntrume-motorsport</a>.
+            </p>
+          </details>
+        </div>
+      </div>
+
     </div>
   </section>
 
