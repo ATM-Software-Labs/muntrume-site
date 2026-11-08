@@ -3,12 +3,6 @@ import Layout from '../../layouts/Layout.astro';
 import fs from 'node:fs';
 import path from 'node:path';
 
-function slugify(text: string) {
-  return (text || '').toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
 
 function renderMarkdownToHtml(md: string) {
   if (!md) return '';
@@ -80,7 +74,7 @@ function getAuthorRole(author: string) {
 }
 
 export async function getStaticPaths() {
-  function slugify(text) {
+  function slugify(text: string): string {
     return (text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   }
   const paths: any[] = [];
@@ -90,14 +84,14 @@ export async function getStaticPaths() {
   try {
     const mdPath = path.resolve('./public/noticias-equipo.md');
     if (fs.existsSync(mdPath)) {
-      const rawMd = fs.readFileSync(mdPath, 'utf8');
+      const rawMd: string = String(fs.readFileSync(mdPath, 'utf8') || '');
       const blocks = rawMd.split(/^---\s*$/m).filter(b => b.trim().length > 0);
-      blocks.forEach(block => {
+      blocks.forEach((block: string) => {
         const lines = block.trim().split(/\r?\n/);
         let title = '', date = '', author = '', category = 'General', image = '', contentLines: string[] = [];
-        const titleLine = lines.find(l => /^#\s+/.test(l));
+        const titleLine = lines.find((l: string) => /^#\s+/.test(l));
         if (titleLine) title = titleLine.replace(/^#\s+/, '').trim();
-        lines.forEach(l => {
+        lines.forEach((l: string) => {
           const trimmed = l.trim();
           const match = trimmed.match(/^\*\*(Date|Fecha|Author|Autor|Category|Categor[ií]a|Image|Imagen):\*\*\s*(.+)$/i);
           if (match) {
@@ -116,7 +110,7 @@ export async function getStaticPaths() {
           const slug = slugify(title);
           seenSlugs.add(slug);
           const fullContent = contentLines.join('\n');
-          const firstPara = contentLines.find(l => !l.startsWith('#') && !l.startsWith('-') && !l.startsWith('>')) || '';
+          const firstPara = contentLines.find((l: string) => !l.startsWith('#') && !l.startsWith('-') && !l.startsWith('>')) || '';
 
           paths.push({
             params: { slug },
