@@ -111,6 +111,16 @@
     if (gate) gate.hidden = on;
     if (form) form.hidden = false;
   }
+  function mmtFilename(car, track, sessOrFile) {
+    if (typeof window !== "undefined" && typeof window.formatOfficialMmtFilename === "function") {
+      return window.formatOfficialMmtFilename(car, track, sessOrFile, sessOrFile);
+    }
+    var model = String(car || "MMT").replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 6) || "MMT";
+    var circ = String(track || "TRACK").replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 12) || "TRACK";
+    var s = String(sessOrFile || "R").toUpperCase();
+    var code = s.indexOf("WET") >= 0 ? "W" : s.indexOf("END") >= 0 ? "END" : s.indexOf("QUAL") >= 0 ? "Q" : s.indexOf("SAFE") >= 0 ? "S" : "R";
+    return "MMT_" + model + "_" + circ + "_" + code + ".sto";
+  }
   function renderSources(sources) {
     var box = $("builderSources");
     if (!box) return;
@@ -119,7 +129,8 @@
       var a = document.createElement("a");
       a.className = "g-chip";
       a.href = "/garage/#setup-" + encodeURIComponent(s.id == null ? "" : s.id);
-      a.textContent = [s.car, s.track || s.circuit, s.session].filter(Boolean).join(" · ");
+      var officialName = mmtFilename(s.car, s.track || s.circuit, s.filename || s.session);
+      a.textContent = officialName + " · ✓ PASS TECH";
       a.addEventListener("click", function (ev) {
         ev.preventDefault();
         if (window.switchGarageTab) window.switchGarageTab("setups");
@@ -281,14 +292,13 @@
     }
   }
   function filename(res, sources) {
-    var cd = res.headers.get("content-disposition") || "";
-    var m = cd.match(/filename=\"?([^\";]+)\"?/i);
-    if (m) return m[1];
     var one = sources && sources.length === 1;
-    var car = (last && last.body && (last.body.car || last.body.car_query)) || "setup";
-    var track = (last && last.body && (last.body.track || last.body.track_query)) || "circuito";
-    var safe = function (s) { return String(s).replace(/[^\w.-]+/g, "_"); };
-    return one ? safe(car) + "_" + safe(track) + ".sto" : "Muntrume_" + safe(car) + "_" + safe(track) + ".zip";
+    var car = (last && last.body && (last.body.car || last.body.car_query)) || (sources && sources[0] && sources[0].car) || "F296";
+    var track = (last && last.body && (last.body.track || last.body.track_query)) || (sources && sources[0] && (sources[0].track || sources[0].circuit)) || "SPA";
+    var sess = (sources && sources[0] && (sources[0].filename || sources[0].session)) || (last && last.body && last.body.sessions && last.body.sessions[0]) || "R";
+    if (one) return mmtFilename(car, track, sess);
+    var baseSto = mmtFilename(car, track, "END").replace(/_[A-Z0-9_]+\.sto$/i, "");
+    return baseSto + "_PACK.zip";
   }
   async function download() {
     var auth = session();

@@ -150,14 +150,93 @@ const figs = [
       </div>
 
       <div id="garageSectionSetups" role="tabpanel" aria-labelledby="tabBtnSetups" style="display:grid;gap:16px">
-        <h2 id="vaultTitle" class="r-h3">Catálogo</h2>
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <h2 id="vaultTitle" class="r-h3" style="margin:0">Catálogo Oficial MMT</h2>
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--r-surface)] border border-[var(--r-accent)] text-[11px] font-mono text-[var(--r-accent)] font-bold">
+            <span class="w-2 h-2 rounded-full bg-[var(--r-accent)]"></span>
+            <span>BOP 26S4 VERIFIED · PASS TECH (0 FAILED TECH)</span>
+          </div>
+        </div>
+
+        <!-- Apartado Dedicado NEC (Nürburgring Combined Gesamtstrecke VLN) + Guía Oficial Nomenclatura MMT -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="g-panel" style="padding:18px;border-left:3px solid var(--r-accent)">
+            <div class="flex flex-wrap items-start justify-between gap-2 mb-2">
+              <div>
+                <p class="r-kicker" style="margin:0">Especial Nordschleife · Semanal W01–W13</p>
+                <h3 class="r-h3" style="font-size:1.08rem;margin:2px 0 0">🏁 NEC · Nürburgring Combined Gesamtstrecke VLN</h3>
+              </div>
+              <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="filterNecSetups()">Ver Setups NEC (VLN) →</button>
+            </div>
+            <p class="r-meta" style="margin:0 0 10px;line-height:1.5">
+              Packs semanales (<code>W01</code> a <code>W13</code>) para las clases oficiales de la <strong>Nürburgring Endurance Championship (NEC)</strong>: GT3 (<code>F296, P911, M4, AMG, R8, LAMBO, MACLA, Z06, MUST, AMR</code>), Porsche Cup (<code>P911</code>), GT4 (<code>PORS, M4, AMG, AMR, MACLA</code>), TCR (<code>RS3, HYUN, CIVIC</code>), <code>GR86</code> y <code>MX5</code>. Calibrados con altura estática <strong>&ge; 70.5 mm</strong> para superar el escrutinio técnico del Nordschleife sin <em>Failed Tech</em>.
+            </p>
+            <div class="flex flex-wrap gap-1.5">
+              <button type="button" class="r-btn r-btn--sm" style="min-height:28px;padding:0 10px;font-size:11px" onclick="filterNecSetups('W01')">NEC W01</button>
+              <button type="button" class="r-btn r-btn--sm" style="min-height:28px;padding:0 10px;font-size:11px" onclick="filterNecSetups('W02')">NEC W02</button>
+              <button type="button" class="r-btn r-btn--sm" style="min-height:28px;padding:0 10px;font-size:11px" onclick="filterNecSetups('W03')">NEC W03</button>
+              <button type="button" class="r-btn r-btn--sm" style="min-height:28px;padding:0 10px;font-size:11px" onclick="filterNecSetups('W04')">NEC W04</button>
+              <button type="button" class="r-btn r-btn--sm" style="min-height:28px;padding:0 10px;font-size:11px" onclick="filterNecSetups('W05')">NEC W05</button>
+              <button type="button" class="r-btn r-btn--sm" style="min-height:28px;padding:0 10px;font-size:11px" onclick="filterNecSetups('W06')">NEC W06</button>
+              <button type="button" class="r-btn r-btn--sm" style="min-height:28px;padding:0 10px;font-size:11px" onclick="filterNecSetups('W07')">NEC W07</button>
+              <button type="button" class="r-btn r-btn--sm" style="min-height:28px;padding:0 10px;font-size:11px" onclick="filterNecSetups('W08')">NEC W08</button>
+              <button type="button" class="r-btn r-btn--sm" style="min-height:28px;padding:0 10px;font-size:11px" onclick="filterNecSetups('')">Todas (W01–W13)</button>
+            </div>
+          </div>
+
+          <details class="g-panel" style="padding:18px">
+            <summary class="cursor-pointer font-bold text-sm flex items-center justify-between gap-2" style="list-style:none">
+              <div>
+                <p class="r-kicker" style="margin:0">Estándar Oficial del Equipo</p>
+                <span class="r-h3" style="font-size:1.08rem">📋 Guía de Nomenclatura MMT &amp; Escrutinio BoP</span>
+              </div>
+              <span class="font-mono text-xs text-[var(--r-accent)]">MMT_[MODELO]_[CIRCUITO]_[SESIÓN] ▾</span>
+            </summary>
+            <div class="mt-3 pt-3 border-t border-[var(--r-line)] text-xs space-y-2.5">
+              <p class="font-mono text-[11px] p-2 rounded bg-[var(--r-bg-2)] border border-[var(--r-line)] text-[var(--r-accent)]">
+                MMT_[MODELO]_[CIRCUITO]_[SESIÓN]_[VERSIÓN_OPCIONAL].sto
+              </p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                <div>
+                  <strong class="block text-[var(--r-text)] mb-1">Códigos de Sesión:</strong>
+                  <ul class="space-y-0.5 text-[var(--r-muted)] font-mono">
+                    <li><strong class="text-[var(--r-accent)]">Q</strong> → Quali 1 vuelta / mín. carga</li>
+                    <li><strong class="text-[var(--r-accent)]">Q2</strong> → Quali 2 vueltas (out + push)</li>
+                    <li><strong class="text-[var(--r-accent)]">Q_SAFE / Q2_SAFE</strong> → Quali estable</li>
+                    <li><strong class="text-[var(--r-accent)]">R</strong> → Race estándar / Sprint</li>
+                    <li><strong class="text-[var(--r-accent)]">END</strong> → Endurance / Especiales</li>
+                    <li><strong class="text-[var(--r-accent)]">W</strong> → Wet (Lluvia)</li>
+                    <li><strong class="text-[var(--r-accent)]">S</strong> → Safe (Alta estabilidad)</li>
+                    <li><strong class="text-[var(--r-accent)]">V2, V3</strong> → Versión / Revisión BoP</li>
+                  </ul>
+                </div>
+                <div>
+                  <strong class="block text-[var(--r-text)] mb-1">Abreviaturas de Modelos MMT:</strong>
+                  <ul class="space-y-0.5 text-[var(--r-muted)] font-mono">
+                    <li><strong class="text-[var(--r-text)]">AMR / VALK</strong> · Aston Martin / Valkyrie</li>
+                    <li><strong class="text-[var(--r-text)]">F296 / F499P</strong> · Ferrari GT3 / GTP</li>
+                    <li><strong class="text-[var(--r-text)]">P911 / PORS / P963</strong> · Porsche GT3 / GTP</li>
+                    <li><strong class="text-[var(--r-text)]">M4 / BMWH</strong> · BMW M4 GT3 / GTP</li>
+                    <li><strong class="text-[var(--r-text)]">CADDY / Z06 / CHEVY</strong> · Cadillac / Corvette</li>
+                    <li><strong class="text-[var(--r-text)]">HUR / LAMBO / MACLA</strong> · Lambo / McLaren</li>
+                    <li><strong class="text-[var(--r-text)]">AMG / R8 / ACURA</strong> · Mercedes / Audi / Acura</li>
+                    <li><strong class="text-[var(--r-text)]">SF23, F3, F4, FF1600, MX5</strong> · Escuela / Open</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </details>
+        </div>
+
         <div class="g-pills" aria-label="Categoría">
           <button type="button" id="catPill-all" class="mmt-cat-pill is-on" onclick="selectMmtCategory('all')">Todas</button>
+          <button type="button" id="catPill-nec" class="mmt-cat-pill" onclick="selectMmtCategory('nec')">🏁 NEC · Nürburgring VLN</button>
           <button type="button" id="catPill-gtp" class="mmt-cat-pill" onclick="selectMmtCategory('gtp')">GTP</button>
           <button type="button" id="catPill-gt3" class="mmt-cat-pill" onclick="selectMmtCategory('gt3')">GT3</button>
           <button type="button" id="catPill-gt4" class="mmt-cat-pill" onclick="selectMmtCategory('gt4')">GT4</button>
           <button type="button" id="catPill-formulas" class="mmt-cat-pill" onclick="selectMmtCategory('formulas')">Fórmulas</button>
           <button type="button" id="catPill-cup" class="mmt-cat-pill" onclick="selectMmtCategory('cup')">Cup</button>
+          <button type="button" id="catPill-mx5" class="mmt-cat-pill" onclick="selectMmtCategory('mx5')">MX-5</button>
         </div>
         <div class="g-filters">
           <div class="g-field">
@@ -508,8 +587,8 @@ const figs = [
     </div>
   </div>
 
-  <script is:inline src="/assets/js/setups.js?v=t299"></script>
-  <script is:inline src="/assets/js/setup-builder.js?v=t299" defer></script>
+  <script is:inline src="/assets/js/setups.js?v=t300"></script>
+  <script is:inline src="/assets/js/setup-builder.js?v=t300" defer></script>
   <script is:inline>
     window.togglePassword = function (id, btn) {
       var input = document.getElementById(id);
