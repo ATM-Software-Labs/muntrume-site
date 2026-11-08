@@ -461,6 +461,17 @@ function normalizeUserAccount(user, fallbackEmail) {
   return base;
 }
 
+function isUserAuthenticated() {
+  return Boolean(
+    currentUser &&
+    currentUser.role !== "guest" &&
+    currentUser.email &&
+    currentUser.email !== "105 Cars · 41,509 setups" &&
+    currentToken &&
+    currentToken !== "guest_token"
+  );
+}
+
 function getStoredSession(key) {
   return localStorage.getItem(key) || sessionStorage.getItem(key);
 }
@@ -1363,6 +1374,12 @@ async function ensureDirectoryHandleForDownload() {
   }
 }
 
+function isNecSetup(circuit, filename) {
+  const c = String(circuit || "").toLowerCase();
+  const f = String(filename || "").toUpperCase();
+  return c.includes("vln") || c.includes("nec") || f.includes("_VLN_");
+}
+
 function getMtSetupsHierarchyParts(season, week, circuit) {
   const s = (season || "26S4").toUpperCase().trim();
   const yr = /^\d{2}/.test(s) ? `20${s.slice(0, 2)}` : "2026";
@@ -1376,7 +1393,12 @@ function getMtSetupsHierarchyParts(season, week, circuit) {
 
 function formatMtSetupsDisplayPath(car, season, week, circuit, filename = "") {
   const { yr, seasonFolder, weekFolder, circFolder } = getMtSetupsHierarchyParts(season, week, circuit);
-  const base = `${car}\\Garage 61 - Muntrume Motorsport\\${yr}\\${seasonFolder}\\${weekFolder}\\${circFolder}`;
+  let base;
+  if (isNecSetup(circuit, filename)) {
+    base = `${car}\\Garage 61 - Muntrume Motorsport\\MT SETUPS\\NEC - Nurburgring Combined VLN\\${weekFolder}\\Nurburgring Combined VLN`;
+  } else {
+    base = `${car}\\Garage 61 - Muntrume Motorsport\\MT SETUPS\\${yr}\\${seasonFolder}\\${weekFolder}\\${circFolder}`;
+  }
   return filename ? `${base}\\${filename}` : `${base}\\`;
 }
 
@@ -1399,9 +1421,17 @@ async function resolveExactSetupDir(rootHandle, car, season, week, circuit) {
   }
 
   const { yr, seasonFolder, weekFolder, circFolder: circName } = getMtSetupsHierarchyParts(season, week, circuit);
+  const isNec = isNecSetup(circuit);
 
   async function ensureMtHierarchy(parentHandle) {
-    const yDir = await parentHandle.getDirectoryHandle(yr, { create: true });
+    const mtFolder = await parentHandle.getDirectoryHandle("MT SETUPS", { create: true });
+    if (isNec) {
+      const necDir = await mtFolder.getDirectoryHandle("NEC - Nurburgring Combined VLN", { create: true });
+      const wDir = await necDir.getDirectoryHandle(weekFolder, { create: true });
+      const cDir = await wDir.getDirectoryHandle("Nurburgring Combined VLN", { create: true });
+      return [cDir];
+    }
+    const yDir = await mtFolder.getDirectoryHandle(yr, { create: true });
     const sDir = await yDir.getDirectoryHandle(seasonFolder, { create: true });
     const wDir = await sDir.getDirectoryHandle(weekFolder, { create: true });
     const cDir = await wDir.getDirectoryHandle(circName, { create: true });
@@ -1414,8 +1444,10 @@ async function resolveExactSetupDir(rootHandle, car, season, week, circuit) {
   const g61Targets = await ensureMtHierarchy(g61Folder);
 
   const allTargetDirs = [...teamTargets, ...g61Targets];
-  const relDisplay = `${safeCar}\\Garage 61 - Muntrume Motorsport\\${yr}\\${seasonFolder}\\${weekFolder}\\${circName}`;
-  return { circFolder: teamTargets[0], allTargetDirs, folderName: circName, relDisplay };
+  const relDisplay = isNec
+    ? `${safeCar}\\Garage 61 - Muntrume Motorsport\\MT SETUPS\\NEC - Nurburgring Combined VLN\\${weekFolder}\\Nurburgring Combined VLN`
+    : `${safeCar}\\Garage 61 - Muntrume Motorsport\\MT SETUPS\\${yr}\\${seasonFolder}\\${weekFolder}\\${circName}`;
+  return { circFolder: teamTargets[0], allTargetDirs, folderName: isNec ? "Nurburgring Combined VLN" : circName, relDisplay };
 }
 
 async function writeSetupBytesToTargets(resolved, filename, byteArray) {
@@ -1561,7 +1593,7 @@ async function ensureScopeLoadedAndApplyFilters() {
     const carSlug = safeCarChunkSlug(selectedCar);
     targetScope = `car:${carSlug}`;
     fetchUrl = `/assets/data/catalog_by_car/${carSlug}.json?v=26s4.mmt1`;
-  } else if (selectedSeason || selectedWeek || selectedCircuit || query) {
+  } else if (selectedSeason || selectedWeek || selectedCircuit || query || document.getElementById("catPill-nec")?.classList.contains("is-on")) {
     const sn = selectedSeason || "26S4";
     const snSlug = safeCarChunkSlug(sn);
     targetScope = `season:${snSlug}`;
@@ -1909,28 +1941,57 @@ function onSearchInput() {
   }, 180);
 }
 
+function normalizeSearchText(str) {
+  return String(str || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
 function applyFilters() {
-  const query = (document.getElementById("searchInput")?.value || "").toLowerCase().trim();
+  const query = (document.getElementById("searchInput")?.value || "").trim();
   const selectedCar = document.getElementById("carSelect")?.value || "";
   const selectedSeason = document.getElementById("seasonSelect")?.value || "";
   const selectedWeek = document.getElementById("weekSelect")?.value || "";
   const selectedCircuit = document.getElementById("circuitSelect")?.value || "";
 
-  visibleFoldersLimit = foldersPageSize();
+  const circNorm = normalizeSearchText(selectedCircuit);
+  const isNecFiltering = circNorm.includes("vln") || circNorm.includes("nec") || document.getElementById("catPill-nec")?.classList.contains("is-on");
+
+  // When filtering for NEC or searching, expand limit so results are never cut off
+  visibleFoldersLimit = isNecFiltering || query ? 250 : foldersPageSize();
 
   const filtered = allSetups.filter(s => {
     if (selectedCar && s.car !== selectedCar) return false;
     if (selectedSeason && s.season !== selectedSeason) return false;
     if (selectedWeek && s.week !== selectedWeek) return false;
-    if (selectedCircuit && s.circuit !== selectedCircuit) return false;
+
+    if (selectedCircuit) {
+      const isNecTarget = circNorm.includes("vln") || circNorm.includes("nec");
+      if (isNecTarget) {
+        const isMatch = s.circuit.includes("VLN") || s.circuit.includes("Combined") || s.filename.includes("_VLN_");
+        if (!isMatch) return false;
+      } else {
+        const sCircNorm = normalizeSearchText(s.circuit);
+        if (sCircNorm !== circNorm && s.circuit !== selectedCircuit) return false;
+      }
+    } else if (isNecFiltering) {
+      const isMatch = s.circuit.includes("VLN") || s.circuit.includes("Combined") || s.filename.includes("_VLN_");
+      if (!isMatch) return false;
+    }
 
     if (currentTypeFilter !== "All" && s.setup_type !== currentTypeFilter) {
       return false;
     }
+
     if (query) {
-      const carName = (CAR_LABELS[s.car] || s.car).toLowerCase();
-      const hay = `${s.car} ${carName} ${s.season} ${s.circuit} ${s.week} ${s.filename} ${s.setup_type}`.toLowerCase();
-      if (!hay.includes(query)) return false;
+      const qNorm = normalizeSearchText(query);
+      const carName = CAR_LABELS[s.car] || s.car;
+      const isNecSetupItem = s.circuit.includes("VLN") || s.circuit.includes("Combined") || s.filename.includes("_VLN_") || s.circuit.includes("Nürburgring") || s.circuit.includes("Nurburgring");
+      const necExtra = isNecSetupItem ? "nec vln nurburgring nordschleife endurance 24h" : "";
+      const hay = normalizeSearchText(`${s.car} ${carName} ${s.season} ${s.circuit} ${s.week} ${s.filename} ${s.setup_type} ${necExtra}`);
+      if (!hay.includes(qNorm)) return false;
     }
     return true;
   });
@@ -2487,13 +2548,14 @@ function decodeAndSanitizeSto(b64, carSlug = "") {
 // 1-CLICK COMPLETE FOLDER DOWNLOAD (EXACT IRACING PATH)
 // ==========================================
 async function downloadFolder(folderKey) {
-  if (currentUser && currentUser.role === 'guest') {
+  if (!isUserAuthenticated()) {
     openAuthModal('login');
     const err = document.getElementById("loginError");
     if (err) {
       err.textContent = "Inicia sesión con tu cuenta de piloto para guardar y sincronizar setups en tu carpeta de iRacing.";
       err.classList.remove("hidden");
     }
+    showDownloadToast("Inicia sesión como piloto para descargar setups", "warning");
     return;
   }
 
@@ -2586,13 +2648,14 @@ async function downloadFolder(folderKey) {
 
 // Download single setup (Direct to exact iRacing folder path, or exact-path package)
 async function downloadSetup(setupId, fallbackFilename) {
-  if (currentUser && currentUser.role === 'guest') {
+  if (!isUserAuthenticated()) {
     openAuthModal('login');
     const err = document.getElementById('loginError');
     if (err) {
       err.textContent = 'Inicia sesión con tu cuenta de piloto para descargar y guardar setups en tu carpeta de iRacing.';
       err.classList.remove('hidden');
     }
+    showDownloadToast("Inicia sesión como piloto para descargar setups", "warning");
     return;
   }
 
@@ -2687,13 +2750,14 @@ async function downloadSetup(setupId, fallbackFilename) {
 
 // Descargar todos los setups del circuito o vista actual (de una sola vez en su ruta exacta)
 async function downloadAllVisibleSetups() {
-  if (currentUser && currentUser.role === 'guest') {
+  if (!isUserAuthenticated()) {
     openAuthModal('login');
     const err = document.getElementById("loginError");
     if (err) {
       err.textContent = "Inicia sesión con tu cuenta de piloto para guardar y sincronizar setups en tu carpeta de iRacing.";
       err.classList.remove("hidden");
     }
+    showDownloadToast("Inicia sesión como piloto para descargar setups", "warning");
     return;
   }
 
@@ -4105,7 +4169,10 @@ function selectMmtCategory(cat) {
   if (!carSel) return;
 
   if (cat === "nec") {
-    carSel.value = "";
+    const necCars = MMT_CATEGORIES.nec || [];
+    if (carSel.value && !necCars.includes(carSel.value)) {
+      carSel.value = "";
+    }
     if (seasonSel) seasonSel.value = "26S4";
     if (circSel) {
       let hasNecOpt = Array.from(circSel.options).some(o => o.value === NEC_CIRCUIT_OFFICIAL);
@@ -4117,6 +4184,8 @@ function selectMmtCategory(cat) {
       }
       circSel.value = NEC_CIRCUIT_OFFICIAL;
     }
+    allFoldersExpanded = true;
+    visibleFoldersLimit = 250;
     onFilterChange();
     return;
   }
@@ -4144,6 +4213,8 @@ function selectMmtCategory(cat) {
 function filterNecSetups(week = "") {
   const weekSel = document.getElementById("weekSelect");
   if (weekSel) weekSel.value = week || "";
+  allFoldersExpanded = true;
+  visibleFoldersLimit = 250;
   selectMmtCategory("nec");
   const vaultSec = document.getElementById("garageSectionSetups") || document.getElementById("vaultTitle");
   if (vaultSec && typeof vaultSec.scrollIntoView === "function") {
