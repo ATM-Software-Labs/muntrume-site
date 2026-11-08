@@ -3791,10 +3791,15 @@ function synthesizeFallbackAiChallenger(setup) {
   const cat = classifyCarCategory(setup.car);
   const lowDrag = isLowDragTrack(setup.circuit);
   const isLemans = (setup.circuit || "").toLowerCase().includes("mans");
+  const isWet = (setup.setup_type === "Wet" || (setup.filename || "").includes("_W") || (setup.filename || "").toUpperCase().includes("WET"));
   const burn = isLemans ? (cat === "GTP" ? 3.75 : 4.13) : (cat === "GTP" ? 2.35 : 2.65);
   const qFuel = Math.max(11.0, +(burn * 3.35).toFixed(1));
-  const rWing = lowDrag ? (cat === "GTP" ? "Min Drag" : "5.5°") : "7.5°";
-  const qWing = lowDrag ? (cat === "GTP" ? "Min Drag" : "5.0°") : "7.0°";
+  const rWing = isWet
+    ? (cat === "GTP" ? "High Downforce Wet" : "10.0°")
+    : (lowDrag ? (cat === "GTP" ? "Min Drag" : "5.5°") : "7.5°");
+  const qWing = isWet
+    ? (cat === "GTP" ? "High Downforce Wet" : "9.5°")
+    : (lowDrag ? (cat === "GTP" ? "Min Drag" : "5.0°") : "7.0°");
 
   return {
     car: setup.car,
@@ -4127,7 +4132,7 @@ async function handleLiveIbtUpload(event) {
         { param: "Presión Fría LF / RF (Race)", fixed: "159 / 159 kPa", shop: `${lf.cold} / ${rf.cold} kPa (Hot: ${lf.hot}/${rf.hot})`, ai_pro: `159.0 / ${rf.hot <= 170 ? '160.0' : '159.0'} kPa + Toe ${aiToe} mm`, impact: "Clava ~170 kPa calientes en apoyo" },
         { param: "Presión Fría LR / RR (Race)", fixed: "159 / 159 kPa", shop: `${lr.cold} / ${rr.cold} kPa (Hot: ${lr.hot}/${rr.hot})`, ai_pro: `159.0 / ${rr.hot <= 170 ? '160.5' : '159.5'} kPa`, impact: "Tracción simétrica en salida" },
         { param: "Presiones Frías QUALY (4 ruedas)", fixed: "159.0 kPa", shop: `${lf.cold}.0 kPa`, ai_pro: "163.5 / 164.0 / 163.8 / 164.5 kPa", impact: "169.5 kPa desde la Vuelta Lanzada 1" },
-        { param: "Alerón Trasero (Race / Qualy)", fixed: "Baseline", shop: `${wing}°`, ai_pro: `${wing}° (Race) / ${Math.max(2, wing - 1)}° (Qualy)`, impact: `Vmax proyectada: ${(vmaxKmh + 0.8).toFixed(1)} km/h` },
+        { param: "Alerón Trasero (Race / Qualy)", fixed: "Baseline", shop: `${wing}°`, ai_pro: `${wing}° (Race) / ${Math.max(5, wing - 1)}° (Qualy)`, impact: `Vmax proyectada: ${(vmaxKmh + 0.8).toFixed(1)} km/h` },
         { param: "Altura Estática Del. / Tras.", fixed: "-", shop: `${lf.rh} / ${lr.rh} mm`, ai_pro: `${lf.rh} / ${(lr.rh - 0.5).toFixed(1)} mm (Dyn: ${dynF}/${dynR} mm)`, impact: "Optimiza rake dinámico a alta velocidad" },
         { param: "Diferencial (Caras / Precarga)", fixed: "-", shop: `${diffFaces} caras / ${diffPreload} Nm`, ai_pro: `${aiDiffFaces} caras / ${aiDiffPreload} Nm`, impact: "Mayor rotación en vértice" },
         { param: "Reparto de Frenada (Race / Qualy)", fixed: "-", shop: `${bb}%`, ai_pro: `${bb}% (Race) / ${(bb - 0.4).toFixed(1)}% (Qualy)`, impact: "Mejor entrada en trail-braking" }
