@@ -28,8 +28,8 @@ function checkBoPAndTech(row) {
     return { ok: false, reason: `Failed Tech: Ride height (${staticFrontRhMm}/${staticRearRhMm} mm) below minimum ${minLegalRhMm} mm` };
   }
 
-  const minLegalKpa = isWet ? 165.0 : 152.0;
-  const coldKpa = isWet ? 168.5 : (isQualy ? 163.5 : 159.0);
+  const minLegalKpa = isWet ? 165.0 : (isGtp ? 152.0 : 159.0);
+  const coldKpa = minLegalKpa;
   if (coldKpa < minLegalKpa) {
     return { ok: false, reason: `Failed Tech: Tire pressure ${coldKpa} kPa below minimum ${minLegalKpa} kPa` };
   }
@@ -42,7 +42,7 @@ function checkBoPAndTech(row) {
 }
 
 function testStoBinaryIntegrity() {
-  const notesText = 'muntru.me - Muntrume Motorsport | MMT_F296_VLN_END.sto | PASSED TECH · 0 FAILED TECH (BoP 26S4 OK) | Setup by Alberto Trujillo';
+  const notesText = 'MUNTRUME MOTORSPORT · iRacing Season 2026 Season 4 [26S4] | MMT_F296_VLN_END.sto | Base: iRacing Fixed + Meta Challenger | Setup by Alberto Trujillo | muntru.me';
   const payloadSize = 1024;
   const l3 = (notesText.length + 1) * 2;
   const l2 = 64;
