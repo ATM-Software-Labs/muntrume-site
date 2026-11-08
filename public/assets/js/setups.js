@@ -357,7 +357,14 @@ function generateModernStoNotes(setupOrFilename, carSlug = "") {
 
   const isVln = /vln|n[uü]rburgring/i.test(circuitName) || /_VLN_|_NURB/i.test(fn);
   const techNote = isVln ? "Pass Tech Nordschleife (Ride Height >= 70.5mm)" : "Pass Tech FIA/IMSA BoP OK";
-  return `MUNTRUME MOTORSPORT · iRacing Season 2026 Season 4 [26S4]\nSetup: ${fn} | Coche: ${carName} | Circuito: ${circuitName} | Sesión: ${session}\nLínea Base: iRacing Fixed Oficial (Mejorado con Telemetría .IBT 60 Hz)\nAero & Chasis: Rake Dinámico Positivo (+12.5mm) · Presiones Mín. Legal iRacing · ${techNote}\nDiferencial: 8 caras / 80 Nm · Reparto Frenada: 53.5% (Optimizado Trail-Braking)\nAutor: Alberto Trujillo Mingorance (#16) | Muntrume Motorsport (muntru.me)`;
+  return `MUNTRUME MOTORSPORT · iRacing 2026 Season 4 [26S4]
+Setup: ${fn}
+Coche: ${carName} | Circuito: ${circuitName} | Sesión: ${session}
+Línea Base: iRacing Fixed Oficial (Evolución Meta con Telemetría .IBT 60 Hz)
+Aero & Chasis: Rake Dinámico Positivo (+12.5 mm) · Presiones Mínimo Legal iRacing · ${techNote}
+Diferencial: 8 caras / 80 Nm · Reparto Frenada: 53.5% (Optimizado Trail-Braking)
+Telemetría Garage 61: garage61.net/app/teams/muntrume-motorsport
+Desarrollo & Puesta a Punto: Alberto Trujillo Mingorance (#16) | muntru.me`;
 }
 
 function validateSetupBoPAndTech(setup) {
@@ -3555,6 +3562,8 @@ function renderSetupFacts(setup, binaryInfo) {
     ["Temporada & Semana", [setup.season, setup.week].filter(Boolean).join(" · ") || "26S4"],
     ["Código de Sesión MMT", `${bop.sessionCode} — ${bop.sessionDescription}`],
     ["Archivo Oficial MMT", bop.officialFilename],
+    ["Ruta Local iRacing", `Documents\\iRacing\\setups\\${setup.car}\\`],
+    ["Sincronización Garage 61", "Garage 61 - Muntrume Motorsport (Sincronizado)"],
     ["Estado BoP & Tech Inspection", bop.statusLabel],
     ["Tamaño Binario .STO", formatBytes(binaryInfo?.bytes || setup.size_bytes) || "—"]
   ];
@@ -3740,11 +3749,14 @@ function renderG61EmptyState(title, detail, showTokenButton) {
   tbody.innerHTML = `
     <tr>
       <td colspan="6" class="py-10 px-4 text-center">
-        <div class="text-sm font-bold text-white">${escapeHtml(title)}</div>
-        <div class="text-[11px] text-neutral-400 mt-1 max-w-md mx-auto leading-relaxed">${escapeHtml(detail)}</div>
-        <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
-          <a href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer" class="px-3.5 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/35 text-[11px] font-bold text-emerald-400">↗ Open Muntrume Motorsport on Garage 61</a>
-          ${showTokenButton ? `<button type="button" onclick="configureG61TokenPrompt()" class="px-3 py-1.5 rounded-xl bg-[#161c24] hover:bg-white/10 border border-white/10 text-[11px] font-semibold text-neutral-300">🔑 Use Personal Garage 61 Token</button>` : ""}
+        <div class="text-sm font-bold text-[var(--r-text)]">${escapeHtml(title)}</div>
+        <div class="text-xs text-[var(--r-muted)] mt-1.5 max-w-md mx-auto leading-relaxed">${escapeHtml(detail)}</div>
+        <div class="mt-4 flex flex-wrap items-center justify-center gap-2 font-mono text-xs">
+          <a href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer" class="px-3.5 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/35 font-bold text-emerald-400 transition">↗ Ver Telemetría Muntrume en Garage 61</a>
+          ${showTokenButton ? `<button type="button" onclick="configureG61TokenPrompt()" class="px-3.5 py-2 rounded-xl bg-[var(--r-surface)] hover:border-[var(--r-accent)] border border-[var(--r-line)] font-semibold text-[var(--r-text)] transition cursor-pointer">🔑 Conectar Token Garage 61</button>` : ""}
+        </div>
+        <div class="mt-4 text-[10px] font-mono text-[var(--r-muted)] max-w-lg mx-auto border-t border-[var(--r-line)] pt-3">
+          💡 <strong>Sincronización en Pista:</strong> Al cargar este setup en iRacing con el agente Garage 61 activo, tus vueltas y canales telemétricos (frenada, aceleración, alturas y temperaturas) se sincronizan directamente con el equipo.
         </div>
       </td>
     </tr>`;
