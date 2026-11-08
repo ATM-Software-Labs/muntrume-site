@@ -342,7 +342,7 @@ function formatOfficialMmtFilename(carSlug, circuitName, rawFilename, fallbackTy
 
 function generateModernStoNotes(setupOrFilename, carSlug = "") {
   let fn = "MMT_SETUP.sto";
-  let carName = CAR_LABELS[carSlug] || carSlug || "Oficial";
+  let carName = CAR_LABELS[carSlug] || carSlug || "Official";
   let circuitName = "Circuit";
   let session = "Race";
 
@@ -360,21 +360,21 @@ function generateModernStoNotes(setupOrFilename, carSlug = "") {
   const tierNote = isEsport
     ? "Esport [E] (Pro / Low Drag / Hotlap)"
     : (isSafe
-      ? "Safe [S] (Iniciación / Anti-Baches / Cero Trompos)"
-      : "Normal (Avanzado / Óptimo Carrera)");
+      ? "Safe [S] (Beginner / Anti-Bottoming / High Stability)"
+      : "Normal (Advanced / Optimal Race Pace)");
 
   const isVln = /vln|n[uü]rburgring/i.test(circuitName) || /_VLN_|_NURB/i.test(fn);
-  const techNote = isVln ? "Pass Tech Nordschleife (>=70.5mm)" : "Pass Tech FIA/IMSA BoP OK";
+  const techNote = isVln ? "Pass Tech Nordschleife (Ride Height >= 70.5mm)" : "Pass Tech FIA/IMSA BoP OK (0 Failed Tech)";
 
   return `MUNTRUME MOTORSPORT [26S4] · MTM MEGASETUP™
-Setup: ${fn} | Modo: ${tierNote}
-Coche: ${carName} | Pista: ${circuitName} | Sesión: ${session}
-Base: iRacing Fixed 26S4 + Benchmark Pro (.IBT 60 Hz)
-Aero & Chasis: Rake +12.5mm | Presiones: 170 kPa hot | ${techNote}
-Diferencial: 8 caras / 80 Nm | Reparto Frenada: 52.5% - 53.5%
-Firma Digital: [MTM-PRO-SEC-26S4] · 0 Failed Tech
-Telemetría Garage 61: garage61.net/app/teams/muntrume-motorsport
-Desarrollado por Alberto Trujillo (#16) | muntru.me`;
+Setup: ${fn} | Mode: ${tierNote}
+Car: ${carName} | Track: ${circuitName} | Session: ${session}
+Baseline: iRacing Fixed 26S4 + Pro Benchmark (.IBT 60 Hz)
+Aero & Chassis: Positive Dynamic Rake (+12.5mm) | Pressures: 170 kPa hot | ${techNote}
+Drivetrain: Differential 8 faces / 80 Nm | Brake Bias: 52.5% - 53.5%
+Digital Signature: [MTM-PRO-SEC-26S4] · 0 Failed Tech
+Telemetry: garage61.net/app/teams/muntrume-motorsport
+Developed by Alberto Trujillo | muntru.me`;
 }
 
 function validateSetupBoPAndTech(setup) {
@@ -2709,7 +2709,7 @@ function decodeAndSanitizeSto(b64, carSlug = "", setupOrFilename = null) {
 
   const cleanText = (typeof generateModernStoNotes === "function")
     ? generateModernStoNotes(setupOrFilename || carSlug, carSlug)
-    : "MUNTRUME MOTORSPORT · 2026 Season 4 [26S4] | Base: iRacing Fixed + Meta Challenger | Setup by Alberto Trujillo | muntru.me";
+    : "MUNTRUME MOTORSPORT [26S4] · MTM MEGASETUP™ | Developed by Alberto Trujillo | muntru.me";
   const newL3 = (cleanText.length + 1) * 2;
   const newL1 = (l1 - l3) + newL3;
   const trailingLen = raw.length - notesEnd;
