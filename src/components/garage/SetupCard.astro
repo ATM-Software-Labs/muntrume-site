@@ -150,10 +150,13 @@ const hasTelemetry = Boolean(telLap || telFuel);
     letter-spacing: 0.04em;
     text-transform: uppercase;
   }
-  .setup-pill--qualy { color: #c4b5fd; }
-  .setup-pill--race { color: var(--acc); }
-  .setup-pill--wet { color: var(--acc2); }
-  .setup-pill--endurance { color: var(--warn); }
+  .setup-pill--qualy { color: #6d28d9; }
+  .setup-pill--race { color: var(--r-accent); }
+  .setup-pill--wet { color: #0369a1; }
+  .setup-pill--endurance { color: #b45309; }
+  :global(html.dark) .setup-pill--qualy { color: #ddd6fe; }
+  :global(html.dark) .setup-pill--wet { color: #7dd3fc; }
+  :global(html.dark) .setup-pill--endurance { color: #fbbf24; }
   .setup-ir { color: var(--txt); }
   .setup-card__file {
     margin: 0;
@@ -210,8 +213,8 @@ const hasTelemetry = Boolean(telLap || telFuel);
     cursor: pointer;
   }
   .setup-card__btn--go {
-    background: var(--acc);
-    color: #06281c;
+    background: var(--r-accent);
+    color: var(--r-accent-ink);
     border-color: transparent;
   }
 </style>

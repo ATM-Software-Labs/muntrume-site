@@ -1,14 +1,14 @@
-/* Tokens t293: superficies oscuras del Garage y del Paddock. */
+/* Alias de las variables de tema del sitio, para que el toggle claro/oscuro llegue a las tarjetas nuevas. */
 :root {
-  --bg: #0a0c0d;
-  --panel: #0f1214;
-  --line: #1b2024;
-  --txt: #e8edf0;
-  --mut: #8a959c;
-  --acc: #2ee6a6;
-  --acc2: #38bdf8;
-  --warn: #f5b84b;
-  --err: #ff5a6a;
+  --bg: var(--r-bg);
+  --panel: var(--r-surface);
+  --line: var(--r-line);
+  --txt: var(--r-text);
+  --mut: var(--r-muted);
+  --acc: var(--r-accent);
+  --acc2: var(--r-accent);
+  --warn: #b45309;
+  --err: #dc2626;
 }
 
 .glow-card {
