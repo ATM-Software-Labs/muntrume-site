@@ -15,8 +15,8 @@ export function getStaticPaths() {
 const { slug } = Astro.params;
 const driver = PILOTOS.find(p => p.slug === slug) || PILOTOS[0];
 const principal = licenciaPrincipal(driver.slug);
-const pageTitle = `${driver.fullName} (${driver.dorsal}) | Drivers | Muntrume Motorsport`;
-const loc = localeDeIdioma("en");
+const pageTitle = `${driver.fullName} (${driver.dorsal}) | Pilotos | Muntrume Motorsport`;
+const loc = localeDeIdioma("es");
 const pageDescription = principal
   ? `${driver.fullName}, ${driver.role} (${driver.specialty}) at Muntrume Motorsport. Sports Car ${principal.classLabel}, SR ${formatoAprox(Number(principal.sr), "sr", loc)}, iRating ${formatoAprox(principal.irating, "k", loc)}. Updated: ${LICENCE_UPDATED_LABEL}.`
   : `${driver.fullName}, ${driver.role} at Muntrume Motorsport.`;
@@ -132,15 +132,20 @@ const personSchema = {
         <span class="opacity-40">/</span>
         <span class="text-[var(--r-accent)] font-bold">{driver.fullName}</span>
       </nav>
-      <nav class="d-tabs" aria-label="Profile Sections">
-        <a href="#resumen">Overview</a>
-        <a href="#mti-ratings">Performance Index</a>
-        <a href="#ratings">Driver Ratings</a>
-        <a href="#circuitos">Sports Car Circuits</a>
-        <a href="#coches">Sports Cars</a>
+      <nav class="d-tabs" aria-label="Secciones de la ficha">
+        <a href="#resumen">Resumen</a>
+        <a href="#stats">Cifras</a>
+        <a href="#licencia">Licencia</a>
+        <a href="#favorito">Circuito favorito</a>
+        <a href="#vueltas">Vueltas</a>
+        <a href="#circuitos">Circuitos</a>
+        <a href="#coches">Coches</a>
+        <a href="#bio">Perfil</a>
+        <a href="#logros">Logros</a>
+        <a href="#redes">Redes</a>
         <a href="#setups">Setups</a>
-        <a href="#comparativa">Team Comparison</a>
-        <a href="#eventos" id="eventosTab">Upcoming Events</a>
+        <a href="#comparativa">Equipo</a>
+        <a href="#eventos" id="eventosTab">Calendario</a>
       </nav>
       <DriverCard driver={driver} heading="h1" headingId="dTitle" hero />
       <DriverF1Stats driver={driver} />

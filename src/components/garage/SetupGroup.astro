@@ -1,0 +1,99 @@
+---
+import SetupCard from "./SetupCard.astro";
+import type { CatalogSetup, SetupKind } from "../../lib/garage-catalog";
+
+interface Props {
+  track: string;
+  carLabel: string;
+  season: string;
+  week: string;
+  counts: Record<SetupKind, number>;
+  setups: Array<CatalogSetup & { hidden?: boolean }>;
+  hidden?: boolean;
+  open?: boolean;
+}
+
+const { track, carLabel, season, week, counts, setups, hidden = false, open = false } = Astro.props;
+const total = setups.length;
+---
+
+<details class="setup-group glow-card" data-page-group open={open} hidden={hidden || undefined}>
+  <summary class="setup-group__sum focus-ring">
+    <span class="setup-group__title">{track}</span>
+    <span class="setup-group__sub">{carLabel} · {season} {week}</span>
+    <span class="setup-group__counts">
+      {total} archivos · {counts.qualy} clas. · {counts.race} carr. · {counts.wet} lluvia · {counts.endurance} res.
+    </span>
+    <span class="setup-group__chev" aria-hidden="true"></span>
+  </summary>
+  <div class="setup-group__grid">
+    {setups.map((item) => (
+      <SetupCard
+        id={item.id}
+        file={item.file}
+        kind={item.kind}
+        car={item.carLabel}
+        carId={item.car}
+        track={item.track}
+        season={item.season}
+        week={item.week}
+        sizeKb={item.sizeKb}
+        typeLabel={item.typeLabel}
+        hidden={item.hidden}
+      />
+    ))}
+  </div>
+</details>
+
+<style>
+  .setup-group {
+    border: 1px solid var(--line);
+    background: var(--bg);
+  }
+  .setup-group__sum {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 2px 12px;
+    align-items: center;
+    padding: 14px 16px;
+    min-height: 44px;
+    cursor: pointer;
+    list-style: none;
+  }
+  .setup-group__sum::-webkit-details-marker { display: none; }
+  .setup-group__title {
+    font: 700 16px/1.25 ui-sans-serif, system-ui, sans-serif;
+    color: var(--txt);
+  }
+  .setup-group__sub,
+  .setup-group__counts {
+    color: var(--mut);
+    font: 500 12px/1.35 ui-monospace, "JetBrains Mono", monospace;
+  }
+  .setup-group__counts { grid-column: 1; }
+  .setup-group__chev {
+    grid-row: 1 / span 3;
+    grid-column: 2;
+    width: 10px;
+    height: 10px;
+    border-right: 2px solid var(--acc);
+    border-bottom: 2px solid var(--acc);
+    transform: rotate(45deg);
+    transition: transform 0.2s;
+  }
+  .setup-group[open] > .setup-group__sum .setup-group__chev {
+    transform: rotate(225deg);
+  }
+  .setup-group__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 0 12px 12px;
+  }
+  @media (min-width: 720px) {
+    .setup-group__grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (min-width: 1100px) {
+    .setup-group__grid { grid-template-columns: 1fr 1fr 1fr; }
+  }
+</style>
