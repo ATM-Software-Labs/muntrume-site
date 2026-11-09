@@ -570,6 +570,38 @@ html.light .d-f1__ovr-num-badge, [data-theme="light"] .d-f1__ovr-num-badge{backg
 }
 @keyframes d-in{from{opacity:.01;transform:translateY(10px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.d-card{transition:none}.d-card:hover{transform:none;box-shadow:none}.d-reveal{animation:none}.d-stats--hero > div{transition:none}.d-stats--hero > div:hover{transform:none}}
+
+/* /garage y /paddock: noche completa, sin arrastrar el tema claro del resto del sitio. */
+html.page-night,
+html.page-night.light,
+html.page-night[data-theme="light"]{
+  color-scheme:dark;
+  --r-bg:#0a0c0d; --r-bg-2:#0a0c0d; --r-surface:#0f1214; --r-line:#1b2024; --r-line-2:#2a3338;
+  --r-text:#e8edf0; --r-muted:#8a959c; --r-accent:#2ee6a6; --r-accent-ink:#06281c;
+  --r-accent-glow:rgba(46,230,166,.22);
+  --bg:#0a0c0d; --panel:#0f1214; --line:#1b2024; --txt:#e8edf0; --mut:#8a959c; --acc:#2ee6a6;
+  --bg-paddock:#0a0c0d; --surface-card:#0f1214; --border-card:#1b2024; --accent-paddock:#2ee6a6; --text-muted:#8a959c;
+}
+html.page-night body,
+html.page-night.light body,
+html.page-night[data-theme="light"] body{
+  background-color:#0a0c0d !important;
+  color:#e8edf0 !important;
+}
+html.page-night .r-figs{grid-template-columns:1fr 1fr;background:#1b2024}
+html.page-night .r-figs > div{background:#0f1214;color:#8a959c}
+html.page-night .r-num,html.page-night .r-figs strong{color:#e8edf0}
+@media (min-width:800px){html.page-night .r-figs{grid-template-columns:repeat(4,minmax(0,1fr))}}
+html.page-night .g-actions__row{display:flex;flex-wrap:wrap;gap:8px}
+html.page-night .pa-hub{background:#0f1214;border-color:#1b2024;color:#e8edf0}
+html.page-night .pa-hub__nav{background:#0a0c0d;border-color:#1b2024}
+@media (max-width:700px){
+  html.page-night .g-actions{display:flex;flex-wrap:wrap;gap:8px}
+  html.page-night .g-actions__primary{flex:1 1 100%}
+  html.page-night .g-actions__row{flex:1 1 100%}
+  html.page-night .g-actions__row > .r-btn{flex:1 1 calc(50% - 8px);max-width:calc(50% - 4px);min-width:0;min-height:44px;padding:0 10px;letter-spacing:.04em;font-size:13px}
+  html.page-night .g-actions__primary.r-btn{min-height:44px}
+}
 .d-pending{margin:8px 0 0;padding:10px 12px;border:1px dashed var(--r-line);border-radius:10px;color:var(--r-muted);font:500 13px/1.45 var(--r-sans)}
 .d-laps-chart{display:grid;gap:8px;padding:16px;border:1px solid var(--r-line);border-radius:12px;background:var(--r-surface)}
 .d-laps-chart svg{display:block;width:100%;height:180px}

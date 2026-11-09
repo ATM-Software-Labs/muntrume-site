@@ -21,6 +21,7 @@ interface Props {
   hideNav?: boolean;
   hideFooter?: boolean;
   noindex?: boolean;
+  forceDark?: boolean;
 }
 
 const siteOrigin = Astro.site ? Astro.site.origin : (Astro.url ? Astro.url.origin : "https://muntru.me");
@@ -39,7 +40,8 @@ const {
   schemaJson = null,
   hideNav = false,
   hideFooter = false,
-  noindex = false
+  noindex = false,
+  forceDark = false
 } = Astro.props;
 
 function hreflangSet(href: string) {
@@ -132,20 +134,27 @@ const finalSchema = schemaJson || defaultSchema;
 ---
 
 <!DOCTYPE html>
-<html lang="en" class="dark scroll-smooth max-w-full overflow-x-hidden" data-theme="dark">
+<html lang="en" class:list={["scroll-smooth", "max-w-full", "overflow-x-hidden", "dark", forceDark && "page-night"]} data-theme="dark" data-force-dark={forceDark ? "1" : undefined}>
 <head>
   <script is:inline>
     (function() {
+      var root = document.documentElement;
+      if (root.getAttribute("data-force-dark") === "1") {
+        root.classList.add("dark", "page-night");
+        root.classList.remove("light");
+        root.setAttribute("data-theme", "dark");
+        return;
+      }
       try {
         var t = localStorage.getItem('muntrume_theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
         if (t === 'light') {
-          document.documentElement.classList.add('light');
-          document.documentElement.classList.remove('dark');
-          document.documentElement.setAttribute('data-theme', 'light');
+          root.classList.add('light');
+          root.classList.remove('dark');
+          root.setAttribute('data-theme', 'light');
         } else {
-          document.documentElement.classList.add('dark');
-          document.documentElement.classList.remove('light');
-          document.documentElement.setAttribute('data-theme', 'dark');
+          root.classList.add('dark');
+          root.classList.remove('light');
+          root.setAttribute('data-theme', 'dark');
         }
       } catch (e) {}
     })();
@@ -213,7 +222,7 @@ const finalSchema = schemaJson || defaultSchema;
 
   <link rel="stylesheet" href="/assets/css/tailwind.min.css?v=t310" />
   <link rel="stylesheet" href="/assets/css/mobile.css?v=t310" />
-  <link rel="stylesheet" href="/assets/css/racing.css?v=t310" />
+  <link rel="stylesheet" href="/assets/css/racing.css?v=t311" />
 
   <!-- Core Dark Racing System CSS -->
   <style is:global>

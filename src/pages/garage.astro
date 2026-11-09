@@ -163,7 +163,7 @@ const garageSchema = {
 };
 ---
 
-<Layout title={pageTitle} description={pageDescription} keywords={pageKeywords} canonical={pageUrl} ogImage={ogImage} ogImageAlt="Garage de setups de Muntrume Motorsport" ogImageWidth={1200} ogImageHeight={630} ogLocale="es_ES" ogType="website" schemaJson={garageSchema}>
+<Layout title={pageTitle} description={pageDescription} keywords={pageKeywords} canonical={pageUrl} ogImage={ogImage} ogImageAlt="Garage de setups de Muntrume Motorsport" ogImageWidth={1200} ogImageHeight={630} ogLocale="es_ES" ogType="website" schemaJson={garageSchema} forceDark>
   <section class="r-section g-hero" aria-labelledby="garageTitle" data-no-i18n>
     <div class="r-wrap">
       <PrivateAreaHeader activeTab="setups" />
@@ -171,16 +171,17 @@ const garageSchema = {
       <h1 id="garageTitle" class="r-h2">Garage</h1>
       <p class="r-lead">Setups .sto por coche, circuito y temporada. Hace falta cuenta de piloto para descargarlos.</p>
       <div class="g-actions" id="garageHeroActions">
-        <button type="button" id="heroAuthBtn" data-driver-signin-btn class="r-btn r-btn--primary" onclick="openAuthModal('login')">Driver Sign In</button>
-        <div id="heroSessionPill" class="hidden items-center gap-2.5 px-4 py-2.5 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] text-xs font-mono text-[var(--r-text)]">
+        <button type="button" id="heroAuthBtn" data-driver-signin-btn class="r-btn r-btn--primary g-actions__primary" onclick="openAuthModal('login')">Inicia sesión</button>
+        <div id="heroSessionPill" class="g-actions__primary hidden items-center gap-2.5 px-4 py-2.5 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] text-xs font-mono text-[var(--r-text)]">
           <span class="w-2 h-2 rounded-full bg-[var(--r-accent)] shrink-0"></span>
           <span id="heroSessionIdentity" class="font-bold text-[var(--r-accent)]">atrumin16</span>
           <span class="text-[var(--r-muted)]">·</span>
           <span id="heroSessionName">Alberto Trujillo (#16)</span>
         </div>
-        <a id="heroRaceControlBtn" href="/admin" class="r-btn r-btn--primary hidden" style="box-shadow:0 0 22px rgba(0,230,153,.28)">RACE CONTROL</a>
-        <button type="button" class="r-btn" onclick="openAuthModal('login')">Acceso Pilotos</button>
-        <a href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer" class="r-btn">Garage 61 Telemetry ↗</a>
+        <div class="g-actions__row">
+          <a id="heroRaceControlBtn" href="/admin" class="r-btn r-btn--primary hidden">Control de carrera</a>
+          <a href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer" class="r-btn">Telemetría Garage 61 ↗</a>
+        </div>
       </div>
       <div class="r-figs">
         {figs.map((f) => (<div><strong class="r-num">{f.n}</strong>{f.l}</div>))}
@@ -193,7 +194,7 @@ const garageSchema = {
       <div>
         <p class="r-kicker">Catálogo</p>
         <h2 id="v2Title" class="r-h3">Setups por circuito</h2>
-        <p class="r-meta">Vista del índice publicado. La insignia de versión de iRacing solo aparece cuando el archivo trae ese dato. La descarga pide sesión.</p>
+        <p class="r-meta">Descarga con sesión de piloto.</p>
       </div>
       <div id="garageV2List" data-page-list>
         {garageGroups.map((group) => (

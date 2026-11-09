@@ -9,7 +9,7 @@ const { activeTab } = Astro.props;
 <!-- ========================================================================= -->
 <!-- HUB UNIFICADO: ÁREA PRIVADA DE ESCUDERÍA                                  -->
 <!-- ========================================================================= -->
-<section class="mb-6 p-3 sm:p-4 rounded-2xl bg-[#161c24] border border-white/10 shadow-xl" data-no-i18n>
+<section class="pa-hub mb-6 p-3 sm:p-4 rounded-2xl border shadow-xl" data-no-i18n>
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
     
     <!-- Left: Section Title & Tab Navigation -->
@@ -20,7 +20,7 @@ const { activeTab } = Astro.props;
       </div>
 
       <!-- Navigation Tabs: Setups vs Mail -->
-      <nav class="flex items-center p-1 bg-[#0e1217] rounded-xl border border-white/10 text-xs font-bold" aria-label="Navegación Área Privada">
+      <nav class="pa-hub__nav flex items-center p-1 rounded-xl border text-xs font-bold" aria-label="Navegación Área Privada">
         <a 
           href="/setups" 
           class={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition ${activeTab === 'setups' ? 'bg-[#161c24] text-emerald-400 shadow-sm border border-emerald-500/30' : 'text-neutral-400 hover:text-white border border-transparent'}`}
