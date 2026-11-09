@@ -5,8 +5,9 @@ import TeamBand from '../components/TeamBand.astro';
 import { PILOTOS, LICENCE_UPDATED_LABEL } from '../lib/pilotos';
 import catalog from '../../public/assets/data/catalog_index.json';
 
-const pageTitle = "Mejores Setups para iRacing 2026 | Muntrume Motorsport (+42,600 Setups .STO & Telemetría)";
-const pageDescription = "Descarga los mejores setups para iRacing (2026 Season 4). Más de 42,600 setups .STO verificados para GT3, GTP, TCR, GT4, Nürburgring Nordschleife e IMSA con 0 Failed Tech y telemetría Garage 61.";
+const pageTitle = "Muntrume Motorsport · Official iRacing SimRacing Team | Escudería Profesional";
+const pageDescription = "Official iRacing sim racing team based in Barcelona. Endurance & sprint championships, professional telemetry engineering, and official driver roster. Escudería oficial de competición en iRacing.";
+const pageKeywords = "muntrume motorsport, official simracing team, iracing team, endurance sim racing, gt3 endurance, sim racing engineering, garage 61 telemetry, alberto trujillo, escuderia simracing, equipo iracing";
 const fmt = (n: number) => n.toLocaleString('en-US');
 const figs = [
   { n: String(PILOTOS.length), l: "Official Drivers" },
@@ -16,7 +17,7 @@ const figs = [
 ];
 ---
 
-<Layout title={pageTitle} description={pageDescription}>
+<Layout title={pageTitle} description={pageDescription} keywords={pageKeywords}>
   <link slot="head" rel="preload" as="image" type="image/avif" fetchpriority="high" imagesrcset="/assets/img/hero-bg-640.avif 640w, /assets/img/hero-bg-960.avif 960w, /assets/img/hero-bg-1280.avif 1280w" imagesizes="100vw" />
 
   <!-- 1 · HERO -->

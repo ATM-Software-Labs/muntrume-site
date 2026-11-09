@@ -8,6 +8,7 @@ import { formatoAprox, localeDeIdioma } from '../lib/formato-licencia.js';
 interface Props {
   title?: string;
   description?: string;
+  keywords?: string;
   canonical?: string;
   ogImage?: string;
   ogType?: string;
@@ -20,8 +21,9 @@ interface Props {
 const siteOrigin = Astro.site ? Astro.site.origin : (Astro.url ? Astro.url.origin : "https://muntru.me");
 
 const {
-  title = "Muntrume Motorsport | Official iRacing Sim Racing Team — Setup Vault & Telemetry",
-  description = `Official iRacing sim racing team based in Sant Andreu, Barcelona. Over 41,000 .STO setups, Garage 61 telemetry, and ${PILOTOS.length} official drivers.`,
+  title = "Muntrume Motorsport | Official iRacing Sim Racing Team · Escudería Profesional",
+  description = `Official iRacing sim racing team based in Sant Andreu, Barcelona. Endurance & sprint championships, telemetry engineering, and ${PILOTOS.length} official drivers.`,
+  keywords = "muntrume motorsport, official simracing team, iracing team, endurance sim racing, gt3 endurance, sim racing engineering, garage 61 telemetry, alberto trujillo, escuderia simracing, equipo iracing",
   canonical = Astro.url.href,
   ogImage = `${siteOrigin}/assets/img/og-home.jpg`,
   ogType = "website",
@@ -148,7 +150,7 @@ const finalSchema = schemaJson || defaultSchema;
   
   <title>{title}</title>
   <meta name="description" content={description} />
-  <meta name="keywords" content="mejores setups para iracing, iracing setups, iracing setups 2026, free iracing setups, gt3 setups iracing, gtp setups iracing, nurburgring nordschleife iracing setup, download iracing setups, garage 61 setups, setup vault iracing, vrs alternative, coach dave alternative, craigs setup shop alternative, grid and go setups alternative, setups iracing telemetria, muntrume motorsport" />
+  <meta name="keywords" content={keywords} />
   <meta name="author" content="Muntrume Motorsport · Alberto Trujillo Mingorance" />
   <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"} />
   <link rel="canonical" href={langs.en} />
