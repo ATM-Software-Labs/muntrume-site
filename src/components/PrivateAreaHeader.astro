@@ -14,8 +14,8 @@ const { activeTab } = Astro.props;
     
     <!-- Left: Section Title & Tab Navigation -->
     <div class="flex flex-wrap items-center gap-2.5 sm:gap-3">
-      <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 shrink-0">
-        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl border shrink-0" style="background:color-mix(in srgb, var(--r-accent) 12%, transparent);border-color:color-mix(in srgb, var(--r-accent) 35%, transparent);color:var(--r-accent)">
+        <span class="w-2.5 h-2.5 rounded-full animate-pulse" style="background:var(--r-accent)"></span>
         <span class="text-xs font-black tracking-wider uppercase">Área Privada</span>
       </div>
 
@@ -23,23 +23,23 @@ const { activeTab } = Astro.props;
       <nav class="pa-hub__nav flex items-center p-1 rounded-xl border text-xs font-bold" aria-label="Navegación Área Privada">
         <a 
           href="/setups" 
-          class={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition ${activeTab === 'setups' ? 'bg-[#161c24] text-emerald-400 shadow-sm border border-emerald-500/30' : 'text-neutral-400 hover:text-white border border-transparent'}`}
+          class={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition ${activeTab === 'setups' ? 'bg-[var(--r-bg)] text-[var(--r-accent)] shadow-sm border border-[var(--r-accent)]/30' : 'text-[var(--r-muted)] hover:text-[var(--r-text)] border border-transparent'}`}
           title="Repositorio oficial con más de 41.000 setups para 105 vehículos y explorador FTP"
         >
-          <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
           <span>⚡ Setup Vault & FTP</span>
         </a>
         <a 
           href="/mail" 
-          class={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition ${activeTab === 'mail' ? 'bg-[#161c24] text-emerald-400 shadow-sm border border-emerald-500/30' : 'text-neutral-400 hover:text-white border border-transparent'}`}
+          class={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition ${activeTab === 'mail' ? 'bg-[var(--r-bg)] text-[var(--r-accent)] shadow-sm border border-[var(--r-accent)]/30' : 'text-[var(--r-muted)] hover:text-[var(--r-text)] border border-transparent'}`}
           title="Webmail institucional cifrado para pilotos y dirección de equipo"
         >
-          <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
           <span>✉️ Webmail de Escudería</span>
         </a>
         <a
-          href="/paddock/#sala"
-          class={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition ${activeTab === 'paddock' ? 'bg-[#161c24] text-emerald-400 shadow-sm border border-emerald-500/30' : 'text-neutral-400 hover:text-white border border-transparent'}`}
+          href="/paddock/sala/"
+          class={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition ${activeTab === 'paddock' ? 'bg-[var(--r-bg)] text-[var(--r-accent)] shadow-sm border border-[var(--r-accent)]/30' : 'text-[var(--r-muted)] hover:text-[var(--r-text)] border border-transparent'}`}
           title="Sala de ingenieros"
         >
           <span>Paddock</span>
@@ -57,10 +57,10 @@ const { activeTab } = Astro.props;
 
       <!-- Authenticated State -->
       <div id="privatePilotAuthenticatedState" class="hidden flex-wrap items-center gap-2">
-        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#0e1217] border border-white/10 text-xs">
-          <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
-          <span class="text-neutral-400 font-medium">Piloto:</span>
-          <span id="privatePilotEmailLabel" class="font-bold text-white font-mono truncate max-w-[160px] sm:max-w-[220px]">piloto@muntru.me</span>
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[var(--r-bg)] border border-[var(--r-line)] text-xs">
+          <div class="w-2 h-2 rounded-full" style="background:var(--r-accent)"></div>
+          <span class="text-[var(--r-muted)] font-medium">Piloto:</span>
+          <span id="privatePilotEmailLabel" class="font-bold text-[var(--r-text)] font-mono truncate max-w-[160px] sm:max-w-[220px]">piloto@muntru.me</span>
           <span id="privatePilotRoleBadge" class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Oficial</span>
         </div>
         <button 
@@ -84,7 +84,7 @@ const { activeTab } = Astro.props;
         <button 
           type="button" 
           data-pa-action="login" 
-          class="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs transition shadow-sm cursor-pointer"
+          class="px-3.5 py-1.5 rounded-xl bg-[var(--r-accent)] text-[var(--r-accent-ink)] font-black text-xs transition cursor-pointer"
         >
           Acceso Piloto Oficial
         </button>
@@ -92,14 +92,14 @@ const { activeTab } = Astro.props;
 
       <!-- Unauthenticated State -->
       <div id="privatePilotUnauthenticatedState" class="hidden flex-wrap items-center gap-2">
-        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs text-neutral-400">
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[var(--r-bg)] border border-[var(--r-line)] text-xs text-[var(--r-muted)]">
           <svg class="w-3.5 h-3.5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
           <span>Acceso Restringido</span>
         </div>
         <button 
           type="button" 
           data-pa-action="login" 
-          class="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider transition shadow-sm shadow-emerald-500/20 cursor-pointer"
+          class="px-3.5 py-1.5 rounded-xl bg-[var(--r-accent)] text-[var(--r-accent-ink)] font-black text-xs uppercase tracking-wider transition cursor-pointer"
         >
           Iniciar Sesión
         </button>

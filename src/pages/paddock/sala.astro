@@ -1,0 +1,15 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import PrivateAreaHeader from '../../components/PrivateAreaHeader.astro';
+import SalaIngenieros from '../../components/paddock/SalaIngenieros.astro';
+
+const pageTitle = "Sala de ingenieros | Muntrume Motorsport";
+const pageDescription = "Sala privada de ingenieros de Muntrume Motorsport. Presencia del equipo, setups en vivo y notas de sesión.";
+---
+
+<Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/paddock/sala/" noindex>
+  <div class="pt-24 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <PrivateAreaHeader activeTab="paddock" />
+    <SalaIngenieros />
+  </div>
+</Layout>
