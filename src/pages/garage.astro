@@ -1,22 +1,73 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import PrivateAreaHeader from '../components/PrivateAreaHeader.astro';
+import SetupGroup from '../components/garage/SetupGroup.astro';
 import catalog from '../../public/assets/data/catalog_index.json';
+import { catalogGroups } from '../lib/garage-catalog';
 import { PILOTOS } from '../lib/pilotos';
 
-const pageTitle = "Best iRacing Setups 2026 (26S4) · +42,600 .STO Files & Telemetry | Mejores Setups iRacing · Muntrume Motorsport";
-const pageDescription = "Download the best iRacing setups for 2026 Season 4. Over 42,600 verified .STO files for 105 cars (GT3, GTP, TCR, GT4, Cup) with 0 Failed Tech & Garage 61 telemetry. Descarga los mejores setups para iRacing gratis.";
+const pageTitle = "Garage de setups iRacing | Muntrume Motorsport";
+const pageDescription = "Archivos .sto de Muntrume Motorsport para iRacing, ordenados por coche, circuito y temporada. La descarga queda tras iniciar sesión.";
+const pageUrl = "https://muntru.me/garage/";
+const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
+const PAGE = 6;
+let seen = 0;
+const garageGroups = catalogGroups().map((group) => {
+  const setups = group.setups.map((item) => {
+    const hidden = seen >= PAGE;
+    seen += 1;
+    return { ...item, hidden };
+  });
+  return {
+    ...group,
+    setups,
+    hidden: setups.every((item) => item.hidden),
+    open: setups.some((item) => !item.hidden),
+  };
+});
 const pageKeywords = "best iracing setups, iracing setups, free iracing setups 2026, gt3 setups iracing, gtp setups, nurburgring setup iracing, download sto setups, garage 61 setups, setup vault, mejores setups para iracing, setups iracing gratis, telemetria iracing, coach dave alternative, vrs alternative, craigs setup shop alternative";
-const fmt = (n: number) => n.toLocaleString('en-US');
+const fmt = (n: number) => n.toLocaleString('es-ES');
 const figs = [
-  { n: fmt(catalog.total_setups), l: "Setups in the Vault" },
-  { n: String(catalog.cars.length), l: "Supported Cars" },
-  { n: String(catalog.circuits.length), l: "Calibrated Circuits" },
-  { n: String(PILOTOS.length), l: "Official Drivers" },
+  { n: fmt(catalog.total_setups), l: "Setups en el catálogo" },
+  { n: String(catalog.cars.length), l: "Coches" },
+  { n: String(catalog.circuits.length), l: "Circuitos" },
+  { n: String(PILOTOS.length), l: "Pilotos oficiales" },
 ];
 
 const garageSchema = {
   "@context": "https://schema.org",
   "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://muntru.me/#org",
+      "name": "Muntrume Motorsport",
+      "url": "https://muntru.me/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://muntru.me/assets/img/icon-512.png"
+      }
+    },
+    {
+      "@type": "WebPage",
+      "@id": `${pageUrl}#webpage`,
+      "url": pageUrl,
+      "name": pageTitle,
+      "description": pageDescription,
+      "inLanguage": "es",
+      "isPartOf": { "@type": "WebSite", "name": "Muntrume Motorsport", "url": "https://muntru.me/" },
+      "about": { "@id": "https://muntru.me/#org" },
+      "primaryImageOfPage": ogImage
+    },
+    {
+      "@type": "CollectionPage",
+      "@id": `${pageUrl}#collection`,
+      "url": pageUrl,
+      "name": "Catálogo de setups .sto",
+      "description": pageDescription,
+      "isPartOf": { "@id": `${pageUrl}#webpage` },
+      "publisher": { "@id": "https://muntru.me/#org" },
+      "numberOfItems": catalog.total_setups
+    },
     {
       "@type": "SoftwareApplication",
       "@id": "https://muntru.me/garage/#app",
@@ -112,12 +163,13 @@ const garageSchema = {
 };
 ---
 
-<Layout title={pageTitle} description={pageDescription} keywords={pageKeywords} canonical="https://muntru.me/garage" schemaJson={garageSchema}>
-  <section class="r-section g-hero" aria-labelledby="garageTitle">
+<Layout title={pageTitle} description={pageDescription} keywords={pageKeywords} canonical={pageUrl} ogImage={ogImage} ogImageAlt="Garage de setups de Muntrume Motorsport" ogImageWidth={1200} ogImageHeight={630} ogLocale="es_ES" ogType="website" schemaJson={garageSchema}>
+  <section class="r-section g-hero" aria-labelledby="garageTitle" data-no-i18n>
     <div class="r-wrap">
-      <p class="r-kicker">Setup Vault &amp; Team HQ</p>
+      <PrivateAreaHeader activeTab="setups" />
+      <p class="r-kicker">Setup Vault · Muntrume Motorsport</p>
       <h1 id="garageTitle" class="r-h2">Garage</h1>
-      <p class="r-lead">Official .STO setups organized by car, circuit, and season. Driver account required for downloads. Files write directly to your local iRacing folder.</p>
+      <p class="r-lead">Setups .sto por coche, circuito y temporada. Hace falta cuenta de piloto para descargarlos.</p>
       <div class="g-actions" id="garageHeroActions">
         <button type="button" id="heroAuthBtn" data-driver-signin-btn class="r-btn r-btn--primary" onclick="openAuthModal('login')">Driver Sign In</button>
         <div id="heroSessionPill" class="hidden items-center gap-2.5 px-4 py-2.5 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] text-xs font-mono text-[var(--r-text)]">
@@ -133,6 +185,31 @@ const garageSchema = {
       <div class="r-figs">
         {figs.map((f) => (<div><strong class="r-num">{f.n}</strong>{f.l}</div>))}
       </div>
+    </div>
+  </section>
+
+  <section class="r-section" id="catalogo-v2" aria-labelledby="v2Title" data-no-i18n>
+    <div class="r-wrap" style="display:grid;gap:16px">
+      <div>
+        <p class="r-kicker">Catálogo</p>
+        <h2 id="v2Title" class="r-h3">Setups por circuito</h2>
+        <p class="r-meta">Vista del índice publicado. La insignia de versión de iRacing solo aparece cuando el archivo trae ese dato. La descarga pide sesión.</p>
+      </div>
+      <div id="garageV2List" data-page-list>
+        {garageGroups.map((group) => (
+          <SetupGroup
+            track={group.track}
+            carLabel={group.carLabel}
+            season={group.season}
+            week={group.week}
+            counts={group.counts}
+            setups={group.setups}
+            hidden={group.hidden}
+            open={group.open}
+          />
+        ))}
+      </div>
+      <button type="button" id="garageV2More" class="r-btn focus-ring" hidden={seen <= PAGE}>Cargar más</button>
     </div>
   </section>
 
@@ -934,6 +1011,10 @@ const garageSchema = {
   </div>
 
   <script is:inline src="/assets/js/setups.js?v=t300"></script>
+  <script>
+    import { initSessionGate } from "../scripts/session-gate";
+    initSessionGate();
+  </script>
   <script is:inline src="/assets/js/setup-builder.js?v=t300" defer></script>
   <script is:inline>
     window.togglePassword = function (id, btn) {

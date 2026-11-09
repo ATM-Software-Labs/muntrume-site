@@ -1,0 +1,186 @@
+---
+import DriverHelmet from "../DriverHelmet.astro";
+import { PILOTOS } from "../../lib/pilotos";
+
+const next = encodeURIComponent("/paddock/#sala");
+---
+
+<section class="sala" id="sala" aria-labelledby="salaTitle" data-no-i18n>
+  <header class="sala__head">
+    <div>
+      <p class="sala__kicker">Área privada</p>
+      <h2 id="salaTitle">Sala de ingenieros</h2>
+    </div>
+    <p id="paddockLive" class="paddock-live" data-state="off">sin conexión en vivo</p>
+  </header>
+
+  <ul class="sala__helmets" aria-label="Presencia del equipo">
+    {PILOTOS.map((pilot) => (
+      <li data-presence={pilot.slug} data-online="0">
+        <DriverHelmet slug={pilot.slug} name={pilot.fullName} />
+        <span>{pilot.fullName}</span>
+      </li>
+    ))}
+  </ul>
+
+  <div id="paddockGate" class="sala__gate">
+    <p>Esta sala es para pilotos con sesión. Los archivos .sto siguen en el Garage, detrás del inicio de sesión.</p>
+    <a class="sala__go focus-ring" href={`/login/?next=${next}`}>Inicia sesión</a>
+  </div>
+
+  <div id="paddockRoom" class="sala__grid" hidden>
+    <section aria-labelledby="liveSetupsTitle">
+      <h3 id="liveSetupsTitle">Setups en vivo</h3>
+      <ul id="paddockSetups" class="sala__feed" aria-live="polite">
+        <li data-empty>Sin avisos de setup todavía.</li>
+      </ul>
+    </section>
+    <aside class="sala__side">
+      <section aria-labelledby="estadoTitle">
+        <h3 id="estadoTitle">Estado</h3>
+        <dl>
+          <div>
+            <dt>Servidor</dt>
+            <dd id="paddockServer">sin conexión en vivo</dd>
+          </div>
+          <div>
+            <dt>Telemetría</dt>
+            <dd id="paddockTelemetry">sin conexión en vivo</dd>
+          </div>
+        </dl>
+      </section>
+      <form id="paddockNoteForm" aria-labelledby="notasTitle">
+        <h3 id="notasTitle">Notas de sesión</h3>
+        <label for="paddockNoteInput">Nota para la sala (280 caracteres)</label>
+        <textarea id="paddockNoteInput" name="text" maxlength="280" rows="4"></textarea>
+        <button type="submit" class="sala__go focus-ring">Enviar nota</button>
+        <p id="paddockNoteStatus" role="status"></p>
+      </form>
+    </aside>
+  </div>
+</section>
+
+<script>
+  import { initPaddock } from "../../scripts/paddock";
+  void initPaddock();
+</script>
+
+<style>
+  .sala {
+    display: grid;
+    gap: 16px;
+    padding: 16px;
+    border: 1px solid var(--line, #1b2024);
+    border-radius: 16px;
+    background: var(--bg, #0a0c0d);
+    color: var(--txt, #e8edf0);
+  }
+  .sala__head,
+  .sala__helmets {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .sala__kicker {
+    margin: 0;
+    color: var(--acc, #2ee6a6);
+    font: 700 11px/1 ui-monospace, monospace;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .sala h2,
+  .sala h3 { margin: 0; }
+  .paddock-live {
+    margin: 0;
+    min-height: 28px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--line, #1b2024);
+    font: 700 12px/1.4 ui-monospace, monospace;
+  }
+  .paddock-live[data-state="live"] { color: var(--acc, #2ee6a6); }
+  .paddock-live[data-state="retry"] { color: var(--warn, #f5b84b); }
+  .paddock-live[data-state="off"] { color: var(--mut, #8a959c); }
+  .sala__helmets {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    justify-content: flex-start;
+  }
+  .sala__helmets li {
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    width: 112px;
+    min-height: 148px;
+    color: var(--mut, #8a959c);
+    font: 600 12px/1.3 ui-sans-serif, system-ui, sans-serif;
+    text-align: center;
+  }
+  .sala__helmets li[data-online="1"] { color: var(--acc, #2ee6a6); }
+  .sala__helmets :global(.driver-helmet) {
+    width: 84px;
+    height: auto;
+  }
+  .sala__gate,
+  .sala__side,
+  .sala__grid section {
+    display: grid;
+    gap: 8px;
+  }
+  .sala__grid {
+    display: grid;
+    gap: 16px;
+  }
+  @media (min-width: 900px) {
+    .sala__grid { grid-template-columns: minmax(0, 1.4fr) minmax(260px, 0.8fr); }
+  }
+  .sala__feed {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+    min-height: 88px;
+  }
+  .sala__feed li,
+  .sala__gate,
+  .sala__side {
+    padding: 12px;
+    border: 1px solid var(--line, #1b2024);
+    border-radius: 12px;
+    background: var(--panel, #0f1214);
+  }
+  .sala label { font: 600 12px/1.3 ui-sans-serif, system-ui, sans-serif; }
+  .sala textarea {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 96px;
+    border-radius: 10px;
+    border: 1px solid var(--line, #1b2024);
+    background: var(--bg, #0a0c0d);
+    color: var(--txt, #e8edf0);
+    padding: 8px 10px;
+    resize: vertical;
+  }
+  .sala__go {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 14px;
+    border-radius: 10px;
+    background: var(--acc, #2ee6a6);
+    color: #06281c;
+    font: 700 14px/1 ui-sans-serif, system-ui, sans-serif;
+    text-decoration: none;
+    border: 0;
+    cursor: pointer;
+    width: fit-content;
+  }
+  .sala dl { display: grid; gap: 8px; margin: 0; }
+  .sala dt { color: var(--mut, #8a959c); font: 600 11px/1.2 ui-monospace, monospace; text-transform: uppercase; }
+  .sala dd { margin: 2px 0 0; }
+</style>

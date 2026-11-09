@@ -1,0 +1,54 @@
+/* Tokens t293: superficies oscuras del Garage y del Paddock. */
+:root {
+  --bg: #0a0c0d;
+  --panel: #0f1214;
+  --line: #1b2024;
+  --txt: #e8edf0;
+  --mut: #8a959c;
+  --acc: #2ee6a6;
+  --acc2: #38bdf8;
+  --warn: #f5b84b;
+  --err: #ff5a6a;
+}
+
+.glow-card {
+  position: relative;
+  background: var(--panel);
+  color: var(--txt);
+  border-radius: 16px;
+  isolation: isolate;
+}
+
+.glow-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: radial-gradient(220px circle at var(--mx, 50%) var(--my, 0%), var(--acc), transparent 62%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+.focus-ring:focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: 3px;
+}
+
+@media (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .glow-card::before {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .setup-group__chev,
+  .glow-card,
+  .paddock-live {
+    transition: none;
+  }
+}

@@ -1,3 +1,29 @@
 ---
-return Astro.redirect('/drivers', 301);
+import Layout from '../layouts/Layout.astro';
+import DriverCard from '../components/DriverCard.astro';
+import { PILOTOS, LICENCE_UPDATED_LABEL } from '../lib/pilotos';
+
+const pageTitle = "Pilotos | Muntrume Motorsport";
+const pageDescription = `Plantilla de Muntrume Motorsport: ${PILOTOS.map((p) => p.fullName).join(", ")}. Licencia Sports Car, horas en pista y circuito favorito elegido por el equipo.`;
 ---
+
+<Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/pilotos/">
+  <section class="r-section" style="border-top:0;padding-top:clamp(80px,8vw,104px);padding-bottom:40px" aria-labelledby="plTitle" data-no-i18n>
+    <div class="r-wrap max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+      <div class="r-head" style="margin-bottom:16px">
+        <div>
+          <p class="r-kicker">Plantilla 2026 · Sports Car</p>
+          <h1 id="plTitle" class="r-h2">Pilotos</h1>
+          <p class="r-lead">{PILOTOS.length} pilotos oficiales. El circuito favorito es el de menos incidentes, elegido por el equipo.</p>
+          <p class="r-meta">Actualizado: <time datetime="2026-11-07">{LICENCE_UPDATED_LABEL}</time></p>
+        </div>
+      </div>
+      <div class="d-grid grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch w-full">
+        {PILOTOS.map((p) => (
+          <DriverCard driver={p} heading="h2" profileHref={`/d/${p.slug}/`} />
+        ))}
+      </div>
+    </div>
+  </section>
+</Layout>
+

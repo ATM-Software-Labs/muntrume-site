@@ -1,0 +1,5 @@
+---
+const next = Astro.url.searchParams.get("next") || "/garage/";
+const safe = next.startsWith("/") && !next.startsWith("//") && !next.includes("\\") ? next : "/garage/";
+return Astro.redirect(`/garage/?mode=login&redirect=${encodeURIComponent(safe)}`);
+---

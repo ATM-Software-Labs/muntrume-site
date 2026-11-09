@@ -1,6 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import StatsGrid from '../components/StatsGrid.astro';
+import PrivateAreaHeader from '../components/PrivateAreaHeader.astro';
+import SalaIngenieros from '../components/paddock/SalaIngenieros.astro';
 import { PILOTOS } from '../lib/pilotos';
 
 const pageTitle = "Paddock | Muntrume Motorsport";
@@ -237,9 +239,11 @@ const galleryItems = [
 ];
 ---
 
-<Layout title={pageTitle} description={pageDescription}>
+<Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/paddock/">
   <div class="pt-24 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-20">
-    
+    <PrivateAreaHeader activeTab="paddock" />
+    <SalaIngenieros />
+
     <!-- 1. Header Hero -->
     <section class="text-center max-w-3xl mx-auto space-y-4 pt-6">
       <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[var(--r-surface)] border border-[var(--r-accent)]/40 text-[var(--r-accent)] text-xs font-mono uppercase tracking-wider">
