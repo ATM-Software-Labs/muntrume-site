@@ -71,7 +71,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "REPLACE_WITH_TAURI_UPDATER_PUBLIC_KEY",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEU0MzA1QUY5ODBCNkQ1OTMKUldTVDFiYUErVm93NUt3aTlLa3hISGI4RWltMjJOT3J3YzBvTVlld3dRd3A1VnhzdDFJWnlKZUcK",
       "endpoints": [
         "https://github.com/atrumin16/muntrume-site/releases/latest/download/latest.json"
       ],

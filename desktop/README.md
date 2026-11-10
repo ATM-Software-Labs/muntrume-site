@@ -53,17 +53,9 @@ npm run dev
 
 ## Secretos y la primera release
 
-Alberto genera el par del actualizador en su máquina. La clave privada no se commitea.
+La clave pública del actualizador ya está en `src-tauri/tauri.conf.json` (`plugins.updater.pubkey`, id `E4305AF980B6D593`). La privada no se commitea.
 
-```bash
-cd desktop
-npx tauri signer generate -w "$HOME/mmt-sync.key"
-```
-
-Eso escribe la clave privada y enseña la pública. Luego:
-
-1. Pegar la pública en `src-tauri/tauri.conf.json`, en `plugins.updater.pubkey`, sustituyendo `REPLACE_WITH_TAURI_UPDATER_PUBLIC_KEY`.
-2. En el repositorio, crear los secretos `TAURI_SIGNING_PRIVATE_KEY` (el contenido del archivo) y `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` (la contraseña elegida al generar, o vacía si no hubo).
+En el repositorio hacen falta los secretos `TAURI_SIGNING_PRIVATE_KEY` (el contenido de `mmt-sync.key`) y `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` (la contraseña de esa clave, o vacía si no tiene).
 
 La primera release:
 
