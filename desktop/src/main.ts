@@ -1,8 +1,8 @@
 import { inTauri } from "./env";
 import { createMock } from "./mock";
 import { createTauriBackend } from "./tauri-backend";
-import type { Backend, LibraryItem, Settings, Snapshot, StagedFile } from "./types";
-import { fuelText, paintExtras } from "./extra";
+import type { Backend, LibraryItem, LiveSample, Settings, Snapshot, StagedFile } from "./types";
+import { fuelText, paintExtras, updateLiveOverlay } from "./extra";
 
 const params = new URLSearchParams(location.search);
 const screen = params.get("screen");
@@ -27,6 +27,36 @@ let filter: "all" | "Race" | "Qualy" | "Wet" = "all";
 let query = "";
 let pollTimer = 0;
 let view: "library" | "upload" | "settings" | "week" | "analysis" | "reference" | "strategy" | "overlays" | "team" = "library";
+
+let lastLiveSample = 0;
+
+function updateLiveStatus(sample: LiveSample): void {
+  lastLiveSample = Date.now();
+  const badge = document.getElementById("irBadge");
+  const dot = document.getElementById("irDot");
+  const text = document.getElementById("irText");
+  if (badge && dot && text) {
+    dot.className = "w-2 h-2 rounded-full bg-r-accent animate-pulse";
+    text.textContent = "iRacing activo";
+    badge.classList.add("text-r-accent", "border-r-accent/40");
+    badge.classList.remove("text-r-muted", "border-r-line");
+  }
+  updateLiveOverlay(sample);
+}
+
+setInterval(() => {
+  if (Date.now() - lastLiveSample > 2500) {
+    const badge = document.getElementById("irBadge");
+    const dot = document.getElementById("irDot");
+    const text = document.getElementById("irText");
+    if (badge && dot && text) {
+      dot.className = "w-2 h-2 rounded-full bg-r-muted";
+      text.textContent = "iRacing en espera";
+      badge.classList.remove("text-r-accent", "border-r-accent/40");
+      badge.classList.add("text-r-muted", "border-r-line");
+    }
+  }
+}, 1000);
 
 function theme(): "dark" | "light" {
   return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
@@ -501,6 +531,7 @@ function bind(): void {
     $("updateBar").hidden = false;
     $("updateText").textContent = `Hay una actualización: ${version}`;
   });
+  backend.onLive((sample) => updateLiveStatus(sample));
 }
 
 async function boot(): Promise<void> {

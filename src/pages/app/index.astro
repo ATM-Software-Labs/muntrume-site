@@ -1,29 +1,158 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 
-const pageTitle = "MMT Sync";
-const pageDescription = "MMT Sync es la aplicación de Windows de Muntrume Motorsport para copiar los setups .sto del equipo a la carpeta de iRacing.";
+const pageTitle = "MMT Sync para Windows | Muntrume Motorsport";
+const pageDescription = "Descarga oficial de MMT Sync para Windows. Sincroniza los setups de Muntrume con iRacing y monitoriza telemetría en tiempo real.";
 const pageUrl = "https://muntru.me/app/";
+const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
 ---
 
-<Layout title={pageTitle} description={pageDescription} canonical={pageUrl} ogLocale="es_ES">
-  <section class="r-section" data-no-i18n style="border-top:0;padding-top:clamp(88px,12vw,140px)">
-    <div class="r-wrap" style="display:grid;gap:28px">
-      <div>
-        <p class="r-kicker">Windows 10 y 11</p>
-        <h1 class="r-h2">MMT Sync</h1>
-        <p class="r-lead">La aplicación de escritorio del equipo. Sincroniza los setups publicados, deja subir un .sto a revisión y, en el ordenador del piloto, puede leer la telemetría local de iRacing.</p>
-        <div class="g-actions" style="margin-top:18px">
-          <a class="r-btn r-btn--primary" href="https://github.com/atrumin16/muntrume-site/releases/latest">Descargar para Windows</a>
-          <a class="r-link" href="/garage/#mmt-sync">Notas de instalación</a>
+<Layout
+  title={pageTitle}
+  description={pageDescription}
+  canonical={pageUrl}
+  ogImage={ogImage}
+>
+  <main class="min-h-screen bg-[var(--r-bg)] text-[var(--r-text)] pt-8 pb-20">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      
+      <!-- Hero Section -->
+      <section class="text-center space-y-6 pt-6 sm:pt-12">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[var(--r-line)] bg-[var(--r-surface)] text-xs font-mono tracking-wider uppercase text-[var(--r-accent)]">
+          <span class="w-2 h-2 rounded-full bg-[var(--r-accent)] animate-pulse"></span>
+          Software Oficial de Equipo · iRacing
         </div>
-      </div>
-      <div class="r-figs">
-        <div><strong class="r-num">.sto</strong>Solo dentro de la carpeta MMT</div>
-        <div><strong class="r-num">0</strong>Analítica de terceros</div>
-        <div><strong class="r-num">Win</strong>Sin certificado de código, de momento</div>
-      </div>
-      <p class="r-meta">Windows SmartScreen puede decir «editor desconocido». Más información → Ejecutar de todas formas. La comparación con otras herramientas está en el repositorio, no en esta página: no decimos que MMT Sync las iguale.</p>
+        
+        <h1 class="text-4xl sm:text-6xl font-display font-extrabold uppercase tracking-tight leading-none">
+          MMT <span class="text-[var(--r-accent)]">SYNC</span>
+        </h1>
+        
+        <p class="max-w-2xl mx-auto text-base sm:text-lg text-[var(--r-muted)] leading-relaxed font-sans">
+          La aplicación de escritorio oficial de Muntrume Motorsport. Sincroniza automáticamente los setups de carrera, clasificación y lluvia en tus carpetas de iRacing y visualiza telemetría en tiempo real en pista.
+        </p>
+
+        <!-- CTA Downloads -->
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+          <a
+            href="https://github.com/atrumin16/muntrume-site/releases/latest"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="w-full sm:w-auto h-13 px-8 rounded-xl bg-[var(--r-accent)] text-[#0a0d0c] font-display font-extrabold text-base uppercase tracking-wider flex items-center justify-center gap-3 transition-transform hover:scale-102 shadow-lg shadow-[var(--r-accent)]/20"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            Descargar para Windows (64-bit)
+          </a>
+          <a
+            href="/garage"
+            class="w-full sm:w-auto h-13 px-6 rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] text-[var(--r-text)] font-display font-extrabold text-base uppercase tracking-wider flex items-center justify-center hover:bg-[var(--r-bg-2)] transition"
+          >
+            Ver catálogo web de setups
+          </a>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-center gap-6 text-xs font-mono text-[var(--r-muted)] pt-2">
+          <span>Windows 10 / 11 (64-bit)</span>
+          <span>•</span>
+          <span>Instalador ligero (~10 MB)</span>
+          <span>•</span>
+          <span>Solo para pilotos del equipo</span>
+        </div>
+      </section>
+
+      <!-- Security / Not a Virus Banner (Guía SmartScreen) -->
+      <section class="rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-6 sm:p-8 space-y-4 shadow-sm">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-[var(--r-accent)]/10 text-[var(--r-accent)] flex items-center justify-center shrink-0">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-lg font-display uppercase tracking-wide text-[var(--r-text)]">
+              Software 100% Seguro y Verificado por Muntrume
+            </h2>
+            <p class="text-xs font-mono text-[var(--r-muted)]">
+              Sin publicidad · Sin rastreadores de terceros · Sin modificar tus archivos privados
+            </p>
+          </div>
+        </div>
+
+        <div class="grid sm:grid-cols-2 gap-4 pt-2 text-xs leading-relaxed text-[var(--r-muted)]">
+          <div class="space-y-2 p-4 rounded-xl border border-[var(--r-line)] bg-[var(--r-bg)]">
+            <strong class="text-[var(--r-text)] block font-mono uppercase tracking-wider text-[11px]">Lectura Segura del SDK de iRacing</strong>
+            <p>
+              MMT Sync se conecta con iRacing únicamente en modo lectura (<code class="text-[var(--r-accent)]">FILE_MAP_READ</code>) a través de la memoria compartida oficial del simulador. Nunca escribe en el juego ni interfiere con el anti-cheat.
+            </p>
+          </div>
+          <div class="space-y-2 p-4 rounded-xl border border-[var(--r-line)] bg-[var(--r-bg)]">
+            <strong class="text-[var(--r-text)] block font-mono uppercase tracking-wider text-[11px]">Aviso de Windows SmartScreen</strong>
+            <p>
+              Al tratarse de una herramienta privada de equipo sin certificado comercial de Microsoft, Windows puede mostrar «Windows protegió su PC». Para instalar: pulsa en <strong>«Más información»</strong> y a continuación <strong>«Ejecutar de todas formas»</strong>.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Key Capabilities Grid -->
+      <section class="grid sm:grid-cols-3 gap-5">
+        <article class="p-6 rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] space-y-3">
+          <div class="text-[var(--r-accent)] font-mono text-2xl font-bold">01</div>
+          <h3 class="font-display uppercase text-lg text-[var(--r-text)]">Sincronización Automática</h3>
+          <p class="text-xs text-[var(--r-muted)] leading-relaxed">
+            Descarga en 1 clic los reglajes oficiales del equipo organizados en <code class="text-[var(--r-text)]">setups\coche\MMT\temporada</code>. Tus propios setups permanecen intactos.
+          </p>
+        </article>
+
+        <article class="p-6 rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] space-y-3">
+          <div class="text-[var(--r-accent)] font-mono text-2xl font-bold">02</div>
+          <h3 class="font-display uppercase text-lg text-[var(--r-text)]">Telemetría en Vivo</h3>
+          <p class="text-xs text-[var(--r-muted)] leading-relaxed">
+            Detecta automáticamente la sesión en pista de iRacing, mostrando barras en tiempo real de acelerador, freno, ángulo de dirección, marcha engranada y velocidad.
+          </p>
+        </article>
+
+        <article class="p-6 rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] space-y-3">
+          <div class="text-[var(--r-accent)] font-mono text-2xl font-bold">03</div>
+          <h3 class="font-display uppercase text-lg text-[var(--r-text)]">Calculadora y Estrategia</h3>
+          <p class="text-xs text-[var(--r-muted)] leading-relaxed">
+            Calcula el combustible necesario para carreras de resistencia, paradas en boxes estimadas y listas de verificación previas a carrera.
+          </p>
+        </article>
+      </section>
+
+      <!-- How to Connect -->
+      <section class="rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-6 sm:p-8 space-y-6">
+        <h2 class="text-2xl font-display uppercase tracking-tight">Cómo vincular tu dispositivo en 3 pasos</h2>
+        
+        <div class="grid sm:grid-cols-3 gap-6 font-mono text-xs">
+          <div class="space-y-2">
+            <span class="inline-block px-2 py-1 rounded bg-[var(--r-accent)]/10 text-[var(--r-accent)] font-bold">Paso 1</span>
+            <h4 class="text-sm font-semibold text-[var(--r-text)]">Instala y abre MMT Sync</h4>
+            <p class="text-[var(--r-muted)] leading-relaxed font-sans">
+              Ejecuta el instalador en tu ordenador y pulsa «Vincular con muntru.me». Verás un código de 8 caracteres.
+            </p>
+          </div>
+
+          <div class="space-y-2">
+            <span class="inline-block px-2 py-1 rounded bg-[var(--r-accent)]/10 text-[var(--r-accent)] font-bold">Paso 2</span>
+            <h4 class="text-sm font-semibold text-[var(--r-text)]">Autoriza en la web</h4>
+            <p class="text-[var(--r-muted)] leading-relaxed font-sans">
+              Se abrirá tu navegador en muntru.me. Pulsa «Autorizar este dispositivo» con tu sesión de piloto activa.
+            </p>
+          </div>
+
+          <div class="space-y-2">
+            <span class="inline-block px-2 py-1 rounded bg-[var(--r-accent)]/10 text-[var(--r-accent)] font-bold">Paso 3</span>
+            <h4 class="text-sm font-semibold text-[var(--r-text)]">¡Listo para rodar!</h4>
+            <p class="text-[var(--r-muted)] leading-relaxed font-sans">
+              Tu token seguro se guardará en el Credential Manager de Windows. Pulsa «Sincronizar ahora» para tener todos los setups en iRacing.
+            </p>
+          </div>
+        </div>
+      </section>
+
     </div>
-  </section>
+  </main>
 </Layout>

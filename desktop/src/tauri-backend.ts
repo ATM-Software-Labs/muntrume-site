@@ -1,5 +1,5 @@
 import { inTauri } from "./env";
-import type { Backend, Settings, SettingsPatch, StagedFile, UploadInput } from "./types";
+import type { Backend, LiveSample, Settings, SettingsPatch, StagedFile, UploadInput } from "./types";
 
 async function invoke<T>(command: string, args?: Record<string, unknown>): Promise<T> {
   const { invoke: call } = await import("@tauri-apps/api/core");
@@ -11,6 +11,7 @@ export function createTauriBackend(): Backend {
   const stagedListeners = new Set<(file: StagedFile) => void>();
   const notices = new Set<(message: string) => void>();
   const updates = new Set<(version: string) => void>();
+  const liveListeners = new Set<(sample: LiveSample) => void>();
   let wired = false;
 
   async function wire(): Promise<void> {
@@ -21,6 +22,7 @@ export function createTauriBackend(): Backend {
     await listen<StagedFile>("mmt-staged", (event) => stagedListeners.forEach((cb) => cb(event.payload)));
     await listen<string>("mmt-notice", (event) => notices.forEach((cb) => cb(event.payload)));
     await listen<string>("mmt-update", (event) => updates.forEach((cb) => cb(event.payload)));
+    await listen<LiveSample>("mmt-live", (event) => liveListeners.forEach((cb) => cb(event.payload)));
   }
 
   return {
@@ -64,6 +66,11 @@ export function createTauriBackend(): Backend {
       void wire();
       updates.add(cb);
       return () => updates.delete(cb);
+    },
+    onLive(cb) {
+      void wire();
+      liveListeners.add(cb);
+      return () => liveListeners.delete(cb);
     },
   };
 }

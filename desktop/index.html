@@ -12,9 +12,15 @@
     <div class="min-h-screen flex flex-col">
       <header class="h-16 shrink-0 border-b border-r-line bg-r-surface flex items-center justify-between gap-4 px-5">
         <div class="flex items-center gap-3 min-w-0">
-          <img src="./icon.png" width="32" height="32" alt="" class="h-8 w-8 rounded-lg" />
+          <img src="./icon.png" width="32" height="32" alt="" class="h-8 w-8 rounded-lg shadow-sm" />
           <div class="min-w-0">
-            <div class="mmt-display text-[22px] leading-none">MMT Sync</div>
+            <div class="flex items-center gap-2">
+              <div class="mmt-display text-[22px] leading-none">MMT Sync</div>
+              <span id="irBadge" class="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono tracking-wider uppercase border border-r-line bg-r-bg text-r-muted transition-colors">
+                <span id="irDot" class="w-2 h-2 rounded-full bg-r-muted"></span>
+                <span id="irText">iRacing en espera</span>
+              </span>
+            </div>
             <div id="pilotLine" class="font-mono text-[11px] tracking-wide text-r-muted truncate">Muntrume Motorsport</div>
           </div>
         </div>
@@ -42,7 +48,15 @@
         <section id="viewLogin" class="mmt-in max-w-xl mx-auto">
           <p class="mmt-kicker">Acceso de piloto</p>
           <h1 class="mmt-display text-5xl mt-4">Vincular este ordenador</h1>
-          <p class="mt-4 text-r-muted leading-relaxed max-w-prose">El token se guarda en el Administrador de credenciales de Windows. No se escribe en un archivo.</p>
+          <p class="mt-4 text-r-muted leading-relaxed max-w-prose">El token se guarda de forma segura en el Administrador de credenciales de Windows. No se escribe en un archivo de texto plano.</p>
+
+          <div class="mt-4 p-4 rounded-xl border border-r-line bg-r-surface text-xs text-r-muted leading-relaxed">
+            <div class="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-r-accent font-semibold mb-1">
+              <span class="inline-block w-2 h-2 rounded-full bg-r-accent"></span>
+              Software oficial y seguro · Muntrume Motorsport
+            </div>
+            Esta herramienta está creada exclusivamente para los pilotos de Muntrume. No contiene virus ni software espía. Solo lee la memoria del SDK de iRacing para la telemetría en directo y sincroniza los reglajes oficiales dentro de tu carpeta <span class="font-mono text-r-text">iRacing\setups\coche\MMT</span>.
+          </div>
           <div id="loginStart" class="mt-8">
             <button type="button" id="linkBtn" class="mmt-btn h-12 px-6 rounded-xl bg-r-accent text-r-ink font-display font-extrabold tracking-wider uppercase">Vincular con muntru.me</button>
           </div>
@@ -246,6 +260,10 @@
               </label>
             </div>
             <div id="moduleFlags" class="mt-4 rounded-2xl border border-r-line bg-r-surface p-5 grid gap-2"></div>
+            <div class="mt-4 rounded-2xl border border-r-line bg-r-surface p-5 text-xs text-r-muted leading-relaxed">
+              <p class="font-mono text-[11px] uppercase tracking-wider text-r-accent font-semibold mb-1">Seguridad y verificación</p>
+              MMT Sync opera bajo permisos estándar de usuario y solo lectura de telemetría de iRacing. Si Windows SmartScreen muestra un aviso en actualizaciones o primera instalación, pulsa «Más información» y «Ejecutar de todas formas».
+            </div>
             <div class="mt-4 flex flex-wrap gap-2">
               <button type="button" id="logoutBtn" class="mmt-btn-ghost h-11 px-4 rounded-xl border border-r-line font-display uppercase tracking-wider text-sm">Cerrar sesión</button>
               <button type="button" id="quitBtn" class="mmt-btn-ghost h-11 px-4 rounded-xl border border-r-line font-display uppercase tracking-wider text-sm">Salir</button>

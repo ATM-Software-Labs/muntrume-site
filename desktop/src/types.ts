@@ -107,6 +107,20 @@ export interface UploadInput {
   notes: string;
 }
 
+export interface LiveSample {
+  t: number;
+  dist: number;
+  speed: number;
+  throttle: number;
+  brake: number;
+  gear: number;
+  steering: number;
+  lat?: number;
+  lon?: number;
+  vx?: number;
+  vy?: number;
+}
+
 export interface Backend {
   snapshot(): Promise<Snapshot>;
   authStart(): Promise<AuthStart>;
@@ -127,4 +141,5 @@ export interface Backend {
   onStaged(cb: (file: StagedFile) => void): () => void;
   onNotice(cb: (message: string) => void): () => void;
   onUpdate(cb: (version: string) => void): () => void;
+  onLive(cb: (sample: LiveSample) => void): () => void;
 }

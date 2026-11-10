@@ -98,5 +98,5 @@ fn wide(value: &str) -> Vec<u16> {
 fn overlays_enabled() -> bool {
     crate::settings::load()
         .map(|settings| settings.modules.overlays)
-        .unwrap_or(false)
+        .unwrap_or(true)
 }

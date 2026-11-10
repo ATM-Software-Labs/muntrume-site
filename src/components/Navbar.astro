@@ -18,6 +18,7 @@ const isDrivers =
   currentPath.startsWith('/p/');
 const isNews = currentPath.startsWith('/news') || currentPath.startsWith('/noticias') || currentPath.startsWith('/article');
 const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('/about') || currentPath.startsWith('/contact');
+const isApp = currentPath.startsWith('/app') || currentPath.startsWith('/sync');
 const isRaceControl = currentPath.startsWith('/admin');
 ---
 
@@ -74,6 +75,12 @@ const isRaceControl = currentPath.startsWith('/admin');
         class={`py-1 transition-colors whitespace-nowrap ${isPaddock ? 'text-[var(--r-accent)] font-bold border-b-2 border-[var(--r-accent)]' : 'text-[var(--r-muted)] hover:text-[var(--r-text)]'}`}
       >
         Paddock
+      </a>
+      <a
+        href="/app"
+        class={`py-1 transition-colors whitespace-nowrap ${isApp ? 'text-[var(--r-accent)] font-bold border-b-2 border-[var(--r-accent)]' : 'text-[var(--r-muted)] hover:text-[var(--r-text)]'}`}
+      >
+        App
       </a>
     </nav>
 
@@ -230,6 +237,9 @@ const isRaceControl = currentPath.startsWith('/admin');
       </a>
       <a href="/paddock" class={`px-3 py-2 rounded-xl transition ${isPaddock ? 'bg-[var(--r-accent)]/10 text-[var(--r-accent)] font-bold' : 'text-[var(--r-muted)] hover:bg-[var(--r-bg-2)] hover:text-[var(--r-text)]'}`}>
         Paddock
+      </a>
+      <a href="/app" class={`px-3 py-2 rounded-xl transition ${isApp ? 'bg-[var(--r-accent)]/10 text-[var(--r-accent)] font-bold' : 'text-[var(--r-muted)] hover:bg-[var(--r-bg-2)] hover:text-[var(--r-text)]'}`}>
+        MMT Sync (App)
       </a>
       <a href="/ai" class="px-3 py-2 rounded-xl text-[var(--r-muted)] hover:bg-[var(--r-bg-2)] hover:text-[var(--r-text)] transition">
         AI Copilot

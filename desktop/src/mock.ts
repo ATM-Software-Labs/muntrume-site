@@ -205,6 +205,9 @@ export function createMock(screen: string | null): Backend {
       updates.add(cb);
       return () => updates.delete(cb);
     },
+    onLive() {
+      return () => {};
+    },
   };
   return backend;
 }

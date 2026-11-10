@@ -1,4 +1,4 @@
-import type { LibraryItem, Settings, Snapshot } from "./types";
+import type { LibraryItem, LiveSample, Settings, Snapshot } from "./types";
 
 export function paintExtras(data: Snapshot): void {
   paintWeek(data);
@@ -166,23 +166,113 @@ function paintOverlays(): void {
   const fuel = document.getElementById("ovFuel");
   const tyres = document.getElementById("ovTyres");
   const canvas = document.getElementById("ovInputs") as HTMLCanvasElement | null;
-  if (rel) rel.textContent = "Relativo\n+0.4 s  coche 2\n— tú\n−0.3 s  coche 7\n\nDatos sintéticos";
-  if (standings) standings.textContent = "Clasificación\nP3  coche 4\nP4  tú\nP5  coche 8";
-  if (delta) delta.textContent = "Δ +0.18 s  ·  sintético";
-  if (fuel) fuel.textContent = "Combustible\n12.4 vueltas con lo que hay\nAñadir en la parada: lo marca el plan, no esta demo";
-  if (tyres) tyres.textContent = "Neumáticos\nSin canal de temperatura en esta demo";
-  if (!canvas) return;
+  if (rel && !rel.dataset.live) rel.textContent = "Relativo\nEsperando sesión de iRacing\n— tú\n\nTelemetría en memoria SDK";
+  if (standings && !standings.dataset.live) standings.textContent = "Clasificación\nP3  coche 4\nP4  tú\nP5  coche 8";
+  if (delta && !delta.dataset.live) delta.textContent = "0 km/h · Neutral";
+  if (fuel && !fuel.dataset.live) fuel.textContent = "Telemetría iRacing\nSDK en modo solo lectura\nConecta al simulador para ver datos";
+  if (tyres && !tyres.dataset.live) tyres.textContent = "Acelerador: 0%\nFreno: 0%";
+  if (!canvas || canvas.dataset.live) return;
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.strokeStyle = "#00e699";
-  ctx.beginPath();
-  for (let i = 0; i < 60; i++) {
-    const y = 70 - (i > 40 ? 50 : 10) - Math.sin(i / 4) * 8;
-    if (i === 0) ctx.moveTo(i * 4, y);
-    else ctx.lineTo(i * 4, y);
+  drawInputsCanvas(canvas, { t: 0, dist: 0, speed: 0, throttle: 0, brake: 0, gear: 0, steering: 0 });
+}
+
+export function updateLiveOverlay(sample: LiveSample): void {
+  const rel = document.getElementById("ovRelative");
+  const delta = document.getElementById("ovDelta");
+  const fuel = document.getElementById("ovFuel");
+  const tyres = document.getElementById("ovTyres");
+  const canvas = document.getElementById("ovInputs") as HTMLCanvasElement | null;
+  const kmh = Math.round(sample.speed * 3.6);
+  const gear = sample.gear === -1 ? "R" : sample.gear === 0 ? "N" : String(sample.gear);
+
+  if (delta) {
+    delta.dataset.live = "1";
+    delta.textContent = `${kmh} km/h  ·  Marcha ${gear}`;
   }
-  ctx.stroke();
+  if (rel) {
+    rel.dataset.live = "1";
+    rel.textContent = `iRacing en directo\nVelocidad: ${kmh} km/h\nMarcha: ${gear}\nDistancia: ${Math.round(sample.dist)} m\nVolante: ${(sample.steering * 57.2958).toFixed(1)}°`;
+  }
+  if (fuel) {
+    fuel.dataset.live = "1";
+    const mins = Math.floor(sample.t / 60);
+    const secs = Math.floor(sample.t % 60);
+    fuel.textContent = `Telemetría SDK activa\nTiempo: ${mins}m ${secs.toString().padStart(2, "0")}s\nConexión: Memoria compartida`;
+  }
+  if (tyres) {
+    tyres.dataset.live = "1";
+    tyres.textContent = `Acelerador: ${Math.round(sample.throttle * 100)}%\nFreno: ${Math.round(sample.brake * 100)}%`;
+  }
+  if (canvas) {
+    canvas.dataset.live = "1";
+    drawInputsCanvas(canvas, sample);
+  }
+}
+
+function drawInputsCanvas(canvas: HTMLCanvasElement, sample: LiveSample): void {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  const w = canvas.width;
+  const h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  // Background
+  ctx.fillStyle = "rgba(10, 15, 13, 0.9)";
+  ctx.fillRect(0, 0, w, h);
+
+  // Throttle bar
+  const barH = 55;
+  const barY = 12;
+  const thrH = Math.max(0, Math.min(1, sample.throttle)) * barH;
+  ctx.fillStyle = "rgba(255,255,255,0.08)";
+  ctx.fillRect(16, barY, 18, barH);
+  ctx.fillStyle = "#00e699";
+  ctx.fillRect(16, barY + barH - thrH, 18, thrH);
+
+  ctx.font = "9px monospace";
+  ctx.fillStyle = "#a0aba6";
+  ctx.textAlign = "center";
+  ctx.fillText("GAS", 25, barY + barH + 14);
+
+  // Brake bar
+  const brkH = Math.max(0, Math.min(1, sample.brake)) * barH;
+  ctx.fillStyle = "rgba(255,255,255,0.08)";
+  ctx.fillRect(44, barY, 18, barH);
+  ctx.fillStyle = "#ff4757";
+  ctx.fillRect(44, barY + barH - brkH, 18, brkH);
+
+  ctx.fillText("BRK", 53, barY + barH + 14);
+
+  // Steering gauge
+  const stX = 80;
+  const stW = 100;
+  const stMid = stX + stW / 2;
+  ctx.fillStyle = "rgba(255,255,255,0.08)";
+  ctx.fillRect(stX, barY + 18, stW, 8);
+  // Center mark
+  ctx.fillStyle = "rgba(255,255,255,0.3)";
+  ctx.fillRect(stMid - 1, barY + 14, 2, 16);
+  // Steering pip
+  const steerDeg = sample.steering * 57.2958;
+  const steerNorm = Math.max(-1, Math.min(1, steerDeg / 90));
+  const pipX = stMid + steerNorm * (stW / 2 - 4);
+  ctx.fillStyle = "#00d2ff";
+  ctx.fillRect(pipX - 3, barY + 14, 6, 16);
+
+  ctx.fillText(`VOL ${steerDeg >= 0 ? "+" : ""}${steerDeg.toFixed(0)}°`, stMid, barY + barH + 14);
+
+  // Gear & Speed display
+  const gear = sample.gear === -1 ? "R" : sample.gear === 0 ? "N" : String(sample.gear);
+  const kmh = Math.round(sample.speed * 3.6);
+  ctx.font = "bold 26px monospace";
+  ctx.fillStyle = "#ffffff";
+  ctx.textAlign = "center";
+  ctx.fillText(gear, 235, 40);
+
+  ctx.font = "11px monospace";
+  ctx.fillStyle = "#00e699";
+  ctx.fillText(`${kmh} km/h`, 235, 62);
 }
 
 function paintTeam(settings: Settings): void {
