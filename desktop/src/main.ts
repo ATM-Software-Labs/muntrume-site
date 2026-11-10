@@ -174,6 +174,33 @@ let activeCatFilter = (() => {
   return "all";
 })();
 
+let garageMode: "my" | "all" = (() => {
+  try {
+    const val = localStorage.getItem("mmt-garage-mode");
+    if (val === "my" || val === "all") return val;
+  } catch {}
+  return "my";
+})();
+
+let userMyCars: string[] = (() => {
+  try {
+    const raw = localStorage.getItem("mmt-user-my-cars");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch {}
+  return [
+    "ferrari296gt3",
+    "porsche992rgt3",
+    "bmwm4gt3",
+    "mercedesamggt3",
+    "acuraarx06gtp",
+    "dallarap217",
+    "fiaf4",
+  ];
+})();
+
 let userPreferences: string[] = (() => {
   try {
     const raw = localStorage.getItem("mmt-user-categories");
@@ -308,6 +335,16 @@ function setNav(): void {
   });
 }
 
+const starSvg = (filled: boolean) =>
+  `<svg class="w-3.5 h-3.5 ${filled ? "fill-amber-400 text-amber-400" : "fill-none text-current"}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+
+const compareSvg = `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>`;
+const timerSvg = `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><polyline points="12 6 12 12 16 14"/></svg>`;
+const copySvg = `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+const checkSvg = `<svg class="w-3.5 h-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`;
+const mapPinSvg = `<svg class="w-3.5 h-3.5 text-r-accent shrink-0 inline-block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
+const calendarSvg = `<svg class="w-3.5 h-3.5 text-r-muted shrink-0 inline-block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
+
 function paintLibrary(): void {
   const allItems = snapshot?.library ?? [];
 
@@ -329,6 +366,17 @@ function paintLibrary(): void {
       return false;
     }
 
+    // Garage Filter: Only show cars selected by the driver when garageMode is "my"
+    if (garageMode === "my") {
+      const folder = (entry.carFolder || "").toLowerCase().trim();
+      const carKey = (entry.car || "").toLowerCase().trim();
+      const match = userMyCars.some((c) => {
+        const target = c.toLowerCase().trim();
+        return target === folder || target === carKey || folder.includes(target) || target.includes(folder);
+      });
+      if (!match) return false;
+    }
+
     // Search query
     if (query) {
       const q = query.trim().toLowerCase();
@@ -346,13 +394,33 @@ function paintLibrary(): void {
     countText.textContent = `${items.length} de ${allItems.length} setups disponibles`;
   }
   if (filterNote) {
-    if (activeCatFilter === "MY_CATS") {
-      filterNote.textContent = `⭐ Mis categorías (${userPreferences.length} activas)`;
-    } else if (activeCatFilter !== "all") {
-      filterNote.textContent = `Filtrando: ${activeCatFilter}`;
-    } else {
-      filterNote.textContent = "";
+    const parts: string[] = [];
+    if (garageMode === "my") {
+      parts.push(`Garaje: ${userMyCars.length} coches activos`);
     }
+    if (activeCatFilter === "MY_CATS") {
+      parts.push(`Categorías (${userPreferences.length} activas)`);
+    } else if (activeCatFilter !== "all") {
+      parts.push(`Categoría: ${activeCatFilter}`);
+    }
+    filterNote.textContent = parts.join(" · ");
+  }
+
+  // Update Garage button pills & badge
+  const badgeMyCars = document.getElementById("myCarsBadgeCount");
+  if (badgeMyCars) {
+    badgeMyCars.textContent = String(userMyCars.length);
+  }
+  const btnGarageMy = document.getElementById("btnGarageMy");
+  const btnGarageAll = document.getElementById("btnGarageAll");
+  if (btnGarageMy && btnGarageAll) {
+    const isMy = garageMode === "my";
+    btnGarageMy.className = isMy
+      ? "h-7 px-3 rounded-lg bg-r-surface text-r-accent font-semibold shadow-sm transition"
+      : "h-7 px-3 rounded-lg text-r-muted hover:text-r-text transition";
+    btnGarageAll.className = !isMy
+      ? "h-7 px-3 rounded-lg bg-r-surface text-r-accent font-semibold shadow-sm transition"
+      : "h-7 px-3 rounded-lg text-r-muted hover:text-r-text transition";
   }
 
   // Update pill active styling
@@ -426,16 +494,16 @@ function openSetupPreview(row: LibraryItem): void {
   if (stabTag) {
     if (profile.stability === "SAFE") {
       stabTag.className = "inline-block mt-1 px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 font-bold text-[10px] uppercase border border-emerald-500/30";
-      stabTag.textContent = "🛡️ SAFE (Alta Estabilidad y Consistencia)";
+      stabTag.textContent = "SAFE · Máxima Estabilidad y Consistencia";
     } else if (profile.stability === "AGGRESSIVE") {
       stabTag.className = "inline-block mt-1 px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 font-bold text-[10px] uppercase border border-amber-500/30";
-      stabTag.textContent = "⚡ AGRESIVO (Pico de Clasificación)";
+      stabTag.textContent = "AGRESIVO · Pico de Clasificación";
     } else if (profile.stability === "WET") {
       stabTag.className = "inline-block mt-1 px-2 py-0.5 rounded bg-sky-500/15 text-sky-300 font-bold text-[10px] uppercase border border-sky-500/30";
-      stabTag.textContent = "🌧️ LLUVIA (Máxima Evacuación y Tracción)";
+      stabTag.textContent = "LLUVIA · Máxima Evacuación y Tracción";
     } else {
       stabTag.className = "inline-block mt-1 px-2 py-0.5 rounded bg-purple-500/15 text-purple-300 font-bold text-[10px] uppercase border border-purple-500/30";
-      stabTag.textContent = "⚖️ BALANCE COMPETITIVO";
+      stabTag.textContent = "BALANCE COMPETITIVO";
     }
   }
 
@@ -461,7 +529,7 @@ function openSetupPreview(row: LibraryItem): void {
   const favBtn = document.getElementById("previewFavToggle");
   if (favBtn && snapshot) {
     const isFav = snapshot.settings.favourites.includes(row.id);
-    favBtn.textContent = isFav ? "★ En Favoritos" : "☆ Añadir Favorito";
+    favBtn.textContent = isFav ? "Guardado en Favoritos" : "Marcar como Favorito";
     favBtn.className = isFav
       ? "h-10 px-4 rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-300 font-bold text-xs uppercase tracking-wider transition"
       : "h-10 px-4 rounded-xl border border-r-line text-r-muted hover:text-amber-400 font-bold text-xs uppercase tracking-wider transition";
@@ -647,10 +715,10 @@ function setupCardView(row: LibraryItem, showCar = false): HTMLElement {
   favBtn.type = "button";
   const isFav = snapshot?.settings.favourites.includes(row.id) ?? false;
   favBtn.className = isFav
-    ? "p-1 rounded text-amber-400 hover:scale-125 transition text-sm leading-none"
-    : "p-1 rounded text-r-muted/40 hover:text-amber-400 hover:scale-125 transition text-sm leading-none";
+    ? "p-1 rounded text-amber-400 hover:scale-110 transition leading-none flex items-center justify-center"
+    : "p-1 rounded text-r-muted/40 hover:text-amber-400 hover:scale-110 transition leading-none flex items-center justify-center";
   favBtn.title = isFav ? "Quitar de favoritos" : "Marcar como favorito";
-  favBtn.textContent = isFav ? "★" : "☆";
+  favBtn.innerHTML = starSvg(isFav);
   favBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     if (!snapshot) return;
@@ -684,7 +752,7 @@ function setupCardView(row: LibraryItem, showCar = false): HTMLElement {
   if (showCar) {
     const carTag = document.createElement("div");
     carTag.className = "text-xs font-semibold text-r-text flex items-center gap-1.5";
-    carTag.innerHTML = `<span>🏎️</span> <span>${formatCarName(row.carFolder || row.car)}</span>`;
+    carTag.innerHTML = `<span class="px-1.5 py-0.2 rounded bg-r-surface border border-r-line text-[9px] uppercase font-mono text-r-muted">Coche</span> <span>${formatCarName(row.carFolder || row.car)}</span>`;
     mid.append(carTag);
   }
 
@@ -729,9 +797,9 @@ function setupCardView(row: LibraryItem, showCar = false): HTMLElement {
 
   const compBtn = document.createElement("button");
   compBtn.type = "button";
-  compBtn.className = "p-1 text-r-muted hover:text-r-accent transition text-xs";
+  compBtn.className = "p-1.5 rounded-lg border border-r-line/60 bg-r-surface text-r-muted hover:text-r-accent hover:border-r-accent/60 transition flex items-center justify-center";
   compBtn.title = "Comparar setup";
-  compBtn.textContent = "⚖️";
+  compBtn.innerHTML = compareSvg;
   compBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     openSetupCompare(row);
@@ -739,9 +807,9 @@ function setupCardView(row: LibraryItem, showCar = false): HTMLElement {
 
   const simBtn = document.createElement("button");
   simBtn.type = "button";
-  simBtn.className = "p-1 text-r-muted hover:text-r-accent transition text-xs";
+  simBtn.className = "p-1.5 rounded-lg border border-r-line/60 bg-r-surface text-r-muted hover:text-r-accent hover:border-r-accent/60 transition flex items-center justify-center";
   simBtn.title = "Estimar tiempo e iRating";
-  simBtn.textContent = "⏱️";
+  simBtn.innerHTML = timerSvg;
   simBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     openIratingAdvisor(row);
@@ -749,15 +817,15 @@ function setupCardView(row: LibraryItem, showCar = false): HTMLElement {
 
   const copyBtn = document.createElement("button");
   copyBtn.type = "button";
-  copyBtn.className = "p-1 text-r-muted hover:text-r-text transition text-xs";
+  copyBtn.className = "p-1.5 rounded-lg border border-r-line/60 bg-r-surface text-r-muted hover:text-r-text hover:border-r-accent/60 transition flex items-center justify-center";
   copyBtn.title = "Copiar nombre de archivo";
-  copyBtn.textContent = "📋";
+  copyBtn.innerHTML = copySvg;
   copyBtn.addEventListener("click", async (e) => {
     e.stopPropagation();
     try {
       await navigator.clipboard.writeText(row.filename);
-      copyBtn.textContent = "✓";
-      setTimeout(() => (copyBtn.textContent = "📋"), 1500);
+      copyBtn.innerHTML = checkSvg;
+      setTimeout(() => (copyBtn.innerHTML = copySvg), 1500);
     } catch {}
   });
 
@@ -820,10 +888,6 @@ function paintGroupedByCar(items: LibraryItem[]): void {
     chevron.className = "text-r-muted transition-transform duration-200 text-xs font-mono";
     chevron.textContent = isCollapsed ? "▶" : "▼";
 
-    const icon = document.createElement("span");
-    icon.className = "text-xl";
-    icon.textContent = cat === "FORMULA CAR" ? "🏎️" : cat === "OVAL" ? "🏁" : cat === "DIRT" ? "🚜" : "🏎️";
-
     const titleBlock = document.createElement("div");
     const heading = document.createElement("h2");
     heading.className = "text-base md:text-lg font-bold text-r-text tracking-wide flex items-center gap-2";
@@ -839,7 +903,7 @@ function paintGroupedByCar(items: LibraryItem[]): void {
     subText.textContent = `${sortedCircuits.length} circuitos cubiertos`;
 
     titleBlock.append(heading, subText);
-    left.append(chevron, icon, titleBlock);
+    left.append(chevron, titleBlock);
 
     const right = document.createElement("div");
     right.className = "flex items-center gap-2 font-mono text-[11px]";
@@ -888,8 +952,8 @@ function paintGroupedByCar(items: LibraryItem[]): void {
       trackLeft.className = "flex items-center gap-2";
 
       const trackPin = document.createElement("span");
-      trackPin.className = "text-r-accent text-sm";
-      trackPin.textContent = "📍";
+      trackPin.className = "flex items-center text-r-accent";
+      trackPin.innerHTML = mapPinSvg;
 
       const trackTitle = document.createElement("h3");
       trackTitle.className = "font-bold text-sm text-r-text";
@@ -904,7 +968,7 @@ function paintGroupedByCar(items: LibraryItem[]): void {
         weekBadge.className = isCur
           ? "px-2 py-0.5 rounded-full bg-r-accent text-r-ink font-bold text-[10px] uppercase tracking-wider shadow-sm"
           : "px-2 py-0.5 rounded-full border border-r-line bg-r-bg text-r-muted text-[10px] font-mono";
-        weekBadge.textContent = isCur ? `🔥 Semana ${weekNum} (ACTUAL)` : `Semana ${weekNum}`;
+        weekBadge.textContent = isCur ? `Semana ${weekNum} · ACTUAL` : `Semana ${weekNum}`;
         trackLeft.append(weekBadge);
       }
 
@@ -972,8 +1036,8 @@ function paintGroupedByTrack(items: LibraryItem[]): void {
     chevron.textContent = isCollapsed ? "▶" : "▼";
 
     const icon = document.createElement("span");
-    icon.className = "text-xl";
-    icon.textContent = "📍";
+    icon.className = "flex items-center text-r-accent";
+    icon.innerHTML = mapPinSvg;
 
     const titleBlock = document.createElement("div");
     const heading = document.createElement("h2");
@@ -1034,14 +1098,15 @@ function paintGroupedByTrack(items: LibraryItem[]): void {
       const carLeft = document.createElement("div");
       carLeft.className = "flex items-center gap-2";
 
-      const carIcon = document.createElement("span");
-      carIcon.textContent = "🏎️";
+      const carTag = document.createElement("span");
+      carTag.className = "px-1.5 py-0.2 rounded bg-r-bg border border-r-line font-mono text-[9px] uppercase text-r-muted font-bold";
+      carTag.textContent = "Coche";
 
       const carTitle = document.createElement("h3");
       carTitle.className = "font-bold text-sm text-r-text";
       carTitle.textContent = formatCarName(car);
 
-      carLeft.append(carIcon, carTitle);
+      carLeft.append(carTag, carTitle);
 
       const carRight = document.createElement("span");
       carRight.className = "text-xs font-mono text-r-muted";
@@ -1126,8 +1191,8 @@ function paintGroupedByWeek(items: LibraryItem[]): void {
     chevron.textContent = isCollapsed ? "▶" : "▼";
 
     const icon = document.createElement("span");
-    icon.className = "text-xl";
-    icon.textContent = isCur ? "🔥" : "📅";
+    icon.className = "flex items-center text-r-muted";
+    icon.innerHTML = calendarSvg;
 
     const titleBlock = document.createElement("div");
     const heading = document.createElement("h2");
@@ -1180,8 +1245,8 @@ function paintGroupedByWeek(items: LibraryItem[]): void {
       trackLeft.className = "flex items-center gap-2";
 
       const trackPin = document.createElement("span");
-      trackPin.className = "text-r-accent text-sm";
-      trackPin.textContent = "📍";
+      trackPin.className = "flex items-center text-r-accent";
+      trackPin.innerHTML = mapPinSvg;
 
       const trackTitle = document.createElement("h3");
       trackTitle.className = "font-bold text-sm text-r-text";
@@ -1633,6 +1698,214 @@ function bind(): void {
       showNotice(error instanceof Error ? error.message : "No se pudo instalar la actualización.");
     });
   });
+  let myCarsSearchTerm = "";
+
+  const renderMyCarsList = () => {
+    const container = document.getElementById("myCarsList");
+    if (!container) return;
+
+    const allItems = snapshot?.library ?? [];
+    const carSetupCounts = new Map<string, number>();
+    for (const item of allItems) {
+      const key = (item.carFolder || item.car || "").toLowerCase().trim();
+      carSetupCounts.set(key, (carSetupCounts.get(key) ?? 0) + 1);
+    }
+
+    const knownCarKeys = new Set<string>();
+    for (const k of Object.keys(CAR_NAMES)) knownCarKeys.add(k.toLowerCase().trim());
+    for (const item of allItems) {
+      if (item.carFolder) knownCarKeys.add(item.carFolder.toLowerCase().trim());
+      if (item.car) knownCarKeys.add(item.car.toLowerCase().trim());
+    }
+
+    const carList = Array.from(knownCarKeys).map((key) => {
+      const name = formatCarName(key);
+      const cat = classifyCar(key);
+      const count = carSetupCounts.get(key) ?? 0;
+      const isSelected = userMyCars.some((c) => c.toLowerCase().trim() === key);
+      return { key, name, cat, count, isSelected };
+    });
+
+    carList.sort((a, b) => a.name.localeCompare(b.name));
+
+    const filtered = carList.filter((c) => {
+      if (!myCarsSearchTerm) return true;
+      const term = myCarsSearchTerm.toLowerCase();
+      return c.name.toLowerCase().includes(term) || c.key.toLowerCase().includes(term) || c.cat.toLowerCase().includes(term);
+    });
+
+    container.replaceChildren();
+
+    const selectedCountEl = document.getElementById("myCarsSelectedCount");
+    if (selectedCountEl) {
+      selectedCountEl.textContent = `${userMyCars.length} coches activos en tu garaje`;
+    }
+
+    for (const car of filtered) {
+      const card = document.createElement("label");
+      card.className = car.isSelected
+        ? "flex items-start gap-3 p-3 rounded-xl border border-r-accent bg-r-accent/10 cursor-pointer select-none transition"
+        : "flex items-start gap-3 p-3 rounded-xl border border-r-line bg-r-bg hover:border-r-line-2 cursor-pointer select-none transition";
+
+      const chk = document.createElement("input");
+      chk.type = "checkbox";
+      chk.className = "mt-0.5 w-4 h-4 rounded border-r-line text-r-accent focus:ring-r-accent";
+      chk.checked = car.isSelected;
+      chk.addEventListener("change", () => {
+        if (chk.checked) {
+          if (!userMyCars.includes(car.key)) userMyCars.push(car.key);
+        } else {
+          userMyCars = userMyCars.filter((k) => k !== car.key);
+        }
+        try {
+          localStorage.setItem("mmt-user-my-cars", JSON.stringify(userMyCars));
+        } catch {}
+        renderMyCarsList();
+        paintLibrary();
+      });
+
+      const info = document.createElement("div");
+      info.className = "flex-1 min-w-0";
+
+      const topRow = document.createElement("div");
+      topRow.className = "flex items-center justify-between gap-2";
+
+      const nameEl = document.createElement("div");
+      nameEl.className = "text-xs font-bold text-r-text truncate";
+      nameEl.textContent = car.name;
+
+      const countPill = document.createElement("span");
+      countPill.className = "font-mono text-[10px] text-r-muted shrink-0";
+      countPill.textContent = car.count > 0 ? `${car.count} setups` : "";
+
+      topRow.append(nameEl, countPill);
+
+      const bottomRow = document.createElement("div");
+      bottomRow.className = "flex items-center gap-1.5 mt-1";
+
+      const catBadge = document.createElement("span");
+      catBadge.className = "px-1.5 py-0.2 rounded bg-r-surface border border-r-line font-mono text-[9px] uppercase text-r-muted font-bold";
+      catBadge.textContent = car.cat;
+
+      const folderTag = document.createElement("span");
+      folderTag.className = "font-mono text-[10px] text-r-muted/70 truncate";
+      folderTag.textContent = car.key;
+
+      bottomRow.append(catBadge, folderTag);
+      info.append(topRow, bottomRow);
+
+      card.append(chk, info);
+      container.append(card);
+    }
+  };
+
+  const openMyCarsModal = () => {
+    const modal = document.getElementById("modalMyCars");
+    if (!modal) return;
+    myCarsSearchTerm = "";
+    const searchInput = document.getElementById("myCarsSearch") as HTMLInputElement | null;
+    if (searchInput) searchInput.value = "";
+    renderMyCarsList();
+    modal.hidden = false;
+  };
+
+  // Wire Garage Controls
+  const btnGarageMy = document.getElementById("btnGarageMy");
+  if (btnGarageMy) {
+    btnGarageMy.addEventListener("click", () => {
+      garageMode = "my";
+      try { localStorage.setItem("mmt-garage-mode", "my"); } catch {}
+      paintLibrary();
+    });
+  }
+
+  const btnGarageAll = document.getElementById("btnGarageAll");
+  if (btnGarageAll) {
+    btnGarageAll.addEventListener("click", () => {
+      garageMode = "all";
+      try { localStorage.setItem("mmt-garage-mode", "all"); } catch {}
+      paintLibrary();
+    });
+  }
+
+  const btnOpenGarage = document.getElementById("btnOpenGarageModal");
+  if (btnOpenGarage) {
+    btnOpenGarage.addEventListener("click", () => {
+      openMyCarsModal();
+    });
+  }
+
+  const applyMyCarsBtn = document.getElementById("applyMyCarsBtn");
+  if (applyMyCarsBtn) {
+    applyMyCarsBtn.addEventListener("click", () => {
+      const modal = document.getElementById("modalMyCars");
+      if (modal) modal.hidden = true;
+      paintLibrary();
+    });
+  }
+
+  const myCarsSearch = document.getElementById("myCarsSearch") as HTMLInputElement | null;
+  if (myCarsSearch) {
+    myCarsSearch.addEventListener("input", () => {
+      myCarsSearchTerm = myCarsSearch.value.trim();
+      renderMyCarsList();
+    });
+  }
+
+  const myCarsSelectGt3 = document.getElementById("myCarsSelectGt3");
+  if (myCarsSelectGt3) {
+    myCarsSelectGt3.addEventListener("click", () => {
+      const gt3s = Object.keys(CAR_NAMES).filter((k) => k.includes("gt3") || CAR_NAMES[k]?.includes("GT3"));
+      userMyCars = Array.from(new Set([...userMyCars, ...gt3s]));
+      try { localStorage.setItem("mmt-user-my-cars", JSON.stringify(userMyCars)); } catch {}
+      renderMyCarsList();
+      paintLibrary();
+    });
+  }
+
+  const myCarsSelectGtp = document.getElementById("myCarsSelectGtp");
+  if (myCarsSelectGtp) {
+    myCarsSelectGtp.addEventListener("click", () => {
+      const gtps = Object.keys(CAR_NAMES).filter((k) => k.includes("gtp") || k.includes("lmdh") || CAR_NAMES[k]?.includes("GTP"));
+      userMyCars = Array.from(new Set([...userMyCars, ...gtps]));
+      try { localStorage.setItem("mmt-user-my-cars", JSON.stringify(userMyCars)); } catch {}
+      renderMyCarsList();
+      paintLibrary();
+    });
+  }
+
+  const myCarsSelectFormula = document.getElementById("myCarsSelectFormula");
+  if (myCarsSelectFormula) {
+    myCarsSelectFormula.addEventListener("click", () => {
+      const formulas = Object.keys(CAR_NAMES).filter((k) => classifyCar(k) === "FORMULA CAR");
+      userMyCars = Array.from(new Set([...userMyCars, ...formulas]));
+      try { localStorage.setItem("mmt-user-my-cars", JSON.stringify(userMyCars)); } catch {}
+      renderMyCarsList();
+      paintLibrary();
+    });
+  }
+
+  const myCarsSelectAll = document.getElementById("myCarsSelectAll");
+  if (myCarsSelectAll) {
+    myCarsSelectAll.addEventListener("click", () => {
+      const all = Object.keys(CAR_NAMES);
+      userMyCars = [...all];
+      try { localStorage.setItem("mmt-user-my-cars", JSON.stringify(userMyCars)); } catch {}
+      renderMyCarsList();
+      paintLibrary();
+    });
+  }
+
+  const myCarsDeselectAll = document.getElementById("myCarsDeselectAll");
+  if (myCarsDeselectAll) {
+    myCarsDeselectAll.addEventListener("click", () => {
+      userMyCars = [];
+      try { localStorage.setItem("mmt-user-my-cars", JSON.stringify(userMyCars)); } catch {}
+      renderMyCarsList();
+      paintLibrary();
+    });
+  }
+
   // Wire Modals & Backdrop Dismissal
   const bindModalDismiss = (modalId: string, closeBtnId: string) => {
     const modal = document.getElementById(modalId);
@@ -1652,12 +1925,13 @@ function bind(): void {
   bindModalDismiss("modalSetupPreview", "closePreviewBtn");
   bindModalDismiss("modalSetupCompare", "closeCompareBtn");
   bindModalDismiss("modalIratingAdvisor", "closeAdvisorBtn");
+  bindModalDismiss("modalMyCars", "closeMyCarsBtn");
 
   $("previewCopyBtn").addEventListener("click", async () => {
     if (!currentPreviewItem) return;
     try {
       await navigator.clipboard.writeText(currentPreviewItem.filename);
-      $("previewCopyBtn").textContent = "Copiado ✓";
+      $("previewCopyBtn").textContent = "Copiado";
       setTimeout(() => ($("previewCopyBtn").textContent = "Copiar"), 1500);
     } catch {}
   });

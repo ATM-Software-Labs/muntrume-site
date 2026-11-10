@@ -4,18 +4,20 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="dark light" />
-    <title>MMT Sync</title>
+    <title>MMT Sync · Muntrume Motorsport</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="alternate icon" href="./icon.png" />
     <script src="./theme-init.js"></script>
     <link rel="stylesheet" href="./src/styles.css" />
   </head>
   <body class="min-h-screen bg-r-bg text-r-text antialiased">
     <div class="min-h-screen flex flex-col">
       <header class="h-16 shrink-0 border-b border-r-line bg-r-surface flex items-center justify-between gap-4 px-5">
-        <div class="flex items-center gap-3 min-w-0">
-          <img src="./icon.png" width="32" height="32" alt="" class="h-8 w-8 rounded-lg shadow-sm" />
+        <div class="flex items-center gap-3.5 min-w-0">
+          <img src="./favicon.svg" width="34" height="34" alt="Muntrume Motorsport" class="h-8 w-8 rounded-lg shadow-sm border border-r-line/60 bg-r-bg" />
           <div class="min-w-0">
             <div class="flex items-center gap-2">
-              <div class="mmt-display text-[22px] leading-none">MMT Sync</div>
+              <div class="mmt-display text-[22px] leading-none tracking-wide">MMT Sync</div>
               <span id="irBadge" class="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono tracking-wider uppercase border border-r-line bg-r-bg text-r-muted transition-colors">
                 <span id="irDot" class="w-2 h-2 rounded-full bg-r-muted"></span>
                 <span id="irText">iRacing en espera</span>
@@ -39,15 +41,22 @@
       </div>
       <div id="offlineChip" hidden class="px-5 py-2 border-b border-r-line font-mono text-[12px] text-r-text">Sin conexión con muntru.me. Se muestra la última biblioteca guardada.</div>
       <div id="updateBar" hidden class="px-5 py-3 border-b border-r-line bg-r-surface flex flex-wrap items-center justify-between gap-3">
-        <p id="updateText" class="text-sm">Hay una actualización.</p>
+        <p id="updateText" class="text-sm font-mono">Hay una actualización disponible.</p>
         <button type="button" id="updateBtn" class="mmt-btn h-10 px-4 rounded-xl bg-r-accent text-r-ink font-display font-extrabold tracking-wider uppercase text-sm">Instalar</button>
       </div>
       <p id="notice" role="status" aria-live="polite" hidden class="mx-5 mt-4 rounded-xl border border-r-line bg-r-surface px-4 py-3 text-sm"></p>
 
       <main class="flex-1 px-5 py-6">
         <section id="viewLogin" class="mmt-in max-w-xl mx-auto">
+          <div class="flex items-center gap-3.5 mb-6 pb-4 border-b border-r-line/60">
+            <img src="./favicon.svg" width="44" height="44" alt="Muntrume Motorsport" class="h-11 w-11 rounded-xl shadow-md border border-r-line bg-r-surface" />
+            <div>
+              <div class="mmt-display text-2xl leading-tight">Muntrume Motorsport</div>
+              <div class="font-mono text-[10px] uppercase tracking-widest text-r-accent font-bold">MMT Sync Desktop Client</div>
+            </div>
+          </div>
           <p class="mmt-kicker">Acceso de piloto</p>
-          <h1 class="mmt-display text-5xl mt-4">Vincular este ordenador</h1>
+          <h1 class="mmt-display text-5xl mt-3">Vincular este ordenador</h1>
           <p class="mt-4 text-r-muted leading-relaxed max-w-prose">El token se guarda de forma segura en el Administrador de credenciales de Windows. No se escribe en un archivo de texto plano.</p>
 
           <div class="mt-4 p-4 rounded-xl border border-r-line bg-r-surface text-xs text-r-muted leading-relaxed">
@@ -55,13 +64,13 @@
               <span class="inline-block w-2 h-2 rounded-full bg-r-accent"></span>
               Software oficial y seguro · Muntrume Motorsport
             </div>
-            Esta herramienta está creada exclusivamente para los pilotos de Muntrume. No contiene virus ni software espía. Solo lee la memoria del SDK de iRacing para la telemetría en directo y sincroniza los reglajes oficiales dentro de tu carpeta <span class="font-mono text-r-text">iRacing\setups\coche\MMT</span>.
+            Esta herramienta está creada exclusivamente para los pilotos de Muntrume. No contiene virus ni software espía. Solo lee la memoria del SDK de iRacing para la telemetría en directo y sincroniza los reglajes oficiales dentro de tu carpeta <span class="font-mono text-r-text">iRacing\setups\coche\MMT by Muntrume</span>.
           </div>
           <div id="loginStart" class="mt-8">
             <button type="button" id="linkBtn" class="mmt-btn h-12 px-6 rounded-xl bg-r-accent text-r-ink font-display font-extrabold tracking-wider uppercase">Vincular con muntru.me</button>
           </div>
           <div id="loginPending" hidden class="mt-8 rounded-2xl border border-r-line bg-r-surface p-6">
-            <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-r-muted">Código</p>
+            <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-r-muted">Código de vinculación</p>
             <p id="userCode" class="mmt-display text-6xl mt-2 text-r-accent">MMT-0000</p>
             <p class="mt-4 text-sm text-r-muted leading-relaxed">Abre muntru.me, entra con tu cuenta de piloto y pulsa «Autorizar este dispositivo».</p>
             <p id="pollStatus" class="mt-3 font-mono text-xs text-r-text">Esperando autorización…</p>
@@ -83,8 +92,8 @@
           <section id="viewLibrary" aria-labelledby="libraryTitle">
             <div class="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <p class="mmt-kicker">Setups del equipo</p>
-                <h1 id="libraryTitle" class="mmt-display text-4xl mt-3">Biblioteca</h1>
+                <p class="mmt-kicker">Setups de competición</p>
+                <h1 id="libraryTitle" class="mmt-display text-4xl mt-2">Biblioteca</h1>
               </div>
               <div class="flex items-center gap-3">
                 <button type="button" id="syncBtn" class="mmt-btn h-11 px-5 rounded-xl bg-r-accent text-r-ink font-display font-extrabold uppercase tracking-wider text-sm flex items-center gap-2 shadow-lg shadow-r-accent/10">
@@ -97,25 +106,42 @@
             <p id="syncStatus" class="mt-2 font-mono text-xs text-r-muted">Todavía no se ha sincronizado.</p>
 
             <!-- Pilot Preferences & Grouping Control Bar -->
-            <div class="mt-5 p-3.5 rounded-2xl border border-r-line bg-r-surface flex flex-wrap items-center justify-between gap-3">
-              <div class="flex flex-wrap items-center gap-2">
-                <span class="text-xs font-mono uppercase tracking-wider text-r-muted mr-1">Mis Categorías:</span>
-                <div id="userCategoryPills" class="flex flex-wrap gap-1.5 font-mono text-xs">
-                  <button type="button" data-cat-toggle="all" class="h-8 px-3 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Todas</button>
-                  <button type="button" data-cat-toggle="SPORTS CAR" class="h-8 px-3 rounded-lg border border-r-line bg-r-bg text-r-muted hover:text-r-text transition">🏎️ Sports Car</button>
-                  <button type="button" data-cat-toggle="FORMULA CAR" class="h-8 px-3 rounded-lg border border-r-line bg-r-bg text-r-muted hover:text-r-text transition">🏎️ Formula</button>
-                  <button type="button" data-cat-toggle="OVAL" class="h-8 px-3 rounded-lg border border-r-line bg-r-bg text-r-muted hover:text-r-text transition">🏁 Oval</button>
-                  <button type="button" data-cat-toggle="DIRT" class="h-8 px-3 rounded-lg border border-r-line bg-r-bg text-r-muted hover:text-r-text transition">🚜 Dirt</button>
+            <div class="mt-5 p-3.5 rounded-2xl border border-r-line bg-r-surface flex flex-col gap-3">
+              <!-- Top Row: Garaje & Grouping -->
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <!-- Garage Selector -->
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-mono uppercase tracking-wider text-r-muted">Garaje:</span>
+                  <div id="garageFilterPills" class="flex rounded-xl border border-r-line bg-r-bg p-0.5 font-mono text-xs">
+                    <button type="button" id="btnGarageMy" data-garage-mode="my" class="h-7 px-3 rounded-lg bg-r-surface text-r-accent font-semibold shadow-sm transition">Mis Coches</button>
+                    <button type="button" id="btnGarageAll" data-garage-mode="all" class="h-7 px-3 rounded-lg text-r-muted hover:text-r-text transition">Todos (104)</button>
+                  </div>
+                  <button type="button" id="btnOpenGarageModal" class="h-7 px-3 rounded-lg border border-r-line bg-r-bg text-r-text hover:border-r-accent hover:text-r-accent font-mono text-xs font-semibold flex items-center gap-1.5 transition">
+                    <span>Editar Garaje</span>
+                    <span id="myCarsBadgeCount" class="px-1.5 py-0.2 rounded-full bg-r-accent/20 text-r-accent text-[10px] font-bold">7</span>
+                  </button>
+                </div>
+
+                <!-- Grouping Selector -->
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-mono uppercase tracking-wider text-r-muted">Agrupar por:</span>
+                  <div id="groupByPills" class="flex rounded-xl border border-r-line bg-r-bg p-0.5 font-mono text-xs">
+                    <button type="button" data-group="car" class="h-7 px-3 rounded-lg bg-r-surface text-r-accent font-semibold shadow-sm transition">Coche</button>
+                    <button type="button" data-group="track" class="h-7 px-3 rounded-lg text-r-muted hover:text-r-text transition">Circuito</button>
+                    <button type="button" data-group="week" class="h-7 px-3 rounded-lg text-r-muted hover:text-r-text transition">Semana</button>
+                  </div>
                 </div>
               </div>
-              
-              <!-- Grouping Selector -->
-              <div class="flex items-center gap-2">
-                <span class="text-xs font-mono uppercase tracking-wider text-r-muted">Agrupar por:</span>
-                <div id="groupByPills" class="flex rounded-xl border border-r-line bg-r-bg p-0.5 font-mono text-xs">
-                  <button type="button" data-group="car" class="h-7 px-3 rounded-lg bg-r-surface text-r-accent font-semibold shadow-sm transition">Coche</button>
-                  <button type="button" data-group="track" class="h-7 px-3 rounded-lg text-r-muted hover:text-r-text transition">Circuito</button>
-                  <button type="button" data-group="week" class="h-7 px-3 rounded-lg text-r-muted hover:text-r-text transition">Semana</button>
+
+              <!-- Categories Row -->
+              <div class="flex flex-wrap items-center gap-2 pt-2.5 border-t border-r-line/50">
+                <span class="text-xs font-mono uppercase tracking-wider text-r-muted mr-1">Categoría:</span>
+                <div id="userCategoryPills" class="flex flex-wrap gap-1.5 font-mono text-xs">
+                  <button type="button" data-cat-toggle="all" class="h-8 px-3 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Todas</button>
+                  <button type="button" data-cat-toggle="SPORTS CAR" class="h-8 px-3 rounded-lg border border-r-line bg-r-bg text-r-muted hover:text-r-text transition">Sports Car</button>
+                  <button type="button" data-cat-toggle="FORMULA CAR" class="h-8 px-3 rounded-lg border border-r-line bg-r-bg text-r-muted hover:text-r-text transition">Fórmula</button>
+                  <button type="button" data-cat-toggle="OVAL" class="h-8 px-3 rounded-lg border border-r-line bg-r-bg text-r-muted hover:text-r-text transition">Oval</button>
+                  <button type="button" data-cat-toggle="DIRT" class="h-8 px-3 rounded-lg border border-r-line bg-r-bg text-r-muted hover:text-r-text transition">Dirt / Rally</button>
                 </div>
               </div>
             </div>
@@ -131,7 +157,7 @@
                 <button type="button" data-filter="Race" class="mmt-chip h-11 px-3.5 rounded-xl border border-r-line font-mono text-[11px] uppercase tracking-wider">Carrera</button>
                 <button type="button" data-filter="Qualy" class="mmt-chip h-11 px-3.5 rounded-xl border border-r-line font-mono text-[11px] uppercase tracking-wider">Clasificación</button>
                 <button type="button" data-filter="Wet" class="mmt-chip h-11 px-3.5 rounded-xl border border-r-line font-mono text-[11px] uppercase tracking-wider">Lluvia</button>
-                <button type="button" data-filter="Fav" class="mmt-chip h-11 px-3.5 rounded-xl border border-r-line font-mono text-[11px] uppercase tracking-wider text-amber-400">★ Favs</button>
+                <button type="button" data-filter="Fav" class="mmt-chip h-11 px-3.5 rounded-xl border border-r-line font-mono text-[11px] uppercase tracking-wider text-amber-400">Favoritos</button>
               </div>
             </div>
 
@@ -409,15 +435,18 @@
         <div id="modalSetupPreview" hidden class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
           <div class="relative w-full max-w-2xl rounded-3xl border border-r-line bg-r-surface p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
             <div class="flex items-start justify-between gap-4 border-b border-r-line pb-4">
-              <div>
-                <div class="flex items-center gap-2">
-                  <span id="previewCatBadge" class="px-2.5 py-0.5 rounded-full border border-r-line bg-r-bg font-mono text-[10px] uppercase font-bold text-r-muted">SPORTS CAR</span>
-                  <span id="previewSeasonBadge" class="font-mono text-xs text-r-muted">26S4</span>
+              <div class="flex items-center gap-3.5">
+                <img src="./favicon.svg" width="36" height="36" alt="MMT" class="h-9 w-9 rounded-xl shadow-sm border border-r-line bg-r-bg" />
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span id="previewCatBadge" class="px-2.5 py-0.5 rounded-full border border-r-line bg-r-bg font-mono text-[10px] uppercase font-bold text-r-muted">SPORTS CAR</span>
+                    <span id="previewSeasonBadge" class="font-mono text-xs text-r-muted">26S4</span>
+                  </div>
+                  <h2 id="previewCarTitle" class="text-2xl font-bold text-r-text mt-1">Ferrari 296 GT3</h2>
+                  <p id="previewTrackTitle" class="text-sm text-r-accent flex items-center gap-1.5 mt-0.5 font-mono">
+                    <span class="text-[11px] text-r-muted uppercase tracking-wider">Circuito:</span> <span id="previewTrackName">Spa-Francorchamps</span>
+                  </p>
                 </div>
-                <h2 id="previewCarTitle" class="text-2xl font-bold text-r-text mt-1">Ferrari 296 GT3</h2>
-                <p id="previewTrackTitle" class="text-sm text-r-accent flex items-center gap-1.5 mt-0.5">
-                  <span>📍</span> <span id="previewTrackName">Spa-Francorchamps</span>
-                </p>
               </div>
               <button type="button" id="closePreviewBtn" class="p-2 rounded-xl text-r-muted hover:text-r-text hover:bg-r-bg transition text-lg leading-none">✕</button>
             </div>
@@ -425,7 +454,7 @@
             <!-- Filename pill -->
             <div class="p-3 rounded-xl bg-r-bg border border-r-line flex items-center justify-between gap-2">
               <span id="previewFilename" class="font-mono text-xs text-r-text font-semibold break-all select-all">MMT_FER_SPA_R_SAFE.sto</span>
-              <button type="button" id="previewCopyBtn" class="px-3 py-1.5 rounded-lg bg-r-surface border border-r-line text-xs font-mono text-r-text hover:border-r-accent transition shrink-0">Copiar</button>
+              <button type="button" id="previewCopyBtn" class="px-3 py-1.5 rounded-lg bg-r-surface border border-r-line text-xs font-mono text-r-text hover:border-r-accent transition shrink-0 uppercase tracking-wider font-bold">Copiar</button>
             </div>
 
             <!-- Technical Analysis Grid -->
@@ -433,7 +462,7 @@
               <div class="p-3.5 rounded-xl border border-r-line bg-r-bg/60 space-y-1">
                 <span class="font-mono text-[10px] uppercase tracking-wider text-r-muted block">Propósito del Setup</span>
                 <strong id="previewPurpose" class="text-r-text text-sm block">Carrera Principal / Máxima Consistencia</strong>
-                <span id="previewStabilityTag" class="inline-block mt-1 px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 font-bold text-[10px] uppercase">SAFE (Alta Estabilidad)</span>
+                <span id="previewStabilityTag" class="inline-block mt-1 px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 font-bold text-[10px] uppercase border border-emerald-500/30">SAFE (Alta Estabilidad)</span>
               </div>
               <div class="p-3.5 rounded-xl border border-r-line bg-r-bg/60 space-y-1">
                 <span class="font-mono text-[10px] uppercase tracking-wider text-r-muted block">Carga Aerodinámica (Aero)</span>
@@ -454,7 +483,7 @@
 
             <!-- Driving Hints -->
             <div class="p-4 rounded-xl border border-r-line bg-r-bg/40 space-y-2">
-              <span class="font-mono text-[11px] uppercase tracking-wider text-r-accent font-bold block">💡 Claves de Ingeniería y Conducción</span>
+              <span class="font-mono text-[11px] uppercase tracking-wider text-r-accent font-bold block">Claves de Ingeniería y Conducción</span>
               <ul id="previewTipsList" class="space-y-1.5 text-xs text-r-muted leading-relaxed list-disc list-inside"></ul>
             </div>
 
@@ -462,13 +491,13 @@
             <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-r-line">
               <div class="flex flex-wrap gap-2">
                 <button type="button" id="previewSimBtn" class="mmt-btn h-10 px-4 rounded-xl bg-r-accent text-r-ink font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
-                  <span>⏱️</span> <span>Estimar Tiempos e iRating</span>
+                  <span>Estimar Tiempos e iRating</span>
                 </button>
                 <button type="button" id="previewCompareBtn" class="mmt-btn-ghost h-10 px-4 rounded-xl border border-r-line text-r-text font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 hover:border-r-accent transition">
-                  <span>⚖️</span> <span>Comparar Setup</span>
+                  <span>Comparar Setup</span>
                 </button>
               </div>
-              <button type="button" id="previewFavToggle" class="h-10 px-3 rounded-xl border border-r-line text-r-muted hover:text-amber-400 transition text-sm">★ Favorito</button>
+              <button type="button" id="previewFavToggle" class="h-10 px-3 rounded-xl border border-r-line text-r-muted hover:text-amber-400 font-mono font-bold uppercase tracking-wider text-xs transition">Favorito</button>
             </div>
           </div>
         </div>
@@ -477,9 +506,12 @@
         <div id="modalSetupCompare" hidden class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
           <div class="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl border border-r-line bg-r-surface p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
             <div class="flex items-center justify-between border-b border-r-line pb-4">
-              <div>
-                <p class="mmt-kicker">Herramienta de Ingeniería</p>
-                <h2 class="text-2xl font-bold text-r-text mt-1">Comparador Técnico de Setups MMT</h2>
+              <div class="flex items-center gap-3.5">
+                <img src="./favicon.svg" width="36" height="36" alt="MMT" class="h-9 w-9 rounded-xl shadow-sm border border-r-line bg-r-bg" />
+                <div>
+                  <p class="mmt-kicker">Herramienta de Ingeniería</p>
+                  <h2 class="text-2xl font-bold text-r-text mt-0.5">Comparador Técnico de Setups MMT</h2>
+                </div>
               </div>
               <button type="button" id="closeCompareBtn" class="p-2 rounded-xl text-r-muted hover:text-r-text hover:bg-r-bg transition text-lg leading-none">✕</button>
             </div>
@@ -514,7 +546,7 @@
 
             <!-- Verdict Card -->
             <div class="p-4 rounded-2xl border border-r-accent/30 bg-r-accent/5 space-y-1.5">
-              <strong class="font-mono text-xs uppercase tracking-wider text-r-accent block">📊 Veredicto de Rendimiento MMT</strong>
+              <strong class="font-mono text-xs uppercase tracking-wider text-r-accent block">Análisis de Rendimiento MMT</strong>
               <p id="compareVerdictText" class="text-xs text-r-text leading-relaxed"></p>
             </div>
           </div>
@@ -524,10 +556,13 @@
         <div id="modalIratingAdvisor" hidden class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
           <div class="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl border border-r-line bg-r-surface p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
             <div class="flex items-center justify-between border-b border-r-line pb-4">
-              <div>
-                <p class="mmt-kicker">Telemetría Predictiva</p>
-                <h2 class="text-2xl font-bold text-r-text mt-1">Estimador de Tiempo por Vuelta e iRating</h2>
-                <p class="text-xs text-r-muted mt-0.5">Calcula tiempos teóricos y consistencia en pista según tu nivel de habilidad.</p>
+              <div class="flex items-center gap-3.5">
+                <img src="./favicon.svg" width="36" height="36" alt="MMT" class="h-9 w-9 rounded-xl shadow-sm border border-r-line bg-r-bg" />
+                <div>
+                  <p class="mmt-kicker">Telemetría Predictiva</p>
+                  <h2 class="text-2xl font-bold text-r-text mt-0.5">Estimador de Tiempo por Vuelta e iRating</h2>
+                  <p class="text-xs text-r-muted mt-0.5">Calcula tiempos teóricos y consistencia en pista según tu nivel de habilidad.</p>
+                </div>
               </div>
               <button type="button" id="closeAdvisorBtn" class="p-2 rounded-xl text-r-muted hover:text-r-text hover:bg-r-bg transition text-lg leading-none">✕</button>
             </div>
@@ -535,7 +570,7 @@
             <!-- iRating Selector -->
             <div class="p-4 rounded-2xl border border-r-line bg-r-bg space-y-3">
               <div class="flex items-center justify-between">
-                <span class="font-mono text-xs uppercase tracking-wider text-r-text font-bold">¿Cuál es tu iRating actual?</span>
+                <span class="font-mono text-xs uppercase tracking-wider text-r-text font-bold">Nivel de iRating del Piloto:</span>
                 <span id="advisorCurrentIrDisplay" class="font-mono text-xs text-r-accent font-bold">1.800 iR</span>
               </div>
               <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 font-mono text-xs">
@@ -552,12 +587,12 @@
               <div class="p-3.5 rounded-2xl border border-r-line bg-r-bg/70 space-y-1">
                 <span class="font-mono text-[10px] uppercase text-r-muted block">Vuelta Clasificación</span>
                 <strong id="advisorQualyTime" class="text-xl font-mono text-r-text block font-bold">2:17.350</strong>
-                <span class="text-[10px] text-r-muted font-mono">Pico óptimo en vuelta limpia</span>
+                <span class="text-[10px] text-r-muted font-mono">Pico en vuelta óptima</span>
               </div>
               <div class="p-3.5 rounded-2xl border border-r-line bg-r-bg/70 space-y-1">
                 <span class="font-mono text-[10px] uppercase text-r-muted block">Ritmo de Carrera</span>
                 <strong id="advisorRacePace" class="text-xl font-mono text-r-accent block font-bold">2:18.420</strong>
-                <span class="text-[10px] text-r-muted font-mono">Promedio en tanda de 30m</span>
+                <span class="text-[10px] text-r-muted font-mono">Media en tanda de 30m</span>
               </div>
               <div class="p-3.5 rounded-2xl border border-r-line bg-r-bg/70 space-y-1">
                 <span class="font-mono text-[10px] uppercase text-r-muted block">Delta vs Esports</span>
@@ -568,39 +603,85 @@
 
             <!-- Setup Comparison: SAFE vs AGRESIVO -->
             <div class="p-4 rounded-2xl border border-r-line bg-r-bg space-y-3">
-              <span class="font-mono text-xs uppercase tracking-wider text-r-text font-bold block">Simulación: ¿Con qué setup serás más constante?</span>
+              <span class="font-mono text-xs uppercase tracking-wider text-r-text font-bold block">Simulación de Telemetría: SAFE vs AGRESIVO</span>
               <div class="grid sm:grid-cols-2 gap-3 text-xs">
                 <!-- SAFE CARD -->
                 <div class="p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 space-y-2">
                   <div class="flex items-center justify-between">
-                    <strong class="text-emerald-400 font-bold uppercase tracking-wider text-[11px]">🛡️ Setup SAFE</strong>
+                    <strong class="text-emerald-400 font-bold uppercase tracking-wider text-[11px]">SETUP SAFE</strong>
                     <span id="advisorSafeCons" class="font-mono font-bold text-emerald-300">96.8% Consistencia</span>
                   </div>
                   <div class="space-y-1 text-r-muted text-[11px]">
                     <div class="flex justify-between"><span>Ritmo medio tanda:</span> <strong id="advisorSafePace" class="text-r-text font-mono">2:18.570</strong></div>
-                    <div class="flex justify-between"><span>Riesgo de trompo:</span> <strong id="advisorSafeRisk" class="text-emerald-400 font-mono">3% (Muy bajo)</strong></div>
+                    <div class="flex justify-between"><span>Riesgo de incidente:</span> <strong id="advisorSafeRisk" class="text-emerald-400 font-mono">3% (Muy bajo)</strong></div>
                   </div>
-                  <span class="block text-[11px] text-emerald-300 font-medium pt-1 border-t border-emerald-500/20">⭐ Recomendado: Máxima ganancia de iRating</span>
+                  <span class="block text-[11px] text-emerald-300 font-medium pt-1 border-t border-emerald-500/20">RECOMENDADO · Máxima ganancia de iRating</span>
                 </div>
                 <!-- AGRESIVO CARD -->
                 <div class="p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-2">
                   <div class="flex items-center justify-between">
-                    <strong class="text-amber-400 font-bold uppercase tracking-wider text-[11px]">⚡ Setup Agresivo</strong>
+                    <strong class="text-amber-400 font-bold uppercase tracking-wider text-[11px]">SETUP AGRESIVO</strong>
                     <span id="advisorAggCons" class="font-mono font-bold text-amber-300">86.4% Consistencia</span>
                   </div>
                   <div class="space-y-1 text-r-muted text-[11px]">
                     <div class="flex justify-between"><span>Ritmo medio real:</span> <strong id="advisorAggPace" class="text-r-text font-mono">2:19.020</strong></div>
-                    <div class="flex justify-between"><span>Riesgo de trompo:</span> <strong id="advisorAggRisk" class="text-amber-400 font-mono">26% (Alto)</strong></div>
+                    <div class="flex justify-between"><span>Riesgo de incidente:</span> <strong id="advisorAggRisk" class="text-amber-400 font-mono">26% (Alto)</strong></div>
                   </div>
-                  <span class="block text-[11px] text-amber-300 font-medium pt-1 border-t border-amber-500/20">Techo 2 décimas más rápido, pero mayor fatiga</span>
+                  <span class="block text-[11px] text-amber-300 font-medium pt-1 border-t border-amber-500/20">Techo 2 décimas más rápido, mayor fatiga</span>
                 </div>
               </div>
             </div>
 
             <!-- Personalized Telemetry Verdict -->
             <div class="p-4 rounded-2xl border border-r-line bg-r-bg/50 space-y-1.5">
-              <strong class="font-mono text-xs uppercase tracking-wider text-r-accent font-bold block">🏎️ Veredicto del Ingeniero de Pista</strong>
+              <strong class="font-mono text-xs uppercase tracking-wider text-r-accent font-bold block">Veredicto del Ingeniero de Pista</strong>
               <p id="advisorVerdictText" class="text-xs text-r-text leading-relaxed"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- MY CARS / GARAGE CONFIGURATION MODAL -->
+        <div id="modalMyCars" hidden class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+          <div class="relative w-full max-w-3xl max-h-[90vh] flex flex-col rounded-3xl border border-r-line bg-r-surface shadow-2xl animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
+            <!-- Header -->
+            <div class="p-6 border-b border-r-line flex items-center justify-between gap-4 bg-r-bg/40">
+              <div class="flex items-center gap-3.5">
+                <img src="./favicon.svg" width="36" height="36" alt="MMT" class="h-9 w-9 rounded-xl shadow-sm border border-r-line/60 bg-r-bg" />
+                <div>
+                  <p class="mmt-kicker">Personalización de Competición</p>
+                  <h2 class="text-2xl font-bold text-r-text mt-0.5">Mi Garaje de Vehículos</h2>
+                  <p class="text-xs text-r-muted mt-0.5">Selecciona únicamente los coches que conduces en iRacing. El resto se ocultarán de la biblioteca.</p>
+                </div>
+              </div>
+              <button type="button" id="closeMyCarsBtn" class="p-2 rounded-xl text-r-muted hover:text-r-text hover:bg-r-bg transition text-lg leading-none">✕</button>
+            </div>
+
+            <!-- Quick search and category filters -->
+            <div class="p-4 border-b border-r-line bg-r-bg/60 space-y-3">
+              <div class="flex flex-wrap items-center gap-2">
+                <input type="search" id="myCarsSearch" placeholder="Buscar por modelo o marca (ej. Porsche, Ferrari, GT3, GTP, Dallara, F4)..." class="h-10 flex-1 min-w-[200px] rounded-xl border border-r-line bg-r-surface px-3 text-xs text-r-text placeholder:text-r-muted focus:border-r-accent focus:outline-none font-mono" />
+                <button type="button" id="myCarsSelectGt3" class="h-8 px-2.5 rounded-lg border border-r-line bg-r-surface text-r-muted hover:text-r-text hover:border-r-accent text-xs font-mono transition">Solo GT3</button>
+                <button type="button" id="myCarsSelectGtp" class="h-8 px-2.5 rounded-lg border border-r-line bg-r-surface text-r-muted hover:text-r-text hover:border-r-accent text-xs font-mono transition">Solo GTP</button>
+                <button type="button" id="myCarsSelectFormula" class="h-8 px-2.5 rounded-lg border border-r-line bg-r-surface text-r-muted hover:text-r-text hover:border-r-accent text-xs font-mono transition">Solo Fórmulas</button>
+                <button type="button" id="myCarsSelectAll" class="h-8 px-2.5 rounded-lg border border-r-line bg-r-surface text-r-muted hover:text-r-text text-xs font-mono transition">Marcar todos</button>
+                <button type="button" id="myCarsDeselectAll" class="h-8 px-2.5 rounded-lg border border-r-line bg-r-surface text-r-muted hover:text-red-400 text-xs font-mono transition">Desmarcar</button>
+              </div>
+              <div class="flex items-center justify-between text-xs font-mono text-r-muted">
+                <span id="myCarsSelectedCount">7 coches activos en tu garaje</span>
+                <span class="text-[11px] text-r-accent">Los cambios se aplican al instante</span>
+              </div>
+            </div>
+
+            <!-- Scrollable Car Grid -->
+            <div id="myCarsList" class="flex-1 overflow-y-auto p-5 grid sm:grid-cols-2 md:grid-cols-3 gap-2.5 max-h-[50vh]">
+            </div>
+
+            <!-- Footer -->
+            <div class="p-4 border-t border-r-line bg-r-bg/40 flex items-center justify-between gap-3">
+              <span class="text-xs font-mono text-r-muted">Filtro activo para mantener tu biblioteca enfocada.</span>
+              <button type="button" id="applyMyCarsBtn" class="mmt-btn h-10 px-5 rounded-xl bg-r-accent text-r-ink font-bold text-xs uppercase tracking-wider shadow-sm">
+                Guardar y Cerrar
+              </button>
             </div>
           </div>
         </div>

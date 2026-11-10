@@ -238,9 +238,9 @@ export function estimateLapTimeAndConsistency(track: string, car: string, iRatin
 
   let verdict = "";
   if (iRating < 3000) {
-    verdict = `💡 Para tu nivel de iRating (${iRating.toLocaleString()} iR), te recomendamos competir con el setup SAFE. Ganarás un promedio de +0.42s por vuelta en tandas largas gracias al control de tracción y consistencia del 96%, minimizando incidentes (0x/1x) y maximizando tu ganancia neta de iRating (+35 a +65 iR por carrera).`;
+    verdict = `Para tu nivel de iRating (${iRating.toLocaleString()} iR), te recomendamos competir con el setup SAFE. Ganarás un promedio de +0.42s por vuelta en tandas largas gracias al control de tracción y consistencia del 96%, minimizando incidentes (0x/1x) y maximizando tu ganancia neta de iRating (+35 a +65 iR por carrera).`;
   } else {
-    verdict = `⚡ Con tu nivel de iRating (${iRating.toLocaleString()} iR), tienes el control para extraer las 2 décimas extra del setup AGRESIVO en clasificación. Para la carrera, evalúa el setup SAFE si la degradación de pista o la temperatura de asfalto supera los 38°C.`;
+    verdict = `Con tu nivel de iRating (${iRating.toLocaleString()} iR), tienes el control para extraer las 2 décimas extra del setup AGRESIVO en clasificación. Para la carrera, evalúa el setup SAFE si la degradación de pista o la temperatura de asfalto supera los 38°C.`;
   }
 
   return {

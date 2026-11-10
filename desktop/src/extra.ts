@@ -191,7 +191,7 @@ function renderWeekItems(data: Snapshot): void {
     if (matchCount > 0) {
       const setupBadge = document.createElement("span");
       setupBadge.className = "px-2.5 py-0.5 rounded bg-r-accent/15 text-r-accent font-mono text-[11px] font-bold";
-      setupBadge.textContent = `✓ ${matchCount} setups MMT listos`;
+      setupBadge.textContent = `${matchCount} setups MMT listos`;
       top.append(badges, setupBadge);
     } else {
       top.append(badges);
@@ -225,17 +225,17 @@ function renderWeekItems(data: Snapshot): void {
 
       if (weekItem.duration) {
         const d = document.createElement("span");
-        d.textContent = `⏱ ${weekItem.duration}`;
+        d.textContent = `Duración: ${weekItem.duration}`;
         trackMeta.append(d);
       }
       if (weekItem.weather) {
         const w = document.createElement("span");
-        w.textContent = `☁ ${weekItem.weather}`;
+        w.textContent = `Clima: ${weekItem.weather}`;
         trackMeta.append(w);
       }
       if (weekItem.sim_time) {
         const st = document.createElement("span");
-        st.textContent = `📅 Sim: ${weekItem.sim_time}`;
+        st.textContent = `Sim: ${weekItem.sim_time}`;
         trackMeta.append(st);
       }
 
@@ -350,8 +350,8 @@ function paintChecklist(settings: Settings): void {
     const li = document.createElement("li");
     li.className = "flex items-center gap-2 text-sm";
     const mark = document.createElement("span");
-    mark.className = "font-mono text-r-accent";
-    mark.textContent = item.done ? "✓" : "○";
+    mark.className = "font-mono text-r-accent text-xs";
+    mark.textContent = item.done ? "[OK]" : "[ ]";
     li.append(mark, document.createTextNode(item.label));
     list.append(li);
   }
@@ -582,13 +582,13 @@ export function paintConfigAnalysis(data: IracingAnalysis): void {
     badge.className = "px-2.5 py-1 rounded-lg font-mono text-[10px] uppercase tracking-wider shrink-0 font-bold ";
     if (item.status === "optimal") {
       badge.className += "bg-r-accent/10 text-r-accent border border-r-accent/30";
-      badge.textContent = "✓ Óptimo";
+      badge.textContent = "Óptimo";
     } else if (item.status === "recommended") {
       badge.className += "bg-yellow-500/10 text-yellow-400 border border-yellow-500/30";
-      badge.textContent = "⚡ Recomendado";
+      badge.textContent = "Recomendado";
     } else {
       badge.className += "bg-red-500/10 text-red-400 border border-red-500/30";
-      badge.textContent = "⚠ Atención";
+      badge.textContent = "Atención";
     }
 
     top.append(titleGroup, badge);

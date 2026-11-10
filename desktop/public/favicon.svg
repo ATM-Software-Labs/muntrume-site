@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0E1412"/>
+      <stop offset="100%" stop-color="#060908"/>
+    </linearGradient>
+    <linearGradient id="neon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00FFAA"/>
+      <stop offset="100%" stop-color="#00E699"/>
+    </linearGradient>
+  </defs>
+  <!-- Background squircle -->
+  <rect width="64" height="64" rx="16" fill="url(#bg)"/>
+  <rect x="1" y="1" width="62" height="62" rx="15" fill="none" stroke="#1A2823" stroke-width="1.5"/>
+  <!-- Minimalist Racing "M" Glyph -->
+  <path d="M12 47 V17 h7.5 l12.5 17 12.5 -17 H52 v30 h-7.5 V27.5 L32 44 19.5 27.5 V47 Z" fill="url(#neon)"/>
+  <!-- Apex speed accent -->
+  <circle cx="32" cy="14" r="2.5" fill="#00FFAA"/>
+</svg>
