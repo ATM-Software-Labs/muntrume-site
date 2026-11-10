@@ -54,6 +54,86 @@ export function classifyCar(carFolder: string): "SPORTS CAR" | "FORMULA CAR" | "
   return "SPORTS CAR";
 }
 
+const CAR_NAMES: Record<string, string> = {
+  ferrari296gt3: "Ferrari 296 GT3",
+  porsche992rgt3: "Porsche 911 GT3.R (992)",
+  bmwm4gt3: "BMW M4 GT3",
+  mercedesamggt3: "Mercedes-AMG GT3",
+  audi97gt3: "Audi R8 LMS GT3",
+  audir8lmsevo2gt3: "Audi R8 LMS EVO II GT3",
+  mclaren720sgt3: "McLaren 720S GT3 EVO",
+  corvettez06gt3r: "Chevrolet Corvette Z06 GT3.R",
+  fordmustanggt3: "Ford Mustang GT3",
+  lamborghinievogt3: "Lamborghini Huracán GT3 EVO2",
+  acuraarx06gtp: "Acura ARX-06 GTP",
+  bmwlmdh: "BMW M Hybrid V8 GTP",
+  bmwmhybridv8: "BMW M Hybrid V8 GTP",
+  cadillacvseriesr: "Cadillac V-Series.R GTP",
+  porsche963: "Porsche 963 GTP",
+  amvalkyriegtp: "Aston Martin Valkyrie AMR Pro GTP",
+  dallarap217: "Dallara P217 LMP2",
+  dallarair18: "Dallara IR-18 IndyCar",
+  superformula_sf23: "Super Formula SF23",
+  "superformula sf23": "Super Formula SF23",
+  formulavee: "Formula Vee",
+  rayff1600: "Ray FF1600",
+  fiaf4: "FIA F4",
+  f4: "FIA F4",
+  dallaraf3: "Dallara F3",
+  formularenault20: "Formula Renault 2.0",
+  formularenault35: "Formula Renault 3.5",
+  williamsfw31: "Williams-Toyota FW31 F1",
+  mclarenmp430: "McLaren-Honda MP4-30 F1",
+  mercedesw12: "Mercedes-AMG F1 W12 E",
+  mercedesw13: "Mercedes-AMG F1 W13 E",
+  "mx5 mx52016": "Global Mazda MX-5 Cup",
+  toyotagr86: "Toyota GR86 Cup",
+  bmwm2csr: "BMW M2 CS Racing",
+  bmwm2g87: "BMW M2 (G87)",
+  porsche992cup: "Porsche 911 GT3 Cup (992)",
+  ferrari488gt3: "Ferrari 488 GT3 EVO",
+  c8rvettegte: "Chevrolet Corvette C8.R GTE",
+  porsche991rsr: "Porsche 911 RSR GTE",
+  bmwm8gte: "BMW M8 GTE",
+  ferrari488gte: "Ferrari 488 GTE",
+  fordgt2017: "Ford GT GTE",
+  astonmartin_vantage_gt4: "Aston Martin Vantage GT4",
+  amvantagegt4: "Aston Martin Vantage GT4",
+  amvantageevogt3: "Aston Martin Vantage GT3 EVO",
+  bmwm4gt4: "BMW M4 GT4",
+  bmwm4evogt4: "BMW M4 GT4 EVO",
+  mclaren570sgt4: "McLaren 570S GT4",
+  mercedesamggt4: "Mercedes-AMG GT4",
+  porschecaymankt4: "Porsche 718 Cayman GT4",
+  audirs3lms: "Audi RS 3 LMS TCR",
+  audirs3lmsgen2: "Audi RS 3 LMS TCR Gen 2",
+  hondacivic: "Honda Civic Type R TCR",
+  hyundaielantra: "Hyundai Elantra N TCR",
+  hyundaiveloster: "Hyundai Veloster N TCR",
+  radicalsrf: "Radical SR10",
+  radicalsr8: "Radical SR8",
+  scca_spec_racer: "SCCA Spec Racer Ford",
+  clio: "Renault Clio Cup",
+};
+
+export function formatCarName(folder: string): string {
+  const clean = String(folder || "").trim();
+  if (!clean) return "Coche";
+  const lower = clean.toLowerCase();
+  if (CAR_NAMES[lower]) return CAR_NAMES[lower];
+  return clean
+    .replace(/gt3/i, " GT3")
+    .replace(/gt4/i, " GT4")
+    .replace(/gtp/i, " GTP")
+    .replace(/gte/i, " GTE")
+    .replace(/lmp2/i, " LMP2")
+    .replace(/evo/i, " EVO ")
+    .replace(/(\d{4})/g, " $1")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 const params = new URLSearchParams(location.search);
 const screen = params.get("screen");
 const backend: Backend = inTauri() ? createTauriBackend() : createMock(screen);
@@ -295,6 +375,132 @@ function paintLibrary(): void {
   }
 }
 
+let collapsedState = new Set<string>();
+let allExpanded = false;
+
+function setupCardView(row: LibraryItem, showCar = false): HTMLElement {
+  const card = document.createElement("div");
+  card.className =
+    "group rounded-xl border border-r-line bg-r-bg/80 p-3.5 flex flex-col justify-between gap-2.5 hover:border-r-accent/60 hover:bg-r-surface transition shadow-xs";
+
+  const top = document.createElement("div");
+  top.className = "flex items-center justify-between gap-2";
+
+  const kKey = kindKey(row.kind);
+  const kindPill = document.createElement("span");
+  kindPill.className =
+    kKey === "Race"
+      ? "px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[11px] font-bold uppercase tracking-wider"
+      : kKey === "Qualy"
+        ? "px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[11px] font-bold uppercase tracking-wider"
+        : kKey === "Wet"
+          ? "px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-300 border border-sky-500/30 text-[11px] font-bold uppercase tracking-wider"
+          : "px-2 py-0.5 rounded-md bg-purple-500/15 text-purple-300 border border-purple-500/30 text-[11px] font-bold uppercase tracking-wider";
+  kindPill.textContent = KIND_LABEL[kKey] ?? row.kind;
+
+  const right = document.createElement("div");
+  right.className = "flex items-center gap-1.5";
+
+  const favBtn = document.createElement("button");
+  favBtn.type = "button";
+  const isFav = snapshot?.settings.favourites.includes(row.id) ?? false;
+  favBtn.className = isFav
+    ? "p-1 rounded text-amber-400 hover:scale-125 transition text-sm leading-none"
+    : "p-1 rounded text-r-muted/40 hover:text-amber-400 hover:scale-125 transition text-sm leading-none";
+  favBtn.title = isFav ? "Quitar de favoritos" : "Marcar como favorito";
+  favBtn.textContent = isFav ? "★" : "☆";
+  favBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (!snapshot) return;
+    const favs = snapshot.settings.favourites;
+    if (favs.includes(row.id)) {
+      snapshot.settings.favourites = favs.filter((id) => id !== row.id);
+    } else {
+      snapshot.settings.favourites = [...favs, row.id];
+    }
+    void persistSettings().then(() => {
+      paintLibrary();
+    });
+  });
+
+  const stateBadge = document.createElement("span");
+  const state = row.state;
+  stateBadge.className =
+    state === "nuevo"
+      ? "px-2 py-0.5 rounded-full bg-r-accent text-r-ink font-mono text-[9px] uppercase font-bold"
+      : state === "actualizado"
+        ? "px-2 py-0.5 rounded-full border border-r-accent text-r-accent font-mono text-[9px] uppercase font-semibold"
+        : "px-1.5 py-0.5 rounded text-emerald-400/80 font-mono text-[9px] uppercase border border-emerald-500/20";
+  stateBadge.textContent = STATE_LABEL[state] ?? state;
+
+  right.append(favBtn, stateBadge);
+  top.append(kindPill, right);
+
+  const mid = document.createElement("div");
+  mid.className = "space-y-1";
+
+  if (showCar) {
+    const carTag = document.createElement("div");
+    carTag.className = "text-xs font-semibold text-r-text flex items-center gap-1.5";
+    carTag.innerHTML = `<span>🏎️</span> <span>${formatCarName(row.carFolder || row.car)}</span>`;
+    mid.append(carTag);
+  }
+
+  const filenameEl = document.createElement("div");
+  filenameEl.className = "font-mono text-xs font-semibold text-r-text break-all select-all group-hover:text-r-accent transition";
+  filenameEl.textContent = row.filename;
+  mid.append(filenameEl);
+
+  const bottom = document.createElement("div");
+  bottom.className = "flex items-center justify-between text-[11px] text-r-muted font-mono pt-1.5 border-t border-r-line/40";
+
+  const details = document.createElement("div");
+  details.className = "flex flex-wrap items-center gap-1.5";
+
+  const lowerName = row.filename.toLowerCase();
+  if (lowerName.includes("safe")) {
+    const safeTag = document.createElement("span");
+    safeTag.className = "px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-300 text-[10px] font-semibold";
+    safeTag.textContent = "SAFE";
+    details.append(safeTag);
+  }
+  if (lowerName.includes("bop")) {
+    const bopMatch = row.filename.match(/bop\d+/i);
+    const bopTag = document.createElement("span");
+    bopTag.className = "px-1.5 py-0.2 rounded bg-indigo-500/10 text-indigo-300 text-[10px] font-semibold";
+    bopTag.textContent = bopMatch ? bopMatch[0].toUpperCase() : "BoP";
+    details.append(bopTag);
+  }
+  if (lowerName.includes("endu")) {
+    const enduTag = document.createElement("span");
+    enduTag.className = "px-1.5 py-0.2 rounded bg-purple-500/10 text-purple-300 text-[10px] font-semibold";
+    enduTag.textContent = "ENDU";
+    details.append(enduTag);
+  }
+
+  const metaSpan = document.createElement("span");
+  metaSpan.textContent = `${row.season} · ${formatBytes(row.size)}`;
+  details.append(metaSpan);
+
+  const copyBtn = document.createElement("button");
+  copyBtn.type = "button";
+  copyBtn.className = "p-1 text-r-muted hover:text-r-text transition text-xs";
+  copyBtn.title = "Copiar nombre de archivo";
+  copyBtn.textContent = "📋";
+  copyBtn.addEventListener("click", async (e) => {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(row.filename);
+      copyBtn.textContent = "✓";
+      setTimeout(() => (copyBtn.textContent = "📋"), 1500);
+    } catch {}
+  });
+
+  bottom.append(details, copyBtn);
+  card.append(top, mid, bottom);
+  return card;
+}
+
 function paintGroupedByCar(items: LibraryItem[]): void {
   const groups = new Map<string, LibraryItem[]>();
   for (const entry of items) {
@@ -304,48 +510,157 @@ function paintGroupedByCar(items: LibraryItem[]): void {
   }
 
   const sortedCars = Array.from(groups.keys()).sort((a, b) => a.localeCompare(b));
+  const isSearching = query.trim().length > 0;
 
-  for (const car of sortedCars) {
+  for (let carIndex = 0; carIndex < sortedCars.length; carIndex++) {
+    const car = sortedCars[carIndex];
     const rows = groups.get(car) ?? [];
-    const section = document.createElement("section");
-    section.className = "rounded-2xl border border-r-line bg-r-surface overflow-hidden transition hover:border-r-line-2 shadow-sm";
+    const prettyCarName = formatCarName(car);
+    const cat = classifyCar(rows[0]?.carFolder || car);
 
+    // Group setups of this car by Circuit
+    const circuitGroups = new Map<string, LibraryItem[]>();
+    for (const r of rows) {
+      const track = r.track.trim() || "Circuito general";
+      const list = circuitGroups.get(track) ?? [];
+      list.push(r);
+      circuitGroups.set(track, list);
+    }
+    const sortedCircuits = Array.from(circuitGroups.keys()).sort((a, b) => a.localeCompare(b));
+
+    let rCount = 0;
+    let qCount = 0;
+    let wCount = 0;
+    for (const r of rows) {
+      const k = kindKey(r.kind);
+      if (k === "Race") rCount++;
+      else if (k === "Qualy") qCount++;
+      else if (k === "Wet") wCount++;
+    }
+
+    const section = document.createElement("section");
+    section.className = "rounded-2xl border border-r-line bg-r-surface overflow-hidden shadow-sm hover:border-r-line-2 transition";
+
+    const isCollapsed = allExpanded ? false : isSearching ? false : collapsedState.has(`car:${car}`) ? true : carIndex >= 4;
+
+    // CAR HEADER BLOCK
     const header = document.createElement("div");
-    header.className = "px-4 py-3.5 border-b border-r-line flex flex-wrap items-center justify-between gap-3 bg-r-bg/40";
+    header.className = "px-5 py-3.5 border-b border-r-line flex flex-wrap items-center justify-between gap-3 bg-r-bg/60 cursor-pointer select-none hover:bg-r-bg/80 transition";
 
     const left = document.createElement("div");
-    left.className = "flex items-center gap-2.5";
-    const icon = document.createElement("span");
-    icon.className = "text-base";
-    icon.textContent = "🏎️";
+    left.className = "flex items-center gap-3";
 
+    const chevron = document.createElement("span");
+    chevron.className = "text-r-muted transition-transform duration-200 text-xs font-mono";
+    chevron.textContent = isCollapsed ? "▶" : "▼";
+
+    const icon = document.createElement("span");
+    icon.className = "text-xl";
+    icon.textContent = cat === "FORMULA CAR" ? "🏎️" : cat === "OVAL" ? "🏁" : cat === "DIRT" ? "🚜" : "🏎️";
+
+    const titleBlock = document.createElement("div");
     const heading = document.createElement("h2");
-    heading.className = "text-lg font-bold text-r-text tracking-wide";
-    heading.textContent = car;
-    left.append(icon, heading);
+    heading.className = "text-base md:text-lg font-bold text-r-text tracking-wide flex items-center gap-2";
+    heading.textContent = prettyCarName;
+
+    const rawFolderPill = document.createElement("span");
+    rawFolderPill.className = "font-mono text-[11px] font-normal px-2 py-0.5 rounded bg-r-line/40 text-r-muted";
+    rawFolderPill.textContent = car;
+    heading.append(rawFolderPill);
+
+    const subText = document.createElement("div");
+    subText.className = "text-xs text-r-muted flex items-center gap-2 mt-0.5";
+    subText.textContent = `${sortedCircuits.length} circuitos cubiertos`;
+
+    titleBlock.append(heading, subText);
+    left.append(chevron, icon, titleBlock);
 
     const right = document.createElement("div");
     right.className = "flex items-center gap-2 font-mono text-[11px]";
 
     const catBadge = document.createElement("span");
-    const cat = classifyCar(rows[0]?.carFolder || car);
-    catBadge.className = "px-2 py-0.5 rounded border border-r-line bg-r-surface text-r-muted uppercase tracking-wider";
+    catBadge.className = "px-2.5 py-1 rounded-lg border border-r-line bg-r-surface text-r-muted uppercase font-bold tracking-wider";
     catBadge.textContent = cat;
 
+    const typePill = document.createElement("span");
+    typePill.className = "hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-r-line bg-r-surface text-r-text text-[11px]";
+    typePill.innerHTML = `<span class="text-emerald-400 font-bold">${rCount}R</span> · <span class="text-amber-400 font-bold">${qCount}Q</span> · <span class="text-sky-400 font-bold">${wCount}W</span>`;
+
     const countBadge = document.createElement("span");
-    countBadge.className = "px-2.5 py-0.5 rounded-full bg-r-accent/15 text-r-accent font-semibold";
+    countBadge.className = "px-3 py-1 rounded-lg bg-r-accent/15 text-r-accent font-bold text-xs";
     countBadge.textContent = `${rows.length} setups`;
 
-    right.append(catBadge, countBadge);
+    right.append(catBadge, typePill, countBadge);
     header.append(left, right);
     section.append(header);
 
-    const list = document.createElement("ul");
-    list.className = "divide-y divide-r-line/50";
-    for (const row of rows) {
-      list.append(rowView(row, false));
+    // CAR BODY: Contains Circuit Sub-Blocks!
+    const body = document.createElement("div");
+    body.className = "divide-y divide-r-line/40 bg-r-surface/40";
+    body.hidden = isCollapsed;
+
+    header.addEventListener("click", () => {
+      body.hidden = !body.hidden;
+      chevron.textContent = body.hidden ? "▶" : "▼";
+      if (body.hidden) {
+        collapsedState.add(`car:${car}`);
+      } else {
+        collapsedState.delete(`car:${car}`);
+      }
+    });
+
+    for (const track of sortedCircuits) {
+      const circuitRows = circuitGroups.get(track) ?? [];
+      const trackBlock = document.createElement("div");
+      trackBlock.className = "p-4 space-y-2.5";
+
+      // Circuit Sub-Header
+      const trackHeader = document.createElement("div");
+      trackHeader.className = "flex items-center justify-between gap-2 px-1";
+
+      const trackLeft = document.createElement("div");
+      trackLeft.className = "flex items-center gap-2";
+
+      const trackPin = document.createElement("span");
+      trackPin.className = "text-r-accent text-sm";
+      trackPin.textContent = "📍";
+
+      const trackTitle = document.createElement("h3");
+      trackTitle.className = "font-bold text-sm text-r-text";
+      trackTitle.textContent = track;
+
+      trackLeft.append(trackPin, trackTitle);
+
+      const weekNum = findWeekForTrack(track);
+      if (weekNum) {
+        const weekBadge = document.createElement("span");
+        const isCur = weekNum === (sched.current_week || 9);
+        weekBadge.className = isCur
+          ? "px-2 py-0.5 rounded-full bg-r-accent text-r-ink font-bold text-[10px] uppercase tracking-wider shadow-sm"
+          : "px-2 py-0.5 rounded-full border border-r-line bg-r-bg text-r-muted text-[10px] font-mono";
+        weekBadge.textContent = isCur ? `🔥 Semana ${weekNum} (ACTUAL)` : `Semana ${weekNum}`;
+        trackLeft.append(weekBadge);
+      }
+
+      const trackRight = document.createElement("span");
+      trackRight.className = "text-xs font-mono text-r-muted";
+      trackRight.textContent = `${circuitRows.length} ${circuitRows.length === 1 ? "setup" : "setups"}`;
+
+      trackHeader.append(trackLeft, trackRight);
+      trackBlock.append(trackHeader);
+
+      // Setup Cards Grid inside Circuit!
+      const grid = document.createElement("div");
+      grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5";
+
+      for (const row of circuitRows) {
+        grid.append(setupCardView(row, false));
+      }
+      trackBlock.append(grid);
+      body.append(trackBlock);
     }
-    section.append(list);
+
+    section.append(body);
     libraryEl.append(section);
   }
 }
@@ -360,25 +675,51 @@ function paintGroupedByTrack(items: LibraryItem[]): void {
   }
 
   const sortedTracks = Array.from(groups.keys()).sort((a, b) => a.localeCompare(b));
+  const isSearching = query.trim().length > 0;
 
-  for (const track of sortedTracks) {
+  for (let trackIndex = 0; trackIndex < sortedTracks.length; trackIndex++) {
+    const track = sortedTracks[trackIndex];
     const rows = groups.get(track) ?? [];
+
+    // Group setups of this track by Car
+    const carGroups = new Map<string, LibraryItem[]>();
+    for (const r of rows) {
+      const list = carGroups.get(r.car) ?? [];
+      list.push(r);
+      carGroups.set(r.car, list);
+    }
+    const sortedCars = Array.from(carGroups.keys()).sort((a, b) => a.localeCompare(b));
+
     const section = document.createElement("section");
-    section.className = "rounded-2xl border border-r-line bg-r-surface overflow-hidden transition hover:border-r-line-2 shadow-sm";
+    section.className = "rounded-2xl border border-r-line bg-r-surface overflow-hidden shadow-sm hover:border-r-line-2 transition";
+
+    const isCollapsed = allExpanded ? false : isSearching ? false : collapsedState.has(`track:${track}`) ? true : trackIndex >= 4;
 
     const header = document.createElement("div");
-    header.className = "px-4 py-3.5 border-b border-r-line flex flex-wrap items-center justify-between gap-3 bg-r-bg/40";
+    header.className = "px-5 py-3.5 border-b border-r-line flex flex-wrap items-center justify-between gap-3 bg-r-bg/60 cursor-pointer select-none hover:bg-r-bg/80 transition";
 
     const left = document.createElement("div");
-    left.className = "flex items-center gap-2.5";
+    left.className = "flex items-center gap-3";
+
+    const chevron = document.createElement("span");
+    chevron.className = "text-r-muted transition-transform duration-200 text-xs font-mono";
+    chevron.textContent = isCollapsed ? "▶" : "▼";
+
     const icon = document.createElement("span");
-    icon.className = "text-base";
+    icon.className = "text-xl";
     icon.textContent = "📍";
 
+    const titleBlock = document.createElement("div");
     const heading = document.createElement("h2");
-    heading.className = "text-lg font-bold text-r-text tracking-wide";
+    heading.className = "text-base md:text-lg font-bold text-r-text tracking-wide";
     heading.textContent = track;
-    left.append(icon, heading);
+
+    const subText = document.createElement("div");
+    subText.className = "text-xs text-r-muted flex items-center gap-2 mt-0.5";
+    subText.textContent = `${sortedCars.length} coches disponibles`;
+
+    titleBlock.append(heading, subText);
+    left.append(chevron, icon, titleBlock);
 
     const right = document.createElement("div");
     right.className = "flex items-center gap-2 font-mono text-[11px]";
@@ -388,26 +729,72 @@ function paintGroupedByTrack(items: LibraryItem[]): void {
       const weekBadge = document.createElement("span");
       const isCur = weekNum === (sched.current_week || 9);
       weekBadge.className = isCur
-        ? "px-2 py-0.5 rounded bg-r-accent text-r-ink font-bold uppercase tracking-wider"
-        : "px-2 py-0.5 rounded border border-r-line bg-r-surface text-r-muted uppercase tracking-wider";
+        ? "px-2 py-0.5 rounded-full bg-r-accent text-r-ink font-bold uppercase tracking-wider"
+        : "px-2 py-0.5 rounded-full border border-r-line bg-r-surface text-r-muted uppercase tracking-wider";
       weekBadge.textContent = isCur ? `Semana ${weekNum} · ACTUAL` : `Semana ${weekNum}`;
       right.append(weekBadge);
     }
 
     const countBadge = document.createElement("span");
-    countBadge.className = "px-2.5 py-0.5 rounded-full bg-r-accent/15 text-r-accent font-semibold";
+    countBadge.className = "px-3 py-1 rounded-lg bg-r-accent/15 text-r-accent font-bold text-xs";
     countBadge.textContent = `${rows.length} setups`;
 
     right.append(countBadge);
     header.append(left, right);
     section.append(header);
 
-    const list = document.createElement("ul");
-    list.className = "divide-y divide-r-line/50";
-    for (const row of rows) {
-      list.append(rowView(row, true));
+    const body = document.createElement("div");
+    body.className = "divide-y divide-r-line/40 bg-r-surface/40";
+    body.hidden = isCollapsed;
+
+    header.addEventListener("click", () => {
+      body.hidden = !body.hidden;
+      chevron.textContent = body.hidden ? "▶" : "▼";
+      if (body.hidden) {
+        collapsedState.add(`track:${track}`);
+      } else {
+        collapsedState.delete(`track:${track}`);
+      }
+    });
+
+    for (const car of sortedCars) {
+      const carRows = carGroups.get(car) ?? [];
+      const carBlock = document.createElement("div");
+      carBlock.className = "p-4 space-y-2.5";
+
+      const carHeader = document.createElement("div");
+      carHeader.className = "flex items-center justify-between gap-2 px-1";
+
+      const carLeft = document.createElement("div");
+      carLeft.className = "flex items-center gap-2";
+
+      const carIcon = document.createElement("span");
+      carIcon.textContent = "🏎️";
+
+      const carTitle = document.createElement("h3");
+      carTitle.className = "font-bold text-sm text-r-text";
+      carTitle.textContent = formatCarName(car);
+
+      carLeft.append(carIcon, carTitle);
+
+      const carRight = document.createElement("span");
+      carRight.className = "text-xs font-mono text-r-muted";
+      carRight.textContent = `${carRows.length} ${carRows.length === 1 ? "setup" : "setups"}`;
+
+      carHeader.append(carLeft, carRight);
+      carBlock.append(carHeader);
+
+      const grid = document.createElement("div");
+      grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5";
+
+      for (const row of carRows) {
+        grid.append(setupCardView(row, false));
+      }
+      carBlock.append(grid);
+      body.append(carBlock);
     }
-    section.append(list);
+
+    section.append(body);
     libraryEl.append(section);
   }
 }
@@ -436,150 +823,126 @@ function paintGroupedByWeek(items: LibraryItem[]): void {
   }
   if (groups.has("Otras semanas")) orderedKeys.push("Otras semanas");
 
-  for (const key of orderedKeys) {
+  const isSearching = query.trim().length > 0;
+
+  for (let weekIndex = 0; weekIndex < orderedKeys.length; weekIndex++) {
+    const key = orderedKeys[weekIndex];
     const rows = groups.get(key) ?? [];
-    const section = document.createElement("section");
     const isCur = key === cur;
+
+    // Group setups of this week by Track
+    const trackGroups = new Map<string, LibraryItem[]>();
+    for (const r of rows) {
+      const track = r.track.trim() || "Circuito general";
+      const list = trackGroups.get(track) ?? [];
+      list.push(r);
+      trackGroups.set(track, list);
+    }
+    const sortedTracks = Array.from(trackGroups.keys()).sort((a, b) => a.localeCompare(b));
+
+    const section = document.createElement("section");
     section.className = isCur
       ? "rounded-2xl border-2 border-r-accent bg-r-surface overflow-hidden shadow-lg shadow-r-accent/5 transition"
       : "rounded-2xl border border-r-line bg-r-surface overflow-hidden shadow-sm transition";
 
+    const isCollapsed = allExpanded ? false : isSearching ? false : isCur ? false : collapsedState.has(`week:${key}`) ? true : weekIndex >= 3;
+
     const header = document.createElement("div");
     header.className = isCur
-      ? "px-4 py-3.5 border-b border-r-accent/30 flex flex-wrap items-center justify-between gap-3 bg-r-accent/10"
-      : "px-4 py-3.5 border-b border-r-line flex flex-wrap items-center justify-between gap-3 bg-r-bg/40";
+      ? "px-5 py-3.5 border-b border-r-accent/30 flex flex-wrap items-center justify-between gap-3 bg-r-accent/10 cursor-pointer select-none hover:bg-r-accent/15 transition"
+      : "px-5 py-3.5 border-b border-r-line flex flex-wrap items-center justify-between gap-3 bg-r-bg/60 cursor-pointer select-none hover:bg-r-bg/80 transition";
 
     const left = document.createElement("div");
-    left.className = "flex items-center gap-2.5";
+    left.className = "flex items-center gap-3";
+
+    const chevron = document.createElement("span");
+    chevron.className = "text-r-muted transition-transform duration-200 text-xs font-mono";
+    chevron.textContent = isCollapsed ? "▶" : "▼";
+
     const icon = document.createElement("span");
-    icon.className = "text-base";
+    icon.className = "text-xl";
     icon.textContent = isCur ? "🔥" : "📅";
 
+    const titleBlock = document.createElement("div");
     const heading = document.createElement("h2");
-    heading.className = "text-lg font-bold text-r-text tracking-wide";
+    heading.className = "text-base md:text-lg font-bold text-r-text tracking-wide";
     if (typeof key === "number") {
       heading.textContent = `Semana ${key} (${weekDates[key] ?? ""})${isCur ? " · SEMANA ACTUAL" : ""}`;
     } else {
       heading.textContent = "Otras semanas y eventos especiales";
     }
-    left.append(icon, heading);
+
+    const subText = document.createElement("div");
+    subText.className = "text-xs text-r-muted flex items-center gap-2 mt-0.5";
+    subText.textContent = `${sortedTracks.length} circuitos en calendario`;
+
+    titleBlock.append(heading, subText);
+    left.append(chevron, icon, titleBlock);
 
     const countBadge = document.createElement("span");
     countBadge.className = isCur
-      ? "px-2.5 py-0.5 rounded-full bg-r-accent text-r-ink font-mono text-[11px] font-extrabold uppercase"
-      : "px-2.5 py-0.5 rounded-full bg-r-accent/15 text-r-accent font-mono text-[11px] font-semibold";
+      ? "px-3 py-1 rounded-lg bg-r-accent text-r-ink font-mono text-xs font-extrabold uppercase shadow-sm"
+      : "px-3 py-1 rounded-lg bg-r-accent/15 text-r-accent font-mono text-xs font-semibold";
     countBadge.textContent = `${rows.length} setups`;
 
     header.append(left, countBadge);
     section.append(header);
 
-    const list = document.createElement("ul");
-    list.className = "divide-y divide-r-line/50";
-    for (const row of rows) {
-      list.append(rowView(row, true));
+    const body = document.createElement("div");
+    body.className = "divide-y divide-r-line/40 bg-r-surface/40";
+    body.hidden = isCollapsed;
+
+    header.addEventListener("click", () => {
+      body.hidden = !body.hidden;
+      chevron.textContent = body.hidden ? "▶" : "▼";
+      if (body.hidden) {
+        collapsedState.add(`week:${key}`);
+      } else {
+        collapsedState.delete(`week:${key}`);
+      }
+    });
+
+    for (const track of sortedTracks) {
+      const trackRows = trackGroups.get(track) ?? [];
+      const trackBlock = document.createElement("div");
+      trackBlock.className = "p-4 space-y-2.5";
+
+      const trackHeader = document.createElement("div");
+      trackHeader.className = "flex items-center justify-between gap-2 px-1";
+
+      const trackLeft = document.createElement("div");
+      trackLeft.className = "flex items-center gap-2";
+
+      const trackPin = document.createElement("span");
+      trackPin.className = "text-r-accent text-sm";
+      trackPin.textContent = "📍";
+
+      const trackTitle = document.createElement("h3");
+      trackTitle.className = "font-bold text-sm text-r-text";
+      trackTitle.textContent = track;
+
+      trackLeft.append(trackPin, trackTitle);
+
+      const trackRight = document.createElement("span");
+      trackRight.className = "text-xs font-mono text-r-muted";
+      trackRight.textContent = `${trackRows.length} ${trackRows.length === 1 ? "setup" : "setups"}`;
+
+      trackHeader.append(trackLeft, trackRight);
+      trackBlock.append(trackHeader);
+
+      const grid = document.createElement("div");
+      grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5";
+
+      for (const row of trackRows) {
+        grid.append(setupCardView(row, true));
+      }
+      trackBlock.append(grid);
+      body.append(trackBlock);
     }
-    section.append(list);
+
+    section.append(body);
     libraryEl.append(section);
   }
-}
-
-function rowView(row: LibraryItem, showCarName: boolean): HTMLLIElement {
-  const li = document.createElement("li");
-  li.className = "px-4 py-3 flex flex-wrap items-center justify-between gap-3 hover:bg-r-bg/50 transition";
-
-  const left = document.createElement("div");
-  left.className = "min-w-0 flex-1";
-
-  const topRow = document.createElement("div");
-  topRow.className = "flex flex-wrap items-center gap-2";
-
-  const kKey = kindKey(row.kind);
-  const dot = document.createElement("span");
-  dot.className =
-    kKey === "Race"
-      ? "w-2 h-2 rounded-full bg-emerald-400 shrink-0"
-      : kKey === "Qualy"
-        ? "w-2 h-2 rounded-full bg-sky-400 shrink-0"
-        : kKey === "Wet"
-          ? "w-2 h-2 rounded-full bg-cyan-400 shrink-0"
-          : "w-2 h-2 rounded-full bg-r-muted shrink-0";
-
-  const name = document.createElement("span");
-  name.className = "font-mono text-sm font-medium text-r-text truncate";
-  name.textContent = row.filename;
-
-  topRow.append(dot, name);
-
-  const pills = document.createElement("div");
-  pills.className = "mt-1.5 flex flex-wrap items-center gap-1.5 text-xs text-r-muted font-mono";
-
-  if (showCarName) {
-    const carPill = document.createElement("span");
-    carPill.className = "px-2 py-0.5 rounded bg-r-bg text-r-text font-medium border border-r-line/60";
-    carPill.textContent = row.car;
-    pills.append(carPill);
-  }
-
-  const trackPill = document.createElement("span");
-  trackPill.className = "px-2 py-0.5 rounded bg-r-bg text-r-accent border border-r-line/60";
-  trackPill.textContent = `📍 ${row.track}`;
-
-  const kindPill = document.createElement("span");
-  kindPill.className =
-    kKey === "Race"
-      ? "px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-      : kKey === "Qualy"
-        ? "px-2 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20"
-        : kKey === "Wet"
-          ? "px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20"
-          : "px-2 py-0.5 rounded bg-r-bg text-r-muted border border-r-line/60";
-  kindPill.textContent = KIND_LABEL[kKey] ?? row.kind;
-
-  const sizePill = document.createElement("span");
-  sizePill.className = "text-[11px] text-r-muted";
-  sizePill.textContent = `${row.season} · ${formatBytes(row.size)}`;
-
-  pills.append(trackPill, kindPill, sizePill);
-  left.append(topRow, pills);
-
-  const right = document.createElement("div");
-  right.className = "flex items-center gap-2.5 shrink-0";
-
-  const favBtn = document.createElement("button");
-  favBtn.type = "button";
-  const isFav = snapshot?.settings.favourites.includes(row.id) ?? false;
-  favBtn.className = isFav
-    ? "p-1.5 rounded-lg text-amber-400 hover:scale-110 transition text-base leading-none"
-    : "p-1.5 rounded-lg text-r-muted/40 hover:text-amber-400 hover:scale-110 transition text-base leading-none";
-  favBtn.title = isFav ? "Quitar de favoritos" : "Marcar como favorito";
-  favBtn.textContent = isFav ? "★" : "☆";
-  favBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    if (!snapshot) return;
-    const favs = snapshot.settings.favourites;
-    if (favs.includes(row.id)) {
-      snapshot.settings.favourites = favs.filter((id) => id !== row.id);
-    } else {
-      snapshot.settings.favourites = [...favs, row.id];
-    }
-    void persistSettings().then(() => {
-      paintLibrary();
-    });
-  });
-
-  const stateBadge = document.createElement("span");
-  const state = row.state;
-  stateBadge.className =
-    state === "nuevo"
-      ? "px-2.5 py-0.5 rounded-full bg-r-accent text-r-ink font-mono text-[10px] uppercase font-bold"
-      : state === "actualizado"
-        ? "px-2.5 py-0.5 rounded-full border border-r-accent text-r-accent font-mono text-[10px] uppercase font-semibold"
-        : "px-2 py-0.5 rounded text-r-muted/70 font-mono text-[10px] uppercase";
-  stateBadge.textContent = STATE_LABEL[state] ?? state;
-
-  right.append(favBtn, stateBadge);
-  li.append(left, right);
-  return li;
 }
 
 function paint(data: Snapshot): void {
@@ -834,7 +1197,8 @@ function bind(): void {
         await refresh();
       })
       .catch((error: unknown) => {
-        showNotice(error instanceof Error ? error.message : "La sincronización no se completó.", true);
+        const msg = typeof error === "string" ? error : (error as { message?: string })?.message || "La sincronización no se completó.";
+        showNotice(msg, true);
       })
       .finally(() => {
         button.removeAttribute("aria-busy");
@@ -844,8 +1208,28 @@ function bind(): void {
   });
   $("search").addEventListener("input", () => {
     query = ($("search") as HTMLInputElement).value;
+    const clearBtn = document.getElementById("clearSearch");
+    if (clearBtn) clearBtn.hidden = query.length === 0;
     paintLibrary();
   });
+  const clearSearchBtn = document.getElementById("clearSearch");
+  if (clearSearchBtn) {
+    clearSearchBtn.addEventListener("click", () => {
+      ($("search") as HTMLInputElement).value = "";
+      query = "";
+      clearSearchBtn.hidden = true;
+      paintLibrary();
+    });
+  }
+  const toggleAllBtn = document.getElementById("btnToggleAll");
+  if (toggleAllBtn) {
+    toggleAllBtn.addEventListener("click", () => {
+      allExpanded = !allExpanded;
+      collapsedState.clear();
+      toggleAllBtn.textContent = allExpanded ? "Colapsar todo" : "Expandir todo";
+      paintLibrary();
+    });
+  }
   document.querySelectorAll<HTMLButtonElement>("[data-filter]").forEach((button) => {
     button.addEventListener("click", () => {
       const value = button.dataset.filter;

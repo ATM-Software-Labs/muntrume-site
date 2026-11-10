@@ -122,10 +122,10 @@
 
             <!-- Search and Kind Filter -->
             <div class="mt-4 flex flex-wrap gap-3">
-              <label class="flex-1 min-w-[220px]">
-                <span class="sr-only">Buscar</span>
-                <input id="search" type="search" placeholder="Buscar por coche, circuito, archivo o semana..." class="w-full h-11 rounded-xl border border-r-line bg-r-surface px-4 text-sm text-r-text placeholder:text-r-muted focus:border-r-accent focus:outline-none" />
-              </label>
+              <div class="relative flex-1 min-w-[220px]">
+                <input id="search" type="search" placeholder="Buscar por coche, circuito, archivo o semana..." class="w-full h-11 rounded-xl border border-r-line bg-r-surface pl-4 pr-9 text-sm text-r-text placeholder:text-r-muted focus:border-r-accent focus:outline-none" />
+                <button type="button" id="clearSearch" hidden class="absolute right-3 top-1/2 -translate-y-1/2 text-r-muted hover:text-r-text text-sm">✕</button>
+              </div>
               <div class="flex flex-wrap gap-1.5" role="group" aria-label="Tipo de setup">
                 <button type="button" data-filter="all" class="mmt-chip h-11 px-3.5 rounded-xl border border-r-line font-mono text-[11px] uppercase tracking-wider">Todos</button>
                 <button type="button" data-filter="Race" class="mmt-chip h-11 px-3.5 rounded-xl border border-r-line font-mono text-[11px] uppercase tracking-wider">Carrera</button>
@@ -137,8 +137,13 @@
 
             <!-- Stats and Status -->
             <div id="libStats" class="mt-3 flex items-center justify-between text-xs font-mono text-r-muted px-1">
-              <span id="libCountText">Cargando biblioteca...</span>
-              <span id="libFilterNote" class="text-r-accent"></span>
+              <div class="flex items-center gap-3">
+                <span id="libCountText">Cargando biblioteca...</span>
+                <span id="libFilterNote" class="text-r-accent"></span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button type="button" id="btnToggleAll" class="text-xs font-mono text-r-muted hover:text-r-accent underline transition">Colapsar todo</button>
+              </div>
             </div>
 
             <div id="library" class="mt-4 grid gap-4"></div>
