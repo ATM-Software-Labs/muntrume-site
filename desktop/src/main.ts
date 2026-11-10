@@ -3,6 +3,56 @@ import { createMock } from "./mock";
 import { createTauriBackend } from "./tauri-backend";
 import type { Backend, LibraryItem, LiveSample, Settings, Snapshot, StagedFile } from "./types";
 import { fuelText, paintConfigAnalysis, paintExtras, updateLiveOverlay } from "./extra";
+import rawSchedule from "./season_schedule_2026_s4.json";
+
+interface ScheduleDoc {
+  current_week?: number;
+  series?: Array<{
+    weeks?: Array<{ week_num: number; track_name: string }>;
+  }>;
+}
+
+const sched = rawSchedule as unknown as ScheduleDoc;
+
+// Track to Week mapping from official 2026 Season 4 PDF
+const trackToWeeks = new Map<string, number[]>();
+if (sched && Array.isArray(sched.series)) {
+  for (const s of sched.series) {
+    for (const w of s.weeks || []) {
+      const cleanTrack = String(w.track_name || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+      if (cleanTrack) {
+        const list = trackToWeeks.get(cleanTrack) ?? [];
+        if (!list.includes(w.week_num)) list.push(w.week_num);
+        trackToWeeks.set(cleanTrack, list);
+      }
+    }
+  }
+}
+
+export function findWeekForTrack(track: string): number | null {
+  const clean = String(track || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (!clean) return null;
+  for (const [t, weeks] of trackToWeeks) {
+    if (clean.includes(t) || t.includes(clean)) {
+      return weeks[0] ?? null;
+    }
+  }
+  return null;
+}
+
+export function classifyCar(carFolder: string): "SPORTS CAR" | "FORMULA CAR" | "OVAL" | "DIRT" {
+  const c = String(carFolder || "").toLowerCase();
+  if (c.includes("dirt") || c.includes("rally") || c.includes("pro2") || c.includes("pro4") || c.includes("offroad") || c.includes("beetlerx")) {
+    return "DIRT";
+  }
+  if (c.includes("formula") || c.includes("f3") || c.includes("f4") || c.includes("sf23") || c.includes("sflights") || c.includes("pm18") || c.includes("usf2000") || c.includes("ir01") || c.includes("ir18") || c.includes("dallarair") || c.includes("lotus") || c.includes("ff1600") || c.includes("skipbarber")) {
+    return "FORMULA CAR";
+  }
+  if (c.includes("nascar") || c.includes("truck") || c.includes("arca") || c.includes("skmod") || c.includes("tourmod") || c.includes("legends") || c.includes("latemodel") || c.includes("superlate") || c.includes("srx") || c.includes("ministock") || c.includes("streetstock")) {
+    return "OVAL";
+  }
+  return "SPORTS CAR";
+}
 
 const params = new URLSearchParams(location.search);
 const screen = params.get("screen");
@@ -23,10 +73,33 @@ const libraryEl = $("library");
 const notice = $("notice");
 
 let snapshot: Snapshot | null = null;
-let filter: "all" | "Race" | "Qualy" | "Wet" = "all";
+let filter: "all" | "Race" | "Qualy" | "Wet" | "Fav" = "all";
 let query = "";
 let pollTimer = 0;
 let view: "library" | "upload" | "settings" | "week" | "analysis" | "reference" | "strategy" | "overlays" | "team" | "config" = "library";
+
+let libraryGroupBy: "car" | "track" | "week" = (() => {
+  try {
+    const val = localStorage.getItem("mmt-library-groupby");
+    if (val === "car" || val === "track" || val === "week") return val;
+  } catch {}
+  return "car";
+})();
+
+let activeCatFilter = (() => {
+  try {
+    return localStorage.getItem("mmt-active-cat-filter") || "all";
+  } catch {}
+  return "all";
+})();
+
+let userPreferences: string[] = (() => {
+  try {
+    const raw = localStorage.getItem("mmt-user-categories");
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return ["SPORTS CAR", "FORMULA CAR", "OVAL", "DIRT"];
+})();
 
 let lastLiveSample = 0;
 
@@ -129,69 +202,368 @@ function setNav(): void {
 }
 
 function paintLibrary(): void {
-  const items = (snapshot?.library ?? []).filter((entry) => {
+  const allItems = snapshot?.library ?? [];
+
+  // Filter items
+  const items = allItems.filter((entry) => {
+    // Kind filter
     const key = kindKey(entry.kind);
-    if (filter !== "all" && key !== filter) return false;
-    const haystack = `${entry.car} ${entry.track} ${entry.filename} ${entry.season}`.toLowerCase();
-    return haystack.includes(query.trim().toLowerCase());
+    if (filter === "Fav") {
+      if (!snapshot?.settings.favourites.includes(entry.id)) return false;
+    } else if (filter !== "all" && key !== filter) {
+      return false;
+    }
+
+    // Category filter
+    const carCat = classifyCar(entry.carFolder);
+    if (activeCatFilter === "MY_CATS") {
+      if (!userPreferences.includes(carCat)) return false;
+    } else if (activeCatFilter !== "all" && carCat !== activeCatFilter) {
+      return false;
+    }
+
+    // Search query
+    if (query) {
+      const q = query.trim().toLowerCase();
+      const haystack = `${entry.car} ${entry.carFolder} ${entry.track} ${entry.filename} ${entry.season} ${entry.kind}`.toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
+
+    return true;
   });
+
+  // Update Stats and UI Badges
+  const countText = document.getElementById("libCountText");
+  const filterNote = document.getElementById("libFilterNote");
+  if (countText) {
+    countText.textContent = `${items.length} de ${allItems.length} setups disponibles`;
+  }
+  if (filterNote) {
+    if (activeCatFilter === "MY_CATS") {
+      filterNote.textContent = `⭐ Mis categorías (${userPreferences.length} activas)`;
+    } else if (activeCatFilter !== "all") {
+      filterNote.textContent = `Filtrando: ${activeCatFilter}`;
+    } else {
+      filterNote.textContent = "";
+    }
+  }
+
+  // Update pill active styling
+  document.querySelectorAll<HTMLButtonElement>("[data-cat-toggle]").forEach((btn) => {
+    const isAct = btn.dataset.catToggle === activeCatFilter;
+    btn.className = isAct
+      ? "h-8 px-3 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition"
+      : "h-8 px-3 rounded-lg border border-r-line bg-r-bg text-r-muted hover:text-r-text transition";
+  });
+
+  document.querySelectorAll<HTMLButtonElement>("[data-group]").forEach((btn) => {
+    const isAct = btn.dataset.group === libraryGroupBy;
+    btn.className = isAct
+      ? "h-7 px-3 rounded-lg bg-r-surface text-r-accent font-semibold shadow-sm transition"
+      : "h-7 px-3 rounded-lg text-r-muted hover:text-r-text transition";
+  });
+
   libraryEl.replaceChildren();
+
+  if (items.length === 0) {
+    $("libraryEmpty").hidden = false;
+    return;
+  }
+  $("libraryEmpty").hidden = true;
+
+  if (libraryGroupBy === "car") {
+    paintGroupedByCar(items);
+  } else if (libraryGroupBy === "track") {
+    paintGroupedByTrack(items);
+  } else if (libraryGroupBy === "week") {
+    paintGroupedByWeek(items);
+  }
+}
+
+function paintGroupedByCar(items: LibraryItem[]): void {
   const groups = new Map<string, LibraryItem[]>();
   for (const entry of items) {
     const list = groups.get(entry.car) ?? [];
     list.push(entry);
     groups.set(entry.car, list);
   }
-  for (const [car, rows] of groups) {
+
+  const sortedCars = Array.from(groups.keys()).sort((a, b) => a.localeCompare(b));
+
+  for (const car of sortedCars) {
+    const rows = groups.get(car) ?? [];
     const section = document.createElement("section");
-    section.className = "rounded-2xl border border-r-line bg-r-surface overflow-hidden mmt-in";
+    section.className = "rounded-2xl border border-r-line bg-r-surface overflow-hidden transition hover:border-r-line-2 shadow-sm";
+
+    const header = document.createElement("div");
+    header.className = "px-4 py-3.5 border-b border-r-line flex flex-wrap items-center justify-between gap-3 bg-r-bg/40";
+
+    const left = document.createElement("div");
+    left.className = "flex items-center gap-2.5";
+    const icon = document.createElement("span");
+    icon.className = "text-base";
+    icon.textContent = "🏎️";
+
     const heading = document.createElement("h2");
-    heading.className = "mmt-display text-2xl px-4 py-3 border-b border-r-line";
+    heading.className = "text-lg font-bold text-r-text tracking-wide";
     heading.textContent = car;
-    section.append(heading);
-    const order = ["Race", "Qualy", "Wet", "other"];
-    for (const key of order) {
-      const ofKind = rows.filter((row) => kindKey(row.kind) === key);
-      if (ofKind.length === 0) continue;
-      const block = document.createElement("div");
-      block.className = "px-4 py-3 border-b border-r-line last:border-b-0";
-      const label = document.createElement("h3");
-      label.className = "font-mono text-[11px] uppercase tracking-[0.16em] text-r-accent mb-2";
-      label.textContent = KIND_LABEL[key] ?? key;
-      block.append(label);
-      const list = document.createElement("ul");
-      list.className = "grid gap-2";
-      for (const row of ofKind) list.append(rowView(row));
-      block.append(list);
-      section.append(block);
+    left.append(icon, heading);
+
+    const right = document.createElement("div");
+    right.className = "flex items-center gap-2 font-mono text-[11px]";
+
+    const catBadge = document.createElement("span");
+    const cat = classifyCar(rows[0]?.carFolder || car);
+    catBadge.className = "px-2 py-0.5 rounded border border-r-line bg-r-surface text-r-muted uppercase tracking-wider";
+    catBadge.textContent = cat;
+
+    const countBadge = document.createElement("span");
+    countBadge.className = "px-2.5 py-0.5 rounded-full bg-r-accent/15 text-r-accent font-semibold";
+    countBadge.textContent = `${rows.length} setups`;
+
+    right.append(catBadge, countBadge);
+    header.append(left, right);
+    section.append(header);
+
+    const list = document.createElement("ul");
+    list.className = "divide-y divide-r-line/50";
+    for (const row of rows) {
+      list.append(rowView(row, false));
     }
+    section.append(list);
     libraryEl.append(section);
   }
-  $("libraryEmpty").hidden = items.length > 0;
 }
 
-function rowView(row: LibraryItem): HTMLLIElement {
+function paintGroupedByTrack(items: LibraryItem[]): void {
+  const groups = new Map<string, LibraryItem[]>();
+  for (const entry of items) {
+    const track = entry.track.trim() || "Circuito general";
+    const list = groups.get(track) ?? [];
+    list.push(entry);
+    groups.set(track, list);
+  }
+
+  const sortedTracks = Array.from(groups.keys()).sort((a, b) => a.localeCompare(b));
+
+  for (const track of sortedTracks) {
+    const rows = groups.get(track) ?? [];
+    const section = document.createElement("section");
+    section.className = "rounded-2xl border border-r-line bg-r-surface overflow-hidden transition hover:border-r-line-2 shadow-sm";
+
+    const header = document.createElement("div");
+    header.className = "px-4 py-3.5 border-b border-r-line flex flex-wrap items-center justify-between gap-3 bg-r-bg/40";
+
+    const left = document.createElement("div");
+    left.className = "flex items-center gap-2.5";
+    const icon = document.createElement("span");
+    icon.className = "text-base";
+    icon.textContent = "📍";
+
+    const heading = document.createElement("h2");
+    heading.className = "text-lg font-bold text-r-text tracking-wide";
+    heading.textContent = track;
+    left.append(icon, heading);
+
+    const right = document.createElement("div");
+    right.className = "flex items-center gap-2 font-mono text-[11px]";
+
+    const weekNum = findWeekForTrack(track);
+    if (weekNum) {
+      const weekBadge = document.createElement("span");
+      const isCur = weekNum === (sched.current_week || 9);
+      weekBadge.className = isCur
+        ? "px-2 py-0.5 rounded bg-r-accent text-r-ink font-bold uppercase tracking-wider"
+        : "px-2 py-0.5 rounded border border-r-line bg-r-surface text-r-muted uppercase tracking-wider";
+      weekBadge.textContent = isCur ? `Semana ${weekNum} · ACTUAL` : `Semana ${weekNum}`;
+      right.append(weekBadge);
+    }
+
+    const countBadge = document.createElement("span");
+    countBadge.className = "px-2.5 py-0.5 rounded-full bg-r-accent/15 text-r-accent font-semibold";
+    countBadge.textContent = `${rows.length} setups`;
+
+    right.append(countBadge);
+    header.append(left, right);
+    section.append(header);
+
+    const list = document.createElement("ul");
+    list.className = "divide-y divide-r-line/50";
+    for (const row of rows) {
+      list.append(rowView(row, true));
+    }
+    section.append(list);
+    libraryEl.append(section);
+  }
+}
+
+function paintGroupedByWeek(items: LibraryItem[]): void {
+  const weekDates: Record<number, string> = {
+    1: "15 sep", 2: "22 sep", 3: "29 sep", 4: "06 oct",
+    5: "13 oct", 6: "20 oct", 7: "27 oct", 8: "03 nov",
+    9: "10 nov", 10: "17 nov", 11: "24 nov", 12: "01 dic",
+  };
+
+  const groups = new Map<number | string, LibraryItem[]>();
+  for (const entry of items) {
+    const w = findWeekForTrack(entry.track);
+    const key = w ?? "Otras semanas";
+    const list = groups.get(key) ?? [];
+    list.push(entry);
+    groups.set(key, list);
+  }
+
+  const cur = sched.current_week || 9;
+  const orderedKeys: Array<number | string> = [];
+  if (groups.has(cur)) orderedKeys.push(cur);
+  for (let w = 1; w <= 12; w++) {
+    if (w !== cur && groups.has(w)) orderedKeys.push(w);
+  }
+  if (groups.has("Otras semanas")) orderedKeys.push("Otras semanas");
+
+  for (const key of orderedKeys) {
+    const rows = groups.get(key) ?? [];
+    const section = document.createElement("section");
+    const isCur = key === cur;
+    section.className = isCur
+      ? "rounded-2xl border-2 border-r-accent bg-r-surface overflow-hidden shadow-lg shadow-r-accent/5 transition"
+      : "rounded-2xl border border-r-line bg-r-surface overflow-hidden shadow-sm transition";
+
+    const header = document.createElement("div");
+    header.className = isCur
+      ? "px-4 py-3.5 border-b border-r-accent/30 flex flex-wrap items-center justify-between gap-3 bg-r-accent/10"
+      : "px-4 py-3.5 border-b border-r-line flex flex-wrap items-center justify-between gap-3 bg-r-bg/40";
+
+    const left = document.createElement("div");
+    left.className = "flex items-center gap-2.5";
+    const icon = document.createElement("span");
+    icon.className = "text-base";
+    icon.textContent = isCur ? "🔥" : "📅";
+
+    const heading = document.createElement("h2");
+    heading.className = "text-lg font-bold text-r-text tracking-wide";
+    if (typeof key === "number") {
+      heading.textContent = `Semana ${key} (${weekDates[key] ?? ""})${isCur ? " · SEMANA ACTUAL" : ""}`;
+    } else {
+      heading.textContent = "Otras semanas y eventos especiales";
+    }
+    left.append(icon, heading);
+
+    const countBadge = document.createElement("span");
+    countBadge.className = isCur
+      ? "px-2.5 py-0.5 rounded-full bg-r-accent text-r-ink font-mono text-[11px] font-extrabold uppercase"
+      : "px-2.5 py-0.5 rounded-full bg-r-accent/15 text-r-accent font-mono text-[11px] font-semibold";
+    countBadge.textContent = `${rows.length} setups`;
+
+    header.append(left, countBadge);
+    section.append(header);
+
+    const list = document.createElement("ul");
+    list.className = "divide-y divide-r-line/50";
+    for (const row of rows) {
+      list.append(rowView(row, true));
+    }
+    section.append(list);
+    libraryEl.append(section);
+  }
+}
+
+function rowView(row: LibraryItem, showCarName: boolean): HTMLLIElement {
   const li = document.createElement("li");
-  li.className = "flex flex-wrap items-center justify-between gap-2";
+  li.className = "px-4 py-3 flex flex-wrap items-center justify-between gap-3 hover:bg-r-bg/50 transition";
+
   const left = document.createElement("div");
-  left.className = "min-w-0";
-  const name = document.createElement("p");
-  name.className = "font-mono text-sm text-r-text truncate";
+  left.className = "min-w-0 flex-1";
+
+  const topRow = document.createElement("div");
+  topRow.className = "flex flex-wrap items-center gap-2";
+
+  const kKey = kindKey(row.kind);
+  const dot = document.createElement("span");
+  dot.className =
+    kKey === "Race"
+      ? "w-2 h-2 rounded-full bg-emerald-400 shrink-0"
+      : kKey === "Qualy"
+        ? "w-2 h-2 rounded-full bg-sky-400 shrink-0"
+        : kKey === "Wet"
+          ? "w-2 h-2 rounded-full bg-cyan-400 shrink-0"
+          : "w-2 h-2 rounded-full bg-r-muted shrink-0";
+
+  const name = document.createElement("span");
+  name.className = "font-mono text-sm font-medium text-r-text truncate";
   name.textContent = row.filename;
-  const meta = document.createElement("p");
-  meta.className = "text-xs text-r-muted";
-  meta.textContent = `${row.track} · ${row.season} · ${formatBytes(row.size)}`;
-  left.append(name, meta);
-  const badge = document.createElement("span");
+
+  topRow.append(dot, name);
+
+  const pills = document.createElement("div");
+  pills.className = "mt-1.5 flex flex-wrap items-center gap-1.5 text-xs text-r-muted font-mono";
+
+  if (showCarName) {
+    const carPill = document.createElement("span");
+    carPill.className = "px-2 py-0.5 rounded bg-r-bg text-r-text font-medium border border-r-line/60";
+    carPill.textContent = row.car;
+    pills.append(carPill);
+  }
+
+  const trackPill = document.createElement("span");
+  trackPill.className = "px-2 py-0.5 rounded bg-r-bg text-r-accent border border-r-line/60";
+  trackPill.textContent = `📍 ${row.track}`;
+
+  const kindPill = document.createElement("span");
+  kindPill.className =
+    kKey === "Race"
+      ? "px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+      : kKey === "Qualy"
+        ? "px-2 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20"
+        : kKey === "Wet"
+          ? "px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20"
+          : "px-2 py-0.5 rounded bg-r-bg text-r-muted border border-r-line/60";
+  kindPill.textContent = KIND_LABEL[kKey] ?? row.kind;
+
+  const sizePill = document.createElement("span");
+  sizePill.className = "text-[11px] text-r-muted";
+  sizePill.textContent = `${row.season} · ${formatBytes(row.size)}`;
+
+  pills.append(trackPill, kindPill, sizePill);
+  left.append(topRow, pills);
+
+  const right = document.createElement("div");
+  right.className = "flex items-center gap-2.5 shrink-0";
+
+  const favBtn = document.createElement("button");
+  favBtn.type = "button";
+  const isFav = snapshot?.settings.favourites.includes(row.id) ?? false;
+  favBtn.className = isFav
+    ? "p-1.5 rounded-lg text-amber-400 hover:scale-110 transition text-base leading-none"
+    : "p-1.5 rounded-lg text-r-muted/40 hover:text-amber-400 hover:scale-110 transition text-base leading-none";
+  favBtn.title = isFav ? "Quitar de favoritos" : "Marcar como favorito";
+  favBtn.textContent = isFav ? "★" : "☆";
+  favBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (!snapshot) return;
+    const favs = snapshot.settings.favourites;
+    if (favs.includes(row.id)) {
+      snapshot.settings.favourites = favs.filter((id) => id !== row.id);
+    } else {
+      snapshot.settings.favourites = [...favs, row.id];
+    }
+    void persistSettings().then(() => {
+      paintLibrary();
+    });
+  });
+
+  const stateBadge = document.createElement("span");
   const state = row.state;
-  badge.className =
+  stateBadge.className =
     state === "nuevo"
-      ? "px-2.5 py-1 rounded-full bg-r-accent text-r-ink font-mono text-[10px] uppercase tracking-wider"
+      ? "px-2.5 py-0.5 rounded-full bg-r-accent text-r-ink font-mono text-[10px] uppercase font-bold"
       : state === "actualizado"
-        ? "px-2.5 py-1 rounded-full border border-r-accent text-r-accent font-mono text-[10px] uppercase tracking-wider"
-        : "px-2.5 py-1 rounded-full text-r-muted font-mono text-[10px] uppercase tracking-wider";
-  badge.textContent = STATE_LABEL[state] ?? state;
-  li.append(left, badge);
+        ? "px-2.5 py-0.5 rounded-full border border-r-accent text-r-accent font-mono text-[10px] uppercase font-semibold"
+        : "px-2 py-0.5 rounded text-r-muted/70 font-mono text-[10px] uppercase";
+  stateBadge.textContent = STATE_LABEL[state] ?? state;
+
+  right.append(favBtn, stateBadge);
+  li.append(left, right);
   return li;
 }
 
@@ -238,6 +610,16 @@ function paintSettings(data: Snapshot): void {
   press("deleteRetired", data.settings.deleteRetired);
   press("startWindows", data.settings.startWithWindows);
   ($("interval") as HTMLInputElement).value = String(data.settings.intervalMinutes);
+
+  const container = document.getElementById("settingsCatToggles");
+  if (container) {
+    container.querySelectorAll<HTMLInputElement>("input[data-settings-cat]").forEach((cb) => {
+      const cat = cb.dataset.settingsCat;
+      if (cat) {
+        cb.checked = userPreferences.includes(cat);
+      }
+    });
+  }
 }
 
 function press(id: string, on: boolean): void {
@@ -445,13 +827,51 @@ function bind(): void {
   document.querySelectorAll<HTMLButtonElement>("[data-filter]").forEach((button) => {
     button.addEventListener("click", () => {
       const value = button.dataset.filter;
-      if (value === "all" || value === "Race" || value === "Qualy" || value === "Wet") {
+      if (value === "all" || value === "Race" || value === "Qualy" || value === "Wet" || value === "Fav") {
         filter = value;
         setNav();
         paintLibrary();
       }
     });
   });
+  const catPills = document.getElementById("userCategoryPills");
+  if (catPills) {
+    catPills.addEventListener("click", (e) => {
+      const btn = (e.target as HTMLElement).closest("button");
+      if (!btn || !btn.dataset.catToggle) return;
+      activeCatFilter = btn.dataset.catToggle;
+      try {
+        localStorage.setItem("mmt-active-cat-filter", activeCatFilter);
+      } catch {}
+      paintLibrary();
+    });
+  }
+  const groupPills = document.getElementById("groupByPills");
+  if (groupPills) {
+    groupPills.addEventListener("click", (e) => {
+      const btn = (e.target as HTMLElement).closest("button");
+      if (!btn || !btn.dataset.group) return;
+      libraryGroupBy = btn.dataset.group as "car" | "track" | "week";
+      try {
+        localStorage.setItem("mmt-library-groupby", libraryGroupBy);
+      } catch {}
+      paintLibrary();
+    });
+  }
+  const settingsCatToggles = document.getElementById("settingsCatToggles");
+  if (settingsCatToggles) {
+    settingsCatToggles.addEventListener("change", () => {
+      const checkedBoxes = settingsCatToggles.querySelectorAll<HTMLInputElement>("input[data-settings-cat]:checked");
+      userPreferences = Array.from(checkedBoxes).map((c) => c.dataset.settingsCat!);
+      if (userPreferences.length === 0) {
+        userPreferences = ["SPORTS CAR", "FORMULA CAR", "OVAL", "DIRT"];
+      }
+      try {
+        localStorage.setItem("mmt-user-categories", JSON.stringify(userPreferences));
+      } catch {}
+      paintLibrary();
+    });
+  }
   const drop = $("dropZone");
   drop.addEventListener("dragover", (event) => {
     event.preventDefault();

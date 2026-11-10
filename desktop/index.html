@@ -81,28 +81,68 @@
           </div>
 
           <section id="viewLibrary" aria-labelledby="libraryTitle">
-            <div class="flex flex-wrap items-end justify-between gap-4">
+            <div class="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <p class="mmt-kicker">Equipo</p>
+                <p class="mmt-kicker">Setups del equipo</p>
                 <h1 id="libraryTitle" class="mmt-display text-4xl mt-3">Biblioteca</h1>
               </div>
-              <button type="button" id="syncBtn" class="mmt-btn h-12 px-5 rounded-xl bg-r-accent text-r-ink font-display font-extrabold tracking-wider uppercase">Sincronizar ahora</button>
-            </div>
-            <p id="syncStatus" class="mt-3 font-mono text-xs text-r-muted">Todavía no se ha sincronizado.</p>
-            <div class="mt-5 flex flex-col lg:flex-row gap-3">
-              <label class="flex-1">
-                <span class="sr-only">Buscar</span>
-                <input id="search" type="search" placeholder="Buscar por coche, circuito o archivo" class="w-full h-12 rounded-xl border border-r-line bg-r-surface px-4 text-sm text-r-text placeholder:text-r-muted" />
-              </label>
-              <div class="flex flex-wrap gap-2" role="group" aria-label="Tipo de setup">
-                <button type="button" data-filter="all" class="mmt-chip h-12 px-4 rounded-xl border border-r-line font-mono text-[11px] uppercase tracking-wider">Todos</button>
-                <button type="button" data-filter="Race" class="mmt-chip h-12 px-4 rounded-xl border border-r-line font-mono text-[11px] uppercase tracking-wider">Carrera</button>
-                <button type="button" data-filter="Qualy" class="mmt-chip h-12 px-4 rounded-xl border border-r-line font-mono text-[11px] uppercase tracking-wider">Clasificación</button>
-                <button type="button" data-filter="Wet" class="mmt-chip h-12 px-4 rounded-xl border border-r-line font-mono text-[11px] uppercase tracking-wider">Lluvia</button>
+              <div class="flex items-center gap-3">
+                <button type="button" id="syncBtn" class="mmt-btn h-11 px-5 rounded-xl bg-r-accent text-r-ink font-display font-extrabold uppercase tracking-wider text-sm flex items-center gap-2 shadow-lg shadow-r-accent/10">
+                  <span id="syncIcon">⟳</span>
+                  <span id="syncText">Sincronizar ahora</span>
+                </button>
               </div>
             </div>
-            <div id="library" class="mt-6 grid gap-4"></div>
-            <p id="libraryEmpty" hidden class="mt-6 rounded-2xl border border-dashed border-r-line px-4 py-8 text-center text-r-muted">Ningún setup coincide con la búsqueda.</p>
+            
+            <p id="syncStatus" class="mt-2 font-mono text-xs text-r-muted">Todavía no se ha sincronizado.</p>
+
+            <!-- Pilot Preferences & Grouping Control Bar -->
+            <div class="mt-5 p-3.5 rounded-2xl border border-r-line bg-r-surface flex flex-wrap items-center justify-between gap-3">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="text-xs font-mono uppercase tracking-wider text-r-muted mr-1">Mis Categorías:</span>
+                <div id="userCategoryPills" class="flex flex-wrap gap-1.5 font-mono text-xs">
+                  <button type="button" data-cat-toggle="all" class="h-8 px-3 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Todas</button>
+                  <button type="button" data-cat-toggle="SPORTS CAR" class="h-8 px-3 rounded-lg border border-r-line bg-r-bg text-r-muted hover:text-r-text transition">🏎️ Sports Car</button>
+                  <button type="button" data-cat-toggle="FORMULA CAR" class="h-8 px-3 rounded-lg border border-r-line bg-r-bg text-r-muted hover:text-r-text transition">🏎️ Formula</button>
+                  <button type="button" data-cat-toggle="OVAL" class="h-8 px-3 rounded-lg border border-r-line bg-r-bg text-r-muted hover:text-r-text transition">🏁 Oval</button>
+                  <button type="button" data-cat-toggle="DIRT" class="h-8 px-3 rounded-lg border border-r-line bg-r-bg text-r-muted hover:text-r-text transition">🚜 Dirt</button>
+                </div>
+              </div>
+              
+              <!-- Grouping Selector -->
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-mono uppercase tracking-wider text-r-muted">Agrupar por:</span>
+                <div id="groupByPills" class="flex rounded-xl border border-r-line bg-r-bg p-0.5 font-mono text-xs">
+                  <button type="button" data-group="car" class="h-7 px-3 rounded-lg bg-r-surface text-r-accent font-semibold shadow-sm transition">Coche</button>
+                  <button type="button" data-group="track" class="h-7 px-3 rounded-lg text-r-muted hover:text-r-text transition">Circuito</button>
+                  <button type="button" data-group="week" class="h-7 px-3 rounded-lg text-r-muted hover:text-r-text transition">Semana</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Search and Kind Filter -->
+            <div class="mt-4 flex flex-wrap gap-3">
+              <label class="flex-1 min-w-[220px]">
+                <span class="sr-only">Buscar</span>
+                <input id="search" type="search" placeholder="Buscar por coche, circuito, archivo o semana..." class="w-full h-11 rounded-xl border border-r-line bg-r-surface px-4 text-sm text-r-text placeholder:text-r-muted focus:border-r-accent focus:outline-none" />
+              </label>
+              <div class="flex flex-wrap gap-1.5" role="group" aria-label="Tipo de setup">
+                <button type="button" data-filter="all" class="mmt-chip h-11 px-3.5 rounded-xl border border-r-line font-mono text-[11px] uppercase tracking-wider">Todos</button>
+                <button type="button" data-filter="Race" class="mmt-chip h-11 px-3.5 rounded-xl border border-r-line font-mono text-[11px] uppercase tracking-wider">Carrera</button>
+                <button type="button" data-filter="Qualy" class="mmt-chip h-11 px-3.5 rounded-xl border border-r-line font-mono text-[11px] uppercase tracking-wider">Clasificación</button>
+                <button type="button" data-filter="Wet" class="mmt-chip h-11 px-3.5 rounded-xl border border-r-line font-mono text-[11px] uppercase tracking-wider">Lluvia</button>
+                <button type="button" data-filter="Fav" class="mmt-chip h-11 px-3.5 rounded-xl border border-r-line font-mono text-[11px] uppercase tracking-wider text-amber-400">★ Favs</button>
+              </div>
+            </div>
+
+            <!-- Stats and Status -->
+            <div id="libStats" class="mt-3 flex items-center justify-between text-xs font-mono text-r-muted px-1">
+              <span id="libCountText">Cargando biblioteca...</span>
+              <span id="libFilterNote" class="text-r-accent"></span>
+            </div>
+
+            <div id="library" class="mt-4 grid gap-4"></div>
+            <p id="libraryEmpty" hidden class="mt-6 rounded-2xl border border-dashed border-r-line px-4 py-8 text-center text-r-muted">Ningún setup coincide con los filtros o tu selección de categorías.</p>
           </section>
 
           <section id="viewUpload" hidden aria-labelledby="uploadTitle">
@@ -165,11 +205,12 @@
             <div class="mt-4 flex flex-wrap items-center gap-2">
               <input type="search" id="weekSearch" placeholder="Buscar serie, circuito o coche..." class="h-10 rounded-xl border border-r-line bg-r-surface px-3 text-sm text-r-text flex-1 min-w-[200px]" />
               <div id="weekCatFilters" class="flex flex-wrap gap-1.5 font-mono text-xs">
-                <button type="button" data-cat="all" class="h-9 px-3 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent">Todas</button>
-                <button type="button" data-cat="SPORTS CAR" class="h-9 px-3 rounded-lg border border-r-line bg-r-surface text-r-muted hover:text-r-text">Sports Car</button>
-                <button type="button" data-cat="FORMULA CAR" class="h-9 px-3 rounded-lg border border-r-line bg-r-surface text-r-muted hover:text-r-text">Formula</button>
-                <button type="button" data-cat="OVAL" class="h-9 px-3 rounded-lg border border-r-line bg-r-surface text-r-muted hover:text-r-text">Oval</button>
-                <button type="button" data-cat="DIRT" class="h-9 px-3 rounded-lg border border-r-line bg-r-surface text-r-muted hover:text-r-text">Dirt</button>
+                <button type="button" data-cat="MY_CATS" class="h-9 px-3 rounded-lg border border-r-line bg-r-surface text-r-muted hover:text-r-text transition">⭐ Mis Categorías</button>
+                <button type="button" data-cat="all" class="h-9 px-3 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent transition">Todas</button>
+                <button type="button" data-cat="SPORTS CAR" class="h-9 px-3 rounded-lg border border-r-line bg-r-surface text-r-muted hover:text-r-text transition">Sports Car</button>
+                <button type="button" data-cat="FORMULA CAR" class="h-9 px-3 rounded-lg border border-r-line bg-r-surface text-r-muted hover:text-r-text transition">Formula</button>
+                <button type="button" data-cat="OVAL" class="h-9 px-3 rounded-lg border border-r-line bg-r-surface text-r-muted hover:text-r-text transition">Oval</button>
+                <button type="button" data-cat="DIRT" class="h-9 px-3 rounded-lg border border-r-line bg-r-surface text-r-muted hover:text-r-text transition">Dirt</button>
               </div>
             </div>
 
@@ -311,6 +352,40 @@
                 </span>
                 <button type="button" id="startWindows" class="mmt-switch" role="switch" aria-pressed="false" aria-label="Iniciar con Windows"><span></span></button>
               </label>
+            </div>
+            <div class="mt-4 rounded-2xl border border-r-line bg-r-surface p-5">
+              <h3 class="font-display uppercase tracking-wide text-lg text-r-text mb-1">Mis Categorías y Especialidad en iRacing</h3>
+              <p class="text-xs text-r-muted mb-4">Selecciona las categorías en las que compites habitualmente. La biblioteca y el calendario semanal se adaptarán automáticamente para mostrar solo tus disciplinas.</p>
+              <div id="settingsCatToggles" class="grid sm:grid-cols-2 gap-3 font-mono text-xs">
+                <label class="flex items-center gap-3 p-3 rounded-xl border border-r-line bg-r-bg cursor-pointer hover:border-r-accent/50 transition">
+                  <input type="checkbox" data-settings-cat="SPORTS CAR" class="w-4 h-4 rounded text-r-accent bg-r-surface border-r-line focus:ring-r-accent" checked />
+                  <div>
+                    <strong class="block text-r-text">🏎️ Sports Car</strong>
+                    <span class="text-[11px] text-r-muted font-sans">IMSA GTP, GT3, GT4, TCR, Porsche Cup</span>
+                  </div>
+                </label>
+                <label class="flex items-center gap-3 p-3 rounded-xl border border-r-line bg-r-bg cursor-pointer hover:border-r-accent/50 transition">
+                  <input type="checkbox" data-settings-cat="FORMULA CAR" class="w-4 h-4 rounded text-r-accent bg-r-surface border-r-line focus:ring-r-accent" checked />
+                  <div>
+                    <strong class="block text-r-text">🏎️ Formula</strong>
+                    <span class="text-[11px] text-r-muted font-sans">FIA F4, Super Formula, F3, Grand Prix</span>
+                  </div>
+                </label>
+                <label class="flex items-center gap-3 p-3 rounded-xl border border-r-line bg-r-bg cursor-pointer hover:border-r-accent/50 transition">
+                  <input type="checkbox" data-settings-cat="OVAL" class="w-4 h-4 rounded text-r-accent bg-r-surface border-r-line focus:ring-r-accent" checked />
+                  <div>
+                    <strong class="block text-r-text">🏁 Oval</strong>
+                    <span class="text-[11px] text-r-muted font-sans">NASCAR Cup, Xfinity, Trucks, Late Model</span>
+                  </div>
+                </label>
+                <label class="flex items-center gap-3 p-3 rounded-xl border border-r-line bg-r-bg cursor-pointer hover:border-r-accent/50 transition">
+                  <input type="checkbox" data-settings-cat="DIRT" class="w-4 h-4 rounded text-r-accent bg-r-surface border-r-line focus:ring-r-accent" checked />
+                  <div>
+                    <strong class="block text-r-text">🚜 Dirt Oval & Road</strong>
+                    <span class="text-[11px] text-r-muted font-sans">Sprint Car, Pro Late Model, Rallycross</span>
+                  </div>
+                </label>
+              </div>
             </div>
             <div id="moduleFlags" class="mt-4 rounded-2xl border border-r-line bg-r-surface p-5 grid gap-2"></div>
             <div class="mt-4 rounded-2xl border border-r-line bg-r-surface p-5 text-xs text-r-muted leading-relaxed">

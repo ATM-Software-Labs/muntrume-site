@@ -114,9 +114,19 @@ function renderWeekItems(data: Snapshot): void {
   const list = document.getElementById("weekList");
   if (!note || !list) return;
 
+  let myCats: string[] = [];
+  try {
+    const raw = localStorage.getItem("mmt-user-categories");
+    if (raw) myCats = JSON.parse(raw);
+  } catch {}
+  if (!myCats.length) myCats = ["SPORTS CAR", "FORMULA CAR", "OVAL", "DIRT"];
+
   // Filter series
   const filtered = schedule.series.filter((s) => {
-    if (activeCat !== "all") {
+    if (activeCat === "MY_CATS") {
+      const isMatch = myCats.some((cat) => s.category.includes(cat) || (cat === "DIRT" && s.category.includes("DIRT")));
+      if (!isMatch) return false;
+    } else if (activeCat !== "all") {
       if (activeCat === "DIRT") {
         if (!s.category.includes("DIRT")) return false;
       } else if (!s.category.includes(activeCat)) {
