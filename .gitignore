@@ -1,20 +1,16 @@
-# Environment & Secrets (NEVER COMMIT)
+# Environment and secrets
 .env
 .env.*
 .dev.vars
 .dev.vars.*
 
-# Dependencies
+# Dependencies and logs
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Cloudflare & Wrangler cache
-.wrangler/
-.mf/
-
-# OS & Editor files
+# OS and editors
 .DS_Store
 Thumbs.db
 .vscode/
@@ -22,15 +18,17 @@ Thumbs.db
 *.swp
 *.bak
 
-# Archivos .sto privados: viven en D1 (tabla setup_files), servidos por el Worker solo a pilotos autenticados
-assets/data/cars/
-_site/
-
-# Astro build cache
+# Astro
 .astro/
 dist/
+_site/
 
-# Backend privado (vive en atrumin16/muntrume-worker-private)
+# Cloudflare local cache
+.wrangler/
+.mf/
+
+# Private setup files and local backend. Do not commit.
+assets/data/cars/
 worker/
 functions/
 wrangler.toml
