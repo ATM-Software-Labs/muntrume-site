@@ -1,0 +1,83 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "MMT Sync",
+  "version": "0.1.0",
+  "identifier": "me.muntru.mmt-sync",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:1420",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "withGlobalTauri": false,
+    "security": {
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'ipc:' 'http://ipc.localhost' 'https://ipc.localhost'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    "windows": [
+      {
+        "label": "main",
+        "title": "MMT Sync",
+        "width": 1120,
+        "height": 760,
+        "minWidth": 880,
+        "minHeight": 620,
+        "resizable": true,
+        "center": true,
+        "dragDropEnabled": true
+      },
+      {
+        "label": "overlay",
+        "url": "index.html?overlay=1",
+        "title": "MMT Sync",
+        "width": 1280,
+        "height": 800,
+        "transparent": true,
+        "alwaysOnTop": true,
+        "decorations": false,
+        "skipTaskbar": true,
+        "visible": false,
+        "shadow": false,
+        "resizable": true
+      }
+    ]
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis", "msi"],
+    "publisher": "Muntrume Motorsport",
+    "copyright": "Copyright © 2026 Muntrume Motorsport",
+    "category": "Sports",
+    "shortDescription": "Sincroniza los setups de Muntrume con iRacing",
+    "longDescription": "MMT Sync copia los setups .sto del equipo a la carpeta de iRacing del piloto, dentro de MMT.",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.png",
+      "icons/icon.ico"
+    ],
+    "createUpdaterArtifacts": false,
+    "windows": {
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper"
+      },
+      "nsis": {
+        "installMode": "currentUser",
+        "languages": ["Spanish"],
+        "displayLanguageSelector": false
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEU0MzA1QUY5ODBCNkQ1OTMKUldTVDFiYUErVm93NUt3aTlLa3hISGI4RWltMjJOT3J3YzBvTVlld3dRd3A1VnhzdDFJWnlKZUcK",
+      "endpoints": [
+        "https://github.com/atrumin16/muntrume-site/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  }
+}

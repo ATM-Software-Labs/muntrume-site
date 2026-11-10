@@ -1,0 +1,37 @@
+[package]
+name = "mmt-sync"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+publish.workspace = true
+description = "MMT Sync sincroniza los setups de Muntrume Motorsport con iRacing"
+
+[lib]
+name = "mmt_sync_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+mmt-sync-core = { path = "../core" }
+tauri = { version = "2", features = ["tray-icon", "image-png"] }
+tauri-plugin-autostart = "2"
+tauri-plugin-notification = "2"
+tauri-plugin-process = "2"
+tauri-plugin-single-instance = "2"
+tauri-plugin-updater = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+reqwest = { version = "0.12", default-features = false, features = ["json", "multipart", "rustls-tls", "stream", "gzip"] }
+futures-util = "0.3"
+tokio = { version = "1", features = ["time", "sync"] }
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+rfd = "0.15"
+open = "5"
+
+[target.'cfg(windows)'.dependencies]
+keyring = { version = "3", features = ["windows-native"] }
+known-folders = "1"
+windows-sys = { version = "0.59", features = ["Win32_Foundation", "Win32_System_Memory", "Win32_System_Threading"] }

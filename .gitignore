@@ -27,7 +27,10 @@ _site/
 .wrangler/
 .mf/
 
-# Private setup files and local backend. Do not commit.
+desktop/dist/
+desktop/target/
+desktop/src-tauri/target/
+desktop/src-tauri/gen/
 assets/data/cars/
 worker/
 functions/

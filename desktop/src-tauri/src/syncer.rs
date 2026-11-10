@@ -1,0 +1,263 @@
+use std::fs;
+use std::path::Path;
+
+use serde::Serialize;
+use tauri::{AppHandle, Manager};
+
+use mmt_sync_core::{
+    file_state, hash_bytes, load_index, locate_mmt_file, plan_sync_cars, prepare_mmt_destination,
+    save_index, toast_message, Action, IndexFile, LocalSetup, PlaceError, MAX_STO_BYTES,
+};
+
+use crate::api::{ApiError, ManifestFetch};
+use crate::state::AppState;
+use crate::settings;
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SyncReport {
+    pub downloaded: u32,
+    pub unchanged: u32,
+    pub deleted: u32,
+    pub kept_retired: u32,
+    pub rejected: u32,
+    pub not_modified: bool,
+    pub cars: Vec<String>,
+    pub errors: Vec<String>,
+    pub message: String,
+    pub at: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LibraryItem {
+    pub id: String,
+    pub car: String,
+    pub car_folder: String,
+    pub track: String,
+    pub season: String,
+    pub kind: String,
+    pub filename: String,
+    pub size: u64,
+    pub updated_at: String,
+    pub state: String,
+}
+
+pub fn library_of(index: &IndexFile) -> Vec<LibraryItem> {
+    index
+        .manifest
+        .iter()
+        .map(|setup| {
+            let local = index.files.iter().find(|file| file.id == setup.id);
+            let state = file_state(&setup.sha256, local.map(|file| file.sha256.as_str()));
+            LibraryItem {
+                id: setup.id.clone(),
+                car: setup.car.clone(),
+                car_folder: setup.car_folder.clone(),
+                track: setup.track.clone(),
+                season: setup.season.clone(),
+                kind: setup.kind.clone(),
+                filename: setup.filename.clone(),
+                size: setup.size,
+                updated_at: setup.updated_at.clone(),
+                state: state.as_str().into(),
+            }
+        })
+        .collect()
+}
+
+pub async fn synchronize(app: &AppHandle) -> Result<SyncReport, String> {
+    let state = app.state::<AppState>();
+    if state
+        .syncing
+        .compare_exchange(false, true, std::sync::atomic::Ordering::SeqCst, std::sync::atomic::Ordering::SeqCst)
+        .is_err()
+    {
+        return Err("Ya hay una sincronización en curso.".into());
+    }
+    let result = run(app).await;
+    state.syncing.store(false, std::sync::atomic::Ordering::SeqCst);
+    result
+}
+
+async fn run(app: &AppHandle) -> Result<SyncReport, String> {
+    let state = app.state::<AppState>();
+    let settings = settings::load()?;
+    let root = std::path::PathBuf::from(&settings.setups_dir);
+    if !root.is_dir() {
+        return Err("Elige la carpeta de setups de iRacing.".into());
+    }
+    let token = state.token()?;
+    let index_path = crate::folders::app_data_dir().join("index.json");
+    let mut index = load_index(&index_path).map_err(|err| err.to_string())?;
+    rehash_local(&root, &mut index);
+
+    let fetched = state.api.manifest(&token, index.etag.as_deref()).await.map_err(explain)?;
+    let not_modified = matches!(fetched, ManifestFetch::NotModified);
+    if let ManifestFetch::Fresh { manifest, etag } = fetched {
+        index.generated_at = manifest.generated_at;
+        index.manifest = manifest.setups;
+        index.etag = etag;
+    }
+
+    let plan = plan_sync_cars(
+        &index.manifest,
+        &index.files,
+        settings.delete_retired,
+        &settings.disabled_cars,
+    );
+    let mut downloaded_cars = Vec::new();
+    let mut downloaded = 0u32;
+    let mut errors = Vec::new();
+    let mut unchanged = 0u32;
+    let mut deleted = 0u32;
+    let mut kept_retired = 0u32;
+
+    for action in &plan.actions {
+        match action {
+            Action::Unchanged { .. } => unchanged += 1,
+            Action::KeepRetired { .. } => kept_retired += 1,
+            Action::Skipped { .. } => kept_retired += 1,
+            Action::Download(item) => match fetch_one(&state, &token, &root, item).await {
+                Ok(local) => {
+                    index.files.retain(|file| file.id != local.id && file.relative_path != local.relative_path);
+                    downloaded_cars.push(item.car.clone());
+                    index.files.push(local);
+                    downloaded += 1;
+                }
+                Err(err) => errors.push(format!("{}: {err}", item.relative)),
+            },
+            Action::Delete(item) => match remove_one(&root, &item.relative) {
+                Ok(()) => {
+                    index.files.retain(|file| file.id != item.id);
+                    deleted += 1;
+                }
+                Err(err) => errors.push(format!("{}: {err}", item.relative)),
+            },
+        }
+    }
+    for rejected in &plan.rejected {
+        errors.push(format!("{}: {}", rejected.id, rejected.reason));
+    }
+
+    let at = chrono::Utc::now().to_rfc3339();
+    index.last_sync_rfc3339 = Some(at.clone());
+    index.last_downloaded = downloaded;
+    index.last_cars = unique_cars(&downloaded_cars);
+    save_index(&index_path, &index).map_err(|err| err.to_string())?;
+
+    let message = if let Some(first) = errors.first() {
+        format!("Sincronización incompleta. {first}")
+    } else if downloaded == 0 && deleted == 0 {
+        if kept_retired > 0 {
+            format!("Todo al día. {kept_retired} setups retirados siguen en el disco.")
+        } else {
+            "Todo al día.".into()
+        }
+    } else {
+        toast_message(downloaded as usize, &downloaded_cars).unwrap_or_else(|| "Sincronización hecha.".into())
+    };
+
+    if downloaded > 0 {
+        if let Some(body) = toast_message(downloaded as usize, &downloaded_cars) {
+            use tauri_plugin_notification::NotificationExt;
+            let _ = app.notification().builder().title("MMT Sync").body(body).show();
+        }
+    }
+
+    Ok(SyncReport {
+        downloaded,
+        unchanged,
+        deleted,
+        kept_retired,
+        rejected: plan.rejected.len() as u32,
+        not_modified,
+        cars: unique_cars(&downloaded_cars),
+        errors,
+        message,
+        at,
+    })
+}
+
+async fn fetch_one(
+    state: &AppState,
+    token: &str,
+    root: &Path,
+    item: &mmt_sync_core::Download,
+) -> Result<LocalSetup, String> {
+    let bytes = state.api.download(token, &item.id).await.map_err(explain)?;
+    if bytes.len() as u64 != item.size {
+        return Err("el tamaño no coincide con el manifiesto".into());
+    }
+    if hash_bytes(&bytes) != item.sha256 {
+        return Err("el sha256 no coincide con el manifiesto".into());
+    }
+    if bytes.len() as u64 > MAX_STO_BYTES {
+        return Err("el archivo supera 1 MB".into());
+    }
+    let dest = prepare_mmt_destination(root, &item.relative).map_err(|err| err.to_string())?;
+    mmt_sync_core::atomic_write(&dest, &bytes).map_err(|err| err.to_string())?;
+    Ok(LocalSetup {
+        id: item.id.clone(),
+        relative_path: item.relative.clone(),
+        sha256: item.sha256.clone(),
+        size: item.size,
+    })
+}
+
+fn remove_one(root: &Path, relative: &str) -> Result<(), String> {
+    let dest = match locate_mmt_file(root, relative) {
+        Ok(path) => path,
+        Err(PlaceError::MissingRoot) => return Ok(()),
+        Err(err) => return Err(err.to_string()),
+    };
+    let meta = match fs::symlink_metadata(&dest) {
+        Ok(meta) => meta,
+        Err(err) if err.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+        Err(err) => return Err(err.to_string()),
+    };
+    if meta.file_type().is_symlink() || meta.is_file() {
+        fs::remove_file(&dest).map_err(|err| err.to_string())?;
+        return Ok(());
+    }
+    Err("no borro nada que no sea un archivo dentro de MMT".into())
+}
+
+fn rehash_local(root: &Path, index: &mut IndexFile) {
+    for file in &mut index.files {
+        let Ok(path) = locate_mmt_file(root, &file.relative_path) else {
+            file.sha256.clear();
+            continue;
+        };
+        let Ok(meta) = fs::symlink_metadata(&path) else {
+            file.sha256.clear();
+            continue;
+        };
+        if meta.file_type().is_symlink() || !meta.is_file() || meta.len() > MAX_STO_BYTES {
+            file.sha256.clear();
+            continue;
+        }
+        match fs::read(&path) {
+            Ok(bytes) => {
+                file.size = bytes.len() as u64;
+                file.sha256 = hash_bytes(&bytes);
+            }
+            Err(_) => file.sha256.clear(),
+        }
+    }
+}
+
+fn unique_cars(cars: &[String]) -> Vec<String> {
+    let mut out = Vec::new();
+    for car in cars {
+        let name = car.trim();
+        if !name.is_empty() && !out.iter().any(|seen: &String| seen == name) {
+            out.push(name.to_string());
+        }
+    }
+    out
+}
+
+fn explain(err: ApiError) -> String {
+    err.to_string()
+}

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-open-verify"
+description = "Enables the open_verify command without any pre-configured scope."
+commands.allow = ["open_verify"]
+
+[[permission]]
+identifier = "deny-open-verify"
+description = "Denies the open_verify command without any pre-configured scope."
+commands.deny = ["open_verify"]

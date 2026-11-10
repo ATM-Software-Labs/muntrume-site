@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="es" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
+    <title>MMT Sync</title>
+    <script src="./theme-init.js"></script>
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body class="min-h-screen bg-r-bg text-r-text antialiased">
+    <div class="min-h-screen flex flex-col">
+      <header class="h-16 shrink-0 border-b border-r-line bg-r-surface flex items-center justify-between gap-4 px-5">
+        <div class="flex items-center gap-3 min-w-0">
+          <img src="./icon.png" width="32" height="32" alt="" class="h-8 w-8 rounded-lg" />
+          <div class="min-w-0">
+            <div class="mmt-display text-[22px] leading-none">MMT Sync</div>
+            <div id="pilotLine" class="font-mono text-[11px] tracking-wide text-r-muted truncate">Muntrume Motorsport</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <nav id="appNav" class="hidden sm:flex items-center gap-1" aria-label="Secciones">
+            <button type="button" data-nav="library" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Biblioteca</button>
+            <button type="button" data-nav="upload" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Subir</button>
+            <button type="button" data-nav="settings" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Ajustes</button>
+          </nav>
+          <button type="button" id="themeToggle" class="mmt-btn-ghost h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-text" aria-pressed="false">Tema claro</button>
+        </div>
+      </header>
+
+      <div id="demoChip" hidden class="px-5 py-2 bg-r-bg-2 border-b border-r-line font-mono text-[11px] uppercase tracking-wider text-r-muted">
+        Demostración local. No hay conexión con el API.
+      </div>
+      <div id="offlineChip" hidden class="px-5 py-2 border-b border-r-line font-mono text-[12px] text-r-text">Sin conexión con muntru.me. Se muestra la última biblioteca guardada.</div>
+      <div id="updateBar" hidden class="px-5 py-3 border-b border-r-line bg-r-surface flex flex-wrap items-center justify-between gap-3">
+        <p id="updateText" class="text-sm">Hay una actualización.</p>
+        <button type="button" id="updateBtn" class="mmt-btn h-10 px-4 rounded-xl bg-r-accent text-r-ink font-display font-extrabold tracking-wider uppercase text-sm">Instalar</button>
+      </div>
+      <p id="notice" role="status" aria-live="polite" hidden class="mx-5 mt-4 rounded-xl border border-r-line bg-r-surface px-4 py-3 text-sm"></p>
+
+      <main class="flex-1 px-5 py-6">
+        <section id="viewLogin" class="mmt-in max-w-xl mx-auto">
+          <p class="mmt-kicker">Acceso de piloto</p>
+          <h1 class="mmt-display text-5xl mt-4">Vincular este ordenador</h1>
+          <p class="mt-4 text-r-muted leading-relaxed max-w-prose">El token se guarda en el Administrador de credenciales de Windows. No se escribe en un archivo.</p>
+          <div id="loginStart" class="mt-8">
+            <button type="button" id="linkBtn" class="mmt-btn h-12 px-6 rounded-xl bg-r-accent text-r-ink font-display font-extrabold tracking-wider uppercase">Vincular con muntru.me</button>
+          </div>
+          <div id="loginPending" hidden class="mt-8 rounded-2xl border border-r-line bg-r-surface p-6">
+            <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-r-muted">Código</p>
+            <p id="userCode" class="mmt-display text-6xl mt-2 text-r-accent">MMT-0000</p>
+            <p class="mt-4 text-sm text-r-muted leading-relaxed">Abre muntru.me, entra con tu cuenta de piloto y pulsa «Autorizar este dispositivo».</p>
+            <p id="pollStatus" class="mt-3 font-mono text-xs text-r-text">Esperando autorización…</p>
+            <div class="mt-5 flex flex-wrap gap-3">
+              <button type="button" id="openBrowser" class="mmt-btn h-11 px-4 rounded-xl bg-r-accent text-r-ink font-display font-extrabold tracking-wider uppercase text-sm">Abrir muntru.me</button>
+              <button type="button" id="cancelLink" class="mmt-btn-ghost h-11 px-4 rounded-xl border border-r-line font-display font-extrabold tracking-wider uppercase text-sm">Cancelar</button>
+            </div>
+            <button type="button" id="mockApprove" hidden class="mt-4 font-mono text-[11px] uppercase tracking-wider text-r-muted underline">Simular autorización (solo demostración)</button>
+          </div>
+        </section>
+
+        <section id="viewApp" hidden>
+          <div class="sm:hidden flex gap-2 mb-4" id="appNavMobile">
+            <button type="button" data-nav="library" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Biblioteca</button>
+            <button type="button" data-nav="upload" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Subir</button>
+            <button type="button" data-nav="settings" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Ajustes</button>
+          </div>
+
+          <section id="viewLibrary" aria-labelledby="libraryTitle">
+            <div class="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p class="mmt-kicker">Equipo</p>
+                <h1 id="libraryTitle" class="mmt-display text-4xl mt-3">Biblioteca</h1>
+              </div>
+              <button type="button" id="syncBtn" class="mmt-btn h-12 px-5 rounded-xl bg-r-accent text-r-ink font-display font-extrabold tracking-wider uppercase">Sincronizar ahora</button>
+            </div>
+            <p id="syncStatus" class="mt-3 font-mono text-xs text-r-muted">Todavía no se ha sincronizado.</p>
+            <div class="mt-5 flex flex-col lg:flex-row gap-3">
+              <label class="flex-1">
+                <span class="sr-only">Buscar</span>
+                <input id="search" type="search" placeholder="Buscar por coche, circuito o archivo" class="w-full h-12 rounded-xl border border-r-line bg-r-surface px-4 text-sm text-r-text placeholder:text-r-muted" />
+              </label>
+              <div class="flex flex-wrap gap-2" role="group" aria-label="Tipo de setup">
+                <button type="button" data-filter="all" class="mmt-chip h-12 px-4 rounded-xl border border-r-line font-mono text-[11px] uppercase tracking-wider">Todos</button>
+                <button type="button" data-filter="Race" class="mmt-chip h-12 px-4 rounded-xl border border-r-line font-mono text-[11px] uppercase tracking-wider">Carrera</button>
+                <button type="button" data-filter="Qualy" class="mmt-chip h-12 px-4 rounded-xl border border-r-line font-mono text-[11px] uppercase tracking-wider">Clasificación</button>
+                <button type="button" data-filter="Wet" class="mmt-chip h-12 px-4 rounded-xl border border-r-line font-mono text-[11px] uppercase tracking-wider">Lluvia</button>
+              </div>
+            </div>
+            <div id="library" class="mt-6 grid gap-4"></div>
+            <p id="libraryEmpty" hidden class="mt-6 rounded-2xl border border-dashed border-r-line px-4 py-8 text-center text-r-muted">Ningún setup coincide con la búsqueda.</p>
+          </section>
+
+          <section id="viewUpload" hidden aria-labelledby="uploadTitle">
+            <p class="mmt-kicker">Sala de ingenieros</p>
+            <h1 id="uploadTitle" class="mmt-display text-4xl mt-3">Subir un setup</h1>
+            <p class="mt-3 text-r-muted max-w-prose">El archivo va a revisión. No se publica solo.</p>
+            <form id="uploadForm" class="mt-6 grid gap-4 max-w-2xl">
+              <div id="dropZone" class="rounded-2xl border border-dashed border-r-line-2 bg-r-surface px-5 py-8 text-center">
+                <p class="font-display text-2xl uppercase">Arrastra un .sto</p>
+                <p id="stagedName" class="mt-2 font-mono text-xs text-r-muted">Como máximo 1 MB.</p>
+                <button type="button" id="pickSto" class="mmt-btn-ghost mt-4 h-11 px-4 rounded-xl border border-r-line font-display uppercase tracking-wider text-sm">Elegir archivo</button>
+                <input id="stoInput" type="file" accept=".sto,application/octet-stream" hidden />
+              </div>
+              <label class="grid gap-1 text-sm">Carpeta del coche en iRacing
+                <input id="carFolder" name="carFolder" required maxlength="80" autocomplete="off" placeholder="ferrari296gt3" class="h-12 rounded-xl border border-r-line bg-r-bg px-3 font-mono text-sm" />
+              </label>
+              <label class="grid gap-1 text-sm">Circuito
+                <input id="track" name="track" required maxlength="80" autocomplete="off" placeholder="Spa-Francorchamps" class="h-12 rounded-xl border border-r-line bg-r-bg px-3 text-sm" />
+              </label>
+              <label class="grid gap-1 text-sm">Tipo
+                <select id="kind" name="kind" class="h-12 rounded-xl border border-r-line bg-r-bg px-3 text-sm">
+                  <option value="Race">Carrera</option>
+                  <option value="Qualy">Clasificación</option>
+                  <option value="Wet">Lluvia</option>
+                </select>
+              </label>
+              <label class="grid gap-1 text-sm">Notas para los ingenieros
+                <textarea id="notes" name="notes" maxlength="280" rows="4" class="rounded-xl border border-r-line bg-r-bg px-3 py-3 text-sm" placeholder="Presiones, temperatura, comentarios de tanda"></textarea>
+                <span id="notesCount" class="font-mono text-[11px] text-r-muted">0 / 280</span>
+              </label>
+              <button type="submit" id="uploadBtn" class="mmt-btn h-12 px-5 rounded-xl bg-r-accent text-r-ink font-display font-extrabold tracking-wider uppercase justify-self-start">Enviar a revisión</button>
+            </form>
+            <p id="uploadDone" hidden class="mt-6 rounded-2xl border border-r-accent bg-r-surface px-5 py-6 mmt-display text-3xl text-r-accent">Enviado a revisión en la Sala de ingenieros</p>
+          </section>
+
+          <div id="moduleNav" class="flex flex-wrap gap-2 mb-5" aria-label="Módulos">
+            <button type="button" data-nav="week" class="mmt-chip h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-muted">Esta semana</button>
+            <button type="button" data-nav="analysis" class="mmt-chip h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-muted">Análisis</button>
+            <button type="button" data-nav="reference" class="mmt-chip h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-muted">Referencia</button>
+            <button type="button" data-nav="strategy" class="mmt-chip h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-muted">Estrategia</button>
+            <button type="button" data-nav="overlays" class="mmt-chip h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-muted">Overlays</button>
+            <button type="button" data-nav="team" class="mmt-chip h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-muted">Equipo</button>
+          </div>
+
+          <section id="viewWeek" hidden aria-labelledby="weekTitle">
+            <p class="mmt-kicker">Calendario</p>
+            <h1 id="weekTitle" class="mmt-display text-4xl mt-3">Esta semana</h1>
+            <p id="weekNote" class="mt-3 text-sm text-r-muted max-w-prose"></p>
+            <div id="weekList" class="mt-5 grid gap-3"></div>
+          </section>
+
+          <section id="viewAnalysis" hidden aria-labelledby="analysisTitle">
+            <p class="mmt-kicker">Telemetría local</p>
+            <h1 id="analysisTitle" class="mmt-display text-4xl mt-3">Análisis</h1>
+            <p class="mt-3 text-sm text-r-muted max-w-prose">Se leen archivos .ibt de tu carpeta de iRacing. La gráfica de abajo es una traza sintética para enseñar la vista, no una vuelta real.</p>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <label class="text-sm">Vuelta A
+                <select id="lapA" class="ml-2 h-10 rounded-lg border border-r-line bg-r-surface px-2"></select>
+              </label>
+              <label class="text-sm">Vuelta B
+                <select id="lapB" class="ml-2 h-10 rounded-lg border border-r-line bg-r-surface px-2"></select>
+              </label>
+            </div>
+            <div class="mt-4 grid lg:grid-cols-[280px_1fr] gap-4">
+              <canvas id="mapCanvas" width="280" height="280" class="w-full rounded-2xl border border-r-line bg-r-surface"></canvas>
+              <canvas id="traceCanvas" width="720" height="280" class="w-full rounded-2xl border border-r-line bg-r-surface"></canvas>
+            </div>
+          </section>
+
+          <section id="viewReference" hidden aria-labelledby="refTitle">
+            <p class="mmt-kicker">Vueltas del equipo</p>
+            <h1 id="refTitle" class="mmt-display text-4xl mt-3">Referencia</h1>
+            <p id="refState" class="mt-3 text-sm text-r-muted max-w-prose"></p>
+            <button type="button" id="refPack" class="mmt-btn mt-4 h-11 px-4 rounded-xl bg-r-accent text-r-ink font-display uppercase tracking-wider text-sm">Empaquetar vuelta sintética</button>
+            <p id="refResult" class="mt-3 font-mono text-xs text-r-muted"></p>
+          </section>
+
+          <section id="viewStrategy" hidden aria-labelledby="strategyTitle" class="max-w-2xl">
+            <p class="mmt-kicker">Resistencia</p>
+            <h1 id="strategyTitle" class="mmt-display text-4xl mt-3">Estrategia</h1>
+            <p class="mt-3 text-sm text-r-muted">Los números los escribes tú. MMT Sync no inventa el consumo de la carrera.</p>
+            <form id="fuelForm" class="mt-4 grid sm:grid-cols-2 gap-3">
+              <label class="text-sm grid gap-1">Minutos de carrera<input id="raceMin" type="number" min="1" step="1" value="60" class="h-11 rounded-xl border border-r-line bg-r-surface px-3" /></label>
+              <label class="text-sm grid gap-1">Segundos por vuelta<input id="lapSec" type="number" min="1" step="0.1" value="120" class="h-11 rounded-xl border border-r-line bg-r-surface px-3" /></label>
+              <label class="text-sm grid gap-1">Litros por vuelta<input id="fuelLap" type="number" min="0.1" step="0.1" value="2" class="h-11 rounded-xl border border-r-line bg-r-surface px-3" /></label>
+              <label class="text-sm grid gap-1">Depósito (L)<input id="tank" type="number" min="1" step="0.1" value="40" class="h-11 rounded-xl border border-r-line bg-r-surface px-3" /></label>
+              <label class="text-sm grid gap-1">Combustible ahora (L)<input id="fuelNow" type="number" min="0" step="0.1" value="40" class="h-11 rounded-xl border border-r-line bg-r-surface px-3" /></label>
+              <label class="text-sm grid gap-1">Pérdida en box (s)<input id="pitLoss" type="number" min="0" step="1" value="25" class="h-11 rounded-xl border border-r-line bg-r-surface px-3" /></label>
+              <button type="submit" class="mmt-btn h-11 px-4 rounded-xl bg-r-accent text-r-ink font-display uppercase tracking-wider text-sm">Calcular</button>
+            </form>
+            <p id="fuelOut" class="mt-4 text-sm leading-relaxed"></p>
+            <h2 class="mmt-display text-2xl mt-8">Lista previa</h2>
+            <ul id="checklist" class="mt-3 grid gap-2"></ul>
+          </section>
+
+          <section id="viewOverlays" hidden aria-labelledby="overlayTitle">
+            <p class="mmt-kicker">En pista</p>
+            <h1 id="overlayTitle" class="mmt-display text-4xl mt-3">Overlays</h1>
+            <p class="mt-3 text-sm text-r-muted max-w-prose">En Windows se leen de la memoria compartida del SDK, solo lectura. Aquí ves el mismo panel sobre un fondo de muestra, con datos sintéticos.</p>
+            <div id="overlayStage" class="relative mt-4 h-[520px] rounded-2xl overflow-hidden border border-r-line">
+              <div class="absolute inset-0" style="background: radial-gradient(circle at 50% 60%, #1c3a32 0%, #0a0d0c 62%);"></div>
+              <div class="absolute left-4 top-4 w-52 rounded-xl border border-white/20 bg-black/55 text-white p-3 text-xs font-mono whitespace-pre-line" id="ovRelative"></div>
+              <div class="absolute right-4 top-4 w-44 rounded-xl border border-white/20 bg-black/55 text-white p-3 text-xs font-mono whitespace-pre-line" id="ovStandings"></div>
+              <div class="absolute left-1/2 top-4 -translate-x-1/2 rounded-xl border border-white/20 bg-black/55 text-white px-4 py-2 font-mono text-sm" id="ovDelta"></div>
+              <div class="absolute left-4 bottom-4 w-56 rounded-xl border border-white/20 bg-black/55 text-white p-3 text-xs whitespace-pre-line" id="ovFuel"></div>
+              <canvas id="ovInputs" width="280" height="90" class="absolute right-4 bottom-24 rounded-xl border border-white/20 bg-black/40"></canvas>
+              <div class="absolute right-4 bottom-4 w-44 rounded-xl border border-white/20 bg-black/55 text-white p-3 text-xs font-mono whitespace-pre-line" id="ovTyres"></div>
+            </div>
+          </section>
+
+          <section id="viewTeam" hidden aria-labelledby="teamTitle" class="max-w-2xl">
+            <p class="mmt-kicker">Paddock</p>
+            <h1 id="teamTitle" class="mmt-display text-4xl mt-3">Equipo</h1>
+            <p id="teamBody" class="mt-3 text-sm text-r-muted leading-relaxed"></p>
+            <p id="reviewBody" class="mt-3 text-sm text-r-muted leading-relaxed"></p>
+          </section>
+
+          <section id="viewSettings" hidden aria-labelledby="settingsTitle" class="max-w-2xl">
+            <p class="mmt-kicker">Este ordenador</p>
+            <h1 id="settingsTitle" class="mmt-display text-4xl mt-3">Ajustes</h1>
+            <div class="mt-6 rounded-2xl border border-r-line bg-r-surface p-5 grid gap-3">
+              <p class="font-mono text-[11px] uppercase tracking-[0.16em] text-r-muted">Carpeta de iRacing</p>
+              <p id="folderPath" class="font-mono text-sm break-all">Sin carpeta</p>
+              <p id="folderWarn" hidden class="text-sm text-r-muted">Esa carpeta todavía no existe. iRacing la crea al guardar un setup, o elige otra.</p>
+              <div class="flex flex-wrap gap-2">
+                <button type="button" id="pickFolder" class="mmt-btn h-11 px-4 rounded-xl bg-r-accent text-r-ink font-display uppercase tracking-wider text-sm">Cambiar carpeta</button>
+                <button type="button" id="detectFolder" class="mmt-btn-ghost h-11 px-4 rounded-xl border border-r-line font-display uppercase tracking-wider text-sm">Detectar de nuevo</button>
+              </div>
+              <p class="text-sm text-r-muted">Los archivos se escriben solo en <span class="font-mono text-r-text">coche\MMT\temporada</span>. El resto de la carpeta no se toca.</p>
+            </div>
+            <div class="mt-4 rounded-2xl border border-r-line bg-r-surface p-5 grid gap-4">
+              <label class="flex items-center justify-between gap-4">
+                <span>
+                  <span class="block font-semibold">Sincronizar automáticamente</span>
+                  <span class="block text-sm text-r-muted">Mientras la aplicación sigue abierta, también en la bandeja.</span>
+                </span>
+                <button type="button" id="autoSync" class="mmt-switch" role="switch" aria-pressed="true" aria-label="Sincronizar automáticamente"><span></span></button>
+              </label>
+              <label class="grid gap-1 text-sm">Cada cuántos minutos
+                <input id="interval" type="number" min="5" max="720" value="30" class="h-12 w-32 rounded-xl border border-r-line bg-r-bg px-3 font-mono" />
+              </label>
+              <label class="flex items-center justify-between gap-4">
+                <span>
+                  <span class="block font-semibold">Eliminar retirados</span>
+                  <span class="block text-sm text-r-muted">Apagado por defecto. Solo borra archivos dentro de las carpetas MMT que ya no están en el manifiesto.</span>
+                </span>
+                <button type="button" id="deleteRetired" class="mmt-switch" role="switch" aria-pressed="false" aria-label="Eliminar retirados"><span></span></button>
+              </label>
+              <label class="flex items-center justify-between gap-4">
+                <span>
+                  <span class="block font-semibold">Iniciar con Windows</span>
+                  <span class="block text-sm text-r-muted">Apagado por defecto. Arranca en la bandeja.</span>
+                </span>
+                <button type="button" id="startWindows" class="mmt-switch" role="switch" aria-pressed="false" aria-label="Iniciar con Windows"><span></span></button>
+              </label>
+            </div>
+            <div id="moduleFlags" class="mt-4 rounded-2xl border border-r-line bg-r-surface p-5 grid gap-2"></div>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <button type="button" id="logoutBtn" class="mmt-btn-ghost h-11 px-4 rounded-xl border border-r-line font-display uppercase tracking-wider text-sm">Cerrar sesión</button>
+              <button type="button" id="quitBtn" class="mmt-btn-ghost h-11 px-4 rounded-xl border border-r-line font-display uppercase tracking-wider text-sm">Salir</button>
+            </div>
+            <p class="mt-4 text-sm text-r-muted">La bandeja tiene Sincronizar ahora, Abrir y Salir. Cerrar la ventana deja MMT Sync en marcha. No hay analítica de terceros.</p>
+          </section>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

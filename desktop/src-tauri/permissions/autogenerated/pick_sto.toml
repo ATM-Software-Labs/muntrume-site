@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-pick-sto"
+description = "Enables the pick_sto command without any pre-configured scope."
+commands.allow = ["pick_sto"]
+
+[[permission]]
+identifier = "deny-pick-sto"
+description = "Denies the pick_sto command without any pre-configured scope."
+commands.deny = ["pick_sto"]
