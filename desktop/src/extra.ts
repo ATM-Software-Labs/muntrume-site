@@ -1,4 +1,40 @@
-import type { IracingAnalysis, LibraryItem, LiveSample, Settings, Snapshot } from "./types";
+import type { IracingAnalysis, LiveSample, Settings, Snapshot } from "./types";
+import rawSchedule from "./season_schedule_2026_s4.json";
+
+interface ScheduleWeek {
+  week_num: number;
+  start_date: string;
+  track_name: string;
+  config: string;
+  weather: string;
+  duration: string;
+  sim_time: string;
+}
+
+interface ScheduleSeries {
+  id: string;
+  name: string;
+  category: string;
+  tier: string;
+  license: string;
+  cars: string[];
+  weeks: ScheduleWeek[];
+}
+
+interface SchedulePayload {
+  season: string;
+  pdf_source: string;
+  total_series: number;
+  current_week: number;
+  series: ScheduleSeries[];
+}
+
+const schedule = rawSchedule as unknown as SchedulePayload;
+
+let activeWeek = schedule.current_week || 9;
+let activeCat = "all";
+let activeSearch = "";
+let weekListenersAttached = false;
 
 export function paintExtras(data: Snapshot): void {
   paintWeek(data);
@@ -19,48 +55,200 @@ export function paintExtras(data: Snapshot): void {
 function paintWeek(data: Snapshot): void {
   const note = document.getElementById("weekNote");
   const list = document.getElementById("weekList");
+  const weekSelect = document.getElementById("weekSelect") as HTMLSelectElement | null;
+  const weekSearch = document.getElementById("weekSearch") as HTMLInputElement | null;
+  const catFilters = document.getElementById("weekCatFilters");
   if (!note || !list) return;
-  const hasWeek = data.library.some((item) => item.id.includes("week"));
-  note.textContent = hasWeek
-    ? "Agrupado con el campo week del manifiesto."
-    : "El manifiesto no trae la semana actual. Se agrupa por circuito, sin inventar el calendario de iRacing.";
-  list.replaceChildren();
-  const groups = new Map<string, LibraryItem[]>();
-  for (const item of data.library) {
-    const key = item.track;
-    const rows = groups.get(key) ?? [];
-    rows.push(item);
-    groups.set(key, rows);
-  }
-  for (const [track, rows] of groups) {
-    const card = document.createElement("article");
-    card.className = "rounded-2xl border border-r-line bg-r-surface p-4";
-    const title = document.createElement("h2");
-    title.className = "mmt-display text-2xl";
-    title.textContent = track;
-    card.append(title);
-    for (const row of rows) {
-      const line = document.createElement("p");
-      line.className = "mt-2 text-sm";
-      const fav = data.settings.favourites.includes(row.id) ? " · favorito" : "";
-      line.textContent = `${row.car} · ${row.filename}${fav}`;
-      card.append(line);
+
+  if (weekSelect && weekSelect.options.length === 0) {
+    const weekDates: Record<number, string> = {
+      1: "15 sep", 2: "22 sep", 3: "29 sep", 4: "06 oct",
+      5: "13 oct", 6: "20 oct", 7: "27 oct", 8: "03 nov",
+      9: "10 nov", 10: "17 nov", 11: "24 nov", 12: "01 dic",
+    };
+    for (let w = 1; w <= 12; w++) {
+      const opt = document.createElement("option");
+      opt.value = String(w);
+      const isCurrent = w === (schedule.current_week || 9);
+      opt.textContent = `Semana ${w} (${weekDates[w] ?? ""})${isCurrent ? " · ACTUAL" : ""}`;
+      weekSelect.append(opt);
     }
-    list.append(card);
+    weekSelect.value = String(activeWeek);
   }
-  if (data.library.length >= 2) {
-    const diff = document.createElement("article");
-    diff.className = "rounded-2xl border border-r-line bg-r-surface p-4";
+
+  if (!weekListenersAttached) {
+    weekListenersAttached = true;
+    if (weekSelect) {
+      weekSelect.addEventListener("change", () => {
+        activeWeek = Number(weekSelect.value);
+        renderWeekItems(data);
+      });
+    }
+    if (weekSearch) {
+      weekSearch.addEventListener("input", () => {
+        activeSearch = weekSearch.value.trim().toLowerCase();
+        renderWeekItems(data);
+      });
+    }
+    if (catFilters) {
+      catFilters.addEventListener("click", (e) => {
+        const btn = (e.target as HTMLElement).closest("button");
+        if (!btn || !btn.dataset.cat) return;
+        activeCat = btn.dataset.cat;
+        for (const b of catFilters.querySelectorAll("button")) {
+          const isSelected = b.dataset.cat === activeCat;
+          b.className = isSelected
+            ? "h-9 px-3 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent"
+            : "h-9 px-3 rounded-lg border border-r-line bg-r-surface text-r-muted hover:text-r-text";
+        }
+        renderWeekItems(data);
+      });
+    }
+  }
+
+  renderWeekItems(data);
+}
+
+function renderWeekItems(data: Snapshot): void {
+  const note = document.getElementById("weekNote");
+  const list = document.getElementById("weekList");
+  if (!note || !list) return;
+
+  // Filter series
+  const filtered = schedule.series.filter((s) => {
+    if (activeCat !== "all") {
+      if (activeCat === "DIRT") {
+        if (!s.category.includes("DIRT")) return false;
+      } else if (!s.category.includes(activeCat)) {
+        return false;
+      }
+    }
+    if (activeSearch) {
+      const haystack = `${s.name} ${s.cars.join(" ")} ${s.weeks.map((w) => `${w.track_name} ${w.config}`).join(" ")}`.toLowerCase();
+      if (!haystack.includes(activeSearch)) return false;
+    }
+    return true;
+  });
+
+  // Check matching setups in library
+  const seriesWithMeta = filtered.map((s) => {
+    const weekItem = s.weeks.find((w) => w.week_num === activeWeek);
+    let matchCount = 0;
+    if (weekItem && weekItem.track_name) {
+      const cleanTrack = weekItem.track_name.toLowerCase().replace(/[^a-z0-9]/g, "");
+      matchCount = data.library.filter((item) => {
+        const itemClean = item.track.toLowerCase().replace(/[^a-z0-9]/g, "");
+        return cleanTrack.includes(itemClean) || itemClean.includes(cleanTrack);
+      }).length;
+    }
+    return { series: s, weekItem, matchCount };
+  });
+
+  // Prioritize series with setups available
+  seriesWithMeta.sort((a, b) => b.matchCount - a.matchCount);
+
+  note.textContent = `Mostrando ${seriesWithMeta.length} series oficiales para la Semana ${activeWeek} de 2026 Season 4 (extraídas de SeasonSchedule.pdf).`;
+  list.replaceChildren();
+
+  if (seriesWithMeta.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "py-8 text-center text-sm text-r-muted";
+    empty.textContent = "Ninguna serie coincide con los filtros seleccionados.";
+    list.append(empty);
+    return;
+  }
+
+  for (const { series: s, weekItem, matchCount } of seriesWithMeta) {
+    const card = document.createElement("article");
+    card.className = "rounded-2xl border border-r-line bg-r-surface p-5 transition hover:border-r-accent/40";
+
+    const top = document.createElement("div");
+    top.className = "flex flex-wrap items-center justify-between gap-2";
+
+    const badges = document.createElement("div");
+    badges.className = "flex flex-wrap items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider";
+
+    const catBadge = document.createElement("span");
+    catBadge.className = "px-2 py-0.5 rounded border border-r-line bg-r-bg text-r-muted";
+    catBadge.textContent = s.category;
+
+    const tierBadge = document.createElement("span");
+    tierBadge.className = "px-2 py-0.5 rounded border border-r-line bg-r-bg text-r-accent";
+    tierBadge.textContent = s.tier.replace("Class", " Class");
+
+    badges.append(catBadge, tierBadge);
+
+    if (matchCount > 0) {
+      const setupBadge = document.createElement("span");
+      setupBadge.className = "px-2.5 py-0.5 rounded bg-r-accent/15 text-r-accent font-mono text-[11px] font-bold";
+      setupBadge.textContent = `✓ ${matchCount} setups MMT listos`;
+      top.append(badges, setupBadge);
+    } else {
+      top.append(badges);
+    }
+
     const title = document.createElement("h2");
-    title.className = "mmt-display text-2xl";
-    title.textContent = "Diferencia de metadatos";
-    const a = data.library[0];
-    const b = data.library[1];
-    const body = document.createElement("p");
-    body.className = "mt-2 text-sm text-r-muted";
-    body.textContent = `${a.filename} y ${b.filename}: circuito ${a.track === b.track ? "igual" : `${a.track} / ${b.track}`}, tipo ${a.kind === b.kind ? "igual" : `${a.kind} / ${b.kind}`}, tamaño ${a.size} B / ${b.size} B. No se comparan los bytes del .sto.`;
-    diff.append(title, body);
-    list.append(diff);
+    title.className = "mt-2.5 text-lg font-bold text-r-text";
+    title.textContent = s.name;
+
+    card.append(top, title);
+
+    if (weekItem) {
+      const trackBox = document.createElement("div");
+      trackBox.className = "mt-3.5 rounded-xl border border-r-line/60 bg-r-bg/50 p-3.5";
+
+      const trackHeader = document.createElement("div");
+      trackHeader.className = "flex flex-wrap items-baseline justify-between gap-2";
+
+      const trackName = document.createElement("strong");
+      trackName.className = "text-base text-r-accent";
+      trackName.textContent = weekItem.track_name;
+
+      const trackConfig = document.createElement("span");
+      trackConfig.className = "font-mono text-xs text-r-muted";
+      trackConfig.textContent = weekItem.config;
+
+      trackHeader.append(trackName, trackConfig);
+
+      const trackMeta = document.createElement("div");
+      trackMeta.className = "mt-2 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs text-r-muted";
+
+      if (weekItem.duration) {
+        const d = document.createElement("span");
+        d.textContent = `⏱ ${weekItem.duration}`;
+        trackMeta.append(d);
+      }
+      if (weekItem.weather) {
+        const w = document.createElement("span");
+        w.textContent = `☁ ${weekItem.weather}`;
+        trackMeta.append(w);
+      }
+      if (weekItem.sim_time) {
+        const st = document.createElement("span");
+        st.textContent = `📅 Sim: ${weekItem.sim_time}`;
+        trackMeta.append(st);
+      }
+
+      trackBox.append(trackHeader, trackMeta);
+      card.append(trackBox);
+    } else {
+      const noWeek = document.createElement("p");
+      noWeek.className = "mt-2 text-xs text-r-muted";
+      noWeek.textContent = "Sin evento programado para esta semana.";
+      card.append(noWeek);
+    }
+
+    if (s.cars && s.cars.length > 0) {
+      const carsRow = document.createElement("p");
+      carsRow.className = "mt-3 text-xs text-r-muted line-clamp-2";
+      const carLabel = document.createElement("strong");
+      carLabel.className = "text-r-text font-normal";
+      carLabel.textContent = "Coches: ";
+      carsRow.append(carLabel, document.createTextNode(s.cars.slice(0, 6).join(", ") + (s.cars.length > 6 ? ` (+${s.cars.length - 6} más)` : "")));
+      card.append(carsRow);
+    }
+
+    list.append(card);
   }
 }
 

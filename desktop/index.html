@@ -149,10 +149,31 @@
           </div>
 
           <section id="viewWeek" hidden aria-labelledby="weekTitle">
-            <p class="mmt-kicker">Calendario</p>
-            <h1 id="weekTitle" class="mmt-display text-4xl mt-3">Esta semana</h1>
-            <p id="weekNote" class="mt-3 text-sm text-r-muted max-w-prose"></p>
-            <div id="weekList" class="mt-5 grid gap-3"></div>
+            <div class="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <p class="mmt-kicker">Calendario Oficial iRacing · 2026 Season 4</p>
+                <h1 id="weekTitle" class="mmt-display text-4xl mt-3">Esta semana</h1>
+              </div>
+              <div class="flex items-center gap-2">
+                <label for="weekSelect" class="text-xs font-mono uppercase tracking-wider text-r-muted">Semana:</label>
+                <select id="weekSelect" class="h-10 rounded-xl border border-r-line bg-r-surface px-3 font-mono text-sm text-r-text">
+                </select>
+              </div>
+            </div>
+            <p id="weekNote" class="mt-3 text-sm text-r-muted max-w-prose">Calendario oficial de 154 series extraído de SeasonSchedule.pdf de iRacing. Compara los circuitos de la semana con los setups MMT de tu biblioteca.</p>
+            
+            <div class="mt-4 flex flex-wrap items-center gap-2">
+              <input type="search" id="weekSearch" placeholder="Buscar serie, circuito o coche..." class="h-10 rounded-xl border border-r-line bg-r-surface px-3 text-sm text-r-text flex-1 min-w-[200px]" />
+              <div id="weekCatFilters" class="flex flex-wrap gap-1.5 font-mono text-xs">
+                <button type="button" data-cat="all" class="h-9 px-3 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent">Todas</button>
+                <button type="button" data-cat="SPORTS CAR" class="h-9 px-3 rounded-lg border border-r-line bg-r-surface text-r-muted hover:text-r-text">Sports Car</button>
+                <button type="button" data-cat="FORMULA CAR" class="h-9 px-3 rounded-lg border border-r-line bg-r-surface text-r-muted hover:text-r-text">Formula</button>
+                <button type="button" data-cat="OVAL" class="h-9 px-3 rounded-lg border border-r-line bg-r-surface text-r-muted hover:text-r-text">Oval</button>
+                <button type="button" data-cat="DIRT" class="h-9 px-3 rounded-lg border border-r-line bg-r-surface text-r-muted hover:text-r-text">Dirt</button>
+              </div>
+            </div>
+
+            <div id="weekList" class="mt-6 grid gap-4"></div>
           </section>
 
           <section id="viewAnalysis" hidden aria-labelledby="analysisTitle">
