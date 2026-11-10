@@ -26,8 +26,8 @@ interface Props {
 const siteOrigin = Astro.site ? Astro.site.origin : (Astro.url ? Astro.url.origin : "https://muntru.me");
 
 const {
-  title = "Muntrume Motorsport | Official iRacing Sim Racing Team · Escudería Profesional",
-  description = `Official iRacing sim racing team based in Sant Andreu, Barcelona. Endurance & sprint championships, telemetry engineering, and ${PILOTOS.length} official drivers.`,
+  title = "Muntrume Motorsport (MMT) · Equipo iRacing",
+  description = "Muntrume Motorsport (MMT) es el equipo de iRacing de Sant Andreu, Barcelona. Pilotos, telemetría y setups .sto.",
   keywords = "muntrume motorsport, official simracing team, iracing team, endurance sim racing, gt3 endurance, sim racing engineering, garage 61 telemetry, alberto trujillo, escuderia simracing, equipo iracing",
   canonical = Astro.url.href,
   ogImage = `${siteOrigin}/assets/img/og-home.jpg`,
@@ -42,14 +42,62 @@ const {
   noindex = false
 } = Astro.props;
 
+function absoluteCanonical(input: string): string {
+  let u: URL;
+  try { u = new URL(input, "https://muntru.me"); }
+  catch { return "https://muntru.me/"; }
+  const host = u.hostname;
+  const internal = host === "muntru.me" || host === "www.muntru.me" || host === "localhost" || host === "127.0.0.1";
+  if (!internal) return u.toString();
+  u.protocol = "https:";
+  u.hostname = "muntru.me";
+  u.port = "";
+  u.search = "";
+  u.hash = "";
+  if (u.pathname !== "/" && !u.pathname.endsWith("/") && !/\.[a-z0-9]+$/i.test(u.pathname)) {
+    u.pathname += "/";
+  }
+  return u.toString();
+}
+
+const canon = absoluteCanonical(canonical);
+const isHome = new URL(canon).pathname === "/";
+const BRAND = "Muntrume Motorsport";
+const HOME_TITLE = "Muntrume Motorsport (MMT) · Equipo iRacing";
+
+function fitTitle(raw: string): string {
+  if (isHome) return HOME_TITLE;
+  let page = String(raw || BRAND)
+    .replace(/\s*[|·]\s*Muntrume Motorsport(?:\s*\(MMT\))?.*$/i, "")
+    .replace(/\s*[|·]\s*Sala de Prensa Muntrume.*$/i, "")
+    .replace(/\s*[|·]\s*Escudería Profesional.*$/i, "")
+    .trim();
+  if (!page || /^muntrume motorsport$/i.test(page)) page = "Inicio";
+  const suffix = ` · ${BRAND}`;
+  const max = 60 - suffix.length;
+  if (page.length > max) page = page.slice(0, Math.max(1, max - 1)).trimEnd() + "…";
+  return page + suffix;
+}
+
+function fitDesc(raw: string): string {
+  let d = String(raw || "").replace(/\s+/g, " ").trim();
+  if (!d) d = "Muntrume Motorsport (MMT), equipo de iRacing en Sant Andreu, Barcelona.";
+  if (!/\bMMT\b/.test(d)) {
+    const extra = " Equipo MMT.";
+    d = d.length + extra.length <= 155 ? d + extra : d.slice(0, 155 - extra.length).trimEnd() + extra;
+  }
+  if (d.length > 155) d = d.slice(0, 154).trimEnd() + "…";
+  return d;
+}
+
+const seoTitle = fitTitle(title);
+const seoDescription = fitDesc(description);
+const brandedOg = /\/og-(home|setups|news|cover|about|contact|team)\.jpg(?:$|\?)/.test(ogImage);
+const imageWidth = ogImageWidth ?? (brandedOg ? 1200 : undefined);
+const imageHeight = ogImageHeight ?? (brandedOg ? 630 : undefined);
+
 function hreflangSet(href: string) {
-  let base = href;
-  try {
-    const u = new URL(href, "https://muntru.me");
-    u.searchParams.delete("lang");
-    u.hash = "";
-    base = u.toString();
-  } catch { /* keep href as is */ }
+  const base = absoluteCanonical(href);
   const alt = (lang: string) => {
     const u = new URL(base);
     if (lang !== "en") u.searchParams.set("lang", lang);
@@ -57,7 +105,54 @@ function hreflangSet(href: string) {
   };
   return { en: alt("en"), es: alt("es"), ca: alt("ca"), fr: alt("fr") };
 }
-const langs = hreflangSet(canonical);
+const langs = hreflangSet(canon);
+
+const CRUMB_LABEL: Record<string, string> = {
+  garage: "Garage",
+  paddock: "Paddock",
+  sala: "Sala de ingenieros",
+  drivers: "Pilotos",
+  pilotos: "Pilotos",
+  d: "Pilotos",
+  news: "Noticias",
+  noticias: "Noticias",
+  ai: "Copiloto",
+  "setup-builder": "Setup Builder",
+  communications: "Comunicación",
+  cookies: "Cookies",
+  privacidad: "Privacidad",
+  "aviso-legal": "Aviso legal",
+  legal: "Información legal",
+  fuentes: "Fuentes",
+  retirada: "Retirada",
+  admin: "Admin",
+  login: "Acceso",
+  article: "Despacho",
+  contact: "Contacto",
+  about: "Paddock",
+};
+
+function breadcrumbList(href: string) {
+  const path = new URL(href).pathname.split("/").filter(Boolean);
+  const items: { name: string; item: string }[] = [{ name: BRAND, item: "https://muntru.me/" }];
+  let acc = "https://muntru.me";
+  path.forEach((part) => {
+    acc += `/${part}`;
+    const pilot = PILOTOS.find((p) => p.slug === part);
+    const name = pilot?.fullName || CRUMB_LABEL[part] || decodeURIComponent(part).replace(/-/g, " ");
+    items.push({ name, item: `${acc}/` });
+  });
+  return {
+    "@type": "BreadcrumbList",
+    "@id": `${href}#breadcrumb`,
+    itemListElement: items.map((entry, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: entry.name,
+      item: entry.item,
+    })),
+  };
+}
 
 const defaultSchema = {
   "@context": "https://schema.org",
@@ -66,10 +161,10 @@ const defaultSchema = {
       "@type": "SportsTeam",
       "@id": `${siteOrigin}/#org`,
       "name": "Muntrume Motorsport",
-      "alternateName": ["Muntrume", "MRT Sim Racing", "Muntrume Racing Team"],
+      "alternateName": ["MMT", "Muntrume", "MMT Motorsport"],
       "url": `${siteOrigin}/`,
       "sport": "Sim Racing (iRacing)",
-      "description": `Official iRacing sim racing team based in Sant Andreu, Barcelona. Over 41,000 .STO setups and ${PILOTOS.length} official drivers.`,
+      "description": `Muntrume Motorsport (MMT), equipo de iRacing en Sant Andreu, Barcelona. ${PILOTOS.length} pilotos oficiales y setups .sto en el Garage.`,
       "logo": {
         "@type": "ImageObject",
         "url": `${siteOrigin}/assets/img/icon-512.png`,
@@ -89,14 +184,14 @@ const defaultSchema = {
       },
       "founder": {
         "@type": "Person",
-        "name": "Alberto Trujillo Mingorance",
-        "url": `${siteOrigin}/drivers/albertot/`
+        "name": "Alberto Trujillo",
+        "url": `${siteOrigin}/d/albertot/`
       },
       "member": PILOTOS.map((p) => ({
         "@type": "Person",
         "name": p.fullName,
         "jobTitle": p.role,
-        "url": `${siteOrigin}/drivers/${p.slug}/`
+        "url": `${siteOrigin}/d/${p.slug}/`
       })),
       "knowsAbout": [
         "iRacing",
@@ -110,15 +205,14 @@ const defaultSchema = {
       ],
       "sameAs": [
         "https://discord.gg/ehX6B8JUtE",
-        "https://garage61.net/app/teams/muntrume-motorsport",
-        "https://ai.trujillomingorance.com",
-        "https://github.com/atrumin16/muntrume-site"
+        "https://garage61.net/app/teams/muntrume-motorsport"
       ]
     },
     {
       "@type": "WebSite",
       "@id": `${siteOrigin}/#website`,
       "name": "Muntrume Motorsport",
+      "alternateName": ["MMT", "Muntrume", "MMT Motorsport"],
       "url": "https://muntru.me/",
       "inLanguage": ["en-US", "es-ES", "ca-ES", "fr-FR"],
       "publisher": {
@@ -128,7 +222,31 @@ const defaultSchema = {
   ]
 };
 
-const finalSchema = schemaJson || defaultSchema;
+function graphOf(schema: any): any[] {
+  if (!schema) return [];
+  if (Array.isArray(schema)) return schema;
+  if (Array.isArray(schema["@graph"])) return schema["@graph"];
+  return [schema];
+}
+
+const homeGraph = isHome && !schemaJson ? defaultSchema["@graph"] : graphOf(schemaJson);
+const baseGraph = homeGraph.length ? homeGraph : [{
+  "@type": "WebPage",
+  "@id": `${canon}#webpage`,
+  "url": canon,
+  "name": seoTitle,
+  "description": seoDescription,
+  "isPartOf": { "@id": "https://muntru.me/#website" },
+  "about": { "@id": "https://muntru.me/#org" },
+}];
+const hasCrumbs = baseGraph.some((node) => {
+  const kind = node?.["@type"];
+  return kind === "BreadcrumbList" || (Array.isArray(kind) && kind.includes("BreadcrumbList"));
+});
+const finalSchema = {
+  "@context": "https://schema.org",
+  "@graph": hasCrumbs ? baseGraph : [...baseGraph, breadcrumbList(canon)],
+};
 ---
 
 <!DOCTYPE html>
@@ -157,12 +275,12 @@ const finalSchema = schemaJson || defaultSchema;
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; object-src 'none'; base-uri 'self'; img-src 'self' data: https:; frame-src 'self' https://discord.com https://*.discord.com; connect-src 'self' https://muntrume.atrumin16.workers.dev wss://muntrume.atrumin16.workers.dev https://ai.trujillomingorance.com https://api.garage61.net https://api.brevo.com;" />
   <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=()" />
   
-  <title>{title}</title>
-  <meta name="description" content={description} />
+  <title>{seoTitle}</title>
+  <meta name="description" content={seoDescription} />
   <meta name="keywords" content={keywords} />
   <meta name="author" content="Muntrume Motorsport · Alberto Trujillo Mingorance" />
   <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"} />
-  <link rel="canonical" href={langs.en} />
+  <link rel="canonical" href={canon} />
   <link rel="alternate" hreflang="en" href={langs.en} />
   <link rel="alternate" hreflang="es" href={langs.es} />
   <link rel="alternate" hreflang="ca" href={langs.ca} />
@@ -171,13 +289,13 @@ const finalSchema = schemaJson || defaultSchema;
 
   <!-- Open Graph / Social Media -->
   <meta property="og:type" content={ogType} />
-  <meta property="og:title" content={title} />
-  <meta property="og:description" content={description} />
-  <meta property="og:url" content={langs.en} />
+  <meta property="og:title" content={seoTitle} />
+  <meta property="og:description" content={seoDescription} />
+  <meta property="og:url" content={canon} />
   <meta property="og:image" content={ogImage} />
   <meta property="og:image:alt" content={ogImageAlt} />
-  {ogImageWidth && <meta property="og:image:width" content={String(ogImageWidth)} />}
-  {ogImageHeight && <meta property="og:image:height" content={String(ogImageHeight)} />}
+  {imageWidth && <meta property="og:image:width" content={String(imageWidth)} />}
+  {imageHeight && <meta property="og:image:height" content={String(imageHeight)} />}
   <meta property="og:site_name" content="Muntrume Motorsport" />
   <meta property="og:locale" content={ogLocale} />
   <meta property="og:locale:alternate" content="es_ES" />
@@ -188,8 +306,8 @@ const finalSchema = schemaJson || defaultSchema;
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@muntrumemrt" />
   <meta name="twitter:creator" content="@atrumin16" />
-  <meta name="twitter:title" content={title} />
-  <meta name="twitter:description" content={description} />
+  <meta name="twitter:title" content={seoTitle} />
+  <meta name="twitter:description" content={seoDescription} />
   <meta name="twitter:image" content={ogImage} />
   <meta name="twitter:image:alt" content={ogImageAlt} />
 

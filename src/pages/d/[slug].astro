@@ -106,7 +106,12 @@ const personSchema = {
       "name": driver.fullName,
       "jobTitle": driver.role,
       "url": pageUrl,
-      "memberOf": { "@id": "https://muntru.me/#org" },
+      "memberOf": {
+        "@type": "SportsTeam",
+        "@id": "https://muntru.me/#org",
+        "name": "Muntrume Motorsport",
+        "alternateName": ["MMT", "Muntrume", "MMT Motorsport"]
+      },
       "nationality": driver.country || undefined,
       "image": ogImage
     },
@@ -114,6 +119,7 @@ const personSchema = {
       "@type": "SportsTeam",
       "@id": "https://muntru.me/#org",
       "name": "Muntrume Motorsport",
+      "alternateName": ["MMT", "Muntrume", "MMT Motorsport"],
       "sport": "Sim Racing (iRacing)",
       "url": "https://muntru.me/",
       "athlete": { "@id": `${pageUrl}#person` }

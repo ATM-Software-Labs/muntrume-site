@@ -5,11 +5,11 @@ import { getStaticPaths as getNoticiasPaths } from '../noticias/[slug].astro';
 export const getStaticPaths = getNoticiasPaths;
 
 const { slug } = Astro.params;
-return Astro.redirect(`/noticias/${slug}`, 302);
+return Astro.redirect(`/noticias/${slug}/`, 301);
 ---
 
 <Layout title="Redireccionando... · Muntrume Motorsport">
-  <meta http-equiv="refresh" content={`0;url=/noticias/${slug}`} />
+  <meta http-equiv="refresh" content={`0;url=/noticias/${slug}/`} />
   <div class="min-h-screen bg-[#0E1211] text-white flex items-center justify-center font-mono text-sm">
     <p>Redirigiendo a la sala de prensa...</p>
   </div>
