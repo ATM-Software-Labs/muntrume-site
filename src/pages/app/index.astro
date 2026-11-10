@@ -1,0 +1,29 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+const pageTitle = "MMT Sync";
+const pageDescription = "MMT Sync es la aplicación de Windows de Muntrume Motorsport para copiar los setups .sto del equipo a la carpeta de iRacing.";
+const pageUrl = "https://muntru.me/app/";
+---
+
+<Layout title={pageTitle} description={pageDescription} canonical={pageUrl} ogLocale="es_ES">
+  <section class="r-section" data-no-i18n style="border-top:0;padding-top:clamp(88px,12vw,140px)">
+    <div class="r-wrap" style="display:grid;gap:28px">
+      <div>
+        <p class="r-kicker">Windows 10 y 11</p>
+        <h1 class="r-h2">MMT Sync</h1>
+        <p class="r-lead">La aplicación de escritorio del equipo. Sincroniza los setups publicados, deja subir un .sto a revisión y, en el ordenador del piloto, puede leer la telemetría local de iRacing.</p>
+        <div class="g-actions" style="margin-top:18px">
+          <a class="r-btn r-btn--primary" href="https://github.com/atrumin16/muntrume-site/releases/latest">Descargar para Windows</a>
+          <a class="r-link" href="/garage/#mmt-sync">Notas de instalación</a>
+        </div>
+      </div>
+      <div class="r-figs">
+        <div><strong class="r-num">.sto</strong>Solo dentro de la carpeta MMT</div>
+        <div><strong class="r-num">0</strong>Analítica de terceros</div>
+        <div><strong class="r-num">Win</strong>Sin certificado de código, de momento</div>
+      </div>
+      <p class="r-meta">Windows SmartScreen puede decir «editor desconocido». Más información → Ejecutar de todas formas. La comparación con otras herramientas está en el repositorio, no en esta página: no decimos que MMT Sync las iguale.</p>
+    </div>
+  </section>
+</Layout>

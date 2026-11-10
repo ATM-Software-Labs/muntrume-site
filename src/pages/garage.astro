@@ -189,6 +189,28 @@ const garageSchema = {
     </div>
   </section>
 
+  <section class="r-section" id="mmt-sync" data-no-i18n style="padding-top:28px">
+    <div class="r-wrap">
+      <article class="grid gap-4 rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-5 sm:p-6">
+        <div>
+          <p class="r-kicker">Aplicación de escritorio</p>
+          <h2 class="r-h3" style="margin-top:12px">MMT Sync para Windows</h2>
+          <p class="r-lead" style="margin-top:12px">Copia los setups del equipo a tu carpeta de iRacing, dentro de <span class="font-mono">coche\MMT\temporada</span>. No toca el resto de archivos.</p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-px overflow-hidden rounded-xl border border-[var(--r-line)] bg-[var(--r-line)]">
+          <div class="bg-[var(--r-bg)] px-3.5 py-3 grid gap-1"><span class="font-mono text-[11px] uppercase tracking-wider text-[var(--r-muted)]">Versión</span><strong id="mmtSyncVersion" class="text-sm text-[var(--r-text)]">Pendiente de la primera release</strong></div>
+          <div class="bg-[var(--r-bg)] px-3.5 py-3 grid gap-1"><span class="font-mono text-[11px] uppercase tracking-wider text-[var(--r-muted)]">Tamaño</span><strong id="mmtSyncSize" class="text-sm text-[var(--r-text)]">Se publica con el instalador</strong></div>
+          <div class="bg-[var(--r-bg)] px-3.5 py-3 grid gap-1"><span class="font-mono text-[11px] uppercase tracking-wider text-[var(--r-muted)]">Sistema</span><strong class="text-sm text-[var(--r-text)]">Windows 10 y Windows 11, 64 bits</strong></div>
+        </div>
+        <div class="flex flex-wrap items-center gap-4">
+          <a class="r-btn r-btn--primary" id="mmtSyncDownload" href="https://github.com/atrumin16/muntrume-site/releases/latest" target="_blank" rel="noopener noreferrer">Descargar MMT Sync para Windows</a>
+          <a class="r-link" href="/app/">Qué es MMT Sync</a>
+        </div>
+        <p class="m-0 rounded-xl border border-[var(--r-line)] bg-[var(--r-bg)] px-3.5 py-3 text-sm leading-relaxed text-[var(--r-text)]">Windows SmartScreen puede mostrar «editor desconocido» porque la aplicación todavía no está firmada con un certificado. Para continuar: Más información → Ejecutar de todas formas.</p>
+      </article>
+    </div>
+  </section>
+
   <section class="r-section" id="catalogo-v2" aria-labelledby="v2Title" data-no-i18n>
     <div class="r-wrap" style="display:grid;gap:16px">
       <div>
@@ -1120,4 +1142,5 @@ const garageSchema = {
       }
     });
   </script>
+  <script is:inline src="/assets/js/mmt-sync-card.js"></script>
 </Layout>

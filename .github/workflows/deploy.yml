@@ -47,6 +47,15 @@ jobs:
       - name: Build site (Astro SSG)
         run: npm run build
 
+      - name: Confirm GitHub Pages output excludes the desktop app
+        run: |
+          test ! -e _site/desktop
+          test ! -e _site/src-tauri
+          if grep -R "mmt-sync-core" _site >/dev/null 2>&1; then
+            echo "The Pages output contains the desktop crate"
+            exit 1
+          fi
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:

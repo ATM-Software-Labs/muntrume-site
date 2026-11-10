@@ -1,0 +1,24 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+const pageTitle = "Vincular MMT Sync";
+const pageDescription = "Autoriza el ordenador del piloto para que MMT Sync sincronice los setups del equipo.";
+---
+
+<Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/app/vincular/" noindex={true}>
+  <section class="r-section" data-no-i18n style="border-top:0;padding-top:clamp(88px,12vw,140px)">
+    <div class="r-wrap" style="max-width:720px;display:grid;gap:16px">
+      <p class="r-kicker">MMT Sync</p>
+      <h1 class="r-h2">Vincular este dispositivo</h1>
+      <p id="vincularLead" class="r-lead">Comprueba el código que muestra la aplicación y autorízalo con tu sesión de piloto.</p>
+      <p id="vincularCode" class="r-h2" style="color:var(--r-accent);letter-spacing:.08em">—</p>
+      <p id="vincularWho" class="r-meta" hidden></p>
+      <div id="vincularActions" style="display:flex;flex-wrap:wrap;gap:12px">
+        <a id="vincularLogin" class="r-btn r-btn--primary" href="/login/">Inicia sesión</a>
+        <button type="button" id="vincularApprove" class="r-btn r-btn--primary" hidden>Autorizar este dispositivo</button>
+      </div>
+      <p id="vincularStatus" class="r-meta" role="status"></p>
+    </div>
+  </section>
+  <script is:inline src="/assets/js/vincular.js"></script>
+</Layout>

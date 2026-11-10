@@ -16,6 +16,7 @@ function getPriorityAndFreq(urlPath) {
   const p = slashPath(urlPath);
   if (p === '/') return { priority: '1.0', changefreq: 'daily' };
   if (p === '/garage/') return { priority: '1.0', changefreq: 'daily' };
+  if (p === '/app/') return { priority: '0.8', changefreq: 'weekly' };
   if (p === '/news/' || p === '/noticias/' || p === '/drivers/' || p === '/pilotos/' || p === '/paddock/') {
     return { priority: '0.9', changefreq: 'daily' };
   }
@@ -95,6 +96,7 @@ for (const filePath of allHtml) {
     rel === 'admin.html' ||
     rel.startsWith('email-preferences') ||
     rel.startsWith('login') ||
+    rel.startsWith('app/vincular') ||
     rel.startsWith('paddock/sala') ||
     /^google[0-9a-f]+\.html$/i.test(rel)
   ) {

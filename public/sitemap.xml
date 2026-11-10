@@ -37,6 +37,12 @@
     <priority>0.9</priority>
   </url>
   <url>
+    <loc>https://muntru.me/app/</loc>
+    <lastmod>2026-11-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://muntru.me/noticias/actualizacion-masiva-del-setup-vault-sincronizacion-completa-de-105-coches-y-41-000-archivos-sto/</loc>
     <lastmod>2026-11-10</lastmod>
     <changefreq>weekly</changefreq>

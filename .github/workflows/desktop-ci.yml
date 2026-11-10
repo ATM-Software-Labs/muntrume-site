@@ -1,0 +1,52 @@
+name: MMT Sync CI
+
+on:
+  pull_request:
+    paths:
+      - "desktop/**"
+      - ".github/workflows/desktop-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+
+      - name: Rust
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # stable
+        with:
+          toolchain: stable
+          components: clippy
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@c8037a86dde8214a8310e9f54a8fc61ab362aa31 # v2.9.3
+        with:
+          workspaces: desktop
+
+      - name: Frontend
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run check
+
+      - name: Tests and clippy
+        run: cargo test --workspace --all-targets && cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Build the installer
+        run: npm run tauri build -- --bundles nsis,msi

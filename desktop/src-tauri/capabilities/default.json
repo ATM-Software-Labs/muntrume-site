@@ -1,0 +1,24 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "El webview solo puede invocar comandos de la app. La red queda limitada al API de Muntrume y el disco a la carpeta de setups y a %APPDATA%\\MMT Sync, ambos en el núcleo Rust. No hay permiso de fs ni de http para la página.",
+  "windows": ["main", "overlay"],
+  "permissions": [
+    "core:default",
+    "allow-snapshot",
+    "allow-auth-start",
+    "allow-auth-cancel",
+    "allow-auth-poll",
+    "allow-open-verify",
+    "allow-logout",
+    "allow-sync-now",
+    "allow-save-settings",
+    "allow-pick-folder",
+    "allow-detect-folder",
+    "allow-pick-sto",
+    "allow-clear-staged",
+    "allow-upload-staged",
+    "allow-install-update",
+    "allow-quit"
+  ]
+}

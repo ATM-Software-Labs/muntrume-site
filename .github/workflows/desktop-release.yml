@@ -1,0 +1,78 @@
+name: MMT Sync release
+
+on:
+  push:
+    tags:
+      - "desktop-v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+
+      - name: Rust
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # stable
+        with:
+          toolchain: stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@c8037a86dde8214a8310e9f54a8fc61ab362aa31 # v2.9.3
+        with:
+          workspaces: desktop
+
+      - name: Frontend
+        working-directory: desktop
+        run: npm ci
+
+      - name: Signing secrets
+        shell: bash
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        run: |
+          if [ -z "$TAURI_SIGNING_PRIVATE_KEY" ]; then
+            echo "Falta TAURI_SIGNING_PRIVATE_KEY."
+            exit 1
+          fi
+          node -e "const c=require('./desktop/src-tauri/tauri.conf.json'); const k=c.plugins.updater.pubkey||''; if(!k || k.includes('REPLACE_WITH')) { console.error('Pega la clave pública en plugins.updater.pubkey'); process.exit(1); }"
+
+      - name: Tag
+        id: tag
+        shell: bash
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            echo "name=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          else
+            ver=$(node -p "require('./desktop/src-tauri/tauri.conf.json').version")
+            echo "name=desktop-v${ver}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build and publish
+        uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5 # v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          projectPath: desktop
+          tagName: ${{ steps.tag.outputs.name }}
+          releaseName: MMT Sync ${{ steps.tag.outputs.name }}
+          releaseBody: |
+            Instalador de MMT Sync para Windows 10 y 11.
+            El ejecutable no lleva certificado de código: SmartScreen puede mostrar «editor desconocido».
+          releaseDraft: false
+          prerelease: false
+          args: --bundles nsis,msi --config src-tauri/tauri.release.json
