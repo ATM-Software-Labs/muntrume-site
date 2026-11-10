@@ -4,6 +4,7 @@ import { createTauriBackend } from "./tauri-backend";
 import type { Backend, LibraryItem, LiveSample, Settings, Snapshot, StagedFile } from "./types";
 import { fuelText, paintConfigAnalysis, paintExtras, updateLiveOverlay } from "./extra";
 import rawSchedule from "./season_schedule_2026_s4.json";
+import { getSetupProfile, estimateLapTimeAndConsistency } from "./setup-intelligence";
 
 interface ScheduleDoc {
   current_week?: number;
@@ -183,33 +184,44 @@ let userPreferences: string[] = (() => {
 
 let lastLiveSample = 0;
 
-function updateLiveStatus(sample: LiveSample): void {
-  lastLiveSample = Date.now();
+function applyIracingStatus(status: string): void {
   const badge = document.getElementById("irBadge");
   const dot = document.getElementById("irDot");
   const text = document.getElementById("irText");
-  if (badge && dot && text) {
+  if (!badge || !dot || !text) return;
+
+  if (status === "on_track") {
+    dot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+    text.textContent = "iRacing en pista";
+    badge.className = "px-3 py-1 rounded-full text-xs font-mono font-bold border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 flex items-center gap-2 transition";
+  } else if (status === "in_sim") {
     dot.className = "w-2 h-2 rounded-full bg-r-accent animate-pulse";
-    text.textContent = "iRacing activo";
-    badge.classList.add("text-r-accent", "border-r-accent/40");
-    badge.classList.remove("text-r-muted", "border-r-line");
+    text.textContent = "Simulador activo";
+    badge.className = "px-3 py-1 rounded-full text-xs font-mono font-bold border border-r-accent/40 bg-r-accent/10 text-r-accent flex items-center gap-2 transition";
+  } else if (status === "ui_open") {
+    dot.className = "w-2 h-2 rounded-full bg-amber-400";
+    text.textContent = "iRacing UI abierto";
+    badge.className = "px-3 py-1 rounded-full text-xs font-mono font-semibold border border-amber-500/40 bg-amber-500/10 text-amber-300 flex items-center gap-2 transition";
+  } else {
+    dot.className = "w-2 h-2 rounded-full bg-r-muted";
+    text.textContent = "iRacing en espera";
+    badge.className = "px-3 py-1 rounded-full text-xs font-mono border border-r-line text-r-muted flex items-center gap-2 transition";
   }
+}
+
+function updateLiveStatus(sample: LiveSample): void {
+  lastLiveSample = Date.now();
+  applyIracingStatus("on_track");
   updateLiveOverlay(sample);
 }
 
 setInterval(() => {
-  if (Date.now() - lastLiveSample > 2500) {
-    const badge = document.getElementById("irBadge");
-    const dot = document.getElementById("irDot");
-    const text = document.getElementById("irText");
-    if (badge && dot && text) {
-      dot.className = "w-2 h-2 rounded-full bg-r-muted";
-      text.textContent = "iRacing en espera";
-      badge.classList.remove("text-r-accent", "border-r-accent/40");
-      badge.classList.add("text-r-muted", "border-r-line");
-    }
+  if (Date.now() - lastLiveSample > 3500) {
+    void backend.checkIracing().then((status) => {
+      applyIracingStatus(status);
+    }).catch(() => {});
   }
-}, 1000);
+}, 2500);
 
 function theme(): "dark" | "light" {
   return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
@@ -378,10 +390,240 @@ function paintLibrary(): void {
 let collapsedState = new Set<string>();
 let allExpanded = false;
 
+let currentPreviewItem: LibraryItem | null = null;
+let currentAdvisorItem: LibraryItem | null = null;
+let userIrRating = (() => {
+  try {
+    const saved = localStorage.getItem("mmt-driver-irating");
+    if (saved) {
+      const n = Number(saved);
+      if (n > 0) return n;
+    }
+  } catch {}
+  return 1800;
+})();
+
+function openSetupPreview(row: LibraryItem): void {
+  currentPreviewItem = row;
+  const profile = getSetupProfile(row);
+
+  const seasonBadge = document.getElementById("previewSeasonBadge");
+  if (seasonBadge) seasonBadge.textContent = row.season;
+
+  const carTitle = document.getElementById("previewCarTitle");
+  if (carTitle) carTitle.textContent = profile.carName;
+
+  const trackName = document.getElementById("previewTrackName");
+  if (trackName) trackName.textContent = row.track;
+
+  const filename = document.getElementById("previewFilename");
+  if (filename) filename.textContent = row.filename;
+
+  const purpose = document.getElementById("previewPurpose");
+  if (purpose) purpose.textContent = profile.purpose;
+
+  const stabTag = document.getElementById("previewStabilityTag");
+  if (stabTag) {
+    if (profile.stability === "SAFE") {
+      stabTag.className = "inline-block mt-1 px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 font-bold text-[10px] uppercase border border-emerald-500/30";
+      stabTag.textContent = "🛡️ SAFE (Alta Estabilidad y Consistencia)";
+    } else if (profile.stability === "AGGRESSIVE") {
+      stabTag.className = "inline-block mt-1 px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 font-bold text-[10px] uppercase border border-amber-500/30";
+      stabTag.textContent = "⚡ AGRESIVO (Pico de Clasificación)";
+    } else if (profile.stability === "WET") {
+      stabTag.className = "inline-block mt-1 px-2 py-0.5 rounded bg-sky-500/15 text-sky-300 font-bold text-[10px] uppercase border border-sky-500/30";
+      stabTag.textContent = "🌧️ LLUVIA (Máxima Evacuación y Tracción)";
+    } else {
+      stabTag.className = "inline-block mt-1 px-2 py-0.5 rounded bg-purple-500/15 text-purple-300 font-bold text-[10px] uppercase border border-purple-500/30";
+      stabTag.textContent = "⚖️ BALANCE COMPETITIVO";
+    }
+  }
+
+  const downforce = document.getElementById("previewDownforce");
+  if (downforce) downforce.textContent = profile.downforce;
+
+  const tireTarget = document.getElementById("previewTireTarget");
+  if (tireTarget) tireTarget.textContent = profile.tirePressureTarget;
+
+  const fuelBrake = document.getElementById("previewFuelBrake");
+  if (fuelBrake) fuelBrake.textContent = `${profile.fuelTarget.split("(")[0].trim()} · Bias ${profile.brakeBiasEst}`;
+
+  const tipsList = document.getElementById("previewTipsList");
+  if (tipsList) {
+    tipsList.replaceChildren();
+    for (const tip of profile.drivingTips) {
+      const li = document.createElement("li");
+      li.textContent = tip;
+      tipsList.append(li);
+    }
+  }
+
+  const favBtn = document.getElementById("previewFavToggle");
+  if (favBtn && snapshot) {
+    const isFav = snapshot.settings.favourites.includes(row.id);
+    favBtn.textContent = isFav ? "★ En Favoritos" : "☆ Añadir Favorito";
+    favBtn.className = isFav
+      ? "h-10 px-4 rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-300 font-bold text-xs uppercase tracking-wider transition"
+      : "h-10 px-4 rounded-xl border border-r-line text-r-muted hover:text-amber-400 font-bold text-xs uppercase tracking-wider transition";
+  }
+
+  const modal = document.getElementById("modalSetupPreview");
+  if (modal) modal.hidden = false;
+}
+
+function openSetupCompare(rowA: LibraryItem, rowB?: LibraryItem): void {
+  const all = snapshot?.library ?? [];
+  const candidates = all.filter((item) => item.car === rowA.car || item.carFolder === rowA.carFolder);
+  const pool = candidates.length > 1 ? candidates : all;
+
+  if (!rowB) {
+    const sameTrack = pool.filter((item) => item.id !== rowA.id && item.track.toLowerCase() === rowA.track.toLowerCase());
+    rowB = sameTrack[0] ?? pool.find((item) => item.id !== rowA.id) ?? rowA;
+  }
+
+  const selectA = document.getElementById("compareSelectA") as HTMLSelectElement | null;
+  const selectB = document.getElementById("compareSelectB") as HTMLSelectElement | null;
+  if (!selectA || !selectB) return;
+
+  const populateSelect = (sel: HTMLSelectElement, selectedId: string) => {
+    sel.replaceChildren();
+    for (const item of pool) {
+      const opt = document.createElement("option");
+      opt.value = item.id;
+      opt.textContent = `${item.track} · ${item.filename}`;
+      if (item.id === selectedId) opt.selected = true;
+      sel.append(opt);
+    }
+  };
+
+  populateSelect(selectA, rowA.id);
+  populateSelect(selectB, rowB.id);
+
+  const renderComparison = () => {
+    const itemA = all.find((i) => i.id === selectA.value) ?? rowA;
+    const itemB = all.find((i) => i.id === selectB.value) ?? rowB!;
+    const profA = getSetupProfile(itemA);
+    const profB = getSetupProfile(itemB);
+
+    const metaA = document.getElementById("compareMetaA");
+    if (metaA) metaA.textContent = `${profA.carName} · ${itemA.track} (${itemA.season})`;
+    const metaB = document.getElementById("compareMetaB");
+    if (metaB) metaB.textContent = `${profB.carName} · ${itemB.track} (${itemB.season})`;
+
+    const tbody = document.getElementById("compareTableBody");
+    if (tbody) {
+      tbody.replaceChildren();
+      const rows: [string, string, string][] = [
+        ["Propósito de Sesión", profA.purpose, profB.purpose],
+        ["Nivel de Estabilidad", profA.stability, profB.stability],
+        ["Carga Aerodinámica (Aero)", profA.downforce, profB.downforce],
+        ["Presiones Hot Objetivo", profA.tirePressureTarget, profB.tirePressureTarget],
+        ["Reparto de Frenada (Brake Bias)", profA.brakeBiasEst, profB.brakeBiasEst],
+        ["Precarga Diferencial (Diff)", profA.diffPreloadEst, profB.diffPreloadEst],
+        ["Combustible Recomendado", profA.fuelTarget, profB.fuelTarget],
+      ];
+
+      for (const [label, valA, valB] of rows) {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-r-bg/40 transition";
+        const tdLabel = document.createElement("td");
+        tdLabel.className = "p-3 font-medium text-r-muted";
+        tdLabel.textContent = label;
+
+        const tdA = document.createElement("td");
+        tdA.className = "p-3 font-mono text-r-text font-semibold";
+        tdA.textContent = valA;
+
+        const tdB = document.createElement("td");
+        tdB.className = "p-3 font-mono text-r-accent font-semibold";
+        tdB.textContent = valB;
+
+        tr.append(tdLabel, tdA, tdB);
+        tbody.append(tr);
+      }
+    }
+
+    const verdict = document.getElementById("compareVerdictText");
+    if (verdict) {
+      if (profA.stability === "SAFE" && profB.stability !== "SAFE") {
+        verdict.textContent = `Setup A (${itemA.filename}) maximiza la estabilidad y el agarre mecánico en frenada en apoyo (+3.5% de consistencia). Setup B (${itemB.filename}) ofrece menor rozamiento y mayor rotación en curva rápida, siendo óptimo para vueltas rápidas individuales o pilotos de alto iRating (>2.500 iR).`;
+      } else if (profA.stability === profB.stability) {
+        verdict.textContent = `Ambos setups comparten la misma filosofía de estabilidad (${profA.stability}). El Setup A está optimizado para ${profA.purpose}, mientras que el Setup B está configurado para ${profB.purpose}. Revisa las presiones de neumáticos según la temperatura en pista.`;
+      } else {
+        verdict.textContent = `Setup A ofrece configuración ${profA.stability} para ${profA.purpose}. Setup B presenta reglajes ${profB.stability} con mayor énfasis en ${profB.downforce}.`;
+      }
+    }
+  };
+
+  selectA.onchange = () => renderComparison();
+  selectB.onchange = () => renderComparison();
+  renderComparison();
+
+  const modal = document.getElementById("modalSetupCompare");
+  if (modal) modal.hidden = false;
+}
+
+function openIratingAdvisor(row: LibraryItem): void {
+  currentAdvisorItem = row;
+  renderAdvisorCalculations();
+  const modal = document.getElementById("modalIratingAdvisor");
+  if (modal) modal.hidden = false;
+}
+
+function renderAdvisorCalculations(): void {
+  if (!currentAdvisorItem) return;
+  const row = currentAdvisorItem;
+  const estimate = estimateLapTimeAndConsistency(row.track, row.carFolder || row.car, userIrRating);
+
+  const irDisplay = document.getElementById("advisorCurrentIrDisplay");
+  if (irDisplay) irDisplay.textContent = `${userIrRating.toLocaleString("es-ES")} iR`;
+
+  const qualyEl = document.getElementById("advisorQualyTime");
+  if (qualyEl) qualyEl.textContent = estimate.qualyTime;
+
+  const raceEl = document.getElementById("advisorRacePace");
+  if (raceEl) raceEl.textContent = estimate.racePace;
+
+  const deltaEl = document.getElementById("advisorDeltaAlien");
+  if (deltaEl) deltaEl.textContent = estimate.deltaVsAlien;
+
+  const safeCons = document.getElementById("advisorSafeCons");
+  if (safeCons) safeCons.textContent = `${estimate.safeSetup.consistencyPct}% Consistencia`;
+
+  const safePace = document.getElementById("advisorSafePace");
+  if (safePace) safePace.textContent = estimate.safeSetup.avgPace;
+
+  const safeRisk = document.getElementById("advisorSafeRisk");
+  if (safeRisk) safeRisk.textContent = `${estimate.safeSetup.incidentRiskPct}%`;
+
+  const aggroCons = document.getElementById("advisorAggCons");
+  if (aggroCons) aggroCons.textContent = `${estimate.aggressiveSetup.consistencyPct}% Consistencia`;
+
+  const aggroPace = document.getElementById("advisorAggPace");
+  if (aggroPace) aggroPace.textContent = estimate.aggressiveSetup.avgPace;
+
+  const aggroRisk = document.getElementById("advisorAggRisk");
+  if (aggroRisk) aggroRisk.textContent = `${estimate.aggressiveSetup.incidentRiskPct}%`;
+
+  const verdictEl = document.getElementById("advisorVerdictText");
+  if (verdictEl) verdictEl.textContent = estimate.verdict;
+
+  document.querySelectorAll<HTMLButtonElement>("#modalIratingAdvisor button[data-ir]").forEach((btn) => {
+    const irVal = Number(btn.dataset.ir);
+    const active = irVal === userIrRating;
+    btn.className = active
+      ? "h-9 rounded-xl border border-r-accent bg-r-accent text-r-ink font-bold transition shadow-xs"
+      : "h-9 rounded-xl border border-r-line bg-r-surface text-r-muted hover:border-r-accent/60 hover:text-r-text transition font-bold";
+  });
+}
+
 function setupCardView(row: LibraryItem, showCar = false): HTMLElement {
   const card = document.createElement("div");
   card.className =
-    "group rounded-xl border border-r-line bg-r-bg/80 p-3.5 flex flex-col justify-between gap-2.5 hover:border-r-accent/60 hover:bg-r-surface transition shadow-xs";
+    "group rounded-xl border border-r-line bg-r-bg/80 p-3.5 flex flex-col justify-between gap-2.5 hover:border-r-accent/60 hover:bg-r-surface transition shadow-xs cursor-pointer";
+  card.addEventListener("click", () => {
+    openSetupPreview(row);
+  });
 
   const top = document.createElement("div");
   top.className = "flex items-center justify-between gap-2";
@@ -482,6 +724,29 @@ function setupCardView(row: LibraryItem, showCar = false): HTMLElement {
   metaSpan.textContent = `${row.season} · ${formatBytes(row.size)}`;
   details.append(metaSpan);
 
+  const quickActions = document.createElement("div");
+  quickActions.className = "flex items-center gap-1 shrink-0";
+
+  const compBtn = document.createElement("button");
+  compBtn.type = "button";
+  compBtn.className = "p-1 text-r-muted hover:text-r-accent transition text-xs";
+  compBtn.title = "Comparar setup";
+  compBtn.textContent = "⚖️";
+  compBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    openSetupCompare(row);
+  });
+
+  const simBtn = document.createElement("button");
+  simBtn.type = "button";
+  simBtn.className = "p-1 text-r-muted hover:text-r-accent transition text-xs";
+  simBtn.title = "Estimar tiempo e iRating";
+  simBtn.textContent = "⏱️";
+  simBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    openIratingAdvisor(row);
+  });
+
   const copyBtn = document.createElement("button");
   copyBtn.type = "button";
   copyBtn.className = "p-1 text-r-muted hover:text-r-text transition text-xs";
@@ -496,7 +761,8 @@ function setupCardView(row: LibraryItem, showCar = false): HTMLElement {
     } catch {}
   });
 
-  bottom.append(details, copyBtn);
+  quickActions.append(compBtn, simBtn, copyBtn);
+  bottom.append(details, quickActions);
   card.append(top, mid, bottom);
   return card;
 }
@@ -1367,6 +1633,71 @@ function bind(): void {
       showNotice(error instanceof Error ? error.message : "No se pudo instalar la actualización.");
     });
   });
+  // Wire Modals & Backdrop Dismissal
+  const bindModalDismiss = (modalId: string, closeBtnId: string) => {
+    const modal = document.getElementById(modalId);
+    const btn = document.getElementById(closeBtnId);
+    if (btn && modal) {
+      btn.addEventListener("click", () => {
+        modal.hidden = true;
+      });
+    }
+    if (modal) {
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) modal.hidden = true;
+      });
+    }
+  };
+
+  bindModalDismiss("modalSetupPreview", "closePreviewBtn");
+  bindModalDismiss("modalSetupCompare", "closeCompareBtn");
+  bindModalDismiss("modalIratingAdvisor", "closeAdvisorBtn");
+
+  $("previewCopyBtn").addEventListener("click", async () => {
+    if (!currentPreviewItem) return;
+    try {
+      await navigator.clipboard.writeText(currentPreviewItem.filename);
+      $("previewCopyBtn").textContent = "Copiado ✓";
+      setTimeout(() => ($("previewCopyBtn").textContent = "Copiar"), 1500);
+    } catch {}
+  });
+
+  $("previewSimBtn").addEventListener("click", () => {
+    if (currentPreviewItem) openIratingAdvisor(currentPreviewItem);
+  });
+
+  $("previewCompareBtn").addEventListener("click", () => {
+    if (currentPreviewItem) openSetupCompare(currentPreviewItem);
+  });
+
+  $("previewFavToggle").addEventListener("click", () => {
+    if (!currentPreviewItem || !snapshot) return;
+    const row = currentPreviewItem;
+    const favs = snapshot.settings.favourites;
+    if (favs.includes(row.id)) {
+      snapshot.settings.favourites = favs.filter((id) => id !== row.id);
+    } else {
+      snapshot.settings.favourites = [...favs, row.id];
+    }
+    void persistSettings().then(() => {
+      paintLibrary();
+      openSetupPreview(row);
+    });
+  });
+
+  document.querySelectorAll<HTMLButtonElement>("#modalIratingAdvisor button[data-ir]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const val = Number(btn.dataset.ir);
+      if (val > 0) {
+        userIrRating = val;
+        try {
+          localStorage.setItem("mmt-driver-irating", String(userIrRating));
+        } catch {}
+        renderAdvisorCalculations();
+      }
+    });
+  });
+
   backend.onRefresh(() => {
     void refresh();
   });
@@ -1377,6 +1708,10 @@ function bind(): void {
     $("updateText").textContent = `Hay una actualización: ${version}`;
   });
   backend.onLive((sample) => updateLiveStatus(sample));
+  if (backend.onIracingStatus) {
+    backend.onIracingStatus((status) => applyIracingStatus(status));
+  }
+  void backend.checkIracing().then((status) => applyIracingStatus(status)).catch(() => {});
 }
 
 async function boot(): Promise<void> {

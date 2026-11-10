@@ -404,6 +404,206 @@
             <p class="mt-4 text-sm text-r-muted">La bandeja tiene Sincronizar ahora, Abrir y Salir. Cerrar la ventana deja MMT Sync en marcha. No hay analítica de terceros.</p>
           </section>
         </section>
+
+        <!-- SETUP PREVIEW MODAL -->
+        <div id="modalSetupPreview" hidden class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div class="relative w-full max-w-2xl rounded-3xl border border-r-line bg-r-surface p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
+            <div class="flex items-start justify-between gap-4 border-b border-r-line pb-4">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span id="previewCatBadge" class="px-2.5 py-0.5 rounded-full border border-r-line bg-r-bg font-mono text-[10px] uppercase font-bold text-r-muted">SPORTS CAR</span>
+                  <span id="previewSeasonBadge" class="font-mono text-xs text-r-muted">26S4</span>
+                </div>
+                <h2 id="previewCarTitle" class="text-2xl font-bold text-r-text mt-1">Ferrari 296 GT3</h2>
+                <p id="previewTrackTitle" class="text-sm text-r-accent flex items-center gap-1.5 mt-0.5">
+                  <span>📍</span> <span id="previewTrackName">Spa-Francorchamps</span>
+                </p>
+              </div>
+              <button type="button" id="closePreviewBtn" class="p-2 rounded-xl text-r-muted hover:text-r-text hover:bg-r-bg transition text-lg leading-none">✕</button>
+            </div>
+
+            <!-- Filename pill -->
+            <div class="p-3 rounded-xl bg-r-bg border border-r-line flex items-center justify-between gap-2">
+              <span id="previewFilename" class="font-mono text-xs text-r-text font-semibold break-all select-all">MMT_FER_SPA_R_SAFE.sto</span>
+              <button type="button" id="previewCopyBtn" class="px-3 py-1.5 rounded-lg bg-r-surface border border-r-line text-xs font-mono text-r-text hover:border-r-accent transition shrink-0">Copiar</button>
+            </div>
+
+            <!-- Technical Analysis Grid -->
+            <div class="grid sm:grid-cols-2 gap-3 text-xs">
+              <div class="p-3.5 rounded-xl border border-r-line bg-r-bg/60 space-y-1">
+                <span class="font-mono text-[10px] uppercase tracking-wider text-r-muted block">Propósito del Setup</span>
+                <strong id="previewPurpose" class="text-r-text text-sm block">Carrera Principal / Máxima Consistencia</strong>
+                <span id="previewStabilityTag" class="inline-block mt-1 px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 font-bold text-[10px] uppercase">SAFE (Alta Estabilidad)</span>
+              </div>
+              <div class="p-3.5 rounded-xl border border-r-line bg-r-bg/60 space-y-1">
+                <span class="font-mono text-[10px] uppercase tracking-wider text-r-muted block">Carga Aerodinámica (Aero)</span>
+                <strong id="previewDownforce" class="text-r-text text-sm block">Media-Alta (Alerón P4/P5)</strong>
+                <span class="text-r-muted block text-[11px]">Equilibrio entre paso por curva y velocidad punta</span>
+              </div>
+              <div class="p-3.5 rounded-xl border border-r-line bg-r-bg/60 space-y-1">
+                <span class="font-mono text-[10px] uppercase tracking-wider text-r-muted block">Presiones Objetivo (Hot)</span>
+                <strong id="previewTireTarget" class="text-r-text text-sm block">160 kPa (23.2 psi)</strong>
+                <span class="text-r-muted block text-[11px]">Margen óptimo de contacto en curva rápida</span>
+              </div>
+              <div class="p-3.5 rounded-xl border border-r-line bg-r-bg/60 space-y-1">
+                <span class="font-mono text-[10px] uppercase tracking-wider text-r-muted block">Combustible y Frenada</span>
+                <strong id="previewFuelBrake" class="text-r-text text-sm block">60 L · Bias 54.0%</strong>
+                <span class="text-r-muted block text-[11px]">Stint de 45 min con frenada estable en apoyo</span>
+              </div>
+            </div>
+
+            <!-- Driving Hints -->
+            <div class="p-4 rounded-xl border border-r-line bg-r-bg/40 space-y-2">
+              <span class="font-mono text-[11px] uppercase tracking-wider text-r-accent font-bold block">💡 Claves de Ingeniería y Conducción</span>
+              <ul id="previewTipsList" class="space-y-1.5 text-xs text-r-muted leading-relaxed list-disc list-inside"></ul>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-r-line">
+              <div class="flex flex-wrap gap-2">
+                <button type="button" id="previewSimBtn" class="mmt-btn h-10 px-4 rounded-xl bg-r-accent text-r-ink font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
+                  <span>⏱️</span> <span>Estimar Tiempos e iRating</span>
+                </button>
+                <button type="button" id="previewCompareBtn" class="mmt-btn-ghost h-10 px-4 rounded-xl border border-r-line text-r-text font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 hover:border-r-accent transition">
+                  <span>⚖️</span> <span>Comparar Setup</span>
+                </button>
+              </div>
+              <button type="button" id="previewFavToggle" class="h-10 px-3 rounded-xl border border-r-line text-r-muted hover:text-amber-400 transition text-sm">★ Favorito</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SETUP COMPARATOR MODAL -->
+        <div id="modalSetupCompare" hidden class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div class="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl border border-r-line bg-r-surface p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
+            <div class="flex items-center justify-between border-b border-r-line pb-4">
+              <div>
+                <p class="mmt-kicker">Herramienta de Ingeniería</p>
+                <h2 class="text-2xl font-bold text-r-text mt-1">Comparador Técnico de Setups MMT</h2>
+              </div>
+              <button type="button" id="closeCompareBtn" class="p-2 rounded-xl text-r-muted hover:text-r-text hover:bg-r-bg transition text-lg leading-none">✕</button>
+            </div>
+
+            <!-- Setup Selector Row -->
+            <div class="grid sm:grid-cols-2 gap-4">
+              <div class="p-3.5 rounded-2xl border border-r-line bg-r-bg space-y-2">
+                <span class="font-mono text-[10px] uppercase tracking-wider text-r-muted block font-bold">Setup A (Base)</span>
+                <select id="compareSelectA" class="w-full h-10 rounded-xl border border-r-line bg-r-surface px-3 text-xs text-r-text font-mono focus:border-r-accent focus:outline-none"></select>
+                <div id="compareMetaA" class="text-xs text-r-muted font-mono"></div>
+              </div>
+              <div class="p-3.5 rounded-2xl border border-r-line bg-r-bg space-y-2">
+                <span class="font-mono text-[10px] uppercase tracking-wider text-r-accent block font-bold">Setup B (Comparación)</span>
+                <select id="compareSelectB" class="w-full h-10 rounded-xl border border-r-line bg-r-surface px-3 text-xs text-r-text font-mono focus:border-r-accent focus:outline-none"></select>
+                <div id="compareMetaB" class="text-xs text-r-muted font-mono"></div>
+              </div>
+            </div>
+
+            <!-- Side-by-Side Comparison Table -->
+            <div class="rounded-2xl border border-r-line overflow-hidden">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-r-bg/80 border-b border-r-line font-mono text-[11px] uppercase tracking-wider text-r-muted">
+                  <tr>
+                    <th class="p-3 w-1/3">Parámetro Técnico</th>
+                    <th class="p-3 w-1/3 text-r-text">Setup A</th>
+                    <th class="p-3 w-1/3 text-r-accent">Setup B</th>
+                  </tr>
+                </thead>
+                <tbody id="compareTableBody" class="divide-y divide-r-line/50 font-sans"></tbody>
+              </table>
+            </div>
+
+            <!-- Verdict Card -->
+            <div class="p-4 rounded-2xl border border-r-accent/30 bg-r-accent/5 space-y-1.5">
+              <strong class="font-mono text-xs uppercase tracking-wider text-r-accent block">📊 Veredicto de Rendimiento MMT</strong>
+              <p id="compareVerdictText" class="text-xs text-r-text leading-relaxed"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- IRATING & LAP TIME ADVISOR MODAL -->
+        <div id="modalIratingAdvisor" hidden class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div class="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl border border-r-line bg-r-surface p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
+            <div class="flex items-center justify-between border-b border-r-line pb-4">
+              <div>
+                <p class="mmt-kicker">Telemetría Predictiva</p>
+                <h2 class="text-2xl font-bold text-r-text mt-1">Estimador de Tiempo por Vuelta e iRating</h2>
+                <p class="text-xs text-r-muted mt-0.5">Calcula tiempos teóricos y consistencia en pista según tu nivel de habilidad.</p>
+              </div>
+              <button type="button" id="closeAdvisorBtn" class="p-2 rounded-xl text-r-muted hover:text-r-text hover:bg-r-bg transition text-lg leading-none">✕</button>
+            </div>
+
+            <!-- iRating Selector -->
+            <div class="p-4 rounded-2xl border border-r-line bg-r-bg space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="font-mono text-xs uppercase tracking-wider text-r-text font-bold">¿Cuál es tu iRating actual?</span>
+                <span id="advisorCurrentIrDisplay" class="font-mono text-xs text-r-accent font-bold">1.800 iR</span>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 font-mono text-xs">
+                <button type="button" data-ir="1200" class="h-9 rounded-xl border border-r-line bg-r-surface text-r-muted hover:border-r-accent transition font-bold">1.200 iR</button>
+                <button type="button" data-ir="1800" class="h-9 rounded-xl border border-r-accent bg-r-accent text-r-ink font-bold transition">1.800 iR</button>
+                <button type="button" data-ir="2500" class="h-9 rounded-xl border border-r-line bg-r-surface text-r-muted hover:border-r-accent transition font-bold">2.500 iR</button>
+                <button type="button" data-ir="3500" class="h-9 rounded-xl border border-r-line bg-r-surface text-r-muted hover:border-r-accent transition font-bold">3.500 iR</button>
+                <button type="button" data-ir="5000" class="h-9 rounded-xl border border-r-line bg-r-surface text-r-muted hover:border-r-accent transition font-bold">5.000+ iR</button>
+              </div>
+            </div>
+
+            <!-- Lap Time Projections -->
+            <div class="grid grid-cols-3 gap-3 text-center">
+              <div class="p-3.5 rounded-2xl border border-r-line bg-r-bg/70 space-y-1">
+                <span class="font-mono text-[10px] uppercase text-r-muted block">Vuelta Clasificación</span>
+                <strong id="advisorQualyTime" class="text-xl font-mono text-r-text block font-bold">2:17.350</strong>
+                <span class="text-[10px] text-r-muted font-mono">Pico óptimo en vuelta limpia</span>
+              </div>
+              <div class="p-3.5 rounded-2xl border border-r-line bg-r-bg/70 space-y-1">
+                <span class="font-mono text-[10px] uppercase text-r-muted block">Ritmo de Carrera</span>
+                <strong id="advisorRacePace" class="text-xl font-mono text-r-accent block font-bold">2:18.420</strong>
+                <span class="text-[10px] text-r-muted font-mono">Promedio en tanda de 30m</span>
+              </div>
+              <div class="p-3.5 rounded-2xl border border-r-line bg-r-bg/70 space-y-1">
+                <span class="font-mono text-[10px] uppercase text-r-muted block">Delta vs Esports</span>
+                <strong id="advisorDeltaAlien" class="text-xl font-mono text-amber-400 block font-bold">+2.15s</strong>
+                <span class="text-[10px] text-r-muted font-mono">Vs Alien MMT Récord</span>
+              </div>
+            </div>
+
+            <!-- Setup Comparison: SAFE vs AGRESIVO -->
+            <div class="p-4 rounded-2xl border border-r-line bg-r-bg space-y-3">
+              <span class="font-mono text-xs uppercase tracking-wider text-r-text font-bold block">Simulación: ¿Con qué setup serás más constante?</span>
+              <div class="grid sm:grid-cols-2 gap-3 text-xs">
+                <!-- SAFE CARD -->
+                <div class="p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 space-y-2">
+                  <div class="flex items-center justify-between">
+                    <strong class="text-emerald-400 font-bold uppercase tracking-wider text-[11px]">🛡️ Setup SAFE</strong>
+                    <span id="advisorSafeCons" class="font-mono font-bold text-emerald-300">96.8% Consistencia</span>
+                  </div>
+                  <div class="space-y-1 text-r-muted text-[11px]">
+                    <div class="flex justify-between"><span>Ritmo medio tanda:</span> <strong id="advisorSafePace" class="text-r-text font-mono">2:18.570</strong></div>
+                    <div class="flex justify-between"><span>Riesgo de trompo:</span> <strong id="advisorSafeRisk" class="text-emerald-400 font-mono">3% (Muy bajo)</strong></div>
+                  </div>
+                  <span class="block text-[11px] text-emerald-300 font-medium pt-1 border-t border-emerald-500/20">⭐ Recomendado: Máxima ganancia de iRating</span>
+                </div>
+                <!-- AGRESIVO CARD -->
+                <div class="p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-2">
+                  <div class="flex items-center justify-between">
+                    <strong class="text-amber-400 font-bold uppercase tracking-wider text-[11px]">⚡ Setup Agresivo</strong>
+                    <span id="advisorAggCons" class="font-mono font-bold text-amber-300">86.4% Consistencia</span>
+                  </div>
+                  <div class="space-y-1 text-r-muted text-[11px]">
+                    <div class="flex justify-between"><span>Ritmo medio real:</span> <strong id="advisorAggPace" class="text-r-text font-mono">2:19.020</strong></div>
+                    <div class="flex justify-between"><span>Riesgo de trompo:</span> <strong id="advisorAggRisk" class="text-amber-400 font-mono">26% (Alto)</strong></div>
+                  </div>
+                  <span class="block text-[11px] text-amber-300 font-medium pt-1 border-t border-amber-500/20">Techo 2 décimas más rápido, pero mayor fatiga</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Personalized Telemetry Verdict -->
+            <div class="p-4 rounded-2xl border border-r-line bg-r-bg/50 space-y-1.5">
+              <strong class="font-mono text-xs uppercase tracking-wider text-r-accent font-bold block">🏎️ Veredicto del Ingeniero de Pista</strong>
+              <p id="advisorVerdictText" class="text-xs text-r-text leading-relaxed"></p>
+            </div>
+          </div>
+        </div>
       </main>
     </div>
     <script type="module" src="./src/main.ts"></script>

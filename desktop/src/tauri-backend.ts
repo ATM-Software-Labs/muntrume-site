@@ -12,6 +12,7 @@ export function createTauriBackend(): Backend {
   const notices = new Set<(message: string) => void>();
   const updates = new Set<(version: string) => void>();
   const liveListeners = new Set<(sample: LiveSample) => void>();
+  const iracingStatusListeners = new Set<(status: string) => void>();
   let wired = false;
 
   async function wire(): Promise<void> {
@@ -23,6 +24,7 @@ export function createTauriBackend(): Backend {
     await listen<string>("mmt-notice", (event) => notices.forEach((cb) => cb(event.payload)));
     await listen<string>("mmt-update", (event) => updates.forEach((cb) => cb(event.payload)));
     await listen<LiveSample>("mmt-live", (event) => liveListeners.forEach((cb) => cb(event.payload)));
+    await listen<string>("mmt-iracing-status", (event) => iracingStatusListeners.forEach((cb) => cb(event.payload)));
   }
 
   return {
@@ -47,6 +49,7 @@ export function createTauriBackend(): Backend {
       }),
     installUpdate: () => invoke("install_update"),
     inspectConfig: () => invoke("inspect_config"),
+    checkIracing: () => invoke<string>("check_iracing_status"),
     quit: () => invoke("quit"),
     onRefresh(cb) {
       void wire();
@@ -72,6 +75,11 @@ export function createTauriBackend(): Backend {
       void wire();
       liveListeners.add(cb);
       return () => liveListeners.delete(cb);
+    },
+    onIracingStatus(cb) {
+      void wire();
+      iracingStatusListeners.add(cb);
+      return () => iracingStatusListeners.delete(cb);
     },
   };
 }

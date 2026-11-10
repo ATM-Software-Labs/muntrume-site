@@ -158,10 +158,12 @@ export interface Backend {
   upload(input: UploadInput): Promise<string>;
   installUpdate(): Promise<void>;
   inspectConfig(): Promise<IracingAnalysis>;
+  checkIracing(): Promise<string>;
   quit(): Promise<void>;
   onRefresh(cb: () => void): () => void;
   onStaged(cb: (file: StagedFile) => void): () => void;
   onNotice(cb: (message: string) => void): () => void;
   onUpdate(cb: (version: string) => void): () => void;
   onLive(cb: (sample: LiveSample) => void): () => void;
+  onIracingStatus?(cb: (status: string) => void): () => void;
 }

@@ -123,6 +123,7 @@ pub fn run() {
             upload_staged,
             install_update,
             inspect_config,
+            check_iracing_status,
             quit
         ])
         .run(tauri::generate_context!())
@@ -518,6 +519,11 @@ async fn install_update(app: AppHandle) -> Result<(), String> {
 #[tauri::command]
 fn inspect_config() -> Result<advisor::IracingAnalysis, String> {
     Ok(advisor::analyze())
+}
+
+#[tauri::command]
+fn check_iracing_status() -> &'static str {
+    live::current_status()
 }
 
 #[tauri::command]

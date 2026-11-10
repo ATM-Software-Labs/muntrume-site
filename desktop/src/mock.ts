@@ -258,6 +258,9 @@ export function createMock(screen: string | null): Backend {
         ],
       };
     },
+    async checkIracing() {
+      return "closed";
+    },
     async quit() {
       notices.forEach((cb) => cb("En la aplicación de Windows, Salir cierra la bandeja."));
     },
@@ -278,6 +281,9 @@ export function createMock(screen: string | null): Backend {
       return () => updates.delete(cb);
     },
     onLive() {
+      return () => {};
+    },
+    onIracingStatus() {
       return () => {};
     },
   };
