@@ -56,7 +56,7 @@ pub enum ManifestFetch {
 impl Api {
     pub fn new(mock: bool) -> Result<Self, String> {
         let client = reqwest::Client::builder()
-            .redirect(reqwest::redirect::Policy::none())
+            .redirect(reqwest::redirect::Policy::limited(5))
             .timeout(Duration::from_secs(45))
             .connect_timeout(Duration::from_secs(15))
             .user_agent("MMT-Sync/0.1.0")
@@ -126,7 +126,7 @@ impl Api {
         }
         let response = self.authed(self.client.post(api_url("/api/desktop/auth/logout").map_err(|err| ApiError::Message(err.to_string()))?), token)?.send().await.map_err(offline)?;
         if response.status().is_redirection() {
-            return Err(ApiError::Message("El API no debe redirigir.".into()));
+            return Err(ApiError::Message("Demasiadas redirecciones en el API.".into()));
         }
         if response.status().as_u16() == 401 {
             return Err(ApiError::Unauthorized);
@@ -155,13 +155,14 @@ impl Api {
             request = request.header(reqwest::header::IF_NONE_MATCH, etag);
         }
         let response = request.send().await.map_err(offline)?;
-        if response.status().is_redirection() {
-            return Err(ApiError::Message("El API no debe redirigir.".into()));
-        }
-        if response.status().as_u16() == 304 {
+        let status = response.status();
+        if status.as_u16() == 304 {
             return Ok(ManifestFetch::NotModified);
         }
-        if response.status().as_u16() == 401 {
+        if status.is_redirection() {
+            return Err(ApiError::Message("Demasiadas redirecciones en el API.".into()));
+        }
+        if status.as_u16() == 401 {
             return Err(ApiError::Unauthorized);
         }
         if !response.status().is_success() {
@@ -188,7 +189,7 @@ impl Api {
         let url = api_url(&path).map_err(|err| ApiError::Message(err.to_string()))?;
         let response = self.authed(self.client.get(url), token)?.send().await.map_err(offline)?;
         if response.status().is_redirection() {
-            return Err(ApiError::Message("El API no debe redirigir.".into()));
+            return Err(ApiError::Message("Demasiadas redirecciones en el API.".into()));
         }
         if response.status().as_u16() == 401 {
             return Err(ApiError::Unauthorized);
@@ -222,7 +223,7 @@ impl Api {
             .text("notes", request.notes);
         let response = self.authed(self.client.post(url), token)?.multipart(form).send().await.map_err(offline)?;
         if response.status().is_redirection() {
-            return Err(ApiError::Message("El API no debe redirigir.".into()));
+            return Err(ApiError::Message("Demasiadas redirecciones en el API.".into()));
         }
         if response.status().as_u16() == 401 {
             return Err(ApiError::Unauthorized);
@@ -267,7 +268,7 @@ impl Api {
         if response.status().as_u16() == 401 {
             return Err(ApiError::Unauthorized);
         }
-        if !response.status().is_success() || response.status().is_redirection() {
+        if !response.status().is_success() {
             return Err(ApiError::Message(message_from(response.status().as_u16(), response).await));
         }
         response
@@ -279,7 +280,7 @@ impl Api {
     async fn send(&self, request: reqwest::RequestBuilder) -> Result<reqwest::Response, ApiError> {
         let response = request.send().await.map_err(offline)?;
         if response.status().is_redirection() {
-            return Err(ApiError::Message("El API no debe redirigir.".into()));
+            return Err(ApiError::Message("Demasiadas redirecciones en el API.".into()));
         }
         Ok(response)
     }
