@@ -26,9 +26,10 @@ fn windows_loop(app: AppHandle) {
         MapViewOfFile, OpenFileMappingW, UnmapViewOfFile, VirtualQuery, FILE_MAP_READ,
         MEMORY_BASIC_INFORMATION,
     };
-    use windows_sys::Win32::System::Threading::{OpenEventW, WaitForSingleObject, WAIT_OBJECT_0};
+    use windows_sys::Win32::System::Threading::{OpenEventW, WaitForSingleObject};
 
     const SYNCHRONIZE: u32 = 0x0010_0000;
+    const WAIT_OBJECT_0: u32 = 0;
     loop {
         if !overlays_enabled() {
             std::thread::sleep(Duration::from_secs(1));
@@ -40,7 +41,7 @@ fn windows_loop(app: AppHandle) {
             continue;
         }
         let view = unsafe { MapViewOfFile(mapping, FILE_MAP_READ, 0, 0, 0) };
-        if view.is_null() {
+        if view.Value.is_null() {
             unsafe { CloseHandle(mapping); }
             std::thread::sleep(Duration::from_secs(1));
             continue;
@@ -65,12 +66,12 @@ fn windows_loop(app: AppHandle) {
             }
             let mut info = unsafe { std::mem::zeroed::<MEMORY_BASIC_INFORMATION>() };
             let queried = unsafe {
-                VirtualQuery(view, &mut info, std::mem::size_of::<MEMORY_BASIC_INFORMATION>())
+                VirtualQuery(view.Value as *const _, &mut info, std::mem::size_of::<MEMORY_BASIC_INFORMATION>())
             };
             if queried == 0 || info.RegionSize < 112 {
                 break;
             }
-            let bytes = unsafe { std::slice::from_raw_parts(view as *const u8, info.RegionSize) };
+            let bytes = unsafe { std::slice::from_raw_parts(view.Value as *const u8, info.RegionSize) };
             if let Ok(sample) = mmt_sync_core::read_live_sample(bytes) {
                 let _ = app.emit("mmt-live", &sample);
                 last_emit = Instant::now();
