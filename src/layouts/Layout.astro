@@ -54,6 +54,9 @@ function absoluteCanonical(input: string): string {
   u.port = "";
   u.search = "";
   u.hash = "";
+  if (u.pathname !== "/" && !u.pathname.endsWith("/") && !/\.[a-z0-9]+$/i.test(u.pathname)) {
+    u.pathname += "/";
+  }
   return u.toString();
 }
 
