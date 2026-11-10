@@ -580,7 +580,10 @@ export function paintConfigAnalysis(data: IracingAnalysis): void {
 
     const badge = document.createElement("span");
     badge.className = "px-2.5 py-1 rounded-lg font-mono text-[10px] uppercase tracking-wider shrink-0 font-bold ";
-    if (item.status === "optimal") {
+    if (item.status === "protected") {
+      badge.className += "bg-sky-500/15 text-sky-300 border border-sky-500/40";
+      badge.textContent = "Protegido / Inalterable";
+    } else if (item.status === "optimal") {
       badge.className += "bg-r-accent/10 text-r-accent border border-r-accent/30";
       badge.textContent = "Óptimo";
     } else if (item.status === "recommended") {
@@ -598,11 +601,18 @@ export function paintConfigAnalysis(data: IracingAnalysis): void {
     desc.textContent = item.explanation;
 
     const values = document.createElement("div");
-    values.className = "mt-1 flex flex-wrap gap-4 text-xs font-mono bg-r-bg/50 p-2.5 rounded-xl border border-r-line/50";
-    values.innerHTML = `
-      <div><span class="text-r-muted">Actual:</span> <strong class="text-r-text">${item.currentValue}</strong></div>
-      <div><span class="text-r-muted">Recomendado:</span> <strong class="text-r-accent">${item.recommendedValue}</strong></div>
-    `;
+    values.className = "mt-1 flex flex-wrap items-center gap-4 text-xs font-mono bg-r-bg/50 p-2.5 rounded-xl border border-r-line/50";
+    if (item.status === "protected") {
+      values.innerHTML = `
+        <div><span class="text-r-muted">Resolución & Pantalla:</span> <strong class="text-r-text">${item.currentValue}</strong></div>
+        <div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span><span class="text-sky-300 font-semibold">Bloqueada por seguridad (MMT nunca altera tu pantalla)</span></div>
+      `;
+    } else {
+      values.innerHTML = `
+        <div><span class="text-r-muted">Actual:</span> <strong class="text-r-text">${item.currentValue}</strong></div>
+        <div><span class="text-r-muted">Recomendado:</span> <strong class="text-r-accent">${item.recommendedValue}</strong></div>
+      `;
+    }
 
     card.append(top, desc, values);
     list.append(card);

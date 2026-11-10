@@ -126,10 +126,10 @@ export interface ConfigItem {
   section: string;
   currentValue: string;
   recommendedValue: string;
-  status: "optimal" | "recommended" | "warning";
+  status: "optimal" | "recommended" | "warning" | "protected";
   title: string;
   explanation: string;
-  category: "ffb" | "graphics" | "visibility" | "performance";
+  category: "ffb" | "graphics" | "visibility" | "performance" | "display" | "latency" | "hardware";
 }
 
 export interface IracingAnalysis {

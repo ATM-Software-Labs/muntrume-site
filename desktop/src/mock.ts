@@ -196,6 +196,16 @@ export function createMock(screen: string | null): Backend {
         warningCount: 0,
         items: [
           {
+            key: "ResolutionGeometry",
+            section: "Pantalla / Hardware (rendererDX11Monitor.ini)",
+            currentValue: "2560 x 1440 (Ventana sin bordes)",
+            recommendedValue: "Nativa Protegida",
+            status: "protected",
+            title: "Resolución y Geometría de Pantallas (Inalterable)",
+            explanation: "Resolución nativa detectada y protegida. MMT Sync respeta siempre tu resolución nativa y alineación multimonitor o VR sin modificarla nunca.",
+            category: "display",
+          },
+          {
             key: "enableFFB360HzInterpolated",
             section: "Force Feedback (app.ini)",
             currentValue: "1 (Activo)",
