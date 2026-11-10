@@ -69,24 +69,54 @@ pub fn analyze() -> IracingAnalysis {
         }
     });
 
-    let iracing_dir = setups_dir
-        .and_then(|p| p.parent().map(|p| p.to_path_buf()))
-        .or_else(|| {
-            crate::folders::detect_setups_dir().and_then(|p| p.parent().map(|p| p.to_path_buf()))
-        });
+    let mut candidate_paths = Vec::new();
+    if let Some(ref p) = setups_dir {
+        if let Some(parent) = p.parent() {
+            candidate_paths.push(parent.to_path_buf());
+        }
+    }
+    if let Some(p) = crate::folders::detect_setups_dir().and_then(|p| p.parent().map(|p| p.to_path_buf())) {
+        candidate_paths.push(p);
+    }
+    if let Ok(profile) = std::env::var("USERPROFILE") {
+        let p = PathBuf::from(&profile);
+        candidate_paths.push(p.join("Documents").join("iRacing"));
+        candidate_paths.push(p.join("Documentos").join("iRacing"));
+        candidate_paths.push(p.join("OneDrive").join("Documents").join("iRacing"));
+        candidate_paths.push(p.join("OneDrive").join("Documentos").join("iRacing"));
+    }
 
-    let Some(iracing_path) = iracing_dir else {
+    let iracing_path = candidate_paths
+        .into_iter()
+        .find(|p| p.join("app.ini").is_file())
+        .or_else(|| setups_dir.and_then(|p| p.parent().map(|p| p.to_path_buf())));
+
+    let Some(iracing_path) = iracing_path else {
         return mock_analysis(false, "Carpeta de iRacing no encontrada");
     };
 
     let app_ini_path = iracing_path.join("app.ini");
-    let renderer_ini_path = iracing_path.join("rendererDX11Monitor.ini");
-    let alt_renderer_path = iracing_path.join("rendererDX11.ini");
-
     let app_content = fs::read_to_string(&app_ini_path).unwrap_or_default();
-    let renderer_content = fs::read_to_string(&renderer_ini_path)
-        .or_else(|_| fs::read_to_string(&alt_renderer_path))
+
+    let mut renderer_content = fs::read_to_string(iracing_path.join("rendererDX11Monitor.ini"))
+        .or_else(|_| fs::read_to_string(iracing_path.join("rendererDX11.ini")))
         .unwrap_or_default();
+
+    if renderer_content.is_empty() {
+        if let Ok(entries) = fs::read_dir(&iracing_path) {
+            for entry in entries.flatten() {
+                let name = entry.file_name().to_string_lossy().to_ascii_lowercase();
+                if name.starts_with("rendererdx11") && name.ends_with(".ini") {
+                    if let Ok(c) = fs::read_to_string(entry.path()) {
+                        if !c.is_empty() {
+                            renderer_content = c;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     if app_content.is_empty() && renderer_content.is_empty() {
         return mock_analysis(false, &iracing_path.display().to_string());

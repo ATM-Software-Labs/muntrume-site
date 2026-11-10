@@ -194,6 +194,69 @@ pub fn toast_message(file_count: usize, cars: &[String]) -> Option<String> {
     Some(format!("{noun}: {list}"))
 }
 
+fn sanitize_track_folder(raw: &str) -> String {
+    let clean: String = raw
+        .chars()
+        .map(|c| match c {
+            '/' | '\\' | ':' | '*' | '?' | '"' | '<' | '>' | '|' => '_',
+            other => other,
+        })
+        .collect();
+    let trimmed = clean.trim().trim_matches('.').trim();
+    if trimmed.is_empty() {
+        "General".to_string()
+    } else {
+        trimmed.to_string()
+    }
+}
+
+fn extract_week_folder(week_opt: Option<u32>, filename: &str, track: &str) -> String {
+    if let Some(w) = week_opt {
+        if w >= 1 && w <= 14 {
+            return format!("WEEK {:02}", w);
+        }
+    }
+    let upper = filename.to_ascii_uppercase();
+    if let Some(pos) = upper.find("_W") {
+        let rest = &upper[pos + 2..];
+        let num_str: String = rest.chars().take_while(|c| c.is_ascii_digit()).collect();
+        if let Ok(num) = num_str.parse::<u32>() {
+            if num >= 1 && num <= 14 {
+                return format!("WEEK {:02}", num);
+            }
+        }
+    }
+    let t = track.to_ascii_lowercase();
+    let week = if t.contains("indy") || t.contains("indianapolis") || t.contains("silverstone") {
+        1
+    } else if t.contains("misano") || t.contains("fuji") {
+        2
+    } else if t.contains("spa") || t.contains("mexico") {
+        3
+    } else if t.contains("lemans") || t.contains("le mans") || t.contains("cota") {
+        4
+    } else if t.contains("bend") || t.contains("montreal") {
+        5
+    } else if t.contains("long beach") || t.contains("longbeach") || t.contains("red bull") || t.contains("rbr") {
+        6
+    } else if t.contains("nurburgring") || t.contains("vln") || t.contains("motegi") {
+        7
+    } else if t.contains("hockenheim") || t.contains("watkins") {
+        8
+    } else if t.contains("monza") || t.contains("barcelona") || t.contains("catalunya") {
+        9
+    } else if t.contains("bathurst") || t.contains("mount panorama") || t.contains("zolder") {
+        10
+    } else if t.contains("sebring") || t.contains("road america") {
+        11
+    } else if t.contains("suzuka") || t.contains("road atlanta") {
+        12
+    } else {
+        1
+    };
+    format!("WEEK {:02}", week)
+}
+
 fn accept_remote(setup: &RemoteSetup) -> Result<(String, String), String> {
     if crate::manifest::parse_id(&setup.id).is_none() {
         return Err("id no válido".into());
@@ -204,14 +267,22 @@ fn accept_remote(setup: &RemoteSetup) -> Result<(String, String), String> {
     if setup.size == 0 || setup.size > MAX_STO_BYTES {
         return Err("el tamaño tiene que estar entre 1 byte y 1 MB".into());
     }
-    let path = MmtPath::try_new(&setup.car_folder, &setup.season, &setup.filename).map_err(
-        |err| match err {
-            PathError::Extension => "el archivo tiene que ser .sto".to_string(),
-            PathError::Escape => "la ruta sale de la carpeta de setups".to_string(),
-            PathError::Empty => "la ruta está vacía".to_string(),
-            PathError::Name => "el nombre no es válido en Windows".to_string(),
-        },
-    )?;
+    let week_folder = extract_week_folder(setup.week, &setup.filename, &setup.track);
+    let track_folder = sanitize_track_folder(&setup.track);
+    let season = if setup.season.trim().is_empty() { "26S4" } else { setup.season.trim() };
+
+    let path = MmtPath::new_hierarchical(
+        &setup.car_folder,
+        "MMT by Muntrume",
+        &[season, &week_folder, &track_folder],
+        &setup.filename,
+    )
+    .map_err(|err| match err {
+        PathError::Extension => "el archivo tiene que ser .sto".to_string(),
+        PathError::Escape => "la ruta sale de la carpeta de setups".to_string(),
+        PathError::Empty => "la ruta está vacía".to_string(),
+        PathError::Name => "el nombre no es válido en Windows".to_string(),
+    })?;
     Ok((path.relative(), sha))
 }
 
@@ -299,7 +370,7 @@ mod tests {
         assert!(plan.actions.iter().any(|action| matches!(
             action,
             Action::Download(item) if item.id == "c" && item.state == FileState::Nuevo
-                && item.relative == "porsche992rgt3/MMT/26S4/spa.sto"
+                && item.relative == "porsche992rgt3/MMT by Muntrume/26S4/WEEK 03/Spa/spa.sto"
         )));
         assert!(plan.actions.iter().any(|action| matches!(
             action,
@@ -312,7 +383,7 @@ mod tests {
                 Action::Delete(item) => item.relative.as_str(),
                 _ => return false,
             };
-            relative.contains("..") || !relative.contains("/MMT/")
+            relative.contains("..") || !relative.contains("/MMT")
         }));
         let kept: Vec<_> = plan
             .actions

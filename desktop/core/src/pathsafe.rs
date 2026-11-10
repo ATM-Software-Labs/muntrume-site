@@ -22,11 +22,12 @@ pub enum PathError {
     Extension,
 }
 
-/// Carpeta `car_folder/MMT/season/filename` ya comprobada.
+/// Carpeta `car_folder/indicator/.../filename` ya comprobada.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MmtPath {
     pub car_folder: String,
-    pub season: String,
+    pub indicator: String,
+    pub intermediates: Vec<String>,
     pub filename: String,
 }
 
@@ -34,31 +35,78 @@ impl MmtPath {
     pub fn try_new(car_folder: &str, season: &str, filename: &str) -> Result<Self, PathError> {
         Ok(Self {
             car_folder: sanitize_segment(car_folder)?,
-            season: sanitize_segment(season)?,
+            indicator: "MMT".to_string(),
+            intermediates: vec![sanitize_segment(season)?],
             filename: sanitize_filename(filename)?,
         })
     }
 
-    /// `ferrari296gt3/MMT/26S4/spa_race.sto`
-    pub fn relative(&self) -> String {
-        format!("{}/MMT/{}/{}", self.car_folder, self.season, self.filename)
+    pub fn new_hierarchical(
+        car_folder: &str,
+        indicator: &str,
+        intermediates: &[&str],
+        filename: &str,
+    ) -> Result<Self, PathError> {
+        let mut clean_intermediates = Vec::new();
+        for item in intermediates {
+            clean_intermediates.push(sanitize_segment(item)?);
+        }
+        Ok(Self {
+            car_folder: sanitize_segment(car_folder)?,
+            indicator: sanitize_segment(indicator)?,
+            intermediates: clean_intermediates,
+            filename: sanitize_filename(filename)?,
+        })
     }
 
-    /// Solo acepta exactamente cuatro tramos y el segundo fijo `MMT`.
+    /// `ferrari296gt3/MMT/26S4/spa_race.sto` o con jerarquía `ferrari296gt3/MMT by Muntrume/26S4/WEEK 01/Indianapolis/setup.sto`
+    pub fn relative(&self) -> String {
+        if self.intermediates.is_empty() {
+            format!("{}/{}/{}", self.car_folder, self.indicator, self.filename)
+        } else {
+            format!(
+                "{}/{}/{}/{}",
+                self.car_folder,
+                self.indicator,
+                self.intermediates.join("/"),
+                self.filename
+            )
+        }
+    }
+
+    /// Acepta rutas estándar de MMT Sync (mínimo 4 partes, indicador "MMT" o "MMT by Muntrume").
     pub fn from_relative(relative: &str) -> Result<Self, PathError> {
         if relative.contains('\\') || relative.contains('\0') {
             return Err(PathError::Escape);
         }
         let parts: Vec<&str> = relative.split('/').collect();
-        if parts.len() != 4 || parts[1] != "MMT" {
+        if parts.len() < 4 {
             return Err(PathError::Escape);
         }
-        let parsed = Self::try_new(parts[0], parts[2], parts[3])?;
-        if parsed.car_folder != parts[0] || parsed.season != parts[2] || parsed.filename != parts[3]
-        {
-            return Err(PathError::Name);
+        let indicator = parts[1];
+        if indicator != "MMT" && indicator != "MMT by Muntrume" {
+            return Err(PathError::Escape);
         }
-        Ok(parsed)
+        let car_folder = sanitize_segment(parts[0])?;
+        let filename = sanitize_filename(parts[parts.len() - 1])?;
+        let mut intermediates = Vec::new();
+        for &inter in &parts[2..parts.len() - 1] {
+            intermediates.push(sanitize_segment(inter)?);
+        }
+        Ok(Self {
+            car_folder,
+            indicator: indicator.to_string(),
+            intermediates,
+            filename,
+        })
+    }
+
+    pub fn dir_segments(&self) -> Vec<&str> {
+        let mut list = vec![self.car_folder.as_str(), self.indicator.as_str()];
+        for inter in &self.intermediates {
+            list.push(inter.as_str());
+        }
+        list
     }
 
     /// Une la ruta a `root` y rechaza cualquier `..` o destino que no quede dentro.
@@ -66,11 +114,11 @@ impl MmtPath {
         if root.as_os_str().is_empty() || !root.is_absolute() {
             return Err(PathError::Escape);
         }
-        let dest = root
-            .join(&self.car_folder)
-            .join("MMT")
-            .join(&self.season)
-            .join(&self.filename);
+        let mut dest = root.join(&self.car_folder).join(&self.indicator);
+        for inter in &self.intermediates {
+            dest = dest.join(inter);
+        }
+        dest = dest.join(&self.filename);
         if !stays_inside(root, &dest) {
             return Err(PathError::Escape);
         }

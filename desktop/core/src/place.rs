@@ -42,7 +42,7 @@ fn walk(root: &Path, relative: &str, create: bool) -> Result<PathBuf, PlaceError
     }
     let root_canon = root.canonicalize()?;
     let mut dir = root_canon.clone();
-    for part in [mmt.car_folder.as_str(), "MMT", mmt.season.as_str()] {
+    for part in mmt.dir_segments() {
         dir.push(part);
         if dir.exists() {
             let meta = fs::symlink_metadata(&dir)?;
