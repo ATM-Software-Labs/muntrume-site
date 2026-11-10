@@ -212,23 +212,7 @@ const wordCount = ((bodyMarkdown || '') + ' ' + (dispatch?.excerpt_short || ''))
 const readTimeMinutes = Math.max(1, Math.ceil(wordCount / 200));
 ---
 
-<Layout title={pageTitle} description={pageDescription} canonical={urlOriginal}>
-  
-  <Fragment slot="head">
-    <link rel="canonical" href={urlOriginal} />
-    {isTeam ? (
-      <>
-        <meta name="robots" content="index, follow" />
-        <meta property="og:title" content={pageTitle} />
-        <meta property="og:description" content={pageDescription} />
-        {imageUrl && <meta property="og:image" content={imageUrl} />}
-        <meta property="og:url" content={urlOriginal} />
-        <meta property="og:type" content="article" />
-      </>
-    ) : (
-      <meta name="robots" content="noindex, follow" />
-    )}
-  </Fragment>
+<Layout title={pageTitle} description={pageDescription} canonical={isTeam ? `https://muntru.me/noticias/${slug}/` : urlOriginal} noindex={!isTeam} ogType={isTeam ? "article" : "website"} ogImage={imageUrl && String(imageUrl).startsWith("http") ? imageUrl : "https://muntru.me/assets/img/og-news.jpg"} ogImageAlt={title}>
 
   <div class="min-h-screen bg-[var(--r-bg)] text-[var(--r-text)] pt-20 pb-20 selection:bg-[var(--r-accent)] selection:text-[var(--r-accent-ink)] transition-colors duration-200">
     <div id="dispatchContainer" class="max-w-3xl mx-auto px-4 sm:px-6 space-y-8">

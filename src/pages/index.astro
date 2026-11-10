@@ -5,8 +5,8 @@ import TeamBand from '../components/TeamBand.astro';
 import { PILOTOS, LICENCE_UPDATED_LABEL } from '../lib/pilotos';
 import catalog from '../../public/assets/data/catalog_index.json';
 
-const pageTitle = "Muntrume Motorsport · Official iRacing SimRacing Team | Escudería Profesional";
-const pageDescription = "Official iRacing sim racing team based in Barcelona. Endurance & sprint championships, professional telemetry engineering, and official driver roster. Escudería oficial de competición en iRacing.";
+const pageTitle = "Muntrume Motorsport (MMT) · Equipo iRacing";
+const pageDescription = "Muntrume Motorsport (MMT) es el equipo de iRacing de Sant Andreu, Barcelona. Pilotos oficiales, telemetría y setups .sto en el Garage.";
 const pageKeywords = "muntrume motorsport, official simracing team, iracing team, endurance sim racing, gt3 endurance, sim racing engineering, garage 61 telemetry, alberto trujillo, escuderia simracing, equipo iracing";
 const fmt = (n: number) => n.toLocaleString('en-US');
 const figs = [
@@ -17,7 +17,7 @@ const figs = [
 ];
 ---
 
-<Layout title={pageTitle} description={pageDescription} keywords={pageKeywords}>
+<Layout title={pageTitle} description={pageDescription} keywords={pageKeywords} canonical="https://muntru.me/" ogImage="https://muntru.me/assets/img/og-home.jpg" ogImageAlt="Muntrume Motorsport (MMT)">
   <link slot="head" rel="preload" as="image" type="image/avif" fetchpriority="high" imagesrcset="/assets/img/hero-bg-640.avif 640w, /assets/img/hero-bg-960.avif 960w, /assets/img/hero-bg-1280.avif 1280w" imagesizes="100vw" />
 
   <!-- 1 · HERO -->
@@ -25,12 +25,12 @@ const figs = [
     <picture>
       <source type="image/avif" srcset="/assets/img/hero-bg-640.avif 640w, /assets/img/hero-bg-960.avif 960w, /assets/img/hero-bg-1280.avif 1280w" sizes="100vw" />
       <source type="image/webp" srcset="/assets/img/hero-bg-640.webp 640w, /assets/img/hero-bg-960.webp 960w, /assets/img/hero-bg-1280.webp 1280w, /assets/img/hero-bg.webp 1920w" sizes="100vw" />
-      <img src="/assets/img/hero-bg-1280.webp" width="1920" height="1080" alt="" fetchpriority="high" decoding="async" />
+      <img src="/assets/img/hero-bg-1280.webp" width="1920" height="1080" alt="Muntrume Motorsport en pista" fetchpriority="high" decoding="async" />
     </picture>
     <div class="r-wrap">
-      <p class="r-kicker">Muntrume Motorsport · Sant Andreu, Barcelona</p>
-      <h1 id="heroTitle" class="r-h1">Engineering-driven sim racing.</h1>
-      <p class="r-lead">Official iRacing endurance and sprint team. Telemetry analysis, .STO setup engineering, and coordinated teamwork across Sports Car, GT3, GT4, and Multiclass Endurance events.</p>
+      <p class="r-kicker">MMT · Sant Andreu, Barcelona</p>
+      <h1 id="heroTitle" class="r-h1">Muntrume Motorsport</h1>
+      <p class="r-lead">Engineering-driven sim racing. Equipo oficial de iRacing en resistencia y sprint: telemetría, setups .sto y trabajo de equipo en Sports Car, GT3 y GT4.</p>
       <div class="r-hero__cta">
         <a href="/drivers" class="r-btn r-btn--primary">Meet the Drivers</a>
         <a href="/garage" class="r-btn r-btn--ghost">Enter Setup Vault</a>
@@ -39,6 +39,13 @@ const figs = [
       <div class="r-hero__meta">
         {figs.map(f => (<div><strong>{f.n}</strong>{f.l}</div>))}
       </div>
+    </div>
+  </section>
+
+  <section class="r-section" aria-labelledby="mmtAbout">
+    <div class="r-wrap" style="display:grid;gap:12px;max-width:70ch">
+      <h2 id="mmtAbout" class="r-h2">Sobre Muntrume Motorsport (MMT)</h2>
+      <p class="r-lead" style="margin:0">Muntrume Motorsport (MMT) es un equipo de iRacing con sede en Sant Andreu, Barcelona. Publica la ficha de sus pilotos, guarda los setups .sto en el Garage y comparte la telemetría en Garage 61. La radio del equipo está en Discord.</p>
     </div>
   </section>
 

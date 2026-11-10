@@ -593,3 +593,19 @@ html.light .d-f1__ovr-num-badge, [data-theme="light"] .d-f1__ovr-num-badge{backg
 .d-strip dt{margin:0;color:var(--r-muted);font:600 10px/1.2 var(--r-mono);letter-spacing:.05em;text-transform:uppercase}
 .d-strip dd{margin:6px 0 0;font:700 18px/1.15 var(--r-mono);font-variant-numeric:tabular-nums}
 @media (min-width:800px){.d-strip{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+/* Pulido: foco visible, hover y micro-movimiento solo si el usuario no pide menos movimiento. */
+a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--r-accent);
+  outline-offset: 3px;
+}
+#mobileDrawer a, #mobileDrawer button { min-height: 44px; }
+@media (prefers-reduced-motion: no-preference) {
+  header a, .r-footer a, .r-card, .d-card {
+    transition: color .2s, border-color .2s, background-color .2s, transform .2s, opacity .2s;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  header a, .r-footer a, .r-card, .d-card, .driver-helmet { transition: none; }
+  .d-card:hover, .r-card:hover, header img { transform: none; }
+}

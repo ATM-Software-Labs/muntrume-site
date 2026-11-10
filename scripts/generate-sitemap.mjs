@@ -46,10 +46,18 @@ const today = new Date().toISOString().split('T')[0];
 for (const filePath of allHtml) {
   const rel = path.relative(SITE_ROOT, filePath).replace(/\\/g, '/');
   
-  // Skip 404 and admin/private pages
-  if (rel === '404.html' || rel.startsWith('admin') || rel.startsWith('email-preferences')) {
+  // Skip 404, private routes and pages marked noindex
+  if (
+    rel === '404.html' ||
+    rel.startsWith('admin') ||
+    rel.startsWith('email-preferences') ||
+    rel.startsWith('login') ||
+    rel.startsWith('paddock/sala')
+  ) {
     continue;
   }
+  const html = fs.readFileSync(filePath, 'utf8');
+  if (/<meta[^>]*name=["']robots["'][^>]*content=["'][^"']*noindex/i.test(html)) continue;
 
   let cleanUrl = '';
   if (rel === 'index.html') {
