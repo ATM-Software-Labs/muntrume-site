@@ -147,9 +147,24 @@ function applyTheme(next: "dark" | "light"): void {
   toggle.setAttribute("aria-pressed", next === "light" ? "true" : "false");
 }
 
-function showNotice(message: string): void {
+let noticeTimeout = 0;
+function showNotice(message: string, isError = false): void {
+  window.clearTimeout(noticeTimeout);
+  if (!message) {
+    notice.hidden = true;
+    notice.textContent = "";
+    return;
+  }
+  notice.hidden = false;
   notice.textContent = message;
-  notice.hidden = message.length === 0;
+  if (isError) {
+    notice.className = "mx-5 mt-4 rounded-xl border border-red-500/40 bg-red-500/10 text-red-300 px-4 py-3 text-sm flex items-center justify-between";
+  } else {
+    notice.className = "mx-5 mt-4 rounded-xl border border-r-accent/40 bg-r-accent/10 text-r-accent px-4 py-3 text-sm flex items-center justify-between";
+    noticeTimeout = window.setTimeout(() => {
+      notice.hidden = true;
+    }, 5000);
+  }
 }
 
 function kindKey(kind: string): "Race" | "Qualy" | "Wet" | "other" {
@@ -805,19 +820,26 @@ function bind(): void {
   $("syncBtn").addEventListener("click", () => {
     const button = $("syncBtn");
     button.setAttribute("aria-busy", "true");
-    button.textContent = "Sincronizando…";
+    const syncText = document.getElementById("syncText");
+    const syncIcon = document.getElementById("syncIcon");
+    if (syncText) syncText.textContent = "Sincronizando…";
+    if (syncIcon) syncIcon.className = "animate-spin inline-block";
+    showNotice("");
+
     void backend
       .syncNow()
       .then(async (report) => {
-        showNotice(report.message);
+        const isErr = report.message.toLowerCase().includes("incompleta") || report.message.toLowerCase().includes("error");
+        showNotice(report.message, isErr);
         await refresh();
       })
       .catch((error: unknown) => {
-        showNotice(error instanceof Error ? error.message : "La sincronización no se completó.");
+        showNotice(error instanceof Error ? error.message : "La sincronización no se completó.", true);
       })
       .finally(() => {
         button.removeAttribute("aria-busy");
-        button.textContent = "Sincronizar ahora";
+        if (syncText) syncText.textContent = "Sincronizar ahora";
+        if (syncIcon) syncIcon.className = "";
       });
   });
   $("search").addEventListener("input", () => {
