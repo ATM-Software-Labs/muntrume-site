@@ -1,4 +1,4 @@
-import type { LibraryItem, LiveSample, Settings, Snapshot } from "./types";
+import type { IracingAnalysis, LibraryItem, LiveSample, Settings, Snapshot } from "./types";
 
 export function paintExtras(data: Snapshot): void {
   paintWeek(data);
@@ -332,4 +332,81 @@ export function fuelText(minutes: number, lapSeconds: number, perLap: number, ta
   const add = Math.min(deficit, tank);
   const left = now / perLap;
   return `${laps.toLocaleString("es-ES", { maximumFractionDigits: 1 })} vueltas de carrera. Hacen falta ${finish.toLocaleString("es-ES", { maximumFractionDigits: 1 })} L. Con lo que hay a bordo salen ${left.toLocaleString("es-ES", { maximumFractionDigits: 1 })} vueltas. Paradas: ${stops}. En la próxima, añadir ${add.toLocaleString("es-ES", { maximumFractionDigits: 1 })} L. La pérdida en box no cambia estos litros.`;
+}
+
+export function paintConfigAnalysis(data: IracingAnalysis): void {
+  const scoreNum = document.getElementById("configScoreNum");
+  const scoreTitle = document.getElementById("configScoreTitle");
+  const scoreDesc = document.getElementById("configScoreDesc");
+  const countOpt = document.getElementById("configCountOpt");
+  const countRec = document.getElementById("configCountRec");
+  const countWarn = document.getElementById("configCountWarn");
+  const list = document.getElementById("configItemsList");
+
+  if (scoreNum) scoreNum.textContent = String(data.score);
+  if (countOpt) countOpt.textContent = String(data.optimalCount);
+  if (countRec) countRec.textContent = String(data.recommendedCount);
+  if (countWarn) countWarn.textContent = String(data.warningCount);
+
+  if (scoreTitle) {
+    if (data.score >= 90) scoreTitle.textContent = "Excelente · Ajuste Pro de Competición";
+    else if (data.score >= 70) scoreTitle.textContent = "Bueno · Recomendaciones Disponibles";
+    else scoreTitle.textContent = "Mejorable · Parámetros Críticos Detectados";
+  }
+
+  if (scoreDesc) {
+    scoreDesc.textContent = data.found
+      ? `iRacing detectado en ${data.iracingDir}`
+      : "No se detectaron archivos .ini locales de iRacing";
+  }
+
+  if (!list) return;
+  list.replaceChildren();
+
+  for (const item of data.items) {
+    const card = document.createElement("article");
+    card.className = "rounded-2xl border border-r-line bg-r-surface p-4 flex flex-col gap-2";
+
+    const top = document.createElement("div");
+    top.className = "flex items-start justify-between gap-3";
+
+    const titleGroup = document.createElement("div");
+    const h3 = document.createElement("h3");
+    h3.className = "font-display text-base uppercase text-r-text";
+    h3.textContent = item.title;
+
+    const meta = document.createElement("p");
+    meta.className = "text-[11px] font-mono text-r-muted mt-0.5";
+    meta.textContent = `${item.section} → ${item.key}`;
+    titleGroup.append(h3, meta);
+
+    const badge = document.createElement("span");
+    badge.className = "px-2.5 py-1 rounded-lg font-mono text-[10px] uppercase tracking-wider shrink-0 font-bold ";
+    if (item.status === "optimal") {
+      badge.className += "bg-r-accent/10 text-r-accent border border-r-accent/30";
+      badge.textContent = "✓ Óptimo";
+    } else if (item.status === "recommended") {
+      badge.className += "bg-yellow-500/10 text-yellow-400 border border-yellow-500/30";
+      badge.textContent = "⚡ Recomendado";
+    } else {
+      badge.className += "bg-red-500/10 text-red-400 border border-red-500/30";
+      badge.textContent = "⚠ Atención";
+    }
+
+    top.append(titleGroup, badge);
+
+    const desc = document.createElement("p");
+    desc.className = "text-xs text-r-muted leading-relaxed font-sans";
+    desc.textContent = item.explanation;
+
+    const values = document.createElement("div");
+    values.className = "mt-1 flex flex-wrap gap-4 text-xs font-mono bg-r-bg/50 p-2.5 rounded-xl border border-r-line/50";
+    values.innerHTML = `
+      <div><span class="text-r-muted">Actual:</span> <strong class="text-r-text">${item.currentValue}</strong></div>
+      <div><span class="text-r-muted">Recomendado:</span> <strong class="text-r-accent">${item.recommendedValue}</strong></div>
+    `;
+
+    card.append(top, desc, values);
+    list.append(card);
+  }
 }

@@ -1,3 +1,4 @@
+mod advisor;
 mod api;
 mod credentials;
 mod folders;
@@ -121,6 +122,7 @@ pub fn run() {
             clear_staged,
             upload_staged,
             install_update,
+            inspect_config,
             quit
         ])
         .run(tauri::generate_context!())
@@ -511,6 +513,11 @@ async fn install_update(app: AppHandle) -> Result<(), String> {
         .await
         .map_err(|err| err.to_string())?;
     app.restart();
+}
+
+#[tauri::command]
+fn inspect_config() -> Result<advisor::IracingAnalysis, String> {
+    Ok(advisor::analyze())
 }
 
 #[tauri::command]

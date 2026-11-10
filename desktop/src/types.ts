@@ -121,6 +121,27 @@ export interface LiveSample {
   vy?: number;
 }
 
+export interface ConfigItem {
+  key: string;
+  section: string;
+  currentValue: string;
+  recommendedValue: string;
+  status: "optimal" | "recommended" | "warning";
+  title: string;
+  explanation: string;
+  category: "ffb" | "graphics" | "visibility" | "performance";
+}
+
+export interface IracingAnalysis {
+  found: boolean;
+  iracingDir: string;
+  score: number;
+  optimalCount: number;
+  recommendedCount: number;
+  warningCount: number;
+  items: ConfigItem[];
+}
+
 export interface Backend {
   snapshot(): Promise<Snapshot>;
   authStart(): Promise<AuthStart>;
@@ -136,6 +157,7 @@ export interface Backend {
   clearStaged(): Promise<void>;
   upload(input: UploadInput): Promise<string>;
   installUpdate(): Promise<void>;
+  inspectConfig(): Promise<IracingAnalysis>;
   quit(): Promise<void>;
   onRefresh(cb: () => void): () => void;
   onStaged(cb: (file: StagedFile) => void): () => void;

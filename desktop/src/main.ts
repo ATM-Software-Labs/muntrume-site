@@ -2,7 +2,7 @@ import { inTauri } from "./env";
 import { createMock } from "./mock";
 import { createTauriBackend } from "./tauri-backend";
 import type { Backend, LibraryItem, LiveSample, Settings, Snapshot, StagedFile } from "./types";
-import { fuelText, paintExtras, updateLiveOverlay } from "./extra";
+import { fuelText, paintConfigAnalysis, paintExtras, updateLiveOverlay } from "./extra";
 
 const params = new URLSearchParams(location.search);
 const screen = params.get("screen");
@@ -26,7 +26,7 @@ let snapshot: Snapshot | null = null;
 let filter: "all" | "Race" | "Qualy" | "Wet" = "all";
 let query = "";
 let pollTimer = 0;
-let view: "library" | "upload" | "settings" | "week" | "analysis" | "reference" | "strategy" | "overlays" | "team" = "library";
+let view: "library" | "upload" | "settings" | "week" | "analysis" | "reference" | "strategy" | "overlays" | "team" | "config" = "library";
 
 let lastLiveSample = 0;
 
@@ -259,13 +259,26 @@ function showView(next: typeof view): void {
     reference: "viewReference",
     strategy: "viewStrategy",
     overlays: "viewOverlays",
+    config: "viewConfig",
     team: "viewTeam",
   };
   for (const [name, id] of Object.entries(extra)) {
     const node = document.getElementById(id);
     if (node) node.hidden = next !== name;
   }
+  if (next === "config") {
+    void loadConfigAnalysis();
+  }
   setNav();
+}
+
+async function loadConfigAnalysis(): Promise<void> {
+  try {
+    const analysis = await backend.inspectConfig();
+    paintConfigAnalysis(analysis);
+  } catch (error) {
+    showNotice(error instanceof Error ? error.message : "No se pudo analizar la configuración de iRacing.");
+  }
 }
 
 async function refresh(): Promise<void> {
@@ -398,9 +411,15 @@ function bind(): void {
   document.querySelectorAll<HTMLButtonElement>("[data-nav]").forEach((button) => {
     button.addEventListener("click", () => {
       const next = button.dataset.nav;
-      if (next === "library" || next === "upload" || next === "settings" || next === "week" || next === "analysis" || next === "reference" || next === "strategy" || next === "overlays" || next === "team") showView(next);
+      if (next === "library" || next === "upload" || next === "settings" || next === "week" || next === "analysis" || next === "reference" || next === "strategy" || next === "overlays" || next === "team" || next === "config") showView(next);
     });
   });
+  const btnRefreshCfg = document.getElementById("btnRefreshConfig");
+  if (btnRefreshCfg) {
+    btnRefreshCfg.addEventListener("click", () => {
+      void loadConfigAnalysis();
+    });
+  }
   $("syncBtn").addEventListener("click", () => {
     const button = $("syncBtn");
     button.setAttribute("aria-busy", "true");
@@ -551,7 +570,7 @@ async function boot(): Promise<void> {
     $("loginPending").hidden = false;
     $("mockApprove").hidden = true;
   }
-  if (snapshot?.pilot && (screen === "upload" || screen === "settings" || screen === "library" || screen === "week" || screen === "analysis" || screen === "reference" || screen === "strategy" || screen === "overlays" || screen === "team")) {
+  if (snapshot?.pilot && (screen === "upload" || screen === "settings" || screen === "library" || screen === "week" || screen === "analysis" || screen === "reference" || screen === "strategy" || screen === "overlays" || screen === "team" || screen === "config")) {
     showView(screen);
   }
 }

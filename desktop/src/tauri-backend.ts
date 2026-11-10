@@ -46,6 +46,7 @@ export function createTauriBackend(): Backend {
         notes: input.notes,
       }),
     installUpdate: () => invoke("install_update"),
+    inspectConfig: () => invoke("inspect_config"),
     quit: () => invoke("quit"),
     onRefresh(cb) {
       void wire();

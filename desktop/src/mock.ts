@@ -186,6 +186,78 @@ export function createMock(screen: string | null): Backend {
     async installUpdate() {
       notices.forEach((cb) => cb("En Windows, la actualización se descarga desde GitHub Releases."));
     },
+    async inspectConfig() {
+      return {
+        found: true,
+        iracingDir: "C:\\Users\\Piloto\\Documents\\iRacing",
+        score: 92,
+        optimalCount: 6,
+        recommendedCount: 2,
+        warningCount: 0,
+        items: [
+          {
+            key: "enableFFB360HzInterpolated",
+            section: "Force Feedback (app.ini)",
+            currentValue: "1 (Activo)",
+            recommendedValue: "1",
+            status: "optimal",
+            title: "Interpolación FFB a 360 Hz",
+            explanation: "FFB de alta frecuencia activo para volantes modernos.",
+            category: "ffb",
+          },
+          {
+            key: "displayLinearInNm",
+            section: "Force Feedback (app.ini)",
+            currentValue: "1 (Activo)",
+            recommendedValue: "1",
+            status: "optimal",
+            title: "Fuerza FFB Lineal en Nm",
+            explanation: "Muestra Newtons-metro reales en la telemetría.",
+            category: "ffb",
+          },
+          {
+            key: "MotionBlurDrivingCams",
+            section: "Gráficos (rendererDX11*.ini)",
+            currentValue: "0 (Desactivado)",
+            recommendedValue: "0",
+            status: "optimal",
+            title: "Desenfoque de Movimiento en Carrera",
+            explanation: "Desenfoque desactivado para máxima nitidez en referencias de frenada.",
+            category: "graphics",
+          },
+          {
+            key: "SSAO",
+            section: "Gráficos (rendererDX11*.ini)",
+            currentValue: "0 (Desactivado)",
+            recommendedValue: "0",
+            status: "optimal",
+            title: "Oclusión Ambiental (SSAO)",
+            explanation: "Ahorra valiosos ms de GPU en parrillas densas de carrera.",
+            category: "graphics",
+          },
+          {
+            key: "Sharpening",
+            section: "Gráficos (rendererDX11*.ini)",
+            currentValue: "1 (Activo)",
+            recommendedValue: "1",
+            status: "optimal",
+            title: "Nitidez Adaptativa (FidelityFX CAS)",
+            explanation: "Filtro de contraste activo para visibilidad de referencias lejanas.",
+            category: "graphics",
+          },
+          {
+            key: "VirtualMirrors",
+            section: "Visibilidad (rendererDX11*.ini)",
+            currentValue: "1 (Activo)",
+            recommendedValue: "1",
+            status: "optimal",
+            title: "Retrovisor Virtual Panorámico",
+            explanation: "Retrovisor virtual activado para visión de tráfico y seguridad.",
+            category: "visibility",
+          },
+        ],
+      };
+    },
     async quit() {
       notices.forEach((cb) => cb("En la aplicación de Windows, Salir cierra la bandeja."));
     },
