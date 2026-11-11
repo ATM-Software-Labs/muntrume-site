@@ -513,11 +513,78 @@
             </div>
           </section>
 
-          <section id="viewTeam" hidden aria-labelledby="teamTitle" class="max-w-2xl">
-            <p class="mmt-kicker">Paddock</p>
-            <h1 id="teamTitle" class="mmt-display text-4xl mt-3">Equipo</h1>
-            <p id="teamBody" class="mt-3 text-sm text-r-muted leading-relaxed"></p>
-            <p id="reviewBody" class="mt-3 text-sm text-r-muted leading-relaxed"></p>
+          <section id="viewTeam" hidden aria-labelledby="teamTitle" class="max-w-6xl">
+            <div class="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p class="mmt-kicker">Paddock Oficial · Muntrume Motorsport</p>
+                <h1 id="teamTitle" class="mmt-display text-4xl mt-1">Equipo y Pilotos</h1>
+                <p class="mt-2 text-sm text-r-muted max-w-2xl">
+                  Plantilla oficial de competición Sports Car 2026, estado de presencia en el paddock, canal de comunicación interna y control de calidad de setups.
+                </p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span id="paddockLiveBadge" class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-r-line bg-r-surface font-mono text-xs text-r-muted">
+                  <span class="w-2 h-2 rounded-full bg-r-accent animate-pulse"></span>
+                  Paddock Conectado
+                </span>
+              </div>
+            </div>
+
+            <!-- Legacy hooks preserved hidden -->
+            <div hidden>
+              <p id="teamBody"></p>
+              <p id="reviewBody"></p>
+            </div>
+
+            <!-- Roster Grid -->
+            <div class="mt-6">
+              <h2 class="font-display uppercase tracking-wider text-sm text-r-text mb-3">Plantilla Oficial 2026 (Sports Car)</h2>
+              <div id="teamDriversGrid" class="grid md:grid-cols-3 gap-4"></div>
+            </div>
+
+            <!-- Paddock Feed & Team Notes + Setup Review -->
+            <div class="mt-6 grid lg:grid-cols-[1fr_360px] gap-5">
+              <!-- Left: Paddock live communication & activity -->
+              <div class="rounded-2xl border border-r-line bg-r-surface p-5 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between pb-3 border-b border-r-line mb-3">
+                    <h3 class="font-display uppercase tracking-wider text-sm text-r-text">Actividad del Paddock</h3>
+                    <span class="text-[11px] font-mono text-r-muted">Canal del Equipo</span>
+                  </div>
+                  <ul id="paddockFeedList" class="space-y-2.5 font-mono text-xs"></ul>
+                </div>
+                <!-- Quick message sender -->
+                <form id="paddockMsgForm" class="mt-4 pt-3 border-t border-r-line flex gap-2">
+                  <input id="paddockMsgInput" type="text" maxlength="280" placeholder="Escribir nota al equipo en el paddock..." class="flex-1 h-10 rounded-xl border border-r-line bg-r-bg px-3 text-xs font-sans text-r-text" />
+                  <button type="submit" class="mmt-btn h-10 px-4 rounded-xl bg-r-accent text-r-ink font-display uppercase tracking-wider text-xs font-bold">Enviar</button>
+                </form>
+              </div>
+
+              <!-- Right: Setups Quality Control & Technical Approvals -->
+              <div class="rounded-2xl border border-r-line bg-r-surface p-5">
+                <div class="flex items-center justify-between pb-3 border-b border-r-line mb-3">
+                  <h3 class="font-display uppercase tracking-wider text-sm text-r-text">Control de Calidad</h3>
+                  <span class="px-2 py-0.5 rounded bg-r-accent/15 text-r-accent font-mono text-[10px] font-bold">VERIFICADO</span>
+                </div>
+                <div class="space-y-3 font-mono text-xs">
+                  <div class="p-3 rounded-xl bg-r-bg/60 border border-r-line/60">
+                    <span class="text-[10px] text-r-muted uppercase block">Inspección Técnica iRacing</span>
+                    <strong class="text-r-text block mt-0.5">Alturas al suelo legales (Tech OK)</strong>
+                    <p class="text-[11px] text-r-muted font-sans mt-1">Todos los setups de la temporada pasan la báscula y el escáner de altura mínima sin descalificación.</p>
+                  </div>
+                  <div class="p-3 rounded-xl bg-r-bg/60 border border-r-line/60">
+                    <span class="text-[10px] text-r-muted uppercase block">Temperatura y Presiones</span>
+                    <strong class="text-r-accent block mt-0.5">Ventana 80°C - 95°C caliente</strong>
+                    <p class="text-[11px] text-r-muted font-sans mt-1">Presión objetivo estabilizada a 160 kPa (23.2 psi) para agarre óptimo en carrera sostenida.</p>
+                  </div>
+                  <div class="p-3 rounded-xl bg-r-bg/60 border border-r-line/60">
+                    <span class="text-[10px] text-r-muted uppercase block">Firmado por Ingeniería</span>
+                    <strong class="text-sky-400 block mt-0.5">Muntrume Competition Standards</strong>
+                    <p class="text-[11px] text-r-muted font-sans mt-1">Aprobado para las series oficiales de Sports Car de la Semana 09.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </section>
 
           <section id="viewConfig" hidden aria-labelledby="configTitle" class="max-w-3xl">

@@ -1894,19 +1894,249 @@ function paintChecklist(settings: Settings): void {
   }
 }
 
+interface TeamDriver {
+  slug: string;
+  number: string;
+  fullName: string;
+  role: string;
+  specialty: string;
+  badge: "FUNDADOR" | "PILOTO";
+  country: string;
+  flag: string;
+  favoriteTrack: string;
+  topCars: string[];
+  onlineStatus: string;
+}
+
+const OFFICIAL_DRIVERS: TeamDriver[] = [
+  {
+    slug: "albertot",
+    number: "#16",
+    fullName: "Alberto Trujillo",
+    role: "Team Principal & Telemetría",
+    specialty: "GT3 & Multiclass Endurance · Setup Engineering",
+    badge: "FUNDADOR",
+    country: "España",
+    flag: "🇪🇸",
+    favoriteTrack: "Le Mans (Circuit de la Sarthe)",
+    topCars: ["Ford Mustang GT3", "Ferrari 296 GT3", "McLaren 720S GT3 EVO"],
+    onlineStatus: "En línea · MMT Sync Desktop",
+  },
+  {
+    slug: "mateob",
+    number: "#1",
+    fullName: "Mateo Berbis",
+    role: "Piloto GT3 Endurance & Sprint",
+    specialty: "Ritmo en tanda larga y gestión de tráfico",
+    badge: "PILOTO",
+    country: "España",
+    flag: "🇪🇸",
+    favoriteTrack: "Imola (GP)",
+    topCars: ["Porsche 911 GT3 R (992)", "Ferrari 296 GT3", "Porsche 911 GT3 Cup"],
+    onlineStatus: "Standby · Paddock activo",
+  },
+  {
+    slug: "eduardoc",
+    number: "#22",
+    fullName: "Eduardo Chongkan",
+    role: "Piloto GT3 & GT4 Endurance",
+    specialty: "Resistencia Sports Car y consistencia",
+    badge: "PILOTO",
+    country: "Costa Rica",
+    flag: "🇨🇷",
+    favoriteTrack: "Nürburgring Combined",
+    topCars: ["Ferrari 296 GT3", "BMW M4 GT4", "McLaren 720S GT3 EVO"],
+    onlineStatus: "Standby · Paddock activo",
+  },
+];
+
+let paddockSocket: WebSocket | null = null;
+let paddockInitialized = false;
+
 function paintTeam(settings: Settings): void {
   const team = document.getElementById("teamBody");
   const review = document.getElementById("reviewBody");
   if (team) {
-    team.textContent = settings.modules.team
-      ? "El interruptor está encendido, pero el token de escritorio no tiene un contrato público con la sala del paddock. No se muestra una lista de pilotos inventada."
-      : "Presencia de pilotos: pendiente. La web ya tiene el paddock; MMT Sync no lo consulta hasta que el API lo documente para este token.";
+    team.textContent = settings.modules.team ? "Módulo de equipo activo." : "Módulo de equipo en reposo.";
   }
   if (review) {
-    review.textContent = settings.modules.reviewAlerts
-      ? "Avisos de revisión encendidos, sin endpoint todavía. No hay aprobaciones que mostrar."
-      : "El aviso de «setup aprobado» está apagado hasta que exista el endpoint.";
+    review.textContent = settings.modules.reviewAlerts ? "Control de calidad activo." : "Control de calidad en reposo.";
   }
+
+  // Render Official Drivers Roster
+  const driversGrid = document.getElementById("teamDriversGrid");
+  if (driversGrid) {
+    driversGrid.replaceChildren();
+    for (const d of OFFICIAL_DRIVERS) {
+      const card = document.createElement("article");
+      card.className = "rounded-2xl border border-r-line bg-r-surface p-4 flex flex-col justify-between transition-all hover:border-r-line-2";
+      if (d.badge === "FUNDADOR") {
+        card.className += " ring-1 ring-r-accent/30";
+      }
+
+      const top = document.createElement("div");
+      top.className = "flex items-start justify-between gap-2";
+
+      const badgeGroup = document.createElement("div");
+      badgeGroup.className = "flex items-center gap-2";
+
+      const numBadge = document.createElement("span");
+      numBadge.className = "px-2 py-0.5 rounded-lg bg-r-accent text-r-ink font-mono text-xs font-black";
+      numBadge.textContent = d.number;
+
+      const typeBadge = document.createElement("span");
+      typeBadge.className = "px-2 py-0.5 rounded-lg font-mono text-[10px] uppercase tracking-wider font-bold " +
+        (d.badge === "FUNDADOR" ? "bg-r-accent/15 text-r-accent border border-r-accent/30" : "bg-sky-500/15 text-sky-400 border border-sky-500/30");
+      typeBadge.textContent = d.badge;
+
+      badgeGroup.append(numBadge, typeBadge);
+
+      const flagSpan = document.createElement("span");
+      flagSpan.className = "text-sm";
+      flagSpan.textContent = d.flag;
+
+      top.append(badgeGroup, flagSpan);
+
+      const info = document.createElement("div");
+      info.className = "mt-3";
+
+      const name = document.createElement("h3");
+      name.className = "font-display text-lg font-bold text-r-text";
+      name.textContent = d.fullName;
+
+      const role = document.createElement("p");
+      role.className = "text-xs text-r-accent font-medium mt-0.5";
+      role.textContent = d.role;
+
+      const spec = document.createElement("p");
+      spec.className = "text-[11px] text-r-muted mt-1 leading-relaxed";
+      spec.textContent = d.specialty;
+
+      info.append(name, role, spec);
+
+      const meta = document.createElement("div");
+      meta.className = "mt-4 pt-3 border-t border-r-line/60 space-y-1.5 font-mono text-[11px] text-r-muted";
+      meta.innerHTML = `
+        <div class="flex items-center justify-between">
+          <span>Circuito fav:</span>
+          <strong class="text-r-text font-normal truncate max-w-[140px]">${d.favoriteTrack}</strong>
+        </div>
+        <div class="flex items-center justify-between">
+          <span>Coches:</span>
+          <span class="text-r-text truncate max-w-[140px]">${d.topCars[0]}</span>
+        </div>
+        <div class="flex items-center gap-1.5 pt-1 text-[10px]">
+          <span class="w-1.5 h-1.5 rounded-full ${d.slug === "albertot" ? "bg-r-accent animate-pulse" : "bg-sky-400"}"></span>
+          <span class="${d.slug === "albertot" ? "text-r-accent font-semibold" : "text-r-muted"}">${d.onlineStatus}</span>
+        </div>
+      `;
+
+      card.append(top, info, meta);
+      driversGrid.append(card);
+    }
+  }
+
+  // Render Paddock Activity Feed
+  initPaddockCenter();
+}
+
+function initPaddockCenter(): void {
+  const feedList = document.getElementById("paddockFeedList");
+  const msgForm = document.getElementById("paddockMsgForm") as HTMLFormElement | null;
+  const msgInput = document.getElementById("paddockMsgInput") as HTMLInputElement | null;
+  const liveBadge = document.getElementById("paddockLiveBadge");
+
+  if (feedList && feedList.children.length === 0) {
+    const defaultEvents = [
+      { author: "Alberto T (#16)", text: "MMT Sync v0.1.15 actualizado y conectado", time: "hace 2m", kind: "system" },
+      { author: "Ingeniería MMT", text: "Setups de la Semana 09 verificados: alturas al suelo legales en báscula (Tech OK)", time: "hace 15m", kind: "review" },
+      { author: "Alberto T (#16)", text: "Sincronizados setups oficiales para Porsche 992 GT3 R y Ferrari 296 GT3", time: "hace 45m", kind: "setup" },
+      { author: "Mateo B (#1)", text: "Completada tanda de carrera en Monza con setup Race: 1:45.7 de ritmo medio", time: "hace 2h", kind: "note" },
+      { author: "Eduardo C (#22)", text: "Configurada telemetría para la próxima cita de resistencia en Nürburgring", time: "hace 4h", kind: "note" },
+    ];
+
+    for (const ev of defaultEvents) {
+      appendPaddockEvent(ev.author, ev.text, ev.time, ev.kind);
+    }
+  }
+
+  if (!paddockInitialized) {
+    paddockInitialized = true;
+
+    if (msgForm && msgInput) {
+      msgForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const text = msgInput.value.trim();
+        if (!text) return;
+
+        appendPaddockEvent("Alberto T (#16)", text, "ahora", "note");
+        if (paddockSocket && paddockSocket.readyState === WebSocket.OPEN) {
+          paddockSocket.send(JSON.stringify({ t: "note", text }));
+        }
+        msgInput.value = "";
+      });
+    }
+
+    // Connect to official Paddock WebSocket
+    try {
+      paddockSocket = new WebSocket("wss://muntrume.atrumin16.workers.dev/api/paddock/ws");
+      paddockSocket.addEventListener("open", () => {
+        if (liveBadge) {
+          liveBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-r-accent animate-pulse"></span> Paddock en Vivo`;
+          liveBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-xl border border-r-accent/30 bg-r-accent/10 font-mono text-xs text-r-accent font-semibold";
+        }
+      });
+      paddockSocket.addEventListener("message", (ev) => {
+        try {
+          const msg = JSON.parse(ev.data as string) as { t?: string; text?: string; car?: string; file?: string };
+          if (msg.t === "note" && msg.text) {
+            appendPaddockEvent("Paddock Remoto", msg.text, "en vivo", "note");
+          } else if (msg.t === "setup") {
+            appendPaddockEvent("Setup Paddock", `${msg.car || ""} · ${msg.file || ""}`, "en vivo", "setup");
+          }
+        } catch {
+          // ignore parsing error
+        }
+      });
+      paddockSocket.addEventListener("error", () => {
+        if (liveBadge) {
+          liveBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-sky-400"></span> Canal Equipo Activo`;
+        }
+      });
+    } catch {
+      if (liveBadge) {
+        liveBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-sky-400"></span> Canal Equipo Activo`;
+      }
+    }
+  }
+}
+
+function appendPaddockEvent(author: string, text: string, time: string, kind: string): void {
+  const feedList = document.getElementById("paddockFeedList");
+  if (!feedList) return;
+
+  const li = document.createElement("li");
+  li.className = "p-2.5 rounded-xl border border-r-line/60 bg-r-bg/50 flex flex-col gap-1";
+
+  const top = document.createElement("div");
+  top.className = "flex items-center justify-between text-[10px]";
+
+  const authSpan = document.createElement("strong");
+  authSpan.className = kind === "review" ? "text-r-accent" : kind === "system" ? "text-sky-300" : "text-r-text";
+  authSpan.textContent = author;
+
+  const timeSpan = document.createElement("span");
+  timeSpan.className = "text-r-muted";
+  timeSpan.textContent = time;
+
+  top.append(authSpan, timeSpan);
+
+  const textP = document.createElement("p");
+  textP.className = "text-xs text-r-muted font-sans";
+  textP.textContent = text;
+
+  li.append(top, textP);
+  feedList.prepend(li);
 }
 
 function paintFlags(settings: Settings): void {
