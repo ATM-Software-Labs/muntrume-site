@@ -2,6 +2,7 @@ mod advisor;
 mod api;
 mod credentials;
 mod folders;
+mod hardware;
 mod live;
 mod settings;
 mod state;
@@ -124,6 +125,7 @@ pub fn run() {
             install_update,
             inspect_config,
             check_iracing_status,
+            detect_hardware,
             toggle_overlay,
             quit
         ])
@@ -525,6 +527,11 @@ fn inspect_config() -> Result<advisor::IracingAnalysis, String> {
 #[tauri::command]
 fn check_iracing_status() -> &'static str {
     live::current_status()
+}
+
+#[tauri::command]
+fn detect_hardware() -> Result<hardware::HardwareReport, String> {
+    Ok(hardware::detect())
 }
 
 #[tauri::command]

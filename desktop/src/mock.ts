@@ -271,6 +271,15 @@ export function createMock(screen: string | null): Backend {
     async checkIracing() {
       return "closed";
     },
+    async detectHardware() {
+      return {
+        detectedWheelbase: "Thrustmaster Advanced Mode Racer (USB)",
+        detectedPedals: "Controlador USB de Carreras / Célula de Carga",
+        audioDevices: ["G435 Bluetooth Gaming Headset", "Realtek High Definition Audio"],
+        iracingSoundSystem: "1 (XAudio2 Ultra-Baja Latencia)",
+        sampleRateRecommendation: "48.000 Hz, 24 bits (Calidad de estudio · Cero Jitter)",
+      };
+    },
     async toggleOverlay(show: boolean) {
       notices.forEach((cb) => cb(show ? "Overlay flotante abierto en iRacing (modo prueba)" : "Overlay flotante ocultado"));
       return show;

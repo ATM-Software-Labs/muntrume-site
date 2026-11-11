@@ -2,7 +2,7 @@ import { inTauri } from "./env";
 import { createMock } from "./mock";
 import { createTauriBackend } from "./tauri-backend";
 import type { Backend, LibraryItem, LiveSample, Settings, Snapshot, StagedFile } from "./types";
-import { fuelText, paintConfigAnalysis, paintExtras, updateLiveOverlay, initFloatingOverlayControls, paintOverlays } from "./extra";
+import { fuelText, paintConfigAnalysis, paintExtras, updateLiveOverlay, initFloatingOverlayControls, paintOverlays, paintHardware } from "./extra";
 import rawSchedule from "./season_schedule_2026_s4.json";
 import { getSetupProfile, estimateLapTimeAndConsistency } from "./setup-intelligence";
 
@@ -60,10 +60,22 @@ export function getTrackWeekInfo(track: string, filename?: string, carFolder?: s
 
   const clean = String(track || "").toLowerCase().replace(/[^a-z0-9]/g, "");
   const cleanCar = String(carFolder || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-  const isGt3 = cleanCar.includes("gt3") || cleanCar.includes("296") || cleanCar.includes("992") || cleanCar.includes("m4") || cleanCar.includes("720s") || cleanCar.includes("mustang") || cleanCar.includes("vantage") || cleanCar.includes("huracan") || cleanCar.includes("z06") || cleanCar === "" || cleanCar.includes("ferrari") || cleanCar.includes("bmw") || cleanCar.includes("porsche");
+  const upperFile = String(filename || "").toUpperCase();
+  const isGtp = cleanCar.includes("gtp") || cleanCar.includes("arx06") || cleanCar.includes("bmwmhybrid") || cleanCar.includes("porsche963") || cleanCar.includes("cadillacv") || cleanCar.includes("amvalkyrie") || cleanCar.includes("valkyrie");
+  const isLmp2 = cleanCar.includes("p217") || cleanCar.includes("lmp2") || cleanCar.includes("dallara");
+  const isImsa = isGtp || isLmp2 || upperFile.includes("IMSA");
+  const isCup = cleanCar.includes("cup") || cleanCar.includes("992cup");
+  const isGt3 = !isGtp && !isLmp2 && !isCup && (cleanCar.includes("gt3") || cleanCar.includes("296") || cleanCar.includes("992") || cleanCar.includes("m4") || cleanCar.includes("720s") || cleanCar.includes("mustang") || cleanCar.includes("vantage") || cleanCar.includes("huracan") || cleanCar.includes("z06") || cleanCar === "" || cleanCar.includes("ferrari") || cleanCar.includes("bmw") || cleanCar.includes("porsche"));
 
-  // 1. Fuji Speedway -> GT3 Open / GT Sprint (Week 9: Current Week!)
+  // 1. Fuji Speedway -> GT3 Open (Week 9: Current Week!) vs IMSA (Week 2)
   if (clean.includes("fuji")) {
+    if (isImsa && !isGt3) {
+      return {
+        week: 2,
+        isCurrent: false,
+        seriesContext: "IMSA SportsCar (Semana 02)",
+      };
+    }
     return {
       week: 9,
       isCurrent: true,
@@ -73,7 +85,7 @@ export function getTrackWeekInfo(track: string, filename?: string, carFolder?: s
 
   // 2. Suzuka -> IMSA SportsCar Open (Week 9: Current Week!) or GT3 Open (Week 12 Final)
   if (clean.includes("suzuka")) {
-    if (cleanCar.includes("imsa") || cleanCar.includes("gtp") || cleanCar.includes("p217")) {
+    if (isImsa || isGtp || isLmp2) {
       return {
         week: 9,
         isCurrent: true,
@@ -355,7 +367,7 @@ let snapshot: Snapshot | null = null;
 let filter: "all" | "Race" | "Qualy" | "Wet" | "Fav" = "all";
 let query = "";
 let pollTimer = 0;
-let view: "library" | "upload" | "settings" | "week" | "analysis" | "reference" | "strategy" | "overlays" | "team" | "config" = "library";
+let view: "library" | "upload" | "settings" | "week" | "analysis" | "reference" | "strategy" | "overlays" | "hardware" | "team" | "config" = "library";
 
 let libraryGroupBy: "car" | "track" | "week" = (() => {
   try {
@@ -1561,9 +1573,9 @@ function press(id: string, on: boolean): void {
 
 function showView(next: typeof view): void {
   view = next;
-  for (const id of ["viewLibrary", "viewUpload", "viewSettings", "viewWeek", "viewAnalysis", "viewReference", "viewStrategy", "viewOverlays", "viewTeam"] as const) {
+  for (const id of ["viewLibrary", "viewUpload", "viewSettings", "viewWeek", "viewAnalysis", "viewReference", "viewStrategy", "viewOverlays", "viewHardware", "viewTeam"] as const) {
     const node = document.getElementById(id);
-    if (node) node.hidden = id !== `view${next[0].toUpperCase()}${next.slice(1)}` && !(next === "library" && id === "viewLibrary") && !(next === "upload" && id === "viewUpload") && !(next === "settings" && id === "viewSettings") && !(next === "week" && id === "viewWeek") && !(next === "analysis" && id === "viewAnalysis") && !(next === "reference" && id === "viewReference") && !(next === "strategy" && id === "viewStrategy") && !(next === "overlays" && id === "viewOverlays") && !(next === "team" && id === "viewTeam");
+    if (node) node.hidden = id !== `view${next[0].toUpperCase()}${next.slice(1)}`;
   }
   viewLibrary.hidden = next !== "library";
   viewUpload.hidden = next !== "upload";
@@ -1574,6 +1586,7 @@ function showView(next: typeof view): void {
     reference: "viewReference",
     strategy: "viewStrategy",
     overlays: "viewOverlays",
+    hardware: "viewHardware",
     config: "viewConfig",
     team: "viewTeam",
   };
@@ -1581,13 +1594,26 @@ function showView(next: typeof view): void {
     const node = document.getElementById(id);
     if (node) node.hidden = next !== name;
   }
-  if (next === "analysis" || next === "overlays" || next === "strategy" || next === "week" || next === "team") {
+  if (next === "analysis" || next === "overlays" || next === "strategy" || next === "week" || next === "team" || next === "reference") {
     if (snapshot) paintExtras(snapshot);
+  }
+  if (next === "hardware") {
+    void loadHardwareReport();
   }
   if (next === "config") {
     void loadConfigAnalysis();
   }
   setNav();
+}
+
+async function loadHardwareReport(): Promise<void> {
+  try {
+    const report = await backend.detectHardware();
+    paintHardware(report);
+  } catch (error) {
+    console.error("Error al detectar hardware:", error);
+    paintHardware();
+  }
 }
 
 async function loadConfigAnalysis(): Promise<void> {
@@ -1766,9 +1792,15 @@ function bind(): void {
   document.querySelectorAll<HTMLButtonElement>("[data-nav]").forEach((button) => {
     button.addEventListener("click", () => {
       const next = button.dataset.nav;
-      if (next === "library" || next === "upload" || next === "settings" || next === "week" || next === "analysis" || next === "reference" || next === "strategy" || next === "overlays" || next === "team" || next === "config") showView(next);
+      if (next === "library" || next === "upload" || next === "settings" || next === "week" || next === "analysis" || next === "reference" || next === "strategy" || next === "overlays" || next === "hardware" || next === "team" || next === "config") showView(next);
     });
   });
+  const btnRefreshHw = document.getElementById("btnRefreshHardware");
+  if (btnRefreshHw) {
+    btnRefreshHw.addEventListener("click", () => {
+      void loadHardwareReport();
+    });
+  }
   const btnRefreshCfg = document.getElementById("btnRefreshConfig");
   if (btnRefreshCfg) {
     btnRefreshCfg.addEventListener("click", () => {

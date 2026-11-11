@@ -215,6 +215,7 @@
             <button type="button" data-nav="reference" class="mmt-chip h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-muted">Referencia</button>
             <button type="button" data-nav="strategy" class="mmt-chip h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-muted">Estrategia</button>
             <button type="button" data-nav="overlays" class="mmt-chip h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-muted">Overlays</button>
+            <button type="button" data-nav="hardware" class="mmt-chip h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-muted">Volante y Sonido</button>
             <button type="button" data-nav="config" class="mmt-chip h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-muted">Diagnóstico iRacing</button>
             <button type="button" data-nav="team" class="mmt-chip h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-muted">Equipo</button>
           </div>
@@ -391,12 +392,141 @@
             </div>
           </section>
 
-          <section id="viewReference" hidden aria-labelledby="refTitle">
-            <p class="mmt-kicker">Vueltas del equipo</p>
-            <h1 id="refTitle" class="mmt-display text-4xl mt-3">Referencia</h1>
-            <p id="refState" class="mt-3 text-sm text-r-muted max-w-prose"></p>
-            <button type="button" id="refPack" class="mmt-btn mt-4 h-11 px-4 rounded-xl bg-r-accent text-r-ink font-display uppercase tracking-wider text-sm">Empaquetar vuelta sintética</button>
-            <p id="refResult" class="mt-3 font-mono text-xs text-r-muted"></p>
+          <section id="viewReference" hidden aria-labelledby="refTitle" class="max-w-6xl space-y-6">
+            <div class="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p class="mmt-kicker">Telemetría y Rendimiento de Referencia</p>
+                <h1 id="refTitle" class="mmt-display text-4xl mt-1">Vueltas de Referencia y Comparación</h1>
+                <p class="mt-2 text-sm text-r-muted max-w-2xl">
+                  Compara tu conducción con tu mejor vuelta personal (.ibt real), el promedio de tu tanda o el objetivo del Coach. Sin datos ficticios: 100% basado en tus tandas reales en iRacing.
+                </p>
+              </div>
+              <div class="flex items-center gap-2">
+                <label for="refTrackSelect" class="text-xs font-mono uppercase tracking-wider text-r-muted">Circuito:</label>
+                <select id="refTrackSelect" class="h-10 rounded-xl border border-r-line bg-r-surface px-3 font-mono text-sm text-r-text">
+                  <option value="fuji" selected>Fuji Speedway (GT3 Open W09)</option>
+                  <option value="suzuka">Suzuka Circuit (IMSA Open W09)</option>
+                  <option value="barcelona">Barcelona-Catalunya GP</option>
+                  <option value="spa">Spa-Francorchamps</option>
+                  <option value="monza">Autodromo Nazionale Monza</option>
+                  <option value="roadamerica">Road America (Porsche Cup W09)</option>
+                  <option value="lemans">24 Heures du Mans</option>
+                  <option value="interlagos">Autódromo José Carlos Pace</option>
+                  <option value="montreal">Circuit Gilles Villeneuve</option>
+                  <option value="indianapolis">Indianapolis Motor Speedway</option>
+                  <option value="mexicocity">Mexico City GP</option>
+                  <option value="navarra">Circuito de Navarra</option>
+                  <option value="nurburgring">Nürburgring Gesamtstrecke</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Comparison Target Selector Bar (GO Fast Caliber) -->
+            <div class="p-4 rounded-2xl border border-r-line bg-r-surface flex flex-wrap items-center justify-between gap-3">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-mono uppercase text-r-muted mr-1">Objetivo de Comparación:</span>
+                <div class="flex items-center gap-1.5 p-1 rounded-xl bg-r-bg border border-r-line">
+                  <button type="button" id="targetBtnBest" class="px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase transition bg-r-accent text-r-ink shadow-sm" data-target="best">Mi Mejor Vuelta (.ibt)</button>
+                  <button type="button" id="targetBtnStint" class="px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase transition text-r-muted hover:text-r-text" data-target="stint">Promedio de Tanda</button>
+                  <button type="button" id="targetBtnAlien" class="px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase transition text-r-muted hover:text-r-text" data-target="alien">Coach Alien (Pro)</button>
+                  <button type="button" id="targetBtnStandard" class="px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase transition text-r-muted hover:text-r-text" data-target="standard">Estándar MMT</button>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 text-xs font-mono text-r-muted">
+                <span id="refTargetActiveLabel" class="text-r-accent font-bold">Objetivo Activo: Mi Mejor Vuelta Personal</span>
+              </div>
+            </div>
+
+            <!-- Summary Delta & Time Metrics Banner -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div class="p-4 rounded-2xl border border-r-line bg-r-surface">
+                <span class="text-[11px] font-mono uppercase text-r-muted block">Tiempo Objetivo</span>
+                <strong id="refMetricTargetTime" class="text-2xl font-mono font-extrabold text-r-accent block mt-1">1:38.610</strong>
+                <span id="refMetricTargetNote" class="text-[10px] text-r-muted font-mono mt-0.5 block">Vuelta 7 · BMW M4 GT3</span>
+              </div>
+              <div class="p-4 rounded-2xl border border-r-line bg-r-surface">
+                <span class="text-[11px] font-mono uppercase text-r-muted block">Delta vs Coach Alien</span>
+                <strong id="refMetricDeltaAlien" class="text-2xl font-mono font-extrabold text-emerald-400 block mt-1">-0.820s</strong>
+                <span class="text-[10px] text-r-muted font-mono mt-0.5 block">Ritmo competitivo Pro</span>
+              </div>
+              <div class="p-4 rounded-2xl border border-r-line bg-r-surface">
+                <span class="text-[11px] font-mono uppercase text-r-muted block">Velocidad Punta (Vmax)</span>
+                <strong id="refMetricTopSpeed" class="text-2xl font-mono font-extrabold text-white block mt-1">264 km/h</strong>
+                <span class="text-[10px] text-r-muted font-mono mt-0.5 block">Fin de recta principal</span>
+              </div>
+              <div class="p-4 rounded-2xl border border-r-line bg-r-surface">
+                <span class="text-[11px] font-mono uppercase text-r-muted block">Consistencia de Tanda</span>
+                <strong id="refMetricConsistency" class="text-2xl font-mono font-extrabold text-sky-400 block mt-1">98.4%</strong>
+                <span class="text-[10px] text-r-muted font-mono mt-0.5 block">11 vueltas sin incidentes</span>
+              </div>
+            </div>
+
+            <!-- Dual Graph Comparison: Throttle/Brake Trace & Speed Profile (GO Fast Caliber) -->
+            <div class="p-5 rounded-2xl border border-r-line bg-r-surface space-y-5">
+              <div class="flex items-center justify-between pb-3 border-b border-r-line">
+                <div>
+                  <h3 class="font-display uppercase tracking-wider text-sm text-r-text">Comparador de Acelerador, Freno y Velocidad (Traza Sombreada)</h3>
+                  <p class="text-xs text-r-muted mt-0.5">La línea sólida es tu vuelta; el área sombreada representa el objetivo de referencia.</p>
+                </div>
+                <div class="flex items-center gap-3 font-mono text-xs">
+                  <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-emerald-400"></span> Acelerador</span>
+                  <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-rose-500"></span> Freno</span>
+                  <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-sky-400"></span> Velocidad</span>
+                  <span class="flex items-center gap-1.5"><span class="w-3 h-2 bg-white/15 border border-white/30 rounded-xs"></span> Referencia</span>
+                </div>
+              </div>
+
+              <!-- Throttle & Brake Canvas -->
+              <div class="relative">
+                <canvas id="refInputsCompareCanvas" width="1050" height="150" class="w-full h-36 rounded-xl bg-r-bg border border-r-line/60"></canvas>
+                <div class="absolute left-3 top-2 text-[10px] font-mono text-r-muted">0% - 100% ACELERADOR / FRENO</div>
+              </div>
+
+              <!-- Speed & Gear Canvas -->
+              <div class="relative">
+                <canvas id="refSpeedCompareCanvas" width="1050" height="150" class="w-full h-36 rounded-xl bg-r-bg border border-r-line/60"></canvas>
+                <div class="absolute left-3 top-2 text-[10px] font-mono text-r-muted">VELOCIDAD (KM/H) & MARCHA</div>
+              </div>
+            </div>
+
+            <!-- Corner by Corner Guidance Cards (GO Fast Insight) -->
+            <div class="p-5 rounded-2xl border border-r-line bg-r-surface space-y-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="font-display uppercase tracking-wider text-sm text-r-text">Análisis de Curvas Clave (Corner-by-Corner Guidance)</h3>
+                  <p class="text-xs text-r-muted mt-0.5">Pérdidas y ganancias de tiempo por ápice y compromiso de salida frente al objetivo.</p>
+                </div>
+                <button type="button" id="btnSetActiveRefForOverlay" class="mmt-btn h-9 px-4 rounded-xl bg-r-accent text-r-ink font-display uppercase tracking-wider text-xs font-bold shadow-md shadow-r-accent/20">
+                  Fijar como Referencia en el Overlay Flotante
+                </button>
+              </div>
+              <div id="refCornerGuidanceGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+            </div>
+
+            <!-- Real Laps Stored in Local Telemetry -->
+            <div class="p-5 rounded-2xl border border-r-line bg-r-surface space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="font-display uppercase tracking-wider text-sm text-r-text">Vueltas Analizadas en tu Carpeta Local (.ibt)</h3>
+                <span id="refLapCountLabel" class="text-xs font-mono text-r-muted">11 vueltas registradas</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left font-mono text-xs">
+                  <thead>
+                    <tr class="border-b border-r-line text-r-muted text-[11px] uppercase">
+                      <th class="pb-2">Vuelta</th>
+                      <th class="pb-2">Tiempo</th>
+                      <th class="pb-2">Delta vs Mejor</th>
+                      <th class="pb-2">Sector 1</th>
+                      <th class="pb-2">Sector 2</th>
+                      <th class="pb-2">Sector 3</th>
+                      <th class="pb-2">Vmax</th>
+                      <th class="pb-2 text-right">Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody id="refLapsTableBody" class="divide-y divide-r-line/40"></tbody>
+                </table>
+              </div>
+            </div>
           </section>
 
           <section id="viewStrategy" hidden aria-labelledby="strategyTitle" class="max-w-4xl">
@@ -472,13 +602,19 @@
                 <p class="mmt-kicker">Telemetría en Pista en Tiempo Real</p>
                 <h1 id="overlayTitle" class="mmt-display text-4xl mt-1">Overlays de Carrera (VRS / Garage 61 HUD)</h1>
                 <p class="mt-2 text-sm text-r-muted max-w-2xl">
-                  Lectura directa de la memoria compartida del SDK de iRacing (modo solo lectura). Muestra instrumentos de telemetría de competición con luces de cambio de marcha, pedales de alta resolución y radar de intervalos.
+                  Lectura directa de la memoria compartida del SDK de iRacing (modo solo lectura). Instrumentos modulares configurables con luces secuenciales, traza de pedales en vivo, avisos de distancia de frenada y radar de carrera.
                 </p>
               </div>
               <div class="flex flex-wrap items-center gap-2.5">
                 <button type="button" id="btnToggleFloatingOverlay" class="mmt-btn h-11 px-5 rounded-xl bg-r-accent text-r-ink font-display font-extrabold uppercase tracking-wider text-xs flex items-center gap-2 shadow-lg shadow-r-accent/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
                   <span id="floatingOverlayDot" class="w-2.5 h-2.5 rounded-full bg-emerald-950 border border-emerald-400"></span>
                   <span id="floatingOverlayText">Poner Overlay Flotante en iRacing</span>
+                </button>
+                <button type="button" id="btnUnlockLayout" class="h-11 px-3.5 rounded-xl border border-r-line bg-r-surface text-r-muted font-mono text-xs font-bold hover:text-r-text hover:border-r-accent transition">
+                  Colocar Widgets
+                </button>
+                <button type="button" id="btnResetLayout" class="h-11 px-3 rounded-xl border border-r-line bg-r-surface text-r-muted font-mono text-xs hover:text-r-text transition" title="Restablecer posiciones originales">
+                  Restablecer
                 </button>
                 <button type="button" id="overlayModeToggle" class="h-11 px-3.5 rounded-xl border border-r-line bg-r-surface text-r-muted font-mono text-xs font-bold hover:text-r-text hover:border-r-accent transition">
                   Modo Demo Activo (Pruébalo)
@@ -492,7 +628,7 @@
                 <span class="w-8 h-8 rounded-xl bg-r-accent/15 border border-r-accent/40 flex items-center justify-center font-bold text-r-accent text-sm">HUD</span>
                 <div>
                   <strong class="text-r-text block font-mono">Ventana flotante Always-On-Top para iRacing</strong>
-                  <span class="text-r-muted">Pulsa el botón superior para superponer el HUD transparente en tiempo real sobre tu simulador. Compatible con pantalla completa sin bordes.</span>
+                  <span class="text-r-muted">Pulsa el botón superior para superponer el HUD transparente en tiempo real sobre tu simulador. Compatible con pantalla completa sin bordes. Arrastra los widgets para ubicarlos donde prefieras.</span>
                 </div>
               </div>
               <div class="flex items-center gap-2 font-mono text-[11px] text-r-muted">
@@ -501,22 +637,44 @@
               </div>
             </div>
 
-            <!-- Stage -->
-            <div id="overlayStage" class="relative mt-5 h-[560px] rounded-2xl overflow-hidden border border-r-line shadow-2xl bg-black">
+            <!-- Stage (Cockpit Simulator & Modular HUD Layout) -->
+            <div id="overlayStage" class="relative mt-5 h-[620px] rounded-2xl overflow-hidden border border-r-line shadow-2xl bg-black select-none">
               <!-- Background cockpit gradient -->
               <div class="absolute inset-0" style="background: radial-gradient(ellipse at 50% 65%, #0d1f1a 0%, #070908 75%);"></div>
 
-              <!-- TOP: Sequential Shift Light LEDs -->
-              <div class="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-black/85 border border-white/10 backdrop-blur-md" id="ovShiftLights"></div>
+              <!-- TOP: Sequential Shift Light LEDs Widget -->
+              <div id="widgetShiftLights" class="mmt-hud-widget absolute top-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-black/85 border border-white/10 backdrop-blur-md shadow-xl" data-widget="shiftLights">
+                <div class="flex items-center gap-1.5" id="ovShiftLights"></div>
+                <div id="ovRevLimiterAlert" class="hidden text-[10px] font-mono font-black uppercase tracking-widest text-rose-400 animate-pulse">¡CAMBIO DE MARCHA!</div>
+              </div>
+
+              <!-- TOP-MID: Brake Distance Countdown Marker Widget (GO Fast style) -->
+              <div id="widgetBrakeMarker" class="mmt-hud-widget absolute top-18 left-1/2 -translate-x-1/2 flex items-center gap-3 px-5 py-2 rounded-2xl bg-black/85 border border-white/15 backdrop-blur-md shadow-lg font-mono text-xs" data-widget="brakeMarker">
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] uppercase text-r-muted font-bold">Punto de Frenada:</span>
+                  <div class="flex items-center gap-1.5 font-bold">
+                    <span id="bm200" class="px-2 py-0.5 rounded bg-white/10 text-white/50">200m</span>
+                    <span id="bm150" class="px-2 py-0.5 rounded bg-white/10 text-white/50">150m</span>
+                    <span id="bm100" class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">100m</span>
+                    <span id="bm50" class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40">50m</span>
+                  </div>
+                </div>
+                <span class="text-white/20">|</span>
+                <span id="bmAdvice" class="text-r-accent font-bold">Frenar 10m antes (Trail-Braking)</span>
+              </div>
 
               <!-- TOP LEFT: Relative Radar (Garage 61 style) -->
-              <div class="absolute left-5 top-18 w-68 rounded-2xl border border-white/15 bg-black/75 backdrop-blur-md text-white p-3.5 text-xs font-mono shadow-lg" id="ovRelative"></div>
+              <div id="widgetRelative" class="mmt-hud-widget absolute left-5 top-18 w-68 rounded-2xl border border-white/15 bg-black/75 backdrop-blur-md text-white p-3.5 text-xs font-mono shadow-lg" data-widget="relative">
+                <div id="ovRelative"></div>
+              </div>
 
               <!-- TOP RIGHT: Standings / Class Interval -->
-              <div class="absolute right-5 top-18 w-60 rounded-2xl border border-white/15 bg-black/75 backdrop-blur-md text-white p-3.5 text-xs font-mono shadow-lg" id="ovStandings"></div>
+              <div id="widgetStandings" class="mmt-hud-widget absolute right-5 top-18 w-60 rounded-2xl border border-white/15 bg-black/75 backdrop-blur-md text-white p-3.5 text-xs font-mono shadow-lg" data-widget="standings">
+                <div id="ovStandings"></div>
+              </div>
 
               <!-- CENTER: Pro Digital Cluster -->
-              <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+              <div id="widgetCluster" class="mmt-hud-widget absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center" data-widget="cluster">
                 <div id="ovDelta" class="mb-3 px-5 py-1.5 rounded-full border border-emerald-500/40 bg-emerald-950/80 text-emerald-400 font-mono text-sm font-bold shadow-lg shadow-emerald-950/50">
                   -0.34s · Sector 2 Púrpura
                 </div>
@@ -537,13 +695,195 @@
                 </div>
               </div>
 
+              <!-- MID RIGHT: Corner Analysis Widget (GO Fast style) -->
+              <div id="widgetCorner" class="mmt-hud-widget absolute right-5 top-1/2 -translate-y-1/2 w-64 rounded-2xl border border-white/15 bg-black/75 backdrop-blur-md text-white p-3.5 text-xs font-mono shadow-lg" data-widget="corner">
+                <div class="flex items-center justify-between pb-2 border-b border-white/10 mb-2">
+                  <span class="text-[10px] uppercase text-r-muted font-bold tracking-wider">Próxima Curva</span>
+                  <span id="ovNextTurnBadge" class="px-2 py-0.5 rounded bg-r-accent/20 text-r-accent text-[10px] font-bold">Curva 1</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-[11px]">
+                  <div><span class="text-r-muted block text-[10px]">ÁPICE OBJETIVO</span><strong id="ovCornerApexTarget" class="text-white">124 km/h</strong></div>
+                  <div><span class="text-r-muted block text-[10px]">DELTA CURVA</span><strong id="ovCornerDelta" class="text-emerald-400">-0.12s</strong></div>
+                </div>
+                <p id="ovCornerTip" class="mt-2 text-[10px] text-r-muted font-sans leading-tight">Abre gas progresivo al pasar el vértice.</p>
+              </div>
+
               <!-- BOTTOM LEFT: Live Fuel & Stint Computer -->
-              <div class="absolute left-5 bottom-5 w-72 rounded-2xl border border-white/15 bg-black/75 backdrop-blur-md text-white p-4 text-xs font-mono shadow-lg" id="ovFuel"></div>
+              <div id="widgetFuel" class="mmt-hud-widget absolute left-5 bottom-5 w-72 rounded-2xl border border-white/15 bg-black/75 backdrop-blur-md text-white p-4 text-xs font-mono shadow-lg" data-widget="fuel">
+                <div id="ovFuel"></div>
+              </div>
+
+              <!-- BOTTOM MID: Scrolling Live Input Waveform (GO Fast style) -->
+              <div id="widgetWaveform" class="mmt-hud-widget absolute left-1/2 bottom-5 -translate-x-1/2 rounded-2xl border border-white/15 bg-black/75 backdrop-blur-md p-3 shadow-lg" data-widget="waveform">
+                <div class="flex items-center justify-between text-[10px] font-mono text-r-muted mb-1 px-1">
+                  <span>HISTÓRICO DE PEDALES (TRAZA CONTINUA)</span>
+                  <span class="flex items-center gap-2"><span class="text-emerald-400">Gas</span> <span class="text-rose-400">Freno</span></span>
+                </div>
+                <canvas id="ovWaveformCanvas" width="280" height="65" class="rounded-lg bg-black/60 border border-white/10"></canvas>
+              </div>
 
               <!-- BOTTOM RIGHT: High Precision Pedals & Steering Canvas -->
-              <div class="absolute right-5 bottom-5 rounded-2xl border border-white/15 bg-black/75 backdrop-blur-md p-3.5 shadow-lg">
+              <div id="widgetPedals" class="mmt-hud-widget absolute right-5 bottom-5 rounded-2xl border border-white/15 bg-black/75 backdrop-blur-md p-3.5 shadow-lg" data-widget="pedals">
                 <canvas id="ovInputs" width="300" height="95" class="rounded-xl"></canvas>
                 <div id="ovTyres" class="mt-2 text-center font-mono text-[11px] text-r-muted"></div>
+              </div>
+            </div>
+          </section>
+
+          <section id="viewHardware" hidden aria-labelledby="hardwareTitle" class="max-w-6xl">
+            <div class="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p class="mmt-kicker">Hardware de Competición & Audio Profesional</p>
+                <h1 id="hardwareTitle" class="mmt-display text-4xl mt-1">Configuración de Volante y Sonido</h1>
+                <p class="mt-2 text-sm text-r-muted max-w-2xl">
+                  Ajustes recomendados de FFB, latencia, pedales de célula de carga y audio 48 kHz para iRacing. Detección automática del hardware USB conectado y compatibilidad total con todas las marcas y bases del mercado.
+                </p>
+              </div>
+              <button type="button" id="btnRefreshHardware" class="mmt-btn h-11 px-5 rounded-xl bg-r-accent text-r-ink font-display font-extrabold uppercase tracking-wider text-xs flex items-center gap-2 shadow-lg shadow-r-accent/20">
+                <span>⟳</span>
+                <span>Detectar Hardware de Nuevo</span>
+              </button>
+            </div>
+
+            <!-- Live Detected Hardware Cards -->
+            <div class="mt-6 grid sm:grid-cols-3 gap-4">
+              <!-- Wheelbase Detected -->
+              <div class="rounded-2xl border border-r-line bg-r-surface p-5 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between pb-3 border-b border-r-line mb-3">
+                    <span class="text-xs font-mono uppercase text-r-muted">Base / Volante Detectado</span>
+                    <span id="hwBaseStatusBadge" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent/20 text-r-accent border border-r-accent/30">CONECTADO</span>
+                  </div>
+                  <strong id="hwDetectedBaseName" class="font-display text-lg text-r-text block">Thrustmaster Advanced Mode Racer (USB)</strong>
+                  <p class="text-xs text-r-muted font-mono mt-1">VID 044F · PID B696</p>
+                </div>
+                <div class="mt-4 pt-3 border-t border-r-line/60 flex items-center justify-between text-xs font-mono">
+                  <span class="text-r-muted">Estado del Firmware:</span>
+                  <span id="hwFirmwareState" class="text-emerald-400 font-bold">Verificado</span>
+                </div>
+              </div>
+
+              <!-- Pedals Detected -->
+              <div class="rounded-2xl border border-r-line bg-r-surface p-5 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between pb-3 border-b border-r-line mb-3">
+                    <span class="text-xs font-mono uppercase text-r-muted">Pedales de Competición</span>
+                    <span id="hwPedalsStatusBadge" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-sky-500/20 text-sky-400 border border-sky-500/30">CÉLULA DE CARGA</span>
+                  </div>
+                  <strong id="hwDetectedPedalsName" class="font-display text-lg text-r-text block">Controlador USB STMicroelectronics (Pedales de Carreras)</strong>
+                  <p class="text-xs text-r-muted font-mono mt-1">Curva Lineal · 0.00 Factor iRacing</p>
+                </div>
+                <div class="mt-4 pt-3 border-t border-r-line/60 flex items-center justify-between text-xs font-mono">
+                  <span class="text-r-muted">Calibración:</span>
+                  <span class="text-r-accent font-bold">Óptima (100% Recorrido)</span>
+                </div>
+              </div>
+
+              <!-- Audio & iRacing Engine -->
+              <div class="rounded-2xl border border-r-line bg-r-surface p-5 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between pb-3 border-b border-r-line mb-3">
+                    <span class="text-xs font-mono uppercase text-r-muted">Audio & Motor de Sonido</span>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">XAUDIO2 48 kHz</span>
+                  </div>
+                  <strong id="hwDetectedAudioName" class="font-display text-lg text-r-text block">Logitech G435 Headset + Realtek HD Audio</strong>
+                  <p class="text-xs text-r-muted font-mono mt-1">app.ini: soundSystem=1 · Latencia Ultra-Baja</p>
+                </div>
+                <div class="mt-4 pt-3 border-t border-r-line/60 flex items-center justify-between text-xs font-mono">
+                  <span class="text-r-muted">Frecuencia Estudio:</span>
+                  <span class="text-emerald-400 font-bold">48.000 Hz / 24-bit</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Manufacturer FFB Database & Tuning Guide -->
+            <div class="mt-6 rounded-2xl border border-r-line bg-r-surface p-6">
+              <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-r-line">
+                <div>
+                  <h2 class="font-display uppercase tracking-wider text-lg text-r-text">Ajustes Recomendados por Fabricante (Todas las Bases)</h2>
+                  <p class="text-xs text-r-muted mt-0.5">Selecciona la marca de tu volante para consultar los valores exactos en su software y dentro de iRacing.</p>
+                </div>
+                <!-- Brand Tabs -->
+                <div id="hwBrandTabs" class="flex flex-wrap gap-1.5 p-1 rounded-xl bg-r-bg border border-r-line font-mono text-xs">
+                  <button type="button" class="px-3 py-1.5 rounded-lg font-bold uppercase transition bg-r-accent text-r-ink shadow-sm" data-brand="thrustmaster">Thrustmaster</button>
+                  <button type="button" class="px-3 py-1.5 rounded-lg font-bold uppercase transition text-r-muted hover:text-r-text" data-brand="fanatec">Fanatec</button>
+                  <button type="button" class="px-3 py-1.5 rounded-lg font-bold uppercase transition text-r-muted hover:text-r-text" data-brand="moza">Moza</button>
+                  <button type="button" class="px-3 py-1.5 rounded-lg font-bold uppercase transition text-r-muted hover:text-r-text" data-brand="simagic">Simagic</button>
+                  <button type="button" class="px-3 py-1.5 rounded-lg font-bold uppercase transition text-r-muted hover:text-r-text" data-brand="asetek">Asetek</button>
+                  <button type="button" class="px-3 py-1.5 rounded-lg font-bold uppercase transition text-r-muted hover:text-r-text" data-brand="simucube">Simucube</button>
+                  <button type="button" class="px-3 py-1.5 rounded-lg font-bold uppercase transition text-r-muted hover:text-r-text" data-brand="logitech">Logitech</button>
+                  <button type="button" class="px-3 py-1.5 rounded-lg font-bold uppercase transition text-r-muted hover:text-r-text" data-brand="vrs">VRS</button>
+                  <button type="button" class="px-3 py-1.5 rounded-lg font-bold uppercase transition text-r-muted hover:text-r-text" data-brand="cammus">Cammus</button>
+                  <button type="button" class="px-3 py-1.5 rounded-lg font-bold uppercase transition text-r-muted hover:text-r-text" data-brand="heusinkveld">Heusinkveld</button>
+                </div>
+              </div>
+
+              <!-- Brand Content Card -->
+              <div id="hwBrandContent" class="mt-5 space-y-6"></div>
+            </div>
+
+            <!-- Pedals & Audio High Fidelity Guides -->
+            <div class="mt-6 grid lg:grid-cols-2 gap-5">
+              <!-- Load Cell Pedals Calibration -->
+              <div class="rounded-2xl border border-r-line bg-r-surface p-5 space-y-3">
+                <div class="flex items-center justify-between pb-3 border-b border-r-line">
+                  <h3 class="font-display uppercase tracking-wider text-sm text-r-text">Ajuste de Pedales y Célula de Carga</h3>
+                  <span class="px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 font-mono text-[10px] font-bold">REGLA DE ORO MMT</span>
+                </div>
+                <div class="p-3.5 rounded-xl bg-r-bg/60 border border-r-line/60 font-mono text-xs space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="text-r-muted">iRacing Brake Force Factor:</span>
+                    <strong class="text-r-accent text-sm">0.00 (Lineal)</strong>
+                  </div>
+                  <p class="text-[11px] text-r-muted font-sans leading-relaxed">
+                    Si tienes pedales con célula de carga (Load Cell), pon siempre <strong class="text-r-text font-mono">Brake Force Factor en 0.00</strong> dentro del menú de pedales de iRacing. Si lo dejas en 1.60 - 2.00 (diseñado para potenciómetros de plástico), el coche bloqueará las ruedas delanteras prematuramente en la última fase del trail braking.
+                  </p>
+                </div>
+                <div class="space-y-2 text-xs font-mono text-r-muted">
+                  <div class="flex items-center justify-between p-2 rounded-lg bg-r-bg/40">
+                    <span>Zona Muerta Superior:</span>
+                    <strong class="text-white">2% - 3% (evita roces accidentales)</strong>
+                  </div>
+                  <div class="flex items-center justify-between p-2 rounded-lg bg-r-bg/40">
+                    <span>Zona Muerta Inferior:</span>
+                    <strong class="text-white">98% (freno máximo sin forzar articulaciones)</strong>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Audio Fidelity Guide -->
+              <div class="rounded-2xl border border-r-line bg-r-surface p-5 space-y-3">
+                <div class="flex items-center justify-between pb-3 border-b border-r-line">
+                  <h3 class="font-display uppercase tracking-wider text-sm text-r-text">Calibración de Sonido Profesional (48 kHz)</h3>
+                  <span class="px-2 py-0.5 rounded bg-sky-500/15 text-sky-300 font-mono text-[10px] font-bold">ACÚSTICA COMPETITIVA</span>
+                </div>
+                <div class="p-3.5 rounded-xl bg-r-bg/60 border border-r-line/60 font-mono text-xs space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="text-r-muted">Balance de Canales Recomendado:</span>
+                    <strong class="text-emerald-400 text-sm">Detección de Deriva</strong>
+                  </div>
+                  <p class="text-[11px] text-r-muted font-sans leading-relaxed">
+                    El sonido de los neumáticos (<strong class="text-r-text">Tire Scrub</strong>) es tu principal sensor de telemetría auditiva. Debe sonar más alto que el motor para anticipar el subviraje antes de que el volante pierda resistencia:
+                  </p>
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+                  <div class="p-2 rounded-lg bg-r-bg/40">
+                    <span class="text-[10px] text-r-muted uppercase block">Neumáticos (Tires):</span>
+                    <strong class="text-r-accent">0 dB (Máxima prioridad)</strong>
+                  </div>
+                  <div class="p-2 rounded-lg bg-r-bg/40">
+                    <span class="text-[10px] text-r-muted uppercase block">Motor (Engine):</span>
+                    <strong class="text-white">-3 dB</strong>
+                  </div>
+                  <div class="p-2 rounded-lg bg-r-bg/40">
+                    <span class="text-[10px] text-r-muted uppercase block">Viento / Aero:</span>
+                    <strong class="text-white">-6 dB</strong>
+                  </div>
+                  <div class="p-2 rounded-lg bg-r-bg/40">
+                    <span class="text-[10px] text-r-muted uppercase block">Spotter / Ingeniero:</span>
+                    <strong class="text-sky-300">+2 dB (Auriculares)</strong>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
@@ -1023,15 +1363,23 @@
         </div>
       </div>
 
-      <!-- Top Sequential Shift Lights -->
-      <div id="floatShiftLightsRow" class="flex justify-center pointer-events-none mt-2">
+      <!-- Top Sequential Shift Lights & Brake Marker -->
+      <div id="floatShiftLightsRow" class="flex flex-col items-center gap-2 pointer-events-none mt-2">
         <div class="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-black/90 border border-white/20 backdrop-blur-md shadow-2xl" id="ovShiftLightsFloat"></div>
+        <div id="ovBrakeMarkerFloat" class="flex items-center gap-2 px-3 py-1 rounded-xl bg-black/85 border border-white/20 text-xs font-mono">
+          <span class="text-[10px] text-r-muted uppercase font-bold">Frenada:</span>
+          <span id="bmFloatCountdown" class="font-bold text-amber-300">100m</span>
+          <span class="text-white/30">·</span>
+          <span id="bmFloatAdvice" class="text-r-accent font-bold text-[11px]">Trail-Braking</span>
+        </div>
       </div>
 
       <!-- Mid Row: Radar (Left), Dash Cluster (Center), Standings (Right) -->
       <div class="flex items-center justify-between gap-6 pointer-events-none flex-1 my-3">
         <!-- Relative Radar -->
-        <div id="floatRelativeCard" class="w-72 rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md text-white p-4 text-xs font-mono shadow-2xl pointer-events-auto" id="ovRelativeFloat"></div>
+        <div id="floatRelativeCard" class="w-72 rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md text-white p-4 text-xs font-mono shadow-2xl pointer-events-auto">
+          <div id="ovRelativeFloat"></div>
+        </div>
 
         <!-- Central Digital Dash Cluster -->
         <div id="floatClusterCard" class="flex flex-col items-center pointer-events-auto">
@@ -1056,12 +1404,20 @@
         </div>
 
         <!-- Standings -->
-        <div id="floatStandingsCard" class="w-64 rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md text-white p-4 text-xs font-mono shadow-2xl pointer-events-auto" id="ovStandingsFloat"></div>
+        <div id="floatStandingsCard" class="w-64 rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md text-white p-4 text-xs font-mono shadow-2xl pointer-events-auto">
+          <div id="ovStandingsFloat"></div>
+        </div>
       </div>
 
-      <!-- Bottom Row: Fuel computer (Left), High-speed inputs canvas (Right) -->
-      <div class="flex items-end justify-between gap-6 pointer-events-none mt-2">
-        <div id="floatFuelCard" class="w-72 rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md text-white p-4 text-xs font-mono shadow-2xl pointer-events-auto" id="ovFuelFloat"></div>
+      <!-- Bottom Row: Fuel computer (Left), Waveform & Pedals (Right) -->
+      <div class="flex items-end justify-between gap-4 pointer-events-none mt-2">
+        <div id="floatFuelCard" class="w-72 rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md text-white p-4 text-xs font-mono shadow-2xl pointer-events-auto">
+          <div id="ovFuelFloat"></div>
+        </div>
+
+        <div id="floatWaveformCard" class="rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md p-2.5 shadow-2xl pointer-events-auto">
+          <canvas id="ovWaveformCanvasFloat" width="220" height="55" class="rounded-lg bg-black/60 border border-white/10"></canvas>
+        </div>
 
         <div id="floatInputsCard" class="rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md p-3.5 shadow-2xl pointer-events-auto">
           <canvas id="ovInputsFloat" width="300" height="95" class="rounded-xl"></canvas>

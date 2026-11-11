@@ -142,6 +142,14 @@ export interface IracingAnalysis {
   items: ConfigItem[];
 }
 
+export interface HardwareReport {
+  detectedWheelbase?: string;
+  detectedPedals?: string;
+  audioDevices: string[];
+  iracingSoundSystem: string;
+  sampleRateRecommendation: string;
+}
+
 export interface Backend {
   snapshot(): Promise<Snapshot>;
   authStart(): Promise<AuthStart>;
@@ -158,6 +166,7 @@ export interface Backend {
   upload(input: UploadInput): Promise<string>;
   installUpdate(): Promise<void>;
   inspectConfig(): Promise<IracingAnalysis>;
+  detectHardware(): Promise<HardwareReport>;
   checkIracing(): Promise<string>;
   toggleOverlay(show: boolean): Promise<boolean>;
   quit(): Promise<void>;
