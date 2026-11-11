@@ -30,7 +30,13 @@ if (sched && Array.isArray(sched.series)) {
   }
 }
 
-export function findWeekForTrack(track: string, filename?: string): number {
+export interface TrackWeekInfo {
+  week: number;
+  isCurrent: boolean;
+  seriesContext: string;
+}
+
+export function getTrackWeekInfo(track: string, filename?: string, carFolder?: string): TrackWeekInfo {
   if (filename) {
     const upper = filename.toUpperCase();
     for (const prefix of ["_W", "-W", ".W", "WEEK"]) {
@@ -40,32 +46,197 @@ export function findWeekForTrack(track: string, filename?: string): number {
         const digits = rest.match(/^\d+/);
         if (digits) {
           const num = parseInt(digits[0], 10);
-          if (num >= 1 && num <= 14) return num;
+          if (num >= 1 && num <= 14) {
+            return {
+              week: num,
+              isCurrent: num === (sched.current_week || 9),
+              seriesContext: num === (sched.current_week || 9) ? "Semana Actual" : `Semana ${num}`,
+            };
+          }
         }
       }
     }
   }
-  const clean = String(track || "").toLowerCase();
-  if (clean.includes("indy") || clean.includes("indianapolis")) return 1;
-  if (clean.includes("silverstone")) return 1;
-  if (clean.includes("atlanta")) return 2;
-  if (clean.includes("zandvoort") || clean.includes("fuji")) return 3;
-  if (clean.includes("motegi") || clean.includes("red bull") || clean.includes("rbr")) return 4;
-  if (clean.includes("long beach")) return 5;
-  if (clean.includes("the bend") || clean.includes("bend") || clean.includes("montreal")) return 6;
-  if (clean.includes("cota") || clean.includes("le mans") || clean.includes("lemans")) return 7;
-  if (clean.includes("spa") || clean.includes("mexico")) return 8;
-  if (clean.includes("suzuka")) return 9;
-  if (clean.includes("misano")) return 10;
-  if (clean.includes("sebring")) return 11;
-  if (clean.includes("monza")) return 12;
-  if (clean.includes("nurburgring") || clean.includes("vln") || clean.includes("mugello")) return 13;
+
+  const clean = String(track || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const cleanCar = String(carFolder || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const isGt3 = cleanCar.includes("gt3") || cleanCar.includes("296") || cleanCar.includes("992") || cleanCar.includes("m4") || cleanCar.includes("720s") || cleanCar.includes("mustang") || cleanCar.includes("vantage") || cleanCar.includes("huracan") || cleanCar.includes("z06") || cleanCar === "" || cleanCar.includes("ferrari") || cleanCar.includes("bmw") || cleanCar.includes("porsche");
+
+  // 1. Fuji Speedway -> GT3 Open / GT Sprint & GT3 Challenge Fixed (Week 9: Current Week!)
+  if (clean.includes("fuji")) {
+    return {
+      week: 9,
+      isCurrent: true,
+      seriesContext: "GT3 Open / GT Sprint",
+    };
+  }
+
+  // 2. Circuit de Barcelona-Catalunya -> GT3 Regional Tour Europe (Week 9: Current Week!) or Ferrari Challenge (Week 10)
+  if (clean.includes("barcelona") || clean.includes("catalunya")) {
+    if (cleanCar.includes("challenge") && !cleanCar.includes("gt3")) {
+      return {
+        week: 10,
+        isCurrent: false,
+        seriesContext: "Ferrari 296 Challenge",
+      };
+    }
+    return {
+      week: 9,
+      isCurrent: true,
+      seriesContext: "Regional Fixed (Europa)",
+    };
+  }
+
+  // 3. Suzuka -> IMSA SportsCar (Week 9: Current Week!) or GT3 Open (Week 12 Final)
+  if (clean.includes("suzuka")) {
+    if (cleanCar.includes("imsa") || cleanCar.includes("gtp") || cleanCar.includes("p217")) {
+      return {
+        week: 9,
+        isCurrent: true,
+        seriesContext: "IMSA SportsCar",
+      };
+    }
+    return {
+      week: isGt3 ? 12 : 9,
+      isCurrent: !isGt3,
+      seriesContext: isGt3 ? "GT3 Open (Semana 12)" : "IMSA Open",
+    };
+  }
+
+  // 4. Misano -> Week 10
+  if (clean.includes("misano")) {
+    return {
+      week: 10,
+      isCurrent: false,
+      seriesContext: "GT3 Open / GT Sprint",
+    };
+  }
+
+  // 5. Sebring -> Week 11
+  if (clean.includes("sebring")) {
+    return {
+      week: 11,
+      isCurrent: false,
+      seriesContext: "GT3 Open / GT Sprint",
+    };
+  }
+
+  // 6. Monza -> Week 12
+  if (clean.includes("monza")) {
+    return {
+      week: 12,
+      isCurrent: false,
+      seriesContext: "GT3 Open (Semana 12)",
+    };
+  }
+
+  // 7. Spa-Francorchamps -> Week 8
+  if (clean.includes("spa") || clean.includes("francorchamps")) {
+    return {
+      week: 8,
+      isCurrent: false,
+      seriesContext: "GT3 Open (Semana 8)",
+    };
+  }
+
+  // 8. COTA -> Week 7
+  if (clean.includes("cota") || clean.includes("americas")) {
+    return {
+      week: 7,
+      isCurrent: false,
+      seriesContext: "GT3 Open (Semana 7)",
+    };
+  }
+
+  // 9. The Bend -> Week 6
+  if (clean.includes("bend")) {
+    return {
+      week: 6,
+      isCurrent: false,
+      seriesContext: "GT3 Open (Semana 6)",
+    };
+  }
+
+  // 10. Indianapolis -> Week 5
+  if (clean.includes("indy") || clean.includes("indianapolis")) {
+    return {
+      week: 5,
+      isCurrent: false,
+      seriesContext: "GT3 Open (Semana 5)",
+    };
+  }
+
+  // 11. Motegi -> Week 4
+  if (clean.includes("motegi")) {
+    return {
+      week: 4,
+      isCurrent: false,
+      seriesContext: "GT3 Open (Semana 4)",
+    };
+  }
+
+  // 12. Zandvoort -> Week 3
+  if (clean.includes("zandvoort")) {
+    return {
+      week: 3,
+      isCurrent: false,
+      seriesContext: "GT3 Open (Semana 3)",
+    };
+  }
+
+  // 13. Road Atlanta -> Week 2
+  if (clean.includes("atlanta")) {
+    return {
+      week: 2,
+      isCurrent: false,
+      seriesContext: "GT3 Open (Semana 2)",
+    };
+  }
+
+  // 14. Silverstone -> Week 1
+  if (clean.includes("silverstone")) {
+    return {
+      week: 1,
+      isCurrent: false,
+      seriesContext: "GT3 Open (Semana 1)",
+    };
+  }
+
+  // 15. Le Mans -> Week 11 (Regional / Endurance)
+  if (clean.includes("lemans")) {
+    return {
+      week: 11,
+      isCurrent: false,
+      seriesContext: "Endurance Tour",
+    };
+  }
+
+  // 16. Nurburgring -> Week 13
+  if (clean.includes("nurburgring") || clean.includes("vln") || clean.includes("nordschleife")) {
+    return {
+      week: 13,
+      isCurrent: false,
+      seriesContext: "NEC Endurance",
+    };
+  }
+
+  // Dynamic lookup in schedule table
   for (const [t, weeks] of trackToWeeks) {
     if (clean.includes(t) || t.includes(clean)) {
-      return weeks[0] ?? 1;
+      const cur = sched.current_week || 9;
+      if (weeks.includes(cur)) {
+        return { week: cur, isCurrent: true, seriesContext: "Calendario W9" };
+      }
+      const w = weeks[0] ?? 1;
+      return { week: w, isCurrent: w === cur, seriesContext: `Semana ${w}` };
     }
   }
-  return 1;
+
+  return { week: 1, isCurrent: false, seriesContext: "General" };
+}
+
+export function findWeekForTrack(track: string, filename?: string, carFolder?: string): number {
+  return getTrackWeekInfo(track, filename, carFolder).week;
 }
 
 export function classifyCar(carFolder: string): "SPORTS CAR" | "FORMULA CAR" | "OVAL" | "DIRT" {
@@ -988,14 +1159,15 @@ function paintGroupedByCar(items: LibraryItem[]): void {
 
       trackLeft.append(trackPin, trackTitle);
 
-      const weekNum = findWeekForTrack(track);
-      if (weekNum) {
+      const weekInfo = getTrackWeekInfo(track, undefined, circuitRows[0]?.carFolder);
+      if (weekInfo.week) {
         const weekBadge = document.createElement("span");
-        const isCur = weekNum === (sched.current_week || 9);
-        weekBadge.className = isCur
+        weekBadge.className = weekInfo.isCurrent
           ? "px-2 py-0.5 rounded-full bg-r-accent text-r-ink font-bold text-[10px] uppercase tracking-wider shadow-sm"
           : "px-2 py-0.5 rounded-full border border-r-line bg-r-bg text-r-muted text-[10px] font-mono";
-        weekBadge.textContent = isCur ? `Semana ${weekNum} · ACTUAL` : `Semana ${weekNum}`;
+        weekBadge.textContent = weekInfo.isCurrent
+          ? `Semana ${weekInfo.week} · ACTUAL (${weekInfo.seriesContext})`
+          : `Semana ${weekInfo.week}`;
         trackLeft.append(weekBadge);
       }
 
@@ -1081,14 +1253,15 @@ function paintGroupedByTrack(items: LibraryItem[]): void {
     const right = document.createElement("div");
     right.className = "flex items-center gap-2 font-mono text-[11px]";
 
-    const weekNum = findWeekForTrack(track);
-    if (weekNum) {
+    const weekInfo = getTrackWeekInfo(track, undefined, rows[0]?.carFolder);
+    if (weekInfo.week) {
       const weekBadge = document.createElement("span");
-      const isCur = weekNum === (sched.current_week || 9);
-      weekBadge.className = isCur
+      weekBadge.className = weekInfo.isCurrent
         ? "px-2 py-0.5 rounded-full bg-r-accent text-r-ink font-bold uppercase tracking-wider"
         : "px-2 py-0.5 rounded-full border border-r-line bg-r-surface text-r-muted uppercase tracking-wider";
-      weekBadge.textContent = isCur ? `Semana ${weekNum} · ACTUAL` : `Semana ${weekNum}`;
+      weekBadge.textContent = weekInfo.isCurrent
+        ? `Semana ${weekInfo.week} · ACTUAL (${weekInfo.seriesContext})`
+        : `Semana ${weekInfo.week}`;
       right.append(weekBadge);
     }
 
@@ -1166,7 +1339,7 @@ function paintGroupedByWeek(items: LibraryItem[]): void {
 
   const groups = new Map<number | string, LibraryItem[]>();
   for (const entry of items) {
-    const w = findWeekForTrack(entry.track, entry.filename);
+    const w = findWeekForTrack(entry.track, entry.filename, entry.carFolder);
     const key = w ?? "Otras semanas";
     const list = groups.get(key) ?? [];
     list.push(entry);

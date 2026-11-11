@@ -80,7 +80,7 @@ export interface RealTrackEntry {
 
 const REAL_TRACKS = rawRealTracks as unknown as Record<string, RealTrackEntry>;
 
-let currentTrackId = "spa";
+let currentTrackId = "fuji";
 let activeHoverDist: number | null = null;
 let coachLossFilter = false;
 
@@ -175,6 +175,49 @@ function paintWeek(data: Snapshot): void {
             : "px-3 py-1.5 rounded-xl border border-r-line bg-r-surface text-r-muted hover:text-r-text font-mono text-xs";
         }
         renderWeekItems(data);
+      });
+    }
+    const seriesPresets = document.getElementById("weekSeriesPresets");
+    if (seriesPresets) {
+      seriesPresets.addEventListener("click", (e) => {
+        const btn = (e.target as HTMLElement).closest("button");
+        if (!btn || !btn.dataset.preset) return;
+        const preset = btn.dataset.preset;
+        if (weekSearch) {
+          if (preset === "gt3open") {
+            weekSearch.value = "GT Sprint Series";
+            activeCat = "SPORTS CAR";
+          } else if (preset === "gt3fixed") {
+            weekSearch.value = "GT3 Challenge Fixed";
+            activeCat = "SPORTS CAR";
+          } else if (preset === "regional") {
+            weekSearch.value = "Regional Tour";
+            activeCat = "SPORTS CAR";
+          } else if (preset === "imsa") {
+            weekSearch.value = "IMSA";
+            activeCat = "SPORTS CAR";
+          } else if (preset === "formula") {
+            weekSearch.value = "Super Formula";
+            activeCat = "FORMULA CAR";
+          }
+          activeSearch = weekSearch.value.trim().toLowerCase();
+
+          for (const b of seriesPresets.querySelectorAll("button")) {
+            const isSelected = b.dataset.preset === preset;
+            b.className = isSelected
+              ? "px-3 py-1.5 rounded-xl border border-r-accent bg-r-accent/20 text-r-accent font-mono text-xs font-bold shadow-sm"
+              : "px-3 py-1.5 rounded-xl border border-r-line bg-r-surface text-r-muted hover:text-r-text hover:border-r-accent font-mono text-xs transition";
+          }
+          if (catFilters) {
+            for (const b of catFilters.querySelectorAll("button")) {
+              const isSelected = b.dataset.cat === activeCat;
+              b.className = isSelected
+                ? "px-3 py-1.5 rounded-xl border border-r-accent bg-r-accent/15 text-r-accent font-mono text-xs font-bold"
+                : "px-3 py-1.5 rounded-xl border border-r-line bg-r-surface text-r-muted hover:text-r-text font-mono text-xs";
+            }
+          }
+          renderWeekItems(data);
+        }
       });
     }
   }
