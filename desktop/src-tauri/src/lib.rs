@@ -124,6 +124,7 @@ pub fn run() {
             install_update,
             inspect_config,
             check_iracing_status,
+            toggle_overlay,
             quit
         ])
         .run(tauri::generate_context!())
@@ -524,6 +525,23 @@ fn inspect_config() -> Result<advisor::IracingAnalysis, String> {
 #[tauri::command]
 fn check_iracing_status() -> &'static str {
     live::current_status()
+}
+
+#[tauri::command]
+fn toggle_overlay(app: AppHandle, show: bool) -> Result<bool, String> {
+    if let Some(window) = app.get_webview_window("overlay") {
+        if show {
+            let _ = window.show();
+            let _ = window.set_always_on_top(true);
+            let _ = window.set_focus();
+            Ok(true)
+        } else {
+            let _ = window.hide();
+            Ok(false)
+        }
+    } else {
+        Err("Ventana de overlay no encontrada".into())
+    }
 }
 
 #[tauri::command]

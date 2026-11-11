@@ -50,6 +50,7 @@ export function createTauriBackend(): Backend {
     installUpdate: () => invoke("install_update"),
     inspectConfig: () => invoke("inspect_config"),
     checkIracing: () => invoke<string>("check_iracing_status"),
+    toggleOverlay: (show: boolean) => invoke<boolean>("toggle_overlay", { show }),
     quit: () => invoke("quit"),
     onRefresh(cb) {
       void wire();

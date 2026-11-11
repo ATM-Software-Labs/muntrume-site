@@ -159,6 +159,7 @@ export interface Backend {
   installUpdate(): Promise<void>;
   inspectConfig(): Promise<IracingAnalysis>;
   checkIracing(): Promise<string>;
+  toggleOverlay(show: boolean): Promise<boolean>;
   quit(): Promise<void>;
   onRefresh(cb: () => void): () => void;
   onStaged(cb: (file: StagedFile) => void): () => void;

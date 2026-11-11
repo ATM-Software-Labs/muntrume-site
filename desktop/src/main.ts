@@ -2,7 +2,7 @@ import { inTauri } from "./env";
 import { createMock } from "./mock";
 import { createTauriBackend } from "./tauri-backend";
 import type { Backend, LibraryItem, LiveSample, Settings, Snapshot, StagedFile } from "./types";
-import { fuelText, paintConfigAnalysis, paintExtras, updateLiveOverlay } from "./extra";
+import { fuelText, paintConfigAnalysis, paintExtras, updateLiveOverlay, initFloatingOverlayControls, paintOverlays } from "./extra";
 import rawSchedule from "./season_schedule_2026_s4.json";
 import { getSetupProfile, estimateLapTimeAndConsistency } from "./setup-intelligence";
 
@@ -1519,6 +1519,34 @@ function bind(): void {
     applyTheme(theme() === "light" ? "dark" : "light");
     if (snapshot?.pilot) void persistSettings();
   });
+  let floatingOverlayActive = false;
+  const btnToggleFloat = document.getElementById("btnToggleFloatingOverlay");
+  const dotFloat = document.getElementById("floatingOverlayDot");
+  const textFloat = document.getElementById("floatingOverlayText");
+  if (btnToggleFloat) {
+    btnToggleFloat.addEventListener("click", () => {
+      floatingOverlayActive = !floatingOverlayActive;
+      void backend
+        .toggleOverlay(floatingOverlayActive)
+        .then((shown) => {
+          floatingOverlayActive = shown;
+          if (textFloat) {
+            textFloat.textContent = shown ? "Ocultar Overlay de iRacing" : "Poner Overlay Flotante en iRacing";
+          }
+          if (dotFloat) {
+            dotFloat.className = shown
+              ? "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse border border-emerald-300"
+              : "w-2.5 h-2.5 rounded-full bg-emerald-950 border border-emerald-400";
+          }
+          if (shown) {
+            showNotice("Overlay flotante Always-On-Top activo sobre iRacing. Arrastra desde la barra superior para colocar los instrumentos.");
+          }
+        })
+        .catch((err: unknown) => {
+          showNotice(err instanceof Error ? err.message : "Error al alternar overlay flotante");
+        });
+    });
+  }
   $("linkBtn").addEventListener("click", () => {
     void beginLink().catch((error: unknown) => {
       showNotice(error instanceof Error ? error.message : "No se pudo empezar la vinculación.");
@@ -2028,6 +2056,29 @@ function bind(): void {
 }
 
 async function boot(): Promise<void> {
+  const isOverlayMode = window.location.search.includes("overlay=1");
+  if (isOverlayMode) {
+    document.documentElement.classList.add("overlay-mode");
+    document.body.classList.remove("bg-r-bg");
+    document.body.classList.add("bg-transparent");
+    const mainWrap = document.getElementById("mainAppWrapper");
+    if (mainWrap) mainWrap.hidden = true;
+    const floatHost = document.getElementById("floatingOverlayHost");
+    if (floatHost) floatHost.hidden = false;
+
+    paintOverlays();
+    initFloatingOverlayControls(() => {
+      void backend.toggleOverlay(false);
+    });
+
+    backend.onLive((sample) => updateLiveStatus(sample));
+    if (backend.onIracingStatus) {
+      backend.onIracingStatus((status) => applyIracingStatus(status));
+    }
+    void backend.checkIracing().then((status) => applyIracingStatus(status)).catch(() => {});
+    return;
+  }
+
   applyTheme(theme());
   bind();
   if (screen === "upload") {

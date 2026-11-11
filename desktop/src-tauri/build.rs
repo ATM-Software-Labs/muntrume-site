@@ -18,6 +18,7 @@ fn main() {
                 "install_update",
                 "inspect_config",
                 "check_iracing_status",
+                "toggle_overlay",
                 "quit",
             ]),
         ),

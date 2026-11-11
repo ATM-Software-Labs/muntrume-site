@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="./src/styles.css" />
   </head>
   <body class="min-h-screen bg-r-bg text-r-text antialiased">
-    <div class="min-h-screen flex flex-col">
+    <div id="mainAppWrapper" class="min-h-screen flex flex-col">
       <header class="h-16 shrink-0 border-b border-r-line bg-r-surface flex items-center justify-between gap-4 px-5">
         <div class="flex items-center gap-3.5 min-w-0">
           <img src="./favicon.svg" width="34" height="34" alt="Muntrume Motorsport" class="h-8 w-8 rounded-lg shadow-sm border border-r-line/60 bg-r-bg" />
@@ -453,10 +453,29 @@
                   Lectura directa de la memoria compartida del SDK de iRacing (modo solo lectura). Muestra instrumentos de telemetría de competición con luces de cambio de marcha, pedales de alta resolución y radar de intervalos.
                 </p>
               </div>
-              <div class="flex items-center gap-2">
-                <button type="button" id="overlayModeToggle" class="px-3.5 py-2 rounded-xl border border-r-accent bg-r-accent/15 text-r-accent font-mono text-xs font-bold">
+              <div class="flex flex-wrap items-center gap-2.5">
+                <button type="button" id="btnToggleFloatingOverlay" class="mmt-btn h-11 px-5 rounded-xl bg-r-accent text-r-ink font-display font-extrabold uppercase tracking-wider text-xs flex items-center gap-2 shadow-lg shadow-r-accent/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                  <span id="floatingOverlayDot" class="w-2.5 h-2.5 rounded-full bg-emerald-950 border border-emerald-400"></span>
+                  <span id="floatingOverlayText">Poner Overlay Flotante en iRacing</span>
+                </button>
+                <button type="button" id="overlayModeToggle" class="h-11 px-3.5 rounded-xl border border-r-line bg-r-surface text-r-muted font-mono text-xs font-bold hover:text-r-text hover:border-r-accent transition">
                   Modo Demo Activo (Pruébalo)
                 </button>
+              </div>
+            </div>
+
+            <!-- In-Game integration badge / guidance -->
+            <div class="mt-4 p-4 rounded-2xl border border-r-line bg-r-surface/70 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div class="flex items-center gap-3">
+                <span class="w-8 h-8 rounded-xl bg-r-accent/15 border border-r-accent/40 flex items-center justify-center font-bold text-r-accent text-sm">HUD</span>
+                <div>
+                  <strong class="text-r-text block font-mono">Ventana flotante Always-On-Top para iRacing</strong>
+                  <span class="text-r-muted">Pulsa el botón superior para superponer el HUD transparente en tiempo real sobre tu simulador. Compatible con pantalla completa sin bordes.</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 font-mono text-[11px] text-r-muted">
+                <span class="w-2 h-2 rounded-full bg-r-accent animate-ping"></span>
+                <span>SDK C++ 60 Hz · Cero impacto en FPS</span>
               </div>
             </div>
 
@@ -954,6 +973,81 @@
         </div>
       </main>
     </div>
+
+    <!-- Floating In-Game Overlay Container (visible exclusively when index.html?overlay=1) -->
+    <div id="floatingOverlayHost" hidden class="fixed inset-0 select-none p-5 flex flex-col justify-between overflow-hidden pointer-events-none">
+      <!-- Top control pill (draggable) -->
+      <div class="flex items-center justify-between gap-3 pointer-events-auto">
+        <div data-tauri-drag-region class="flex items-center gap-3 px-4 py-2 rounded-2xl bg-black/85 border border-white/15 backdrop-blur-md cursor-move shadow-2xl">
+          <img src="./favicon.svg" width="22" height="22" alt="MMT" class="h-5 w-5 rounded shadow pointer-events-none" />
+          <div class="pointer-events-none flex items-center gap-2">
+            <span class="font-display font-extrabold text-xs text-white uppercase tracking-wider">MMT Live HUD</span>
+            <span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">ON-TOP</span>
+          </div>
+          <span class="text-white/30 text-xs pointer-events-none">|</span>
+          <span class="text-[11px] font-mono text-r-muted pointer-events-none">Arrastra para mover sobre iRacing</span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1 p-1 rounded-xl bg-black/85 border border-white/15 backdrop-blur-md">
+            <button type="button" id="floatHudPresetAll" class="px-3 py-1 rounded-lg text-[10px] font-mono uppercase font-bold bg-r-accent text-r-ink transition">Completo</button>
+            <button type="button" id="floatHudPresetRadar" class="px-3 py-1 rounded-lg text-[10px] font-mono uppercase font-bold text-r-muted hover:text-white transition">Radar</button>
+            <button type="button" id="floatHudPresetTelemetry" class="px-3 py-1 rounded-lg text-[10px] font-mono uppercase font-bold text-r-muted hover:text-white transition">Telemetría</button>
+          </div>
+          <button type="button" id="btnCloseFloatOverlay" title="Ocultar overlay (puedes reactivarlo desde MMT Sync)" class="px-3 py-1.5 rounded-xl bg-red-950/80 border border-red-500/40 text-red-300 font-mono text-xs font-bold hover:bg-red-900 transition flex items-center gap-1.5 shadow-lg">
+            <span>✕</span>
+            <span>Ocultar</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Top Sequential Shift Lights -->
+      <div id="floatShiftLightsRow" class="flex justify-center pointer-events-none mt-2">
+        <div class="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-black/90 border border-white/20 backdrop-blur-md shadow-2xl" id="ovShiftLightsFloat"></div>
+      </div>
+
+      <!-- Mid Row: Radar (Left), Dash Cluster (Center), Standings (Right) -->
+      <div class="flex items-center justify-between gap-6 pointer-events-none flex-1 my-3">
+        <!-- Relative Radar -->
+        <div id="floatRelativeCard" class="w-72 rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md text-white p-4 text-xs font-mono shadow-2xl pointer-events-auto" id="ovRelativeFloat"></div>
+
+        <!-- Central Digital Dash Cluster -->
+        <div id="floatClusterCard" class="flex flex-col items-center pointer-events-auto">
+          <div id="ovDeltaFloat" class="mb-3 px-5 py-1.5 rounded-full border border-emerald-500/40 bg-emerald-950/90 text-emerald-400 font-mono text-sm font-bold shadow-xl shadow-emerald-950/50">
+            -0.34s · Sector 2
+          </div>
+          <div class="flex items-baseline gap-4 px-8 py-5 rounded-3xl border border-white/20 bg-black/90 backdrop-blur-md shadow-2xl">
+            <div class="flex flex-col items-center">
+              <span class="text-[10px] font-mono text-r-muted uppercase tracking-wider">Marcha</span>
+              <strong id="ovGearFloat" class="font-mono text-7xl font-black text-white leading-none mt-1">4</strong>
+            </div>
+            <div class="h-16 w-px bg-white/20"></div>
+            <div class="flex flex-col">
+              <span class="text-[10px] font-mono text-r-muted uppercase tracking-wider">Velocidad</span>
+              <div class="flex items-baseline gap-1 mt-1">
+                <strong id="ovSpeedFloat" class="font-mono text-5xl font-black text-r-accent leading-none">198</strong>
+                <span class="font-mono text-xs text-r-muted">km/h</span>
+              </div>
+              <span id="ovRpmFloat" class="text-[11px] font-mono text-r-muted mt-1">7,420 RPM</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Standings -->
+        <div id="floatStandingsCard" class="w-64 rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md text-white p-4 text-xs font-mono shadow-2xl pointer-events-auto" id="ovStandingsFloat"></div>
+      </div>
+
+      <!-- Bottom Row: Fuel computer (Left), High-speed inputs canvas (Right) -->
+      <div class="flex items-end justify-between gap-6 pointer-events-none mt-2">
+        <div id="floatFuelCard" class="w-72 rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md text-white p-4 text-xs font-mono shadow-2xl pointer-events-auto" id="ovFuelFloat"></div>
+
+        <div id="floatInputsCard" class="rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md p-3.5 shadow-2xl pointer-events-auto">
+          <canvas id="ovInputsFloat" width="300" height="95" class="rounded-xl"></canvas>
+          <div id="ovTyresFloat" class="mt-2 text-center font-mono text-[11px] text-r-muted"></div>
+        </div>
+      </div>
+    </div>
+
     <script type="module" src="./src/main.ts"></script>
   </body>
 </html>

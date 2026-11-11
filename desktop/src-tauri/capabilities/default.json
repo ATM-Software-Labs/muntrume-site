@@ -21,6 +21,7 @@
     "allow-install-update",
     "allow-inspect-config",
     "allow-check-iracing-status",
+    "allow-toggle-overlay",
     "allow-quit"
   ]
 }

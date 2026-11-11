@@ -227,3 +227,11 @@ body {
     transform: none;
   }
 }
+
+html.overlay-mode,
+html.overlay-mode body {
+  background: transparent !important;
+  background-color: transparent !important;
+  overflow: hidden !important;
+  user-select: none;
+}

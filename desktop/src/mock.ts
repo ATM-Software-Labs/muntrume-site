@@ -271,6 +271,10 @@ export function createMock(screen: string | null): Backend {
     async checkIracing() {
       return "closed";
     },
+    async toggleOverlay(show: boolean) {
+      notices.forEach((cb) => cb(show ? "Overlay flotante abierto en iRacing (modo prueba)" : "Overlay flotante ocultado"));
+      return show;
+    },
     async quit() {
       notices.forEach((cb) => cb("En la aplicación de Windows, Salir cierra la bandeja."));
     },

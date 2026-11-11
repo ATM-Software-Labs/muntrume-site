@@ -1021,19 +1021,21 @@ let isLiveFromSDK = false;
 let demoAnimationTimer: number | null = null;
 let demoTick = 0;
 
-function paintOverlays(): void {
+export function paintOverlays(): void {
   const toggleBtn = document.getElementById("overlayModeToggle");
-  const shiftLights = document.getElementById("ovShiftLights");
-  const canvas = document.getElementById("ovInputs") as HTMLCanvasElement | null;
+  const shiftLightContainers = document.querySelectorAll<HTMLElement>("#ovShiftLights, #ovShiftLightsFloat");
+  const canvases = document.querySelectorAll<HTMLCanvasElement>("#ovInputs, #ovInputsFloat");
 
-  if (shiftLights && shiftLights.children.length === 0) {
-    for (let i = 0; i < 16; i++) {
-      const led = document.createElement("div");
-      led.className = "w-3 h-5 rounded-sm bg-white/10 transition-colors duration-75";
-      led.dataset.led = String(i);
-      shiftLights.append(led);
+  shiftLightContainers.forEach((shiftLights) => {
+    if (shiftLights && shiftLights.children.length === 0) {
+      for (let i = 0; i < 16; i++) {
+        const led = document.createElement("div");
+        led.className = "w-3 h-5 rounded-sm bg-white/10 transition-colors duration-75";
+        led.dataset.led = String(i);
+        shiftLights.append(led);
+      }
     }
-  }
+  });
 
   if (toggleBtn && !overlayInitialized) {
     overlayInitialized = true;
@@ -1048,9 +1050,60 @@ function paintOverlays(): void {
     startDemoOverlayLoop();
   }
 
-  if (canvas) {
+  canvases.forEach((canvas) => {
     drawInputsCanvas(canvas, { t: 0, dist: 0, speed: 0, throttle: 0, brake: 0, gear: 0, steering: 0 });
+  });
+}
+
+export function initFloatingOverlayControls(onClose?: () => void): void {
+  const btnClose = document.getElementById("btnCloseFloatOverlay");
+  if (btnClose && onClose) {
+    btnClose.addEventListener("click", () => onClose());
   }
+
+  const btnAll = document.getElementById("floatHudPresetAll");
+  const btnRadar = document.getElementById("floatHudPresetRadar");
+  const btnTelemetry = document.getElementById("floatHudPresetTelemetry");
+
+  const rowLights = document.getElementById("floatShiftLightsRow");
+  const cardRadar = document.getElementById("floatRelativeCard");
+  const cardCluster = document.getElementById("floatClusterCard");
+  const cardStandings = document.getElementById("floatStandingsCard");
+  const cardFuel = document.getElementById("floatFuelCard");
+  const cardInputs = document.getElementById("floatInputsCard");
+
+  const setPreset = (preset: "all" | "radar" | "telemetry") => {
+    if (btnAll) btnAll.className = preset === "all" ? "px-3 py-1 rounded-lg text-[10px] font-mono uppercase font-bold bg-r-accent text-r-ink transition" : "px-3 py-1 rounded-lg text-[10px] font-mono uppercase font-bold text-r-muted hover:text-white transition";
+    if (btnRadar) btnRadar.className = preset === "radar" ? "px-3 py-1 rounded-lg text-[10px] font-mono uppercase font-bold bg-r-accent text-r-ink transition" : "px-3 py-1 rounded-lg text-[10px] font-mono uppercase font-bold text-r-muted hover:text-white transition";
+    if (btnTelemetry) btnTelemetry.className = preset === "telemetry" ? "px-3 py-1 rounded-lg text-[10px] font-mono uppercase font-bold bg-r-accent text-r-ink transition" : "px-3 py-1 rounded-lg text-[10px] font-mono uppercase font-bold text-r-muted hover:text-white transition";
+
+    if (preset === "all") {
+      if (rowLights) rowLights.hidden = false;
+      if (cardRadar) cardRadar.hidden = false;
+      if (cardCluster) cardCluster.hidden = false;
+      if (cardStandings) cardStandings.hidden = false;
+      if (cardFuel) cardFuel.hidden = false;
+      if (cardInputs) cardInputs.hidden = false;
+    } else if (preset === "radar") {
+      if (rowLights) rowLights.hidden = false;
+      if (cardRadar) cardRadar.hidden = false;
+      if (cardCluster) cardCluster.hidden = false;
+      if (cardStandings) cardStandings.hidden = true;
+      if (cardFuel) cardFuel.hidden = true;
+      if (cardInputs) cardInputs.hidden = true;
+    } else if (preset === "telemetry") {
+      if (rowLights) rowLights.hidden = false;
+      if (cardRadar) cardRadar.hidden = true;
+      if (cardCluster) cardCluster.hidden = false;
+      if (cardStandings) cardStandings.hidden = true;
+      if (cardFuel) cardFuel.hidden = true;
+      if (cardInputs) cardInputs.hidden = false;
+    }
+  };
+
+  btnAll?.addEventListener("click", () => setPreset("all"));
+  btnRadar?.addEventListener("click", () => setPreset("radar"));
+  btnTelemetry?.addEventListener("click", () => setPreset("telemetry"));
 }
 
 function startDemoOverlayLoop(): void {
@@ -1089,9 +1142,17 @@ function updateHUDDisplay(sample: LiveSample): void {
   const gearStr = sample.gear === -1 ? "R" : sample.gear === 0 ? "N" : String(sample.gear);
   const rpmEst = Math.min(8500, Math.round(kmh * 38 + 2000));
 
-  // Shift Lights
-  const shiftLights = document.getElementById("ovShiftLights");
-  if (shiftLights) {
+  // Shift Lights (both preview and in-game floating overlay)
+  const shiftLightContainers = document.querySelectorAll<HTMLElement>("#ovShiftLights, #ovShiftLightsFloat");
+  shiftLightContainers.forEach((shiftLights) => {
+    if (shiftLights.children.length === 0) {
+      for (let i = 0; i < 16; i++) {
+        const led = document.createElement("div");
+        led.className = "w-3 h-5 rounded-sm bg-white/10 transition-colors duration-75";
+        led.dataset.led = String(i);
+        shiftLights.append(led);
+      }
+    }
     const leds = shiftLights.children;
     const rpmNorm = Math.max(0, Math.min(1, (rpmEst - 5000) / 3200));
     const activeCount = Math.floor(rpmNorm * 16);
@@ -1109,89 +1170,86 @@ function updateHUDDisplay(sample: LiveSample): void {
         el.style.boxShadow = "none";
       }
     }
-  }
+  });
 
   // Central Cluster
-  const ovGear = document.getElementById("ovGear");
-  const ovSpeed = document.getElementById("ovSpeed");
-  const ovRpm = document.getElementById("ovRpm");
-  const ovDelta = document.getElementById("ovDelta");
-  if (ovGear) ovGear.textContent = gearStr;
-  if (ovSpeed) ovSpeed.textContent = String(kmh);
-  if (ovRpm) ovRpm.textContent = `${rpmEst.toLocaleString()} RPM`;
-  if (ovDelta) {
-    const deltaVal = Math.sin(sample.t * 0.5) * 0.45;
-    ovDelta.textContent = `${deltaVal >= 0 ? "+" : ""}${deltaVal.toFixed(2)}s · Sector 2`;
+  document.querySelectorAll<HTMLElement>("#ovGear, #ovGearFloat").forEach((el) => { el.textContent = gearStr; });
+  document.querySelectorAll<HTMLElement>("#ovSpeed, #ovSpeedFloat").forEach((el) => { el.textContent = String(kmh); });
+  document.querySelectorAll<HTMLElement>("#ovRpm, #ovRpmFloat").forEach((el) => { el.textContent = `${rpmEst.toLocaleString()} RPM`; });
+
+  const deltaVal = Math.sin(sample.t * 0.5) * 0.45;
+  const deltaText = `${deltaVal >= 0 ? "+" : ""}${deltaVal.toFixed(2)}s · Sector 2`;
+  document.querySelectorAll<HTMLElement>("#ovDelta, #ovDeltaFloat").forEach((ovDelta) => {
+    ovDelta.textContent = deltaText;
     if (deltaVal <= 0) {
       ovDelta.className = "mb-3 px-5 py-1.5 rounded-full border border-emerald-500/40 bg-emerald-950/80 text-emerald-400 font-mono text-sm font-bold shadow-lg shadow-emerald-950/50";
     } else {
       ovDelta.className = "mb-3 px-5 py-1.5 rounded-full border border-rose-500/40 bg-rose-950/80 text-rose-400 font-mono text-sm font-bold shadow-lg shadow-rose-950/50";
     }
-  }
+  });
 
   // Relative Radar (Garage 61 style)
-  const rel = document.getElementById("ovRelative");
-  if (rel) {
-    rel.innerHTML = `
-      <div class="text-[10px] uppercase text-r-muted mb-1.5 font-bold tracking-wider">Radar de Intervalos (Relativo)</div>
-      <div class="space-y-1">
-        <div class="flex items-center justify-between text-r-muted">
-          <span>#911 · Porsche 992</span>
-          <span class="text-amber-400 font-bold">-1.24s</span>
-        </div>
-        <div class="flex items-center justify-between bg-r-accent/20 text-r-accent px-1.5 py-0.5 rounded font-bold">
-          <span>#16 · Tú (Alberto)</span>
-          <span>P3 · PACE</span>
-        </div>
-        <div class="flex items-center justify-between text-r-muted">
-          <span>#23 · Ferrari 296</span>
-          <span class="text-sky-300 font-bold">+0.85s</span>
-        </div>
+  const relHtml = `
+    <div class="text-[10px] uppercase text-r-muted mb-1.5 font-bold tracking-wider">Radar de Intervalos (Relativo)</div>
+    <div class="space-y-1">
+      <div class="flex items-center justify-between text-r-muted">
+        <span>#911 · Porsche 992</span>
+        <span class="text-amber-400 font-bold">-1.24s</span>
       </div>
-    `;
-  }
+      <div class="flex items-center justify-between bg-r-accent/20 text-r-accent px-1.5 py-0.5 rounded font-bold">
+        <span>#16 · Tú (Alberto)</span>
+        <span>P3 · PACE</span>
+      </div>
+      <div class="flex items-center justify-between text-r-muted">
+        <span>#23 · Ferrari 296</span>
+        <span class="text-sky-300 font-bold">+0.85s</span>
+      </div>
+    </div>
+  `;
+  document.querySelectorAll<HTMLElement>("#ovRelative, #ovRelativeFloat").forEach((rel) => {
+    rel.innerHTML = relHtml;
+  });
 
   // Standings
-  const standings = document.getElementById("ovStandings");
-  if (standings) {
-    standings.innerHTML = `
-      <div class="text-[10px] uppercase text-r-muted mb-1.5 font-bold tracking-wider">Clasificación GT3</div>
-      <div class="space-y-1 text-xs">
-        <div class="flex justify-between"><span>P1 · Coche 8</span><span class="text-r-muted">LIDER</span></div>
-        <div class="flex justify-between"><span>P2 · Coche 911</span><span class="text-r-muted">+3.2s</span></div>
-        <div class="flex justify-between font-bold text-r-accent"><span>P3 · Tú (#16)</span><span>+4.4s</span></div>
-        <div class="flex justify-between"><span>P4 · Coche 23</span><span class="text-r-muted">+5.2s</span></div>
-      </div>
-    `;
-  }
+  const standingsHtml = `
+    <div class="text-[10px] uppercase text-r-muted mb-1.5 font-bold tracking-wider">Clasificación GT3</div>
+    <div class="space-y-1 text-xs">
+      <div class="flex justify-between"><span>P1 · Coche 8</span><span class="text-r-muted">LIDER</span></div>
+      <div class="flex justify-between"><span>P2 · Coche 911</span><span class="text-r-muted">+3.2s</span></div>
+      <div class="flex justify-between font-bold text-r-accent"><span>P3 · Tú (#16)</span><span>+4.4s</span></div>
+      <div class="flex justify-between"><span>P4 · Coche 23</span><span class="text-r-muted">+5.2s</span></div>
+    </div>
+  `;
+  document.querySelectorAll<HTMLElement>("#ovStandings, #ovStandingsFloat").forEach((standings) => {
+    standings.innerHTML = standingsHtml;
+  });
 
   // Live Fuel Computer
-  const fuel = document.getElementById("ovFuel");
-  if (fuel) {
-    const fuelRemainingL = 48.5;
-    const lapsLeft = (fuelRemainingL / 3.15).toFixed(1);
-    fuel.innerHTML = `
-      <div class="text-[10px] uppercase text-r-muted mb-1.5 font-bold tracking-wider">Ordenador de Carrera & Consumo</div>
-      <div class="grid grid-cols-2 gap-2 text-xs">
-        <div><span class="text-r-muted block text-[10px]">COMBUSTIBLE</span><strong class="text-white text-base">${fuelRemainingL} L</strong></div>
-        <div><span class="text-r-muted block text-[10px]">VUELTAS RESTANTES</span><strong class="text-r-accent text-base">${lapsLeft}</strong></div>
-        <div><span class="text-r-muted block text-[10px]">BURN RATE</span><strong class="text-white">3.15 L/v</strong></div>
-        <div><span class="text-r-muted block text-[10px]">PARA META</span><strong class="text-amber-400">+12.5 L</strong></div>
-      </div>
-    `;
-  }
+  const fuelRemainingL = 48.5;
+  const lapsLeft = (fuelRemainingL / 3.15).toFixed(1);
+  const fuelHtml = `
+    <div class="text-[10px] uppercase text-r-muted mb-1.5 font-bold tracking-wider">Ordenador de Carrera & Consumo</div>
+    <div class="grid grid-cols-2 gap-2 text-xs">
+      <div><span class="text-r-muted block text-[10px]">COMBUSTIBLE</span><strong class="text-white text-base">${fuelRemainingL} L</strong></div>
+      <div><span class="text-r-muted block text-[10px]">VUELTAS RESTANTES</span><strong class="text-r-accent text-base">${lapsLeft}</strong></div>
+      <div><span class="text-r-muted block text-[10px]">BURN RATE</span><strong class="text-white">3.15 L/v</strong></div>
+      <div><span class="text-r-muted block text-[10px]">PARA META</span><strong class="text-amber-400">+12.5 L</strong></div>
+    </div>
+  `;
+  document.querySelectorAll<HTMLElement>("#ovFuel, #ovFuelFloat").forEach((fuel) => {
+    fuel.innerHTML = fuelHtml;
+  });
 
   // Inputs Canvas
-  const canvas = document.getElementById("ovInputs") as HTMLCanvasElement | null;
-  if (canvas) {
+  document.querySelectorAll<HTMLCanvasElement>("#ovInputs, #ovInputsFloat").forEach((canvas) => {
     drawInputsCanvas(canvas, sample);
-  }
+  });
 
-  const tyres = document.getElementById("ovTyres");
-  if (tyres) {
-    const steerDeg = (sample.steering * 57.2958).toFixed(1);
-    tyres.textContent = `Volante: ${steerDeg}° · Gas: ${Math.round(sample.throttle * 100)}% · Freno: ${Math.round(sample.brake * 100)}%`;
-  }
+  const steerDeg = (sample.steering * 57.2958).toFixed(1);
+  const tyresText = `Volante: ${steerDeg}° · Gas: ${Math.round(sample.throttle * 100)}% · Freno: ${Math.round(sample.brake * 100)}%`;
+  document.querySelectorAll<HTMLElement>("#ovTyres, #ovTyresFloat").forEach((tyres) => {
+    tyres.textContent = tyresText;
+  });
 }
 
 function drawInputsCanvas(canvas: HTMLCanvasElement, sample: LiveSample): void {
