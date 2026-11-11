@@ -355,6 +355,10 @@ function generateModernStoNotes(setupOrFilename, carSlug = "") {
     session = setupOrFilename.setup_type || session;
   }
 
+  if (/gng|grid-and-go|zek/i.test(fn) || (typeof setupOrFilename === "object" && /gng|grid-and-go|zek/i.test(JSON.stringify(setupOrFilename)))) {
+    return "Grid and Go | https://grid-and-go.com";
+  }
+
   const isEsport = /_E\.sto$/i.test(fn) || /_E_/i.test(fn);
   const isSafe = /_S\.sto$/i.test(fn) || /_SAFE/i.test(fn);
   const tierNote = isEsport
