@@ -1122,72 +1122,80 @@ function paintGroupedByCar(items: LibraryItem[]): void {
     header.append(left, right);
     section.append(header);
 
-    // CAR BODY: Contains Circuit Sub-Blocks!
+    // CAR BODY: Contains Circuit Sub-Blocks (Lazy Rendered)
     const body = document.createElement("div");
     body.className = "divide-y divide-r-line/40 bg-r-surface/40";
     body.hidden = isCollapsed;
 
+    const renderCarCircuits = () => {
+      if (body.children.length > 0) return;
+      for (const track of sortedCircuits) {
+        const circuitRows = circuitGroups.get(track) ?? [];
+        const trackBlock = document.createElement("div");
+        trackBlock.className = "p-4 space-y-2.5";
+
+        // Circuit Sub-Header
+        const trackHeader = document.createElement("div");
+        trackHeader.className = "flex items-center justify-between gap-2 px-1";
+
+        const trackLeft = document.createElement("div");
+        trackLeft.className = "flex items-center gap-2";
+
+        const trackPin = document.createElement("span");
+        trackPin.className = "flex items-center text-r-accent";
+        trackPin.innerHTML = mapPinSvg;
+
+        const trackTitle = document.createElement("h3");
+        trackTitle.className = "font-bold text-sm text-r-text";
+        trackTitle.textContent = track;
+
+        trackLeft.append(trackPin, trackTitle);
+
+        const weekInfo = getTrackWeekInfo(track, undefined, circuitRows[0]?.carFolder);
+        if (weekInfo.week) {
+          const weekBadge = document.createElement("span");
+          weekBadge.className = weekInfo.isCurrent
+            ? "px-2 py-0.5 rounded-full bg-r-accent text-r-ink font-bold text-[10px] uppercase tracking-wider shadow-sm"
+            : "px-2 py-0.5 rounded-full border border-r-line bg-r-bg text-r-muted text-[10px] font-mono";
+          weekBadge.textContent = weekInfo.isCurrent
+            ? `Semana ${weekInfo.week} · ACTUAL (${weekInfo.seriesContext})`
+            : `Semana ${weekInfo.week}`;
+          trackLeft.append(weekBadge);
+        }
+
+        const trackRight = document.createElement("span");
+        trackRight.className = "text-xs font-mono text-r-muted";
+        trackRight.textContent = `${circuitRows.length} ${circuitRows.length === 1 ? "setup" : "setups"}`;
+
+        trackHeader.append(trackLeft, trackRight);
+        trackBlock.append(trackHeader);
+
+        // Setup Cards Grid inside Circuit!
+        const grid = document.createElement("div");
+        grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5";
+
+        for (const row of circuitRows) {
+          grid.append(setupCardView(row, false));
+        }
+        trackBlock.append(grid);
+        body.append(trackBlock);
+      }
+    };
+
+    if (!isCollapsed) {
+      renderCarCircuits();
+    }
+
     header.addEventListener("click", () => {
       body.hidden = !body.hidden;
       chevron.textContent = body.hidden ? "▶" : "▼";
-      if (body.hidden) {
-        collapsedState.add(`car:${car}`);
-      } else {
+      if (!body.hidden) {
+        renderCarCircuits();
         collapsedState.delete(`car:${car}`);
+      } else {
+        collapsedState.add(`car:${car}`);
       }
     });
-
-    for (const track of sortedCircuits) {
-      const circuitRows = circuitGroups.get(track) ?? [];
-      const trackBlock = document.createElement("div");
-      trackBlock.className = "p-4 space-y-2.5";
-
-      // Circuit Sub-Header
-      const trackHeader = document.createElement("div");
-      trackHeader.className = "flex items-center justify-between gap-2 px-1";
-
-      const trackLeft = document.createElement("div");
-      trackLeft.className = "flex items-center gap-2";
-
-      const trackPin = document.createElement("span");
-      trackPin.className = "flex items-center text-r-accent";
-      trackPin.innerHTML = mapPinSvg;
-
-      const trackTitle = document.createElement("h3");
-      trackTitle.className = "font-bold text-sm text-r-text";
-      trackTitle.textContent = track;
-
-      trackLeft.append(trackPin, trackTitle);
-
-      const weekInfo = getTrackWeekInfo(track, undefined, circuitRows[0]?.carFolder);
-      if (weekInfo.week) {
-        const weekBadge = document.createElement("span");
-        weekBadge.className = weekInfo.isCurrent
-          ? "px-2 py-0.5 rounded-full bg-r-accent text-r-ink font-bold text-[10px] uppercase tracking-wider shadow-sm"
-          : "px-2 py-0.5 rounded-full border border-r-line bg-r-bg text-r-muted text-[10px] font-mono";
-        weekBadge.textContent = weekInfo.isCurrent
-          ? `Semana ${weekInfo.week} · ACTUAL (${weekInfo.seriesContext})`
-          : `Semana ${weekInfo.week}`;
-        trackLeft.append(weekBadge);
-      }
-
-      const trackRight = document.createElement("span");
-      trackRight.className = "text-xs font-mono text-r-muted";
-      trackRight.textContent = `${circuitRows.length} ${circuitRows.length === 1 ? "setup" : "setups"}`;
-
-      trackHeader.append(trackLeft, trackRight);
-      trackBlock.append(trackHeader);
-
-      // Setup Cards Grid inside Circuit!
-      const grid = document.createElement("div");
-      grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5";
-
-      for (const row of circuitRows) {
-        grid.append(setupCardView(row, false));
-      }
-      trackBlock.append(grid);
-      body.append(trackBlock);
-    }
 
     section.append(body);
     libraryEl.append(section);
@@ -1277,53 +1285,61 @@ function paintGroupedByTrack(items: LibraryItem[]): void {
     body.className = "divide-y divide-r-line/40 bg-r-surface/40";
     body.hidden = isCollapsed;
 
+    const renderTrackCars = () => {
+      if (body.children.length > 0) return;
+      for (const car of sortedCars) {
+        const carRows = carGroups.get(car) ?? [];
+        const carBlock = document.createElement("div");
+        carBlock.className = "p-4 space-y-2.5";
+
+        const carHeader = document.createElement("div");
+        carHeader.className = "flex items-center justify-between gap-2 px-1";
+
+        const carLeft = document.createElement("div");
+        carLeft.className = "flex items-center gap-2";
+
+        const carTag = document.createElement("span");
+        carTag.className = "px-1.5 py-0.2 rounded bg-r-bg border border-r-line font-mono text-[9px] uppercase text-r-muted font-bold";
+        carTag.textContent = "Coche";
+
+        const carTitle = document.createElement("h3");
+        carTitle.className = "font-bold text-sm text-r-text";
+        carTitle.textContent = formatCarName(car);
+
+        carLeft.append(carTag, carTitle);
+
+        const carRight = document.createElement("span");
+        carRight.className = "text-xs font-mono text-r-muted";
+        carRight.textContent = `${carRows.length} ${carRows.length === 1 ? "setup" : "setups"}`;
+
+        carHeader.append(carLeft, carRight);
+        carBlock.append(carHeader);
+
+        const grid = document.createElement("div");
+        grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5";
+
+        for (const row of carRows) {
+          grid.append(setupCardView(row, false));
+        }
+        carBlock.append(grid);
+        body.append(carBlock);
+      }
+    };
+
+    if (!isCollapsed) {
+      renderTrackCars();
+    }
+
     header.addEventListener("click", () => {
       body.hidden = !body.hidden;
       chevron.textContent = body.hidden ? "▶" : "▼";
-      if (body.hidden) {
-        collapsedState.add(`track:${track}`);
-      } else {
+      if (!body.hidden) {
+        renderTrackCars();
         collapsedState.delete(`track:${track}`);
+      } else {
+        collapsedState.add(`track:${track}`);
       }
     });
-
-    for (const car of sortedCars) {
-      const carRows = carGroups.get(car) ?? [];
-      const carBlock = document.createElement("div");
-      carBlock.className = "p-4 space-y-2.5";
-
-      const carHeader = document.createElement("div");
-      carHeader.className = "flex items-center justify-between gap-2 px-1";
-
-      const carLeft = document.createElement("div");
-      carLeft.className = "flex items-center gap-2";
-
-      const carTag = document.createElement("span");
-      carTag.className = "px-1.5 py-0.2 rounded bg-r-bg border border-r-line font-mono text-[9px] uppercase text-r-muted font-bold";
-      carTag.textContent = "Coche";
-
-      const carTitle = document.createElement("h3");
-      carTitle.className = "font-bold text-sm text-r-text";
-      carTitle.textContent = formatCarName(car);
-
-      carLeft.append(carTag, carTitle);
-
-      const carRight = document.createElement("span");
-      carRight.className = "text-xs font-mono text-r-muted";
-      carRight.textContent = `${carRows.length} ${carRows.length === 1 ? "setup" : "setups"}`;
-
-      carHeader.append(carLeft, carRight);
-      carBlock.append(carHeader);
-
-      const grid = document.createElement("div");
-      grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5";
-
-      for (const row of carRows) {
-        grid.append(setupCardView(row, false));
-      }
-      carBlock.append(grid);
-      body.append(carBlock);
-    }
 
     section.append(body);
     libraryEl.append(section);
@@ -1423,53 +1439,61 @@ function paintGroupedByWeek(items: LibraryItem[]): void {
     body.className = "divide-y divide-r-line/40 bg-r-surface/40";
     body.hidden = isCollapsed;
 
+    const renderWeekTracks = () => {
+      if (body.children.length > 0) return;
+      for (const track of sortedTracks) {
+        const trackRows = trackGroups.get(track) ?? [];
+        const trackBlock = document.createElement("div");
+        trackBlock.className = "p-4 space-y-2.5";
+
+        const trackHeader = document.createElement("div");
+        trackHeader.className = "flex items-center justify-between gap-2 px-1";
+
+        const trackLeft = document.createElement("div");
+        trackLeft.className = "flex items-center gap-2";
+
+        const trackPin = document.createElement("span");
+        trackPin.className = "flex items-center text-r-accent";
+        trackPin.innerHTML = mapPinSvg;
+
+        const trackTitle = document.createElement("h3");
+        trackTitle.className = "font-bold text-sm text-r-text";
+        trackTitle.textContent = track;
+
+        trackLeft.append(trackPin, trackTitle);
+
+        const trackRight = document.createElement("span");
+        trackRight.className = "text-xs font-mono text-r-muted";
+        trackRight.textContent = `${trackRows.length} ${trackRows.length === 1 ? "setup" : "setups"}`;
+
+        trackHeader.append(trackLeft, trackRight);
+        trackBlock.append(trackHeader);
+
+        const grid = document.createElement("div");
+        grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5";
+
+        for (const row of trackRows) {
+          grid.append(setupCardView(row, true));
+        }
+        trackBlock.append(grid);
+        body.append(trackBlock);
+      }
+    };
+
+    if (!isCollapsed) {
+      renderWeekTracks();
+    }
+
     header.addEventListener("click", () => {
       body.hidden = !body.hidden;
       chevron.textContent = body.hidden ? "▶" : "▼";
-      if (body.hidden) {
-        collapsedState.add(`week:${key}`);
-      } else {
+      if (!body.hidden) {
+        renderWeekTracks();
         collapsedState.delete(`week:${key}`);
+      } else {
+        collapsedState.add(`week:${key}`);
       }
     });
-
-    for (const track of sortedTracks) {
-      const trackRows = trackGroups.get(track) ?? [];
-      const trackBlock = document.createElement("div");
-      trackBlock.className = "p-4 space-y-2.5";
-
-      const trackHeader = document.createElement("div");
-      trackHeader.className = "flex items-center justify-between gap-2 px-1";
-
-      const trackLeft = document.createElement("div");
-      trackLeft.className = "flex items-center gap-2";
-
-      const trackPin = document.createElement("span");
-      trackPin.className = "flex items-center text-r-accent";
-      trackPin.innerHTML = mapPinSvg;
-
-      const trackTitle = document.createElement("h3");
-      trackTitle.className = "font-bold text-sm text-r-text";
-      trackTitle.textContent = track;
-
-      trackLeft.append(trackPin, trackTitle);
-
-      const trackRight = document.createElement("span");
-      trackRight.className = "text-xs font-mono text-r-muted";
-      trackRight.textContent = `${trackRows.length} ${trackRows.length === 1 ? "setup" : "setups"}`;
-
-      trackHeader.append(trackLeft, trackRight);
-      trackBlock.append(trackHeader);
-
-      const grid = document.createElement("div");
-      grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5";
-
-      for (const row of trackRows) {
-        grid.append(setupCardView(row, true));
-      }
-      trackBlock.append(grid);
-      body.append(trackBlock);
-    }
 
     section.append(body);
     libraryEl.append(section);
