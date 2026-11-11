@@ -1384,6 +1384,9 @@ function showView(next: typeof view): void {
     const node = document.getElementById(id);
     if (node) node.hidden = next !== name;
   }
+  if (next === "analysis" || next === "overlays" || next === "strategy" || next === "week") {
+    if (snapshot) paintExtras(snapshot);
+  }
   if (next === "config") {
     void loadConfigAnalysis();
   }

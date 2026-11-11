@@ -248,21 +248,130 @@
             <div id="weekList" class="mt-6 grid gap-4"></div>
           </section>
 
-          <section id="viewAnalysis" hidden aria-labelledby="analysisTitle">
-            <p class="mmt-kicker">Telemetría local</p>
-            <h1 id="analysisTitle" class="mmt-display text-4xl mt-3">Análisis</h1>
-            <p class="mt-3 text-sm text-r-muted max-w-prose">Se leen archivos .ibt de tu carpeta de iRacing. La gráfica de abajo es una traza sintética para enseñar la vista, no una vuelta real.</p>
-            <div class="mt-4 flex flex-wrap gap-2">
-              <label class="text-sm">Vuelta A
-                <select id="lapA" class="ml-2 h-10 rounded-lg border border-r-line bg-r-surface px-2"></select>
-              </label>
-              <label class="text-sm">Vuelta B
-                <select id="lapB" class="ml-2 h-10 rounded-lg border border-r-line bg-r-surface px-2"></select>
-              </label>
+          <section id="viewAnalysis" hidden aria-labelledby="analysisTitle" class="max-w-7xl">
+            <div class="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p class="mmt-kicker">Coaching y Telemetría TrackTitan / VRS</p>
+                <h1 id="analysisTitle" class="mmt-display text-4xl mt-1">Análisis de Telemetría</h1>
+                <p class="mt-2 text-sm text-r-muted max-w-2xl">
+                  Comparador de curvas de telemetría y desglose curva a curva con recomendaciones del coach. Inspección de velocidad mínima de vértice, puntos de frenada y modulación de trail-braking.
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-3">
+                <div>
+                  <label class="block text-xs font-mono text-r-muted uppercase mb-1">Circuito</label>
+                  <select id="telemetryTrack" class="h-10 rounded-xl border border-r-line bg-r-surface px-3 text-sm font-sans text-r-text">
+                    <option value="spa">Spa-Francorchamps (GP)</option>
+                    <option value="monza">Autodromo Nazionale Monza</option>
+                    <option value="nurburgring">Nürburgring GP</option>
+                    <option value="silverstone">Silverstone Circuit</option>
+                    <option value="suzuka">Suzuka International</option>
+                    <option value="sebring">Sebring International</option>
+                    <option value="redbullring">Red Bull Ring Spielberg</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-mono text-r-muted uppercase mb-1">Coche</label>
+                  <select id="telemetryCar" class="h-10 rounded-xl border border-r-line bg-r-surface px-3 text-sm font-sans text-r-text">
+                    <option value="porsche992gt3r">Porsche 911 GT3.R (992)</option>
+                    <option value="ferrari296gt3">Ferrari 296 GT3</option>
+                    <option value="bmwm4gt3">BMW M4 GT3</option>
+                    <option value="amggt3">Mercedes-AMG GT3 Evo</option>
+                  </select>
+                </div>
+              </div>
             </div>
-            <div class="mt-4 grid lg:grid-cols-[280px_1fr] gap-4">
-              <canvas id="mapCanvas" width="280" height="280" class="w-full rounded-2xl border border-r-line bg-r-surface"></canvas>
-              <canvas id="traceCanvas" width="720" height="280" class="w-full rounded-2xl border border-r-line bg-r-surface"></canvas>
+
+            <!-- Lap delta summary header banner -->
+            <div id="lapSummaryBanner" class="mt-5 rounded-2xl border border-r-line bg-r-surface p-4 flex flex-wrap items-center justify-between gap-4">
+              <div class="flex flex-wrap items-center gap-6">
+                <div>
+                  <span class="block text-[11px] font-mono uppercase text-r-muted">Referencia (Alien Coach)</span>
+                  <div class="flex items-baseline gap-2 mt-0.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-r-accent inline-block"></span>
+                    <strong id="lapAlienTime" class="font-mono text-xl text-r-accent">2:15.184</strong>
+                    <span class="text-xs text-r-muted font-mono">100% óptimo</span>
+                  </div>
+                </div>
+                <div class="h-8 w-px bg-r-line hidden sm:block"></div>
+                <div>
+                  <span class="block text-[11px] font-mono uppercase text-r-muted">Tu Vuelta</span>
+                  <div class="flex items-baseline gap-2 mt-0.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-sky-400 inline-block"></span>
+                    <strong id="lapUserTime" class="font-mono text-xl text-r-text">2:16.420</strong>
+                    <span class="text-xs text-r-muted font-mono">Personal Best</span>
+                  </div>
+                </div>
+                <div class="h-8 w-px bg-r-line hidden sm:block"></div>
+                <div>
+                  <span class="block text-[11px] font-mono uppercase text-r-muted">Delta Tiempo</span>
+                  <div class="flex items-baseline gap-2 mt-0.5">
+                    <strong id="lapDeltaSummary" class="font-mono text-xl text-amber-400">+1.236s</strong>
+                    <span class="text-xs text-r-muted font-mono">Margen de mejora: ~0.9s</span>
+                  </div>
+                </div>
+              </div>
+              <div id="telemetryCursorReadout" class="font-mono text-xs text-r-muted flex flex-wrap items-center gap-4 bg-r-bg px-3.5 py-2 rounded-xl border border-r-line">
+                <span>Dist: <strong id="curDist" class="text-r-text">0 m</strong></span>
+                <span>Δ Vel: <strong id="curSpeed" class="text-r-accent">0 km/h</strong></span>
+                <span>Δ Tiempo: <strong id="curDelta" class="text-amber-400">+0.00s</strong></span>
+                <span id="curCorner" class="text-r-text font-bold">Recta principal</span>
+              </div>
+            </div>
+
+            <!-- Studio Canvas Grid: Circuit map (left) & Synchronized traces (right) -->
+            <div class="mt-4 grid lg:grid-cols-[320px_1fr] gap-4">
+              <!-- Map & corner selector -->
+              <div class="rounded-2xl border border-r-line bg-r-surface p-4 flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                  <h3 class="font-display uppercase tracking-wider text-sm text-r-text">Mapa del Circuito</h3>
+                  <span class="text-[11px] font-mono text-r-muted" id="trackLengthBadge">7.004 km · 19 giros</span>
+                </div>
+                <div class="relative my-3 flex items-center justify-center">
+                  <canvas id="mapCanvas" width="300" height="300" class="w-full max-w-[300px] h-auto aspect-square rounded-xl bg-r-bg/40"></canvas>
+                </div>
+                <div class="text-[11px] font-mono text-r-muted flex items-center justify-between border-t border-r-line pt-2.5">
+                  <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-r-accent"></span> S1 / S2 / S3</span>
+                  <span>Clic en un giro para enfocar</span>
+                </div>
+              </div>
+
+              <!-- Telemetry Multi-channel traces -->
+              <div class="rounded-2xl border border-r-line bg-r-surface p-4 flex flex-col">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-2 pb-2 border-b border-r-line">
+                  <div class="flex flex-wrap items-center gap-4 text-xs font-mono">
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-r-accent"></span> Coach Alien</span>
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-sky-400"></span> Tu Telemetría</span>
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-2 bg-emerald-500/30 rounded-xs"></span> Acelerador</span>
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-2 bg-rose-500/40 rounded-xs"></span> Freno (Trail)</span>
+                  </div>
+                  <div class="text-[11px] font-mono text-r-muted">Pasa el ratón para inspeccionar cada metro</div>
+                </div>
+                <div class="relative w-full overflow-hidden">
+                  <canvas id="traceCanvas" width="900" height="340" class="w-full h-[340px] rounded-xl bg-r-bg/60 cursor-crosshair"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- Legacy select hooks hidden for backward compatibility -->
+            <div hidden>
+              <select id="lapA"></select>
+              <select id="lapB"></select>
+            </div>
+
+            <!-- Corner by corner coaching table / cards (TrackTitan style) -->
+            <div class="mt-8">
+              <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                <div>
+                  <h2 class="mmt-display text-2xl">Coaching Curva a Curva (TrackTitan Insights)</h2>
+                  <p class="text-sm text-r-muted mt-0.5">Diagnóstico preciso de frenada, velocidad de ápice y compromiso de aceleración.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" id="coachFilterAll" class="px-3 py-1.5 rounded-xl border border-r-accent bg-r-accent/10 text-r-accent font-mono text-xs font-bold">Todos los giros</button>
+                  <button type="button" id="coachFilterLoss" class="px-3 py-1.5 rounded-xl border border-r-line bg-r-surface text-r-muted hover:text-r-text font-mono text-xs">Pérdidas > 0.1s</button>
+                </div>
+              </div>
+              <div id="cornerCoachingList" class="grid md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
             </div>
           </section>
 
@@ -274,36 +383,133 @@
             <p id="refResult" class="mt-3 font-mono text-xs text-r-muted"></p>
           </section>
 
-          <section id="viewStrategy" hidden aria-labelledby="strategyTitle" class="max-w-2xl">
-            <p class="mmt-kicker">Resistencia</p>
-            <h1 id="strategyTitle" class="mmt-display text-4xl mt-3">Estrategia</h1>
-            <p class="mt-3 text-sm text-r-muted">Los números los escribes tú. MMT Sync no inventa el consumo de la carrera.</p>
-            <form id="fuelForm" class="mt-4 grid sm:grid-cols-2 gap-3">
-              <label class="text-sm grid gap-1">Minutos de carrera<input id="raceMin" type="number" min="1" step="1" value="60" class="h-11 rounded-xl border border-r-line bg-r-surface px-3" /></label>
-              <label class="text-sm grid gap-1">Segundos por vuelta<input id="lapSec" type="number" min="1" step="0.1" value="120" class="h-11 rounded-xl border border-r-line bg-r-surface px-3" /></label>
-              <label class="text-sm grid gap-1">Litros por vuelta<input id="fuelLap" type="number" min="0.1" step="0.1" value="2" class="h-11 rounded-xl border border-r-line bg-r-surface px-3" /></label>
-              <label class="text-sm grid gap-1">Depósito (L)<input id="tank" type="number" min="1" step="0.1" value="40" class="h-11 rounded-xl border border-r-line bg-r-surface px-3" /></label>
-              <label class="text-sm grid gap-1">Combustible ahora (L)<input id="fuelNow" type="number" min="0" step="0.1" value="40" class="h-11 rounded-xl border border-r-line bg-r-surface px-3" /></label>
-              <label class="text-sm grid gap-1">Pérdida en box (s)<input id="pitLoss" type="number" min="0" step="1" value="25" class="h-11 rounded-xl border border-r-line bg-r-surface px-3" /></label>
-              <button type="submit" class="mmt-btn h-11 px-4 rounded-xl bg-r-accent text-r-ink font-display uppercase tracking-wider text-sm">Calcular</button>
+          <section id="viewStrategy" hidden aria-labelledby="strategyTitle" class="max-w-4xl">
+            <div class="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p class="mmt-kicker">Planificación de Carrera</p>
+                <h1 id="strategyTitle" class="mmt-display text-4xl mt-1">Estrategia y Combustible (Coach Dave / GnG)</h1>
+                <p class="mt-2 text-sm text-r-muted max-w-2xl">
+                  Calculador inteligente de stints, paradas en boxes, consumo por vuelta y ventanas óptimas de pit stop para iRacing.
+                </p>
+              </div>
+            </div>
+
+            <!-- Presets Bar -->
+            <div class="mt-6 flex flex-wrap items-center gap-2" id="stratPresetsBar">
+              <span class="text-xs font-mono uppercase text-r-muted mr-1">Presets Rápidos:</span>
+              <button type="button" class="strat-preset px-3 py-1.5 rounded-xl border border-r-line bg-r-surface text-r-muted hover:text-r-text font-mono text-xs" data-preset="sprint20">Sprint 20m</button>
+              <button type="button" class="strat-preset px-3 py-1.5 rounded-xl border border-r-accent bg-r-accent/15 text-r-accent font-mono text-xs font-bold" data-preset="feature40">Feature 40m</button>
+              <button type="button" class="strat-preset px-3 py-1.5 rounded-xl border border-r-line bg-r-surface text-r-muted hover:text-r-text font-mono text-xs" data-preset="imsa45">IMSA 45m</button>
+              <button type="button" class="strat-preset px-3 py-1.5 rounded-xl border border-r-line bg-r-surface text-r-muted hover:text-r-text font-mono text-xs" data-preset="vrs144">VRS Special 2.4h</button>
+              <button type="button" class="strat-preset px-3 py-1.5 rounded-xl border border-r-line bg-r-surface text-r-muted hover:text-r-text font-mono text-xs" data-preset="endur360">Endurance 6h</button>
+              <button type="button" class="strat-preset px-3 py-1.5 rounded-xl border border-r-line bg-r-surface text-r-muted hover:text-r-text font-mono text-xs" data-preset="daytona24">24 Horas</button>
+            </div>
+
+            <form id="fuelForm" class="mt-4 grid sm:grid-cols-3 gap-3.5 bg-r-surface p-4 rounded-2xl border border-r-line">
+              <label class="text-xs font-mono text-r-muted uppercase grid gap-1.5">
+                Minutos de Carrera
+                <input id="raceMin" type="number" min="1" step="1" value="40" class="h-11 rounded-xl border border-r-line bg-r-bg px-3 font-mono text-sm text-r-text" />
+              </label>
+              <label class="text-xs font-mono text-r-muted uppercase grid gap-1.5">
+                Segundos por Vuelta
+                <input id="lapSec" type="number" min="1" step="0.1" value="135.2" class="h-11 rounded-xl border border-r-line bg-r-bg px-3 font-mono text-sm text-r-text" />
+              </label>
+              <label class="text-xs font-mono text-r-muted uppercase grid gap-1.5">
+                Litros por Vuelta (Burn Rate)
+                <input id="fuelLap" type="number" min="0.1" step="0.05" value="3.15" class="h-11 rounded-xl border border-r-line bg-r-bg px-3 font-mono text-sm text-r-text" />
+              </label>
+              <label class="text-xs font-mono text-r-muted uppercase grid gap-1.5">
+                Capacidad Depósito (L)
+                <input id="tank" type="number" min="1" step="1" value="110" class="h-11 rounded-xl border border-r-line bg-r-bg px-3 font-mono text-sm text-r-text" />
+              </label>
+              <label class="text-xs font-mono text-r-muted uppercase grid gap-1.5">
+                Combustible de Salida (L)
+                <input id="fuelNow" type="number" min="0" step="1" value="65" class="h-11 rounded-xl border border-r-line bg-r-bg px-3 font-mono text-sm text-r-text" />
+              </label>
+              <label class="text-xs font-mono text-r-muted uppercase grid gap-1.5">
+                Pérdida en Pit Lane (s)
+                <input id="pitLoss" type="number" min="0" step="1" value="32" class="h-11 rounded-xl border border-r-line bg-r-bg px-3 font-mono text-sm text-r-text" />
+              </label>
+              <div class="sm:col-span-3 flex justify-end pt-1">
+                <button type="submit" class="mmt-btn h-11 px-6 rounded-xl bg-r-accent text-r-ink font-display uppercase tracking-wider text-sm font-bold">Recalcular Estrategia</button>
+              </div>
             </form>
-            <p id="fuelOut" class="mt-4 text-sm leading-relaxed"></p>
-            <h2 class="mmt-display text-2xl mt-8">Lista previa</h2>
+
+            <!-- Strategic Output Cards Grid -->
+            <div id="stratMetricsGrid" class="mt-5 grid sm:grid-cols-2 lg:grid-cols-4 gap-3.5"></div>
+
+            <!-- Stint Timeline Visual -->
+            <div id="stratTimelineCard" class="mt-4 rounded-2xl border border-r-line bg-r-surface p-4">
+              <h3 class="font-display uppercase tracking-wider text-sm text-r-text mb-3">Secuencia de Carrera y Ventana de Box</h3>
+              <div id="stintVisualTimeline" class="space-y-2"></div>
+            </div>
+
+            <p id="fuelOut" class="mt-4 text-xs font-mono text-r-muted leading-relaxed bg-r-bg/50 p-3 rounded-xl border border-r-line/60"></p>
+
+            <h2 class="mmt-display text-2xl mt-8">Lista Previa a la Carrera</h2>
             <ul id="checklist" class="mt-3 grid gap-2"></ul>
           </section>
 
-          <section id="viewOverlays" hidden aria-labelledby="overlayTitle">
-            <p class="mmt-kicker">En pista</p>
-            <h1 id="overlayTitle" class="mmt-display text-4xl mt-3">Overlays</h1>
-            <p class="mt-3 text-sm text-r-muted max-w-prose">En Windows se leen de la memoria compartida del SDK, solo lectura. Aquí ves el mismo panel sobre un fondo de muestra, con datos sintéticos.</p>
-            <div id="overlayStage" class="relative mt-4 h-[520px] rounded-2xl overflow-hidden border border-r-line">
-              <div class="absolute inset-0" style="background: radial-gradient(circle at 50% 60%, #1c3a32 0%, #0a0d0c 62%);"></div>
-              <div class="absolute left-4 top-4 w-52 rounded-xl border border-white/20 bg-black/55 text-white p-3 text-xs font-mono whitespace-pre-line" id="ovRelative"></div>
-              <div class="absolute right-4 top-4 w-44 rounded-xl border border-white/20 bg-black/55 text-white p-3 text-xs font-mono whitespace-pre-line" id="ovStandings"></div>
-              <div class="absolute left-1/2 top-4 -translate-x-1/2 rounded-xl border border-white/20 bg-black/55 text-white px-4 py-2 font-mono text-sm" id="ovDelta"></div>
-              <div class="absolute left-4 bottom-4 w-56 rounded-xl border border-white/20 bg-black/55 text-white p-3 text-xs whitespace-pre-line" id="ovFuel"></div>
-              <canvas id="ovInputs" width="280" height="90" class="absolute right-4 bottom-24 rounded-xl border border-white/20 bg-black/40"></canvas>
-              <div class="absolute right-4 bottom-4 w-44 rounded-xl border border-white/20 bg-black/55 text-white p-3 text-xs font-mono whitespace-pre-line" id="ovTyres"></div>
+          <section id="viewOverlays" hidden aria-labelledby="overlayTitle" class="max-w-6xl">
+            <div class="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p class="mmt-kicker">Telemetría en Pista en Tiempo Real</p>
+                <h1 id="overlayTitle" class="mmt-display text-4xl mt-1">Overlays de Carrera (VRS / Garage 61 HUD)</h1>
+                <p class="mt-2 text-sm text-r-muted max-w-2xl">
+                  Lectura directa de la memoria compartida del SDK de iRacing (modo solo lectura). Muestra instrumentos de telemetría de competición con luces de cambio de marcha, pedales de alta resolución y radar de intervalos.
+                </p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button type="button" id="overlayModeToggle" class="px-3.5 py-2 rounded-xl border border-r-accent bg-r-accent/15 text-r-accent font-mono text-xs font-bold">
+                  Modo Demo Activo (Pruébalo)
+                </button>
+              </div>
+            </div>
+
+            <!-- Stage -->
+            <div id="overlayStage" class="relative mt-5 h-[560px] rounded-2xl overflow-hidden border border-r-line shadow-2xl bg-black">
+              <!-- Background cockpit gradient -->
+              <div class="absolute inset-0" style="background: radial-gradient(ellipse at 50% 65%, #0d1f1a 0%, #070908 75%);"></div>
+
+              <!-- TOP: Sequential Shift Light LEDs -->
+              <div class="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-black/85 border border-white/10 backdrop-blur-md" id="ovShiftLights"></div>
+
+              <!-- TOP LEFT: Relative Radar (Garage 61 style) -->
+              <div class="absolute left-5 top-18 w-68 rounded-2xl border border-white/15 bg-black/75 backdrop-blur-md text-white p-3.5 text-xs font-mono shadow-lg" id="ovRelative"></div>
+
+              <!-- TOP RIGHT: Standings / Class Interval -->
+              <div class="absolute right-5 top-18 w-60 rounded-2xl border border-white/15 bg-black/75 backdrop-blur-md text-white p-3.5 text-xs font-mono shadow-lg" id="ovStandings"></div>
+
+              <!-- CENTER: Pro Digital Cluster -->
+              <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                <div id="ovDelta" class="mb-3 px-5 py-1.5 rounded-full border border-emerald-500/40 bg-emerald-950/80 text-emerald-400 font-mono text-sm font-bold shadow-lg shadow-emerald-950/50">
+                  -0.34s · Sector 2 Púrpura
+                </div>
+                <div class="flex items-baseline gap-4 px-8 py-5 rounded-3xl border border-white/15 bg-black/80 backdrop-blur-md shadow-2xl">
+                  <div class="flex flex-col items-center">
+                    <span class="text-[10px] font-mono text-r-muted uppercase tracking-wider">Marcha</span>
+                    <strong id="ovGear" class="font-mono text-7xl font-black text-white leading-none mt-1">4</strong>
+                  </div>
+                  <div class="h-16 w-px bg-white/15"></div>
+                  <div class="flex flex-col">
+                    <span class="text-[10px] font-mono text-r-muted uppercase tracking-wider">Velocidad</span>
+                    <div class="flex items-baseline gap-1 mt-1">
+                      <strong id="ovSpeed" class="font-mono text-5xl font-black text-r-accent leading-none">198</strong>
+                      <span class="font-mono text-xs text-r-muted">km/h</span>
+                    </div>
+                    <span id="ovRpm" class="text-[11px] font-mono text-r-muted mt-1">7,420 RPM</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- BOTTOM LEFT: Live Fuel & Stint Computer -->
+              <div class="absolute left-5 bottom-5 w-72 rounded-2xl border border-white/15 bg-black/75 backdrop-blur-md text-white p-4 text-xs font-mono shadow-lg" id="ovFuel"></div>
+
+              <!-- BOTTOM RIGHT: High Precision Pedals & Steering Canvas -->
+              <div class="absolute right-5 bottom-5 rounded-2xl border border-white/15 bg-black/75 backdrop-blur-md p-3.5 shadow-lg">
+                <canvas id="ovInputs" width="300" height="95" class="rounded-xl"></canvas>
+                <div id="ovTyres" class="mt-2 text-center font-mono text-[11px] text-r-muted"></div>
+              </div>
             </div>
           </section>
 
