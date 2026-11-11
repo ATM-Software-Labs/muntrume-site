@@ -62,44 +62,44 @@ export function getTrackWeekInfo(track: string, filename?: string, carFolder?: s
   const cleanCar = String(carFolder || "").toLowerCase().replace(/[^a-z0-9]/g, "");
   const isGt3 = cleanCar.includes("gt3") || cleanCar.includes("296") || cleanCar.includes("992") || cleanCar.includes("m4") || cleanCar.includes("720s") || cleanCar.includes("mustang") || cleanCar.includes("vantage") || cleanCar.includes("huracan") || cleanCar.includes("z06") || cleanCar === "" || cleanCar.includes("ferrari") || cleanCar.includes("bmw") || cleanCar.includes("porsche");
 
-  // 1. Fuji Speedway -> GT3 Open / GT Sprint & GT3 Challenge Fixed (Week 9: Current Week!)
+  // 1. Fuji Speedway -> GT3 Open / GT Sprint (Week 9: Current Week!)
   if (clean.includes("fuji")) {
     return {
       week: 9,
       isCurrent: true,
-      seriesContext: "GT3 Open / GT Sprint",
+      seriesContext: "GT3 Open (Fuji)",
     };
   }
 
-  // 2. Circuit de Barcelona-Catalunya -> GT3 Regional Tour Europe (Week 9: Current Week!) or Ferrari Challenge (Week 10)
-  if (clean.includes("barcelona") || clean.includes("catalunya")) {
-    if (cleanCar.includes("challenge") && !cleanCar.includes("gt3")) {
-      return {
-        week: 10,
-        isCurrent: false,
-        seriesContext: "Ferrari 296 Challenge",
-      };
-    }
-    return {
-      week: 9,
-      isCurrent: true,
-      seriesContext: "Regional Fixed (Europa)",
-    };
-  }
-
-  // 3. Suzuka -> IMSA SportsCar (Week 9: Current Week!) or GT3 Open (Week 12 Final)
+  // 2. Suzuka -> IMSA SportsCar Open (Week 9: Current Week!) or GT3 Open (Week 12 Final)
   if (clean.includes("suzuka")) {
     if (cleanCar.includes("imsa") || cleanCar.includes("gtp") || cleanCar.includes("p217")) {
       return {
         week: 9,
         isCurrent: true,
-        seriesContext: "IMSA SportsCar",
+        seriesContext: "IMSA Open (Suzuka)",
       };
     }
     return {
       week: isGt3 ? 12 : 9,
       isCurrent: !isGt3,
-      seriesContext: isGt3 ? "GT3 Open (Semana 12)" : "IMSA Open",
+      seriesContext: isGt3 ? "GT3 Open (Semana 12)" : "IMSA Open (Suzuka)",
+    };
+  }
+
+  // 3. Circuit de Barcelona-Catalunya -> Not on GT3 Open calendar (Regional is Fixed, Muntrume does not supply fixed setups)
+  if (clean.includes("barcelona") || clean.includes("catalunya")) {
+    if (cleanCar.includes("challenge") && !cleanCar.includes("gt3")) {
+      return {
+        week: 10,
+        isCurrent: false,
+        seriesContext: "Ferrari 296 Challenge Open",
+      };
+    }
+    return {
+      week: 0,
+      isCurrent: false,
+      seriesContext: "Test / Especial (Fuera de GT3 Open)",
     };
   }
 
@@ -1340,7 +1340,7 @@ function paintGroupedByWeek(items: LibraryItem[]): void {
   const groups = new Map<number | string, LibraryItem[]>();
   for (const entry of items) {
     const w = findWeekForTrack(entry.track, entry.filename, entry.carFolder);
-    const key = w ?? "Otras semanas";
+    const key = w > 0 ? w : "Otras semanas";
     const list = groups.get(key) ?? [];
     list.push(entry);
     groups.set(key, list);

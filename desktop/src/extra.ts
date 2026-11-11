@@ -35,6 +35,7 @@ const schedule = rawSchedule as unknown as SchedulePayload;
 let activeWeek = schedule.current_week || 9;
 let activeCat = "all";
 let activeSearch = "";
+let filterOnlyOpen = false;
 let weekListenersAttached = false;
 let studioInitialized = false;
 let strategyInitialized = false;
@@ -187,26 +188,37 @@ function paintWeek(data: Snapshot): void {
           if (preset === "gt3open") {
             weekSearch.value = "GT Sprint Series";
             activeCat = "SPORTS CAR";
-          } else if (preset === "gt3fixed") {
-            weekSearch.value = "GT3 Challenge Fixed";
+            filterOnlyOpen = true;
+          } else if (preset === "imsa") {
+            weekSearch.value = "IMSA iRacing Series by GO Fast";
             activeCat = "SPORTS CAR";
+            filterOnlyOpen = true;
+          } else if (preset === "formula") {
+            weekSearch.value = "Super Formula Series 2026";
+            activeCat = "FORMULA CAR";
+            filterOnlyOpen = true;
+          } else if (preset === "onlyopen") {
+            filterOnlyOpen = !filterOnlyOpen;
+            weekSearch.value = "";
+            activeCat = "all";
           } else if (preset === "regional") {
             weekSearch.value = "Regional Tour";
             activeCat = "SPORTS CAR";
-          } else if (preset === "imsa") {
-            weekSearch.value = "IMSA";
-            activeCat = "SPORTS CAR";
-          } else if (preset === "formula") {
-            weekSearch.value = "Super Formula";
-            activeCat = "FORMULA CAR";
+            filterOnlyOpen = false;
           }
           activeSearch = weekSearch.value.trim().toLowerCase();
 
           for (const b of seriesPresets.querySelectorAll("button")) {
             const isSelected = b.dataset.preset === preset;
-            b.className = isSelected
-              ? "px-3 py-1.5 rounded-xl border border-r-accent bg-r-accent/20 text-r-accent font-mono text-xs font-bold shadow-sm"
-              : "px-3 py-1.5 rounded-xl border border-r-line bg-r-surface text-r-muted hover:text-r-text hover:border-r-accent font-mono text-xs transition";
+            if (b.dataset.preset === "onlyopen") {
+              b.className = filterOnlyOpen
+                ? "px-3.5 py-1.5 rounded-xl border border-emerald-400 bg-emerald-500/25 text-emerald-300 font-mono text-xs font-bold transition shadow-sm"
+                : "px-3.5 py-1.5 rounded-xl border border-r-line bg-r-surface text-r-muted hover:text-r-text font-mono text-xs transition";
+            } else {
+              b.className = isSelected
+                ? "px-3.5 py-1.5 rounded-xl border border-r-accent bg-r-accent/20 text-r-accent font-mono text-xs font-bold shadow-sm"
+                : "px-3.5 py-1.5 rounded-xl border border-r-line bg-r-surface text-r-muted hover:text-r-text hover:border-r-accent font-mono text-xs transition";
+            }
           }
           if (catFilters) {
             for (const b of catFilters.querySelectorAll("button")) {
@@ -244,6 +256,8 @@ function renderWeekItems(data: Snapshot): void {
   if (!note || !list) return;
 
   const filtered = schedule.series.filter((s) => {
+    const isFixed = s.name.toLowerCase().includes("fixed") || s.tier.toLowerCase().includes("fixed");
+    if (filterOnlyOpen && isFixed) return false;
     if (activeCat !== "all" && s.category.toLowerCase() !== activeCat.toLowerCase()) return false;
     if (activeSearch) {
       const q = activeSearch;
@@ -286,7 +300,17 @@ function renderWeekItems(data: Snapshot): void {
     tierBadge.className = "px-2 py-0.5 rounded border border-r-line bg-r-bg text-r-accent";
     tierBadge.textContent = s.tier.replace("Class", " Class");
 
-    badges.append(catBadge, tierBadge);
+    const isFixed = s.name.toLowerCase().includes("fixed") || s.tier.toLowerCase().includes("fixed");
+    const openBadge = document.createElement("span");
+    if (isFixed) {
+      openBadge.className = "px-2 py-0.5 rounded border border-r-line bg-r-bg text-r-muted text-[10px]";
+      openBadge.textContent = "FIXED (Baseline iRacing)";
+    } else {
+      openBadge.className = "px-2 py-0.5 rounded border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 font-bold text-[10px]";
+      openBadge.textContent = "OPEN (Setups MMT)";
+    }
+
+    badges.append(catBadge, tierBadge, openBadge);
 
     if (matchCount > 0) {
       const setupBadge = document.createElement("span");
