@@ -210,7 +210,7 @@
           </section>
 
           <div id="moduleNav" class="flex flex-wrap gap-2 mb-5" aria-label="Módulos">
-            <button type="button" data-nav="week" class="mmt-chip h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-muted">Esta semana</button>
+            <button type="button" data-nav="week" class="mmt-chip h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-muted">Calendario</button>
             <button type="button" data-nav="analysis" class="mmt-chip h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-muted">Análisis</button>
             <button type="button" data-nav="reference" class="mmt-chip h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-muted">Referencia</button>
             <button type="button" data-nav="strategy" class="mmt-chip h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-muted">Estrategia</button>
@@ -222,8 +222,8 @@
           <section id="viewWeek" hidden aria-labelledby="weekTitle">
             <div class="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <p class="mmt-kicker">Calendario Oficial iRacing · 2026 Season 4</p>
-                <h1 id="weekTitle" class="mmt-display text-4xl mt-3">Esta semana</h1>
+                <p class="mmt-kicker">Temporada Oficial iRacing · 2026 Season 4</p>
+                <h1 id="weekTitle" class="mmt-display text-4xl mt-1">Calendario de Temporada</h1>
               </div>
               <div class="flex items-center gap-2">
                 <label for="weekSelect" class="text-xs font-mono uppercase tracking-wider text-r-muted">Semana:</label>
@@ -231,12 +231,15 @@
                 </select>
               </div>
             </div>
+
+            <!-- Horizontal Week Timeline Navigation Bar -->
+            <div id="calendarWeeksBar" class="mt-4 flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-r-line/60"></div>
+
             <p id="weekNote" class="mt-3 text-sm text-r-muted max-w-prose">Calendario oficial de 154 series extraído de SeasonSchedule.pdf de iRacing. Compara los circuitos de la semana con los setups MMT de tu biblioteca.</p>
             
             <div class="mt-4 flex flex-wrap items-center gap-2">
               <input type="search" id="weekSearch" placeholder="Buscar serie, circuito o coche..." class="h-10 rounded-xl border border-r-line bg-r-surface px-3 text-sm text-r-text flex-1 min-w-[200px]" />
               <div id="weekCatFilters" class="flex flex-wrap gap-1.5 font-mono text-xs">
-                <button type="button" data-cat="MY_CATS" class="h-9 px-3 rounded-lg border border-r-line bg-r-surface text-r-muted hover:text-r-text transition">⭐ Mis Categorías</button>
                 <button type="button" data-cat="all" class="h-9 px-3 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent transition">Todas</button>
                 <button type="button" data-cat="SPORTS CAR" class="h-9 px-3 rounded-lg border border-r-line bg-r-surface text-r-muted hover:text-r-text transition">Sports Car</button>
                 <button type="button" data-cat="FORMULA CAR" class="h-9 px-3 rounded-lg border border-r-line bg-r-surface text-r-muted hover:text-r-text transition">Formula</button>
@@ -251,32 +254,23 @@
           <section id="viewAnalysis" hidden aria-labelledby="analysisTitle" class="max-w-7xl">
             <div class="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p class="mmt-kicker">Coaching y Telemetría TrackTitan / VRS</p>
+                <p class="mmt-kicker">Telemetría Real iRacing (.ibt) & Laser-Scanned Tracks</p>
                 <h1 id="analysisTitle" class="mmt-display text-4xl mt-1">Análisis de Telemetría</h1>
                 <p class="mt-2 text-sm text-r-muted max-w-2xl">
-                  Comparador de curvas de telemetría y desglose curva a curva con recomendaciones del coach. Inspección de velocidad mínima de vértice, puntos de frenada y modulación de trail-braking.
+                  Mapas del circuito 100% auténticos generados directamente desde tus archivos de telemetría .ibt de iRacing. Comparativa de tu mejor vuelta vs tu promedio de tanda con análisis de velocidad de ápice, acelerador y modulación de freno.
                 </p>
               </div>
               <div class="flex flex-wrap items-center gap-3">
                 <div>
-                  <label class="block text-xs font-mono text-r-muted uppercase mb-1">Circuito</label>
+                  <label class="block text-xs font-mono text-r-muted uppercase mb-1">Circuito (Telemetría .ibt)</label>
                   <select id="telemetryTrack" class="h-10 rounded-xl border border-r-line bg-r-surface px-3 text-sm font-sans text-r-text">
-                    <option value="spa">Spa-Francorchamps (GP)</option>
-                    <option value="monza">Autodromo Nazionale Monza</option>
-                    <option value="nurburgring">Nürburgring GP</option>
-                    <option value="silverstone">Silverstone Circuit</option>
-                    <option value="suzuka">Suzuka International</option>
-                    <option value="sebring">Sebring International</option>
-                    <option value="redbullring">Red Bull Ring Spielberg</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-xs font-mono text-r-muted uppercase mb-1">Coche</label>
-                  <select id="telemetryCar" class="h-10 rounded-xl border border-r-line bg-r-surface px-3 text-sm font-sans text-r-text">
-                    <option value="porsche992gt3r">Porsche 911 GT3.R (992)</option>
-                    <option value="ferrari296gt3">Ferrari 296 GT3</option>
-                    <option value="bmwm4gt3">BMW M4 GT3</option>
-                    <option value="amggt3">Mercedes-AMG GT3 Evo</option>
+                    <option value="spa">Spa-Francorchamps (6.929 km · 61 vueltas .ibt)</option>
+                    <option value="indianapolis">Indianapolis Motor Speedway (3.845 km · 132 vueltas .ibt)</option>
+                    <option value="montreal">Circuit Gilles Villeneuve (4.310 km · 95 vueltas .ibt)</option>
+                    <option value="interlagos">Autódromo José Carlos Pace (4.223 km · 32 vueltas .ibt)</option>
+                    <option value="roadamerica">Road America (6.414 km · 101 vueltas .ibt)</option>
+                    <option value="lemans">Circuit des 24 Heures du Mans (13.554 km · 58 vueltas .ibt)</option>
+                    <option value="nurburgring">Nürburgring Gesamtstrecke VLN (24.154 km · 16 vueltas .ibt)</option>
                   </select>
                 </div>
               </div>
@@ -286,28 +280,28 @@
             <div id="lapSummaryBanner" class="mt-5 rounded-2xl border border-r-line bg-r-surface p-4 flex flex-wrap items-center justify-between gap-4">
               <div class="flex flex-wrap items-center gap-6">
                 <div>
-                  <span class="block text-[11px] font-mono uppercase text-r-muted">Referencia (Alien Coach)</span>
+                  <span class="block text-[11px] font-mono uppercase text-r-muted">Tu Mejor Vuelta (.ibt Real)</span>
                   <div class="flex items-baseline gap-2 mt-0.5">
                     <span class="w-2.5 h-2.5 rounded-full bg-r-accent inline-block"></span>
-                    <strong id="lapAlienTime" class="font-mono text-xl text-r-accent">2:15.184</strong>
-                    <span class="text-xs text-r-muted font-mono">100% óptimo</span>
+                    <strong id="lapAlienTime" class="font-mono text-xl text-r-accent">2:15.500</strong>
+                    <span id="lapAlienBadge" class="text-xs text-r-muted font-mono">Mejor Vuelta</span>
                   </div>
                 </div>
                 <div class="h-8 w-px bg-r-line hidden sm:block"></div>
                 <div>
-                  <span class="block text-[11px] font-mono uppercase text-r-muted">Tu Vuelta</span>
+                  <span class="block text-[11px] font-mono uppercase text-r-muted">Tu Vuelta Promedio (Stint)</span>
                   <div class="flex items-baseline gap-2 mt-0.5">
                     <span class="w-2.5 h-2.5 rounded-full bg-sky-400 inline-block"></span>
-                    <strong id="lapUserTime" class="font-mono text-xl text-r-text">2:16.420</strong>
-                    <span class="text-xs text-r-muted font-mono">Personal Best</span>
+                    <strong id="lapUserTime" class="font-mono text-xl text-r-text">2:19.368</strong>
+                    <span id="lapCountBadge" class="text-xs text-r-muted font-mono">61 vueltas</span>
                   </div>
                 </div>
                 <div class="h-8 w-px bg-r-line hidden sm:block"></div>
                 <div>
-                  <span class="block text-[11px] font-mono uppercase text-r-muted">Delta Tiempo</span>
+                  <span class="block text-[11px] font-mono uppercase text-r-muted">Consistencia / Delta</span>
                   <div class="flex items-baseline gap-2 mt-0.5">
-                    <strong id="lapDeltaSummary" class="font-mono text-xl text-amber-400">+1.236s</strong>
-                    <span class="text-xs text-r-muted font-mono">Margen de mejora: ~0.9s</span>
+                    <strong id="lapDeltaSummary" class="font-mono text-xl text-amber-400">+3.868s</strong>
+                    <span id="lapFileBadge" class="text-xs text-r-muted font-mono truncate max-w-[180px]">Telemetría local</span>
                   </div>
                 </div>
               </div>
@@ -315,7 +309,7 @@
                 <span>Dist: <strong id="curDist" class="text-r-text">0 m</strong></span>
                 <span>Δ Vel: <strong id="curSpeed" class="text-r-accent">0 km/h</strong></span>
                 <span>Δ Tiempo: <strong id="curDelta" class="text-amber-400">+0.00s</strong></span>
-                <span id="curCorner" class="text-r-text font-bold">Recta principal</span>
+                <span id="curCorner" class="text-r-text font-bold">Pasa el ratón por la telemetría</span>
               </div>
             </div>
 

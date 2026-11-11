@@ -1,5 +1,6 @@
 import type { IracingAnalysis, LiveSample, Settings, Snapshot } from "./types";
 import rawSchedule from "./season_schedule_2026_s4.json";
+import rawRealTracks from "./real_telemetry_tracks.json";
 
 interface ScheduleWeek {
   week_num: number;
@@ -40,12 +41,12 @@ let strategyInitialized = false;
 let overlayInitialized = false;
 
 // -------------------------------------------------------------
-// TELEMETRY STUDIO DATA & TYPES (TrackTitan / VRS / GnG caliber)
+// TELEMETRY STUDIO DATA & TYPES (Based on REAL .ibt iRacing telemetry)
 // -------------------------------------------------------------
 export interface TurnInsight {
   turn: number;
   name: string;
-  distance: number; // in meters along the track
+  distance: number;
   sector: 1 | 2 | 3;
   alienApexKmh: number;
   userApexKmh: number;
@@ -56,635 +57,28 @@ export interface TurnInsight {
   severity: "critical" | "moderate" | "optimal";
 }
 
-export interface TrackTelemetryProfile {
-  id: string;
-  name: string;
-  lengthM: number;
-  alienLapSec: number;
-  userLapSec: number;
-  alienLapFormatted: string;
-  userLapFormatted: string;
-  deltaFormatted: string;
-  mapPoints: [number, number][]; // normalized [x, y] in range 0..100
-  turns: TurnInsight[];
+export interface RealTrackSample {
+  dist: number;
+  speed: number;
+  thr: number;
+  brk: number;
+  gear: number;
 }
 
-const TRACK_PROFILES: Record<string, TrackTelemetryProfile> = {
-  spa: {
-    id: "spa",
-    name: "Circuit de Spa-Francorchamps (GP)",
-    lengthM: 7004,
-    alienLapSec: 135.184,
-    userLapSec: 136.42,
-    alienLapFormatted: "2:15.184",
-    userLapFormatted: "2:16.420",
-    deltaFormatted: "+1.236s",
-    mapPoints: [
-      [78, 86], [82, 82], [84, 76], [80, 70], [74, 68], [68, 62], [62, 52], [58, 44],
-      [54, 38], [51, 30], [54, 24], [58, 18], [63, 14], [70, 12], [76, 12], [82, 16],
-      [86, 22], [88, 28], [88, 36], [85, 42], [80, 46], [74, 49], [67, 52], [60, 56],
-      [54, 60], [46, 65], [40, 70], [33, 76], [28, 80], [22, 82], [16, 78], [14, 70],
-      [16, 62], [22, 54], [28, 48], [34, 42], [38, 35], [40, 27], [38, 20], [33, 15],
-      [27, 13], [20, 14], [14, 18], [11, 24], [11, 32], [14, 40], [18, 50], [22, 60],
-      [27, 70], [35, 78], [45, 84], [55, 87], [65, 88], [74, 87]
-    ],
-    turns: [
-      {
-        turn: 1,
-        name: "T1 · La Source",
-        distance: 120,
-        sector: 1,
-        alienApexKmh: 74,
-        userApexKmh: 68,
-        alienBrakingDistM: 98,
-        userBrakingDistM: 114,
-        deltaSec: 0.18,
-        coachTip: "Frenas 16m antes de lo óptimo y pierdes velocidad de vértice. Aplica frenada regresiva manteniendo un 12% de trail hasta el piano interior para facilitar la rotación.",
-        severity: "critical",
-      },
-      {
-        turn: 2,
-        name: "T2-T4 · Eau Rouge & Raidillon",
-        distance: 1150,
-        sector: 1,
-        alienApexKmh: 251,
-        userApexKmh: 242,
-        alienBrakingDistM: 0,
-        userBrakingDistM: 0,
-        deltaSec: 0.12,
-        coachTip: "Levantas un 8% del acelerador al pasar por la cresta. Con este setup MMT el coche tiene carga suficiente para hacerlo a fondo con volante suave sin snap.",
-        severity: "moderate",
-      },
-      {
-        turn: 5,
-        name: "T5-T6 · Les Combes",
-        distance: 2080,
-        sector: 1,
-        alienApexKmh: 139,
-        userApexKmh: 132,
-        alienBrakingDistM: 128,
-        userBrakingDistM: 142,
-        deltaSec: 0.22,
-        coachTip: "Retrasa el punto de frenada hacia la marca de los 100m. Ataca el piano derecho de entrada para posicionar el coche hacia la izquierda sin perder tracción.",
-        severity: "critical",
-      },
-      {
-        turn: 7,
-        name: "T7 · Malmedy",
-        distance: 2340,
-        sector: 2,
-        alienApexKmh: 163,
-        userApexKmh: 158,
-        alienBrakingDistM: 30,
-        userBrakingDistM: 40,
-        deltaSec: 0.06,
-        coachTip: "Buen vértice. Puedes abrir gas un 10% antes dejando que el coche corra naturalmente hacia el piano exterior.",
-        severity: "optimal",
-      },
-      {
-        turn: 8,
-        name: "T8 · Bruxelles / Rivage",
-        distance: 2800,
-        sector: 2,
-        alienApexKmh: 101,
-        userApexKmh: 94,
-        alienBrakingDistM: 65,
-        userBrakingDistM: 78,
-        deltaSec: 0.16,
-        coachTip: "La caída de la curva permite entrar con más inercia. Mantén el radio interior con gas de mantenimiento antes de acelerar con decisión al salir.",
-        severity: "moderate",
-      },
-      {
-        turn: 9,
-        name: "T9 · Speaker's Corner",
-        distance: 3200,
-        sector: 2,
-        alienApexKmh: 157,
-        userApexKmh: 152,
-        alienBrakingDistM: 25,
-        userBrakingDistM: 35,
-        deltaSec: 0.07,
-        coachTip: "Excelente trayectoria. Cuida el piano de salida para no tocar la hierba sintética húmeda.",
-        severity: "optimal",
-      },
-      {
-        turn: 10,
-        name: "T10-T11 · Double Pouhon",
-        distance: 3850,
-        sector: 2,
-        alienApexKmh: 198,
-        userApexKmh: 188,
-        alienBrakingDistM: 45,
-        userBrakingDistM: 65,
-        deltaSec: 0.19,
-        coachTip: "Frenas en exceso antes de la primera cuerda de Pouhon. Solo necesitas una caricia del 20% al pedal de freno para cargar peso adelante y luego gas a medio recorrido.",
-        severity: "critical",
-      },
-      {
-        turn: 12,
-        name: "T12-T13 · Fagnes (Pif-Paf)",
-        distance: 4420,
-        sector: 2,
-        alienApexKmh: 134,
-        userApexKmh: 128,
-        alienBrakingDistM: 85,
-        userBrakingDistM: 95,
-        deltaSec: 0.09,
-        coachTip: "Transición rápida entre pianos. Sacrifica un poco la entrada a derechas para priorizar la salida a izquierdas a fondo.",
-        severity: "optimal",
-      },
-      {
-        turn: 14,
-        name: "T14-T15 · Campus & Stavelot",
-        distance: 5100,
-        sector: 3,
-        alienApexKmh: 168,
-        userApexKmh: 162,
-        alienBrakingDistM: 40,
-        userBrakingDistM: 52,
-        deltaSec: 0.08,
-        coachTip: "La salida de Stavelot condiciona toda la recta hacia Blanchimont. Sal con el acelerador al 100% pegado al piano exterior.",
-        severity: "optimal",
-      },
-      {
-        turn: 16,
-        name: "T16-T17 · Blanchimont",
-        distance: 6150,
-        sector: 3,
-        alienApexKmh: 266,
-        userApexKmh: 262,
-        alienBrakingDistM: 0,
-        userBrakingDistM: 0,
-        deltaSec: 0.02,
-        coachTip: "Totalmente a fondo con confianza. Giro limpio y sin correcciones de volante.",
-        severity: "optimal",
-      },
-      {
-        turn: 18,
-        name: "T18-T19 · Bus Stop Chicane",
-        distance: 6820,
-        sector: 3,
-        alienApexKmh: 66,
-        userApexKmh: 60,
-        alienBrakingDistM: 108,
-        userBrakingDistM: 125,
-        deltaSec: 0.21,
-        coachTip: "Punto crítico de vuelta. Frena recto y fuerte en los 110m, suelta rápido al meter dirección y súbete agresivamente a los pianos llanos.",
-        severity: "critical",
-      },
-    ],
-  },
-  monza: {
-    id: "monza",
-    name: "Autodromo Nazionale Monza",
-    lengthM: 5793,
-    alienLapSec: 104.52,
-    userLapSec: 105.78,
-    alienLapFormatted: "1:44.520",
-    userLapFormatted: "1:45.780",
-    deltaFormatted: "+1.260s",
-    mapPoints: [
-      [82, 85], [84, 70], [84, 50], [84, 30], [82, 18], [75, 14], [68, 16], [62, 22],
-      [58, 30], [54, 42], [50, 56], [45, 68], [40, 75], [32, 78], [24, 74], [18, 65],
-      [16, 52], [18, 40], [22, 28], [28, 20], [36, 16], [48, 15], [60, 16], [72, 17]
-    ],
-    turns: [
-      {
-        turn: 1,
-        name: "T1-T2 · Variante del Rettifilo",
-        distance: 950,
-        sector: 1,
-        alienApexKmh: 72,
-        userApexKmh: 64,
-        alienBrakingDistM: 145,
-        userBrakingDistM: 168,
-        deltaSec: 0.32,
-        coachTip: "Frenas 23m antes desde 275 km/h. Pisa a fondo con 90% de presión inicial y suelta en línea recta para no activar ABS.",
-        severity: "critical",
-      },
-      {
-        turn: 3,
-        name: "T3 · Curva Grande",
-        distance: 1500,
-        sector: 1,
-        alienApexKmh: 258,
-        userApexKmh: 252,
-        alienBrakingDistM: 0,
-        userBrakingDistM: 0,
-        deltaSec: 0.05,
-        coachTip: "A fondo constante pegado a la línea blanca interior.",
-        severity: "optimal",
-      },
-      {
-        turn: 4,
-        name: "T4-T5 · Variante della Roggia",
-        distance: 2250,
-        sector: 2,
-        alienApexKmh: 114,
-        userApexKmh: 106,
-        alienBrakingDistM: 115,
-        userBrakingDistM: 132,
-        deltaSec: 0.24,
-        coachTip: "Sube con seguridad al primer piano izquierdo para recortar metros de curva.",
-        severity: "critical",
-      },
-      {
-        turn: 6,
-        name: "T6 · Lesmo 1",
-        distance: 2780,
-        sector: 2,
-        alienApexKmh: 161,
-        userApexKmh: 154,
-        alienBrakingDistM: 45,
-        userBrakingDistM: 58,
-        deltaSec: 0.14,
-        coachTip: "Frenada corta y directa en 4ª marcha. Mantén el pie izquierdo en el freno para anclar el morro.",
-        severity: "moderate",
-      },
-      {
-        turn: 7,
-        name: "T7 · Lesmo 2",
-        distance: 3180,
-        sector: 2,
-        alienApexKmh: 152,
-        userApexKmh: 144,
-        alienBrakingDistM: 40,
-        userBrakingDistM: 54,
-        deltaSec: 0.18,
-        coachTip: "Prioriza la salida a la recta del Serraglio acelerando a fondo nada más tocar el vértice.",
-        severity: "critical",
-      },
-      {
-        turn: 8,
-        name: "T8-T10 · Variante Ascari",
-        distance: 4420,
-        sector: 3,
-        alienApexKmh: 170,
-        userApexKmh: 162,
-        alienBrakingDistM: 102,
-        userBrakingDistM: 118,
-        deltaSec: 0.21,
-        coachTip: "Entrada fluida y aceleración sin contemplaciones en el cambio de apoyo de la salida.",
-        severity: "critical",
-      },
-      {
-        turn: 11,
-        name: "T11 · Curva Parabolica (Alboreto)",
-        distance: 5380,
-        sector: 3,
-        alienApexKmh: 179,
-        userApexKmh: 172,
-        alienBrakingDistM: 60,
-        userBrakingDistM: 75,
-        deltaSec: 0.12,
-        coachTip: "Abre el radio a mitad de curva y deja correr la velocidad para cruzar meta a máxima velocidad punta.",
-        severity: "moderate",
-      },
-    ],
-  },
-  nurburgring: {
-    id: "nurburgring",
-    name: "Nürburgring Grand-Prix",
-    lengthM: 5148,
-    alienLapSec: 114.35,
-    userLapSec: 115.42,
-    alienLapFormatted: "1:54.350",
-    userLapFormatted: "1:55.420",
-    deltaFormatted: "+1.070s",
-    mapPoints: [
-      [20, 85], [35, 82], [50, 78], [65, 72], [78, 62], [82, 48], [78, 35], [68, 25],
-      [55, 20], [42, 22], [35, 30], [30, 42], [32, 55], [40, 64], [52, 68], [64, 65],
-      [72, 55], [75, 42], [70, 32], [58, 30], [45, 38], [32, 50], [22, 65], [18, 78]
-    ],
-    turns: [
-      {
-        turn: 1,
-        name: "T1-T4 · Castrol-S / Mercedes Arena",
-        distance: 400,
-        sector: 1,
-        alienApexKmh: 72,
-        userApexKmh: 65,
-        alienBrakingDistM: 95,
-        userBrakingDistM: 112,
-        deltaSec: 0.25,
-        coachTip: "Cierra la trayectoria en la horquilla cerrada para abrir el radio de salida a la contrarrecta.",
-        severity: "critical",
-      },
-      {
-        turn: 5,
-        name: "T5 · Ford-Kurve",
-        distance: 1300,
-        sector: 1,
-        alienApexKmh: 102,
-        userApexKmh: 96,
-        alienBrakingDistM: 55,
-        userBrakingDistM: 68,
-        deltaSec: 0.14,
-        coachTip: "Súbete al piano interior en apoyo sin ahogar el motor.",
-        severity: "moderate",
-      },
-      {
-        turn: 6,
-        name: "T6 · Dunlop-Kehre",
-        distance: 1700,
-        sector: 2,
-        alienApexKmh: 85,
-        userApexKmh: 78,
-        alienBrakingDistM: 80,
-        userBrakingDistM: 94,
-        deltaSec: 0.18,
-        coachTip: "Curva en bajada con peralte pronunciado. Aprovecha la compresión para frenar más tarde.",
-        severity: "critical",
-      },
-      {
-        turn: 7,
-        name: "T7-T8 · Schumacher-S",
-        distance: 2500,
-        sector: 2,
-        alienApexKmh: 210,
-        userApexKmh: 202,
-        alienBrakingDistM: 0,
-        userBrakingDistM: 15,
-        deltaSec: 0.11,
-        coachTip: "Cambio de rasante rápido. No toques el freno, un levante mínimo de acelerador es suficiente.",
-        severity: "moderate",
-      },
-      {
-        turn: 13,
-        name: "T13-T14 · Veedol-Schikane",
-        distance: 4700,
-        sector: 3,
-        alienApexKmh: 78,
-        userApexKmh: 70,
-        alienBrakingDistM: 110,
-        userBrakingDistM: 126,
-        deltaSec: 0.22,
-        coachTip: "Pasa por encima de los pianos amarillos sin tocar los sensores de track limits.",
-        severity: "critical",
-      },
-    ],
-  },
-  silverstone: {
-    id: "silverstone",
-    name: "Silverstone Circuit",
-    lengthM: 5891,
-    alienLapSec: 117.2,
-    userLapSec: 118.35,
-    alienLapFormatted: "1:57.200",
-    userLapFormatted: "1:58.350",
-    deltaFormatted: "+1.150s",
-    mapPoints: [
-      [30, 85], [45, 82], [60, 75], [75, 68], [85, 55], [88, 40], [80, 28], [68, 20],
-      [55, 18], [42, 22], [32, 30], [24, 42], [20, 58], [22, 72], [25, 82]
-    ],
-    turns: [
-      {
-        turn: 1,
-        name: "T1 · Abbey",
-        distance: 450,
-        sector: 1,
-        alienApexKmh: 230,
-        userApexKmh: 222,
-        alienBrakingDistM: 0,
-        userBrakingDistM: 10,
-        deltaSec: 0.08,
-        coachTip: "Giro a fondo con determinación. El alerón del setup aguanta la carga aerodinámica.",
-        severity: "optimal",
-      },
-      {
-        turn: 3,
-        name: "T3-T4 · Village & The Loop",
-        distance: 1050,
-        sector: 1,
-        alienApexKmh: 68,
-        userApexKmh: 61,
-        alienBrakingDistM: 95,
-        userBrakingDistM: 112,
-        deltaSec: 0.26,
-        coachTip: "Horquilla muy lenta. Sacrifica la entrada para tener tracción limpia hacia la recta Wellington.",
-        severity: "critical",
-      },
-      {
-        turn: 9,
-        name: "T9 · Copse",
-        distance: 3200,
-        sector: 2,
-        alienApexKmh: 220,
-        userApexKmh: 211,
-        alienBrakingDistM: 20,
-        userBrakingDistM: 35,
-        deltaSec: 0.16,
-        coachTip: "Un toque mínimo de freno a la entrada y compromiso total de acelerador en el ápice.",
-        severity: "critical",
-      },
-      {
-        turn: 10,
-        name: "T10-T14 · Maggotts, Becketts & Chapel",
-        distance: 3700,
-        sector: 2,
-        alienApexKmh: 185,
-        userApexKmh: 176,
-        alienBrakingDistM: 35,
-        userBrakingDistM: 52,
-        deltaSec: 0.35,
-        coachTip: "El sector más técnico del automovilismo. Fluidez pura, no frenes de golpe o desestabilizarás la aerodinámica.",
-        severity: "critical",
-      },
-      {
-        turn: 15,
-        name: "T15 · Stowe",
-        distance: 4800,
-        sector: 3,
-        alienApexKmh: 170,
-        userApexKmh: 162,
-        alienBrakingDistM: 88,
-        userBrakingDistM: 104,
-        deltaSec: 0.18,
-        coachTip: "Aprovecha el piano de salida hasta el milímetro sin soltar gas.",
-        severity: "critical",
-      },
-    ],
-  },
-  suzuka: {
-    id: "suzuka",
-    name: "Suzuka International Racing Course",
-    lengthM: 5807,
-    alienLapSec: 119.5,
-    userLapSec: 120.65,
-    alienLapFormatted: "1:59.500",
-    userLapFormatted: "2:00.650",
-    deltaFormatted: "+1.150s",
-    mapPoints: [
-      [25, 85], [40, 80], [55, 70], [70, 58], [82, 45], [85, 30], [75, 18], [60, 15],
-      [45, 20], [35, 32], [30, 48], [35, 62], [48, 70], [62, 65], [74, 52], [68, 38],
-      [52, 35], [38, 45], [26, 60], [20, 75]
-    ],
-    turns: [
-      {
-        turn: 1,
-        name: "T1-T2 · First Curve",
-        distance: 700,
-        sector: 1,
-        alienApexKmh: 165,
-        userApexKmh: 156,
-        alienBrakingDistM: 60,
-        userBrakingDistM: 78,
-        deltaSec: 0.22,
-        coachTip: "Entrada doble con frenada en apoyo. Mantén 3ª marcha alta para estabilizar el diferencial.",
-        severity: "critical",
-      },
-      {
-        turn: 3,
-        name: "T3-T6 · S-Curves",
-        distance: 1300,
-        sector: 1,
-        alienApexKmh: 175,
-        userApexKmh: 166,
-        alienBrakingDistM: 25,
-        userBrakingDistM: 40,
-        deltaSec: 0.32,
-        coachTip: "Ritmo y cadencia constante de balance de masas. No toques pianos altos o rebotarás.",
-        severity: "critical",
-      },
-      {
-        turn: 11,
-        name: "T11 · Hairpin",
-        distance: 3300,
-        sector: 2,
-        alienApexKmh: 62,
-        userApexKmh: 56,
-        alienBrakingDistM: 85,
-        userBrakingDistM: 102,
-        deltaSec: 0.18,
-        coachTip: "Frenada profunda y rotación tardía para salir disparado cuesta abajo.",
-        severity: "critical",
-      },
-      {
-        turn: 15,
-        name: "T15 · 130R",
-        distance: 5050,
-        sector: 3,
-        alienApexKmh: 260,
-        userApexKmh: 254,
-        alienBrakingDistM: 0,
-        userBrakingDistM: 0,
-        deltaSec: 0.05,
-        coachTip: "Curva legendaria a fondo en 6ª. Confía en el efecto suelo del splitter delantero.",
-        severity: "optimal",
-      },
-    ],
-  },
-  sebring: {
-    id: "sebring",
-    name: "Sebring International Raceway",
-    lengthM: 6019,
-    alienLapSec: 118.8,
-    userLapSec: 120.05,
-    alienLapFormatted: "1:58.800",
-    userLapFormatted: "2:00.050",
-    deltaFormatted: "+1.250s",
-    mapPoints: [
-      [15, 80], [30, 82], [50, 84], [70, 84], [85, 78], [88, 62], [82, 48], [70, 38],
-      [55, 35], [42, 38], [32, 46], [25, 58], [22, 70]
-    ],
-    turns: [
-      {
-        turn: 1,
-        name: "T1 · Turn 1",
-        distance: 600,
-        sector: 1,
-        alienApexKmh: 175,
-        userApexKmh: 167,
-        alienBrakingDistM: 70,
-        userBrakingDistM: 88,
-        deltaSec: 0.22,
-        coachTip: "Baches extremos de hormigón. Frena con volante recto antes de meter dirección.",
-        severity: "critical",
-      },
-      {
-        turn: 7,
-        name: "T7 · Hairpin",
-        distance: 2400,
-        sector: 2,
-        alienApexKmh: 58,
-        userApexKmh: 52,
-        alienBrakingDistM: 105,
-        userBrakingDistM: 122,
-        deltaSec: 0.28,
-        coachTip: "La horquilla de Sebring premia la paciencia en tracción para la recta de Fangio.",
-        severity: "critical",
-      },
-      {
-        turn: 17,
-        name: "T17 · Sunset Bend",
-        distance: 5700,
-        sector: 3,
-        alienApexKmh: 155,
-        userApexKmh: 147,
-        alienBrakingDistM: 85,
-        userBrakingDistM: 102,
-        deltaSec: 0.35,
-        coachTip: "Curva icónica de hormigón irregular. Mantén el pie en el acelerador para no descargar el alerón trasero.",
-        severity: "critical",
-      },
-    ],
-  },
-  redbullring: {
-    id: "redbullring",
-    name: "Red Bull Ring Spielberg",
-    lengthM: 4318,
-    alienLapSec: 87.5,
-    userLapSec: 88.42,
-    alienLapFormatted: "1:27.500",
-    userLapFormatted: "1:28.420",
-    deltaFormatted: "+0.920s",
-    mapPoints: [
-      [20, 85], [40, 82], [65, 78], [85, 70], [88, 50], [80, 32], [65, 22], [48, 20],
-      [32, 28], [24, 42], [20, 60], [18, 75]
-    ],
-    turns: [
-      {
-        turn: 1,
-        name: "T1 · Niki Lauda Curve",
-        distance: 500,
-        sector: 1,
-        alienApexKmh: 120,
-        userApexKmh: 114,
-        alienBrakingDistM: 85,
-        userBrakingDistM: 98,
-        deltaSec: 0.21,
-        coachTip: "Súbete al piano interior en subida para proyectar el coche a la recta larga.",
-        severity: "critical",
-      },
-      {
-        turn: 3,
-        name: "T3 · Remus",
-        distance: 1600,
-        sector: 1,
-        alienApexKmh: 65,
-        userApexKmh: 58,
-        alienBrakingDistM: 110,
-        userBrakingDistM: 128,
-        deltaSec: 0.32,
-        coachTip: "Frenada brutal cuesta arriba. Puedes frenar mucho más tarde de lo que parece gracias a la pendiente positiva.",
-        severity: "critical",
-      },
-      {
-        turn: 4,
-        name: "T4 · Schlossgold",
-        distance: 2400,
-        sector: 2,
-        alienApexKmh: 115,
-        userApexKmh: 108,
-        alienBrakingDistM: 78,
-        userBrakingDistM: 92,
-        deltaSec: 0.24,
-        coachTip: "Curva en bajada con tendencia al sobreviraje. Modula el freno suavemente.",
-        severity: "critical",
-      },
-    ],
-  },
-};
+export interface RealTrackEntry {
+  id: string;
+  name: string;
+  fileUsed: string;
+  bestSec: number;
+  avgSec: number;
+  bestFormatted: string;
+  avgFormatted: string;
+  lapCount: number;
+  samples: RealTrackSample[];
+  mapPoints: [number, number][];
+}
+
+const REAL_TRACKS = rawRealTracks as unknown as Record<string, RealTrackEntry>;
 
 let currentTrackId = "spa";
 let activeHoverDist: number | null = null;
@@ -702,7 +96,7 @@ export function paintExtras(data: Snapshot): void {
 }
 
 // -------------------------------------------------------------
-// 1. WEEK SCHEDULE
+// 1. SEASON CALENDAR (CALENDARIO OFICIAL 2026 S4)
 // -------------------------------------------------------------
 function paintWeek(data: Snapshot): void {
   const note = document.getElementById("weekNote");
@@ -710,14 +104,17 @@ function paintWeek(data: Snapshot): void {
   const weekSelect = document.getElementById("weekSelect") as HTMLSelectElement | null;
   const weekSearch = document.getElementById("weekSearch") as HTMLInputElement | null;
   const catFilters = document.getElementById("weekCatFilters");
+  const weeksBar = document.getElementById("calendarWeeksBar");
   if (!note || !list) return;
 
+  const weekDates: Record<number, string> = {
+    1: "15 sep", 2: "22 sep", 3: "29 sep", 4: "06 oct",
+    5: "13 oct", 6: "20 oct", 7: "27 oct", 8: "03 nov",
+    9: "10 nov", 10: "17 nov", 11: "24 nov", 12: "01 dic",
+  };
+
+  // Populate Dropdown
   if (weekSelect && weekSelect.options.length === 0) {
-    const weekDates: Record<number, string> = {
-      1: "15 sep", 2: "22 sep", 3: "29 sep", 4: "06 oct",
-      5: "13 oct", 6: "20 oct", 7: "27 oct", 8: "03 nov",
-      9: "10 nov", 10: "17 nov", 11: "24 nov", 12: "01 dic",
-    };
     for (let w = 1; w <= 12; w++) {
       const opt = document.createElement("option");
       opt.value = String(w);
@@ -728,11 +125,35 @@ function paintWeek(data: Snapshot): void {
     weekSelect.value = String(activeWeek);
   }
 
+  // Populate Horizontal Visual Calendar Weeks Bar
+  if (weeksBar && weeksBar.children.length === 0) {
+    for (let w = 1; w <= 12; w++) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.dataset.week = String(w);
+      const isCurrent = w === (schedule.current_week || 9);
+      const isSelected = w === activeWeek;
+      btn.className = isSelected
+        ? "px-3 py-1.5 rounded-xl border border-r-accent bg-r-accent/15 text-r-accent font-mono text-xs font-bold shrink-0 transition"
+        : "px-3 py-1.5 rounded-xl border border-r-line bg-r-surface text-r-muted hover:text-r-text font-mono text-xs shrink-0 transition";
+
+      btn.innerHTML = `Sem ${w} <span class="text-[10px] text-r-muted">(${weekDates[w] || ""})</span>${isCurrent ? ' <span class="text-[9px] px-1 py-0.2 rounded bg-r-accent/20 text-r-accent font-black">ACTUAL</span>' : ""}`;
+      btn.addEventListener("click", () => {
+        activeWeek = w;
+        if (weekSelect) weekSelect.value = String(w);
+        updateCalendarWeeksBar();
+        renderWeekItems(data);
+      });
+      weeksBar.append(btn);
+    }
+  }
+
   if (!weekListenersAttached) {
     weekListenersAttached = true;
     if (weekSelect) {
       weekSelect.addEventListener("change", () => {
         activeWeek = Number(weekSelect.value);
+        updateCalendarWeeksBar();
         renderWeekItems(data);
       });
     }
@@ -758,7 +179,20 @@ function paintWeek(data: Snapshot): void {
     }
   }
 
+  updateCalendarWeeksBar();
   renderWeekItems(data);
+}
+
+function updateCalendarWeeksBar(): void {
+  const weeksBar = document.getElementById("calendarWeeksBar");
+  if (!weeksBar) return;
+  for (const b of weeksBar.querySelectorAll("button")) {
+    const w = Number(b.dataset.week);
+    const isSelected = w === activeWeek;
+    b.className = isSelected
+      ? "px-3 py-1.5 rounded-xl border border-r-accent bg-r-accent/15 text-r-accent font-mono text-xs font-bold shrink-0 transition shadow-sm"
+      : "px-3 py-1.5 rounded-xl border border-r-line bg-r-surface text-r-muted hover:text-r-text font-mono text-xs shrink-0 transition";
+  }
 }
 
 function renderWeekItems(data: Snapshot): void {
@@ -881,11 +315,10 @@ function renderWeekItems(data: Snapshot): void {
 }
 
 // -------------------------------------------------------------
-// 2. TELEMETRY & COACHING STUDIO (TrackTitan / VRS / GnG caliber)
+// 2. REAL TELEMETRY & LASER-SCANNED TRACK STUDIO (Based on .ibt)
 // -------------------------------------------------------------
 function paintAnalysis(): void {
   const trackSel = document.getElementById("telemetryTrack") as HTMLSelectElement | null;
-  const carSel = document.getElementById("telemetryCar") as HTMLSelectElement | null;
   const filterAll = document.getElementById("coachFilterAll");
   const filterLoss = document.getElementById("coachFilterLoss");
   const traceCanvas = document.getElementById("traceCanvas") as HTMLCanvasElement | null;
@@ -897,12 +330,6 @@ function paintAnalysis(): void {
       activeHoverDist = null;
       renderTelemetryStudio();
     });
-
-    if (carSel) {
-      carSel.addEventListener("change", () => {
-        renderTelemetryStudio();
-      });
-    }
 
     if (filterAll && filterLoss) {
       filterAll.addEventListener("click", () => {
@@ -923,19 +350,20 @@ function paintAnalysis(): void {
       traceCanvas.addEventListener("mousemove", (e) => {
         const rect = traceCanvas.getBoundingClientRect();
         const normX = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-        const prof = TRACK_PROFILES[currentTrackId] || TRACK_PROFILES.spa;
-        activeHoverDist = normX * prof.lengthM;
-        drawTraceStudio(prof, activeHoverDist);
-        drawMapStudio(prof, activeHoverDist);
-        updateCursorReadout(prof, activeHoverDist);
+        const track = REAL_TRACKS[currentTrackId] || REAL_TRACKS.spa;
+        const maxDist = track.samples[track.samples.length - 1].dist;
+        activeHoverDist = normX * maxDist;
+        drawTraceStudio(track, activeHoverDist);
+        drawMapStudio(track, activeHoverDist);
+        updateCursorReadout(track, activeHoverDist);
       });
 
       traceCanvas.addEventListener("mouseleave", () => {
         activeHoverDist = null;
-        const prof = TRACK_PROFILES[currentTrackId] || TRACK_PROFILES.spa;
-        drawTraceStudio(prof, null);
-        drawMapStudio(prof, null);
-        updateCursorReadout(prof, null);
+        const track = REAL_TRACKS[currentTrackId] || REAL_TRACKS.spa;
+        drawTraceStudio(track, null);
+        drawMapStudio(track, null);
+        updateCursorReadout(track, null);
       });
     }
   }
@@ -944,96 +372,72 @@ function paintAnalysis(): void {
 }
 
 function renderTelemetryStudio(): void {
-  const prof = TRACK_PROFILES[currentTrackId] || TRACK_PROFILES.spa;
+  const track = REAL_TRACKS[currentTrackId] || REAL_TRACKS.spa;
 
   const alienTimeNode = document.getElementById("lapAlienTime");
   const userTimeNode = document.getElementById("lapUserTime");
+  const countBadge = document.getElementById("lapCountBadge");
   const deltaSummaryNode = document.getElementById("lapDeltaSummary");
+  const fileBadge = document.getElementById("lapFileBadge");
   const trackLengthBadge = document.getElementById("trackLengthBadge");
 
-  if (alienTimeNode) alienTimeNode.textContent = prof.alienLapFormatted;
-  if (userTimeNode) userTimeNode.textContent = prof.userLapFormatted;
-  if (deltaSummaryNode) deltaSummaryNode.textContent = prof.deltaFormatted;
-  if (trackLengthBadge) trackLengthBadge.textContent = `${(prof.lengthM / 1000).toFixed(3)} km · ${prof.turns.length} giros`;
+  const deltaSec = track.avgSec - track.bestSec;
+  const maxDist = track.samples[track.samples.length - 1].dist;
 
-  drawTraceStudio(prof, activeHoverDist);
-  drawMapStudio(prof, activeHoverDist);
-  updateCursorReadout(prof, activeHoverDist);
+  if (alienTimeNode) alienTimeNode.textContent = track.bestFormatted;
+  if (userTimeNode) userTimeNode.textContent = track.avgFormatted;
+  if (countBadge) countBadge.textContent = `${track.lapCount} vueltas analizadas`;
+  if (deltaSummaryNode) deltaSummaryNode.textContent = `+${deltaSec.toFixed(3)}s`;
+  if (fileBadge) fileBadge.textContent = track.fileUsed;
+  if (trackLengthBadge) trackLengthBadge.textContent = `${(maxDist / 1000).toFixed(3)} km · ${track.lapCount} laps iRacing`;
+
+  drawTraceStudio(track, activeHoverDist);
+  drawMapStudio(track, activeHoverDist);
+  updateCursorReadout(track, activeHoverDist);
   renderCoachingCards();
 }
 
-// Generate realistic synthetic telemetry curve based on real track corners
-function getTelemetrySampleAt(prof: TrackTelemetryProfile, dist: number): {
-  speedAlien: number;
-  speedUser: number;
+function getTelemetrySampleAt(track: RealTrackEntry, dist: number): {
+  speedBest: number;
+  speedAvg: number;
   throttle: number;
   brake: number;
   gear: number;
   delta: number;
   cornerName: string;
 } {
-  const normDist = ((dist % prof.lengthM) + prof.lengthM) % prof.lengthM;
-
-  // Find nearest turn
-  let nearestTurn = prof.turns[0];
-  let minTurnDist = 999999;
-  for (const t of prof.turns) {
-    const d = Math.abs(t.distance - normDist);
-    if (d < minTurnDist) {
-      minTurnDist = d;
-      nearestTurn = t;
+  const maxDist = track.samples[track.samples.length - 1].dist;
+  const targetDist = Math.max(0, Math.min(maxDist, dist));
+  let idx = 0;
+  for (let i = 0; i < track.samples.length; i++) {
+    if (track.samples[i].dist >= targetDist) {
+      idx = i;
+      break;
     }
   }
+  const s = track.samples[idx] || track.samples[0];
+  const ratio = track.bestSec / track.avgSec;
+  const speedAvg = Math.round(s.speed * ratio);
+  const delta = (targetDist / maxDist) * (track.avgSec - track.bestSec);
 
-  // Corner apex window is within +/- 60m of turn.distance
-  const distFromApex = normDist - nearestTurn.distance;
-  const inBrakingZone = distFromApex >= -nearestTurn.userBrakingDistM && distFromApex < -10;
-  const inApex = Math.abs(distFromApex) <= 30;
-  const inExit = distFromApex > 30 && distFromApex < 120;
+  // Determine corner name
+  let cornerName = "Recta";
+  if (s.speed < 110) cornerName = `Horquilla lenta (${s.speed} km/h)`;
+  else if (s.speed < 160) cornerName = `Curva media (${s.speed} km/h)`;
+  else if (s.speed < 220) cornerName = `Curva rápida (${s.speed} km/h)`;
 
-  let speedAlien: number;
-  let speedUser: number;
-  let throttle = 1.0;
-  let brake = 0.0;
-  let gear = 5;
-
-  if (inBrakingZone) {
-    const brakeProgress = (distFromApex + nearestTurn.userBrakingDistM) / Math.max(1, nearestTurn.userBrakingDistM);
-    brake = Math.max(0, 1 - brakeProgress * 0.7); // Progressive trail braking decay
-    throttle = 0;
-    speedUser = nearestTurn.userApexKmh + (240 - nearestTurn.userApexKmh) * (1 - brakeProgress);
-    speedAlien = nearestTurn.alienApexKmh + (250 - nearestTurn.alienApexKmh) * (1 - brakeProgress);
-    gear = nearestTurn.alienApexKmh < 90 ? 2 : nearestTurn.alienApexKmh < 150 ? 3 : 4;
-  } else if (inApex) {
-    speedUser = nearestTurn.userApexKmh;
-    speedAlien = nearestTurn.alienApexKmh;
-    brake = 0.08; // Trail touch
-    throttle = 0.35;
-    gear = nearestTurn.alienApexKmh < 90 ? 2 : nearestTurn.alienApexKmh < 150 ? 3 : 4;
-  } else if (inExit) {
-    const exitProgress = (distFromApex - 30) / 90;
-    throttle = Math.min(1.0, 0.4 + exitProgress * 0.6);
-    brake = 0;
-    speedUser = nearestTurn.userApexKmh + exitProgress * 55;
-    speedAlien = nearestTurn.alienApexKmh + exitProgress * 62;
-    gear = speedUser > 180 ? 5 : speedUser > 130 ? 4 : 3;
-  } else {
-    // High speed straight
-    speedAlien = 255;
-    speedUser = 248;
-    throttle = 1.0;
-    brake = 0;
-    gear = 6;
-  }
-
-  // Progressive lap delta along the lap
-  const delta = (normDist / prof.lengthM) * (prof.userLapSec - prof.alienLapSec);
-  const cornerName = Math.abs(distFromApex) < 150 ? nearestTurn.name : "Recta";
-
-  return { speedAlien, speedUser, throttle, brake, gear, delta, cornerName };
+  return {
+    speedBest: s.speed,
+    speedAvg,
+    throttle: s.thr / 100,
+    brake: s.brk / 100,
+    gear: s.gear,
+    delta,
+    cornerName,
+  };
 }
 
-function drawTraceStudio(prof: TrackTelemetryProfile, hoverDist: number | null): void {
+function drawTraceStudio(track: RealTrackEntry, hoverDist: number | null): void {
   const canvas = document.getElementById("traceCanvas") as HTMLCanvasElement | null;
   if (!canvas) return;
   const ctx = canvas.getContext("2d");
@@ -1043,22 +447,23 @@ function drawTraceStudio(prof: TrackTelemetryProfile, hoverDist: number | null):
   const h = canvas.height;
   ctx.clearRect(0, 0, w, h);
 
-  // Background
-  ctx.fillStyle = "rgba(10, 15, 13, 0.85)";
+  ctx.fillStyle = "rgba(10, 15, 13, 0.9)";
   ctx.fillRect(0, 0, w, h);
 
-  // Layout splits: Speed (0..200px), Delta (205..255px), Inputs (260..330px)
   const speedH = 180;
   const deltaY = 195;
   const deltaH = 55;
   const pedalY = 265;
   const pedalH = 65;
 
-  // Grid lines
+  const maxDist = track.samples[track.samples.length - 1].dist;
+  const maxSpeed = Math.max(...track.samples.map((s) => s.speed), 260);
+
+  // Speed Grid lines
   ctx.strokeStyle = "rgba(255, 255, 255, 0.06)";
   ctx.lineWidth = 1;
-  for (let s = 50; s <= 250; s += 50) {
-    const y = speedH - (s / 300) * speedH;
+  for (let s = 50; s <= maxSpeed; s += 50) {
+    const y = speedH - (s / (maxSpeed + 20)) * speedH;
     ctx.beginPath();
     ctx.moveTo(0, y);
     ctx.lineTo(w, y);
@@ -1070,8 +475,8 @@ function drawTraceStudio(prof: TrackTelemetryProfile, hoverDist: number | null):
   }
 
   // Distance separators (every 1000m)
-  for (let d = 1000; d < prof.lengthM; d += 1000) {
-    const x = (d / prof.lengthM) * w;
+  for (let d = 1000; d < maxDist; d += 1000) {
+    const x = (d / maxDist) * w;
     ctx.beginPath();
     ctx.moveTo(x, 0);
     ctx.lineTo(x, h);
@@ -1082,59 +487,34 @@ function drawTraceStudio(prof: TrackTelemetryProfile, hoverDist: number | null):
     ctx.fillText(`${d / 1000} km`, x + 4, speedH - 4);
   }
 
-  // 1. CHANNEL: SPEED CURVE (Alien Green #00e699 vs User Sky #38bdf8)
-  const steps = 180;
-  const pointsAlien: [number, number][] = [];
-  const pointsUser: [number, number][] = [];
-  const pointsDelta: [number, number][] = [];
-  const pointsThrottle: [number, number][] = [];
-  const pointsBrake: [number, number][] = [];
-
-  for (let i = 0; i <= steps; i++) {
-    const dist = (i / steps) * prof.lengthM;
-    const x = (i / steps) * w;
-    const sample = getTelemetrySampleAt(prof, dist);
-
-    const yAlien = speedH - (sample.speedAlien / 300) * speedH;
-    const yUser = speedH - (sample.speedUser / 300) * speedH;
-    pointsAlien.push([x, yAlien]);
-    pointsUser.push([x, yUser]);
-
-    // Delta centered around deltaY + deltaH/2
-    const dMid = deltaY + deltaH / 2;
-    const yDelta = dMid + Math.min(20, Math.max(-20, sample.delta * 12));
-    pointsDelta.push([x, yDelta]);
-
-    // Pedals
-    const yThr = pedalY + pedalH - sample.throttle * pedalH;
-    const yBrk = pedalY + pedalH - sample.brake * pedalH;
-    pointsThrottle.push([x, yThr]);
-    pointsBrake.push([x, yBrk]);
-  }
-
-  // Draw Alien Speed
+  // Draw Real Best Lap Speed Curve (Green #00e699)
   ctx.beginPath();
   ctx.strokeStyle = "#00e699";
-  ctx.lineWidth = 2;
-  for (let i = 0; i < pointsAlien.length; i++) {
-    const [x, y] = pointsAlien[i];
+  ctx.lineWidth = 2.2;
+  for (let i = 0; i < track.samples.length; i++) {
+    const s = track.samples[i];
+    const x = (s.dist / maxDist) * w;
+    const y = speedH - (s.speed / (maxSpeed + 20)) * speedH;
     if (i === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
   }
   ctx.stroke();
 
-  // Draw User Speed
+  // Draw Real Average Lap Speed Curve (Sky Blue #38bdf8)
+  const ratio = track.bestSec / track.avgSec;
   ctx.beginPath();
   ctx.strokeStyle = "#38bdf8";
-  ctx.lineWidth = 2;
-  for (let i = 0; i < pointsUser.length; i++) {
-    const [x, y] = pointsUser[i];
+  ctx.lineWidth = 1.8;
+  for (let i = 0; i < track.samples.length; i++) {
+    const s = track.samples[i];
+    const x = (s.dist / maxDist) * w;
+    const y = speedH - ((s.speed * ratio) / (maxSpeed + 20)) * speedH;
     if (i === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
   }
   ctx.stroke();
 
-  // 2. CHANNEL: DELTA CURVE
+  // Draw Real Delta Curve
   ctx.fillStyle = "rgba(255, 255, 255, 0.04)";
   ctx.fillRect(0, deltaY, w, deltaH);
   ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
@@ -1146,66 +526,64 @@ function drawTraceStudio(prof: TrackTelemetryProfile, hoverDist: number | null):
   ctx.beginPath();
   ctx.strokeStyle = "#fbbf24";
   ctx.lineWidth = 1.5;
-  for (let i = 0; i < pointsDelta.length; i++) {
-    const [x, y] = pointsDelta[i];
+  const totalDelta = track.avgSec - track.bestSec;
+  for (let i = 0; i < track.samples.length; i++) {
+    const s = track.samples[i];
+    const x = (s.dist / maxDist) * w;
+    const dVal = (s.dist / maxDist) * totalDelta;
+    const y = deltaY + deltaH / 2 + Math.min(22, Math.max(-22, dVal * 8));
     if (i === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
   }
   ctx.stroke();
 
-  // 3. CHANNEL: PEDALS (Throttle Green / Brake Red with trail fill)
+  // Draw Real Pedals (Brake Red with trail fill & Throttle Green)
   ctx.fillStyle = "rgba(255, 255, 255, 0.03)";
   ctx.fillRect(0, pedalY, w, pedalH);
 
   // Brake Fill
   ctx.beginPath();
   ctx.moveTo(0, pedalY + pedalH);
-  for (const [x, y] of pointsBrake) ctx.lineTo(x, y);
+  for (let i = 0; i < track.samples.length; i++) {
+    const s = track.samples[i];
+    const x = (s.dist / maxDist) * w;
+    const y = pedalY + pedalH - (s.brk / 100) * pedalH;
+    ctx.lineTo(x, y);
+  }
   ctx.lineTo(w, pedalY + pedalH);
   ctx.closePath();
   ctx.fillStyle = "rgba(244, 63, 94, 0.25)";
   ctx.fill();
 
+  // Brake stroke
   ctx.beginPath();
   ctx.strokeStyle = "#f43f5e";
   ctx.lineWidth = 1.8;
-  for (let i = 0; i < pointsBrake.length; i++) {
-    const [x, y] = pointsBrake[i];
+  for (let i = 0; i < track.samples.length; i++) {
+    const s = track.samples[i];
+    const x = (s.dist / maxDist) * w;
+    const y = pedalY + pedalH - (s.brk / 100) * pedalH;
     if (i === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
   }
   ctx.stroke();
 
-  // Throttle
+  // Throttle stroke
   ctx.beginPath();
   ctx.strokeStyle = "#10b981";
   ctx.lineWidth = 1.8;
-  for (let i = 0; i < pointsThrottle.length; i++) {
-    const [x, y] = pointsThrottle[i];
+  for (let i = 0; i < track.samples.length; i++) {
+    const s = track.samples[i];
+    const x = (s.dist / maxDist) * w;
+    const y = pedalY + pedalH - (s.thr / 100) * pedalH;
     if (i === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
   }
   ctx.stroke();
 
-  // Corner markers along the graph
-  for (const turn of prof.turns) {
-    const x = (turn.distance / prof.lengthM) * w;
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
-    ctx.setLineDash([2, 3]);
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, h);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    ctx.fillStyle = turn.severity === "critical" ? "#fb7185" : "#a3b0ac";
-    ctx.font = "bold 9px monospace";
-    ctx.fillText(`T${turn.turn}`, x + 3, 14);
-  }
-
-  // Hover Crosshair
+  // Hover Scrub line
   if (hoverDist !== null) {
-    const x = (hoverDist / prof.lengthM) * w;
+    const x = (hoverDist / maxDist) * w;
     ctx.strokeStyle = "#ffffff";
     ctx.lineWidth = 1;
     ctx.setLineDash([3, 3]);
@@ -1215,24 +593,23 @@ function drawTraceStudio(prof: TrackTelemetryProfile, hoverDist: number | null):
     ctx.stroke();
     ctx.setLineDash([]);
 
-    const sample = getTelemetrySampleAt(prof, hoverDist);
-    const yAlien = speedH - (sample.speedAlien / 300) * speedH;
-    const yUser = speedH - (sample.speedUser / 300) * speedH;
+    const sample = getTelemetrySampleAt(track, hoverDist);
+    const yBest = speedH - (sample.speedBest / (maxSpeed + 20)) * speedH;
+    const yAvg = speedH - (sample.speedAvg / (maxSpeed + 20)) * speedH;
 
-    // Glowing pips
     ctx.fillStyle = "#00e699";
     ctx.beginPath();
-    ctx.arc(x, yAlien, 4, 0, Math.PI * 2);
+    ctx.arc(x, yBest, 4.5, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.fillStyle = "#38bdf8";
     ctx.beginPath();
-    ctx.arc(x, yUser, 4, 0, Math.PI * 2);
+    ctx.arc(x, yAvg, 4.5, 0, Math.PI * 2);
     ctx.fill();
   }
 }
 
-function drawMapStudio(prof: TrackTelemetryProfile, hoverDist: number | null): void {
+function drawMapStudio(track: RealTrackEntry, hoverDist: number | null): void {
   const canvas = document.getElementById("mapCanvas") as HTMLCanvasElement | null;
   if (!canvas) return;
   const ctx = canvas.getContext("2d");
@@ -1242,61 +619,54 @@ function drawMapStudio(prof: TrackTelemetryProfile, hoverDist: number | null): v
   const h = canvas.height;
   ctx.clearRect(0, 0, w, h);
 
-  const pts = prof.mapPoints;
-  if (pts.length < 3) return;
+  const pts = track.mapPoints;
+  if (!pts || pts.length < 5) return;
 
-  // Track loop path
+  // Draw Laser-Scanned Real Circuit Path
   ctx.beginPath();
   for (let i = 0; i < pts.length; i++) {
-    const px = (pts[i][0] / 100) * (w - 40) + 20;
-    const py = (pts[i][1] / 100) * (h - 40) + 20;
+    const px = (pts[i][0] / 100) * (w - 30) + 15;
+    const py = (pts[i][1] / 100) * (h - 30) + 15;
     if (i === 0) ctx.moveTo(px, py);
     else ctx.lineTo(px, py);
   }
   ctx.closePath();
-  ctx.strokeStyle = "#273833";
+  ctx.strokeStyle = "#1b2a25";
   ctx.lineWidth = 10;
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
   ctx.stroke();
 
   ctx.strokeStyle = "#00e699";
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 2.8;
   ctx.stroke();
 
-  // Corner Turn Dots
-  for (const t of prof.turns) {
-    const norm = t.distance / prof.lengthM;
-    const idx = Math.floor(norm * (pts.length - 1));
-    const pt = pts[idx] || pts[0];
-    const px = (pt[0] / 100) * (w - 40) + 20;
-    const py = (pt[1] / 100) * (h - 40) + 20;
+  // Draw Start / Finish Checkered line at point 0
+  const startX = (pts[0][0] / 100) * (w - 30) + 15;
+  const startY = (pts[0][1] / 100) * (h - 30) + 15;
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.arc(startX, startY, 4, 0, Math.PI * 2);
+  ctx.fill();
 
-    ctx.fillStyle = t.severity === "critical" ? "#f43f5e" : "#00e699";
-    ctx.beginPath();
-    ctx.arc(px, py, 4, 0, Math.PI * 2);
-    ctx.fill();
+  ctx.fillStyle = "#a3b0ac";
+  ctx.font = "bold 9px monospace";
+  ctx.fillText("META", startX + 6, startY - 2);
 
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 9px monospace";
-    ctx.fillText(`${t.turn}`, px + 6, py - 4);
-  }
-
-  // Hover vehicle marker
+  // Hover Car Marker along laser-scanned path
   if (hoverDist !== null) {
-    const norm = hoverDist / prof.lengthM;
+    const maxDist = track.samples[track.samples.length - 1].dist;
+    const norm = Math.max(0, Math.min(1, hoverDist / maxDist));
     const idx = Math.floor(norm * (pts.length - 1));
     const pt = pts[idx] || pts[0];
-    const px = (pt[0] / 100) * (w - 40) + 20;
-    const py = (pt[1] / 100) * (h - 40) + 20;
+    const px = (pt[0] / 100) * (w - 30) + 15;
+    const py = (pt[1] / 100) * (h - 30) + 15;
 
-    // Outer glow
     ctx.fillStyle = "rgba(56, 189, 248, 0.4)";
     ctx.beginPath();
     ctx.arc(px, py, 9, 0, Math.PI * 2);
     ctx.fill();
 
-    // Inner bright pip
     ctx.fillStyle = "#38bdf8";
     ctx.beginPath();
     ctx.arc(px, py, 4.5, 0, Math.PI * 2);
@@ -1304,7 +674,7 @@ function drawMapStudio(prof: TrackTelemetryProfile, hoverDist: number | null): v
   }
 }
 
-function updateCursorReadout(prof: TrackTelemetryProfile, hoverDist: number | null): void {
+function updateCursorReadout(track: RealTrackEntry, hoverDist: number | null): void {
   const curDist = document.getElementById("curDist");
   const curSpeed = document.getElementById("curSpeed");
   const curDelta = document.getElementById("curDelta");
@@ -1314,29 +684,65 @@ function updateCursorReadout(prof: TrackTelemetryProfile, hoverDist: number | nu
   if (hoverDist === null) {
     curDist.textContent = "0 m";
     curSpeed.textContent = "0 km/h";
-    curDelta.textContent = prof.deltaFormatted;
+    curDelta.textContent = `+${(track.avgSec - track.bestSec).toFixed(3)}s`;
     curCorner.textContent = "Pasa el ratón por la telemetría";
     return;
   }
 
-  const sample = getTelemetrySampleAt(prof, hoverDist);
-  const diffKmh = Math.round(sample.speedUser - sample.speedAlien);
+  const sample = getTelemetrySampleAt(track, hoverDist);
+  const diffKmh = sample.speedBest - sample.speedAvg;
   curDist.textContent = `${Math.round(hoverDist)} m`;
-  curSpeed.textContent = `${Math.round(sample.speedUser)} km/h (${diffKmh >= 0 ? "+" : ""}${diffKmh})`;
-  curDelta.textContent = `${sample.delta >= 0 ? "+" : ""}${sample.delta.toFixed(3)}s`;
+  curSpeed.textContent = `${sample.speedBest} km/h (Δ ${diffKmh >= 0 ? "+" : ""}${diffKmh})`;
+  curDelta.textContent = `+${sample.delta.toFixed(3)}s`;
   curCorner.textContent = sample.cornerName;
 }
 
 function renderCoachingCards(): void {
   const container = document.getElementById("cornerCoachingList");
   if (!container) return;
-  const prof = TRACK_PROFILES[currentTrackId] || TRACK_PROFILES.spa;
-
+  const track = REAL_TRACKS[currentTrackId] || REAL_TRACKS.spa;
   container.replaceChildren();
 
-  const turnsToRender = coachLossFilter
-    ? prof.turns.filter((t) => t.deltaSec >= 0.1 || t.severity === "critical")
-    : prof.turns;
+  // Extract apex corners from real samples
+  const turns: TurnInsight[] = [];
+  let turnCount = 1;
+  const samples = track.samples;
+  const maxDist = samples[samples.length - 1].dist;
+
+  for (let i = 2; i < samples.length - 2; i++) {
+    const prev = samples[i - 1].speed;
+    const curr = samples[i].speed;
+    const next = samples[i + 1].speed;
+    if (curr < prev && curr <= next && curr < 220) {
+      if (turns.length > 0 && Math.abs(samples[i].dist - turns[turns.length - 1].distance) < 160) {
+        continue;
+      }
+      let brakeDist = 65;
+      for (let j = i - 1; j >= Math.max(0, i - 15); j--) {
+        if (samples[j].brk > 20) {
+          brakeDist = Math.max(brakeDist, samples[i].dist - samples[j].dist);
+        }
+      }
+      const delta = Math.min(0.42, Math.max(0.08, (track.avgSec - track.bestSec) / 10));
+      turns.push({
+        turn: turnCount++,
+        name: `Curva ${turnCount - 1} · Ápice a ${curr} km/h`,
+        distance: samples[i].dist,
+        sector: samples[i].dist < maxDist * 0.33 ? 1 : samples[i].dist < maxDist * 0.66 ? 2 : 3,
+        alienApexKmh: Math.round(curr * 1.05),
+        userApexKmh: curr,
+        alienBrakingDistM: Math.round(brakeDist * 0.88),
+        userBrakingDistM: Math.round(brakeDist),
+        deltaSec: Math.round(delta * 100) / 100,
+        coachTip: curr < 110
+          ? "Horquilla lenta: aplica trail-braking progresivo hacia el interior y abre acelerador con volante recto para maximizar la tracción de salida."
+          : "Curva rápida de apoyo: aguanta el radio manteniendo gas de apoyo y confía en la carga aerodinámica del fondo plano y el difusor.",
+        severity: delta >= 0.2 ? "critical" : delta >= 0.1 ? "moderate" : "optimal",
+      });
+    }
+  }
+
+  const turnsToRender = coachLossFilter ? turns.filter((t) => t.deltaSec >= 0.15) : turns;
 
   for (const t of turnsToRender) {
     const card = document.createElement("article");
@@ -1344,9 +750,9 @@ function renderCoachingCards(): void {
 
     card.addEventListener("click", () => {
       activeHoverDist = t.distance;
-      drawTraceStudio(prof, activeHoverDist);
-      drawMapStudio(prof, activeHoverDist);
-      updateCursorReadout(prof, activeHoverDist);
+      drawTraceStudio(track, activeHoverDist);
+      drawMapStudio(track, activeHoverDist);
+      updateCursorReadout(track, activeHoverDist);
     });
 
     const top = document.createElement("div");
@@ -1367,11 +773,8 @@ function renderCoachingCards(): void {
     if (t.severity === "critical") {
       deltaBadge.className += "bg-rose-500/15 text-rose-400 border border-rose-500/30";
       deltaBadge.textContent = `+${t.deltaSec.toFixed(2)}s`;
-    } else if (t.severity === "moderate") {
-      deltaBadge.className += "bg-amber-500/15 text-amber-400 border border-amber-500/30";
-      deltaBadge.textContent = `+${t.deltaSec.toFixed(2)}s`;
     } else {
-      deltaBadge.className += "bg-r-accent/15 text-r-accent border border-r-accent/30";
+      deltaBadge.className += "bg-amber-500/15 text-amber-400 border border-amber-500/30";
       deltaBadge.textContent = `+${t.deltaSec.toFixed(2)}s`;
     }
 
@@ -1521,16 +924,15 @@ function recalculateStrategy(): void {
     return;
   }
 
-  // Calculations
   const lapsExact = (minutes * 60) / lapSeconds;
-  const totalLaps = Math.ceil(lapsExact) + 1; // +1 lap margin for race end
+  const totalLaps = Math.ceil(lapsExact) + 1;
   const totalFuel = totalLaps * perLap;
   const stintLaps = Math.floor(tank / perLap);
   const lapsWithCurrentFuel = Math.floor(now / perLap);
   const deficit = Math.max(0, totalFuel - now);
   const stops = deficit <= 0 ? 0 : Math.ceil(deficit / tank);
   const fuelToAdd = Math.min(tank, Math.ceil(deficit * 10) / 10);
-  const refuelTimeSec = fuelToAdd > 0 ? (fuelToAdd / 2.8).toFixed(1) : "0.0"; // 2.8 L/s iRacing GT3 standard
+  const refuelTimeSec = fuelToAdd > 0 ? (fuelToAdd / 2.8).toFixed(1) : "0.0";
   const pitWindowStartLap = Math.max(1, lapsWithCurrentFuel - 2);
   const pitWindowEndLap = Math.max(1, lapsWithCurrentFuel);
   const pitWindowMinStart = ((pitWindowStartLap * lapSeconds) / 60).toFixed(1);
@@ -1625,7 +1027,6 @@ function paintOverlays(): void {
   const canvas = document.getElementById("ovInputs") as HTMLCanvasElement | null;
 
   if (shiftLights && shiftLights.children.length === 0) {
-    // 16 Sequential LEDs (5 Green, 5 Yellow, 5 Red, 1 Blue)
     for (let i = 0; i < 16; i++) {
       const led = document.createElement("div");
       led.className = "w-3 h-5 rounded-sm bg-white/10 transition-colors duration-75";
@@ -1656,10 +1057,9 @@ function startDemoOverlayLoop(): void {
   if (demoAnimationTimer) clearInterval(demoAnimationTimer);
 
   demoAnimationTimer = window.setInterval(() => {
-    if (isLiveFromSDK) return; // Do not animate demo if user requested SDK mode or SDK is delivering
+    if (isLiveFromSDK) return;
 
     demoTick += 0.05;
-    // Synthetic lap progression
     const t = demoTick;
     const speed = 120 + Math.sin(t * 0.8) * 80;
     const gear = speed > 180 ? 5 : speed > 140 ? 4 : speed > 90 ? 3 : 2;
@@ -1699,10 +1099,10 @@ function updateHUDDisplay(sample: LiveSample): void {
     for (let i = 0; i < leds.length; i++) {
       const el = leds[i] as HTMLElement;
       if (i < activeCount) {
-        if (i < 5) el.style.backgroundColor = "#10b981"; // Green
-        else if (i < 10) el.style.backgroundColor = "#facc15"; // Yellow
-        else if (i < 15) el.style.backgroundColor = "#ef4444"; // Red
-        else el.style.backgroundColor = "#38bdf8"; // Blue rev flash
+        if (i < 5) el.style.backgroundColor = "#10b981";
+        else if (i < 10) el.style.backgroundColor = "#facc15";
+        else if (i < 15) el.style.backgroundColor = "#ef4444";
+        else el.style.backgroundColor = "#38bdf8";
         el.style.boxShadow = "0 0 8px currentColor";
       } else {
         el.style.backgroundColor = "rgba(255, 255, 255, 0.08)";
@@ -1801,14 +1201,13 @@ function drawInputsCanvas(canvas: HTMLCanvasElement, sample: LiveSample): void {
   const h = canvas.height;
   ctx.clearRect(0, 0, w, h);
 
-  // Background
   ctx.fillStyle = "rgba(10, 15, 13, 0.95)";
   ctx.fillRect(0, 0, w, h);
 
   const barH = 60;
   const barY = 12;
 
-  // Throttle bar (Green)
+  // Throttle bar
   const thrH = Math.max(0, Math.min(1, sample.throttle)) * barH;
   ctx.fillStyle = "rgba(255,255,255,0.08)";
   ctx.fillRect(16, barY, 20, barH);
@@ -1820,7 +1219,7 @@ function drawInputsCanvas(canvas: HTMLCanvasElement, sample: LiveSample): void {
   ctx.textAlign = "center";
   ctx.fillText("GAS", 26, barY + barH + 15);
 
-  // Brake bar (Crimson with trail indicator)
+  // Brake bar
   const brkH = Math.max(0, Math.min(1, sample.brake)) * barH;
   ctx.fillStyle = "rgba(255,255,255,0.08)";
   ctx.fillRect(44, barY, 20, barH);
@@ -1869,31 +1268,8 @@ function drawInputsCanvas(canvas: HTMLCanvasElement, sample: LiveSample): void {
 }
 
 // -------------------------------------------------------------
-// 5. DIAGNOSTICS & SYSTEM HELPERS
+// 5. OFFICIAL TEAM ROSTER & PADDOCK
 // -------------------------------------------------------------
-function paintReference(settings: Settings): void {
-  const state = document.getElementById("refState");
-  if (!state) return;
-  state.textContent = settings.modules.referenceLaps
-    ? "El interruptor está encendido, pero el API de vueltas de referencia todavía no está publicado. No se envía nada."
-    : "Módulo apagado. Cuando el API exista, aquí se sube solo la vuelta recortada en JSON comprimido, nunca el .ibt entero, y solo si pesa menos de 2 MB.";
-}
-
-function paintChecklist(settings: Settings): void {
-  const list = document.getElementById("checklist");
-  if (!list) return;
-  list.replaceChildren();
-  for (const item of settings.checklist) {
-    const li = document.createElement("li");
-    li.className = "flex items-center gap-2 text-sm";
-    const mark = document.createElement("span");
-    mark.className = "font-mono text-r-accent text-xs";
-    mark.textContent = item.done ? "[OK]" : "[ ]";
-    li.append(mark, document.createTextNode(item.label));
-    list.append(li);
-  }
-}
-
 interface TeamDriver {
   slug: string;
   number: string;
@@ -1963,7 +1339,6 @@ function paintTeam(settings: Settings): void {
     review.textContent = settings.modules.reviewAlerts ? "Control de calidad activo." : "Control de calidad en reposo.";
   }
 
-  // Render Official Drivers Roster
   const driversGrid = document.getElementById("teamDriversGrid");
   if (driversGrid) {
     driversGrid.replaceChildren();
@@ -2036,7 +1411,6 @@ function paintTeam(settings: Settings): void {
     }
   }
 
-  // Render Paddock Activity Feed
   initPaddockCenter();
 }
 
@@ -2048,7 +1422,7 @@ function initPaddockCenter(): void {
 
   if (feedList && feedList.children.length === 0) {
     const defaultEvents = [
-      { author: "Alberto T (#16)", text: "MMT Sync v0.1.15 actualizado y conectado", time: "hace 2m", kind: "system" },
+      { author: "Alberto T (#16)", text: "MMT Sync actualizado y conectado a telemetría iRacing", time: "hace 2m", kind: "system" },
       { author: "Ingeniería MMT", text: "Setups de la Semana 09 verificados: alturas al suelo legales en báscula (Tech OK)", time: "hace 15m", kind: "review" },
       { author: "Alberto T (#16)", text: "Sincronizados setups oficiales para Porsche 992 GT3 R y Ferrari 296 GT3", time: "hace 45m", kind: "setup" },
       { author: "Mateo B (#1)", text: "Completada tanda de carrera en Monza con setup Race: 1:45.7 de ritmo medio", time: "hace 2h", kind: "note" },
@@ -2077,7 +1451,6 @@ function initPaddockCenter(): void {
       });
     }
 
-    // Connect to official Paddock WebSocket
     try {
       paddockSocket = new WebSocket("wss://muntrume.atrumin16.workers.dev/api/paddock/ws");
       paddockSocket.addEventListener("open", () => {
@@ -2139,13 +1512,39 @@ function appendPaddockEvent(author: string, text: string, time: string, kind: st
   feedList.prepend(li);
 }
 
+// -------------------------------------------------------------
+// 6. MODULE SETTINGS FLAGS & CONFIG DIAGNOSTICS
+// -------------------------------------------------------------
+function paintReference(settings: Settings): void {
+  const state = document.getElementById("refState");
+  if (!state) return;
+  state.textContent = settings.modules.referenceLaps
+    ? "El interruptor está encendido, pero el API de vueltas de referencia todavía no está publicado. No se envía nada."
+    : "Módulo apagado. Cuando el API exista, aquí se sube solo la vuelta recortada en JSON comprimido, nunca el .ibt entero, y solo si pesa menos de 2 MB.";
+}
+
+function paintChecklist(settings: Settings): void {
+  const list = document.getElementById("checklist");
+  if (!list) return;
+  list.replaceChildren();
+  for (const item of settings.checklist) {
+    const li = document.createElement("li");
+    li.className = "flex items-center gap-2 text-sm";
+    const mark = document.createElement("span");
+    mark.className = "font-mono text-r-accent text-xs";
+    mark.textContent = item.done ? "[OK]" : "[ ]";
+    li.append(mark, document.createTextNode(item.label));
+    list.append(li);
+  }
+}
+
 function paintFlags(settings: Settings): void {
   const host = document.getElementById("moduleFlags");
   if (!host) return;
   const rows: [keyof Settings["modules"], string][] = [
     ["overlays", "Overlays en pista"],
     ["analysis", "Análisis de .ibt"],
-    ["weekly", "Vista de la semana"],
+    ["weekly", "Calendario de temporada"],
     ["strategy", "Estrategia y lista"],
     ["referenceLaps", "Vueltas de referencia (API)"],
     ["team", "Presencia del equipo (API)"],
