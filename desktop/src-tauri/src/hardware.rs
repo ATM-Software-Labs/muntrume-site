@@ -1,6 +1,7 @@
-//! Detección de hardware USB / PnP de simracing y configuración de audio para iRacing.
+//! Detección universal de hardware USB / DirectInput y configuración de audio para iRacing.
 
 use std::fs;
+use std::path::Path;
 use std::process::Command;
 use serde::{Deserialize, Serialize};
 
@@ -12,89 +13,104 @@ pub struct HardwareReport {
     pub audio_devices: Vec<String>,
     pub iracing_sound_system: String,
     pub sample_rate_recommendation: String,
+    pub wheelbase_brand: Option<String>,
+    pub software_status: String,
+    pub firmware_recommendation: String,
 }
 
 pub fn detect() -> HardwareReport {
-    let mut detected_wheelbase = None;
-    let mut detected_pedals = None;
-    let mut audio_devices = Vec::new();
+    let mut detected_wheelbase: Option<String> = None;
+    let mut detected_pedals: Option<String> = None;
+    let mut audio_devices: Vec<String> = Vec::new();
+    let mut wheelbase_brand: Option<String> = None;
 
     #[cfg(windows)]
     {
-        // 1. Detectar mandos y bases a través del registro OEM de DirectInput
-        if let Ok(output) = Command::new("reg")
-            .args(&[
-                "query",
-                r"HKLM\SYSTEM\CurrentControlSet\Control\MediaProperties\PrivateProperties\Joystick\OEM",
-                "/s",
-                "/f",
-                "OEMName",
-            ])
-            .output()
-        {
-            let text = String::from_utf8_lossy(&output.stdout);
-            for line in text.lines() {
-                let line_trim = line.trim();
-                if line_trim.starts_with("OEMName") {
-                    let parts: Vec<&str> = line_trim.split("REG_SZ").collect();
-                    if let Some(val) = parts.get(1) {
-                        let name = val.trim();
-                        let lower = name.to_lowercase();
-                        if lower.contains("wheel") || lower.contains("racer") || lower.contains("thrustmaster") || lower.contains("fanatec") || lower.contains("moza") || lower.contains("simagic") || lower.contains("simucube") || lower.contains("asetek") || lower.contains("logitech") {
-                            if detected_wheelbase.is_none() {
-                                detected_wheelbase = Some(name.to_string());
-                            }
-                        } else if lower.contains("pedal") || lower.contains("load cell") || lower.contains("heusinkveld") {
-                            if detected_pedals.is_none() {
-                                detected_pedals = Some(name.to_string());
-                            }
+        // 1. Detección en registros de DirectInput OEM (HKCU y HKLM)
+        for hive in &[
+            r"HKCU\System\CurrentControlSet\Control\MediaProperties\PrivateProperties\Joystick\OEM",
+            r"HKLM\SYSTEM\CurrentControlSet\Control\MediaProperties\PrivateProperties\Joystick\OEM",
+        ] {
+            if let Ok(output) = Command::new("reg")
+                .args(&["query", hive, "/s", "/f", "OEMName"])
+                .output()
+            {
+                let text = String::from_utf8_lossy(&output.stdout);
+                for line in text.lines() {
+                    let line_trim = line.trim();
+                    if line_trim.starts_with("OEMName") {
+                        let parts: Vec<&str> = line_trim.split("REG_SZ").collect();
+                        if let Some(val) = parts.get(1) {
+                            let name = val.trim();
+                            classify_device(name, &mut detected_wheelbase, &mut detected_pedals, &mut wheelbase_brand);
                         }
                     }
                 }
             }
         }
 
-        // 2. Si no se detectó por Joystick\OEM, buscar en dispositivos PnP de Windows
-        if detected_wheelbase.is_none() || detected_pedals.is_none() || audio_devices.is_empty() {
-            if let Ok(output) = Command::new("powershell")
-                .args(&[
-                    "-NoProfile",
-                    "-Command",
-                    "Get-PnpDevice -PresentOnly | Where-Object { $_.Class -in @('HIDClass','Media') } | Select-Object -ExpandProperty FriendlyName",
-                ])
-                .output()
-            {
-                let text = String::from_utf8_lossy(&output.stdout);
-                for line in text.lines() {
-                    let name = line.trim();
-                    let lower = name.to_lowercase();
-                    if detected_wheelbase.is_none() && (lower.contains("thrustmaster") || lower.contains("fanatec") || lower.contains("moza") || lower.contains("simagic") || lower.contains("simucube") || lower.contains("asetek") || lower.contains("g pro") || lower.contains("g29") || lower.contains("g923") || lower.contains("vrs")) {
-                        detected_wheelbase = Some(name.to_string());
-                    }
-                    if detected_pedals.is_none() && (lower.contains("pedal") || lower.contains("t-lcm") || lower.contains("heusinkveld") || lower.contains("load cell") || lower.contains("crp")) {
-                        detected_pedals = Some(name.to_string());
-                    }
-                    if (lower.contains("audio") || lower.contains("headset") || lower.contains("speaker") || lower.contains("sound") || lower.contains("g435") || lower.contains("realtek")) && !audio_devices.contains(&name.to_string()) {
-                        audio_devices.push(name.to_string());
-                    }
+        // 2. Detección a través de dispositivos PnP de Windows
+        if let Ok(output) = Command::new("powershell")
+            .args(&[
+                "-NoProfile",
+                "-Command",
+                "Get-PnpDevice -PresentOnly | Where-Object Class -in @('HIDClass','Media','USB') | Select-Object -ExpandProperty FriendlyName",
+            ])
+            .output()
+        {
+            let text = String::from_utf8_lossy(&output.stdout);
+            for line in text.lines() {
+                let name = line.trim();
+                if name.is_empty() {
+                    continue;
+                }
+                classify_device(name, &mut detected_wheelbase, &mut detected_pedals, &mut wheelbase_brand);
+
+                let lower = name.to_lowercase();
+                if (lower.contains("audio") || lower.contains("headset") || lower.contains("speaker") || lower.contains("sound") || lower.contains("mic") || lower.contains("realtek") || lower.contains("g435") || lower.contains("trust"))
+                    && !lower.contains("virtual")
+                    && !lower.contains("controller")
+                    && !audio_devices.iter().any(|d| d.eq_ignore_ascii_case(name))
+                {
+                    audio_devices.push(name.to_string());
                 }
             }
         }
     }
 
-    // Si aún no hay pedales detectados específicamente, pero hay base conectada, muchas van por RJ12 a la base o USB HID
-    if detected_pedals.is_none() {
-        detected_pedals = Some("Conexión directa a base / Controlador USB estándar (Célula de carga)".into());
-    }
-    if detected_wheelbase.is_none() {
-        detected_wheelbase = Some("Thrustmaster Advanced Mode Racer (USB)".into());
-    }
-    if audio_devices.is_empty() {
-        audio_devices.push("G435 Bluetooth Gaming Headset".into());
-        audio_devices.push("Realtek High Definition Audio".into());
+    // 3. Inspección del software de gestión instalado en el sistema
+    let mut installed_suites = Vec::new();
+
+    let check_paths = [
+        ("Thrustmaster Control Panel", r"C:\Program Files\Thrustmaster\FFB Racing wheel\drivers\tmJoycpl.exe", "thrustmaster", "v34+ (2024_TTRS_1)"),
+        ("Simagic SimPro Manager", r"C:\Program Files (x86)\simpro\bin\simpro.exe", "simagic", "SimPro 2.0+ (Firmware v2.x)"),
+        ("Fanatec Control Panel", r"C:\Program Files\Fanatec\Fanatec Control Panel\FanatecControlPanel.exe", "fanatec", "Driver v455+ / FanaLab v2.01"),
+        ("Moza Pit House", r"C:\Program Files\MOZA Pit House\MOZA Pit House.exe", "moza", "Pit House v1.2.9+ / v1.3"),
+        ("Asetek RaceHub", r"C:\Program Files\Asetek\RaceHub\RaceHub.exe", "asetek", "RaceHub v2.4+"),
+        ("Simucube TrueDrive", r"C:\Program Files\Simucube\TrueDrive\TrueDrive.exe", "simucube", "TrueDrive v2024.1+"),
+        ("Logitech G HUB", r"C:\Program Files\LGHUB\lghub.exe", "logitech", "G HUB 2024.x"),
+        ("Heusinkveld SmartControl", r"C:\Program Files\Heusinkveld SmartControl\SmartControl.exe", "heusinkveld", "SmartControl v1.4+"),
+    ];
+
+    let mut fw_rec = String::from("Drivers y firmware oficiales recomendados al día.");
+
+    for (suite_name, exe_path, brand_id, fw_target) in check_paths {
+        if Path::new(exe_path).exists() {
+            installed_suites.push(format!("{suite_name} (Instalado)"));
+            if wheelbase_brand.is_none() {
+                wheelbase_brand = Some(brand_id.to_string());
+            }
+            fw_rec = format!("Software oficial detectado: {suite_name}. Versión de firmware recomendada: {fw_target}.");
+        }
     }
 
-    // 3. Inspeccionar configuración de sonido en app.ini
+    let software_status = if installed_suites.is_empty() {
+        "Sin suite de fabricante detectada en Program Files".into()
+    } else {
+        installed_suites.join(" · ")
+    };
+
+    // 4. Inspección de app.ini para sonido
     let mut sound_sys = "1 (XAudio2 Ultra-Baja Latencia)".to_string();
     if let Some(user_docs) = get_documents_dir() {
         let app_ini = user_docs.join("iRacing").join("app.ini");
@@ -117,6 +133,66 @@ pub fn detect() -> HardwareReport {
         audio_devices,
         iracing_sound_system: sound_sys,
         sample_rate_recommendation: "48.000 Hz, 24 bits (Calidad de estudio · Cero Jitter)".into(),
+        wheelbase_brand,
+        software_status,
+        firmware_recommendation: fw_rec,
+    }
+}
+
+fn classify_device(
+    name: &str,
+    wheelbase: &mut Option<String>,
+    pedals: &mut Option<String>,
+    brand: &mut Option<String>,
+) {
+    let lower = name.to_lowercase();
+
+    // Wheelbase identification across all brands
+    let is_wheel = lower.contains("wheel")
+        || lower.contains("racer")
+        || lower.contains("base")
+        || lower.contains("thrustmaster")
+        || lower.contains("fanatec")
+        || lower.contains("moza")
+        || lower.contains("simagic")
+        || lower.contains("simucube")
+        || lower.contains("asetek")
+        || lower.contains("vrs directforce")
+        || lower.contains("g29")
+        || lower.contains("g920")
+        || lower.contains("g923")
+        || lower.contains("g pro racing wheel");
+
+    let is_pedal = lower.contains("pedal")
+        || lower.contains("t-lcm")
+        || lower.contains("heusinkveld")
+        || lower.contains("load cell")
+        || lower.contains("crp")
+        || lower.contains("srp");
+
+    if is_wheel && !is_pedal && wheelbase.is_none() {
+        *wheelbase = Some(name.to_string());
+        if lower.contains("thrustmaster") {
+            *brand = Some("thrustmaster".into());
+        } else if lower.contains("fanatec") {
+            *brand = Some("fanatec".into());
+        } else if lower.contains("moza") {
+            *brand = Some("moza".into());
+        } else if lower.contains("simagic") {
+            *brand = Some("simagic".into());
+        } else if lower.contains("simucube") {
+            *brand = Some("simucube".into());
+        } else if lower.contains("asetek") {
+            *brand = Some("asetek".into());
+        } else if lower.contains("logitech") || lower.contains("g29") || lower.contains("g923") || lower.contains("g pro") {
+            *brand = Some("logitech".into());
+        } else if lower.contains("vrs") {
+            *brand = Some("vrs".into());
+        }
+    }
+
+    if is_pedal && pedals.is_none() {
+        *pedals = Some(name.to_string());
     }
 }
 

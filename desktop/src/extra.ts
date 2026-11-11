@@ -689,24 +689,71 @@ function drawTraceStudio(track: RealTrackEntry, hoverDist: number | null): void 
   }
 }
 
-function drawMapStudio(track: RealTrackEntry, hoverDist: number | null): void {
-  const canvas = document.getElementById("mapCanvas") as HTMLCanvasElement | null;
-  if (!canvas) return;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
+const CLEAN_TRACK_LAYOUTS: Record<string, [number, number][]> = {
+  barcelona: [
+    [15, 75], [72, 75], [82, 70], [84, 58], [76, 52], [70, 48],
+    [76, 40], [84, 32], [82, 22], [70, 18], [58, 22], [48, 30],
+    [52, 42], [44, 48], [34, 52], [24, 56], [18, 66], [15, 75],
+  ],
+  fuji: [
+    [12, 80], [78, 80], [88, 76], [90, 64], [84, 54], [72, 48],
+    [64, 44], [52, 34], [48, 24], [56, 16], [68, 16], [74, 24],
+    [70, 36], [58, 44], [42, 54], [30, 62], [20, 72], [12, 80],
+  ],
+  spa: [
+    [16, 76], [24, 82], [30, 74], [38, 58], [54, 46], [74, 36],
+    [86, 26], [82, 16], [68, 18], [58, 26], [48, 36], [38, 48],
+    [32, 60], [25, 68], [16, 76],
+  ],
+  monza: [
+    [14, 76], [78, 76], [88, 70], [82, 54], [70, 44], [56, 36],
+    [52, 24], [58, 16], [72, 18], [84, 28], [78, 40], [36, 56],
+    [20, 66], [14, 76],
+  ],
+  suzuka: [
+    [28, 80], [62, 80], [76, 72], [72, 58], [60, 52], [48, 42],
+    [40, 32], [48, 20], [62, 18], [78, 22], [82, 36], [70, 48],
+    [46, 60], [34, 70], [28, 80],
+  ],
+  daytona: [
+    [15, 75], [75, 75], [86, 66], [80, 45], [70, 35], [55, 30],
+    [45, 20], [30, 20], [25, 32], [35, 42], [50, 48], [40, 60],
+    [25, 65], [15, 75],
+  ],
+  sebring: [
+    [15, 80], [65, 80], [75, 72], [70, 60], [80, 50], [78, 35],
+    [65, 30], [55, 38], [45, 35], [35, 25], [25, 25], [20, 40],
+    [30, 50], [20, 65], [15, 80],
+  ],
+};
 
-  const w = canvas.width;
-  const h = canvas.height;
+function getTrackPoints(key: string): [number, number][] {
+  const k = key.toLowerCase();
+  for (const [id, pts] of Object.entries(CLEAN_TRACK_LAYOUTS)) {
+    if (k.includes(id) || id.includes(k)) {
+      return pts;
+    }
+  }
+  return CLEAN_TRACK_LAYOUTS.barcelona;
+}
+
+function drawCircuitGeometry(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  trackKey: string,
+  hoverDist: number | null,
+  totalDist: number
+): void {
   ctx.clearRect(0, 0, w, h);
+  const pts = getTrackPoints(trackKey);
+  if (!pts || pts.length < 3) return;
 
-  const pts = track.mapPoints;
-  if (!pts || pts.length < 5) return;
-
-  // Draw Laser-Scanned Real Circuit Path
+  // Background road track
   ctx.beginPath();
   for (let i = 0; i < pts.length; i++) {
-    const px = (pts[i][0] / 100) * (w - 30) + 15;
-    const py = (pts[i][1] / 100) * (h - 30) + 15;
+    const px = (pts[i][0] / 100) * (w - 36) + 18;
+    const py = (pts[i][1] / 100) * (h - 36) + 18;
     if (i === 0) ctx.moveTo(px, py);
     else ctx.lineTo(px, py);
   }
@@ -717,13 +764,14 @@ function drawMapStudio(track: RealTrackEntry, hoverDist: number | null): void {
   ctx.lineJoin = "round";
   ctx.stroke();
 
+  // Racing line
   ctx.strokeStyle = "#00e699";
   ctx.lineWidth = 2.8;
   ctx.stroke();
 
-  // Draw Start / Finish Checkered line at point 0
-  const startX = (pts[0][0] / 100) * (w - 30) + 15;
-  const startY = (pts[0][1] / 100) * (h - 30) + 15;
+  // Start / Finish Line
+  const startX = (pts[0][0] / 100) * (w - 36) + 18;
+  const startY = (pts[0][1] / 100) * (h - 36) + 18;
   ctx.fillStyle = "#ffffff";
   ctx.beginPath();
   ctx.arc(startX, startY, 4, 0, Math.PI * 2);
@@ -733,14 +781,13 @@ function drawMapStudio(track: RealTrackEntry, hoverDist: number | null): void {
   ctx.font = "bold 9px monospace";
   ctx.fillText("META", startX + 6, startY - 2);
 
-  // Hover Car Marker along laser-scanned path
-  if (hoverDist !== null) {
-    const maxDist = track.samples[track.samples.length - 1].dist;
-    const norm = Math.max(0, Math.min(1, hoverDist / maxDist));
+  // Hover Car Marker
+  if (hoverDist !== null && totalDist > 0) {
+    const norm = Math.max(0, Math.min(1, hoverDist / totalDist));
     const idx = Math.floor(norm * (pts.length - 1));
     const pt = pts[idx] || pts[0];
-    const px = (pt[0] / 100) * (w - 30) + 15;
-    const py = (pt[1] / 100) * (h - 30) + 15;
+    const px = (pt[0] / 100) * (w - 36) + 18;
+    const py = (pt[1] / 100) * (h - 36) + 18;
 
     ctx.fillStyle = "rgba(56, 189, 248, 0.4)";
     ctx.beginPath();
@@ -752,6 +799,22 @@ function drawMapStudio(track: RealTrackEntry, hoverDist: number | null): void {
     ctx.arc(px, py, 4.5, 0, Math.PI * 2);
     ctx.fill();
   }
+}
+
+function drawMapStudio(track: RealTrackEntry, hoverDist: number | null): void {
+  const canvas = document.getElementById("mapCanvas") as HTMLCanvasElement | null;
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  const maxDist = track.samples?.[track.samples.length - 1]?.dist || 4657;
+  drawCircuitGeometry(ctx, canvas.width, canvas.height, track.id || "barcelona", hoverDist, maxDist);
+}
+
+export function drawLastSessionTrackCanvas(canvas: HTMLCanvasElement, trackId: string): void {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  drawCircuitGeometry(ctx, canvas.width, canvas.height, trackId, null, 4657);
 }
 
 function updateCursorReadout(track: RealTrackEntry, hoverDist: number | null): void {
@@ -1328,6 +1391,121 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
   btnAll?.addEventListener("click", () => setPreset("all"));
   btnRadar?.addEventListener("click", () => setPreset("radar"));
   btnTelemetry?.addEventListener("click", () => setPreset("telemetry"));
+
+  // Draggable Free HUD Customization
+  let floatEditMode = false;
+  const btnEdit = document.getElementById("btnFloatEditLayout");
+  const btnReset = document.getElementById("btnFloatResetLayout");
+  const floatHost = document.getElementById("floatingOverlayHost");
+
+  const restoreFloatPositions = () => {
+    try {
+      const raw = localStorage.getItem("mmt_float_hud_positions");
+      if (!raw || !floatHost) return;
+      const pos = JSON.parse(raw) as Record<string, { left: string; top: string }>;
+      for (const [id, coord] of Object.entries(pos)) {
+        const el = floatHost.querySelector<HTMLElement>(`[data-widget="${id}"]`);
+        if (el) {
+          el.style.position = "absolute";
+          el.style.left = coord.left;
+          el.style.top = coord.top;
+          el.style.transform = "none";
+        }
+      }
+    } catch {}
+  };
+
+  const saveFloatPositions = () => {
+    if (!floatHost) return;
+    const positions: Record<string, { left: string; top: string }> = {};
+    floatHost.querySelectorAll<HTMLElement>(".mmt-float-widget").forEach((w) => {
+      const id = w.dataset.widget;
+      if (id && w.style.left && w.style.top) {
+        positions[id] = { left: w.style.left, top: w.style.top };
+      }
+    });
+    localStorage.setItem("mmt_float_hud_positions", JSON.stringify(positions));
+  };
+
+  const resetFloatPositions = () => {
+    if (!floatHost) return;
+    localStorage.removeItem("mmt_float_hud_positions");
+    floatHost.querySelectorAll<HTMLElement>(".mmt-float-widget").forEach((w) => {
+      w.style.position = "";
+      w.style.left = "";
+      w.style.top = "";
+      w.style.transform = "";
+    });
+  };
+
+  restoreFloatPositions();
+
+  btnReset?.addEventListener("click", () => {
+    resetFloatPositions();
+  });
+
+  btnEdit?.addEventListener("click", () => {
+    floatEditMode = !floatEditMode;
+    if (btnEdit) {
+      btnEdit.className = floatEditMode
+        ? "px-2.5 py-1.5 rounded-xl bg-r-accent text-r-ink font-mono text-[10px] font-bold uppercase transition flex items-center gap-1 shadow-md"
+        : "px-2.5 py-1.5 rounded-xl bg-black/85 border border-white/15 text-r-muted hover:text-r-accent font-mono text-[10px] font-bold uppercase transition flex items-center gap-1 shadow-md";
+      btnEdit.innerHTML = floatEditMode ? "<span>✓ Fijar HUD</span>" : "<span>✥ Mover HUD</span>";
+    }
+
+    if (floatHost) {
+      floatHost.querySelectorAll<HTMLElement>(".mmt-float-widget").forEach((w) => {
+        if (floatEditMode) {
+          w.classList.add("ring-2", "ring-r-accent", "cursor-move");
+        } else {
+          w.classList.remove("ring-2", "ring-r-accent", "cursor-move");
+        }
+      });
+    }
+  });
+
+  if (floatHost) {
+    floatHost.querySelectorAll<HTMLElement>(".mmt-float-widget").forEach((w) => {
+      let startX = 0;
+      let startY = 0;
+      let initLeft = 0;
+      let initTop = 0;
+
+      w.addEventListener("mousedown", (e) => {
+        if (!floatEditMode) return;
+        e.preventDefault();
+        startX = e.clientX;
+        startY = e.clientY;
+
+        const rect = w.getBoundingClientRect();
+        initLeft = rect.left;
+        initTop = rect.top;
+
+        w.style.position = "absolute";
+        w.style.transform = "none";
+        w.style.left = `${initLeft}px`;
+        w.style.top = `${initTop}px`;
+        w.style.zIndex = "60";
+
+        const onMove = (ev: MouseEvent) => {
+          const dx = ev.clientX - startX;
+          const dy = ev.clientY - startY;
+          w.style.left = `${Math.max(0, initLeft + dx)}px`;
+          w.style.top = `${Math.max(0, initTop + dy)}px`;
+        };
+
+        const onUp = () => {
+          document.removeEventListener("mousemove", onMove);
+          document.removeEventListener("mouseup", onUp);
+          w.style.zIndex = "10";
+          saveFloatPositions();
+        };
+
+        document.addEventListener("mousemove", onMove);
+        document.addEventListener("mouseup", onUp);
+      });
+    });
+  }
 }
 
 function startDemoOverlayLoop(): void {
@@ -2554,18 +2732,63 @@ export function paintHardware(report?: HardwareReport): void {
   const pedalsName = document.getElementById("hwDetectedPedalsName");
   const audioName = document.getElementById("hwDetectedAudioName");
   const brandTabs = document.getElementById("hwBrandTabs");
+  const baseBadge = document.getElementById("hwBaseStatusBadge");
+  const pedalsBadge = document.getElementById("hwPedalsStatusBadge");
+  const fwState = document.getElementById("hwFirmwareState");
 
   if (baseName) {
-    baseName.textContent = report?.detectedWheelbase || "Thrustmaster Advanced Mode Racer (USB)";
+    if (report?.detectedWheelbase) {
+      baseName.textContent = report.detectedWheelbase;
+      if (baseBadge) {
+        baseBadge.textContent = "CONECTADO";
+        baseBadge.className = "px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent/20 text-r-accent border border-r-accent/30";
+      }
+    } else {
+      baseName.textContent = "Ninguna base USB detectada (conecta tu base por USB)";
+      if (baseBadge) {
+        baseBadge.textContent = "DESCONECTADO";
+        baseBadge.className = "px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-muted/20 text-r-muted border border-r-line";
+      }
+    }
   }
+
   if (pedalsName) {
-    pedalsName.textContent = report?.detectedPedals || "Controlador USB STMicroelectronics (Pedales de Carreras)";
+    if (report?.detectedPedals) {
+      pedalsName.textContent = report.detectedPedals;
+      if (pedalsBadge) {
+        pedalsBadge.textContent = "DETECTADOS";
+        pedalsBadge.className = "px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-sky-500/20 text-sky-400 border border-sky-500/30";
+      }
+    } else {
+      pedalsName.textContent = "Conexión a base / Entrada DirectInput estándar";
+      if (pedalsBadge) {
+        pedalsBadge.textContent = "ESTÁNDAR";
+        pedalsBadge.className = "px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-muted/20 text-r-muted border border-r-line";
+      }
+    }
   }
+
   if (audioName) {
     const devices = report?.audioDevices && report.audioDevices.length > 0
-      ? report.audioDevices.join(" + ")
-      : "Logitech G435 Headset + Realtek HD Audio";
+      ? report.audioDevices.join(" · ")
+      : "Dispositivo predeterminado de Windows";
     audioName.textContent = devices;
+  }
+
+  if (fwState && report?.firmwareRecommendation) {
+    fwState.textContent = report.firmwareRecommendation;
+  }
+
+  if (report?.wheelbaseBrand && BRAND_PROFILES[report.wheelbaseBrand]) {
+    activeBrandKey = report.wheelbaseBrand;
+    if (brandTabs) {
+      brandTabs.querySelectorAll<HTMLButtonElement>("button[data-brand]").forEach((b) => {
+        const isMatch = b.dataset.brand === activeBrandKey;
+        b.className = isMatch
+          ? "px-3 py-1.5 rounded-lg font-bold uppercase transition bg-r-accent text-r-ink shadow-sm"
+          : "px-3 py-1.5 rounded-lg font-bold uppercase transition text-r-muted hover:text-r-text";
+      });
+    }
   }
 
   // Render brand profile
@@ -2816,315 +3039,28 @@ export function paintConfigAnalysis(data: IracingAnalysis): void {
 // 10. LAST SESSION (ÚLTIMA SESIÓN) TELEMETRY & RESULTS SUITE
 // -------------------------------------------------------------
 
-interface LastSessionEntry {
-  id: string;
-  dateStr: string;
-  trackId: string;
-  trackName: string;
-  trackConfig: string;
-  trackLengthKm: number;
-  airTemp: string;
-  trackTemp: string;
-  wind: string;
-  humidity: string;
-  brandCode: string;
-  brandName: string;
-  carModel: string;
-  carFolder: string;
-  carClass: string;
-  pilot: string;
-  setupName: string;
-  position: string;
-  posBadge: string;
-  iratingGain: string;
-  iratingTotal: string;
-  safetyGain: string;
-  safetyTotal: string;
-  avgTime: string;
-  bestTime: string;
-  bestLapNum: number;
-  lapsCount: number;
-  consistency: string;
-  consistencyNote: string;
-  topSpeed: string;
-  fuelPerLap: string;
-  laps: Array<{
-    num: number;
-    time: string;
-    delta: string;
-    s1: string;
-    s2: string;
-    s3: string;
-    topSpeed: string;
-    incidents: string;
-    status: string;
-    isBest?: boolean;
-  }>;
-}
-
-const LAST_SESSIONS_DATABASE: Record<string, LastSessionEntry> = {
-  fuji_bmw: {
-    id: "fuji_bmw",
-    dateStr: "11 nov 2026 · 23:41 CET",
-    trackId: "fuji",
-    trackName: "Fuji International Speedway",
-    trackConfig: "Grand Prix · 4.484 km · 16 Curvas",
-    trackLengthKm: 4.484,
-    airTemp: "19.2°C",
-    trackTemp: "25.2°C",
-    wind: "3.2 km/h (Norte)",
-    humidity: "43%",
-    brandCode: "BMW",
-    brandName: "BMW M Motorsport",
-    carModel: "BMW M4 GT3 EVO",
-    carFolder: "bmwm4gt3",
-    carClass: "GT3 Class (BoP Oficial)",
-    pilot: "#17 Alberto Trujillo (ATM Labs)",
-    setupName: "MMT_M4_FUJI_R.sto",
-    position: "P3",
-    posBadge: "Podio GT3 (+2 pos ganadas)",
-    iratingGain: "+42 iR",
-    iratingTotal: "Total: 3,111 iR (SOF: 3,240)",
-    safetyGain: "+0.28 SR",
-    safetyTotal: "Licencia: A 1.84 · 0x Limpio",
-    avgTime: "1:39.920",
-    bestTime: "1:38.953",
-    bestLapNum: 5,
-    lapsCount: 15,
-    consistency: "98.6%",
-    consistencyNote: "Ritmo excelente (±0.42s de desviación)",
-    topSpeed: "266.9 km/h",
-    fuelPerLap: "3.15 L/vuelta",
-    laps: [
-      { num: 1, time: "1:39.893", delta: "+0.940s", s1: "32.120", s2: "36.410", s3: "31.363", topSpeed: "265.8 km/h", incidents: "0x", status: "Limpia" },
-      { num: 2, time: "1:41.793", delta: "+2.840s", s1: "32.840", s2: "37.110", s3: "31.843", topSpeed: "265.5 km/h", incidents: "0x", status: "Tráfico T1" },
-      { num: 3, time: "1:40.479", delta: "+1.526s", s1: "32.310", s2: "36.620", s3: "31.549", topSpeed: "265.4 km/h", incidents: "0x", status: "Limpia" },
-      { num: 4, time: "1:39.326", delta: "+0.373s", s1: "31.980", s2: "36.080", s3: "31.266", topSpeed: "266.0 km/h", incidents: "0x", status: "Limpia" },
-      { num: 5, time: "1:38.953", delta: "+0.000s", s1: "31.810", s2: "35.910", s3: "31.233", topSpeed: "265.5 km/h", incidents: "0x", status: "Personal Best", isBest: true },
-      { num: 6, time: "1:39.755", delta: "+0.802s", s1: "32.040", s2: "36.250", s3: "31.465", topSpeed: "265.8 km/h", incidents: "0x", status: "Limpia" },
-      { num: 7, time: "1:39.546", delta: "+0.593s", s1: "31.990", s2: "36.190", s3: "31.366", topSpeed: "266.0 km/h", incidents: "0x", status: "Limpia" },
-      { num: 8, time: "1:39.831", delta: "+0.878s", s1: "32.090", s2: "36.210", s3: "31.531", topSpeed: "266.9 km/h", incidents: "0x", status: "Limpia" },
-      { num: 9, time: "1:39.300", delta: "+0.347s", s1: "31.940", s2: "36.050", s3: "31.310", topSpeed: "266.0 km/h", incidents: "0x", status: "Limpia" },
-      { num: 10, time: "1:39.072", delta: "+0.119s", s1: "31.850", s2: "35.980", s3: "31.242", topSpeed: "266.5 km/h", incidents: "0x", status: "Limpia" },
-      { num: 11, time: "1:39.774", delta: "+0.821s", s1: "32.080", s2: "36.240", s3: "31.454", topSpeed: "265.5 km/h", incidents: "0x", status: "Limpia" },
-      { num: 12, time: "1:41.580", delta: "+2.627s", s1: "32.750", s2: "37.050", s3: "31.780", topSpeed: "266.0 km/h", incidents: "0x", status: "Doblados" },
-      { num: 13, time: "1:43.480", delta: "+4.527s", s1: "33.120", s2: "37.890", s3: "32.470", topSpeed: "265.9 km/h", incidents: "0x", status: "Desgaste Neumático" },
-      { num: 14, time: "1:42.414", delta: "+3.461s", s1: "32.900", s2: "37.314", s3: "32.200", topSpeed: "266.5 km/h", incidents: "0x", status: "Limpia" },
-      { num: 15, time: "1:43.914", delta: "+4.961s", s1: "33.500", s2: "38.100", s3: "32.314", topSpeed: "60.6 km/h", incidents: "0x", status: "Entrada en Box" },
-    ],
-  },
-  spa_mclaren: {
-    id: "spa_mclaren",
-    dateStr: "09 nov 2026 · 23:57 CET",
-    trackId: "spa",
-    trackName: "Circuit de Spa-Francorchamps",
-    trackConfig: "Grand Prix · 7.004 km · 19 Curvas",
-    trackLengthKm: 7.004,
-    airTemp: "17.5°C",
-    trackTemp: "22.8°C",
-    wind: "5.1 km/h (Oeste)",
-    humidity: "58%",
-    brandCode: "MCLAREN",
-    brandName: "McLaren Motorsport",
-    carModel: "McLaren 720S GT3 EVO",
-    carFolder: "mclaren720sgt3",
-    carClass: "GT3 Class (BoP Oficial)",
-    pilot: "#16 Alberto Trujillo (ATM Labs)",
-    setupName: "MMT_720S_SPA_R.sto",
-    position: "P2",
-    posBadge: "Podio GT3 (+2 pos ganadas)",
-    iratingGain: "+38 iR",
-    iratingTotal: "Total: 3,069 iR (SOF: 3,180)",
-    safetyGain: "+0.22 SR",
-    safetyTotal: "Licencia: A 1.56 · 1x Incidente",
-    avgTime: "2:17.310",
-    bestTime: "2:16.480",
-    bestLapNum: 4,
-    lapsCount: 8,
-    consistency: "98.1%",
-    consistencyNote: "Ritmo sólido (±0.58s de desviación)",
-    topSpeed: "272.4 km/h",
-    fuelPerLap: "3.82 L/vuelta",
-    laps: [
-      { num: 1, time: "2:18.120", delta: "+1.640s", s1: "41.210", s2: "58.120", s3: "38.790", topSpeed: "271.2 km/h", incidents: "0x", status: "Limpia" },
-      { num: 2, time: "2:17.550", delta: "+1.070s", s1: "41.050", s2: "57.850", s3: "38.650", topSpeed: "271.8 km/h", incidents: "0x", status: "Limpia" },
-      { num: 3, time: "2:16.920", delta: "+0.440s", s1: "40.890", s2: "57.510", s3: "38.520", topSpeed: "272.0 km/h", incidents: "0x", status: "Limpia" },
-      { num: 4, time: "2:16.480", delta: "+0.000s", s1: "40.750", s2: "57.340", s3: "38.390", topSpeed: "272.4 km/h", incidents: "0x", status: "Personal Best", isBest: true },
-      { num: 5, time: "2:17.020", delta: "+0.540s", s1: "40.820", s2: "57.650", s3: "38.550", topSpeed: "271.9 km/h", incidents: "0x", status: "Limpia" },
-      { num: 6, time: "2:17.840", delta: "+1.360s", s1: "41.150", s2: "58.010", s3: "38.680", topSpeed: "271.5 km/h", incidents: "1x", status: "Offtrack Blanchimont" },
-      { num: 7, time: "2:17.410", delta: "+0.930s", s1: "40.950", s2: "57.820", s3: "38.640", topSpeed: "271.7 km/h", incidents: "0x", status: "Limpia" },
-      { num: 8, time: "2:19.820", delta: "+3.340s", s1: "41.500", s2: "58.920", s3: "39.400", topSpeed: "72.0 km/h", incidents: "0x", status: "Pit Entry" },
-    ],
-  },
-  bcn_ferrari: {
-    id: "bcn_ferrari",
-    dateStr: "08 nov 2026 · 21:15 CET",
-    trackId: "barcelona",
-    trackName: "Circuit de Barcelona-Catalunya",
-    trackConfig: "Grand Prix · 4.657 km · 14 Curvas",
-    trackLengthKm: 4.657,
-    airTemp: "20.3°C",
-    trackTemp: "24.1°C",
-    wind: "4.0 km/h (Sur)",
-    humidity: "48%",
-    brandCode: "FERRARI",
-    brandName: "Ferrari Competizioni GT",
-    carModel: "Ferrari 296 GT3",
-    carFolder: "ferrari296gt3",
-    carClass: "GT3 Class (BoP Oficial)",
-    pilot: "#17 Alberto Trujillo (ATM Labs)",
-    setupName: "MMT_296_BCN_R.sto",
-    position: "P1",
-    posBadge: "Victoria GT3 Open (Pole & Win)",
-    iratingGain: "+55 iR",
-    iratingTotal: "Total: 3,031 iR (SOF: 3,350)",
-    safetyGain: "+0.35 SR",
-    safetyTotal: "Licencia: A 1.34 · 0x Limpio",
-    avgTime: "1:41.890",
-    bestTime: "1:41.220",
-    bestLapNum: 3,
-    lapsCount: 10,
-    consistency: "99.0%",
-    consistencyNote: "Consistencia óptima (±0.28s de desviación)",
-    topSpeed: "270.8 km/h",
-    fuelPerLap: "3.30 L/vuelta",
-    laps: [
-      { num: 1, time: "1:42.340", delta: "+1.120s", s1: "28.350", s2: "36.210", s3: "37.780", topSpeed: "270.1 km/h", incidents: "0x", status: "Limpia" },
-      { num: 2, time: "1:41.650", delta: "+0.430s", s1: "28.120", s2: "35.950", s3: "37.580", topSpeed: "270.5 km/h", incidents: "0x", status: "Limpia" },
-      { num: 3, time: "1:41.220", delta: "+0.000s", s1: "27.980", s2: "35.810", s3: "37.430", topSpeed: "270.8 km/h", incidents: "0x", status: "Personal Best", isBest: true },
-      { num: 4, time: "1:41.510", delta: "+0.290s", s1: "28.050", s2: "35.910", s3: "37.550", topSpeed: "270.4 km/h", incidents: "0x", status: "Limpia" },
-      { num: 5, time: "1:41.740", delta: "+0.520s", s1: "28.140", s2: "36.020", s3: "37.580", topSpeed: "270.2 km/h", incidents: "0x", status: "Limpia" },
-      { num: 6, time: "1:41.920", delta: "+0.700s", s1: "28.210", s2: "36.110", s3: "37.600", topSpeed: "270.0 km/h", incidents: "0x", status: "Limpia" },
-      { num: 7, time: "1:41.880", delta: "+0.660s", s1: "28.190", s2: "36.080", s3: "37.610", topSpeed: "270.3 km/h", incidents: "0x", status: "Limpia" },
-      { num: 8, time: "1:42.150", delta: "+0.930s", s1: "28.280", s2: "36.190", s3: "37.680", topSpeed: "269.8 km/h", incidents: "0x", status: "Limpia" },
-      { num: 9, time: "1:42.480", delta: "+1.260s", s1: "28.390", s2: "36.310", s3: "37.780", topSpeed: "269.5 km/h", incidents: "0x", status: "Limpia" },
-      { num: 10, time: "1:44.200", delta: "+2.980s", s1: "28.950", s2: "37.120", s3: "38.130", topSpeed: "65.0 km/h", incidents: "0x", status: "Pit Entry" },
-    ],
-  },
-};
-
-let activeLastSessionId = "fuji_bmw";
-let lastSessionSelectWired = false;
-
-function drawLastSessionTrackCanvas(canvas: HTMLCanvasElement, trackId: string): void {
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-  const w = canvas.width;
-  const h = canvas.height;
-  ctx.clearRect(0, 0, w, h);
-
-  const trk = REAL_TRACKS[trackId] || REAL_TRACKS["fuji"];
-  const pts = trk?.mapPoints;
-  if (!pts || pts.length < 5) return;
-
-  // Background subtle telemetry grid
-  ctx.save();
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.04)";
-  ctx.lineWidth = 1;
-  for (let x = 30; x < w; x += 40) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, h);
-    ctx.stroke();
-  }
-  for (let y = 30; y < h; y += 40) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(w, y);
-    ctx.stroke();
-  }
-  ctx.restore();
-
-  const len = pts.length;
-  const s1End = Math.floor(len * 0.33);
-  const s2End = Math.floor(len * 0.68);
-
-  const getPt = (p: [number, number]) => {
-    return [
-      (p[0] / 100) * (w - 40) + 20,
-      (p[1] / 100) * (h - 40) + 20,
-    ];
-  };
-
-  const drawSegment = (startIdx: number, endIdx: number, color: string, glowColor: string) => {
-    ctx.save();
-    ctx.beginPath();
-    ctx.strokeStyle = glowColor;
-    ctx.lineWidth = 8;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.shadowColor = glowColor;
-    ctx.shadowBlur = 12;
-    for (let i = startIdx; i <= endIdx && i < len; i++) {
-      const [px, py] = getPt(pts[i]);
-      if (i === startIdx) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
-    }
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 3.5;
-    ctx.shadowBlur = 0;
-    for (let i = startIdx; i <= endIdx && i < len; i++) {
-      const [px, py] = getPt(pts[i]);
-      if (i === startIdx) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
-    }
-    ctx.stroke();
-    ctx.restore();
-  };
-
-  drawSegment(0, s1End, "#38bdf8", "rgba(56, 189, 248, 0.35)");
-  drawSegment(s1End, s2End, "#fbbf24", "rgba(251, 191, 36, 0.35)");
-  drawSegment(s2End, len - 1, "#fb7185", "rgba(251, 113, 133, 0.35)");
-
-  // Meta / Finish Line pin
-  const [mx, my] = getPt(pts[0]);
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(mx, my, 6, 0, Math.PI * 2);
-  ctx.fillStyle = "#10b981";
-  ctx.shadowColor = "#10b981";
-  ctx.shadowBlur = 10;
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.arc(mx, my, 2.5, 0, Math.PI * 2);
-  ctx.fillStyle = "#ffffff";
-  ctx.fill();
-
-  ctx.font = "bold 10px monospace";
-  ctx.fillStyle = "#10b981";
-  ctx.fillText("META", mx + 8, my - 6);
-  ctx.restore();
-}
-
-export function paintLastSession(sessionId?: string): void {
-  if (sessionId && LAST_SESSIONS_DATABASE[sessionId]) {
-    activeLastSessionId = sessionId;
-  }
-  const session = LAST_SESSIONS_DATABASE[activeLastSessionId] || LAST_SESSIONS_DATABASE["fuji_bmw"];
-
+export function paintLastSession(trackId: string = "fuji"): void {
   const canvas = document.getElementById("lastSessionTrackCanvas") as HTMLCanvasElement | null;
   if (canvas) {
-    drawLastSessionTrackCanvas(canvas, session.trackId);
+    drawLastSessionTrackCanvas(canvas, trackId);
   }
+
+  const trk = REAL_TRACKS[trackId] || REAL_TRACKS["fuji"];
 
   // Update Track details
   const trackName = document.getElementById("lsTrackName");
   const trackConfig = document.getElementById("lsTrackConfig");
   const trackConditions = document.getElementById("lsTrackConditions");
   const dateText = document.getElementById("lsDateText");
-  if (trackName) trackName.textContent = session.trackName;
-  if (trackConfig) trackConfig.textContent = session.trackConfig;
+  if (trackName) trackName.textContent = trk?.name || "Circuito Oficial";
+  if (trackConfig) trackConfig.textContent = `Trazado Oficial · ${(trk?.samples?.[trk.samples.length - 1]?.dist ? trk.samples[trk.samples.length - 1].dist / 1000 : 4.484).toFixed(3)} km`;
   if (trackConditions) {
     trackConditions.innerHTML = `
-      <span>Asfalto ${session.trackTemp} · Aire ${session.airTemp}</span><br/>
-      <span>Viento ${session.wind} · Humedad ${session.humidity}</span>
+      <span>Asfalto --°C · Aire --°C</span><br/>
+      <span>Esperando conexión con simulador</span>
     `;
   }
-  if (dateText) dateText.textContent = session.dateStr;
+  if (dateText) dateText.textContent = "Esperando a iRacing";
 
   // Update Car Make & Setup
   const brandIcon = document.getElementById("lsBrandIcon");
@@ -3133,14 +3069,14 @@ export function paintLastSession(sessionId?: string): void {
   const carClass = document.getElementById("lsCarClass");
   const pilot = document.getElementById("lsPilot");
   const setup = document.getElementById("lsSetup");
-  if (brandIcon) brandIcon.textContent = session.brandCode;
-  if (brandName) brandName.textContent = session.brandName;
-  if (carModel) carModel.textContent = session.carModel;
-  if (carClass) carClass.textContent = session.carClass;
-  if (pilot) pilot.textContent = session.pilot;
+  if (brandIcon) brandIcon.textContent = "--";
+  if (brandName) brandName.textContent = "Vehículo";
+  if (carModel) carModel.textContent = "Sin coche en pista";
+  if (carClass) carClass.textContent = "Clase --";
+  if (pilot) pilot.textContent = "Alberto Trujillo";
   if (setup) {
-    setup.textContent = session.setupName;
-    setup.title = session.setupName;
+    setup.textContent = "Sin telemetría en vivo";
+    setup.title = "Esperando que iRacing esté en pista";
   }
 
   // Update Big Results Cards
@@ -3153,68 +3089,35 @@ export function paintLastSession(sessionId?: string): void {
   const avgTime = document.getElementById("lsAvgTime");
   const lapsCount = document.getElementById("lsLapsCount");
 
-  if (position) position.textContent = session.position;
-  if (posBadge) posBadge.textContent = session.posBadge;
-  if (iratingGain) iratingGain.textContent = session.iratingGain;
-  if (iratingTotal) iratingTotal.textContent = session.iratingTotal;
-  if (safetyGain) safetyGain.textContent = session.safetyGain;
-  if (safetyTotal) safetyTotal.textContent = session.safetyTotal;
-  if (avgTime) avgTime.textContent = session.avgTime;
-  if (lapsCount) lapsCount.textContent = `${session.lapsCount} vueltas analizadas`;
+  if (position) position.textContent = "--";
+  if (posBadge) posBadge.textContent = "Sin carrera activa";
+  if (iratingGain) iratingGain.textContent = "--";
+  if (iratingTotal) iratingTotal.textContent = "Solo oficial finalizada";
+  if (safetyGain) safetyGain.textContent = "--";
+  if (safetyTotal) safetyTotal.textContent = "0x incidentes";
+  if (avgTime) avgTime.textContent = "--:--.---";
+  if (lapsCount) lapsCount.textContent = "0 vueltas";
 
   // Update Stint Highlights
   const bestTime = document.getElementById("lsBestTime");
   const consistency = document.getElementById("lsConsistency");
   const topSpeed = document.getElementById("lsTopSpeed");
   const fuel = document.getElementById("lsFuel");
-  if (bestTime) bestTime.textContent = session.bestTime;
-  if (consistency) consistency.textContent = session.consistency;
-  if (topSpeed) topSpeed.textContent = session.topSpeed;
-  if (fuel) fuel.textContent = session.fuelPerLap;
+  if (bestTime) bestTime.textContent = "--:--.---";
+  if (consistency) consistency.textContent = "--";
+  if (topSpeed) topSpeed.textContent = "-- km/h";
+  if (fuel) fuel.textContent = "-- L/vuelta";
 
-  // Update Lap Table
+  // Clean Lap Table
   const tableBody = document.getElementById("lsLapTableBody");
   if (tableBody) {
-    tableBody.innerHTML = "";
-    for (const lap of session.laps) {
-      const tr = document.createElement("tr");
-      tr.className = lap.isBest
-        ? "bg-fuchsia-500/10 hover:bg-fuchsia-500/15 transition-colors font-semibold"
-        : "hover:bg-r-bg/60 transition-colors";
-
-      const badgeColor = lap.isBest
-        ? "bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30"
-        : lap.status.includes("Tráfico") || lap.status.includes("Offtrack")
-        ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-        : "bg-emerald-500/15 text-emerald-400 border border-emerald-500/25";
-
-      tr.innerHTML = `
-        <td class="py-2.5 px-3 font-bold text-r-text">L${lap.num}</td>
-        <td class="py-2.5 px-3 font-bold ${lap.isBest ? "text-fuchsia-400" : "text-r-text"}">${lap.time}</td>
-        <td class="py-2.5 px-3 text-r-muted">${lap.delta}</td>
-        <td class="py-2.5 px-3 text-sky-400">${lap.s1}</td>
-        <td class="py-2.5 px-3 text-amber-400">${lap.s2}</td>
-        <td class="py-2.5 px-3 text-rose-400">${lap.s3}</td>
-        <td class="py-2.5 px-3 text-r-text">${lap.topSpeed}</td>
-        <td class="py-2.5 px-3 ${lap.incidents === "0x" ? "text-emerald-400" : "text-amber-400"}">${lap.incidents}</td>
-        <td class="py-2.5 px-3">
-          <span class="px-2 py-0.5 rounded text-[10px] font-mono ${badgeColor}">
-            ${lap.status}
-          </span>
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="9" class="py-12 text-center text-r-muted font-mono text-xs">
+          Sin telemetría en vivo. Entra a pista en iRacing para ver tiempos y telemetría real a 60 Hz sin datos inventados.
         </td>
-      `;
-      tableBody.append(tr);
-    }
-  }
-
-  // Bind dropdown change listener
-  const sessionSelect = document.getElementById("lastSessionSelect") as HTMLSelectElement | null;
-  if (sessionSelect && !lastSessionSelectWired) {
-    lastSessionSelectWired = true;
-    sessionSelect.value = activeLastSessionId;
-    sessionSelect.addEventListener("change", () => {
-      paintLastSession(sessionSelect.value);
-    });
+      </tr>
+    `;
   }
 }
 

@@ -19,16 +19,17 @@ pub fn spawn(app: AppHandle) {
 
 #[cfg(windows)]
 pub fn current_status() -> &'static str {
-    use windows_sys::Win32::System::Memory::{OpenFileMappingW, FILE_MAP_READ};
-    let mapping = unsafe { OpenFileMappingW(FILE_MAP_READ, 0, wide("Local\\IRSDKMemMapFileName").as_ptr()) };
-    if !mapping.is_null() {
-        unsafe { windows_sys::Win32::Foundation::CloseHandle(mapping); }
-        return "on_track";
-    }
-    if is_process_running(&["iRacingSim64DX11.exe", "iRacingSim64.exe"]) {
+    let sim_running = is_process_running(&["iRacingSim64DX11.exe", "iRacingSim64.exe"]);
+    if sim_running {
+        use windows_sys::Win32::System::Memory::{OpenFileMappingW, FILE_MAP_READ};
+        let mapping = unsafe { OpenFileMappingW(FILE_MAP_READ, 0, wide("Local\\IRSDKMemMapFileName").as_ptr()) };
+        if !mapping.is_null() {
+            unsafe { windows_sys::Win32::Foundation::CloseHandle(mapping); }
+            return "on_track";
+        }
         return "in_sim";
     }
-    if is_process_running(&["iRacingUI.exe", "iRacingService64.exe", "iRacingService.exe"]) {
+    if is_process_running(&["iRacingUI.exe"]) {
         return "ui_open";
     }
     "closed"
@@ -94,12 +95,10 @@ fn windows_loop(app: AppHandle) {
     let mut last_status_check = Instant::now() - Duration::from_secs(5);
 
     loop {
-        let mapping = unsafe { OpenFileMappingW(FILE_MAP_READ, 0, wide("Local\\IRSDKMemMapFileName").as_ptr()) };
-        if mapping.is_null() {
+        let sim_running = is_process_running(&["iRacingSim64DX11.exe", "iRacingSim64.exe"]);
+        if !sim_running {
             if last_status_check.elapsed() >= Duration::from_millis(1500) {
-                let st = if is_process_running(&["iRacingSim64DX11.exe", "iRacingSim64.exe"]) {
-                    "in_sim"
-                } else if is_process_running(&["iRacingUI.exe", "iRacingService64.exe", "iRacingService.exe"]) {
+                let st = if is_process_running(&["iRacingUI.exe"]) {
                     "ui_open"
                 } else {
                     "closed"
@@ -107,6 +106,13 @@ fn windows_loop(app: AppHandle) {
                 let _ = app.emit("mmt-iracing-status", st);
                 last_status_check = Instant::now();
             }
+            std::thread::sleep(Duration::from_millis(1000));
+            continue;
+        }
+
+        let mapping = unsafe { OpenFileMappingW(FILE_MAP_READ, 0, wide("Local\\IRSDKMemMapFileName").as_ptr()) };
+        if mapping.is_null() {
+            let _ = app.emit("mmt-iracing-status", "in_sim");
             std::thread::sleep(Duration::from_millis(1000));
             continue;
         }

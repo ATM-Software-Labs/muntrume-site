@@ -20,7 +20,7 @@
               <div class="mmt-display text-[22px] leading-none tracking-wide">MMT Sync</div>
               <span id="irBadge" class="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono tracking-wider uppercase border border-r-line bg-r-bg text-r-muted transition-colors">
                 <span id="irDot" class="w-2 h-2 rounded-full bg-r-muted"></span>
-                <span id="irText">iRacing en espera</span>
+                <span id="irText">iRacing cerrado</span>
               </span>
             </div>
             <div id="pilotLine" class="font-mono text-[11px] tracking-wide text-r-muted truncate">Muntrume Motorsport</div>
@@ -172,20 +172,6 @@
               </div>
             </div>
 
-            <!-- Quick Last Session Alert/Banner -->
-            <div id="libLastSessionBanner" class="mt-3 p-3 rounded-xl border border-r-line bg-r-surface flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
-              <div class="flex items-center gap-2.5">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span class="text-r-muted">Última Sesión:</span>
-                <strong class="text-r-text">BMW M4 GT3 EVO en Fuji GP</strong>
-                <span class="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold">P3 (+42 iR)</span>
-                <span class="text-r-muted hidden sm:inline">Promedio: 1:39.920 · SR +0.28</span>
-              </div>
-              <button type="button" id="quickLastSessionBtn" class="px-2.5 py-1 rounded-lg border border-r-line bg-r-bg hover:border-r-accent hover:text-r-accent transition-colors font-bold text-[11px] text-r-text">
-                Ver Detalles de Sesión &rarr;
-              </button>
-            </div>
-
             <div id="library" class="mt-4 grid gap-4"></div>
             <p id="libraryEmpty" hidden class="mt-6 rounded-2xl border border-dashed border-r-line px-4 py-8 text-center text-r-muted">Ningún setup coincide con los filtros o tu selección de categorías.</p>
           </section>
@@ -314,11 +300,11 @@
               <div class="lg:col-span-7 rounded-2xl border border-r-line bg-r-surface p-5 space-y-4">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-r-accent animate-pulse"></span>
-                    <span id="lsTrackBadge" class="px-2 py-0.5 rounded-full bg-r-accent/15 border border-r-accent/30 text-r-accent font-mono text-[11px] font-bold uppercase tracking-wider">Circuito Oficial</span>
-                    <span id="lsSessionTypeBadge" class="px-2 py-0.5 rounded-full bg-r-bg border border-r-line text-r-muted font-mono text-[11px]">Carrera / Tanda Oficial</span>
+                    <span id="lsTrackDot" class="w-2.5 h-2.5 rounded-full bg-r-muted"></span>
+                    <span id="lsTrackBadge" class="px-2 py-0.5 rounded-full bg-r-bg border border-r-line text-r-muted font-mono text-[11px] font-bold uppercase tracking-wider">Circuito Oficial</span>
+                    <span id="lsSessionTypeBadge" class="px-2 py-0.5 rounded-full bg-r-bg border border-r-line text-r-muted font-mono text-[11px]">Sin sesión activa</span>
                   </div>
-                  <span id="lsDateText" class="font-mono text-xs text-r-muted">11 nov 2026 · 23:41 CET</span>
+                  <span id="lsDateText" class="font-mono text-xs text-r-muted">Esperando a iRacing</span>
                 </div>
 
                 <div class="relative w-full h-[280px] rounded-xl bg-black/60 border border-r-line/50 overflow-hidden flex items-center justify-center">
@@ -337,8 +323,8 @@
                     <p id="lsTrackConfig" class="text-r-muted text-[11px]">Grand Prix · 4.484 km · 16 Curvas</p>
                   </div>
                   <div id="lsTrackConditions" class="text-right text-[11px] text-r-muted">
-                    <span>Asfalto 25.2°C · Aire 19.2°C</span><br/>
-                    <span>Viento 3.2 km/h · Humedad 43%</span>
+                    <span>Asfalto --°C · Aire --°C</span><br/>
+                    <span>Viento -- km/h · Humedad --%</span>
                   </div>
                 </div>
               </div>
@@ -349,23 +335,23 @@
                 <div class="rounded-2xl border border-r-line bg-r-surface p-5 space-y-3">
                   <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
-                      <div id="lsBrandIcon" class="w-8 h-8 rounded-lg bg-r-bg border border-r-line flex items-center justify-center font-bold text-xs text-r-accent">BMW</div>
+                      <div id="lsBrandIcon" class="w-8 h-8 rounded-lg bg-r-bg border border-r-line flex items-center justify-center font-bold text-xs text-r-muted">--</div>
                       <div>
-                        <span id="lsBrandName" class="text-[10px] uppercase font-mono tracking-wider text-r-muted">BMW M Motorsport</span>
-                        <h3 id="lsCarModel" class="text-base font-bold text-r-text">BMW M4 GT3 EVO</h3>
+                        <span id="lsBrandName" class="text-[10px] uppercase font-mono tracking-wider text-r-muted">Fabricante</span>
+                        <h3 id="lsCarModel" class="text-base font-bold text-r-text">Ningún coche en pista</h3>
                       </div>
                     </div>
-                    <span id="lsCarClass" class="px-2 py-0.5 rounded-full border border-r-line bg-r-bg font-mono text-[10px] text-r-muted">GT3 Class</span>
+                    <span id="lsCarClass" class="px-2 py-0.5 rounded-full border border-r-line bg-r-bg font-mono text-[10px] text-r-muted">Clase --</span>
                   </div>
 
                   <div class="grid grid-cols-2 gap-2 pt-2 border-t border-r-line/50 text-xs font-mono">
                     <div class="bg-r-bg/50 p-2.5 rounded-xl border border-r-line/40">
-                      <span class="text-r-muted text-[10px] block uppercase">Piloto / Dorsal</span>
-                      <strong id="lsPilot" class="text-r-text text-xs">#17 Alberto Trujillo</strong>
+                      <span class="text-r-muted text-[10px] block uppercase">Piloto</span>
+                      <strong id="lsPilot" class="text-r-text text-xs">Alberto Trujillo</strong>
                     </div>
                     <div class="bg-r-bg/50 p-2.5 rounded-xl border border-r-line/40">
-                      <span class="text-r-muted text-[10px] block uppercase">Setup Usado</span>
-                      <strong id="lsSetup" class="text-r-accent text-xs truncate block" title="MMT_M4_FUJI_R.sto">MMT_M4_FUJI_R.sto</strong>
+                      <span class="text-r-muted text-[10px] block uppercase">Setup Cargado</span>
+                      <strong id="lsSetup" class="text-r-muted text-xs truncate block" title="Esperando telemetría">Esperando a iRacing</strong>
                     </div>
                   </div>
                 </div>
@@ -374,30 +360,30 @@
                 <div class="grid grid-cols-2 gap-3">
                   <!-- Posicion -->
                   <div class="rounded-2xl border border-r-line bg-r-surface p-4 text-center">
-                    <span class="text-[11px] font-mono uppercase text-r-muted tracking-wider block">Posición Final</span>
-                    <div id="lsPosition" class="text-3xl font-extrabold text-r-text font-mono mt-1">P3</div>
-                    <span id="lsPosBadge" class="inline-block mt-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-mono">Podio GT3 (+2 pos)</span>
+                    <span class="text-[11px] font-mono uppercase text-r-muted tracking-wider block">Posición</span>
+                    <div id="lsPosition" class="text-3xl font-extrabold text-r-muted font-mono mt-1">--</div>
+                    <span id="lsPosBadge" class="inline-block mt-1 px-2 py-0.5 rounded-full bg-r-bg text-r-muted border border-r-line text-[10px] font-mono">Sin carrera activa</span>
                   </div>
 
                   <!-- Ganancia iRating -->
-                  <div class="rounded-2xl border border-emerald-500/30 bg-emerald-950/10 p-4 text-center">
-                    <span class="text-[11px] font-mono uppercase text-emerald-400/80 tracking-wider block">Ganancia iRating</span>
-                    <div id="lsIratingGain" class="text-3xl font-extrabold text-emerald-400 font-mono mt-1">+42 iR</div>
-                    <span id="lsIratingTotal" class="inline-block mt-1 text-[11px] font-mono text-r-muted">Total: 3,111 iR (SOF: 3,240)</span>
+                  <div class="rounded-2xl border border-r-line bg-r-surface p-4 text-center">
+                    <span class="text-[11px] font-mono uppercase text-r-muted tracking-wider block">iRating</span>
+                    <div id="lsIratingGain" class="text-3xl font-extrabold text-r-muted font-mono mt-1">--</div>
+                    <span id="lsIratingTotal" class="inline-block mt-1 text-[11px] font-mono text-r-muted">Solo oficial finalizada</span>
                   </div>
 
                   <!-- Safety Rating -->
                   <div class="rounded-2xl border border-r-line bg-r-surface p-4 text-center">
                     <span class="text-[11px] font-mono uppercase text-r-muted tracking-wider block">Safety Rating (SR)</span>
-                    <div id="lsSafetyGain" class="text-2xl font-extrabold text-sky-400 font-mono mt-1">+0.28 SR</div>
-                    <span id="lsSafetyTotal" class="inline-block mt-1 text-[11px] font-mono text-r-muted">Licencia: A 1.84 · 0x Limpio</span>
+                    <div id="lsSafetyGain" class="text-2xl font-extrabold text-r-muted font-mono mt-1">--</div>
+                    <span id="lsSafetyTotal" class="inline-block mt-1 text-[11px] font-mono text-r-muted">0x incidentes</span>
                   </div>
 
                   <!-- Tiempo Promedio -->
                   <div class="rounded-2xl border border-r-line bg-r-surface p-4 text-center">
                     <span class="text-[11px] font-mono uppercase text-r-muted tracking-wider block">Tiempo Promedio</span>
-                    <div id="lsAvgTime" class="text-2xl font-extrabold text-r-accent font-mono mt-1">1:39.920</div>
-                    <span id="lsLapsCount" class="inline-block mt-1 text-[11px] font-mono text-r-muted">15 vueltas analizadas</span>
+                    <div id="lsAvgTime" class="text-2xl font-extrabold text-r-muted font-mono mt-1">--:--.---</div>
+                    <span id="lsLapsCount" class="inline-block mt-1 text-[11px] font-mono text-r-muted">0 vueltas</span>
                   </div>
                 </div>
               </div>
@@ -407,23 +393,23 @@
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div class="rounded-xl border border-r-line bg-r-surface p-3 text-center">
                 <span class="text-[10px] font-mono uppercase text-r-muted block">Mejor Vuelta</span>
-                <strong id="lsBestTime" class="text-lg font-mono text-fuchsia-400 block mt-0.5">1:38.953</strong>
-                <span class="text-[10px] font-mono text-r-muted">Vuelta 5 (Purple)</span>
+                <strong id="lsBestTime" class="text-lg font-mono text-r-muted block mt-0.5">--:--.---</strong>
+                <span class="text-[10px] font-mono text-r-muted">Sin registro</span>
               </div>
               <div class="rounded-xl border border-r-line bg-r-surface p-3 text-center">
                 <span class="text-[10px] font-mono uppercase text-r-muted block">Consistencia Tanda</span>
-                <strong id="lsConsistency" class="text-lg font-mono text-r-text block mt-0.5">98.6%</strong>
-                <span class="text-[10px] font-mono text-emerald-400">Ritmo excelente (&plusmn;0.42s)</span>
+                <strong id="lsConsistency" class="text-lg font-mono text-r-muted block mt-0.5">--</strong>
+                <span class="text-[10px] font-mono text-r-muted">Requiere vueltas limpias</span>
               </div>
               <div class="rounded-xl border border-r-line bg-r-surface p-3 text-center">
                 <span class="text-[10px] font-mono uppercase text-r-muted block">Velocidad Punta</span>
-                <strong id="lsTopSpeed" class="text-lg font-mono text-r-text block mt-0.5">266.9 km/h</strong>
-                <span class="text-[10px] font-mono text-r-muted">Recta principal 1.475m</span>
+                <strong id="lsTopSpeed" class="text-lg font-mono text-r-muted block mt-0.5">-- km/h</strong>
+                <span class="text-[10px] font-mono text-r-muted">En recta</span>
               </div>
               <div class="rounded-xl border border-r-line bg-r-surface p-3 text-center">
                 <span class="text-[10px] font-mono uppercase text-r-muted block">Consumo Combustible</span>
-                <strong id="lsFuel" class="text-lg font-mono text-r-text block mt-0.5">3.15 L/vuelta</strong>
-                <span class="text-[10px] font-mono text-r-muted">Gasto real en carrera</span>
+                <strong id="lsFuel" class="text-lg font-mono text-r-muted block mt-0.5">-- L/vuelta</strong>
+                <span class="text-[10px] font-mono text-r-muted">Estimación real en pista</span>
               </div>
             </div>
 
@@ -455,6 +441,7 @@
                     </tr>
                   </thead>
                   <tbody id="lsLapTableBody" class="divide-y divide-r-line/40">
+                    <tr><td colspan="9" class="py-8 text-center text-r-muted">Sin telemetría en vivo. Entra a pista en iRacing para ver tiempos reales medidos a 60 Hz.</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -492,20 +479,20 @@
             <div id="lapSummaryBanner" class="mt-5 rounded-2xl border border-r-line bg-r-surface p-4 flex flex-wrap items-center justify-between gap-4">
               <div class="flex flex-wrap items-center gap-6">
                 <div>
-                  <span class="block text-[11px] font-mono uppercase text-r-muted">Tu Mejor Vuelta (.ibt Real)</span>
+                  <span class="block text-[11px] font-mono uppercase text-r-muted">Referencia Óptima (.ibt)</span>
                   <div class="flex items-baseline gap-2 mt-0.5">
                     <span class="w-2.5 h-2.5 rounded-full bg-r-accent inline-block"></span>
-                    <strong id="lapAlienTime" class="font-mono text-xl text-r-accent">2:15.500</strong>
+                    <strong id="lapAlienTime" class="font-mono text-xl text-r-accent">--:--.---</strong>
                     <span id="lapAlienBadge" class="text-xs text-r-muted font-mono">Mejor Vuelta</span>
                   </div>
                 </div>
                 <div class="h-8 w-px bg-r-line hidden sm:block"></div>
                 <div>
-                  <span class="block text-[11px] font-mono uppercase text-r-muted">Tu Vuelta Promedio (Stint)</span>
+                  <span class="block text-[11px] font-mono uppercase text-r-muted">Ritmo Promedio de Tanda</span>
                   <div class="flex items-baseline gap-2 mt-0.5">
                     <span class="w-2.5 h-2.5 rounded-full bg-sky-400 inline-block"></span>
-                    <strong id="lapUserTime" class="font-mono text-xl text-r-text">2:19.368</strong>
-                    <span id="lapCountBadge" class="text-xs text-r-muted font-mono">61 vueltas</span>
+                    <strong id="lapUserTime" class="font-mono text-xl text-r-text">--:--.---</strong>
+                    <span id="lapCountBadge" class="text-xs text-r-muted font-mono">0 vueltas</span>
                   </div>
                 </div>
                 <div class="h-8 w-px bg-r-line hidden sm:block"></div>
@@ -1327,9 +1314,6 @@
             <!-- Action buttons -->
             <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-r-line">
               <div class="flex flex-wrap gap-2">
-                <button type="button" id="previewSimBtn" class="mmt-btn h-10 px-4 rounded-xl bg-r-accent text-r-ink font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
-                  <span>Estimar Tiempos e iRating</span>
-                </button>
                 <button type="button" id="previewCompareBtn" class="mmt-btn-ghost h-10 px-4 rounded-xl border border-r-line text-r-text font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 hover:border-r-accent transition">
                   <span>Comparar Setup</span>
                 </button>
@@ -1385,94 +1369,6 @@
             <div class="p-4 rounded-2xl border border-r-accent/30 bg-r-accent/5 space-y-1.5">
               <strong class="font-mono text-xs uppercase tracking-wider text-r-accent block">Análisis de Rendimiento MMT</strong>
               <p id="compareVerdictText" class="text-xs text-r-text leading-relaxed"></p>
-            </div>
-          </div>
-        </div>
-
-        <!-- IRATING & LAP TIME ADVISOR MODAL -->
-        <div id="modalIratingAdvisor" hidden class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div class="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl border border-r-line bg-r-surface p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
-            <div class="flex items-center justify-between border-b border-r-line pb-4">
-              <div class="flex items-center gap-3.5">
-                <img src="./favicon.svg" width="36" height="36" alt="MMT" class="h-9 w-9 rounded-xl shadow-sm border border-r-line bg-r-bg" />
-                <div>
-                  <p class="mmt-kicker">Telemetría Predictiva</p>
-                  <h2 class="text-2xl font-bold text-r-text mt-0.5">Estimador de Tiempo por Vuelta e iRating</h2>
-                  <p class="text-xs text-r-muted mt-0.5">Calcula tiempos teóricos y consistencia en pista según tu nivel de habilidad.</p>
-                </div>
-              </div>
-              <button type="button" id="closeAdvisorBtn" class="p-2 rounded-xl text-r-muted hover:text-r-text hover:bg-r-bg transition text-lg leading-none">✕</button>
-            </div>
-
-            <!-- iRating Selector -->
-            <div class="p-4 rounded-2xl border border-r-line bg-r-bg space-y-3">
-              <div class="flex items-center justify-between">
-                <span class="font-mono text-xs uppercase tracking-wider text-r-text font-bold">Nivel de iRating del Piloto:</span>
-                <span id="advisorCurrentIrDisplay" class="font-mono text-xs text-r-accent font-bold">1.800 iR</span>
-              </div>
-              <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 font-mono text-xs">
-                <button type="button" data-ir="1200" class="h-9 rounded-xl border border-r-line bg-r-surface text-r-muted hover:border-r-accent transition font-bold">1.200 iR</button>
-                <button type="button" data-ir="1800" class="h-9 rounded-xl border border-r-accent bg-r-accent text-r-ink font-bold transition">1.800 iR</button>
-                <button type="button" data-ir="2500" class="h-9 rounded-xl border border-r-line bg-r-surface text-r-muted hover:border-r-accent transition font-bold">2.500 iR</button>
-                <button type="button" data-ir="3500" class="h-9 rounded-xl border border-r-line bg-r-surface text-r-muted hover:border-r-accent transition font-bold">3.500 iR</button>
-                <button type="button" data-ir="5000" class="h-9 rounded-xl border border-r-line bg-r-surface text-r-muted hover:border-r-accent transition font-bold">5.000+ iR</button>
-              </div>
-            </div>
-
-            <!-- Lap Time Projections -->
-            <div class="grid grid-cols-3 gap-3 text-center">
-              <div class="p-3.5 rounded-2xl border border-r-line bg-r-bg/70 space-y-1">
-                <span class="font-mono text-[10px] uppercase text-r-muted block">Vuelta Clasificación</span>
-                <strong id="advisorQualyTime" class="text-xl font-mono text-r-text block font-bold">2:17.350</strong>
-                <span class="text-[10px] text-r-muted font-mono">Pico en vuelta óptima</span>
-              </div>
-              <div class="p-3.5 rounded-2xl border border-r-line bg-r-bg/70 space-y-1">
-                <span class="font-mono text-[10px] uppercase text-r-muted block">Ritmo de Carrera</span>
-                <strong id="advisorRacePace" class="text-xl font-mono text-r-accent block font-bold">2:18.420</strong>
-                <span class="text-[10px] text-r-muted font-mono">Media en tanda de 30m</span>
-              </div>
-              <div class="p-3.5 rounded-2xl border border-r-line bg-r-bg/70 space-y-1">
-                <span class="font-mono text-[10px] uppercase text-r-muted block">Delta vs Esports</span>
-                <strong id="advisorDeltaAlien" class="text-xl font-mono text-amber-400 block font-bold">+2.15s</strong>
-                <span class="text-[10px] text-r-muted font-mono">Vs Alien MMT Récord</span>
-              </div>
-            </div>
-
-            <!-- Setup Comparison: SAFE vs AGRESIVO -->
-            <div class="p-4 rounded-2xl border border-r-line bg-r-bg space-y-3">
-              <span class="font-mono text-xs uppercase tracking-wider text-r-text font-bold block">Simulación de Telemetría: SAFE vs AGRESIVO</span>
-              <div class="grid sm:grid-cols-2 gap-3 text-xs">
-                <!-- SAFE CARD -->
-                <div class="p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 space-y-2">
-                  <div class="flex items-center justify-between">
-                    <strong class="text-emerald-400 font-bold uppercase tracking-wider text-[11px]">SETUP SAFE</strong>
-                    <span id="advisorSafeCons" class="font-mono font-bold text-emerald-300">96.8% Consistencia</span>
-                  </div>
-                  <div class="space-y-1 text-r-muted text-[11px]">
-                    <div class="flex justify-between"><span>Ritmo medio tanda:</span> <strong id="advisorSafePace" class="text-r-text font-mono">2:18.570</strong></div>
-                    <div class="flex justify-between"><span>Riesgo de incidente:</span> <strong id="advisorSafeRisk" class="text-emerald-400 font-mono">3% (Muy bajo)</strong></div>
-                  </div>
-                  <span class="block text-[11px] text-emerald-300 font-medium pt-1 border-t border-emerald-500/20">RECOMENDADO · Máxima ganancia de iRating</span>
-                </div>
-                <!-- AGRESIVO CARD -->
-                <div class="p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-2">
-                  <div class="flex items-center justify-between">
-                    <strong class="text-amber-400 font-bold uppercase tracking-wider text-[11px]">SETUP AGRESIVO</strong>
-                    <span id="advisorAggCons" class="font-mono font-bold text-amber-300">86.4% Consistencia</span>
-                  </div>
-                  <div class="space-y-1 text-r-muted text-[11px]">
-                    <div class="flex justify-between"><span>Ritmo medio real:</span> <strong id="advisorAggPace" class="text-r-text font-mono">2:19.020</strong></div>
-                    <div class="flex justify-between"><span>Riesgo de incidente:</span> <strong id="advisorAggRisk" class="text-amber-400 font-mono">26% (Alto)</strong></div>
-                  </div>
-                  <span class="block text-[11px] text-amber-300 font-medium pt-1 border-t border-amber-500/20">Techo 2 décimas más rápido, mayor fatiga</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Personalized Telemetry Verdict -->
-            <div class="p-4 rounded-2xl border border-r-line bg-r-bg/50 space-y-1.5">
-              <strong class="font-mono text-xs uppercase tracking-wider text-r-accent font-bold block">Veredicto del Ingeniero de Pista</strong>
-              <p id="advisorVerdictText" class="text-xs text-r-text leading-relaxed"></p>
             </div>
           </div>
         </div>
@@ -1545,6 +1441,12 @@
             <button type="button" id="floatHudPresetRadar" class="px-3 py-1 rounded-lg text-[10px] font-mono uppercase font-bold text-r-muted hover:text-white transition">Radar</button>
             <button type="button" id="floatHudPresetTelemetry" class="px-3 py-1 rounded-lg text-[10px] font-mono uppercase font-bold text-r-muted hover:text-white transition">Telemetría</button>
           </div>
+          <button type="button" id="btnFloatEditLayout" class="px-2.5 py-1.5 rounded-xl bg-black/85 border border-white/15 text-r-muted hover:text-r-accent font-mono text-[10px] font-bold uppercase transition flex items-center gap-1 shadow-md">
+            <span>✥ Mover HUD</span>
+          </button>
+          <button type="button" id="btnFloatResetLayout" class="px-2.5 py-1.5 rounded-xl bg-black/85 border border-white/15 text-r-muted hover:text-white font-mono text-[10px] font-bold uppercase transition shadow-md">
+            <span>↺</span>
+          </button>
           <button type="button" id="btnCloseFloatOverlay" title="Ocultar overlay (puedes reactivarlo desde MMT Sync)" class="px-3 py-1.5 rounded-xl bg-red-950/80 border border-red-500/40 text-red-300 font-mono text-xs font-bold hover:bg-red-900 transition flex items-center gap-1.5 shadow-lg">
             <span>✕</span>
             <span>Ocultar</span>
@@ -1553,7 +1455,7 @@
       </div>
 
       <!-- Top Sequential Shift Lights & Brake Marker -->
-      <div id="floatShiftLightsRow" class="flex flex-col items-center gap-2 pointer-events-none mt-2">
+      <div id="floatShiftLightsRow" class="mmt-float-widget flex flex-col items-center gap-2 pointer-events-auto mt-2" data-widget="lights">
         <div class="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-black/90 border border-white/20 backdrop-blur-md shadow-2xl" id="ovShiftLightsFloat"></div>
         <div id="ovBrakeMarkerFloat" class="flex items-center gap-2 px-3 py-1 rounded-xl bg-black/85 border border-white/20 text-xs font-mono">
           <span class="text-[10px] text-r-muted uppercase font-bold">Frenada:</span>
@@ -1566,12 +1468,12 @@
       <!-- Mid Row: Radar (Left), Dash Cluster (Center), Standings (Right) -->
       <div class="flex items-center justify-between gap-6 pointer-events-none flex-1 my-3">
         <!-- Relative Radar -->
-        <div id="floatRelativeCard" class="w-72 rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md text-white p-4 text-xs font-mono shadow-2xl pointer-events-auto">
+        <div id="floatRelativeCard" class="mmt-float-widget w-72 rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md text-white p-4 text-xs font-mono shadow-2xl pointer-events-auto" data-widget="relative">
           <div id="ovRelativeFloat"></div>
         </div>
 
         <!-- Central Digital Dash Cluster -->
-        <div id="floatClusterCard" class="flex flex-col items-center pointer-events-auto">
+        <div id="floatClusterCard" class="mmt-float-widget flex flex-col items-center pointer-events-auto" data-widget="cluster">
           <div id="ovDeltaFloat" class="mb-3 px-5 py-1.5 rounded-full border border-emerald-500/40 bg-emerald-950/90 text-emerald-400 font-mono text-sm font-bold shadow-xl shadow-emerald-950/50">
             -0.34s · Sector 2
           </div>
@@ -1593,22 +1495,22 @@
         </div>
 
         <!-- Standings -->
-        <div id="floatStandingsCard" class="w-64 rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md text-white p-4 text-xs font-mono shadow-2xl pointer-events-auto">
+        <div id="floatStandingsCard" class="mmt-float-widget w-64 rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md text-white p-4 text-xs font-mono shadow-2xl pointer-events-auto" data-widget="standings">
           <div id="ovStandingsFloat"></div>
         </div>
       </div>
 
       <!-- Bottom Row: Fuel computer (Left), Waveform & Pedals (Right) -->
       <div class="flex items-end justify-between gap-4 pointer-events-none mt-2">
-        <div id="floatFuelCard" class="w-72 rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md text-white p-4 text-xs font-mono shadow-2xl pointer-events-auto">
+        <div id="floatFuelCard" class="mmt-float-widget w-72 rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md text-white p-4 text-xs font-mono shadow-2xl pointer-events-auto" data-widget="fuel">
           <div id="ovFuelFloat"></div>
         </div>
 
-        <div id="floatWaveformCard" class="rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md p-2.5 shadow-2xl pointer-events-auto">
+        <div id="floatWaveformCard" class="mmt-float-widget rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md p-2.5 shadow-2xl pointer-events-auto" data-widget="waveform">
           <canvas id="ovWaveformCanvasFloat" width="220" height="55" class="rounded-lg bg-black/60 border border-white/10"></canvas>
         </div>
 
-        <div id="floatInputsCard" class="rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md p-3.5 shadow-2xl pointer-events-auto">
+        <div id="floatInputsCard" class="mmt-float-widget rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md p-3.5 shadow-2xl pointer-events-auto" data-widget="inputs">
           <canvas id="ovInputsFloat" width="300" height="95" class="rounded-xl"></canvas>
           <div id="ovTyresFloat" class="mt-2 text-center font-mono text-[11px] text-r-muted"></div>
         </div>

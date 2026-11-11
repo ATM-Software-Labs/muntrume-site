@@ -148,6 +148,9 @@ export interface HardwareReport {
   audioDevices: string[];
   iracingSoundSystem: string;
   sampleRateRecommendation: string;
+  wheelbaseBrand?: string;
+  softwareStatus?: string;
+  firmwareRecommendation?: string;
 }
 
 export interface Backend {

@@ -4,7 +4,7 @@ import { createTauriBackend } from "./tauri-backend";
 import type { Backend, LibraryItem, LiveSample, Settings, Snapshot, StagedFile } from "./types";
 import { fuelText, paintConfigAnalysis, paintExtras, updateLiveOverlay, initFloatingOverlayControls, paintOverlays, paintHardware, paintLastSession } from "./extra";
 import rawSchedule from "./season_schedule_2026_s4.json";
-import { getSetupProfile, estimateLapTimeAndConsistency } from "./setup-intelligence";
+import { getSetupProfile } from "./setup-intelligence";
 
 interface ScheduleDoc {
   current_week?: number;
@@ -441,7 +441,7 @@ function applyIracingStatus(status: string): void {
     badge.className = "px-3 py-1 rounded-full text-xs font-mono font-semibold border border-amber-500/40 bg-amber-500/10 text-amber-300 flex items-center gap-2 transition";
   } else {
     dot.className = "w-2 h-2 rounded-full bg-r-muted";
-    text.textContent = "iRacing en espera";
+    text.textContent = "iRacing cerrado";
     badge.className = "px-3 py-1 rounded-full text-xs font-mono border border-r-line text-r-muted flex items-center gap-2 transition";
   }
 }
@@ -549,7 +549,6 @@ const starSvg = (filled: boolean) =>
   `<svg class="w-3.5 h-3.5 ${filled ? "fill-amber-400 text-amber-400" : "fill-none text-current"}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
 
 const compareSvg = `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>`;
-const timerSvg = `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><polyline points="12 6 12 12 16 14"/></svg>`;
 const copySvg = `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
 const checkSvg = `<svg class="w-3.5 h-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`;
 const mapPinSvg = `<svg class="w-3.5 h-3.5 text-r-accent shrink-0 inline-block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
@@ -669,17 +668,6 @@ let collapsedState = new Set<string>();
 let allExpanded = false;
 
 let currentPreviewItem: LibraryItem | null = null;
-let currentAdvisorItem: LibraryItem | null = null;
-let userIrRating = (() => {
-  try {
-    const saved = localStorage.getItem("mmt-driver-irating");
-    if (saved) {
-      const n = Number(saved);
-      if (n > 0) return n;
-    }
-  } catch {}
-  return 1800;
-})();
 
 function openSetupPreview(row: LibraryItem): void {
   currentPreviewItem = row;
@@ -841,60 +829,6 @@ function openSetupCompare(rowA: LibraryItem, rowB?: LibraryItem): void {
   if (modal) modal.hidden = false;
 }
 
-function openIratingAdvisor(row: LibraryItem): void {
-  currentAdvisorItem = row;
-  renderAdvisorCalculations();
-  const modal = document.getElementById("modalIratingAdvisor");
-  if (modal) modal.hidden = false;
-}
-
-function renderAdvisorCalculations(): void {
-  if (!currentAdvisorItem) return;
-  const row = currentAdvisorItem;
-  const estimate = estimateLapTimeAndConsistency(row.track, row.carFolder || row.car, userIrRating);
-
-  const irDisplay = document.getElementById("advisorCurrentIrDisplay");
-  if (irDisplay) irDisplay.textContent = `${userIrRating.toLocaleString("es-ES")} iR`;
-
-  const qualyEl = document.getElementById("advisorQualyTime");
-  if (qualyEl) qualyEl.textContent = estimate.qualyTime;
-
-  const raceEl = document.getElementById("advisorRacePace");
-  if (raceEl) raceEl.textContent = estimate.racePace;
-
-  const deltaEl = document.getElementById("advisorDeltaAlien");
-  if (deltaEl) deltaEl.textContent = estimate.deltaVsAlien;
-
-  const safeCons = document.getElementById("advisorSafeCons");
-  if (safeCons) safeCons.textContent = `${estimate.safeSetup.consistencyPct}% Consistencia`;
-
-  const safePace = document.getElementById("advisorSafePace");
-  if (safePace) safePace.textContent = estimate.safeSetup.avgPace;
-
-  const safeRisk = document.getElementById("advisorSafeRisk");
-  if (safeRisk) safeRisk.textContent = `${estimate.safeSetup.incidentRiskPct}%`;
-
-  const aggroCons = document.getElementById("advisorAggCons");
-  if (aggroCons) aggroCons.textContent = `${estimate.aggressiveSetup.consistencyPct}% Consistencia`;
-
-  const aggroPace = document.getElementById("advisorAggPace");
-  if (aggroPace) aggroPace.textContent = estimate.aggressiveSetup.avgPace;
-
-  const aggroRisk = document.getElementById("advisorAggRisk");
-  if (aggroRisk) aggroRisk.textContent = `${estimate.aggressiveSetup.incidentRiskPct}%`;
-
-  const verdictEl = document.getElementById("advisorVerdictText");
-  if (verdictEl) verdictEl.textContent = estimate.verdict;
-
-  document.querySelectorAll<HTMLButtonElement>("#modalIratingAdvisor button[data-ir]").forEach((btn) => {
-    const irVal = Number(btn.dataset.ir);
-    const active = irVal === userIrRating;
-    btn.className = active
-      ? "h-9 rounded-xl border border-r-accent bg-r-accent text-r-ink font-bold transition shadow-xs"
-      : "h-9 rounded-xl border border-r-line bg-r-surface text-r-muted hover:border-r-accent/60 hover:text-r-text transition font-bold";
-  });
-}
-
 function setupCardView(row: LibraryItem, showCar = false): HTMLElement {
   const card = document.createElement("div");
   card.className =
@@ -1015,16 +949,6 @@ function setupCardView(row: LibraryItem, showCar = false): HTMLElement {
     openSetupCompare(row);
   });
 
-  const simBtn = document.createElement("button");
-  simBtn.type = "button";
-  simBtn.className = "p-1.5 rounded-lg border border-r-line/60 bg-r-surface text-r-muted hover:text-r-accent hover:border-r-accent/60 transition flex items-center justify-center";
-  simBtn.title = "Estimar tiempo e iRating";
-  simBtn.innerHTML = timerSvg;
-  simBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    openIratingAdvisor(row);
-  });
-
   const copyBtn = document.createElement("button");
   copyBtn.type = "button";
   copyBtn.className = "p-1.5 rounded-lg border border-r-line/60 bg-r-surface text-r-muted hover:text-r-text hover:border-r-accent/60 transition flex items-center justify-center";
@@ -1039,7 +963,7 @@ function setupCardView(row: LibraryItem, showCar = false): HTMLElement {
     } catch {}
   });
 
-  quickActions.append(compBtn, simBtn, copyBtn);
+  quickActions.append(compBtn, copyBtn);
   bottom.append(details, quickActions);
   card.append(top, mid, bottom);
   return card;
@@ -2248,10 +2172,6 @@ function bind(): void {
     } catch {}
   });
 
-  $("previewSimBtn").addEventListener("click", () => {
-    if (currentPreviewItem) openIratingAdvisor(currentPreviewItem);
-  });
-
   $("previewCompareBtn").addEventListener("click", () => {
     if (currentPreviewItem) openSetupCompare(currentPreviewItem);
   });
@@ -2268,19 +2188,6 @@ function bind(): void {
     void persistSettings().then(() => {
       paintLibrary();
       openSetupPreview(row);
-    });
-  });
-
-  document.querySelectorAll<HTMLButtonElement>("#modalIratingAdvisor button[data-ir]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const val = Number(btn.dataset.ir);
-      if (val > 0) {
-        userIrRating = val;
-        try {
-          localStorage.setItem("mmt-driver-irating", String(userIrRating));
-        } catch {}
-        renderAdvisorCalculations();
-      }
     });
   });
 
