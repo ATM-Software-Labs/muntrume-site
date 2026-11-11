@@ -1364,11 +1364,20 @@ function showView(next: typeof view): void {
 }
 
 async function loadConfigAnalysis(): Promise<void> {
+  const scoreNum = document.getElementById("configScoreNum");
+  const scoreTitle = document.getElementById("configScoreTitle");
+  const scoreDesc = document.getElementById("configScoreDesc");
+  if (scoreTitle) scoreTitle.textContent = "Analizando configuración de iRacing…";
   try {
     const analysis = await backend.inspectConfig();
     paintConfigAnalysis(analysis);
   } catch (error) {
-    showNotice(error instanceof Error ? error.message : "No se pudo analizar la configuración de iRacing.");
+    const msg = error instanceof Error ? error.message : "No se pudo analizar la configuración de iRacing.";
+    console.error("Error al analizar configuración de iRacing:", error);
+    if (scoreNum) scoreNum.textContent = "!";
+    if (scoreTitle) scoreTitle.textContent = "Error al leer archivos de iRacing";
+    if (scoreDesc) scoreDesc.textContent = msg;
+    showNotice(msg, true);
   }
 }
 

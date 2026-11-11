@@ -289,7 +289,7 @@ fn accept_remote(setup: &RemoteSetup) -> Result<(String, String), String> {
 fn local_sha_for(local: &[LocalSetup], id: &str, relative: &str) -> Option<String> {
     local
         .iter()
-        .find(|entry| entry.id == id || entry.relative_path == relative)
+        .find(|entry| entry.id == id && entry.relative_path == relative)
         .map(|entry| entry.sha256.clone())
 }
 
@@ -354,8 +354,8 @@ mod tests {
             remote("c", &sha(4), "porsche992rgt3", "spa.sto"),
         ];
         let local = vec![
-            local("a", "ferrari296gt3/MMT/26S4/spa.sto", &same),
-            local("b", "ferrari296gt3/MMT/26S4/monza.sto", &old),
+            local("a", "ferrari296gt3/MMT by Muntrume/26S4/WEEK 03/Spa/spa.sto", &same),
+            local("b", "ferrari296gt3/MMT by Muntrume/26S4/WEEK 09/Monza/monza.sto", &old),
             local("gone", "porsche992rgt3/MMT/26S4/old.sto", &sha(9)),
             local("evil", "../../Windows/System32/evil.sto", &sha(8)),
             local("outside", "porsche992rgt3/other/26S4/x.sto", &sha(7)),
@@ -400,7 +400,7 @@ mod tests {
     fn retired_files_are_deleted_only_when_asked_and_only_inside_mmt() {
         let remote = vec![remote("a", &sha(1), "ferrari296gt3", "spa.sto")];
         let local = vec![
-            local("a", "ferrari296gt3/MMT/26S4/spa.sto", &sha(1)),
+            local("a", "ferrari296gt3/MMT by Muntrume/26S4/WEEK 03/Spa/spa.sto", &sha(1)),
             local("gone", "ferrari296gt3/MMT/26S4/old.sto", &sha(2)),
             local("nope", "../secret.sto", &sha(3)),
             local("nope2", "ferrari296gt3/MMT/../../secret.sto", &sha(3)),

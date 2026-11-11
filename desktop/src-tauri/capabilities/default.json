@@ -19,6 +19,8 @@
     "allow-clear-staged",
     "allow-upload-staged",
     "allow-install-update",
+    "allow-inspect-config",
+    "allow-check-iracing-status",
     "allow-quit"
   ]
 }

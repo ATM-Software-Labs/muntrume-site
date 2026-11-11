@@ -185,18 +185,46 @@ async fn fetch_one(
     root: &Path,
     item: &mmt_sync_core::Download,
 ) -> Result<LocalSetup, String> {
-    let bytes = state.api.download(token, &item.id).await.map_err(explain)?;
-    if bytes.len() as u64 != item.size {
-        return Err("el tamaño no coincide con el manifiesto".into());
-    }
-    if hash_bytes(&bytes) != item.sha256 {
-        return Err("el sha256 no coincide con el manifiesto".into());
-    }
-    if bytes.len() as u64 > MAX_STO_BYTES {
-        return Err("el archivo supera 1 MB".into());
-    }
     let dest = prepare_mmt_destination(root, &item.relative).map_err(|err| err.to_string())?;
-    mmt_sync_core::atomic_write(&dest, &bytes).map_err(|err| err.to_string())?;
+
+    let mut local_bytes: Option<Vec<u8>> = None;
+    if let Ok(b) = fs::read(&dest) {
+        if b.len() as u64 == item.size && hash_bytes(&b) == item.sha256 {
+            local_bytes = Some(b);
+        }
+    }
+    if local_bytes.is_none() {
+        let parts: Vec<&str> = item.relative.split('/').collect();
+        if let (Some(&car), Some(&file)) = (parts.first(), parts.last()) {
+            let legacy_path = root.join(car).join("MMT").join("26S4").join(file);
+            if let Ok(b) = fs::read(&legacy_path) {
+                if b.len() as u64 == item.size && hash_bytes(&b) == item.sha256 {
+                    mmt_sync_core::atomic_write(&dest, &b).map_err(|err| err.to_string())?;
+                    let _ = fs::remove_file(&legacy_path);
+                    local_bytes = Some(b);
+                }
+            }
+        }
+    }
+
+    let _bytes = match local_bytes {
+        Some(b) => b,
+        None => {
+            let bytes = state.api.download(token, &item.id).await.map_err(explain)?;
+            if bytes.len() as u64 != item.size {
+                return Err("el tamaño no coincide con el manifiesto".into());
+            }
+            if hash_bytes(&bytes) != item.sha256 {
+                return Err("el sha256 no coincide con el manifiesto".into());
+            }
+            if bytes.len() as u64 > MAX_STO_BYTES {
+                return Err("el archivo supera 1 MB".into());
+            }
+            mmt_sync_core::atomic_write(&dest, &bytes).map_err(|err| err.to_string())?;
+            bytes
+        }
+    };
+
     Ok(LocalSetup {
         id: item.id.clone(),
         relative_path: item.relative.clone(),

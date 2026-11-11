@@ -16,6 +16,8 @@ fn main() {
                 "clear_staged",
                 "upload_staged",
                 "install_update",
+                "inspect_config",
+                "check_iracing_status",
                 "quit",
             ]),
         ),
