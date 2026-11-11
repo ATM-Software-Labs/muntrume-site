@@ -274,11 +274,24 @@ function renderWeekItems(data: Snapshot): void {
   list.replaceChildren();
 
   const userCars = (data.lastCars || []).map((c) => c.toLowerCase());
+  const carSetupMap = new Map<string, number>();
+  for (const lib of data.library) {
+    const key = lib.carFolder.toLowerCase();
+    carSetupMap.set(key, (carSetupMap.get(key) || 0) + 1);
+  }
 
   for (const s of filtered) {
     const weekItem = s.weeks.find((w) => w.week_num === activeWeek);
     const hasUserCar = userCars.length > 0 && s.cars.some((c) => userCars.some((uc) => c.toLowerCase().includes(uc) || uc.includes(c.toLowerCase())));
-    const matchCount = data.library.filter((lib) => s.cars.some((c) => c.toLowerCase().includes(lib.carFolder.toLowerCase()) || lib.carFolder.toLowerCase().includes(c.toLowerCase()))).length;
+    let matchCount = 0;
+    for (const c of s.cars) {
+      const cl = c.toLowerCase();
+      for (const [folder, count] of carSetupMap) {
+        if (cl.includes(folder) || folder.includes(cl)) {
+          matchCount += count;
+        }
+      }
+    }
 
     const card = document.createElement("article");
     card.className = "rounded-2xl border border-r-line bg-r-surface p-4 flex flex-col justify-between transition-all hover:border-r-line-2";

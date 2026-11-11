@@ -2261,7 +2261,12 @@ async function boot(): Promise<void> {
     ($("notes") as HTMLTextAreaElement).value = "Presiones para 20 °C. Revisar el rake.";
     $("notesCount").textContent = `${($("notes") as HTMLTextAreaElement).value.length} / 280`;
   }
-  await refresh();
+  try {
+    await refresh();
+  } catch (err) {
+    console.error("Error al cargar estado inicial:", err);
+    showNotice(err instanceof Error ? err.message : "Error al iniciar conexión. Cargando datos locales.");
+  }
   if (!snapshot?.pilot && screen === "login") {
     $("userCode").textContent = "MMT-7K2Q";
     $("loginStart").hidden = true;

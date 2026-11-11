@@ -57,8 +57,8 @@ impl Api {
     pub fn new(mock: bool) -> Result<Self, String> {
         let client = reqwest::Client::builder()
             .redirect(reqwest::redirect::Policy::limited(5))
-            .timeout(Duration::from_secs(45))
-            .connect_timeout(Duration::from_secs(15))
+            .timeout(Duration::from_secs(12))
+            .connect_timeout(Duration::from_secs(4))
             .user_agent("MMT-Sync/0.1.0")
             .build()
             .map_err(|err| err.to_string())?;

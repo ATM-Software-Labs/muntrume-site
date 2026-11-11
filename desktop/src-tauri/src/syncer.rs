@@ -44,12 +44,19 @@ pub struct LibraryItem {
 }
 
 pub fn library_of(index: &IndexFile) -> Vec<LibraryItem> {
+    use std::collections::HashMap;
+    let local_map: HashMap<&str, &str> = index
+        .files
+        .iter()
+        .map(|file| (file.id.as_str(), file.sha256.as_str()))
+        .collect();
+
     index
         .manifest
         .iter()
         .map(|setup| {
-            let local = index.files.iter().find(|file| file.id == setup.id);
-            let state = file_state(&setup.sha256, local.map(|file| file.sha256.as_str()));
+            let local_sha = local_map.get(setup.id.as_str()).copied();
+            let state = file_state(&setup.sha256, local_sha);
             LibraryItem {
                 id: setup.id.clone(),
                 car: setup.car.clone(),
