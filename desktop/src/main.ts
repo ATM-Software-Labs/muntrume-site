@@ -30,15 +30,42 @@ if (sched && Array.isArray(sched.series)) {
   }
 }
 
-export function findWeekForTrack(track: string): number | null {
-  const clean = String(track || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-  if (!clean) return null;
-  for (const [t, weeks] of trackToWeeks) {
-    if (clean.includes(t) || t.includes(clean)) {
-      return weeks[0] ?? null;
+export function findWeekForTrack(track: string, filename?: string): number {
+  if (filename) {
+    const upper = filename.toUpperCase();
+    for (const prefix of ["_W", "-W", ".W", "WEEK"]) {
+      const idx = upper.indexOf(prefix);
+      if (idx !== -1) {
+        const rest = upper.slice(idx + prefix.length);
+        const digits = rest.match(/^\d+/);
+        if (digits) {
+          const num = parseInt(digits[0], 10);
+          if (num >= 1 && num <= 14) return num;
+        }
+      }
     }
   }
-  return null;
+  const clean = String(track || "").toLowerCase();
+  if (clean.includes("indy") || clean.includes("indianapolis")) return 1;
+  if (clean.includes("silverstone")) return 1;
+  if (clean.includes("atlanta")) return 2;
+  if (clean.includes("zandvoort") || clean.includes("fuji")) return 3;
+  if (clean.includes("motegi") || clean.includes("red bull") || clean.includes("rbr")) return 4;
+  if (clean.includes("long beach")) return 5;
+  if (clean.includes("the bend") || clean.includes("bend") || clean.includes("montreal")) return 6;
+  if (clean.includes("cota") || clean.includes("le mans") || clean.includes("lemans")) return 7;
+  if (clean.includes("spa") || clean.includes("mexico")) return 8;
+  if (clean.includes("suzuka")) return 9;
+  if (clean.includes("misano")) return 10;
+  if (clean.includes("sebring")) return 11;
+  if (clean.includes("monza")) return 12;
+  if (clean.includes("nurburgring") || clean.includes("vln") || clean.includes("mugello")) return 13;
+  for (const [t, weeks] of trackToWeeks) {
+    if (clean.includes(t) || t.includes(clean)) {
+      return weeks[0] ?? 1;
+    }
+  }
+  return 1;
 }
 
 export function classifyCar(carFolder: string): "SPORTS CAR" | "FORMULA CAR" | "OVAL" | "DIRT" {
@@ -1139,7 +1166,7 @@ function paintGroupedByWeek(items: LibraryItem[]): void {
 
   const groups = new Map<number | string, LibraryItem[]>();
   for (const entry of items) {
-    const w = findWeekForTrack(entry.track);
+    const w = findWeekForTrack(entry.track, entry.filename);
     const key = w ?? "Otras semanas";
     const list = groups.get(key) ?? [];
     list.push(entry);
@@ -1149,7 +1176,7 @@ function paintGroupedByWeek(items: LibraryItem[]): void {
   const cur = sched.current_week || 9;
   const orderedKeys: Array<number | string> = [];
   if (groups.has(cur)) orderedKeys.push(cur);
-  for (let w = 1; w <= 12; w++) {
+  for (let w = 1; w <= 13; w++) {
     if (w !== cur && groups.has(w)) orderedKeys.push(w);
   }
   if (groups.has("Otras semanas")) orderedKeys.push("Otras semanas");

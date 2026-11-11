@@ -145,6 +145,7 @@ async fn run(app: &AppHandle) -> Result<SyncReport, String> {
     index.last_downloaded = downloaded;
     index.last_cars = unique_cars(&downloaded_cars);
     save_index(&index_path, &index).map_err(|err| err.to_string())?;
+    cleanup_legacy_empty_dirs(&root);
 
     let message = if let Some(first) = errors.first() {
         format!("Sincronización incompleta. {first}")
@@ -204,6 +205,16 @@ async fn fetch_one(
                     local_bytes = Some(b);
                 }
             }
+            if local_bytes.is_none() {
+                let legacy_path2 = root.join(car).join("MMT").join(file);
+                if let Ok(b) = fs::read(&legacy_path2) {
+                    if b.len() as u64 == item.size && hash_bytes(&b) == item.sha256 {
+                        mmt_sync_core::atomic_write(&dest, &b).map_err(|err| err.to_string())?;
+                        let _ = fs::remove_file(&legacy_path2);
+                        local_bytes = Some(b);
+                    }
+                }
+            }
         }
     }
 
@@ -246,9 +257,28 @@ fn remove_one(root: &Path, relative: &str) -> Result<(), String> {
     };
     if meta.file_type().is_symlink() || meta.is_file() {
         fs::remove_file(&dest).map_err(|err| err.to_string())?;
+        if let Some(parent) = dest.parent() {
+            let _ = fs::remove_dir(parent);
+            if let Some(grandparent) = parent.parent() {
+                let _ = fs::remove_dir(grandparent);
+            }
+        }
         return Ok(());
     }
     Err("no borro nada que no sea un archivo dentro de MMT".into())
+}
+
+fn cleanup_legacy_empty_dirs(root: &Path) {
+    if let Ok(entries) = fs::read_dir(root) {
+        for entry in entries.flatten() {
+            let mmt_old = entry.path().join("MMT");
+            if mmt_old.is_dir() {
+                let s4 = mmt_old.join("26S4");
+                let _ = fs::remove_dir(&s4);
+                let _ = fs::remove_dir(&mmt_old);
+            }
+        }
+    }
 }
 
 fn rehash_local(root: &Path, index: &mut IndexFile) {

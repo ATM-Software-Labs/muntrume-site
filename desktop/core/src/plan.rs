@@ -194,6 +194,69 @@ pub fn toast_message(file_count: usize, cars: &[String]) -> Option<String> {
     Some(format!("{noun}: {list}"))
 }
 
+pub fn clean_track_folder(raw: &str) -> String {
+    let t = raw.to_ascii_lowercase();
+    if t.contains("vln") || t.contains("gesamtstrecke") {
+        "Nurburgring Combined VLN".to_string()
+    } else if t.contains("gp-strecke") || t.contains("gp strecke") {
+        "Nurburgring GP-Strecke".to_string()
+    } else if t.contains("nurburgring") || t.contains("nordschleife") {
+        "Nurburgring".to_string()
+    } else if t.contains("indy") || t.contains("indianapolis") {
+        "Indianapolis".to_string()
+    } else if t.contains("silverstone") {
+        "Silverstone".to_string()
+    } else if t.contains("road atlanta") || t.contains("atlanta") {
+        "Road Atlanta".to_string()
+    } else if t.contains("zandvoort") {
+        "Zandvoort".to_string()
+    } else if t.contains("motegi") {
+        "Motegi".to_string()
+    } else if t.contains("red bull") || t.contains("rbr") || t.contains("spielberg") {
+        "Red Bull Ring".to_string()
+    } else if t.contains("long beach") || t.contains("longbeach") {
+        "Long Beach".to_string()
+    } else if t.contains("the bend") || t.contains("thebend") || t.contains("bend") {
+        "The Bend".to_string()
+    } else if t.contains("montreal") || t.contains("villeneuve") {
+        "Montreal".to_string()
+    } else if t.contains("cota") || t.contains("austin") || t.contains("americas") {
+        "COTA".to_string()
+    } else if t.contains("le mans") || t.contains("lemans") || t.contains("sarthe") {
+        "Le Mans".to_string()
+    } else if t.contains("mexico") || t.contains("hermanos") {
+        "Mexico".to_string()
+    } else if t.contains("spa") || t.contains("francorchamps") {
+        "Spa".to_string()
+    } else if t.contains("suzuka") {
+        "Suzuka".to_string()
+    } else if t.contains("misano") {
+        "Misano".to_string()
+    } else if t.contains("sebring") {
+        "Sebring".to_string()
+    } else if t.contains("monza") {
+        "Monza".to_string()
+    } else if t.contains("mugello") {
+        "Mugello".to_string()
+    } else if t.contains("fuji") {
+        "Fuji".to_string()
+    } else if t.contains("watkins") {
+        "Watkins Glen".to_string()
+    } else if t.contains("catalunya") || t.contains("barcelona") {
+        "Catalunya".to_string()
+    } else if t.contains("bathurst") || t.contains("panorama") {
+        "Bathurst".to_string()
+    } else if t.contains("road america") {
+        "Road America".to_string()
+    } else if t.contains("hockenheim") {
+        "Hockenheim".to_string()
+    } else if t.contains("zolder") {
+        "Zolder".to_string()
+    } else {
+        sanitize_track_folder(raw)
+    }
+}
+
 fn sanitize_track_folder(raw: &str) -> String {
     let clean: String = raw
         .chars()
@@ -217,40 +280,56 @@ fn extract_week_folder(week_opt: Option<u32>, filename: &str, track: &str) -> St
         }
     }
     let upper = filename.to_ascii_uppercase();
-    if let Some(pos) = upper.find("_W") {
-        let rest = &upper[pos + 2..];
-        let num_str: String = rest.chars().take_while(|c| c.is_ascii_digit()).collect();
-        if let Ok(num) = num_str.parse::<u32>() {
-            if num >= 1 && num <= 14 {
-                return format!("WEEK {:02}", num);
+    for prefix in ["_W", "-W", ".W", "WEEK"] {
+        if let Some(pos) = upper.find(prefix) {
+            let rest = &upper[pos + prefix.len()..];
+            let num_str: String = rest.chars().take_while(|c| c.is_ascii_digit()).collect();
+            if let Ok(num) = num_str.parse::<u32>() {
+                if num >= 1 && num <= 14 {
+                    return format!("WEEK {:02}", num);
+                }
             }
         }
     }
     let t = track.to_ascii_lowercase();
-    let week = if t.contains("indy") || t.contains("indianapolis") || t.contains("silverstone") {
-        1
-    } else if t.contains("misano") || t.contains("fuji") {
+    let week = if t.contains("indy") || t.contains("indianapolis") {
+        if upper.contains("W05") || upper.contains("W5") { 5 } else { 1 }
+    } else if t.contains("silverstone") {
+        if upper.contains("W10") { 10 } else { 1 }
+    } else if t.contains("road atlanta") || t.contains("atlanta") {
         2
-    } else if t.contains("spa") || t.contains("mexico") {
+    } else if t.contains("zandvoort") {
         3
-    } else if t.contains("lemans") || t.contains("le mans") || t.contains("cota") {
+    } else if t.contains("fuji") {
+        if upper.contains("W09") || upper.contains("W9") { 9 } else { 3 }
+    } else if t.contains("motegi") || t.contains("red bull") || t.contains("rbr") || t.contains("spielberg") {
         4
-    } else if t.contains("bend") || t.contains("montreal") {
+    } else if t.contains("long beach") || t.contains("longbeach") {
         5
-    } else if t.contains("long beach") || t.contains("longbeach") || t.contains("red bull") || t.contains("rbr") {
+    } else if t.contains("the bend") || t.contains("thebend") || t.contains("bend") || t.contains("montreal") || t.contains("villeneuve") {
         6
-    } else if t.contains("nurburgring") || t.contains("vln") || t.contains("motegi") {
+    } else if t.contains("cota") || t.contains("austin") || t.contains("lemans") || t.contains("le mans") || t.contains("sarthe") {
         7
-    } else if t.contains("hockenheim") || t.contains("watkins") {
+    } else if t.contains("spa") || t.contains("francorchamps") || t.contains("mexico") || t.contains("hermanos") {
         8
-    } else if t.contains("monza") || t.contains("barcelona") || t.contains("catalunya") {
-        9
-    } else if t.contains("bathurst") || t.contains("mount panorama") || t.contains("zolder") {
+    } else if t.contains("suzuka") {
+        if upper.contains("W12") { 12 } else { 9 }
+    } else if t.contains("misano") {
         10
-    } else if t.contains("sebring") || t.contains("road america") {
+    } else if t.contains("sebring") {
         11
-    } else if t.contains("suzuka") || t.contains("road atlanta") {
+    } else if t.contains("monza") {
         12
+    } else if t.contains("mugello") || t.contains("nurburgring") || t.contains("vln") || t.contains("nordschleife") {
+        13
+    } else if t.contains("watkins") {
+        8
+    } else if t.contains("catalunya") || t.contains("barcelona") {
+        9
+    } else if t.contains("bathurst") || t.contains("panorama") {
+        10
+    } else if t.contains("road america") {
+        11
     } else {
         1
     };
@@ -268,7 +347,7 @@ fn accept_remote(setup: &RemoteSetup) -> Result<(String, String), String> {
         return Err("el tamaño tiene que estar entre 1 byte y 1 MB".into());
     }
     let week_folder = extract_week_folder(setup.week, &setup.filename, &setup.track);
-    let track_folder = sanitize_track_folder(&setup.track);
+    let track_folder = clean_track_folder(&setup.track);
     let season = if setup.season.trim().is_empty() { "26S4" } else { setup.season.trim() };
 
     let path = MmtPath::new_hierarchical(
@@ -354,8 +433,8 @@ mod tests {
             remote("c", &sha(4), "porsche992rgt3", "spa.sto"),
         ];
         let local = vec![
-            local("a", "ferrari296gt3/MMT by Muntrume/26S4/WEEK 03/Spa/spa.sto", &same),
-            local("b", "ferrari296gt3/MMT by Muntrume/26S4/WEEK 09/Monza/monza.sto", &old),
+            local("a", "ferrari296gt3/MMT by Muntrume/26S4/WEEK 08/Spa/spa.sto", &same),
+            local("b", "ferrari296gt3/MMT by Muntrume/26S4/WEEK 12/Monza/monza.sto", &old),
             local("gone", "porsche992rgt3/MMT/26S4/old.sto", &sha(9)),
             local("evil", "../../Windows/System32/evil.sto", &sha(8)),
             local("outside", "porsche992rgt3/other/26S4/x.sto", &sha(7)),
@@ -370,7 +449,7 @@ mod tests {
         assert!(plan.actions.iter().any(|action| matches!(
             action,
             Action::Download(item) if item.id == "c" && item.state == FileState::Nuevo
-                && item.relative == "porsche992rgt3/MMT by Muntrume/26S4/WEEK 03/Spa/spa.sto"
+                && item.relative == "porsche992rgt3/MMT by Muntrume/26S4/WEEK 08/Spa/spa.sto"
         )));
         assert!(plan.actions.iter().any(|action| matches!(
             action,
@@ -400,7 +479,7 @@ mod tests {
     fn retired_files_are_deleted_only_when_asked_and_only_inside_mmt() {
         let remote = vec![remote("a", &sha(1), "ferrari296gt3", "spa.sto")];
         let local = vec![
-            local("a", "ferrari296gt3/MMT by Muntrume/26S4/WEEK 03/Spa/spa.sto", &sha(1)),
+            local("a", "ferrari296gt3/MMT by Muntrume/26S4/WEEK 08/Spa/spa.sto", &sha(1)),
             local("gone", "ferrari296gt3/MMT/26S4/old.sto", &sha(2)),
             local("nope", "../secret.sto", &sha(3)),
             local("nope2", "ferrari296gt3/MMT/../../secret.sto", &sha(3)),
