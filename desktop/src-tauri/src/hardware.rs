@@ -96,7 +96,7 @@ pub fn detect() -> HardwareReport {
 
     // 3. Inspeccionar configuración de sonido en app.ini
     let mut sound_sys = "1 (XAudio2 Ultra-Baja Latencia)".to_string();
-    if let Some(user_docs) = dirs_next().or_else(dirs_fallback) {
+    if let Some(user_docs) = get_documents_dir() {
         let app_ini = user_docs.join("iRacing").join("app.ini");
         if let Ok(content) = fs::read_to_string(app_ini) {
             for line in content.lines() {
@@ -120,10 +120,12 @@ pub fn detect() -> HardwareReport {
     }
 }
 
-fn dirs_next() -> Option<std::path::PathBuf> {
-    dirs::document_dir()
-}
-
-fn dirs_fallback() -> Option<std::path::PathBuf> {
+fn get_documents_dir() -> Option<std::path::PathBuf> {
+    #[cfg(windows)]
+    {
+        if let Some(docs) = known_folders::get_known_folder_path(known_folders::KnownFolder::Documents) {
+            return Some(docs);
+        }
+    }
     std::env::var("USERPROFILE").ok().map(|p| std::path::PathBuf::from(p).join("Documents"))
 }

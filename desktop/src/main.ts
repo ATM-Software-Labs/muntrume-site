@@ -2,7 +2,7 @@ import { inTauri } from "./env";
 import { createMock } from "./mock";
 import { createTauriBackend } from "./tauri-backend";
 import type { Backend, LibraryItem, LiveSample, Settings, Snapshot, StagedFile } from "./types";
-import { fuelText, paintConfigAnalysis, paintExtras, updateLiveOverlay, initFloatingOverlayControls, paintOverlays, paintHardware } from "./extra";
+import { fuelText, paintConfigAnalysis, paintExtras, updateLiveOverlay, initFloatingOverlayControls, paintOverlays, paintHardware, paintLastSession } from "./extra";
 import rawSchedule from "./season_schedule_2026_s4.json";
 import { getSetupProfile, estimateLapTimeAndConsistency } from "./setup-intelligence";
 
@@ -367,7 +367,7 @@ let snapshot: Snapshot | null = null;
 let filter: "all" | "Race" | "Qualy" | "Wet" | "Fav" = "all";
 let query = "";
 let pollTimer = 0;
-let view: "library" | "upload" | "settings" | "week" | "analysis" | "reference" | "strategy" | "overlays" | "hardware" | "team" | "config" = "library";
+let view: "library" | "upload" | "settings" | "week" | "last_session" | "analysis" | "reference" | "strategy" | "overlays" | "hardware" | "team" | "config" = "library";
 
 let libraryGroupBy: "car" | "track" | "week" = (() => {
   try {
@@ -1573,7 +1573,7 @@ function press(id: string, on: boolean): void {
 
 function showView(next: typeof view): void {
   view = next;
-  for (const id of ["viewLibrary", "viewUpload", "viewSettings", "viewWeek", "viewAnalysis", "viewReference", "viewStrategy", "viewOverlays", "viewHardware", "viewTeam"] as const) {
+  for (const id of ["viewLibrary", "viewUpload", "viewSettings", "viewWeek", "viewLastSession", "viewAnalysis", "viewReference", "viewStrategy", "viewOverlays", "viewHardware", "viewTeam"] as const) {
     const node = document.getElementById(id);
     if (node) node.hidden = id !== `view${next[0].toUpperCase()}${next.slice(1)}`;
   }
@@ -1582,6 +1582,7 @@ function showView(next: typeof view): void {
   viewSettings.hidden = next !== "settings";
   const extra: Record<string, string> = {
     week: "viewWeek",
+    last_session: "viewLastSession",
     analysis: "viewAnalysis",
     reference: "viewReference",
     strategy: "viewStrategy",
@@ -1593,6 +1594,9 @@ function showView(next: typeof view): void {
   for (const [name, id] of Object.entries(extra)) {
     const node = document.getElementById(id);
     if (node) node.hidden = next !== name;
+  }
+  if (next === "last_session") {
+    paintLastSession();
   }
   if (next === "analysis" || next === "overlays" || next === "strategy" || next === "week" || next === "team" || next === "reference") {
     if (snapshot) paintExtras(snapshot);
@@ -1792,9 +1796,21 @@ function bind(): void {
   document.querySelectorAll<HTMLButtonElement>("[data-nav]").forEach((button) => {
     button.addEventListener("click", () => {
       const next = button.dataset.nav;
-      if (next === "library" || next === "upload" || next === "settings" || next === "week" || next === "analysis" || next === "reference" || next === "strategy" || next === "overlays" || next === "hardware" || next === "team" || next === "config") showView(next);
+      if (next === "library" || next === "upload" || next === "settings" || next === "week" || next === "last_session" || next === "analysis" || next === "reference" || next === "strategy" || next === "overlays" || next === "hardware" || next === "team" || next === "config") showView(next);
     });
   });
+  const quickLastSession = document.getElementById("quickLastSessionBtn");
+  if (quickLastSession) {
+    quickLastSession.addEventListener("click", () => {
+      showView("last_session");
+    });
+  }
+  const openInAnalysis = document.getElementById("lsOpenInAnalysisBtn");
+  if (openInAnalysis) {
+    openInAnalysis.addEventListener("click", () => {
+      showView("analysis");
+    });
+  }
   const btnRefreshHw = document.getElementById("btnRefreshHardware");
   if (btnRefreshHw) {
     btnRefreshHw.addEventListener("click", () => {
