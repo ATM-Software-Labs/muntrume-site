@@ -141,6 +141,9 @@ async fn run(app: &AppHandle) -> Result<SyncReport, String> {
                     .map(|(name, track_name)| SeriesWeek { name, track: track_name })
                     .collect();
                 if let Err(reason) = install_allowed(&track, filename, &weeks, None) {
+                    if reason == "serie fixed" {
+                        continue;
+                    }
                     errors.push(format!("{}: {reason}", item.relative));
                     continue;
                 }

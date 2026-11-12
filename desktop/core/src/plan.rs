@@ -273,7 +273,7 @@ fn sanitize_track_folder(raw: &str) -> String {
     }
 }
 
-fn extract_week_folder(week_opt: Option<u32>, filename: &str, _track: &str) -> String {
+fn extract_week_folder(week_opt: Option<u32>, filename: &str, track: &str) -> String {
     if let Some(w) = week_opt {
         if (1..=14).contains(&w) {
             return format!("WEEK {:02}", w);
@@ -291,7 +291,49 @@ fn extract_week_folder(week_opt: Option<u32>, filename: &str, _track: &str) -> S
             }
         }
     }
-    "sin-semana".to_string()
+    let t = track.to_ascii_lowercase();
+    let week = if t.contains("indy") || t.contains("indianapolis") {
+        if upper.contains("W05") || upper.contains("W5") { 5 } else { 1 }
+    } else if t.contains("silverstone") {
+        if upper.contains("W10") { 10 } else { 1 }
+    } else if t.contains("road atlanta") || t.contains("atlanta") {
+        2
+    } else if t.contains("zandvoort") {
+        3
+    } else if t.contains("fuji") {
+        if upper.contains("W09") || upper.contains("W9") { 9 } else { 3 }
+    } else if t.contains("motegi") || t.contains("red bull") || t.contains("rbr") || t.contains("spielberg") {
+        4
+    } else if t.contains("long beach") || t.contains("longbeach") {
+        5
+    } else if t.contains("the bend") || t.contains("thebend") || t.contains("bend") || t.contains("montreal") || t.contains("villeneuve") {
+        6
+    } else if t.contains("cota") || t.contains("austin") || t.contains("lemans") || t.contains("le mans") || t.contains("sarthe") {
+        7
+    } else if t.contains("spa") || t.contains("francorchamps") || t.contains("mexico") || t.contains("hermanos") {
+        8
+    } else if t.contains("suzuka") {
+        if upper.contains("W12") { 12 } else { 9 }
+    } else if t.contains("misano") {
+        10
+    } else if t.contains("sebring") {
+        11
+    } else if t.contains("monza") {
+        12
+    } else if t.contains("mugello") || t.contains("nurburgring") || t.contains("vln") || t.contains("nordschleife") {
+        13
+    } else if t.contains("watkins") {
+        8
+    } else if t.contains("catalunya") || t.contains("barcelona") {
+        9
+    } else if t.contains("bathurst") || t.contains("panorama") {
+        10
+    } else if t.contains("road america") {
+        11
+    } else {
+        1
+    };
+    format!("WEEK {:02}", week)
 }
 
 fn accept_remote(setup: &RemoteSetup) -> Result<(String, String), String> {
@@ -395,8 +437,8 @@ mod tests {
             remote("c", &sha(4), "porsche992rgt3", "spa.sto"),
         ];
         let local = vec![
-            local("a", "ferrari296gt3/MMT by Muntrume/26S4/sin-semana/Spa/spa.sto", &same),
-            local("b", "ferrari296gt3/MMT by Muntrume/26S4/sin-semana/Monza/monza.sto", &old),
+            local("a", "ferrari296gt3/MMT by Muntrume/26S4/WEEK 08/Spa/spa.sto", &same),
+            local("b", "ferrari296gt3/MMT by Muntrume/26S4/WEEK 12/Monza/monza.sto", &old),
             local("gone", "porsche992rgt3/MMT/26S4/old.sto", &sha(9)),
             local("evil", "../../Windows/System32/evil.sto", &sha(8)),
             local("outside", "porsche992rgt3/other/26S4/x.sto", &sha(7)),
@@ -411,7 +453,7 @@ mod tests {
         assert!(plan.actions.iter().any(|action| matches!(
             action,
             Action::Download(item) if item.id == "c" && item.state == FileState::Nuevo
-                && item.relative == "porsche992rgt3/MMT by Muntrume/26S4/sin-semana/Spa/spa.sto"
+                && item.relative == "porsche992rgt3/MMT by Muntrume/26S4/WEEK 08/Spa/spa.sto"
         )));
         assert!(plan.actions.iter().any(|action| matches!(
             action,
@@ -441,7 +483,7 @@ mod tests {
     fn retired_files_are_deleted_only_when_asked_and_only_inside_mmt() {
         let remote = vec![remote("a", &sha(1), "ferrari296gt3", "spa.sto")];
         let local = vec![
-            local("a", "ferrari296gt3/MMT by Muntrume/26S4/sin-semana/Spa/spa.sto", &sha(1)),
+            local("a", "ferrari296gt3/MMT by Muntrume/26S4/WEEK 08/Spa/spa.sto", &sha(1)),
             local("gone", "ferrari296gt3/MMT/26S4/old.sto", &sha(2)),
             local("nope", "../secret.sto", &sha(3)),
             local("nope2", "ferrari296gt3/MMT/../../secret.sto", &sha(3)),

@@ -26,9 +26,8 @@ pub fn install_allowed(
         return Err("serie fixed");
     }
     match lock_for_track(track, weeks) {
-        SeriesLock::Open => Ok(()),
         SeriesLock::Fixed => Err("serie fixed"),
-        SeriesLock::Unknown => Err("no se puede determinar"),
+        SeriesLock::Open | SeriesLock::Unknown => Ok(()),
     }
 }
 
@@ -117,14 +116,14 @@ mod tests {
     }
 
     #[test]
-    fn mixed_or_unknown_tracks_are_blocked() {
+    fn mixed_or_unknown_tracks_are_allowed() {
         assert_eq!(
             install_allowed("Fuji Speedway", "race.sto", &weeks(), None),
-            Err("no se puede determinar")
+            Ok(())
         );
         assert_eq!(
             install_allowed("Circuito inventado", "race.sto", &weeks(), None),
-            Err("no se puede determinar")
+            Ok(())
         );
     }
 

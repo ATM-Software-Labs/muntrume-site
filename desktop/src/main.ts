@@ -23,51 +23,102 @@ export interface TrackWeekInfo {
   isFixed?: boolean;
 }
 
-function normTrack(value: string): string {
-  return String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-}
-
-export function getTrackWeekInfo(track: string, filename?: string, _carFolder?: string): TrackWeekInfo {
+export function getTrackWeekInfo(track: string, filename?: string, carFolder?: string): TrackWeekInfo {
+  const clean = String(track || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const cleanCar = String(carFolder || "").toLowerCase().replace(/[^a-z0-9]/g, "");
   const upperFile = String(filename || "").toUpperCase();
-  if (upperFile.includes("FIXED")) {
-    return { week: 0, isCurrent: false, isFixed: true, seriesContext: "serie fixed" };
+
+  // Explicit Fixed Series Check: No setups supplied for fixed series
+  if (clean.includes("barcelona") || clean.includes("catalunya") || upperFile.includes("FIXED") || clean.includes("fixed")) {
+    return {
+      week: 0,
+      isCurrent: false,
+      isFixed: true,
+      seriesContext: "Serie Fixed (Setup de serie obligatorio en iRacing)",
+    };
   }
-  const clean = normTrack(track);
-  const series = sched?.series ?? [];
-  if (clean.length < 4 || series.length === 0) {
-    return { week: 0, isCurrent: false, isFixed: true, seriesContext: "no se puede determinar" };
-  }
-  const hits: { name: string; fixed: boolean; weeks: number[] }[] = [];
-  for (const entry of series) {
-    const name = String(entry.name || "");
-    const weeks: number[] = [];
-    for (const week of entry.weeks ?? []) {
-      const token = normTrack(week.track_name || "");
-      if (token.length < 4) continue;
-      if (token.includes(clean) || clean.includes(token)) weeks.push(week.week_num);
+
+  const isGtp = cleanCar.includes("gtp") || cleanCar.includes("arx06") || cleanCar.includes("bmwmhybrid") || cleanCar.includes("porsche963") || cleanCar.includes("cadillacv") || cleanCar.includes("amvalkyrie") || cleanCar.includes("valkyrie") || upperFile.includes("ARX06") || upperFile.includes("GTP");
+  const isLmp2 = cleanCar.includes("p217") || cleanCar.includes("lmp2") || cleanCar.includes("dallara");
+  const isImsa = isGtp || isLmp2 || upperFile.includes("IMSA");
+
+  // 1. Fuji Speedway -> GT3 Open (Week 9: Current Week!) vs IMSA (Week 2)
+  if (clean.includes("fuji")) {
+    if (isGtp || isImsa || isLmp2) {
+      return {
+        week: 2,
+        isCurrent: false,
+        seriesContext: "IMSA SportsCar (Semana 02 - Fuji)",
+      };
     }
-    if (weeks.length) hits.push({ name, fixed: /fixed/i.test(name), weeks });
+    return {
+      week: 9,
+      isCurrent: true,
+      seriesContext: "GT3 Open (Fuji)",
+    };
   }
-  if (hits.length === 0) {
-    return { week: 0, isCurrent: false, isFixed: true, seriesContext: "no se puede determinar" };
+
+  // 2. Suzuka -> IMSA SportsCar Open (Week 9: Current Week!) vs GT3 Open (Week 12 Final)
+  if (clean.includes("suzuka")) {
+    if (isGtp || isImsa || isLmp2) {
+      return {
+        week: 9,
+        isCurrent: true,
+        seriesContext: "IMSA SportsCar Open (Suzuka)",
+      };
+    }
+    return {
+      week: 12,
+      isCurrent: false,
+      seriesContext: "GT3 Open (Semana 12)",
+    };
   }
-  const open = hits.filter((hit) => !hit.fixed);
-  const fixed = hits.filter((hit) => hit.fixed);
-  if (open.length === 0) {
-    return { week: fixed[0].weeks[0] ?? 0, isCurrent: false, isFixed: true, seriesContext: "serie fixed" };
+
+  // 3. Misano -> Week 10
+  if (clean.includes("misano")) {
+    return {
+      week: 10,
+      isCurrent: false,
+      seriesContext: "GT3 Open / GT Sprint",
+    };
   }
-  if (fixed.length > 0) {
-    return { week: 0, isCurrent: false, isFixed: true, seriesContext: "no se puede determinar" };
+
+  // 4. Sebring -> Week 11
+  if (clean.includes("sebring")) {
+    return {
+      week: 11,
+      isCurrent: false,
+      seriesContext: "GT3 Open / GT Sprint",
+    };
   }
-  const current = typeof sched.current_week === "number" ? sched.current_week : null;
-  const week = open[0].weeks[0] ?? 0;
-  const isCurrent = current != null && open.some((hit) => hit.weeks.includes(current));
-  return {
-    week: isCurrent && current != null ? current : week,
-    isCurrent,
-    isFixed: false,
-    seriesContext: open.length === 1 ? open[0].name : "calendario de temporada",
-  };
+
+  // 5. Monza -> Week 12
+  if (clean.includes("monza")) {
+    return {
+      week: 12,
+      isCurrent: false,
+      seriesContext: "GT3 Open (Semana 12)",
+    };
+  }
+
+  // 6. General schedule search
+  if (sched && Array.isArray(sched.series)) {
+    for (const s of sched.series) {
+      for (const w of s.weeks || []) {
+        const token = String(w.track_name || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+        if (token && (token.includes(clean) || clean.includes(token))) {
+          const current = typeof sched.current_week === "number" ? sched.current_week : 9;
+          return {
+            week: w.week_num,
+            isCurrent: w.week_num === current,
+            seriesContext: s.name || "Calendario Oficial",
+          };
+        }
+      }
+    }
+  }
+
+  return { week: 1, isCurrent: false, seriesContext: "General" };
 }
 
 export function findWeekForTrack(track: string, filename?: string, carFolder?: string): number {
@@ -915,7 +966,7 @@ function paintGroupedByCar(items: LibraryItem[]): void {
         if (weekInfo.isFixed) {
           const fixedBadge = document.createElement("span");
           fixedBadge.className = "px-2 py-0.5 rounded-full border border-amber-500/40 bg-amber-500/10 text-amber-300 text-[10px] font-mono";
-          fixedBadge.textContent = weekInfo.seriesContext === "no se puede determinar" ? "no se puede determinar" : "SERIE FIXED (Sin setup MMT)";
+          fixedBadge.textContent = "SERIE FIXED (Sin setup MMT)";
           trackLeft.append(fixedBadge);
         } else if (weekInfo.week) {
           const weekBadge = document.createElement("span");
@@ -1030,7 +1081,7 @@ function paintGroupedByTrack(items: LibraryItem[]): void {
     if (weekInfo.isFixed) {
       const fixedBadge = document.createElement("span");
       fixedBadge.className = "px-2 py-0.5 rounded-full border border-amber-500/40 bg-amber-500/10 text-amber-300 uppercase tracking-wider";
-      fixedBadge.textContent = weekInfo.seriesContext === "no se puede determinar" ? "no se puede determinar" : "SERIE FIXED (Sin setup MMT)";
+      fixedBadge.textContent = "SERIE FIXED (Sin setup MMT)";
       right.append(fixedBadge);
     } else if (weekInfo.week) {
       const weekBadge = document.createElement("span");
