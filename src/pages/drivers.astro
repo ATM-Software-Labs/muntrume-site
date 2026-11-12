@@ -4,19 +4,19 @@ import DriverCard from '../components/DriverCard.astro';
 import TeamBand from '../components/TeamBand.astro';
 import { PILOTOS, LICENCE_UPDATED_LABEL } from '../lib/pilotos';
 
-const pageTitle = "Drivers | Muntrume Motorsport";
-const pageDescription = `Official driver roster of Muntrume Motorsport: ${PILOTOS.map(p => p.fullName).join(", ")}. Sports Car license, GT3/GT4 endurance telemetry hours, and Muntrume Telemetry Index (MTI) performance ratings.`;
+const pageTitle = "Pilotos | Muntrume Motorsport";
+const pageDescription = `Plantilla de Muntrume Motorsport: ${PILOTOS.map((p) => p.fullName).join(", ")}. Licencia Sports Car, horas en pista e índice MTI.`;
 ---
 
-<Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/drivers/" ogImage="https://muntru.me/assets/img/og-team.jpg" ogImageAlt="Pilotos de Muntrume Motorsport">
-  <section class="r-section" style="border-top:0;padding-top:clamp(80px,8vw,104px);padding-bottom:40px" aria-labelledby="plTitle">
+<Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/drivers/" ogImage="https://muntru.me/assets/img/og-team.jpg" ogImageAlt="Pilotos de Muntrume Motorsport" translated i18nTitle="pilots.meta.title" i18nDescription="pilots.meta.desc">
+  <section class="r-section" style="border-top:0;padding-top:clamp(28px,4vw,48px);padding-bottom:40px" aria-labelledby="plTitle">
     <div class="r-wrap max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
       <div class="r-head" style="margin-bottom:16px">
         <div>
-          <p class="r-kicker">Official Roster 2026 · Sports Car, GT3, GT4 &amp; Multiclass Endurance</p>
-          <h1 id="plTitle" class="r-h2">Drivers</h1>
-          <p class="r-lead">{PILOTOS.length} official drivers. Sports Car license &amp; real hours on track weighted by lap time.</p>
-          <p class="r-meta" id="licenceUpdated">Updated: <time datetime="2026-11-07">{LICENCE_UPDATED_LABEL}</time></p>
+          <p class="r-kicker" data-i18n="pilots.kicker">Plantilla 2026 · Sports Car</p>
+          <h1 id="plTitle" class="r-h2" data-i18n="pilots.title">Pilotos</h1>
+          <p class="r-lead"><span data-i18n-num={PILOTOS.length}>{PILOTOS.length}</span> <span data-i18n="pilots.lead">pilotos oficiales. El circuito favorito es el de menos incidentes, elegido por el equipo.</span></p>
+          <p class="r-meta" id="licenceUpdated"><span data-i18n="pilots.updated">Actualizado:</span> <time datetime="2026-11-07">{LICENCE_UPDATED_LABEL}</time></p>
         </div>
       </div>
       <TeamBand />
@@ -27,5 +27,5 @@ const pageDescription = `Official driver roster of Muntrume Motorsport: ${PILOTO
       </div>
     </div>
   </section>
-  <script is:inline src="/assets/js/home-r.js?v=t295" defer></script>
+  <script is:inline src="/assets/js/home-r.js?v=t330" defer></script>
 </Layout>

@@ -1,99 +1,175 @@
-/* Muntrume i18n: browser dictionary translation (assets/i18n/*.json).
-   Default language: English (en). Explicit ?lang= or localStorage overrides. */
+/* Spanish is the HTML source. en/ca/fr are key dictionaries.
+   Choice persists in muntrume_lang and mm_lang. ?lang= overrides. */
 (function () {
   "use strict";
-  var LANGS = { en: "English", es: "Español", ca: "Català", fr: "Français" };
-  var KEY = "mm_lang", V = "t291";
-  var root = document.documentElement;
-  function pick() {
+  var LANGS = ["es", "en", "ca", "fr"];
+  var V = "t330";
+  var dict = null;
+  var lang = "es";
+
+  function allowed(code) {
+    code = String(code || "").toLowerCase();
+    return LANGS.indexOf(code) >= 0 ? code : "";
+  }
+  function readStored() {
     try {
-      var q = new URLSearchParams(location.search).get("lang");
-      if (q && LANGS[q]) { localStorage.setItem(KEY, q); return { lang: q, explicit: true }; }
-      var s = localStorage.getItem("muntrume_lang") || localStorage.getItem(KEY);
-      if (s) { s = s.toLowerCase(); if (LANGS[s]) return { lang: s, explicit: false }; }
+      return allowed(localStorage.getItem("muntrume_lang")) || allowed(localStorage.getItem("mm_lang"));
+    } catch (e) { return ""; }
+  }
+  function persist(code) {
+    try {
+      localStorage.setItem("muntrume_lang", code);
+      localStorage.setItem("mm_lang", code);
     } catch (e) {}
-    return { lang: "en", explicit: false };
   }
-  var sel = pick(), lang = sel.lang, dict = null;
-  root.lang = lang;
-  if (lang !== "en") {
-    root.classList.add("i18n-wait");
-    var st = document.createElement("style"); st.id = "i18n-wait-css";
-    st.textContent = "html.i18n-wait body{opacity:0}";
-    document.head.appendChild(st);
-    setTimeout(function () { root.classList.remove("i18n-wait"); }, 800);
+  function pick() {
+    var q = "";
+    try { q = allowed(new URLSearchParams(location.search).get("lang")); } catch (e) {}
+    if (q) { persist(q); return q; }
+    return readStored() || "es";
   }
-  var SKIP = { SCRIPT: 1, STYLE: 1, NOSCRIPT: 1, TEXTAREA: 1, CODE: 1, PRE: 1, svg: 1 };
-  var ATTRS = ["placeholder", "aria-label", "title", "alt"];
-  var done = new WeakMap();
-  function tr(s) {
-    if (!dict) return null;
-    var k = s.replace(/\s+/g, " ").trim();
-    return k && Object.prototype.hasOwnProperty.call(dict, k) ? dict[k] : null;
+  function lookup(key) {
+    if (!key || !dict || !Object.prototype.hasOwnProperty.call(dict, key)) return null;
+    var value = dict[key];
+    return typeof value === "string" ? value : null;
   }
-  function textNode(n) {
-    var v = n.nodeValue; if (!v || !/[A-Za-zÀ-ÿ]/.test(v) || done.get(n) === v) return;
-    var t = tr(v); if (t == null) return;
-    var m = v.match(/^(\s*)[\s\S]*?(\s*)$/);
-    var out = m[1] + t + m[2]; done.set(n, out); n.nodeValue = out;
-  }
-  function el(e) {
-    for (var i = 0; i < ATTRS.length; i++) {
-      var a = e.getAttribute && e.getAttribute(ATTRS[i]);
-      if (a) { var t = tr(a); if (t != null) e.setAttribute(ATTRS[i], t); }
+  function applyNums() {
+    var loc = { es: "es-ES", en: "en-GB", ca: "ca-ES", fr: "fr-FR" }[lang] || "es-ES";
+    var nodes = document.querySelectorAll("[data-i18n-num]");
+    for (var i = 0; i < nodes.length; i++) {
+      var n = Number(nodes[i].getAttribute("data-i18n-num"));
+      if (!isFinite(n)) continue;
+      try { nodes[i].textContent = n.toLocaleString(loc); }
+      catch (e) { nodes[i].textContent = String(n); }
     }
   }
-  function skip(n) {
-    for (var p = n; p && p !== document; p = p.parentNode) {
-      if (p.nodeType === 1 && (SKIP[p.nodeName] || p.hasAttribute("data-no-i18n") || p.getAttribute("translate") === "no" || p.isContentEditable)) return true;
+  function applyAttrs() {
+    var map = [
+      ["data-i18n-placeholder", "placeholder"],
+      ["data-i18n-aria", "aria-label"],
+      ["data-i18n-title", "title"],
+      ["data-i18n-alt", "alt"],
+      ["data-i18n-content", "content"]
+    ];
+    for (var m = 0; m < map.length; m++) {
+      var nodes = document.querySelectorAll("[" + map[m][0] + "]");
+      for (var i = 0; i < nodes.length; i++) {
+        var value = lookup(nodes[i].getAttribute(map[m][0]));
+        if (value != null) nodes[i].setAttribute(map[m][1], value);
+      }
     }
-    return false;
   }
-  function walk(node) {
-    if (!dict || !node) return;
-    if (node.nodeType === 3) { if (!skip(node.parentNode)) textNode(node); return; }
-    if (node.nodeType !== 1 || skip(node)) return;
-    el(node);
-    var w = document.createTreeWalker(node, 5 /* ELEMENT|TEXT */, {
-      acceptNode: function (n) { return n.nodeType === 1 && (SKIP[n.nodeName] || n.hasAttribute("data-no-i18n") || n.getAttribute("translate") === "no") ? 2 : 1; }
-    });
-    var n; while ((n = w.nextNode())) { if (n.nodeType === 3) textNode(n); else el(n); }
+  function applyText() {
+    var nodes = document.querySelectorAll("[data-i18n]");
+    for (var i = 0; i < nodes.length; i++) {
+      var value = lookup(nodes[i].getAttribute("data-i18n"));
+      if (value != null) nodes[i].textContent = value;
+    }
   }
-  function head() {
-    var t = tr(document.title); if (t) document.title = t;
-    var ms = document.querySelectorAll('meta[name="description"],meta[property="og:title"],meta[property="og:description"],meta[name="twitter:title"],meta[name="twitter:description"],meta[property="og:image:alt"]');
-    for (var i = 0; i < ms.length; i++) { var c = tr(ms[i].getAttribute("content") || ""); if (c) ms[i].setAttribute("content", c); }
+  function applyLocale() {
+    document.documentElement.lang = lang;
     var loc = { es: "es_ES", en: "en_US", ca: "ca_ES", fr: "fr_FR" }[lang];
-    var og = document.querySelector('meta[property="og:locale"]'); if (og) og.setAttribute("content", loc);
-    if (sel.explicit) { var cn = document.querySelector('link[rel="canonical"]'); if (cn && !/[?&]lang=/.test(cn.href)) cn.href = cn.href + (cn.href.indexOf("?") < 0 ? "?" : "&") + "lang=" + lang; }
+    var og = document.querySelector('meta[property="og:locale"]');
+    if (og && loc) og.setAttribute("content", loc);
   }
-  function picker() {
-    // Selector unico vive en Navbar / Header
+  function paintSwitch() {
+    var code = lang.toUpperCase();
+    var labels = document.querySelectorAll("[data-lang-code]");
+    for (var i = 0; i < labels.length; i++) labels[i].textContent = code;
+    var setters = document.querySelectorAll("[data-set-lang]");
+    for (var j = 0; j < setters.length; j++) {
+      var on = setters[j].getAttribute("data-set-lang") === lang;
+      if (setters[j].getAttribute("role") === "option") setters[j].setAttribute("aria-selected", on ? "true" : "false");
+      else setters[j].setAttribute("aria-pressed", on ? "true" : "false");
+    }
+    var full = document.body && document.body.getAttribute("data-i18n-coverage") === "full";
+    var show = lang !== "es" && !full;
+    var notes = document.querySelectorAll("[data-lang-fallback]");
+    for (var n = 0; n < notes.length; n++) {
+      if (show) notes[n].removeAttribute("hidden");
+      else notes[n].setAttribute("hidden", "");
+    }
+  }
+  function closeMenus() {
+    var menus = document.querySelectorAll("[data-lang-menu]");
+    for (var i = 0; i < menus.length; i++) {
+      menus[i].hidden = true;
+      var btn = document.querySelector('[aria-controls="' + menus[i].id + '"]');
+      if (btn) btn.setAttribute("aria-expanded", "false");
+    }
+  }
+  function bindSwitch() {
+    document.addEventListener("click", function (e) {
+      var target = e.target;
+      var setter = target && target.closest ? target.closest("[data-set-lang]") : null;
+      if (setter) {
+        e.preventDefault();
+        var next = allowed(setter.getAttribute("data-set-lang"));
+        if (next) window.muntruI18n.set(next);
+        return;
+      }
+      var toggle = target && target.closest ? target.closest("[data-lang-toggle]") : null;
+      if (toggle) {
+        e.preventDefault();
+        e.stopPropagation();
+        var menu = document.getElementById(toggle.getAttribute("aria-controls") || "");
+        if (!menu) return;
+        var open = menu.hidden;
+        closeMenus();
+        if (open) {
+          menu.hidden = false;
+          toggle.setAttribute("aria-expanded", "true");
+          var current = menu.querySelector('[aria-selected="true"]') || menu.querySelector("button");
+          if (current) current.focus();
+        }
+        return;
+      }
+      if (!target || !target.closest || !target.closest("[data-lang-root]")) closeMenus();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closeMenus();
+    });
+    document.addEventListener("muntru:close-lang", closeMenus);
   }
   function apply() {
-    head(); walk(document.body); picker();
-    root.classList.remove("i18n-wait");
+    if (lang !== "es") {
+      applyText();
+      applyAttrs();
+    }
+    applyNums();
+    applyLocale();
+    paintSwitch();
     try { document.dispatchEvent(new CustomEvent("muntru:i18n", { detail: { lang: lang } })); } catch (e) {}
-    new MutationObserver(function (ms) {
-      for (var i = 0; i < ms.length; i++) {
-        var m = ms[i];
-        if (m.type === "characterData") { if (!skip(m.target.parentNode)) textNode(m.target); }
-        else if (m.type === "attributes") el(m.target);
-        else for (var j = 0; j < m.addedNodes.length; j++) walk(m.addedNodes[j]);
-      }
-    }).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS });
   }
+  function whenReady(fn) {
+    if (document.readyState !== "loading") fn();
+    else document.addEventListener("DOMContentLoaded", fn, { once: true });
+  }
+
+  lang = pick();
+  document.documentElement.lang = lang;
   window.muntruI18n = {
-    lang: lang, langs: LANGS,
-    t: function (s) { var t = tr(String(s)); return t == null ? s : t; },
-    set: function (l) {
-      if (!LANGS[l]) return;
-      try { localStorage.setItem(KEY, l); } catch (e) {}
-      var u = new URL(location.href); u.searchParams.delete("lang");
-      location.href = u.pathname + (u.search || "") + u.hash;
+    get lang() { return lang; },
+    langs: { es: "Español", en: "English", ca: "Català", fr: "Français" },
+    t: function (key) { return lookup(key); },
+    set: function (code) {
+      code = allowed(code);
+      if (!code) return;
+      closeMenus();
+      if (code === lang) return;
+      persist(code);
+      var u = new URL(location.href);
+      if (code === "es") u.searchParams.delete("lang");
+      else u.searchParams.set("lang", code);
+      location.href = u.pathname + u.search + u.hash;
     }
   };
-  var ready = new Promise(function (r) { if (document.readyState !== "loading") r(); else document.addEventListener("DOMContentLoaded", r, { once: true }); });
-  fetch("/assets/i18n/" + lang + ".json?v=" + V).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; })
-    .then(function (d) { dict = d || {}; return ready; }).then(apply);
+  bindSwitch();
+  if (lang === "es") whenReady(apply);
+  else {
+    fetch("/assets/i18n/" + lang + ".json?v=" + V)
+      .then(function (r) { return r.ok ? r.json() : {}; })
+      .catch(function () { return {}; })
+      .then(function (data) { dict = data || {}; whenReady(apply); });
+  }
 })();

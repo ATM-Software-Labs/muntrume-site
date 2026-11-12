@@ -8,19 +8,18 @@ import catalog from '../../public/assets/data/catalog_index.json';
 const pageTitle = "Muntrume Motorsport (MMT) · Equipo iRacing";
 const pageDescription = "Muntrume Motorsport (MMT) es el equipo de iRacing de Sant Andreu, Barcelona. Pilotos oficiales, telemetría y setups .sto en el Garage.";
 const pageKeywords = "muntrume motorsport, official simracing team, iracing team, endurance sim racing, gt3 endurance, sim racing engineering, garage 61 telemetry, alberto trujillo, escuderia simracing, equipo iracing";
-const fmt = (n: number) => n.toLocaleString('en-US');
+const es = (n: number) => n.toLocaleString('es-ES');
 const figs = [
-  { n: String(PILOTOS.length), l: "Official Drivers" },
-  { n: fmt(catalog.total_setups), l: "Setups in the Vault" },
-  { n: String(catalog.cars.length), l: "Supported Cars" },
-  { n: String(catalog.circuits.length), l: "Calibrated Circuits" },
+  { n: PILOTOS.length, k: "home.fig.drivers", l: "Pilotos oficiales" },
+  { n: catalog.total_setups, k: "home.fig.setups", l: "Setups en el catálogo" },
+  { n: catalog.cars.length, k: "home.fig.cars", l: "Coches" },
+  { n: catalog.circuits.length, k: "home.fig.tracks", l: "Circuitos" },
 ];
 ---
 
-<Layout title={pageTitle} description={pageDescription} keywords={pageKeywords} canonical="https://muntru.me/" ogImage="https://muntru.me/assets/img/og-home.jpg" ogImageAlt="Muntrume Motorsport (MMT)">
+<Layout title={pageTitle} description={pageDescription} keywords={pageKeywords} canonical="https://muntru.me/" ogImage="https://muntru.me/assets/img/og-home.jpg" ogImageAlt="Muntrume Motorsport (MMT)" translated i18nTitle="home.meta.title" i18nDescription="home.meta.desc">
   <link slot="head" rel="preload" as="image" type="image/avif" fetchpriority="high" imagesrcset="/assets/img/hero-bg-640.avif 640w, /assets/img/hero-bg-960.avif 960w, /assets/img/hero-bg-1280.avif 1280w" imagesizes="100vw" />
 
-  <!-- 1 · HERO -->
   <section class="r-hero" aria-labelledby="heroTitle">
     <picture>
       <source type="image/avif" srcset="/assets/img/hero-bg-640.avif 640w, /assets/img/hero-bg-960.avif 960w, /assets/img/hero-bg-1280.avif 1280w" sizes="100vw" />
@@ -30,36 +29,40 @@ const figs = [
     <div class="r-wrap">
       <p class="r-kicker">MMT · Sant Andreu, Barcelona</p>
       <h1 id="heroTitle" class="r-h1">Muntrume Motorsport</h1>
-      <p class="r-lead">Engineering-driven sim racing. Equipo oficial de iRacing en resistencia y sprint: telemetría, setups .sto y trabajo de equipo en Sports Car, GT3 y GT4.</p>
+      <p class="r-lead" data-i18n="home.lead">Sim racing con criterio de ingeniería. Equipo oficial de iRacing en resistencia y sprint: telemetría, setups .sto y trabajo de equipo en Sports Car, GT3 y GT4.</p>
       <div class="r-hero__cta">
-        <a href="/pilotos/" class="r-btn r-btn--primary">Meet the Drivers</a>
-        <a href="/garage/" class="r-btn r-btn--ghost">Enter Setup Vault</a>
-        <a href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer" class="r-btn r-btn--ghost">Garage 61 Telemetry ↗</a>
+        <a href="/pilotos/" class="r-btn r-btn--primary" data-i18n="home.cta.drivers">Conocer a los pilotos</a>
+        <a href="/garage/" class="r-btn r-btn--ghost" data-i18n="home.cta.vault">Entrar al Garage</a>
+        <a href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer" class="r-btn r-btn--ghost" data-i18n="home.cta.g61">Telemetría Garage 61 ↗</a>
       </div>
       <div class="r-hero__meta">
-        {figs.map(f => (<div><strong>{f.n}</strong>{f.l}</div>))}
+        {figs.map(f => (
+          <div>
+            <strong data-i18n-num={f.n}>{es(f.n)}</strong>
+            <span data-i18n={f.k}>{f.l}</span>
+          </div>
+        ))}
       </div>
     </div>
   </section>
 
   <section class="r-section" aria-labelledby="mmtAbout">
     <div class="r-wrap" style="display:grid;gap:12px;max-width:70ch">
-      <h2 id="mmtAbout" class="r-h2">Sobre Muntrume Motorsport (MMT)</h2>
-      <p class="r-lead" style="margin:0">Muntrume Motorsport (MMT) es un equipo de iRacing con sede en Sant Andreu, Barcelona. Publica la ficha de sus pilotos, guarda los setups .sto en el Garage y comparte la telemetría en Garage 61. La radio del equipo está en Discord.</p>
+      <h2 id="mmtAbout" class="r-h2" data-i18n="home.about.title">Sobre Muntrume Motorsport (MMT)</h2>
+      <p class="r-lead" style="margin:0" data-i18n="home.about.body">Muntrume Motorsport (MMT) es un equipo de iRacing con sede en Sant Andreu, Barcelona. Publica la ficha de sus pilotos, guarda los setups .sto en el Garage y comparte la telemetría en Garage 61. La radio del equipo está en Discord.</p>
     </div>
   </section>
 
-  <!-- 2 · DRIVERS -->
   <section class="r-section" aria-labelledby="driversTitle">
     <div class="r-wrap max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
       <div class="r-head">
         <div>
-          <p class="r-kicker">Official Roster 2026</p>
-          <h2 id="driversTitle" class="r-h2">Drivers</h2>
+          <p class="r-kicker" data-i18n="home.roster.kicker">Plantilla oficial 2026</p>
+          <h2 id="driversTitle" class="r-h2" data-i18n="home.roster.title">Pilotos</h2>
         </div>
-        <a href="/pilotos/" class="r-link">View Full Roster →</a>
+        <a href="/pilotos/" class="r-link" data-i18n="home.roster.link">Ver la plantilla →</a>
       </div>
-      <p class="r-meta" id="licenceUpdated" style="margin-bottom:14px">Updated: <time datetime="2026-11-07">{LICENCE_UPDATED_LABEL}</time></p>
+      <p class="r-meta" id="licenceUpdated" style="margin-bottom:14px"><span data-i18n="home.roster.updated">Actualizado:</span> <time datetime="2026-11-07">{LICENCE_UPDATED_LABEL}</time></p>
       <TeamBand />
       <div class="d-grid grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch w-full">
         {PILOTOS.map(p => (
@@ -69,54 +72,60 @@ const figs = [
     </div>
   </section>
 
-  <!-- 3 · CALENDAR -->
   <section class="r-section r-section--alt" aria-labelledby="calTitle">
     <div class="r-wrap">
       <div class="r-head">
         <div>
-          <p class="r-kicker">Season</p>
-          <h2 id="calTitle" class="r-h2">Race Calendar</h2>
+          <p class="r-kicker" data-i18n="home.cal.kicker">Temporada</p>
+          <h2 id="calTitle" class="r-h2" data-i18n="home.cal.title">Calendario</h2>
         </div>
       </div>
       <ul class="r-list" id="calList" hidden></ul>
-      <p class="r-empty" id="calEmpty">No upcoming events published yet. The calendar syncs automatically from Race Control.</p>
+      <p class="r-empty" id="calEmpty" data-i18n="home.cal.empty">Todavía no hay carreras publicadas. El calendario se sincroniza desde Race Control.</p>
     </div>
   </section>
 
-  <!-- 4 · THE TEAM / METHODOLOGY -->
   <section class="r-section" aria-labelledby="aboutTitle">
     <div class="r-wrap">
       <div class="r-head">
         <div>
-          <p class="r-kicker">The Team</p>
-          <h2 id="aboutTitle" class="r-h2">Who We Are</h2>
-          <p class="r-lead">A racing squad from Sant Andreu (Barcelona) and Costa Rica competing on iRacing with professional engineering methodology: setup preparation, verified telemetry data, and live race communications.</p>
+          <p class="r-kicker" data-i18n="home.team.kicker">El equipo</p>
+          <h2 id="aboutTitle" class="r-h2" data-i18n="home.team.title">Quiénes somos</h2>
+          <p class="r-lead" data-i18n="home.team.lead">Un equipo de Sant Andreu (Barcelona) y Costa Rica que compite en iRacing con método de ingeniería: preparación de setups, telemetría de Garage 61 y radio en carrera.</p>
         </div>
       </div>
       <div class="r-cols">
-        <div class="r-value"><h3 class="r-h3">Preparation</h3><p>Over 41,000 .STO setups organized by car, circuit, and season in the team Setup Vault and Dynamic Setup Builder.</p></div>
-        <div class="r-value"><h3 class="r-h3">Telemetry Data</h3><p>Road-only telemetry metrics weighted by real hours on track and verified iRacing licenses via Garage 61.</p></div>
-        <div class="r-value"><h3 class="r-h3">Teamwork</h3><p>Live Discord race radio, shared fuel &amp; tyre stint strategies, and coordinated driver swaps in 24h endurance races.</p></div>
+        <div class="r-value">
+          <h3 class="r-h3" data-i18n="home.team.prep.title">Preparación</h3>
+          <p><span data-i18n-num={catalog.total_setups}>{es(catalog.total_setups)}</span> <span data-i18n="home.team.prep.body">setups .sto, ordenados por coche, circuito y temporada, en el Garage del equipo y en el Setup Builder.</span></p>
+        </div>
+        <div class="r-value">
+          <h3 class="r-h3" data-i18n="home.team.tel.title">Telemetría</h3>
+          <p data-i18n="home.team.tel.body">Telemetría de carretera ponderada por horas reales en pista, y licencias de iRacing, vía Garage 61.</p>
+        </div>
+        <div class="r-value">
+          <h3 class="r-h3" data-i18n="home.team.work.title">Trabajo de equipo</h3>
+          <p data-i18n="home.team.work.body">Radio de carrera en Discord, planes compartidos de combustible y stint de neumáticos, y relevos coordinados en carreras de resistencia de 24 h.</p>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- 5 · PRESS ROOM & CONTACT -->
   <section class="r-section r-section--alt" aria-labelledby="pressTitle">
     <div class="r-wrap r-cols" style="align-items:end">
       <div style="display:grid;gap:16px">
-        <p class="r-kicker">Media</p>
-        <h2 id="pressTitle" class="r-h2">Press Room &amp; AI Copilot</h2>
-        <p class="r-lead">Race dispatches, motorsport news wire, and our Groq LPU race engineering AI Copilot.</p>
+        <p class="r-kicker" data-i18n="home.media.kicker">Medios</p>
+        <h2 id="pressTitle" class="r-h2" data-i18n="home.media.title">Sala de prensa y copiloto</h2>
+        <p class="r-lead" data-i18n="home.media.lead">Despachos de carrera, titulares de motor y el copiloto de ingeniería Muntrume AI (Groq LPU).</p>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:12px">
-        <a href="/noticias/" class="r-btn r-btn--primary">Press Room</a>
-        <a href="/app/" class="r-btn" style="border-color:var(--r-line-2);color:var(--r-text)">MMT Sync</a>
-        <a href="/paddock/" class="r-btn" style="border-color:var(--r-line-2);color:var(--r-text)">Paddock</a>
-        <a href="/ai/" class="r-btn" style="border-color:var(--r-line-2);color:var(--r-text)">AI Copilot</a>
+        <a href="/noticias/" class="r-btn r-btn--primary" data-i18n="home.media.news">Sala de prensa</a>
+        <a href="/app/" class="r-btn" style="border-color:var(--r-line-2);color:var(--r-text)" data-i18n="home.media.app">MMT Sync</a>
+        <a href="/paddock/" class="r-btn" style="border-color:var(--r-line-2);color:var(--r-text)" data-i18n="home.media.paddock">Paddock</a>
+        <a href="/ai/" class="r-btn" style="border-color:var(--r-line-2);color:var(--r-text)" data-i18n="home.media.ai">Copiloto AI</a>
       </div>
     </div>
   </section>
 
-  <script is:inline src="/assets/js/home-r.js?v=t295" defer></script>
+  <script is:inline src="/assets/js/home-r.js?v=t330" defer></script>
 </Layout>

@@ -1,7 +1,22 @@
 /**
- * 🏁 Muntrume Motorsport · news.js
- * Institutional Client Engine
+ * Muntrume Motorsport · news.js
+ * External headlines stay in the source language.
  */
+    function tr(key, fallback) {
+      try {
+        var value = window.muntruI18n && window.muntruI18n.t && window.muntruI18n.t(key);
+        if (typeof value === "string" && value) return value;
+      } catch (e) {}
+      return fallback;
+    }
+    function trn(key, fallback, vars) {
+      var text = tr(key, fallback);
+      if (vars) Object.keys(vars).forEach(function (name) { text = text.split("{" + name + "}").join(String(vars[name])); });
+      return text;
+    }
+    function uiLocale() {
+      return { es: "es-ES", en: "en-GB", ca: "ca-ES", fr: "fr-FR" }[document.documentElement.lang] || "es-ES";
+    }
 
 
 
@@ -119,8 +134,7 @@
       allNews = [...teamArticles, ...allNews.filter(a => !(teamArticles.length && a.isTeam) && !existingTitles.has(a.title.toLowerCase()))]
         .sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
 
-      document.getElementById('articleCount').textContent = `${allNews.length} Articles`;
-      document.getElementById('sourceCount').textContent = `${newsSources.length} Sources`;
+      paintCounts();
 
       const breaking = allNews.filter(n => n.isBreaking);
       if (breaking.length > 0) showBreakingTicker(breaking);
@@ -182,8 +196,7 @@
         liveFeedStatus = 'offline';
       } finally {
         lastUpdateTime = new Date();
-        document.getElementById('articleCount').textContent = `${allNews.length} Articles`;
-        document.getElementById('sourceCount').textContent = `${newsSources.length} Sources`;
+        paintCounts();
         const breaking = allNews.filter(n => n.isBreaking);
         if (breaking.length > 0) showBreakingTicker(breaking);
         renderAllSections();
@@ -208,7 +221,17 @@
         el.className = 'flex items-center justify-between gap-3 px-4 py-3 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] text-xs text-[var(--r-text)]';
         host.prepend(el);
       }
-      el.innerHTML = '<span>External racing feeds are temporarily unavailable &mdash; showing team dispatches only.</span><button type="button" onclick="loadAllNews()" class="shrink-0 text-emerald-400 font-semibold hover:text-emerald-300">Retry</button>';
+      el.textContent = '';
+      var note = document.createElement('span');
+      note.textContent = tr('news.offline', 'Las fuentes externas no están disponibles ahora. Solo se muestran los despachos del equipo.');
+      var retry = document.createElement('button');
+      retry.type = 'button';
+      retry.className = 'shrink-0 font-semibold';
+      retry.style.color = 'var(--r-accent)';
+      retry.textContent = tr('news.retry', 'Reintentar');
+      retry.addEventListener('click', function () { loadAllNews(); });
+      el.appendChild(note);
+      el.appendChild(retry);
     }
 
     function showBreakingTicker(items) {
@@ -259,7 +282,7 @@
       }
 
       if (filtered.length === 0) {
-        document.getElementById('mainFeatured').innerHTML = '<div class="text-center py-12 bg-[var(--r-surface)] rounded-2xl border border-[var(--r-line)] text-xs text-[var(--r-muted)]"><p class="text-sm font-semibold text-[var(--r-text)] mb-1">No stories match this filter</p><p>Try another category or clear the search box.</p></div>';
+        document.getElementById('mainFeatured').innerHTML = '<div class="text-center py-12 bg-[var(--r-surface)] rounded-2xl border border-[var(--r-line)] text-xs text-[var(--r-muted)]"><p class="text-sm font-semibold text-[var(--r-text)] mb-1">' + esc(tr('news.empty.title', 'Ninguna noticia coincide con este filtro')) + '</p><p>' + esc(tr('news.empty.body', 'Prueba otra categoría o vacía la búsqueda.')) + '</p></div>';
         document.getElementById('sideStories').innerHTML = '';
         document.getElementById('secondaryGrid').innerHTML = '';
         return;
@@ -275,7 +298,7 @@
       if (!container) return;
       const esports = allNews.filter(n => n.autoCategory === 'esports').slice(0, 4);
       if (esports.length === 0) {
-        container.innerHTML = `<div class="col-span-full text-center py-8 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] text-[var(--r-muted)] text-xs">${liveFeedStatus === 'pending' ? 'Loading esports headlines…' : 'No sim racing esports headlines in the live feeds right now.'}</div>`;
+        container.innerHTML = `<div class="col-span-full text-center py-8 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] text-[var(--r-muted)] text-xs">${esc(liveFeedStatus === 'pending' ? tr('news.loading.esports', 'Cargando titulares de esports…') : tr('news.empty.esports', 'Ahora mismo no hay titulares de esports en los feeds.'))}</div>`;
         return;
       }
       container.innerHTML = esports.map(renderSecondaryCard).join('');
@@ -286,7 +309,7 @@
       if (!container) return;
       const sport = allNews.filter(n => n.autoCategory === 'sport').slice(0, 4);
       if (sport.length === 0) {
-        container.innerHTML = `<div class="col-span-full text-center py-8 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] text-[var(--r-muted)] text-xs">${liveFeedStatus === 'pending' ? 'Loading motorsport headlines…' : 'Motorsport headlines are temporarily unavailable.'}</div>`;
+        container.innerHTML = `<div class="col-span-full text-center py-8 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] text-[var(--r-muted)] text-xs">${esc(liveFeedStatus === 'pending' ? tr('news.loading.sport', 'Cargando titulares de motor…') : tr('news.empty.sport', 'Los titulares de motor no están disponibles temporalmente.'))}</div>`;
         return;
       }
       container.innerHTML = sport.map(renderSecondaryCard).join('');
@@ -314,7 +337,15 @@
     }
 
     function formatDate(d) {
-      try { return new Date(d).toLocaleDateString('es-ES', { month: 'short', day: 'numeric', year: 'numeric' }); } catch (e) { return ''; }
+      try { return new Date(d).toLocaleDateString(uiLocale(), { month: 'short', day: 'numeric', year: 'numeric' }); } catch (e) { return ''; }
+    }
+    function paintCounts() {
+      var articles = document.getElementById('articleCount');
+      var sources = document.getElementById('sourceCount');
+      var updated = document.getElementById('lastUpdate');
+      if (articles) articles.textContent = trn('news.count.articles', '{n} artículos', { n: allNews.length });
+      if (sources) sources.textContent = trn('news.count.sources', '{n} fuentes', { n: newsSources.length });
+      if (updated) updated.textContent = lastUpdateTime.toLocaleTimeString(uiLocale(), { hour: '2-digit', minute: '2-digit' });
     }
 
     function resolveNewsUrl(a) {
@@ -327,7 +358,7 @@
       const href = esc(resolveNewsUrl(a));
       const isInternal = href.startsWith('/') && !href.startsWith('//');
       const targetAttr = isInternal ? '' : 'target="_blank" rel="noopener noreferrer"';
-      const ctaText = isInternal ? (a.isTeam ? 'Leer Despacho Oficial &rarr;' : 'Leer Noticia y Contexto &rarr;') : 'Leer Noticia en ' + esc(a.source) + ' &rarr;';
+      const ctaText = esc(isInternal ? (a.isTeam ? tr('news.cta.dispatch', 'Leer el despacho del equipo →') : tr('news.cta.story', 'Leer la noticia →')) : trn('news.cta.source', 'Leer en {source} →', { source: a.source }));
       return `
         <a href="${href}" ${targetAttr} class="group block relative overflow-hidden rounded-3xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-line-2)] transition duration-300 shadow-2xl">
           <div class="h-80 sm:h-96 w-full relative overflow-hidden bg-[var(--r-bg-2)]">
@@ -336,7 +367,7 @@
           </div>
           <div class="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
             <div class="flex items-center gap-2.5 mb-3 flex-wrap text-xs">
-              ${a.isBreaking ? '<span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-[var(--r-accent)] border border-emerald-500/30 font-bold text-[10px] tracking-wider uppercase">Breaking</span>' : ''}
+              ${a.isBreaking ? '<span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-[var(--r-accent)] border border-emerald-500/30 font-bold text-[10px] tracking-wider uppercase">' + esc(tr('news.breaking', 'Última hora')) + '</span>' : ''}
               <span class="px-2.5 py-0.5 rounded-full bg-[var(--r-bg-2)] text-[var(--r-text)] border border-[var(--r-line)] text-[11px] font-medium">${esc(a.source)}</span>
               <span class="text-[var(--r-muted)] text-xs">${formatDate(a.pubDate)}</span>
             </div>
@@ -358,7 +389,7 @@
       const href = esc(resolveNewsUrl(a));
       const isInternal = href.startsWith('/') && !href.startsWith('//');
       const targetAttr = isInternal ? '' : 'target="_blank" rel="noopener noreferrer"';
-      const ctaText = isInternal ? (a.isTeam ? 'Leer Despacho &rarr;' : 'Ver Noticia &rarr;') : 'Leer en ' + esc(a.source) + ' &rarr;';
+      const ctaText = esc(isInternal ? (a.isTeam ? tr('news.cta.short', 'Leer el despacho →') : tr('news.cta.view', 'Ver la noticia →')) : trn('news.cta.source', 'Leer en {source} →', { source: a.source }));
       return `
         <a href="${href}" ${targetAttr} class="group block bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-line-2)] rounded-2xl overflow-hidden transition duration-300 shadow-md flex flex-col justify-between">
           <div>
@@ -392,7 +423,7 @@
       const href = esc(resolveNewsUrl(a));
       const isInternal = href.startsWith('/') && !href.startsWith('//');
       const targetAttr = isInternal ? '' : 'target="_blank" rel="noopener noreferrer"';
-      const ctaText = isInternal ? (a.isTeam ? 'Leer Despacho &rarr;' : 'Ver Noticia &rarr;') : 'Leer en ' + esc(a.source) + ' &rarr;';
+      const ctaText = esc(isInternal ? (a.isTeam ? tr('news.cta.short', 'Leer el despacho →') : tr('news.cta.view', 'Ver la noticia →')) : trn('news.cta.source', 'Leer en {source} →', { source: a.source }));
       return `
         <a href="${href}" ${targetAttr} class="group block p-5 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-line-2)] transition duration-300 shadow-sm flex flex-col justify-between">
           <div>
@@ -419,7 +450,7 @@
       if (!container) return;
       const trending = allNews.slice(0, 5);
       if (trending.length === 0) {
-        container.innerHTML = '<p class="text-xs text-[var(--r-muted)]">No trending intel.</p>';
+        container.innerHTML = '<p class="text-xs text-[var(--r-muted)]">' + esc(tr('news.trending.empty', 'Todavía no hay nada en la lista.')) + '</p>';
         return;
       }
       container.innerHTML = trending.map((a, i) => {
@@ -442,7 +473,7 @@
       const c = document.getElementById('aiBriefContent');
       if (!c || allNews.length === 0) return;
       const top = allNews.slice(0, 3);
-      let brief = `<p class="mb-2 text-[var(--r-text)]">Latest of <strong>${allNews.length} stories</strong> from <strong>${newsSources.length} ${newsSources.length === 1 ? 'source' : 'sources'}</strong>:</p><div class="space-y-1.5 text-[var(--r-text)]">`;
+      let brief = `<p class="mb-2 text-[var(--r-text)]">${esc(trn('news.brief.lead', 'Últimas de {n} noticias de {s}.', { n: allNews.length, s: newsSources.length }))}</p><div class="space-y-1.5 text-[var(--r-text)]">`;
       top.forEach(a => {
         brief += `<p class="leading-tight"><span class="text-[var(--r-accent)] font-bold">•</span> ${esc(a.title.length > 80 ? a.title.substring(0, 80) + '…' : a.title)}</p>`;
       });
@@ -495,7 +526,7 @@
       const text = document.getElementById('gamesToggleText');
       if (!section) return;
       section.classList.toggle('hidden');
-      text.textContent = section.classList.contains('hidden') ? 'Expand Module' : 'Collapse Module';
+        text.textContent = section.classList.contains('hidden') ? tr('news.games.show', 'Mostrar módulo') : tr('news.games.hide', 'Ocultar módulo');
     }
 
     // 9. MINI-GAMES ENGINE
@@ -614,15 +645,15 @@
 
     // B. TRIVIA QUIZ
     const TRIVIA_QUESTIONS = [
-      { q: "What does DRS stand for in aerodynamic regulation?", options: ["Drag Reduction System", "Direct Race Steering", "Downforce Recovery System", "Dynamic Rate Stabilizer"], correct: 0 },
-      { q: "Which circuit features the iconic 'Eau Rouge - Raidillon' complex?", options: ["Circuit de Spa-Francorchamps", "Autodromo Nazionale Monza", "Suzuka International", "Silverstone Circuit"], correct: 0 },
-      { q: "What is the primary objective of Trail Braking?", options: ["Keeping engine temps cold", "Maintaining front-end grip into corner entry", "Reducing brake pad wear", "Locking the rear differential"], correct: 1 },
-      { q: "What metric does iRating determine on the iRacing service?", options: ["Vehicle speed multiplier", "Driver matchmaking skill rating", "Fuel burn efficiency", "Engine displacement class"], correct: 1 },
-      { q: "What is the typical endurance stint length on a GT3 fuel tank in iRacing?", options: ["20 minutes", "60 to 65 minutes", "180 minutes", "10 minutes"], correct: 1 },
-      { q: "What telemetry channel measures tire deformation relative to wheel velocity?", options: ["Slip Angle / Slip Ratio", "Pedal potentiometer", "Rocker travel", "Lambda sensor"], correct: 0 },
-      { q: "In what Barcelona district is Muntrume Motorsport headquarters located?", options: ["Sant Andreu", "Eixample", "Gràcia", "Sants"], correct: 0 },
-      { q: "What happens during aerodynamic pitch sensitivity on a GT3 car?", options: ["Brake fluid boils", "Center of pressure shifts between axles under braking", "Rear wing detaches", "Tire pressure drops"], correct: 1 },
-      { q: "Who founded Muntrume Motorsport?", options: ["Alberto Trujillo", "Mateo Berbis", "Eduardo Chongkan", "Un patrocinador externo"], correct: 0 }
+      { key: "trivia.0", q: "¿Qué significa DRS en la normativa aerodinámica?", options: ["Drag Reduction System", "Direct Race Steering", "Downforce Recovery System", "Dynamic Rate Stabilizer"], correct: 0 },
+      { key: "trivia.1", q: "¿Qué circuito tiene el complejo Eau Rouge–Raidillon?", options: ["Circuit de Spa-Francorchamps", "Autodromo Nazionale Monza", "Suzuka International", "Silverstone Circuit"], correct: 0 },
+      { key: "trivia.2", q: "¿Cuál es el objetivo principal del trail braking?", options: ["Mantener baja la temperatura del motor", "Mantener el agarre delantero en la entrada de la curva", "Reducir el desgaste de las pastillas", "Bloquear el diferencial trasero"], correct: 1 },
+      { key: "trivia.3", q: "¿Qué mide el iRating en iRacing?", options: ["Un multiplicador de velocidad del coche", "La valoración de habilidad del piloto para los emparejamientos", "La eficiencia del consumo", "La clase de cilindrada"], correct: 1 },
+      { key: "trivia.4", q: "¿Cuánto dura un stint típico de combustible de un GT3 en resistencia en iRacing?", options: ["20 minutos", "60 a 65 minutos", "180 minutos", "10 minutos"], correct: 1 },
+      { key: "trivia.5", q: "¿Qué canal de telemetría describe el deslizamiento del neumático respecto a la velocidad de la rueda?", options: ["Slip angle / slip ratio", "Potenciómetro del pedal", "Recorrido del rocker", "Sonda lambda"], correct: 0 },
+      { key: "trivia.6", q: "¿En qué distrito de Barcelona tiene la sede Muntrume Motorsport?", options: ["Sant Andreu", "Eixample", "Gràcia", "Sants"], correct: 0 },
+      { key: "trivia.7", q: "¿Qué es la sensibilidad aerodinámica al cabeceo en un GT3?", options: ["El líquido de frenos hierve", "El centro de presión se desplaza entre ejes al frenar", "El alerón trasero se desprende", "Baja la presión de los neumáticos"], correct: 1 },
+      { key: "trivia.8", q: "¿Quién fundó Muntrume Motorsport?", options: ["Alberto Trujillo", "Mateo Berbis", "Eduardo Chongkan", "Un patrocinador externo"], correct: 0 }
     ];
 
     let triviaCurrent = 0, triviaScore = 0, triviaAnswered = false, triviaQuestions = [];
@@ -640,11 +671,12 @@
     function showTriviaQuestion() {
       triviaAnswered = false;
       const q = triviaQuestions[triviaCurrent];
-      document.getElementById('triviaQuestion').textContent = q.q;
+      const letters = ["a", "b", "c", "d"];
+      document.getElementById('triviaQuestion').textContent = tr(q.key + ".q", q.q);
       document.getElementById('trivia-qnum').textContent = `${triviaCurrent + 1}/${triviaQuestions.length}`;
       document.getElementById('triviaNext').classList.add('hidden');
       document.getElementById('triviaOptions').innerHTML = q.options.map((opt, i) => `
-        <button class="trivia-option font-medium" onclick="answerTrivia(${i})">${opt}</button>
+        <button class="trivia-option font-medium" onclick="answerTrivia(${i})">${esc(tr(q.key + "." + letters[i], opt))}</button>
       `).join('');
     }
 
@@ -686,9 +718,9 @@
       clearTimeout(reactionTimeout);
       clearInterval(lightInterval);
       for (let i = 1; i <= 5; i++) document.getElementById(`light${i}`).className = 'f1-light';
-      document.getElementById('reactionStatus').textContent = 'Press INITIATE SEQUENCE to begin';
+      document.getElementById('reactionStatus').textContent = tr('news.react.idle', 'Pulsa iniciar para empezar');
       document.getElementById('reactionTime').classList.add('hidden');
-      document.getElementById('reactionBtn').textContent = 'Initiate Sequence';
+      document.getElementById('reactionBtn').textContent = tr('news.react.start', 'Iniciar');
       document.getElementById('reactionBtn').disabled = false;
     }
 
@@ -704,9 +736,9 @@
 
     function startReactionSequence() {
       reactionState = 'waiting';
-      document.getElementById('reactionStatus').textContent = 'Holding revs... Watch the lights...';
+      document.getElementById('reactionStatus').textContent = tr('news.react.wait', 'Mantén las revoluciones. Mira las luces.');
       document.getElementById('reactionTime').classList.add('hidden');
-      document.getElementById('reactionBtn').textContent = 'Wait For Lights Out';
+      document.getElementById('reactionBtn').textContent = tr('news.react.hold', 'Espera a que se apaguen');
       document.getElementById('reactionBtn').disabled = true;
 
       for (let i = 1; i <= 5; i++) document.getElementById(`light${i}`).className = 'f1-light';
@@ -720,8 +752,8 @@
             if (reactionState !== 'waiting') return;
             reactionState = 'go';
             for (let i = 1; i <= 5; i++) document.getElementById(`light${i}`).className = 'f1-light go';
-            document.getElementById('reactionStatus').textContent = 'LIGHTS OUT! CLICK NOW!';
-            document.getElementById('reactionBtn').textContent = 'DUMP CLUTCH NOW!';
+            document.getElementById('reactionStatus').textContent = tr('news.react.go', 'Luces apagadas. Haz clic ahora.');
+            document.getElementById('reactionBtn').textContent = tr('news.react.dump', 'Suelta el embrague');
             document.getElementById('reactionBtn').disabled = false;
             reactionStart = performance.now();
           }, delay);
@@ -737,8 +769,8 @@
       clearTimeout(reactionTimeout);
       clearInterval(lightInterval);
       for (let i = 1; i <= 5; i++) document.getElementById(`light${i}`).className = 'f1-light';
-      document.getElementById('reactionStatus').innerHTML = '<span class="text-red-400 font-bold">False Start Penalty (+5.0s) · Jump Start Detected</span>';
-      document.getElementById('reactionBtn').textContent = 'Reset Sequence';
+      document.getElementById('reactionStatus').textContent = tr('news.react.jump', 'Salida nula. Has hecho clic antes de que se apagaran las luces.');
+      document.getElementById('reactionBtn').textContent = tr('news.react.reset', 'Reiniciar');
       document.getElementById('reactionBtn').disabled = false;
     }
 
@@ -749,13 +781,13 @@
       document.getElementById('reactionTime').textContent = `${rt} ms`;
       document.getElementById('reactionTime').classList.remove('hidden');
 
-      let rating = 'Class D: Below safety car threshold. Practice launch timing.';
-      if (rt < 200) rating = 'Class S: Pro-grade reaction latency (<200ms).';
-      else if (rt < 240) rating = 'Class A: Top split GT3 reaction benchmark (<240ms).';
-      else if (rt < 300) rating = 'Class B: Competitive launch pace (<300ms).';
+      let rating = tr('news.react.d', 'Por encima de 300 ms. Vuelve a probar la salida.');
+      if (rt < 200) rating = tr('news.react.s', 'Por debajo de 200 ms.');
+      else if (rt < 240) rating = tr('news.react.a', 'Por debajo de 240 ms.');
+      else if (rt < 300) rating = tr('news.react.b', 'Por debajo de 300 ms.');
 
       document.getElementById('reactionStatus').textContent = rating;
-      document.getElementById('reactionBtn').textContent = 'Run Again';
+      document.getElementById('reactionBtn').textContent = tr('news.react.again', 'Probar otra vez');
       document.getElementById('reactionBtn').disabled = false;
 
       if (!reactionBest || rt < reactionBest) {
@@ -885,6 +917,15 @@
     } else {
       initNewsSystem();
     }
+    document.addEventListener('muntru:i18n', function () {
+      paintCounts();
+      renderAllSections();
+      renderTrending();
+      loadAIBrief();
+      var toggle = document.getElementById('gamesToggleText');
+      var section = document.getElementById('gamesSection');
+      if (toggle && section) toggle.textContent = section.classList.contains('hidden') ? tr('news.games.show', 'Mostrar módulo') : tr('news.games.hide', 'Ocultar módulo');
+    });
 
     // Expose all interactive functions to global window scope
     window.loadAllNews = loadAllNews;

@@ -18,6 +18,27 @@ const BlockTag = hero ? "h2" : "h3";
 const lic = licenciaPrincipal(driver.slug);
 const loc = localeDeIdioma("es");
 const bio = driver.bio.trim();
+const ROLE_ES: Record<string, string> = {
+  albertot: "Director de equipo y telemetría",
+  mateob: "Resistencia y sprint GT3",
+  eduardoc: "Resistencia GT3 y GT4",
+};
+const SPEC_ES: Record<string, string> = {
+  albertot: "Resistencia multiclase y GT3",
+  mateob: "Resistencia y sprint GT3",
+  eduardoc: "Resistencia GT3 y GT4",
+};
+const BIO_ES: Record<string, string> = {
+  albertot: "Fundador, director de equipo e ingeniero jefe de telemetría de Muntrume Motorsport. Especializado en el desarrollo de setups de Sports Car, la estrategia de resistencia GT3 y el análisis de telemetría en Garage 61.",
+  mateob: "Piloto oficial de resistencia y sprint GT3 de Muntrume Motorsport, centrado en un ritmo constante en tandas largas de Sports Car y en una gestión limpia del tráfico.",
+  eduardoc: "Piloto oficial de resistencia multiclase de Sports Car que representa a Costa Rica en Muntrume Motorsport, y compite en campeonatos de GT3 y GT4.",
+};
+const roleText = ROLE_ES[driver.slug] || driver.role;
+const roleKey = ROLE_ES[driver.slug] ? `driver.role.${driver.slug}` : undefined;
+const specText = SPEC_ES[driver.slug] || driver.specialty;
+const specKey = SPEC_ES[driver.slug] ? `driver.specialty.${driver.slug}` : undefined;
+const bioText = BIO_ES[driver.slug] || bio;
+const bioKey = BIO_ES[driver.slug] ? `driver.bio.${driver.slug}` : undefined;
 const cars = driver.favouriteCars.map((s) => s.trim()).filter(Boolean);
 const series = driver.favouriteSeries.map((s) => s.trim()).filter(Boolean);
 const achievements = driver.achievements.map((s) => s.trim()).filter(Boolean);
@@ -89,7 +110,7 @@ const socials = (
               <span class="d-flag" aria-hidden="true">{driver.flag}</span>
               <span>{driver.country}</span>
               <span>·</span>
-              <span data-f="role">{driver.role}</span>
+              <span data-f="role" data-i18n={roleKey}>{roleText}</span>
             </p>
             <Tag class="d-name" id={headingId}>
               <span class="d-num-pill">{driver.dorsal}</span>
@@ -100,13 +121,13 @@ const socials = (
               <span class="d-ovr-pill" title="Muntrume Telemetry Index (MTI)">
                 OVR <strong data-f="ovr">{ovrScore}</strong>
               </span>
-              {driver.specialty && <span class="d-specialty-pill" data-f="specialty">{driver.specialty}</span>}
+              {driver.specialty && <span class="d-specialty-pill" data-f="specialty" data-i18n={specKey}>{specText}</span>}
             </div>
           </div>
 
           <dl class="d-stats d-stats--hero" id="stats">
             <div>
-              <dt>Dorsal</dt>
+              <dt data-i18n="card.dorsal">Dorsal</dt>
               <dd class="d-stats__dorsal">{driver.dorsal}</dd>
               <span class="d-stats__sub">Muntrume Roster</span>
             </div>
@@ -123,7 +144,7 @@ const socials = (
               </svg>
             </div>
             <div>
-              <dt>Horas en pista</dt>
+              <dt data-i18n="card.trackHours">Horas en pista</dt>
               <dd data-approx="h" data-n={sumTrackHours}>{hoursText(sumTrackHours)}</dd>
               <span class="d-stats__sub">Garage 61</span>
             </div>
@@ -132,13 +153,13 @@ const socials = (
           <div class="d-hero-meta">
             <div class="d-hero-meta__items">
               <span data-block="member_since" hidden={!since}>
-                En el equipo desde <strong data-f="member_since_value">{since}</strong>
+                <span data-i18n="card.since">En el equipo desde</span> <strong data-f="member_since_value">{since}</strong>
               </span>
               <span data-block="club" hidden={!club}>
-                Club: <strong data-f="club_value">{club}</strong>
+                <span data-i18n="card.club">Club:</span> <strong data-f="club_value">{club}</strong>
               </span>
               <span id="licenceUpdated">
-                Actualizado: <time datetime="2026-11-07">{LICENCE_UPDATED_LABEL}</time>
+                <span data-i18n="card.updated">Actualizado:</span> <time datetime="2026-11-07">{LICENCE_UPDATED_LABEL}</time>
               </span>
             </div>
             <div id="redes" data-block="socials">
@@ -153,7 +174,7 @@ const socials = (
                   ))}
                 </ul>
               ) : (
-                <p class="d-pending">Pendiente. Este piloto todavía no ha publicado redes.</p>
+                <p class="d-pending" data-i18n="card.pending">Pendiente. Este piloto todavía no ha publicado redes.</p>
               )}
             </div>
           </div>
@@ -168,12 +189,12 @@ const socials = (
               <span class="p-1.5 rounded-lg bg-[var(--r-bg)] border border-[var(--r-line)] text-amber-500 shrink-0">
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 2.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.2 6.8 18.6l1-5.8L3.6 8.7l5.8-.8z"/></svg>
               </span>
-              <span class="text-[10px] font-mono font-semibold uppercase tracking-wider text-[var(--r-muted)]" data-no-i18n>Circuito favorito</span>
+              <span class="text-[10px] font-mono font-semibold uppercase tracking-wider text-[var(--r-muted)]" data-i18n="card.fav">Circuito favorito</span>
             </div>
             <div class="my-1">
               <h3 class="font-sans font-bold text-lg text-[var(--r-text)] leading-tight" data-f="favorite_track">{fav}</h3>
             </div>
-            <p class="text-xs font-mono text-[var(--r-muted)]">Elegido por el equipo: el circuito con menos incidentes.</p>
+            <p class="text-xs font-mono text-[var(--r-muted)]" data-i18n="card.favNote">Elegido por el equipo: el circuito con menos incidentes.</p>
           </div>
         )}
         {topTrack && (
@@ -182,7 +203,7 @@ const socials = (
               <span class="p-1.5 rounded-lg bg-[var(--r-bg)] border border-[var(--r-line)] text-[var(--r-accent)] shrink-0">
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               </span>
-              <span class="text-[10px] font-mono font-semibold uppercase tracking-wider text-[var(--r-muted)]">Circuito más usado</span>
+              <span class="text-[10px] font-mono font-semibold uppercase tracking-wider text-[var(--r-muted)]" data-i18n="card.mostUsed">Circuito más usado</span>
             </div>
             <div class="my-1">
               <h3 class="font-sans font-bold text-lg text-[var(--r-text)] leading-tight" data-f="top_track_name">{topTrack.name}</h3>
@@ -196,7 +217,7 @@ const socials = (
       <div class="d-info-grid">
         <div class="d-block d-info-card" id="bio" data-block="bio">
           <BlockTag class="d-block__title">Perfil</BlockTag>
-          {bio ? <p class="d-bio" data-f="bio">{bio}</p> : <p class="d-pending">Pendiente de publicación. La biografía todavía no está escrita.</p>}
+          {bio ? <p class="d-bio" data-f="bio" data-i18n={bioKey}>{bioText}</p> : <p class="d-pending" data-i18n="card.bioPending">Pendiente de publicación. La biografía todavía no está escrita.</p>}
           <div class="d-info-card__sub" id="logros" data-block="achievements">
             <span class="r-kicker">Logros</span>
             {achievements.length > 0 ? (
@@ -327,7 +348,7 @@ const socials = (
         <div class="d-card__top">
           <p class="d-kicker">
             <span class="d-flag" aria-hidden="true">{driver.flag}</span>
-            <span>{driver.country}</span> · <span data-f="role">{driver.role}</span>
+            <span>{driver.country}</span> · <span data-f="role" data-i18n={roleKey}>{roleText}</span>
           </p>
           <Tag class="d-name" id={headingId}>
             <span class="d-num-pill d-num-pill--sm">{driver.dorsal}</span>
@@ -338,7 +359,7 @@ const socials = (
             <span class="d-ovr-pill" title="Muntrume Telemetry Index (MTI)">
               OVR <strong data-f="ovr">{ovrScore}</strong>
             </span>
-            {driver.specialty && <span class="d-specialty-pill" data-f="specialty">{driver.specialty}</span>}
+            {driver.specialty && <span class="d-specialty-pill" data-f="specialty" data-i18n={specKey}>{specText}</span>}
           </div>
 
           <dl class="d-stats">
@@ -355,7 +376,7 @@ const socials = (
               </svg>
             </div>
             <div>
-              <dt>Horas</dt>
+              <dt data-i18n="card.hours">Horas</dt>
               <dd data-approx="h" data-n={sumTrackHours}>{hoursText(sumTrackHours)}</dd>
             </div>
           </dl>
@@ -366,14 +387,14 @@ const socials = (
           <div class="d-compact-tracks">
             {fav && (
               <p class="d-fav">
-                <svg class="d-star" viewBox="0 0 24 24" width="14" height="14" role="img" aria-label="Favorite track"><path fill="currentColor" d="M12 2.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.2 6.8 18.6l1-5.8L3.6 8.7l5.8-.8z"/></svg>
-                <span class="d-fav__k" data-no-i18n>Circuito favorito</span>
+                <svg class="d-star" viewBox="0 0 24 24" width="14" height="14" role="img" aria-label="Circuito favorito" data-i18n-aria="card.favAria"><path fill="currentColor" d="M12 2.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.2 6.8 18.6l1-5.8L3.6 8.7l5.8-.8z"/></svg>
+                <span class="d-fav__k" data-i18n="card.fav">Circuito favorito</span>
                 <span class="d-fav__n">{fav}</span>
               </p>
             )}
             {topTrack && (
               <p class="d-lap">
-                <span class="d-lap__k">Más usado ({hoursText(topTrack.hours)})</span>
+                <span class="d-lap__k"><span data-i18n="card.most">Más usado</span> ({hoursText(topTrack.hours)})</span>
                 <span class="d-lap__n">{topTrack.name}</span>
               </p>
             )}
@@ -381,7 +402,7 @@ const socials = (
 
           <details class="d-telemetry-expand">
             <summary class="d-expand-summary">
-              <span>Circuitos ({tracks.length})</span>
+              <span><span data-i18n="card.tracks">Circuitos</span> ({tracks.length})</span>
               <span class="d-chevron">▾</span>
             </summary>
             <div class="d-expand-content">
@@ -398,7 +419,7 @@ const socials = (
 
           <div class="d-actions-row">
             <a class="d-card__link" href={profileHref}>
-              <span>Ver ficha</span>
+              <span data-i18n="card.profile">Ver ficha</span>
               <span aria-hidden="true">→</span>
             </a>
           </div>

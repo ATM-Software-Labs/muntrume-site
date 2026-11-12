@@ -31,7 +31,21 @@
     if (/end/i.test(file || "")) return "endurance";
     return "race";
   }
-  var kindLabel = { race: "Carrera", qualy: "Clasificación", wet: "Lluvia", endurance: "Resistencia" };
+  function tr(key, fallback) {
+    var value = window.muntruI18n && window.muntruI18n.t && window.muntruI18n.t(key);
+    return value == null ? fallback : value;
+  }
+  function fill(key, fallback, vars) {
+    var text = tr(key, fallback);
+    if (!vars) return text;
+    Object.keys(vars).forEach(function (name) {
+      text = text.split("{" + name + "}").join(String(vars[name]));
+    });
+    return text;
+  }
+  function kindLabelOf(kind) {
+    return tr("garage.kind." + kind, { race: "Carrera", qualy: "Clasificación", wet: "Lluvia", endurance: "Resistencia" }[kind] || kind);
+  }
   function sizeLabel(bytes) {
     var n = Number(bytes);
     if (!isFinite(n) || n <= 0) return "—";
@@ -59,7 +73,7 @@
     list.querySelectorAll("[data-download]").forEach(function (btn) {
       if (btn.dataset.busy === "1") return;
       btn.dataset.auth = ok ? "in" : "out";
-      btn.textContent = ok ? "Descargar" : "Inicia sesión";
+      btn.textContent = ok ? tr("garage.dl.in", "Descargar") : tr("garage.dl.out", "Inicia sesión");
     });
   }
   function filtered() {
@@ -68,7 +82,7 @@
     return rows.filter(function (row) {
       if (kind && row.kind !== kind) return false;
       if (!q) return true;
-      return (row.carLabel + " " + row.track + " " + row.file + " " + kindLabel[row.kind]).toLowerCase().indexOf(q) !== -1;
+      return (row.carLabel + " " + row.track + " " + row.file + " " + kindLabelOf(row.kind)).toLowerCase().indexOf(q) !== -1;
     });
   }
   function render() {
@@ -76,7 +90,7 @@
     var slice = view.slice(0, shown);
     if (!view.length) {
       list.innerHTML = "";
-      setStatus("Ningún setup coincide con el filtro.", "empty");
+      setStatus(tr("garage.status.empty", "Ningún setup coincide con el filtro."), "empty");
       if (more) more.hidden = true;
       return;
     }
@@ -84,13 +98,13 @@
       return "<tr>" +
         "<td>" + esc(row.carLabel) + "</td>" +
         "<td>" + esc(row.track) + "</td>" +
-        "<td>" + esc(kindLabel[row.kind] || row.kind) + "</td>" +
+        "<td>" + esc(kindLabelOf(row.kind)) + "</td>" +
         "<td>" + esc(row.size) + "</td>" +
-        "<td><button type=\"button\" class=\"g2-dl\" data-download data-id=\"" + esc(row.id) + "\" data-file=\"" + esc(row.file) + "\" data-auth=\"pending\">Inicia sesión</button></td>" +
+        "<td><button type=\"button\" class=\"g2-dl\" data-download data-id=\"" + esc(row.id) + "\" data-file=\"" + esc(row.file) + "\" data-auth=\"pending\">" + esc(tr("garage.dl.out", "Inicia sesión")) + "</button></td>" +
         "</tr>";
     }).join("");
     paint();
-    setStatus(slice.length + " de " + view.length + (car && car.value ? "" : " en el índice") + ".", "ready");
+    setStatus(fill(car && car.value ? "garage.status.count" : "garage.status.countIndex", car && car.value ? "{n} de {m}." : "{n} de {m} en el índice.", { n: slice.length, m: view.length }), "ready");
     if (more) more.hidden = slice.length >= view.length;
   }
   function unpack(raw) {
@@ -127,7 +141,7 @@
       ? "/assets/data/catalog_by_car/" + slug(selected) + ".json"
       : "/assets/data/catalog_index.json";
     var key = selected ? "car:" + slug(selected) : "index";
-    setStatus("Cargando catálogo…", "loading");
+    setStatus(tr("garage.status.loading", "Cargando catálogo…"), "loading");
     if (more) more.hidden = true;
     load(url, key).then(function (next) {
       if (id !== request) return;
@@ -137,7 +151,7 @@
       render();
     }).catch(function () {
       if (id !== request) return;
-      setStatus("No se ha podido cargar el catálogo. Reintenta.", "error");
+      setStatus(tr("garage.status.error", "No se ha podido cargar el catálogo. Reintenta."), "error");
       if (more) more.hidden = true;
     });
   }
@@ -162,5 +176,6 @@
     render();
   });
   window.addEventListener("muntrume-auth-change", paint);
+  document.addEventListener("muntru:i18n", function () { paint(); if (ready) render(); });
   paint();
 })();

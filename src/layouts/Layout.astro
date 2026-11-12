@@ -21,6 +21,9 @@ interface Props {
   hideNav?: boolean;
   hideFooter?: boolean;
   noindex?: boolean;
+  translated?: boolean;
+  i18nTitle?: string;
+  i18nDescription?: string;
 }
 
 const siteOrigin = Astro.site ? Astro.site.origin : (Astro.url ? Astro.url.origin : "https://muntru.me");
@@ -32,14 +35,17 @@ const {
   canonical = Astro.url.href,
   ogImage = `${siteOrigin}/assets/img/og-home.jpg`,
   ogType = "website",
-  ogLocale = "en_US",
+  ogLocale = "es_ES",
   ogImageAlt = "Muntrume Motorsport",
   ogImageWidth,
   ogImageHeight,
   schemaJson = null,
   hideNav = false,
   hideFooter = false,
-  noindex = false
+  noindex = false,
+  translated = false,
+  i18nTitle,
+  i18nDescription
 } = Astro.props;
 
 function absoluteCanonical(input: string): string {
@@ -100,10 +106,10 @@ function hreflangSet(href: string) {
   const base = absoluteCanonical(href);
   const alt = (lang: string) => {
     const u = new URL(base);
-    if (lang !== "en") u.searchParams.set("lang", lang);
+    if (lang !== "es") u.searchParams.set("lang", lang);
     return u.toString();
   };
-  return { en: alt("en"), es: alt("es"), ca: alt("ca"), fr: alt("fr") };
+  return { es: alt("es"), en: alt("en"), ca: alt("ca"), fr: alt("fr") };
 }
 const langs = hreflangSet(canon);
 
@@ -262,7 +268,7 @@ const finalSchema = {
 ---
 
 <!DOCTYPE html>
-<html lang="en" class="dark scroll-smooth max-w-full overflow-x-hidden" data-theme="dark">
+<html lang="es" class="dark scroll-smooth max-w-full overflow-x-hidden" data-theme="dark">
 <head>
   <script is:inline>
     (function() {
@@ -278,6 +284,25 @@ const finalSchema = {
           document.documentElement.setAttribute('data-theme', 'dark');
         }
       } catch (e) {}
+      try {
+        var allowed = { es: 1, en: 1, ca: 1, fr: 1 };
+        var q = new URLSearchParams(location.search).get('lang');
+        var stored = localStorage.getItem('muntrume_lang') || localStorage.getItem('mm_lang') || '';
+        var lang = (q && allowed[q]) ? q : (allowed[stored.toLowerCase()] ? stored.toLowerCase() : 'es');
+        document.documentElement.lang = lang;
+        if (q && allowed[q]) {
+          localStorage.setItem('muntrume_lang', q);
+          localStorage.setItem('mm_lang', q);
+        }
+        if (lang !== 'es') {
+          var preload = document.createElement('link');
+          preload.rel = 'preload';
+          preload.as = 'fetch';
+          preload.href = '/assets/i18n/' + lang + '.json?v=t330';
+          preload.crossOrigin = 'anonymous';
+          document.head.appendChild(preload);
+        }
+      } catch (e) {}
     })();
   </script>
   <meta charset="UTF-8" />
@@ -287,8 +312,8 @@ const finalSchema = {
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; object-src 'none'; base-uri 'self'; img-src 'self' data: https:; frame-src 'self' https://discord.com https://*.discord.com; connect-src 'self' https://muntrume.atrumin16.workers.dev wss://muntrume.atrumin16.workers.dev https://ai.trujillomingorance.com https://api.garage61.net https://api.brevo.com https://api.github.com;" />
   <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=()" />
   
-  <title>{seoTitle}</title>
-  <meta name="description" content={seoDescription} />
+  <title data-i18n={i18nTitle}>{seoTitle}</title>
+  <meta name="description" content={seoDescription} data-i18n-content={i18nDescription} />
   <meta name="keywords" content={keywords} />
   <meta name="author" content="Muntrume Motorsport · Alberto Trujillo Mingorance" />
   <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"} />
@@ -297,12 +322,12 @@ const finalSchema = {
   <link rel="alternate" hreflang="es" href={langs.es} />
   <link rel="alternate" hreflang="ca" href={langs.ca} />
   <link rel="alternate" hreflang="fr" href={langs.fr} />
-  <link rel="alternate" hreflang="x-default" href={langs.en} />
+  <link rel="alternate" hreflang="x-default" href={langs.es} />
 
   <!-- Open Graph / Social Media -->
   <meta property="og:type" content={ogType} />
-  <meta property="og:title" content={seoTitle} />
-  <meta property="og:description" content={seoDescription} />
+  <meta property="og:title" content={seoTitle} data-i18n-content={i18nTitle} />
+  <meta property="og:description" content={seoDescription} data-i18n-content={i18nDescription} />
   <meta property="og:url" content={canon} />
   <meta property="og:image" content={ogImage} />
   <meta property="og:image:alt" content={ogImageAlt} />
@@ -310,7 +335,7 @@ const finalSchema = {
   {imageHeight && <meta property="og:image:height" content={String(imageHeight)} />}
   <meta property="og:site_name" content="Muntrume Motorsport" />
   <meta property="og:locale" content={ogLocale} />
-  <meta property="og:locale:alternate" content="es_ES" />
+  <meta property="og:locale:alternate" content="en_US" />
   <meta property="og:locale:alternate" content="ca_ES" />
   <meta property="og:locale:alternate" content="fr_FR" />
 
@@ -318,8 +343,8 @@ const finalSchema = {
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@muntrumemrt" />
   <meta name="twitter:creator" content="@atrumin16" />
-  <meta name="twitter:title" content={seoTitle} />
-  <meta name="twitter:description" content={seoDescription} />
+  <meta name="twitter:title" content={seoTitle} data-i18n-content={i18nTitle} />
+  <meta name="twitter:description" content={seoDescription} data-i18n-content={i18nDescription} />
   <meta name="twitter:image" content={ogImage} />
   <meta name="twitter:image:alt" content={ogImageAlt} />
 
@@ -343,7 +368,7 @@ const finalSchema = {
 
   <link rel="stylesheet" href="/assets/css/tailwind.min.css?v=t321" />
   <link rel="stylesheet" href="/assets/css/mobile.css?v=t321" />
-  <link rel="stylesheet" href="/assets/css/racing.css?v=t321" />
+  <link rel="stylesheet" href="/assets/css/racing.css?v=t330" />
 
   <!-- Core Dark Racing System CSS -->
   <style is:global>
@@ -410,9 +435,9 @@ const finalSchema = {
   <!-- Core Scripts -->
   <script is:inline src="/assets/js/vpfix.js?v=m9" defer></script>
   <script is:inline set:html={`window.muntruFormato=${formatoAprox.toString()};window.muntruLocale=${localeDeIdioma.toString()};`}></script>
-  <script is:inline src="/assets/js/i18n.js?v=t292" defer></script>
+  <script is:inline src="/assets/js/i18n.js?v=t330" defer></script>
 </head>
-<body class="bg-[var(--r-bg)] text-[var(--r-text)] antialiased selection:bg-[var(--r-accent)] selection:text-[var(--r-accent-ink)] font-sans min-h-screen flex flex-col justify-between relative max-w-full overflow-x-hidden">
+<body class="bg-[var(--r-bg)] text-[var(--r-text)] antialiased selection:bg-[var(--r-accent)] selection:text-[var(--r-accent-ink)] font-sans min-h-screen flex flex-col justify-between relative max-w-full overflow-x-hidden" data-i18n-coverage={translated ? "full" : "chrome"}>
   
   <!-- Subtle MoTeC Telemetry Waveform & Circuit Trace Background (3.5% opacity) -->
   <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-[0.035]" aria-hidden="true">

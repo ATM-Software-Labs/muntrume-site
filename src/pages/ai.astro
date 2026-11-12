@@ -1,118 +1,139 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-const pageTitle = "AI Copilot | Muntrume Motorsport";
-const pageDescription = "Full-screen Muntrume AI Copilot powered by Trujillo AI and Groq LPU. Virtual race engineer for .STO setups, Garage 61 telemetry, and iRacing endurance strategy.";
+const pageTitle = "Copiloto AI | Muntrume Motorsport";
+const pageDescription = "Copiloto de ingeniería de Muntrume Motorsport para setups .sto, telemetría de Garage 61 y estrategia de resistencia en iRacing.";
 ---
 
-<Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/ai">
-  <section class="pt-20 pb-12 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 max-w-full overflow-x-hidden">
-    <!-- Cabecera técnica de Muntrume AI -->
-    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-[var(--r-line)]">
-      <div class="space-y-2">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--r-surface)] border border-[var(--r-accent)]/40 text-[var(--r-accent)] text-[11px] font-mono uppercase tracking-wider">
-          <span class="w-2 h-2 rounded-full bg-[var(--r-accent)] animate-pulse"></span>
-          <span>TRUJILLO AI ENGINE · GROQ LPU STREAMING</span>
-        </div>
-        <h1 class="text-3xl sm:text-5xl font-extrabold text-[var(--r-text)] tracking-tight font-display uppercase">
-          MUNTRUME <span class="text-[var(--r-accent)]">AI</span> COPILOT
-        </h1>
-        <p class="text-xs sm:text-sm text-[var(--r-muted)] max-w-2xl leading-relaxed">
-          Ingeniero de pista virtual de Muntrume Motorsport. Consulta reglajes aerodinámicos y mecánicos para Sports Car (GT3 y GT4), interpretación de telemetría en Garage 61 o estrategia de stints en resistencia multiclase.
-        </p>
-      </div>
+<Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/ai/" translated i18nTitle="ai.meta.title" i18nDescription="ai.meta.desc">
+  <section class="ai">
+    <header class="ai-hero">
+      <p class="r-kicker" data-i18n="ai.kicker">Muntrume AI</p>
+      <h1 id="aiTitle" class="r-h2" data-i18n="ai.title">Copiloto de pista</h1>
+      <p class="r-lead" data-i18n="ai.lead">Ingeniero virtual del equipo para setups .sto, telemetría de Garage 61 y estrategia de resistencia en iRacing. Los archivos de setup siguen en el Garage.</p>
+    </header>
 
-      <div class="flex flex-wrap items-center gap-2.5 shrink-0">
-        <a href="/garage" class="px-3.5 py-2 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono text-[var(--r-text)] hover:text-[var(--r-accent)] transition">
-          Abrir Setup Vault (.STO) &rarr;
-        </a>
-        <button type="button" id="aiFullResetBtn" class="px-3.5 py-2 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono text-[var(--r-muted)] hover:text-[var(--r-text)] transition cursor-pointer">
-          Reiniciar sesión
+    <ul class="ai-caps">
+      <li>
+        <h2 data-i18n="ai.cap.setup.title">Reglajes</h2>
+        <p data-i18n="ai.cap.setup.body">Balance, alturas y aero de GT3 y GT4, a partir de lo que preguntes. El archivo .sto se sigue descargando del Garage.</p>
+      </li>
+      <li>
+        <h2 data-i18n="ai.cap.tel.title">Telemetría</h2>
+        <p data-i18n="ai.cap.tel.body">Cómo leer canales de Garage 61: frenada, slip y deltas. No sustituye Garage 61.</p>
+      </li>
+      <li>
+        <h2 data-i18n="ai.cap.stint.title">Resistencia</h2>
+        <p data-i18n="ai.cap.stint.body">Presiones en frío, combustible y relevos en carreras largas de iRacing.</p>
+      </li>
+    </ul>
+
+    <div class="ai-work">
+      <div class="ai-bar">
+        <p data-i18n="ai.workspace">Canal de ingeniería</p>
+        <span id="aiFullStatus" data-i18n="ai.status.ready">Listo</span>
+      </div>
+      <div id="aiFullLog" class="ai-log" role="log" aria-live="polite" aria-relevant="additions"></div>
+      <div class="ai-starters" id="aiTopicButtons">
+        <button type="button" data-prompt-key="ai.prompt.balance" data-prompt="Dame una guía paso a paso para corregir subviraje en entrada y sobreviraje en salida en un GT3 en Spa-Francorchamps.">
+          <strong data-i18n="ai.starter.balance.title">Balance GT3</strong>
+          <span data-i18n="ai.starter.balance.body">Subviraje de entrada, sobreviraje de salida</span>
+        </button>
+        <button type="button" data-prompt-key="ai.prompt.tel" data-prompt="¿Qué canales de telemetría debo analizar en Garage 61 para ganar décimas en frenada (trail braking) en Le Mans o Watkins Glen?">
+          <strong data-i18n="ai.starter.tel.title">Garage 61</strong>
+          <span data-i18n="ai.starter.tel.body">Canales de frenada</span>
+        </button>
+        <button type="button" data-prompt-key="ai.prompt.stint" data-prompt="¿Cómo gestionamos presiones en frío, combustible y doble stint de neumáticos en una carrera de resistencia de 24h en iRacing?">
+          <strong data-i18n="ai.starter.stint.title">Resistencia</strong>
+          <span data-i18n="ai.starter.stint.body">Presiones y relevos</span>
+        </button>
+        <button type="button" data-prompt-key="ai.prompt.join" data-prompt="¿Cuáles son los requisitos y pasos para unirme como piloto oficial a Muntrume Motorsport?">
+          <strong data-i18n="ai.starter.join.title">Unirse al equipo</strong>
+          <span data-i18n="ai.starter.join.body">Cuál es el paso</span>
         </button>
       </div>
-    </div>
-
-    <!-- Layout principal: Panel lateral de modos + Consola de Chat Expandida -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
-      <!-- Columna lateral de modos y consultas rápidas -->
-      <aside class="lg:col-span-4 space-y-4">
-        <div class="p-5 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] space-y-3">
-          <p class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)] font-bold">Módulos de Ingeniería</p>
-          <div class="space-y-2" id="aiTopicButtons">
-            <button type="button" data-prompt="Dame una guía paso a paso para corregir subviraje en entrada y sobreviraje en salida en un GT3 en Spa-Francorchamps." class="w-full text-left p-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition group cursor-pointer">
-              <span class="block text-xs font-bold text-[var(--r-text)] group-hover:text-[var(--r-accent)]">Balance Mecánico y Aero GT3</span>
-              <span class="block text-[11px] text-[var(--r-muted)] font-mono mt-0.5">Subviraje, barras, alturas y alerón</span>
-            </button>
-            <button type="button" data-prompt="¿Qué canales de telemetría debo analizar en Garage 61 para ganar décimas en frenada (trail braking) en Le Mans o Watkins Glen?" class="w-full text-left p-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition group cursor-pointer">
-              <span class="block text-xs font-bold text-[var(--r-text)] group-hover:text-[var(--r-accent)]">Telemetría Garage 61 (60 Hz)</span>
-              <span class="block text-[11px] text-[var(--r-muted)] font-mono mt-0.5">Trail braking, slip angle y deltas</span>
-            </button>
-            <button type="button" data-prompt="¿Cómo gestionamos presiones en frío, combustible y doble stint de neumáticos en una carrera de resistencia de 24h en iRacing?" class="w-full text-left p-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition group cursor-pointer">
-              <span class="block text-xs font-bold text-[var(--r-text)] group-hover:text-[var(--r-accent)]">Estrategia Endurance 24H</span>
-              <span class="block text-[11px] text-[var(--r-muted)] font-mono mt-0.5">Presiones, consumo y relevos</span>
-            </button>
-            <button type="button" data-prompt="¿Cuáles son los requisitos y pasos para unirme como piloto oficial a Muntrume Motorsport?" class="w-full text-left p-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition group cursor-pointer">
-              <span class="block text-xs font-bold text-[var(--r-text)] group-hover:text-[var(--r-accent)]">Ingreso al Paddock Muntrume</span>
-              <span class="block text-[11px] text-[var(--r-muted)] font-mono mt-0.5">Requisitos, Discord y Paddock Pass</span>
-            </button>
-          </div>
+      <form id="aiFullForm" class="ai-form" autocomplete="off">
+        <label class="sr-only" for="aiFullInput" data-i18n="ai.placeholder">Pregunta por reglajes, telemetría o una carrera de resistencia</label>
+        <input
+          type="text"
+          id="aiFullInput"
+          maxlength="500"
+          data-i18n-placeholder="ai.placeholder"
+          placeholder="Pregunta por reglajes, telemetría o una carrera de resistencia"
+        />
+        <button type="submit" id="aiFullSendBtn" data-i18n="ai.send">Enviar</button>
+      </form>
+      <div class="ai-foot">
+        <p data-i18n="ai.note">Las respuestas las genera el modelo. Los setups del equipo están en el Garage, no en este chat.</p>
+        <div class="ai-foot__actions">
+          <a href="/garage/" data-i18n="ai.vault">Abrir el Garage</a>
+          <button type="button" id="aiFullResetBtn" data-i18n="ai.reset">Reiniciar</button>
         </div>
-
-        <div class="p-5 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] space-y-2 text-xs">
-          <div class="flex items-center justify-between font-mono text-[11px]">
-            <span class="text-[var(--r-muted)]">MOTOR INFERENCIA</span>
-            <span class="text-[var(--r-accent)] font-bold">Groq LPU · Streaming</span>
-          </div>
-          <div class="flex items-center justify-between font-mono text-[11px]">
-            <span class="text-[var(--r-muted)]">ESPECIALIDAD</span>
-            <span class="text-[var(--r-text)]">Road · GT3 / GTP / GT4</span>
-          </div>
-          <div class="flex items-center justify-between font-mono text-[11px]">
-            <span class="text-[var(--r-muted)]">CATÁLOGO VINCULADO</span>
-            <span class="text-[var(--r-text)]">+41.000 Setups .STO</span>
-          </div>
-        </div>
-      </aside>
-
-      <!-- Consola Principal de Chat -->
-      <div class="lg:col-span-8 flex flex-col rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] shadow-2xl overflow-hidden min-h-[540px] max-h-[75vh]">
-        <!-- Barra de estado de la consola -->
-        <div class="px-5 py-3.5 bg-[var(--r-bg-2)] border-b border-[var(--r-line)] flex items-center justify-between gap-3">
-          <div class="flex items-center gap-2.5">
-            <span class="w-2.5 h-2.5 rounded-full bg-[var(--r-accent)]"></span>
-            <span class="text-xs font-mono font-bold text-[var(--r-text)] uppercase tracking-wider">Canal de Radio Ingeniería · Muntrume AI</span>
-          </div>
-          <span class="text-[11px] font-mono text-[var(--r-muted)]" id="aiFullStatus">Listo en pista</span>
-        </div>
-
-        <!-- Historial de mensajes -->
-        <div id="aiFullLog" class="flex-1 overflow-y-auto p-5 space-y-4 scroll-smooth" role="log" aria-live="polite">
-          <div class="max-w-[88%] p-4 rounded-2xl rounded-tl-xs bg-[var(--r-bg-2)] border border-[var(--r-line)] text-sm text-[var(--r-text)] leading-relaxed">
-            ¡Hola! Soy <strong class="text-[var(--r-text)]">Muntrume AI</strong>, copiloto e ingeniero de pista de Muntrume Motorsport conectado sobre <strong class="text-[var(--r-accent)]">Groq LPU</strong>. ¿En qué circuito Road (Le Mans, Spa, Nürburgring, Watkins Glen, Imola...) o con qué coche estás trabajando hoy?
-          </div>
-        </div>
-
-        <!-- Barra de entrada -->
-        <form id="aiFullForm" class="p-4 bg-[var(--r-bg-2)] border-t border-[var(--r-line)] flex items-center gap-3" autocomplete="off">
-          <input
-            type="text"
-            id="aiFullInput"
-            maxlength="500"
-            placeholder="Pregunta sobre reglajes GT3/GTP, presiones, telemetría en Garage 61 o circuitos Road..."
-            class="flex-1 min-w-0 px-4 py-3 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] text-[var(--r-text)] text-xs sm:text-sm font-mono focus:outline-none focus:border-[var(--r-accent)] transition"
-          />
-          <button
-            type="submit"
-            id="aiFullSendBtn"
-            class="px-5 py-3 rounded-xl bg-[var(--r-accent)] hover:opacity-90 text-[var(--r-accent-ink)] font-black text-xs font-mono uppercase tracking-wider transition cursor-pointer shrink-0"
-          >
-            Enviar &rarr;
-          </button>
-        </form>
       </div>
     </div>
   </section>
 </Layout>
+
+<style>
+  .ai { width: min(1120px, calc(100% - 2 * var(--r-gutter))); margin: 0 auto; padding: clamp(28px, 5vw, 56px) 0 72px; display: grid; gap: clamp(28px, 4vw, 48px); }
+  .ai-hero { display: grid; gap: 14px; max-width: 68ch; }
+  .ai-hero .r-lead { margin: 0; }
+  .ai-caps { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ai-caps li { margin: 0; padding: 18px 18px 20px; border: 1px solid var(--r-line); border-radius: 16px; background: var(--r-surface); display: grid; gap: 8px; transition: border-color .2s ease, transform .2s ease; }
+  .ai-caps h2 { margin: 0; font: 700 22px/1 var(--r-display); letter-spacing: .04em; text-transform: uppercase; }
+  .ai-caps p { margin: 0; color: var(--r-muted); font-size: 14px; line-height: 1.5; }
+  .ai-caps li:hover { border-color: var(--r-accent); }
+  .ai-work { border: 1px solid var(--r-line); border-radius: 20px; background: var(--r-surface); display: grid; min-height: 560px; overflow: hidden; }
+  .ai-bar, .ai-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; background: var(--r-bg-2); }
+  .ai-bar { border-bottom: 1px solid var(--r-line); }
+  .ai-bar p, #aiFullStatus { margin: 0; font: 700 12px/1 var(--r-mono); letter-spacing: .08em; text-transform: uppercase; }
+  #aiFullStatus { color: var(--r-accent); }
+  .ai-log { min-height: 280px; max-height: min(52vh, 520px); overflow: auto; padding: 22px 18px; display: flex; flex-direction: column; gap: 12px; }
+  .ai-empty { margin: auto; max-width: 42ch; text-align: center; display: grid; gap: 8px; padding: 24px 8px; animation: ai-in .45s ease; }
+  .ai-empty__title { margin: 0; color: var(--r-text); font-size: 18px; line-height: 1.45; }
+  .ai-empty__hint { margin: 0; color: var(--r-muted); font-size: 14px; }
+  .ai-msg { max-width: min(72ch, 88%); padding: 12px 14px; border-radius: 16px; font-size: 14.5px; line-height: 1.55; animation: ai-in .28s ease; }
+  .ai-msg--user { margin-left: auto; background: var(--r-accent); color: var(--r-accent-ink); border-bottom-right-radius: 6px; font-weight: 650; }
+  .ai-msg--bot { background: var(--r-bg); border: 1px solid var(--r-line); color: var(--r-text); border-bottom-left-radius: 6px; }
+  .ai-msg--error { border-color: #b91c1c; background: color-mix(in srgb, #b91c1c 8%, var(--r-bg)); }
+  .ai-msg code { font-family: var(--r-mono); font-size: 12px; padding: 1px 5px; border-radius: 4px; background: var(--r-bg-2); color: var(--r-accent); }
+  .ai-dots { display: inline-flex; gap: 4px; margin-right: 8px; vertical-align: middle; }
+  .ai-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--r-accent); animation: ai-dot .9s infinite ease-in-out; }
+  .ai-dots i:nth-child(2) { animation-delay: .15s; }
+  .ai-dots i:nth-child(3) { animation-delay: .3s; }
+  .ai-retry { margin-top: 10px; min-height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--r-line); background: var(--r-surface); color: var(--r-text); font: 700 13px/1 var(--r-sans); cursor: pointer; }
+  .ai-starters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; padding: 0 12px 12px; }
+  .ai-starters button { text-align: left; min-height: 64px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--r-line); background: var(--r-bg); color: var(--r-text); cursor: pointer; display: grid; gap: 4px; transition: border-color .2s ease, transform .2s ease; }
+  .ai-starters button:hover { border-color: var(--r-accent); transform: translateY(-1px); }
+  .ai-starters strong { font: 700 13px/1.2 var(--r-sans); }
+  .ai-starters span { color: var(--r-muted); font-size: 12px; line-height: 1.3; }
+  .ai-form { display: flex; gap: 8px; padding: 0 12px 12px; }
+  .ai-form input { flex: 1; min-width: 0; min-height: 48px; border-radius: 12px; border: 1px solid var(--r-line); background: var(--r-bg); color: var(--r-text); font: 16px/1.3 var(--r-sans); padding: 0 14px; }
+  .ai-form input:focus { outline: 2px solid var(--r-accent); outline-offset: 1px; border-color: transparent; }
+  .ai-form button, .ai-foot__actions button, .ai-foot__actions a { min-height: 48px; padding: 0 16px; border-radius: 12px; border: 0; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
+  .ai-form button { background: var(--r-accent); color: var(--r-accent-ink); font: 800 14px/1 var(--r-display); letter-spacing: .08em; text-transform: uppercase; }
+  .ai-form button:disabled { opacity: .55; cursor: progress; }
+  .ai-foot { border-top: 1px solid var(--r-line); align-items: flex-start; }
+  .ai-foot p { margin: 0; color: var(--r-muted); font-size: 12px; line-height: 1.45; max-width: 62ch; }
+  .ai-foot__actions { display: flex; gap: 8px; flex: 0 0 auto; }
+  .ai-foot__actions a, .ai-foot__actions button { min-height: 40px; background: transparent; border: 1px solid var(--r-line); color: var(--r-text); font: 700 13px/1 var(--r-sans); }
+  .ai-foot__actions a:hover, .ai-foot__actions button:hover, .ai-retry:hover { border-color: var(--r-accent); color: var(--r-accent); }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  @keyframes ai-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @keyframes ai-dot { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+  @media (max-width: 800px) {
+    .ai-caps, .ai-starters { grid-template-columns: 1fr 1fr; }
+    .ai-foot { flex-direction: column; }
+  }
+  @media (max-width: 560px) {
+    .ai-caps, .ai-starters { grid-template-columns: 1fr; }
+    .ai-form { flex-direction: column; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ai-empty, .ai-msg, .ai-dots i, .ai-caps li, .ai-starters button { animation: none; transition: none; }
+    .ai-caps li:hover, .ai-starters button:hover { transform: none; }
+  }
+</style>
 
 <script is:inline>
   (function initMuntrumeAiPage() {
@@ -127,141 +148,106 @@ const pageDescription = "Full-screen Muntrume AI Copilot powered by Trujillo AI 
     var history = [];
     var streaming = false;
     var ctrl = null;
-
+    var lastPrompt = '';
     if (!log || !form || !input || !sendBtn) return;
 
-    function createEl(tag, cls, text) {
-      var n = document.createElement(tag);
-      if (cls) n.className = cls;
-      if (text != null) n.textContent = text;
-      return n;
+    function tr(key, fallback) {
+      var value = window.muntruI18n && window.muntruI18n.t && window.muntruI18n.t(key);
+      return value == null ? fallback : value;
     }
-
+    function el(tag, cls) {
+      var node = document.createElement(tag);
+      if (cls) node.className = cls;
+      return node;
+    }
+    function setStatus(key, fallback) {
+      if (!statusEl) return;
+      statusEl.setAttribute('data-i18n', key);
+      statusEl.textContent = tr(key, fallback);
+    }
+    function showEmpty() {
+      log.textContent = '';
+      var box = el('div', 'ai-empty');
+      var title = el('p', 'ai-empty__title');
+      title.textContent = tr('ai.empty', 'Hola. Soy Muntrume AI, el copiloto del equipo. Pregunta por un circuito, un coche o un reglaje.');
+      var hint = el('p', 'ai-empty__hint');
+      hint.textContent = tr('ai.emptyHint', 'Elige un tema o escribe tu pregunta.');
+      box.appendChild(title);
+      box.appendChild(hint);
+      log.appendChild(box);
+    }
+    function append(role, text) {
+      var bubble = el('div', role === 'user' ? 'ai-msg ai-msg--user' : 'ai-msg ai-msg--bot');
+      bubble.textContent = text || '';
+      log.appendChild(bubble);
+      log.scrollTop = log.scrollHeight;
+      return bubble;
+    }
     function formatInline(container, text) {
       String(text || '').split('**').forEach(function (part, i) {
         if (i % 2 === 1) {
-          var b = document.createElement('strong');
-          b.className = 'text-[var(--r-text)] font-bold';
-          b.textContent = part;
-          container.appendChild(b);
+          var strong = document.createElement('strong');
+          strong.textContent = part;
+          container.appendChild(strong);
         } else {
           part.split('`').forEach(function (codePart, j) {
             if (j % 2 === 1) {
-              var c = document.createElement('code');
-              c.className = 'px-1.5 py-0.5 rounded bg-[var(--r-surface)] text-[var(--r-accent)] font-mono text-xs';
-              c.textContent = codePart;
-              container.appendChild(c);
-            } else {
-              container.appendChild(document.createTextNode(codePart));
-            }
+              var code = document.createElement('code');
+              code.textContent = codePart;
+              container.appendChild(code);
+            } else container.appendChild(document.createTextNode(codePart));
           });
         }
       });
     }
-
-    function parseTable(lines) {
-      var tLines = lines.filter(function (l) { return l.trim().startsWith('|') && l.trim().endsWith('|'); });
-      if (tLines.length < 2) return null;
-      var headers = tLines[0].split('|').map(function (c) { return c.trim(); }).filter(Boolean);
-      var rows = [];
-      for (var i = 1; i < tLines.length; i++) {
-        var r = tLines[i].trim();
-        if (/^\|[-:| ]+\|$/.test(r)) continue;
-        var cols = r.split('|').map(function (c) { return c.trim(); }).filter(Boolean);
-        if (cols.length) rows.push(cols);
-      }
-      return rows.length ? { headers: headers, rows: rows } : null;
-    }
-
     function renderFormatted(node, rawText) {
       node.textContent = '';
-      var clean = String(rawText || '').replace(/<br\s*\/?>/gi, '\n').replace(/^#{1,6}\s*/gm, '');
-      var lines = clean.split('\n');
-      var i = 0;
-      while (i < lines.length) {
-        if (lines[i].trim().startsWith('|') && lines[i].trim().endsWith('|')) {
-          var tbl = [];
-          while (i < lines.length && lines[i].trim().startsWith('|') && lines[i].trim().endsWith('|')) {
-            tbl.push(lines[i]);
-            i++;
-          }
-          var parsed = parseTable(tbl);
-          if (parsed) {
-            var grid = createEl('div', 'grid gap-2.5 my-2');
-            parsed.rows.forEach(function (row, idx) {
-              var card = createEl('div', 'p-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] border-l-2 border-l-[var(--r-accent)] space-y-1');
-              var badge = createEl('span', 'inline-block text-[10px] font-mono font-bold uppercase text-[var(--r-accent)] bg-[var(--r-accent)]/10 px-2 py-0.5 rounded', 'PASO ' + (idx + 1));
-              var ttl = createEl('div', 'font-bold text-[var(--r-text)] text-xs sm:text-sm');
-              formatInline(ttl, row[0] || ('Ajuste ' + (idx + 1)));
-              card.appendChild(badge);
-              card.appendChild(ttl);
-              for (var c = 1; c < row.length; c++) {
-                var kv = createEl('div', 'text-xs text-[var(--r-muted)] font-mono');
-                kv.textContent = (parsed.headers[c] || ('Parámetro ' + c)) + ': ';
-                var val = createEl('span', 'text-[var(--r-text)] font-sans');
-                formatInline(val, row[c]);
-                kv.appendChild(val);
-                card.appendChild(kv);
-              }
-              grid.appendChild(card);
-            });
-            node.appendChild(grid);
-            continue;
-          }
-        }
-        if (lines[i].trim().length > 0) {
-          var p = createEl('div', 'my-1 leading-relaxed');
-          formatInline(p, lines[i]);
-          node.appendChild(p);
-        }
-        i++;
-      }
+      var lines = String(rawText || '').replace(/<br\s*\/?>/gi, '\n').replace(/^#{1,6}\s*/gm, '').split('\n');
+      lines.forEach(function (line) {
+        if (!line.trim()) return;
+        var row = el('div');
+        formatInline(row, line);
+        node.appendChild(row);
+      });
     }
-
-    function appendMessage(role, text) {
-      var isUser = role === 'user';
-      var bubble = createEl(
-        'div',
-        isUser
-          ? 'ml-auto max-w-[85%] p-3.5 rounded-2xl rounded-tr-xs bg-[var(--r-accent)] text-[var(--r-accent-ink)] font-semibold text-sm'
-          : 'max-w-[88%] p-4 rounded-2xl rounded-tl-xs bg-[var(--r-bg-2)] border border-[var(--r-line)] text-sm text-[var(--r-text)] leading-relaxed',
-        text
-      );
-      log.appendChild(bubble);
-      log.scrollTop = log.scrollHeight;
-      bubble.scrollIntoView({ behavior: 'smooth', block: 'end' });
-      return bubble;
+    function showError(bubble, promptText) {
+      bubble.className = 'ai-msg ai-msg--bot ai-msg--error';
+      bubble.textContent = '';
+      var p = el('p');
+      p.textContent = tr('ai.error', 'No he podido obtener respuesta. Prueba otra vez en unos segundos.');
+      var retry = el('button', 'ai-retry');
+      retry.type = 'button';
+      retry.textContent = tr('ai.retry', 'Reintentar');
+      retry.addEventListener('click', function () { sendPrompt(promptText); });
+      bubble.appendChild(p);
+      bubble.appendChild(retry);
     }
-
     async function sendPrompt(promptText) {
       var text = String(promptText || '').trim();
       if (!text || streaming) return;
+      lastPrompt = text;
       input.value = '';
-      appendMessage('user', text);
-
-      var botBubble = appendMessage('assistant', '');
-      botBubble.innerHTML = '<span class="inline-flex items-center gap-2 font-mono text-xs text-[var(--r-accent)]"><span class="w-2 h-2 rounded-full bg-[var(--r-accent)] animate-ping"></span>Trujillo AI procesando en Groq LPU...</span>';
+      var empty = log.querySelector('.ai-empty');
+      if (empty) empty.remove();
+      append('user', text);
+      var bot = append('assistant', '');
+      bot.innerHTML = '<span class="ai-dots" aria-hidden="true"><i></i><i></i><i></i></span>';
+      bot.appendChild(document.createTextNode(tr('ai.loading', 'Consultando el modelo…')));
       streaming = true;
       sendBtn.disabled = true;
-      if (statusEl) statusEl.textContent = 'Recibiendo telemetría...';
-
+      setStatus('ai.status.loading', 'Respondiendo…');
       ctrl = new AbortController();
       var tid = setTimeout(function () { ctrl.abort(); }, 45000);
       var acc = '';
-
       try {
         var res = await fetch(API, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           signal: ctrl.signal,
           credentials: 'omit',
-          body: JSON.stringify({
-            prompt: text,
-            custom_prompt: SYSTEM,
-            chat_history: history.slice(-6)
-          })
+          body: JSON.stringify({ prompt: text, custom_prompt: SYSTEM, chat_history: history.slice(-6) })
         });
-        if (!res.ok || !res.body) throw new Error('Error de conexión con Groq LPU');
+        if (!res.ok || !res.body) throw new Error('status');
         var reader = res.body.getReader();
         var dec = new TextDecoder();
         var buf = '';
@@ -281,45 +267,47 @@ const pageDescription = "Full-screen Muntrume AI Copilot powered by Trujillo AI 
               var parsed = JSON.parse(d);
               if (typeof parsed.content === 'string' && parsed.content) {
                 acc += parsed.content;
-                renderFormatted(botBubble, acc);
+                renderFormatted(bot, acc);
                 log.scrollTop = log.scrollHeight;
               }
             } catch (e) {}
           }
         }
-        if (!acc) {
-          botBubble.textContent = 'No se recibió respuesta del motor. Inténtalo de nuevo.';
-        } else {
-          history.push({ role: 'user', content: text }, { role: 'assistant', content: acc.slice(0, 2000) });
-        }
+        if (!acc) showError(bot, text);
+        else history.push({ role: 'user', content: text }, { role: 'assistant', content: acc.slice(0, 2000) });
       } catch (err) {
-        botBubble.textContent = 'El canal de inferencia está ocupado en este instante. Prueba de nuevo en unos segundos o consulta el Setup Vault.';
+        showError(bot, text);
       } finally {
         clearTimeout(tid);
         streaming = false;
         sendBtn.disabled = false;
-        if (statusEl) statusEl.textContent = 'Listo en pista';
+        setStatus('ai.status.ready', 'Listo');
       }
     }
-
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       sendPrompt(input.value);
     });
-
     document.querySelectorAll('#aiTopicButtons [data-prompt]').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        sendPrompt(btn.getAttribute('data-prompt'));
+        var key = btn.getAttribute('data-prompt-key');
+        sendPrompt(tr(key, btn.getAttribute('data-prompt') || ''));
       });
     });
-
     if (resetBtn) {
       resetBtn.addEventListener('click', function () {
         if (ctrl) ctrl.abort();
         history = [];
-        log.innerHTML = '';
-        appendMessage('assistant', 'Sesión de ingeniería reiniciada. ¿Qué coche o circuito Road analizamos ahora?');
+        streaming = false;
+        sendBtn.disabled = false;
+        showEmpty();
+        setStatus('ai.status.ready', 'Listo');
       });
     }
+    showEmpty();
+    document.addEventListener('muntru:i18n', function () {
+      if (!history.length) showEmpty();
+      setStatus(streaming ? 'ai.status.loading' : 'ai.status.ready', streaming ? 'Respondiendo…' : 'Listo');
+    });
   })();
 </script>

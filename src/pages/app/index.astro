@@ -56,147 +56,111 @@ const appSchema = {
   ogImageWidth={1200}
   ogImageHeight={630}
   schemaJson={appSchema}
+  translated
+  i18nTitle="app.meta.title"
+  i18nDescription="app.meta.desc"
 >
-  <div class="min-h-screen bg-[var(--r-bg)] text-[var(--r-text)] pt-8 pb-20">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-      
-      <!-- Hero Section -->
-      <section class="text-center space-y-6 pt-6 sm:pt-12">
-        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[var(--r-line)] bg-[var(--r-surface)] text-xs font-mono tracking-wider uppercase text-[var(--r-accent)]">
-          <span class="w-2 h-2 rounded-full bg-[var(--r-accent)] animate-pulse"></span>
-          Software Oficial de Equipo · iRacing
-        </div>
-        
-        <h1 class="text-4xl sm:text-6xl font-display font-extrabold uppercase tracking-tight leading-none">
-          MMT <span class="text-[var(--r-accent)]">SYNC</span>
-        </h1>
-        
-        <p class="max-w-2xl mx-auto text-base sm:text-lg text-[var(--r-muted)] leading-relaxed font-sans">
-          La aplicación de escritorio oficial de Muntrume Motorsport. Sincroniza automáticamente los setups de carrera, clasificación y lluvia en tus carpetas de iRacing y visualiza telemetría en tiempo real en pista.
-        </p>
+  <div class="app-page">
+    <section class="app-hero">
+      <p class="r-kicker" data-i18n="app.kicker">Software oficial de equipo · iRacing</p>
+      <h1 data-i18n="app.title">MMT Sync</h1>
+      <p class="r-lead" data-i18n="app.lead">La aplicación de escritorio oficial de Muntrume Motorsport. Sincroniza los setups de carrera, clasificación y lluvia en tus carpetas de iRacing y muestra en pista barras en directo de acelerador, freno, dirección, marcha y velocidad.</p>
+      <div class="app-cta">
+        <a class="r-btn r-btn--primary" href="https://github.com/atrumin16/muntrume-site/releases/latest" target="_blank" rel="noopener noreferrer" data-i18n="app.download">Descargar para Windows (64-bit)</a>
+        <a class="r-btn app-btn" href="/garage/" data-i18n="app.catalog">Ver catálogo web de setups</a>
+      </div>
+      <p class="app-meta">
+        <span data-i18n="app.meta.os">Windows 10 / 11 (64-bit)</span>
+        <span aria-hidden="true">·</span>
+        <span data-i18n="app.meta.ver">Versión 0.1.26</span>
+        <span aria-hidden="true">·</span>
+        <span data-i18n="app.meta.free">Gratis</span>
+      </p>
+    </section>
 
-        <!-- CTA Downloads -->
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-          <a
-            href="https://github.com/atrumin16/muntrume-site/releases/latest"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="w-full sm:w-auto h-13 px-8 rounded-xl bg-[var(--r-accent)] text-[#0a0d0c] font-display font-extrabold text-base uppercase tracking-wider flex items-center justify-center gap-3 transition-transform hover:scale-102 shadow-lg shadow-[var(--r-accent)]/20"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-            </svg>
-            Descargar para Windows (64-bit)
-          </a>
-          <a
-            href="/garage"
-            class="w-full sm:w-auto h-13 px-6 rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] text-[var(--r-text)] font-display font-extrabold text-base uppercase tracking-wider flex items-center justify-center hover:bg-[var(--r-bg-2)] transition"
-          >
-            Ver catálogo web de setups
-          </a>
-        </div>
-
-        <div class="flex flex-wrap items-center justify-center gap-6 text-xs font-mono text-[var(--r-muted)] pt-2">
-          <span>Windows 10 / 11 (64-bit)</span>
-          <span>•</span>
-          <span>Versión 0.1.26</span>
-          <span>•</span>
-          <span>Gratis</span>
-        </div>
-      </section>
-
-      <!-- Security / Not a Virus Banner (Guía SmartScreen) -->
-      <section class="rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-6 sm:p-8 space-y-4 shadow-sm">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-[var(--r-accent)]/10 text-[var(--r-accent)] flex items-center justify-center shrink-0">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-            </svg>
-          </div>
-          <div>
-            <h2 class="text-lg font-display uppercase tracking-wide text-[var(--r-text)]">
-              Software 100% Seguro y Verificado por Muntrume
-            </h2>
-            <p class="text-xs font-mono text-[var(--r-muted)]">
-              Sin publicidad · Sin rastreadores de terceros · Sin modificar tus archivos privados
-            </p>
-          </div>
-        </div>
-
-        <div class="grid sm:grid-cols-2 gap-4 pt-2 text-xs leading-relaxed text-[var(--r-muted)]">
-          <div class="space-y-2 p-4 rounded-xl border border-[var(--r-line)] bg-[var(--r-bg)]">
-            <strong class="text-[var(--r-text)] block font-mono uppercase tracking-wider text-[11px]">Lectura Segura del SDK de iRacing</strong>
-            <p>
-              MMT Sync se conecta con iRacing únicamente en modo lectura (<code class="text-[var(--r-accent)]">FILE_MAP_READ</code>) a través de la memoria compartida oficial del simulador. Nunca escribe en el juego ni interfiere con el anti-cheat.
-            </p>
-          </div>
-          <div class="space-y-2 p-4 rounded-xl border border-[var(--r-line)] bg-[var(--r-bg)]">
-            <strong class="text-[var(--r-text)] block font-mono uppercase tracking-wider text-[11px]">Aviso de Windows SmartScreen</strong>
-            <p>
-              Al tratarse de una herramienta privada de equipo sin certificado comercial de Microsoft, Windows puede mostrar «Windows protegió su PC». Para instalar: pulsa en <strong>«Más información»</strong> y a continuación <strong>«Ejecutar de todas formas»</strong>.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Key Capabilities Grid -->
-      <section class="grid sm:grid-cols-3 gap-5">
-        <article class="p-6 rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] space-y-3">
-          <div class="text-[var(--r-accent)] font-mono text-2xl font-bold">01</div>
-          <h3 class="font-display uppercase text-lg text-[var(--r-text)]">Sincronización Automática</h3>
-          <p class="text-xs text-[var(--r-muted)] leading-relaxed">
-            Descarga en 1 clic los reglajes oficiales del equipo organizados en <code class="text-[var(--r-text)]">setups\coche\MMT\temporada</code>. Tus propios setups permanecen intactos.
-          </p>
+    <section class="app-card">
+      <h2 data-i18n="app.safe.title">Revisado por el equipo</h2>
+      <p class="app-sub" data-i18n="app.safe.sub">Sin publicidad · sin rastreadores de terceros · no modifica tus archivos privados</p>
+      <div class="app-split">
+        <article>
+          <h3 data-i18n="app.safe.sdk.title">SDK de iRacing solo lectura</h3>
+          <p data-i18n="app.safe.sdk.body">MMT Sync se conecta con iRacing en modo lectura (<code>FILE_MAP_READ</code>) a través de la memoria compartida oficial del simulador. No escribe en el juego.</p>
         </article>
-
-        <article class="p-6 rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] space-y-3">
-          <div class="text-[var(--r-accent)] font-mono text-2xl font-bold">02</div>
-          <h3 class="font-display uppercase text-lg text-[var(--r-text)]">Telemetría en Vivo</h3>
-          <p class="text-xs text-[var(--r-muted)] leading-relaxed">
-            Detecta automáticamente la sesión en pista de iRacing, mostrando barras en tiempo real de acelerador, freno, ángulo de dirección, marcha engranada y velocidad.
-          </p>
+        <article>
+          <h3 data-i18n="app.safe.screen.title">Aviso de Windows SmartScreen</h3>
+          <p data-i18n="app.safe.screen.body">Es una herramienta privada del equipo sin certificado comercial de Microsoft, así que Windows puede decir que protegió tu PC. Para instalar, elige Más información y después Ejecutar de todas formas.</p>
         </article>
+      </div>
+    </section>
 
-        <article class="p-6 rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] space-y-3">
-          <div class="text-[var(--r-accent)] font-mono text-2xl font-bold">03</div>
-          <h3 class="font-display uppercase text-lg text-[var(--r-text)]">Calculadora y Estrategia</h3>
-          <p class="text-xs text-[var(--r-muted)] leading-relaxed">
-            Calcula el combustible necesario para carreras de resistencia, paradas en boxes estimadas y listas de verificación previas a carrera.
-          </p>
-        </article>
-      </section>
+    <section class="app-grid">
+      <article class="app-card">
+        <p class="app-num">01</p>
+        <h2 data-i18n="app.cap.1.title">Sincronización automática</h2>
+        <p data-i18n="app.cap.1.body">Descarga en un clic los reglajes oficiales del equipo, organizados en setups\coche\MMT\temporada. Tus propios setups se quedan donde están.</p>
+      </article>
+      <article class="app-card">
+        <p class="app-num">02</p>
+        <h2 data-i18n="app.cap.2.title">Telemetría en directo</h2>
+        <p data-i18n="app.cap.2.body">Detecta la sesión en pista de iRacing y muestra barras en directo de acelerador, freno, ángulo de dirección, marcha y velocidad.</p>
+      </article>
+      <article class="app-card">
+        <p class="app-num">03</p>
+        <h2 data-i18n="app.cap.3.title">Calculadora y estrategia</h2>
+        <p data-i18n="app.cap.3.body">Calcula el combustible para una carrera de resistencia, las paradas estimadas y una lista de verificación previa.</p>
+      </article>
+    </section>
 
-      <!-- How to Connect -->
-      <section class="rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-6 sm:p-8 space-y-6">
-        <h2 class="text-2xl font-display uppercase tracking-tight">Cómo vincular tu dispositivo en 3 pasos</h2>
-        
-        <div class="grid sm:grid-cols-3 gap-6 font-mono text-xs">
-          <div class="space-y-2">
-            <span class="inline-block px-2 py-1 rounded bg-[var(--r-accent)]/10 text-[var(--r-accent)] font-bold">Paso 1</span>
-            <h3 class="text-sm font-semibold text-[var(--r-text)]">Instala y abre MMT Sync</h3>
-            <p class="text-[var(--r-muted)] leading-relaxed font-sans">
-              Ejecuta el instalador en tu ordenador y pulsa «Vincular con muntru.me». Verás un código de 8 caracteres.
-            </p>
-          </div>
-
-          <div class="space-y-2">
-            <span class="inline-block px-2 py-1 rounded bg-[var(--r-accent)]/10 text-[var(--r-accent)] font-bold">Paso 2</span>
-            <h3 class="text-sm font-semibold text-[var(--r-text)]">Autoriza en la web</h3>
-            <p class="text-[var(--r-muted)] leading-relaxed font-sans">
-              Se abrirá tu navegador en muntru.me. Pulsa «Autorizar este dispositivo» con tu sesión de piloto activa.
-            </p>
-          </div>
-
-          <div class="space-y-2">
-            <span class="inline-block px-2 py-1 rounded bg-[var(--r-accent)]/10 text-[var(--r-accent)] font-bold">Paso 3</span>
-            <h3 class="text-sm font-semibold text-[var(--r-text)]">¡Listo para rodar!</h3>
-            <p class="text-[var(--r-muted)] leading-relaxed font-sans">
-              Tu token seguro se guardará en el Credential Manager de Windows. Pulsa «Sincronizar ahora» para tener todos los setups en iRacing.
-            </p>
-          </div>
-        </div>
-      </section>
-
-    </div>
+    <section class="app-card">
+      <h2 data-i18n="app.how.title">Vincula la aplicación en tres pasos</h2>
+      <ol class="app-steps">
+        <li>
+          <span>1</span>
+          <h3 data-i18n="app.how.1.title">Instala y abre MMT Sync</h3>
+          <p data-i18n="app.how.1.body">Ejecuta el instalador y pulsa Vincular con muntru.me. Verás un código de 8 caracteres.</p>
+        </li>
+        <li>
+          <span>2</span>
+          <h3 data-i18n="app.how.2.title">Autoriza en la web</h3>
+          <p data-i18n="app.how.2.body">Se abrirá el navegador en muntru.me. Pulsa Autorizar este dispositivo con tu sesión de piloto activa.</p>
+        </li>
+        <li>
+          <span>3</span>
+          <h3 data-i18n="app.how.3.title">Listo para rodar</h3>
+          <p data-i18n="app.how.3.body">El token se guarda en el Credential Manager de Windows. Pulsa Sincronizar ahora para tener los setups en iRacing.</p>
+        </li>
+      </ol>
+    </section>
   </div>
 </Layout>
+
+<style>
+  .app-page { width: min(1040px, calc(100% - 2 * var(--r-gutter))); margin: 0 auto; padding: clamp(28px, 5vw, 64px) 0 80px; display: grid; gap: 20px; }
+  .app-hero { display: grid; gap: 14px; justify-items: center; text-align: center; padding: 12px 0 8px; }
+  .app-hero .r-kicker { justify-content: center; }
+  .app-hero h1 { margin: 0; font: 800 clamp(56px, 10vw, 96px)/.9 var(--r-display); letter-spacing: .02em; text-transform: uppercase; }
+  .app-hero .r-lead { margin: 0 auto; }
+  .app-cta { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+  .app-btn { border-color: var(--r-line); color: var(--r-text); background: var(--r-surface); }
+  .app-btn:hover { border-color: var(--r-accent); color: var(--r-accent); }
+  .app-meta { margin: 0; display: flex; flex-wrap: wrap; gap: 8px 10px; justify-content: center; color: var(--r-muted); font: 600 12px/1.4 var(--r-mono); }
+  .app-card { padding: 22px; border: 1px solid var(--r-line); border-radius: 16px; background: var(--r-surface); display: grid; gap: 10px; transition: border-color .2s ease, transform .2s ease; }
+  .app-card:hover { border-color: var(--r-accent); }
+  .app-card h2, .app-card h3 { margin: 0; }
+  .app-card p { margin: 0; color: var(--r-muted); font-size: 14px; line-height: 1.55; }
+  .app-card code { color: var(--r-accent); font-family: var(--r-mono); font-size: 12px; }
+  .app-sub { font: 600 12px/1.4 var(--r-mono) !important; }
+  .app-num { margin: 0; color: var(--r-accent); font: 800 28px/1 var(--r-mono); }
+  .app-split, .app-grid, .app-steps { display: grid; gap: 12px; }
+  .app-split article, .app-steps li { padding: 14px; border: 1px solid var(--r-line); border-radius: 12px; background: var(--r-bg); display: grid; gap: 6px; }
+  .app-steps { list-style: none; margin: 8px 0 0; padding: 0; }
+  .app-steps span { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 8px; background: color-mix(in srgb, var(--r-accent) 14%, transparent); color: var(--r-accent); font: 800 13px/1 var(--r-mono); }
+  @media (min-width: 800px) {
+    .app-split, .app-grid, .app-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .app-split { grid-template-columns: 1fr 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .app-card { transition: none; }
+    .app-card:hover { transform: none; }
+  }
+</style>

@@ -3,8 +3,8 @@
 (function () {
   var API = 'https://muntrume.atrumin16.workers.dev';
   var esc = function (v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
-  var lang = (document.documentElement.lang || 'es');
-  function loc() { return window.muntruLocale ? window.muntruLocale(document.documentElement.lang || lang) : "es-ES"; }
+  function uiLang() { return document.documentElement.lang || "es"; }
+  function loc() { return window.muntruLocale ? window.muntruLocale(uiLang()) : "es-ES"; }
   function approx(el, kind, value) {
     if (!el || !window.muntruFormato || value == null || value === "") return;
     el.setAttribute("data-n", String(value));
@@ -123,7 +123,7 @@
     if (!ev.length || !ul) return;
     ul.innerHTML = ev.map(function (e) {
       var dt = new Date(e.starts_at);
-      return '<li><div class="r-row"><span class="r-meta">' + esc(dt.toLocaleDateString(lang, { day: '2-digit', month: 'short', year: 'numeric' })) + '<br>' + esc(dt.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' })) + '</span><span><span class="r-h3">' + esc(e.title) + '</span><br><span class="r-meta">' + esc(e.track || 'iRacing') + '</span></span><span class="r-meta">' + esc(e.car_class || '') + '</span></div></li>';
+      return '<li><div class="r-row"><span class="r-meta">' + esc(dt.toLocaleDateString(uiLang(), { day: '2-digit', month: 'short', year: 'numeric' })) + '<br>' + esc(dt.toLocaleTimeString(uiLang(), { hour: '2-digit', minute: '2-digit' })) + '</span><span><span class="r-h3">' + esc(e.title) + '</span><br><span class="r-meta">' + esc(e.track || 'iRacing') + '</span></span><span class="r-meta">' + esc(e.car_class || '') + '</span></div></li>';
     }).join('');
     ul.hidden = false;
     var empty = document.getElementById('calEmpty');
@@ -136,7 +136,7 @@
       if (when && ev[0].starts_at) {
         var dt = new Date(ev[0].starts_at);
         when.dateTime = ev[0].starts_at;
-        when.textContent = dt.toLocaleDateString(lang, { day: '2-digit', month: 'short' });
+        when.textContent = dt.toLocaleDateString(uiLang(), { day: '2-digit', month: 'short' });
       }
       stat.hidden = false;
     }

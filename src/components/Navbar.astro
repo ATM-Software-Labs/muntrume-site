@@ -11,44 +11,70 @@ function active(path: string, ...prefixes: string[]): boolean {
 }
 
 const links = [
-  { href: "/", label: "Inicio", on: active(currentPath) },
+  { href: "/", label: "Inicio", key: "nav.home", on: active(currentPath) },
   {
     href: "/pilotos/",
     label: "Pilotos",
+    key: "nav.drivers",
     on: active(currentPath, "/pilotos", "/drivers", "/d/", "/team", "/p/"),
   },
   {
     href: "/garage/",
     label: "Garage",
+    key: "nav.garage",
     on: active(currentPath, "/garage", "/setups", "/setup-builder"),
   },
   {
     href: "/paddock/",
     label: "Paddock",
+    key: "nav.paddock",
     on: active(currentPath, "/paddock", "/about", "/contact"),
   },
   {
     href: "/noticias/",
     label: "Noticias",
+    key: "nav.news",
     on: active(currentPath, "/noticias", "/news", "/article"),
   },
 ];
 ---
 
-<header class="site-header" id="siteHeader" data-no-i18n>
+<header class="site-header" id="siteHeader">
   <div class="site-header__bar">
     <a class="site-logo" href="/" aria-label="Muntrume Motorsport">
       <img src="/assets/img/logo-64.webp" alt="" width="32" height="32" />
       <span>Muntrume</span>
     </a>
 
-    <nav class="site-nav" aria-label="Secciones">
+    <nav class="site-nav" aria-label="Secciones" data-i18n-aria="nav.sections">
       {links.map((link) => (
-        <a href={link.href} aria-current={link.on ? "page" : undefined}>{link.label}</a>
+        <a href={link.href} aria-current={link.on ? "page" : undefined} data-i18n={link.key}>{link.label}</a>
       ))}
     </nav>
 
     <div class="site-tools">
+      <div class="lang-switch" data-lang-root>
+        <button
+          type="button"
+          class="lang-switch__btn"
+          data-lang-toggle
+          aria-haspopup="listbox"
+          aria-expanded="false"
+          aria-controls="langMenu"
+          data-i18n-aria="nav.lang"
+          aria-label="Idioma"
+        >
+          <span data-lang-code>ES</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-width="2.5" d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div id="langMenu" class="lang-switch__menu" data-lang-menu role="listbox" aria-label="Idioma" data-i18n-aria="nav.lang" hidden>
+          <button type="button" role="option" data-set-lang="es" lang="es" aria-selected="true">ES · Español</button>
+          <button type="button" role="option" data-set-lang="ca" lang="ca" aria-selected="false">CA · Català</button>
+          <button type="button" role="option" data-set-lang="en" lang="en" aria-selected="false">EN · English</button>
+          <button type="button" role="option" data-set-lang="fr" lang="fr" aria-selected="false">FR · Français</button>
+          <p class="lang-fallback" data-lang-fallback data-i18n="nav.fallback" hidden>Esta página sigue en español.</p>
+        </div>
+      </div>
       <button
         type="button"
         id="themeToggleBtn"
@@ -71,13 +97,13 @@ const links = [
           aria-controls="accountMenu"
         >
           <span class="site-account__mark" aria-hidden="true"></span>
-          <span id="accountLabel">Cuenta</span>
+          <span id="accountLabel" data-i18n="nav.account">Cuenta</span>
         </button>
         <div id="accountMenu" class="site-account__menu" role="menu" hidden>
-          <a id="accountLogin" role="menuitem" href="/login/">Iniciar sesión</a>
-          <a id="accountSala" role="menuitem" hidden>Sala</a>
+          <a id="accountLogin" role="menuitem" href="/login/" data-i18n="nav.login">Iniciar sesión</a>
+          <a id="accountSala" role="menuitem" data-i18n="nav.sala" hidden>Sala</a>
           <a id="accountAdmin" role="menuitem" hidden>Race Control</a>
-          <button type="button" id="accountLogout" role="menuitem" hidden>Salir</button>
+          <button type="button" id="accountLogout" role="menuitem" data-i18n="nav.logout" hidden>Salir</button>
         </div>
       </div>
 
@@ -86,6 +112,7 @@ const links = [
         id="navDrawerOpenBtn"
         class="site-iconbtn site-burger"
         aria-label="Abrir menú"
+        data-i18n-aria="nav.open"
         aria-expanded="false"
         aria-controls="navPanel"
       >
@@ -106,26 +133,35 @@ const links = [
   aria-labelledby="navPanelTitle"
   hidden
   inert
-  data-no-i18n
 >
   <div class="nav-panel__bar">
-    <p id="navPanelTitle" class="nav-panel__title">Menú</p>
-    <button type="button" id="navDrawerCloseBtn" class="site-iconbtn" aria-label="Cerrar menú">
+    <p id="navPanelTitle" class="nav-panel__title" data-i18n="nav.menu">Menú</p>
+    <button type="button" id="navDrawerCloseBtn" class="site-iconbtn" aria-label="Cerrar menú" data-i18n-aria="nav.close">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
         <path stroke-linecap="round" stroke-width="2" d="M6 6l12 12M18 6L6 18" />
       </svg>
     </button>
   </div>
-  <nav class="nav-panel__links" aria-label="Secciones">
+  <nav class="nav-panel__links" aria-label="Secciones" data-i18n-aria="nav.sections">
     {links.map((link) => (
-      <a href={link.href} aria-current={link.on ? "page" : undefined}>{link.label}</a>
+      <a href={link.href} aria-current={link.on ? "page" : undefined} data-i18n={link.key}>{link.label}</a>
     ))}
   </nav>
+  <div class="nav-panel__lang">
+    <p data-i18n="nav.lang">Idioma</p>
+    <div class="nav-panel__langs" role="group" aria-label="Idioma" data-i18n-aria="nav.lang">
+      <button type="button" data-set-lang="es" aria-pressed="true">ES</button>
+      <button type="button" data-set-lang="ca" aria-pressed="false">CA</button>
+      <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
+      <button type="button" data-set-lang="fr" aria-pressed="false">FR</button>
+    </div>
+    <p class="lang-fallback" data-lang-fallback data-i18n="nav.fallback" hidden>Esta página sigue en español.</p>
+  </div>
   <div class="nav-panel__account" id="navPanelAccount">
-    <a id="panelLogin" href="/login/">Iniciar sesión</a>
-    <a id="panelSala" hidden>Sala</a>
+    <a id="panelLogin" href="/login/" data-i18n="nav.login">Iniciar sesión</a>
+    <a id="panelSala" data-i18n="nav.sala" hidden>Sala</a>
     <a id="panelAdmin" hidden>Race Control</a>
-    <button type="button" id="panelLogout" hidden>Salir</button>
+    <button type="button" id="panelLogout" data-i18n="nav.logout" hidden>Salir</button>
   </div>
 </div>
 
@@ -142,10 +178,14 @@ const links = [
   onScroll();
   window.addEventListener("scroll", onScroll, { passive: true });
 
+  function t(key, fallback) {
+    var value = window.muntruI18n && window.muntruI18n.t && window.muntruI18n.t(key);
+    return value == null ? fallback : value;
+  }
   function paintThemeLabel() {
     if (!themeBtn) return;
     var light = document.documentElement.classList.contains("light") || document.documentElement.getAttribute("data-theme") === "light";
-    themeBtn.setAttribute("aria-label", light ? "Cambiar a tema oscuro" : "Cambiar a tema claro");
+    themeBtn.setAttribute("aria-label", light ? t("nav.theme.dark", "Cambiar a tema oscuro") : t("nav.theme.light", "Cambiar a tema claro"));
   }
   function toggleTheme() {
     var light = document.documentElement.classList.contains("light");
@@ -158,6 +198,7 @@ const links = [
   }
   if (themeBtn) themeBtn.addEventListener("click", toggleTheme);
   paintThemeLabel();
+  document.addEventListener("muntru:i18n", paintThemeLabel);
 
   var ADMIN = "atrumin16@gmail.com";
   function readUser() {
@@ -190,7 +231,15 @@ const links = [
     var panelSala = document.getElementById("panelSala");
     var panelAdmin = document.getElementById("panelAdmin");
     var panelLogout = document.getElementById("panelLogout");
-    if (label) label.textContent = authed ? (user.name || email.split("@")[0]) : "Cuenta";
+    if (label) {
+      if (authed) {
+        label.textContent = user.name || email.split("@")[0];
+        label.removeAttribute("data-i18n");
+      } else {
+        label.setAttribute("data-i18n", "nav.account");
+        label.textContent = t("nav.account", "Cuenta");
+      }
+    }
     show(login, !authed);
     show(panelLogin, !authed);
     show(sala, authed);
@@ -232,6 +281,7 @@ const links = [
   }
   function openAccount() {
     if (!accountMenu || !accountBtn) return;
+    document.dispatchEvent(new Event("muntru:close-lang"));
     closePanel();
     accountMenu.hidden = false;
     accountBtn.setAttribute("aria-expanded", "true");
@@ -288,6 +338,7 @@ const links = [
   }
   function openPanel() {
     if (!panel) return;
+    document.dispatchEvent(new Event("muntru:close-lang"));
     closeAccount();
     panel.hidden = false;
     panel.removeAttribute("inert");
