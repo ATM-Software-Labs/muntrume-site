@@ -143,3 +143,21 @@ export function catalogGroups(): CatalogGroup[] {
 }
 
 export const CATALOG_TOTAL = Number(catalog.total_setups) || 0;
+
+export function carOptions(): { id: string; label: string }[] {
+  const cars = (catalog.cars || []) as string[];
+  return cars
+    .map((id) => ({ id, label: CAR_LABELS[id] || id }))
+    .sort((a, b) => a.label.localeCompare(b.label, "es"));
+}
+
+export function previewSetups(limit = 20): CatalogSetup[] {
+  const out: CatalogSetup[] = [];
+  for (const group of catalogGroups()) {
+    for (const setup of group.setups) {
+      out.push(setup);
+      if (out.length >= limit) return out;
+    }
+  }
+  return out;
+}

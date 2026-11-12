@@ -2,9 +2,49 @@
 import Layout from "../../layouts/Layout.astro";
 
 const pageTitle = "MMT Sync para Windows | Muntrume Motorsport";
-const pageDescription = "Descarga oficial de MMT Sync para Windows. Sincroniza los setups de Muntrume con iRacing y monitoriza telemetría en tiempo real.";
+const pageDescription = "MMT Sync 0.1.26 para Windows. Sincroniza los setups de Muntrume con iRacing. Gratis.";
 const pageUrl = "https://muntru.me/app/";
 const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
+const appSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": `${pageUrl}#webpage`,
+      "url": pageUrl,
+      "name": pageTitle,
+      "description": pageDescription,
+      "isPartOf": { "@id": "https://muntru.me/#website" },
+      "about": { "@id": `${pageUrl}#software` },
+      "primaryImageOfPage": ogImage
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": `${pageUrl}#software`,
+      "name": "MMT Sync",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Windows",
+      "softwareVersion": "0.1.26",
+      "url": pageUrl,
+      "downloadUrl": "https://github.com/atrumin16/muntrume-site/releases/latest",
+      "description": pageDescription,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "EUR"
+      },
+      "publisher": { "@id": "https://muntru.me/#org" }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": `${pageUrl}#breadcrumb`,
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://muntru.me/" },
+        { "@type": "ListItem", "position": 2, "name": "MMT Sync", "item": pageUrl }
+      ]
+    }
+  ]
+};
 ---
 
 <Layout
@@ -12,8 +52,12 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
   description={pageDescription}
   canonical={pageUrl}
   ogImage={ogImage}
+  ogImageAlt="MMT Sync para Windows"
+  ogImageWidth={1200}
+  ogImageHeight={630}
+  schemaJson={appSchema}
 >
-  <main class="min-h-screen bg-[var(--r-bg)] text-[var(--r-text)] pt-8 pb-20">
+  <div class="min-h-screen bg-[var(--r-bg)] text-[var(--r-text)] pt-8 pb-20">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
       
       <!-- Hero Section -->
@@ -55,9 +99,9 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
         <div class="flex flex-wrap items-center justify-center gap-6 text-xs font-mono text-[var(--r-muted)] pt-2">
           <span>Windows 10 / 11 (64-bit)</span>
           <span>•</span>
-          <span>Instalador ligero (~10 MB)</span>
+          <span>Versión 0.1.26</span>
           <span>•</span>
-          <span>Solo para pilotos del equipo</span>
+          <span>Gratis</span>
         </div>
       </section>
 
@@ -129,7 +173,7 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
         <div class="grid sm:grid-cols-3 gap-6 font-mono text-xs">
           <div class="space-y-2">
             <span class="inline-block px-2 py-1 rounded bg-[var(--r-accent)]/10 text-[var(--r-accent)] font-bold">Paso 1</span>
-            <h4 class="text-sm font-semibold text-[var(--r-text)]">Instala y abre MMT Sync</h4>
+            <h3 class="text-sm font-semibold text-[var(--r-text)]">Instala y abre MMT Sync</h3>
             <p class="text-[var(--r-muted)] leading-relaxed font-sans">
               Ejecuta el instalador en tu ordenador y pulsa «Vincular con muntru.me». Verás un código de 8 caracteres.
             </p>
@@ -137,7 +181,7 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
 
           <div class="space-y-2">
             <span class="inline-block px-2 py-1 rounded bg-[var(--r-accent)]/10 text-[var(--r-accent)] font-bold">Paso 2</span>
-            <h4 class="text-sm font-semibold text-[var(--r-text)]">Autoriza en la web</h4>
+            <h3 class="text-sm font-semibold text-[var(--r-text)]">Autoriza en la web</h3>
             <p class="text-[var(--r-muted)] leading-relaxed font-sans">
               Se abrirá tu navegador en muntru.me. Pulsa «Autorizar este dispositivo» con tu sesión de piloto activa.
             </p>
@@ -145,7 +189,7 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
 
           <div class="space-y-2">
             <span class="inline-block px-2 py-1 rounded bg-[var(--r-accent)]/10 text-[var(--r-accent)] font-bold">Paso 3</span>
-            <h4 class="text-sm font-semibold text-[var(--r-text)]">¡Listo para rodar!</h4>
+            <h3 class="text-sm font-semibold text-[var(--r-text)]">¡Listo para rodar!</h3>
             <p class="text-[var(--r-muted)] leading-relaxed font-sans">
               Tu token seguro se guardará en el Credential Manager de Windows. Pulsa «Sincronizar ahora» para tener todos los setups en iRacing.
             </p>
@@ -154,5 +198,5 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
       </section>
 
     </div>
-  </main>
+  </div>
 </Layout>

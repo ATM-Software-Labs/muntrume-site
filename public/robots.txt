@@ -8,5 +8,7 @@ Disallow: /login
 Disallow: /login/
 Disallow: /paddock/sala
 Disallow: /paddock/sala/
+Disallow: /app/vincular
+Disallow: /app/vincular/
 
 Sitemap: https://muntru.me/sitemap.xml

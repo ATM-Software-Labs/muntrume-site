@@ -12,6 +12,9 @@
   function getPreferredTheme() {
     const saved = localStorage.getItem('muntrume_theme') || localStorage.getItem('theme');
     if (saved === 'dark' || saved === 'light') return saved;
+    try {
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) return 'light';
+    } catch (e) {}
     return 'dark';
   }
 
@@ -40,6 +43,7 @@
     // Set both HTML and Body attributes & Tailwind compatibility classes
     document.documentElement.setAttribute('data-theme', theme);
     document.documentElement.classList.toggle('dark', isDark);
+    document.documentElement.classList.toggle('light', !isDark);
     if (document.body) {
       document.body.setAttribute('data-theme', theme);
       document.body.classList.toggle('dark', isDark);

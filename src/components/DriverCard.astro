@@ -10,8 +10,9 @@ interface Props {
   headingId?: string;
   hero?: boolean;
   profileHref?: string;
+  eagerHelmet?: boolean;
 }
-const { driver, heading = "h2", headingId, hero = false, profileHref = `/drivers/${driver.slug}/` } = Astro.props;
+const { driver, heading = "h2", headingId, hero = false, profileHref = `/drivers/${driver.slug}/`, eagerHelmet = false } = Astro.props;
 const Tag = heading;
 const BlockTag = hero ? "h2" : "h3";
 const lic = licenciaPrincipal(driver.slug);
@@ -318,7 +319,7 @@ const socials = (
       <!-- OVERVIEW GRID CARD (!hero): Equal Height Flex Column with Bottom-Aligned CTA -->
       <div class="d-stage" data-team={driver.slug}>
         <span class="d-stage-dorsal" aria-label={`Official Number ${driver.dorsal}`}>{driver.dorsal}</span>
-        <DriverHelmet slug={driver.slug} name={driver.fullName} eager={false} />
+        <DriverHelmet slug={driver.slug} name={driver.fullName} eager={eagerHelmet} />
       </div>
 
       <div class="d-card__body">

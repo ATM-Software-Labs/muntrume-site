@@ -45,6 +45,7 @@ const png = `/img/helmets/${chosen}.png`;
     width={dim.w}
     height={dim.h}
     loading={eager ? "eager" : "lazy"}
+    fetchpriority={eager ? "high" : "auto"}
     decoding="async"
   />
 </picture>

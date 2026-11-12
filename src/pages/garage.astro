@@ -1,1146 +1,259 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import PrivateAreaHeader from '../components/PrivateAreaHeader.astro';
-import SetupGroup from '../components/garage/SetupGroup.astro';
-import catalog from '../../public/assets/data/catalog_index.json';
-import { catalogGroups } from '../lib/garage-catalog';
-import { PILOTOS } from '../lib/pilotos';
+import Layout from "../layouts/Layout.astro";
+import catalog from "../../public/assets/data/catalog_index.json";
+import { carOptions, previewSetups } from "../lib/garage-catalog";
 
 const pageTitle = "Garage de setups iRacing | Muntrume Motorsport";
-const pageDescription = "Archivos .sto de Muntrume Motorsport para iRacing, ordenados por coche, circuito y temporada. La descarga queda tras iniciar sesión.";
+const pageDescription = "Archivos .sto de Muntrume Motorsport para iRacing, por coche y circuito. La descarga queda tras iniciar sesión.";
 const pageUrl = "https://muntru.me/garage/";
 const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
-const PAGE = 6;
-let seen = 0;
-const garageGroups = catalogGroups().map((group) => {
-  const setups = group.setups.map((item) => {
-    const hidden = seen >= PAGE;
-    seen += 1;
-    return { ...item, hidden };
-  });
-  return {
-    ...group,
-    setups,
-    hidden: setups.every((item) => item.hidden),
-    open: setups.some((item) => !item.hidden),
-  };
-});
-const pageKeywords = "best iracing setups, iracing setups, free iracing setups 2026, gt3 setups iracing, gtp setups, nurburgring setup iracing, download sto setups, garage 61 setups, setup vault, mejores setups para iracing, setups iracing gratis, telemetria iracing, coach dave alternative, vrs alternative, craigs setup shop alternative";
-const fmt = (n: number) => n.toLocaleString('es-ES');
-const figs = [
-  { n: fmt(catalog.total_setups), l: "Setups en el catálogo" },
-  { n: String(catalog.cars.length), l: "Coches" },
-  { n: String(catalog.circuits.length), l: "Circuitos" },
-  { n: String(PILOTOS.length), l: "Pilotos oficiales" },
-];
+const cars = carOptions();
+const preview = previewSetups(20);
+const labels = Object.fromEntries(cars.map((item) => [item.id, item.label]));
+const kindLabel = { race: "Carrera", qualy: "Clasificación", wet: "Lluvia", endurance: "Resistencia" } as const;
+const kb = (n: number) =>
+  Number.isFinite(n) && n > 0
+    ? `${n.toLocaleString("es-ES", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} KB`
+    : "—";
 
 const garageSchema = {
   "@context": "https://schema.org",
   "@graph": [
     {
-      "@type": "Organization",
-      "@id": "https://muntru.me/#org",
-      "name": "Muntrume Motorsport",
-      "url": "https://muntru.me/",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://muntru.me/assets/img/icon-512.png"
-      }
-    },
-    {
       "@type": "WebPage",
       "@id": `${pageUrl}#webpage`,
-      "url": pageUrl,
-      "name": pageTitle,
-      "description": pageDescription,
-      "inLanguage": "es",
-      "isPartOf": { "@type": "WebSite", "name": "Muntrume Motorsport", "url": "https://muntru.me/" },
-      "about": { "@id": "https://muntru.me/#org" },
-      "primaryImageOfPage": ogImage
+      url: pageUrl,
+      name: pageTitle,
+      description: pageDescription,
+      inLanguage: "es",
+      isPartOf: { "@id": "https://muntru.me/#website" },
+      about: { "@id": "https://muntru.me/#org" },
+      primaryImageOfPage: ogImage,
     },
     {
       "@type": "CollectionPage",
       "@id": `${pageUrl}#collection`,
-      "url": pageUrl,
-      "name": "Catálogo de setups .sto",
-      "description": pageDescription,
-      "isPartOf": { "@id": `${pageUrl}#webpage` },
-      "publisher": { "@id": "https://muntru.me/#org" },
-      "numberOfItems": catalog.total_setups
-    },
-    {
-      "@type": "SoftwareApplication",
-      "@id": "https://muntru.me/garage/#app",
-      "name": "Muntrume iRacing Setup Vault & Telemetry Hub",
-      "applicationCategory": "GameApplication",
-      "operatingSystem": "Windows 10, Windows 11",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "EUR",
-        "availability": "https://schema.org/InStock"
-      },
-      "description": "Official iRacing Setup Vault & Telemetry Hub featuring +42,600 verified .STO files for 105 cars (2026 Season 4). BoP legal, 0 Failed Tech, 60 Hz telemetry, and Garage 61 sync. Catálogo y optimizador de setups para iRacing."
-    },
-    {
-      "@type": "Dataset",
-      "@id": "https://muntru.me/garage/#dataset",
-      "name": "Official iRacing Setups Catalog 2026 (Muntrume Motorsport) · Catálogo Oficial de Setups iRacing",
-      "description": "Telemetry-verified database of 42,654 .STO setup configurations optimized for 105 iRacing cars across GT3, GTP, LMP2, and Cup series. Base de datos telemétrica de configuraciones .STO.",
-      "license": "https://muntru.me/legal",
-      "isAccessibleForFree": true,
-      "creator": {
-        "@type": "Organization",
-        "name": "Muntrume Motorsport",
-        "url": "https://muntru.me"
-      }
+      url: pageUrl,
+      name: "Catálogo de setups .sto",
+      description: pageDescription,
+      isPartOf: { "@id": `${pageUrl}#webpage` },
+      numberOfItems: catalog.total_setups,
     },
     {
       "@type": "BreadcrumbList",
-      "@id": "https://muntru.me/garage/#breadcrumbs",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Home / Inicio",
-          "item": "https://muntru.me/"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "Best iRacing Setups / Mejores Setups iRacing",
-          "item": "https://muntru.me/garage"
-        }
-      ]
+      "@id": `${pageUrl}#breadcrumb`,
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Inicio", item: "https://muntru.me/" },
+        { "@type": "ListItem", position: 2, name: "Garage", item: pageUrl },
+      ],
     },
-    {
-      "@type": "FAQPage",
-      "@id": "https://muntru.me/garage/#faq",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "Where can I download the best iRacing setups for 2026? / ¿Dónde descargar los mejores setups para iRacing en 2026?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "In the Muntrume Motorsport Setup Vault (muntru.me/garage), you can access over 42,600 updated .STO setups for 2026 Season 4 with 0 Failed Tech, 60 Hz telemetry benchmarks, and Garage 61 integration. En el Setup Vault de Muntrume dispones de más de 42,600 setups verificados."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "How do I install a .sto setup file in iRacing? / ¿Cómo instalar un archivo de setup .sto en iRacing?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Copy the downloaded .sto file into your computer's folder 'Documents\\iRacing\\setups\\[car_name]\\'. In your iRacing session, open the Garage menu, select 'My Setups', and load the file. Copia el archivo .sto en Documentos\\iRacing\\setups\\[nombre_del_coche]\\ y cárgalo en My Setups."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "What is the difference between Esport [E], Normal, and Safe [S] modes? / ¿Qué diferencia hay entre los modos Esport [E], Normal y Safe [S]?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Esport [E] mode is calibrated for qualifying and pro drivers with minimal aerodynamic drag and reactive differential. Normal mode provides balanced race pace with hot tire pressures stabilized at ~170 kPa. Safe [S] mode delivers maximum stability, anti-bottoming ride heights, and high curb tolerance to prevent spins."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Are Muntrume setups legal for iRacing technical inspection? / ¿Son legales los setups de Muntrume ante la inspección técnica de iRacing?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes, 100% of Muntrume setups pass technical scrutiny (Pass Tech BoP) with 0 Failed Tech, strictly adhering to mandatory minimum pressures (152 kPa GTP / 159 kPa GT3) and minimum ride heights of 70.0 mm at Nürburgring Nordschleife."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "How does telemetry synchronization with Garage 61 work? / ¿Cómo se sincroniza la telemetría con Garage 61?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "When driving in iRacing with the Garage 61 agent running in the background, your laps and telemetry channels (braking, throttle, ride heights, tire temps) automatically synchronize with the Muntrume Motorsport team at garage61.net/app/teams/muntrume-motorsport."
-          }
-        }
-      ]
-    }
-  ]
+  ],
 };
 ---
 
-<Layout title={pageTitle} description={pageDescription} keywords={pageKeywords} canonical={pageUrl} ogImage={ogImage} ogImageAlt="Garage de setups de Muntrume Motorsport" ogImageWidth={1200} ogImageHeight={630} ogLocale="es_ES" ogType="website" schemaJson={garageSchema}>
-  <section class="r-section g-hero" aria-labelledby="garageTitle" data-no-i18n>
-    <div class="r-wrap">
-      <PrivateAreaHeader activeTab="setups" />
-      <p class="r-kicker">Setup Vault · Muntrume Motorsport</p>
-      <h1 id="garageTitle" class="r-h2">Garage</h1>
-      <p class="r-lead">Setups .sto por coche, circuito y temporada. Hace falta cuenta de piloto para descargarlos.</p>
-      <div class="g-actions" id="garageHeroActions">
-        <button type="button" id="heroAuthBtn" data-driver-signin-btn class="r-btn r-btn--primary g-actions__primary" onclick="openAuthModal('login')">Inicia sesión</button>
-        <div id="heroSessionPill" class="g-actions__primary hidden items-center gap-2.5 px-4 py-2.5 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] text-xs font-mono text-[var(--r-text)]">
-          <span class="w-2 h-2 rounded-full bg-[var(--r-accent)] shrink-0"></span>
-          <span id="heroSessionIdentity" class="font-bold text-[var(--r-accent)]">atrumin16</span>
-          <span class="text-[var(--r-muted)]">·</span>
-          <span id="heroSessionName">Alberto Trujillo (#16)</span>
-        </div>
-        <div class="g-actions__row">
-          <a id="heroRaceControlBtn" href="/admin" class="r-btn r-btn--primary hidden">Control de carrera</a>
-          <a href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer" class="r-btn">Telemetría Garage 61 ↗</a>
-        </div>
-      </div>
-      <div class="r-figs">
-        {figs.map((f) => (<div><strong class="r-num">{f.n}</strong>{f.l}</div>))}
-      </div>
-    </div>
-  </section>
+<Layout
+  title={pageTitle}
+  description={pageDescription}
+  canonical={pageUrl}
+  ogImage={ogImage}
+  ogImageAlt="Garage de setups de Muntrume Motorsport"
+  ogImageWidth={1200}
+  ogImageHeight={630}
+  ogLocale="es_ES"
+  schemaJson={garageSchema}
+>
+  <section class="g2" aria-labelledby="garageTitle" data-no-i18n>
+    <div class="r-wrap g2-wrap">
+      <header class="g2-head">
+        <p class="r-kicker">Setups .sto</p>
+        <h1 id="garageTitle" class="r-h2">Garage</h1>
+        <p class="r-lead">{catalog.total_setups.toLocaleString("es-ES")} archivos en el catálogo. La descarga pide sesión de piloto: el navegador no genera el .sto.</p>
+      </header>
 
-  <section class="r-section" id="mmt-sync" data-no-i18n style="padding-top:28px">
-    <div class="r-wrap">
-      <article class="grid gap-4 rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-5 sm:p-6">
+      <article class="g2-sync">
         <div>
-          <p class="r-kicker">Aplicación de escritorio</p>
-          <h2 class="r-h3" style="margin-top:12px">MMT Sync para Windows</h2>
-          <p class="r-lead" style="margin-top:12px">Copia los setups del equipo a tu carpeta de iRacing, dentro de <span class="font-mono">coche\MMT\temporada</span>. No toca el resto de archivos.</p>
+          <h2 class="r-h3">MMT Sync</h2>
+          <p>Windows · v0.1.26. Copia los setups a la carpeta de iRacing.</p>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-px overflow-hidden rounded-xl border border-[var(--r-line)] bg-[var(--r-line)]">
-          <div class="bg-[var(--r-bg)] px-3.5 py-3 grid gap-1"><span class="font-mono text-[11px] uppercase tracking-wider text-[var(--r-muted)]">Versión</span><strong id="mmtSyncVersion" class="text-sm text-[var(--r-text)]">Pendiente de la primera release</strong></div>
-          <div class="bg-[var(--r-bg)] px-3.5 py-3 grid gap-1"><span class="font-mono text-[11px] uppercase tracking-wider text-[var(--r-muted)]">Tamaño</span><strong id="mmtSyncSize" class="text-sm text-[var(--r-text)]">Se publica con el instalador</strong></div>
-          <div class="bg-[var(--r-bg)] px-3.5 py-3 grid gap-1"><span class="font-mono text-[11px] uppercase tracking-wider text-[var(--r-muted)]">Sistema</span><strong class="text-sm text-[var(--r-text)]">Windows 10 y Windows 11, 64 bits</strong></div>
-        </div>
-        <div class="flex flex-wrap items-center gap-4">
-          <a class="r-btn r-btn--primary" id="mmtSyncDownload" href="https://github.com/atrumin16/muntrume-site/releases/latest" target="_blank" rel="noopener noreferrer">Descargar MMT Sync para Windows</a>
+        <div class="g2-sync__actions">
+          <a class="r-btn r-btn--primary" href="https://github.com/atrumin16/muntrume-site/releases/latest" target="_blank" rel="noopener noreferrer">Descargar</a>
           <a class="r-link" href="/app/">Qué es MMT Sync</a>
         </div>
-        <p class="m-0 rounded-xl border border-[var(--r-line)] bg-[var(--r-bg)] px-3.5 py-3 text-sm leading-relaxed text-[var(--r-text)]">Windows SmartScreen puede mostrar «editor desconocido» porque la aplicación todavía no está firmada con un certificado. Para continuar: Más información → Ejecutar de todas formas.</p>
       </article>
+
+      <form class="g2-bar" id="garageFilters" role="search">
+        <label>
+          Buscar
+          <input id="garageSearch" type="search" placeholder="Coche o circuito" autocomplete="off" />
+        </label>
+        <label>
+          Coche
+          <select id="garageCar">
+            <option value="">Todos (índice)</option>
+            {cars.map((item) => <option value={item.id}>{item.label}</option>)}
+          </select>
+        </label>
+        <label>
+          Tipo
+          <select id="garageType">
+            <option value="">Todos</option>
+            <option value="race">Carrera</option>
+            <option value="qualy">Clasificación</option>
+            <option value="wet">Lluvia</option>
+            <option value="endurance">Resistencia</option>
+          </select>
+        </label>
+      </form>
+
+      <p id="garageStatus" class="g2-status" role="status" data-state="ready">Índice del catálogo. Elige un coche para ver sus archivos.</p>
+      <div class="g2-scroll">
+        <table class="g2-table">
+          <caption class="sr-only">Setups del garage</caption>
+          <thead>
+            <tr>
+              <th scope="col">Coche</th>
+              <th scope="col">Circuito</th>
+              <th scope="col">Tipo</th>
+              <th scope="col">Tamaño</th>
+              <th scope="col"><span class="sr-only">Descarga</span></th>
+            </tr>
+          </thead>
+          <tbody id="garageList">
+            {preview.map((item) => (
+              <tr>
+                <td>{item.carLabel}</td>
+                <td>{item.track}</td>
+                <td>{kindLabel[item.kind]}</td>
+                <td>{kb(item.sizeKb)}</td>
+                <td>
+                  <button type="button" class="g2-dl" data-download data-id={item.id} data-file={item.file} data-auth="pending">Inicia sesión</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <button type="button" id="garageMore" class="r-btn">Cargar más</button>
+      <script type="application/json" id="garageMeta" set:html={JSON.stringify({ labels, total: catalog.total_setups })}></script>
     </div>
   </section>
 
-  <section class="r-section" id="catalogo-v2" aria-labelledby="v2Title" data-no-i18n>
-    <div class="r-wrap" style="display:grid;gap:16px">
-      <div>
-        <p class="r-kicker">Catálogo</p>
-        <h2 id="v2Title" class="r-h3">Setups por circuito</h2>
-        <p class="r-meta">Descarga con sesión de piloto.</p>
-      </div>
-      <div id="garageV2List" data-page-list>
-        {garageGroups.map((group) => (
-          <SetupGroup
-            track={group.track}
-            carLabel={group.carLabel}
-            season={group.season}
-            week={group.week}
-            counts={group.counts}
-            setups={group.setups}
-            hidden={group.hidden}
-            open={group.open}
-          />
-        ))}
-      </div>
-      <button type="button" id="garageV2More" class="r-btn focus-ring" hidden={seen <= PAGE}>Cargar más</button>
-    </div>
-  </section>
-
-  <section class="r-section r-section--alt" aria-labelledby="saveTitle">
-    <div class="r-wrap" style="display:grid;gap:var(--r-s4)">
-      <div class="g-panel g-save" id="fsSavePanel">
-        <div class="g-save__row">
-          <div>
-            <p class="r-kicker">Guardado</p>
-            <h2 id="saveTitle" class="r-h3">Carpeta de iRacing</h2>
-          </div>
-          <button type="button" id="linkFolderBtn" class="r-btn r-btn--primary r-btn--sm" onclick="toggleLinkDirectory()">
-            <span id="linkFolderText">Vincular carpeta de iRacing</span>
-          </button>
-        </div>
-        <p id="metricDirectStatus" class="g-status">Sin carpeta vinculada</p>
-        <p class="r-meta" style="margin:0">Si vinculas una carpeta, el archivo se escribe en tu ordenador. Muntrume no lo recibe.</p>
-
-        <!-- Banner Inteligente Cyberpunk / Dark Mode para Navegadores Restrictivos (Brave) -->
-        <div id="fsAccessNotice" class="p-4 rounded-xl bg-[#080C0A] border border-[#1E2A26] border-l-4 border-l-[#00ff88] shadow-[0_10px_30px_rgba(0,0,0,0.6)] space-y-3" role="alert" hidden>
-          <div class="flex items-start justify-between gap-3">
-            <div class="flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-[#00ff88] animate-ping" aria-hidden="true"></span>
-              <span class="text-[11px] font-mono uppercase font-bold text-[#00ff88] tracking-wider">COMPATIBILIDAD DE NAVEGADOR · BRAVE / RESTRICTIVO</span>
-            </div>
-            <button type="button" id="fsNoticeDismiss" class="text-neutral-400 hover:text-white p-1 text-sm font-mono cursor-pointer transition" onclick="dismissFsAccessNotice()" aria-label="Cerrar aviso">✕</button>
-          </div>
-          <div class="space-y-2 text-xs">
-            <p class="font-bold text-white text-sm" id="fsNoticeTitle">Guardado en carpeta local no disponible directamente</p>
-            <div id="fsNoticeOther">
-              <p class="text-neutral-400 leading-relaxed">Tu navegador actual no permite que las webs escriban directamente en carpetas del disco. Puedes <strong>descargar los setups de forma tradicional (.sto)</strong> en 1 clic o abrir el Setup Vault en Google Chrome o Microsoft Edge.</p>
-            </div>
-            <div id="fsNoticeBrave" hidden class="space-y-2.5">
-              <p class="text-neutral-300 leading-relaxed">Brave desactiva por defecto la <em>File System Access API</em> por privacidad. Puedes activarla en 10 segundos o continuar con la descarga clásica:</p>
-              <div class="p-2.5 rounded-lg bg-[#0E1513] border border-[#1E2A26] flex flex-wrap items-center justify-between gap-2 font-mono text-[11px]">
-                <code class="text-[#00ff88] select-all">brave://flags/#file-system-access-api</code>
-                <div class="relative inline-block">
-                  <button type="button" id="copyFlagsBtn" onclick="copyBraveFlagUrlWithTooltip(this)" class="r-btn r-btn--sm" style="border-color:#00E699;color:#00E699;min-height:34px;padding:0 12px">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;flex-shrink:0"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                    <span>Copiar ruta de flags</span>
-                  </button>
-                  <span id="flagsTooltip" class="hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1 text-[10px] font-mono font-bold bg-[#00ff88] text-neutral-950 rounded shadow-md whitespace-nowrap animate-bounce">
-                    ✓ ¡Copiado al portapapeles!
-                  </span>
-                </div>
-              </div>
-              <p class="text-[11px] text-neutral-400">Pega la ruta en una pestaña de Brave, pon la flag en <strong>Enabled</strong>, pulsa <strong>Relaunch</strong> y recarga.</p>
-            </div>
-          </div>
-          <div class="pt-2 flex flex-wrap gap-2 items-center">
-            <button type="button" class="r-btn r-btn--sm r-btn--primary" onclick="openFallbackDownloadModal()">Descarga tradicional directa</button>
-            <button type="button" class="r-btn r-btn--sm" style="border-color:var(--r-line);color:var(--r-text)" onclick="copyVaultUrlForChrome()">Copiar enlace para Chrome / Edge</button>
-          </div>
-        </div>
-
-        <div id="savedFolderReconnectBanner" class="m-notice m-notice--inline m-notice--info hidden" role="status">
-          <span class="m-notice__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 8h.01"/></svg>
-          </span>
-          <div class="m-notice__body">
-            <p class="m-notice__title">Permiso de carpeta</p>
-            <p class="m-notice__msg">Vuelve a permitir esta carpeta.</p>
-            <p class="m-notice__msg" id="savedFolderNameLabel" data-no-i18n></p>
-          </div>
-          <button type="button" class="r-btn r-btn--sm" onclick="reconnectSavedDirectory()">Permitir</button>
-        </div>
-      </div>
-
-      <div>
-        <div class="r-head" style="margin-bottom:var(--r-s3)">
-          <div>
-            <p class="r-kicker">Método</p>
-            <h2 class="r-h3">Cómo se guarda</h2>
-          </div>
-        </div>
-        <ol class="g-steps">
-          <li>
-            <span>01</span>
-            <h3 class="r-h3">Vincular la carpeta</h3>
-            <p>Una vez, si el navegador lo permite: la carpeta de setups de iRacing, con permiso de lectura y escritura.</p>
-          </li>
-          <li>
-            <span>02</span>
-            <h3 class="r-h3">Elegir el setup</h3>
-            <p>Filtra por coche, circuito y temporada. Clasificación, carrera o lluvia.</p>
-          </li>
-          <li>
-            <span>03</span>
-            <h3 class="r-h3">Guardar o descargar</h3>
-            <p>Con la carpeta vinculada, el archivo entra en la ruta del coche. Si no, se descarga el .sto.</p>
-          </li>
-        </ol>
-      </div>
-    </div>
-  </section>
-
-  <section class="r-section" aria-labelledby="vaultTitle">
-    <div class="r-wrap" style="display:grid;gap:var(--r-s3)">
-      <div class="g-toolbar">
-        <div class="g-tabs" id="garageTabs" role="tablist" aria-label="Garage Sections">
-          <button type="button" role="tab" aria-selected="true" aria-controls="garageSectionSetups" id="tabBtnSetups" class="is-on" onclick="switchGarageTab('setups')">Setups</button>
-          <button type="button" role="tab" aria-selected="false" aria-controls="garageSectionTelemetry" id="tabBtnTelemetry" onclick="switchGarageTab('telemetry')">Telemetry</button>
-          <button type="button" role="tab" aria-selected="false" aria-controls="garageSectionComms" id="tabBtnComms" onclick="switchGarageTab('comms')">Communications</button>
-          <button type="button" role="tab" aria-selected="false" aria-controls="garageSectionBuilder" id="tabBtnBuilder" onclick="switchGarageTab('builder')">Setup Builder</button>
-        </div>
-        <div class="g-session" id="garageSessionToolbar">
-          <span id="userEmailDisplay" class="font-mono text-xs font-semibold">Guest</span>
-          <span id="userRoleBadge" class="g-badge">Catalog</span>
-          <a id="adminPanelBtn" href="/admin" class="r-btn r-btn--primary r-btn--sm hidden" style="box-shadow:0 0 18px rgba(0,230,153,.28)">RACE CONTROL</a>
-          <button type="button" id="logoutBtn" class="r-link hidden" onclick="handleLogout()">Log out</button>
-          <button type="button" id="authGateOpenBtn" data-driver-signin-btn class="r-btn r-btn--primary r-btn--sm" onclick="openAuthModal('login')">Driver Sign In</button>
-        </div>
-      </div>
-
-      <div id="garageSectionSetups" role="tabpanel" aria-labelledby="tabBtnSetups" style="display:grid;gap:16px">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-          <h2 id="vaultTitle" class="r-h3" style="margin:0">Catálogo Oficial MMT</h2>
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--r-surface)] border border-[var(--r-accent)] text-[11px] font-mono text-[var(--r-accent)] font-bold">
-            <span class="w-2 h-2 rounded-full bg-[var(--r-accent)]"></span>
-            <span>BOP 26S4 VERIFIED · PASS TECH (0 FAILED TECH)</span>
-          </div>
-        </div>
-
-        <!-- Muro de Autenticación para Invitados / No autenticados -->
-        <div id="vaultAuthGateWall" class="p-8 sm:p-12 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] text-center space-y-5 my-2 shadow-sm">
-          <div class="w-14 h-14 mx-auto rounded-2xl bg-[var(--r-bg-2)] border border-[var(--r-line)] flex items-center justify-center text-[var(--r-accent)] shadow-xs">
-            <svg class="w-7 h-7 fill-none stroke-current" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-          </div>
-          <div class="max-w-md mx-auto space-y-2">
-            <h3 class="text-xl sm:text-2xl font-extrabold text-[var(--r-text)] font-display uppercase tracking-tight">Acceso Privado para Pilotos</h3>
-            <p class="text-xs sm:text-sm text-[var(--r-muted)] leading-relaxed">
-              El Setup Vault de Muntrume Motorsport y los paquetes semanales de la NEC están reservados a miembros autenticados. Inicia sesión con tu cuenta de piloto para ver y descargar setups (.STO).
-            </p>
-          </div>
-          <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
-            <button type="button" class="r-btn r-btn--primary" onclick="openAuthModal('login')">Iniciar Sesión de Piloto</button>
-            <button type="button" class="r-btn" onclick="openAuthModal('join')">Solicitar Ingreso al Equipo</button>
-          </div>
-        </div>
-
-        <!-- Contenido Completo del Catálogo (Solo para pilotos autenticados) -->
-        <div id="vaultSetupsContent" class="hidden space-y-4">
-        <!-- Apartado Dedicado NEC (Nürburgring Combined Gesamtstrecke VLN) + Guía Oficial Nomenclatura MMT -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div class="g-panel" style="padding:18px;border-left:3px solid var(--r-accent)">
-            <div class="flex flex-wrap items-start justify-between gap-2 mb-2">
-              <div>
-                <p class="r-kicker" style="margin:0">Especial Nordschleife · Semanal W01–W13</p>
-                <h3 class="r-h3" style="font-size:1.08rem;margin:2px 0 0">🏁 NEC · Nürburgring Combined Gesamtstrecke VLN</h3>
-              </div>
-              <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="filterNecSetups()">Ver Setups NEC (VLN) →</button>
-            </div>
-            <p class="r-meta" style="margin:0 0 10px;line-height:1.5">
-              Packs semanales (<code>W01</code> a <code>W13</code>) para las clases oficiales de la <strong>Nürburgring Endurance Championship (NEC)</strong>: GT3 (<code>F296, P911, M4, AMG, R8, LAMBO, MACLA, Z06, MUST, AMR</code>), Porsche Cup (<code>P911</code>), GT4 (<code>PORS, M4, AMG, AMR, MACLA</code>), TCR (<code>RS3, HYUN, CIVIC</code>), <code>GR86</code> y <code>MX5</code>. Calibrados con altura estática <strong>&ge; 70.5 mm</strong> para superar el escrutinio técnico del Nordschleife sin <em>Failed Tech</em>.
-            </p>
-            <div class="flex flex-wrap gap-1.5">
-              <button type="button" class="r-btn r-btn--sm" style="min-height:28px;padding:0 10px;font-size:11px" onclick="filterNecSetups('W01')">NEC W01</button>
-              <button type="button" class="r-btn r-btn--sm" style="min-height:28px;padding:0 10px;font-size:11px" onclick="filterNecSetups('W02')">NEC W02</button>
-              <button type="button" class="r-btn r-btn--sm" style="min-height:28px;padding:0 10px;font-size:11px" onclick="filterNecSetups('W03')">NEC W03</button>
-              <button type="button" class="r-btn r-btn--sm" style="min-height:28px;padding:0 10px;font-size:11px" onclick="filterNecSetups('W04')">NEC W04</button>
-              <button type="button" class="r-btn r-btn--sm" style="min-height:28px;padding:0 10px;font-size:11px" onclick="filterNecSetups('W05')">NEC W05</button>
-              <button type="button" class="r-btn r-btn--sm" style="min-height:28px;padding:0 10px;font-size:11px" onclick="filterNecSetups('W06')">NEC W06</button>
-              <button type="button" class="r-btn r-btn--sm" style="min-height:28px;padding:0 10px;font-size:11px" onclick="filterNecSetups('W07')">NEC W07</button>
-              <button type="button" class="r-btn r-btn--sm" style="min-height:28px;padding:0 10px;font-size:11px" onclick="filterNecSetups('W08')">NEC W08</button>
-              <button type="button" class="r-btn r-btn--sm" style="min-height:28px;padding:0 10px;font-size:11px" onclick="filterNecSetups('')">Todas (W01–W13)</button>
-            </div>
-          </div>
-
-          <details class="g-panel" style="padding:18px">
-            <summary class="cursor-pointer font-bold text-sm flex items-center justify-between gap-2" style="list-style:none">
-              <div>
-                <p class="r-kicker" style="margin:0">Estándar Oficial del Equipo</p>
-                <span class="r-h3" style="font-size:1.08rem">📋 Guía de Nomenclatura MMT &amp; Escrutinio BoP</span>
-              </div>
-              <span class="font-mono text-xs text-[var(--r-accent)]">MMT_[MODELO]_[CIRCUITO]_[SESIÓN] ▾</span>
-            </summary>
-            <div class="mt-3 pt-3 border-t border-[var(--r-line)] text-xs space-y-2.5">
-              <p class="font-mono text-[11px] p-2 rounded bg-[var(--r-bg-2)] border border-[var(--r-line)] text-[var(--r-accent)]">
-                MMT_[MODELO]_[CIRCUITO]_[SESIÓN]_[VERSIÓN_OPCIONAL].sto
-              </p>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
-                <div>
-                  <strong class="block text-[var(--r-text)] mb-1">Nomenclatura y Modificadores:</strong>
-                  <ul class="space-y-0.5 text-[var(--r-muted)] font-mono">
-                    <li><strong class="text-[var(--r-accent)]">Q / Q2</strong> → Quali 1 vuelta / 2 vueltas</li>
-                    <li><strong class="text-[var(--r-accent)]">R</strong> → Race estándar / Sprint</li>
-                    <li><strong class="text-[var(--r-accent)]">END</strong> → Endurance / Especiales</li>
-                    <li><strong class="text-[var(--r-accent)]">W</strong> → Wet (Lluvia)</li>
-                    <li><strong class="text-red-400 font-bold">_E</strong> → Modificador Esport (Nivel Pro / Superagresivo)</li>
-                    <li><strong class="text-amber-400 font-bold">(sin letra)</strong> → Normal (Piloto Avanzado / Mejor ratio)</li>
-                    <li><strong class="text-emerald-400 font-bold">_S</strong> → Modificador Safe (Principiante / Máxima estabilidad)</li>
-                    <li><strong class="text-[var(--r-accent)]">V2, V3</strong> → Versión / Revisión BoP</li>
-                  </ul>
-                </div>
-                <div>
-                  <strong class="block text-[var(--r-text)] mb-1">Abreviaturas de Modelos MMT:</strong>
-                  <ul class="space-y-0.5 text-[var(--r-muted)] font-mono">
-                    <li><strong class="text-[var(--r-text)]">AMR / VALK</strong> · Aston Martin / Valkyrie</li>
-                    <li><strong class="text-[var(--r-text)]">F296 / F499P</strong> · Ferrari GT3 / GTP</li>
-                    <li><strong class="text-[var(--r-text)]">P911 / PORS / P963</strong> · Porsche GT3 / GTP</li>
-                    <li><strong class="text-[var(--r-text)]">M4 / BMWH</strong> · BMW M4 GT3 / GTP</li>
-                    <li><strong class="text-[var(--r-text)]">CADDY / Z06 / CHEVY</strong> · Cadillac / Corvette</li>
-                    <li><strong class="text-[var(--r-text)]">HUR / LAMBO / MACLA</strong> · Lambo / McLaren</li>
-                    <li><strong class="text-[var(--r-text)]">AMG / R8 / ACURA</strong> · Mercedes / Audi / Acura</li>
-                    <li><strong class="text-[var(--r-text)]">SF23, F3, F4, FF1600, MX5</strong> · Escuela / Open</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </details>
-        </div>
-
-        <div class="g-pills" aria-label="Categoría">
-          <button type="button" id="catPill-all" class="mmt-cat-pill is-on" onclick="selectMmtCategory('all')">Todas</button>
-          <button type="button" id="catPill-nec" class="mmt-cat-pill" onclick="selectMmtCategory('nec')">🏁 NEC · Nürburgring VLN</button>
-          <button type="button" id="catPill-gtp" class="mmt-cat-pill" onclick="selectMmtCategory('gtp')">GTP</button>
-          <button type="button" id="catPill-gt3" class="mmt-cat-pill" onclick="selectMmtCategory('gt3')">GT3</button>
-          <button type="button" id="catPill-gt4" class="mmt-cat-pill" onclick="selectMmtCategory('gt4')">GT4</button>
-          <button type="button" id="catPill-formulas" class="mmt-cat-pill" onclick="selectMmtCategory('formulas')">Fórmulas</button>
-          <button type="button" id="catPill-cup" class="mmt-cat-pill" onclick="selectMmtCategory('cup')">Cup</button>
-          <button type="button" id="catPill-mx5" class="mmt-cat-pill" onclick="selectMmtCategory('mx5')">MX-5</button>
-        </div>
-        <div class="g-filters">
-          <div class="g-field">
-            <label for="carSelect">Coche</label>
-            <select id="carSelect" onchange="onFilterChange()"><option value="">Todos los coches</option></select>
-          </div>
-          <div class="g-field">
-            <label for="seasonSelect">Temporada</label>
-            <select id="seasonSelect" onchange="onFilterChange()"><option value="">Todas las temporadas</option></select>
-          </div>
-          <div class="g-field">
-            <label for="weekSelect">Semana</label>
-            <select id="weekSelect" onchange="onFilterChange()"><option value="">Todas las semanas</option></select>
-          </div>
-          <div class="g-field">
-            <label for="circuitSelect">Circuito</label>
-            <select id="circuitSelect" onchange="onFilterChange()"><option value="">Todos los circuitos</option></select>
-          </div>
-        </div>
-        <div class="g-toolbar">
-          <div class="g-search-wrap" style="flex:1;min-width:min(100%,220px)">
-            <label class="visually-hidden" for="searchInput" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Buscar setups</label>
-            <input id="searchInput" class="g-search" type="search" oninput="onSearchInput()" placeholder="Buscar por circuito, coche o tipo" />
-          </div>
-          <div class="g-field" style="min-width:160px">
-            <label for="setupSort">Orden</label>
-            <select id="setupSort" onchange="onFilterChange()">
-              <option value="season">Temporada</option>
-              <option value="circuit">Circuito</option>
-              <option value="car">Coche</option>
-              <option value="week">Semana</option>
-            </select>
-          </div>
-          <div class="g-views" aria-label="Tipo de sesión">
-            <button type="button" id="typeAll" class="is-on" onclick="setTypeFilter('')">Todos</button>
-            <button type="button" id="typeRace" onclick="setTypeFilter('Race')">Race / End</button>
-            <button type="button" id="typeQualy" onclick="setTypeFilter('Qualy')">Qualy</button>
-            <button type="button" id="typeWet" onclick="setTypeFilter('Wet')">Wet</button>
-          </div>
-          <div class="g-views" aria-label="Vista del catálogo">
-            <button type="button" id="viewModeFoldersBtn" class="is-on" onclick="setViewMode('folders')">Carpetas</button>
-            <button type="button" id="viewModeListBtn" onclick="setViewMode('list')">Lista</button>
-            <button type="button" id="viewModeFtpBtn" onclick="setViewMode('ftp')">Archivos</button>
-          </div>
-          <button type="button" id="toggleAllFoldersBtn" class="r-btn r-btn--sm" onclick="toggleAllFolderAccordions()"><span id="toggleAllFoldersText">Desplegar todo</span></button>
-          <button type="button" class="r-btn r-btn--sm" onclick="resetGarageFilters()" title="Restablecer todos los filtros">Limpiar filtros</button>
-        </div>
-        <div class="flex flex-wrap items-center justify-between gap-3 py-1">
-          <p class="r-meta" style="margin:0"><span id="visibleFoldersCount">0</span> carpetas · <span id="visibleSetupsCount">0</span> setups verificados BoP (<span id="selectedBatchCount">0</span> seleccionados)</p>
-          <div class="flex flex-wrap items-center gap-2">
-            <button type="button" id="downloadBatchBtn" class="r-btn r-btn--primary r-btn--sm" onclick="downloadAllVisibleSetups()">
-              <span id="downloadBatchBtnText">Descargar visibles (.sto)</span>
-            </button>
-          </div>
-        </div>
-        <div id="setupsContainer">
-          <p id="setupsLoading" class="r-empty">Pulsa «Ver catálogo» o entra con tu cuenta para cargar los setups.</p>
-          <div id="setupsGrid" class="g-setups"></div>
-          <p id="emptyState" class="r-empty hidden">Ningún setup coincide. Prueba otro coche, circuito o temporada.</p>
-          <div id="loadMoreContainer" class="hidden" style="text-align:center">
-            <button type="button" class="r-btn r-btn--sm" onclick="loadMoreFolders()"><span id="loadMoreBtnText">Mostrar más</span></button>
-          </div>
-        </div>
-        </div> <!-- /vaultSetupsContent -->
-      </div>
-
-      <div id="garageSectionTelemetry" class="hidden" role="tabpanel" aria-labelledby="tabBtnTelemetry" hidden>
-        <div class="g-panel">
-          <div class="g-panel__head">
-            <div>
-              <p class="r-kicker">60 Hz Data &amp; Laps</p>
-              <h2 class="r-h3">Garage 61 Official Team Telemetry</h2>
-            </div>
-            <a class="r-btn r-btn--primary r-btn--sm" href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer">Open Garage 61 Team Hub ↗</a>
-          </div>
-          <p>Official Muntrume Motorsport lap telemetry, sector deltas, and fuel data are hosted on Garage 61 (<code style="color:#00E699">garage61.net/app/teams/muntrume-motorsport</code>). Direct access is always guaranteed below, and you can optionally link your personal Garage 61 API token in this browser.</p>
-          <div class="g-actions">
-            <a class="r-btn r-btn--primary r-btn--sm" href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer">Launch Muntrume Motorsport on Garage 61 ↗</a>
-            <button type="button" class="r-btn r-btn--sm" onclick="configureG61TokenPrompt()">Configure Personal Garage 61 Token</button>
-          </div>
-        </div>
-      </div>
-
-      <div id="garageSectionComms" class="hidden" role="tabpanel" aria-labelledby="tabBtnComms" hidden>
-        <div class="g-panel">
-          <div class="g-panel__head">
-            <div>
-              <p class="r-kicker">Team HQ &amp; Mail</p>
-              <h2 class="r-h3">Communications &amp; Corporate Webmail</h2>
-            </div>
-            <a class="r-btn r-btn--primary r-btn--sm" href="https://mail.trujillomingorance.com" target="_blank" rel="noopener noreferrer">Corporate Webmail ↗</a>
-          </div>
-          <p>Endurance race briefings, stint strategy dispatches, and official corporate email (<code style="color:#00E699">mail.trujillomingorance.com</code>). The internal driver mailbox syncs automatically with your active Garage session.</p>
-          <div class="g-actions">
-            <a class="r-btn r-btn--primary r-btn--sm" href="https://mail.trujillomingorance.com" target="_blank" rel="noopener noreferrer">Open Corporate Webmail (mail.trujillomingorance.com) ↗</a>
-            <a class="r-btn r-btn--sm" href="/communications">Open Internal Driver Inbox →</a>
-            <button type="button" id="commsAuthBtn" data-driver-signin-btn class="r-btn r-btn--sm" onclick="openAuthModal('login')">Driver Sign In</button>
-          </div>
-        </div>
-      </div>
-
-      <div id="garageSectionBuilder" class="hidden" role="tabpanel" aria-labelledby="tabBtnBuilder" hidden>
-        <div class="g-panel" id="builderPanel">
-          <div class="g-panel__head">
-            <div>
-              <p class="r-kicker">Dynamic .STO Assembler</p>
-              <h2 class="r-h3" id="builderTitle">Setup Builder</h2>
-              <p>Select a vehicle and Road circuit from the catalog or type a custom combination across Qualy, Race, Wet, and Endurance sessions.</p>
-            </div>
-            <a class="r-link" href="/setup-builder">Open Full-Screen Builder →</a>
-          </div>
-          <div id="builderGate" data-driver-signin-btn>
-            <p class="r-meta">Sign in with your driver account to download assembled .sto packages.</p>
-            <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="openAuthModal('login')">Driver Sign In</button>
-          </div>
-          <form id="builderForm">
-            <div class="sb-grid">
-              <div class="sb-col">
-                <div class="sb-col__head">
-                  <span class="sb-col__step">01</span>
-                  <div>
-                    <h3 class="sb-col__title">Vehicle Selection</h3>
-                    <p class="sb-col__sub">Catalog dropdown or free-text model</p>
-                  </div>
-                </div>
-                <div class="g-field">
-                  <label for="builderCar">Catalog Car</label>
-                  <select id="builderCar"><option value="">Select car from catalog...</option></select>
-                </div>
-                <div class="g-field">
-                  <label for="builderCarText">Or type car name</label>
-                  <input id="builderCarText" type="text" autocomplete="off" placeholder="e.g. Ferrari 296 GT3, Mustang GT3" />
-                </div>
-              </div>
-              <div class="sb-col">
-                <div class="sb-col__head">
-                  <span class="sb-col__step">02</span>
-                  <div>
-                    <h3 class="sb-col__title">Road Circuit Selection</h3>
-                    <p class="sb-col__sub">Catalog dropdown or free-text track</p>
-                  </div>
-                </div>
-                <div class="g-field">
-                  <label for="builderTrack">Catalog Circuit</label>
-                  <select id="builderTrack"><option value="">Select circuit from catalog...</option></select>
-                </div>
-                <div class="g-field">
-                  <label for="builderTrackText">Or type circuit name</label>
-                  <input id="builderTrackText" type="text" autocomplete="off" placeholder="e.g. Spa-Francorchamps, Le Mans" />
-                </div>
-              </div>
-            </div>
-            <div class="sb-sessions-box">
-              <div class="sb-col__head" style="margin-bottom:10px">
-                <span class="sb-col__step">03</span>
-                <div>
-                  <h3 class="sb-col__title">Setup Session Types</h3>
-                  <p class="sb-col__sub">Select session configurations (Qualy, Race, Wet, Endurance)</p>
-                </div>
-              </div>
-              <div id="builderSessions" class="sb-sessions-grid" role="group" aria-label="Sessions">
-                <button type="button" class="g-chip sb-chip" data-session="qualy" aria-pressed="true">
-                  <span class="sb-chip__dot"></span>
-                  <span class="sb-chip__name">Qualy</span>
-                  <span class="sb-chip__meta">Low fuel · Peak grip</span>
-                </button>
-                <button type="button" class="g-chip sb-chip" data-session="race" aria-pressed="true">
-                  <span class="sb-chip__dot"></span>
-                  <span class="sb-chip__name">Race</span>
-                  <span class="sb-chip__meta">Full tank · Race pace</span>
-                </button>
-                <button type="button" class="g-chip sb-chip" data-session="wet" aria-pressed="false">
-                  <span class="sb-chip__dot"></span>
-                  <span class="sb-chip__name">Wet</span>
-                  <span class="sb-chip__meta">Rain tyres · Wet balance</span>
-                </button>
-                <button type="button" class="g-chip sb-chip" data-session="endurance" aria-pressed="false">
-                  <span class="sb-chip__dot"></span>
-                  <span class="sb-chip__name">Endurance</span>
-                  <span class="sb-chip__meta">Multi-stint · Tyre life</span>
-                </button>
-              </div>
-            </div>
-            <div class="g-actions">
-              <button type="submit" id="builderSubmit" class="r-btn r-btn--primary r-btn--sm">Build Setups →</button>
-              <button type="button" id="builderDownload" class="r-btn r-btn--sm" hidden>Download .STO</button>
-            </div>
-            <div id="builderAnswer" class="builder-md" hidden aria-live="polite"></div>
-            <div id="builderSources" class="builder-sources"></div>
-          </form>
-        </div>
-      </div>
-
-      <div id="vaultLanding" class="hidden"></div>
-      <div id="vaultDashboard" class="hidden"></div>
-    </div>
-  </section>
-
-  <section class="r-section r-section--alt" aria-labelledby="garageLegal">
-    <div class="r-wrap lg-wrap">
-      <p class="r-kicker">Uso de los setups</p>
-      <h2 id="garageLegal" class="r-h3">Propiedad y uso permitido</h2>
-      <div class="lg-body">
-        <p>Los archivos de setup (.sto) y la telemetría de este Garage son de Muntrume Motorsport. El acceso es personal e intransferible, solo para pilotos autorizados. No se pueden redistribuir sin autorización escrita.</p>
-        <p>Si el navegador escribe el archivo en una carpeta de tu ordenador, ese archivo no se sube a Muntrume. La descarga también se queda en tu equipo.</p>
-        <p class="g-links"><a class="r-link" href="/aviso-legal">Aviso legal</a><a class="r-link" href="/privacidad">Privacidad</a></p>
-        <p class="r-meta">Este texto es informativo y no constituye asesoramiento jurídico.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- SECCIÓN SEO AVANZADO: GUÍA DE MEJORES SETUPS IRACING 2026 & FAQ HUB -->
-  <section class="r-section bg-[var(--r-bg)] border-t border-[var(--r-line)] py-14" aria-labelledby="seoHubTitle">
-    <div class="r-wrap space-y-12 max-w-5xl mx-auto">
-      
-      <!-- Encabezado de Autoridad SEO -->
-      <div class="text-center space-y-3">
-        <p class="text-xs font-mono uppercase tracking-widest text-[var(--r-accent)] font-bold">Setup Engineering &amp; Telemetry Guide · Guía Técnica iRacing 26S4</p>
-        <h2 id="seoHubTitle" class="text-2xl sm:text-3xl font-extrabold text-[var(--r-text)] tracking-tight">
-          Best iRacing Setups: Performance, Safety &amp; Telemetry · Mejores Setups iRacing
-        </h2>
-        <p class="text-sm text-[var(--r-muted)] max-w-2xl mx-auto leading-relaxed">
-          Access over 42,600 track-verified <strong class="text-[var(--r-text)]">.STO</strong> setups with 60 Hz telemetry benchmarks. Strict Balance of Performance (BoP) compliance, zero Failed Tech, and race-ready calibration. Accede al catálogo oficial de setups optimizados para iRacing.
-        </p>
-      </div>
-
-      <!-- 3 Pilares Técnicos -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="p-4 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] space-y-2">
-          <div class="text-base font-bold text-[var(--r-text)] flex items-center gap-2">
-            <span>🛡️</span><span>0 Failed Tech Guaranteed · 0 Failed Tech Garantizado</span>
-          </div>
-          <p class="text-xs text-[var(--r-muted)] leading-relaxed">
-            Statutory static ride heights fully legal. On demanding circuits like <strong class="text-[var(--r-text)]">Nürburgring Nordschleife</strong>, we enforce ride heights above 70.0 mm mandated by iRacing BoP, preventing inspection disqualifications. Alturas estáticas escrupulosamente legales.
-          </p>
-        </div>
-        <div class="p-4 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] space-y-2">
-          <div class="text-base font-bold text-[var(--r-text)] flex items-center gap-2">
-            <span>⚡</span><span>170 kPa Thermal Window · Ventana Térmica 170 kPa</span>
-          </div>
-          <p class="text-xs text-[var(--r-muted)] leading-relaxed">
-            Cold pressures calibrated to hit exactly <strong class="text-[var(--r-text)]">~169.5-170.5 kPa hot</strong> on lap 1, maximizing tire contact patch without overheating. Presiones frías en el mínimo reglamentario (152 kPa GTP / 159 kPa GT3) sin degradación prematura.
-          </p>
-        </div>
-        <div class="p-4 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] space-y-2">
-          <div class="text-base font-bold text-[var(--r-text)] flex items-center gap-2">
-            <span>🏎️</span><span>Dynamic Rake &amp; Diffuser · Rake Dinámico y Difusor</span>
-          </div>
-          <p class="text-xs text-[var(--r-muted)] leading-relaxed">
-            Suspension geometry with optimized positive rake (+12.5 mm high-speed) that seals the diffuser over 235 km/h, preventing porpoising in compressions. Geometría optimizada para máxima velocidad punta y estabilidad aerodinámica.
-          </p>
-        </div>
-      </div>
-
-      <!-- Categorías y Coches Soportados -->
-      <div class="p-5 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] space-y-4">
-        <h3 class="text-sm font-bold uppercase tracking-wider font-mono text-[var(--r-accent)]">
-          Vehicle Categories &amp; Classes · Categorías de Coches y Especialidades
-        </h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-          <div class="space-y-1">
-            <div class="font-bold text-[var(--r-text)]">GT3 Series</div>
-            <div class="text-[11px] text-[var(--r-muted)] leading-snug">
-              Ferrari 296 GT3, Porsche 992 GT3 R, BMW M4 GT3, Mercedes-AMG GT3 Evo, McLaren 720S GT3 Evo, Corvette Z06 GT3.R, Aston Martin Vantage GT3 Evo, Mustang GT3, Audi R8 LMS Evo II.
-            </div>
-          </div>
-          <div class="space-y-1">
-            <div class="font-bold text-[var(--r-text)]">GTP / Hypercar</div>
-            <div class="text-[11px] text-[var(--r-muted)] leading-snug">
-              BMW M Hybrid V8, Porsche 963, Cadillac V-Series.R, Acura ARX-06, Ferrari 499P, Aston Martin Valkyrie GTP. Optimized hybrid maps &amp; traction control.
-            </div>
-          </div>
-          <div class="space-y-1">
-            <div class="font-bold text-[var(--r-text)]">Prototypes &amp; GT4 · Prototipos</div>
-            <div class="text-[11px] text-[var(--r-muted)] leading-snug">
-              Dallara P217 LMP2, Ligier JS P320 LMP3, Porsche 718 Cayman GT4, BMW M4 GT4, Aston Martin Vantage GT4, McLaren 570S GT4.
-            </div>
-          </div>
-          <div class="space-y-1">
-            <div class="font-bold text-[var(--r-text)]">Formula &amp; Single-Make Cups · Copas</div>
-            <div class="text-[11px] text-[var(--r-muted)] leading-snug">
-              Super Formula SF23, Formula 4, Super Formula Lights, Porsche 992 Cup, Mazda MX-5 Cup, TCR (Audi, Honda, Hyundai).
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Guía de Instalación Paso a Paso -->
-      <div class="p-5 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] space-y-3">
-        <h3 class="text-sm font-bold uppercase tracking-wider font-mono text-[var(--r-text)]">
-          Step-by-Step .STO Setup Installation · Cómo Instalar Setups en iRacing
-        </h3>
-        <ol class="list-decimal list-inside space-y-1.5 text-xs text-[var(--r-muted)] leading-relaxed">
-          <li>Download the <code class="px-1.5 py-0.5 rounded bg-[var(--r-bg)] text-[var(--r-accent)] font-mono">.sto</code> file from the Setup Vault or link your local folder for 1-click sync. (Descarga el setup o sincronízalo con tu carpeta).</li>
-          <li>Copy the file into your PC directory: <code class="px-1.5 py-0.5 rounded bg-[var(--r-bg)] text-[var(--r-text)] font-mono">Documents\iRacing\setups\[car_name]\</code>.</li>
-          <li>Join an official iRacing session, open the <strong class="text-[var(--r-text)]">Garage</strong> screen, click <strong class="text-[var(--r-text)]">My Setups</strong>, and select the setup file.</li>
-          <li>Confirm technical scrutiny displays <strong class="text-emerald-400 font-mono">Pass Tech</strong> before heading out to the track.</li>
-        </ol>
-      </div>
-
-      <!-- Preguntas Frecuentes (FAQ Accordion Indexable) -->
-      <div class="space-y-3">
-        <h3 class="text-sm font-bold uppercase tracking-wider font-mono text-[var(--r-text)]">
-          Frequently Asked Questions (FAQ) · Preguntas Frecuentes sobre Setups iRacing
-        </h3>
-        <div class="space-y-2">
-          <details class="p-3.5 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] text-xs group cursor-pointer">
-            <summary class="font-bold text-[var(--r-text)] flex items-center justify-between select-none">
-              <span>Where can I download the best iRacing setups in 2026? · ¿Dónde descargar los mejores setups para iRacing?</span>
-              <span class="text-[var(--r-muted)] group-open:rotate-180 transition-transform">▼</span>
-            </summary>
-            <p class="text-[var(--r-muted)] leading-relaxed mt-2 pt-2 border-t border-[var(--r-line)]">
-              In the Muntrume Motorsport Setup Vault (<a href="/garage" class="text-[var(--r-accent)] underline">muntru.me/garage</a>), you have over 42,600 verified .STO setups for 2026 Season 4 with 0 Failed Tech, 60 Hz telemetry benchmarks, and direct Garage 61 synchronization. En el Setup Vault dispones del catálogo más completo y legal para iRacing.
-            </p>
-          </details>
-
-          <details class="p-3.5 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] text-xs group cursor-pointer">
-            <summary class="font-bold text-[var(--r-text)] flex items-center justify-between select-none">
-              <span>What is the difference between Esport [E], Normal, and Safe [S] modes? · ¿Qué diferencia hay entre los modos?</span>
-              <span class="text-[var(--r-muted)] group-open:rotate-180 transition-transform">▼</span>
-            </summary>
-            <p class="text-[var(--r-muted)] leading-relaxed mt-2 pt-2 border-t border-[var(--r-line)]">
-              <strong class="text-red-400">Esport [E]</strong> is calibrated for qualifying and pro drivers, prioritizing minimum aerodynamic drag and reactive differential lock. <strong class="text-amber-400">Normal</strong> delivers the optimal race pace balance with hot pressures at ~170 kPa. <strong class="text-emerald-400">Safe [S]</strong> provides higher ride heights and absorbing dampers for rough tracks, wet weather, and spin prevention.
-            </p>
-          </details>
-
-          <details class="p-3.5 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] text-xs group cursor-pointer">
-            <summary class="font-bold text-[var(--r-text)] flex items-center justify-between select-none">
-              <span>Why do all Muntrume setups guarantee 0 Failed Tech? · ¿Por qué garantizan 0 Failed Tech?</span>
-              <span class="text-[var(--r-muted)] group-open:rotate-180 transition-transform">▼</span>
-            </summary>
-            <p class="text-[var(--r-muted)] leading-relaxed mt-2 pt-2 border-t border-[var(--r-line)]">
-              Every setup passes automated technical scrutiny in the simulator. We strictly enforce 2026 legal minimum pressures (152.0 kPa GTP / 159.0 kPa GT3) and mandatory ride heights above 70.0 mm at Nürburgring Nordschleife / VLN. 100% legales ante escrutinio técnico en carrera oficial.
-            </p>
-          </details>
-
-          <details class="p-3.5 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] text-xs group cursor-pointer">
-            <summary class="font-bold text-[var(--r-text)] flex items-center justify-between select-none">
-              <span>How does telemetry sync with Garage 61? · ¿Cómo se integra la telemetría con Garage 61?</span>
-              <span class="text-[var(--r-muted)] group-open:rotate-180 transition-transform">▼</span>
-            </summary>
-            <p class="text-[var(--r-muted)] leading-relaxed mt-2 pt-2 border-t border-[var(--r-line)]">
-              When driving in iRacing with the Garage 61 agent running, your laps, tire temperatures, braking, and throttle traces automatically sync with the Muntrume Motorsport team at <a href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer" class="text-[var(--r-accent)] underline">garage61.net/app/teams/muntrume-motorsport</a>.
-            </p>
-          </details>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <div id="authModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+  <div id="authModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="authTitle" hidden>
     <div class="g-dialog">
       <div class="g-dialog__bar">
         <h2 id="authTitle">Acceso de piloto</h2>
-        <button type="button" class="m-notice__close" onclick="closeAuthModal()" aria-label="Cerrar">×</button>
+        <button type="button" class="m-notice__close" data-close-modal="authModal" aria-label="Cerrar">×</button>
       </div>
       <div class="g-auth-tabs">
-        <button type="button" id="tabLoginBtn" class="is-on" onclick="switchAuthTab('login')">Entrar</button>
-        <button type="button" id="tabJoinBtn" onclick="switchAuthTab('join')">Solicitar acceso</button>
+        <button type="button" id="tabLoginBtn" class="is-on" data-auth-tab="login">Entrar</button>
+        <button type="button" id="tabJoinBtn" data-auth-tab="join">Solicitar acceso</button>
       </div>
-      <form id="loginForm" onsubmit="handleLoginSubmit(event)">
+      <form id="loginForm">
         <div class="g-field">
           <label for="loginEmail">Correo</label>
-          <input type="email" id="loginEmail" required autocomplete="username" placeholder="tu-email@dominio.com" />
+          <input type="email" id="loginEmail" required autocomplete="username" />
         </div>
         <div class="g-field">
           <label for="loginKey">Contraseña</label>
           <div class="g-pass">
-            <input type="password" id="loginKey" required autocomplete="current-password" placeholder="Contraseña de piloto" />
-            <button type="button" class="g-pass__toggle" aria-controls="loginKey" aria-pressed="false" onclick="togglePassword('loginKey', this)">Mostrar</button>
+            <input type="password" id="loginKey" required autocomplete="current-password" />
+            <button type="button" class="g-pass__toggle" data-toggle-pass="loginKey" aria-pressed="false">Mostrar</button>
           </div>
         </div>
-        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:center">
+        <div class="g2-authrow">
           <label class="g-check" for="rememberMe"><input type="checkbox" id="rememberMe" checked /> Recordar sesión</label>
-          <button type="button" class="r-link" onclick="openForgotPasswordModal()">¿Olvidaste la contraseña?</button>
+          <button type="button" class="r-link" id="forgotOpenBtn">¿Olvidaste la contraseña?</button>
         </div>
-        <div id="loginError" class="m-notice m-notice--inline m-notice--error hidden" role="alert"></div>
+        <div id="loginError" class="m-notice m-notice--inline m-notice--error hidden" role="alert" hidden></div>
         <button type="submit" id="loginSubmitBtn" class="r-btn r-btn--primary"><span id="loginBtnText">Entrar</span></button>
       </form>
-      <form id="joinForm" class="hidden" onsubmit="handleJoinSubmit(event)">
-        <p>¿Quieres acceso al Garage? Deja tu nombre y el correo de iRacing.</p>
+      <form id="joinForm" class="hidden" hidden>
+        <p>Deja tu nombre y el correo de iRacing.</p>
         <div class="g-field">
-          <label for="reqName">Nombre de piloto</label>
-          <input type="text" id="reqName" required placeholder="Nombre o nick" />
+          <label for="reqName">Nombre</label>
+          <input type="text" id="reqName" required />
         </div>
         <div class="g-field">
           <label for="reqEmail">Correo</label>
-          <input type="email" id="reqEmail" required placeholder="tu-email@dominio.com" />
+          <input type="email" id="reqEmail" required />
         </div>
         <div class="g-field">
           <label for="reqMessage">Mensaje</label>
-          <textarea id="reqMessage" rows="3" placeholder="Coche, categoría o lo que quieras comentar"></textarea>
+          <textarea id="reqMessage" rows="3"></textarea>
         </div>
-        <input type="hidden" id="reqIracingId" value="" />
-        <input type="hidden" id="reqCategory" value="" />
         <input type="hidden" id="reqWebsite" value="" />
-        <div id="joinFeedback" class="m-notice m-notice--inline m-notice--success hidden" role="status"></div>
-        <div id="joinError" class="m-notice m-notice--inline m-notice--error hidden" role="alert"></div>
-        <button type="submit" id="joinSubmitBtn" class="r-btn r-btn--primary"><span id="joinBtnText">Solicitar acceso</span></button>
+        <div id="joinFeedback" class="m-notice m-notice--inline m-notice--success hidden" role="status" hidden></div>
+        <div id="joinError" class="m-notice m-notice--inline m-notice--error hidden" role="alert" hidden></div>
+        <button type="submit" id="joinSubmitBtn" class="r-btn r-btn--primary">Solicitar acceso</button>
       </form>
     </div>
   </div>
 
-  <!-- Modal Inspector Oficial de Setup (.STO), BoP Tech Check, Garage 61 & AI Lab -->
-  <div id="setupPreviewModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="previewSetupTitle">
-    <div class="g-dialog g-dialog--wide" style="width:min(940px,100%);max-height:min(92svh,880px);padding:22px;overflow-x:hidden">
-      <div class="flex flex-wrap items-start justify-between gap-3 pb-3 border-b border-[var(--r-line)]">
-        <div class="space-y-1 min-w-0">
-          <div class="flex flex-wrap items-center gap-2">
-            <span id="previewTypeBadge" class="text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full border border-[var(--r-accent)] text-[var(--r-accent)]">Race</span>
-            <span id="previewSeasonWeekBadge" class="text-[11px] font-mono text-[var(--r-muted)] px-2 py-0.5 rounded border border-[var(--r-line)] bg-[var(--r-bg)]">26S4 · W01</span>
-            <span class="text-[10px] font-mono font-bold text-[var(--r-accent)] px-2 py-0.5 rounded border border-[var(--r-accent)] bg-[var(--r-bg)]">✓ PASS TECH · BOP OK</span>
-          </div>
-          <h2 id="previewSetupTitle" class="font-mono font-extrabold text-lg sm:text-xl text-[var(--r-text)] break-all" style="margin:4px 0 0;text-transform:none">MMT_F296_SPA_R.sto</h2>
-          <p class="text-xs font-mono text-[var(--r-muted)]" style="margin:0">
-            <strong id="previewCarName" class="text-[var(--r-text)]">Ferrari 296 GT3</strong> · <span id="previewCircuitName">🏁 Spa-Francorchamps</span>
-          </p>
-        </div>
-        <div class="flex items-center gap-2 shrink-0">
-          <button type="button" id="previewDownloadBtn" class="r-btn r-btn--primary r-btn--sm">
-            <span id="previewDownloadBtnText">Descargar .sto</span>
-          </button>
-          <button type="button" class="m-notice__close" onclick="closeSetupPreviewModal()" aria-label="Cerrar">×</button>
-        </div>
-      </div>
-
-      <!-- Selector de variantes hermanas en la misma carpeta -->
-      <div id="previewVariantSelectorWrap" class="hidden py-2 border-b border-[var(--r-line)]">
-        <div class="text-[10px] font-mono uppercase tracking-wider text-[var(--r-muted)] mb-1.5">Variantes de la carpeta (MMT Pack):</div>
-        <div id="previewVariantButtons" class="flex flex-wrap gap-1.5"></div>
-      </div>
-
-      <!-- Pestañas del Inspector (Minimalista) -->
-      <div class="g-tabs" role="tablist">
-        <button type="button" id="previewTabAiBtn" class="is-on" onclick="switchPreviewTab('ai')">⚡ Setup &amp; Telemetría</button>
-        <button type="button" id="previewTabSpecsBtn" onclick="switchPreviewTab('specs')">Ficha &amp; Escrutinio</button>
-        <button type="button" id="previewTabG61Btn" onclick="switchPreviewTab('g61')">Garage 61 (<span id="previewG61CountBadge">—</span>)</button>
-      </div>
-
-      <!-- Tab 1: Setup & Telemetría (Principal, Minimalista) -->
-      <div id="previewTabAi" class="space-y-3 max-w-full overflow-hidden">
-        <div id="previewAiTrainerContent" class="space-y-3 max-w-full overflow-hidden"></div>
-      </div>
-
-      <!-- Tab 2: Ficha Técnica, BoP Tech & Notas Binarias .STO -->
-      <div id="previewTabSpecs" class="hidden space-y-4">
-        <div id="previewSpecsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
-        <div class="p-3.5 rounded-xl bg-[var(--r-bg)] border border-[var(--r-line)] space-y-1.5">
-          <div class="flex items-center justify-between gap-2 text-[11px] font-mono text-[var(--r-muted)]">
-            <span class="uppercase font-bold text-[var(--r-accent)]">Notas incrustadas en binario (.STO UTF-16LE)</span>
-            <span id="previewBinarySizeInfo"></span>
-          </div>
-          <pre id="previewStoNotesText" class="text-xs font-mono text-[var(--r-text)] whitespace-pre-wrap break-words m-0">MUNTRUME MOTORSPORT [26S4] · MTM MEGASETUP™ | Muntrume Motorsport by Alberto Trujillo | muntru.me</pre>
-        </div>
-      </div>
-
-      <!-- Tab 3: Vueltas Reales Garage 61 -->
-      <div id="previewTabG61" class="hidden space-y-3">
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-mono font-bold uppercase text-[var(--r-text)]">Telemetría Oficial Garage 61</span>
-            <span id="g61LiveStatusBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full border border-[var(--r-line)] text-[var(--r-muted)]">Consultando…</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <button type="button" class="r-btn r-btn--sm" onclick="configureG61TokenPrompt()">🔑 Token Garage 61</button>
-            <a id="g61ExternalSearchLink" href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer" class="r-btn r-btn--primary r-btn--sm">Abrir Garage 61 ↗</a>
-          </div>
-        </div>
-        <div class="r-scroll border border-[var(--r-line)] rounded-xl bg-[var(--r-bg)]">
-          <table class="r-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Piloto</th>
-                <th>Tiempo</th>
-                <th>Fecha</th>
-                <th>Condiciones</th>
-                <th class="text-right">Telemetría</th>
-              </tr>
-            </thead>
-            <tbody id="previewG61LapsTableBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="forgotPasswordModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="forgotTitle">
+  <div id="forgotPasswordModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="forgotTitle" hidden>
     <div class="g-dialog">
       <div class="g-dialog__bar">
         <h2 id="forgotTitle">Recuperar acceso</h2>
-        <button type="button" class="m-notice__close" onclick="closeForgotPasswordModal()" aria-label="Cerrar">×</button>
+        <button type="button" class="m-notice__close" data-close-modal="forgotPasswordModal" aria-label="Cerrar">×</button>
       </div>
-      <p>Escribe el correo de la cuenta. Te enviaremos un enlace para elegir contraseña.</p>
+      <p>Escribe el correo de la cuenta.</p>
       <div class="g-field">
         <label for="forgotEmail">Correo</label>
-        <input type="email" id="forgotEmail" placeholder="tu-email@dominio.com" />
+        <input type="email" id="forgotEmail" />
       </div>
-      <div id="forgotError" class="m-notice m-notice--inline m-notice--error hidden" role="alert"></div>
-      <div id="forgotFeedback" class="m-notice m-notice--inline m-notice--success hidden" role="status"></div>
-      <button type="button" id="forgotSubmitBtn" class="r-btn r-btn--primary" onclick="handleForgotPasswordSubmit(event)">Enviar enlace</button>
+      <div id="forgotError" class="m-notice m-notice--inline m-notice--error hidden" role="alert" hidden></div>
+      <div id="forgotFeedback" class="m-notice m-notice--inline m-notice--success hidden" role="status" hidden></div>
+      <button type="button" id="forgotSubmitBtn" class="r-btn r-btn--primary">Enviar enlace</button>
     </div>
   </div>
 
-  <div id="setPasswordModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="setPwTitle">
+  <div id="setPasswordModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="setPwTitle" hidden>
     <div class="g-dialog">
       <div class="g-dialog__bar">
         <h2 id="setPwTitle">Crea tu contraseña</h2>
-        <button type="button" class="m-notice__close" onclick="closeSetPasswordModal()" aria-label="Cerrar">×</button>
+        <button type="button" class="m-notice__close" data-close-modal="setPasswordModal" aria-label="Cerrar">×</button>
       </div>
       <p id="setPwIntro">Comprobando el enlace…</p>
-      <form id="setPasswordForm" class="hidden" onsubmit="handleSetPasswordSubmit(event)">
+      <form id="setPasswordForm" class="hidden" hidden>
         <div class="g-field">
           <label for="setPwNew">Nueva contraseña</label>
-          <input type="password" id="setPwNew" required minlength="10" maxlength="128" autocomplete="new-password" placeholder="Mínimo 10 caracteres" />
+          <input type="password" id="setPwNew" required minlength="10" maxlength="128" autocomplete="new-password" />
         </div>
         <div class="g-field">
           <label for="setPwConfirm">Confirmar contraseña</label>
-          <input type="password" id="setPwConfirm" required minlength="10" maxlength="128" autocomplete="new-password" placeholder="Repite la contraseña" />
+          <input type="password" id="setPwConfirm" required minlength="10" maxlength="128" autocomplete="new-password" />
         </div>
         <button type="submit" id="setPwBtn" class="r-btn r-btn--primary">Guardar y entrar</button>
       </form>
-      <div id="setPwError" class="m-notice m-notice--inline m-notice--error hidden" role="alert"></div>
+      <div id="setPwError" class="m-notice m-notice--inline m-notice--error hidden" role="alert" hidden></div>
     </div>
   </div>
 
-  <div id="changePasswordModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="changePwTitle">
+  <div id="changePasswordModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="changePwTitle" hidden>
     <div class="g-dialog">
       <div class="g-dialog__bar">
         <h2 id="changePwTitle">Nueva contraseña</h2>
-        <button type="button" class="m-notice__close" onclick="closeChangePasswordModal()" aria-label="Cerrar">×</button>
+        <button type="button" class="m-notice__close" data-close-modal="changePasswordModal" aria-label="Cerrar">×</button>
       </div>
       <p>Elige una contraseña permanente para la cuenta.</p>
-      <form id="changePasswordForm" onsubmit="handleChangePasswordSubmit(event)">
+      <form id="changePasswordForm">
         <div class="g-field">
           <label for="newPassInput">Nueva contraseña</label>
-          <input type="password" id="newPassInput" required minlength="10" maxlength="128" autocomplete="new-password" placeholder="Mínimo 10 caracteres" />
+          <input type="password" id="newPassInput" required minlength="10" maxlength="128" autocomplete="new-password" />
         </div>
         <div class="g-field">
           <label for="confirmPassInput">Confirmar contraseña</label>
-          <input type="password" id="confirmPassInput" required minlength="10" maxlength="128" autocomplete="new-password" placeholder="Repite la contraseña" />
+          <input type="password" id="confirmPassInput" required minlength="10" maxlength="128" autocomplete="new-password" />
         </div>
-        <div id="changePassError" class="m-notice m-notice--inline m-notice--error hidden" role="alert"></div>
+        <div id="changePassError" class="m-notice m-notice--inline m-notice--error hidden" role="alert" hidden></div>
         <button type="submit" id="changePassBtn" class="r-btn r-btn--primary">Guardar</button>
       </form>
     </div>
   </div>
 
-  <!-- Modal de Doble Ruta / Fallback para descarga tradicional -->
-  <div id="fallbackDownloadModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="fallbackModalTitle">
-    <div class="g-dialog" style="max-width:540px;border-color:#00ff88;box-shadow:0 0 35px rgba(0,255,136,0.22)">
-      <div class="g-dialog__bar">
-        <div class="flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-[#00ff88]" aria-hidden="true"></span>
-          <h2 id="fallbackModalTitle" style="color:#00ff88;font-size:18px">No pasa nada, descarga el setup de forma tradicional</h2>
-        </div>
-        <button type="button" class="m-notice__close" onclick="closeFallbackDownloadModal()" aria-label="Cerrar">×</button>
-      </div>
-      <p style="color:#D5DDDA;line-height:1.55;font-size:13px">
-        Tu navegador (Brave, Safari o Firefox) mantiene restringido el acceso directo a carpetas locales. Puedes seguir disfrutando de los más de 41.000 setups de Muntrume de manera tradicional descargando el archivo <code>.sto</code> y copiándolo a <code>Documentos\iRacing\setups</code>.
-      </p>
-      <div class="p-4 rounded-xl bg-[#080C0A] border border-[#1E2A26] space-y-3">
-        <div class="flex items-center justify-between text-xs font-mono text-[#9AA8A3]">
-          <span>MÉTODO: DESCARGA DIRECTA .STO</span>
-          <span class="text-[#00ff88] font-bold">100% COMPATIBLE</span>
-        </div>
-        <button type="button" id="directDownloadFallbackBtn" onclick="triggerFallbackDownload(this)" class="r-btn r-btn--primary" style="width:100%;justify-content:center">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:16px;height:16px;flex-shrink:0"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          <span id="directDownloadFallbackText">Descargar archivo .sto directo</span>
-        </button>
-      </div>
-      <div class="flex justify-between items-center text-xs font-mono text-neutral-400 pt-1">
-        <span>Destino habitual: Carpeta Descargas</span>
-        <button type="button" class="r-link" onclick="closeFallbackDownloadModal()">Continuar en el Garage</button>
-      </div>
-    </div>
-  </div>
-
-  <script is:inline src="/assets/js/setups.js?v=t300"></script>
+  <script is:inline src="/assets/js/garage-list.js?v=t321" defer></script>
+  <script is:inline src="/assets/js/garage-auth.js?v=t321" defer></script>
   <script>
     import { initSessionGate } from "../scripts/session-gate";
     initSessionGate();
   </script>
-  <script is:inline src="/assets/js/setup-builder.js?v=t300" defer></script>
-  <script is:inline>
-    window.togglePassword = function (id, btn) {
-      var input = document.getElementById(id);
-      if (!input || !btn) return;
-      var show = input.type === "password";
-      input.type = show ? "text" : "password";
-      btn.textContent = show ? "Ocultar" : "Mostrar";
-      btn.setAttribute("aria-pressed", show ? "true" : "false");
-    };
-    function switchGarageTab(tab) {
-      var map = {
-        setups: ["tabBtnSetups", "garageSectionSetups"],
-        telemetry: ["tabBtnTelemetry", "garageSectionTelemetry"],
-        comms: ["tabBtnComms", "garageSectionComms"],
-        builder: ["tabBtnBuilder", "garageSectionBuilder"]
-      };
-      var buttons = ["tabBtnSetups", "tabBtnTelemetry", "tabBtnComms", "tabBtnBuilder"].map(function (id) { return document.getElementById(id); });
-      var sections = ["garageSectionSetups", "garageSectionTelemetry", "garageSectionComms", "garageSectionBuilder"].map(function (id) { return document.getElementById(id); });
-      var chosen = map[tab] || map.setups;
-      buttons.forEach(function (b) {
-        if (!b) return;
-        var on = b.id === chosen[0];
-        b.classList.toggle("is-on", on);
-        b.setAttribute("aria-selected", on ? "true" : "false");
-      });
-      sections.forEach(function (s) {
-        if (!s) return;
-        var on = s.id === chosen[1];
-        s.classList.toggle("hidden", !on);
-        s.hidden = !on;
-      });
-    }
-    window.switchGarageTab = switchGarageTab;
-
-    function switchAuthTab(tab) {
-      var loginForm = document.getElementById("loginForm");
-      var joinForm = document.getElementById("joinForm");
-      var tabLoginBtn = document.getElementById("tabLoginBtn");
-      var tabJoinBtn = document.getElementById("tabJoinBtn");
-      var login = tab !== "join";
-      if (loginForm) loginForm.classList.toggle("hidden", !login);
-      if (joinForm) joinForm.classList.toggle("hidden", login);
-      if (tabLoginBtn) tabLoginBtn.classList.toggle("is-on", login);
-      if (tabJoinBtn) tabJoinBtn.classList.toggle("is-on", !login);
-    }
-    window.switchAuthTab = switchAuthTab;
-    window.switchTab = switchAuthTab;
-
-    window.openAuthModal = window.openAuthModal || function (tab) {
-      var modal = document.getElementById("authModal");
-      if (modal) { modal.classList.remove("hidden"); switchAuthTab(tab || "login"); }
-    };
-    window.closeAuthModal = window.closeAuthModal || function () {
-      var modal = document.getElementById("authModal");
-      if (modal) modal.classList.add("hidden");
-    };
-    window.openForgotPasswordModal = window.openForgotPasswordModal || function () {
-      document.getElementById("forgotPasswordModal")?.classList.remove("hidden");
-    };
-    window.closeForgotPasswordModal = window.closeForgotPasswordModal || function () {
-      document.getElementById("forgotPasswordModal")?.classList.add("hidden");
-    };
-    window.handleLoginSubmit = function (e) {
-      if (typeof window.handleLogin === "function") return window.handleLogin(e);
-      e.preventDefault();
-    };
-    window.handleJoinSubmit = function (e) {
-      if (typeof window.handleJoinRequest === "function") return window.handleJoinRequest(e);
-      e.preventDefault();
-    };
-    window.handleForgotPasswordSubmit = function (e) {
-      if (typeof window.handleForgotPassword === "function") return window.handleForgotPassword(e);
-      e.preventDefault();
-    };
-    window.handleSetPasswordSubmit = function (e) {
-      if (typeof window.handleSetPassword === "function") return window.handleSetPassword(e);
-      e.preventDefault();
-    };
-    window.handleChangePasswordSubmit = function (e) {
-      if (typeof window.handleChangePassword === "function") return window.handleChangePassword(e);
-      e.preventDefault();
-    };
-    window.closeSetPasswordModal = function () {
-      document.getElementById("setPasswordModal")?.classList.add("hidden");
-    };
-    window.closeChangePasswordModal = function () {
-      document.getElementById("changePasswordModal")?.classList.add("hidden");
-    };
-
-    document.addEventListener("DOMContentLoaded", function () {
-      var p = new URLSearchParams(window.location.search);
-      if (p.get("tab") === "telemetry") switchGarageTab("telemetry");
-      if (p.get("tab") === "comms") switchGarageTab("comms");
-      if (p.get("tab") === "builder") switchGarageTab("builder");
-      var necWeek = p.get("nec");
-      var qSearch = p.get("q");
-      if (necWeek !== null && typeof window.filterNecSetups === "function") {
-        setTimeout(function () { window.filterNecSetups(necWeek); }, 350);
-      } else if (qSearch && typeof window.quickSearchMmt === "function") {
-        setTimeout(function () { window.quickSearchMmt(qSearch); }, 350);
-      }
-    });
-  </script>
-  <script is:inline src="/assets/js/mmt-sync-card.js"></script>
 </Layout>

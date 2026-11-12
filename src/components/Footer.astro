@@ -1,52 +1,72 @@
 ---
 const year = new Date().getFullYear();
+const sections = [
+  { href: "/", label: "Inicio" },
+  { href: "/pilotos/", label: "Pilotos" },
+  { href: "/garage/", label: "Garage" },
+  { href: "/paddock/", label: "Paddock" },
+  { href: "/noticias/", label: "Noticias" },
+  { href: "/app/", label: "App · MMT Sync" },
+];
+const legal = [
+  { href: "/aviso-legal/", label: "Aviso legal" },
+  { href: "/privacidad/", label: "Privacidad" },
+  { href: "/cookies/", label: "Cookies" },
+  { href: "/legal/retirada/", label: "Retirada" },
+  { href: "/legal/fuentes/", label: "Fuentes" },
+];
 ---
-<footer class="r-footer">
-  <div class="r-wrap">
-    <div class="r-footer__grid">
-      <div style="display:grid;gap:14px;align-content:start">
-        <a href="/" class="r-lockup" data-no-i18n>
-          <img src="/assets/img/logo-64.webp" width="44" height="44" alt="Muntrume Motorsport" loading="lazy" decoding="async" />
-          <span class="r-lockup__txt"><b>Muntrume</b><small>Motorsport</small></span>
-        </a>
-        <span class="text-xs text-[var(--r-muted)]">Official iRacing Sim Racing Team · Barcelona, Spain</span>
-        <span class="r-footer__id">Principal: Alberto Trujillo · <a href="mailto:info@muntru.me">info@muntru.me</a></span>
-      </div>
-      <nav aria-label="Team">
-        <h2>Team</h2>
-        <ul>
-          <li><a href="/drivers">Pilotos de Muntrume Motorsport</a></li>
-          <li><a href="/noticias/">Noticias de Muntrume Motorsport</a></li>
-          <li><a href="/paddock">Paddock de Muntrume Motorsport</a></li>
-          <li><a href="/ai">AI Copilot</a></li>
-          <li><a href="/contact">Contact</a></li>
-        </ul>
-      </nav>
-      <nav aria-label="Driver Area">
-        <h2>Driver Area</h2>
-        <ul>
-          <li><a href="/garage">Garage MMT de Muntrume Motorsport</a></li>
-          <li><a href="/setup-builder">Setup Builder</a></li>
-          <li><a href="/communications">Communications &amp; Webmail</a></li>
-          <li><a href="https://mail.trujillomingorance.com" target="_blank" rel="noopener noreferrer">Corporate Webmail ↗</a></li>
-          <li><a href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer">Garage 61 Telemetry ↗</a></li>
-          <li><a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer">Discord Radio ↗</a></li>
-        </ul>
-      </nav>
-      <nav aria-label="Legal">
-        <h2>Legal Information</h2>
-        <ul>
-          <li><a href="/aviso-legal">Legal Notice</a></li>
-          <li><a href="/privacidad">Privacy Policy</a></li>
-          <li><a href="/cookies">Cookie Policy</a></li>
-          <li><a href="/legal/retirada">DMCA Takedown</a></li>
-          <li><a href="/legal/fuentes">Media Sources</a></li>
-        </ul>
-      </nav>
+
+<footer class="site-footer" data-no-i18n>
+  <div class="site-footer__bar">
+    <div class="site-footer__brand">
+      <a class="site-logo" href="/">
+        <img src="/assets/img/logo-64.webp" width="28" height="28" alt="" loading="lazy" decoding="async" />
+        <span>Muntrume</span>
+      </a>
+      <p>Equipo de iRacing en Sant Andreu, Barcelona.</p>
     </div>
-    <div class="r-footer__legal">
-      <span>&copy; {year} Muntrume Motorsport <span>· All rights reserved</span></span>
-      <span>Zero ad or tracking cookies · <a href="/cookies" style="font-size:12px;padding:0">Política de cookies de Muntrume Motorsport</a></span>
+    <nav class="site-footer__links" aria-label="Secciones">
+      {sections.map((link) => <a href={link.href}>{link.label}</a>)}
+    </nav>
+    <nav class="site-footer__links" aria-label="Comunidad">
+      <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer">Discord</a>
+      <a href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer">Garage 61</a>
+    </nav>
+    <nav class="site-footer__links" aria-label="Información legal">
+      {legal.map((link) => <a href={link.href}>{link.label}</a>)}
+    </nav>
+  </div>
+  <div class="site-footer__meta">
+    <p>© <span id="copyYear">{year}</span> Muntrume Motorsport</p>
+    <div class="site-lang" role="group" aria-label="Idioma">
+      <button type="button" data-lang="en">EN</button>
+      <button type="button" data-lang="es">ES</button>
+      <button type="button" data-lang="ca">CA</button>
+      <button type="button" data-lang="fr">FR</button>
     </div>
   </div>
 </footer>
+<script is:inline>
+(function () {
+  var y = document.getElementById("copyYear");
+  if (y) y.textContent = String(new Date().getFullYear());
+  var current = "en";
+  try {
+    current = (localStorage.getItem("muntrume_lang") || localStorage.getItem("mm_lang") || document.documentElement.lang || "en").toLowerCase();
+  } catch (e) {}
+  document.querySelectorAll(".site-lang [data-lang]").forEach(function (btn) {
+    var on = btn.getAttribute("data-lang") === current;
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+    btn.addEventListener("click", function () {
+      var code = btn.getAttribute("data-lang");
+      try {
+        localStorage.setItem("muntrume_lang", code);
+        localStorage.setItem("mm_lang", code);
+      } catch (err) {}
+      if (window.muntruI18n && typeof window.muntruI18n.set === "function") window.muntruI18n.set(code);
+      else location.reload();
+    });
+  });
+})();
+</script>

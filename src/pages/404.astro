@@ -1,27 +1,22 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-const pageTitle = "Page Not Found · Muntrume Motorsport";
+const pageTitle = "Página no encontrada | Muntrume Motorsport";
 ---
 
-<Layout title={pageTitle} description="Esta página no existe en Muntrume Motorsport (MMT). Vuelve al inicio del equipo de iRacing." noindex>
-  <div class="bg-[#0e1217] flex items-center pt-32 pb-24 min-h-[70vh]">
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#161c24] border border-white/10 text-xs text-neutral-300 font-semibold mb-2">
-        <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-        <span>Error 404 · Fuera de Pista</span>
-      </div>
-      <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white">Salida de pista en la chicane</h1>
-      <p class="text-base text-neutral-400 max-w-xl mx-auto leading-relaxed">
-        La página que buscas no existe o ha cambiado de trazada. Vuelve a incorporarte a la trazada oficial desde aquí:
-      </p>
-      <div class="flex flex-wrap items-center justify-center gap-3 text-sm font-semibold pt-4">
-        <a href="/" class="px-5 py-3 rounded-xl bg-emerald-500 text-neutral-950 font-bold hover:bg-emerald-400 transition shadow-lg shadow-emerald-500/20">Inicio</a>
-        <a href="/setups" class="px-5 py-3 rounded-xl bg-[#161c24] border border-emerald-500/30 text-emerald-400 hover:border-emerald-500 hover:bg-emerald-500/10 transition">Setup Vault</a>
-        <a href="/team" class="px-5 py-3 rounded-xl bg-[#161c24] border border-white/10 text-white hover:border-emerald-500/40 transition">Pilotos</a>
-        <a href="/news" class="px-5 py-3 rounded-xl bg-[#161c24] border border-white/10 text-white hover:border-emerald-500/40 transition">Noticias</a>
-        <a href="/contact" class="px-5 py-3 rounded-xl bg-[#161c24] border border-white/10 text-white hover:border-emerald-500/40 transition">Contacto</a>
+<Layout title={pageTitle} description="Esta página no existe en Muntrume Motorsport (MMT). Vuelve al inicio, al garage o a la plantilla." noindex>
+  <section class="r-section" style="border-top:0;padding-top:clamp(72px,10vw,120px)" aria-labelledby="missingTitle">
+    <div class="r-wrap" style="display:grid;gap:16px;max-width:68ch">
+      <p class="r-kicker">404</p>
+      <h1 id="missingTitle" class="r-h2">Esta página no está</h1>
+      <p class="r-lead">El enlace no corresponde a ninguna página del sitio.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:12px">
+        <a href="/" class="r-btn r-btn--primary">Inicio</a>
+        <a href="/pilotos/" class="r-btn" style="border-color:var(--r-line);color:var(--r-text)">Pilotos</a>
+        <a href="/garage/" class="r-btn" style="border-color:var(--r-line);color:var(--r-text)">Garage</a>
+        <a href="/noticias/" class="r-btn" style="border-color:var(--r-line);color:var(--r-text)">Noticias</a>
+        <a href="/paddock/" class="r-btn" style="border-color:var(--r-line);color:var(--r-text)">Paddock</a>
       </div>
     </div>
-  </div>
+  </section>
 </Layout>
