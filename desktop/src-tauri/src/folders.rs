@@ -10,7 +10,7 @@ pub fn detect_setups_dir() -> Option<PathBuf> {
         if let Ok(profile) = std::env::var("USERPROFILE") {
             return Some(PathBuf::from(profile).join("Documents").join("iRacing").join("setups"));
         }
-        return None;
+        None
     }
     #[cfg(not(windows))]
     {

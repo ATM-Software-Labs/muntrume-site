@@ -37,7 +37,7 @@ pub fn detect() -> HardwareReport {
             r"HKLM\SYSTEM\CurrentControlSet\Control\MediaProperties\PrivateProperties\Joystick\OEM",
         ] {
             if let Ok(output) = Command::new("reg")
-                .args(&["query", hive, "/s", "/f", "OEMName"])
+                .args(["query", hive, "/s", "/f", "OEMName"])
                 .output()
             {
                 let text = String::from_utf8_lossy(&output.stdout);
@@ -56,7 +56,7 @@ pub fn detect() -> HardwareReport {
 
         // 2. Detección a través de dispositivos PnP de Windows
         if let Ok(output) = Command::new("powershell")
-            .args(&[
+            .args([
                 "-NoProfile",
                 "-Command",
                 "Get-PnpDevice -PresentOnly | Where-Object Class -in @('HIDClass','Media','USB') | Select-Object -ExpandProperty FriendlyName",
