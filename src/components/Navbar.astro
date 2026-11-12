@@ -1,4 +1,6 @@
 ---
+import { PILOTOS } from "../lib/pilotos";
+
 interface Props {
   currentPath?: string;
 }
@@ -10,33 +12,30 @@ function active(path: string, ...prefixes: string[]): boolean {
   return prefixes.some((prefix) => path === prefix || path.startsWith(prefix.endsWith("/") ? prefix : `${prefix}/`) || path === prefix.replace(/\/$/, ""));
 }
 
+const ICONS: Record<string, string> = {
+  home: '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+  drivers: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  garage: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
+  paddock: '<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/>',
+  news: '<path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8z"/>',
+  user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  setups: '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z"/>',
+  sala: '<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/>',
+  admin: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/>',
+  sync: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>',
+  theme: '<circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20z"/>',
+  logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',
+};
+
 const links = [
-  { href: "/", label: "Inicio", key: "nav.home", on: active(currentPath) },
-  {
-    href: "/pilotos/",
-    label: "Pilotos",
-    key: "nav.drivers",
-    on: active(currentPath, "/pilotos", "/drivers", "/d/", "/team", "/p/"),
-  },
-  {
-    href: "/garage/",
-    label: "Garage",
-    key: "nav.garage",
-    on: active(currentPath, "/garage", "/setups", "/setup-builder"),
-  },
-  {
-    href: "/paddock/",
-    label: "Paddock",
-    key: "nav.paddock",
-    on: active(currentPath, "/paddock", "/about", "/contact"),
-  },
-  {
-    href: "/noticias/",
-    label: "Noticias",
-    key: "nav.news",
-    on: active(currentPath, "/noticias", "/news", "/article"),
-  },
+  { href: "/", label: "Inicio", key: "nav.home", icon: "home", on: active(currentPath) },
+  { href: "/pilotos/", label: "Pilotos", key: "nav.drivers", icon: "drivers", on: active(currentPath, "/pilotos", "/drivers", "/d/", "/team", "/p/") },
+  { href: "/garage/", label: "Garage", key: "nav.garage", icon: "garage", on: active(currentPath, "/garage", "/setups", "/setup-builder") },
+  { href: "/paddock/", label: "Paddock", key: "nav.paddock", icon: "paddock", on: active(currentPath, "/paddock", "/about", "/contact") },
+  { href: "/noticias/", label: "Noticias", key: "nav.news", icon: "news", on: active(currentPath, "/noticias", "/news", "/article") },
 ];
+
+const roster = PILOTOS.map((p) => ({ slug: p.slug, name: p.fullName, helmet: p.helmet_url || `/img/helmets/${p.slug}.webp` }));
 ---
 
 <header class="site-header" id="siteHeader">
@@ -48,22 +47,16 @@ const links = [
 
     <nav class="site-nav" aria-label="Secciones" data-i18n-aria="nav.sections">
       {links.map((link) => (
-        <a href={link.href} aria-current={link.on ? "page" : undefined} data-i18n={link.key}>{link.label}</a>
+        <a href={link.href} aria-current={link.on ? "page" : undefined} aria-label={link.label} title={link.label} data-i18n-aria={link.key} data-i18n-title={link.key}>
+          <svg class="nav-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS[link.icon]} />
+          <span class="nav-label" data-i18n={link.key}>{link.label}</span>
+        </a>
       ))}
     </nav>
 
     <div class="site-tools">
       <div class="lang-switch" data-lang-root>
-        <button
-          type="button"
-          class="lang-switch__btn"
-          data-lang-toggle
-          aria-haspopup="listbox"
-          aria-expanded="false"
-          aria-controls="langMenu"
-          data-i18n-aria="nav.lang"
-          aria-label="Idioma"
-        >
+        <button type="button" class="lang-switch__btn" data-lang-toggle aria-haspopup="listbox" aria-expanded="false" aria-controls="langMenu" data-i18n-aria="nav.lang" aria-label="Idioma">
           <span data-lang-code>ES</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-width="2.5" d="M6 9l6 6 6-6"/></svg>
         </button>
@@ -75,78 +68,85 @@ const links = [
           <p class="lang-fallback" data-lang-fallback data-i18n="nav.fallback" hidden>Esta página sigue en español.</p>
         </div>
       </div>
-      <button
-        type="button"
-        id="themeToggleBtn"
-        class="site-iconbtn"
-        aria-label="Cambiar a tema claro"
-      >
+      <button type="button" id="themeToggleBtn" class="site-iconbtn" aria-label="Cambiar a tema claro">
         <span class="theme-ico" aria-hidden="true">
           <svg class="theme-ico__sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
           <svg class="theme-ico__moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
         </span>
       </button>
 
-      <div class="site-account">
-        <button
-          type="button"
-          id="accountBtn"
-          class="site-account__btn"
-          aria-haspopup="menu"
-          aria-expanded="false"
-          aria-controls="accountMenu"
-        >
-          <span class="site-account__mark" aria-hidden="true"></span>
-          <span id="accountLabel" data-i18n="nav.account">Cuenta</span>
+      <div class="site-account" id="accountRoot">
+        <button type="button" id="accountBtn" class="site-account__btn" aria-haspopup="menu" aria-expanded="false" aria-controls="accountMenu">
+          <span class="site-avatar" id="accountAvatar" aria-hidden="true">
+            <svg class="nav-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" set:html={ICONS.user} />
+            <img id="accountPhoto" alt="" width="28" height="28" hidden />
+            <span id="accountInitials" hidden></span>
+          </span>
+          <span id="accountLabel" class="site-account__name" data-i18n="nav.enter">Entrar</span>
         </button>
-        <div id="accountMenu" class="site-account__menu" role="menu" hidden>
-          <a id="accountLogin" role="menuitem" href="/login/" data-i18n="nav.login">Iniciar sesión</a>
-          <a id="accountSala" role="menuitem" data-i18n="nav.sala" hidden>Sala</a>
-          <a id="accountAdmin" role="menuitem" hidden>Race Control</a>
-          <button type="button" id="accountLogout" role="menuitem" data-i18n="nav.logout" hidden>Salir</button>
+        <div id="accountMenu" class="site-account__menu profile-card" role="menu" hidden>
+          <div class="profile-card__head" id="profileHead" hidden>
+            <span class="site-avatar" id="menuAvatar" aria-hidden="true">
+              <svg class="nav-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" set:html={ICONS.user} />
+              <img id="menuPhoto" alt="" width="40" height="40" hidden />
+              <span id="menuInitials" hidden></span>
+            </span>
+            <div class="profile-card__id">
+              <p id="profileName"></p>
+              <p id="profileMeta"></p>
+            </div>
+          </div>
+          <a id="accountLogin" role="menuitem" href="/login/"><svg class="nav-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS.user} /><span data-i18n="nav.enter">Entrar</span></a>
+          <a id="accountProfile" role="menuitem" href="/garage/" hidden><svg class="nav-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS.user} /><span data-i18n="nav.profile">Mi perfil</span></a>
+          <a id="accountSetups" role="menuitem" href="/garage/" hidden><svg class="nav-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS.setups} /><span data-i18n="nav.setups">Mis setups</span></a>
+          <a id="accountSala" role="menuitem" hidden><svg class="nav-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS.sala} /><span data-i18n="nav.sala">Sala de ingenieros</span></a>
+          <a id="accountAdmin" role="menuitem" hidden><svg class="nav-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS.admin} /><span>Race Control</span></a>
+          <a role="menuitem" href="/app/"><svg class="nav-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS.sync} /><span data-i18n="nav.sync">Descargar MMT Sync</span></a>
+          <button type="button" id="menuTheme" role="menuitem"><svg class="nav-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS.theme} /><span data-i18n="nav.theme">Tema</span></button>
+          <div class="profile-card__langs" role="group" aria-label="Idioma" data-i18n-aria="nav.lang">
+            <span data-i18n="nav.lang">Idioma</span>
+            <button type="button" role="menuitem" data-set-lang="es">ES</button>
+            <button type="button" role="menuitem" data-set-lang="ca">CA</button>
+            <button type="button" role="menuitem" data-set-lang="en">EN</button>
+            <button type="button" role="menuitem" data-set-lang="fr">FR</button>
+          </div>
+          <button type="button" id="accountLogout" role="menuitem" hidden><svg class="nav-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS.logout} /><span data-i18n="nav.logout">Cerrar sesión</span></button>
         </div>
       </div>
 
-      <button
-        type="button"
-        id="navDrawerOpenBtn"
-        class="site-iconbtn site-burger"
-        aria-label="Abrir menú"
-        data-i18n-aria="nav.open"
-        aria-expanded="false"
-        aria-controls="navPanel"
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-          <path stroke-linecap="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h16" />
-        </svg>
+      <button type="button" id="navDrawerOpenBtn" class="site-iconbtn site-burger" aria-label="Abrir menú" data-i18n-aria="nav.open" aria-expanded="false" aria-controls="navPanel">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h16" /></svg>
       </button>
     </div>
   </div>
 </header>
 
 <div id="navScrim" class="nav-scrim" hidden></div>
-<div
-  id="navPanel"
-  class="nav-panel"
-  role="dialog"
-  aria-modal="true"
-  aria-labelledby="navPanelTitle"
-  hidden
-  inert
->
+<div id="navPanel" class="nav-panel" role="dialog" aria-modal="true" aria-labelledby="navPanelTitle" hidden inert>
   <div class="nav-panel__bar">
     <p id="navPanelTitle" class="nav-panel__title" data-i18n="nav.menu">Menú</p>
     <button type="button" id="navDrawerCloseBtn" class="site-iconbtn" aria-label="Cerrar menú" data-i18n-aria="nav.close">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-        <path stroke-linecap="round" stroke-width="2" d="M6 6l12 12M18 6L6 18" />
-      </svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-width="2" d="M6 6l12 12M18 6L6 18" /></svg>
     </button>
   </div>
   <nav class="nav-panel__links" aria-label="Secciones" data-i18n-aria="nav.sections">
     {links.map((link) => (
-      <a href={link.href} aria-current={link.on ? "page" : undefined} data-i18n={link.key}>{link.label}</a>
+      <a href={link.href} aria-current={link.on ? "page" : undefined}>
+        <svg class="nav-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS[link.icon]} />
+        <span data-i18n={link.key}>{link.label}</span>
+      </a>
     ))}
   </nav>
+  <div class="nav-panel__account" id="navPanelAccount">
+    <a id="panelLogin" href="/login/"><svg class="nav-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS.user} /><span data-i18n="nav.enter">Entrar</span></a>
+    <a id="panelProfile" href="/garage/" hidden><svg class="nav-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS.user} /><span data-i18n="nav.profile">Mi perfil</span></a>
+    <a id="panelSetups" href="/garage/" hidden><svg class="nav-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS.setups} /><span data-i18n="nav.setups">Mis setups</span></a>
+    <a id="panelSala" hidden><svg class="nav-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS.sala} /><span data-i18n="nav.sala">Sala de ingenieros</span></a>
+    <a id="panelAdmin" hidden><svg class="nav-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS.admin} /><span>Race Control</span></a>
+    <a href="/app/"><svg class="nav-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS.sync} /><span data-i18n="nav.sync">Descargar MMT Sync</span></a>
+    <button type="button" id="panelTheme"><svg class="nav-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS.theme} /><span data-i18n="nav.theme">Tema</span></button>
+    <button type="button" id="panelLogout" hidden><svg class="nav-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS.logout} /><span data-i18n="nav.logout">Cerrar sesión</span></button>
+  </div>
   <div class="nav-panel__lang">
     <p data-i18n="nav.lang">Idioma</p>
     <div class="nav-panel__langs" role="group" aria-label="Idioma" data-i18n-aria="nav.lang">
@@ -157,19 +157,16 @@ const links = [
     </div>
     <p class="lang-fallback" data-lang-fallback data-i18n="nav.fallback" hidden>Esta página sigue en español.</p>
   </div>
-  <div class="nav-panel__account" id="navPanelAccount">
-    <a id="panelLogin" href="/login/" data-i18n="nav.login">Iniciar sesión</a>
-    <a id="panelSala" data-i18n="nav.sala" hidden>Sala</a>
-    <a id="panelAdmin" hidden>Race Control</a>
-    <button type="button" id="panelLogout" data-i18n="nav.logout" hidden>Salir</button>
-  </div>
 </div>
+<script type="application/json" id="navRoster" set:html={JSON.stringify(roster)}></script>
 
 <script is:inline>
 (function () {
   var header = document.getElementById("siteHeader");
   var themeBtn = document.getElementById("themeToggleBtn");
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var roster = [];
+  try { roster = JSON.parse(document.getElementById("navRoster").textContent || "[]"); } catch (e) {}
 
   function onScroll() {
     if (!header) return;
@@ -197,6 +194,10 @@ const links = [
     paintThemeLabel();
   }
   if (themeBtn) themeBtn.addEventListener("click", toggleTheme);
+  var menuTheme = document.getElementById("menuTheme");
+  var panelTheme = document.getElementById("panelTheme");
+  if (menuTheme) menuTheme.addEventListener("click", toggleTheme);
+  if (panelTheme) panelTheme.addEventListener("click", toggleTheme);
   paintThemeLabel();
   document.addEventListener("muntru:i18n", paintThemeLabel);
 
@@ -217,46 +218,129 @@ const links = [
     if (on) el.removeAttribute("hidden");
     else el.setAttribute("hidden", "");
   }
+  function matchPilot(user) {
+    var email = String(user.email || "").trim().toLowerCase();
+    var name = String(user.name || "").trim().toLowerCase();
+    var slug = String(user.slug || "").trim().toLowerCase();
+    var i;
+    for (i = 0; i < roster.length; i++) {
+      if (slug && roster[i].slug === slug) return roster[i];
+    }
+    if (email === ADMIN) {
+      for (i = 0; i < roster.length; i++) if (roster[i].slug === "albertot") return roster[i];
+    }
+    if (name) {
+      for (i = 0; i < roster.length; i++) if (String(roster[i].name || "").toLowerCase() === name) return roster[i];
+    }
+    return null;
+  }
+  function pictureOf(user, pilot) {
+    var keys = ["helmet_url", "photo", "avatar", "image"];
+    for (var i = 0; i < keys.length; i++) {
+      var value = user[keys[i]];
+      if (typeof value === "string" && (value.charAt(0) === "/" || value.indexOf("https://") === 0)) return value;
+    }
+    return pilot && pilot.helmet ? pilot.helmet : "";
+  }
+  function initialsOf(user) {
+    var name = String(user.name || "").trim();
+    if (name) return name.split(/\s+/).slice(0, 2).map(function (part) { return part.charAt(0); }).join("").toUpperCase();
+    return String(user.email || "?").split("@")[0].slice(0, 2).toUpperCase();
+  }
+  function firstOf(user) {
+    var name = String(user.name || "").trim();
+    if (name) return name.split(/\s+/)[0];
+    return String(user.email || "").split("@")[0];
+  }
+  function paintAvatar(rootId, photoId, initialsId, src, initials) {
+    var root = document.getElementById(rootId);
+    var photo = document.getElementById(photoId);
+    var text = document.getElementById(initialsId);
+    if (photo) {
+      if (src) { photo.src = src; photo.removeAttribute("hidden"); }
+      else { photo.removeAttribute("src"); photo.setAttribute("hidden", ""); }
+    }
+    if (text) {
+      if (!src && initials) { text.textContent = initials; text.removeAttribute("hidden"); }
+      else { text.textContent = ""; text.setAttribute("hidden", ""); }
+    }
+    if (root) root.classList.toggle("has-photo", Boolean(src));
+  }
   function syncAccount() {
     var user = readUser();
     var email = user && user.email ? String(user.email).trim().toLowerCase() : "";
     var authed = Boolean(email);
     var admin = authed && (email === ADMIN || user.role === "admin");
+    var pilot = authed ? matchPilot(user) : null;
+    var root = document.getElementById("accountRoot");
     var label = document.getElementById("accountLabel");
-    var login = document.getElementById("accountLogin");
-    var sala = document.getElementById("accountSala");
-    var adminLink = document.getElementById("accountAdmin");
-    var logout = document.getElementById("accountLogout");
-    var panelLogin = document.getElementById("panelLogin");
-    var panelSala = document.getElementById("panelSala");
-    var panelAdmin = document.getElementById("panelAdmin");
-    var panelLogout = document.getElementById("panelLogout");
+    var btn = document.getElementById("accountBtn");
+    if (root) root.classList.toggle("is-in", authed);
+    var first = authed ? firstOf(user) : "";
+    var initials = authed ? initialsOf(user) : "";
+    var src = authed ? pictureOf(user, pilot) : "";
+    paintAvatar("accountAvatar", "accountPhoto", "accountInitials", src, initials);
+    paintAvatar("menuAvatar", "menuPhoto", "menuInitials", src, initials);
     if (label) {
       if (authed) {
-        label.textContent = user.name || email.split("@")[0];
+        label.textContent = first;
         label.removeAttribute("data-i18n");
       } else {
-        label.setAttribute("data-i18n", "nav.account");
-        label.textContent = t("nav.account", "Cuenta");
+        label.setAttribute("data-i18n", "nav.enter");
+        label.textContent = t("nav.enter", "Entrar");
       }
     }
-    show(login, !authed);
-    show(panelLogin, !authed);
+    if (btn) {
+      var narrow = window.matchMedia("(max-width: 1279px)").matches;
+      if (authed && narrow) btn.setAttribute("aria-label", first);
+      else btn.removeAttribute("aria-label");
+    }
+    var head = document.getElementById("profileHead");
+    var nameEl = document.getElementById("profileName");
+    var metaEl = document.getElementById("profileMeta");
+    show(head, authed);
+    if (authed && nameEl) nameEl.textContent = user.name || first;
+    if (authed && metaEl) {
+      var bits = [];
+      if (user.email) bits.push(user.email);
+      if (user.role) bits.push(String(user.role));
+      metaEl.textContent = bits.join(" · ");
+      show(metaEl, bits.length > 0);
+    }
+    var profile = document.getElementById("accountProfile");
+    var panelProfile = document.getElementById("panelProfile");
+    var href = pilot ? "/d/" + pilot.slug + "/" : "/garage/";
+    if (profile) profile.setAttribute("href", href);
+    if (panelProfile) panelProfile.setAttribute("href", href);
+    show(document.getElementById("accountLogin"), !authed);
+    show(document.getElementById("panelLogin"), !authed);
+    ["accountProfile", "panelProfile", "accountSetups", "panelSetups", "accountLogout", "panelLogout"].forEach(function (id) {
+      show(document.getElementById(id), authed);
+    });
+    var sala = document.getElementById("accountSala");
+    var panelSala = document.getElementById("panelSala");
     show(sala, authed);
     show(panelSala, authed);
-    show(logout, authed);
-    show(panelLogout, authed);
-    show(adminLink, admin);
-    show(panelAdmin, admin);
     if (authed) {
       if (sala) sala.setAttribute("href", "/paddock/sala/");
       if (panelSala) panelSala.setAttribute("href", "/paddock/sala/");
+    } else {
+      if (sala) sala.removeAttribute("href");
+      if (panelSala) panelSala.removeAttribute("href");
     }
+    var adminLink = document.getElementById("accountAdmin");
+    var panelAdmin = document.getElementById("panelAdmin");
+    show(adminLink, admin);
+    show(panelAdmin, admin);
     if (admin) {
       if (adminLink) adminLink.setAttribute("href", "/admin/");
       if (panelAdmin) panelAdmin.setAttribute("href", "/admin/");
+    } else {
+      if (adminLink) adminLink.removeAttribute("href");
+      if (panelAdmin) panelAdmin.removeAttribute("href");
     }
   }
+
   function logout() {
     try {
       ["mrt_vault_token", "mrt_vault_user", "muntrume_user_email", "muntrume_auth_state", "muntrume_is_admin"].forEach(function (key) {
@@ -274,18 +358,36 @@ const links = [
   }
   var accountBtn = document.getElementById("accountBtn");
   var accountMenu = document.getElementById("accountMenu");
+  var closing = false;
+  function menuItems() {
+    if (!accountMenu) return [];
+    return Array.prototype.filter.call(accountMenu.querySelectorAll("[role='menuitem']"), function (el) {
+      return !el.hasAttribute("hidden") && el.offsetParent !== null;
+    });
+  }
   function closeAccount() {
-    if (!accountMenu || accountMenu.hidden) return;
-    accountMenu.hidden = true;
+    if (!accountMenu || accountMenu.hidden || closing) return;
+    closing = true;
+    accountMenu.classList.remove("is-open");
     if (accountBtn) accountBtn.setAttribute("aria-expanded", "false");
+    var finish = function () {
+      if (!closing) return;
+      closing = false;
+      accountMenu.hidden = true;
+    };
+    if (reduce) finish();
+    else window.setTimeout(finish, 180);
   }
   function openAccount() {
     if (!accountMenu || !accountBtn) return;
+    closing = false;
     document.dispatchEvent(new Event("muntru:close-lang"));
     closePanel();
     accountMenu.hidden = false;
     accountBtn.setAttribute("aria-expanded", "true");
-    var first = accountMenu.querySelector("a:not([hidden]), button:not([hidden])");
+    if (reduce) accountMenu.classList.add("is-open");
+    else requestAnimationFrame(function () { accountMenu.classList.add("is-open"); });
+    var first = menuItems()[0];
     if (first) first.focus();
   }
   if (accountBtn && accountMenu) {
@@ -295,7 +397,7 @@ const links = [
       else closeAccount();
     });
     document.addEventListener("click", function (e) {
-      if (!accountMenu.hidden && !accountMenu.contains(e.target) && e.target !== accountBtn) closeAccount();
+      if (!accountMenu.hidden && !accountMenu.contains(e.target) && e.target !== accountBtn && !accountBtn.contains(e.target)) closeAccount();
     });
   }
   var logoutBtn = document.getElementById("accountLogout");
@@ -304,6 +406,7 @@ const links = [
   if (panelLogout) panelLogout.addEventListener("click", logout);
   window.addEventListener("muntrume-auth-change", syncAccount);
   window.addEventListener("storage", syncAccount);
+  window.addEventListener("resize", syncAccount);
   syncAccount();
 
   var openBtn = document.getElementById("navDrawerOpenBtn");
@@ -311,9 +414,9 @@ const links = [
   var panel = document.getElementById("navPanel");
   var scrim = document.getElementById("navScrim");
   var lockY = 0;
-  function focusables() {
-    if (!panel) return [];
-    return Array.prototype.filter.call(panel.querySelectorAll("a[href], button:not([disabled])"), function (el) {
+  function focusables(root) {
+    if (!root) return [];
+    return Array.prototype.filter.call(root.querySelectorAll("a[href], button:not([disabled])"), function (el) {
       return !el.hasAttribute("hidden");
     });
   }
@@ -345,7 +448,7 @@ const links = [
     if (scrim) scrim.hidden = false;
     if (openBtn) openBtn.setAttribute("aria-expanded", "true");
     lockBody();
-    var list = focusables();
+    var list = focusables(panel);
     (closeBtn || list[0] || panel).focus();
   }
   if (openBtn) openBtn.addEventListener("click", openPanel);
@@ -353,22 +456,35 @@ const links = [
   if (scrim) scrim.addEventListener("click", closePanel);
   if (panel) {
     panel.addEventListener("click", function (e) {
-      var link = e.target.closest && e.target.closest("a");
+      var link = e.target.closest && e.target.closest("a[href]");
       if (link) closePanel();
     });
   }
   document.addEventListener("keydown", function (e) {
+    var menuOpen = accountMenu && !accountMenu.hidden;
+    var panelOpen = panel && !panel.hidden;
     if (e.key === "Escape") {
-      if (panel && !panel.hidden) { e.preventDefault(); closePanel(); return; }
-      if (accountMenu && !accountMenu.hidden) { e.preventDefault(); closeAccount(); if (accountBtn) accountBtn.focus(); }
+      if (panelOpen) { e.preventDefault(); closePanel(); return; }
+      if (menuOpen) { e.preventDefault(); closeAccount(); if (accountBtn) accountBtn.focus(); }
       return;
     }
-    if (e.key !== "Tab" || !panel || panel.hidden) return;
-    var list = focusables();
+    if ((e.key === "ArrowDown" || e.key === "ArrowUp") && menuOpen) {
+      var items = menuItems();
+      if (!items.length) return;
+      e.preventDefault();
+      var index = items.indexOf(document.activeElement);
+      var next = e.key === "ArrowDown" ? (index + 1) % items.length : (index <= 0 ? items.length - 1 : index - 1);
+      items[next].focus();
+      return;
+    }
+    if (e.key !== "Tab") return;
+    var root = panelOpen ? panel : (menuOpen ? accountMenu : null);
+    if (!root) return;
+    var list = panelOpen ? focusables(panel) : menuItems();
     if (!list.length) return;
     var first = list[0];
     var last = list[list.length - 1];
-    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    if (e.shiftKey && (document.activeElement === first || document.activeElement === accountBtn)) { e.preventDefault(); last.focus(); }
     else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
   });
   if (reduce && panel) panel.style.transition = "none";
