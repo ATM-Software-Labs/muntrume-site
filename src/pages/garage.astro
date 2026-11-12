@@ -61,46 +61,49 @@ const garageSchema = {
   ogImageHeight={630}
   ogLocale="es_ES"
   schemaJson={garageSchema}
+  translated
+  i18nTitle="garage.meta.title"
+  i18nDescription="garage.meta.desc"
 >
-  <section class="g2" aria-labelledby="garageTitle" data-no-i18n>
+  <section class="g2" aria-labelledby="garageTitle">
     <div class="r-wrap g2-wrap">
       <header class="g2-head">
-        <p class="r-kicker">Setups .sto</p>
-        <h1 id="garageTitle" class="r-h2">Garage</h1>
-        <p class="r-lead">{catalog.total_setups.toLocaleString("es-ES")} archivos en el catálogo. La descarga pide sesión de piloto: el navegador no genera el .sto.</p>
+        <p class="r-kicker" data-i18n="garage.kicker">Setups .sto</p>
+        <h1 id="garageTitle" class="r-h2" data-i18n="garage.title">Garage</h1>
+        <p class="r-lead"><span data-i18n-num={catalog.total_setups}>{catalog.total_setups.toLocaleString("es-ES")}</span> <span data-i18n="garage.lead">archivos en el catálogo. La descarga pide sesión de piloto: el navegador no genera el .sto.</span></p>
       </header>
 
       <article class="g2-sync">
         <div>
-          <h2 class="r-h3">MMT Sync</h2>
-          <p>Windows · v0.1.26. Copia los setups a la carpeta de iRacing.</p>
+          <h2 class="r-h3" data-i18n="garage.sync.title">MMT Sync</h2>
+          <p data-i18n="garage.sync.body">Windows · v0.1.26. Copia los setups a la carpeta de iRacing.</p>
         </div>
         <div class="g2-sync__actions">
-          <a class="r-btn r-btn--primary" href="https://github.com/atrumin16/muntrume-site/releases/latest" target="_blank" rel="noopener noreferrer">Descargar</a>
-          <a class="r-link" href="/app/">Qué es MMT Sync</a>
+          <a class="r-btn r-btn--primary" href="https://github.com/atrumin16/muntrume-site/releases/latest" target="_blank" rel="noopener noreferrer" data-i18n="garage.sync.download">Descargar</a>
+          <a class="r-link" href="/app/" data-i18n="garage.sync.more">Qué es MMT Sync</a>
         </div>
       </article>
 
       <form class="g2-bar" id="garageFilters" role="search">
         <label>
-          Buscar
-          <input id="garageSearch" type="search" placeholder="Coche o circuito" autocomplete="off" />
+          <span data-i18n="garage.search">Buscar</span>
+          <input id="garageSearch" type="search" placeholder="Coche o circuito" data-i18n-placeholder="garage.search.ph" autocomplete="off" />
         </label>
         <label>
-          Coche
+          <span data-i18n="garage.car">Coche</span>
           <select id="garageCar">
-            <option value="">Todos (índice)</option>
+            <option value="" data-i18n="garage.car.all">Todos (índice)</option>
             {cars.map((item) => <option value={item.id}>{item.label}</option>)}
           </select>
         </label>
         <label>
-          Tipo
+          <span data-i18n="garage.type">Tipo</span>
           <select id="garageType">
-            <option value="">Todos</option>
-            <option value="race">Carrera</option>
-            <option value="qualy">Clasificación</option>
-            <option value="wet">Lluvia</option>
-            <option value="endurance">Resistencia</option>
+            <option value="" data-i18n="garage.type.all">Todos</option>
+            <option value="race" data-i18n="garage.type.race">Carrera</option>
+            <option value="qualy" data-i18n="garage.type.qualy">Clasificación</option>
+            <option value="wet" data-i18n="garage.type.wet">Lluvia</option>
+            <option value="endurance" data-i18n="garage.type.endurance">Resistencia</option>
           </select>
         </label>
       </form>
@@ -108,14 +111,14 @@ const garageSchema = {
       <p id="garageStatus" class="g2-status" role="status" data-state="ready">Índice del catálogo. Elige un coche para ver sus archivos.</p>
       <div class="g2-scroll">
         <table class="g2-table">
-          <caption class="sr-only">Setups del garage</caption>
+          <caption class="sr-only" data-i18n="garage.caption">Setups del garage</caption>
           <thead>
             <tr>
-              <th scope="col">Coche</th>
-              <th scope="col">Circuito</th>
-              <th scope="col">Tipo</th>
-              <th scope="col">Tamaño</th>
-              <th scope="col"><span class="sr-only">Descarga</span></th>
+              <th scope="col" data-i18n="garage.col.car">Coche</th>
+              <th scope="col" data-i18n="garage.col.track">Circuito</th>
+              <th scope="col" data-i18n="garage.col.type">Tipo</th>
+              <th scope="col" data-i18n="garage.col.size">Tamaño</th>
+              <th scope="col"><span class="sr-only" data-i18n="garage.col.download">Descarga</span></th>
             </tr>
           </thead>
           <tbody id="garageList">
@@ -123,17 +126,17 @@ const garageSchema = {
               <tr>
                 <td>{item.carLabel}</td>
                 <td>{item.track}</td>
-                <td>{kindLabel[item.kind]}</td>
+                <td data-i18n={"garage.kind." + item.kind}>{kindLabel[item.kind]}</td>
                 <td>{kb(item.sizeKb)}</td>
                 <td>
-                  <button type="button" class="g2-dl" data-download data-id={item.id} data-file={item.file} data-auth="pending">Inicia sesión</button>
+                  <button type="button" class="g2-dl" data-download data-id={item.id} data-file={item.file} data-auth="pending" data-i18n="garage.dl.out">Inicia sesión</button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <button type="button" id="garageMore" class="r-btn">Cargar más</button>
+      <button type="button" id="garageMore" class="r-btn" data-i18n="garage.more">Cargar más</button>
       <script type="application/json" id="garageMeta" set:html={JSON.stringify({ labels, total: catalog.total_setups })}></script>
     </div>
   </section>
@@ -141,50 +144,50 @@ const garageSchema = {
   <div id="authModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="authTitle" hidden>
     <div class="g-dialog">
       <div class="g-dialog__bar">
-        <h2 id="authTitle">Acceso de piloto</h2>
-        <button type="button" class="m-notice__close" data-close-modal="authModal" aria-label="Cerrar">×</button>
+        <h2 id="authTitle" data-i18n="garage.auth.title">Acceso de piloto</h2>
+        <button type="button" class="m-notice__close" data-close-modal="authModal" aria-label="Cerrar" data-i18n-aria="garage.auth.close">×</button>
       </div>
       <div class="g-auth-tabs">
-        <button type="button" id="tabLoginBtn" class="is-on" data-auth-tab="login">Entrar</button>
-        <button type="button" id="tabJoinBtn" data-auth-tab="join">Solicitar acceso</button>
+        <button type="button" id="tabLoginBtn" class="is-on" data-auth-tab="login" data-i18n="garage.auth.login">Entrar</button>
+        <button type="button" id="tabJoinBtn" data-auth-tab="join" data-i18n="garage.auth.join">Solicitar acceso</button>
       </div>
       <form id="loginForm">
         <div class="g-field">
-          <label for="loginEmail">Correo</label>
+          <label for="loginEmail" data-i18n="garage.auth.email">Correo</label>
           <input type="email" id="loginEmail" required autocomplete="username" />
         </div>
         <div class="g-field">
-          <label for="loginKey">Contraseña</label>
+          <label for="loginKey" data-i18n="garage.auth.password">Contraseña</label>
           <div class="g-pass">
             <input type="password" id="loginKey" required autocomplete="current-password" />
-            <button type="button" class="g-pass__toggle" data-toggle-pass="loginKey" aria-pressed="false">Mostrar</button>
+            <button type="button" class="g-pass__toggle" data-toggle-pass="loginKey" aria-pressed="false" data-i18n="garage.auth.show">Mostrar</button>
           </div>
         </div>
         <div class="g2-authrow">
-          <label class="g-check" for="rememberMe"><input type="checkbox" id="rememberMe" checked /> Recordar sesión</label>
-          <button type="button" class="r-link" id="forgotOpenBtn">¿Olvidaste la contraseña?</button>
+          <label class="g-check" for="rememberMe"><input type="checkbox" id="rememberMe" checked /> <span data-i18n="garage.auth.remember">Recordar sesión</span></label>
+          <button type="button" class="r-link" id="forgotOpenBtn" data-i18n="garage.auth.forgot">¿Olvidaste la contraseña?</button>
         </div>
         <div id="loginError" class="m-notice m-notice--inline m-notice--error hidden" role="alert" hidden></div>
-        <button type="submit" id="loginSubmitBtn" class="r-btn r-btn--primary"><span id="loginBtnText">Entrar</span></button>
+        <button type="submit" id="loginSubmitBtn" class="r-btn r-btn--primary"><span id="loginBtnText" data-i18n="garage.auth.login">Entrar</span></button>
       </form>
       <form id="joinForm" class="hidden" hidden>
-        <p>Deja tu nombre y el correo de iRacing.</p>
+        <p data-i18n="garage.auth.joinLead">Deja tu nombre y el correo de iRacing.</p>
         <div class="g-field">
-          <label for="reqName">Nombre</label>
+          <label for="reqName" data-i18n="garage.auth.name">Nombre</label>
           <input type="text" id="reqName" required />
         </div>
         <div class="g-field">
-          <label for="reqEmail">Correo</label>
+          <label for="reqEmail" data-i18n="garage.auth.email">Correo</label>
           <input type="email" id="reqEmail" required />
         </div>
         <div class="g-field">
-          <label for="reqMessage">Mensaje</label>
+          <label for="reqMessage" data-i18n="garage.auth.message">Mensaje</label>
           <textarea id="reqMessage" rows="3"></textarea>
         </div>
         <input type="hidden" id="reqWebsite" value="" />
         <div id="joinFeedback" class="m-notice m-notice--inline m-notice--success hidden" role="status" hidden></div>
         <div id="joinError" class="m-notice m-notice--inline m-notice--error hidden" role="alert" hidden></div>
-        <button type="submit" id="joinSubmitBtn" class="r-btn r-btn--primary">Solicitar acceso</button>
+        <button type="submit" id="joinSubmitBtn" class="r-btn r-btn--primary" data-i18n="garage.auth.join">Solicitar acceso</button>
       </form>
     </div>
   </div>
@@ -192,37 +195,37 @@ const garageSchema = {
   <div id="forgotPasswordModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="forgotTitle" hidden>
     <div class="g-dialog">
       <div class="g-dialog__bar">
-        <h2 id="forgotTitle">Recuperar acceso</h2>
-        <button type="button" class="m-notice__close" data-close-modal="forgotPasswordModal" aria-label="Cerrar">×</button>
+        <h2 id="forgotTitle" data-i18n="garage.auth.forgotTitle">Recuperar acceso</h2>
+        <button type="button" class="m-notice__close" data-close-modal="forgotPasswordModal" aria-label="Cerrar" data-i18n-aria="garage.auth.close">×</button>
       </div>
-      <p>Escribe el correo de la cuenta.</p>
+      <p data-i18n="garage.auth.forgotLead">Escribe el correo de la cuenta.</p>
       <div class="g-field">
-        <label for="forgotEmail">Correo</label>
+        <label for="forgotEmail" data-i18n="garage.auth.email">Correo</label>
         <input type="email" id="forgotEmail" />
       </div>
       <div id="forgotError" class="m-notice m-notice--inline m-notice--error hidden" role="alert" hidden></div>
       <div id="forgotFeedback" class="m-notice m-notice--inline m-notice--success hidden" role="status" hidden></div>
-      <button type="button" id="forgotSubmitBtn" class="r-btn r-btn--primary">Enviar enlace</button>
+      <button type="button" id="forgotSubmitBtn" class="r-btn r-btn--primary" data-i18n="garage.auth.sendLink">Enviar enlace</button>
     </div>
   </div>
 
   <div id="setPasswordModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="setPwTitle" hidden>
     <div class="g-dialog">
       <div class="g-dialog__bar">
-        <h2 id="setPwTitle">Crea tu contraseña</h2>
-        <button type="button" class="m-notice__close" data-close-modal="setPasswordModal" aria-label="Cerrar">×</button>
+        <h2 id="setPwTitle" data-i18n="garage.auth.setTitle">Crea tu contraseña</h2>
+        <button type="button" class="m-notice__close" data-close-modal="setPasswordModal" aria-label="Cerrar" data-i18n-aria="garage.auth.close">×</button>
       </div>
-      <p id="setPwIntro">Comprobando el enlace…</p>
+      <p id="setPwIntro" data-i18n="garage.auth.setIntro">Comprobando el enlace…</p>
       <form id="setPasswordForm" class="hidden" hidden>
         <div class="g-field">
-          <label for="setPwNew">Nueva contraseña</label>
+          <label for="setPwNew" data-i18n="garage.auth.new">Nueva contraseña</label>
           <input type="password" id="setPwNew" required minlength="10" maxlength="128" autocomplete="new-password" />
         </div>
         <div class="g-field">
-          <label for="setPwConfirm">Confirmar contraseña</label>
+          <label for="setPwConfirm" data-i18n="garage.auth.confirm">Confirmar contraseña</label>
           <input type="password" id="setPwConfirm" required minlength="10" maxlength="128" autocomplete="new-password" />
         </div>
-        <button type="submit" id="setPwBtn" class="r-btn r-btn--primary">Guardar y entrar</button>
+        <button type="submit" id="setPwBtn" class="r-btn r-btn--primary" data-i18n="garage.auth.saveEnter">Guardar y entrar</button>
       </form>
       <div id="setPwError" class="m-notice m-notice--inline m-notice--error hidden" role="alert" hidden></div>
     </div>
@@ -231,26 +234,26 @@ const garageSchema = {
   <div id="changePasswordModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="changePwTitle" hidden>
     <div class="g-dialog">
       <div class="g-dialog__bar">
-        <h2 id="changePwTitle">Nueva contraseña</h2>
-        <button type="button" class="m-notice__close" data-close-modal="changePasswordModal" aria-label="Cerrar">×</button>
+        <h2 id="changePwTitle" data-i18n="garage.auth.changeTitle">Nueva contraseña</h2>
+        <button type="button" class="m-notice__close" data-close-modal="changePasswordModal" aria-label="Cerrar" data-i18n-aria="garage.auth.close">×</button>
       </div>
-      <p>Elige una contraseña permanente para la cuenta.</p>
+      <p data-i18n="garage.auth.changeLead">Elige una contraseña permanente para la cuenta.</p>
       <form id="changePasswordForm">
         <div class="g-field">
-          <label for="newPassInput">Nueva contraseña</label>
+          <label for="newPassInput" data-i18n="garage.auth.new">Nueva contraseña</label>
           <input type="password" id="newPassInput" required minlength="10" maxlength="128" autocomplete="new-password" />
         </div>
         <div class="g-field">
-          <label for="confirmPassInput">Confirmar contraseña</label>
+          <label for="confirmPassInput" data-i18n="garage.auth.confirm">Confirmar contraseña</label>
           <input type="password" id="confirmPassInput" required minlength="10" maxlength="128" autocomplete="new-password" />
         </div>
         <div id="changePassError" class="m-notice m-notice--inline m-notice--error hidden" role="alert" hidden></div>
-        <button type="submit" id="changePassBtn" class="r-btn r-btn--primary">Guardar</button>
+        <button type="submit" id="changePassBtn" class="r-btn r-btn--primary" data-i18n="garage.auth.save">Guardar</button>
       </form>
     </div>
   </div>
 
-  <script is:inline src="/assets/js/garage-list.js?v=t321" defer></script>
+  <script is:inline src="/assets/js/garage-list.js?v=t330" defer></script>
   <script is:inline src="/assets/js/garage-auth.js?v=t321" defer></script>
   <script>
     import { initSessionGate } from "../scripts/session-gate";

@@ -1,72 +1,56 @@
 ---
 const year = new Date().getFullYear();
 const sections = [
-  { href: "/", label: "Inicio" },
-  { href: "/pilotos/", label: "Pilotos" },
-  { href: "/garage/", label: "Garage" },
-  { href: "/paddock/", label: "Paddock" },
-  { href: "/noticias/", label: "Noticias" },
-  { href: "/app/", label: "App · MMT Sync" },
+  { href: "/", label: "Inicio", key: "nav.home" },
+  { href: "/pilotos/", label: "Pilotos", key: "nav.drivers" },
+  { href: "/garage/", label: "Garage", key: "nav.garage" },
+  { href: "/paddock/", label: "Paddock", key: "nav.paddock" },
+  { href: "/noticias/", label: "Noticias", key: "nav.news" },
+  { href: "/app/", label: "App · MMT Sync", key: "footer.app" },
 ];
 const legal = [
-  { href: "/aviso-legal/", label: "Aviso legal" },
-  { href: "/privacidad/", label: "Privacidad" },
-  { href: "/cookies/", label: "Cookies" },
-  { href: "/legal/retirada/", label: "Retirada" },
-  { href: "/legal/fuentes/", label: "Fuentes" },
+  { href: "/aviso-legal/", label: "Aviso legal", key: "footer.aviso" },
+  { href: "/privacidad/", label: "Privacidad", key: "footer.privacy" },
+  { href: "/cookies/", label: "Cookies", key: "footer.cookies" },
+  { href: "/legal/retirada/", label: "Retirada", key: "footer.takedown" },
+  { href: "/legal/fuentes/", label: "Fuentes", key: "footer.sources" },
 ];
 ---
 
-<footer class="site-footer" data-no-i18n>
+<footer class="site-footer">
   <div class="site-footer__bar">
     <div class="site-footer__brand">
       <a class="site-logo" href="/">
         <img src="/assets/img/logo-64.webp" width="28" height="28" alt="" loading="lazy" decoding="async" />
         <span>Muntrume</span>
       </a>
-      <p>Equipo de iRacing en Sant Andreu, Barcelona.</p>
+      <p data-i18n="footer.blurb">Equipo de iRacing en Sant Andreu, Barcelona.</p>
     </div>
-    <nav class="site-footer__links" aria-label="Secciones">
-      {sections.map((link) => <a href={link.href}>{link.label}</a>)}
+    <nav class="site-footer__links" aria-label="Secciones" data-i18n-aria="nav.sections">
+      {sections.map((link) => <a href={link.href} data-i18n={link.key}>{link.label}</a>)}
     </nav>
-    <nav class="site-footer__links" aria-label="Comunidad">
+    <nav class="site-footer__links" aria-label="Comunidad" data-i18n-aria="footer.community">
       <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer">Discord</a>
       <a href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer">Garage 61</a>
     </nav>
-    <nav class="site-footer__links" aria-label="Información legal">
-      {legal.map((link) => <a href={link.href}>{link.label}</a>)}
+    <nav class="site-footer__links" aria-label="Información legal" data-i18n-aria="footer.legal">
+      {legal.map((link) => <a href={link.href} data-i18n={link.key}>{link.label}</a>)}
     </nav>
   </div>
   <div class="site-footer__meta">
     <p>© <span id="copyYear">{year}</span> Muntrume Motorsport</p>
-    <div class="site-lang" role="group" aria-label="Idioma">
-      <button type="button" data-lang="en">EN</button>
-      <button type="button" data-lang="es">ES</button>
-      <button type="button" data-lang="ca">CA</button>
-      <button type="button" data-lang="fr">FR</button>
+    <div class="site-lang" role="group" aria-label="Idioma" data-i18n-aria="nav.lang">
+      <button type="button" data-set-lang="es" aria-pressed="true">ES</button>
+      <button type="button" data-set-lang="ca" aria-pressed="false">CA</button>
+      <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
+      <button type="button" data-set-lang="fr" aria-pressed="false">FR</button>
     </div>
+    <p class="lang-fallback" data-lang-fallback data-i18n="nav.fallback" hidden>Esta página sigue en español.</p>
   </div>
 </footer>
 <script is:inline>
 (function () {
   var y = document.getElementById("copyYear");
   if (y) y.textContent = String(new Date().getFullYear());
-  var current = "en";
-  try {
-    current = (localStorage.getItem("muntrume_lang") || localStorage.getItem("mm_lang") || document.documentElement.lang || "en").toLowerCase();
-  } catch (e) {}
-  document.querySelectorAll(".site-lang [data-lang]").forEach(function (btn) {
-    var on = btn.getAttribute("data-lang") === current;
-    btn.setAttribute("aria-pressed", on ? "true" : "false");
-    btn.addEventListener("click", function () {
-      var code = btn.getAttribute("data-lang");
-      try {
-        localStorage.setItem("muntrume_lang", code);
-        localStorage.setItem("mm_lang", code);
-      } catch (err) {}
-      if (window.muntruI18n && typeof window.muntruI18n.set === "function") window.muntruI18n.set(code);
-      else location.reload();
-    });
-  });
 })();
 </script>

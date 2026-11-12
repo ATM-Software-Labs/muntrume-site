@@ -8,40 +8,55 @@ const pageDescription = "Official Muntrume Motorsport Paddock. Canal de radio en
 
 const channels = [
   {
-    title: "Discord Paddock Radio",
+    titleKey: "paddock.ch.discord.title",
+    title: "Radio del paddock en Discord",
+    descKey: "paddock.ch.discord.desc",
     desc: "Canal oficial de voz en carrera y enlace directo con pilotos e ingenieros.",
     link: "https://discord.gg/ehX6B8JUtE",
-    cta: "Conectar a Radio",
+    ctaKey: "paddock.ch.discord.cta",
+    cta: "Conectar a la radio",
     isExternal: true,
     icon: "discord",
-    badge: "Voice & Radio"
+    badgeKey: "paddock.ch.discord.badge",
+    badge: "Voz y radio"
   },
   {
+    titleKey: "paddock.ch.g61.title",
     title: "Telemetría Garage 61",
+    descKey: "paddock.ch.g61.desc",
     desc: "Datos a 60 Hz, comparación de sectores, trazadas y deltas con el equipo.",
     link: "https://garage61.net/app/teams/muntrume-motorsport",
-    cta: "Abrir Telemetría",
+    ctaKey: "paddock.ch.g61.cta",
+    cta: "Abrir telemetría",
     isExternal: true,
     icon: "garage61",
-    badge: "60 Hz Live"
+    badgeKey: "paddock.ch.g61.badge",
+    badge: "60 Hz en directo"
   },
   {
-    title: "Setup Vault (.STO)",
-    desc: "Más de 41.000 reglajes listos para sincronizar en tu simulador iRacing.",
-    link: "/garage",
-    cta: "Acceder al Vault",
+    titleKey: "paddock.ch.vault.title",
+    title: "Setup vault (.sto)",
+    descKey: "paddock.ch.vault.desc",
+    desc: "Reglajes de carrera listos para sincronizar en tu simulador iRacing.",
+    link: "/garage/",
+    ctaKey: "paddock.ch.vault.cta",
+    cta: "Abrir el Garage",
     isExternal: false,
     icon: "vault",
-    badge: "+41.000 STO"
+    badgeKey: "paddock.ch.vault.badge",
+    badge: "Archivos .sto"
   },
   {
-    title: "Roster de Pilotos",
-    desc: "Fichas oficiales, índice MTI y estadísticas en series Sports Car.",
-    link: "/drivers",
-    cta: "Ver Pilotos",
+    titleKey: "paddock.ch.roster.title",
+    title: "Plantilla de pilotos",
+    descKey: "paddock.ch.roster.desc",
+    desc: "Fichas oficiales, índice MTI y estadísticas en Sports Car.",
+    link: "/pilotos/",
+    ctaKey: "paddock.ch.roster.cta",
+    cta: "Ver pilotos",
     isExternal: false,
     icon: "roster",
-    badge: "3 Oficiales"
+    badge: `${PILOTOS.length} oficiales`
   }
 ];
 
@@ -49,29 +64,38 @@ const socialLinks = [
   {
     name: "Discord Paddock",
     handle: "Muntrume Radio",
-    desc: "Canal oficial de voz en carrera, salas técnicas de telemetría y sala de espera para pilotos aspirantes.",
+    descKey: "s.discord.desc",
+    desc: "Canal oficial de voz en carrera, salas técnicas de telemetría y sala de espera para pilotos que quieren entrar.",
     link: "https://discord.gg/ehX6B8JUtE",
+    ctaKey: "s.discord.cta",
     cta: "Entrar a Discord",
-    badge: "Voz & Telemetría",
+    badgeKey: "s.discord.badge",
+    badge: "Voz y telemetría",
     icon: "discord",
     brandColor: "#5865F2"
   },
   {
     name: "Garage 61",
     handle: "Muntrume Motorsport",
-    desc: "Perfil oficial de escudería en Garage 61 con análisis de vueltas a 60 Hz y comparación de deltas por sector.",
+    descKey: "s.g61.desc",
+    desc: "Perfil oficial del equipo en Garage 61, con análisis de vueltas a 60 Hz y deltas por sector.",
     link: "https://garage61.net/app/teams/muntrume-motorsport",
-    cta: "Abrir Telemetría",
-    badge: "60 Hz Live",
+    ctaKey: "s.g61.cta",
+    cta: "Abrir telemetría",
+    badgeKey: "s.g61.badge",
+    badge: "60 Hz en directo",
     icon: "garage61",
     brandColor: "#00E699"
   },
   {
     name: "YouTube",
     handle: "@MuntrumeMotorsport",
-    desc: "Retransmisiones oficiales de carreras de resistencia de 24h, vueltas rápidas on-board y análisis de setups.",
+    descKey: "s.yt.desc",
+    desc: "Retransmisiones oficiales de carreras de resistencia de 24 h, vueltas onboard y notas de setups.",
     link: "https://www.youtube.com",
-    cta: "Ver Canal",
+    ctaKey: "s.yt.cta",
+    cta: "Ver el canal",
+    badgeKey: "s.yt.badge",
     badge: "Onboards HD",
     icon: "youtube",
     brandColor: "#FF0000"
@@ -79,19 +103,25 @@ const socialLinks = [
   {
     name: "Twitch",
     handle: "MuntrumeLive",
-    desc: "Directos multiclase desde el habitáculo, stint radio con ingenieros de pista y sesiones de práctica.",
+    descKey: "s.twitch.desc",
+    desc: "Directos multiclase desde el habitáculo, radio de stint con los ingenieros y sesiones de práctica.",
     link: "https://www.twitch.tv",
-    cta: "Seguir Directos",
-    badge: "Cockpit Live",
+    ctaKey: "s.twitch.cta",
+    cta: "Seguir los directos",
+    badgeKey: "s.twitch.badge",
+    badge: "Habitáculo en directo",
     icon: "twitch",
     brandColor: "#9146FF"
   },
   {
     name: "X / Twitter",
     handle: "@MuntrumeRT",
-    desc: "Despachos oficiales del equipo, resultados en directo, sanciones de carrera y partes meteorológicos.",
+    descKey: "s.x.desc",
+    desc: "Publicaciones oficiales del equipo, resultados en directo, sanciones de carrera y notas del tiempo.",
     link: "https://x.com",
+    ctaKey: "s.x.cta",
     cta: "Seguir en X",
+    badgeKey: "s.x.badge",
     badge: "Actualidad",
     icon: "x",
     brandColor: "#1DA1F2"
@@ -99,10 +129,13 @@ const socialLinks = [
   {
     name: "Instagram",
     handle: "@muntrumems",
-    desc: "Fotografía del paddock, libreas corporativas de la temporada 2026, cascos y momentos del equipo.",
+    descKey: "s.ig.desc",
+    desc: "Fotos del paddock, libreas de 2026, cascos y momentos del equipo.",
     link: "https://www.instagram.com",
-    cta: "Ver Galería",
-    badge: "Lifestyle",
+    ctaKey: "s.ig.cta",
+    cta: "Ver la galería",
+    badgeKey: "s.ig.badge",
+    badge: "Fotos",
     icon: "instagram",
     brandColor: "#E1306C"
   }
@@ -113,7 +146,8 @@ const teamCars = [
     name: "Ferrari 296 GT3",
     category: "GT3",
     driverDorsals: ["#16", "#1", "#22"],
-    desc: "Coche oficial de resistencia GT3 con motor V6 Twin-Turbo y reparto de frenada optimizado.",
+    descKey: "paddock.car.ferrari",
+    desc: "Coche oficial de resistencia GT3 con motor V6 biturbo y reparto de frenada preparado para el equipo.",
     setupCar: "Ferrari 296 GT3",
     img: "/assets/img/coche1-640.webp"
   },
@@ -121,7 +155,8 @@ const teamCars = [
     name: "Ford Mustang GT3",
     category: "GT3",
     driverDorsals: ["#16"],
-    desc: "Chasis V8 de competición homologado para la serie IMSA GTD y resistencia multiclase.",
+    descKey: "paddock.car.ford",
+    desc: "Chasis V8 de competición homologado para la clase IMSA GTD y la resistencia multiclase.",
     setupCar: "Ford Mustang GT3",
     img: "/assets/img/coche3-640.webp"
   },
@@ -129,7 +164,8 @@ const teamCars = [
     name: "McLaren 720S GT3 EVO",
     category: "GT3",
     driverDorsals: ["#16"],
-    desc: "Aerodinámica de alto downforce y estabilidad en virajes rápidos de circuito largo.",
+    descKey: "paddock.car.mclaren",
+    desc: "Aerodinámica de alta carga y estabilidad en los virajes rápidos de un circuito largo.",
     setupCar: "McLaren 720S GT3 EVO",
     img: "/assets/img/coche4-640.webp"
   },
@@ -137,7 +173,8 @@ const teamCars = [
     name: "Porsche 911 GT3 R (992)",
     category: "GT3",
     driverDorsals: ["#1"],
-    desc: "Motor bóxer trasero con tracción excelente en tracción lenta y curvas enlazadas.",
+    descKey: "paddock.car.porsche",
+    desc: "Motor bóxer trasero con buena tracción a la salida de curvas lentas y curvas enlazadas.",
     setupCar: "Porsche 911 GT3 R (992)",
     img: "/assets/img/coche2-640.webp"
   }
@@ -147,7 +184,7 @@ const galleryItems = [
   {
     id: "g1",
     title: "Ferrari 296 GT3 #27",
-    subtitle: "Muntrume Motorsport Livery · iRacing",
+    subtitle: "Librea de Muntrume Motorsport · iRacing",
     category: "cars",
     tag: "GT3 Oficial",
     img: "/assets/img/coche1.webp",
@@ -217,7 +254,7 @@ const galleryItems = [
   {
     id: "g8",
     title: "Identidad Corporativa 2026",
-    subtitle: "Muntrume Motorsport Visual Identity",
+    subtitle: "Identidad visual de Muntrume Motorsport",
     category: "tech",
     tag: "Escudería",
     img: "/assets/img/og-cover.jpg",
@@ -237,23 +274,13 @@ const galleryItems = [
 ];
 ---
 
-<Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/paddock/" ogImage="https://muntru.me/assets/img/og-about.jpg" ogImageAlt="Paddock de Muntrume Motorsport">
-  <div class="pt-24 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-20">
-    
-    <!-- 1. Header Hero -->
-    <section class="text-center max-w-3xl mx-auto space-y-4 pt-6">
-      <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[var(--r-surface)] border border-[var(--r-accent)]/40 text-[var(--r-accent)] text-xs font-mono uppercase tracking-wider">
-        <span class="w-2 h-2 rounded-full bg-[var(--r-accent)] animate-pulse"></span>
-        <span>PADDOCK &amp; TEAM HQ · SANT ANDREU, BARCELONA</span>
-      </div>
+<Layout title={pageTitle} description="Paddock de Muntrume Motorsport: radio en carrera, telemetría de Garage 61, la galería de iRacing y los canales oficiales." canonical="https://muntru.me/paddock/" ogImage="https://muntru.me/assets/img/og-about.jpg" ogImageAlt="Paddock de Muntrume Motorsport" translated i18nTitle="paddock.meta.title" i18nDescription="paddock.meta.desc">
+  <div class="pt-8 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
 
-      <h1 class="text-4xl sm:text-6xl font-extrabold text-[var(--r-text)] tracking-tight font-display uppercase">
-        MUNTRUME <span class="text-[var(--r-accent)]">PADDOCK</span>
-      </h1>
-
-      <p class="text-base sm:text-lg text-[var(--r-muted)] leading-relaxed max-w-2xl mx-auto font-normal">
-        Punto de encuentro del equipo. Acceso directo a comunicaciones de radio en carrera, directos técnicos, galería oficial de competición y solicitud de ingreso.
-      </p>
+    <section class="max-w-3xl space-y-4">
+      <p class="r-kicker" data-i18n="paddock.kicker">Paddock · Sant Andreu, Barcelona</p>
+      <h1 class="r-h2" data-i18n="paddock.title">Paddock</h1>
+      <p class="r-lead" data-i18n="paddock.lead">Punto de encuentro del equipo. Acceso directo a la radio en carrera, los directos técnicos, la galería oficial y la solicitud de ingreso.</p>
     </section>
 
     <!-- 2. Grid de 4 Canales Oficiales con Iconos Destacados -->
@@ -275,16 +302,16 @@ const galleryItems = [
                 <svg class="w-6 h-6 fill-none stroke-current" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
               )}
             </div>
-            <span class="px-2.5 py-0.5 rounded-full bg-[var(--r-bg-2)] border border-[var(--r-line)] text-[10px] font-mono text-[var(--r-accent)] font-semibold">
+            <span class="px-2.5 py-0.5 rounded-full bg-[var(--r-bg-2)] border border-[var(--r-line)] text-[10px] font-mono text-[var(--r-accent)] font-semibold" data-i18n={c.badgeKey}>
               {c.badge}
             </span>
           </div>
 
           <div>
-            <h3 class="text-lg font-bold text-[var(--r-text)] font-display tracking-tight group-hover:text-[var(--r-accent)] transition-colors">
+            <h3 class="text-lg font-bold text-[var(--r-text)] font-display tracking-tight group-hover:text-[var(--r-accent)] transition-colors" data-i18n={c.titleKey}>
               {c.title}
             </h3>
-            <p class="text-xs text-[var(--r-muted)] mt-1.5 leading-relaxed">
+            <p class="text-xs text-[var(--r-muted)] mt-1.5 leading-relaxed" data-i18n={c.descKey}>
               {c.desc}
             </p>
           </div>
@@ -295,7 +322,7 @@ const galleryItems = [
             rel={c.isExternal ? "noopener noreferrer" : ""} 
             class="pt-4 border-t border-[var(--r-line)] text-xs font-mono font-bold text-[var(--r-accent)] hover:underline flex items-center justify-between group-hover:translate-x-0.5 transition-transform"
           >
-            <span>{c.cta}</span>
+            <span data-i18n={c.ctaKey}>{c.cta}</span>
             <span>&rarr;</span>
           </a>
         </div>
@@ -308,16 +335,16 @@ const galleryItems = [
         <div>
           <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--r-accent)] mb-1">
             <span class="w-2 h-2 rounded-full bg-[var(--r-accent)]"></span>
-            <span>COMMUNITY &amp; SOCIAL HUBS</span>
+            <span data-i18n="paddock.social.kicker">Canales de la comunidad</span>
           </div>
-          <h2 class="text-2xl sm:text-4xl font-extrabold text-[var(--r-text)] font-display tracking-tight">
-            OFFICIAL TEAM CHANNELS
+          <h2 class="text-2xl sm:text-4xl font-extrabold text-[var(--r-text)] font-display tracking-tight" data-i18n="paddock.social.title">
+            Canales oficiales del equipo
           </h2>
-          <p class="text-xs sm:text-sm text-[var(--r-muted)] mt-1 max-w-xl">
-            Sigue a Muntrume Motorsport en las plataformas de emisión en directo, análisis de telemetría y redes sociales.
+          <p class="text-xs sm:text-sm text-[var(--r-muted)] mt-1 max-w-xl" data-i18n="paddock.social.lead">
+            Sigue a Muntrume Motorsport en las plataformas de directo, telemetría y redes.
           </p>
         </div>
-        <span class="text-xs font-mono text-[var(--r-muted)]">6 Canales Activos</span>
+        <span class="text-xs font-mono text-[var(--r-muted)]">{socialLinks.length} <span data-i18n="paddock.social.count">canales activos</span></span>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -357,17 +384,17 @@ const galleryItems = [
                   <span class="text-xs font-mono text-[var(--r-muted)]">{s.handle}</span>
                 </div>
               </div>
-              <span class="px-2.5 py-0.5 rounded-full bg-[var(--r-bg-2)] border border-[var(--r-line)] text-[10px] font-mono text-[var(--r-accent)] font-semibold shrink-0">
+              <span class="px-2.5 py-0.5 rounded-full bg-[var(--r-bg-2)] border border-[var(--r-line)] text-[10px] font-mono text-[var(--r-accent)] font-semibold shrink-0" data-i18n={s.badgeKey}>
                 {s.badge}
               </span>
             </div>
 
-            <p class="text-xs text-[var(--r-muted)] leading-relaxed">
+            <p class="text-xs text-[var(--r-muted)] leading-relaxed" data-i18n={s.descKey}>
               {s.desc}
             </p>
 
             <div class="pt-3 border-t border-[var(--r-line)] flex items-center justify-between text-xs font-mono text-[var(--r-accent)] font-bold">
-              <span>{s.cta}</span>
+              <span data-i18n={s.ctaKey}>{s.cta}</span>
               <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
             </div>
           </a>
@@ -380,13 +407,13 @@ const galleryItems = [
       <div class="pb-4 border-b border-[var(--r-line)]">
         <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--r-accent)] mb-1">
           <span class="w-2 h-2 rounded-full bg-[var(--r-accent)]"></span>
-          <span>PARQUE CERRADO &amp; GT3</span>
+            <span data-i18n="paddock.fleet.kicker">Parque cerrado y GT3</span>
         </div>
-        <h2 class="text-2xl sm:text-4xl font-extrabold text-[var(--r-text)] font-display tracking-tight">
-          VEHÍCULOS OFICIALES DE COMPETICIÓN
+        <h2 class="text-2xl sm:text-4xl font-extrabold text-[var(--r-text)] font-display tracking-tight" data-i18n="paddock.fleet.title">
+          Vehículos oficiales de competición
         </h2>
-        <p class="text-xs sm:text-sm text-[var(--r-muted)] mt-1 max-w-xl">
-          Modelos GT3 y Sports Car utilizados por Alberto Trujillo (#16), Mateo Berbis (#1) y Eduardo Chongkan (#22).
+        <p class="text-xs sm:text-sm text-[var(--r-muted)] mt-1 max-w-xl" data-i18n="paddock.fleet.lead">
+          Modelos GT3 y Sports Car que usan Alberto Trujillo (#16), Mateo Berbis (#1) y Eduardo Chongkan (#22).
         </p>
       </div>
 
@@ -420,7 +447,7 @@ const galleryItems = [
                 <h3 class="text-base font-bold text-[var(--r-text)] font-display tracking-tight">
                   {car.name}
                 </h3>
-                <p class="text-xs text-[var(--r-muted)] mt-1.5 leading-relaxed">
+                <p class="text-xs text-[var(--r-muted)] mt-1.5 leading-relaxed" data-i18n={car.descKey}>
                   {car.desc}
                 </p>
               </div>
@@ -429,7 +456,7 @@ const galleryItems = [
                 href={`/garage?car=${encodeURIComponent(car.setupCar)}`} 
                 class="w-full py-2.5 px-3 rounded-xl bg-[var(--r-bg-2)] hover:bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono font-bold text-[var(--r-accent)] transition flex items-center justify-between text-center"
               >
-                <span>Setups en el Vault</span>
+                <span data-i18n="paddock.fleet.cta">Setups en el vault</span>
                 <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
               </a>
             </div>
@@ -444,13 +471,13 @@ const galleryItems = [
         <div>
           <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--r-accent)] mb-1">
             <span class="w-2 h-2 rounded-full bg-[var(--r-accent)]"></span>
-            <span>GALERÍA DE COMPETICIÓN</span>
+            <span data-i18n="paddock.gallery.kicker">Galería de competición</span>
           </div>
-          <h2 class="text-2xl sm:text-4xl font-extrabold text-[var(--r-text)] font-display tracking-tight">
-            PADDOCK &amp; TRACK GALLERY
+          <h2 class="text-2xl sm:text-4xl font-extrabold text-[var(--r-text)] font-display tracking-tight" data-i18n="paddock.gallery.title">
+            Paddock y pista
           </h2>
-          <p class="text-xs sm:text-sm text-[var(--r-muted)] mt-1 max-w-xl">
-            Fotografías oficiales de los GT3 en pista, sesiones nocturnas, puesto de telemetría y boxes de Muntrume Motorsport.
+          <p class="text-xs sm:text-sm text-[var(--r-muted)] mt-1 max-w-xl" data-i18n="paddock.gallery.lead">
+            Fotografías oficiales de los GT3 en pista, stints nocturnos, el puesto de telemetría y los boxes de Muntrume Motorsport.
           </p>
         </div>
 
@@ -507,19 +534,19 @@ const galleryItems = [
             <!-- Content Body -->
             <div class="p-5 flex-1 flex flex-col justify-between space-y-3">
               <div>
-                <span class="block text-[11px] font-mono text-[var(--r-muted)] mb-1 uppercase tracking-wider">
+                <span class="block text-[11px] font-mono text-[var(--r-muted)] mb-1 uppercase tracking-wider" data-i18n={`g.${item.id}.sub`}>
                   {item.subtitle}
                 </span>
-                <h3 class="text-base font-bold text-[var(--r-text)] tracking-tight group-hover:text-[var(--r-accent)] transition-colors line-clamp-1">
+                <h3 class="text-base font-bold text-[var(--r-text)] tracking-tight group-hover:text-[var(--r-accent)] transition-colors line-clamp-1" data-i18n={`g.${item.id}.title`}>
                   {item.title}
                 </h3>
-                <p class="text-xs text-[var(--r-muted)] mt-1.5 line-clamp-2 leading-relaxed">
+                <p class="text-xs text-[var(--r-muted)] mt-1.5 line-clamp-2 leading-relaxed" data-i18n={`g.${item.id}.desc`}>
                   {item.desc}
                 </p>
               </div>
 
               <div class="pt-3 border-t border-[var(--r-line)] flex items-center justify-between text-xs font-mono text-[var(--r-accent)] font-semibold">
-                <span>Ampliar en HD</span>
+                <span data-i18n="paddock.gallery.open">Ampliar</span>
                 <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
               </div>
             </div>
@@ -534,17 +561,17 @@ const galleryItems = [
         <div>
           <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--r-accent)] mb-1">
             <span class="w-2 h-2 rounded-full bg-[var(--r-accent)]"></span>
-            <span>PILOTOS OFICIALES</span>
+            <span data-i18n="paddock.roster.kicker">Pilotos oficiales</span>
           </div>
-          <h2 class="text-2xl sm:text-4xl font-extrabold text-[var(--r-text)] font-display tracking-tight">
-            MUNTRUME DRIVER ROSTER
+          <h2 class="text-2xl sm:text-4xl font-extrabold text-[var(--r-text)] font-display tracking-tight" data-i18n="paddock.roster.title">
+            Plantilla de pilotos
           </h2>
-          <p class="text-xs sm:text-sm text-[var(--r-muted)] mt-1 max-w-xl">
-            Pilotos federados en la alineación oficial de iRacing con telemetría compartida en el equipo.
+          <p class="text-xs sm:text-sm text-[var(--r-muted)] mt-1 max-w-xl" data-i18n="paddock.roster.lead">
+            Pilotos de la alineación oficial de iRacing, con la telemetría compartida dentro del equipo.
           </p>
         </div>
-        <a href="/drivers" class="text-xs font-mono font-bold text-[var(--r-accent)] hover:underline flex items-center gap-1">
-          <span>Ver Fichas Completas MTI &rarr;</span>
+        <a href="/pilotos/" class="text-xs font-mono font-bold text-[var(--r-accent)] hover:underline flex items-center gap-1">
+          <span data-i18n="paddock.roster.cta">Ver las fichas completas →</span>
         </a>
       </div>
 
@@ -589,28 +616,28 @@ const galleryItems = [
       <div class="p-6 sm:p-8 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] shadow-sm">
         <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--r-accent)] mb-2">
           <span class="w-2 h-2 rounded-full bg-[var(--r-accent)]"></span>
-          <span>ESTÁNDARES DE COMPETICIÓN</span>
+            <span data-i18n="paddock.rules.kicker">Estándares de competición</span>
         </div>
-        <h2 class="text-xl sm:text-2xl font-bold text-[var(--r-text)] font-display tracking-tight mb-4">
-          CÓDIGO DE CONDUCTA &amp; PROTOCOLO DE PISTA
+        <h2 class="text-xl sm:text-2xl font-bold text-[var(--r-text)] font-display tracking-tight mb-4" data-i18n="paddock.rules.title">
+          Código de conducta y protocolo de pista
         </h2>
         
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
           <div class="p-4 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] space-y-1">
-            <strong class="text-[var(--r-accent)] font-mono block">#01 · Safety First</strong>
-            <p class="text-[var(--r-muted)] leading-relaxed">Objetivo de incidentes bajos (0x-4x) para preservar la licencia Class A y Safety Rating de la escudería.</p>
+            <strong class="text-[var(--r-accent)] font-mono block" data-i18n="paddock.rules.1.title">#01 · Seguridad primero</strong>
+            <p class="text-[var(--r-muted)] leading-relaxed" data-i18n="paddock.rules.1.body">Objetivo de incidentes bajos (0x-4x) para preservar la licencia Class A y el safety rating del equipo.</p>
           </div>
           <div class="p-4 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] space-y-1">
-            <strong class="text-[var(--r-accent)] font-mono block">#02 · Telemetría Abierta</strong>
-            <p class="text-[var(--r-muted)] leading-relaxed">Sincronización activa en Garage 61 en todas las sesiones oficiales para comparar deltas de sector.</p>
+            <strong class="text-[var(--r-accent)] font-mono block" data-i18n="paddock.rules.2.title">#02 · Telemetría abierta</strong>
+            <p class="text-[var(--r-muted)] leading-relaxed" data-i18n="paddock.rules.2.body">Sincronización activa en Garage 61 en todas las sesiones oficiales para comparar deltas de sector.</p>
           </div>
           <div class="p-4 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] space-y-1">
-            <strong class="text-[var(--r-accent)] font-mono block">#03 · Disciplina de Radio</strong>
-            <p class="text-[var(--r-muted)] leading-relaxed">Canal limpio en Discord con Push-to-Talk obligatorio durante clasificaciones y paradas en box.</p>
+            <strong class="text-[var(--r-accent)] font-mono block" data-i18n="paddock.rules.3.title">#03 · Disciplina de radio</strong>
+            <p class="text-[var(--r-muted)] leading-relaxed" data-i18n="paddock.rules.3.body">Canal limpio en Discord, con push-to-talk obligatorio en las clasificaciones y las paradas en boxes.</p>
           </div>
           <div class="p-4 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] space-y-1">
-            <strong class="text-[var(--r-accent)] font-mono block">#04 · Respeto Deportivo</strong>
-            <p class="text-[var(--r-muted)] leading-relaxed">Cero toxicidad. Reincorporaciones seguras a pista y facilitación de doblados en multiclasse.</p>
+            <strong class="text-[var(--r-accent)] font-mono block" data-i18n="paddock.rules.4.title">#04 · Respeto deportivo</strong>
+            <p class="text-[var(--r-muted)] leading-relaxed" data-i18n="paddock.rules.4.body">Cero toxicidad. Reincorporaciones seguras y espacio para los doblados en multiclase.</p>
           </div>
         </div>
       </div>
@@ -624,20 +651,20 @@ const galleryItems = [
         <div class="space-y-2 text-center sm:text-left pb-6 border-b border-[var(--r-line)]">
           <div class="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--r-accent)]">
             <span class="w-2 h-2 rounded-full bg-[var(--r-accent)] animate-pulse"></span>
-            <span>ACCESO A LA ESCUDERÍA</span>
+            <span data-i18n="paddock.form.kicker">Acceso al equipo</span>
           </div>
-          <h2 class="text-2xl sm:text-3xl font-extrabold text-[var(--r-text)] font-display tracking-tight">
-            REQUEST PADDOCK PASS
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-[var(--r-text)] font-display tracking-tight" data-i18n="paddock.form.title">
+            Solicitar el paddock pass
           </h2>
-          <p class="text-xs text-[var(--r-muted)] leading-relaxed">
-            Envía tus datos para solicitar acceso a las salas técnicas de telemetría y comunicación del equipo.
+          <p class="text-xs text-[var(--r-muted)] leading-relaxed" data-i18n="paddock.form.lead">
+            Envía tus datos para pedir acceso a las salas de telemetría y radio del equipo.
           </p>
         </div>
 
         <form id="paddockPassForm" class="space-y-5" onsubmit="handlePaddockPass(event)" novalidate>
           <div>
-            <label for="driverNameInput" class="block text-xs font-mono text-[var(--r-muted)] uppercase mb-1.5 font-bold">
-              Nombre del Piloto
+            <label for="driverNameInput" class="block text-xs font-mono text-[var(--r-muted)] uppercase mb-1.5 font-bold" data-i18n="paddock.form.name">
+              Nombre del piloto
             </label>
             <input 
               type="text" 
@@ -685,7 +712,7 @@ const galleryItems = [
             id="paddockSubmitBtn"
             class="w-full py-3.5 rounded-xl bg-[var(--r-accent)] hover:opacity-90 text-[var(--r-accent-ink)] font-black text-xs uppercase tracking-wider transition shadow-lg shadow-[var(--r-accent)]/15 flex items-center justify-center gap-2 cursor-pointer"
           >
-            <span id="paddockBtnText">Enviar Solicitud de Paddock Pass</span>
+            <span id="paddockBtnText" data-i18n="paddock.form.send">Enviar la solicitud de paddock pass</span>
             <span id="paddockBtnArrow">&rarr;</span>
           </button>
 

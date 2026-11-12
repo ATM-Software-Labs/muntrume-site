@@ -7,15 +7,15 @@ const pageTitle = "Pilotos | Muntrume Motorsport";
 const pageDescription = `Plantilla de Muntrume Motorsport: ${PILOTOS.map((p) => p.fullName).join(", ")}. Licencia Sports Car, horas en pista y circuito favorito elegido por el equipo.`;
 ---
 
-<Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/pilotos/" ogImage="https://muntru.me/assets/img/og-team.jpg" ogImageAlt="Pilotos de Muntrume Motorsport" ogImageWidth={1200} ogImageHeight={630}>
-  <section class="r-section" style="border-top:0;padding-top:clamp(80px,8vw,104px);padding-bottom:40px" aria-labelledby="plTitle" data-no-i18n>
+<Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/pilotos/" ogImage="https://muntru.me/assets/img/og-team.jpg" ogImageAlt="Pilotos de Muntrume Motorsport" ogImageWidth={1200} ogImageHeight={630} translated i18nTitle="pilots.meta.title" i18nDescription="pilots.meta.desc">
+  <section class="r-section" style="border-top:0;padding-top:clamp(28px,4vw,48px);padding-bottom:40px" aria-labelledby="plTitle">
     <div class="r-wrap max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
       <div class="r-head" style="margin-bottom:16px">
         <div>
-          <p class="r-kicker">Plantilla 2026 · Sports Car</p>
-          <h1 id="plTitle" class="r-h2">Pilotos</h1>
-          <p class="r-lead">{PILOTOS.length} pilotos oficiales. El circuito favorito es el de menos incidentes, elegido por el equipo.</p>
-          <p class="r-meta">Actualizado: <time datetime="2026-11-07">{LICENCE_UPDATED_LABEL}</time></p>
+          <p class="r-kicker" data-i18n="pilots.kicker">Plantilla 2026 · Sports Car</p>
+          <h1 id="plTitle" class="r-h2" data-i18n="pilots.title">Pilotos</h1>
+          <p class="r-lead"><span data-i18n-num={PILOTOS.length}>{PILOTOS.length}</span> <span data-i18n="pilots.lead">pilotos oficiales. El circuito favorito es el de menos incidentes, elegido por el equipo.</span></p>
+          <p class="r-meta"><span data-i18n="pilots.updated">Actualizado:</span> <time datetime="2026-11-07">{LICENCE_UPDATED_LABEL}</time></p>
         </div>
       </div>
       <div class="d-grid grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch w-full">

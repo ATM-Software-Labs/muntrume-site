@@ -1,18 +1,18 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-const pageTitle = "News & Press Room | Muntrume Motorsport";
-const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, endurance race reports, official team announcements, and global sim racing headlines.";
+const pageTitle = "Noticias | Muntrume Motorsport";
+const pageDescription = "Despachos de Muntrume Motorsport y titulares de motor de fuentes RSS públicas.";
 ---
 
-<Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/noticias/" ogImage="https://muntru.me/assets/img/og-news.jpg" ogImageAlt="Noticias de Muntrume Motorsport">
+<Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/noticias/" ogImage="https://muntru.me/assets/img/og-news.jpg" ogImageAlt="Noticias de Muntrume Motorsport" translated i18nTitle="news.meta.title" i18nDescription="news.meta.desc">
 <!-- ========================================================================= -->
   <!-- 2. BREAKING TICKER (Clean Marquee)                                        -->
   <!-- ========================================================================= -->
-  <div id="breakingBanner" class="fixed top-16 left-0 right-0 z-40 bg-[var(--r-surface)]/95 backdrop-blur-md border-b border-[var(--r-line)] text-[var(--r-text)] text-xs py-2 px-4 flex items-center gap-3 overflow-hidden hidden">
+  <div id="breakingBanner" class="bg-[var(--r-surface)] border-b border-[var(--r-line)] text-[var(--r-text)] text-xs py-2 px-4 flex items-center gap-3 overflow-hidden hidden">
     <div class="flex items-center gap-2 flex-shrink-0 bg-[var(--r-accent)]/15 text-[var(--r-accent)] px-2.5 py-0.5 rounded-full border border-[var(--r-accent)]/30 text-[11px] font-semibold uppercase tracking-wider">
       <span class="pulse-dot"></span>
-      <span>LATEST DISPATCH</span>
+      <span data-i18n="news.latest">Última hora</span>
     </div>
     <div class="overflow-hidden flex-1 relative">
       <div class="scrolling-ticker text-xs" id="breakingText"></div>
@@ -22,43 +22,18 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
   <!-- ========================================================================= -->
   <!-- 3. NEWS WIRE HERO & METADATA STRIP                                        -->
   <!-- ========================================================================= -->
-  <section class="pt-28 pb-10 bg-[var(--r-bg-2)] border-b border-[var(--r-line)]">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      
-      <!-- Top status badges -->
-      <div class="flex flex-wrap items-center justify-between gap-4 pb-4 mb-8 border-b border-[var(--r-line)] text-xs">
-        <div class="flex items-center gap-3">
-          <span class="px-3 py-1 rounded-full bg-[var(--r-surface)] border border-[var(--r-accent)] text-[var(--r-accent)] font-semibold tracking-wide uppercase flex items-center gap-2">
-            <span class="pulse-dot"></span>
-            Wire Live &amp; Connected
-          </span>
-          <span class="text-[var(--r-muted)] hidden sm:inline" id="currentDate">SYNCING CLOCK...</span>
-          <span class="text-[var(--r-muted)] hidden md:inline">•</span>
-          <span class="text-[var(--r-muted)] hidden md:inline">Updated: <span id="lastUpdate" class="text-[var(--r-text)] font-medium">Just now</span></span>
-        </div>
-
-        <div class="flex items-center gap-3 text-[var(--r-muted)] w-full sm:w-auto">
-          <span class="hidden sm:inline">Sant Andreu, Barcelona</span>
-          <span class="text-[var(--r-line-2)] hidden sm:inline">|</span>
-          <span class="px-2.5 py-0.5 rounded-md bg-[var(--r-surface)] border border-[var(--r-line)] text-[var(--r-accent)] font-semibold" id="articleCount">0 Articles</span>
-          <span class="px-2.5 py-0.5 rounded-md bg-[var(--r-surface)] border border-[var(--r-line)] text-[var(--r-text)] font-medium" id="sourceCount">0 Sources</span>
-          <span class="text-[var(--r-line-2)] hidden sm:inline">|</span>
-        </div>
-      </div>
-
-      <!-- Main Editorial Header -->
-      <div class="text-center py-6">
-        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[var(--r-surface)] border border-[var(--r-line)] text-[var(--r-accent)] text-xs font-semibold uppercase tracking-wider mb-4">
-          <span>Press Room &amp; Media Wire</span>
-        </div>
-        <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-[var(--r-text)] mb-4">
-          PRESS ROOM &amp; <span class="text-[var(--r-accent)]">MEDIA WIRE</span>
-        </h1>
-        <p class="text-base text-[var(--r-muted)] max-w-2xl mx-auto leading-relaxed">
-          Team updates and motorsport headlines from public RSS feeds.
-        </p>
-      </div>
-
+  <section class="r-section" style="border-top:0;padding-top:clamp(28px,4vw,48px);padding-bottom:28px">
+    <div class="r-wrap" style="display:grid;gap:14px">
+      <p class="r-kicker" data-i18n="news.kicker">Sala de prensa</p>
+      <h1 class="r-h2" data-i18n="news.title">Noticias</h1>
+      <p class="r-lead" data-i18n="news.lead">Despachos del equipo y titulares de motor de fuentes RSS públicas. Los titulares externos se quedan en el idioma de la fuente.</p>
+      <p class="r-meta" style="display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center">
+        <span>Sant Andreu, Barcelona</span>
+        <span id="articleCount">0 artículos</span>
+        <span id="sourceCount">0 fuentes</span>
+        <span><span data-i18n="news.updated">Actualizado:</span> <span id="lastUpdate">—</span></span>
+        <span id="currentDate"></span>
+      </p>
     </div>
   </section>
 
@@ -79,7 +54,7 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
             
             <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div class="flex items-center gap-3">
-                <h2 class="text-xl font-bold text-[var(--r-text)] tracking-tight">Top Wire Stories</h2>
+                <h2 class="text-xl font-bold text-[var(--r-text)] tracking-tight" data-i18n="news.top">Noticias destacadas</h2>
               </div>
               
               <!-- Search bar -->
@@ -90,7 +65,7 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
                 <input 
                   type="text" 
                   id="searchInput" 
-                  placeholder="Buscar noticias o fuentes en tiempo real..." 
+                  placeholder="Buscar noticias o fuentes" data-i18n-placeholder="news.search.ph" 
                   class="w-full bg-[var(--r-bg-2)] border border-[var(--r-line)] rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-[var(--r-text)] placeholder-[var(--r-muted)] focus:outline-none focus:border-[var(--r-accent)] focus:shadow-[0_0_12px_var(--r-accent-glow)] transition"
                 >
               </div>
@@ -98,14 +73,14 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
 
             <!-- Filter Pills -->
             <div class="flex flex-wrap gap-2 pt-2 border-t border-[var(--r-line)]" id="filterButtons">
-              <button class="filter-btn active" data-filter="all">All</button>
-              <button class="filter-btn" data-filter="endurance">Endurance</button>
+              <button class="filter-btn active" data-filter="all" data-i18n="news.filter.all">Todas</button>
+              <button class="filter-btn" data-filter="endurance" data-i18n="news.filter.endurance">Resistencia</button>
               <button class="filter-btn" data-filter="iracing">iRacing</button>
-              <button class="filter-btn" data-filter="simracing">Sim Racing</button>
-              <button class="filter-btn" data-filter="esports">Esports</button>
-              <button class="filter-btn" data-filter="sport">Motorsport</button>
-              <button class="filter-btn" data-filter="tech">Hardware</button>
-              <button class="filter-btn" data-filter="team">Team</button>
+              <button class="filter-btn" data-filter="simracing" data-i18n="news.filter.sim">Sim racing</button>
+              <button class="filter-btn" data-filter="esports" data-i18n="news.filter.esports">Esports</button>
+              <button class="filter-btn" data-filter="sport" data-i18n="news.filter.sport">Motor</button>
+              <button class="filter-btn" data-filter="tech" data-i18n="news.filter.tech">Hardware</button>
+              <button class="filter-btn" data-filter="team" data-i18n="news.filter.team">Equipo</button>
             </div>
 
           </div>
@@ -180,10 +155,10 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
           <!-- Error Container -->
           <div id="errorState" class="hidden text-center py-16 bg-[var(--r-surface)] border border-[var(--r-line)] rounded-2xl p-6">
             <div class="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 mx-auto flex items-center justify-center mb-4 font-bold text-xl">!</div>
-            <h3 class="text-lg font-bold text-[var(--r-text)] mb-1">Feed Sync Offline</h3>
-            <p class="text-[var(--r-muted)] mb-5 text-xs">Connection to news feeds timed out. Tap retry to reconnect:</p>
-            <button onclick="loadAllNews()" class="bg-[var(--r-accent)] hover:opacity-90 text-[var(--r-accent-ink)] font-semibold py-2.5 px-6 rounded-xl text-xs transition shadow-md">
-              Retry Sync
+            <h3 class="text-lg font-bold text-[var(--r-text)] mb-1" data-i18n="news.error.title">Fuentes sin conexión</h3>
+            <p class="text-[var(--r-muted)] mb-5 text-xs" data-i18n="news.error.body">La conexión con las fuentes de noticias ha caducado.</p>
+            <button onclick="loadAllNews()" class="bg-[var(--r-accent)] hover:opacity-90 text-[var(--r-accent-ink)] font-semibold py-2.5 px-6 rounded-xl text-xs transition shadow-md" data-i18n="news.retry">
+              Reintentar
             </button>
           </div>
 
@@ -193,8 +168,8 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
         <section id="esports-news" class="pt-8 border-t border-[var(--r-line)]">
           <div class="flex items-center justify-between mb-6">
             <div class="flex items-center gap-3">
-              <span class="px-2.5 py-0.5 rounded-full bg-[var(--r-surface)] border border-[var(--r-accent)] text-[var(--r-accent)] text-xs font-semibold uppercase">Esports</span>
-              <h2 class="text-xl font-bold text-[var(--r-text)] tracking-tight">Competitive Racing &amp; Esports</h2>
+              <span class="px-2.5 py-0.5 rounded-full bg-[var(--r-surface)] border border-[var(--r-accent)] text-[var(--r-accent)] text-xs font-semibold uppercase" data-i18n="news.esports.kicker">Esports</span>
+              <h2 class="text-xl font-bold text-[var(--r-text)] tracking-tight" data-i18n="news.esports.title">Competición y esports</h2>
             </div>
           </div>
           <div id="esportsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -207,8 +182,8 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
         <section id="sport-news" class="pt-8 border-t border-[var(--r-line)]">
           <div class="flex items-center justify-between mb-6">
             <div class="flex items-center gap-3">
-              <span class="px-2.5 py-0.5 rounded-full bg-[var(--r-surface)] border border-[var(--r-accent)] text-[var(--r-accent)] text-xs font-semibold uppercase">Motorsport</span>
-              <h2 class="text-xl font-bold text-[var(--r-text)] tracking-tight">Global Racing Headlines</h2>
+              <span class="px-2.5 py-0.5 rounded-full bg-[var(--r-surface)] border border-[var(--r-accent)] text-[var(--r-accent)] text-xs font-semibold uppercase" data-i18n="news.sport.kicker">Motor</span>
+              <h2 class="text-xl font-bold text-[var(--r-text)] tracking-tight" data-i18n="news.sport.title">Titulares de motor</h2>
             </div>
           </div>
           <div id="sportGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -227,7 +202,7 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
           <div class="flex items-center justify-between mb-4 pb-3 border-b border-[var(--r-line)]">
             <div class="flex items-center gap-2.5">
               <span class="w-2 h-2 rounded-full bg-[var(--r-accent)] animate-pulse"></span>
-              <h3 class="text-xs font-bold tracking-wider uppercase text-[var(--r-text)]">Top Headlines</h3>
+              <h3 class="text-xs font-bold tracking-wider uppercase text-[var(--r-text)]" data-i18n="news.brief">Titulares</h3>
             </div>
             
           </div>
@@ -238,14 +213,14 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
           </div>
           <button onclick="refreshAIBrief()" class="mt-4 text-xs text-[var(--r-accent)] hover:opacity-80 font-semibold flex items-center gap-1.5 transition">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-            <span>Refresh Briefing</span>
+            <span data-i18n="news.brief.refresh">Actualizar</span>
           </button>
         </div>
 
         <!-- WIDGET 3: TRENDING STORIES -->
         <div class="bg-[var(--r-surface)] border border-[var(--r-line)] rounded-2xl p-6 shadow-lg">
           <div class="flex items-center gap-2 mb-4 pb-3 border-b border-[var(--r-line)]">
-            <h3 class="text-xs font-bold tracking-wider uppercase text-[var(--r-text)]">Trending Dispatches</h3>
+            <h3 class="text-xs font-bold tracking-wider uppercase text-[var(--r-text)]" data-i18n="news.trending">Lo más leído</h3>
           </div>
           <div id="trendingList" class="space-y-3">
             <div class="loading-skeleton h-10 rounded-xl"></div>
@@ -299,12 +274,12 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
       
       <div class="flex flex-wrap items-center justify-between gap-4 mb-8 pb-4 border-b border-[var(--r-line)]">
         <div>
-          <span class="px-2.5 py-0.5 rounded-full bg-[var(--r-surface)] border border-[var(--r-accent)] text-[var(--r-accent)] text-xs font-semibold uppercase">Driver Training</span>
-          <h2 class="text-2xl sm:text-3xl font-bold text-[var(--r-text)] tracking-tight mt-1">Reflex &amp; Reaction Calibration</h2>
-          <p class="text-xs text-[var(--r-muted)] mt-1">Calibrate reaction latency, motorsport terminology, and memory before entering the cockpit.</p>
+          <span class="px-2.5 py-0.5 rounded-full bg-[var(--r-surface)] border border-[var(--r-accent)] text-[var(--r-accent)] text-xs font-semibold uppercase" data-i18n="news.games.kicker">Entrenamiento</span>
+          <h2 class="text-2xl sm:text-3xl font-bold text-[var(--r-text)] tracking-tight mt-1" data-i18n="news.games.title">Reflejos y reacción</h2>
+          <p class="text-xs text-[var(--r-muted)] mt-1" data-i18n="news.games.lead">Un calentamiento corto de reacción, palabras de carreras y memoria antes de subirte al coche. Es un juego, no una medida de los pilotos.</p>
         </div>
         <button onclick="toggleGames()" class="px-4 py-2 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-line-2)] text-xs font-semibold text-[var(--r-accent)] transition" id="gamesToggleBtn">
-          <span id="gamesToggleText">Collapse Module</span>
+          <span id="gamesToggleText" data-i18n="news.games.hide">Ocultar módulo</span>
         </button>
       </div>
 
@@ -316,29 +291,29 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
             <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-[var(--r-accent)] mx-auto mb-2">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16"/></svg>
             </div>
-            <div class="font-bold text-sm text-[var(--r-text)]">Word Search</div>
-            <div class="text-[11px] text-[var(--r-muted)] mt-0.5">Motorsport Grid</div>
+            <div class="font-bold text-sm text-[var(--r-text)]" data-i18n="news.game.word">Sopa de letras</div>
+            <div class="text-[11px] text-[var(--r-muted)] mt-0.5" data-i18n="news.game.word.sub">Parrilla del motor</div>
           </button>
           <button onclick="selectGame('trivia')" class="game-card-btn" id="gameBtn-trivia">
             <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-[var(--r-accent)] mx-auto mb-2">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
             </div>
-            <div class="font-bold text-sm text-[var(--r-text)]">Telemetry Trivia</div>
-            <div class="text-[11px] text-[var(--r-muted)] mt-0.5">10 Questions</div>
+            <div class="font-bold text-sm text-[var(--r-text)]" data-i18n="news.game.trivia">Trivial de telemetría</div>
+            <div class="text-[11px] text-[var(--r-muted)] mt-0.5" data-i18n="news.game.trivia.sub">9 preguntas</div>
           </button>
           <button onclick="selectGame('reaction')" class="game-card-btn" id="gameBtn-reaction">
             <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-[var(--r-accent)] mx-auto mb-2">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
-            <div class="font-bold text-sm text-[var(--r-text)]">F1 Reaction Test</div>
-            <div class="text-[11px] text-[var(--r-muted)] mt-0.5">Lights Out</div>
+            <div class="font-bold text-sm text-[var(--r-text)]" data-i18n="news.game.react">Test de reacción</div>
+            <div class="text-[11px] text-[var(--r-muted)] mt-0.5" data-i18n="news.game.react.sub">Apagado de luces</div>
           </button>
           <button onclick="selectGame('memory')" class="game-card-btn" id="gameBtn-memory">
             <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-[var(--r-accent)] mx-auto mb-2">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/></svg>
             </div>
-            <div class="font-bold text-sm text-[var(--r-text)]">Circuit Memory</div>
-            <div class="text-[11px] text-[var(--r-muted)] mt-0.5">Track Match</div>
+            <div class="font-bold text-sm text-[var(--r-text)]" data-i18n="news.game.memory">Memoria de circuitos</div>
+            <div class="text-[11px] text-[var(--r-muted)] mt-0.5" data-i18n="news.game.memory.sub">Parejas</div>
           </button>
         </div>
 
@@ -350,17 +325,17 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
             <div class="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-[var(--r-line)]">
               <div>
                 <h3 class="text-lg font-bold text-[var(--r-text)] flex items-center gap-2">
-                  <span>Sim Racing Word Search</span>
+                  <span data-i18n="news.ws.title">Sopa de letras de sim racing</span>
                 </h3>
-                <p class="text-xs text-[var(--r-muted)] mt-0.5">Click &amp; drag across letters to highlight racing terms.</p>
+                <p class="text-xs text-[var(--r-muted)] mt-0.5" data-i18n="news.ws.lead">Haz clic y arrastra sobre las letras para marcar términos de carreras.</p>
               </div>
               <div class="flex items-center gap-4">
                 <div class="text-right">
                   <div class="text-xl font-bold text-[var(--r-accent)]" id="ws-found">0</div>
-                  <div class="text-[10px] text-[var(--r-muted)] uppercase font-semibold">Found</div>
+                  <div class="text-[10px] text-[var(--r-muted)] uppercase font-semibold" data-i18n="news.ws.found">Encontradas</div>
                 </div>
                 <button onclick="initWordSearch()" class="px-3.5 py-1.5 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs text-[var(--r-text)] transition font-medium">
-                  Regenerate Grid
+                  <span data-i18n="news.ws.new">Nueva sopa</span>
                 </button>
               </div>
             </div>
@@ -370,11 +345,11 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
                 <div id="wordsearchGrid" class="wordsearch-grid max-w-lg mx-auto"></div>
               </div>
               <div class="bg-[var(--r-bg-2)] p-5 rounded-2xl border border-[var(--r-line)]">
-                <h4 class="text-xs font-semibold text-[var(--r-muted)] uppercase tracking-wider mb-3">Target Terms:</h4>
+                <h4 class="text-xs font-semibold text-[var(--r-muted)] uppercase tracking-wider mb-3" data-i18n="news.ws.words">Palabras</h4>
                 <div id="wordList" class="grid grid-cols-2 gap-2"></div>
                 <div id="wsWinMessage" class="hidden mt-4 p-3 bg-emerald-500/10 border border-emerald-500/30 text-[var(--r-accent)] rounded-xl text-center font-bold text-xs flex items-center justify-center gap-2">
                   <svg class="w-4 h-4 text-[var(--r-accent)] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                  <span>Grid Cleared! All terms identified.</span>
+                  <span data-i18n="news.ws.win">Hecho. Has encontrado todas las palabras.</span>
                 </div>
               </div>
             </div>
@@ -384,17 +359,17 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
           <div id="game-trivia" class="game-panel hidden">
             <div class="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-[var(--r-line)]">
               <div>
-                <h3 class="text-lg font-bold text-[var(--r-text)]">Vehicle Dynamics &amp; Sim Racing Trivia</h3>
-                <p class="text-xs text-[var(--r-muted)] mt-0.5">Verify your racing knowledge across vehicle balance, circuits, and telemetry.</p>
+                <h3 class="text-lg font-bold text-[var(--r-text)]" data-i18n="news.trivia.title">Trivial de dinámica del vehículo y sim racing</h3>
+                <p class="text-xs text-[var(--r-muted)] mt-0.5" data-i18n="news.trivia.lead">Balance, circuitos y telemetría. Las preguntas son un juego.</p>
               </div>
               <div class="flex items-center gap-4">
                 <div class="text-right">
                   <div class="text-xl font-bold text-[var(--r-accent)]" id="trivia-score">0</div>
-                  <div class="text-[10px] text-[var(--r-muted)] uppercase font-semibold">Score</div>
+                  <div class="text-[10px] text-[var(--r-muted)] uppercase font-semibold" data-i18n="news.trivia.score">Puntos</div>
                 </div>
                 <div class="text-right">
                   <div class="text-xl font-bold text-[var(--r-text)]" id="trivia-qnum">1/9</div>
-                  <div class="text-[10px] text-[var(--r-muted)] uppercase font-semibold">Progress</div>
+                  <div class="text-[10px] text-[var(--r-muted)] uppercase font-semibold" data-i18n="news.trivia.progress">Progreso</div>
                 </div>
               </div>
             </div>
@@ -406,7 +381,7 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
               </div>
               <div class="text-center">
                 <button id="triviaNext" onclick="nextTrivia()" class="hidden px-6 py-2.5 bg-[var(--r-accent)] hover:opacity-90 text-[var(--r-accent-ink)] font-bold text-xs rounded-xl transition">
-                  Next Question &rarr;
+                  <span data-i18n="news.trivia.next">Siguiente pregunta →</span>
                 </button>
               </div>
             </div>
@@ -415,10 +390,10 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
               <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-[var(--r-accent)] mx-auto mb-3">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
               </div>
-              <h4 class="text-2xl font-bold text-[var(--r-text)] mb-1">Debrief Complete</h4>
-              <p class="text-sm text-[var(--r-text)] mb-6">Final Score: <span id="triviaFinalScore" class="text-[var(--r-accent)] font-bold">0</span> / 9</p>
+              <h4 class="text-2xl font-bold text-[var(--r-text)] mb-1" data-i18n="news.trivia.done">Resultado</h4>
+              <p class="text-sm text-[var(--r-text)] mb-6"><span data-i18n="news.trivia.final">Puntuación final:</span> <span id="triviaFinalScore" class="text-[var(--r-accent)] font-bold">0</span> / 9</p>
               <button onclick="initTrivia()" class="px-5 py-2.5 bg-[var(--r-accent)] hover:opacity-90 text-[var(--r-accent-ink)] font-bold text-xs rounded-xl transition">
-                Restart Quiz
+                <span data-i18n="news.trivia.restart">Jugar otra vez</span>
               </button>
             </div>
           </div>
@@ -427,12 +402,12 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
           <div id="game-reaction" class="game-panel hidden text-center">
             <div class="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-[var(--r-line)] text-left">
               <div>
-                <h3 class="text-lg font-bold text-[var(--r-text)]">Starting Lights Reaction Calibration</h3>
-                <p class="text-xs text-[var(--r-muted)] mt-0.5">Wait for 5 red lights. When lights extinguish (LIGHTS OUT), click as fast as possible!</p>
+                <h3 class="text-lg font-bold text-[var(--r-text)]" data-i18n="news.react.title">Reacción al semáforo de salida</h3>
+                <p class="text-xs text-[var(--r-muted)] mt-0.5" data-i18n="news.react.lead">Espera a las 5 luces rojas. Cuando se apaguen, haz clic lo más rápido que puedas.</p>
               </div>
               <div class="text-right">
                 <div class="text-xl font-bold text-[var(--r-accent)]" id="reaction-best">—</div>
-                <div class="text-[10px] text-[var(--r-muted)] uppercase font-semibold">Best (ms)</div>
+                <div class="text-[10px] text-[var(--r-muted)] uppercase font-semibold" data-i18n="news.react.best">Mejor (ms)</div>
               </div>
             </div>
 
@@ -445,7 +420,7 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
                 <div class="f1-light" id="light5"></div>
               </div>
               
-              <div id="reactionStatus" class="text-base font-semibold text-[var(--r-text)] mb-4">Press INITIATE SEQUENCE to begin</div>
+              <div id="reactionStatus" class="text-base font-semibold text-[var(--r-text)] mb-4" data-i18n="news.react.idle">Pulsa iniciar para empezar</div>
               <div id="reactionTime" class="text-5xl font-black text-[var(--r-accent)] mb-6 hidden">0 ms</div>
               
               <button 
@@ -453,7 +428,7 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
                 onclick="handleReactionClick()" 
                 class="px-8 py-3.5 bg-[var(--r-accent)] hover:opacity-90 text-[var(--r-accent-ink)] font-extrabold text-sm rounded-xl transition shadow-md active:scale-95"
               >
-                Initiate Sequence
+                <span data-i18n="news.react.start">Iniciar</span>
               </button>
             </div>
           </div>
@@ -462,20 +437,20 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
           <div id="game-memory" class="game-panel hidden">
             <div class="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-[var(--r-line)]">
               <div>
-                <h3 class="text-lg font-bold text-[var(--r-text)]">Circuit Memory Match</h3>
-                <p class="text-xs text-[var(--r-muted)] mt-0.5">Find and pair world circuits across the virtual grid.</p>
+                <h3 class="text-lg font-bold text-[var(--r-text)]" data-i18n="news.mem.title">Parejas de circuitos</h3>
+                <p class="text-xs text-[var(--r-muted)] mt-0.5" data-i18n="news.mem.lead">Encuentra los circuitos que hacen pareja.</p>
               </div>
               <div class="flex items-center gap-4">
                 <div class="text-right">
                   <div class="text-xl font-bold text-[var(--r-accent)]" id="memory-moves">0</div>
-                  <div class="text-[10px] text-[var(--r-muted)] uppercase font-semibold">Moves</div>
+                  <div class="text-[10px] text-[var(--r-muted)] uppercase font-semibold" data-i18n="news.mem.moves">Movimientos</div>
                 </div>
                 <div class="text-right">
                   <div class="text-xl font-bold text-[var(--r-text)]" id="memory-pairs">0/8</div>
-                  <div class="text-[10px] text-[var(--r-muted)] uppercase font-semibold">Pairs</div>
+                  <div class="text-[10px] text-[var(--r-muted)] uppercase font-semibold" data-i18n="news.mem.pairs">Parejas</div>
                 </div>
                 <button onclick="initMemory()" class="px-3.5 py-1.5 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs text-[var(--r-text)] transition font-medium">
-                  Reset
+                  <span data-i18n="news.mem.reset">Reiniciar</span>
                 </button>
               </div>
             </div>
@@ -486,10 +461,10 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
               <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-[var(--r-accent)] mx-auto mb-3">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
               </div>
-              <h4 class="text-xl font-bold text-[var(--r-text)] mb-1">All Circuits Identified</h4>
-              <p class="text-xs text-[var(--r-text)] mb-4">Completed in <span id="memoryFinalMoves" class="text-[var(--r-accent)] font-bold">0</span> moves.</p>
+              <h4 class="text-xl font-bold text-[var(--r-text)] mb-1" data-i18n="news.mem.win">Todos los circuitos encontrados</h4>
+              <p class="text-xs text-[var(--r-text)] mb-4"><span data-i18n="news.mem.done">Completado en</span> <span id="memoryFinalMoves" class="text-[var(--r-accent)] font-bold">0</span> <span data-i18n="news.mem.movesWord">movimientos.</span></p>
               <button onclick="initMemory()" class="px-5 py-2.5 bg-[var(--r-accent)] hover:opacity-90 text-[var(--r-accent-ink)] font-bold text-xs rounded-xl transition">
-                Play Again
+                <span data-i18n="news.mem.again">Jugar otra vez</span>
               </button>
             </div>
           </div>
@@ -510,18 +485,18 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
         <div class="space-y-1">
           <div class="flex items-center gap-2 text-[var(--r-text)] font-semibold">
             <span class="w-2 h-2 rounded-full bg-[var(--r-accent)]"></span>
-            <span>Aviso Legal de Sala de Prensa y Atribución Editorial (Art. 32 LPI)</span>
+            <span data-i18n="news.legal.title">Aviso de la sala de prensa y crédito editorial</span>
           </div>
-          <p class="text-[var(--r-muted)] text-[11px] leading-relaxed max-w-4xl">
-            Este servicio agrega titulares y extractos de menos de 160 caracteres procedentes de canales RSS públicos (SimRacer.es, Motorsport.com, iRacing Official, Outlaws Racing, Traxion.GG y Esports Insider) con fines informativos y de cita de actualidad. Todos los derechos y titularidad pertenecen a sus autores originales. Los enlaces dirigen directamente a la publicación fuente con transferencia de autoridad canonical.
+          <p class="text-[var(--r-muted)] text-[11px] leading-relaxed max-w-4xl" data-i18n="news.legal.body">
+            Esta página agrega titulares y extractos de menos de 160 caracteres de canales RSS públicos (SimRacer.es, Motorsport.com, iRacing Official, Outlaws Racing, Traxion.GG y Esports Insider) con fines informativos y de cita. Los derechos siguen siendo de los autores. Los enlaces van a la fuente.
           </p>
         </div>
         <div class="flex flex-wrap items-center gap-3 shrink-0">
           <a href="/legal/fuentes" class="px-3 py-1.5 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-[var(--r-text)] hover:text-[var(--r-accent)] transition text-xs">
-            Directorio de Fuentes &rarr;
+            <span data-i18n="news.legal.sources">Directorio de fuentes →</span>
           </a>
           <a href="/legal/retirada" class="px-3 py-1.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition text-xs font-semibold">
-            Retirada DMCA &rarr;
+            <span data-i18n="news.legal.takedown">Retirada →</span>
           </a>
         </div>
       </div>
@@ -656,5 +631,5 @@ const pageDescription = "Latest Muntrume Motorsport iRacing dispatches, enduranc
     }
   </style>
 
-  <script is:inline src="/assets/js/news.js?v=26s5.3"></script>
+  <script is:inline src="/assets/js/news.js?v=t330"></script>
 </Layout>

@@ -11,7 +11,7 @@ const MAX = 500, MIN_GAP = 3000, PER_MIN = 6;
 
 function lang() {
   let l = '';
-  try { l = localStorage.getItem('muntrume_lang') || ''; } catch {}
+  try { l = localStorage.getItem('muntrume_lang') || localStorage.getItem('mm_lang') || ''; } catch {}
   l = (l || document.documentElement.lang || 'es').slice(0, 2).toLowerCase();
   return T[l] ? l : 'es';
 }
