@@ -538,8 +538,9 @@ fn detect_hardware() -> Result<hardware::HardwareReport, String> {
 fn toggle_overlay(app: AppHandle, show: bool) -> Result<bool, String> {
     if let Some(window) = app.get_webview_window("overlay") {
         if show {
-            let _ = window.show();
+            let _ = window.maximize();
             let _ = window.set_always_on_top(true);
+            let _ = window.show();
             let _ = window.set_focus();
             Ok(true)
         } else {

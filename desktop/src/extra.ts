@@ -1632,21 +1632,108 @@ function updateHUDDisplay(sample: LiveSample): void {
       : "Curva rápida: sostén gas de apoyo para asentar el alerón trasero.";
   }
 
-  // Relative Radar (Garage 61 style)
+function getManufacturerSvg(brand: string): string {
+  const b = brand.toLowerCase();
+  if (b.includes("porsche")) {
+    return `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none"><path d="M12 2L4 5v7c0 5.5 3.5 10 8 11 4.5-1 8-5.5 8-11V5l-8-3z" fill="#c5a059" stroke="#111" stroke-width="1.2"/><path d="M12 6v13M8 9h8M8 14h8" stroke="#d92525" stroke-width="1.2"/></svg>`;
+  }
+  if (b.includes("ferrari")) {
+    return `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none"><path d="M12 2L5 6v7c0 5 3 9 7 10 4-1 7-5 7-10V6l-7-4z" fill="#fcd34d" stroke="#111" stroke-width="1.2"/><path d="M12 7c-1 1-1.5 2.5-1 4.5.5-1 1.5-1.5 2-1 1 1 0 3-1 4.5" stroke="#111" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+  }
+  if (b.includes("bmw")) {
+    return `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#111" stroke="#fff" stroke-width="1.5"/><path d="M12 2A10 10 0 0 1 22 12H12V2z" fill="#3b82f6"/><path d="M12 12v10A10 10 0 0 1 2 12h10z" fill="#3b82f6"/><path d="M12 2A10 10 0 0 0 2 12h10V2z" fill="#ffffff"/><path d="M12 12h10A10 10 0 0 1 12 22V12z" fill="#ffffff"/></svg>`;
+  }
+  if (b.includes("mercedes") || b.includes("amg")) {
+    return `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="#e2e8f0" stroke-width="1.8"/><path d="M12 2v10l8.66 5M12 12L3.34 17" stroke="#e2e8f0" stroke-width="1.8" stroke-linecap="round"/></svg>`;
+  }
+  if (b.includes("audi")) {
+    return `<svg class="w-4 h-3 shrink-0" viewBox="0 0 32 16" fill="none" stroke="#e2e8f0" stroke-width="1.5"><circle cx="7" cy="8" r="5"/><circle cx="13" cy="8" r="5"/><circle cx="19" cy="8" r="5"/><circle cx="25" cy="8" r="5"/></svg>`;
+  }
+  if (b.includes("lambo") || b.includes("huracan")) {
+    return `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24"><path d="M12 2L4 6v8l8 8 8-8V6l-8-4z" fill="#0f172a" stroke="#eab308" stroke-width="1.5"/><circle cx="12" cy="12" r="3" fill="#eab308"/></svg>`;
+  }
+  if (b.includes("mclaren") || b.includes("720s")) {
+    return `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none"><path d="M4 14C8 10 16 9 20 12c-4-1-10 0-16 2z" fill="#f97316"/></svg>`;
+  }
+  if (b.includes("aston") || b.includes("vantage")) {
+    return `<svg class="w-4 h-3 shrink-0" viewBox="0 0 28 14" fill="none" stroke="#22c55e" stroke-width="1.5"><path d="M2 7h24M6 3l8 4 8-4M8 11l6-4 6 4"/></svg>`;
+  }
+  if (b.includes("acura") || b.includes("arx")) {
+    return `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M8 16l4-8 4 8M10 13h4"/></svg>`;
+  }
+  if (b.includes("cadillac")) {
+    return `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 4v6l-7 8-7-8V7l7-4z" fill="#1e293b" stroke="#eab308" stroke-width="1.2"/><path d="M8 8h8v3H8zm0 4h8v3H8z" fill="#f59e0b"/></svg>`;
+  }
+  if (b.includes("corvette") || b.includes("chevrolet") || b.includes("z06")) {
+    return `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none"><path d="M3 8l9 3 9-3-9-3-9 3z" fill="#ef4444"/><path d="M3 16l9 3 9-3-9-3-9 3z" fill="#f59e0b"/></svg>`;
+  }
+  if (b.includes("ford") || b.includes("mustang")) {
+    return `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="10" ry="6" fill="#1d4ed8" stroke="#fff" stroke-width="1.2"/><text x="12" y="14" font-size="6" font-family="sans-serif" font-weight="bold" fill="#fff" text-anchor="middle">Ford</text></svg>`;
+  }
+  return `<svg class="w-3.5 h-3.5 shrink-0 text-r-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>`;
+}
+
+  // Relative Radar (GoSetups / GoFast style with Real Manufacturer Logos)
   const relHtml = `
-    <div class="text-[10px] uppercase text-r-muted mb-1.5 font-bold tracking-wider">Radar de Intervalos (Relativo)</div>
-    <div class="space-y-1">
-      <div class="flex items-center justify-between text-r-muted">
-        <span>#911 · Porsche 992</span>
-        <span class="text-amber-400 font-bold">-1.24s</span>
+    <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-white/10 text-[10px] uppercase font-bold tracking-wider">
+      <span class="text-r-muted">Radar de Intervalos (Relativo)</span>
+      <span class="px-1.5 py-0.5 rounded text-[9px] bg-emerald-500/20 text-emerald-400 font-mono">LIVE SDK</span>
+    </div>
+    <div class="space-y-1.5 font-mono text-xs">
+      <!-- Car Ahead -->
+      <div class="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-black/40 border border-white/5">
+        <div class="flex items-center gap-1.5 min-w-0">
+          <span class="px-1 py-0.5 rounded text-[9px] font-bold bg-sky-500/20 text-sky-400 border border-sky-500/30">GTP</span>
+          <span class="text-white/80 font-black text-[11px] w-6">#22</span>
+          ${getManufacturerSvg("porsche")}
+          <span class="truncate text-[11px] text-white/90 font-medium">M. Campbell</span>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <span class="px-1 py-0.5 rounded text-[9px] bg-white/10 text-emerald-400">A 4.8 · 3.1k</span>
+          <span class="text-amber-400 font-bold text-xs">-1.16s</span>
+        </div>
       </div>
-      <div class="flex items-center justify-between bg-r-accent/20 text-r-accent px-1.5 py-0.5 rounded font-bold">
-        <span>#16 · Tú (Alberto)</span>
-        <span>P3 · PACE</span>
+
+      <!-- Player Car (Alberto) -->
+      <div class="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/40 shadow-sm">
+        <div class="flex items-center gap-1.5 min-w-0">
+          <span class="px-1 py-0.5 rounded text-[9px] font-bold bg-emerald-500/30 text-emerald-300 border border-emerald-500/50">GTP</span>
+          <span class="text-emerald-300 font-black text-[11px] w-6">#16</span>
+          ${getManufacturerSvg("acura")}
+          <span class="truncate text-[11px] text-emerald-300 font-bold">Tú (Alberto)</span>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <span class="px-1 py-0.5 rounded text-[9px] bg-emerald-500/20 text-emerald-300">A 3.9 · 2.8k</span>
+          <span class="text-emerald-400 font-bold text-xs">P3 · PACE</span>
+        </div>
       </div>
-      <div class="flex items-center justify-between text-r-muted">
-        <span>#23 · Ferrari 296</span>
-        <span class="text-sky-300 font-bold">+0.85s</span>
+
+      <!-- Car Behind -->
+      <div class="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-black/40 border border-white/5">
+        <div class="flex items-center gap-1.5 min-w-0">
+          <span class="px-1 py-0.5 rounded text-[9px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">GT3</span>
+          <span class="text-white/80 font-black text-[11px] w-6">#69</span>
+          ${getManufacturerSvg("bmw")}
+          <span class="truncate text-[11px] text-white/90 font-medium">F. Murian</span>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <span class="px-1 py-0.5 rounded text-[9px] bg-white/10 text-sky-400">B 3.2 · 2.7k</span>
+          <span class="text-sky-400 font-bold text-xs">+1.24s</span>
+        </div>
+      </div>
+
+      <!-- Trailing Car -->
+      <div class="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-black/40 border border-white/5">
+        <div class="flex items-center gap-1.5 min-w-0">
+          <span class="px-1 py-0.5 rounded text-[9px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">GT3</span>
+          <span class="text-white/80 font-black text-[11px] w-6">#23</span>
+          ${getManufacturerSvg("ferrari")}
+          <span class="truncate text-[11px] text-white/90 font-medium">C. Must</span>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <span class="px-1 py-0.5 rounded text-[9px] bg-white/10 text-amber-400">C 3.4 · 2.1k</span>
+          <span class="text-sky-300 font-bold text-xs">+2.85s</span>
+        </div>
       </div>
     </div>
   `;
@@ -1654,14 +1741,45 @@ function updateHUDDisplay(sample: LiveSample): void {
     rel.innerHTML = relHtml;
   });
 
-  // Standings
+  // Standings with Manufacturer Badges
   const standingsHtml = `
-    <div class="text-[10px] uppercase text-r-muted mb-1.5 font-bold tracking-wider">Clasificación GT3</div>
-    <div class="space-y-1 text-xs">
-      <div class="flex justify-between"><span>P1 · Coche 8</span><span class="text-r-muted">LIDER</span></div>
-      <div class="flex justify-between"><span>P2 · Coche 911</span><span class="text-r-muted">+3.2s</span></div>
-      <div class="flex justify-between font-bold text-r-accent"><span>P3 · Tú (#16)</span><span>+4.4s</span></div>
-      <div class="flex justify-between"><span>P4 · Coche 23</span><span class="text-r-muted">+5.2s</span></div>
+    <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-white/10 text-[10px] uppercase font-bold tracking-wider">
+      <span class="text-r-muted">Clasificación en Pista</span>
+      <span class="text-[9px] text-r-muted font-mono">VUELTA 5 / 24</span>
+    </div>
+    <div class="space-y-1.5 font-mono text-xs">
+      <div class="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-black/40">
+        <div class="flex items-center gap-1.5 min-w-0">
+          <span class="text-amber-400 font-bold text-[11px]">P1</span>
+          ${getManufacturerSvg("porsche")}
+          <span class="truncate text-white/80 text-[11px]">Porsche #8</span>
+        </div>
+        <span class="text-r-muted text-[11px]">LÍDER</span>
+      </div>
+      <div class="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-black/40">
+        <div class="flex items-center gap-1.5 min-w-0">
+          <span class="text-white font-bold text-[11px]">P2</span>
+          ${getManufacturerSvg("ferrari")}
+          <span class="truncate text-white/80 text-[11px]">Ferrari #51</span>
+        </div>
+        <span class="text-white font-mono text-[11px]">+2.15s</span>
+      </div>
+      <div class="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/40 font-bold text-emerald-300">
+        <div class="flex items-center gap-1.5 min-w-0">
+          <span class="text-emerald-400 text-[11px]">P3</span>
+          ${getManufacturerSvg("bmw")}
+          <span class="truncate text-[11px]">Tú (#16)</span>
+        </div>
+        <span class="text-emerald-400 font-mono text-[11px]">+3.82s</span>
+      </div>
+      <div class="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-black/40">
+        <div class="flex items-center gap-1.5 min-w-0">
+          <span class="text-white font-bold text-[11px]">P4</span>
+          ${getManufacturerSvg("audi")}
+          <span class="truncate text-white/80 text-[11px]">Audi #33</span>
+        </div>
+        <span class="text-white font-mono text-[11px]">+5.40s</span>
+      </div>
     </div>
   `;
   document.querySelectorAll<HTMLElement>("#ovStandings, #ovStandingsFloat").forEach((standings) => {

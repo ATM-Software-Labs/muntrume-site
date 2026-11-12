@@ -34,46 +34,35 @@ export interface TrackWeekInfo {
   week: number;
   isCurrent: boolean;
   seriesContext: string;
+  isFixed?: boolean;
 }
 
 export function getTrackWeekInfo(track: string, filename?: string, carFolder?: string): TrackWeekInfo {
-  if (filename) {
-    const upper = filename.toUpperCase();
-    for (const prefix of ["_W", "-W", ".W", "WEEK"]) {
-      const idx = upper.indexOf(prefix);
-      if (idx !== -1) {
-        const rest = upper.slice(idx + prefix.length);
-        const digits = rest.match(/^\d+/);
-        if (digits) {
-          const num = parseInt(digits[0], 10);
-          if (num >= 1 && num <= 14) {
-            return {
-              week: num,
-              isCurrent: num === (sched.current_week || 9),
-              seriesContext: num === (sched.current_week || 9) ? "Semana Actual" : `Semana ${num}`,
-            };
-          }
-        }
-      }
-    }
-  }
-
   const clean = String(track || "").toLowerCase().replace(/[^a-z0-9]/g, "");
   const cleanCar = String(carFolder || "").toLowerCase().replace(/[^a-z0-9]/g, "");
   const upperFile = String(filename || "").toUpperCase();
-  const isGtp = cleanCar.includes("gtp") || cleanCar.includes("arx06") || cleanCar.includes("bmwmhybrid") || cleanCar.includes("porsche963") || cleanCar.includes("cadillacv") || cleanCar.includes("amvalkyrie") || cleanCar.includes("valkyrie");
+
+  // Explicit Fixed Series Check: No setups supplied for fixed series
+  if (clean.includes("barcelona") || clean.includes("catalunya") || upperFile.includes("FIXED") || clean.includes("fixed")) {
+    return {
+      week: 0,
+      isCurrent: false,
+      isFixed: true,
+      seriesContext: "Serie Fixed (Setup de serie obligatorio en iRacing)",
+    };
+  }
+
+  const isGtp = cleanCar.includes("gtp") || cleanCar.includes("arx06") || cleanCar.includes("bmwmhybrid") || cleanCar.includes("porsche963") || cleanCar.includes("cadillacv") || cleanCar.includes("amvalkyrie") || cleanCar.includes("valkyrie") || upperFile.includes("ARX06") || upperFile.includes("GTP");
   const isLmp2 = cleanCar.includes("p217") || cleanCar.includes("lmp2") || cleanCar.includes("dallara");
   const isImsa = isGtp || isLmp2 || upperFile.includes("IMSA");
-  const isCup = cleanCar.includes("cup") || cleanCar.includes("992cup");
-  const isGt3 = !isGtp && !isLmp2 && !isCup && (cleanCar.includes("gt3") || cleanCar.includes("296") || cleanCar.includes("992") || cleanCar.includes("m4") || cleanCar.includes("720s") || cleanCar.includes("mustang") || cleanCar.includes("vantage") || cleanCar.includes("huracan") || cleanCar.includes("z06") || cleanCar === "" || cleanCar.includes("ferrari") || cleanCar.includes("bmw") || cleanCar.includes("porsche"));
 
   // 1. Fuji Speedway -> GT3 Open (Week 9: Current Week!) vs IMSA (Week 2)
   if (clean.includes("fuji")) {
-    if (isImsa && !isGt3) {
+    if (isGtp || isImsa || isLmp2) {
       return {
         week: 2,
         isCurrent: false,
-        seriesContext: "IMSA SportsCar (Semana 02)",
+        seriesContext: "IMSA SportsCar (Semana 02 - Fuji)",
       };
     }
     return {
@@ -83,19 +72,19 @@ export function getTrackWeekInfo(track: string, filename?: string, carFolder?: s
     };
   }
 
-  // 2. Suzuka -> IMSA SportsCar Open (Week 9: Current Week!) or GT3 Open (Week 12 Final)
+  // 2. Suzuka -> IMSA SportsCar Open (Week 9: Current Week!) vs GT3 Open (Week 12 Final)
   if (clean.includes("suzuka")) {
-    if (isImsa || isGtp || isLmp2) {
+    if (isGtp || isImsa || isLmp2) {
       return {
         week: 9,
         isCurrent: true,
-        seriesContext: "IMSA Open (Suzuka)",
+        seriesContext: "IMSA SportsCar Open (Suzuka)",
       };
     }
     return {
-      week: isGt3 ? 12 : 9,
-      isCurrent: !isGt3,
-      seriesContext: isGt3 ? "GT3 Open (Semana 12)" : "IMSA Open (Suzuka)",
+      week: 12,
+      isCurrent: false,
+      seriesContext: "GT3 Open (Semana 12)",
     };
   }
 
@@ -1087,8 +1076,13 @@ function paintGroupedByCar(items: LibraryItem[]): void {
 
         trackLeft.append(trackPin, trackTitle);
 
-        const weekInfo = getTrackWeekInfo(track, undefined, circuitRows[0]?.carFolder);
-        if (weekInfo.week) {
+        const weekInfo = getTrackWeekInfo(track, circuitRows[0]?.filename, circuitRows[0]?.carFolder || circuitRows[0]?.car);
+        if (weekInfo.isFixed) {
+          const fixedBadge = document.createElement("span");
+          fixedBadge.className = "px-2 py-0.5 rounded-full border border-amber-500/40 bg-amber-500/10 text-amber-300 text-[10px] font-mono";
+          fixedBadge.textContent = "SERIE FIXED (Sin setup MMT)";
+          trackLeft.append(fixedBadge);
+        } else if (weekInfo.week) {
           const weekBadge = document.createElement("span");
           weekBadge.className = weekInfo.isCurrent
             ? "px-2 py-0.5 rounded-full bg-r-accent text-r-ink font-bold text-[10px] uppercase tracking-wider shadow-sm"
@@ -1197,8 +1191,13 @@ function paintGroupedByTrack(items: LibraryItem[]): void {
     const right = document.createElement("div");
     right.className = "flex items-center gap-2 font-mono text-[11px]";
 
-    const weekInfo = getTrackWeekInfo(track, undefined, rows[0]?.carFolder);
-    if (weekInfo.week) {
+    const weekInfo = getTrackWeekInfo(track, rows[0]?.filename, rows[0]?.carFolder || rows[0]?.car);
+    if (weekInfo.isFixed) {
+      const fixedBadge = document.createElement("span");
+      fixedBadge.className = "px-2 py-0.5 rounded-full border border-amber-500/40 bg-amber-500/10 text-amber-300 uppercase tracking-wider";
+      fixedBadge.textContent = "SERIE FIXED (Sin setup MMT)";
+      right.append(fixedBadge);
+    } else if (weekInfo.week) {
       const weekBadge = document.createElement("span");
       weekBadge.className = weekInfo.isCurrent
         ? "px-2 py-0.5 rounded-full bg-r-accent text-r-ink font-bold uppercase tracking-wider"

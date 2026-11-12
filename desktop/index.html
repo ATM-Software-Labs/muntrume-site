@@ -1465,54 +1465,61 @@
         </div>
       </div>
 
-      <!-- Mid Row: Radar (Left), Dash Cluster (Center), Standings (Right) -->
+      <!-- Mid Area: Unobstructed windshield view! Radar on far Left, Standings on far Right -->
       <div class="flex items-center justify-between gap-6 pointer-events-none flex-1 my-3">
-        <!-- Relative Radar -->
-        <div id="floatRelativeCard" class="mmt-float-widget w-72 rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md text-white p-4 text-xs font-mono shadow-2xl pointer-events-auto" data-widget="relative">
+        <!-- Relative Radar (Left Edge) -->
+        <div id="floatRelativeCard" class="mmt-float-widget w-80 rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md text-white p-3.5 text-xs font-mono shadow-2xl pointer-events-auto" data-widget="relative">
           <div id="ovRelativeFloat"></div>
         </div>
 
-        <!-- Central Digital Dash Cluster -->
-        <div id="floatClusterCard" class="mmt-float-widget flex flex-col items-center pointer-events-auto" data-widget="cluster">
-          <div id="ovDeltaFloat" class="mb-3 px-5 py-1.5 rounded-full border border-emerald-500/40 bg-emerald-950/90 text-emerald-400 font-mono text-sm font-bold shadow-xl shadow-emerald-950/50">
-            -0.34s · Sector 2
-          </div>
-          <div class="flex items-baseline gap-4 px-8 py-5 rounded-3xl border border-white/20 bg-black/90 backdrop-blur-md shadow-2xl">
-            <div class="flex flex-col items-center">
-              <span class="text-[10px] font-mono text-r-muted uppercase tracking-wider">Marcha</span>
-              <strong id="ovGearFloat" class="font-mono text-7xl font-black text-white leading-none mt-1">4</strong>
-            </div>
-            <div class="h-16 w-px bg-white/20"></div>
-            <div class="flex flex-col">
-              <span class="text-[10px] font-mono text-r-muted uppercase tracking-wider">Velocidad</span>
-              <div class="flex items-baseline gap-1 mt-1">
-                <strong id="ovSpeedFloat" class="font-mono text-5xl font-black text-r-accent leading-none">198</strong>
-                <span class="font-mono text-xs text-r-muted">km/h</span>
-              </div>
-              <span id="ovRpmFloat" class="text-[11px] font-mono text-r-muted mt-1">7,420 RPM</span>
-            </div>
-          </div>
-        </div>
+        <!-- Center of screen is 100% CLEAR for driver windshield and track apex vision -->
+        <div class="pointer-events-none flex-1"></div>
 
-        <!-- Standings -->
-        <div id="floatStandingsCard" class="mmt-float-widget w-64 rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md text-white p-4 text-xs font-mono shadow-2xl pointer-events-auto" data-widget="standings">
+        <!-- Standings / Corner Guidance (Right Edge) -->
+        <div id="floatStandingsCard" class="mmt-float-widget w-64 rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md text-white p-3.5 text-xs font-mono shadow-2xl pointer-events-auto" data-widget="standings">
           <div id="ovStandingsFloat"></div>
         </div>
       </div>
 
-      <!-- Bottom Row: Fuel computer (Left), Waveform & Pedals (Right) -->
+      <!-- Bottom Row: Fuel (Left), Compact Digital Dash (Center-Bottom), Waveform & Pedals (Right) -->
       <div class="flex items-end justify-between gap-4 pointer-events-none mt-2">
-        <div id="floatFuelCard" class="mmt-float-widget w-72 rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md text-white p-4 text-xs font-mono shadow-2xl pointer-events-auto" data-widget="fuel">
+        <!-- Fuel & Stint Computer (Bottom-Left) -->
+        <div id="floatFuelCard" class="mmt-float-widget w-64 rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md text-white p-3 text-xs font-mono shadow-2xl pointer-events-auto" data-widget="fuel">
           <div id="ovFuelFloat"></div>
         </div>
 
-        <div id="floatWaveformCard" class="mmt-float-widget rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md p-2.5 shadow-2xl pointer-events-auto" data-widget="waveform">
-          <canvas id="ovWaveformCanvasFloat" width="220" height="55" class="rounded-lg bg-black/60 border border-white/10"></canvas>
+        <!-- Central Digital Dash Cluster (Sits low on bottom edge, above physical wheel) -->
+        <div id="floatClusterCard" class="mmt-float-widget flex flex-col items-center pointer-events-auto" data-widget="cluster">
+          <div id="ovDeltaFloat" class="mb-1.5 px-4 py-1 rounded-full border border-emerald-500/40 bg-emerald-950/90 text-emerald-400 font-mono text-xs font-bold shadow-xl shadow-emerald-950/50">
+            -0.34s · Sector 2
+          </div>
+          <div class="flex items-baseline gap-3.5 px-6 py-3.5 rounded-2xl border border-white/20 bg-black/90 backdrop-blur-md shadow-2xl">
+            <div class="flex flex-col items-center">
+              <span class="text-[9px] font-mono text-r-muted uppercase tracking-wider">Marcha</span>
+              <strong id="ovGearFloat" class="font-mono text-5xl font-black text-white leading-none mt-0.5">4</strong>
+            </div>
+            <div class="h-10 w-px bg-white/20"></div>
+            <div class="flex flex-col">
+              <span class="text-[9px] font-mono text-r-muted uppercase tracking-wider">Velocidad</span>
+              <div class="flex items-baseline gap-1 mt-0.5">
+                <strong id="ovSpeedFloat" class="font-mono text-3xl font-black text-r-accent leading-none">198</strong>
+                <span class="font-mono text-[10px] text-r-muted">km/h</span>
+              </div>
+              <span id="ovRpmFloat" class="text-[10px] font-mono text-r-muted mt-0.5">7,420 RPM</span>
+            </div>
+          </div>
         </div>
 
-        <div id="floatInputsCard" class="mmt-float-widget rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md p-3.5 shadow-2xl pointer-events-auto" data-widget="inputs">
-          <canvas id="ovInputsFloat" width="300" height="95" class="rounded-xl"></canvas>
-          <div id="ovTyresFloat" class="mt-2 text-center font-mono text-[11px] text-r-muted"></div>
+        <!-- Telemetry & Pedals (Bottom-Right) -->
+        <div class="flex items-end gap-2.5">
+          <div id="floatWaveformCard" class="mmt-float-widget rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md p-2 shadow-2xl pointer-events-auto" data-widget="waveform">
+            <canvas id="ovWaveformCanvasFloat" width="200" height="50" class="rounded-lg bg-black/60 border border-white/10"></canvas>
+          </div>
+
+          <div id="floatInputsCard" class="mmt-float-widget rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md p-3 shadow-2xl pointer-events-auto" data-widget="inputs">
+            <canvas id="ovInputsFloat" width="280" height="85" class="rounded-xl"></canvas>
+            <div id="ovTyresFloat" class="mt-1 text-center font-mono text-[10px] text-r-muted"></div>
+          </div>
         </div>
       </div>
     </div>
