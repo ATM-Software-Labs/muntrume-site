@@ -2,6 +2,7 @@
 
 use std::fs;
 use std::path::Path;
+#[cfg(windows)]
 use std::process::Command;
 use serde::{Deserialize, Serialize};
 
@@ -19,9 +20,13 @@ pub struct HardwareReport {
 }
 
 pub fn detect() -> HardwareReport {
+    #[cfg_attr(not(windows), allow(unused_mut))]
     let mut detected_wheelbase: Option<String> = None;
+    #[cfg_attr(not(windows), allow(unused_mut))]
     let mut detected_pedals: Option<String> = None;
+    #[cfg_attr(not(windows), allow(unused_mut))]
     let mut audio_devices: Vec<String> = Vec::new();
+    #[cfg_attr(not(windows), allow(unused_mut))]
     let mut wheelbase_brand: Option<String> = None;
 
     #[cfg(windows)]
@@ -139,6 +144,7 @@ pub fn detect() -> HardwareReport {
     }
 }
 
+#[cfg(windows)]
 fn classify_device(
     name: &str,
     wheelbase: &mut Option<String>,

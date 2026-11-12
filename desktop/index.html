@@ -1422,9 +1422,10 @@
     </div>
 
     <!-- Floating In-Game Overlay Container (visible exclusively when index.html?overlay=1) -->
-    <div id="floatingOverlayHost" hidden class="fixed inset-0 select-none p-5 flex flex-col justify-between overflow-hidden pointer-events-none">
-      <!-- Top control pill (draggable) -->
-      <div class="flex items-center justify-between gap-3 pointer-events-auto">
+    <div id="floatingOverlayHost" hidden class="fixed inset-0 select-none p-5 flex flex-col justify-between overflow-hidden pointer-events-none" data-hud="closed">
+      <div id="hudStateBanner" class="absolute top-6 left-6 z-20 px-4 py-2 rounded-xl bg-black/80 border border-white/20 text-white font-mono text-sm font-bold tracking-wide">iRacing Cerrado</div>
+      <!-- Top control pill (draggable). Hidden until the HUD is live or in edit. -->
+      <div id="floatHudChrome" hidden class="flex items-center justify-between gap-3 pointer-events-auto">
         <div data-tauri-drag-region class="flex items-center gap-3 px-4 py-2 rounded-2xl bg-black/85 border border-white/15 backdrop-blur-md cursor-move shadow-2xl">
           <img src="./favicon.svg" width="22" height="22" alt="MMT" class="h-5 w-5 rounded shadow pointer-events-none" />
           <div class="pointer-events-none flex items-center gap-2">
@@ -1459,9 +1460,9 @@
         <div class="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-black/90 border border-white/20 backdrop-blur-md shadow-2xl" id="ovShiftLightsFloat"></div>
         <div id="ovBrakeMarkerFloat" class="flex items-center gap-2 px-3 py-1 rounded-xl bg-black/85 border border-white/20 text-xs font-mono">
           <span class="text-[10px] text-r-muted uppercase font-bold">Frenada:</span>
-          <span id="bmFloatCountdown" class="font-bold text-amber-300">100m</span>
+          <span id="bmFloatCountdown" class="font-bold text-amber-300">—</span>
           <span class="text-white/30">·</span>
-          <span id="bmFloatAdvice" class="text-r-accent font-bold text-[11px]">Trail-Braking</span>
+          <span id="bmFloatAdvice" class="text-r-accent font-bold text-[11px]">—</span>
         </div>
       </div>
 
@@ -1491,21 +1492,21 @@
         <!-- Central Digital Dash Cluster (Sits low on bottom edge, above physical wheel) -->
         <div id="floatClusterCard" class="mmt-float-widget flex flex-col items-center pointer-events-auto" data-widget="cluster">
           <div id="ovDeltaFloat" class="mb-1.5 px-4 py-1 rounded-full border border-emerald-500/40 bg-emerald-950/90 text-emerald-400 font-mono text-xs font-bold shadow-xl shadow-emerald-950/50">
-            -0.34s · Sector 2
+            —
           </div>
           <div class="flex items-baseline gap-3.5 px-6 py-3.5 rounded-2xl border border-white/20 bg-black/90 backdrop-blur-md shadow-2xl">
             <div class="flex flex-col items-center">
               <span class="text-[9px] font-mono text-r-muted uppercase tracking-wider">Marcha</span>
-              <strong id="ovGearFloat" class="font-mono text-5xl font-black text-white leading-none mt-0.5">4</strong>
+              <strong id="ovGearFloat" class="font-mono text-5xl font-black text-white leading-none mt-0.5">—</strong>
             </div>
             <div class="h-10 w-px bg-white/20"></div>
             <div class="flex flex-col">
               <span class="text-[9px] font-mono text-r-muted uppercase tracking-wider">Velocidad</span>
               <div class="flex items-baseline gap-1 mt-0.5">
-                <strong id="ovSpeedFloat" class="font-mono text-3xl font-black text-r-accent leading-none">198</strong>
+                <strong id="ovSpeedFloat" class="font-mono text-3xl font-black text-r-accent leading-none">—</strong>
                 <span class="font-mono text-[10px] text-r-muted">km/h</span>
               </div>
-              <span id="ovRpmFloat" class="text-[10px] font-mono text-r-muted mt-0.5">7,420 RPM</span>
+              <span id="ovRpmFloat" class="text-[10px] font-mono text-r-muted mt-0.5">—</span>
             </div>
           </div>
         </div>

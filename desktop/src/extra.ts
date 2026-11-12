@@ -995,58 +995,24 @@ function applyStrategyPreset(preset: string): void {
   const pitLoss = document.getElementById("pitLoss") as HTMLInputElement | null;
   if (!raceMin || !lapSec || !fuelLap || !tank || !fuelNow || !pitLoss) return;
 
-  switch (preset) {
-    case "sprint20":
-      raceMin.value = "20";
-      lapSec.value = "135.2";
-      fuelLap.value = "3.15";
-      tank.value = "110";
-      fuelNow.value = "35";
-      pitLoss.value = "28";
-      break;
-    case "feature40":
-      raceMin.value = "40";
-      lapSec.value = "135.2";
-      fuelLap.value = "3.15";
-      tank.value = "110";
-      fuelNow.value = "65";
-      pitLoss.value = "32";
-      break;
-    case "imsa45":
-      raceMin.value = "45";
-      lapSec.value = "135.2";
-      fuelLap.value = "3.15";
-      tank.value = "110";
-      fuelNow.value = "75";
-      pitLoss.value = "35";
-      break;
-    case "vrs144":
-      raceMin.value = "144";
-      lapSec.value = "135.2";
-      fuelLap.value = "3.15";
-      tank.value = "110";
-      fuelNow.value = "110";
-      pitLoss.value = "40";
-      break;
-    case "endur360":
-      raceMin.value = "360";
-      lapSec.value = "135.2";
-      fuelLap.value = "3.15";
-      tank.value = "110";
-      fuelNow.value = "110";
-      pitLoss.value = "42";
-      break;
-    case "daytona24":
-      raceMin.value = "1440";
-      lapSec.value = "135.2";
-      fuelLap.value = "3.15";
-      tank.value = "110";
-      fuelNow.value = "110";
-      pitLoss.value = "45";
-      break;
-  }
-
-  recalculateStrategy();
+  const minutes: Record<string, string> = {
+    sprint20: "20",
+    feature40: "40",
+    imsa45: "45",
+    vrs144: "144",
+    endur360: "360",
+    daytona24: "1440",
+  };
+  const chosen = minutes[preset];
+  if (!chosen) return;
+  raceMin.value = chosen;
+  lapSec.value = "";
+  fuelLap.value = "";
+  tank.value = "";
+  fuelNow.value = "";
+  pitLoss.value = "";
+  const fuelOut = document.getElementById("fuelOut");
+  if (fuelOut) fuelOut.textContent = "Duración fijada. Faltan tiempo de vuelta, consumo y depósito medidos. No se estiman.";
 }
 
 function recalculateStrategy(): void {
@@ -1068,20 +1034,19 @@ function recalculateStrategy(): void {
   }
 
   const lapsExact = (minutes * 60) / lapSeconds;
-  const totalLaps = Math.ceil(lapsExact) + 1;
+  const totalLaps = Math.ceil(lapsExact);
   const totalFuel = totalLaps * perLap;
   const stintLaps = Math.floor(tank / perLap);
   const lapsWithCurrentFuel = Math.floor(now / perLap);
   const deficit = Math.max(0, totalFuel - now);
   const stops = deficit <= 0 ? 0 : Math.ceil(deficit / tank);
   const fuelToAdd = Math.min(tank, Math.ceil(deficit * 10) / 10);
-  const refuelTimeSec = fuelToAdd > 0 ? (fuelToAdd / 2.8).toFixed(1) : "0.0";
-  const pitWindowStartLap = Math.max(1, lapsWithCurrentFuel - 2);
+  const pitWindowStartLap = Math.max(1, lapsWithCurrentFuel);
   const pitWindowEndLap = Math.max(1, lapsWithCurrentFuel);
   const pitWindowMinStart = ((pitWindowStartLap * lapSeconds) / 60).toFixed(1);
 
   if (fuelOut) {
-    fuelOut.textContent = `${totalLaps} vueltas estimadas (con margen de meta). Total necesario: ${totalFuel.toFixed(1)} L. Depósito actual: ${lapsWithCurrentFuel} vueltas. Paradas requeridas: ${stops}. En la parada repostar: ${fuelToAdd} L (~${refuelTimeSec}s de manguera a 2.8 L/s). Pérdida de pit lane: ${pitLoss}s.`;
+    fuelOut.textContent = `${totalLaps} vueltas con los datos introducidos. Combustible: ${totalFuel.toFixed(1)} L. Paradas: ${stops}. Repostar: ${fuelToAdd} L. Pérdida de pit introducida: ${pitLoss}s. El caudal de manguera no se puede determinar.`;
   }
 
   if (metricsGrid) {
@@ -1119,7 +1084,7 @@ function recalculateStrategy(): void {
           <strong class="font-mono text-3xl font-black ${stops > 0 ? "text-amber-400" : "text-r-accent"}">${stops}</strong>
           <span class="text-xs text-r-muted font-mono">${stops === 1 ? "parada" : "paradas"}</span>
         </div>
-        <span class="text-[10px] font-mono text-r-muted mt-2">${stops > 0 ? `Añadir ${fuelToAdd} L (~${refuelTimeSec}s)` : "Sin parada obligatoria"}</span>
+        <span class="text-[10px] font-mono text-r-muted mt-2">${stops > 0 ? `Añadir ${fuelToAdd} L` : "Sin parada obligatoria"}</span>
       </div>
     `;
   }
@@ -1143,8 +1108,7 @@ function recalculateStrategy(): void {
           </div>
           <div class="flex items-center gap-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 font-mono text-xs text-amber-300">
             <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold">PIT STOP</span>
-            <span>Entrada a box: repostar ${fuelToAdd} L (${refuelTimeSec}s manguera) + ${pitLoss}s pit lane</span>
-            <span class="ml-auto font-semibold">Tiempo total box: ${(Number(refuelTimeSec) + pitLoss).toFixed(0)}s</span>
+            <span>Entrada a box: repostar ${fuelToAdd} L. Pérdida de pit introducida: ${pitLoss}s. Caudal de manguera: no se puede determinar.</span>
           </div>
           <div class="flex items-center gap-2 p-3 rounded-xl bg-r-bg/50 border border-r-line font-mono text-xs">
             <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">STINT 2</span>
@@ -1165,6 +1129,36 @@ let demoAnimationTimer: number | null = null;
 let demoTick = 0;
 const liveWaveformHistory: { thr: number; brk: number }[] = [];
 let layoutUnlocked = false;
+
+function hudMockAllowed(): boolean {
+  return import.meta.env.DEV && new URLSearchParams(location.search).get("hudmock") === "1";
+}
+
+function setHudMode(mode: "closed" | "live" | "mock"): void {
+  const host = document.getElementById("floatingOverlayHost");
+  const banner = document.getElementById("hudStateBanner");
+  if (host) host.dataset.hud = mode;
+  if (banner) {
+    banner.hidden = mode === "live";
+    banner.textContent = mode === "mock" ? "DEMO · DATOS SINTÉTICOS" : "iRacing Cerrado";
+  }
+  document.querySelectorAll<HTMLElement>(".mmt-float-widget, #floatHudChrome").forEach((el) => {
+    el.hidden = mode === "closed";
+  });
+}
+
+export function noteHudClosed(): void {
+  if (hudMockAllowed()) return;
+  isLiveFromSDK = false;
+  setHudMode("closed");
+}
+
+async function setOverlayEdit(editing: boolean): Promise<void> {
+  const { inTauri } = await import("./env");
+  if (!inTauri()) return;
+  const { invoke } = await import("@tauri-apps/api/core");
+  await invoke("set_overlay_edit", { editing });
+}
 
 export function paintOverlays(): void {
   const toggleBtn = document.getElementById("overlayModeToggle");
@@ -1187,14 +1181,10 @@ export function paintOverlays(): void {
   if (!overlayInitialized) {
     overlayInitialized = true;
 
-    if (toggleBtn) {
-      toggleBtn.addEventListener("click", () => {
-        isLiveFromSDK = !isLiveFromSDK;
-        toggleBtn.textContent = isLiveFromSDK ? "Modo SDK Directo (Esperando iRacing)" : "Modo Demo Activo (Pruébalo)";
-        toggleBtn.className = isLiveFromSDK
-          ? "px-3.5 py-2 rounded-xl border border-sky-400 bg-sky-500/15 text-sky-300 font-mono text-xs font-bold"
-          : "px-3.5 py-2 rounded-xl border border-r-accent bg-r-accent/15 text-r-accent font-mono text-xs font-bold";
-      });
+    if (toggleBtn instanceof HTMLButtonElement) {
+      toggleBtn.disabled = true;
+      toggleBtn.textContent = "Próximamente";
+      toggleBtn.title = "El modo demo no está en la build de release";
     }
 
     if (btnUnlock) {
@@ -1217,7 +1207,8 @@ export function paintOverlays(): void {
 
     setupDraggableWidgets();
     restoreWidgetPositions();
-    startDemoOverlayLoop();
+    if (hudMockAllowed()) startDemoOverlayLoop();
+    else setHudMode("closed");
   }
 
   canvases.forEach((canvas) => {
@@ -1446,6 +1437,7 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
 
   btnEdit?.addEventListener("click", () => {
     floatEditMode = !floatEditMode;
+    void setOverlayEdit(floatEditMode);
     if (btnEdit) {
       btnEdit.className = floatEditMode
         ? "px-2.5 py-1.5 rounded-xl bg-r-accent text-r-ink font-mono text-[10px] font-bold uppercase transition flex items-center gap-1 shadow-md"
@@ -1509,9 +1501,14 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
 }
 
 function startDemoOverlayLoop(): void {
+  if (!hudMockAllowed()) {
+    setHudMode("closed");
+    return;
+  }
+  setHudMode("mock");
   if (demoAnimationTimer) clearInterval(demoAnimationTimer);
 
-  demoAnimationTimer = window.setInterval(() => {
+  const paintDemo = () => {
     if (isLiveFromSDK) return;
 
     demoTick += 0.05;
@@ -1531,18 +1528,23 @@ function startDemoOverlayLoop(): void {
       gear,
       steering,
     });
-  }, 50);
+  };
+  paintDemo();
+  demoAnimationTimer = window.setInterval(paintDemo, 50);
 }
 
 export function updateLiveOverlay(sample: LiveSample): void {
+  if (hudMockAllowed()) return;
   isLiveFromSDK = true;
+  setHudMode("live");
   updateHUDDisplay(sample);
 }
 
 function updateHUDDisplay(sample: LiveSample): void {
   const kmh = Math.round(sample.speed * 3.6);
   const gearStr = sample.gear === -1 ? "R" : sample.gear === 0 ? "N" : String(sample.gear);
-  const rpmEst = Math.min(8600, Math.round(kmh * 38 + 2100));
+  const mock = hudMockAllowed();
+  const rpmEst = mock ? Math.min(8600, Math.round(kmh * 38 + 2100)) : 0;
 
   // Push to rolling waveform buffer
   liveWaveformHistory.push({ thr: sample.throttle, brk: sample.brake });
@@ -1558,7 +1560,7 @@ function updateHUDDisplay(sample: LiveSample): void {
   // Shift Lights
   const shiftLightContainers = document.querySelectorAll<HTMLElement>("#ovShiftLights, #ovShiftLightsFloat");
   const revAlert = document.getElementById("ovRevLimiterAlert");
-  const isLimiter = rpmEst >= 8250;
+  const isLimiter = mock && rpmEst >= 8250;
 
   if (revAlert) {
     revAlert.classList.toggle("hidden", !isLimiter);
@@ -1574,7 +1576,7 @@ function updateHUDDisplay(sample: LiveSample): void {
       }
     }
     const leds = shiftLights.children;
-    const rpmNorm = Math.max(0, Math.min(1, (rpmEst - 5000) / 3250));
+    const rpmNorm = mock ? Math.max(0, Math.min(1, (rpmEst - 5000) / 3250)) : 0;
     const activeCount = Math.floor(rpmNorm * 16);
 
     for (let i = 0; i < leds.length; i++) {
@@ -1601,10 +1603,12 @@ function updateHUDDisplay(sample: LiveSample): void {
   // Central Cluster
   document.querySelectorAll<HTMLElement>("#ovGear, #ovGearFloat").forEach((el) => { el.textContent = gearStr; });
   document.querySelectorAll<HTMLElement>("#ovSpeed, #ovSpeedFloat").forEach((el) => { el.textContent = String(kmh); });
-  document.querySelectorAll<HTMLElement>("#ovRpm, #ovRpmFloat").forEach((el) => { el.textContent = `${rpmEst.toLocaleString()} RPM`; });
+  document.querySelectorAll<HTMLElement>("#ovRpm, #ovRpmFloat").forEach((el) => {
+    el.textContent = mock ? `${rpmEst.toLocaleString()} RPM` : "—";
+  });
 
-  const deltaVal = Math.sin(sample.t * 0.5) * 0.42;
-  const deltaText = `${deltaVal >= 0 ? "+" : ""}${deltaVal.toFixed(2)}s · Sector 2`;
+  const deltaVal = mock ? Math.sin(sample.t * 0.5) * 0.42 : 0;
+  const deltaText = mock ? `${deltaVal >= 0 ? "+" : ""}${deltaVal.toFixed(2)}s · Sector 2` : "—";
   document.querySelectorAll<HTMLElement>("#ovDelta, #ovDeltaFloat").forEach((ovDelta) => {
     ovDelta.textContent = deltaText;
     if (deltaVal <= 0) {
@@ -1619,7 +1623,12 @@ function updateHUDDisplay(sample: LiveSample): void {
   const apexTarget = document.getElementById("ovCornerApexTarget");
   const cornerDelta = document.getElementById("ovCornerDelta");
   const cornerTip = document.getElementById("ovCornerTip");
-  if (nextTurnBadge && apexTarget && cornerDelta && cornerTip) {
+  if (nextTurnBadge && apexTarget && cornerDelta && cornerTip && !mock) {
+    nextTurnBadge.textContent = "—";
+    apexTarget.textContent = "—";
+    cornerDelta.textContent = "—";
+    cornerTip.textContent = "—";
+  } else if (nextTurnBadge && apexTarget && cornerDelta && cornerTip) {
     const turnIdx = Math.floor((sample.dist / 4657) * 14) + 1;
     nextTurnBadge.textContent = `Curva ${turnIdx}`;
     const targetSpd = 95 + ((turnIdx * 17) % 65);
@@ -1633,51 +1642,15 @@ function updateHUDDisplay(sample: LiveSample): void {
   }
 
 function getManufacturerSvg(brand: string): string {
-  const b = brand.toLowerCase();
-  if (b.includes("porsche")) {
-    return `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none"><path d="M12 2L4 5v7c0 5.5 3.5 10 8 11 4.5-1 8-5.5 8-11V5l-8-3z" fill="#c5a059" stroke="#111" stroke-width="1.2"/><path d="M12 6v13M8 9h8M8 14h8" stroke="#d92525" stroke-width="1.2"/></svg>`;
-  }
-  if (b.includes("ferrari")) {
-    return `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none"><path d="M12 2L5 6v7c0 5 3 9 7 10 4-1 7-5 7-10V6l-7-4z" fill="#fcd34d" stroke="#111" stroke-width="1.2"/><path d="M12 7c-1 1-1.5 2.5-1 4.5.5-1 1.5-1.5 2-1 1 1 0 3-1 4.5" stroke="#111" stroke-width="1.5" stroke-linecap="round"/></svg>`;
-  }
-  if (b.includes("bmw")) {
-    return `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#111" stroke="#fff" stroke-width="1.5"/><path d="M12 2A10 10 0 0 1 22 12H12V2z" fill="#3b82f6"/><path d="M12 12v10A10 10 0 0 1 2 12h10z" fill="#3b82f6"/><path d="M12 2A10 10 0 0 0 2 12h10V2z" fill="#ffffff"/><path d="M12 12h10A10 10 0 0 1 12 22V12z" fill="#ffffff"/></svg>`;
-  }
-  if (b.includes("mercedes") || b.includes("amg")) {
-    return `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="#e2e8f0" stroke-width="1.8"/><path d="M12 2v10l8.66 5M12 12L3.34 17" stroke="#e2e8f0" stroke-width="1.8" stroke-linecap="round"/></svg>`;
-  }
-  if (b.includes("audi")) {
-    return `<svg class="w-4 h-3 shrink-0" viewBox="0 0 32 16" fill="none" stroke="#e2e8f0" stroke-width="1.5"><circle cx="7" cy="8" r="5"/><circle cx="13" cy="8" r="5"/><circle cx="19" cy="8" r="5"/><circle cx="25" cy="8" r="5"/></svg>`;
-  }
-  if (b.includes("lambo") || b.includes("huracan")) {
-    return `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24"><path d="M12 2L4 6v8l8 8 8-8V6l-8-4z" fill="#0f172a" stroke="#eab308" stroke-width="1.5"/><circle cx="12" cy="12" r="3" fill="#eab308"/></svg>`;
-  }
-  if (b.includes("mclaren") || b.includes("720s")) {
-    return `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none"><path d="M4 14C8 10 16 9 20 12c-4-1-10 0-16 2z" fill="#f97316"/></svg>`;
-  }
-  if (b.includes("aston") || b.includes("vantage")) {
-    return `<svg class="w-4 h-3 shrink-0" viewBox="0 0 28 14" fill="none" stroke="#22c55e" stroke-width="1.5"><path d="M2 7h24M6 3l8 4 8-4M8 11l6-4 6 4"/></svg>`;
-  }
-  if (b.includes("acura") || b.includes("arx")) {
-    return `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M8 16l4-8 4 8M10 13h4"/></svg>`;
-  }
-  if (b.includes("cadillac")) {
-    return `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 4v6l-7 8-7-8V7l7-4z" fill="#1e293b" stroke="#eab308" stroke-width="1.2"/><path d="M8 8h8v3H8zm0 4h8v3H8z" fill="#f59e0b"/></svg>`;
-  }
-  if (b.includes("corvette") || b.includes("chevrolet") || b.includes("z06")) {
-    return `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none"><path d="M3 8l9 3 9-3-9-3-9 3z" fill="#ef4444"/><path d="M3 16l9 3 9-3-9-3-9 3z" fill="#f59e0b"/></svg>`;
-  }
-  if (b.includes("ford") || b.includes("mustang")) {
-    return `<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="10" ry="6" fill="#1d4ed8" stroke="#fff" stroke-width="1.2"/><text x="12" y="14" font-size="6" font-family="sans-serif" font-weight="bold" fill="#fff" text-anchor="middle">Ford</text></svg>`;
-  }
-  return `<svg class="w-3.5 h-3.5 shrink-0 text-r-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>`;
+  const label = brand.replace(/[^a-zA-Z0-9 ]/g, "").trim().slice(0, 14) || "coche";
+  return `<span class="text-[9px] uppercase tracking-wide text-white/70">${label}</span>`;
 }
 
   // Relative Radar (GoSetups / GoFast style with Real Manufacturer Logos)
   const relHtml = `
     <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-white/10 text-[10px] uppercase font-bold tracking-wider">
       <span class="text-r-muted">Radar de Intervalos (Relativo)</span>
-      <span class="px-1.5 py-0.5 rounded text-[9px] bg-emerald-500/20 text-emerald-400 font-mono">LIVE SDK</span>
+      <span class="px-1.5 py-0.5 rounded text-[9px] bg-amber-500/20 text-amber-300 font-mono">DEMO</span>
     </div>
     <div class="space-y-1.5 font-mono text-xs">
       <!-- Car Ahead -->
@@ -1737,8 +1710,9 @@ function getManufacturerSvg(brand: string): string {
       </div>
     </div>
   `;
+  const emptyRel = `<div class="text-[11px] text-white/70">Sin coches en el SDK</div>`;
   document.querySelectorAll<HTMLElement>("#ovRelative, #ovRelativeFloat").forEach((rel) => {
-    rel.innerHTML = relHtml;
+    rel.innerHTML = mock ? relHtml : emptyRel;
   });
 
   // Standings with Manufacturer Badges
@@ -1782,8 +1756,9 @@ function getManufacturerSvg(brand: string): string {
       </div>
     </div>
   `;
+  const emptyStandings = `<div class="text-[11px] text-white/70">Sin clasificación en el SDK</div>`;
   document.querySelectorAll<HTMLElement>("#ovStandings, #ovStandingsFloat").forEach((standings) => {
-    standings.innerHTML = standingsHtml;
+    standings.innerHTML = mock ? standingsHtml : emptyStandings;
   });
 
   // Live Fuel Computer
@@ -1798,8 +1773,9 @@ function getManufacturerSvg(brand: string): string {
       <div><span class="text-r-muted block text-[10px]">PARA META</span><strong class="text-amber-400">+12.5 L</strong></div>
     </div>
   `;
+  const emptyFuel = `<div class="text-[11px] text-white/70">Sin FuelLevel en el SDK</div>`;
   document.querySelectorAll<HTMLElement>("#ovFuel, #ovFuelFloat").forEach((fuel) => {
-    fuel.innerHTML = fuelHtml;
+    fuel.innerHTML = mock ? fuelHtml : emptyFuel;
   });
 
   // Pedals & Steering Canvas
@@ -1823,7 +1799,14 @@ function updateBrakeMarkerCountdown(dist: number, speed: number): void {
   const bmFloatCountdown = document.getElementById("bmFloatCountdown");
   const bmFloatAdvice = document.getElementById("bmFloatAdvice");
 
-  // Approximate next braking zone (repeats every ~400m)
+  if (!hudMockAllowed()) {
+    if (bmFloatCountdown) bmFloatCountdown.textContent = "—";
+    if (bmFloatAdvice) bmFloatAdvice.textContent = "—";
+    if (bmAdvice) bmAdvice.textContent = "—";
+    return;
+  }
+
+  // Approximate next braking zone (repeats every ~400m). Solo con el flag de demo.
   const zoneCycle = dist % 400;
   const distToZone = Math.max(0, 250 - zoneCycle);
 
@@ -2127,7 +2110,7 @@ function paintTeam(settings: Settings): void {
         </div>
         <div class="flex items-center gap-1.5 pt-1 text-[10px]">
           <span class="w-1.5 h-1.5 rounded-full ${d.slug === "albertot" ? "bg-r-accent animate-pulse" : "bg-sky-400"}"></span>
-          <span class="${d.slug === "albertot" ? "text-r-accent font-semibold" : "text-r-muted"}">${d.onlineStatus}</span>
+          <span class="text-r-muted">Sin datos de presencia</span>
         </div>
       `;
 
@@ -2146,17 +2129,7 @@ function initPaddockCenter(): void {
   const liveBadge = document.getElementById("paddockLiveBadge");
 
   if (feedList && feedList.children.length === 0) {
-    const defaultEvents = [
-      { author: "Alberto T (#16)", text: "MMT Sync actualizado y conectado a telemetría iRacing", time: "hace 2m", kind: "system" },
-      { author: "Ingeniería MMT", text: "Setups de la Semana 09 verificados: alturas al suelo legales en báscula (Tech OK)", time: "hace 15m", kind: "review" },
-      { author: "Alberto T (#16)", text: "Sincronizados setups oficiales para Porsche 992 GT3 R y Ferrari 296 GT3", time: "hace 45m", kind: "setup" },
-      { author: "Mateo B (#1)", text: "Completada tanda de carrera en Monza con setup Race: 1:45.7 de ritmo medio", time: "hace 2h", kind: "note" },
-      { author: "Eduardo C (#22)", text: "Configurada telemetría para la próxima cita de resistencia en Nürburgring", time: "hace 4h", kind: "note" },
-    ];
-
-    for (const ev of defaultEvents) {
-      appendPaddockEvent(ev.author, ev.text, ev.time, ev.kind);
-    }
+    appendPaddockEvent("Paddock", "Próximamente. No hay un feed de presencia conectado.", "", "system");
   }
 
   if (!paddockInitialized) {
@@ -2168,7 +2141,7 @@ function initPaddockCenter(): void {
         const text = msgInput.value.trim();
         if (!text) return;
 
-        appendPaddockEvent("Alberto T (#16)", text, "ahora", "note");
+        appendPaddockEvent("Nota local", text, "ahora", "note");
         if (paddockSocket && paddockSocket.readyState === WebSocket.OPEN) {
           paddockSocket.send(JSON.stringify({ t: "note", text }));
         }
@@ -2271,33 +2244,24 @@ export function renderReferenceComparator(trackId?: string, target?: "best" | "s
   // Target metrics calculation based on authentic .ibt telemetry
   let targetTimeStr = track.bestFormatted;
   let targetNoteStr = `Vuelta rápida · ${track.fileUsed.slice(0, 24)}...`;
-  let deltaAlienStr = "-0.780s";
+  let deltaAlienStr = "—";
   let targetDeltaSec = 0;
 
   if (activeRefTarget === "best") {
     targetTimeStr = track.bestFormatted;
     targetNoteStr = `Mejor personal registrada (.ibt)`;
-    deltaAlienStr = "-0.780s ritmo alien";
+    deltaAlienStr = "—";
     targetDeltaSec = 0;
   } else if (activeRefTarget === "stint") {
     targetTimeStr = track.avgFormatted;
     targetNoteStr = `Ritmo de tanda media (${track.lapCount} vueltas)`;
     targetDeltaSec = track.avgSec - track.bestSec;
     deltaAlienStr = `+${targetDeltaSec.toFixed(3)}s vs óptima`;
-  } else if (activeRefTarget === "alien") {
-    const alienSec = track.bestSec - 0.78;
-    const m = Math.floor(alienSec / 60);
-    const s = (alienSec % 60).toFixed(3);
-    targetTimeStr = `${m}:${Number(s) < 10 ? "0" : ""}${s}`;
-    targetNoteStr = "Referencia Coach Alien Esports";
-    deltaAlienStr = "0.000s (Óptimo absoluto)";
   } else {
-    const stdSec = track.bestSec + 1.25;
-    const m = Math.floor(stdSec / 60);
-    const s = (stdSec % 60).toFixed(3);
-    targetTimeStr = `${m}:${Number(s) < 10 ? "0" : ""}${s}`;
-    targetNoteStr = "Línea segura de carrera MMT";
-    deltaAlienStr = "+1.250s vs récord";
+    targetTimeStr = "—";
+    targetNoteStr = "Próximamente";
+    deltaAlienStr = "—";
+    targetDeltaSec = 0;
   }
 
   // Max Speed from authentic samples
@@ -3157,21 +3121,19 @@ export function paintConfigAnalysis(data: IracingAnalysis): void {
 // 10. LAST SESSION (ÚLTIMA SESIÓN) TELEMETRY & RESULTS SUITE
 // -------------------------------------------------------------
 
-export function paintLastSession(trackId: string = "fuji"): void {
+export function paintLastSession(_trackId?: string): void {
   const canvas = document.getElementById("lastSessionTrackCanvas") as HTMLCanvasElement | null;
   if (canvas) {
-    drawLastSessionTrackCanvas(canvas, trackId);
+    const ctx = canvas.getContext("2d");
+    ctx?.clearRect(0, 0, canvas.width, canvas.height);
   }
 
-  const trk = REAL_TRACKS[trackId] || REAL_TRACKS["fuji"];
-
-  // Update Track details
   const trackName = document.getElementById("lsTrackName");
   const trackConfig = document.getElementById("lsTrackConfig");
   const trackConditions = document.getElementById("lsTrackConditions");
   const dateText = document.getElementById("lsDateText");
-  if (trackName) trackName.textContent = trk?.name || "Circuito Oficial";
-  if (trackConfig) trackConfig.textContent = `Trazado Oficial · ${(trk?.samples?.[trk.samples.length - 1]?.dist ? trk.samples[trk.samples.length - 1].dist / 1000 : 4.484).toFixed(3)} km`;
+  if (trackName) trackName.textContent = "iRacing Cerrado";
+  if (trackConfig) trackConfig.textContent = "Sin sesión";
   if (trackConditions) {
     trackConditions.innerHTML = `
       <span>Asfalto --°C · Aire --°C</span><br/>
@@ -3191,7 +3153,7 @@ export function paintLastSession(trackId: string = "fuji"): void {
   if (brandName) brandName.textContent = "Vehículo";
   if (carModel) carModel.textContent = "Sin coche en pista";
   if (carClass) carClass.textContent = "Clase --";
-  if (pilot) pilot.textContent = "Alberto Trujillo";
+  if (pilot) pilot.textContent = "—";
   if (setup) {
     setup.textContent = "Sin telemetría en vivo";
     setup.title = "Esperando que iRacing esté en pista";
@@ -3212,9 +3174,9 @@ export function paintLastSession(trackId: string = "fuji"): void {
   if (iratingGain) iratingGain.textContent = "--";
   if (iratingTotal) iratingTotal.textContent = "Solo oficial finalizada";
   if (safetyGain) safetyGain.textContent = "--";
-  if (safetyTotal) safetyTotal.textContent = "0x incidentes";
+  if (safetyTotal) safetyTotal.textContent = "—";
   if (avgTime) avgTime.textContent = "--:--.---";
-  if (lapsCount) lapsCount.textContent = "0 vueltas";
+  if (lapsCount) lapsCount.textContent = "—";
 
   // Update Stint Highlights
   const bestTime = document.getElementById("lsBestTime");

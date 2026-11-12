@@ -613,7 +613,7 @@ pub fn analyze() -> IracingAnalysis {
         100
     } else {
         let earned = (optimal_count as u32 * 100) + (recommended_count as u32 * 60) + (warning_count as u32 * 20);
-        (earned / total).clamp(0, 100)
+        earned.checked_div(total).unwrap_or(0).clamp(0, 100)
     };
 
     IracingAnalysis {

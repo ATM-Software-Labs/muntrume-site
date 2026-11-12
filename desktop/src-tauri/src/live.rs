@@ -80,18 +80,45 @@ fn is_process_running(target_names: &[&str]) -> bool {
 }
 
 #[cfg(windows)]
+struct SdkMap {
+    mapping: windows_sys::Win32::Foundation::HANDLE,
+    view: *mut std::ffi::c_void,
+    event: windows_sys::Win32::Foundation::HANDLE,
+}
+
+#[cfg(windows)]
+impl Drop for SdkMap {
+    fn drop(&mut self) {
+        use windows_sys::Win32::Foundation::CloseHandle;
+        use windows_sys::Win32::System::Memory::UnmapViewOfFile;
+        unsafe {
+            if !self.view.is_null() {
+                UnmapViewOfFile(self.view);
+            }
+            if !self.mapping.is_null() {
+                CloseHandle(self.mapping);
+            }
+            if !self.event.is_null() {
+                CloseHandle(self.event);
+            }
+        }
+    }
+}
+
+#[cfg(windows)]
 fn windows_loop(app: AppHandle) {
     use std::time::{Duration, Instant};
+    use mmt_sync_core::{read_live_sample_with, resolve_var_table, session_info_update, IbtError, VarTable};
     use tauri::Emitter;
     use windows_sys::Win32::Foundation::CloseHandle;
     use windows_sys::Win32::System::Memory::{
-        MapViewOfFile, OpenFileMappingW, UnmapViewOfFile, VirtualQuery, FILE_MAP_READ,
-        MEMORY_BASIC_INFORMATION,
+        MapViewOfFile, OpenFileMappingW, VirtualQuery, FILE_MAP_READ, MEMORY_BASIC_INFORMATION,
     };
     use windows_sys::Win32::System::Threading::{OpenEventW, WaitForSingleObject};
 
     const SYNCHRONIZE: u32 = 0x0010_0000;
     const WAIT_OBJECT_0: u32 = 0;
+    const FRAME_MS: u64 = 16;
     let mut last_status_check = Instant::now() - Duration::from_secs(5);
 
     loop {
@@ -116,50 +143,86 @@ fn windows_loop(app: AppHandle) {
             std::thread::sleep(Duration::from_millis(1000));
             continue;
         }
-
-        let _ = app.emit("mmt-iracing-status", "on_track");
         let view = unsafe { MapViewOfFile(mapping, FILE_MAP_READ, 0, 0, 0) };
-        if view.Value.is_null() {
+        if view.is_null() {
             unsafe { CloseHandle(mapping); }
             std::thread::sleep(Duration::from_millis(500));
             continue;
         }
-        let event_name = wide("Local\\IRSDKDataValidEvent");
-        let event = unsafe { OpenEventW(SYNCHRONIZE, 0, event_name.as_ptr()) };
+        let event = unsafe { OpenEventW(SYNCHRONIZE, 0, wide("Local\\IRSDKDataValidEvent").as_ptr()) };
+        let mapped = SdkMap { mapping, view, event };
+        let _ = app.emit("mmt-iracing-status", "on_track");
+
+        let mut vars: Option<VarTable> = None;
         let mut last_emit = Instant::now() - Duration::from_secs(1);
+        let mut last_proc = Instant::now();
         loop {
-            if !event.is_null() {
-                let waited = unsafe { WaitForSingleObject(event, 1000) };
-                if waited != WAIT_OBJECT_0 {
-                    continue;
-                }
+            let signaled = if mapped.event.is_null() {
+                std::thread::sleep(Duration::from_millis(FRAME_MS));
+                true
             } else {
-                std::thread::sleep(Duration::from_millis(16));
+                let waited = unsafe { WaitForSingleObject(mapped.event, FRAME_MS as u32) };
+                waited == WAIT_OBJECT_0
+            };
+            if last_proc.elapsed() >= Duration::from_millis(500) {
+                last_proc = Instant::now();
+                if !is_process_running(&["iRacingSim64DX11.exe", "iRacingSim64.exe"]) {
+                    let _ = app.emit("mmt-iracing-status", "closed");
+                    break;
+                }
             }
-            if last_emit.elapsed() < Duration::from_millis(50) {
+            if !signaled {
+                continue;
+            }
+            if last_emit.elapsed() < Duration::from_millis(FRAME_MS) {
                 continue;
             }
             let mut info = unsafe { std::mem::zeroed::<MEMORY_BASIC_INFORMATION>() };
             let queried = unsafe {
-                VirtualQuery(view.Value as *const _, &mut info, std::mem::size_of::<MEMORY_BASIC_INFORMATION>())
+                VirtualQuery(mapped.view as *const _, &mut info, std::mem::size_of::<MEMORY_BASIC_INFORMATION>())
             };
             if queried == 0 || info.RegionSize < 112 {
+                let _ = app.emit("mmt-iracing-status", "in_sim");
                 break;
             }
-            let bytes = unsafe { std::slice::from_raw_parts(view.Value as *const u8, info.RegionSize) };
-            if let Ok(sample) = mmt_sync_core::read_live_sample(bytes) {
-                let _ = app.emit("mmt-live", &sample);
-                let _ = app.emit("mmt-iracing-status", "on_track");
-                last_emit = Instant::now();
+            let bytes = unsafe { std::slice::from_raw_parts(mapped.view as *const u8, info.RegionSize) };
+            let update = match session_info_update(bytes) {
+                Ok(update) => update,
+                Err(IbtError::NotConnected) => {
+                    let _ = app.emit("mmt-iracing-status", "in_sim");
+                    vars = None;
+                    continue;
+                }
+                Err(_) => continue,
+            };
+            let stale = vars.as_ref().map(VarTable::session_info_update) != Some(update);
+            if stale {
+                match resolve_var_table(bytes) {
+                    Ok(table) => vars = Some(table),
+                    Err(IbtError::NotConnected) => {
+                        let _ = app.emit("mmt-iracing-status", "in_sim");
+                        vars = None;
+                        continue;
+                    }
+                    Err(_) => continue,
+                }
+            }
+            let Some(table) = vars.as_ref() else { continue };
+            match read_live_sample_with(bytes, table) {
+                Ok(sample) => {
+                    let _ = app.emit("mmt-live", &sample);
+                    let _ = app.emit("mmt-iracing-status", "on_track");
+                    last_emit = Instant::now();
+                }
+                Err(IbtError::NotConnected) => {
+                    let _ = app.emit("mmt-iracing-status", "in_sim");
+                    vars = None;
+                }
+                Err(IbtError::StaleVars) => vars = None,
+                Err(_) => {}
             }
         }
-        unsafe {
-            UnmapViewOfFile(view);
-            CloseHandle(mapping);
-            if !event.is_null() {
-                CloseHandle(event);
-            }
-        }
+        drop(mapped);
     }
 }
 

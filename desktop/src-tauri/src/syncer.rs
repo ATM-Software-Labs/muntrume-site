@@ -1,12 +1,14 @@
 use std::fs;
 use std::path::Path;
+use std::sync::OnceLock;
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};
 
 use mmt_sync_core::{
-    file_state, hash_bytes, load_index, locate_mmt_file, plan_sync_cars, prepare_mmt_destination,
-    save_index, toast_message, Action, IndexFile, LocalSetup, PlaceError, MAX_STO_BYTES,
+    file_state, hash_bytes, install_allowed, load_index, locate_mmt_file, plan_sync_cars,
+    prepare_mmt_destination, save_index, toast_message, Action, IndexFile, LocalSetup, PlaceError,
+    SeriesWeek, MAX_STO_BYTES,
 };
 
 use crate::api::{ApiError, ManifestFetch};
@@ -125,15 +127,33 @@ async fn run(app: &AppHandle) -> Result<SyncReport, String> {
             Action::Unchanged { .. } => unchanged += 1,
             Action::KeepRetired { .. } => kept_retired += 1,
             Action::Skipped { .. } => kept_retired += 1,
-            Action::Download(item) => match fetch_one(&state, &token, &root, item).await {
-                Ok(local) => {
-                    index.files.retain(|file| file.id != local.id && file.relative_path != local.relative_path);
-                    downloaded_cars.push(item.car.clone());
-                    index.files.push(local);
-                    downloaded += 1;
+            Action::Download(item) => {
+                let track = index
+                    .manifest
+                    .iter()
+                    .find(|setup| setup.id == item.id)
+                    .map(|setup| setup.track.clone())
+                    .unwrap_or_default();
+                let filename = item.relative.rsplit('/').next().unwrap_or(item.relative.as_str());
+                let pairs = season_pairs();
+                let weeks: Vec<SeriesWeek<'_>> = pairs
+                    .iter()
+                    .map(|(name, track_name)| SeriesWeek { name, track: track_name })
+                    .collect();
+                if let Err(reason) = install_allowed(&track, filename, &weeks, None) {
+                    errors.push(format!("{}: {reason}", item.relative));
+                    continue;
                 }
-                Err(err) => errors.push(format!("{}: {err}", item.relative)),
-            },
+                match fetch_one(&state, &token, &root, item).await {
+                    Ok(local) => {
+                        index.files.retain(|file| file.id != local.id && file.relative_path != local.relative_path);
+                        downloaded_cars.push(item.car.clone());
+                        index.files.push(local);
+                        downloaded += 1;
+                    }
+                    Err(err) => errors.push(format!("{}: {err}", item.relative)),
+                }
+            }
             Action::Delete(item) => match remove_one(&root, &item.relative) {
                 Ok(()) => {
                     index.files.retain(|file| file.id != item.id);
@@ -325,4 +345,41 @@ fn unique_cars(cars: &[String]) -> Vec<String> {
 
 fn explain(err: ApiError) -> String {
     err.to_string()
+}
+
+#[derive(Deserialize)]
+struct SeasonFile {
+    #[serde(default)]
+    series: Vec<SeasonSeries>,
+}
+
+#[derive(Deserialize)]
+struct SeasonSeries {
+    #[serde(default)]
+    name: String,
+    #[serde(default)]
+    weeks: Vec<SeasonWeek>,
+}
+
+#[derive(Deserialize)]
+struct SeasonWeek {
+    #[serde(default)]
+    track_name: String,
+}
+
+fn season_pairs() -> &'static Vec<(String, String)> {
+    static CACHE: OnceLock<Vec<(String, String)>> = OnceLock::new();
+    CACHE.get_or_init(|| {
+        let raw = include_str!("../../src/season_schedule_2026_s4.json");
+        let doc: SeasonFile = serde_json::from_str(raw).unwrap_or(SeasonFile { series: Vec::new() });
+        let mut pairs = Vec::new();
+        for series in doc.series {
+            for week in series.weeks {
+                if !week.track_name.is_empty() {
+                    pairs.push((series.name.clone(), week.track_name));
+                }
+            }
+        }
+        pairs
+    })
 }
