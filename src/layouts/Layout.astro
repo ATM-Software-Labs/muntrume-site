@@ -126,6 +126,8 @@ const CRUMB_LABEL: Record<string, string> = {
   fuentes: "Fuentes",
   retirada: "Retirada",
   admin: "Admin",
+  app: "MMT Sync",
+  vincular: "Vincular",
   login: "Acceso",
   article: "Despacho",
   contact: "Contacto",
@@ -229,8 +231,8 @@ function graphOf(schema: any): any[] {
   return [schema];
 }
 
-const homeGraph = isHome && !schemaJson ? defaultSchema["@graph"] : graphOf(schemaJson);
-const baseGraph = homeGraph.length ? homeGraph : [{
+const pageGraph = graphOf(schemaJson);
+const baseGraph = pageGraph.length ? pageGraph : (isHome ? [] : [{
   "@type": "WebPage",
   "@id": `${canon}#webpage`,
   "url": canon,
@@ -238,14 +240,24 @@ const baseGraph = homeGraph.length ? homeGraph : [{
   "description": seoDescription,
   "isPartOf": { "@id": "https://muntru.me/#website" },
   "about": { "@id": "https://muntru.me/#org" },
-}];
-const hasCrumbs = baseGraph.some((node) => {
+}]);
+function hasId(nodes: any[], id: string): boolean {
+  return nodes.some((node) => node && node["@id"] === id);
+}
+const orgNode = defaultSchema["@graph"][0];
+const siteNode = defaultSchema["@graph"][1];
+const withBrand = [
+  ...(hasId(baseGraph, "https://muntru.me/#org") || hasId(baseGraph, `${siteOrigin}/#org`) ? [] : [orgNode]),
+  ...(hasId(baseGraph, "https://muntru.me/#website") || hasId(baseGraph, `${siteOrigin}/#website`) ? [] : [siteNode]),
+  ...baseGraph,
+];
+const hasCrumbs = withBrand.some((node) => {
   const kind = node?.["@type"];
   return kind === "BreadcrumbList" || (Array.isArray(kind) && kind.includes("BreadcrumbList"));
 });
 const finalSchema = {
   "@context": "https://schema.org",
-  "@graph": hasCrumbs ? baseGraph : [...baseGraph, breadcrumbList(canon)],
+  "@graph": hasCrumbs ? withBrand : [...withBrand, breadcrumbList(canon)],
 };
 ---
 
@@ -329,9 +341,9 @@ const finalSchema = {
   <link rel="stylesheet" href="/assets/fonts/fonts.css?v=t264" />
   <slot name="head" />
 
-  <link rel="stylesheet" href="/assets/css/tailwind.min.css?v=t310" />
-  <link rel="stylesheet" href="/assets/css/mobile.css?v=t310" />
-  <link rel="stylesheet" href="/assets/css/racing.css?v=t312" />
+  <link rel="stylesheet" href="/assets/css/tailwind.min.css?v=t321" />
+  <link rel="stylesheet" href="/assets/css/mobile.css?v=t321" />
+  <link rel="stylesheet" href="/assets/css/racing.css?v=t321" />
 
   <!-- Core Dark Racing System CSS -->
   <style is:global>
@@ -376,44 +388,7 @@ const finalSchema = {
       box-shadow: 0 0 24px rgba(0, 230, 153, 0.08);
     }
 
-    #mobileDrawer {
-      position: fixed;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      width: 18rem;
-      max-width: 85vw;
-      background-color: var(--r-surface, #0E1211);
-      border-left: 1px solid var(--r-line, #1E2A26);
-      z-index: 60;
-      box-shadow: -10px 0 30px rgba(0, 0, 0, 0.8);
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      transform: translateX(100%);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 1.5rem;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    #mobileDrawer.open {
-      transform: translateX(0) !important;
-    }
-    #mobileBackdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      z-index: 55;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-    }
-    #mobileBackdrop.open {
-      opacity: 1 !important;
-      pointer-events: auto !important;
-    }
+    .site-header { position: sticky; top: 0; z-index: 50; height: 56px; }
     ::-webkit-scrollbar { width: 8px; }
     ::-webkit-scrollbar-track { background: var(--r-bg, #080C0A); }
     ::-webkit-scrollbar-thumb { background: var(--r-line-2, #1E2A26); border-radius: 4px; }
@@ -433,9 +408,9 @@ const finalSchema = {
   <script type="application/ld+json" set:html={JSON.stringify(finalSchema)} />
 
   <!-- Core Scripts -->
-  <script is:inline src="/assets/js/vpfix.js?v=m9"></script>
+  <script is:inline src="/assets/js/vpfix.js?v=m9" defer></script>
   <script is:inline set:html={`window.muntruFormato=${formatoAprox.toString()};window.muntruLocale=${localeDeIdioma.toString()};`}></script>
-  <script is:inline src="/assets/js/i18n.js?v=t292"></script>
+  <script is:inline src="/assets/js/i18n.js?v=t292" defer></script>
 </head>
 <body class="bg-[var(--r-bg)] text-[var(--r-text)] antialiased selection:bg-[var(--r-accent)] selection:text-[var(--r-accent-ink)] font-sans min-h-screen flex flex-col justify-between relative max-w-full overflow-x-hidden">
   
@@ -459,7 +434,7 @@ const finalSchema = {
   {!hideFooter && <Footer />}
   <MuntrumeChatbot />
 
-  <script is:inline src="/assets/js/notices.js?v=t272"></script>
+  <script is:inline src="/assets/js/notices.js?v=t272" defer></script>
   <script src="/assets/js/motion.js?v=t269" defer></script>
 </body>
 </html>

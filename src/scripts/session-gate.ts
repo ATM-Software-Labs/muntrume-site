@@ -44,6 +44,12 @@ export function clearSessionCache(): void {
   sessionCache = null;
 }
 
+if (typeof window !== "undefined") {
+  window.addEventListener("muntrume-auth-change", () => {
+    clearSessionCache();
+  });
+}
+
 export async function getSession(): Promise<Session | null> {
   if (!sessionCache) sessionCache = loadSession();
   return sessionCache;
@@ -52,16 +58,6 @@ export async function getSession(): Promise<Session | null> {
 async function loadSession(): Promise<Session | null> {
   const stored = readStored();
   if (stored) return stored;
-  try {
-    const res = await fetch(`${API}/api/session`, { credentials: "include" });
-    if (!res.ok) return null;
-    const data = (await res.json()) as { token?: string; user?: VaultUser; authenticated?: boolean };
-    if (data && (data.user || data.authenticated)) {
-      return { token: data.token || "", user: data.user || null };
-    }
-  } catch {
-    /* el endpoint de sesión aún no existe: no hay sesión */
-  }
   return null;
 }
 

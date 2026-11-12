@@ -116,6 +116,14 @@ const personSchema = {
       "image": ogImage
     },
     {
+      "@type": "ProfilePage",
+      "@id": `${pageUrl}#profile`,
+      "url": pageUrl,
+      "name": driver.fullName,
+      "description": pageDescription,
+      "mainEntity": { "@id": `${pageUrl}#person` }
+    },
+    {
       "@type": "SportsTeam",
       "@id": "https://muntru.me/#org",
       "name": "Muntrume Motorsport",

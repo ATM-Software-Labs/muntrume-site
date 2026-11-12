@@ -5,549 +5,321 @@ interface Props {
 
 const { currentPath = Astro.url.pathname } = Astro.props;
 
-const isHome = currentPath === '/' || currentPath === '/index.html' || currentPath === '';
-const isGarage =
-  currentPath.startsWith('/garage') ||
-  currentPath.startsWith('/setups') ||
-  currentPath.startsWith('/setup-builder');
-const isDrivers =
-  currentPath.startsWith('/drivers') ||
-  currentPath.startsWith('/pilotos') ||
-  currentPath.startsWith('/d/') ||
-  currentPath.startsWith('/team') ||
-  currentPath.startsWith('/p/');
-const isNews = currentPath.startsWith('/news') || currentPath.startsWith('/noticias') || currentPath.startsWith('/article');
-const isPaddock = currentPath.startsWith('/paddock') || currentPath.startsWith('/about') || currentPath.startsWith('/contact');
-const isApp = currentPath.startsWith('/app') || currentPath.startsWith('/sync');
-const isRaceControl = currentPath.startsWith('/admin');
+function active(path: string, ...prefixes: string[]): boolean {
+  if (prefixes.length === 0) return path === "/" || path === "" || path === "/index.html";
+  return prefixes.some((prefix) => path === prefix || path.startsWith(prefix.endsWith("/") ? prefix : `${prefix}/`) || path === prefix.replace(/\/$/, ""));
+}
+
+const links = [
+  { href: "/", label: "Inicio", on: active(currentPath) },
+  {
+    href: "/pilotos/",
+    label: "Pilotos",
+    on: active(currentPath, "/pilotos", "/drivers", "/d/", "/team", "/p/"),
+  },
+  {
+    href: "/garage/",
+    label: "Garage",
+    on: active(currentPath, "/garage", "/setups", "/setup-builder"),
+  },
+  {
+    href: "/paddock/",
+    label: "Paddock",
+    on: active(currentPath, "/paddock", "/about", "/contact"),
+  },
+  {
+    href: "/noticias/",
+    label: "Noticias",
+    on: active(currentPath, "/noticias", "/news", "/article"),
+  },
+];
 ---
 
-<header class="w-full h-16 bg-[var(--r-surface)] border-b border-[var(--r-line)] sticky top-0 z-50 select-none max-w-full flex items-center transition-colors">
-  <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
-    <!-- Left: Official Logo + Clean Full MUNTRUME MOTORSPORT Lockup -->
-    <a
-      href="/"
-      data-no-i18n
-      class="flex items-center gap-2 sm:gap-2.5 group shrink-0"
-      title="Muntrume Motorsport — Official iRacing Team"
-    >
-      <img
-        src="/assets/img/logo-64.webp"
-        alt="Muntrume Motorsport"
-        class="h-7 w-7 sm:h-8 sm:w-8 object-contain transition-transform group-hover:scale-105 shrink-0"
-        width="32"
-        height="32"
-      />
-      <span class="font-extrabold tracking-[.06em] text-[var(--r-text)] text-sm sm:text-base font-display uppercase whitespace-nowrap leading-none">
-        MUNTRUME<span class="hidden sm:inline"> <span class="text-[var(--r-accent)]">MOTORSPORT</span></span>
-      </span>
+<header class="site-header" id="siteHeader" data-no-i18n>
+  <div class="site-header__bar">
+    <a class="site-logo" href="/" aria-label="Muntrume Motorsport">
+      <img src="/assets/img/logo-64.webp" alt="" width="32" height="32" />
+      <span>Muntrume</span>
     </a>
 
-    <!-- Center: Navigation Links (Home, Garage, Drivers, News, Paddock) — Flex aligned without overlap -->
-    <nav class="hidden md:flex items-center gap-5 lg:gap-7 text-xs font-mono uppercase tracking-wider shrink-0" aria-label="Main Navigation">
-      <a
-        href="/"
-        class={`py-1 transition-colors whitespace-nowrap ${isHome ? 'text-[var(--r-accent)] font-bold border-b-2 border-[var(--r-accent)]' : 'text-[var(--r-muted)] hover:text-[var(--r-text)]'}`}
-      >
-        Home
-      </a>
-      <a
-        href="/garage"
-        class={`py-1 inline-flex items-center gap-1.5 transition-colors whitespace-nowrap ${isGarage ? 'text-[var(--r-accent)] font-bold border-b-2 border-[var(--r-accent)]' : 'text-[var(--r-muted)] hover:text-[var(--r-text)]'}`}
-      >
-        <span class="w-1.5 h-1.5 rounded-full bg-[var(--r-accent)]"></span>
-        <span>Garage</span>
-      </a>
-      <a
-        href="/drivers"
-        class={`py-1 transition-colors whitespace-nowrap ${isDrivers ? 'text-[var(--r-accent)] font-bold border-b-2 border-[var(--r-accent)]' : 'text-[var(--r-muted)] hover:text-[var(--r-text)]'}`}
-      >
-        Drivers
-      </a>
-      <a
-        href="/noticias/"
-        class={`py-1 transition-colors whitespace-nowrap ${isNews ? 'text-[var(--r-accent)] font-bold border-b-2 border-[var(--r-accent)]' : 'text-[var(--r-muted)] hover:text-[var(--r-text)]'}`}
-      >
-        News
-      </a>
-      <a
-        href="/paddock"
-        class={`py-1 transition-colors whitespace-nowrap ${isPaddock ? 'text-[var(--r-accent)] font-bold border-b-2 border-[var(--r-accent)]' : 'text-[var(--r-muted)] hover:text-[var(--r-text)]'}`}
-      >
-        Paddock
-      </a>
-      <a
-        href="/app"
-        class={`py-1 transition-colors whitespace-nowrap ${isApp ? 'text-[var(--r-accent)] font-bold border-b-2 border-[var(--r-accent)]' : 'text-[var(--r-muted)] hover:text-[var(--r-text)]'}`}
-      >
-        App
-      </a>
+    <nav class="site-nav" aria-label="Secciones">
+      {links.map((link) => (
+        <a href={link.href} aria-current={link.on ? "page" : undefined}>{link.label}</a>
+      ))}
     </nav>
 
-    <!-- Right: Discord Radio + Theme Toggle + Language Switcher + User Area -->
-    <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-      <!-- Discord Radio Indicator (Desktop) -->
-      <a
-        href="https://discord.gg/ehX6B8JUtE"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="hidden xl:inline-flex items-center gap-2 min-h-[40px] text-xs font-mono text-[var(--r-muted)] hover:text-[var(--r-text)] px-3 py-2 rounded-xl border border-[var(--r-line)] hover:border-[var(--r-accent)] bg-[var(--r-bg)] transition whitespace-nowrap shrink-0"
-        title="Official Team Radio on Discord"
-      >
-        <span class="w-2 h-2 rounded-full bg-[var(--r-accent)] animate-pulse shrink-0"></span>
-        <span class="text-[11px] font-semibold">Discord Radio</span>
-      </a>
-
-      <!-- Theme Switcher (Dark / Light) - Min 38x38px mobile / 40x40px desktop -->
+    <div class="site-tools">
       <button
         type="button"
         id="themeToggleBtn"
-        class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[var(--r-bg)] hover:bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-[var(--r-muted)] hover:text-[var(--r-text)] transition-all cursor-pointer focus:outline-none shrink-0"
-        title="Toggle theme (Dark / Light)"
-        aria-label="Toggle theme"
+        class="site-iconbtn"
+        aria-label="Cambiar a tema claro"
       >
-        <svg id="themeSunIcon" width="18" height="18" class="w-4 h-4 sm:w-4.5 sm:h-4.5 hidden text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-        <svg id="themeMoonIcon" width="18" height="18" class="w-4 h-4 sm:w-4.5 sm:h-4.5 text-[var(--r-accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+        <span class="theme-ico" aria-hidden="true">
+          <svg class="theme-ico__sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          <svg class="theme-ico__moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+        </span>
       </button>
 
-      <!-- Language Switcher -->
-      <div class="relative inline-block text-left shrink-0" id="langSwitcherContainer">
+      <div class="site-account">
         <button
           type="button"
-          id="langSwitcherBtn"
-          class="flex items-center gap-1 sm:gap-1.5 h-9 sm:h-10 bg-[var(--r-bg)] hover:bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] rounded-xl px-2 sm:px-3 text-xs font-mono text-[var(--r-text)] transition-all cursor-pointer focus:outline-none"
-          title="Language / Idioma"
-          aria-haspopup="true"
+          id="accountBtn"
+          class="site-account__btn"
+          aria-haspopup="menu"
+          aria-expanded="false"
+          aria-controls="accountMenu"
         >
-          <span class="sr-only">Language</span>
-          <span id="currentLangIcon" class="flex items-center">
-            <img src="/flags/senyera.png" alt="Senyera" width="16" height="12" class="w-3.5 h-2.5 sm:w-4 sm:h-3 object-contain rounded-xs hidden" id="currentSenyeraImg" />
-            <span id="currentFlagEmoji" class="text-xs sm:text-sm">🇬🇧</span>
-          </span>
-          <span id="currentLangLabel" class="font-bold text-[11px] sm:text-xs">EN</span>
-          <svg width="10" height="10" class="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[var(--r-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
-          </svg>
+          <span class="site-account__mark" aria-hidden="true"></span>
+          <span id="accountLabel">Cuenta</span>
         </button>
-
-        <div
-          id="langDropdown"
-          class="hidden absolute right-0 mt-1 w-28 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] shadow-2xl py-1 z-50"
-        >
-          <button type="button" data-set-lang="EN" class="w-full flex items-center gap-2 px-3 py-2 text-xs font-mono text-[var(--r-text)] hover:bg-[var(--r-bg)] cursor-pointer">
-            <span class="text-sm leading-none">🇬🇧</span>
-            <span>EN</span>
-          </button>
-          <button type="button" data-set-lang="ES" class="w-full flex items-center gap-2 px-3 py-2 text-xs font-mono text-[var(--r-text)] hover:bg-[var(--r-bg)] cursor-pointer">
-            <span class="text-sm leading-none">🇪🇸</span>
-            <span>ES</span>
-          </button>
-          <button type="button" data-set-lang="CA" class="w-full flex items-center gap-2 px-3 py-2 text-xs font-mono text-[var(--r-text)] hover:bg-[var(--r-bg)] cursor-pointer">
-            <img src="/flags/senyera.png" alt="Senyera" width="16" height="12" class="w-4 h-3 object-contain rounded-xs" />
-            <span>CA</span>
-          </button>
-          <button type="button" data-set-lang="FR" class="w-full flex items-center gap-2 px-3 py-2 text-xs font-mono text-[var(--r-text)] hover:bg-[var(--r-bg)] cursor-pointer">
-            <span class="text-sm leading-none">🇫🇷</span>
-            <span>FR</span>
-          </button>
+        <div id="accountMenu" class="site-account__menu" role="menu" hidden>
+          <a id="accountLogin" role="menuitem" href="/login/">Iniciar sesión</a>
+          <a id="accountSala" role="menuitem" hidden>Sala</a>
+          <a id="accountAdmin" role="menuitem" hidden>Race Control</a>
+          <button type="button" id="accountLogout" role="menuitem" hidden>Salir</button>
         </div>
       </div>
 
-      <!-- Active Session / Admin Race Control Bar (Desktop Only) -->
-      <div id="navSessionBox" class="hidden md:flex items-center gap-2 shrink-0">
-        <a
-          href="/drivers/albertot/"
-          id="navAdminBadge"
-          style="background:var(--r-bg);color:var(--r-text);border-color:var(--r-line)"
-          class="hidden xl:inline-flex items-center gap-2 min-h-[40px] px-3 py-2 rounded-xl border text-xs font-mono hover:border-[var(--r-accent)] transition whitespace-nowrap"
-          title="Team Principal & Administrator — atrumin16@gmail.com"
-        >
-          <span class="w-2 h-2 rounded-full bg-[var(--r-accent)] shrink-0"></span>
-          <span id="navSessionHandle" class="font-bold text-[var(--r-accent)]">atrumin16</span>
-          <span class="text-[var(--r-muted)]">·</span>
-          <span id="navSessionLabel" style="color:var(--r-text)" class="font-semibold">Principal</span>
-        </a>
-        <a
-          href="/admin"
-          id="navRaceControlBtn"
-          class={`hidden items-center gap-1.5 min-h-[40px] font-black text-xs font-mono uppercase tracking-wider px-3.5 py-2 rounded-xl transition-all whitespace-nowrap shrink-0 ${isRaceControl ? 'bg-[var(--r-text)] text-[var(--r-bg)]' : 'bg-[var(--r-accent)] hover:opacity-90 text-[var(--r-accent-ink)] shadow-md'}`}
-          title="Open Race Control Admin Console"
-        >
-          <span>RACE CONTROL</span>
-        </a>
-        <button
-          type="button"
-          id="navLogoutBtn"
-          style="background:var(--r-bg);color:var(--r-muted);border-color:var(--r-line)"
-          class="inline-flex items-center min-h-[40px] px-3 py-2 rounded-xl border hover:border-rose-500/50 text-xs font-mono hover:text-rose-500 transition cursor-pointer whitespace-nowrap"
-        >
-          Log out
-        </button>
-      </div>
-
-      <!-- GARAGE ACCESS Button - Always visible on desktop for 1-click access to /garage -->
-      <a
-        href="/garage"
-        id="navGarageAccessBtn"
-        class={`hidden lg:inline-flex items-center gap-1.5 min-h-[40px] font-black text-xs font-mono uppercase tracking-wider px-3.5 py-2 rounded-xl transition-all whitespace-nowrap shrink-0 ${isGarage ? 'bg-[var(--r-bg)] text-[var(--r-accent)] border border-[var(--r-accent)]' : 'bg-[var(--r-accent)] hover:opacity-90 text-[var(--r-accent-ink)] shadow-md'}`}
-      >
-        <span>GARAGE VAULT</span>
-      </a>
-
-      <!-- Mobile Drawer Trigger - Min 38x38px mobile / 40x40px desktop -->
       <button
         type="button"
         id="navDrawerOpenBtn"
-        class="relative md:hidden flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 text-[var(--r-muted)] hover:text-[var(--r-text)] bg-[var(--r-bg)] border border-[var(--r-line)] rounded-xl transition focus:outline-none shrink-0"
-        aria-label="Open Navigation Menu"
+        class="site-iconbtn site-burger"
+        aria-label="Abrir menú"
+        aria-expanded="false"
+        aria-controls="navPanel"
       >
-        <span id="navDrawerIndicatorDot" class="hidden absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[var(--r-accent)] shadow-[0_0_8px_var(--r-accent)] animate-pulse" aria-hidden="true"></span>
-        <svg width="20" height="20" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h16" />
         </svg>
       </button>
     </div>
   </div>
 </header>
 
-<!-- Mobile Drawer Navigation -->
-<div id="mobileDrawer">
-  <div class="space-y-6">
-    <div class="flex items-center justify-between pb-4 border-b border-[var(--r-line)]">
-      <div class="flex items-center gap-2" data-no-i18n>
-        <img src="/assets/img/logo-48.webp" alt="Muntrume Motorsport" class="h-6 w-auto" width="24" height="24" />
-        <span class="font-extrabold text-[var(--r-text)] text-sm font-display tracking-tight uppercase">MUNTRUME <span class="text-[var(--r-accent)]">MOTORSPORT</span></span>
-      </div>
-      <button type="button" id="navDrawerCloseBtn" aria-label="Close menu" class="p-1 text-[var(--r-muted)] hover:text-[var(--r-text)] rounded-lg focus:outline-none">
-        <svg width="24" height="24" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-    </div>
-
-    <nav class="flex flex-col space-y-2.5 font-mono text-sm uppercase">
-      <a href="/" class={`px-3 py-2 rounded-xl transition ${isHome ? 'bg-[var(--r-accent)]/10 text-[var(--r-accent)] font-bold' : 'text-[var(--r-muted)] hover:bg-[var(--r-bg-2)] hover:text-[var(--r-text)]'}`}>
-        Home
-      </a>
-      <a href="/drivers" class={`px-3 py-2 rounded-xl transition ${isDrivers ? 'bg-[var(--r-accent)]/10 text-[var(--r-accent)] font-bold' : 'text-[var(--r-muted)] hover:bg-[var(--r-bg-2)] hover:text-[var(--r-text)]'}`}>
-        Drivers
-      </a>
-      <a href="/noticias/" class={`px-3 py-2 rounded-xl transition ${isNews ? 'bg-[var(--r-accent)]/10 text-[var(--r-accent)] font-bold' : 'text-[var(--r-muted)] hover:bg-[var(--r-bg-2)] hover:text-[var(--r-text)]'}`}>
-        News
-      </a>
-      <a href="/paddock" class={`px-3 py-2 rounded-xl transition ${isPaddock ? 'bg-[var(--r-accent)]/10 text-[var(--r-accent)] font-bold' : 'text-[var(--r-muted)] hover:bg-[var(--r-bg-2)] hover:text-[var(--r-text)]'}`}>
-        Paddock
-      </a>
-      <a href="/app" class={`px-3 py-2 rounded-xl transition ${isApp ? 'bg-[var(--r-accent)]/10 text-[var(--r-accent)] font-bold' : 'text-[var(--r-muted)] hover:bg-[var(--r-bg-2)] hover:text-[var(--r-text)]'}`}>
-        MMT Sync (App)
-      </a>
-      <a href="/ai" class="px-3 py-2 rounded-xl text-[var(--r-muted)] hover:bg-[var(--r-bg-2)] hover:text-[var(--r-text)] transition">
-        AI Copilot
-      </a>
-      <a href="/setup-builder" class="px-3 py-2 rounded-xl text-[var(--r-muted)] hover:bg-[var(--r-bg-2)] hover:text-[var(--r-text)] transition">
-        Setup Builder
-      </a>
-      <a href="/communications" class="px-3 py-2 rounded-xl text-[var(--r-muted)] hover:bg-[var(--r-bg-2)] hover:text-[var(--r-text)] transition">
-        Communications &amp; Webmail
-      </a>
-      <a href="/garage" class="px-3 py-2.5 rounded-xl bg-[var(--r-accent)] text-[var(--r-accent-ink)] font-bold text-center transition">
-        Garage Access
-      </a>
-      <div id="mobileAdminBox" class="hidden pt-2 mt-2 border-t border-[var(--r-line)] space-y-2">
-        <div class="px-3 py-2 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] text-xs font-mono">
-          <div class="font-bold text-[var(--r-accent)]" id="mobileSessionHandle">atrumin16 · #16</div>
-          <div class="text-[11px] text-[var(--r-muted)]" id="mobileSessionLabel">Alberto Trujillo (Team Principal)</div>
-        </div>
-        <a id="mobileRaceControlBtn" href="/admin" class="hidden block px-3 py-2.5 rounded-xl bg-[var(--r-accent)] text-[var(--r-accent-ink)] font-black text-center tracking-wider transition shadow-[0_0_16px_rgba(0,230,153,0.28)]">
-          RACE CONTROL
-        </a>
-        <button type="button" id="mobileLogoutBtn" class="w-full px-3 py-2 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] text-xs font-mono text-[var(--r-muted)] hover:text-[var(--r-text)] text-center cursor-pointer">
-          Log out
-        </button>
-      </div>
-    </nav>
+<div id="navScrim" class="nav-scrim" hidden></div>
+<div
+  id="navPanel"
+  class="nav-panel"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="navPanelTitle"
+  hidden
+  inert
+  data-no-i18n
+>
+  <div class="nav-panel__bar">
+    <p id="navPanelTitle" class="nav-panel__title">Menú</p>
+    <button type="button" id="navDrawerCloseBtn" class="site-iconbtn" aria-label="Cerrar menú">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-width="2" d="M6 6l12 12M18 6L6 18" />
+      </svg>
+    </button>
   </div>
-
-  <div class="pt-6 border-t border-[var(--r-line)] space-y-3">
-    <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between text-xs font-mono text-[var(--r-muted)] hover:text-[var(--r-text)]">
-      <span>Discord Radio</span>
-      <span class="w-2 h-2 rounded-full bg-[var(--r-accent)] animate-pulse"></span>
-    </a>
-    <div class="flex items-center justify-between pt-2">
-      <span class="text-xs font-mono text-[var(--r-muted)]">Theme</span>
-      <button
-        type="button"
-        id="themeToggleBtnMobile"
-        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--r-bg-2)] border border-[var(--r-line)] text-xs font-mono text-[var(--r-text)] cursor-pointer"
-      >
-        <span id="themeMobileLabel">Switch to Light ☀️</span>
-      </button>
-    </div>
+  <nav class="nav-panel__links" aria-label="Secciones">
+    {links.map((link) => (
+      <a href={link.href} aria-current={link.on ? "page" : undefined}>{link.label}</a>
+    ))}
+  </nav>
+  <div class="nav-panel__account" id="navPanelAccount">
+    <a id="panelLogin" href="/login/">Iniciar sesión</a>
+    <a id="panelSala" hidden>Sala</a>
+    <a id="panelAdmin" hidden>Race Control</a>
+    <button type="button" id="panelLogout" hidden>Salir</button>
   </div>
 </div>
 
-<div id="mobileBackdrop"></div>
-
 <script is:inline>
-  function applyThemeUI(theme) {
-    var isLight = theme === 'light';
-    var sun = document.getElementById('themeSunIcon');
-    var moon = document.getElementById('themeMoonIcon');
-    var mobileLabel = document.getElementById('themeMobileLabel');
-    var btn = document.getElementById('themeToggleBtn');
-    // Display the target theme action: in dark mode show Sun (to switch to light), in light mode show Moon (to switch to dark)
-    if (sun) sun.classList.toggle('hidden', isLight);
-    if (moon) moon.classList.toggle('hidden', !isLight);
-    if (btn) btn.setAttribute('title', isLight ? 'Switch to Dark Mode' : 'Switch to Light Mode');
-    if (mobileLabel) mobileLabel.textContent = isLight ? 'Switch to Dark 🌙' : 'Switch to Light ☀️';
-  }
+(function () {
+  var header = document.getElementById("siteHeader");
+  var themeBtn = document.getElementById("themeToggleBtn");
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  function onScroll() {
+    if (!header) return;
+    header.classList.toggle("is-scrolled", window.scrollY > 4);
+  }
+  onScroll();
+  window.addEventListener("scroll", onScroll, { passive: true });
+
+  function paintThemeLabel() {
+    if (!themeBtn) return;
+    var light = document.documentElement.classList.contains("light") || document.documentElement.getAttribute("data-theme") === "light";
+    themeBtn.setAttribute("aria-label", light ? "Cambiar a tema oscuro" : "Cambiar a tema claro");
+  }
   function toggleTheme() {
-    var isCurrentlyLight = document.documentElement.classList.contains('light');
-    var nextTheme = isCurrentlyLight ? 'dark' : 'light';
-    if (nextTheme === 'light') {
-      document.documentElement.classList.add('light');
-      document.documentElement.classList.remove('dark');
-      document.documentElement.setAttribute('data-theme', 'light');
-    } else {
-      document.documentElement.classList.add('dark');
-      document.documentElement.classList.remove('light');
-      document.documentElement.setAttribute('data-theme', 'dark');
-    }
-    try { localStorage.setItem('muntrume_theme', nextTheme); } catch (e) {}
-    applyThemeUI(nextTheme);
+    var light = document.documentElement.classList.contains("light");
+    var next = light ? "dark" : "light";
+    document.documentElement.classList.toggle("light", next === "light");
+    document.documentElement.classList.toggle("dark", next === "dark");
+    document.documentElement.setAttribute("data-theme", next);
+    try { localStorage.setItem("muntrume_theme", next); } catch (e) {}
+    paintThemeLabel();
   }
+  if (themeBtn) themeBtn.addEventListener("click", toggleTheme);
+  paintThemeLabel();
 
-  var themeBtn = document.getElementById('themeToggleBtn');
-  var themeBtnMobile = document.getElementById('themeToggleBtnMobile');
-  if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
-  if (themeBtnMobile) themeBtnMobile.addEventListener('click', toggleTheme);
-  applyThemeUI(document.documentElement.classList.contains('light') ? 'light' : 'dark');
-
-  document.addEventListener('click', function (e) {
-    var b = e.target.closest && e.target.closest('[data-set-lang]');
-    if (b) setLanguage(b.getAttribute('data-set-lang'));
-  });
-
-  function setLanguage(code, triggerI18n) {
-    var label = document.getElementById('currentLangLabel');
-    var emoji = document.getElementById('currentFlagEmoji');
-    var senyera = document.getElementById('currentSenyeraImg');
-    var dropdown = document.getElementById('langDropdown');
-
-    if (code === 'CA') {
-      if (emoji) emoji.classList.add('hidden');
-      if (senyera) senyera.classList.remove('hidden');
-      if (label) label.textContent = 'CA';
-    } else if (code === 'ES' || code === 'FR') {
-      if (senyera) senyera.classList.add('hidden');
-      if (emoji) { emoji.classList.remove('hidden'); emoji.textContent = code === 'FR' ? '🇫🇷' : '🇪🇸'; }
-      if (label) label.textContent = code;
-    } else {
-      code = 'EN';
-      if (senyera) senyera.classList.add('hidden');
-      if (emoji) { emoji.classList.remove('hidden'); emoji.textContent = '🇬🇧'; }
-      if (label) label.textContent = 'EN';
-    }
-
+  var ADMIN = "atrumin16@gmail.com";
+  function readUser() {
     try {
-      localStorage.setItem('muntrume_lang', code);
-      localStorage.setItem('mm_lang', code.toLowerCase());
-      document.documentElement.lang = code.toLowerCase();
-    } catch (e) {}
-
-    if (dropdown) dropdown.classList.add('hidden');
-
-    if (triggerI18n !== false && window.muntruI18n && typeof window.muntruI18n.set === 'function') {
-      window.muntruI18n.set(code.toLowerCase());
+      var token = localStorage.getItem("mrt_vault_token") || sessionStorage.getItem("mrt_vault_token");
+      if (!token || token === "guest_token" || token === "local_session") return null;
+      var raw = localStorage.getItem("mrt_vault_user") || sessionStorage.getItem("mrt_vault_user");
+      if (!raw) return null;
+      var user = JSON.parse(raw);
+      if (!user || !user.email || user.role === "guest") return null;
+      return user;
+    } catch (e) { return null; }
+  }
+  function show(el, on) {
+    if (!el) return;
+    if (on) el.removeAttribute("hidden");
+    else el.setAttribute("hidden", "");
+  }
+  function syncAccount() {
+    var user = readUser();
+    var email = user && user.email ? String(user.email).trim().toLowerCase() : "";
+    var authed = Boolean(email);
+    var admin = authed && (email === ADMIN || user.role === "admin");
+    var label = document.getElementById("accountLabel");
+    var login = document.getElementById("accountLogin");
+    var sala = document.getElementById("accountSala");
+    var adminLink = document.getElementById("accountAdmin");
+    var logout = document.getElementById("accountLogout");
+    var panelLogin = document.getElementById("panelLogin");
+    var panelSala = document.getElementById("panelSala");
+    var panelAdmin = document.getElementById("panelAdmin");
+    var panelLogout = document.getElementById("panelLogout");
+    if (label) label.textContent = authed ? (user.name || email.split("@")[0]) : "Cuenta";
+    show(login, !authed);
+    show(panelLogin, !authed);
+    show(sala, authed);
+    show(panelSala, authed);
+    show(logout, authed);
+    show(panelLogout, authed);
+    show(adminLink, admin);
+    show(panelAdmin, admin);
+    if (authed) {
+      if (sala) sala.setAttribute("href", "/paddock/sala/");
+      if (panelSala) panelSala.setAttribute("href", "/paddock/sala/");
+    }
+    if (admin) {
+      if (adminLink) adminLink.setAttribute("href", "/admin/");
+      if (panelAdmin) panelAdmin.setAttribute("href", "/admin/");
     }
   }
-
-  (function initLang() {
-    var btn = document.getElementById('langSwitcherBtn');
-    var dropdown = document.getElementById('langDropdown');
-    if (btn && dropdown) {
-      btn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        dropdown.classList.toggle('hidden');
-      });
-      document.addEventListener('click', function() {
-        dropdown.classList.add('hidden');
-      });
-    }
-
+  function logout() {
     try {
-      var q = (new URLSearchParams(location.search).get('lang') || '').toUpperCase();
-      if (q === 'EN' || q === 'CA' || q === 'ES' || q === 'FR') { setLanguage(q, false); return; }
+      ["mrt_vault_token", "mrt_vault_user", "muntrume_user_email", "muntrume_auth_state", "muntrume_is_admin"].forEach(function (key) {
+        localStorage.removeItem(key);
+      });
+      sessionStorage.clear();
     } catch (e) {}
-    try {
-      var saved = localStorage.getItem('muntrume_lang') || localStorage.getItem('mm_lang');
-      if (saved) {
-        var s = saved.toUpperCase();
-        if (s === 'EN' || s === 'CA' || s === 'ES' || s === 'FR') {
-          setLanguage(s, false);
-          return;
-        }
-      }
-    } catch (e) {}
-
-    // Global default: English (EN)
-    setLanguage('EN', false);
-  })();
-
-  (function initDrawer() {
-    var openBtn = document.getElementById('navDrawerOpenBtn');
-    var closeBtn = document.getElementById('navDrawerCloseBtn');
-    var drawer = document.getElementById('mobileDrawer');
-    var backdrop = document.getElementById('mobileBackdrop');
-
-    function open() {
-      if (drawer) drawer.classList.add('open');
-      if (backdrop) {
-        backdrop.style.opacity = '1';
-        backdrop.style.pointerEvents = 'auto';
-      }
+    closeAccount();
+    closePanel();
+    syncAccount();
+    window.dispatchEvent(new Event("muntrume-auth-change"));
+    if (window.location.pathname.indexOf("/admin") === 0 || window.location.pathname.indexOf("/paddock/sala") === 0) {
+      window.location.replace("/garage/");
     }
-
-    function close() {
-      if (drawer) drawer.classList.remove('open');
-      if (backdrop) {
-        backdrop.style.opacity = '0';
-        backdrop.style.pointerEvents = 'none';
-      }
-    }
-
-    if (openBtn) openBtn.addEventListener('click', open);
-    if (closeBtn) closeBtn.addEventListener('click', close);
-    if (backdrop) backdrop.addEventListener('click', close);
-  })();
-
-  (function initGlobalAuthHeader() {
-    var ADMIN_EMAIL = 'atrumin16@gmail.com';
-
-    function getActiveUser() {
-      try {
-        var token = localStorage.getItem('mrt_vault_token') || sessionStorage.getItem('mrt_vault_token');
-        if (!token || token === 'guest_token') return null;
-
-        var rawUser = localStorage.getItem('mrt_vault_user') || sessionStorage.getItem('mrt_vault_user');
-        if (rawUser) {
-          var parsed = JSON.parse(rawUser);
-          if (parsed && parsed.role !== 'guest' && parsed.email) {
-            return parsed;
-          }
-        }
-        var savedEmail = (localStorage.getItem('muntrume_user_email') || '').trim().toLowerCase();
-        var authState = localStorage.getItem('muntrume_auth_state') || '';
-        if (authState === 'authenticated' && savedEmail) {
-          return {
-            email: savedEmail,
-            role: savedEmail === ADMIN_EMAIL ? 'admin' : 'driver',
-            name: savedEmail === ADMIN_EMAIL ? 'Alberto Trujillo' : savedEmail.split('@')[0]
-          };
-        }
-      } catch (e) {}
-      return null;
-    }
-
-    function syncNavbarSession() {
-      var user = getActiveUser();
-      var email = user && user.email ? String(user.email).trim().toLowerCase() : '';
-      var isAuth = Boolean(email);
-      var isAdmin = isAuth && (email === ADMIN_EMAIL || user.role === 'admin');
-
-      var sessionBox = document.getElementById('navSessionBox');
-      var adminBadge = document.getElementById('navAdminBadge');
-      var sessionHandle = document.getElementById('navSessionHandle');
-      var sessionLabel = document.getElementById('navSessionLabel');
-      var raceControlBtn = document.getElementById('navRaceControlBtn');
-      var garageAccessBtn = document.getElementById('navGarageAccessBtn');
-      var mobileAdminBox = document.getElementById('mobileAdminBox');
-      var mobileHandle = document.getElementById('mobileSessionHandle');
-      var mobileLabel = document.getElementById('mobileSessionLabel');
-      var mobileRaceControlBtn = document.getElementById('mobileRaceControlBtn');
-      var drawerDot = document.getElementById('navDrawerIndicatorDot');
-
-      if (isAuth) {
-        if (sessionBox) {
-          sessionBox.classList.remove('hidden');
-          sessionBox.classList.add('md:flex');
-        }
-        if (drawerDot) drawerDot.classList.remove('hidden');
-        if (mobileAdminBox) mobileAdminBox.classList.remove('hidden');
-
-        if (isAdmin) {
-          if (sessionHandle) sessionHandle.textContent = 'atrumin16';
-          if (sessionLabel) sessionLabel.textContent = 'Principal';
-          if (adminBadge) adminBadge.href = '/drivers/albertot/';
-          if (raceControlBtn) {
-            raceControlBtn.classList.remove('hidden');
-            raceControlBtn.classList.add('inline-flex');
-          }
-          if (mobileHandle) mobileHandle.textContent = 'atrumin16 · #16';
-          if (mobileLabel) mobileLabel.textContent = 'Team Principal & Admin';
-          if (mobileRaceControlBtn) mobileRaceControlBtn.classList.remove('hidden');
-        } else {
-          var handle = email.split('@')[0];
-          if (sessionHandle) sessionHandle.textContent = handle;
-          if (sessionLabel) sessionLabel.textContent = user.name || 'Official Driver';
-          if (raceControlBtn) {
-            raceControlBtn.classList.add('hidden');
-            raceControlBtn.classList.remove('inline-flex');
-          }
-          if (mobileHandle) mobileHandle.textContent = handle;
-          if (mobileLabel) mobileLabel.textContent = user.name || 'Official Driver';
-          if (mobileRaceControlBtn) mobileRaceControlBtn.classList.add('hidden');
-        }
-      } else {
-        if (sessionBox) {
-          sessionBox.classList.add('hidden');
-          sessionBox.classList.remove('md:flex');
-        }
-        if (drawerDot) drawerDot.classList.add('hidden');
-        if (raceControlBtn) {
-          raceControlBtn.classList.add('hidden');
-          raceControlBtn.classList.remove('inline-flex');
-        }
-        if (mobileAdminBox) mobileAdminBox.classList.add('hidden');
-      }
-    }
-
-    function globalLogout() {
-      try {
-        localStorage.removeItem('mrt_vault_token');
-        localStorage.removeItem('mrt_vault_user');
-        localStorage.removeItem('muntrume_user_email');
-        localStorage.removeItem('muntrume_auth_state');
-        localStorage.removeItem('muntrume_is_admin');
-        localStorage.removeItem('muntrume_rc_audit_logs');
-        localStorage.removeItem('muntrume_rc_custom_members');
-        sessionStorage.clear();
-      } catch (e) {}
-
-      if (typeof window.handleLogout === 'function') {
-        try { window.handleLogout(); } catch (e) {}
-      }
-      syncNavbarSession();
-      window.dispatchEvent(new Event('muntrume-auth-change'));
-
-      if (window.location.pathname.startsWith('/admin')) {
-        window.location.replace('/garage?logged_out=1');
-      }
-    }
-
-    var navLogout = document.getElementById('navLogoutBtn');
-    var mobileLogout = document.getElementById('mobileLogoutBtn');
-    if (navLogout) navLogout.addEventListener('click', globalLogout);
-    if (mobileLogout) mobileLogout.addEventListener('click', globalLogout);
-
-    window.addEventListener('muntrume-auth-change', syncNavbarSession);
-    window.addEventListener('storage', syncNavbarSession);
-    window.addEventListener('pageshow', function (event) {
-      if (event.persisted) {
-        syncNavbarSession();
-      }
+  }
+  var accountBtn = document.getElementById("accountBtn");
+  var accountMenu = document.getElementById("accountMenu");
+  function closeAccount() {
+    if (!accountMenu || accountMenu.hidden) return;
+    accountMenu.hidden = true;
+    if (accountBtn) accountBtn.setAttribute("aria-expanded", "false");
+  }
+  function openAccount() {
+    if (!accountMenu || !accountBtn) return;
+    closePanel();
+    accountMenu.hidden = false;
+    accountBtn.setAttribute("aria-expanded", "true");
+    var first = accountMenu.querySelector("a:not([hidden]), button:not([hidden])");
+    if (first) first.focus();
+  }
+  if (accountBtn && accountMenu) {
+    accountBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (accountMenu.hidden) openAccount();
+      else closeAccount();
     });
-    syncNavbarSession();
-  })();
+    document.addEventListener("click", function (e) {
+      if (!accountMenu.hidden && !accountMenu.contains(e.target) && e.target !== accountBtn) closeAccount();
+    });
+  }
+  var logoutBtn = document.getElementById("accountLogout");
+  var panelLogout = document.getElementById("panelLogout");
+  if (logoutBtn) logoutBtn.addEventListener("click", logout);
+  if (panelLogout) panelLogout.addEventListener("click", logout);
+  window.addEventListener("muntrume-auth-change", syncAccount);
+  window.addEventListener("storage", syncAccount);
+  syncAccount();
+
+  var openBtn = document.getElementById("navDrawerOpenBtn");
+  var closeBtn = document.getElementById("navDrawerCloseBtn");
+  var panel = document.getElementById("navPanel");
+  var scrim = document.getElementById("navScrim");
+  var lockY = 0;
+  function focusables() {
+    if (!panel) return [];
+    return Array.prototype.filter.call(panel.querySelectorAll("a[href], button:not([disabled])"), function (el) {
+      return !el.hasAttribute("hidden");
+    });
+  }
+  function lockBody() {
+    lockY = window.scrollY || 0;
+    document.body.classList.add("nav-lock");
+    document.body.style.top = "-" + lockY + "px";
+  }
+  function unlockBody() {
+    document.body.classList.remove("nav-lock");
+    document.body.style.top = "";
+    window.scrollTo(0, lockY);
+  }
+  function closePanel() {
+    if (!panel || panel.hidden) return;
+    panel.hidden = true;
+    panel.setAttribute("inert", "");
+    if (scrim) scrim.hidden = true;
+    if (openBtn) openBtn.setAttribute("aria-expanded", "false");
+    unlockBody();
+    if (openBtn) openBtn.focus();
+  }
+  function openPanel() {
+    if (!panel) return;
+    closeAccount();
+    panel.hidden = false;
+    panel.removeAttribute("inert");
+    if (scrim) scrim.hidden = false;
+    if (openBtn) openBtn.setAttribute("aria-expanded", "true");
+    lockBody();
+    var list = focusables();
+    (closeBtn || list[0] || panel).focus();
+  }
+  if (openBtn) openBtn.addEventListener("click", openPanel);
+  if (closeBtn) closeBtn.addEventListener("click", closePanel);
+  if (scrim) scrim.addEventListener("click", closePanel);
+  if (panel) {
+    panel.addEventListener("click", function (e) {
+      var link = e.target.closest && e.target.closest("a");
+      if (link) closePanel();
+    });
+  }
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      if (panel && !panel.hidden) { e.preventDefault(); closePanel(); return; }
+      if (accountMenu && !accountMenu.hidden) { e.preventDefault(); closeAccount(); if (accountBtn) accountBtn.focus(); }
+      return;
+    }
+    if (e.key !== "Tab" || !panel || panel.hidden) return;
+    var list = focusables();
+    if (!list.length) return;
+    var first = list[0];
+    var last = list[list.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
+  if (reduce && panel) panel.style.transition = "none";
+})();
 </script>
