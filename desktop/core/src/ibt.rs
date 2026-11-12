@@ -13,9 +13,22 @@ pub enum IbtError {
     Short,
     #[error("la cabecera del .ibt no es válida")]
     Header,
+    #[error("la versión de la cabecera no es 2")]
+    Version,
+    #[error("el simulador no está conectado")]
+    NotConnected,
+    #[error("lectura a medias: el tick cambió durante la copia")]
+    Torn,
+    #[error("la tabla de variables es de otra sesión")]
+    StaleVars,
     #[error("el .ibt no trae las variables de una vuelta")]
     Variables,
 }
+
+const HEADER_VERSION: i32 = 2;
+const STATUS_CONNECTED: i32 = 1;
+const VARBUF_STRIDE: usize = 16;
+const VARBUF_OFFSET: usize = 48;
 
 pub fn parse_ibt(bytes: &[u8]) -> Result<Session, IbtError> {
     if bytes.len() < HEADER_SIZE {
@@ -75,18 +88,77 @@ pub fn parse_ibt(bytes: &[u8]) -> Result<Session, IbtError> {
     })
 }
 
-/// Lee la muestra más nueva de la memoria del SDK. Solo lectura.
+/// Tabla de variables resuelta una vez por `sessionInfoUpdate`.
+#[derive(Clone)]
+pub struct VarTable {
+    update: i32,
+    vars: Vec<Var>,
+}
+
+impl VarTable {
+    pub fn session_info_update(&self) -> i32 {
+        self.update
+    }
+}
+
+/// `sessionInfoUpdate` de la cabecera. Cambia cuando hay que volver a resolver offsets.
+pub fn session_info_update(bytes: &[u8]) -> Result<i32, IbtError> {
+    validate_live_header(bytes)?;
+    Ok(i32_at(bytes, 12))
+}
+
+/// Resuelve nombre y tipo a offset. Hay que repetirlo si `sessionInfoUpdate` cambia.
+pub fn resolve_var_table(bytes: &[u8]) -> Result<VarTable, IbtError> {
+    validate_live_header(bytes)?;
+    let update = i32_at(bytes, 12);
+    let vars = parse_vars(bytes)?;
+    if i32_at(bytes, 12) != update {
+        return Err(IbtError::Torn);
+    }
+    Ok(VarTable { update, vars })
+}
+
+/// Lee la muestra más nueva: versión 2, bit conectado, copia del buffer y relectura del tick.
 pub fn read_live_sample(bytes: &[u8]) -> Result<Sample, IbtError> {
+    let table = resolve_var_table(bytes)?;
+    read_live_sample_with(bytes, &table)
+}
+
+pub fn read_live_sample_with(bytes: &[u8], table: &VarTable) -> Result<Sample, IbtError> {
+    validate_live_header(bytes)?;
+    if i32_at(bytes, 12) != table.update {
+        return Err(IbtError::StaleVars);
+    }
+    let copy = copy_latest(bytes)?;
+    Ok(read_sample(&copy, 0, &table.vars).sample)
+}
+
+fn validate_live_header(bytes: &[u8]) -> Result<(), IbtError> {
     if bytes.len() < HEADER_SIZE {
         return Err(IbtError::Short);
     }
-    let num_vars = i32_at(bytes, 24);
-    let var_off = i32_at(bytes, 28).max(0) as usize;
+    if i32_at(bytes, 0) != HEADER_VERSION {
+        return Err(IbtError::Version);
+    }
+    if i32_at(bytes, 4) & STATUS_CONNECTED == 0 {
+        return Err(IbtError::NotConnected);
+    }
+    let num_buf = i32_at(bytes, 32);
     let buf_len = i32_at(bytes, 36);
-    if num_vars <= 0 || num_vars > 4096 || buf_len <= 0 {
+    if !(1..=4).contains(&num_buf) || buf_len <= 0 || buf_len > 1_000_000 {
         return Err(IbtError::Header);
     }
-    let mut vars = Vec::new();
+    Ok(())
+}
+
+fn parse_vars(bytes: &[u8]) -> Result<Vec<Var>, IbtError> {
+    let num_vars = i32_at(bytes, 24);
+    let var_off = i32_at(bytes, 28);
+    if num_vars <= 0 || num_vars > 4096 || var_off < 0 {
+        return Err(IbtError::Header);
+    }
+    let var_off = var_off as usize;
+    let mut vars = Vec::with_capacity(num_vars as usize);
     for index in 0..num_vars as usize {
         let start = var_off + index * VAR_HEADER_SIZE;
         if start + VAR_HEADER_SIZE > bytes.len() {
@@ -98,25 +170,62 @@ pub fn read_live_sample(bytes: &[u8]) -> Result<Sample, IbtError> {
             name: c_string(&bytes[start + 16..start + 48]),
         });
     }
-    let num_buf = i32_at(bytes, 32).clamp(1, 4) as usize;
-    let mut best_tick = i32::MIN;
-    let mut best_off = -1i32;
-    for index in 0..num_buf {
-        let base = 48 + index * 16;
-        let tick = i32_at(bytes, base);
-        let off = i32_at(bytes, base + 4);
-        if off >= 0 && tick >= best_tick {
-            best_tick = tick;
-            best_off = off;
-        }
-    }
-    let base = best_off as usize;
-    if best_off < 0 || base + buf_len as usize > bytes.len() {
-        return Err(IbtError::Header);
-    }
-    Ok(read_sample(bytes, base, &vars).sample)
+    Ok(vars)
 }
 
+struct BufPick {
+    index: usize,
+    tick: i32,
+    offset: usize,
+    len: usize,
+}
+
+fn newest_buffer(bytes: &[u8]) -> Result<BufPick, IbtError> {
+    validate_live_header(bytes)?;
+    let num_buf = i32_at(bytes, 32) as usize;
+    let len = i32_at(bytes, 36) as usize;
+    let mut best: Option<BufPick> = None;
+    for index in 0..num_buf {
+        let base = VARBUF_OFFSET + index * VARBUF_STRIDE;
+        let tick = i32_at(bytes, base);
+        let off = i32_at(bytes, base + 4);
+        if off < 0 {
+            continue;
+        }
+        let offset = off as usize;
+        if offset.saturating_add(len) > bytes.len() {
+            continue;
+        }
+        let newer = best.as_ref().map(|pick| tick >= pick.tick).unwrap_or(true);
+        if newer {
+            best = Some(BufPick { index, tick, offset, len });
+        }
+    }
+    best.ok_or(IbtError::Header)
+}
+
+/// Copia el buffer y descarta la copia si el tick de ese slot cambió.
+fn copy_if_stable(bytes: &[u8], pick: &BufPick) -> Result<Vec<u8>, IbtError> {
+    let end = pick.offset + pick.len;
+    let copy = bytes.get(pick.offset..end).ok_or(IbtError::Header)?.to_vec();
+    let tick_now = i32_at(bytes, VARBUF_OFFSET + pick.index * VARBUF_STRIDE);
+    if tick_now != pick.tick {
+        return Err(IbtError::Torn);
+    }
+    Ok(copy)
+}
+
+fn copy_latest(bytes: &[u8]) -> Result<Vec<u8>, IbtError> {
+    for _ in 0..4 {
+        let pick = newest_buffer(bytes)?;
+        if let Ok(copy) = copy_if_stable(bytes, &pick) {
+            return Ok(copy);
+        }
+    }
+    Err(IbtError::Torn)
+}
+
+#[derive(Clone)]
 struct Var {
     kind: i32,
     offset: i32,
@@ -128,30 +237,36 @@ struct ReadSample {
     sample: Sample,
 }
 
+fn find_var<'a>(vars: &'a [Var], name: &str, kinds: &[i32]) -> Option<&'a Var> {
+    vars.iter().find(|var| var.name == name && kinds.contains(&var.kind))
+}
+
 fn read_sample(bytes: &[u8], base: usize, vars: &[Var]) -> ReadSample {
-    let value = |name: &str| -> f64 {
-        let Some(var) = vars.iter().find(|var| var.name == name) else {
+    let value = |name: &str, kinds: &[i32]| -> f64 {
+        let Some(var) = find_var(vars, name, kinds) else {
             return 0.0;
         };
         read_number(bytes, base, var).unwrap_or(0.0)
     };
-    let number = value("Lap").round() as i32;
+    let float_kinds = [4, 5];
+    let int_kinds = [2];
+    let number = value("Lap", &int_kinds).round() as i32;
     let lat = optional(vars, bytes, base, "Lat");
     let lon = optional(vars, bytes, base, "Lon");
     ReadSample {
         number,
         sample: Sample {
-            t: value("SessionTime"),
-            dist: if vars.iter().any(|var| var.name == "LapDist") {
-                value("LapDist")
+            t: value("SessionTime", &float_kinds),
+            dist: if find_var(vars, "LapDist", &float_kinds).is_some() {
+                value("LapDist", &float_kinds)
             } else {
-                value("LapDistPct")
+                value("LapDistPct", &float_kinds)
             },
-            speed: value("Speed"),
-            throttle: value("Throttle"),
-            brake: value("Brake"),
-            gear: value("Gear").round() as i32,
-            steering: value("SteeringWheelAngle"),
+            speed: value("Speed", &float_kinds),
+            throttle: value("Throttle", &float_kinds),
+            brake: value("Brake", &float_kinds),
+            gear: value("Gear", &int_kinds).round() as i32,
+            steering: value("SteeringWheelAngle", &float_kinds),
             lat,
             lon,
             vx: optional(vars, bytes, base, "VelocityX"),
@@ -267,5 +382,100 @@ mod tests {
     #[test]
     fn rejects_a_file_without_the_header() {
         assert_eq!(parse_ibt(b"not a telemetry file"), Err(IbtError::Short));
+    }
+
+    fn live_image(speed_old: f32, tick_old: i32, speed_new: f32, tick_new: i32) -> Vec<u8> {
+        let names = [
+            ("SessionTime", 4, 0),
+            ("Speed", 4, 4),
+            ("Throttle", 4, 8),
+            ("Brake", 4, 12),
+            ("Gear", 2, 16),
+            ("SteeringWheelAngle", 4, 20),
+            ("Lap", 2, 24),
+            ("LapDist", 4, 28),
+        ];
+        let buf_len = 32i32;
+        let var_off = HEADER_SIZE;
+        let buf0 = var_off + names.len() * VAR_HEADER_SIZE;
+        let buf1 = buf0 + buf_len as usize;
+        let mut bytes = vec![0u8; buf1 + buf_len as usize];
+        put_i32(&mut bytes, 0, 2);
+        put_i32(&mut bytes, 4, 1);
+        put_i32(&mut bytes, 8, 60);
+        put_i32(&mut bytes, 12, 7);
+        put_i32(&mut bytes, 24, names.len() as i32);
+        put_i32(&mut bytes, 28, var_off as i32);
+        put_i32(&mut bytes, 32, 2);
+        put_i32(&mut bytes, 36, buf_len);
+        put_i32(&mut bytes, 48, tick_old);
+        put_i32(&mut bytes, 52, buf0 as i32);
+        put_i32(&mut bytes, 64, tick_new);
+        put_i32(&mut bytes, 68, buf1 as i32);
+        for (index, (name, kind, offset)) in names.iter().enumerate() {
+            let start = var_off + index * VAR_HEADER_SIZE;
+            bytes[start..start + VAR_HEADER_SIZE].copy_from_slice(&var_header(*kind, *offset, name));
+        }
+        put_f32(&mut bytes, buf0 + 4, speed_old);
+        put_i32(&mut bytes, buf0 + 16, 2);
+        put_i32(&mut bytes, buf0 + 24, 1);
+        put_f32(&mut bytes, buf1 + 4, speed_new);
+        put_i32(&mut bytes, buf1 + 16, 4);
+        put_i32(&mut bytes, buf1 + 24, 3);
+        bytes
+    }
+
+    #[test]
+    fn live_sample_uses_the_newest_tick_not_the_older_buffer() {
+        let bytes = live_image(10.0, 1, 50.0, 9);
+        let sample = read_live_sample(&bytes).unwrap();
+        assert!((sample.speed - 50.0).abs() < 1e-4);
+        assert_eq!(sample.gear, 4);
+    }
+
+    #[test]
+    fn torn_copy_is_discarded_when_the_tick_moves() {
+        let mut bytes = live_image(10.0, 1, 50.0, 9);
+        let pick = newest_buffer(&bytes).unwrap();
+        assert_eq!(pick.tick, 9);
+        assert_eq!(pick.index, 1);
+        put_i32(&mut bytes, 64, 10);
+        assert_eq!(copy_if_stable(&bytes, &pick), Err(IbtError::Torn));
+        let again = newest_buffer(&bytes).unwrap();
+        let copy = copy_if_stable(&bytes, &again).unwrap();
+        assert_eq!(copy.len(), 32);
+    }
+
+    #[test]
+    fn live_header_requires_version_2_and_the_connected_bit() {
+        let mut bytes = live_image(10.0, 1, 50.0, 9);
+        put_i32(&mut bytes, 0, 1);
+        assert_eq!(read_live_sample(&bytes), Err(IbtError::Version));
+        put_i32(&mut bytes, 0, 2);
+        put_i32(&mut bytes, 4, 0);
+        assert_eq!(read_live_sample(&bytes), Err(IbtError::NotConnected));
+    }
+
+    #[test]
+    fn speed_lookup_requires_a_float_not_just_the_name() {
+        let mut bytes = live_image(10.0, 1, 50.0, 9);
+        let var_off = HEADER_SIZE;
+        bytes[var_off + VAR_HEADER_SIZE..var_off + 2 * VAR_HEADER_SIZE]
+            .copy_from_slice(&var_header(2, 4, "Speed"));
+        let sample = read_live_sample(&bytes).unwrap();
+        assert_eq!(sample.speed, 0.0);
+    }
+
+    #[test]
+    fn a_new_session_info_update_invalidates_the_cached_table() {
+        let bytes = live_image(10.0, 1, 50.0, 9);
+        let table = resolve_var_table(&bytes).unwrap();
+        assert_eq!(table.session_info_update(), 7);
+        let mut moved = bytes.clone();
+        put_i32(&mut moved, 12, 8);
+        assert_eq!(read_live_sample_with(&moved, &table), Err(IbtError::StaleVars));
+        let fresh = resolve_var_table(&moved).unwrap();
+        assert_eq!(fresh.session_info_update(), 8);
+        assert!((read_live_sample_with(&moved, &fresh).unwrap().speed - 50.0).abs() < 1e-4);
     }
 }

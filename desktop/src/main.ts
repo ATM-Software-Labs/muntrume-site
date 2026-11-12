@@ -2,33 +2,19 @@ import { inTauri } from "./env";
 import { createMock } from "./mock";
 import { createTauriBackend } from "./tauri-backend";
 import type { Backend, LibraryItem, LiveSample, Settings, Snapshot, StagedFile } from "./types";
-import { fuelText, paintConfigAnalysis, paintExtras, updateLiveOverlay, initFloatingOverlayControls, paintOverlays, paintHardware, paintLastSession } from "./extra";
+import { fuelText, paintConfigAnalysis, paintExtras, updateLiveOverlay, initFloatingOverlayControls, paintOverlays, paintHardware, paintLastSession, noteHudClosed } from "./extra";
 import rawSchedule from "./season_schedule_2026_s4.json";
 import { getSetupProfile } from "./setup-intelligence";
 
 interface ScheduleDoc {
   current_week?: number;
   series?: Array<{
+    name?: string;
     weeks?: Array<{ week_num: number; track_name: string }>;
   }>;
 }
 
 const sched = rawSchedule as unknown as ScheduleDoc;
-
-// Track to Week mapping from official 2026 Season 4 PDF
-const trackToWeeks = new Map<string, number[]>();
-if (sched && Array.isArray(sched.series)) {
-  for (const s of sched.series) {
-    for (const w of s.weeks || []) {
-      const cleanTrack = String(w.track_name || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-      if (cleanTrack) {
-        const list = trackToWeeks.get(cleanTrack) ?? [];
-        if (!list.includes(w.week_num)) list.push(w.week_num);
-        trackToWeeks.set(cleanTrack, list);
-      }
-    }
-  }
-}
 
 export interface TrackWeekInfo {
   week: number;
@@ -37,203 +23,51 @@ export interface TrackWeekInfo {
   isFixed?: boolean;
 }
 
-export function getTrackWeekInfo(track: string, filename?: string, carFolder?: string): TrackWeekInfo {
-  const clean = String(track || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-  const cleanCar = String(carFolder || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+function normTrack(value: string): string {
+  return String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+export function getTrackWeekInfo(track: string, filename?: string, _carFolder?: string): TrackWeekInfo {
   const upperFile = String(filename || "").toUpperCase();
-
-  // Explicit Fixed Series Check: No setups supplied for fixed series
-  if (clean.includes("barcelona") || clean.includes("catalunya") || upperFile.includes("FIXED") || clean.includes("fixed")) {
-    return {
-      week: 0,
-      isCurrent: false,
-      isFixed: true,
-      seriesContext: "Serie Fixed (Setup de serie obligatorio en iRacing)",
-    };
+  if (upperFile.includes("FIXED")) {
+    return { week: 0, isCurrent: false, isFixed: true, seriesContext: "serie fixed" };
   }
-
-  const isGtp = cleanCar.includes("gtp") || cleanCar.includes("arx06") || cleanCar.includes("bmwmhybrid") || cleanCar.includes("porsche963") || cleanCar.includes("cadillacv") || cleanCar.includes("amvalkyrie") || cleanCar.includes("valkyrie") || upperFile.includes("ARX06") || upperFile.includes("GTP");
-  const isLmp2 = cleanCar.includes("p217") || cleanCar.includes("lmp2") || cleanCar.includes("dallara");
-  const isImsa = isGtp || isLmp2 || upperFile.includes("IMSA");
-
-  // 1. Fuji Speedway -> GT3 Open (Week 9: Current Week!) vs IMSA (Week 2)
-  if (clean.includes("fuji")) {
-    if (isGtp || isImsa || isLmp2) {
-      return {
-        week: 2,
-        isCurrent: false,
-        seriesContext: "IMSA SportsCar (Semana 02 - Fuji)",
-      };
+  const clean = normTrack(track);
+  const series = sched?.series ?? [];
+  if (clean.length < 4 || series.length === 0) {
+    return { week: 0, isCurrent: false, isFixed: true, seriesContext: "no se puede determinar" };
+  }
+  const hits: { name: string; fixed: boolean; weeks: number[] }[] = [];
+  for (const entry of series) {
+    const name = String(entry.name || "");
+    const weeks: number[] = [];
+    for (const week of entry.weeks ?? []) {
+      const token = normTrack(week.track_name || "");
+      if (token.length < 4) continue;
+      if (token.includes(clean) || clean.includes(token)) weeks.push(week.week_num);
     }
-    return {
-      week: 9,
-      isCurrent: true,
-      seriesContext: "GT3 Open (Fuji)",
-    };
+    if (weeks.length) hits.push({ name, fixed: /fixed/i.test(name), weeks });
   }
-
-  // 2. Suzuka -> IMSA SportsCar Open (Week 9: Current Week!) vs GT3 Open (Week 12 Final)
-  if (clean.includes("suzuka")) {
-    if (isGtp || isImsa || isLmp2) {
-      return {
-        week: 9,
-        isCurrent: true,
-        seriesContext: "IMSA SportsCar Open (Suzuka)",
-      };
-    }
-    return {
-      week: 12,
-      isCurrent: false,
-      seriesContext: "GT3 Open (Semana 12)",
-    };
+  if (hits.length === 0) {
+    return { week: 0, isCurrent: false, isFixed: true, seriesContext: "no se puede determinar" };
   }
-
-  // 3. Circuit de Barcelona-Catalunya -> Not on GT3 Open calendar (Regional is Fixed, Muntrume does not supply fixed setups)
-  if (clean.includes("barcelona") || clean.includes("catalunya")) {
-    if (cleanCar.includes("challenge") && !cleanCar.includes("gt3")) {
-      return {
-        week: 10,
-        isCurrent: false,
-        seriesContext: "Ferrari 296 Challenge Open",
-      };
-    }
-    return {
-      week: 0,
-      isCurrent: false,
-      seriesContext: "Test / Especial (Fuera de GT3 Open)",
-    };
+  const open = hits.filter((hit) => !hit.fixed);
+  const fixed = hits.filter((hit) => hit.fixed);
+  if (open.length === 0) {
+    return { week: fixed[0].weeks[0] ?? 0, isCurrent: false, isFixed: true, seriesContext: "serie fixed" };
   }
-
-  // 4. Misano -> Week 10
-  if (clean.includes("misano")) {
-    return {
-      week: 10,
-      isCurrent: false,
-      seriesContext: "GT3 Open / GT Sprint",
-    };
+  if (fixed.length > 0) {
+    return { week: 0, isCurrent: false, isFixed: true, seriesContext: "no se puede determinar" };
   }
-
-  // 5. Sebring -> Week 11
-  if (clean.includes("sebring")) {
-    return {
-      week: 11,
-      isCurrent: false,
-      seriesContext: "GT3 Open / GT Sprint",
-    };
-  }
-
-  // 6. Monza -> Week 12
-  if (clean.includes("monza")) {
-    return {
-      week: 12,
-      isCurrent: false,
-      seriesContext: "GT3 Open (Semana 12)",
-    };
-  }
-
-  // 7. Spa-Francorchamps -> Week 8
-  if (clean.includes("spa") || clean.includes("francorchamps")) {
-    return {
-      week: 8,
-      isCurrent: false,
-      seriesContext: "GT3 Open (Semana 8)",
-    };
-  }
-
-  // 8. COTA -> Week 7
-  if (clean.includes("cota") || clean.includes("americas")) {
-    return {
-      week: 7,
-      isCurrent: false,
-      seriesContext: "GT3 Open (Semana 7)",
-    };
-  }
-
-  // 9. The Bend -> Week 6
-  if (clean.includes("bend")) {
-    return {
-      week: 6,
-      isCurrent: false,
-      seriesContext: "GT3 Open (Semana 6)",
-    };
-  }
-
-  // 10. Indianapolis -> Week 5
-  if (clean.includes("indy") || clean.includes("indianapolis")) {
-    return {
-      week: 5,
-      isCurrent: false,
-      seriesContext: "GT3 Open (Semana 5)",
-    };
-  }
-
-  // 11. Motegi -> Week 4
-  if (clean.includes("motegi")) {
-    return {
-      week: 4,
-      isCurrent: false,
-      seriesContext: "GT3 Open (Semana 4)",
-    };
-  }
-
-  // 12. Zandvoort -> Week 3
-  if (clean.includes("zandvoort")) {
-    return {
-      week: 3,
-      isCurrent: false,
-      seriesContext: "GT3 Open (Semana 3)",
-    };
-  }
-
-  // 13. Road Atlanta -> Week 2
-  if (clean.includes("atlanta")) {
-    return {
-      week: 2,
-      isCurrent: false,
-      seriesContext: "GT3 Open (Semana 2)",
-    };
-  }
-
-  // 14. Silverstone -> Week 1
-  if (clean.includes("silverstone")) {
-    return {
-      week: 1,
-      isCurrent: false,
-      seriesContext: "GT3 Open (Semana 1)",
-    };
-  }
-
-  // 15. Le Mans -> Week 11 (Regional / Endurance)
-  if (clean.includes("lemans")) {
-    return {
-      week: 11,
-      isCurrent: false,
-      seriesContext: "Endurance Tour",
-    };
-  }
-
-  // 16. Nurburgring -> Week 13
-  if (clean.includes("nurburgring") || clean.includes("vln") || clean.includes("nordschleife")) {
-    return {
-      week: 13,
-      isCurrent: false,
-      seriesContext: "NEC Endurance",
-    };
-  }
-
-  // Dynamic lookup in schedule table
-  for (const [t, weeks] of trackToWeeks) {
-    if (clean.includes(t) || t.includes(clean)) {
-      const cur = sched.current_week || 9;
-      if (weeks.includes(cur)) {
-        return { week: cur, isCurrent: true, seriesContext: "Calendario W9" };
-      }
-      const w = weeks[0] ?? 1;
-      return { week: w, isCurrent: w === cur, seriesContext: `Semana ${w}` };
-    }
-  }
-
-  return { week: 1, isCurrent: false, seriesContext: "General" };
+  const current = typeof sched.current_week === "number" ? sched.current_week : null;
+  const week = open[0].weeks[0] ?? 0;
+  const isCurrent = current != null && open.some((hit) => hit.weeks.includes(current));
+  return {
+    week: isCurrent && current != null ? current : week,
+    isCurrent,
+    isFixed: false,
+    seriesContext: open.length === 1 ? open[0].name : "calendario de temporada",
+  };
 }
 
 export function findWeekForTrack(track: string, filename?: string, carFolder?: string): number {
@@ -411,6 +245,7 @@ let userPreferences: string[] = (() => {
 let lastLiveSample = 0;
 
 function applyIracingStatus(status: string): void {
+  if (status !== "on_track") noteHudClosed();
   const badge = document.getElementById("irBadge");
   const dot = document.getElementById("irDot");
   const text = document.getElementById("irText");
@@ -801,7 +636,7 @@ function openSetupCompare(rowA: LibraryItem, rowB?: LibraryItem): void {
     const verdict = document.getElementById("compareVerdictText");
     if (verdict) {
       if (profA.stability === "SAFE" && profB.stability !== "SAFE") {
-        verdict.textContent = `Setup A (${itemA.filename}) maximiza la estabilidad y el agarre mecánico en frenada en apoyo (+3.5% de consistencia). Setup B (${itemB.filename}) ofrece menor rozamiento y mayor rotación en curva rápida, siendo óptimo para vueltas rápidas individuales o pilotos de alto iRating (>2.500 iR).`;
+        verdict.textContent = `El archivo .sto no incluye una medición de consistencia ni de iRating. Setup A: ${itemA.filename}. Setup B: ${itemB.filename}.`;
       } else if (profA.stability === profB.stability) {
         verdict.textContent = `Ambos setups comparten la misma filosofía de estabilidad (${profA.stability}). El Setup A está optimizado para ${profA.purpose}, mientras que el Setup B está configurado para ${profB.purpose}. Revisa las presiones de neumáticos según la temperatura en pista.`;
       } else {
@@ -1080,7 +915,7 @@ function paintGroupedByCar(items: LibraryItem[]): void {
         if (weekInfo.isFixed) {
           const fixedBadge = document.createElement("span");
           fixedBadge.className = "px-2 py-0.5 rounded-full border border-amber-500/40 bg-amber-500/10 text-amber-300 text-[10px] font-mono";
-          fixedBadge.textContent = "SERIE FIXED (Sin setup MMT)";
+          fixedBadge.textContent = weekInfo.seriesContext === "no se puede determinar" ? "no se puede determinar" : "SERIE FIXED (Sin setup MMT)";
           trackLeft.append(fixedBadge);
         } else if (weekInfo.week) {
           const weekBadge = document.createElement("span");
@@ -1195,7 +1030,7 @@ function paintGroupedByTrack(items: LibraryItem[]): void {
     if (weekInfo.isFixed) {
       const fixedBadge = document.createElement("span");
       fixedBadge.className = "px-2 py-0.5 rounded-full border border-amber-500/40 bg-amber-500/10 text-amber-300 uppercase tracking-wider";
-      fixedBadge.textContent = "SERIE FIXED (Sin setup MMT)";
+      fixedBadge.textContent = weekInfo.seriesContext === "no se puede determinar" ? "no se puede determinar" : "SERIE FIXED (Sin setup MMT)";
       right.append(fixedBadge);
     } else if (weekInfo.week) {
       const weekBadge = document.createElement("span");
@@ -1668,6 +1503,12 @@ function bind(): void {
   $("themeToggle").addEventListener("click", () => {
     applyTheme(theme() === "light" ? "dark" : "light");
     if (snapshot?.pilot) void persistSettings();
+  });
+  window.addEventListener("keydown", (event) => {
+    if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === "h") {
+      event.preventDefault();
+      void backend.toggleOverlay(true);
+    }
   });
   let floatingOverlayActive = false;
   const btnToggleFloat = document.getElementById("btnToggleFloatingOverlay");

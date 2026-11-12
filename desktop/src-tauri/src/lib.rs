@@ -127,6 +127,7 @@ pub fn run() {
             check_iracing_status,
             detect_hardware,
             toggle_overlay,
+            set_overlay_edit,
             quit
         ])
         .run(tauri::generate_context!())
@@ -538,10 +539,10 @@ fn detect_hardware() -> Result<hardware::HardwareReport, String> {
 fn toggle_overlay(app: AppHandle, show: bool) -> Result<bool, String> {
     if let Some(window) = app.get_webview_window("overlay") {
         if show {
-            let _ = window.maximize();
+            fit_overlay(&window);
             let _ = window.set_always_on_top(true);
+            let _ = window.set_ignore_cursor_events(true);
             let _ = window.show();
-            let _ = window.set_focus();
             Ok(true)
         } else {
             let _ = window.hide();
@@ -549,6 +550,31 @@ fn toggle_overlay(app: AppHandle, show: bool) -> Result<bool, String> {
         }
     } else {
         Err("Ventana de overlay no encontrada".into())
+    }
+}
+
+#[tauri::command]
+fn set_overlay_edit(app: AppHandle, editing: bool) -> Result<(), String> {
+    let window = app.get_webview_window("overlay").ok_or("Ventana de overlay no encontrada")?;
+    if editing {
+        fit_overlay(&window);
+        let _ = window.set_ignore_cursor_events(false);
+        let _ = window.set_focus();
+    } else {
+        let _ = window.set_ignore_cursor_events(true);
+    }
+    let _ = window.set_always_on_top(true);
+    Ok(())
+}
+
+fn fit_overlay(window: &tauri::WebviewWindow) {
+    use tauri::{PhysicalPosition, PhysicalSize};
+    let monitor = window.current_monitor().ok().flatten().or_else(|| window.primary_monitor().ok().flatten());
+    if let Some(monitor) = monitor {
+        let size = monitor.size();
+        let pos = monitor.position();
+        let _ = window.set_position(PhysicalPosition::new(pos.x, pos.y));
+        let _ = window.set_size(PhysicalSize::new(size.width, size.height));
     }
 }
 

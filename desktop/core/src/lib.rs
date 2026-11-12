@@ -2,6 +2,7 @@
 //! No abre red ni guarda tokens.
 
 mod allow;
+mod fixed;
 mod ibt;
 mod manifest;
 mod pathsafe;
@@ -12,7 +13,11 @@ mod store;
 mod upload;
 
 pub use allow::{allowed_verify_url, api_url, canonical_link_url, ApiUrlError};
-pub use ibt::{parse_ibt, read_live_sample, IbtError};
+pub use fixed::{install_allowed, yaml_fixed_flag, SeriesLock, SeriesWeek};
+pub use ibt::{
+    parse_ibt, read_live_sample, read_live_sample_with, resolve_var_table, session_info_update,
+    IbtError, VarTable,
+};
 pub use manifest::{flexible_id, Manifest, RemoteSetup, MAX_STO_BYTES};
 pub use pathsafe::{sanitize_filename, sanitize_segment, MmtPath, PathError};
 pub use place::{locate_mmt_file, prepare_mmt_destination, PlaceError};

@@ -2,6 +2,7 @@
 
 use std::fs;
 use std::path::Path;
+#[cfg(windows)]
 use std::process::Command;
 use serde::{Deserialize, Serialize};
 
@@ -19,9 +20,13 @@ pub struct HardwareReport {
 }
 
 pub fn detect() -> HardwareReport {
+    #[cfg_attr(not(windows), allow(unused_mut))]
     let mut detected_wheelbase: Option<String> = None;
+    #[cfg_attr(not(windows), allow(unused_mut))]
     let mut detected_pedals: Option<String> = None;
+    #[cfg_attr(not(windows), allow(unused_mut))]
     let mut audio_devices: Vec<String> = Vec::new();
+    #[cfg_attr(not(windows), allow(unused_mut))]
     let mut wheelbase_brand: Option<String> = None;
 
     #[cfg(windows)]
@@ -32,7 +37,7 @@ pub fn detect() -> HardwareReport {
             r"HKLM\SYSTEM\CurrentControlSet\Control\MediaProperties\PrivateProperties\Joystick\OEM",
         ] {
             if let Ok(output) = Command::new("reg")
-                .args(&["query", hive, "/s", "/f", "OEMName"])
+                .args(["query", hive, "/s", "/f", "OEMName"])
                 .output()
             {
                 let text = String::from_utf8_lossy(&output.stdout);
@@ -51,7 +56,7 @@ pub fn detect() -> HardwareReport {
 
         // 2. Detección a través de dispositivos PnP de Windows
         if let Ok(output) = Command::new("powershell")
-            .args(&[
+            .args([
                 "-NoProfile",
                 "-Command",
                 "Get-PnpDevice -PresentOnly | Where-Object Class -in @('HIDClass','Media','USB') | Select-Object -ExpandProperty FriendlyName",
@@ -139,6 +144,7 @@ pub fn detect() -> HardwareReport {
     }
 }
 
+#[cfg(windows)]
 fn classify_device(
     name: &str,
     wheelbase: &mut Option<String>,
