@@ -82,7 +82,7 @@ fn is_process_running(target_names: &[&str]) -> bool {
 #[cfg(windows)]
 struct SdkMap {
     mapping: windows_sys::Win32::Foundation::HANDLE,
-    view: *mut std::ffi::c_void,
+    view: windows_sys::Win32::System::Memory::MEMORY_MAPPED_VIEW_ADDRESS,
     event: windows_sys::Win32::Foundation::HANDLE,
 }
 
@@ -92,7 +92,7 @@ impl Drop for SdkMap {
         use windows_sys::Win32::Foundation::CloseHandle;
         use windows_sys::Win32::System::Memory::UnmapViewOfFile;
         unsafe {
-            if !self.view.is_null() {
+            if !self.view.Value.is_null() {
                 UnmapViewOfFile(self.view);
             }
             if !self.mapping.is_null() {
@@ -144,7 +144,7 @@ fn windows_loop(app: AppHandle) {
             continue;
         }
         let view = unsafe { MapViewOfFile(mapping, FILE_MAP_READ, 0, 0, 0) };
-        if view.is_null() {
+        if view.Value.is_null() {
             unsafe { CloseHandle(mapping); }
             std::thread::sleep(Duration::from_millis(500));
             continue;
@@ -179,13 +179,13 @@ fn windows_loop(app: AppHandle) {
             }
             let mut info = unsafe { std::mem::zeroed::<MEMORY_BASIC_INFORMATION>() };
             let queried = unsafe {
-                VirtualQuery(mapped.view as *const _, &mut info, std::mem::size_of::<MEMORY_BASIC_INFORMATION>())
+                VirtualQuery(mapped.view.Value as *const _, &mut info, std::mem::size_of::<MEMORY_BASIC_INFORMATION>())
             };
             if queried == 0 || info.RegionSize < 112 {
                 let _ = app.emit("mmt-iracing-status", "in_sim");
                 break;
             }
-            let bytes = unsafe { std::slice::from_raw_parts(mapped.view as *const u8, info.RegionSize) };
+            let bytes = unsafe { std::slice::from_raw_parts(mapped.view.Value as *const u8, info.RegionSize) };
             let update = match session_info_update(bytes) {
                 Ok(update) => update,
                 Err(IbtError::NotConnected) => {
