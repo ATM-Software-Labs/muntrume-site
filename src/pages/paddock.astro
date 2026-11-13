@@ -739,22 +739,31 @@ const galleryItems = [
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {[
-          { name: "Escudo Heráldico", fmt: "JPG Alta Res.", src: "/assets/brand/muntrume-escudo-heraldico.jpg", bg: "bg-white", file: "muntrume-escudo-heraldico.jpg" },
-          { name: "Escudo Vectorial", fmt: "SVG", src: "/assets/brand/muntrume-escudo-vector.svg", bg: "bg-[#090d12]", file: "muntrume-escudo-vector.svg" },
-          { name: "Monograma MTM", fmt: "SVG", src: "/assets/brand/muntrume-monogram-mtm.svg", bg: "bg-[#090d12]", file: "muntrume-monogram-mtm.svg" },
-          { name: "Wordmark Oficial", fmt: "SVG Dark", src: "/assets/brand/muntrume-wordmark-dark.svg", bg: "bg-[#090d12]", file: "muntrume-wordmark-dark.svg" },
-          { name: "Sello 60Hz Verified", fmt: "SVG", src: "/assets/brand/muntrume-telemetry-badge.svg", bg: "bg-[#090d12]", file: "muntrume-telemetry-badge.svg" },
+          { name: "Escudo Heráldico", fmt: "Original · JPG", src: "/assets/brand/muntrume-escudo-heraldico.jpg", bg: "bg-white", file: "muntrume-escudo-heraldico.jpg" },
+          { name: "Logo Clásico", fmt: "Original · PNG", src: "/assets/img/logo.png", bg: "bg-[#090d12]", file: "muntrume-logo-clasico.png" },
+          { name: "Icono App 512px", fmt: "Original · PNG", src: "/assets/img/icon-512.png", bg: "bg-[#090d12]", file: "muntrume-icon-512.png" },
+          { name: "Icono Maskable", fmt: "Original · PNG", src: "/assets/img/icon-maskable-512.png", bg: "bg-[#111827]", file: "muntrume-maskable-512.png" },
+          { name: "Cabecera Prensa", fmt: "Original · PNG", src: "/assets/img/email-logo.png", bg: "bg-white", file: "muntrume-email-logo.png" },
         ].map((asset) => (
           <article class="rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-4 flex flex-col justify-between gap-4 hover:border-[var(--r-accent)] transition-colors">
-            <div class={`h-28 rounded-xl ${asset.bg} border border-white/10 flex items-center justify-center p-4 overflow-hidden`}>
-              <img src={asset.src} alt={asset.name} loading="lazy" decoding="async" class="max-h-full max-w-full object-contain" />
-            </div>
+            <button
+              type="button"
+              data-preview-src={asset.src}
+              data-preview-title={asset.name}
+              data-preview-sub={asset.fmt}
+              data-preview-id={`brand:${asset.file}`}
+              data-preview-download={asset.file}
+              class={`h-28 w-full rounded-xl ${asset.bg} border border-white/10 flex items-center justify-center p-4 overflow-hidden cursor-zoom-in group`}
+              title="Ver imagen completa"
+            >
+              <img src={asset.src} alt={asset.name} loading="lazy" decoding="async" class="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105" />
+            </button>
             <div class="flex items-center justify-between gap-2">
-              <div>
-                <h3 class="text-sm font-bold text-[var(--r-text)] leading-tight">{asset.name}</h3>
+              <div class="min-w-0">
+                <h3 class="text-sm font-bold text-[var(--r-text)] leading-tight truncate">{asset.name}</h3>
                 <span class="text-[11px] font-mono text-[var(--r-muted)]">{asset.fmt}</span>
               </div>
-              <a href={asset.src} download={asset.file} class="px-3 py-1.5 rounded-lg bg-[var(--r-bg)] border border-[var(--r-line)] hover:border-[var(--r-accent)] hover:text-[var(--r-accent)] font-mono text-[11px] font-bold transition-colors">
+              <a href={asset.src} download={asset.file} class="px-3 py-1.5 rounded-lg bg-[var(--r-bg)] border border-[var(--r-line)] hover:border-[var(--r-accent)] hover:text-[var(--r-accent)] font-mono text-[11px] font-bold transition-colors shrink-0">
                 Descargar
               </a>
             </div>
