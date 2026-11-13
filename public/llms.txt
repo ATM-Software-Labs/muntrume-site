@@ -7,7 +7,7 @@ Muntrume Motorsport (also known as Equipo MMT) competes in iRacing endurance and
 ## Core Platform & Tools
 
 - [Garage Vault (42,654+ Setups .sto)](https://muntru.me/garage/): Searchable vault of 42,654+ verified `.sto` setups across 105+ cars and 150 official iRacing tracks, with interactive `.sto` setup preview modal, variant tags (`Safe`, `Endurance`, `LDF`, `MDF`, `HDF`), season/week filtering, and direct downloads.
-- [MMT Sync Desktop App (Windows)](https://muntru.me/app/): Native Windows desktop application (Tauri/Rust, v0.1.32, open-source on [GitHub](https://github.com/atrumin16/muntrume-site/releases/latest)) that automatically syncs team `.sto` setups directly into `Documents\iRacing\setups\MMT`, includes live telemetry overlay, iRacing path auto-detection, and automatic updates.
+- [MMT Sync Desktop App (Windows)](https://muntru.me/app/): Native Windows desktop application (Tauri/Rust, v0.1.32, open-source on [GitHub](https://github.com/ATM-Software-Labs/muntrume-site/releases/latest)) that automatically syncs team `.sto` setups directly into `Documents\iRacing\setups\MMT`, includes live telemetry overlay, iRacing path auto-detection, and automatic updates.
 - [Official iRacing Tracks Directory (150 Circuits)](https://muntru.me/tracks/): Complete directory of 150 official iRacing tracks ranked by popularity (official series, setup coverage, free/base content, layouts), featuring 1,055 official track screenshots, circuit history, layout variants, and direct setup links.
 - [2026 Season 4 Official Calendar](https://muntru.me/calendar/): Interactive iRacing season schedule with license classes (Rookie to Class A), Fixed/Open filters, car classes, and direct car+track setup matching.
 - [Cars & Brands Catalog (108 Cars)](https://muntru.me/porsche/): Brand-by-brand and car-by-car technical directory covering 108 iRacing cars with studio previews, official iRacing PDF manuals, and setup counts.
@@ -20,7 +20,7 @@ Muntrume Motorsport (also known as Equipo MMT) competes in iRacing endurance and
 - **Founder & Team Principal**: [Alberto Trujillo (atrumin16)](https://muntru.me/d/albertot/)
 - **Official Roster**: [Drivers Page](https://muntru.me/drivers/) — Alberto Trujillo, Mateo Berbis, Eduardo Chongkan.
 - **Languages**: Spanish, Catalan, English, French (`?lang=es|ca|en|fr`).
-- **Community & Telemetry**: [Discord](https://discord.gg/ehX6B8JUtE) · [Garage 61](https://garage61.net/app/teams/muntrume-motorsport) · [GitHub](https://github.com/atrumin16/muntrume-site)
+- **Community & Telemetry**: [Discord](https://discord.gg/ehX6B8JUtE) · [Garage 61](https://garage61.net/app/teams/muntrume-motorsport) · [GitHub](https://github.com/ATM-Software-Labs/muntrume-site)
 
 ## Extended Context
 

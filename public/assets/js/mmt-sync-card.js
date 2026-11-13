@@ -2,7 +2,7 @@
   var version = document.getElementById("mmtSyncVersion");
   var size = document.getElementById("mmtSyncSize");
   if (!version || !size) return;
-  fetch("https://api.github.com/repos/atrumin16/muntrume-site/releases/latest", {
+  fetch("https://api.github.com/repos/ATM-Software-Labs/muntrume-site/releases/latest", {
     headers: { Accept: "application/vnd.github+json" }
   }).then(function (res) {
     return res.ok ? res.json() : null;

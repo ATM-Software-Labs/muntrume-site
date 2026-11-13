@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/atrumin16/muntrume-site/actions/workflows/deploy.yml"><img alt="Deploy" src="https://github.com/atrumin16/muntrume-site/actions/workflows/deploy.yml/badge.svg" /></a>
+  <a href="https://github.com/ATM-Software-Labs/muntrume-site/actions/workflows/deploy.yml"><img alt="Deploy" src="https://github.com/ATM-Software-Labs/muntrume-site/actions/workflows/deploy.yml/badge.svg" /></a>
   <img alt="Astro" src="https://img.shields.io/badge/Astro-7-BC52EE?logo=astro&logoColor=white" />
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white" />
   <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss&logoColor=white" />
@@ -75,7 +75,7 @@ docs/                 banner y capturas de este README
 El workflow de deploy usa **Node.js 24**.
 
 ```bash
-git clone https://github.com/atrumin16/muntrume-site.git && cd muntrume-site
+git clone https://github.com/ATM-Software-Labs/muntrume-site.git && cd muntrume-site
 npm ci
 npm run dev
 ```

@@ -4,7 +4,7 @@ Muntrume Motorsport (MMT) is a competitive sim racing team and sim racing engine
 
 ## 1. MMT Sync Desktop Application (Windows)
 - **URL**: https://muntru.me/app/
-- **Releases & Source**: https://github.com/atrumin16/muntrume-site/releases/latest
+- **Releases & Source**: https://github.com/ATM-Software-Labs/muntrume-site/releases/latest
 - **Current Version**: v0.1.32 (Windows 10/11 NSIS & MSI installers, Tauri 2 + Rust + TypeScript)
 - **Capabilities**:
   - One-click synchronization of 42,654+ `.sto` setups into the local iRacing setups directory (`Documents\iRacing\setups\MMT`).
