@@ -494,26 +494,28 @@ const galleryItems = [
             data-search={`${car.brand} ${car.model} ${car.carClass} ${car.category} ${car.specs}`.toLowerCase()}
           >
             <div>
-              <!-- Car Preview (Real Muntrume track photo when available, or clean studio brand stage) -->
-              <div class="relative aspect-video w-full bg-[#090d12] border-b border-[var(--r-line)] overflow-hidden">
+              <!-- Car Preview (Official studio banner, full uncropped aspect ratio) -->
+              <div class="relative aspect-[344/182] w-full bg-[#090d12] border-b border-[var(--r-line)] overflow-hidden">
                 {car.previewImg ? (
                   <img
                     src={car.previewImg}
                     alt={`${car.brand} ${car.model}`}
-                    width="640"
-                    height="360"
+                    width="344"
+                    height="182"
                     loading="lazy"
                     decoding="async"
-                    class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    class="w-full h-full object-contain object-center transition-transform duration-500 group-hover:scale-[1.03]"
                   />
                 ) : (
-                  <Fragment set:html={getCarPreviewBannerSvg(car)} />
+                  <>
+                    <Fragment set:html={getCarPreviewBannerSvg(car)} />
+                    <div class="absolute bottom-2.5 left-3 flex items-center gap-2 px-2.5 py-1 rounded-lg bg-black/80 backdrop-blur-xs border border-white/10">
+                      <Fragment set:html={getBrandSvgMarkup(car, 18)} />
+                      <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-white/90">{car.brand}</span>
+                    </div>
+                  </>
                 )}
-                <div class="absolute bottom-2.5 left-3 flex items-center gap-2 px-2.5 py-1 rounded-lg bg-black/80 backdrop-blur-xs border border-white/10">
-                  <Fragment set:html={getBrandSvgMarkup(car, 18)} />
-                  <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-white/90">{car.brand}</span>
-                </div>
-                <span class="absolute top-2.5 right-3 px-2 py-0.5 rounded-md bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">
+                <span class="absolute top-2 right-2.5 px-2 py-0.5 rounded-md bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">
                   {car.carClass}
                 </span>
               </div>
@@ -558,6 +560,16 @@ const galleryItems = [
           </article>
           );
         })}
+      </div>
+
+      <div id="fleet-expand-wrap" class="hidden flex justify-center pt-1">
+        <button
+          id="fleet-expand-btn"
+          type="button"
+          class="px-5 py-2 rounded-xl bg-[var(--r-surface)] hover:border-[var(--r-accent)] border border-[var(--r-line)] text-xs font-mono font-bold text-[var(--r-text)] hover:text-[var(--r-accent)] transition cursor-pointer"
+        >
+          Ver todos los vehículos
+        </button>
       </div>
 
       <p class="text-[11px] font-mono text-[var(--r-muted)]">
@@ -1143,8 +1155,11 @@ const galleryItems = [
     var countEl = document.getElementById('fleet-count');
     var catBtns = document.querySelectorAll('.fleet-cat-btn');
     var cards = Array.from(document.querySelectorAll('.fleet-card'));
+    var expandWrap = document.getElementById('fleet-expand-wrap');
+    var expandBtn = document.getElementById('fleet-expand-btn');
     if (!grid || !cards.length) return;
     var activeCat = 'Top 3';
+    var showAll = false;
 
     function applySort() {
       var mode = sortSelect ? sortSelect.value : 'pop';
@@ -1168,7 +1183,8 @@ const galleryItems = [
     function applyFilter() {
       var q = (searchInput && searchInput.value ? searchInput.value : '').trim().toLowerCase();
       var brand = brandSelect ? brandSelect.value : '';
-      var visible = 0;
+      var matched = 0;
+      var shown = 0;
       cards.forEach(function(card) {
         var cat = card.getAttribute('data-cat') || '';
         var cardBrand = card.getAttribute('data-brand') || '';
@@ -1180,19 +1196,46 @@ const galleryItems = [
           ? (activeCat === 'Top 3' || activeCat === 'Todos' ? true : cat === activeCat)
           : (activeCat === 'Todos' || (activeCat === 'Top 3' ? isTop3 : cat === activeCat));
         var ok = matchesCat && matchesQuery && matchesBrand;
-        card.classList.toggle('hidden', !ok);
-        if (ok) visible++;
+        if (ok) {
+          matched++;
+          var canShow = showAll || matched <= 3;
+          card.classList.toggle('hidden', !canShow);
+          if (canShow) shown++;
+        } else {
+          card.classList.add('hidden');
+        }
       });
-      if (countEl) {
-        countEl.textContent = (!q && !brand && activeCat === 'Top 3')
-          ? 'Top 3 populares (de ' + cards.length + ' coches)'
-          : visible + ' coches';
+      if (expandWrap && expandBtn) {
+        var hasMore = matched > 3 && (activeCat !== 'Top 3' || q || brand);
+        expandWrap.classList.toggle('hidden', !hasMore);
+        if (hasMore) {
+          expandBtn.textContent = showAll
+            ? 'Mostrar solo 3'
+            : 'Ver todos (' + matched + ' coches)';
+        }
       }
+      if (countEl) {
+        if (!q && !brand && activeCat === 'Top 3') {
+          countEl.textContent = 'Top 3 populares (de ' + cards.length + ' coches)';
+        } else if (matched > shown) {
+          countEl.textContent = 'Mostrando ' + shown + ' de ' + matched + ' coches';
+        } else {
+          countEl.textContent = matched + ' coches';
+        }
+      }
+    }
+
+    if (expandBtn) {
+      expandBtn.addEventListener('click', function() {
+        showAll = !showAll;
+        applyFilter();
+      });
     }
 
     catBtns.forEach(function(btn) {
       btn.addEventListener('click', function() {
         activeCat = btn.getAttribute('data-fleet-cat') || 'Top 3';
+        showAll = false;
         catBtns.forEach(function(b) {
           var isOn = b === btn;
           b.className = 'fleet-cat-btn px-3 py-1.5 rounded-lg border text-xs font-mono font-bold transition ' + (
@@ -1205,8 +1248,8 @@ const galleryItems = [
       });
     });
 
-    if (searchInput) searchInput.addEventListener('input', applyFilter);
-    if (brandSelect) brandSelect.addEventListener('change', applyFilter);
-    if (sortSelect) sortSelect.addEventListener('change', function() { applySort(); applyFilter(); });
+    if (searchInput) searchInput.addEventListener('input', function() { showAll = false; applyFilter(); });
+    if (brandSelect) brandSelect.addEventListener('change', function() { showAll = false; applyFilter(); });
+    if (sortSelect) sortSelect.addEventListener('change', function() { showAll = false; applySort(); applyFilter(); });
   })();
 </script>
