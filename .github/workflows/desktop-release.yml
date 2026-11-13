@@ -118,16 +118,34 @@ jobs:
           signing-policy-slug: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG || 'release-signing' }}
           github-artifact-id: ${{ steps.upload_unsigned.outputs.artifact-id }}
           wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: 2400
           output-artifact-directory: ./signpath-signed
 
-      - name: Publish SignPath-signed installers to release
+      # Authenticode cambia los bytes del instalador: hay que volver a generar las firmas
+      # del updater de Tauri (.sig) y actualizar latest.json, o las auto-actualizaciones fallarían.
+      - name: Re-sign updater signatures and publish signed installers
         if: steps.signpath_check.outputs.enabled == 'true'
         shell: pwsh
+        working-directory: desktop
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          TAG: ${{ steps.tag.outputs.name }}
         run: |
-          $files = Get-ChildItem -Path ./signpath-signed -Include *.exe,*.msi -Recurse | ForEach-Object { $_.FullName }
-          if ($files.Count -gt 0) {
-            gh release upload "${{ steps.tag.outputs.name }}" @files --clobber
-            gh release edit "${{ steps.tag.outputs.name }}" --notes "Instalador de MMT Sync para Windows 10 y 11.`nFirmado digitalmente mediante SignPath Foundation (https://signpath.io/)."
+          $ErrorActionPreference = "Stop"
+          $files = @(Get-ChildItem -Path ../signpath-signed -Include *.exe,*.msi -Recurse)
+          if ($files.Count -eq 0) { throw "SignPath no devolvió instaladores firmados." }
+          # GitHub publica los assets con puntos en lugar de espacios: mismo nombre para que --clobber los reemplace.
+          $files = @($files | ForEach-Object { $n = $_.Name -replace ' ', '.'; if ($n -ne $_.Name) { Rename-Item $_.FullName $n }; Get-Item (Join-Path $_.DirectoryName $n) })
+          foreach ($f in $files) {
+            $sig = Get-AuthenticodeSignature $f.FullName
+            if ($sig.Status -ne "Valid") { throw "Firma Authenticode no válida en $($f.Name): $($sig.Status)" }
+            npx tauri signer sign "$($f.FullName)"
+            if ($LASTEXITCODE -ne 0) { throw "tauri signer sign falló en $($f.Name)" }
           }
+          gh release download $env:TAG -p latest.json -O ../latest.json --clobber
+          node -e "const fs=require('fs');const path=require('path');const dir='../signpath-signed';const all=[];(function walk(d){for(const e of fs.readdirSync(d,{withFileTypes:true})){const p=path.join(d,e.name);e.isDirectory()?walk(p):all.push(p);}})(dir);const j=JSON.parse(fs.readFileSync('../latest.json','utf8'));const norm=s=>s.replace(/ /g,'.');for(const k of Object.keys(j.platforms||{})){const url=j.platforms[k].url||'';const name=decodeURIComponent(url.split('/').pop());const hit=all.find(p=>p.endsWith('.sig')&&norm(path.basename(p,'.sig'))===name);if(hit){j.platforms[k].signature=fs.readFileSync(hit,'utf8').trim();console.log('updated',k);}else{console.log('no match',k,name);}}j.notes='Instalador de MMT Sync para Windows 10 y 11. Firmado digitalmente mediante SignPath Foundation.';fs.writeFileSync('../latest.json',JSON.stringify(j,null,2));"
+          $upload = @($files | ForEach-Object { $_.FullName; "$($_.FullName).sig" }) + (Resolve-Path ../latest.json).Path
+          gh release upload $env:TAG @upload --clobber
+          gh release edit $env:TAG --notes "Instalador de MMT Sync para Windows 10 y 11.`nFirmado digitalmente: Free code signing provided by SignPath.io, certificate by SignPath Foundation."
