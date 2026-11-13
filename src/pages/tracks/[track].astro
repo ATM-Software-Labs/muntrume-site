@@ -24,6 +24,17 @@ const garage = getTrackGarageInfo(track);
 const sched = getTrackScheduleInfo(track);
 const isFree = track.categories.includes('Free');
 
+const topSeries = sched.entries.slice(0, 3);
+const topCars = garage.cars.slice(0, 3);
+
+const TIER_COLORS: Record<string, string> = {
+  RClass: '#ef4444',
+  DClass: '#f97316',
+  CClass: '#eab308',
+  BClass: '#22c55e',
+  AClass: '#3b82f6',
+};
+
 const TIER_LABELS: Record<string, string> = {
   RClass: 'Rookie',
   DClass: 'Class D',
@@ -133,61 +144,91 @@ const pageDescription = track.history
       </section>
     )}
 
-    <!-- VARIANTES Y TEMPORADA ACTUAL -->
-    {(sched.configs.length > 0 || sched.entries.length > 0) && (
-      <section aria-label="Variantes y series en 2026 Season 4" class="space-y-4">
+    <!-- VARIANTES DEL CIRCUITO -->
+    {sched.configs.length > 0 && (
+      <section aria-label="Variantes del circuito" class="space-y-3">
+        <div>
+          <span class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)]">Trazados</span>
+          <h2 class="r-h3">Variantes del circuito ({sched.configs.length})</h2>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          {sched.configs.map((cfg) => (
+            <span class="px-3 py-1.5 rounded-lg bg-[var(--r-surface)] border border-[var(--r-line)] text-xs font-mono text-[var(--r-text)]">
+              {cfg}
+            </span>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <!-- 3 SERIES MAS IMPORTANTES -->
+    {topSeries.length > 0 && (
+      <section aria-label="Series destacadas en 2026 Season 4" class="space-y-4">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <div>
             <span class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)]">2026 Season 4</span>
-            <h2 class="r-h3">Variantes y Series Oficiales ({sched.entries.length})</h2>
+            <h2 class="r-h3">Series más importantes ({Math.min(3, sched.entries.length)}{sched.entries.length > 3 ? ` de ${sched.entries.length}` : ''})</h2>
           </div>
           <a href="/calendar/" class="r-link text-xs">Ver calendario completo →</a>
         </div>
 
-        {sched.configs.length > 0 && (
-          <div class="flex flex-wrap gap-2">
-            {sched.configs.map((cfg) => (
-              <span class="px-3 py-1 rounded-lg bg-[var(--r-surface)] border border-[var(--r-line)] text-xs font-mono text-[var(--r-text)]">
-                {cfg}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {sched.entries.length > 0 && (
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {sched.entries.slice(0, 18).map((entry) => (
-              <a
-                href={`/garage/?track=${encodeURIComponent(garage.garageQuery)}`}
-                class="p-3.5 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition flex flex-col gap-1"
-              >
-                <div class="flex items-center justify-between gap-2 text-[10px] font-mono uppercase text-[var(--r-muted)]">
-                  <span>Semana {entry.weekNum} · {TIER_LABELS[entry.tier] ?? entry.tier}</span>
-                  <span>{entry.config || 'Standard'}</span>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {topSeries.map((entry) => (
+            <a
+              href={`/garage/?track=${encodeURIComponent(garage.garageQuery)}`}
+              class="p-3.5 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition flex items-center gap-3"
+            >
+              {entry.logo ? (
+                <img src={entry.logo} alt="" width="40" height="40" class="w-10 h-10 rounded-lg object-cover shrink-0 border border-white/10" loading="lazy" />
+              ) : (
+                <span
+                  class="w-10 h-10 rounded-lg shrink-0 flex items-center justify-center text-[11px] font-mono font-bold border"
+                  style={`color:${TIER_COLORS[entry.tier] ?? '#94a3b8'}; border-color:${TIER_COLORS[entry.tier] ?? '#94a3b8'}44; background:${TIER_COLORS[entry.tier] ?? '#94a3b8'}14`}
+                >
+                  {TIER_LABELS[entry.tier]?.replace('Class ', '') ?? entry.tier}
+                </span>
+              )}
+              <div class="min-w-0 flex-1">
+                <div class="text-[10px] font-mono uppercase text-[var(--r-muted)] truncate">
+                  Sem. {entry.weekNum} · {TIER_LABELS[entry.tier] ?? entry.tier}{entry.config ? ` · ${entry.config}` : ''}
                 </div>
-                <span class="text-xs font-bold text-[var(--r-text)] truncate">{entry.seriesName}</span>
-              </a>
-            ))}
-          </div>
-        )}
+                <div class="text-xs font-bold text-[var(--r-text)] truncate">{entry.seriesName}</div>
+              </div>
+            </a>
+          ))}
+        </div>
       </section>
     )}
 
-    <!-- COCHES CON SETUPS EN EL VAULT -->
-    {garage.cars.length > 0 && (
+    <!-- TOP 3 COCHES CON SETUPS -->
+    {topCars.length > 0 && (
       <section aria-label="Coches con setups disponibles" class="space-y-4">
-        <div>
-          <span class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)]">Setup Vault</span>
-          <h2 class="r-h3">Coches con Setups en {track.name} ({garage.cars.length})</h2>
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <span class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)]">Setup Vault</span>
+            <h2 class="r-h3">Coches principales con Setups ({Math.min(3, garage.cars.length)}{garage.cars.length > 3 ? ` de ${garage.cars.length}` : ''})</h2>
+          </div>
+          {garage.cars.length > 3 && (
+            <a href={`/garage/?track=${encodeURIComponent(garage.garageQuery)}`} class="r-link text-xs">
+              Ver los {garage.cars.length} coches en Garage →
+            </a>
+          )}
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {garage.cars.map((car) => (
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {topCars.map((car) => (
             <a
               href={`/garage/?car=${encodeURIComponent(car.id)}&track=${encodeURIComponent(garage.garageQuery)}`}
               class="p-3.5 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition flex items-center justify-between gap-3"
             >
-              <span class="text-xs font-bold text-[var(--r-text)] truncate">{car.label}</span>
+              <span class="inline-flex items-center gap-2.5 min-w-0">
+                {car.brandPath && (
+                  <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" style={`color:${car.brandColor}`}>
+                    <path fill="currentColor" d={car.brandPath} />
+                  </svg>
+                )}
+                <span class="text-xs font-bold text-[var(--r-text)] truncate">{car.label}</span>
+              </span>
               <span class="text-[11px] font-mono text-[var(--r-accent)] shrink-0">{car.count} .sto →</span>
             </a>
           ))}
