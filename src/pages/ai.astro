@@ -18,13 +18,41 @@ const pageDescription = "Copiloto de ingeniería de Muntrume Motorsport para set
     <div class="ai-main">
       <header class="ai-top">
         <button type="button" id="aiSideOpen" class="ai-icon" aria-expanded="false" aria-controls="aiSide" aria-label="Abrir chats" data-i18n-aria="ai.openChats">☰</button>
+        <img src="/assets/img/icon-192.png" alt="Muntrume AI" width="28" height="28" class="ai-top__logo" />
         <h1 data-i18n="ai.title">Copiloto de pista</h1>
+        <button type="button" id="aiGeminiToggle" class="ai-gemini-btn" aria-expanded="false" aria-controls="aiGeminiPanel" title="Configurar API Key gratuita de Google Gemini">
+          <span class="ai-gemini-dot" id="aiGeminiDot"></span>
+          <span id="aiGeminiBadge">Gemini Free</span>
+        </button>
         <a href="/garage/" data-i18n="ai.vault">Abrir el Garage</a>
         <button type="button" id="aiNew" data-i18n="ai.new">Nuevo chat</button>
       </header>
+      <div id="aiGeminiPanel" class="ai-gemini-panel" hidden>
+        <div class="ai-gemini-panel__inner">
+          <div class="ai-gemini-panel__head">
+            <strong>API gratuita de Google Gemini (opcional, se guarda solo en tu navegador)</strong>
+            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">Obtener API Key gratis ↗</a>
+          </div>
+          <div class="ai-gemini-panel__row">
+            <input type="password" id="aiGeminiKey" placeholder="Pega tu clave AIza... (Gemini Free)" autocomplete="off" spellcheck="false" />
+            <select id="aiGeminiModel" aria-label="Modelo Gemini">
+              <option value="gemini-2.5-flash">gemini-2.5-flash (Recomendado)</option>
+              <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+            </select>
+            <button type="button" id="aiGeminiSave" class="is-primary">Guardar</button>
+            <button type="button" id="aiGeminiClear">Usar servidor MMT</button>
+          </div>
+          <p id="aiGeminiStatus" class="ai-gemini-panel__status">Modo actual: Servidor Muntrume AI.</p>
+        </div>
+      </div>
       <div id="aiStage" class="ai-stage is-empty">
         <div id="aiEmpty" class="ai-empty">
-          <p class="r-kicker" data-i18n="ai.kicker">Muntrume AI</p>
+          <div class="ai-empty__brand">
+            <img src="/assets/img/icon-192.png" alt="Muntrume Motorsport" width="44" height="44" />
+            <div>
+              <p class="r-kicker" data-i18n="ai.kicker">Muntrume AI</p>
+            </div>
+          </div>
           <p class="ai-empty__lead" data-i18n="ai.lead">Ingeniero virtual del equipo para setups .sto, telemetría de Garage 61 y estrategia de resistencia en iRacing. Los archivos de setup siguen en el Garage.</p>
           <ul class="ai-caps">
             <li>
@@ -117,8 +145,26 @@ const pageDescription = "Copiloto de ingeniería de Muntrume Motorsport para set
   .ai-log { width: min(760px, calc(100% - 32px)); margin: 0 auto; padding: 20px 0 12px; display: flex; flex-direction: column; gap: 18px; }
   .ai-turn { display: grid; gap: 8px; }
   .ai-turn--user .ai-turn__body { justify-items: end; }
-  .ai-turn--bot { grid-template-columns: 28px minmax(0, 1fr); column-gap: 12px; align-items: start; }
-  .ai-avatar { width: 28px; height: 28px; border-radius: 8px; margin-top: 2px; }
+  .ai-top__logo { width: 28px; height: 28px; border-radius: 8px; object-fit: contain; background: rgba(0, 230, 153, .08); border: 1px solid rgba(0, 230, 153, .28); padding: 2px; flex-shrink: 0; }
+  .ai-empty__brand { display: flex; align-items: center; gap: 12px; }
+  .ai-empty__brand img { width: 44px; height: 44px; border-radius: 12px; object-fit: contain; background: rgba(0, 230, 153, .08); border: 1px solid rgba(0, 230, 153, .28); padding: 4px; }
+  .ai-gemini-btn { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 11px; border-radius: 10px; border: 1px solid var(--r-line); background: var(--r-surface); color: var(--r-text); cursor: pointer; font: 700 12px/1 var(--r-mono); }
+  .ai-gemini-btn:hover, .ai-gemini-btn.is-active { border-color: var(--r-accent); color: var(--r-accent); }
+  .ai-gemini-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--r-muted); }
+  .ai-gemini-btn.is-active .ai-gemini-dot { background: var(--r-accent); box-shadow: 0 0 8px var(--r-accent); }
+  .ai-gemini-panel { border-bottom: 1px solid var(--r-line); background: color-mix(in srgb, var(--r-surface) 92%, var(--r-bg)); padding: 12px 16px; }
+  .ai-gemini-panel[hidden] { display: none !important; }
+  .ai-gemini-panel__inner { width: min(760px, 100%); margin: 0 auto; display: grid; gap: 8px; }
+  .ai-gemini-panel__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; }
+  .ai-gemini-panel__head a { color: var(--r-accent); font-family: var(--r-mono); text-decoration: none; }
+  .ai-gemini-panel__row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .ai-gemini-panel__row input, .ai-gemini-panel__row select { min-height: 38px; padding: 0 10px; border-radius: 9px; border: 1px solid var(--r-line); background: var(--r-bg); color: var(--r-text); font: 13px/1 var(--r-mono); }
+  .ai-gemini-panel__row input { flex: 1 1 220px; min-width: 0; }
+  .ai-gemini-panel__row button { min-height: 38px; padding: 0 12px; border-radius: 9px; border: 1px solid var(--r-line); background: var(--r-surface); color: var(--r-text); font: 700 12px/1 var(--r-sans); cursor: pointer; }
+  .ai-gemini-panel__row button.is-primary { background: var(--r-accent); color: var(--r-accent-ink); border-color: transparent; }
+  .ai-gemini-panel__status { margin: 0; font-size: 12px; color: var(--r-muted); font-family: var(--r-mono); }
+  .ai-turn--bot { grid-template-columns: 34px minmax(0, 1fr); column-gap: 12px; align-items: start; }
+  .ai-avatar { width: 34px; height: 34px; border-radius: 10px; margin-top: 2px; object-fit: contain; background: rgba(0, 230, 153, .08); border: 1px solid rgba(0, 230, 153, .28); padding: 3px; }
   .ai-bubble { max-width: min(85%, 560px); padding: 10px 14px; border-radius: 16px 16px 6px 16px; background: var(--r-accent); color: var(--r-accent-ink); white-space: pre-wrap; line-height: 1.45; }
   .ai-turn__body { min-width: 0; display: grid; gap: 6px; }
   .ai-actions { display: flex; gap: 6px; }
@@ -182,4 +228,4 @@ const pageDescription = "Copiloto de ingeniería de Muntrume Motorsport para set
   }
 </style>
 
-<script is:inline src="/assets/js/ai-chat.js?v=t341" defer></script>
+<script is:inline src="/assets/js/ai-chat.js?v=t342" defer></script>
