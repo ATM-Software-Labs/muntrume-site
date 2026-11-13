@@ -26,7 +26,7 @@ function getPriorityAndFreq(urlPath) {
   if (p.startsWith('/drivers/') || p.startsWith('/pilotos/') || p.startsWith('/d/')) {
     return { priority: '0.7', changefreq: 'weekly' };
   }
-  if (p === '/aviso-legal/' || p === '/privacity/' || p === '/privacidad/' || p === '/cookies/' || p.startsWith('/legal/')) {
+  if (p === '/aviso-legal/' || p === '/privacy/' || p === '/privacity/' || p === '/privacidad/' || p === '/cookies/' || p.startsWith('/legal/')) {
     return { priority: '0.3', changefreq: 'monthly' };
   }
   return { priority: '0.6', changefreq: 'weekly' };
