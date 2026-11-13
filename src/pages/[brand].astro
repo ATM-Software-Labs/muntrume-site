@@ -1,0 +1,197 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { CAR_CATALOG_LIST, type CarMetadata } from '../../desktop/src/cars/catalog';
+
+const slugifyBrand = (brand: string) =>
+  brand
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+export function getStaticPaths() {
+  const slugify = (brand: string) =>
+    brand
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+  const seenModels = new Set<string>();
+  const uniqueCars: CarMetadata[] = CAR_CATALOG_LIST.filter((car) => {
+    const key = `${car.brand}|${car.model}`;
+    if (seenModels.has(key)) return false;
+    seenModels.add(key);
+    return true;
+  });
+
+  const bySlug = new Map<string, { brand: string; cars: CarMetadata[] }>();
+  for (const car of uniqueCars) {
+    const slug = slugify(car.brand);
+    const existing = bySlug.get(slug);
+    if (existing) {
+      existing.cars.push(car);
+    } else {
+      bySlug.set(slug, { brand: car.brand, cars: [car] });
+    }
+  }
+
+  const allBrands = Array.from(bySlug.entries())
+    .map(([slug, data]) => ({ slug, brand: data.brand, count: data.cars.length }))
+    .sort((a, b) => a.brand.localeCompare(b.brand));
+
+  return Array.from(bySlug.entries()).map(([slug, data]) => ({
+    params: { brand: slug },
+    props: {
+      brandName: data.brand,
+      brandSlug: slug,
+      cars: data.cars,
+      allBrands,
+    },
+  }));
+}
+
+interface Props {
+  brandName: string;
+  brandSlug: string;
+  cars: CarMetadata[];
+  allBrands: Array<{ slug: string; brand: string; count: number }>;
+}
+
+const { brandName, brandSlug, cars, allBrands } = Astro.props;
+const categories = Array.from(new Set(cars.map((c) => c.carClass)));
+const pageTitle = `${brandName} en iRacing · Todos los modelos | Muntrume Motorsport`;
+const pageDescription = `Catálogo completo de vehículos ${brandName} en iRacing (${cars.length} modelos: ${categories.join(', ')}). Previews oficiales, setups (.sto), User Manual PDF y Car Forum.`;
+---
+
+<Layout
+  title={pageTitle}
+  description={pageDescription}
+  canonical={`https://muntru.me/${brandSlug}/`}
+>
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20 space-y-8">
+    <nav aria-label="Breadcrumb" class="flex flex-wrap items-center gap-2 text-xs font-mono text-[var(--r-muted)]">
+      <a href="/paddock/" class="hover:text-[var(--r-accent)] transition">Paddock</a>
+      <span>/</span>
+      <span>Marcas</span>
+      <span>/</span>
+      <span class="text-[var(--r-text)] font-bold">{brandName}</span>
+    </nav>
+
+    <header class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[var(--r-line)] pb-6">
+      <div class="space-y-2">
+        <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-[var(--r-accent)]/10 border border-[var(--r-accent)]/30 text-[10px] font-mono font-bold uppercase tracking-widest text-[var(--r-accent)]">
+          <span>iRacing Brand Directory</span>
+        </div>
+        <h1 class="text-3xl sm:text-5xl font-extrabold text-[var(--r-text)] font-display tracking-tight">
+          {brandName}
+        </h1>
+        <p class="text-xs sm:text-sm text-[var(--r-muted)] max-w-2xl">
+          Todos los vehículos oficiales de <strong class="text-[var(--r-text)]">{brandName}</strong> en iRacing ({cars.length} {cars.length === 1 ? 'modelo' : 'modelos'} · {categories.join(' · ')}) con enlace directo a setups (.sto), User Manual PDF y Car Forum.
+        </p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <a
+          href="/paddock/#vehiculos"
+          class="px-4 py-2 rounded-xl bg-[var(--r-surface)] hover:border-[var(--r-accent)] border border-[var(--r-line)] text-xs font-mono font-bold text-[var(--r-text)] transition"
+        >
+          ← Volver al catálogo
+        </a>
+        <a
+          href={`/garage?q=${encodeURIComponent(brandName)}`}
+          class="px-4 py-2 rounded-xl bg-[var(--r-accent)]/15 hover:bg-[var(--r-accent)]/25 border border-[var(--r-accent)]/50 text-xs font-mono font-bold text-[var(--r-accent)] transition"
+        >
+          Setups {brandName} en Garage →
+        </a>
+      </div>
+    </header>
+
+    <section aria-label={`Modelos ${brandName}`} class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {cars.map((car) => (
+        <article class="rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-200 overflow-hidden flex flex-col justify-between group">
+          <div>
+            <div class="relative aspect-[344/182] w-full bg-[#090d12] border-b border-[var(--r-line)] overflow-hidden">
+              {car.previewImg && (
+                <img
+                  src={car.previewImg}
+                  alt={`${car.brand} ${car.model}`}
+                  width="344"
+                  height="182"
+                  loading="lazy"
+                  decoding="async"
+                  class="w-full h-full object-contain object-center transition-transform duration-500 group-hover:scale-[1.03]"
+                />
+              )}
+              <span class="absolute top-2 right-2.5 px-2 py-0.5 rounded-md bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">
+                {car.carClass}
+              </span>
+            </div>
+
+            <div class="p-4 space-y-2">
+              <h2 class="text-base font-bold text-[var(--r-text)] font-display leading-snug truncate" title={`${car.brand} ${car.model}`}>
+                {car.brand} {car.model}
+              </h2>
+              <div class="flex items-center gap-1.5 text-[10px] font-mono text-[var(--r-muted)]">
+                <span class="px-2 py-0.5 rounded bg-[var(--r-bg-2)] border border-[var(--r-line)]/70 text-[var(--r-text)]">{car.category}</span>
+                <span class="truncate" title={car.specs}>{car.specs}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="px-4 pb-4 space-y-2">
+            <a
+              href={`/garage?car=${encodeURIComponent(car.carFolder)}`}
+              class="block w-full py-2 px-3 rounded-xl bg-[var(--r-accent)]/15 hover:bg-[var(--r-accent)]/25 border border-[var(--r-accent)]/50 text-xs font-mono font-bold text-[var(--r-accent)] text-center transition"
+            >
+              Ver Setups (.sto)
+            </a>
+            <div class="grid grid-cols-2 gap-2">
+              <a
+                href={car.manualUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="py-1.5 px-2 rounded-lg bg-[var(--r-bg-2)] hover:border-[var(--r-accent)] border border-[var(--r-line)] text-[10px] font-mono font-bold text-[var(--r-text)] text-center transition"
+              >
+                User Manual (PDF)
+              </a>
+              <a
+                href={car.forumUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="py-1.5 px-2 rounded-lg bg-[var(--r-bg-2)] hover:border-[var(--r-accent)] border border-[var(--r-line)] text-[10px] font-mono font-bold text-[var(--r-muted)] hover:text-[var(--r-text)] text-center transition"
+              >
+                Car Forum
+              </a>
+            </div>
+          </div>
+        </article>
+      ))}
+    </section>
+
+    <section aria-label="Otras marcas" class="pt-6 border-t border-[var(--r-line)] space-y-3">
+      <h2 class="text-xs font-mono font-bold uppercase tracking-widest text-[var(--r-muted)]">
+        Explorar otras marcas en iRacing ({allBrands.length})
+      </h2>
+      <div class="flex flex-wrap gap-2">
+        {allBrands.map((b) => (
+          <a
+            href={`/${b.slug}/`}
+            class={`px-2.5 py-1 rounded-lg border text-[11px] font-mono transition ${
+              b.slug === brandSlug
+                ? 'bg-[var(--r-accent)]/15 border-[var(--r-accent)] text-[var(--r-accent)] font-bold'
+                : 'bg-[var(--r-surface)] border-[var(--r-line)] text-[var(--r-muted)] hover:text-[var(--r-text)] hover:border-[var(--r-accent)]/50'
+            }`}
+          >
+            {b.brand} <span class="opacity-60">({b.count})</span>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <p class="text-[11px] font-mono text-[var(--r-muted)]">
+      Fair Use: Marcas y nombres de vehículos mostrados con fines identificativos y de compatibilidad con iRacing. Manuales y foros oficiales alojados en iRacing.com.
+    </p>
+  </main>
+</Layout>

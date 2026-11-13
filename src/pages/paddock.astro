@@ -482,6 +482,28 @@ const galleryItems = [
         <span id="fleet-count" class="ml-auto text-[11px] font-mono text-[var(--r-muted)]">
           Top 3 populares (de {directoryCars.length} coches)
         </span>
+        <a
+          id="fleet-brand-page-link"
+          href="/bmw/"
+          class="hidden px-2.5 py-1 rounded-lg bg-[var(--r-accent)]/15 border border-[var(--r-accent)]/50 text-[11px] font-mono font-bold text-[var(--r-accent)] hover:bg-[var(--r-accent)]/25 transition"
+        >
+          Ver subpágina →
+        </a>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-1.5 text-[11px] font-mono">
+        <span class="text-[var(--r-muted)] mr-1">Marcas:</span>
+        {["BMW", "Ferrari", "Porsche", "Mercedes-AMG", "Ford", "McLaren", "Dallara", "Toyota", "Mazda", "Chevrolet", "Audi"].map((b) => {
+          const slug = b.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+          return (
+            <a
+              href={`/${slug}/`}
+              class="px-2 py-0.5 rounded-md bg-[var(--r-surface)] border border-[var(--r-line)] text-[var(--r-muted)] hover:text-[var(--r-accent)] hover:border-[var(--r-accent)]/60 transition"
+            >
+              /{slug}
+            </a>
+          );
+        })}
       </div>
 
       <div id="fleet-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -1161,9 +1183,14 @@ const galleryItems = [
     var cards = Array.from(document.querySelectorAll('.fleet-card'));
     var expandWrap = document.getElementById('fleet-expand-wrap');
     var expandBtn = document.getElementById('fleet-expand-btn');
+    var brandPageLink = document.getElementById('fleet-brand-page-link');
     if (!grid || !cards.length) return;
     var activeCat = 'Top 3';
     var showAll = false;
+
+    function slugifyBrand(b) {
+      return String(b || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    }
 
     function applySort() {
       var mode = sortSelect ? sortSelect.value : 'pop';
@@ -1225,6 +1252,16 @@ const galleryItems = [
           countEl.textContent = 'Mostrando ' + shown + ' de ' + matched + ' coches';
         } else {
           countEl.textContent = matched + ' coches';
+        }
+      }
+      if (brandPageLink) {
+        if (brand) {
+          var slug = slugifyBrand(brand);
+          brandPageLink.setAttribute('href', '/' + slug + '/');
+          brandPageLink.textContent = 'Ver /' + slug + ' →';
+          brandPageLink.classList.remove('hidden');
+        } else {
+          brandPageLink.classList.add('hidden');
         }
       }
     }
