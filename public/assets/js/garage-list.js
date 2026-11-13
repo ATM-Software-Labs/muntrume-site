@@ -77,13 +77,17 @@
       btn.textContent = ok ? tr("garage.dl.in", "Descargar") : tr("garage.dl.out", "Inicia sesión");
     });
   }
+  function normText(s) {
+    var v = String(s || "").toLowerCase();
+    return v.normalize ? v.normalize("NFD").replace(/[\u0300-\u036f]/g, "") : v;
+  }
   function filtered() {
-    var q = (search && search.value || "").trim().toLowerCase();
+    var q = normText((search && search.value || "").trim());
     var kind = type && type.value || "";
     return rows.filter(function (row) {
       if (kind && row.kind !== kind) return false;
       if (!q) return true;
-      return (row.carLabel + " " + row.track + " " + row.file + " " + kindLabelOf(row.kind)).toLowerCase().indexOf(q) !== -1;
+      return normText(row.carLabel + " " + row.track + " " + row.file + " " + kindLabelOf(row.kind)).indexOf(q) !== -1;
     });
   }
   function render() {

@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import schedule from "../../desktop/src/season_schedule_2026_s4.json";
+import catalog from "../../public/assets/data/catalog_index.json";
 
 const SEASON_START_MS = Date.UTC(2026, 8, 15);
 const buildWeek = Math.max(1, Math.min(12, Math.floor((Date.now() - SEASON_START_MS) / 604_800_000) + 1));
@@ -84,6 +85,52 @@ function isEnduranceSeries(name: string): boolean {
   return /endurance|24h|creventic|special/i.test(name);
 }
 
+const normStr = (s: string) =>
+  (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+const normKey = (s: string) => normStr(s).replace(/\s+/g, "");
+
+const CATALOG_CIRCUITS = catalog.circuits.map((c) => ({ raw: c, n: normStr(c) }));
+const CATALOG_CARS = catalog.cars.map((c) => ({ id: c, n: normKey(c) }));
+
+const CAR_ALIASES: Array<[RegExp, string]> = [
+  [/porsche\s*911\s*gt3\s*cup/i, "porsche992cup"],
+  [/porsche\s*992\.?2/i, "porsche9922cup"],
+  [/super\s*formula\s*lights/i, "superformulalights324"],
+  [/super\s*formula\s*sf23.*honda/i, "superformulasf23 honda"],
+  [/super\s*formula\s*sf23.*toyota/i, "superformulasf23 toyota"],
+  [/indy\s*pro\s*2000/i, "indypropm18"],
+  [/dallara\s*ir18/i, "dallarair18"],
+  [/dallara\s*f3/i, "dallaraf3"],
+  [/formula\s*ir-?04|\bfia\s*f4\b/i, "formulair04"],
+  [/formula\s*1600|ray\s*ff1600/i, "raygr22"],
+  [/formula\s*vee/i, "formulavee"],
+  [/mx-?5\s*cup/i, "mx5 cup"],
+  [/toyota\s*gr86/i, "toyotagr86"],
+  [/bmw\s*m2\s*cs/i, "bmwm2csr"],
+  [/clio/i, "renaultcliocup"],
+  [/nascar\s*truck\s*ford/i, "trucks fordf150"],
+  [/nascar\s*truck\s*chevrolet/i, "trucks silverado"],
+  [/nascar\s*truck\s*toyota/i, "trucks toyotatundra2022"],
+];
+
+function resolveSeriesCarIds(cars: string[], seriesName: string): string[] {
+  const found = new Set<string>();
+  const inputs = [...(cars || []), seriesName];
+  for (const raw of inputs) {
+    for (const [rx, id] of CAR_ALIASES) {
+      if (rx.test(raw) && catalog.cars.includes(id)) found.add(id);
+    }
+    const nk = normKey(raw);
+    if (!nk || nk.length < 4) continue;
+    for (const c of CATALOG_CARS) {
+      if (nk === c.n || nk.includes(c.n) || (c.n.length >= 6 && c.n.includes(nk))) {
+        found.add(c.id);
+      }
+    }
+  }
+  return [...found];
+}
+
 function trackQuery(rawTrack: string): string {
   const t = rawTrack || "";
   if (/suzuka/i.test(t)) return "Suzuka";
@@ -91,22 +138,26 @@ function trackQuery(rawTrack: string): string {
   if (/mans/i.test(t)) return "Le Mans";
   if (/long beach/i.test(t)) return "Long Beach";
   if (/panorama|bathurst/i.test(t)) return "Bathurst";
-  if (/spa-francorchamps/i.test(t)) return "Spa";
-  if (/nürburgring|nurburgring/i.test(t)) return "Nurburgring";
-  if (/interlagos/i.test(t)) return "Interlagos";
-  if (/monza/i.test(t)) return "Monza";
-  if (/laguna seca/i.test(t)) return "Laguna Seca";
-  if (/watkins glen/i.test(t)) return "Watkins Glen";
-  if (/road america/i.test(t)) return "Road America";
-  if (/road atlanta/i.test(t)) return "Road Atlanta";
-  if (/daytona/i.test(t)) return "Daytona";
-  if (/sebring/i.test(t)) return "Sebring";
-  if (/imola/i.test(t)) return "Imola";
-  if (/silverstone/i.test(t)) return "Silverstone";
-  if (/barcelona/i.test(t)) return "Barcelona";
-  if (/red bull ring/i.test(t)) return "Red Bull Ring";
   if (/americas|cota/i.test(t)) return "COTA";
+  if (/enzo e dino ferrari|imola/i.test(t)) return "Imola";
+  if (/carlos pace|interlagos/i.test(t)) return "Interlagos";
+  if (/gilles villeneuve|montreal/i.test(t)) return "Montreal";
+  if (/magny-cours/i.test(t)) return "Magny Cours";
+  if (/gateway/i.test(t)) return "Gateway";
+  if (/hermanos rodr/i.test(t)) return "Mexico";
+  const nt = normStr(t);
+  const hit = CATALOG_CIRCUITS.find((c) => nt === c.n || nt.includes(c.n) || c.n.includes(nt));
+  if (hit) return hit.raw;
   return t.replace(/\s+(International Racing Course|International Speedway|Street Circuit|Circuit|Raceway|Motorsports Park).*$/i, "").trim();
+}
+
+function buildGarageHref(carIds: string[], trackQ: string): string {
+  const p = new URLSearchParams();
+  if (carIds.length === 1) p.set("car", carIds[0]);
+  else if (carIds.length > 1) p.set("cars", carIds.slice(0, 14).join(","));
+  if (trackQ) p.set("track", trackQ);
+  const qs = p.toString();
+  return qs ? `/garage/?${qs}` : "/garage/";
 }
 
 const cleanSeries = schedule.series
@@ -117,6 +168,7 @@ const cleanSeries = schedule.series
     const fixed = isFixedSeries(cleanName);
     const endurance = isEnduranceSeries(cleanName);
     const pop = popularityRank(cleanName, tier);
+    const carIds = resolveSeriesCarIds(s.cars ?? [], cleanName);
     return {
       id: s.id,
       name: cleanName,
@@ -129,15 +181,20 @@ const cleanSeries = schedule.series
       fixed,
       endurance,
       pop,
+      carIds,
       cars: s.cars ?? [],
-      weeks: (s.weeks ?? []).map((w) => ({
-        w: w.week_num,
-        date: w.start_date,
-        track: w.track_name,
-        config: w.config ?? "",
-        duration: w.duration ?? "",
-        trackQ: trackQuery(w.track_name),
-      })),
+      weeks: (s.weeks ?? []).map((w) => {
+        const trackQ = trackQuery(w.track_name);
+        return {
+          w: w.week_num,
+          date: w.start_date,
+          track: w.track_name,
+          config: w.config ?? "",
+          duration: w.duration ?? "",
+          trackQ,
+          href: buildGarageHref(carIds, trackQ),
+        };
+      }),
     };
   })
   .sort((a, b) => a.pop - b.pop || a.name.localeCompare(b.name));
@@ -233,7 +290,9 @@ const canonical = "https://muntru.me/calendario/";
               <header class="cal-card__head">
                 <div class="cal-card__title-wrap">
                   <span class="cal-dot" title={s.tierLabel}></span>
-                  <h2 class="cal-card__title">{s.name}</h2>
+                  <h2 class="cal-card__title">
+                    <a href={cur?.href ?? "/garage/"} data-title-garage>{s.name}</a>
+                  </h2>
                 </div>
                 <button type="button" class="cal-fav" data-fav-btn={s.id} aria-pressed="false" title="Guardar en favoritas">★</button>
               </header>
@@ -250,7 +309,7 @@ const canonical = "https://muntru.me/calendario/";
                   const state = w.w < buildWeek ? "past" : w.w === buildWeek ? "now" : "next";
                   return (
                     <li class={`cal-week is-${state}`} data-week-num={w.w}>
-                      <a href={w.trackQ ? `/garage/?track=${encodeURIComponent(w.trackQ)}` : "/garage/"} title={`Ver setups en ${w.track}`}>
+                      <a href={w.href} title={`Setups en ${w.track}`}>
                         <span class="cal-week__num">{w.w}</span>
                         <span class="cal-week__track">{w.track}</span>
                         <span class="cal-week__cfg">{w.config}</span>
@@ -267,7 +326,7 @@ const canonical = "https://muntru.me/calendario/";
                 <a
                   class="cal-card__cta"
                   data-foot-garage
-                  href={cur?.trackQ ? `/garage/?track=${encodeURIComponent(cur.trackQ)}` : "/garage/"}
+                  href={cur?.href ?? "/garage/"}
                 >
                   Setups S{buildWeek} →
                 </a>
@@ -336,6 +395,8 @@ const canonical = "https://muntru.me/calendario/";
       margin: 0; font-size: 14px; font-weight: 700; line-height: 1.25; color: var(--r-text);
       overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
     }
+    .cal-card__title a { color: inherit; text-decoration: none; }
+    .cal-card__title a:hover { color: var(--r-accent, #00e699); }
     .cal-fav {
       background: transparent; border: none; color: var(--r-muted); cursor: pointer;
       font-size: 15px; line-height: 1; padding: 2px 4px; opacity: .6; transition: opacity .15s, color .15s;
@@ -415,10 +476,15 @@ const canonical = "https://muntru.me/calendario/";
           li.classList.add(w < week ? "is-past" : w === week ? "is-now" : "is-next");
         });
         const foot = card.querySelector("[data-foot-garage]");
+        const titleLink = card.querySelector("[data-title-garage]");
         const nowLink = card.querySelector('.cal-week.is-now a');
-        if (foot && nowLink) {
-          foot.setAttribute("href", nowLink.getAttribute("href") || "/garage/");
-          foot.textContent = "Setups S" + week + " →";
+        if (nowLink) {
+          const href = nowLink.getAttribute("href") || "/garage/";
+          if (titleLink) titleLink.setAttribute("href", href);
+          if (foot) {
+            foot.setAttribute("href", href);
+            foot.textContent = "Setups S" + week + " →";
+          }
         }
       });
 
