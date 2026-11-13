@@ -261,9 +261,9 @@ const colorPalette = [
       </div>
     </section>
 
-    <!-- BRANDING FUTURISTA / TECH (COLAPSABLE CON MOSTRAR MAS) -->
-    <section class="space-y-5">
-      <div class="pb-3 border-b border-[var(--r-line)] flex flex-wrap items-center justify-between gap-4">
+    <!-- BRANDING FUTURISTA / TECH -->
+    <section class="space-y-6">
+      <div class="pb-3 border-b border-[var(--r-line)] flex flex-wrap items-end justify-between gap-4">
         <div>
           <span class="r-kicker">Línea 02 · Vectorial &amp; Telemetría</span>
           <h2 class="text-2xl font-extrabold text-[var(--r-text)] font-display mt-1">
@@ -273,17 +273,9 @@ const colorPalette = [
             Variantes vectoriales SVG de líneas limpias para liveries oscuras, HUD telemétrico y banners digitales.
           </p>
         </div>
-        <button
-          id="toggle-futuristic-btn"
-          type="button"
-          aria-expanded="false"
-          class="px-4 py-2 rounded-xl bg-[var(--r-surface)] hover:border-[var(--r-accent)] border border-[var(--r-line)] text-xs font-mono font-bold text-[var(--r-accent)] transition cursor-pointer"
-        >
-          Mostrar más ({futuristicAssets.length} variantes futuristas) ↓
-        </button>
       </div>
 
-      <div id="futuristic-grid" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {futuristicAssets.map((asset) => (
           <article class="rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-5 flex flex-col justify-between gap-4 hover:border-[var(--r-accent)] transition-colors">
             <div class="space-y-3">
@@ -334,22 +326,6 @@ const colorPalette = [
         ))}
       </div>
     </section>
-
-    <script is:inline>
-      (function () {
-        var btn = document.getElementById('toggle-futuristic-btn');
-        var grid = document.getElementById('futuristic-grid');
-        if (!btn || !grid) return;
-        btn.addEventListener('click', function () {
-          var isHidden = grid.classList.contains('hidden');
-          grid.classList.toggle('hidden', !isHidden);
-          btn.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
-          btn.textContent = isHidden
-            ? 'Ocultar variantes futuristas ↑'
-            : 'Mostrar más (' + grid.children.length + ' variantes futuristas) ↓';
-        });
-      })();
-    </script>
 
     <!-- COLOR PALETTE & TYPOGRAPHY -->
     <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
