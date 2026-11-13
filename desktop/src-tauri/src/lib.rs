@@ -3,7 +3,9 @@ mod api;
 mod credentials;
 mod folders;
 mod hardware;
+mod ibt_parser;
 mod live;
+mod privacy;
 mod settings;
 mod state;
 mod syncer;
@@ -128,6 +130,8 @@ pub fn run() {
             detect_hardware,
             toggle_overlay,
             set_overlay_edit,
+            parse_ibt_telemetry,
+            redact_session_info,
             quit
         ])
         .run(tauri::generate_context!())
@@ -576,6 +580,19 @@ fn fit_overlay(window: &tauri::WebviewWindow) {
         let _ = window.set_position(PhysicalPosition::new(pos.x, pos.y));
         let _ = window.set_size(PhysicalSize::new(size.width, size.height));
     }
+}
+
+#[tauri::command]
+async fn parse_ibt_telemetry(path: String) -> Result<Vec<ibt_parser::TelemetrySample>, String> {
+    let pb = std::path::PathBuf::from(path);
+    tauri::async_runtime::spawn_blocking(move || ibt_parser::parse_ibt_channels(&pb))
+        .await
+        .map_err(|e| format!("Error en tarea de telemetría: {e}"))?
+}
+
+#[tauri::command]
+fn redact_session_info(raw_yaml: String) -> String {
+    privacy::redact_session_yaml(&raw_yaml)
 }
 
 #[tauri::command]

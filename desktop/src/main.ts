@@ -5,6 +5,9 @@ import type { Backend, LibraryItem, LiveSample, Settings, Snapshot, StagedFile }
 import { fuelText, paintConfigAnalysis, paintExtras, updateLiveOverlay, initFloatingOverlayControls, paintOverlays, paintHardware, paintLastSession, noteHudClosed } from "./extra";
 import rawSchedule from "./season_schedule_2026_s4.json";
 import { getSetupProfile } from "./setup-intelligence";
+import { SyncCoordinator } from "./sync/sync-coordinator";
+
+const syncCoordinator = new SyncCoordinator<Awaited<ReturnType<Backend["syncNow"]>>>();
 
 interface ScheduleDoc {
   current_week?: number;
@@ -1647,8 +1650,8 @@ function bind(): void {
     if (syncIcon) syncIcon.className = "animate-spin inline-block";
     showNotice("");
 
-    void backend
-      .syncNow()
+    void syncCoordinator
+      .run(() => backend.syncNow())
       .then(async (report) => {
         const isErr = report.message.toLowerCase().includes("incompleta") || report.message.toLowerCase().includes("error");
         showNotice(report.message, isErr);
@@ -1659,9 +1662,11 @@ function bind(): void {
         showNotice(msg, true);
       })
       .finally(() => {
-        button.removeAttribute("aria-busy");
-        if (syncText) syncText.textContent = "Sincronizar ahora";
-        if (syncIcon) syncIcon.className = "";
+        if (!syncCoordinator.isSyncing) {
+          button.removeAttribute("aria-busy");
+          if (syncText) syncText.textContent = "Sincronizar ahora";
+          if (syncIcon) syncIcon.className = "";
+        }
       });
   });
   $("search").addEventListener("input", () => {
