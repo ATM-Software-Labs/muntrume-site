@@ -107,15 +107,10 @@ const pageDescription = `Catálogo completo de vehículos ${brandName} en iRacin
       {cars.map((car) => (
         <article class="rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-200 overflow-hidden flex flex-col justify-between group">
           <div>
-            <button
-              type="button"
-              data-preview-src={car.previewImg}
-              data-preview-title={`${car.brand} ${car.model}`}
-              data-preview-sub={`${car.carClass} · ${car.specs}`}
-              data-preview-id={`car:${car.carFolder}`}
-              data-preview-setups={`/garage?car=${encodeURIComponent(car.carFolder)}`}
-              class="relative block aspect-[344/182] w-full bg-[#090d12] border-b border-[var(--r-line)] overflow-hidden cursor-zoom-in"
-              title="Ver imagen completa"
+            <a
+              href={`/coche/${car.carFolder.toLowerCase()}/`}
+              class="relative block aspect-[344/182] w-full bg-[#090d12] border-b border-[var(--r-line)] overflow-hidden"
+              title={`Ver ficha técnica completa de ${car.brand} ${car.model}`}
             >
               {car.previewImg && (
                 <img
@@ -131,7 +126,7 @@ const pageDescription = `Catálogo completo de vehículos ${brandName} en iRacin
               <span class="absolute top-2 right-2.5 px-2 py-0.5 rounded-md bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">
                 {car.carClass}
               </span>
-            </button>
+            </a>
 
             <div class="p-4 space-y-2">
               <div class="flex items-center justify-between gap-2">
@@ -176,7 +171,7 @@ const pageDescription = `Catálogo completo de vehículos ${brandName} en iRacin
                 href={car.forumUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                class="py-1.5 px-2 rounded-lg bg-[var(--r-bg-2)] hover:border-[var(--r-accent)] border border-[var(--r-line)] text-[10px] font-mono font-bold text-[var(--r-muted)] hover:text-[var(--r-text)] text-center transition"
+                class="py-1.5 px-2 rounded-lg bg-[var(--r-bg-2)] hover:border-[var(--r-accent)] border border-[var(--r-line)] text-[10px] font-mono font-bold text-[var(--r-text)] text-center transition"
               >
                 Car Forum
               </a>

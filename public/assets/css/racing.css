@@ -31,8 +31,10 @@ html[data-theme="light"], html.light {
 .r-btn.hidden,[hidden].r-btn{display:none!important}
 .r-btn--primary{background:var(--r-accent);color:var(--r-accent-ink)}
 .r-btn--primary:hover{filter:brightness(1.08)}
-.r-btn--ghost{border-color:currentColor;color:#fff}
-.r-btn--ghost:hover{background:rgba(255,255,255,.08)}
+.r-btn--ghost{border-color:var(--r-line-2,currentColor);color:var(--r-text)}
+.r-btn--ghost:hover{border-color:var(--r-accent);background:var(--r-surface)}
+.r-hero .r-btn--ghost{border-color:rgba(255,255,255,.45);color:#fff}
+.r-hero .r-btn--ghost:hover{background:rgba(255,255,255,.08);border-color:#fff}
 :where(.r-btn,.r-link,.r-card,a):focus-visible{outline:2px solid var(--r-accent);outline-offset:3px}
 
 /* Hero a pantalla completa */

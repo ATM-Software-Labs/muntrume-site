@@ -1,0 +1,230 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import MediaLightbox from '../../components/MediaLightbox.astro';
+import { CAR_CATALOG_LIST, type CarMetadata } from '../../../desktop/src/cars/catalog';
+import { getBrandOrigin, getCarDossier } from '../../data/car-dossiers';
+import catalogIndex from '../../../public/assets/data/catalog_index.json';
+
+export function getStaticPaths() {
+  const seen = new Set<string>();
+  const uniqueCars = CAR_CATALOG_LIST.filter((c) => {
+    const slug = c.carFolder.toLowerCase();
+    if (seen.has(slug)) return false;
+    seen.add(slug);
+    return true;
+  });
+
+  return uniqueCars.map((car) => ({
+    params: { car: car.carFolder.toLowerCase() },
+    props: { car },
+  }));
+}
+
+interface Props {
+  car: CarMetadata;
+}
+
+const { car } = Astro.props;
+const brandSlug = car.brand
+  .toLowerCase()
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/^-+|-+$/g, '');
+
+const origin = getBrandOrigin(car.brand);
+const dossier = getCarDossier(car);
+const hasGarageSetups = (catalogIndex.cars as string[]).some(
+  (c) => c.toLowerCase() === car.carFolder.toLowerCase(),
+);
+
+const pageTitle = `${car.brand} ${car.model} · Ficha Técnica iRacing | Muntrume Motorsport`;
+const pageDescription = `${car.brand} ${car.model} (${car.carClass}): ${dossier.headline}`;
+---
+
+<Layout
+  title={pageTitle}
+  description={pageDescription}
+  canonical={`https://muntru.me/coche/${car.carFolder.toLowerCase()}/`}
+>
+  <main class="r-wrap py-12 sm:py-16 space-y-10">
+    <nav aria-label="Breadcrumb" class="r-kicker flex flex-wrap items-center gap-2">
+      <a href="/paddock/" class="hover:text-[var(--r-accent)] transition">Paddock</a>
+      <span>/</span>
+      <a href={`/${brandSlug}/`} class="hover:text-[var(--r-accent)] transition">{car.brand}</a>
+      <span>/</span>
+      <span class="text-[var(--r-text)] font-bold">{car.model}</span>
+    </nav>
+
+    <!-- HERO DOSSIER -->
+    <header class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center border-b border-[var(--r-line)] pb-8">
+      <div class="lg:col-span-6 space-y-4">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="px-2.5 py-1 rounded-md bg-[var(--r-accent)]/15 border border-[var(--r-accent)]/40 text-[var(--r-accent)] text-xs font-mono font-bold uppercase">
+            {car.carClass} · {car.category}
+          </span>
+          <span class="px-2.5 py-1 rounded-md bg-[var(--r-surface)] border border-[var(--r-line)] text-xs font-mono text-[var(--r-text)]">
+            {origin.flag} {origin.country}
+          </span>
+          <button
+            type="button"
+            data-like-btn
+            data-like-id={`car:${car.carFolder}`}
+            class="px-2.5 py-1 rounded-md bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-rose-500/60 text-xs font-mono font-bold text-[var(--r-muted)] inline-flex items-center gap-1.5 transition cursor-pointer"
+            title="Me gusta"
+          >
+            <span data-heart>♡</span>
+            <span data-count>0</span>
+          </button>
+        </div>
+
+        <h1 class="r-h2">
+          {car.brand} {car.model}
+        </h1>
+
+        <p class="r-lead">
+          {dossier.headline}
+        </p>
+
+        <div class="flex flex-wrap items-center gap-3 pt-2">
+          <a
+            href={`/garage?car=${encodeURIComponent(car.carFolder)}`}
+            class="r-btn r-btn--primary"
+          >
+            {hasGarageSetups ? 'Ver Setups (.sto) en Garage →' : 'Buscar en Garage →'}
+          </a>
+          <a
+            href={car.manualUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="r-btn r-btn--ghost"
+          >
+            User Manual (PDF) ↗
+          </a>
+          <a
+            href={car.forumUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="r-btn r-btn--ghost"
+          >
+            Car Forum ↗
+          </a>
+        </div>
+      </div>
+
+      <div class="lg:col-span-6">
+        <button
+          type="button"
+          data-preview-src={car.previewImg || ''}
+          data-preview-title={`${car.brand} ${car.model}`}
+          data-preview-sub={`${car.carClass} · ${origin.flag} ${origin.country} · ${car.specs}`}
+          data-preview-id={`car:${car.carFolder}`}
+          data-preview-setups={`/garage?car=${encodeURIComponent(car.carFolder)}`}
+          class="relative block w-full aspect-[344/182] rounded-2xl bg-[#090d12] border border-[var(--r-line)] hover:border-[var(--r-accent)] overflow-hidden cursor-zoom-in group transition"
+          title="Ampliar imagen completa"
+        >
+          {car.previewImg && (
+            <img
+              src={car.previewImg}
+              alt={`${car.brand} ${car.model}`}
+              width="688"
+              height="364"
+              class="w-full h-full object-contain object-center transition-transform duration-500 group-hover:scale-[1.03]"
+            />
+          )}
+          <span class="absolute bottom-3 right-3 px-2.5 py-1 rounded-lg bg-black/80 border border-white/15 text-[11px] font-mono text-white/90">
+            Ampliar foto completa ⤢
+          </span>
+        </button>
+      </div>
+    </header>
+
+    <!-- FICHA TECNICA -->
+    <section aria-label="Especificaciones de ingeniería" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="p-4 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] space-y-1">
+        <span class="text-[10px] font-mono uppercase tracking-widest text-[var(--r-accent)]">Motorización</span>
+        <p class="text-sm font-bold text-[var(--r-text)]">{dossier.powertrain}</p>
+      </div>
+      <div class="p-4 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] space-y-1">
+        <span class="text-[10px] font-mono uppercase tracking-widest text-[var(--r-accent)]">Transmisión</span>
+        <p class="text-sm font-bold text-[var(--r-text)]">{dossier.drivetrain}</p>
+      </div>
+      <div class="p-4 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] space-y-1">
+        <span class="text-[10px] font-mono uppercase tracking-widest text-[var(--r-accent)]">Electrónica &amp; Ayudas</span>
+        <p class="text-sm font-bold text-[var(--r-text)]">{dossier.electronics}</p>
+      </div>
+      <div class="p-4 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] space-y-1">
+        <span class="text-[10px] font-mono uppercase tracking-widest text-[var(--r-accent)]">País &amp; Sede Técnica</span>
+        <p class="text-sm font-bold text-[var(--r-text)]">{origin.flag} {origin.country}</p>
+        <p class="text-[11px] font-mono text-[var(--r-muted)]">{origin.hq}</p>
+      </div>
+    </section>
+
+    <!-- PILOTOS REALES + CURIOSIDADES + MEJORES VUELTAS -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div class="lg:col-span-5 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] p-6 space-y-4">
+        <div>
+          <span class="r-kicker">Paddock Real</span>
+          <h2 class="text-xl font-extrabold text-[var(--r-text)] font-display mt-1">
+            Pilotos reconocidos en la vida real
+          </h2>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          {dossier.realDrivers.map((driver) => (
+            <span class="px-3 py-1.5 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] text-xs font-mono font-bold text-[var(--r-text)]">
+              {driver}
+            </span>
+          ))}
+        </div>
+        <div class="pt-3 border-t border-[var(--r-line)] space-y-2">
+          <span class="text-[10px] font-mono uppercase tracking-widest text-[var(--r-accent)]">Carpeta técnica iRacing</span>
+          <p class="text-xs font-mono text-[var(--r-muted)]">
+            ID de chasis: <strong class="text-[var(--r-text)]">{car.carFolder}</strong>
+          </p>
+        </div>
+      </div>
+
+      <div class="lg:col-span-7 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] p-6 space-y-4">
+        <div>
+          <span class="r-kicker">Ingeniería &amp; Historia</span>
+          <h2 class="text-xl font-extrabold text-[var(--r-text)] font-display mt-1">
+            Curiosidades y comportamiento en pista
+          </h2>
+        </div>
+        <ul class="space-y-3 text-sm text-[var(--r-muted)] leading-relaxed">
+          {dossier.curiosities.map((fact) => (
+            <li class="p-3.5 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] text-[var(--r-text)]">
+              {fact}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+
+    <!-- MEJORES VUELTAS DE REFERENCIA -->
+    <section class="rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] p-6 space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <span class="r-kicker">Telemetría &amp; Ritmo</span>
+          <h2 class="text-xl font-extrabold text-[var(--r-text)] font-display mt-1">
+            Mejores vueltas de referencia &amp; Benchmarks
+          </h2>
+        </div>
+        <a href={`/${brandSlug}/`} class="r-link">
+          Ver todos los {car.brand} →
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {dossier.lapBenchmarks.map((b) => (
+          <div class="p-4 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] space-y-1">
+            <span class="text-xs font-mono text-[var(--r-muted)]">{b.track}</span>
+            <div class="text-2xl font-extrabold font-mono text-[var(--r-accent)]">{b.lap}</div>
+            <p class="text-[11px] font-mono text-[var(--r-muted)]">{b.note}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  </main>
+  <MediaLightbox />
+</Layout>
