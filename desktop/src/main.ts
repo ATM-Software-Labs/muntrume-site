@@ -13,11 +13,22 @@ interface ScheduleDoc {
   current_week?: number;
   series?: Array<{
     name?: string;
+    cars?: string[];
     weeks?: Array<{ week_num: number; track_name: string }>;
   }>;
 }
 
 const sched = rawSchedule as unknown as ScheduleDoc;
+
+/**
+ * Computes the current 2026 Season 4 week (1..12) from its official start date (2026-09-15 UTC).
+ */
+export function getCurrentSeasonWeek(nowMs = Date.now()): number {
+  const seasonStartMs = Date.UTC(2026, 8, 15, 0, 0, 0);
+  const diffWeeks = Math.floor((nowMs - seasonStartMs) / (7 * 86_400_000)) + 1;
+  if (!Number.isFinite(diffWeeks)) return sched.current_week || 9;
+  return Math.max(1, Math.min(12, diffWeeks));
+}
 
 export interface TrackWeekInfo {
   week: number;
@@ -26,13 +37,56 @@ export interface TrackWeekInfo {
   isFixed?: boolean;
 }
 
+const CAR_FOLDER_KEYWORDS: Record<string, readonly string[]> = {
+  ferrari296gt3: ["ferrari 296 gt3", "gt3"],
+  porsche992rgt3: ["porsche 911 gt3 r", "992", "gt3"],
+  bmwm4gt3: ["bmw m4 gt3", "gt3"],
+  mercedesamggt3: ["mercedes-amg gt3", "gt3"],
+  audir8lmsevo2gt3: ["audi r8 lms", "gt3"],
+  mclaren720sgt3: ["mclaren 720s gt3", "gt3"],
+  corvettez06gt3r: ["corvette z06 gt3", "gt3"],
+  fordmustanggt3: ["ford mustang gt3", "gt3"],
+  lamborghinievogt3: ["lamborghini huracan gt3", "gt3"],
+  porsche963: ["porsche 963", "gtp", "imsa"],
+  porsche963gtp: ["porsche 963", "gtp", "imsa"],
+  ferrari499p: ["ferrari 499p", "gtp", "imsa"],
+  bmwmhybridv8: ["bmw m hybrid v8", "gtp", "imsa"],
+  bmwlmdh: ["bmw m hybrid v8", "gtp", "imsa"],
+  cadillacvseriesr: ["cadillac v-series", "gtp", "imsa"],
+  acuraarx06gtp: ["acura arx-06", "gtp", "imsa"],
+  dallarap217: ["dallara p217", "lmp2", "imsa"],
+  formulair04: ["fia formula 4", "formula 4"],
+  superformulalights324: ["super formula lights"],
+  toyotagr86: ["toyota gr86"],
+  bmwm2csr: ["bmw m2 cs"],
+  bmwm2g87: ["bmw m2"],
+  radicalsr8: ["radical sr8"],
+  specracer: ["spec racer ford"],
+  renaultcliocup: ["renault clio"],
+  raygr22: ["ray ff1600"],
+  formulavee: ["formula vee"],
+};
+
+function seriesMatchesCar(seriesCars: readonly string[] | undefined, cleanCar: string): boolean {
+  if (!cleanCar || !seriesCars || seriesCars.length === 0) return false;
+  const hay = seriesCars.join(" ").toLowerCase();
+  const hayClean = hay.replace(/[^a-z0-9]/g, "");
+  if (hayClean.includes(cleanCar) || cleanCar.includes(hayClean)) return true;
+
+  const aliases = CAR_FOLDER_KEYWORDS[cleanCar];
+  if (aliases) {
+    return aliases.some((a) => hay.includes(a));
+  }
+  return false;
+}
+
 export function getTrackWeekInfo(track: string, filename?: string, carFolder?: string): TrackWeekInfo {
   const clean = String(track || "").toLowerCase().replace(/[^a-z0-9]/g, "");
   const cleanCar = String(carFolder || "").toLowerCase().replace(/[^a-z0-9]/g, "");
   const upperFile = String(filename || "").toUpperCase();
+  const current = getCurrentSeasonWeek();
 
-  // Explicit Fixed Series Check: No setups supplied for fixed series
-  if (clean.includes("barcelona") || clean.includes("catalunya") || upperFile.includes("FIXED") || clean.includes("fixed")) {
+  if (upperFile.includes("FIXED")) {
     return {
       week: 0,
       isCurrent: false,
@@ -41,87 +95,42 @@ export function getTrackWeekInfo(track: string, filename?: string, carFolder?: s
     };
   }
 
-  const isGtp = cleanCar.includes("gtp") || cleanCar.includes("arx06") || cleanCar.includes("bmwmhybrid") || cleanCar.includes("porsche963") || cleanCar.includes("cadillacv") || cleanCar.includes("amvalkyrie") || cleanCar.includes("valkyrie") || upperFile.includes("ARX06") || upperFile.includes("GTP");
-  const isLmp2 = cleanCar.includes("p217") || cleanCar.includes("lmp2") || cleanCar.includes("dallara");
-  const isImsa = isGtp || isLmp2 || upperFile.includes("IMSA");
+  if (clean && sched && Array.isArray(sched.series)) {
+    const carMatches: Array<{ week: number; name: string; isFixed: boolean }> = [];
+    const anyMatches: Array<{ week: number; name: string; isFixed: boolean }> = [];
 
-  // 1. Fuji Speedway -> GT3 Open (Week 9: Current Week!) vs IMSA (Week 2)
-  if (clean.includes("fuji")) {
-    if (isGtp || isImsa || isLmp2) {
-      return {
-        week: 2,
-        isCurrent: false,
-        seriesContext: "IMSA SportsCar (Semana 02 - Fuji)",
-      };
-    }
-    return {
-      week: 9,
-      isCurrent: true,
-      seriesContext: "GT3 Open (Fuji)",
-    };
-  }
-
-  // 2. Suzuka -> IMSA SportsCar Open (Week 9: Current Week!) vs GT3 Open (Week 12 Final)
-  if (clean.includes("suzuka")) {
-    if (isGtp || isImsa || isLmp2) {
-      return {
-        week: 9,
-        isCurrent: true,
-        seriesContext: "IMSA SportsCar Open (Suzuka)",
-      };
-    }
-    return {
-      week: 12,
-      isCurrent: false,
-      seriesContext: "GT3 Open (Semana 12)",
-    };
-  }
-
-  // 3. Misano -> Week 10
-  if (clean.includes("misano")) {
-    return {
-      week: 10,
-      isCurrent: false,
-      seriesContext: "GT3 Open / GT Sprint",
-    };
-  }
-
-  // 4. Sebring -> Week 11
-  if (clean.includes("sebring")) {
-    return {
-      week: 11,
-      isCurrent: false,
-      seriesContext: "GT3 Open / GT Sprint",
-    };
-  }
-
-  // 5. Monza -> Week 12
-  if (clean.includes("monza")) {
-    return {
-      week: 12,
-      isCurrent: false,
-      seriesContext: "GT3 Open (Semana 12)",
-    };
-  }
-
-  // 6. General schedule search
-  if (sched && Array.isArray(sched.series)) {
     for (const s of sched.series) {
+      const sName = s.name || "Calendario Oficial";
+      const isSeriesFixed = sName.toLowerCase().includes("fixed");
+      const matchesCar = seriesMatchesCar(s.cars, cleanCar);
+
       for (const w of s.weeks || []) {
         const token = String(w.track_name || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-        if (token && (token.includes(clean) || clean.includes(token))) {
-          const current = typeof sched.current_week === "number" ? sched.current_week : 9;
-          return {
-            week: w.week_num,
-            isCurrent: w.week_num === current,
-            seriesContext: s.name || "Calendario Oficial",
-          };
-        }
+        if (!token || (!token.includes(clean) && !clean.includes(token))) continue;
+        const hit = { week: w.week_num, name: sName, isFixed: isSeriesFixed };
+        if (matchesCar) carMatches.push(hit);
+        anyMatches.push(hit);
       }
+    }
+
+    const pool = carMatches.length > 0 ? carMatches : anyMatches;
+    if (pool.length > 0) {
+      // Prefer Open series in the current week, then any Open series, then Fixed.
+      const best =
+        pool.find((m) => !m.isFixed && m.week === current) ??
+        pool.find((m) => !m.isFixed) ??
+        pool[0];
+      const allFixed = pool.every((m) => m.isFixed);
+      return {
+        week: best.week,
+        isCurrent: best.week === current,
+        isFixed: allFixed,
+        seriesContext: best.name,
+      };
     }
   }
 
-  return { week: 1, isCurrent: false, seriesContext: "General" };
+  return { week: current, isCurrent: true, seriesContext: "General" };
 }
 
 export function findWeekForTrack(track: string, filename?: string, carFolder?: string): number {
@@ -1772,9 +1781,13 @@ function bind(): void {
     const num = (id: string) => Number((document.getElementById(id) as HTMLInputElement).value);
     $("fuelOut").textContent = fuelText(num("raceMin"), num("lapSec"), num("fuelLap"), num("tank"), num("fuelNow"));
   });
-  $("refPack").addEventListener("click", () => {
-    $("refResult").textContent = "Paquete de demostración preparado en memoria. No se ha enviado: el endpoint no existe y el módulo sigue apagado por defecto.";
-  });
+  const refPackBtn = document.getElementById("refPack");
+  const refResultEl = document.getElementById("refResult");
+  if (refPackBtn && refResultEl) {
+    refPackBtn.addEventListener("click", () => {
+      refResultEl.textContent = "Paquete de demostración preparado en memoria. No se ha enviado: el endpoint no existe y el módulo sigue apagado por defecto.";
+    });
+  }
   $("uploadForm").addEventListener("submit", (event) => {
     event.preventDefault();
     const carFolder = ($("carFolder") as HTMLInputElement).value.trim();

@@ -135,10 +135,13 @@ async fn run(app: &AppHandle) -> Result<SyncReport, String> {
                     .map(|setup| setup.track.clone())
                     .unwrap_or_default();
                 let filename = item.relative.rsplit('/').next().unwrap_or(item.relative.as_str());
-                let pairs = season_pairs();
-                let weeks: Vec<SeriesWeek<'_>> = pairs
+                if item.relative.to_ascii_lowercase().contains("fixed") {
+                    continue;
+                }
+                let car_pairs = season_pairs_for_car(&item.car);
+                let weeks: Vec<SeriesWeek<'_>> = car_pairs
                     .iter()
-                    .map(|(name, track_name)| SeriesWeek { name, track: track_name })
+                    .map(|(name, track_name)| SeriesWeek { name: name.as_str(), track: track_name.as_str() })
                     .collect();
                 if let Err(reason) = install_allowed(&track, filename, &weeks, None) {
                     if reason == "serie fixed" {
@@ -361,6 +364,8 @@ struct SeasonSeries {
     #[serde(default)]
     name: String,
     #[serde(default)]
+    cars: Vec<String>,
+    #[serde(default)]
     weeks: Vec<SeasonWeek>,
 }
 
@@ -370,19 +375,57 @@ struct SeasonWeek {
     track_name: String,
 }
 
-fn season_pairs() -> &'static Vec<(String, String)> {
-    static CACHE: OnceLock<Vec<(String, String)>> = OnceLock::new();
+struct SeasonEntry {
+    name: String,
+    cars_norm: String,
+    track: String,
+}
+
+fn norm_token(value: &str) -> String {
+    value
+        .bytes()
+        .filter(u8::is_ascii_alphanumeric)
+        .map(|b| b.to_ascii_lowercase() as char)
+        .collect()
+}
+
+fn season_entries() -> &'static Vec<SeasonEntry> {
+    static CACHE: OnceLock<Vec<SeasonEntry>> = OnceLock::new();
     CACHE.get_or_init(|| {
         let raw = include_str!("../../src/season_schedule_2026_s4.json");
         let doc: SeasonFile = serde_json::from_str(raw).unwrap_or(SeasonFile { series: Vec::new() });
-        let mut pairs = Vec::new();
+        let mut entries = Vec::new();
         for series in doc.series {
+            let cars_norm = norm_token(&series.cars.join(" "));
             for week in series.weeks {
                 if !week.track_name.is_empty() {
-                    pairs.push((series.name.clone(), week.track_name));
+                    entries.push(SeasonEntry {
+                        name: series.name.clone(),
+                        cars_norm: cars_norm.clone(),
+                        track: week.track_name,
+                    });
                 }
             }
         }
-        pairs
+        entries
     })
+}
+
+fn season_pairs_for_car(car_folder: &str) -> Vec<(&'static str, &'static str)> {
+    let entries = season_entries();
+    let car_norm = norm_token(car_folder);
+    if !car_norm.is_empty() {
+        let matched: Vec<(&'static str, &'static str)> = entries
+            .iter()
+            .filter(|e| e.cars_norm.contains(&car_norm))
+            .map(|e| (e.name.as_str(), e.track.as_str()))
+            .collect();
+        if !matched.is_empty() {
+            return matched;
+        }
+    }
+    entries
+        .iter()
+        .map(|e| (e.name.as_str(), e.track.as_str()))
+        .collect()
 }

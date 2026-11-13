@@ -32,7 +32,13 @@ interface SchedulePayload {
 
 const schedule = rawSchedule as unknown as SchedulePayload;
 
-let activeWeek = schedule.current_week || 9;
+function currentSeasonWeek(): number {
+  const startMs = Date.UTC(2026, 8, 15, 0, 0, 0);
+  const w = Math.floor((Date.now() - startMs) / (7 * 86_400_000)) + 1;
+  return Number.isFinite(w) ? Math.max(1, Math.min(12, w)) : schedule.current_week || 9;
+}
+
+let activeWeek = currentSeasonWeek();
 let activeCat = "all";
 let activeSearch = "";
 let filterOnlyOpen = false;
@@ -114,12 +120,14 @@ function paintWeek(data: Snapshot): void {
     9: "10 nov", 10: "17 nov", 11: "24 nov", 12: "01 dic",
   };
 
+  const curWeek = currentSeasonWeek();
+
   // Populate Dropdown
   if (weekSelect && weekSelect.options.length === 0) {
     for (let w = 1; w <= 12; w++) {
       const opt = document.createElement("option");
       opt.value = String(w);
-      const isCurrent = w === (schedule.current_week || 9);
+      const isCurrent = w === curWeek;
       opt.textContent = `Semana ${w} (${weekDates[w] ?? ""})${isCurrent ? " · ACTUAL" : ""}`;
       weekSelect.append(opt);
     }
@@ -132,7 +140,7 @@ function paintWeek(data: Snapshot): void {
       const btn = document.createElement("button");
       btn.type = "button";
       btn.dataset.week = String(w);
-      const isCurrent = w === (schedule.current_week || 9);
+      const isCurrent = w === curWeek;
       const isSelected = w === activeWeek;
       btn.className = isSelected
         ? "px-3 py-1.5 rounded-xl border border-r-accent bg-r-accent/15 text-r-accent font-mono text-xs font-bold shrink-0 transition"
@@ -325,7 +333,7 @@ function renderWeekItems(data: Snapshot): void {
 
     badges.append(catBadge, tierBadge, openBadge);
 
-    if (matchCount > 0) {
+    if (!isFixed && matchCount > 0) {
       const setupBadge = document.createElement("span");
       setupBadge.className = "px-2.5 py-0.5 rounded bg-r-accent/15 text-r-accent font-mono text-[11px] font-bold";
       setupBadge.textContent = `${matchCount} setups MMT listos`;

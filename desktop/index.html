@@ -1422,7 +1422,7 @@
     </div>
 
     <!-- Floating In-Game Overlay Container (visible exclusively when index.html?overlay=1) -->
-    <div id="floatingOverlayHost" hidden class="fixed inset-0 select-none p-5 flex flex-col justify-between overflow-hidden pointer-events-none" data-hud="closed">
+    <div id="floatingOverlayHost" hidden class="fixed inset-0 select-none p-3 flex flex-col justify-between overflow-hidden pointer-events-none" data-hud="closed">
       <div id="hudStateBanner" class="absolute top-6 left-6 z-20 px-4 py-2 rounded-xl bg-black/80 border border-white/20 text-white font-mono text-sm font-bold tracking-wide">iRacing Cerrado</div>
       <!-- Top control pill (draggable). Hidden until the HUD is live or in edit. -->
       <div id="floatHudChrome" hidden class="flex items-center justify-between gap-3 pointer-events-auto">
@@ -1469,7 +1469,7 @@
       <!-- Mid Area: Unobstructed windshield view! Radar on far Left, Standings on far Right -->
       <div class="flex items-center justify-between gap-6 pointer-events-none flex-1 my-3">
         <!-- Relative Radar (Left Edge) -->
-        <div id="floatRelativeCard" class="mmt-float-widget w-80 rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md text-white p-3.5 text-xs font-mono shadow-2xl pointer-events-auto" data-widget="relative">
+        <div id="floatRelativeCard" class="mmt-float-widget w-72 rounded-xl border border-white/15 bg-black/85 backdrop-blur-md text-white p-3 text-xs font-mono shadow-2xl pointer-events-auto" data-widget="relative">
           <div id="ovRelativeFloat"></div>
         </div>
 
@@ -1477,7 +1477,7 @@
         <div class="pointer-events-none flex-1"></div>
 
         <!-- Standings / Corner Guidance (Right Edge) -->
-        <div id="floatStandingsCard" class="mmt-float-widget w-64 rounded-2xl border border-white/20 bg-black/85 backdrop-blur-md text-white p-3.5 text-xs font-mono shadow-2xl pointer-events-auto" data-widget="standings">
+        <div id="floatStandingsCard" class="mmt-float-widget w-60 rounded-xl border border-white/15 bg-black/85 backdrop-blur-md text-white p-3 text-xs font-mono shadow-2xl pointer-events-auto" data-widget="standings">
           <div id="ovStandingsFloat"></div>
         </div>
       </div>
