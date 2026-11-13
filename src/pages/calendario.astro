@@ -1,0 +1,415 @@
+---
+import Layout from "../layouts/Layout.astro";
+import schedule from "../../desktop/src/season_schedule_2026_s4.json";
+
+const SEASON_START_MS = Date.UTC(2026, 8, 15);
+const buildWeek = Math.max(1, Math.min(12, Math.floor((Date.now() - SEASON_START_MS) / 604_800_000) + 1));
+
+const CAT_LABELS: Record<string, string> = {
+  "SPORTS CAR": "Sports Car",
+  "FORMULA CAR": "Formula Car",
+  "OVAL": "Oval",
+  "DIRT OVAL": "Dirt Oval",
+  "DIRT ROAD": "Dirt Road",
+};
+
+const TIER_LABELS: Record<string, string> = {
+  RClass: "Rookie",
+  DClass: "Class D",
+  CClass: "Class C",
+  BClass: "Class B",
+  AClass: "Class A",
+};
+
+const TIER_COLORS: Record<string, string> = {
+  RClass: "#ef4444",
+  DClass: "#f97316",
+  CClass: "#eab308",
+  BClass: "#22c55e",
+  AClass: "#3b82f6",
+};
+
+function trackQuery(rawTrack: string): string {
+  const t = rawTrack || "";
+  if (/suzuka/i.test(t)) return "Suzuka";
+  if (/fuji/i.test(t)) return "Fuji";
+  if (/mans/i.test(t)) return "Le Mans";
+  if (/long beach/i.test(t)) return "Long Beach";
+  if (/panorama|bathurst/i.test(t)) return "Bathurst";
+  if (/spa-francorchamps/i.test(t)) return "Spa";
+  if (/nürburgring|nurburgring/i.test(t)) return "Nurburgring";
+  if (/interlagos/i.test(t)) return "Interlagos";
+  if (/monza/i.test(t)) return "Monza";
+  if (/laguna seca/i.test(t)) return "Laguna Seca";
+  if (/watkins glen/i.test(t)) return "Watkins Glen";
+  if (/road america/i.test(t)) return "Road America";
+  if (/road atlanta/i.test(t)) return "Road Atlanta";
+  if (/daytona/i.test(t)) return "Daytona";
+  if (/sebring/i.test(t)) return "Sebring";
+  if (/imola/i.test(t)) return "Imola";
+  if (/silverstone/i.test(t)) return "Silverstone";
+  if (/barcelona/i.test(t)) return "Barcelona";
+  if (/red bull ring/i.test(t)) return "Red Bull Ring";
+  if (/americas|cota/i.test(t)) return "COTA";
+  return t.replace(/\s+(International Racing Course|International Speedway|Street Circuit|Circuit|Raceway|Motorsports Park).*$/i, "").trim();
+}
+
+const cleanSeries = schedule.series.map((s) => {
+  const cleanName = s.name.replace(/\s*-?\s*2026 Season.*$/i, "").trim();
+  const cat = s.category || "SPORTS CAR";
+  const tier = s.tier || "DClass";
+  return {
+    id: s.id,
+    name: cleanName,
+    category: cat,
+    categoryLabel: CAT_LABELS[cat] ?? cat,
+    tier,
+    tierLabel: TIER_LABELS[tier] ?? tier,
+    tierColor: TIER_COLORS[tier] ?? "#94a3b8",
+    license: s.license,
+    cars: s.cars ?? [],
+    weeks: (s.weeks ?? []).map((w) => ({
+      w: w.week_num,
+      date: w.start_date,
+      track: w.track_name,
+      config: w.config ?? "",
+      weather: (w.weather ?? "").replace(/,\s*$/, ""),
+      duration: w.duration ?? "",
+      simTime: w.sim_time ?? "",
+      trackQ: trackQuery(w.track_name),
+    })),
+  };
+});
+
+const catOrder = ["SPORTS CAR", "FORMULA CAR", "OVAL", "DIRT OVAL", "DIRT ROAD"];
+const catCounts = Object.fromEntries(catOrder.map((c) => [c, cleanSeries.filter((s) => s.category === c).length]));
+
+const pageTitle = "Calendario Oficial iRacing 2026 Season 4 | Muntrume Motorsport";
+const pageDescription = "Calendario completo de las 154 series oficiales de iRacing 2026 Season 4 (Sports Car, Formula, Oval y Dirt) por semana, licencia, circuito y setups.";
+const canonical = "https://muntru.me/calendario/";
+---
+
+<Layout title={pageTitle} description={pageDescription} canonical={canonical}>
+  <section class="r-section cal-page" aria-labelledby="calPageTitle">
+    <div class="r-wrap">
+      <nav class="cal-crumb" aria-label="Breadcrumb">
+        <a href="/">Inicio</a>
+        <span>/</span>
+        <span>Calendario 2026 S4</span>
+      </nav>
+
+      <header class="cal-hero">
+        <div>
+          <p class="r-kicker">IRACING OFFICIAL SCHEDULE · 2026 SEASON 4</p>
+          <h1 id="calPageTitle" class="r-h1">Calendario Oficial iRacing</h1>
+          <p class="r-lead">
+            Las <strong>{cleanSeries.length} series oficiales</strong> de la temporada 2026 S4 organizadas por disciplina, licencia y semana (W01–W12), con meteorología, duración y acceso directo a setups en el Garage.
+          </p>
+        </div>
+        <div class="cal-kpis">
+          <div>
+            <strong>{cleanSeries.length}</strong>
+            <span>Series oficiales</span>
+          </div>
+          <div>
+            <strong>12</strong>
+            <span>Semanas</span>
+          </div>
+          <div>
+            <strong id="calLiveWeek">Semana {buildWeek}</strong>
+            <span>Semana activa</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="cal-controls" role="region" aria-label="Filtros de calendario">
+        <div class="cal-search-row">
+          <label class="cal-search">
+            <span class="sr-only">Buscar serie, coche o circuito</span>
+            <input id="calSearch" type="search" placeholder="Buscar serie, coche o circuito (ej. GT3, Suzuka, Ferrari, Formula)…" autocomplete="off" />
+          </label>
+          <span id="calCount" class="cal-count">{cleanSeries.length} series</span>
+        </div>
+
+        <div class="cal-filter-group">
+          <span class="cal-filter-label">Semana</span>
+          <div class="cal-pills" id="calWeekPills">
+            {Array.from({ length: 12 }, (_, idx) => idx + 1).map((w) => (
+              <button type="button" class={`cal-pill ${w === buildWeek ? "is-on" : ""}`} data-week={w}>
+                S{w}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div class="cal-filter-group">
+          <span class="cal-filter-label">Disciplina</span>
+          <div class="cal-pills" id="calCatPills">
+            <button type="button" class="cal-pill is-on" data-cat="ALL">Todas ({cleanSeries.length})</button>
+            {catOrder.map((c) => (
+              <button type="button" class="cal-pill" data-cat={c}>
+                {CAT_LABELS[c]} ({catCounts[c] ?? 0})
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div class="cal-filter-group">
+          <span class="cal-filter-label">Licencia</span>
+          <div class="cal-pills" id="calTierPills">
+            <button type="button" class="cal-pill is-on" data-tier="ALL">Todas</button>
+            {Object.entries(TIER_LABELS).map(([k, lbl]) => (
+              <button type="button" class="cal-pill" data-tier={k}>{lbl}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div id="calGrid" class="cal-grid">
+        {cleanSeries.map((s) => {
+          const cur = s.weeks.find((w) => w.w === buildWeek) ?? s.weeks[0];
+          const searchBlob = `${s.name} ${s.categoryLabel} ${s.tierLabel} ${s.cars.join(" ")} ${s.weeks.map((w) => `${w.track} ${w.config}`).join(" ")}`.toLowerCase();
+          return (
+            <article
+              class="cal-card"
+              data-cat={s.category}
+              data-tier={s.tier}
+              data-search={searchBlob}
+              data-weeks={JSON.stringify(s.weeks)}
+            >
+              <div class="cal-card__top">
+                <span class="cal-badge cal-badge--cat">{s.categoryLabel}</span>
+                <span class="cal-badge cal-badge--tier" style={`--tier:${s.tierColor}`}>{s.tierLabel}</span>
+              </div>
+
+              <h2 class="cal-card__title">{s.name}</h2>
+
+              {s.cars.length > 0 && (
+                <p class="cal-card__cars" title={s.cars.join(" · ")}>
+                  {s.cars.slice(0, 4).join(" · ")}{s.cars.length > 4 ? ` (+${s.cars.length - 4})` : ""}
+                </p>
+              )}
+
+              {cur ? (
+                <div class="cal-card__week" data-week-box>
+                  <div class="cal-card__week-head">
+                    <span data-w-label>Semana {cur.w}</span>
+                    <span data-w-date>{cur.date}</span>
+                  </div>
+                  <strong class="cal-card__track" data-w-track>{cur.track}</strong>
+                  <span class="cal-card__config" data-w-config>{cur.config}</span>
+                  <div class="cal-card__meta">
+                    <span data-w-duration>{cur.duration}</span>
+                    <span data-w-weather>{cur.weather}</span>
+                  </div>
+                </div>
+              ) : (
+                <div class="cal-card__week" data-week-box>
+                  <strong class="cal-card__track" data-w-track>Sin evento esta semana</strong>
+                </div>
+              )}
+
+              <div class="cal-card__actions">
+                <a
+                  class="cal-btn"
+                  data-w-garage
+                  href={cur?.trackQ ? `/garage/?track=${encodeURIComponent(cur.trackQ)}` : "/garage/"}
+                >
+                  Setups en Garage →
+                </a>
+                <details class="cal-details">
+                  <summary>12 semanas</summary>
+                  <div class="cal-table-wrap">
+                    <table class="cal-table">
+                      <thead>
+                        <tr>
+                          <th>Sem</th>
+                          <th>Fecha</th>
+                          <th>Circuito</th>
+                          <th>Duración</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {s.weeks.map((w) => (
+                          <tr class={w.w === buildWeek ? "is-current" : ""} data-row-week={w.w}>
+                            <td>W{String(w.w).padStart(2, "0")}</td>
+                            <td>{w.date}</td>
+                            <td>{w.track}{w.config ? ` · ${w.config}` : ""}</td>
+                            <td>{w.duration}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </details>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+
+      <p id="calEmptyState" class="r-empty" hidden>Ninguna serie coincide con los filtros seleccionados.</p>
+    </div>
+  </section>
+
+  <style>
+    .cal-page { padding-top: 28px; }
+    .cal-crumb { display: flex; gap: 8px; align-items: center; font: 600 12px/1.2 ui-monospace, monospace; color: var(--r-muted); margin-bottom: 18px; }
+    .cal-crumb a { color: var(--r-muted); text-decoration: none; }
+    .cal-crumb a:hover { color: var(--r-text); }
+    .cal-hero { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 20px; margin-bottom: 24px; }
+    .cal-kpis { display: flex; flex-wrap: wrap; gap: 16px; }
+    .cal-kpis > div { padding: 12px 16px; border-radius: 12px; border: 1px solid var(--r-line); background: var(--r-surface, rgba(255,255,255,0.03)); min-width: 110px; }
+    .cal-kpis strong { display: block; font-size: 20px; color: var(--r-accent, #00e699); }
+    .cal-kpis span { font: 600 11px/1.3 ui-monospace, monospace; text-transform: uppercase; color: var(--r-muted); }
+
+    .cal-controls { display: grid; gap: 12px; padding: 16px; border-radius: 14px; border: 1px solid var(--r-line); background: var(--r-surface, rgba(255,255,255,0.03)); margin-bottom: 22px; }
+    .cal-search-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+    .cal-search { flex: 1; min-width: 240px; }
+    .cal-search input { width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--r-line); background: var(--r-bg, #0e1211); color: var(--r-text); font-size: 14px; }
+    .cal-count { font: 600 12px/1.2 ui-monospace, monospace; color: var(--r-muted); }
+
+    .cal-filter-group { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .cal-filter-label { font: 600 11px/1.2 ui-monospace, monospace; text-transform: uppercase; letter-spacing: .06em; color: var(--r-muted); min-width: 78px; }
+    .cal-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+    .cal-pill {
+      padding: 6px 11px; border-radius: 999px; border: 1px solid var(--r-line);
+      background: transparent; color: var(--r-muted); font: 600 12px/1.2 inherit; cursor: pointer;
+      transition: border-color .15s ease, color .15s ease, background .15s ease;
+    }
+    .cal-pill:hover { border-color: var(--r-line-2); color: var(--r-text); }
+    .cal-pill.is-on { border-color: var(--r-accent, #00e699); background: rgba(0, 230, 153, 0.14); color: var(--r-text); }
+
+    .cal-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); }
+    .cal-card {
+      display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 14px;
+      border: 1px solid var(--r-line); background: var(--r-surface, rgba(255,255,255,0.03));
+    }
+    .cal-card__top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .cal-badge { font: 700 10px/1.2 ui-monospace, monospace; text-transform: uppercase; letter-spacing: .06em; padding: 4px 8px; border-radius: 6px; }
+    .cal-badge--cat { border: 1px solid var(--r-line); color: var(--r-muted); }
+    .cal-badge--tier { border: 1px solid var(--tier, #94a3b8); color: var(--tier, #94a3b8); }
+
+    .cal-card__title { font-size: 16px; line-height: 1.3; margin: 0; color: var(--r-text); }
+    .cal-card__cars { font-size: 12px; color: var(--r-muted); margin: 0; }
+
+    .cal-card__week { display: grid; gap: 4px; padding: 12px; border-radius: 10px; border: 1px solid var(--r-line); background: rgba(0, 0, 0, 0.16); }
+    .cal-card__week-head { display: flex; justify-content: space-between; font: 700 11px/1.2 ui-monospace, monospace; color: var(--r-accent, #00e699); text-transform: uppercase; }
+    .cal-card__track { font-size: 15px; line-height: 1.25; color: var(--r-text); }
+    .cal-card__config { font-size: 12px; color: var(--r-muted); }
+    .cal-card__meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 11px; color: var(--r-muted); margin-top: 2px; }
+
+    .cal-card__actions { margin-top: auto; display: grid; gap: 8px; }
+    .cal-btn {
+      display: inline-flex; justify-content: center; align-items: center; padding: 8px 12px; border-radius: 9px;
+      border: 1px solid var(--r-line-2); color: var(--r-text); text-decoration: none; font: 600 12px/1.2 inherit;
+      transition: border-color .15s ease, background .15s ease;
+    }
+    .cal-btn:hover { border-color: var(--r-accent, #00e699); background: rgba(0, 230, 153, 0.1); }
+
+    .cal-details summary { cursor: pointer; font: 600 12px/1.3 ui-monospace, monospace; color: var(--r-muted); user-select: none; }
+    .cal-details summary:hover { color: var(--r-text); }
+    .cal-table-wrap { margin-top: 8px; overflow-x: auto; max-height: 240px; border: 1px solid var(--r-line); border-radius: 8px; }
+    .cal-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .cal-table th, .cal-table td { padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--r-line); }
+    .cal-table th { font-family: ui-monospace, monospace; color: var(--r-muted); position: sticky; top: 0; background: var(--r-bg, #0e1211); }
+    .cal-table tr.is-current { background: rgba(0, 230, 153, 0.12); font-weight: 700; }
+  </style>
+
+  <script is:inline>
+    (() => {
+      const grid = document.getElementById("calGrid");
+      if (!grid) return;
+      const cards = Array.from(grid.querySelectorAll(".cal-card"));
+      const searchInput = document.getElementById("calSearch");
+      const countEl = document.getElementById("calCount");
+      const emptyEl = document.getElementById("calEmptyState");
+      const liveWeekEl = document.getElementById("calLiveWeek");
+
+      let activeWeek = Math.max(1, Math.min(12, Math.floor((Date.now() - Date.UTC(2026, 8, 15)) / 604800000) + 1));
+      let activeCat = "ALL";
+      let activeTier = "ALL";
+
+      if (liveWeekEl) liveWeekEl.textContent = "Semana " + activeWeek;
+
+      function syncWeekPills() {
+        document.querySelectorAll("#calWeekPills .cal-pill").forEach((b) => {
+          b.classList.toggle("is-on", Number(b.dataset.week) === activeWeek);
+        });
+      }
+
+      function paintWeekOnCards() {
+        cards.forEach((card) => {
+          let weeks = [];
+          try { weeks = JSON.parse(card.dataset.weeks || "[]"); } catch { weeks = []; }
+          const hit = weeks.find((w) => w.w === activeWeek) || weeks[0];
+          const wLbl = card.querySelector("[data-w-label]");
+          const wDate = card.querySelector("[data-w-date]");
+          const wTrack = card.querySelector("[data-w-track]");
+          const wConfig = card.querySelector("[data-w-config]");
+          const wDur = card.querySelector("[data-w-duration]");
+          const wWeath = card.querySelector("[data-w-weather]");
+          const wGarage = card.querySelector("[data-w-garage]");
+
+          if (hit) {
+            if (wLbl) wLbl.textContent = "Semana " + hit.w;
+            if (wDate) wDate.textContent = hit.date || "";
+            if (wTrack) wTrack.textContent = hit.track || "—";
+            if (wConfig) wConfig.textContent = hit.config || "";
+            if (wDur) wDur.textContent = hit.duration || "";
+            if (wWeath) wWeath.textContent = hit.weather || "";
+            if (wGarage) wGarage.setAttribute("href", hit.trackQ ? "/garage/?track=" + encodeURIComponent(hit.trackQ) : "/garage/");
+          }
+          card.querySelectorAll("[data-row-week]").forEach((tr) => {
+            tr.classList.toggle("is-current", Number(tr.dataset.rowWeek) === activeWeek);
+          });
+        });
+      }
+
+      function filter() {
+        const q = (searchInput?.value || "").trim().toLowerCase();
+        let visible = 0;
+        cards.forEach((card) => {
+          const okCat = activeCat === "ALL" || card.dataset.cat === activeCat;
+          const okTier = activeTier === "ALL" || card.dataset.tier === activeTier;
+          const okQ = !q || (card.dataset.search || "").includes(q);
+          const show = okCat && okTier && okQ;
+          card.hidden = !show;
+          if (show) visible++;
+        });
+        if (countEl) countEl.textContent = visible + (visible === 1 ? " serie" : " series");
+        if (emptyEl) emptyEl.hidden = visible > 0;
+      }
+
+      document.getElementById("calWeekPills")?.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-week]");
+        if (!btn) return;
+        activeWeek = Number(btn.dataset.week);
+        syncWeekPills();
+        paintWeekOnCards();
+      });
+
+      document.getElementById("calCatPills")?.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-cat]");
+        if (!btn) return;
+        activeCat = btn.dataset.cat || "ALL";
+        document.querySelectorAll("#calCatPills .cal-pill").forEach((b) => b.classList.toggle("is-on", b === btn));
+        filter();
+      });
+
+      document.getElementById("calTierPills")?.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-tier]");
+        if (!btn) return;
+        activeTier = btn.dataset.tier || "ALL";
+        document.querySelectorAll("#calTierPills .cal-pill").forEach((b) => b.classList.toggle("is-on", b === btn));
+        filter();
+      });
+
+      searchInput?.addEventListener("input", filter);
+
+      syncWeekPills();
+      paintWeekOnCards();
+      filter();
+    })();
+  </script>
+</Layout>

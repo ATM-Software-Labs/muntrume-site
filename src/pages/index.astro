@@ -214,14 +214,31 @@ const figs = [
     <div class="r-wrap">
       <div class="r-head">
         <div>
-          <p class="r-kicker" data-i18n="home.cal.kicker">Temporada</p>
-          <h2 id="calTitle" class="r-h2" data-i18n="home.cal.title">Calendario</h2>
+          <p class="r-kicker" data-i18n="home.cal.kicker">Temporada 2026 S4</p>
+          <h2 id="calTitle" class="r-h2" data-i18n="home.cal.title">Calendario oficial iRacing</h2>
         </div>
+        <a href="/calendario/" class="r-link">Ver las {schedule.series.length} series →</a>
       </div>
       <ul class="r-list" id="calList" hidden></ul>
-      <p class="r-empty" id="calEmpty" data-i18n="home.cal.empty">Todavía no hay carreras publicadas. El calendario se sincroniza desde Race Control.</p>
+      <div id="calEmpty" class="mmt-cal-banner">
+        <div>
+          <strong>Temporada completa 2026 Season 4 · {schedule.series.length} series · 12 semanas</strong>
+          <p class="r-meta">Consulta todas las categorías oficiales (Sports Car, Formula, Oval, Dirt Oval y Dirt Road), licencias, meteorología y acceso directo a los setups de cada circuito.</p>
+        </div>
+        <a href="/calendario/" class="r-btn r-btn--primary">Abrir calendario completo →</a>
+      </div>
     </div>
   </section>
+
+  <style>
+    .mmt-cal-banner {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;
+      padding: 20px 22px; border-radius: 14px; border: 1px solid var(--r-line);
+      background: var(--r-surface, rgba(255,255,255,0.03));
+    }
+    .mmt-cal-banner strong { display: block; font-size: 16px; margin-bottom: 4px; color: var(--r-text); }
+    .mmt-cal-banner p { margin: 0; max-width: 62ch; }
+  </style>
 
   <section class="r-section" aria-labelledby="aboutTitle">
     <div class="r-wrap">
