@@ -1,0 +1,37 @@
+# Muntrume Motorsport (MMT) — Complete Platform & Engineering Reference
+
+Muntrume Motorsport (MMT) is a competitive sim racing team and sim racing engineering ecosystem founded in Sant Andreu, Barcelona (Catalonia, Spain). Beyond competing in iRacing Special Events (24 Hours of Spa, 24 Hours of Nürburgring, 24 Hours of Daytona, 6 Hours of Watkins Glen, Petit Le Mans, 12 Hours of Sebring) and official sprint/endurance series, MMT develops open tools, telemetry analytics, and setup infrastructure for iRacing drivers.
+
+## 1. MMT Sync Desktop Application (Windows)
+- **URL**: https://muntru.me/app/
+- **Releases & Source**: https://github.com/atrumin16/muntrume-site/releases/latest
+- **Current Version**: v0.1.32 (Windows 10/11 NSIS & MSI installers, Tauri 2 + Rust + TypeScript)
+- **Capabilities**:
+  - One-click synchronization of 42,654+ `.sto` setups into the local iRacing setups directory (`Documents\iRacing\setups\MMT`).
+  - Automatic matching of 2026 Season 4 schedules, cars, and track variants (including Nordschleife/VLN/24h/GP/Roval/Boot/Short).
+  - Transparent always-on-top telemetry overlay window and built-in automatic updater.
+
+## 2. Garage Vault & Setup Engineering
+- **URL**: https://muntru.me/garage/
+- **Catalog Size**: 42,654 verified `.sto` files covering 105+ cars across 150 official iRacing circuits.
+- **Features**:
+  - Filter by car, track, season/week, and setup type (`Race`, `Qualy`, `Wet`, `Endurance`).
+  - Variant badges (`Safe`, `Endurance`, `LDF`, `MDF`, `HDF`, `V1..Vn`) and track layout tags (`GP`, `24h`, `VLN`, `Nordschleife`, `Roval`, `Oval`, `Boot`, `No Chicane`).
+  - Interactive Setup Preview modal (eye-icon button) + authenticated `.sto` download.
+
+## 3. Official iRacing Circuits Directory
+- **URL**: https://muntru.me/tracks/
+- **Coverage**: 150 official iRacing tracks, 1,055 official gallery screenshots, circuit history, layout variants, free/included status, and 2026 Season 4 series mapping.
+- **Sorting**: Ranked by popularity score combining official series appearances, team setup coverage, base-content status, and layout variety; also sortable by most setups, most series, or alphabetical A–Z.
+
+## 4. Official 2026 Season 4 Calendar
+- **URL**: https://muntru.me/calendar/
+- **Coverage**: Full 2026 Season 4 schedule across Rookie, D, C, B, and A license classes, Fixed & Open setups, Sports Car, Formula, Oval, and Dirt categories, linking directly to matching car+track setups in `/garage/`.
+
+## 5. Cars & Brands Technical Directory
+- **Coverage**: 108 iRacing cars grouped by manufacturer (`/porsche/`, `/ferrari/`, `/bmw/`, `/aston-martin/`, `/mercedes-amg/`, `/audi/`, `/mclaren/`, `/lamborghini/`, `/acura/`, `/cadillac/`, `/chevrolet/`, `/ford/`, `/dallara/`, `/ligier/`, `/lotus/`, `/mazda/`, `/toyota/`, etc.) with individual `/car/<id>/` pages, official PDF user manuals, and setup counts.
+
+## 6. Telemetry, AI Copilot & Paddock
+- **Garage 61 Telemetry**: Team telemetry team at `https://garage61.net/app/teams/muntrume-motorsport` and MTI (Muntrume Telemetry Index).
+- **AI Race Engineer (`/ai/`)**: Sim racing AI copilot for setup balance diagnosis, tyre pressure/camber tuning, and endurance stint strategy.
+- **Paddock (`/paddock/`)**: Race radio, live telemetry desk, official photo gallery, and driver tryout intake.

@@ -124,6 +124,8 @@ const CRUMB_LABEL: Record<string, string> = {
   noticias: "Noticias",
   ai: "Copiloto",
   "setup-builder": "Setup Builder",
+  tracks: "Circuitos",
+  calendar: "Calendario",
   communications: "Comunicación",
   cookies: "Cookies",
   privacidad: "Privacidad",
@@ -172,7 +174,7 @@ const defaultSchema = {
       "alternateName": ["MMT", "Muntrume", "MMT Motorsport"],
       "url": `${siteOrigin}/`,
       "sport": "Sim Racing (iRacing)",
-      "description": `Muntrume Motorsport (MMT), equipo de iRacing en Sant Andreu, Barcelona. ${PILOTOS.length} pilotos oficiales y setups .sto en el Garage.`,
+      "description": `Muntrume Motorsport (MMT), equipo de sim racing e ingeniería en Sant Andreu, Barcelona. ${PILOTOS.length} pilotos oficiales, más de 42.600 setups .sto en el Garage, directorio de 150 circuitos oficiales, calendario 2026 S4, telemetría Garage 61 y la app de escritorio MMT Sync para Windows.`,
       "logo": {
         "@type": "ImageObject",
         "url": `${siteOrigin}/assets/img/icon-512.png`,
@@ -205,26 +207,65 @@ const defaultSchema = {
         "iRacing",
         "Sim Racing",
         "iRacing Setups",
+        "MMT Sync Desktop App",
+        "iRacing Tracks Directory",
         "Sports Car",
         "GT3 Endurance",
         "GT4 Endurance",
+        "GTP / LMDh",
         "Multiclass Endurance",
+        "Garage 61 Telemetry",
         "Motorsport Engineering"
       ],
       "sameAs": [
         "https://discord.gg/ehX6B8JUtE",
-        "https://garage61.net/app/teams/muntrume-motorsport"
+        "https://garage61.net/app/teams/muntrume-motorsport",
+        "https://github.com/atrumin16/muntrume-site"
       ]
     },
     {
       "@type": "WebSite",
       "@id": `${siteOrigin}/#website`,
       "name": "Muntrume Motorsport",
-      "alternateName": ["MMT", "Muntrume", "MMT Motorsport"],
+      "alternateName": ["MMT", "Muntrume", "MMT Motorsport", "Equipo MMT"],
       "url": "https://muntru.me/",
       "inLanguage": ["en-US", "es-ES", "ca-ES", "fr-FR"],
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://muntru.me/garage/?track={search_term_string}",
+        "query-input": "required name=search_term_string"
+      },
       "publisher": {
         "@id": "https://muntru.me/#org"
+      }
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": `${siteOrigin}/app/#software`,
+      "name": "MMT Sync",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Windows 10, Windows 11",
+      "softwareVersion": "0.1.32",
+      "url": `${siteOrigin}/app/`,
+      "downloadUrl": "https://github.com/atrumin16/muntrume-site/releases/latest",
+      "description": "Aplicación de escritorio nativa (Tauri/Rust) para Windows que sincroniza automáticamente más de 42.600 setups .sto de Muntrume Motorsport con iRacing, con overlay de telemetría y actualizador automático.",
+      "publisher": {
+        "@id": `${siteOrigin}/#org`
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "EUR"
+      }
+    },
+    {
+      "@type": "Dataset",
+      "@id": `${siteOrigin}/garage/#dataset`,
+      "name": "Muntrume Motorsport iRacing .STO Setup Vault",
+      "url": `${siteOrigin}/garage/`,
+      "description": "Catálogo técnico de más de 42.654 setups .sto verificados para iRacing en 105+ coches y 150 circuitos oficiales, con variantes Race, Qualy, Wet, Endurance, Safe, LDF y HDF.",
+      "creator": {
+        "@id": `${siteOrigin}/#org`
       }
     }
   ]
@@ -429,7 +470,8 @@ const finalSchema = {
     }
   </script>
 
-  <!-- Structured SEO Schema -->
+  <!-- Structured SEO Schema & LLMs Context -->
+  <link rel="alternate" type="text/plain" title="LLMs Context" href="https://muntru.me/llms.txt" />
   <script type="application/ld+json" set:html={JSON.stringify(finalSchema)} />
 
   <!-- Core Scripts -->
