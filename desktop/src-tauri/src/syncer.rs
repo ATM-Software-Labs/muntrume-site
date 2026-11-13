@@ -141,7 +141,7 @@ async fn run(app: &AppHandle) -> Result<SyncReport, String> {
                 let car_pairs = season_pairs_for_car(&item.car);
                 let weeks: Vec<SeriesWeek<'_>> = car_pairs
                     .iter()
-                    .map(|(name, track_name)| SeriesWeek { name: name.as_str(), track: track_name.as_str() })
+                    .map(|(name, track_name)| SeriesWeek { name, track: track_name })
                     .collect();
                 if let Err(reason) = install_allowed(&track, filename, &weeks, None) {
                     if reason == "serie fixed" {
