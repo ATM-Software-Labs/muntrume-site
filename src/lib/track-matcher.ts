@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import tracksData from "../data/iracing-tracks.json";
+import seriesLogosData from "../data/iracing-series-logos.json";
 import catalogIndex from "../../public/assets/data/catalog_index.json";
 import schedule from "../../desktop/src/season_schedule_2026_s4.json";
 import { CAR_CATALOG_LIST } from "../../desktop/src/cars/catalog";
@@ -161,10 +162,31 @@ const SERIES_POPULARITY: Array<[RegExp, number]> = [
 const SERIES_LOGOS: Array<[RegExp, string]> = [
   [/^IMSA/i, "/assets/img/series/imsa.jpg"],
   [/^GT Sprint|^GT3|^GT Endurance/i, "/assets/img/series/gt-sprint.jpg"],
-  [/Porsche Cup/i, "/assets/img/series/porsche-cup.jpg"],
+  [/Porsche Cup|Porsche Esports Supercup/i, "/assets/img/series/porsche-cup.jpg"],
   [/Production Car/i, "/assets/img/series/pcc.jpg"],
   [/Super Formula Lights/i, "/assets/img/series/sfl.jpg"],
 ];
+
+interface SeriesLogoEntry {
+  slug: string;
+  name: string;
+  logo: string;
+}
+
+const normSeries = (s: string) =>
+  (s || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\b(2026|season\s*\d+|fixed|by\s+[a-z0-9.-]+|presented\s+by\s+[a-z0-9.-]+|series|iracing)\b/gi, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+
+const SERIES_LOGO_ITEMS = (seriesLogosData as SeriesLogoEntry[]).map((item) => ({
+  ...item,
+  n: normSeries(item.name),
+  tokens: new Set(normSeries(item.name).split(/\s+/).filter((w) => w.length >= 3)),
+}));
 
 function seriesPopularity(name: string, tier: string): number {
   for (const [rx, score] of SERIES_POPULARITY) {
@@ -177,6 +199,25 @@ function seriesPopularity(name: string, tier: string): number {
 function seriesLogoFor(name: string): string {
   for (const [rx, src] of SERIES_LOGOS) {
     if (rx.test(name)) return src;
+  }
+  const sn = normSeries(name);
+  if (sn) {
+    const direct = SERIES_LOGO_ITEMS.find((i) => i.n === sn || sn.includes(i.n) || (i.n.length >= 6 && i.n.includes(sn)));
+    if (direct) return direct.logo;
+    const sTokens = sn.split(/\s+/).filter((w) => w.length >= 3);
+    let best: SeriesLogoEntry | null = null;
+    let bestScore = 0;
+    for (const item of SERIES_LOGO_ITEMS) {
+      let overlap = 0;
+      for (const t of sTokens) {
+        if (item.tokens.has(t)) overlap++;
+      }
+      if (overlap >= 2 && overlap > bestScore) {
+        bestScore = overlap;
+        best = item;
+      }
+    }
+    if (best) return best.logo;
   }
   return "";
 }

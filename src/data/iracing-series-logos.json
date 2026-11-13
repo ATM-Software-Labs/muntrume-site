@@ -1,0 +1,797 @@
+[
+  {
+    "slug": "track-day",
+    "name": "Track Day",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/09/track-day-feature-350x197.jpg"
+  },
+  {
+    "slug": "nascar-gen-4-grand-national-series",
+    "name": "NASCAR Gen 4 Grand National Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/09/nascar-gen-4-grand-national-series-feature-350x197.jpg"
+  },
+  {
+    "slug": "caterham-420r-cup",
+    "name": "Caterham 420R Cup",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/09/caterham-420r-cup-feature-350x197.jpg"
+  },
+  {
+    "slug": "caterham-academy-challenge",
+    "name": "Caterham Academy Challenge",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/09/caterham-academy-challenge-feature-350x197.jpg"
+  },
+  {
+    "slug": "nascar-euro-series",
+    "name": "NASCAR Euro Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/06/euro-nascar-series-feature-350x197.jpg"
+  },
+  {
+    "slug": "dtm",
+    "name": "iRacing DTM Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/04/iracing-dtm-series-feature-350x197.jpg"
+  },
+  {
+    "slug": "world-of-outlaws-pro-qualifying-series",
+    "name": "World of Outlaws Pro Qualifying Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/03/woo-pro-qualifyinf-series-featured-350x197.jpg"
+  },
+  {
+    "slug": "world-of-outlaws-pro-series",
+    "name": "World of Outlaws Pro Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/03/woo-pro-series-featured-350x197.jpg"
+  },
+  {
+    "slug": "indy-nxt-iracing-series",
+    "name": "INDY NXT iRacing Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/02/iRacing-Indy-NXT-Series-feature-350x197.jpg"
+  },
+  {
+    "slug": "fia-cross-car-series",
+    "name": "FIA Cross Car Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2025/12/fia-cross-car-championship-feature-350x197.jpg"
+  },
+  {
+    "slug": "indy-nxt-pro-qualifying-series",
+    "name": "INDY NXT Thrustmaster Pro Qualifying Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/10/indy-nxt-thrustmaster-pro-qualifying-series-feature-350x197.jpg"
+  },
+  {
+    "slug": "lmp2-challenge",
+    "name": "LMP2 Challenge – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2025/09/lmp2-challenge-fixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "indy-nxt-road-series",
+    "name": "Indy NXT Road Series – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2025/09/indy-nxt-road-series-fixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "indy-nxt-oval-series",
+    "name": "Indy NXT Oval Series – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2025/09/indy-nxt-oval-series-fixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "gt3-regional-tour-asia-pacific",
+    "name": "iRacing GT3 Regional Tour by Sensit! – Asia Pacific",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/09/iracing-gt3-regional-tour-asia-pacific-feature-350x197.jpg"
+  },
+  {
+    "slug": "gt3-regional-tour-americas",
+    "name": "iRacing GT3 Regional Tour by Sensit! – Americas",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/09/iracing-gt3-regional-tour-americas-feature-350x197.jpg"
+  },
+  {
+    "slug": "gt3-regional-tour-europe",
+    "name": "iRacing GT3 Regional Tour by Sensit! – Europe",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/09/iracing-gt3-regional-tour-europe-feature-350x197.jpg"
+  },
+  {
+    "slug": "advanced-pro-2-lite-off-road-series",
+    "name": "Advanced Pro 2 Lite Off Road Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/09/advanced-pro-2-lite-off-road-series-feature-350x197.jpg"
+  },
+  {
+    "slug": "production-endurance-challenge",
+    "name": "Production Endurance Challenge",
+    "logo": "https://www.iracing.com/wp-content/uploads/2025/06/productionendurancechallenge-feature-350x197.jpg"
+  },
+  {
+    "slug": "vintage-grand-prix-tour",
+    "name": "Vintage Grand Prix Tour",
+    "logo": "https://www.iracing.com/wp-content/uploads/2025/03/vintage-grand-prix-tour-feature-350x197.jpg"
+  },
+  {
+    "slug": "imsa-sportscar-endurance-challenge",
+    "name": "IMSA Sportscar Endurance Challenge",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/12/imsa-sportscar-endurance-challenge-feature-350x197.jpg"
+  },
+  {
+    "slug": "bmw-m2-cup",
+    "name": "BMW M2 Cup by Vero Motion",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/09/bmw-m2-cup-feature-350x197.jpg"
+  },
+  {
+    "slug": "indycar-thrustmaster-pro-series",
+    "name": "INDYCAR Thrustmaster Pro Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/10/indycar-thrustmaster-pro-series-feature-350x197.jpg"
+  },
+  {
+    "slug": "fia-f4-esports",
+    "name": "FIA F4 Esports Global Championship",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/10/fia-f4-esports-featured-2-350x197.jpg"
+  },
+  {
+    "slug": "nascar-iracing-class-c-series",
+    "name": "NASCAR iRacing Class C Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/10/nascar-truck-feature-350x197.jpg"
+  },
+  {
+    "slug": "dirt-mini-stock-rookie-series",
+    "name": "Dirt Mini Stock Rookie Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/09/rookie-dirt-mini-stock-feature-1-350x197.jpg"
+  },
+  {
+    "slug": "mini-stock-rookie-series",
+    "name": "Mini Stock Rookie Series by Thrustmaster",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/09/mini-stock-rookie-series-feature-1-350x197.jpg"
+  },
+  {
+    "slug": "jr-open-wheel-oval-challenge",
+    "name": "Jr Open Wheel Oval Challenge",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/09/jr-open-wheel-oval-challenge-feature-1-350x197.jpg"
+  },
+  {
+    "slug": "legends-road-cup",
+    "name": "Legends Road Cup by Go Motorsports Shop",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/12/legends-road-cup-by-go-motorsports-shop-feature-350x197.jpg"
+  },
+  {
+    "slug": "rain-master",
+    "name": "Rain Master Challenge by Podium 1",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/06/rain-master-feature-350x197.jpg"
+  },
+  {
+    "slug": "indycar-iracing-series",
+    "name": "INDYCAR iRacing Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/03/indycar-iracing-series-feature-1-350x197.jpg"
+  },
+  {
+    "slug": "indycar-series-oval",
+    "name": "INDYCAR Series – Oval – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/01/INDYCAR-Series-Oval-feature-350x197.jpg"
+  },
+  {
+    "slug": "srx-series-fixed",
+    "name": "SRX Series – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/03/srx-series-fixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "rookie-micro-winged-sprint-car-series-fixed",
+    "name": "Micro Winged Sprint Car Rookie by Thrustmaster",
+    "logo": "https://www.iracing.com/wp-content/uploads/2025/09/rookie-micro-winged-sprint-car-series-fixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "millbridge-micro-showdown",
+    "name": "Millbridge Micro Showdown",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/06/outlaw-micro-showdown-feature-350x197.jpg"
+  },
+  {
+    "slug": "formula-c-super-formula-lights-fixed",
+    "name": "Formula C – Super Formula Lights – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/03/formula-c-super-formula-lights-fixed-feature-1-350x197.jpg"
+  },
+  {
+    "slug": "formula-c-super-formula-lights",
+    "name": "Formula C – Super Formula Lights",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/03/formula-c-super-formula-lights-feature-1-350x197.jpg"
+  },
+  {
+    "slug": "bmw-m-power-challenge",
+    "name": "BMW M Power Challenge",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/03/bmw-m-power-challenge-fixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "formula-b-super-formula-series-fixed",
+    "name": "Formula B – Super Formula Series – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/09/formula-b-super-formula-series-fixed-feature-1-350x197.jpg"
+  },
+  {
+    "slug": "formula-b-super-formula-series",
+    "name": "Formula B – Super Formula Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/09/formula-b-super-formula-series-feature-1-350x197.jpg"
+  },
+  {
+    "slug": "mustang-skip-barber-challenge-fixed",
+    "name": "Mustang Skip Barber Challenge – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2023/09/Skip-Barber-Mustang-Challenge-Fixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "imsa-iracing-series-fixed",
+    "name": "IMSA iRacing Series Fixed by GO Fast",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/09/imsa-iracing-series-fixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "gte-sprint-series",
+    "name": "GTE Sprint Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2025/03/gte-sprint-series-feature-350x197.jpg"
+  },
+  {
+    "slug": "fia-f4-esports-regional-tour-americas",
+    "name": "FIA F4 Esports Regional Tour – Americas",
+    "logo": "https://www.iracing.com/wp-content/uploads/2025/06/fia-f4-esports-regional-tour-americas-feature-350x197.jpg"
+  },
+  {
+    "slug": "fia-f4-esports-regional-tour-europe",
+    "name": "FIA F4 Esports Regional Tour – Europe",
+    "logo": "https://www.iracing.com/wp-content/uploads/2025/06/fia-f4-esports-regional-tour-europe-feature-350x197.jpg"
+  },
+  {
+    "slug": "fia-f4-esports-regional-tour-asia-pacific",
+    "name": "FIA F4 Esports Regional Tour – Asia Pacific",
+    "logo": "https://www.iracing.com/wp-content/uploads/2025/06/fia-f4-esports-regional-tour-asia-pacific-feature-350x197.jpg"
+  },
+  {
+    "slug": "draft-master",
+    "name": "Draft Master Challenge by SIMAGIC",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/06/DraftMaster-feature-350x197.jpg"
+  },
+  {
+    "slug": "ring-meister-series",
+    "name": "Ring Meister by LVRY",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/03/ring-meister-feature-1-350x197.jpg"
+  },
+  {
+    "slug": "lmp3-trophy-fixed",
+    "name": "LMP3 Trophy – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/03/lmp3-trophy-fixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "gen-4-cup",
+    "name": "Gen 4 Cup – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2025/06/gen-4-cup-–-fixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "formula-1600-rookie-series",
+    "name": "Formula 1600 Rookie Series by Asetek Racing",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/03/formula-1600-rookie-series-feature-350x197.jpg"
+  },
+  {
+    "slug": "cars-late-model-stock-tour-fixed",
+    "name": "CARS Late Model Stock Tour – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2017/02/cars-late-model-stock-tour-fixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "clio-cup",
+    "name": "Clio Cup – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2023/03/cliocup-feature-350x197.jpg"
+  },
+  {
+    "slug": "formula-1600-trophy",
+    "name": "Motorsport UK FF1600 Trophy by Thrustmaster",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/12/motorsport-uk-ff1600-trophy-by-thrustmaster-feature-350x197.jpg"
+  },
+  {
+    "slug": "dirt-410-sprint-car-tour",
+    "name": "Dirt 410 Sprint Car Tour – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2023/12/dirt-410-sprint-car-tour-feature-350x197.jpg"
+  },
+  {
+    "slug": "dirt-super-late-model-tour",
+    "name": "Dirt Super Late Model Tour – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2023/12/dirt-super-late-model-tour-feature-350x197.jpg"
+  },
+  {
+    "slug": "stock-car-brasil-fixed",
+    "name": "Stock Car Brasil – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2023/01/stockcarbrasil-feature-350x197.jpg"
+  },
+  {
+    "slug": "porsche-cup-fixed",
+    "name": "iRacing Porsche Cup – Fixed by CONSPIT",
+    "logo": "https://www.iracing.com/wp-content/uploads/2025/12/iracing-porsche-cup-fixed-feature-feature-350x197.jpg"
+  },
+  {
+    "slug": "gt4-challenge-fixed",
+    "name": "GT4 Falken Tyre Challenge – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/10/falken-gt4-challenge-fixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "tcr-virtual-challenge-fixed",
+    "name": "TCR Virtual Challenge – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/03/iracing-tcr-virtual-challenge-series-fixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "indycar-series-fixed",
+    "name": "INDYCAR Series – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/01/INDYCAR-Series-Fixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "super-dirtcar-big-block-modified-fixed",
+    "name": "Super DIRTcar Series – Big Block Modified – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2022/12/superdirtcarbigblockmodifiedsfixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "pro-4-off-road-iracing-series",
+    "name": "Pro 4 Off-Road iRacing Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2022/12/pro4offroadracingseries-feature-350x197.jpg"
+  },
+  {
+    "slug": "mission-r-challenge-fixed",
+    "name": "Mission R Challenge – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2022/12/missionrchallengefixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "gr-cup-fixed",
+    "name": "Toyota GR86 Cup by SIMAGIC",
+    "logo": "https://www.iracing.com/wp-content/uploads/2025/06/toyota-gr86-cup-by-simagic-feature-350x197.jpg"
+  },
+  {
+    "slug": "falken-tyre-sports-car-challenge",
+    "name": "Falken Tyre Sports Car Challenge",
+    "logo": "https://www.iracing.com/wp-content/uploads/2023/06/FalkenTyreSportscarChallenge-feature-350x197.jpg"
+  },
+  {
+    "slug": "fia-formula-4-challenge-fixed",
+    "name": "FIA Formula 4 Challenge – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2025/06/fia-formula-4-challenge-fixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "iracing-grand-prix-tour-fixed",
+    "name": "iRacing Grand Prix Fixed Tour",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/03/formula-a-grand-prix-tour-fixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "iracing-grand-prix-tour",
+    "name": "iRacing Grand Prix Tour",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/03/formula-a-grand-prix-tour-feature-350x197.jpg"
+  },
+  {
+    "slug": "iracing-dirt-midget-cup-fixed",
+    "name": "iRacing Dirt Midget Cup – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2017/12/dirtmidgetcupfixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "dirtcar-pro-late-model-series-fixed",
+    "name": "DIRTcar Pro Late Model Series – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2022/12/dirtcarprolatemodelseriesfixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "dirtcar-360-sprint-car-series-fixed",
+    "name": "DIRTcar 360 Sprint Car Series – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/06/dirtcar-360-sprint-car-series-fixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "rookie-legends-cup",
+    "name": "Rookie Legends Cup by Simshop",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/09/rookie-legends-cup-simshop-feature-1-350x197.jpg"
+  },
+  {
+    "slug": "iracing-grand-prix-sprint-series",
+    "name": "Formula A – Cosworth Cup Grand Prix – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2025/09/formula-a-cosworth-cup-grand-prix-fixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "winter-iracing-nascar-gen-4-cup",
+    "name": "Winter iRacing NASCAR Gen 4 Cup",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/11/winter-iracing-nascar-gen-4-cup-feature-350x197.jpg"
+  },
+  {
+    "slug": "winter-iracing-nascar-87-series",
+    "name": "Winter iRacing NASCAR 87 Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/11/winter-iracing-nascar-87-series-feature-350x197.jpg"
+  },
+  {
+    "slug": "world-of-outlaws-sprint-car-series-fixed",
+    "name": "World of Outlaws NOS Energy Sprint Car Series – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2021/06/worldofoutlawssprintcarseriesfixed-feature.jpg-350x197.jpg"
+  },
+  {
+    "slug": "sk-modified-series",
+    "name": "SK Modified Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2021/06/skmodifiedweeklyseries-feature.jpg-350x197.jpg"
+  },
+  {
+    "slug": "rookie-pro-2-lite-off-road-iracing-series",
+    "name": "Pro 2 Lite Off-Road Rookie Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/09/pro-2-lite-off-road-rookie-series-feature-350x197.jpg"
+  },
+  {
+    "slug": "rookie-irx-volkswagen-beetle-lite-fixed",
+    "name": "VW Lite iRX Rookie Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/09/vw-lite-irx-rookie-series-feature-350x197.jpg"
+  },
+  {
+    "slug": "pro-4-off-road-series-fixed",
+    "name": "Pro 4 Off-Road Series – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/09/pro-4-off-road-series-fixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "pro-2-off-road-series-fixed",
+    "name": "Pro 2 Off-Road Series – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/09/pro-2-lite-off-road-series-fixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "pro-2-off-road-iracing-series",
+    "name": "Pro 2 Off-Road iRacing Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2021/06/pro2offroadracingseries-feature-350x197.jpg"
+  },
+  {
+    "slug": "prototype-challenge-fixed",
+    "name": "Prototype Challenge – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/12/prototype-challenge-fixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "irx-volkswagen-beetle-lite",
+    "name": "iRX Volkswagen Beetle Lite Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/09/irx-volkswagen-beetle-lite-series-feature-350x197.jpg"
+  },
+  {
+    "slug": "rallycross-series-fixed",
+    "name": "Rallycross Series – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/09/rallycross-series-fixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "dallara-f3-seies-fixed",
+    "name": "Formula C – Dallara F3 Series – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2025/09/formula-c-dallara-f3-series-fixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "formula-vee-series",
+    "name": "Formula Vee Series by Trophi.ai",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/12/formula-vee-series-by-trophi.ai-feature-350x197.jpg"
+  },
+  {
+    "slug": "dirtcar-358-modified-series",
+    "name": "DIRTcar 358 Modified Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/06/dirtcar-358-modified-series-feature-350x197.jpg"
+  },
+  {
+    "slug": "iracing-gt3-challenge",
+    "name": "FANATEC GT3 Challenge",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/10/fanatec-gt3-challenge-feature-350x197.jpg"
+  },
+  {
+    "slug": "dirtcar-ump-modified-series-fixed",
+    "name": "DIRTcar UMP Modified Series – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2025/03/dirtcar-ump-modified-series-fixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "dallara-formula-ir",
+    "name": "Dallara Formula iR",
+    "logo": "https://www.iracing.com/wp-content/uploads/2020/12/series_feature-2-350x197.jpg"
+  },
+  {
+    "slug": "superdirtcar-big-block-modified",
+    "name": "Super DIRTcar Series – Big Block Modified",
+    "logo": "https://www.iracing.com/wp-content/uploads/2020/12/series_feature-4-350x197.jpg"
+  },
+  {
+    "slug": "irx-world-championship",
+    "name": "iRX World Championship",
+    "logo": "https://www.iracing.com/wp-content/uploads/2020/09/irx-wcs-feature-350x197.jpg"
+  },
+  {
+    "slug": "tcr-virtual-challenge",
+    "name": "TCR Virtual Challenge",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/03/iracing-tcr-virtual-challenge-series-open-feature-350x197.jpg"
+  },
+  {
+    "slug": "nurburgring-endurance-championship",
+    "name": "Nürburgring Endurance Championship",
+    "logo": "https://www.iracing.com/wp-content/uploads/2025/03/nurburgring-endurance-championship-feature-350x197.jpg"
+  },
+  {
+    "slug": "creventic-endurance-series",
+    "name": "Creventic Endurance Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2020/09/creventic-endurance-series-feature-350x197.jpg"
+  },
+  {
+    "slug": "imsa-endurance-series",
+    "name": "IMSA Endurance Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/06/imsa-endurance-series-feature-350x197.jpg"
+  },
+  {
+    "slug": "ferrari-296-challenge",
+    "name": "Ferrari 296 Challenge",
+    "logo": "https://www.iracing.com/wp-content/uploads/2020/09/ferrari-296-challenge-feature-350x197.jpg"
+  },
+  {
+    "slug": "us-open-wheel-usf2000",
+    "name": "US Open Wheel D – USF2000",
+    "logo": "https://www.iracing.com/wp-content/uploads/2020/09/usopenwheeldusf2000-feature-350x197.jpg"
+  },
+  {
+    "slug": "us-open-wheel-indy-pro-2000-series",
+    "name": "US Open Wheel C – INDY Pro 2000 Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2020/09/usopenwheelcindypro2000-feature-350x197.jpg"
+  },
+  {
+    "slug": "enascar-qualifying",
+    "name": "eNASCAR Coca Cola iRacing Series Qualifying",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/01/eNASCAR-Coca-Cola-iRacing-Qualifying-Series-feature-350x197.jpg"
+  },
+  {
+    "slug": "nascar-legends-series",
+    "name": "NASCAR Legends Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2020/09/ON-NASCAR-Legends-Series-350x197.png"
+  },
+  {
+    "slug": "iracing-street-stock-series",
+    "name": "Street Stock Next Level Racing Series – C",
+    "logo": "https://www.iracing.com/wp-content/uploads/2020/09/streetstocknextlevelracingseries-feature-1-350x197.jpg"
+  },
+  {
+    "slug": "arca-menards-series",
+    "name": "ARCA Menards Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2025/03/iracing-arca-menards-series-feature-350x197.jpg"
+  },
+  {
+    "slug": "world-of-outlaws-sprint-car-series",
+    "name": "World of Outlaws NOS Energy Sprint Car Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2020/09/OD-WoO-Sprint-Car-Series-350x197.png"
+  },
+  {
+    "slug": "world-of-outlaws-late-model-series",
+    "name": "World of Outlaws Late Model Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2020/09/world-of-outlaws-late-model-series-350x197.jpg"
+  },
+  {
+    "slug": "iracing-dirt-legends-cup",
+    "name": "iRacing Dirt Legends Cup",
+    "logo": "https://www.iracing.com/wp-content/uploads/2023/12/dirt-legends-cup-feature-350x197.jpg"
+  },
+  {
+    "slug": "dirtcar-ump-modified-series",
+    "name": "DIRTcar UMP Modified Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2025/03/dirtcar-ump-modified-series-feature-350x197.jpg"
+  },
+  {
+    "slug": "dirtcar-class-c-street-stock-series",
+    "name": "DIRTcar Class C Street Stock Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2020/09/OD-DIRTcar-Class-C-Street-Stock-Series-350x197.png"
+  },
+  {
+    "slug": "porsche-esports-supercup",
+    "name": "Porsche TAG Heuer eSports Supercup",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/10/pesc-feature-350x197.jpg"
+  },
+  {
+    "slug": "rallycross-series",
+    "name": "Rallycross Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/09/rallycross-series-feature-350x197.jpg"
+  },
+  {
+    "slug": "iracing-off-road-championship-series",
+    "name": "iRacing Off Road Championship Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2019/11/ir-off-road-champ-350x197.jpg"
+  },
+  {
+    "slug": "global-endurance-tour",
+    "name": "Global Endurance Tour",
+    "logo": "https://www.iracing.com/wp-content/uploads/2025/03/global-endurance-tour-feature-350x197.jpg"
+  },
+  {
+    "slug": "f3-championship",
+    "name": "Formula C – Dallara F3 Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/12/formula-c-dallara-f3-series-feature-350x197.jpg"
+  },
+  {
+    "slug": "iracing-imsa-michelin-pilot-challenge",
+    "name": "iRacing IMSA Michelin Pilot Challenge",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/10/imsa-pilot-challenge-feature-350x197.jpg"
+  },
+  {
+    "slug": "dirt-midget-cup",
+    "name": "iRacing Dirt Midget Cup",
+    "logo": "https://www.iracing.com/wp-content/uploads/2017/12/OD-iRacing-Dirt-Midget-Cup-350x197.png"
+  },
+  {
+    "slug": "usac-360-sprint-car-series",
+    "name": "USAC 360 Sprint Car Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/10/usac-360-feature-350x197.jpg"
+  },
+  {
+    "slug": "dirtcar-street-stock-series",
+    "name": "DIRTcar Street Stock Rookie by IMB Racewear",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/03/dirtcar-street-stock-rookie-series-feature-1-350x197.jpg"
+  },
+  {
+    "slug": "dirtcar-pro-late-model-series",
+    "name": "DIRTcar Pro Late Model Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2017/05/dirtcarprolatemodelseries-feature-350x197.jpg"
+  },
+  {
+    "slug": "dirtcar-limited-late-model-series",
+    "name": "DIRTcar Limited Late Model Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2017/05/OD-DIRTcar-Limited-Late-Model-Series-350x197.png"
+  },
+  {
+    "slug": "dirtcar-360-sprint-car-series",
+    "name": "DIRTcar 360 Sprint Car Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/06/dirtcar-360-sprint-car-series-feature-350x197.jpg"
+  },
+  {
+    "slug": "dirtcar-305-sprint-car-series",
+    "name": "DIRTcar 305 Sprint Car FANATEC Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2017/05/OD-FANATEC-305-Sprint-Car-Series-350x197.png"
+  },
+  {
+    "slug": "amsoil-usac-sprint-car-fixed",
+    "name": "AMSOIL USAC Sprint Car – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/10/usac-sprint-car-feature-350x197.jpg"
+  },
+  {
+    "slug": "world-of-outlaws-late-model-series-fixed",
+    "name": "World of Outlaws Late Model Series – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2020/09/world-of-outlaws-late-model-series-fixed-350x197.jpg"
+  },
+  {
+    "slug": "porsche-cup",
+    "name": "iRacing Porsche Cup by CONSPIT",
+    "logo": "https://www.iracing.com/wp-content/uploads/2025/12/iracing-porsche-cup-by-conspit-feature-350x197.jpg"
+  },
+  {
+    "slug": "nascar-tour-modified-series",
+    "name": "NASCAR Tour Modified Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2017/02/NASCAR-Modified-Tour-feature-350x197.jpg"
+  },
+  {
+    "slug": "imsa-vintage-series",
+    "name": "IMSA Vintage Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2023/12/IMSA-vintages-eries-feature-350x197.jpg"
+  },
+  {
+    "slug": "iracing-grand-prix-series",
+    "name": "Formula A – Cosworth Cup Grand Prix",
+    "logo": "https://www.iracing.com/wp-content/uploads/2025/09/formula-a-cosworth-cup-grand-prix-feature-350x197.jpg"
+  },
+  {
+    "slug": "enascar-coca-cola-iracing-series",
+    "name": "eNASCAR Coca-Cola iRacing Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2017/02/eNASCAR-Coca-Cola-iRacing-Championship-Series-feature-350x197.jpg"
+  },
+  {
+    "slug": "indycar-series",
+    "name": "INDYCAR Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/01/INDYCAR-Series-Open-feature-350x197.jpg"
+  },
+  {
+    "slug": "iracing-sprint-car-cup",
+    "name": "iRacing Sprint Car Cup",
+    "logo": "https://www.iracing.com/wp-content/uploads/2023/12/sprint-car-cup-feature-350x197.jpg"
+  },
+  {
+    "slug": "iracing-silver-crown-cup",
+    "name": "iRacing Silver Crown Cup",
+    "logo": "https://www.iracing.com/wp-content/uploads/2023/12/silver-crown-cup-feature-350x197.jpg"
+  },
+  {
+    "slug": "radical-esports-cup-fixed",
+    "name": "Radical Esports Cup – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2023/12/iracing-radical-esports-cup-feature-350x197.jpg"
+  },
+  {
+    "slug": "nascar-class-c-series-fixed",
+    "name": "NASCAR Class C Series – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2025/03/nascar-class-c-series-fixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "nascar-iracing-class-b-series",
+    "name": "NASCAR iRacing Class B Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2017/02/nascar-iracing-class-b-series-350x197.jpg"
+  },
+  {
+    "slug": "nascar-iracing-class-a-series",
+    "name": "NASCAR iRacing Class A Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/10/nascar-cup-series-feature-350x197.jpg"
+  },
+  {
+    "slug": "super-late-model-series",
+    "name": "iRacing Super Late Model Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2023/12/super-late-model-fixed-feature-350x197.jpg"
+  },
+  {
+    "slug": "imsa-series",
+    "name": "IMSA iRacing Series by GO Fast",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/09/imsa-iracing-series-feature-350x197.jpg"
+  },
+  {
+    "slug": "classic-lotus-grand-prix",
+    "name": "Classic Lotus Grand Prix",
+    "logo": "https://www.iracing.com/wp-content/uploads/2023/12/classic-lotus-grand-prix-feature-350x197.jpg"
+  },
+  {
+    "slug": "gt-endurance-series",
+    "name": "GT Endurance Series by Simucube",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/10/gt-endurance-feature-350x197.jpg"
+  },
+  {
+    "slug": "advanced-mazda-cup",
+    "name": "Advanced Mazda MX-5 Cup by Heusinkveld",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/09/advanced-mazda-mx-5-cup-by-heusinkveld-feature-350x197.jpg"
+  },
+  {
+    "slug": "gt-sprint-series",
+    "name": "GT Sprint Series by Simucube",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/10/gt-sprint-feature-350x197.jpg"
+  },
+  {
+    "slug": "proto-gt-challenge",
+    "name": "Proto/GT Challenge",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/09/proto-gt-challenge-feature-1-350x197.jpg"
+  },
+  {
+    "slug": "grand-prix-legends",
+    "name": "Grand Prix Legends",
+    "logo": "https://www.iracing.com/wp-content/uploads/2023/12/grand-prix-legends-feature-350x197.jpg"
+  },
+  {
+    "slug": "supercars-series",
+    "name": "Supercars Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2017/02/supercars-series-feature-350x197.jpg"
+  },
+  {
+    "slug": "nascar-iracing-series",
+    "name": "NASCAR iRacing Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2017/02/enascariracingseries-feature-350x197.jpg"
+  },
+  {
+    "slug": "iracing-global-challenge",
+    "name": "Fanatec Global Challenge",
+    "logo": "https://www.iracing.com/wp-content/uploads/2023/12/global-fanatec-challenge-feature-350x197.jpg"
+  },
+  {
+    "slug": "spec-racer-ford-challenge",
+    "name": "S.C.C.A. Spec Racer Ford Challenge",
+    "logo": "https://www.iracing.com/wp-content/uploads/2017/02/RR-iRacing-Spec-Racer-Ford-Challenge-350x197.png"
+  },
+  {
+    "slug": "cars-late-model-stock-tour",
+    "name": "CARS Late Model Stock Tour",
+    "logo": "https://www.iracing.com/wp-content/uploads/2017/02/cars-late-model-stock-tour-feature-350x197.jpg"
+  },
+  {
+    "slug": "skip-barber-race-series",
+    "name": "Skip Barber Race Series",
+    "logo": "https://www.iracing.com/wp-content/uploads/2017/02/OW-Skip-Barber-Race-Series-350x197.png"
+  },
+  {
+    "slug": "sk-modified-series-fixed",
+    "name": "SK Modified Series – Fixed",
+    "logo": "https://www.iracing.com/wp-content/uploads/2017/02/skmodifiedweeklyseriesfixed-feature.jpg-350x197.jpg"
+  },
+  {
+    "slug": "production-car-challenge",
+    "name": "Production Car Sim-Lab Challenge",
+    "logo": "https://www.iracing.com/wp-content/uploads/2023/12/production-car-sim-lab-challenge-feature-350x197.jpg"
+  },
+  {
+    "slug": "pickup-cup",
+    "name": "PickUp Cup",
+    "logo": "https://www.iracing.com/wp-content/uploads/2023/12/pickup-cup-feature-350x197.jpg"
+  },
+  {
+    "slug": "dallara-dash",
+    "name": "Dallara Dash",
+    "logo": "https://www.iracing.com/wp-content/uploads/2017/02/dallaradash-feature-3.jpg-3-350x197.jpg"
+  },
+  {
+    "slug": "iracing-street-stock-series-rookie",
+    "name": "Street Stock FANATEC Series – Rookie",
+    "logo": "https://www.iracing.com/wp-content/uploads/2023/12/street-stock-fanatec-series-rookie-feature-350x197.jpg"
+  },
+  {
+    "slug": "carburetor-cup",
+    "name": "Carburetor Cup",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/10/carburetorcup-feature-350x197.jpg"
+  },
+  {
+    "slug": "advanced-legends-cup",
+    "name": "Legends Cup by Go Motorsports Shop",
+    "logo": "https://www.iracing.com/wp-content/uploads/2024/12/legends-cup-by-go-motorsports-shop-feature-350x197.jpg"
+  },
+  {
+    "slug": "global-mazda-mx-5-cup",
+    "name": "FANATEC Global Mazda MX-5 Cup",
+    "logo": "https://www.iracing.com/wp-content/uploads/2026/09/global-mazda-mx-5-cup-feature-350x197.jpg"
+  }
+]
