@@ -1,3 +1,5 @@
+import { OFFICIAL_BRAND_PATHS } from "./brand-icons";
+
 export type CarClass = "GTP" | "LMP2" | "LMP3" | "GT3" | "GT4" | "GTE" | "Formula" | "Touring" | "Oval" | "Dirt" | "Prototype";
 export type CarCategory = "Sports Car" | "Formula Car" | "Oval" | "Dirt";
 
@@ -12,7 +14,15 @@ export interface CarMetadata {
   readonly specs: string;
   readonly manualUrl: string;
   readonly forumUrl: string;
+  readonly previewImg?: string;
 }
+
+const PREVIEW_IMG_BY_KEY: Record<string, string> = {
+  ferrari296gt3: "/assets/img/coche1-640.webp",
+  porsche992rgt3: "/assets/img/coche2-640.webp",
+  fordmustanggt3: "/assets/img/coche3-640.webp",
+  mclaren720sgt3: "/assets/img/coche4-640.webp",
+};
 
 interface RawCarEntry {
   readonly carFolder: string;
@@ -129,6 +139,7 @@ function enrichCar(entry: RawCarEntry): CarMetadata {
     specs: entry.specs ?? defaultSpecsForClass(entry.carClass),
     manualUrl: MANUAL_PDF_BY_KEY[key] ?? "https://www.iracing.com/resources/user-manuals/",
     forumUrl: "https://forums.iracing.com/categories/cars",
+    previewImg: PREVIEW_IMG_BY_KEY[key],
   };
 }
 
@@ -346,9 +357,13 @@ export function filterCarsByClass(carClass?: CarClass): readonly CarMetadata[] {
 }
 
 /**
- * Returns raw inner SVG markup for a manufacturer logo, or a crisp monogram fallback.
+ * Returns raw inner SVG markup for a manufacturer logo, preferring official vector paths.
  */
 export function brandSvgInner(meta: CarMetadata): string {
+  const officialPath = OFFICIAL_BRAND_PATHS[meta.svgLogoId];
+  if (officialPath) {
+    return `<path d="${officialPath}" fill="${meta.accentColor}"/>`;
+  }
   return (
     BRAND_SVG_INNER[meta.svgLogoId] ??
     `<rect x="2.5" y="2.5" width="19" height="19" rx="5" fill="${meta.accentColor}" fill-opacity="0.16" stroke="${meta.accentColor}" stroke-width="1.5"/><text x="12" y="15.5" text-anchor="middle" fill="${meta.accentColor}" font-family="monospace" font-weight="800" font-size="9">${meta.brand.slice(0, 2).toUpperCase()}</text>`
@@ -378,30 +393,18 @@ export function createBrandBadgeElement(meta: CarMetadata, size = 20): SVGSVGEle
 }
 
 /**
- * Generates an iRacing-inspired 16:9 studio preview SVG banner (clean, 100% original silhouette + brand emblem).
+ * Generates a clean studio manufacturer banner when no track photo is available.
  */
 export function getCarPreviewBannerSvg(meta: CarMetadata): string {
-  let silhouette = `<path d="M52 126 C56 108 82 96 116 92 L162 74 C188 70 218 72 240 90 L282 98 C298 102 308 112 310 126 L296 132 H62 Z" fill="#1e293b" stroke="${meta.accentColor}" stroke-width="2"/><path d="M124 94 L164 78 H206 L228 94 Z" fill="#0f172a" stroke="#38bdf8" stroke-width="1.2"/><path d="M44 106 L58 92 H72 L66 108 Z" fill="${meta.accentColor}"/><circle cx="102" cy="130" r="19" fill="#090d12" stroke="#94a3b8" stroke-width="3"/><circle cx="102" cy="130" r="9" fill="#1e293b"/><circle cx="252" cy="130" r="19" fill="#090d12" stroke="#94a3b8" stroke-width="3"/><circle cx="252" cy="130" r="9" fill="#1e293b"/>`;
-
-  if (meta.carClass === "GTP" || meta.carClass === "LMP2" || meta.carClass === "LMP3" || meta.carClass === "Prototype") {
-    silhouette = `<path d="M44 128 C50 112 72 104 108 102 L146 78 C166 72 194 74 214 96 L278 102 C298 106 312 116 314 128 L294 134 H56 Z" fill="#1e293b" stroke="${meta.accentColor}" stroke-width="2"/><path d="M148 82 L176 78 L198 96 H144 Z" fill="#0f172a" stroke="#38bdf8" stroke-width="1.2"/><path d="M40 88 H74 L68 112 H52 Z" fill="${meta.accentColor}"/><circle cx="100" cy="130" r="18" fill="#090d12" stroke="#94a3b8" stroke-width="3"/><circle cx="256" cy="130" r="18" fill="#090d12" stroke="#94a3b8" stroke-width="3"/>`;
-  } else if (meta.carClass === "Formula") {
-    silhouette = `<path d="M36 100 H66 L76 116 L138 110 L164 88 H186 L204 110 L292 120 L312 126 L298 132 H64 Z" fill="#1e293b" stroke="${meta.accentColor}" stroke-width="2"/><path d="M34 86 H68 L62 110 H46 Z" fill="${meta.accentColor}"/><path d="M294 118 H322 V128 H292 Z" fill="${meta.accentColor}"/><circle cx="96" cy="128" r="20" fill="#090d12" stroke="#cbd5e1" stroke-width="3"/><circle cx="258" cy="128" r="18" fill="#090d12" stroke="#cbd5e1" stroke-width="3"/>`;
-  } else if (meta.carClass === "Oval" || meta.carClass === "Dirt") {
-    silhouette = `<path d="M48 126 L56 96 L108 92 L144 74 H214 L252 94 L300 100 L308 126 L294 132 H60 Z" fill="#1e293b" stroke="${meta.accentColor}" stroke-width="2"/><path d="M146 78 H210 L236 94 H122 Z" fill="#0f172a" stroke="#94a3b8" stroke-width="1.2"/><circle cx="104" cy="130" r="19" fill="#090d12" stroke="#94a3b8" stroke-width="3"/><circle cx="252" cy="130" r="19" fill="#090d12" stroke="#94a3b8" stroke-width="3"/>`;
-  }
-
   return `<svg viewBox="0 0 356 168" class="w-full h-full block" aria-hidden="true">
     <defs>
-      <radialGradient id="g-${meta.carFolder}" cx="65%" cy="40%" r="65%">
-        <stop offset="0%" stop-color="${meta.accentColor}" stop-opacity="0.24"/>
+      <radialGradient id="g-${meta.carFolder}" cx="50%" cy="45%" r="60%">
+        <stop offset="0%" stop-color="${meta.accentColor}" stop-opacity="0.22"/>
         <stop offset="100%" stop-color="#090d12" stop-opacity="1"/>
       </radialGradient>
     </defs>
-    <rect width="356" height="168" fill="#0b1018"/>
+    <rect width="356" height="168" fill="#090d12"/>
     <rect width="356" height="168" fill="url(#g-${meta.carFolder})"/>
-    <ellipse cx="180" cy="146" rx="135" ry="12" fill="#000000" fill-opacity="0.65"/>
-    <line x1="20" y1="146" x2="336" y2="146" stroke="${meta.accentColor}" stroke-opacity="0.35" stroke-width="1"/>
-    ${silhouette}
+    <svg x="146" y="46" width="64" height="64" viewBox="0 0 24 24">${brandSvgInner(meta)}</svg>
   </svg>`;
 }

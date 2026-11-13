@@ -436,14 +436,26 @@ const galleryItems = [
             data-search={`${car.brand} ${car.model} ${car.carClass} ${car.category} ${car.specs}`.toLowerCase()}
           >
             <div>
-              <!-- iRacing-style 16:9 Studio Preview Banner -->
-              <div class="relative aspect-[16/8] w-full bg-[#090d12] border-b border-[var(--r-line)] overflow-hidden">
-                <Fragment set:html={getCarPreviewBannerSvg(car)} />
-                <div class="absolute bottom-2.5 left-3 flex items-center gap-2 px-2 py-1 rounded-lg bg-black/75 backdrop-blur-xs border border-white/10">
+              <!-- Car Preview (Real Muntrume track photo when available, or clean studio brand stage) -->
+              <div class="relative aspect-video w-full bg-[#090d12] border-b border-[var(--r-line)] overflow-hidden">
+                {car.previewImg ? (
+                  <img
+                    src={car.previewImg}
+                    alt={`${car.brand} ${car.model}`}
+                    width="640"
+                    height="360"
+                    loading="lazy"
+                    decoding="async"
+                    class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                ) : (
+                  <Fragment set:html={getCarPreviewBannerSvg(car)} />
+                )}
+                <div class="absolute bottom-2.5 left-3 flex items-center gap-2 px-2.5 py-1 rounded-lg bg-black/80 backdrop-blur-xs border border-white/10">
                   <Fragment set:html={getBrandSvgMarkup(car, 18)} />
                   <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-white/90">{car.brand}</span>
                 </div>
-                <span class="absolute top-2.5 right-3 px-2 py-0.5 rounded-md bg-black/75 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">
+                <span class="absolute top-2.5 right-3 px-2 py-0.5 rounded-md bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">
                   {car.carClass}
                 </span>
               </div>
