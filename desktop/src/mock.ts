@@ -284,6 +284,9 @@ export function createMock(screen: string | null): Backend {
       notices.forEach((cb) => cb(show ? "Overlay flotante abierto en iRacing (modo prueba)" : "Overlay flotante ocultado"));
       return show;
     },
+    async setOverlayEdit(_editing: boolean) {
+      // No-op in browser mock mode
+    },
     async quit() {
       notices.forEach((cb) => cb("En la aplicación de Windows, Salir cierra la bandeja."));
     },

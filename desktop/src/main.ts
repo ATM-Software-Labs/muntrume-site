@@ -1574,9 +1574,30 @@ function bind(): void {
     }
   });
   let floatingOverlayActive = false;
+  let floatingEditActive = false;
   const btnToggleFloat = document.getElementById("btnToggleFloatingOverlay");
+  const btnEditFloat = document.getElementById("btnEditFloatingHud");
   const dotFloat = document.getElementById("floatingOverlayDot");
   const textFloat = document.getElementById("floatingOverlayText");
+  if (btnEditFloat) {
+    btnEditFloat.addEventListener("click", () => {
+      floatingEditActive = !floatingEditActive;
+      void backend
+        .setOverlayEdit(floatingEditActive)
+        .then(() => {
+          btnEditFloat.textContent = floatingEditActive ? "Bloquear HUD (Conducir)" : "Editar HUD en iRacing";
+          showNotice(
+            floatingEditActive
+              ? "HUD desbloqueado sobre iRacing: ya puedes mover widgets o cambiar presets."
+              : "HUD bloqueado: los clics vuelven a pasar a iRacing.",
+          );
+        })
+        .catch((err: unknown) => {
+          floatingEditActive = !floatingEditActive;
+          showNotice(err instanceof Error ? err.message : "No se pudo cambiar el modo de edición del HUD");
+        });
+    });
+  }
   if (btnToggleFloat) {
     btnToggleFloat.addEventListener("click", () => {
       floatingOverlayActive = !floatingOverlayActive;
@@ -1584,6 +1605,11 @@ function bind(): void {
         .toggleOverlay(floatingOverlayActive)
         .then((shown) => {
           floatingOverlayActive = shown;
+          if (!shown) {
+            floatingEditActive = false;
+            if (btnEditFloat) btnEditFloat.textContent = "Editar HUD en iRacing";
+          }
+          if (btnEditFloat) btnEditFloat.hidden = !shown;
           if (textFloat) {
             textFloat.textContent = shown ? "Ocultar Overlay de iRacing" : "Poner Overlay Flotante en iRacing";
           }
@@ -1593,7 +1619,7 @@ function bind(): void {
               : "w-2.5 h-2.5 rounded-full bg-emerald-950 border border-emerald-400";
           }
           if (shown) {
-            showNotice("Overlay flotante Always-On-Top activo sobre iRacing. Arrastra desde la barra superior para colocar los instrumentos.");
+            showNotice("Overlay flotante activo sobre iRacing. Pulsa «Editar HUD en iRacing» para mover widgets o cambiar presets.");
           }
         })
         .catch((err: unknown) => {

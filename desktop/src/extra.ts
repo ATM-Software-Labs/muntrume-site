@@ -1,6 +1,7 @@
 import type { HardwareReport, IracingAnalysis, LiveSample, Settings, Snapshot } from "./types";
 import rawSchedule from "./season_schedule_2026_s4.json";
 import rawRealTracks from "./real_telemetry_tracks.json";
+import { clamp, finiteOr, safeDiv } from "./core/math-guards";
 
 interface ScheduleWeek {
   week_num: number;
@@ -469,8 +470,10 @@ function renderTelemetryStudio(): void {
   const fileBadge = document.getElementById("lapFileBadge");
   const trackLengthBadge = document.getElementById("trackLengthBadge");
 
-  const deltaSec = track.avgSec - track.bestSec;
-  const maxDist = track.samples[track.samples.length - 1].dist;
+  if (!track.samples || track.samples.length === 0) return;
+
+  const deltaSec = finiteOr(track.avgSec - track.bestSec, 0);
+  const maxDist = Math.max(1, finiteOr(track.samples[track.samples.length - 1]?.dist, 1));
 
   if (alienTimeNode) alienTimeNode.textContent = track.bestFormatted;
   if (userTimeNode) userTimeNode.textContent = track.avgFormatted;
@@ -494,8 +497,8 @@ function getTelemetrySampleAt(track: RealTrackEntry, dist: number): {
   delta: number;
   cornerName: string;
 } {
-  const maxDist = track.samples[track.samples.length - 1].dist;
-  const targetDist = Math.max(0, Math.min(maxDist, dist));
+  const maxDist = Math.max(1, finiteOr(track.samples[track.samples.length - 1]?.dist, 1));
+  const targetDist = clamp(dist, 0, maxDist);
   let idx = 0;
   for (let i = 0; i < track.samples.length; i++) {
     if (track.samples[i].dist >= targetDist) {
@@ -504,9 +507,12 @@ function getTelemetrySampleAt(track: RealTrackEntry, dist: number): {
     }
   }
   const s = track.samples[idx] || track.samples[0];
-  const ratio = track.bestSec / track.avgSec;
-  const speedAvg = Math.round(s.speed * ratio);
-  const delta = (targetDist / maxDist) * (track.avgSec - track.bestSec);
+  if (!s) {
+    return { speedBest: 0, speedAvg: 0, throttle: 0, brake: 0, gear: 0, delta: 0, cornerName: "—" };
+  }
+  const ratio = safeDiv(track.bestSec, track.avgSec, 1);
+  const speedAvg = Math.round(finiteOr(s.speed * ratio, s.speed));
+  const delta = safeDiv(targetDist, maxDist, 0) * finiteOr(track.avgSec - track.bestSec, 0);
 
   // Determine corner name
   let cornerName = "Recta";

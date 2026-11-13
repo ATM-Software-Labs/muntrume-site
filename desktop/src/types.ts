@@ -172,6 +172,7 @@ export interface Backend {
   detectHardware(): Promise<HardwareReport>;
   checkIracing(): Promise<string>;
   toggleOverlay(show: boolean): Promise<boolean>;
+  setOverlayEdit(editing: boolean): Promise<void>;
   quit(): Promise<void>;
   onRefresh(cb: () => void): () => void;
   onStaged(cb: (file: StagedFile) => void): () => void;

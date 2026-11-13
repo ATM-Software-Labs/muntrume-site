@@ -52,6 +52,7 @@ export function createTauriBackend(): Backend {
     detectHardware: () => invoke("detect_hardware"),
     checkIracing: () => invoke<string>("check_iracing_status"),
     toggleOverlay: (show: boolean) => invoke<boolean>("toggle_overlay", { show }),
+    setOverlayEdit: (editing: boolean) => invoke("set_overlay_edit", { editing }),
     quit: () => invoke("quit"),
     onRefresh(cb) {
       void wire();
