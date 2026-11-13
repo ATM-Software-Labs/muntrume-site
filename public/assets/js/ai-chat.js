@@ -1,7 +1,7 @@
 /* Muntrume AI chat. The markdown bundle loads only after the first answer. */
 (function () {
   "use strict";
-  var API = "https://muntrume.atrumin16.workers.dev/api/ai";
+  var API = "https://muntru-api.trujillomingorance.com/api/ai";
   var SYSTEM = [
     "Eres Muntrume AI, el copiloto e ingeniero de pista oficial de Muntrume Motorsport (Equipo MMT), un equipo competitivo de sim racing en iRacing e ingeniería deportiva con sede en Sant Andreu, Barcelona (Cataluña, España). NO eres un taller mecánico ni una empresa de Monterrey.",
     "FUENTES OFICIALES DE MUNTRUME MOTORSPORT (cita los enlaces relevantes cuando respondas):",
