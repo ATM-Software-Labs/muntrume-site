@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import MediaLightbox from '../components/MediaLightbox.astro';
 import { CAR_CATALOG_LIST, type CarMetadata } from '../../desktop/src/cars/catalog';
 
 const slugifyBrand = (brand: string) =>
@@ -106,7 +107,16 @@ const pageDescription = `Catálogo completo de vehículos ${brandName} en iRacin
       {cars.map((car) => (
         <article class="rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-200 overflow-hidden flex flex-col justify-between group">
           <div>
-            <div class="relative aspect-[344/182] w-full bg-[#090d12] border-b border-[var(--r-line)] overflow-hidden">
+            <button
+              type="button"
+              data-preview-src={car.previewImg}
+              data-preview-title={`${car.brand} ${car.model}`}
+              data-preview-sub={`${car.carClass} · ${car.specs}`}
+              data-preview-id={`car:${car.carFolder}`}
+              data-preview-setups={`/garage?car=${encodeURIComponent(car.carFolder)}`}
+              class="relative block aspect-[344/182] w-full bg-[#090d12] border-b border-[var(--r-line)] overflow-hidden cursor-zoom-in"
+              title="Ver imagen completa"
+            >
               {car.previewImg && (
                 <img
                   src={car.previewImg}
@@ -121,12 +131,24 @@ const pageDescription = `Catálogo completo de vehículos ${brandName} en iRacin
               <span class="absolute top-2 right-2.5 px-2 py-0.5 rounded-md bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">
                 {car.carClass}
               </span>
-            </div>
+            </button>
 
             <div class="p-4 space-y-2">
-              <h2 class="text-base font-bold text-[var(--r-text)] font-display leading-snug truncate" title={`${car.brand} ${car.model}`}>
-                {car.brand} {car.model}
-              </h2>
+              <div class="flex items-center justify-between gap-2">
+                <h2 class="text-base font-bold text-[var(--r-text)] font-display leading-snug truncate" title={`${car.brand} ${car.model}`}>
+                  {car.brand} {car.model}
+                </h2>
+                <button
+                  type="button"
+                  data-like-btn
+                  data-like-id={`car:${car.carFolder}`}
+                  class="px-2 py-0.5 rounded-lg bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-rose-500/60 text-[11px] font-mono font-bold text-[var(--r-muted)] inline-flex items-center gap-1 transition cursor-pointer shrink-0"
+                  title="Me gusta"
+                >
+                  <span data-heart>♡</span>
+                  <span data-count>0</span>
+                </button>
+              </div>
               <div class="flex items-center gap-1.5 text-[10px] font-mono text-[var(--r-muted)]">
                 <span class="px-2 py-0.5 rounded bg-[var(--r-bg-2)] border border-[var(--r-line)]/70 text-[var(--r-text)]">{car.category}</span>
                 <span class="truncate" title={car.specs}>{car.specs}</span>
@@ -188,4 +210,5 @@ const pageDescription = `Catálogo completo de vehículos ${brandName} en iRacin
       Fair Use: Marcas y nombres de vehículos mostrados con fines identificativos y de compatibilidad con iRacing. Manuales y foros oficiales alojados en iRacing.com.
     </p>
   </main>
+  <MediaLightbox />
 </Layout>

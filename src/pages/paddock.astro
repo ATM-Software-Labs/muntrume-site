@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import StatsGrid from '../components/StatsGrid.astro';
+import MediaLightbox from '../components/MediaLightbox.astro';
 import { PILOTOS } from '../lib/pilotos';
 import { PADDOCK_ALBUMS } from '../data/paddock-gallery';
 import { CAR_CATALOG_LIST, getBrandSvgMarkup, getCarPreviewBannerSvg, type CarMetadata } from '../../desktop/src/cars/catalog';
@@ -530,8 +531,17 @@ const galleryItems = [
             data-search={`${car.brand} ${car.model} ${car.carClass} ${car.category} ${car.specs}`.toLowerCase()}
           >
             <div>
-              <!-- Car Preview (Official studio banner, full uncropped aspect ratio) -->
-              <div class="relative aspect-[344/182] w-full bg-[#090d12] border-b border-[var(--r-line)] overflow-hidden">
+              <!-- Car Preview (Official studio banner, full uncropped aspect ratio, clickable) -->
+              <button
+                type="button"
+                data-preview-src={car.previewImg || ''}
+                data-preview-title={`${car.brand} ${car.model}`}
+                data-preview-sub={`${car.carClass} · ${car.specs}`}
+                data-preview-id={`car:${car.carFolder}`}
+                data-preview-setups={`/garage?car=${encodeURIComponent(car.carFolder)}`}
+                class="relative block aspect-[344/182] w-full bg-[#090d12] border-b border-[var(--r-line)] overflow-hidden cursor-zoom-in"
+                title="Ver imagen completa"
+              >
                 {car.previewImg ? (
                   <img
                     src={car.previewImg}
@@ -554,12 +564,24 @@ const galleryItems = [
                 <span class="absolute top-2 right-2.5 px-2 py-0.5 rounded-md bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">
                   {car.carClass}
                 </span>
-              </div>
+              </button>
 
               <div class="p-4 space-y-2">
-                <h3 class="text-base font-bold text-[var(--r-text)] font-display leading-snug truncate" title={`${car.brand} ${car.model}`}>
-                  {car.brand} {car.model}
-                </h3>
+                <div class="flex items-center justify-between gap-2">
+                  <h3 class="text-base font-bold text-[var(--r-text)] font-display leading-snug truncate" title={`${car.brand} ${car.model}`}>
+                    {car.brand} {car.model}
+                  </h3>
+                  <button
+                    type="button"
+                    data-like-btn
+                    data-like-id={`car:${car.carFolder}`}
+                    class="px-2 py-0.5 rounded-lg bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-rose-500/60 text-[11px] font-mono font-bold text-[var(--r-muted)] inline-flex items-center gap-1 transition cursor-pointer shrink-0"
+                    title="Me gusta"
+                  >
+                    <span data-heart>♡</span>
+                    <span data-count>0</span>
+                  </button>
+                </div>
                 <div class="flex items-center gap-1.5 text-[10px] font-mono text-[var(--r-muted)]">
                   <span class="px-2 py-0.5 rounded bg-[var(--r-bg-2)] border border-[var(--r-line)]/70 text-[var(--r-text)]">{car.category}</span>
                   <span class="truncate" title={car.specs}>{car.specs}</span>
@@ -952,6 +974,7 @@ const galleryItems = [
       </div>
     </div>
   </div>
+<MediaLightbox />
 </Layout>
 
 <script is:inline>

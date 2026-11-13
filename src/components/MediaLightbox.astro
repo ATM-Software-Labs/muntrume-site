@@ -1,0 +1,212 @@
+---
+---
+<div
+  id="mmt-lightbox"
+  class="fixed inset-0 z-50 hidden items-center justify-center bg-black/85 backdrop-blur-sm p-4 sm:p-6"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="mmt-lb-title"
+>
+  <div class="relative w-full max-w-4xl rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] shadow-2xl overflow-hidden">
+    <div class="flex items-center justify-between gap-3 px-5 py-3.5 border-b border-[var(--r-line)]">
+      <div class="min-w-0">
+        <h3 id="mmt-lb-title" class="text-base sm:text-lg font-extrabold text-[var(--r-text)] font-display truncate"></h3>
+        <p id="mmt-lb-sub" class="text-[11px] font-mono text-[var(--r-muted)] truncate"></p>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <button
+          id="mmt-lb-bg-toggle"
+          type="button"
+          class="px-2.5 py-1 rounded-lg bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-[11px] font-mono text-[var(--r-muted)] hover:text-[var(--r-text)] transition cursor-pointer"
+          title="Alternar fondo claro/oscuro"
+        >
+          Fondo
+        </button>
+        <button
+          id="mmt-lb-close"
+          type="button"
+          aria-label="Cerrar vista previa"
+          class="w-8 h-8 rounded-lg bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-[var(--r-text)] flex items-center justify-center font-bold transition cursor-pointer"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <div id="mmt-lb-stage" class="bg-[#090d12] flex items-center justify-center p-4 sm:p-8 min-h-[260px] max-h-[70vh] overflow-hidden">
+      <img
+        id="mmt-lb-img"
+        src=""
+        alt=""
+        class="max-h-[62vh] max-w-full w-auto h-auto object-contain rounded-lg"
+      />
+    </div>
+
+    <div class="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 border-t border-[var(--r-line)] bg-[var(--r-bg-2)]">
+      <button
+        id="mmt-lb-like"
+        type="button"
+        class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] hover:border-rose-500/60 text-xs font-mono font-bold text-[var(--r-muted)] transition cursor-pointer"
+      >
+        <span data-heart>♡</span>
+        <span>Me gusta</span>
+        <span data-count class="text-[var(--r-text)]">0</span>
+      </button>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <a
+          id="mmt-lb-setups"
+          href="#"
+          class="hidden px-4 py-1.5 rounded-xl bg-[var(--r-accent)]/15 hover:bg-[var(--r-accent)]/25 border border-[var(--r-accent)]/50 text-xs font-mono font-bold text-[var(--r-accent)] transition"
+        >
+          Ver Setups (.sto) →
+        </a>
+        <a
+          id="mmt-lb-download"
+          href="#"
+          download=""
+          class="hidden px-4 py-1.5 rounded-xl bg-[var(--r-accent)] text-[#090d12] hover:opacity-90 text-xs font-mono font-bold transition"
+        >
+          Descargar archivo ↓
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  (function () {
+    var STORAGE_KEY = 'mmt_likes_v1';
+    function loadLikes() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') || {};
+      } catch (e) {
+        return {};
+      }
+    }
+    function saveLikes(map) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+      } catch (e) {}
+    }
+
+    var likes = loadLikes();
+    var modal = document.getElementById('mmt-lightbox');
+    var img = document.getElementById('mmt-lb-img');
+    var titleEl = document.getElementById('mmt-lb-title');
+    var subEl = document.getElementById('mmt-lb-sub');
+    var stage = document.getElementById('mmt-lb-stage');
+    var closeBtn = document.getElementById('mmt-lb-close');
+    var bgBtn = document.getElementById('mmt-lb-bg-toggle');
+    var lbLikeBtn = document.getElementById('mmt-lb-like');
+    var dlLink = document.getElementById('mmt-lb-download');
+    var setupsLink = document.getElementById('mmt-lb-setups');
+    var currentId = '';
+    var lightStage = false;
+
+    function syncLikeButton(btn, id) {
+      var isLiked = !!likes[id];
+      var heart = btn.querySelector('[data-heart]');
+      var count = btn.querySelector('[data-count]');
+      if (heart) heart.textContent = isLiked ? '♥' : '♡';
+      if (count) count.textContent = isLiked ? '1' : '0';
+      btn.classList.toggle('border-rose-500/70', isLiked);
+      btn.classList.toggle('text-rose-400', isLiked);
+      btn.classList.toggle('bg-rose-500/10', isLiked);
+      btn.setAttribute('aria-pressed', isLiked ? 'true' : 'false');
+    }
+
+    function syncAllLikeButtons(id) {
+      document.querySelectorAll('[data-like-btn]').forEach(function (btn) {
+        if (!id || btn.getAttribute('data-like-id') === id) {
+          syncLikeButton(btn, btn.getAttribute('data-like-id') || '');
+        }
+      });
+      if (lbLikeBtn && currentId && (!id || currentId === id)) {
+        syncLikeButton(lbLikeBtn, currentId);
+      }
+    }
+
+    function toggleLike(id) {
+      if (!id) return;
+      if (likes[id]) delete likes[id];
+      else likes[id] = 1;
+      saveLikes(likes);
+      syncAllLikeButtons(id);
+    }
+
+    document.addEventListener('click', function (e) {
+      var likeBtn = e.target.closest ? e.target.closest('[data-like-btn]') : null;
+      if (likeBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleLike(likeBtn.getAttribute('data-like-id') || '');
+        return;
+      }
+
+      var trigger = e.target.closest ? e.target.closest('[data-preview-src]') : null;
+      if (trigger && modal && img) {
+        e.preventDefault();
+        var src = trigger.getAttribute('data-preview-src') || '';
+        var title = trigger.getAttribute('data-preview-title') || '';
+        var sub = trigger.getAttribute('data-preview-sub') || '';
+        var dl = trigger.getAttribute('data-preview-download') || '';
+        var setups = trigger.getAttribute('data-preview-setups') || '';
+        currentId = trigger.getAttribute('data-preview-id') || src;
+        img.setAttribute('src', src);
+        img.setAttribute('alt', title);
+        if (titleEl) titleEl.textContent = title;
+        if (subEl) subEl.textContent = sub;
+        if (dlLink) {
+          if (dl) {
+            dlLink.setAttribute('href', src);
+            dlLink.setAttribute('download', dl);
+            dlLink.classList.remove('hidden');
+          } else {
+            dlLink.classList.add('hidden');
+          }
+        }
+        if (setupsLink) {
+          if (setups) {
+            setupsLink.setAttribute('href', setups);
+            setupsLink.classList.remove('hidden');
+          } else {
+            setupsLink.classList.add('hidden');
+          }
+        }
+        syncAllLikeButtons(currentId);
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    });
+
+    function closeModal() {
+      if (!modal) return;
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (modal) {
+      modal.addEventListener('click', function (e) {
+        if (e.target === modal) closeModal();
+      });
+    }
+    if (lbLikeBtn) {
+      lbLikeBtn.addEventListener('click', function () {
+        toggleLike(currentId);
+      });
+    }
+    if (bgBtn && stage) {
+      bgBtn.addEventListener('click', function () {
+        lightStage = !lightStage;
+        stage.className = (lightStage ? 'bg-slate-100' : 'bg-[#090d12]') + ' flex items-center justify-center p-4 sm:p-8 min-h-[260px] max-h-[70vh] overflow-hidden';
+      });
+    }
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeModal();
+    });
+
+    syncAllLikeButtons();
+  })();
+</script>

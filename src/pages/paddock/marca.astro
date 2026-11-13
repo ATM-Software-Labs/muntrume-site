@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import MediaLightbox from "../../components/MediaLightbox.astro";
 
 const pageTitle = "Marca y Brand Kit Oficial | Muntrume Motorsport";
 const pageDescription = "Subpágina oficial de identidad visual, logotipos vectoriales, escudo heráldico, paleta cromática, tipografías y marco legal de marca de Muntrume Motorsport™.";
@@ -212,25 +213,49 @@ const colorPalette = [
         {originalAssets.map((asset) => (
           <article class="rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-5 flex flex-col justify-between gap-4 hover:border-[var(--r-accent)] transition-colors">
             <div class="space-y-3">
-              <div class={`relative h-36 rounded-xl ${asset.bg} border border-white/10 flex items-center justify-center p-4 overflow-hidden`}>
-                <img src={asset.src} alt={asset.name} loading="lazy" decoding="async" class="max-h-full max-w-full object-contain" />
+              <button
+                type="button"
+                data-preview-src={asset.src}
+                data-preview-title={asset.name}
+                data-preview-sub={asset.fmt}
+                data-preview-id={`brand:${asset.file}`}
+                data-preview-download={asset.file}
+                class={`relative w-full h-36 rounded-xl ${asset.bg} border border-white/10 flex items-center justify-center p-4 overflow-hidden cursor-zoom-in group`}
+                title="Ver imagen completa"
+              >
+                <img src={asset.src} alt={asset.name} loading="lazy" decoding="async" class="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105" />
                 <span class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded bg-black/75 border border-white/15 text-[10px] font-mono font-bold text-[var(--r-accent)] uppercase">
                   {asset.badge}
                 </span>
-              </div>
+                <span class="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/75 border border-white/15 text-[10px] font-mono text-white/80 opacity-0 group-hover:opacity-100 transition">
+                  Ver completo
+                </span>
+              </button>
               <div>
                 <h3 class="text-sm font-bold text-[var(--r-text)] leading-tight">{asset.name}</h3>
                 <span class="text-[11px] font-mono text-[var(--r-accent)] block mt-0.5">{asset.fmt}</span>
                 <p class="text-xs text-[var(--r-muted)] mt-1.5 leading-relaxed">{asset.desc}</p>
               </div>
             </div>
-            <a
-              href={asset.src}
-              download={asset.file}
-              class="w-full py-2 px-3 rounded-xl bg-[var(--r-bg-2)] hover:bg-[var(--r-accent)]/15 border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono font-bold text-[var(--r-text)] hover:text-[var(--r-accent)] text-center transition-colors"
-            >
-              Descargar {asset.file.split('.').pop()?.toUpperCase()}
-            </a>
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                data-like-btn
+                data-like-id={`brand:${asset.file}`}
+                class="px-3 py-2 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-rose-500/60 text-xs font-mono font-bold text-[var(--r-muted)] inline-flex items-center gap-1.5 transition cursor-pointer shrink-0"
+                title="Me gusta"
+              >
+                <span data-heart>♡</span>
+                <span data-count>0</span>
+              </button>
+              <a
+                href={asset.src}
+                download={asset.file}
+                class="flex-1 py-2 px-3 rounded-xl bg-[var(--r-bg-2)] hover:bg-[var(--r-accent)]/15 border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono font-bold text-[var(--r-text)] hover:text-[var(--r-accent)] text-center transition-colors"
+              >
+                Descargar {asset.file.split('.').pop()?.toUpperCase()}
+              </a>
+            </div>
           </article>
         ))}
       </div>
@@ -262,25 +287,49 @@ const colorPalette = [
         {futuristicAssets.map((asset) => (
           <article class="rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-5 flex flex-col justify-between gap-4 hover:border-[var(--r-accent)] transition-colors">
             <div class="space-y-3">
-              <div class={`relative h-36 rounded-xl ${asset.bg} border border-white/10 flex items-center justify-center p-4 overflow-hidden`}>
-                <img src={asset.src} alt={asset.name} loading="lazy" decoding="async" class="max-h-full max-w-full object-contain" />
+              <button
+                type="button"
+                data-preview-src={asset.src}
+                data-preview-title={asset.name}
+                data-preview-sub={asset.fmt}
+                data-preview-id={`brand:${asset.file}`}
+                data-preview-download={asset.file}
+                class={`relative w-full h-36 rounded-xl ${asset.bg} border border-white/10 flex items-center justify-center p-4 overflow-hidden cursor-zoom-in group`}
+                title="Ver imagen completa"
+              >
+                <img src={asset.src} alt={asset.name} loading="lazy" decoding="async" class="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105" />
                 <span class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded bg-black/75 border border-white/15 text-[10px] font-mono font-bold text-[var(--r-accent)] uppercase">
                   {asset.badge}
                 </span>
-              </div>
+                <span class="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/75 border border-white/15 text-[10px] font-mono text-white/80 opacity-0 group-hover:opacity-100 transition">
+                  Ver completo
+                </span>
+              </button>
               <div>
                 <h3 class="text-sm font-bold text-[var(--r-text)] leading-tight">{asset.name}</h3>
                 <span class="text-[11px] font-mono text-[var(--r-accent)] block mt-0.5">{asset.fmt}</span>
                 <p class="text-xs text-[var(--r-muted)] mt-1.5 leading-relaxed">{asset.desc}</p>
               </div>
             </div>
-            <a
-              href={asset.src}
-              download={asset.file}
-              class="w-full py-2 px-3 rounded-xl bg-[var(--r-bg-2)] hover:bg-[var(--r-accent)]/15 border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono font-bold text-[var(--r-text)] hover:text-[var(--r-accent)] text-center transition-colors"
-            >
-              Descargar {asset.file.split('.').pop()?.toUpperCase()}
-            </a>
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                data-like-btn
+                data-like-id={`brand:${asset.file}`}
+                class="px-3 py-2 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-rose-500/60 text-xs font-mono font-bold text-[var(--r-muted)] inline-flex items-center gap-1.5 transition cursor-pointer shrink-0"
+                title="Me gusta"
+              >
+                <span data-heart>♡</span>
+                <span data-count>0</span>
+              </button>
+              <a
+                href={asset.src}
+                download={asset.file}
+                class="flex-1 py-2 px-3 rounded-xl bg-[var(--r-bg-2)] hover:bg-[var(--r-accent)]/15 border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono font-bold text-[var(--r-text)] hover:text-[var(--r-accent)] text-center transition-colors"
+              >
+                Descargar {asset.file.split('.').pop()?.toUpperCase()}
+              </a>
+            </div>
           </article>
         ))}
       </div>
@@ -395,6 +444,7 @@ const colorPalette = [
       </div>
     </section>
   </main>
+  <MediaLightbox />
 </Layout>
 
 <script is:inline>
