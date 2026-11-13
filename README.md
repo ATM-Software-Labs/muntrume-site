@@ -102,6 +102,10 @@ Para volver atrás: `git revert <commit>` y push a `main`, que vuelve a desplega
 
 Las plantillas de issue y de pull request están en `.github/`. Antes del PR, ejecuta `npm run check` y `npm run build`. Si encuentras una vulnerabilidad, sigue [SECURITY.md](SECURITY.md) en lugar de abrir un issue público.
 
+## Firma de código (MMT Sync)
+
+Free code signing provided by [SignPath.io](https://signpath.io/), certificate by [SignPath Foundation](https://signpath.org/).
+
 ## Licencia
 
 [MIT con exclusión de marca](LICENSE) © 2026 Alberto Trujillo Mingorance / Muntrume Motorsport. Fuentes autoalojadas bajo [SIL OFL 1.1](public/assets/fonts/OFL.txt).
