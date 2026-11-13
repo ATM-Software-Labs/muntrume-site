@@ -273,18 +273,62 @@ export function getTrackScheduleInfo(track: IracingTrack): { configs: string[]; 
   return { configs: Array.from(configs), entries };
 }
 
+const normCarKey = (s: string) => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+
 const carLabelMap = new Map<string, string>(
-  CAR_CATALOG_LIST.map((c) => [c.carFolder.toLowerCase(), `${c.brand} ${c.model}`])
+  CAR_CATALOG_LIST.map((c) => [normCarKey(c.carFolder), `${c.brand} ${c.model}`])
 );
+const EXTRA_CAR_LABELS: Record<string, string> = {
+  mx5cup: "Mazda MX-5 Cup",
+  mx5mx52016: "Mazda MX-5 Cup (ND1)",
+  mxmx52016: "Mazda MX-5 Cup (ND1)",
+  superformulasf23honda: "Dallara Super Formula SF23 (Honda)",
+  superformulasf23toyota: "Dallara Super Formula SF23 (Toyota)",
+};
 const carBrandMap = new Map<string, { path: string; color: string }>(
   CAR_CATALOG_LIST.map((c) => [
-    c.carFolder.toLowerCase(),
+    normCarKey(c.carFolder),
     {
       path: OFFICIAL_BRAND_PATHS[c.svgLogoId] || "",
       color: c.svgLogoId === "logo-aston" ? "#2dd4bf" : c.accentColor,
     },
   ])
 );
+
+const FALLBACK_BRANDS: Array<[RegExp, { logo: string; color: string }]> = [
+  [/honda/i, { logo: "logo-honda", color: "#CC0000" }],
+  [/toyota|gr86/i, { logo: "logo-toyota", color: "#EB0A1E" }],
+  [/mazda|mx5|mx_/i, { logo: "logo-mazda", color: "#E11D48" }],
+  [/dallara|superformula|indy|formulair04/i, { logo: "logo-dallara", color: "#00E699" }],
+  [/ligier/i, { logo: "logo-ligier", color: "#38BDF8" }],
+  [/lotus/i, { logo: "logo-lotus", color: "#22C55E" }],
+  [/radical/i, { logo: "logo-radical", color: "#F59E0B" }],
+  [/caterham/i, { logo: "logo-caterham", color: "#10B981" }],
+  [/mercedes/i, { logo: "logo-mercedes", color: "#00D2BE" }],
+  [/porsche/i, { logo: "logo-porsche", color: "#D5001C" }],
+  [/ferrari/i, { logo: "logo-ferrari", color: "#DC0000" }],
+  [/bmw/i, { logo: "logo-bmw", color: "#1C69D4" }],
+  [/audi/i, { logo: "logo-audi", color: "#BB0A30" }],
+  [/lamborghini/i, { logo: "logo-lambo", color: "#DDB321" }],
+  [/mclaren/i, { logo: "logo-mclaren", color: "#FF8700" }],
+  [/aston|amvantage|amvalkyrie/i, { logo: "logo-aston", color: "#2dd4bf" }],
+  [/cadillac/i, { logo: "logo-cadillac", color: "#D4AF37" }],
+  [/acura/i, { logo: "logo-acura", color: "#E11D48" }],
+  [/corvette|chevy|camaro|silverado|c6r|c8r/i, { logo: "logo-chevy", color: "#EAB308" }],
+  [/ford|mustang/i, { logo: "logo-ford", color: "#3B82F6" }],
+  [/formulavee|raygr|rt2000|specracer/i, { logo: "logo-formula", color: "#94A3B8" }],
+];
+
+function brandForCarId(carId: string): { path: string; color: string } {
+  const hit = carBrandMap.get(normCarKey(carId));
+  if (hit && hit.path) return hit;
+  for (const [rx, meta] of FALLBACK_BRANDS) {
+    if (rx.test(carId) && OFFICIAL_BRAND_PATHS[meta.logo]) {
+      return { path: OFFICIAL_BRAND_PATHS[meta.logo], color: meta.color };
+    }
+  }
+  return { path: "", color: "#00e699" };
+}
 
 const slugId = (id: string) => String(id || "").trim().toLowerCase().replace(/[^a-z0-9_-]/g, "_");
 
@@ -336,13 +380,14 @@ export function getTrackGarageInfo(track: IracingTrack): {
   const cars = Array.from(carCounts.entries())
     .map(([id, count]) => {
       setupCount += count;
-      const b = carBrandMap.get(id.toLowerCase());
+      const nk = normCarKey(id);
+      const b = brandForCarId(id);
       return {
         id,
-        label: carLabelMap.get(id.toLowerCase()) || id,
+        label: carLabelMap.get(nk) || EXTRA_CAR_LABELS[nk] || id,
         count,
-        brandPath: b?.path || "",
-        brandColor: b?.color || "#00e699",
+        brandPath: b.path,
+        brandColor: b.color,
       };
     })
     .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
