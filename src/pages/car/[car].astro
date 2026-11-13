@@ -164,16 +164,30 @@ const pageDescription = `${car.brand} ${car.model} (${car.carClass}): ${dossier.
     <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
       <div class="lg:col-span-5 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] p-6 space-y-4">
         <div>
-          <span class="r-kicker">Paddock Real</span>
+          <span class="r-kicker">Paddock Real · WEC, IMSA &amp; Histórica</span>
           <h2 class="text-xl font-extrabold text-[var(--r-text)] font-display mt-1">
             Pilotos reconocidos en la vida real
           </h2>
         </div>
-        <div class="flex flex-wrap gap-2">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {dossier.realDrivers.map((driver) => (
-            <span class="px-3 py-1.5 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] text-xs font-mono font-bold text-[var(--r-text)]">
-              {driver}
-            </span>
+            <a
+              href={driver.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="p-2.5 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition flex items-center justify-between gap-2 group"
+              title={`Abrir biografía / Wikipedia de ${driver.name}`}
+            >
+              <div class="min-w-0">
+                <div class="text-xs font-mono font-bold text-[var(--r-text)] group-hover:text-[var(--r-accent)] truncate">
+                  {driver.name}
+                </div>
+                <div class="text-[10px] font-mono text-[var(--r-muted)] truncate">
+                  {driver.series}
+                </div>
+              </div>
+              <span class="text-[11px] font-mono text-[var(--r-accent)] shrink-0">↗</span>
+            </a>
           ))}
         </div>
         <div class="pt-3 border-t border-[var(--r-line)] space-y-2">
