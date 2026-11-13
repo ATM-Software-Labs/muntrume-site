@@ -5,11 +5,28 @@
  * @muntru.me Mailboxes, and Zero-Trust Audit Logs.
  */
 
-const RC_API_BASE =
-  typeof window !== "undefined" &&
-  (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
-    ? "https://muntrume.atrumin16.workers.dev"
-    : "";
+const RC_API_BASE = "https://muntrume.atrumin16.workers.dev";
+
+async function rcAdminFetch(path, body = {}) {
+  const token = getAdminToken();
+  const headers = { "Content-Type": "application/json" };
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const res = await fetch(`${RC_API_BASE}${path}`, {
+    method: "POST",
+    credentials: "include",
+    headers,
+    body: JSON.stringify(body)
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 401 || res.status === 403) {
+    secureAdminLogout("invalid_token");
+    throw new Error(data.error || "Sesión caducada o sin permisos de administrador.");
+  }
+  if (!res.ok || data.success === false) {
+    throw new Error(data.error || `Error HTTP ${res.status}`);
+  }
+  return data;
+}
 
 const OFFICIAL_ROSTER_DEFAULTS = [
   {
@@ -347,54 +364,46 @@ async function refreshRaceControlData() {
     if (m && m.email) byEmail.set(m.email.toLowerCase(), { ...byEmail.get(m.email.toLowerCase()), ...m });
   });
 
-  // 2. Strict Session Verification + Live D1 Admin Overview
+  // 2. Strict Session Verification + Live D1 Admin Panel
   if (!verifyAdminSession()) return;
-  const token = getAdminToken();
-  if (token) {
-    try {
-      const res = await fetch(`${RC_API_BASE}/api/setups/admin/overview`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({})
+  let d1Online = false;
+  try {
+    const data = await rcAdminFetch("/api/setups/admin/panel", {});
+    d1Online = true;
+    if (Array.isArray(data.members)) {
+      data.members.forEach((dbM) => {
+        if (!dbM || !dbM.email) return;
+        const key = String(dbM.email).toLowerCase();
+        const existing = byEmail.get(key) || {};
+        byEmail.set(key, {
+          ...existing,
+          name: dbM.name || existing.name || key.split("@")[0],
+          email: dbM.email,
+          role: dbM.role || existing.role || "driver",
+          roleLabel: dbM.role === "admin" ? "Team Principal & Admin" : existing.roleLabel || "Official Driver",
+          status: dbM.status || "active",
+          has_password: Boolean(dbM.has_password),
+          last_login_at: dbM.last_login_at || null,
+          created_at: dbM.created_at || existing.created_at || new Date().toISOString()
+        });
       });
-      if (res.status === 401 || res.status === 403) {
-        secureAdminLogout("invalid_token");
-        return;
-      }
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data.members)) {
-          data.members.forEach((dbM) => {
-            if (!dbM || !dbM.email) return;
-            const key = String(dbM.email).toLowerCase();
-            const existing = byEmail.get(key) || {};
-            byEmail.set(key, {
-              ...existing,
-              name: dbM.name || existing.name || key.split("@")[0],
-              email: dbM.email,
-              role: dbM.role || existing.role || "driver",
-              roleLabel: dbM.role === "admin" ? "Team Principal & Admin" : existing.roleLabel || "Official Driver",
-              status: "active",
-              has_password: Boolean(dbM.has_password),
-              created_at: dbM.created_at || existing.created_at || new Date().toISOString()
-            });
-          });
-        }
-        if (Array.isArray(data.pending_requests)) {
-          rcState.pendingRequests = data.pending_requests;
-        }
-      }
-    } catch {}
+    }
+    if (Array.isArray(data.requests)) {
+      rcState.pendingRequests = data.requests.filter((r) => r && r.status === "pending");
+    } else if (Array.isArray(data.pending_requests)) {
+      rcState.pendingRequests = data.pending_requests;
+    } else {
+      rcState.pendingRequests = [];
+    }
+  } catch (err) {
+    showRcNotice("Error al sincronizar con Cloudflare D1", err?.message || "No se pudo cargar /api/setups/admin/panel.", "err");
   }
 
   rcState.members = Array.from(byEmail.values());
 
   // 3. Fetch live driver telemetry from /api/drivers
   try {
-    const res = await fetch("/api/drivers", { headers: { Accept: "application/json" } });
+    const res = await fetch(`${RC_API_BASE}/api/drivers`, { headers: { Accept: "application/json" } });
     if (res.ok) {
       const payload = await res.json();
       const drivers = Array.isArray(payload) ? payload : payload.drivers || [];
@@ -404,8 +413,8 @@ async function refreshRaceControlData() {
     }
   } catch {}
 
-  if (badge) badge.textContent = "D1 Edge: Online";
-  if (d1Side) d1Side.textContent = `${rcState.members.length} miembros activos`;
+  if (badge) badge.textContent = d1Online ? "D1 Edge: Online" : "D1 Edge: Error";
+  if (d1Side) d1Side.textContent = `${rcState.members.filter((m) => m.status === "active").length} activos · ${rcState.pendingRequests.length} pend.`;
 
   renderOverviewSection();
   renderDirectoryTable();
@@ -492,7 +501,7 @@ function renderOverviewActivity() {
 // ============================================================================
 function filterDirectory(mode) {
   rcState.directoryFilter = mode;
-  ["all", "active", "admin", "pending"].forEach((m) => {
+  ["all", "active", "admin", "inactive", "pending"].forEach((m) => {
     document.getElementById(`dirFilter-${m}`)?.classList.toggle("is-on", m === mode);
   });
   renderPendingRequests();
@@ -519,17 +528,27 @@ function renderPendingRequests() {
     return;
   }
 
-  container.innerHTML = list.map((req) => `
-    <div class="rc-sim-output">
-      <div>
-        <div class="rc-strong">${rcEscape(req.name || "Solicitante")} · <code>${rcEscape(req.email)}</code></div>
-        <p class="rc-muted">${rcEscape(req.message || "Solicitud de acceso al Setup Vault")}</p>
+  container.innerHTML = list.map((req) => {
+    const meta = [
+      req.iracing_id ? `iRacing ID: ${req.iracing_id}` : null,
+      req.car_category ? `Categoría: ${req.car_category}` : null,
+      req.created_at ? new Date(req.created_at).toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" }) : null
+    ].filter(Boolean).join(" · ");
+    return `
+      <div class="rc-sim-output" style="flex-wrap:wrap;gap:12px">
+        <div style="flex:1;min-width:240px">
+          <div class="rc-strong">${rcEscape(req.name || "Solicitante")} · <code>${rcEscape(req.email)}</code></div>
+          ${meta ? `<div class="rc-mono-sub">${rcEscape(meta)}</div>` : ""}
+          <p class="rc-muted" style="margin-top:4px">${rcEscape(req.message || "Solicitud de acceso al Setup Vault")}</p>
+        </div>
+        <div class="rc-btn-row" style="flex-wrap:wrap">
+          <button type="button" class="r-btn r-btn--primary r-btn--sm" data-request-id="${rcEscape(req.id)}" data-email="${rcEscape(req.email)}" data-name="${rcEscape(req.name || "")}" onclick="approvePendingRequestBtn(this, 'link')">✓ Aprobar (Enlace 72h)</button>
+          <button type="button" class="r-btn r-btn--sm" data-request-id="${rcEscape(req.id)}" data-email="${rcEscape(req.email)}" data-name="${rcEscape(req.name || "")}" onclick="approvePendingRequestBtn(this, 'temp_password')">🔑 Clave Temp.</button>
+          <button type="button" class="r-btn r-btn--sm" style="border-color:rgba(239,68,68,.4);color:#f87171" data-request-id="${rcEscape(req.id)}" data-email="${rcEscape(req.email)}" data-name="${rcEscape(req.name || "")}" onclick="rejectPendingRequestBtn(this)">✕ Rechazar</button>
+        </div>
       </div>
-      <div class="rc-btn-row">
-        <button type="button" class="r-btn r-btn--primary r-btn--sm" data-email="${rcEscape(req.email)}" data-name="${rcEscape(req.name || "")}" onclick="approvePendingRequestBtn(this)">✓ Aprobar y Generar Link</button>
-      </div>
-    </div>
-  `).join("");
+    `;
+  }).join("");
 }
 
 function renderDirectoryTable() {
@@ -540,6 +559,7 @@ function renderDirectoryTable() {
   const filtered = rcState.members.filter((m) => {
     if (rcState.directoryFilter === "admin" && m.role !== "admin") return false;
     if (rcState.directoryFilter === "active" && m.status !== "active") return false;
+    if (rcState.directoryFilter === "inactive" && m.status !== "inactive") return false;
     if (!q) return true;
     const hay = `${m.name} ${m.email} ${m.mailbox || ""} ${m.roleLabel || ""} ${m.number || ""}`.toLowerCase();
     return hay.includes(q);
@@ -553,6 +573,12 @@ function renderDirectoryTable() {
   tbody.innerHTML = filtered.map((m) => {
     const numBadge = m.number ? `#${m.number}` : (m.name || "MMT").slice(0, 2).toUpperCase();
     const isPrincipal = m.email.toLowerCase() === "atrumin16@gmail.com";
+    const isBlocked = m.status === "inactive";
+    const statusBadge = isBlocked
+      ? `<span class="rc-badge rc-badge--err">Bloqueada</span>`
+      : m.has_password
+      ? `<span class="rc-badge rc-badge--ok">Activa</span>`
+      : `<span class="rc-badge rc-badge--warn">Pendiente clave</span>`;
     return `
       <tr>
         <td>
@@ -574,13 +600,13 @@ function renderDirectoryTable() {
         <td>
           <div class="rc-mono-sub">${rcEscape(m.irating ? `${m.irating} iR · SR ${m.sr || "A"}` : "Vault & Setup Builder")}</div>
         </td>
-        <td>
-          <span class="rc-badge rc-badge--ok">${m.has_password ? "Contraseña Activa" : "Enlace Enviado"}</span>
-        </td>
+        <td>${statusBadge}</td>
         <td class="text-right">
-          <div class="rc-btn-row" style="justify-content:flex-end">
-            <button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" data-name="${rcEscape(m.name)}" onclick="generateDriverAccessFromBtn(this)">Renovar Acceso</button>
-            ${!isPrincipal ? `<button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" onclick="revokeDriverAccessBtn(this)">Revocar</button>` : ""}
+          <div class="rc-btn-row" style="justify-content:flex-end;flex-wrap:wrap">
+            ${!isBlocked ? `<button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" data-name="${rcEscape(m.name)}" onclick="generateDriverAccessFromBtn(this, 'link')">Reset / Enlace</button>` : ""}
+            ${!isBlocked ? `<button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" data-name="${rcEscape(m.name)}" onclick="generateDriverAccessFromBtn(this, 'temp_password')">Clave Temp.</button>` : ""}
+            ${!isPrincipal ? `<button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" data-status="${isBlocked ? "active" : "inactive"}" onclick="toggleMemberStatusBtn(this)">${isBlocked ? "Reactivar" : "Bloquear"}</button>` : ""}
+            ${!isPrincipal ? `<button type="button" class="r-btn r-btn--sm" style="border-color:rgba(239,68,68,.35);color:#f87171" data-email="${rcEscape(m.email)}" onclick="deleteMemberBtn(this)">Eliminar</button>` : ""}
           </div>
         </td>
       </tr>
@@ -597,70 +623,42 @@ function closeAddDriverModal() {
   document.getElementById("addDriverModal")?.classList.add("hidden");
 }
 
-async function issuePilotCredentials({ name, email, role = "driver", method = "link", send_email = true }) {
+async function issuePilotCredentials({ request_id = null, name, email, role = "driver", method = "link", send_email = true, force = true }) {
   const cleanEmail = String(email || "").trim().toLowerCase();
   const cleanName = String(name || cleanEmail.split("@")[0]).trim();
   if (!cleanEmail) return;
 
-  let secret = "";
-  let isTempPass = method === "temp_password";
-  const token = getAdminToken();
+  try {
+    const payload = request_id
+      ? { request_id: Number(request_id), method, send_email, force }
+      : { email: cleanEmail, name: cleanName, role, method, send_email, force };
 
-  if (token) {
-    try {
-      const res = await fetch(`${RC_API_BASE}/api/setups/admin/approve`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ email: cleanEmail, name: cleanName, method, send_email, force: true })
-      });
-      const data = await res.json().catch(() => ({}));
-      if (res.ok && data.success) {
-        secret = data.temp_password || data.set_password_link || "";
-        isTempPass = Boolean(data.temp_password);
-      }
-    } catch {}
-  }
+    const data = await rcAdminFetch("/api/setups/admin/approve", payload);
+    const secret = data.temp_password || data.set_password_link || "";
+    const isTempPass = Boolean(data.temp_password);
 
-  if (!secret) {
-    const randHex = Array.from(crypto.getRandomValues(new Uint8Array(12)))
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
-    if (isTempPass) {
-      secret = `MMT-${randHex.slice(0, 4).toUpperCase()}-${randHex.slice(4, 8).toUpperCase()}`;
-    } else {
-      secret = `https://muntru.me/garage?set_password=${randHex}&email=${encodeURIComponent(cleanEmail)}`;
+    appendAuditEvent(
+      "admin",
+      "atrumin16@gmail.com",
+      `Credenciales emitidas para ${cleanName} (${cleanEmail}) · ${isTempPass ? "Clave temporal" : "Enlace 72h"} · Email: ${data.email_sent ? "enviado" : "no enviado"}`,
+      data.email_sent ? "ENVIADO" : "LISTO"
+    );
+
+    await refreshRaceControlData();
+
+    if (secret) {
+      openCredentialsResultModal({ name: data.pilot?.name || cleanName, email: data.pilot?.email || cleanEmail, secret, isTempPass });
     }
+    if (data.email_sent) {
+      showRcNotice("Operación completada", `Acceso emitido para ${cleanEmail} y correo enviado correctamente.`, "success");
+    } else if (data.email_error) {
+      showRcNotice("Acceso creado (revisa el correo)", `Cuenta activada en D1, pero el correo falló: ${data.email_error}. Puedes copiar el enlace/clave desde el modal.`, "warn");
+    } else if (data.message) {
+      showRcNotice("Solicitud actualizada", data.message, "info");
+    }
+  } catch (err) {
+    showRcNotice("No se pudo aprobar/generar acceso", err?.message || "Error al conectar con Cloudflare D1.", "err");
   }
-
-  // Persist in local custom members list
-  const custom = loadLocalCustomMembers().filter((x) => String(x.email).toLowerCase() !== cleanEmail);
-  custom.push({
-    name: cleanName,
-    email: cleanEmail,
-    role,
-    roleLabel: role === "admin" ? "Team Principal / Admin" : role === "engineer" ? "Race Engineer" : "Official Driver",
-    status: "active",
-    has_password: true,
-    created_at: new Date().toISOString()
-  });
-  saveLocalCustomMembers(custom);
-
-  rcState.pendingRequests = (rcState.pendingRequests || []).filter(
-    (r) => String(r.email).toLowerCase() !== cleanEmail
-  );
-
-  appendAuditEvent(
-    "admin",
-    "atrumin16@gmail.com",
-    `Credenciales emitidas para ${cleanName} (${cleanEmail}) · Método: ${isTempPass ? "Contraseña temporal" : "Enlace 72h"}`,
-    "AUTORIZADO"
-  );
-
-  await refreshRaceControlData();
-  openCredentialsResultModal({ name: cleanName, email: cleanEmail, secret, isTempPass });
 }
 
 async function submitAddDriverForm(e) {
@@ -672,31 +670,90 @@ async function submitAddDriverForm(e) {
   const send_email = Boolean(document.getElementById("newDriverSendEmail")?.checked);
 
   closeAddDriverModal();
-  await issuePilotCredentials({ name, email, role, method, send_email });
+  await issuePilotCredentials({ name, email, role, method, send_email, force: true });
 }
 
-function generateDriverAccessFromBtn(btn) {
-  const email = btn?.dataset?.email || "";
-  const name = btn?.dataset?.name || "";
-  issuePilotCredentials({ name, email, role: "driver", method: "link", send_email: false });
+async function generateDriverAccessFromBtn(btn, method = "link") {
+  const email = (btn?.dataset?.email || "").trim().toLowerCase();
+  const name = btn?.dataset?.name || email.split("@")[0];
+  if (!email) return;
+  if (method === "temp_password") {
+    await issuePilotCredentials({ name, email, method: "temp_password", send_email: true, force: true });
+    return;
+  }
+  try {
+    const data = await rcAdminFetch("/api/setups/admin/resend-invite", { email });
+    const secret = data.set_password_link || "";
+    appendAuditEvent("admin", "atrumin16@gmail.com", `Reset/enlace 72h enviado a ${email} · Email: ${data.email_sent ? "OK" : "error"}`, "RESET");
+    await refreshRaceControlData();
+    if (secret) openCredentialsResultModal({ name, email, secret, isTempPass: false });
+    showRcNotice(
+      data.email_sent ? "Enlace de reset enviado" : "Enlace generado (correo pendiente)",
+      data.email_sent ? `Se ha enviado el enlace de contraseña a ${email}.` : `Enlace generado, pero el correo falló: ${data.email_error || "revisa Resend"}. Cópialo del modal.`,
+      data.email_sent ? "success" : "warn"
+    );
+  } catch (err) {
+    showRcNotice("No se pudo enviar el reset", err?.message || "Error al generar enlace.", "err");
+  }
 }
 
-function approvePendingRequestBtn(btn) {
+function approvePendingRequestBtn(btn, method = "link") {
+  const request_id = btn?.dataset?.requestId || null;
   const email = btn?.dataset?.email || "";
   const name = btn?.dataset?.name || "";
-  issuePilotCredentials({ name, email, role: "driver", method: "link", send_email: true });
+  issuePilotCredentials({ request_id, name, email, role: "driver", method, send_email: true, force: true });
+}
+
+async function rejectPendingRequestBtn(btn) {
+  const request_id = btn?.dataset?.requestId;
+  const email = btn?.dataset?.email || "";
+  if (!request_id) return;
+  const reason = window.prompt(`Motivo opcional para rechazar a ${email} (déjalo vacío si no quieres indicar motivo):`, "");
+  if (reason === null) return;
+  try {
+    const data = await rcAdminFetch("/api/setups/admin/reject", { request_id: Number(request_id), notify: true, reason });
+    appendAuditEvent("admin", "atrumin16@gmail.com", `Solicitud rechazada: ${email}`, "RECHAZADA");
+    await refreshRaceControlData();
+    showRcNotice("Solicitud rechazada", data.email_sent ? `Solicitud de ${email} rechazada y piloto notificado.` : `Solicitud de ${email} rechazada.`, "info");
+  } catch (err) {
+    showRcNotice("Error al rechazar solicitud", err?.message || "No se pudo rechazar la solicitud.", "err");
+  }
+}
+
+async function toggleMemberStatusBtn(btn) {
+  const email = (btn?.dataset?.email || "").trim().toLowerCase();
+  const nextStatus = btn?.dataset?.status === "active" ? "active" : "inactive";
+  if (!email || email === "atrumin16@gmail.com") return;
+  const actionLabel = nextStatus === "inactive" ? "bloquear" : "reactivar";
+  if (!window.confirm(`¿Seguro que quieres ${actionLabel} la cuenta de ${email}?`)) return;
+  try {
+    await rcAdminFetch("/api/setups/admin/set-status", { email, status: nextStatus });
+    appendAuditEvent("admin", "atrumin16@gmail.com", `Cuenta ${nextStatus === "inactive" ? "bloqueada" : "reactivada"}: ${email}`, nextStatus === "inactive" ? "BLOQUEADA" : "ACTIVA");
+    await refreshRaceControlData();
+    showRcNotice(nextStatus === "inactive" ? "Cuenta bloqueada" : "Cuenta reactivada", `${email} ahora está ${nextStatus === "inactive" ? "bloqueada y con sesión cerrada" : "activa"}.`, "info");
+  } catch (err) {
+    showRcNotice("No se pudo cambiar el estado", err?.message || "Error en D1.", "err");
+  }
+}
+
+async function deleteMemberBtn(btn) {
+  const email = (btn?.dataset?.email || "").trim().toLowerCase();
+  if (!email || email === "atrumin16@gmail.com") return;
+  if (!window.confirm(`¿Eliminar definitivamente la cuenta de ${email} de Cloudflare D1? Esta acción no se puede deshacer.`)) return;
+  try {
+    await rcAdminFetch("/api/setups/admin/user/delete", { email });
+    const custom = loadLocalCustomMembers().filter((x) => String(x.email).toLowerCase() !== email);
+    saveLocalCustomMembers(custom);
+    appendAuditEvent("admin", "atrumin16@gmail.com", `Cuenta eliminada: ${email}`, "ELIMINADA");
+    await refreshRaceControlData();
+    showRcNotice("Cuenta eliminada", `Se ha eliminado la cuenta de ${email}.`, "info");
+  } catch (err) {
+    showRcNotice("No se pudo eliminar la cuenta", err?.message || "Error en D1.", "err");
+  }
 }
 
 function revokeDriverAccessBtn(btn) {
-  const email = (btn?.dataset?.email || "").toLowerCase();
-  if (!email || email === "atrumin16@gmail.com") return;
-  const custom = loadLocalCustomMembers().filter((x) => String(x.email).toLowerCase() !== email);
-  saveLocalCustomMembers(custom);
-  rcState.members = rcState.members.filter((x) => String(x.email).toLowerCase() !== email);
-  appendAuditEvent("admin", "atrumin16@gmail.com", `Acceso revocado para ${email}`, "REVOCADO");
-  renderOverviewSection();
-  renderDirectoryTable();
-  showRcNotice("Acceso revocado", `Se ha revocado la credencial de ${email}.`, "info");
+  return toggleMemberStatusBtn(btn);
 }
 
 function openCredentialsResultModal({ name, email, secret, isTempPass }) {
@@ -990,7 +1047,7 @@ function copyIracingConsoleSnippet() {
 
 async function testLiveDriversEndpoint() {
   try {
-    const res = await fetch("/api/drivers", { headers: { Accept: "application/json" } });
+    const res = await fetch(`${RC_API_BASE}/api/drivers`, { headers: { Accept: "application/json" } });
     const data = await res.json();
     const count = Array.isArray(data) ? data.length : (data.drivers || []).length;
     showRcNotice("Endpoint /api/drivers OK", `Respuesta HTTP ${res.status}: ${count} pilotos recibidos en vivo.`, "success");
@@ -1114,6 +1171,9 @@ if (typeof window !== "undefined") {
   window.submitAddDriverForm = submitAddDriverForm;
   window.generateDriverAccessFromBtn = generateDriverAccessFromBtn;
   window.approvePendingRequestBtn = approvePendingRequestBtn;
+  window.rejectPendingRequestBtn = rejectPendingRequestBtn;
+  window.toggleMemberStatusBtn = toggleMemberStatusBtn;
+  window.deleteMemberBtn = deleteMemberBtn;
   window.revokeDriverAccessBtn = revokeDriverAccessBtn;
   window.closeCredentialsResultModal = closeCredentialsResultModal;
   window.copyCredentialSecretOnly = copyCredentialSecretOnly;

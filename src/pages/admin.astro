@@ -342,6 +342,7 @@ const totalCircuits = catalog.circuits?.length || 128;
               <button type="button" id="dirFilter-all" class="is-on" onclick="filterDirectory('all')">Todos</button>
               <button type="button" id="dirFilter-active" onclick="filterDirectory('active')">Titulares Activos</button>
               <button type="button" id="dirFilter-admin" onclick="filterDirectory('admin')">Administradores</button>
+              <button type="button" id="dirFilter-inactive" onclick="filterDirectory('inactive')">Bloqueadas</button>
               <button type="button" id="dirFilter-pending" onclick="filterDirectory('pending')">Solicitudes</button>
             </div>
             <div class="rc-search-inline">
@@ -1361,5 +1362,5 @@ const totalCircuits = catalog.circuits?.length || 128;
   </style>
 
   <script is:inline src="/assets/js/driver-ids.js?v=t310"></script>
-  <script is:inline src="/assets/js/admin.js?v=t310"></script>
+  <script is:inline src="/assets/js/admin.js?v=t311"></script>
 </Layout>
