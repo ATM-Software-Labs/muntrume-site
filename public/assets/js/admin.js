@@ -13,7 +13,6 @@ async function rcAdminFetch(path, body = {}) {
   if (token) headers.Authorization = `Bearer ${token}`;
   const res = await fetch(`${RC_API_BASE}${path}`, {
     method: "POST",
-    credentials: "include",
     headers,
     body: JSON.stringify(body)
   });
@@ -318,7 +317,8 @@ function showRcNotice(title, msg, tone = "info") {
   const titleEl = document.getElementById("rcFeedbackTitle");
   const msgEl = document.getElementById("rcFeedbackMsg");
   if (!banner || !titleEl || !msgEl) return;
-  banner.className = `m-notice m-notice--${tone}`;
+  const toneMap = { err: "error", warn: "warning" };
+  banner.className = `m-notice m-notice--${toneMap[tone] || tone}`;
   titleEl.textContent = title;
   msgEl.textContent = msg;
   banner.classList.remove("hidden");
@@ -741,7 +741,7 @@ async function deleteMemberBtn(btn) {
   if (!email || email === "atrumin16@gmail.com") return;
   if (!window.confirm(`¿Eliminar definitivamente la cuenta de ${email} de Cloudflare D1? Esta acción no se puede deshacer.`)) return;
   try {
-    await rcAdminFetch("/api/setups/admin/user/delete", { email });
+    await rcAdminFetch("/api/setups/admin/user/delete", { email, confirm: email });
     const custom = loadLocalCustomMembers().filter((x) => String(x.email).toLowerCase() !== email);
     saveLocalCustomMembers(custom);
     appendAuditEvent("admin", "atrumin16@gmail.com", `Cuenta eliminada: ${email}`, "ELIMINADA");
