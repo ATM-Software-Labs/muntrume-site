@@ -311,11 +311,30 @@
 
   var params = new URLSearchParams(location.search);
   var setpw = params.get("setpw");
+  // Enlaces antiguos de correo (/setups#admin → /garage#admin) y redirecciones desde /admin.
+  if (location.hash === "#admin" && !params.get("redirect")) {
+    params.set("redirect", "/admin?tab=directory");
+    params.set("auth", "admin");
+    try { history.replaceState({}, "", location.pathname + "?" + params.toString()); } catch (e) {}
+  }
+  var wantsAdmin = params.get("auth") === "admin" || params.get("auth") === "expired";
+  var redirectTo = params.get("redirect") || "";
+  var hasSession = false;
+  try {
+    var t0 = localStorage.getItem("mrt_vault_token") || sessionStorage.getItem("mrt_vault_token");
+    var u0 = JSON.parse(localStorage.getItem("mrt_vault_user") || sessionStorage.getItem("mrt_vault_user") || "null");
+    hasSession = Boolean(t0 && t0 !== "guest_token" && u0 && u0.email && u0.role !== "guest");
+    if (hasSession && params.get("auth") === "admin" && u0.role !== "admin" && String(u0.email).toLowerCase() !== ADMIN) hasSession = false;
+  } catch (e) {}
   if (setpw) {
     params.delete("setpw");
     var qs = params.toString();
     try { history.replaceState({}, "", location.pathname + (qs ? "?" + qs : "") + location.hash); } catch (e) {}
     openSetPassword(setpw);
+  } else if (wantsAdmin && hasSession && params.get("auth") === "admin" && redirectTo.charAt(0) === "/" && redirectTo.charAt(1) !== "/") {
+    location.replace(redirectTo);
+  } else if (wantsAdmin) {
+    openAuth("login");
   } else if (params.get("mode") === "login" || location.hash === "#login") {
     openAuth("login");
   } else if (params.get("mode") === "join" || location.hash === "#join") {

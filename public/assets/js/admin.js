@@ -7,19 +7,64 @@
 
 const RC_API_BASE = "https://muntrume.atrumin16.workers.dev";
 
-async function rcAdminFetch(path, body = {}) {
+function rcStoreSession(token, user) {
+  try {
+    if (token) {
+      localStorage.setItem("mrt_vault_token", token);
+      sessionStorage.setItem("mrt_vault_token", token);
+    }
+    if (user) {
+      const raw = JSON.stringify(user);
+      localStorage.setItem("mrt_vault_user", raw);
+      sessionStorage.setItem("mrt_vault_user", raw);
+    }
+  } catch {}
+}
+
+async function rcRawPost(path, body) {
   const token = getAdminToken();
   const headers = { "Content-Type": "application/json" };
   if (token) headers.Authorization = `Bearer ${token}`;
-  const res = await fetch(`${RC_API_BASE}${path}`, {
-    method: "POST",
-    headers,
-    body: JSON.stringify(body)
-  });
+  const res = await fetch(`${RC_API_BASE}${path}`, { method: "POST", headers, body: JSON.stringify(body || {}) });
   const data = await res.json().catch(() => ({}));
-  if (res.status === 401 || res.status === 403) {
+  return { res, data };
+}
+
+let rcReauthPromise = null;
+function rcReauth() {
+  if (rcReauthPromise) return rcReauthPromise;
+  rcReauthPromise = (async () => {
+    let email = "";
+    try { email = JSON.parse(localStorage.getItem("mrt_vault_user") || sessionStorage.getItem("mrt_vault_user") || "{}").email || ""; } catch {}
+    if (!email) return false;
+    const reqOut = await rcRawPost("/api/setups/code/request", { email });
+    if (!reqOut.data.success) {
+      showRcNotice("No se pudo enviar el código", reqOut.data.error || "Inténtalo de nuevo en un minuto.", "err");
+      return false;
+    }
+    const code = window.prompt(`Por seguridad, Race Control requiere verificación.\n\nTe he enviado un código de 6 dígitos a ${email}. Escríbelo aquí:`);
+    if (!code) return false;
+    const v = await rcRawPost("/api/setups/code/verify", { email, code: code.replace(/\D/g, "") });
+    if (v.data.success && v.data.token) {
+      rcStoreSession(v.data.token, v.data.user || null);
+      return true;
+    }
+    showRcNotice("Código incorrecto", v.data.error || "Código incorrecto o caducado.", "err");
+    return false;
+  })().finally(() => { setTimeout(() => { rcReauthPromise = null; }, 0); });
+  return rcReauthPromise;
+}
+
+async function rcAdminFetch(path, body = {}, _retried = false) {
+  const { res, data } = await rcRawPost(path, body);
+  if (res.status === 403 && data.code === "reauth_required" && !_retried) {
+    const ok = await rcReauth();
+    if (ok) return rcAdminFetch(path, body, true);
+    throw new Error("Verificación por código necesaria para usar Race Control.");
+  }
+  if (res.status === 401) {
     secureAdminLogout("invalid_token");
-    throw new Error(data.error || "Sesión caducada o sin permisos de administrador.");
+    throw new Error(data.error || "Sesión caducada. Vuelve a iniciar sesión.");
   }
   if (!res.ok || data.success === false) {
     throw new Error(data.error || `Error HTTP ${res.status}`);
