@@ -1,7 +1,9 @@
-import type { HardwareReport, IracingAnalysis, LiveSample, Settings, Snapshot } from "./types";
+import type { HardwareReport, IbtSessionReport, IracingAnalysis, LiveSample, Settings, Snapshot } from "./types";
 import rawSchedule from "./season_schedule_2026_s4.json";
 import rawRealTracks from "./real_telemetry_tracks.json";
 import { clamp, finiteOr, safeDiv } from "./core/math-guards";
+import { resolveCarMetadata, createBrandBadgeElement } from "./cars/catalog";
+import { computeTrailBrakingScore } from "./telemetry/comparator";
 
 interface ScheduleWeek {
   week_num: number;
@@ -40,6 +42,7 @@ function currentSeasonWeek(): number {
 }
 
 let activeWeek = currentSeasonWeek();
+let lastIbtReport: IbtSessionReport | null = null;
 let activeCat = "all";
 let activeSearch = "";
 let filterOnlyOpen = false;
@@ -476,10 +479,17 @@ function renderTelemetryStudio(): void {
   const maxDist = Math.max(1, finiteOr(track.samples[track.samples.length - 1]?.dist, 1));
 
   if (alienTimeNode) alienTimeNode.textContent = track.bestFormatted;
-  if (userTimeNode) userTimeNode.textContent = track.avgFormatted;
-  if (countBadge) countBadge.textContent = `${track.lapCount} vueltas analizadas`;
+  if (userTimeNode) userTimeNode.textContent = lastIbtReport && lastIbtReport.bestLapS > 0 ? formatLapSec(lastIbtReport.bestLapS) : track.avgFormatted;
+  if (countBadge) {
+    if (lastIbtReport && lastIbtReport.bestLapSamples.length > 0) {
+      const tbScore = Math.round(computeTrailBrakingScore(lastIbtReport.bestLapSamples));
+      countBadge.textContent = `${lastIbtReport.totalLaps} vueltas · Trail Braking ${tbScore}%`;
+    } else {
+      countBadge.textContent = `${track.lapCount} vueltas analizadas`;
+    }
+  }
   if (deltaSummaryNode) deltaSummaryNode.textContent = `+${deltaSec.toFixed(3)}s`;
-  if (fileBadge) fileBadge.textContent = track.fileUsed;
+  if (fileBadge) fileBadge.textContent = lastIbtReport ? `${lastIbtReport.fileName} (.ibt real)` : track.fileUsed;
   if (trackLengthBadge) trackLengthBadge.textContent = `${(maxDist / 1000).toFixed(3)} km · ${track.lapCount} laps iRacing`;
 
   drawTraceStudio(track, activeHoverDist);
@@ -1174,7 +1184,30 @@ async function setOverlayEdit(editing: boolean): Promise<void> {
   await invoke("set_overlay_edit", { editing });
 }
 
+export function updateOverlayBrandBadge(carFolder?: string): void {
+  const target = carFolder || lastIbtReport?.carPath || "ferrari296gt3";
+  const meta = resolveCarMetadata(target);
+  const nodes = document.querySelectorAll<HTMLElement>("#ovClusterBrandFloat, #ovClusterBrandPreview");
+  nodes.forEach((node) => {
+    node.replaceChildren();
+    if (!meta) {
+      node.hidden = true;
+      return;
+    }
+    node.hidden = false;
+    const badge = createBrandBadgeElement(meta, 16);
+    const label = document.createElement("span");
+    label.className = "font-bold tracking-wide text-white";
+    label.textContent = `${meta.brand} ${meta.model}`;
+    const cls = document.createElement("span");
+    cls.className = "px-1 py-0.2 rounded bg-white/10 text-[9px] text-[#00e5ff] font-bold";
+    cls.textContent = meta.carClass;
+    node.append(badge, label, cls);
+  });
+}
+
 export function paintOverlays(): void {
+  updateOverlayBrandBadge();
   const toggleBtn = document.getElementById("overlayModeToggle");
   const btnUnlock = document.getElementById("btnUnlockLayout");
   const btnReset = document.getElementById("btnResetLayout");
@@ -3142,45 +3175,72 @@ export function paintConfigAnalysis(data: IracingAnalysis): void {
 // 10. LAST SESSION (ÚLTIMA SESIÓN) TELEMETRY & RESULTS SUITE
 // -------------------------------------------------------------
 
-export function paintLastSession(_trackId?: string): void {
+function formatLapSec(sec: number): string {
+  const s = finiteOr(sec, 0);
+  if (s <= 0) return "--:--.---";
+  const mins = Math.floor(s / 60);
+  const rem = s - mins * 60;
+  return `${mins}:${rem.toFixed(3).padStart(6, "0")}`;
+}
+
+function drawIbtTrace(canvas: HTMLCanvasElement, report: IbtSessionReport): void {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  const w = canvas.width || 480;
+  const h = canvas.height || 180;
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = "#090d12";
+  ctx.fillRect(0, 0, w, h);
+
+  const pts = report.bestLapSamples;
+  if (!pts || pts.length < 2) return;
+
+  const minD = pts[0].distM;
+  const spanD = Math.max(1, pts[pts.length - 1].distM - minD);
+  const maxSpd = Math.max(120, report.topSpeedKmh);
+
+  const strokeLine = (color: string, getY: (i: number) => number) => {
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    for (let i = 0; i < pts.length; i++) {
+      const x = safeDiv(pts[i].distM - minD, spanD, 0) * w;
+      const y = h - clamp(getY(i), 0, 1) * (h - 16) - 8;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  };
+
+  strokeLine("#10b981", (i) => pts[i].throttle);
+  strokeLine("#ef4444", (i) => pts[i].brake);
+  strokeLine("#00e5ff", (i) => safeDiv(pts[i].speedKmh, maxSpd, 0));
+}
+
+export function paintLastSession(report?: IbtSessionReport | null): void {
+  if (report !== undefined) {
+    lastIbtReport = report;
+  }
   const canvas = document.getElementById("lastSessionTrackCanvas") as HTMLCanvasElement | null;
   if (canvas) {
-    const ctx = canvas.getContext("2d");
-    ctx?.clearRect(0, 0, canvas.width, canvas.height);
+    if (report && report.bestLapSamples.length > 1) {
+      drawIbtTrace(canvas, report);
+    } else {
+      const ctx = canvas.getContext("2d");
+      ctx?.clearRect(0, 0, canvas.width, canvas.height);
+    }
   }
 
   const trackName = document.getElementById("lsTrackName");
   const trackConfig = document.getElementById("lsTrackConfig");
   const trackConditions = document.getElementById("lsTrackConditions");
   const dateText = document.getElementById("lsDateText");
-  if (trackName) trackName.textContent = "iRacing Cerrado";
-  if (trackConfig) trackConfig.textContent = "Sin sesión";
-  if (trackConditions) {
-    trackConditions.innerHTML = `
-      <span>Asfalto --°C · Aire --°C</span><br/>
-      <span>Esperando conexión con simulador</span>
-    `;
-  }
-  if (dateText) dateText.textContent = "Esperando a iRacing";
-
-  // Update Car Make & Setup
   const brandIcon = document.getElementById("lsBrandIcon");
   const brandName = document.getElementById("lsBrandName");
   const carModel = document.getElementById("lsCarModel");
   const carClass = document.getElementById("lsCarClass");
   const pilot = document.getElementById("lsPilot");
   const setup = document.getElementById("lsSetup");
-  if (brandIcon) brandIcon.textContent = "--";
-  if (brandName) brandName.textContent = "Vehículo";
-  if (carModel) carModel.textContent = "Sin coche en pista";
-  if (carClass) carClass.textContent = "Clase --";
-  if (pilot) pilot.textContent = "—";
-  if (setup) {
-    setup.textContent = "Sin telemetría en vivo";
-    setup.title = "Esperando que iRacing esté en pista";
-  }
-
-  // Update Big Results Cards
   const position = document.getElementById("lsPosition");
   const posBadge = document.getElementById("lsPosBadge");
   const iratingGain = document.getElementById("lsIratingGain");
@@ -3189,36 +3249,110 @@ export function paintLastSession(_trackId?: string): void {
   const safetyTotal = document.getElementById("lsSafetyTotal");
   const avgTime = document.getElementById("lsAvgTime");
   const lapsCount = document.getElementById("lsLapsCount");
-
-  if (position) position.textContent = "--";
-  if (posBadge) posBadge.textContent = "Sin carrera activa";
-  if (iratingGain) iratingGain.textContent = "--";
-  if (iratingTotal) iratingTotal.textContent = "Solo oficial finalizada";
-  if (safetyGain) safetyGain.textContent = "--";
-  if (safetyTotal) safetyTotal.textContent = "—";
-  if (avgTime) avgTime.textContent = "--:--.---";
-  if (lapsCount) lapsCount.textContent = "—";
-
-  // Update Stint Highlights
   const bestTime = document.getElementById("lsBestTime");
   const consistency = document.getElementById("lsConsistency");
   const topSpeed = document.getElementById("lsTopSpeed");
   const fuel = document.getElementById("lsFuel");
-  if (bestTime) bestTime.textContent = "--:--.---";
-  if (consistency) consistency.textContent = "--";
-  if (topSpeed) topSpeed.textContent = "-- km/h";
-  if (fuel) fuel.textContent = "-- L/vuelta";
-
-  // Clean Lap Table
   const tableBody = document.getElementById("lsLapTableBody");
+
+  if (!report) {
+    if (trackName) trackName.textContent = "Sin archivo .ibt";
+    if (trackConfig) trackConfig.textContent = "Sin sesión";
+    if (trackConditions) {
+      trackConditions.innerHTML = `<span>Asfalto --°C · Aire --°C</span><br/><span>Guarda telemetría en iRacing (Alt+L)</span>`;
+    }
+    if (dateText) dateText.textContent = "Documents\\iRacing\\telemetry";
+    if (brandIcon) brandIcon.textContent = "--";
+    if (brandName) brandName.textContent = "Vehículo";
+    if (carModel) carModel.textContent = "Sin coche detectado";
+    if (carClass) carClass.textContent = "Clase --";
+    if (pilot) pilot.textContent = "Anonimizado";
+    if (setup) setup.textContent = "Sin .ibt reciente";
+    if (position) position.textContent = "--";
+    if (posBadge) posBadge.textContent = "Telemetría local";
+    if (iratingGain) iratingGain.textContent = "--";
+    if (iratingTotal) iratingTotal.textContent = "Privado";
+    if (safetyGain) safetyGain.textContent = "--";
+    if (safetyTotal) safetyTotal.textContent = "—";
+    if (avgTime) avgTime.textContent = "--:--.---";
+    if (lapsCount) lapsCount.textContent = "—";
+    if (bestTime) bestTime.textContent = "--:--.---";
+    if (consistency) consistency.textContent = "--";
+    if (topSpeed) topSpeed.textContent = "-- km/h";
+    if (fuel) fuel.textContent = "-- L/vuelta";
+    if (tableBody) {
+      tableBody.innerHTML = `<tr><td colspan="9" class="py-12 text-center text-r-muted font-mono text-xs">No se encontraron archivos .ibt en Documents\\iRacing\\telemetry. Activa la telemetría en iRacing (Alt+L).</td></tr>`;
+    }
+    return;
+  }
+
+  const carMeta = resolveCarMetadata(report.carPath);
+  updateOverlayBrandBadge(report.carPath);
+  if (trackName) trackName.textContent = report.trackName || "Circuito iRacing";
+  if (trackConfig) trackConfig.textContent = report.trackConfig || "Configuración estándar";
+  if (trackConditions) {
+    trackConditions.textContent = `Asfalto ${report.trackTemp || "--"} · Aire ${report.airTemp || "--"}`;
+  }
+  if (dateText) dateText.textContent = report.fileName;
+  if (brandIcon) {
+    brandIcon.replaceChildren();
+    if (carMeta) {
+      brandIcon.append(createBrandBadgeElement(carMeta, 24));
+    } else {
+      brandIcon.textContent = "IR";
+    }
+  }
+  if (brandName) brandName.textContent = carMeta ? carMeta.brand : "iRacing";
+  if (carModel) carModel.textContent = carMeta ? carMeta.model : report.carScreenName || report.carPath || "Coche";
+  if (carClass) carClass.textContent = carMeta ? carMeta.carClass : "OFICIAL";
+  if (pilot) pilot.textContent = "Piloto local (Anonimizado)";
+  if (setup) setup.textContent = `${report.totalLaps} vueltas válidas (.ibt real)`;
+
+  if (position) position.textContent = `${report.totalLaps}`;
+  if (posBadge) posBadge.textContent = "Vueltas válidas";
+  if (iratingGain) iratingGain.textContent = "Privado";
+  if (iratingTotal) iratingTotal.textContent = "Sin datos personales";
+  if (safetyGain) safetyGain.textContent = "OK";
+  if (safetyTotal) safetyTotal.textContent = "Lectura directa .ibt";
+  if (avgTime) avgTime.textContent = formatLapSec(report.avgLapS);
+  if (lapsCount) lapsCount.textContent = `${report.totalLaps} vueltas`;
+  if (bestTime) bestTime.textContent = formatLapSec(report.bestLapS);
+  if (consistency) {
+    const spread = Math.max(0, report.avgLapS - report.bestLapS);
+    consistency.textContent = `+${spread.toFixed(3)}s`;
+  }
+  if (topSpeed) topSpeed.textContent = `${Math.round(report.topSpeedKmh)} km/h`;
+  if (fuel) fuel.textContent = "Solo .ibt";
+
   if (tableBody) {
-    tableBody.innerHTML = `
-      <tr>
-        <td colspan="9" class="py-12 text-center text-r-muted font-mono text-xs">
-          Sin telemetría en vivo. Entra a pista en iRacing para ver tiempos y telemetría real a 60 Hz sin datos inventados.
-        </td>
-      </tr>
-    `;
+    tableBody.replaceChildren();
+    if (report.laps.length === 0) {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = 9;
+      td.className = "py-8 text-center text-r-muted font-mono text-xs";
+      td.textContent = "El archivo .ibt no contiene vueltas completas válidas.";
+      tr.append(td);
+      tableBody.append(tr);
+    } else {
+      for (const lap of report.laps) {
+        const tr = document.createElement("tr");
+        tr.className = "border-b border-r-line/40 font-mono text-xs";
+        const cols = [
+          `V${lap.lapNum}`,
+          formatLapSec(lap.lapTimeS),
+          lap.deltaS <= 0.001 ? "ÓPTIMA" : `+${lap.deltaS.toFixed(3)}s`,
+          `${Math.round(lap.topSpeedKmh)} km/h`,
+        ];
+        for (const text of cols) {
+          const td = document.createElement("td");
+          td.className = "py-2.5 px-3";
+          td.textContent = text;
+          tr.append(td);
+        }
+        tableBody.append(tr);
+      }
+    }
   }
 }
 

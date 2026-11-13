@@ -555,6 +555,60 @@ const galleryItems = [
       </div>
     </section>
 
+    <!-- 5B. IDENTIDAD Y MARCA (LOGOS OFICIALES MUNTRUME) -->
+    <section id="brand-kit" class="space-y-8 pt-4">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-[var(--r-line)]">
+        <div>
+          <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--r-accent)] mb-1">
+            <span class="w-2 h-2 rounded-full bg-[var(--r-accent)]"></span>
+            <span>Brand Kit Oficial</span>
+          </div>
+          <h2 class="text-2xl sm:text-4xl font-extrabold text-[var(--r-text)] font-display tracking-tight">
+            Marca y Logos de Muntrume
+          </h2>
+          <p class="text-xs sm:text-sm text-[var(--r-muted)] mt-1 max-w-xl">
+            Archivos oficiales de identidad visual de Muntrume Motorsport para liveries en Trading Paints, retransmisiones, overlays y prensa.
+          </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 font-mono text-[11px]">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--r-surface)] border border-[var(--r-line)]">
+            <span class="w-3 h-3 rounded-sm bg-[#00e5ff]"></span>#00E5FF
+          </span>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--r-surface)] border border-[var(--r-line)]">
+            <span class="w-3 h-3 rounded-sm bg-[#10b981]"></span>#10B981
+          </span>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--r-surface)] border border-[var(--r-line)]">
+            <span class="w-3 h-3 rounded-sm bg-[#090d12] border border-white/20"></span>#090D12
+          </span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        {[
+          { name: "Emblema Vectorial", fmt: "SVG", src: "/assets/img/favicon.svg", bg: "bg-[#090d12]", file: "muntrume-logo.svg" },
+          { name: "Icono Alta Res.", fmt: "PNG 512px", src: "/assets/img/icon-512.png", bg: "bg-[#090d12]", file: "muntrume-icon-512.png" },
+          { name: "Logo App Maskable", fmt: "PNG 512px", src: "/assets/img/icon-maskable-512.png", bg: "bg-[#111827]", file: "muntrume-maskable-512.png" },
+          { name: "Logo Compacto", fmt: "PNG 128px", src: "/assets/img/logo-128.png", bg: "bg-[#090d12]", file: "muntrume-logo-128.png" },
+          { name: "Cabecera Prensa", fmt: "PNG", src: "/assets/img/email-logo.png", bg: "bg-white", file: "muntrume-email-logo.png" },
+        ].map((asset) => (
+          <article class="rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-4 flex flex-col justify-between gap-4 hover:border-[var(--r-accent)] transition-colors">
+            <div class={`h-28 rounded-xl ${asset.bg} border border-white/10 flex items-center justify-center p-4 overflow-hidden`}>
+              <img src={asset.src} alt={asset.name} loading="lazy" decoding="async" class="max-h-full max-w-full object-contain" />
+            </div>
+            <div class="flex items-center justify-between gap-2">
+              <div>
+                <h3 class="text-sm font-bold text-[var(--r-text)] leading-tight">{asset.name}</h3>
+                <span class="text-[11px] font-mono text-[var(--r-muted)]">{asset.fmt}</span>
+              </div>
+              <a href={asset.src} download={asset.file} class="px-3 py-1.5 rounded-lg bg-[var(--r-bg)] border border-[var(--r-line)] hover:border-[var(--r-accent)] hover:text-[var(--r-accent)] font-mono text-[11px] font-bold transition-colors">
+                Descargar
+              </a>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+
     <!-- 6. ROSTER DE PILOTOS EN EL PADDOCK -->
     <section id="roster" class="space-y-8 pt-4">
       <div class="pb-4 border-b border-[var(--r-line)] flex flex-col sm:flex-row sm:items-end justify-between gap-4">

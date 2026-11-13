@@ -6,6 +6,7 @@ import { fuelText, paintConfigAnalysis, paintExtras, updateLiveOverlay, initFloa
 import rawSchedule from "./season_schedule_2026_s4.json";
 import { getSetupProfile } from "./setup-intelligence";
 import { SyncCoordinator } from "./sync/sync-coordinator";
+import { resolveCarMetadata, createBrandBadgeElement } from "./cars/catalog";
 
 const syncCoordinator = new SyncCoordinator<Awaited<ReturnType<Backend["syncNow"]>>>();
 
@@ -1134,15 +1135,22 @@ function paintGroupedByTrack(items: LibraryItem[]): void {
         const carLeft = document.createElement("div");
         carLeft.className = "flex items-center gap-2";
 
+        const meta = resolveCarMetadata(car);
         const carTag = document.createElement("span");
-        carTag.className = "px-1.5 py-0.2 rounded bg-r-bg border border-r-line font-mono text-[9px] uppercase text-r-muted font-bold";
-        carTag.textContent = "Coche";
+        carTag.className = meta
+          ? "px-2 py-0.5 rounded bg-r-accent/15 border border-r-accent/40 font-mono text-[9px] uppercase text-r-accent font-bold tracking-wider"
+          : "px-1.5 py-0.2 rounded bg-r-bg border border-r-line font-mono text-[9px] uppercase text-r-muted font-bold";
+        carTag.textContent = meta ? `${meta.brand} · ${meta.carClass}` : classifyCar(car);
 
         const carTitle = document.createElement("h3");
         carTitle.className = "font-bold text-sm text-r-text";
-        carTitle.textContent = formatCarName(car);
+        carTitle.textContent = meta ? `${meta.brand} ${meta.model}` : formatCarName(car);
 
-        carLeft.append(carTag, carTitle);
+        if (meta) {
+          carLeft.append(createBrandBadgeElement(meta), carTag, carTitle);
+        } else {
+          carLeft.append(carTag, carTitle);
+        }
 
         const carRight = document.createElement("span");
         carRight.className = "text-xs font-mono text-r-muted";
@@ -1421,6 +1429,11 @@ function showView(next: typeof view): void {
   }
   if (next === "last_session") {
     paintLastSession();
+    void backend.readLatestIbt().then((report) => {
+      paintLastSession(report);
+    }).catch(() => {
+      paintLastSession(null);
+    });
   }
   if (next === "analysis" || next === "overlays" || next === "strategy" || next === "week" || next === "team" || next === "reference") {
     if (snapshot) paintExtras(snapshot);

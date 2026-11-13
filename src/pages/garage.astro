@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import catalog from "../../public/assets/data/catalog_index.json";
+import desktopPkg from "../../desktop/package.json";
 import { carOptions, previewSetups } from "../lib/garage-catalog";
 
 const pageTitle = "Garage de setups iRacing | Muntrume Motorsport";
@@ -76,7 +77,7 @@ const garageSchema = {
       <article class="g2-sync">
         <div>
           <h2 class="r-h3" data-i18n="garage.sync.title">MMT Sync</h2>
-          <p data-i18n="garage.sync.body">Windows · v0.1.26. Copia los setups a la carpeta de iRacing.</p>
+          <p>Windows · v{desktopPkg.version}. Sincroniza setups Open en tu carpeta de iRacing (sin series Fixed).</p>
         </div>
         <div class="g2-sync__actions">
           <a class="r-btn r-btn--primary" href="https://github.com/atrumin16/muntrume-site/releases/latest" target="_blank" rel="noopener noreferrer" data-i18n="garage.sync.download">Descargar</a>

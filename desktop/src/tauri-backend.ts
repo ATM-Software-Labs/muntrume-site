@@ -1,5 +1,5 @@
 import { inTauri } from "./env";
-import type { Backend, LiveSample, Settings, SettingsPatch, StagedFile, UploadInput } from "./types";
+import type { Backend, IbtSessionReport, LiveSample, Settings, SettingsPatch, StagedFile, UploadInput } from "./types";
 
 async function invoke<T>(command: string, args?: Record<string, unknown>): Promise<T> {
   const { invoke: call } = await import("@tauri-apps/api/core");
@@ -53,6 +53,7 @@ export function createTauriBackend(): Backend {
     checkIracing: () => invoke<string>("check_iracing_status"),
     toggleOverlay: (show: boolean) => invoke<boolean>("toggle_overlay", { show }),
     setOverlayEdit: (editing: boolean) => invoke("set_overlay_edit", { editing }),
+    readLatestIbt: () => invoke<IbtSessionReport | null>("read_latest_ibt"),
     quit: () => invoke("quit"),
     onRefresh(cb) {
       void wire();

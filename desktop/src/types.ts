@@ -153,6 +153,38 @@ export interface HardwareReport {
   firmwareRecommendation?: string;
 }
 
+export interface IbtTelemetrySample {
+  distM: number;
+  lapTimeS: number;
+  speedKmh: number;
+  throttle: number;
+  brake: number;
+  steeringRad: number;
+}
+
+export interface IbtLapSummary {
+  lapNum: number;
+  lapTimeS: number;
+  topSpeedKmh: number;
+  deltaS: number;
+}
+
+export interface IbtSessionReport {
+  fileName: string;
+  trackName: string;
+  trackConfig: string;
+  trackTemp: string;
+  airTemp: string;
+  carPath: string;
+  carScreenName: string;
+  bestLapS: number;
+  avgLapS: number;
+  topSpeedKmh: number;
+  totalLaps: number;
+  laps: IbtLapSummary[];
+  bestLapSamples: IbtTelemetrySample[];
+}
+
 export interface Backend {
   snapshot(): Promise<Snapshot>;
   authStart(): Promise<AuthStart>;
@@ -173,6 +205,7 @@ export interface Backend {
   checkIracing(): Promise<string>;
   toggleOverlay(show: boolean): Promise<boolean>;
   setOverlayEdit(editing: boolean): Promise<void>;
+  readLatestIbt(): Promise<IbtSessionReport | null>;
   quit(): Promise<void>;
   onRefresh(cb: () => void): () => void;
   onStaged(cb: (file: StagedFile) => void): () => void;

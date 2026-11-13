@@ -1,8 +1,10 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import desktopPkg from "../../../desktop/package.json";
 
+const appVersion = desktopPkg.version;
 const pageTitle = "MMT Sync para Windows | Muntrume Motorsport";
-const pageDescription = "MMT Sync 0.1.26 para Windows. Sincroniza los setups de Muntrume con iRacing. Gratis.";
+const pageDescription = `MMT Sync ${appVersion} para Windows. Sincroniza setups .sto Open, analiza telemetría .ibt y muestra overlays en iRacing.`;
 const pageUrl = "https://muntru.me/app/";
 const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
 const appSchema = {
@@ -24,7 +26,7 @@ const appSchema = {
       "name": "MMT Sync",
       "applicationCategory": "UtilitiesApplication",
       "operatingSystem": "Windows",
-      "softwareVersion": "0.1.26",
+      "softwareVersion": appVersion,
       "url": pageUrl,
       "downloadUrl": "https://github.com/atrumin16/muntrume-site/releases/latest",
       "description": pageDescription,
@@ -72,7 +74,7 @@ const appSchema = {
       <p class="app-meta">
         <span data-i18n="app.meta.os">Windows 10 / 11 (64-bit)</span>
         <span aria-hidden="true">·</span>
-        <span data-i18n="app.meta.ver">Versión 0.1.26</span>
+        <span>Versión {appVersion}</span>
         <span aria-hidden="true">·</span>
         <span data-i18n="app.meta.free">Gratis</span>
       </p>
@@ -96,18 +98,18 @@ const appSchema = {
     <section class="app-grid">
       <article class="app-card">
         <p class="app-num">01</p>
-        <h2 data-i18n="app.cap.1.title">Sincronización automática</h2>
-        <p data-i18n="app.cap.1.body">Descarga en un clic los reglajes oficiales del equipo, organizados en setups\coche\MMT\temporada. Tus propios setups se quedan donde están.</p>
+        <h2 data-i18n="app.cap.1.title">Setups Open por semana</h2>
+        <p data-i18n="app.cap.1.body">Sincroniza automáticamente los reglajes .sto de la semana en <code>iRacing\setups</code>. Bloquea series Fixed para no duplicar archivos innecesarios.</p>
       </article>
       <article class="app-card">
         <p class="app-num">02</p>
-        <h2 data-i18n="app.cap.2.title">Telemetría en directo</h2>
-        <p data-i18n="app.cap.2.body">Detecta la sesión en pista de iRacing y muestra barras en directo de acelerador, freno, ángulo de dirección, marcha y velocidad.</p>
+        <h2 data-i18n="app.cap.2.title">HUD estilo GO Setups</h2>
+        <p data-i18n="app.cap.2.body">Overlay transparente Always-On-Top con telemetría en directo, shift lights, radar relativo y presets (Completo, Radar, Telemetría).</p>
       </article>
       <article class="app-card">
         <p class="app-num">03</p>
-        <h2 data-i18n="app.cap.3.title">Calculadora y estrategia</h2>
-        <p data-i18n="app.cap.3.body">Calcula el combustible para una carrera de resistencia, las paradas estimadas y una lista de verificación previa.</p>
+        <h2 data-i18n="app.cap.3.title">Análisis .ibt local</h2>
+        <p data-i18n="app.cap.3.body">Compara tu vuelta metro a metro y revisa tu última sesión sin subir datos privados ni dorsales fuera de tu PC.</p>
       </article>
     </section>
 

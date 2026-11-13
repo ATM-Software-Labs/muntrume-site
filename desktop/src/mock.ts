@@ -287,6 +287,9 @@ export function createMock(screen: string | null): Backend {
     async setOverlayEdit(_editing: boolean) {
       // No-op in browser mock mode
     },
+    async readLatestIbt() {
+      return null;
+    },
     async quit() {
       notices.forEach((cb) => cb("En la aplicación de Windows, Salir cierra la bandeja."));
     },

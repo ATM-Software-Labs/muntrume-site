@@ -18,6 +18,10 @@ pub fn detect_setups_dir() -> Option<PathBuf> {
     }
 }
 
+pub fn detect_telemetry_dir() -> Option<PathBuf> {
+    detect_setups_dir().and_then(|p| p.parent().map(|root| root.join("telemetry")))
+}
+
 pub fn app_data_dir() -> PathBuf {
     #[cfg(windows)]
     {
