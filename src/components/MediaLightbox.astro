@@ -33,12 +33,12 @@
       </div>
     </div>
 
-    <div id="mmt-lb-stage" class="bg-[#090d12] flex items-center justify-center p-4 sm:p-8 min-h-[260px] max-h-[70vh] overflow-hidden">
+    <div id="mmt-lb-stage" class="bg-[#090d12] flex items-center justify-center p-3 sm:p-5 h-[56vh] sm:h-[64vh] overflow-hidden">
       <img
         id="mmt-lb-img"
         src=""
         alt=""
-        class="max-h-[62vh] max-w-full w-auto h-auto object-contain rounded-lg"
+        class="w-full h-full object-contain rounded-lg"
       />
     </div>
 
@@ -200,7 +200,7 @@
     if (bgBtn && stage) {
       bgBtn.addEventListener('click', function () {
         lightStage = !lightStage;
-        stage.className = (lightStage ? 'bg-slate-100' : 'bg-[#090d12]') + ' flex items-center justify-center p-4 sm:p-8 min-h-[260px] max-h-[70vh] overflow-hidden';
+        stage.className = (lightStage ? 'bg-slate-100' : 'bg-[#090d12]') + ' flex items-center justify-center p-3 sm:p-5 h-[56vh] sm:h-[64vh] overflow-hidden';
       });
     }
     document.addEventListener('keydown', function (e) {

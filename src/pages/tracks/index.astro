@@ -1,0 +1,62 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import catalogIndex from '../../../public/assets/data/catalog_index.json';
+
+const circuits = (catalogIndex.circuits as string[]).slice().sort((a, b) => a.localeCompare(b));
+const pageTitle = 'Circuitos iRacing | Muntrume Motorsport';
+const pageDescription = `Directorio de ${circuits.length} circuitos oficiales de iRacing disponibles en el Garage de Muntrume Motorsport.`;
+---
+
+<Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/tracks/">
+  <main class="r-wrap py-12 sm:py-16 space-y-8">
+    <nav aria-label="Breadcrumb" class="r-kicker flex items-center gap-2">
+      <a href="/paddock/" class="hover:text-[var(--r-accent)] transition">Paddock</a>
+      <span>/</span>
+      <span class="text-[var(--r-text)] font-bold">Circuitos</span>
+    </nav>
+
+    <header class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[var(--r-line)] pb-6">
+      <div class="space-y-2">
+        <div class="r-kicker">iRacing Track Directory · Próximamente fichas técnicas</div>
+        <h1 class="r-h2">Circuitos Oficiales ({circuits.length})</h1>
+        <p class="r-lead max-w-2xl">
+          Todos los trazados indexados en nuestro Vault con acceso directo a sus setups (.sto) en el Garage.
+        </p>
+      </div>
+      <input
+        id="track-search"
+        type="search"
+        placeholder="Buscar circuito..."
+        class="w-full sm:w-64 px-3.5 py-2 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] focus:border-[var(--r-accent)] outline-none text-xs font-mono text-[var(--r-text)]"
+      />
+    </header>
+
+    <section id="track-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {circuits.map((track) => (
+        <a
+          href={`/garage?q=${encodeURIComponent(track)}`}
+          data-track-name={track.toLowerCase()}
+          class="track-card p-4 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition flex items-center justify-between gap-3"
+        >
+          <span class="text-sm font-bold text-[var(--r-text)] capitalize truncate">{track.replace(/[-_]/g, ' ')}</span>
+          <span class="text-[11px] font-mono text-[var(--r-accent)] shrink-0">Setups →</span>
+        </a>
+      ))}
+    </section>
+  </main>
+
+  <script is:inline>
+    (function () {
+      var input = document.getElementById('track-search');
+      var cards = document.querySelectorAll('.track-card');
+      if (!input) return;
+      input.addEventListener('input', function () {
+        var q = (input.value || '').trim().toLowerCase();
+        cards.forEach(function (card) {
+          var name = card.getAttribute('data-track-name') || '';
+          card.classList.toggle('hidden', !!q && name.indexOf(q) === -1);
+        });
+      });
+    })();
+  </script>
+</Layout>
