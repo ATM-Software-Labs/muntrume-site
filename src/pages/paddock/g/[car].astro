@@ -1,0 +1,73 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import { PADDOCK_ALBUMS, type GalleryAlbum } from "../../../data/paddock-gallery";
+
+export function getStaticPaths() {
+  return PADDOCK_ALBUMS.map((album) => ({
+    params: { car: album.slug },
+    props: { album },
+  }));
+}
+
+interface Props {
+  album: GalleryAlbum;
+}
+
+const { album } = Astro.props;
+const pageTitle = `${album.title} · Galería Paddock | Muntrume Motorsport`;
+const pageDescription = `${album.summary} (${album.photos.length} fotografías oficiales).`;
+---
+
+<Layout title={pageTitle} description={pageDescription} canonical={`https://muntru.me/paddock/g/${album.slug}/`}>
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-[var(--r-line)]">
+      <div class="space-y-2">
+        <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--r-muted)]">
+          <a href="/paddock/" class="hover:text-[var(--r-accent)] transition-colors">Paddock</a>
+          <span>/</span>
+          <a href="/paddock/#gallery" class="hover:text-[var(--r-accent)] transition-colors">Galería</a>
+          <span>/</span>
+          <span class="text-[var(--r-accent)]">{album.slug}</span>
+        </div>
+        <h1 class="text-3xl sm:text-5xl font-extrabold text-[var(--r-text)] font-display tracking-tight">
+          {album.title}
+        </h1>
+        <p class="text-sm text-[var(--r-muted)] max-w-2xl">{album.summary}</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="px-3 py-1 rounded-full bg-[var(--r-surface)] border border-[var(--r-line)] font-mono text-xs text-[var(--r-accent)] font-bold">
+          {album.brand} · {album.carClass} · {album.photos.length} fotos
+        </span>
+        <a href="/paddock/#gallery" class="px-4 py-2 rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] hover:border-[var(--r-accent)] text-xs font-mono font-bold transition-colors">
+          &larr; Volver al Paddock
+        </a>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {album.photos.map((photo) => (
+        <article class="rounded-2xl overflow-hidden border border-[var(--r-line)] bg-[var(--r-surface)] flex flex-col">
+          <a href={photo.img} target="_blank" rel="noopener noreferrer" class="relative block aspect-video overflow-hidden bg-black/40 group">
+            <img
+              src={photo.thumb}
+              alt={photo.title}
+              width="640"
+              height="360"
+              loading="lazy"
+              decoding="async"
+              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+            <span class="absolute top-3 left-3 px-2.5 py-0.5 rounded-full bg-black/75 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase tracking-wider">
+              {photo.tag}
+            </span>
+          </a>
+          <div class="p-5 space-y-2">
+            <span class="block text-[11px] font-mono uppercase tracking-wider text-[var(--r-muted)]">{photo.subtitle}</span>
+            <h2 class="text-lg font-bold text-[var(--r-text)]">{photo.title}</h2>
+            <p class="text-xs text-[var(--r-muted)] leading-relaxed">{photo.desc}</p>
+          </div>
+        </article>
+      ))}
+    </div>
+  </main>
+</Layout>

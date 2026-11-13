@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import StatsGrid from '../components/StatsGrid.astro';
 import { PILOTOS } from '../lib/pilotos';
+import { PADDOCK_ALBUMS } from '../data/paddock-gallery';
 
 const pageTitle = "Paddock | Muntrume Motorsport";
 const pageDescription = "Official Muntrume Motorsport Paddock. Canal de radio en carrera, telemetría Garage 61, galería fotográfica en iRacing, redes sociales oficiales y acceso Paddock Pass.";
@@ -497,60 +498,46 @@ const galleryItems = [
         </div>
       </div>
 
-      <!-- Photo Grid -->
+      <!-- Photo Albums Indexed by Car -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="paddockGalleryGrid">
-        {galleryItems.map(item => (
-          <div 
-            class="gallery-item group relative rounded-2xl overflow-hidden bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-300 shadow-md flex flex-col justify-between cursor-pointer"
-            data-category={item.category}
-            data-img={item.img}
-            data-title={item.title}
-            data-subtitle={item.subtitle}
-            data-tag={item.tag}
-            data-desc={item.desc}
+        {PADDOCK_ALBUMS.map((album) => (
+          <a
+            href={`/paddock/g/${album.slug}/`}
+            class="group relative rounded-2xl overflow-hidden bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-300 shadow-md flex flex-col justify-between"
           >
-            <!-- Image Frame -->
             <div class="relative w-full aspect-video overflow-hidden bg-[var(--r-bg-2)]">
-              <img 
-                src={item.thumb} 
-                alt={item.title} 
-                width="640" 
-                height="360" 
-                loading="lazy" 
-                decoding="async" 
-                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+              <img
+                src={album.cover}
+                alt={album.title}
+                width="640"
+                height="360"
+                loading="lazy"
+                decoding="async"
+                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
               <div class="absolute inset-0 bg-gradient-to-t from-[var(--r-surface)] via-transparent to-transparent opacity-80 group-hover:opacity-60 transition-opacity"></div>
-              
-              <span class="absolute top-3 left-3 px-2.5 py-0.5 rounded-full bg-[var(--r-surface)]/90 backdrop-blur-xs border border-[var(--r-line)] text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase tracking-wider">
-                {item.tag}
+              <span class="absolute top-3 left-3 px-2.5 py-0.5 rounded-full bg-[var(--r-surface)]/90 border border-[var(--r-line)] text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase tracking-wider">
+                {album.brand} · {album.carClass}
               </span>
-
-              <div class="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-1 group-hover:translate-y-0 duration-200">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/></svg>
-              </div>
+              <span class="absolute top-3 right-3 px-2.5 py-0.5 rounded-full bg-black/75 border border-white/15 text-white text-[10px] font-mono font-bold">
+                {album.photos.length} fotos
+              </span>
             </div>
-
-            <!-- Content Body -->
             <div class="p-5 flex-1 flex flex-col justify-between space-y-3">
               <div>
-                <span class="block text-[11px] font-mono text-[var(--r-muted)] mb-1 uppercase tracking-wider" data-i18n={`g.${item.id}.sub`}>
-                  {item.subtitle}
-                </span>
-                <h3 class="text-base font-bold text-[var(--r-text)] tracking-tight group-hover:text-[var(--r-accent)] transition-colors line-clamp-1" data-i18n={`g.${item.id}.title`}>
-                  {item.title}
+                <h3 class="text-base font-bold text-[var(--r-text)] tracking-tight group-hover:text-[var(--r-accent)] transition-colors">
+                  {album.title}
                 </h3>
-                <p class="text-xs text-[var(--r-muted)] mt-1.5 line-clamp-2 leading-relaxed" data-i18n={`g.${item.id}.desc`}>
-                  {item.desc}
+                <p class="text-xs text-[var(--r-muted)] mt-1.5 line-clamp-2 leading-relaxed">
+                  {album.summary}
                 </p>
               </div>
-
               <div class="pt-3 border-t border-[var(--r-line)] flex items-center justify-between text-xs font-mono text-[var(--r-accent)] font-semibold">
-                <span data-i18n="paddock.gallery.open">Ampliar</span>
+                <span>Abrir álbum /paddock/g/{album.slug}</span>
                 <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
               </div>
             </div>
-          </div>
+          </a>
         ))}
       </div>
     </section>
