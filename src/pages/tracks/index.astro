@@ -2,20 +2,31 @@
 import Layout from '../../layouts/Layout.astro';
 import { IRACING_TRACKS, getTrackGarageInfo, getTrackScheduleInfo } from '../../lib/track-matcher';
 
-const items = IRACING_TRACKS.slice()
-  .sort((a, b) => a.name.localeCompare(b.name))
-  .map((t) => {
-    const garage = getTrackGarageInfo(t);
-    const sched = getTrackScheduleInfo(t);
-    const isFree = t.categories.includes('Free');
-    return {
-      ...t,
-      isFree,
-      setupCount: garage.setupCount,
-      configs: sched.configs,
-      excerpt: t.history.length > 135 ? `${t.history.slice(0, 132).trim()}…` : t.history,
-    };
-  });
+const items = IRACING_TRACKS.map((t) => {
+  const garage = getTrackGarageInfo(t);
+  const sched = getTrackScheduleInfo(t);
+  const isFree = t.categories.includes('Free');
+  const seriesCount = sched.entries.length;
+  const galleryCount = t.gallery?.length ?? 0;
+  // Popularity score combining official series appearances, team setups, base-content status, layouts & media
+  const popularityScore =
+    seriesCount * 12 +
+    garage.setupCount * 4 +
+    (isFree ? 15 : 0) +
+    sched.configs.length * 2 +
+    (galleryCount > 0 ? 3 : 0);
+
+  return {
+    ...t,
+    isFree,
+    setupCount: garage.setupCount,
+    seriesCount,
+    galleryCount,
+    popularityScore,
+    configs: sched.configs,
+    excerpt: t.history.length > 135 ? `${t.history.slice(0, 132).trim()}…` : t.history,
+  };
+}).sort((a, b) => b.popularityScore - a.popularityScore || a.name.localeCompare(b.name));
 
 const withSetupsCount = items.filter((i) => i.setupCount > 0).length;
 const freeCount = items.filter((i) => i.isFree).length;
@@ -46,11 +57,21 @@ const pageDescription = `Directorio de ${items.length} circuitos oficiales de iR
           <button type="button" class="trk-pill" data-filter="setups">Con Setups ({withSetupsCount})</button>
           <button type="button" class="trk-pill" data-filter="free">Incluidos / Free ({freeCount})</button>
         </div>
+        <select
+          id="track-sort"
+          aria-label="Ordenar circuitos"
+          class="px-3 py-2 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] focus:border-[var(--r-accent)] outline-none text-xs font-mono text-[var(--r-text)] cursor-pointer"
+        >
+          <option value="pop">Orden: Popularidad</option>
+          <option value="setups">Orden: Más setups</option>
+          <option value="series">Orden: Más series</option>
+          <option value="az">Orden: A–Z</option>
+        </select>
         <input
           id="track-search"
           type="search"
           placeholder="Buscar circuito..."
-          class="w-full sm:w-56 px-3.5 py-2 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] focus:border-[var(--r-accent)] outline-none text-xs font-mono text-[var(--r-text)]"
+          class="w-full sm:w-52 px-3.5 py-2 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] focus:border-[var(--r-accent)] outline-none text-xs font-mono text-[var(--r-text)]"
         />
       </div>
     </header>
@@ -60,6 +81,10 @@ const pageDescription = `Directorio de ${items.length} circuitos oficiales de iR
         <a
           href={`/tracks/${track.slug}/`}
           data-track-name={`${track.name} ${track.configs.join(' ')}`.toLowerCase()}
+          data-track-title={track.name.toLowerCase()}
+          data-pop={String(track.popularityScore)}
+          data-setups={String(track.setupCount)}
+          data-series={String(track.seriesCount)}
           data-has-setups={track.setupCount > 0 ? '1' : '0'}
           data-is-free={track.isFree ? '1' : '0'}
           class="track-card group rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] overflow-hidden transition flex flex-col"
@@ -85,7 +110,17 @@ const pageDescription = `Directorio de ${items.length} circuitos oficiales de iR
                   {track.setupCount} setups
                 </span>
               )}
+              {track.seriesCount > 0 && (
+                <span class="px-2 py-0.5 rounded bg-black/75 border border-white/15 text-[10px] font-mono font-bold text-white/90">
+                  {track.seriesCount} series
+                </span>
+              )}
             </div>
+            {track.galleryCount > 0 && (
+              <span class="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/75 border border-white/15 text-[10px] font-mono text-white/85">
+                {track.galleryCount} fotos
+              </span>
+            )}
           </div>
 
           <div class="p-4 flex flex-col flex-1 gap-2">
@@ -134,10 +169,27 @@ const pageDescription = `Directorio de ${items.length} circuitos oficiales de iR
 
   <script is:inline>
     (function () {
+      var grid = document.getElementById('track-grid');
       var input = document.getElementById('track-search');
-      var cards = document.querySelectorAll('.track-card');
+      var sortSelect = document.getElementById('track-sort');
+      var cards = Array.prototype.slice.call(document.querySelectorAll('.track-card'));
       var pills = document.querySelectorAll('.trk-pill');
       var activeFilter = 'all';
+
+      function applySort() {
+        if (!grid || !sortSelect) return;
+        var mode = sortSelect.value || 'pop';
+        var sorted = cards.slice().sort(function (a, b) {
+          if (mode === 'az') {
+            return (a.getAttribute('data-track-title') || '').localeCompare(b.getAttribute('data-track-title') || '');
+          }
+          var key = mode === 'setups' ? 'data-setups' : mode === 'series' ? 'data-series' : 'data-pop';
+          var diff = Number(b.getAttribute(key) || 0) - Number(a.getAttribute(key) || 0);
+          if (diff !== 0) return diff;
+          return (a.getAttribute('data-track-title') || '').localeCompare(b.getAttribute('data-track-title') || '');
+        });
+        sorted.forEach(function (card) { grid.appendChild(card); });
+      }
 
       function apply() {
         var q = (input && input.value ? input.value : '').trim().toLowerCase();
@@ -152,6 +204,7 @@ const pageDescription = `Directorio de ${items.length} circuitos oficiales de iR
       }
 
       if (input) input.addEventListener('input', apply);
+      if (sortSelect) sortSelect.addEventListener('change', applySort);
       pills.forEach(function (btn) {
         btn.addEventListener('click', function () {
           activeFilter = btn.getAttribute('data-filter') || 'all';

@@ -146,6 +146,41 @@ const pageDescription = track.history
       </section>
     )}
 
+    <!-- GALERIA OFICIAL -->
+    {track.gallery && track.gallery.length > 0 && (
+      <section aria-label="Galería de fotos del circuito" class="space-y-4">
+        <div>
+          <span class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)]">Capturas oficiales</span>
+          <h2 class="r-h3">Galería del circuito ({track.gallery.length} fotos)</h2>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {track.gallery.map((photoUrl, idx) => (
+            <button
+              type="button"
+              data-preview-src={photoUrl}
+              data-preview-title={`${track.name} — Foto ${idx + 1}`}
+              data-preview-sub={sched.configs.length ? `Variantes: ${sched.configs.join(' · ')}` : 'Circuito oficial iRacing'}
+              data-preview-id={`track:${track.slug}`}
+              data-preview-setups={`/garage/?track=${encodeURIComponent(garage.garageQuery)}`}
+              class="relative block w-full aspect-[16/9] rounded-xl bg-[#090d12] border border-[var(--r-line)] hover:border-[var(--r-accent)] overflow-hidden cursor-zoom-in group transition"
+              title={`Ampliar foto ${idx + 1}`}
+            >
+              <img
+                src={photoUrl}
+                alt={`${track.name} captura ${idx + 1}`}
+                loading="lazy"
+                decoding="async"
+                class="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.04]"
+              />
+              <span class="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/75 border border-white/15 text-[10px] font-mono text-white/85 opacity-0 group-hover:opacity-100 transition">
+                Ampliar ⤢
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
+    )}
+
     <!-- VARIANTES DEL CIRCUITO -->
     {sched.configs.length > 0 && (
       <section aria-label="Variantes del circuito" class="space-y-3">

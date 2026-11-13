@@ -15,6 +15,7 @@ export interface IracingTrack {
   thumb: string;
   categories: string[];
   history: string;
+  gallery?: string[];
 }
 
 export const IRACING_TRACKS = tracksData as IracingTrack[];
