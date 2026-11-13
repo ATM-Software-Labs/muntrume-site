@@ -6,13 +6,53 @@ import { PILOTOS, LICENCE_UPDATED_LABEL } from '../lib/pilotos';
 import catalog from '../../public/assets/data/catalog_index.json';
 import schedule from '../../desktop/src/season_schedule_2026_s4.json';
 
-// "Esta semana": Top 4 series Open con mayor participación semanal en iRacing 2026 S4 (las Fixed usan el setup oficial de iRacing).
+// "Esta semana": Top 5 series Open con mayor participación semanal en iRacing 2026 S4 (incluyendo GT Sprint GT3; las Fixed usan el setup oficial de iRacing).
+const GT3_CARS = 'acuransxevo22gt3,amvantageevogt3,audir8gt3,audir8lmsevo2gt3,bmwm4gt3,chevyvettez06rgt3,ferrari296gt3,fordmustanggt3,lamborghinievogt3,mclaren720sgt3,mercedesamgevogt3,mercedesamggt3,porsche992rgt3';
+const IMSA_CARS = `acuraarx06gtp,amvalkyriegtp,bmwlmdh,cadillacvseriesrgtp,dallarap217,ferrari499p,porsche963gtp,${GT3_CARS}`;
+const PCC_CARS = 'mx5 cup,toyotagr86,bmwm2csr,bmwm2g87,renaultcliocup';
+
 const FEATURED = [
-  { prefix: 'IMSA iRacing Series by GO Fast', schedule: '45 min · Cada 2h (:45 UTC)' },
-  { prefix: 'Production Car Challenge by Sim-Lab', schedule: '25 min · Cada 1h (:30 UTC)' },
-  { prefix: 'iRacing Porsche Cup by CONSPIT', schedule: '19 vueltas · Cada 2h (:45 UTC)' },
-  { prefix: 'Formula C - Super Formula Lights by RSS', schedule: '30 min · Cada 2h (:15 UTC)' },
+  { prefix: 'IMSA iRacing Series by GO Fast', schedule: '45 min · Cada 2h (:45 UTC)', img: '/assets/img/series/imsa.jpg', cars: IMSA_CARS },
+  { prefix: 'GT Sprint Series by Simucube', schedule: '40 min · Cada 2h (:00 UTC)', img: '/assets/img/series/gt-sprint.jpg', cars: GT3_CARS },
+  { prefix: 'Production Car Challenge by Sim-Lab', schedule: '25 min · Cada 1h (:30 UTC)', img: '/assets/img/series/pcc.jpg', cars: PCC_CARS },
+  { prefix: 'iRacing Porsche Cup by CONSPIT', schedule: '19 vueltas · Cada 2h (:45 UTC)', img: '/assets/img/series/porsche-cup.jpg', car: 'porsche992cup' },
+  { prefix: 'Formula C - Super Formula Lights by RSS', schedule: '30 min · Cada 2h (:15 UTC)', img: '/assets/img/series/sfl.jpg', car: 'superformulalights324' },
 ];
+
+function trackQuery(rawTrack: string): string {
+  const t = rawTrack || '';
+  if (/suzuka/i.test(t)) return 'Suzuka';
+  if (/fuji/i.test(t)) return 'Fuji';
+  if (/mans/i.test(t)) return 'Le Mans';
+  if (/long beach/i.test(t)) return 'Long Beach';
+  if (/panorama|bathurst/i.test(t)) return 'Bathurst';
+  if (/spa-francorchamps/i.test(t)) return 'Spa';
+  if (/nürburgring|nurburgring/i.test(t)) return 'Nurburgring';
+  if (/interlagos/i.test(t)) return 'Interlagos';
+  if (/monza/i.test(t)) return 'Monza';
+  if (/laguna seca/i.test(t)) return 'Laguna Seca';
+  if (/watkins glen/i.test(t)) return 'Watkins Glen';
+  if (/road america/i.test(t)) return 'Road America';
+  if (/road atlanta/i.test(t)) return 'Road Atlanta';
+  if (/daytona/i.test(t)) return 'Daytona';
+  if (/sebring/i.test(t)) return 'Sebring';
+  if (/imola/i.test(t)) return 'Imola';
+  if (/silverstone/i.test(t)) return 'Silverstone';
+  if (/barcelona/i.test(t)) return 'Barcelona';
+  if (/red bull ring/i.test(t)) return 'Red Bull Ring';
+  if (/americas|cota/i.test(t)) return 'COTA';
+  return t.replace(/\s+(International Racing Course|International Speedway|Street Circuit|Circuit|Raceway|Motorsports Park).*$/i, '').trim();
+}
+
+function garageHref(item: (typeof FEATURED)[number], trackName: string): string {
+  const p = new URLSearchParams();
+  if (item.car) p.set('car', item.car);
+  else if (item.cars) p.set('cars', item.cars);
+  const q = trackQuery(trackName);
+  if (q) p.set('track', q);
+  return `/garage/?${p.toString()}`;
+}
+
 const weekly = FEATURED
   .map((item) => {
     const s = schedule.series.find((x) => x.name.startsWith(item.prefix));
@@ -20,7 +60,10 @@ const weekly = FEATURED
     return {
       name: s.name.replace(/\s*-?\s*2026 Season.*$/i, '').trim(),
       schedule: item.schedule,
-      weeks: s.weeks.map((w) => [w.week_num, w.track_name, w.config ?? ''] as [number, string, string]),
+      img: item.img,
+      car: item.car ?? '',
+      cars: item.cars ?? '',
+      weeks: s.weeks.map((w) => [w.week_num, w.track_name, w.config ?? '', garageHref(item, w.track_name)] as [number, string, string, string]),
     };
   })
   .filter((s) => s !== undefined);
@@ -73,7 +116,7 @@ const figs = [
       <div class="r-head">
         <div>
           <p class="r-kicker">2026 Season 4 · <span id="weekNum">Semana {buildWeek}</span></p>
-          <h2 id="weekTitle" class="r-h2">Esta semana en iRacing</h2>
+          <h2 id="weekTitle" class="r-h2">Esta semana en iRacing · <span id="weekNumBadge">Semana {buildWeek}</span></h2>
         </div>
         <a href="/garage/" class="r-link">Ver todos los setups →</a>
       </div>
@@ -81,17 +124,22 @@ const figs = [
         {weekly.map((s) => {
           const w = s.weeks.find((x) => x[0] === buildWeek);
           return (
-            <a href="/garage/" class="mmt-week-card">
-              <span class="mmt-week-card__series">{s.name}</span>
-              <strong class="mmt-week-card__track" data-track>{w?.[1] ?? '—'}</strong>
-              <span class="mmt-week-card__config" data-config>{w?.[2] ?? ''}</span>
-              <span class="mmt-week-card__time">{s.schedule}</span>
+            <a href={w?.[3] ?? '/garage/'} class="mmt-week-card">
+              <div class="mmt-week-card__media">
+                <img src={s.img} alt={s.name} loading="lazy" decoding="async" />
+              </div>
+              <div class="mmt-week-card__body">
+                <span class="mmt-week-card__series">{s.name}</span>
+                <strong class="mmt-week-card__track" data-track>{w?.[1] ?? '—'}</strong>
+                <span class="mmt-week-card__config" data-config>{w?.[2] ?? ''}</span>
+                <span class="mmt-week-card__time">{s.schedule}</span>
+              </div>
             </a>
           );
         })}
       </div>
       <div class="mmt-week-foot">
-        <p class="r-meta">Top 4 series Open por participación semanal. Las series Fixed (ej. GT3 Regional Tour) usan setup oficial de iRacing.</p>
+        <p class="r-meta">Top 5 series Open por participación semanal (incluyendo GT Sprint GT3). Las series Fixed (ej. GT3 Regional Tour) usan setup oficial de iRacing.</p>
         <div class="mmt-week-links">
           <a href="https://iracingstats.net/" target="_blank" rel="noopener noreferrer" class="r-link">Participación semanal (iRacingStats) ↗</a>
           <a href="https://members-ng.iracing.com/racing/schedule" target="_blank" rel="noopener noreferrer" class="r-link">Horarios y sesiones oficiales ↗</a>
@@ -101,18 +149,22 @@ const figs = [
   </section>
 
   <style>
-    .mmt-week-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    .mmt-week-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
     .mmt-week-card {
-      display: grid; gap: 6px; padding: 16px 18px; border-radius: 12px;
+      display: flex; flex-direction: column; overflow: hidden; border-radius: 12px;
       border: 1px solid var(--r-line); border-top: 2px solid var(--r-accent, #00e5ff);
       background: var(--r-surface, rgba(255,255,255,0.03)); color: var(--r-text); text-decoration: none;
       transition: border-color .15s ease, transform .15s ease;
     }
     .mmt-week-card:hover { border-color: var(--r-line-2); transform: translateY(-2px); }
+    .mmt-week-card__media { aspect-ratio: 16 / 9; width: 100%; overflow: hidden; background: rgba(0, 0, 0, 0.25); }
+    .mmt-week-card__media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .25s ease; }
+    .mmt-week-card:hover .mmt-week-card__media img { transform: scale(1.03); }
+    .mmt-week-card__body { display: grid; gap: 6px; padding: 14px 16px 16px; flex: 1; }
     .mmt-week-card__series { font: 600 11px/1.3 ui-monospace, monospace; text-transform: uppercase; letter-spacing: .06em; color: var(--r-muted); }
-    .mmt-week-card__track { font-size: 18px; line-height: 1.25; }
+    .mmt-week-card__track { font-size: 17px; line-height: 1.25; }
     .mmt-week-card__config { font-size: 13px; color: var(--r-muted); }
-    .mmt-week-card__time { font: 600 11px/1.3 ui-monospace, monospace; color: var(--r-accent, #00e5ff); margin-top: 4px; }
+    .mmt-week-card__time { font: 600 11px/1.3 ui-monospace, monospace; color: var(--r-accent, #00e5ff); margin-top: auto; padding-top: 6px; }
     .mmt-week-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; }
     .mmt-week-links { display: flex; flex-wrap: wrap; gap: 16px; }
   </style>
@@ -126,12 +178,15 @@ const figs = [
       const week = Math.max(1, Math.min(12, Math.floor((Date.now() - Date.UTC(2026, 8, 15)) / 604800000) + 1));
       const label = document.getElementById('weekNum');
       if (label) label.textContent = 'Semana ' + week;
+      const badge = document.getElementById('weekNumBadge');
+      if (badge) badge.textContent = 'Semana ' + week;
       grid.querySelectorAll('.mmt-week-card').forEach((card, i) => {
         const hit = ((data[i] && data[i].weeks) || []).find((e) => e[0] === week);
         card.hidden = !hit;
         if (!hit) return;
         card.querySelector('[data-track]').textContent = hit[1];
         card.querySelector('[data-config]').textContent = hit[2];
+        if (hit[3]) card.setAttribute('href', hit[3]);
       });
     })();
   </script>

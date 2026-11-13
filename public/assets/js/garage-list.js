@@ -18,6 +18,7 @@
   var shown = list.children.length || 0;
   var ready = false;
   var request = 0;
+  var multiCars = [];
 
   function esc(value) {
     return String(value == null ? "" : value).replace(/[&<>"']/g, function (c) {
@@ -137,6 +138,24 @@
   function apply() {
     var id = ++request;
     var selected = car && car.value || "";
+    if (!selected && multiCars.length) {
+      setStatus(tr("garage.status.loading", "Cargando catálogo…"), "loading");
+      if (more) more.hidden = true;
+      Promise.all(multiCars.map(function (c) {
+        return load("/assets/data/catalog_by_car/" + slug(c) + ".json", "car:" + slug(c)).catch(function () { return []; });
+      })).then(function (groups) {
+        if (id !== request) return;
+        rows = [].concat.apply([], groups);
+        ready = true;
+        if (shown < PAGE) shown = PAGE;
+        render();
+      }).catch(function () {
+        if (id !== request) return;
+        setStatus(tr("garage.status.error", "No se ha podido cargar el catálogo. Reintenta."), "error");
+        if (more) more.hidden = true;
+      });
+      return;
+    }
     var url = selected
       ? "/assets/data/catalog_by_car/" + slug(selected) + ".json"
       : "/assets/data/catalog_index.json";
@@ -169,7 +188,10 @@
     if (!ready) queue();
     else { shown = PAGE; render(); }
   });
-  if (car) car.addEventListener("change", queue);
+  if (car) car.addEventListener("change", function () {
+    multiCars = [];
+    queue();
+  });
   if (more) more.addEventListener("click", function () {
     if (!ready) { shown = PAGE * 2; apply(); return; }
     shown += PAGE;
@@ -179,36 +201,47 @@
   document.addEventListener("muntru:i18n", function () { paint(); if (ready) render(); });
   paint();
 
-  // Auto-select car from ?car= query parameter (supports folder id or display label)
-  if (car) {
-    try {
-      var paramCar = new URLSearchParams(window.location.search).get("car");
-      if (paramCar) {
-        var needle = paramCar.trim().toLowerCase();
-        var matched = "";
-        for (var i = 0; i < car.options.length; i++) {
-          var opt = car.options[i];
-          if (!opt.value) continue;
-          if (opt.value.toLowerCase() === needle || (opt.textContent || "").trim().toLowerCase() === needle) {
-            matched = opt.value;
+  // Auto-select car/cars and track/query from URL parameters
+  try {
+    var params = new URLSearchParams(window.location.search);
+    var paramTrack = params.get("track") || params.get("q");
+    if (paramTrack && search) {
+      search.value = paramTrack.trim();
+    }
+    var paramCar = params.get("car");
+    var paramCars = params.get("cars");
+    if (paramCar && car) {
+      var needle = paramCar.trim().toLowerCase();
+      var matched = "";
+      for (var i = 0; i < car.options.length; i++) {
+        var opt = car.options[i];
+        if (!opt.value) continue;
+        if (opt.value.toLowerCase() === needle || (opt.textContent || "").trim().toLowerCase() === needle) {
+          matched = opt.value;
+          break;
+        }
+      }
+      if (!matched) {
+        for (var j = 0; j < car.options.length; j++) {
+          var opt2 = car.options[j];
+          if (!opt2.value) continue;
+          if ((opt2.textContent || "").toLowerCase().indexOf(needle) !== -1) {
+            matched = opt2.value;
             break;
           }
         }
-        if (!matched) {
-          for (var j = 0; j < car.options.length; j++) {
-            var opt2 = car.options[j];
-            if (!opt2.value) continue;
-            if ((opt2.textContent || "").toLowerCase().indexOf(needle) !== -1) {
-              matched = opt2.value;
-              break;
-            }
-          }
-        }
-        if (matched) {
-          car.value = matched;
-          queue();
-        }
       }
-    } catch (e) {}
-  }
+      if (matched) {
+        car.value = matched;
+        queue();
+      } else if (paramTrack) {
+        queue();
+      }
+    } else if (paramCars) {
+      multiCars = paramCars.split(",").map(function (s) { return s.trim(); }).filter(Boolean);
+      if (multiCars.length) queue();
+    } else if (paramTrack) {
+      queue();
+    }
+  } catch (e) {}
 })();
