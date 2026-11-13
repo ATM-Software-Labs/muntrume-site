@@ -27,7 +27,7 @@ const FALLBACK_BRAND_BY_PREFIX: Array<[RegExp, { logo: string; color: string }]>
   [/audi/i, { logo: "logo-audi", color: "#BB0A30" }],
   [/lamborghini/i, { logo: "logo-lambo", color: "#DDB321" }],
   [/mclaren/i, { logo: "logo-mclaren", color: "#FF8700" }],
-  [/aston|amvantage|amvalkyrie/i, { logo: "logo-aston", color: "#006F62" }],
+  [/aston|amvantage|amvalkyrie/i, { logo: "logo-aston", color: "#2dd4bf" }],
   [/cadillac/i, { logo: "logo-cadillac", color: "#D4AF37" }],
   [/acura/i, { logo: "logo-acura", color: "#E11D48" }],
   [/corvette|chevy|camaro|silverado|c6r|c8r/i, { logo: "logo-chevy", color: "#EAB308" }],
@@ -47,7 +47,10 @@ const FALLBACK_BRAND_BY_PREFIX: Array<[RegExp, { logo: string; color: string }]>
 
 function brandMetaFor(carId: string) {
   const hit = catalogByKey.get(normCarKey(carId));
-  if (hit && OFFICIAL_BRAND_PATHS[hit.logo]) return hit;
+  if (hit && OFFICIAL_BRAND_PATHS[hit.logo]) {
+    if (hit.logo === "logo-aston") return { logo: "logo-aston", color: "#2dd4bf" };
+    return hit;
+  }
   for (const [rx, meta] of FALLBACK_BRAND_BY_PREFIX) {
     if (rx.test(carId) && OFFICIAL_BRAND_PATHS[meta.logo]) return meta;
   }
@@ -211,7 +214,7 @@ const garageSchema = {
 
   <style is:global>
     .g2-carcell { display: inline-flex; align-items: center; gap: 10px; }
-    .g2-brand { display: inline-block; flex-shrink: 0; width: 18px; height: 18px; opacity: 0.95; }
+    .g2-brand { display: inline-block; flex-shrink: 0; width: 22px; height: 22px; opacity: 0.96; }
   </style>
 
   <div id="authModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="authTitle" hidden>
