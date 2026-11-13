@@ -4,6 +4,26 @@ import DriverCard from '../components/DriverCard.astro';
 import TeamBand from '../components/TeamBand.astro';
 import { PILOTOS, LICENCE_UPDATED_LABEL } from '../lib/pilotos';
 import catalog from '../../public/assets/data/catalog_index.json';
+import schedule from '../../desktop/src/season_schedule_2026_s4.json';
+
+// "Esta semana": series Open destacadas del calendario oficial 2026 S4 (las Fixed usan el setup de iRacing).
+const FEATURED = [
+  'GT Sprint Series by Simucube',
+  'IMSA iRacing Series by GO Fast',
+  'GT3 Regional Tour by SensitHaptics - Europe',
+  'GT4 Falken Tyre Challenge',
+  'LMP3 Trophy',
+  'Supercars Series - 2026',
+];
+const weekly = FEATURED
+  .map((prefix) => schedule.series.find((s) => s.name.startsWith(prefix)))
+  .filter((s) => s !== undefined)
+  .map((s) => ({
+    name: s.name.replace(/\s*-?\s*2026 Season.*$/i, '').trim(),
+    weeks: s.weeks.map((w) => [w.week_num, w.track_name, w.config ?? ''] as [number, string, string]),
+  }));
+const SEASON_START_MS = Date.UTC(2026, 8, 15);
+const buildWeek = Math.max(1, Math.min(12, Math.floor((Date.now() - SEASON_START_MS) / 604_800_000) + 1));
 
 const pageTitle = "Muntrume Motorsport (MMT) · Equipo iRacing";
 const pageDescription = "Muntrume Motorsport (MMT) es el equipo de iRacing de Sant Andreu, Barcelona. Pilotos oficiales, telemetría y setups .sto en el Garage.";
@@ -31,9 +51,9 @@ const figs = [
       <h1 id="heroTitle" class="r-h1">Muntrume Motorsport</h1>
       <p class="r-lead" data-i18n="home.lead">Sim racing con criterio de ingeniería. Equipo oficial de iRacing en resistencia y sprint: telemetría, setups .sto y trabajo de equipo en Sports Car, GT3 y GT4.</p>
       <div class="r-hero__cta">
-        <a href="/pilotos/" class="r-btn r-btn--primary" data-i18n="home.cta.drivers">Conocer a los pilotos</a>
+        <a href="/app/" class="r-btn r-btn--primary">Descargar MMT Sync</a>
         <a href="/garage/" class="r-btn r-btn--ghost" data-i18n="home.cta.vault">Entrar al Garage</a>
-        <a href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer" class="r-btn r-btn--ghost" data-i18n="home.cta.g61">Telemetría Garage 61 ↗</a>
+        <a href="/login" class="r-btn r-btn--ghost">Acceso piloto</a>
       </div>
       <div class="r-hero__meta">
         {figs.map(f => (
@@ -46,12 +66,63 @@ const figs = [
     </div>
   </section>
 
-  <section class="r-section" aria-labelledby="mmtAbout">
-    <div class="r-wrap" style="display:grid;gap:12px;max-width:70ch">
-      <h2 id="mmtAbout" class="r-h2" data-i18n="home.about.title">Sobre Muntrume Motorsport (MMT)</h2>
-      <p class="r-lead" style="margin:0" data-i18n="home.about.body">Muntrume Motorsport (MMT) es un equipo de iRacing con sede en Sant Andreu, Barcelona. Publica la ficha de sus pilotos, guarda los setups .sto en el Garage y comparte la telemetría en Garage 61. La radio del equipo está en Discord.</p>
+  <section class="r-section" aria-labelledby="weekTitle">
+    <div class="r-wrap">
+      <div class="r-head">
+        <div>
+          <p class="r-kicker">2026 Season 4 · <span id="weekNum">Semana {buildWeek}</span></p>
+          <h2 id="weekTitle" class="r-h2">Esta semana en iRacing</h2>
+        </div>
+        <a href="/garage/" class="r-link">Ver todos los setups →</a>
+      </div>
+      <div id="weekGrid" class="mmt-week-grid" data-weeks={JSON.stringify(weekly)}>
+        {weekly.map((s) => {
+          const w = s.weeks.find((x) => x[0] === buildWeek);
+          return (
+            <a href="/garage/" class="mmt-week-card">
+              <span class="mmt-week-card__series">{s.name}</span>
+              <strong class="mmt-week-card__track" data-track>{w?.[1] ?? '—'}</strong>
+              <span class="mmt-week-card__config" data-config>{w?.[2] ?? ''}</span>
+            </a>
+          );
+        })}
+      </div>
+      <p class="r-meta" style="margin-top:12px">Calendario oficial de iRacing. Solo series Open: en las series Fixed se corre con el setup de iRacing.</p>
     </div>
   </section>
+
+  <style>
+    .mmt-week-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+    .mmt-week-card {
+      display: grid; gap: 6px; padding: 16px 18px; border-radius: 12px;
+      border: 1px solid var(--r-line); border-top: 2px solid var(--r-accent, #00e5ff);
+      background: var(--r-surface, rgba(255,255,255,0.03)); color: var(--r-text); text-decoration: none;
+      transition: border-color .15s ease, transform .15s ease;
+    }
+    .mmt-week-card:hover { border-color: var(--r-line-2); transform: translateY(-2px); }
+    .mmt-week-card__series { font: 600 11px/1.3 ui-monospace, monospace; text-transform: uppercase; letter-spacing: .06em; color: var(--r-muted); }
+    .mmt-week-card__track { font-size: 18px; line-height: 1.25; }
+    .mmt-week-card__config { font-size: 13px; color: var(--r-muted); }
+  </style>
+
+  <script is:inline>
+    (() => {
+      const grid = document.getElementById('weekGrid');
+      if (!grid) return;
+      let data = [];
+      try { data = JSON.parse(grid.dataset.weeks || '[]'); } catch { return; }
+      const week = Math.max(1, Math.min(12, Math.floor((Date.now() - Date.UTC(2026, 8, 15)) / 604800000) + 1));
+      const label = document.getElementById('weekNum');
+      if (label) label.textContent = 'Semana ' + week;
+      grid.querySelectorAll('.mmt-week-card').forEach((card, i) => {
+        const hit = ((data[i] && data[i].weeks) || []).find((e) => e[0] === week);
+        card.hidden = !hit;
+        if (!hit) return;
+        card.querySelector('[data-track]').textContent = hit[1];
+        card.querySelector('[data-config]').textContent = hit[2];
+      });
+    })();
+  </script>
 
   <section class="r-section" aria-labelledby="driversTitle">
     <div class="r-wrap max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">

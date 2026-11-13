@@ -29,7 +29,9 @@
         <div class="flex items-center gap-2">
           <nav id="appNav" class="hidden sm:flex items-center gap-1" aria-label="Secciones">
             <button type="button" data-nav="library" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Biblioteca</button>
-            <button type="button" data-nav="upload" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Subir</button>
+            <button type="button" data-nav="week" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Semana</button>
+            <button type="button" data-nav="last_session" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Telemetría</button>
+            <button type="button" data-nav="overlays" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Overlays</button>
             <button type="button" data-nav="settings" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Ajustes</button>
           </nav>
           <button type="button" id="themeToggle" class="mmt-btn-ghost h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-text" aria-pressed="false">Tema claro</button>
@@ -83,9 +85,11 @@
         </section>
 
         <section id="viewApp" hidden>
-          <div class="sm:hidden flex gap-2 mb-4" id="appNavMobile">
+          <div class="sm:hidden flex flex-wrap gap-2 mb-4" id="appNavMobile">
             <button type="button" data-nav="library" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Biblioteca</button>
-            <button type="button" data-nav="upload" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Subir</button>
+            <button type="button" data-nav="week" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Semana</button>
+            <button type="button" data-nav="last_session" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Telemetría</button>
+            <button type="button" data-nav="overlays" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Overlays</button>
             <button type="button" data-nav="settings" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Ajustes</button>
           </div>
 
@@ -96,6 +100,7 @@
                 <h1 id="libraryTitle" class="mmt-display text-4xl mt-2">Biblioteca</h1>
               </div>
               <div class="flex items-center gap-3">
+                <button type="button" data-nav="upload" class="mmt-btn-ghost h-11 px-4 rounded-xl border border-r-line font-display font-extrabold uppercase tracking-wider text-sm">Subir setup</button>
                 <button type="button" id="syncBtn" class="mmt-btn h-11 px-5 rounded-xl bg-r-accent text-r-ink font-display font-extrabold uppercase tracking-wider text-sm flex items-center gap-2 shadow-lg shadow-r-accent/10">
                   <span id="syncIcon">⟳</span>
                   <span id="syncText">Sincronizar ahora</span>
@@ -209,17 +214,7 @@
             <p id="uploadDone" hidden class="mt-6 rounded-2xl border border-r-accent bg-r-surface px-5 py-6 mmt-display text-3xl text-r-accent">Enviado a revisión en la Sala de ingenieros</p>
           </section>
 
-          <div id="moduleNav" class="flex flex-wrap gap-2 mb-5" aria-label="Módulos">
-            <button type="button" data-nav="week" class="mmt-chip h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-muted">Calendario</button>
-            <button type="button" data-nav="last_session" class="mmt-chip h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-muted">Última Sesión</button>
-            <button type="button" data-nav="analysis" class="mmt-chip h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-muted">Análisis</button>
-            <button type="button" data-nav="reference" class="mmt-chip h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-muted">Referencia</button>
-            <button type="button" data-nav="strategy" class="mmt-chip h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-muted">Estrategia</button>
-            <button type="button" data-nav="overlays" class="mmt-chip h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-muted">Overlays</button>
-            <button type="button" data-nav="hardware" class="mmt-chip h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-muted">Volante y Sonido</button>
-            <button type="button" data-nav="config" class="mmt-chip h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-muted">Diagnóstico iRacing</button>
-            <button type="button" data-nav="team" class="mmt-chip h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-muted">Equipo</button>
-          </div>
+          <!-- Módulos experimentales (Referencia, Estrategia, Volante, Diagnóstico, Equipo) ocultos de la navegación. -->
 
           <section id="viewWeek" hidden aria-labelledby="weekTitle">
             <div class="flex flex-wrap items-center justify-between gap-4">

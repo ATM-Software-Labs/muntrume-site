@@ -417,8 +417,11 @@ function formatWhen(iso: string | null): string {
 }
 
 function setNav(): void {
-  document.querySelectorAll<HTMLButtonElement>("[data-nav]").forEach((button) => {
-    const on = button.dataset.nav === view;
+  // Sub-views are highlighted under their parent tab.
+  const parent: Record<string, string> = { analysis: "last_session", upload: "library" };
+  const active = parent[view] ?? view;
+  document.querySelectorAll<HTMLButtonElement>("#appNav [data-nav], #appNavMobile [data-nav]").forEach((button) => {
+    const on = button.dataset.nav === active;
     button.classList.toggle("text-r-accent", on);
     button.classList.toggle("text-r-muted", !on);
     button.setAttribute("aria-current", on ? "page" : "false");
