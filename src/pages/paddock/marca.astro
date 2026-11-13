@@ -4,69 +4,15 @@ import Layout from "../../layouts/Layout.astro";
 const pageTitle = "Marca y Brand Kit Oficial | Muntrume Motorsport";
 const pageDescription = "Subpágina oficial de identidad visual, logotipos vectoriales, escudo heráldico, paleta cromática, tipografías y marco legal de marca de Muntrume Motorsport™.";
 
-const brandAssets = [
+const originalAssets = [
   {
-    name: "Escudo Heráldico Oficial (Nuevo)",
+    name: "Escudo Heráldico Oficial",
     fmt: "JPG · Alta Resolución",
     desc: "Emblema heráldico oficial con casco verde esmeralda, torre almenada, paloma, mano y barras doradas cruzadas.",
     src: "/assets/brand/muntrume-escudo-heraldico.jpg",
     bg: "bg-white",
     file: "muntrume-escudo-heraldico.jpg",
-    badge: "Nuevo"
-  },
-  {
-    name: "Escudo Heráldico Vectorial",
-    fmt: "SVG · Escalable",
-    desc: "Adaptación vectorial limpia del escudo heráldico para impresión, vinilos, overlays y Trading Paints.",
-    src: "/assets/brand/muntrume-escudo-vector.svg",
-    bg: "bg-[#090d12]",
-    file: "muntrume-escudo-vector.svg",
-    badge: "Nuevo SVG"
-  },
-  {
-    name: "Monograma Técnico MTM",
-    fmt: "SVG · Escalable",
-    desc: "Icono compacto MTM de alto contraste para avatares, HUD telemétrico, capó y app de escritorio.",
-    src: "/assets/brand/muntrume-monogram-mtm.svg",
-    bg: "bg-[#090d12]",
-    file: "muntrume-monogram-mtm.svg",
-    badge: "Nuevo SVG"
-  },
-  {
-    name: "Wordmark Horizontal Dark",
-    fmt: "SVG · 640×160",
-    desc: "Logotipo completo con tipografía corporativa para fondos oscuros, banners de Twitch/YouTube y faldones.",
-    src: "/assets/brand/muntrume-wordmark-dark.svg",
-    bg: "bg-[#090d12]",
-    file: "muntrume-wordmark-dark.svg",
-    badge: "Nuevo SVG"
-  },
-  {
-    name: "Wordmark Horizontal Light",
-    fmt: "SVG · 640×160",
-    desc: "Logotipo completo para carrocerías claras, dosieres de prensa, documentos PDF y patrocinadores.",
-    src: "/assets/brand/muntrume-wordmark-light.svg",
-    bg: "bg-slate-100",
-    file: "muntrume-wordmark-light.svg",
-    badge: "Nuevo SVG"
-  },
-  {
-    name: "Sello MTM 60Hz Verified",
-    fmt: "SVG · Circular",
-    desc: "Distintivo técnico de homologación para tarjetas de setups (.sto), telemetría .IBT y escrutinio 100% Pass Tech.",
-    src: "/assets/brand/muntrume-telemetry-badge.svg",
-    bg: "bg-[#090d12]",
-    file: "muntrume-telemetry-badge.svg",
-    badge: "Nuevo SVG"
-  },
-  {
-    name: "Emblema Monocromo Blanco",
-    fmt: "SVG · 100% Blanco",
-    desc: "Versión monocroma pura para fibra de carbono, cristales, alerones traseros y liveries oscuras.",
-    src: "/assets/brand/muntrume-mono-white.svg",
-    bg: "bg-black",
-    file: "muntrume-mono-white.svg",
-    badge: "Livery"
+    badge: "Original"
   },
   {
     name: "Logo Clásico Principal",
@@ -115,6 +61,63 @@ const brandAssets = [
   }
 ];
 
+const futuristicAssets = [
+  {
+    name: "Escudo Heráldico Vectorial",
+    fmt: "SVG · Escalable",
+    desc: "Adaptación vectorial limpia del escudo heráldico para impresión, vinilos, overlays y Trading Paints.",
+    src: "/assets/brand/muntrume-escudo-vector.svg",
+    bg: "bg-[#090d12]",
+    file: "muntrume-escudo-vector.svg",
+    badge: "Futurista SVG"
+  },
+  {
+    name: "Monograma Técnico MTM",
+    fmt: "SVG · Escalable",
+    desc: "Icono compacto MTM de alto contraste para avatares, HUD telemétrico, capó y app de escritorio.",
+    src: "/assets/brand/muntrume-monogram-mtm.svg",
+    bg: "bg-[#090d12]",
+    file: "muntrume-monogram-mtm.svg",
+    badge: "Futurista SVG"
+  },
+  {
+    name: "Wordmark Horizontal Dark",
+    fmt: "SVG · 640×160",
+    desc: "Logotipo completo con tipografía corporativa para fondos oscuros, banners de Twitch/YouTube y faldones.",
+    src: "/assets/brand/muntrume-wordmark-dark.svg",
+    bg: "bg-[#090d12]",
+    file: "muntrume-wordmark-dark.svg",
+    badge: "Futurista SVG"
+  },
+  {
+    name: "Wordmark Horizontal Light",
+    fmt: "SVG · 640×160",
+    desc: "Logotipo completo para carrocerías claras, dosieres de prensa, documentos PDF y patrocinadores.",
+    src: "/assets/brand/muntrume-wordmark-light.svg",
+    bg: "bg-slate-100",
+    file: "muntrume-wordmark-light.svg",
+    badge: "Futurista SVG"
+  },
+  {
+    name: "Sello MTM 60Hz Verified",
+    fmt: "SVG · Circular",
+    desc: "Distintivo técnico de homologación para tarjetas de setups (.sto), telemetría .IBT y escrutinio 100% Pass Tech.",
+    src: "/assets/brand/muntrume-telemetry-badge.svg",
+    bg: "bg-[#090d12]",
+    file: "muntrume-telemetry-badge.svg",
+    badge: "Tech SVG"
+  },
+  {
+    name: "Emblema Monocromo Blanco",
+    fmt: "SVG · 100% Blanco",
+    desc: "Versión monocroma pura para fibra de carbono, cristales, alerones traseros y liveries oscuras.",
+    src: "/assets/brand/muntrume-mono-white.svg",
+    bg: "bg-black",
+    file: "muntrume-mono-white.svg",
+    badge: "Livery SVG"
+  }
+];
+
 const colorPalette = [
   { name: "Emerald Racing", hex: "#10B981", rgb: "16, 185, 129", role: "Color principal de escudería, casco y detalles activos." },
   { name: "Telemetry Cyan", hex: "#00E5FF", rgb: "0, 229, 255", role: "Acento técnico, trazas telemétricas y visor." },
@@ -126,28 +129,28 @@ const colorPalette = [
 ---
 
 <Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/paddock/marca/">
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
+  <main class="r-wrap py-12 sm:py-16 space-y-12">
     <!-- BREADCRUMB & HERO -->
     <header class="pb-6 border-b border-[var(--r-line)] flex flex-col lg:flex-row lg:items-end justify-between gap-6">
       <div class="space-y-3">
-        <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--r-muted)]">
+        <div class="r-kicker flex items-center gap-2">
           <a href="/paddock/" class="hover:text-[var(--r-accent)] transition-colors">Paddock</a>
           <span>/</span>
           <span class="text-[var(--r-accent)]">Marca &amp; Brand Kit</span>
         </div>
-        <h1 class="text-3xl sm:text-5xl font-extrabold text-[var(--r-text)] font-display tracking-tight">
+        <h1 class="r-h2">
           Identidad Visual y Marca Oficial
         </h1>
-        <p class="text-sm text-[var(--r-muted)] max-w-2xl leading-relaxed">
+        <p class="r-lead max-w-2xl">
           Manual completo de marca de <strong class="text-[var(--r-text)]">Muntrume Motorsport™</strong> y <strong class="text-[var(--r-text)]">MTM Megasetup™</strong>:
-          escudo heráldico, nuevas variantes vectoriales SVG, paleta cromática, tipografía y normativa legal de uso.
+          branding original, variantes futuristas vectoriales, paleta cromática y normativa legal de uso.
         </p>
       </div>
       <div class="flex flex-wrap items-center gap-2">
-        <a href="/legal/" class="px-4 py-2 rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] hover:border-[var(--r-accent)] text-xs font-mono font-bold transition-colors">
+        <a href="/legal/" class="r-btn r-btn--ghost">
           Marco Legal
         </a>
-        <a href="/paddock/#brand-kit" class="px-4 py-2 rounded-xl border border-[var(--r-accent)]/50 bg-[var(--r-accent)]/12 text-xs font-mono font-bold text-[var(--r-accent)] hover:bg-[var(--r-accent)]/20 transition-colors">
+        <a href="/paddock/#brand-kit" class="r-btn r-btn--primary">
           &larr; Volver al Paddock
         </a>
       </div>
@@ -191,22 +194,23 @@ const colorPalette = [
       </div>
     </section>
 
-    <!-- ALL LOGOS & VARIANTS -->
+    <!-- BRANDING ORIGINAL & CLASICO -->
     <section class="space-y-6">
       <div class="pb-3 border-b border-[var(--r-line)] flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h2 class="text-2xl font-extrabold text-[var(--r-text)] font-display">
-            Catálogo Completo de Logotipos ({brandAssets.length} archivos)
+          <span class="r-kicker">Línea 01 · Heráldica &amp; Clásica</span>
+          <h2 class="text-2xl font-extrabold text-[var(--r-text)] font-display mt-1">
+            Branding Original ({originalAssets.length} archivos)
           </h2>
           <p class="text-xs text-[var(--r-muted)] mt-1">
-            Incluye el nuevo escudo, variantes vectoriales SVG creadas a partir de la identidad oficial y archivos clásicos en PNG.
+            Escudo heráldico oficial, logotipo histórico principal e iconos estándar de aplicación y prensa.
           </p>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-        {brandAssets.map((asset) => (
-          <article class="rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-4 flex flex-col justify-between gap-4 hover:border-[var(--r-accent)] transition-colors">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {originalAssets.map((asset) => (
+          <article class="rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-5 flex flex-col justify-between gap-4 hover:border-[var(--r-accent)] transition-colors">
             <div class="space-y-3">
               <div class={`relative h-36 rounded-xl ${asset.bg} border border-white/10 flex items-center justify-center p-4 overflow-hidden`}>
                 <img src={asset.src} alt={asset.name} loading="lazy" decoding="async" class="max-h-full max-w-full object-contain" />
@@ -215,9 +219,7 @@ const colorPalette = [
                 </span>
               </div>
               <div>
-                <div class="flex items-center justify-between gap-2">
-                  <h3 class="text-sm font-bold text-[var(--r-text)] leading-tight">{asset.name}</h3>
-                </div>
+                <h3 class="text-sm font-bold text-[var(--r-text)] leading-tight">{asset.name}</h3>
                 <span class="text-[11px] font-mono text-[var(--r-accent)] block mt-0.5">{asset.fmt}</span>
                 <p class="text-xs text-[var(--r-muted)] mt-1.5 leading-relaxed">{asset.desc}</p>
               </div>
@@ -233,6 +235,72 @@ const colorPalette = [
         ))}
       </div>
     </section>
+
+    <!-- BRANDING FUTURISTA / TECH (COLAPSABLE CON MOSTRAR MAS) -->
+    <section class="space-y-5">
+      <div class="pb-3 border-b border-[var(--r-line)] flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <span class="r-kicker">Línea 02 · Vectorial &amp; Telemetría</span>
+          <h2 class="text-2xl font-extrabold text-[var(--r-text)] font-display mt-1">
+            Branding Futurista / Tech ({futuristicAssets.length} variantes SVG)
+          </h2>
+          <p class="text-xs text-[var(--r-muted)] mt-1">
+            Variantes vectoriales SVG de líneas limpias para liveries oscuras, HUD telemétrico y banners digitales.
+          </p>
+        </div>
+        <button
+          id="toggle-futuristic-btn"
+          type="button"
+          aria-expanded="false"
+          class="px-4 py-2 rounded-xl bg-[var(--r-surface)] hover:border-[var(--r-accent)] border border-[var(--r-line)] text-xs font-mono font-bold text-[var(--r-accent)] transition cursor-pointer"
+        >
+          Mostrar más ({futuristicAssets.length} variantes futuristas) ↓
+        </button>
+      </div>
+
+      <div id="futuristic-grid" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {futuristicAssets.map((asset) => (
+          <article class="rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-5 flex flex-col justify-between gap-4 hover:border-[var(--r-accent)] transition-colors">
+            <div class="space-y-3">
+              <div class={`relative h-36 rounded-xl ${asset.bg} border border-white/10 flex items-center justify-center p-4 overflow-hidden`}>
+                <img src={asset.src} alt={asset.name} loading="lazy" decoding="async" class="max-h-full max-w-full object-contain" />
+                <span class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded bg-black/75 border border-white/15 text-[10px] font-mono font-bold text-[var(--r-accent)] uppercase">
+                  {asset.badge}
+                </span>
+              </div>
+              <div>
+                <h3 class="text-sm font-bold text-[var(--r-text)] leading-tight">{asset.name}</h3>
+                <span class="text-[11px] font-mono text-[var(--r-accent)] block mt-0.5">{asset.fmt}</span>
+                <p class="text-xs text-[var(--r-muted)] mt-1.5 leading-relaxed">{asset.desc}</p>
+              </div>
+            </div>
+            <a
+              href={asset.src}
+              download={asset.file}
+              class="w-full py-2 px-3 rounded-xl bg-[var(--r-bg-2)] hover:bg-[var(--r-accent)]/15 border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono font-bold text-[var(--r-text)] hover:text-[var(--r-accent)] text-center transition-colors"
+            >
+              Descargar {asset.file.split('.').pop()?.toUpperCase()}
+            </a>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <script is:inline>
+      (function () {
+        var btn = document.getElementById('toggle-futuristic-btn');
+        var grid = document.getElementById('futuristic-grid');
+        if (!btn || !grid) return;
+        btn.addEventListener('click', function () {
+          var isHidden = grid.classList.contains('hidden');
+          grid.classList.toggle('hidden', !isHidden);
+          btn.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+          btn.textContent = isHidden
+            ? 'Ocultar variantes futuristas ↑'
+            : 'Mostrar más (' + grid.children.length + ' variantes futuristas) ↓';
+        });
+      })();
+    </script>
 
     <!-- COLOR PALETTE & TYPOGRAPHY -->
     <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">

@@ -491,19 +491,29 @@ const galleryItems = [
         </a>
       </div>
 
-      <div class="flex flex-wrap items-center gap-1.5 text-[11px] font-mono">
-        <span class="text-[var(--r-muted)] mr-1">Marcas:</span>
-        {["BMW", "Ferrari", "Porsche", "Mercedes-AMG", "Ford", "McLaren", "Dallara", "Toyota", "Mazda", "Chevrolet", "Audi"].map((b) => {
+      <div class="flex flex-wrap items-center gap-1.5 text-[11px] font-mono" id="fleet-brand-links">
+        <span class="text-[var(--r-muted)] mr-1">Marcas ({fleetBrands.length}):</span>
+        {fleetBrands.map((b, idx) => {
           const slug = b.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
           return (
             <a
               href={`/${slug}/`}
-              class="px-2 py-0.5 rounded-md bg-[var(--r-surface)] border border-[var(--r-line)] text-[var(--r-muted)] hover:text-[var(--r-accent)] hover:border-[var(--r-accent)]/60 transition"
+              data-extra-brand={idx >= 12 ? "1" : "0"}
+              class={`px-2 py-0.5 rounded-md bg-[var(--r-surface)] border border-[var(--r-line)] text-[var(--r-muted)] hover:text-[var(--r-accent)] hover:border-[var(--r-accent)]/60 transition ${idx >= 12 ? 'hidden' : ''}`}
             >
-              /{slug}
+              {b}
             </a>
           );
         })}
+        {fleetBrands.length > 12 && (
+          <button
+            id="fleet-brands-more-btn"
+            type="button"
+            class="px-2 py-0.5 rounded-md bg-[var(--r-accent)]/10 border border-[var(--r-accent)]/40 text-[var(--r-accent)] hover:bg-[var(--r-accent)]/20 transition cursor-pointer"
+          >
+            + Todas ({fleetBrands.length})
+          </button>
+        )}
       </div>
 
       <div id="fleet-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -1292,5 +1302,19 @@ const galleryItems = [
     if (searchInput) searchInput.addEventListener('input', function() { showAll = false; applyFilter(); });
     if (brandSelect) brandSelect.addEventListener('change', function() { showAll = false; applyFilter(); });
     if (sortSelect) sortSelect.addEventListener('change', function() { showAll = false; applySort(); applyFilter(); });
+    var brandsMoreBtn = document.getElementById('fleet-brands-more-btn');
+    if (brandsMoreBtn) {
+      var brandsExpanded = false;
+      brandsMoreBtn.addEventListener('click', function() {
+        brandsExpanded = !brandsExpanded;
+        document.querySelectorAll('[data-extra-brand="1"]').forEach(function(el) {
+          el.classList.toggle('hidden', !brandsExpanded);
+        });
+        brandsMoreBtn.textContent = brandsExpanded ? '− Menos marcas' : '+ Todas (' + fleetBrandsCount() + ')';
+      });
+      function fleetBrandsCount() {
+        return document.querySelectorAll('#fleet-brand-links a').length;
+      }
+    }
   })();
 </script>

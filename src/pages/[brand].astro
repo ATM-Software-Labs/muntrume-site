@@ -71,8 +71,8 @@ const pageDescription = `Catálogo completo de vehículos ${brandName} en iRacin
   description={pageDescription}
   canonical={`https://muntru.me/${brandSlug}/`}
 >
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20 space-y-8">
-    <nav aria-label="Breadcrumb" class="flex flex-wrap items-center gap-2 text-xs font-mono text-[var(--r-muted)]">
+  <main class="r-wrap py-12 sm:py-16 space-y-10">
+    <nav aria-label="Breadcrumb" class="r-kicker flex flex-wrap items-center gap-2">
       <a href="/paddock/" class="hover:text-[var(--r-accent)] transition">Paddock</a>
       <span>/</span>
       <span>Marcas</span>
@@ -82,27 +82,21 @@ const pageDescription = `Catálogo completo de vehículos ${brandName} en iRacin
 
     <header class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[var(--r-line)] pb-6">
       <div class="space-y-2">
-        <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-[var(--r-accent)]/10 border border-[var(--r-accent)]/30 text-[10px] font-mono font-bold uppercase tracking-widest text-[var(--r-accent)]">
-          <span>iRacing Brand Directory</span>
+        <div class="r-kicker">
+          iRacing Brand Directory
         </div>
-        <h1 class="text-3xl sm:text-5xl font-extrabold text-[var(--r-text)] font-display tracking-tight">
+        <h1 class="r-h2">
           {brandName}
         </h1>
-        <p class="text-xs sm:text-sm text-[var(--r-muted)] max-w-2xl">
+        <p class="r-lead max-w-2xl">
           Todos los vehículos oficiales de <strong class="text-[var(--r-text)]">{brandName}</strong> en iRacing ({cars.length} {cars.length === 1 ? 'modelo' : 'modelos'} · {categories.join(' · ')}) con enlace directo a setups (.sto), User Manual PDF y Car Forum.
         </p>
       </div>
       <div class="flex flex-wrap items-center gap-2">
-        <a
-          href="/paddock/#vehiculos"
-          class="px-4 py-2 rounded-xl bg-[var(--r-surface)] hover:border-[var(--r-accent)] border border-[var(--r-line)] text-xs font-mono font-bold text-[var(--r-text)] transition"
-        >
+        <a href="/paddock/#vehiculos" class="r-btn r-btn--ghost">
           ← Volver al catálogo
         </a>
-        <a
-          href={`/garage?q=${encodeURIComponent(brandName)}`}
-          class="px-4 py-2 rounded-xl bg-[var(--r-accent)]/15 hover:bg-[var(--r-accent)]/25 border border-[var(--r-accent)]/50 text-xs font-mono font-bold text-[var(--r-accent)] transition"
-        >
+        <a href={`/garage?q=${encodeURIComponent(brandName)}`} class="r-btn r-btn--primary">
           Setups {brandName} en Garage →
         </a>
       </div>
