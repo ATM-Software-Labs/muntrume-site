@@ -1145,6 +1145,7 @@ function paintGroupedByTrack(items: LibraryItem[]): void {
         const carTitle = document.createElement("h3");
         carTitle.className = "font-bold text-sm text-r-text";
         carTitle.textContent = meta ? `${meta.brand} ${meta.model}` : formatCarName(car);
+        if (meta) carTitle.title = `${meta.category} · ${meta.specs}`;
 
         if (meta) {
           carLeft.append(createBrandBadgeElement(meta), carTag, carTitle);
@@ -1152,11 +1153,32 @@ function paintGroupedByTrack(items: LibraryItem[]): void {
           carLeft.append(carTag, carTitle);
         }
 
+        const carRightWrap = document.createElement("div");
+        carRightWrap.className = "flex items-center gap-2";
+
+        if (meta) {
+          const mkInfoLink = (label: string, href: string, title: string): HTMLAnchorElement => {
+            const a = document.createElement("a");
+            a.href = href;
+            a.target = "_blank";
+            a.rel = "noopener noreferrer";
+            a.title = title;
+            a.textContent = label;
+            a.className = "px-2 py-0.5 rounded bg-r-bg border border-r-line hover:border-r-accent text-[10px] font-mono text-r-muted hover:text-r-accent transition-colors";
+            return a;
+          };
+          carRightWrap.append(
+            mkInfoLink("Manual", meta.manualUrl, "iRacing Official User Manual"),
+            mkInfoLink("Forum", meta.forumUrl, "iRacing Car Forum"),
+          );
+        }
+
         const carRight = document.createElement("span");
         carRight.className = "text-xs font-mono text-r-muted";
         carRight.textContent = `${carRows.length} ${carRows.length === 1 ? "setup" : "setups"}`;
+        carRightWrap.append(carRight);
 
-        carHeader.append(carLeft, carRight);
+        carHeader.append(carLeft, carRightWrap);
         carBlock.append(carHeader);
 
         const grid = document.createElement("div");

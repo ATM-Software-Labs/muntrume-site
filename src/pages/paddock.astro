@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import StatsGrid from '../components/StatsGrid.astro';
 import { PILOTOS } from '../lib/pilotos';
 import { PADDOCK_ALBUMS } from '../data/paddock-gallery';
+import { CAR_CATALOG_LIST, getBrandSvgMarkup, type CarMetadata } from '../../desktop/src/cars/catalog';
 
 const pageTitle = "Paddock | Muntrume Motorsport";
 const pageDescription = "Official Muntrume Motorsport Paddock. Canal de radio en carrera, telemetría Garage 61, galería fotográfica en iRacing, redes sociales oficiales y acceso Paddock Pass.";
@@ -142,44 +143,14 @@ const socialLinks = [
   }
 ];
 
-const teamCars = [
-  {
-    name: "Ferrari 296 GT3",
-    category: "GT3",
-    driverDorsals: ["#16", "#1", "#22"],
-    descKey: "paddock.car.ferrari",
-    desc: "Coche oficial de resistencia GT3 con motor V6 biturbo y reparto de frenada preparado para el equipo.",
-    setupCar: "Ferrari 296 GT3",
-    img: "/assets/img/coche1-640.webp"
-  },
-  {
-    name: "Ford Mustang GT3",
-    category: "GT3",
-    driverDorsals: ["#16"],
-    descKey: "paddock.car.ford",
-    desc: "Chasis V8 de competición homologado para la clase IMSA GTD y la resistencia multiclase.",
-    setupCar: "Ford Mustang GT3",
-    img: "/assets/img/coche3-640.webp"
-  },
-  {
-    name: "McLaren 720S GT3 EVO",
-    category: "GT3",
-    driverDorsals: ["#16"],
-    descKey: "paddock.car.mclaren",
-    desc: "Aerodinámica de alta carga y estabilidad en los virajes rápidos de un circuito largo.",
-    setupCar: "McLaren 720S GT3 EVO",
-    img: "/assets/img/coche4-640.webp"
-  },
-  {
-    name: "Porsche 911 GT3 R (992)",
-    category: "GT3",
-    driverDorsals: ["#1"],
-    descKey: "paddock.car.porsche",
-    desc: "Motor bóxer trasero con buena tracción a la salida de curvas lentas y curvas enlazadas.",
-    setupCar: "Porsche 911 GT3 R (992)",
-    img: "/assets/img/coche2-640.webp"
-  }
-];
+const seenModels = new Set<string>();
+const directoryCars: CarMetadata[] = CAR_CATALOG_LIST.filter((car) => {
+  const key = `${car.brand}|${car.model}`;
+  if (seenModels.has(key)) return false;
+  seenModels.add(key);
+  return true;
+});
+const fleetCategories = ["All", "Sports Car", "Formula Car", "Oval", "Dirt"] as const;
 
 const galleryItems = [
   {
@@ -403,67 +374,115 @@ const galleryItems = [
       </div>
     </section>
 
-    <!-- 4. COCHES OFICIALES DE LA ESCUDERÍA (GT3 REALES DE LOS PILOTOS) -->
-    <section id="fleet" class="space-y-8 pt-4">
-      <div class="pb-4 border-b border-[var(--r-line)]">
-        <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--r-accent)] mb-1">
-          <span class="w-2 h-2 rounded-full bg-[var(--r-accent)]"></span>
-            <span data-i18n="paddock.fleet.kicker">Parque cerrado y GT3</span>
+    <!-- 4. DIRECTORIO DE COCHES IRACING (CAR INFO + MANUAL + FORUM + SETUPS) -->
+    <section id="fleet" class="space-y-6 pt-4">
+      <div class="pb-4 border-b border-[var(--r-line)] flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--r-accent)] mb-1">
+            <span class="w-2 h-2 rounded-full bg-[var(--r-accent)]"></span>
+            <span data-i18n="paddock.fleet.kicker">iRacing Car Directory &amp; Info</span>
+          </div>
+          <h2 class="text-2xl sm:text-4xl font-extrabold text-[var(--r-text)] font-display tracking-tight" data-i18n="paddock.fleet.title">
+            Vehículos oficiales de competición
+          </h2>
+          <p class="text-xs sm:text-sm text-[var(--r-muted)] mt-1 max-w-2xl" data-i18n="paddock.fleet.lead">
+            Catálogo técnico de {directoryCars.length} coches de iRacing con emblemas propios, enlace directo a nuestros setups (.sto), User Manual y Car Forum oficial.
+          </p>
         </div>
-        <h2 class="text-2xl sm:text-4xl font-extrabold text-[var(--r-text)] font-display tracking-tight" data-i18n="paddock.fleet.title">
-          Vehículos oficiales de competición
-        </h2>
-        <p class="text-xs sm:text-sm text-[var(--r-muted)] mt-1 max-w-xl" data-i18n="paddock.fleet.lead">
-          Modelos GT3 y Sports Car que usan Alberto Trujillo (#16), Mateo Berbis (#1) y Eduardo Chongkan (#22).
-        </p>
+
+        <div class="w-full md:w-72">
+          <input
+            id="fleet-search"
+            type="search"
+            placeholder="Buscar coche, marca o clase..."
+            class="w-full px-3.5 py-2 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] focus:border-[var(--r-accent)] outline-none text-xs font-mono text-[var(--r-text)] placeholder:text-[var(--r-muted)]"
+          />
+        </div>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {teamCars.map(car => (
-          <div class="rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-300 overflow-hidden shadow-sm flex flex-col justify-between group">
-            <div class="relative w-full aspect-video overflow-hidden bg-[var(--r-bg-2)] border-b border-[var(--r-line)]">
-              <img 
-                src={car.img} 
-                alt={car.name} 
-                width="640" 
-                height="360" 
-                loading="lazy" 
-                decoding="async" 
-                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-              />
-              <div class="absolute top-3 left-3 flex items-center gap-1.5">
-                <span class="px-2 py-0.5 rounded-md bg-[var(--r-surface)]/90 backdrop-blur-xs border border-[var(--r-line)] text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase tracking-wider">
-                  {car.category}
+      <div class="flex flex-wrap items-center gap-2" id="fleet-category-filters">
+        {fleetCategories.map((cat, idx) => (
+          <button
+            type="button"
+            data-fleet-cat={cat}
+            class={`fleet-cat-btn px-3 py-1.5 rounded-lg border text-xs font-mono font-bold transition ${
+              idx === 0
+                ? 'bg-[var(--r-accent)]/15 border-[var(--r-accent)] text-[var(--r-accent)]'
+                : 'bg-[var(--r-surface)] border-[var(--r-line)] text-[var(--r-muted)] hover:text-[var(--r-text)]'
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+        <span id="fleet-count" class="ml-auto text-[11px] font-mono text-[var(--r-muted)]">
+          {directoryCars.length} coches
+        </span>
+      </div>
+
+      <div id="fleet-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {directoryCars.map((car) => (
+          <article
+            class="fleet-card rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-200 p-4 flex flex-col justify-between gap-4"
+            data-cat={car.category}
+            data-search={`${car.brand} ${car.model} ${car.carClass} ${car.category} ${car.specs}`.toLowerCase()}
+          >
+            <div class="space-y-2.5">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div class="w-10 h-10 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] flex items-center justify-center shrink-0">
+                    <Fragment set:html={getBrandSvgMarkup(car, 24)} />
+                  </div>
+                  <div class="min-w-0">
+                    <div class="text-[10px] font-mono uppercase tracking-wider text-[var(--r-muted)] truncate">
+                      {car.brand}
+                    </div>
+                    <h3 class="text-sm font-bold text-[var(--r-text)] font-display leading-snug truncate" title={`${car.brand} ${car.model}`}>
+                      {car.model}
+                    </h3>
+                  </div>
+                </div>
+                <span class="px-2 py-0.5 rounded-md bg-[var(--r-bg-2)] border border-[var(--r-line)] text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase shrink-0">
+                  {car.carClass}
                 </span>
-                {car.driverDorsals.map(d => (
-                  <span class="px-1.5 py-0.5 rounded-md bg-[var(--r-bg-2)]/90 border border-[var(--r-line)] text-[var(--r-text)] text-[10px] font-mono font-bold">
-                    {d}
-                  </span>
-                ))}
+              </div>
+
+              <div class="flex items-center gap-1.5 text-[10px] font-mono text-[var(--r-muted)]">
+                <span class="px-2 py-0.5 rounded bg-[var(--r-bg-2)] border border-[var(--r-line)]/70">{car.category}</span>
+                <span class="truncate" title={car.specs}>{car.specs}</span>
               </div>
             </div>
 
-            <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
-              <div>
-                <h3 class="text-base font-bold text-[var(--r-text)] font-display tracking-tight">
-                  {car.name}
-                </h3>
-                <p class="text-xs text-[var(--r-muted)] mt-1.5 leading-relaxed" data-i18n={car.descKey}>
-                  {car.desc}
-                </p>
-              </div>
-
-              <a 
-                href={`/garage?car=${encodeURIComponent(car.setupCar)}`} 
-                class="w-full py-2.5 px-3 rounded-xl bg-[var(--r-bg-2)] hover:bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono font-bold text-[var(--r-accent)] transition flex items-center justify-between text-center"
+            <div class="grid grid-cols-3 gap-1.5 pt-2 border-t border-[var(--r-line)]/60">
+              <a
+                href={`/garage?car=${encodeURIComponent(`${car.brand} ${car.model}`)}`}
+                class="py-1.5 px-2 rounded-lg bg-[var(--r-accent)]/12 hover:bg-[var(--r-accent)]/20 border border-[var(--r-accent)]/40 text-[10px] font-mono font-bold text-[var(--r-accent)] text-center transition"
               >
-                <span data-i18n="paddock.fleet.cta">Setups en el vault</span>
-                <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                Setups
+              </a>
+              <a
+                href={car.manualUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="py-1.5 px-2 rounded-lg bg-[var(--r-bg-2)] hover:border-[var(--r-accent)] border border-[var(--r-line)] text-[10px] font-mono font-bold text-[var(--r-text)] text-center transition"
+              >
+                Manual
+              </a>
+              <a
+                href={car.forumUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="py-1.5 px-2 rounded-lg bg-[var(--r-bg-2)] hover:border-[var(--r-accent)] border border-[var(--r-line)] text-[10px] font-mono font-bold text-[var(--r-muted)] hover:text-[var(--r-text)] text-center transition"
+              >
+                Forum
               </a>
             </div>
-          </div>
+          </article>
         ))}
       </div>
+
+      <p class="text-[11px] font-mono text-[var(--r-muted)]">
+        Fair Use: Marcas, emblemas geométricos propios y nombres de vehículos mostrados con fines identificativos y de compatibilidad. Manuales y foros alojados en iRacing.com.
+      </p>
     </section>
 
     <!-- 5. GALERÍA FOTOGRÁFICA OFICIAL (CAPTURA REAL DE IRACING) -->
@@ -1032,4 +1051,43 @@ const galleryItems = [
       if (btnArrow) btnArrow.innerHTML = '&rarr;';
     }
   }
+
+  (function initFleetDirectory() {
+    var searchInput = document.getElementById('fleet-search');
+    var countEl = document.getElementById('fleet-count');
+    var catBtns = document.querySelectorAll('.fleet-cat-btn');
+    var cards = document.querySelectorAll('.fleet-card');
+    if (!cards.length) return;
+    var activeCat = 'All';
+
+    function applyFilter() {
+      var q = (searchInput && searchInput.value ? searchInput.value : '').trim().toLowerCase();
+      var visible = 0;
+      cards.forEach(function(card) {
+        var cat = card.getAttribute('data-cat') || '';
+        var hay = card.getAttribute('data-search') || '';
+        var ok = (activeCat === 'All' || cat === activeCat) && (!q || hay.indexOf(q) !== -1);
+        card.classList.toggle('hidden', !ok);
+        if (ok) visible++;
+      });
+      if (countEl) countEl.textContent = visible + ' coches';
+    }
+
+    catBtns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        activeCat = btn.getAttribute('data-fleet-cat') || 'All';
+        catBtns.forEach(function(b) {
+          var isOn = b === btn;
+          b.className = 'fleet-cat-btn px-3 py-1.5 rounded-lg border text-xs font-mono font-bold transition ' + (
+            isOn
+              ? 'bg-[var(--r-accent)]/15 border-[var(--r-accent)] text-[var(--r-accent)]'
+              : 'bg-[var(--r-surface)] border-[var(--r-line)] text-[var(--r-muted)] hover:text-[var(--r-text)]'
+          );
+        });
+        applyFilter();
+      });
+    });
+
+    if (searchInput) searchInput.addEventListener('input', applyFilter);
+  })();
 </script>

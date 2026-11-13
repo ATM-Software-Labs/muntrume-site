@@ -1,85 +1,185 @@
 export type CarClass = "GTP" | "LMP2" | "LMP3" | "GT3" | "GT4" | "GTE" | "Formula" | "Touring" | "Oval" | "Dirt" | "Prototype";
+export type CarCategory = "Sports Car" | "Formula Car" | "Oval" | "Dirt";
 
 export interface CarMetadata {
   readonly carFolder: string;
   readonly brand: string;
   readonly model: string;
   readonly carClass: CarClass;
+  readonly category: CarCategory;
   readonly svgLogoId: string;
   readonly accentColor: string;
+  readonly specs: string;
+  readonly manualUrl: string;
+  readonly forumUrl: string;
 }
 
-const CAR_CATALOG_LIST: readonly CarMetadata[] = [
+interface RawCarEntry {
+  readonly carFolder: string;
+  readonly brand: string;
+  readonly model: string;
+  readonly carClass: CarClass;
+  readonly svgLogoId: string;
+  readonly accentColor: string;
+  readonly specs?: string;
+}
+
+function categoryFromClass(carClass: CarClass): CarCategory {
+  if (carClass === "Formula") return "Formula Car";
+  if (carClass === "Oval") return "Oval";
+  if (carClass === "Dirt") return "Dirt";
+  return "Sports Car";
+}
+
+function defaultSpecsForClass(carClass: CarClass): string {
+  switch (carClass) {
+    case "GTP": return "Hybrid Prototype · IMSA / WEC";
+    case "LMP2": return "Carbon Monocoque · Endurance P2";
+    case "LMP3": return "V8 Prototype · Multi-Class";
+    case "GT3": return "FIA GT3 · ABS & TC";
+    case "GT4": return "Production GT4 · Endurance";
+    case "GTE": return "LMGTE Spec · No ABS";
+    case "Formula": return "Open-Wheel · High Downforce";
+    case "Touring": return "Production / TCR / Supercars";
+    case "Oval": return "Stock / Short Track Oval";
+    case "Dirt": return "Dirt Oval / Off-Road";
+    case "Prototype": return "Lightweight Track Prototype";
+  }
+}
+
+function enrichCar(entry: RawCarEntry): CarMetadata {
+  const category = categoryFromClass(entry.carClass);
+  const query = encodeURIComponent(entry.model);
+  return {
+    ...entry,
+    category,
+    specs: entry.specs ?? defaultSpecsForClass(entry.carClass),
+    manualUrl: "https://www.iracing.com/cars/",
+    forumUrl: `https://forums.iracing.com/search?Search=${query}`,
+  };
+}
+
+const RAW_CAR_CATALOG: readonly RawCarEntry[] = [
   // GTP
-  { carFolder: "porsche963gtp", brand: "Porsche", model: "963 GTP", carClass: "GTP", svgLogoId: "logo-porsche", accentColor: "#d97706" },
-  { carFolder: "porsche963", brand: "Porsche", model: "963 GTP", carClass: "GTP", svgLogoId: "logo-porsche", accentColor: "#d97706" },
-  { carFolder: "ferrari499p", brand: "Ferrari", model: "499P", carClass: "GTP", svgLogoId: "logo-ferrari", accentColor: "#ef4444" },
-  { carFolder: "bmwmhybridv8", brand: "BMW", model: "M Hybrid V8", carClass: "GTP", svgLogoId: "logo-bmw", accentColor: "#38bdf8" },
-  { carFolder: "bmwlmdh", brand: "BMW", model: "M Hybrid V8", carClass: "GTP", svgLogoId: "logo-bmw", accentColor: "#38bdf8" },
-  { carFolder: "acuraarx06gtp", brand: "Acura", model: "ARX-06 GTP", carClass: "GTP", svgLogoId: "logo-acura", accentColor: "#e2e8f0" },
-  { carFolder: "cadillacvseriesrgtp", brand: "Cadillac", model: "V-Series.R GTP", carClass: "GTP", svgLogoId: "logo-cadillac", accentColor: "#facc15" },
-  { carFolder: "amvalkyriegtp", brand: "Aston Martin", model: "Valkyrie AMR-LMH", carClass: "GTP", svgLogoId: "logo-aston", accentColor: "#10b981" },
+  { carFolder: "porsche963gtp", brand: "Porsche", model: "963 GTP", carClass: "GTP", svgLogoId: "logo-porsche", accentColor: "#d97706", specs: "4.6L Twin-Turbo V8 Hybrid · LMDh" },
+  { carFolder: "porsche963", brand: "Porsche", model: "963 GTP", carClass: "GTP", svgLogoId: "logo-porsche", accentColor: "#d97706", specs: "4.6L Twin-Turbo V8 Hybrid · LMDh" },
+  { carFolder: "ferrari499p", brand: "Ferrari", model: "499P", carClass: "GTP", svgLogoId: "logo-ferrari", accentColor: "#ef4444", specs: "3.0L Twin-Turbo V6 Hybrid · LMH" },
+  { carFolder: "bmwmhybridv8", brand: "BMW", model: "M Hybrid V8", carClass: "GTP", svgLogoId: "logo-bmw", accentColor: "#38bdf8", specs: "4.0L Twin-Turbo V8 Hybrid · LMDh" },
+  { carFolder: "bmwlmdh", brand: "BMW", model: "M Hybrid V8", carClass: "GTP", svgLogoId: "logo-bmw", accentColor: "#38bdf8", specs: "4.0L Twin-Turbo V8 Hybrid · LMDh" },
+  { carFolder: "acuraarx06gtp", brand: "Acura", model: "ARX-06 GTP", carClass: "GTP", svgLogoId: "logo-acura", accentColor: "#e2e8f0", specs: "2.4L Twin-Turbo V6 Hybrid · LMDh" },
+  { carFolder: "cadillacvseriesrgtp", brand: "Cadillac", model: "V-Series.R GTP", carClass: "GTP", svgLogoId: "logo-cadillac", accentColor: "#facc15", specs: "5.5L NA V8 Hybrid · LMDh" },
+  { carFolder: "amvalkyriegtp", brand: "Aston Martin", model: "Valkyrie AMR-LMH", carClass: "GTP", svgLogoId: "logo-aston", accentColor: "#10b981", specs: "6.5L NA V12 · Le Mans Hypercar" },
   // LMP2 / LMP3
-  { carFolder: "dallarap217", brand: "Dallara", model: "P217 LMP2", carClass: "LMP2", svgLogoId: "logo-dallara", accentColor: "#60a5fa" },
-  { carFolder: "ligierjsp320", brand: "Ligier", model: "JS P320 LMP3", carClass: "LMP3", svgLogoId: "logo-ligier", accentColor: "#38bdf8" },
+  { carFolder: "dallarap217", brand: "Dallara", model: "P217 LMP2", carClass: "LMP2", svgLogoId: "logo-dallara", accentColor: "#60a5fa", specs: "4.2L Gibson V8 · Carbon LMP2" },
+  { carFolder: "hpdarx01c", brand: "Acura", model: "HPD ARX-01c", carClass: "LMP2", svgLogoId: "logo-acura", accentColor: "#e2e8f0", specs: "3.4L V8 · Classic LMP2" },
+  { carFolder: "ligierjsp320", brand: "Ligier", model: "JS P320 LMP3", carClass: "LMP3", svgLogoId: "logo-ligier", accentColor: "#38bdf8", specs: "5.6L Nissan V8 · LMP3" },
   // GT3
-  { carFolder: "ferrari296gt3", brand: "Ferrari", model: "296 GT3", carClass: "GT3", svgLogoId: "logo-ferrari", accentColor: "#ef4444" },
-  { carFolder: "porsche992rgt3", brand: "Porsche", model: "911 GT3 R (992)", carClass: "GT3", svgLogoId: "logo-porsche", accentColor: "#d97706" },
-  { carFolder: "bmwm4gt3", brand: "BMW", model: "M4 GT3", carClass: "GT3", svgLogoId: "logo-bmw", accentColor: "#38bdf8" },
-  { carFolder: "mercedesamggt3", brand: "Mercedes-AMG", model: "GT3", carClass: "GT3", svgLogoId: "logo-mercedes", accentColor: "#cbd5e1" },
-  { carFolder: "mercedesamgevogt3", brand: "Mercedes-AMG", model: "GT3 EVO", carClass: "GT3", svgLogoId: "logo-mercedes", accentColor: "#cbd5e1" },
-  { carFolder: "audir8gt3", brand: "Audi", model: "R8 LMS GT3", carClass: "GT3", svgLogoId: "logo-audi", accentColor: "#f87171" },
-  { carFolder: "audir8lmsevo2gt3", brand: "Audi", model: "R8 LMS EVO II GT3", carClass: "GT3", svgLogoId: "logo-audi", accentColor: "#f87171" },
-  { carFolder: "mclaren720sgt3", brand: "McLaren", model: "720S GT3 EVO", carClass: "GT3", svgLogoId: "logo-mclaren", accentColor: "#fb923c" },
-  { carFolder: "chevyvettez06rgt3", brand: "Chevrolet", model: "Corvette Z06 GT3.R", carClass: "GT3", svgLogoId: "logo-chevy", accentColor: "#fbbf24" },
-  { carFolder: "fordmustanggt3", brand: "Ford", model: "Mustang GT3", carClass: "GT3", svgLogoId: "logo-ford", accentColor: "#3b82f6" },
-  { carFolder: "lamborghinievogt3", brand: "Lamborghini", model: "Huracán GT3 EVO2", carClass: "GT3", svgLogoId: "logo-lambo", accentColor: "#eab308" },
-  { carFolder: "acuransxevo22gt3", brand: "Acura", model: "NSX GT3 EVO 22", carClass: "GT3", svgLogoId: "logo-acura", accentColor: "#e2e8f0" },
-  { carFolder: "amvantageevogt3", brand: "Aston Martin", model: "Vantage GT3 EVO", carClass: "GT3", svgLogoId: "logo-aston", accentColor: "#10b981" },
-  // GT4 / GTE / Cup
+  { carFolder: "ferrari296gt3", brand: "Ferrari", model: "296 GT3", carClass: "GT3", svgLogoId: "logo-ferrari", accentColor: "#ef4444", specs: "3.0L Twin-Turbo V6 · Mid-Engine GT3" },
+  { carFolder: "porsche992rgt3", brand: "Porsche", model: "911 GT3 R (992)", carClass: "GT3", svgLogoId: "logo-porsche", accentColor: "#d97706", specs: "4.2L Flat-6 · Rear-Engine GT3" },
+  { carFolder: "bmwm4gt3", brand: "BMW", model: "M4 GT3 EVO", carClass: "GT3", svgLogoId: "logo-bmw", accentColor: "#38bdf8", specs: "3.0L Twin-Turbo I6 · Front-Engine GT3" },
+  { carFolder: "mercedesamggt3", brand: "Mercedes-AMG", model: "GT3", carClass: "GT3", svgLogoId: "logo-mercedes", accentColor: "#cbd5e1", specs: "6.2L NA V8 · Front-Engine GT3" },
+  { carFolder: "mercedesamgevogt3", brand: "Mercedes-AMG", model: "GT3 2020 EVO", carClass: "GT3", svgLogoId: "logo-mercedes", accentColor: "#cbd5e1", specs: "6.2L NA V8 · Front-Engine GT3" },
+  { carFolder: "audir8gt3", brand: "Audi", model: "R8 LMS GT3", carClass: "GT3", svgLogoId: "logo-audi", accentColor: "#f87171", specs: "5.2L NA V10 · Mid-Engine GT3" },
+  { carFolder: "audir8lmsevo2gt3", brand: "Audi", model: "R8 LMS EVO II GT3", carClass: "GT3", svgLogoId: "logo-audi", accentColor: "#f87171", specs: "5.2L NA V10 · Mid-Engine GT3" },
+  { carFolder: "mclaren720sgt3", brand: "McLaren", model: "720S GT3 EVO", carClass: "GT3", svgLogoId: "logo-mclaren", accentColor: "#fb923c", specs: "4.0L Twin-Turbo V8 · Carbon MonoCage" },
+  { carFolder: "chevyvettez06rgt3", brand: "Chevrolet", model: "Corvette Z06 GT3.R", carClass: "GT3", svgLogoId: "logo-chevy", accentColor: "#fbbf24", specs: "5.5L Flat-Plane V8 · Mid-Engine GT3" },
+  { carFolder: "fordmustanggt3", brand: "Ford", model: "Mustang GT3", carClass: "GT3", svgLogoId: "logo-ford", accentColor: "#3b82f6", specs: "5.4L Coyote V8 · Front-Engine GT3" },
+  { carFolder: "lamborghinievogt3", brand: "Lamborghini", model: "Huracán GT3 EVO", carClass: "GT3", svgLogoId: "logo-lambo", accentColor: "#eab308", specs: "5.2L NA V10 · Mid-Engine GT3" },
+  { carFolder: "acuransxevo22gt3", brand: "Acura", model: "NSX GT3 EVO 22", carClass: "GT3", svgLogoId: "logo-acura", accentColor: "#e2e8f0", specs: "3.5L Twin-Turbo V6 · Mid-Engine GT3" },
+  { carFolder: "amvantageevogt3", brand: "Aston Martin", model: "Vantage GT3 EVO", carClass: "GT3", svgLogoId: "logo-aston", accentColor: "#10b981", specs: "4.0L Twin-Turbo V8 · Front-Engine GT3" },
+  { carFolder: "porsche992cup", brand: "Porsche", model: "911 GT3 Cup (992)", carClass: "GT3", svgLogoId: "logo-porsche", accentColor: "#d97706", specs: "4.0L Flat-6 · Single-Make Cup" },
+  { carFolder: "porsche9922cup", brand: "Porsche", model: "911 Cup (992.2)", carClass: "GT3", svgLogoId: "logo-porsche", accentColor: "#d97706", specs: "4.0L Flat-6 · Single-Make Cup" },
+  // GT4 / GTE / GT1
   { carFolder: "amvantagegt4", brand: "Aston Martin", model: "Vantage GT4", carClass: "GT4", svgLogoId: "logo-aston", accentColor: "#10b981" },
-  { carFolder: "bmwm4gt4", brand: "BMW", model: "M4 GT4", carClass: "GT4", svgLogoId: "logo-bmw", accentColor: "#38bdf8" },
-  { carFolder: "bmwm4evogt4", brand: "BMW", model: "M4 GT4 EVO", carClass: "GT4", svgLogoId: "logo-bmw", accentColor: "#38bdf8" },
+  { carFolder: "bmwm4gt4", brand: "BMW", model: "M4 F82 GT4", carClass: "GT4", svgLogoId: "logo-bmw", accentColor: "#38bdf8" },
+  { carFolder: "bmwm4evogt4", brand: "BMW", model: "M4 G82 GT4 EVO", carClass: "GT4", svgLogoId: "logo-bmw", accentColor: "#38bdf8" },
   { carFolder: "fordmustanggt4", brand: "Ford", model: "Mustang GT4", carClass: "GT4", svgLogoId: "logo-ford", accentColor: "#3b82f6" },
   { carFolder: "mclaren570sgt4", brand: "McLaren", model: "570S GT4", carClass: "GT4", svgLogoId: "logo-mclaren", accentColor: "#fb923c" },
   { carFolder: "mercedesamggt4", brand: "Mercedes-AMG", model: "GT4", carClass: "GT4", svgLogoId: "logo-mercedes", accentColor: "#cbd5e1" },
   { carFolder: "porsche718gt4", brand: "Porsche", model: "718 Cayman GT4", carClass: "GT4", svgLogoId: "logo-porsche", accentColor: "#d97706" },
-  { carFolder: "porsche992cup", brand: "Porsche", model: "911 GT3 Cup (992)", carClass: "GT3", svgLogoId: "logo-porsche", accentColor: "#d97706" },
-  { carFolder: "porsche9922cup", brand: "Porsche", model: "911 GT3 Cup (992.2)", carClass: "GT3", svgLogoId: "logo-porsche", accentColor: "#d97706" },
   { carFolder: "ferrari488gte", brand: "Ferrari", model: "488 GTE", carClass: "GTE", svgLogoId: "logo-ferrari", accentColor: "#ef4444" },
   { carFolder: "bmwm8gte", brand: "BMW", model: "M8 GTE", carClass: "GTE", svgLogoId: "logo-bmw", accentColor: "#38bdf8" },
   { carFolder: "c8rvettegte", brand: "Chevrolet", model: "Corvette C8.R GTE", carClass: "GTE", svgLogoId: "logo-chevy", accentColor: "#fbbf24" },
+  { carFolder: "c6r", brand: "Chevrolet", model: "Corvette C6.R GT1", carClass: "GTE", svgLogoId: "logo-chevy", accentColor: "#fbbf24" },
   { carFolder: "porsche991rsr", brand: "Porsche", model: "911 RSR", carClass: "GTE", svgLogoId: "logo-porsche", accentColor: "#d97706" },
   { carFolder: "fordgt2017", brand: "Ford", model: "GT Le Mans", carClass: "GTE", svgLogoId: "logo-ford", accentColor: "#3b82f6" },
+  { carFolder: "fordgt", brand: "Ford", model: "GT GT2", carClass: "GTE", svgLogoId: "logo-ford", accentColor: "#3b82f6" },
+  { carFolder: "astonmartindbr9", brand: "Aston Martin", model: "DBR9 GT1", carClass: "GTE", svgLogoId: "logo-aston", accentColor: "#10b981" },
   // Touring / Production / Supercars
   { carFolder: "bmwm2csr", brand: "BMW", model: "M2 CS Racing", carClass: "Touring", svgLogoId: "logo-bmw", accentColor: "#38bdf8" },
-  { carFolder: "bmwm2g87", brand: "BMW", model: "M2 (G87)", carClass: "Touring", svgLogoId: "logo-bmw", accentColor: "#38bdf8" },
+  { carFolder: "bmwm2g87", brand: "BMW", model: "M2 Racing (G87)", carClass: "Touring", svgLogoId: "logo-bmw", accentColor: "#38bdf8" },
   { carFolder: "toyotagr86", brand: "Toyota", model: "GR86", carClass: "Touring", svgLogoId: "logo-toyota", accentColor: "#ef4444" },
+  { carFolder: "mx5cup", brand: "Mazda", model: "Global MX-5 Cup", carClass: "Touring", svgLogoId: "logo-mazda", accentColor: "#e2e8f0" },
+  { carFolder: "mx5mx52016", brand: "Mazda", model: "MX-5 Cup (ND1)", carClass: "Touring", svgLogoId: "logo-mazda", accentColor: "#e2e8f0" },
+  { carFolder: "mxmx52016", brand: "Mazda", model: "MX-5 Roadster", carClass: "Touring", svgLogoId: "logo-mazda", accentColor: "#e2e8f0" },
   { carFolder: "renaultcliocup", brand: "Renault", model: "Clio R.S. V", carClass: "Touring", svgLogoId: "logo-renault", accentColor: "#facc15" },
   { carFolder: "hondacivictyper", brand: "Honda", model: "Civic Type R TCR", carClass: "Touring", svgLogoId: "logo-honda", accentColor: "#ef4444" },
   { carFolder: "hyundaielantracn7", brand: "Hyundai", model: "Elantra N TCR", carClass: "Touring", svgLogoId: "logo-hyundai", accentColor: "#38bdf8" },
   { carFolder: "hyundaivelostern", brand: "Hyundai", model: "Veloster N TCR", carClass: "Touring", svgLogoId: "logo-hyundai", accentColor: "#38bdf8" },
   { carFolder: "audirs3lms", brand: "Audi", model: "RS 3 LMS TCR", carClass: "Touring", svgLogoId: "logo-audi", accentColor: "#f87171" },
   { carFolder: "audirs3lmsgen2", brand: "Audi", model: "RS 3 LMS Gen2", carClass: "Touring", svgLogoId: "logo-audi", accentColor: "#f87171" },
+  { carFolder: "audi90gto", brand: "Audi", model: "90 GTO", carClass: "Touring", svgLogoId: "logo-audi", accentColor: "#f87171" },
+  { carFolder: "caterham420r", brand: "Caterham", model: "Seven 420R", carClass: "Touring", svgLogoId: "logo-caterham", accentColor: "#10b981" },
+  { carFolder: "caterhamcaterham420r", brand: "Caterham", model: "Seven 420R", carClass: "Touring", svgLogoId: "logo-caterham", accentColor: "#10b981" },
+  { carFolder: "caterhamcaterhamacademy", brand: "Caterham", model: "Academy", carClass: "Touring", svgLogoId: "logo-caterham", accentColor: "#10b981" },
   { carFolder: "supercarsfordmustanggen3", brand: "Ford", model: "Mustang Gen3 Supercar", carClass: "Touring", svgLogoId: "logo-ford", accentColor: "#3b82f6" },
   { carFolder: "supercarschevycamarogen3", brand: "Chevrolet", model: "Camaro Gen3 Supercar", carClass: "Touring", svgLogoId: "logo-chevy", accentColor: "#fbbf24" },
   { carFolder: "v8supercarsholden2019", brand: "Holden", model: "Commodore ZB", carClass: "Touring", svgLogoId: "logo-holden", accentColor: "#ef4444" },
   // Formula
-  { carFolder: "superformulalights324", brand: "Dallara", model: "SF Lights 324", carClass: "Formula", svgLogoId: "logo-dallara", accentColor: "#60a5fa" },
+  { carFolder: "superformulalights324", brand: "Dallara", model: "Super Formula Lights 324", carClass: "Formula", svgLogoId: "logo-dallara", accentColor: "#60a5fa" },
   { carFolder: "superformulasf23honda", brand: "Honda", model: "Super Formula SF23", carClass: "Formula", svgLogoId: "logo-honda", accentColor: "#ef4444" },
   { carFolder: "superformulasf23toyota", brand: "Toyota", model: "Super Formula SF23", carClass: "Formula", svgLogoId: "logo-toyota", accentColor: "#ef4444" },
   { carFolder: "dallaraf3", brand: "Dallara", model: "F3", carClass: "Formula", svgLogoId: "logo-dallara", accentColor: "#60a5fa" },
   { carFolder: "dallarair18", brand: "Dallara", model: "IR18 IndyCar", carClass: "Formula", svgLogoId: "logo-dallara", accentColor: "#60a5fa" },
   { carFolder: "dallarair01", brand: "Dallara", model: "iR-01", carClass: "Formula", svgLogoId: "logo-dallara", accentColor: "#60a5fa" },
+  { carFolder: "indypropm18", brand: "Dallara", model: "Indy Pro 2000 PM-18", carClass: "Formula", svgLogoId: "logo-dallara", accentColor: "#60a5fa" },
   { carFolder: "mercedesw13", brand: "Mercedes-AMG", model: "F1 W13 E Performance", carClass: "Formula", svgLogoId: "logo-mercedes", accentColor: "#00e5ff" },
   { carFolder: "formulair04", brand: "FIA", model: "Formula 4", carClass: "Formula", svgLogoId: "logo-fia", accentColor: "#22d3ee" },
   { carFolder: "raygr22", brand: "Ray", model: "FF1600", carClass: "Formula", svgLogoId: "logo-fia", accentColor: "#22d3ee" },
   { carFolder: "formulavee", brand: "Formula Vee", model: "FVee", carClass: "Formula", svgLogoId: "logo-fia", accentColor: "#22d3ee" },
+  { carFolder: "formulaveeformulavee2", brand: "Formula Vee", model: "FVee (Spec 2)", carClass: "Formula", svgLogoId: "logo-fia", accentColor: "#22d3ee" },
+  { carFolder: "formulaveeformulavee3", brand: "Formula Vee", model: "FVee (Spec 3)", carClass: "Formula", svgLogoId: "logo-fia", accentColor: "#22d3ee" },
+  { carFolder: "rt2000", brand: "Skip Barber", model: "Formula 2000", carClass: "Formula", svgLogoId: "logo-fia", accentColor: "#22d3ee" },
+  { carFolder: "lotus79", brand: "Lotus", model: "Type 79", carClass: "Formula", svgLogoId: "logo-lotus", accentColor: "#facc15" },
   // Prototype
   { carFolder: "radicalsr8", brand: "Radical", model: "SR8", carClass: "Prototype", svgLogoId: "logo-radical", accentColor: "#10b981" },
-  { carFolder: "specracer", brand: "Ford", model: "Spec Racer Ford", carClass: "Prototype", svgLogoId: "logo-ford", accentColor: "#3b82f6" },
+  { carFolder: "specracer", brand: "Ford", model: "SCCA Spec Racer Ford", carClass: "Prototype", svgLogoId: "logo-ford", accentColor: "#3b82f6" },
   { carFolder: "nissangtpzxt", brand: "Nissan", model: "GTP ZX-T", carClass: "Prototype", svgLogoId: "logo-nissan", accentColor: "#ef4444" },
+  // Oval
+  { carFolder: "stockcarsfordmustang2022", brand: "Ford", model: "NASCAR Next Gen Mustang", carClass: "Oval", svgLogoId: "logo-ford", accentColor: "#3b82f6" },
+  { carFolder: "stockcarschevycamarozl12022", brand: "Chevrolet", model: "NASCAR Next Gen Camaro ZL1", carClass: "Oval", svgLogoId: "logo-chevy", accentColor: "#fbbf24" },
+  { carFolder: "stockcarstoyotacamry2022", brand: "Toyota", model: "NASCAR Next Gen Camry", carClass: "Oval", svgLogoId: "logo-toyota", accentColor: "#ef4444" },
+  { carFolder: "stockcarsfordfusion", brand: "Ford", model: "NASCAR Cup Ford Fusion", carClass: "Oval", svgLogoId: "logo-ford", accentColor: "#3b82f6" },
+  { carFolder: "stockcars2mustang2019", brand: "Ford", model: "NASCAR Xfinity Mustang", carClass: "Oval", svgLogoId: "logo-ford", accentColor: "#3b82f6" },
+  { carFolder: "stockcars2camaro2019", brand: "Chevrolet", model: "NASCAR Xfinity Camaro", carClass: "Oval", svgLogoId: "logo-chevy", accentColor: "#fbbf24" },
+  { carFolder: "stockcars2supra2019", brand: "Toyota", model: "NASCAR Xfinity Supra", carClass: "Oval", svgLogoId: "logo-toyota", accentColor: "#ef4444" },
+  { carFolder: "trucksfordf150", brand: "Ford", model: "NASCAR Truck F-150", carClass: "Oval", svgLogoId: "logo-ford", accentColor: "#3b82f6" },
+  { carFolder: "truckssilverado", brand: "Chevrolet", model: "NASCAR Truck Silverado", carClass: "Oval", svgLogoId: "logo-chevy", accentColor: "#fbbf24" },
+  { carFolder: "truckssilverado2019", brand: "Chevrolet", model: "NASCAR Truck Silverado 2019", carClass: "Oval", svgLogoId: "logo-chevy", accentColor: "#fbbf24" },
+  { carFolder: "truckstoyotatundra2022", brand: "Toyota", model: "NASCAR Truck Tundra", carClass: "Oval", svgLogoId: "logo-toyota", accentColor: "#ef4444" },
+  { carFolder: "stockcarsbuicklesabre87", brand: "Buick", model: "1987 LeSabre Stock Car", carClass: "Oval", svgLogoId: "logo-buick", accentColor: "#94a3b8" },
+  { carFolder: "stockcarschevymontecarlo87", brand: "Chevrolet", model: "1987 Monte Carlo Stock Car", carClass: "Oval", svgLogoId: "logo-chevy", accentColor: "#fbbf24" },
+  { carFolder: "stockcarsfordthunderbird87", brand: "Ford", model: "1987 Thunderbird Stock Car", carClass: "Oval", svgLogoId: "logo-ford", accentColor: "#3b82f6" },
+  { carFolder: "stockcarspontiacgrandprix87", brand: "Pontiac", model: "1987 Grand Prix Stock Car", carClass: "Oval", svgLogoId: "logo-pontiac", accentColor: "#ef4444" },
+  { carFolder: "legendsford34c", brand: "Ford", model: "Legends Ford '34 Coupe", carClass: "Oval", svgLogoId: "logo-ford", accentColor: "#3b82f6" },
+  { carFolder: "latemodel2023", brand: "NASCAR", model: "Late Model Stock", carClass: "Oval", svgLogoId: "logo-oval", accentColor: "#f59e0b" },
+  { carFolder: "superlatemodel", brand: "NASCAR", model: "Super Late Model", carClass: "Oval", svgLogoId: "logo-oval", accentColor: "#f59e0b" },
+  { carFolder: "skmodified", brand: "NASCAR", model: "SK Modified", carClass: "Oval", svgLogoId: "logo-oval", accentColor: "#f59e0b" },
+  { carFolder: "skmodifiedtour", brand: "NASCAR", model: "Whelen Tour Modified", carClass: "Oval", svgLogoId: "logo-oval", accentColor: "#f59e0b" },
+  { carFolder: "ministock", brand: "Stock", model: "Mini Stock", carClass: "Oval", svgLogoId: "logo-oval", accentColor: "#f59e0b" },
+  { carFolder: "euronascar", brand: "EuroNASCAR", model: "EuroNASCAR", carClass: "Oval", svgLogoId: "logo-oval", accentColor: "#f59e0b" },
+  // Dirt
+  { carFolder: "dirtlatemodel358", brand: "DIRTcar", model: "Dirt Late Model 358", carClass: "Dirt", svgLogoId: "logo-dirt", accentColor: "#fb923c" },
+  { carFolder: "dirtlatemodel438", brand: "DIRTcar", model: "Dirt Late Model Pro / 438", carClass: "Dirt", svgLogoId: "logo-dirt", accentColor: "#fb923c" },
+  { carFolder: "dirtmicrosprintnonwinged", brand: "DIRTcar", model: "Micro Sprint Non-Winged", carClass: "Dirt", svgLogoId: "logo-dirt", accentColor: "#fb923c" },
+  { carFolder: "dirtmicrosprintwinged", brand: "DIRTcar", model: "Micro Sprint Winged", carClass: "Dirt", svgLogoId: "logo-dirt", accentColor: "#fb923c" },
+  { carFolder: "dirtmodifiedbigblock", brand: "DIRTcar", model: "Big Block Modified", carClass: "Dirt", svgLogoId: "logo-dirt", accentColor: "#fb923c" },
+  { carFolder: "dirtsprintwinged360", brand: "DIRTcar", model: "360 Winged Sprint Car", carClass: "Dirt", svgLogoId: "logo-dirt", accentColor: "#fb923c" },
+  { carFolder: "dirtsprintwinged410", brand: "DIRTcar", model: "410 Winged Sprint Car", carClass: "Dirt", svgLogoId: "logo-dirt", accentColor: "#fb923c" },
+  { carFolder: "dirtumpmod", brand: "DIRTcar", model: "Dirt UMP Modified", carClass: "Dirt", svgLogoId: "logo-dirt", accentColor: "#fb923c" },
 ];
+
+export const CAR_CATALOG_LIST: readonly CarMetadata[] = RAW_CAR_CATALOG.map(enrichCar);
 
 const CAR_BY_FOLDER = new Map<string, CarMetadata>(
   CAR_CATALOG_LIST.map((car) => [car.carFolder.toLowerCase(), car]),
@@ -150,14 +250,14 @@ export function resolveCarMetadata(carFolder: string): CarMetadata | null {
 
   for (const rule of BRAND_RULES) {
     if (rule.match.some((m) => key.includes(m))) {
-      return {
+      return enrichCar({
         carFolder: raw,
         brand: rule.brand,
         model: raw,
         carClass: rule.defaultClass,
         svgLogoId: rule.svgLogoId,
         accentColor: rule.accentColor,
-      };
+      });
     }
   }
   return null;
@@ -171,11 +271,18 @@ export function filterCarsByClass(carClass?: CarClass): readonly CarMetadata[] {
 /**
  * Returns raw inner SVG markup for a manufacturer logo, or a crisp monogram fallback.
  */
-function brandSvgInner(meta: CarMetadata): string {
+export function brandSvgInner(meta: CarMetadata): string {
   return (
     BRAND_SVG_INNER[meta.svgLogoId] ??
     `<rect x="2.5" y="2.5" width="19" height="19" rx="5" fill="${meta.accentColor}" fill-opacity="0.16" stroke="${meta.accentColor}" stroke-width="1.5"/><text x="12" y="15.5" text-anchor="middle" fill="${meta.accentColor}" font-family="monospace" font-weight="800" font-size="9">${meta.brand.slice(0, 2).toUpperCase()}</text>`
   );
+}
+
+/**
+ * Returns a complete standalone `<svg>` string for SSR / Astro rendering.
+ */
+export function getBrandSvgMarkup(meta: CarMetadata, size = 20): string {
+  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" class="shrink-0">${brandSvgInner(meta)}</svg>`;
 }
 
 /**

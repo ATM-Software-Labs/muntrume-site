@@ -1,6 +1,7 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
 import { PADDOCK_ALBUMS, type GalleryAlbum } from "../../../data/paddock-gallery";
+import { resolveCarMetadata, getBrandSvgMarkup } from "../../../../desktop/src/cars/catalog";
 
 export function getStaticPaths() {
   return PADDOCK_ALBUMS.map((album) => ({
@@ -14,6 +15,7 @@ interface Props {
 }
 
 const { album } = Astro.props;
+const carMeta = resolveCarMetadata(album.slug);
 const pageTitle = `${album.title} · Galería Paddock | Muntrume Motorsport`;
 const pageDescription = `${album.summary} (${album.photos.length} fotografías oficiales).`;
 ---
@@ -34,7 +36,23 @@ const pageDescription = `${album.summary} (${album.photos.length} fotografías o
         </h1>
         <p class="text-sm text-[var(--r-muted)] max-w-2xl">{album.summary}</p>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex flex-wrap items-center gap-2">
+        {carMeta && (
+          <div class="flex items-center gap-2 mr-2">
+            <span class="w-8 h-8 rounded-lg bg-[var(--r-surface)] border border-[var(--r-line)] flex items-center justify-center">
+              <Fragment set:html={getBrandSvgMarkup(carMeta, 20)} />
+            </span>
+            <a href={`/garage?car=${encodeURIComponent(`${carMeta.brand} ${carMeta.model}`)}`} class="px-3 py-1.5 rounded-xl bg-[var(--r-accent)]/15 border border-[var(--r-accent)]/50 text-xs font-mono font-bold text-[var(--r-accent)] hover:bg-[var(--r-accent)]/25 transition-colors">
+              Setups (.sto)
+            </a>
+            <a href={carMeta.manualUrl} target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] hover:border-[var(--r-accent)] text-xs font-mono font-bold transition-colors">
+              User Manual
+            </a>
+            <a href={carMeta.forumUrl} target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] hover:border-[var(--r-accent)] text-xs font-mono font-bold transition-colors">
+              Car Forum
+            </a>
+          </div>
+        )}
         <span class="px-3 py-1 rounded-full bg-[var(--r-surface)] border border-[var(--r-line)] font-mono text-xs text-[var(--r-accent)] font-bold">
           {album.brand} · {album.carClass} · {album.photos.length} fotos
         </span>
