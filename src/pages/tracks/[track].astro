@@ -25,7 +25,9 @@ const sched = getTrackScheduleInfo(track);
 const isFree = track.categories.includes('Free');
 
 const topSeries = sched.entries.slice(0, 3);
+const extraSeries = sched.entries.slice(3);
 const topCars = garage.cars.slice(0, 3);
+const extraCars = garage.cars.slice(3);
 
 const TIER_COLORS: Record<string, string> = {
   RClass: '#ef4444',
@@ -197,6 +199,45 @@ const pageDescription = track.history
             </a>
           ))}
         </div>
+
+        {extraSeries.length > 0 && (
+          <>
+            <div id="extraSeriesGrid" class="grid grid-cols-1 md:grid-cols-3 gap-3 hidden" hidden>
+              {extraSeries.map((entry) => (
+                <a
+                  href={`/garage/?track=${encodeURIComponent(garage.garageQuery)}`}
+                  class="p-3.5 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition flex items-center gap-3"
+                >
+                  {entry.logo ? (
+                    <img src={entry.logo} alt="" width="40" height="40" class="w-10 h-10 rounded-lg object-cover shrink-0 border border-white/10" loading="lazy" />
+                  ) : (
+                    <span
+                      class="w-10 h-10 rounded-lg shrink-0 flex items-center justify-center text-[11px] font-mono font-bold border"
+                      style={`color:${TIER_COLORS[entry.tier] ?? '#94a3b8'}; border-color:${TIER_COLORS[entry.tier] ?? '#94a3b8'}44; background:${TIER_COLORS[entry.tier] ?? '#94a3b8'}14`}
+                    >
+                      {TIER_LABELS[entry.tier]?.replace('Class ', '') ?? entry.tier}
+                    </span>
+                  )}
+                  <div class="min-w-0 flex-1">
+                    <div class="text-[10px] font-mono uppercase text-[var(--r-muted)] truncate">
+                      Sem. {entry.weekNum} · {TIER_LABELS[entry.tier] ?? entry.tier}{entry.config ? ` · ${entry.config}` : ''}
+                    </div>
+                    <div class="text-xs font-bold text-[var(--r-text)] truncate">{entry.seriesName}</div>
+                  </div>
+                </a>
+              ))}
+            </div>
+            <button
+              type="button"
+              data-toggle-target="extraSeriesGrid"
+              data-more-label={`Mostrar más (${extraSeries.length})`}
+              data-less-label="Mostrar menos"
+              class="r-btn r-btn--ghost text-xs"
+            >
+              Mostrar más ({extraSeries.length})
+            </button>
+          </>
+        )}
       </section>
     )}
 
@@ -233,9 +274,63 @@ const pageDescription = track.history
             </a>
           ))}
         </div>
+
+        {extraCars.length > 0 && (
+          <>
+            <div id="extraCarsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-3 hidden" hidden>
+              {extraCars.map((car) => (
+                <a
+                  href={`/garage/?car=${encodeURIComponent(car.id)}&track=${encodeURIComponent(garage.garageQuery)}`}
+                  class="p-3.5 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition flex items-center justify-between gap-3"
+                >
+                  <span class="inline-flex items-center gap-2.5 min-w-0">
+                    {car.brandPath && (
+                      <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" style={`color:${car.brandColor}`}>
+                        <path fill="currentColor" d={car.brandPath} />
+                      </svg>
+                    )}
+                    <span class="text-xs font-bold text-[var(--r-text)] truncate">{car.label}</span>
+                  </span>
+                  <span class="text-[11px] font-mono text-[var(--r-accent)] shrink-0">{car.count} .sto →</span>
+                </a>
+              ))}
+            </div>
+            <button
+              type="button"
+              data-toggle-target="extraCarsGrid"
+              data-more-label={`Mostrar más (${extraCars.length})`}
+              data-less-label="Mostrar menos"
+              class="r-btn r-btn--ghost text-xs"
+            >
+              Mostrar más ({extraCars.length})
+            </button>
+          </>
+        )}
       </section>
     )}
   </main>
+
+  <script is:inline>
+    (function () {
+      document.querySelectorAll('[data-toggle-target]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var id = btn.getAttribute('data-toggle-target');
+          var el = id && document.getElementById(id);
+          if (!el) return;
+          var open = el.hasAttribute('hidden');
+          if (open) {
+            el.removeAttribute('hidden');
+            el.classList.remove('hidden');
+            btn.textContent = btn.getAttribute('data-less-label') || 'Mostrar menos';
+          } else {
+            el.setAttribute('hidden', '');
+            el.classList.add('hidden');
+            btn.textContent = btn.getAttribute('data-more-label') || 'Mostrar más';
+          }
+        });
+      });
+    })();
+  </script>
 
   <MediaLightbox />
 </Layout>

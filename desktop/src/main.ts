@@ -43,22 +43,41 @@ const CAR_FOLDER_KEYWORDS: Record<string, readonly string[]> = {
   porsche992rgt3: ["porsche 911 gt3 r", "992", "gt3"],
   bmwm4gt3: ["bmw m4 gt3", "gt3"],
   mercedesamggt3: ["mercedes-amg gt3", "gt3"],
+  mercedesamgevogt3: ["mercedes-amg gt3", "gt3"],
   audir8lmsevo2gt3: ["audi r8 lms", "gt3"],
   mclaren720sgt3: ["mclaren 720s gt3", "gt3"],
+  chevyvettez06rgt3: ["corvette z06 gt3", "gt3"],
   corvettez06gt3r: ["corvette z06 gt3", "gt3"],
   fordmustanggt3: ["ford mustang gt3", "gt3"],
   lamborghinievogt3: ["lamborghini huracan gt3", "gt3"],
+  amvantageevogt3: ["aston martin vantage gt3", "gt3"],
+  acuransxevo22gt3: ["acura nsx gt3", "gt3"],
   porsche963: ["porsche 963", "gtp", "imsa"],
   porsche963gtp: ["porsche 963", "gtp", "imsa"],
   ferrari499p: ["ferrari 499p", "gtp", "imsa"],
   bmwmhybridv8: ["bmw m hybrid v8", "gtp", "imsa"],
   bmwlmdh: ["bmw m hybrid v8", "gtp", "imsa"],
   cadillacvseriesr: ["cadillac v-series", "gtp", "imsa"],
+  cadillacvseriesrgtp: ["cadillac v-series", "gtp", "imsa"],
   acuraarx06gtp: ["acura arx-06", "gtp", "imsa"],
+  amvalkyriegtp: ["aston martin valkyrie", "gtp", "imsa"],
   dallarap217: ["dallara p217", "lmp2", "imsa"],
-  formulair04: ["fia formula 4", "formula 4"],
+  ligierjsp320: ["ligier js p320", "lmp3"],
+  porsche992cup: ["porsche 911 gt3 cup", "porsche cup"],
+  porsche9922cup: ["porsche 911 cup", "992.2", "porsche cup"],
+  amvantagegt4: ["aston martin vantage gt4", "gt4"],
+  bmwm4gt4: ["bmw m4", "gt4"],
+  bmwm4evogt4: ["bmw m4", "gt4"],
+  fordmustanggt4: ["ford mustang gt4", "gt4"],
+  mclaren570sgt4: ["mclaren 570s gt4", "gt4"],
+  mercedesamggt4: ["mercedes-amg gt4", "gt4"],
+  porsche718gt4: ["porsche 718 cayman gt4", "gt4"],
+  formulair04: ["fia formula 4", "fia f4", "formula 4"],
   superformulalights324: ["super formula lights"],
+  dallaraf3: ["dallara f3"],
+  dallarair18: ["dallara ir18", "indycar"],
   toyotagr86: ["toyota gr86"],
+  mx5cup: ["mazda mx-5"],
   bmwm2csr: ["bmw m2 cs"],
   bmwm2g87: ["bmw m2"],
   radicalsr8: ["radical sr8"],
@@ -67,6 +86,28 @@ const CAR_FOLDER_KEYWORDS: Record<string, readonly string[]> = {
   raygr22: ["ray ff1600"],
   formulavee: ["formula vee"],
 };
+
+const TRACK_NORM_ALIASES: Record<string, string> = {
+  cota: "circuitoftheamericas",
+  bathurst: "mountpanoramacircuit",
+  imola: "autodromointernazionaleenzoedinoferrari",
+  interlagos: "autodromojosecarlospace",
+  montreal: "circuitgillesvilleneuve",
+  lemans: "circuitdes24heuresdumans",
+  mexico: "autodromohermanosrodriguez",
+  gateway: "worldwidetechnologyraceway",
+  echopark: "echoparkspeedway",
+  ledenon: "circuitdeledenon",
+  deledenon: "circuitdeledenon",
+};
+
+function normTrackToken(s: string): string {
+  return String(s || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
 
 function seriesMatchesCar(seriesCars: readonly string[] | undefined, cleanCar: string): boolean {
   if (!cleanCar || !seriesCars || seriesCars.length === 0) return false;
@@ -82,8 +123,9 @@ function seriesMatchesCar(seriesCars: readonly string[] | undefined, cleanCar: s
 }
 
 export function getTrackWeekInfo(track: string, filename?: string, carFolder?: string): TrackWeekInfo {
-  const clean = String(track || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-  const cleanCar = String(carFolder || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const rawClean = normTrackToken(track);
+  const clean = TRACK_NORM_ALIASES[rawClean] || rawClean;
+  const cleanCar = normTrackToken(carFolder || "");
   const upperFile = String(filename || "").toUpperCase();
   const current = getCurrentSeasonWeek();
 
@@ -106,7 +148,7 @@ export function getTrackWeekInfo(track: string, filename?: string, carFolder?: s
       const matchesCar = seriesMatchesCar(s.cars, cleanCar);
 
       for (const w of s.weeks || []) {
-        const token = String(w.track_name || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+        const token = normTrackToken(w.track_name || "");
         if (!token || (!token.includes(clean) && !clean.includes(token))) continue;
         const hit = { week: w.week_num, name: sName, isFixed: isSeriesFixed };
         if (matchesCar) carMatches.push(hit);
