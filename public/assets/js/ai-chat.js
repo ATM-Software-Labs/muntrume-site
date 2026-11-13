@@ -440,12 +440,14 @@
     var history = prior.slice(-6).map(function (msg) {
       return { role: msg.role, content: msg.role === "assistant" ? msg.content.slice(0, 2000) : msg.content };
     });
+    var modelSelect = document.getElementById("aiModelSelect");
+    var chosenModel = modelSelect && modelSelect.value ? modelSelect.value : "";
     fetch(API, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "omit",
       signal: ctrl.signal,
-      body: JSON.stringify({ prompt: text, custom_prompt: SYSTEM, chat_history: history, stream: true, mode: "ai_chat" })
+      body: JSON.stringify({ prompt: text, custom_prompt: SYSTEM, chat_history: history, stream: true, mode: "ai_chat", model: chosenModel })
     }).then(function (res) {
       if (!res.ok || !res.body) throw new Error("status");
       return readAnswer(res, reply);
@@ -506,7 +508,7 @@
   function openSide() {
     if (!side) return;
     side.hidden = false;
-    if (scrim) scrim.hidden = false;
+    if (scrim) scrim.hidden = !window.matchMedia("(max-width: 959px)").matches;
     if (sideOpen) sideOpen.setAttribute("aria-expanded", "true");
     document.body.classList.add("ai-side-open");
     try { localStorage.setItem(SIDE, "1"); } catch (e) {}
@@ -591,6 +593,18 @@
     if (chat) chat.messages.forEach(function (msg) { if (msg.role === "assistant" && msg.content) scheduleRender(msg); });
   });
 
+  var modelSelect = document.getElementById("aiModelSelect");
+  if (modelSelect) {
+    try {
+      var savedModel = localStorage.getItem("muntrume_ai_model");
+      if (savedModel && modelSelect.querySelector('option[value="' + savedModel + '"]')) {
+        modelSelect.value = savedModel;
+      }
+      modelSelect.addEventListener("change", function () {
+        try { localStorage.setItem("muntrume_ai_model", modelSelect.value); } catch (e) {}
+      });
+    } catch (e) {}
+  }
   try {
     if (localStorage.getItem(SIDE) === "1" && window.matchMedia("(min-width: 960px)").matches) openSide();
   } catch (e) {}
