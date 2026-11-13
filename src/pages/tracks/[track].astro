@@ -1,0 +1,200 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import MediaLightbox from '../../components/MediaLightbox.astro';
+import {
+  IRACING_TRACKS,
+  getTrackGarageInfo,
+  getTrackScheduleInfo,
+  type IracingTrack,
+} from '../../lib/track-matcher';
+
+export function getStaticPaths() {
+  return IRACING_TRACKS.map((track) => ({
+    params: { track: track.slug },
+    props: { track },
+  }));
+}
+
+interface Props {
+  track: IracingTrack;
+}
+
+const { track } = Astro.props;
+const garage = getTrackGarageInfo(track);
+const sched = getTrackScheduleInfo(track);
+const isFree = track.categories.includes('Free');
+
+const TIER_LABELS: Record<string, string> = {
+  RClass: 'Rookie',
+  DClass: 'Class D',
+  CClass: 'Class C',
+  BClass: 'Class B',
+  AClass: 'Class A',
+};
+
+const pageTitle = `${track.name} · Circuito iRacing | Muntrume Motorsport`;
+const pageDescription = track.history
+  ? `${track.name} en iRacing: ${track.history.slice(0, 145)}...`
+  : `Ficha de ${track.name} en iRacing: variantes, series de la temporada y setups (.sto) disponibles.`;
+---
+
+<Layout
+  title={pageTitle}
+  description={pageDescription}
+  canonical={`https://muntru.me/tracks/${track.slug}/`}
+>
+  <main class="r-wrap py-12 sm:py-16 space-y-10">
+    <nav aria-label="Breadcrumb" class="r-kicker flex flex-wrap items-center gap-2">
+      <a href="/paddock/" class="hover:text-[var(--r-accent)] transition">Paddock</a>
+      <span>/</span>
+      <a href="/tracks/" class="hover:text-[var(--r-accent)] transition">Circuitos</a>
+      <span>/</span>
+      <span class="text-[var(--r-text)] font-bold">{track.name}</span>
+    </nav>
+
+    <!-- HERO -->
+    <header class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center border-b border-[var(--r-line)] pb-8">
+      <div class="lg:col-span-6 space-y-4">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="px-2.5 py-1 rounded-md bg-[var(--r-accent)]/15 border border-[var(--r-accent)]/40 text-[var(--r-accent)] text-xs font-mono font-bold uppercase">
+            {isFree ? 'Contenido Base (Free)' : 'Circuito Oficial iRacing'}
+          </span>
+          {garage.setupCount > 0 && (
+            <span class="px-2.5 py-1 rounded-md bg-[var(--r-surface)] border border-[var(--r-line)] text-xs font-mono text-[var(--r-text)]">
+              {garage.setupCount} setups (.sto)
+            </span>
+          )}
+          <button
+            type="button"
+            data-like-btn
+            data-like-id={`track:${track.slug}`}
+            class="px-2.5 py-1 rounded-md bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-rose-500/60 text-xs font-mono font-bold text-[var(--r-muted)] inline-flex items-center gap-1.5 transition cursor-pointer"
+            title="Me gusta"
+          >
+            <span data-heart>♡</span>
+            <span data-count>0</span>
+          </button>
+        </div>
+
+        <h1 class="r-h2">{track.name}</h1>
+
+        <div class="flex flex-wrap items-center gap-3 pt-2">
+          <a
+            href={`/garage/?track=${encodeURIComponent(garage.garageQuery)}`}
+            class="r-btn r-btn--primary"
+          >
+            {garage.setupCount > 0 ? `Ver ${garage.setupCount} Setups (.sto) en Garage →` : 'Buscar en Garage →'}
+          </a>
+          <a
+            href={track.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="r-btn r-btn--ghost"
+          >
+            Ficha Oficial iRacing ↗
+          </a>
+        </div>
+      </div>
+
+      <div class="lg:col-span-6">
+        <button
+          type="button"
+          data-preview-src={track.img || track.thumb || ''}
+          data-preview-title={track.name}
+          data-preview-sub={sched.configs.length ? `Variantes: ${sched.configs.join(' · ')}` : 'Circuito oficial iRacing'}
+          data-preview-id={`track:${track.slug}`}
+          data-preview-setups={`/garage/?track=${encodeURIComponent(garage.garageQuery)}`}
+          class="relative block w-full aspect-[16/9] rounded-2xl bg-[#090d12] border border-[var(--r-line)] hover:border-[var(--r-accent)] overflow-hidden cursor-zoom-in group transition"
+          title="Ampliar imagen completa"
+        >
+          {(track.img || track.thumb) && (
+            <img
+              src={track.img || track.thumb}
+              alt={track.name}
+              width="1024"
+              height="576"
+              class="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
+            />
+          )}
+          <span class="absolute bottom-3 right-3 px-2.5 py-1 rounded-lg bg-black/80 border border-white/15 text-[11px] font-mono text-white/90">
+            Ampliar foto completa ⤢
+          </span>
+        </button>
+      </div>
+    </header>
+
+    <!-- HISTORIA -->
+    {track.history && (
+      <section aria-label="Historia del circuito" class="p-6 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] space-y-3">
+        <span class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)]">Historia y descripción</span>
+        <p class="text-sm sm:text-base text-[var(--r-text)]/90 leading-relaxed">
+          {track.history}
+        </p>
+      </section>
+    )}
+
+    <!-- VARIANTES Y TEMPORADA ACTUAL -->
+    {(sched.configs.length > 0 || sched.entries.length > 0) && (
+      <section aria-label="Variantes y series en 2026 Season 4" class="space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <span class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)]">2026 Season 4</span>
+            <h2 class="r-h3">Variantes y Series Oficiales ({sched.entries.length})</h2>
+          </div>
+          <a href="/calendar/" class="r-link text-xs">Ver calendario completo →</a>
+        </div>
+
+        {sched.configs.length > 0 && (
+          <div class="flex flex-wrap gap-2">
+            {sched.configs.map((cfg) => (
+              <span class="px-3 py-1 rounded-lg bg-[var(--r-surface)] border border-[var(--r-line)] text-xs font-mono text-[var(--r-text)]">
+                {cfg}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {sched.entries.length > 0 && (
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {sched.entries.slice(0, 18).map((entry) => (
+              <a
+                href={`/garage/?track=${encodeURIComponent(garage.garageQuery)}`}
+                class="p-3.5 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition flex flex-col gap-1"
+              >
+                <div class="flex items-center justify-between gap-2 text-[10px] font-mono uppercase text-[var(--r-muted)]">
+                  <span>Semana {entry.weekNum} · {TIER_LABELS[entry.tier] ?? entry.tier}</span>
+                  <span>{entry.config || 'Standard'}</span>
+                </div>
+                <span class="text-xs font-bold text-[var(--r-text)] truncate">{entry.seriesName}</span>
+              </a>
+            ))}
+          </div>
+        )}
+      </section>
+    )}
+
+    <!-- COCHES CON SETUPS EN EL VAULT -->
+    {garage.cars.length > 0 && (
+      <section aria-label="Coches con setups disponibles" class="space-y-4">
+        <div>
+          <span class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)]">Setup Vault</span>
+          <h2 class="r-h3">Coches con Setups en {track.name} ({garage.cars.length})</h2>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {garage.cars.map((car) => (
+            <a
+              href={`/garage/?car=${encodeURIComponent(car.id)}&track=${encodeURIComponent(garage.garageQuery)}`}
+              class="p-3.5 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition flex items-center justify-between gap-3"
+            >
+              <span class="text-xs font-bold text-[var(--r-text)] truncate">{car.label}</span>
+              <span class="text-[11px] font-mono text-[var(--r-accent)] shrink-0">{car.count} .sto →</span>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+  </main>
+
+  <MediaLightbox />
+</Layout>
