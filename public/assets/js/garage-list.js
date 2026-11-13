@@ -5,6 +5,8 @@
   var meta = {};
   try { meta = metaEl ? JSON.parse(metaEl.textContent || "{}") : {}; } catch (e) { meta = {}; }
   var labels = meta.labels || {};
+  var brandByCar = meta.brandByCar || {};
+  var brandPaths = meta.brandPaths || {};
   var list = document.getElementById("garageList");
   var status = document.getElementById("garageStatus");
   var more = document.getElementById("garageMore");
@@ -90,6 +92,16 @@
       return normText(row.carLabel + " " + row.track + " " + row.file + " " + kindLabelOf(row.kind)).indexOf(q) !== -1;
     });
   }
+  function carCellHtml(carId, carLabel) {
+    var key = String(carId || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    var b = brandByCar[key];
+    var p = b && brandPaths[b.logo];
+    if (!p) return esc(carLabel);
+    return "<span class=\"g2-carcell\">" +
+      "<svg class=\"g2-brand\" viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" aria-hidden=\"true\" style=\"color:" + esc(b.color || "currentColor") + "\">" +
+      "<path fill=\"currentColor\" d=\"" + esc(p) + "\"></path></svg>" +
+      "<span>" + esc(carLabel) + "</span></span>";
+  }
   function render() {
     var view = filtered();
     var slice = view.slice(0, shown);
@@ -101,7 +113,7 @@
     }
     list.innerHTML = slice.map(function (row) {
       return "<tr>" +
-        "<td>" + esc(row.carLabel) + "</td>" +
+        "<td>" + carCellHtml(row.car, row.carLabel) + "</td>" +
         "<td>" + esc(row.track) + "</td>" +
         "<td>" + esc(kindLabelOf(row.kind)) + "</td>" +
         "<td>" + esc(row.size) + "</td>" +

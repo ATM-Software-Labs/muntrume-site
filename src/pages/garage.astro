@@ -3,6 +3,8 @@ import Layout from "../layouts/Layout.astro";
 import catalog from "../../public/assets/data/catalog_index.json";
 import desktopPkg from "../../desktop/package.json";
 import { carOptions, previewSetups } from "../lib/garage-catalog";
+import { CAR_CATALOG_LIST } from "../../desktop/src/cars/catalog";
+import { OFFICIAL_BRAND_PATHS } from "../../desktop/src/cars/brand-icons";
 
 const pageTitle = "Garage de setups iRacing | Muntrume Motorsport";
 const pageDescription = "Archivos .sto de Muntrume Motorsport para iRacing, por coche y circuito. La descarga queda tras iniciar sesión.";
@@ -11,6 +13,58 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
 const cars = carOptions();
 const preview = previewSetups(20);
 const labels = Object.fromEntries(cars.map((item) => [item.id, item.label]));
+
+const normCarKey = (s: string) => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+const catalogByKey = new Map(
+  CAR_CATALOG_LIST.map((c) => [normCarKey(c.carFolder), { logo: c.svgLogoId, color: c.accentColor }])
+);
+
+const FALLBACK_BRAND_BY_PREFIX: Array<[RegExp, { logo: string; color: string }]> = [
+  [/mercedes/i, { logo: "logo-mercedes", color: "#00D2BE" }],
+  [/porsche/i, { logo: "logo-porsche", color: "#D5001C" }],
+  [/ferrari/i, { logo: "logo-ferrari", color: "#DC0000" }],
+  [/bmw/i, { logo: "logo-bmw", color: "#1C69D4" }],
+  [/audi/i, { logo: "logo-audi", color: "#BB0A30" }],
+  [/lamborghini/i, { logo: "logo-lambo", color: "#DDB321" }],
+  [/mclaren/i, { logo: "logo-mclaren", color: "#FF8700" }],
+  [/aston|amvantage|amvalkyrie/i, { logo: "logo-aston", color: "#006F62" }],
+  [/cadillac/i, { logo: "logo-cadillac", color: "#D4AF37" }],
+  [/acura/i, { logo: "logo-acura", color: "#E11D48" }],
+  [/corvette|chevy|camaro|silverado|c6r|c8r/i, { logo: "logo-chevy", color: "#EAB308" }],
+  [/ford|mustang/i, { logo: "logo-ford", color: "#003478" }],
+  [/toyota|gr86|tundra/i, { logo: "logo-toyota", color: "#EB0A1E" }],
+  [/mazda|mx5|mx_/i, { logo: "logo-mazda", color: "#910A2D" }],
+  [/honda|hpd/i, { logo: "logo-honda", color: "#CC0000" }],
+  [/hyundai/i, { logo: "logo-hyundai", color: "#002C5F" }],
+  [/renault/i, { logo: "logo-renault", color: "#FFCC00" }],
+  [/dallara|superformula|indy|formulair04/i, { logo: "logo-dallara", color: "#00E699" }],
+  [/ligier/i, { logo: "logo-ligier", color: "#1D4ED8" }],
+  [/nissan/i, { logo: "logo-nissan", color: "#C3002F" }],
+  [/lotus/i, { logo: "logo-lotus", color: "#15803D" }],
+  [/pontiac/i, { logo: "logo-pontiac", color: "#DC2626" }],
+  [/buick/i, { logo: "logo-buick", color: "#2563EB" }],
+];
+
+function brandMetaFor(carId: string) {
+  const hit = catalogByKey.get(normCarKey(carId));
+  if (hit && OFFICIAL_BRAND_PATHS[hit.logo]) return hit;
+  for (const [rx, meta] of FALLBACK_BRAND_BY_PREFIX) {
+    if (rx.test(carId) && OFFICIAL_BRAND_PATHS[meta.logo]) return meta;
+  }
+  return undefined;
+}
+
+const brandByCar: Record<string, { logo: string; color: string }> = {};
+const brandPaths: Record<string, string> = {};
+for (const item of cars) {
+  const meta = brandMetaFor(item.id);
+  if (meta) {
+    brandByCar[normCarKey(item.id)] = meta;
+    if (OFFICIAL_BRAND_PATHS[meta.logo]) {
+      brandPaths[meta.logo] = OFFICIAL_BRAND_PATHS[meta.logo];
+    }
+  }
+}
 const kindLabel = { race: "Carrera", qualy: "Clasificación", wet: "Lluvia", endurance: "Resistencia" } as const;
 const kb = (n: number) =>
   Number.isFinite(n) && n > 0
@@ -123,9 +177,21 @@ const garageSchema = {
             </tr>
           </thead>
           <tbody id="garageList">
-            {preview.map((item) => (
+            {preview.map((item) => {
+              const b = brandByCar[normCarKey(item.car)];
+              const bPath = b ? brandPaths[b.logo] : undefined;
+              return (
               <tr>
-                <td>{item.carLabel}</td>
+                <td>
+                  <span class="g2-carcell">
+                    {b && bPath && (
+                      <svg class="g2-brand" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style={`color:${b.color}`}>
+                        <path fill="currentColor" d={bPath} />
+                      </svg>
+                    )}
+                    <span>{item.carLabel}</span>
+                  </span>
+                </td>
                 <td>{item.track}</td>
                 <td data-i18n={"garage.kind." + item.kind}>{kindLabel[item.kind]}</td>
                 <td>{kb(item.sizeKb)}</td>
@@ -133,14 +199,20 @@ const garageSchema = {
                   <button type="button" class="g2-dl" data-download data-id={item.id} data-file={item.file} data-auth="pending" data-i18n="garage.dl.out">Inicia sesión</button>
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>
       <button type="button" id="garageMore" class="r-btn" data-i18n="garage.more">Cargar más</button>
-      <script type="application/json" id="garageMeta" set:html={JSON.stringify({ labels, total: catalog.total_setups })}></script>
+      <script type="application/json" id="garageMeta" set:html={JSON.stringify({ labels, total: catalog.total_setups, brandByCar, brandPaths })}></script>
     </div>
   </section>
+
+  <style>
+    .g2-carcell { display: inline-flex; align-items: center; gap: 8px; }
+    .g2-brand { flex-shrink: 0; opacity: 0.92; }
+  </style>
 
   <div id="authModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="authTitle" hidden>
     <div class="g-dialog">
