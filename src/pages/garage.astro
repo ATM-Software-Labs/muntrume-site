@@ -1,4 +1,6 @@
 ---
+import fs from "node:fs";
+import path from "node:path";
 import Layout from "../layouts/Layout.astro";
 import catalog from "../../public/assets/data/catalog_index.json";
 import desktopPkg from "../../desktop/package.json";
@@ -56,6 +58,30 @@ function brandMetaFor(carId: string) {
   }
   return undefined;
 }
+
+const carsByTrackMap = new Map<string, Set<string>>();
+const byCarDir = path.resolve(process.cwd(), "public/assets/data/catalog_by_car");
+const slugId = (id: string) => String(id || "").trim().toLowerCase().replace(/[^a-z0-9_-]/g, "_");
+for (const c of catalog.cars) {
+  const filePath = path.join(byCarDir, `${slugId(c)}.json`);
+  if (!fs.existsSync(filePath)) continue;
+  try {
+    const rows = JSON.parse(fs.readFileSync(filePath, "utf8")) as unknown[][];
+    for (const r of rows) {
+      const trk = String(r[4] || "").trim();
+      if (!trk) continue;
+      let set = carsByTrackMap.get(trk);
+      if (!set) {
+        set = new Set<string>();
+        carsByTrackMap.set(trk, set);
+      }
+      set.add(c);
+    }
+  } catch {}
+}
+const carsByTrack: Record<string, string[]> = Object.fromEntries(
+  Array.from(carsByTrackMap.entries()).map(([trk, set]) => [trk, Array.from(set)])
+);
 
 const brandByCar: Record<string, { logo: string; color: string }> = {};
 const brandPaths: Record<string, string> = {};
@@ -208,7 +234,7 @@ const garageSchema = {
         </table>
       </div>
       <button type="button" id="garageMore" class="r-btn" data-i18n="garage.more">Cargar más</button>
-      <script type="application/json" id="garageMeta" set:html={JSON.stringify({ labels, total: catalog.total_setups, brandByCar, brandPaths })}></script>
+      <script type="application/json" id="garageMeta" set:html={JSON.stringify({ labels, total: catalog.total_setups, brandByCar, brandPaths, carsByTrack })}></script>
     </div>
   </section>
 

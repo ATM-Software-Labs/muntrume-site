@@ -8959,7 +8959,7 @@
       "id": "porsche-esports-supercup-global-open-qualifiers",
       "name": "Porsche Esports Supercup Global Open Qualifiers",
       "category": "SPORTS CAR",
-      "tier": "RClass",
+      "tier": "CClass",
       "license": "Class D 4.0 --> Pro/WC 4.0",
       "cars": [
         "Porsche 911 Cup (992.2)"
@@ -11696,8 +11696,8 @@
     {
       "id": "fia-f4-esports-regional-tour-america-2026-season-4",
       "name": "FIA F4 Esports Regional Tour - America - 2026 Season 4",
-      "category": "SPORTS CAR",
-      "tier": "RClass",
+      "category": "FORMULA CAR",
+      "tier": "DClass",
       "license": "Rookie 4.0 --> Pro/WC 4.0",
       "cars": [
         "FIA F4"
@@ -14710,8 +14710,8 @@
     {
       "id": "formula-a-cosworth-cup-grand-prix-fixed-2026-season-4",
       "name": "Formula A - Cosworth Cup Grand Prix - Fixed - 2026 Season 4",
-      "category": "DIRT OVAL",
-      "tier": "RClass",
+      "category": "FORMULA CAR",
+      "tier": "AClass",
       "license": "Class B 4.0 --> Pro/WC 4.0",
       "cars": [
         "Mercedes-AMG W13 E Performance"
@@ -14950,7 +14950,7 @@
     {
       "id": "dirtcar-street-stock-rookie-by-imb-racewear-2026-season-4",
       "name": "DIRTcar Street Stock Rookie by IMB Racewear - 2026 Season 4",
-      "category": "SPORTS CAR",
+      "category": "DIRT OVAL",
       "tier": "RClass",
       "license": "Rookie 1.0 --> Pro/WC 4.0",
       "cars": [
@@ -15190,7 +15190,7 @@
     {
       "id": "micro-winged-sprint-car-rookie-by-thrustmaster-2026-season-4",
       "name": "Micro Winged Sprint Car Rookie by Thrustmaster - 2026 Season 4",
-      "category": "SPORTS CAR",
+      "category": "DIRT OVAL",
       "tier": "RClass",
       "license": "Rookie 1.0 --> Pro/WC 4.0",
       "cars": [
@@ -15550,8 +15550,8 @@
     {
       "id": "dirtcar-358-modified-series-2026-season-4",
       "name": "DIRTcar 358 Modified Series - 2026 Season 4",
-      "category": "SPORTS CAR",
-      "tier": "RClass",
+      "category": "DIRT OVAL",
+      "tier": "DClass",
       "license": "Rookie 4.0 --> Pro/WC 4.0",
       "cars": [
         "Dirt 358 Modified"
@@ -18658,8 +18658,8 @@
     {
       "id": "world-of-outlaws-pro-qualifying-series-2026-season-lates",
       "name": "World of Outlaws Pro Qualifying Series - 2026 Season - Lates",
-      "category": "DIRT ROAD",
-      "tier": "AClass",
+      "category": "DIRT OVAL",
+      "tier": "BClass",
       "license": "Class A 1.0 --> Pro/WC 4.0",
       "cars": [
         "Dirt Late Model - Super"
@@ -18716,7 +18716,7 @@
       "id": "fia-cross-car-championship-2026-season-4",
       "name": "FIA Cross Car Championship - 2026 Season 4",
       "category": "DIRT ROAD",
-      "tier": "AClass",
+      "tier": "DClass",
       "license": "Rookie 1.0 --> Pro/WC 4.0",
       "cars": [
         "FIA Cross Car"
@@ -18836,7 +18836,7 @@
       "id": "pro-2-lite-off-road-rookie-series-2026-season-4",
       "name": "Pro 2 Lite Off-Road Rookie Series - 2026 Season 4",
       "category": "DIRT ROAD",
-      "tier": "AClass",
+      "tier": "RClass",
       "license": "Rookie 1.0 --> Pro/WC 4.0",
       "cars": [
         "Lucas Oil Off Road Pro 2 Lite"
@@ -18956,7 +18956,7 @@
       "id": "vw-lite-irx-rookie-series-2026-season-4",
       "name": "VW Lite iRX Rookie Series - 2026 Season 4",
       "category": "DIRT ROAD",
-      "tier": "AClass",
+      "tier": "RClass",
       "license": "Rookie 1.0 --> Pro/WC 4.0",
       "cars": [
         "VW Beetle - Lite"
@@ -19799,7 +19799,7 @@
     {
       "id": "dallara-dw12-dash-2026-season-4",
       "name": "Dallara DW12 Dash - 2026 Season 4",
-      "category": "DIRT ROAD",
+      "category": "OVAL",
       "tier": "RClass",
       "license": "Rookie 1.0 --> Pro/WC 4.0",
       "cars": [
@@ -19928,7 +19928,7 @@
     {
       "id": "nascar-carburetor-cup-2026-season-4",
       "name": "NASCAR Carburetor Cup - 2026 Season 4",
-      "category": "DIRT ROAD",
+      "category": "OVAL",
       "tier": "RClass",
       "license": "Rookie 1.0 --> Pro/WC 4.0",
       "cars": [
@@ -20061,7 +20061,7 @@
     {
       "id": "nascar-pickup-cup-2026-season-4",
       "name": "NASCAR Pickup Cup - 2026 Season 4",
-      "category": "DIRT ROAD",
+      "category": "OVAL",
       "tier": "RClass",
       "license": "Rookie 1.0 --> Pro/WC 4.0",
       "cars": [

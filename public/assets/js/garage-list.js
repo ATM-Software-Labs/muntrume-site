@@ -7,6 +7,7 @@
   var labels = meta.labels || {};
   var brandByCar = meta.brandByCar || {};
   var brandPaths = meta.brandPaths || {};
+  var carsByTrack = meta.carsByTrack || {};
   var list = document.getElementById("garageList");
   var status = document.getElementById("garageStatus");
   var more = document.getElementById("garageMore");
@@ -151,13 +152,34 @@
       return cache[key];
     });
   }
+  function carsForQuery(q) {
+    var nq = normText(String(q || "").trim());
+    if (!nq || nq.length < 2) return [];
+    var seen = {};
+    var out = [];
+    Object.keys(carsByTrack).forEach(function (trk) {
+      var nt = normText(trk);
+      if (nt.indexOf(nq) !== -1 || nq.indexOf(nt) !== -1) {
+        (carsByTrack[trk] || []).forEach(function (c) {
+          if (!seen[c]) { seen[c] = true; out.push(c); }
+        });
+      }
+    });
+    return out;
+  }
   function apply() {
     var id = ++request;
     var selected = car && car.value || "";
+    var targetCars = [];
     if (!selected && multiCars.length) {
+      targetCars = multiCars;
+    } else if (!selected && search && search.value.trim()) {
+      targetCars = carsForQuery(search.value);
+    }
+    if (!selected && targetCars.length) {
       setStatus(tr("garage.status.loading", "Cargando catálogo…"), "loading");
       if (more) more.hidden = true;
-      Promise.all(multiCars.map(function (c) {
+      Promise.all(targetCars.map(function (c) {
         return load("/assets/data/catalog_by_car/" + slug(c) + ".json", "car:" + slug(c)).catch(function () { return []; });
       })).then(function (groups) {
         if (id !== request) return;
@@ -197,7 +219,8 @@
   var form = document.getElementById("garageFilters");
   if (form) form.addEventListener("submit", function (e) { e.preventDefault(); });
   if (search) search.addEventListener("input", function () {
-    if (!ready) queue();
+    var selected = car && car.value || "";
+    if (!ready || (!selected && !multiCars.length && carsForQuery(search.value).length)) queue();
     else { shown = PAGE; render(); }
   });
   if (type) type.addEventListener("change", function () {
