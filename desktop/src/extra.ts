@@ -1402,17 +1402,24 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
       const raw = localStorage.getItem("mmt_float_hud_positions");
       if (!raw || !floatHost) return;
       const pos = JSON.parse(raw) as Record<string, { left: string; top: string }>;
+      const vw = Math.max(320, window.innerWidth);
+      const vh = Math.max(240, window.innerHeight);
       for (const [id, coord] of Object.entries(pos)) {
         const el = floatHost.querySelector<HTMLElement>(`[data-widget="${id}"]`);
         if (el) {
           el.style.position = "absolute";
-          el.style.left = coord.left;
-          el.style.top = coord.top;
+          const rawLeft = Number.parseFloat(coord.left);
+          const rawTop = Number.parseFloat(coord.top);
+          const maxLeft = Math.max(8, vw - (el.offsetWidth || 220) - 8);
+          const maxTop = Math.max(8, vh - (el.offsetHeight || 120) - 8);
+          el.style.left = Number.isFinite(rawLeft) ? `${Math.max(8, Math.min(maxLeft, rawLeft))}px` : coord.left;
+          el.style.top = Number.isFinite(rawTop) ? `${Math.max(8, Math.min(maxTop, rawTop))}px` : coord.top;
           el.style.transform = "none";
         }
       }
     } catch {}
   };
+  window.addEventListener("resize", restoreFloatPositions);
 
   const saveFloatPositions = () => {
     if (!floatHost) return;
