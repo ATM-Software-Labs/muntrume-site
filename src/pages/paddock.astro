@@ -144,6 +144,42 @@ const socialLinks = [
 ];
 
 const top3Folders = new Set(["ferrari296gt3", "porsche992rgt3", "mclaren720sgt3"]);
+const COMMUNITY_POPULARITY: Record<string, number> = {
+  ferrari296gt3: 1,
+  porsche992rgt3: 2,
+  mclaren720sgt3: 3,
+  bmwm4gt3: 4,
+  fordmustanggt3: 5,
+  mercedesamgevogt3: 6,
+  porsche992cup: 7,
+  mx5cup: 8,
+  formulair04: 9,
+  toyotagr86: 10,
+  superformulalights324: 11,
+  dallarap217: 12,
+  porsche963gtp: 13,
+  ferrari499p: 14,
+  bmwlmdh: 15,
+  acuraarx06gtp: 16,
+  cadillacvseriesrgtp: 17,
+  amvalkyriegtp: 18,
+  raygr22: 19,
+  dallaraf3: 20,
+  superformulasf23honda: 21,
+  superformulasf23toyota: 22,
+  lamborghinievogt3: 23,
+  chevyvettez06rgt3: 24,
+  audir8lmsevo2gt3: 25,
+  amvantageevogt3: 26,
+  porsche718gt4: 27,
+  bmwm4evogt4: 28,
+  mercedesamggt4: 29,
+  stockcarsfordmustang2022: 30,
+  stockcarschevycamarozl12022: 31,
+  stockcarstoyotacamry2022: 32,
+};
+const popRankOf = (folder: string) => COMMUNITY_POPULARITY[folder.toLowerCase()] ?? 999;
+
 const seenModels = new Set<string>();
 const directoryCars: CarMetadata[] = CAR_CATALOG_LIST.filter((car) => {
   const key = `${car.brand}|${car.model}`;
@@ -151,12 +187,12 @@ const directoryCars: CarMetadata[] = CAR_CATALOG_LIST.filter((car) => {
   seenModels.add(key);
   return true;
 }).sort((a, b) => {
-  const aTop = top3Folders.has(a.carFolder) ? 0 : 1;
-  const bTop = top3Folders.has(b.carFolder) ? 0 : 1;
-  if (aTop !== bTop) return aTop - bTop;
+  const diff = popRankOf(a.carFolder) - popRankOf(b.carFolder);
+  if (diff !== 0) return diff;
   return `${a.brand} ${a.model}`.localeCompare(`${b.brand} ${b.model}`);
 });
 const fleetCategories = ["Top 3", "Sports Car", "Formula Car", "Oval", "Dirt", "Todos"] as const;
+const fleetBrands = Array.from(new Set(directoryCars.map((c) => c.brand))).sort((a, b) => a.localeCompare(b));
 
 const galleryItems = [
   {
@@ -396,12 +432,31 @@ const galleryItems = [
           </p>
         </div>
 
-        <div class="w-full md:w-72">
+        <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+          <select
+            id="fleet-brand"
+            aria-label="Filtrar por marca"
+            class="px-3 py-2 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] focus:border-[var(--r-accent)] outline-none text-xs font-mono text-[var(--r-text)]"
+          >
+            <option value="">Todas las marcas</option>
+            {fleetBrands.map((b) => (
+              <option value={b}>{b}</option>
+            ))}
+          </select>
+          <select
+            id="fleet-sort"
+            aria-label="Ordenar vehículos"
+            class="px-3 py-2 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] focus:border-[var(--r-accent)] outline-none text-xs font-mono text-[var(--r-text)]"
+          >
+            <option value="pop">Orden: Popularidad</option>
+            <option value="brand">Orden: Marca (A-Z)</option>
+            <option value="name">Orden: Modelo (A-Z)</option>
+          </select>
           <input
             id="fleet-search"
             type="search"
-            placeholder="Buscar coche, marca o clase..."
-            class="w-full px-3.5 py-2 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] focus:border-[var(--r-accent)] outline-none text-xs font-mono text-[var(--r-text)] placeholder:text-[var(--r-muted)]"
+            placeholder="Buscar coche o clase..."
+            class="w-full sm:w-56 px-3.5 py-2 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] focus:border-[var(--r-accent)] outline-none text-xs font-mono text-[var(--r-text)] placeholder:text-[var(--r-muted)]"
           />
         </div>
       </div>
@@ -432,6 +487,9 @@ const galleryItems = [
           <article
             class={`fleet-card rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-200 overflow-hidden flex flex-col justify-between group ${isTop3 ? '' : 'hidden'}`}
             data-cat={car.category}
+            data-brand={car.brand}
+            data-pop={popRankOf(car.carFolder)}
+            data-name={`${car.brand} ${car.model}`.toLowerCase()}
             data-top3={isTop3 ? "1" : "0"}
             data-search={`${car.brand} ${car.model} ${car.carClass} ${car.category} ${car.specs}`.toLowerCase()}
           >
@@ -1078,30 +1136,55 @@ const galleryItems = [
   }
 
   (function initFleetDirectory() {
+    var grid = document.getElementById('fleet-grid');
     var searchInput = document.getElementById('fleet-search');
+    var brandSelect = document.getElementById('fleet-brand');
+    var sortSelect = document.getElementById('fleet-sort');
     var countEl = document.getElementById('fleet-count');
     var catBtns = document.querySelectorAll('.fleet-cat-btn');
-    var cards = document.querySelectorAll('.fleet-card');
-    if (!cards.length) return;
+    var cards = Array.from(document.querySelectorAll('.fleet-card'));
+    if (!grid || !cards.length) return;
     var activeCat = 'Top 3';
+
+    function applySort() {
+      var mode = sortSelect ? sortSelect.value : 'pop';
+      cards.sort(function(a, b) {
+        if (mode === 'brand') {
+          var ba = (a.getAttribute('data-brand') || '').localeCompare(b.getAttribute('data-brand') || '');
+          if (ba !== 0) return ba;
+          return (a.getAttribute('data-name') || '').localeCompare(b.getAttribute('data-name') || '');
+        }
+        if (mode === 'name') {
+          return (a.getAttribute('data-name') || '').localeCompare(b.getAttribute('data-name') || '');
+        }
+        var pa = Number(a.getAttribute('data-pop') || '999');
+        var pb = Number(b.getAttribute('data-pop') || '999');
+        if (pa !== pb) return pa - pb;
+        return (a.getAttribute('data-name') || '').localeCompare(b.getAttribute('data-name') || '');
+      });
+      cards.forEach(function(c) { grid.appendChild(c); });
+    }
 
     function applyFilter() {
       var q = (searchInput && searchInput.value ? searchInput.value : '').trim().toLowerCase();
+      var brand = brandSelect ? brandSelect.value : '';
       var visible = 0;
       cards.forEach(function(card) {
         var cat = card.getAttribute('data-cat') || '';
+        var cardBrand = card.getAttribute('data-brand') || '';
         var isTop3 = card.getAttribute('data-top3') === '1';
         var hay = card.getAttribute('data-search') || '';
         var matchesQuery = !q || hay.indexOf(q) !== -1;
-        var matchesCat = q
-          ? true
+        var matchesBrand = !brand || cardBrand === brand;
+        var matchesCat = (q || brand)
+          ? (activeCat === 'Top 3' || activeCat === 'Todos' ? true : cat === activeCat)
           : (activeCat === 'Todos' || (activeCat === 'Top 3' ? isTop3 : cat === activeCat));
-        var ok = matchesCat && matchesQuery;
+        var ok = matchesCat && matchesQuery && matchesBrand;
         card.classList.toggle('hidden', !ok);
         if (ok) visible++;
       });
       if (countEl) {
-        countEl.textContent = (!q && activeCat === 'Top 3')
+        countEl.textContent = (!q && !brand && activeCat === 'Top 3')
           ? 'Top 3 populares (de ' + cards.length + ' coches)'
           : visible + ' coches';
       }
@@ -1123,5 +1206,7 @@ const galleryItems = [
     });
 
     if (searchInput) searchInput.addEventListener('input', applyFilter);
+    if (brandSelect) brandSelect.addEventListener('change', applyFilter);
+    if (sortSelect) sortSelect.addEventListener('change', function() { applySort(); applyFilter(); });
   })();
 </script>
