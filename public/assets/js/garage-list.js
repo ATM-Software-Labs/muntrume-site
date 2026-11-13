@@ -103,8 +103,45 @@
       "<path fill=\"currentColor\" d=\"" + esc(p) + "\"></path></svg>" +
       "<span>" + esc(carLabel) + "</span></span>";
   }
+  function setupTags(file, kind) {
+    var stem = String(file || "").replace(/\.sto$/i, "");
+    var tags = [];
+    if (/(?:^|_)SAFE?(?:_|$)/i.test(stem)) tags.push("Safe");
+    if (/(?:^|_)END(?:U|URANCE)?(?:_|$)/i.test(stem) && kind !== "endurance") tags.push("Endurance");
+    var df = stem.match(/(?:^|_)(LDF|MDF|HDF)(?:_|$)/i);
+    if (df) tags.push(df[1].toUpperCase());
+    var ver = stem.match(/(?:^|_)(V\d+)(?:_|$)/i);
+    if (ver) tags.push(ver[1].toUpperCase());
+    return tags;
+  }
+  function trackLayoutTags(file, track) {
+    var stem = String(file || "").replace(/\.sto$/i, "");
+    var trk = String(track || "").toLowerCase();
+    var tags = [];
+    var rules = [
+      [/(?:^|_)VLN(?:_|$)/i, "VLN"],
+      [/(?:^|_)24H(?:_|$)/i, "24h"],
+      [/(?:^|_)NORD(?:SCHLEIFE)?(?:_|$)/i, "Nordschleife"],
+      [/(?:^|_)GP(?:_|$)/i, "GP"],
+      [/(?:^|_)ROVAL(?:_|$)/i, "Roval"],
+      [/(?:^|_)OVAL(?:_|$)/i, "Oval"],
+      [/(?:^|_)BOOT(?:_|$)/i, "Boot"],
+      [/(?:^|_)SHORT(?:_|$)/i, "Short"],
+      [/(?:^|_)NAT(?:IONAL)?(?:_|$)/i, "National"],
+      [/(?:^|_)INT(?:ERNATIONAL)?(?:_|$)/i, "International"],
+      [/(?:^|_)NOCHICANE(?:_|$)/i, "No Chicane"]
+    ];
+    for (var i = 0; i < rules.length; i++) {
+      if (rules[i][0].test(stem) && trk.indexOf(rules[i][1].toLowerCase()) === -1) tags.push(rules[i][1]);
+    }
+    return tags;
+  }
   function render() {
-    var view = filtered();
+    var view = filtered().slice().sort(function (a, b) {
+      var sa = (a.season || "") + " " + (a.week || "");
+      var sb = (b.season || "") + " " + (b.week || "");
+      return sb.localeCompare(sa);
+    });
     var slice = view.slice(0, shown);
     if (!view.length) {
       list.innerHTML = "";
@@ -113,10 +150,15 @@
       return;
     }
     list.innerHTML = slice.map(function (row) {
+      var lTags = trackLayoutTags(row.file, row.track);
+      var verParts = [row.season, row.week].concat(lTags).filter(Boolean);
+      var verHtml = verParts.length ? "<span class=\"g2-meta\">" + esc(verParts.join(" · ")) + "</span>" : "";
+      var sTags = setupTags(row.file, row.kind);
+      var varHtml = sTags.map(function (t) { return "<span class=\"g2-var\">" + esc(t) + "</span>"; }).join("");
       return "<tr>" +
         "<td>" + carCellHtml(row.car, row.carLabel) + "</td>" +
-        "<td>" + esc(row.track) + "</td>" +
-        "<td>" + esc(kindLabelOf(row.kind)) + "</td>" +
+        "<td><span class=\"g2-track\">" + esc(row.track) + "</span>" + verHtml + "</td>" +
+        "<td>" + esc(kindLabelOf(row.kind)) + varHtml + "</td>" +
         "<td>" + esc(row.size) + "</td>" +
         "<td><button type=\"button\" class=\"g2-dl\" data-download data-id=\"" + esc(row.id) + "\" data-file=\"" + esc(row.file) + "\" data-auth=\"pending\">" + esc(tr("garage.dl.out", "Inicia sesión")) + "</button></td>" +
         "</tr>";
@@ -134,6 +176,8 @@
         id: r[0],
         car: id,
         carLabel: labels[id] || id,
+        season: String(r[2] || ""),
+        week: String(r[3] || ""),
         track: String(r[4] || ""),
         file: file,
         kind: kind,

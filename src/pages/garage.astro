@@ -95,6 +95,39 @@ for (const item of cars) {
   }
 }
 const kindLabel = { race: "Carrera", qualy: "Clasificación", wet: "Lluvia", endurance: "Resistencia" } as const;
+const setupTags = (file: string, kind: string) => {
+  const stem = String(file || "").replace(/\.sto$/i, "");
+  const tags: string[] = [];
+  if (/(?:^|_)SAFE?(?:_|$)/i.test(stem)) tags.push("Safe");
+  if (/(?:^|_)END(?:U|URANCE)?(?:_|$)/i.test(stem) && kind !== "endurance") tags.push("Endurance");
+  const df = stem.match(/(?:^|_)(LDF|MDF|HDF)(?:_|$)/i);
+  if (df) tags.push(df[1].toUpperCase());
+  const ver = stem.match(/(?:^|_)(V\d+)(?:_|$)/i);
+  if (ver) tags.push(ver[1].toUpperCase());
+  return tags;
+};
+const trackLayoutTags = (file: string, track: string) => {
+  const stem = String(file || "").replace(/\.sto$/i, "");
+  const trk = String(track || "").toLowerCase();
+  const tags: string[] = [];
+  const candidates: Array<[RegExp, string]> = [
+    [/(?:^|_)VLN(?:_|$)/i, "VLN"],
+    [/(?:^|_)24H(?:_|$)/i, "24h"],
+    [/(?:^|_)NORD(?:SCHLEIFE)?(?:_|$)/i, "Nordschleife"],
+    [/(?:^|_)GP(?:_|$)/i, "GP"],
+    [/(?:^|_)ROVAL(?:_|$)/i, "Roval"],
+    [/(?:^|_)OVAL(?:_|$)/i, "Oval"],
+    [/(?:^|_)BOOT(?:_|$)/i, "Boot"],
+    [/(?:^|_)SHORT(?:_|$)/i, "Short"],
+    [/(?:^|_)NAT(?:IONAL)?(?:_|$)/i, "National"],
+    [/(?:^|_)INT(?:ERNATIONAL)?(?:_|$)/i, "International"],
+    [/(?:^|_)NOCHICANE(?:_|$)/i, "No Chicane"],
+  ];
+  for (const [rx, label] of candidates) {
+    if (rx.test(stem) && !trk.includes(label.toLowerCase())) tags.push(label);
+  }
+  return tags;
+};
 const kb = (n: number) =>
   Number.isFinite(n) && n > 0
     ? `${n.toLocaleString("es-ES", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} KB`
@@ -209,6 +242,9 @@ const garageSchema = {
             {preview.map((item) => {
               const b = brandByCar[normCarKey(item.car)];
               const bPath = b ? brandPaths[b.logo] : undefined;
+              const sTags = setupTags(item.file, item.kind);
+              const lTags = trackLayoutTags(item.file, item.track);
+              const verText = [item.season, item.week, ...lTags].filter(Boolean).join(" · ");
               return (
               <tr>
                 <td>
@@ -221,8 +257,14 @@ const garageSchema = {
                     <span>{item.carLabel}</span>
                   </span>
                 </td>
-                <td>{item.track}</td>
-                <td data-i18n={"garage.kind." + item.kind}>{kindLabel[item.kind]}</td>
+                <td>
+                  <span class="g2-track">{item.track}</span>
+                  {verText && <span class="g2-meta">{verText}</span>}
+                </td>
+                <td>
+                  <span data-i18n={"garage.kind." + item.kind}>{kindLabel[item.kind]}</span>
+                  {sTags.map((t) => <span class="g2-var">{t}</span>)}
+                </td>
                 <td>{kb(item.sizeKb)}</td>
                 <td>
                   <button type="button" class="g2-dl" data-download data-id={item.id} data-file={item.file} data-auth="pending" data-i18n="garage.dl.out">Inicia sesión</button>
@@ -241,6 +283,17 @@ const garageSchema = {
   <style is:global>
     .g2-carcell { display: inline-flex; align-items: center; gap: 10px; }
     .g2-brand { display: inline-block; flex-shrink: 0; width: 22px; height: 22px; opacity: 0.96; }
+    .g2-track { display: inline-block; }
+    .g2-meta {
+      display: inline-block; margin-left: 8px; padding: 2px 6px; border-radius: 5px;
+      font: 600 11px/1.2 ui-monospace, monospace; color: var(--r-muted, #94a3b8);
+      border: 1px solid var(--r-line, rgba(255,255,255,0.1)); vertical-align: middle;
+    }
+    .g2-var {
+      display: inline-block; margin-left: 6px; padding: 2px 6px; border-radius: 5px;
+      font: 700 10px/1.2 ui-monospace, monospace; text-transform: uppercase; letter-spacing: .04em;
+      color: var(--r-accent, #00e699); border: 1px solid rgba(0, 230, 153, 0.32); vertical-align: middle;
+    }
   </style>
 
   <div id="authModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="authTitle" hidden>
