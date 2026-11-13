@@ -1,56 +1,286 @@
 ---
 const year = new Date().getFullYear();
-const sections = [
-  { href: "/", label: "Inicio", key: "nav.home" },
-  { href: "/pilotos/", label: "Pilotos", key: "nav.drivers" },
-  { href: "/garage/", label: "Garage", key: "nav.garage" },
-  { href: "/paddock/", label: "Paddock", key: "nav.paddock" },
-  { href: "/noticias/", label: "Noticias", key: "nav.news" },
-  { href: "/app/", label: "App · MMT Sync", key: "footer.app" },
-];
-const legal = [
-  { href: "/aviso-legal/", label: "Aviso legal", key: "footer.aviso" },
-  { href: "/privacidad/", label: "Privacidad", key: "footer.privacy" },
-  { href: "/cookies/", label: "Cookies", key: "footer.cookies" },
-  { href: "/legal/retirada/", label: "Retirada", key: "footer.takedown" },
-  { href: "/legal/fuentes/", label: "Fuentes", key: "footer.sources" },
+
+const columns = [
+  {
+    title: "Escudería",
+    links: [
+      { href: "/", label: "Inicio", key: "nav.home" },
+      { href: "/pilotos/", label: "Pilotos", key: "nav.drivers" },
+      { href: "/team/", label: "El equipo" },
+      { href: "/about/", label: "Quiénes somos" },
+      { href: "/noticias/", label: "Sala de prensa", key: "nav.news" },
+      { href: "/contact/", label: "Contacto" },
+    ],
+  },
+  {
+    title: "Ingeniería y Setups",
+    links: [
+      { href: "/garage/", label: "Garage (.sto)", key: "nav.garage" },
+      { href: "/setup-builder/", label: "Setup Builder" },
+      { href: "/app/", label: "MMT Sync (App)", key: "footer.app" },
+      { href: "/ai/", label: "Muntrume AI" },
+      { href: "/calendario/", label: "Calendario 2026 S4" },
+      { href: "/login/", label: "Acceso piloto" },
+    ],
+  },
+  {
+    title: "Paddock y Catálogo",
+    links: [
+      { href: "/paddock/", label: "Paddock", key: "nav.paddock" },
+      { href: "/paddock/marca/", label: "Marcas" },
+      { href: "/tracks/", label: "Circuitos" },
+      { href: "/paddock/sala/", label: "Sala de paddock" },
+      { href: "https://discord.gg/ehX6B8JUtE", label: "Discord oficial", external: true },
+      { href: "https://garage61.net/app/teams/muntrume-motorsport", label: "Garage 61", external: true },
+    ],
+  },
+  {
+    title: "Transparencia y Legal",
+    links: [
+      { href: "/aviso-legal/", label: "Aviso legal", key: "footer.aviso" },
+      { href: "/privacidad/", label: "Privacidad", key: "footer.privacy" },
+      { href: "/cookies/", label: "Cookies", key: "footer.cookies" },
+      { href: "/legal/fuentes/", label: "Fuentes RSS", key: "footer.sources" },
+      { href: "/legal/retirada/", label: "Política de retirada", key: "footer.takedown" },
+      { href: "/email-preferences/", label: "Preferencias de email" },
+    ],
+  },
 ];
 ---
 
-<footer class="site-footer">
-  <div class="site-footer__bar">
-    <div class="site-footer__brand">
-      <a class="site-logo" href="/">
-        <img src="/assets/img/logo-64.webp" width="28" height="28" alt="" loading="lazy" decoding="async" />
-        <span>Muntrume</span>
-      </a>
-      <p data-i18n="footer.blurb">Equipo de iRacing en Sant Andreu, Barcelona.</p>
+<footer class="mmt-footer">
+  <div class="mmt-footer__inner">
+    <div class="mmt-footer__grid">
+      {columns.map((col) => (
+        <div class="mmt-footer__col">
+          <h2 class="mmt-footer__heading">{col.title}</h2>
+          <ul class="mmt-footer__list">
+            {col.links.map((link) => (
+              <li>
+                <a
+                  href={link.href}
+                  data-i18n={link.key}
+                  target={link.external ? "_blank" : undefined}
+                  rel={link.external ? "noopener noreferrer" : undefined}
+                >
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
     </div>
-    <nav class="site-footer__links" aria-label="Secciones" data-i18n-aria="nav.sections">
-      {sections.map((link) => <a href={link.href} data-i18n={link.key}>{link.label}</a>)}
-    </nav>
-    <nav class="site-footer__links" aria-label="Comunidad" data-i18n-aria="footer.community">
-      <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noopener noreferrer">Discord</a>
-      <a href="https://garage61.net/app/teams/muntrume-motorsport" target="_blank" rel="noopener noreferrer">Garage 61</a>
-    </nav>
-    <nav class="site-footer__links" aria-label="Información legal" data-i18n-aria="footer.legal">
-      {legal.map((link) => <a href={link.href} data-i18n={link.key}>{link.label}</a>)}
-    </nav>
-  </div>
-  <div class="site-footer__meta">
-    <p>© <span id="copyYear">{year}</span> Muntrume Motorsport</p>
-    <div class="site-lang" role="group" aria-label="Idioma" data-i18n-aria="nav.lang">
-      <button type="button" data-set-lang="es" aria-pressed="true">ES</button>
-      <button type="button" data-set-lang="ca" aria-pressed="false">CA</button>
-      <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
-      <button type="button" data-set-lang="fr" aria-pressed="false">FR</button>
+
+    <div class="mmt-footer__bottom">
+      <div class="mmt-footer__brand-row">
+        <a class="mmt-footer__wordmark" href="/">
+          <img src="/assets/img/logo-64.webp" width="24" height="24" alt="" loading="lazy" decoding="async" />
+          <span>Muntrume Motorsport</span>
+        </a>
+        <nav class="mmt-footer__legal" aria-label="Información legal" data-i18n-aria="footer.legal">
+          <a href="/privacidad/" data-i18n="footer.privacy">Privacidad</a>
+          <a href="/aviso-legal/" data-i18n="footer.aviso">Términos</a>
+          <a href="/cookies/" data-i18n="footer.cookies">Cookies</a>
+          <span class="mmt-footer__copy">© <span id="copyYear">{year}</span> MMT</span>
+        </nav>
+      </div>
+
+      <div class="mmt-footer__utils">
+        <a href="/contact/" class="mmt-footer__help">
+          <span>Ayuda</span>
+          <span class="mmt-footer__q" aria-hidden="true">?</span>
+        </a>
+        <label class="mmt-footer__lang-wrap">
+          <span class="sr-only" data-i18n="nav.lang">Idioma</span>
+          <select id="footerLangSelect" class="mmt-footer__select" aria-label="Idioma">
+            <option value="es">Español</option>
+            <option value="ca">Català</option>
+            <option value="en">English</option>
+            <option value="fr">Français</option>
+          </select>
+        </label>
+        <p class="lang-fallback" data-lang-fallback data-i18n="nav.fallback" hidden>Esta página sigue en español.</p>
+      </div>
     </div>
-    <p class="lang-fallback" data-lang-fallback data-i18n="nav.fallback" hidden>Esta página sigue en español.</p>
   </div>
 </footer>
+
+<style>
+  .mmt-footer {
+    border-top: 1px solid var(--r-line);
+    background: var(--r-surface, rgba(255, 255, 255, 0.02));
+    color: var(--r-text);
+    padding: 56px 24px 32px;
+    margin-top: 48px;
+  }
+  .mmt-footer__inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .mmt-footer__grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 36px 28px;
+    padding-bottom: 44px;
+  }
+  .mmt-footer__heading {
+    margin: 0 0 18px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--r-text);
+    letter-spacing: -0.01em;
+  }
+  .mmt-footer__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 12px;
+  }
+  .mmt-footer__list a {
+    color: var(--r-muted);
+    text-decoration: none;
+    font-size: 14px;
+    line-height: 1.4;
+    transition: color 0.15s ease;
+  }
+  .mmt-footer__list a:hover {
+    color: var(--r-text);
+  }
+
+  .mmt-footer__bottom {
+    border-top: 1px solid var(--r-line);
+    padding-top: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .mmt-footer__brand-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 24px;
+  }
+  .mmt-footer__wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--r-text);
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .mmt-footer__wordmark img {
+    border-radius: 6px;
+  }
+  .mmt-footer__legal {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 18px;
+    font-size: 13px;
+  }
+  .mmt-footer__legal a {
+    color: var(--r-muted);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  .mmt-footer__legal a:hover {
+    color: var(--r-text);
+  }
+  .mmt-footer__copy {
+    color: var(--r-muted);
+    font-size: 12px;
+  }
+
+  .mmt-footer__utils {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 18px;
+  }
+  .mmt-footer__help {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--r-muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .mmt-footer__help:hover {
+    color: var(--r-text);
+  }
+  .mmt-footer__q {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: var(--r-muted);
+    color: var(--r-bg, #0e1211);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .mmt-footer__select {
+    min-width: 132px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--r-line-2, var(--r-line));
+    background: var(--r-bg, #0e1211);
+    color: var(--r-text);
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  @media (max-width: 900px) {
+    .mmt-footer__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 560px) {
+    .mmt-footer {
+      padding: 40px 18px 28px;
+    }
+    .mmt-footer__grid {
+      grid-template-columns: 1fr;
+      gap: 28px;
+    }
+  }
+</style>
+
 <script is:inline>
 (function () {
   var y = document.getElementById("copyYear");
   if (y) y.textContent = String(new Date().getFullYear());
+
+  var sel = document.getElementById("footerLangSelect");
+  if (!sel) return;
+
+  function syncSelect() {
+    var cur = (document.documentElement.lang || localStorage.getItem("muntru_lang") || "es").slice(0, 2).toLowerCase();
+    if (["es", "ca", "en", "fr"].indexOf(cur) !== -1) sel.value = cur;
+  }
+
+  sel.addEventListener("change", function () {
+    var lang = sel.value;
+    if (window.muntruI18n && typeof window.muntruI18n.setLang === "function") {
+      window.muntruI18n.setLang(lang);
+      return;
+    }
+    var btn = document.querySelector('[data-set-lang="' + lang + '"]');
+    if (btn) btn.click();
+  });
+
+  document.addEventListener("muntru:i18n", syncSelect);
+  syncSelect();
 })();
 </script>
