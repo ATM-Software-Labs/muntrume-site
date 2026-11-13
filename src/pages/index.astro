@@ -6,22 +6,24 @@ import { PILOTOS, LICENCE_UPDATED_LABEL } from '../lib/pilotos';
 import catalog from '../../public/assets/data/catalog_index.json';
 import schedule from '../../desktop/src/season_schedule_2026_s4.json';
 
-// "Esta semana": series Open destacadas del calendario oficial 2026 S4 (las Fixed usan el setup de iRacing).
+// "Esta semana": Top 4 series Open con mayor participación semanal en iRacing (las Fixed usan el setup oficial de iRacing).
 const FEATURED = [
-  'GT Sprint Series by Simucube',
-  'IMSA iRacing Series by GO Fast',
-  'GT3 Regional Tour by SensitHaptics - Europe',
-  'GT4 Falken Tyre Challenge',
-  'LMP3 Trophy',
-  'Supercars Series - 2026',
+  { prefix: 'GT Sprint Series by Simucube', schedule: '40 min · Cada 2h (:00 UTC)' },
+  { prefix: 'IMSA iRacing Series by GO Fast', schedule: '45 min · Cada 2h (:45 UTC)' },
+  { prefix: 'iRacing Porsche Cup by CONSPIT', schedule: '19 vueltas · Cada 2h (:45 UTC)' },
+  { prefix: 'Formula C - Super Formula Lights by RSS', schedule: '30 min · Cada 2h (:15 UTC)' },
 ];
 const weekly = FEATURED
-  .map((prefix) => schedule.series.find((s) => s.name.startsWith(prefix)))
-  .filter((s) => s !== undefined)
-  .map((s) => ({
-    name: s.name.replace(/\s*-?\s*2026 Season.*$/i, '').trim(),
-    weeks: s.weeks.map((w) => [w.week_num, w.track_name, w.config ?? ''] as [number, string, string]),
-  }));
+  .map((item) => {
+    const s = schedule.series.find((x) => x.name.startsWith(item.prefix));
+    if (!s) return undefined;
+    return {
+      name: s.name.replace(/\s*-?\s*2026 Season.*$/i, '').trim(),
+      schedule: item.schedule,
+      weeks: s.weeks.map((w) => [w.week_num, w.track_name, w.config ?? ''] as [number, string, string]),
+    };
+  })
+  .filter((s) => s !== undefined);
 const SEASON_START_MS = Date.UTC(2026, 8, 15);
 const buildWeek = Math.max(1, Math.min(12, Math.floor((Date.now() - SEASON_START_MS) / 604_800_000) + 1));
 
@@ -83,16 +85,23 @@ const figs = [
               <span class="mmt-week-card__series">{s.name}</span>
               <strong class="mmt-week-card__track" data-track>{w?.[1] ?? '—'}</strong>
               <span class="mmt-week-card__config" data-config>{w?.[2] ?? ''}</span>
+              <span class="mmt-week-card__time">{s.schedule}</span>
             </a>
           );
         })}
       </div>
-      <p class="r-meta" style="margin-top:12px">Calendario oficial de iRacing. Solo series Open: en las series Fixed se corre con el setup de iRacing.</p>
+      <div class="mmt-week-foot">
+        <p class="r-meta">Top 4 series Open por participación semanal. Las series Fixed (ej. GT3 Regional Tour) usan setup oficial de iRacing.</p>
+        <div class="mmt-week-links">
+          <a href="https://iracingstats.net/" target="_blank" rel="noopener noreferrer" class="r-link">Participación semanal (iRacingStats) ↗</a>
+          <a href="https://members-ng.iracing.com/racing/schedule" target="_blank" rel="noopener noreferrer" class="r-link">Horarios y sesiones oficiales ↗</a>
+        </div>
+      </div>
     </div>
   </section>
 
   <style>
-    .mmt-week-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+    .mmt-week-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
     .mmt-week-card {
       display: grid; gap: 6px; padding: 16px 18px; border-radius: 12px;
       border: 1px solid var(--r-line); border-top: 2px solid var(--r-accent, #00e5ff);
@@ -103,6 +112,9 @@ const figs = [
     .mmt-week-card__series { font: 600 11px/1.3 ui-monospace, monospace; text-transform: uppercase; letter-spacing: .06em; color: var(--r-muted); }
     .mmt-week-card__track { font-size: 18px; line-height: 1.25; }
     .mmt-week-card__config { font-size: 13px; color: var(--r-muted); }
+    .mmt-week-card__time { font: 600 11px/1.3 ui-monospace, monospace; color: var(--r-accent, #00e5ff); margin-top: 4px; }
+    .mmt-week-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; }
+    .mmt-week-links { display: flex; flex-wrap: wrap; gap: 16px; }
   </style>
 
   <script is:inline>
