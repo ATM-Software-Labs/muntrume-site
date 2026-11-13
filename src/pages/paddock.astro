@@ -143,14 +143,20 @@ const socialLinks = [
   }
 ];
 
+const top3Folders = new Set(["ferrari296gt3", "porsche992rgt3", "mclaren720sgt3"]);
 const seenModels = new Set<string>();
 const directoryCars: CarMetadata[] = CAR_CATALOG_LIST.filter((car) => {
   const key = `${car.brand}|${car.model}`;
   if (seenModels.has(key)) return false;
   seenModels.add(key);
   return true;
+}).sort((a, b) => {
+  const aTop = top3Folders.has(a.carFolder) ? 0 : 1;
+  const bTop = top3Folders.has(b.carFolder) ? 0 : 1;
+  if (aTop !== bTop) return aTop - bTop;
+  return `${a.brand} ${a.model}`.localeCompare(`${b.brand} ${b.model}`);
 });
-const fleetCategories = ["All", "Sports Car", "Formula Car", "Oval", "Dirt"] as const;
+const fleetCategories = ["Top 3", "Sports Car", "Formula Car", "Oval", "Dirt", "Todos"] as const;
 
 const galleryItems = [
   {
@@ -415,15 +421,18 @@ const galleryItems = [
           </button>
         ))}
         <span id="fleet-count" class="ml-auto text-[11px] font-mono text-[var(--r-muted)]">
-          {directoryCars.length} coches
+          Top 3 populares (de {directoryCars.length} coches)
         </span>
       </div>
 
-      <div id="fleet-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-        {directoryCars.map((car) => (
+      <div id="fleet-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {directoryCars.map((car) => {
+          const isTop3 = top3Folders.has(car.carFolder);
+          return (
           <article
-            class="fleet-card rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-200 overflow-hidden flex flex-col justify-between group"
+            class={`fleet-card rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-200 overflow-hidden flex flex-col justify-between group ${isTop3 ? '' : 'hidden'}`}
             data-cat={car.category}
+            data-top3={isTop3 ? "1" : "0"}
             data-search={`${car.brand} ${car.model} ${car.carClass} ${car.category} ${car.specs}`.toLowerCase()}
           >
             <div>
@@ -477,7 +486,8 @@ const galleryItems = [
               </div>
             </div>
           </article>
-        ))}
+          );
+        })}
       </div>
 
       <p class="text-[11px] font-mono text-[var(--r-muted)]">
@@ -1061,24 +1071,33 @@ const galleryItems = [
     var catBtns = document.querySelectorAll('.fleet-cat-btn');
     var cards = document.querySelectorAll('.fleet-card');
     if (!cards.length) return;
-    var activeCat = 'All';
+    var activeCat = 'Top 3';
 
     function applyFilter() {
       var q = (searchInput && searchInput.value ? searchInput.value : '').trim().toLowerCase();
       var visible = 0;
       cards.forEach(function(card) {
         var cat = card.getAttribute('data-cat') || '';
+        var isTop3 = card.getAttribute('data-top3') === '1';
         var hay = card.getAttribute('data-search') || '';
-        var ok = (activeCat === 'All' || cat === activeCat) && (!q || hay.indexOf(q) !== -1);
+        var matchesQuery = !q || hay.indexOf(q) !== -1;
+        var matchesCat = q
+          ? true
+          : (activeCat === 'Todos' || (activeCat === 'Top 3' ? isTop3 : cat === activeCat));
+        var ok = matchesCat && matchesQuery;
         card.classList.toggle('hidden', !ok);
         if (ok) visible++;
       });
-      if (countEl) countEl.textContent = visible + ' coches';
+      if (countEl) {
+        countEl.textContent = (!q && activeCat === 'Top 3')
+          ? 'Top 3 populares (de ' + cards.length + ' coches)'
+          : visible + ' coches';
+      }
     }
 
     catBtns.forEach(function(btn) {
       btn.addEventListener('click', function() {
-        activeCat = btn.getAttribute('data-fleet-cat') || 'All';
+        activeCat = btn.getAttribute('data-fleet-cat') || 'Top 3';
         catBtns.forEach(function(b) {
           var isOn = b === btn;
           b.className = 'fleet-cat-btn px-3 py-1.5 rounded-lg border text-xs font-mono font-bold transition ' + (
