@@ -3,7 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import StatsGrid from '../components/StatsGrid.astro';
 import { PILOTOS } from '../lib/pilotos';
 import { PADDOCK_ALBUMS } from '../data/paddock-gallery';
-import { CAR_CATALOG_LIST, getBrandSvgMarkup, type CarMetadata } from '../../desktop/src/cars/catalog';
+import { CAR_CATALOG_LIST, getBrandSvgMarkup, getCarPreviewBannerSvg, type CarMetadata } from '../../desktop/src/cars/catalog';
 
 const pageTitle = "Paddock | Muntrume Motorsport";
 const pageDescription = "Official Muntrume Motorsport Paddock. Canal de radio en carrera, telemetría Garage 61, galería fotográfica en iRacing, redes sociales oficiales y acceso Paddock Pass.";
@@ -419,62 +419,62 @@ const galleryItems = [
         </span>
       </div>
 
-      <div id="fleet-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div id="fleet-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         {directoryCars.map((car) => (
           <article
-            class="fleet-card rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-200 p-4 flex flex-col justify-between gap-4"
+            class="fleet-card rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-200 overflow-hidden flex flex-col justify-between group"
             data-cat={car.category}
             data-search={`${car.brand} ${car.model} ${car.carClass} ${car.category} ${car.specs}`.toLowerCase()}
           >
-            <div class="space-y-2.5">
-              <div class="flex items-start justify-between gap-3">
-                <div class="flex items-center gap-2.5 min-w-0">
-                  <div class="w-10 h-10 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] flex items-center justify-center shrink-0">
-                    <Fragment set:html={getBrandSvgMarkup(car, 24)} />
-                  </div>
-                  <div class="min-w-0">
-                    <div class="text-[10px] font-mono uppercase tracking-wider text-[var(--r-muted)] truncate">
-                      {car.brand}
-                    </div>
-                    <h3 class="text-sm font-bold text-[var(--r-text)] font-display leading-snug truncate" title={`${car.brand} ${car.model}`}>
-                      {car.model}
-                    </h3>
-                  </div>
+            <div>
+              <!-- iRacing-style 16:9 Studio Preview Banner -->
+              <div class="relative aspect-[16/8] w-full bg-[#090d12] border-b border-[var(--r-line)] overflow-hidden">
+                <Fragment set:html={getCarPreviewBannerSvg(car)} />
+                <div class="absolute bottom-2.5 left-3 flex items-center gap-2 px-2 py-1 rounded-lg bg-black/75 backdrop-blur-xs border border-white/10">
+                  <Fragment set:html={getBrandSvgMarkup(car, 18)} />
+                  <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-white/90">{car.brand}</span>
                 </div>
-                <span class="px-2 py-0.5 rounded-md bg-[var(--r-bg-2)] border border-[var(--r-line)] text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase shrink-0">
+                <span class="absolute top-2.5 right-3 px-2 py-0.5 rounded-md bg-black/75 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">
                   {car.carClass}
                 </span>
               </div>
 
-              <div class="flex items-center gap-1.5 text-[10px] font-mono text-[var(--r-muted)]">
-                <span class="px-2 py-0.5 rounded bg-[var(--r-bg-2)] border border-[var(--r-line)]/70">{car.category}</span>
-                <span class="truncate" title={car.specs}>{car.specs}</span>
+              <div class="p-4 space-y-2">
+                <h3 class="text-base font-bold text-[var(--r-text)] font-display leading-snug truncate" title={`${car.brand} ${car.model}`}>
+                  {car.brand} {car.model}
+                </h3>
+                <div class="flex items-center gap-1.5 text-[10px] font-mono text-[var(--r-muted)]">
+                  <span class="px-2 py-0.5 rounded bg-[var(--r-bg-2)] border border-[var(--r-line)]/70 text-[var(--r-text)]">{car.category}</span>
+                  <span class="truncate" title={car.specs}>{car.specs}</span>
+                </div>
               </div>
             </div>
 
-            <div class="grid grid-cols-3 gap-1.5 pt-2 border-t border-[var(--r-line)]/60">
+            <div class="px-4 pb-4 space-y-2">
               <a
-                href={`/garage?car=${encodeURIComponent(`${car.brand} ${car.model}`)}`}
-                class="py-1.5 px-2 rounded-lg bg-[var(--r-accent)]/12 hover:bg-[var(--r-accent)]/20 border border-[var(--r-accent)]/40 text-[10px] font-mono font-bold text-[var(--r-accent)] text-center transition"
+                href={`/garage?car=${encodeURIComponent(car.carFolder)}`}
+                class="block w-full py-2 px-3 rounded-xl bg-[var(--r-accent)]/15 hover:bg-[var(--r-accent)]/25 border border-[var(--r-accent)]/50 text-xs font-mono font-bold text-[var(--r-accent)] text-center transition"
               >
-                Setups
+                Ver Setups (.sto)
               </a>
-              <a
-                href={car.manualUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="py-1.5 px-2 rounded-lg bg-[var(--r-bg-2)] hover:border-[var(--r-accent)] border border-[var(--r-line)] text-[10px] font-mono font-bold text-[var(--r-text)] text-center transition"
-              >
-                Manual
-              </a>
-              <a
-                href={car.forumUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="py-1.5 px-2 rounded-lg bg-[var(--r-bg-2)] hover:border-[var(--r-accent)] border border-[var(--r-line)] text-[10px] font-mono font-bold text-[var(--r-muted)] hover:text-[var(--r-text)] text-center transition"
-              >
-                Forum
-              </a>
+              <div class="grid grid-cols-2 gap-2">
+                <a
+                  href={car.manualUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="py-1.5 px-2 rounded-lg bg-[var(--r-bg-2)] hover:border-[var(--r-accent)] border border-[var(--r-line)] text-[10px] font-mono font-bold text-[var(--r-text)] text-center transition"
+                >
+                  User Manual (PDF)
+                </a>
+                <a
+                  href={car.forumUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="py-1.5 px-2 rounded-lg bg-[var(--r-bg-2)] hover:border-[var(--r-accent)] border border-[var(--r-line)] text-[10px] font-mono font-bold text-[var(--r-muted)] hover:text-[var(--r-text)] text-center transition"
+                >
+                  Car Forum
+                </a>
+              </div>
             </div>
           </article>
         ))}

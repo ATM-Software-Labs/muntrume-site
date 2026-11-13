@@ -42,7 +42,7 @@ const pageDescription = `${album.summary} (${album.photos.length} fotografías o
             <span class="w-8 h-8 rounded-lg bg-[var(--r-surface)] border border-[var(--r-line)] flex items-center justify-center">
               <Fragment set:html={getBrandSvgMarkup(carMeta, 20)} />
             </span>
-            <a href={`/garage?car=${encodeURIComponent(`${carMeta.brand} ${carMeta.model}`)}`} class="px-3 py-1.5 rounded-xl bg-[var(--r-accent)]/15 border border-[var(--r-accent)]/50 text-xs font-mono font-bold text-[var(--r-accent)] hover:bg-[var(--r-accent)]/25 transition-colors">
+            <a href={`/garage?car=${encodeURIComponent(carMeta.carFolder)}`} class="px-3 py-1.5 rounded-xl bg-[var(--r-accent)]/15 border border-[var(--r-accent)]/50 text-xs font-mono font-bold text-[var(--r-accent)] hover:bg-[var(--r-accent)]/25 transition-colors">
               Setups (.sto)
             </a>
             <a href={carMeta.manualUrl} target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] hover:border-[var(--r-accent)] text-xs font-mono font-bold transition-colors">

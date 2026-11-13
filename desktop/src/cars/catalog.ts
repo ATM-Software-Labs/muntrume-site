@@ -47,15 +47,88 @@ function defaultSpecsForClass(carClass: CarClass): string {
   }
 }
 
+const MANUAL_PDF_BY_KEY: Record<string, string> = {
+  acuraarx06gtp: "https://s100.iracing.com/wp-content/uploads/2025/01/Acura-ARX-06-GTP-V2.pdf",
+  acuransxevo22gt3: "https://s100.iracing.com/wp-content/uploads/2024/12/Acura-GT3_Manual_V2.pdf",
+  amvantageevogt3: "https://s100.iracing.com/wp-content/uploads/2026/01/Aston-Martin-GT3-Evo-V1.pdf",
+  amvantagegt4: "https://s100.iracing.com/wp-content/uploads/2025/03/Aston-Vantage-GT4-Manual_V4.pdf",
+  audir8gt3: "https://s100.iracing.com/wp-content/uploads/2023/10/UM-Audi-R8-LMS-GT3-Manual.pdf",
+  audir8lmsevo2gt3: "https://s100.iracing.com/wp-content/uploads/2024/07/Audi-R8-LMS-EVO-II-GT3_Manual.pdf",
+  audirs3lms: "https://s100.iracing.com/wp-content/uploads/2025/03/Audi_RS3_LMS_TCR_V2.pdf",
+  audirs3lmsgen2: "https://s100.iracing.com/wp-content/uploads/2025/03/Audi_RS3_LMS_TCR_V2.pdf",
+  bmwlmdh: "https://s100.iracing.com/wp-content/uploads/2025/01/BMW-M-Hybrid-V8-V2.pdf",
+  bmwmhybridv8: "https://s100.iracing.com/wp-content/uploads/2025/01/BMW-M-Hybrid-V8-V2.pdf",
+  bmwm2csr: "https://s100.iracing.com/wp-content/uploads/2024/12/BMW-M2-CSR-Manual_V2.pdf",
+  bmwm4gt3: "https://s100.iracing.com/wp-content/uploads/2024/07/BMW-M4-GT3-Manual_V3.pdf",
+  bmwm4gt4: "https://s100.iracing.com/wp-content/uploads/2024/07/BMW-M4-GT4-V2.pdf",
+  bmwm4evogt4: "https://s100.iracing.com/wp-content/uploads/2024/12/BMW-M4-G82-GT4-Manual-V2.pdf",
+  bmwm8gte: "https://s100.iracing.com/wp-content/uploads/2024/09/BMW-M8-GTE_Manual_V2.pdf",
+  cadillacvseriesrgtp: "https://s100.iracing.com/wp-content/uploads/2025/01/Cadillac-V-Series.R-GTP-V2.pdf",
+  chevyvettez06rgt3: "https://s100.iracing.com/wp-content/uploads/2024/06/Chevrolet-Corvette-Z06-GT3_manual_V2.pdf",
+  dallarair01: "https://s100.iracing.com/wp-content/uploads/2023/10/UM-Dallara-iR01-Manual.pdf",
+  dallarair18: "https://s100.iracing.com/wp-content/uploads/2026/01/Dallara-IR18-V3.pdf",
+  dallarap217: "https://s100.iracing.com/wp-content/uploads/2025/03/UM-Dallara-P217-LMP2-V2.pdf",
+  dirtmicrosprintnonwinged: "https://s100.iracing.com/wp-content/uploads/2024/03/Dirt_Micro-Sprint_Manual.pdf",
+  dirtmicrosprintwinged: "https://s100.iracing.com/wp-content/uploads/2024/03/Dirt_Micro-Sprint_Manual.pdf",
+  dirtmodifiedbigblock: "https://s100.iracing.com/wp-content/uploads/2023/10/UM-Big-Block-Modified-V2.pdf",
+  ferrari296gt3: "https://s100.iracing.com/wp-content/uploads/2024/06/Ferrari-296-GT3-V4.pdf",
+  ferrari488gte: "https://s100.iracing.com/wp-content/uploads/2023/10/UM-Ferrari-488-GT3-Manual-V2.pdf",
+  fordgt: "https://s100.iracing.com/wp-content/uploads/2024/01/UM-Ford-GT-GT3-V2.pdf",
+  fordmustanggt3: "https://s100.iracing.com/wp-content/uploads/2024/06/Mustang-GT3_Manual_V2.pdf",
+  formulair04: "https://s100.iracing.com/wp-content/uploads/2024/04/FIA-F4-Manual-V3.pdf",
+  formulavee: "https://s100.iracing.com/wp-content/uploads/2023/10/Formula-Vee-Manual.pdf",
+  formulaveeformulavee2: "https://s100.iracing.com/wp-content/uploads/2023/10/Formula-Vee-Manual.pdf",
+  formulaveeformulavee3: "https://s100.iracing.com/wp-content/uploads/2023/10/Formula-Vee-Manual.pdf",
+  hondacivictyper: "https://s100.iracing.com/wp-content/uploads/2025/03/Honda-Civic-Type-R_TCR.pdf",
+  hyundaielantracn7: "https://s100.iracing.com/wp-content/uploads/2025/03/Hyundai-Elantra-N-TCR_V3.pdf",
+  hyundaivelostern: "https://s100.iracing.com/wp-content/uploads/2025/03/Hyundai-Veloster-N-TC-Manual-V4.pdf",
+  lamborghinievogt3: "https://s100.iracing.com/wp-content/uploads/2024/07/UM-Lamborghini-Huracan-GT3-Evo-V3.pdf",
+  latemodel2023: "https://s100.iracing.com/wp-content/uploads/2024/09/Late-Model-Stock-Manual_V6.pdf",
+  legendsford34c: "https://s100.iracing.com/wp-content/uploads/2025/03/Legends-Ford-Coupe_Manual_V1.pdf",
+  ligierjsp320: "https://s100.iracing.com/wp-content/uploads/2025/03/Ligier-JS-P320-V2.pdf",
+  mclaren570sgt4: "https://s100.iracing.com/wp-content/uploads/2024/07/McLaren-570S-GT4-Manual-V2.pdf",
+  mclaren720sgt3: "https://s100.iracing.com/wp-content/uploads/2024/09/Mclaren-720S-GT3_V2.pdf",
+  mercedesamgevogt3: "https://s100.iracing.com/wp-content/uploads/2026/09/Mercedes-AMG-GT3-2020-Manual_V10.pdf",
+  mercedesamggt3: "https://s100.iracing.com/wp-content/uploads/2023/10/UM-Mercedes-AMG-GT3-Manual-V2.pdf",
+  mercedesamggt4: "https://s100.iracing.com/wp-content/uploads/2024/07/Mercedes-AMG-GT4-Manual_V2.pdf",
+  ministock: "https://s100.iracing.com/wp-content/uploads/2024/09/Mini_Stock_Manual-V1.pdf",
+  mx5cup: "https://s100.iracing.com/wp-content/uploads/2025/02/Global-Mazda-MX5_Manual_V2.pdf",
+  mx5mx52016: "https://s100.iracing.com/wp-content/uploads/2025/02/Global-Mazda-MX5_Manual_V2.pdf",
+  mxmx52016: "https://s100.iracing.com/wp-content/uploads/2025/02/Global-Mazda-MX5_Manual_V2.pdf",
+  porsche718gt4: "https://s100.iracing.com/wp-content/uploads/2024/07/Porsche-718-Cayman-GT4-Manual-V5.pdf",
+  porsche963: "https://s100.iracing.com/wp-content/uploads/2025/03/Porsche-963-GTP-V2.pdf",
+  porsche963gtp: "https://s100.iracing.com/wp-content/uploads/2025/03/Porsche-963-GTP-V2.pdf",
+  porsche9922cup: "https://s100.iracing.com/wp-content/uploads/2026/01/Porsche-Cup-992.2-V1.pdf",
+  porsche992cup: "https://s100.iracing.com/wp-content/uploads/2024/07/Porsche-911-GT3-Cup-992_Manual.pdf",
+  porsche992rgt3: "https://s100.iracing.com/wp-content/uploads/2024/09/Porsche-911-GT3-R-992_V2.pdf",
+  stockcarsfordmustang2022: "https://s100.iracing.com/wp-content/uploads/2024/03/NASCAR-NextGen-Cars-Manual-V2.pdf",
+  stockcarschevycamarozl12022: "https://s100.iracing.com/wp-content/uploads/2024/03/NASCAR-NextGen-Cars-Manual-V2.pdf",
+  stockcarstoyotacamry2022: "https://s100.iracing.com/wp-content/uploads/2024/03/NASCAR-NextGen-Cars-Manual-V2.pdf",
+  stockcarsfordfusion: "https://s100.iracing.com/wp-content/uploads/2023/10/UM-NASCAR-Cup-Series.pdf",
+  stockcars2camaro2019: "https://s100.iracing.com/wp-content/uploads/2026/03/UM-NASCAR-Oreilly_Manual_V1.pdf",
+  stockcars2mustang2019: "https://s100.iracing.com/wp-content/uploads/2026/03/UM-NASCAR-Oreilly_Manual_V1.pdf",
+  stockcars2supra2019: "https://s100.iracing.com/wp-content/uploads/2026/03/UM-NASCAR-Oreilly_Manual_V1.pdf",
+  supercarschevycamarogen3: "https://s100.iracing.com/wp-content/uploads/2025/06/Gen-3-Supercars-Manual_V5.pdf",
+  supercarsfordmustanggen3: "https://s100.iracing.com/wp-content/uploads/2025/06/Gen-3-Supercars-Manual_V5.pdf",
+  superformulalights324: "https://s100.iracing.com/wp-content/uploads/2024/03/Super-Formula-Lights_Manual_V1.pdf",
+  superformulasf23honda: "https://s100.iracing.com/wp-content/uploads/2024/04/Super-Formula-SF23_V4.pdf",
+  superformulasf23toyota: "https://s100.iracing.com/wp-content/uploads/2024/04/Super-Formula-SF23_V4.pdf",
+  toyotagr86: "https://s100.iracing.com/wp-content/uploads/2024/09/Toyota_GR86_Manual_V2.pdf",
+  trucksfordf150: "https://s100.iracing.com/wp-content/uploads/2024/05/NASCAR-Trucks-Manual-V6.pdf",
+  truckssilverado: "https://s100.iracing.com/wp-content/uploads/2024/05/NASCAR-Trucks-Manual-V6.pdf",
+  truckssilverado2019: "https://s100.iracing.com/wp-content/uploads/2024/05/NASCAR-Trucks-Manual-V6.pdf",
+  truckstoyotatundra2022: "https://s100.iracing.com/wp-content/uploads/2024/05/NASCAR-Trucks-Manual-V6.pdf",
+};
+
 function enrichCar(entry: RawCarEntry): CarMetadata {
   const category = categoryFromClass(entry.carClass);
-  const query = encodeURIComponent(entry.model);
+  const key = entry.carFolder.toLowerCase().replace(/[^a-z0-9]/g, "");
   return {
     ...entry,
     category,
     specs: entry.specs ?? defaultSpecsForClass(entry.carClass),
-    manualUrl: "https://www.iracing.com/cars/",
-    forumUrl: `https://forums.iracing.com/search?Search=${query}`,
+    manualUrl: MANUAL_PDF_BY_KEY[key] ?? "https://www.iracing.com/resources/user-manuals/",
+    forumUrl: "https://forums.iracing.com/categories/cars",
   };
 }
 
@@ -221,24 +294,28 @@ const BRAND_RULES: ReadonlyArray<{
 ];
 
 const BRAND_SVG_INNER: Record<string, string> = {
-  "logo-bmw": `<circle cx="12" cy="12" r="9.5" fill="#0f172a" stroke="#cbd5e1" stroke-width="1.5"/><path d="M12 4.5A7.5 7.5 0 0 1 19.5 12H12z" fill="#38bdf8"/><path d="M12 19.5A7.5 7.5 0 0 1 4.5 12H12z" fill="#38bdf8"/><path d="M12 4.5A7.5 7.5 0 0 0 4.5 12H12z" fill="#f8fafc"/><path d="M12 19.5A7.5 7.5 0 0 0 19.5 12H12z" fill="#f8fafc"/>`,
-  "logo-audi": `<g fill="none" stroke="#e2e8f0" stroke-width="1.6"><circle cx="5.4" cy="12" r="2.7"/><circle cx="9.8" cy="12" r="2.7"/><circle cx="14.2" cy="12" r="2.7"/><circle cx="18.6" cy="12" r="2.7"/></g>`,
-  "logo-mercedes": `<circle cx="12" cy="12" r="9.5" fill="none" stroke="#cbd5e1" stroke-width="1.6"/><path d="M12 3v9m0 0-7.5 4.8M12 12l7.5 4.8" stroke="#e2e8f0" stroke-width="1.7" stroke-linecap="round"/>`,
-  "logo-ferrari": `<path d="M6 4h12v9c0 4.2-6 7.5-6 7.5S6 17.2 6 13z" fill="#facc15" stroke="#ca8a04" stroke-width="1.2"/><path d="M6 4h4v2H6z" fill="#16a34a"/><path d="M10 4h4v2h-4z" fill="#f8fafc"/><path d="M14 4h4v2h-4z" fill="#dc2626"/><path d="M12 8.5c1.5 1.5 1.8 4 .2 6.8-.9-1.5-1.2-3.2-.2-6.8z" fill="#090d12"/>`,
-  "logo-porsche": `<path d="M6 4h12v9c0 4.2-6 7.5-6 7.5S6 17.2 6 13z" fill="#d97706" stroke="#fbbf24" stroke-width="1.2"/><path d="M6 4h6v5.5H6zM12 9.5h6V15h-6z" fill="#dc2626" fill-opacity="0.85"/><path d="M6 9.5h12M12 4v15" stroke="#090d12" stroke-width="1"/>`,
-  "logo-ford": `<ellipse cx="12" cy="12" rx="10" ry="5.5" fill="#1d4ed8" stroke="#93c5fd" stroke-width="1.4"/><text x="12" y="14.5" text-anchor="middle" fill="#ffffff" font-family="sans-serif" font-style="italic" font-weight="800" font-size="7.5">Ford</text>`,
-  "logo-chevy": `<path d="M3 10.2h5.2V8h7.6v2.2H21l-1.6 3.6h-3.6V16H8.2v-2.2H4.6z" fill="#fbbf24" stroke="#fef08a" stroke-width="1"/>`,
-  "logo-aston": `<path d="M2.5 9.5 12 12l9.5-2.5-2.5 4.2-7 1.3-7-1.3z" fill="#e2e8f0" stroke="#10b981" stroke-width="1"/><path d="M5 11.2h14" stroke="#090d12" stroke-width="0.9"/>`,
-  "logo-lambo": `<path d="M6 4.5 12 3l6 1.5v8.8c0 3.8-6 7.4-6 7.4s-6-3.6-6-7.4z" fill="#090d12" stroke="#eab308" stroke-width="1.5"/><path d="M9 14c1-2.5 2.5-4.5 5.2-5-1 1.8-.5 3.6.8 5-2 0-3.8-.5-6 0z" fill="#eab308"/>`,
-  "logo-mclaren": `<path d="M4 15.5c3.5-5 10.5-7.5 16.5-5.5-4 1.2-7.5 3.8-9.5 6.8 1.5-2.5.8-4.5-7-1.3z" fill="#fb923c"/>`,
-  "logo-acura": `<path d="M12 3.5 5 19h2.8l4.2-9.8L16.2 19H19z" fill="#e2e8f0"/><path d="M8.5 14.5h7" stroke="#e2e8f0" stroke-width="1.6"/>`,
-  "logo-cadillac": `<path d="M5 5h14v9l-7 6-7-6z" fill="#090d12" stroke="#facc15" stroke-width="1.4"/><path d="M7 7h5v4H7z" fill="#dc2626"/><path d="M12 7h5v4h-5z" fill="#2563eb"/><path d="M7 11h10v3l-5 4-5-4z" fill="#facc15"/>`,
-  "logo-toyota": `<ellipse cx="12" cy="12" rx="9.5" ry="6.2" fill="none" stroke="#ef4444" stroke-width="1.5"/><ellipse cx="12" cy="12" rx="3" ry="6" fill="none" stroke="#ef4444" stroke-width="1.4"/><ellipse cx="12" cy="9.2" rx="6" ry="2.2" fill="none" stroke="#ef4444" stroke-width="1.3"/>`,
-  "logo-honda": `<rect x="4" y="4.5" width="16" height="15" rx="3" fill="none" stroke="#ef4444" stroke-width="1.5"/><path d="M8 7.5v9M16 7.5v9M8 12h8" stroke="#f8fafc" stroke-width="1.8" stroke-linecap="round"/>`,
-  "logo-mazda": `<circle cx="12" cy="12" r="9" fill="none" stroke="#cbd5e1" stroke-width="1.5"/><path d="M5.5 9.5 12 14.5l6.5-5" fill="none" stroke="#e2e8f0" stroke-width="1.7" stroke-linecap="round"/>`,
-  "logo-hyundai": `<ellipse cx="12" cy="12" rx="9.5" ry="5.8" fill="none" stroke="#38bdf8" stroke-width="1.5"/><path d="M9.5 8 7.5 16M16.5 8l-2 8M8.5 12.5l7-1.2" stroke="#e2e8f0" stroke-width="1.6" stroke-linecap="round"/>`,
-  "logo-renault": `<path d="M12 3 19 12l-7 9-7-9z" fill="none" stroke="#facc15" stroke-width="1.8"/><path d="M12 6.5 16 12l-4 5.5L8 12z" fill="none" stroke="#facc15" stroke-width="1.2"/>`,
-  "logo-nissan": `<circle cx="12" cy="12" r="8" fill="none" stroke="#cbd5e1" stroke-width="1.6"/><rect x="3" y="9.8" width="18" height="4.4" rx="1" fill="#090d12" stroke="#ef4444" stroke-width="1.2"/>`,
+  "logo-bmw": `<circle cx="12" cy="12" r="9.5" fill="#0b1220" stroke="#e2e8f0" stroke-width="1.4"/><circle cx="12" cy="12" r="6.5" fill="none" stroke="#94a3b8" stroke-width="0.6"/><path d="M12 5.5A6.5 6.5 0 0 1 18.5 12H12z" fill="#38bdf8"/><path d="M12 18.5A6.5 6.5 0 0 1 5.5 12H12z" fill="#38bdf8"/><path d="M12 5.5A6.5 6.5 0 0 0 5.5 12H12z" fill="#f8fafc"/><path d="M12 18.5A6.5 6.5 0 0 0 18.5 12H12z" fill="#f8fafc"/>`,
+  "logo-audi": `<g fill="none" stroke="#f8fafc" stroke-width="1.5"><circle cx="5.2" cy="12" r="2.7"/><circle cx="9.7" cy="12" r="2.7"/><circle cx="14.3" cy="12" r="2.7"/><circle cx="18.8" cy="12" r="2.7"/></g>`,
+  "logo-mercedes": `<circle cx="12" cy="12" r="9.5" fill="#0b1220" stroke="#e2e8f0" stroke-width="1.4"/><path d="M12 3.2 13.3 11.2 19.6 16.5 12 13.1 4.4 16.5 10.7 11.2Z" fill="#e2e8f0"/>`,
+  "logo-ferrari": `<path d="M6.5 3.5H17.5V12.5C17.5 17 12 20.5 12 20.5S6.5 17 6.5 12.5Z" fill="#facc15" stroke="#eab308" stroke-width="1"/><path d="M6.5 3.5H10.1V5.6H6.5Z" fill="#16a34a"/><path d="M10.1 3.5H13.9V5.6H10.1Z" fill="#f8fafc"/><path d="M13.9 3.5H17.5V5.6H13.9Z" fill="#dc2626"/><path d="M12.5 8C10.5 9.5 10 12 11.5 14C10.3 15.2 10.8 17 12.2 17.5C13.8 16 14 13.5 13 11.5C13.8 10.5 14 9 12.5 8Z" fill="#090d12"/>`,
+  "logo-porsche": `<path d="M6.5 3.5H17.5V12.5C17.5 17 12 20.5 12 20.5S6.5 17 6.5 12.5Z" fill="#eab308" stroke="#facc15" stroke-width="1"/><path d="M7.5 4.8H12V9.5H7.5ZM12 9.5H16.5V14.2H12Z" fill="#dc2626"/><path d="M7.5 9.5H16.5M12 4.8V18" stroke="#090d12" stroke-width="0.9"/>`,
+  "logo-ford": `<ellipse cx="12" cy="12" rx="10" ry="5.4" fill="#1d4ed8" stroke="#e2e8f0" stroke-width="1.3"/><ellipse cx="12" cy="12" rx="8.4" ry="4" fill="none" stroke="#93c5fd" stroke-width="0.6"/><path d="M7.5 13.5L9 9.5H12.5M8.3 11.6H11M13 12C13 10.9 14.5 10.9 14.5 12C14.5 13.1 13 13.1 13 12ZM16.5 9.5V13.5" fill="none" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>`,
+  "logo-chevy": `<path d="M2.5 10.4H8V8.2H16V10.4H21.5L19.8 13.6H16V15.8H8V13.6H4.2Z" fill="#facc15" stroke="#fef08a" stroke-width="1" stroke-linejoin="round"/>`,
+  "logo-aston": `<path d="M2 9.2L12 11.6L22 9.2L19.5 13.4L12 15L4.5 13.4Z" fill="#f8fafc" stroke="#10b981" stroke-width="0.9"/><path d="M4.5 11.2H19.5M6.5 12.6H17.5" stroke="#0f172a" stroke-width="0.8"/>`,
+  "logo-lambo": `<path d="M6.5 4L12 2.8L17.5 4V12.8C17.5 16.8 12 20.5 12 20.5S6.5 16.8 6.5 12.8Z" fill="#090d12" stroke="#eab308" stroke-width="1.4"/><path d="M9 14.2C9.8 11.5 11.5 9.5 14.6 8.8C13.6 10.6 14 12.5 15.2 14.2C13.2 14 11.2 13.6 9 14.2Z" fill="#eab308"/>`,
+  "logo-mclaren": `<path d="M3.5 15.8C7.5 10.2 14.2 7.8 20.8 9.6C16.8 11 13.2 13.6 11 16.8C12.2 14.2 11.2 12.6 3.5 15.8Z" fill="#fb923c"/>`,
+  "logo-acura": `<path d="M12 3.5L5.2 18.8H8L12 9.6L16 18.8H18.8Z" fill="#f8fafc"/><path d="M8.5 14.5H15.5" stroke="#f8fafc" stroke-width="1.5"/>`,
+  "logo-cadillac": `<path d="M4.5 5H19.5V13.5L12 19.5L4.5 13.5Z" fill="#090d12" stroke="#e2e8f0" stroke-width="1.3"/><path d="M6.8 7H12V10.8H6.8Z" fill="#dc2626"/><path d="M12 7H17.2V10.8H12Z" fill="#2563eb"/><path d="M6.8 10.8H17.2V13.2L12 17.2L6.8 13.2Z" fill="#facc15"/>`,
+  "logo-toyota": `<ellipse cx="12" cy="12" rx="9.5" ry="6.2" fill="none" stroke="#ef4444" stroke-width="1.5"/><ellipse cx="12" cy="12" rx="2.8" ry="6" fill="none" stroke="#ef4444" stroke-width="1.4"/><ellipse cx="12" cy="9.2" rx="6" ry="2.1" fill="none" stroke="#ef4444" stroke-width="1.3"/>`,
+  "logo-honda": `<rect x="4" y="4.5" width="16" height="15" rx="3" fill="#0b1220" stroke="#ef4444" stroke-width="1.4"/><path d="M8.2 7.5V16.5M15.8 7.5V16.5M8.2 12H15.8" stroke="#f8fafc" stroke-width="1.8" stroke-linecap="round"/>`,
+  "logo-mazda": `<circle cx="12" cy="12" r="9" fill="#0b1220" stroke="#e2e8f0" stroke-width="1.4"/><path d="M5.5 9.5L12 14.5L18.5 9.5" fill="none" stroke="#f8fafc" stroke-width="1.7" stroke-linecap="round"/>`,
+  "logo-hyundai": `<ellipse cx="12" cy="12" rx="9.5" ry="5.8" fill="#0b1220" stroke="#38bdf8" stroke-width="1.4"/><path d="M9.5 8L7.5 16M16.5 8L14.5 16M8.5 12.5L15.5 11.3" stroke="#f8fafc" stroke-width="1.6" stroke-linecap="round"/>`,
+  "logo-renault": `<path d="M12 3L19 12L12 21L5 12Z" fill="none" stroke="#facc15" stroke-width="1.8"/><path d="M12 6.8L15.8 12L12 17.2L8.2 12Z" fill="none" stroke="#facc15" stroke-width="1.2"/>`,
+  "logo-nissan": `<circle cx="12" cy="12" r="8" fill="#0b1220" stroke="#e2e8f0" stroke-width="1.5"/><rect x="3" y="9.8" width="18" height="4.4" rx="1" fill="#090d12" stroke="#ef4444" stroke-width="1.2"/>`,
+  "logo-dallara": `<rect x="3" y="6" width="18" height="12" rx="3" fill="#0b1220" stroke="#60a5fa" stroke-width="1.4"/><path d="M7 15V9H11.5C13.5 9 14.5 10.2 14.5 12C14.5 13.8 13.5 15 11.5 15Z" fill="none" stroke="#60a5fa" stroke-width="1.6"/>`,
+  "logo-fia": `<circle cx="12" cy="12" r="9.5" fill="#0b1220" stroke="#22d3ee" stroke-width="1.4"/><path d="M7 12H17M12 7V17" stroke="#22d3ee" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="12" r="3" fill="#0b1220" stroke="#f8fafc" stroke-width="1.2"/>`,
+  "logo-oval": `<ellipse cx="12" cy="12" rx="9.5" ry="6" fill="#0b1220" stroke="#f59e0b" stroke-width="1.6"/><ellipse cx="12" cy="12" rx="5.5" ry="2.8" fill="none" stroke="#fde68a" stroke-width="1"/>`,
+  "logo-dirt": `<path d="M4 16L8 8H16L20 16Z" fill="#0b1220" stroke="#fb923c" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 13H17" stroke="#fdba74" stroke-width="1.4"/>`,
 };
 
 export function resolveCarMetadata(carFolder: string): CarMetadata | null {
@@ -298,4 +375,33 @@ export function createBrandBadgeElement(meta: CarMetadata, size = 20): SVGSVGEle
   svg.classList.add("shrink-0");
   svg.innerHTML = brandSvgInner(meta);
   return svg;
+}
+
+/**
+ * Generates an iRacing-inspired 16:9 studio preview SVG banner (clean, 100% original silhouette + brand emblem).
+ */
+export function getCarPreviewBannerSvg(meta: CarMetadata): string {
+  let silhouette = `<path d="M52 126 C56 108 82 96 116 92 L162 74 C188 70 218 72 240 90 L282 98 C298 102 308 112 310 126 L296 132 H62 Z" fill="#1e293b" stroke="${meta.accentColor}" stroke-width="2"/><path d="M124 94 L164 78 H206 L228 94 Z" fill="#0f172a" stroke="#38bdf8" stroke-width="1.2"/><path d="M44 106 L58 92 H72 L66 108 Z" fill="${meta.accentColor}"/><circle cx="102" cy="130" r="19" fill="#090d12" stroke="#94a3b8" stroke-width="3"/><circle cx="102" cy="130" r="9" fill="#1e293b"/><circle cx="252" cy="130" r="19" fill="#090d12" stroke="#94a3b8" stroke-width="3"/><circle cx="252" cy="130" r="9" fill="#1e293b"/>`;
+
+  if (meta.carClass === "GTP" || meta.carClass === "LMP2" || meta.carClass === "LMP3" || meta.carClass === "Prototype") {
+    silhouette = `<path d="M44 128 C50 112 72 104 108 102 L146 78 C166 72 194 74 214 96 L278 102 C298 106 312 116 314 128 L294 134 H56 Z" fill="#1e293b" stroke="${meta.accentColor}" stroke-width="2"/><path d="M148 82 L176 78 L198 96 H144 Z" fill="#0f172a" stroke="#38bdf8" stroke-width="1.2"/><path d="M40 88 H74 L68 112 H52 Z" fill="${meta.accentColor}"/><circle cx="100" cy="130" r="18" fill="#090d12" stroke="#94a3b8" stroke-width="3"/><circle cx="256" cy="130" r="18" fill="#090d12" stroke="#94a3b8" stroke-width="3"/>`;
+  } else if (meta.carClass === "Formula") {
+    silhouette = `<path d="M36 100 H66 L76 116 L138 110 L164 88 H186 L204 110 L292 120 L312 126 L298 132 H64 Z" fill="#1e293b" stroke="${meta.accentColor}" stroke-width="2"/><path d="M34 86 H68 L62 110 H46 Z" fill="${meta.accentColor}"/><path d="M294 118 H322 V128 H292 Z" fill="${meta.accentColor}"/><circle cx="96" cy="128" r="20" fill="#090d12" stroke="#cbd5e1" stroke-width="3"/><circle cx="258" cy="128" r="18" fill="#090d12" stroke="#cbd5e1" stroke-width="3"/>`;
+  } else if (meta.carClass === "Oval" || meta.carClass === "Dirt") {
+    silhouette = `<path d="M48 126 L56 96 L108 92 L144 74 H214 L252 94 L300 100 L308 126 L294 132 H60 Z" fill="#1e293b" stroke="${meta.accentColor}" stroke-width="2"/><path d="M146 78 H210 L236 94 H122 Z" fill="#0f172a" stroke="#94a3b8" stroke-width="1.2"/><circle cx="104" cy="130" r="19" fill="#090d12" stroke="#94a3b8" stroke-width="3"/><circle cx="252" cy="130" r="19" fill="#090d12" stroke="#94a3b8" stroke-width="3"/>`;
+  }
+
+  return `<svg viewBox="0 0 356 168" class="w-full h-full block" aria-hidden="true">
+    <defs>
+      <radialGradient id="g-${meta.carFolder}" cx="65%" cy="40%" r="65%">
+        <stop offset="0%" stop-color="${meta.accentColor}" stop-opacity="0.24"/>
+        <stop offset="100%" stop-color="#090d12" stop-opacity="1"/>
+      </radialGradient>
+    </defs>
+    <rect width="356" height="168" fill="#0b1018"/>
+    <rect width="356" height="168" fill="url(#g-${meta.carFolder})"/>
+    <ellipse cx="180" cy="146" rx="135" ry="12" fill="#000000" fill-opacity="0.65"/>
+    <line x1="20" y1="146" x2="336" y2="146" stroke="${meta.accentColor}" stroke-opacity="0.35" stroke-width="1"/>
+    ${silhouette}
+  </svg>`;
 }

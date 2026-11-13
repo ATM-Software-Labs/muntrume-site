@@ -178,4 +178,37 @@
   window.addEventListener("muntrume-auth-change", paint);
   document.addEventListener("muntru:i18n", function () { paint(); if (ready) render(); });
   paint();
+
+  // Auto-select car from ?car= query parameter (supports folder id or display label)
+  if (car) {
+    try {
+      var paramCar = new URLSearchParams(window.location.search).get("car");
+      if (paramCar) {
+        var needle = paramCar.trim().toLowerCase();
+        var matched = "";
+        for (var i = 0; i < car.options.length; i++) {
+          var opt = car.options[i];
+          if (!opt.value) continue;
+          if (opt.value.toLowerCase() === needle || (opt.textContent || "").trim().toLowerCase() === needle) {
+            matched = opt.value;
+            break;
+          }
+        }
+        if (!matched) {
+          for (var j = 0; j < car.options.length; j++) {
+            var opt2 = car.options[j];
+            if (!opt2.value) continue;
+            if ((opt2.textContent || "").toLowerCase().indexOf(needle) !== -1) {
+              matched = opt2.value;
+              break;
+            }
+          }
+        }
+        if (matched) {
+          car.value = matched;
+          queue();
+        }
+      }
+    } catch (e) {}
+  }
 })();

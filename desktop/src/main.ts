@@ -2120,7 +2120,9 @@ function bind(): void {
     const modal = document.getElementById(modalId);
     const btn = document.getElementById(closeBtnId);
     if (btn && modal) {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         modal.hidden = true;
       });
     }
@@ -2132,9 +2134,17 @@ function bind(): void {
   };
 
   bindModalDismiss("modalSetupPreview", "closePreviewBtn");
+  bindModalDismiss("modalSetupPreview", "previewCloseFooterBtn");
   bindModalDismiss("modalSetupCompare", "closeCompareBtn");
-  bindModalDismiss("modalIratingAdvisor", "closeAdvisorBtn");
   bindModalDismiss("modalMyCars", "closeMyCarsBtn");
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    for (const id of ["modalSetupPreview", "modalSetupCompare", "modalMyCars"]) {
+      const modal = document.getElementById(id);
+      if (modal && !modal.hidden) modal.hidden = true;
+    }
+  });
 
   $("previewCopyBtn").addEventListener("click", async () => {
     if (!currentPreviewItem) return;

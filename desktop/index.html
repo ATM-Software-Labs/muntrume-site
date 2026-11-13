@@ -1255,8 +1255,8 @@
         </section>
 
         <!-- SETUP PREVIEW MODAL -->
-        <div id="modalSetupPreview" hidden class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div class="relative w-full max-w-2xl rounded-3xl border border-r-line bg-r-surface p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
+        <div id="modalSetupPreview" hidden class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
+          <div class="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl border border-r-line bg-r-surface p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
             <div class="flex items-start justify-between gap-4 border-b border-r-line pb-4">
               <div class="flex items-center gap-3.5">
                 <img src="./favicon.svg" width="36" height="36" alt="MMT" class="h-9 w-9 rounded-xl shadow-sm border border-r-line bg-r-bg" />
@@ -1271,7 +1271,7 @@
                   </p>
                 </div>
               </div>
-              <button type="button" id="closePreviewBtn" class="p-2 rounded-xl text-r-muted hover:text-r-text hover:bg-r-bg transition text-lg leading-none">✕</button>
+              <button type="button" id="closePreviewBtn" aria-label="Cerrar vista previa" class="relative z-20 w-9 h-9 flex items-center justify-center rounded-xl text-r-muted hover:text-r-text hover:bg-r-bg border border-transparent hover:border-r-line cursor-pointer transition text-lg leading-none shrink-0">✕</button>
             </div>
 
             <!-- Filename pill -->
@@ -1317,7 +1317,10 @@
                   <span>Comparar Setup</span>
                 </button>
               </div>
-              <button type="button" id="previewFavToggle" class="h-10 px-3 rounded-xl border border-r-line text-r-muted hover:text-amber-400 font-mono font-bold uppercase tracking-wider text-xs transition">Favorito</button>
+              <div class="flex items-center gap-2">
+                <button type="button" id="previewFavToggle" class="h-10 px-3 rounded-xl border border-r-line text-r-muted hover:text-amber-400 font-mono font-bold uppercase tracking-wider text-xs cursor-pointer transition">Favorito</button>
+                <button type="button" id="previewCloseFooterBtn" class="h-10 px-4 rounded-xl bg-r-bg border border-r-line text-r-text hover:border-r-accent font-mono font-bold uppercase tracking-wider text-xs cursor-pointer transition">Cerrar</button>
+              </div>
             </div>
           </div>
         </div>

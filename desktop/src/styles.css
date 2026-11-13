@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+[hidden] {
+  display: none !important;
+}
+
 @font-face {
   font-family: "Inter";
   font-style: normal;
