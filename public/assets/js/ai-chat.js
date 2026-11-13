@@ -1,9 +1,7 @@
 /* Muntrume AI chat. The markdown bundle loads only after the first answer. */
 (function () {
   "use strict";
-  var API = "https://ai.trujillomingorance.com/api/chat";
-  var GEMINI_KEY_STORE = "muntrume_gemini_key";
-  var GEMINI_MODEL_STORE = "muntrume_gemini_model";
+  var API = "https://muntrume.atrumin16.workers.dev/api/ai";
   var SYSTEM = [
     "Eres Muntrume AI, el copiloto e ingeniero de pista oficial de Muntrume Motorsport (Equipo MMT), un equipo competitivo de sim racing en iRacing e ingeniería deportiva con sede en Sant Andreu, Barcelona (Cataluña, España). NO eres un taller mecánico ni una empresa de Monterrey.",
     "FUENTES OFICIALES DE MUNTRUME MOTORSPORT (cita los enlaces relevantes cuando respondas):",
@@ -408,64 +406,6 @@
     }
     return acc;
   }
-  function getGeminiConfig() {
-    try {
-      return {
-        key: (localStorage.getItem(GEMINI_KEY_STORE) || "").trim(),
-        model: (localStorage.getItem(GEMINI_MODEL_STORE) || "gemini-2.5-flash").trim()
-      };
-    } catch (e) {
-      return { key: "", model: "gemini-2.5-flash" };
-    }
-  }
-  function updateGeminiUi() {
-    var toggle = document.getElementById("aiGeminiToggle");
-    var badge = document.getElementById("aiGeminiBadge");
-    var status = document.getElementById("aiGeminiStatus");
-    var keyInput = document.getElementById("aiGeminiKey");
-    var modelSelect = document.getElementById("aiGeminiModel");
-    var cfg = getGeminiConfig();
-    if (keyInput && !keyInput.value && cfg.key) keyInput.value = cfg.key;
-    if (modelSelect && cfg.model) modelSelect.value = cfg.model;
-    if (toggle) toggle.classList.toggle("is-active", Boolean(cfg.key));
-    if (badge) badge.textContent = cfg.key ? "Gemini Free: ON" : "Gemini Free";
-    if (status) {
-      status.textContent = cfg.key
-        ? "Modo actual: Google Gemini Free (" + cfg.model + ") conectado directamente desde tu navegador."
-        : "Modo actual: Servidor Muntrume AI.";
-    }
-  }
-  function askGemini(cfg, text, history, reply, signal) {
-    var contents = history.map(function (msg) {
-      return {
-        role: msg.role === "assistant" ? "model" : "user",
-        parts: [{ text: String(msg.content || "") }]
-      };
-    });
-    contents.push({ role: "user", parts: [{ text: text }] });
-    var url = "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(cfg.model) + ":generateContent?key=" + encodeURIComponent(cfg.key);
-    return fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      signal: signal,
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYSTEM }] },
-        contents: contents,
-        generationConfig: { temperature: 0.4, maxOutputTokens: 2048 }
-      })
-    }).then(function (res) {
-      return res.json().catch(function () { return {}; }).then(function (data) {
-        if (!res.ok) throw new Error((data && data.error && data.error.message) || "gemini_error");
-        var parts = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts;
-        var out = Array.isArray(parts) ? parts.map(function (p) { return p && p.text ? p.text : ""; }).join("") : "";
-        if (!out) throw new Error("empty");
-        reply.content = out;
-        scheduleRender(reply);
-        follow();
-        return out;
-      });
-    });
-  }
   function send(text, reuseUser) {
     text = String(text || "").trim();
     if (!text || streaming) return;
@@ -496,20 +436,16 @@
     var history = prior.slice(-6).map(function (msg) {
       return { role: msg.role, content: msg.role === "assistant" ? msg.content.slice(0, 2000) : msg.content };
     });
-    var geminiCfg = getGeminiConfig();
-    var requestPromise = geminiCfg.key
-      ? askGemini(geminiCfg, text, history, reply, ctrl.signal)
-      : fetch(API, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "omit",
-          signal: ctrl.signal,
-          body: JSON.stringify({ prompt: text, custom_prompt: SYSTEM, chat_history: history })
-        }).then(function (res) {
-          if (!res.ok || !res.body) throw new Error("status");
-          return readAnswer(res, reply);
-        });
-    requestPromise.then(function (acc) {
+    fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "omit",
+      signal: ctrl.signal,
+      body: JSON.stringify({ prompt: text, custom_prompt: SYSTEM, chat_history: history, stream: true, mode: "ai_chat" })
+    }).then(function (res) {
+      if (!res.ok || !res.body) throw new Error("status");
+      return readAnswer(res, reply);
+    }).then(function (acc) {
       if (!acc) throw new Error("empty");
       var actions = log.querySelector('[data-id="' + reply.id + '"] .ai-actions');
       if (actions) actions.hidden = false;
@@ -651,49 +587,9 @@
     if (chat) chat.messages.forEach(function (msg) { if (msg.role === "assistant" && msg.content) scheduleRender(msg); });
   });
 
-  var geminiToggle = document.getElementById("aiGeminiToggle");
-  var geminiPanel = document.getElementById("aiGeminiPanel");
-  var geminiSave = document.getElementById("aiGeminiSave");
-  var geminiClear = document.getElementById("aiGeminiClear");
-  var geminiKeyInput = document.getElementById("aiGeminiKey");
-  var geminiModelSelect = document.getElementById("aiGeminiModel");
-  if (geminiToggle && geminiPanel) {
-    geminiToggle.addEventListener("click", function () {
-      var nextOpen = geminiPanel.hidden;
-      geminiPanel.hidden = !nextOpen;
-      geminiToggle.setAttribute("aria-expanded", nextOpen ? "true" : "false");
-    });
-  }
-  if (geminiSave && geminiKeyInput) {
-    geminiSave.addEventListener("click", function () {
-      try {
-        var k = geminiKeyInput.value.trim();
-        var m = geminiModelSelect ? geminiModelSelect.value : "gemini-2.5-flash";
-        if (k) localStorage.setItem(GEMINI_KEY_STORE, k);
-        else localStorage.removeItem(GEMINI_KEY_STORE);
-        localStorage.setItem(GEMINI_MODEL_STORE, m);
-      } catch (e) {}
-      updateGeminiUi();
-      if (geminiPanel && geminiToggle) {
-        geminiPanel.hidden = true;
-        geminiToggle.setAttribute("aria-expanded", "false");
-      }
-    });
-  }
-  if (geminiClear) {
-    geminiClear.addEventListener("click", function () {
-      try {
-        localStorage.removeItem(GEMINI_KEY_STORE);
-      } catch (e) {}
-      if (geminiKeyInput) geminiKeyInput.value = "";
-      updateGeminiUi();
-    });
-  }
-
   try {
     if (localStorage.getItem(SIDE) === "1" && window.matchMedia("(min-width: 960px)").matches) openSide();
   } catch (e) {}
-  updateGeminiUi();
   renderList();
   renderThread();
   grow();

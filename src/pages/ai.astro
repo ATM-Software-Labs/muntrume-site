@@ -20,31 +20,9 @@ const pageDescription = "Copiloto de ingeniería de Muntrume Motorsport para set
         <button type="button" id="aiSideOpen" class="ai-icon" aria-expanded="false" aria-controls="aiSide" aria-label="Abrir chats" data-i18n-aria="ai.openChats">☰</button>
         <img src="/assets/img/icon-192.png" alt="Muntrume AI" width="28" height="28" class="ai-top__logo" />
         <h1 data-i18n="ai.title">Copiloto de pista</h1>
-        <button type="button" id="aiGeminiToggle" class="ai-gemini-btn" aria-expanded="false" aria-controls="aiGeminiPanel" title="Configurar API Key gratuita de Google Gemini">
-          <span class="ai-gemini-dot" id="aiGeminiDot"></span>
-          <span id="aiGeminiBadge">Gemini Free</span>
-        </button>
         <a href="/garage/" data-i18n="ai.vault">Abrir el Garage</a>
         <button type="button" id="aiNew" data-i18n="ai.new">Nuevo chat</button>
       </header>
-      <div id="aiGeminiPanel" class="ai-gemini-panel" hidden>
-        <div class="ai-gemini-panel__inner">
-          <div class="ai-gemini-panel__head">
-            <strong>API gratuita de Google Gemini (opcional, se guarda solo en tu navegador)</strong>
-            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">Obtener API Key gratis ↗</a>
-          </div>
-          <div class="ai-gemini-panel__row">
-            <input type="password" id="aiGeminiKey" placeholder="Pega tu clave AIza... (Gemini Free)" autocomplete="off" spellcheck="false" />
-            <select id="aiGeminiModel" aria-label="Modelo Gemini">
-              <option value="gemini-2.5-flash">gemini-2.5-flash (Recomendado)</option>
-              <option value="gemini-2.0-flash">gemini-2.0-flash</option>
-            </select>
-            <button type="button" id="aiGeminiSave" class="is-primary">Guardar</button>
-            <button type="button" id="aiGeminiClear">Usar servidor MMT</button>
-          </div>
-          <p id="aiGeminiStatus" class="ai-gemini-panel__status">Modo actual: Servidor Muntrume AI.</p>
-        </div>
-      </div>
       <div id="aiStage" class="ai-stage is-empty">
         <div id="aiEmpty" class="ai-empty">
           <div class="ai-empty__brand">
@@ -228,4 +206,4 @@ const pageDescription = "Copiloto de ingeniería de Muntrume Motorsport para set
   }
 </style>
 
-<script is:inline src="/assets/js/ai-chat.js?v=t342" defer></script>
+<script is:inline src="/assets/js/ai-chat.js?v=t343" defer></script>
