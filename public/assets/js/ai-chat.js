@@ -118,7 +118,11 @@
   }
   function paintSend() {
     var stop = streaming;
-    sendBtn.textContent = stop ? tr("ai.stop", "Parar") : tr("ai.send", "Enviar");
+    if (stop) {
+      sendBtn.textContent = tr("ai.stop", "Parar");
+    } else {
+      sendBtn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
+    }
     sendBtn.setAttribute("aria-label", stop ? tr("ai.stop", "Parar") : tr("ai.send", "Enviar"));
     sendBtn.dataset.mode = stop ? "stop" : "send";
     sendBtn.disabled = !stop && !input.value.trim();

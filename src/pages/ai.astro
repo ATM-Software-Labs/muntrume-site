@@ -10,72 +10,107 @@ const pageDescription = "Copiloto de ingeniería de Muntrume Motorsport para set
     <div id="aiScrim" class="ai-scrim" hidden></div>
     <aside id="aiSide" class="ai-side" aria-label="Chats" data-i18n-aria="ai.chats" hidden>
       <div class="ai-side__bar">
-        <p data-i18n="ai.chats">Chats</p>
+        <div class="ai-side__brand">
+          <img src="/assets/img/icon-192.png" alt="Muntrume AI" width="24" height="24" />
+          <p data-i18n="ai.chats">Chats</p>
+        </div>
         <button type="button" id="aiSideClose" class="ai-icon" aria-label="Cerrar chats" data-i18n-aria="ai.closeChats">×</button>
       </div>
+      <div class="ai-side__new">
+        <button type="button" class="ai-side__newbtn" onclick="document.getElementById('aiNew')?.click()">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          <span data-i18n="ai.new">Nuevo chat</span>
+        </button>
+      </div>
       <div id="aiChatList" class="ai-list" role="list"></div>
+      <div class="ai-side__foot">
+        <a href="/garage/">Garage .sto (42.654)</a>
+        <a href="/tracks/">Circuitos (150)</a>
+        <a href="/calendar/">Calendario 2026 S4</a>
+        <a href="/app/">MMT Sync Windows</a>
+      </div>
     </aside>
+
     <div class="ai-main">
       <header class="ai-top">
-        <button type="button" id="aiSideOpen" class="ai-icon" aria-expanded="false" aria-controls="aiSide" aria-label="Abrir chats" data-i18n-aria="ai.openChats">☰</button>
-        <img src="/assets/img/icon-192.png" alt="Muntrume AI" width="28" height="28" class="ai-top__logo" />
-        <h1 data-i18n="ai.title">Copiloto de pista</h1>
-        <a href="/garage/" data-i18n="ai.vault">Abrir el Garage</a>
-        <button type="button" id="aiNew" data-i18n="ai.new">Nuevo chat</button>
+        <button type="button" id="aiSideOpen" class="ai-icon" aria-expanded="false" aria-controls="aiSide" aria-label="Abrir chats" data-i18n-aria="ai.openChats">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <div class="ai-top__brand">
+          <img src="/assets/img/icon-192.png" alt="Muntrume AI" width="28" height="28" class="ai-top__logo" />
+          <h1 data-i18n="ai.title">Copiloto de pista</h1>
+          <span class="ai-model-pill">Gemini · MMT</span>
+        </div>
+        <div class="ai-top__actions">
+          <a href="/garage/" class="ai-top__link" data-i18n="ai.vault">Abrir el Garage</a>
+          <button type="button" id="aiNew" data-i18n="ai.new">Nuevo chat</button>
+        </div>
       </header>
+
       <div id="aiStage" class="ai-stage is-empty">
         <div id="aiEmpty" class="ai-empty">
-          <div class="ai-empty__brand">
-            <img src="/assets/img/icon-192.png" alt="Muntrume Motorsport" width="44" height="44" />
-            <div>
-              <p class="r-kicker" data-i18n="ai.kicker">Muntrume AI</p>
+          <div class="ai-hero">
+            <div class="ai-hero__emblem">
+              <img src="/assets/img/icon-192.png" alt="Muntrume Motorsport" width="52" height="52" />
             </div>
+            <p class="r-kicker" data-i18n="ai.kicker">Muntrume AI</p>
+            <h2 class="ai-hero__title">¿En qué te ayudo hoy en pista?</h2>
+            <p class="ai-empty__lead" data-i18n="ai.lead">Ingeniero virtual de Muntrume Motorsport para reglajes .sto, telemetría de Garage 61 y estrategia de resistencia en iRacing.</p>
           </div>
-          <p class="ai-empty__lead" data-i18n="ai.lead">Ingeniero virtual del equipo para setups .sto, telemetría de Garage 61 y estrategia de resistencia en iRacing. Los archivos de setup siguen en el Garage.</p>
-          <ul class="ai-caps">
-            <li>
-              <h2 data-i18n="ai.cap.setup.title">Reglajes</h2>
-              <p data-i18n="ai.cap.setup.body">Balance, alturas y aero de GT3 y GT4, a partir de lo que preguntes. El archivo .sto se sigue descargando del Garage.</p>
-            </li>
-            <li>
-              <h2 data-i18n="ai.cap.tel.title">Telemetría</h2>
-              <p data-i18n="ai.cap.tel.body">Cómo leer canales de Garage 61: frenada, slip y deltas. No sustituye Garage 61.</p>
-            </li>
-            <li>
-              <h2 data-i18n="ai.cap.stint.title">Resistencia</h2>
-              <p data-i18n="ai.cap.stint.body">Presiones en frío, combustible y relevos en carreras largas de iRacing.</p>
-            </li>
-          </ul>
+
           <div class="ai-starters" id="aiTopicButtons">
             <button type="button" data-prompt-key="ai.prompt.balance" data-prompt="Dame una guía paso a paso para corregir subviraje en entrada y sobreviraje en salida en un GT3 en Spa-Francorchamps.">
+              <span class="ai-starter__tag">Setup · GT3</span>
               <strong data-i18n="ai.starter.balance.title">Balance GT3</strong>
               <span data-i18n="ai.starter.balance.body">Subviraje de entrada, sobreviraje de salida</span>
             </button>
             <button type="button" data-prompt-key="ai.prompt.tel" data-prompt="¿Qué canales de telemetría debo analizar en Garage 61 para ganar décimas en frenada (trail braking) en Le Mans o Watkins Glen?">
-              <strong data-i18n="ai.starter.tel.title">Garage 61</strong>
-              <span data-i18n="ai.starter.tel.body">Canales de frenada</span>
+              <span class="ai-starter__tag">Garage 61</span>
+              <strong data-i18n="ai.starter.tel.title">Telemetría de frenada</strong>
+              <span data-i18n="ai.starter.tel.body">Trail braking, slip y deltas de vuelta</span>
             </button>
             <button type="button" data-prompt-key="ai.prompt.stint" data-prompt="¿Cómo gestionamos presiones en frío, combustible y doble stint de neumáticos en una carrera de resistencia de 24h en iRacing?">
-              <strong data-i18n="ai.starter.stint.title">Resistencia</strong>
-              <span data-i18n="ai.starter.stint.body">Presiones y relevos</span>
+              <span class="ai-starter__tag">Endurance</span>
+              <strong data-i18n="ai.starter.stint.title">Estrategia 24h</strong>
+              <span data-i18n="ai.starter.stint.body">Presiones en frío, combustible y relevos</span>
             </button>
-            <button type="button" data-prompt-key="ai.prompt.join" data-prompt="¿Cuáles son los requisitos y pasos para unirme como piloto oficial a Muntrume Motorsport?">
-              <strong data-i18n="ai.starter.join.title">Unirse al equipo</strong>
-              <span data-i18n="ai.starter.join.body">Cuál es el paso</span>
+            <button type="button" data-prompt-key="ai.prompt.join" data-prompt="¿Qué es Muntrume Motorsport y cómo puedo unirme al equipo?">
+              <span class="ai-starter__tag">Equipo MMT</span>
+              <strong data-i18n="ai.starter.join.title">Sobre Muntrume</strong>
+              <span data-i18n="ai.starter.join.body">Historia, pilotos, tools y acceso al equipo</span>
             </button>
           </div>
+
+          <ul class="ai-caps">
+            <li>
+              <h3 data-i18n="ai.cap.setup.title">Reglajes .sto</h3>
+              <p data-i18n="ai.cap.setup.body">Balance, alturas y aero para GT3, GTP y GT4. Los .sto verificados están en el Garage.</p>
+            </li>
+            <li>
+              <h3 data-i18n="ai.cap.tel.title">Garage 61 & MTI</h3>
+              <p data-i18n="ai.cap.tel.body">Lectura de canales de frenada, aceleración y temperatura de neumáticos.</p>
+            </li>
+            <li>
+              <h3 data-i18n="ai.cap.stint.title">Resistencia</h3>
+              <p data-i18n="ai.cap.stint.body">Cálculo de stints, consumo, doble stint y cambios de piloto.</p>
+            </li>
+          </ul>
         </div>
         <div id="aiLog" class="ai-log" role="log" aria-busy="false" hidden></div>
       </div>
-      <button type="button" id="aiJump" class="ai-jump" hidden data-i18n="ai.jump">Ir al final</button>
+
+      <button type="button" id="aiJump" class="ai-jump" hidden data-i18n="ai.jump">Ir al final ↓</button>
+
       <form id="aiForm" class="ai-composer" autocomplete="off">
         <p id="aiLive" class="sr-only" aria-live="polite"></p>
         <div class="ai-composer__box">
           <label class="sr-only" for="aiInput" data-i18n="ai.placeholder">Pregunta por reglajes, telemetría o una carrera de resistencia</label>
-          <textarea id="aiInput" rows="1" maxlength="500" data-i18n-placeholder="ai.placeholder" placeholder="Pregunta por reglajes, telemetría o una carrera de resistencia"></textarea>
-          <button type="button" id="aiSend" data-i18n="ai.send" aria-label="Enviar" data-i18n-aria="ai.send">Enviar</button>
+          <textarea id="aiInput" rows="1" maxlength="500" data-i18n-placeholder="ai.placeholder" placeholder="Pregunta a Muntrume AI sobre reglajes, telemetría o iRacing…"></textarea>
+          <button type="button" id="aiSend" data-i18n="ai.send" aria-label="Enviar" data-i18n-aria="ai.send">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+          </button>
         </div>
-        <p class="ai-note" data-i18n="ai.note">Las respuestas las genera el modelo. Los setups del equipo están en el Garage, no en este chat.</p>
+        <p class="ai-note" data-i18n="ai.note">Respuestas generadas por Muntrume AI (Gemini) con fuentes oficiales del equipo. Los archivos .sto están en el Garage.</p>
       </form>
     </div>
   </div>
@@ -85,117 +120,131 @@ const pageDescription = "Copiloto de ingeniería de Muntrume Motorsport para set
   body:has(.ai-app) { height: 100dvh; min-height: 0; overflow: hidden; }
   body:has(.ai-app) #main-content { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
   .ai-app { flex: 1; min-height: 0; display: flex; background: var(--r-bg); color: var(--r-text); }
-  .ai-scrim { position: fixed; inset: var(--site-header) 0 0 0; background: rgba(4, 8, 7, .45); z-index: 30; }
+  .ai-scrim { position: fixed; inset: var(--site-header) 0 0 0; background: rgba(4, 8, 7, .55); backdrop-filter: blur(4px); z-index: 30; }
   .ai-scrim[hidden], .ai-side[hidden], .ai-jump[hidden], .ai-actions[hidden] { display: none !important; }
-  .ai-side { width: min(280px, 88vw); flex: 0 0 auto; display: flex; flex-direction: column; min-height: 0; background: var(--r-surface); border-right: 1px solid var(--r-line); }
-  .ai-side__bar, .ai-top { display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 8px 12px; border-bottom: 1px solid var(--r-line); }
-  .ai-side__bar p { margin: 0; font: 700 12px/1 var(--r-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--r-muted); }
-  .ai-side__bar button { margin-left: auto; }
-  .ai-list { overflow: auto; padding: 8px; display: grid; align-content: start; gap: 4px; }
+
+  .ai-side { width: min(272px, 86vw); flex: 0 0 auto; display: flex; flex-direction: column; min-height: 0; background: color-mix(in srgb, var(--r-surface) 92%, var(--r-bg)); border-right: 1px solid var(--r-line); }
+  .ai-side__bar { display: flex; align-items: center; justify-content: space-between; min-height: 54px; padding: 8px 12px; border-bottom: 1px solid var(--r-line); }
+  .ai-side__brand { display: flex; align-items: center; gap: 8px; }
+  .ai-side__brand img { width: 24px; height: 24px; border-radius: 7px; object-fit: contain; background: rgba(0, 230, 153, .08); border: 1px solid rgba(0, 230, 153, .25); padding: 2px; }
+  .ai-side__bar p { margin: 0; font: 700 11px/1 var(--r-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--r-muted); }
+  .ai-side__new { padding: 10px 10px 4px; }
+  .ai-side__newbtn { width: 100%; display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--r-line); background: var(--r-bg); color: var(--r-text); font: 600 13px/1 var(--r-sans); cursor: pointer; transition: border-color .15s, color .15s; }
+  .ai-side__newbtn:hover { border-color: var(--r-accent); color: var(--r-accent); }
+  .ai-list { flex: 1; min-height: 0; overflow: auto; padding: 8px; display: grid; align-content: start; gap: 4px; }
   .ai-list__empty { margin: 8px; color: var(--r-muted); font-size: 13px; }
   .ai-chat { display: grid; grid-template-columns: 1fr auto auto; gap: 2px; align-items: center; }
-  .ai-chat__open, .ai-rename { min-height: 40px; border: 0; border-radius: 10px; background: transparent; color: var(--r-text); text-align: left; padding: 0 10px; cursor: pointer; font: 600 14px/1.3 var(--r-sans); }
+  .ai-chat__open, .ai-rename { min-height: 38px; border: 0; border-radius: 10px; background: transparent; color: var(--r-text); text-align: left; padding: 0 10px; cursor: pointer; font: 500 13.5px/1.3 var(--r-sans); }
   .ai-chat__open { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ai-chat__open[aria-current="true"] { background: color-mix(in srgb, var(--r-accent) 16%, transparent); color: var(--r-accent); }
+  .ai-chat__open[aria-current="true"] { background: color-mix(in srgb, var(--r-accent) 14%, transparent); color: var(--r-accent); font-weight: 600; }
   .ai-rename { width: 100%; background: var(--r-bg); border: 1px solid var(--r-accent); }
-  .ai-icon, .ai-action, .ai-codecopy, #aiNew, .ai-jump, .ai-error button, #aiSend {
-    min-height: 40px; border-radius: 10px; border: 1px solid var(--r-line); background: var(--r-surface); color: var(--r-text); cursor: pointer; font: 700 13px/1 var(--r-sans);
+  .ai-side__foot { padding: 10px 12px; border-top: 1px solid var(--r-line); display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .ai-side__foot a { font: 600 11px/1.2 var(--r-mono); color: var(--r-muted); text-decoration: none; padding: 5px 6px; border-radius: 6px; border: 1px solid transparent; transition: color .15s, border-color .15s; }
+  .ai-side__foot a:hover { color: var(--r-accent); border-color: var(--r-line); }
+
+  .ai-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 54px; padding: 8px 16px; border-bottom: 1px solid var(--r-line); background: color-mix(in srgb, var(--r-bg) 88%, transparent); backdrop-filter: blur(8px); }
+  .ai-top__brand { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+  .ai-top__logo { width: 28px; height: 28px; border-radius: 8px; object-fit: contain; background: rgba(0, 230, 153, .08); border: 1px solid rgba(0, 230, 153, .28); padding: 2px; flex-shrink: 0; }
+  .ai-top h1 { margin: 0; font-size: 16px; font-weight: 700; letter-spacing: .01em; text-transform: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ai-model-pill { padding: 3px 8px; border-radius: 999px; border: 1px solid rgba(0, 230, 153, .28); background: rgba(0, 230, 153, .08); color: var(--r-accent); font: 700 10px/1.2 var(--r-mono); letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
+  .ai-top__actions { display: flex; align-items: center; gap: 10px; }
+  .ai-top__link { color: var(--r-muted); text-decoration: none; font: 600 13px/1 var(--r-sans); padding: 8px 10px; border-radius: 8px; transition: color .15s, background .15s; }
+  .ai-top__link:hover { color: var(--r-accent); background: var(--r-surface); }
+
+  .ai-icon, .ai-action, .ai-codecopy, #aiNew, .ai-jump, .ai-error button {
+    min-height: 36px; border-radius: 10px; border: 1px solid var(--r-line); background: var(--r-surface); color: var(--r-text); cursor: pointer; font: 600 12.5px/1 var(--r-sans); transition: border-color .15s, color .15s, background .15s;
   }
-  .ai-icon { width: 40px; padding: 0; }
+  .ai-icon { width: 36px; padding: 0; display: inline-grid; place-items: center; }
   .ai-icon:hover, .ai-action:hover, .ai-chat__open:hover, #aiNew:hover { border-color: var(--r-accent); color: var(--r-accent); }
-  .ai-main { position: relative; flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
-  .ai-top h1 { margin: 0; flex: 1; min-width: 0; font-size: 22px; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ai-top a { color: var(--r-muted); text-decoration: none; font: 700 13px/1 var(--r-sans); }
-  .ai-top a:hover { color: var(--r-accent); }
   #aiNew { padding: 0 12px; }
-  .ai-stage { flex: 1; min-height: 0; overflow: auto; }
-  .ai-stage.is-empty { display: grid; place-items: center; }
-  .ai-empty { width: min(760px, calc(100% - 32px)); display: grid; gap: 16px; padding: 24px 0 12px; }
-  .ai-empty__lead { margin: 0; color: var(--r-muted); font-size: 16px; line-height: 1.5; }
-  .ai-caps, .ai-starters { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .ai-starters { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .ai-caps li, .ai-starters button { text-align: left; padding: 12px; border: 1px solid var(--r-line); border-radius: 14px; background: var(--r-surface); }
-  .ai-caps h2 { margin: 0 0 6px; font: 700 16px/1.2 var(--r-sans); text-transform: none; letter-spacing: 0; }
-  .ai-caps p, .ai-starters span { margin: 0; color: var(--r-muted); font-size: 13px; line-height: 1.4; }
-  .ai-starters button { cursor: pointer; display: grid; gap: 4px; color: var(--r-text); font: inherit; }
-  .ai-starters strong { font: 700 14px/1.2 var(--r-sans); }
-  .ai-starters button:hover, .ai-caps li:hover { border-color: var(--r-accent); }
-  .ai-log { width: min(760px, calc(100% - 32px)); margin: 0 auto; padding: 20px 0 12px; display: flex; flex-direction: column; gap: 18px; }
+
+  .ai-main { position: relative; flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+  .ai-stage { flex: 1; min-height: 0; overflow: auto; scroll-behavior: smooth; }
+  .ai-stage.is-empty { display: grid; place-items: center; padding: 16px 0; }
+
+  .ai-empty { width: min(760px, calc(100% - 32px)); display: grid; gap: 22px; padding: 16px 0 8px; }
+  .ai-hero { text-align: center; display: grid; justify-items: center; gap: 8px; }
+  .ai-hero__emblem { width: 64px; height: 64px; border-radius: 18px; display: grid; place-items: center; background: radial-gradient(circle at 30% 30%, rgba(0, 230, 153, .18), rgba(0, 230, 153, .04)); border: 1px solid rgba(0, 230, 153, .35); box-shadow: 0 10px 30px rgba(0, 230, 153, .1); }
+  .ai-hero__emblem img { width: 46px; height: 46px; object-fit: contain; }
+  .ai-hero__title { margin: 0; font-size: clamp(22px, 3vw, 30px); font-weight: 700; letter-spacing: -.02em; color: var(--r-text); }
+  .ai-empty__lead { margin: 0; max-width: 560px; color: var(--r-muted); font-size: 15px; line-height: 1.5; }
+
+  .ai-starters { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ai-starters button { text-align: left; padding: 14px 16px; border: 1px solid var(--r-line); border-radius: 16px; background: var(--r-surface); cursor: pointer; display: grid; gap: 4px; color: var(--r-text); font: inherit; transition: border-color .15s, transform .15s, background .15s; }
+  .ai-starters button:hover { border-color: var(--r-accent); transform: translateY(-1px); background: color-mix(in srgb, var(--r-surface) 88%, var(--r-accent) 12%); }
+  .ai-starter__tag { font: 700 10px/1 var(--r-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--r-accent); margin-bottom: 2px; }
+  .ai-starters strong { font: 700 14.5px/1.25 var(--r-sans); }
+  .ai-starters span:last-child { color: var(--r-muted); font-size: 13px; line-height: 1.4; }
+
+  .ai-caps { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ai-caps li { padding: 12px 14px; border: 1px solid var(--r-line); border-radius: 14px; background: color-mix(in srgb, var(--r-surface) 60%, transparent); }
+  .ai-caps h3 { margin: 0 0 4px; font: 700 13px/1.2 var(--r-mono); text-transform: uppercase; letter-spacing: .04em; color: var(--r-text); }
+  .ai-caps p { margin: 0; color: var(--r-muted); font-size: 12.5px; line-height: 1.45; }
+
+  .ai-log { width: min(760px, calc(100% - 32px)); margin: 0 auto; padding: 24px 0 18px; display: flex; flex-direction: column; gap: 22px; }
   .ai-turn { display: grid; gap: 8px; }
   .ai-turn--user .ai-turn__body { justify-items: end; }
-  .ai-top__logo { width: 28px; height: 28px; border-radius: 8px; object-fit: contain; background: rgba(0, 230, 153, .08); border: 1px solid rgba(0, 230, 153, .28); padding: 2px; flex-shrink: 0; }
-  .ai-empty__brand { display: flex; align-items: center; gap: 12px; }
-  .ai-empty__brand img { width: 44px; height: 44px; border-radius: 12px; object-fit: contain; background: rgba(0, 230, 153, .08); border: 1px solid rgba(0, 230, 153, .28); padding: 4px; }
-  .ai-gemini-btn { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 11px; border-radius: 10px; border: 1px solid var(--r-line); background: var(--r-surface); color: var(--r-text); cursor: pointer; font: 700 12px/1 var(--r-mono); }
-  .ai-gemini-btn:hover, .ai-gemini-btn.is-active { border-color: var(--r-accent); color: var(--r-accent); }
-  .ai-gemini-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--r-muted); }
-  .ai-gemini-btn.is-active .ai-gemini-dot { background: var(--r-accent); box-shadow: 0 0 8px var(--r-accent); }
-  .ai-gemini-panel { border-bottom: 1px solid var(--r-line); background: color-mix(in srgb, var(--r-surface) 92%, var(--r-bg)); padding: 12px 16px; }
-  .ai-gemini-panel[hidden] { display: none !important; }
-  .ai-gemini-panel__inner { width: min(760px, 100%); margin: 0 auto; display: grid; gap: 8px; }
-  .ai-gemini-panel__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; }
-  .ai-gemini-panel__head a { color: var(--r-accent); font-family: var(--r-mono); text-decoration: none; }
-  .ai-gemini-panel__row { display: flex; flex-wrap: wrap; gap: 8px; }
-  .ai-gemini-panel__row input, .ai-gemini-panel__row select { min-height: 38px; padding: 0 10px; border-radius: 9px; border: 1px solid var(--r-line); background: var(--r-bg); color: var(--r-text); font: 13px/1 var(--r-mono); }
-  .ai-gemini-panel__row input { flex: 1 1 220px; min-width: 0; }
-  .ai-gemini-panel__row button { min-height: 38px; padding: 0 12px; border-radius: 9px; border: 1px solid var(--r-line); background: var(--r-surface); color: var(--r-text); font: 700 12px/1 var(--r-sans); cursor: pointer; }
-  .ai-gemini-panel__row button.is-primary { background: var(--r-accent); color: var(--r-accent-ink); border-color: transparent; }
-  .ai-gemini-panel__status { margin: 0; font-size: 12px; color: var(--r-muted); font-family: var(--r-mono); }
-  .ai-turn--bot { grid-template-columns: 34px minmax(0, 1fr); column-gap: 12px; align-items: start; }
-  .ai-avatar { width: 34px; height: 34px; border-radius: 10px; margin-top: 2px; object-fit: contain; background: rgba(0, 230, 153, .08); border: 1px solid rgba(0, 230, 153, .28); padding: 3px; }
-  .ai-bubble { max-width: min(85%, 560px); padding: 10px 14px; border-radius: 16px 16px 6px 16px; background: var(--r-accent); color: var(--r-accent-ink); white-space: pre-wrap; line-height: 1.45; }
-  .ai-turn__body { min-width: 0; display: grid; gap: 6px; }
-  .ai-actions { display: flex; gap: 6px; }
-  .ai-action { padding: 0 10px; background: transparent; }
-  .ai-md { min-width: 0; font-size: 15.5px; line-height: 1.55; }
-  .ai-md :is(h1, h2, h3, h4) { font-family: var(--r-sans); font-weight: 700; text-transform: none; letter-spacing: 0; line-height: 1.3; margin: 14px 0 6px; }
+  .ai-turn--bot { grid-template-columns: 36px minmax(0, 1fr); column-gap: 14px; align-items: start; }
+  .ai-avatar { width: 36px; height: 36px; border-radius: 10px; margin-top: 2px; object-fit: contain; background: rgba(0, 230, 153, .08); border: 1px solid rgba(0, 230, 153, .28); padding: 4px; }
+  .ai-bubble { max-width: min(82%, 560px); padding: 11px 16px; border-radius: 20px 20px 6px 20px; background: color-mix(in srgb, var(--r-accent) 18%, var(--r-surface)); border: 1px solid rgba(0, 230, 153, .32); color: var(--r-text); white-space: pre-wrap; font-size: 15px; line-height: 1.5; }
+  .ai-turn__body { min-width: 0; display: grid; gap: 8px; }
+  .ai-actions { display: flex; gap: 6px; opacity: .75; transition: opacity .15s; }
+  .ai-turn:hover .ai-actions, .ai-actions:focus-within { opacity: 1; }
+  .ai-action { min-height: 30px; padding: 0 10px; background: transparent; font-size: 12px; border-radius: 8px; }
+
+  .ai-md { min-width: 0; font-size: 15.5px; line-height: 1.65; color: var(--r-text); }
+  .ai-md :is(h1, h2, h3, h4) { font-family: var(--r-sans); font-weight: 700; text-transform: none; letter-spacing: -.01em; line-height: 1.3; margin: 16px 0 8px; }
   .ai-md h1 { font-size: 1.25rem; }
   .ai-md h2 { font-size: 1.12rem; }
-  .ai-md h3, .ai-md h4 { font-size: 1rem; }
+  .ai-md h3, .ai-md h4 { font-size: 1rem; color: var(--r-accent); }
   .ai-md p { margin: 8px 0; }
   .ai-md ul { list-style: disc; }
   .ai-md ol { list-style: decimal; }
   .ai-md ul, .ai-md ol { margin: 8px 0 8px 1.2em; padding: 0 0 0 1.1em; }
   .ai-md li { margin: 4px 0; }
-  .ai-md blockquote { margin: 10px 0; padding: 4px 0 4px 12px; border-left: 3px solid var(--r-accent); color: var(--r-muted); }
+  .ai-md blockquote { margin: 10px 0; padding: 6px 0 6px 14px; border-left: 3px solid var(--r-accent); color: var(--r-muted); }
   .ai-md hr { border: 0; border-top: 1px solid var(--r-line); margin: 16px 0; }
-  .ai-md a { color: var(--r-accent); }
-  .ai-md :not(pre) > code { font-family: var(--r-mono); font-size: .9em; background: var(--r-bg-2); padding: 1px 5px; border-radius: 5px; }
+  .ai-md a { color: var(--r-accent); text-underline-offset: 3px; }
+  .ai-md :not(pre) > code { font-family: var(--r-mono); font-size: .88em; background: var(--r-surface); border: 1px solid var(--r-line); padding: 1px 6px; border-radius: 6px; }
   .ai-table { overflow-x: auto; max-width: 100%; margin: 12px 0; border: 1px solid var(--r-line); border-radius: 12px; }
   .ai-table table { width: 100%; border-collapse: collapse; min-width: 420px; }
   .ai-table th, .ai-table td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--r-line); border-right: 1px solid var(--r-line); vertical-align: top; font-size: 14px; }
   .ai-table th:last-child, .ai-table td:last-child { border-right: 0; }
-  .ai-table th { position: sticky; top: 0; background: var(--r-bg-2); z-index: 1; font: 700 12px/1.3 var(--r-mono); }
-  .ai-table tbody tr:nth-child(even) { background: color-mix(in srgb, var(--r-text) 5%, transparent); }
+  .ai-table th { position: sticky; top: 0; background: var(--r-surface); z-index: 1; font: 700 12px/1.3 var(--r-mono); }
+  .ai-table tbody tr:nth-child(even) { background: color-mix(in srgb, var(--r-text) 4%, transparent); }
   .ai-code { position: relative; margin: 12px 0; }
   .ai-code pre, .ai-plain { margin: 0; padding: 14px 12px 12px; overflow: auto; background: var(--r-bg); border: 1px solid var(--r-line); border-radius: 12px; font-family: var(--r-mono); font-size: 13px; line-height: 1.45; white-space: pre; }
   .ai-code code { background: none; padding: 0; font: inherit; }
   .ai-codecopy { position: absolute; top: 8px; right: 8px; padding: 0 10px; }
-  .ai-dots { display: inline-flex; gap: 4px; padding: 8px 0; }
-  .ai-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--r-accent); animation: ai-dot .9s infinite ease-in-out; }
+
+  .ai-dots { display: inline-flex; gap: 5px; padding: 10px 0; }
+  .ai-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--r-accent); animation: ai-dot .9s infinite ease-in-out; }
   .ai-dots i:nth-child(2) { animation-delay: .15s; }
   .ai-dots i:nth-child(3) { animation-delay: .3s; }
-  .ai-error { display: grid; gap: 8px; padding: 12px; border-radius: 12px; border: 1px solid #b91c1c; background: color-mix(in srgb, #b91c1c 8%, var(--r-bg)); }
-  .ai-error p { margin: 0; }
+  .ai-error { display: grid; gap: 8px; padding: 12px 14px; border-radius: 14px; border: 1px solid rgba(239, 68, 68, .45); background: color-mix(in srgb, #b91c1c 10%, var(--r-surface)); }
+  .ai-error p { margin: 0; font-size: 14px; }
   .ai-error button { justify-self: start; padding: 0 12px; }
-  .ai-jump { position: absolute; left: 50%; bottom: 108px; transform: translateX(-50%); z-index: 5; padding: 0 14px; box-shadow: 0 8px 24px rgba(0,0,0,.25); }
-  .ai-composer { width: min(760px, calc(100% - 24px)); margin: 0 auto; padding: 0 0 max(10px, env(safe-area-inset-bottom)); }
-  .ai-composer__box { display: flex; align-items: flex-end; gap: 8px; padding: 8px; border: 1px solid var(--r-line); border-radius: 22px; background: var(--r-surface); }
-  .ai-composer textarea { flex: 1; min-height: 44px; max-height: 160px; resize: none; border: 0; background: transparent; color: var(--r-text); font: 16px/1.4 var(--r-sans); padding: 10px 8px; }
+  .ai-jump { position: absolute; left: 50%; bottom: 112px; transform: translateX(-50%); z-index: 5; padding: 0 14px; border-radius: 999px; box-shadow: 0 8px 24px rgba(0,0,0,.35); }
+
+  .ai-composer { width: min(760px, calc(100% - 24px)); margin: 0 auto; padding: 8px 0 max(12px, env(safe-area-inset-bottom)); }
+  .ai-composer__box { display: flex; align-items: flex-end; gap: 8px; padding: 8px 10px 8px 14px; border: 1px solid var(--r-line); border-radius: 26px; background: var(--r-surface); box-shadow: 0 8px 30px rgba(0, 0, 0, .25); transition: border-color .15s, box-shadow .15s; }
+  .ai-composer__box:focus-within { border-color: var(--r-accent); box-shadow: 0 8px 30px rgba(0, 230, 153, .12); }
+  .ai-composer textarea { flex: 1; min-height: 40px; max-height: 160px; resize: none; border: 0; background: transparent; color: var(--r-text); font: 15.5px/1.45 var(--r-sans); padding: 8px 4px; }
   .ai-composer textarea:focus { outline: none; }
-  .ai-composer__box:focus-within { border-color: var(--r-accent); }
-  #aiSend { min-width: 76px; padding: 0 14px; background: var(--r-accent); color: var(--r-accent-ink); border-color: transparent; }
-  #aiSend:disabled { opacity: .45; cursor: default; }
-  #aiSend[data-mode="stop"] { background: var(--r-bg); color: var(--r-text); border-color: var(--r-line); }
-  .ai-note { margin: 6px 8px 0; color: var(--r-muted); font-size: 12px; line-height: 1.4; }
+  #aiSend { width: 40px; height: 40px; min-width: 40px; padding: 0; border-radius: 999px; border: 0; background: var(--r-accent); color: var(--r-accent-ink); cursor: pointer; display: inline-grid; place-items: center; transition: transform .12s, opacity .15s; }
+  #aiSend:hover:not(:disabled) { transform: scale(1.04); }
+  #aiSend:disabled { opacity: .35; cursor: default; }
+  #aiSend[data-mode="stop"] { background: var(--r-bg); color: var(--r-text); border: 1px solid var(--r-line); width: auto; padding: 0 14px; font: 700 12px/1 var(--r-sans); }
+  .ai-note { margin: 8px 8px 0; text-align: center; color: var(--r-muted); font-size: 11.5px; line-height: 1.4; }
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
   @keyframes ai-dot { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+
   @media (max-width: 800px) {
-    .ai-caps, .ai-starters { grid-template-columns: 1fr 1fr; }
-    .ai-top a { display: none; }
+    .ai-caps { grid-template-columns: 1fr; }
+    .ai-top__link, .ai-model-pill { display: none; }
   }
-  @media (max-width: 560px) {
-    .ai-caps, .ai-starters { grid-template-columns: 1fr; }
+  @media (max-width: 600px) {
+    .ai-starters { grid-template-columns: 1fr; }
     .ai-log, .ai-empty { width: calc(100% - 20px); }
   }
   @media (max-width: 959px) {
@@ -206,4 +255,4 @@ const pageDescription = "Copiloto de ingeniería de Muntrume Motorsport para set
   }
 </style>
 
-<script is:inline src="/assets/js/ai-chat.js?v=t343" defer></script>
+<script is:inline src="/assets/js/ai-chat.js?v=t344" defer></script>
