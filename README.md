@@ -21,7 +21,7 @@
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white" />
   <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss&logoColor=white" />
   <img alt="GitHub Pages" src="https://img.shields.io/badge/GitHub%20Pages-222222?logo=githubpages&logoColor=white" />
-  <a href="LICENSE"><img alt="Licencia" src="https://img.shields.io/badge/licencia-MIT%20%2B%20marca-10B981" /></a>
+  <a href="LICENSE"><img alt="Licencia" src="https://img.shields.io/badge/licencia-MIT-10B981" /></a>
 </p>
 
 ---
@@ -108,4 +108,4 @@ Free code signing provided by [SignPath.io](https://signpath.io/), certificate b
 
 ## Licencia
 
-[MIT con exclusión de marca](LICENSE) © 2026 Alberto Trujillo Mingorance / Muntrume Motorsport. Fuentes autoalojadas bajo [SIL OFL 1.1](public/assets/fonts/OFL.txt).
+[MIT](LICENSE) © 2026 Alberto Trujillo Mingorance / Muntrume Motorsport · [Marcas registradas](TRADEMARKS.md). Fuentes autoalojadas bajo [SIL OFL 1.1](public/assets/fonts/OFL.txt).
