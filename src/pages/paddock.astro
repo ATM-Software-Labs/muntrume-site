@@ -584,18 +584,21 @@ const galleryItems = [
             <span class="w-3 h-3 rounded-sm bg-[#10b981]"></span>#10B981
           </span>
           <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--r-surface)] border border-[var(--r-line)]">
-            <span class="w-3 h-3 rounded-sm bg-[#090d12] border border-white/20"></span>#090D12
+            <span class="w-3 h-3 rounded-sm bg-[#eab308]"></span>#EAB308
           </span>
+          <a href="/paddock/marca/" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[var(--r-accent)]/15 border border-[var(--r-accent)]/50 text-[var(--r-accent)] font-bold hover:bg-[var(--r-accent)]/25 transition-colors">
+            Manual de Marca y Legal &rarr;
+          </a>
         </div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {[
-          { name: "Emblema Vectorial", fmt: "SVG", src: "/assets/img/favicon.svg", bg: "bg-[#090d12]", file: "muntrume-logo.svg" },
-          { name: "Icono Alta Res.", fmt: "PNG 512px", src: "/assets/img/icon-512.png", bg: "bg-[#090d12]", file: "muntrume-icon-512.png" },
-          { name: "Logo App Maskable", fmt: "PNG 512px", src: "/assets/img/icon-maskable-512.png", bg: "bg-[#111827]", file: "muntrume-maskable-512.png" },
-          { name: "Logo Compacto", fmt: "PNG 128px", src: "/assets/img/logo-128.png", bg: "bg-[#090d12]", file: "muntrume-logo-128.png" },
-          { name: "Cabecera Prensa", fmt: "PNG", src: "/assets/img/email-logo.png", bg: "bg-white", file: "muntrume-email-logo.png" },
+          { name: "Escudo Heráldico", fmt: "JPG Alta Res.", src: "/assets/brand/muntrume-escudo-heraldico.jpg", bg: "bg-white", file: "muntrume-escudo-heraldico.jpg" },
+          { name: "Escudo Vectorial", fmt: "SVG", src: "/assets/brand/muntrume-escudo-vector.svg", bg: "bg-[#090d12]", file: "muntrume-escudo-vector.svg" },
+          { name: "Monograma MTM", fmt: "SVG", src: "/assets/brand/muntrume-monogram-mtm.svg", bg: "bg-[#090d12]", file: "muntrume-monogram-mtm.svg" },
+          { name: "Wordmark Oficial", fmt: "SVG Dark", src: "/assets/brand/muntrume-wordmark-dark.svg", bg: "bg-[#090d12]", file: "muntrume-wordmark-dark.svg" },
+          { name: "Sello 60Hz Verified", fmt: "SVG", src: "/assets/brand/muntrume-telemetry-badge.svg", bg: "bg-[#090d12]", file: "muntrume-telemetry-badge.svg" },
         ].map((asset) => (
           <article class="rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-4 flex flex-col justify-between gap-4 hover:border-[var(--r-accent)] transition-colors">
             <div class={`h-28 rounded-xl ${asset.bg} border border-white/10 flex items-center justify-center p-4 overflow-hidden`}>

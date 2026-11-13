@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 160" fill="none">
+  <rect x="4" y="4" width="632" height="152" rx="24" fill="#090D12" stroke="#1E293B" stroke-width="4"/>
+  <!-- Emblem -->
+  <rect x="28" y="28" width="104" height="104" rx="20" fill="#111827" stroke="#10B981" stroke-width="3"/>
+  <path d="M46 108 V52 H62 L78 82 L94 52 H110 V108 H96 V74 L82 98 H74 L60 74 V108 Z" fill="#F8FAFC"/>
+  <path d="M46 118 H112" stroke="#00E5FF" stroke-width="4" stroke-linecap="round"/>
+  <!-- Wordmark -->
+  <text x="156" y="78" fill="#F8FAFC" font-family="Arial Narrow, Impact, sans-serif" font-weight="800" font-size="48" letter-spacing="4">MUNTRUME</text>
+  <text x="158" y="114" fill="#10B981" font-family="ui-monospace, monospace" font-weight="700" font-size="20" letter-spacing="6">MOTORSPORT · MTM</text>
+</svg>

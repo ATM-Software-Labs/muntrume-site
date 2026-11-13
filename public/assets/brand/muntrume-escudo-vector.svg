@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none">
+  <defs>
+    <linearGradient id="mmt-gold" x1="40" y1="40" x2="216" y2="216" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FACC15"/>
+      <stop offset="100%" stop-color="#CA8A04"/>
+    </linearGradient>
+    <linearGradient id="mmt-green" x1="128" y1="44" x2="128" y2="220" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#065F46"/>
+    </linearGradient>
+  </defs>
+  <!-- Crossed Heraldic Gold Bars -->
+  <path d="M52 54 L72 38 L204 202 L184 218 Z" fill="url(#mmt-gold)" stroke="#090D12" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M204 54 L184 38 L52 202 L72 218 Z" fill="url(#mmt-gold)" stroke="#090D12" stroke-width="4" stroke-linejoin="round"/>
+  <!-- Upper Emerald Crest Ribbon -->
+  <path d="M46 112 C46 72 90 54 128 54 C166 54 210 72 210 112 L192 122 C188 94 160 80 128 80 C96 80 68 94 64 122 Z" fill="url(#mmt-green)" stroke="#090D12" stroke-width="4" stroke-linejoin="round"/>
+  <!-- Heraldic Tower -->
+  <path d="M106 32 H116 V40 H123 V32 H133 V40 H140 V32 H150 V52 L144 62 V80 H112 V62 L106 52 Z" fill="#E2E8F0" stroke="#090D12" stroke-width="4" stroke-linejoin="round"/>
+  <rect x="118" y="54" width="6" height="10" rx="1" fill="#090D12"/>
+  <rect x="132" y="54" width="6" height="10" rx="1" fill="#090D12"/>
+  <!-- Racing Helmet Shell -->
+  <path d="M74 134 C74 96 104 82 134 82 C164 82 184 102 184 136 C184 156 174 166 154 168 L84 168 C76 162 74 148 74 134 Z" fill="url(#mmt-green)" stroke="#090D12" stroke-width="4" stroke-linejoin="round"/>
+  <!-- Helmet Visor -->
+  <path d="M132 108 H176 C180 118 180 132 174 142 H136 C128 134 126 118 132 108 Z" fill="#0F172A" stroke="#00E5FF" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M138 114 L168 114 L160 124 L136 124 Z" fill="#38BDF8" fill-opacity="0.35"/>
+  <!-- Aero Chin Lines -->
+  <path d="M90 144 H124 M94 154 H134" stroke="#A7F3D0" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Lower Emerald Chevron + Star -->
+  <path d="M70 174 C88 206 110 218 128 224 C146 218 168 206 186 174 L164 184 C150 198 138 204 128 206 C118 204 106 198 92 184 Z" fill="url(#mmt-green)" stroke="#090D12" stroke-width="4" stroke-linejoin="round"/>
+  <polygon points="128,186 131,194 140,194 133,199 135,207 128,202 121,207 123,199 116,194 125,194" fill="#090D12"/>
+</svg>

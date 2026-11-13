@@ -1,0 +1,346 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+const pageTitle = "Marca y Brand Kit Oficial | Muntrume Motorsport";
+const pageDescription = "Subpágina oficial de identidad visual, logotipos vectoriales, escudo heráldico, paleta cromática, tipografías y marco legal de marca de Muntrume Motorsport™.";
+
+const brandAssets = [
+  {
+    name: "Escudo Heráldico Oficial (Nuevo)",
+    fmt: "JPG · Alta Resolución",
+    desc: "Emblema heráldico oficial con casco verde esmeralda, torre almenada, paloma, mano y barras doradas cruzadas.",
+    src: "/assets/brand/muntrume-escudo-heraldico.jpg",
+    bg: "bg-white",
+    file: "muntrume-escudo-heraldico.jpg",
+    badge: "Nuevo"
+  },
+  {
+    name: "Escudo Heráldico Vectorial",
+    fmt: "SVG · Escalable",
+    desc: "Adaptación vectorial limpia del escudo heráldico para impresión, vinilos, overlays y Trading Paints.",
+    src: "/assets/brand/muntrume-escudo-vector.svg",
+    bg: "bg-[#090d12]",
+    file: "muntrume-escudo-vector.svg",
+    badge: "Nuevo SVG"
+  },
+  {
+    name: "Monograma Técnico MTM",
+    fmt: "SVG · Escalable",
+    desc: "Icono compacto MTM de alto contraste para avatares, HUD telemétrico, capó y app de escritorio.",
+    src: "/assets/brand/muntrume-monogram-mtm.svg",
+    bg: "bg-[#090d12]",
+    file: "muntrume-monogram-mtm.svg",
+    badge: "Nuevo SVG"
+  },
+  {
+    name: "Wordmark Horizontal Dark",
+    fmt: "SVG · 640×160",
+    desc: "Logotipo completo con tipografía corporativa para fondos oscuros, banners de Twitch/YouTube y faldones.",
+    src: "/assets/brand/muntrume-wordmark-dark.svg",
+    bg: "bg-[#090d12]",
+    file: "muntrume-wordmark-dark.svg",
+    badge: "Nuevo SVG"
+  },
+  {
+    name: "Wordmark Horizontal Light",
+    fmt: "SVG · 640×160",
+    desc: "Logotipo completo para carrocerías claras, dosieres de prensa, documentos PDF y patrocinadores.",
+    src: "/assets/brand/muntrume-wordmark-light.svg",
+    bg: "bg-slate-100",
+    file: "muntrume-wordmark-light.svg",
+    badge: "Nuevo SVG"
+  },
+  {
+    name: "Sello MTM 60Hz Verified",
+    fmt: "SVG · Circular",
+    desc: "Distintivo técnico de homologación para tarjetas de setups (.sto), telemetría .IBT y escrutinio 100% Pass Tech.",
+    src: "/assets/brand/muntrume-telemetry-badge.svg",
+    bg: "bg-[#090d12]",
+    file: "muntrume-telemetry-badge.svg",
+    badge: "Nuevo SVG"
+  },
+  {
+    name: "Emblema Monocromo Blanco",
+    fmt: "SVG · 100% Blanco",
+    desc: "Versión monocroma pura para fibra de carbono, cristales, alerones traseros y liveries oscuras.",
+    src: "/assets/brand/muntrume-mono-white.svg",
+    bg: "bg-black",
+    file: "muntrume-mono-white.svg",
+    badge: "Livery"
+  },
+  {
+    name: "Logo Clásico Principal",
+    fmt: "PNG · Transparente",
+    desc: "Logotipo histórico original de Muntrume Motorsport en alta definición.",
+    src: "/assets/img/logo.png",
+    bg: "bg-[#090d12]",
+    file: "muntrume-logo-clasico.png",
+    badge: "Clásico"
+  },
+  {
+    name: "Icono App 512px",
+    fmt: "PNG · 512×512",
+    desc: "Icono cuadrado estándar para PWA, Tauri Desktop, Discord y perfiles sociales.",
+    src: "/assets/img/icon-512.png",
+    bg: "bg-[#090d12]",
+    file: "muntrume-icon-512.png",
+    badge: "App"
+  },
+  {
+    name: "Icono Maskable 512px",
+    fmt: "PNG · 512×512",
+    desc: "Versión con margen de seguridad para iconos adaptativos en Android, iOS y Windows.",
+    src: "/assets/img/icon-maskable-512.png",
+    bg: "bg-[#111827]",
+    file: "muntrume-maskable-512.png",
+    badge: "App"
+  },
+  {
+    name: "Logo Compacto 128px",
+    fmt: "PNG · 128×128",
+    desc: "Versión ligera optimizada para tablas de tiempos, overlays web y miniaturas.",
+    src: "/assets/img/logo-128.png",
+    bg: "bg-[#090d12]",
+    file: "muntrume-logo-128.png",
+    badge: "UI"
+  },
+  {
+    name: "Cabecera Email & Prensa",
+    fmt: "PNG · Ligero",
+    desc: "Logotipo compacto optimizado para firmas de correo electrónico y comunicados oficiales.",
+    src: "/assets/img/email-logo.png",
+    bg: "bg-white",
+    file: "muntrume-email-logo.png",
+    badge: "Prensa"
+  }
+];
+
+const colorPalette = [
+  { name: "Emerald Racing", hex: "#10B981", rgb: "16, 185, 129", role: "Color principal de escudería, casco y detalles activos." },
+  { name: "Telemetry Cyan", hex: "#00E5FF", rgb: "0, 229, 255", role: "Acento técnico, trazas telemétricas y visor." },
+  { name: "Heraldic Gold", hex: "#EAB308", rgb: "234, 179, 8", role: "Barras cruzadas heráldicas y trofeos." },
+  { name: "Carbon Pitch", hex: "#090D12", rgb: "9, 13, 18", role: "Fondo principal oscuro y fibra de carbono." },
+  { name: "Surface Slate", hex: "#111827", rgb: "17, 24, 39", role: "Tarjetas de interfaz, paddock y paneles HUD." },
+  { name: "Pure White", hex: "#F8FAFC", rgb: "248, 250, 252", role: "Tipografía principal, emblemas monocromos y dorsal." }
+];
+---
+
+<Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/paddock/marca/">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
+    <!-- BREADCRUMB & HERO -->
+    <header class="pb-6 border-b border-[var(--r-line)] flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+      <div class="space-y-3">
+        <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--r-muted)]">
+          <a href="/paddock/" class="hover:text-[var(--r-accent)] transition-colors">Paddock</a>
+          <span>/</span>
+          <span class="text-[var(--r-accent)]">Marca &amp; Brand Kit</span>
+        </div>
+        <h1 class="text-3xl sm:text-5xl font-extrabold text-[var(--r-text)] font-display tracking-tight">
+          Identidad Visual y Marca Oficial
+        </h1>
+        <p class="text-sm text-[var(--r-muted)] max-w-2xl leading-relaxed">
+          Manual completo de marca de <strong class="text-[var(--r-text)]">Muntrume Motorsport™</strong> y <strong class="text-[var(--r-text)]">MTM Megasetup™</strong>:
+          escudo heráldico, nuevas variantes vectoriales SVG, paleta cromática, tipografía y normativa legal de uso.
+        </p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <a href="/legal/" class="px-4 py-2 rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] hover:border-[var(--r-accent)] text-xs font-mono font-bold transition-colors">
+          Marco Legal
+        </a>
+        <a href="/paddock/#brand-kit" class="px-4 py-2 rounded-xl border border-[var(--r-accent)]/50 bg-[var(--r-accent)]/12 text-xs font-mono font-bold text-[var(--r-accent)] hover:bg-[var(--r-accent)]/20 transition-colors">
+          &larr; Volver al Paddock
+        </a>
+      </div>
+    </header>
+
+    <!-- FEATURED HERALDIC CREST -->
+    <section class="rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      <div class="lg:col-span-5 flex flex-col sm:flex-row lg:flex-col gap-4">
+        <div class="rounded-2xl bg-white p-6 border border-white/10 flex items-center justify-center aspect-square max-h-64">
+          <img src="/assets/brand/muntrume-escudo-heraldico.jpg" alt="Escudo Heráldico Muntrume Motorsport" class="max-h-full max-w-full object-contain" />
+        </div>
+      </div>
+      <div class="lg:col-span-7 space-y-4">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--r-accent)]/15 border border-[var(--r-accent)]/40 text-[var(--r-accent)] text-xs font-mono font-bold uppercase tracking-wider">
+          Nuevo Emblema Heráldico 2026
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-[var(--r-text)] font-display">
+          Simbología del Escudo Muntrume
+        </h2>
+        <p class="text-sm text-[var(--r-muted)] leading-relaxed">
+          El nuevo emblema fusiona la tradición heráldica con la competición GT3 y Prototipos moderna:
+        </p>
+        <ul class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-[var(--r-muted)]">
+          <li class="p-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)]">
+            <strong class="text-[var(--r-text)] block mb-0.5">Casco Verde Esmeralda</strong>
+            Enfoque en pista, precisión telemétrica y seguridad del piloto.
+          </li>
+          <li class="p-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)]">
+            <strong class="text-[var(--r-text)] block mb-0.5">Torre Almenada</strong>
+            Solidez estructural, defensa de posición y consistencia en resistencia.
+          </li>
+          <li class="p-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)]">
+            <strong class="text-[var(--r-text)] block mb-0.5">Paloma y Mano Abierta</strong>
+            Juego limpio (Fair Play), deportividad y espíritu de equipo en pista.
+          </li>
+          <li class="p-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)]">
+            <strong class="text-[var(--r-text)] block mb-0.5">Aspa Dorada y Estrella</strong>
+            Ambición competitiva en top-split y sello de calidad MTM.
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ALL LOGOS & VARIANTS -->
+    <section class="space-y-6">
+      <div class="pb-3 border-b border-[var(--r-line)] flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-extrabold text-[var(--r-text)] font-display">
+            Catálogo Completo de Logotipos ({brandAssets.length} archivos)
+          </h2>
+          <p class="text-xs text-[var(--r-muted)] mt-1">
+            Incluye el nuevo escudo, variantes vectoriales SVG creadas a partir de la identidad oficial y archivos clásicos en PNG.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        {brandAssets.map((asset) => (
+          <article class="rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-4 flex flex-col justify-between gap-4 hover:border-[var(--r-accent)] transition-colors">
+            <div class="space-y-3">
+              <div class={`relative h-36 rounded-xl ${asset.bg} border border-white/10 flex items-center justify-center p-4 overflow-hidden`}>
+                <img src={asset.src} alt={asset.name} loading="lazy" decoding="async" class="max-h-full max-w-full object-contain" />
+                <span class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded bg-black/75 border border-white/15 text-[10px] font-mono font-bold text-[var(--r-accent)] uppercase">
+                  {asset.badge}
+                </span>
+              </div>
+              <div>
+                <div class="flex items-center justify-between gap-2">
+                  <h3 class="text-sm font-bold text-[var(--r-text)] leading-tight">{asset.name}</h3>
+                </div>
+                <span class="text-[11px] font-mono text-[var(--r-accent)] block mt-0.5">{asset.fmt}</span>
+                <p class="text-xs text-[var(--r-muted)] mt-1.5 leading-relaxed">{asset.desc}</p>
+              </div>
+            </div>
+            <a
+              href={asset.src}
+              download={asset.file}
+              class="w-full py-2 px-3 rounded-xl bg-[var(--r-bg-2)] hover:bg-[var(--r-accent)]/15 border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono font-bold text-[var(--r-text)] hover:text-[var(--r-accent)] text-center transition-colors"
+            >
+              Descargar {asset.file.split('.').pop()?.toUpperCase()}
+            </a>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <!-- COLOR PALETTE & TYPOGRAPHY -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div class="lg:col-span-7 rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-6 space-y-5">
+        <h2 class="text-xl font-extrabold text-[var(--r-text)] font-display">Paleta Cromática Oficial</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {colorPalette.map((c) => (
+            <button
+              type="button"
+              data-copy-hex={c.hex}
+              class="text-left p-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition flex items-start gap-3 group"
+              title={`Copiar ${c.hex}`}
+            >
+              <span class="w-10 h-10 rounded-lg shrink-0 border border-white/15" style={`background:${c.hex};`}></span>
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-bold text-[var(--r-text)]">{c.name}</span>
+                  <span class="text-[11px] font-mono text-[var(--r-accent)] group-hover:underline">{c.hex}</span>
+                </div>
+                <span class="text-[10px] font-mono text-[var(--r-muted)] block">RGB({c.rgb})</span>
+                <p class="text-[11px] text-[var(--r-muted)] mt-1 leading-snug">{c.role}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div class="lg:col-span-5 rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-6 space-y-5">
+        <h2 class="text-xl font-extrabold text-[var(--r-text)] font-display">Tipografías Corporativas</h2>
+        <div class="space-y-3 text-xs">
+          <div class="p-3.5 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)]">
+            <span class="font-mono text-[10px] uppercase text-[var(--r-accent)]">Display &amp; Titulares</span>
+            <div class="text-2xl font-extrabold font-display tracking-tight text-[var(--r-text)] mt-0.5">Barlow Condensed (700/800)</div>
+            <p class="text-[var(--r-muted)] mt-1">Cabeceras, dorsales y títulos de sección.</p>
+          </div>
+          <div class="p-3.5 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)]">
+            <span class="font-mono text-[10px] uppercase text-[var(--r-accent)]">Interfaz &amp; Lectura</span>
+            <div class="text-lg font-semibold text-[var(--r-text)] mt-0.5">Inter (400 / 600)</div>
+            <p class="text-[var(--r-muted)] mt-1">Textos descriptivos, tarjetas y menús web/app.</p>
+          </div>
+          <div class="p-3.5 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)]">
+            <span class="font-mono text-[10px] uppercase text-[var(--r-accent)]">Telemetría &amp; Datos</span>
+            <div class="text-base font-mono font-bold text-[var(--r-text)] mt-0.5">JetBrains Mono (500 / 700)</div>
+            <p class="text-[var(--r-muted)] mt-1">Tiempos por vuelta, deltas, presiones kPa y hashes .sto.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GUIDELINES & LEGAL COMPLIANCE -->
+    <section class="rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-6 sm:p-8 space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[var(--r-line)]">
+        <div>
+          <span class="text-xs font-mono uppercase tracking-widest text-[var(--r-accent)]">Normativa &amp; Propiedad Intelectual</span>
+          <h2 class="text-2xl font-extrabold text-[var(--r-text)] font-display mt-1">
+            Guía de Uso y Cumplimiento Legal
+          </h2>
+        </div>
+        <span class="px-3 py-1 rounded-full bg-[var(--r-bg-2)] border border-[var(--r-line)] text-xs font-mono text-[var(--r-muted)]">
+          [MTM-PRO-SEC-26S4]
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs leading-relaxed">
+        <div class="p-4 rounded-xl bg-[var(--r-bg-2)] border border-emerald-500/30 space-y-2">
+          <h3 class="text-sm font-bold text-emerald-400 font-mono uppercase">Usos Permitidos</h3>
+          <ul class="list-disc pl-4 space-y-1.5 text-[var(--r-muted)]">
+            <li>Liveries oficiales del equipo en <strong>Trading Paints</strong> e <strong>iRacing</strong> para pilotos autorizados.</li>
+            <li>Retransmisiones de carreras, overlays de Twitch/YouTube y notas de prensa acreditadas.</li>
+            <li>Respetar siempre un margen de seguridad mínimo equivalente al 15% del ancho del emblema.</li>
+          </ul>
+        </div>
+        <div class="p-4 rounded-xl bg-[var(--r-bg-2)] border border-rose-500/30 space-y-2">
+          <h3 class="text-sm font-bold text-rose-400 font-mono uppercase">Usos Prohibidos</h3>
+          <ul class="list-disc pl-4 space-y-1.5 text-[var(--r-muted)]">
+            <li>Deformar, estirar, rotar o alterar los colores oficiales fuera de las variantes suministradas.</li>
+            <li>Utilizar el logotipo para suplantar al equipo, vender setups ajenos o fines comerciales sin licencia escrita.</li>
+            <li>Asociar la marca con contenido que vulnere el Código Deportivo de iRacing o normativas aplicables.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="p-4 rounded-xl bg-[var(--r-bg)] border border-[var(--r-line)] text-xs text-[var(--r-muted)] space-y-2 leading-relaxed">
+        <p>
+          <strong class="text-[var(--r-text)]">Titularidad de Marca:</strong>
+          <strong>Muntrume Motorsport™</strong>, <strong>MTM Megasetup™</strong>, sus escudos, monogramas y archivos vectoriales son propiedad intelectual de Alberto Trujillo Mingorance (#16).
+        </p>
+        <p>
+          <strong class="text-[var(--r-text)]">Descargo de Responsabilidad (Fair Use):</strong>
+          <em>iRacing</em> e <em>iRacing.com</em> son marcas registradas de <em>iRacing.com Motorsport Simulations, LLC</em>. <em>Garage 61</em> y las denominaciones de fabricantes de automóviles citadas en el catálogo pertenecen a sus respectivos titulares y se utilizan exclusivamente con fines identificativos y de compatibilidad técnica (uso nominativo / <em>Fair Use</em>).
+        </p>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<script is:inline>
+  document.querySelectorAll('[data-copy-hex]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var hex = btn.getAttribute('data-copy-hex');
+      if (!hex || !navigator.clipboard) return;
+      navigator.clipboard.writeText(hex).then(function() {
+        var tag = btn.querySelector('.font-mono.text-\\[var\\(--r-accent\\)\\]');
+        if (!tag) return;
+        var orig = tag.textContent;
+        tag.textContent = '¡Copiado!';
+        setTimeout(function() { tag.textContent = orig; }, 1200);
+      });
+    });
+  });
+</script>
