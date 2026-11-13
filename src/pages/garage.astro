@@ -270,7 +270,29 @@ const garageSchema = {
                 </td>
                 <td>{kb(item.sizeKb)}</td>
                 <td>
-                  <button type="button" class="g2-dl" data-download data-id={item.id} data-file={item.file} data-auth="pending" data-i18n="garage.dl.out">Inicia sesión</button>
+                  <div class="g2-actions">
+                    <button
+                      type="button"
+                      class="g2-eye"
+                      data-preview
+                      data-id={item.id}
+                      data-file={item.file}
+                      data-car={item.carLabel}
+                      data-track={item.track}
+                      data-season={item.season}
+                      data-week={item.week}
+                      data-type={kindLabel[item.kind]}
+                      data-size={kb(item.sizeKb)}
+                      aria-label={`Vista previa de ${item.file}`}
+                      title="Vista previa del setup"
+                    >
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    </button>
+                    <button type="button" class="g2-dl" data-download data-id={item.id} data-file={item.file} data-auth="pending" data-i18n="garage.dl.out">Inicia sesión</button>
+                  </div>
                 </td>
               </tr>
               );
@@ -296,6 +318,38 @@ const garageSchema = {
       display: inline-block; margin-left: 6px; padding: 2px 6px; border-radius: 5px;
       font: 700 10px/1.2 ui-monospace, monospace; text-transform: uppercase; letter-spacing: .04em;
       color: var(--r-accent, #00e699); border: 1px solid rgba(0, 230, 153, 0.32); vertical-align: middle;
+    }
+    .g2-actions {
+      display: inline-flex; align-items: center; justify-content: flex-end; gap: 6px;
+    }
+    .g2-eye {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; padding: 0; border-radius: 8px;
+      border: 1px solid var(--r-line, rgba(255,255,255,0.12));
+      background: transparent; color: var(--r-muted, #94a3b8); cursor: pointer;
+      transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+    }
+    .g2-eye:hover {
+      border-color: var(--r-accent, #00e699);
+      color: var(--r-accent, #00e699);
+      background: rgba(0, 230, 153, 0.08);
+    }
+    .gpv-grid {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;
+      margin: 14px 0 18px;
+    }
+    .gpv-item {
+      padding: 10px 12px; border-radius: 10px;
+      border: 1px solid var(--r-line, rgba(255,255,255,0.1));
+      background: rgba(255,255,255,0.02);
+    }
+    .gpv-item span {
+      display: block; font: 600 10px/1.2 ui-monospace, monospace;
+      text-transform: uppercase; letter-spacing: 0.06em; color: var(--r-muted, #94a3b8);
+      margin-bottom: 4px;
+    }
+    .gpv-item strong {
+      display: block; font-size: 13px; color: var(--r-text, #f8fafc); word-break: break-word;
     }
   </style>
 
@@ -411,7 +465,23 @@ const garageSchema = {
     </div>
   </div>
 
-  <script is:inline src="/assets/js/garage-list.js?v=t330" defer></script>
+  <div id="garagePreviewModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="gpvFile" hidden>
+    <div class="g-dialog">
+      <div class="g-dialog__bar">
+        <h2 id="gpvFile">Setup .sto</h2>
+        <button type="button" class="m-notice__close" data-close-modal="garagePreviewModal" aria-label="Cerrar" data-i18n-aria="garage.auth.close">×</button>
+      </div>
+      <div class="gpv-grid">
+        <div class="gpv-item"><span>Coche</span><strong id="gpvCar">—</strong></div>
+        <div class="gpv-item"><span>Circuito</span><strong id="gpvTrack">—</strong></div>
+        <div class="gpv-item"><span>Temporada / Semana</span><strong id="gpvSeasonWeek">—</strong></div>
+        <div class="gpv-item"><span>Tipo · Tamaño</span><strong><span id="gpvType" style="display:inline;color:inherit;font-size:inherit;margin:0">—</span> · <span id="gpvSize" style="display:inline;color:inherit;font-size:inherit;margin:0">—</span></strong></div>
+      </div>
+      <button type="button" id="gpvDownloadBtn" class="r-btn r-btn--primary" data-download data-id="" data-file="" data-auth="pending">Descargar .sto</button>
+    </div>
+  </div>
+
+  <script is:inline src="/assets/js/garage-list.js?v=t331" defer></script>
   <script is:inline src="/assets/js/garage-auth.js?v=t321" defer></script>
   <script>
     import { initSessionGate } from "../scripts/session-gate";

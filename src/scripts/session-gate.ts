@@ -92,7 +92,6 @@ async function downloadFile(id: string, file: string): Promise<"ok" | "expired" 
   try {
     res = await fetch(`${API}/api/setups/download`, {
       method: "POST",
-      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${session.token}`,
@@ -117,12 +116,14 @@ async function downloadFile(id: string, file: string): Promise<"ok" | "expired" 
     return "retry";
   }
   const blob = new Blob([bytes.buffer as ArrayBuffer], { type: "application/octet-stream" });
+  const blobUrl = URL.createObjectURL(blob);
   const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
+  link.href = blobUrl;
   link.download = safeFilename(data.filename || "", file);
   document.body.appendChild(link);
   link.click();
   link.remove();
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 1500);
   return "ok";
 }
 
@@ -214,6 +215,17 @@ export function initSessionGate(root: ParentNode = document): void {
           preview.dataset.type || "",
           ""
         );
+      } else {
+        openGaragePreviewModal({
+          id: preview.dataset.id || "",
+          file: preview.dataset.file || "",
+          car: preview.dataset.car || "",
+          track: preview.dataset.track || "",
+          season: preview.dataset.season || "",
+          week: preview.dataset.week || "",
+          type: preview.dataset.type || "",
+          size: preview.dataset.size || "",
+        });
       }
       return;
     }
@@ -241,4 +253,44 @@ export function initSessionGate(root: ParentNode = document): void {
     apply();
     new MutationObserver(apply).observe(tbody, { childList: true });
   }
+}
+
+interface GaragePreviewInfo {
+  id: string;
+  file: string;
+  car: string;
+  track: string;
+  season: string;
+  week: string;
+  type: string;
+  size: string;
+}
+
+function openGaragePreviewModal(info: GaragePreviewInfo): void {
+  const modal = document.getElementById("garagePreviewModal");
+  if (!modal) return;
+  const setText = (id: string, val: string) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val || "—";
+  };
+  setText("gpvFile", info.file);
+  setText("gpvCar", info.car);
+  setText("gpvTrack", info.track);
+  setText("gpvSeasonWeek", [info.season, info.week].filter(Boolean).join(" · ") || "—");
+  setText("gpvType", info.type || "Race");
+  setText("gpvSize", info.size || "—");
+
+  const dlBtn = document.getElementById("gpvDownloadBtn") as HTMLButtonElement | null;
+  if (dlBtn) {
+    dlBtn.dataset.id = info.id;
+    dlBtn.dataset.file = info.file;
+    dlBtn.dataset.busy = "0";
+    void getSession().then((session) => {
+      if (session) setAuthState(dlBtn, "in", "Descargar .sto");
+      else setAuthState(dlBtn, "out", "Inicia sesión para descargar");
+    });
+  }
+
+  modal.classList.remove("hidden");
+  modal.removeAttribute("hidden");
 }

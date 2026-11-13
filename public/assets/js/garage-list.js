@@ -160,7 +160,22 @@
         "<td><span class=\"g2-track\">" + esc(row.track) + "</span>" + verHtml + "</td>" +
         "<td>" + esc(kindLabelOf(row.kind)) + varHtml + "</td>" +
         "<td>" + esc(row.size) + "</td>" +
-        "<td><button type=\"button\" class=\"g2-dl\" data-download data-id=\"" + esc(row.id) + "\" data-file=\"" + esc(row.file) + "\" data-auth=\"pending\">" + esc(tr("garage.dl.out", "Inicia sesión")) + "</button></td>" +
+        "<td><div class=\"g2-actions\">" +
+        "<button type=\"button\" class=\"g2-eye\" data-preview" +
+        " data-id=\"" + esc(row.id) + "\"" +
+        " data-file=\"" + esc(row.file) + "\"" +
+        " data-car=\"" + esc(row.carLabel) + "\"" +
+        " data-track=\"" + esc(row.track) + "\"" +
+        " data-season=\"" + esc(row.season) + "\"" +
+        " data-week=\"" + esc(row.week) + "\"" +
+        " data-type=\"" + esc(kindLabelOf(row.kind)) + "\"" +
+        " data-size=\"" + esc(row.size) + "\"" +
+        " aria-label=\"Vista previa de " + esc(row.file) + "\" title=\"Vista previa del setup\">" +
+        "<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\">" +
+        "<path d=\"M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z\"></path><circle cx=\"12\" cy=\"12\" r=\"3\"></circle>" +
+        "</svg></button>" +
+        "<button type=\"button\" class=\"g2-dl\" data-download data-id=\"" + esc(row.id) + "\" data-file=\"" + esc(row.file) + "\" data-auth=\"pending\">" + esc(tr("garage.dl.out", "Inicia sesión")) + "</button>" +
+        "</div></td>" +
         "</tr>";
     }).join("");
     paint();
