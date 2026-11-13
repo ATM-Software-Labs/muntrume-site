@@ -20,7 +20,7 @@
   "author": "Muntrume Motorsport (ATM Software Labs)",
   "license": "UNLICENSED",
   "dependencies": {
-    "astro": "7.4.4",
+    "astro": "7.4.7",
     "dompurify": "^3.4.17",
     "marked": "^18.2.0",
     "postal-mime": "4.2.0"
