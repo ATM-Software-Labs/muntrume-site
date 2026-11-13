@@ -2,7 +2,7 @@
 
 ## Avisar de una vulnerabilidad
 
-No abras un issue público. Usa **[Report a vulnerability](https://github.com/atrumin16/muntrume-site/security/advisories/new)** (aviso privado de GitHub) o escribe a **alberto@trujillomingorance.com** con:
+No abras un issue público. Usa **[Report a vulnerability](https://github.com/atrumin16/muntrume-site/security/advisories/new)** (aviso privado de GitHub) o escribe a **security@trujillomingorance.com** con:
 
 - qué has encontrado y dónde (URL o archivo),
 - cómo reproducirlo,
