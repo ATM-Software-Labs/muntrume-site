@@ -851,6 +851,58 @@
               </div>
             </div>
 
+            <!-- Personalización Total del HUD (Kapps Pro Studio) -->
+            <div id="overlayCustomStudio" class="mt-4 p-3.5 rounded-2xl border border-r-line bg-r-surface/80 flex flex-col gap-3 text-xs">
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="flex flex-wrap items-center gap-3">
+                  <label class="flex items-center gap-1.5 font-mono text-[11px] text-r-muted">
+                    <span>Tema:</span>
+                    <select id="hudPresetSelect" class="h-8 rounded-lg border border-r-line bg-r-bg px-2 text-r-text font-mono text-[11px]">
+                      <option value="dark-carbon">Dark Carbon</option>
+                      <option value="minimal-transparent">Minimal Transparent</option>
+                      <option value="high-contrast">High Contrast</option>
+                      <option value="retro-tv">Retro TV</option>
+                    </select>
+                  </label>
+                  <label class="flex items-center gap-1.5 font-mono text-[11px] text-r-muted">
+                    <span>Opacidad:</span>
+                    <input id="hudOpacityRange" type="range" min="50" max="100" value="92" class="w-20 accent-[#00e699]" />
+                    <span id="hudOpacityVal" class="text-r-text tabular-nums w-8">92%</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 font-mono text-[11px] text-r-muted">
+                    <span>Escala:</span>
+                    <input id="hudScaleRange" type="range" min="75" max="130" value="100" class="w-20 accent-[#00e699]" />
+                    <span id="hudScaleVal" class="text-r-text tabular-nums w-9">100%</span>
+                  </label>
+                </div>
+                <div class="flex flex-wrap items-center gap-3 font-mono text-[11px]">
+                  <label class="flex items-center gap-1.5 cursor-pointer text-r-text">
+                    <input id="hudShowInReplays" type="checkbox" checked class="accent-[#00e699]" />
+                    <span>Activo en Replays</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer text-r-text">
+                    <input id="hudShowAllSessions" type="checkbox" checked class="accent-[#00e699]" />
+                    <span>Vuelta 1 / Qualy</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer text-r-text">
+                    <input id="hudStreamerMode" type="checkbox" class="accent-[#00e699]" />
+                    <span>Modo Streamer</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-1.5 pt-2 border-t border-r-line/60 font-mono text-[11px]">
+                <span class="text-r-muted mr-1">Widgets:</span>
+                <button type="button" data-widget-toggle="relative" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Relative</button>
+                <button type="button" data-widget-toggle="standings" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Standings</button>
+                <button type="button" data-widget-toggle="fuel" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Fuel</button>
+                <button type="button" data-widget-toggle="inputs" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Pedales</button>
+                <button type="button" data-widget-toggle="waveform" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Traza</button>
+                <button type="button" data-widget-toggle="cluster" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Marcha/Vel</button>
+                <button type="button" data-widget-toggle="lights" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Shift Lights</button>
+              </div>
+            </div>
+
             <!-- Stage (Cockpit Simulator & Modular HUD Layout) -->
             <div id="overlayStage" class="relative mt-5 h-[700px] rounded-2xl overflow-hidden border border-r-line shadow-2xl bg-[#05080c] select-none">
               <!-- Kapps / GO Broadcast Backdrop Grid -->

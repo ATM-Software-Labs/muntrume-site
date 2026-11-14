@@ -1309,8 +1309,130 @@ export function updateOverlayBrandBadge(carFolder?: string): void {
   });
 }
 
+function loadDisabledWidgets(): Set<string> {
+  try {
+    const raw = localStorage.getItem("mmt-hud-disabled-widgets");
+    if (raw) return new Set(JSON.parse(raw) as string[]);
+  } catch {}
+  return new Set();
+}
+
+function saveDisabledWidgets(set: Set<string>): void {
+  try {
+    localStorage.setItem("mmt-hud-disabled-widgets", JSON.stringify(Array.from(set)));
+  } catch {}
+}
+
+function applyHudCustomAppearance(): void {
+  const vars = ThemeEngine.getInstance().getActiveVariables();
+  const disabled = loadDisabledWidgets();
+  document.querySelectorAll<HTMLElement>(".mmt-float-widget").forEach((el) => {
+    const key = el.dataset.widget || "";
+    if (key && disabled.has(key)) {
+      el.hidden = true;
+    }
+    el.style.opacity = String(vars.opacity);
+    (el.style as CSSStyleDeclaration & { zoom?: string }).zoom = String(vars.scale);
+  });
+}
+
 export function paintOverlays(): void {
   updateOverlayBrandBadge();
+  applyHudCustomAppearance();
+
+  const studio = document.getElementById("overlayCustomStudio");
+  if (studio && !studio.dataset.wired) {
+    studio.dataset.wired = "1";
+    const theme = ThemeEngine.getInstance();
+    const layout = SmartLayoutManager.getInstance();
+    const vars = theme.getActiveVariables();
+
+    const presetSel = document.getElementById("hudPresetSelect") as HTMLSelectElement | null;
+    if (presetSel) {
+      presetSel.value = theme.getPreset();
+      presetSel.addEventListener("change", () => {
+        theme.setPreset(presetSel.value as "dark-carbon" | "minimal-transparent" | "high-contrast" | "retro-tv");
+        applyHudCustomAppearance();
+      });
+    }
+
+    const opRange = document.getElementById("hudOpacityRange") as HTMLInputElement | null;
+    const opVal = document.getElementById("hudOpacityVal");
+    if (opRange) {
+      opRange.value = String(Math.round(vars.opacity * 100));
+      if (opVal) opVal.textContent = `${opRange.value}%`;
+      opRange.addEventListener("input", () => {
+        const pct = Number(opRange.value);
+        if (opVal) opVal.textContent = `${pct}%`;
+        theme.setCustomVars({ opacity: pct / 100 });
+        applyHudCustomAppearance();
+      });
+    }
+
+    const scRange = document.getElementById("hudScaleRange") as HTMLInputElement | null;
+    const scVal = document.getElementById("hudScaleVal");
+    if (scRange) {
+      scRange.value = String(Math.round(vars.scale * 100));
+      if (scVal) scVal.textContent = `${scRange.value}%`;
+      scRange.addEventListener("input", () => {
+        const pct = Number(scRange.value);
+        if (scVal) scVal.textContent = `${pct}%`;
+        theme.setCustomVars({ scale: pct / 100 });
+        applyHudCustomAppearance();
+      });
+    }
+
+    const repChk = document.getElementById("hudShowInReplays") as HTMLInputElement | null;
+    if (repChk) {
+      repChk.checked = localStorage.getItem("mmt-hud-show-replays") !== "0";
+      repChk.addEventListener("change", () => {
+        localStorage.setItem("mmt-hud-show-replays", repChk.checked ? "1" : "0");
+      });
+    }
+
+    const allSesChk = document.getElementById("hudShowAllSessions") as HTMLInputElement | null;
+    if (allSesChk) {
+      allSesChk.checked = localStorage.getItem("mmt-hud-show-all-sessions") !== "0";
+      allSesChk.addEventListener("change", () => {
+        localStorage.setItem("mmt-hud-show-all-sessions", allSesChk.checked ? "1" : "0");
+      });
+    }
+
+    const strChk = document.getElementById("hudStreamerMode") as HTMLInputElement | null;
+    if (strChk) {
+      strChk.checked = layout.isStreamerMode();
+      strChk.addEventListener("change", () => {
+        if (layout.isStreamerMode() !== strChk.checked) {
+          layout.toggleStreamerMode();
+        }
+      });
+    }
+
+    const paintWidgetBtns = () => {
+      const disabled = loadDisabledWidgets();
+      studio.querySelectorAll<HTMLButtonElement>("[data-widget-toggle]").forEach((btn) => {
+        const k = btn.dataset.widgetToggle || "";
+        const active = !disabled.has(k);
+        btn.className = active
+          ? "h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition"
+          : "h-7 px-2.5 rounded-lg border border-r-line bg-r-bg text-r-muted transition";
+      });
+    };
+    paintWidgetBtns();
+
+    studio.querySelectorAll<HTMLButtonElement>("[data-widget-toggle]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const k = btn.dataset.widgetToggle || "";
+        if (!k) return;
+        const disabled = loadDisabledWidgets();
+        if (disabled.has(k)) disabled.delete(k);
+        else disabled.add(k);
+        saveDisabledWidgets(disabled);
+        paintWidgetBtns();
+        applyHudCustomAppearance();
+      });
+    });
+  }
   const toggleBtn = document.getElementById("overlayModeToggle");
   const btnUnlock = document.getElementById("btnUnlockLayout");
   const btnReset = document.getElementById("btnResetLayout");
@@ -2040,23 +2162,29 @@ function updateHUDDisplay(sample: LiveSample): void {
       rpm: 7500,
     });
 
-    // Bloque 21: Contextual visibility rules (Replay, Qualy, Lap 1, Pit Road, Boss Key)
+    // Bloque 21: Contextual visibility rules (works in BOTH Replays and Race by default, customizable in Studio)
     const vis = VisibilityRulesEngine.getInstance();
+    const showReplays = localStorage.getItem("mmt-hud-show-replays") !== "0";
+    const showAllSess = localStorage.getItem("mmt-hud-show-all-sessions") !== "0";
+    const disabledWidgets = loadDisabledWidgets();
     const visCtx = {
-      isReplayPlaying: irsdkState.isReplayPlaying,
-      sessionType: session.sessionType || "",
+      isReplayPlaying: showReplays ? false : irsdkState.isReplayPlaying,
+      sessionType: showAllSess ? "Race" : (session.sessionType || ""),
       sessionState: frame.sessionState || 4,
       camCarIdx: irsdkState.camCarIdx,
-      activeLap: frame.carIdxLap[irsdkState.camCarIdx] || 1,
-      lapDistPct: frame.carIdxLapDistPct[irsdkState.camCarIdx] || 0,
+      activeLap: showAllSess ? 2 : (frame.carIdxLap[irsdkState.camCarIdx] || 1),
+      lapDistPct: showAllSess ? 0.5 : (frame.carIdxLapDistPct[irsdkState.camCarIdx] || 0),
       onPitRoad: irsdkState.onPitRoad,
     };
 
-    vis.applyElementVisibility(document.getElementById("floatRelativeCard"), vis.evaluateVisibility("relative", visCtx));
-    vis.applyElementVisibility(document.getElementById("floatStandingsCard"), vis.evaluateVisibility("standings", visCtx));
-    vis.applyElementVisibility(document.getElementById("floatFuelCard"), vis.evaluateVisibility("fuel", visCtx));
-    vis.applyElementVisibility(document.getElementById("floatInputsCard"), vis.evaluateVisibility("pedals", visCtx));
-    vis.applyElementVisibility(document.getElementById("floatWaveformCard"), vis.evaluateVisibility("waveform", visCtx));
+    vis.applyElementVisibility(document.getElementById("floatRelativeCard"), !disabledWidgets.has("relative") && vis.evaluateVisibility("relative", visCtx));
+    vis.applyElementVisibility(document.getElementById("floatStandingsCard"), !disabledWidgets.has("standings") && vis.evaluateVisibility("standings", visCtx));
+    vis.applyElementVisibility(document.getElementById("floatFuelCard"), !disabledWidgets.has("fuel") && vis.evaluateVisibility("fuel", visCtx));
+    vis.applyElementVisibility(document.getElementById("floatInputsCard"), !disabledWidgets.has("inputs") && vis.evaluateVisibility("pedals", visCtx));
+    vis.applyElementVisibility(document.getElementById("floatWaveformCard"), !disabledWidgets.has("waveform") && vis.evaluateVisibility("waveform", visCtx));
+    vis.applyElementVisibility(document.getElementById("floatClusterCard"), !disabledWidgets.has("cluster"));
+    vis.applyElementVisibility(document.getElementById("floatShiftLightsRow"), !disabledWidgets.has("lights"));
+    applyHudCustomAppearance();
 
     // Auto-hide top edit bar when on track (OnPitRoad === false)
     if (!floatEditMode) {
