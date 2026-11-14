@@ -4,7 +4,6 @@ import MediaLightbox from '../components/MediaLightbox.astro';
 import MediaCarousel from '../components/MediaCarousel.astro';
 import { CAR_CATALOG_LIST, type CarMetadata } from '../../desktop/src/cars/catalog';
 import { getBrandGallerySlides } from '../lib/car-gallery';
-import { getCarVideos } from '../lib/video-links';
 
 export function getStaticPaths() {
   const slugify = (brand: string) =>
@@ -123,8 +122,7 @@ const pageDescription = `Catálogo completo de vehículos ${brandName} en iRacin
 
     <section aria-label={`Modelos ${brandName}`} class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
       {cars.map((car) => {
-        const vids = getCarVideos(car.brand, car.model, car.carClass, car.carFolder);
-        const fallbackImg = vids[0]?.thumbnail || '/assets/img/hero-bg.webp';
+        const carImg = car.previewImg || `/assets/cars/${car.carFolder.toLowerCase()}.webp`;
         return (
           <article class="rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-200 overflow-hidden flex flex-col justify-between group">
             <div>
@@ -134,7 +132,7 @@ const pageDescription = `Catálogo completo de vehículos ${brandName} en iRacin
                 title={`Ver ficha técnica completa de ${car.brand} ${car.model}`}
               >
                 <img
-                  src={car.previewImg || fallbackImg}
+                  src={carImg}
                   alt={`${car.brand} ${car.model}`}
                   width="344"
                   height="182"

@@ -2,7 +2,6 @@
 import Layout from '../../layouts/Layout.astro';
 import MediaLightbox from '../../components/MediaLightbox.astro';
 import MediaCarousel from '../../components/MediaCarousel.astro';
-import VideoModal from '../../components/VideoModal.astro';
 import { CAR_CATALOG_LIST, type CarMetadata } from '../../../desktop/src/cars/catalog';
 import { getBrandOrigin, getCarDossier } from '../../data/car-dossiers';
 import { getCarVideos } from '../../lib/video-links';
@@ -286,17 +285,15 @@ const pageDescription = `${car.brand} ${car.model} (${car.carClass}): ${dossier.
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
         {carVideos.map((vid) => (
-          <div class="rounded-2xl overflow-hidden border border-[var(--r-line)] bg-[var(--r-surface)] hover:border-[var(--r-accent)] transition-all duration-300 flex flex-col justify-between shadow-sm hover:shadow-md group">
+          <a
+            href={vid.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="rounded-2xl overflow-hidden border border-[var(--r-line)] bg-[var(--r-surface)] hover:border-[var(--r-accent)] transition-all duration-300 flex flex-col justify-between shadow-sm hover:shadow-md group block"
+            title={`Ver vídeo en YouTube: ${vid.title}`}
+          >
             <div>
-              <div
-                class="relative aspect-[16/9] bg-[#090d12] overflow-hidden cursor-pointer"
-                data-video-id={vid.videoId}
-                data-video-title={vid.title}
-                data-video-channel={vid.channel}
-                role="button"
-                tabindex="0"
-                aria-label={`Reproducir vídeo: ${vid.title}`}
-              >
+              <div class="relative aspect-[16/9] bg-[#090d12] overflow-hidden">
                 <img
                   src={vid.thumbnail}
                   alt={vid.title}
@@ -332,12 +329,7 @@ const pageDescription = `${car.brand} ${car.model} (${car.carClass}): ${dossier.
                 <span class="text-[10px] font-mono text-[var(--r-muted)] uppercase tracking-wider block">
                   {vid.channel}
                 </span>
-                <h3
-                  class="text-sm font-bold text-[var(--r-text)] group-hover:text-[var(--r-accent)] transition-colors line-clamp-2 cursor-pointer"
-                  data-video-id={vid.videoId}
-                  data-video-title={vid.title}
-                  data-video-channel={vid.channel}
-                >
+                <h3 class="text-sm font-bold text-[var(--r-text)] group-hover:text-[var(--r-accent)] transition-colors line-clamp-2">
                   {vid.title}
                 </h3>
                 <p class="text-xs text-[var(--r-muted)] line-clamp-2 leading-relaxed">
@@ -346,32 +338,14 @@ const pageDescription = `${car.brand} ${car.model} (${car.carClass}): ${dossier.
               </div>
             </div>
 
-            <div class="px-4 pb-4 pt-2 border-t border-[var(--r-line)] flex items-center justify-between text-xs font-mono font-bold">
-              <button
-                type="button"
-                data-video-id={vid.videoId}
-                data-video-title={vid.title}
-                data-video-channel={vid.channel}
-                class="text-[var(--r-text)] hover:text-[var(--r-accent)] transition flex items-center gap-1.5 cursor-pointer"
-              >
-                <span>▶ Reproducir</span>
-              </button>
-              <a
-                href={vid.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="text-[var(--r-accent)] hover:underline flex items-center gap-1"
-                title="Abrir directamente en YouTube"
-              >
-                <span>Ver en YouTube</span>
-                <span class="group-hover:translate-x-0.5 transition-transform">↗</span>
-              </a>
+            <div class="px-4 pb-4 pt-2 border-t border-[var(--r-line)] flex items-center justify-between text-xs font-mono font-bold text-[var(--r-accent)]">
+              <span>Ver vídeo en YouTube</span>
+              <span class="group-hover:translate-x-1 transition-transform">↗</span>
             </div>
-          </div>
+          </a>
         ))}
       </div>
     </section>
   </main>
   <MediaLightbox />
-  <VideoModal />
 </Layout>
