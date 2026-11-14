@@ -82,6 +82,11 @@ export interface IrsdkTelemetryFrame {
 
   fuelLevel: number;
   fuelLevelPct: number;
+  trackTempC?: number;
+  airTempC?: number;
+  windKmh?: number;
+  precipitationPct?: number;
+  trackWetness?: number;
 
   // 64-car arrays from SDK
   carIdxLapDistPct: number[];

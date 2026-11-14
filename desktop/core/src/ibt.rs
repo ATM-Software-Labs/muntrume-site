@@ -156,6 +156,11 @@ pub struct IrsdkFrame {
     pub steering: f64,
     pub fuel_level: f64,
     pub fuel_level_pct: f64,
+    pub track_temp_c: f64,
+    pub air_temp_c: f64,
+    pub wind_kmh: f64,
+    pub precipitation_pct: f64,
+    pub track_wetness: i32,
     pub car_idx_lap_dist_pct: Vec<f64>,
     pub car_idx_position: Vec<i32>,
     pub car_idx_class_position: Vec<i32>,
@@ -261,6 +266,14 @@ pub fn read_live_irsdk_frame_with(bytes: &[u8], table: &VarTable) -> Result<Irsd
         steering: val_f("SteeringWheelAngle"),
         fuel_level: val_f("FuelLevel"),
         fuel_level_pct: val_f("FuelLevelPct"),
+        track_temp_c: {
+            let t = val_f("TrackTempCrew");
+            if t > 0.0 { t } else { val_f("TrackTemp") }
+        },
+        air_temp_c: val_f("AirTemp"),
+        wind_kmh: val_f("WindVel") * 3.6,
+        precipitation_pct: (val_f("Precipitation") * 100.0).clamp(0.0, 100.0),
+        track_wetness: val_i("TrackWetness"),
         car_idx_lap_dist_pct: arr_f("CarIdxLapDistPct"),
         car_idx_position: arr_i("CarIdxPosition"),
         car_idx_class_position: arr_i("CarIdxClassPosition"),

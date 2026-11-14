@@ -181,7 +181,7 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
     : "";
 
   const headerHtml = `
-    <div class="flex items-center justify-between pb-1 mb-1.5 border-b border-white/10 text-[10px] uppercase font-bold tracking-wider">
+    <div class="flex items-center justify-between pb-1 mb-1 border-b border-white/10 text-[10px] uppercase font-bold tracking-wider">
       <div class="flex items-center gap-1.5">
         <span class="text-white/60">${isPractice ? "PRAC" : "RACE"}</span>
         ${sofPill}
@@ -190,6 +190,18 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
       </div>
       <span class="text-[9px] text-white/60 font-mono tabular-nums">${isPractice ? "BEST" : lapStr}</span>
     </div>
+    ${(() => {
+      const tTrack = state.frame.trackTempC;
+      const tAir = state.frame.airTempC;
+      const rain = state.frame.precipitationPct ?? 0;
+      const wind = state.frame.windKmh ?? 0;
+      if (typeof tTrack !== "number" || tTrack <= 0) return "";
+      const rainLabel = rain > 0 ? `<span class="text-sky-300 font-bold">LLUVIA ${Math.round(rain)}%</span>` : `<span class="text-emerald-300">SECO</span>`;
+      return `<div class="flex items-center justify-between pb-1 mb-1 text-[9px] font-mono tabular-nums text-white/65 border-b border-white/[0.06]">
+        <span>PISTA <strong class="text-amber-300">${tTrack.toFixed(1)}°</strong> · AIRE ${typeof tAir === "number" ? tAir.toFixed(1) : "--"}°</span>
+        <span>${wind > 0 ? `${Math.round(wind)}km/h · ` : ""}${rainLabel}</span>
+      </div>`;
+    })()}
   `;
 
   // Display top 10 drivers (Kapps Pro density)
