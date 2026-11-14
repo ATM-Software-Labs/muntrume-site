@@ -310,7 +310,7 @@
   });
 
   var params = new URLSearchParams(location.search);
-  var setpw = params.get("setpw");
+  var setpw = params.get("setpw") || params.get("set_password");
   // Enlaces antiguos de correo (/setups#admin → /garage#admin) y redirecciones desde /admin.
   if (location.hash === "#admin" && !params.get("redirect")) {
     params.set("redirect", "/admin?tab=directory");
@@ -328,6 +328,7 @@
   } catch (e) {}
   if (setpw) {
     params.delete("setpw");
+    params.delete("set_password");
     var qs = params.toString();
     try { history.replaceState({}, "", location.pathname + (qs ? "?" + qs : "") + location.hash); } catch (e) {}
     openSetPassword(setpw);

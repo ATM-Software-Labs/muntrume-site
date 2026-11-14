@@ -502,11 +502,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search);
 
   // Enlace de invitación / restablecimiento: ?setpw=TOKEN
-  const setPwToken = urlParams.get("setpw");
+  const setPwToken = urlParams.get("setpw") || urlParams.get("set_password");
   if (setPwToken) {
     // Quitamos el token de la barra de direcciones (y del historial) cuanto antes.
     try {
       urlParams.delete("setpw");
+      urlParams.delete("set_password");
       const qs = urlParams.toString();
       window.history.replaceState({}, "", window.location.pathname + (qs ? `?${qs}` : "") + window.location.hash);
     } catch (e) { /* noop */ }
@@ -4362,6 +4363,17 @@ async function renderAiTrainerForSetup(setup, customModel = null) {
   `;
 }
 
+// iRacing writes session text as UTF-8 in recent builds and as Windows-1252 before that.
+// Decoding UTF-8 bytes as Latin-1 is what produces Ã© / â€™ on track and setup names.
+function decodeTelemetryText(bytes) {
+  try {
+    return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  } catch (e) {
+    try { return new TextDecoder("windows-1252").decode(bytes); }
+    catch (err) { return new TextDecoder("latin1").decode(bytes); }
+  }
+}
+
 // Live Client-Side .IBT 60Hz Telemetry Parser & Instant AI Trainer (<40ms, 0 Server RAM)
 async function handleLiveIbtUpload(event) {
   const file = event.target?.files?.[0];
@@ -4383,7 +4395,7 @@ async function handleLiveIbtUpload(event) {
     const bufOff = view.getInt32(52, true);
 
     const yamlBytes = new Uint8Array(buf, sOff, Math.min(sLen, buf.byteLength - sOff));
-    const yamlStr = new TextDecoder("latin1").decode(yamlBytes);
+    const yamlStr = decodeTelemetryText(yamlBytes);
 
     const getYamlVal = (regex) => {
       const m = yamlStr.match(regex);

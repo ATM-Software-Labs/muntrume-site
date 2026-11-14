@@ -115,8 +115,8 @@
         const slug = slugify(n.title);
         return {
           id: slug,
-          title: n.title,
-          description: n.content,
+          title: repairMojibake(n.title),
+          description: repairMojibake(n.content),
           link: `/article?id=${slug}`,
           slug: slug,
           pubDate: n.date ? new Date(n.date).toISOString() : new Date().toISOString(),
@@ -157,6 +157,23 @@
       } finally { clearTimeout(tid); }
     }
 
+    // UTF-8 leído como Latin-1/Windows-1252 (Ã©, â€™). Si el texto ya es Unicode válido, se deja igual.
+    function repairMojibake(value) {
+      const text = String(value || "");
+      if (!/[\u00C2\u00C3\u00E2]/.test(text)) return text;
+      try {
+        const bytes = Uint8Array.from(text, (ch) => {
+          const code = ch.charCodeAt(0);
+          if (code > 255) throw new Error("wide");
+          return code;
+        });
+        const fixed = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+        return fixed && !fixed.includes("\uFFFD") ? fixed : text;
+      } catch (e) {
+        return text;
+      }
+    }
+
     function safeLink(u) {
       if (typeof u !== 'string') return '#';
       if (u.startsWith('/article') || u.startsWith('article.html')) return u;
@@ -172,7 +189,7 @@
         const liveItems = data.items
           .filter(i => i && i.title && i.link)
           .map(i => ({
-            title: String(i.title), description: String(i.description || ''), link: safeLink(i.link),
+            title: repairMojibake(i.title), description: repairMojibake(i.description || ''), link: safeLink(i.link),
             pubDate: i.pubDate || null, source: String(i.source || ''), thumbnail: i.thumbnail || null,
             autoCategory: (() => {
             const text = ((i.title || '') + ' ' + (i.description || '')).toLowerCase();
