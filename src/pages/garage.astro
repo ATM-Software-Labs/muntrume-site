@@ -190,7 +190,7 @@ const garageSchema = {
       <header class="g2-head">
         <p class="r-kicker" data-i18n="garage.kicker">Setups .sto</p>
         <h1 id="garageTitle" class="r-h2" data-i18n="garage.title">Garage</h1>
-        <p class="r-lead"><span data-i18n-num={catalog.total_setups}>{catalog.total_setups.toLocaleString("es-ES")}</span> <span data-i18n="garage.lead">archivos en el catálogo. La descarga pide sesión de piloto: el navegador no genera el .sto.</span></p>
+        <p class="r-lead"><span data-i18n-num={catalog.total_setups}>{catalog.total_setups.toLocaleString("es-ES")}</span> <span data-i18n="garage.lead">archivos en el catálogo oficial de Muntrume Motorsport listos para descargar o sincronizar con MMT Sync.</span></p>
       </header>
 
       <article class="g2-sync">
@@ -291,7 +291,7 @@ const garageSchema = {
                         <circle cx="12" cy="12" r="3" />
                       </svg>
                     </button>
-                    <button type="button" class="g2-dl" data-download data-id={item.id} data-file={item.file} data-auth="pending" data-i18n="garage.dl.out">Inicia sesión</button>
+                    <button type="button" class="g2-dl" data-download data-id={item.id} data-file={item.file} data-car={item.car} data-auth="in" data-i18n="garage.dl.in">Descargar</button>
                   </div>
                 </td>
               </tr>

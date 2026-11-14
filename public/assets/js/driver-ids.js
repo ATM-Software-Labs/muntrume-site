@@ -13,22 +13,7 @@
   }
   function msg(t, err) { var m = document.getElementById("driverIdsMsg"); if (m) { m.textContent = t; m.style.color = err ? "#f87171" : "#34d399"; } }
   function call(body) {
-    return post("driver/iracing", body).then(function (o) {
-      if (o.status === 403 && o.data.code === "reauth_required") return reauth().then(function (ok) { return ok ? post("driver/iracing", body) : o; });
-      return o;
-    });
-  }
-  function reauth() {
-    var u = user(); if (!u || !u.email) return Promise.resolve(false);
-    return post("code/request", { email: u.email }).then(function (o) {
-      if (!o.data.success) { msg(o.data.error || "No se pudo enviar el código.", true); return false; }
-      var code = window.prompt("Te he enviado un código de 6 dígitos a " + u.email + ". Escríbelo para confirmar:");
-      if (!code) return false;
-      return post("code/verify", { email: u.email, code: code.replace(/\D/g, "") }).then(function (v) {
-        if (v.data.success && v.data.token) { store().setItem("mrt_vault_token", v.data.token); if (v.data.user) store().setItem("mrt_vault_user", JSON.stringify(v.data.user)); return true; }
-        msg(v.data.error || "Código incorrecto.", true); return false;
-      });
-    });
+    return post("driver/iracing", body);
   }
   function render(list, isAdmin) {
     if (!list.length) { box.innerHTML = '<p class="text-xs text-neutral-400">No hay ninguna ficha de piloto vinculada a tu cuenta. Pide a Race Control que vincule tu email.</p>'; return; }

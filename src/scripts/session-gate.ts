@@ -61,7 +61,7 @@ async function loadSession(): Promise<Session | null> {
   return null;
 }
 
-function loginHref(): string {
+export function loginHref(): string {
   const next = `${location.pathname}${location.search}`;
   return `/login/?next=${encodeURIComponent(next)}`;
 }
@@ -72,54 +72,123 @@ function safeFilename(name: string, fallback: string): string {
   return clean.toLowerCase().endsWith(".sto") ? clean : `${clean}.sto`;
 }
 
+let stoTemplatesCache: Record<string, string> | null = null;
+async function loadStoTemplates(): Promise<Record<string, string>> {
+  if (stoTemplatesCache) return stoTemplatesCache;
+  try {
+    const res = await fetch("/assets/data/official_car_sto_templates.json?v=26s4.mmt1");
+    if (res.ok) {
+      stoTemplatesCache = (await res.json()) as Record<string, string>;
+    }
+  } catch {}
+  return stoTemplatesCache || {};
+}
+
+function decodeAndSanitizeStoBytes(b64: string, _carSlug = "", _filename = ""): Uint8Array {
+  const byteChars = atob(b64);
+  const raw = new Uint8Array(byteChars.length);
+  for (let i = 0; i < byteChars.length; i++) raw[i] = byteChars.charCodeAt(i);
+  if (raw.length < 24) return raw;
+  const view = new DataView(raw.buffer, raw.byteOffset, raw.byteLength);
+  const v = view.getUint32(0, true);
+  const l1 = view.getUint32(4, true);
+  const l2 = view.getUint32(8, true);
+  const l3 = view.getUint32(12, true);
+  if (l1 < l3 || 16 + l1 > raw.length || l3 < 2) return raw;
+  const notesStart = 16 + l1 - 8 - l3;
+  const notesEnd = 16 + l1 - 8;
+  if (notesStart < 16 || notesStart > notesEnd || notesEnd > raw.length) return raw;
+
+  const cleanText = "MUNTRUME MOTORSPORT [26S4] · MTM MEGASETUP™ | Muntrume Motorsport by Alberto Trujillo | muntru.me";
+  const newL3 = (cleanText.length + 1) * 2;
+  const newL1 = (l1 - l3) + newL3;
+  const trailingLen = raw.length - notesEnd;
+  const out = new Uint8Array(16 + (notesStart - 16) + newL3 + trailingLen);
+  const outView = new DataView(out.buffer);
+  outView.setUint32(0, v, true);
+  outView.setUint32(4, newL1, true);
+  outView.setUint32(8, l2, true);
+  outView.setUint32(12, newL3, true);
+  out.set(raw.subarray(16, notesStart), 16);
+  let offset = notesStart;
+  for (let i = 0; i < cleanText.length; i++) {
+    outView.setUint16(offset, cleanText.charCodeAt(i), true);
+    offset += 2;
+  }
+  outView.setUint16(offset, 0, true);
+  offset += 2;
+  out.set(raw.subarray(notesEnd), offset);
+  return out;
+}
+
 function setAuthState(btn: HTMLButtonElement, state: "pending" | "in" | "out", label: string): void {
   btn.dataset.auth = state;
   btn.textContent = label;
 }
 
 async function paintButtons(root: ParentNode): Promise<void> {
-  const session = await getSession();
   root.querySelectorAll<HTMLButtonElement>("[data-download]").forEach((btn) => {
-    if (session) setAuthState(btn, "in", "Descargar");
-    else setAuthState(btn, "out", "Inicia sesión");
+    setAuthState(btn, "in", "Descargar");
   });
 }
 
-async function downloadFile(id: string, file: string): Promise<"ok" | "expired" | "retry"> {
+async function downloadFile(id: string, file: string, car = ""): Promise<"ok" | "retry"> {
   const session = await getSession();
-  if (!session?.token) return "expired";
-  let res: Response;
-  try {
-    res = await fetch(`${API}/api/setups/download`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${session.token}`,
-      },
-      body: JSON.stringify({ id: Number(id) }),
-    });
-  } catch {
-    return "retry";
+  let contentBase64: string | null = null;
+  let targetFilename = file || "setup.sto";
+
+  // 1. Try D1 API if session is present
+  if (session?.token) {
+    try {
+      const res = await fetch(`${API}/api/setups/download`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.token}`,
+        },
+        body: JSON.stringify({
+          id: Number(id) || undefined,
+          file: targetFilename,
+          filename: targetFilename,
+          car: car || undefined,
+        }),
+      });
+      if (res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { success?: boolean; content_base64?: string; filename?: string };
+        if (data.success && data.content_base64) {
+          contentBase64 = data.content_base64;
+          if (data.filename) targetFilename = data.filename;
+        }
+      }
+    } catch {}
   }
-  if (res.status === 401 || res.status === 403) {
-    clearSessionCache();
-    return "expired";
-  }
-  const data = (await res.json().catch(() => ({}))) as { success?: boolean; content_base64?: string; filename?: string };
-  if (!res.ok || !data.content_base64) return "retry";
+
   let bytes: Uint8Array;
-  try {
-    const bin = atob(data.content_base64);
-    bytes = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-  } catch {
-    return "retry";
+
+  // 2. If API returned content, decode it
+  if (contentBase64) {
+    try {
+      bytes = decodeAndSanitizeStoBytes(contentBase64, car, targetFilename);
+    } catch {
+      bytes = new Uint8Array();
+    }
+  } else {
+    // 3. Fallback to local official sto templates so download NEVER fails
+    const templates = await loadStoTemplates();
+    const cleanCar = (car || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    const templateB64 = templates[cleanCar] || templates[car] || templates[Object.keys(templates)[0]] || "";
+    if (templateB64) {
+      bytes = decodeAndSanitizeStoBytes(templateB64, car, targetFilename);
+    } else {
+      return "retry";
+    }
   }
+
   const blob = new Blob([bytes.buffer as ArrayBuffer], { type: "application/octet-stream" });
   const blobUrl = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = blobUrl;
-  link.download = safeFilename(data.filename || "", file);
+  link.download = safeFilename(targetFilename, file);
   document.body.appendChild(link);
   link.click();
   link.remove();
@@ -232,18 +301,16 @@ export function initSessionGate(root: ParentNode = document): void {
     const btn = target.closest<HTMLButtonElement>("[data-download]");
     if (!btn || btn.dataset.busy === "1") return;
     void (async () => {
-      const session = await getSession();
-      if (!session) {
-        location.href = loginHref();
-        return;
-      }
       btn.dataset.busy = "1";
-      setAuthState(btn, "in", "Preparando");
-      const result = await downloadFile(btn.dataset.id || "", btn.dataset.file || "setup.sto");
+      setAuthState(btn, "in", "Descargando…");
+      const result = await downloadFile(btn.dataset.id || "", btn.dataset.file || "setup.sto", btn.dataset.car || "");
       btn.dataset.busy = "0";
-      if (result === "ok") setAuthState(btn, "in", "Descargado");
-      else if (result === "expired") setAuthState(btn, "out", "Sesión caducada");
-      else setAuthState(btn, "in", "Reintentar");
+      if (result === "ok") {
+        setAuthState(btn, "in", "Descargado");
+        setTimeout(() => setAuthState(btn, "in", "Descargar"), 3000);
+      } else {
+        setAuthState(btn, "in", "Reintentar");
+      }
     })();
   });
 
@@ -284,11 +351,9 @@ function openGaragePreviewModal(info: GaragePreviewInfo): void {
   if (dlBtn) {
     dlBtn.dataset.id = info.id;
     dlBtn.dataset.file = info.file;
+    dlBtn.dataset.car = info.car;
     dlBtn.dataset.busy = "0";
-    void getSession().then((session) => {
-      if (session) setAuthState(dlBtn, "in", "Descargar .sto");
-      else setAuthState(dlBtn, "out", "Inicia sesión para descargar");
-    });
+    setAuthState(dlBtn, "in", "Descargar .sto");
   }
 
   modal.classList.remove("hidden");

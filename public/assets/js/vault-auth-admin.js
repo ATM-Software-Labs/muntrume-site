@@ -205,19 +205,13 @@
   };
 
   // adminApi con reintento tras verificar por código
-  window.adminApi = async function (path, payload, _retried) {
+  window.adminApi = async function (path, payload) {
     const res = await fetch(`${API_BASE}/api/setups/${path}`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${currentToken}` },
       body: JSON.stringify(payload || {}),
     });
     const data = await res.json().catch(() => ({}));
-    if (res.status === 403 && data.code === "reauth_required" && !_retried) {
-      const ok = await openReauth();
-      if (ok) return window.adminApi(path, payload, true);
-      closeAdminModal();
-      return { res, data };
-    }
     if (res.status === 401) { closeAdminModal(); handleAuthFailure(res, data); }
     return { res, data };
   };

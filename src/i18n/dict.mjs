@@ -108,7 +108,7 @@ export const dict = {
 
   "garage.kicker": { en: "Setups .sto", ca: "Setups .sto", fr: "Setups .sto" },
   "garage.title": { en: "Garage", ca: "Garage", fr: "Garage" },
-  "garage.lead": { en: "files in the catalogue. Download asks for a driver session: the browser does not build the .sto.", ca: "fitxers al catàleg. La descàrrega demana sessió de pilot: el navegador no genera el .sto.", fr: "fichiers dans le catalogue. Le téléchargement demande une session pilote : le navigateur ne génère pas le .sto." },
+  "garage.lead": { en: "files in the official Muntrume Motorsport catalogue ready to download or sync with MMT Sync.", ca: "fitxers al catàleg oficial de Muntrume Motorsport llestos per descarregar o sincronitzar amb MMT Sync.", fr: "fichiers dans le catalogue officiel de Muntrume Motorsport prêts à être téléchargés ou synchronisés avec MMT Sync." },
   "garage.sync.title": { en: "MMT Sync", ca: "MMT Sync", fr: "MMT Sync" },
   "garage.sync.body": { en: "Windows · v0.1.26. Copies setups into the iRacing folder.", ca: "Windows · v0.1.26. Copia els setups a la carpeta d'iRacing.", fr: "Windows · v0.1.26. Copie les setups dans le dossier iRacing." },
   "garage.sync.download": { en: "Download", ca: "Descarrega", fr: "Télécharger" },
@@ -132,7 +132,7 @@ export const dict = {
   "garage.caption": { en: "Garage setups", ca: "Setups del garage", fr: "Setups du garage" },
   "garage.more": { en: "Load more", ca: "Carrega'n més", fr: "Charger plus" },
   "garage.dl.in": { en: "Download", ca: "Descarrega", fr: "Télécharger" },
-  "garage.dl.out": { en: "Log in", ca: "Inicia la sessió", fr: "Connexion" },
+  "garage.dl.out": { en: "Download", ca: "Descarrega", fr: "Télécharger" },
   "garage.kind.race": { en: "Race", ca: "Cursa", fr: "Course" },
   "garage.kind.qualy": { en: "Qualifying", ca: "Classificació", fr: "Qualifications" },
   "garage.kind.wet": { en: "Wet", ca: "Pluja", fr: "Pluie" },

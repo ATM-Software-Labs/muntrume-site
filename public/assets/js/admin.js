@@ -30,38 +30,8 @@ async function rcRawPost(path, body) {
   return { res, data };
 }
 
-let rcReauthPromise = null;
-function rcReauth() {
-  if (rcReauthPromise) return rcReauthPromise;
-  rcReauthPromise = (async () => {
-    let email = "";
-    try { email = JSON.parse(localStorage.getItem("mrt_vault_user") || sessionStorage.getItem("mrt_vault_user") || "{}").email || ""; } catch {}
-    if (!email) return false;
-    const reqOut = await rcRawPost("/api/setups/code/request", { email });
-    if (!reqOut.data.success) {
-      showRcNotice("No se pudo enviar el código", reqOut.data.error || "Inténtalo de nuevo en un minuto.", "err");
-      return false;
-    }
-    const code = window.prompt(`Por seguridad, Race Control requiere verificación.\n\nTe he enviado un código de 6 dígitos a ${email}. Escríbelo aquí:`);
-    if (!code) return false;
-    const v = await rcRawPost("/api/setups/code/verify", { email, code: code.replace(/\D/g, "") });
-    if (v.data.success && v.data.token) {
-      rcStoreSession(v.data.token, v.data.user || null);
-      return true;
-    }
-    showRcNotice("Código incorrecto", v.data.error || "Código incorrecto o caducado.", "err");
-    return false;
-  })().finally(() => { setTimeout(() => { rcReauthPromise = null; }, 0); });
-  return rcReauthPromise;
-}
-
-async function rcAdminFetch(path, body = {}, _retried = false) {
+async function rcAdminFetch(path, body = {}) {
   const { res, data } = await rcRawPost(path, body);
-  if (res.status === 403 && data.code === "reauth_required" && !_retried) {
-    const ok = await rcReauth();
-    if (ok) return rcAdminFetch(path, body, true);
-    throw new Error("Verificación por código necesaria para usar Race Control.");
-  }
   if (res.status === 401) {
     secureAdminLogout("invalid_token");
     throw new Error(data.error || "Sesión caducada. Vuelve a iniciar sesión.");
@@ -374,7 +344,7 @@ function hideRcNotice() {
 }
 
 function switchAdminTab(tabId) {
-  const validTabs = ["overview", "directory", "setups", "domains", "iracing", "security"];
+  const validTabs = ["overview", "directory", "setups", "iracing", "security"];
   const chosen = validTabs.includes(tabId) ? tabId : "overview";
   rcState.activeTab = chosen;
 
@@ -465,15 +435,22 @@ async function refreshRaceControlData() {
 function renderOverviewSection() {
   const kpiDrivers = document.getElementById("kpiDriversCount");
   const kpiPendingSub = document.getElementById("kpiPendingSub");
+  const kpiPendingCount = document.getElementById("kpiPendingCount");
+  const kpiPendingStatus = document.getElementById("kpiPendingStatusBadge");
   const sidebarBadge = document.getElementById("sidebarPendingBadge");
   const pendingCount = rcState.pendingRequests.length;
 
   if (kpiDrivers) kpiDrivers.textContent = String(rcState.members.length);
+  if (kpiPendingCount) kpiPendingCount.textContent = String(pendingCount);
+  if (kpiPendingStatus) {
+    kpiPendingStatus.textContent = pendingCount > 0 ? `${pendingCount} nuevas` : "Al día";
+    kpiPendingStatus.className = `rc-badge ${pendingCount > 0 ? "rc-badge--warn" : "rc-badge--ok"}`;
+  }
   if (kpiPendingSub) {
     kpiPendingSub.textContent =
       pendingCount > 0
         ? `${rcState.members.length} titulares activos · ${pendingCount} solicitud(es) pendiente(s)`
-        : `${rcState.members.length} pilotos titulares con acceso verificado (0 solicitudes pendientes)`;
+        : `${rcState.members.length} pilotos oficiales del equipo`;
   }
   if (sidebarBadge) {
     sidebarBadge.textContent = pendingCount > 0 ? `${rcState.members.length}+${pendingCount}` : String(rcState.members.length);
@@ -483,7 +460,9 @@ function renderOverviewSection() {
   if (tbody) {
     tbody.innerHTML = rcState.members.map((p) => {
       const initial = (p.name || p.email || "M").slice(0, 2).toUpperCase();
-      const isOwner = p.email.toLowerCase() === "atrumin16@gmail.com" || p.role === "admin";
+      const tInfo = rcState.liveTelemetryBySlug[p.slug] || {};
+      const irating = tInfo.irating || p.irating || "";
+      const sr = tInfo.sr || p.sr || "";
       return `
         <tr>
           <td>
@@ -496,9 +475,9 @@ function renderOverviewSection() {
             </div>
           </td>
           <td><span class="rc-badge ${p.role === "admin" ? "rc-badge--ok" : ""}">${rcEscape(p.roleLabel)}</span></td>
-          <td><code>${rcEscape(p.email)}</code></td>
+          <td><code>${rcEscape(p.cust_id || tInfo.cust_id || "—")}</code></td>
           <td>
-            <div class="rc-mono-sub">Registro: ${p.created_at ? new Date(p.created_at).toLocaleDateString("es-ES") : "—"}</div>
+            <div class="rc-mono-sub">${irating ? `${irating} iR · ${sr}` : "Sincronizado"}</div>
           </td>
           <td><span class="rc-badge ${p.status === "active" ? "rc-badge--ok" : "rc-badge--err"}">${p.status === "active" ? (p.has_password ? "Activa" : "Pendiente clave") : "Bloqueada"}</span></td>
           <td class="text-right">
@@ -627,7 +606,6 @@ function renderDirectoryTable() {
         </td>
         <td>
           <div><code>${rcEscape(m.email)}</code></div>
-          ${m.mailbox && m.mailbox !== m.email ? `<div class="rc-mono-sub">Buzón: ${rcEscape(m.mailbox)}</div>` : ""}
         </td>
         <td>
           <span class="rc-badge ${m.role === "admin" ? "rc-badge--ok" : ""}">${rcEscape(m.roleLabel || (m.role === "admin" ? "Admin" : "Official Driver"))}</span>

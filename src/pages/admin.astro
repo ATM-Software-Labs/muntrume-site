@@ -105,13 +105,8 @@ const totalCircuits = catalog.circuits?.length || 128;
             </button>
             <button type="button" id="nav-setups" data-rc-tab="setups" class="rc-nav__btn" onclick="switchAdminTab('setups')">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-6"/></svg>
-              <span>Vault MMT &amp; NEC BoP</span>
+              <span>Vault MMT (.STO)</span>
               <span class="rc-nav__pill">42.6k</span>
-            </button>
-            <button type="button" id="nav-domains" data-rc-tab="domains" class="rc-nav__btn" onclick="switchAdminTab('domains')">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-              <span>Buzones @muntru.me</span>
-              <span class="rc-nav__pill">5</span>
             </button>
             <button type="button" id="nav-iracing" data-rc-tab="iracing" class="rc-nav__btn" onclick="switchAdminTab('iracing')">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
@@ -176,8 +171,18 @@ const totalCircuits = catalog.circuits?.length || 128;
                 <span class="rc-badge rc-badge--ok" id="kpiDriversBadge">D1 Activo</span>
               </div>
               <div class="rc-kpi-val" id="kpiDriversCount">{PILOTOS.length}</div>
-              <p class="rc-kpi-sub" id="kpiPendingSub">Pilotos titulares con acceso verificado (0 solicitudes pendientes)</p>
+              <p class="rc-kpi-sub" id="kpiPendingSub">Pilotos oficiales del equipo</p>
               <button type="button" class="rc-kpi-link" onclick="switchAdminTab('directory')">Gestionar Directorio →</button>
+            </article>
+
+            <article class="rc-kpi-card">
+              <div class="rc-kpi-card__top">
+                <span class="rc-kpi-tag">SOLICITUDES PENDIENTES</span>
+                <span class="rc-badge rc-badge--ok" id="kpiPendingStatusBadge">Al día</span>
+              </div>
+              <div class="rc-kpi-val" id="kpiPendingCount">0</div>
+              <p class="rc-kpi-sub">Solicitudes de acceso al Vault</p>
+              <button type="button" class="rc-kpi-link" onclick="switchAdminTab('directory')">Revisar Solicitudes →</button>
             </article>
 
             <article class="rc-kpi-card">
@@ -186,28 +191,18 @@ const totalCircuits = catalog.circuits?.length || 128;
                 <span class="rc-badge rc-badge--ok">26S4</span>
               </div>
               <div class="rc-kpi-val" id="kpiSetupsCount">{fmt(totalSetups)}</div>
-              <p class="rc-kpi-sub">{totalCars} coches · {totalCircuits} circuitos · Nomenclatura oficial <code>MMT_</code></p>
-              <button type="button" class="rc-kpi-link" onclick="switchAdminTab('setups')">Auditar Setups &amp; BoP →</button>
+              <p class="rc-kpi-sub">{totalCars} coches · {totalCircuits} circuitos oficiales</p>
+              <button type="button" class="rc-kpi-link" onclick="switchAdminTab('setups')">Ver Setups →</button>
             </article>
 
             <article class="rc-kpi-card">
               <div class="rc-kpi-card__top">
-                <span class="rc-kpi-tag">ESPECIAL NEC · VLN</span>
-                <span class="rc-badge rc-badge--ok">W01–W13</span>
+                <span class="rc-kpi-tag">BASE DE DATOS D1</span>
+                <span class="rc-badge rc-badge--ok">Edge Online</span>
               </div>
-              <div class="rc-kpi-val">1,638</div>
-              <p class="rc-kpi-sub">Setups en Nürburgring Combined Gesamtstrecke VLN (Altura &ge; 70.5 mm)</p>
-              <button type="button" class="rc-kpi-link" onclick="switchAdminTab('setups')">Ver Calendario NEC →</button>
-            </article>
-
-            <article class="rc-kpi-card">
-              <div class="rc-kpi-card__top">
-                <span class="rc-kpi-tag">CORREO &amp; SEGURIDAD</span>
-                <span class="rc-badge rc-badge--ok">Zero-Trust</span>
-              </div>
-              <div class="rc-kpi-val">5 / 100%</div>
-              <p class="rc-kpi-sub">5 buzones <code>@muntru.me</code> · 0 Failed Tech · PBKDF2 100k iter.</p>
-              <button type="button" class="rc-kpi-link" onclick="switchAdminTab('domains')">Abrir Buzones &amp; DNS →</button>
+              <div class="rc-kpi-val">10,162</div>
+              <p class="rc-kpi-sub">Cloudflare D1 &amp; Workers API</p>
+              <button type="button" class="rc-kpi-link" onclick="refreshRaceControlData()">Sincronizar D1 →</button>
             </article>
           </div>
 
@@ -229,7 +224,7 @@ const totalCircuits = catalog.circuits?.length || 128;
                   <tr>
                     <th>Dorsal &amp; Piloto</th>
                     <th>Rol Institucional</th>
-                    <th>Buzón @muntru.me</th>
+                    <th>iRacing cust_id</th>
                     <th>Sports Car iRating / SR</th>
                     <th>Estado Vault</th>
                     <th class="text-right">Acciones</th>
@@ -243,13 +238,13 @@ const totalCircuits = catalog.circuits?.length || 128;
                           <span class="rc-avatar">#{p.dorsal}</span>
                           <div>
                             <div class="rc-strong">{p.fullName}</div>
-                            <div class="rc-mono-sub">cust_id: {p.cust_id || 'Pendiente'}</div>
+                            <div class="rc-mono-sub">cust_id: {p.cust_id || 'Sin vincular'}</div>
                           </div>
                         </div>
                       </td>
                       <td><span class="rc-badge">{p.role}</span></td>
-                      <td><code>{p.slug === 'albertot' ? 'alberto@muntru.me' : p.slug === 'mateob' ? 'mateo@muntru.me' : p.slug === 'eduardoc' ? 'eduardo@muntru.me' : 'juanlu@muntru.me'}</code></td>
-                      <td><span class="rc-mono-sub">Sincronizando…</span></td>
+                      <td><code>{p.cust_id || 'Sin vincular'}</code></td>
+                      <td><span class="rc-mono-sub">Sincronizado</span></td>
                       <td><span class="rc-badge rc-badge--ok">Verificado</span></td>
                       <td class="text-right">
                         <a href={`/drivers/${p.slug}/`} class="r-btn r-btn--sm">Perfil ↗</a>
@@ -362,7 +357,7 @@ const totalCircuits = catalog.circuits?.length || 128;
                 <thead>
                   <tr>
                     <th>Piloto &amp; Identidad</th>
-                    <th>Correo de Acceso / Buzón</th>
+                    <th>Correo de Acceso</th>
                     <th>Rol &amp; Dorsal</th>
                     <th>Licencia / Telemetría</th>
                     <th>Estado Credencial</th>
@@ -517,69 +512,6 @@ const totalCircuits = catalog.circuits?.length || 128;
           </div>
         </section>
 
-        <!-- =============================================================== -->
-        <!-- TAB 4: BUZONES @MUNTRU.ME, CLOUDFLARE ROUTING & WEBMAIL         -->
-        <!-- =============================================================== -->
-        <section id="tab-domains" class="rc-panel space-y-6 hidden">
-          <div class="rc-section-head">
-            <div>
-              <p class="r-kicker">Comunicaciones &amp; Dominio Institucional</p>
-              <h2 class="r-h3">Buzones @muntru.me &amp; Despacho de Correo</h2>
-              <p class="rc-muted">Enrutamiento Cloudflare Email Routing + Resend API transaccional y acceso directo al Webmail corporativo.</p>
-            </div>
-            <div class="rc-btn-row">
-              <a href="/communications" class="r-btn r-btn--sm">Bandeja Interna (/communications) →</a>
-              <a href="https://mail.trujillomingorance.com" target="_blank" rel="noopener noreferrer" class="r-btn r-btn--primary r-btn--sm">Abrir Webmail Corporativo ↗</a>
-            </div>
-          </div>
-
-          <div class="rc-kpi-grid">
-            <div class="rc-kpi-card">
-              <span class="rc-kpi-tag">DOMINIO PRIMARIO</span>
-              <div class="rc-kpi-val">muntru.me</div>
-              <p class="rc-kpi-sub">Cloudflare DNS + Email Routing Activo</p>
-            </div>
-            <div class="rc-kpi-card">
-              <span class="rc-kpi-tag">AUTENTICACIÓN DNS</span>
-              <div class="rc-kpi-val">SPF · DKIM</div>
-              <p class="rc-kpi-sub">DMARC p=quarantine · TLS 1.3</p>
-            </div>
-            <div class="rc-kpi-card">
-              <span class="rc-kpi-tag">BUZONES OFICIALES</span>
-              <div class="rc-kpi-val">5 Activos</div>
-              <p class="rc-kpi-sub">4 pilotos titulares + Race Control</p>
-            </div>
-            <div class="rc-kpi-card">
-              <span class="rc-kpi-tag">PLANTILLAS AUTOMÁTICAS</span>
-              <div class="rc-kpi-val">3 Listas</div>
-              <p class="rc-kpi-sub">Bienvenida, Recuperación y Briefing</p>
-            </div>
-          </div>
-
-          <div class="rc-card">
-            <div class="rc-card__head">
-              <div>
-                <h3 class="rc-card__title">Buzones Institucionales @muntru.me</h3>
-                <p class="rc-muted">Redirección verificada y acceso a bandeja de comunicaciones del equipo.</p>
-              </div>
-              <button type="button" class="r-btn r-btn--sm" onclick="openEmailPreviewModal('welcome')">Probar Plantillas HTML</button>
-            </div>
-            <div class="r-scroll">
-              <table class="r-table">
-                <thead>
-                  <tr>
-                    <th>Buzón Institucional</th>
-                    <th>Titular Asignado</th>
-                    <th>Rol</th>
-                    <th>Estado DNS / TLS</th>
-                    <th class="text-right">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody id="mailboxesTableBody"></tbody>
-              </table>
-            </div>
-          </div>
-        </section>
 
         <!-- =============================================================== -->
         <!-- TAB 5: IRACING SYNC BRIDGE (CUST_ID & TELEMETRY)                -->

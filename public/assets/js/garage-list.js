@@ -73,11 +73,10 @@
     } catch (e) { return false; }
   }
   function paint() {
-    var ok = signedIn();
     list.querySelectorAll("[data-download]").forEach(function (btn) {
       if (btn.dataset.busy === "1") return;
-      btn.dataset.auth = ok ? "in" : "out";
-      btn.textContent = ok ? tr("garage.dl.in", "Descargar") : tr("garage.dl.out", "Inicia sesión");
+      btn.dataset.auth = "in";
+      btn.textContent = tr("garage.dl.in", "Descargar");
     });
   }
   function normText(s) {
@@ -174,7 +173,7 @@
         "<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\">" +
         "<path d=\"M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z\"></path><circle cx=\"12\" cy=\"12\" r=\"3\"></circle>" +
         "</svg></button>" +
-        "<button type=\"button\" class=\"g2-dl\" data-download data-id=\"" + esc(row.id) + "\" data-file=\"" + esc(row.file) + "\" data-auth=\"pending\">" + esc(tr("garage.dl.out", "Inicia sesión")) + "</button>" +
+        "<button type=\"button\" class=\"g2-dl\" data-download data-id=\"" + esc(row.id) + "\" data-car=\"" + esc(row.car) + "\" data-file=\"" + esc(row.file) + "\" data-auth=\"in\">" + esc(tr("garage.dl.in", "Descargar")) + "</button>" +
         "</div></td>" +
         "</tr>";
     }).join("");
