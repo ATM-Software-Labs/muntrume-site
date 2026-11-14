@@ -112,6 +112,10 @@ const totalCircuits = catalog.circuits?.length || 128;
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
               <span>iRacing Sync Bridge</span>
             </button>
+            <button type="button" id="nav-gallery" data-rc-tab="gallery" class="rc-nav__btn" onclick="switchAdminTab('gallery')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+              <span>Galería &amp; CarPath</span>
+            </button>
             <button type="button" id="nav-security" data-rc-tab="security" class="rc-nav__btn" onclick="switchAdminTab('security')">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
               <span>Seguridad &amp; Auditoría</span>
@@ -583,8 +587,125 @@ const totalCircuits = catalog.circuits?.length || 128;
                     <th>Estado Telemetría</th>
                   </tr>
                 </thead>
-                <tbody id="iracingBridgeTableBody"></tbody>
+                 <tbody id="iracingBridgeTableBody"></tbody>
               </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- =============================================================== -->
+        <!-- TAB 5: GALERÍA & DEPURADOR CARPATH (BLOQUE 28)                  -->
+        <!-- =============================================================== -->
+        <section id="tab-gallery" class="rc-panel space-y-6 hidden">
+          <div class="rc-section-head">
+            <div>
+              <p class="r-kicker">Mapeo iRacing SDK &bull; DriverInfo.CarPath</p>
+              <h2 class="r-h3">Galería Oficial &amp; Depurador de Vehículos</h2>
+              <p class="rc-muted">Saneamiento estricto: relación 1:1 entre imágenes y <code>DriverInfo.Drivers[CamCarIdx].CarPath</code>. Evita mezclas de fotos entre marcas.</p>
+            </div>
+            <div class="rc-btn-row">
+              <button type="button" class="r-btn r-btn--sm" onclick="resetGalleryToDefaults()">↻ Restaurar Catálogo</button>
+            </div>
+          </div>
+
+          <!-- Mapeador y Selector de Coche -->
+          <div class="rc-card">
+            <div class="rc-card__head" style="flex-wrap:wrap;gap:12px">
+              <div>
+                <h3 class="rc-card__title">Depurador y Clasificador por Coche</h3>
+                <p class="rc-muted">Filtra las imágenes asignadas a un modelo. Si detectas una foto incorrecta, reubícala o desasóciala con 1 clic.</p>
+              </div>
+              <div class="rc-btn-row">
+                <label for="adminGalleryCarSelect" class="sr-only">Seleccionar Coche</label>
+                <select id="adminGalleryCarSelect" class="r-input" style="min-width:240px" onchange="filterAdminGalleryByCar()">
+                  <option value="all">Todos los vehículos (Vista global)</option>
+                  <option value="porsche9922cup">Porsche 911 GT3 Cup (992.2)</option>
+                  <option value="porsche992rgt3">Porsche 911 GT3 R (992)</option>
+                  <option value="ferrari296gt3">Ferrari 296 GT3</option>
+                  <option value="bmwm4gt3">BMW M4 GT3</option>
+                  <option value="mercedesamgevogt3">Mercedes-AMG GT3 2020</option>
+                  <option value="mclaren720sgt3">McLaren 720S GT3 EVO</option>
+                  <option value="chevyvettez06rgt3">Chevrolet Corvette Z06 GT3.R</option>
+                  <option value="amvantageevogt3">Aston Martin Vantage GT3 EVO</option>
+                  <option value="fordmustanggt3">Ford Mustang GT3</option>
+                  <option value="lamborghinievogt3">Lamborghini Huracán GT3 EVO</option>
+                  <option value="audir8lmsevo2gt3">Audi R8 LMS EVO II GT3</option>
+                  <option value="cadillacvseriesrgtp">Cadillac V-Series.R GTP</option>
+                  <option value="porsche963gtp">Porsche 963 GTP</option>
+                  <option value="bmwlmdh">BMW M Hybrid V8 GTP</option>
+                  <option value="acuraarx06gtp">Acura ARX-06 GTP</option>
+                  <option value="amvalkyriegtp">Aston Martin Valkyrie AMR-LMH</option>
+                  <option value="dallarap217">Dallara P217 LMP2</option>
+                  <option value="ligierjsp320">Ligier JS P320 LMP3</option>
+                  <option value="superformulasf23toyota">Super Formula SF23</option>
+                  <option value="dallaraf3">Dallara F3</option>
+                  <option value="formulair04">FIA F4</option>
+                  <option value="mx5cup">Global Mazda MX-5 Cup</option>
+                  <option value="toyotagr86">Toyota GR86 Cup</option>
+                  <option value="multiclass">Multiclase &amp; Parrilla</option>
+                  <option value="team_engineering">Muntrume Tech &amp; Pit Wall</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Grid de Fotos del Coche -->
+            <div id="adminGalleryGrid" class="rc-gallery-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:16px">
+              <!-- Renderizado dinámico desde admin.js -->
+            </div>
+          </div>
+
+          <!-- Validador de Subida con Detector de Discordancias (Prompt 28 Punto 4) -->
+          <div class="rc-card">
+            <div class="rc-card__head">
+              <div>
+                <h3 class="rc-card__title">Subir Nueva Foto con Validación Estricta</h3>
+                <p class="rc-muted">Obliga a seleccionar el coche de destino. Si el archivo contiene palabras de otra marca (ej. 'Ferrari' subiendo a 'Porsche'), lanzará aviso de advertencia.</p>
+              </div>
+            </div>
+            <div class="rc-upload-box" style="padding:20px;border:2px dashed var(--r-line);border-radius:12px;display:grid;gap:14px;background:var(--r-surface)">
+              <div class="rc-two-col">
+                <div class="g-field">
+                  <label for="adminUploadCarPath"><strong>Coche de Destino (Obligatorio · CarPath) *</strong></label>
+                  <select id="adminUploadCarPath" class="r-input">
+                    <option value="">-- Elige el modelo exacto de iRacing --</option>
+                    <option value="porsche9922cup">Porsche 911 GT3 Cup (992.2)</option>
+                    <option value="porsche992rgt3">Porsche 911 GT3 R (992)</option>
+                    <option value="ferrari296gt3">Ferrari 296 GT3</option>
+                    <option value="bmwm4gt3">BMW M4 GT3</option>
+                    <option value="mercedesamgevogt3">Mercedes-AMG GT3 2020</option>
+                    <option value="mclaren720sgt3">McLaren 720S GT3 EVO</option>
+                    <option value="chevyvettez06rgt3">Chevrolet Corvette Z06 GT3.R</option>
+                    <option value="amvantageevogt3">Aston Martin Vantage GT3 EVO</option>
+                    <option value="fordmustanggt3">Ford Mustang GT3</option>
+                    <option value="lamborghinievogt3">Lamborghini Huracán GT3 EVO</option>
+                    <option value="audir8lmsevo2gt3">Audi R8 LMS EVO II GT3</option>
+                    <option value="cadillacvseriesrgtp">Cadillac V-Series.R GTP</option>
+                    <option value="porsche963gtp">Porsche 963 GTP</option>
+                    <option value="bmwlmdh">BMW M Hybrid V8 GTP</option>
+                    <option value="acuraarx06gtp">Acura ARX-06 GTP</option>
+                    <option value="amvalkyriegtp">Aston Martin Valkyrie AMR-LMH</option>
+                    <option value="dallarap217">Dallara P217 LMP2</option>
+                    <option value="ligierjsp320">Ligier JS P320 LMP3</option>
+                    <option value="superformulasf23toyota">Super Formula SF23</option>
+                    <option value="dallaraf3">Dallara F3</option>
+                    <option value="formulair04">FIA F4</option>
+                    <option value="mx5cup">Global Mazda MX-5 Cup</option>
+                    <option value="toyotagr86">Toyota GR86 Cup</option>
+                  </select>
+                </div>
+                <div class="g-field">
+                  <label for="adminUploadPhotoTitle">Título de la Foto</label>
+                  <input type="text" id="adminUploadPhotoTitle" class="r-input" placeholder="ej. Stint Nocturno Turn 1" />
+                </div>
+              </div>
+              <div class="g-field">
+                <label for="adminUploadFileInput">Seleccionar o Arrastrar Archivo de Imagen (.webp, .jpg, .png)</label>
+                <input type="file" id="adminUploadFileInput" class="r-input" accept="image/png,image/jpeg,image/webp" />
+              </div>
+              <div id="adminUploadWarning" class="m-notice m-notice--warning hidden" role="alert"></div>
+              <div class="rc-btn-row" style="justify-content:flex-end">
+                <button type="button" class="r-btn r-btn--primary" onclick="submitAdminPhotoUpload()">Validar y Registrar en Galería</button>
+              </div>
             </div>
           </div>
         </section>
@@ -1297,6 +1418,6 @@ const totalCircuits = catalog.circuits?.length || 128;
     }
   </style>
 
-  <script is:inline src="/assets/js/driver-ids.js?v=t310"></script>
-  <script is:inline src="/assets/js/admin.js?v=t311"></script>
+  <script is:inline src="/assets/js/driver-ids.js?v=t350"></script>
+  <script is:inline src="/assets/js/admin.js?v=t350"></script>
 </Layout>

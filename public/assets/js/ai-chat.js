@@ -1,7 +1,7 @@
 /* Muntrume AI chat. The markdown bundle loads only after the first answer. */
 (function () {
   "use strict";
-  var API = "https://muntru-api.trujillomingorance.com/api/ai";
+  var API = "https://muntrume.atrumin16.workers.dev/api/ai";
   var SYSTEM = [
     "Eres Muntrume AI, el copiloto e ingeniero de pista oficial de Muntrume Motorsport (Equipo MMT), un equipo competitivo de sim racing en iRacing e ingeniería deportiva con sede en Sant Andreu, Barcelona (Cataluña, España). NO eres un taller mecánico ni una empresa de Monterrey.",
     "FUENTES OFICIALES DE MUNTRUME MOTORSPORT (cita los enlaces relevantes cuando respondas):",
@@ -330,21 +330,25 @@
     if (window.matchMedia("(max-width: 959px)").matches) closeSide();
     input.focus();
   }
-  function showError(text) {
+  function showError(errOrText, originalQuery) {
     var box = document.createElement("div");
     box.className = "ai-error";
     box.setAttribute("role", "alert");
     var p = document.createElement("p");
-    p.textContent = tr("ai.error", "No he podido obtener respuesta. Prueba otra vez en unos segundos.");
-    var button = document.createElement("button");
-    button.type = "button";
-    button.textContent = tr("ai.retry", "Reintentar");
-    button.addEventListener("click", function () {
-      box.remove();
-      send(text, true);
-    });
+    var isErr = errOrText && typeof errOrText === "string" && (errOrText.startsWith("Error") || errOrText.includes("HTTP") || errOrText.includes("servidor") || errOrText.includes("Falta"));
+    p.textContent = isErr ? errOrText : tr("ai.error", "No he podido obtener respuesta. Prueba otra vez en unos segundos.");
+    var retryQuery = originalQuery || (!isErr ? errOrText : "");
     box.appendChild(p);
-    box.appendChild(button);
+    if (retryQuery) {
+      var button = document.createElement("button");
+      button.type = "button";
+      button.textContent = tr("ai.retry", "Reintentar");
+      button.addEventListener("click", function () {
+        box.remove();
+        send(retryQuery, true);
+      });
+      box.appendChild(button);
+    }
     log.hidden = false;
     emptyEl.hidden = true;
     stage.classList.remove("is-empty");
@@ -368,13 +372,23 @@
     try {
       var data = JSON.parse(trimmed);
       if (data && data.error) return "";
-      if (data && typeof data.content === "string") return data.content;
-      if (data && typeof data.text === "string") return data.text;
+      return data.content || data.reply || data.answer || data.result || data.markdown || data.text || "";
     } catch (e) {}
     return "";
   }
   async function readAnswer(res, reply) {
-    var mode = (res.headers.get("content-type") || "").toLowerCase().indexOf("event-stream") >= 0 ? "sse" : "";
+    var cType = (res.headers.get("content-type") || "").toLowerCase();
+    if (cType.indexOf("json") >= 0 && cType.indexOf("event-stream") < 0) {
+      var jsonData = await res.json().catch(function() { return {}; });
+      var directText = jsonData.content || jsonData.reply || jsonData.answer || jsonData.result || jsonData.markdown || jsonData.text || "";
+      if (directText) {
+        reply.content = directText;
+        scheduleRender(reply);
+        follow();
+      }
+      return directText;
+    }
+    var mode = cType.indexOf("event-stream") >= 0 ? "sse" : "";
     var reader = res.body.getReader();
     var dec = new TextDecoder();
     var buf = "";
@@ -402,11 +416,14 @@
     }
     if (mode === "raw") {
       acc = textFromRaw(raw);
-      reply.content = acc;
-      scheduleRender(reply);
+      if (acc) {
+        reply.content = acc;
+        scheduleRender(reply);
+        follow();
+      }
     } else if (buf.trim()) {
       var tail = takeSse(buf);
-      if (tail) { acc += tail; reply.content = acc; scheduleRender(reply); }
+      if (tail) { acc += tail; reply.content = acc; scheduleRender(reply); follow(); }
     }
     return acc;
   }
@@ -451,11 +468,16 @@
       credentials: "omit",
       signal: ctrl.signal,
       body: JSON.stringify({ prompt: text, custom_prompt: SYSTEM, chat_history: history, stream: true, mode: "ai_chat" })
-    }).then(function (res) {
-      if (!res.ok || !res.body) throw new Error("status");
+    }).then(async function (res) {
+      if (!res.ok) {
+        var errBody = await res.json().catch(function () { return {}; });
+        var msg = errBody.error || errBody.message || ("Error de conexión con Muntrume AI (HTTP " + res.status + ")");
+        throw new Error(msg);
+      }
+      if (!res.body) throw new Error("Cuerpo de respuesta vacío");
       return readAnswer(res, reply);
     }).then(function (acc) {
-      if (!acc) throw new Error("empty");
+      if (!acc) throw new Error("Sin respuesta del asistente");
       var elapsed = Date.now() - startTime;
       if (statusBadge) statusBadge.classList.remove("is-busy");
       if (statusText) statusText.textContent = "Muntrume AI • Listo (" + elapsed + " ms)";
@@ -477,7 +499,7 @@
       } else {
         chat.messages = chat.messages.filter(function (msg) { return msg.id !== reply.id; });
         renderThread();
-        showError(text);
+        showError(err && err.message && err.message !== "Sin respuesta del asistente" ? err.message : text, text);
       }
     }).then(function () {
       clearTimeout(timer);

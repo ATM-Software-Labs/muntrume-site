@@ -165,6 +165,8 @@ let rcState = {
   activeTab: "overview",
   directoryFilter: "all",
   auditFilter: "all",
+  galleryFilter: "all",
+  galleryPhotos: [],
   members: [],
   pendingRequests: [],
   auditLogs: [],
@@ -344,7 +346,7 @@ function hideRcNotice() {
 }
 
 function switchAdminTab(tabId) {
-  const validTabs = ["overview", "directory", "setups", "iracing", "security"];
+  const validTabs = ["overview", "directory", "setups", "iracing", "gallery", "security"];
   const chosen = validTabs.includes(tabId) ? tabId : "overview";
   rcState.activeTab = chosen;
 
@@ -354,6 +356,10 @@ function switchAdminTab(tabId) {
     if (panel) panel.classList.toggle("hidden", t !== chosen);
     if (btn) btn.classList.toggle("is-active", t === chosen);
   });
+
+  if (chosen === "gallery") {
+    renderAdminGalleryGrid();
+  }
 
   try {
     const url = new URL(window.location.href);
@@ -407,6 +413,9 @@ async function refreshRaceControlData() {
     showRcNotice("Error al sincronizar con Cloudflare D1", err?.message || "No se pudo cargar /api/setups/admin/panel.", "err");
   }
 
+  if (byEmail.size === 0) {
+    OFFICIAL_ROSTER_DEFAULTS.forEach((m) => byEmail.set(m.email.toLowerCase(), m));
+  }
   rcState.members = Array.from(byEmail.values());
 
   // 3. Fetch live driver telemetry from /api/drivers
@@ -1108,6 +1117,249 @@ function renderAuditLogsTable() {
   }).join("");
 }
 
+// ============================================================================
+// TAB 5: GALERÍA OFICIAL & DEPURADOR CARPATH (BLOQUE 28)
+// ============================================================================
+const OFFICIAL_GALLERY_DEFAULTS = [
+  { id: "ferrari-studio", carPath: "ferrari296gt3", title: "Ferrari 296 GT3 · Render Oficial", img: "/assets/cars/ferrari296gt3.webp", tag: "Estudio" },
+  { id: "ferrari-pista", carPath: "ferrari296gt3", title: "Ferrari 296 GT3 en Pista", img: "/assets/img/coche1.webp", tag: "Pista" },
+  { id: "ferrari-nocturna", carPath: "ferrari296gt3", title: "Stint Nocturno y Ópticas LED", img: "/assets/img/coche3.webp", tag: "Nocturna" },
+  { id: "ferrari-vertice", carPath: "ferrari296gt3", title: "Apoyo Aerodinámico en Vértice", img: "/assets/img/coche4.webp", tag: "Telemetría" },
+  { id: "porsche-studio", carPath: "porsche992rgt3", title: "Porsche 911 GT3 R (992) · Render de Estudio", img: "/assets/cars/porsche992rgt3.webp", tag: "Estudio" },
+  { id: "porsche-peloton", carPath: "porsche992rgt3", title: "Pelotón GT3 en Curva Rápida", img: "/assets/img/coche2.webp", tag: "Carrera" },
+  { id: "porsche-cup-studio", carPath: "porsche9922cup", title: "Porsche 911 GT3 Cup (992.2) · Asset Oficial", img: "/assets/cars/porsche9922cup.webp", tag: "Estudio" },
+  { id: "porsche-cup-track", carPath: "porsche9922cup", title: "Porsche Cup Supercup en Trazado GP", img: "/assets/img/series/porsche-cup.jpg", tag: "Competición" },
+  { id: "bmw-studio", carPath: "bmwm4gt3", title: "BMW M4 GT3 · Render de Estudio Oficial", img: "/assets/cars/bmwm4gt3.webp", tag: "Estudio" },
+  { id: "bmw-series", carPath: "bmwm4gt3", title: "GT Sprint Series Oficial iRacing", img: "/assets/img/series/gt-sprint.jpg", tag: "GT Sprint" }
+];
+
+function initGalleryData() {
+  try {
+    const raw = localStorage.getItem("muntrume_admin_gallery");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        rcState.galleryPhotos = parsed;
+        return;
+      }
+    }
+  } catch {}
+  rcState.galleryPhotos = [...OFFICIAL_GALLERY_DEFAULTS];
+}
+
+function saveAdminGallery() {
+  try {
+    localStorage.setItem("muntrume_admin_gallery", JSON.stringify(rcState.galleryPhotos));
+  } catch {}
+}
+
+function resetGalleryToDefaults() {
+  rcState.galleryPhotos = [...OFFICIAL_GALLERY_DEFAULTS];
+  saveAdminGallery();
+  renderAdminGalleryGrid();
+  showRcNotice("Catálogo Restaurado", "Galería reseteada a los valores de fábrica con CarPath estricto.", "success");
+}
+
+function filterAdminGalleryByCar() {
+  const sel = document.getElementById("adminGalleryCarSelect");
+  rcState.galleryFilter = sel ? sel.value : "all";
+  renderAdminGalleryGrid();
+}
+
+function renderAdminGalleryGrid() {
+  const grid = document.getElementById("adminGalleryGrid");
+  if (!grid) return;
+
+  const filter = rcState.galleryFilter || "all";
+  const photos = filter === "all"
+    ? rcState.galleryPhotos
+    : rcState.galleryPhotos.filter((p) => p.carPath && p.carPath.toLowerCase() === filter.toLowerCase());
+
+  if (photos.length === 0) {
+    grid.innerHTML = `
+      <div style="grid-column:1/-1;text-align:center;padding:40px;border:1px dashed var(--r-line);border-radius:12px;color:var(--r-muted)">
+        <p style="font-weight:600;margin-bottom:6px">No hay fotos asociadas a este vehículo (${rcEscape(filter)})</p>
+        <p style="font-size:12px">Utiliza el formulario inferior para subir o arrastrar capturas verificadas de este coche.</p>
+      </div>
+    `;
+    return;
+  }
+
+  const carOptions = [
+    { id: "porsche9922cup", label: "Porsche 911 GT3 Cup (992.2)" },
+    { id: "porsche992rgt3", label: "Porsche 911 GT3 R (992)" },
+    { id: "ferrari296gt3", label: "Ferrari 296 GT3" },
+    { id: "bmwm4gt3", label: "BMW M4 GT3" },
+    { id: "mercedesamgevogt3", label: "Mercedes-AMG GT3 2020" },
+    { id: "mclaren720sgt3", label: "McLaren 720S GT3 EVO" },
+    { id: "chevyvettez06rgt3", label: "Corvette Z06 GT3.R" },
+    { id: "amvantageevogt3", label: "Aston Martin Vantage GT3 EVO" },
+    { id: "multiclass", label: "Multiclase / Parrilla" },
+    { id: "team_engineering", label: "Muntrume Tech / Pit Wall" }
+  ];
+
+  grid.innerHTML = photos.map((p) => {
+    const isUnassigned = !p.carPath || p.carPath === "unassigned";
+    const carBadgeClass = isUnassigned ? "rc-badge rc-badge--warn" : "rc-badge rc-badge--ok";
+
+    return `
+      <div class="rc-card" style="padding:12px;display:flex;flex-direction:column;gap:10px;border-radius:10px">
+        <div style="position:relative;width:100%;height:160px;border-radius:8px;overflow:hidden;background:#000">
+          <img src="${rcEscape(p.img)}" alt="${rcEscape(p.title)}" style="width:100%;height:100%;object-fit:cover" onerror="this.src='/assets/img/coche1.webp'" />
+          <span class="${carBadgeClass}" style="position:absolute;top:8px;left:8px;font-size:10px">
+            ${rcEscape(p.carPath || "SIN ASIGNAR")}
+          </span>
+          <span class="rc-badge" style="position:absolute;top:8px;right:8px;font-size:10px">
+            ${rcEscape(p.tag || "Foto")}
+          </span>
+        </div>
+        <div style="flex:1">
+          <h4 style="font-size:13px;font-weight:700;margin:0 0 4px 0">${rcEscape(p.title)}</h4>
+          <code style="font-size:10px;color:var(--r-muted);display:block;word-break:break-all">${rcEscape(p.id)}</code>
+        </div>
+        <div class="rc-btn-row" style="flex-direction:column;gap:6px;width:100%">
+          <div style="display:flex;gap:6px;width:100%">
+            <select class="r-input" style="font-size:11px;padding:4px 8px;flex:1" onchange="reassignPhotoCarPath('${rcEscape(p.id)}', this.value)">
+              <option value="">Mover a...</option>
+              ${carOptions.map((c) => `<option value="${c.id}" ${c.id === p.carPath ? "selected" : ""}>${c.label}</option>`).join("")}
+            </select>
+            <button type="button" class="r-btn r-btn--sm" style="padding:4px 8px;font-size:11px" onclick="unassignPhoto('${rcEscape(p.id)}')" title="Desasociar de este coche">
+              Desasociar
+            </button>
+            <button type="button" class="r-btn r-btn--sm" style="padding:4px 8px;font-size:11px;color:#ef4444;border-color:rgba(239,68,68,0.3)" onclick="deleteGalleryPhoto('${rcEscape(p.id)}')" title="Eliminar foto">
+              ✕
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function reassignPhotoCarPath(photoId, newCarPath) {
+  if (!newCarPath) return;
+  const item = rcState.galleryPhotos.find((p) => p.id === photoId);
+  if (!item) return;
+  const oldCar = item.carPath;
+  item.carPath = newCarPath;
+  saveAdminGallery();
+  renderAdminGalleryGrid();
+  appendAuditEvent("gallery", "atrumin16@gmail.com", `Foto '${photoId}' reasignada de '${oldCar}' a '${newCarPath}' (CarPath estricto)`, "OK");
+  showRcNotice("Foto Reubicada", `La foto se ha movido correctamente a ${newCarPath}.`, "success");
+}
+
+function unassignPhoto(photoId) {
+  const item = rcState.galleryPhotos.find((p) => p.id === photoId);
+  if (!item) return;
+  item.carPath = "unassigned";
+  saveAdminGallery();
+  renderAdminGalleryGrid();
+  appendAuditEvent("gallery", "atrumin16@gmail.com", `Foto '${photoId}' desasociada`, "OK");
+  showRcNotice("Foto Desasociada", "La foto ya no se mostrará en ningún álbum de vehículo.", "warn");
+}
+
+function deleteGalleryPhoto(photoId) {
+  const idx = rcState.galleryPhotos.findIndex((p) => p.id === photoId);
+  if (idx < 0) return;
+  rcState.galleryPhotos.splice(idx, 1);
+  saveAdminGallery();
+  renderAdminGalleryGrid();
+  appendAuditEvent("gallery", "atrumin16@gmail.com", `Foto '${photoId}' eliminada de la galería`, "OK");
+  showRcNotice("Foto Eliminada", "La foto ha sido eliminada de la galería.", "warn");
+}
+
+function submitAdminPhotoUpload() {
+  const targetCar = document.getElementById("adminUploadCarPath")?.value;
+  const titleInput = document.getElementById("adminUploadPhotoTitle")?.value.trim();
+  const fileInput = document.getElementById("adminUploadFileInput");
+  const warnEl = document.getElementById("adminUploadWarning");
+
+  if (!targetCar) {
+    if (warnEl) {
+      warnEl.textContent = "Error: Debes seleccionar un coche de destino obligatorio (CarPath) antes de subir.";
+      warnEl.classList.remove("hidden");
+    }
+    showRcNotice("Falta Selección", "Selecciona el coche de destino antes de subir.", "err");
+    return;
+  }
+
+  const file = fileInput?.files?.[0];
+  if (!file) {
+    if (warnEl) {
+      warnEl.textContent = "Error: Elige un archivo de imagen válido para subir.";
+      warnEl.classList.remove("hidden");
+    }
+    showRcNotice("Falta Archivo", "Elige un archivo de imagen.", "err");
+    return;
+  }
+
+  // Detector de discordancias de marca (Prompt 28 Punto 4)
+  const BRAND_PATTERNS = {
+    ferrari: /(ferrari|296|488|499p|f296)/i,
+    porsche: /(porsche|911|992|718|cayman|963)/i,
+    bmw: /(bmw|m4|m2|m8|lmdh)/i,
+    mercedes: /(mercedes|amg)/i,
+    mclaren: /(mclaren|720s|570s|macla)/i,
+    chevrolet: /(corvette|chevy|z06|c8r|c6r|camaro)/i,
+    astonmartin: /(aston|vantage|valkyrie|dbr9)/i,
+    lamborghini: /(lamborghini|lambo|huracan|hurac[aá]n)/i,
+    audi: /(audi|r8|rs3)/i,
+    ford: /(ford|mustang)/i,
+    toyota: /(toyota|gr86|supra|sf23)/i,
+    honda: /(honda|civic|nsx|acura)/i,
+  };
+
+  let targetBrand = "";
+  for (const [brand, pattern] of Object.entries(BRAND_PATTERNS)) {
+    if (pattern.test(targetCar)) {
+      targetBrand = brand;
+      break;
+    }
+  }
+
+  let detectedBrand = "";
+  for (const [brand, pattern] of Object.entries(BRAND_PATTERNS)) {
+    if (pattern.test(file.name)) {
+      detectedBrand = brand;
+      break;
+    }
+  }
+
+  if (detectedBrand && targetBrand && detectedBrand !== targetBrand) {
+    const confirmUpload = window.confirm(
+      `AVISO DE DISCORDANCIA DE MARCA:\n\nEl archivo '${file.name}' contiene identificadores de ${detectedBrand.toUpperCase()}, pero intentas asociarlo a un vehículo ${targetBrand.toUpperCase()} (${targetCar}).\n\n¿Estás completamente seguro de forzar esta asignación?`
+    );
+    if (!confirmUpload) {
+      if (warnEl) {
+        warnEl.textContent = `Subida cancelada: Detectada discordancia de marca (${detectedBrand.toUpperCase()} ≠ ${targetBrand.toUpperCase()}).`;
+        warnEl.classList.remove("hidden");
+      }
+      return;
+    }
+  }
+
+  if (warnEl) warnEl.classList.add("hidden");
+
+  // Añadir la foto validada a la galería
+  const newId = `user_${Date.now()}`;
+  const newTitle = titleInput || file.name.replace(/\.[^.]+$/, "");
+  const newPhoto = {
+    id: newId,
+    carPath: targetCar,
+    title: newTitle,
+    img: URL.createObjectURL(file),
+    tag: "Subida Verificada"
+  };
+
+  rcState.galleryPhotos.unshift(newPhoto);
+  saveAdminGallery();
+  renderAdminGalleryGrid();
+  if (fileInput) fileInput.value = "";
+  if (document.getElementById("adminUploadPhotoTitle")) document.getElementById("adminUploadPhotoTitle").value = "";
+  appendAuditEvent("gallery", "atrumin16@gmail.com", `Nueva foto '${newTitle}' asociada a '${targetCar}'`, "PASS TECH");
+  showRcNotice("Foto Validada y Registrada", `La foto se ha asociado estrictamente al modelo ${targetCar}.`, "success");
+}
+
 function exportAuditLogsCsv() {
   const rows = [
     ["timestamp", "category", "actor", "detail", "status"],
@@ -1128,6 +1380,7 @@ function exportAuditLogsCsv() {
 document.addEventListener("DOMContentLoaded", () => {
   if (!verifyAdminSession()) return;
   initDefaultAuditLogs();
+  initGalleryData();
   updateMmtSimulator();
   refreshRaceControlData();
 
@@ -1204,4 +1457,12 @@ if (typeof window !== "undefined") {
   window.exportAuditLogsCsv = exportAuditLogsCsv;
   window.showRcNotice = showRcNotice;
   window.hideRcNotice = hideRcNotice;
+  window.initGalleryData = initGalleryData;
+  window.renderAdminGalleryGrid = renderAdminGalleryGrid;
+  window.filterAdminGalleryByCar = filterAdminGalleryByCar;
+  window.reassignPhotoCarPath = reassignPhotoCarPath;
+  window.unassignPhoto = unassignPhoto;
+  window.deleteGalleryPhoto = deleteGalleryPhoto;
+  window.submitAdminPhotoUpload = submitAdminPhotoUpload;
+  window.resetGalleryToDefaults = resetGalleryToDefaults;
 }

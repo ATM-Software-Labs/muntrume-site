@@ -1,5 +1,6 @@
 export interface GalleryPhoto {
   readonly id: string;
+  readonly carPath: string; // Relación estricta con DriverInfo.Drivers[CamCarIdx].CarPath
   readonly title: string;
   readonly subtitle: string;
   readonly tag: string;
@@ -10,6 +11,7 @@ export interface GalleryPhoto {
 
 export interface GalleryAlbum {
   readonly slug: string;
+  readonly carPath: string; // Identificador exacto de telemetría iRacing
   readonly title: string;
   readonly brand: string;
   readonly carClass: string;
@@ -21,6 +23,7 @@ export interface GalleryAlbum {
 export const PADDOCK_ALBUMS: readonly GalleryAlbum[] = [
   {
     slug: "ferrari296gt3",
+    carPath: "ferrari296gt3",
     title: "Ferrari 296 GT3",
     brand: "Ferrari",
     carClass: "GT3",
@@ -29,6 +32,7 @@ export const PADDOCK_ALBUMS: readonly GalleryAlbum[] = [
     photos: [
       {
         id: "ferrari-studio",
+        carPath: "ferrari296gt3",
         title: "Ferrari 296 GT3 · Render de Estudio Oficial",
         subtitle: "Asset oficial del catálogo iRacing",
         tag: "Estudio iRacing",
@@ -38,6 +42,7 @@ export const PADDOCK_ALBUMS: readonly GalleryAlbum[] = [
       },
       {
         id: "ferrari-pista",
+        carPath: "ferrari296gt3",
         title: "Ferrari 296 GT3 en Pista",
         subtitle: "Sesión oficial en simulador iRacing",
         tag: "Pista",
@@ -47,6 +52,7 @@ export const PADDOCK_ALBUMS: readonly GalleryAlbum[] = [
       },
       {
         id: "ferrari-nocturna",
+        carPath: "ferrari296gt3",
         title: "Stint Nocturno y Ópticas LED",
         subtitle: "Resistencia oficial iRacing",
         tag: "Nocturna",
@@ -56,6 +62,7 @@ export const PADDOCK_ALBUMS: readonly GalleryAlbum[] = [
       },
       {
         id: "ferrari-vertice",
+        carPath: "ferrari296gt3",
         title: "Apoyo Aerodinámico en Vértice",
         subtitle: "Paso por curva de alta velocidad",
         tag: "Telemetría",
@@ -67,6 +74,7 @@ export const PADDOCK_ALBUMS: readonly GalleryAlbum[] = [
   },
   {
     slug: "porsche992rgt3",
+    carPath: "porsche992rgt3",
     title: "Porsche 911 GT3 R (992)",
     brand: "Porsche",
     carClass: "GT3",
@@ -75,6 +83,7 @@ export const PADDOCK_ALBUMS: readonly GalleryAlbum[] = [
     photos: [
       {
         id: "porsche-studio",
+        carPath: "porsche992rgt3",
         title: "Porsche 911 GT3 R (992) · Render de Estudio",
         subtitle: "Asset oficial del catálogo iRacing",
         tag: "Estudio iRacing",
@@ -84,6 +93,7 @@ export const PADDOCK_ALBUMS: readonly GalleryAlbum[] = [
       },
       {
         id: "porsche-series",
+        carPath: "porsche992rgt3",
         title: "Competición Oficial Porsche en iRacing",
         subtitle: "Series oficiales en el simulador",
         tag: "Competición",
@@ -93,6 +103,7 @@ export const PADDOCK_ALBUMS: readonly GalleryAlbum[] = [
       },
       {
         id: "porsche-peloton",
+        carPath: "porsche992rgt3",
         title: "Pelotón GT3 en Curva Rápida",
         subtitle: "Gestión de carrera y tráfico en grupo",
         tag: "Carrera",
@@ -103,7 +114,39 @@ export const PADDOCK_ALBUMS: readonly GalleryAlbum[] = [
     ],
   },
   {
+    slug: "porsche9922cup",
+    carPath: "porsche9922cup",
+    title: "Porsche 911 GT3 Cup (992.2)",
+    brand: "Porsche",
+    carClass: "Cup",
+    cover: "/assets/cars/porsche9922cup.webp",
+    summary: "Copa monomarca oficial sin ABS ni control de tracción: conducción pura de resistencia.",
+    photos: [
+      {
+        id: "porsche-cup-studio",
+        carPath: "porsche9922cup",
+        title: "Porsche 911 GT3 Cup (992.2) · Asset Oficial",
+        subtitle: "Modelo oficial escaneado por láser iRacing",
+        tag: "Estudio iRacing",
+        img: "/assets/cars/porsche9922cup.webp",
+        thumb: "/assets/cars/porsche9922cup.webp",
+        desc: "Render de estudio oficial de iRacing para el Porsche 911 GT3 Cup 992.2.",
+      },
+      {
+        id: "porsche-cup-track",
+        carPath: "porsche9922cup",
+        title: "Porsche Cup Supercup en Trazado GP",
+        subtitle: "Gestión de frenada sin ABS",
+        tag: "Competición",
+        img: "/assets/img/series/porsche-cup.jpg",
+        thumb: "/assets/img/series/porsche-cup.jpg",
+        desc: "Transición de masas y apurada de frenada en copa monomarca oficial.",
+      },
+    ],
+  },
+  {
     slug: "bmwm4gt3",
+    carPath: "bmwm4gt3",
     title: "BMW M4 GT3",
     brand: "BMW",
     carClass: "GT3",
@@ -112,6 +155,7 @@ export const PADDOCK_ALBUMS: readonly GalleryAlbum[] = [
     photos: [
       {
         id: "bmw-studio",
+        carPath: "bmwm4gt3",
         title: "BMW M4 GT3 · Render de Estudio Oficial",
         subtitle: "Asset oficial del catálogo iRacing",
         tag: "Estudio iRacing",
@@ -121,6 +165,7 @@ export const PADDOCK_ALBUMS: readonly GalleryAlbum[] = [
       },
       {
         id: "bmw-series",
+        carPath: "bmwm4gt3",
         title: "GT Sprint Series Oficial iRacing",
         subtitle: "Competición oficial de GT3",
         tag: "GT Sprint",
@@ -130,17 +175,19 @@ export const PADDOCK_ALBUMS: readonly GalleryAlbum[] = [
       },
       {
         id: "bmw-carrera",
-        title: "Frenada y Apoyo en Enlazadas",
-        subtitle: "Telemetría de entrada en curva",
-        tag: "Telemetría",
-        img: "/assets/img/coche1.webp",
-        thumb: "/assets/img/coche1-640.webp",
+        carPath: "bmwm4gt3",
+        title: "BMW M4 GT3 · Librea de Competición",
+        subtitle: "Render técnico oficial iRacing",
+        tag: "Pista iRacing",
+        img: "/assets/cars/bmwm4gt3.webp",
+        thumb: "/assets/cars/bmwm4gt3.webp",
         desc: "Comportamiento del chasis ante transferencia de masas y compresión de amortiguadores.",
       },
     ],
   },
   {
     slug: "gt3-endurance",
+    carPath: "multiclass",
     title: "GT3 Endurance & Parrilla",
     brand: "Multiclase",
     carClass: "Endurance",
@@ -149,6 +196,7 @@ export const PADDOCK_ALBUMS: readonly GalleryAlbum[] = [
     photos: [
       {
         id: "g3",
+        carPath: "multiclass",
         title: "Tráfico y Frenada en Grupo",
         subtitle: "Gestión de Carrera y Doblados",
         tag: "Pista iRacing",
@@ -158,6 +206,7 @@ export const PADDOCK_ALBUMS: readonly GalleryAlbum[] = [
       },
       {
         id: "g6",
+        carPath: "multiclass",
         title: "Parrilla de Salida al Ocaso",
         subtitle: "Alineación Oficial de Escuderías",
         tag: "Parrilla iRacing",
@@ -169,6 +218,7 @@ export const PADDOCK_ALBUMS: readonly GalleryAlbum[] = [
   },
   {
     slug: "pit-wall-tech",
+    carPath: "team_engineering",
     title: "Pit Wall & Telemetría",
     brand: "Muntrume Tech",
     carClass: "Ingeniería",
@@ -177,6 +227,7 @@ export const PADDOCK_ALBUMS: readonly GalleryAlbum[] = [
     photos: [
       {
         id: "g7",
+        carPath: "team_engineering",
         title: "Puesto de Control de Telemetría",
         subtitle: "Monitorización Garage 61 en Directo",
         tag: "Telemetría",
@@ -186,6 +237,7 @@ export const PADDOCK_ALBUMS: readonly GalleryAlbum[] = [
       },
       {
         id: "g8",
+        carPath: "team_engineering",
         title: "Identidad Corporativa 2026",
         subtitle: "Identidad visual de Muntrume Motorsport",
         tag: "Escudería",
@@ -195,6 +247,7 @@ export const PADDOCK_ALBUMS: readonly GalleryAlbum[] = [
       },
       {
         id: "g9",
+        carPath: "team_engineering",
         title: "Setup Vault (.STO)",
         subtitle: "Banco de Reglajes Oficiales",
         tag: "Setup Lab",
@@ -205,3 +258,26 @@ export const PADDOCK_ALBUMS: readonly GalleryAlbum[] = [
     ],
   },
 ];
+
+/**
+ * Filtro estricto anti-mezcla: cualquier foto sin carPath o cuyo carPath no coincida
+ * exactamente con el vehículo solicitado queda excluida de la visualización.
+ */
+export function getSanitizedPhotosByCar(targetCarPath: string): GalleryPhoto[] {
+  const norm = String(targetCarPath || "").toLowerCase().trim();
+  if (!norm) return [];
+  const results: GalleryPhoto[] = [];
+  for (const album of PADDOCK_ALBUMS) {
+    for (const photo of album.photos) {
+      if (photo.carPath && photo.carPath.toLowerCase().trim() === norm) {
+        results.push(photo);
+      }
+    }
+  }
+  return results;
+}
+
+export function validatePhotoCarPath(photo: GalleryPhoto, expectedCarPath: string): boolean {
+  if (!photo || !photo.carPath || !expectedCarPath) return false;
+  return photo.carPath.toLowerCase().trim() === expectedCarPath.toLowerCase().trim();
+}
