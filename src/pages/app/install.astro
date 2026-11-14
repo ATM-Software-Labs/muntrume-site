@@ -1,0 +1,190 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import desktopPkg from "../../../desktop/package.json";
+
+const appVersion = desktopPkg.version;
+const pageTitle = "Instalar MMT Sync | Muntrume Motorsport";
+const pageDescription = "Guía e instalación oficial de MMT Sync para Windows: descarga directa o mediante Windows Package Manager (winget).";
+const pageUrl = "https://muntru.me/app/install/";
+const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
+---
+
+<Layout
+  title={pageTitle}
+  description={pageDescription}
+  canonical={pageUrl}
+  ogImage={ogImage}
+  ogImageAlt="Instalar MMT Sync en Windows"
+  ogImageWidth={1200}
+  ogImageHeight={630}
+>
+  <div class="inst-page">
+    <header class="inst-hero">
+      <nav class="inst-crumb" aria-label="Breadcrumb">
+        <a href="/app/">MMT Sync</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">Instalación</span>
+      </nav>
+      <p class="r-kicker">Guía oficial de instalación · Windows 10 & 11</p>
+      <h1>Instalar MMT Sync</h1>
+      <p class="r-lead">
+        Elige tu método preferido de instalación. Si Windows SmartScreen muestra el aviso de «editor desconocido» al descargar el ejecutable directo, te recomendamos usar el comando oficial de <strong>winget</strong>.
+      </p>
+    </header>
+
+    <div class="inst-grid">
+      <!-- Método 1: Winget (Recomendado sin alertas) -->
+      <section class="inst-card inst-card--featured">
+        <div class="inst-badge">Método recomendado</div>
+        <div class="inst-card-head">
+          <span class="inst-icon">⚡</span>
+          <div>
+            <h2>Vía Windows Package Manager (winget)</h2>
+            <p>Instalación nativa desde la terminal de Windows. Valida el hash SHA-256 oficial directamente desde el repositorio de Microsoft sin bloqueos de SmartScreen.</p>
+          </div>
+        </div>
+
+        <div class="inst-cmd-box">
+          <label class="inst-cmd-label">Ejecuta en PowerShell o Símbolo del sistema:</label>
+          <div class="inst-cmd-row">
+            <code>winget install Muntrume.MMTSync</code>
+            <button
+              type="button"
+              class="inst-copy-btn"
+              id="copyWingetMain"
+              title="Copiar comando"
+              onclick="navigator.clipboard.writeText('winget install Muntrume.MMTSync').then(()=>{const b=this;b.dataset.copied='1';setTimeout(()=>delete b.dataset.copied,2000);})"
+            >
+              <span>Copiar</span>
+            </button>
+          </div>
+        </div>
+
+        <ol class="inst-steps">
+          <li>Abre <strong>PowerShell</strong> o <strong>Terminal de Windows</strong> (Win + X &rarr; Terminal).</li>
+          <li>Pega el comando y pulsa <kbd>Enter</kbd>.</li>
+          <li>Windows descargará, verificará e instalará MMT Sync automáticamente.</li>
+        </ol>
+      </section>
+
+      <!-- Método 2: Descarga directa tradicional -->
+      <section class="inst-card">
+        <div class="inst-card-head">
+          <span class="inst-icon">💾</span>
+          <div>
+            <h2>Descarga directa (Instalador tradicional)</h2>
+            <p>Descarga el archivo instalador ejecutable o el paquete MSI generado en nuestras compilaciones públicas de GitHub Actions.</p>
+          </div>
+        </div>
+
+        <div class="inst-downloads">
+          <a
+            class="r-btn r-btn--primary inst-dl-btn"
+            href="https://github.com/ATM-Software-Labs/muntrume-site/releases/latest/download/MMT.Sync_0.1.32_x64-setup.exe"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span>Descargar .EXE (Setup v{appVersion})</span>
+          </a>
+          <a
+            class="r-btn app-btn inst-dl-btn"
+            href="https://github.com/ATM-Software-Labs/muntrume-site/releases/latest/download/MMT.Sync_0.1.32_x64_en-US.msi"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span>Descargar .MSI (Paquete v{appVersion})</span>
+          </a>
+        </div>
+
+        <div class="inst-notice">
+          <strong>¿Aparece el aviso azul de Windows SmartScreen?</strong>
+          <p>
+            Al ser una aplicación de código abierto sin certificado corporativo comprado a Microsoft, Windows puede mostrar «Windows protegió su PC». Para continuar: haz clic en <em>«Más información»</em> y luego en <em>«Ejecutar de todas formas»</em>. Si prefieres evitar este paso por completo, usa el método <strong>winget</strong> superior.
+          </p>
+        </div>
+      </section>
+    </div>
+
+    <!-- Pasos posteriores para vincular la cuenta -->
+    <section class="inst-card inst-card--after">
+      <h2>Siguientes pasos: vincula tus setups con iRacing</h2>
+      <div class="inst-post-steps">
+        <div class="inst-post-step">
+          <span class="inst-num">1</span>
+          <div>
+            <h3>Abre MMT Sync</h3>
+            <p>Inicia la aplicación desde el Menú Inicio o la bandeja del sistema (System Tray junto al reloj).</p>
+          </div>
+        </div>
+        <div class="inst-post-step">
+          <span class="inst-num">2</span>
+          <div>
+            <h3>Vincula tu cuenta</h3>
+            <p>Pulsa «Vincular dispositivo» para conectar con tu sesión de piloto de muntru.me y autorizar la sincronización.</p>
+          </div>
+        </div>
+        <div class="inst-post-step">
+          <span class="inst-num">3</span>
+          <div>
+            <h3>Sincroniza y rueda</h3>
+            <p>Tus setups se descargarán en <code>Documentos\iRacing\setups\MMT</code> listos para rodar en carrera.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</Layout>
+
+<style>
+  .inst-page { width: min(1040px, calc(100% - 2 * var(--r-gutter))); margin: 0 auto; padding: clamp(28px, 5vw, 64px) 0 80px; display: grid; gap: 24px; }
+  .inst-hero { display: grid; gap: 12px; }
+  .inst-crumb { display: flex; gap: 8px; font: 600 12px/1 var(--r-mono); color: var(--r-muted); }
+  .inst-crumb a { color: var(--r-accent); text-decoration: none; }
+  .inst-hero h1 { margin: 0; font: 800 clamp(40px, 6vw, 64px)/1 var(--r-display); letter-spacing: .02em; text-transform: uppercase; }
+  .inst-hero .r-lead { margin: 0; max-width: 800px; color: var(--r-muted); font-size: clamp(16px, 2vw, 18px); line-height: 1.5; }
+  
+  .inst-grid { display: grid; gap: 20px; }
+  @media (min-width: 860px) {
+    .inst-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  .inst-card { position: relative; padding: 26px; border: 1px solid var(--r-line); border-radius: 18px; background: var(--r-surface); display: grid; gap: 16px; align-content: start; }
+  .inst-card--featured { border-color: color-mix(in srgb, var(--r-accent) 60%, var(--r-line)); background: color-mix(in srgb, var(--r-accent) 4%, var(--r-surface)); }
+  .inst-badge { position: absolute; top: -11px; right: 20px; background: var(--r-accent); color: #000; font: 800 10px/1 var(--r-mono); text-transform: uppercase; letter-spacing: .08em; padding: 4px 10px; border-radius: 999px; }
+  
+  .inst-card-head { display: flex; gap: 14px; align-items: flex-start; }
+  .inst-icon { font-size: 28px; line-height: 1; }
+  .inst-card-head h2 { margin: 0 0 6px; font-size: 20px; font-weight: 700; line-height: 1.2; }
+  .inst-card-head p { margin: 0; font-size: 14px; color: var(--r-muted); line-height: 1.5; }
+
+  .inst-cmd-box { display: grid; gap: 8px; padding: 14px; background: var(--r-bg); border: 1px solid var(--r-line); border-radius: 12px; }
+  .inst-cmd-label { font: 600 11px/1 var(--r-mono); color: var(--r-muted); }
+  .inst-cmd-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .inst-cmd-row code { color: var(--r-accent); font-family: var(--r-mono); font-size: 13px; font-weight: 700; }
+  .inst-copy-btn { background: var(--r-surface); border: 1px solid var(--r-line); color: var(--r-text); border-radius: 8px; padding: 6px 12px; font: 700 11px/1 var(--r-mono); cursor: pointer; transition: all .15s ease; }
+  .inst-copy-btn:hover { border-color: var(--r-accent); color: var(--r-accent); }
+  .inst-copy-btn[data-copied="1"] { border-color: #10b981; background: #10b981; color: #000; }
+  .inst-copy-btn[data-copied="1"] span::after { content: " ✓"; }
+
+  .inst-steps { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 13px; color: var(--r-muted); }
+  .inst-steps kbd { background: var(--r-bg); border: 1px solid var(--r-line); border-radius: 4px; padding: 2px 6px; font-family: var(--r-mono); font-size: 11px; color: var(--r-text); }
+
+  .inst-downloads { display: grid; gap: 10px; }
+  .inst-dl-btn { justify-content: center; text-align: center; }
+  
+  .inst-notice { padding: 14px; background: color-mix(in srgb, #eab308 8%, var(--r-bg)); border: 1px solid color-mix(in srgb, #eab308 25%, var(--r-line)); border-radius: 12px; font-size: 12px; color: var(--r-muted); line-height: 1.5; }
+  .inst-notice strong { color: var(--r-text); display: block; margin-bottom: 4px; }
+  .inst-notice em { font-style: normal; color: var(--r-text); font-weight: 600; }
+
+  .inst-card--after { border-color: var(--r-line); }
+  .inst-card--after h2 { margin: 0; font-size: 18px; }
+  .inst-post-steps { display: grid; gap: 14px; }
+  @media (min-width: 760px) {
+    .inst-post-steps { grid-template-columns: repeat(3, 1fr); }
+  }
+  .inst-post-step { display: flex; gap: 12px; align-items: flex-start; padding: 14px; background: var(--r-bg); border: 1px solid var(--r-line); border-radius: 12px; }
+  .inst-num { width: 28px; height: 28px; border-radius: 8px; background: color-mix(in srgb, var(--r-accent) 15%, transparent); color: var(--r-accent); font: 800 13px/28px var(--r-mono); text-align: center; flex-shrink: 0; }
+  .inst-post-step h3 { margin: 0 0 4px; font-size: 14px; font-weight: 700; }
+  .inst-post-step p { margin: 0; font-size: 12px; color: var(--r-muted); line-height: 1.4; }
+  .inst-post-step code { font-size: 11px; color: var(--r-accent); }
+</style>
