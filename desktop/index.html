@@ -1528,12 +1528,12 @@
       <div class="flex items-center justify-between gap-4 pointer-events-none flex-1 my-2 pb-16">
         <!-- Left Stack: Relative + Fuel (Mid-Left, above native Black Box) -->
         <div class="flex flex-col gap-2 items-start">
-          <div id="floatRelativeCard" class="mmt-float-widget w-64 rounded-lg border border-white/10 border-t-2 border-t-[#00e5ff] bg-[#090d12]/88 backdrop-blur-md text-white p-2.5 text-[11px] font-mono tabular-nums shadow-[0_8px_32px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="relative">
+          <div id="floatRelativeCard" class="mmt-float-widget w-64 rounded-md border border-white/10 bg-[#0a0c10]/90 backdrop-blur-md text-white p-2 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="relative">
             <div id="ovRelativeFloat"></div>
-            <div id="ovRadarFloat" class="mt-2"></div>
+            <div id="ovRadarFloat" class="mt-1.5"></div>
           </div>
 
-          <div id="floatFuelCard" class="mmt-float-widget w-64 rounded-lg border border-white/10 border-t-2 border-t-amber-400 bg-[#090d12]/88 backdrop-blur-md text-white p-2.5 text-[11px] font-mono tabular-nums shadow-[0_8px_32px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="fuel">
+          <div id="floatFuelCard" class="mmt-float-widget w-64 rounded-md border border-white/10 bg-[#0a0c10]/90 backdrop-blur-md text-white p-2 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="fuel">
             <div id="ovFuelFloat"></div>
           </div>
         </div>
@@ -1542,9 +1542,9 @@
         <div class="pointer-events-none flex-1"></div>
 
         <!-- Standings (Mid-Right, below FPS and above native Pit/Fuel Black Box) -->
-        <div id="floatStandingsCard" class="mmt-float-widget w-60 rounded-lg border border-white/10 border-t-2 border-t-emerald-400 bg-[#090d12]/88 backdrop-blur-md text-white p-2.5 text-[11px] font-mono tabular-nums shadow-[0_8px_32px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="standings">
+        <div id="floatStandingsCard" class="mmt-float-widget w-64 rounded-md border border-white/10 bg-[#0a0c10]/90 backdrop-blur-md text-white p-2 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="standings">
           <div id="ovStandingsFloat"></div>
-          <div id="ovPitboxFloat" class="mt-2 overflow-hidden"></div>
+          <div id="ovPitboxFloat" class="mt-1.5 overflow-hidden"></div>
         </div>
       </div>
 
@@ -1552,40 +1552,40 @@
       <div class="flex flex-col items-center justify-end gap-1.5 pointer-events-none mt-1">
         <div id="floatShiftLightsRow" class="mmt-float-widget flex flex-col items-center gap-1 pointer-events-auto" data-widget="lights">
           <div id="ovDigiFlagFloat" class="w-full max-w-xs"></div>
-          <div class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#090d12]/90 border border-white/10 border-t-2 border-t-[#00e5ff] backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.65)]" id="ovShiftLightsFloat"></div>
+          <div class="flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-[#0a0c10]/90 border border-white/10 backdrop-blur-md shadow-[0_6px_24px_rgba(0,0,0,0.65)]" id="ovShiftLightsFloat"></div>
         </div>
 
-        <div class="flex items-end justify-center gap-2.5 pointer-events-none">
+        <div class="flex items-end justify-center gap-2 pointer-events-none">
           <!-- Compact Waveform -->
-          <div id="floatWaveformCard" class="mmt-float-widget rounded-lg border border-white/10 border-t-2 border-t-[#00e5ff] bg-[#090d12]/88 backdrop-blur-md p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.65)] pointer-events-auto" data-widget="waveform">
+          <div id="floatWaveformCard" class="mmt-float-widget rounded-md border border-white/10 bg-[#0a0c10]/90 backdrop-blur-md p-1.5 shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto" data-widget="waveform">
             <canvas id="ovWaveformCanvasFloat" width="170" height="44" class="rounded bg-black/60 border border-white/10"></canvas>
           </div>
 
           <!-- Central Digital Dash Cluster -->
           <div id="floatClusterCard" class="mmt-float-widget flex flex-col items-center pointer-events-auto" data-widget="cluster">
-            <div id="ovClusterBrandFloat" class="mb-1 flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-[#090d12]/90 border border-white/10 text-[10px] font-mono text-white/90"></div>
-            <div id="ovDeltaFloat" class="mb-1 px-3 py-0.5 rounded-md border border-emerald-500/40 bg-[#090d12]/90 text-emerald-400 font-mono tabular-nums text-[11px] font-bold shadow-lg">
+            <div id="ovClusterBrandFloat" class="mb-1 flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-[#0a0c10]/90 border border-white/10 text-[10px] font-mono text-white/90"></div>
+            <div id="ovDeltaFloat" class="mb-1 px-3 py-0.5 rounded border border-emerald-500/40 bg-[#0a0c10]/90 text-emerald-400 font-mono tabular-nums text-[11px] font-bold shadow-lg">
               —
             </div>
-            <div class="flex items-center gap-3 px-4 py-2 rounded-lg border border-white/10 border-t-2 border-t-[#00e5ff] bg-[#090d12]/92 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.7)] tabular-nums">
+            <div class="flex items-center gap-3 px-4 py-1.5 rounded-md border border-white/10 bg-[#0a0c10]/92 backdrop-blur-md shadow-[0_6px_24px_rgba(0,0,0,0.7)] tabular-nums">
               <div class="flex flex-col items-center">
-                <span class="text-[8px] font-mono text-r-muted uppercase tracking-widest">Gear</span>
+                <span class="text-[8px] font-mono text-white/50 uppercase tracking-widest">Gear</span>
                 <strong id="ovGearFloat" class="font-mono text-3xl font-black text-white leading-none mt-0.5">—</strong>
               </div>
               <div class="h-8 w-px bg-white/15"></div>
               <div class="flex flex-col">
-                <span class="text-[8px] font-mono text-r-muted uppercase tracking-widest">Speed</span>
+                <span class="text-[8px] font-mono text-white/50 uppercase tracking-widest">Speed</span>
                 <div class="flex items-baseline gap-1 mt-0.5">
                   <strong id="ovSpeedFloat" class="font-mono text-xl font-black text-[#00e5ff] leading-none">—</strong>
-                  <span class="font-mono text-[9px] text-r-muted">km/h</span>
+                  <span class="font-mono text-[9px] text-white/50">km/h</span>
                 </div>
-                <span id="ovRpmFloat" class="text-[9px] font-mono text-r-muted mt-0.5">—</span>
+                <span id="ovRpmFloat" class="text-[9px] font-mono text-white/50 mt-0.5">—</span>
               </div>
             </div>
           </div>
 
           <!-- Compact Pedals & Inputs -->
-          <div id="floatInputsCard" class="mmt-float-widget rounded-lg border border-white/10 border-t-2 border-t-emerald-400 bg-[#090d12]/88 backdrop-blur-md p-2 shadow-[0_8px_32px_rgba(0,0,0,0.65)] pointer-events-auto" data-widget="inputs">
+          <div id="floatInputsCard" class="mmt-float-widget rounded-md border border-white/10 bg-[#0a0c10]/90 backdrop-blur-md p-2 shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto" data-widget="inputs">
             <div id="ovGpuPedalsFloat"></div>
             <canvas id="ovInputsFloat" width="220" height="70" class="rounded-md hidden"></canvas>
             <div id="ovTyresFloat" class="mt-1 text-center font-mono text-[9px] text-r-muted tabular-nums"></div>
