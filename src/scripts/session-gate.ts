@@ -5,6 +5,14 @@ interface VaultUser {
   email?: string;
   role?: string;
   name?: string;
+  has_setup_access?: boolean | number;
+}
+
+function hasSetupAccess(session: { user: VaultUser } | null): boolean {
+  if (!session?.user) return false;
+  const role = String(session.user.role || "").toLowerCase();
+  if (role === "admin" || role === "team_driver") return true;
+  return session.user.has_setup_access === true || Number(session.user.has_setup_access) === 1;
 }
 
 interface Session {
@@ -72,18 +80,6 @@ function safeFilename(name: string, fallback: string): string {
   return clean.toLowerCase().endsWith(".sto") ? clean : `${clean}.sto`;
 }
 
-let stoTemplatesCache: Record<string, string> | null = null;
-async function loadStoTemplates(): Promise<Record<string, string>> {
-  if (stoTemplatesCache) return stoTemplatesCache;
-  try {
-    const res = await fetch("/assets/data/official_car_sto_templates.json?v=26s4.mmt1");
-    if (res.ok) {
-      stoTemplatesCache = (await res.json()) as Record<string, string>;
-    }
-  } catch {}
-  return stoTemplatesCache || {};
-}
-
 function decodeAndSanitizeStoBytes(b64: string, _carSlug = "", _filename = ""): Uint8Array {
   const byteChars = atob(b64);
   const raw = new Uint8Array(byteChars.length);
@@ -126,62 +122,82 @@ function setAuthState(btn: HTMLButtonElement, state: "pending" | "in" | "out", l
   btn.textContent = label;
 }
 
+function ensureLockedBadge(btn: HTMLButtonElement): HTMLAnchorElement {
+  const existing = btn.parentElement?.querySelector<HTMLAnchorElement>("[data-locked-badge]");
+  if (existing) return existing;
+  const badge = document.createElement("a");
+  badge.href = "/paddock/";
+  badge.className = "g2-dl g2-dl-locked";
+  badge.dataset.lockedBadge = "1";
+  badge.textContent = "Acceso Privado · Solo Pilotos MMT";
+  badge.style.textDecoration = "none";
+  badge.style.display = "inline-flex";
+  badge.style.alignItems = "center";
+  btn.insertAdjacentElement("afterend", badge);
+  return badge;
+}
+
 async function paintButtons(root: ParentNode): Promise<void> {
+  const session = await getSession();
+  const allowed = hasSetupAccess(session);
   root.querySelectorAll<HTMLButtonElement>("[data-download]").forEach((btn) => {
-    setAuthState(btn, "in", "Descargar");
+    if (allowed) {
+      btn.hidden = false;
+      const badge = btn.parentElement?.querySelector<HTMLAnchorElement>("[data-locked-badge]");
+      if (badge) badge.hidden = true;
+      setAuthState(btn, "in", btn.id === "gpvDownloadBtn" ? "Descargar .sto" : "Descargar");
+    } else {
+      btn.hidden = true;
+      const badge = ensureLockedBadge(btn);
+      badge.hidden = false;
+    }
   });
 }
 
-async function downloadFile(id: string, file: string, car = ""): Promise<"ok" | "retry"> {
+async function downloadFile(id: string, file: string, car = ""): Promise<"ok" | "retry" | "forbidden"> {
   const session = await getSession();
+  if (!session?.token || !hasSetupAccess(session)) {
+    return "forbidden";
+  }
+
   let contentBase64: string | null = null;
   let targetFilename = file || "setup.sto";
 
-  // 1. Try D1 API if session is present
-  if (session?.token) {
-    try {
-      const res = await fetch(`${API}/api/setups/download`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.token}`,
-        },
-        body: JSON.stringify({
-          id: Number(id) || undefined,
-          file: targetFilename,
-          filename: targetFilename,
-          car: car || undefined,
-        }),
-      });
-      if (res.ok) {
-        const data = (await res.json().catch(() => ({}))) as { success?: boolean; content_base64?: string; filename?: string };
-        if (data.success && data.content_base64) {
-          contentBase64 = data.content_base64;
-          if (data.filename) targetFilename = data.filename;
-        }
+  try {
+    const res = await fetch(`${API}/api/setups/download`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.token}`,
+      },
+      body: JSON.stringify({
+        id: Number(id) || undefined,
+        file: targetFilename,
+        filename: targetFilename,
+        car: car || undefined,
+      }),
+    });
+    if (res.status === 403 || res.status === 401) {
+      return "forbidden";
+    }
+    if (res.ok) {
+      const data = (await res.json().catch(() => ({}))) as { success?: boolean; content_base64?: string; filename?: string };
+      if (data.success && data.content_base64) {
+        contentBase64 = data.content_base64;
+        if (data.filename) targetFilename = data.filename;
       }
-    } catch {}
+    }
+  } catch {}
+
+  if (!contentBase64) {
+    return "retry";
   }
 
   let bytes: Uint8Array;
-
-  // 2. If API returned content, decode it
-  if (contentBase64) {
-    try {
-      bytes = decodeAndSanitizeStoBytes(contentBase64, car, targetFilename);
-    } catch {
-      bytes = new Uint8Array();
-    }
-  } else {
-    // 3. Fallback to local official sto templates so download NEVER fails
-    const templates = await loadStoTemplates();
-    const cleanCar = (car || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-    const templateB64 = templates[cleanCar] || templates[car] || templates[Object.keys(templates)[0]] || "";
-    if (templateB64) {
-      bytes = decodeAndSanitizeStoBytes(templateB64, car, targetFilename);
-    } else {
-      return "retry";
-    }
+  try {
+    bytes = decodeAndSanitizeStoBytes(contentBase64, car, targetFilename);
+  } catch {
+    return "retry";
   }
 
   const blob = new Blob([bytes.buffer as ArrayBuffer], { type: "application/octet-stream" });
@@ -308,6 +324,10 @@ export function initSessionGate(root: ParentNode = document): void {
       if (result === "ok") {
         setAuthState(btn, "in", "Descargado");
         setTimeout(() => setAuthState(btn, "in", "Descargar"), 3000);
+      } else if (result === "forbidden") {
+        btn.hidden = true;
+        const badge = ensureLockedBadge(btn);
+        badge.hidden = false;
       } else {
         setAuthState(btn, "in", "Reintentar");
       }
@@ -353,7 +373,18 @@ function openGaragePreviewModal(info: GaragePreviewInfo): void {
     dlBtn.dataset.file = info.file;
     dlBtn.dataset.car = info.car;
     dlBtn.dataset.busy = "0";
-    setAuthState(dlBtn, "in", "Descargar .sto");
+    void getSession().then((session) => {
+      if (hasSetupAccess(session)) {
+        dlBtn.hidden = false;
+        const badge = dlBtn.parentElement?.querySelector<HTMLAnchorElement>("[data-locked-badge]");
+        if (badge) badge.hidden = true;
+        setAuthState(dlBtn, "in", "Descargar .sto");
+      } else {
+        dlBtn.hidden = true;
+        const badge = ensureLockedBadge(dlBtn);
+        badge.hidden = false;
+      }
+    });
   }
 
   modal.classList.remove("hidden");

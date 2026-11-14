@@ -11,6 +11,7 @@ pub const MOCK_TOKEN: &str = "mock-token-not-stored";
 #[derive(Debug)]
 pub enum ApiError {
     Unauthorized,
+    Forbidden,
     Expired,
     Pending,
     Message(String),
@@ -20,6 +21,7 @@ impl std::fmt::Display for ApiError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Unauthorized => write!(f, "La sesión ha caducado. Vuelve a vincular el ordenador."),
+            Self::Forbidden => write!(f, "Acceso restringido a pilotos autorizados de Muntrume Motorsport"),
             Self::Expired => write!(f, "El código ha caducado. Empieza de nuevo."),
             Self::Pending => write!(f, "pending"),
             Self::Message(text) => write!(f, "{text}"),
@@ -131,6 +133,9 @@ impl Api {
         if response.status().as_u16() == 401 {
             return Err(ApiError::Unauthorized);
         }
+        if response.status().as_u16() == 403 {
+            return Err(ApiError::Forbidden);
+        }
         if !response.status().is_success() {
             return Err(ApiError::Message(message_from(response.status().as_u16(), response).await));
         }
@@ -165,6 +170,9 @@ impl Api {
         if status.as_u16() == 401 {
             return Err(ApiError::Unauthorized);
         }
+        if status.as_u16() == 403 {
+            return Err(ApiError::Forbidden);
+        }
         if !response.status().is_success() {
             return Err(ApiError::Message(message_from(response.status().as_u16(), response).await));
         }
@@ -193,6 +201,9 @@ impl Api {
         }
         if response.status().as_u16() == 401 {
             return Err(ApiError::Unauthorized);
+        }
+        if response.status().as_u16() == 403 {
+            return Err(ApiError::Forbidden);
         }
         if !response.status().is_success() {
             return Err(ApiError::Message(message_from(response.status().as_u16(), response).await));
@@ -227,6 +238,9 @@ impl Api {
         }
         if response.status().as_u16() == 401 {
             return Err(ApiError::Unauthorized);
+        }
+        if response.status().as_u16() == 403 {
+            return Err(ApiError::Forbidden);
         }
         if !response.status().is_success() {
             return Err(ApiError::Message(message_from(response.status().as_u16(), response).await));
@@ -267,6 +281,9 @@ impl Api {
         let response = self.authed(self.client.get(url), token)?.send().await.map_err(offline)?;
         if response.status().as_u16() == 401 {
             return Err(ApiError::Unauthorized);
+        }
+        if response.status().as_u16() == 403 {
+            return Err(ApiError::Forbidden);
         }
         if !response.status().is_success() {
             return Err(ApiError::Message(message_from(response.status().as_u16(), response).await));

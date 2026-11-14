@@ -63,8 +63,12 @@ export class CloudManifestClient {
         signal: controller.signal,
       });
 
-      if (response.status === 401 || response.status === 403) {
+      if (response.status === 401) {
         throw new UnauthorizedSyncError();
+      }
+
+      if (response.status === 403) {
+        throw new UnauthorizedSyncError("Acceso restringido a pilotos autorizados de Muntrume Motorsport");
       }
 
       if (response.status === 304) {

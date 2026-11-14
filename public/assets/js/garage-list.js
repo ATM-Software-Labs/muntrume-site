@@ -62,21 +62,45 @@
     status.textContent = message;
     status.dataset.state = state || "ready";
   }
-  function signedIn() {
+  function hasSetupAccess() {
     try {
       var token = localStorage.getItem("mrt_vault_token") || sessionStorage.getItem("mrt_vault_token");
       if (!token || token === "guest_token" || token === "local_session") return false;
       var raw = localStorage.getItem("mrt_vault_user") || sessionStorage.getItem("mrt_vault_user");
       if (!raw) return false;
       var user = JSON.parse(raw);
-      return Boolean(user && user.email && user.role !== "guest");
+      if (!user || !user.email || user.role === "guest") return false;
+      var role = String(user.role || "").toLowerCase();
+      if (role === "admin" || role === "team_driver") return true;
+      return user.has_setup_access === true || Number(user.has_setup_access) === 1;
     } catch (e) { return false; }
   }
   function paint() {
+    var allowed = hasSetupAccess();
     list.querySelectorAll("[data-download]").forEach(function (btn) {
       if (btn.dataset.busy === "1") return;
-      btn.dataset.auth = "in";
-      btn.textContent = tr("garage.dl.in", "Descargar");
+      var badge = btn.parentElement && btn.parentElement.querySelector("[data-locked-badge]");
+      if (allowed) {
+        btn.hidden = false;
+        if (badge) badge.hidden = true;
+        btn.dataset.auth = "in";
+        btn.textContent = tr("garage.dl.in", "Descargar");
+      } else {
+        btn.hidden = true;
+        if (badge) {
+          badge.hidden = false;
+        } else if (btn.parentElement) {
+          var a = document.createElement("a");
+          a.href = "/paddock/";
+          a.className = "g2-dl g2-dl-locked";
+          a.setAttribute("data-locked-badge", "1");
+          a.style.textDecoration = "none";
+          a.style.display = "inline-flex";
+          a.style.alignItems = "center";
+          a.textContent = "Acceso Privado · Solo Pilotos MMT";
+          btn.insertAdjacentElement("afterend", a);
+        }
+      }
     });
   }
   function normText(s) {

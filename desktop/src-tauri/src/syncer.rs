@@ -157,7 +157,12 @@ async fn run(app: &AppHandle) -> Result<SyncReport, String> {
                         index.files.push(local);
                         downloaded += 1;
                     }
-                    Err(err) => errors.push(format!("{}: {err}", item.relative)),
+                    Err(err) => {
+                        if err.contains("Acceso restringido a pilotos autorizados de Muntrume Motorsport") {
+                            return Err(err);
+                        }
+                        errors.push(format!("{}: {err}", item.relative));
+                    }
                 }
             }
             Action::Delete(item) => match remove_one(&root, &item.relative) {

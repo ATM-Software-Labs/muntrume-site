@@ -212,7 +212,15 @@ fn spawn_scheduler(app: AppHandle) {
                 last = Instant::now();
                 let handle = app.clone();
                 tauri::async_runtime::spawn(async move {
-                    let _ = syncer::synchronize(&handle).await;
+                    if let Err(err) = syncer::synchronize(&handle).await {
+                        if err.contains("Acceso restringido a pilotos autorizados de Muntrume Motorsport") {
+                            if let Ok(mut cfg) = settings::load() {
+                                cfg.auto_sync = false;
+                                let _ = settings::save(&cfg);
+                            }
+                            let _ = handle.emit("mmt-notice", err);
+                        }
+                    }
                     let _ = handle.emit("mmt-refresh", ());
                 });
             }

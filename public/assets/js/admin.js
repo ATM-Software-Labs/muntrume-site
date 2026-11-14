@@ -397,6 +397,7 @@ async function refreshRaceControlData() {
           roleLabel: dbM.role === "admin" ? "Team Principal & Admin" : "Official Driver",
           status: dbM.status || "active",
           has_password: Boolean(dbM.has_password),
+          has_setup_access: Boolean(dbM.has_setup_access) || dbM.role === "admin" || dbM.role === "team_driver",
           last_login_at: dbM.last_login_at || null,
           created_at: dbM.created_at || new Date().toISOString()
         });
@@ -597,6 +598,7 @@ function renderDirectoryTable() {
     const numBadge = m.number ? `#${m.number}` : (m.name || "MMT").slice(0, 2).toUpperCase();
     const isPrincipal = m.email.toLowerCase() === "atrumin16@gmail.com";
     const isBlocked = m.status === "inactive";
+    const hasSetupAccess = Boolean(m.has_setup_access) || m.role === "admin" || m.role === "team_driver";
     const statusBadge = isBlocked
       ? `<span class="rc-badge rc-badge--err">Bloqueada</span>`
       : m.has_password
@@ -627,6 +629,7 @@ function renderDirectoryTable() {
           <div class="rc-btn-row" style="justify-content:flex-end;flex-wrap:wrap">
             ${!isBlocked ? `<button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" data-name="${rcEscape(m.name)}" onclick="generateDriverAccessFromBtn(this, 'link')">Reset / Enlace</button>` : ""}
             ${!isBlocked ? `<button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" data-name="${rcEscape(m.name)}" onclick="generateDriverAccessFromBtn(this, 'temp_password')">Clave Temp.</button>` : ""}
+            ${!isPrincipal ? `<button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" data-access="${hasSetupAccess ? "1" : "0"}" onclick="toggleSetupAccessBtn(this)" style="${hasSetupAccess ? "border-color:rgba(16,185,129,.45);color:#34d399" : ""}">${hasSetupAccess ? "Setups: ON" : "Setups: OFF"}</button>` : ""}
             ${!isPrincipal ? `<button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" data-status="${isBlocked ? "active" : "inactive"}" onclick="toggleMemberStatusBtn(this)">${isBlocked ? "Reactivar" : "Bloquear"}</button>` : ""}
             ${!isPrincipal ? `<button type="button" class="r-btn r-btn--sm" style="border-color:rgba(239,68,68,.35);color:#f87171" data-email="${rcEscape(m.email)}" onclick="deleteMemberBtn(this)">Eliminar</button>` : ""}
           </div>
@@ -739,6 +742,21 @@ async function rejectPendingRequestBtn(btn) {
     showRcNotice("Solicitud rechazada", data.email_sent ? `Solicitud de ${email} rechazada y piloto notificado.` : `Solicitud de ${email} rechazada.`, "info");
   } catch (err) {
     showRcNotice("Error al rechazar solicitud", err?.message || "No se pudo rechazar la solicitud.", "err");
+  }
+}
+
+async function toggleSetupAccessBtn(btn) {
+  const email = (btn?.dataset?.email || "").trim().toLowerCase();
+  const current = btn?.dataset?.access === "1";
+  const nextAccess = !current;
+  if (!email) return;
+  try {
+    await rcAdminFetch("/api/admin/setups-access", { email, has_setup_access: nextAccess });
+    appendAuditEvent("admin", "atrumin16@gmail.com", `Acceso setups (.sto) ${nextAccess ? "concedido" : "revocado"}: ${email}`, nextAccess ? "SETUPS ON" : "SETUPS OFF");
+    await refreshRaceControlData();
+    showRcNotice(nextAccess ? "Acceso a setups concedido" : "Acceso a setups revocado", `${email} ahora tiene ${nextAccess ? "permitida" : "bloqueada"} la descarga y sync de .sto.`, nextAccess ? "success" : "info");
+  } catch (err) {
+    showRcNotice("No se pudo cambiar el acceso a setups", err?.message || "Error en D1.", "err");
   }
 }
 
@@ -1439,6 +1457,7 @@ if (typeof window !== "undefined") {
   window.approvePendingRequestBtn = approvePendingRequestBtn;
   window.rejectPendingRequestBtn = rejectPendingRequestBtn;
   window.toggleMemberStatusBtn = toggleMemberStatusBtn;
+  window.toggleSetupAccessBtn = toggleSetupAccessBtn;
   window.deleteMemberBtn = deleteMemberBtn;
   window.revokeDriverAccessBtn = revokeDriverAccessBtn;
   window.closeCredentialsResultModal = closeCredentialsResultModal;
