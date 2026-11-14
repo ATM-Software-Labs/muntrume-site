@@ -6,6 +6,10 @@ on:
       - "desktop-v*"
   workflow_dispatch:
 
+concurrency:
+  group: desktop-release
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
