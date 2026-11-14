@@ -6,7 +6,8 @@ import { fuelText, paintConfigAnalysis, paintExtras, updateLiveOverlay, initFloa
 import rawSchedule from "./season_schedule_2026_s4.json";
 import { getSetupProfile } from "./setup-intelligence";
 import { SyncCoordinator } from "./sync/sync-coordinator";
-import { resolveCarMetadata, createBrandBadgeElement } from "./cars/catalog";
+import { resolveCarMetadata } from "./cars/catalog";
+import { createBrandLogoBadge } from "./brand-logos";
 
 const syncCoordinator = new SyncCoordinator<Awaited<ReturnType<Backend["syncNow"]>>>();
 
@@ -306,6 +307,22 @@ let libraryGroupBy: "car" | "track" | "week" = (() => {
   return "car";
 })();
 
+let libraryViewMode: "groups" | "list" | "grid" = (() => {
+  try {
+    const val = localStorage.getItem("mmt-library-viewmode");
+    if (val === "groups" || val === "list" || val === "grid") return val;
+  } catch {}
+  return "groups";
+})();
+
+let librarySort: "active_week" | "favorites" | "count" | "alpha" = (() => {
+  try {
+    const val = localStorage.getItem("mmt-library-sort");
+    if (val === "active_week" || val === "favorites" || val === "count" || val === "alpha") return val;
+  } catch {}
+  return "active_week";
+})();
+
 let activeCatFilter = (() => {
   try {
     return localStorage.getItem("mmt-active-cat-filter") || "all";
@@ -578,9 +595,24 @@ function paintLibrary(): void {
   document.querySelectorAll<HTMLButtonElement>("[data-group]").forEach((btn) => {
     const isAct = btn.dataset.group === libraryGroupBy;
     btn.className = isAct
-      ? "h-7 px-3 rounded-lg bg-r-surface text-r-accent font-semibold shadow-sm transition"
-      : "h-7 px-3 rounded-lg text-r-muted hover:text-r-text transition";
+      ? "h-8 px-2.5 rounded-lg bg-r-surface text-r-accent font-semibold shadow-sm transition"
+      : "h-8 px-2.5 rounded-lg text-r-muted hover:text-r-text transition";
   });
+
+  document.querySelectorAll<HTMLButtonElement>("[data-view-mode]").forEach((btn) => {
+    const isAct = btn.dataset.viewMode === libraryViewMode;
+    btn.className = isAct
+      ? "h-8 px-2.5 rounded-lg bg-r-surface text-r-accent font-semibold shadow-sm transition"
+      : "h-8 px-2.5 rounded-lg text-r-muted hover:text-r-text transition";
+  });
+
+  const groupByWrap = document.getElementById("groupByWrap");
+  if (groupByWrap) groupByWrap.hidden = libraryViewMode !== "groups";
+  const toggleAllBtnEl = document.getElementById("btnToggleAll");
+  if (toggleAllBtnEl) toggleAllBtnEl.hidden = libraryViewMode !== "groups";
+
+  const sortSel = document.getElementById("librarySortSelect") as HTMLSelectElement | null;
+  if (sortSel && sortSel.value !== librarySort) sortSel.value = librarySort;
 
   libraryEl.replaceChildren();
 
@@ -590,7 +622,11 @@ function paintLibrary(): void {
   }
   $("libraryEmpty").hidden = true;
 
-  if (libraryGroupBy === "car") {
+  if (libraryViewMode === "list") {
+    paintListView(items);
+  } else if (libraryViewMode === "grid") {
+    paintGridView(items);
+  } else if (libraryGroupBy === "car") {
     paintGroupedByCar(items);
   } else if (libraryGroupBy === "track") {
     paintGroupedByTrack(items);
@@ -830,8 +866,11 @@ function setupCardView(row: LibraryItem, showCar = false): HTMLElement {
 
   if (showCar) {
     const carTag = document.createElement("div");
-    carTag.className = "text-xs font-semibold text-r-text flex items-center gap-1.5";
-    carTag.innerHTML = `<span class="px-1.5 py-0.2 rounded bg-r-surface border border-r-line text-[9px] uppercase font-mono text-r-muted">Coche</span> <span>${formatCarName(row.carFolder || row.car)}</span>`;
+    carTag.className = "text-xs font-semibold text-r-text flex items-center gap-2";
+    const logo = createBrandLogoBadge(row.carFolder || row.car, "sm");
+    const nameSpan = document.createElement("span");
+    nameSpan.textContent = formatCarName(row.carFolder || row.car);
+    carTag.append(logo, nameSpan);
     mid.append(carTag);
   }
 
@@ -904,6 +943,134 @@ function setupCardView(row: LibraryItem, showCar = false): HTMLElement {
   return card;
 }
 
+function sortItemsByMode(items: LibraryItem[]): LibraryItem[] {
+  const favSet = new Set(snapshot?.settings.favourites ?? []);
+  const myCarSet = new Set(userMyCars.map((c) => c.toLowerCase().trim()));
+  return [...items].sort((a, b) => {
+    if (librarySort === "alpha") {
+      return formatCarName(a.carFolder || a.car).localeCompare(formatCarName(b.carFolder || b.car)) || a.track.localeCompare(b.track);
+    }
+    const aFav = favSet.has(a.id) ? 1 : 0;
+    const bFav = favSet.has(b.id) ? 1 : 0;
+    if (librarySort === "favorites" && aFav !== bFav) return bFav - aFav;
+
+    const aWeek = getTrackWeekInfo(a.track, a.filename, a.carFolder || a.car).isCurrent ? 1 : 0;
+    const bWeek = getTrackWeekInfo(b.track, b.filename, b.carFolder || b.car).isCurrent ? 1 : 0;
+    if (aWeek !== bWeek) return bWeek - aWeek;
+    if (aFav !== bFav) return bFav - aFav;
+
+    const aMy = myCarSet.has((a.carFolder || a.car).toLowerCase().trim()) ? 1 : 0;
+    const bMy = myCarSet.has((b.carFolder || b.car).toLowerCase().trim()) ? 1 : 0;
+    if (aMy !== bMy) return bMy - aMy;
+
+    return formatCarName(a.carFolder || a.car).localeCompare(formatCarName(b.carFolder || b.car)) || a.track.localeCompare(b.track);
+  });
+}
+
+function paintListView(items: LibraryItem[]): void {
+  const sorted = sortItemsByMode(items);
+  const favSet = new Set(snapshot?.settings.favourites ?? []);
+  const wrap = document.createElement("div");
+  wrap.className = "rounded-2xl border border-r-line bg-r-surface divide-y divide-r-line/50 overflow-hidden";
+
+  for (const row of sorted) {
+    const line = document.createElement("div");
+    line.className = "px-4 py-2.5 flex items-center justify-between gap-3 hover:bg-r-bg/70 transition cursor-pointer";
+    line.addEventListener("click", () => openSetupPreview(row));
+
+    const left = document.createElement("div");
+    left.className = "flex items-center gap-3 min-w-0 flex-1";
+
+    const logo = createBrandLogoBadge(row.carFolder || row.car, "sm");
+
+    const info = document.createElement("div");
+    info.className = "min-w-0 flex-1";
+
+    const topLine = document.createElement("div");
+    topLine.className = "flex items-center gap-2 flex-wrap";
+
+    const carSpan = document.createElement("span");
+    carSpan.className = "text-xs font-bold text-r-text truncate";
+    carSpan.textContent = formatCarName(row.carFolder || row.car);
+
+    const sep = document.createElement("span");
+    sep.className = "text-r-muted text-xs";
+    sep.textContent = "·";
+
+    const trackSpan = document.createElement("span");
+    trackSpan.className = "text-xs font-medium text-r-accent truncate";
+    trackSpan.textContent = row.track;
+
+    topLine.append(carSpan, sep, trackSpan);
+
+    const weekInfo = getTrackWeekInfo(row.track, row.filename, row.carFolder || row.car);
+    if (weekInfo.isCurrent) {
+      const wk = document.createElement("span");
+      wk.className = "px-1.5 py-0.2 rounded bg-r-accent/15 text-r-accent font-mono text-[10px] font-bold uppercase";
+      wk.textContent = `S${weekInfo.week} ACTUAL`;
+      topLine.append(wk);
+    }
+
+    const fileLine = document.createElement("div");
+    fileLine.className = "font-mono text-[11px] text-r-muted truncate";
+    fileLine.textContent = `${row.filename} · ${row.season} · ${formatBytes(row.size)}`;
+
+    info.append(topLine, fileLine);
+    left.append(logo, info);
+
+    const right = document.createElement("div");
+    right.className = "flex items-center gap-2 shrink-0";
+
+    const kKey = kindKey(row.kind);
+    const kindPill = document.createElement("span");
+    kindPill.className =
+      kKey === "Race"
+        ? "px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 text-[10px] font-bold uppercase"
+        : kKey === "Qualy"
+          ? "px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 text-[10px] font-bold uppercase"
+          : "px-2 py-0.5 rounded bg-sky-500/15 text-sky-300 text-[10px] font-bold uppercase";
+    kindPill.textContent = KIND_LABEL[kKey] ?? row.kind;
+
+    const isFav = favSet.has(row.id);
+    const favBtn = document.createElement("button");
+    favBtn.type = "button";
+    favBtn.className = isFav ? "p-1 text-amber-400" : "p-1 text-r-muted/40 hover:text-amber-400";
+    favBtn.innerHTML = starSvg(isFav);
+    favBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (!snapshot) return;
+      const favs = snapshot.settings.favourites;
+      snapshot.settings.favourites = favs.includes(row.id) ? favs.filter((id) => id !== row.id) : [...favs, row.id];
+      void persistSettings().then(() => paintLibrary());
+    });
+
+    const compBtn = document.createElement("button");
+    compBtn.type = "button";
+    compBtn.className = "p-1.5 rounded-lg border border-r-line/60 bg-r-bg text-r-muted hover:text-r-accent transition";
+    compBtn.title = "Comparar setup";
+    compBtn.innerHTML = compareSvg;
+    compBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openSetupCompare(row);
+    });
+
+    right.append(kindPill, favBtn, compBtn);
+    line.append(left, right);
+    wrap.append(line);
+  }
+  libraryEl.append(wrap);
+}
+
+function paintGridView(items: LibraryItem[]): void {
+  const sorted = sortItemsByMode(items);
+  const grid = document.createElement("div");
+  grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3";
+  for (const row of sorted) {
+    grid.append(setupCardView(row, true));
+  }
+  libraryEl.append(grid);
+}
+
 function paintGroupedByCar(items: LibraryItem[]): void {
   const groups = new Map<string, LibraryItem[]>();
   for (const entry of items) {
@@ -912,7 +1079,40 @@ function paintGroupedByCar(items: LibraryItem[]): void {
     groups.set(entry.car, list);
   }
 
-  const sortedCars = Array.from(groups.keys()).sort((a, b) => a.localeCompare(b));
+  const favSet = new Set(snapshot?.settings.favourites ?? []);
+  const myCarSet = new Set(userMyCars.map((c) => c.toLowerCase().trim()));
+
+  const carStats = new Map<string, { hasCurrent: boolean; favCount: number; isMyCar: boolean; total: number }>();
+  for (const [car, rows] of groups.entries()) {
+    let hasCurrent = false;
+    let favCount = 0;
+    for (const r of rows) {
+      if (favSet.has(r.id)) favCount++;
+      if (!hasCurrent && getTrackWeekInfo(r.track, r.filename, r.carFolder || r.car).isCurrent) {
+        hasCurrent = true;
+      }
+    }
+    const carKey = (rows[0]?.carFolder || car).toLowerCase().trim();
+    carStats.set(car, {
+      hasCurrent,
+      favCount,
+      isMyCar: myCarSet.has(carKey) || myCarSet.has(car.toLowerCase().trim()),
+      total: rows.length,
+    });
+  }
+
+  const sortedCars = Array.from(groups.keys()).sort((a, b) => {
+    if (librarySort === "alpha") return formatCarName(a).localeCompare(formatCarName(b));
+    const sa = carStats.get(a)!;
+    const sb = carStats.get(b)!;
+    if (librarySort === "favorites" && sa.favCount !== sb.favCount) return sb.favCount - sa.favCount;
+    if (librarySort === "count" && sa.total !== sb.total) return sb.total - sa.total;
+    if (sa.hasCurrent !== sb.hasCurrent) return sa.hasCurrent ? -1 : 1;
+    if ((sa.favCount > 0) !== (sb.favCount > 0)) return sa.favCount > 0 ? -1 : 1;
+    if (sa.isMyCar !== sb.isMyCar) return sa.isMyCar ? -1 : 1;
+    if (sa.total !== sb.total) return sb.total - sa.total;
+    return formatCarName(a).localeCompare(formatCarName(b));
+  });
   const isSearching = query.trim().length > 0;
 
   for (let carIndex = 0; carIndex < sortedCars.length; carIndex++) {
@@ -957,6 +1157,8 @@ function paintGroupedByCar(items: LibraryItem[]): void {
     chevron.className = "text-r-muted transition-transform duration-200 text-xs font-mono";
     chevron.textContent = isCollapsed ? "▶" : "▼";
 
+    const brandLogo = createBrandLogoBadge(rows[0]?.carFolder || car, "md");
+
     const titleBlock = document.createElement("div");
     const heading = document.createElement("h2");
     heading.className = "text-base md:text-lg font-bold text-r-text tracking-wide flex items-center gap-2";
@@ -972,7 +1174,7 @@ function paintGroupedByCar(items: LibraryItem[]): void {
     subText.textContent = `${sortedCircuits.length} circuitos cubiertos`;
 
     titleBlock.append(heading, subText);
-    left.append(chevron, titleBlock);
+    left.append(chevron, brandLogo, titleBlock);
 
     const right = document.createElement("div");
     right.className = "flex items-center gap-2 font-mono text-[11px]";
@@ -1179,6 +1381,8 @@ function paintGroupedByTrack(items: LibraryItem[]): void {
         const carLeft = document.createElement("div");
         carLeft.className = "flex items-center gap-2";
 
+        const brandBadge = createBrandLogoBadge(carRows[0]?.carFolder || car, "sm");
+
         const meta = resolveCarMetadata(car);
         const carTag = document.createElement("span");
         carTag.className = meta
@@ -1191,11 +1395,7 @@ function paintGroupedByTrack(items: LibraryItem[]): void {
         carTitle.textContent = meta ? `${meta.brand} ${meta.model}` : formatCarName(car);
         if (meta) carTitle.title = `${meta.category} · ${meta.specs}`;
 
-        if (meta) {
-          carLeft.append(createBrandBadgeElement(meta), carTag, carTitle);
-        } else {
-          carLeft.append(carTag, carTitle);
-        }
+        carLeft.append(brandBadge, carTag, carTitle);
 
         const carRightWrap = document.createElement("div");
         carRightWrap.className = "flex items-center gap-2";
@@ -1840,6 +2040,28 @@ function bind(): void {
       libraryGroupBy = btn.dataset.group as "car" | "track" | "week";
       try {
         localStorage.setItem("mmt-library-groupby", libraryGroupBy);
+      } catch {}
+      paintLibrary();
+    });
+  }
+  const viewModePills = document.getElementById("viewModePills");
+  if (viewModePills) {
+    viewModePills.addEventListener("click", (e) => {
+      const btn = (e.target as HTMLElement).closest("button");
+      if (!btn || !btn.dataset.viewMode) return;
+      libraryViewMode = btn.dataset.viewMode as "groups" | "list" | "grid";
+      try {
+        localStorage.setItem("mmt-library-viewmode", libraryViewMode);
+      } catch {}
+      paintLibrary();
+    });
+  }
+  const sortSelect = document.getElementById("librarySortSelect") as HTMLSelectElement | null;
+  if (sortSelect) {
+    sortSelect.addEventListener("change", () => {
+      librarySort = sortSelect.value as "active_week" | "favorites" | "count" | "alpha";
+      try {
+        localStorage.setItem("mmt-library-sort", librarySort);
       } catch {}
       paintLibrary();
     });

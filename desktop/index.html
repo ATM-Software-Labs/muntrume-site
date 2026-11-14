@@ -150,59 +150,70 @@
               </button>
             </div>
 
-            <!-- Pilot Preferences & Grouping Control Bar -->
-            <div class="mt-5 p-3.5 rounded-2xl border border-r-line bg-r-surface flex flex-col gap-3">
-              <!-- Top Row: Garaje & Grouping -->
-              <div class="flex flex-wrap items-center justify-between gap-3">
-                <!-- Garage Selector -->
-                <div class="flex items-center gap-2">
-                  <span class="text-xs font-mono uppercase tracking-wider text-r-muted">Garaje:</span>
-                  <div id="garageFilterPills" class="flex rounded-xl border border-r-line bg-r-bg p-0.5 font-mono text-xs">
-                    <button type="button" id="btnGarageMy" data-garage-mode="my" class="h-7 px-3 rounded-lg bg-r-surface text-r-accent font-semibold shadow-sm transition">Mis Coches</button>
-                    <button type="button" id="btnGarageAll" data-garage-mode="all" class="h-7 px-3 rounded-lg text-r-muted hover:text-r-text transition">Todos (104)</button>
+            <!-- Simplified Library Toolbar -->
+            <div class="mt-4 p-3 rounded-2xl border border-r-line bg-r-surface flex flex-col gap-2.5">
+              <!-- Row 1: Search + View Mode + Group By + Sort -->
+              <div class="flex flex-wrap items-center gap-2">
+                <div class="relative flex-1 min-w-[200px]">
+                  <input id="search" type="search" placeholder="Buscar coche, circuito, archivo o semana..." class="w-full h-9 rounded-xl border border-r-line bg-r-bg pl-3.5 pr-8 text-xs text-r-text placeholder:text-r-muted focus:border-r-accent focus:outline-none" />
+                  <button type="button" id="clearSearch" hidden class="absolute right-2.5 top-1/2 -translate-y-1/2 text-r-muted hover:text-r-text text-xs">✕</button>
+                </div>
+
+                <!-- View Mode: Grupos | Lista | Tarjetas -->
+                <div id="viewModePills" class="flex rounded-xl border border-r-line bg-r-bg p-0.5 font-mono text-[11px]" role="group" aria-label="Vista de biblioteca">
+                  <button type="button" data-view-mode="groups" class="h-8 px-2.5 rounded-lg bg-r-surface text-r-accent font-semibold shadow-sm transition">Grupos</button>
+                  <button type="button" data-view-mode="list" class="h-8 px-2.5 rounded-lg text-r-muted hover:text-r-text transition">Lista</button>
+                  <button type="button" data-view-mode="grid" class="h-8 px-2.5 rounded-lg text-r-muted hover:text-r-text transition">Tarjetas</button>
+                </div>
+
+                <!-- Group By (only in Grupos mode) -->
+                <div id="groupByWrap" class="flex items-center gap-1.5">
+                  <div id="groupByPills" class="flex rounded-xl border border-r-line bg-r-bg p-0.5 font-mono text-[11px]">
+                    <button type="button" data-group="car" class="h-8 px-2.5 rounded-lg bg-r-surface text-r-accent font-semibold shadow-sm transition">Coche</button>
+                    <button type="button" data-group="track" class="h-8 px-2.5 rounded-lg text-r-muted hover:text-r-text transition">Circuito</button>
+                    <button type="button" data-group="week" class="h-8 px-2.5 rounded-lg text-r-muted hover:text-r-text transition">Semana</button>
                   </div>
-                  <button type="button" id="btnOpenGarageModal" class="h-7 px-3 rounded-lg border border-r-line bg-r-bg text-r-text hover:border-r-accent hover:text-r-accent font-mono text-xs font-semibold flex items-center gap-1.5 transition">
-                    <span>Editar Garaje</span>
+                </div>
+
+                <!-- Smart Sort -->
+                <select id="librarySortSelect" aria-label="Ordenar biblioteca" class="h-9 rounded-xl border border-r-line bg-r-bg px-2.5 font-mono text-[11px] text-r-text focus:border-r-accent focus:outline-none">
+                  <option value="active_week">Semana actual primero</option>
+                  <option value="favorites">Favoritos primero</option>
+                  <option value="count">Más setups primero</option>
+                  <option value="alpha">Alfabético (A-Z)</option>
+                </select>
+              </div>
+
+              <!-- Row 2: Compact Garage + Category + Setup Kind Pills -->
+              <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-r-line/50">
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <div id="garageFilterPills" class="flex rounded-lg border border-r-line bg-r-bg p-0.5 font-mono text-[11px]">
+                    <button type="button" id="btnGarageMy" data-garage-mode="my" class="h-7 px-2.5 rounded-md bg-r-surface text-r-accent font-semibold shadow-sm transition">Mis Coches</button>
+                    <button type="button" id="btnGarageAll" data-garage-mode="all" class="h-7 px-2.5 rounded-md text-r-muted hover:text-r-text transition">Todos</button>
+                  </div>
+                  <button type="button" id="btnOpenGarageModal" class="h-8 px-2.5 rounded-lg border border-r-line bg-r-bg text-r-text hover:border-r-accent hover:text-r-accent font-mono text-[11px] font-semibold flex items-center gap-1.5 transition">
+                    <span>Garaje</span>
                     <span id="myCarsBadgeCount" class="px-1.5 py-0.2 rounded-full bg-r-accent/20 text-r-accent text-[10px] font-bold">7</span>
                   </button>
-                </div>
 
-                <!-- Grouping Selector -->
-                <div class="flex items-center gap-2">
-                  <span class="text-xs font-mono uppercase tracking-wider text-r-muted">Agrupar por:</span>
-                  <div id="groupByPills" class="flex rounded-xl border border-r-line bg-r-bg p-0.5 font-mono text-xs">
-                    <button type="button" data-group="car" class="h-7 px-3 rounded-lg bg-r-surface text-r-accent font-semibold shadow-sm transition">Coche</button>
-                    <button type="button" data-group="track" class="h-7 px-3 rounded-lg text-r-muted hover:text-r-text transition">Circuito</button>
-                    <button type="button" data-group="week" class="h-7 px-3 rounded-lg text-r-muted hover:text-r-text transition">Semana</button>
+                  <span class="h-4 w-px bg-r-line mx-0.5"></span>
+
+                  <div id="userCategoryPills" class="flex flex-wrap gap-1 font-mono text-[11px]">
+                    <button type="button" data-cat-toggle="all" class="h-8 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Todas</button>
+                    <button type="button" data-cat-toggle="SPORTS CAR" class="h-8 px-2.5 rounded-lg border border-r-line bg-r-bg text-r-muted hover:text-r-text transition">Sports Car</button>
+                    <button type="button" data-cat-toggle="FORMULA CAR" class="h-8 px-2.5 rounded-lg border border-r-line bg-r-bg text-r-muted hover:text-r-text transition">Fórmula</button>
+                    <button type="button" data-cat-toggle="OVAL" class="h-8 px-2.5 rounded-lg border border-r-line bg-r-bg text-r-muted hover:text-r-text transition">Oval</button>
+                    <button type="button" data-cat-toggle="DIRT" class="h-8 px-2.5 rounded-lg border border-r-line bg-r-bg text-r-muted hover:text-r-text transition">Dirt</button>
                   </div>
                 </div>
-              </div>
 
-              <!-- Categories Row -->
-              <div class="flex flex-wrap items-center gap-2 pt-2.5 border-t border-r-line/50">
-                <span class="text-xs font-mono uppercase tracking-wider text-r-muted mr-1">Categoría:</span>
-                <div id="userCategoryPills" class="flex flex-wrap gap-1.5 font-mono text-xs">
-                  <button type="button" data-cat-toggle="all" class="h-8 px-3 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Todas</button>
-                  <button type="button" data-cat-toggle="SPORTS CAR" class="h-8 px-3 rounded-lg border border-r-line bg-r-bg text-r-muted hover:text-r-text transition">Sports Car</button>
-                  <button type="button" data-cat-toggle="FORMULA CAR" class="h-8 px-3 rounded-lg border border-r-line bg-r-bg text-r-muted hover:text-r-text transition">Fórmula</button>
-                  <button type="button" data-cat-toggle="OVAL" class="h-8 px-3 rounded-lg border border-r-line bg-r-bg text-r-muted hover:text-r-text transition">Oval</button>
-                  <button type="button" data-cat-toggle="DIRT" class="h-8 px-3 rounded-lg border border-r-line bg-r-bg text-r-muted hover:text-r-text transition">Dirt / Rally</button>
+                <div class="flex flex-wrap gap-1" role="group" aria-label="Tipo de setup">
+                  <button type="button" data-filter="all" class="mmt-chip h-8 px-2.5 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider">Todos</button>
+                  <button type="button" data-filter="Race" class="mmt-chip h-8 px-2.5 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider">Carrera</button>
+                  <button type="button" data-filter="Qualy" class="mmt-chip h-8 px-2.5 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider">Qualy</button>
+                  <button type="button" data-filter="Wet" class="mmt-chip h-8 px-2.5 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider">Lluvia</button>
+                  <button type="button" data-filter="Fav" class="mmt-chip h-8 px-2.5 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-amber-400">★ Fav</button>
                 </div>
-              </div>
-            </div>
-
-            <!-- Search and Kind Filter -->
-            <div class="mt-4 flex flex-wrap gap-3">
-              <div class="relative flex-1 min-w-[220px]">
-                <input id="search" type="search" placeholder="Buscar por coche, circuito, archivo o semana..." class="w-full h-11 rounded-xl border border-r-line bg-r-surface pl-4 pr-9 text-sm text-r-text placeholder:text-r-muted focus:border-r-accent focus:outline-none" />
-                <button type="button" id="clearSearch" hidden class="absolute right-3 top-1/2 -translate-y-1/2 text-r-muted hover:text-r-text text-sm">✕</button>
-              </div>
-              <div class="flex flex-wrap gap-1.5" role="group" aria-label="Tipo de setup">
-                <button type="button" data-filter="all" class="mmt-chip h-11 px-3.5 rounded-xl border border-r-line font-mono text-[11px] uppercase tracking-wider">Todos</button>
-                <button type="button" data-filter="Race" class="mmt-chip h-11 px-3.5 rounded-xl border border-r-line font-mono text-[11px] uppercase tracking-wider">Carrera</button>
-                <button type="button" data-filter="Qualy" class="mmt-chip h-11 px-3.5 rounded-xl border border-r-line font-mono text-[11px] uppercase tracking-wider">Clasificación</button>
-                <button type="button" data-filter="Wet" class="mmt-chip h-11 px-3.5 rounded-xl border border-r-line font-mono text-[11px] uppercase tracking-wider">Lluvia</button>
-                <button type="button" data-filter="Fav" class="mmt-chip h-11 px-3.5 rounded-xl border border-r-line font-mono text-[11px] uppercase tracking-wider text-amber-400">Favoritos</button>
               </div>
             </div>
 
