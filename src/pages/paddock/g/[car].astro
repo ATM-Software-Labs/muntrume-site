@@ -1,5 +1,6 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
+import MediaLightbox from "../../../components/MediaLightbox.astro";
 import { PADDOCK_ALBUMS, type GalleryAlbum } from "../../../data/paddock-gallery";
 import { resolveCarMetadata, getBrandSvgMarkup } from "../../../../desktop/src/cars/catalog";
 
@@ -16,76 +17,253 @@ interface Props {
 
 const { album } = Astro.props;
 const carMeta = resolveCarMetadata(album.slug);
+const siblingAlbums = PADDOCK_ALBUMS.filter((a) => a.slug !== album.slug);
 const pageTitle = `${album.title} · Galería Paddock | Muntrume Motorsport`;
-const pageDescription = `${album.summary} (${album.photos.length} fotografías oficiales).`;
+const pageDescription = `${album.summary} (${album.photos.length} fotografías oficiales en alta definición).`;
 ---
 
 <Layout title={pageTitle} description={pageDescription} canonical={`https://muntru.me/paddock/g/${album.slug}/`}>
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-    <div class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-[var(--r-line)]">
-      <div class="space-y-2">
-        <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--r-muted)]">
-          <a href="/paddock/" class="hover:text-[var(--r-accent)] transition-colors">Paddock</a>
-          <span>/</span>
-          <a href="/paddock/#gallery" class="hover:text-[var(--r-accent)] transition-colors">Galería</a>
-          <span>/</span>
-          <span class="text-[var(--r-accent)]">{album.slug}</span>
-        </div>
-        <h1 class="text-3xl sm:text-5xl font-extrabold text-[var(--r-text)] font-display tracking-tight">
-          {album.title}
-        </h1>
-        <p class="text-sm text-[var(--r-muted)] max-w-2xl">{album.summary}</p>
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-10">
+    <!-- Breadcrumb & Back navigation -->
+    <nav aria-label="Breadcrumb" class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-[var(--r-line)]">
+      <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[var(--r-muted)]">
+        <a href="/paddock/" class="hover:text-[var(--r-accent)] transition-colors">Paddock</a>
+        <span>/</span>
+        <a href="/paddock/#gallery" class="hover:text-[var(--r-accent)] transition-colors">Galería</a>
+        <span>/</span>
+        <span class="text-[var(--r-accent)] font-bold">{album.title}</span>
       </div>
-      <div class="flex flex-wrap items-center gap-2">
-        {carMeta && (
-          <div class="flex items-center gap-2 mr-2">
-            <span class="w-8 h-8 rounded-lg bg-[var(--r-surface)] border border-[var(--r-line)] flex items-center justify-center">
-              <Fragment set:html={getBrandSvgMarkup(carMeta, 20)} />
+      <a
+        href="/paddock/#gallery"
+        class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] hover:border-[var(--r-accent)] hover:text-[var(--r-accent)] text-xs font-mono font-bold transition-colors"
+      >
+        <span>&larr;</span>
+        <span>Volver al Paddock</span>
+      </a>
+    </nav>
+
+    <!-- Header Section -->
+    <header class="space-y-6">
+      <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+        <div class="space-y-3 max-w-3xl">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="px-2.5 py-1 rounded-md bg-[var(--r-accent)]/15 border border-[var(--r-accent)]/40 text-[var(--r-accent)] text-xs font-mono font-bold uppercase tracking-wider">
+              {album.brand} · {album.carClass}
             </span>
-            <a href={`/garage?car=${encodeURIComponent(carMeta.carFolder)}`} class="px-3 py-1.5 rounded-xl bg-[var(--r-accent)]/15 border border-[var(--r-accent)]/50 text-xs font-mono font-bold text-[var(--r-accent)] hover:bg-[var(--r-accent)]/25 transition-colors">
-              Setups (.sto)
+            <span class="px-2.5 py-1 rounded-md bg-[var(--r-surface)] border border-[var(--r-line)] text-xs font-mono text-[var(--r-text)]">
+              {album.photos.length} fotografías HD
+            </span>
+            {carMeta && (
+              <span class="px-2.5 py-1 rounded-md bg-[var(--r-bg-2)] border border-[var(--r-line)] text-xs font-mono text-[var(--r-muted)]">
+                {carMeta.category}
+              </span>
+            )}
+          </div>
+          <h1 class="text-3xl sm:text-5xl font-extrabold text-[var(--r-text)] font-display tracking-tight">
+            {album.title}
+          </h1>
+          <p class="text-sm sm:text-base text-[var(--r-muted)] leading-relaxed">
+            {album.summary}
+          </p>
+        </div>
+
+        {carMeta && (
+          <div class="flex flex-wrap items-center gap-2 shrink-0">
+            <span class="w-10 h-10 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] flex items-center justify-center p-2">
+              <Fragment set:html={getBrandSvgMarkup(carMeta, 24)} />
+            </span>
+            <a
+              href={`/garage?car=${encodeURIComponent(carMeta.carFolder)}`}
+              class="px-4 py-2.5 rounded-xl bg-[var(--r-accent)]/15 border border-[var(--r-accent)]/50 text-xs font-mono font-bold text-[var(--r-accent)] hover:bg-[var(--r-accent)]/25 transition-colors"
+            >
+              Setups en Garage (.sto) &rarr;
             </a>
-            <a href={carMeta.manualUrl} target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] hover:border-[var(--r-accent)] text-xs font-mono font-bold transition-colors">
-              User Manual
+            <a
+              href={carMeta.manualUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="px-3.5 py-2.5 rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] hover:border-[var(--r-accent)] text-xs font-mono font-bold transition-colors"
+            >
+              Manual PDF ↗
             </a>
-            <a href={carMeta.forumUrl} target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] hover:border-[var(--r-accent)] text-xs font-mono font-bold transition-colors">
-              Car Forum
+            <a
+              href={carMeta.forumUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="px-3.5 py-2.5 rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] hover:border-[var(--r-accent)] text-xs font-mono font-bold transition-colors"
+            >
+              Car Forum ↗
             </a>
           </div>
         )}
-        <span class="px-3 py-1 rounded-full bg-[var(--r-surface)] border border-[var(--r-line)] font-mono text-xs text-[var(--r-accent)] font-bold">
-          {album.brand} · {album.carClass} · {album.photos.length} fotos
-        </span>
-        <a href="/paddock/#gallery" class="px-4 py-2 rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] hover:border-[var(--r-accent)] text-xs font-mono font-bold transition-colors">
-          &larr; Volver al Paddock
-        </a>
       </div>
-    </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {album.photos.map((photo) => (
-        <article class="rounded-2xl overflow-hidden border border-[var(--r-line)] bg-[var(--r-surface)] flex flex-col">
-          <a href={photo.img} target="_blank" rel="noopener noreferrer" class="relative block aspect-video overflow-hidden bg-black/40 group">
-            <img
-              src={photo.thumb}
-              alt={photo.title}
-              width="640"
-              height="360"
-              loading="lazy"
-              decoding="async"
-              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-            <span class="absolute top-3 left-3 px-2.5 py-0.5 rounded-full bg-black/75 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase tracking-wider">
-              {photo.tag}
-            </span>
-          </a>
-          <div class="p-5 space-y-2">
-            <span class="block text-[11px] font-mono uppercase tracking-wider text-[var(--r-muted)]">{photo.subtitle}</span>
-            <h2 class="text-lg font-bold text-[var(--r-text)]">{photo.title}</h2>
-            <p class="text-xs text-[var(--r-muted)] leading-relaxed">{photo.desc}</p>
+      <!-- Sibling Switcher Tabs -->
+      <div class="flex flex-wrap items-center gap-2 pt-2" role="tablist" aria-label="Cambiar de álbum">
+        <span class="text-xs font-mono text-[var(--r-muted)] mr-1">Álbumes oficiales:</span>
+        {PADDOCK_ALBUMS.map((alb) => {
+          const isActive = alb.slug === album.slug;
+          return (
+            <a
+              href={`/paddock/g/${alb.slug}/`}
+              class={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition flex items-center gap-2 ${
+                isActive
+                  ? 'bg-[var(--r-accent)] text-[var(--r-accent-ink)] border border-[var(--r-accent)] shadow-xs'
+                  : 'bg-[var(--r-surface)] text-[var(--r-muted)] hover:text-[var(--r-text)] border border-[var(--r-line)] hover:border-[var(--r-accent)]'
+              }`}
+            >
+              <span>{alb.title}</span>
+              <span class={`px-1.5 py-0.5 rounded text-[10px] ${isActive ? 'bg-black/20 text-[var(--r-accent-ink)]' : 'bg-[var(--r-bg-2)] text-[var(--r-muted)]'}`}>
+                {alb.photos.length}
+              </span>
+            </a>
+          );
+        })}
+      </div>
+    </header>
+
+    <!-- Gallery Photos Grid -->
+    <section aria-label="Fotos del álbum" class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {album.photos.map((photo) => (
+          <article class="rounded-2xl overflow-hidden border border-[var(--r-line)] bg-[var(--r-surface)] hover:border-[var(--r-accent)] transition-all duration-300 flex flex-col justify-between shadow-sm hover:shadow-md group">
+            <div>
+              <button
+                type="button"
+                data-preview-src={photo.img}
+                data-preview-title={photo.title}
+                data-preview-sub={`${photo.subtitle} · ${album.title}`}
+                data-preview-id={`photo:${photo.id}`}
+                data-preview-download={photo.img.split('/').pop()}
+                data-preview-setups={carMeta ? `/garage?car=${encodeURIComponent(carMeta.carFolder)}` : ''}
+                class="relative block w-full aspect-video overflow-hidden bg-[#090d12] cursor-zoom-in text-left"
+                title={`Ampliar "${photo.title}" en HD`}
+              >
+                <img
+                  src={photo.thumb}
+                  alt={photo.title}
+                  width="640"
+                  height="360"
+                  loading="lazy"
+                  decoding="async"
+                  class="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                />
+                <div class="absolute inset-0 bg-gradient-to-t from-[var(--r-surface)] via-transparent to-transparent opacity-60 group-hover:opacity-30 transition-opacity"></div>
+                <span class="absolute top-3 left-3 px-2.5 py-0.5 rounded-full bg-black/80 backdrop-blur-xs border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase tracking-wider">
+                  {photo.tag}
+                </span>
+                <span class="absolute bottom-3 right-3 px-2.5 py-1 rounded-lg bg-black/80 backdrop-blur-xs border border-white/15 text-[11px] font-mono text-white/90 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  Ampliar HD ⤢
+                </span>
+              </button>
+
+              <div class="p-5 space-y-2">
+                <span class="block text-[11px] font-mono uppercase tracking-wider text-[var(--r-muted)]">
+                  {photo.subtitle}
+                </span>
+                <h2 class="text-lg font-bold text-[var(--r-text)] font-display tracking-tight group-hover:text-[var(--r-accent)] transition-colors">
+                  {photo.title}
+                </h2>
+                <p class="text-xs text-[var(--r-muted)] leading-relaxed">
+                  {photo.desc}
+                </p>
+              </div>
+            </div>
+
+            <div class="px-5 pb-5 pt-2 border-t border-[var(--r-line)] flex items-center justify-between gap-3">
+              <button
+                type="button"
+                data-like-btn
+                data-like-id={`photo:${photo.id}`}
+                class="px-3 py-1.5 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-rose-500/60 text-xs font-mono font-bold text-[var(--r-muted)] inline-flex items-center gap-1.5 transition cursor-pointer"
+                title="Me gusta"
+              >
+                <span data-heart>♡</span>
+                <span>Me gusta</span>
+                <span data-count>0</span>
+              </button>
+
+              <div class="flex items-center gap-2">
+                <a
+                  href={photo.img}
+                  download={photo.img.split('/').pop()}
+                  class="px-3 py-1.5 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono font-bold text-[var(--r-text)] hover:text-[var(--r-accent)] transition flex items-center gap-1"
+                  title="Descargar foto en resolución completa"
+                >
+                  <span>Descargar</span>
+                  <span>↓</span>
+                </a>
+                <button
+                  type="button"
+                  data-preview-src={photo.img}
+                  data-preview-title={photo.title}
+                  data-preview-sub={`${photo.subtitle} · ${album.title}`}
+                  data-preview-id={`photo:${photo.id}`}
+                  data-preview-download={photo.img.split('/').pop()}
+                  data-preview-setups={carMeta ? `/garage?car=${encodeURIComponent(carMeta.carFolder)}` : ''}
+                  class="px-3.5 py-1.5 rounded-xl bg-[var(--r-accent)]/15 border border-[var(--r-accent)]/50 text-xs font-mono font-bold text-[var(--r-accent)] hover:bg-[var(--r-accent)]/25 transition cursor-pointer flex items-center gap-1"
+                >
+                  <span>Ver HD</span>
+                  <span>⤢</span>
+                </button>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <!-- Sibling Albums Footer -->
+    {siblingAlbums.length > 0 && (
+      <section aria-label="Otros álbumes" class="space-y-4 pt-10 border-t border-[var(--r-line)]">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+          <div>
+            <span class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)]">Más galerías del Paddock</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-[var(--r-text)] font-display tracking-tight">Otros álbumes fotográficos</h2>
           </div>
-        </article>
-      ))}
-    </div>
+          <a href="/paddock/#gallery" class="text-xs font-mono font-bold text-[var(--r-accent)] hover:underline flex items-center gap-1">
+            <span>Ver toda la galería del Paddock</span>
+            <span>&rarr;</span>
+          </a>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {siblingAlbums.map((sibling) => (
+            <a
+              href={`/paddock/g/${sibling.slug}/`}
+              class="p-4 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-300 flex items-center gap-4 group shadow-sm hover:shadow-md"
+            >
+              <img
+                src={sibling.cover}
+                alt={sibling.title}
+                width="160"
+                height="90"
+                class="w-24 sm:w-28 h-16 sm:h-18 rounded-xl object-cover shrink-0 border border-white/10 group-hover:scale-105 transition-transform"
+                loading="lazy"
+                decoding="async"
+              />
+              <div class="min-w-0 flex-1 space-y-1">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-[10px] font-mono text-[var(--r-accent)] font-bold uppercase tracking-wider">
+                    {sibling.brand} · {sibling.carClass}
+                  </span>
+                  <span class="text-[10px] font-mono text-[var(--r-muted)] shrink-0">
+                    {sibling.photos.length} fotos
+                  </span>
+                </div>
+                <h3 class="text-sm font-bold text-[var(--r-text)] group-hover:text-[var(--r-accent)] transition-colors truncate">
+                  {sibling.title}
+                </h3>
+                <p class="text-xs text-[var(--r-muted)] line-clamp-1">
+                  {sibling.summary}
+                </p>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
   </main>
+
+  <MediaLightbox />
 </Layout>

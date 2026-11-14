@@ -23,6 +23,7 @@ const { track } = Astro.props;
 const garage = getTrackGarageInfo(track);
 const sched = getTrackScheduleInfo(track);
 const isFree = track.categories.includes('Free');
+const gallery = track.gallery ?? [];
 
 const topSeries = sched.entries.slice(0, 3);
 const extraSeries = sched.entries.slice(3);
@@ -57,13 +58,22 @@ const pageDescription = track.history
   canonical={`https://muntru.me/tracks/${track.slug}/`}
 >
   <main class="r-wrap py-12 sm:py-16 space-y-10">
-    <nav aria-label="Breadcrumb" class="r-kicker flex flex-wrap items-center gap-2">
-      <a href="/paddock/" class="hover:text-[var(--r-accent)] transition">Paddock</a>
-      <span>/</span>
-      <a href="/tracks/" class="hover:text-[var(--r-accent)] transition">Circuitos</a>
-      <span>/</span>
-      <span class="text-[var(--r-text)] font-bold">{track.name}</span>
-    </nav>
+    <div class="flex items-center justify-between gap-3 pb-2 border-b border-[var(--r-line)]">
+      <nav aria-label="Breadcrumb" class="r-kicker flex flex-wrap items-center gap-2">
+        <a href="/paddock/" class="hover:text-[var(--r-accent)] transition">Paddock</a>
+        <span>/</span>
+        <a href="/tracks/" class="hover:text-[var(--r-accent)] transition">Circuitos</a>
+        <span>/</span>
+        <span class="text-[var(--r-text)] font-bold">{track.name}</span>
+      </nav>
+      <a
+        href="/tracks/"
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] hover:border-[var(--r-accent)] hover:text-[var(--r-accent)] text-xs font-mono font-bold transition-colors"
+      >
+        <span>&larr;</span>
+        <span>Volver a Circuitos</span>
+      </a>
+    </div>
 
     <!-- HERO -->
     <header class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center border-b border-[var(--r-line)] pb-8">
@@ -147,35 +157,84 @@ const pageDescription = track.history
     )}
 
     <!-- GALERIA OFICIAL -->
-    {track.gallery && track.gallery.length > 0 && (
+    {gallery.length > 0 && (
       <section aria-label="Galería de fotos del circuito" class="space-y-4">
-        <div>
-          <span class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)]">Capturas oficiales</span>
-          <h2 class="r-h3">Galería del circuito ({track.gallery.length} fotos)</h2>
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2 pb-2 border-b border-[var(--r-line)]">
+          <div>
+            <span class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)]">Capturas oficiales en pista</span>
+            <h2 class="r-h3">Galería del circuito ({gallery.length} fotos)</h2>
+          </div>
+          <span class="text-xs font-mono text-[var(--r-muted)]">
+            Haz clic en cualquier imagen para abrirla en alta resolución
+          </span>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {track.gallery.map((photoUrl, idx) => (
-            <button
-              type="button"
-              data-preview-src={photoUrl}
-              data-preview-title={`${track.name} — Foto ${idx + 1}`}
-              data-preview-sub={sched.configs.length ? `Variantes: ${sched.configs.join(' · ')}` : 'Circuito oficial iRacing'}
-              data-preview-id={`track:${track.slug}`}
-              data-preview-setups={`/garage/?track=${encodeURIComponent(garage.garageQuery)}`}
-              class="relative block w-full aspect-[16/9] rounded-xl bg-[#090d12] border border-[var(--r-line)] hover:border-[var(--r-accent)] overflow-hidden cursor-zoom-in group transition"
-              title={`Ampliar foto ${idx + 1}`}
-            >
-              <img
-                src={photoUrl}
-                alt={`${track.name} captura ${idx + 1}`}
-                loading="lazy"
-                decoding="async"
-                class="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.04]"
-              />
-              <span class="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/75 border border-white/15 text-[10px] font-mono text-white/85 opacity-0 group-hover:opacity-100 transition">
-                Ampliar ⤢
-              </span>
-            </button>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {gallery.map((photoUrl, idx) => (
+            <article class="rounded-2xl overflow-hidden border border-[var(--r-line)] bg-[var(--r-surface)] hover:border-[var(--r-accent)] transition-all duration-300 flex flex-col justify-between shadow-sm hover:shadow-md group">
+              <button
+                type="button"
+                data-preview-src={photoUrl}
+                data-preview-title={`${track.name} — Captura ${idx + 1}`}
+                data-preview-sub={sched.configs.length ? `Variantes: ${sched.configs.join(' · ')}` : 'Circuito oficial iRacing'}
+                data-preview-id={`track:${track.slug}:photo:${idx + 1}`}
+                data-preview-download={photoUrl.split('/').pop()}
+                data-preview-setups={`/garage/?track=${encodeURIComponent(garage.garageQuery)}`}
+                class="relative block w-full aspect-[16/9] bg-[#090d12] overflow-hidden cursor-zoom-in text-left"
+                title={`Ampliar captura ${idx + 1} de ${track.name}`}
+              >
+                <img
+                  src={photoUrl}
+                  alt={`${track.name} captura ${idx + 1}`}
+                  loading="lazy"
+                  decoding="async"
+                  class="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.04]"
+                />
+                <div class="absolute inset-0 bg-gradient-to-t from-[var(--r-surface)] via-transparent to-transparent opacity-60 group-hover:opacity-30 transition-opacity"></div>
+                <span class="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-md bg-black/80 backdrop-blur-xs border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold">
+                  Foto {idx + 1} / {gallery.length}
+                </span>
+                <span class="absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded-lg bg-black/80 backdrop-blur-xs border border-white/15 text-[10px] font-mono text-white/90 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  Ampliar HD ⤢
+                </span>
+              </button>
+
+              <div class="px-4 py-3 border-t border-[var(--r-line)] flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  data-like-btn
+                  data-like-id={`track:${track.slug}:photo:${idx + 1}`}
+                  class="px-2.5 py-1 rounded-lg bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-rose-500/60 text-xs font-mono font-bold text-[var(--r-muted)] inline-flex items-center gap-1 transition cursor-pointer"
+                  title="Me gusta"
+                >
+                  <span data-heart>♡</span>
+                  <span data-count>0</span>
+                </button>
+
+                <div class="flex items-center gap-1.5">
+                  <a
+                    href={photoUrl}
+                    download={photoUrl.split('/').pop()}
+                    class="px-2.5 py-1 rounded-lg bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-[11px] font-mono font-bold text-[var(--r-text)] hover:text-[var(--r-accent)] transition flex items-center gap-1"
+                    title="Descargar imagen"
+                  >
+                    <span>Descargar</span>
+                    <span>↓</span>
+                  </a>
+                  <button
+                    type="button"
+                    data-preview-src={photoUrl}
+                    data-preview-title={`${track.name} — Captura ${idx + 1}`}
+                    data-preview-sub={sched.configs.length ? `Variantes: ${sched.configs.join(' · ')}` : 'Circuito oficial iRacing'}
+                    data-preview-id={`track:${track.slug}:photo:${idx + 1}`}
+                    data-preview-download={photoUrl.split('/').pop()}
+                    data-preview-setups={`/garage/?track=${encodeURIComponent(garage.garageQuery)}`}
+                    class="px-2.5 py-1 rounded-lg bg-[var(--r-accent)]/15 border border-[var(--r-accent)]/50 text-[11px] font-mono font-bold text-[var(--r-accent)] hover:bg-[var(--r-accent)]/25 transition cursor-pointer"
+                  >
+                    HD ⤢
+                  </button>
+                </div>
+              </div>
+            </article>
           ))}
         </div>
       </section>

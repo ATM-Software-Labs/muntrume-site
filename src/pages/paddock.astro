@@ -5,6 +5,7 @@ import MediaLightbox from '../components/MediaLightbox.astro';
 import { PILOTOS } from '../lib/pilotos';
 import { PADDOCK_ALBUMS } from '../data/paddock-gallery';
 import { CAR_CATALOG_LIST, getBrandSvgMarkup, getCarPreviewBannerSvg, type CarMetadata } from '../../desktop/src/cars/catalog';
+import { IRACING_TRACKS, getTrackGarageInfo, getTrackScheduleInfo } from '../lib/track-matcher';
 
 const pageTitle = "Paddock | Muntrume Motorsport";
 const pageDescription = "Official Muntrume Motorsport Paddock. Canal de radio en carrera, telemetría Garage 61, galería fotográfica en iRacing, redes sociales oficiales y acceso Paddock Pass.";
@@ -199,101 +200,36 @@ const directoryCars: CarMetadata[] = CAR_CATALOG_LIST.filter((car) => {
 const fleetCategories = ["Top 3", "Sports Car", "Formula Car", "Oval", "Dirt", "Todos"] as const;
 const fleetBrands = Array.from(new Set(directoryCars.map((c) => c.brand))).sort((a, b) => a.localeCompare(b));
 
-const galleryItems = [
-  {
-    id: "g1",
-    title: "Ferrari 296 GT3 #27",
-    subtitle: "Librea de Muntrume Motorsport · iRacing",
-    category: "cars",
-    tag: "GT3 Oficial",
-    img: "/assets/img/coche1.webp",
-    thumb: "/assets/img/coche1-640.webp",
-    desc: "Captura en pista del Ferrari 296 GT3 con librea corporativa verde esmeralda y patrocinadores oficiales en iRacing."
-  },
-  {
-    id: "g2",
-    title: "Pelotón GT3 en Carrera",
-    subtitle: "Series de Resistencia Multiclase",
-    category: "track",
-    tag: "Carrera",
-    img: "/assets/img/coche2.webp",
-    thumb: "/assets/img/coche2-640.webp",
-    desc: "Lucha en pelotón cerrado negociando la entrada a curva peraltada durante una prueba oficial de resistencia."
-  },
-  {
-    id: "g3",
-    title: "Tráfico y Frenada en Grupo",
-    subtitle: "Gestión de Carrera y Doblados",
-    category: "track",
-    tag: "Pista",
-    img: "/assets/img/race1.webp",
-    thumb: "/assets/img/race1-640.webp",
-    desc: "Frenada sincronizada con luces de cruce encendidas y gestión de adelantamientos entre diferentes clases de vehículos."
-  },
-  {
-    id: "g4",
-    title: "Stint Nocturno con Ópticas LED",
-    subtitle: "Transición al Anochecer",
-    category: "track",
-    tag: "Nocturna",
-    img: "/assets/img/coche3.webp",
-    thumb: "/assets/img/coche3-640.webp",
-    desc: "Competición con iluminación artificial en pista y gestión de temperatura de neumáticos con caída térmica."
-  },
-  {
-    id: "g5",
-    title: "Apoyo Aerodinámico en Vértice",
-    subtitle: "Paso por Curva Rápida",
-    category: "cars",
-    tag: "GT3",
-    img: "/assets/img/coche4.webp",
-    thumb: "/assets/img/coche4-640.webp",
-    desc: "Alineación de caída y convergencia trabajando en máxima carga lateral sobre el piano de salida."
-  },
-  {
-    id: "g6",
-    title: "Parrilla de Salida al Ocaso",
-    subtitle: "Alineación Oficial de Escuderías",
-    category: "track",
-    tag: "Parrilla",
-    img: "/assets/img/hero-bg.webp",
-    thumb: "/assets/img/hero-bg-640.webp",
-    desc: "Momento previo a la bandera verde con los vehículos en formación de parrilla para la prueba de resistencia."
-  },
-  {
-    id: "g7",
-    title: "Puesto de Control de Telemetría",
-    subtitle: "Monitorización Garage 61 en Directo",
-    category: "tech",
-    tag: "Telemetría",
-    img: "/assets/img/og-team.jpg",
-    thumb: "/assets/img/og-team.jpg",
-    desc: "Estación de análisis de datos a 60 Hz con curvas de aceleración, presión de freno y deltas de tiempo por sector."
-  },
-  {
-    id: "g8",
-    title: "Identidad Corporativa 2026",
-    subtitle: "Identidad visual de Muntrume Motorsport",
-    category: "tech",
-    tag: "Escudería",
-    img: "/assets/img/og-cover.jpg",
-    thumb: "/assets/img/og-cover.jpg",
-    desc: "Diseño institucional del equipo combinando el verde neón (#00E699), gris carbón y tipografía deportiva."
-  },
-  {
-    id: "g9",
-    title: "Setup Vault (.STO)",
-    subtitle: "Banco de Reglajes Oficiales",
-    category: "tech",
-    tag: "Setup Lab",
-    img: "/assets/img/og-setups.jpg",
-    thumb: "/assets/img/og-setups.jpg",
-    desc: "Catálogo técnico con más de 41.000 configuraciones .STO verificadas y listas para sincronización local."
-  }
-];
+const allTracksWithPop = IRACING_TRACKS.map((t) => {
+  const garage = getTrackGarageInfo(t);
+  const sched = getTrackScheduleInfo(t);
+  const isFree = t.categories.includes('Free');
+  const seriesCount = sched.entries.length;
+  const galleryCount = t.gallery?.length ?? 0;
+  const popularityScore =
+    seriesCount * 12 +
+    garage.setupCount * 4 +
+    (isFree ? 15 : 0) +
+    sched.configs.length * 2 +
+    (galleryCount > 0 ? 3 : 0);
+
+  return {
+    ...t,
+    isFree,
+    setupCount: garage.setupCount,
+    seriesCount,
+    galleryCount,
+    popularityScore,
+    configs: sched.configs,
+    garageQuery: garage.garageQuery,
+    excerpt: t.history && t.history.length > 130 ? `${t.history.slice(0, 127).trim()}…` : (t.history || 'Trazado oficial de iRacing con telemetría y setups de equipo.'),
+  };
+}).sort((a, b) => b.popularityScore - a.popularityScore || a.name.localeCompare(b.name));
+
+const topHistoricTracks = allTracksWithPop.slice(0, 8);
 ---
 
-<Layout title={pageTitle} description="Paddock de Muntrume Motorsport: radio en carrera, telemetría de Garage 61, la galería de iRacing y los canales oficiales." canonical="https://muntru.me/paddock/" ogImage="https://muntru.me/assets/img/og-about.jpg" ogImageAlt="Paddock de Muntrume Motorsport" translated i18nTitle="paddock.meta.title" i18nDescription="paddock.meta.desc">
+<Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/paddock/" ogImage="https://muntru.me/assets/img/og-about.jpg" ogImageAlt="Paddock de Muntrume Motorsport" translated i18nTitle="paddock.meta.title" i18nDescription="paddock.meta.desc">
   <div class="pt-8 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
 
     <section class="max-w-3xl space-y-4">
@@ -636,6 +572,184 @@ const galleryItems = [
       </p>
     </section>
 
+    <!-- 4B. CIRCUITOS OFICIALES IRACING (TRACK DIRECTORY & POPULARIDAD HISTÓRICA) -->
+    <section id="tracks" class="space-y-6 pt-4">
+      <div class="pb-4 border-b border-[var(--r-line)] flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--r-accent)] mb-1">
+            <span class="w-2 h-2 rounded-full bg-[var(--r-accent)]"></span>
+            <span>iRacing Track Directory · Trazados Históricos</span>
+          </div>
+          <h2 class="text-2xl sm:text-4xl font-extrabold text-[var(--r-text)] font-display tracking-tight">
+            Circuitos oficiales por popularidad histórica
+          </h2>
+          <p class="text-xs sm:text-sm text-[var(--r-muted)] mt-1 max-w-2xl">
+            Trazados más legendarios y disputados de iRacing, ordenados por participación en series oficiales de temporada, volumen de setups (.sto) en el Garage y relevancia en carreras de resistencia.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <a
+            href="/tracks/"
+            class="px-4 py-2 rounded-xl bg-[var(--r-accent)] text-[var(--r-accent-ink)] font-mono text-xs font-bold hover:opacity-90 transition-opacity flex items-center gap-1.5 shadow-sm"
+          >
+            <span>Ver los 150 circuitos</span>
+            <span>&rarr;</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick Category / Filter Pills Bar -->
+      <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+        <div class="flex flex-wrap items-center gap-2" role="tablist" aria-label="Filtros de circuitos">
+          <span class="text-xs font-mono text-[var(--r-muted)] mr-1">Trazados top:</span>
+          <span class="px-3 py-1 rounded-full bg-[var(--r-surface)] border border-[var(--r-accent)]/60 text-[var(--r-accent)] text-xs font-mono font-bold">
+            Top 8 Históricos
+          </span>
+          <a href="/tracks/?filter=setups" class="px-3 py-1 rounded-full bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-[var(--r-muted)] hover:text-[var(--r-text)] text-xs font-mono transition">
+            Con Setups ({allTracksWithPop.filter(t => t.setupCount > 0).length})
+          </a>
+          <a href="/tracks/?filter=free" class="px-3 py-1 rounded-full bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-[var(--r-muted)] hover:text-[var(--r-text)] text-xs font-mono transition">
+            Incluidos / Free ({allTracksWithPop.filter(t => t.isFree).length})
+          </a>
+        </div>
+        <span class="text-xs font-mono text-[var(--r-muted)]">
+          150 circuitos indexados en el Paddock
+        </span>
+      </div>
+
+      <!-- Track Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {topHistoricTracks.map((track, idx) => (
+          <article class="group rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] overflow-hidden transition-all duration-300 flex flex-col justify-between shadow-sm hover:shadow-md">
+            <div>
+              <div class="relative aspect-[16/9] bg-[#090d12] overflow-hidden">
+                {track.thumb ? (
+                  <img
+                    src={track.thumb}
+                    alt={track.name}
+                    loading="lazy"
+                    decoding="async"
+                    class="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.04]"
+                  />
+                ) : (
+                  <div class="w-full h-full flex items-center justify-center text-xs font-mono text-[var(--r-muted)] bg-[var(--r-bg-2)]">
+                    Foto en pista iRacing
+                  </div>
+                )}
+                <div class="absolute inset-0 bg-gradient-to-t from-[var(--r-surface)] via-transparent to-transparent opacity-70 group-hover:opacity-40 transition-opacity"></div>
+                
+                <span class="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-md bg-black/80 backdrop-blur-xs border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold">
+                  #{idx + 1} Popularidad
+                </span>
+
+                <div class="absolute top-2.5 right-2.5 flex items-center gap-1.5">
+                  {track.isFree ? (
+                    <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 backdrop-blur-xs border border-emerald-500/40 text-emerald-300 text-[10px] font-mono font-bold">
+                      Base / Free
+                    </span>
+                  ) : (
+                    <span class="px-2 py-0.5 rounded-md bg-black/75 backdrop-blur-xs border border-white/15 text-white/90 text-[10px] font-mono">
+                      {track.categories.filter(c => c !== 'Free').join(' · ') || 'Road'}
+                    </span>
+                  )}
+                </div>
+
+                {track.galleryCount > 0 && (
+                  <span class="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded-md bg-black/75 backdrop-blur-xs border border-white/15 text-white/80 text-[10px] font-mono flex items-center gap-1">
+                    <svg class="w-3 h-3 fill-current" viewBox="0 0 20 20"><path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"/></svg>
+                    {track.galleryCount} fotos
+                  </span>
+                )}
+              </div>
+
+              <div class="p-4 space-y-2.5">
+                <div class="flex items-start justify-between gap-2">
+                  <h3 class="text-base font-bold text-[var(--r-text)] font-display leading-snug group-hover:text-[var(--r-accent)] transition-colors line-clamp-1" title={track.name}>
+                    <a href={`/tracks/${track.slug}/`}>
+                      {track.name}
+                    </a>
+                  </h3>
+                  <button
+                    type="button"
+                    data-like-btn
+                    data-like-id={`track:${track.slug}`}
+                    class="px-2 py-0.5 rounded-lg bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-rose-500/60 text-[11px] font-mono font-bold text-[var(--r-muted)] inline-flex items-center gap-1 transition cursor-pointer shrink-0"
+                    title="Me gusta"
+                  >
+                    <span data-heart>♡</span>
+                    <span data-count>0</span>
+                  </button>
+                </div>
+
+                <p class="text-xs text-[var(--r-muted)] line-clamp-2 leading-relaxed">
+                  {track.excerpt}
+                </p>
+
+                <div class="flex flex-wrap items-center gap-1.5 text-[10px] font-mono text-[var(--r-muted)] pt-1">
+                  {track.setupCount > 0 ? (
+                    <span class="px-2 py-0.5 rounded bg-[var(--r-accent)]/10 border border-[var(--r-accent)]/30 text-[var(--r-accent)] font-semibold">
+                      {track.setupCount} setups (.sto)
+                    </span>
+                  ) : (
+                    <span class="px-2 py-0.5 rounded bg-[var(--r-bg-2)] border border-[var(--r-line)] text-[var(--r-muted)]">
+                      Vault abierto
+                    </span>
+                  )}
+                  {track.seriesCount > 0 && (
+                    <span class="px-2 py-0.5 rounded bg-[var(--r-bg-2)] border border-[var(--r-line)] text-[var(--r-text)]">
+                      {track.seriesCount} series S4
+                    </span>
+                  )}
+                  {track.configs.length > 0 && (
+                    <span class="px-2 py-0.5 rounded bg-[var(--r-bg-2)] border border-[var(--r-line)] text-[var(--r-muted)]">
+                      {track.configs.length} trazados
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div class="px-4 pb-4 pt-1 space-y-2">
+              <div class="grid grid-cols-2 gap-2">
+                <a
+                  href={`/tracks/${track.slug}/`}
+                  class="py-1.5 px-2 rounded-xl bg-[var(--r-bg-2)] hover:border-[var(--r-accent)] border border-[var(--r-line)] text-[11px] font-mono font-bold text-[var(--r-text)] text-center transition hover:text-[var(--r-accent)]"
+                >
+                  Ficha y fotos
+                </a>
+                <a
+                  href={`/garage/?track=${encodeURIComponent(track.garageQuery)}`}
+                  class="py-1.5 px-2 rounded-xl bg-[var(--r-accent)]/15 hover:bg-[var(--r-accent)]/25 border border-[var(--r-accent)]/50 text-[11px] font-mono font-bold text-[var(--r-accent)] text-center transition"
+                >
+                  Setups (.sto) &rarr;
+                </a>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <!-- Banner Callout to /tracks/ -->
+      <div class="p-6 rounded-2xl bg-gradient-to-r from-[var(--r-surface)] to-[var(--r-bg-2)] border border-[var(--r-line)] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div class="space-y-1">
+          <h4 class="text-base font-bold text-[var(--r-text)] font-display">
+            Explora el directorio completo de circuitos de iRacing
+          </h4>
+          <p class="text-xs text-[var(--r-muted)] max-w-2xl leading-relaxed">
+            Consulta los 150 circuitos oficiales con fichas técnicas, historia de cada trazado, asignación de semanas en las 2026 Season 4 series y descarga directa de telemetría y setups (.sto).
+          </p>
+        </div>
+        <a
+          href="/tracks/"
+          class="px-5 py-2.5 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] hover:text-[var(--r-accent)] text-xs font-mono font-bold transition-all shrink-0 flex items-center gap-2"
+        >
+          <span>Directorio /tracks/ (150)</span>
+          <span>&rarr;</span>
+        </a>
+      </div>
+    </section>
+
     <!-- 5. GALERÍA FOTOGRÁFICA OFICIAL (CAPTURA REAL DE IRACING) -->
     <section id="gallery" class="space-y-8 pt-4">
       <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-[var(--r-line)]">
@@ -654,7 +768,7 @@ const galleryItems = [
 
         <div class="flex flex-wrap items-center gap-2" id="galleryFilterBar">
           <button type="button" class="gallery-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition cursor-pointer bg-[var(--r-accent)] text-[var(--r-accent-ink)] border border-[var(--r-accent)]" data-filter="all">
-            TODAS (9)
+            TODAS (3 ÁLBUMES)
           </button>
           <button type="button" class="gallery-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition cursor-pointer bg-[var(--r-surface)] text-[var(--r-muted)] border border-[var(--r-line)] hover:border-[var(--r-accent)]" data-filter="cars">
             COCHES &amp; GT3
@@ -670,45 +784,52 @@ const galleryItems = [
 
       <!-- Photo Albums Indexed by Car -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="paddockGalleryGrid">
-        {PADDOCK_ALBUMS.map((album) => (
-          <a
-            href={`/paddock/g/${album.slug}/`}
-            class="group relative rounded-2xl overflow-hidden bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-300 shadow-md flex flex-col justify-between"
-          >
-            <div class="relative w-full aspect-video overflow-hidden bg-[var(--r-bg-2)]">
-              <img
-                src={album.cover}
-                alt={album.title}
-                width="640"
-                height="360"
-                loading="lazy"
-                decoding="async"
-                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              <div class="absolute inset-0 bg-gradient-to-t from-[var(--r-surface)] via-transparent to-transparent opacity-80 group-hover:opacity-60 transition-opacity"></div>
-              <span class="absolute top-3 left-3 px-2.5 py-0.5 rounded-full bg-[var(--r-surface)]/90 border border-[var(--r-line)] text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase tracking-wider">
-                {album.brand} · {album.carClass}
-              </span>
-              <span class="absolute top-3 right-3 px-2.5 py-0.5 rounded-full bg-black/75 border border-white/15 text-white text-[10px] font-mono font-bold">
-                {album.photos.length} fotos
-              </span>
-            </div>
-            <div class="p-5 flex-1 flex flex-col justify-between space-y-3">
-              <div>
-                <h3 class="text-base font-bold text-[var(--r-text)] tracking-tight group-hover:text-[var(--r-accent)] transition-colors">
-                  {album.title}
-                </h3>
-                <p class="text-xs text-[var(--r-muted)] mt-1.5 line-clamp-2 leading-relaxed">
-                  {album.summary}
-                </p>
+        {PADDOCK_ALBUMS.map((album) => {
+          const cat = album.slug === 'ferrari296gt3' ? 'cars' : album.slug === 'gt3-endurance' ? 'track' : 'tech';
+          return (
+            <article
+              data-category={cat}
+              class="gallery-item group relative rounded-2xl overflow-hidden bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-300 shadow-md flex flex-col justify-between"
+            >
+              <a href={`/paddock/g/${album.slug}/`} class="relative w-full aspect-video overflow-hidden bg-[var(--r-bg-2)] block">
+                <img
+                  src={album.cover}
+                  alt={album.title}
+                  width="640"
+                  height="360"
+                  loading="lazy"
+                  decoding="async"
+                  class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div class="absolute inset-0 bg-gradient-to-t from-[var(--r-surface)] via-transparent to-transparent opacity-80 group-hover:opacity-60 transition-opacity"></div>
+                <span class="absolute top-3 left-3 px-2.5 py-0.5 rounded-full bg-[var(--r-surface)]/90 backdrop-blur-xs border border-[var(--r-line)] text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase tracking-wider">
+                  {album.brand} · {album.carClass}
+                </span>
+                <span class="absolute top-3 right-3 px-2.5 py-0.5 rounded-full bg-black/75 backdrop-blur-xs border border-white/15 text-white text-[10px] font-mono font-bold">
+                  {album.photos.length} fotos
+                </span>
+              </a>
+              <div class="p-5 flex-1 flex flex-col justify-between space-y-3">
+                <div>
+                  <h3 class="text-base font-bold text-[var(--r-text)] tracking-tight group-hover:text-[var(--r-accent)] transition-colors">
+                    <a href={`/paddock/g/${album.slug}/`}>
+                      {album.title}
+                    </a>
+                  </h3>
+                  <p class="text-xs text-[var(--r-muted)] mt-1.5 line-clamp-2 leading-relaxed">
+                    {album.summary}
+                  </p>
+                </div>
+                <div class="pt-3 border-t border-[var(--r-line)] flex items-center justify-between text-xs font-mono text-[var(--r-accent)] font-semibold">
+                  <a href={`/paddock/g/${album.slug}/`} class="hover:underline flex items-center justify-between w-full">
+                    <span>Abrir álbum /paddock/g/{album.slug}</span>
+                    <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                  </a>
+                </div>
               </div>
-              <div class="pt-3 border-t border-[var(--r-line)] flex items-center justify-between text-xs font-mono text-[var(--r-accent)] font-semibold">
-                <span>Abrir álbum /paddock/g/{album.slug}</span>
-                <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
-              </div>
-            </div>
-          </a>
-        ))}
+            </article>
+          );
+        })}
       </div>
     </section>
 
