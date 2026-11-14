@@ -102,6 +102,20 @@ Para volver atrás: `git revert <commit>` y push a `main`, que vuelve a desplega
 
 Las plantillas de issue y de pull request están en `.github/`. Antes del PR, ejecuta `npm run check` y `npm run build`. Si encuentras una vulnerabilidad, sigue [SECURITY.md](SECURITY.md) en lugar de abrir un issue público.
 
+## Instalación de MMT Sync (Windows)
+
+Puedes instalar MMT Sync de dos formas:
+
+1. **Instalación recomendada mediante Windows Package Manager (winget):**
+   Si al descargar el instalador directo te aparece el aviso de Windows SmartScreen («editor desconocido») y no estás seguro de ejecutarlo, la alternativa oficial y segura es instalarlo desde la terminal mediante **winget**:
+   ```powershell
+   winget install Muntrume.MMTSync
+   ```
+   *(Valida automáticamente el hash SHA-256 oficial del paquete).*
+
+2. **Descarga directa:**
+   Descarga el instalador ejecutable `.exe` o paquete `.msi` desde [muntru.me/app/](https://muntru.me/app/) o desde [Releases](https://github.com/ATM-Software-Labs/muntrume-site/releases/latest).
+
 ## Firma de código (MMT Sync)
 
 Free code signing provided by [SignPath.io](https://signpath.io/), certificate by [SignPath Foundation](https://signpath.org/).
