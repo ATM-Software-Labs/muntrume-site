@@ -433,30 +433,38 @@
     renderList();
     streaming = true;
     paintSend();
-    if (live) live.textContent = tr("ai.loading", "Consultando el modelo…");
+    var startTime = Date.now();
+    var statusBadge = document.getElementById("aiEngineStatus");
+    var statusText = document.getElementById("aiStatusText");
+    if (statusBadge) statusBadge.classList.add("is-busy");
+    if (statusText) statusText.textContent = "Muntrume AI • Analizando telemetría…";
+    if (live) live.textContent = tr("ai.loading", "Analizando telemetría…");
     log.setAttribute("aria-busy", "true");
     ctrl = new AbortController();
     var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 120000);
     var history = prior.slice(-6).map(function (msg) {
       return { role: msg.role, content: msg.role === "assistant" ? msg.content.slice(0, 2000) : msg.content };
     });
-    var modelSelect = document.getElementById("aiModelSelect");
-    var chosenModel = modelSelect && modelSelect.value ? modelSelect.value : "";
     fetch(API, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "omit",
       signal: ctrl.signal,
-      body: JSON.stringify({ prompt: text, custom_prompt: SYSTEM, chat_history: history, stream: true, mode: "ai_chat", model: chosenModel })
+      body: JSON.stringify({ prompt: text, custom_prompt: SYSTEM, chat_history: history, stream: true, mode: "ai_chat" })
     }).then(function (res) {
       if (!res.ok || !res.body) throw new Error("status");
       return readAnswer(res, reply);
     }).then(function (acc) {
       if (!acc) throw new Error("empty");
+      var elapsed = Date.now() - startTime;
+      if (statusBadge) statusBadge.classList.remove("is-busy");
+      if (statusText) statusText.textContent = "Muntrume AI • Listo (" + elapsed + " ms)";
       var actions = log.querySelector('[data-id="' + reply.id + '"] .ai-actions');
       if (actions) actions.hidden = false;
       save();
     }).catch(function (err) {
+      if (statusBadge) statusBadge.classList.remove("is-busy");
+      if (statusText) statusText.textContent = "Muntrume AI • Listo";
       if (err && err.name === "AbortError") {
         if (!reply.content) {
           chat.messages = chat.messages.filter(function (msg) { return msg.id !== reply.id; });
@@ -593,18 +601,20 @@
     if (chat) chat.messages.forEach(function (msg) { if (msg.role === "assistant" && msg.content) scheduleRender(msg); });
   });
 
-  var modelSelect = document.getElementById("aiModelSelect");
-  if (modelSelect) {
-    try {
-      var savedModel = localStorage.getItem("muntrume_ai_model");
-      if (savedModel && modelSelect.querySelector('option[value="' + savedModel + '"]')) {
-        modelSelect.value = savedModel;
+  // Zero-Typing Quick Action Chips (Bloque 23)
+  document.querySelectorAll(".ai-chip[data-quick]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var prompt = btn.getAttribute("data-quick");
+      if (prompt && input) {
+        input.value = prompt;
+        if (form.requestSubmit) {
+          form.requestSubmit();
+        } else {
+          submit();
+        }
       }
-      modelSelect.addEventListener("change", function () {
-        try { localStorage.setItem("muntrume_ai_model", modelSelect.value); } catch (e) {}
-      });
-    } catch (e) {}
-  }
+    });
+  });
   try {
     if (localStorage.getItem(SIDE) === "1" && window.matchMedia("(min-width: 960px)").matches) openSide();
   } catch (e) {}

@@ -9,6 +9,7 @@ import {
   renderPitboxWidget,
   renderDigiFlagWidget,
   SmartLayoutManager,
+  VisibilityRulesEngine,
 } from "./irsdk";
 import { LocalTelemetryBus } from "./plugins/telemetry-bus";
 import { PluginLoader } from "./plugins/plugin-loader";
@@ -1404,6 +1405,9 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
     if ((e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "s") || e.key === "F8") {
       const active = SmartLayoutManager.getInstance().toggleStreamerMode();
       console.log(`[Streamer Mode] ${active ? "ACTIVADO" : "DESACTIVADO"}`);
+    } else if (e.key === "F9" || (e.ctrlKey && e.key.toLowerCase() === "h")) {
+      const active = VisibilityRulesEngine.getInstance().toggleBossKey();
+      console.log(`[Clean Screen Boss Key] ${active ? "ACTIVADO" : "DESACTIVADO"}`);
     }
   });
 
@@ -1804,6 +1808,24 @@ function updateHUDDisplay(sample: LiveSample): void {
       gear: sample.gear,
       rpm: 7500,
     });
+
+    // Bloque 21: Contextual visibility rules (Replay, Qualy, Lap 1, Pit Road, Boss Key)
+    const vis = VisibilityRulesEngine.getInstance();
+    const visCtx = {
+      isReplayPlaying: irsdkState.isReplayPlaying,
+      sessionType: session.sessionType || "",
+      sessionState: frame.sessionState || 4,
+      camCarIdx: irsdkState.camCarIdx,
+      activeLap: frame.carIdxLap[irsdkState.camCarIdx] || 1,
+      lapDistPct: frame.carIdxLapDistPct[irsdkState.camCarIdx] || 0,
+      onPitRoad: irsdkState.onPitRoad,
+    };
+
+    vis.applyElementVisibility(document.getElementById("floatRelativeCard"), vis.evaluateVisibility("relative", visCtx));
+    vis.applyElementVisibility(document.getElementById("floatStandingsCard"), vis.evaluateVisibility("standings", visCtx));
+    vis.applyElementVisibility(document.getElementById("floatFuelCard"), vis.evaluateVisibility("fuel", visCtx));
+    vis.applyElementVisibility(document.getElementById("floatInputsCard"), vis.evaluateVisibility("pedals", visCtx));
+    vis.applyElementVisibility(document.getElementById("floatWaveformCard"), vis.evaluateVisibility("waveform", visCtx));
 
     // Auto-hide top edit bar when on track (OnPitRoad === false)
     if (!floatEditMode) {
