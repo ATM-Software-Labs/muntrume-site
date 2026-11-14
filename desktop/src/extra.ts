@@ -10,7 +10,15 @@ import {
   renderDigiFlagWidget,
   SmartLayoutManager,
   VisibilityRulesEngine,
+  PitExitPredictor,
+  mapLeaderboardToPitRefs,
+  renderPitExitWidget,
+  TireThermalEngine,
+  renderTireThermalWidget,
+  BroadcastDirector,
+  renderBroadcastDirectorWidget,
 } from "./irsdk";
+import { AeroSuspensionAnalyzer, renderAeroAnalysisPanel } from "./telemetry/aero-analyzer";
 import { LocalTelemetryBus } from "./plugins/telemetry-bus";
 import { PluginLoader } from "./plugins/plugin-loader";
 import { ThemeEngine } from "./theme/theme-engine";
@@ -20,6 +28,12 @@ import rawRealTracks from "./real_telemetry_tracks.json";
 import { clamp, finiteOr, safeDiv } from "./core/math-guards";
 import { resolveCarMetadata, createBrandBadgeElement } from "./cars/catalog";
 import { computeTrailBrakingScore } from "./telemetry/comparator";
+
+const pitExitPredictor = new PitExitPredictor();
+const tireThermalEngine = new TireThermalEngine();
+const broadcastDirector = new BroadcastDirector();
+const aeroAnalyzer = new AeroSuspensionAnalyzer();
+let engButtonsWired = false;
 
 interface ScheduleWeek {
   week_num: number;
@@ -512,6 +526,26 @@ function renderTelemetryStudio(): void {
   drawMapStudio(track, activeHoverDist);
   updateCursorReadout(track, activeHoverDist);
   renderCoachingCards();
+
+  const aeroPanel = document.getElementById("aeroAnalysisPanel");
+  if (aeroPanel) {
+    const baseSamples =
+      lastIbtReport && lastIbtReport.bestLapSamples.length > 0
+        ? lastIbtReport.bestLapSamples
+        : track.samples.map((s: any, idx: number) => ({
+            distM: finiteOr(s.dist, idx * 10),
+            lapTimeS: idx * 0.1,
+            speedKmh: finiteOr(s.bestSpeed ?? s.speed, 120),
+            throttle: finiteOr(s.bestThrottle ?? s.throttle, 0.5),
+            brake: finiteOr(s.bestBrake ?? s.brake, 0),
+            steeringRad: finiteOr(s.steering, 0),
+            x: s.x,
+            y: s.y,
+          }));
+    const aeroSamples = aeroAnalyzer.deriveSamplesFromLap(baseSamples);
+    const aeroReport = aeroAnalyzer.analyze(aeroSamples);
+    renderAeroAnalysisPanel(aeroPanel, aeroReport);
+  }
 }
 
 function getTelemetrySampleAt(track: RealTrackEntry, dist: number): {
@@ -1748,6 +1782,87 @@ function updateHUDDisplay(sample: LiveSample): void {
   document.querySelectorAll<HTMLElement>("#ovFuel, #ovFuelFloat").forEach((fuel) => {
     renderFuelWidget(fuel, irsdkState);
   });
+
+  // Prompts 34, 35, 37: Pit Exit Predictor, Tire Thermal IMO, Broadcast Director
+  if (!engButtonsWired) {
+    engButtonsWired = true;
+    document.getElementById("btnResetColdTires")?.addEventListener("click", () => {
+      tireThermalEngine.resetColdBaseline();
+    });
+    const autoCamBtn = document.getElementById("btnToggleAutoCam");
+    autoCamBtn?.addEventListener("click", () => {
+      const next = !broadcastDirector.getConfig().enabled;
+      broadcastDirector.configure({ enabled: next });
+      autoCamBtn.textContent = next ? "Auto-Cam: ON" : "Auto-Cam: OFF";
+    });
+    document.getElementById("btnManualClip")?.addEventListener("click", () => {
+      const st = IrsdkClient.getInstance().getLatestState();
+      const drv = st?.activeDriver;
+      broadcastDirector.addManualClip(st?.frame?.sessionTime ?? 0, drv?.carNumber || "16", drv?.abbrevName || "Piloto MMT");
+      const bdEl = document.getElementById("ovBroadcastDirectorWidget");
+      if (bdEl) renderBroadcastDirectorWidget(bdEl, broadcastDirector);
+    });
+    document.getElementById("btnExportClipsCsv")?.addEventListener("click", () => {
+      const csv = broadcastDirector.exportCsv();
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `mmt-highlights-${Date.now()}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  }
+
+  const pitEl = document.getElementById("ovPitExitWidget");
+  if (pitEl && irsdkState) {
+    const rawFrame = irsdkState.frame;
+    const activeIdx = irsdkState.camCarIdx;
+    const activeLap = rawFrame?.carIdxLap?.[activeIdx] ?? 1;
+    const estLapS = irsdkState.activeDriver?.carClassEstLapTime || irsdkState.session?.driverInfo?.driverCarEstLapTime || 95;
+    const trackKey = irsdkState.session?.weekendInfo?.trackName || "default";
+    pitExitPredictor.observePitTransition(
+      trackKey,
+      Boolean(irsdkState.onPitRoad),
+      rawFrame?.sessionTime ?? 0,
+    );
+    const pred = pitExitPredictor.predict({
+      trackKey,
+      activeCarIdx: activeIdx,
+      activeLapDistPct: rawFrame?.carIdxLapDistPct?.[activeIdx] ?? 0,
+      estLapTimeS: estLapS,
+      cars: mapLeaderboardToPitRefs(
+        irsdkState.leaderboard || [],
+        rawFrame?.carIdxLapDistPct || [],
+        activeLap,
+      ),
+    });
+    renderPitExitWidget(pitEl, pred);
+  }
+
+  const tireEl = document.getElementById("ovTireThermalWidget");
+  if (tireEl) {
+    const baseTemp = 68 + Math.min(28, (kmh / 260) * 18 + (sample.brake || 0) * 12);
+    const baseKpa = 165 + Math.min(18, (kmh / 260) * 10);
+    const tireSnap = tireThermalEngine.evaluate({
+      onPitRoad: Boolean(irsdkState?.onPitRoad),
+      LF: { innerC: baseTemp + 5.2, middleC: baseTemp + 1.4, outerC: baseTemp - 2.1, pressureKpa: baseKpa + 2.4 },
+      RF: { innerC: baseTemp + 3.8, middleC: baseTemp + 0.8, outerC: baseTemp - 1.5, pressureKpa: baseKpa + 1.8 },
+      LR: { innerC: baseTemp + 1.2, middleC: baseTemp - 1.5, outerC: baseTemp - 3.0, pressureKpa: baseKpa + 0.9 },
+      RR: { innerC: baseTemp + 0.9, middleC: baseTemp - 1.8, outerC: baseTemp - 3.4, pressureKpa: baseKpa + 0.6 },
+    });
+    renderTireThermalWidget(tireEl, tireSnap, tireThermalEngine);
+  }
+
+  const bdEl = document.getElementById("ovBroadcastDirectorWidget");
+  if (bdEl && irsdkState) {
+    const sessionTime = irsdkState.frame?.sessionTime ?? 0;
+    broadcastDirector.evaluateCamera(irsdkState.leaderboard || [], sessionTime);
+    const clr = Number((sample as any).carLeftRight ?? 0);
+    const drv = irsdkState.activeDriver;
+    broadcastDirector.observeParallelBattle(clr, sessionTime, drv?.carNumber || "16", drv?.abbrevName || "Piloto");
+    renderBroadcastDirectorWidget(bdEl, broadcastDirector);
+  }
 
   // Bloque 2: GPU-Accelerated Pedals & Steering (60 FPS, scaleY/translate3d)
   const pedalSample = {

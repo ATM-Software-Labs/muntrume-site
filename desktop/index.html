@@ -561,6 +561,18 @@
               </div>
               <div id="cornerCoachingList" class="grid md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
             </div>
+
+            <!-- Aero & Suspension Engineering (Prompt 36) -->
+            <div id="aeroEngineeringCard" class="mmt-panel mt-8">
+              <div class="mmt-panel-header">
+                <div>
+                  <p class="mmt-kicker">Ingeniería Aerodinámica &amp; Suspensiones (.mmt-lap)</p>
+                  <h2 class="mmt-display text-2xl mt-0.5">Altura al Suelo (Ride Height), Rake Dinámico &amp; Bottoming Out</h2>
+                </div>
+                <span class="px-2.5 py-1 rounded-lg border border-r-line bg-r-bg font-mono text-[11px] text-r-accent">LFrideHeight · RFrideHeight · ShockDefl</span>
+              </div>
+              <div id="aeroAnalysisPanel"></div>
+            </div>
           </section>
 
           <section id="viewReference" hidden aria-labelledby="refTitle" class="max-w-6xl space-y-6">
@@ -904,6 +916,27 @@
                 <div id="ovGpuPedals"></div>
                 <canvas id="ovInputs" width="300" height="95" class="rounded-xl hidden"></canvas>
                 <div id="ovTyres" class="mt-2 text-center font-mono text-[11px] text-r-muted"></div>
+              </div>
+            </div>
+
+            <!-- Engineering Modules Dock (Prompts 34, 35, 37) -->
+            <div id="engineeringOverlaysDock" class="mt-6 grid lg:grid-cols-3 gap-4">
+              <div class="mmt-panel">
+                <div id="ovPitExitWidget"></div>
+              </div>
+              <div class="mmt-panel space-y-2.5">
+                <div id="ovTireThermalWidget"></div>
+                <div class="flex justify-end">
+                  <button type="button" id="btnResetColdTires" class="px-2.5 py-1 rounded-lg border border-r-line bg-r-bg text-[10px] font-mono text-r-muted hover:text-r-text">Reiniciar Base Frío</button>
+                </div>
+              </div>
+              <div class="mmt-panel space-y-2.5">
+                <div id="ovBroadcastDirectorWidget"></div>
+                <div class="flex flex-wrap items-center gap-1.5 pt-1">
+                  <button type="button" id="btnToggleAutoCam" class="px-2.5 py-1 rounded-lg border border-r-line bg-r-bg text-[10px] font-mono text-r-muted hover:text-r-text">Auto-Cam: OFF</button>
+                  <button type="button" id="btnManualClip" class="px-2.5 py-1 rounded-lg border border-r-accent/50 bg-r-accent/10 text-[10px] font-mono text-r-accent font-bold">Marcar Clip</button>
+                  <button type="button" id="btnExportClipsCsv" class="px-2.5 py-1 rounded-lg border border-r-line bg-r-bg text-[10px] font-mono text-r-muted hover:text-r-text">Exportar CSV</button>
+                </div>
               </div>
             </div>
           </section>

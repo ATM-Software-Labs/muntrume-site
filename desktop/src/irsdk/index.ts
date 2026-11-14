@@ -18,3 +18,6 @@ export * from "./radar-360";
 export * from "./pitbox-helper";
 export * from "./digi-flag";
 export * from "./visibility-rules";
+export * from "./pit-exit-predictor";
+export * from "./tire-thermal-widget";
+export * from "./broadcast-director";
