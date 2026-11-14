@@ -1753,10 +1753,12 @@ export function updateLiveOverlay(sample: LiveSample): void {
 }
 
 function updateHUDDisplay(sample: LiveSample): void {
+  const irsdkState = IrsdkClient.getInstance().getLatestState();
   const kmh = Math.round(sample.speed * 3.6);
   const gearStr = sample.gear === -1 ? "R" : sample.gear === 0 ? "N" : String(sample.gear);
   const mock = hudMockAllowed();
-  const rpmEst = mock ? Math.min(8600, Math.round(kmh * 38 + 2100)) : 0;
+  const liveRpm = irsdkState?.frame.rpm ?? 0;
+  const rpmEst = liveRpm > 0 ? Math.round(liveRpm) : (mock ? Math.min(8600, Math.round(kmh * 38 + 2100)) : 0);
 
   // Push to rolling waveform buffer
   liveWaveformHistory.push({ thr: sample.throttle, brk: sample.brake });
@@ -1772,7 +1774,7 @@ function updateHUDDisplay(sample: LiveSample): void {
   // Shift Lights
   const shiftLightContainers = document.querySelectorAll<HTMLElement>("#ovShiftLights, #ovShiftLightsFloat");
   const revAlert = document.getElementById("ovRevLimiterAlert");
-  const isLimiter = mock && rpmEst >= 8250;
+  const isLimiter = (liveRpm > 0 || mock) && rpmEst >= 8250;
 
   if (revAlert) {
     revAlert.classList.toggle("hidden", !isLimiter);
@@ -1854,7 +1856,6 @@ function updateHUDDisplay(sample: LiveSample): void {
   }
 
   // Render high-precision Relative, Standings, and Fuel via iRacing SDK Engines (Bloque 1)
-  const irsdkState = IrsdkClient.getInstance().getLatestState();
   if (isLiveFromSDK) {
     updateOverlayBrandBadge(irsdkState?.activeDriver?.carPath);
   }

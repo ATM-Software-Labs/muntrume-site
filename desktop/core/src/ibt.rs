@@ -54,6 +54,7 @@ pub fn parse_ibt(bytes: &[u8]) -> Result<Session, IbtError> {
         vars.push(Var {
             kind: i32_at(bytes, start),
             offset: i32_at(bytes, start + 4),
+            count: i32_at(bytes, start + 8).max(1) as usize,
             name: c_string(&bytes[start + 16..start + 48]),
         });
     }
@@ -133,6 +134,145 @@ pub fn read_live_sample_with(bytes: &[u8], table: &VarTable) -> Result<Sample, I
     Ok(read_sample(&copy, 0, &table.vars).sample)
 }
 
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IrsdkFrame {
+    pub session_time: f64,
+    pub session_time_remain: f64,
+    pub session_laps_remain_ex: i32,
+    pub session_state: i32,
+    pub session_flags: i32,
+    pub session_num: i32,
+    pub cam_car_idx: i32,
+    pub player_car_idx: i32,
+    pub is_replay_playing: bool,
+    pub on_pit_road: bool,
+    pub speed_kmh: f64,
+    pub rpm: f64,
+    pub gear: i32,
+    pub throttle: f64,
+    pub brake: f64,
+    pub clutch: f64,
+    pub steering: f64,
+    pub fuel_level: f64,
+    pub fuel_level_pct: f64,
+    pub car_idx_lap_dist_pct: Vec<f64>,
+    pub car_idx_position: Vec<i32>,
+    pub car_idx_class_position: Vec<i32>,
+    pub car_idx_f2_time: Vec<f64>,
+    pub car_idx_est_time: Vec<f64>,
+    pub car_idx_best_lap_time: Vec<f64>,
+    pub car_idx_last_lap_time: Vec<f64>,
+    pub car_idx_lap: Vec<i32>,
+    pub car_idx_on_pit_road: Vec<bool>,
+}
+
+pub fn read_session_info_yaml(bytes: &[u8]) -> Result<(i32, String), IbtError> {
+    validate_live_header(bytes)?;
+    let update = i32_at(bytes, 12);
+    let session_len = i32_at(bytes, 16).max(0) as usize;
+    let session_off = i32_at(bytes, 20).max(0) as usize;
+    if session_len == 0 || session_off.saturating_add(session_len) > bytes.len() {
+        return Err(IbtError::Header);
+    }
+    let slice = &bytes[session_off..session_off + session_len];
+    let end = slice.iter().position(|&b| b == 0).unwrap_or(slice.len());
+    let yaml = String::from_utf8_lossy(&slice[..end]).into_owned();
+    if i32_at(bytes, 12) != update {
+        return Err(IbtError::Torn);
+    }
+    Ok((update, yaml))
+}
+
+pub fn read_live_irsdk_frame_with(bytes: &[u8], table: &VarTable) -> Result<IrsdkFrame, IbtError> {
+    validate_live_header(bytes)?;
+    if i32_at(bytes, 12) != table.update {
+        return Err(IbtError::StaleVars);
+    }
+    let copy = copy_latest(bytes)?;
+    let vars = &table.vars;
+    let val_f = |name: &str| -> f64 {
+        vars.iter()
+            .find(|v| v.name == name)
+            .and_then(|v| read_number_at(&copy, 0, v, 0))
+            .unwrap_or(0.0)
+    };
+    let val_i = |name: &str| -> i32 { val_f(name).round() as i32 };
+    let val_b = |name: &str| -> bool {
+        vars.iter()
+            .find(|v| v.name == name)
+            .and_then(|v| read_bool_at(&copy, 0, v, 0))
+            .unwrap_or(false)
+    };
+    let arr_f = |name: &str| -> Vec<f64> {
+        let Some(v) = vars.iter().find(|v| v.name == name) else {
+            return vec![0.0; 64];
+        };
+        let n = v.count.min(64);
+        let mut out = Vec::with_capacity(64);
+        for i in 0..n {
+            out.push(read_number_at(&copy, 0, v, i).unwrap_or(0.0));
+        }
+        out.resize(64, 0.0);
+        out
+    };
+    let arr_i = |name: &str| -> Vec<i32> {
+        let Some(v) = vars.iter().find(|v| v.name == name) else {
+            return vec![0; 64];
+        };
+        let n = v.count.min(64);
+        let mut out = Vec::with_capacity(64);
+        for i in 0..n {
+            out.push(read_number_at(&copy, 0, v, i).unwrap_or(0.0).round() as i32);
+        }
+        out.resize(64, 0);
+        out
+    };
+    let arr_b = |name: &str| -> Vec<bool> {
+        let Some(v) = vars.iter().find(|v| v.name == name) else {
+            return vec![false; 64];
+        };
+        let n = v.count.min(64);
+        let mut out = Vec::with_capacity(64);
+        for i in 0..n {
+            out.push(read_bool_at(&copy, 0, v, i).unwrap_or(false));
+        }
+        out.resize(64, false);
+        out
+    };
+
+    Ok(IrsdkFrame {
+        session_time: val_f("SessionTime"),
+        session_time_remain: val_f("SessionTimeRemain"),
+        session_laps_remain_ex: val_i("SessionLapsRemainEx"),
+        session_state: val_i("SessionState"),
+        session_flags: val_i("SessionFlags"),
+        session_num: val_i("SessionNum"),
+        cam_car_idx: val_i("CamCarIdx"),
+        player_car_idx: val_i("PlayerCarIdx"),
+        is_replay_playing: val_b("IsReplayPlaying"),
+        on_pit_road: val_b("OnPitRoad"),
+        speed_kmh: val_f("Speed") * 3.6,
+        rpm: val_f("RPM"),
+        gear: val_i("Gear"),
+        throttle: val_f("Throttle"),
+        brake: val_f("Brake"),
+        clutch: val_f("Clutch"),
+        steering: val_f("SteeringWheelAngle"),
+        fuel_level: val_f("FuelLevel"),
+        fuel_level_pct: val_f("FuelLevelPct"),
+        car_idx_lap_dist_pct: arr_f("CarIdxLapDistPct"),
+        car_idx_position: arr_i("CarIdxPosition"),
+        car_idx_class_position: arr_i("CarIdxClassPosition"),
+        car_idx_f2_time: arr_f("CarIdxF2Time"),
+        car_idx_est_time: arr_f("CarIdxEstTime"),
+        car_idx_best_lap_time: arr_f("CarIdxBestLapTime"),
+        car_idx_last_lap_time: arr_f("CarIdxLastLapTime"),
+        car_idx_lap: arr_i("CarIdxLap"),
+        car_idx_on_pit_road: arr_b("CarIdxOnPitRoad"),
+    })
+}
+
 fn validate_live_header(bytes: &[u8]) -> Result<(), IbtError> {
     if bytes.len() < HEADER_SIZE {
         return Err(IbtError::Short);
@@ -167,6 +307,7 @@ fn parse_vars(bytes: &[u8]) -> Result<Vec<Var>, IbtError> {
         vars.push(Var {
             kind: i32_at(bytes, start),
             offset: i32_at(bytes, start + 4),
+            count: i32_at(bytes, start + 8).max(1) as usize,
             name: c_string(&bytes[start + 16..start + 48]),
         });
     }
@@ -229,6 +370,7 @@ fn copy_latest(bytes: &[u8]) -> Result<Vec<u8>, IbtError> {
 struct Var {
     kind: i32,
     offset: i32,
+    count: usize,
     name: String,
 }
 
@@ -281,14 +423,42 @@ fn optional(vars: &[Var], bytes: &[u8], base: usize, name: &str) -> Option<f64> 
 }
 
 fn read_number(bytes: &[u8], base: usize, var: &Var) -> Option<f64> {
+    read_number_at(bytes, base, var, 0)
+}
+
+fn read_number_at(bytes: &[u8], base: usize, var: &Var, index: usize) -> Option<f64> {
     if var.offset < 0 {
         return None;
     }
-    let at = base + var.offset as usize;
+    let stride = match var.kind {
+        0 | 1 => 1,
+        2 | 3 | 4 => 4,
+        5 => 8,
+        _ => return None,
+    };
+    let at = base + var.offset as usize + index * stride;
     match var.kind {
+        1 => Some(if *bytes.get(at)? != 0 { 1.0 } else { 0.0 }),
         2 | 3 => Some(i32_at(bytes, at) as f64),
         4 => Some(f32::from_le_bytes(bytes.get(at..at + 4)?.try_into().ok()?) as f64),
         5 => Some(f64::from_le_bytes(bytes.get(at..at + 8)?.try_into().ok()?)),
+        _ => None,
+    }
+}
+
+fn read_bool_at(bytes: &[u8], base: usize, var: &Var, index: usize) -> Option<bool> {
+    if var.offset < 0 {
+        return None;
+    }
+    let stride = match var.kind {
+        0 | 1 => 1,
+        2 | 3 => 4,
+        _ => return None,
+    };
+    let at = base + var.offset as usize + index * stride;
+    match var.kind {
+        0 | 1 => Some(*bytes.get(at)? != 0),
+        2 | 3 => Some(i32_at(bytes, at) != 0),
         _ => None,
     }
 }

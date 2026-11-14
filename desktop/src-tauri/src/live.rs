@@ -108,7 +108,10 @@ impl Drop for SdkMap {
 #[cfg(windows)]
 fn windows_loop(app: AppHandle) {
     use std::time::{Duration, Instant};
-    use mmt_sync_core::{read_live_sample_with, resolve_var_table, session_info_update, IbtError, VarTable};
+    use mmt_sync_core::{
+        read_live_irsdk_frame_with, read_live_sample_with, read_session_info_yaml,
+        resolve_var_table, session_info_update, IbtError, VarTable,
+    };
     use tauri::Emitter;
     use windows_sys::Win32::Foundation::CloseHandle;
     use windows_sys::Win32::System::Memory::{
@@ -154,7 +157,9 @@ fn windows_loop(app: AppHandle) {
         let _ = app.emit("mmt-iracing-status", "on_track");
 
         let mut vars: Option<VarTable> = None;
+        let mut last_yaml_update: Option<i32> = None;
         let mut last_emit = Instant::now() - Duration::from_secs(1);
+        let mut last_frame_emit = Instant::now() - Duration::from_secs(1);
         let mut last_proc = Instant::now();
         loop {
             let signaled = if mapped.event.is_null() {
@@ -202,9 +207,19 @@ fn windows_loop(app: AppHandle) {
                     Err(IbtError::NotConnected) => {
                         let _ = app.emit("mmt-iracing-status", "in_sim");
                         vars = None;
+                        last_yaml_update = None;
                         continue;
                     }
                     Err(_) => continue,
+                }
+            }
+            if last_yaml_update != Some(update) {
+                if let Ok((u, yaml)) = read_session_info_yaml(bytes) {
+                    let _ = app.emit(
+                        "mmt-session-info",
+                        serde_json::json!({ "update": u, "yaml": yaml }),
+                    );
+                    last_yaml_update = Some(u);
                 }
             }
             let Some(table) = vars.as_ref() else { continue };
@@ -217,9 +232,16 @@ fn windows_loop(app: AppHandle) {
                 Err(IbtError::NotConnected) => {
                     let _ = app.emit("mmt-iracing-status", "in_sim");
                     vars = None;
+                    last_yaml_update = None;
                 }
                 Err(IbtError::StaleVars) => vars = None,
                 Err(_) => {}
+            }
+            if last_frame_emit.elapsed() >= Duration::from_millis(66) {
+                if let Ok(frame) = read_live_irsdk_frame_with(bytes, table) {
+                    let _ = app.emit("mmt-irsdk-frame", &frame);
+                    last_frame_emit = Instant::now();
+                }
             }
         }
         drop(mapped);
