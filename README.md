@@ -116,10 +116,6 @@ Puedes instalar MMT Sync de dos formas:
 2. **Descarga directa:**
    Descarga el instalador ejecutable `.exe` o paquete `.msi` desde [muntru.me/app/](https://muntru.me/app/) o desde [Releases](https://github.com/ATM-Software-Labs/muntrume-site/releases/latest).
 
-## Firma de código (MMT Sync)
-
-Free code signing provided by [SignPath.io](https://signpath.io/), certificate by [SignPath Foundation](https://signpath.org/).
-
 ## Licencia
 
 [MIT](LICENSE) © 2026 Alberto Trujillo Mingorance / Muntrume Motorsport · [Marcas registradas](TRADEMARKS.md). Fuentes autoalojadas bajo [SIL OFL 1.1](public/assets/fonts/OFL.txt).
