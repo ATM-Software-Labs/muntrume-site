@@ -1,0 +1,263 @@
+---
+export interface CarouselSlide {
+  src: string;
+  title: string;
+  subtitle?: string;
+  tag?: string;
+  id?: string;
+  setupsUrl?: string;
+  downloadName?: string;
+}
+
+interface Props {
+  id: string;
+  slides: CarouselSlide[];
+  aspectRatioClass?: string;
+  intervalMs?: number;
+}
+
+const {
+  id,
+  slides = [],
+  aspectRatioClass = "aspect-[16/9]",
+  intervalMs = 4500,
+} = Astro.props;
+---
+
+{slides.length > 0 && (
+  <div
+    id={`carousel-${id}`}
+    data-carousel-root
+    data-interval={String(intervalMs)}
+    class="relative rounded-2xl overflow-hidden border border-[var(--r-line)] bg-[#090d12] shadow-xl group/carousel select-none"
+    role="region"
+    aria-label="Galería interactiva en carrusel automático"
+  >
+    <!-- Slides Frame -->
+    <div class={`relative w-full ${aspectRatioClass} overflow-hidden`}>
+      {slides.map((slide, idx) => (
+        <div
+          data-slide
+          data-index={String(idx)}
+          class={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+            idx === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+          }`}
+        >
+          <img
+            src={slide.src}
+            alt={slide.title}
+            loading={idx === 0 ? 'eager' : 'lazy'}
+            decoding="async"
+            class="w-full h-full object-cover object-center"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/20"></div>
+
+          <!-- Slide Meta Overlays -->
+          <div class="absolute top-3 left-3 flex items-center gap-2">
+            {slide.tag && (
+              <span class="px-2.5 py-0.5 rounded-full bg-black/80 backdrop-blur-xs border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase tracking-wider">
+                {slide.tag}
+              </span>
+            )}
+            <span class="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-xs border border-white/10 text-white/80 text-[10px] font-mono">
+              Auto · {idx + 1}/{slides.length}
+            </span>
+          </div>
+
+          <div class="absolute top-3 right-3 flex items-center gap-2">
+            {slide.id && (
+              <button
+                type="button"
+                data-like-btn
+                data-like-id={slide.id}
+                class="px-2.5 py-1 rounded-lg bg-black/75 backdrop-blur-xs border border-white/15 hover:border-rose-500/70 text-xs font-mono font-bold text-white/90 inline-flex items-center gap-1 transition cursor-pointer"
+                title="Me gusta"
+              >
+                <span data-heart>♡</span>
+                <span data-count>0</span>
+              </button>
+            )}
+          </div>
+
+          <div class="absolute bottom-3 left-3 right-3 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+            <div class="min-w-0 pr-2">
+              {slide.subtitle && (
+                <span class="block text-[11px] font-mono uppercase tracking-wider text-white/70 truncate">
+                  {slide.subtitle}
+                </span>
+              )}
+              <h3 class="text-base sm:text-lg font-bold text-white font-display tracking-tight truncate drop-shadow-sm">
+                {slide.title}
+              </h3>
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0">
+              {slide.setupsUrl && (
+                <a
+                  href={slide.setupsUrl}
+                  class="px-3 py-1.5 rounded-xl bg-[var(--r-accent)]/20 hover:bg-[var(--r-accent)]/30 border border-[var(--r-accent)]/60 text-[11px] font-mono font-bold text-[var(--r-accent)] transition flex items-center gap-1"
+                >
+                  <span>Setups (.sto)</span>
+                  <span>&rarr;</span>
+                </a>
+              )}
+              <button
+                type="button"
+                data-preview-src={slide.src}
+                data-preview-title={slide.title}
+                data-preview-sub={slide.subtitle || ''}
+                data-preview-id={slide.id || slide.src}
+                data-preview-download={slide.downloadName || slide.src.split('/').pop()}
+                data-preview-setups={slide.setupsUrl || ''}
+                class="px-3 py-1.5 rounded-xl bg-black/80 hover:bg-black border border-white/20 hover:border-[var(--r-accent)] text-xs font-mono font-bold text-white transition flex items-center gap-1.5 cursor-zoom-in"
+                title="Abrir imagen completa en alta definición"
+              >
+                <span>Ampliar HD</span>
+                <span>⤢</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <!-- Navigation Arrows -->
+    {slides.length > 1 && (
+      <>
+        <button
+          type="button"
+          data-carousel-prev
+          aria-label="Foto anterior"
+          class="absolute left-2.5 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/70 hover:bg-black border border-white/20 hover:border-[var(--r-accent)] text-white flex items-center justify-center transition-all opacity-0 group-hover/carousel:opacity-100 cursor-pointer shadow-md"
+        >
+          <span class="text-base font-bold leading-none">&larr;</span>
+        </button>
+        <button
+          type="button"
+          data-carousel-next
+          aria-label="Siguiente foto"
+          class="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/70 hover:bg-black border border-white/20 hover:border-[var(--r-accent)] text-white flex items-center justify-center transition-all opacity-0 group-hover/carousel:opacity-100 cursor-pointer shadow-md"
+        >
+          <span class="text-base font-bold leading-none">&rarr;</span>
+        </button>
+
+        <!-- Dots Indicators -->
+        <div class="absolute bottom-16 sm:bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-xs border border-white/10">
+          {slides.map((_, dotIdx) => (
+            <button
+              type="button"
+              data-carousel-dot={String(dotIdx)}
+              aria-label={`Ir a la foto ${dotIdx + 1}`}
+              class={`h-1.5 rounded-full transition-all cursor-pointer ${
+                dotIdx === 0 ? 'w-5 bg-[var(--r-accent)]' : 'w-1.5 bg-white/40 hover:bg-white/80'
+              }`}
+            />
+          ))}
+        </div>
+      </>
+    )}
+  </div>
+)}
+
+<script is:inline>
+  (function initCarousels() {
+    function setup(root) {
+      if (!root || root.hasAttribute('data-carousel-ready')) return;
+      root.setAttribute('data-carousel-ready', 'true');
+
+      var slides = Array.from(root.querySelectorAll('[data-slide]'));
+      var dots = Array.from(root.querySelectorAll('[data-carousel-dot]'));
+      var prevBtn = root.querySelector('[data-carousel-prev]');
+      var nextBtn = root.querySelector('[data-carousel-next]');
+      var intervalMs = parseInt(root.getAttribute('data-interval') || '4500', 10);
+      var current = 0;
+      var timer = null;
+
+      function goTo(index) {
+        if (!slides.length) return;
+        current = (index + slides.length) % slides.length;
+        slides.forEach(function (slide, idx) {
+          if (idx === current) {
+            slide.classList.remove('opacity-0', 'z-0', 'pointer-events-none');
+            slide.classList.add('opacity-100', 'z-10');
+          } else {
+            slide.classList.remove('opacity-100', 'z-10');
+            slide.classList.add('opacity-0', 'z-0', 'pointer-events-none');
+          }
+        });
+        dots.forEach(function (dot, idx) {
+          if (idx === current) {
+            dot.className = 'h-1.5 rounded-full transition-all cursor-pointer w-5 bg-[var(--r-accent)]';
+          } else {
+            dot.className = 'h-1.5 rounded-full transition-all cursor-pointer w-1.5 bg-white/40 hover:bg-white/80';
+          }
+        });
+      }
+
+      function next() {
+        goTo(current + 1);
+      }
+
+      function prev() {
+        goTo(current - 1);
+      }
+
+      function start() {
+        stop();
+        if (slides.length > 1) {
+          timer = setInterval(next, intervalMs);
+        }
+      }
+
+      function stop() {
+        if (timer) {
+          clearInterval(timer);
+          timer = null;
+        }
+      }
+
+      if (prevBtn) prevBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        prev();
+        start();
+      });
+
+      if (nextBtn) nextBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        next();
+        start();
+      });
+
+      dots.forEach(function (dot, idx) {
+        dot.addEventListener('click', function (e) {
+          e.preventDefault();
+          goTo(idx);
+          start();
+        });
+      });
+
+      root.addEventListener('mouseenter', stop);
+      root.addEventListener('mouseleave', start);
+
+      // Touch swipe support
+      var startX = 0;
+      root.addEventListener('touchstart', function (e) {
+        startX = e.touches[0].clientX;
+        stop();
+      }, { passive: true });
+
+      root.addEventListener('touchend', function (e) {
+        var diffX = e.changedTouches[0].clientX - startX;
+        if (Math.abs(diffX) > 40) {
+          if (diffX < 0) next();
+          else prev();
+        }
+        start();
+      }, { passive: true });
+
+      start();
+    }
+
+    document.querySelectorAll('[data-carousel-root]').forEach(setup);
+  })();
+</script>

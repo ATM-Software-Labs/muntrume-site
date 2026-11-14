@@ -1,8 +1,10 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import MediaLightbox from '../../components/MediaLightbox.astro';
+import MediaCarousel from '../../components/MediaCarousel.astro';
 import { CAR_CATALOG_LIST, type CarMetadata } from '../../../desktop/src/cars/catalog';
 import { getBrandOrigin, getCarDossier } from '../../data/car-dossiers';
+import { getCarVideos } from '../../lib/video-links';
 import catalogIndex from '../../../public/assets/data/catalog_index.json';
 
 export function getStaticPaths() {
@@ -37,6 +39,56 @@ const dossier = getCarDossier(car);
 const hasGarageSetups = (catalogIndex.cars as string[]).some(
   (c) => c.toLowerCase() === car.carFolder.toLowerCase(),
 );
+
+const carSlides = [
+  ...(car.previewImg ? [{
+    src: car.previewImg,
+    title: `${car.brand} ${car.model} · Ficha Técnica iRacing`,
+    subtitle: `${car.carClass} · ${origin.flag} ${origin.country} · ${car.specs}`,
+    tag: `${car.carClass} Oficial`,
+    id: `car:${car.carFolder}:main`,
+    setupsUrl: `/garage?car=${encodeURIComponent(car.carFolder)}`,
+    downloadName: `${car.carFolder}-preview.webp`,
+  }] : []),
+  {
+    src: '/assets/img/coche1.webp',
+    title: `${car.brand} ${car.model} · Apoyo Aerodinámico en Vértice`,
+    subtitle: 'Telemetría y reparto de cargas en curva rápida · Muntrume Motorsport',
+    tag: 'Pista & Dinámica',
+    id: `car:${car.carFolder}:track1`,
+    setupsUrl: `/garage?car=${encodeURIComponent(car.carFolder)}`,
+    downloadName: `${car.carFolder}-track1.webp`,
+  },
+  {
+    src: '/assets/img/coche3.webp',
+    title: `${car.brand} ${car.model} · Stint Nocturno y Ópticas LED`,
+    subtitle: 'Gestión de temperatura de neumáticos y caída térmica en carrera nocturna',
+    tag: 'Nocturna',
+    id: `car:${car.carFolder}:night`,
+    setupsUrl: `/garage?car=${encodeURIComponent(car.carFolder)}`,
+    downloadName: `${car.carFolder}-night.webp`,
+  },
+  {
+    src: '/assets/img/race1.webp',
+    title: `${car.brand} ${car.model} · Tráfico y Lucha Multiclase`,
+    subtitle: 'Frenada sincronizada y adelantamientos entre clases en series oficiales',
+    tag: 'Carrera',
+    id: `car:${car.carFolder}:race`,
+    setupsUrl: `/garage?car=${encodeURIComponent(car.carFolder)}`,
+    downloadName: `${car.carFolder}-race.webp`,
+  },
+  {
+    src: '/assets/img/hero-bg.webp',
+    title: `${car.brand} ${car.model} · Parrilla de Salida y Boxes`,
+    subtitle: 'Formación de parrilla previa a la bandera verde en prueba de resistencia',
+    tag: 'Paddock & Grid',
+    id: `car:${car.carFolder}:grid`,
+    setupsUrl: `/garage?car=${encodeURIComponent(car.carFolder)}`,
+    downloadName: `${car.carFolder}-grid.webp`,
+  },
+];
+
+const carVideos = getCarVideos(car.brand, car.model, car.carClass);
 
 const pageTitle = `${car.brand} ${car.model} · Ficha Técnica iRacing | Muntrume Motorsport`;
 const pageDescription = `${car.brand} ${car.model} (${car.carClass}): ${dossier.headline}`;
@@ -236,6 +288,107 @@ const pageDescription = `${car.brand} ${car.model} (${car.carClass}): ${dossier.
             <div class="text-2xl font-extrabold font-mono text-[var(--r-accent)]">{b.lap}</div>
             <p class="text-[11px] font-mono text-[var(--r-muted)]">{b.note}</p>
           </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- GALERIA DE FOTOS INTERACTIVA (AUTO-CAROUSEL) -->
+    <section aria-label="Galería interactiva del vehículo" class="space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2 pb-2 border-b border-[var(--r-line)]">
+        <div>
+          <span class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)]">Galería propia interactiva</span>
+          <h2 class="r-h3">Galería fotográfica · {car.brand} {car.model}</h2>
+        </div>
+        <span class="text-xs font-mono text-[var(--r-muted)]">
+          Carrusel automático todo en uno · Pausa al pasar el ratón · Haz clic para ampliar en HD
+        </span>
+      </div>
+
+      <MediaCarousel
+        id={`car-${car.carFolder.toLowerCase()}`}
+        slides={carSlides}
+        intervalMs={4500}
+        aspectRatioClass="aspect-[16/9]"
+      />
+    </section>
+
+    <!-- VIDEOS OFICIALES & COMUNIDAD -->
+    <section aria-label="Vídeos y onboards del vehículo" class="space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2 pb-2 border-b border-[var(--r-line)]">
+        <div>
+          <span class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)]">Onboard &amp; Streaming</span>
+          <h2 class="r-h3">Vídeos oficiales y onboard en pista (iRacing &amp; Comunidad)</h2>
+        </div>
+        <a
+          href={`https://www.youtube.com/results?search_query=iRacing+${encodeURIComponent(car.brand + ' ' + car.model)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-xs font-mono font-bold text-[var(--r-accent)] hover:underline flex items-center gap-1"
+        >
+          <span>Buscar más vídeos en YouTube</span>
+          <span>↗</span>
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        {carVideos.map((vid) => (
+          <a
+            href={vid.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="group rounded-2xl overflow-hidden border border-[var(--r-line)] bg-[var(--r-surface)] hover:border-[var(--r-accent)] transition-all duration-300 flex flex-col justify-between shadow-sm hover:shadow-md"
+          >
+            <div>
+              <div class="relative aspect-[16/9] bg-[#090d12] overflow-hidden">
+                <img
+                  src={car.previewImg || '/assets/img/coche1.webp'}
+                  alt={vid.title}
+                  class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-100"
+                  loading="lazy"
+                />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/30"></div>
+
+                <div class="absolute top-2.5 left-2.5 flex items-center gap-2">
+                  <span class="px-2 py-0.5 rounded-md bg-red-600/90 text-white font-mono text-[10px] font-bold flex items-center gap-1">
+                    <svg class="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    YouTube
+                  </span>
+                  <span class="px-2 py-0.5 rounded-md bg-black/75 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">
+                    {vid.badge}
+                  </span>
+                </div>
+
+                {vid.duration && (
+                  <span class="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded bg-black/85 text-white text-[10px] font-mono">
+                    {vid.duration}
+                  </span>
+                )}
+
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div class="w-12 h-12 rounded-full bg-red-600/90 group-hover:bg-red-600 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                    <svg class="w-5 h-5 fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-4 space-y-1.5">
+                <span class="text-[10px] font-mono text-[var(--r-muted)] uppercase tracking-wider block">
+                  {vid.channel}
+                </span>
+                <h3 class="text-sm font-bold text-[var(--r-text)] group-hover:text-[var(--r-accent)] transition-colors line-clamp-2">
+                  {vid.title}
+                </h3>
+                <p class="text-xs text-[var(--r-muted)] line-clamp-2 leading-relaxed">
+                  {vid.desc}
+                </p>
+              </div>
+            </div>
+
+            <div class="px-4 pb-4 pt-2 border-t border-[var(--r-line)] flex items-center justify-between text-xs font-mono font-bold text-[var(--r-accent)]">
+              <span>Ver vídeo en YouTube</span>
+              <span class="group-hover:translate-x-1 transition-transform">↗</span>
+            </div>
+          </a>
         ))}
       </div>
     </section>

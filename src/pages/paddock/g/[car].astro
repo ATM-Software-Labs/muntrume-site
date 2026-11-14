@@ -1,8 +1,10 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
 import MediaLightbox from "../../../components/MediaLightbox.astro";
+import MediaCarousel from "../../../components/MediaCarousel.astro";
 import { PADDOCK_ALBUMS, type GalleryAlbum } from "../../../data/paddock-gallery";
 import { resolveCarMetadata, getBrandSvgMarkup } from "../../../../desktop/src/cars/catalog";
+import { getCarVideos } from "../../../lib/video-links";
 
 export function getStaticPaths() {
   return PADDOCK_ALBUMS.map((album) => ({
@@ -20,6 +22,18 @@ const carMeta = resolveCarMetadata(album.slug);
 const siblingAlbums = PADDOCK_ALBUMS.filter((a) => a.slug !== album.slug);
 const pageTitle = `${album.title} · Galería Paddock | Muntrume Motorsport`;
 const pageDescription = `${album.summary} (${album.photos.length} fotografías oficiales en alta definición).`;
+
+const albumSlides = album.photos.map((p) => ({
+  src: p.img,
+  title: p.title,
+  subtitle: `${p.subtitle} · ${album.title}`,
+  tag: p.tag,
+  id: `gallery:${album.slug}:${p.id}`,
+  downloadName: p.img.split('/').pop(),
+  setupsUrl: carMeta ? `/garage?car=${encodeURIComponent(carMeta.carFolder)}` : undefined,
+}));
+
+const carVideos = carMeta ? getCarVideos(carMeta.brand, carMeta.model, carMeta.carClass) : [];
 ---
 
 <Layout title={pageTitle} description={pageDescription} canonical={`https://muntru.me/paddock/g/${album.slug}/`}>
@@ -122,6 +136,25 @@ const pageDescription = `${album.summary} (${album.photos.length} fotografías o
       </div>
     </header>
 
+    <!-- All-in-One Auto Carousel -->
+    <div class="space-y-2">
+      <div class="flex items-center justify-between text-xs font-mono">
+        <span class="text-[var(--r-accent)] font-bold flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-[var(--r-accent)] animate-pulse"></span>
+          Carrusel interactivo todo en uno ({albumSlides.length} fotos)
+        </span>
+        <span class="text-[var(--r-muted)] hidden sm:inline">
+          Rotación automática · Pausa al pasar el ratón · Haz clic para ampliar HD
+        </span>
+      </div>
+      <MediaCarousel
+        id={`album-${album.slug}`}
+        slides={albumSlides}
+        intervalMs={4500}
+        aspectRatioClass="aspect-[16/9] sm:aspect-[21/9]"
+      />
+    </div>
+
     <!-- Gallery Photos Grid -->
     <section aria-label="Fotos del álbum" class="space-y-4">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -212,6 +245,89 @@ const pageDescription = `${album.summary} (${album.photos.length} fotografías o
         ))}
       </div>
     </section>
+
+    <!-- VIDEOS OFICIALES & COMUNIDAD -->
+    {carVideos.length > 0 && carMeta && (
+      <section aria-label="Vídeos y onboards del vehículo" class="space-y-4 pt-4 border-t border-[var(--r-line)]">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2 pb-2 border-b border-[var(--r-line)]">
+          <div>
+            <span class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)]">Onboard &amp; Streaming</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-[var(--r-text)] font-display tracking-tight">Vídeos oficiales y onboard en pista (iRacing &amp; Comunidad)</h2>
+          </div>
+          <a
+            href={`https://www.youtube.com/results?search_query=iRacing+${encodeURIComponent(carMeta.brand + ' ' + carMeta.model)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-xs font-mono font-bold text-[var(--r-accent)] hover:underline flex items-center gap-1"
+          >
+            <span>Buscar más vídeos en YouTube</span>
+            <span>↗</span>
+          </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {carVideos.map((vid) => (
+            <a
+              href={vid.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="group rounded-2xl overflow-hidden border border-[var(--r-line)] bg-[var(--r-surface)] hover:border-[var(--r-accent)] transition-all duration-300 flex flex-col justify-between shadow-sm hover:shadow-md"
+            >
+              <div>
+                <div class="relative aspect-[16/9] bg-[#090d12] overflow-hidden">
+                  <img
+                    src={album.cover}
+                    alt={vid.title}
+                    class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-100"
+                    loading="lazy"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/30"></div>
+
+                  <div class="absolute top-2.5 left-2.5 flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded-md bg-red-600/90 text-white font-mono text-[10px] font-bold flex items-center gap-1">
+                      <svg class="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                      YouTube
+                    </span>
+                    <span class="px-2 py-0.5 rounded-md bg-black/75 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">
+                      {vid.badge}
+                    </span>
+                  </div>
+
+                  {vid.duration && (
+                    <span class="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded bg-black/85 text-white text-[10px] font-mono">
+                      {vid.duration}
+                    </span>
+                  )}
+
+                  <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div class="w-12 h-12 rounded-full bg-red-600/90 group-hover:bg-red-600 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                      <svg class="w-5 h-5 fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="p-4 space-y-1.5">
+                  <span class="text-[10px] font-mono text-[var(--r-muted)] uppercase tracking-wider block">
+                    {vid.channel}
+                  </span>
+                  <h3 class="text-sm font-bold text-[var(--r-text)] group-hover:text-[var(--r-accent)] transition-colors line-clamp-2">
+                    {vid.title}
+                  </h3>
+                  <p class="text-xs text-[var(--r-muted)] line-clamp-2 leading-relaxed">
+                    {vid.desc}
+                  </p>
+                </div>
+              </div>
+
+              <div class="px-4 pb-4 pt-2 border-t border-[var(--r-line)] flex items-center justify-between text-xs font-mono font-bold text-[var(--r-accent)]">
+                <span>Ver vídeo en YouTube</span>
+                <span class="group-hover:translate-x-1 transition-transform">↗</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
 
     <!-- Sibling Albums Footer -->
     {siblingAlbums.length > 0 && (

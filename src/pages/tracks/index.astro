@@ -1,6 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { IRACING_TRACKS, getTrackGarageInfo, getTrackScheduleInfo } from '../../lib/track-matcher';
+import { IRACING_TRACKS, getTrackGarageInfo, getTrackScheduleInfo, getHistoricTrackRank } from '../../lib/track-matcher';
 
 const items = IRACING_TRACKS.map((t) => {
   const garage = getTrackGarageInfo(t);
@@ -8,13 +8,15 @@ const items = IRACING_TRACKS.map((t) => {
   const isFree = t.categories.includes('Free');
   const seriesCount = sched.entries.length;
   const galleryCount = t.gallery?.length ?? 0;
-  // Popularity score combining official series appearances, team setups, base-content status, layouts & media
+  const historicRank = getHistoricTrackRank(t.slug);
+  // Authoritative historical popularity combined with series activity and setups
   const popularityScore =
-    seriesCount * 12 +
-    garage.setupCount * 4 +
-    (isFree ? 15 : 0) +
+    (historicRank < 900 ? (100 - historicRank) * 250 : 0) +
+    seriesCount * 8 +
+    Math.min(garage.setupCount, 400) * 0.25 +
+    (isFree ? 20 : 0) +
     sched.configs.length * 2 +
-    (galleryCount > 0 ? 3 : 0);
+    (galleryCount > 0 ? 5 : 0);
 
   return {
     ...t,

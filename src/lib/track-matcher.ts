@@ -134,6 +134,44 @@ const TRACK_VARIANTS: Record<string, string[]> = {
   "road-america": ["Full Course", "Bend"],
 };
 
+export const HISTORIC_TRACK_POPULARITY: Record<string, number> = {
+  // Legendary canonical world motorsport circuits in iRacing
+  "nurburgring-nordschleife": 1,
+  "circuit-de-spa-francorchamps": 2,
+  "daytona": 3,
+  "circuit-de-la-sarthe": 4,
+  "sebring-international-raceway": 5,
+  "watkins-glen-international": 6,
+  "autodromo-nazionale-monza": 7,
+  "mount-panorama-circuit": 8,
+  "road-america": 9,
+  "silverstone-circuit": 10,
+  "suzuka-international-racing-course": 11,
+  "road-atlanta": 12,
+  "circuit-de-barcelona-catalunya": 13,
+  "indianapolis-motor-speedway": 14,
+  "weathertech-raceway-laguna-seca": 15,
+  "autodromo-jose-carlos-pace": 16,
+  "brands-hatch-circuit": 17,
+  "hockenheimring-baden-wurttemberg": 18,
+  "circuit-of-the-americas": 19,
+  "autodromo-enzo-e-dino-ferrari": 20,
+  "charlotte-motor-speedway": 21,
+  "talladega-superspeedway": 22,
+  "red-bull-ring": 23,
+  "donington-park-racing-circuit": 24,
+  "circuit-park-zandvoort": 25,
+  "fuji-international-speedway": 26,
+  "lime-rock-park": 27,
+  "okayama-international-circuit": 28,
+  "summit-point-raceway": 29,
+  "virginia-international-raceway": 30,
+};
+
+export function getHistoricTrackRank(slug: string): number {
+  return HISTORIC_TRACK_POPULARITY[slug] ?? 999;
+}
+
 const SERIES_POPULARITY: Array<[RegExp, number]> = [
   [/^Global Mazda MX-5 Cup/i, 1],
   [/^GT3 Challenge Fixed/i, 2],

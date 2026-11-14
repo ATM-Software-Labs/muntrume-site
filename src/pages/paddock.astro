@@ -2,10 +2,11 @@
 import Layout from '../layouts/Layout.astro';
 import StatsGrid from '../components/StatsGrid.astro';
 import MediaLightbox from '../components/MediaLightbox.astro';
+import MediaCarousel from '../components/MediaCarousel.astro';
 import { PILOTOS } from '../lib/pilotos';
 import { PADDOCK_ALBUMS } from '../data/paddock-gallery';
 import { CAR_CATALOG_LIST, getBrandSvgMarkup, getCarPreviewBannerSvg, type CarMetadata } from '../../desktop/src/cars/catalog';
-import { IRACING_TRACKS, getTrackGarageInfo, getTrackScheduleInfo } from '../lib/track-matcher';
+import { IRACING_TRACKS, getTrackGarageInfo, getTrackScheduleInfo, getHistoricTrackRank } from '../lib/track-matcher';
 
 const pageTitle = "Paddock | Muntrume Motorsport";
 const pageDescription = "Official Muntrume Motorsport Paddock. Canal de radio en carrera, telemetría Garage 61, galería fotográfica en iRacing, redes sociales oficiales y acceso Paddock Pass.";
@@ -206,12 +207,14 @@ const allTracksWithPop = IRACING_TRACKS.map((t) => {
   const isFree = t.categories.includes('Free');
   const seriesCount = sched.entries.length;
   const galleryCount = t.gallery?.length ?? 0;
+  const historicRank = getHistoricTrackRank(t.slug);
   const popularityScore =
-    seriesCount * 12 +
-    garage.setupCount * 4 +
-    (isFree ? 15 : 0) +
+    (historicRank < 900 ? (100 - historicRank) * 250 : 0) +
+    seriesCount * 8 +
+    Math.min(garage.setupCount, 400) * 0.25 +
+    (isFree ? 20 : 0) +
     sched.configs.length * 2 +
-    (galleryCount > 0 ? 3 : 0);
+    (galleryCount > 0 ? 5 : 0);
 
   return {
     ...t,
@@ -220,6 +223,7 @@ const allTracksWithPop = IRACING_TRACKS.map((t) => {
     seriesCount,
     galleryCount,
     popularityScore,
+    historicRank,
     configs: sched.configs,
     garageQuery: garage.garageQuery,
     excerpt: t.history && t.history.length > 130 ? `${t.history.slice(0, 127).trim()}…` : (t.history || 'Trazado oficial de iRacing con telemetría y setups de equipo.'),
@@ -227,6 +231,25 @@ const allTracksWithPop = IRACING_TRACKS.map((t) => {
 }).sort((a, b) => b.popularityScore - a.popularityScore || a.name.localeCompare(b.name));
 
 const topHistoricTracks = allTracksWithPop.slice(0, 8);
+
+const allPaddockPhotos = PADDOCK_ALBUMS.flatMap((album) =>
+  album.photos.map((photo) => ({
+    ...photo,
+    albumSlug: album.slug,
+    albumTitle: album.title,
+    category: album.slug === 'ferrari296gt3' ? 'cars' : album.slug === 'gt3-endurance' ? 'track' : 'tech',
+  }))
+);
+
+const paddockCarouselSlides = allPaddockPhotos.slice(0, 6).map((photo) => ({
+  src: photo.img,
+  title: photo.title,
+  subtitle: `${photo.subtitle} · Muntrume Motorsport`,
+  tag: photo.tag,
+  id: `gallery:${photo.albumSlug}:${photo.id}`,
+  downloadName: photo.img.split('/').pop(),
+  setupsUrl: photo.albumSlug === 'ferrari296gt3' ? '/garage?car=ferrari296gt3' : '/garage/',
+}));
 ---
 
 <Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/paddock/" ogImage="https://muntru.me/assets/img/og-about.jpg" ogImageAlt="Paddock de Muntrume Motorsport" translated i18nTitle="paddock.meta.title" i18nDescription="paddock.meta.desc">
@@ -759,7 +782,7 @@ const topHistoricTracks = allTracksWithPop.slice(0, 8);
             <span data-i18n="paddock.gallery.kicker">Galería de competición</span>
           </div>
           <h2 class="text-2xl sm:text-4xl font-extrabold text-[var(--r-text)] font-display tracking-tight" data-i18n="paddock.gallery.title">
-            Paddock y pista
+            Paddock y pista en competición
           </h2>
           <p class="text-xs sm:text-sm text-[var(--r-muted)] mt-1 max-w-xl" data-i18n="paddock.gallery.lead">
             Fotografías oficiales de los GT3 en pista, stints nocturnos, el puesto de telemetría y los boxes de Muntrume Motorsport.
@@ -768,30 +791,154 @@ const topHistoricTracks = allTracksWithPop.slice(0, 8);
 
         <div class="flex flex-wrap items-center gap-2" id="galleryFilterBar">
           <button type="button" class="gallery-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition cursor-pointer bg-[var(--r-accent)] text-[var(--r-accent-ink)] border border-[var(--r-accent)]" data-filter="all">
-            TODAS (3 ÁLBUMES)
+            TODAS ({allPaddockPhotos.length})
           </button>
           <button type="button" class="gallery-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition cursor-pointer bg-[var(--r-surface)] text-[var(--r-muted)] border border-[var(--r-line)] hover:border-[var(--r-accent)]" data-filter="cars">
-            COCHES &amp; GT3
+            COCHES &amp; GT3 ({allPaddockPhotos.filter(p => p.category === 'cars').length})
           </button>
           <button type="button" class="gallery-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition cursor-pointer bg-[var(--r-surface)] text-[var(--r-muted)] border border-[var(--r-line)] hover:border-[var(--r-accent)]" data-filter="track">
-            CARRERA &amp; PISTA
+            CARRERA &amp; PISTA ({allPaddockPhotos.filter(p => p.category === 'track').length})
           </button>
           <button type="button" class="gallery-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition cursor-pointer bg-[var(--r-surface)] text-[var(--r-muted)] border border-[var(--r-line)] hover:border-[var(--r-accent)]" data-filter="tech">
-            PIT WALL &amp; TECH
+            PIT WALL &amp; TECH ({allPaddockPhotos.filter(p => p.category === 'tech').length})
           </button>
         </div>
       </div>
 
-      <!-- Photo Albums Indexed by Car -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="paddockGalleryGrid">
-        {PADDOCK_ALBUMS.map((album) => {
-          const cat = album.slug === 'ferrari296gt3' ? 'cars' : album.slug === 'gt3-endurance' ? 'track' : 'tech';
-          return (
+      <!-- Auto-moving All-in-One Featured Showcase -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between text-xs font-mono">
+          <span class="text-[var(--r-accent)] font-bold flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-[var(--r-accent)] animate-pulse"></span>
+            Carrusel destacado automático ({paddockCarouselSlides.length} capturas en rotación)
+          </span>
+          <span class="text-[var(--r-muted)] hidden sm:inline">
+            Pausa al pasar el ratón · Haz clic para ampliar en HD
+          </span>
+        </div>
+        <MediaCarousel
+          id="paddock-showcase"
+          slides={paddockCarouselSlides}
+          intervalMs={4500}
+          aspectRatioClass="aspect-[16/9] sm:aspect-[21/9]"
+        />
+      </div>
+
+      <!-- 9 Official Muntrume Photos Grid -->
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-mono uppercase tracking-wider text-[var(--r-muted)] font-bold">
+            Capturas individuales ({allPaddockPhotos.length})
+          </span>
+          <span class="text-xs font-mono text-[var(--r-muted)]">
+            Haz clic en cualquier imagen para abrirla en alta resolución
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="paddockGalleryGrid">
+          {allPaddockPhotos.map((photo) => (
             <article
-              data-category={cat}
-              class="gallery-item group relative rounded-2xl overflow-hidden bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-300 shadow-md flex flex-col justify-between"
+              data-category={photo.category}
+              class="gallery-item group rounded-2xl overflow-hidden border border-[var(--r-line)] bg-[var(--r-surface)] hover:border-[var(--r-accent)] transition-all duration-300 flex flex-col justify-between shadow-sm hover:shadow-md"
             >
-              <a href={`/paddock/g/${album.slug}/`} class="relative w-full aspect-video overflow-hidden bg-[var(--r-bg-2)] block">
+              <div>
+                <button
+                  type="button"
+                  data-preview-src={photo.img}
+                  data-preview-title={photo.title}
+                  data-preview-sub={`${photo.subtitle} · Muntrume Motorsport`}
+                  data-preview-id={`gallery:${photo.albumSlug}:${photo.id}`}
+                  data-preview-download={photo.img.split('/').pop()}
+                  data-preview-setups={photo.albumSlug === 'ferrari296gt3' ? '/garage?car=ferrari296gt3' : '/garage/'}
+                  class="relative block w-full aspect-video overflow-hidden bg-[#090d12] cursor-zoom-in text-left"
+                  title={`Ampliar "${photo.title}" en HD`}
+                >
+                  <img
+                    src={photo.thumb}
+                    alt={photo.title}
+                    width="640"
+                    height="360"
+                    loading="lazy"
+                    decoding="async"
+                    class="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-[var(--r-surface)] via-transparent to-transparent opacity-60 group-hover:opacity-30 transition-opacity"></div>
+                  <span class="absolute top-3 left-3 px-2.5 py-0.5 rounded-full bg-black/80 backdrop-blur-xs border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase tracking-wider">
+                    {photo.tag}
+                  </span>
+                  <span class="absolute bottom-3 right-3 px-2.5 py-1 rounded-lg bg-black/80 backdrop-blur-xs border border-white/15 text-[11px] font-mono text-white/90 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    Ampliar HD ⤢
+                  </span>
+                </button>
+
+                <div class="p-5 space-y-2">
+                  <span class="block text-[11px] font-mono uppercase tracking-wider text-[var(--r-muted)]">
+                    {photo.subtitle}
+                  </span>
+                  <h3 class="text-base font-bold text-[var(--r-text)] font-display tracking-tight group-hover:text-[var(--r-accent)] transition-colors">
+                    {photo.title}
+                  </h3>
+                  <p class="text-xs text-[var(--r-muted)] leading-relaxed line-clamp-2">
+                    {photo.desc}
+                  </p>
+                </div>
+              </div>
+
+              <div class="px-5 pb-4 pt-2 border-t border-[var(--r-line)] flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  data-like-btn
+                  data-like-id={`gallery:${photo.albumSlug}:${photo.id}`}
+                  class="px-2.5 py-1 rounded-lg bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-rose-500/60 text-xs font-mono font-bold text-[var(--r-muted)] inline-flex items-center gap-1 transition cursor-pointer"
+                  title="Me gusta"
+                >
+                  <span data-heart>♡</span>
+                  <span data-count>0</span>
+                </button>
+
+                <div class="flex items-center gap-1.5">
+                  <a
+                    href={`/paddock/g/${photo.albumSlug}/`}
+                    class="px-2.5 py-1 rounded-lg bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-[11px] font-mono font-bold text-[var(--r-text)] hover:text-[var(--r-accent)] transition"
+                  >
+                    Álbum &rarr;
+                  </a>
+                  <button
+                    type="button"
+                    data-preview-src={photo.img}
+                    data-preview-title={photo.title}
+                    data-preview-sub={`${photo.subtitle} · Muntrume Motorsport`}
+                    data-preview-id={`gallery:${photo.albumSlug}:${photo.id}`}
+                    data-preview-download={photo.img.split('/').pop()}
+                    data-preview-setups={photo.albumSlug === 'ferrari296gt3' ? '/garage?car=ferrari296gt3' : '/garage/'}
+                    class="px-2.5 py-1 rounded-lg bg-[var(--r-accent)]/15 border border-[var(--r-accent)]/50 text-[11px] font-mono font-bold text-[var(--r-accent)] hover:bg-[var(--r-accent)]/25 transition cursor-pointer"
+                  >
+                    HD ⤢
+                  </button>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      <!-- Álbumes Temáticos Subpáginas -->
+      <div class="space-y-4 pt-6 border-t border-[var(--r-line)]">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)]">Subpáginas dedicadas</span>
+            <h3 class="text-xl font-bold text-[var(--r-text)] font-display">Álbumes oficiales del Paddock</h3>
+          </div>
+          <span class="text-xs font-mono text-[var(--r-muted)]">3 colecciones indexadas</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          {PADDOCK_ALBUMS.map((album) => (
+            <a
+              href={`/paddock/g/${album.slug}/`}
+              class="group rounded-2xl overflow-hidden bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-300 shadow-sm hover:shadow-md flex flex-col justify-between"
+            >
+              <div class="relative w-full aspect-video overflow-hidden bg-[var(--r-bg-2)]">
                 <img
                   src={album.cover}
                   alt={album.title}
@@ -801,35 +948,31 @@ const topHistoricTracks = allTracksWithPop.slice(0, 8);
                   decoding="async"
                   class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
-                <div class="absolute inset-0 bg-gradient-to-t from-[var(--r-surface)] via-transparent to-transparent opacity-80 group-hover:opacity-60 transition-opacity"></div>
-                <span class="absolute top-3 left-3 px-2.5 py-0.5 rounded-full bg-[var(--r-surface)]/90 backdrop-blur-xs border border-[var(--r-line)] text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase tracking-wider">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-md bg-black/80 backdrop-blur-xs border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase tracking-wider">
                   {album.brand} · {album.carClass}
                 </span>
-                <span class="absolute top-3 right-3 px-2.5 py-0.5 rounded-full bg-black/75 backdrop-blur-xs border border-white/15 text-white text-[10px] font-mono font-bold">
+                <span class="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-md bg-black/75 backdrop-blur-xs border border-white/15 text-white text-[10px] font-mono font-bold">
                   {album.photos.length} fotos
                 </span>
-              </a>
-              <div class="p-5 flex-1 flex flex-col justify-between space-y-3">
+              </div>
+              <div class="p-4 space-y-1.5 flex-1 flex flex-col justify-between">
                 <div>
-                  <h3 class="text-base font-bold text-[var(--r-text)] tracking-tight group-hover:text-[var(--r-accent)] transition-colors">
-                    <a href={`/paddock/g/${album.slug}/`}>
-                      {album.title}
-                    </a>
-                  </h3>
-                  <p class="text-xs text-[var(--r-muted)] mt-1.5 line-clamp-2 leading-relaxed">
+                  <h4 class="text-sm font-bold text-[var(--r-text)] group-hover:text-[var(--r-accent)] transition-colors truncate">
+                    {album.title}
+                  </h4>
+                  <p class="text-xs text-[var(--r-muted)] line-clamp-1 mt-0.5">
                     {album.summary}
                   </p>
                 </div>
-                <div class="pt-3 border-t border-[var(--r-line)] flex items-center justify-between text-xs font-mono text-[var(--r-accent)] font-semibold">
-                  <a href={`/paddock/g/${album.slug}/`} class="hover:underline flex items-center justify-between w-full">
-                    <span>Abrir álbum /paddock/g/{album.slug}</span>
-                    <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
-                  </a>
+                <div class="pt-2 border-t border-[var(--r-line)] flex items-center justify-between text-xs font-mono text-[var(--r-accent)] font-bold">
+                  <span>Abrir subpágina</span>
+                  <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
                 </div>
               </div>
-            </article>
-          );
-        })}
+            </a>
+          ))}
+        </div>
       </div>
     </section>
 
@@ -1078,51 +1221,15 @@ const topHistoricTracks = allTracksWithPop.slice(0, 8);
 
   </div>
 
-  <!-- LIGHTBOX MODAL DIALOG (ACCESSIBLE FULL RESOLUTION PREVIEW) -->
-  <div id="paddockLightbox" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden items-center justify-center p-4 sm:p-8" role="dialog" aria-modal="true" aria-labelledby="lightboxTitle">
-    <div class="relative max-w-5xl w-full bg-[var(--r-surface)] border border-[var(--r-line)] rounded-2xl overflow-hidden shadow-2xl flex flex-col" id="lightboxCard">
-      <button type="button" id="lightboxCloseBtn" class="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center transition focus:outline-none cursor-pointer" aria-label="Cerrar vista previa">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-      </button>
-
-      <div class="relative bg-black flex items-center justify-center max-h-[65vh] overflow-hidden">
-        <img id="lightboxImg" src="" alt="" class="w-full h-auto max-h-[65vh] object-contain transition duration-300" />
-      </div>
-
-      <div class="p-6 bg-[var(--r-surface)] border-t border-[var(--r-line)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <div class="flex items-center gap-2 mb-1.5 flex-wrap">
-            <span id="lightboxTag" class="px-2.5 py-0.5 rounded-full bg-[var(--r-accent)]/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase tracking-wider"></span>
-            <span id="lightboxSubtitle" class="text-xs font-mono text-[var(--r-muted)]"></span>
-          </div>
-          <h3 id="lightboxTitle" class="text-lg sm:text-xl font-bold text-[var(--r-text)] tracking-tight"></h3>
-          <p id="lightboxDesc" class="text-xs text-[var(--r-muted)] mt-1 max-w-2xl leading-relaxed"></p>
-        </div>
-
-        <a id="lightboxFullBtn" href="" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 rounded-xl bg-[var(--r-bg-2)] hover:bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono font-bold text-[var(--r-text)] hover:text-[var(--r-accent)] transition shrink-0">
-          Abrir Original HD &rarr;
-        </a>
-      </div>
-    </div>
-  </div>
-<MediaLightbox />
+  <MediaLightbox />
 </Layout>
 
 <script is:inline>
-  // 1. Gallery Filtering & Lightbox Interactions
+  // 1. Gallery Filtering
   (function initPaddockGallery() {
     var filterBtns = document.querySelectorAll('.gallery-filter-btn');
     var items = document.querySelectorAll('.gallery-item');
-    var lightbox = document.getElementById('paddockLightbox');
-    var closeBtn = document.getElementById('lightboxCloseBtn');
-    var lbImg = document.getElementById('lightboxImg');
-    var lbTitle = document.getElementById('lightboxTitle');
-    var lbSubtitle = document.getElementById('lightboxSubtitle');
-    var lbTag = document.getElementById('lightboxTag');
-    var lbDesc = document.getElementById('lightboxDesc');
-    var lbFullBtn = document.getElementById('lightboxFullBtn');
 
-    // Filtering
     filterBtns.forEach(function(btn) {
       btn.addEventListener('click', function() {
         var filter = btn.getAttribute('data-filter');
@@ -1134,60 +1241,12 @@ const topHistoricTracks = allTracksWithPop.slice(0, 8);
         items.forEach(function(item) {
           var cat = item.getAttribute('data-category');
           if (filter === 'all' || cat === filter) {
-            item.style.display = 'flex';
+            item.style.display = '';
           } else {
             item.style.display = 'none';
           }
         });
       });
-    });
-
-    // Open Lightbox
-    items.forEach(function(item) {
-      item.addEventListener('click', function() {
-        var imgUrl = item.getAttribute('data-img');
-        var title = item.getAttribute('data-title');
-        var subtitle = item.getAttribute('data-subtitle');
-        var tag = item.getAttribute('data-tag');
-        var desc = item.getAttribute('data-desc');
-
-        if (lbImg) {
-          lbImg.src = imgUrl;
-          lbImg.alt = title;
-        }
-        if (lbTitle) lbTitle.textContent = title;
-        if (lbSubtitle) lbSubtitle.textContent = subtitle;
-        if (lbTag) lbTag.textContent = tag;
-        if (lbDesc) lbDesc.textContent = desc;
-        if (lbFullBtn) lbFullBtn.href = imgUrl;
-
-        if (lightbox) {
-          lightbox.classList.remove('hidden');
-          lightbox.classList.add('flex');
-          document.body.style.overflow = 'hidden';
-        }
-      });
-    });
-
-    function closeLightbox() {
-      if (lightbox) {
-        lightbox.classList.add('hidden');
-        lightbox.classList.remove('flex');
-        document.body.style.overflow = '';
-      }
-    }
-
-    if (closeBtn) closeBtn.addEventListener('click', closeLightbox);
-    if (lightbox) {
-      lightbox.addEventListener('click', function(e) {
-        if (e.target === lightbox) closeLightbox();
-      });
-    }
-
-    window.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape' && lightbox && !lightbox.classList.contains('hidden')) {
-        closeLightbox();
-      }
     });
   })();
 
