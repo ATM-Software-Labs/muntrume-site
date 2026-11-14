@@ -12,7 +12,7 @@
   </head>
   <body class="min-h-screen bg-r-bg text-r-text antialiased">
     <div id="mainAppWrapper" class="min-h-screen flex flex-col">
-      <header class="h-16 shrink-0 border-b border-r-line bg-r-surface flex items-center justify-between gap-4 px-5">
+      <header class="sticky top-0 z-40 h-16 shrink-0 border-b border-r-line bg-r-surface/85 backdrop-blur-md flex items-center justify-between gap-4 px-5 shadow-sm">
         <div class="flex items-center gap-3.5 min-w-0">
           <img src="./favicon.svg" width="34" height="34" alt="Muntrume Motorsport" class="h-8 w-8 rounded-lg shadow-sm border border-r-line/60 bg-r-bg" />
           <div class="min-w-0">
@@ -27,7 +27,7 @@
           </div>
         </div>
         <div class="flex items-center gap-2">
-          <nav id="appNav" class="hidden sm:flex items-center gap-1" aria-label="Secciones">
+          <nav id="appNav" class="hidden sm:flex items-center gap-1 p-1 rounded-xl border border-r-line bg-r-bg/90" aria-label="Secciones">
             <button type="button" data-nav="library" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Biblioteca</button>
             <button type="button" data-nav="week" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Semana</button>
             <button type="button" data-nav="last_session" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Telemetría</button>

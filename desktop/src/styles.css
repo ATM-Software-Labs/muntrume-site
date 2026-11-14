@@ -85,24 +85,24 @@
 }
 
 :root {
-  --r-bg: #0a0d0c;
-  --r-bg-2: #101514;
-  --r-surface: #141a19;
-  --r-line: #1f2926;
-  --r-line-2: #2a3633;
-  --r-text: #f2f5f4;
-  --r-muted: #a3b0ac;
+  --r-bg: #070a09;
+  --r-bg-2: #0c1110;
+  --r-surface: #111816;
+  --r-line: rgba(255, 255, 255, 0.09);
+  --r-line-2: rgba(255, 255, 255, 0.16);
+  --r-text: #f3f6f5;
+  --r-muted: #98a8a2;
   --r-accent: #00e699;
   --r-accent-ink: #04120c;
-  --r-accent-glow: rgba(0, 230, 153, 0.18);
+  --r-accent-glow: rgba(0, 230, 153, 0.2);
   color-scheme: dark;
 
   /* MMT Theme Engine Variables (Bloque 16) */
-  --mmt-bg: #090d12;
-  --mmt-card-bg: rgba(9, 13, 18, 0.92);
+  --mmt-bg: #070b0f;
+  --mmt-card-bg: rgba(11, 16, 22, 0.9);
   --mmt-accent: #00e5ff;
-  --mmt-accent-glow: rgba(0, 229, 255, 0.3);
-  --mmt-border: rgba(255, 255, 255, 0.12);
+  --mmt-accent-glow: rgba(0, 229, 255, 0.28);
+  --mmt-border: rgba(255, 255, 255, 0.1);
   --mmt-font-mono: "JetBrains Mono", ui-monospace, monospace;
   --mmt-radius: 12px;
   --mmt-scale: 1.0;
@@ -133,6 +133,51 @@ body {
 body {
   margin: 0;
   font-family: var(--font-sans);
+  background-image:
+    radial-gradient(ellipse 65% 40% at 15% 0%, rgba(0, 230, 153, 0.065), transparent 70%),
+    radial-gradient(ellipse 50% 35% at 85% 0%, rgba(0, 229, 255, 0.045), transparent 70%);
+  background-attachment: fixed;
+}
+
+/* Modern sleek scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--r-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 230, 153, 0.4);
+}
+
+/* Unified inputs, selects & tables across all views */
+select,
+input[type="text"],
+input[type="number"],
+input[type="search"] {
+  transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+}
+
+select:focus,
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="search"]:focus {
+  border-color: var(--r-accent) !important;
+  box-shadow: 0 0 0 3px var(--r-accent-glow);
+  outline: none;
+}
+
+.mmt-chip[aria-current="page"],
+.mmt-chip.bg-r-surface {
+  background: rgba(0, 230, 153, 0.12);
+  color: var(--r-accent);
+  border: 1px solid rgba(0, 230, 153, 0.3);
+  font-weight: 700;
 }
 
 [hidden] {
