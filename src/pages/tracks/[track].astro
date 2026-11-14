@@ -9,6 +9,7 @@ import {
   type IracingTrack,
 } from '../../lib/track-matcher';
 import { getTrackVideos } from '../../lib/video-links';
+import VideoModal from '../../components/VideoModal.astro';
 
 export function getStaticPaths() {
   return IRACING_TRACKS.map((track) => ({
@@ -48,7 +49,7 @@ const carouselSlides = [
   })),
 ];
 
-const trackVideos = getTrackVideos(track.name, track.categories[0] || 'Road');
+const trackVideos = getTrackVideos(track.name, track.categories[0] || 'Road', track.slug);
 
 const topSeries = sched.entries.slice(0, 3);
 const extraSeries = sched.entries.slice(3);
@@ -283,33 +284,36 @@ const pageDescription = track.history
           <h2 class="r-h3">Vídeos oficiales y guías de trazado (iRacing &amp; Comunidad)</h2>
         </div>
         <a
-          href={`https://www.youtube.com/results?search_query=iRacing+${encodeURIComponent(track.name)}`}
+          href="https://www.youtube.com/@iracing/videos"
           target="_blank"
           rel="noopener noreferrer"
           class="text-xs font-mono font-bold text-[var(--r-accent)] hover:underline flex items-center gap-1"
         >
-          <span>Buscar más vídeos en YouTube</span>
+          <span>Canal Oficial de iRacing</span>
           <span>↗</span>
         </a>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
         {trackVideos.map((vid) => (
-          <a
-            href={vid.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="group rounded-2xl overflow-hidden border border-[var(--r-line)] bg-[var(--r-surface)] hover:border-[var(--r-accent)] transition-all duration-300 flex flex-col justify-between shadow-sm hover:shadow-md"
-          >
+          <div class="rounded-2xl overflow-hidden border border-[var(--r-line)] bg-[var(--r-surface)] hover:border-[var(--r-accent)] transition-all duration-300 flex flex-col justify-between shadow-sm hover:shadow-md group">
             <div>
-              <div class="relative aspect-[16/9] bg-[#090d12] overflow-hidden">
+              <div
+                class="relative aspect-[16/9] bg-[#090d12] overflow-hidden cursor-pointer"
+                data-video-id={vid.videoId}
+                data-video-title={vid.title}
+                data-video-channel={vid.channel}
+                role="button"
+                tabindex="0"
+                aria-label={`Reproducir vídeo: ${vid.title}`}
+              >
                 <img
-                  src={track.thumb || track.img || '/assets/img/hero-bg.webp'}
+                  src={vid.thumbnail}
                   alt={vid.title}
-                  class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-100"
+                  class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
                   loading="lazy"
                 />
-                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/30"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/30"></div>
 
                 <div class="absolute top-2.5 left-2.5 flex items-center gap-2">
                   <span class="px-2 py-0.5 rounded-md bg-red-600/90 text-white font-mono text-[10px] font-bold flex items-center gap-1">
@@ -338,7 +342,12 @@ const pageDescription = track.history
                 <span class="text-[10px] font-mono text-[var(--r-muted)] uppercase tracking-wider block">
                   {vid.channel}
                 </span>
-                <h3 class="text-sm font-bold text-[var(--r-text)] group-hover:text-[var(--r-accent)] transition-colors line-clamp-2">
+                <h3
+                  class="text-sm font-bold text-[var(--r-text)] group-hover:text-[var(--r-accent)] transition-colors line-clamp-2 cursor-pointer"
+                  data-video-id={vid.videoId}
+                  data-video-title={vid.title}
+                  data-video-channel={vid.channel}
+                >
                   {vid.title}
                 </h3>
                 <p class="text-xs text-[var(--r-muted)] line-clamp-2 leading-relaxed">
@@ -347,11 +356,28 @@ const pageDescription = track.history
               </div>
             </div>
 
-            <div class="px-4 pb-4 pt-2 border-t border-[var(--r-line)] flex items-center justify-between text-xs font-mono font-bold text-[var(--r-accent)]">
-              <span>Ver vídeo en YouTube</span>
-              <span class="group-hover:translate-x-1 transition-transform">↗</span>
+            <div class="px-4 pb-4 pt-2 border-t border-[var(--r-line)] flex items-center justify-between text-xs font-mono font-bold">
+              <button
+                type="button"
+                data-video-id={vid.videoId}
+                data-video-title={vid.title}
+                data-video-channel={vid.channel}
+                class="text-[var(--r-text)] hover:text-[var(--r-accent)] transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>▶ Reproducir</span>
+              </button>
+              <a
+                href={vid.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-[var(--r-accent)] hover:underline flex items-center gap-1"
+                title="Abrir directamente en YouTube"
+              >
+                <span>Ver en YouTube</span>
+                <span class="group-hover:translate-x-0.5 transition-transform">↗</span>
+              </a>
             </div>
-          </a>
+          </div>
         ))}
       </div>
     </section>
@@ -543,4 +569,5 @@ const pageDescription = track.history
   </script>
 
   <MediaLightbox />
+  <VideoModal />
 </Layout>
