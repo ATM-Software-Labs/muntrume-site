@@ -61,17 +61,17 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
     .map((e: RelativeEntry) => {
       const isSelf = e.isActiveCam;
       const rowBg = isSelf
-        ? "bg-emerald-500/20 border-emerald-500/50 shadow-sm"
-        : "bg-black/50 border-white/5 hover:border-white/15";
+        ? "bg-emerald-500/18 border-y border-emerald-400/35"
+        : "bg-[#0d121a]/85 odd:bg-[#111822]/85 border-b border-white/[0.05] hover:bg-white/[0.06]";
 
       const deltaClass = isSelf
-        ? "text-emerald-400 font-bold"
+        ? "text-emerald-300 font-extrabold"
         : e.isAhead
-        ? "text-amber-400 font-bold"
+        ? "text-amber-300 font-bold"
         : "text-sky-300 font-bold";
 
       const pitBadge = cols.pitStatus && e.onPitRoad
-        ? `<span class="px-1 py-0.2 rounded text-[8px] bg-rose-500/30 text-rose-300 border border-rose-500/40 font-bold">PIT</span>`
+        ? `<span class="px-1 py-0.2 rounded-[3px] text-[8px] bg-rose-500/30 text-rose-200 border border-rose-500/50 font-bold">PIT</span>`
         : "";
 
       const tagBadge = driverTags.renderBadgeHtml(e.cust_id || e.driverName || e.carNumber);
@@ -81,33 +81,32 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
         : isSelf ? `${e.abbrevName} (Tú)` : e.abbrevName;
 
       const classSpan = cols.carClass
-        ? `<span class="px-1 py-0.5 rounded text-[9px] font-bold tracking-tight" style="background-color: ${e.carClassColor}25; color: ${e.carClassColor}; border: 1px solid ${e.carClassColor}50">${e.carClassShortName}</span>`
+        ? `<span class="px-1 py-0.2 rounded-[3px] text-[8px] font-bold tracking-tight" style="background-color: ${e.carClassColor}28; color: ${e.carClassColor}">${e.carClassShortName}</span>`
         : "";
 
       const numSpan = cols.carNumber
-        ? `<span class="w-6 text-[11px] font-black text-right ${isSelf ? "text-emerald-300" : "text-white/80"}">#${e.carNumber}</span>`
+        ? `<span class="min-w-[22px] text-[10px] font-black text-center px-1 py-0.2 rounded-[3px] ${isSelf ? "bg-emerald-500/25 text-emerald-200" : "bg-white/10 text-white/90"}">#${e.carNumber}</span>`
         : "";
 
-      const brandSvg = cols.brandIcon ? getCarBrandSvg(e.carPath, 13) : "";
+      const brandSvg = cols.brandIcon ? getCarBrandSvg(e.carPath, 12) : "";
 
       const nameSpan = cols.driverName
-        ? `<span class="truncate text-[11px] font-medium ${isSelf ? "text-emerald-300 font-bold" : "text-white/90"}">${displayName}</span>`
+        ? `<span class="truncate text-[11px] font-semibold ${isSelf ? "text-emerald-200" : "text-white/90"}">${displayName}</span>`
         : "";
 
       const licText = cols.license ? e.licString.split(" ")[0] : "";
       const irText = cols.iRating ? e.iRatingStr : "";
-      const licIrCombined = [licText, irText].filter(Boolean).join(" · ");
+      const licIrCombined = [licText, irText].filter(Boolean).join(" ");
       const licSpan = licIrCombined
-        ? `<span class="px-1.5 py-0.5 rounded text-[9px] bg-white/10 tabular-nums font-medium" style="color: ${e.licBadgeColor}">${licIrCombined}</span>`
+        ? `<span class="px-1.5 py-0.2 rounded-[3px] text-[9px] bg-black/50 border border-white/10 tabular-nums font-bold" style="color: ${e.licBadgeColor}">${licIrCombined}</span>`
         : "";
 
       const deltaSpan = cols.delta
-        ? `<span class="w-12 text-right text-xs tabular-nums ${deltaClass}">${e.deltaStr}</span>`
+        ? `<span class="w-11 text-right text-[11px] tabular-nums ${deltaClass}">${e.deltaStr}</span>`
         : "";
 
       return `
-        <div class="flex items-center justify-between gap-1.5 p-1.5 rounded-lg border transition-colors ${rowBg} font-mono">
-          <!-- Left: Class + Car Number + Brand + Driver + Tag -->
+        <div class="flex items-center justify-between gap-1.5 px-2 py-1 rounded-[4px] transition-colors ${rowBg} font-mono" style="border-left: 3px solid ${e.carClassColor || "#00e699"}">
           <div class="flex items-center gap-1.5 min-w-0">
             ${classSpan}
             ${numSpan}
@@ -116,9 +115,7 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
             ${tagBadge}
             ${pitBadge}
           </div>
-
-          <!-- Right: License & iRating + Delta -->
-          <div class="flex items-center gap-2 shrink-0">
+          <div class="flex items-center gap-1.5 shrink-0">
             ${licSpan}
             ${deltaSpan}
           </div>
@@ -129,7 +126,7 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
 
   container.innerHTML = `
     ${headerHtml}
-    <div class="space-y-1 font-mono text-xs select-none">
+    <div class="space-y-0.5 font-mono text-xs select-none">
       ${rowsHtml}
     </div>
   `;
@@ -189,8 +186,8 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
         : "text-white/70";
 
       const rowBg = isSelf
-        ? "bg-emerald-500/20 border-emerald-500/50 shadow-sm"
-        : "bg-black/50 border-white/5";
+        ? "bg-emerald-500/18 border-y border-emerald-400/35"
+        : "bg-[#0d121a]/85 odd:bg-[#111822]/85 border-b border-white/[0.05]";
 
       const timeVal = isPractice
         ? e.bestLapStr
@@ -199,35 +196,35 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
         : e.gapStr;
 
       const posSpan = cols.position
-        ? `<span class="w-5 text-[11px] font-bold ${posClass}">P${e.position}</span>`
+        ? `<span class="w-5 text-[10px] font-black ${posClass}">${e.position}</span>`
         : "";
 
       const classSpan = cols.classPosition
-        ? `<span class="px-1 py-0.2 rounded text-[8px] font-bold" style="background-color: ${e.carClassColor}25; color: ${e.carClassColor}">${e.carClassShortName}</span>`
+        ? `<span class="px-1 py-0.2 rounded-[3px] text-[8px] font-bold" style="background-color: ${e.carClassColor}28; color: ${e.carClassColor}">${e.carClassShortName}</span>`
         : "";
 
-      const brandSvg = cols.brandIcon ? getCarBrandSvg(e.carPath, 12) : "";
+      const brandSvg = cols.brandIcon ? getCarBrandSvg(e.carPath, 11) : "";
 
       const displayName = isStreamer
         ? isSelf ? "Piloto (Tú)" : `Piloto #${e.carNumber}`
         : `${cols.carNumber && e.carNumber ? `#${e.carNumber} ` : ""}${cols.driverName ? e.abbrevName : ""}`;
 
       const nameSpan = displayName
-        ? `<span class="truncate text-[11px] ${isSelf ? "text-emerald-300 font-bold" : "text-white/90 font-medium"}">${displayName}</span>`
+        ? `<span class="truncate text-[11px] ${isSelf ? "text-emerald-200 font-bold" : "text-white/90 font-semibold"}">${displayName}</span>`
         : "";
 
       const pitBadge = cols.pitStatus && e.onPitRoad
-        ? `<span class="px-1 py-0.2 rounded text-[8px] bg-rose-500/30 text-rose-300 border border-rose-500/40 font-bold">PIT</span>`
+        ? `<span class="px-1 py-0.2 rounded-[3px] text-[8px] bg-rose-500/30 text-rose-200 border border-rose-500/50 font-bold">PIT</span>`
         : "";
 
       const tagBadge = driverTags.renderBadgeHtml(e.cust_id || e.driverName || e.carNumber);
 
       const timeSpan = (isPractice ? cols.bestLap : cols.gap)
-        ? `<span class="tabular-nums font-mono text-[11px] ${isLeader ? "text-amber-400 font-bold" : isSelf ? "text-emerald-400 font-bold" : "text-white/80"}">${timeVal}</span>`
+        ? `<span class="tabular-nums font-mono text-[10px] ${isLeader ? "text-amber-300 font-bold" : isSelf ? "text-emerald-300 font-bold" : "text-white/80"}">${timeVal}</span>`
         : "";
 
       return `
-        <div class="flex items-center justify-between gap-1.5 p-1.5 rounded-lg border transition-colors ${rowBg} font-mono text-xs">
+        <div class="flex items-center justify-between gap-1.5 px-2 py-1 rounded-[4px] transition-colors ${rowBg} font-mono text-xs" style="border-left: 3px solid ${e.carClassColor || "#38bdf8"}">
           <div class="flex items-center gap-1.5 min-w-0">
             ${posSpan}
             ${classSpan}
@@ -246,7 +243,7 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
 
   container.innerHTML = `
     ${headerHtml}
-    <div class="space-y-1 font-mono text-xs select-none">
+    <div class="space-y-0.5 font-mono text-xs select-none">
       ${rowsHtml}
     </div>
   `;
@@ -342,15 +339,23 @@ export function renderFuelWidget(container: HTMLElement, state: IrsdkComputedSta
       : "",
   ].filter(Boolean).join("");
 
+  const fuelPct = Math.max(0, Math.min(100, Math.round(fuel.fuelRemainingPct || 0)));
+  const barColor = fuelPct < 15 ? "#f43f5e" : fuelPct < 35 ? "#f59e0b" : "#10b981";
+
   container.innerHTML = `
     ${headerHtml}
-    <div class="grid grid-cols-2 gap-2 text-xs font-mono select-none">
+    <div class="mb-2">
+      <div class="h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
+        <div class="h-full rounded-full transition-all duration-300" style="width:${fuelPct}%;background:${barColor}"></div>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 gap-1.5 text-xs font-mono select-none">
       ${cardsHtml}
     </div>
-    <div class="mt-2 flex items-center justify-between text-[9px] text-r-muted font-mono pt-1.5 border-t border-white/5">
-      <span>MÁX: ${fuel.maxBurnPerLap} L/v</span>
-      <span class="text-emerald-400">LIFT & COAST: ${fuel.liftAndCoastTarget} L/v</span>
-      <span>${fuel.completedLapsSampled} v calculadas</span>
+    <div class="mt-2 flex items-center justify-between text-[9px] text-r-muted font-mono pt-1.5 border-t border-white/10">
+      <span>MÁX ${fuel.maxBurnPerLap} L/v</span>
+      <span class="text-emerald-300 font-bold">L&amp;C ${fuel.liftAndCoastTarget} L/v</span>
+      <span>${fuel.completedLapsSampled}v</span>
     </div>
   `;
 }

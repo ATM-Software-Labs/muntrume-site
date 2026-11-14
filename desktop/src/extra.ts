@@ -1203,10 +1203,14 @@ let demoAnimationTimer: number | null = null;
 let demoTick = 0;
 const liveWaveformHistory: { thr: number; brk: number }[] = [];
 let layoutUnlocked = false;
-let previewDemoActive = false;
+let previewDemoActive = true;
+
+function forcedDevHudMock(): boolean {
+  return import.meta.env.DEV && new URLSearchParams(location.search).get("hudmock") === "1";
+}
 
 function hudMockAllowed(): boolean {
-  return previewDemoActive || (import.meta.env.DEV && new URLSearchParams(location.search).get("hudmock") === "1");
+  return previewDemoActive || forcedDevHudMock();
 }
 
 function renderStandbyWidgets(): void {
@@ -1706,7 +1710,16 @@ function startDemoOverlayLoop(): void {
 }
 
 export function updateLiveOverlay(sample: LiveSample): void {
-  if (hudMockAllowed()) return;
+  if (forcedDevHudMock()) return;
+  if (previewDemoActive) {
+    previewDemoActive = false;
+    if (demoAnimationTimer) {
+      clearInterval(demoAnimationTimer);
+      demoAnimationTimer = null;
+    }
+    const toggleBtn = document.getElementById("overlayModeToggle");
+    if (toggleBtn) toggleBtn.textContent = "Probar Demo en Escenario";
+  }
   isLiveFromSDK = true;
   IrsdkClient.getInstance().stopSimulation();
   setHudMode("live");
