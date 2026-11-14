@@ -401,13 +401,8 @@ async function refreshRaceControlData() {
   const d1Side = document.getElementById("rcSidebarD1Status");
   if (badge) badge.textContent = "D1 Edge: Sincronizando…";
 
-  // 1. Merge official roster with local custom members
-  const custom = loadLocalCustomMembers();
+  // 1. Members come from real D1 database (no hardcoded fake members)
   const byEmail = new Map();
-  OFFICIAL_ROSTER_DEFAULTS.forEach((m) => byEmail.set(m.email.toLowerCase(), { ...m }));
-  custom.forEach((m) => {
-    if (m && m.email) byEmail.set(m.email.toLowerCase(), { ...byEmail.get(m.email.toLowerCase()), ...m });
-  });
 
   // 2. Strict Session Verification + Live D1 Admin Panel
   if (!verifyAdminSession()) return;
@@ -419,17 +414,15 @@ async function refreshRaceControlData() {
       data.members.forEach((dbM) => {
         if (!dbM || !dbM.email) return;
         const key = String(dbM.email).toLowerCase();
-        const existing = byEmail.get(key) || {};
         byEmail.set(key, {
-          ...existing,
-          name: dbM.name || existing.name || key.split("@")[0],
+          name: dbM.name || key.split("@")[0],
           email: dbM.email,
-          role: dbM.role || existing.role || "driver",
-          roleLabel: dbM.role === "admin" ? "Team Principal & Admin" : existing.roleLabel || "Official Driver",
+          role: dbM.role || "driver",
+          roleLabel: dbM.role === "admin" ? "Team Principal & Admin" : "Official Driver",
           status: dbM.status || "active",
           has_password: Boolean(dbM.has_password),
           last_login_at: dbM.last_login_at || null,
-          created_at: dbM.created_at || existing.created_at || new Date().toISOString()
+          created_at: dbM.created_at || new Date().toISOString()
         });
       });
     }
@@ -488,32 +481,29 @@ function renderOverviewSection() {
 
   const tbody = document.getElementById("overviewRosterBody");
   if (tbody) {
-    tbody.innerHTML = OFFICIAL_ROSTER_DEFAULTS.map((p) => {
-      const live = rcState.liveTelemetryBySlug[p.slug] || {};
-      const ir = live.irating ? Number(live.irating).toLocaleString("en-US") : p.irating;
-      const sr = live.safetyRating ? `${live.licenseClass || "A"} ${live.safetyRating}` : p.sr;
+    tbody.innerHTML = rcState.members.map((p) => {
+      const initial = (p.name || p.email || "M").slice(0, 2).toUpperCase();
+      const isOwner = p.email.toLowerCase() === "atrumin16@gmail.com" || p.role === "admin";
       return `
         <tr>
           <td>
             <div class="rc-user-cell">
-              <span class="rc-avatar">#${rcEscape(p.number)}</span>
+              <span class="rc-avatar">${rcEscape(initial)}</span>
               <div>
                 <div class="rc-strong">${rcEscape(p.name)}</div>
-                <div class="rc-mono-sub">cust_id: ${rcEscape(p.cust_id)}</div>
+                <div class="rc-mono-sub">${rcEscape(p.email)}</div>
               </div>
             </div>
           </td>
-          <td><span class="rc-badge">${rcEscape(p.roleLabel)}</span></td>
-          <td><code>${rcEscape(p.mailbox)}</code></td>
+          <td><span class="rc-badge ${p.role === "admin" ? "rc-badge--ok" : ""}">${rcEscape(p.roleLabel)}</span></td>
+          <td><code>${rcEscape(p.email)}</code></td>
           <td>
-            <div class="rc-strong" style="font-family:var(--r-mono)">${rcEscape(ir)} iR · SR ${rcEscape(sr)}</div>
-            <div class="rc-mono-sub">${rcEscape(p.hours)} en Garage 61</div>
+            <div class="rc-mono-sub">Registro: ${p.created_at ? new Date(p.created_at).toLocaleDateString("es-ES") : "—"}</div>
           </td>
-          <td><span class="rc-badge rc-badge--ok">Acceso D1 Activo</span></td>
+          <td><span class="rc-badge ${p.status === "active" ? "rc-badge--ok" : "rc-badge--err"}">${p.status === "active" ? (p.has_password ? "Activa" : "Pendiente clave") : "Bloqueada"}</span></td>
           <td class="text-right">
             <div class="rc-btn-row" style="justify-content:flex-end">
-              <a href="/drivers/${rcEscape(p.slug)}/" class="r-btn r-btn--sm">Perfil ↗</a>
-              <button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(p.email)}" data-name="${rcEscape(p.name)}" onclick="generateDriverAccessFromBtn(this)">Clave / Link</button>
+              <button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(p.email)}" data-name="${rcEscape(p.name)}" onclick="generateDriverAccessFromBtn(this, 'link')">Reset / Enlace</button>
             </div>
           </td>
         </tr>
