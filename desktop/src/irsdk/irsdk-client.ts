@@ -146,6 +146,9 @@ export class IrsdkClient {
       clearInterval(this.simTimer);
       this.simTimer = null;
     }
+    if (this.isSimulated) {
+      this.latestState = null;
+    }
     this.isSimulated = false;
   }
 

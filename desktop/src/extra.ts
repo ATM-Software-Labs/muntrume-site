@@ -1285,11 +1285,14 @@ async function setOverlayEdit(editing: boolean): Promise<void> {
 }
 
 export function updateOverlayBrandBadge(carFolder?: string): void {
-  const target = carFolder || lastIbtReport?.carPath || "ferrari296gt3";
-  const meta = resolveCarMetadata(target);
   const nodes = document.querySelectorAll<HTMLElement>("#ovClusterBrandFloat, #ovClusterBrandPreview");
   nodes.forEach((node) => {
     node.replaceChildren();
+    const isFloat = node.id === "ovClusterBrandFloat";
+    const target = isFloat && isLiveFromSDK
+      ? carFolder
+      : (carFolder || lastIbtReport?.carPath || (hudMockAllowed() ? "ferrari296gt3" : undefined));
+    const meta = target ? resolveCarMetadata(target) : null;
     if (!meta) {
       node.hidden = true;
       return;
@@ -1852,6 +1855,17 @@ function updateHUDDisplay(sample: LiveSample): void {
 
   // Render high-precision Relative, Standings, and Fuel via iRacing SDK Engines (Bloque 1)
   const irsdkState = IrsdkClient.getInstance().getLatestState();
+  if (isLiveFromSDK) {
+    updateOverlayBrandBadge(irsdkState?.activeDriver?.carPath);
+  }
+  const hasSessionField = !isLiveFromSDK || (irsdkState !== null && irsdkState.leaderboard.length > 0);
+  const floatRelCard = document.getElementById("floatRelativeCard");
+  const floatStdCard = document.getElementById("floatStandingsCard");
+  const floatFuelCard = document.getElementById("floatFuelCard");
+  if (floatRelCard) floatRelCard.hidden = !hasSessionField;
+  if (floatStdCard) floatStdCard.hidden = !hasSessionField;
+  if (floatFuelCard) floatFuelCard.hidden = !hasSessionField;
+
   document.querySelectorAll<HTMLElement>("#ovRelative, #ovRelativeFloat").forEach((rel) => {
     renderRelativeWidget(rel, irsdkState);
   });
