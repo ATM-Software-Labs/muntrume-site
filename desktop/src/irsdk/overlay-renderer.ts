@@ -14,6 +14,7 @@ import { Radar360Engine, type RadarInputState } from "./radar-360";
 import { PitboxHelperEngine, type PitboxInputState } from "./pitbox-helper";
 import { DigiFlagEngine } from "./digi-flag";
 import { ThemeEngine } from "../theme/theme-engine";
+import { estimateLiveIRating, formatIRatingDelta, formatSofShort } from "./irating-calc";
 
 const gpuPedalsEngine = new GpuPedalsEngine();
 const radar360Engine = new Radar360Engine();
@@ -41,18 +42,28 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
   const isStreamer = SmartLayoutManager.getInstance().isStreamerMode();
   const driverTags = DriverTagsManager.getInstance();
   const cols = ThemeEngine.getInstance().getColumnsConfig().relative;
+  const irEst = estimateLiveIRating(state);
+  const irPill = irEst
+    ? `<span class="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold tabular-nums ${
+        irEst.delta >= 0 ? "bg-emerald-500/20 text-emerald-300" : "bg-rose-500/20 text-rose-300"
+      }">${formatIRatingDelta(irEst.delta)}</span>`
+    : "";
+  const sofPill = irEst
+    ? `<span class="text-[9px] text-white/55 font-mono tabular-nums">SOF ${formatSofShort(irEst.sof)}</span>`
+    : "";
 
   const headerHtml = `
-    <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-white/10 text-[10px] uppercase font-bold tracking-wider">
+    <div class="flex items-center justify-between pb-1 mb-1.5 border-b border-white/10 text-[10px] uppercase font-bold tracking-wider">
       <div class="flex items-center gap-1.5">
-        <span class="text-r-muted">Radar Relativo</span>
-        <span class="text-[9px] text-white/40 font-mono">±4 COCHES</span>
-        ${isStreamer ? `<span class="px-1 py-0.2 rounded text-[8px] bg-purple-500/20 text-purple-300 border border-purple-500/40">STREAMER</span>` : ""}
+        <span class="text-white/60">REL</span>
+        ${sofPill}
+        ${irPill}
+        ${isStreamer ? `<span class="px-1 py-0.2 rounded text-[8px] bg-purple-500/20 text-purple-300">STREAMER</span>` : ""}
       </div>
-      <span class="px-1.5 py-0.5 rounded text-[9px] font-mono ${
+      <span class="px-1.5 py-0.2 rounded text-[9px] font-mono tabular-nums ${
         isReplay ? "bg-amber-500/20 text-amber-300" : "bg-emerald-500/20 text-emerald-300"
       }">
-        ${isReplay ? "REPLAY" : "VIVO"} · #${activeCar?.carNumber || state.camCarIdx}
+        ${isReplay ? "REPLAY" : "LIVE"} · #${activeCar?.carNumber || state.camCarIdx}
       </span>
     </div>
   `;
@@ -158,15 +169,26 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
 
   const activeLap = state.frame.carIdxLap[state.camCarIdx] || 1;
   const totalLaps = state.frame.sessionLapsRemainEx > 0 ? activeLap + state.frame.sessionLapsRemainEx : 0;
-  const lapStr = totalLaps > 0 ? `VUELTA ${activeLap} / ${totalLaps}` : `VUELTA ${activeLap}`;
+  const lapStr = totalLaps > 0 ? `L${activeLap}/${totalLaps}` : `L${activeLap}`;
+  const irEst = estimateLiveIRating(state);
+  const sofPill = irEst
+    ? `<span class="text-[9px] text-white/55 font-mono tabular-nums">SOF ${formatSofShort(irEst.sof)}</span>`
+    : "";
+  const irPill = irEst
+    ? `<span class="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold tabular-nums ${
+        irEst.delta >= 0 ? "bg-emerald-500/20 text-emerald-300" : "bg-rose-500/20 text-rose-300"
+      }">${formatIRatingDelta(irEst.delta)}</span>`
+    : "";
 
   const headerHtml = `
-    <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-white/10 text-[10px] uppercase font-bold tracking-wider">
+    <div class="flex items-center justify-between pb-1 mb-1.5 border-b border-white/10 text-[10px] uppercase font-bold tracking-wider">
       <div class="flex items-center gap-1.5">
-        <span class="text-r-muted">Clasificación (${isPractice ? "Práctica" : "Carrera"})</span>
-        ${isStreamer ? `<span class="px-1 py-0.2 rounded text-[8px] bg-purple-500/20 text-purple-300 border border-purple-500/40">STREAMER</span>` : ""}
+        <span class="text-white/60">${isPractice ? "PRAC" : "RACE"}</span>
+        ${sofPill}
+        ${irPill}
+        ${isStreamer ? `<span class="px-1 py-0.2 rounded text-[8px] bg-purple-500/20 text-purple-300">STREAMER</span>` : ""}
       </div>
-      <span class="text-[9px] text-r-muted font-mono">${isPractice ? "TIEMPOS" : lapStr}</span>
+      <span class="text-[9px] text-white/60 font-mono tabular-nums">${isPractice ? "BEST" : lapStr}</span>
     </div>
   `;
 

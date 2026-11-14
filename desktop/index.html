@@ -114,40 +114,17 @@
             
             <p id="syncStatus" class="mt-2 font-mono text-xs text-r-muted">Todavía no se ha sincronizado.</p>
 
-            <!-- Centro de Ingeniería y Carrera (Acceso 1-clic) -->
-            <div class="mt-4 grid grid-cols-2 lg:grid-cols-4 gap-2.5">
-              <button type="button" data-nav="strategy" class="text-left p-3 rounded-xl border border-r-line bg-r-bg/70 hover:border-r-accent/60 hover:bg-r-panel transition group">
-                <div class="flex items-center justify-between gap-2">
-                  <span class="font-mono text-[10px] uppercase tracking-widest text-r-accent">Estrategia</span>
-                  <span class="text-xs text-r-muted group-hover:text-r-accent">→</span>
-                </div>
-                <p class="mt-1 text-xs font-semibold text-r-text">Fuel, Stints &amp; Pit Window</p>
-                <p class="mt-0.5 text-[11px] text-r-muted">Calculadora de paradas y pit exit</p>
-              </button>
-              <button type="button" data-nav="analysis" class="text-left p-3 rounded-xl border border-r-line bg-r-bg/70 hover:border-r-accent/60 hover:bg-r-panel transition group">
-                <div class="flex items-center justify-between gap-2">
-                  <span class="font-mono text-[10px] uppercase tracking-widest text-r-accent">Ingeniería</span>
-                  <span class="text-xs text-r-muted group-hover:text-r-accent">→</span>
-                </div>
-                <p class="mt-1 text-xs font-semibold text-r-text">Telemetría &amp; Aero (.ibt)</p>
-                <p class="mt-0.5 text-[11px] text-r-muted">Ride height, rake, IMO y vueltas</p>
-              </button>
-              <button type="button" data-nav="hardware" class="text-left p-3 rounded-xl border border-r-line bg-r-bg/70 hover:border-r-accent/60 hover:bg-r-panel transition group">
-                <div class="flex items-center justify-between gap-2">
-                  <span class="font-mono text-[10px] uppercase tracking-widest text-r-accent">Hardware</span>
-                  <span class="text-xs text-r-muted group-hover:text-r-accent">→</span>
-                </div>
-                <p class="mt-1 text-xs font-semibold text-r-text">FFB &amp; Pedales</p>
-                <p class="mt-0.5 text-[11px] text-r-muted">Ajuste de base, clipping y curvas</p>
-              </button>
-              <button type="button" data-nav="overlays" class="text-left p-3 rounded-xl border border-r-line bg-r-bg/70 hover:border-r-accent/60 hover:bg-r-panel transition group">
-                <div class="flex items-center justify-between gap-2">
-                  <span class="font-mono text-[10px] uppercase tracking-widest text-r-accent">HUD Live</span>
-                  <span class="text-xs text-r-muted group-hover:text-r-accent">→</span>
-                </div>
-                <p class="mt-1 text-xs font-semibold text-r-text">Overlays Broadcast</p>
-                <p class="mt-0.5 text-[11px] text-r-muted">Relative, Standings, Fuel &amp; OBS</p>
-              </button>
+            <!-- Minimalist Pro Command & Live Telemetry Strip -->
+            <div class="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-r-line bg-r-surface/80 px-3 py-2">
+              <div class="flex flex-wrap items-center gap-1.5">
+                <button type="button" data-nav="strategy" class="h-7 px-2.5 rounded-lg border border-r-line bg-r-bg/80 hover:border-r-accent/60 font-mono text-[11px] text-r-text hover:text-r-accent transition">Estrategia &amp; Fuel</button>
+                <button type="button" data-nav="analysis" class="h-7 px-2.5 rounded-lg border border-r-line bg-r-bg/80 hover:border-r-accent/60 font-mono text-[11px] text-r-text hover:text-r-accent transition">Telemetría &amp; Aero</button>
+                <button type="button" data-nav="hardware" class="h-7 px-2.5 rounded-lg border border-r-line bg-r-bg/80 hover:border-r-accent/60 font-mono text-[11px] text-r-text hover:text-r-accent transition">FFB &amp; Pedales</button>
+                <button type="button" data-nav="overlays" class="h-7 px-2.5 rounded-lg border border-r-line bg-r-bg/80 hover:border-r-accent/60 font-mono text-[11px] text-r-text hover:text-r-accent transition">Overlays Pro</button>
+              </div>
+              <div id="proLiveMetricsStrip" class="flex items-center gap-2 font-mono text-[11px] tabular-nums text-r-muted">
+                <span class="px-2 py-0.5 rounded bg-r-bg border border-r-line/70">iRacing en espera</span>
+              </div>
             </div>
 
             <!-- Simplified Library Toolbar -->

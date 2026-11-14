@@ -18,6 +18,7 @@ import {
   BroadcastDirector,
   renderBroadcastDirectorWidget,
 } from "./irsdk";
+import { estimateLiveIRating, formatIRatingDelta, formatSofShort } from "./irsdk/irating-calc";
 import { AeroSuspensionAnalyzer, renderAeroAnalysisPanel } from "./telemetry/aero-analyzer";
 import { LocalTelemetryBus } from "./plugins/telemetry-bus";
 import { PluginLoader } from "./plugins/plugin-loader";
@@ -1224,6 +1225,28 @@ function renderStandbyWidgets(): void {
   document.querySelectorAll<HTMLElement>("#ovFuel, #ovFuelFloat").forEach((fuel) => {
     renderFuelWidget(fuel, irsdkState);
   });
+
+  // Update minimalist Pro Live Metrics Strip in main app
+  const proStrip = document.getElementById("proLiveMetricsStrip");
+  if (proStrip && irsdkState) {
+    const irEst = estimateLiveIRating(irsdkState);
+    const activeLap = irsdkState.frame.carIdxLap[irsdkState.camCarIdx] || 0;
+    const fuelLaps = irsdkState.fuel?.lapsRemaining;
+    const parts: string[] = [];
+    if (irEst) {
+      parts.push(`<span class="px-2 py-0.5 rounded bg-r-bg border border-r-line text-r-text font-bold">P${irEst.myClassPos}/${irEst.classFieldSize}</span>`);
+      parts.push(`<span class="text-r-muted">SOF ${formatSofShort(irEst.sof)}</span>`);
+      const irColor = irEst.delta >= 0 ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30" : "bg-rose-500/15 text-rose-300 border-rose-500/30";
+      parts.push(`<span class="px-2 py-0.5 rounded border font-bold ${irColor}">${formatIRatingDelta(irEst.delta)} → ${irEst.projectedIr}</span>`);
+    }
+    if (activeLap > 0) {
+      parts.push(`<span class="px-1.5 py-0.5 rounded bg-r-bg border border-r-line text-r-muted">L${activeLap}</span>`);
+    }
+    if (typeof fuelLaps === "number" && fuelLaps > 0 && Number.isFinite(fuelLaps)) {
+      parts.push(`<span class="text-r-accent font-semibold">${fuelLaps.toFixed(1)}v fuel</span>`);
+    }
+    proStrip.innerHTML = parts.join("");
+  }
   document.querySelectorAll<HTMLElement>("#ovGpuPedals, #ovGpuPedalsFloat").forEach((container) => {
     renderGpuPedalsWidget(container, { throttle: 0, brake: 0, clutch: 0, steering: 0, speedKmh: 0, gear: 0 });
   });
@@ -1838,6 +1861,28 @@ function updateHUDDisplay(sample: LiveSample): void {
   document.querySelectorAll<HTMLElement>("#ovFuel, #ovFuelFloat").forEach((fuel) => {
     renderFuelWidget(fuel, irsdkState);
   });
+
+  // Update minimalist Pro Live Metrics Strip in main app
+  const proStrip = document.getElementById("proLiveMetricsStrip");
+  if (proStrip && irsdkState) {
+    const irEst = estimateLiveIRating(irsdkState);
+    const activeLap = irsdkState.frame.carIdxLap[irsdkState.camCarIdx] || 0;
+    const fuelLaps = irsdkState.fuel?.lapsRemaining;
+    const parts: string[] = [];
+    if (irEst) {
+      parts.push(`<span class="px-2 py-0.5 rounded bg-r-bg border border-r-line text-r-text font-bold">P${irEst.myClassPos}/${irEst.classFieldSize}</span>`);
+      parts.push(`<span class="text-r-muted">SOF ${formatSofShort(irEst.sof)}</span>`);
+      const irColor = irEst.delta >= 0 ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30" : "bg-rose-500/15 text-rose-300 border-rose-500/30";
+      parts.push(`<span class="px-2 py-0.5 rounded border font-bold ${irColor}">${formatIRatingDelta(irEst.delta)} → ${irEst.projectedIr}</span>`);
+    }
+    if (activeLap > 0) {
+      parts.push(`<span class="px-1.5 py-0.5 rounded bg-r-bg border border-r-line text-r-muted">L${activeLap}</span>`);
+    }
+    if (typeof fuelLaps === "number" && fuelLaps > 0 && Number.isFinite(fuelLaps)) {
+      parts.push(`<span class="text-r-accent font-semibold">${fuelLaps.toFixed(1)}v fuel</span>`);
+    }
+    proStrip.innerHTML = parts.join("");
+  }
 
   // Prompts 34, 35, 37: Pit Exit Predictor, Tire Thermal IMO, Broadcast Director
   if (!engButtonsWired) {
