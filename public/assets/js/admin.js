@@ -1151,13 +1151,34 @@ const OFFICIAL_GALLERY_DEFAULTS = [
   { id: "bmw-series", carPath: "bmwm4gt3", title: "GT Sprint Series Oficial iRacing", img: "/assets/img/series/gt-sprint.jpg", tag: "GT Sprint" }
 ];
 
+function sanitizeGalleryEntries(entries) {
+  if (!Array.isArray(entries)) return [];
+  const foreignByCar = {
+    porsche: ["ferrari", "296", "coche1", "coche3", "coche4", "bmw", "mercedes", "amg", "lamborghini", "huracan", "audi", "mclaren", "ford", "mustang", "corvette", "aston"],
+    ferrari: ["porsche", "992", "911", "bmw", "mercedes", "amg", "lamborghini", "huracan", "audi", "mclaren", "ford", "mustang", "corvette", "aston"],
+    bmw: ["ferrari", "296", "porsche", "992", "911", "coche1", "coche3", "coche4", "mercedes", "amg", "lamborghini", "audi", "mclaren", "ford", "corvette", "aston"],
+  };
+  return entries.filter((item) => {
+    if (!item || !item.img) return false;
+    const cp = String(item.carPath || "").toLowerCase();
+    const hay = `${item.img} ${item.title || ""} ${item.id || ""}`.toLowerCase();
+    for (const [owner, badList] of Object.entries(foreignByCar)) {
+      if (cp.includes(owner) && badList.some((kw) => hay.includes(kw))) {
+        return false;
+      }
+    }
+    return true;
+  });
+}
+
 function initGalleryData() {
   try {
     const raw = localStorage.getItem("muntrume_admin_gallery");
     if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
+      const parsed = sanitizeGalleryEntries(JSON.parse(raw));
+      if (parsed.length > 0) {
         rcState.galleryPhotos = parsed;
+        saveAdminGallery();
         return;
       }
     }
@@ -1223,7 +1244,7 @@ function renderAdminGalleryGrid() {
     return `
       <div class="rc-card" style="padding:12px;display:flex;flex-direction:column;gap:10px;border-radius:10px">
         <div style="position:relative;width:100%;height:160px;border-radius:8px;overflow:hidden;background:#000">
-          <img src="${rcEscape(p.img)}" alt="${rcEscape(p.title)}" style="width:100%;height:100%;object-fit:cover" onerror="this.src='/assets/img/coche1.webp'" />
+          <img src="${rcEscape(p.img)}" alt="${rcEscape(p.title)}" style="width:100%;height:100%;object-fit:cover" onerror="this.onerror=null;this.style.display='none'" />
           <span class="${carBadgeClass}" style="position:absolute;top:8px;left:8px;font-size:10px">
             ${rcEscape(p.carPath || "SIN ASIGNAR")}
           </span>

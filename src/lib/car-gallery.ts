@@ -2,10 +2,11 @@
  * car-gallery.ts
  * Generador de diapositivas y galerías fotográficas oficiales de iRacing para coches y marcas.
  * Utiliza exclusivamente renders de estudio oficiales de iRacing (/assets/cars/*.webp)
- * y capturas en circuito verificadas del simulador iRacing. Cero fotos de sitios externos no oficiales.
+ * y fotos verificadas cuyo carPath coincide exactamente. Cero fallbacks cruzados entre coches.
  */
 
 import { type CarMetadata } from '../../desktop/src/cars/catalog';
+import { PADDOCK_ALBUMS } from '../data/paddock-gallery';
 
 export interface CarGallerySlide {
   src: string;
@@ -17,32 +18,52 @@ export interface CarGallerySlide {
   setupsUrl?: string;
 }
 
-// Fondos oficiales de competición iRacing por categoría para complementar el banner de estudio
-function getCategoryActionImg(carClass: string, _category: string): { src: string; tag: string } {
-  if (carClass === 'GT3') {
-    return { src: '/assets/img/series/gt-sprint.jpg', tag: 'GT Sprint Series iRacing' };
+const OTHER_MANUFACTURER_KEYWORDS = [
+  'ferrari', '296', '488', '499p',
+  'bmw', 'm4', 'm8', 'm2',
+  'mercedes', 'amg',
+  'lamborghini', 'huracan',
+  'audi', 'r8',
+  'mclaren', '720s', '570s',
+  'ford', 'mustang',
+  'corvette', 'chevy', 'vette',
+  'aston', 'vantage',
+  'porsche', '992', '963', '911', '718',
+];
+
+function isForeignManufacturerAsset(car: CarMetadata, src: string, title = ''): boolean {
+  const brandLower = car.brand.toLowerCase();
+  const folderLower = car.carFolder.toLowerCase();
+  const haystack = `${src} ${title}`.toLowerCase();
+
+  // Nunca usar assets genéricos de otros coches (p. ej. coche1.webp = Ferrari 296 GT3) salvo en su propio carPath
+  if (/\/assets\/img\/coche[134]\b/.test(haystack) && folderLower !== 'ferrari296gt3') {
+    return true;
   }
-  if (carClass === 'GTP' || carClass === 'LMP2' || carClass === 'LMP3') {
-    return { src: '/assets/img/series/imsa.jpg', tag: 'IMSA SportsCar Championship' };
+  if (/\/assets\/img\/coche2\b/.test(haystack) && folderLower !== 'porsche992rgt3') {
+    return true;
   }
-  if (carClass === 'Formula') {
-    return { src: '/assets/img/series/sfl.jpg', tag: 'iRacing Formula Series' };
+
+  for (const kw of OTHER_MANUFACTURER_KEYWORDS) {
+    if (brandLower.includes(kw) || folderLower.includes(kw)) continue;
+    // Evitar falsos positivos de subcadenas cortas como 'm2'/'m4'/'r8' dentro de palabras
+    const re = kw.length <= 3 ? new RegExp(`(^|[^a-z0-9])${kw}([^a-z0-9]|$)`, 'i') : new RegExp(kw, 'i');
+    if (re.test(haystack)) {
+      return true;
+    }
   }
-  if (carClass.includes('Cup') || carClass.includes('Porsche')) {
-    return { src: '/assets/img/series/porsche-cup.jpg', tag: 'Porsche Cup Series' };
-  }
-  return { src: '/assets/img/series/pcc.jpg', tag: 'Production Car Challenge' };
+  return false;
 }
 
 /**
  * Obtiene las diapositivas de la galería para un vehículo específico.
- * 100% auténtico de iRacing: banner oficial de estudio + series oficiales iRacing.
+ * Solo incluye fotos cuyo carPath coincide exactamente con car.carFolder.
+ * Prohibido rellenar con fotos de otros coches o imágenes genéricas.
  */
 export function getCarGallerySlides(car: CarMetadata): CarGallerySlide[] {
-  const preview = car.previewImg || `/assets/cars/${car.carFolder.toLowerCase()}.webp`;
-  const actionSeries = getCategoryActionImg(car.carClass, car.category);
-
-  return [
+  const folderLower = car.carFolder.toLowerCase();
+  const preview = car.previewImg || `/assets/cars/${folderLower}.webp`;
+  const slides: CarGallerySlide[] = [
     {
       src: preview,
       title: `${car.brand} ${car.model} · Ficha de Estudio Oficial`,
@@ -52,34 +73,29 @@ export function getCarGallerySlides(car: CarMetadata): CarGallerySlide[] {
       setupsUrl: `/garage?car=${encodeURIComponent(car.carFolder)}`,
       downloadName: `${car.carFolder}-studio.webp`,
     },
-    {
-      src: actionSeries.src,
-      title: `${car.brand} ${car.model} · Competición Oficial en Pista`,
-      subtitle: `Serie oficial en iRacing: ${actionSeries.tag}`,
-      tag: actionSeries.tag,
-      id: `car:${car.carFolder}:action`,
-      setupsUrl: `/garage?car=${encodeURIComponent(car.carFolder)}`,
-      downloadName: `${car.carFolder}-action.jpg`,
-    },
-    {
-      src: '/assets/img/coche1.webp',
-      title: `${car.brand} ${car.model} · Dinámica y Apoyo Aerodinámico`,
-      subtitle: 'Telemetría de suspensiones, control de tracción y reparto de frenada a 60 Hz',
-      tag: 'Telemetría iRacing',
-      id: `car:${car.carFolder}:dynamics`,
-      setupsUrl: `/garage?car=${encodeURIComponent(car.carFolder)}`,
-      downloadName: `${car.carFolder}-dynamics.webp`,
-    },
-    {
-      src: '/assets/img/coche3.webp',
-      title: `${car.brand} ${car.model} · Stint Nocturno y Ópticas LED`,
-      subtitle: 'Comportamiento con temperatura de pista variable en pruebas de resistencia',
-      tag: 'Nocturna iRacing',
-      id: `car:${car.carFolder}:night`,
-      setupsUrl: `/garage?car=${encodeURIComponent(car.carFolder)}`,
-      downloadName: `${car.carFolder}-night.webp`,
-    },
   ];
+
+  const seenSrc = new Set<string>([preview.toLowerCase()]);
+  const album = PADDOCK_ALBUMS.find((a) => a.carPath.toLowerCase() === folderLower);
+  if (album) {
+    for (const photo of album.photos) {
+      if (photo.carPath.toLowerCase() !== folderLower) continue;
+      if (seenSrc.has(photo.img.toLowerCase())) continue;
+      if (isForeignManufacturerAsset(car, photo.img, photo.title)) continue;
+      seenSrc.add(photo.img.toLowerCase());
+      slides.push({
+        src: photo.img,
+        title: photo.title,
+        subtitle: photo.subtitle || `${car.brand} ${car.model} · ${car.carFolder}`,
+        tag: photo.tag || 'Oficial iRacing',
+        id: photo.id,
+        setupsUrl: `/garage?car=${encodeURIComponent(car.carFolder)}`,
+        downloadName: `${car.carFolder}-${photo.id}.webp`,
+      });
+    }
+  }
+
+  return slides;
 }
 
 /**
