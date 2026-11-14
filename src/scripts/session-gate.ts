@@ -8,7 +8,7 @@ interface VaultUser {
   has_setup_access?: boolean | number;
 }
 
-function hasSetupAccess(session: { user: VaultUser } | null): boolean {
+function hasSetupAccess(session: { user?: VaultUser | null } | null): boolean {
   if (!session?.user) return false;
   const role = String(session.user.role || "").toLowerCase();
   if (role === "admin" || role === "team_driver") return true;
