@@ -13,6 +13,7 @@ import { GpuPedalsEngine, type PedalsSample } from "./gpu-pedals";
 import { Radar360Engine, type RadarInputState } from "./radar-360";
 import { PitboxHelperEngine, type PitboxInputState } from "./pitbox-helper";
 import { DigiFlagEngine } from "./digi-flag";
+import { ThemeEngine } from "../theme/theme-engine";
 
 const gpuPedalsEngine = new GpuPedalsEngine();
 const radar360Engine = new Radar360Engine();
@@ -39,6 +40,7 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
   const activeCar = state.activeDriver;
   const isStreamer = SmartLayoutManager.getInstance().isStreamerMode();
   const driverTags = DriverTagsManager.getInstance();
+  const cols = ThemeEngine.getInstance().getColumnsConfig().relative;
 
   const headerHtml = `
     <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-white/10 text-[10px] uppercase font-bold tracking-wider">
@@ -68,7 +70,7 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
         ? "text-amber-400 font-bold"
         : "text-sky-300 font-bold";
 
-      const pitBadge = e.onPitRoad
+      const pitBadge = cols.pitStatus && e.onPitRoad
         ? `<span class="px-1 py-0.2 rounded text-[8px] bg-rose-500/30 text-rose-300 border border-rose-500/40 font-bold">PIT</span>`
         : "";
 
@@ -78,32 +80,47 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
         ? isSelf ? "Piloto (Tú)" : `Piloto #${e.carNumber}`
         : isSelf ? `${e.abbrevName} (Tú)` : e.abbrevName;
 
+      const classSpan = cols.carClass
+        ? `<span class="px-1 py-0.5 rounded text-[9px] font-bold tracking-tight" style="background-color: ${e.carClassColor}25; color: ${e.carClassColor}; border: 1px solid ${e.carClassColor}50">${e.carClassShortName}</span>`
+        : "";
+
+      const numSpan = cols.carNumber
+        ? `<span class="w-6 text-[11px] font-black text-right ${isSelf ? "text-emerald-300" : "text-white/80"}">#${e.carNumber}</span>`
+        : "";
+
+      const brandSvg = cols.brandIcon ? getCarBrandSvg(e.carPath, 13) : "";
+
+      const nameSpan = cols.driverName
+        ? `<span class="truncate text-[11px] font-medium ${isSelf ? "text-emerald-300 font-bold" : "text-white/90"}">${displayName}</span>`
+        : "";
+
+      const licText = cols.license ? e.licString.split(" ")[0] : "";
+      const irText = cols.iRating ? e.iRatingStr : "";
+      const licIrCombined = [licText, irText].filter(Boolean).join(" · ");
+      const licSpan = licIrCombined
+        ? `<span class="px-1.5 py-0.5 rounded text-[9px] bg-white/10 tabular-nums font-medium" style="color: ${e.licBadgeColor}">${licIrCombined}</span>`
+        : "";
+
+      const deltaSpan = cols.delta
+        ? `<span class="w-12 text-right text-xs tabular-nums ${deltaClass}">${e.deltaStr}</span>`
+        : "";
+
       return `
         <div class="flex items-center justify-between gap-1.5 p-1.5 rounded-lg border transition-colors ${rowBg} font-mono">
           <!-- Left: Class + Car Number + Brand + Driver + Tag -->
           <div class="flex items-center gap-1.5 min-w-0">
-            <span class="px-1 py-0.5 rounded text-[9px] font-bold tracking-tight" style="background-color: ${e.carClassColor}25; color: ${e.carClassColor}; border: 1px solid ${e.carClassColor}50">
-              ${e.carClassShortName}
-            </span>
-            <span class="w-6 text-[11px] font-black text-right ${isSelf ? "text-emerald-300" : "text-white/80"}">
-              #${e.carNumber}
-            </span>
-            ${getCarBrandSvg(e.carPath, 13)}
-            <span class="truncate text-[11px] font-medium ${isSelf ? "text-emerald-300 font-bold" : "text-white/90"}">
-              ${displayName}
-            </span>
+            ${classSpan}
+            ${numSpan}
+            ${brandSvg}
+            ${nameSpan}
             ${tagBadge}
             ${pitBadge}
           </div>
 
           <!-- Right: License & iRating + Delta -->
           <div class="flex items-center gap-2 shrink-0">
-            <span class="px-1.5 py-0.5 rounded text-[9px] bg-white/10 tabular-nums font-medium" style="color: ${e.licBadgeColor}">
-              ${e.licString.split(" ")[0]} · ${e.iRatingStr}
-            </span>
-            <span class="w-12 text-right text-xs tabular-nums ${deltaClass}">
-              ${e.deltaStr}
-            </span>
+            ${licSpan}
+            ${deltaSpan}
           </div>
         </div>
       `;
@@ -136,6 +153,7 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
   const { leaderboard } = state;
   const isStreamer = SmartLayoutManager.getInstance().isStreamerMode();
   const driverTags = DriverTagsManager.getInstance();
+  const cols = ThemeEngine.getInstance().getColumnsConfig().leaderboard;
 
   const isPractice =
     state.session.sessionType.toLowerCase().includes("practice") ||
@@ -180,34 +198,46 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
         ? "LÍDER"
         : e.gapStr;
 
-      const pitBadge = e.onPitRoad
+      const posSpan = cols.position
+        ? `<span class="w-5 text-[11px] font-bold ${posClass}">P${e.position}</span>`
+        : "";
+
+      const classSpan = cols.classPosition
+        ? `<span class="px-1 py-0.2 rounded text-[8px] font-bold" style="background-color: ${e.carClassColor}25; color: ${e.carClassColor}">${e.carClassShortName}</span>`
+        : "";
+
+      const brandSvg = cols.brandIcon ? getCarBrandSvg(e.carPath, 12) : "";
+
+      const displayName = isStreamer
+        ? isSelf ? "Piloto (Tú)" : `Piloto #${e.carNumber}`
+        : `${cols.carNumber && e.carNumber ? `#${e.carNumber} ` : ""}${cols.driverName ? e.abbrevName : ""}`;
+
+      const nameSpan = displayName
+        ? `<span class="truncate text-[11px] ${isSelf ? "text-emerald-300 font-bold" : "text-white/90 font-medium"}">${displayName}</span>`
+        : "";
+
+      const pitBadge = cols.pitStatus && e.onPitRoad
         ? `<span class="px-1 py-0.2 rounded text-[8px] bg-rose-500/30 text-rose-300 border border-rose-500/40 font-bold">PIT</span>`
         : "";
 
       const tagBadge = driverTags.renderBadgeHtml(e.cust_id || e.driverName || e.carNumber);
 
-      const displayName = isStreamer
-        ? isSelf ? "Piloto (Tú)" : `Piloto #${e.carNumber}`
-        : `${e.carNumber ? `#${e.carNumber} ` : ""}${e.abbrevName}`;
+      const timeSpan = (isPractice ? cols.bestLap : cols.gap)
+        ? `<span class="tabular-nums font-mono text-[11px] ${isLeader ? "text-amber-400 font-bold" : isSelf ? "text-emerald-400 font-bold" : "text-white/80"}">${timeVal}</span>`
+        : "";
 
       return `
         <div class="flex items-center justify-between gap-1.5 p-1.5 rounded-lg border transition-colors ${rowBg} font-mono text-xs">
           <div class="flex items-center gap-1.5 min-w-0">
-            <span class="w-5 text-[11px] font-bold ${posClass}">P${e.position}</span>
-            <span class="px-1 py-0.2 rounded text-[8px] font-bold" style="background-color: ${e.carClassColor}25; color: ${e.carClassColor}">
-              ${e.carClassShortName}
-            </span>
-            ${getCarBrandSvg(e.carPath, 12)}
-            <span class="truncate text-[11px] ${isSelf ? "text-emerald-300 font-bold" : "text-white/90 font-medium"}">
-              ${displayName}
-            </span>
+            ${posSpan}
+            ${classSpan}
+            ${brandSvg}
+            ${nameSpan}
             ${tagBadge}
             ${pitBadge}
           </div>
           <div class="shrink-0 text-right">
-            <span class="tabular-nums font-mono text-[11px] ${isLeader ? "text-amber-400 font-bold" : isSelf ? "text-emerald-400 font-bold" : "text-white/80"}">
-              ${timeVal}
-            </span>
+            ${timeSpan}
           </div>
         </div>
       `;
@@ -226,6 +256,7 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
  * Renders the Fuel Computer widget into target DOM container
  */
 export function renderFuelWidget(container: HTMLElement, state: IrsdkComputedState | null): void {
+  const cols = ThemeEngine.getInstance().getColumnsConfig().fuel;
   if (!state) {
     container.innerHTML = `
       <div class="text-[10px] uppercase text-r-muted mb-1.5 font-bold tracking-wider">Ordenador de Combustible</div>
@@ -284,25 +315,37 @@ export function renderFuelWidget(container: HTMLElement, state: IrsdkComputedSta
   const toAddStr = fuel.fuelToAdd > 0 ? `+${fuel.fuelToAdd} L` : "SUFICIENTE";
   const toAddClass = fuel.fuelToAdd > 0 ? "text-amber-400" : "text-emerald-400";
 
+  const cardsHtml = [
+    cols.remainingL
+      ? `<div class="p-1.5 rounded-lg bg-black/40 border border-white/5">
+           <span class="text-r-muted block text-[10px]">A BORDO</span>
+           <strong class="text-white text-base tabular-nums">${fuel.fuelRemainingL} L</strong>
+         </div>`
+      : "",
+    cols.lapsRemaining
+      ? `<div class="p-1.5 rounded-lg bg-black/40 border border-white/5">
+           <span class="text-r-muted block text-[10px]">VUELTAS RESTANTES</span>
+           <strong class="text-r-accent text-base tabular-nums">${fuel.stintLapsRemaining} v</strong>
+         </div>`
+      : "",
+    cols.avgBurn
+      ? `<div class="p-1.5 rounded-lg bg-black/40 border border-white/5">
+           <span class="text-r-muted block text-[10px]">CONSUMO MEDIO (5V)</span>
+           <strong class="text-white text-sm tabular-nums">${fuel.avgBurnPerLap} L/v</strong>
+         </div>`
+      : "",
+    cols.fuelToAdd
+      ? `<div class="p-1.5 rounded-lg bg-black/40 border border-white/5">
+           <span class="text-r-muted block text-[10px]">REPOSTAR (+0.2L MARGEN)</span>
+           <strong class="${toAddClass} text-sm tabular-nums font-bold">${toAddStr}</strong>
+         </div>`
+      : "",
+  ].filter(Boolean).join("");
+
   container.innerHTML = `
     ${headerHtml}
     <div class="grid grid-cols-2 gap-2 text-xs font-mono select-none">
-      <div class="p-1.5 rounded-lg bg-black/40 border border-white/5">
-        <span class="text-r-muted block text-[10px]">A BORDO</span>
-        <strong class="text-white text-base tabular-nums">${fuel.fuelRemainingL} L</strong>
-      </div>
-      <div class="p-1.5 rounded-lg bg-black/40 border border-white/5">
-        <span class="text-r-muted block text-[10px]">VUELTAS RESTANTES</span>
-        <strong class="text-r-accent text-base tabular-nums">${fuel.stintLapsRemaining} v</strong>
-      </div>
-      <div class="p-1.5 rounded-lg bg-black/40 border border-white/5">
-        <span class="text-r-muted block text-[10px]">CONSUMO MEDIO (5V)</span>
-        <strong class="text-white text-sm tabular-nums">${fuel.avgBurnPerLap} L/v</strong>
-      </div>
-      <div class="p-1.5 rounded-lg bg-black/40 border border-white/5">
-        <span class="text-r-muted block text-[10px]">REPOSTAR (+0.2L MARGEN)</span>
-        <strong class="${toAddClass} text-sm tabular-nums font-bold">${toAddStr}</strong>
-      </div>
+      ${cardsHtml}
     </div>
     <div class="mt-2 flex items-center justify-between text-[9px] text-r-muted font-mono pt-1.5 border-t border-white/5">
       <span>MÁX: ${fuel.maxBurnPerLap} L/v</span>

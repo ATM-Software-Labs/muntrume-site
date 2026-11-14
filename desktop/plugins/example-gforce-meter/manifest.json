@@ -1,0 +1,14 @@
+{
+  "id": "example-gforce-meter",
+  "name": "Medidor de Fuerzas G (2D)",
+  "version": "1.0.0",
+  "author": "Comunidad MMT",
+  "description": "Visualizador 2D de fuerzas G longitudinales y aceleración lateral para cockpit.",
+  "entry": "index.html",
+  "width": 170,
+  "height": 170,
+  "defaultPosition": {
+    "x": 740,
+    "y": 720
+  }
+}

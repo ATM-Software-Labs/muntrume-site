@@ -10,6 +10,10 @@ import {
   renderDigiFlagWidget,
   SmartLayoutManager,
 } from "./irsdk";
+import { LocalTelemetryBus } from "./plugins/telemetry-bus";
+import { PluginLoader } from "./plugins/plugin-loader";
+import { ThemeEngine } from "./theme/theme-engine";
+import { I18nManager } from "./i18n/i18n-manager";
 import rawSchedule from "./season_schedule_2026_s4.json";
 import rawRealTracks from "./real_telemetry_tracks.json";
 import { clamp, finiteOr, safeDiv } from "./core/math-guards";
@@ -1510,6 +1514,11 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
   };
 
   restoreFloatPositions();
+  ThemeEngine.getInstance().applyToDom();
+  I18nManager.getInstance().updateDomTranslations();
+  if (floatHost) {
+    PluginLoader.getInstance().mountPlugins(floatHost);
+  }
 
   btnReset?.addEventListener("click", () => {
     resetFloatPositions();
@@ -1785,6 +1794,16 @@ function updateHUDDisplay(sample: LiveSample): void {
     const sessionType = session.sessionType || "";
     const carPath = irsdkState.activeDriver?.carPath || "";
     SmartLayoutManager.getInstance().matchAndActivate(category, sessionType, carPath);
+
+    // Broadcast normalized 60 Hz telemetry to WebSocket and external plugins (Bloque 17)
+    LocalTelemetryBus.getInstance().publish(irsdkState, kmh, {
+      throttle: sample.throttle,
+      brake: sample.brake,
+      clutch: (sample as any).clutch ?? 0,
+      steering: sample.steering,
+      gear: sample.gear,
+      rpm: 7500,
+    });
 
     // Auto-hide top edit bar when on track (OnPitRoad === false)
     if (!floatEditMode) {

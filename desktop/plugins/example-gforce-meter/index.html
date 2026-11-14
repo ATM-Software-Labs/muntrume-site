@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>G-Force Meter Plugin</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="g-container">
+    <div class="g-header">
+      <span>G-Force 2D</span>
+      <span id="gTotal">0.0G</span>
+    </div>
+    <div class="g-field" id="gField">
+      <div class="g-cross-x"></div>
+      <div class="g-cross-y"></div>
+      <div class="g-ring g-ring-1"></div>
+      <div class="g-ring g-ring-2"></div>
+      <div class="g-dot" id="gDot" style="top: 50%; left: 50%;"></div>
+    </div>
+    <div class="g-readout">
+      <span>LAT: <strong id="gLat">0.00</strong></span>
+      <span>LON: <strong id="gLon">0.00</strong></span>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

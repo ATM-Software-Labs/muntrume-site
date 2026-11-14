@@ -96,6 +96,17 @@
   --r-accent-ink: #04120c;
   --r-accent-glow: rgba(0, 230, 153, 0.18);
   color-scheme: dark;
+
+  /* MMT Theme Engine Variables (Bloque 16) */
+  --mmt-bg: #090d12;
+  --mmt-card-bg: rgba(9, 13, 18, 0.92);
+  --mmt-accent: #00e5ff;
+  --mmt-accent-glow: rgba(0, 229, 255, 0.3);
+  --mmt-border: rgba(255, 255, 255, 0.12);
+  --mmt-font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --mmt-radius: 12px;
+  --mmt-scale: 1.0;
+  --mmt-opacity: 0.95;
 }
 
 html[data-theme="light"] {
