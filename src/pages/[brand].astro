@@ -1,15 +1,10 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import MediaLightbox from '../components/MediaLightbox.astro';
+import MediaCarousel from '../components/MediaCarousel.astro';
 import { CAR_CATALOG_LIST, type CarMetadata } from '../../desktop/src/cars/catalog';
-
-const slugifyBrand = (brand: string) =>
-  brand
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+import { getBrandGallerySlides } from '../lib/car-gallery';
+import { getCarVideos } from '../lib/video-links';
 
 export function getStaticPaths() {
   const slugify = (brand: string) =>
@@ -63,6 +58,7 @@ interface Props {
 
 const { brandName, brandSlug, cars, allBrands } = Astro.props;
 const categories = Array.from(new Set(cars.map((c) => c.carClass)));
+const brandSlides = getBrandGallerySlides(brandName, cars);
 const pageTitle = `${brandName} en iRacing · Todos los modelos | Muntrume Motorsport`;
 const pageDescription = `Catálogo completo de vehículos ${brandName} en iRacing (${cars.length} modelos: ${categories.join(', ')}). Previews oficiales, setups (.sto), User Manual PDF y Car Forum.`;
 ---
@@ -103,18 +99,42 @@ const pageDescription = `Catálogo completo de vehículos ${brandName} en iRacin
       </div>
     </header>
 
-    <section aria-label={`Modelos ${brandName}`} class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-      {cars.map((car) => (
-        <article class="rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-200 overflow-hidden flex flex-col justify-between group">
+    <!-- GALERIA INTERACTIVA DE LA MARCA -->
+    {brandSlides.length > 0 && (
+      <section aria-label={`Galería oficial ${brandName}`} class="space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2 pb-2 border-b border-[var(--r-line)]">
           <div>
-            <a
-              href={`/car/${car.carFolder.toLowerCase()}/`}
-              class="relative block aspect-[344/182] w-full bg-[#090d12] border-b border-[var(--r-line)] overflow-hidden"
-              title={`Ver ficha técnica completa de ${car.brand} ${car.model}`}
-            >
-              {car.previewImg && (
+            <span class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)]">Galería Oficial &amp; Pista</span>
+            <h2 class="r-h3">Competición y acción en pista · {brandName}</h2>
+          </div>
+          <span class="text-xs font-mono text-[var(--r-muted)]">
+            Carrusel interactivo HD · Haz clic en cualquier foto para ampliarla
+          </span>
+        </div>
+
+        <MediaCarousel
+          id={`brand-${brandSlug}`}
+          slides={brandSlides}
+          intervalMs={4500}
+          aspectRatioClass="aspect-[16/9] sm:aspect-[21/9]"
+        />
+      </section>
+    )}
+
+    <section aria-label={`Modelos ${brandName}`} class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {cars.map((car) => {
+        const vids = getCarVideos(car.brand, car.model, car.carClass, car.carFolder);
+        const fallbackImg = vids[0]?.thumbnail || '/assets/img/hero-bg.webp';
+        return (
+          <article class="rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-200 overflow-hidden flex flex-col justify-between group">
+            <div>
+              <a
+                href={`/car/${car.carFolder.toLowerCase()}/`}
+                class="relative block aspect-[344/182] w-full bg-[#090d12] border-b border-[var(--r-line)] overflow-hidden"
+                title={`Ver ficha técnica completa de ${car.brand} ${car.model}`}
+              >
                 <img
-                  src={car.previewImg}
+                  src={car.previewImg || fallbackImg}
                   alt={`${car.brand} ${car.model}`}
                   width="344"
                   height="182"
@@ -122,11 +142,10 @@ const pageDescription = `Catálogo completo de vehículos ${brandName} en iRacin
                   decoding="async"
                   class="w-full h-full object-contain object-center transition-transform duration-500 group-hover:scale-[1.03]"
                 />
-              )}
-              <span class="absolute top-2 right-2.5 px-2 py-0.5 rounded-md bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">
-                {car.carClass}
-              </span>
-            </a>
+                <span class="absolute top-2 right-2.5 px-2 py-0.5 rounded-md bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">
+                  {car.carClass}
+                </span>
+              </a>
 
             <div class="p-4 space-y-2">
               <div class="flex items-center justify-between gap-2">
@@ -178,7 +197,8 @@ const pageDescription = `Catálogo completo de vehículos ${brandName} en iRacin
             </div>
           </div>
         </article>
-      ))}
+      );
+    })}
     </section>
 
     <section aria-label="Otras marcas" class="pt-6 border-t border-[var(--r-line)] space-y-3">

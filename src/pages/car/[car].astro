@@ -6,6 +6,7 @@ import VideoModal from '../../components/VideoModal.astro';
 import { CAR_CATALOG_LIST, type CarMetadata } from '../../../desktop/src/cars/catalog';
 import { getBrandOrigin, getCarDossier } from '../../data/car-dossiers';
 import { getCarVideos } from '../../lib/video-links';
+import { getCarGallerySlides } from '../../lib/car-gallery';
 import catalogIndex from '../../../public/assets/data/catalog_index.json';
 
 export function getStaticPaths() {
@@ -41,53 +42,7 @@ const hasGarageSetups = (catalogIndex.cars as string[]).some(
   (c) => c.toLowerCase() === car.carFolder.toLowerCase(),
 );
 
-const carSlides = [
-  ...(car.previewImg ? [{
-    src: car.previewImg,
-    title: `${car.brand} ${car.model} · Ficha Técnica iRacing`,
-    subtitle: `${car.carClass} · ${origin.flag} ${origin.country} · ${car.specs}`,
-    tag: `${car.carClass} Oficial`,
-    id: `car:${car.carFolder}:main`,
-    setupsUrl: `/garage?car=${encodeURIComponent(car.carFolder)}`,
-    downloadName: `${car.carFolder}-preview.webp`,
-  }] : []),
-  {
-    src: '/assets/img/coche1.webp',
-    title: `${car.brand} ${car.model} · Apoyo Aerodinámico en Vértice`,
-    subtitle: 'Telemetría y reparto de cargas en curva rápida · Muntrume Motorsport',
-    tag: 'Pista & Dinámica',
-    id: `car:${car.carFolder}:track1`,
-    setupsUrl: `/garage?car=${encodeURIComponent(car.carFolder)}`,
-    downloadName: `${car.carFolder}-track1.webp`,
-  },
-  {
-    src: '/assets/img/coche3.webp',
-    title: `${car.brand} ${car.model} · Stint Nocturno y Ópticas LED`,
-    subtitle: 'Gestión de temperatura de neumáticos y caída térmica en carrera nocturna',
-    tag: 'Nocturna',
-    id: `car:${car.carFolder}:night`,
-    setupsUrl: `/garage?car=${encodeURIComponent(car.carFolder)}`,
-    downloadName: `${car.carFolder}-night.webp`,
-  },
-  {
-    src: '/assets/img/race1.webp',
-    title: `${car.brand} ${car.model} · Tráfico y Lucha Multiclase`,
-    subtitle: 'Frenada sincronizada y adelantamientos entre clases en series oficiales',
-    tag: 'Carrera',
-    id: `car:${car.carFolder}:race`,
-    setupsUrl: `/garage?car=${encodeURIComponent(car.carFolder)}`,
-    downloadName: `${car.carFolder}-race.webp`,
-  },
-  {
-    src: '/assets/img/hero-bg.webp',
-    title: `${car.brand} ${car.model} · Parrilla de Salida y Boxes`,
-    subtitle: 'Formación de parrilla previa a la bandera verde en prueba de resistencia',
-    tag: 'Paddock & Grid',
-    id: `car:${car.carFolder}:grid`,
-    setupsUrl: `/garage?car=${encodeURIComponent(car.carFolder)}`,
-    downloadName: `${car.carFolder}-grid.webp`,
-  },
-];
+const carSlides = getCarGallerySlides(car);
 
 const carVideos = getCarVideos(car.brand, car.model, car.carClass, car.carFolder);
 
@@ -168,7 +123,7 @@ const pageDescription = `${car.brand} ${car.model} (${car.carClass}): ${dossier.
       <div class="lg:col-span-6">
         <button
           type="button"
-          data-preview-src={car.previewImg || ''}
+          data-preview-src={carSlides[0]?.src || car.previewImg || ''}
           data-preview-title={`${car.brand} ${car.model}`}
           data-preview-sub={`${car.carClass} · ${origin.flag} ${origin.country} · ${car.specs}`}
           data-preview-id={`car:${car.carFolder}`}
@@ -176,15 +131,13 @@ const pageDescription = `${car.brand} ${car.model} (${car.carClass}): ${dossier.
           class="relative block w-full aspect-[344/182] rounded-2xl bg-[#090d12] border border-[var(--r-line)] hover:border-[var(--r-accent)] overflow-hidden cursor-zoom-in group transition"
           title="Ampliar imagen completa"
         >
-          {car.previewImg && (
-            <img
-              src={car.previewImg}
-              alt={`${car.brand} ${car.model}`}
-              width="688"
-              height="364"
-              class="w-full h-full object-contain object-center transition-transform duration-500 group-hover:scale-[1.03]"
-            />
-          )}
+          <img
+            src={car.previewImg || carSlides[0]?.src || '/assets/img/hero-bg.webp'}
+            alt={`${car.brand} ${car.model}`}
+            width="688"
+            height="364"
+            class="w-full h-full object-contain object-center transition-transform duration-500 group-hover:scale-[1.03]"
+          />
           <span class="absolute bottom-3 right-3 px-2.5 py-1 rounded-lg bg-black/80 border border-white/15 text-[11px] font-mono text-white/90">
             Ampliar foto completa ⤢
           </span>
