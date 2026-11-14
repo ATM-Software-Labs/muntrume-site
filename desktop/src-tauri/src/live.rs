@@ -224,25 +224,32 @@ fn windows_loop(app: AppHandle) {
                     last_yaml_emit = Instant::now();
                 }
             }
-            let Some(table) = vars.as_ref() else { continue };
-            match read_live_sample_with(bytes, table) {
-                Ok(sample) => {
-                    let _ = app.emit("mmt-live", &sample);
-                    let _ = app.emit("mmt-iracing-status", "on_track");
-                    last_emit = Instant::now();
+            let mut clear_vars = false;
+            if let Some(table) = vars.as_ref() {
+                match read_live_sample_with(bytes, table) {
+                    Ok(sample) => {
+                        let _ = app.emit("mmt-live", &sample);
+                        let _ = app.emit("mmt-iracing-status", "on_track");
+                        last_emit = Instant::now();
+                    }
+                    Err(IbtError::NotConnected) => {
+                        let _ = app.emit("mmt-iracing-status", "in_sim");
+                        clear_vars = true;
+                        last_yaml_update = None;
+                    }
+                    Err(IbtError::StaleVars) => clear_vars = true,
+                    Err(_) => {}
                 }
-                Err(IbtError::NotConnected) => {
-                    let _ = app.emit("mmt-iracing-status", "in_sim");
-                    vars = None;
-                    last_yaml_update = None;
-                }
-                Err(IbtError::StaleVars) => vars = None,
-                Err(_) => {}
+            }
+            if clear_vars {
+                vars = None;
             }
             if last_frame_emit.elapsed() >= Duration::from_millis(66) {
-                if let Ok(frame) = read_live_irsdk_frame_with(bytes, table) {
-                    let _ = app.emit("mmt-irsdk-frame", &frame);
-                    last_frame_emit = Instant::now();
+                if let Some(table) = vars.as_ref() {
+                    if let Ok(frame) = read_live_irsdk_frame_with(bytes, table) {
+                        let _ = app.emit("mmt-irsdk-frame", &frame);
+                        last_frame_emit = Instant::now();
+                    }
                 }
             }
         }
