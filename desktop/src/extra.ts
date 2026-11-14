@@ -1203,9 +1203,32 @@ let demoAnimationTimer: number | null = null;
 let demoTick = 0;
 const liveWaveformHistory: { thr: number; brk: number }[] = [];
 let layoutUnlocked = false;
+let previewDemoActive = false;
 
 function hudMockAllowed(): boolean {
-  return import.meta.env.DEV && new URLSearchParams(location.search).get("hudmock") === "1";
+  return previewDemoActive || (import.meta.env.DEV && new URLSearchParams(location.search).get("hudmock") === "1");
+}
+
+function renderStandbyWidgets(): void {
+  const irsdkState = IrsdkClient.getInstance().getLatestState();
+  document.querySelectorAll<HTMLElement>("#ovRelative, #ovRelativeFloat").forEach((rel) => {
+    renderRelativeWidget(rel, irsdkState);
+  });
+  document.querySelectorAll<HTMLElement>("#ovStandings, #ovStandingsFloat").forEach((standings) => {
+    renderStandingsWidget(standings, irsdkState);
+  });
+  document.querySelectorAll<HTMLElement>("#ovFuel, #ovFuelFloat").forEach((fuel) => {
+    renderFuelWidget(fuel, irsdkState);
+  });
+  document.querySelectorAll<HTMLElement>("#ovGpuPedals, #ovGpuPedalsFloat").forEach((container) => {
+    renderGpuPedalsWidget(container, { throttle: 0, brake: 0, clutch: 0, steering: 0, speedKmh: 0, gear: 0 });
+  });
+  const pitEl = document.getElementById("ovPitExitWidget");
+  if (pitEl) renderPitExitWidget(pitEl, null);
+  const tireEl = document.getElementById("ovTireThermalWidget");
+  if (tireEl) renderTireThermalWidget(tireEl, null, tireThermalEngine);
+  const bdEl = document.getElementById("ovBroadcastDirectorWidget");
+  if (bdEl) renderBroadcastDirectorWidget(bdEl, broadcastDirector);
 }
 
 function setHudMode(mode: "closed" | "live" | "mock"): void {
@@ -1279,9 +1302,26 @@ export function paintOverlays(): void {
     overlayInitialized = true;
 
     if (toggleBtn instanceof HTMLButtonElement) {
-      toggleBtn.disabled = true;
-      toggleBtn.textContent = "Próximamente";
-      toggleBtn.title = "El modo demo no está en la build de release";
+      toggleBtn.disabled = false;
+      const syncToggleLabel = () => {
+        toggleBtn.textContent = previewDemoActive ? "Modo Demo Activo (Pausar)" : "Probar Demo en Escenario";
+      };
+      syncToggleLabel();
+      toggleBtn.addEventListener("click", () => {
+        previewDemoActive = !previewDemoActive;
+        syncToggleLabel();
+        if (previewDemoActive) {
+          startDemoOverlayLoop();
+        } else {
+          if (demoAnimationTimer) {
+            clearInterval(demoAnimationTimer);
+            demoAnimationTimer = null;
+          }
+          IrsdkClient.getInstance().stopSimulation();
+          setHudMode("closed");
+          renderStandbyWidgets();
+        }
+      });
     }
 
     if (btnUnlock) {
@@ -1305,7 +1345,10 @@ export function paintOverlays(): void {
     setupDraggableWidgets();
     restoreWidgetPositions();
     if (hudMockAllowed()) startDemoOverlayLoop();
-    else setHudMode("closed");
+    else {
+      setHudMode("closed");
+      renderStandbyWidgets();
+    }
   }
 
   canvases.forEach((canvas) => {
