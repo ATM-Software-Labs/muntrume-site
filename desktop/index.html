@@ -30,8 +30,10 @@
           <nav id="appNav" class="hidden sm:flex items-center gap-1 p-1 rounded-xl border border-r-line bg-r-bg/90" aria-label="Secciones">
             <button type="button" data-nav="library" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Biblioteca</button>
             <button type="button" data-nav="week" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Semana</button>
-            <button type="button" data-nav="last_session" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Telemetría</button>
+            <button type="button" data-nav="analysis" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Análisis</button>
+            <button type="button" data-nav="strategy" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Estrategia</button>
             <button type="button" data-nav="overlays" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Overlays</button>
+            <button type="button" data-nav="hardware" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Hardware</button>
             <button type="button" data-nav="settings" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Ajustes</button>
           </nav>
           <button type="button" id="themeToggle" class="mmt-btn-ghost h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-text" aria-pressed="false">Tema claro</button>
@@ -88,8 +90,10 @@
           <div class="sm:hidden flex flex-wrap gap-2 mb-4" id="appNavMobile">
             <button type="button" data-nav="library" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Biblioteca</button>
             <button type="button" data-nav="week" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Semana</button>
-            <button type="button" data-nav="last_session" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Telemetría</button>
+            <button type="button" data-nav="analysis" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Análisis</button>
+            <button type="button" data-nav="strategy" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Estrategia</button>
             <button type="button" data-nav="overlays" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Overlays</button>
+            <button type="button" data-nav="hardware" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Hardware</button>
             <button type="button" data-nav="settings" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Ajustes</button>
           </div>
 
@@ -109,6 +113,42 @@
             </div>
             
             <p id="syncStatus" class="mt-2 font-mono text-xs text-r-muted">Todavía no se ha sincronizado.</p>
+
+            <!-- Centro de Ingeniería y Carrera (Acceso 1-clic) -->
+            <div class="mt-4 grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+              <button type="button" data-nav="strategy" class="text-left p-3 rounded-xl border border-r-line bg-r-bg/70 hover:border-r-accent/60 hover:bg-r-panel transition group">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="font-mono text-[10px] uppercase tracking-widest text-r-accent">Estrategia</span>
+                  <span class="text-xs text-r-muted group-hover:text-r-accent">→</span>
+                </div>
+                <p class="mt-1 text-xs font-semibold text-r-text">Fuel, Stints &amp; Pit Window</p>
+                <p class="mt-0.5 text-[11px] text-r-muted">Calculadora de paradas y pit exit</p>
+              </button>
+              <button type="button" data-nav="analysis" class="text-left p-3 rounded-xl border border-r-line bg-r-bg/70 hover:border-r-accent/60 hover:bg-r-panel transition group">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="font-mono text-[10px] uppercase tracking-widest text-r-accent">Ingeniería</span>
+                  <span class="text-xs text-r-muted group-hover:text-r-accent">→</span>
+                </div>
+                <p class="mt-1 text-xs font-semibold text-r-text">Telemetría &amp; Aero (.ibt)</p>
+                <p class="mt-0.5 text-[11px] text-r-muted">Ride height, rake, IMO y vueltas</p>
+              </button>
+              <button type="button" data-nav="hardware" class="text-left p-3 rounded-xl border border-r-line bg-r-bg/70 hover:border-r-accent/60 hover:bg-r-panel transition group">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="font-mono text-[10px] uppercase tracking-widest text-r-accent">Hardware</span>
+                  <span class="text-xs text-r-muted group-hover:text-r-accent">→</span>
+                </div>
+                <p class="mt-1 text-xs font-semibold text-r-text">FFB &amp; Pedales</p>
+                <p class="mt-0.5 text-[11px] text-r-muted">Ajuste de base, clipping y curvas</p>
+              </button>
+              <button type="button" data-nav="overlays" class="text-left p-3 rounded-xl border border-r-line bg-r-bg/70 hover:border-r-accent/60 hover:bg-r-panel transition group">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="font-mono text-[10px] uppercase tracking-widest text-r-accent">HUD Live</span>
+                  <span class="text-xs text-r-muted group-hover:text-r-accent">→</span>
+                </div>
+                <p class="mt-1 text-xs font-semibold text-r-text">Overlays Broadcast</p>
+                <p class="mt-0.5 text-[11px] text-r-muted">Relative, Standings, Fuel &amp; OBS</p>
+              </button>
+            </div>
 
             <!-- Pilot Preferences & Grouping Control Bar -->
             <div class="mt-5 p-3.5 rounded-2xl border border-r-line bg-r-surface flex flex-col gap-3">
