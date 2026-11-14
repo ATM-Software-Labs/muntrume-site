@@ -8,6 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 127.0.0.1 --port 1420",
     "check": "tsc --noEmit",
+    "test": "npx tsx tests/test-bloque1.ts",
     "tauri": "tauri"
   },
   "dependencies": {

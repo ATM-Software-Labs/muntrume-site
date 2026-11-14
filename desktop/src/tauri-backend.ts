@@ -1,4 +1,5 @@
 import { inTauri } from "./env";
+import { IrsdkClient, type IrsdkTelemetryFrame } from "./irsdk";
 import type { Backend, IbtSessionReport, LiveSample, Settings, SettingsPatch, StagedFile, UploadInput } from "./types";
 
 async function invoke<T>(command: string, args?: Record<string, unknown>): Promise<T> {
@@ -25,6 +26,12 @@ export function createTauriBackend(): Backend {
     await listen<string>("mmt-update", (event) => updates.forEach((cb) => cb(event.payload)));
     await listen<LiveSample>("mmt-live", (event) => liveListeners.forEach((cb) => cb(event.payload)));
     await listen<string>("mmt-iracing-status", (event) => iracingStatusListeners.forEach((cb) => cb(event.payload)));
+    await listen<{ update: number; yaml: string }>("mmt-session-info", (event) => {
+      IrsdkClient.getInstance().updateSessionInfo(event.payload.yaml, event.payload.update);
+    });
+    await listen<IrsdkTelemetryFrame>("mmt-irsdk-frame", (event) => {
+      IrsdkClient.getInstance().processTelemetryFrame(event.payload);
+    });
   }
 
   return {

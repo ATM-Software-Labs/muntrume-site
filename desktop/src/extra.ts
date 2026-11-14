@@ -1,4 +1,5 @@
 import type { HardwareReport, IbtSessionReport, IracingAnalysis, LiveSample, Settings, Snapshot } from "./types";
+import { IrsdkClient, renderRelativeWidget, renderStandingsWidget, renderFuelWidget } from "./irsdk";
 import rawSchedule from "./season_schedule_2026_s4.json";
 import rawRealTracks from "./real_telemetry_tracks.json";
 import { clamp, finiteOr, safeDiv } from "./core/math-guards";
@@ -1557,9 +1558,11 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
 function startDemoOverlayLoop(): void {
   if (!hudMockAllowed()) {
     setHudMode("closed");
+    IrsdkClient.getInstance().stopSimulation();
     return;
   }
   setHudMode("mock");
+  IrsdkClient.getInstance().startSimulation(70);
   if (demoAnimationTimer) clearInterval(demoAnimationTimer);
 
   const paintDemo = () => {
@@ -1590,6 +1593,7 @@ function startDemoOverlayLoop(): void {
 export function updateLiveOverlay(sample: LiveSample): void {
   if (hudMockAllowed()) return;
   isLiveFromSDK = true;
+  IrsdkClient.getInstance().stopSimulation();
   setHudMode("live");
   updateHUDDisplay(sample);
 }
@@ -1695,141 +1699,16 @@ function updateHUDDisplay(sample: LiveSample): void {
       : "Curva rápida: sostén gas de apoyo para asentar el alerón trasero.";
   }
 
-function getManufacturerSvg(brand: string): string {
-  const label = brand.replace(/[^a-zA-Z0-9 ]/g, "").trim().slice(0, 14) || "coche";
-  return `<span class="text-[9px] uppercase tracking-wide text-white/70">${label}</span>`;
-}
-
-  // Relative Radar (GoSetups / GoFast style with Real Manufacturer Logos)
-  const relHtml = `
-    <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-white/10 text-[10px] uppercase font-bold tracking-wider">
-      <span class="text-r-muted">Radar de Intervalos (Relativo)</span>
-      <span class="px-1.5 py-0.5 rounded text-[9px] bg-amber-500/20 text-amber-300 font-mono">DEMO</span>
-    </div>
-    <div class="space-y-1.5 font-mono text-xs">
-      <!-- Car Ahead -->
-      <div class="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-black/40 border border-white/5">
-        <div class="flex items-center gap-1.5 min-w-0">
-          <span class="px-1 py-0.5 rounded text-[9px] font-bold bg-sky-500/20 text-sky-400 border border-sky-500/30">GTP</span>
-          <span class="text-white/80 font-black text-[11px] w-6">#22</span>
-          ${getManufacturerSvg("porsche")}
-          <span class="truncate text-[11px] text-white/90 font-medium">M. Campbell</span>
-        </div>
-        <div class="flex items-center gap-2 shrink-0">
-          <span class="px-1 py-0.5 rounded text-[9px] bg-white/10 text-emerald-400">A 4.8 · 3.1k</span>
-          <span class="text-amber-400 font-bold text-xs">-1.16s</span>
-        </div>
-      </div>
-
-      <!-- Player Car (Alberto) -->
-      <div class="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/40 shadow-sm">
-        <div class="flex items-center gap-1.5 min-w-0">
-          <span class="px-1 py-0.5 rounded text-[9px] font-bold bg-emerald-500/30 text-emerald-300 border border-emerald-500/50">GTP</span>
-          <span class="text-emerald-300 font-black text-[11px] w-6">#16</span>
-          ${getManufacturerSvg("acura")}
-          <span class="truncate text-[11px] text-emerald-300 font-bold">Tú (Alberto)</span>
-        </div>
-        <div class="flex items-center gap-2 shrink-0">
-          <span class="px-1 py-0.5 rounded text-[9px] bg-emerald-500/20 text-emerald-300">A 3.9 · 2.8k</span>
-          <span class="text-emerald-400 font-bold text-xs">P3 · PACE</span>
-        </div>
-      </div>
-
-      <!-- Car Behind -->
-      <div class="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-black/40 border border-white/5">
-        <div class="flex items-center gap-1.5 min-w-0">
-          <span class="px-1 py-0.5 rounded text-[9px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">GT3</span>
-          <span class="text-white/80 font-black text-[11px] w-6">#69</span>
-          ${getManufacturerSvg("bmw")}
-          <span class="truncate text-[11px] text-white/90 font-medium">F. Murian</span>
-        </div>
-        <div class="flex items-center gap-2 shrink-0">
-          <span class="px-1 py-0.5 rounded text-[9px] bg-white/10 text-sky-400">B 3.2 · 2.7k</span>
-          <span class="text-sky-400 font-bold text-xs">+1.24s</span>
-        </div>
-      </div>
-
-      <!-- Trailing Car -->
-      <div class="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-black/40 border border-white/5">
-        <div class="flex items-center gap-1.5 min-w-0">
-          <span class="px-1 py-0.5 rounded text-[9px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">GT3</span>
-          <span class="text-white/80 font-black text-[11px] w-6">#23</span>
-          ${getManufacturerSvg("ferrari")}
-          <span class="truncate text-[11px] text-white/90 font-medium">C. Must</span>
-        </div>
-        <div class="flex items-center gap-2 shrink-0">
-          <span class="px-1 py-0.5 rounded text-[9px] bg-white/10 text-amber-400">C 3.4 · 2.1k</span>
-          <span class="text-sky-300 font-bold text-xs">+2.85s</span>
-        </div>
-      </div>
-    </div>
-  `;
-  const emptyRel = `<div class="text-[11px] text-white/70">Sin coches en el SDK</div>`;
+  // Render high-precision Relative, Standings, and Fuel via iRacing SDK Engines (Bloque 1)
+  const irsdkState = IrsdkClient.getInstance().getLatestState();
   document.querySelectorAll<HTMLElement>("#ovRelative, #ovRelativeFloat").forEach((rel) => {
-    rel.innerHTML = mock ? relHtml : emptyRel;
+    renderRelativeWidget(rel, irsdkState);
   });
-
-  // Standings with Manufacturer Badges
-  const standingsHtml = `
-    <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-white/10 text-[10px] uppercase font-bold tracking-wider">
-      <span class="text-r-muted">Clasificación en Pista</span>
-      <span class="text-[9px] text-r-muted font-mono">VUELTA 5 / 24</span>
-    </div>
-    <div class="space-y-1.5 font-mono text-xs">
-      <div class="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-black/40">
-        <div class="flex items-center gap-1.5 min-w-0">
-          <span class="text-amber-400 font-bold text-[11px]">P1</span>
-          ${getManufacturerSvg("porsche")}
-          <span class="truncate text-white/80 text-[11px]">Porsche #8</span>
-        </div>
-        <span class="text-r-muted text-[11px]">LÍDER</span>
-      </div>
-      <div class="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-black/40">
-        <div class="flex items-center gap-1.5 min-w-0">
-          <span class="text-white font-bold text-[11px]">P2</span>
-          ${getManufacturerSvg("ferrari")}
-          <span class="truncate text-white/80 text-[11px]">Ferrari #51</span>
-        </div>
-        <span class="text-white font-mono text-[11px]">+2.15s</span>
-      </div>
-      <div class="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/40 font-bold text-emerald-300">
-        <div class="flex items-center gap-1.5 min-w-0">
-          <span class="text-emerald-400 text-[11px]">P3</span>
-          ${getManufacturerSvg("bmw")}
-          <span class="truncate text-[11px]">Tú (#16)</span>
-        </div>
-        <span class="text-emerald-400 font-mono text-[11px]">+3.82s</span>
-      </div>
-      <div class="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-black/40">
-        <div class="flex items-center gap-1.5 min-w-0">
-          <span class="text-white font-bold text-[11px]">P4</span>
-          ${getManufacturerSvg("audi")}
-          <span class="truncate text-white/80 text-[11px]">Audi #33</span>
-        </div>
-        <span class="text-white font-mono text-[11px]">+5.40s</span>
-      </div>
-    </div>
-  `;
-  const emptyStandings = `<div class="text-[11px] text-white/70">Sin clasificación en el SDK</div>`;
   document.querySelectorAll<HTMLElement>("#ovStandings, #ovStandingsFloat").forEach((standings) => {
-    standings.innerHTML = mock ? standingsHtml : emptyStandings;
+    renderStandingsWidget(standings, irsdkState);
   });
-
-  // Live Fuel Computer
-  const fuelRemainingL = 48.5;
-  const lapsLeft = (fuelRemainingL / 3.15).toFixed(1);
-  const fuelHtml = `
-    <div class="text-[10px] uppercase text-r-muted mb-1.5 font-bold tracking-wider">Ordenador de Carrera & Consumo</div>
-    <div class="grid grid-cols-2 gap-2 text-xs">
-      <div><span class="text-r-muted block text-[10px]">COMBUSTIBLE</span><strong class="text-white text-base">${fuelRemainingL} L</strong></div>
-      <div><span class="text-r-muted block text-[10px]">VUELTAS RESTANTES</span><strong class="text-r-accent text-base">${lapsLeft}</strong></div>
-      <div><span class="text-r-muted block text-[10px]">BURN RATE</span><strong class="text-white">3.15 L/v</strong></div>
-      <div><span class="text-r-muted block text-[10px]">PARA META</span><strong class="text-amber-400">+12.5 L</strong></div>
-    </div>
-  `;
-  const emptyFuel = `<div class="text-[11px] text-white/70">Sin FuelLevel en el SDK</div>`;
   document.querySelectorAll<HTMLElement>("#ovFuel, #ovFuelFloat").forEach((fuel) => {
-    fuel.innerHTML = mock ? fuelHtml : emptyFuel;
+    renderFuelWidget(fuel, irsdkState);
   });
 
   // Pedals & Steering Canvas
