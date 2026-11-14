@@ -158,6 +158,7 @@ fn windows_loop(app: AppHandle) {
 
         let mut vars: Option<VarTable> = None;
         let mut last_yaml_update: Option<i32> = None;
+        let mut last_yaml_emit = Instant::now() - Duration::from_secs(10);
         let mut last_emit = Instant::now() - Duration::from_secs(1);
         let mut last_frame_emit = Instant::now() - Duration::from_secs(1);
         let mut last_proc = Instant::now();
@@ -213,13 +214,14 @@ fn windows_loop(app: AppHandle) {
                     Err(_) => continue,
                 }
             }
-            if last_yaml_update != Some(update) {
+            if last_yaml_update != Some(update) || last_yaml_emit.elapsed() >= Duration::from_secs(3) {
                 if let Ok((u, yaml)) = read_session_info_yaml(bytes) {
                     let _ = app.emit(
                         "mmt-session-info",
                         serde_json::json!({ "update": u, "yaml": yaml }),
                     );
                     last_yaml_update = Some(u);
+                    last_yaml_emit = Instant::now();
                 }
             }
             let Some(table) = vars.as_ref() else { continue };

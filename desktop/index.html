@@ -1600,49 +1600,55 @@
         </div>
       </div>
 
-      <!-- Bottom-Center Pro Strip: Shift Lights + Dash Cluster + Waveform & Pedals (leaves bottom-left & bottom-right iRacing Black Boxes 100% clear) -->
-      <div class="flex flex-col items-center justify-end gap-1.5 pointer-events-none mt-1">
-        <div id="floatShiftLightsRow" class="mmt-float-widget flex flex-col items-center gap-1 pointer-events-auto" data-widget="lights">
-          <div id="ovDigiFlagFloat" class="w-full max-w-xs"></div>
-          <div class="flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-[#0a0c10]/90 border border-white/10 backdrop-blur-md shadow-[0_6px_24px_rgba(0,0,0,0.65)]" id="ovShiftLightsFloat"></div>
-        </div>
+      <!-- Bottom Row: Keeps Left Black Box, Center Car DDU/Wheel, and Right Black Box 100% CLEAR -->
+      <div class="flex items-end justify-between gap-3 pointer-events-none mt-1">
+        <!-- Left Black Box clearance -->
+        <div class="hidden xl:block w-[330px] shrink-0 pointer-events-none"></div>
 
-        <div class="flex items-end justify-center gap-2 pointer-events-none">
-          <!-- Compact Waveform -->
-          <div id="floatWaveformCard" class="mmt-float-widget rounded-md border border-white/10 bg-[#0a0c10]/90 backdrop-blur-md p-1.5 shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto" data-widget="waveform">
-            <canvas id="ovWaveformCanvasFloat" width="170" height="44" class="rounded bg-black/60 border border-white/10"></canvas>
-          </div>
-
-          <!-- Central Digital Dash Cluster -->
+        <!-- Left-of-Wheel Slot: Compact Cluster + Waveform -->
+        <div class="flex flex-col items-center gap-1.5 pointer-events-none">
           <div id="floatClusterCard" class="mmt-float-widget flex flex-col items-center pointer-events-auto" data-widget="cluster">
-            <div id="ovClusterBrandFloat" class="mb-1 flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-[#0a0c10]/90 border border-white/10 text-[10px] font-mono text-white/90"></div>
-            <div id="ovDeltaFloat" class="mb-1 px-3 py-0.5 rounded border border-emerald-500/40 bg-[#0a0c10]/90 text-emerald-400 font-mono tabular-nums text-[11px] font-bold shadow-lg">
+            <div id="ovClusterBrandFloat" class="mb-1 flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#0a0c10]/90 border border-white/10 text-[10px] font-mono text-white/90"></div>
+            <div id="ovDeltaFloat" class="mb-1 px-2.5 py-0.5 rounded border border-emerald-500/40 bg-[#0a0c10]/90 text-emerald-400 font-mono tabular-nums text-[10px] font-bold shadow-lg">
               —
             </div>
-            <div class="flex items-center gap-3 px-4 py-1.5 rounded-md border border-white/10 bg-[#0a0c10]/92 backdrop-blur-md shadow-[0_6px_24px_rgba(0,0,0,0.7)] tabular-nums">
-              <div class="flex flex-col items-center">
-                <span class="text-[8px] font-mono text-white/50 uppercase tracking-widest">Gear</span>
-                <strong id="ovGearFloat" class="font-mono text-3xl font-black text-white leading-none mt-0.5">—</strong>
-              </div>
-              <div class="h-8 w-px bg-white/15"></div>
+            <div class="flex items-center gap-2.5 px-3 py-1 rounded-md border border-white/10 bg-[#0a0c10]/92 backdrop-blur-md shadow-[0_6px_24px_rgba(0,0,0,0.7)] tabular-nums">
+              <strong id="ovGearFloat" class="font-mono text-2xl font-black text-white leading-none">—</strong>
+              <div class="h-6 w-px bg-white/15"></div>
               <div class="flex flex-col">
-                <span class="text-[8px] font-mono text-white/50 uppercase tracking-widest">Speed</span>
-                <div class="flex items-baseline gap-1 mt-0.5">
-                  <strong id="ovSpeedFloat" class="font-mono text-xl font-black text-[#00e5ff] leading-none">—</strong>
+                <div class="flex items-baseline gap-1">
+                  <strong id="ovSpeedFloat" class="font-mono text-base font-black text-[#00e5ff] leading-none">—</strong>
                   <span class="font-mono text-[9px] text-white/50">km/h</span>
                 </div>
-                <span id="ovRpmFloat" class="text-[9px] font-mono text-white/50 mt-0.5">—</span>
+                <span id="ovRpmFloat" class="text-[9px] font-mono text-white/50">—</span>
               </div>
             </div>
           </div>
 
-          <!-- Compact Pedals & Inputs -->
+          <div id="floatWaveformCard" class="mmt-float-widget rounded-md border border-white/10 bg-[#0a0c10]/90 backdrop-blur-md p-1.5 shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto" data-widget="waveform">
+            <canvas id="ovWaveformCanvasFloat" width="165" height="40" class="rounded bg-black/60 border border-white/10"></canvas>
+          </div>
+        </div>
+
+        <!-- Center Steering Wheel / Car DDU 10 Dashboard clearance (100% EMPTY) -->
+        <div class="flex-1 min-w-[260px] pointer-events-none"></div>
+
+        <!-- Right-of-Wheel Slot: Shift Lights + Compact Pedals & Inputs -->
+        <div class="flex flex-col items-center gap-1.5 pointer-events-none">
+          <div id="floatShiftLightsRow" class="mmt-float-widget flex flex-col items-center gap-1 pointer-events-auto" data-widget="lights">
+            <div id="ovDigiFlagFloat" class="w-full max-w-[220px]"></div>
+            <div class="flex items-center gap-0.5 px-2 py-1 rounded-md bg-[#0a0c10]/90 border border-white/10 backdrop-blur-md shadow-[0_6px_24px_rgba(0,0,0,0.65)]" id="ovShiftLightsFloat"></div>
+          </div>
+
           <div id="floatInputsCard" class="mmt-float-widget rounded-md border border-white/10 bg-[#0a0c10]/90 backdrop-blur-md p-2 shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto" data-widget="inputs">
             <div id="ovGpuPedalsFloat"></div>
-            <canvas id="ovInputsFloat" width="220" height="70" class="rounded-md hidden"></canvas>
+            <canvas id="ovInputsFloat" width="210" height="66" class="rounded-md hidden"></canvas>
             <div id="ovTyresFloat" class="mt-1 text-center font-mono text-[9px] text-r-muted tabular-nums"></div>
           </div>
         </div>
+
+        <!-- Right Black Box clearance -->
+        <div class="hidden xl:block w-[330px] shrink-0 pointer-events-none"></div>
       </div>
     </div>
 
