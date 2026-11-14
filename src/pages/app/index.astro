@@ -71,15 +71,21 @@ const appSchema = {
         <a class="r-btn r-btn--primary" href="https://github.com/ATM-Software-Labs/muntrume-site/releases/latest" target="_blank" rel="noopener noreferrer" data-i18n="app.download">Descargar para Windows (64-bit)</a>
         <a class="r-btn app-btn" href="/garage/" data-i18n="app.catalog">Ver catálogo web de setups</a>
       </div>
+
+      <div class="app-winget-box">
+        <span class="app-winget-label">Instalación alternativa por consola (sin aviso SmartScreen):</span>
+        <button type="button" class="app-winget-copy" id="copyWingetBtn" title="Copiar comando winget" onclick="navigator.clipboard.writeText('winget install Muntrume.MMTSync').then(()=>{const b=this;b.dataset.copied='1';setTimeout(()=>delete b.dataset.copied,2000);})">
+          <code>winget install Muntrume.MMTSync</code>
+          <span class="app-winget-icon">📋</span>
+        </button>
+      </div>
+
       <p class="app-meta">
         <span data-i18n="app.meta.os">Windows 10 / 11 (64-bit)</span>
         <span aria-hidden="true">·</span>
         <span>Versión {appVersion}</span>
         <span aria-hidden="true">·</span>
         <span data-i18n="app.meta.free">Gratis</span>
-      </p>
-      <p class="app-meta" style="margin-top:-6px;font-size:11px;">
-        <span>Alternativa por consola: <code>winget install Muntrume.MMTSync</code></span>
       </p>
     </section>
 
@@ -146,6 +152,15 @@ const appSchema = {
   .app-hero h1 { margin: 0; font: 800 clamp(56px, 10vw, 96px)/.9 var(--r-display); letter-spacing: .02em; text-transform: uppercase; }
   .app-hero .r-lead { margin: 0 auto; }
   .app-cta { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+  .app-winget-box { margin-top: 4px; display: inline-flex; flex-direction: column; align-items: center; gap: 6px; }
+  .app-winget-label { font-size: 11px; color: var(--r-muted); font-family: var(--r-mono); font-weight: 500; }
+  .app-winget-copy { display: inline-flex; align-items: center; gap: 8px; background: color-mix(in srgb, var(--r-surface) 90%, transparent); border: 1px solid var(--r-line); border-radius: 999px; padding: 6px 14px; cursor: pointer; transition: border-color .15s ease, background-color .15s ease, transform .1s ease; }
+  .app-winget-copy:hover { border-color: var(--r-accent); background: var(--r-surface); transform: translateY(-1px); }
+  .app-winget-copy:active { transform: translateY(0); }
+  .app-winget-copy code { color: var(--r-accent); font-family: var(--r-mono); font-size: 12px; font-weight: 600; letter-spacing: 0.02em; }
+  .app-winget-copy .app-winget-icon { font-size: 12px; transition: transform .15s ease; }
+  .app-winget-copy[data-copied="1"] { border-color: #10b981; background: color-mix(in srgb, #10b981 12%, var(--r-surface)); }
+  .app-winget-copy[data-copied="1"]::after { content: "¡Copiado!"; font-family: var(--r-mono); font-size: 11px; font-weight: 700; color: #10b981; }
   .app-btn { border-color: var(--r-line); color: var(--r-text); background: var(--r-surface); }
   .app-btn:hover { border-color: var(--r-accent); color: var(--r-accent); }
   .app-meta { margin: 0; display: flex; flex-wrap: wrap; gap: 8px 10px; justify-content: center; color: var(--r-muted); font: 600 12px/1.4 var(--r-mono); }
