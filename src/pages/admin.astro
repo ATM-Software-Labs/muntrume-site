@@ -1,4 +1,4 @@
-﻿---
+---
 import Layout from '../layouts/Layout.astro';
 import catalog from '../../public/assets/data/catalog_index.json';
 import { PILOTOS } from '../lib/pilotos';
@@ -10,8 +10,8 @@ const totalCircuits = catalog.circuits?.length || 128;
 ---
 
 <Layout
-  title="Race Control | Consola de AdministraciÃ³n Â· Muntrume Motorsport"
-  description="Consola de direcciÃ³n de equipo y administraciÃ³n tÃ©cnica de Muntrume Motorsport: gestiÃ³n de pilotos D1, auditorÃ­a BoP 26S4, nomenclatura MMT, NEC VLN y buzones @muntru.me."
+  title="Race Control | Consola de Administración · Muntrume Motorsport"
+  description="Consola de dirección de equipo y administración técnica de Muntrume Motorsport: gestión de pilotos D1, auditoría BoP 26S4, nomenclatura MMT, NEC VLN y buzones @muntru.me."
   noindex={true}
 >
   <Fragment slot="head">
@@ -52,8 +52,8 @@ const totalCircuits = catalog.circuits?.length || 128;
             RACE CONTROL v4.2
           </span>
           <div class="rc-brand__titles">
-            <h1 class="rc-brand__title">Consola de DirecciÃ³n &amp; TelemetrÃ­a</h1>
-            <p class="rc-brand__sub">Alberto Trujillo (#16 Â· Team Principal) Â· <code id="rcSessionEmail">atrumin16@gmail.com</code></p>
+            <h1 class="rc-brand__title">Consola de Dirección &amp; Telemetría</h1>
+            <p class="rc-brand__sub">Alberto Trujillo (#16 · Team Principal) · <code id="rcSessionEmail">atrumin16@gmail.com</code></p>
           </div>
         </div>
 
@@ -66,21 +66,21 @@ const totalCircuits = catalog.circuits?.length || 128;
             type="search"
             id="adminGlobalSearch"
             class="rc-search-input"
-            placeholder="Buscar piloto, setup MMT, circuito, buzÃ³n o logâ€¦ (Pulsa '/' para enfocar)"
+            placeholder="Buscar piloto, setup MMT, circuito, buzón o log… (Pulsa '/' para enfocar)"
             aria-label="Buscar en Race Control"
           />
           <kbd class="rc-kbd">/</kbd>
         </div>
 
         <div class="rc-topbar__actions">
-          <span id="rcBackendBadge" class="rc-badge rc-badge--ok" title="Estado de conexiÃ³n con Cloudflare D1 y Worker">
+          <span id="rcBackendBadge" class="rc-badge rc-badge--ok" title="Estado de conexión con Cloudflare D1 y Worker">
             <span class="rc-dot"></span>
             <span id="rcBackendBadgeText">D1 Edge: Online</span>
           </span>
-          <a href="/garage" class="r-btn r-btn--sm">Ir al Garage â†’</a>
+          <a href="/garage" class="r-btn r-btn--sm">Ir al Garage →</a>
           <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="openAddDriverModal()">+ Alta de Piloto</button>
-          <button type="button" class="r-btn r-btn--sm" style="border-color:rgba(239,68,68,0.4);color:#f87171" onclick="secureAdminLogout()" title="Cerrar sesiÃ³n de administrador de forma segura">
-            ðŸ”’ Salir
+          <button type="button" class="r-btn r-btn--sm" style="border-color:rgba(239,68,68,0.4);color:#f87171" onclick="secureAdminLogout()" title="Cerrar sesión de administrador de forma segura">
+            🔒 Salir
           </button>
         </div>
       </div>
@@ -89,10 +89,10 @@ const totalCircuits = catalog.circuits?.length || 128;
     <!-- Main Workspace Grid (Sidebar + Active Module) -->
     <div class="r-wrap rc-workspace">
       <!-- Left Navigation Sidebar -->
-      <aside class="rc-sidebar" aria-label="MÃ³dulos de Race Control">
+      <aside class="rc-sidebar" aria-label="Módulos de Race Control">
         <div class="rc-sidebar__group">
-          <p class="rc-sidebar__label">MÃ³dulos de Control</p>
-          <nav class="rc-nav" role="tablist" aria-label="Secciones de administraciÃ³n">
+          <p class="rc-sidebar__label">Módulos de Control</p>
+          <nav class="rc-nav" role="tablist" aria-label="Secciones de administración">
             <button type="button" id="nav-overview" data-rc-tab="overview" class="rc-nav__btn is-active" onclick="switchAdminTab('overview')">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
               <span>Panel General</span>
@@ -119,7 +119,7 @@ const totalCircuits = catalog.circuits?.length || 128;
             </button>
             <button type="button" id="nav-security" data-rc-tab="security" class="rc-nav__btn" onclick="switchAdminTab('security')">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              <span>Seguridad &amp; AuditorÃ­a</span>
+              <span>Seguridad &amp; Auditoría</span>
             </button>
           </nav>
         </div>
@@ -133,10 +133,10 @@ const totalCircuits = catalog.circuits?.length || 128;
             <div><dt>Dominio</dt><dd>muntru.me</dd></div>
             <div><dt>Base D1</dt><dd id="rcSidebarD1Status">Sincronizada</dd></div>
             <div><dt>Escrutinio BoP</dt><dd class="rc-accent">100% PASS TECH</dd></div>
-            <div><dt>NEC VLN 26S4</dt><dd>W01â€“W13 (1,638)</dd></div>
+            <div><dt>NEC VLN 26S4</dt><dd>W01–W13 (1,638)</dd></div>
           </dl>
           <div class="rc-sidebar__btns">
-            <button type="button" class="r-btn r-btn--sm" style="width:100%" onclick="refreshRaceControlData()">â†» Sincronizar D1 Ahora</button>
+            <button type="button" class="r-btn r-btn--sm" style="width:100%" onclick="refreshRaceControlData()">↻ Sincronizar D1 Ahora</button>
           </div>
         </div>
       </aside>
@@ -149,7 +149,7 @@ const totalCircuits = catalog.circuits?.length || 128;
             <p class="m-notice__title" id="rcFeedbackTitle">Estado</p>
             <p class="m-notice__msg" id="rcFeedbackMsg"></p>
           </div>
-          <button type="button" class="m-notice__close" onclick="hideRcNotice()" aria-label="Cerrar">Ã—</button>
+          <button type="button" class="m-notice__close" onclick="hideRcNotice()" aria-label="Cerrar">×</button>
         </div>
 
         <!-- =============================================================== -->
@@ -158,12 +158,12 @@ const totalCircuits = catalog.circuits?.length || 128;
         <section id="tab-overview" class="rc-panel space-y-6">
           <div class="rc-section-head">
             <div>
-              <p class="r-kicker">Centro de Mando Â· Tiempo Real</p>
+              <p class="r-kicker">Centro de Mando · Tiempo Real</p>
               <h2 class="r-h3">Estado Global de Muntrume Motorsport</h2>
-              <p class="rc-muted">SupervisiÃ³n unificada de pilotos oficiales, escrutinio BoP 26S4, catÃ¡logo MMT (.STO), paquetes semanales NEC VLN y correo institucional.</p>
+              <p class="rc-muted">Supervisión unificada de pilotos oficiales, escrutinio BoP 26S4, catálogo MMT (.STO), paquetes semanales NEC VLN y correo institucional.</p>
             </div>
             <div class="rc-btn-row">
-              <button type="button" class="r-btn r-btn--sm" onclick="openEmailPreviewModal('welcome')">âœ‰ï¸ Plantillas Correo</button>
+              <button type="button" class="r-btn r-btn--sm" onclick="openEmailPreviewModal('welcome')">✉️ Plantillas Correo</button>
               <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="openAddDriverModal()">+ Alta de Piloto</button>
             </div>
           </div>
@@ -177,7 +177,7 @@ const totalCircuits = catalog.circuits?.length || 128;
               </div>
               <div class="rc-kpi-val" id="kpiDriversCount">{PILOTOS.length}</div>
               <p class="rc-kpi-sub" id="kpiPendingSub">Pilotos titulares con acceso verificado (0 solicitudes pendientes)</p>
-              <button type="button" class="rc-kpi-link" onclick="switchAdminTab('directory')">Gestionar Directorio â†’</button>
+              <button type="button" class="rc-kpi-link" onclick="switchAdminTab('directory')">Gestionar Directorio →</button>
             </article>
 
             <article class="rc-kpi-card">
@@ -186,18 +186,18 @@ const totalCircuits = catalog.circuits?.length || 128;
                 <span class="rc-badge rc-badge--ok">26S4</span>
               </div>
               <div class="rc-kpi-val" id="kpiSetupsCount">{fmt(totalSetups)}</div>
-              <p class="rc-kpi-sub">{totalCars} coches Â· {totalCircuits} circuitos Â· Nomenclatura oficial <code>MMT_</code></p>
-              <button type="button" class="rc-kpi-link" onclick="switchAdminTab('setups')">Auditar Setups &amp; BoP â†’</button>
+              <p class="rc-kpi-sub">{totalCars} coches · {totalCircuits} circuitos · Nomenclatura oficial <code>MMT_</code></p>
+              <button type="button" class="rc-kpi-link" onclick="switchAdminTab('setups')">Auditar Setups &amp; BoP →</button>
             </article>
 
             <article class="rc-kpi-card">
               <div class="rc-kpi-card__top">
-                <span class="rc-kpi-tag">ESPECIAL NEC Â· VLN</span>
-                <span class="rc-badge rc-badge--ok">W01â€“W13</span>
+                <span class="rc-kpi-tag">ESPECIAL NEC · VLN</span>
+                <span class="rc-badge rc-badge--ok">W01–W13</span>
               </div>
               <div class="rc-kpi-val">1,638</div>
-              <p class="rc-kpi-sub">Setups en NÃ¼rburgring Combined Gesamtstrecke VLN (Altura &ge; 70.5 mm)</p>
-              <button type="button" class="rc-kpi-link" onclick="switchAdminTab('setups')">Ver Calendario NEC â†’</button>
+              <p class="rc-kpi-sub">Setups en Nürburgring Combined Gesamtstrecke VLN (Altura &ge; 70.5 mm)</p>
+              <button type="button" class="rc-kpi-link" onclick="switchAdminTab('setups')">Ver Calendario NEC →</button>
             </article>
 
             <article class="rc-kpi-card">
@@ -206,21 +206,21 @@ const totalCircuits = catalog.circuits?.length || 128;
                 <span class="rc-badge rc-badge--ok">Zero-Trust</span>
               </div>
               <div class="rc-kpi-val">5 / 100%</div>
-              <p class="rc-kpi-sub">5 buzones <code>@muntru.me</code> Â· 0 Failed Tech Â· PBKDF2 100k iter.</p>
-              <button type="button" class="rc-kpi-link" onclick="switchAdminTab('domains')">Abrir Buzones &amp; DNS â†’</button>
+              <p class="rc-kpi-sub">5 buzones <code>@muntru.me</code> · 0 Failed Tech · PBKDF2 100k iter.</p>
+              <button type="button" class="rc-kpi-link" onclick="switchAdminTab('domains')">Abrir Buzones &amp; DNS →</button>
             </article>
           </div>
 
-          <!-- Roster Oficial en Vivo + Acciones RÃ¡pidas -->
+          <!-- Roster Oficial en Vivo + Acciones Rápidas -->
           <div class="rc-card">
             <div class="rc-card__head">
               <div>
-                <h3 class="rc-card__title">Plantilla Oficial &amp; TelemetrÃ­a en Vivo (iRacing / Garage 61)</h3>
-                <p class="rc-muted">Datos sincronizados desde <code>/api/drivers</code> y vinculaciÃ³n de cuenta del Setup Vault.</p>
+                <h3 class="rc-card__title">Plantilla Oficial &amp; Telemetría en Vivo (iRacing / Garage 61)</h3>
+                <p class="rc-muted">Datos sincronizados desde <code>/api/drivers</code> y vinculación de cuenta del Setup Vault.</p>
               </div>
               <div class="rc-btn-row">
-                <a href="/drivers" class="r-btn r-btn--sm">Ver Roster PÃºblico â†—</a>
-                <button type="button" class="r-btn r-btn--sm" onclick="switchAdminTab('directory')">Directorio Completo â†’</button>
+                <a href="/drivers" class="r-btn r-btn--sm">Ver Roster Público ↗</a>
+                <button type="button" class="r-btn r-btn--sm" onclick="switchAdminTab('directory')">Directorio Completo →</button>
               </div>
             </div>
             <div class="r-scroll">
@@ -229,7 +229,7 @@ const totalCircuits = catalog.circuits?.length || 128;
                   <tr>
                     <th>Dorsal &amp; Piloto</th>
                     <th>Rol Institucional</th>
-                    <th>BuzÃ³n @muntru.me</th>
+                    <th>Buzón @muntru.me</th>
                     <th>Sports Car iRating / SR</th>
                     <th>Estado Vault</th>
                     <th class="text-right">Acciones</th>
@@ -249,10 +249,10 @@ const totalCircuits = catalog.circuits?.length || 128;
                       </td>
                       <td><span class="rc-badge">{p.role}</span></td>
                       <td><code>{p.slug === 'albertot' ? 'alberto@muntru.me' : p.slug === 'mateob' ? 'mateo@muntru.me' : p.slug === 'eduardoc' ? 'eduardo@muntru.me' : 'juanlu@muntru.me'}</code></td>
-                      <td><span class="rc-mono-sub">Sincronizandoâ€¦</span></td>
+                      <td><span class="rc-mono-sub">Sincronizando…</span></td>
                       <td><span class="rc-badge rc-badge--ok">Verificado</span></td>
                       <td class="text-right">
-                        <a href={`/drivers/${p.slug}/`} class="r-btn r-btn--sm">Perfil â†—</a>
+                        <a href={`/drivers/${p.slug}/`} class="r-btn r-btn--sm">Perfil ↗</a>
                       </td>
                     </tr>
                   ))}
@@ -266,26 +266,26 @@ const totalCircuits = catalog.circuits?.length || 128;
             <div class="rc-card">
               <div class="rc-card__head">
                 <div>
-                  <h3 class="rc-card__title">âœ“ Estado de Escrutinio BoP 26S4 &amp; Nomenclatura MMT</h3>
-                  <p class="rc-muted">AuditorÃ­a automÃ¡tica sobre los {fmt(totalSetups)} archivos <code>.sto</code> del Vault.</p>
+                  <h3 class="rc-card__title">✓ Estado de Escrutinio BoP 26S4 &amp; Nomenclatura MMT</h3>
+                  <p class="rc-muted">Auditoría automática sobre los {fmt(totalSetups)} archivos <code>.sto</code> del Vault.</p>
                 </div>
                 <span class="rc-badge rc-badge--ok">0 FAILED TECH</span>
               </div>
               <ul class="rc-check-list">
                 <li>
-                  <span>Estructura Oficial <code>MMT_[MODELO]_[CIRCUITO]_[SESIÃ“N].sto</code></span>
+                  <span>Estructura Oficial <code>MMT_[MODELO]_[CIRCUITO]_[SESIÓN].sto</code></span>
                   <strong class="rc-accent">42,654 / 42,654 (100%)</strong>
                 </li>
                 <li>
-                  <span>Alturas EstÃ¡ticas y CaÃ­das dentro de lÃ­mites iRacing 26S4</span>
+                  <span>Alturas Estáticas y Caídas dentro de límites iRacing 26S4</span>
                   <strong class="rc-accent">PASS TECH (100%)</strong>
                 </li>
                 <li>
-                  <span>NÃ¼rburgring Combined Gesamtstrecke VLN (Altura NEC &ge; 70.5 mm)</span>
+                  <span>Nürburgring Combined Gesamtstrecke VLN (Altura NEC &ge; 70.5 mm)</span>
                   <strong class="rc-accent">1,638 / 1,638 OK</strong>
                 </li>
                 <li>
-                  <span>PresiÃ³n FrÃ­a MÃ­nima (&ge; 151.7 kPa Dry / &ge; 165.5 kPa Wet)</span>
+                  <span>Presión Fría Mínima (&ge; 151.7 kPa Dry / &ge; 165.5 kPa Wet)</span>
                   <strong class="rc-accent">Verificado</strong>
                 </li>
                 <li>
@@ -299,9 +299,9 @@ const totalCircuits = catalog.circuits?.length || 128;
               <div class="rc-card__head">
                 <div>
                   <h3 class="rc-card__title">Actividad Reciente en Race Control</h3>
-                  <p class="rc-muted">Ãšltimos eventos registrados en Cloudflare D1 y consola.</p>
+                  <p class="rc-muted">Últimos eventos registrados en Cloudflare D1 y consola.</p>
                 </div>
-                <button type="button" class="r-btn r-btn--sm" onclick="switchAdminTab('security')">Ver AuditorÃ­a â†’</button>
+                <button type="button" class="r-btn r-btn--sm" onclick="switchAdminTab('security')">Ver Auditoría →</button>
               </div>
               <ul id="overviewActivityList" class="rc-activity-list"></ul>
             </div>
@@ -314,12 +314,12 @@ const totalCircuits = catalog.circuits?.length || 128;
         <section id="tab-directory" class="rc-panel space-y-6 hidden">
           <div class="rc-section-head">
             <div>
-              <p class="r-kicker">GestiÃ³n de Miembros Â· Cloudflare D1</p>
+              <p class="r-kicker">Gestión de Miembros · Cloudflare D1</p>
               <h2 class="r-h3">Directorio de Pilotos &amp; Solicitudes de Acceso</h2>
-              <p class="rc-muted">Autoriza solicitudes de ingreso al Garage, genera enlaces Ãºnicos de contraseÃ±a (72 h) o contraseÃ±as temporales de 1 uso y administra permisos.</p>
+              <p class="rc-muted">Autoriza solicitudes de ingreso al Garage, genera enlaces únicos de contraseña (72 h) o contraseñas temporales de 1 uso y administra permisos.</p>
             </div>
             <div class="rc-btn-row">
-              <button type="button" class="r-btn r-btn--sm" onclick="refreshRaceControlData()">â†» Actualizar D1</button>
+              <button type="button" class="r-btn r-btn--sm" onclick="refreshRaceControlData()">↻ Actualizar D1</button>
               <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="openAddDriverModal()">+ Alta de Piloto</button>
             </div>
           </div>
@@ -328,8 +328,8 @@ const totalCircuits = catalog.circuits?.length || 128;
           <div id="pendingRequestsCard" class="rc-card hidden" style="border-left:3px solid var(--r-accent)">
             <div class="rc-card__head">
               <div>
-                <h3 class="rc-card__title">Solicitudes de Acceso Pendientes de AprobaciÃ³n</h3>
-                <p class="rc-muted">Solicitudes enviadas desde el formulario Â«Solicitar accesoÂ» de <code>/garage</code>.</p>
+                <h3 class="rc-card__title">Solicitudes de Acceso Pendientes de Aprobación</h3>
+                <p class="rc-muted">Solicitudes enviadas desde el formulario «Solicitar acceso» de <code>/garage</code>.</p>
               </div>
               <span id="pendingRequestsCountBadge" class="rc-badge rc-badge--warn">0 pendientes</span>
             </div>
@@ -350,7 +350,7 @@ const totalCircuits = catalog.circuits?.length || 128;
                 type="search"
                 id="directorySearchInput"
                 class="g-search"
-                placeholder="Filtrar por nombre, correo, dorsal o rolâ€¦"
+                placeholder="Filtrar por nombre, correo, dorsal o rol…"
                 oninput="renderDirectoryTable()"
               />
             </div>
@@ -362,9 +362,9 @@ const totalCircuits = catalog.circuits?.length || 128;
                 <thead>
                   <tr>
                     <th>Piloto &amp; Identidad</th>
-                    <th>Correo de Acceso / BuzÃ³n</th>
+                    <th>Correo de Acceso / Buzón</th>
                     <th>Rol &amp; Dorsal</th>
-                    <th>Licencia / TelemetrÃ­a</th>
+                    <th>Licencia / Telemetría</th>
                     <th>Estado Credencial</th>
                     <th class="text-right">Acciones de Cuenta</th>
                   </tr>
@@ -381,12 +381,12 @@ const totalCircuits = catalog.circuits?.length || 128;
         <section id="tab-setups" class="rc-panel space-y-6 hidden">
           <div class="rc-section-head">
             <div>
-              <p class="r-kicker">IngenierÃ­a de Pista Â· BoP 26S4</p>
+              <p class="r-kicker">Ingeniería de Pista · BoP 26S4</p>
               <h2 class="r-h3">Vault Setups, Nomenclatura MMT &amp; Especial NEC VLN</h2>
-              <p class="rc-muted">Inspector de cumplimiento del estÃ¡ndar <code>MMT_[MODELO]_[CIRCUITO]_[SESIÃ“N]_[VERSIÃ“N].sto</code> y verificaciÃ³n de escrutinio tÃ©cnico sin <em>Failed Tech</em>.</p>
+              <p class="rc-muted">Inspector de cumplimiento del estándar <code>MMT_[MODELO]_[CIRCUITO]_[SESIÓN]_[VERSIÓN].sto</code> y verificación de escrutinio técnico sin <em>Failed Tech</em>.</p>
             </div>
             <div class="rc-btn-row">
-              <a href="/garage" class="r-btn r-btn--primary r-btn--sm">Abrir CatÃ¡logo en /garage â†’</a>
+              <a href="/garage" class="r-btn r-btn--primary r-btn--sm">Abrir Catálogo en /garage →</a>
             </div>
           </div>
 
@@ -394,83 +394,83 @@ const totalCircuits = catalog.circuits?.length || 128;
           <div class="rc-card" style="border-left:3px solid var(--r-accent)">
             <div class="rc-card__head">
               <div>
-                <h3 class="rc-card__title">ðŸ”¬ Simulador de Nomenclatura Oficial MMT &amp; Escrutinio BoP</h3>
-                <p class="rc-muted">Prueba cualquier combinaciÃ³n de modelo, circuito, sesiÃ³n y versiÃ³n para validar su nombre oficial y sus parÃ¡metros tÃ©cnicos BoP 26S4.</p>
+                <h3 class="rc-card__title">🔬 Simulador de Nomenclatura Oficial MMT &amp; Escrutinio BoP</h3>
+                <p class="rc-muted">Prueba cualquier combinación de modelo, circuito, sesión y versión para validar su nombre oficial y sus parámetros técnicos BoP 26S4.</p>
               </div>
-              <span class="rc-badge rc-badge--ok">PASS TECH Â· 0 FAILED TECH</span>
+              <span class="rc-badge rc-badge--ok">PASS TECH · 0 FAILED TECH</span>
             </div>
 
             <div class="rc-sim-grid">
               <div class="g-field">
                 <label for="simCarSelect">Modelo MMT</label>
                 <select id="simCarSelect" onchange="updateMmtSimulator()">
-                  <option value="ferrari296gt3">F296 Â· Ferrari 296 GT3</option>
-                  <option value="porsche992rgt3">P911 Â· Porsche 911 GT3 R (992)</option>
-                  <option value="bmwm4gt3">M4 Â· BMW M4 GT3</option>
-                  <option value="mercedesamgevogt3">AMG Â· Mercedes-AMG GT3 2020</option>
-                  <option value="audir8lmsevo2gt3">R8 Â· Audi R8 LMS EVO II GT3</option>
-                  <option value="lamborghinievogt3">LAMBO Â· Lamborghini HuracÃ¡n GT3 EVO</option>
-                  <option value="mclaren720sgt3">MACLA Â· McLaren 720S GT3 EVO</option>
-                  <option value="chevyvettez06rgt3">Z06 Â· Chevrolet Corvette Z06 GT3.R</option>
-                  <option value="fordmustanggt3">MUST Â· Ford Mustang GT3</option>
-                  <option value="amvantageevogt3">AMR Â· Aston Martin Vantage GT3 EVO</option>
-                  <option value="amvalkyriegtp">VALK Â· Aston Martin Valkyrie AMR-LMH</option>
-                  <option value="ferrari499p">F499P Â· Ferrari 499P Hypercar</option>
-                  <option value="cadillacvseriesrgtp">CADDY Â· Cadillac V-Series.R GTP</option>
-                  <option value="porsche963gtp">P963 Â· Porsche 963 GTP</option>
-                  <option value="bmwlmdh">BMWH Â· BMW M Hybrid V8 GTP</option>
-                  <option value="acuraarx06gtp">ACURA Â· Acura ARX-06 GTP</option>
-                  <option value="porsche718gt4">PORS Â· Porsche 718 Cayman GT4</option>
-                  <option value="audirs3lmsgen2">RS3 Â· Audi RS 3 LMS TCR</option>
-                  <option value="hyundaielantracn7">HYUN Â· Hyundai Elantra N TCR</option>
-                  <option value="hondacivictyper">CIVIC Â· Honda Civic Type R TCR</option>
-                  <option value="toyotagr86">GR86 Â· Toyota GR86 Cup</option>
-                  <option value="superformulasf23 toyota">SF23 Â· Super Formula SF23</option>
-                  <option value="dallaraf3">F3 Â· Dallara F3</option>
-                  <option value="formulair04">F4 Â· FIA F4</option>
-                  <option value="raygr22">FF1600 Â· Ray FF1600</option>
-                  <option value="mx5 cup">MX5 Â· Global Mazda MX-5 Cup</option>
+                  <option value="ferrari296gt3">F296 · Ferrari 296 GT3</option>
+                  <option value="porsche992rgt3">P911 · Porsche 911 GT3 R (992)</option>
+                  <option value="bmwm4gt3">M4 · BMW M4 GT3</option>
+                  <option value="mercedesamgevogt3">AMG · Mercedes-AMG GT3 2020</option>
+                  <option value="audir8lmsevo2gt3">R8 · Audi R8 LMS EVO II GT3</option>
+                  <option value="lamborghinievogt3">LAMBO · Lamborghini Huracán GT3 EVO</option>
+                  <option value="mclaren720sgt3">MACLA · McLaren 720S GT3 EVO</option>
+                  <option value="chevyvettez06rgt3">Z06 · Chevrolet Corvette Z06 GT3.R</option>
+                  <option value="fordmustanggt3">MUST · Ford Mustang GT3</option>
+                  <option value="amvantageevogt3">AMR · Aston Martin Vantage GT3 EVO</option>
+                  <option value="amvalkyriegtp">VALK · Aston Martin Valkyrie AMR-LMH</option>
+                  <option value="ferrari499p">F499P · Ferrari 499P Hypercar</option>
+                  <option value="cadillacvseriesrgtp">CADDY · Cadillac V-Series.R GTP</option>
+                  <option value="porsche963gtp">P963 · Porsche 963 GTP</option>
+                  <option value="bmwlmdh">BMWH · BMW M Hybrid V8 GTP</option>
+                  <option value="acuraarx06gtp">ACURA · Acura ARX-06 GTP</option>
+                  <option value="porsche718gt4">PORS · Porsche 718 Cayman GT4</option>
+                  <option value="audirs3lmsgen2">RS3 · Audi RS 3 LMS TCR</option>
+                  <option value="hyundaielantracn7">HYUN · Hyundai Elantra N TCR</option>
+                  <option value="hondacivictyper">CIVIC · Honda Civic Type R TCR</option>
+                  <option value="toyotagr86">GR86 · Toyota GR86 Cup</option>
+                  <option value="superformulasf23 toyota">SF23 · Super Formula SF23</option>
+                  <option value="dallaraf3">F3 · Dallara F3</option>
+                  <option value="formulair04">F4 · FIA F4</option>
+                  <option value="raygr22">FF1600 · Ray FF1600</option>
+                  <option value="mx5 cup">MX5 · Global Mazda MX-5 Cup</option>
                 </select>
               </div>
 
               <div class="g-field">
                 <label for="simCircuitSelect">Circuito</label>
                 <select id="simCircuitSelect" onchange="updateMmtSimulator()">
-                  <option value="NÃ¼rburgring Combined Gesamtstrecke VLN">VLN Â· NÃ¼rburgring Combined Gesamtstrecke VLN (NEC)</option>
-                  <option value="Spa">SPA Â· Circuit de Spa-Francorchamps</option>
-                  <option value="Le Mans">LEMANS Â· Circuit des 24 Heures du Mans</option>
-                  <option value="Daytona">DAYTONA Â· Daytona International Speedway</option>
-                  <option value="Sebring">SEBRING Â· Sebring International Raceway</option>
-                  <option value="Watkins Glen">WGLEN Â· Watkins Glen International</option>
-                  <option value="Road Atlanta">RATLANTA Â· Michelin Raceway Road Atlanta</option>
-                  <option value="Monza">MONZA Â· Autodromo Nazionale Monza</option>
-                  <option value="Imola">IMOLA Â· Autodromo Internazionale Enzo e Dino Ferrari</option>
-                  <option value="Suzuka">SUZUKA Â· Suzuka International Racing Course</option>
-                  <option value="Bathurst">BATHURST Â· Mount Panorama Circuit</option>
-                  <option value="Interlagos">INTERLAGOS Â· AutÃ³dromo JosÃ© Carlos Pace</option>
+                  <option value="Nürburgring Combined Gesamtstrecke VLN">VLN · Nürburgring Combined Gesamtstrecke VLN (NEC)</option>
+                  <option value="Spa">SPA · Circuit de Spa-Francorchamps</option>
+                  <option value="Le Mans">LEMANS · Circuit des 24 Heures du Mans</option>
+                  <option value="Daytona">DAYTONA · Daytona International Speedway</option>
+                  <option value="Sebring">SEBRING · Sebring International Raceway</option>
+                  <option value="Watkins Glen">WGLEN · Watkins Glen International</option>
+                  <option value="Road Atlanta">RATLANTA · Michelin Raceway Road Atlanta</option>
+                  <option value="Monza">MONZA · Autodromo Nazionale Monza</option>
+                  <option value="Imola">IMOLA · Autodromo Internazionale Enzo e Dino Ferrari</option>
+                  <option value="Suzuka">SUZUKA · Suzuka International Racing Course</option>
+                  <option value="Bathurst">BATHURST · Mount Panorama Circuit</option>
+                  <option value="Interlagos">INTERLAGOS · Autódromo José Carlos Pace</option>
                 </select>
               </div>
 
               <div class="g-field">
-                <label for="simSessionSelect">CÃ³digo de SesiÃ³n MMT</label>
+                <label for="simSessionSelect">Código de Sesión MMT</label>
                 <select id="simSessionSelect" onchange="updateMmtSimulator()">
-                  <option value="R">R Â· Race (Carrera estÃ¡ndar / Sprint)</option>
-                  <option value="END">END Â· Endurance / Eventos Especiales / NEC</option>
-                  <option value="S">S Â· Safe (Alta estabilidad para carrera)</option>
-                  <option value="Q">Q Â· Quali estÃ¡ndar (1 vuelta / mÃ­nima carga)</option>
-                  <option value="Q2">Q2 Â· Quali de 2 vueltas (out-lap + push)</option>
-                  <option value="Q_SAFE">Q_SAFE Â· Quali alta estabilidad</option>
-                  <option value="Q2_SAFE">Q2_SAFE Â· Quali 2 vueltas alta estabilidad</option>
-                  <option value="W">W Â· Wet (Lluvia)</option>
+                  <option value="R">R · Race (Carrera estándar / Sprint)</option>
+                  <option value="END">END · Endurance / Eventos Especiales / NEC</option>
+                  <option value="S">S · Safe (Alta estabilidad para carrera)</option>
+                  <option value="Q">Q · Quali estándar (1 vuelta / mínima carga)</option>
+                  <option value="Q2">Q2 · Quali de 2 vueltas (out-lap + push)</option>
+                  <option value="Q_SAFE">Q_SAFE · Quali alta estabilidad</option>
+                  <option value="Q2_SAFE">Q2_SAFE · Quali 2 vueltas alta estabilidad</option>
+                  <option value="W">W · Wet (Lluvia)</option>
                 </select>
               </div>
 
               <div class="g-field">
-                <label for="simVersionSelect">VersiÃ³n (Opcional)</label>
+                <label for="simVersionSelect">Versión (Opcional)</label>
                 <select id="simVersionSelect" onchange="updateMmtSimulator()">
-                  <option value="">EstÃ¡ndar (Sin sufijo)</option>
-                  <option value="V2">V2 Â· RevisiÃ³n BoP 2</option>
-                  <option value="V3">V3 Â· RevisiÃ³n BoP 3</option>
+                  <option value="">Estándar (Sin sufijo)</option>
+                  <option value="V2">V2 · Revisión BoP 2</option>
+                  <option value="V3">V3 · Revisión BoP 3</option>
                 </select>
               </div>
             </div>
@@ -483,7 +483,7 @@ const totalCircuits = catalog.circuits?.length || 128;
               </div>
               <div class="rc-btn-row">
                 <button type="button" class="r-btn r-btn--sm" onclick="copySimulatedFilename()">Copiar nombre .sto</button>
-                <a id="simOpenInGarageBtn" href="/garage" class="r-btn r-btn--primary r-btn--sm">Buscar en /garage â†’</a>
+                <a id="simOpenInGarageBtn" href="/garage" class="r-btn r-btn--primary r-btn--sm">Buscar en /garage →</a>
               </div>
             </div>
 
@@ -494,10 +494,10 @@ const totalCircuits = catalog.circuits?.length || 128;
           <div class="rc-card">
             <div class="rc-card__head">
               <div>
-                <h3 class="rc-card__title">ðŸ Cobertura Semanal NEC Â· NÃ¼rburgring Combined Gesamtstrecke VLN (W01â€“W13)</h3>
-                <p class="rc-muted">1,638 setups verificados para las 21 monturas de la NÃ¼rburgring Endurance Championship (6 variantes por coche cada semana: <code>Q</code>, <code>Q2_SAFE</code>, <code>R</code>, <code>END</code>, <code>S</code>, <code>W</code>).</p>
+                <h3 class="rc-card__title">🏁 Cobertura Semanal NEC · Nürburgring Combined Gesamtstrecke VLN (W01–W13)</h3>
+                <p class="rc-muted">1,638 setups verificados para las 21 monturas de la Nürburgring Endurance Championship (6 variantes por coche cada semana: <code>Q</code>, <code>Q2_SAFE</code>, <code>R</code>, <code>END</code>, <code>S</code>, <code>W</code>).</p>
               </div>
-              <a href="/garage" class="r-btn r-btn--sm">Ver NEC en Garage â†’</a>
+              <a href="/garage" class="r-btn r-btn--sm">Ver NEC en Garage →</a>
             </div>
             <div class="rc-nec-grid">
               {Array.from({ length: 13 }, (_, i) => {
@@ -508,8 +508,8 @@ const totalCircuits = catalog.circuits?.length || 128;
                       <span class="rc-strong">NEC {w}</span>
                       <span class="rc-badge rc-badge--ok">PASS TECH</span>
                     </div>
-                    <div class="rc-mono-sub">VLN Â· 21 coches Â· 126 setups</div>
-                    <div class="rc-nec-card__codes">Q Â· Q2_SAFE Â· R Â· END Â· S Â· W</div>
+                    <div class="rc-mono-sub">VLN · 21 coches · 126 setups</div>
+                    <div class="rc-nec-card__codes">Q · Q2_SAFE · R · END · S · W</div>
                   </a>
                 );
               })}
@@ -528,8 +528,8 @@ const totalCircuits = catalog.circuits?.length || 128;
               <p class="rc-muted">Enrutamiento Cloudflare Email Routing + Resend API transaccional y acceso directo al Webmail corporativo.</p>
             </div>
             <div class="rc-btn-row">
-              <a href="/communications" class="r-btn r-btn--sm">Bandeja Interna (/communications) â†’</a>
-              <a href="https://mail.trujillomingorance.com" target="_blank" rel="noopener noreferrer" class="r-btn r-btn--primary r-btn--sm">Abrir Webmail Corporativo â†—</a>
+              <a href="/communications" class="r-btn r-btn--sm">Bandeja Interna (/communications) →</a>
+              <a href="https://mail.trujillomingorance.com" target="_blank" rel="noopener noreferrer" class="r-btn r-btn--primary r-btn--sm">Abrir Webmail Corporativo ↗</a>
             </div>
           </div>
 
@@ -540,9 +540,9 @@ const totalCircuits = catalog.circuits?.length || 128;
               <p class="rc-kpi-sub">Cloudflare DNS + Email Routing Activo</p>
             </div>
             <div class="rc-kpi-card">
-              <span class="rc-kpi-tag">AUTENTICACIÃ“N DNS</span>
-              <div class="rc-kpi-val">SPF Â· DKIM</div>
-              <p class="rc-kpi-sub">DMARC p=quarantine Â· TLS 1.3</p>
+              <span class="rc-kpi-tag">AUTENTICACIÓN DNS</span>
+              <div class="rc-kpi-val">SPF · DKIM</div>
+              <p class="rc-kpi-sub">DMARC p=quarantine · TLS 1.3</p>
             </div>
             <div class="rc-kpi-card">
               <span class="rc-kpi-tag">BUZONES OFICIALES</span>
@@ -550,9 +550,9 @@ const totalCircuits = catalog.circuits?.length || 128;
               <p class="rc-kpi-sub">4 pilotos titulares + Race Control</p>
             </div>
             <div class="rc-kpi-card">
-              <span class="rc-kpi-tag">PLANTILLAS AUTOMÃTICAS</span>
+              <span class="rc-kpi-tag">PLANTILLAS AUTOMÁTICAS</span>
               <div class="rc-kpi-val">3 Listas</div>
-              <p class="rc-kpi-sub">Bienvenida, RecuperaciÃ³n y Briefing</p>
+              <p class="rc-kpi-sub">Bienvenida, Recuperación y Briefing</p>
             </div>
           </div>
 
@@ -560,7 +560,7 @@ const totalCircuits = catalog.circuits?.length || 128;
             <div class="rc-card__head">
               <div>
                 <h3 class="rc-card__title">Buzones Institucionales @muntru.me</h3>
-                <p class="rc-muted">RedirecciÃ³n verificada y acceso a bandeja de comunicaciones del equipo.</p>
+                <p class="rc-muted">Redirección verificada y acceso a bandeja de comunicaciones del equipo.</p>
               </div>
               <button type="button" class="r-btn r-btn--sm" onclick="openEmailPreviewModal('welcome')">Probar Plantillas HTML</button>
             </div>
@@ -568,7 +568,7 @@ const totalCircuits = catalog.circuits?.length || 128;
               <table class="r-table">
                 <thead>
                   <tr>
-                    <th>BuzÃ³n Institucional</th>
+                    <th>Buzón Institucional</th>
                     <th>Titular Asignado</th>
                     <th>Rol</th>
                     <th>Estado DNS / TLS</th>
@@ -587,13 +587,13 @@ const totalCircuits = catalog.circuits?.length || 128;
         <section id="tab-iracing" class="rc-panel space-y-6 hidden">
           <div class="rc-section-head">
             <div>
-              <p class="r-kicker">TelemetrÃ­a Oficial Â· Cero Riesgo de Baneo</p>
-              <h2 class="r-h3">iRacing Sync Bridge &amp; VinculaciÃ³n de cust_id</h2>
-              <p class="rc-muted">Vincula el <code>cust_id</code> oficial de cada piloto para sincronizar iRating, Safety Rating y telemetrÃ­a de Garage 61 sin almacenar contraseÃ±as de iRacing.</p>
+              <p class="r-kicker">Telemetría Oficial · Cero Riesgo de Baneo</p>
+              <h2 class="r-h3">iRacing Sync Bridge &amp; Vinculación de cust_id</h2>
+              <p class="rc-muted">Vincula el <code>cust_id</code> oficial de cada piloto para sincronizar iRating, Safety Rating y telemetría de Garage 61 sin almacenar contraseñas de iRacing.</p>
             </div>
             <div class="rc-btn-row">
-              <button type="button" class="r-btn r-btn--sm" onclick="testLiveDriversEndpoint()">âš¡ Probar /api/drivers en Vivo</button>
-              <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="copyDriverIdsConfig()">ðŸ“‹ Copiar driver-ids.js</button>
+              <button type="button" class="r-btn r-btn--sm" onclick="testLiveDriversEndpoint()">⚡ Probar /api/drivers en Vivo</button>
+              <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="copyDriverIdsConfig()">📋 Copiar driver-ids.js</button>
             </div>
           </div>
 
@@ -601,20 +601,20 @@ const totalCircuits = catalog.circuits?.length || 128;
             <div class="rc-card">
               <div class="rc-card__head">
                 <div>
-                  <h3 class="rc-card__title">MÃ©todo 1 Â· Marcador Anti-Ban en 1 Clic</h3>
-                  <p class="rc-muted">Arrastra el botÃ³n a tu barra de marcadores y pÃºlsalo dentro de <code>members-ng.iracing.com</code>.</p>
+                  <h3 class="rc-card__title">Método 1 · Marcador Anti-Ban en 1 Clic</h3>
+                  <p class="rc-muted">Arrastra el botón a tu barra de marcadores y púlsalo dentro de <code>members-ng.iracing.com</code>.</p>
                 </div>
                 <span class="rc-badge rc-badge--ok">Recomendado</span>
               </div>
-              <p class="rc-muted">El navegador lee Ãºnicamente tu resumen pÃºblico de licencia (`cust_id`, iRating y SR) y lo envÃ­a al endpoint oficial de Muntrume.</p>
+              <p class="rc-muted">El navegador lee únicamente tu resumen público de licencia (`cust_id`, iRating y SR) y lo envía al endpoint oficial de Muntrume.</p>
               <div class="rc-btn-row" style="margin-top:8px">
                 <a
                   id="iracingBookmarkletLink"
                   href="javascript:(function(){alert('Muntrume iRacing Sync Bridge: Ejecuta este marcador dentro de members-ng.iracing.com');})();"
                   class="r-btn r-btn--primary r-btn--sm"
-                  onclick="event.preventDefault(); showRcNotice('Arrastra el botÃ³n', 'Arrastra este botÃ³n a la barra de marcadores de tu navegador y pÃºlsalo cuando estÃ©s en members-ng.iracing.com.', 'info');"
+                  onclick="event.preventDefault(); showRcNotice('Arrastra el botón', 'Arrastra este botón a la barra de marcadores de tu navegador y púlsalo cuando estés en members-ng.iracing.com.', 'info');"
                 >
-                  âš¡ Sync Muntrume iRacing
+                  ⚡ Sync Muntrume iRacing
                 </a>
                 <button type="button" class="r-btn r-btn--sm" onclick="copyIracingConsoleSnippet()">Copiar Script Consola (F12)</button>
               </div>
@@ -623,20 +623,20 @@ const totalCircuits = catalog.circuits?.length || 128;
             <div class="rc-card">
               <div class="rc-card__head">
                 <div>
-                  <h3 class="rc-card__title">MÃ©todo 2 Â· Mapeo Directo en driver-ids.js</h3>
+                  <h3 class="rc-card__title">Método 2 · Mapeo Directo en driver-ids.js</h3>
                   <p class="rc-muted">Edita los <code>cust_id</code> en la tabla inferior y guarda o exporta el archivo <code>public/assets/js/driver-ids.js</code>.</p>
                 </div>
-                <span class="rc-badge">InstantÃ¡neo</span>
+                <span class="rc-badge">Instantáneo</span>
               </div>
-              <p class="rc-muted">Los cambios se guardan inmediatamente en tu sesiÃ³n local de Race Control y puedes copiar el bloque listo para producciÃ³n en 1 clic.</p>
+              <p class="rc-muted">Los cambios se guardan inmediatamente en tu sesión local de Race Control y puedes copiar el bloque listo para producción en 1 clic.</p>
             </div>
           </div>
 
           <div class="rc-card">
             <div class="rc-card__head">
               <div>
-                <h3 class="rc-card__title">VinculaciÃ³n de Pilotos Oficiales (cust_id &amp; Correo)</h3>
-                <p class="rc-muted">Introduce el nÃºmero de cliente de iRacing (<code>cust_id</code>) de cada piloto titular.</p>
+                <h3 class="rc-card__title">Vinculación de Pilotos Oficiales (cust_id &amp; Correo)</h3>
+                <p class="rc-muted">Introduce el número de cliente de iRacing (<code>cust_id</code>) de cada piloto titular.</p>
               </div>
               <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="saveIracingMappings()">Guardar Mapeo Local</button>
             </div>
@@ -648,7 +648,7 @@ const totalCircuits = catalog.circuits?.length || 128;
                     <th>Slug</th>
                     <th>iRacing cust_id</th>
                     <th>Correo Asignado</th>
-                    <th>Estado TelemetrÃ­a</th>
+                    <th>Estado Telemetría</th>
                   </tr>
                 </thead>
                 <tbody id="iracingBridgeTableBody"></tbody>
@@ -658,18 +658,18 @@ const totalCircuits = catalog.circuits?.length || 128;
         </section>
 
         <!-- =============================================================== -->
-        <!-- TAB 6: SEGURIDAD ZERO-TRUST & REGISTROS DE AUDITORÃA            -->
+        <!-- TAB 6: SEGURIDAD ZERO-TRUST & REGISTROS DE AUDITORÍA            -->
         <!-- =============================================================== -->
         <section id="tab-security" class="rc-panel space-y-6 hidden">
           <div class="rc-section-head">
             <div>
-              <p class="r-kicker">CriptografÃ­a &amp; Trazabilidad</p>
-              <h2 class="r-h3">Seguridad Zero-Trust &amp; Registros de AuditorÃ­a</h2>
-              <p class="rc-muted">PolÃ­ticas activas en el Worker de Cloudflare y registro cronolÃ³gico de accesos, descargas <code>.sto</code> y cambios administrativos.</p>
+              <p class="r-kicker">Criptografía &amp; Trazabilidad</p>
+              <h2 class="r-h3">Seguridad Zero-Trust &amp; Registros de Auditoría</h2>
+              <p class="rc-muted">Políticas activas en el Worker de Cloudflare y registro cronológico de accesos, descargas <code>.sto</code> y cambios administrativos.</p>
             </div>
             <div class="rc-btn-row">
-              <button type="button" class="r-btn r-btn--sm" onclick="exportAuditLogsCsv()">â¬‡ Exportar CSV</button>
-              <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="refreshRaceControlData()">â†» Refrescar Logs</button>
+              <button type="button" class="r-btn r-btn--sm" onclick="exportAuditLogsCsv()">⬇ Exportar CSV</button>
+              <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="refreshRaceControlData()">↻ Refrescar Logs</button>
             </div>
           </div>
 
@@ -677,10 +677,10 @@ const totalCircuits = catalog.circuits?.length || 128;
             <div class="rc-kpi-card">
               <span class="rc-kpi-tag">CIFRADO DE CREDENCIALES</span>
               <div class="rc-kpi-val">PBKDF2</div>
-              <p class="rc-kpi-sub">100,000 iteraciones SHA-256 + Salt Ãºnico</p>
+              <p class="rc-kpi-sub">100,000 iteraciones SHA-256 + Salt único</p>
             </div>
             <div class="rc-kpi-card">
-              <span class="rc-kpi-tag">PROTECCIÃ“N ANTI-FUERZA BRUTA</span>
+              <span class="rc-kpi-tag">PROTECCIÓN ANTI-FUERZA BRUTA</span>
               <div class="rc-kpi-val">10 req/m</div>
               <p class="rc-kpi-sub">Rate Limiting por IP en Cloudflare Edge</p>
             </div>
@@ -692,14 +692,14 @@ const totalCircuits = catalog.circuits?.length || 128;
             <div class="rc-kpi-card">
               <span class="rc-kpi-tag">CABECERAS HTTP</span>
               <div class="rc-kpi-val">CSP Strict</div>
-              <p class="rc-kpi-sub">nosniff Â· strict-origin Â· TLS 1.3</p>
+              <p class="rc-kpi-sub">nosniff · strict-origin · TLS 1.3</p>
             </div>
           </div>
 
           <div class="rc-toolbar">
-            <div class="g-views" role="group" aria-label="Filtrar eventos de auditorÃ­a">
+            <div class="g-views" role="group" aria-label="Filtrar eventos de auditoría">
               <button type="button" id="auditFilter-all" class="is-on" onclick="filterAuditLogs('all')">Todos los Eventos</button>
-              <button type="button" id="auditFilter-auth" onclick="filterAuditLogs('auth')">AutenticaciÃ³n</button>
+              <button type="button" id="auditFilter-auth" onclick="filterAuditLogs('auth')">Autenticación</button>
               <button type="button" id="auditFilter-download" onclick="filterAuditLogs('download')">Descargas .STO</button>
               <button type="button" id="auditFilter-admin" onclick="filterAuditLogs('admin')">Altas &amp; Permisos</button>
             </div>
@@ -711,9 +711,9 @@ const totalCircuits = catalog.circuits?.length || 128;
                 <thead>
                   <tr>
                     <th>Fecha / Hora (UTC)</th>
-                    <th>CategorÃ­a</th>
+                    <th>Categoría</th>
                     <th>Actor / Usuario</th>
-                    <th>Evento &amp; Detalle TÃ©cnico</th>
+                    <th>Evento &amp; Detalle Técnico</th>
                     <th>Estado</th>
                   </tr>
                 </thead>
@@ -727,13 +727,13 @@ const totalCircuits = catalog.circuits?.length || 128;
   </div>
 
   <!-- ===================================================================== -->
-  <!-- MODAL 1: ALTA DE PILOTO / GENERADOR DE INVITACIÃ“N                     -->
+  <!-- MODAL 1: ALTA DE PILOTO / GENERADOR DE INVITACIÓN                     -->
   <!-- ===================================================================== -->
   <div id="addDriverModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="addDriverModalTitle">
     <div class="g-dialog">
       <div class="g-dialog__bar">
         <h2 id="addDriverModalTitle">Alta de Piloto en el Vault</h2>
-        <button type="button" class="m-notice__close" onclick="closeAddDriverModal()" aria-label="Cerrar">Ã—</button>
+        <button type="button" class="m-notice__close" onclick="closeAddDriverModal()" aria-label="Cerrar">×</button>
       </div>
       <p>Autoriza a un nuevo piloto en Cloudflare D1 o genera credenciales de acceso para un miembro del equipo.</p>
       <form id="addDriverForm" onsubmit="submitAddDriverForm(event)">
@@ -742,7 +742,7 @@ const totalCircuits = catalog.circuits?.length || 128;
           <input type="text" id="newDriverName" required placeholder="Ej. Carlos Sainz" />
         </div>
         <div class="g-field">
-          <label for="newDriverEmail">Correo ElectrÃ³nico de Acceso</label>
+          <label for="newDriverEmail">Correo Electrónico de Acceso</label>
           <input type="email" id="newDriverEmail" required placeholder="piloto@dominio.com" />
         </div>
         <div class="rc-two-col" style="gap:10px">
@@ -756,16 +756,16 @@ const totalCircuits = catalog.circuits?.length || 128;
             </select>
           </div>
           <div class="g-field">
-            <label for="newDriverMethod">MÃ©todo de Credencial</label>
+            <label for="newDriverMethod">Método de Credencial</label>
             <select id="newDriverMethod">
-              <option value="link">Enlace Ãºnico (72 h)</option>
-              <option value="temp_password">ContraseÃ±a temporal</option>
+              <option value="link">Enlace único (72 h)</option>
+              <option value="temp_password">Contraseña temporal</option>
             </select>
           </div>
         </div>
         <label class="g-check" for="newDriverSendEmail">
           <input type="checkbox" id="newDriverSendEmail" checked />
-          Enviar correo automÃ¡tico de bienvenida (vÃ­a Resend @muntru.me)
+          Enviar correo automático de bienvenida (vía Resend @muntru.me)
         </label>
         <div class="rc-btn-row" style="justify-content:flex-end;margin-top:8px">
           <button type="button" class="r-btn r-btn--sm" onclick="closeAddDriverModal()">Cancelar</button>
@@ -782,9 +782,9 @@ const totalCircuits = catalog.circuits?.length || 128;
     <div class="g-dialog g-dialog--wide">
       <div class="g-dialog__bar">
         <h2 id="credModalTitle">Credenciales Listas para el Piloto</h2>
-        <button type="button" class="m-notice__close" onclick="closeCredentialsResultModal()" aria-label="Cerrar">Ã—</button>
+        <button type="button" class="m-notice__close" onclick="closeCredentialsResultModal()" aria-label="Cerrar">×</button>
       </div>
-      <p id="credModalSub">Se ha autorizado el acceso al Setup Vault. Copia el mensaje inferior para enviÃ¡rselo por Discord, WhatsApp o correo.</p>
+      <p id="credModalSub">Se ha autorizado el acceso al Setup Vault. Copia el mensaje inferior para enviárselo por Discord, WhatsApp o correo.</p>
       <div class="rc-cred-box">
         <div class="rc-kpi-tag" id="credSecretLabel">ENLACE PERSONAL DE ACCESO (72H)</div>
         <code id="credSecretCode" class="rc-cred-secret">https://muntru.me/garage?set_password=...</code>
@@ -796,7 +796,7 @@ const totalCircuits = catalog.circuits?.length || 128;
       <div class="rc-btn-row" style="justify-content:space-between">
         <button type="button" class="r-btn r-btn--sm" onclick="copyCredentialSecretOnly()">Copiar solo enlace/clave</button>
         <div class="rc-btn-row">
-          <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="copyWelcomeMessageTemplate()">ðŸ“‹ Copiar Mensaje Completo</button>
+          <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="copyWelcomeMessageTemplate()">📋 Copiar Mensaje Completo</button>
           <button type="button" class="r-btn r-btn--sm" onclick="closeCredentialsResultModal()">Cerrar</button>
         </div>
       </div>
@@ -810,12 +810,12 @@ const totalCircuits = catalog.circuits?.length || 128;
     <div class="g-dialog g-dialog--wide">
       <div class="g-dialog__bar">
         <h2 id="emailTemplateModalTitle">Plantillas Oficiales @muntru.me</h2>
-        <button type="button" class="m-notice__close" onclick="closeEmailPreviewModal()" aria-label="Cerrar">Ã—</button>
+        <button type="button" class="m-notice__close" onclick="closeEmailPreviewModal()" aria-label="Cerrar">×</button>
       </div>
       <div class="g-views" role="group">
         <button type="button" id="tplBtn-welcome" class="is-on" onclick="openEmailPreviewModal('welcome')">Bienvenida al Vault</button>
         <button type="button" id="tplBtn-nec" onclick="openEmailPreviewModal('nec')">Convocatoria NEC VLN</button>
-        <button type="button" id="tplBtn-reset" onclick="openEmailPreviewModal('reset')">RecuperaciÃ³n de Clave</button>
+        <button type="button" id="tplBtn-reset" onclick="openEmailPreviewModal('reset')">Recuperación de Clave</button>
       </div>
       <div class="rc-email-preview">
         <div class="rc-email-preview__meta">
@@ -825,7 +825,7 @@ const totalCircuits = catalog.circuits?.length || 128;
         <pre id="tplBodyText" class="rc-email-preview__body"></pre>
       </div>
       <div class="rc-btn-row" style="justify-content:flex-end">
-        <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="copyCurrentEmailTemplate()">ðŸ“‹ Copiar Plantilla</button>
+        <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="copyCurrentEmailTemplate()">📋 Copiar Plantilla</button>
         <button type="button" class="r-btn r-btn--sm" onclick="closeEmailPreviewModal()">Cerrar</button>
       </div>
     </div>
@@ -1366,5 +1366,5 @@ const totalCircuits = catalog.circuits?.length || 128;
   </style>
 
   <script is:inline src="/assets/js/driver-ids.js?v=t310"></script>
-  <script is:inline src="/assets/js/admin.js?v=t312"></script>
+  <script is:inline src="/assets/js/admin.js?v=t311"></script>
 </Layout>
