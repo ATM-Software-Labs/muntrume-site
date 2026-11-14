@@ -85,6 +85,8 @@ export class RelativeEngine {
 
       const entry: RelativeEntry = {
         carIdx: idx,
+        userId: driver.userId,
+        cust_id: driver.userId,
         carNumber: driver.carNumber || String(idx),
         driverName: driver.userName,
         abbrevName: driver.abbrevName || driver.userName,

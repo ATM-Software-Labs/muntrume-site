@@ -840,11 +840,13 @@
               <!-- TOP LEFT: Relative Radar (Garage 61 style) -->
               <div id="widgetRelative" class="mmt-hud-widget absolute left-5 top-18 w-68 rounded-2xl border border-white/15 bg-black/75 backdrop-blur-md text-white p-3.5 text-xs font-mono shadow-lg" data-widget="relative">
                 <div id="ovRelative"></div>
+                <div id="ovRadar" class="mt-2.5"></div>
               </div>
 
               <!-- TOP RIGHT: Standings / Class Interval -->
               <div id="widgetStandings" class="mmt-hud-widget absolute right-5 top-18 w-60 rounded-2xl border border-white/15 bg-black/75 backdrop-blur-md text-white p-3.5 text-xs font-mono shadow-lg" data-widget="standings">
                 <div id="ovStandings"></div>
+                <div id="ovPitbox" class="mt-2.5"></div>
               </div>
 
               <!-- CENTER: Pro Digital Cluster -->
@@ -897,9 +899,10 @@
                 <canvas id="ovWaveformCanvas" width="280" height="65" class="rounded-lg bg-black/60 border border-white/10"></canvas>
               </div>
 
-              <!-- BOTTOM RIGHT: High Precision Pedals & Steering Canvas -->
+              <!-- BOTTOM RIGHT: High Precision Pedals & Steering (GPU 60 FPS + Fallback) -->
               <div id="widgetPedals" class="mmt-hud-widget absolute right-5 bottom-5 rounded-2xl border border-white/15 bg-black/75 backdrop-blur-md p-3.5 shadow-lg" data-widget="pedals">
-                <canvas id="ovInputs" width="300" height="95" class="rounded-xl"></canvas>
+                <div id="ovGpuPedals"></div>
+                <canvas id="ovInputs" width="300" height="95" class="rounded-xl hidden"></canvas>
                 <div id="ovTyres" class="mt-2 text-center font-mono text-[11px] text-r-muted"></div>
               </div>
             </div>
@@ -1459,6 +1462,7 @@
 
       <!-- Top Sequential Shift Lights & Brake Marker -->
       <div id="floatShiftLightsRow" class="mmt-float-widget flex flex-col items-center gap-1.5 pointer-events-auto mt-1" data-widget="lights">
+        <div id="ovDigiFlagFloat" class="w-full max-w-xs"></div>
         <div class="flex items-center gap-1 px-3 py-2 rounded-lg bg-[#090d12]/90 border border-white/10 border-t-2 border-t-[#00e5ff] backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.65)]" id="ovShiftLightsFloat"></div>
         <div id="ovBrakeMarkerFloat" class="flex items-center gap-2 px-2.5 py-1 rounded-md bg-[#090d12]/88 border border-white/10 text-[11px] font-mono tabular-nums">
           <span class="text-[9px] text-r-muted uppercase tracking-wider font-bold">Brake</span>
@@ -1473,6 +1477,7 @@
         <!-- Relative Radar (Left Edge) -->
         <div id="floatRelativeCard" class="mmt-float-widget w-64 rounded-lg border border-white/10 border-t-2 border-t-[#00e5ff] bg-[#090d12]/88 backdrop-blur-md text-white p-2.5 text-[11px] font-mono tabular-nums shadow-[0_8px_32px_rgba(0,0,0,0.65)] pointer-events-auto" data-widget="relative">
           <div id="ovRelativeFloat"></div>
+          <div id="ovRadarFloat" class="mt-2"></div>
         </div>
 
         <!-- Center of screen is 100% CLEAR for driver windshield and track apex vision -->
@@ -1481,6 +1486,7 @@
         <!-- Standings / Corner Guidance (Right Edge) -->
         <div id="floatStandingsCard" class="mmt-float-widget w-56 rounded-lg border border-white/10 border-t-2 border-t-emerald-400 bg-[#090d12]/88 backdrop-blur-md text-white p-2.5 text-[11px] font-mono tabular-nums shadow-[0_8px_32px_rgba(0,0,0,0.65)] pointer-events-auto" data-widget="standings">
           <div id="ovStandingsFloat"></div>
+          <div id="ovPitboxFloat" class="mt-2"></div>
         </div>
       </div>
 
@@ -1521,7 +1527,8 @@
           </div>
 
           <div id="floatInputsCard" class="mmt-float-widget rounded-lg border border-white/10 border-t-2 border-t-emerald-400 bg-[#090d12]/88 backdrop-blur-md p-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.65)] pointer-events-auto" data-widget="inputs">
-            <canvas id="ovInputsFloat" width="260" height="78" class="rounded-md"></canvas>
+            <div id="ovGpuPedalsFloat"></div>
+            <canvas id="ovInputsFloat" width="260" height="78" class="rounded-md hidden"></canvas>
             <div id="ovTyresFloat" class="mt-1 text-center font-mono text-[9px] text-r-muted tabular-nums"></div>
           </div>
         </div>

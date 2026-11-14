@@ -1,11 +1,23 @@
 /**
- * MMT Sync — Kapps 2027 Style Overlay Renderers (Bloque 1)
- * High performance, tabular numeric typography, hardware accelerated classes.
- * Renders Relative Radar (4 ahead, active, 4 behind), Multiclass Standings, and Fuel Computer.
+ * MMT Sync — Kapps 2027 Style Overlay Renderers (Bloque 1 & 2)
+ * High performance 60 FPS GPU-accelerated renderers, tabular numeric typography,
+ * SVG local brand mappers, Driver Tags badges, Streamer Mode,
+ * Radar 360°, Pitbox Helper, and DigiFlag.
  */
 
 import type { IrsdkComputedState, LeaderboardEntry, RelativeEntry } from "./types";
 import { getCarBrandSvg } from "./brand-helper";
+import { DriverTagsManager } from "./driver-tags";
+import { SmartLayoutManager } from "./smart-layouts";
+import { GpuPedalsEngine, type PedalsSample } from "./gpu-pedals";
+import { Radar360Engine, type RadarInputState } from "./radar-360";
+import { PitboxHelperEngine, type PitboxInputState } from "./pitbox-helper";
+import { DigiFlagEngine } from "./digi-flag";
+
+const gpuPedalsEngine = new GpuPedalsEngine();
+const radar360Engine = new Radar360Engine();
+const pitboxEngine = new PitboxHelperEngine();
+const digiFlagEngine = new DigiFlagEngine();
 
 /**
  * Renders the Relative Radar widget into target DOM container
@@ -25,12 +37,15 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
   const { entries } = state.relative;
   const isReplay = state.isReplayPlaying;
   const activeCar = state.activeDriver;
+  const isStreamer = SmartLayoutManager.getInstance().isStreamerMode();
+  const driverTags = DriverTagsManager.getInstance();
 
   const headerHtml = `
     <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-white/10 text-[10px] uppercase font-bold tracking-wider">
       <div class="flex items-center gap-1.5">
         <span class="text-r-muted">Radar Relativo</span>
         <span class="text-[9px] text-white/40 font-mono">±4 COCHES</span>
+        ${isStreamer ? `<span class="px-1 py-0.2 rounded text-[8px] bg-purple-500/20 text-purple-300 border border-purple-500/40">STREAMER</span>` : ""}
       </div>
       <span class="px-1.5 py-0.5 rounded text-[9px] font-mono ${
         isReplay ? "bg-amber-500/20 text-amber-300" : "bg-emerald-500/20 text-emerald-300"
@@ -57,9 +72,15 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
         ? `<span class="px-1 py-0.2 rounded text-[8px] bg-rose-500/30 text-rose-300 border border-rose-500/40 font-bold">PIT</span>`
         : "";
 
+      const tagBadge = driverTags.renderBadgeHtml(e.cust_id || e.driverName || e.carNumber);
+
+      const displayName = isStreamer
+        ? isSelf ? "Piloto (Tú)" : `Piloto #${e.carNumber}`
+        : isSelf ? `${e.abbrevName} (Tú)` : e.abbrevName;
+
       return `
         <div class="flex items-center justify-between gap-1.5 p-1.5 rounded-lg border transition-colors ${rowBg} font-mono">
-          <!-- Left: Class + Car Number + Brand + Driver -->
+          <!-- Left: Class + Car Number + Brand + Driver + Tag -->
           <div class="flex items-center gap-1.5 min-w-0">
             <span class="px-1 py-0.5 rounded text-[9px] font-bold tracking-tight" style="background-color: ${e.carClassColor}25; color: ${e.carClassColor}; border: 1px solid ${e.carClassColor}50">
               ${e.carClassShortName}
@@ -69,8 +90,9 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
             </span>
             ${getCarBrandSvg(e.carPath, 13)}
             <span class="truncate text-[11px] font-medium ${isSelf ? "text-emerald-300 font-bold" : "text-white/90"}">
-              ${isSelf ? `${e.abbrevName} (Tú)` : e.abbrevName}
+              ${displayName}
             </span>
+            ${tagBadge}
             ${pitBadge}
           </div>
 
@@ -112,6 +134,9 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
   }
 
   const { leaderboard } = state;
+  const isStreamer = SmartLayoutManager.getInstance().isStreamerMode();
+  const driverTags = DriverTagsManager.getInstance();
+
   const isPractice =
     state.session.sessionType.toLowerCase().includes("practice") ||
     state.session.sessionType.toLowerCase().includes("warmup");
@@ -122,7 +147,10 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
 
   const headerHtml = `
     <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-white/10 text-[10px] uppercase font-bold tracking-wider">
-      <span class="text-r-muted">Clasificación (${isPractice ? "Práctica" : "Carrera"})</span>
+      <div class="flex items-center gap-1.5">
+        <span class="text-r-muted">Clasificación (${isPractice ? "Práctica" : "Carrera"})</span>
+        ${isStreamer ? `<span class="px-1 py-0.2 rounded text-[8px] bg-purple-500/20 text-purple-300 border border-purple-500/40">STREAMER</span>` : ""}
+      </div>
       <span class="text-[9px] text-r-muted font-mono">${isPractice ? "TIEMPOS" : lapStr}</span>
     </div>
   `;
@@ -156,6 +184,12 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
         ? `<span class="px-1 py-0.2 rounded text-[8px] bg-rose-500/30 text-rose-300 border border-rose-500/40 font-bold">PIT</span>`
         : "";
 
+      const tagBadge = driverTags.renderBadgeHtml(e.cust_id || e.driverName || e.carNumber);
+
+      const displayName = isStreamer
+        ? isSelf ? "Piloto (Tú)" : `Piloto #${e.carNumber}`
+        : `${e.carNumber ? `#${e.carNumber} ` : ""}${e.abbrevName}`;
+
       return `
         <div class="flex items-center justify-between gap-1.5 p-1.5 rounded-lg border transition-colors ${rowBg} font-mono text-xs">
           <div class="flex items-center gap-1.5 min-w-0">
@@ -165,8 +199,9 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
             </span>
             ${getCarBrandSvg(e.carPath, 12)}
             <span class="truncate text-[11px] ${isSelf ? "text-emerald-300 font-bold" : "text-white/90 font-medium"}">
-              #${e.carNumber} ${e.abbrevName}
+              ${displayName}
             </span>
+            ${tagBadge}
             ${pitBadge}
           </div>
           <div class="shrink-0 text-right">
@@ -275,4 +310,32 @@ export function renderFuelWidget(container: HTMLElement, state: IrsdkComputedSta
       <span>${fuel.completedLapsSampled} v calculadas</span>
     </div>
   `;
+}
+
+/**
+ * Renders the hardware-accelerated GPU Pedals & Steering widget
+ */
+export function renderGpuPedalsWidget(container: HTMLElement, sample: PedalsSample): void {
+  gpuPedalsEngine.render(container, sample);
+}
+
+/**
+ * Renders the 360° Proximity Radar & Spotter widget
+ */
+export function renderRadarWidget(container: HTMLElement, state: RadarInputState): void {
+  radar360Engine.render(container, state);
+}
+
+/**
+ * Renders the Pitbox Helper & Speed Limiter widget
+ */
+export function renderPitboxWidget(container: HTMLElement, state: PitboxInputState): void {
+  pitboxEngine.render(container, state);
+}
+
+/**
+ * Renders the DigiFlag LED flag matrix widget
+ */
+export function renderDigiFlagWidget(container: HTMLElement, sessionFlags: number): void {
+  digiFlagEngine.render(container, sessionFlags);
 }

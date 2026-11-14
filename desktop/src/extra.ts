@@ -1,5 +1,15 @@
 import type { HardwareReport, IbtSessionReport, IracingAnalysis, LiveSample, Settings, Snapshot } from "./types";
-import { IrsdkClient, renderRelativeWidget, renderStandingsWidget, renderFuelWidget } from "./irsdk";
+import {
+  IrsdkClient,
+  renderRelativeWidget,
+  renderStandingsWidget,
+  renderFuelWidget,
+  renderGpuPedalsWidget,
+  renderRadarWidget,
+  renderPitboxWidget,
+  renderDigiFlagWidget,
+  SmartLayoutManager,
+} from "./irsdk";
 import rawSchedule from "./season_schedule_2026_s4.json";
 import rawRealTracks from "./real_telemetry_tracks.json";
 import { clamp, finiteOr, safeDiv } from "./core/math-guards";
@@ -1377,7 +1387,22 @@ function resetWidgetPositions(): void {
   });
 }
 
+// Module-level HUD Edit Mode and Streamer Mode control (Bloque 2)
+let floatEditMode = false;
+
+export function isFloatHudInEditMode(): boolean {
+  return floatEditMode;
+}
+
 export function initFloatingOverlayControls(onClose?: () => void): void {
+  // Global shortcut for Streamer Mode (Ctrl+Shift+S or F8)
+  window.addEventListener("keydown", (e: KeyboardEvent) => {
+    if ((e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "s") || e.key === "F8") {
+      const active = SmartLayoutManager.getInstance().toggleStreamerMode();
+      console.log(`[Streamer Mode] ${active ? "ACTIVADO" : "DESACTIVADO"}`);
+    }
+  });
+
   const btnClose = document.getElementById("btnCloseFloatOverlay");
   if (btnClose && onClose) {
     btnClose.addEventListener("click", () => onClose());
@@ -1432,7 +1457,7 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
   btnTelemetry?.addEventListener("click", () => setPreset("telemetry"));
 
   // Draggable Free HUD Customization
-  let floatEditMode = false;
+  floatEditMode = false;
   const btnEdit = document.getElementById("btnFloatEditLayout");
   const btnReset = document.getElementById("btnFloatResetLayout");
   const floatHost = document.getElementById("floatingOverlayHost");
@@ -1711,10 +1736,65 @@ function updateHUDDisplay(sample: LiveSample): void {
     renderFuelWidget(fuel, irsdkState);
   });
 
-  // Pedals & Steering Canvas
-  document.querySelectorAll<HTMLCanvasElement>("#ovInputs, #ovInputsFloat").forEach((canvas) => {
-    drawInputsCanvas(canvas, sample);
+  // Bloque 2: GPU-Accelerated Pedals & Steering (60 FPS, scaleY/translate3d)
+  const pedalSample = {
+    throttle: sample.throttle,
+    brake: sample.brake,
+    clutch: (sample as any).clutch ?? 0,
+    steering: sample.steering,
+    speedKmh: kmh,
+    gear: sample.gear,
+  };
+  document.querySelectorAll<HTMLElement>("#ovGpuPedals, #ovGpuPedalsFloat").forEach((container) => {
+    renderGpuPedalsWidget(container, pedalSample);
   });
+
+  // Fallback for canvas inputs if visible
+  document.querySelectorAll<HTMLCanvasElement>("#ovInputs, #ovInputsFloat").forEach((canvas) => {
+    if (!canvas.classList.contains("hidden")) {
+      drawInputsCanvas(canvas, sample);
+    }
+  });
+
+  // Bloque 2: 360° Proximity Radar, Pitbox Helper, DigiFlag & Smart Layouts
+  if (irsdkState) {
+    const frame = irsdkState.frame;
+    const session = irsdkState.session;
+
+    document.querySelectorAll<HTMLElement>("#ovRadar, #ovRadarFloat").forEach((radar) => {
+      renderRadarWidget(radar, {
+        carLeftRight: (frame as any).carLeftRight ?? 0,
+        speedKmh: kmh,
+      });
+    });
+
+    document.querySelectorAll<HTMLElement>("#ovPitbox, #ovPitboxFloat").forEach((pitbox) => {
+      renderPitboxWidget(pitbox, {
+        onPitRoad: irsdkState.onPitRoad,
+        speedKmh: kmh,
+        pitSpeedLimitKmh: (frame as any).pitSpeedLimitKmh ?? 60,
+        distanceToStallMeters: (frame as any).playerCarPitLocation ?? 0,
+      });
+    });
+
+    document.querySelectorAll<HTMLElement>("#ovDigiFlag, #ovDigiFlagFloat").forEach((flag) => {
+      renderDigiFlagWidget(flag, frame.sessionFlags ?? 0);
+    });
+
+    const category = session.weekendInfo?.category || "";
+    const sessionType = session.sessionType || "";
+    const carPath = irsdkState.activeDriver?.carPath || "";
+    SmartLayoutManager.getInstance().matchAndActivate(category, sessionType, carPath);
+
+    // Auto-hide top edit bar when on track (OnPitRoad === false)
+    if (!floatEditMode) {
+      const showChrome = SmartLayoutManager.getInstance().computeEditBarVisibility(irsdkState.onPitRoad, false);
+      const chrome = document.getElementById("floatHudChrome");
+      if (chrome && chrome.hidden === showChrome) {
+        chrome.hidden = !showChrome;
+      }
+    }
+  }
 
   const steerDeg = (sample.steering * 57.2958).toFixed(1);
   const tyresText = `Volante: ${steerDeg}° · Gas: ${Math.round(sample.throttle * 100)}% · Freno: ${Math.round(sample.brake * 100)}%`;

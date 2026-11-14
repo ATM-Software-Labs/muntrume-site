@@ -98,6 +98,8 @@ export interface IrsdkTelemetryFrame {
 
 export interface RelativeEntry {
   carIdx: number;
+  userId?: number;
+  cust_id?: number | string;
   carNumber: string;
   driverName: string;
   abbrevName: string;
@@ -121,6 +123,8 @@ export interface LeaderboardEntry {
   position: number;
   classPosition: number;
   carIdx: number;
+  userId?: number;
+  cust_id?: number | string;
   carNumber: string;
   driverName: string;
   abbrevName: string;

@@ -157,6 +157,8 @@ export class LeaderboardEngine {
         position: item.position > 0 ? item.position : rank,
         classPosition: item.classPosition > 0 ? item.classPosition : rank,
         carIdx: item.carIdx,
+        userId: driver.userId,
+        cust_id: driver.userId,
         carNumber: driver.carNumber,
         driverName: driver.userName,
         abbrevName: driver.abbrevName,
