@@ -21,85 +21,30 @@ pub fn spawn(app: AppHandle) {
 }
 
 #[cfg(windows)]
+fn is_irsdk_mapped() -> bool {
+    use windows_sys::Win32::Foundation::CloseHandle;
+    use windows_sys::Win32::System::Memory::{OpenFileMappingW, FILE_MAP_READ};
+    let mapping = unsafe { OpenFileMappingW(FILE_MAP_READ, 0, wide("Local\\IRSDKMemMapFileName").as_ptr()) };
+    if !mapping.is_null() {
+        unsafe { CloseHandle(mapping); }
+        true
+    } else {
+        false
+    }
+}
+
+#[cfg(windows)]
 pub fn current_status() -> &'static str {
-    let (sim_running, ui_running) = detect_iracing_processes();
-    if sim_running {
-        use windows_sys::Win32::System::Memory::{OpenFileMappingW, FILE_MAP_READ};
-        let mapping = unsafe { OpenFileMappingW(FILE_MAP_READ, 0, wide("Local\\IRSDKMemMapFileName").as_ptr()) };
-        if !mapping.is_null() {
-            unsafe { windows_sys::Win32::Foundation::CloseHandle(mapping); }
-            return "on_track";
-        }
-        return "in_sim";
+    if is_irsdk_mapped() {
+        "on_track"
+    } else {
+        "closed"
     }
-    if ui_running {
-        return "ui_open";
-    }
-    "closed"
 }
 
 #[cfg(not(windows))]
 pub fn current_status() -> &'static str {
     "closed"
-}
-
-#[cfg(windows)]
-fn eq_utf16_ascii_ignore_case(wide_slice: &[u16], ascii_target: &str) -> bool {
-    let target = ascii_target.as_bytes();
-    if wide_slice.len() != target.len() {
-        return false;
-    }
-    wide_slice
-        .iter()
-        .zip(target.iter())
-        .all(|(&w, &b)| w <= 0x7F && (w as u8).eq_ignore_ascii_case(&b))
-}
-
-#[cfg(windows)]
-fn detect_iracing_processes() -> (bool, bool) {
-    use windows_sys::Win32::Foundation::{CloseHandle, INVALID_HANDLE_VALUE};
-    use windows_sys::Win32::System::Diagnostics::ToolHelp::{
-        CreateToolhelp32Snapshot, Process32FirstW, Process32NextW, PROCESSENTRY32W,
-        TH32CS_SNAPPROCESS,
-    };
-
-    let snapshot = unsafe { CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0) };
-    if snapshot == INVALID_HANDLE_VALUE {
-        return (false, false);
-    }
-
-    let mut entry: PROCESSENTRY32W = unsafe { std::mem::zeroed() };
-    entry.dwSize = std::mem::size_of::<PROCESSENTRY32W>() as u32;
-
-    let mut sim_running = false;
-    let mut ui_running = false;
-    if unsafe { Process32FirstW(snapshot, &mut entry) } != 0 {
-        loop {
-            let len = entry
-                .szExeFile
-                .iter()
-                .position(|&c| c == 0)
-                .unwrap_or(entry.szExeFile.len());
-            let name = &entry.szExeFile[..len];
-            if !sim_running
-                && (eq_utf16_ascii_ignore_case(name, "iRacingSim64DX11.exe")
-                    || eq_utf16_ascii_ignore_case(name, "iRacingSim64.exe"))
-            {
-                sim_running = true;
-            } else if !ui_running && eq_utf16_ascii_ignore_case(name, "iRacingUI.exe") {
-                ui_running = true;
-            }
-            if sim_running && ui_running {
-                break;
-            }
-            if unsafe { Process32NextW(snapshot, &mut entry) } == 0 {
-                break;
-            }
-        }
-    }
-
-    unsafe { CloseHandle(snapshot); }
-    (sim_running, ui_running)
 }
 
 #[cfg(windows)]
@@ -177,29 +122,31 @@ fn windows_loop(app: AppHandle) {
     let mut last_status: Option<&'static str> = None;
 
     loop {
-        let (sim_running, ui_running) = detect_iracing_processes();
-        if !sim_running {
-            let st = if ui_running { "ui_open" } else { "closed" };
-            emit_status_if_changed(&app, &mut last_status, st);
-            std::thread::sleep(Duration::from_millis(2000));
-            continue;
-        }
-
         let mapping = unsafe { OpenFileMappingW(FILE_MAP_READ, 0, wide("Local\\IRSDKMemMapFileName").as_ptr()) };
         if mapping.is_null() {
-            emit_status_if_changed(&app, &mut last_status, "in_sim");
-            std::thread::sleep(Duration::from_millis(1200));
+            emit_status_if_changed(&app, &mut last_status, "closed");
+            std::thread::sleep(Duration::from_millis(2000));
             continue;
         }
         let view = unsafe { MapViewOfFile(mapping, FILE_MAP_READ, 0, 0, 0) };
         if view.Value.is_null() {
             unsafe { CloseHandle(mapping); }
-            std::thread::sleep(Duration::from_millis(500));
+            emit_status_if_changed(&app, &mut last_status, "closed");
+            std::thread::sleep(Duration::from_millis(2000));
             continue;
         }
         let event = unsafe { OpenEventW(SYNCHRONIZE, 0, wide("Local\\IRSDKDataValidEvent").as_ptr()) };
         let mapped = SdkMap { mapping, view, event };
         emit_status_if_changed(&app, &mut last_status, "on_track");
+
+        // Lazy WebView2: create overlay window only when entering session if overlays enabled
+        let should_auto_overlay = crate::settings::load().map(|s| s.overlays).unwrap_or(true);
+        if should_auto_overlay && !is_window_active(&app, "overlay") {
+            let app_open = app.clone();
+            tauri::async_runtime::spawn(async move {
+                let _ = crate::toggle_overlay(app_open, true).await;
+            });
+        }
 
         let mut vars: Option<VarTable> = None;
         let mut last_yaml_update: Option<i32> = None;
@@ -223,9 +170,14 @@ fn windows_loop(app: AppHandle) {
             };
             if last_proc.elapsed() >= Duration::from_millis(2000) {
                 last_proc = Instant::now();
-                let (sim_alive, _) = detect_iracing_processes();
-                if !sim_alive {
+                if !is_irsdk_mapped() {
                     emit_status_if_changed(&app, &mut last_status, "closed");
+                    if is_window_active(&app, "overlay") {
+                        let app_close = app.clone();
+                        tauri::async_runtime::spawn(async move {
+                            let _ = crate::toggle_overlay(app_close, false).await;
+                        });
+                    }
                     break;
                 }
             }

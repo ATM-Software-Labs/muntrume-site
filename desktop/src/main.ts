@@ -2,8 +2,21 @@ import { inTauri } from "./env";
 import { createMock } from "./mock";
 import { createTauriBackend } from "./tauri-backend";
 import type { Backend, LibraryItem, LiveSample, Settings, Snapshot, StagedFile } from "./types";
-import { fuelText, paintConfigAnalysis, paintExtras, updateLiveOverlay, initFloatingOverlayControls, paintOverlays, paintHardware, paintLastSession, noteHudClosed, stopOverlayDemoLoop } from "./extra";
 import { getCalendarContentStatus, initPrompts48To50 } from "./features-48-50";
+
+type ExtraModule = typeof import("./extra");
+let extraMod: ExtraModule | null = null;
+let extraPromise: Promise<ExtraModule> | null = null;
+function loadExtra(): Promise<ExtraModule> {
+  if (extraMod) return Promise.resolve(extraMod);
+  if (!extraPromise) {
+    extraPromise = import("./extra").then((m) => {
+      extraMod = m;
+      return m;
+    });
+  }
+  return extraPromise;
+}
 import rawSchedule from "./season_schedule_2026_s4.json";
 import { getSetupProfile } from "./setup-intelligence";
 import { SyncCoordinator } from "./sync/sync-coordinator";
@@ -371,7 +384,7 @@ let userPreferences: string[] = (() => {
 })();
 
 function applyIracingStatus(status: string): void {
-  if (status !== "on_track") noteHudClosed();
+  if (status !== "on_track" && extraMod) extraMod.noteHudClosed();
   if (document.documentElement.classList.contains("overlay-mode")) return;
   const badge = document.getElementById("irBadge");
   const dot = document.getElementById("irDot");
@@ -399,7 +412,7 @@ function applyIracingStatus(status: string): void {
 
 function updateLiveStatus(sample: LiveSample): void {
   applyIracingStatus("on_track");
-  updateLiveOverlay(sample);
+  if (extraMod) extraMod.updateLiveOverlay(sample);
 }
 
 function theme(): "dark" | "light" {
@@ -1648,8 +1661,12 @@ function paint(data: Snapshot): void {
     status.textContent += ` · ${data.lastDownloaded} sincronizados: ${data.lastCars.join(", ")}`;
   }
   paintLibrary();
-  paintExtras(data);
-  initPrompts48To50(backend, data);
+  if (logged && (view === "analysis" || view === "overlays" || view === "strategy" || view === "week" || view === "team" || view === "reference")) {
+    void loadExtra().then((m) => m.paintExtras(data));
+  }
+  if (logged) {
+    setTimeout(() => initPrompts48To50(backend, data), 50);
+  }
   paintStaged(data.staged);
   paintSettings(data);
   if (data.updateVersion) {
@@ -1719,23 +1736,25 @@ function showView(next: typeof view): void {
     const node = document.getElementById(id);
     if (node) node.hidden = next !== name;
   }
-  if (next !== "overlays") {
-    stopOverlayDemoLoop();
+  if (next !== "overlays" && extraMod) {
+    extraMod.stopOverlayDemoLoop();
   }
   if (backend.setMainTelemetry) {
     const needsMainTel = Boolean(snapshot?.pilot) && (next === "overlays" || next === "analysis" || next === "strategy");
     void backend.setMainTelemetry(needsMainTel).catch(() => {});
   }
   if (next === "last_session") {
-    paintLastSession();
-    void backend.readLatestIbt().then((report) => {
-      paintLastSession(report);
-    }).catch(() => {
-      paintLastSession(null);
+    void loadExtra().then((m) => {
+      m.paintLastSession();
+      void backend.readLatestIbt().then((report) => {
+        m.paintLastSession(report);
+      }).catch(() => {
+        m.paintLastSession(null);
+      });
     });
   }
   if (next === "analysis" || next === "overlays" || next === "strategy" || next === "week" || next === "team" || next === "reference") {
-    if (snapshot) paintExtras(snapshot);
+    if (snapshot) void loadExtra().then((m) => m.paintExtras(snapshot!));
   }
   if (next === "hardware") {
     void loadHardwareReport();
@@ -1747,12 +1766,13 @@ function showView(next: typeof view): void {
 }
 
 async function loadHardwareReport(): Promise<void> {
+  const m = await loadExtra();
   try {
     const report = await backend.detectHardware();
-    paintHardware(report);
+    m.paintHardware(report);
   } catch (error) {
     console.error("Error al detectar hardware:", error);
-    paintHardware();
+    m.paintHardware();
   }
 }
 
@@ -1762,8 +1782,8 @@ async function loadConfigAnalysis(): Promise<void> {
   const scoreDesc = document.getElementById("configScoreDesc");
   if (scoreTitle) scoreTitle.textContent = "Analizando configuración de iRacing…";
   try {
-    const analysis = await backend.inspectConfig();
-    paintConfigAnalysis(analysis);
+    const [m, analysis] = await Promise.all([loadExtra(), backend.inspectConfig()]);
+    m.paintConfigAnalysis(analysis);
   } catch (error) {
     const msg = error instanceof Error ? error.message : "No se pudo analizar la configuración de iRacing.";
     console.error("Error al analizar configuración de iRacing:", error);
@@ -1875,7 +1895,7 @@ function bind(): void {
     if (!snapshot) return;
     snapshot.settings.modules[key] = !snapshot.settings.modules[key];
     void persistSettings().then(() => {
-      if (snapshot) paintExtras(snapshot);
+      if (snapshot && extraMod) extraMod.paintExtras(snapshot);
     });
   });
   $("themeToggle").addEventListener("click", () => {
@@ -2171,7 +2191,9 @@ function bind(): void {
   $("fuelForm").addEventListener("submit", (event) => {
     event.preventDefault();
     const num = (id: string) => Number((document.getElementById(id) as HTMLInputElement).value);
-    $("fuelOut").textContent = fuelText(num("raceMin"), num("lapSec"), num("fuelLap"), num("tank"), num("fuelNow"));
+    void loadExtra().then((m) => {
+      $("fuelOut").textContent = m.fuelText(num("raceMin"), num("lapSec"), num("fuelLap"), num("tank"), num("fuelNow"));
+    });
   });
   const refPackBtn = document.getElementById("refPack");
   const refResultEl = document.getElementById("refResult");
@@ -2529,8 +2551,9 @@ async function boot(): Promise<void> {
     const floatHost = document.getElementById("floatingOverlayHost");
     if (floatHost) floatHost.hidden = false;
 
-    paintOverlays();
-    initFloatingOverlayControls(() => {
+    const m = await loadExtra();
+    m.paintOverlays();
+    m.initFloatingOverlayControls(() => {
       void backend.toggleOverlay(false);
     });
 
@@ -2551,21 +2574,25 @@ async function boot(): Promise<void> {
     ($("notes") as HTMLTextAreaElement).value = "Presiones para 20 °C. Revisar el rake.";
     $("notesCount").textContent = `${($("notes") as HTMLTextAreaElement).value.length} / 280`;
   }
-  try {
-    await refresh();
-  } catch (err) {
-    console.error("Error al cargar estado inicial:", err);
-    showNotice(err instanceof Error ? err.message : "Error al iniciar conexión. Cargando datos locales.");
-  }
-  if (!snapshot?.pilot && screen === "login") {
-    $("userCode").textContent = "MMT-7K2Q";
-    $("loginStart").hidden = true;
-    $("loginPending").hidden = false;
-    $("mockApprove").hidden = true;
-  }
-  if (snapshot?.pilot && (screen === "upload" || screen === "settings" || screen === "library" || screen === "week" || screen === "analysis" || screen === "reference" || screen === "strategy" || screen === "overlays" || screen === "team" || screen === "config")) {
-    showView(screen);
-  }
+  // Zero-blocking startup: paint UI immediately and hydrate snapshot/iRacing status after first paint
+  setTimeout(() => {
+    void refresh()
+      .then(() => {
+        if (!snapshot?.pilot && screen === "login") {
+          $("userCode").textContent = "MMT-7K2Q";
+          $("loginStart").hidden = true;
+          $("loginPending").hidden = false;
+          $("mockApprove").hidden = true;
+        }
+        if (snapshot?.pilot && (screen === "upload" || screen === "settings" || screen === "library" || screen === "week" || screen === "analysis" || screen === "reference" || screen === "strategy" || screen === "overlays" || screen === "team" || screen === "config")) {
+          showView(screen);
+        }
+      })
+      .catch((err: unknown) => {
+        console.error("Error al cargar estado inicial:", err);
+        showNotice(err instanceof Error ? err.message : "Error al iniciar conexión. Cargando datos locales.");
+      });
+  }, 0);
 }
 
 void boot().catch((error: unknown) => {

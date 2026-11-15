@@ -638,7 +638,7 @@ fn spawn_overlay_hotkeys(app: AppHandle) {
 fn spawn_overlay_hotkeys(_app: AppHandle) {}
 
 #[tauri::command]
-async fn toggle_overlay(app: AppHandle, show: bool) -> Result<bool, String> {
+pub(crate) async fn toggle_overlay(app: AppHandle, show: bool) -> Result<bool, String> {
     if show {
         OVERLAY_EDITING.store(false, std::sync::atomic::Ordering::Relaxed);
         if let Some(window) = app.get_webview_window("overlay") {
