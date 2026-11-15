@@ -178,6 +178,10 @@ export class LocalTelemetryBus {
   }
 
   public publish(state: IrsdkComputedState, speedKmh: number, inputs: { throttle: number; brake: number; clutch: number; steering: number; gear: number; rpm: number }): void {
+    const hasWs = Boolean(this.ws && this.wsConnected && this.ws.readyState === WebSocket.OPEN);
+    const hasIframe = typeof document !== "undefined" && document.getElementsByTagName("iframe").length > 0;
+    if (this.listeners.size === 0 && !hasWs && !hasIframe) return;
+
     const now = Date.now();
     if (now - this.lastEmitTime < this.minIntervalMs) return;
     this.lastEmitTime = now;
@@ -194,12 +198,12 @@ export class LocalTelemetryBus {
     });
 
     // 2. Broadcast to embedded plugin iframes via postMessage
-    if (typeof window !== "undefined") {
+    if (hasIframe && typeof window !== "undefined") {
       window.postMessage(payload, "*");
     }
 
     // 3. Send over local WebSocket if connected
-    if (this.ws && this.wsConnected && this.ws.readyState === WebSocket.OPEN) {
+    if (hasWs && this.ws) {
       try {
         this.ws.send(JSON.stringify(payload));
       } catch {}

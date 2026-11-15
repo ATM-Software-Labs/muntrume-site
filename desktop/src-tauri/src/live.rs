@@ -19,7 +19,7 @@ pub fn spawn(app: AppHandle) {
 
 #[cfg(windows)]
 pub fn current_status() -> &'static str {
-    let sim_running = is_process_running(&["iRacingSim64DX11.exe", "iRacingSim64.exe"]);
+    let (sim_running, ui_running) = detect_iracing_processes();
     if sim_running {
         use windows_sys::Win32::System::Memory::{OpenFileMappingW, FILE_MAP_READ};
         let mapping = unsafe { OpenFileMappingW(FILE_MAP_READ, 0, wide("Local\\IRSDKMemMapFileName").as_ptr()) };
@@ -29,7 +29,7 @@ pub fn current_status() -> &'static str {
         }
         return "in_sim";
     }
-    if is_process_running(&["iRacingUI.exe"]) {
+    if ui_running {
         return "ui_open";
     }
     "closed"
@@ -41,7 +41,19 @@ pub fn current_status() -> &'static str {
 }
 
 #[cfg(windows)]
-fn is_process_running(target_names: &[&str]) -> bool {
+fn eq_utf16_ascii_ignore_case(wide_slice: &[u16], ascii_target: &str) -> bool {
+    let target = ascii_target.as_bytes();
+    if wide_slice.len() != target.len() {
+        return false;
+    }
+    wide_slice
+        .iter()
+        .zip(target.iter())
+        .all(|(&w, &b)| w <= 0x7F && (w as u8).eq_ignore_ascii_case(&b))
+}
+
+#[cfg(windows)]
+fn detect_iracing_processes() -> (bool, bool) {
     use windows_sys::Win32::Foundation::{CloseHandle, INVALID_HANDLE_VALUE};
     use windows_sys::Win32::System::Diagnostics::ToolHelp::{
         CreateToolhelp32Snapshot, Process32FirstW, Process32NextW, PROCESSENTRY32W,
@@ -50,13 +62,14 @@ fn is_process_running(target_names: &[&str]) -> bool {
 
     let snapshot = unsafe { CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0) };
     if snapshot == INVALID_HANDLE_VALUE {
-        return false;
+        return (false, false);
     }
 
     let mut entry: PROCESSENTRY32W = unsafe { std::mem::zeroed() };
     entry.dwSize = std::mem::size_of::<PROCESSENTRY32W>() as u32;
 
-    let mut found = false;
+    let mut sim_running = false;
+    let mut ui_running = false;
     if unsafe { Process32FirstW(snapshot, &mut entry) } != 0 {
         loop {
             let len = entry
@@ -64,9 +77,16 @@ fn is_process_running(target_names: &[&str]) -> bool {
                 .iter()
                 .position(|&c| c == 0)
                 .unwrap_or(entry.szExeFile.len());
-            let name = String::from_utf16_lossy(&entry.szExeFile[..len]).to_lowercase();
-            if target_names.iter().any(|target| target.to_lowercase() == name) {
-                found = true;
+            let name = &entry.szExeFile[..len];
+            if !sim_running
+                && (eq_utf16_ascii_ignore_case(name, "iRacingSim64DX11.exe")
+                    || eq_utf16_ascii_ignore_case(name, "iRacingSim64.exe"))
+            {
+                sim_running = true;
+            } else if !ui_running && eq_utf16_ascii_ignore_case(name, "iRacingUI.exe") {
+                ui_running = true;
+            }
+            if sim_running && ui_running {
                 break;
             }
             if unsafe { Process32NextW(snapshot, &mut entry) } == 0 {
@@ -76,7 +96,7 @@ fn is_process_running(target_names: &[&str]) -> bool {
     }
 
     unsafe { CloseHandle(snapshot); }
-    found
+    (sim_running, ui_running)
 }
 
 #[cfg(windows)]
@@ -106,6 +126,24 @@ impl Drop for SdkMap {
 }
 
 #[cfg(windows)]
+fn is_window_active(app: &AppHandle, label: &str) -> bool {
+    use tauri::Manager;
+    let Some(win) = app.get_webview_window(label) else {
+        return false;
+    };
+    win.is_visible().unwrap_or(false) && !win.is_minimized().unwrap_or(false)
+}
+
+#[cfg(windows)]
+fn emit_status_if_changed(app: &AppHandle, last_status: &mut Option<&'static str>, next: &'static str) {
+    use tauri::Emitter;
+    if *last_status != Some(next) {
+        *last_status = Some(next);
+        let _ = app.emit("mmt-iracing-status", next);
+    }
+}
+
+#[cfg(windows)]
 fn windows_loop(app: AppHandle) {
     use std::time::{Duration, Instant};
     use mmt_sync_core::{
@@ -122,28 +160,22 @@ fn windows_loop(app: AppHandle) {
     const SYNCHRONIZE: u32 = 0x0010_0000;
     const WAIT_OBJECT_0: u32 = 0;
     const FRAME_MS: u64 = 16;
-    let mut last_status_check = Instant::now() - Duration::from_secs(5);
+    const MAIN_FRAME_MS: u64 = 66;
+    let mut last_status: Option<&'static str> = None;
 
     loop {
-        let sim_running = is_process_running(&["iRacingSim64DX11.exe", "iRacingSim64.exe"]);
+        let (sim_running, ui_running) = detect_iracing_processes();
         if !sim_running {
-            if last_status_check.elapsed() >= Duration::from_millis(1500) {
-                let st = if is_process_running(&["iRacingUI.exe"]) {
-                    "ui_open"
-                } else {
-                    "closed"
-                };
-                let _ = app.emit("mmt-iracing-status", st);
-                last_status_check = Instant::now();
-            }
-            std::thread::sleep(Duration::from_millis(1000));
+            let st = if ui_running { "ui_open" } else { "closed" };
+            emit_status_if_changed(&app, &mut last_status, st);
+            std::thread::sleep(Duration::from_millis(2000));
             continue;
         }
 
         let mapping = unsafe { OpenFileMappingW(FILE_MAP_READ, 0, wide("Local\\IRSDKMemMapFileName").as_ptr()) };
         if mapping.is_null() {
-            let _ = app.emit("mmt-iracing-status", "in_sim");
-            std::thread::sleep(Duration::from_millis(1000));
+            emit_status_if_changed(&app, &mut last_status, "in_sim");
+            std::thread::sleep(Duration::from_millis(1200));
             continue;
         }
         let view = unsafe { MapViewOfFile(mapping, FILE_MAP_READ, 0, 0, 0) };
@@ -154,12 +186,14 @@ fn windows_loop(app: AppHandle) {
         }
         let event = unsafe { OpenEventW(SYNCHRONIZE, 0, wide("Local\\IRSDKDataValidEvent").as_ptr()) };
         let mapped = SdkMap { mapping, view, event };
-        let _ = app.emit("mmt-iracing-status", "on_track");
+        emit_status_if_changed(&app, &mut last_status, "on_track");
 
         let mut vars: Option<VarTable> = None;
         let mut last_yaml_update: Option<i32> = None;
-        let mut last_yaml_emit = Instant::now() - Duration::from_secs(10);
+        let mut overlay_synced_yaml = false;
+        let mut main_synced_yaml = false;
         let mut last_emit = Instant::now() - Duration::from_secs(1);
+        let mut last_main_emit = Instant::now() - Duration::from_secs(1);
         let mut last_frame_emit = Instant::now() - Duration::from_secs(1);
         let mut last_proc = Instant::now();
         loop {
@@ -170,10 +204,11 @@ fn windows_loop(app: AppHandle) {
                 let waited = unsafe { WaitForSingleObject(mapped.event, FRAME_MS as u32) };
                 waited == WAIT_OBJECT_0
             };
-            if last_proc.elapsed() >= Duration::from_millis(500) {
+            if last_proc.elapsed() >= Duration::from_millis(2000) {
                 last_proc = Instant::now();
-                if !is_process_running(&["iRacingSim64DX11.exe", "iRacingSim64.exe"]) {
-                    let _ = app.emit("mmt-iracing-status", "closed");
+                let (sim_alive, _) = detect_iracing_processes();
+                if !sim_alive {
+                    emit_status_if_changed(&app, &mut last_status, "closed");
                     break;
                 }
             }
@@ -183,19 +218,33 @@ fn windows_loop(app: AppHandle) {
             if last_emit.elapsed() < Duration::from_millis(FRAME_MS) {
                 continue;
             }
+            let overlay_active = is_window_active(&app, "overlay");
+            let main_active = is_window_active(&app, "main");
+            if !overlay_active {
+                overlay_synced_yaml = false;
+            }
+            if !main_active {
+                main_synced_yaml = false;
+            }
+            // Skip shared-memory deserialization & IPC completely when no window is visible
+            if !overlay_active && !main_active {
+                last_emit = Instant::now();
+                std::thread::sleep(Duration::from_millis(100));
+                continue;
+            }
             let mut info = unsafe { std::mem::zeroed::<MEMORY_BASIC_INFORMATION>() };
             let queried = unsafe {
                 VirtualQuery(mapped.view.Value as *const _, &mut info, std::mem::size_of::<MEMORY_BASIC_INFORMATION>())
             };
             if queried == 0 || info.RegionSize < 112 {
-                let _ = app.emit("mmt-iracing-status", "in_sim");
+                emit_status_if_changed(&app, &mut last_status, "in_sim");
                 break;
             }
             let bytes = unsafe { std::slice::from_raw_parts(mapped.view.Value as *const u8, info.RegionSize) };
             let update = match session_info_update(bytes) {
                 Ok(update) => update,
                 Err(IbtError::NotConnected) => {
-                    let _ = app.emit("mmt-iracing-status", "in_sim");
+                    emit_status_if_changed(&app, &mut last_status, "in_sim");
                     vars = None;
                     continue;
                 }
@@ -206,7 +255,7 @@ fn windows_loop(app: AppHandle) {
                 match resolve_var_table(bytes) {
                     Ok(table) => vars = Some(table),
                     Err(IbtError::NotConnected) => {
-                        let _ = app.emit("mmt-iracing-status", "in_sim");
+                        emit_status_if_changed(&app, &mut last_status, "in_sim");
                         vars = None;
                         last_yaml_update = None;
                         continue;
@@ -214,26 +263,39 @@ fn windows_loop(app: AppHandle) {
                     Err(_) => continue,
                 }
             }
-            if last_yaml_update != Some(update) || last_yaml_emit.elapsed() >= Duration::from_secs(3) {
+            let yaml_changed = last_yaml_update != Some(update);
+            let need_overlay_yaml = overlay_active && (yaml_changed || !overlay_synced_yaml);
+            let need_main_yaml = main_active && (yaml_changed || !main_synced_yaml);
+            if need_overlay_yaml || need_main_yaml {
                 if let Ok((u, yaml)) = read_session_info_yaml(bytes) {
-                    let _ = app.emit(
-                        "mmt-session-info",
-                        serde_json::json!({ "update": u, "yaml": yaml }),
-                    );
+                    let payload = serde_json::json!({ "update": u, "yaml": yaml });
+                    if need_overlay_yaml {
+                        let _ = app.emit_to("overlay", "mmt-session-info", &payload);
+                        overlay_synced_yaml = true;
+                    }
+                    if need_main_yaml {
+                        let _ = app.emit_to("main", "mmt-session-info", &payload);
+                        main_synced_yaml = true;
+                    }
                     last_yaml_update = Some(u);
-                    last_yaml_emit = Instant::now();
                 }
             }
             let mut clear_vars = false;
             if let Some(table) = vars.as_ref() {
                 match read_live_sample_with(bytes, table) {
                     Ok(sample) => {
-                        let _ = app.emit("mmt-live", &sample);
-                        let _ = app.emit("mmt-iracing-status", "on_track");
+                        if overlay_active {
+                            let _ = app.emit_to("overlay", "mmt-live", &sample);
+                        }
+                        if main_active && last_main_emit.elapsed() >= Duration::from_millis(MAIN_FRAME_MS) {
+                            let _ = app.emit_to("main", "mmt-live", &sample);
+                            last_main_emit = Instant::now();
+                        }
+                        emit_status_if_changed(&app, &mut last_status, "on_track");
                         last_emit = Instant::now();
                     }
                     Err(IbtError::NotConnected) => {
-                        let _ = app.emit("mmt-iracing-status", "in_sim");
+                        emit_status_if_changed(&app, &mut last_status, "in_sim");
                         clear_vars = true;
                         last_yaml_update = None;
                     }
@@ -244,10 +306,15 @@ fn windows_loop(app: AppHandle) {
             if clear_vars {
                 vars = None;
             }
-            if last_frame_emit.elapsed() >= Duration::from_millis(66) {
+            if last_frame_emit.elapsed() >= Duration::from_millis(MAIN_FRAME_MS) {
                 if let Some(table) = vars.as_ref() {
                     if let Ok(frame) = read_live_irsdk_frame_with(bytes, table) {
-                        let _ = app.emit("mmt-irsdk-frame", &frame);
+                        if overlay_active {
+                            let _ = app.emit_to("overlay", "mmt-irsdk-frame", &frame);
+                        }
+                        if main_active {
+                            let _ = app.emit_to("main", "mmt-irsdk-frame", &frame);
+                        }
                         last_frame_emit = Instant::now();
                     }
                 }

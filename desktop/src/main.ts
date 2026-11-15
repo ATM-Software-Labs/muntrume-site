@@ -365,10 +365,9 @@ let userPreferences: string[] = (() => {
   return ["SPORTS CAR", "FORMULA CAR", "OVAL", "DIRT"];
 })();
 
-let lastLiveSample = 0;
-
 function applyIracingStatus(status: string): void {
   if (status !== "on_track") noteHudClosed();
+  if (document.documentElement.classList.contains("overlay-mode")) return;
   const badge = document.getElementById("irBadge");
   const dot = document.getElementById("irDot");
   const text = document.getElementById("irText");
@@ -394,18 +393,9 @@ function applyIracingStatus(status: string): void {
 }
 
 function updateLiveStatus(sample: LiveSample): void {
-  lastLiveSample = Date.now();
   applyIracingStatus("on_track");
   updateLiveOverlay(sample);
 }
-
-setInterval(() => {
-  if (Date.now() - lastLiveSample > 3500) {
-    void backend.checkIracing().then((status) => {
-      applyIracingStatus(status);
-    }).catch(() => {});
-  }
-}, 2500);
 
 function theme(): "dark" | "light" {
   return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";

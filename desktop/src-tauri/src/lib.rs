@@ -94,8 +94,10 @@ pub fn run() {
         })
         .on_window_event(|window, event| match event {
             WindowEvent::CloseRequested { api, .. } => {
-                api.prevent_close();
-                let _ = window.hide();
+                if window.label() == "main" {
+                    api.prevent_close();
+                    let _ = window.hide();
+                }
             }
             WindowEvent::DragDrop(tauri::DragDropEvent::Drop { paths, .. }) => {
                 match stage_paths(window.app_handle(), paths) {
@@ -550,19 +552,41 @@ fn detect_hardware() -> Result<hardware::HardwareReport, String> {
 
 #[tauri::command]
 fn toggle_overlay(app: AppHandle, show: bool) -> Result<bool, String> {
-    if let Some(window) = app.get_webview_window("overlay") {
-        if show {
+    if show {
+        if let Some(window) = app.get_webview_window("overlay") {
             fit_overlay(&window);
             let _ = window.set_always_on_top(true);
             let _ = window.set_ignore_cursor_events(true);
             let _ = window.show();
-            Ok(true)
-        } else {
-            let _ = window.hide();
-            Ok(false)
+            return Ok(true);
         }
+        let builder = tauri::WebviewWindowBuilder::new(
+            &app,
+            "overlay",
+            tauri::WebviewUrl::App("index.html?overlay=1".into()),
+        )
+        .title("MMT Sync")
+        .inner_size(1920.0, 1080.0)
+        .transparent(true)
+        .always_on_top(true)
+        .decorations(false)
+        .skip_taskbar(true)
+        .visible(false)
+        .shadow(false)
+        .resizable(true)
+        .maximized(true);
+        let window = builder
+            .build()
+            .map_err(|e| format!("No se pudo abrir el overlay: {e}"))?;
+        fit_overlay(&window);
+        let _ = window.set_ignore_cursor_events(true);
+        let _ = window.show();
+        Ok(true)
     } else {
-        Err("Ventana de overlay no encontrada".into())
+        if let Some(window) = app.get_webview_window("overlay") {
+            let _ = window.close();
+        }
+        Ok(false)
     }
 }
 

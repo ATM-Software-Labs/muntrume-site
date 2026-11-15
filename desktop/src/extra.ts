@@ -1907,6 +1907,7 @@ export function updateLiveOverlay(sample: LiveSample): void {
 }
 
 function updateHUDDisplay(sample: LiveSample): void {
+  if (typeof document !== "undefined" && document.hidden) return;
   const irsdkState = IrsdkClient.getInstance().getLatestState();
   const kmh = Math.round(sample.speed * 3.6);
   const gearStr = sample.gear === -1 ? "R" : sample.gear === 0 ? "N" : String(sample.gear);
@@ -1920,9 +1921,9 @@ function updateHUDDisplay(sample: LiveSample): void {
     liveWaveformHistory.shift();
   }
 
-  // Draw scrolling live waveform
+  // Draw scrolling live waveform only for visible canvases
   document.querySelectorAll<HTMLCanvasElement>("#ovWaveformCanvas, #ovWaveformCanvasFloat").forEach((c) => {
-    drawWaveformCanvas(c, liveWaveformHistory);
+    if (c.offsetParent !== null) drawWaveformCanvas(c, liveWaveformHistory);
   });
 
   // Shift Lights
@@ -1968,22 +1969,28 @@ function updateHUDDisplay(sample: LiveSample): void {
   // Update Brake Marker Countdown
   updateBrakeMarkerCountdown(sample.dist, kmh);
 
-  // Central Cluster
-  document.querySelectorAll<HTMLElement>("#ovGear, #ovGearFloat").forEach((el) => { el.textContent = gearStr; });
-  document.querySelectorAll<HTMLElement>("#ovSpeed, #ovSpeedFloat").forEach((el) => { el.textContent = String(kmh); });
+  // Central Cluster (only update visible elements and skip unchanged text)
+  const speedStr = String(kmh);
+  const rpmStr = mock ? `${rpmEst.toLocaleString()} RPM` : "—";
+  document.querySelectorAll<HTMLElement>("#ovGear, #ovGearFloat").forEach((el) => {
+    if (el.offsetParent !== null && el.textContent !== gearStr) el.textContent = gearStr;
+  });
+  document.querySelectorAll<HTMLElement>("#ovSpeed, #ovSpeedFloat").forEach((el) => {
+    if (el.offsetParent !== null && el.textContent !== speedStr) el.textContent = speedStr;
+  });
   document.querySelectorAll<HTMLElement>("#ovRpm, #ovRpmFloat").forEach((el) => {
-    el.textContent = mock ? `${rpmEst.toLocaleString()} RPM` : "—";
+    if (el.offsetParent !== null && el.textContent !== rpmStr) el.textContent = rpmStr;
   });
 
   const deltaVal = mock ? Math.sin(sample.t * 0.5) * 0.42 : 0;
   const deltaText = mock ? `${deltaVal >= 0 ? "+" : ""}${deltaVal.toFixed(2)}s · Sector 2` : "—";
   document.querySelectorAll<HTMLElement>("#ovDelta, #ovDeltaFloat").forEach((ovDelta) => {
-    ovDelta.textContent = deltaText;
-    if (deltaVal <= 0) {
-      ovDelta.className = "mb-3 px-5 py-1.5 rounded-full border border-emerald-500/40 bg-emerald-950/80 text-emerald-400 font-mono text-sm font-bold shadow-lg shadow-emerald-950/50";
-    } else {
-      ovDelta.className = "mb-3 px-5 py-1.5 rounded-full border border-rose-500/40 bg-rose-950/80 text-rose-400 font-mono text-sm font-bold shadow-lg shadow-rose-950/50";
-    }
+    if (ovDelta.offsetParent === null) return;
+    if (ovDelta.textContent !== deltaText) ovDelta.textContent = deltaText;
+    const nextClass = deltaVal <= 0
+      ? "mb-3 px-5 py-1.5 rounded-full border border-emerald-500/40 bg-emerald-950/80 text-emerald-400 font-mono text-sm font-bold shadow-lg shadow-emerald-950/50"
+      : "mb-3 px-5 py-1.5 rounded-full border border-rose-500/40 bg-rose-950/80 text-rose-400 font-mono text-sm font-bold shadow-lg shadow-rose-950/50";
+    if (ovDelta.className !== nextClass) ovDelta.className = nextClass;
   });
 
   // Corner Analysis Widget
@@ -2195,59 +2202,60 @@ function updateHUDDisplay(sample: LiveSample): void {
       });
     }
 
-    const category = session.weekendInfo?.category || "";
-    const sessionType = session.sessionType || "";
-    const carPath = irsdkState.activeDriver?.carPath || "";
-    SmartLayoutManager.getInstance().matchAndActivate(category, sessionType, carPath);
+    if (shouldRenderSlowHud) {
+      const category = session.weekendInfo?.category || "";
+      const sessionType = session.sessionType || "";
+      const carPath = irsdkState.activeDriver?.carPath || "";
+      SmartLayoutManager.getInstance().matchAndActivate(category, sessionType, carPath);
 
-    // Broadcast normalized 60 Hz telemetry to WebSocket and external plugins (Bloque 17)
+      // Bloque 21: Contextual visibility rules (evaluated at 4 Hz, not 60 Hz)
+      const vis = VisibilityRulesEngine.getInstance();
+      const showReplays = localStorage.getItem("mmt-hud-show-replays") !== "0";
+      const showAllSess = localStorage.getItem("mmt-hud-show-all-sessions") !== "0";
+      const disabledWidgets = loadDisabledWidgets();
+      const visCtx = {
+        isReplayPlaying: showReplays ? false : irsdkState.isReplayPlaying,
+        sessionType: showAllSess ? "Race" : (session.sessionType || ""),
+        sessionState: frame.sessionState || 4,
+        camCarIdx: irsdkState.camCarIdx,
+        activeLap: showAllSess ? 2 : (frame.carIdxLap[irsdkState.camCarIdx] || 1),
+        lapDistPct: showAllSess ? 0.5 : (frame.carIdxLapDistPct[irsdkState.camCarIdx] || 0),
+        onPitRoad: irsdkState.onPitRoad,
+      };
+
+      vis.applyElementVisibility(document.getElementById("floatRelativeCard"), !disabledWidgets.has("relative") && vis.evaluateVisibility("relative", visCtx));
+      vis.applyElementVisibility(document.getElementById("floatStandingsCard"), !disabledWidgets.has("standings") && vis.evaluateVisibility("standings", visCtx));
+      vis.applyElementVisibility(document.getElementById("floatFuelCard"), !disabledWidgets.has("fuel") && vis.evaluateVisibility("fuel", visCtx));
+      vis.applyElementVisibility(document.getElementById("floatInputsCard"), !disabledWidgets.has("inputs") && vis.evaluateVisibility("pedals", visCtx));
+      vis.applyElementVisibility(document.getElementById("floatWaveformCard"), !disabledWidgets.has("waveform") && vis.evaluateVisibility("waveform", visCtx));
+      vis.applyElementVisibility(document.getElementById("floatClusterCard"), !disabledWidgets.has("cluster"));
+      vis.applyElementVisibility(document.getElementById("floatShiftLightsRow"), !disabledWidgets.has("lights"));
+
+      // Auto-hide top edit bar when on track (OnPitRoad === false)
+      if (!floatEditMode) {
+        const showChrome = SmartLayoutManager.getInstance().computeEditBarVisibility(irsdkState.onPitRoad, false);
+        const chrome = document.getElementById("floatHudChrome");
+        if (chrome && chrome.hidden === showChrome) {
+          chrome.hidden = !showChrome;
+        }
+      }
+    }
+
+    // Broadcast normalized telemetry to WebSocket and external plugins only if subscribers exist
     LocalTelemetryBus.getInstance().publish(irsdkState, kmh, {
       throttle: sample.throttle,
       brake: sample.brake,
       clutch: (sample as any).clutch ?? 0,
       steering: sample.steering,
       gear: sample.gear,
-      rpm: 7500,
+      rpm: rpmEst || 7500,
     });
-
-    // Bloque 21: Contextual visibility rules (works in BOTH Replays and Race by default, customizable in Studio)
-    const vis = VisibilityRulesEngine.getInstance();
-    const showReplays = localStorage.getItem("mmt-hud-show-replays") !== "0";
-    const showAllSess = localStorage.getItem("mmt-hud-show-all-sessions") !== "0";
-    const disabledWidgets = loadDisabledWidgets();
-    const visCtx = {
-      isReplayPlaying: showReplays ? false : irsdkState.isReplayPlaying,
-      sessionType: showAllSess ? "Race" : (session.sessionType || ""),
-      sessionState: frame.sessionState || 4,
-      camCarIdx: irsdkState.camCarIdx,
-      activeLap: showAllSess ? 2 : (frame.carIdxLap[irsdkState.camCarIdx] || 1),
-      lapDistPct: showAllSess ? 0.5 : (frame.carIdxLapDistPct[irsdkState.camCarIdx] || 0),
-      onPitRoad: irsdkState.onPitRoad,
-    };
-
-    vis.applyElementVisibility(document.getElementById("floatRelativeCard"), !disabledWidgets.has("relative") && vis.evaluateVisibility("relative", visCtx));
-    vis.applyElementVisibility(document.getElementById("floatStandingsCard"), !disabledWidgets.has("standings") && vis.evaluateVisibility("standings", visCtx));
-    vis.applyElementVisibility(document.getElementById("floatFuelCard"), !disabledWidgets.has("fuel") && vis.evaluateVisibility("fuel", visCtx));
-    vis.applyElementVisibility(document.getElementById("floatInputsCard"), !disabledWidgets.has("inputs") && vis.evaluateVisibility("pedals", visCtx));
-    vis.applyElementVisibility(document.getElementById("floatWaveformCard"), !disabledWidgets.has("waveform") && vis.evaluateVisibility("waveform", visCtx));
-    vis.applyElementVisibility(document.getElementById("floatClusterCard"), !disabledWidgets.has("cluster"));
-    vis.applyElementVisibility(document.getElementById("floatShiftLightsRow"), !disabledWidgets.has("lights"));
-    applyHudCustomAppearance();
-
-    // Auto-hide top edit bar when on track (OnPitRoad === false)
-    if (!floatEditMode) {
-      const showChrome = SmartLayoutManager.getInstance().computeEditBarVisibility(irsdkState.onPitRoad, false);
-      const chrome = document.getElementById("floatHudChrome");
-      if (chrome && chrome.hidden === showChrome) {
-        chrome.hidden = !showChrome;
-      }
-    }
   }
 
   const steerDeg = (sample.steering * 57.2958).toFixed(1);
   const tyresText = `Volante: ${steerDeg}° · Gas: ${Math.round(sample.throttle * 100)}% · Freno: ${Math.round(sample.brake * 100)}%`;
   document.querySelectorAll<HTMLElement>("#ovTyres, #ovTyresFloat").forEach((tyres) => {
-    tyres.textContent = tyresText;
+    if (tyres.offsetParent !== null && tyres.textContent !== tyresText) tyres.textContent = tyresText;
   });
 }
 
