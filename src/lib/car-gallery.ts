@@ -55,6 +55,21 @@ function isForeignManufacturerAsset(car: CarMetadata, src: string, title = ''): 
   return false;
 }
 
+function isSeriesLogoOrBannerAsset(src: string, title = '', subtitle = ''): boolean {
+  const srcLower = src.toLowerCase();
+  if (/\/assets\/img\/(series|og-)\b/i.test(srcLower)) {
+    return true;
+  }
+  if (/(^|[\/_-])(series|logo|badge|conspit|banner|emblem)([\/_.-]|$)/i.test(srcLower)) {
+    return true;
+  }
+  const textLower = `${title} ${subtitle}`.toLowerCase();
+  if (textLower.includes('series oficiales en el simulador')) {
+    return true;
+  }
+  return false;
+}
+
 /**
  * Obtiene las diapositivas de la galería para un vehículo específico.
  * Solo incluye fotos cuyo carPath coincide exactamente con car.carFolder.
@@ -81,6 +96,7 @@ export function getCarGallerySlides(car: CarMetadata): CarGallerySlide[] {
     for (const photo of album.photos) {
       if (photo.carPath.toLowerCase() !== folderLower) continue;
       if (seenSrc.has(photo.img.toLowerCase())) continue;
+      if (isSeriesLogoOrBannerAsset(photo.img, photo.title, photo.subtitle)) continue;
       if (isForeignManufacturerAsset(car, photo.img, photo.title)) continue;
       seenSrc.add(photo.img.toLowerCase());
       slides.push({

@@ -6,6 +6,7 @@ import { CAR_CATALOG_LIST, type CarMetadata } from '../../../desktop/src/cars/ca
 import { getBrandOrigin, getCarDossier } from '../../data/car-dossiers';
 import { getCarVideos } from '../../lib/video-links';
 import { getCarGallerySlides } from '../../lib/car-gallery';
+import { getCarOfficialSeries } from '../../lib/car-series';
 import catalogIndex from '../../../public/assets/data/catalog_index.json';
 
 export function getStaticPaths() {
@@ -42,6 +43,7 @@ const hasGarageSetups = (catalogIndex.cars as string[]).some(
 );
 
 const carSlides = getCarGallerySlides(car);
+const officialSeries = getCarOfficialSeries(car);
 
 const carVideos = getCarVideos(car.brand, car.model, car.carClass, car.carFolder);
 
@@ -282,6 +284,25 @@ const pageDescription = `${car.brand} ${car.model} (${car.carClass}): ${dossier.
               <span class="text-[10px] text-[var(--r-muted)] block uppercase">Arquitectura / Specs</span>
               <strong class="text-[var(--r-text)]">{car.specs}</strong>
             </div>
+            {officialSeries.length > 0 && (
+              <div class="p-2.5 rounded-xl bg-[var(--r-bg)] border border-[var(--r-line)]/60 col-span-2 space-y-2">
+                <span class="text-[10px] text-[var(--r-muted)] block uppercase">Series Oficiales donde participa ({officialSeries.length})</span>
+                <div class="flex flex-wrap gap-1.5">
+                  {officialSeries.map((sr) => (
+                    <span
+                      class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--r-surface)] border border-[var(--r-line)] text-[11px] text-[var(--r-text)]"
+                      title={sr.currentTrack ? `${sr.name} · Semana actual: ${sr.currentTrack}` : sr.name}
+                    >
+                      <span class="w-1.5 h-1.5 rounded-full bg-[var(--r-accent)] shrink-0"></span>
+                      <span>{sr.name}</span>
+                      {sr.currentTrack && (
+                        <span class="text-[10px] text-[var(--r-muted)]">· {sr.currentTrack}</span>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
