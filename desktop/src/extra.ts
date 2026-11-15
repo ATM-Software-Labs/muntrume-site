@@ -1960,20 +1960,34 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
   syncWidgetToggleBar();
 }
 
+export function stopOverlayDemoLoop(): void {
+  previewDemoActive = false;
+  if (demoAnimationTimer) {
+    clearInterval(demoAnimationTimer);
+    demoAnimationTimer = null;
+  }
+  IrsdkClient.getInstance().stopSimulation();
+}
+
 function startDemoOverlayLoop(): void {
+  if (typeof window !== "undefined" && window.location.search.includes("overlay=1") && !forcedDevHudMock()) {
+    stopOverlayDemoLoop();
+    setHudMode("closed");
+    return;
+  }
   if (!hudMockAllowed()) {
     setHudMode("closed");
     IrsdkClient.getInstance().stopSimulation();
     return;
   }
   setHudMode("mock");
-  IrsdkClient.getInstance().startSimulation(70);
+  IrsdkClient.getInstance().startSimulation(200);
   if (demoAnimationTimer) clearInterval(demoAnimationTimer);
 
   const paintDemo = () => {
     if (isLiveFromSDK) return;
 
-    demoTick += 0.05;
+    demoTick += 0.1;
     const t = demoTick;
     const speed = 120 + Math.sin(t * 0.8) * 85;
     const gear = speed > 185 ? 5 : speed > 145 ? 4 : speed > 95 ? 3 : 2;
@@ -1992,7 +2006,7 @@ function startDemoOverlayLoop(): void {
     });
   };
   paintDemo();
-  demoAnimationTimer = window.setInterval(paintDemo, 50);
+  demoAnimationTimer = window.setInterval(paintDemo, 100);
 }
 
 export function updateLiveOverlay(sample: LiveSample): void {

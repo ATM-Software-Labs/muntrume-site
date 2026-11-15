@@ -135,6 +135,15 @@ fn is_window_active(app: &AppHandle, label: &str) -> bool {
 }
 
 #[cfg(windows)]
+fn is_window_focused(app: &AppHandle, label: &str) -> bool {
+    use tauri::Manager;
+    let Some(win) = app.get_webview_window(label) else {
+        return false;
+    };
+    win.is_focused().unwrap_or(false)
+}
+
+#[cfg(windows)]
 fn emit_status_if_changed(app: &AppHandle, last_status: &mut Option<&'static str>, next: &'static str) {
     use tauri::Emitter;
     if *last_status != Some(next) {
@@ -159,8 +168,9 @@ fn windows_loop(app: AppHandle) {
 
     const SYNCHRONIZE: u32 = 0x0010_0000;
     const WAIT_OBJECT_0: u32 = 0;
-    const FRAME_MS: u64 = 16;
-    const MAIN_FRAME_MS: u64 = 66;
+    const FRAME_MS: u64 = 33;
+    const MAIN_FRAME_MS: u64 = 100;
+    const IRSDK_FRAME_MS: u64 = 200;
     let mut last_status: Option<&'static str> = None;
 
     loop {
@@ -219,7 +229,7 @@ fn windows_loop(app: AppHandle) {
                 continue;
             }
             let overlay_active = is_window_active(&app, "overlay");
-            let main_active = is_window_active(&app, "main");
+            let main_active = is_window_active(&app, "main") && (!overlay_active || is_window_focused(&app, "main"));
             if !overlay_active {
                 overlay_synced_yaml = false;
             }
@@ -306,7 +316,7 @@ fn windows_loop(app: AppHandle) {
             if clear_vars {
                 vars = None;
             }
-            if last_frame_emit.elapsed() >= Duration::from_millis(MAIN_FRAME_MS) {
+            if last_frame_emit.elapsed() >= Duration::from_millis(IRSDK_FRAME_MS) {
                 if let Some(table) = vars.as_ref() {
                     if let Ok(frame) = read_live_irsdk_frame_with(bytes, table) {
                         if overlay_active {

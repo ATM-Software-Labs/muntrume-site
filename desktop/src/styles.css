@@ -296,6 +296,18 @@ html.overlay-mode body {
   user-select: none;
 }
 
+.mmt-brand-svg,
+.mmt-brand-svg > svg {
+  width: 12px !important;
+  height: 12px !important;
+  min-width: 12px !important;
+  min-height: 12px !important;
+  max-width: 12px !important;
+  max-height: 12px !important;
+  display: block !important;
+  flex: 0 0 12px !important;
+}
+
 /* Unified Engineering & Panel System (Calendario, Análisis, Referencia, Estrategia, Overlays, Equipo) */
 .mmt-panel {
   border-radius: 1rem;

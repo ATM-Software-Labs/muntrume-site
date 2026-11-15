@@ -55,7 +55,19 @@ const DEFAULT_BRAND: CarBrandInfo = {
   svg: `<svg viewBox="0 0 24 24" fill="none" class="w-full h-full"><circle cx="12" cy="12" r="8.5" stroke="#10b981" stroke-width="1.5"/><path d="M8 15.5 12 7l4 8.5-4-2-4 2Z" fill="#10b981"/></svg>`,
 };
 
+const brandInfoCache = new Map<string, CarBrandInfo>();
+
 export function getCarBrandInfo(carNameOrFolder: string): CarBrandInfo {
+  const rawKey = String(carNameOrFolder || "");
+  const cached = brandInfoCache.get(rawKey);
+  if (cached) return cached;
+  const info = computeCarBrandInfo(rawKey);
+  if (brandInfoCache.size > 256) brandInfoCache.clear();
+  brandInfoCache.set(rawKey, info);
+  return info;
+}
+
+function computeCarBrandInfo(carNameOrFolder: string): CarBrandInfo {
   const key = normKey(carNameOrFolder);
   const catalogHit = CATALOG_BRAND_BY_KEY.get(key);
   if (catalogHit && OFFICIAL_BRAND_PATHS[catalogHit.logo]) {

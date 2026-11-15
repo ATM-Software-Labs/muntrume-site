@@ -2,7 +2,7 @@ import { inTauri } from "./env";
 import { createMock } from "./mock";
 import { createTauriBackend } from "./tauri-backend";
 import type { Backend, LibraryItem, LiveSample, Settings, Snapshot, StagedFile } from "./types";
-import { fuelText, paintConfigAnalysis, paintExtras, updateLiveOverlay, initFloatingOverlayControls, paintOverlays, paintHardware, paintLastSession, noteHudClosed } from "./extra";
+import { fuelText, paintConfigAnalysis, paintExtras, updateLiveOverlay, initFloatingOverlayControls, paintOverlays, paintHardware, paintLastSession, noteHudClosed, stopOverlayDemoLoop } from "./extra";
 import rawSchedule from "./season_schedule_2026_s4.json";
 import { getSetupProfile } from "./setup-intelligence";
 import { SyncCoordinator } from "./sync/sync-coordinator";
@@ -1686,6 +1686,9 @@ function showView(next: typeof view): void {
   for (const [name, id] of Object.entries(extra)) {
     const node = document.getElementById(id);
     if (node) node.hidden = next !== name;
+  }
+  if (next !== "overlays") {
+    stopOverlayDemoLoop();
   }
   if (next === "last_session") {
     paintLastSession();

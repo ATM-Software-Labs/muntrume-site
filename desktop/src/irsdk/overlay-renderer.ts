@@ -16,6 +16,13 @@ import { DigiFlagEngine } from "./digi-flag";
 import { ThemeEngine } from "../theme/theme-engine";
 import { estimateAllDriversIRatingDeltas, estimateLiveIRating, formatIRatingDelta, formatSofShort } from "./irating-calc";
 
+const lastRenderedHtml = new WeakMap<HTMLElement, string>();
+function setHtmlIfChanged(container: HTMLElement, html: string): void {
+  if (lastRenderedHtml.get(container) === html) return;
+  lastRenderedHtml.set(container, html);
+  container.innerHTML = html;
+}
+
 const LICENSE_BADGE_STYLES: Record<string, { bg: string; border: string; text: string }> = {
   A: { bg: "#0284c7", border: "#38bdf8", text: "#ffffff" },
   B: { bg: "#16a34a", border: "#4ade80", text: "#ffffff" },
@@ -161,12 +168,12 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
     })
     .join("");
 
-  container.innerHTML = `
+  setHtmlIfChanged(container, `
     ${headerHtml}
     <div class="divide-y divide-white/[0.04] rounded overflow-hidden font-mono text-xs select-none">
       ${rowsHtml}
     </div>
-  `;
+  `);
 }
 
 /**
@@ -313,12 +320,12 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
     })
     .join("");
 
-  container.innerHTML = `
+  setHtmlIfChanged(container, `
     ${headerHtml}
     <div class="divide-y divide-white/[0.04] rounded overflow-hidden font-mono text-xs select-none">
       ${rowsHtml}
     </div>
-  `;
+  `);
 }
 
 /**
@@ -414,7 +421,7 @@ export function renderFuelWidget(container: HTMLElement, state: IrsdkComputedSta
   const fuelPct = Math.max(0, Math.min(100, Math.round(fuel.fuelRemainingPct || 0)));
   const barColor = fuelPct < 15 ? "#f43f5e" : fuelPct < 35 ? "#f59e0b" : "#10b981";
 
-  container.innerHTML = `
+  setHtmlIfChanged(container, `
     ${headerHtml}
     <div class="mb-2">
       <div class="h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
@@ -429,7 +436,7 @@ export function renderFuelWidget(container: HTMLElement, state: IrsdkComputedSta
       <span class="text-emerald-300 font-bold">L&amp;C ${fuel.liftAndCoastTarget} L/v</span>
       <span>${fuel.completedLapsSampled}v</span>
     </div>
-  `;
+  `);
 }
 
 /**
