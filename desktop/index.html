@@ -1727,13 +1727,13 @@
         </div>
       </div>
 
-      <!-- 1. Top-Left (top: 8px, left: 8px): Kapps-style Standings (width 450px, 20px rows) -->
-      <div id="floatStandingsCard" class="mmt-float-widget fixed top-2 left-2 w-[450px] rounded border border-white/12 bg-[#0a0c10]/94 text-white p-1 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="standings">
+      <!-- 1. Top-Left (top: 6px, left: 6px): Kapps-style Standings (width 375px, 19px rows, 0.52 alpha) -->
+      <div id="floatStandingsCard" class="mmt-float-widget fixed top-[6px] left-[6px] w-[375px] rounded-[3px] text-white text-[11px] font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: rgba(10, 12, 16, 0.52); text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="standings">
         <div id="ovStandingsFloat"></div>
       </div>
 
-      <!-- 2. Top-Right (top: 8px, right: 8px): Kapps-style Relative (width 320px, 20px rows) -->
-      <div id="floatRelativeCard" class="mmt-float-widget fixed top-2 right-2 w-[320px] rounded border border-white/12 bg-[#0a0c10]/94 text-white p-1 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="relative">
+      <!-- 2. Top-Right (top: 6px, right: 6px): Kapps-style Relative (width 320px, 19px rows, 0.52 alpha) -->
+      <div id="floatRelativeCard" class="mmt-float-widget fixed top-[6px] right-[6px] w-[320px] rounded-[3px] text-white text-[11px] font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: rgba(10, 12, 16, 0.52); text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="relative">
         <div id="ovRelativeFloat"></div>
       </div>
 
@@ -1742,19 +1742,14 @@
         <div id="ovRadarFloat"></div>
       </div>
 
-      <!-- 4. Center-Top below mirror: Slim Pit Lane Bar (280x26px, only visible when OnPitRoad === true) -->
+      <!-- 4. Pit Helper kept hidden on track (avoids duplicating iRacing native IN PIT LANE) -->
       <div id="floatPitHelperCard" hidden class="mmt-float-widget fixed top-[110px] left-1/2 -translate-x-1/2 w-[280px] h-[26px] pointer-events-auto overflow-hidden" data-widget="pit">
         <div id="ovPitboxFloat"></div>
       </div>
 
-      <!-- 5. Bottom-Left Stack (left: 8px, bottom: 8px, 6px vertical gap): VS Session + Fuel -->
-      <div class="fixed bottom-2 left-2 flex flex-col items-start gap-[6px] pointer-events-none">
-        <div id="floatDeltaCard" class="mmt-float-widget w-[210px] rounded border border-white/12 bg-[#0a0c10]/94 text-white p-1.5 text-[10px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="delta">
-          <div id="ovDeltaFloat"></div>
-        </div>
-        <div id="floatFuelCard" class="mmt-float-widget w-[240px] rounded border border-white/12 bg-[#0a0c10]/94 text-white p-1.5 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="fuel">
-          <div id="ovFuelFloat"></div>
-        </div>
+      <!-- 5. Bottom-Left Fuel (left: 8px, bottom: 8px, 0.52 alpha, no duplicate Delta box) -->
+      <div id="floatFuelCard" class="mmt-float-widget fixed bottom-2 left-2 w-[240px] rounded-[3px] text-white p-1.5 text-[11px] font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: rgba(10, 12, 16, 0.52); text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="fuel">
+        <div id="ovFuelFloat"></div>
       </div>
 
       <!-- 6. Center over Dashboard DDU (bottom: 185px, centered): Compact Inputs + Gear + Speed (300x38px) -->

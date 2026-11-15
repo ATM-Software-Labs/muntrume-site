@@ -13,7 +13,7 @@ import { Radar360Engine, type RadarInputState } from "./radar-360";
 import { PitboxHelperEngine, type PitboxInputState } from "./pitbox-helper";
 import { DigiFlagEngine } from "./digi-flag";
 import { ThemeEngine } from "../theme/theme-engine";
-import { estimateLiveIRating, formatIRatingDelta, formatSofShort } from "./irating-calc";
+import { estimateLiveIRating, formatSofShort } from "./irating-calc";
 
 const lastRenderedHtml = new WeakMap<HTMLElement, string>();
 function setHtmlIfChanged(container: HTMLElement, html: string): void {
@@ -66,16 +66,11 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
   const irEst = estimateLiveIRating(state);
   const posByCarIdx = new Map<number, number>();
   state.leaderboard.forEach((entry) => posByCarIdx.set(entry.carIdx, entry.position));
-  const irPill = irEst
-    ? `<span class="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold tabular-nums ${
-        irEst.delta >= 0 ? "bg-emerald-500/20 text-emerald-300" : "bg-rose-500/20 text-rose-300"
-      }">${formatIRatingDelta(irEst.delta)}</span>`
-    : "";
 
   const tTrack = state.frame.trackTempC;
   const trackTempStr = typeof tTrack === "number" && tTrack > 0 ? `${tTrack.toFixed(0)}°C` : "--°C";
   const localClock = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
-  const activeLap = state.frame.carIdxLap[state.camCarIdx] || 1;
+  const activeLap = Math.max(0, state.frame.carIdxLap[state.camCarIdx] || 0);
   const remSec = Math.max(0, Math.round(state.frame.sessionTimeRemain || 0));
   const remMin = Math.floor(remSec / 60);
   const remSecPart = String(remSec % 60).padStart(2, "0");
@@ -83,16 +78,9 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
   const sessType = (state.session.sessionType || "Practice").split(" ")[0];
 
   const headerHtml = `
-    <div class="h-[22px] px-2 flex items-center justify-between border-b border-white/10 text-[10px] font-mono tabular-nums whitespace-nowrap text-white/75">
-      <div class="flex items-center gap-1.5">
-        <span class="font-bold text-white/90">${irEst ? `SOF ${formatSofShort(irEst.sof)}` : "REL"}</span>
-        ${irPill}
-        ${isStreamer ? `<span class="px-1 rounded text-[8px] bg-purple-500/20 text-purple-300">STR</span>` : ""}
-      </div>
-      <div class="flex items-center gap-2 text-white/65">
-        <span>${trackTempStr}</span>
-        <span>${localClock}</span>
-      </div>
+    <div style="height:19px;padding:0 6px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,12,16,0.62);border-bottom:1px solid rgba(255,255,255,0.08);font-size:10px;font-weight:600;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,0.9);color:rgba(255,255,255,0.8)">
+      <span>${irEst ? `SOF ${formatSofShort(irEst.sof)}` : "REL"}</span>
+      <span>${trackTempStr} · ${localClock}</span>
     </div>
   `;
 
@@ -102,50 +90,57 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
     : entries.slice(0, 7);
 
   const rowsHtml = displayEntries
-    .map((e: RelativeEntry) => {
+    .map((e: RelativeEntry, rowIdx: number) => {
       const isSelf = e.isActiveCam;
-      const rowBg = isSelf
-        ? "bg-[rgba(0,230,118,0.18)]"
-        : "bg-[#0a0c10]/88 odd:bg-[#0e1218]/88";
+      const rowBgStyle = isSelf
+        ? "background:rgba(0,230,118,0.20)"
+        : rowIdx % 2 === 1
+        ? "background:rgba(255,255,255,0.03)"
+        : "background:transparent";
 
-      const deltaClass = isSelf
-        ? "text-[#00e676] font-extrabold"
-        : e.isAhead
-        ? "text-amber-300 font-bold"
-        : "text-sky-300 font-bold";
+      const gapClean = (e.deltaStr || "0.0").replace(/s$/i, "");
+      const gapColor = isSelf
+        ? "#00e676"
+        : e.onPitRoad
+        ? "#fbbf24"
+        : "#ffffff";
 
       const pitBadge = cols.pitStatus && e.onPitRoad
-        ? `<span class="px-1 rounded-[2px] text-[8px] bg-amber-500/25 text-amber-300 font-bold">PIT</span>`
+        ? `<span style="padding:0 3px;border-radius:2px;font-size:8px;font-weight:700;background:rgba(245,158,11,0.25);color:#fbbf24">PIT</span>`
         : "";
 
       const displayName = isStreamer
         ? isSelf ? "Piloto (Tú)" : `Piloto #${e.carNumber}`
-        : e.abbrevName;
+        : (e.driverName || e.abbrevName);
 
       const relPos = posByCarIdx.get(e.carIdx) ?? 0;
-      const classPosCell = `<span style="width:24px;flex-shrink:0;text-align:center;font-size:10px;font-weight:700;color:${e.carClassColor || "#38bdf8"}">${relPos > 0 ? `P${relPos}` : "-"}</span>`;
+      const classPosCell = `<span style="width:20px;flex-shrink:0;text-align:center;font-size:10px;font-weight:700;color:${e.carClassColor || "#38bdf8"}">${relPos > 0 ? relPos : "-"}</span>`;
       const numCell = cols.carNumber
-        ? `<span style="width:30px;flex-shrink:0;text-align:center;font-size:10px;font-weight:700;color:${isSelf ? "#00e676" : "rgba(255,255,255,0.8)"}">#${e.carNumber}</span>`
+        ? `<span style="width:30px;flex-shrink:0;text-align:center;font-size:10px;font-weight:700;color:${isSelf ? "#00e676" : "rgba(255,255,255,0.85)"}">#${e.carNumber}</span>`
         : `<span style="width:30px;flex-shrink:0"></span>`;
       const nameCell = cols.driverName
-        ? `<span style="flex:1 1 0%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:${isSelf ? "700" : "500"};color:${isSelf ? "#ffffff" : "rgba(255,255,255,0.9)"}">${displayName}</span>`
+        ? `<span style="flex:1 1 0%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:${isSelf ? "700" : "600"};color:${isSelf ? "#ffffff" : "rgba(255,255,255,0.92)"}">${displayName}</span>`
         : `<span style="flex:1 1 0%;min-width:0"></span>`;
+      const tagCell = `<span style="width:24px;flex-shrink:0;text-align:center">${pitBadge}</span>`;
       const licCell = cols.license
-        ? `<span style="width:42px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:flex-end;gap:2px">${renderLicenseBadge(e.licString)}</span>`
-        : `<span style="width:42px;flex-shrink:0"></span>`;
-      const tagCell = `<span style="width:26px;flex-shrink:0;text-align:center">${pitBadge}</span>`;
+        ? `<span style="width:34px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center">${renderLicenseBadge(e.licString)}</span>`
+        : `<span style="width:34px;flex-shrink:0"></span>`;
+      const irCell = cols.iRating && e.iRatingStr
+        ? `<span style="width:34px;flex-shrink:0;text-align:right;font-size:10px;color:rgba(255,255,255,0.72)">${e.iRatingStr}</span>`
+        : `<span style="width:34px;flex-shrink:0"></span>`;
       const deltaCell = cols.delta
-        ? `<span style="width:46px;flex-shrink:0;text-align:right;font-size:11px;font-variant-numeric:tabular-nums" class="${deltaClass}">${e.deltaStr}</span>`
-        : `<span style="width:46px;flex-shrink:0"></span>`;
+        ? `<span style="width:36px;flex-shrink:0;text-align:right;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;color:${gapColor}">${gapClean}</span>`
+        : `<span style="width:36px;flex-shrink:0"></span>`;
 
       return `
-        <div class="${rowBg} font-mono tabular-nums"
-             style="display:flex;align-items:center;gap:4px;height:20px;padding:0 6px;white-space:nowrap;overflow:hidden;border-left:3px solid ${isSelf ? "#00e676" : (e.carClassColor || "#00e699")}">
+        <div class="font-mono tabular-nums"
+             style="${rowBgStyle};display:flex;align-items:center;gap:3px;height:19px;padding:0 5px;white-space:nowrap;overflow:hidden;text-shadow:0 1px 2px rgba(0,0,0,0.9);border-left:2px solid ${isSelf ? "#00e676" : (e.carClassColor || "#00e699")}">
           ${classPosCell}
           ${numCell}
           ${nameCell}
-          ${licCell}
           ${tagCell}
+          ${licCell}
+          ${irCell}
           ${deltaCell}
         </div>
       `;
@@ -153,8 +148,8 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
     .join("");
 
   const footerHtml = `
-    <div class="h-[20px] px-2 flex items-center justify-between border-t border-white/10 text-[10px] font-mono tabular-nums whitespace-nowrap text-white/60">
-      <span>Lap: <strong class="text-white/90">${activeLap}</strong></span>
+    <div style="height:19px;padding:0 6px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,12,16,0.62);border-top:1px solid rgba(255,255,255,0.08);font-size:10px;font-weight:600;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,0.9);color:rgba(255,255,255,0.7)">
+      <span>Lap: <strong style="color:#fff">${activeLap}</strong></span>
       <span>${sessionClock}</span>
       <span>${isReplay ? "Replay" : sessType}</span>
     </div>
@@ -162,7 +157,7 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
 
   setHtmlIfChanged(container, `
     ${headerHtml}
-    <div class="divide-y divide-white/[0.04] overflow-hidden font-mono text-[11px] select-none">
+    <div class="font-mono select-none" style="overflow:hidden">
       ${rowsHtml}
     </div>
     ${footerHtml}
@@ -225,29 +220,30 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
     state.session.sessionType.toLowerCase().includes("practice") ||
     state.session.sessionType.toLowerCase().includes("warmup");
 
-  const activeLap = state.frame.carIdxLap[state.camCarIdx] || 1;
-  const totalLaps = state.frame.sessionLapsRemainEx > 0 ? activeLap + state.frame.sessionLapsRemainEx : 0;
-  const lapStr = totalLaps > 0 ? `Lap ${activeLap}/${totalLaps}` : `Lap ${activeLap}`;
+  const rawLap = state.frame.carIdxLap[state.camCarIdx] ?? 0;
+  const activeLap = Math.max(0, rawLap);
+  const remainLaps = state.frame.sessionLapsRemainEx;
+  const validTotalLaps = remainLaps > 0 && remainLaps < 30000 ? activeLap + remainLaps : 0;
+  const lapStr = validTotalLaps > 0 ? `Lap ${activeLap}/${validTotalLaps}` : `Lap ${activeLap}`;
   const remSec = Math.max(0, Math.round(state.frame.sessionTimeRemain || 0));
   const remClock = `${Math.floor(remSec / 60)}:${String(remSec % 60).padStart(2, "0")}`;
   const tTrack = state.frame.trackTempC;
-  const tAir = state.frame.airTempC;
-  const tempStr = typeof tTrack === "number" && tTrack > 0
-    ? `${tTrack.toFixed(0)}°/${typeof tAir === "number" ? tAir.toFixed(0) : "--"}°`
-    : "--°/--°";
+  const tempStr = typeof tTrack === "number" && tTrack > 0 ? `${tTrack.toFixed(0)}°C` : "--°C";
   const leadClass = leaderboard[0]?.carClassShortName || (isPractice ? "PRAC" : "RACE");
   const leadColor = leaderboard[0]?.carClassColor || "#38bdf8";
+  const sessChar = isPractice ? "P" : "R";
 
   const headerHtml = `
-    <div class="h-[22px] px-2 flex items-center justify-between border-b border-white/10 text-[10px] font-mono tabular-nums whitespace-nowrap">
-      <div class="flex items-center gap-1.5">
-        <span class="px-1 rounded-[2px] text-[9px] font-extrabold" style="background:${leadColor}28;color:${leadColor}">${leadClass}</span>
-        <span class="text-white/90 font-bold">${lapStr}</span>
-        <span class="text-white/55">• ${remClock}</span>
-        ${isStreamer ? `<span class="px-1 rounded text-[8px] bg-purple-500/20 text-purple-300">STR</span>` : ""}
+    <div style="height:19px;padding:0 6px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,12,16,0.62);border-bottom:1px solid rgba(255,255,255,0.08);font-size:10px;font-weight:600;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,0.9)">
+      <div style="display:flex;align-items:center;gap:5px">
+        <span style="color:rgba(255,255,255,0.75);font-weight:700">${sessChar}</span>
+        <span style="padding:0 4px;border-radius:2px;font-size:9px;font-weight:800;background:${leadColor}28;color:${leadColor}">${leadClass}</span>
+        <span style="color:#fff">${lapStr}</span>
+        <span style="color:rgba(255,255,255,0.6)">${remClock}</span>
       </div>
-      <div class="flex items-center gap-2 text-white/65">
+      <div style="display:flex;align-items:center;gap:6px;color:rgba(255,255,255,0.72)">
         <span>${tempStr}</span>
+        <span>${leaderboard.length}</span>
       </div>
     </div>
   `;
@@ -257,9 +253,9 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
   const classPositions = new Map<string, number>();
 
   const rowsHtml = compactRows
-    .map((row) => {
+    .map((row, rowIdx) => {
       if (row.kind === "separator") {
-        return `<div class="h-[14px] flex items-center justify-center bg-[#0a0c10]/70 text-[10px] font-mono text-white/35 tracking-widest select-none">···</div>`;
+        return `<div style="height:12px;display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.35);letter-spacing:2px">···</div>`;
       }
       const e = row.entry;
       const idx = row.rankIdx;
@@ -269,44 +265,36 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
 
       const isLeader = idx === 0;
       const isSelf = e.isActiveCam;
-      const posClass = isLeader
-        ? "text-amber-400 font-black"
-        : idx === 1
-        ? "text-slate-200 font-bold"
-        : idx === 2
-        ? "text-amber-600 font-bold"
-        : "text-white/75";
+      const posColor = isLeader ? "#fbbf24" : idx === 1 ? "#e2e8f0" : idx === 2 ? "#d97706" : "rgba(255,255,255,0.8)";
+      const rowBgStyle = isSelf
+        ? "background:rgba(0,230,118,0.20)"
+        : rowIdx % 2 === 1
+        ? "background:rgba(255,255,255,0.03)"
+        : "background:transparent";
 
-      const rowBg = isSelf
-        ? "bg-[rgba(0,230,118,0.18)]"
-        : "bg-[#0a0c10]/88 odd:bg-[#0e1218]/88";
-
-      const posClassCell = `<span style="width:18px;flex-shrink:0;text-align:center;font-size:10px;font-weight:700;color:${e.carClassColor || "#38bdf8"}">${clsPos}</span>`;
       const posGlobalCell = cols.position
-        ? `<span style="width:18px;flex-shrink:0;text-align:center;font-size:10px" class="${posClass}">${e.position}</span>`
+        ? `<span style="width:18px;flex-shrink:0;text-align:center;font-size:10px;font-weight:700;color:${posColor}">${e.position}</span>`
         : `<span style="width:18px;flex-shrink:0"></span>`;
-      const numCell = cols.carNumber && e.carNumber
-        ? `<span style="width:30px;flex-shrink:0;text-align:center;font-size:10px;font-weight:700;color:${isSelf ? "#00e676" : "rgba(255,255,255,0.8)"}">#${e.carNumber}</span>`
-        : `<span style="width:30px;flex-shrink:0"></span>`;
+      const posClassCell = `<span style="width:18px;flex-shrink:0;text-align:center;font-size:10px;font-weight:700;color:${e.carClassColor || "#38bdf8"}">${clsPos}</span>`;
 
       const displayName = isStreamer
         ? isSelf ? "Piloto (Tú)" : `Piloto #${e.carNumber}`
-        : (cols.driverName ? e.abbrevName : "");
-      const nameCell = `<span style="flex:1 1 0%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:${isSelf ? "700" : "500"};color:${isSelf ? "#ffffff" : "rgba(255,255,255,0.9)"}">${displayName}</span>`;
+        : (cols.driverName ? (e.driverName || e.abbrevName) : "");
+      const nameCell = `<span style="flex:1 1 0%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:${isSelf ? "700" : "600"};color:${isSelf ? "#ffffff" : "rgba(255,255,255,0.94)"}">${displayName}</span>`;
       const brandCell = cols.brandIcon
-        ? `<span style="width:14px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center">${getCarBrandSvg(e.carPath, 12)}</span>`
-        : `<span style="width:14px;flex-shrink:0"></span>`;
-      const licIrCell = `<span style="width:64px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:flex-end;gap:3px">${e.licString ? renderLicenseBadge(e.licString) : ""}${cols.iRating && e.iRatingStr ? `<span style="font-size:9px;color:rgba(255,255,255,0.65)">${e.iRatingStr}</span>` : ""}</span>`;
-      const gapCell = `<span style="width:44px;flex-shrink:0;text-align:right;font-size:10px;color:${isLeader ? "#fcd34d" : "rgba(255,255,255,0.75)"};font-weight:${isLeader ? "700" : "400"}">${isLeader ? "LDR" : (e.gapStr || "-")}</span>`;
-      const intCell = `<span style="width:44px;flex-shrink:0;text-align:right;font-size:10px;color:rgba(255,255,255,0.6)">${isLeader ? "-" : (e.intervalStr || "-")}</span>`;
-      const bestCell = `<span style="width:56px;flex-shrink:0;text-align:right;font-size:10px;font-weight:${(isLeader && isPractice) || isSelf ? "700" : "400"};color:${isLeader && isPractice ? "#fcd34d" : isSelf ? "#00e676" : "rgba(255,255,255,0.9)"}">${e.bestLapStr || "--:--.--"}</span>`;
+        ? `<span style="width:16px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center">${getCarBrandSvg(e.carPath, 12)}</span>`
+        : `<span style="width:16px;flex-shrink:0"></span>`;
+      const fullIr = (e as any).iRating > 0 ? String((e as any).iRating) : (e.iRatingStr || "");
+      const licIrCell = `<span style="width:66px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:flex-end;gap:3px">${e.licString ? renderLicenseBadge(e.licString) : ""}${cols.iRating && fullIr ? `<span style="font-size:10px;color:rgba(255,255,255,0.75)">${fullIr}</span>` : ""}</span>`;
+      const gapCell = `<span style="width:40px;flex-shrink:0;text-align:right;font-size:10px;color:${isLeader ? "#fbbf24" : "rgba(255,255,255,0.8)"};font-weight:${isLeader ? "700" : "600"}">${isLeader ? "LDR" : (e.gapStr || "-")}</span>`;
+      const intCell = `<span style="width:40px;flex-shrink:0;text-align:right;font-size:10px;color:rgba(255,255,255,0.68)">${isLeader ? "-" : (e.intervalStr || "-")}</span>`;
+      const bestCell = `<span style="width:52px;flex-shrink:0;text-align:right;font-size:10px;font-weight:${(isLeader && isPractice) || isSelf ? "700" : "600"};color:${isLeader && isPractice ? "#fbbf24" : isSelf ? "#00e676" : "rgba(255,255,255,0.92)"}">${e.bestLapStr || "--:--.--"}</span>`;
 
       return `
-        <div class="${rowBg} font-mono tabular-nums"
-             style="display:flex;align-items:center;gap:4px;height:20px;padding:0 6px;white-space:nowrap;overflow:hidden;border-left:3px solid ${isSelf ? "#00e676" : (e.carClassColor || "#38bdf8")}">
-          ${posClassCell}
+        <div class="font-mono tabular-nums"
+             style="${rowBgStyle};display:flex;align-items:center;gap:3px;height:19px;padding:0 5px;white-space:nowrap;overflow:hidden;text-shadow:0 1px 2px rgba(0,0,0,0.9);border-left:2px solid ${isSelf ? "#00e676" : (e.carClassColor || "#38bdf8")}">
           ${posGlobalCell}
-          ${numCell}
+          ${posClassCell}
           ${nameCell}
           ${brandCell}
           ${licIrCell}
@@ -320,7 +308,7 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
 
   setHtmlIfChanged(container, `
     ${headerHtml}
-    <div class="divide-y divide-white/[0.04] overflow-hidden font-mono text-[11px] tabular-nums select-none max-h-[260px]">
+    <div class="font-mono tabular-nums select-none" style="overflow:hidden;max-height:240px">
       ${rowsHtml}
     </div>
   `);
