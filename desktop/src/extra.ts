@@ -35,6 +35,8 @@ const tireThermalEngine = new TireThermalEngine();
 const broadcastDirector = new BroadcastDirector();
 const aeroAnalyzer = new AeroSuspensionAnalyzer();
 let engButtonsWired = false;
+let lastSlowHudRenderMs = 0;
+let lastRadarRenderMs = 0;
 
 interface ScheduleWeek {
   week_num: number;
@@ -1977,48 +1979,53 @@ function updateHUDDisplay(sample: LiveSample): void {
       : "Curva rápida: sostén gas de apoyo para asentar el alerón trasero.";
   }
 
-  // Render high-precision Relative, Standings, and Fuel via iRacing SDK Engines (Bloque 1)
-  if (isLiveFromSDK) {
-    updateOverlayBrandBadge(irsdkState?.activeDriver?.carPath);
-  }
-  const hasSessionField = !isLiveFromSDK || (irsdkState !== null && irsdkState.leaderboard.length > 0);
-  const floatRelCard = document.getElementById("floatRelativeCard");
-  const floatStdCard = document.getElementById("floatStandingsCard");
-  const floatFuelCard = document.getElementById("floatFuelCard");
-  if (floatRelCard) floatRelCard.hidden = !hasSessionField;
-  if (floatStdCard) floatStdCard.hidden = !hasSessionField;
-  if (floatFuelCard) floatFuelCard.hidden = !hasSessionField;
+  // Render high-precision Relative, Standings, and Fuel at 4 Hz (250ms) and only when visible
+  const nowHudMs = performance.now();
+  const shouldRenderSlowHud = nowHudMs - lastSlowHudRenderMs >= 250;
+  if (shouldRenderSlowHud) {
+    lastSlowHudRenderMs = nowHudMs;
+    if (isLiveFromSDK) {
+      updateOverlayBrandBadge(irsdkState?.activeDriver?.carPath);
+    }
+    const hasSessionField = !isLiveFromSDK || (irsdkState !== null && irsdkState.leaderboard.length > 0);
+    const floatRelCard = document.getElementById("floatRelativeCard");
+    const floatStdCard = document.getElementById("floatStandingsCard");
+    const floatFuelCard = document.getElementById("floatFuelCard");
+    if (floatRelCard) floatRelCard.hidden = !hasSessionField;
+    if (floatStdCard) floatStdCard.hidden = !hasSessionField;
+    if (floatFuelCard) floatFuelCard.hidden = !hasSessionField;
 
-  document.querySelectorAll<HTMLElement>("#ovRelative, #ovRelativeFloat").forEach((rel) => {
-    renderRelativeWidget(rel, irsdkState);
-  });
-  document.querySelectorAll<HTMLElement>("#ovStandings, #ovStandingsFloat").forEach((standings) => {
-    renderStandingsWidget(standings, irsdkState);
-  });
-  document.querySelectorAll<HTMLElement>("#ovFuel, #ovFuelFloat").forEach((fuel) => {
-    renderFuelWidget(fuel, irsdkState);
-  });
+    document.querySelectorAll<HTMLElement>("#ovRelative, #ovRelativeFloat").forEach((rel) => {
+      if (rel.offsetParent !== null) renderRelativeWidget(rel, irsdkState);
+    });
+    document.querySelectorAll<HTMLElement>("#ovStandings, #ovStandingsFloat").forEach((standings) => {
+      if (standings.offsetParent !== null) renderStandingsWidget(standings, irsdkState);
+    });
+    document.querySelectorAll<HTMLElement>("#ovFuel, #ovFuelFloat").forEach((fuel) => {
+      if (fuel.offsetParent !== null) renderFuelWidget(fuel, irsdkState);
+    });
 
-  // Update minimalist Pro Live Metrics Strip in main app
-  const proStrip = document.getElementById("proLiveMetricsStrip");
-  if (proStrip && irsdkState) {
-    const irEst = estimateLiveIRating(irsdkState);
-    const activeLap = irsdkState.frame.carIdxLap[irsdkState.camCarIdx] || 0;
-    const fuelLaps = irsdkState.fuel?.lapsRemaining;
-    const parts: string[] = [];
-    if (irEst) {
-      parts.push(`<span class="px-2 py-0.5 rounded bg-r-bg border border-r-line text-r-text font-bold">P${irEst.myClassPos}/${irEst.classFieldSize}</span>`);
-      parts.push(`<span class="text-r-muted">SOF ${formatSofShort(irEst.sof)}</span>`);
-      const irColor = irEst.delta >= 0 ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30" : "bg-rose-500/15 text-rose-300 border-rose-500/30";
-      parts.push(`<span class="px-2 py-0.5 rounded border font-bold ${irColor}">${formatIRatingDelta(irEst.delta)} → ${irEst.projectedIr}</span>`);
+    // Update minimalist Pro Live Metrics Strip in main app
+    const proStrip = document.getElementById("proLiveMetricsStrip");
+    if (proStrip && proStrip.offsetParent !== null && irsdkState) {
+      const irEst = estimateLiveIRating(irsdkState);
+      const activeLap = irsdkState.frame.carIdxLap[irsdkState.camCarIdx] || 0;
+      const fuelLaps = irsdkState.fuel?.lapsRemaining;
+      const parts: string[] = [];
+      if (irEst) {
+        parts.push(`<span class="px-2 py-0.5 rounded bg-r-bg border border-r-line text-r-text font-bold">P${irEst.myClassPos}/${irEst.classFieldSize}</span>`);
+        parts.push(`<span class="text-r-muted">SOF ${formatSofShort(irEst.sof)}</span>`);
+        const irColor = irEst.delta >= 0 ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30" : "bg-rose-500/15 text-rose-300 border-rose-500/30";
+        parts.push(`<span class="px-2 py-0.5 rounded border font-bold ${irColor}">${formatIRatingDelta(irEst.delta)} → ${irEst.projectedIr}</span>`);
+      }
+      if (activeLap > 0) {
+        parts.push(`<span class="px-1.5 py-0.5 rounded bg-r-bg border border-r-line text-r-muted">L${activeLap}</span>`);
+      }
+      if (typeof fuelLaps === "number" && fuelLaps > 0 && Number.isFinite(fuelLaps)) {
+        parts.push(`<span class="text-r-accent font-semibold">${fuelLaps.toFixed(1)}v fuel</span>`);
+      }
+      proStrip.innerHTML = parts.join("");
     }
-    if (activeLap > 0) {
-      parts.push(`<span class="px-1.5 py-0.5 rounded bg-r-bg border border-r-line text-r-muted">L${activeLap}</span>`);
-    }
-    if (typeof fuelLaps === "number" && fuelLaps > 0 && Number.isFinite(fuelLaps)) {
-      parts.push(`<span class="text-r-accent font-semibold">${fuelLaps.toFixed(1)}v fuel</span>`);
-    }
-    proStrip.innerHTML = parts.join("");
   }
 
   // Prompts 34, 35, 37: Pit Exit Predictor, Tire Thermal IMO, Broadcast Director
@@ -2053,7 +2060,7 @@ function updateHUDDisplay(sample: LiveSample): void {
   }
 
   const pitEl = document.getElementById("ovPitExitWidget");
-  if (pitEl && irsdkState) {
+  if (shouldRenderSlowHud && pitEl && pitEl.offsetParent !== null && irsdkState) {
     const rawFrame = irsdkState.frame;
     const activeIdx = irsdkState.camCarIdx;
     const activeLap = rawFrame?.carIdxLap?.[activeIdx] ?? 1;
@@ -2079,7 +2086,7 @@ function updateHUDDisplay(sample: LiveSample): void {
   }
 
   const tireEl = document.getElementById("ovTireThermalWidget");
-  if (tireEl) {
+  if (shouldRenderSlowHud && tireEl && tireEl.offsetParent !== null) {
     const baseTemp = 68 + Math.min(28, (kmh / 260) * 18 + (sample.brake || 0) * 12);
     const baseKpa = 165 + Math.min(18, (kmh / 260) * 10);
     const tireSnap = tireThermalEngine.evaluate({
@@ -2093,7 +2100,7 @@ function updateHUDDisplay(sample: LiveSample): void {
   }
 
   const bdEl = document.getElementById("ovBroadcastDirectorWidget");
-  if (bdEl && irsdkState) {
+  if (shouldRenderSlowHud && bdEl && bdEl.offsetParent !== null && irsdkState) {
     const sessionTime = irsdkState.frame?.sessionTime ?? 0;
     broadcastDirector.evaluateCamera(irsdkState.leaderboard || [], sessionTime);
     const clr = Number((sample as any).carLeftRight ?? 0);
@@ -2112,40 +2119,51 @@ function updateHUDDisplay(sample: LiveSample): void {
     gear: sample.gear,
   };
   document.querySelectorAll<HTMLElement>("#ovGpuPedals, #ovGpuPedalsFloat").forEach((container) => {
-    renderGpuPedalsWidget(container, pedalSample);
+    if (container.offsetParent !== null) renderGpuPedalsWidget(container, pedalSample);
   });
 
   // Fallback for canvas inputs if visible
   document.querySelectorAll<HTMLCanvasElement>("#ovInputs, #ovInputsFloat").forEach((canvas) => {
-    if (!canvas.classList.contains("hidden")) {
+    if (!canvas.classList.contains("hidden") && canvas.offsetParent !== null) {
       drawInputsCanvas(canvas, sample);
     }
   });
 
-  // Bloque 2: 360° Proximity Radar, Pitbox Helper, DigiFlag & Smart Layouts
+  // Bloque 2: 360° Proximity Radar (15 Hz), Pitbox Helper (4 Hz), DigiFlag (15 Hz)
   if (irsdkState) {
     const frame = irsdkState.frame;
     const session = irsdkState.session;
 
-    document.querySelectorAll<HTMLElement>("#ovRadar, #ovRadarFloat").forEach((radar) => {
-      renderRadarWidget(radar, {
-        carLeftRight: (frame as any).carLeftRight ?? 0,
-        speedKmh: kmh,
+    if (nowHudMs - lastRadarRenderMs >= 66) {
+      lastRadarRenderMs = nowHudMs;
+      document.querySelectorAll<HTMLElement>("#ovRadar, #ovRadarFloat").forEach((radar) => {
+        if (radar.offsetParent !== null) {
+          renderRadarWidget(radar, {
+            carLeftRight: (frame as any).carLeftRight ?? 0,
+            speedKmh: kmh,
+          });
+        }
       });
-    });
+    }
 
-    document.querySelectorAll<HTMLElement>("#ovPitbox, #ovPitboxFloat").forEach((pitbox) => {
-      renderPitboxWidget(pitbox, {
-        onPitRoad: irsdkState.onPitRoad,
-        speedKmh: kmh,
-        pitSpeedLimitKmh: (frame as any).pitSpeedLimitKmh ?? 60,
-        distanceToStallMeters: (frame as any).playerCarPitLocation ?? 0,
+    if (shouldRenderSlowHud) {
+      document.querySelectorAll<HTMLElement>("#ovPitbox, #ovPitboxFloat").forEach((pitbox) => {
+        if (pitbox.offsetParent !== null) {
+          renderPitboxWidget(pitbox, {
+            onPitRoad: irsdkState.onPitRoad,
+            speedKmh: kmh,
+          pitSpeedLimitKmh: (frame as any).pitSpeedLimitKmh ?? 60,
+          distanceToStallMeters: (frame as any).playerCarPitLocation ?? 0,
+        });
+        }
       });
-    });
 
-    document.querySelectorAll<HTMLElement>("#ovDigiFlag, #ovDigiFlagFloat").forEach((flag) => {
-      renderDigiFlagWidget(flag, frame.sessionFlags ?? 0);
-    });
+      document.querySelectorAll<HTMLElement>("#ovDigiFlag, #ovDigiFlagFloat").forEach((flag) => {
+        if (flag.offsetParent !== null) {
+          renderDigiFlagWidget(flag, frame.sessionFlags ?? 0);
+        }
+      });
+    }
 
     const category = session.weekendInfo?.category || "";
     const sessionType = session.sessionType || "";

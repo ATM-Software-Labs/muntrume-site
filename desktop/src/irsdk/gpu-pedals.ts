@@ -65,102 +65,189 @@ export class GpuPedalsEngine {
     };
   }
 
-  public render(container: HTMLElement, sample: PedalsSample): void {
-    const p = this.computePedalState(sample);
+  private refsMap = new WeakMap<
+    HTMLElement,
+    {
+      canvas: HTMLCanvasElement;
+      ctx: CanvasRenderingContext2D | null;
+      history: Array<{ thr: number; brk: number }>;
+      cltBar: HTMLElement;
+      brkBar: HTMLElement;
+      brkPeak: HTMLElement;
+      thrBar: HTMLElement;
+      cltPct: HTMLElement;
+      brkPct: HTMLElement;
+      thrPct: HTMLElement;
+      absPill: HTMLElement;
+      tcPill: HTMLElement;
+      ffbPill: HTMLElement;
+      wheelSvg: SVGSVGElement;
+      steerDeg: HTMLElement;
+    }
+  >();
 
-    const ffbColor = p.isFfbClipping ? "#ef4444" : "#94a3b8";
-    const absClass = p.absActive
-      ? "bg-amber-400 text-black shadow-[0_0_8px_#facc15] font-black"
-      : "bg-white/5 text-white/20";
-    const tcClass = p.tcActive
-      ? "bg-sky-400 text-black shadow-[0_0_8px_#38bdf8] font-black"
-      : "bg-white/5 text-white/20";
-
+  private initContainer(container: HTMLElement) {
     container.innerHTML = `
-      <div class="p-2 rounded-xl bg-black/85 border border-white/10 text-white font-mono select-none" style="will-change: transform;">
-        <!-- Header -->
-        <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-white/10 text-[10px] font-bold uppercase tracking-wider">
-          <span class="text-r-muted">Pedales &amp; Volante (GPU 60 FPS)</span>
-          <div class="flex items-center gap-1.5 text-[8px]">
-            <span class="px-1.5 py-0.2 rounded ${absClass}">ABS</span>
-            <span class="px-1.5 py-0.2 rounded ${tcClass}">TC</span>
-            <span class="px-1.5 py-0.2 rounded font-bold ${p.isFfbClipping ? "bg-rose-500 text-white animate-pulse" : "bg-white/10 text-white/50"}">FFB</span>
+      <div class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg bg-[#0a0c10]/92 border border-white/10 text-white font-mono select-none">
+        <!-- Live 60 FPS Telemetry Trace -->
+        <div class="flex flex-col gap-1">
+          <canvas data-mmt-trace width="128" height="46" class="rounded bg-black/70 border border-white/10 block"></canvas>
+          <div class="flex items-center justify-between text-[8px] tracking-wider uppercase font-bold">
+            <div class="flex items-center gap-1">
+              <span data-mmt-abs class="px-1 rounded bg-white/5 text-white/25">ABS</span>
+              <span data-mmt-tc class="px-1 rounded bg-white/5 text-white/25">TC</span>
+              <span data-mmt-ffb class="px-1 rounded bg-white/5 text-white/40">FFB</span>
+            </div>
+            <span class="text-white/35">60Hz</span>
           </div>
         </div>
 
-        <div class="grid grid-cols-[1fr_auto] gap-3 items-center">
-          <!-- 3 Vertical GPU Bars -->
-          <div class="flex items-end gap-2.5 h-24">
-            <!-- Clutch Bar -->
-            <div class="flex flex-col items-center gap-1 h-full">
-              <span class="text-[9px] text-white/60 tabular-nums">${p.clutchPct}%</span>
-              <div class="w-4 flex-1 bg-white/5 rounded-md overflow-hidden relative border border-white/10">
-                <div class="absolute inset-x-0 bottom-0 bg-sky-400 rounded-sm origin-bottom"
-                  style="height: 100%; transform: scaleY(${p.clutchPct / 100}) translate3d(0,0,0); will-change: transform; transition: transform 16ms linear;"></div>
-              </div>
-              <span class="text-[9px] font-bold text-sky-400">CLT</span>
+        <!-- 3 Slim Pro Bars -->
+        <div class="flex items-end gap-1.5 h-[58px]">
+          <div class="flex flex-col items-center gap-0.5 h-full">
+            <span data-mmt-clt-pct class="text-[8px] text-sky-300/80 tabular-nums leading-none">0</span>
+            <div class="w-2 flex-1 bg-white/5 rounded-sm overflow-hidden relative border border-white/10">
+              <div data-mmt-clt-bar class="absolute inset-x-0 bottom-0 h-full bg-sky-400 origin-bottom" style="transform: scaleY(0) translate3d(0,0,0); will-change: transform;"></div>
             </div>
-
-            <!-- Brake Bar (with Trail Peak) -->
-            <div class="flex flex-col items-center gap-1 h-full">
-              <span class="text-[9px] text-rose-300 font-bold tabular-nums">${p.brakePct}%</span>
-              <div class="w-6 flex-1 bg-white/5 rounded-md overflow-hidden relative border border-white/10">
-                <!-- Peak Line -->
-                <div class="absolute inset-x-0 border-b-2 border-amber-300 z-10 origin-bottom"
-                  style="bottom: ${p.brakePeakPct}%; will-change: bottom;"></div>
-                <!-- Main Brake Bar -->
-                <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-rose-600 to-rose-400 rounded-sm origin-bottom"
-                  style="height: 100%; transform: scaleY(${p.brakePct / 100}) translate3d(0,0,0); will-change: transform; transition: transform 16ms linear;"></div>
-              </div>
-              <span class="text-[9px] font-black text-rose-400">BRK</span>
-            </div>
-
-            <!-- Throttle Bar -->
-            <div class="flex flex-col items-center gap-1 h-full">
-              <span class="text-[9px] text-emerald-300 font-bold tabular-nums">${p.throttlePct}%</span>
-              <div class="w-6 flex-1 bg-white/5 rounded-md overflow-hidden relative border border-white/10">
-                <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-emerald-600 to-emerald-400 rounded-sm origin-bottom"
-                  style="height: 100%; transform: scaleY(${p.throttlePct / 100}) translate3d(0,0,0); will-change: transform; transition: transform 16ms linear;"></div>
-              </div>
-              <span class="text-[9px] font-black text-emerald-400">GAS</span>
-            </div>
-
-            <!-- FFB Level Bar -->
-            <div class="flex flex-col items-center gap-1 h-full">
-              <span class="text-[9px] text-white/50 tabular-nums">${p.ffbPct}%</span>
-              <div class="w-2.5 flex-1 bg-white/5 rounded-md overflow-hidden relative border border-white/10">
-                <div class="absolute inset-x-0 bottom-0 rounded-sm origin-bottom"
-                  style="height: 100%; background-color: ${ffbColor}; transform: scaleY(${p.ffbPct / 100}) translate3d(0,0,0); will-change: transform;"></div>
-              </div>
-              <span class="text-[8px] text-white/50">FF</span>
-            </div>
+            <span class="text-[8px] font-bold text-sky-400 leading-none">C</span>
           </div>
-
-          <!-- Steering Wheel SVG (Hardware Rotated) -->
-          <div class="flex flex-col items-center justify-center p-2 rounded-lg bg-black/40 border border-white/5">
-            <div class="relative w-20 h-20 flex items-center justify-center">
-              <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md origin-center"
-                style="transform: rotate(${p.steerDeg}deg) translate3d(0,0,0); will-change: transform; transition: transform 16ms linear;">
-                <!-- Wheel Rim -->
-                <circle cx="50" cy="50" r="44" fill="none" stroke="#262626" stroke-width="9" />
-                <circle cx="50" cy="50" r="44" fill="none" stroke="#404040" stroke-width="2" />
-                <!-- Top Center Marker (Yellow) -->
-                <path d="M 47 6 A 44 44 0 0 1 53 6" fill="none" stroke="#facc15" stroke-width="9" stroke-linecap="butt" />
-                <!-- Center Hub -->
-                <circle cx="50" cy="50" r="16" fill="#171717" stroke="#525252" stroke-width="2" />
-                <!-- Spokes -->
-                <rect x="6" y="47" width="30" height="6" rx="2" fill="#333" />
-                <rect x="64" y="47" width="30" height="6" rx="2" fill="#333" />
-                <rect x="47" y="64" width="6" height="30" rx="2" fill="#333" />
-                <circle cx="50" cy="50" r="5" fill="#00e699" />
-              </svg>
+          <div class="flex flex-col items-center gap-0.5 h-full">
+            <span data-mmt-brk-pct class="text-[8px] text-rose-300 font-bold tabular-nums leading-none">0</span>
+            <div class="w-3 flex-1 bg-white/5 rounded-sm overflow-hidden relative border border-white/10">
+              <div data-mmt-brk-peak class="absolute inset-x-0 border-b border-amber-300 z-10" style="bottom: 0%;"></div>
+              <div data-mmt-brk-bar class="absolute inset-x-0 bottom-0 h-full bg-gradient-to-t from-rose-600 to-rose-400 origin-bottom" style="transform: scaleY(0) translate3d(0,0,0); will-change: transform;"></div>
             </div>
-            <div class="mt-1 text-center font-mono">
-              <span class="text-xs font-black tabular-nums ${Math.abs(p.steerDeg) > 90 ? "text-amber-300" : "text-white"}">${p.steerDisplay}°</span>
-            </div>
+            <span class="text-[8px] font-black text-rose-400 leading-none">B</span>
           </div>
+          <div class="flex flex-col items-center gap-0.5 h-full">
+            <span data-mmt-thr-pct class="text-[8px] text-emerald-300 font-bold tabular-nums leading-none">0</span>
+            <div class="w-3 flex-1 bg-white/5 rounded-sm overflow-hidden relative border border-white/10">
+              <div data-mmt-thr-bar class="absolute inset-x-0 bottom-0 h-full bg-gradient-to-t from-emerald-600 to-emerald-400 origin-bottom" style="transform: scaleY(0) translate3d(0,0,0); will-change: transform;"></div>
+            </div>
+            <span class="text-[8px] font-black text-emerald-400 leading-none">T</span>
+          </div>
+        </div>
+
+        <!-- Sleek GT3 / Formula Steering Wheel -->
+        <div class="flex flex-col items-center justify-center pl-1.5 border-l border-white/10">
+          <div class="w-11 h-11 flex items-center justify-center">
+            <svg data-mmt-wheel viewBox="0 0 100 100" class="w-full h-full origin-center" style="will-change: transform;">
+              <circle cx="50" cy="50" r="42" fill="none" stroke="#2a2f3a" stroke-width="10" />
+              <circle cx="50" cy="50" r="42" fill="none" stroke="#475569" stroke-width="1.5" />
+              <path d="M 46 8 A 42 42 0 0 1 54 8" fill="none" stroke="#00e699" stroke-width="10" stroke-linecap="butt" />
+              <path d="M 12 50 L 34 50 M 66 50 L 88 50 M 50 66 L 50 88" stroke="#1e293b" stroke-width="8" stroke-linecap="round" />
+              <circle cx="50" cy="50" r="14" fill="#0f172a" stroke="#334155" stroke-width="2" />
+              <circle cx="50" cy="50" r="4" fill="#00e699" />
+            </svg>
+          </div>
+          <span data-mmt-steer class="mt-0.5 text-[10px] font-bold tabular-nums text-white/90 leading-none">0.0°</span>
         </div>
       </div>
     `;
+
+    const canvas = container.querySelector("[data-mmt-trace]") as HTMLCanvasElement;
+    const refs = {
+      canvas,
+      ctx: canvas.getContext("2d"),
+      history: [] as Array<{ thr: number; brk: number }>,
+      cltBar: container.querySelector("[data-mmt-clt-bar]") as HTMLElement,
+      brkBar: container.querySelector("[data-mmt-brk-bar]") as HTMLElement,
+      brkPeak: container.querySelector("[data-mmt-brk-peak]") as HTMLElement,
+      thrBar: container.querySelector("[data-mmt-thr-bar]") as HTMLElement,
+      cltPct: container.querySelector("[data-mmt-clt-pct]") as HTMLElement,
+      brkPct: container.querySelector("[data-mmt-brk-pct]") as HTMLElement,
+      thrPct: container.querySelector("[data-mmt-thr-pct]") as HTMLElement,
+      absPill: container.querySelector("[data-mmt-abs]") as HTMLElement,
+      tcPill: container.querySelector("[data-mmt-tc]") as HTMLElement,
+      ffbPill: container.querySelector("[data-mmt-ffb]") as HTMLElement,
+      wheelSvg: container.querySelector("[data-mmt-wheel]") as SVGSVGElement,
+      steerDeg: container.querySelector("[data-mmt-steer]") as HTMLElement,
+    };
+    this.refsMap.set(container, refs);
+    return refs;
+  }
+
+  public render(container: HTMLElement, sample: PedalsSample): void {
+    const p = this.computePedalState(sample);
+    let refs = this.refsMap.get(container);
+    if (!refs || !container.contains(refs.canvas)) {
+      refs = this.initContainer(container);
+    }
+
+    // Fast GPU transforms (no DOM rebuild)
+    refs.cltBar.style.transform = `scaleY(${p.clutchPct / 100}) translate3d(0,0,0)`;
+    refs.brkBar.style.transform = `scaleY(${p.brakePct / 100}) translate3d(0,0,0)`;
+    refs.brkPeak.style.bottom = `${p.brakePeakPct}%`;
+    refs.thrBar.style.transform = `scaleY(${p.throttlePct / 100}) translate3d(0,0,0)`;
+    refs.wheelSvg.style.transform = `rotate(${p.steerDeg.toFixed(1)}deg) translate3d(0,0,0)`;
+
+    refs.cltPct.textContent = String(p.clutchPct);
+    refs.brkPct.textContent = String(p.brakePct);
+    refs.thrPct.textContent = String(p.throttlePct);
+    refs.steerDeg.textContent = `${p.steerDisplay}°`;
+    refs.steerDeg.className = `mt-0.5 text-[10px] font-bold tabular-nums leading-none ${
+      Math.abs(p.steerDeg) > 90 ? "text-amber-300" : "text-white/90"
+    }`;
+
+    refs.absPill.className = p.absActive
+      ? "px-1 rounded bg-amber-400 text-black font-black"
+      : "px-1 rounded bg-white/5 text-white/25";
+    refs.tcPill.className = p.tcActive
+      ? "px-1 rounded bg-sky-400 text-black font-black"
+      : "px-1 rounded bg-white/5 text-white/25";
+    refs.ffbPill.className = p.isFfbClipping
+      ? "px-1 rounded bg-rose-500 text-white font-black"
+      : "px-1 rounded bg-white/5 text-white/40";
+
+    // Draw 60 FPS scrolling trace
+    const thr = Math.max(0, Math.min(1, sample.throttle));
+    const brk = Math.max(0, Math.min(1, sample.brake));
+    refs.history.push({ thr, brk });
+    if (refs.history.length > 64) refs.history.shift();
+
+    const ctx = refs.ctx;
+    if (ctx) {
+      const w = refs.canvas.width;
+      const h = refs.canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      // Subtle 50% horizontal guide
+      ctx.strokeStyle = "rgba(255,255,255,0.08)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, h * 0.5);
+      ctx.lineTo(w, h * 0.5);
+      ctx.stroke();
+
+      const len = refs.history.length;
+      if (len > 1) {
+        const step = w / 63;
+        const startX = w - (len - 1) * step;
+
+        // Brake trace (rose)
+        ctx.strokeStyle = "#fb7185";
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        for (let i = 0; i < len; i++) {
+          const x = startX + i * step;
+          const y = h - 2 - refs.history[i].brk * (h - 4);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        // Throttle trace (emerald)
+        ctx.strokeStyle = "#34d399";
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        for (let i = 0; i < len; i++) {
+          const x = startX + i * step;
+          const y = h - 2 - refs.history[i].thr * (h - 4);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+    }
   }
 }

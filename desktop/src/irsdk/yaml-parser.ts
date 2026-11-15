@@ -3,7 +3,7 @@
  * Zero external dependencies. Sanitizes non-ASCII characters, quotes, and escaped sequences.
  */
 
-import type { Driver, SessionInfoState, WeekendInfo } from "./types";
+import type { Driver, SessionInfoState, SessionResultPosition, WeekendInfo } from "./types";
 
 /**
  * Sanitizes arbitrary strings from iRacing YAML (unescapes unicode, strips outer quotes, normalizes spaces)
@@ -88,6 +88,28 @@ export function parseSessionInfoYaml(yamlText: string, updateNum: number = 0): S
   let currentDriver: Partial<Driver> | null = null;
   let sessionType = "Practice";
   let sessionNum = 0;
+  const sessionResults: Record<number, Record<number, SessionResultPosition>> = {};
+  let currentSessNum = 0;
+  let inResultsPositions = false;
+  let currentResult: Partial<SessionResultPosition> | null = null;
+
+  const commitResult = () => {
+    if (!currentResult || currentResult.carIdx === undefined || currentResult.carIdx < 0 || currentResult.carIdx > 63) {
+      currentResult = null;
+      return;
+    }
+    if (!sessionResults[currentSessNum]) sessionResults[currentSessNum] = {};
+    sessionResults[currentSessNum][currentResult.carIdx] = {
+      carIdx: currentResult.carIdx,
+      position: currentResult.position || 0,
+      classPosition: currentResult.classPosition || 0,
+      fastestTime: currentResult.fastestTime && currentResult.fastestTime > 0 ? currentResult.fastestTime : 0,
+      lastTime: currentResult.lastTime && currentResult.lastTime > 0 ? currentResult.lastTime : 0,
+      lapsComplete: currentResult.lapsComplete || 0,
+      timeGap: currentResult.timeGap && currentResult.timeGap > 0 ? currentResult.timeGap : 0,
+    };
+    currentResult = null;
+  };
 
   const commitDriver = () => {
     if (!currentDriver || currentDriver.carIdx === undefined) return;
@@ -136,7 +158,9 @@ export function parseSessionInfoYaml(yamlText: string, updateNum: number = 0): S
     // Top level section detection
     if (/^[A-Za-z0-9_]+:/.test(trimmed) && !rawLine.startsWith(" ") && !rawLine.startsWith("\t")) {
       commitDriver();
+      commitResult();
       inDriversList = false;
+      inResultsPositions = false;
       currentSection = trimmed.split(":")[0];
       continue;
     }
@@ -208,15 +232,45 @@ export function parseSessionInfoYaml(yamlText: string, updateNum: number = 0): S
     }
 
     if (currentSection === "SessionInfo") {
-      if (trimmed.startsWith("SessionType:")) {
-        sessionType = sanitizeYamlString(trimmed.slice(12));
+      if (trimmed.startsWith("- SessionNum:")) {
+        commitResult();
+        inResultsPositions = false;
+        currentSessNum = parseInt(trimmed.slice(13).trim(), 10) || 0;
+        sessionNum = currentSessNum;
       } else if (trimmed.startsWith("SessionNum:")) {
-        sessionNum = parseInt(trimmed.slice(11).trim(), 10) || 0;
+        commitResult();
+        inResultsPositions = false;
+        currentSessNum = parseInt(trimmed.slice(11).trim(), 10) || 0;
+        sessionNum = currentSessNum;
+      } else if (trimmed.startsWith("SessionType:")) {
+        sessionType = sanitizeYamlString(trimmed.slice(12));
+      } else if (trimmed.startsWith("ResultsPositions:")) {
+        commitResult();
+        inResultsPositions = true;
+      } else if (trimmed.startsWith("ResultsFastestLap:") || trimmed.startsWith("ResultsAverageLapTime:") || trimmed.startsWith("SessionTime:")) {
+        commitResult();
+        inResultsPositions = false;
+      } else if (inResultsPositions) {
+        if (trimmed.startsWith("- ")) {
+          commitResult();
+          currentResult = {};
+          const content = trimmed.slice(2).trim();
+          const colonIdx = content.indexOf(":");
+          if (colonIdx > 0) {
+            applyResultField(currentResult, content.slice(0, colonIdx).trim(), sanitizeYamlString(content.slice(colonIdx + 1)));
+          }
+        } else if (currentResult) {
+          const colonIdx = trimmed.indexOf(":");
+          if (colonIdx > 0) {
+            applyResultField(currentResult, trimmed.slice(0, colonIdx).trim(), sanitizeYamlString(trimmed.slice(colonIdx + 1)));
+          }
+        }
       }
     }
   }
 
   commitDriver();
+  commitResult();
 
   return {
     update: updateNum,
@@ -228,7 +282,20 @@ export function parseSessionInfoYaml(yamlText: string, updateNum: number = 0): S
     },
     sessionType,
     sessionNum,
+    sessionResults,
   };
+}
+
+function applyResultField(r: Partial<SessionResultPosition>, key: string, val: string) {
+  switch (key) {
+    case "Position": r.position = parseInt(val, 10) || 0; break;
+    case "ClassPosition": r.classPosition = parseInt(val, 10) || 0; break;
+    case "CarIdx": r.carIdx = parseInt(val, 10); break;
+    case "FastestTime": r.fastestTime = parseFloat(val) || 0; break;
+    case "LastTime": r.lastTime = parseFloat(val) || 0; break;
+    case "LapsComplete": r.lapsComplete = parseInt(val, 10) || 0; break;
+    case "Time": r.timeGap = parseFloat(val) || 0; break;
+  }
 }
 
 function applyDriverField(d: Partial<Driver>, key: string, val: string) {

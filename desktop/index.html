@@ -1576,25 +1576,28 @@
       <!-- Top zone kept 100% CLEAR for iRacing Virtual Mirror & Session Alerts -->
       <div class="h-24 pointer-events-none"></div>
 
-      <!-- Mid Area: Relative + Fuel on mid-left, Standings on mid-right (leaves bottom-left & bottom-right Black Boxes 100% clear) -->
+      <!-- Mid Area: Relative + Fuel on mid-left, 360 Radar in lower-center, Standings on mid-right -->
       <div class="flex items-center justify-between gap-4 pointer-events-none flex-1 my-2 pb-16">
         <!-- Left Stack: Relative + Fuel (Mid-Left, above native Black Box) -->
         <div class="flex flex-col gap-2 items-start">
-          <div id="floatRelativeCard" class="mmt-float-widget w-64 rounded-md border border-white/10 bg-[#0a0c10]/90 backdrop-blur-md text-white p-2 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="relative">
+          <div id="floatRelativeCard" class="mmt-float-widget w-[340px] rounded-md border border-white/10 bg-[#0a0c10]/92 text-white p-2 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="relative">
             <div id="ovRelativeFloat"></div>
-            <div id="ovRadarFloat" class="mt-1.5"></div>
           </div>
 
-          <div id="floatFuelCard" class="mmt-float-widget w-64 rounded-md border border-white/10 bg-[#0a0c10]/90 backdrop-blur-md text-white p-2 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="fuel">
+          <div id="floatFuelCard" class="mmt-float-widget w-[340px] rounded-md border border-white/10 bg-[#0a0c10]/92 text-white p-2 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="fuel">
             <div id="ovFuelFloat"></div>
           </div>
         </div>
 
-        <!-- Center of screen is 100% CLEAR for driver windshield and track apex vision -->
-        <div class="pointer-events-none flex-1"></div>
+        <!-- Center of screen: 360° Proximity Radar positioned low-center in peripheral vision (keeps apex clear) -->
+        <div class="pointer-events-none flex-1 self-end flex justify-center pb-2">
+          <div id="floatRadarCard" class="mmt-float-widget w-48 rounded-md border border-white/10 bg-[#0a0c10]/82 text-white p-1.5 text-[10px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.55)] pointer-events-auto overflow-hidden" data-widget="radar">
+            <div id="ovRadarFloat"></div>
+          </div>
+        </div>
 
         <!-- Standings (Mid-Right, below FPS and above native Pit/Fuel Black Box) -->
-        <div id="floatStandingsCard" class="mmt-float-widget w-64 rounded-md border border-white/10 bg-[#0a0c10]/90 backdrop-blur-md text-white p-2 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="standings">
+        <div id="floatStandingsCard" class="mmt-float-widget w-[375px] rounded-md border border-white/10 bg-[#0a0c10]/92 text-white p-2 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="standings">
           <div id="ovStandingsFloat"></div>
           <div id="ovPitboxFloat" class="mt-1.5 overflow-hidden"></div>
         </div>
@@ -1603,7 +1606,7 @@
       <!-- Bottom Row: Keeps Left Black Box, Center Car DDU/Wheel, and Right Black Box 100% CLEAR -->
       <div class="flex items-end justify-between gap-3 pointer-events-none mt-1">
         <!-- Left Black Box clearance -->
-        <div class="hidden xl:block w-[330px] shrink-0 pointer-events-none"></div>
+        <div class="hidden lg:block w-[320px] shrink-0 pointer-events-none"></div>
 
         <!-- Left-of-Wheel Slot: Compact Cluster + Waveform -->
         <div class="flex flex-col items-center gap-1.5 pointer-events-none">
@@ -1612,7 +1615,7 @@
             <div id="ovDeltaFloat" class="mb-1 px-2.5 py-0.5 rounded border border-emerald-500/40 bg-[#0a0c10]/90 text-emerald-400 font-mono tabular-nums text-[10px] font-bold shadow-lg">
               —
             </div>
-            <div class="flex items-center gap-2.5 px-3 py-1 rounded-md border border-white/10 bg-[#0a0c10]/92 backdrop-blur-md shadow-[0_6px_24px_rgba(0,0,0,0.7)] tabular-nums">
+            <div class="flex items-center gap-2.5 px-3 py-1 rounded-md border border-white/10 bg-[#0a0c10]/92 shadow-[0_6px_24px_rgba(0,0,0,0.7)] tabular-nums">
               <strong id="ovGearFloat" class="font-mono text-2xl font-black text-white leading-none">—</strong>
               <div class="h-6 w-px bg-white/15"></div>
               <div class="flex flex-col">
@@ -1625,30 +1628,30 @@
             </div>
           </div>
 
-          <div id="floatWaveformCard" class="mmt-float-widget rounded-md border border-white/10 bg-[#0a0c10]/90 backdrop-blur-md p-1.5 shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto" data-widget="waveform">
+          <div id="floatWaveformCard" class="mmt-float-widget rounded-md border border-white/10 bg-[#0a0c10]/92 p-1.5 shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto" data-widget="waveform">
             <canvas id="ovWaveformCanvasFloat" width="165" height="40" class="rounded bg-black/60 border border-white/10"></canvas>
           </div>
         </div>
 
         <!-- Center Steering Wheel / Car DDU 10 Dashboard clearance (100% EMPTY) -->
-        <div class="flex-1 min-w-[260px] pointer-events-none"></div>
+        <div class="flex-1 min-w-[220px] pointer-events-none"></div>
 
-        <!-- Right-of-Wheel Slot: Shift Lights + Compact Pedals & Inputs -->
+        <!-- Right-of-Wheel Slot: Shift Lights + Sleek Pro Pedals & Steering -->
         <div class="flex flex-col items-center gap-1.5 pointer-events-none">
           <div id="floatShiftLightsRow" class="mmt-float-widget flex flex-col items-center gap-1 pointer-events-auto" data-widget="lights">
             <div id="ovDigiFlagFloat" class="w-full max-w-[220px]"></div>
-            <div class="flex items-center gap-0.5 px-2 py-1 rounded-md bg-[#0a0c10]/90 border border-white/10 backdrop-blur-md shadow-[0_6px_24px_rgba(0,0,0,0.65)]" id="ovShiftLightsFloat"></div>
+            <div class="flex items-center gap-0.5 px-2 py-1 rounded-md bg-[#0a0c10]/92 border border-white/10 shadow-[0_6px_24px_rgba(0,0,0,0.65)]" id="ovShiftLightsFloat"></div>
           </div>
 
-          <div id="floatInputsCard" class="mmt-float-widget rounded-md border border-white/10 bg-[#0a0c10]/90 backdrop-blur-md p-2 shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto" data-widget="inputs">
+          <div id="floatInputsCard" class="mmt-float-widget pointer-events-auto" data-widget="inputs">
             <div id="ovGpuPedalsFloat"></div>
             <canvas id="ovInputsFloat" width="210" height="66" class="rounded-md hidden"></canvas>
-            <div id="ovTyresFloat" class="mt-1 text-center font-mono text-[9px] text-r-muted tabular-nums"></div>
+            <div id="ovTyresFloat" class="mt-0.5 text-center font-mono text-[9px] text-r-muted tabular-nums"></div>
           </div>
         </div>
 
         <!-- Right Black Box clearance -->
-        <div class="hidden xl:block w-[330px] shrink-0 pointer-events-none"></div>
+        <div class="hidden lg:block w-[320px] shrink-0 pointer-events-none"></div>
       </div>
     </div>
 

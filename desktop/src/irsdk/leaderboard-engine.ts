@@ -4,7 +4,7 @@
  * Calculates GAP and INT, and displays PIT indicators.
  */
 
-import type { DriverInfo, IrsdkTelemetryFrame, LeaderboardEntry } from "./types";
+import type { DriverInfo, IrsdkTelemetryFrame, LeaderboardEntry, SessionResultPosition } from "./types";
 import { formatIRating } from "./relative-engine";
 
 export function formatLapTime(seconds: number): string {
@@ -27,7 +27,8 @@ export class LeaderboardEngine {
   public compute(
     frame: IrsdkTelemetryFrame,
     driverInfo: DriverInfo,
-    sessionType: string = "Practice"
+    sessionType: string = "Practice",
+    sessionResults?: Record<number, SessionResultPosition>
   ): LeaderboardEntry[] {
     let activeCarIdx = frame.camCarIdx;
     if (activeCarIdx === undefined || activeCarIdx < 0 || activeCarIdx > 63) {
@@ -64,15 +65,16 @@ export class LeaderboardEngine {
       const idx = Number(idxStr);
       if (idx < 0 || idx > 63) continue;
 
+      const res = sessionResults?.[idx];
       const surface = trackSurfaces[idx] ?? 3;
-      if (surface === -1) continue; // NotInWorld
+      if (surface === -1 && !(res && (res.fastestTime > 0 || res.position > 0))) continue; // NotInWorld without results
 
-      const pos = positions[idx] || 0;
-      const classPos = classPositions[idx] || 0;
-      const best = bestLapTimes[idx] || 0;
-      const last = lastLapTimes[idx] || 0;
-      const f2 = f2Times[idx] || 0;
-      const laps = lapsDone[idx] || 0;
+      const pos = (positions[idx] > 0 ? positions[idx] : 0) || res?.position || 0;
+      const classPos = (classPositions[idx] > 0 ? classPositions[idx] : 0) || res?.classPosition || 0;
+      const best = (bestLapTimes[idx] > 0 ? bestLapTimes[idx] : 0) || res?.fastestTime || 0;
+      const last = (lastLapTimes[idx] > 0 ? lastLapTimes[idx] : 0) || res?.lastTime || 0;
+      const f2 = (f2Times[idx] > 0 ? f2Times[idx] : 0) || res?.timeGap || 0;
+      const laps = (lapsDone[idx] > 0 ? lapsDone[idx] : 0) || res?.lapsComplete || 0;
       const onPit = !!onPitRoads[idx];
 
       rawList.push({
@@ -176,7 +178,7 @@ export class LeaderboardEngine {
         gapSeconds: gap,
         gapStr: formatGap(gap, isLeader),
         intervalSeconds: interval,
-        intervalStr: isLeader ? "LÍDER" : `+${interval.toFixed(2)}s`,
+        intervalStr: isLeader ? "LÍDER" : interval > 0 ? `+${interval.toFixed(3)}` : "—",
         onPitRoad: item.onPit,
         isActiveCam: item.carIdx === activeCarIdx,
         lapsCompleted: item.laps,

@@ -86,11 +86,15 @@ export class IrsdkClient {
     // 1. Relative computation
     const relative = this.relativeEngine.compute(frame, this.sessionState.driverInfo);
 
-    // 2. Leaderboard computation
+    // 2. Leaderboard computation (merged with SessionInfo ResultsPositions)
+    const activeResults =
+      this.sessionState.sessionResults?.[frame.sessionNum] ??
+      this.sessionState.sessionResults?.[this.sessionState.sessionNum];
     const leaderboard = this.leaderboardEngine.compute(
       frame,
       this.sessionState.driverInfo,
-      this.sessionState.sessionType
+      this.sessionState.sessionType,
+      activeResults
     );
 
     // 3. Fuel calculation

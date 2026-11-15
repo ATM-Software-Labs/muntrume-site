@@ -105,11 +105,12 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
         ? `<span class="truncate text-[11px] font-medium ${isSelf ? "text-white font-bold" : "text-white/90"}">${displayName}</span>`
         : "";
 
-      const licText = cols.license ? e.licString.split(" ")[0] : "";
-      const irText = cols.iRating ? e.iRatingStr : "";
-      const licIrCombined = [licText, irText].filter(Boolean).join(" ");
-      const licSpan = licIrCombined
-        ? `<span class="px-1 rounded-[2px] text-[9px] bg-black/50 tabular-nums font-semibold" style="color: ${e.licBadgeColor}">${licIrCombined}</span>`
+      const licCode = (e.licString || "R 0.0").replace(/\s+/g, "");
+      const licSpan = cols.license
+        ? `<span class="px-1 py-[1px] rounded-[3px] text-[9px] font-bold tabular-nums leading-none" style="background-color: ${e.licBadgeColor}28; color: ${e.licBadgeColor}; border: 1px solid ${e.licBadgeColor}55">${licCode}</span>`
+        : "";
+      const irSpan = cols.iRating && e.iRatingStr
+        ? `<span class="w-8 text-right text-[9px] text-white/60 tabular-nums">${e.iRatingStr}</span>`
         : "";
 
       const deltaSpan = cols.delta
@@ -118,7 +119,7 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
 
       return `
         <div class="flex items-center justify-between gap-1.5 px-2 py-[3px] ${rowBg} font-mono" style="border-left: 3px solid ${e.carClassColor || "#00e699"}">
-          <div class="flex items-center gap-1.5 min-w-0">
+          <div class="flex items-center gap-1.5 min-w-0 flex-1">
             ${classSpan}
             ${numSpan}
             ${brandSvg}
@@ -128,6 +129,7 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
           </div>
           <div class="flex items-center gap-1.5 shrink-0">
             ${licSpan}
+            ${irSpan}
             ${deltaSpan}
           </div>
         </div>
@@ -253,17 +255,26 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
 
       const tagBadge = driverTags.renderBadgeHtml(e.cust_id || e.driverName || e.carNumber);
 
-      const irBadge = cols.iRating && e.iRatingStr
-        ? `<span class="text-[9px] text-white/45 tabular-nums">${e.iRatingStr}</span>`
+      const licCode = (e.licString || "R 0.0").replace(/\s+/g, "");
+      const licBadge = e.licString
+        ? `<span class="px-1 py-[1px] rounded-[3px] text-[9px] font-bold tabular-nums leading-none" style="background-color: ${e.licBadgeColor}28; color: ${e.licBadgeColor}; border: 1px solid ${e.licBadgeColor}55">${licCode}</span>`
         : "";
 
+      const irBadge = cols.iRating && e.iRatingStr
+        ? `<span class="w-8 text-right text-[9px] text-white/60 tabular-nums">${e.iRatingStr}</span>`
+        : "";
+
+      const intSpan = !isLeader && e.intervalStr && e.intervalStr !== "—"
+        ? `<span class="w-11 text-right text-[9px] text-white/45 tabular-nums">${e.intervalStr}</span>`
+        : `<span class="w-11"></span>`;
+
       const timeSpan = (isPractice ? cols.bestLap : cols.gap)
-        ? `<span class="tabular-nums font-mono text-[10px] ${isLeader ? "text-amber-300 font-bold" : isSelf ? "text-[#00e699] font-bold" : "text-white/80"}">${timeVal}</span>`
+        ? `<span class="w-14 text-right tabular-nums font-mono text-[10px] ${isLeader ? "text-amber-300 font-bold" : isSelf ? "text-[#00e699] font-bold" : "text-white/85"}">${timeVal}</span>`
         : "";
 
       return `
         <div class="flex items-center justify-between gap-1.5 px-2 py-[3px] ${rowBg} font-mono text-xs" style="border-left: 3px solid ${e.carClassColor || "#38bdf8"}">
-          <div class="flex items-center gap-1.5 min-w-0">
+          <div class="flex items-center gap-1.5 min-w-0 flex-1">
             ${posSpan}
             ${classSpan}
             ${brandSvg}
@@ -272,7 +283,9 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
             ${pitBadge}
           </div>
           <div class="flex items-center gap-1.5 shrink-0 text-right">
+            ${licBadge}
             ${irBadge}
+            ${intSpan}
             ${timeSpan}
           </div>
         </div>

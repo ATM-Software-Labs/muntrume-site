@@ -48,12 +48,23 @@ export interface WeekendInfo {
   seasonQuarter?: number;
 }
 
+export interface SessionResultPosition {
+  carIdx: number;
+  position: number;
+  classPosition: number;
+  fastestTime: number;
+  lastTime: number;
+  lapsComplete: number;
+  timeGap: number;
+}
+
 export interface SessionInfoState {
   update: number;
   weekendInfo: WeekendInfo;
   driverInfo: DriverInfo;
   sessionType: "Practice" | "Qualify" | "Warmup" | "Race" | "Offline" | string;
   sessionNum: number;
+  sessionResults?: Record<number, Record<number, SessionResultPosition>>;
 }
 
 /**
