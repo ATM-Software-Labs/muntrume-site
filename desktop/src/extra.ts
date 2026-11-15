@@ -1699,7 +1699,11 @@ function renderStandbyWidgets(): void {
   if (bdEl) renderBroadcastDirectorWidget(bdEl, broadcastDirector);
 }
 
+let currentHudMode: "closed" | "live" | "mock" | null = null;
+
 function setHudMode(mode: "closed" | "live" | "mock"): void {
+  if (currentHudMode === mode) return;
+  currentHudMode = mode;
   const host = document.getElementById("floatingOverlayHost");
   const banner = document.getElementById("hudStateBanner");
   if (host) host.dataset.hud = mode;
@@ -1707,9 +1711,24 @@ function setHudMode(mode: "closed" | "live" | "mock"): void {
     banner.hidden = mode === "live";
     banner.textContent = mode === "mock" ? "DEMO · DATOS SINTÉTICOS" : "iRacing Cerrado";
   }
-  document.querySelectorAll<HTMLElement>(".mmt-float-widget, #floatHudChrome").forEach((el) => {
-    el.hidden = mode === "closed";
+  const disabled = loadDisabledWidgets();
+  document.querySelectorAll<HTMLElement>(".mmt-float-widget").forEach((el) => {
+    if (mode === "closed") {
+      el.hidden = true;
+      return;
+    }
+    const key = el.dataset.widget || "";
+    // Pit Helper and Proximity Radar are shown conditionally by telemetry/edit mode
+    if (key === "pitbox" || key === "radar") {
+      el.hidden = !floatEditMode;
+      return;
+    }
+    el.hidden = Boolean(key && disabled.has(key));
   });
+  const chrome = document.getElementById("floatHudChrome");
+  if (chrome) {
+    chrome.hidden = mode === "closed";
+  }
 }
 
 export function noteHudClosed(): void {
@@ -2222,7 +2241,7 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
     if ((e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "s") || e.key === "F8") {
       const active = SmartLayoutManager.getInstance().toggleStreamerMode();
       console.log(`[Streamer Mode] ${active ? "ACTIVADO" : "DESACTIVADO"}`);
-    } else if (e.key === "F9" || (e.ctrlKey && e.key.toLowerCase() === "h")) {
+    } else if (e.ctrlKey && e.key.toLowerCase() === "h") {
       const active = VisibilityRulesEngine.getInstance().toggleBossKey();
       console.log(`[Clean Screen Boss Key] ${active ? "ACTIVADO" : "DESACTIVADO"}`);
     }
@@ -2378,9 +2397,11 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
     });
   });
 
-  const applyEditModeUi = (nextEdit: boolean) => {
+  const applyEditModeUi = (nextEdit: boolean, fromBackend = false) => {
     floatEditMode = nextEdit;
-    void setOverlayEdit(floatEditMode);
+    if (!fromBackend) {
+      void setOverlayEdit(floatEditMode);
+    }
     if (floatHost) {
       floatHost.classList.toggle("overlay-editing", floatEditMode);
     }
@@ -2389,6 +2410,7 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
     const reopenEl = document.getElementById("hudReopenBtn");
     if (floatEditMode) {
       if (chromeEl) chromeEl.hidden = false;
+      if (layersEl) layersEl.hidden = false;
       if (reopenEl) reopenEl.hidden = true;
     } else {
       if (layersEl) layersEl.hidden = true;
@@ -2443,18 +2465,23 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
   });
 
   window.addEventListener("keydown", (e: KeyboardEvent) => {
-    if (e.key === "F9" || e.key === "F10" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "e")) {
+    if (e.key === "F9" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "e")) {
       e.preventDefault();
-      const next = !floatEditMode;
-      applyEditModeUi(next);
-      if (next) {
-        const p = document.getElementById("floatLayersControlPanel");
-        if (p) p.hidden = false;
-      }
+      applyEditModeUi(!floatEditMode);
     } else if (e.key === "Escape" && floatEditMode) {
       applyEditModeUi(false);
     }
   });
+
+  if (typeof window !== "undefined" && window.location.search.includes("overlay=1")) {
+    void import("@tauri-apps/api/event")
+      .then(({ listen }) =>
+        listen<boolean>("mmt-overlay-edit", (ev) => {
+          applyEditModeUi(Boolean(ev.payload), true);
+        }),
+      )
+      .catch(() => {});
+  }
 
   if (floatHost) {
     floatHost.querySelectorAll<HTMLElement>(".mmt-float-widget").forEach((w) => {

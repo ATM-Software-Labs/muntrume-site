@@ -90,6 +90,7 @@ pub fn run() {
             spawn_scheduler(app.handle().clone());
             spawn_update_check(app.handle().clone());
             live::spawn(app.handle().clone());
+            spawn_overlay_hotkeys(app.handle().clone());
             Ok(())
         })
         .on_window_event(|window, event| match event {
@@ -587,14 +588,65 @@ fn detect_hardware() -> Result<hardware::HardwareReport, String> {
     Ok(hardware::detect())
 }
 
+static OVERLAY_EDITING: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+fn apply_overlay_edit_state(app: &AppHandle, window: &tauri::WebviewWindow, editing: bool) {
+    OVERLAY_EDITING.store(editing, std::sync::atomic::Ordering::Relaxed);
+    if editing {
+        fit_overlay(window);
+        let _ = window.set_ignore_cursor_events(false);
+        let _ = window.set_focus();
+    } else {
+        let _ = window.set_ignore_cursor_events(true);
+    }
+    let _ = window.set_always_on_top(true);
+    let _ = window.emit("mmt-overlay-edit", editing);
+    let _ = app.emit_to("main", "mmt-overlay-edit", editing);
+}
+
+#[cfg(windows)]
+fn spawn_overlay_hotkeys(app: AppHandle) {
+    use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_F10, VK_F9};
+    std::thread::spawn(move || {
+        let mut prev_f9 = false;
+        let mut prev_f10 = false;
+        loop {
+            std::thread::sleep(std::time::Duration::from_millis(60));
+            let f9_down = unsafe { (GetAsyncKeyState(VK_F9 as i32) as u16 & 0x8000) != 0 };
+            let f10_down = unsafe { (GetAsyncKeyState(VK_F10 as i32) as u16 & 0x8000) != 0 };
+
+            if f9_down && !prev_f9 {
+                if let Some(window) = app.get_webview_window("overlay") {
+                    let next = !OVERLAY_EDITING.load(std::sync::atomic::Ordering::Relaxed);
+                    apply_overlay_edit_state(&app, &window, next);
+                }
+            }
+            if f10_down && !prev_f10 {
+                let app_clone = app.clone();
+                let show = app.get_webview_window("overlay").is_none();
+                tauri::async_runtime::spawn(async move {
+                    let _ = toggle_overlay(app_clone, show).await;
+                });
+            }
+            prev_f9 = f9_down;
+            prev_f10 = f10_down;
+        }
+    });
+}
+
+#[cfg(not(windows))]
+fn spawn_overlay_hotkeys(_app: AppHandle) {}
+
 #[tauri::command]
 async fn toggle_overlay(app: AppHandle, show: bool) -> Result<bool, String> {
     if show {
+        OVERLAY_EDITING.store(false, std::sync::atomic::Ordering::Relaxed);
         if let Some(window) = app.get_webview_window("overlay") {
             fit_overlay(&window);
             let _ = window.set_always_on_top(true);
             let _ = window.set_ignore_cursor_events(true);
             let _ = window.show();
+            let _ = app.emit_to("main", "mmt-overlay-visibility", true);
             return Ok(true);
         }
         let builder = tauri::WebviewWindowBuilder::new(
@@ -618,11 +670,14 @@ async fn toggle_overlay(app: AppHandle, show: bool) -> Result<bool, String> {
         fit_overlay(&window);
         let _ = window.set_ignore_cursor_events(true);
         let _ = window.show();
+        let _ = app.emit_to("main", "mmt-overlay-visibility", true);
         Ok(true)
     } else {
+        OVERLAY_EDITING.store(false, std::sync::atomic::Ordering::Relaxed);
         if let Some(window) = app.get_webview_window("overlay") {
             let _ = window.close();
         }
+        let _ = app.emit_to("main", "mmt-overlay-visibility", false);
         Ok(false)
     }
 }
@@ -630,14 +685,7 @@ async fn toggle_overlay(app: AppHandle, show: bool) -> Result<bool, String> {
 #[tauri::command]
 async fn set_overlay_edit(app: AppHandle, editing: bool) -> Result<(), String> {
     let window = app.get_webview_window("overlay").ok_or("Ventana de overlay no encontrada")?;
-    if editing {
-        fit_overlay(&window);
-        let _ = window.set_ignore_cursor_events(false);
-        let _ = window.set_focus();
-    } else {
-        let _ = window.set_ignore_cursor_events(true);
-    }
-    let _ = window.set_always_on_top(true);
+    apply_overlay_edit_state(&app, &window, editing);
     Ok(())
 }
 

@@ -1934,13 +1934,42 @@ function bind(): void {
               : "w-2.5 h-2.5 rounded-full bg-emerald-950 border border-emerald-400";
           }
           if (shown) {
-            showNotice("Overlay flotante activo sobre iRacing. Pulsa «Editar HUD en iRacing» para mover widgets o cambiar presets.");
+            showNotice("Overlay flotante activo sobre iRacing. Pulsa F9 para editar o F10 para ocultar/mostrar.");
           }
         })
         .catch((err: unknown) => {
           showNotice(err instanceof Error ? err.message : "Error al alternar overlay flotante");
         });
     });
+  }
+  if (!window.location.search.includes("overlay=1")) {
+    void import("@tauri-apps/api/event")
+      .then(async ({ listen }) => {
+        await listen<boolean>("mmt-overlay-visibility", (ev) => {
+          const shown = Boolean(ev.payload);
+          floatingOverlayActive = shown;
+          if (!shown) {
+            floatingEditActive = false;
+            if (btnEditFloat) btnEditFloat.textContent = "Editar HUD en iRacing";
+          }
+          if (btnEditFloat) btnEditFloat.hidden = !shown;
+          if (textFloat) {
+            textFloat.textContent = shown ? "Ocultar Overlay de iRacing" : "Poner Overlay Flotante en iRacing";
+          }
+          if (dotFloat) {
+            dotFloat.className = shown
+              ? "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse border border-emerald-300"
+              : "w-2.5 h-2.5 rounded-full bg-emerald-950 border border-emerald-400";
+          }
+        });
+        await listen<boolean>("mmt-overlay-edit", (ev) => {
+          floatingEditActive = Boolean(ev.payload);
+          if (btnEditFloat) {
+            btnEditFloat.textContent = floatingEditActive ? "Bloquear HUD (Conducir)" : "Editar HUD en iRacing";
+          }
+        });
+      })
+      .catch(() => {});
   }
   $("linkBtn").addEventListener("click", () => {
     void beginLink().catch((error: unknown) => {
