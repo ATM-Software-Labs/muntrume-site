@@ -241,6 +241,7 @@ export interface Backend {
   toggleOverlay(show: boolean): Promise<boolean>;
   recenterOverlay?(): Promise<boolean>;
   setOverlayEdit(editing: boolean): Promise<void>;
+  setMainTelemetry?(enabled: boolean): Promise<void>;
   readLatestIbt(): Promise<IbtSessionReport | null>;
   listIbtSessions?(): Promise<IbtSessionMeta[]>;
   readIbtFile?(path: string): Promise<IbtSessionReport | null>;

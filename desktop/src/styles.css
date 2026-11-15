@@ -294,6 +294,14 @@ html.overlay-mode body {
   background-color: transparent !important;
   overflow: hidden !important;
   user-select: none;
+  pointer-events: none;
+}
+
+html.overlay-mode.overlay-editing,
+html.overlay-mode.overlay-editing body,
+html.overlay-mode.overlay-editing .mmt-float-widget,
+html.overlay-mode.overlay-editing #floatLayersControlPanel {
+  pointer-events: auto;
 }
 
 .mmt-brand-svg,

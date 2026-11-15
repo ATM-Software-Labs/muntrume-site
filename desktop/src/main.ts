@@ -1656,6 +1656,9 @@ function paint(data: Snapshot): void {
     $("updateBar").hidden = false;
     $("updateText").textContent = `Hay una actualización: ${data.updateVersion}`;
   }
+  if (!logged && backend.setMainTelemetry) {
+    void backend.setMainTelemetry(false).catch(() => {});
+  }
   showView(logged ? view : "library");
 }
 
@@ -1718,6 +1721,10 @@ function showView(next: typeof view): void {
   }
   if (next !== "overlays") {
     stopOverlayDemoLoop();
+  }
+  if (backend.setMainTelemetry) {
+    const needsMainTel = Boolean(snapshot?.pilot) && (next === "overlays" || next === "analysis" || next === "strategy");
+    void backend.setMainTelemetry(needsMainTel).catch(() => {});
   }
   if (next === "last_session") {
     paintLastSession();

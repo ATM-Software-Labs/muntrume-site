@@ -134,6 +134,7 @@ pub fn run() {
             toggle_overlay,
             recenter_overlay,
             set_overlay_edit,
+            set_main_telemetry,
             parse_ibt_telemetry,
             read_latest_ibt,
             list_ibt_sessions,
@@ -641,10 +642,16 @@ async fn set_overlay_edit(app: AppHandle, editing: bool) -> Result<(), String> {
 }
 
 #[tauri::command]
+fn set_main_telemetry(enabled: bool) {
+    live::MAIN_TELEMETRY_ENABLED.store(enabled, std::sync::atomic::Ordering::Relaxed);
+}
+
+#[tauri::command]
 async fn recenter_overlay(app: AppHandle) -> Result<bool, String> {
     if let Some(window) = app.get_webview_window("overlay") {
         fit_overlay(&window);
         let _ = window.set_always_on_top(true);
+        let _ = window.set_ignore_cursor_events(true);
         return Ok(true);
     }
     Ok(false)

@@ -233,24 +233,22 @@ const allTracksWithPop = IRACING_TRACKS.map((t) => {
 const topHistoricTracks = allTracksWithPop.slice(0, 8);
 
 const allPaddockPhotos = PADDOCK_ALBUMS.flatMap((album) =>
-  album.photos
-    .filter((photo) => photo.img.startsWith('/assets/img/') && !photo.img.includes('/series/'))
-    .map((photo) => ({
-      ...photo,
-      albumSlug: album.slug,
-      albumTitle: album.title,
-      category: album.slug === 'ferrari296gt3' ? 'cars' : album.slug === 'gt3-endurance' ? 'track' : 'tech',
-    }))
-).slice(0, 6);
+  album.photos.map((photo) => ({
+    ...photo,
+    albumSlug: album.slug,
+    albumTitle: album.title,
+    category: album.carClass === 'GT3' ? 'cars' : album.carClass === 'GTP' ? 'track' : 'tech',
+  }))
+);
 
-const paddockCarouselSlides = allPaddockPhotos.slice(0, 6).map((photo) => ({
+const paddockCarouselSlides = allPaddockPhotos.slice(0, 8).map((photo) => ({
   src: photo.img,
   title: photo.title,
-  subtitle: `${photo.subtitle} · Muntrume Motorsport`,
+  subtitle: `${photo.subtitle} · iRacing Official`,
   tag: photo.tag,
   id: `gallery:${photo.albumSlug}:${photo.id}`,
   downloadName: photo.img.split('/').pop(),
-  setupsUrl: photo.albumSlug === 'ferrari296gt3' ? '/garage?car=ferrari296gt3' : '/garage/',
+  setupsUrl: `/garage/?car=${photo.carPath}`,
 }));
 ---
 
@@ -796,13 +794,13 @@ const paddockCarouselSlides = allPaddockPhotos.slice(0, 6).map((photo) => ({
             TODAS ({allPaddockPhotos.length})
           </button>
           <button type="button" class="gallery-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition cursor-pointer bg-[var(--r-surface)] text-[var(--r-muted)] border border-[var(--r-line)] hover:border-[var(--r-accent)]" data-filter="cars">
-            COCHES &amp; GT3 ({allPaddockPhotos.filter(p => p.category === 'cars').length})
+            GT3 ({allPaddockPhotos.filter(p => p.category === 'cars').length})
           </button>
           <button type="button" class="gallery-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition cursor-pointer bg-[var(--r-surface)] text-[var(--r-muted)] border border-[var(--r-line)] hover:border-[var(--r-accent)]" data-filter="track">
-            CARRERA &amp; PISTA ({allPaddockPhotos.filter(p => p.category === 'track').length})
+            PROTOTIPOS GTP ({allPaddockPhotos.filter(p => p.category === 'track').length})
           </button>
           <button type="button" class="gallery-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition cursor-pointer bg-[var(--r-surface)] text-[var(--r-muted)] border border-[var(--r-line)] hover:border-[var(--r-accent)]" data-filter="tech">
-            PIT WALL &amp; TECH ({allPaddockPhotos.filter(p => p.category === 'tech').length})
+            CUP ({allPaddockPhotos.filter(p => p.category === 'tech').length})
           </button>
         </div>
       </div>

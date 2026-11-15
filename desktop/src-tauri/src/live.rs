@@ -1,7 +1,10 @@
 //! Lectura de la memoria compartida del SDK de iRacing y detección de procesos.
 //! Solo `FILE_MAP_READ`. No hay escritura ni mensajes al simulador.
 
+use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::AppHandle;
+
+pub static MAIN_TELEMETRY_ENABLED: AtomicBool = AtomicBool::new(false);
 
 pub fn spawn(app: AppHandle) {
     #[cfg(windows)]
@@ -213,6 +216,9 @@ fn windows_loop(app: AppHandle) {
                 true
             } else {
                 let waited = unsafe { WaitForSingleObject(mapped.event, FRAME_MS as u32) };
+                if waited == WAIT_OBJECT_0 {
+                    std::thread::sleep(Duration::from_millis(FRAME_MS));
+                }
                 waited == WAIT_OBJECT_0
             };
             if last_proc.elapsed() >= Duration::from_millis(2000) {
@@ -230,7 +236,9 @@ fn windows_loop(app: AppHandle) {
                 continue;
             }
             let overlay_active = is_window_active(&app, "overlay");
-            let main_active = is_window_active(&app, "main") && (!overlay_active || is_window_focused(&app, "main"));
+            let main_active = MAIN_TELEMETRY_ENABLED.load(Ordering::Relaxed)
+                && is_window_active(&app, "main")
+                && (!overlay_active || is_window_focused(&app, "main"));
             if !overlay_active {
                 overlay_synced_yaml = false;
             }
