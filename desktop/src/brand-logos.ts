@@ -29,7 +29,7 @@ const FALLBACK_BRAND_RULES: Array<[RegExp, { logo: string; name: string; color: 
   [/aston|amvantage|amvalkyrie|dbr9/i, { logo: "logo-aston", name: "Aston Martin", color: "#2dd4bf" }],
   [/cadillac|vseries/i, { logo: "logo-cadillac", name: "Cadillac", color: "#D4AF37" }],
   [/acura|arx06|nsx/i, { logo: "logo-acura", name: "Acura", color: "#E11D48" }],
-  [/corvette|chevy|chevrolet|camaro|c8r|c6r|z06/i, { logo: "logo-chevy", name: "Chevrolet", color: "#EAB308" }],
+  [/corvette|chevy|chevrolet|camaro|silverado|impala|montecarlo|vette|c8r|c6r|z06/i, { logo: "logo-chevy", name: "Chevrolet", color: "#EAB308" }],
   [/ford|mustang/i, { logo: "logo-ford", name: "Ford", color: "#3b82f6" }],
   [/toyota|gr86/i, { logo: "logo-toyota", name: "Toyota", color: "#EB0A1E" }],
   [/mazda|mx5/i, { logo: "logo-mazda", name: "Mazda", color: "#e11d48" }],

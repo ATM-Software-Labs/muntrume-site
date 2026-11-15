@@ -45,13 +45,13 @@ export function parseColor(raw: string | number): string {
 export function getLicenseColor(licString: string): string {
   const first = (licString || "").trim().toUpperCase().charAt(0);
   switch (first) {
-    case "R": return "#ef4444"; // Red
-    case "D": return "#f97316"; // Orange
+    case "R": return "#dc2626"; // Red
+    case "D": return "#ea580c"; // Orange
     case "C": return "#eab308"; // Yellow
-    case "B": return "#10b981"; // Green
-    case "A": return "#38bdf8"; // Sky Blue
-    case "P": return "#000000"; // Pro / Black
-    default: return "#94a3b8";  // Gray
+    case "B": return "#16a34a"; // Green
+    case "A": return "#0284c7"; // Blue
+    case "P": return "#111827"; // Pro (Black)
+    default: return "#64748b";  // Gray
   }
 }
 

@@ -83,3 +83,51 @@ export function formatSofShort(sof: number): string {
   if (sof >= 1000) return `${(sof / 1000).toFixed(1)}k`;
   return `${sof}`;
 }
+
+/**
+ * Estimates live projected iRating gain/loss for every driver in the leaderboard,
+ * grouped by car class using iRacing's pairwise Elo model.
+ */
+export function estimateAllDriversIRatingDeltas(state: IrsdkComputedState | null): Map<number, number> {
+  const result = new Map<number, number>();
+  if (!state || !state.leaderboard || state.leaderboard.length < 2) return result;
+
+  const driverByIdx = new Map<number, number>();
+  for (const d of Object.values(state.session.driverInfo?.drivers ?? {})) {
+    if (d.iRating > 0 && !d.isSpectator) {
+      driverByIdx.set(d.carIdx, d.iRating);
+    }
+  }
+
+  const byClass = new Map<string, Array<{ carIdx: number; ir: number }>>();
+  for (const entry of state.leaderboard) {
+    const ir = driverByIdx.get(entry.carIdx) ?? 0;
+    if (ir <= 0) continue;
+    const cls = entry.carClassShortName || "default";
+    let list = byClass.get(cls);
+    if (!list) {
+      list = [];
+      byClass.set(cls, list);
+    }
+    list.push({ carIdx: entry.carIdx, ir });
+  }
+
+  for (const peers of byClass.values()) {
+    const n = peers.length;
+    if (n < 2) continue;
+    const kFactor = 200 / n;
+    for (let i = 0; i < n; i++) {
+      const myIr = peers[i].ir;
+      let deltaSum = 0;
+      for (let j = 0; j < n; j++) {
+        if (i === j) continue;
+        const expectedWin = 1 / (1 + Math.exp((peers[j].ir - myIr) / BR1));
+        const actualWin = i < j ? 1 : 0;
+        deltaSum += (actualWin - expectedWin) * kFactor;
+      }
+      result.set(peers[i].carIdx, Math.round(deltaSum));
+    }
+  }
+
+  return result;
+}

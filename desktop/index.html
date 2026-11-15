@@ -1544,7 +1544,7 @@
       <div id="hudStateBanner" class="absolute top-6 left-6 z-20 px-4 py-2 rounded-xl bg-black/80 border border-white/20 text-white font-mono text-sm font-bold tracking-wide">iRacing Cerrado</div>
       <!-- Top control pill (draggable). Hidden until the HUD is live or in edit. -->
       <div id="floatHudChrome" hidden class="flex items-center justify-between gap-3 pointer-events-auto">
-        <div data-tauri-drag-region class="flex items-center gap-3 px-4 py-2 rounded-2xl bg-black/85 border border-white/15 backdrop-blur-md cursor-move shadow-2xl">
+        <div data-tauri-drag-region class="flex items-center gap-3 px-4 py-2 rounded-2xl bg-black/92 border border-white/15 cursor-move shadow-2xl">
           <img src="./favicon.svg" width="22" height="22" alt="MMT" class="h-5 w-5 rounded shadow pointer-events-none" />
           <div class="pointer-events-none flex items-center gap-2">
             <span class="font-display font-extrabold text-xs text-white uppercase tracking-wider">MMT Live HUD</span>
@@ -1555,7 +1555,7 @@
         </div>
 
         <div class="flex items-center gap-2">
-          <div class="flex items-center gap-1 p-1 rounded-xl bg-black/85 border border-white/15 backdrop-blur-md">
+          <div class="flex items-center gap-1 p-1 rounded-xl bg-black/92 border border-white/15">
             <button type="button" id="floatHudPresetAll" class="px-3 py-1 rounded-lg text-[10px] font-mono uppercase font-bold bg-r-accent text-r-ink transition">Completo</button>
             <button type="button" id="floatHudPresetRadar" class="px-3 py-1 rounded-lg text-[10px] font-mono uppercase font-bold text-r-muted hover:text-white transition">Radar</button>
             <button type="button" id="floatHudPresetTelemetry" class="px-3 py-1 rounded-lg text-[10px] font-mono uppercase font-bold text-r-muted hover:text-white transition">Telemetría</button>
@@ -1576,17 +1576,12 @@
       <!-- Top zone kept 100% CLEAR for iRacing Virtual Mirror & Session Alerts -->
       <div class="h-24 pointer-events-none"></div>
 
-      <!-- Mid Area: Relative + Fuel on mid-left, 360 Radar in lower-center, Standings on mid-right -->
-      <div class="flex items-center justify-between gap-4 pointer-events-none flex-1 my-2 pb-16">
-        <!-- Left Stack: Relative + Fuel (Mid-Left, above native Black Box) -->
-        <div class="flex flex-col gap-2 items-start">
-          <div id="floatRelativeCard" class="mmt-float-widget w-[340px] rounded-md border border-white/10 bg-[#0a0c10]/92 text-white p-2 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="relative">
-            <div id="ovRelativeFloat"></div>
-          </div>
-
-          <div id="floatFuelCard" class="mmt-float-widget w-[340px] rounded-md border border-white/10 bg-[#0a0c10]/92 text-white p-2 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="fuel">
-            <div id="ovFuelFloat"></div>
-          </div>
+      <!-- Mid Area: Standings Top-Left, 360 Radar in lower-center, Relative + Fuel on Right -->
+      <div class="flex items-start justify-between gap-4 pointer-events-none flex-1 my-1 pb-16">
+        <!-- Top-Left: Standings -->
+        <div id="floatStandingsCard" class="mmt-float-widget w-[345px] rounded-md border border-white/10 bg-[#0a0c10]/92 text-white p-2 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden self-start" data-widget="standings">
+          <div id="ovStandingsFloat"></div>
+          <div id="ovPitboxFloat" class="mt-1.5 overflow-hidden"></div>
         </div>
 
         <!-- Center of screen: 360° Proximity Radar positioned low-center in peripheral vision (keeps apex clear) -->
@@ -1596,10 +1591,15 @@
           </div>
         </div>
 
-        <!-- Standings (Mid-Right, below FPS and above native Pit/Fuel Black Box) -->
-        <div id="floatStandingsCard" class="mmt-float-widget w-[375px] rounded-md border border-white/10 bg-[#0a0c10]/92 text-white p-2 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="standings">
-          <div id="ovStandingsFloat"></div>
-          <div id="ovPitboxFloat" class="mt-1.5 overflow-hidden"></div>
+        <!-- Right Stack: Relative + Fuel -->
+        <div class="flex flex-col gap-2 items-end self-center">
+          <div id="floatRelativeCard" class="mmt-float-widget w-[315px] rounded-md border border-white/10 bg-[#0a0c10]/92 text-white p-2 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="relative">
+            <div id="ovRelativeFloat"></div>
+          </div>
+
+          <div id="floatFuelCard" class="mmt-float-widget w-[315px] rounded-md border border-white/10 bg-[#0a0c10]/92 text-white p-2 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="fuel">
+            <div id="ovFuelFloat"></div>
+          </div>
         </div>
       </div>
 

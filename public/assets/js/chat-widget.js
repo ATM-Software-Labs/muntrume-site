@@ -222,27 +222,51 @@ async function send(raw) {
   ctrl = new AbortController(); const to = setTimeout(() => ctrl.abort(), 45000);
   let acc = '';
   try {
-    const res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal, credentials: 'omit', referrerPolicy: 'strict-origin',
-      body: JSON.stringify({ prompt: text, custom_prompt: SYSTEM, chat_history: history.slice(-6) }) });
+    const res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal, credentials: 'omit',
+      body: JSON.stringify({ prompt: text, custom_prompt: SYSTEM, chat_history: history.slice(-6), stream: true, mode: 'ai_chat' }) });
     if (res.status === 429 || res.status >= 500) throw new Error('busy');
     if (!res.ok || !res.body) throw new Error('err');
-    const reader = res.body.getReader(), dec = new TextDecoder(); let buf = '', done = false;
-    while (!done) {
-      const c = await reader.read(); if (c.done) break;
-      buf += dec.decode(c.value, { stream: true });
-      const lines = buf.split('\n'); buf = lines.pop() || '';
-      for (const ln of lines) {
-        const l = ln.trim(); if (!l.startsWith('data:')) continue;
-        const d = l.slice(5).trim(); if (d === '[DONE]') { done = true; break; }
+    const cType = (res.headers.get('content-type') || '').toLowerCase();
+    if (cType.includes('json') && !cType.includes('event-stream')) {
+      const jsonData = await res.json().catch(() => ({}));
+      const direct = jsonData.content || jsonData.reply || jsonData.answer || jsonData.result || jsonData.markdown || jsonData.text || '';
+      if (typeof direct === 'string' && direct) {
+        acc = direct;
+        render(bot, acc);
+      }
+    } else {
+      const reader = res.body.getReader(), dec = new TextDecoder(); let buf = '', done = false, raw = '', sse = cType.includes('event-stream');
+      while (!done) {
+        const c = await reader.read(); if (c.done) break;
+        const piece = dec.decode(c.value, { stream: true });
+        if (!sse && piece.trimStart().startsWith('data:')) sse = true;
+        if (!sse) { raw += piece; continue; }
+        buf += piece;
+        const lines = buf.split('\n'); buf = lines.pop() || '';
+        for (const ln of lines) {
+          const l = ln.trim(); if (!l.startsWith('data:')) continue;
+          const d = l.slice(5).trim(); if (d === '[DONE]') { done = true; break; }
+          try {
+            const j = JSON.parse(d);
+            const bit = j.content || j.reply || j.delta || j.text || '';
+            if (typeof bit === 'string' && bit) {
+              acc += bit;
+              render(bot, acc);
+              log.scrollTop = log.scrollHeight;
+              bot.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }
+          } catch {}
+        }
+      }
+      if (!acc && raw.trim()) {
         try {
-          const j = JSON.parse(d);
-          if (typeof j.content === 'string' && j.content) {
-            acc += j.content;
-            render(bot, acc);
-            log.scrollTop = log.scrollHeight;
-            bot.scrollIntoView({ behavior: 'smooth', block: 'end' });
-          }
-        } catch {}
+          const j = JSON.parse(raw);
+          const direct = j.content || j.reply || j.answer || j.result || j.text || '';
+          if (typeof direct === 'string' && direct) { acc = direct; render(bot, acc); }
+        } catch {
+          acc = raw.trim();
+          render(bot, acc);
+        }
       }
     }
     if (!acc) { bot.textContent = t.empty; }

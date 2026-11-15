@@ -551,7 +551,7 @@ fn detect_hardware() -> Result<hardware::HardwareReport, String> {
 }
 
 #[tauri::command]
-fn toggle_overlay(app: AppHandle, show: bool) -> Result<bool, String> {
+async fn toggle_overlay(app: AppHandle, show: bool) -> Result<bool, String> {
     if show {
         if let Some(window) = app.get_webview_window("overlay") {
             fit_overlay(&window);
@@ -591,7 +591,7 @@ fn toggle_overlay(app: AppHandle, show: bool) -> Result<bool, String> {
 }
 
 #[tauri::command]
-fn set_overlay_edit(app: AppHandle, editing: bool) -> Result<(), String> {
+async fn set_overlay_edit(app: AppHandle, editing: bool) -> Result<(), String> {
     let window = app.get_webview_window("overlay").ok_or("Ventana de overlay no encontrada")?;
     if editing {
         fit_overlay(&window);
