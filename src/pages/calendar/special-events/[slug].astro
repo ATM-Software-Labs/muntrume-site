@@ -1,0 +1,329 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import eventsData from "../../../data/iracing-special-events.json";
+
+interface SpecialEvent {
+  id: string;
+  slug: string;
+  year: number;
+  title: string;
+  dateLabel: string;
+  startUtc: string;
+  endUtc: string;
+  type: string;
+  discipline: string;
+  duration: string;
+  license: string;
+  teamSize: string;
+  timeSlots: string;
+  cars: string;
+  track: string;
+  description: string;
+  logo: string;
+  poster: string;
+}
+
+export function getStaticPaths() {
+  const all = eventsData as SpecialEvent[];
+  return all.map((ev) => ({
+    params: { slug: ev.slug },
+    props: { event: ev },
+  }));
+}
+
+interface Props {
+  event: SpecialEvent;
+}
+
+const { event } = Astro.props;
+const others = (eventsData as SpecialEvent[])
+  .filter((e) => e.slug !== event.slug)
+  .sort((a, b) => Date.parse(a.startUtc) - Date.parse(b.startUtc))
+  .slice(0, 6);
+
+const pageTitle = `${event.title} ${event.year} · Special Event iRacing | Muntrume Motorsport`;
+const pageDescription = `${event.title} (${event.dateLabel}) en ${event.track}: ${event.duration}, coches ${event.cars}, horarios UTC y cuenta atrás en Muntrume Motorsport.`;
+const canonical = `https://muntru.me/calendar/special-events/${event.slug}/`;
+---
+
+<Layout title={pageTitle} description={pageDescription} canonical={canonical} ogImage={event.poster || event.logo} ogImageAlt={event.title}>
+  <section class="r-section sed-page" aria-labelledby="sedTitle">
+    <div class="r-wrap">
+      <nav class="sed-crumb" aria-label="Ruta">
+        <a href="/calendar/special-events/">← Special Events {event.year}</a>
+        <span>/</span>
+        <span>{event.title}</span>
+      </nav>
+
+      <header class="sed-hero" data-start={event.startUtc} data-end={event.endUtc}>
+        <div class="sed-hero__logo">
+          <img src={event.logo} alt={event.title} loading="eager" decoding="async" />
+        </div>
+        <div class="sed-hero__body">
+          <div class="sed-badges">
+            <span id="sedState" class="sed-badge sed-badge--live">CARGANDO…</span>
+            <span class="sed-badge">{event.type}</span>
+            <span class="sed-badge">{event.discipline}</span>
+            <span class="sed-badge">{event.year}</span>
+          </div>
+          <h1 id="sedTitle" class="r-h1">{event.title}</h1>
+          <p class="sed-date">{event.dateLabel} · {event.track}</p>
+          <p class="sed-desc">{event.description}</p>
+
+          <div class="sed-cd" role="timer" aria-label="Cuenta atrás">
+            <div class="sed-cd-box"><span id="cdD">--</span><small>Días</small></div>
+            <div class="sed-cd-sep">:</div>
+            <div class="sed-cd-box"><span id="cdH">--</span><small>Horas</small></div>
+            <div class="sed-cd-sep">:</div>
+            <div class="sed-cd-box"><span id="cdM">--</span><small>Min</small></div>
+            <div class="sed-cd-sep">:</div>
+            <div class="sed-cd-box"><span id="cdS">--</span><small>Seg</small></div>
+          </div>
+
+          <div class="sed-actions">
+            <a href="/garage/" class="sed-btn sed-btn--primary">Setups .STO del Equipo →</a>
+            <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noreferrer noopener" class="sed-btn">Apuntarme en Discord</a>
+            <a href="https://www.iracing.com/special-events/" target="_blank" rel="noreferrer noopener" class="sed-btn">Web oficial iRacing ↗</a>
+          </div>
+        </div>
+      </header>
+
+      <div class="sed-layout">
+        <section class="sed-panel">
+          <h2 class="sed-h2">Información del Evento</h2>
+          <dl class="sed-specs">
+            <div><dt>Fechas oficiales</dt><dd>{event.dateLabel}</dd></div>
+            <div><dt>Circuito</dt><dd>{event.track}</dd></div>
+            <div><dt>Duración / Formato</dt><dd>{event.duration}</dd></div>
+            <div><dt>Coches elegibles</dt><dd>{event.cars}</dd></div>
+            <div><dt>Licencia mínima</dt><dd>{event.license}</dd></div>
+            <div><dt>Tamaño de equipo</dt><dd>{event.teamSize}</dd></div>
+            <div><dt>Franjas horarias (UTC)</dt><dd>{event.timeSlots}</dd></div>
+          </dl>
+        </section>
+
+        {event.poster && (
+          <aside class="sed-panel">
+            <h2 class="sed-h2">Póster Oficial {event.year}</h2>
+            <a href={event.poster} target="_blank" rel="noreferrer noopener" class="sed-poster">
+              <img src={event.poster} alt={`Póster oficial ${event.title} ${event.year}`} loading="lazy" decoding="async" />
+            </a>
+          </aside>
+        )}
+      </div>
+
+      <section class="sed-more">
+        <div class="sed-more__head">
+          <h2 class="sed-h2">Otros Special Events {event.year}</h2>
+          <a href="/calendar/special-events/" class="sed-link">Ver todos →</a>
+        </div>
+        <div class="sed-more__grid">
+          {others.map((o) => (
+            <a href={`/calendar/special-events/${o.slug}/`} class="sed-mini">
+              <img src={o.logo} alt={o.title} loading="lazy" decoding="async" />
+              <div>
+                <strong>{o.title}</strong>
+                <span>{o.dateLabel} · {o.duration}</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <style>
+    .sed-crumb {
+      display: flex;
+      gap: 0.5rem;
+      font-family: var(--font-mono, monospace);
+      font-size: 0.78rem;
+      color: #94a3b8;
+      margin-bottom: 1.1rem;
+    }
+    .sed-crumb a { color: #34d399; text-decoration: none; }
+    .sed-hero {
+      display: grid;
+      grid-template-columns: minmax(220px, 340px) 1fr;
+      gap: 1.5rem;
+      padding: 1.4rem;
+      border-radius: 1rem;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.14), rgba(15, 23, 42, 0.85) 55%);
+      align-items: center;
+      margin-bottom: 1.75rem;
+    }
+    @media (max-width: 780px) { .sed-hero { grid-template-columns: 1fr; } }
+    .sed-hero__logo {
+      background: rgba(2, 6, 23, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 180px;
+    }
+    .sed-hero__logo img { max-height: 170px; width: auto; object-fit: contain; }
+    .sed-badges { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-bottom: 0.6rem; }
+    .sed-badge {
+      font-family: var(--font-mono, monospace);
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #e2e8f0;
+      text-transform: uppercase;
+    }
+    .sed-badge--live {
+      background: rgba(16, 185, 129, 0.22);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.45);
+    }
+    .sed-date {
+      margin: 0.35rem 0 0.6rem;
+      font-family: var(--font-mono, monospace);
+      font-size: 0.85rem;
+      color: #34d399;
+      font-weight: 700;
+    }
+    .sed-desc {
+      margin: 0 0 1rem;
+      color: #cbd5e1;
+      font-size: 0.92rem;
+      line-height: 1.55;
+      max-width: 65ch;
+    }
+    .sed-cd {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.65rem 0.9rem;
+      border-radius: 0.75rem;
+      background: rgba(2, 6, 23, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 1rem;
+    }
+    .sed-cd-box { min-width: 3rem; text-align: center; }
+    .sed-cd-box span {
+      display: block;
+      font-family: var(--font-mono, monospace);
+      font-size: 1.5rem;
+      font-weight: 800;
+      line-height: 1.1;
+      color: #34d399;
+      font-variant-numeric: tabular-nums;
+    }
+    .sed-cd-box small {
+      display: block;
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      color: #94a3b8;
+      margin-top: 0.15rem;
+    }
+    .sed-cd-sep {
+      font-family: var(--font-mono, monospace);
+      font-size: 1.2rem;
+      color: rgba(255, 255, 255, 0.35);
+      padding-bottom: 0.75rem;
+    }
+    .sed-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+    .sed-btn {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.55rem 0.95rem;
+      border-radius: 0.6rem;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.04);
+      color: #e2e8f0;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .sed-btn--primary { background: #10b981; border-color: #10b981; color: #052e16; }
+    .sed-layout { display: grid; grid-template-columns: 1.3fr 1fr; gap: 1.25rem; margin-bottom: 2rem; }
+    @media (max-width: 820px) { .sed-layout { grid-template-columns: 1fr; } }
+    .sed-panel {
+      padding: 1.25rem;
+      border-radius: 0.9rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(15, 23, 42, 0.65);
+    }
+    .sed-h2 { margin: 0 0 0.95rem; font-size: 1.05rem; font-weight: 800; }
+    .sed-specs { margin: 0; display: grid; gap: 0.65rem; }
+    .sed-specs div {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-bottom: 0.55rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      font-size: 0.86rem;
+    }
+    .sed-specs dt { color: #94a3b8; }
+    .sed-specs dd { margin: 0; text-align: right; color: #f8fafc; font-weight: 600; }
+    .sed-poster { display: block; border-radius: 0.65rem; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); }
+    .sed-poster img { width: 100%; height: auto; display: block; }
+    .sed-more__head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+    .sed-link { color: #34d399; text-decoration: none; font-family: var(--font-mono, monospace); font-size: 0.8rem; font-weight: 700; }
+    .sed-more__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 0.75rem; }
+    .sed-mini {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.65rem;
+      border-radius: 0.75rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(15, 23, 42, 0.55);
+      text-decoration: none;
+      color: inherit;
+    }
+    .sed-mini:hover { border-color: rgba(16, 185, 129, 0.5); }
+    .sed-mini img { width: 64px; height: 42px; object-fit: contain; background: #020617; border-radius: 0.45rem; padding: 0.2rem; }
+    .sed-mini strong { display: block; font-size: 0.84rem; }
+    .sed-mini span { display: block; font-size: 0.72rem; color: #94a3b8; }
+  </style>
+
+  <script>
+    (() => {
+      const hero = document.querySelector<HTMLElement>(".sed-hero");
+      const stateEl = document.getElementById("sedState");
+      const cdD = document.getElementById("cdD");
+      const cdH = document.getElementById("cdH");
+      const cdM = document.getElementById("cdM");
+      const cdS = document.getElementById("cdS");
+      if (!hero) return;
+
+      const startMs = Date.parse(hero.dataset.start || "");
+      const endMs = Date.parse(hero.dataset.end || "");
+      const pad = (n: number) => String(Math.max(0, Math.floor(n))).padStart(2, "0");
+
+      function tick() {
+        const now = Date.now();
+        let target = startMs;
+        if (now >= startMs && now <= endMs) {
+          if (stateEl) stateEl.textContent = "EN DIRECTO AHORA";
+          target = endMs;
+        } else if (now < startMs) {
+          if (stateEl) stateEl.textContent = "PRÓXIMAMENTE";
+          target = startMs;
+        } else {
+          if (stateEl) stateEl.textContent = "EDICIÓN 2026 COMPLETADA";
+          if (cdD) cdD.textContent = "00";
+          if (cdH) cdH.textContent = "00";
+          if (cdM) cdM.textContent = "00";
+          if (cdS) cdS.textContent = "00";
+          return;
+        }
+        const diff = Math.max(0, target - now);
+        if (cdD) cdD.textContent = pad(diff / 86400000);
+        if (cdH) cdH.textContent = pad((diff % 86400000) / 3600000);
+        if (cdM) cdM.textContent = pad((diff % 3600000) / 60000);
+        if (cdS) cdS.textContent = pad((diff % 60000) / 1000);
+      }
+
+      tick();
+      setInterval(tick, 1000);
+    })();
+  </script>
+</Layout>

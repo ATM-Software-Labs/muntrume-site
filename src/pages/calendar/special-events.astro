@@ -4,12 +4,16 @@ import eventsData from "../../data/iracing-special-events.json";
 
 interface SpecialEvent {
   id: string;
+  slug: string;
+  year: number;
   title: string;
   dateLabel: string;
   startUtc: string;
   endUtc: string;
   type: string;
   discipline: string;
+  duration: string;
+  license: string;
   cars: string;
   track: string;
   logo: string;
@@ -68,8 +72,9 @@ const canonical = "https://muntru.me/calendar/special-events/";
           </div>
 
           <div class="se-hero__cta">
+            <a id="seHeroDetails" href={`/calendar/special-events/${events[0].slug}/`} class="se-btn se-btn--primary">Ver ficha completa →</a>
             <a id="seHeroPoster" href="#" target="_blank" rel="noreferrer noopener" class="se-btn se-btn--ghost">Ver póster oficial</a>
-            <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noreferrer noopener" class="se-btn se-btn--primary">Buscar equipo en Discord →</a>
+            <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noreferrer noopener" class="se-btn se-btn--ghost">Buscar equipo en Discord</a>
           </div>
         </div>
       </article>
@@ -92,6 +97,7 @@ const canonical = "https://muntru.me/calendar/special-events/";
           <article
             class="se-card"
             data-id={ev.id}
+            data-slug={ev.slug}
             data-title={ev.title}
             data-start={ev.startUtc}
             data-end={ev.endUtc}
@@ -103,26 +109,25 @@ const canonical = "https://muntru.me/calendar/special-events/";
             data-logo={ev.logo}
             data-poster={ev.poster}
           >
-            <div class="se-card__img">
+            <a href={`/calendar/special-events/${ev.slug}/`} class="se-card__img">
               <img src={ev.logo} alt={ev.title} loading="lazy" decoding="async" />
               <span class="se-card__status" data-status-badge>—</span>
-            </div>
+            </a>
             <div class="se-card__body">
               <div class="se-card__top">
                 <span class="se-tag">{ev.type === "TEAM EVENT" ? "Team Endurance" : "Solo Event"}</span>
-                <span class="se-tag se-tag--muted">{ev.discipline}</span>
+                <span class="se-tag se-tag--muted">{ev.duration}</span>
               </div>
-              <h3 class="se-card__title">{ev.title}</h3>
+              <h3 class="se-card__title"><a href={`/calendar/special-events/${ev.slug}/`} class="hover:text-emerald-400 no-underline text-inherit">{ev.title}</a></h3>
               <p class="se-card__date">{ev.dateLabel}</p>
               <dl class="se-card__specs">
                 <div><dt>Circuito</dt><dd>{ev.track}</dd></div>
                 <div><dt>Coches</dt><dd>{ev.cars}</dd></div>
+                <div><dt>Licencia</dt><dd>{ev.license}</dd></div>
               </dl>
               <div class="se-card__foot">
                 <span class="se-card__mini-cd" data-mini-cd></span>
-                {ev.poster && (
-                  <a href={ev.poster} target="_blank" rel="noreferrer noopener" class="se-poster-link">Póster ↗</a>
-                )}
+                <a href={`/calendar/special-events/${ev.slug}/`} class="se-poster-link">Ver evento →</a>
               </div>
             </div>
           </article>
@@ -493,6 +498,7 @@ const canonical = "https://muntru.me/calendar/special-events/";
       const heroDate = document.getElementById("seHeroDate");
       const heroTitle = document.getElementById("seHeroTitle");
       const heroMeta = document.getElementById("seHeroMeta");
+      const heroDetails = document.getElementById("seHeroDetails") as HTMLAnchorElement | null;
       const heroPoster = document.getElementById("seHeroPoster") as HTMLAnchorElement | null;
       const cdDays = document.getElementById("cdDays");
       const cdHours = document.getElementById("cdHours");
@@ -555,6 +561,9 @@ const canonical = "https://muntru.me/calendar/special-events/";
           if (heroDate) heroDate.textContent = targetCard.dataset.datelabel || "";
           if (heroTitle) heroTitle.textContent = targetCard.dataset.title || "";
           if (heroMeta) heroMeta.textContent = `${targetCard.dataset.track || ""} · ${targetCard.dataset.cars || ""}`;
+          if (heroDetails && targetCard.dataset.slug) {
+            heroDetails.href = `/calendar/special-events/${targetCard.dataset.slug}/`;
+          }
           if (heroPoster) {
             const p = targetCard.dataset.poster || "";
             heroPoster.href = p || "#";
