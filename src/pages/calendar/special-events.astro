@@ -1,0 +1,615 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import eventsData from "../../data/iracing-special-events.json";
+
+interface SpecialEvent {
+  id: string;
+  title: string;
+  dateLabel: string;
+  startUtc: string;
+  endUtc: string;
+  type: string;
+  discipline: string;
+  cars: string;
+  track: string;
+  logo: string;
+  poster: string;
+}
+
+const events = (eventsData as SpecialEvent[])
+  .slice()
+  .sort((a, b) => Date.parse(a.startUtc) - Date.parse(b.startUtc));
+
+const pageTitle = "Special Events iRacing 2026 | Calendario y Cuenta Atrás | Muntrume Motorsport";
+const pageDescription =
+  "Calendario completo de iRacing Special Events 2026 con contador en tiempo real, eventos de resistencia por equipos, coches, circuitos y pósters oficiales.";
+const canonical = "https://muntru.me/calendar/special-events/";
+---
+
+<Layout title={pageTitle} description={pageDescription} canonical={canonical}>
+  <section class="r-section se-page" aria-labelledby="seTitle">
+    <div class="r-wrap">
+      <header class="se-head">
+        <div>
+          <p class="r-kicker">IRACING SPECIAL EVENTS · 2026</p>
+          <h1 id="seTitle" class="r-h1">Eventos Especiales</h1>
+          <p class="se-sub">
+            Calendario oficial sincronizado con <a href="https://www.iracing.com/special-events/" target="_blank" rel="noreferrer noopener" class="underline hover:text-emerald-400">iRacing.com/special-events</a>. Organiza tu stint con el equipo para las carreras de resistencia y eventos especiales.
+          </p>
+        </div>
+        <div class="se-head-actions">
+          <a href="/calendar/" class="se-nav-btn">← Calendario 154 Series</a>
+          <a href="/garage/" class="se-nav-btn se-nav-btn--accent">Ir al Garage →</a>
+        </div>
+      </header>
+
+      <!-- Live Hero Countdown -->
+      <article id="seHero" class="se-hero" aria-live="polite">
+        <div class="se-hero__media">
+          <img id="seHeroLogo" src={events[0].logo} alt={events[0].title} loading="eager" decoding="async" />
+        </div>
+        <div class="se-hero__body">
+          <div class="se-hero__badges">
+            <span id="seHeroState" class="se-badge se-badge--live">PRÓXIMO EVENTO</span>
+            <span id="seHeroType" class="se-badge">TEAM EVENT</span>
+            <span id="seHeroDate" class="se-date-pill"></span>
+          </div>
+          <h2 id="seHeroTitle" class="se-hero__title">Cargando próximo evento…</h2>
+          <p id="seHeroMeta" class="se-hero__meta"></p>
+
+          <div class="se-countdown" role="timer" aria-label="Cuenta atrás para el evento">
+            <div class="se-cd-box"><span id="cdDays">--</span><small>Días</small></div>
+            <div class="se-cd-sep">:</div>
+            <div class="se-cd-box"><span id="cdHours">--</span><small>Horas</small></div>
+            <div class="se-cd-sep">:</div>
+            <div class="se-cd-box"><span id="cdMins">--</span><small>Min</small></div>
+            <div class="se-cd-sep">:</div>
+            <div class="se-cd-box"><span id="cdSecs">--</span><small>Seg</small></div>
+          </div>
+
+          <div class="se-hero__cta">
+            <a id="seHeroPoster" href="#" target="_blank" rel="noreferrer noopener" class="se-btn se-btn--ghost">Ver póster oficial</a>
+            <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noreferrer noopener" class="se-btn se-btn--primary">Buscar equipo en Discord →</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- Filters -->
+      <div class="se-filters" role="region" aria-label="Filtros de eventos">
+        <div class="se-pills" id="seStatusPills">
+          <button type="button" class="se-pill is-on" data-filter="upcoming">Próximos y en curso</button>
+          <button type="button" class="se-pill" data-filter="all">Todos (2026)</button>
+          <button type="button" class="se-pill" data-filter="team">Team Endurance</button>
+          <button type="button" class="se-pill" data-filter="solo">Solo Events</button>
+          <button type="button" class="se-pill" data-filter="past">Finalizados</button>
+        </div>
+        <span id="seVisibleCount" class="se-count">{events.length} eventos</span>
+      </div>
+
+      <!-- Events Grid -->
+      <div id="seGrid" class="se-grid">
+        {events.map((ev) => (
+          <article
+            class="se-card"
+            data-id={ev.id}
+            data-title={ev.title}
+            data-start={ev.startUtc}
+            data-end={ev.endUtc}
+            data-type={ev.type}
+            data-discipline={ev.discipline}
+            data-cars={ev.cars}
+            data-track={ev.track}
+            data-datelabel={ev.dateLabel}
+            data-logo={ev.logo}
+            data-poster={ev.poster}
+          >
+            <div class="se-card__img">
+              <img src={ev.logo} alt={ev.title} loading="lazy" decoding="async" />
+              <span class="se-card__status" data-status-badge>—</span>
+            </div>
+            <div class="se-card__body">
+              <div class="se-card__top">
+                <span class="se-tag">{ev.type === "TEAM EVENT" ? "Team Endurance" : "Solo Event"}</span>
+                <span class="se-tag se-tag--muted">{ev.discipline}</span>
+              </div>
+              <h3 class="se-card__title">{ev.title}</h3>
+              <p class="se-card__date">{ev.dateLabel}</p>
+              <dl class="se-card__specs">
+                <div><dt>Circuito</dt><dd>{ev.track}</dd></div>
+                <div><dt>Coches</dt><dd>{ev.cars}</dd></div>
+              </dl>
+              <div class="se-card__foot">
+                <span class="se-card__mini-cd" data-mini-cd></span>
+                {ev.poster && (
+                  <a href={ev.poster} target="_blank" rel="noreferrer noopener" class="se-poster-link">Póster ↗</a>
+                )}
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .se-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1.25rem;
+      margin-bottom: 1.75rem;
+    }
+    .se-sub {
+      margin-top: 0.5rem;
+      max-width: 62ch;
+      color: var(--r-muted, #94a3b8);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+    .se-head-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+    .se-nav-btn {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.55rem 0.9rem;
+      border-radius: 0.65rem;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.04);
+      font-family: var(--font-mono, monospace);
+      font-size: 0.78rem;
+      color: inherit;
+      text-decoration: none;
+      transition: border-color 140ms, background 140ms;
+    }
+    .se-nav-btn:hover {
+      border-color: rgba(16, 185, 129, 0.55);
+      background: rgba(16, 185, 129, 0.1);
+    }
+    .se-nav-btn--accent {
+      background: #10b981;
+      color: #052e16;
+      border-color: #10b981;
+      font-weight: 700;
+    }
+    .se-nav-btn--accent:hover {
+      background: #34d399;
+      color: #052e16;
+    }
+    .se-hero {
+      display: grid;
+      grid-template-columns: minmax(220px, 320px) 1fr;
+      gap: 1.5rem;
+      padding: 1.4rem;
+      border-radius: 1rem;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.14), rgba(15, 23, 42, 0.85) 55%);
+      margin-bottom: 1.75rem;
+      align-items: center;
+    }
+    @media (max-width: 780px) {
+      .se-hero { grid-template-columns: 1fr; }
+    }
+    .se-hero__media {
+      background: rgba(2, 6, 23, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 0.75rem;
+      padding: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 165px;
+    }
+    .se-hero__media img {
+      max-height: 155px;
+      width: auto;
+      object-fit: contain;
+    }
+    .se-hero__badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 0.55rem;
+    }
+    .se-badge {
+      font-family: var(--font-mono, monospace);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.22rem 0.55rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #e2e8f0;
+    }
+    .se-badge--live {
+      background: rgba(16, 185, 129, 0.22);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.45);
+    }
+    .se-date-pill {
+      font-family: var(--font-mono, monospace);
+      font-size: 0.76rem;
+      color: #94a3b8;
+    }
+    .se-hero__title {
+      font-size: clamp(1.5rem, 3vw, 2.2rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin: 0;
+    }
+    .se-hero__meta {
+      margin: 0.4rem 0 1rem;
+      color: #cbd5e1;
+      font-size: 0.9rem;
+    }
+    .se-countdown {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.65rem 0.9rem;
+      border-radius: 0.75rem;
+      background: rgba(2, 6, 23, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 1rem;
+    }
+    .se-cd-box {
+      min-width: 3.1rem;
+      text-align: center;
+    }
+    .se-cd-box span {
+      display: block;
+      font-family: var(--font-mono, monospace);
+      font-size: 1.55rem;
+      font-weight: 800;
+      line-height: 1.1;
+      color: #34d399;
+      font-variant-numeric: tabular-nums;
+    }
+    .se-cd-box small {
+      display: block;
+      font-size: 0.64rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+      margin-top: 0.15rem;
+    }
+    .se-cd-sep {
+      font-family: var(--font-mono, monospace);
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.35);
+      padding-bottom: 0.8rem;
+    }
+    .se-hero__cta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+    }
+    .se-btn {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.55rem 0.95rem;
+      border-radius: 0.6rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .se-btn--primary {
+      background: #10b981;
+      color: #052e16;
+    }
+    .se-btn--primary:hover { background: #34d399; }
+    .se-btn--ghost {
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #e2e8f0;
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .se-btn--ghost:hover { border-color: rgba(255, 255, 255, 0.4); }
+    .se-filters {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+    .se-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+    }
+    .se-pill {
+      padding: 0.42rem 0.85rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.03);
+      color: #cbd5e1;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .se-pill.is-on {
+      background: #10b981;
+      border-color: #10b981;
+      color: #052e16;
+      font-weight: 700;
+    }
+    .se-count {
+      font-family: var(--font-mono, monospace);
+      font-size: 0.78rem;
+      color: #94a3b8;
+    }
+    .se-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 1rem;
+    }
+    .se-card {
+      border-radius: 0.9rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(15, 23, 42, 0.65);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 150ms, border-color 150ms;
+    }
+    .se-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(16, 185, 129, 0.45);
+    }
+    .se-card[data-state="past"] {
+      opacity: 0.72;
+    }
+    .se-card__img {
+      position: relative;
+      height: 150px;
+      background: rgba(2, 6, 23, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .se-card__img img {
+      max-height: 100%;
+      max-width: 100%;
+      object-fit: contain;
+    }
+    .se-card__status {
+      position: absolute;
+      top: 0.6rem;
+      right: 0.6rem;
+      font-family: var(--font-mono, monospace);
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 0.18rem 0.5rem;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #cbd5e1;
+    }
+    .se-card[data-state="live"] .se-card__status {
+      background: rgba(16, 185, 129, 0.25);
+      border-color: #10b981;
+      color: #34d399;
+    }
+    .se-card[data-state="upcoming"] .se-card__status {
+      background: rgba(56, 189, 248, 0.18);
+      border-color: rgba(56, 189, 248, 0.5);
+      color: #7dd3fc;
+    }
+    .se-card__body {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      gap: 0.4rem;
+    }
+    .se-card__top {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+    .se-tag {
+      font-family: var(--font-mono, monospace);
+      font-size: 0.66rem;
+      text-transform: uppercase;
+      padding: 0.14rem 0.45rem;
+      border-radius: 0.35rem;
+      background: rgba(16, 185, 129, 0.14);
+      color: #34d399;
+      font-weight: 700;
+    }
+    .se-tag--muted {
+      background: rgba(255, 255, 255, 0.07);
+      color: #cbd5e1;
+    }
+    .se-card__title {
+      margin: 0.15rem 0 0;
+      font-size: 1.05rem;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+    .se-card__date {
+      margin: 0;
+      font-family: var(--font-mono, monospace);
+      font-size: 0.78rem;
+      color: #34d399;
+    }
+    .se-card__specs {
+      margin: 0.4rem 0 0;
+      display: grid;
+      gap: 0.25rem;
+      font-size: 0.8rem;
+    }
+    .se-card__specs div {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.6rem;
+    }
+    .se-card__specs dt { color: #94a3b8; }
+    .se-card__specs dd {
+      margin: 0;
+      text-align: right;
+      color: #e2e8f0;
+      font-weight: 500;
+    }
+    .se-card__foot {
+      margin-top: auto;
+      padding-top: 0.65rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      font-family: var(--font-mono, monospace);
+      font-size: 0.74rem;
+    }
+    .se-card__mini-cd {
+      color: #94a3b8;
+    }
+    .se-poster-link {
+      color: #34d399;
+      text-decoration: none;
+      font-weight: 700;
+    }
+    .se-poster-link:hover { text-decoration: underline; }
+  </style>
+
+  <script>
+    (() => {
+      const cards = Array.from(document.querySelectorAll<HTMLElement>("#seGrid .se-card"));
+      const pills = Array.from(document.querySelectorAll<HTMLButtonElement>("#seStatusPills .se-pill"));
+      const countEl = document.getElementById("seVisibleCount");
+      const heroLogo = document.getElementById("seHeroLogo") as HTMLImageElement | null;
+      const heroState = document.getElementById("seHeroState");
+      const heroType = document.getElementById("seHeroType");
+      const heroDate = document.getElementById("seHeroDate");
+      const heroTitle = document.getElementById("seHeroTitle");
+      const heroMeta = document.getElementById("seHeroMeta");
+      const heroPoster = document.getElementById("seHeroPoster") as HTMLAnchorElement | null;
+      const cdDays = document.getElementById("cdDays");
+      const cdHours = document.getElementById("cdHours");
+      const cdMins = document.getElementById("cdMins");
+      const cdSecs = document.getElementById("cdSecs");
+
+      let activeFilter = "upcoming";
+      let targetCard: HTMLElement | null = null;
+      let targetEndMs = 0;
+      let targetStartMs = 0;
+
+      const pad = (n: number) => String(Math.max(0, Math.floor(n))).padStart(2, "0");
+
+      function updateStates() {
+        const now = Date.now();
+        let nextLive: HTMLElement | null = null;
+        let nextUpcoming: HTMLElement | null = null;
+
+        for (const card of cards) {
+          const start = Date.parse(card.dataset.start || "");
+          const end = Date.parse(card.dataset.end || "");
+          const badge = card.querySelector("[data-status-badge]");
+          const mini = card.querySelector("[data-mini-cd]");
+
+          if (now >= start && now <= end) {
+            card.dataset.state = "live";
+            if (badge) badge.textContent = "EN CURSO";
+            const remH = Math.max(0, Math.floor((end - now) / 3600000));
+            if (mini) mini.textContent = `Termina en ${remH}h`;
+            if (!nextLive) nextLive = card;
+          } else if (now < start) {
+            card.dataset.state = "upcoming";
+            const diff = start - now;
+            const days = Math.floor(diff / 86400000);
+            const hrs = Math.floor((diff % 86400000) / 3600000);
+            if (badge) badge.textContent = days > 0 ? `En ${days}d` : `En ${hrs}h`;
+            if (mini) mini.textContent = days > 0 ? `Faltan ${days}d ${hrs}h` : `Faltan ${hrs}h`;
+            if (!nextUpcoming) nextUpcoming = card;
+          } else {
+            card.dataset.state = "past";
+            if (badge) badge.textContent = "Finalizado";
+            if (mini) mini.textContent = "Edición 2026 completada";
+          }
+        }
+
+        targetCard = nextLive || nextUpcoming || cards[cards.length - 1] || null;
+        if (targetCard) {
+          targetStartMs = Date.parse(targetCard.dataset.start || "");
+          targetEndMs = Date.parse(targetCard.dataset.end || "");
+          if (heroLogo) {
+            heroLogo.src = targetCard.dataset.logo || "";
+            heroLogo.alt = targetCard.dataset.title || "";
+          }
+          if (heroState) {
+            heroState.textContent = targetCard.dataset.state === "live" ? "EN DIRECTO AHORA" : "PRÓXIMO EVENTO";
+          }
+          if (heroType) {
+            heroType.textContent = targetCard.dataset.type === "TEAM EVENT" ? "TEAM ENDURANCE" : "SOLO EVENT";
+          }
+          if (heroDate) heroDate.textContent = targetCard.dataset.datelabel || "";
+          if (heroTitle) heroTitle.textContent = targetCard.dataset.title || "";
+          if (heroMeta) heroMeta.textContent = `${targetCard.dataset.track || ""} · ${targetCard.dataset.cars || ""}`;
+          if (heroPoster) {
+            const p = targetCard.dataset.poster || "";
+            heroPoster.href = p || "#";
+            heroPoster.style.display = p ? "inline-flex" : "none";
+          }
+        }
+      }
+
+      function tickCountdown() {
+        if (!targetCard) return;
+        const now = Date.now();
+        const isLive = now >= targetStartMs && now <= targetEndMs;
+        const target = isLive ? targetEndMs : targetStartMs;
+        const diff = Math.max(0, target - now);
+        const days = Math.floor(diff / 86400000);
+        const hrs = Math.floor((diff % 86400000) / 3600000);
+        const mins = Math.floor((diff % 3600000) / 60000);
+        const secs = Math.floor((diff % 60000) / 1000);
+
+        if (cdDays) cdDays.textContent = pad(days);
+        if (cdHours) cdHours.textContent = pad(hrs);
+        if (cdMins) cdMins.textContent = pad(mins);
+        if (cdSecs) cdSecs.textContent = pad(secs);
+      }
+
+      function applyFilter() {
+        let visible = 0;
+        for (const card of cards) {
+          const st = card.dataset.state || "past";
+          const tp = card.dataset.type || "";
+          let show = true;
+          if (activeFilter === "upcoming") show = st === "live" || st === "upcoming";
+          else if (activeFilter === "team") show = tp === "TEAM EVENT";
+          else if (activeFilter === "solo") show = tp !== "TEAM EVENT";
+          else if (activeFilter === "past") show = st === "past";
+          card.hidden = !show;
+          if (show) visible++;
+        }
+        if (countEl) countEl.textContent = `${visible} eventos`;
+      }
+
+      for (const pill of pills) {
+        pill.addEventListener("click", () => {
+          activeFilter = pill.dataset.filter || "upcoming";
+          for (const p of pills) p.classList.toggle("is-on", p === pill);
+          applyFilter();
+        });
+      }
+
+      updateStates();
+      applyFilter();
+      tickCountdown();
+      setInterval(() => {
+        tickCountdown();
+      }, 1000);
+    })();
+  </script>
+</Layout>

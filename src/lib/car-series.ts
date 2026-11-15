@@ -6,6 +6,7 @@
 
 import type { CarMetadata } from '../../desktop/src/cars/catalog';
 import schedule from '../../desktop/src/season_schedule_2026_s4.json';
+import seriesLogosData from '../data/iracing-series-logos.json';
 
 export interface CarOfficialSeries {
   id: string;
@@ -181,7 +182,46 @@ function seriesPriorityScore(sr: ScheduleSeries): number {
   return score;
 }
 
+const normSeriesLogoName = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/\b(2026|season\s*\d+|fixed|by\s+[a-z0-9.-]+|presented\s+by\s+[a-z0-9.-]+|series|iracing)\b/gi, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+
+const SERIES_LOGO_INDEX = (seriesLogosData as Array<{ name: string; logo: string }>).map((entry) => ({
+  logo: entry.logo,
+  norm: normSeriesLogoName(entry.name),
+  tokens: new Set(normSeriesLogoName(entry.name).split(/\s+/).filter((w) => w.length >= 3)),
+}));
+
+function lookupOfficialSeriesLogo(name: string): string {
+  const sn = normSeriesLogoName(name);
+  if (!sn) return '';
+  const direct = SERIES_LOGO_INDEX.find(
+    (item) => item.norm === sn || sn.includes(item.norm) || (item.norm.length >= 6 && item.norm.includes(sn))
+  );
+  if (direct) return direct.logo;
+  const tokens = sn.split(/\s+/).filter((w) => w.length >= 3);
+  let best = '';
+  let bestOverlap = 0;
+  for (const item of SERIES_LOGO_INDEX) {
+    let overlap = 0;
+    for (const t of tokens) {
+      if (item.tokens.has(t)) overlap++;
+    }
+    if (overlap >= 2 && overlap > bestOverlap) {
+      bestOverlap = overlap;
+      best = item.logo;
+    }
+  }
+  return best;
+}
+
 function getSeriesImage(sr: ScheduleSeries): string {
+  const official = lookupOfficialSeriesLogo(sr.name);
+  if (official) return official;
+
   const n = sr.name.toLowerCase();
   const c = (sr.category || '').toLowerCase();
 

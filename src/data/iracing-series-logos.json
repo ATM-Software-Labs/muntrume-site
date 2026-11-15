@@ -793,5 +793,10 @@
     "slug": "global-mazda-mx-5-cup",
     "name": "FANATEC Global Mazda MX-5 Cup",
     "logo": "https://www.iracing.com/wp-content/uploads/2026/09/global-mazda-mx-5-cup-feature-350x197.jpg"
+  },
+  {
+    "slug": "ff1600-festival",
+    "name": "2026 FF1600 Festival Presented by Conspit",
+    "logo": "https://s100.iracing.com/wp-content/uploads/2026/01/iRSE-2026-iRacing-Conspit-FF1600-Festival.png"
   }
 ]

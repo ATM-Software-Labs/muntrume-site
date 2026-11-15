@@ -1,0 +1,339 @@
+---
+import Layout from "../layouts/Layout.astro";
+import schedule from "../../desktop/src/season_schedule_2026_s4.json";
+import seriesLogosData from "../data/iracing-series-logos.json";
+
+interface ScheduleWeek {
+  week_num: number;
+  track_name: string;
+}
+
+interface ScheduleSeries {
+  id: string;
+  name: string;
+  category: string;
+  tier: string;
+  license: string;
+  cars?: string[];
+  weeks?: ScheduleWeek[];
+}
+
+const SEASON_START_MS = Date.UTC(2026, 8, 15);
+const buildWeek = Math.max(1, Math.min(12, Math.floor((Date.now() - SEASON_START_MS) / 604_800_000) + 1));
+
+const normSeriesLogoName = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/\b(2026|season\s*\d+|fixed|by\s+[a-z0-9.-]+|presented\s+by\s+[a-z0-9.-]+|series|iracing)\b/gi, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+
+const LOGO_INDEX = (seriesLogosData as Array<{ name: string; logo: string }>).map((entry) => ({
+  logo: entry.logo,
+  norm: normSeriesLogoName(entry.name),
+  tokens: new Set(normSeriesLogoName(entry.name).split(/\s+/).filter((w) => w.length >= 3)),
+}));
+
+function logoForSeries(name: string): string {
+  const sn = normSeriesLogoName(name);
+  if (sn) {
+    const direct = LOGO_INDEX.find(
+      (item) => item.norm === sn || sn.includes(item.norm) || (item.norm.length >= 6 && item.norm.includes(sn))
+    );
+    if (direct) return direct.logo;
+    const tokens = sn.split(/\s+/).filter((w) => w.length >= 3);
+    let best = "";
+    let bestOverlap = 0;
+    for (const item of LOGO_INDEX) {
+      let overlap = 0;
+      for (const t of tokens) {
+        if (item.tokens.has(t)) overlap++;
+      }
+      if (overlap >= 2 && overlap > bestOverlap) {
+        bestOverlap = overlap;
+        best = item.logo;
+      }
+    }
+    if (best) return best;
+  }
+  return "/assets/img/series/gt-sprint.jpg";
+}
+
+const TIER_COLORS: Record<string, string> = {
+  RClass: "#ef4444",
+  DClass: "#f97316",
+  CClass: "#eab308",
+  BClass: "#22c55e",
+  AClass: "#3b82f6",
+};
+
+const CAT_LABELS: Record<string, string> = {
+  "SPORTS CAR": "Sports Car",
+  "FORMULA CAR": "Formula Car",
+  "OVAL": "Oval",
+  "DIRT OVAL": "Dirt Oval",
+  "DIRT ROAD": "Dirt Road",
+};
+
+const seriesList = ((schedule as { series?: ScheduleSeries[] }).series ?? []).map((sr) => {
+  const week = (sr.weeks ?? []).find((w) => w.week_num === buildWeek);
+  return {
+    id: sr.id,
+    name: sr.name.replace(/\s*-\s*2026 Season \d+$/i, "").trim(),
+    category: sr.category,
+    tier: sr.tier,
+    license: sr.license,
+    color: TIER_COLORS[sr.tier] || "#10b981",
+    currentTrack: week?.track_name || sr.weeks?.[0]?.track_name || "Calendario rotativo",
+    carsCount: (sr.cars ?? []).length,
+    logo: logoForSeries(sr.name),
+  };
+});
+
+const catOrder = ["SPORTS CAR", "FORMULA CAR", "OVAL", "DIRT OVAL", "DIRT ROAD"].filter((c) =>
+  seriesList.some((s) => s.category === c)
+);
+
+const pageTitle = "Series Oficiales iRacing 2026 S4 | Muntrume Motorsport";
+const pageDescription =
+  "Catálogo completo de las 154 series oficiales de iRacing 2026 Season 4 con logos oficiales, licencia requerida, disciplina y circuito de la semana.";
+const canonical = "https://muntru.me/series/";
+---
+
+<Layout title={pageTitle} description={pageDescription} canonical={canonical}>
+  <section class="r-section sr-page" aria-labelledby="srTitle">
+    <div class="r-wrap">
+      <header class="sr-head">
+        <div>
+          <p class="r-kicker">IRACING SERIES DIRECTORY · SEMANA {buildWeek}</p>
+          <h1 id="srTitle" class="r-h1">Series Oficiales iRacing</h1>
+          <p class="sr-sub">
+            Las {seriesList.length} series oficiales de la temporada 2026 S4 con su logotipo oficial, licencia requerida y circuito activo esta semana.
+          </p>
+        </div>
+        <div class="sr-actions">
+          <a href="/calendar/" class="sr-btn">Calendario 12 Semanas</a>
+          <a href="/calendar/special-events/" class="sr-btn sr-btn--accent">Special Events →</a>
+        </div>
+      </header>
+
+      <div class="sr-bar">
+        <div class="sr-pills" id="srCatPills">
+          <button type="button" class="sr-pill is-on" data-cat="ALL">Todas ({seriesList.length})</button>
+          {catOrder.map((c) => (
+            <button type="button" class="sr-pill" data-cat={c}>{CAT_LABELS[c]}</button>
+          ))}
+        </div>
+        <div class="sr-right">
+          <input id="srSearch" type="search" placeholder="Buscar serie o circuito…" autocomplete="off" class="sr-search" />
+          <span id="srCount" class="sr-count">{seriesList.length} series</span>
+        </div>
+      </div>
+
+      <div id="srGrid" class="sr-grid">
+        {seriesList.map((sr) => (
+          <article class="sr-card" data-cat={sr.category} data-search={`${sr.name} ${sr.currentTrack} ${sr.license}`.toLowerCase()}>
+            <div class="sr-card__media">
+              <img src={sr.logo} alt={sr.name} loading="lazy" decoding="async" />
+              <span class="sr-lic" style={`border-color:${sr.color}66;color:${sr.color};background:${sr.color}1a`}>{sr.license}</span>
+            </div>
+            <div class="sr-card__body">
+              <span class="sr-cat">{CAT_LABELS[sr.category] || sr.category}</span>
+              <h2 class="sr-card__title">{sr.name}</h2>
+              <p class="sr-track">W{String(buildWeek).padStart(2, "0")}: {sr.currentTrack}</p>
+              <div class="sr-card__foot">
+                <span>{sr.carsCount} {sr.carsCount === 1 ? "coche" : "coches"}</span>
+                <a href={`/calendar/?q=${encodeURIComponent(sr.name)}`} class="sr-link">Ver calendario →</a>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .sr-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .sr-sub {
+      margin-top: 0.45rem;
+      color: var(--r-muted, #94a3b8);
+      max-width: 60ch;
+      font-size: 0.92rem;
+    }
+    .sr-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+    .sr-btn {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.55rem 0.9rem;
+      border-radius: 0.65rem;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.04);
+      font-family: var(--font-mono, monospace);
+      font-size: 0.78rem;
+      color: inherit;
+      text-decoration: none;
+    }
+    .sr-btn--accent {
+      background: #10b981;
+      border-color: #10b981;
+      color: #052e16;
+      font-weight: 700;
+    }
+    .sr-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.85rem;
+      margin-bottom: 1.25rem;
+    }
+    .sr-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .sr-pill {
+      padding: 0.4rem 0.8rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.03);
+      color: #cbd5e1;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .sr-pill.is-on {
+      background: #10b981;
+      border-color: #10b981;
+      color: #052e16;
+      font-weight: 700;
+    }
+    .sr-right { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+    .sr-search {
+      padding: 0.48rem 0.85rem;
+      border-radius: 0.6rem;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(15, 23, 42, 0.75);
+      color: #f8fafc;
+      font-size: 0.82rem;
+      min-width: 220px;
+    }
+    .sr-count { font-family: var(--font-mono, monospace); font-size: 0.78rem; color: #94a3b8; }
+    .sr-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(265px, 1fr));
+      gap: 1rem;
+    }
+    .sr-card {
+      border-radius: 0.9rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(15, 23, 42, 0.65);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .sr-card__media {
+      position: relative;
+      height: 148px;
+      background: #020617;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .sr-card__media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .sr-lic {
+      position: absolute;
+      top: 0.55rem;
+      right: 0.55rem;
+      font-family: var(--font-mono, monospace);
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 0.16rem 0.5rem;
+      border-radius: 999px;
+      border: 1px solid;
+      backdrop-filter: blur(6px);
+    }
+    .sr-card__body {
+      padding: 0.9rem;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      gap: 0.35rem;
+    }
+    .sr-cat {
+      font-family: var(--font-mono, monospace);
+      font-size: 0.66rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #34d399;
+      font-weight: 700;
+    }
+    .sr-card__title {
+      margin: 0;
+      font-size: 0.96rem;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+    .sr-track {
+      margin: 0;
+      font-size: 0.78rem;
+      color: #94a3b8;
+    }
+    .sr-card__foot {
+      margin-top: auto;
+      padding-top: 0.6rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono, monospace);
+      font-size: 0.74rem;
+      color: #94a3b8;
+    }
+    .sr-link { color: #34d399; text-decoration: none; font-weight: 700; }
+    .sr-link:hover { text-decoration: underline; }
+  </style>
+
+  <script>
+    (() => {
+      const cards = Array.from(document.querySelectorAll<HTMLElement>("#srGrid .sr-card"));
+      const pills = Array.from(document.querySelectorAll<HTMLButtonElement>("#srCatPills .sr-pill"));
+      const searchEl = document.getElementById("srSearch") as HTMLInputElement | null;
+      const countEl = document.getElementById("srCount");
+      let activeCat = "ALL";
+      let query = "";
+
+      function render() {
+        let visible = 0;
+        for (const c of cards) {
+          const okCat = activeCat === "ALL" || c.dataset.cat === activeCat;
+          const okQ = !query || (c.dataset.search || "").includes(query);
+          const show = okCat && okQ;
+          c.hidden = !show;
+          if (show) visible++;
+        }
+        if (countEl) countEl.textContent = `${visible} series`;
+      }
+
+      for (const p of pills) {
+        p.addEventListener("click", () => {
+          activeCat = p.dataset.cat || "ALL";
+          for (const x of pills) x.classList.toggle("is-on", x === p);
+          render();
+        });
+      }
+      searchEl?.addEventListener("input", () => {
+        query = searchEl.value.trim().toLowerCase();
+        render();
+      });
+    })();
+  </script>
+</Layout>
