@@ -23,11 +23,11 @@ function setHtmlIfChanged(container: HTMLElement, html: string): void {
 }
 
 const LICENSE_BADGE_STYLES: Record<string, { bg: string; border: string; text: string }> = {
-  A: { bg: "#2563eb", border: "#60a5fa", text: "#ffffff" },
-  B: { bg: "#16a34a", border: "#4ade80", text: "#ffffff" },
-  C: { bg: "#eab308", border: "#fde047", text: "#09090b" },
-  D: { bg: "#ea580c", border: "#fb923c", text: "#ffffff" },
-  R: { bg: "#dc2626", border: "#f87171", text: "#ffffff" },
+  A: { bg: "#1d4ed8", border: "#3b82f6", text: "#ffffff" },
+  B: { bg: "#15803d", border: "#22c55e", text: "#ffffff" },
+  C: { bg: "#b45309", border: "#f59e0b", text: "#ffffff" },
+  D: { bg: "#c2410c", border: "#fb923c", text: "#ffffff" },
+  R: { bg: "#b91c1c", border: "#f87171", text: "#ffffff" },
   P: { bg: "#09090b", border: "rgba(255,255,255,0.65)", text: "#ffffff" },
   W: { bg: "#09090b", border: "rgba(255,255,255,0.65)", text: "#ffffff" },
 };
