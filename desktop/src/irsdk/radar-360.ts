@@ -45,50 +45,33 @@ export class Radar360Engine {
       : "";
 
     container.innerHTML = `
-      <div class="p-2.5 rounded-xl bg-black/85 border border-white/10 text-white font-mono select-none" style="will-change: transform;">
-        <!-- Header Spotter Status Banner -->
-        <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-white/10 text-[10px] uppercase font-bold tracking-wider">
-          <span class="text-r-muted">Radar 360° / Spotter</span>
-          <span class="px-2 py-0.5 rounded text-[9px] font-black tracking-tight"
-            style="background-color: ${spotter.alertColor}25; color: ${spotter.alertColor}; border: 1px solid ${spotter.alertColor}80">
-            ${spotter.label}
-          </span>
+      <div class="flex flex-col items-center gap-1 text-white font-mono select-none" style="will-change: transform;">
+        <div class="relative w-28 h-14 flex items-center justify-center">
+          <div class="absolute inset-0 rounded-lg border border-white/10 bg-black/50 pointer-events-none"></div>
+
+          ${aheadDist ? `<span class="absolute top-0.5 inset-x-0 text-center text-[8px] text-amber-300 font-bold tabular-nums leading-none">${aheadDist}</span>` : ""}
+
+          <!-- Left Proximity Bar -->
+          <div class="absolute left-1 inset-y-1.5 w-3 rounded border flex items-center justify-center transition-colors ${leftPulse}">
+            ${hasLeft ? `<span class="text-[7px] font-black text-black">◀</span>` : ""}
+          </div>
+
+          <!-- Minimalist Center Car -->
+          <div class="relative z-10 w-5 h-9 rounded bg-emerald-500/25 border border-emerald-400/80 flex items-center justify-center">
+            <div class="w-1 h-1 rounded-full bg-emerald-300"></div>
+          </div>
+
+          <!-- Right Proximity Bar -->
+          <div class="absolute right-1 inset-y-1.5 w-3 rounded border flex items-center justify-center transition-colors ${rightPulse}">
+            ${hasRight ? `<span class="text-[7px] font-black text-black">▶</span>` : ""}
+          </div>
+
+          ${behindDist ? `<span class="absolute bottom-0.5 inset-x-0 text-center text-[8px] text-sky-300 font-bold tabular-nums leading-none">${behindDist}</span>` : ""}
         </div>
-
-        <!-- Radar Graphical Field -->
-        <div class="relative w-48 h-32 mx-auto flex items-center justify-center">
-          <!-- Concentric Oval Distance Rings -->
-          <div class="absolute inset-0 rounded-[50%] border border-white/5 pointer-events-none"></div>
-          <div class="absolute inset-3 rounded-[50%] border border-white/10 pointer-events-none"></div>
-          <div class="absolute inset-6 rounded-[50%] border border-white/15 pointer-events-none"></div>
-
-          <!-- Ahead Zone -->
-          <div class="absolute top-1 inset-x-0 text-center">
-            <span class="text-[9px] text-amber-300 font-bold tabular-nums">${aheadDist}</span>
-          </div>
-
-          <!-- Left Spotter Wing Indicator -->
-          <div class="absolute left-1 inset-y-6 w-5 rounded-lg border flex items-center justify-center transition-colors ${leftPulse}">
-            <span class="text-[8px] font-black text-black">IZQ</span>
-          </div>
-
-          <!-- Center Car (Player) -->
-          <div class="relative z-10 w-9 h-14 rounded-md bg-emerald-500/20 border-2 border-emerald-400 flex flex-col items-center justify-between p-1 shadow-[0_0_12px_rgba(16,185,129,0.3)]">
-            <div class="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
-            <span class="text-[8px] font-black text-emerald-300">TÚ</span>
-            <div class="w-4 h-0.5 bg-emerald-400/50"></div>
-          </div>
-
-          <!-- Right Spotter Wing Indicator -->
-          <div class="absolute right-1 inset-y-6 w-5 rounded-lg border flex items-center justify-center transition-colors ${rightPulse}">
-            <span class="text-[8px] font-black text-black">DER</span>
-          </div>
-
-          <!-- Behind Zone -->
-          <div class="absolute bottom-1 inset-x-0 text-center">
-            <span class="text-[9px] text-sky-300 font-bold tabular-nums">${behindDist}</span>
-          </div>
-        </div>
+        <span class="px-1.5 py-[1px] rounded text-[8px] font-black tracking-wider uppercase leading-none"
+          style="background-color: ${spotter.alertColor}22; color: ${spotter.alertColor}; border: 1px solid ${spotter.alertColor}66">
+          ${spotter.label}
+        </span>
       </div>
     `;
   }

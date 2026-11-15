@@ -1735,20 +1735,27 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
     try {
       const raw = localStorage.getItem("mmt_float_hud_positions");
       if (!raw || !floatHost) return;
-      const pos = JSON.parse(raw) as Record<string, { left: string; top: string }>;
+      const pos = JSON.parse(raw) as Record<string, { left?: string; top?: string; scale?: number }>;
       const vw = Math.max(320, window.innerWidth);
       const vh = Math.max(240, window.innerHeight);
       for (const [id, coord] of Object.entries(pos)) {
         const el = floatHost.querySelector<HTMLElement>(`[data-widget="${id}"]`);
         if (el) {
-          el.style.position = "absolute";
-          const rawLeft = Number.parseFloat(coord.left);
-          const rawTop = Number.parseFloat(coord.top);
-          const maxLeft = Math.max(8, vw - (el.offsetWidth || 220) - 8);
-          const maxTop = Math.max(8, vh - (el.offsetHeight || 120) - 8);
-          el.style.left = Number.isFinite(rawLeft) ? `${Math.max(8, Math.min(maxLeft, rawLeft))}px` : coord.left;
-          el.style.top = Number.isFinite(rawTop) ? `${Math.max(8, Math.min(maxTop, rawTop))}px` : coord.top;
-          el.style.transform = "none";
+          if (coord.left && coord.top) {
+            el.style.position = "absolute";
+            const rawLeft = Number.parseFloat(coord.left);
+            const rawTop = Number.parseFloat(coord.top);
+            const maxLeft = Math.max(8, vw - (el.offsetWidth || 220) - 8);
+            const maxTop = Math.max(8, vh - (el.offsetHeight || 120) - 8);
+            el.style.left = Number.isFinite(rawLeft) ? `${Math.max(8, Math.min(maxLeft, rawLeft))}px` : coord.left;
+            el.style.top = Number.isFinite(rawTop) ? `${Math.max(8, Math.min(maxTop, rawTop))}px` : coord.top;
+            el.style.transform = "none";
+          }
+          if (typeof coord.scale === "number" && Number.isFinite(coord.scale)) {
+            const clamped = Math.max(0.6, Math.min(1.6, coord.scale));
+            el.dataset.scale = String(clamped);
+            (el.style as CSSStyleDeclaration & { zoom?: string }).zoom = String(clamped);
+          }
         }
       }
     } catch {}
@@ -1757,11 +1764,16 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
 
   const saveFloatPositions = () => {
     if (!floatHost) return;
-    const positions: Record<string, { left: string; top: string }> = {};
+    const positions: Record<string, { left?: string; top?: string; scale?: number }> = {};
     floatHost.querySelectorAll<HTMLElement>(".mmt-float-widget").forEach((w) => {
       const id = w.dataset.widget;
-      if (id && w.style.left && w.style.top) {
-        positions[id] = { left: w.style.left, top: w.style.top };
+      if (!id) return;
+      const scaleVal = w.dataset.scale ? Number.parseFloat(w.dataset.scale) : undefined;
+      if ((w.style.left && w.style.top) || (scaleVal && Number.isFinite(scaleVal))) {
+        positions[id] = {
+          ...(w.style.left && w.style.top ? { left: w.style.left, top: w.style.top } : {}),
+          ...(scaleVal && Number.isFinite(scaleVal) ? { scale: scaleVal } : {}),
+        };
       }
     });
     localStorage.setItem("mmt_float_hud_positions", JSON.stringify(positions));
@@ -1770,12 +1782,75 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
   const resetFloatPositions = () => {
     if (!floatHost) return;
     localStorage.removeItem("mmt_float_hud_positions");
+    localStorage.removeItem("mmt-hud-disabled-widgets");
     floatHost.querySelectorAll<HTMLElement>(".mmt-float-widget").forEach((w) => {
       w.style.position = "";
       w.style.left = "";
       w.style.top = "";
       w.style.transform = "";
+      delete w.dataset.scale;
+      (w.style as CSSStyleDeclaration & { zoom?: string }).zoom = "";
+      w.hidden = false;
     });
+    syncWidgetToggleBar();
+  };
+
+  const toggleBar = document.getElementById("floatWidgetToggleBar");
+  const syncWidgetToggleBar = () => {
+    if (!toggleBar) return;
+    const disabled = loadDisabledWidgets();
+    toggleBar.querySelectorAll<HTMLButtonElement>("[data-toggle-widget]").forEach((btn) => {
+      const id = btn.dataset.toggleWidget || "";
+      const active = !disabled.has(id);
+      btn.className = active
+        ? "px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent text-r-ink transition"
+        : "px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-white/10 text-white/45 line-through transition";
+    });
+  };
+
+  toggleBar?.querySelectorAll<HTMLButtonElement>("[data-toggle-widget]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.toggleWidget || "";
+      if (!id) return;
+      const disabled = loadDisabledWidgets();
+      if (disabled.has(id)) disabled.delete(id);
+      else disabled.add(id);
+      saveDisabledWidgets(disabled);
+      const target = floatHost?.querySelector<HTMLElement>(`[data-widget="${id}"]`);
+      if (target) target.hidden = disabled.has(id);
+      syncWidgetToggleBar();
+    });
+  });
+
+  const applyEditModeUi = (nextEdit: boolean) => {
+    floatEditMode = nextEdit;
+    void setOverlayEdit(floatEditMode);
+    if (btnEdit) {
+      btnEdit.className = floatEditMode
+        ? "px-2.5 py-1.5 rounded-xl bg-r-accent text-r-ink font-mono text-[10px] font-bold uppercase transition flex items-center gap-1 shadow-md"
+        : "px-2.5 py-1.5 rounded-xl bg-black/85 border border-white/15 text-r-muted hover:text-r-accent font-mono text-[10px] font-bold uppercase transition flex items-center gap-1 shadow-md";
+      btnEdit.innerHTML = floatEditMode ? "<span>✓ Fijar HUD</span>" : "<span>✥ Mover HUD</span>";
+    }
+    if (toggleBar) {
+      toggleBar.hidden = !floatEditMode;
+      if (floatEditMode) syncWidgetToggleBar();
+    }
+    if (floatHost) {
+      const disabled = loadDisabledWidgets();
+      floatHost.querySelectorAll<HTMLElement>(".mmt-float-widget").forEach((w) => {
+        const wid = w.dataset.widget || "";
+        const closeBtn = w.querySelector<HTMLElement>(".mmt-widget-close-btn");
+        if (floatEditMode) {
+          w.classList.add("ring-2", "ring-r-accent", "cursor-move", "relative");
+          if (wid === "radar" && !disabled.has("radar")) w.hidden = false;
+          if (closeBtn) closeBtn.hidden = false;
+        } else {
+          w.classList.remove("ring-2", "ring-r-accent", "cursor-move");
+          if (closeBtn) closeBtn.hidden = true;
+          if (wid && disabled.has(wid)) w.hidden = true;
+        }
+      });
+    }
   };
 
   restoreFloatPositions();
@@ -1790,28 +1865,52 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
   });
 
   btnEdit?.addEventListener("click", () => {
-    floatEditMode = !floatEditMode;
-    void setOverlayEdit(floatEditMode);
-    if (btnEdit) {
-      btnEdit.className = floatEditMode
-        ? "px-2.5 py-1.5 rounded-xl bg-r-accent text-r-ink font-mono text-[10px] font-bold uppercase transition flex items-center gap-1 shadow-md"
-        : "px-2.5 py-1.5 rounded-xl bg-black/85 border border-white/15 text-r-muted hover:text-r-accent font-mono text-[10px] font-bold uppercase transition flex items-center gap-1 shadow-md";
-      btnEdit.innerHTML = floatEditMode ? "<span>✓ Fijar HUD</span>" : "<span>✥ Mover HUD</span>";
-    }
+    applyEditModeUi(!floatEditMode);
+  });
 
-    if (floatHost) {
-      floatHost.querySelectorAll<HTMLElement>(".mmt-float-widget").forEach((w) => {
-        if (floatEditMode) {
-          w.classList.add("ring-2", "ring-r-accent", "cursor-move");
-        } else {
-          w.classList.remove("ring-2", "ring-r-accent", "cursor-move");
-        }
-      });
+  window.addEventListener("keydown", (e: KeyboardEvent) => {
+    if (e.key === "F10") {
+      applyEditModeUi(!floatEditMode);
+    } else if (e.key === "Escape" && floatEditMode) {
+      applyEditModeUi(false);
     }
   });
 
   if (floatHost) {
     floatHost.querySelectorAll<HTMLElement>(".mmt-float-widget").forEach((w) => {
+      // Inject individual close (✕) button visible only in Mover HUD mode
+      const wid = w.dataset.widget || "";
+      if (wid && !w.querySelector(".mmt-widget-close-btn")) {
+        const closeBtn = document.createElement("button");
+        closeBtn.type = "button";
+        closeBtn.hidden = true;
+        closeBtn.title = "Ocultar este widget";
+        closeBtn.textContent = "✕";
+        closeBtn.className = "mmt-widget-close-btn absolute top-1 right-1 z-50 w-5 h-5 rounded-full bg-rose-600/90 hover:bg-rose-500 text-white text-[10px] font-bold leading-none flex items-center justify-center shadow cursor-pointer";
+        closeBtn.addEventListener("mousedown", (ev) => ev.stopPropagation());
+        closeBtn.addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          const disabled = loadDisabledWidgets();
+          disabled.add(wid);
+          saveDisabledWidgets(disabled);
+          w.hidden = true;
+          syncWidgetToggleBar();
+        });
+        w.appendChild(closeBtn);
+      }
+
+      // Mouse wheel to resize individual widget in Mover HUD mode
+      w.addEventListener("wheel", (e) => {
+        if (!floatEditMode) return;
+        e.preventDefault();
+        const current = w.dataset.scale ? Number.parseFloat(w.dataset.scale) : 1;
+        const delta = e.deltaY < 0 ? 0.06 : -0.06;
+        const next = Math.max(0.6, Math.min(1.6, Number((current + delta).toFixed(2))));
+        w.dataset.scale = String(next);
+        (w.style as CSSStyleDeclaration & { zoom?: string }).zoom = String(next);
+        saveFloatPositions();
+      }, { passive: false });
+
       let startX = 0;
       let startY = 0;
       let initLeft = 0;
@@ -1852,6 +1951,7 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
       });
     });
   }
+  syncWidgetToggleBar();
 }
 
 function startDemoOverlayLoop(): void {
@@ -2230,6 +2330,9 @@ function updateHUDDisplay(sample: LiveSample): void {
       vis.applyElementVisibility(document.getElementById("floatWaveformCard"), !disabledWidgets.has("waveform") && vis.evaluateVisibility("waveform", visCtx));
       vis.applyElementVisibility(document.getElementById("floatClusterCard"), !disabledWidgets.has("cluster"));
       vis.applyElementVisibility(document.getElementById("floatShiftLightsRow"), !disabledWidgets.has("lights"));
+      const carProximity = Number((frame as any).carLeftRight ?? 0);
+      const radarVisible = !disabledWidgets.has("radar") && (floatEditMode || carProximity > 1);
+      vis.applyElementVisibility(document.getElementById("floatRadarCard"), radarVisible);
 
       // Auto-hide top edit bar when on track (OnPitRoad === false)
       if (!floatEditMode) {
@@ -2425,7 +2528,7 @@ function drawInputsCanvas(canvas: HTMLCanvasElement, sample: LiveSample): void {
 
   const steerDeg = sample.steering * 57.2958;
   const steerNorm = Math.max(-1, Math.min(1, steerDeg / 90));
-  const pipX = stMid + steerNorm * (stW / 2 - 5);
+  const pipX = stMid - steerNorm * (stW / 2 - 5);
   ctx.fillStyle = "#38bdf8";
   ctx.fillRect(pipX - 3, barY + 16, 6, 20);
 

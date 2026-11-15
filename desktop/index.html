@@ -1573,6 +1573,22 @@
         </div>
       </div>
 
+      <!-- Widget visibility & resize bar (shown when Mover HUD is active) -->
+      <div id="floatWidgetToggleBar" hidden class="mt-2 flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-black/92 border border-white/15 pointer-events-auto shadow-xl">
+        <div class="flex flex-wrap items-center gap-1.5">
+          <span class="text-[9px] font-mono uppercase text-r-muted mr-1">Overlays:</span>
+          <button type="button" data-toggle-widget="standings" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent text-r-ink transition">Standings</button>
+          <button type="button" data-toggle-widget="relative" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent text-r-ink transition">Relative</button>
+          <button type="button" data-toggle-widget="fuel" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent text-r-ink transition">Fuel</button>
+          <button type="button" data-toggle-widget="radar" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent text-r-ink transition">Radar</button>
+          <button type="button" data-toggle-widget="cluster" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent text-r-ink transition">Marcha/Vel</button>
+          <button type="button" data-toggle-widget="waveform" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent text-r-ink transition">Gráfica</button>
+          <button type="button" data-toggle-widget="inputs" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent text-r-ink transition">Pedales/Vol</button>
+          <button type="button" data-toggle-widget="lights" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent text-r-ink transition">Luces/Bandera</button>
+        </div>
+        <span class="text-[9px] font-mono text-white/55">Arrastra para mover · Rueda ratón = Tamaño · ✕ = Quitar</span>
+      </div>
+
       <!-- Top zone kept 100% CLEAR for iRacing Virtual Mirror & Session Alerts -->
       <div class="h-24 pointer-events-none"></div>
 
@@ -1584,9 +1600,9 @@
           <div id="ovPitboxFloat" class="mt-1.5 overflow-hidden"></div>
         </div>
 
-        <!-- Center of screen: 360° Proximity Radar positioned low-center in peripheral vision (keeps apex clear) -->
+        <!-- Center of screen: Minimalist 360° Proximity Radar (auto-hides when clear) -->
         <div class="pointer-events-none flex-1 self-end flex justify-center pb-2">
-          <div id="floatRadarCard" class="mmt-float-widget w-48 rounded-md border border-white/10 bg-[#0a0c10]/82 text-white p-1.5 text-[10px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.55)] pointer-events-auto overflow-hidden" data-widget="radar">
+          <div id="floatRadarCard" class="mmt-float-widget w-32 rounded-lg border border-white/10 bg-[#0a0c10]/80 text-white p-1.5 text-[10px] font-mono tabular-nums shadow-[0_4px_16px_rgba(0,0,0,0.5)] pointer-events-auto overflow-hidden" data-widget="radar">
             <div id="ovRadarFloat"></div>
           </div>
         </div>

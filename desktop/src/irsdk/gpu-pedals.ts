@@ -179,7 +179,7 @@ export class GpuPedalsEngine {
     refs.brkBar.style.transform = `scaleY(${p.brakePct / 100}) translate3d(0,0,0)`;
     refs.brkPeak.style.bottom = `${p.brakePeakPct}%`;
     refs.thrBar.style.transform = `scaleY(${p.throttlePct / 100}) translate3d(0,0,0)`;
-    refs.wheelSvg.style.transform = `rotate(${p.steerDeg.toFixed(1)}deg) translate3d(0,0,0)`;
+    refs.wheelSvg.style.transform = `rotate(${(-p.steerDeg).toFixed(1)}deg) translate3d(0,0,0)`;
 
     refs.cltPct.textContent = String(p.clutchPct);
     refs.brkPct.textContent = String(p.brakePct);
