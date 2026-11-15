@@ -98,6 +98,7 @@ pub fn run() {
                 if window.label() == "main" {
                     api.prevent_close();
                     let _ = window.hide();
+                    trim_working_set();
                 }
             }
             WindowEvent::DragDrop(tauri::DragDropEvent::Drop { paths, .. }) => {
@@ -153,9 +154,11 @@ fn install_tray(app: &AppHandle) -> tauri::Result<()> {
     let menu = Menu::with_items(
         app,
         &[
-            &MenuItem::with_id(app, "sync", "Sincronizar ahora", true, None::<&str>)?,
-            &MenuItem::with_id(app, "open", "Abrir", true, None::<&str>)?,
-            &MenuItem::with_id(app, "quit", "Salir", true, None::<&str>)?,
+            &MenuItem::with_id(app, "open", "Abrir MMT Sync", true, None::<&str>)?,
+            &MenuItem::with_id(app, "toggle_overlays", "Activar/Pausar Overlays", true, None::<&str>)?,
+            &MenuItem::with_id(app, "edit_hud", "Modo Edición HUD", true, None::<&str>)?,
+            &MenuItem::with_id(app, "sync", "Sincronizar setups", true, None::<&str>)?,
+            &MenuItem::with_id(app, "quit", "Salir completamente", true, None::<&str>)?,
         ],
     )?;
     let icon = tauri::image::Image::from_bytes(include_bytes!("../icons/32x32.png"))?;
@@ -167,9 +170,26 @@ fn install_tray(app: &AppHandle) -> tauri::Result<()> {
             "sync" => {
                 let app = app.clone();
                 tauri::async_runtime::spawn(async move {
-                    let _ = syncer::synchronize(&app).await;
+                    if let Ok(report) = syncer::synchronize(&app).await {
+                        if report.downloaded > 0 {
+                            let _ = app.emit_to("overlay", "mmt-setup-updated", report.downloaded);
+                        }
+                    }
                     let _ = app.emit("mmt-refresh", ());
                 });
+            }
+            "toggle_overlays" => {
+                let app_clone = app.clone();
+                let show = app.get_webview_window("overlay").is_none();
+                tauri::async_runtime::spawn(async move {
+                    let _ = toggle_overlay(app_clone, show).await;
+                });
+            }
+            "edit_hud" => {
+                if let Some(window) = app.get_webview_window("overlay") {
+                    let next = !OVERLAY_EDITING.load(std::sync::atomic::Ordering::Relaxed);
+                    apply_overlay_edit_state(app, &window, next);
+                }
             }
             "open" => show_main(app),
             "quit" => app.exit(0),
@@ -435,6 +455,9 @@ async fn logout(state: State<'_, AppState>) -> Result<(), String> {
 #[tauri::command]
 async fn sync_now(app: AppHandle) -> Result<syncer::SyncReport, String> {
     let report = syncer::synchronize(&app).await?;
+    if report.downloaded > 0 {
+        let _ = app.emit_to("overlay", "mmt-setup-updated", report.downloaded);
+    }
     let _ = app.emit("mmt-refresh", ());
     Ok(report)
 }
@@ -588,6 +611,20 @@ fn detect_hardware() -> Result<hardware::HardwareReport, String> {
     Ok(hardware::detect())
 }
 
+const LOW_MEM_WEBVIEW_ARGS: &str = "--disable-features=msWebOOUI,msPdfOOUI,Translate,BackForwardCache --disable-background-networking --disable-default-apps --disable-extensions --disable-sync --renderer-process-limit=1 --js-flags=--max-old-space-size=64";
+
+#[cfg(windows)]
+fn trim_working_set() {
+    use windows_sys::Win32::System::ProcessStatus::K32EmptyWorkingSet;
+    use windows_sys::Win32::System::Threading::GetCurrentProcess;
+    unsafe {
+        let _ = K32EmptyWorkingSet(GetCurrentProcess());
+    }
+}
+
+#[cfg(not(windows))]
+fn trim_working_set() {}
+
 static OVERLAY_EDITING: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
 fn apply_overlay_edit_state(app: &AppHandle, window: &tauri::WebviewWindow, editing: bool) {
@@ -606,30 +643,45 @@ fn apply_overlay_edit_state(app: &AppHandle, window: &tauri::WebviewWindow, edit
 
 #[cfg(windows)]
 fn spawn_overlay_hotkeys(app: AppHandle) {
-    use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_F10, VK_F9};
+    use windows_sys::Win32::UI::Input::KeyboardAndMouse::{
+        GetAsyncKeyState, VK_F10, VK_F9, VK_MENU,
+    };
     std::thread::spawn(move || {
         let mut prev_f9 = false;
         let mut prev_f10 = false;
+        let mut prev_alt_e = false;
+        let mut prev_alt_h = false;
+        let mut prev_alt_r = false;
         loop {
             std::thread::sleep(std::time::Duration::from_millis(60));
             let f9_down = unsafe { (GetAsyncKeyState(VK_F9 as i32) as u16 & 0x8000) != 0 };
             let f10_down = unsafe { (GetAsyncKeyState(VK_F10 as i32) as u16 & 0x8000) != 0 };
+            let alt_down = unsafe { (GetAsyncKeyState(VK_MENU as i32) as u16 & 0x8000) != 0 };
+            let alt_e = alt_down && unsafe { (GetAsyncKeyState(b'E' as i32) as u16 & 0x8000) != 0 };
+            let alt_h = alt_down && unsafe { (GetAsyncKeyState(b'H' as i32) as u16 & 0x8000) != 0 };
+            let alt_r = alt_down && unsafe { (GetAsyncKeyState(b'R' as i32) as u16 & 0x8000) != 0 };
 
-            if f9_down && !prev_f9 {
+            if (f9_down && !prev_f9) || (alt_e && !prev_alt_e) {
                 if let Some(window) = app.get_webview_window("overlay") {
                     let next = !OVERLAY_EDITING.load(std::sync::atomic::Ordering::Relaxed);
                     apply_overlay_edit_state(&app, &window, next);
                 }
             }
-            if f10_down && !prev_f10 {
+            if (f10_down && !prev_f10) || (alt_h && !prev_alt_h) {
                 let app_clone = app.clone();
                 let show = app.get_webview_window("overlay").is_none();
                 tauri::async_runtime::spawn(async move {
                     let _ = toggle_overlay(app_clone, show).await;
                 });
             }
+            if alt_r && !prev_alt_r {
+                let _ = app.emit_to("overlay", "mmt-reset-delta", ());
+            }
             prev_f9 = f9_down;
             prev_f10 = f10_down;
+            prev_alt_e = alt_e;
+            prev_alt_h = alt_h;
+            prev_alt_r = alt_r;
         }
     });
 }
@@ -663,7 +715,8 @@ pub(crate) async fn toggle_overlay(app: AppHandle, show: bool) -> Result<bool, S
         .visible(false)
         .shadow(false)
         .resizable(true)
-        .maximized(true);
+        .maximized(true)
+        .additional_browser_args(LOW_MEM_WEBVIEW_ARGS);
         let window = builder
             .build()
             .map_err(|e| format!("No se pudo abrir el overlay: {e}"))?;
@@ -677,6 +730,7 @@ pub(crate) async fn toggle_overlay(app: AppHandle, show: bool) -> Result<bool, S
         if let Some(window) = app.get_webview_window("overlay") {
             let _ = window.close();
         }
+        trim_working_set();
         let _ = app.emit_to("main", "mmt-overlay-visibility", false);
         Ok(false)
     }

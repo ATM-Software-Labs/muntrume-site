@@ -2475,11 +2475,29 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
 
   if (typeof window !== "undefined" && window.location.search.includes("overlay=1")) {
     void import("@tauri-apps/api/event")
-      .then(({ listen }) =>
-        listen<boolean>("mmt-overlay-edit", (ev) => {
+      .then(async ({ listen }) => {
+        await listen<boolean>("mmt-overlay-edit", (ev) => {
           applyEditModeUi(Boolean(ev.payload), true);
-        }),
-      )
+        });
+        await listen<number>("mmt-setup-updated", (ev) => {
+          const count = Number(ev.payload || 1);
+          const host = document.getElementById("floatingOverlayHost");
+          if (!host) return;
+          const prev = document.getElementById("mmtOverlaySetupToast");
+          if (prev) prev.remove();
+          const toast = document.createElement("div");
+          toast.id = "mmtOverlaySetupToast";
+          toast.className = "fixed top-3 left-1/2 -translate-x-1/2 z-50 px-3 py-1 rounded bg-[#0a0c10]/85 border border-emerald-400/50 text-emerald-300 font-mono text-[11px] font-bold pointer-events-none shadow-lg";
+          toast.textContent = count > 1
+            ? `${count} setups actualizados listos en el garaje de iRacing`
+            : "Setup actualizado listo en el garaje de iRacing";
+          host.appendChild(toast);
+          setTimeout(() => toast.remove(), 4000);
+        });
+        await listen("mmt-reset-delta", () => {
+          liveWaveformHistory.length = 0;
+        });
+      })
       .catch(() => {});
   }
 

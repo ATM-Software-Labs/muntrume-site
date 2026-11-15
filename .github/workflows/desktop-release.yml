@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
 
       - name: Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
@@ -64,6 +66,64 @@ jobs:
             echo "name=desktop-v${ver}" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Generate Release Notes
+        id: notes
+        shell: bash
+        run: |
+          TAG="${{ steps.tag.outputs.name }}"
+          VER="${TAG#desktop-v}"
+          node -e '
+            const fs = require("fs");
+            const { execSync } = require("child_process");
+            const tag = process.argv[1];
+            const ver = process.argv[2];
+            let body = "";
+
+            if (fs.existsSync("CHANGELOG.md")) {
+              const ch = fs.readFileSync("CHANGELOG.md", "utf8");
+              const re = new RegExp(`^##\\s+\\[?(?:desktop-v|v)?${ver.replace(/\./g, "\\.")}\\]?[^\\n]*\\n([\\s\\S]*?)(?=^##\\s|$)`, "m");
+              const m = ch.match(re);
+              if (m && m[1].trim()) body = m[1].trim();
+            }
+
+            if (!body) {
+              let prev = "";
+              try {
+                prev = execSync("git describe --tags --abbrev=0 HEAD^ 2>/dev/null || true", { encoding: "utf8" }).trim();
+              } catch {}
+              const range = prev ? `${prev}..HEAD` : "-n 15 HEAD";
+              let log = "";
+              try {
+                log = execSync(`git log ${range} --pretty=format:"%s"`, { encoding: "utf8" }).trim();
+              } catch {}
+              const lines = log.split(/\r?\n/).map((s) => s.trim()).filter(Boolean)
+                .filter((s) => !/^chore:\s*release/i.test(s));
+
+              const feats = [];
+              const perfs = [];
+              const fixes = [];
+              const others = [];
+              for (const msg of lines) {
+                const clean = msg.replace(/^[a-z]+(\([^)]+\))?:\s*/i, "");
+                if (/^feat/i.test(msg)) feats.push(`- ${clean}`);
+                else if (/^perf/i.test(msg)) perfs.push(`- ${clean}`);
+                else if (/^fix/i.test(msg)) fixes.push(`- ${clean}`);
+                else others.push(`- ${clean}`);
+              }
+              const sections = [];
+              if (feats.length) sections.push("### ✨ Novedades\n" + feats.join("\n"));
+              if (perfs.length) sections.push("### ⚡ Rendimiento\n" + perfs.join("\n"));
+              if (fixes.length) sections.push("### 🐛 Correcciones\n" + fixes.join("\n"));
+              if (others.length) sections.push("### 🔧 Otros cambios\n" + others.join("\n"));
+              body = sections.join("\n\n") || "- Mejoras de estabilidad y rendimiento.";
+            }
+
+            const footer = "\n\n---\nInstalador de MMT Sync para Windows 10 y 11.\nEl ejecutable no lleva certificado de código: SmartScreen puede mostrar «editor desconocido».";
+            const full = body + footer;
+            const out = process.env.GITHUB_OUTPUT;
+            fs.appendFileSync(out, "body<<__MMT_NOTES_EOF__\n" + full + "\n__MMT_NOTES_EOF__\n");
+          ' "$TAG" "$VER"
+
       - name: Build and publish
         uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5 # v0
         env:
@@ -74,9 +134,7 @@ jobs:
           projectPath: desktop
           tagName: ${{ steps.tag.outputs.name }}
           releaseName: MMT Sync ${{ steps.tag.outputs.name }}
-          releaseBody: |
-            Instalador de MMT Sync para Windows 10 y 11.
-            El ejecutable no lleva certificado de código: SmartScreen puede mostrar «editor desconocido».
+          releaseBody: ${{ steps.notes.outputs.body }}
           releaseDraft: false
           prerelease: false
           args: --bundles nsis,msi --config src-tauri/tauri.release.json
