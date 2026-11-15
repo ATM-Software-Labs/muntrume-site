@@ -354,3 +354,17 @@ html.overlay-mode body {
   color: var(--r-accent-ink);
   font-weight: 700;
 }
+
+/* HUD Visual Themes (Prompt 48: FirstRunWizard) */
+html[data-hud-theme="minimal-transparent"] .mmt-float-widget {
+  background: rgba(10, 12, 16, 0.45) !important;
+  backdrop-filter: blur(4px);
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: none !important;
+}
+
+html[data-hud-theme="high-contrast"] .mmt-float-widget {
+  background: rgba(0, 0, 0, 0.96) !important;
+  border: 2px solid #00ff9d !important;
+  color: #ffffff !important;
+}
