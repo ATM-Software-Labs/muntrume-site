@@ -508,26 +508,52 @@ function renderTelemetryStudio(): void {
 
   if (!track.samples || track.samples.length === 0) return;
 
-  const deltaSec = finiteOr(track.avgSec - track.bestSec, 0);
-  const maxDist = Math.max(1, finiteOr(track.samples[track.samples.length - 1]?.dist, 1));
+  const hasRealIbt = Boolean(lastIbtReport && lastIbtReport.bestLapSamples.length > 5);
+  const effectiveTrack: RealTrackEntry = hasRealIbt && lastIbtReport
+    ? {
+        ...track,
+        name: lastIbtReport.trackName || track.name,
+        bestSec: lastIbtReport.bestLapS > 0 ? lastIbtReport.bestLapS : 0,
+        avgSec: lastIbtReport.avgLapS > 0 ? lastIbtReport.avgLapS : lastIbtReport.bestLapS,
+        bestFormatted: lastIbtReport.bestLapS > 0 ? formatLapSec(lastIbtReport.bestLapS) : "--:--.---",
+        avgFormatted: lastIbtReport.avgLapS > 0 ? formatLapSec(lastIbtReport.avgLapS) : "--:--.---",
+        lapCount: lastIbtReport.totalLaps,
+        fileUsed: lastIbtReport.fileName,
+        samples: lastIbtReport.bestLapSamples.map((s) => ({
+          dist: s.distM,
+          speed: Math.round(s.speedKmh),
+          thr: Math.round(s.throttle * 100),
+          brk: Math.round(s.brake * 100),
+          gear: 0,
+          steering: s.steeringRad,
+          x: s.x,
+          y: s.y,
+        })),
+      }
+    : track;
 
-  if (alienTimeNode) alienTimeNode.textContent = track.bestFormatted;
-  if (userTimeNode) userTimeNode.textContent = lastIbtReport && lastIbtReport.bestLapS > 0 ? formatLapSec(lastIbtReport.bestLapS) : track.avgFormatted;
+  const deltaSec = effectiveTrack.bestSec > 0 && effectiveTrack.avgSec > 0
+    ? Math.max(0, finiteOr(effectiveTrack.avgSec - effectiveTrack.bestSec, 0))
+    : 0;
+  const maxDist = Math.max(1, finiteOr(effectiveTrack.samples[effectiveTrack.samples.length - 1]?.dist, 1));
+
+  if (alienTimeNode) alienTimeNode.textContent = effectiveTrack.bestFormatted;
+  if (userTimeNode) userTimeNode.textContent = effectiveTrack.bestFormatted;
   if (countBadge) {
     if (lastIbtReport && lastIbtReport.bestLapSamples.length > 0) {
       const tbScore = Math.round(computeTrailBrakingScore(lastIbtReport.bestLapSamples));
-      countBadge.textContent = `${lastIbtReport.totalLaps} vueltas · Trail Braking ${tbScore}%`;
+      countBadge.textContent = `${lastIbtReport.totalLaps} vueltas válidas · Trail Braking ${tbScore}%`;
     } else {
-      countBadge.textContent = `${track.lapCount} vueltas analizadas`;
+      countBadge.textContent = `${effectiveTrack.lapCount} vueltas analizadas`;
     }
   }
-  if (deltaSummaryNode) deltaSummaryNode.textContent = `+${deltaSec.toFixed(3)}s`;
-  if (fileBadge) fileBadge.textContent = lastIbtReport ? `${lastIbtReport.fileName} (.ibt real)` : track.fileUsed;
-  if (trackLengthBadge) trackLengthBadge.textContent = `${(maxDist / 1000).toFixed(3)} km · ${track.lapCount} laps iRacing`;
+  if (deltaSummaryNode) deltaSummaryNode.textContent = effectiveTrack.bestSec > 0 ? `+${deltaSec.toFixed(3)}s` : "--";
+  if (fileBadge) fileBadge.textContent = lastIbtReport ? `${lastIbtReport.fileName} (.ibt real)` : effectiveTrack.fileUsed;
+  if (trackLengthBadge) trackLengthBadge.textContent = `${(maxDist / 1000).toFixed(3)} km · ${effectiveTrack.lapCount} vueltas`;
 
-  drawTraceStudio(track, activeHoverDist);
-  drawMapStudio(track, activeHoverDist);
-  updateCursorReadout(track, activeHoverDist);
+  drawTraceStudio(effectiveTrack, activeHoverDist);
+  drawMapStudio(effectiveTrack, activeHoverDist);
+  updateCursorReadout(effectiveTrack, activeHoverDist);
   renderCoachingCards();
 
   const aeroPanel = document.getElementById("aeroAnalysisPanel");
@@ -820,10 +846,11 @@ function drawCircuitGeometry(
   h: number,
   trackKey: string,
   hoverDist: number | null,
-  totalDist: number
+  totalDist: number,
+  customPts?: Array<[number, number]>
 ): void {
   ctx.clearRect(0, 0, w, h);
-  const pts = getTrackPoints(trackKey);
+  const pts = customPts && customPts.length >= 10 ? customPts : getTrackPoints(trackKey);
   if (!pts || pts.length < 3) return;
 
   // Background road track
@@ -885,7 +912,10 @@ function drawMapStudio(track: RealTrackEntry, hoverDist: number | null): void {
   if (!ctx) return;
 
   const maxDist = track.samples?.[track.samples.length - 1]?.dist || 4657;
-  drawCircuitGeometry(ctx, canvas.width, canvas.height, track.id || "barcelona", hoverDist, maxDist);
+  const gpsPts: Array<[number, number]> = (track.samples || [])
+    .filter((s: any) => typeof s.x === "number" && typeof s.y === "number" && Number.isFinite(s.x) && Number.isFinite(s.y))
+    .map((s: any) => [s.x as number, s.y as number]);
+  drawCircuitGeometry(ctx, canvas.width, canvas.height, track.id || "barcelona", hoverDist, maxDist, gpsPts);
 }
 
 export function drawLastSessionTrackCanvas(canvas: HTMLCanvasElement, trackId: string): void {

@@ -160,6 +160,8 @@ export interface IbtTelemetrySample {
   throttle: number;
   brake: number;
   steeringRad: number;
+  x?: number;
+  y?: number;
 }
 
 export interface IbtLapSummary {
