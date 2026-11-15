@@ -33,6 +33,10 @@ const pageDescription = "Despachos de Muntrume Motorsport y titulares de motor d
         <span id="sourceCount">0 fuentes</span>
         <span><span data-i18n="news.updated">Actualizado:</span> <span id="lastUpdate">—</span></span>
         <span id="currentDate"></span>
+        <button type="button" id="refreshNewsBtn" onclick="window.loadAllNews && window.loadAllNews()" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-[11px] font-mono text-[var(--r-text)] hover:text-[var(--r-accent)] transition">
+          <span>↻</span>
+          <span>Actualizar wire</span>
+        </button>
       </p>
     </div>
   </section>
@@ -81,6 +85,12 @@ const pageDescription = "Despachos de Muntrume Motorsport y titulares de motor d
               <button class="filter-btn" data-filter="sport" data-i18n="news.filter.sport">Motor</button>
               <button class="filter-btn" data-filter="tech" data-i18n="news.filter.tech">Hardware</button>
               <button class="filter-btn" data-filter="team" data-i18n="news.filter.team">Equipo</button>
+            </div>
+
+            <!-- Dynamic Source Filter Pills -->
+            <div class="pt-3 border-t border-[var(--r-line)]/60 flex flex-wrap items-center gap-2">
+              <span class="text-[10px] font-mono uppercase tracking-wider text-[var(--r-muted)] mr-1">Fuentes:</span>
+              <div id="sourceFilterPills" class="flex flex-wrap gap-1.5"></div>
             </div>
 
           </div>
@@ -488,7 +498,7 @@ const pageDescription = "Despachos de Muntrume Motorsport y titulares de motor d
             <span data-i18n="news.legal.title">Aviso de la sala de prensa y crédito editorial</span>
           </div>
           <p class="text-[var(--r-muted)] text-[11px] leading-relaxed max-w-4xl" data-i18n="news.legal.body">
-            Esta página agrega titulares y extractos de menos de 160 caracteres de canales RSS públicos (SimRacer.es, Motorsport.com, iRacing Official, Outlaws Racing, Traxion.GG y Esports Insider) con fines informativos y de cita. Los derechos siguen siendo de los autores. Los enlaces van a la fuente.
+            Esta página agrega titulares y extractos de menos de 160 caracteres de canales RSS públicos (iRacing Official, SimRacer.es, Motorsport.com, Outlaws Racing, Traxion.GG, Esports Insider, Overtake.gg, BSimRacing, BoxThisLap, Daily Sportscar, The Race y RACER) con fines informativos y de cita. Los derechos siguen siendo de los autores. Los enlaces van a la fuente.
           </p>
         </div>
         <div class="flex flex-wrap items-center gap-3 shrink-0">

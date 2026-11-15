@@ -74,9 +74,10 @@ const columns = [
     <div class="mmt-footer__bottom">
       <div class="mmt-footer__brand-row">
         <a class="mmt-footer__wordmark" href="/">
-          <img src="/assets/img/logo-64.webp" width="24" height="24" alt="" loading="lazy" decoding="async" />
+          <img src="/assets/img/logo-64.webp" width="26" height="26" alt="" loading="lazy" decoding="async" />
           <span>Muntrume Motorsport</span>
         </a>
+        <span class="mmt-footer__pill">iRacing · Endurance &amp; GT</span>
         <nav class="mmt-footer__legal" aria-label="Información legal" data-i18n-aria="footer.legal">
           <a href="/privacy/" data-i18n="footer.privacy">Privacidad</a>
           <a href="/aviso-legal/" data-i18n="footer.aviso">Términos</a>
@@ -90,18 +91,43 @@ const columns = [
           <span>Ayuda</span>
           <span class="mmt-footer__q" aria-hidden="true">?</span>
         </a>
-        <label class="mmt-footer__lang-wrap" style="display:inline-flex;align-items:center;gap:0.45rem;border:1px solid var(--r-line);border-radius:0.5rem;padding:0 0.55rem;background:var(--r-surface, rgba(255,255,255,0.03))">
-          <span class="sr-only" data-i18n="nav.lang">Idioma</span>
-          <span class="mmt-footer__flag" data-lang-flag="active" aria-hidden="true" style="display:inline-flex;align-items:center;line-height:0">
-            <svg viewBox="0 0 18 12" width="18" height="12"><rect width="18" height="12" rx="2" fill="#AA151B"/><rect y="3" width="18" height="6" fill="#F1BF00"/></svg>
-          </span>
-          <select id="footerLangSelect" class="mmt-footer__select" aria-label="Idioma" style="border:0;background:transparent;padding-left:0">
-            <option value="es">Español</option>
-            <option value="ca">Català</option>
-            <option value="en">English</option>
-            <option value="fr">Français</option>
-          </select>
-        </label>
+
+        <!-- Custom dark-themed language selector (replaces native white-popup <select>) -->
+        <div class="mmt-footer__lang" id="footerLangWrap">
+          <button
+            type="button"
+            id="footerLangBtn"
+            class="mmt-footer__lang-btn"
+            aria-haspopup="listbox"
+            aria-expanded="false"
+            aria-label="Idioma"
+          >
+            <span class="mmt-footer__flag" data-lang-flag="active" aria-hidden="true">
+              <svg viewBox="0 0 18 12" width="18" height="12"><rect width="18" height="12" rx="2" fill="#AA151B"/><rect y="3" width="18" height="6" fill="#F1BF00"/></svg>
+            </span>
+            <span id="footerLangLabel">Español</span>
+            <svg class="mmt-footer__chev" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+
+          <div id="footerLangMenu" class="mmt-footer__lang-menu" role="listbox" aria-label="Seleccionar idioma" hidden>
+            <button type="button" class="mmt-footer__lang-opt" data-footer-lang="es" role="option">
+              <span class="mmt-footer__flag" aria-hidden="true"><svg viewBox="0 0 18 12" width="18" height="12"><rect width="18" height="12" rx="2" fill="#AA151B"/><rect y="3" width="18" height="6" fill="#F1BF00"/></svg></span>
+              <span>ES · Español</span>
+            </button>
+            <button type="button" class="mmt-footer__lang-opt" data-footer-lang="ca" role="option">
+              <span class="mmt-footer__flag" aria-hidden="true"><svg viewBox="0 0 18 12" width="18" height="12"><rect width="18" height="12" rx="2" fill="#FCDD09"/><rect y="1.6" width="18" height="1.3" fill="#DA121A"/><rect y="4.2" width="18" height="1.3" fill="#DA121A"/><rect y="6.8" width="18" height="1.3" fill="#DA121A"/><rect y="9.4" width="18" height="1.3" fill="#DA121A"/></svg></span>
+              <span>CA · Català</span>
+            </button>
+            <button type="button" class="mmt-footer__lang-opt" data-footer-lang="en" role="option">
+              <span class="mmt-footer__flag" aria-hidden="true"><svg viewBox="0 0 18 12" width="18" height="12"><clipPath id="ft-uk"><rect width="18" height="12" rx="2"/></clipPath><g clip-path="url(#ft-uk)"><rect width="18" height="12" fill="#012169"/><path d="M0 0l18 12M18 0L0 12" stroke="#FFF" stroke-width="2.2"/><path d="M0 0l18 12M18 0L0 12" stroke="#C8102E" stroke-width="1.2"/><path d="M9 0v12M0 6h18" stroke="#FFF" stroke-width="3.6"/><path d="M9 0v12M0 6h18" stroke="#C8102E" stroke-width="2"/></g></svg></span>
+              <span>EN · English</span>
+            </button>
+            <button type="button" class="mmt-footer__lang-opt" data-footer-lang="fr" role="option">
+              <span class="mmt-footer__flag" aria-hidden="true"><svg viewBox="0 0 18 12" width="18" height="12"><clipPath id="ft-fr"><rect width="18" height="12" rx="2"/></clipPath><g clip-path="url(#ft-fr)"><rect width="6" height="12" fill="#002395"/><rect x="6" width="6" height="12" fill="#FFFFFF"/><rect x="12" width="6" height="12" fill="#ED2939"/></g></svg></span>
+              <span>FR · Français</span>
+            </button>
+          </div>
+        </div>
         <p class="lang-fallback" data-lang-fallback data-i18n="nav.fallback" hidden>Esta página sigue en español.</p>
       </div>
     </div>
@@ -111,10 +137,10 @@ const columns = [
 <style>
   .mmt-footer {
     border-top: 1px solid var(--r-line);
-    background: var(--r-surface, rgba(255, 255, 255, 0.02));
+    background: linear-gradient(180deg, rgba(16, 22, 19, 0.92) 0%, rgba(10, 14, 12, 0.98) 100%);
     color: var(--r-text);
-    padding: 56px 24px 32px;
-    margin-top: 48px;
+    padding: 52px 24px 30px;
+    margin-top: 56px;
   }
   .mmt-footer__inner {
     max-width: 1200px;
@@ -123,68 +149,79 @@ const columns = [
   .mmt-footer__grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 36px 28px;
-    padding-bottom: 44px;
+    gap: 32px 28px;
+    padding-bottom: 40px;
   }
   .mmt-footer__heading {
-    margin: 0 0 18px;
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 1.4;
-    color: var(--r-text);
-    letter-spacing: -0.01em;
+    margin: 0 0 16px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--r-accent, #00e699);
   }
   .mmt-footer__list {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
-    gap: 12px;
+    gap: 10px;
   }
   .mmt-footer__list a {
     color: var(--r-muted);
     text-decoration: none;
-    font-size: 14px;
-    line-height: 1.4;
-    transition: color 0.15s ease;
+    font-size: 13.5px;
+    line-height: 1.45;
+    transition: color 0.15s ease, transform 0.15s ease;
+    display: inline-block;
   }
   .mmt-footer__list a:hover {
     color: var(--r-text);
+    transform: translateX(2px);
   }
 
   .mmt-footer__bottom {
     border-top: 1px solid var(--r-line);
-    padding-top: 24px;
+    padding-top: 22px;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 20px;
+    gap: 18px;
   }
   .mmt-footer__brand-row {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 24px;
+    gap: 16px 20px;
   }
   .mmt-footer__wordmark {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 9px;
     text-decoration: none;
     color: var(--r-text);
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 700;
     letter-spacing: -0.02em;
   }
   .mmt-footer__wordmark img {
     border-radius: 6px;
   }
+  .mmt-footer__pill {
+    font-size: 11px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--r-accent, #00e699);
+    background: rgba(0, 230, 153, 0.08);
+    border: 1px solid rgba(0, 230, 153, 0.22);
+    padding: 3px 9px;
+    border-radius: 999px;
+  }
   .mmt-footer__legal {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 18px;
+    gap: 16px;
     font-size: 13px;
   }
   .mmt-footer__legal a {
@@ -204,16 +241,17 @@ const columns = [
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 18px;
+    gap: 16px;
   }
   .mmt-footer__help {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 7px;
     color: var(--r-muted);
     text-decoration: none;
     font-size: 13px;
     font-weight: 500;
+    transition: color 0.15s ease;
   }
   .mmt-footer__help:hover {
     color: var(--r-text);
@@ -231,15 +269,83 @@ const columns = [
     font-weight: 700;
     line-height: 1;
   }
-  .mmt-footer__select {
-    min-width: 132px;
-    padding: 8px 12px;
-    border-radius: 6px;
+
+  .mmt-footer__lang {
+    position: relative;
+  }
+  .mmt-footer__lang-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 38px;
+    padding: 0 12px;
+    border-radius: 10px;
     border: 1px solid var(--r-line-2, var(--r-line));
     background: var(--r-bg, #0e1211);
     color: var(--r-text);
     font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .mmt-footer__lang-btn:hover,
+  .mmt-footer__lang-btn[aria-expanded="true"] {
+    border-color: var(--r-accent, #00e699);
+    background: rgba(0, 230, 153, 0.06);
+  }
+  .mmt-footer__flag {
+    display: inline-flex;
+    align-items: center;
+    line-height: 0;
+    flex-shrink: 0;
+  }
+  .mmt-footer__chev {
+    color: var(--r-muted);
+    transition: transform 0.15s ease;
+  }
+  .mmt-footer__lang-btn[aria-expanded="true"] .mmt-footer__chev {
+    transform: rotate(180deg);
+  }
+  .mmt-footer__lang-menu {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    right: 0;
+    min-width: 176px;
+    padding: 6px;
+    border-radius: 12px;
+    border: 1px solid var(--r-line-2, #25332d);
+    background: #101714;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+    display: grid;
+    gap: 4px;
+    z-index: 60;
+  }
+  .mmt-footer__lang-menu[hidden] {
+    display: none;
+  }
+  .mmt-footer__lang-opt {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #d6e2dc;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.12s ease, color 0.12s ease;
+  }
+  .mmt-footer__lang-opt:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: #ffffff;
+  }
+  .mmt-footer__lang-opt[aria-selected="true"] {
+    background: rgba(0, 230, 153, 0.14);
+    color: var(--r-accent, #00e699);
   }
 
   @media (max-width: 900px) {
@@ -253,7 +359,7 @@ const columns = [
     }
     .mmt-footer__grid {
       grid-template-columns: 1fr;
-      gap: 28px;
+      gap: 24px;
     }
   }
 </style>
@@ -263,25 +369,61 @@ const columns = [
   var y = document.getElementById("copyYear");
   if (y) y.textContent = String(new Date().getFullYear());
 
-  var sel = document.getElementById("footerLangSelect");
-  if (!sel) return;
+  var wrap = document.getElementById("footerLangWrap");
+  var btn = document.getElementById("footerLangBtn");
+  var menu = document.getElementById("footerLangMenu");
+  var label = document.getElementById("footerLangLabel");
+  if (!wrap || !btn || !menu || !label) return;
 
-  function syncSelect() {
+  var NAMES = { es: "Español", ca: "Català", en: "English", fr: "Français" };
+
+  function currentLang() {
     var cur = (document.documentElement.lang || localStorage.getItem("muntru_lang") || "es").slice(0, 2).toLowerCase();
-    if (["es", "ca", "en", "fr"].indexOf(cur) !== -1) sel.value = cur;
+    return NAMES[cur] ? cur : "es";
   }
 
-  sel.addEventListener("change", function () {
-    var lang = sel.value;
-    if (window.muntruI18n && typeof window.muntruI18n.setLang === "function") {
-      window.muntruI18n.setLang(lang);
-      return;
-    }
-    var btn = document.querySelector('[data-set-lang="' + lang + '"]');
-    if (btn) btn.click();
+  function syncMenu() {
+    var cur = currentLang();
+    label.textContent = NAMES[cur];
+    menu.querySelectorAll("[data-footer-lang]").forEach(function (opt) {
+      var isCur = opt.getAttribute("data-footer-lang") === cur;
+      opt.setAttribute("aria-selected", isCur ? "true" : "false");
+    });
+  }
+
+  function closeMenu() {
+    menu.hidden = true;
+    btn.setAttribute("aria-expanded", "false");
+  }
+
+  btn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    var willOpen = menu.hidden;
+    menu.hidden = !willOpen;
+    btn.setAttribute("aria-expanded", willOpen ? "true" : "false");
   });
 
-  document.addEventListener("muntru:i18n", syncSelect);
-  syncSelect();
+  menu.querySelectorAll("[data-footer-lang]").forEach(function (opt) {
+    opt.addEventListener("click", function () {
+      var lang = opt.getAttribute("data-footer-lang");
+      closeMenu();
+      if (window.muntruI18n && typeof window.muntruI18n.setLang === "function") {
+        window.muntruI18n.setLang(lang);
+      } else {
+        var navBtn = document.querySelector('[data-set-lang="' + lang + '"]');
+        if (navBtn) navBtn.click();
+      }
+      syncMenu();
+    });
+  });
+
+  document.addEventListener("click", function (e) {
+    if (!wrap.contains(e.target)) closeMenu();
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") closeMenu();
+  });
+  document.addEventListener("muntru:i18n", syncMenu);
+  syncMenu();
 })();
 </script>

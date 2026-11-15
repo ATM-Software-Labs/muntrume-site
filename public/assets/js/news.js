@@ -57,12 +57,21 @@
       },
     ];
 
-    // Live external news: server-side RSS proxy on the Muntrume Worker (replaces rss2json)
+    // Live external news: server-side RSS proxy on the Muntrume Worker + extra public RSS feeds
     const NEWS_API = 'https://muntrume.atrumin16.workers.dev/api/news';
+    const EXTRA_RSS_FEEDS = [
+      { name: 'Overtake.gg', url: 'https://www.overtake.gg/news/index.rss', category: 'simracing' },
+      { name: 'BSimRacing', url: 'https://www.bsimracing.com/feed/', category: 'simracing' },
+      { name: 'BoxThisLap', url: 'https://boxthislap.org/feed/', category: 'iracing' },
+      { name: 'Daily Sportscar', url: 'https://www.dailysportscar.com/feed', category: 'endurance' },
+      { name: 'The Race', url: 'https://www.the-race.com/feed/', category: 'sport' },
+      { name: 'RACER', url: 'https://racer.com/feed/', category: 'sport' }
+    ];
     let allNews = [...BASELINE_NEWS];
     let newsSources = [{ name: 'Muntrume Motorsport', category: 'team' }];
     let liveFeedStatus = 'pending'; // pending | ok | offline
     let currentFilter = 'all';
+    let currentSource = 'all';
     let currentSearch = '';
     let lastUpdateTime = new Date();
 
@@ -163,40 +172,103 @@
       try { const x = new URL(u); return /^https?:$/.test(x.protocol) ? x.href : '#'; } catch (e) { return '#'; }
     }
 
+    function categorizeArticle(title, desc, fallback) {
+      const text = ((title || '') + ' ' + (desc || '')).toLowerCase();
+      if (/hardware|fanatec|moza|cockpit|wheel|simagic|rig|pedal|direct drive|vrs|asetek|thrustmaster|logitech|rtx|gpu|vr|headset|chassis/i.test(text)) return 'tech';
+      if (/iracing/i.test(text)) return 'iracing';
+      if (/endurance|le mans|24h|nurburgring|spa|bathurst|wec|imsa|daytona/i.test(text)) return 'endurance';
+      if (/esports|e-sports|championship|tournament|league|cup|series|pesc/i.test(text)) return 'esports';
+      if (/sim\s*racing|simulator|acc|assetto|automobilista|rf2|rfactor|rennsport|overtake/i.test(text)) return 'simracing';
+      return fallback || 'sport';
+    }
+
+    async function fetchExtraRssFeed(feed) {
+      const controller = new AbortController();
+      const tid = setTimeout(() => controller.abort(), 5000);
+      try {
+        const apiUrl = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(feed.url);
+        const res = await fetch(apiUrl, { signal: controller.signal });
+        if (!res.ok) return { name: feed.name, category: feed.category, items: [], ok: false };
+        const json = await res.json();
+        if (!json || json.status !== 'ok' || !Array.isArray(json.items)) {
+          return { name: feed.name, category: feed.category, items: [], ok: false };
+        }
+        const items = json.items.slice(0, 6).map(i => ({
+          title: String(i.title || '').trim(),
+          description: cleanDesc(i.description || i.content || ''),
+          link: safeLink(i.link),
+          pubDate: i.pubDate || null,
+          source: feed.name,
+          thumbnail: i.thumbnail || (i.enclosure && i.enclosure.link) || null,
+          autoCategory: categorizeArticle(i.title, i.description, feed.category),
+          isBreaking: false
+        })).filter(i => i.title && i.link !== '#');
+        return { name: feed.name, category: feed.category, items, ok: items.length > 0 };
+      } catch (e) {
+        return { name: feed.name, category: feed.category, items: [], ok: false };
+      } finally {
+        clearTimeout(tid);
+      }
+    }
+
     async function loadAllNews() {
       const loadingEl = document.getElementById('loadingState');
       const featuredEl = document.getElementById('featuredGrid');
       const errorEl = document.getElementById('errorState');
+      const refreshBtn = document.getElementById('refreshNewsBtn');
+      if (refreshBtn) refreshBtn.disabled = true;
       try {
-        const data = await fetchLiveNews();
-        const liveItems = data.items
-          .filter(i => i && i.title && i.link)
-          .map(i => ({
-            title: String(i.title), description: String(i.description || ''), link: safeLink(i.link),
-            pubDate: i.pubDate || null, source: String(i.source || ''), thumbnail: i.thumbnail || null,
-            autoCategory: (() => {
-            const text = ((i.title || '') + ' ' + (i.description || '')).toLowerCase();
-            if (/hardware|fanatec|moza|cockpit|wheel|simagic|rig|pedal|direct drive|vrs|asetek|thrustmaster|logitech|rtx|gpu|vr|headset|chassis/i.test(text)) return 'tech';
-            if (/iracing/i.test(text)) return 'iracing';
-            if (/endurance|le mans|24h|nurburgring|spa|bathurst|wec|imsa|daytona/i.test(text)) return 'endurance';
-            if (/esports|e-sports|championship|tournament|league|cup|pesc/i.test(text)) return 'esports';
-            if (/sim\s*racing|simulator|acc|assetto|automobilista|rf2|rfactor|rennsport/i.test(text)) return 'simracing';
-            return i.autoCategory || 'sport';
-          })(),
-            isBreaking: false
-          }));
-        const okSources = (data.sources || []).filter(s => s.ok);
+        const [workerRes, ...extraResults] = await Promise.allSettled([
+          fetchLiveNews(),
+          ...EXTRA_RSS_FEEDS.map(fetchExtraRssFeed)
+        ]);
+
+        let liveItems = [];
+        let okSources = [];
+
+        if (workerRes.status === 'fulfilled' && workerRes.value) {
+          const data = workerRes.value;
+          liveItems = data.items
+            .filter(i => i && i.title && i.link)
+            .map(i => ({
+              title: String(i.title), description: String(i.description || ''), link: safeLink(i.link),
+              pubDate: i.pubDate || null, source: String(i.source || ''), thumbnail: i.thumbnail || null,
+              autoCategory: categorizeArticle(i.title, i.description, i.autoCategory),
+              isBreaking: false
+            }));
+          okSources = (data.sources || []).filter(s => s.ok);
+        }
+
+        extraResults.forEach(r => {
+          if (r.status === 'fulfilled' && r.value && r.value.ok) {
+            liveItems.push(...r.value.items);
+            if (!okSources.some(s => s.name === r.value.name)) {
+              okSources.push({ name: r.value.name, category: r.value.category, ok: true });
+            }
+          }
+        });
+
         newsSources = [{ name: 'Muntrume Motorsport', category: 'team' }, ...okSources];
         const teamOnly = allNews.filter(a => a.isTeam);
-        const teamTitles = new Set(teamOnly.map(a => a.title.toLowerCase()));
-        allNews = [...teamOnly, ...liveItems.filter(i => !teamTitles.has(i.title.toLowerCase()))]
+        const seenTitles = new Set(teamOnly.map(a => a.title.toLowerCase()));
+        const dedupedLive = [];
+        liveItems.forEach(item => {
+          const key = item.title.toLowerCase();
+          if (!seenTitles.has(key)) {
+            seenTitles.add(key);
+            dedupedLive.push(item);
+          }
+        });
+        allNews = [...teamOnly, ...dedupedLive]
           .sort((a, b) => new Date(b.pubDate || 0) - new Date(a.pubDate || 0));
-        liveFeedStatus = liveItems.length ? 'ok' : 'offline';
+        liveFeedStatus = dedupedLive.length ? 'ok' : 'offline';
       } catch (err) {
         liveFeedStatus = 'offline';
       } finally {
+        if (refreshBtn) refreshBtn.disabled = false;
         lastUpdateTime = new Date();
         paintCounts();
+        renderSourcePills();
         const breaking = allNews.filter(n => n.isBreaking);
         if (breaking.length > 0) showBreakingTicker(breaking);
         renderAllSections();
@@ -207,6 +279,37 @@
         if (errorEl) errorEl.classList.add('hidden');
         if (featuredEl) featuredEl.classList.remove('hidden');
       }
+    }
+
+    function renderSourcePills() {
+      const host = document.getElementById('sourceFilterPills');
+      if (!host) return;
+      const counts = new Map();
+      allNews.forEach(n => {
+        if (!n.source) return;
+        counts.set(n.source, (counts.get(n.source) || 0) + 1);
+      });
+      const sources = Array.from(counts.keys());
+      host.textContent = '';
+
+      const makePill = (label, val, count) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        const isActive = currentSource === val;
+        btn.className = isActive
+          ? 'px-2.5 py-1 rounded-lg text-[11px] font-mono font-semibold bg-[var(--r-accent)]/15 text-[var(--r-accent)] border border-[var(--r-accent)]/40 transition'
+          : 'px-2.5 py-1 rounded-lg text-[11px] font-mono text-[var(--r-muted)] bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:text-[var(--r-text)] hover:border-[var(--r-line-2)] transition';
+        btn.textContent = count != null ? `${label} (${count})` : label;
+        btn.addEventListener('click', () => {
+          currentSource = val;
+          renderSourcePills();
+          renderTopStories();
+        });
+        return btn;
+      };
+
+      host.appendChild(makePill('Todas las fuentes', 'all', allNews.length));
+      sources.forEach(src => host.appendChild(makePill(src, src, counts.get(src))));
     }
 
     function renderFeedNotice() {
@@ -274,6 +377,10 @@
         } else {
           filtered = allNews.filter(n => n.autoCategory === currentFilter);
         }
+      }
+
+      if (currentSource !== 'all') {
+        filtered = filtered.filter(n => n.source === currentSource);
       }
 
       if (currentSearch) {
