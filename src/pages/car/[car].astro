@@ -350,6 +350,7 @@ const pageDescription = `${car.brand} ${car.model} (${car.carClass}): ${dossier.
     </section>
 
     <!-- VIDEOS OFICIALES & COMUNIDAD -->
+    {carVideos.length > 0 && (
     <section aria-label="Vídeos y onboards del vehículo" class="space-y-4">
       <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2 pb-2 border-b border-[var(--r-line)]">
         <div>
@@ -430,6 +431,7 @@ const pageDescription = `${car.brand} ${car.model} (${car.carClass}): ${dossier.
         ))}
       </div>
     </section>
+    )}
   </main>
   <MediaLightbox />
 </Layout>

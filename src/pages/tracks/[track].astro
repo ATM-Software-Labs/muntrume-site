@@ -276,6 +276,7 @@ const pageDescription = track.history
     )}
 
     <!-- VIDEOS OFICIALES & COMUNIDAD -->
+    {trackVideos.length > 0 && (
     <section aria-label="Vídeos y guías en pista" class="space-y-4">
       <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2 pb-2 border-b border-[var(--r-line)]">
         <div>
@@ -356,6 +357,7 @@ const pageDescription = track.history
         ))}
       </div>
     </section>
+    )}
 
     <!-- VARIANTES DEL CIRCUITO -->
     {sched.configs.length > 0 && (
