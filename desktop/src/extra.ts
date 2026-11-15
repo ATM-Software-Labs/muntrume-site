@@ -481,8 +481,8 @@ function paintAnalysis(): void {
       traceCanvas.addEventListener("mousemove", (e) => {
         const rect = traceCanvas.getBoundingClientRect();
         const normX = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-        const track = REAL_TRACKS[currentTrackId] || REAL_TRACKS.spa;
-        const maxDist = track.samples[track.samples.length - 1].dist;
+        const track = getEffectiveTelemetryTrack();
+        const maxDist = Math.max(1, track.samples[track.samples.length - 1]?.dist || 1);
         activeHoverDist = normX * maxDist;
         drawTraceStudio(track, activeHoverDist);
         drawMapStudio(track, activeHoverDist);
@@ -491,7 +491,7 @@ function paintAnalysis(): void {
 
       traceCanvas.addEventListener("mouseleave", () => {
         activeHoverDist = null;
-        const track = REAL_TRACKS[currentTrackId] || REAL_TRACKS.spa;
+        const track = getEffectiveTelemetryTrack();
         drawTraceStudio(track, null);
         drawMapStudio(track, null);
         updateCursorReadout(track, null);
@@ -502,9 +502,58 @@ function paintAnalysis(): void {
   renderTelemetryStudio();
 }
 
-function renderTelemetryStudio(): void {
-  const track = REAL_TRACKS[currentTrackId] || REAL_TRACKS.spa;
+function parseLapFormatted(fmt: string | undefined): number {
+  if (!fmt) return 0;
+  const parts = fmt.trim().split(":");
+  if (parts.length === 2) {
+    const mins = Number(parts[0]);
+    const secs = Number(parts[1]);
+    if (Number.isFinite(mins) && Number.isFinite(secs)) return mins * 60 + secs;
+  }
+  const direct = Number(fmt);
+  return Number.isFinite(direct) ? direct : 0;
+}
 
+function getEffectiveTelemetryTrack(): RealTrackEntry {
+  const track = REAL_TRACKS[currentTrackId] || REAL_TRACKS.spa;
+  const hasRealIbt = Boolean(lastIbtReport && lastIbtReport.bestLapSamples.length > 5);
+  if (hasRealIbt && lastIbtReport) {
+    const bestSec = lastIbtReport.bestLapS > 0 ? lastIbtReport.bestLapS : 0;
+    const avgSec = lastIbtReport.avgLapS > 0 ? lastIbtReport.avgLapS : bestSec;
+    const bestFormatted = bestSec > 0 ? formatLapSec(bestSec) : "--:--.---";
+    const avgFormatted = avgSec > 0 ? formatLapSec(avgSec) : bestFormatted;
+    return {
+      ...track,
+      name: lastIbtReport.trackName || track.name,
+      bestSec,
+      avgSec,
+      bestFormatted,
+      avgFormatted,
+      lapCount: lastIbtReport.totalLaps,
+      fileUsed: lastIbtReport.fileName,
+      samples: lastIbtReport.bestLapSamples.map((s) => ({
+        dist: s.distM,
+        speed: Math.round(s.speedKmh),
+        thr: Math.round(s.throttle * 100),
+        brk: Math.round(s.brake * 100),
+        gear: 0,
+        steering: s.steeringRad,
+        x: s.x,
+        y: s.y,
+      })),
+    };
+  }
+  const bestSec = finiteOr(track.bestSec, 0) > 0 ? track.bestSec : parseLapFormatted(track.bestFormatted);
+  const avgSec = finiteOr(track.avgSec, 0) > 0 ? track.avgSec : bestSec;
+  return {
+    ...track,
+    bestSec,
+    avgSec,
+    avgFormatted: track.avgFormatted || (avgSec > 0 ? formatLapSec(avgSec) : track.bestFormatted),
+  };
+}
+
+function renderTelemetryStudio(): void {
   const alienTimeNode = document.getElementById("lapAlienTime");
   const userTimeNode = document.getElementById("lapUserTime");
   const countBadge = document.getElementById("lapCountBadge");
@@ -512,31 +561,8 @@ function renderTelemetryStudio(): void {
   const fileBadge = document.getElementById("lapFileBadge");
   const trackLengthBadge = document.getElementById("trackLengthBadge");
 
-  if (!track.samples || track.samples.length === 0) return;
-
-  const hasRealIbt = Boolean(lastIbtReport && lastIbtReport.bestLapSamples.length > 5);
-  const effectiveTrack: RealTrackEntry = hasRealIbt && lastIbtReport
-    ? {
-        ...track,
-        name: lastIbtReport.trackName || track.name,
-        bestSec: lastIbtReport.bestLapS > 0 ? lastIbtReport.bestLapS : 0,
-        avgSec: lastIbtReport.avgLapS > 0 ? lastIbtReport.avgLapS : lastIbtReport.bestLapS,
-        bestFormatted: lastIbtReport.bestLapS > 0 ? formatLapSec(lastIbtReport.bestLapS) : "--:--.---",
-        avgFormatted: lastIbtReport.avgLapS > 0 ? formatLapSec(lastIbtReport.avgLapS) : "--:--.---",
-        lapCount: lastIbtReport.totalLaps,
-        fileUsed: lastIbtReport.fileName,
-        samples: lastIbtReport.bestLapSamples.map((s) => ({
-          dist: s.distM,
-          speed: Math.round(s.speedKmh),
-          thr: Math.round(s.throttle * 100),
-          brk: Math.round(s.brake * 100),
-          gear: 0,
-          steering: s.steeringRad,
-          x: s.x,
-          y: s.y,
-        })),
-      }
-    : track;
+  const effectiveTrack = getEffectiveTelemetryTrack();
+  if (!effectiveTrack.samples || effectiveTrack.samples.length === 0) return;
 
   const deltaSec = effectiveTrack.bestSec > 0 && effectiveTrack.avgSec > 0
     ? Math.max(0, finiteOr(effectiveTrack.avgSec - effectiveTrack.bestSec, 0))
@@ -544,7 +570,7 @@ function renderTelemetryStudio(): void {
   const maxDist = Math.max(1, finiteOr(effectiveTrack.samples[effectiveTrack.samples.length - 1]?.dist, 1));
 
   if (alienTimeNode) alienTimeNode.textContent = effectiveTrack.bestFormatted;
-  if (userTimeNode) userTimeNode.textContent = effectiveTrack.bestFormatted;
+  if (userTimeNode) userTimeNode.textContent = effectiveTrack.avgFormatted || effectiveTrack.bestFormatted;
   if (countBadge) {
     if (lastIbtReport && lastIbtReport.bestLapSamples.length > 0) {
       const tbScore = Math.round(computeTrailBrakingScore(lastIbtReport.bestLapSamples));
@@ -567,7 +593,7 @@ function renderTelemetryStudio(): void {
     const baseSamples =
       lastIbtReport && lastIbtReport.bestLapSamples.length > 0
         ? lastIbtReport.bestLapSamples
-        : track.samples.map((s: any, idx: number) => ({
+        : effectiveTrack.samples.map((s: any, idx: number) => ({
             distM: finiteOr(s.dist, idx * 10),
             lapTimeS: idx * 0.1,
             speedKmh: finiteOr(s.bestSpeed ?? s.speed, 120),
@@ -859,11 +885,15 @@ function drawCircuitGeometry(
   const pts = customPts && customPts.length >= 10 ? customPts : getTrackPoints(trackKey);
   if (!pts || pts.length < 3) return;
 
+  const scale = Math.max(20, Math.min(w - 36, h - 36));
+  const ox = (w - scale) / 2;
+  const oy = (h - scale) / 2;
+
   // Background road track
   ctx.beginPath();
   for (let i = 0; i < pts.length; i++) {
-    const px = (pts[i][0] / 100) * (w - 36) + 18;
-    const py = (pts[i][1] / 100) * (h - 36) + 18;
+    const px = (pts[i][0] / 100) * scale + ox;
+    const py = (pts[i][1] / 100) * scale + oy;
     if (i === 0) ctx.moveTo(px, py);
     else ctx.lineTo(px, py);
   }
@@ -880,8 +910,8 @@ function drawCircuitGeometry(
   ctx.stroke();
 
   // Start / Finish Line
-  const startX = (pts[0][0] / 100) * (w - 36) + 18;
-  const startY = (pts[0][1] / 100) * (h - 36) + 18;
+  const startX = (pts[0][0] / 100) * scale + ox;
+  const startY = (pts[0][1] / 100) * scale + oy;
   ctx.fillStyle = "#ffffff";
   ctx.beginPath();
   ctx.arc(startX, startY, 4, 0, Math.PI * 2);
@@ -896,8 +926,8 @@ function drawCircuitGeometry(
     const norm = Math.max(0, Math.min(1, hoverDist / totalDist));
     const idx = Math.floor(norm * (pts.length - 1));
     const pt = pts[idx] || pts[0];
-    const px = (pt[0] / 100) * (w - 36) + 18;
-    const py = (pt[1] / 100) * (h - 36) + 18;
+    const px = (pt[0] / 100) * scale + ox;
+    const py = (pt[1] / 100) * scale + oy;
 
     ctx.fillStyle = "rgba(56, 189, 248, 0.4)";
     ctx.beginPath();
@@ -918,16 +948,24 @@ function drawMapStudio(track: RealTrackEntry, hoverDist: number | null): void {
   if (!ctx) return;
 
   const maxDist = track.samples?.[track.samples.length - 1]?.dist || 4657;
-  const gpsPts: Array<[number, number]> = (track.samples || [])
+  const sampleGps: Array<[number, number]> = (track.samples || [])
     .filter((s: any) => typeof s.x === "number" && typeof s.y === "number" && Number.isFinite(s.x) && Number.isFinite(s.y))
     .map((s: any) => [s.x as number, s.y as number]);
+  const gpsPts = sampleGps.length >= 10
+    ? sampleGps
+    : (Array.isArray(track.mapPoints) && track.mapPoints.length >= 10 ? track.mapPoints : undefined);
   drawCircuitGeometry(ctx, canvas.width, canvas.height, track.id || "barcelona", hoverDist, maxDist, gpsPts);
 }
 
 export function drawLastSessionTrackCanvas(canvas: HTMLCanvasElement, trackId: string): void {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
-  drawCircuitGeometry(ctx, canvas.width, canvas.height, trackId, null, 4657);
+  const ibtPts: Array<[number, number]> = (lastIbtReport?.bestLapSamples || [])
+    .filter((s) => typeof s.x === "number" && typeof s.y === "number" && Number.isFinite(s.x) && Number.isFinite(s.y))
+    .map((s) => [s.x as number, s.y as number]);
+  const presetPts = REAL_TRACKS[trackId]?.mapPoints;
+  const customPts = ibtPts.length >= 10 ? ibtPts : (Array.isArray(presetPts) && presetPts.length >= 10 ? presetPts : undefined);
+  drawCircuitGeometry(ctx, canvas.width, canvas.height, trackId, null, 4657, customPts);
 }
 
 function updateCursorReadout(track: RealTrackEntry, hoverDist: number | null): void {
@@ -940,7 +978,8 @@ function updateCursorReadout(track: RealTrackEntry, hoverDist: number | null): v
   if (hoverDist === null) {
     curDist.textContent = "0 m";
     curSpeed.textContent = "0 km/h";
-    curDelta.textContent = `+${(track.avgSec - track.bestSec).toFixed(3)}s`;
+    const baseDelta = Math.max(0, finiteOr(track.avgSec - track.bestSec, 0));
+    curDelta.textContent = `+${baseDelta.toFixed(3)}s`;
     curCorner.textContent = "Pasa el ratón por la telemetría";
     return;
   }
@@ -3758,6 +3797,9 @@ function drawIbtTrace(canvas: HTMLCanvasElement, report: IbtSessionReport): void
 export function paintLastSession(report?: IbtSessionReport | null): void {
   if (report !== undefined) {
     lastIbtReport = report;
+    if (studioInitialized) {
+      renderTelemetryStudio();
+    }
   }
   const canvas = document.getElementById("lastSessionTrackCanvas") as HTMLCanvasElement | null;
   if (canvas) {

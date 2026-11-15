@@ -155,6 +155,12 @@ pub fn parse_ibt_report(path: &Path) -> Result<IbtSessionReport, String> {
         .read_exact(&mut hdr)
         .map_err(|e| format!("Cabecera .ibt inválida: {e}"))?;
 
+    let tick_rate = i32::from_le_bytes(hdr[8..12].try_into().unwrap());
+    let dt_s = if tick_rate > 0 && tick_rate <= 1000 {
+        1.0f64 / (tick_rate as f64)
+    } else {
+        1.0f64 / 60.0f64
+    };
     let session_info_len = i32::from_le_bytes(hdr[16..20].try_into().unwrap()).max(0) as usize;
     let session_info_offset = i32::from_le_bytes(hdr[20..24].try_into().unwrap()).max(0) as u64;
     let num_vars = i32::from_le_bytes(hdr[24..28].try_into().unwrap()).max(0) as usize;
@@ -193,6 +199,9 @@ pub fn parse_ibt_report(path: &Path) -> Result<IbtSessionReport, String> {
         "SteeringWheelAngle",
         "Lat",
         "Lon",
+        "Yaw",
+        "VelocityX",
+        "VelocityY",
     ];
     let mut offsets: HashMap<String, VarOffset> = HashMap::with_capacity(wanted.len());
     let mut var_buf = [0u8; IRSDK_VAR_HEADER_SIZE];
@@ -230,6 +239,9 @@ pub fn parse_ibt_report(path: &Path) -> Result<IbtSessionReport, String> {
     let v_last_lap = get_var("LapLastLapTime");
     let v_lat = get_var("Lat");
     let v_lon = get_var("Lon");
+    let v_yaw = get_var("Yaw");
+    let v_vx = get_var("VelocityX");
+    let v_vy = get_var("VelocityY");
 
     reader
         .seek(SeekFrom::Start(data_offset))
@@ -240,6 +252,9 @@ pub fn parse_ibt_report(path: &Path) -> Result<IbtSessionReport, String> {
         sample: TelemetrySample,
         lat: Option<f64>,
         lon: Option<f64>,
+        yaw: Option<f64>,
+        vx: Option<f64>,
+        vy: Option<f64>,
     }
 
     let mut frame = vec![0u8; buf_len];
@@ -285,6 +300,15 @@ pub fn parse_ibt_report(path: &Path) -> Result<IbtSessionReport, String> {
         let lon_opt = v_lon
             .map(|v| read_f64_le(&frame, v.offset, v.var_type))
             .filter(|v| v.is_finite() && v.abs() > 0.01);
+        let yaw_opt = v_yaw
+            .map(|v| read_f64_le(&frame, v.offset, v.var_type))
+            .filter(|v| v.is_finite());
+        let vx_opt = v_vx
+            .map(|v| read_f64_le(&frame, v.offset, v.var_type))
+            .filter(|v| v.is_finite());
+        let vy_opt = v_vy
+            .map(|v| read_f64_le(&frame, v.offset, v.var_type))
+            .filter(|v| v.is_finite());
 
         laps_map.entry(lap_num).or_default().push(RawIbtPoint {
             sample: TelemetrySample {
@@ -299,6 +323,9 @@ pub fn parse_ibt_report(path: &Path) -> Result<IbtSessionReport, String> {
             },
             lat: lat_opt,
             lon: lon_opt,
+            yaw: yaw_opt,
+            vx: vx_opt,
+            vy: vy_opt,
         });
     }
 
@@ -398,12 +425,54 @@ pub fn parse_ibt_report(path: &Path) -> Result<IbtSessionReport, String> {
         None
     };
 
+    // Dead-reckoning fallback from Yaw + VelocityX/Y (or Speed) when Lat/Lon are absent in .ibt
+    let dr_norm: Vec<(f32, f32)> = if gps_bounds.is_none() && best_pts_raw.len() > 20 && v_yaw.is_some() {
+        let mut raw_xy = Vec::with_capacity(best_pts_raw.len());
+        let mut cx = 0.0f64;
+        let mut cy = 0.0f64;
+        for p in best_pts_raw {
+            let yaw = p.yaw.unwrap_or(0.0);
+            let speed_ms = (p.sample.speed_kmh as f64) / 3.6;
+            let (wx, wy) = match (p.vx, p.vy) {
+                (Some(vx), Some(vy)) => (vx * yaw.cos() - vy * yaw.sin(), vx * yaw.sin() + vy * yaw.cos()),
+                _ => (speed_ms * yaw.cos(), speed_ms * yaw.sin()),
+            };
+            cx += wx * dt_s;
+            cy += wy * dt_s;
+            raw_xy.push((cx, cy));
+        }
+        let min_x = raw_xy.iter().map(|c| c.0).fold(f64::INFINITY, f64::min);
+        let max_x = raw_xy.iter().map(|c| c.0).fold(f64::NEG_INFINITY, f64::max);
+        let min_y = raw_xy.iter().map(|c| c.1).fold(f64::INFINITY, f64::min);
+        let max_y = raw_xy.iter().map(|c| c.1).fold(f64::NEG_INFINITY, f64::max);
+        let span_x = max_x - min_x;
+        let span_y = max_y - min_y;
+        let max_span = span_x.max(span_y);
+        if max_span > 10.0 {
+            let offset_x = (max_span - span_x) * 0.5;
+            let offset_y = (max_span - span_y) * 0.5;
+            raw_xy
+                .into_iter()
+                .map(|(x, y)| {
+                    let nx = 5.0 + ((x - min_x + offset_x) / max_span) * 90.0;
+                    let ny = 95.0 - ((y - min_y + offset_y) / max_span) * 90.0;
+                    (nx as f32, ny as f32)
+                })
+                .collect()
+        } else {
+            Vec::new()
+        }
+    } else {
+        Vec::new()
+    };
+
     // Downsample to <= 240 points for crisp 60 FPS Canvas rendering.
     let stride = (best_pts_raw.len() / 240).max(1);
     let best_lap_samples = best_pts_raw
         .iter()
+        .enumerate()
         .step_by(stride)
-        .map(|p| {
+        .map(|(idx, p)| {
             let mut s = p.sample.clone();
             if let (Some((min_lon, min_lat, cos_lat, span_x, span_y, max_span)), Some(lon), Some(lat)) =
                 (gps_bounds, p.lon, p.lat)
@@ -414,6 +483,9 @@ pub fn parse_ibt_report(path: &Path) -> Result<IbtSessionReport, String> {
                 let ny = 95.0 - (((lat - min_lat) + offset_y) / max_span) * 90.0;
                 s.x = Some(nx as f32);
                 s.y = Some(ny as f32);
+            } else if let Some(&(nx, ny)) = dr_norm.get(idx) {
+                s.x = Some(nx);
+                s.y = Some(ny);
             }
             s
         })
