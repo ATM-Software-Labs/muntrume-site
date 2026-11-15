@@ -45,6 +45,10 @@ const FALLBACK_BRAND_RULES: Array<[RegExp, { logo: string; name: string; color: 
   [/formulavee|raygr|skip|f1600/i, { logo: "logo-formula", name: "Formula", color: "#94A3B8" }],
   [/pontiac/i, { logo: "logo-pontiac", name: "Pontiac", color: "#DC2626" }],
   [/buick/i, { logo: "logo-buick", name: "Buick", color: "#2563EB" }],
+  [/holden|commodore/i, { logo: "logo-holden", name: "Holden", color: "#DC2626" }],
+  [/fiaf4|formula4|\bf4\b/i, { logo: "logo-fia", name: "FIA", color: "#38BDF8" }],
+  [/dirt|sprintcar|latemodel|midget|ump|streetstock/i, { logo: "logo-dirt", name: "Dirt", color: "#F59E0B" }],
+  [/nascar|stockcar|arca|truck|legends|modified/i, { logo: "logo-oval", name: "Oval", color: "#FBBF24" }],
 ];
 
 const DEFAULT_BRAND: CarBrandInfo = {

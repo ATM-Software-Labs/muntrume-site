@@ -1,7 +1,9 @@
+use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::Path;
 use std::sync::OnceLock;
 
+use futures_util::stream::{self, StreamExt};
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};
 
@@ -115,12 +117,18 @@ async fn run(app: &AppHandle) -> Result<SyncReport, String> {
         settings.delete_retired,
         &settings.disabled_cars,
     );
+    let manifest_tracks: HashMap<String, String> = index
+        .manifest
+        .iter()
+        .map(|setup| (setup.id.clone(), setup.track.clone()))
+        .collect();
     let mut downloaded_cars = Vec::new();
     let mut downloaded = 0u32;
     let mut errors = Vec::new();
     let mut unchanged = 0u32;
     let mut deleted = 0u32;
     let mut kept_retired = 0u32;
+    let mut pending_downloads = Vec::new();
 
     for action in &plan.actions {
         match action {
@@ -128,12 +136,7 @@ async fn run(app: &AppHandle) -> Result<SyncReport, String> {
             Action::KeepRetired { .. } => kept_retired += 1,
             Action::Skipped { .. } => kept_retired += 1,
             Action::Download(item) => {
-                let track = index
-                    .manifest
-                    .iter()
-                    .find(|setup| setup.id == item.id)
-                    .map(|setup| setup.track.clone())
-                    .unwrap_or_default();
+                let track = manifest_tracks.get(&item.id).map(String::as_str).unwrap_or("");
                 let filename = item.relative.rsplit('/').next().unwrap_or(item.relative.as_str());
                 if item.relative.to_ascii_lowercase().contains("fixed") {
                     continue;
@@ -143,27 +146,14 @@ async fn run(app: &AppHandle) -> Result<SyncReport, String> {
                     .iter()
                     .map(|(name, track_name)| SeriesWeek { name, track: track_name })
                     .collect();
-                if let Err(reason) = install_allowed(&track, filename, &weeks, None) {
+                if let Err(reason) = install_allowed(track, filename, &weeks, None) {
                     if reason == "serie fixed" {
                         continue;
                     }
                     errors.push(format!("{}: {reason}", item.relative));
                     continue;
                 }
-                match fetch_one(&state, &token, &root, item).await {
-                    Ok(local) => {
-                        index.files.retain(|file| file.id != local.id && file.relative_path != local.relative_path);
-                        downloaded_cars.push(item.car.clone());
-                        index.files.push(local);
-                        downloaded += 1;
-                    }
-                    Err(err) => {
-                        if err.contains("Acceso restringido a pilotos autorizados de Muntrume Motorsport") {
-                            return Err(err);
-                        }
-                        errors.push(format!("{}: {err}", item.relative));
-                    }
-                }
+                pending_downloads.push(item.clone());
             }
             Action::Delete(item) => match remove_one(&root, &item.relative) {
                 Ok(()) => {
@@ -173,6 +163,54 @@ async fn run(app: &AppHandle) -> Result<SyncReport, String> {
                 Err(err) => errors.push(format!("{}: {err}", item.relative)),
             },
         }
+    }
+
+    let mut replaced_ids: HashSet<String> = HashSet::new();
+    let mut replaced_paths: HashSet<String> = HashSet::new();
+    let mut new_locals: Vec<LocalSetup> = Vec::new();
+
+    let mut download_stream = stream::iter(pending_downloads)
+        .map(|item| {
+            let state = &state;
+            let token = &token;
+            let root = &root;
+            async move {
+                let res = fetch_one(state, token, root, &item).await;
+                (item, res)
+            }
+        })
+        .buffer_unordered(8);
+
+    while let Some((item, result)) = download_stream.next().await {
+        match result {
+            Ok(local) => {
+                replaced_ids.insert(local.id.clone());
+                replaced_paths.insert(local.relative_path.clone());
+                downloaded_cars.push(item.car);
+                new_locals.push(local);
+                downloaded += 1;
+                if downloaded % 50 == 0 {
+                    index.files.retain(|file| !replaced_ids.contains(&file.id) && !replaced_paths.contains(&file.relative_path));
+                    index.files.extend(new_locals.drain(..));
+                    replaced_ids.clear();
+                    replaced_paths.clear();
+                    let _ = save_index(&index_path, &index);
+                }
+            }
+            Err(err) => {
+                if err.contains("Acceso restringido a pilotos autorizados de Muntrume Motorsport") {
+                    index.files.retain(|file| !replaced_ids.contains(&file.id) && !replaced_paths.contains(&file.relative_path));
+                    index.files.extend(new_locals);
+                    let _ = save_index(&index_path, &index);
+                    return Err(err);
+                }
+                errors.push(format!("{}: {err}", item.relative));
+            }
+        }
+    }
+    if !new_locals.is_empty() {
+        index.files.retain(|file| !replaced_ids.contains(&file.id) && !replaced_paths.contains(&file.relative_path));
+        index.files.extend(new_locals);
     }
     for rejected in &plan.rejected {
         errors.push(format!("{}: {}", rejected.id, rejected.reason));
@@ -416,13 +454,42 @@ fn season_entries() -> &'static Vec<SeasonEntry> {
     })
 }
 
+fn car_folder_aliases(car_norm: &str) -> &'static [&'static str] {
+    match car_norm {
+        "porsche992rgt3" => &["porsche911gt3r992", "gt3"],
+        "porsche992cup" => &["porsche911gt3cup992", "porschecup"],
+        "chevyvettez06rgt3" => &["chevroletcorvettez06gt3r", "corvettez06", "gt3"],
+        "amvantageevogt3" => &["astonmartinvantagegt3evo", "astonmartin", "gt3"],
+        "ferrari296gt3" => &["ferrari296gt3", "gt3"],
+        "bmwm4gt3" => &["bmwm4gt3", "gt3"],
+        "mercedesamgevogt3" | "mercedesamggt3" => &["mercedesamggt3", "gt3"],
+        "lamborghinihuracangt3evo" | "lamborghinievogt3" => &["lamborghinihuracangt3", "gt3"],
+        "mclaren720sgt3evo" | "mclaren720sgt3" => &["mclaren720sgt3", "gt3"],
+        "audir8lmsevo2gt3" | "audir8gt3" => &["audir8lms", "gt3"],
+        "fordmustanggt3" => &["fordmustanggt3", "gt3"],
+        "acuransxevo22gt3" => &["acuransxgt3", "gt3"],
+        "porsche963gtp" => &["porsche963gtp", "imsa"],
+        "cadillacvseriesrgtp" => &["cadillacvseries", "imsa"],
+        "bmwhybridv8" | "bmwmhybridv8" => &["bmwmhybridv8", "imsa"],
+        "acuraarx06gtp" => &["acuraarx06", "imsa"],
+        "ferrari499p" => &["ferrari499p", "imsa"],
+        "dallarap217" => &["dallarap217", "lmp2"],
+        "ligierjsp320" => &["ligierjsp320", "lmp3"],
+        _ => &[],
+    }
+}
+
 fn season_pairs_for_car(car_folder: &str) -> Vec<(&'static str, &'static str)> {
     let entries = season_entries();
     let car_norm = norm_token(car_folder);
     if !car_norm.is_empty() {
+        let aliases = car_folder_aliases(&car_norm);
         let matched: Vec<(&'static str, &'static str)> = entries
             .iter()
-            .filter(|e| e.cars_norm.contains(&car_norm))
+            .filter(|e| {
+                e.cars_norm.contains(&car_norm)
+                    || aliases.iter().any(|alias| e.cars_norm.contains(alias))
+            })
             .map(|e| (e.name.as_str(), e.track.as_str()))
             .collect();
         if !matched.is_empty() {

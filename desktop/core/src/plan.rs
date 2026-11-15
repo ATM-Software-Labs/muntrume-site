@@ -1,6 +1,8 @@
 //! Diff entre el manifiesto del equipo y el índice local.
 //! No borra nada: solo describe descargas y borrados que el llamador puede ejecutar.
 
+use std::collections::HashSet;
+
 use serde::{Deserialize, Serialize};
 
 use crate::manifest::{parse_sha256, RemoteSetup, MAX_STO_BYTES};
@@ -89,23 +91,21 @@ pub fn plan_sync_cars(
 ) -> SyncPlan {
     let mut actions = Vec::new();
     let mut rejected = Vec::new();
-    let mut seen_ids = Vec::new();
-    let mut seen_relative = Vec::new();
+    let mut seen_ids: HashSet<String> = HashSet::with_capacity(remote.len());
+    let mut seen_relative: HashSet<String> = HashSet::with_capacity(remote.len());
 
     for setup in remote {
         match accept_remote(setup) {
             Ok((relative, sha)) => {
-                if seen_ids.iter().any(|id: &String| id == &setup.id)
-                    || seen_relative.iter().any(|rel: &String| rel == &relative)
-                {
+                if seen_ids.contains(&setup.id) || seen_relative.contains(&relative) {
                     rejected.push(Rejected {
                         id: setup.id.clone(),
                         reason: "el manifiesto repite un id o una ruta".into(),
                     });
                     continue;
                 }
-                seen_ids.push(setup.id.clone());
-                seen_relative.push(relative.clone());
+                seen_ids.insert(setup.id.clone());
+                seen_relative.insert(relative.clone());
                 if disabled_cars.iter().any(|car| car == &setup.car_folder) {
                     actions.push(Action::Skipped { id: setup.id.clone() });
                     continue;
@@ -133,10 +133,7 @@ pub fn plan_sync_cars(
     }
 
     for entry in local {
-        if seen_ids.iter().any(|id| id == &entry.id) {
-            continue;
-        }
-        if seen_relative.iter().any(|rel| rel == &entry.relative_path) {
+        if seen_ids.contains(&entry.id) || seen_relative.contains(&entry.relative_path) {
             continue;
         }
         if MmtPath::from_relative(&entry.relative_path).is_err() {
