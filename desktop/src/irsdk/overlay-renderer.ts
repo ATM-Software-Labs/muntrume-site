@@ -24,19 +24,20 @@ function setHtmlIfChanged(container: HTMLElement, html: string): void {
 }
 
 const LICENSE_BADGE_STYLES: Record<string, { bg: string; border: string; text: string }> = {
-  A: { bg: "#0284c7", border: "#38bdf8", text: "#ffffff" },
+  A: { bg: "#2563eb", border: "#60a5fa", text: "#ffffff" },
   B: { bg: "#16a34a", border: "#4ade80", text: "#ffffff" },
-  C: { bg: "#ca8a04", border: "#facc15", text: "#ffffff" },
+  C: { bg: "#eab308", border: "#fde047", text: "#09090b" },
   D: { bg: "#ea580c", border: "#fb923c", text: "#ffffff" },
   R: { bg: "#dc2626", border: "#f87171", text: "#ffffff" },
-  P: { bg: "#05070a", border: "rgba(255,255,255,0.55)", text: "#ffffff" },
+  P: { bg: "#09090b", border: "rgba(255,255,255,0.65)", text: "#ffffff" },
+  W: { bg: "#09090b", border: "rgba(255,255,255,0.65)", text: "#ffffff" },
 };
 
 function renderLicenseBadge(licString: string | undefined): string {
   const code = (licString || "R 0.0").replace(/\s+/g, "");
   const letter = code.charAt(0).toUpperCase();
   const palette = LICENSE_BADGE_STYLES[letter] ?? { bg: "#475569", border: "#94a3b8", text: "#ffffff" };
-  return `<span class="px-1 py-[1px] rounded-[3px] text-[9px] font-bold tabular-nums leading-none" style="background-color:${palette.bg};color:${palette.text};border:1px solid ${palette.border}">${code}</span>`;
+  return `<span style="display:inline-flex;align-items:center;justify-content:center;padding:1px 5px;border-radius:3px;font-size:10px;font-weight:800;line-height:1.15;font-variant-numeric:tabular-nums;background-color:${palette.bg};color:${palette.text};border:1px solid ${palette.border}">${code}</span>`;
 }
 
 function renderDriverIrDelta(delta: number | undefined): string {
@@ -131,24 +132,24 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
         ? `<span class="min-w-[20px] text-[10px] font-bold text-center px-1 rounded-[2px] ${isSelf ? "bg-[#00e699]/25 text-[#00e699]" : "bg-white/10 text-white/80"}">#${e.carNumber}</span>`
         : "";
 
-      const brandSvg = cols.brandIcon ? getCarBrandSvg(e.carPath, 11) : "";
+      const brandSvg = cols.brandIcon ? getCarBrandSvg(e.carPath, 13) : "";
 
       const nameSpan = cols.driverName
-        ? `<span class="truncate text-[11px] font-medium ${isSelf ? "text-white font-bold" : "text-white/90"}">${displayName}</span>`
+        ? `<span class="truncate text-[12px] font-medium ${isSelf ? "text-white font-bold" : "text-white/90"}">${displayName}</span>`
         : "";
 
       const licSpan = cols.license ? renderLicenseBadge(e.licString) : "";
       const irSpan = cols.iRating && e.iRatingStr
-        ? `<span class="w-7 text-right text-[9px] text-white/60 tabular-nums">${e.iRatingStr}</span>`
+        ? `<span class="w-8 text-right text-[10px] text-white/65 tabular-nums">${e.iRatingStr}</span>`
         : "";
       const irDeltaSpan = cols.iRating ? renderDriverIrDelta(irDeltas.get(e.carIdx)) : "";
 
       const deltaSpan = cols.delta
-        ? `<span class="w-10 text-right text-[11px] tabular-nums ${deltaClass}">${e.deltaStr}</span>`
+        ? `<span class="w-12 text-right text-[12px] tabular-nums ${deltaClass}">${e.deltaStr}</span>`
         : "";
 
       return `
-        <div class="flex items-center justify-between gap-1 px-2 py-[3px] ${rowBg} font-mono" style="border-left: 3px solid ${e.carClassColor || "#00e699"}">
+        <div class="flex items-center justify-between gap-1.5 px-2.5 py-[4px] ${rowBg} font-mono" style="border-left: 3px solid ${e.carClassColor || "#00e699"}">
           <div class="flex items-center gap-1 min-w-0 flex-1">
             ${classSpan}
             ${numSpan}
@@ -214,14 +215,18 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
     : "";
 
   const headerHtml = `
-    <div class="flex items-center justify-between pb-1 mb-1 border-b border-white/10 text-[10px] uppercase font-bold tracking-wider">
+    <div class="flex items-center justify-between pb-1 mb-1 border-b border-white/10 text-[11px] uppercase font-bold tracking-wider">
       <div class="flex items-center gap-1.5">
-        <span class="text-white/60">${isPractice ? "PRAC" : "RACE"}</span>
+        <span class="text-white/70">${isPractice ? "PRAC" : "RACE"}</span>
         ${sofPill}
         ${irPill}
         ${isStreamer ? `<span class="px-1 py-0.2 rounded text-[8px] bg-purple-500/20 text-purple-300">STREAMER</span>` : ""}
       </div>
-      <span class="text-[9px] text-white/60 font-mono tabular-nums">${isPractice ? "BEST" : lapStr}</span>
+      <div class="flex items-center gap-2 text-[10px] text-white/55 font-mono tabular-nums">
+        <span>BEST</span>
+        <span>LAST</span>
+        ${!isPractice ? `<span>${lapStr}</span>` : ""}
+      </div>
     </div>
     ${(() => {
       const tTrack = state.frame.trackTempC;
@@ -265,25 +270,25 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
         : e.gapStr;
 
       const posSpan = cols.position
-        ? `<span class="w-4 text-[10px] font-bold tabular-nums ${posClass}">${e.position}</span>`
+        ? `<span class="w-4 text-[11px] font-bold tabular-nums ${posClass}">${e.position}</span>`
         : "";
 
       const classSpan = cols.classPosition && isMulticlass
-        ? `<span class="px-1 rounded-[2px] text-[8px] font-bold" style="background-color: ${e.carClassColor}28; color: ${e.carClassColor}">${e.carClassShortName}</span>`
+        ? `<span class="px-1 rounded-[2px] text-[9px] font-bold" style="background-color: ${e.carClassColor}28; color: ${e.carClassColor}">${e.carClassShortName}</span>`
         : "";
 
-      const brandSvg = cols.brandIcon ? getCarBrandSvg(e.carPath, 11) : "";
+      const brandSvg = cols.brandIcon ? getCarBrandSvg(e.carPath, 13) : "";
 
       const displayName = isStreamer
         ? isSelf ? "Piloto (Tú)" : `Piloto #${e.carNumber}`
         : `${cols.carNumber && e.carNumber ? `#${e.carNumber} ` : ""}${cols.driverName ? e.abbrevName : ""}`;
 
       const nameSpan = displayName
-        ? `<span class="truncate text-[11px] ${isSelf ? "text-white font-bold" : "text-white/90 font-medium"}">${displayName}</span>`
+        ? `<span class="truncate text-[12px] ${isSelf ? "text-white font-bold" : "text-white/90 font-medium"}">${displayName}</span>`
         : "";
 
       const pitBadge = cols.pitStatus && e.onPitRoad
-        ? `<span class="px-1 rounded-[2px] text-[8px] bg-rose-500/30 text-rose-200 font-bold">PIT</span>`
+        ? `<span class="px-1 rounded-[2px] text-[9px] bg-rose-500/30 text-rose-200 font-bold">PIT</span>`
         : "";
 
       const tagBadge = driverTags.renderBadgeHtml(e.cust_id || e.driverName || e.carNumber);
@@ -291,16 +296,18 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
       const licBadge = e.licString ? renderLicenseBadge(e.licString) : "";
 
       const irBadge = cols.iRating && e.iRatingStr
-        ? `<span class="w-7 text-right text-[9px] text-white/60 tabular-nums">${e.iRatingStr}</span>`
+        ? `<span class="w-8 text-right text-[10px] text-white/65 tabular-nums">${e.iRatingStr}</span>`
         : "";
       const irDeltaBadge = cols.iRating ? renderDriverIrDelta(irDeltas.get(e.carIdx)) : "";
 
-      const timeSpan = (isPractice ? cols.bestLap : cols.gap)
-        ? `<span class="w-12 text-right tabular-nums font-mono text-[10px] ${isLeader ? "text-amber-300 font-bold" : isSelf ? "text-[#00e699] font-bold" : "text-white/85"}">${timeVal}</span>`
+      const bestSpan = `<span class="w-[52px] text-right tabular-nums font-mono text-[11px] ${isLeader && isPractice ? "text-amber-300 font-bold" : isSelf ? "text-[#00e699] font-bold" : "text-white/90"}">${e.bestLapStr || "--:--.---"}</span>`;
+      const lastSpan = `<span class="w-[52px] text-right tabular-nums font-mono text-[11px] text-white/65">${e.lastLapStr || "--:--.---"}</span>`;
+      const gapSpan = !isPractice && cols.gap
+        ? `<span class="w-11 text-right tabular-nums font-mono text-[11px] ${isLeader ? "text-amber-300 font-bold" : "text-white/80"}">${timeVal}</span>`
         : "";
 
       return `
-        <div class="flex items-center justify-between gap-1 px-2 py-[3px] ${rowBg} font-mono text-xs" style="border-left: 3px solid ${e.carClassColor || "#38bdf8"}">
+        <div class="flex items-center justify-between gap-1.5 px-2.5 py-[4px] ${rowBg} font-mono text-xs" style="border-left: 3px solid ${e.carClassColor || "#38bdf8"}">
           <div class="flex items-center gap-1 min-w-0 flex-1">
             ${posSpan}
             ${classSpan}
@@ -309,11 +316,13 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
             ${tagBadge}
             ${pitBadge}
           </div>
-          <div class="flex items-center gap-1 shrink-0 text-right">
+          <div class="flex items-center gap-1.5 shrink-0 text-right">
             ${licBadge}
             ${irBadge}
             ${irDeltaBadge}
-            ${timeSpan}
+            ${bestSpan}
+            ${lastSpan}
+            ${gapSpan}
           </div>
         </div>
       `;
