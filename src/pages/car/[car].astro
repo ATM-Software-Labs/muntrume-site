@@ -323,21 +323,29 @@ const pageDescription = `${car.brand} ${car.model} (${car.carClass}): ${dossier.
             {officialSeries.length > 0 && (
               <div class="p-3 rounded-xl bg-[var(--r-bg)] border border-[var(--r-line)]/60 col-span-2 space-y-2.5">
                 <div class="flex items-center justify-between gap-2">
-                  <span class="text-[10px] text-[var(--r-muted)] uppercase">Series Oficiales donde participa</span>
-                  <span class="text-[10px] px-2 py-0.5 rounded-full bg-[var(--r-accent)]/15 text-[var(--r-accent)] font-bold">{officialSeries.length} series</span>
+                  <span class="text-[10px] text-[var(--r-muted)] uppercase">Series Oficiales Principales</span>
+                  <span class="text-[10px] px-2 py-0.5 rounded-full bg-[var(--r-accent)]/15 text-[var(--r-accent)] font-bold">
+                    {officialSeries.length === 1 ? '1 serie' : `${officialSeries.length} principales`}
+                  </span>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {officialSeries.map((sr) => (
                     <div
-                      class="flex items-start gap-2 px-2.5 py-2 rounded-lg bg-[var(--r-surface)] border border-[var(--r-line)]/80 hover:border-[var(--r-accent)]/50 transition-colors"
+                      class="flex items-center gap-2.5 p-2 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)]/80 hover:border-[var(--r-accent)]/50 transition-colors"
                       title={sr.currentTrack ? `${sr.name} · Semana actual: ${sr.currentTrack}` : sr.name}
                     >
-                      <span class="w-1.5 h-1.5 rounded-full bg-[var(--r-accent)] shrink-0 mt-1.5"></span>
+                      <img
+                        src={sr.image}
+                        alt={sr.name}
+                        loading="lazy"
+                        decoding="async"
+                        class="w-14 h-10 object-cover rounded-lg border border-[var(--r-line)] shrink-0"
+                      />
                       <div class="min-w-0 leading-snug">
                         <span class="block text-[11px] font-semibold text-[var(--r-text)] truncate">{sr.name}</span>
-                        {sr.currentTrack && (
-                          <span class="block text-[10px] text-[var(--r-muted)] truncate">{sr.currentTrack}</span>
-                        )}
+                        <span class="block text-[10px] text-[var(--r-muted)] truncate">
+                          {sr.currentTrack ? `${sr.tier.replace('Class', ' Class')} · ${sr.currentTrack}` : sr.tier.replace('Class', ' Class')}
+                        </span>
                       </div>
                     </div>
                   ))}
