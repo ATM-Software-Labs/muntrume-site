@@ -325,6 +325,13 @@
   // Auto-select car/cars and track/query from URL parameters
   try {
     var params = new URLSearchParams(window.location.search);
+    var paramType = params.get("type");
+    if (paramType && type) {
+      var tVal = paramType.trim().toLowerCase();
+      if (["race", "qualy", "wet", "endurance"].indexOf(tVal) !== -1) {
+        type.value = tVal;
+      }
+    }
     var paramTrack = params.get("track") || params.get("q");
     if (paramTrack && search) {
       search.value = paramTrack.trim();

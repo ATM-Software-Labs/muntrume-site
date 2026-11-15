@@ -44,6 +44,51 @@ const others = (eventsData as SpecialEvent[])
 const pageTitle = `${event.title} ${event.year} · Special Event iRacing | Muntrume Motorsport`;
 const pageDescription = `${event.title} (${event.dateLabel}) en ${event.track}: ${event.duration}, coches ${event.cars}, horarios UTC y cuenta atrás en Muntrume Motorsport.`;
 const canonical = `https://muntru.me/calendar/special-events/${event.slug}/`;
+
+function resolveTrackQuery(trackName: string): string {
+  const t = trackName.toLowerCase();
+  if (t.includes("spa")) return "Spa";
+  if (t.includes("daytona")) return "Daytona";
+  if (t.includes("panorama") || t.includes("bathurst")) return "Bathurst";
+  if (t.includes("sebring")) return "Sebring";
+  if (t.includes("watkins")) return "Watkins Glen";
+  if (t.includes("indianapolis") || t.includes("indy")) return "Indianapolis";
+  if (t.includes("charlotte")) return "Charlotte";
+  if (t.includes("road america")) return "Road America";
+  if (t.includes("road atlanta")) return "Road Atlanta";
+  if (t.includes("suzuka")) return "Suzuka";
+  if (t.includes("silverstone")) return "Silverstone";
+  if (t.includes("algarve") || t.includes("portimao")) return "Algarve";
+  if (t.includes("brands hatch")) return "Brands Hatch";
+  if (t.includes("virginia")) return "Virginia";
+  if (t.includes("homestead")) return "Homestead";
+  if (t.includes("darlington")) return "Darlington";
+  if (t.includes("five flags")) return "Five Flags";
+  if (t.includes("knoxville")) return "Knoxville";
+  if (t.includes("thruxton")) return "Thruxton";
+  if (t.includes("tulsa")) return "Tulsa";
+  if (t.includes("crandon")) return "Crandon";
+  if (t.includes("rburgring") || t.includes("nurburgring")) return "Nurburgring";
+  return trackName.split("(")[0].trim();
+}
+
+function resolveSingleCar(carsText: string): string | null {
+  const c = carsText.toLowerCase();
+  if (c.includes(",")) return null;
+  if (c.includes("992.2") || c.includes("porsche 911 cup")) return "porsche9922cup";
+  if (c.includes("super formula lights")) return "superformulalights324";
+  if (c.includes("ir18")) return "dallarair18";
+  if (c.includes("ff1600")) return "ff1600";
+  if (c.includes("super late model")) return "superlatemodel";
+  if (c.includes("410 sprint")) return "dirtsprint winged 410";
+  return null;
+}
+
+const trackQuery = resolveTrackQuery(event.track);
+const singleCar = resolveSingleCar(event.cars);
+const setupParams = new URLSearchParams({ track: trackQuery });
+if (singleCar) setupParams.set("car", singleCar);
+const setupUrl = `/garage/?${setupParams.toString()}`;
 ---
 
 <Layout title={pageTitle} description={pageDescription} canonical={canonical} ogImage={event.poster || event.logo} ogImageAlt={event.title}>
@@ -81,7 +126,7 @@ const canonical = `https://muntru.me/calendar/special-events/${event.slug}/`;
           </div>
 
           <div class="sed-actions">
-            <a href="/garage/" class="sed-btn sed-btn--primary">Setups .STO del Equipo →</a>
+            <a href={setupUrl} class="sed-btn sed-btn--primary">Setups .STO para este evento →</a>
             <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noreferrer noopener" class="sed-btn">Apuntarme en Discord</a>
             <a href="https://www.iracing.com/special-events/" target="_blank" rel="noreferrer noopener" class="sed-btn">Web oficial iRacing ↗</a>
           </div>
