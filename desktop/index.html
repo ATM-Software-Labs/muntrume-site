@@ -1645,57 +1645,43 @@
     </div>
 
     <!-- Floating In-Game Overlay Container (visible exclusively when index.html?overlay=1) -->
-    <div id="floatingOverlayHost" hidden class="fixed inset-0 select-none p-3 flex flex-col justify-between overflow-hidden pointer-events-none" data-hud="closed">
-      <div id="hudStateBanner" class="absolute top-6 left-6 z-20 px-4 py-2 rounded-xl bg-black/80 border border-white/20 text-white font-mono text-sm font-bold tracking-wide">iRacing Cerrado</div>
-      <!-- Top control pill (draggable). Hidden until the HUD is live or in edit. -->
-      <div id="floatHudChrome" hidden class="flex items-center justify-between gap-3 pointer-events-auto">
-        <div data-tauri-drag-region class="flex items-center gap-3 px-4 py-2 rounded-2xl bg-black/92 border border-white/15 cursor-move shadow-2xl">
-          <img src="./favicon.svg" width="22" height="22" alt="MMT" class="h-5 w-5 rounded shadow pointer-events-none" />
-          <div class="pointer-events-none flex items-center gap-2">
-            <span class="font-display font-extrabold text-xs text-white uppercase tracking-wider">MMT Live HUD</span>
-            <span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">ON-TOP</span>
-          </div>
-          <span class="text-white/30 text-xs pointer-events-none">|</span>
-          <span class="text-[11px] font-mono text-r-muted pointer-events-none">Arrastra para mover sobre iRacing</span>
-        </div>
+    <div id="floatingOverlayHost" hidden class="fixed inset-0 select-none overflow-hidden pointer-events-none" data-hud="closed">
+      <div id="hudStateBanner" class="fixed top-4 left-1/2 -translate-x-1/2 z-20 px-4 py-1.5 rounded-xl bg-black/80 border border-white/20 text-white font-mono text-xs font-bold tracking-wide">iRacing Cerrado</div>
 
-        <div class="flex items-center gap-2">
-          <div class="flex items-center gap-1 p-1 rounded-xl bg-black/92 border border-white/15">
-            <button type="button" id="floatHudPresetAll" class="px-3 py-1 rounded-lg text-[10px] font-mono uppercase font-bold bg-r-accent text-r-ink transition">Completo</button>
-            <button type="button" id="floatHudPresetRadar" class="px-3 py-1 rounded-lg text-[10px] font-mono uppercase font-bold text-r-muted hover:text-white transition">Radar</button>
-            <button type="button" id="floatHudPresetTelemetry" class="px-3 py-1 rounded-lg text-[10px] font-mono uppercase font-bold text-r-muted hover:text-white transition">Telemetría</button>
-          </div>
-          <button type="button" id="btnFloatEditLayout" class="px-2.5 py-1.5 rounded-xl bg-black/85 border border-white/15 text-r-muted hover:text-r-accent font-mono text-[10px] font-bold uppercase transition flex items-center gap-1 shadow-md">
-            <span>✥ Mover HUD</span>
-          </button>
-          <button type="button" id="btnFloatResetLayout" class="px-2.5 py-1.5 rounded-xl bg-black/85 border border-white/15 text-r-muted hover:text-white font-mono text-[10px] font-bold uppercase transition shadow-md">
-            <span>↺</span>
-          </button>
-          <button type="button" id="btnCloseFloatOverlay" title="Ocultar overlay (puedes reactivarlo desde MMT Sync)" class="px-3 py-1.5 rounded-xl bg-red-950/80 border border-red-500/40 text-red-300 font-mono text-xs font-bold hover:bg-red-900 transition flex items-center gap-1.5 shadow-lg">
-            <span>✕</span>
-            <span>Ocultar</span>
-          </button>
+      <!-- Discreet top-right reopen pill (visible when on-track & controls auto-hidden) -->
+      <button type="button" id="hudReopenBtn" hidden class="fixed top-3 right-3 z-40 px-2.5 py-1 rounded-lg bg-black/65 border border-white/15 text-white/75 hover:text-r-accent font-mono text-[10px] font-bold pointer-events-auto transition" title="Mostrar controles HUD (F9 / Ctrl+E)">
+        HUD ⚙
+      </button>
+
+      <!-- Top control pill (auto-hidden when IsOnTrack === true unless editing via F9 / Ctrl+E) -->
+      <div id="floatHudChrome" hidden class="fixed top-3 right-3 z-40 flex items-center justify-end gap-2 pointer-events-auto">
+        <div data-tauri-drag-region class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/92 border border-white/15 cursor-move shadow-2xl">
+          <img src="./favicon.svg" width="18" height="18" alt="MMT" class="h-4 w-4 rounded pointer-events-none" />
+          <span class="font-display font-extrabold text-[11px] text-white uppercase tracking-wider pointer-events-none">MMT HUD</span>
         </div>
+        <div class="flex items-center gap-1 p-1 rounded-xl bg-black/92 border border-white/15">
+          <button type="button" id="floatHudPresetAll" class="px-2.5 py-1 rounded-lg text-[10px] font-mono uppercase font-bold bg-r-accent text-r-ink transition">Completo</button>
+          <button type="button" id="floatHudPresetRadar" class="px-2.5 py-1 rounded-lg text-[10px] font-mono uppercase font-bold text-r-muted hover:text-white transition">Radar</button>
+          <button type="button" id="floatHudPresetTelemetry" class="px-2.5 py-1 rounded-lg text-[10px] font-mono uppercase font-bold text-r-muted hover:text-white transition">Telemetría</button>
+        </div>
+        <button type="button" id="btnFloatEditLayout" class="px-2.5 py-1.5 rounded-xl bg-black/85 border border-white/15 text-r-muted hover:text-r-accent font-mono text-[10px] font-bold uppercase transition shadow-md">✥ Mover HUD</button>
+        <button type="button" id="btnFloatResetLayout" class="px-2.5 py-1.5 rounded-xl bg-black/85 border border-white/15 text-r-muted hover:text-white font-mono text-[10px] font-bold uppercase transition shadow-md">↺</button>
+        <button type="button" id="btnCloseFloatOverlay" title="Ocultar overlay" class="px-2.5 py-1.5 rounded-xl bg-red-950/80 border border-red-500/40 text-red-300 font-mono text-[10px] font-bold hover:bg-red-900 transition shadow-lg">✕ Ocultar</button>
       </div>
 
-      <!-- Widget visibility & resize bar (shown when Mover HUD is active) -->
-      <div id="floatWidgetToggleBar" hidden class="mt-2 flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-black/92 border border-white/15 pointer-events-auto shadow-xl">
-        <div class="flex flex-wrap items-center gap-1.5">
-          <span class="text-[9px] font-mono uppercase text-r-muted mr-1">Overlays:</span>
-          <button type="button" data-toggle-widget="standings" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent text-r-ink transition">Standings</button>
-          <button type="button" data-toggle-widget="relative" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent text-r-ink transition">Relative</button>
-          <button type="button" data-toggle-widget="fuel" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent text-r-ink transition">Fuel</button>
-          <button type="button" data-toggle-widget="radar" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent text-r-ink transition">Radar</button>
-          <button type="button" data-toggle-widget="cluster" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent text-r-ink transition">Marcha/Vel</button>
-          <button type="button" data-toggle-widget="waveform" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent text-r-ink transition">Gráfica</button>
-          <button type="button" data-toggle-widget="inputs" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent text-r-ink transition">Pedales/Vol</button>
-          <button type="button" data-toggle-widget="lights" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent text-r-ink transition">Luces/Bandera</button>
-        </div>
-        <span class="text-[9px] font-mono text-white/55">Arrastra para mover · Rueda ratón = Tamaño · ✕ = Quitar</span>
+      <!-- Widget visibility bar (shown when Mover HUD is active) -->
+      <div id="floatWidgetToggleBar" hidden class="fixed top-14 right-3 z-40 flex flex-wrap items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/92 border border-white/15 pointer-events-auto shadow-xl">
+        <span class="text-[9px] font-mono uppercase text-r-muted mr-1">Overlays:</span>
+        <button type="button" data-toggle-widget="standings" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent text-r-ink transition">Standings</button>
+        <button type="button" data-toggle-widget="relative" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent text-r-ink transition">Relative</button>
+        <button type="button" data-toggle-widget="fuel" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent text-r-ink transition">Fuel</button>
+        <button type="button" data-toggle-widget="radar" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent text-r-ink transition">Radar</button>
+        <button type="button" data-toggle-widget="inputs" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent text-r-ink transition">Pedales/Vol</button>
+        <button type="button" data-toggle-widget="lights" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent text-r-ink transition">Luces/Bandera</button>
       </div>
 
-      <!-- Floating Layers Control Panel (overlay visibility manager) -->
-      <div id="floatLayersControlPanel" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 w-[290px] rounded-xl border border-white/15 bg-[#12141a]/95 text-white shadow-[0_12px_36px_rgba(0,0,0,0.75)] pointer-events-auto select-none font-sans">
+      <!-- Floating Layers Control Panel (auto-hidden when IsOnTrack === true unless F9 / Ctrl+E) -->
+      <div id="floatLayersControlPanel" hidden class="fixed top-20 right-3 z-50 w-[270px] rounded-xl border border-white/15 bg-[#12141a]/95 text-white shadow-[0_12px_36px_rgba(0,0,0,0.75)] pointer-events-auto select-none font-sans">
         <div id="lcpDragHandle" class="flex items-center justify-between px-3 py-2 border-b border-white/10 cursor-move">
           <div class="flex items-center gap-2">
             <span class="text-xs text-r-accent">❖</span>
@@ -1724,25 +1710,14 @@
             <button type="button" data-lcp-close="fuel" class="w-6 h-6 rounded-full border border-white/20 hover:border-rose-400 text-[11px] flex items-center justify-center" title="Desactivar">✕</button>
           </div>
           <div class="flex items-center gap-1.5" data-lcp-row="radar">
-            <span class="flex-1 px-2.5 py-1 rounded border border-white/15 bg-white/[0.03] text-xs font-medium text-center">Car Left Right / Radar</span>
+            <span class="flex-1 px-2.5 py-1 rounded border border-white/15 bg-white/[0.03] text-xs font-medium text-center">Proximity Radar</span>
             <button type="button" data-lcp-eye="radar" class="w-6 h-6 rounded-full border border-white/20 hover:border-r-accent text-[11px] flex items-center justify-center" title="Mostrar/Ocultar">👁</button>
             <button type="button" data-lcp-close="radar" class="w-6 h-6 rounded-full border border-white/20 hover:border-rose-400 text-[11px] flex items-center justify-center" title="Desactivar">✕</button>
           </div>
-          <div class="text-[9px] font-mono uppercase tracking-wider text-white/40 text-center pt-1">Custom Overlays</div>
           <div class="flex items-center gap-1.5" data-lcp-row="inputs">
-            <span class="flex-1 px-2.5 py-1 rounded border border-white/15 bg-white/[0.03] text-xs font-medium text-center">Pedals / Inputs</span>
+            <span class="flex-1 px-2.5 py-1 rounded border border-white/15 bg-white/[0.03] text-xs font-medium text-center">Inputs + Marcha</span>
             <button type="button" data-lcp-eye="inputs" class="w-6 h-6 rounded-full border border-white/20 hover:border-r-accent text-[11px] flex items-center justify-center" title="Mostrar/Ocultar">👁</button>
             <button type="button" data-lcp-close="inputs" class="w-6 h-6 rounded-full border border-white/20 hover:border-rose-400 text-[11px] flex items-center justify-center" title="Desactivar">✕</button>
-          </div>
-          <div class="flex items-center gap-1.5" data-lcp-row="cluster">
-            <span class="flex-1 px-2.5 py-1 rounded border border-white/15 bg-white/[0.03] text-xs font-medium text-center">Gear / Speed</span>
-            <button type="button" data-lcp-eye="cluster" class="w-6 h-6 rounded-full border border-white/20 hover:border-r-accent text-[11px] flex items-center justify-center" title="Mostrar/Ocultar">👁</button>
-            <button type="button" data-lcp-close="cluster" class="w-6 h-6 rounded-full border border-white/20 hover:border-rose-400 text-[11px] flex items-center justify-center" title="Desactivar">✕</button>
-          </div>
-          <div class="flex items-center gap-1.5" data-lcp-row="waveform">
-            <span class="flex-1 px-2.5 py-1 rounded border border-white/15 bg-white/[0.03] text-xs font-medium text-center">Telemetry Trace</span>
-            <button type="button" data-lcp-eye="waveform" class="w-6 h-6 rounded-full border border-white/20 hover:border-r-accent text-[11px] flex items-center justify-center" title="Mostrar/Ocultar">👁</button>
-            <button type="button" data-lcp-close="waveform" class="w-6 h-6 rounded-full border border-white/20 hover:border-rose-400 text-[11px] flex items-center justify-center" title="Desactivar">✕</button>
           </div>
           <div class="flex items-center gap-1.5" data-lcp-row="lights">
             <span class="flex-1 px-2.5 py-1 rounded border border-white/15 bg-white/[0.03] text-xs font-medium text-center">Shift Lights &amp; Flags</span>
@@ -1752,85 +1727,53 @@
         </div>
       </div>
 
-      <!-- Top zone kept 100% CLEAR for iRacing Virtual Mirror & Session Alerts -->
-      <div class="h-24 pointer-events-none"></div>
-
-      <!-- Mid Area: Standings Top-Left, 360 Radar in lower-center, Relative + Fuel on Right -->
-      <div class="flex items-start justify-between gap-4 pointer-events-none flex-1 my-1 pb-16">
-        <!-- Top-Left: Standings -->
-        <div id="floatStandingsCard" class="mmt-float-widget w-[475px] rounded-lg border border-white/12 bg-[#0a0c10]/94 text-white p-2.5 text-[12px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden self-start" data-widget="standings">
-          <div id="ovStandingsFloat"></div>
-          <div id="ovPitboxFloat" class="mt-1.5 overflow-hidden"></div>
-        </div>
-
-        <!-- Center of screen: Minimalist 360° Proximity Radar (auto-hides when clear) -->
-        <div class="pointer-events-none flex-1 self-end flex justify-center pb-2">
-          <div id="floatRadarCard" class="mmt-float-widget w-36 rounded-lg border border-white/10 bg-[#0a0c10]/80 text-white p-1.5 text-[11px] font-mono tabular-nums shadow-[0_4px_16px_rgba(0,0,0,0.5)] pointer-events-auto overflow-hidden" data-widget="radar">
-            <div id="ovRadarFloat"></div>
-          </div>
-        </div>
-
-        <!-- Right Stack: Relative + Fuel -->
-        <div class="flex flex-col gap-2 items-end self-center">
-          <div id="floatRelativeCard" class="mmt-float-widget w-[385px] rounded-lg border border-white/12 bg-[#0a0c10]/94 text-white p-2.5 text-[12px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="relative">
-            <div id="ovRelativeFloat"></div>
-          </div>
-
-          <div id="floatFuelCard" class="mmt-float-widget w-[385px] rounded-lg border border-white/12 bg-[#0a0c10]/94 text-white p-2.5 text-[12px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="fuel">
-            <div id="ovFuelFloat"></div>
-          </div>
-        </div>
+      <!-- 1. Top-Left (x: 16, y: 16): Compact Standings (width 330px, max 10 rows) -->
+      <div id="floatStandingsCard" class="mmt-float-widget fixed top-4 left-4 w-[330px] rounded-lg border border-white/12 bg-[#0a0c10]/94 text-white p-2 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="standings">
+        <div id="ovStandingsFloat"></div>
       </div>
 
-      <!-- Bottom Row: Keeps Left Black Box, Center Car DDU/Wheel, and Right Black Box 100% CLEAR -->
-      <div class="flex items-end justify-between gap-3 pointer-events-none mt-1">
-        <!-- Left Black Box clearance -->
-        <div class="hidden lg:block w-[320px] shrink-0 pointer-events-none"></div>
+      <!-- 2. Top-Center Flanking Virtual Mirror (top: 12px, 540px clear gap for iRacing Mirror) -->
+      <div id="floatRadarCard" class="mmt-float-widget fixed top-3 left-1/2 -translate-x-1/2 pointer-events-none z-20" data-widget="radar">
+        <div id="ovRadarFloat"></div>
+      </div>
 
-        <!-- Left-of-Wheel Slot: Compact Cluster + Waveform -->
-        <div class="flex flex-col items-center gap-1.5 pointer-events-none">
-          <div id="floatClusterCard" class="mmt-float-widget flex flex-col items-center pointer-events-auto" data-widget="cluster">
-            <div id="ovClusterBrandFloat" class="mb-1 flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#0a0c10]/90 border border-white/10 text-[10px] font-mono text-white/90"></div>
-            <div id="ovDeltaFloat" class="mb-1 px-2.5 py-0.5 rounded border border-emerald-500/40 bg-[#0a0c10]/90 text-emerald-400 font-mono tabular-nums text-[10px] font-bold shadow-lg">
-              —
-            </div>
-            <div class="flex items-center gap-2.5 px-3 py-1 rounded-md border border-white/10 bg-[#0a0c10]/92 shadow-[0_6px_24px_rgba(0,0,0,0.7)] tabular-nums">
-              <strong id="ovGearFloat" class="font-mono text-2xl font-black text-white leading-none">—</strong>
-              <div class="h-6 w-px bg-white/15"></div>
-              <div class="flex flex-col">
-                <div class="flex items-baseline gap-1">
-                  <strong id="ovSpeedFloat" class="font-mono text-base font-black text-[#00e5ff] leading-none">—</strong>
-                  <span class="font-mono text-[9px] text-white/50">km/h</span>
-                </div>
-                <span id="ovRpmFloat" class="text-[9px] font-mono text-white/50">—</span>
+      <!-- 3. Center-Top (top: 140px): Compact Pit Lane Helper (280px, only visible when OnPitRoad === true) -->
+      <div id="floatPitHelperCard" hidden class="mmt-float-widget fixed top-[140px] left-1/2 -translate-x-1/2 w-[280px] rounded-lg border border-amber-400/35 bg-[#0a0c10]/94 text-white p-2 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.7)] pointer-events-auto overflow-hidden" data-widget="pit">
+        <div id="ovPitboxFloat"></div>
+      </div>
+
+      <!-- 4. Bottom-Left (x: 16, bottom: 16): Compact Relative (330px) + Fuel (260px) side-by-side, zero overlap -->
+      <div id="floatRelativeCard" class="mmt-float-widget fixed bottom-4 left-4 w-[330px] rounded-lg border border-white/12 bg-[#0a0c10]/94 text-white p-2 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="relative">
+        <div id="ovRelativeFloat"></div>
+      </div>
+      <div id="floatFuelCard" class="mmt-float-widget fixed bottom-4 left-[358px] w-[260px] rounded-lg border border-white/12 bg-[#0a0c10]/94 text-white p-2 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="fuel">
+        <div id="ovFuelFloat"></div>
+      </div>
+
+      <!-- 5. Center over Steering Wheel (x: center, y: 68%): Compact Inputs + Gear + Speed + Delta Bar (320px) -->
+      <div id="floatInputsCard" class="mmt-float-widget fixed left-1/2 -translate-x-1/2 top-[68%] w-[320px] flex flex-col items-center gap-1 pointer-events-auto" data-widget="inputs">
+        <div id="floatShiftLightsRow" class="flex flex-col items-center gap-1 w-full" data-widget="lights">
+          <div id="ovDigiFlagFloat" class="w-full max-w-[220px]"></div>
+          <div class="flex items-center gap-0.5 px-2 py-0.5 rounded-md bg-[#0a0c10]/92 border border-white/10" id="ovShiftLightsFloat"></div>
+        </div>
+        <div class="w-full rounded-lg border border-white/12 bg-[#0a0c10]/92 px-2.5 py-1.5 flex items-center justify-between gap-2 shadow-[0_6px_24px_rgba(0,0,0,0.7)]">
+          <div id="ovGpuPedalsFloat" class="flex-1 min-w-0"></div>
+          <canvas id="ovInputsFloat" width="160" height="44" class="rounded hidden"></canvas>
+          <div class="flex items-center gap-2 shrink-0 pl-2 border-l border-white/10 tabular-nums">
+            <strong id="ovGearFloat" class="font-mono text-2xl font-black text-white leading-none">—</strong>
+            <div class="flex flex-col">
+              <div class="flex items-baseline gap-0.5">
+                <strong id="ovSpeedFloat" class="font-mono text-sm font-black text-[#00e5ff] leading-none">—</strong>
+                <span class="font-mono text-[8px] text-white/50">km/h</span>
               </div>
+              <span id="ovRpmFloat" class="text-[9px] font-mono text-white/50">—</span>
             </div>
           </div>
-
-          <div id="floatWaveformCard" class="mmt-float-widget rounded-md border border-white/10 bg-[#0a0c10]/92 p-1.5 shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto" data-widget="waveform">
-            <canvas id="ovWaveformCanvasFloat" width="165" height="40" class="rounded bg-black/60 border border-white/10"></canvas>
-          </div>
         </div>
-
-        <!-- Center Steering Wheel / Car DDU 10 Dashboard clearance (100% EMPTY) -->
-        <div class="flex-1 min-w-[220px] pointer-events-none"></div>
-
-        <!-- Right-of-Wheel Slot: Shift Lights + Sleek Pro Pedals & Steering -->
-        <div class="flex flex-col items-center gap-1.5 pointer-events-none">
-          <div id="floatShiftLightsRow" class="mmt-float-widget flex flex-col items-center gap-1 pointer-events-auto" data-widget="lights">
-            <div id="ovDigiFlagFloat" class="w-full max-w-[220px]"></div>
-            <div class="flex items-center gap-0.5 px-2 py-1 rounded-md bg-[#0a0c10]/92 border border-white/10 shadow-[0_6px_24px_rgba(0,0,0,0.65)]" id="ovShiftLightsFloat"></div>
-          </div>
-
-          <div id="floatInputsCard" class="mmt-float-widget pointer-events-auto" data-widget="inputs">
-            <div id="ovGpuPedalsFloat"></div>
-            <canvas id="ovInputsFloat" width="210" height="66" class="rounded-md hidden"></canvas>
-            <div id="ovTyresFloat" class="mt-0.5 text-center font-mono text-[9px] text-r-muted tabular-nums"></div>
-          </div>
+        <div id="ovDeltaFloat" class="w-full text-center px-2.5 py-0.5 rounded border border-emerald-500/40 bg-[#0a0c10]/90 text-emerald-400 font-mono tabular-nums text-[10px] font-bold shadow">
+          —
         </div>
-
-        <!-- Right Black Box clearance -->
-        <div class="hidden lg:block w-[320px] shrink-0 pointer-events-none"></div>
+        <div id="ovTyresFloat" class="text-center font-mono text-[9px] text-r-muted tabular-nums"></div>
       </div>
     </div>
 

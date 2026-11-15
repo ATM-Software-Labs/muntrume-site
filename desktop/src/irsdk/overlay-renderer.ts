@@ -101,7 +101,12 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
     </div>
   `;
 
-  const rowsHtml = entries
+  const selfIdx = entries.findIndex((e) => e.isActiveCam);
+  const displayEntries = selfIdx >= 0
+    ? entries.slice(Math.max(0, selfIdx - 3), selfIdx + 4)
+    : entries.slice(0, 7);
+
+  const rowsHtml = displayEntries
     .map((e: RelativeEntry) => {
       const isSelf = e.isActiveCam;
       const rowBg = isSelf

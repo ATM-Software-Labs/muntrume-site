@@ -98,6 +98,8 @@ export interface IrsdkTelemetryFrame {
   windKmh?: number;
   precipitationPct?: number;
   trackWetness?: number;
+  carLeftRight?: number;
+  isOnTrack?: boolean;
 
   // 64-car arrays from SDK
   carIdxLapDistPct: number[];

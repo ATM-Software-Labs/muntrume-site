@@ -22,6 +22,7 @@ import {
   BroadcastDirector,
   renderBroadcastDirectorWidget,
 } from "./irsdk";
+import { renderMirrorProximityWings } from "./irsdk/proximity-radar";
 import { estimateLiveIRating, formatIRatingDelta, formatSofShort } from "./irsdk/irating-calc";
 import { AeroSuspensionAnalyzer, renderAeroAnalysisPanel } from "./telemetry/aero-analyzer";
 import { LocalTelemetryBus } from "./plugins/telemetry-bus";
@@ -2380,6 +2381,18 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
   const applyEditModeUi = (nextEdit: boolean) => {
     floatEditMode = nextEdit;
     void setOverlayEdit(floatEditMode);
+    if (floatHost) {
+      floatHost.classList.toggle("overlay-editing", floatEditMode);
+    }
+    const chromeEl = document.getElementById("floatHudChrome");
+    const layersEl = document.getElementById("floatLayersControlPanel");
+    const reopenEl = document.getElementById("hudReopenBtn");
+    if (floatEditMode) {
+      if (chromeEl) chromeEl.hidden = false;
+      if (reopenEl) reopenEl.hidden = true;
+    } else {
+      if (layersEl) layersEl.hidden = true;
+    }
     if (btnEdit) {
       btnEdit.className = floatEditMode
         ? "px-2.5 py-1.5 rounded-xl bg-r-accent text-r-ink font-mono text-[10px] font-bold uppercase transition flex items-center gap-1 shadow-md"
@@ -2423,9 +2436,21 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
     applyEditModeUi(!floatEditMode);
   });
 
+  document.getElementById("hudReopenBtn")?.addEventListener("click", () => {
+    applyEditModeUi(true);
+    const p = document.getElementById("floatLayersControlPanel");
+    if (p) p.hidden = false;
+  });
+
   window.addEventListener("keydown", (e: KeyboardEvent) => {
-    if (e.key === "F10") {
-      applyEditModeUi(!floatEditMode);
+    if (e.key === "F9" || e.key === "F10" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "e")) {
+      e.preventDefault();
+      const next = !floatEditMode;
+      applyEditModeUi(next);
+      if (next) {
+        const p = document.getElementById("floatLayersControlPanel");
+        if (p) p.hidden = false;
+      }
     } else if (e.key === "Escape" && floatEditMode) {
       applyEditModeUi(false);
     }
@@ -2842,14 +2867,18 @@ function updateHUDDisplay(sample: LiveSample): void {
 
     if (nowHudMs - lastRadarRenderMs >= 66) {
       lastRadarRenderMs = nowHudMs;
-      document.querySelectorAll<HTMLElement>("#ovRadar, #ovRadarFloat").forEach((radar) => {
+      document.querySelectorAll<HTMLElement>("#ovRadar").forEach((radar) => {
         if (radar.offsetParent !== null) {
           renderRadarWidget(radar, {
-            carLeftRight: (frame as any).carLeftRight ?? 0,
+            carLeftRight: frame.carLeftRight ?? 0,
             speedKmh: kmh,
           });
         }
       });
+      const floatRadar = document.getElementById("ovRadarFloat");
+      if (floatRadar && floatRadar.offsetParent !== null) {
+        renderMirrorProximityWings(floatRadar, irsdkState);
+      }
     }
 
     if (shouldRenderSlowHud) {
@@ -2899,17 +2928,30 @@ function updateHUDDisplay(sample: LiveSample): void {
       vis.applyElementVisibility(document.getElementById("floatWaveformCard"), !disabledWidgets.has("waveform") && vis.evaluateVisibility("waveform", visCtx));
       vis.applyElementVisibility(document.getElementById("floatClusterCard"), !disabledWidgets.has("cluster"));
       vis.applyElementVisibility(document.getElementById("floatShiftLightsRow"), !disabledWidgets.has("lights"));
-      const carProximity = Number((frame as any).carLeftRight ?? 0);
-      const radarVisible = !disabledWidgets.has("radar") && (floatEditMode || carProximity > 1);
+      const pitCard = document.getElementById("floatPitHelperCard");
+      if (pitCard) {
+        pitCard.hidden = !(!disabledWidgets.has("pitbox") && (floatEditMode || irsdkState.onPitRoad));
+      }
+      const carProximity = Number(frame.carLeftRight ?? 0);
+      const radarVisible = !disabledWidgets.has("radar") && (floatEditMode || carProximity > 0);
       vis.applyElementVisibility(document.getElementById("floatRadarCard"), radarVisible);
 
-      // Auto-hide top edit bar when on track (OnPitRoad === false)
-      if (!floatEditMode) {
+      // Auto-hide Layers Control Panel and top-right HUD chrome when driving on track
+      const isOnTrack = Boolean(frame.isOnTrack);
+      const chrome = document.getElementById("floatHudChrome");
+      const layersPanel = document.getElementById("floatLayersControlPanel");
+      const reopenBtn = document.getElementById("hudReopenBtn");
+      if (isOnTrack && !floatEditMode) {
+        if (chrome) chrome.hidden = true;
+        if (layersPanel) layersPanel.hidden = true;
+        if (reopenBtn) reopenBtn.hidden = false;
+      } else if (!floatEditMode) {
         const showChrome = SmartLayoutManager.getInstance().computeEditBarVisibility(irsdkState.onPitRoad, false);
-        const chrome = document.getElementById("floatHudChrome");
-        if (chrome && chrome.hidden === showChrome) {
-          chrome.hidden = !showChrome;
-        }
+        if (chrome) chrome.hidden = !showChrome;
+        if (reopenBtn) reopenBtn.hidden = showChrome;
+      } else {
+        if (chrome) chrome.hidden = false;
+        if (reopenBtn) reopenBtn.hidden = true;
       }
     }
 
