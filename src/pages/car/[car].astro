@@ -330,8 +330,9 @@ const pageDescription = `${car.brand} ${car.model} (${car.carClass}): ${dossier.
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {officialSeries.map((sr) => (
-                    <div
-                      class="flex items-center gap-2.5 p-2 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)]/80 hover:border-[var(--r-accent)]/50 transition-colors"
+                    <a
+                      href={`/series/${sr.id}/`}
+                      class="flex items-center gap-2.5 p-2 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)]/80 hover:border-[var(--r-accent)] transition-colors no-underline group"
                       title={sr.currentTrack ? `${sr.name} · Semana actual: ${sr.currentTrack}` : sr.name}
                     >
                       <img
@@ -342,12 +343,12 @@ const pageDescription = `${car.brand} ${car.model} (${car.carClass}): ${dossier.
                         class="w-14 h-10 object-cover rounded-lg border border-[var(--r-line)] shrink-0"
                       />
                       <div class="min-w-0 leading-snug">
-                        <span class="block text-[11px] font-semibold text-[var(--r-text)] truncate">{sr.name}</span>
+                        <span class="block text-[11px] font-semibold text-[var(--r-text)] group-hover:text-[var(--r-accent)] truncate">{sr.name}</span>
                         <span class="block text-[10px] text-[var(--r-muted)] truncate">
                           {sr.currentTrack ? `${sr.tier.replace('Class', ' Class')} · ${sr.currentTrack}` : sr.tier.replace('Class', ' Class')}
                         </span>
                       </div>
-                    </div>
+                    </a>
                   ))}
                 </div>
               </div>

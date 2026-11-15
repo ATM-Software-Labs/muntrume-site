@@ -1,7 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import schedule from "../../desktop/src/season_schedule_2026_s4.json";
-import seriesLogosData from "../data/iracing-series-logos.json";
+import { getSeriesLogoEntry } from "../lib/car-series";
 
 interface ScheduleWeek {
   week_num: number;
@@ -21,42 +21,8 @@ interface ScheduleSeries {
 const SEASON_START_MS = Date.UTC(2026, 8, 15);
 const buildWeek = Math.max(1, Math.min(12, Math.floor((Date.now() - SEASON_START_MS) / 604_800_000) + 1));
 
-const normSeriesLogoName = (value: string) =>
-  value
-    .toLowerCase()
-    .replace(/\b(2026|season\s*\d+|fixed|by\s+[a-z0-9.-]+|presented\s+by\s+[a-z0-9.-]+|series|iracing)\b/gi, "")
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
-
-const LOGO_INDEX = (seriesLogosData as Array<{ name: string; logo: string }>).map((entry) => ({
-  logo: entry.logo,
-  norm: normSeriesLogoName(entry.name),
-  tokens: new Set(normSeriesLogoName(entry.name).split(/\s+/).filter((w) => w.length >= 3)),
-}));
-
 function logoForSeries(name: string): string {
-  const sn = normSeriesLogoName(name);
-  if (sn) {
-    const direct = LOGO_INDEX.find(
-      (item) => item.norm === sn || sn.includes(item.norm) || (item.norm.length >= 6 && item.norm.includes(sn))
-    );
-    if (direct) return direct.logo;
-    const tokens = sn.split(/\s+/).filter((w) => w.length >= 3);
-    let best = "";
-    let bestOverlap = 0;
-    for (const item of LOGO_INDEX) {
-      let overlap = 0;
-      for (const t of tokens) {
-        if (item.tokens.has(t)) overlap++;
-      }
-      if (overlap >= 2 && overlap > bestOverlap) {
-        bestOverlap = overlap;
-        best = item.logo;
-      }
-    }
-    if (best) return best;
-  }
-  return "/assets/img/series/gt-sprint.jpg";
+  return getSeriesLogoEntry(name).logo || "/assets/img/series/gt-sprint.jpg";
 }
 
 const TIER_COLORS: Record<string, string> = {
@@ -133,17 +99,17 @@ const canonical = "https://muntru.me/series/";
       <div id="srGrid" class="sr-grid">
         {seriesList.map((sr) => (
           <article class="sr-card" data-cat={sr.category} data-search={`${sr.name} ${sr.currentTrack} ${sr.license}`.toLowerCase()}>
-            <div class="sr-card__media">
+            <a href={`/series/${sr.id}/`} class="sr-card__media">
               <img src={sr.logo} alt={sr.name} loading="lazy" decoding="async" />
               <span class="sr-lic" style={`border-color:${sr.color}66;color:${sr.color};background:${sr.color}1a`}>{sr.license}</span>
-            </div>
+            </a>
             <div class="sr-card__body">
               <span class="sr-cat">{CAT_LABELS[sr.category] || sr.category}</span>
-              <h2 class="sr-card__title">{sr.name}</h2>
+              <h2 class="sr-card__title"><a href={`/series/${sr.id}/`} class="hover:text-emerald-400 no-underline text-inherit">{sr.name}</a></h2>
               <p class="sr-track">W{String(buildWeek).padStart(2, "0")}: {sr.currentTrack}</p>
               <div class="sr-card__foot">
                 <span>{sr.carsCount} {sr.carsCount === 1 ? "coche" : "coches"}</span>
-                <a href={`/calendar/?q=${encodeURIComponent(sr.name)}`} class="sr-link">Ver calendario →</a>
+                <a href={`/series/${sr.id}/`} class="sr-link">Ver serie →</a>
               </div>
             </div>
           </article>

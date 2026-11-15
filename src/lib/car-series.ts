@@ -189,21 +189,22 @@ const normSeriesLogoName = (value: string) =>
     .replace(/[^a-z0-9]+/g, ' ')
     .trim();
 
-const SERIES_LOGO_INDEX = (seriesLogosData as Array<{ name: string; logo: string }>).map((entry) => ({
+const SERIES_LOGO_INDEX = (seriesLogosData as Array<{ slug?: string; name: string; logo: string }>).map((entry) => ({
+  slug: entry.slug || '',
   logo: entry.logo,
   norm: normSeriesLogoName(entry.name),
   tokens: new Set(normSeriesLogoName(entry.name).split(/\s+/).filter((w) => w.length >= 3)),
 }));
 
-function lookupOfficialSeriesLogo(name: string): string {
+export function getSeriesLogoEntry(name: string): { logo: string; officialSlug: string } {
   const sn = normSeriesLogoName(name);
-  if (!sn) return '';
+  if (!sn) return { logo: '', officialSlug: '' };
   const direct = SERIES_LOGO_INDEX.find(
     (item) => item.norm === sn || sn.includes(item.norm) || (item.norm.length >= 6 && item.norm.includes(sn))
   );
-  if (direct) return direct.logo;
+  if (direct) return { logo: direct.logo, officialSlug: direct.slug };
   const tokens = sn.split(/\s+/).filter((w) => w.length >= 3);
-  let best = '';
+  let best = { logo: '', officialSlug: '' };
   let bestOverlap = 0;
   for (const item of SERIES_LOGO_INDEX) {
     let overlap = 0;
@@ -212,14 +213,14 @@ function lookupOfficialSeriesLogo(name: string): string {
     }
     if (overlap >= 2 && overlap > bestOverlap) {
       bestOverlap = overlap;
-      best = item.logo;
+      best = { logo: item.logo, officialSlug: item.slug };
     }
   }
   return best;
 }
 
 function getSeriesImage(sr: ScheduleSeries): string {
-  const official = lookupOfficialSeriesLogo(sr.name);
+  const official = getSeriesLogoEntry(sr.name).logo;
   if (official) return official;
 
   const n = sr.name.toLowerCase();
