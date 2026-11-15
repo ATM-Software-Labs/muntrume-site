@@ -397,7 +397,7 @@ async function refreshRaceControlData() {
           roleLabel: dbM.role === "admin" ? "Team Principal & Admin" : "Official Driver",
           status: dbM.status || "active",
           has_password: Boolean(dbM.has_password),
-          has_setup_access: Boolean(dbM.has_setup_access) || dbM.role === "admin" || dbM.role === "team_driver",
+          has_setup_access: Boolean(dbM.has_setup_access) || ["admin", "team_driver", "driver", "pilot", "academy", "engineer"].includes(String(dbM.role || "").toLowerCase()),
           last_login_at: dbM.last_login_at || null,
           created_at: dbM.created_at || new Date().toISOString()
         });
@@ -598,7 +598,7 @@ function renderDirectoryTable() {
     const numBadge = m.number ? `#${m.number}` : (m.name || "MMT").slice(0, 2).toUpperCase();
     const isPrincipal = m.email.toLowerCase() === "atrumin16@gmail.com";
     const isBlocked = m.status === "inactive";
-    const hasSetupAccess = Boolean(m.has_setup_access) || m.role === "admin" || m.role === "team_driver";
+    const hasSetupAccess = Boolean(m.has_setup_access) || ["admin", "team_driver", "driver", "pilot", "academy", "engineer"].includes(String(m.role || "").toLowerCase());
     const statusBadge = isBlocked
       ? `<span class="rc-badge rc-badge--err">Bloqueada</span>`
       : m.has_password

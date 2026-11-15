@@ -100,6 +100,9 @@ const TRACK_NORM_ALIASES: Record<string, string> = {
   echopark: "echoparkspeedway",
   ledenon: "circuitdeledenon",
   deledenon: "circuitdeledenon",
+  fujispeedway: "fujiinternationalspeedway",
+  fujigp: "fujiinternationalspeedway",
+  fujigrandprix: "fujiinternationalspeedway",
 };
 
 function normTrackToken(s: string): string {
@@ -145,7 +148,8 @@ export function getTrackWeekInfo(track: string, filename?: string, carFolder?: s
 
     for (const s of sched.series) {
       const sName = s.name || "Calendario Oficial";
-      const isSeriesFixed = sName.toLowerCase().includes("fixed");
+      const sLower = sName.toLowerCase();
+      const isSeriesFixed = sLower.includes("fixed") || sLower.includes("gt3 regional tour");
       const matchesCar = seriesMatchesCar(s.cars, cleanCar);
 
       for (const w of s.weeks || []) {

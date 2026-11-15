@@ -46,7 +46,8 @@ pub fn lock_for_track(track: &str, weeks: &[SeriesWeek<'_>]) -> SeriesLock {
         if !(name.contains(&clean) || clean.contains(&name)) {
             continue;
         }
-        if week.name.to_ascii_lowercase().contains("fixed") {
+        let lower_name = week.name.to_ascii_lowercase();
+        if lower_name.contains("fixed") || lower_name.contains("gt3 regional tour") {
             fixed += 1;
         } else {
             open += 1;

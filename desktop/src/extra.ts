@@ -295,13 +295,19 @@ function updateCalendarWeeksBar(): void {
   }
 }
 
+function isFixedSeries(s: ScheduleSeries): boolean {
+  const n = s.name.toLowerCase();
+  const t = s.tier.toLowerCase();
+  return n.includes("fixed") || t.includes("fixed") || n.includes("gt3 regional tour");
+}
+
 function renderWeekItems(data: Snapshot): void {
   const note = document.getElementById("weekNote");
   const list = document.getElementById("weekList");
   if (!note || !list) return;
 
   const filtered = schedule.series.filter((s) => {
-    const isFixed = s.name.toLowerCase().includes("fixed") || s.tier.toLowerCase().includes("fixed");
+    const isFixed = isFixedSeries(s);
     if (filterOnlyOpen && isFixed) return false;
     if (activeCat !== "all" && s.category.toLowerCase() !== activeCat.toLowerCase()) return false;
     if (activeSearch) {
@@ -358,7 +364,7 @@ function renderWeekItems(data: Snapshot): void {
     tierBadge.className = "px-2 py-0.5 rounded border border-r-line bg-r-bg text-r-accent";
     tierBadge.textContent = s.tier.replace("Class", " Class");
 
-    const isFixed = s.name.toLowerCase().includes("fixed") || s.tier.toLowerCase().includes("fixed");
+    const isFixed = isFixedSeries(s);
     const openBadge = document.createElement("span");
     if (isFixed) {
       openBadge.className = "px-2 py-0.5 rounded border border-r-line bg-r-bg text-r-muted text-[10px]";

@@ -301,7 +301,7 @@ fn extract_week_folder(week_opt: Option<u32>, filename: &str, track: &str) -> St
     } else if t.contains("zandvoort") {
         3
     } else if t.contains("fuji") {
-        if upper.contains("W09") || upper.contains("W9") { 9 } else { 3 }
+        if upper.contains("W03") || upper.contains("W3") { 3 } else { 9 }
     } else if t.contains("motegi") || t.contains("red bull") || t.contains("rbr") || t.contains("spielberg") {
         4
     } else if t.contains("long beach") || t.contains("longbeach") {

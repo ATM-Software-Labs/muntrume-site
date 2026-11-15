@@ -11,7 +11,16 @@ interface VaultUser {
 function hasSetupAccess(session: { user?: VaultUser | null } | null): boolean {
   if (!session?.user) return false;
   const role = String(session.user.role || "").toLowerCase();
-  if (role === "admin" || role === "team_driver") return true;
+  if (
+    role === "admin" ||
+    role === "team_driver" ||
+    role === "driver" ||
+    role === "pilot" ||
+    role === "academy" ||
+    role === "engineer"
+  ) {
+    return true;
+  }
   return session.user.has_setup_access === true || Number(session.user.has_setup_access) === 1;
 }
 

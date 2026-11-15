@@ -71,7 +71,7 @@
       var user = JSON.parse(raw);
       if (!user || !user.email || user.role === "guest") return false;
       var role = String(user.role || "").toLowerCase();
-      if (role === "admin" || role === "team_driver") return true;
+      if (role === "admin" || role === "team_driver" || role === "driver" || role === "pilot" || role === "academy" || role === "engineer") return true;
       return user.has_setup_access === true || Number(user.has_setup_access) === 1;
     } catch (e) { return false; }
   }
