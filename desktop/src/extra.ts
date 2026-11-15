@@ -1,5 +1,7 @@
 import type { HardwareReport, IbtSessionMeta, IbtSessionReport, IracingAnalysis, LiveSample, Settings, Snapshot } from "./types";
 import { areSessionsCompatible, computeDistanceDelta, resampleTrackByDistance } from "./telemetry/alignment";
+import { cleanTelemetrySignals, detectCornerKeyEvents } from "./telemetry/signal-cleaner";
+import { analyzeStintConsistency } from "./telemetry/consistency";
 import {
   IrsdkClient,
   renderRelativeWidget,
@@ -524,15 +526,121 @@ async function loadSelectedIbtSession(path: string): Promise<void> {
   }
 }
 
+async function refreshIbtStorageStats(): Promise<void> {
+  const summary = document.getElementById("ibtStorageSummary");
+  if (!summary) return;
+  try {
+    const { inTauri } = await import("./env");
+    if (!inTauri()) {
+      summary.textContent = "Disponible en la app de escritorio Windows.";
+      return;
+    }
+    const { invoke } = await import("@tauri-apps/api/core");
+    const days = Number(localStorage.getItem(TELEMETRY_RETENTION_KEY) || "14") || 14;
+    const stats = await invoke<{ totalFiles: number; totalBytes: number; oldFilesCount: number; oldBytes: number }>(
+      "get_ibt_storage_stats",
+      { maxAgeDays: days },
+    );
+    const totalMb = (stats.totalBytes / (1024 * 1024)).toFixed(1);
+    const oldMb = (stats.oldBytes / (1024 * 1024)).toFixed(1);
+    summary.textContent = `${stats.totalFiles} archivos .ibt (${totalMb} MB) · ${stats.oldFilesCount} con > ${days} días (${oldMb} MB recuperables)`;
+  } catch {
+    summary.textContent = "No se pudo leer la carpeta de telemetría.";
+  }
+}
+
 function wireRetentionSetting(): void {
   const retSel = document.getElementById("telemetryRetentionDays") as HTMLSelectElement | null;
-  if (!retSel || retSel.dataset.wired === "1") return;
-  retSel.dataset.wired = "1";
-  retSel.value = localStorage.getItem(TELEMETRY_RETENTION_KEY) || "0";
-  retSel.addEventListener("change", () => {
-    localStorage.setItem(TELEMETRY_RETENTION_KEY, retSel.value);
-    void populateIbtSessionSelectors();
-  });
+  if (retSel && retSel.dataset.wired !== "1") {
+    retSel.dataset.wired = "1";
+    retSel.value = localStorage.getItem(TELEMETRY_RETENTION_KEY) || "0";
+    retSel.addEventListener("change", () => {
+      localStorage.setItem(TELEMETRY_RETENTION_KEY, retSel.value);
+      void populateIbtSessionSelectors();
+      void refreshIbtStorageStats();
+    });
+  }
+  const cleanBtn = document.getElementById("btnCleanupOldIbt");
+  const cleanRes = document.getElementById("ibtCleanupResult");
+  if (cleanBtn && cleanBtn.dataset.wired !== "1") {
+    cleanBtn.dataset.wired = "1";
+    void refreshIbtStorageStats();
+    cleanBtn.addEventListener("click", async () => {
+      try {
+        const { inTauri } = await import("./env");
+        if (!inTauri()) return;
+        const { invoke } = await import("@tauri-apps/api/core");
+        const days = Math.max(1, Number(localStorage.getItem(TELEMETRY_RETENTION_KEY) || "14") || 14);
+        const res = await invoke<{ deletedCount: number; freedBytes: number }>("cleanup_old_ibt_files", { maxAgeDays: days });
+        const freedMb = (res.freedBytes / (1024 * 1024)).toFixed(1);
+        if (cleanRes) cleanRes.textContent = `${res.deletedCount} borrados (${freedMb} MB liberados)`;
+        void refreshIbtStorageStats();
+        void populateIbtSessionSelectors();
+      } catch {
+        if (cleanRes) cleanRes.textContent = "Error al limpiar .ibt";
+      }
+    });
+  }
+}
+
+function exportCurrentMmtLap(): void {
+  const track = getEffectiveTelemetryTrack();
+  const payload = {
+    format: "mmt-lap-v1",
+    exportedAt: new Date().toISOString(),
+    trackName: track.name,
+    carPath: lastIbtReport?.carPath || "",
+    carScreenName: lastIbtReport?.carScreenName || "",
+    bestLapS: track.bestSec,
+    avgLapS: track.avgSec,
+    trackLengthM: track.samples[track.samples.length - 1]?.dist || 0,
+    samples: track.samples.map((s) => ({
+      distM: s.dist,
+      lapTimeS: 0,
+      speedKmh: s.speed,
+      throttle: s.thr / 100,
+      brake: s.brk / 100,
+      steeringRad: (s as { steering?: number }).steering ?? 0,
+      gear: s.gear,
+      x: (s as { x?: number }).x,
+      y: (s as { y?: number }).y,
+    })),
+  };
+  const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const slug = (track.name || "lap").toLowerCase().replace(/[^a-z0-9]+/g, "_");
+  a.href = url;
+  a.download = `${slug}.mmt-lap`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function loadMmtLapJson(rawText: string, fileName: string): void {
+  try {
+    const parsed = JSON.parse(rawText);
+    if (!parsed || !Array.isArray(parsed.samples) || parsed.samples.length < 10) return;
+    const report: IbtSessionReport = {
+      fileName: `${fileName} (.mmt-lap)`,
+      trackName: String(parsed.trackName || "Circuito importado"),
+      trackConfig: "",
+      trackLengthM: Number(parsed.trackLengthM) || 0,
+      trackTemp: "",
+      airTemp: "",
+      carPath: String(parsed.carPath || ""),
+      carScreenName: String(parsed.carScreenName || ""),
+      bestLapS: Number(parsed.bestLapS) || 0,
+      avgLapS: Number(parsed.avgLapS) || Number(parsed.bestLapS) || 0,
+      topSpeedKmh: Math.max(...parsed.samples.map((s: any) => Number(s.speedKmh) || 0), 0),
+      totalLaps: 1,
+      laps: [],
+      bestLapSamples: parsed.samples,
+    };
+    paintLastSession(report);
+    renderTelemetryStudio();
+  } catch {
+    // Ignore invalid file
+  }
 }
 
 function paintAnalysis(): void {
@@ -576,6 +684,32 @@ function paintAnalysis(): void {
         if (recentSel) recentSel.value = "";
         if (archiveSel) archiveSel.value = "";
         renderTelemetryStudio();
+      });
+    }
+    const exportBtn = document.getElementById("btnExportMmtLap");
+    if (exportBtn) exportBtn.addEventListener("click", exportCurrentMmtLap);
+    const importBtn = document.getElementById("btnImportMmtLap");
+    const importInput = document.getElementById("inputImportMmtLap") as HTMLInputElement | null;
+    if (importBtn && importInput) {
+      importBtn.addEventListener("click", () => importInput.click());
+      importInput.addEventListener("change", async () => {
+        const f = importInput.files?.[0];
+        if (!f) return;
+        loadMmtLapJson(await f.text(), f.name);
+        importInput.value = "";
+      });
+    }
+    const viewAnalysis = document.getElementById("viewAnalysis");
+    if (viewAnalysis) {
+      viewAnalysis.addEventListener("dragover", (e) => {
+        e.preventDefault();
+      });
+      viewAnalysis.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const f = e.dataTransfer?.files?.[0];
+        if (f && (f.name.endsWith(".mmt-lap") || f.name.endsWith(".json"))) {
+          loadMmtLapJson(await f.text(), f.name);
+        }
       });
     }
 
@@ -647,8 +781,8 @@ function getEffectiveTelemetryTrack(): RealTrackEntry {
       gear: s.gear ?? 0,
       steering: s.steeringRad,
       lapTimeS: s.lapTimeS,
-      x: s.x,
-      y: s.y,
+      x: (s as { x?: number }).x,
+      y: (s as { y?: number }).y,
     }));
     const trackLen = lastIbtReport.trackLengthM && lastIbtReport.trackLengthM > 300
       ? lastIbtReport.trackLengthM
@@ -667,16 +801,8 @@ function getEffectiveTelemetryTrack(): RealTrackEntry {
       5,
     );
     alignedDeltaCurve = computeDistanceDelta(aligned, refAligned, bestSec, avgSec);
-    return {
-      ...track,
-      name: lastIbtReport.trackName || track.name,
-      bestSec,
-      avgSec,
-      bestFormatted,
-      avgFormatted,
-      lapCount: lastIbtReport.totalLaps,
-      fileUsed: lastIbtReport.fileName,
-      samples: aligned.map((p) => ({
+    const cleanedSamples = cleanTelemetrySignals(
+      aligned.map((p) => ({
         dist: p.dist,
         speed: Math.round(p.speed),
         thr: Math.round(p.thr),
@@ -686,6 +812,17 @@ function getEffectiveTelemetryTrack(): RealTrackEntry {
         x: p.x,
         y: p.y,
       })),
+    );
+    return {
+      ...track,
+      name: lastIbtReport.trackName || track.name,
+      bestSec,
+      avgSec,
+      bestFormatted,
+      avgFormatted,
+      lapCount: lastIbtReport.totalLaps,
+      fileUsed: lastIbtReport.fileName,
+      samples: cleanedSamples,
     };
   }
   const bestSec = finiteOr(track.bestSec, 0) > 0 ? track.bestSec : parseLapFormatted(track.bestFormatted);
@@ -741,6 +878,38 @@ function renderTelemetryStudio(): void {
       countBadge.textContent = `${lastIbtReport.totalLaps} vueltas válidas · Trail Braking ${tbScore}%`;
     } else {
       countBadge.textContent = `${effectiveTrack.lapCount} vueltas analizadas`;
+    }
+  }
+
+  // Prompt 42: Stint Consistency & Theoretical Optimal Lap
+  const stintOptNode = document.getElementById("stintOptimalLap");
+  const stintScoreNode = document.getElementById("stintConsistencyScore");
+  const stintStdNode = document.getElementById("stintStdDev");
+  const stintSummaryNode = document.getElementById("stintSummaryText");
+  const stintBarsNode = document.getElementById("stintBarsChart");
+  if (stintOptNode && stintScoreNode && stintStdNode && stintSummaryNode && stintBarsNode) {
+    const stint = analyzeStintConsistency(lastIbtReport?.laps || []);
+    if (stint.cleanCount > 0) {
+      stintOptNode.textContent = formatLapSec(stint.optimalLapS);
+      stintScoreNode.textContent = `${stint.consistencyScore}%`;
+      stintStdNode.textContent = `±${stint.stdDevS.toFixed(3)}s`;
+      stintSummaryNode.textContent = `${stint.cleanCount} vueltas limpias · ${stint.discardedCount} descartadas (boxes/incidentes/amarillas).`;
+      const maxD = Math.max(0.2, ...stint.cleanLaps.map((l) => l.deltaFromBestS));
+      stintBarsNode.innerHTML = stint.cleanLaps
+        .map((l) => {
+          const pct = Math.max(15, Math.round((1 - l.deltaFromBestS / (maxD * 1.15)) * 100));
+          const color = l.deltaFromBestS <= 0.05 ? "bg-r-accent" : l.deltaFromBestS < 0.4 ? "bg-sky-400" : "bg-amber-400";
+          return `<div class="flex flex-col items-center gap-0.5 min-w-[26px]" title="V${l.lapNum}: ${formatLapSec(l.lapTimeS)} (+${l.deltaFromBestS.toFixed(3)}s)"><div class="w-4 rounded-t ${color}" style="height:${Math.round((pct / 100) * 44)}px"></div><span class="text-[9px] font-mono text-r-muted">V${l.lapNum}</span></div>`;
+        })
+        .join("");
+    } else {
+      stintOptNode.textContent = effectiveTrack.bestFormatted;
+      stintScoreNode.textContent = "--%";
+      stintStdNode.textContent = "--";
+      stintSummaryNode.textContent = lastIbtReport
+        ? "Sin suficientes vueltas limpias en este .ibt."
+        : "Carga una sesión .ibt para calcular desviación estándar y ritmo vuelta a vuelta.";
+      stintBarsNode.replaceChildren();
     }
   }
   if (deltaSummaryNode) deltaSummaryNode.textContent = effectiveTrack.bestSec > 0 ? `+${deltaSec.toFixed(3)}s` : "--";
@@ -963,6 +1132,21 @@ function drawTraceStudio(track: RealTrackEntry, hoverDist: number | null): void 
   }
   ctx.stroke();
 
+  // Prompt 41: Key driving event markers (Brake Point & Full Throttle)
+  const keyEvents = detectCornerKeyEvents(track.samples);
+  ctx.font = "bold 8px monospace";
+  for (const ev of keyEvents) {
+    const bpX = (ev.brakePointDist / maxDist) * w;
+    ctx.fillStyle = "#f43f5e";
+    ctx.fillRect(bpX - 1, pedalY, 2, 10);
+    ctx.fillText("BP", bpX + 2, pedalY + 9);
+    if (ev.fullThrottleDist !== null) {
+      const ftX = (ev.fullThrottleDist / maxDist) * w;
+      ctx.fillStyle = "#10b981";
+      ctx.fillRect(ftX - 1, pedalY + pedalH - 10, 2, 10);
+    }
+  }
+
   // Hover Scrub line
   if (hoverDist !== null) {
     const x = (hoverDist / maxDist) * w;
@@ -1148,6 +1332,8 @@ function updateCursorReadout(track: RealTrackEntry, hoverDist: number | null): v
     const baseDelta = Math.max(0, finiteOr(track.avgSec - track.bestSec, 0));
     curDelta.textContent = `+${baseDelta.toFixed(3)}s`;
     curCorner.textContent = "Pasa el ratón por la telemetría";
+    const tt = document.getElementById("telemetryCursorTooltip");
+    if (tt) tt.hidden = true;
     return;
   }
 
@@ -1157,6 +1343,14 @@ function updateCursorReadout(track: RealTrackEntry, hoverDist: number | null): v
   curSpeed.textContent = `${sample.speedBest} km/h (Δ ${diffKmh >= 0 ? "+" : ""}${diffKmh})`;
   curDelta.textContent = `+${sample.delta.toFixed(3)}s`;
   curCorner.textContent = sample.cornerName;
+  const tt = document.getElementById("telemetryCursorTooltip");
+  if (tt) {
+    tt.hidden = false;
+    tt.innerHTML =
+      `<div class="text-r-accent font-bold">${Math.round(hoverDist)} m · ${sample.cornerName}</div>` +
+      `<div>Vel: <strong>${sample.speedBest}</strong> vs ${sample.speedAvg} km/h · Marcha: <strong>${sample.gear || "—"}</strong></div>` +
+      `<div>Gas: <strong class="text-emerald-400">${Math.round(sample.throttle * 100)}%</strong> · Freno: <strong class="text-rose-400">${Math.round(sample.brake * 100)}%</strong> · Δ <strong class="text-amber-400">+${sample.delta.toFixed(3)}s</strong></div>`;
+  }
 }
 
 function renderCoachingCards(): void {
@@ -1572,17 +1766,117 @@ function applyHudCustomAppearance(): void {
   const disabled = loadDisabledWidgets();
   document.querySelectorAll<HTMLElement>(".mmt-float-widget").forEach((el) => {
     const key = el.dataset.widget || "";
-    if (key && disabled.has(key)) {
-      el.hidden = true;
+    if (key) {
+      el.hidden = disabled.has(key);
     }
     el.style.opacity = String(vars.opacity);
     (el.style as CSSStyleDeclaration & { zoom?: string }).zoom = String(vars.scale);
   });
+  const panel = document.getElementById("floatLayersControlPanel");
+  if (panel) {
+    panel.querySelectorAll<HTMLButtonElement>("[data-lcp-eye]").forEach((btn) => {
+      const key = btn.dataset.lcpEye || "";
+      const active = !disabled.has(key);
+      btn.style.opacity = active ? "1" : "0.35";
+      btn.style.borderColor = active ? "rgba(0,230,153,0.6)" : "rgba(255,255,255,0.2)";
+    });
+  }
+}
+
+function wireLayersControlPanel(): void {
+  const panel = document.getElementById("floatLayersControlPanel");
+  if (panel && panel.dataset.wired !== "1") {
+    panel.dataset.wired = "1";
+    const body = document.getElementById("lcpBody");
+    const minBtn = document.getElementById("lcpMinBtn");
+    const closeBtn = document.getElementById("lcpCloseBtn");
+    const eyeAllBtn = document.getElementById("lcpEyeAll");
+    const handle = document.getElementById("lcpDragHandle");
+
+    if (minBtn && body) {
+      minBtn.addEventListener("click", () => {
+        body.hidden = !body.hidden;
+      });
+    }
+    if (closeBtn) {
+      closeBtn.addEventListener("click", () => {
+        panel.hidden = true;
+      });
+    }
+    if (eyeAllBtn) {
+      eyeAllBtn.addEventListener("click", () => {
+        const keys = ["standings", "relative", "fuel", "radar", "inputs", "cluster", "waveform", "lights"];
+        const disabled = loadDisabledWidgets();
+        const allHidden = keys.every((k) => disabled.has(k));
+        if (allHidden) keys.forEach((k) => disabled.delete(k));
+        else keys.forEach((k) => disabled.add(k));
+        saveDisabledWidgets(disabled);
+        applyHudCustomAppearance();
+      });
+    }
+    panel.querySelectorAll<HTMLButtonElement>("[data-lcp-eye]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const key = btn.dataset.lcpEye || "";
+        if (!key) return;
+        const disabled = loadDisabledWidgets();
+        if (disabled.has(key)) disabled.delete(key);
+        else disabled.add(key);
+        saveDisabledWidgets(disabled);
+        applyHudCustomAppearance();
+      });
+    });
+    panel.querySelectorAll<HTMLButtonElement>("[data-lcp-close]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const key = btn.dataset.lcpClose || "";
+        if (!key) return;
+        const disabled = loadDisabledWidgets();
+        disabled.add(key);
+        saveDisabledWidgets(disabled);
+        applyHudCustomAppearance();
+      });
+    });
+    if (handle) {
+      let dragging = false;
+      let startX = 0;
+      let startY = 0;
+      let baseLeft = 0;
+      let baseTop = 0;
+      handle.addEventListener("mousedown", (e) => {
+        if ((e.target as HTMLElement)?.closest("button")) return;
+        dragging = true;
+        const rect = panel.getBoundingClientRect();
+        panel.style.transform = "none";
+        panel.style.left = `${rect.left}px`;
+        panel.style.top = `${rect.top}px`;
+        startX = e.clientX;
+        startY = e.clientY;
+        baseLeft = rect.left;
+        baseTop = rect.top;
+      });
+      window.addEventListener("mousemove", (e) => {
+        if (!dragging) return;
+        panel.style.left = `${Math.max(0, baseLeft + e.clientX - startX)}px`;
+        panel.style.top = `${Math.max(0, baseTop + e.clientY - startY)}px`;
+      });
+      window.addEventListener("mouseup", () => {
+        dragging = false;
+      });
+    }
+  }
+  const toggleBtn = document.getElementById("btnToggleLayersPanel");
+  if (toggleBtn && toggleBtn.dataset.wired !== "1") {
+    toggleBtn.dataset.wired = "1";
+    toggleBtn.addEventListener("click", () => {
+      const p = document.getElementById("floatLayersControlPanel");
+      if (p) p.hidden = !p.hidden;
+    });
+  }
 }
 
 export function paintOverlays(): void {
   updateOverlayBrandBadge();
   applyHudCustomAppearance();
+  wireLayersControlPanel();
 
   const studio = document.getElementById("overlayCustomStudio");
   if (studio && !studio.dataset.wired) {

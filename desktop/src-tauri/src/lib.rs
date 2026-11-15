@@ -136,6 +136,8 @@ pub fn run() {
             read_latest_ibt,
             list_ibt_sessions,
             read_ibt_file,
+            get_ibt_storage_stats,
+            cleanup_old_ibt_files,
             redact_session_info,
             quit
         ])
@@ -623,6 +625,96 @@ async fn parse_ibt_telemetry(path: String) -> Result<Vec<ibt_parser::TelemetrySa
     tauri::async_runtime::spawn_blocking(move || ibt_parser::parse_ibt_channels(&pb))
         .await
         .map_err(|e| format!("Error en tarea de telemetría: {e}"))?
+}
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct IbtStorageStats {
+    total_files: usize,
+    total_bytes: u64,
+    old_files_count: usize,
+    old_bytes: u64,
+    deleted_count: usize,
+    freed_bytes: u64,
+}
+
+#[tauri::command]
+async fn get_ibt_storage_stats(max_age_days: u32) -> Result<IbtStorageStats, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let Some(dir) = folders::detect_telemetry_dir() else {
+            return Ok(IbtStorageStats { total_files: 0, total_bytes: 0, old_files_count: 0, old_bytes: 0, deleted_count: 0, freed_bytes: 0 });
+        };
+        let Ok(entries) = fs::read_dir(&dir) else {
+            return Ok(IbtStorageStats { total_files: 0, total_bytes: 0, old_files_count: 0, old_bytes: 0, deleted_count: 0, freed_bytes: 0 });
+        };
+        let now = std::time::SystemTime::now();
+        let cutoff = std::time::Duration::from_secs(u64::from(max_age_days.max(1)) * 24 * 3600);
+        let mut total_files = 0usize;
+        let mut total_bytes = 0u64;
+        let mut old_files_count = 0usize;
+        let mut old_bytes = 0u64;
+        for entry in entries.flatten() {
+            let p = entry.path();
+            if p.extension().and_then(|e| e.to_str()).is_some_and(|e| e.eq_ignore_ascii_case("ibt")) {
+                if let Ok(meta) = entry.metadata() {
+                    let len = meta.len();
+                    total_files += 1;
+                    total_bytes += len;
+                    if max_age_days > 0 {
+                        if let Ok(modified) = meta.modified() {
+                            if now.duration_since(modified).map_or(false, |d| d > cutoff) {
+                                old_files_count += 1;
+                                old_bytes += len;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        Ok(IbtStorageStats { total_files, total_bytes, old_files_count, old_bytes, deleted_count: 0, freed_bytes: 0 })
+    })
+    .await
+    .map_err(|e| format!("Error leyendo espacio .ibt: {e}"))?
+}
+
+#[tauri::command]
+async fn cleanup_old_ibt_files(max_age_days: u32) -> Result<IbtStorageStats, String> {
+    if max_age_days == 0 {
+        return get_ibt_storage_stats(0).await;
+    }
+    tauri::async_runtime::spawn_blocking(move || {
+        let Some(dir) = folders::detect_telemetry_dir() else {
+            return Ok(IbtStorageStats { total_files: 0, total_bytes: 0, old_files_count: 0, old_bytes: 0, deleted_count: 0, freed_bytes: 0 });
+        };
+        let Ok(entries) = fs::read_dir(&dir) else {
+            return Ok(IbtStorageStats { total_files: 0, total_bytes: 0, old_files_count: 0, old_bytes: 0, deleted_count: 0, freed_bytes: 0 });
+        };
+        let now = std::time::SystemTime::now();
+        let cutoff = std::time::Duration::from_secs(u64::from(max_age_days) * 24 * 3600);
+        let mut total_files = 0usize;
+        let mut total_bytes = 0u64;
+        let mut deleted_count = 0usize;
+        let mut freed_bytes = 0u64;
+        for entry in entries.flatten() {
+            let p = entry.path();
+            if p.extension().and_then(|e| e.to_str()).is_some_and(|e| e.eq_ignore_ascii_case("ibt")) {
+                if let Ok(meta) = entry.metadata() {
+                    let len = meta.len();
+                    let is_old = meta.modified().ok().and_then(|m| now.duration_since(m).ok()).is_some_and(|d| d > cutoff);
+                    if is_old && fs::remove_file(&p).is_ok() {
+                        deleted_count += 1;
+                        freed_bytes += len;
+                    } else {
+                        total_files += 1;
+                        total_bytes += len;
+                    }
+                }
+            }
+        }
+        Ok(IbtStorageStats { total_files, total_bytes, old_files_count: 0, old_bytes: 0, deleted_count, freed_bytes })
+    })
+    .await
+    .map_err(|e| format!("Error limpiando .ibt antiguos: {e}"))?
 }
 
 #[tauri::command]

@@ -383,6 +383,8 @@ pub fn parse_ibt_report(path: &Path) -> Result<IbtSessionReport, String> {
     let mut prev_lap_num: Option<i32> = None;
     let mut prev_pct: Option<f32> = None;
     let mut first_fuel_l = 0.0f32;
+    let mut last_seen_official_t = 0.0f32;
+    let mut last_completed_lap: Option<i32> = None;
 
     while reader.read_exact(&mut frame).is_ok() {
         let dist_m = read_f32_le(&frame, v_dist.offset, v_dist.var_type);
@@ -413,13 +415,16 @@ pub fn parse_ibt_report(path: &Path) -> Result<IbtSessionReport, String> {
                     lap_states.entry(lap_num).or_default().crossed_start = true;
                 }
                 if lap_num > prev {
-                    if let Some(vl) = v_last_lap {
-                        let official_t = read_f32_le(&frame, vl.offset, vl.var_type);
-                        if official_t > 20.0 && official_t < 1800.0 {
-                            official_lap_times.entry(prev).or_insert(official_t);
-                        }
-                    }
+                    last_completed_lap = Some(prev);
                 }
+            }
+        }
+        if let (Some(completed), Some(vl)) = (last_completed_lap, v_last_lap) {
+            let official_t = read_f32_le(&frame, vl.offset, vl.var_type);
+            if official_t > 20.0 && official_t < 1800.0 && (official_t - last_seen_official_t).abs() > 0.0005 {
+                official_lap_times.insert(completed, official_t);
+                last_seen_official_t = official_t;
+                last_completed_lap = None;
             }
         }
         prev_lap_num = Some(lap_num);
