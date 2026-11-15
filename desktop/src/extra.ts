@@ -1976,6 +1976,34 @@ export function paintOverlays(): void {
   const toggleBtn = document.getElementById("overlayModeToggle");
   const btnUnlock = document.getElementById("btnUnlockLayout");
   const btnReset = document.getElementById("btnResetLayout");
+  const btnRecenter = document.getElementById("btnRecenterOverlay");
+
+  const clampFloatingWidgetsToViewport = (resetPositions = false) => {
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    const maxW = Math.max(320, window.innerWidth);
+    const maxH = Math.max(240, window.innerHeight);
+    document.querySelectorAll<HTMLElement>(".mmt-float-widget").forEach((el) => {
+      if (resetPositions) {
+        el.style.transform = "";
+        el.style.left = "";
+        el.style.top = "";
+        return;
+      }
+      const rect = el.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return;
+      // Compensate if saved coordinates overflow logical viewport at 125%/150% Windows DPI scaling
+      if (rect.right > maxW - 8 || rect.bottom > maxH - 8 || rect.left < 4 || rect.top < 4) {
+        const dx = rect.right > maxW - 8 ? (maxW - 8 - rect.right) / dpr : rect.left < 4 ? (8 - rect.left) / dpr : 0;
+        const dy = rect.bottom > maxH - 8 ? (maxH - 8 - rect.bottom) / dpr : rect.top < 4 ? (8 - rect.top) / dpr : 0;
+        if (dx !== 0 || dy !== 0) {
+          const curLeft = parseFloat(el.style.left || "0") || 0;
+          const curTop = parseFloat(el.style.top || "0") || 0;
+          el.style.left = `${Math.round(curLeft + dx)}px`;
+          el.style.top = `${Math.round(curTop + dy)}px`;
+        }
+      }
+    });
+  };
   const shiftLightContainers = document.querySelectorAll<HTMLElement>("#ovShiftLights, #ovShiftLightsFloat");
   const canvases = document.querySelectorAll<HTMLCanvasElement>("#ovInputs, #ovInputsFloat");
 
@@ -2015,6 +2043,25 @@ export function paintOverlays(): void {
         }
       });
     }
+
+    if (btnRecenter) {
+      btnRecenter.addEventListener("click", async () => {
+        try {
+          const { invoke } = await import("@tauri-apps/api/core");
+          await invoke("recenter_overlay");
+        } catch {
+          // web/mock fallback
+        }
+        clampFloatingWidgetsToViewport(true);
+        try {
+          localStorage.removeItem("mmt_overlay_layouts");
+        } catch {
+          // ignore
+        }
+      });
+    }
+
+    window.addEventListener("resize", () => clampFloatingWidgetsToViewport(false));
 
     if (btnUnlock) {
       btnUnlock.addEventListener("click", () => {

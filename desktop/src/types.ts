@@ -239,6 +239,7 @@ export interface Backend {
   detectHardware(): Promise<HardwareReport>;
   checkIracing(): Promise<string>;
   toggleOverlay(show: boolean): Promise<boolean>;
+  recenterOverlay?(): Promise<boolean>;
   setOverlayEdit(editing: boolean): Promise<void>;
   readLatestIbt(): Promise<IbtSessionReport | null>;
   listIbtSessions?(): Promise<IbtSessionMeta[]>;

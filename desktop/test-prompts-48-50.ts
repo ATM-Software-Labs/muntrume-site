@@ -10,6 +10,8 @@ import {
 import { ActiveTrackCoach, buildReferenceCorners, isRaceSession } from "./src/telemetry/active-track-coach";
 import { getCalendarContentStatus } from "./src/features-48-50";
 import type { SignalSample } from "./src/telemetry/signal-cleaner";
+import { buildCompactStandingsWindow } from "./src/irsdk/overlay-renderer";
+import type { LeaderboardEntry } from "./src/irsdk/types";
 
 // Polyfill browser globals for Node test runner
 const memStorage = new Map<string, string>();
@@ -96,6 +98,41 @@ async function runTests() {
   const status = getCalendarContentStatus("Fuji International Speedway - Grand Prix", []);
   assert.strictEqual(status.installed, true);
   assert.strictEqual(status.refTrackKey, "fuji");
+
+  // 4. Prompt 51: Compact Standings window on a 40-car grid (P22 active)
+  const grid40: LeaderboardEntry[] = Array.from({ length: 40 }, (_, i) => ({
+    position: i + 1,
+    classPosition: i + 1,
+    carIdx: i,
+    carNumber: String(i + 1),
+    driverName: `Driver ${i + 1}`,
+    abbrevName: `D. ${i + 1}`,
+    carPath: "bmwm4gt3",
+    carScreenName: "BMW M4 GT3",
+    carClassShortName: "GT3",
+    carClassColor: "#00d97e",
+    licString: "A 3.50",
+    licBadgeColor: "#0153db",
+    iRatingStr: "2.5k",
+    bestLapTime: 97 + i * 0.1,
+    bestLapStr: "1:37.000",
+    lastLapTime: 97.2 + i * 0.1,
+    lastLapStr: "1:37.200",
+    gapSeconds: i * 0.5,
+    gapStr: i === 0 ? "LEADER" : `+${(i * 0.5).toFixed(1)}s`,
+    intervalSeconds: 0.5,
+    intervalStr: "+0.5s",
+    onPitRoad: false,
+    isActiveCam: i === 21, // P22
+    lapsCompleted: 5,
+  }));
+  const compact = buildCompactStandingsWindow(grid40);
+  assert(compact.length <= 11, `Compact standings should be <= 11 rows, got ${compact.length}`);
+  assert(compact.some((r) => r.kind === "separator"), "Should include separator when P22 is outside Top 6");
+  assert(
+    compact.some((r) => r.kind === "entry" && r.entry.position === 22),
+    "Should include active P22 car",
+  );
 
   console.log("ALL PROMPTS 48-50 TESTS PASSED");
 }

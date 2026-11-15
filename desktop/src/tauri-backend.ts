@@ -60,6 +60,7 @@ export function createTauriBackend(): Backend {
     detectHardware: () => invoke("detect_hardware"),
     checkIracing: () => invoke<string>("check_iracing_status"),
     toggleOverlay: (show: boolean) => invoke<boolean>("toggle_overlay", { show }),
+    recenterOverlay: () => invoke<boolean>("recenter_overlay"),
     setOverlayEdit: (editing: boolean) => invoke("set_overlay_edit", { editing }),
     readLatestIbt: () => invoke<IbtSessionReport | null>("read_latest_ibt"),
     listIbtSessions: () => invoke<IbtSessionMeta[]>("list_ibt_sessions"),

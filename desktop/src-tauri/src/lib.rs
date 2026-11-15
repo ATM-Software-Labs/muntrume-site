@@ -132,6 +132,7 @@ pub fn run() {
             check_iracing_status,
             detect_hardware,
             toggle_overlay,
+            recenter_overlay,
             set_overlay_edit,
             parse_ibt_telemetry,
             read_latest_ibt,
@@ -637,6 +638,16 @@ async fn set_overlay_edit(app: AppHandle, editing: bool) -> Result<(), String> {
     }
     let _ = window.set_always_on_top(true);
     Ok(())
+}
+
+#[tauri::command]
+async fn recenter_overlay(app: AppHandle) -> Result<bool, String> {
+    if let Some(window) = app.get_webview_window("overlay") {
+        fit_overlay(&window);
+        let _ = window.set_always_on_top(true);
+        return Ok(true);
+    }
+    Ok(false)
 }
 
 fn fit_overlay(window: &tauri::WebviewWindow) {

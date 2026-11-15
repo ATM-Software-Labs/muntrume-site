@@ -177,6 +177,39 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
   `);
 }
 
+export type CompactStandingsRow =
+  | { kind: "entry"; entry: LeaderboardEntry; rankIdx: number }
+  | { kind: "separator" };
+
+/**
+ * Compact Standings window: Top 3 fixed + subtle divider + ±3 around CamCarIdx (max 11 rows total).
+ */
+export function buildCompactStandingsWindow(leaderboard: LeaderboardEntry[]): CompactStandingsRow[] {
+  if (!leaderboard || leaderboard.length === 0) return [];
+  if (leaderboard.length <= 10) {
+    return leaderboard.map((entry, rankIdx) => ({ kind: "entry", entry, rankIdx }));
+  }
+
+  const selfIdx = leaderboard.findIndex((e) => e.isActiveCam);
+  if (selfIdx <= 6) {
+    return leaderboard.slice(0, 10).map((entry, rankIdx) => ({ kind: "entry", entry, rankIdx }));
+  }
+
+  const rows: CompactStandingsRow[] = leaderboard
+    .slice(0, 3)
+    .map((entry, rankIdx) => ({ kind: "entry", entry, rankIdx }));
+
+  const winStart = Math.max(3, selfIdx - 3);
+  const winEnd = Math.min(leaderboard.length, selfIdx + 4);
+  if (winStart > 3) {
+    rows.push({ kind: "separator" });
+  }
+  for (let i = winStart; i < winEnd && rows.length < 11; i++) {
+    rows.push({ kind: "entry", entry: leaderboard[i], rankIdx: i });
+  }
+  return rows;
+}
+
 /**
  * Renders the Multiclass Standings widget into target DOM container
  */
@@ -242,13 +275,21 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
     })()}
   `;
 
-  // Display top 10 drivers (compact Kapps Pro density)
-  const sliceList = leaderboard.slice(0, 10);
+  // Compact Standings window: Top 3 + divider + ±3 around CamCarIdx (max 10-11 rows)
+  const compactRows = buildCompactStandingsWindow(leaderboard);
+  const entryList = compactRows
+    .filter((r): r is { kind: "entry"; entry: LeaderboardEntry; rankIdx: number } => r.kind === "entry")
+    .map((r) => r.entry);
   const irDeltas = estimateAllDriversIRatingDeltas(state);
-  const isMulticlass = new Set(sliceList.map((x) => x.carClassShortName)).size > 1;
+  const isMulticlass = new Set(entryList.map((x) => x.carClassShortName)).size > 1;
 
-  const rowsHtml = sliceList
-    .map((e: LeaderboardEntry, idx: number) => {
+  const rowsHtml = compactRows
+    .map((row) => {
+      if (row.kind === "separator") {
+        return `<div class="h-[14px] flex items-center justify-center bg-[#0a0c10]/70 text-[10px] font-mono text-white/35 tracking-widest select-none">···</div>`;
+      }
+      const e = row.entry;
+      const idx = row.rankIdx;
       const isLeader = idx === 0;
       const isSelf = e.isActiveCam;
       const posClass = isLeader
@@ -307,7 +348,7 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
         : "";
 
       return `
-        <div class="flex items-center justify-between gap-1.5 px-2.5 py-[4px] ${rowBg} font-mono text-xs" style="border-left: 3px solid ${e.carClassColor || "#38bdf8"}">
+        <div class="flex items-center justify-between gap-1.5 px-2 h-[23px] ${rowBg} font-mono text-[11px] tabular-nums overflow-hidden" style="border-left: 3px solid ${e.carClassColor || "#38bdf8"}">
           <div class="flex items-center gap-1 min-w-0 flex-1">
             ${posSpan}
             ${classSpan}
@@ -331,7 +372,7 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
 
   setHtmlIfChanged(container, `
     ${headerHtml}
-    <div class="divide-y divide-white/[0.04] rounded overflow-hidden font-mono text-xs select-none">
+    <div class="divide-y divide-white/[0.04] rounded overflow-hidden font-mono text-[11px] tabular-nums select-none max-h-[290px]">
       ${rowsHtml}
     </div>
   `);

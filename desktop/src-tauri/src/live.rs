@@ -205,6 +205,7 @@ fn windows_loop(app: AppHandle) {
         let mut last_emit = Instant::now() - Duration::from_secs(1);
         let mut last_main_emit = Instant::now() - Duration::from_secs(1);
         let mut last_frame_emit = Instant::now() - Duration::from_secs(1);
+        let mut last_yaml_emit = Instant::now() - Duration::from_secs(2);
         let mut last_proc = Instant::now();
         loop {
             let signaled = if mapped.event.is_null() {
@@ -256,9 +257,13 @@ fn windows_loop(app: AppHandle) {
                 Err(IbtError::NotConnected) => {
                     emit_status_if_changed(&app, &mut last_status, "in_sim");
                     vars = None;
+                    std::thread::sleep(Duration::from_millis(50));
                     continue;
                 }
-                Err(_) => continue,
+                Err(_) => {
+                    std::thread::sleep(Duration::from_millis(25));
+                    continue;
+                }
             };
             let stale = vars.as_ref().map(VarTable::session_info_update) != Some(update);
             if stale {
@@ -268,15 +273,19 @@ fn windows_loop(app: AppHandle) {
                         emit_status_if_changed(&app, &mut last_status, "in_sim");
                         vars = None;
                         last_yaml_update = None;
+                        std::thread::sleep(Duration::from_millis(50));
                         continue;
                     }
-                    Err(_) => continue,
+                    Err(_) => {
+                        std::thread::sleep(Duration::from_millis(25));
+                        continue;
+                    }
                 }
             }
             let yaml_changed = last_yaml_update != Some(update);
             let need_overlay_yaml = overlay_active && (yaml_changed || !overlay_synced_yaml);
             let need_main_yaml = main_active && (yaml_changed || !main_synced_yaml);
-            if need_overlay_yaml || need_main_yaml {
+            if (need_overlay_yaml || need_main_yaml) && last_yaml_emit.elapsed() >= Duration::from_millis(1000) {
                 if let Ok((u, yaml)) = read_session_info_yaml(bytes) {
                     let payload = serde_json::json!({ "update": u, "yaml": yaml });
                     if need_overlay_yaml {
@@ -288,6 +297,7 @@ fn windows_loop(app: AppHandle) {
                         main_synced_yaml = true;
                     }
                     last_yaml_update = Some(u);
+                    last_yaml_emit = Instant::now();
                 }
             }
             let mut clear_vars = false;
