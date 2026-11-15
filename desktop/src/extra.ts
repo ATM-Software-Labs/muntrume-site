@@ -2,6 +2,7 @@ import type { HardwareReport, IbtSessionMeta, IbtSessionReport, IracingAnalysis,
 import { areSessionsCompatible, computeDistanceDelta, resampleTrackByDistance } from "./telemetry/alignment";
 import { cleanTelemetrySignals, detectCornerKeyEvents } from "./telemetry/signal-cleaner";
 import { analyzeStintConsistency } from "./telemetry/consistency";
+import { setActiveCoachReference } from "./features-48-50";
 import {
   IrsdkClient,
   renderRelativeWidget,
@@ -864,6 +865,7 @@ function renderTelemetryStudio(): void {
 
   const effectiveTrack = getEffectiveTelemetryTrack();
   if (!effectiveTrack.samples || effectiveTrack.samples.length === 0) return;
+  setActiveCoachReference(effectiveTrack.samples);
 
   const deltaSec = effectiveTrack.bestSec > 0 && effectiveTrack.avgSec > 0
     ? Math.max(0, finiteOr(effectiveTrack.avgSec - effectiveTrack.bestSec, 0))

@@ -1,6 +1,6 @@
 import { inTauri } from "./env";
 import { IrsdkClient, type IrsdkTelemetryFrame } from "./irsdk";
-import type { Backend, IbtSessionMeta, IbtSessionReport, LiveSample, Settings, SettingsPatch, StagedFile, UploadInput } from "./types";
+import type { Backend, IbtSessionMeta, IbtSessionReport, IracingPathsStatus, LiveSample, Settings, SettingsPatch, StagedFile, UploadInput } from "./types";
 
 async function invoke<T>(command: string, args?: Record<string, unknown>): Promise<T> {
   const { invoke: call } = await import("@tauri-apps/api/core");
@@ -45,6 +45,7 @@ export function createTauriBackend(): Backend {
     saveSettings: (patch: SettingsPatch) => invoke<Settings>("save_settings", { patch }),
     pickFolder: () => invoke("pick_folder"),
     detectFolder: () => invoke("detect_folder"),
+    detectIracingPaths: () => invoke<IracingPathsStatus>("detect_iracing_paths"),
     pickSto: () => invoke("pick_sto"),
     clearStaged: () => invoke("clear_staged"),
     upload: (input: UploadInput) =>

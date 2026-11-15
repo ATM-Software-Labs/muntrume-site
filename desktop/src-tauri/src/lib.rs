@@ -123,6 +123,7 @@ pub fn run() {
             save_settings,
             pick_folder,
             detect_folder,
+            detect_iracing_paths,
             pick_sto,
             clear_staged,
             upload_staged,
@@ -462,6 +463,36 @@ fn detect_folder() -> Result<settings::Settings, String> {
     let dir = folders::detect_setups_dir()
         .ok_or_else(|| "No encuentro la carpeta Documentos. Elige la de iRacing a mano.".to_string())?;
     settings::set_setups_dir(&dir, false)
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct IracingPathsStatus {
+    base_path: String,
+    base_exists: bool,
+    setups_path: String,
+    setups_exists: bool,
+    telemetry_path: String,
+    telemetry_exists: bool,
+}
+
+#[tauri::command]
+fn detect_iracing_paths() -> IracingPathsStatus {
+    let setups = folders::detect_setups_dir();
+    let telemetry = folders::detect_telemetry_dir();
+    let base = setups
+        .as_ref()
+        .and_then(|p| p.parent().map(|d| d.to_path_buf()))
+        .or_else(|| telemetry.as_ref().and_then(|p| p.parent().map(|d| d.to_path_buf())));
+
+    IracingPathsStatus {
+        base_path: base.as_ref().map(|p| p.display().to_string()).unwrap_or_default(),
+        base_exists: base.as_ref().map(|p| p.exists()).unwrap_or(false),
+        setups_path: setups.as_ref().map(|p| p.display().to_string()).unwrap_or_default(),
+        setups_exists: setups.as_ref().map(|p| p.exists()).unwrap_or(false),
+        telemetry_path: telemetry.as_ref().map(|p| p.display().to_string()).unwrap_or_default(),
+        telemetry_exists: telemetry.as_ref().map(|p| p.exists()).unwrap_or(false),
+    }
 }
 
 #[tauri::command]

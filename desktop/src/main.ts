@@ -3,6 +3,7 @@ import { createMock } from "./mock";
 import { createTauriBackend } from "./tauri-backend";
 import type { Backend, LibraryItem, LiveSample, Settings, Snapshot, StagedFile } from "./types";
 import { fuelText, paintConfigAnalysis, paintExtras, updateLiveOverlay, initFloatingOverlayControls, paintOverlays, paintHardware, paintLastSession, noteHudClosed, stopOverlayDemoLoop } from "./extra";
+import { getCalendarContentStatus, initPrompts48To50 } from "./features-48-50";
 import rawSchedule from "./season_schedule_2026_s4.json";
 import { getSetupProfile } from "./setup-intelligence";
 import { SyncCoordinator } from "./sync/sync-coordinator";
@@ -1566,9 +1567,36 @@ function paintGroupedByWeek(items: LibraryItem[]): void {
 
         trackLeft.append(trackPin, trackTitle);
 
-        const trackRight = document.createElement("span");
-        trackRight.className = "text-xs font-mono text-r-muted";
-        trackRight.textContent = `${trackRows.length} ${trackRows.length === 1 ? "setup" : "setups"}`;
+        const trackRight = document.createElement("div");
+        trackRight.className = "flex items-center gap-2";
+
+        const contentStatus = getCalendarContentStatus(track, snapshot?.library ?? []);
+        const statusBadge = document.createElement("span");
+        statusBadge.className = contentStatus.installed
+          ? "px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+          : "px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30";
+        statusBadge.textContent = contentStatus.installed
+          ? `Instalado (${trackRows.length} setups)`
+          : "Falta contenido";
+
+        trackRight.append(statusBadge);
+
+        if (contentStatus.refTrackKey) {
+          const loadBtn = document.createElement("button");
+          loadBtn.type = "button";
+          loadBtn.className = "h-7 px-2.5 rounded-lg border border-r-accent/40 bg-r-accent/15 text-r-accent font-mono text-[10px] font-bold hover:bg-r-accent/25 transition";
+          loadBtn.textContent = "⚡ Cargar Ref + Setup";
+          loadBtn.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            const sel = document.getElementById("telemetryTrack") as HTMLSelectElement | null;
+            if (sel && contentStatus.refTrackKey) {
+              sel.value = contentStatus.refTrackKey;
+              sel.dispatchEvent(new Event("change"));
+            }
+            showView("analysis");
+          });
+          trackRight.append(loadBtn);
+        }
 
         trackHeader.append(trackLeft, trackRight);
         trackBlock.append(trackHeader);
@@ -1621,6 +1649,7 @@ function paint(data: Snapshot): void {
   }
   paintLibrary();
   paintExtras(data);
+  initPrompts48To50(backend, data);
   paintStaged(data.staged);
   paintSettings(data);
   if (data.updateVersion) {

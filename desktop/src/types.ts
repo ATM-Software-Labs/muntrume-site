@@ -210,6 +210,15 @@ export interface IbtSessionReport {
   bestLapSamples: IbtTelemetrySample[];
 }
 
+export interface IracingPathsStatus {
+  basePath: string;
+  baseExists: boolean;
+  setupsPath: string;
+  setupsExists: boolean;
+  telemetryPath: string;
+  telemetryExists: boolean;
+}
+
 export interface Backend {
   snapshot(): Promise<Snapshot>;
   authStart(): Promise<AuthStart>;
@@ -221,6 +230,7 @@ export interface Backend {
   saveSettings(patch: SettingsPatch): Promise<Settings>;
   pickFolder(): Promise<Settings | null>;
   detectFolder(): Promise<Settings>;
+  detectIracingPaths?(): Promise<IracingPathsStatus>;
   pickSto(): Promise<StagedFile | null>;
   clearStaged(): Promise<void>;
   upload(input: UploadInput): Promise<string>;
