@@ -91,11 +91,14 @@ export function getCarGallerySlides(car: CarMetadata): CarGallerySlide[] {
   ];
 
   const seenSrc = new Set<string>([preview.toLowerCase()]);
+  // En la ficha individual de cada coche solo se muestran renders/fotos oficiales de vehículo,
+  // nunca fotos de equipo/paddock (/assets/img/coche*, race*, hero*, etc.) ni logos de series.
   const album = PADDOCK_ALBUMS.find((a) => a.carPath.toLowerCase() === folderLower);
   if (album) {
     for (const photo of album.photos) {
       if (photo.carPath.toLowerCase() !== folderLower) continue;
       if (seenSrc.has(photo.img.toLowerCase())) continue;
+      if (!photo.img.toLowerCase().startsWith('/assets/cars/')) continue;
       if (isSeriesLogoOrBannerAsset(photo.img, photo.title, photo.subtitle)) continue;
       if (isForeignManufacturerAsset(car, photo.img, photo.title)) continue;
       seenSrc.add(photo.img.toLowerCase());

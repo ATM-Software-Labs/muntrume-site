@@ -1,7 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import MediaLightbox from '../../components/MediaLightbox.astro';
-import MediaCarousel from '../../components/MediaCarousel.astro';
 import { CAR_CATALOG_LIST, type CarMetadata } from '../../../desktop/src/cars/catalog';
 import { getBrandOrigin, getCarDossier } from '../../data/car-dossiers';
 import { getCarVideos } from '../../lib/video-links';
@@ -247,25 +246,62 @@ const pageDescription = `${car.brand} ${car.model} (${car.carClass}): ${dossier.
       </div>
     </section>
 
-    <!-- GALERIA DE FOTOS INTERACTIVA (AUTO-CAROUSEL) -->
-    <section aria-label="Galería interactiva del vehículo" class="space-y-4">
+    <!-- FICHA VISUAL DE ESTUDIO Y ESPECIFICACIONES -->
+    <section aria-label="Ficha visual y especificaciones del vehículo" class="space-y-4">
       <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2 pb-2 border-b border-[var(--r-line)]">
         <div>
-          <span class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)]">Galería propia interactiva</span>
-          <h2 class="r-h3">Galería fotográfica · {car.brand} {car.model}</h2>
+          <span class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)]">Estudio Oficial iRacing</span>
+          <h2 class="r-h3">{car.brand} {car.model} · Ficha Técnica</h2>
         </div>
         <span class="text-xs font-mono text-[var(--r-muted)]">
-          Carrusel automático todo en uno · Pausa al pasar el ratón · Haz clic para ampliar en HD
+          Render oficial de estudio · Haz clic para ampliar en HD
         </span>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,520px)_1fr] gap-6 items-center">
-        <MediaCarousel
-          id={`car-${car.carFolder.toLowerCase()}`}
-          slides={carSlides}
-          intervalMs={4500}
-          aspectRatioClass="aspect-[16/9]"
-        />
+      <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,520px)_1fr] gap-6 items-start">
+        {carSlides[0] && (
+          <div class="rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] overflow-hidden shadow-lg">
+            <div class="relative aspect-[16/9] bg-gradient-to-b from-[#0b1017] to-[#06090d] overflow-hidden group">
+              <img
+                src={carSlides[0].src}
+                alt={`${car.brand} ${car.model}`}
+                class="w-full h-full object-cover object-center group-hover:scale-[1.03] transition-transform duration-500"
+                loading="eager"
+              />
+              <span class="absolute top-3 left-3 px-2.5 py-1 rounded-md bg-black/75 border border-white/10 font-mono text-[10px] font-bold uppercase tracking-wider text-[var(--r-accent)]">
+                {carSlides[0].tag}
+              </span>
+            </div>
+            <div class="p-4 border-t border-[var(--r-line)] bg-[var(--r-bg-2)] flex flex-wrap items-center justify-between gap-3">
+              <div class="min-w-0">
+                <p class="text-[10px] font-mono uppercase tracking-wider text-[var(--r-muted)] truncate">
+                  {car.carClass} · {car.carFolder}
+                </p>
+                <p class="text-sm font-bold text-[var(--r-text)] truncate">
+                  {car.brand} {car.model}
+                </p>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                {hasGarageSetups && (
+                  <a
+                    href={`/garage?car=${encodeURIComponent(car.carFolder)}`}
+                    class="px-3.5 py-1.5 rounded-xl bg-[var(--r-accent)]/15 hover:bg-[var(--r-accent)]/25 border border-[var(--r-accent)]/40 text-xs font-mono font-bold text-[var(--r-accent)] transition"
+                  >
+                    Setups (.sto) →
+                  </a>
+                )}
+                <a
+                  href={carSlides[0].src}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="px-3.5 py-1.5 rounded-xl bg-[var(--r-surface)] hover:border-[var(--r-accent)] border border-[var(--r-line)] text-xs font-mono font-bold text-[var(--r-text)] transition"
+                >
+                  Ampliar HD ↗
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
         <div class="rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-5 space-y-3">
           <div class="flex items-center justify-between gap-2 border-b border-[var(--r-line)] pb-2.5">
             <span class="font-mono text-[11px] uppercase tracking-widest text-[var(--r-accent)] font-bold">Especificaciones Oficiales</span>
@@ -285,20 +321,25 @@ const pageDescription = `${car.brand} ${car.model} (${car.carClass}): ${dossier.
               <strong class="text-[var(--r-text)]">{car.specs}</strong>
             </div>
             {officialSeries.length > 0 && (
-              <div class="p-2.5 rounded-xl bg-[var(--r-bg)] border border-[var(--r-line)]/60 col-span-2 space-y-2">
-                <span class="text-[10px] text-[var(--r-muted)] block uppercase">Series Oficiales donde participa ({officialSeries.length})</span>
-                <div class="flex flex-wrap gap-1.5">
+              <div class="p-3 rounded-xl bg-[var(--r-bg)] border border-[var(--r-line)]/60 col-span-2 space-y-2.5">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-[10px] text-[var(--r-muted)] uppercase">Series Oficiales donde participa</span>
+                  <span class="text-[10px] px-2 py-0.5 rounded-full bg-[var(--r-accent)]/15 text-[var(--r-accent)] font-bold">{officialSeries.length} series</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {officialSeries.map((sr) => (
-                    <span
-                      class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--r-surface)] border border-[var(--r-line)] text-[11px] text-[var(--r-text)]"
+                    <div
+                      class="flex items-start gap-2 px-2.5 py-2 rounded-lg bg-[var(--r-surface)] border border-[var(--r-line)]/80 hover:border-[var(--r-accent)]/50 transition-colors"
                       title={sr.currentTrack ? `${sr.name} · Semana actual: ${sr.currentTrack}` : sr.name}
                     >
-                      <span class="w-1.5 h-1.5 rounded-full bg-[var(--r-accent)] shrink-0"></span>
-                      <span>{sr.name}</span>
-                      {sr.currentTrack && (
-                        <span class="text-[10px] text-[var(--r-muted)]">· {sr.currentTrack}</span>
-                      )}
-                    </span>
+                      <span class="w-1.5 h-1.5 rounded-full bg-[var(--r-accent)] shrink-0 mt-1.5"></span>
+                      <div class="min-w-0 leading-snug">
+                        <span class="block text-[11px] font-semibold text-[var(--r-text)] truncate">{sr.name}</span>
+                        {sr.currentTrack && (
+                          <span class="block text-[10px] text-[var(--r-muted)] truncate">{sr.currentTrack}</span>
+                        )}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
