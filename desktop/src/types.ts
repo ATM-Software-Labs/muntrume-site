@@ -160,6 +160,7 @@ export interface IbtTelemetrySample {
   throttle: number;
   brake: number;
   steeringRad: number;
+  gear?: number;
   x?: number;
   y?: number;
 }
@@ -169,14 +170,36 @@ export interface IbtLapSummary {
   lapTimeS: number;
   topSpeedKmh: number;
   deltaS: number;
+  isValid?: boolean;
+  invalidReason?: string;
+}
+
+export interface IbtSessionMeta {
+  filePath: string;
+  fileName: string;
+  modifiedEpochMs: number;
+  sessionUniqueId: string;
+  subSessionId: string;
+  trackName: string;
+  trackConfig: string;
+  carPath: string;
+  carScreenName: string;
+  isRecent48h: boolean;
 }
 
 export interface IbtSessionReport {
   fileName: string;
+  sessionUniqueId?: string;
+  subSessionId?: string;
+  modifiedEpochMs?: number;
   trackName: string;
   trackConfig: string;
+  trackLengthM?: number;
   trackTemp: string;
   airTemp: string;
+  trackRubberState?: string;
+  driverSetupName?: string;
+  fuelLevelStartL?: number;
   carPath: string;
   carScreenName: string;
   bestLapS: number;
@@ -208,6 +231,8 @@ export interface Backend {
   toggleOverlay(show: boolean): Promise<boolean>;
   setOverlayEdit(editing: boolean): Promise<void>;
   readLatestIbt(): Promise<IbtSessionReport | null>;
+  listIbtSessions?(): Promise<IbtSessionMeta[]>;
+  readIbtFile?(path: string): Promise<IbtSessionReport | null>;
   quit(): Promise<void>;
   onRefresh(cb: () => void): () => void;
   onStaged(cb: (file: StagedFile) => void): () => void;

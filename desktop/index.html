@@ -480,9 +480,21 @@
                   Mapas del circuito 100% auténticos generados directamente desde tus archivos de telemetría .ibt de iRacing. Comparativa de tu mejor vuelta vs tu promedio de tanda con análisis de velocidad de ápice, acelerador y modulación de freno.
                 </p>
               </div>
-              <div class="flex flex-wrap items-center gap-3">
+              <div class="flex flex-wrap items-end gap-3">
                 <div>
-                  <label class="block text-xs font-mono text-r-muted uppercase mb-1">Circuito (Telemetría .ibt)</label>
+                  <label class="block text-xs font-mono text-r-muted uppercase mb-1">Sesión Reciente (.ibt ≤ 48h)</label>
+                  <select id="ibtRecentSelect" class="h-10 rounded-xl border border-r-line bg-r-surface px-3 text-sm font-sans text-r-text max-w-[260px]">
+                    <option value="">Sesión activa / últimas 48h…</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-mono text-r-muted uppercase mb-1">Archivo Histórico (&gt; 48h)</label>
+                  <select id="ibtArchiveSelect" class="h-10 rounded-xl border border-r-line bg-r-surface px-3 text-sm font-sans text-r-text max-w-[260px]">
+                    <option value="">Archivo Histórico (&gt; 48h)…</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-mono text-r-muted uppercase mb-1">Circuito (Referencia)</label>
                   <select id="telemetryTrack" class="h-10 rounded-xl border border-r-line bg-r-surface px-3 text-sm font-sans text-r-text">
                     <option value="fuji" selected>Fuji International Speedway (4.563 km · BMW M4 GT3 · 11 vueltas .ibt)</option>
                     <option value="barcelona">Circuit de Barcelona-Catalunya (4.657 km · 8 vueltas .ibt)</option>
@@ -495,7 +507,9 @@
                     <option value="nurburgring">Nürburgring Gesamtstrecke VLN (24.154 km · 16 vueltas .ibt)</option>
                   </select>
                 </div>
+                <button type="button" id="btnClearIbtSession" class="h-10 px-3.5 rounded-xl border border-r-line bg-r-surface hover:border-rose-400/60 text-xs font-mono text-r-muted hover:text-rose-300 transition">Limpiar sesión actual</button>
               </div>
+              <div id="ibtSessionMetaBadge" class="w-full mt-1 text-[11px] font-mono text-r-muted"></div>
             </div>
 
             <!-- Lap delta summary header banner -->
@@ -1321,6 +1335,17 @@
                   <span class="block text-sm text-r-muted">Apagado por defecto. Arranca en la bandeja.</span>
                 </span>
                 <button type="button" id="startWindows" class="mmt-switch" role="switch" aria-pressed="false" aria-label="Iniciar con Windows"><span></span></button>
+              </label>
+              <label class="flex items-center justify-between gap-4">
+                <span>
+                  <span class="block font-semibold">Retención automática de telemetría local</span>
+                  <span class="block text-sm text-r-muted">Purga automáticamente sesiones locales no favoritas más antiguas que el plazo elegido.</span>
+                </span>
+                <select id="telemetryRetentionDays" class="h-10 rounded-xl border border-r-line bg-r-bg px-3 text-sm font-mono text-r-text">
+                  <option value="0">Desactivado</option>
+                  <option value="7">7 días</option>
+                  <option value="14">14 días</option>
+                </select>
               </label>
             </div>
             <div class="mt-4 rounded-2xl border border-r-line bg-r-surface p-5">

@@ -1,4 +1,5 @@
-import type { HardwareReport, IbtSessionReport, IracingAnalysis, LiveSample, Settings, Snapshot } from "./types";
+import type { HardwareReport, IbtSessionMeta, IbtSessionReport, IracingAnalysis, LiveSample, Settings, Snapshot } from "./types";
+import { areSessionsCompatible, computeDistanceDelta, resampleTrackByDistance } from "./telemetry/alignment";
 import {
   IrsdkClient,
   renderRelativeWidget,
@@ -448,11 +449,106 @@ function renderWeekItems(data: Snapshot): void {
 // -------------------------------------------------------------
 // 2. REAL TELEMETRY & LASER-SCANNED TRACK STUDIO (Based on .ibt)
 // -------------------------------------------------------------
+const TELEMETRY_RETENTION_KEY = "mmt_telemetry_retention_days";
+let ibtSessionsLoaded = false;
+let alignedDeltaCurve: number[] | null = null;
+
+function formatEpochShort(ms: number): string {
+  if (!ms || !Number.isFinite(ms)) return "";
+  try {
+    const d = new Date(ms);
+    return d.toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit" }) + " " +
+      d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+  } catch {
+    return "";
+  }
+}
+
+async function populateIbtSessionSelectors(): Promise<void> {
+  const recentSel = document.getElementById("ibtRecentSelect") as HTMLSelectElement | null;
+  const archiveSel = document.getElementById("ibtArchiveSelect") as HTMLSelectElement | null;
+  if (!recentSel || !archiveSel) return;
+  try {
+    const { inTauri } = await import("./env");
+    if (!inTauri()) return;
+    const { invoke } = await import("@tauri-apps/api/core");
+    const sessions = await invoke<IbtSessionMeta[]>("list_ibt_sessions");
+    const retentionDays = Number(localStorage.getItem(TELEMETRY_RETENTION_KEY) || "0");
+    const nowMs = Date.now();
+    const filtered = (sessions || []).filter((s) => {
+      if (retentionDays > 0 && s.modifiedEpochMs > 0) {
+        const ageDays = (nowMs - s.modifiedEpochMs) / (24 * 3600 * 1000);
+        if (ageDays > retentionDays) return false;
+      }
+      return true;
+    });
+
+    const recent = filtered.filter((s) => s.isRecent48h);
+    const archive = filtered.filter((s) => !s.isRecent48h);
+
+    recentSel.innerHTML = `<option value="">${recent.length ? `Sesiones últimas 48h (${recent.length})…` : "Sin sesiones en las últimas 48h"}</option>`;
+    for (const s of recent) {
+      const opt = document.createElement("option");
+      opt.value = s.filePath;
+      const sid = s.sessionUniqueId ? ` #${s.sessionUniqueId}` : "";
+      opt.textContent = `${formatEpochShort(s.modifiedEpochMs)} · ${s.trackName || s.fileName} · ${s.carScreenName || s.carPath}${sid}`;
+      recentSel.appendChild(opt);
+    }
+
+    archiveSel.innerHTML = `<option value="">${archive.length ? `Archivo Histórico > 48h (${archive.length})…` : "Archivo Histórico (> 48h) vacío"}</option>`;
+    for (const s of archive) {
+      const opt = document.createElement("option");
+      opt.value = s.filePath;
+      const sid = s.sessionUniqueId ? ` #${s.sessionUniqueId}` : "";
+      opt.textContent = `${formatEpochShort(s.modifiedEpochMs)} · ${s.trackName || s.fileName} · ${s.carScreenName || s.carPath}${sid}`;
+      archiveSel.appendChild(opt);
+    }
+  } catch {
+    // Non-fatal in mock/browser mode
+  }
+}
+
+async function loadSelectedIbtSession(path: string): Promise<void> {
+  if (!path) return;
+  try {
+    const { inTauri } = await import("./env");
+    if (!inTauri()) return;
+    const { invoke } = await import("@tauri-apps/api/core");
+    const report = await invoke<IbtSessionReport | null>("read_ibt_file", { path });
+    if (report) {
+      paintLastSession(report);
+      renderTelemetryStudio();
+    }
+  } catch {
+    // Keep current view on read failure
+  }
+}
+
+function wireRetentionSetting(): void {
+  const retSel = document.getElementById("telemetryRetentionDays") as HTMLSelectElement | null;
+  if (!retSel || retSel.dataset.wired === "1") return;
+  retSel.dataset.wired = "1";
+  retSel.value = localStorage.getItem(TELEMETRY_RETENTION_KEY) || "0";
+  retSel.addEventListener("change", () => {
+    localStorage.setItem(TELEMETRY_RETENTION_KEY, retSel.value);
+    void populateIbtSessionSelectors();
+  });
+}
+
 function paintAnalysis(): void {
   const trackSel = document.getElementById("telemetryTrack") as HTMLSelectElement | null;
+  const recentSel = document.getElementById("ibtRecentSelect") as HTMLSelectElement | null;
+  const archiveSel = document.getElementById("ibtArchiveSelect") as HTMLSelectElement | null;
+  const clearBtn = document.getElementById("btnClearIbtSession");
   const filterAll = document.getElementById("coachFilterAll");
   const filterLoss = document.getElementById("coachFilterLoss");
   const traceCanvas = document.getElementById("traceCanvas") as HTMLCanvasElement | null;
+
+  wireRetentionSetting();
+  if (!ibtSessionsLoaded) {
+    ibtSessionsLoaded = true;
+    void populateIbtSessionSelectors();
+  }
 
   if (trackSel && !studioInitialized) {
     studioInitialized = true;
@@ -461,6 +557,27 @@ function paintAnalysis(): void {
       activeHoverDist = null;
       renderTelemetryStudio();
     });
+    if (recentSel) {
+      recentSel.addEventListener("change", () => {
+        if (archiveSel) archiveSel.value = "";
+        void loadSelectedIbtSession(recentSel.value);
+      });
+    }
+    if (archiveSel) {
+      archiveSel.addEventListener("change", () => {
+        if (recentSel) recentSel.value = "";
+        void loadSelectedIbtSession(archiveSel.value);
+      });
+    }
+    if (clearBtn) {
+      clearBtn.addEventListener("click", () => {
+        lastIbtReport = null;
+        activeHoverDist = null;
+        if (recentSel) recentSel.value = "";
+        if (archiveSel) archiveSel.value = "";
+        renderTelemetryStudio();
+      });
+    }
 
     if (filterAll && filterLoss) {
       filterAll.addEventListener("click", () => {
@@ -522,6 +639,34 @@ function getEffectiveTelemetryTrack(): RealTrackEntry {
     const avgSec = lastIbtReport.avgLapS > 0 ? lastIbtReport.avgLapS : bestSec;
     const bestFormatted = bestSec > 0 ? formatLapSec(bestSec) : "--:--.---";
     const avgFormatted = avgSec > 0 ? formatLapSec(avgSec) : bestFormatted;
+    const rawPts = lastIbtReport.bestLapSamples.map((s) => ({
+      dist: s.distM,
+      speed: s.speedKmh,
+      thr: s.throttle * 100,
+      brk: s.brake * 100,
+      gear: s.gear ?? 0,
+      steering: s.steeringRad,
+      lapTimeS: s.lapTimeS,
+      x: s.x,
+      y: s.y,
+    }));
+    const trackLen = lastIbtReport.trackLengthM && lastIbtReport.trackLengthM > 300
+      ? lastIbtReport.trackLengthM
+      : (rawPts[rawPts.length - 1]?.dist || 4000);
+    const aligned = resampleTrackByDistance(rawPts, trackLen, 5);
+    const refAligned = resampleTrackByDistance(
+      track.samples.map((s) => ({
+        dist: s.dist,
+        speed: s.speed,
+        thr: s.thr,
+        brk: s.brk,
+        gear: s.gear,
+        steering: (s as { steering?: number }).steering ?? 0,
+      })),
+      trackLen,
+      5,
+    );
+    alignedDeltaCurve = computeDistanceDelta(aligned, refAligned, bestSec, avgSec);
     return {
       ...track,
       name: lastIbtReport.trackName || track.name,
@@ -531,20 +676,21 @@ function getEffectiveTelemetryTrack(): RealTrackEntry {
       avgFormatted,
       lapCount: lastIbtReport.totalLaps,
       fileUsed: lastIbtReport.fileName,
-      samples: lastIbtReport.bestLapSamples.map((s) => ({
-        dist: s.distM,
-        speed: Math.round(s.speedKmh),
-        thr: Math.round(s.throttle * 100),
-        brk: Math.round(s.brake * 100),
-        gear: 0,
-        steering: s.steeringRad,
-        x: s.x,
-        y: s.y,
+      samples: aligned.map((p) => ({
+        dist: p.dist,
+        speed: Math.round(p.speed),
+        thr: Math.round(p.thr),
+        brk: Math.round(p.brk),
+        gear: p.gear,
+        steering: p.steering,
+        x: p.x,
+        y: p.y,
       })),
     };
   }
   const bestSec = finiteOr(track.bestSec, 0) > 0 ? track.bestSec : parseLapFormatted(track.bestFormatted);
   const avgSec = finiteOr(track.avgSec, 0) > 0 ? track.avgSec : bestSec;
+  alignedDeltaCurve = null;
   return {
     ...track,
     bestSec,
@@ -560,6 +706,24 @@ function renderTelemetryStudio(): void {
   const deltaSummaryNode = document.getElementById("lapDeltaSummary");
   const fileBadge = document.getElementById("lapFileBadge");
   const trackLengthBadge = document.getElementById("trackLengthBadge");
+  const metaBadge = document.getElementById("ibtSessionMetaBadge");
+
+  if (metaBadge) {
+    if (lastIbtReport) {
+      const parts = [
+        lastIbtReport.sessionUniqueId ? `SessionID #${lastIbtReport.sessionUniqueId}` : "",
+        lastIbtReport.subSessionId ? `Sub #${lastIbtReport.subSessionId}` : "",
+        lastIbtReport.trackTemp ? `Asfalto ${lastIbtReport.trackTemp}` : "",
+        lastIbtReport.airTemp ? `Aire ${lastIbtReport.airTemp}` : "",
+        lastIbtReport.trackRubberState ? `Goma: ${lastIbtReport.trackRubberState}` : "",
+        lastIbtReport.driverSetupName ? `Setup: ${lastIbtReport.driverSetupName}` : "",
+        lastIbtReport.fuelLevelStartL && lastIbtReport.fuelLevelStartL > 0 ? `Fuel: ${lastIbtReport.fuelLevelStartL.toFixed(1)} L` : "",
+      ].filter(Boolean);
+      metaBadge.textContent = parts.join(" · ");
+    } else {
+      metaBadge.textContent = "Sin .ibt reciente en las últimas 48h (mostrando referencia del circuito).";
+    }
+  }
 
   const effectiveTrack = getEffectiveTelemetryTrack();
   if (!effectiveTrack.samples || effectiveTrack.samples.length === 0) return;
@@ -633,7 +797,10 @@ function getTelemetrySampleAt(track: RealTrackEntry, dist: number): {
   }
   const ratio = safeDiv(track.bestSec, track.avgSec, 1);
   const speedAvg = Math.round(finiteOr(s.speed * ratio, s.speed));
-  const delta = safeDiv(targetDist, maxDist, 0) * finiteOr(track.avgSec - track.bestSec, 0);
+  const rawDelta = alignedDeltaCurve && idx < alignedDeltaCurve.length
+    ? alignedDeltaCurve[idx]
+    : safeDiv(targetDist, maxDist, 0) * finiteOr(track.avgSec - track.bestSec, 0);
+  const delta = finiteOr(rawDelta, 0);
 
   // Determine corner name
   let cornerName = "Recta";
@@ -3796,6 +3963,9 @@ function drawIbtTrace(canvas: HTMLCanvasElement, report: IbtSessionReport): void
 
 export function paintLastSession(report?: IbtSessionReport | null): void {
   if (report !== undefined) {
+    if (report && lastIbtReport && !areSessionsCompatible(lastIbtReport, report)) {
+      activeHoverDist = null;
+    }
     lastIbtReport = report;
     if (studioInitialized) {
       renderTelemetryStudio();

@@ -134,6 +134,8 @@ pub fn run() {
             set_overlay_edit,
             parse_ibt_telemetry,
             read_latest_ibt,
+            list_ibt_sessions,
+            read_ibt_file,
             redact_session_info,
             quit
         ])
@@ -624,6 +626,51 @@ async fn parse_ibt_telemetry(path: String) -> Result<Vec<ibt_parser::TelemetrySa
 }
 
 #[tauri::command]
+async fn list_ibt_sessions() -> Result<Vec<ibt_parser::IbtSessionMeta>, String> {
+    tauri::async_runtime::spawn_blocking(|| {
+        let Some(dir) = folders::detect_telemetry_dir() else {
+            return Ok(Vec::new());
+        };
+        if !dir.is_dir() {
+            return Ok(Vec::new());
+        }
+        let Ok(entries) = fs::read_dir(&dir) else {
+            return Ok(Vec::new());
+        };
+        let mut files: Vec<(std::time::SystemTime, std::path::PathBuf)> = Vec::new();
+        for entry in entries.flatten() {
+            let p = entry.path();
+            if p.extension().and_then(|e| e.to_str()).is_some_and(|e| e.eq_ignore_ascii_case("ibt")) {
+                if let Ok(modified) = entry.metadata().and_then(|m| m.modified()) {
+                    files.push((modified, p));
+                }
+            }
+        }
+        files.sort_by(|a, b| b.0.cmp(&a.0));
+        let mut out = Vec::new();
+        for (_, p) in files.into_iter().take(60) {
+            if let Ok(meta) = ibt_parser::read_ibt_meta(&p) {
+                out.push(meta);
+            }
+        }
+        Ok(out)
+    })
+    .await
+    .map_err(|e| format!("Error listando sesiones .ibt: {e}"))?
+}
+
+#[tauri::command]
+async fn read_ibt_file(path: String) -> Result<Option<ibt_parser::IbtSessionReport>, String> {
+    let pb = std::path::PathBuf::from(path);
+    if !pb.is_file() {
+        return Ok(None);
+    }
+    tauri::async_runtime::spawn_blocking(move || ibt_parser::parse_ibt_report(&pb).map(Some))
+        .await
+        .map_err(|e| format!("Error leyendo .ibt: {e}"))?
+}
+
+#[tauri::command]
 async fn read_latest_ibt() -> Result<Option<ibt_parser::IbtSessionReport>, String> {
     tauri::async_runtime::spawn_blocking(|| {
         let Some(dir) = folders::detect_telemetry_dir() else {
@@ -635,13 +682,16 @@ async fn read_latest_ibt() -> Result<Option<ibt_parser::IbtSessionReport>, Strin
         let Ok(entries) = fs::read_dir(&dir) else {
             return Ok(None);
         };
+        let now = std::time::SystemTime::now();
+        let cutoff = std::time::Duration::from_secs(48 * 3600);
         let mut newest: Option<(std::time::SystemTime, std::path::PathBuf)> = None;
         for entry in entries.flatten() {
             let p = entry.path();
             if p.extension().and_then(|e| e.to_str()).is_some_and(|e| e.eq_ignore_ascii_case("ibt")) {
                 if let Ok(meta) = entry.metadata() {
                     if let Ok(modified) = meta.modified() {
-                        if newest.as_ref().is_none_or(|(t, _)| modified > *t) {
+                        let is_recent = now.duration_since(modified).map_or(false, |d| d <= cutoff);
+                        if is_recent && newest.as_ref().is_none_or(|(t, _)| modified > *t) {
                             newest = Some((modified, p));
                         }
                     }

@@ -1,6 +1,6 @@
 import { inTauri } from "./env";
 import { IrsdkClient, type IrsdkTelemetryFrame } from "./irsdk";
-import type { Backend, IbtSessionReport, LiveSample, Settings, SettingsPatch, StagedFile, UploadInput } from "./types";
+import type { Backend, IbtSessionMeta, IbtSessionReport, LiveSample, Settings, SettingsPatch, StagedFile, UploadInput } from "./types";
 
 async function invoke<T>(command: string, args?: Record<string, unknown>): Promise<T> {
   const { invoke: call } = await import("@tauri-apps/api/core");
@@ -61,6 +61,8 @@ export function createTauriBackend(): Backend {
     toggleOverlay: (show: boolean) => invoke<boolean>("toggle_overlay", { show }),
     setOverlayEdit: (editing: boolean) => invoke("set_overlay_edit", { editing }),
     readLatestIbt: () => invoke<IbtSessionReport | null>("read_latest_ibt"),
+    listIbtSessions: () => invoke<IbtSessionMeta[]>("list_ibt_sessions"),
+    readIbtFile: (path: string) => invoke<IbtSessionReport | null>("read_ibt_file", { path }),
     quit: () => invoke("quit"),
     onRefresh(cb) {
       void wire();

@@ -290,6 +290,12 @@ export function createMock(screen: string | null): Backend {
     async readLatestIbt() {
       return null;
     },
+    async listIbtSessions() {
+      return [];
+    },
+    async readIbtFile(_path: string) {
+      return null;
+    },
     async quit() {
       notices.forEach((cb) => cb("En la aplicación de Windows, Salir cierra la bandeja."));
     },

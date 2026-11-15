@@ -17,6 +17,7 @@ pub struct TelemetrySample {
     pub throttle: f32,
     pub brake: f32,
     pub steering_rad: f32,
+    pub gear: i32,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub x: Option<f32>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -30,16 +31,41 @@ pub struct IbtLapSummary {
     pub lap_time_s: f32,
     pub top_speed_kmh: f32,
     pub delta_s: f32,
+    pub is_valid: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub invalid_reason: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IbtSessionMeta {
+    pub file_path: String,
+    pub file_name: String,
+    pub modified_epoch_ms: u64,
+    pub session_unique_id: String,
+    pub sub_session_id: String,
+    pub track_name: String,
+    pub track_config: String,
+    pub car_path: String,
+    pub car_screen_name: String,
+    pub is_recent_48h: bool,
 }
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IbtSessionReport {
     pub file_name: String,
+    pub session_unique_id: String,
+    pub sub_session_id: String,
+    pub modified_epoch_ms: u64,
     pub track_name: String,
     pub track_config: String,
+    pub track_length_m: f32,
     pub track_temp: String,
     pub air_temp: String,
+    pub track_rubber_state: String,
+    pub driver_setup_name: String,
+    pub fuel_level_start_l: f32,
     pub car_path: String,
     pub car_screen_name: String,
     pub best_lap_s: f32,
@@ -129,6 +155,33 @@ fn read_i32_le(buf: &[u8], offset: usize, var_type: i32) -> i32 {
     i32::from_le_bytes(buf[offset..offset + 4].try_into().unwrap_or([0; 4]))
 }
 
+fn read_u32_le(buf: &[u8], offset: usize, var_type: i32) -> u32 {
+    if (var_type != 3 && var_type != 2) || offset + 4 > buf.len() {
+        return 0;
+    }
+    u32::from_le_bytes(buf[offset..offset + 4].try_into().unwrap_or([0; 4]))
+}
+
+fn read_bool_le(buf: &[u8], offset: usize, var_type: i32) -> bool {
+    if offset >= buf.len() {
+        return false;
+    }
+    match var_type {
+        1 => buf[offset] != 0,
+        2 | 3 => offset + 4 <= buf.len() && i32::from_le_bytes(buf[offset..offset + 4].try_into().unwrap_or([0; 4])) != 0,
+        _ => false,
+    }
+}
+
+fn file_modified_epoch_ms(path: &Path) -> u64 {
+    std::fs::metadata(path)
+        .and_then(|m| m.modified())
+        .ok()
+        .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+        .map(|d| d.as_millis() as u64)
+        .unwrap_or(0)
+}
+
 fn extract_yaml_field(yaml: &str, key: &str) -> String {
     for line in yaml.lines() {
         let trimmed = line.trim();
@@ -137,6 +190,46 @@ fn extract_yaml_field(yaml: &str, key: &str) -> String {
         }
     }
     String::new()
+}
+
+/// Reads only header + YAML metadata from an `.ibt` file to list sessions quickly.
+pub fn read_ibt_meta(path: &Path) -> Result<IbtSessionMeta, String> {
+    let file = File::open(path).map_err(|e| format!("No se pudo abrir .ibt: {e}"))?;
+    let mut reader = BufReader::with_capacity(16 * 1024, file);
+    let mut hdr = [0u8; IRSDK_HEADER_BASE_SIZE];
+    reader
+        .read_exact(&mut hdr)
+        .map_err(|e| format!("Cabecera .ibt inválida: {e}"))?;
+    let session_info_len = i32::from_le_bytes(hdr[16..20].try_into().unwrap()).max(0) as usize;
+    let session_info_offset = i32::from_le_bytes(hdr[20..24].try_into().unwrap()).max(0) as u64;
+    let mut yaml = String::new();
+    if session_info_len > 0 && session_info_len <= 2 * 1024 * 1024 {
+        if reader.seek(SeekFrom::Start(session_info_offset)).is_ok() {
+            let mut raw_yaml = vec![0u8; session_info_len];
+            if reader.read_exact(&mut raw_yaml).is_ok() {
+                let end = raw_yaml.iter().position(|&b| b == 0).unwrap_or(raw_yaml.len());
+                yaml = String::from_utf8_lossy(&raw_yaml[..end]).to_string();
+            }
+        }
+    }
+    let modified_epoch_ms = file_modified_epoch_ms(path);
+    let now_ms = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_millis() as u64)
+        .unwrap_or(0);
+    let is_recent_48h = modified_epoch_ms > 0 && now_ms.saturating_sub(modified_epoch_ms) <= 48 * 3600 * 1000;
+    Ok(IbtSessionMeta {
+        file_path: path.to_string_lossy().to_string(),
+        file_name: path.file_name().and_then(|n| n.to_str()).unwrap_or("session.ibt").to_string(),
+        modified_epoch_ms,
+        session_unique_id: extract_yaml_field(&yaml, "SessionUniqueID:"),
+        sub_session_id: extract_yaml_field(&yaml, "SubSessionID:"),
+        track_name: extract_yaml_field(&yaml, "TrackDisplayName:"),
+        track_config: extract_yaml_field(&yaml, "TrackConfigName:"),
+        car_path: extract_yaml_field(&yaml, "CarPath:"),
+        car_screen_name: extract_yaml_field(&yaml, "CarScreenName:"),
+        is_recent_48h,
+    })
 }
 
 /// Parses essential channels from an iRacing `.ibt` binary telemetry file in streaming mode.
@@ -191,12 +284,18 @@ pub fn parse_ibt_report(path: &Path) -> Result<IbtSessionReport, String> {
     let wanted = [
         "Lap",
         "LapDist",
+        "LapDistPct",
         "LapCurrentLapTime",
         "LapLastLapTime",
         "Speed",
         "Throttle",
         "Brake",
         "SteeringWheelAngle",
+        "Gear",
+        "OnPitRoad",
+        "SessionFlags",
+        "PlayerCarMyIncidentCount",
+        "FuelLevel",
         "Lat",
         "Lon",
         "Yaw",
@@ -236,7 +335,13 @@ pub fn parse_ibt_report(path: &Path) -> Result<IbtSessionReport, String> {
         return Err("Faltan canales esenciales en el .ibt".into());
     };
     let v_lap = get_var("Lap");
+    let v_pct = get_var("LapDistPct");
     let v_last_lap = get_var("LapLastLapTime");
+    let v_gear = get_var("Gear");
+    let v_pit = get_var("OnPitRoad");
+    let v_flags = get_var("SessionFlags");
+    let v_inc = get_var("PlayerCarMyIncidentCount");
+    let v_fuel = get_var("FuelLevel");
     let v_lat = get_var("Lat");
     let v_lon = get_var("Lon");
     let v_yaw = get_var("Yaw");
@@ -257,12 +362,27 @@ pub fn parse_ibt_report(path: &Path) -> Result<IbtSessionReport, String> {
         vy: Option<f64>,
     }
 
+    #[derive(Default)]
+    struct LapMetaState {
+        saw_pit_road: bool,
+        had_caution_flag: bool,
+        had_invalid_time: bool,
+        min_inc: Option<i32>,
+        max_inc: Option<i32>,
+        crossed_start: bool,
+        crossed_finish: bool,
+        start_fuel_l: Option<f32>,
+    }
+
     let mut frame = vec![0u8; buf_len];
     let mut laps_map: BTreeMap<i32, Vec<RawIbtPoint>> = BTreeMap::new();
+    let mut lap_states: BTreeMap<i32, LapMetaState> = BTreeMap::new();
     let mut official_lap_times: HashMap<i32, f32> = HashMap::new();
     let mut global_top_speed = 0.0f32;
     let mut global_max_dist = 0.0f32;
     let mut prev_lap_num: Option<i32> = None;
+    let mut prev_pct: Option<f32> = None;
+    let mut first_fuel_l = 0.0f32;
 
     while reader.read_exact(&mut frame).is_ok() {
         let dist_m = read_f32_le(&frame, v_dist.offset, v_dist.var_type);
@@ -281,19 +401,64 @@ pub fn parse_ibt_report(path: &Path) -> Result<IbtSessionReport, String> {
             .map(|vl| read_i32_le(&frame, vl.offset, vl.var_type))
             .unwrap_or(1)
             .max(1);
+        let pct = v_pct
+            .map(|vp| read_f32_le(&frame, vp.offset, vp.var_type))
+            .unwrap_or(0.0);
+        let crossed_line = prev_pct.is_some_and(|p| p > 0.90 && pct < 0.10);
 
         if let Some(prev) = prev_lap_num {
-            if lap_num > prev {
-                if let Some(vl) = v_last_lap {
-                    let official_t = read_f32_le(&frame, vl.offset, vl.var_type);
-                    if official_t > 20.0 && official_t < 1800.0 {
-                        official_lap_times.entry(prev).or_insert(official_t);
+            if lap_num > prev || crossed_line {
+                if crossed_line {
+                    lap_states.entry(prev).or_default().crossed_finish = true;
+                    lap_states.entry(lap_num).or_default().crossed_start = true;
+                }
+                if lap_num > prev {
+                    if let Some(vl) = v_last_lap {
+                        let official_t = read_f32_le(&frame, vl.offset, vl.var_type);
+                        if official_t > 20.0 && official_t < 1800.0 {
+                            official_lap_times.entry(prev).or_insert(official_t);
+                        }
                     }
                 }
             }
         }
         prev_lap_num = Some(lap_num);
+        if v_pct.is_some() {
+            prev_pct = Some(pct);
+        }
 
+        let st = lap_states.entry(lap_num).or_default();
+        if v_pit.is_some_and(|vp| read_bool_le(&frame, vp.offset, vp.var_type)) {
+            st.saw_pit_road = true;
+        }
+        if let Some(vf) = v_flags {
+            let flags = read_u32_le(&frame, vf.offset, vf.var_type);
+            // Yellow (0x0008), YellowWaving (0x0010), Caution (0x4000), CautionWaving (0x8000), Red (0x0002_0000)
+            if (flags & 0x0002_C018) != 0 {
+                st.had_caution_flag = true;
+            }
+        }
+        if let Some(vi) = v_inc {
+            let inc = read_i32_le(&frame, vi.offset, vi.var_type);
+            st.min_inc = Some(st.min_inc.map_or(inc, |m| m.min(inc)));
+            st.max_inc = Some(st.max_inc.map_or(inc, |m| m.max(inc)));
+        }
+        if let Some(vfl) = v_fuel {
+            let fl = read_f32_le(&frame, vfl.offset, vfl.var_type);
+            if fl > 0.0 && fl.is_finite() {
+                if first_fuel_l <= 0.0 {
+                    first_fuel_l = fl;
+                }
+                if st.start_fuel_l.is_none() {
+                    st.start_fuel_l = Some(fl);
+                }
+            }
+        }
+        if lap_time_s < 0.0 {
+            st.had_invalid_time = true;
+        }
+
+        let gear = v_gear.map(|vg| read_i32_le(&frame, vg.offset, vg.var_type)).unwrap_or(0);
         let lat_opt = v_lat
             .map(|v| read_f64_le(&frame, v.offset, v.var_type))
             .filter(|v| v.is_finite() && v.abs() > 0.01);
@@ -318,6 +483,7 @@ pub fn parse_ibt_report(path: &Path) -> Result<IbtSessionReport, String> {
                 throttle: read_f32_le(&frame, v_thr.offset, v_thr.var_type).clamp(0.0, 1.0),
                 brake: read_f32_le(&frame, v_brk.offset, v_brk.var_type).clamp(0.0, 1.0),
                 steering_rad: read_f32_le(&frame, v_str.offset, v_str.var_type),
+                gear,
                 x: None,
                 y: None,
             },
@@ -337,6 +503,7 @@ pub fn parse_ibt_report(path: &Path) -> Result<IbtSessionReport, String> {
     };
 
     let mut valid_laps: Vec<(i32, f32, f32)> = Vec::new();
+    let mut all_laps_raw: Vec<(i32, f32, f32, bool, Option<String>)> = Vec::new();
     let mut fallback_longest_lap: Option<i32> = None;
     let mut longest_span = 0.0f32;
 
@@ -352,11 +519,6 @@ pub fn parse_ibt_report(path: &Path) -> Result<IbtSessionReport, String> {
             fallback_longest_lap = Some(*lap_num);
         }
 
-        // Complete flying lap: starts near start/finish line AND covers >= 90% of track length.
-        if min_d > 180.0 || max_d < track_len_m * 0.90 {
-            continue;
-        }
-
         let max_t = pts.iter().map(|p| p.sample.lap_time_s).fold(0.0f32, f32::max);
         let lap_t = official_lap_times
             .get(lap_num)
@@ -364,9 +526,33 @@ pub fn parse_ibt_report(path: &Path) -> Result<IbtSessionReport, String> {
             .filter(|&t| t > 20.0)
             .unwrap_or(max_t);
         let top_spd = pts.iter().map(|p| p.sample.speed_kmh).fold(0.0f32, f32::max);
-        if lap_t > 20.0 {
+
+        let st = lap_states.get(lap_num);
+        let saw_pit = st.is_some_and(|s| s.saw_pit_road);
+        let had_caution = st.is_some_and(|s| s.had_caution_flag);
+        let had_inc = st.is_some_and(|s| matches!((s.min_inc, s.max_inc), (Some(a), Some(b)) if b > a));
+        let invalid_time = st.is_some_and(|s| s.had_invalid_time) || lap_t <= 20.0 || lap_t >= 1800.0;
+        let incomplete = min_d > 220.0 || max_d < track_len_m * 0.90;
+
+        let invalid_reason = if saw_pit {
+            Some("Boxes (Out/In-Lap)".to_string())
+        } else if had_inc {
+            Some("Incidente / Off-track".to_string())
+        } else if had_caution {
+            Some("Bandera amarilla/roja".to_string())
+        } else if incomplete {
+            Some("Vuelta incompleta".to_string())
+        } else if invalid_time {
+            Some("Tiempo inválido".to_string())
+        } else {
+            None
+        };
+
+        let is_valid = invalid_reason.is_none();
+        if is_valid {
             valid_laps.push((*lap_num, lap_t, top_spd));
         }
+        all_laps_raw.push((*lap_num, lap_t, top_spd, is_valid, invalid_reason));
     }
 
     let best_lap = valid_laps
@@ -380,13 +566,19 @@ pub fn parse_ibt_report(path: &Path) -> Result<IbtSessionReport, String> {
         valid_laps.iter().map(|l| l.1).sum::<f32>() / (valid_laps.len() as f32)
     };
 
-    let laps: Vec<IbtLapSummary> = valid_laps
-        .iter()
-        .map(|&(lap_num, lap_time_s, top_speed_kmh)| IbtLapSummary {
+    let laps: Vec<IbtLapSummary> = all_laps_raw
+        .into_iter()
+        .map(|(lap_num, lap_time_s, top_speed_kmh, is_valid, invalid_reason)| IbtLapSummary {
             lap_num,
             lap_time_s,
             top_speed_kmh,
-            delta_s: (lap_time_s - best_lap_s).max(0.0),
+            delta_s: if best_lap_s > 0.0 && lap_time_s > 0.0 {
+                (lap_time_s - best_lap_s).max(0.0)
+            } else {
+                0.0
+            },
+            is_valid,
+            invalid_reason,
         })
         .collect();
 
@@ -466,8 +658,8 @@ pub fn parse_ibt_report(path: &Path) -> Result<IbtSessionReport, String> {
         Vec::new()
     };
 
-    // Downsample to <= 240 points for crisp 60 FPS Canvas rendering.
-    let stride = (best_pts_raw.len() / 240).max(1);
+    // Downsample to <= 600 points for crisp 60 FPS Canvas rendering and 1m distance interpolation.
+    let stride = (best_pts_raw.len() / 600).max(1);
     let best_lap_samples = best_pts_raw
         .iter()
         .enumerate()
@@ -496,13 +688,32 @@ pub fn parse_ibt_report(path: &Path) -> Result<IbtSessionReport, String> {
         .and_then(|n| n.to_str())
         .unwrap_or("session.ibt")
         .to_string();
+    let best_fuel_l = best_lap
+        .and_then(|(num, _, _)| lap_states.get(&num))
+        .and_then(|st| st.start_fuel_l)
+        .unwrap_or(first_fuel_l);
+    let track_temp = {
+        let t = extract_yaml_field(&yaml, "TrackSurfaceTemp:");
+        if t.is_empty() { extract_yaml_field(&yaml, "TrackTempCrew:") } else { t }
+    };
+    let air_temp = {
+        let a = extract_yaml_field(&yaml, "TrackAirTemp:");
+        if a.is_empty() { extract_yaml_field(&yaml, "AirTemp:") } else { a }
+    };
 
     Ok(IbtSessionReport {
         file_name,
+        session_unique_id: extract_yaml_field(&yaml, "SessionUniqueID:"),
+        sub_session_id: extract_yaml_field(&yaml, "SubSessionID:"),
+        modified_epoch_ms: file_modified_epoch_ms(path),
         track_name: extract_yaml_field(&yaml, "TrackDisplayName:"),
         track_config: extract_yaml_field(&yaml, "TrackConfigName:"),
-        track_temp: extract_yaml_field(&yaml, "TrackSurfaceTemp:"),
-        air_temp: extract_yaml_field(&yaml, "TrackAirTemp:"),
+        track_length_m: track_len_m,
+        track_temp,
+        air_temp,
+        track_rubber_state: extract_yaml_field(&yaml, "TrackRubberState:"),
+        driver_setup_name: extract_yaml_field(&yaml, "DriverSetupName:"),
+        fuel_level_start_l: best_fuel_l,
         car_path: extract_yaml_field(&yaml, "CarPath:"),
         car_screen_name: extract_yaml_field(&yaml, "CarScreenName:"),
         best_lap_s,
