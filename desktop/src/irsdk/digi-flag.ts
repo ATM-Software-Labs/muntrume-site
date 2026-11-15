@@ -36,8 +36,10 @@ export class DigiFlagEngine {
   public decodeFlags(sessionFlags: number): FlagDescriptor[] {
     const active: FlagDescriptor[] = [];
 
-    // Red flag / Disqualified / Meatball (Highest safety priority)
-    if (sessionFlags & 0x00010000) {
+    // Black flag (irsdk_black = 0x00010000), Disqualified (irsdk_disqualify = 0x00020000),
+    // Meatball / Mandatory repair (irsdk_repair = 0x00200000)
+    // Note: 0x00040000 is irsdk_servicible (in pits/eligible for service), NOT meatball!
+    if (sessionFlags & 0x00020000) {
       active.push({
         type: "disqualify",
         label: "DESCALIFICADO",
@@ -50,11 +52,11 @@ export class DigiFlagEngine {
       });
     }
 
-    if (sessionFlags & 0x00040000) {
+    if (sessionFlags & 0x00200000) {
       active.push({
         type: "meatball",
         label: "BANDERA NEGRA / DISCO NARANJA",
-        subLabel: "DAÑO MECÁNICO: PARADA OBLIGATORIA",
+        subLabel: "REPARACIÓN OBLIGATORIA",
         bgColor: "#171717",
         fgColor: "#f97316",
         borderColor: "#f97316",
@@ -63,7 +65,7 @@ export class DigiFlagEngine {
       });
     }
 
-    if (sessionFlags & 0x00008000) {
+    if (sessionFlags & 0x00010000) {
       active.push({
         type: "black",
         label: "BANDERA NEGRA",
@@ -196,24 +198,39 @@ export class DigiFlagEngine {
   public render(container: HTMLElement, sessionFlags: number): void {
     const primary = this.getPrimaryFlag(sessionFlags);
     const isClear = primary.type === "clear";
+    const isAlertFlag =
+      primary.type === "disqualify" ||
+      primary.type === "meatball" ||
+      primary.type === "black" ||
+      primary.type === "red" ||
+      primary.type === "safety_car" ||
+      primary.type === "yellow_local" ||
+      primary.type === "blue" ||
+      primary.type === "checkered" ||
+      primary.type === "white";
 
+    if (isClear || !isAlertFlag) {
+      container.style.display = "none";
+      if (container.innerHTML !== "") container.innerHTML = "";
+      return;
+    }
+
+    container.style.display = "";
     const pulseClass = primary.pulse ? "animate-pulse shadow-lg" : "";
 
     container.innerHTML = `
-      <div class="px-3 py-1.5 rounded-xl border flex items-center justify-between gap-3 font-mono select-none ${pulseClass}"
+      <div class="px-2.5 py-1 rounded-lg border flex items-center justify-between gap-2 font-mono select-none ${pulseClass}"
         style="background-color: ${primary.bgColor}; color: ${primary.fgColor}; border-color: ${primary.borderColor};">
         <div class="flex items-center gap-2">
-          <!-- Flag LED Indicator Icon -->
-          <div class="w-3.5 h-3.5 rounded-full border border-white/40 flex items-center justify-center"
-            style="background-color: ${isClear ? "#22c55e" : primary.borderColor};">
-            <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+          <div class="w-3 h-3 rounded-full border border-white/40 flex items-center justify-center"
+            style="background-color: ${primary.borderColor};">
+            <div class="w-1 h-1 rounded-full bg-white"></div>
           </div>
           <div>
-            <div class="text-[11px] font-black tracking-wider uppercase leading-none">${primary.label}</div>
+            <div class="text-[10px] font-black tracking-wider uppercase leading-none">${primary.label}</div>
             ${primary.subLabel ? `<div class="text-[8px] font-medium opacity-85 leading-tight mt-0.5">${primary.subLabel}</div>` : ""}
           </div>
         </div>
-        <span class="text-[9px] uppercase font-bold tracking-tight opacity-75">DigiFlag</span>
       </div>
     `;
   }

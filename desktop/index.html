@@ -1648,13 +1648,13 @@
     <div id="floatingOverlayHost" hidden class="fixed inset-0 select-none overflow-hidden pointer-events-none" data-hud="closed">
       <div id="hudStateBanner" class="fixed top-4 left-1/2 -translate-x-1/2 z-20 px-4 py-1.5 rounded-xl bg-black/80 border border-white/20 text-white font-mono text-xs font-bold tracking-wide">iRacing Cerrado</div>
 
-      <!-- Discreet top-right reopen pill (visible when on-track & controls auto-hidden) -->
-      <button type="button" id="hudReopenBtn" hidden class="fixed top-3 right-3 z-40 px-2.5 py-1 rounded-lg bg-black/65 border border-white/15 text-white/75 hover:text-r-accent font-mono text-[10px] font-bold pointer-events-auto transition" title="Mostrar controles HUD (F9 / Ctrl+E)">
-        HUD ⚙
+      <!-- Discreet bottom-right reopen pill (never covers Relative at top-right) -->
+      <button type="button" id="hudReopenBtn" hidden class="fixed bottom-2 right-2 z-40 px-2 py-0.5 rounded bg-black/65 border border-white/15 text-white/75 hover:text-r-accent font-mono text-[10px] font-bold pointer-events-auto transition" title="F9 Editar · F10 Ocultar">
+        F9 Editar · F10 Ocultar
       </button>
 
       <!-- Top control pill (auto-hidden when IsOnTrack === true unless editing via F9 / Ctrl+E) -->
-      <div id="floatHudChrome" hidden class="fixed top-3 right-3 z-40 flex items-center justify-end gap-2 pointer-events-auto">
+      <div id="floatHudChrome" hidden class="fixed top-2 left-1/2 -translate-x-1/2 z-40 flex items-center justify-center gap-2 pointer-events-auto">
         <div data-tauri-drag-region class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/92 border border-white/15 cursor-move shadow-2xl">
           <img src="./favicon.svg" width="18" height="18" alt="MMT" class="h-4 w-4 rounded pointer-events-none" />
           <span class="font-display font-extrabold text-[11px] text-white uppercase tracking-wider pointer-events-none">MMT HUD</span>
@@ -1727,53 +1727,55 @@
         </div>
       </div>
 
-      <!-- 1. Top-Left (x: 16, y: 16): Compact Standings (width 330px, max 10 rows) -->
-      <div id="floatStandingsCard" class="mmt-float-widget fixed top-4 left-4 w-[330px] rounded-lg border border-white/12 bg-[#0a0c10]/94 text-white p-2 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="standings">
+      <!-- 1. Top-Left (top: 8px, left: 8px): Kapps-style Standings (width 450px, 20px rows) -->
+      <div id="floatStandingsCard" class="mmt-float-widget fixed top-2 left-2 w-[450px] rounded border border-white/12 bg-[#0a0c10]/94 text-white p-1 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="standings">
         <div id="ovStandingsFloat"></div>
       </div>
 
-      <!-- 2. Top-Center Flanking Virtual Mirror (top: 12px, 540px clear gap for iRacing Mirror) -->
+      <!-- 2. Top-Right (top: 8px, right: 8px): Kapps-style Relative (width 320px, 20px rows) -->
+      <div id="floatRelativeCard" class="mmt-float-widget fixed top-2 right-2 w-[320px] rounded border border-white/12 bg-[#0a0c10]/94 text-white p-1 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="relative">
+        <div id="ovRelativeFloat"></div>
+      </div>
+
+      <!-- 3. Top-Center Flanking Virtual Mirror (top: 12px, 540px clear gap for iRacing Mirror) -->
       <div id="floatRadarCard" class="mmt-float-widget fixed top-3 left-1/2 -translate-x-1/2 pointer-events-none z-20" data-widget="radar">
         <div id="ovRadarFloat"></div>
       </div>
 
-      <!-- 3. Center-Top (top: 140px): Compact Pit Lane Helper (280px, only visible when OnPitRoad === true) -->
-      <div id="floatPitHelperCard" hidden class="mmt-float-widget fixed top-[140px] left-1/2 -translate-x-1/2 w-[280px] rounded-lg border border-amber-400/35 bg-[#0a0c10]/94 text-white p-2 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.7)] pointer-events-auto overflow-hidden" data-widget="pit">
+      <!-- 4. Center-Top below mirror: Slim Pit Lane Bar (280x26px, only visible when OnPitRoad === true) -->
+      <div id="floatPitHelperCard" hidden class="mmt-float-widget fixed top-[110px] left-1/2 -translate-x-1/2 w-[280px] h-[26px] pointer-events-auto overflow-hidden" data-widget="pit">
         <div id="ovPitboxFloat"></div>
       </div>
 
-      <!-- 4. Bottom-Left (x: 16, bottom: 16): Compact Relative (330px) + Fuel (260px) side-by-side, zero overlap -->
-      <div id="floatRelativeCard" class="mmt-float-widget fixed bottom-4 left-4 w-[330px] rounded-lg border border-white/12 bg-[#0a0c10]/94 text-white p-2 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="relative">
-        <div id="ovRelativeFloat"></div>
-      </div>
-      <div id="floatFuelCard" class="mmt-float-widget fixed bottom-4 left-[358px] w-[260px] rounded-lg border border-white/12 bg-[#0a0c10]/94 text-white p-2 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="fuel">
-        <div id="ovFuelFloat"></div>
+      <!-- 5. Bottom-Left Stack (left: 8px, bottom: 8px, 6px vertical gap): VS Session + Fuel -->
+      <div class="fixed bottom-2 left-2 flex flex-col items-start gap-[6px] pointer-events-none">
+        <div id="floatDeltaCard" class="mmt-float-widget w-[210px] rounded border border-white/12 bg-[#0a0c10]/94 text-white p-1.5 text-[10px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="delta">
+          <div id="ovDeltaFloat"></div>
+        </div>
+        <div id="floatFuelCard" class="mmt-float-widget w-[240px] rounded border border-white/12 bg-[#0a0c10]/94 text-white p-1.5 text-[11px] font-mono tabular-nums shadow-[0_6px_24px_rgba(0,0,0,0.65)] pointer-events-auto overflow-hidden" data-widget="fuel">
+          <div id="ovFuelFloat"></div>
+        </div>
       </div>
 
-      <!-- 5. Center over Steering Wheel (x: center, y: 68%): Compact Inputs + Gear + Speed + Delta Bar (320px) -->
-      <div id="floatInputsCard" class="mmt-float-widget fixed left-1/2 -translate-x-1/2 top-[68%] w-[320px] flex flex-col items-center gap-1 pointer-events-auto" data-widget="inputs">
+      <!-- 6. Center over Dashboard DDU (bottom: 185px, centered): Compact Inputs + Gear + Speed (300x38px) -->
+      <div id="floatInputsCard" class="mmt-float-widget fixed left-1/2 -translate-x-1/2 bottom-[185px] w-[300px] flex flex-col items-center gap-1 pointer-events-auto" data-widget="inputs">
         <div id="floatShiftLightsRow" class="flex flex-col items-center gap-1 w-full" data-widget="lights">
-          <div id="ovDigiFlagFloat" class="w-full max-w-[220px]"></div>
-          <div class="flex items-center gap-0.5 px-2 py-0.5 rounded-md bg-[#0a0c10]/92 border border-white/10" id="ovShiftLightsFloat"></div>
+          <div id="ovDigiFlagFloat" class="w-full max-w-[240px]" style="display: none;"></div>
+          <div class="flex items-center gap-0.5 px-2 py-0.5 rounded bg-[#0a0c10]/92 border border-white/10" id="ovShiftLightsFloat"></div>
         </div>
-        <div class="w-full rounded-lg border border-white/12 bg-[#0a0c10]/92 px-2.5 py-1.5 flex items-center justify-between gap-2 shadow-[0_6px_24px_rgba(0,0,0,0.7)]">
+        <div class="w-[300px] h-[38px] rounded border border-white/12 bg-[#0a0c10]/92 px-2 flex items-center justify-between gap-2 shadow-[0_6px_24px_rgba(0,0,0,0.7)]">
           <div id="ovGpuPedalsFloat" class="flex-1 min-w-0"></div>
-          <canvas id="ovInputsFloat" width="160" height="44" class="rounded hidden"></canvas>
+          <canvas id="ovInputsFloat" width="140" height="32" class="rounded hidden"></canvas>
           <div class="flex items-center gap-2 shrink-0 pl-2 border-l border-white/10 tabular-nums">
-            <strong id="ovGearFloat" class="font-mono text-2xl font-black text-white leading-none">—</strong>
-            <div class="flex flex-col">
-              <div class="flex items-baseline gap-0.5">
-                <strong id="ovSpeedFloat" class="font-mono text-sm font-black text-[#00e5ff] leading-none">—</strong>
-                <span class="font-mono text-[8px] text-white/50">km/h</span>
-              </div>
-              <span id="ovRpmFloat" class="text-[9px] font-mono text-white/50">—</span>
+            <strong id="ovGearFloat" class="font-mono text-xl font-black text-white leading-none">—</strong>
+            <div class="flex items-baseline gap-0.5">
+              <strong id="ovSpeedFloat" class="font-mono text-sm font-black text-[#00e5ff] leading-none">—</strong>
+              <span class="font-mono text-[8px] text-white/50">km/h</span>
             </div>
+            <span id="ovRpmFloat" class="hidden">—</span>
           </div>
         </div>
-        <div id="ovDeltaFloat" class="w-full text-center px-2.5 py-0.5 rounded border border-emerald-500/40 bg-[#0a0c10]/90 text-emerald-400 font-mono tabular-nums text-[10px] font-bold shadow">
-          —
-        </div>
-        <div id="ovTyresFloat" class="text-center font-mono text-[9px] text-r-muted tabular-nums"></div>
+        <div id="ovTyresFloat" class="hidden"></div>
       </div>
     </div>
 

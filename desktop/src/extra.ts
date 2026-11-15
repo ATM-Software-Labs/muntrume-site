@@ -2704,15 +2704,35 @@ function updateHUDDisplay(sample: LiveSample): void {
   });
 
   const deltaVal = mock ? Math.sin(sample.t * 0.5) * 0.42 : 0;
-  const deltaText = mock ? `${deltaVal >= 0 ? "+" : ""}${deltaVal.toFixed(2)}s · Sector 2` : "—";
-  document.querySelectorAll<HTMLElement>("#ovDelta, #ovDeltaFloat").forEach((ovDelta) => {
-    if (ovDelta.offsetParent === null) return;
+  const ovDelta = document.getElementById("ovDelta");
+  if (ovDelta && ovDelta.offsetParent !== null) {
+    const deltaText = mock ? `${deltaVal >= 0 ? "+" : ""}${deltaVal.toFixed(2)}s · Sector 2` : "—";
     if (ovDelta.textContent !== deltaText) ovDelta.textContent = deltaText;
-    const nextClass = deltaVal <= 0
+    ovDelta.className = deltaVal <= 0
       ? "mb-3 px-5 py-1.5 rounded-full border border-emerald-500/40 bg-emerald-950/80 text-emerald-400 font-mono text-sm font-bold shadow-lg shadow-emerald-950/50"
       : "mb-3 px-5 py-1.5 rounded-full border border-rose-500/40 bg-rose-950/80 text-rose-400 font-mono text-sm font-bold shadow-lg shadow-rose-950/50";
-    if (ovDelta.className !== nextClass) ovDelta.className = nextClass;
-  });
+  }
+  const ovDeltaFloat = document.getElementById("ovDeltaFloat");
+  if (ovDeltaFloat && ovDeltaFloat.offsetParent !== null) {
+    const activeEntry = irsdkState?.leaderboard.find((e) => e.isActiveCam);
+    const bestStr = activeEntry?.bestLapStr || "--:--.--";
+    const lastStr = activeEntry?.lastLapStr || "--:--.--";
+    const limiterBadge = irsdkState?.onPitRoad
+      ? `<span class="px-1 py-0.2 rounded bg-emerald-500/25 text-emerald-300 font-bold text-[8px]">LIMITER</span>`
+      : "";
+    const deltaHtml = `
+      <div class="flex items-center justify-between pb-1 mb-1 border-b border-white/10 text-[9px] font-bold tracking-wider">
+        <span class="text-white/75">VS SESSION BEST</span>
+        ${limiterBadge}
+      </div>
+      <div class="grid gap-0.5 text-[10px] font-mono tabular-nums whitespace-nowrap">
+        <div class="flex justify-between text-white/65"><span>S1 / S2 / S3</span><span>${mock ? `${deltaVal >= 0 ? "+" : ""}${deltaVal.toFixed(2)}s` : "-- / -- / --"}</span></div>
+        <div class="flex justify-between text-white/80"><span>Last</span><span>${lastStr}</span></div>
+        <div class="flex justify-between text-[#00e676] font-bold"><span>Best</span><span>${bestStr}</span></div>
+      </div>
+    `;
+    if (ovDeltaFloat.innerHTML !== deltaHtml) ovDeltaFloat.innerHTML = deltaHtml;
+  }
 
   // Corner Analysis Widget
   const nextTurnBadge = document.getElementById("ovNextTurnBadge");
@@ -2921,7 +2941,7 @@ function updateHUDDisplay(sample: LiveSample): void {
       });
 
       document.querySelectorAll<HTMLElement>("#ovDigiFlag, #ovDigiFlagFloat").forEach((flag) => {
-        if (flag.offsetParent !== null) {
+        if (flag.parentElement && flag.parentElement.offsetParent !== null) {
           renderDigiFlagWidget(flag, frame.sessionFlags ?? 0);
         }
       });

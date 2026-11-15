@@ -54,69 +54,19 @@ export class PitboxHelperEngine {
 
   public render(container: HTMLElement, state: PitboxInputState): void {
     if (!state.onPitRoad) {
-      container.innerHTML = `
-        <div class="p-2 rounded-xl bg-black/80 border border-white/10 text-white font-mono select-none">
-          <div class="flex items-center justify-between pb-1 border-b border-white/10 text-[10px] font-bold text-r-muted uppercase tracking-wider">
-            <span>Pitbox Helper</span>
-            <span class="text-[9px] text-white/40">EN PISTA</span>
-          </div>
-          <div class="p-2 text-center text-xs text-white/40">Listo para entrada en pitlane</div>
-        </div>
-      `;
+      if (container.innerHTML !== "") container.innerHTML = "";
       return;
     }
 
     const ev = this.evaluatePitState(state);
-
-    const speedCardClass = ev.isSpeeding
-      ? "bg-rose-500/30 border-rose-500 text-rose-300 animate-pulse"
-      : "bg-emerald-500/20 border-emerald-500/40 text-emerald-300";
-
-    const stallActionClass = ev.shouldBrakeNow
-      ? "bg-rose-600 text-white animate-bounce font-black"
-      : "bg-white/10 text-amber-300";
+    const speedColor = ev.isSpeeding ? "text-rose-400 animate-pulse" : "text-emerald-300";
+    const borderColor = ev.isSpeeding ? "border-rose-500/80" : "border-amber-400/50";
 
     container.innerHTML = `
-      <div class="p-2.5 rounded-xl bg-black/90 border border-white/15 text-white font-mono select-none shadow-xl">
-        <!-- Header -->
-        <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-white/10 text-[10px] font-bold uppercase tracking-wider">
-          <span class="text-amber-400">Pit Lane Activo</span>
-          <span class="px-2 py-0.5 rounded text-[9px] font-black ${ev.isSpeeding ? "bg-rose-500 text-white" : "bg-emerald-500/30 text-emerald-300"}">
-            ${ev.isSpeeding ? "¡EXCESO DE VELOCIDAD!" : "LIMITADOR OK"}
-          </span>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2 text-xs">
-          <!-- Speed vs Pit Limit -->
-          <div class="p-2 rounded-lg border flex flex-col justify-between ${speedCardClass}">
-            <span class="text-[9px] uppercase font-bold text-white/70">Velocidad</span>
-            <div class="flex items-baseline gap-1 my-0.5">
-              <span class="text-2xl font-black tabular-nums">${ev.speedKmh}</span>
-              <span class="text-[10px] text-white/60">/ ${ev.limitKmh} km/h</span>
-            </div>
-            <span class="text-[9px] tabular-nums font-bold">
-              ${ev.speedDelta > 0 ? `+${ev.speedDelta} km/h` : `${ev.speedDelta} km/h`}
-            </span>
-          </div>
-
-          <!-- Stall Distance / Countdown -->
-          <div class="p-2 rounded-lg bg-black/40 border border-white/10 flex flex-col justify-between">
-            <span class="text-[9px] uppercase font-bold text-white/70">Tu Cajón de Parada</span>
-            <div class="flex items-baseline gap-1 my-0.5">
-              <span class="text-2xl font-black text-amber-400 tabular-nums">${ev.distToStall > 0 ? ev.distToStall : "0"}</span>
-              <span class="text-[10px] text-white/60">m</span>
-            </div>
-            <span class="px-1.5 py-0.2 rounded text-[9px] text-center font-bold uppercase ${stallActionClass}">
-              ${ev.shouldBrakeNow ? "¡FRENAR YA!" : ev.distToStall > 0 ? "Aproximación" : "En Caja"}
-            </span>
-          </div>
-        </div>
-
-        <!-- Pit Timers -->
-        <div class="mt-2 pt-1.5 border-t border-white/10 flex items-center justify-between text-[10px] text-white/70">
-          <div>En Pitlane: <strong class="text-white tabular-nums">${ev.inPitSec}s</strong></div>
-          <div>Parado en Caja: <strong class="text-amber-400 tabular-nums">${ev.stopSec}s</strong></div>
-        </div>
+      <div class="w-[280px] h-[26px] px-2.5 rounded border ${borderColor} bg-[#0a0c10]/94 text-white font-mono text-[11px] tabular-nums flex items-center justify-between select-none shadow-md whitespace-nowrap">
+        <span class="text-amber-400 font-extrabold tracking-wide">IN PIT LANE</span>
+        <span class="${speedColor} font-black">${ev.speedKmh}<span class="text-white/45 font-normal">/${ev.limitKmh}</span></span>
+        <span class="text-white/90 font-bold">${ev.stopSec.toFixed(1)}s</span>
       </div>
     `;
   }
