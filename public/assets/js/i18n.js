@@ -72,10 +72,22 @@
     var og = document.querySelector('meta[property="og:locale"]');
     if (og && loc) og.setAttribute("content", loc);
   }
+  var LANG_FLAGS = {
+    es: '<svg viewBox="0 0 18 12" width="18" height="12" aria-hidden="true"><rect width="18" height="12" rx="2" fill="#AA151B"/><rect y="3" width="18" height="6" fill="#F1BF00"/></svg>',
+    ca: '<svg viewBox="0 0 18 12" width="18" height="12" aria-hidden="true"><rect width="18" height="12" rx="2" fill="#FCDD09"/><rect y="1.33" width="18" height="1.33" fill="#DA121A"/><rect y="4" width="18" height="1.33" fill="#DA121A"/><rect y="6.66" width="18" height="1.33" fill="#DA121A"/><rect y="9.33" width="18" height="1.33" fill="#DA121A"/></svg>',
+    en: '<svg viewBox="0 0 18 12" width="18" height="12" aria-hidden="true"><rect width="18" height="12" rx="2" fill="#012169"/><path d="M0 0l18 12M18 0L0 12" stroke="#FFF" stroke-width="2.2"/><path d="M0 0l18 12M18 0L0 12" stroke="#C8102E" stroke-width="1.1"/><path d="M9 0v12M0 6h18" stroke="#FFF" stroke-width="3.6"/><path d="M9 0v12M0 6h18" stroke="#C8102E" stroke-width="2"/></svg>',
+    fr: '<svg viewBox="0 0 18 12" width="18" height="12" aria-hidden="true"><rect width="6" height="12" rx="2" fill="#002395"/><rect x="6" width="6" height="12" fill="#FFF"/><rect x="12" width="6" height="12" rx="2" fill="#ED2939"/><rect x="4" width="2" height="12" fill="#002395"/><rect x="12" width="2" height="12" fill="#ED2939"/></svg>'
+  };
   function paintSwitch() {
     var code = lang.toUpperCase();
     var labels = document.querySelectorAll("[data-lang-code]");
     for (var i = 0; i < labels.length; i++) labels[i].textContent = code;
+    var flags = document.querySelectorAll("[data-lang-flag]");
+    for (var f = 0; f < flags.length; f++) {
+      var targetLang = flags[f].getAttribute("data-lang-flag") || lang;
+      if (targetLang === "active") targetLang = lang;
+      flags[f].innerHTML = LANG_FLAGS[targetLang] || LANG_FLAGS.es;
+    }
     var setters = document.querySelectorAll("[data-set-lang]");
     for (var j = 0; j < setters.length; j++) {
       var on = setters[j].getAttribute("data-set-lang") === lang;

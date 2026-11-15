@@ -90,9 +90,12 @@ const columns = [
           <span>Ayuda</span>
           <span class="mmt-footer__q" aria-hidden="true">?</span>
         </a>
-        <label class="mmt-footer__lang-wrap">
+        <label class="mmt-footer__lang-wrap" style="display:inline-flex;align-items:center;gap:0.45rem;border:1px solid var(--r-line);border-radius:0.5rem;padding:0 0.55rem;background:var(--r-surface, rgba(255,255,255,0.03))">
           <span class="sr-only" data-i18n="nav.lang">Idioma</span>
-          <select id="footerLangSelect" class="mmt-footer__select" aria-label="Idioma">
+          <span class="mmt-footer__flag" data-lang-flag="active" aria-hidden="true" style="display:inline-flex;align-items:center;line-height:0">
+            <svg viewBox="0 0 18 12" width="18" height="12"><rect width="18" height="12" rx="2" fill="#AA151B"/><rect y="3" width="18" height="6" fill="#F1BF00"/></svg>
+          </span>
+          <select id="footerLangSelect" class="mmt-footer__select" aria-label="Idioma" style="border:0;background:transparent;padding-left:0">
             <option value="es">Español</option>
             <option value="ca">Català</option>
             <option value="en">English</option>
