@@ -354,10 +354,15 @@ input[type="search"]:focus {
   white-space: nowrap;
 }
 
-/* Prompt 90: Responsive AppShell & Proportional 16:9 HUD Stage */
+/* Prompt 90 & 91: Full-Width AppShell, Responsive Grid & Proportional 16:9 HUD Stage */
 html:not(.overlay-mode),
-html:not(.overlay-mode) body {
+html:not(.overlay-mode) body,
+#mainAppWrapper {
+  width: 100%;
+  min-height: 100vh;
   max-width: 100%;
+  display: flex;
+  flex-direction: column;
   overflow-x: hidden;
 }
 

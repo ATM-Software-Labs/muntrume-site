@@ -11,14 +11,14 @@
     <link rel="stylesheet" href="./src/styles.css" />
   </head>
   <body class="min-h-screen bg-r-bg text-r-text antialiased">
-    <div id="mainAppWrapper" class="min-h-screen flex flex-col">
-      <header class="sticky top-0 z-40 h-16 shrink-0 border-b border-r-line bg-r-surface/85 backdrop-blur-md flex items-center justify-between gap-4 px-5 shadow-sm">
-        <div class="flex items-center gap-3.5 min-w-0">
-          <img src="./favicon.svg" width="34" height="34" alt="Muntrume Motorsport" class="h-8 w-8 rounded-lg shadow-sm border border-r-line/60 bg-r-bg" />
+    <div id="mainAppWrapper" class="w-full min-h-screen flex flex-col">
+      <header class="sticky top-0 z-40 w-full min-h-16 shrink-0 border-b border-r-line bg-r-surface/85 backdrop-blur-md flex items-center justify-between gap-3 px-4 py-2 shadow-sm">
+        <div class="flex items-center gap-3 shrink-0">
+          <img src="./favicon.svg" width="34" height="34" alt="Muntrume Motorsport" class="h-8 w-8 rounded-lg shadow-sm border border-r-line/60 bg-r-bg shrink-0" />
           <div class="min-w-0">
-            <div class="flex items-center gap-2">
-              <div class="mmt-display text-[22px] leading-none tracking-wide">MMT Sync</div>
-              <span id="irBadge" class="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono tracking-wider uppercase border border-r-line bg-r-bg text-r-muted transition-colors">
+            <div class="flex items-center gap-2 whitespace-nowrap">
+              <div class="mmt-display text-[22px] leading-none tracking-wide whitespace-nowrap">MMT Sync</div>
+              <span id="irBadge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono tracking-wider uppercase border border-r-line bg-r-bg text-r-muted transition-colors whitespace-nowrap shrink-0">
                 <span id="irDot" class="w-2 h-2 rounded-full bg-r-muted"></span>
                 <span id="irText">iRacing cerrado</span>
               </span>
@@ -26,18 +26,18 @@
             <div id="pilotLine" class="font-mono text-[11px] tracking-wide text-r-muted truncate">Muntrume Motorsport</div>
           </div>
         </div>
-        <div class="flex flex-wrap items-center gap-2 min-w-0">
+        <div class="flex items-center justify-end gap-2 min-w-0">
           <nav id="appNav" class="flex flex-wrap items-center gap-1 p-1 rounded-xl border border-r-line bg-r-bg/90 max-w-full" aria-label="Secciones">
-            <button type="button" data-nav="library" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Biblioteca</button>
-            <button type="button" data-nav="week" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Semana</button>
-            <button type="button" data-nav="analysis" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Análisis</button>
-            <button type="button" data-nav="strategy" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Estrategia</button>
-            <button type="button" data-nav="overlays" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Overlays</button>
-            <button type="button" data-nav="performance" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Rendimiento</button>
-            <button type="button" data-nav="hardware" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Hardware</button>
-            <button type="button" data-nav="settings" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Ajustes</button>
+            <button type="button" data-nav="library" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap">Biblioteca</button>
+            <button type="button" data-nav="week" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap">Semana</button>
+            <button type="button" data-nav="analysis" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap">Análisis</button>
+            <button type="button" data-nav="strategy" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap">Estrategia</button>
+            <button type="button" data-nav="overlays" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap">Overlays</button>
+            <button type="button" data-nav="performance" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap">Rendimiento</button>
+            <button type="button" data-nav="hardware" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap">Hardware</button>
+            <button type="button" data-nav="settings" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap">Ajustes</button>
           </nav>
-          <button type="button" id="themeToggle" class="mmt-btn-ghost h-10 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-text" aria-pressed="false">Tema claro</button>
+          <button type="button" id="themeToggle" class="mmt-btn-ghost h-9 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-text whitespace-nowrap shrink-0" aria-pressed="false">Tema claro</button>
         </div>
       </header>
 

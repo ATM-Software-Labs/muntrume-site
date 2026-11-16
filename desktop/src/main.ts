@@ -406,14 +406,6 @@ let userPreferences: string[] = (() => {
 function applyIracingStatus(status: string): void {
   if (status !== "on_track" && extraMod) extraMod.noteHudClosed();
   if (document.documentElement.classList.contains("overlay-mode")) return;
-  if (status === "on_track") {
-    document.documentElement.classList.add("mmt-perf-paused");
-    if (perfMod) perfMod.unmountPerformanceDashboard();
-    if (hotlapMod) hotlapMod.unmountHotlapStudio();
-  } else {
-    document.documentElement.classList.remove("mmt-perf-paused");
-    if (view === "performance" && perfMod) void perfMod.mountPerformanceDashboard();
-  }
   const badge = document.getElementById("irBadge");
   const dot = document.getElementById("irDot");
   const text = document.getElementById("irText");
