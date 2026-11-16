@@ -1192,7 +1192,7 @@ const topAlbums = [...PADDOCK_ALBUMS].sort((a, b) => (b.views ?? 0) - (a.views ?
         else usedImgs.add(src);
       });
 
-      fetch("https://muntru-api.trujillomingorance.com/api/gallery?status=published")
+      fetch("https://muntrume.atrumin16.workers.dev/api/gallery?status=published")
         .then((r) => (r.ok ? r.json() : null))
         .then((data) => {
           if (!data || !Array.isArray(data.photos)) return;

@@ -266,7 +266,7 @@ const gallerySchema = {
     if (nextBtn?.dataset.src) { const im = new Image(); im.src = nextBtn.dataset.src; }
     if (prevBtn?.dataset.src) { const im = new Image(); im.src = prevBtn.dataset.src; }
     if (btn.dataset.photoId) {
-      fetch('https://muntru-api.trujillomingorance.com/api/gallery/view', {
+      fetch('https://muntrume.atrumin16.workers.dev/api/gallery/view', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: btn.dataset.photoId }),
@@ -289,7 +289,7 @@ const gallerySchema = {
     const id = lb?.dataset.activePhotoId || '';
     const contact = window.prompt('Indica tu usuario o correo para verificar autoría y retirar la captura:');
     if (!contact) return;
-    await fetch('https://muntru-api.trujillomingorance.com/api/gallery/takedown', {
+    await fetch('https://muntrume.atrumin16.workers.dev/api/gallery/takedown', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: id || lbTitle?.textContent || 'galeria', contact, reason: 'Solicitud de autor en Lightbox' }),
@@ -313,7 +313,7 @@ const gallerySchema = {
   });
 
   // Dynamic community gallery hydration (Prompts 131, 132, 136, 138, 156)
-  fetch('https://muntru-api.trujillomingorance.com/api/gallery?status=published')
+  fetch('https://muntrume.atrumin16.workers.dev/api/gallery?status=published')
     .then((r) => (r.ok ? r.json() : null))
     .then((data) => {
       if (!data || !Array.isArray(data.photos)) return;

@@ -98,7 +98,7 @@ const classes = Array.from(new Set(PADDOCK_ALBUMS.map((a) => a.carClass)));
     (() => {
       const grid = document.getElementById("albumesGrid");
       if (!grid) return;
-      fetch("https://muntru-api.trujillomingorance.com/api/gallery?status=published")
+      fetch("https://muntrume.atrumin16.workers.dev/api/gallery?status=published")
         .then((r) => (r.ok ? r.json() : null))
         .then((data) => {
           if (!data || !Array.isArray(data.albums)) return;
