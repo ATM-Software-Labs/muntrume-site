@@ -354,6 +354,37 @@ input[type="search"]:focus {
   white-space: nowrap;
 }
 
+/* Prompt 90: Responsive AppShell & Proportional 16:9 HUD Stage */
+html:not(.overlay-mode),
+html:not(.overlay-mode) body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.mmt-responsive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  width: 100%;
+}
+
+#overlayStageViewport {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  position: relative;
+  overflow: hidden;
+}
+
+#overlayStage {
+  width: 1920px;
+  height: 1080px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
+  will-change: transform;
+}
+
 html.overlay-mode,
 html.overlay-mode body {
   background: transparent !important;

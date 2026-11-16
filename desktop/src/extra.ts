@@ -1914,6 +1914,23 @@ export function paintOverlays(): void {
   applyHudCustomAppearance();
   wireLayersControlPanel();
 
+  const viewport = document.getElementById("overlayStageViewport");
+  const stageEl = document.getElementById("overlayStage");
+  if (viewport && stageEl && viewport.dataset.scaleWired !== "1") {
+    viewport.dataset.scaleWired = "1";
+    const rescaleStage = () => {
+      const w = viewport.clientWidth || 1280;
+      const scale = Math.max(0.25, Math.min(1.5, w / 1920));
+      stageEl.style.transform = `scale(${scale.toFixed(4)})`;
+    };
+    rescaleStage();
+    if (typeof ResizeObserver !== "undefined") {
+      new ResizeObserver(rescaleStage).observe(viewport);
+    } else {
+      window.addEventListener("resize", rescaleStage);
+    }
+  }
+
   const studio = document.getElementById("overlayCustomStudio");
   if (studio && !studio.dataset.wired) {
     studio.dataset.wired = "1";
