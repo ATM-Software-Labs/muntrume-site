@@ -13,9 +13,14 @@ const pageDescription = "Autoriza el ordenador del piloto para que MMT Sync sinc
       <p id="vincularLead" class="r-lead">Comprueba el código que muestra la aplicación y autorízalo con tu sesión de piloto.</p>
       <p id="vincularCode" class="r-h2" style="color:var(--r-accent);letter-spacing:.08em">—</p>
       <p id="vincularWho" class="r-meta" hidden></p>
-      <div id="vincularActions" style="display:flex;flex-wrap:wrap;gap:12px">
+      <div id="vincularActions" style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
         <a id="vincularLogin" class="r-btn r-btn--primary" href="/login/">Inicia sesión</a>
         <button type="button" id="vincularApprove" class="r-btn r-btn--primary" hidden>Autorizar este dispositivo</button>
+        <button type="button" id="vincularGenerate" class="r-btn" style="border-color:var(--r-line-2);color:var(--r-text)" hidden>Generar nuevo código</button>
+      </div>
+      <div id="vincularManualBox" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:4px" hidden>
+        <input id="vincularManualInput" type="text" placeholder="O pega tu código (ej. MMT-1234)" style="height:40px;padding:0 12px;border-radius:10px;border:1px solid var(--r-line);background:var(--r-surface);color:var(--r-text);font-family:var(--r-mono);font-size:13px" />
+        <button type="button" id="vincularManualApply" class="r-btn" style="border-color:var(--r-line-2);color:var(--r-text)">Usar código</button>
       </div>
       <p id="vincularStatus" class="r-meta" role="status"></p>
     </div>
