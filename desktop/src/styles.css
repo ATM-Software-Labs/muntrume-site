@@ -60,7 +60,10 @@ html[data-theme="light"] {
 
 html,
 body {
-  min-height: 100%;
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
   background: var(--r-bg);
   color: var(--r-text);
 }
@@ -369,9 +372,16 @@ input[type="search"]:focus {
   white-space: nowrap;
 }
 
-/* Prompt 90 & 91: Full-Width AppShell, Responsive Grid & Proportional 16:9 HUD Stage */
+/* Prompt 90, 91 & 97: Full-Width AppShell, Responsive Grid & Proportional 16:9 HUD Stage */
 html:not(.overlay-mode),
-html:not(.overlay-mode) body,
+html:not(.overlay-mode) body {
+  width: 100%;
+  min-height: 100vh;
+  max-width: 100%;
+  margin: 0;
+  overflow-x: hidden;
+}
+
 #mainAppWrapper {
   width: 100%;
   min-height: 100vh;
@@ -379,6 +389,14 @@ html:not(.overlay-mode) body,
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
+}
+
+.mmt-no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.mmt-no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 .mmt-responsive-grid {

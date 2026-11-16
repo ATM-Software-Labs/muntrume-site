@@ -12,7 +12,7 @@
   </head>
   <body class="min-h-screen bg-r-bg text-r-text antialiased">
     <div id="mainAppWrapper" class="w-full min-h-screen flex flex-col">
-      <header class="sticky top-0 z-40 w-full min-h-16 shrink-0 border-b border-r-line bg-r-surface/85 backdrop-blur-md flex items-center justify-between gap-3 px-4 py-2 shadow-sm">
+      <header class="sticky top-0 z-40 w-full min-h-16 shrink-0 border-b border-r-line bg-r-surface/85 backdrop-blur-md flex items-center justify-between gap-3 px-5 py-2.5 shadow-sm">
         <div class="flex items-center gap-3 shrink-0">
           <img src="./favicon.svg" width="34" height="34" alt="Muntrume Motorsport" class="h-8 w-8 rounded-lg shadow-sm border border-r-line/60 bg-r-bg shrink-0" />
           <div class="min-w-0">
@@ -27,15 +27,15 @@
           </div>
         </div>
         <div class="flex items-center justify-end gap-2 min-w-0">
-          <nav id="appNav" class="flex flex-wrap items-center gap-1 p-1 rounded-xl border border-r-line bg-r-bg/90 max-w-full" aria-label="Secciones">
-            <button type="button" data-nav="library" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap">Biblioteca</button>
-            <button type="button" data-nav="week" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap">Semana</button>
-            <button type="button" data-nav="analysis" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap">Análisis</button>
-            <button type="button" data-nav="strategy" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap">Estrategia</button>
-            <button type="button" data-nav="overlays" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap">Overlays</button>
-            <button type="button" data-nav="performance" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap">Rendimiento</button>
-            <button type="button" data-nav="hardware" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap">Hardware</button>
-            <button type="button" data-nav="settings" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap">Ajustes</button>
+          <nav id="appNav" class="flex flex-nowrap items-center gap-1 p-1 rounded-xl border border-r-line bg-r-bg/90 overflow-x-auto max-w-full mmt-no-scrollbar" aria-label="Secciones">
+            <button type="button" data-nav="library" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap shrink-0">Biblioteca</button>
+            <button type="button" data-nav="week" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap shrink-0">Semana</button>
+            <button type="button" data-nav="analysis" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap shrink-0">Análisis</button>
+            <button type="button" data-nav="strategy" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap shrink-0">Estrategia</button>
+            <button type="button" data-nav="overlays" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap shrink-0">Overlays</button>
+            <button type="button" data-nav="performance" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap shrink-0">Rendimiento</button>
+            <button type="button" data-nav="hardware" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap shrink-0">Hardware</button>
+            <button type="button" data-nav="settings" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap shrink-0">Ajustes</button>
           </nav>
           <button type="button" id="themeToggle" class="mmt-btn-ghost h-9 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-text whitespace-nowrap shrink-0" aria-pressed="false">Tema claro</button>
         </div>
@@ -65,8 +65,9 @@
       </div>
       <p id="notice" role="status" aria-live="polite" hidden class="mx-5 mt-4 rounded-xl border border-r-line bg-r-surface px-4 py-3 text-sm"></p>
 
-      <main class="flex-1 px-5 py-6">
-        <section id="viewLogin" class="mmt-in max-w-xl mx-auto">
+      <main class="flex-1 w-full flex flex-col px-5 py-6">
+        <section id="viewLogin" class="mmt-in flex-1 w-full flex items-center justify-center p-6">
+          <div class="w-full max-w-[540px]">
           <div class="flex items-center gap-3.5 mb-6 pb-4 border-b border-r-line/60">
             <img src="./favicon.svg" width="44" height="44" alt="Muntrume Motorsport" class="h-11 w-11 rounded-xl shadow-md border border-r-line bg-r-surface" />
             <div>
@@ -99,9 +100,14 @@
             </div>
             <button type="button" id="mockApprove" hidden class="mt-4 font-mono text-[11px] uppercase tracking-wider text-r-muted underline">Simular autorización (solo demostración)</button>
           </div>
+          </div>
         </section>
 
-        <section id="viewApp" hidden>
+        <section id="viewApp" hidden class="w-full">
+          <div id="unlinkedBanner" hidden class="mb-4 px-4 py-2.5 rounded-xl border border-r-accent/30 bg-r-surface flex flex-wrap items-center justify-between gap-3 text-xs">
+            <span class="text-r-muted">Cuenta no vinculada · Estás usando las herramientas locales (<strong class="text-r-text">Overlays, Rendimiento, Hardware, Ajustes</strong>).</span>
+            <button type="button" id="unlinkedBannerBtn" class="mmt-btn h-8 px-3 rounded-lg bg-r-accent text-r-ink font-display font-extrabold uppercase tracking-wider text-[11px]">Vincular cuenta</button>
+          </div>
           <div class="sm:hidden flex flex-wrap gap-2 mb-4" id="appNavMobile">
             <button type="button" data-nav="library" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Biblioteca</button>
             <button type="button" data-nav="week" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Semana</button>
@@ -312,7 +318,7 @@
             <div id="weekList" class="mt-6 grid gap-4"></div>
           </section>
 
-          <section id="viewLastSession" hidden aria-labelledby="lastSessionTitle" class="max-w-7xl space-y-6">
+          <section id="viewLastSession" hidden aria-labelledby="lastSessionTitle" class="w-full space-y-6">
             <div class="flex flex-wrap items-end justify-between gap-4">
               <div>
                 <p class="mmt-kicker">Telemetría Real iRacing (.ibt) &amp; Resultados Oficiales</p>
@@ -487,7 +493,7 @@
             </div>
           </section>
 
-          <section id="viewAnalysis" hidden aria-labelledby="analysisTitle" class="max-w-7xl">
+          <section id="viewAnalysis" hidden aria-labelledby="analysisTitle" class="w-full">
             <div id="hotlapStudioCard" class="mb-4 rounded-2xl border border-r-line bg-r-surface p-4 space-y-3">
               <div class="flex flex-wrap items-center justify-between gap-3">
                 <div>
@@ -684,7 +690,7 @@
             </div>
           </section>
 
-          <section id="viewReference" hidden aria-labelledby="refTitle" class="max-w-6xl space-y-6">
+          <section id="viewReference" hidden aria-labelledby="refTitle" class="w-full space-y-6">
             <div class="flex flex-wrap items-end justify-between gap-4">
               <div>
                 <p class="mmt-kicker">Telemetría y Rendimiento de Referencia</p>
@@ -821,7 +827,7 @@
             </div>
           </section>
 
-          <section id="viewStrategy" hidden aria-labelledby="strategyTitle" class="max-w-4xl">
+          <section id="viewStrategy" hidden aria-labelledby="strategyTitle" class="w-full">
             <div class="flex flex-wrap items-end justify-between gap-4">
               <div>
                 <p class="mmt-kicker">Planificación de Carrera</p>
@@ -888,7 +894,7 @@
             <ul id="checklist" class="mt-3 grid gap-2"></ul>
           </section>
 
-          <section id="viewOverlays" hidden aria-labelledby="overlayTitle" class="max-w-6xl">
+          <section id="viewOverlays" hidden aria-labelledby="overlayTitle" class="w-full">
             <div class="flex flex-wrap items-end justify-between gap-4">
               <div>
                 <p class="mmt-kicker">Telemetría en Pista en Tiempo Real</p>
@@ -1085,7 +1091,7 @@
             </div>
           </section>
 
-          <section id="viewHardware" hidden aria-labelledby="hardwareTitle" class="max-w-6xl">
+          <section id="viewHardware" hidden aria-labelledby="hardwareTitle" class="w-full">
             <div class="flex flex-wrap items-end justify-between gap-4">
               <div>
                 <p class="mmt-kicker">Hardware de Competición & Audio Profesional</p>
@@ -1243,7 +1249,7 @@
             </div>
           </section>
 
-          <section id="viewTeam" hidden aria-labelledby="teamTitle" class="max-w-6xl">
+          <section id="viewTeam" hidden aria-labelledby="teamTitle" class="w-full">
             <div class="flex flex-wrap items-end justify-between gap-4">
               <div>
                 <p class="mmt-kicker">Paddock Oficial · Muntrume Motorsport</p>
@@ -1317,7 +1323,7 @@
             </div>
           </section>
 
-          <section id="viewConfig" hidden aria-labelledby="configTitle" class="max-w-3xl">
+          <section id="viewConfig" hidden aria-labelledby="configTitle" class="w-full max-w-5xl mx-auto">
             <div class="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <p class="mmt-kicker">Optimización de simracing</p>
@@ -1348,7 +1354,7 @@
             <div id="configItemsList" class="mt-6 grid gap-3"></div>
           </section>
 
-          <section id="viewSettings" hidden aria-labelledby="settingsTitle" class="max-w-2xl">
+          <section id="viewSettings" hidden aria-labelledby="settingsTitle" class="w-full max-w-4xl mx-auto">
             <p class="mmt-kicker">Este ordenador</p>
             <h1 id="settingsTitle" class="mmt-display text-4xl mt-3">Ajustes</h1>
             <div class="mt-6 rounded-2xl border border-r-line bg-r-surface p-5 grid gap-3">
@@ -1654,7 +1660,7 @@
           </div>
         </div>
         <!-- Performance & Streaks View (Prompts 81-82, lazy-loaded & unmounted on track) -->
-        <section id="viewPerformance" hidden class="mmt-in max-w-6xl mx-auto space-y-5">
+        <section id="viewPerformance" hidden class="mmt-in w-full space-y-5">
           <div class="mmt-panel-header">
             <div>
               <p class="mmt-kicker">Mi Trayectoria · Track Titan Style</p>

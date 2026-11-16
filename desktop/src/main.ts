@@ -1670,9 +1670,7 @@ function paint(data: Snapshot): void {
   $("demoChip").hidden = !data.mock;
   $("offlineChip").hidden = !data.offline;
   const logged = Boolean(data.pilot);
-  viewLogin.hidden = logged;
-  viewApp.hidden = !logged;
-  $("appNav").hidden = !logged;
+  $("appNav").hidden = false;
   $("pilotLine").textContent = data.pilot ? `${data.pilot.name} · ${data.pilot.slug}` : "Muntrume Motorsport";
   applyTheme(data.settings.theme === "light" ? "light" : themeFromSettings(data));
   const status = $( "syncStatus");
@@ -1681,7 +1679,7 @@ function paint(data: Snapshot): void {
     status.textContent += ` · ${data.lastDownloaded} sincronizados: ${data.lastCars.join(", ")}`;
   }
   paintLibrary();
-  if (logged && (view === "analysis" || view === "overlays" || view === "strategy" || view === "week" || view === "team" || view === "reference")) {
+  if (view === "analysis" || view === "overlays" || view === "strategy" || view === "week" || view === "team" || view === "reference") {
     void loadExtra().then((m) => m.paintExtras(data));
   }
   if (logged) {
@@ -1693,10 +1691,7 @@ function paint(data: Snapshot): void {
     $("updateBar").hidden = false;
     $("updateText").textContent = `Hay una actualización: ${data.updateVersion}`;
   }
-  if (!logged && backend.setMainTelemetry) {
-    void backend.setMainTelemetry(false).catch(() => {});
-  }
-  showView(logged ? view : "library");
+  showView(logged ? view : (LOCAL_UNLINKED_VIEWS.has(view) ? view : "library"));
 }
 
 function themeFromSettings(data: Snapshot): "dark" | "light" {
@@ -1732,8 +1727,24 @@ function press(id: string, on: boolean): void {
   $(id).setAttribute("aria-pressed", on ? "true" : "false");
 }
 
+const LOCAL_UNLINKED_VIEWS = new Set<string>([
+  "overlays",
+  "performance",
+  "hardware",
+  "settings",
+  "analysis",
+  "strategy",
+  "config",
+]);
+
 function showView(next: typeof view): void {
   view = next;
+  const logged = Boolean(snapshot?.pilot);
+  const showLoginGate = !logged && !LOCAL_UNLINKED_VIEWS.has(next);
+  viewLogin.hidden = !showLoginGate;
+  viewApp.hidden = showLoginGate;
+  const banner = document.getElementById("unlinkedBanner");
+  if (banner) banner.hidden = logged || showLoginGate;
   for (const id of ["viewLibrary", "viewUpload", "viewSettings", "viewWeek", "viewLastSession", "viewAnalysis", "viewReference", "viewStrategy", "viewOverlays", "viewHardware", "viewTeam"] as const) {
     const node = document.getElementById(id);
     if (node) node.hidden = id !== `view${next[0].toUpperCase()}${next.slice(1)}`;
@@ -1761,7 +1772,7 @@ function showView(next: typeof view): void {
     extraMod.stopOverlayDemoLoop();
   }
   if (backend.setMainTelemetry) {
-    const needsMainTel = Boolean(snapshot?.pilot) && (next === "overlays" || next === "analysis" || next === "strategy");
+    const needsMainTel = next === "overlays" || next === "analysis" || next === "strategy";
     void backend.setMainTelemetry(needsMainTel).catch(() => {});
   }
   if (next === "last_session") {
@@ -2042,8 +2053,11 @@ function bind(): void {
   document.querySelectorAll<HTMLButtonElement>("[data-nav]").forEach((button) => {
     button.addEventListener("click", () => {
       const next = button.dataset.nav;
-      if (next === "library" || next === "upload" || next === "settings" || next === "week" || next === "last_session" || next === "analysis" || next === "reference" || next === "strategy" || next === "overlays" || next === "hardware" || next === "team" || next === "config") showView(next);
+      if (next === "library" || next === "upload" || next === "settings" || next === "week" || next === "last_session" || next === "analysis" || next === "reference" || next === "strategy" || next === "overlays" || next === "performance" || next === "hardware" || next === "team" || next === "config") showView(next);
     });
+  });
+  document.getElementById("unlinkedBannerBtn")?.addEventListener("click", () => {
+    showView("library");
   });
   const quickLastSession = document.getElementById("quickLastSessionBtn");
   if (quickLastSession) {
