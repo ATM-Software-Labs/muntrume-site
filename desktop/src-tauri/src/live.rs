@@ -118,7 +118,7 @@ fn windows_loop(app: AppHandle) {
     const WAIT_OBJECT_0: u32 = 0;
     const FRAME_MS: u64 = 33;
     const MAIN_FRAME_MS: u64 = 100;
-    const IRSDK_FRAME_MS: u64 = 200;
+    const IRSDK_FRAME_MS: u64 = 250;
     let mut last_status: Option<&'static str> = None;
 
     loop {
@@ -249,7 +249,9 @@ fn windows_loop(app: AppHandle) {
             let need_overlay_yaml = overlay_active && (yaml_changed || !overlay_synced_yaml);
             let need_main_yaml = main_active && (yaml_changed || !main_synced_yaml);
             if (need_overlay_yaml || need_main_yaml) && last_yaml_emit.elapsed() >= Duration::from_millis(1000) {
-                if let Ok((u, yaml)) = read_session_info_yaml(bytes) {
+                if let Ok(Ok((u, yaml))) = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    read_session_info_yaml(bytes)
+                })) {
                     let payload = serde_json::json!({ "update": u, "yaml": yaml });
                     if need_overlay_yaml {
                         let _ = app.emit_to("overlay", "mmt-session-info", &payload);
@@ -265,8 +267,10 @@ fn windows_loop(app: AppHandle) {
             }
             let mut clear_vars = false;
             if let Some(table) = vars.as_ref() {
-                match read_live_sample_with(bytes, table) {
-                    Ok(sample) => {
+                match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    read_live_sample_with(bytes, table)
+                })) {
+                    Ok(Ok(sample)) => {
                         if overlay_active {
                             let _ = app.emit_to("overlay", "mmt-live", &sample);
                         }
@@ -277,13 +281,13 @@ fn windows_loop(app: AppHandle) {
                         emit_status_if_changed(&app, &mut last_status, "on_track");
                         last_emit = Instant::now();
                     }
-                    Err(IbtError::NotConnected) => {
+                    Ok(Err(IbtError::NotConnected)) => {
                         emit_status_if_changed(&app, &mut last_status, "in_sim");
                         clear_vars = true;
                         last_yaml_update = None;
                     }
-                    Err(IbtError::StaleVars) => clear_vars = true,
-                    Err(_) => {}
+                    Ok(Err(IbtError::StaleVars)) => clear_vars = true,
+                    Ok(Err(_)) | Err(_) => {}
                 }
             }
             if clear_vars {
@@ -291,7 +295,9 @@ fn windows_loop(app: AppHandle) {
             }
             if last_frame_emit.elapsed() >= Duration::from_millis(IRSDK_FRAME_MS) {
                 if let Some(table) = vars.as_ref() {
-                    if let Ok(frame) = read_live_irsdk_frame_with(bytes, table) {
+                    if let Ok(Ok(frame)) = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                        read_live_irsdk_frame_with(bytes, table)
+                    })) {
                         let checkered = (frame.session_flags & 0x0000_0001) != 0;
                         let cooldown = frame.session_state == 5;
                         if !race_finished_emitted && (cooldown || (checkered && frame.on_pit_road)) {

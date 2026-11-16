@@ -15,7 +15,7 @@ mod upload;
 pub use allow::{allowed_verify_url, api_url, canonical_link_url, ApiUrlError};
 pub use fixed::{install_allowed, yaml_fixed_flag, SeriesLock, SeriesWeek};
 pub use ibt::{
-    parse_ibt, read_live_irsdk_frame_with, read_live_sample, read_live_sample_with,
+    decode_irsdk_text, parse_ibt, read_live_irsdk_frame_with, read_live_sample, read_live_sample_with,
     read_session_info_yaml, resolve_var_table, session_info_update, IbtError, IrsdkFrame, VarTable,
 };
 pub use manifest::{flexible_id, Manifest, RemoteSetup, MAX_STO_BYTES};

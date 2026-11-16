@@ -174,6 +174,14 @@ pub struct IrsdkFrame {
     pub car_idx_on_pit_road: Vec<bool>,
 }
 
+pub fn decode_irsdk_text(raw: &[u8]) -> String {
+    if raw.starts_with(&[0xEF, 0xBB, 0xBF]) {
+        return String::from_utf8_lossy(&raw[3..]).into_owned();
+    }
+    let (decoded, _, _) = encoding_rs::WINDOWS_1252.decode_without_bom_handling(raw);
+    decoded.into_owned()
+}
+
 pub fn read_session_info_yaml(bytes: &[u8]) -> Result<(i32, String), IbtError> {
     validate_live_header(bytes)?;
     let update = i32_at(bytes, 12);
@@ -184,7 +192,7 @@ pub fn read_session_info_yaml(bytes: &[u8]) -> Result<(i32, String), IbtError> {
     }
     let slice = &bytes[session_off..session_off + session_len];
     let end = slice.iter().position(|&b| b == 0).unwrap_or(slice.len());
-    let yaml = String::from_utf8_lossy(&slice[..end]).into_owned();
+    let yaml = decode_irsdk_text(&slice[..end]);
     if i32_at(bytes, 12) != update {
         return Err(IbtError::Torn);
     }
@@ -489,7 +497,7 @@ fn i32_at(bytes: &[u8], offset: usize) -> i32 {
 
 fn c_string(bytes: &[u8]) -> String {
     let end = bytes.iter().position(|byte| *byte == 0).unwrap_or(bytes.len());
-    String::from_utf8_lossy(&bytes[..end]).to_string()
+    decode_irsdk_text(&bytes[..end])
 }
 
 #[cfg(test)]

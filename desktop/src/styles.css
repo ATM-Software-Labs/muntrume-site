@@ -484,8 +484,7 @@ html.overlay-mode.overlay-editing #floatLayersControlPanel {
 
 /* HUD Visual Themes (Prompt 48: FirstRunWizard) */
 html[data-hud-theme="minimal-transparent"] .mmt-float-widget {
-  background: rgba(10, 12, 16, 0.45) !important;
-  backdrop-filter: blur(4px);
+  background: rgba(10, 12, 16, 0.72) !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
   box-shadow: none !important;
 }
