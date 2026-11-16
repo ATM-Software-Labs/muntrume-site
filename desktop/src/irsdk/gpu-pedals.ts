@@ -90,7 +90,7 @@ export class GpuPedalsEngine {
 
   private initContainer(container: HTMLElement) {
     const dpr = Math.min(2, typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1);
-    container.innerHTML = `<canvas data-mmt-pedals-canvas width="${310 * dpr}" height="${76 * dpr}" style="width:310px;height:76px;background:rgba(10,12,16,0.72);border-radius:4px;display:block;"></canvas>`;
+    container.innerHTML = `<canvas data-mmt-pedals-canvas width="${280 * dpr}" height="${82 * dpr}" style="width:280px;height:82px;background:rgba(10,12,16,0.78);border-radius:4px;display:block;"></canvas>`;
 
     const canvas = container.querySelector("[data-mmt-pedals-canvas]") as HTMLCanvasElement;
     const ctx = canvas.getContext("2d");
@@ -154,13 +154,16 @@ export class GpuPedalsEngine {
     refs.ringHead = (refs.ringHead + 1) % cap;
     if (refs.ringCount < cap) refs.ringCount++;
 
-    ctx.clearRect(0, 0, 310, 76);
+    ctx.clearRect(0, 0, 280, 82);
 
-    // 1. Área de trazas nítidas 76px (188px x 68px, x: 4..192, y: 4..72) con guías 25/50/75%
+    // 1. Área de trazas nítidas 280x82 (192x74, x: 4..196, y: 4..78) con guías 25/50/75%
     const traceX = 4;
     const traceY = 4;
-    const traceW = 188;
-    const traceH = 68;
+    const traceW = 192;
+    const traceH = 74;
+    const absAlert = Boolean(sample.absActive);
+    const brakeColor = absAlert ? "#facc15" : "#ef4444";
+    const brakeFill = absAlert ? "rgba(250, 204, 21, 0.28)" : "rgba(239, 68, 68, 0.18)";
 
     ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
     ctx.lineWidth = 1;
@@ -225,7 +228,7 @@ export class GpuPedalsEngine {
       }
       ctx.stroke();
 
-      // Brake (#ef4444, 2px + soft gradient fill)
+      // Brake (#ef4444 normal, #facc15 bright yellow on ABS/LOCK)
       ctx.beginPath();
       ctx.moveTo(startX, traceY + traceH - 1);
       for (let i = 0; i < len; i++) {
@@ -234,11 +237,11 @@ export class GpuPedalsEngine {
       }
       ctx.lineTo(startX + (len - 1) * step, traceY + traceH - 1);
       ctx.closePath();
-      ctx.fillStyle = "rgba(239, 68, 68, 0.18)";
+      ctx.fillStyle = brakeFill;
       ctx.fill();
 
-      ctx.strokeStyle = "#ef4444";
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = brakeColor;
+      ctx.lineWidth = 2.2;
       ctx.beginPath();
       for (let i = 0; i < len; i++) {
         const idx = (oldest + i) % cap;
@@ -274,75 +277,48 @@ export class GpuPedalsEngine {
       ctx.stroke();
     }
 
-    // 2. 3 Barras verticales instantáneas (48px, x: 198..244) con % exacto debajo
-    const barY = 6;
-    const barH = 50;
+    // 2. 3 Barras verticales instantáneas (x: 204..248) con % debajo + Badge ABS / LOCK en amarillo
+    const barY = absAlert ? 18 : 6;
+    const barH = absAlert ? 44 : 56;
     const bars: Array<{ x: number; val: number; color: string }> = [
-      { x: 200, val: clt, color: "#3b82f6" },
-      { x: 216, val: brk, color: "#ef4444" },
-      { x: 232, val: thr, color: "#10b981" },
+      { x: 204, val: clt, color: "#3b82f6" },
+      { x: 220, val: brk, color: brakeColor },
+      { x: 236, val: thr, color: "#10b981" },
     ];
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
+    if (absAlert) {
+      ctx.fillStyle = "#facc15";
+      ctx.fillRect(202, 4, 72, 11);
+      ctx.fillStyle = "#090b0f";
+      ctx.font = "900 8px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace";
+      ctx.fillText("ABS / LOCK", 238, 10);
+    }
     for (const b of bars) {
       ctx.fillStyle = "rgba(255, 255, 255, 0.12)";
-      ctx.fillRect(b.x, barY, 8, barH);
+      ctx.fillRect(b.x, barY, 9, barH);
       const fillH = Math.round(b.val * barH);
       if (fillH > 0) {
         ctx.fillStyle = b.color;
-        ctx.fillRect(b.x, barY + barH - fillH, 8, fillH);
+        ctx.fillRect(b.x, barY + barH - fillH, 9, fillH);
       }
       ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
       ctx.font = "700 8px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace";
-      ctx.fillText(`${Math.round(b.val * 100)}`, b.x + 4, 67);
+      ctx.fillText(`${Math.round(b.val * 100)}`, b.x + 4.5, 73);
     }
 
-    // 3. Marcha + Velocidad + Aro de Volante (x: 248..308)
+    // 3. Marcha + Velocidad a la derecha (x: 252..278)
     const gearVal = Math.round(sample.gear ?? 0);
     const gearStr = gearVal < 0 ? "R" : gearVal === 0 ? "N" : String(gearVal);
     const kmh = Math.max(0, Math.round(sample.speedKmh ?? 0));
 
     ctx.fillStyle = "#ffffff";
     ctx.font = "900 18px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace";
-    ctx.fillText(gearStr, 278, 16);
+    ctx.fillText(gearStr, 265, 32);
 
     ctx.fillStyle = "rgba(255, 255, 255, 0.78)";
     ctx.font = "700 9px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace";
-    ctx.fillText(`${kmh}`, 278, 30);
-
-    // 4. Aro de Volante (center x: 278, y: 55)
-    const cx = 278;
-    const cy = 55;
-    const radius = 13;
-    const rotRad = -(Number.isFinite(sample.steering) ? sample.steering : 0);
-
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(rotRad);
-
-    // Thin white rim
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.9)";
-    ctx.lineWidth = 2.2;
-    ctx.beginPath();
-    ctx.arc(0, 0, radius, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Subtle inner spoke
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.28)";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(-radius + 2, 0);
-    ctx.lineTo(radius - 2, 0);
-    ctx.stroke();
-
-    // Top marker (red/green)
-    ctx.strokeStyle = "#10b981";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.arc(0, 0, radius, -Math.PI / 2 - 0.24, -Math.PI / 2 + 0.24);
-    ctx.stroke();
-
-    ctx.restore();
+    ctx.fillText(`${kmh}`, 265, 50);
   }
 
   public render(container: HTMLElement, sample: PedalsSample): void {
@@ -376,4 +352,43 @@ export class GpuPedalsEngine {
       refs.rafId = requestAnimationFrame(tick);
     }
   }
+}
+
+export function renderCenteredSteeringWheel(canvas: HTMLCanvasElement, steeringRad: number): void {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  const w = canvas.width;
+  const h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  const cx = w / 2;
+  const cy = h / 2;
+  const r = Math.min(cx, cy) - 4;
+  const rot = -(Number.isFinite(steeringRad) ? steeringRad : 0);
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(rot);
+
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.92)";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(-r + 3, 0);
+  ctx.lineTo(r - 3, 0);
+  ctx.stroke();
+
+  // 4px top center marker (red/green)
+  ctx.strokeStyle = Math.abs(rot) < 0.08 ? "#10b981" : "#ef4444";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.arc(0, 0, r, -Math.PI / 2 - 0.25, -Math.PI / 2 + 0.25);
+  ctx.stroke();
+
+  ctx.restore();
 }

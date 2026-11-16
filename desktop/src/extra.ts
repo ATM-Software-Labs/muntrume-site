@@ -3,6 +3,7 @@ import { areSessionsCompatible, computeDistanceDelta, resampleTrackByDistance } 
 import { cleanTelemetrySignals, detectCornerKeyEvents } from "./telemetry/signal-cleaner";
 import { analyzeStintConsistency } from "./telemetry/consistency";
 import { setActiveCoachReference } from "./features-48-50";
+import { renderCenteredSteeringWheel } from "./irsdk/gpu-pedals";
 import {
   IrsdkClient,
   renderRelativeWidget,
@@ -2049,7 +2050,7 @@ export function paintOverlays(): void {
 
 function ensureLayoutSchemaV2(force = false): void {
   if (typeof localStorage === "undefined") return;
-  if (!force && localStorage.getItem("mmt_layout_version") === "2") return;
+  if (!force && localStorage.getItem("mmt_layout_version") === "3") return;
   localStorage.removeItem("mmt_float_hud_positions");
   localStorage.removeItem("mmt-hud-disabled-widgets");
   localStorage.setItem("mmt-rule-std-pit-only", "0");
@@ -2058,8 +2059,9 @@ function ensureLayoutSchemaV2(force = false): void {
   localStorage.setItem("mmt-hide-off-track", "0");
   localStorage.setItem("mmt-kapps-std-rows", "9");
   localStorage.setItem("mmt-kapps-rel-rows", "3");
-  ThemeEngine.getInstance().setCustomVars({ scale: 1.0, opacity: 0.88 });
-  localStorage.setItem("mmt_layout_version", "2");
+  localStorage.setItem("mmt-wheel-pos-y", "24");
+  ThemeEngine.getInstance().setCustomVars({ scale: 1.15, opacity: 0.88 });
+  localStorage.setItem("mmt_layout_version", "3");
 }
 
   const studio = document.getElementById("overlayCustomStudio");
@@ -2074,8 +2076,8 @@ function ensureLayoutSchemaV2(force = false): void {
       ensureLayoutSchemaV2(true);
       const scR = document.getElementById("hudScaleRange") as HTMLInputElement | null;
       const scV = document.getElementById("hudScaleVal");
-      if (scR) scR.value = "100";
-      if (scV) scV.textContent = "100%";
+      if (scR) scR.value = "115";
+      if (scV) scV.textContent = "115%";
       const opR = document.getElementById("hudOpacityRange") as HTMLInputElement | null;
       const opV = document.getElementById("hudOpacityVal");
       if (opR) opR.value = "88";
@@ -2119,6 +2121,20 @@ function ensureLayoutSchemaV2(force = false): void {
         if (scVal) scVal.textContent = `${pct}%`;
         theme.setCustomVars({ scale: pct / 100 });
         applyHudCustomAppearance();
+      });
+    }
+
+    const wheelYRange = document.getElementById("hudWheelPosY") as HTMLInputElement | null;
+    const wheelYVal = document.getElementById("hudWheelPosYVal");
+    if (wheelYRange) {
+      const savedY = localStorage.getItem("mmt-wheel-pos-y") || "24";
+      wheelYRange.value = savedY;
+      if (wheelYVal) wheelYVal.textContent = `${savedY}px`;
+      wheelYRange.addEventListener("input", () => {
+        localStorage.setItem("mmt-wheel-pos-y", wheelYRange.value);
+        if (wheelYVal) wheelYVal.textContent = `${wheelYRange.value}px`;
+        const wCard = document.getElementById("floatSteeringWheelCard");
+        if (wCard) wCard.style.bottom = `${wheelYRange.value}px`;
       });
     }
 
@@ -2559,15 +2575,21 @@ export function isFloatHudInEditMode(): boolean {
 }
 
 export function initFloatingOverlayControls(onClose?: () => void): void {
-  if (typeof localStorage !== "undefined" && localStorage.getItem("mmt_layout_version") !== "2") {
+  if (typeof localStorage !== "undefined" && localStorage.getItem("mmt_layout_version") !== "3") {
     localStorage.removeItem("mmt_float_hud_positions");
     localStorage.removeItem("mmt-hud-disabled-widgets");
     localStorage.setItem("mmt-rule-std-pit-only", "0");
     localStorage.setItem("mmt-rule-rel-track-only", "0");
     localStorage.setItem("mmt-rule-fuel-reserve-only", "0");
     localStorage.setItem("mmt-hide-off-track", "0");
-    ThemeEngine.getInstance().setCustomVars({ scale: 1.0, opacity: 0.88 });
-    localStorage.setItem("mmt_layout_version", "2");
+    localStorage.setItem("mmt-wheel-pos-y", "24");
+    ThemeEngine.getInstance().setCustomVars({ scale: 1.15, opacity: 0.88 });
+    localStorage.setItem("mmt_layout_version", "3");
+  }
+  const wheelCardInit = document.getElementById("floatSteeringWheelCard");
+  if (wheelCardInit && typeof localStorage !== "undefined") {
+    const wy = localStorage.getItem("mmt-wheel-pos-y") || "24";
+    wheelCardInit.style.bottom = `${wy}px`;
   }
   // Global shortcut for Streamer Mode (Ctrl+Shift+S or F8)
   window.addEventListener("keydown", (e: KeyboardEvent) => {
@@ -3308,6 +3330,7 @@ function safeRenderWidget(el: HTMLElement | null, fn: () => void): void {
     steering: sample.steering,
     speedKmh: kmh,
     gear: sample.gear,
+    absActive: Boolean(sample.brakeAbsActive || irsdkState?.frame.brakeAbsActive),
     ghostEnabled,
     ghostThrottle: ghostPt?.throttle,
     ghostBrake: ghostPt?.brake,
@@ -3315,6 +3338,10 @@ function safeRenderWidget(el: HTMLElement | null, fn: () => void): void {
   document.querySelectorAll<HTMLElement>("#ovGpuPedals, #ovGpuPedalsFloat").forEach((container) => {
     if (container.offsetParent !== null) safeRenderWidget(container, () => renderGpuPedalsWidget(container, pedalSample));
   });
+  const wheelCanvas = document.getElementById("ovSteeringWheelFloat") as HTMLCanvasElement | null;
+  if (wheelCanvas && wheelCanvas.offsetParent !== null) {
+    safeRenderWidget(wheelCanvas, () => renderCenteredSteeringWheel(wheelCanvas, sample.steering));
+  }
 
   // Live Delta Bar (30 FPS Canvas, Prompt 109)
   const deltaCanvas = document.getElementById("ovLiveDeltaFloat") as HTMLCanvasElement | null;

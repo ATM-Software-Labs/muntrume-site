@@ -118,6 +118,7 @@ export interface LiveSample {
   clutch?: number;
   lapDelta?: number;
   lapDeltaOk?: boolean;
+  brakeAbsActive?: boolean;
   lat?: number;
   lon?: number;
   vx?: number;

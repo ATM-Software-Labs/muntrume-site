@@ -24,6 +24,8 @@ pub struct Sample {
     pub lap_delta: Option<f64>,
     #[serde(default)]
     pub lap_delta_ok: Option<bool>,
+    #[serde(default)]
+    pub brake_abs_active: Option<bool>,
     pub lat: Option<f64>,
     pub lon: Option<f64>,
     pub vx: Option<f64>,
@@ -227,6 +229,7 @@ fn blend(a: &Sample, b: &Sample, mix: f64) -> Sample {
         clutch: None,
         lap_delta: None,
         lap_delta_ok: None,
+        brake_abs_active: None,
         lat: match (a.lat, b.lat) {
             (Some(left), Some(right)) => Some(lerp(left, right)),
             _ => None,
@@ -274,6 +277,7 @@ pub fn synthetic_session() -> Session {
                 clutch: None,
                 lap_delta: None,
                 lap_delta_ok: None,
+                brake_abs_active: None,
                 lat: Some(41.5 + angle.sin() * 0.002),
                 lon: Some(2.1 + angle.cos() * 0.002),
                 vx: None,
@@ -332,6 +336,7 @@ mod tests {
                 clutch: None,
                 lap_delta: None,
                 lap_delta_ok: None,
+                brake_abs_active: None,
                 lat: None,
                 lon: None,
                 vx: Some(10.0),
@@ -348,6 +353,7 @@ mod tests {
                 clutch: None,
                 lap_delta: None,
                 lap_delta_ok: None,
+                brake_abs_active: None,
                 lat: None,
                 lon: None,
                 vx: Some(10.0),

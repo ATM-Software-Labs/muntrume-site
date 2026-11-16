@@ -580,7 +580,7 @@ export function renderTrackConditionsWidget(container: HTMLElement, state: Irsdk
         : `<span class="px-1.5 py-0.5 rounded-[2px] bg-[#f8fafc] text-black font-black text-[9.5px] tracking-wider">SLICK</span>`;
 
   setHtmlIfChanged(container, `
-    <div class="h-[24px] rounded-[2px] border border-white/10 text-white font-mono text-[10.5px] tabular-nums flex items-center whitespace-nowrap select-none" style="width: max-content; padding: 3px 10px; gap: 10px; background: rgba(8, 10, 14, 0.88);">
+    <div class="h-[26px] rounded-[2px] border border-white/10 text-white font-mono text-[13px] font-semibold tabular-nums flex items-center whitespace-nowrap select-none" style="width: max-content; padding: 3px 10px; gap: 10px; background: rgba(8, 10, 14, 0.88);">
       ${flagHtml}
       ${tempHtml}
       <span class="${wet.cls}">💧 ${wet.label}</span>

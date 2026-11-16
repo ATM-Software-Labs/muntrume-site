@@ -971,8 +971,13 @@
                   </label>
                   <label class="flex items-center gap-1.5 font-mono text-[11px] text-r-muted">
                     <span>Escala General del HUD:</span>
-                    <input id="hudScaleRange" type="range" min="70" max="115" value="100" class="w-20 accent-[#00e699]" />
-                    <span id="hudScaleVal" class="text-r-text tabular-nums w-9">100%</span>
+                    <input id="hudScaleRange" type="range" min="70" max="135" value="115" class="w-20 accent-[#00e699]" />
+                    <span id="hudScaleVal" class="text-r-text tabular-nums w-9">115%</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 font-mono text-[11px] text-r-muted">
+                    <span>Posición Y del Volante:</span>
+                    <input id="hudWheelPosY" type="range" min="0" max="160" value="24" class="w-20 accent-[#00e699]" />
+                    <span id="hudWheelPosYVal" class="text-r-text tabular-nums w-10">24px</span>
                   </label>
                 </div>
                 <div class="flex flex-wrap items-center gap-3 font-mono text-[11px]">
@@ -1924,18 +1929,23 @@
         <canvas id="ovTrackMapFloat" width="150" height="110"></canvas>
       </div>
 
-      <!-- 6. Bottom-Center Crisp 310x76 Canvas Inputs + Gear + Speed + Wheel (bottom: 24px) -->
-      <div id="floatInputsCard" class="mmt-float-widget fixed left-1/2 -translate-x-1/2 bottom-[24px] w-[310px] flex flex-col items-center gap-1 pointer-events-auto" data-widget="inputs">
+      <!-- 6. Bottom-Center Pedals (280x82px left of wheel) + Centered Steering Wheel (46x46px at left: 50%) -->
+      <div id="floatInputsCard" class="mmt-float-widget fixed right-[calc(50%+32px)] bottom-[24px] w-[280px] flex flex-col items-center gap-1 pointer-events-auto" data-widget="inputs">
         <div id="floatShiftLightsRow" class="flex flex-col items-center gap-1 w-full" data-widget="lights">
           <div id="ovDigiFlagFloat" class="w-full max-w-[260px]" style="display: none;"></div>
           <div class="flex items-center gap-0.5 px-2 py-0.5 rounded bg-[#0a0c10]/70" id="ovShiftLightsFloat"></div>
         </div>
-        <div id="ovGpuPedalsFloat" class="w-[310px] h-[76px]"></div>
+        <div id="ovGpuPedalsFloat" class="w-[280px] h-[82px]"></div>
         <canvas id="ovInputsFloat" width="140" height="32" class="hidden"></canvas>
         <strong id="ovGearFloat" class="hidden">—</strong>
         <strong id="ovSpeedFloat" class="hidden">—</strong>
         <span id="ovRpmFloat" class="hidden">—</span>
         <div id="ovTyresFloat" class="hidden"></div>
+      </div>
+
+      <!-- 6b. Centered Steering Wheel (46x46px at left: 50%, adjustable Y) -->
+      <div id="floatSteeringWheelCard" class="mmt-float-widget fixed left-1/2 -translate-x-1/2 bottom-[24px] w-[46px] h-[46px] pointer-events-none z-25" data-widget="wheel">
+        <canvas id="ovSteeringWheelFloat" width="46" height="46" style="width:46px;height:46px;display:block;"></canvas>
       </div>
     </div>
 
