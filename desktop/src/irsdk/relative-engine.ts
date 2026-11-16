@@ -44,8 +44,13 @@ export class RelativeEngine {
     const lapDistPcts = frame.carIdxLapDistPct || [];
     const trackSurfaces = frame.carIdxTrackSurface || [];
     const onPitRoads = frame.carIdxOnPitRoad || [];
+    const sessionFlagsArr = frame.carIdxSessionFlags || [];
+    const lastLapTimes = frame.carIdxLastLapTime || [];
+    const carIdxLaps = frame.carIdxLap || [];
+    const carIdxPositions = frame.carIdxPosition || [];
 
     const activeDistPct = lapDistPcts[activeCarIdx] ?? 0;
+    const activeLap = carIdxLaps[activeCarIdx] ?? 0;
     const baselineEstLap = driverInfo.driverCarEstLapTime > 10 ? driverInfo.driverCarEstLapTime : 90.0;
 
     const allCandidates: Array<{
@@ -83,6 +88,15 @@ export class RelativeEngine {
       // diffPct > 0 means car is ahead in lap distance, so delta = -diffPct * estLap
       const deltaSeconds = -diffPct * estLap;
 
+      const lastLapSec = lastLapTimes[idx] ?? 0;
+      const lastLapMins = Math.floor(lastLapSec / 60);
+      const lastLapRem = lastLapSec % 60;
+      const lastLapStr = lastLapSec > 0 && isFinite(lastLapSec)
+        ? `${lastLapMins}:${lastLapRem.toFixed(3).padStart(6, "0")}`
+        : "--:--.---";
+      const carLap = carIdxLaps[idx] ?? 0;
+      const lapDelta = activeLap > 0 && carLap > 0 ? carLap - activeLap : 0;
+
       const entry: RelativeEntry = {
         carIdx: idx,
         userId: driver.userId,
@@ -97,6 +111,11 @@ export class RelativeEngine {
         licString: driver.licString,
         licBadgeColor: driver.licColor,
         iRatingStr: formatIRating(driver.iRating),
+        iRatingExact: driver.iRating > 0 ? driver.iRating : 0,
+        position: carIdxPositions[idx] > 0 ? carIdxPositions[idx] : 0,
+        lastLapStr,
+        sessionFlags: sessionFlagsArr[idx] ?? 0,
+        lapDelta,
         diffPct,
         deltaSeconds,
         deltaStr: isActive ? "REF" : formatDeltaSeconds(deltaSeconds),

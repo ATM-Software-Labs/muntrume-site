@@ -26,9 +26,17 @@ function renderLicenseBadge(licString: string | undefined): string {
   const raw = (licString || "R 0.0").trim();
   const letter = raw.charAt(0).toUpperCase();
   const num = raw.slice(1).trim();
-  const label = num ? `${letter} ${num}` : letter;
+  const label = num ? `${letter}${num}` : letter;
   const cls = ["A", "B", "C", "D", "R"].includes(letter) ? `mmt-lic-${letter}` : "mmt-lic-R";
   return `<span class="mmt-lic-pill ${cls}">${label}</span>`;
+}
+
+function renderLicenseIrBlock(licString: string | undefined, iRatingExact?: number, iRatingStr?: string, showIr = true): string {
+  const licHtml = licString ? renderLicenseBadge(licString) : "";
+  const irVal = iRatingExact && iRatingExact > 0 ? String(Math.round(iRatingExact)) : (iRatingStr || "");
+  const irHtml = showIr && irVal ? `<span class="mmt-ir-exact">${irVal}</span>` : "";
+  if (!licHtml && !irHtml) return "";
+  return `<span class="mmt-lic-ir-block">${licHtml}${irHtml}</span>`;
 }
 
 const gpuPedalsEngine = new GpuPedalsEngine();
@@ -95,32 +103,40 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
         ? "text-emerald-400 font-bold"
         : e.onPitRoad
         ? "text-amber-300 font-bold"
-        : "text-white font-semibold";
+        : "text-[#f8fafc] font-semibold";
 
-      const pitBadge = cols.pitStatus && e.onPitRoad
-        ? `<span class="px-1 rounded-[2px] text-[8px] font-bold bg-amber-500/25 text-amber-300">PIT</span>`
-        : "";
+      const flags = e.sessionFlags ?? 0;
+      const hasBlackFlag = (flags & 0x00010000) !== 0; // irsdk_black
+      const hasSlowDown = (flags & 0x00080000) !== 0;  // irsdk_furled
+      const badgeParts: string[] = [];
+      if (hasBlackFlag) badgeParts.push(`<span class="mmt-flag-f" title="Bandera Negra">F</span>`);
+      if (hasSlowDown) badgeParts.push(`<span class="mmt-flag-xd" title="Slow Down">XD</span>`);
+      if (cols.pitStatus && e.onPitRoad) badgeParts.push(`<span class="mmt-flag-pit">PIT</span>`);
 
       const displayName = isStreamer
         ? isSelf ? "Piloto (Tú)" : `Piloto #${e.carNumber}`
         : (e.driverName || e.abbrevName);
 
-      const relPos = posByCarIdx.get(e.carIdx) ?? 0;
-      const classPosCell = `<span class="text-center text-[10px] font-bold" style="color:${e.carClassColor || "#38bdf8"}">${relPos > 0 ? relPos : "-"}</span>`;
+      const relPos = e.position && e.position > 0 ? e.position : (posByCarIdx.get(e.carIdx) ?? 0);
+      const isOffLap = !isSelf && (e.lapDelta ?? 0) !== 0;
+      const nameColor = isSelf ? "text-white font-bold" : isOffLap ? "text-[#fbbf24]" : "text-[#f8fafc]";
+
+      const classPosCell = `<span class="text-center text-[10.5px] font-bold" style="color:${e.carClassColor || "#38bdf8"}">${relPos > 0 ? relPos : "-"}</span>`;
       const numCell = cols.carNumber
-        ? `<span class="text-center text-[10px] font-bold ${isSelf ? "text-emerald-400" : "text-white/85"}">#${e.carNumber}</span>`
+        ? `<span class="text-center text-[10.5px] font-bold ${isSelf ? "text-emerald-400" : isOffLap ? "text-[#fbbf24]" : "text-white/85"}">#${e.carNumber}</span>`
         : `<span></span>`;
       const nameCell = cols.driverName
-        ? `<span class="mmt-cell-name text-[11px] ${isSelf ? "text-white font-bold" : "text-white/90 font-semibold"}">${displayName}</span>`
+        ? `<span class="mmt-cell-name ${nameColor}">${displayName}</span>`
         : `<span></span>`;
-      const tagCell = `<span class="text-center">${pitBadge}</span>`;
-      const licCell = cols.license
-        ? `<span class="flex items-center justify-center">${renderLicenseBadge(e.licString)}</span>`
+      const tagCell = `<span class="flex items-center justify-center gap-0.5">${badgeParts.join("")}</span>`;
+      const licIrCell = cols.license
+        ? `<span class="flex items-center justify-end">${renderLicenseIrBlock(e.licString, e.iRatingExact, e.iRatingStr, true)}</span>`
         : `<span></span>`;
       const irDeltaVal = isPractice ? 0 : (irDeltas.get(e.carIdx) ?? 0);
       const irDeltaText = isPractice ? "—" : irDeltaVal > 0 ? `+${Math.round(irDeltaVal)}` : `${Math.round(irDeltaVal)}`;
       const irDeltaColor = isPractice || irDeltaVal === 0 ? "text-white/40" : irDeltaVal > 0 ? "text-emerald-400 font-bold" : "text-rose-400 font-bold";
-      const irDeltaCell = `<span class="text-right text-[10px] tabular-nums ${irDeltaColor}">${irDeltaText}</span>`;
+      const irDeltaCell = `<span class="text-right text-[10.5px] tabular-nums ${irDeltaColor}">${irDeltaText}</span>`;
+      const lastLapCell = `<span class="text-right text-[10.5px] tabular-nums ${isOffLap ? "text-[#fbbf24]/85" : "text-white/75"}">${e.lastLapStr || "--:--.---"}</span>`;
       const deltaCell = cols.delta
         ? `<span class="text-right text-[11px] tabular-nums ${gapColor}">${gapClean}</span>`
         : `<span></span>`;
@@ -131,8 +147,9 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
           ${numCell}
           ${nameCell}
           ${tagCell}
-          ${licCell}
+          ${licIrCell}
           ${irDeltaCell}
+          ${lastLapCell}
           ${deltaCell}
         </div>
       `;
@@ -218,22 +235,34 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
   const validTotalLaps = remainLaps > 0 && remainLaps < 30000 ? activeLap + remainLaps : 0;
   const lapStr = validTotalLaps > 0 ? `Lap ${activeLap}/${validTotalLaps}` : `Lap ${activeLap}`;
   const remSec = Math.max(0, Math.round(state.frame.sessionTimeRemain || 0));
-  const remClock = `${Math.floor(remSec / 60)}:${String(remSec % 60).padStart(2, "0")}`;
+  const remH = Math.floor(remSec / 3600);
+  const remM = Math.floor((remSec % 3600) / 60);
+  const remS = remSec % 60;
+  const remClock = remH > 0
+    ? `${remH}:${String(remM).padStart(2, "0")}:${String(remS).padStart(2, "0")}`
+    : `${remM}:${String(remS).padStart(2, "0")}`;
   const tTrack = state.frame.trackTempC;
-  const tempPart = typeof tTrack === "number" && tTrack > 0 ? ` · ${tTrack.toFixed(0)}°C` : "";
+  const tempPart = typeof tTrack === "number" && tTrack > 0 ? `🌡 ${tTrack.toFixed(0)}°C` : "";
   const leadClass = leaderboard[0]?.carClassShortName || (isPractice ? "PRAC" : "RACE");
   const leadColor = leaderboard[0]?.carClassColor || "#38bdf8";
   const sessChar = isPractice ? "P" : "R";
+  const totalSessionCars = Math.max(
+    leaderboard.length,
+    Object.values(state.session.driverInfo?.drivers ?? {}).filter((d) => !d.isPaceCar && !d.isSpectator).length
+  );
 
   const headerHtml = `
     <div class="mmt-std-header">
       <div class="flex items-center gap-1.5">
-        <span class="font-bold text-white/80">${sessChar}</span>
+        <span class="font-bold text-white/90">${sessChar}</span>
         <span class="px-1 rounded-[2px] text-[9px] font-extrabold" style="background:${leadColor}28;color:${leadColor}">${leadClass}</span>
         <span class="text-white">${lapStr}</span>
-        <span class="text-white/60">• ${remClock}</span>
+        <span class="text-white/70">${remClock}</span>
       </div>
-      <span class="text-white/70">${leaderboard.length} coches${tempPart}</span>
+      <div class="flex items-center gap-2 text-white/80">
+        ${tempPart ? `<span>${tempPart}</span>` : ""}
+        <span>🏎 ${leaderboard.length}/${totalSessionCars}</span>
+      </div>
     </div>
   `;
 
@@ -291,41 +320,47 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
 
       const clsRows = group.entries
         .map(({ entry: e, rankIdx: idx }, clsIdx) => {
-          const clsPos = clsIdx + 1;
           const isLeader = idx === 0;
           const isSelf = e.isActiveCam;
-          const posColor = isLeader ? "text-amber-400" : idx === 1 ? "text-slate-200" : idx === 2 ? "text-amber-600" : "text-white/80";
+          const isOffLap = !isSelf && !isPractice && (e.lapDelta ?? 0) !== 0;
+          const posColor = isLeader ? "text-amber-400" : idx === 1 ? "text-slate-200" : idx === 2 ? "text-amber-600" : "text-white/85";
           const rowCls = `mmt-std-row font-mono${isSelf ? " is-self" : clsIdx % 2 === 1 ? " is-alt" : ""}`;
 
           const posGlobalCell = cols.position
-            ? `<span class="text-center text-[10px] font-bold ${posColor}">${e.position}</span>`
+            ? `<span class="text-center text-[10.5px] font-bold ${posColor}">${e.position}</span>`
             : `<span></span>`;
-          const posClassCell = `<span class="text-center text-[10px] font-bold" style="color:${e.carClassColor || "#38bdf8"}">${clsPos}</span>`;
+          const deltaPos = e.posDelta ?? 0;
+          const posDeltaCell = deltaPos > 0
+            ? `<span class="text-center text-[9.5px] font-bold text-emerald-400">▲${deltaPos}</span>`
+            : deltaPos < 0
+            ? `<span class="text-center text-[9.5px] font-bold text-rose-400">▼${Math.abs(deltaPos)}</span>`
+            : `<span class="text-center text-[9.5px] text-white/25">—</span>`;
+          const numCell = `<span class="text-center text-[10.5px] font-bold ${isSelf ? "text-emerald-400" : isOffLap ? "text-[#fbbf24]" : "text-white/80"}">#${e.carNumber}</span>`;
 
           const displayName = isStreamer
             ? isSelf ? "Piloto (Tú)" : `Piloto #${e.carNumber}`
             : (cols.driverName ? (e.driverName || e.abbrevName) : "");
-          const nameCell = `<span class="mmt-cell-name text-[11px] ${isSelf ? "text-white font-bold" : "text-white/90 font-semibold"}">${displayName}</span>`;
+          const nameCell = `<span class="mmt-cell-name ${isSelf ? "text-white font-bold" : isOffLap ? "text-[#fbbf24]" : "text-[#f8fafc]"}">${displayName}</span>`;
           const brandCell = cols.brandIcon
             ? `<span class="flex items-center justify-center">${getCarBrandSvg(e.carPath, 16)}</span>`
             : `<span></span>`;
-          const irShort = e.iRatingStr || "";
-          const licIrCell = `<span class="flex items-center justify-end gap-1">${e.licString ? renderLicenseBadge(e.licString) : ""}${cols.iRating && irShort ? `<span class="mmt-ir-pill">${irShort}</span>` : ""}</span>`;
+          const licIrCell = `<span class="flex items-center justify-end">${renderLicenseIrBlock(e.licString, e.iRatingExact, e.iRatingStr, cols.iRating)}</span>`;
 
           const irDeltaVal = isPractice ? 0 : (irDeltas.get(e.carIdx) ?? 0);
           const irDeltaText = isPractice ? "—" : irDeltaVal > 0 ? `+${Math.round(irDeltaVal)}` : `${Math.round(irDeltaVal)}`;
           const irDeltaColor = isPractice || irDeltaVal === 0 ? "text-white/40" : irDeltaVal > 0 ? "text-emerald-400 font-bold" : "text-rose-400 font-bold";
-          const irDeltaCell = `<span class="text-right text-[10px] tabular-nums ${irDeltaColor}">${irDeltaText}</span>`;
+          const irDeltaCell = `<span class="text-right text-[10.5px] tabular-nums ${irDeltaColor}">${irDeltaText}</span>`;
 
-          const gapCell = `<span class="text-right text-[10px] ${isLeader ? "text-amber-300 font-bold" : "text-white/80 font-semibold"}">${isLeader ? "LDR" : (e.gapStr || "-")}</span>`;
-          const intCell = `<span class="text-right text-[10px] text-white/65">${isLeader ? "-" : (e.intervalStr || "-")}</span>`;
-          const lastCell = `<span class="text-right text-[10px] tabular-nums text-white/75">${e.lastLapStr || "--:--.---"}</span>`;
-          const bestCell = `<span class="text-right text-[10px] tabular-nums ${isLeader && isPractice ? "text-amber-300 font-bold" : isSelf ? "text-emerald-400 font-bold" : "text-white/90 font-semibold"}">${e.bestLapStr || "--:--.---"}</span>`;
+          const gapCell = `<span class="text-right text-[10.5px] ${isLeader ? "text-amber-300 font-bold" : isOffLap ? "text-[#fbbf24]/90" : "text-white/85 font-semibold"}">${isLeader ? "LDR" : (e.gapStr || "-")}</span>`;
+          const intCell = `<span class="text-right text-[10.5px] text-white/65">${isLeader ? "-" : (e.intervalStr || "-")}</span>`;
+          const lastCell = `<span class="text-right text-[10.5px] tabular-nums text-white/75">${e.lastLapStr || "--:--.---"}</span>`;
+          const bestCell = `<span class="text-right text-[10.5px] tabular-nums ${isLeader && isPractice ? "text-amber-300 font-bold" : isSelf ? "text-emerald-400 font-bold" : "text-[#f8fafc] font-semibold"}">${e.bestLapStr || "--:--.---"}</span>`;
 
           return `
             <div class="${rowCls}" style="border-left-color: ${isSelf ? "#10b981" : (e.carClassColor || "#38bdf8")}">
               ${posGlobalCell}
-              ${posClassCell}
+              ${posDeltaCell}
+              ${numCell}
               ${nameCell}
               ${brandCell}
               ${licIrCell}

@@ -21,6 +21,9 @@ export function formatGap(seconds: number, isLeader: boolean): string {
 }
 
 export class LeaderboardEngine {
+  private initialPosByCarIdx = new Map<number, number>();
+  private lastSessionNum = -1;
+
   /**
    * Computes the sorted leaderboard table
    */
@@ -49,6 +52,12 @@ export class LeaderboardEngine {
       sessionType.toLowerCase().includes("practice") ||
       sessionType.toLowerCase().includes("warmup") ||
       sessionType.toLowerCase().includes("offline");
+
+    if (frame.sessionNum !== this.lastSessionNum) {
+      this.lastSessionNum = frame.sessionNum;
+      this.initialPosByCarIdx.clear();
+    }
+    const activePlayerLap = lapsDone[activeCarIdx] ?? 0;
 
     const rawList: Array<{
       carIdx: number;
@@ -155,9 +164,19 @@ export class LeaderboardEngine {
         }
       }
 
+      const resolvedPos = item.position > 0 ? item.position : rank;
+      if (!isPracticeOrWarmup && resolvedPos > 0 && !this.initialPosByCarIdx.has(item.carIdx)) {
+        this.initialPosByCarIdx.set(item.carIdx, resolvedPos);
+      }
+      const startPos = this.initialPosByCarIdx.get(item.carIdx) ?? resolvedPos;
+      const posDelta = !isPracticeOrWarmup && startPos > 0 && resolvedPos > 0 ? startPos - resolvedPos : 0;
+      const lapDelta = activePlayerLap > 0 && item.laps > 0 ? item.laps - activePlayerLap : 0;
+
       result.push({
-        position: item.position > 0 ? item.position : rank,
+        position: resolvedPos,
         classPosition: item.classPosition > 0 ? item.classPosition : rank,
+        posDelta,
+        lapDelta,
         carIdx: item.carIdx,
         userId: driver.userId,
         cust_id: driver.userId,
@@ -171,6 +190,7 @@ export class LeaderboardEngine {
         licString: driver.licString,
         licBadgeColor: driver.licColor,
         iRatingStr: formatIRating(driver.iRating),
+        iRatingExact: driver.iRating > 0 ? driver.iRating : 0,
         bestLapTime: item.bestLap,
         bestLapStr: formatLapTime(item.bestLap),
         lastLapTime: item.lastLap,

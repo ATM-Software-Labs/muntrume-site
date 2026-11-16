@@ -172,6 +172,7 @@ pub struct IrsdkFrame {
     pub car_idx_last_lap_time: Vec<f64>,
     pub car_idx_lap: Vec<i32>,
     pub car_idx_on_pit_road: Vec<bool>,
+    pub car_idx_session_flags: Vec<i32>,
 }
 
 pub fn decode_irsdk_text(raw: &[u8]) -> String {
@@ -295,6 +296,7 @@ pub fn read_live_irsdk_frame_with(bytes: &[u8], table: &VarTable) -> Result<Irsd
         car_idx_last_lap_time: arr_f("CarIdxLastLapTime"),
         car_idx_lap: arr_i("CarIdxLap"),
         car_idx_on_pit_road: arr_b("CarIdxOnPitRoad"),
+        car_idx_session_flags: arr_i("CarIdxSessionFlags"),
     })
 }
 

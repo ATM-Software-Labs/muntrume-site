@@ -112,6 +112,7 @@ export interface IrsdkTelemetryFrame {
   carIdxLap: number[];
   carIdxOnPitRoad: boolean[];
   carIdxTrackSurface: number[];
+  carIdxSessionFlags?: number[];
 }
 
 export interface RelativeEntry {
@@ -128,6 +129,11 @@ export interface RelativeEntry {
   licString: string;
   licBadgeColor: string;
   iRatingStr: string;
+  iRatingExact?: number;
+  position?: number;
+  lastLapStr?: string;
+  sessionFlags?: number;
+  lapDelta?: number;
   diffPct: number;
   deltaSeconds: number;
   deltaStr: string;
@@ -140,6 +146,8 @@ export interface RelativeEntry {
 export interface LeaderboardEntry {
   position: number;
   classPosition: number;
+  posDelta?: number;
+  lapDelta?: number;
   carIdx: number;
   userId?: number;
   cust_id?: number | string;
@@ -153,6 +161,7 @@ export interface LeaderboardEntry {
   licString: string;
   licBadgeColor: string;
   iRatingStr: string;
+  iRatingExact?: number;
   bestLapTime: number;
   bestLapStr: string;
   lastLapTime: number;
