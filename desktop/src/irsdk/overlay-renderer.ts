@@ -13,7 +13,7 @@ import { Radar360Engine, type RadarInputState } from "./radar-360";
 import { PitboxHelperEngine, type PitboxInputState } from "./pitbox-helper";
 import { DigiFlagEngine } from "./digi-flag";
 import { ThemeEngine } from "../theme/theme-engine";
-import { estimateLiveIRating, formatSofShort } from "./irating-calc";
+import { estimateAllDriversIRatingDeltas, estimateLiveIRating, formatSofShort } from "./irating-calc";
 
 const lastRenderedHtml = new WeakMap<HTMLElement, string>();
 function setHtmlIfChanged(container: HTMLElement, html: string): void {
@@ -228,62 +228,113 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
     </div>
   `;
 
-  // Compact Standings window: Top 3 + divider + ±3 around CamCarIdx (max 10-11 rows)
+  // Group & sort compact Standings by class speed (GTP -> LMP2 -> LMP3 -> GTE -> GT3 -> GT4 -> TCR -> MX5)
+  const classSpeedOrder = (cls: string): number => {
+    const u = cls.toUpperCase();
+    if (u.includes("GTP") || u.includes("LMDH") || u.includes("HYPER")) return 1;
+    if (u.includes("LMP2")) return 2;
+    if (u.includes("LMP3")) return 3;
+    if (u.includes("GTE")) return 4;
+    if (u.includes("GT3")) return 5;
+    if (u.includes("GT4")) return 6;
+    if (u.includes("TCR")) return 7;
+    if (u.includes("MX")) return 8;
+    return 9;
+  };
+
   const compactRows = buildCompactStandingsWindow(leaderboard);
-  const classPositions = new Map<string, number>();
+  const irDeltas = estimateAllDriversIRatingDeltas(state);
+  const allDrivers = Object.values(state.session.driverInfo?.drivers ?? {});
+  const classSofMap = new Map<string, { sum: number; count: number; color: string }>();
+  for (const d of allDrivers) {
+    if (d.isPaceCar || d.isSpectator) continue;
+    const key = d.carClassShortName || "ALL";
+    const cur = classSofMap.get(key) ?? { sum: 0, count: 0, color: d.carClassColor || "#38bdf8" };
+    if (d.iRating > 0) {
+      cur.sum += d.iRating;
+      cur.count += 1;
+    }
+    classSofMap.set(key, cur);
+  }
 
-  const rowsHtml = compactRows
-    .map((row, rowIdx) => {
-      if (row.kind === "separator") {
-        return `<div class="h-[12px] flex items-center justify-center text-[9px] text-white/35 tracking-widest">···</div>`;
-      }
-      const e = row.entry;
-      const idx = row.rankIdx;
-      const clsKey = e.carClassShortName || "ALL";
-      const clsPos = (classPositions.get(clsKey) ?? 0) + 1;
-      classPositions.set(clsKey, clsPos);
+  // Group compact entries by class while preserving speed order
+  const entryGroups = new Map<string, { color: string; entries: Array<{ entry: LeaderboardEntry; rankIdx: number }> }>();
+  for (const row of compactRows) {
+    if (row.kind !== "entry") continue;
+    const key = row.entry.carClassShortName || "ALL";
+    const g = entryGroups.get(key) ?? { color: row.entry.carClassColor || "#38bdf8", entries: [] };
+    g.entries.push({ entry: row.entry, rankIdx: row.rankIdx });
+    entryGroups.set(key, g);
+  }
+  const sortedClasses = Array.from(entryGroups.entries()).sort((a, b) => classSpeedOrder(a[0]) - classSpeedOrder(b[0]));
+  const isMulticlass = sortedClasses.length > 1;
 
-      const isLeader = idx === 0;
-      const isSelf = e.isActiveCam;
-      const posColor = isLeader ? "text-amber-400" : idx === 1 ? "text-slate-200" : idx === 2 ? "text-amber-600" : "text-white/80";
-      const rowCls = `mmt-std-row font-mono${isSelf ? " is-self" : rowIdx % 2 === 1 ? " is-alt" : ""}`;
+  const rowsHtml = sortedClasses
+    .map(([clsName, group]) => {
+      const sofData = classSofMap.get(clsName);
+      const clsSof = sofData && sofData.count > 0 ? formatSofShort(Math.round(sofData.sum / sofData.count)) : "";
+      const classHeaderHtml = isMulticlass
+        ? `<div class="mmt-std-class-header" style="border-left: 3px solid ${group.color}; color: ${group.color}">
+             <span>${clsName}</span>
+             <span class="text-white/65">${clsSof ? `SOF ${clsSof}` : `${group.entries.length} coches`}</span>
+           </div>`
+        : "";
 
-      const posGlobalCell = cols.position
-        ? `<span class="text-center text-[10px] font-bold ${posColor}">${e.position}</span>`
-        : `<span></span>`;
-      const posClassCell = `<span class="text-center text-[10px] font-bold" style="color:${e.carClassColor || "#38bdf8"}">${clsPos}</span>`;
+      const clsRows = group.entries
+        .map(({ entry: e, rankIdx: idx }, clsIdx) => {
+          const clsPos = clsIdx + 1;
+          const isLeader = idx === 0;
+          const isSelf = e.isActiveCam;
+          const posColor = isLeader ? "text-amber-400" : idx === 1 ? "text-slate-200" : idx === 2 ? "text-amber-600" : "text-white/80";
+          const rowCls = `mmt-std-row font-mono${isSelf ? " is-self" : clsIdx % 2 === 1 ? " is-alt" : ""}`;
 
-      const displayName = isStreamer
-        ? isSelf ? "Piloto (Tú)" : `Piloto #${e.carNumber}`
-        : (cols.driverName ? (e.driverName || e.abbrevName) : "");
-      const nameCell = `<span class="mmt-cell-name text-[11px] ${isSelf ? "text-white font-bold" : "text-white/90 font-semibold"}">${displayName}</span>`;
-      const brandCell = cols.brandIcon
-        ? `<span class="flex items-center justify-center">${getCarBrandSvg(e.carPath, 12)}</span>`
-        : `<span></span>`;
-      const irShort = e.iRatingStr || "";
-      const licIrCell = `<span class="flex items-center justify-end gap-1">${e.licString ? renderLicenseBadge(e.licString) : ""}${cols.iRating && irShort ? `<span class="mmt-ir-pill">${irShort}</span>` : ""}</span>`;
-      const gapCell = `<span class="text-right text-[10px] ${isLeader ? "text-amber-300 font-bold" : "text-white/80 font-semibold"}">${isLeader ? "LDR" : (e.gapStr || "-")}</span>`;
-      const intCell = `<span class="text-right text-[10px] text-white/65">${isLeader ? "-" : (e.intervalStr || "-")}</span>`;
-      const bestCell = `<span class="text-right text-[10px] ${isLeader && isPractice ? "text-amber-300 font-bold" : isSelf ? "text-emerald-400 font-bold" : "text-white/90 font-semibold"}">${e.bestLapStr || "--:--.--"}</span>`;
+          const posGlobalCell = cols.position
+            ? `<span class="text-center text-[10px] font-bold ${posColor}">${e.position}</span>`
+            : `<span></span>`;
+          const posClassCell = `<span class="text-center text-[10px] font-bold" style="color:${e.carClassColor || "#38bdf8"}">${clsPos}</span>`;
 
-      return `
-        <div class="${rowCls}" style="border-left-color: ${isSelf ? "#10b981" : (e.carClassColor || "#38bdf8")}">
-          ${posGlobalCell}
-          ${posClassCell}
-          ${nameCell}
-          ${brandCell}
-          ${licIrCell}
-          ${gapCell}
-          ${intCell}
-          ${bestCell}
-        </div>
-      `;
+          const displayName = isStreamer
+            ? isSelf ? "Piloto (Tú)" : `Piloto #${e.carNumber}`
+            : (cols.driverName ? (e.driverName || e.abbrevName) : "");
+          const nameCell = `<span class="mmt-cell-name text-[11px] ${isSelf ? "text-white font-bold" : "text-white/90 font-semibold"}">${displayName}</span>`;
+          const brandCell = cols.brandIcon
+            ? `<span class="flex items-center justify-center">${getCarBrandSvg(e.carPath, 16)}</span>`
+            : `<span></span>`;
+          const irShort = e.iRatingStr || "";
+          const licIrCell = `<span class="flex items-center justify-end gap-1">${e.licString ? renderLicenseBadge(e.licString) : ""}${cols.iRating && irShort ? `<span class="mmt-ir-pill">${irShort}</span>` : ""}</span>`;
+
+          const irDeltaVal = isPractice ? 0 : (irDeltas.get(e.carIdx) ?? 0);
+          const irDeltaText = isPractice ? "—" : irDeltaVal > 0 ? `+${Math.round(irDeltaVal)}` : `${Math.round(irDeltaVal)}`;
+          const irDeltaColor = isPractice || irDeltaVal === 0 ? "text-white/40" : irDeltaVal > 0 ? "text-emerald-400 font-bold" : "text-rose-400 font-bold";
+          const irDeltaCell = `<span class="text-right text-[10px] tabular-nums ${irDeltaColor}">${irDeltaText}</span>`;
+
+          const gapCell = `<span class="text-right text-[10px] ${isLeader ? "text-amber-300 font-bold" : "text-white/80 font-semibold"}">${isLeader ? "LDR" : (e.gapStr || "-")}</span>`;
+          const intCell = `<span class="text-right text-[10px] text-white/65">${isLeader ? "-" : (e.intervalStr || "-")}</span>`;
+          const bestCell = `<span class="text-right text-[10px] ${isLeader && isPractice ? "text-amber-300 font-bold" : isSelf ? "text-emerald-400 font-bold" : "text-white/90 font-semibold"}">${e.bestLapStr || "--:--.--"}</span>`;
+
+          return `
+            <div class="${rowCls}" style="border-left-color: ${isSelf ? "#10b981" : (e.carClassColor || "#38bdf8")}">
+              ${posGlobalCell}
+              ${posClassCell}
+              ${nameCell}
+              ${brandCell}
+              ${licIrCell}
+              ${irDeltaCell}
+              ${gapCell}
+              ${intCell}
+              ${bestCell}
+            </div>
+          `;
+        })
+        .join("");
+
+      return `${classHeaderHtml}${clsRows}`;
     })
     .join("");
 
   setHtmlIfChanged(container, `
     ${headerHtml}
-    <div class="font-mono tabular-nums select-none overflow-hidden max-h-[240px]">
+    <div class="font-mono tabular-nums select-none overflow-hidden max-h-[260px]">
       ${rowsHtml}
     </div>
   `);
