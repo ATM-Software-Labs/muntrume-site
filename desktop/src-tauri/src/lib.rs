@@ -3,6 +3,7 @@ mod api;
 mod credentials;
 mod folders;
 mod hardware;
+mod history;
 mod ibt_parser;
 mod live;
 mod privacy;
@@ -150,6 +151,9 @@ pub fn run() {
             get_ibt_storage_stats,
             cleanup_old_ibt_files,
             redact_session_info,
+            get_race_history,
+            record_race_session,
+            toggle_favorite_session,
             quit
         ])
         .run(tauri::generate_context!())
@@ -1185,6 +1189,21 @@ async fn read_latest_ibt() -> Result<Option<ibt_parser::IbtSessionReport>, Strin
 #[tauri::command]
 fn redact_session_info(raw_yaml: String) -> String {
     privacy::redact_session_yaml(&raw_yaml)
+}
+
+#[tauri::command]
+fn get_race_history() -> history::RaceHistoryResponse {
+    history::get_history()
+}
+
+#[tauri::command]
+fn record_race_session(entry: history::RaceSessionEntry) -> Result<history::RaceHistoryResponse, String> {
+    history::record_entry(entry)
+}
+
+#[tauri::command]
+fn toggle_favorite_session(sub_session_id: i64) -> Result<history::RaceHistoryResponse, String> {
+    history::toggle_favorite(sub_session_id)
 }
 
 #[tauri::command]

@@ -158,6 +158,7 @@ fn windows_loop(app: AppHandle) {
         let mut last_yaml_emit = Instant::now() - Duration::from_secs(2);
         let mut last_proc = Instant::now();
         let mut last_frame_json = String::new();
+        let mut race_finished_emitted = false;
         loop {
             let signaled = if mapped.event.is_null() {
                 std::thread::sleep(Duration::from_millis(FRAME_MS));
@@ -291,6 +292,12 @@ fn windows_loop(app: AppHandle) {
             if last_frame_emit.elapsed() >= Duration::from_millis(IRSDK_FRAME_MS) {
                 if let Some(table) = vars.as_ref() {
                     if let Ok(frame) = read_live_irsdk_frame_with(bytes, table) {
+                        let checkered = (frame.session_flags & 0x0000_0001) != 0;
+                        let cooldown = frame.session_state == 5;
+                        if !race_finished_emitted && (cooldown || (checkered && frame.on_pit_road)) {
+                            race_finished_emitted = true;
+                            let _ = app.emit_to("main", "mmt-race-finished", &frame);
+                        }
                         if let Ok(json_str) = serde_json::to_string(&frame) {
                             if json_str != last_frame_json {
                                 last_frame_json = json_str;

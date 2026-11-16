@@ -315,7 +315,17 @@ let snapshot: Snapshot | null = null;
 let filter: "all" | "Race" | "Qualy" | "Wet" | "Fav" = "all";
 let query = "";
 let pollTimer = 0;
-let view: "library" | "upload" | "settings" | "week" | "last_session" | "analysis" | "reference" | "strategy" | "overlays" | "hardware" | "team" | "config" = "library";
+let view: "library" | "upload" | "settings" | "week" | "last_session" | "analysis" | "reference" | "strategy" | "overlays" | "performance" | "hardware" | "team" | "config" = "library";
+
+type PerfModule = typeof import("./performance");
+let perfMod: PerfModule | null = null;
+function loadPerf(): Promise<PerfModule> {
+  if (perfMod) return Promise.resolve(perfMod);
+  return import("./performance").then((m) => {
+    perfMod = m;
+    return m;
+  });
+}
 
 let libraryGroupBy: "car" | "track" | "week" = (() => {
   try {
@@ -386,6 +396,13 @@ let userPreferences: string[] = (() => {
 function applyIracingStatus(status: string): void {
   if (status !== "on_track" && extraMod) extraMod.noteHudClosed();
   if (document.documentElement.classList.contains("overlay-mode")) return;
+  if (status === "on_track") {
+    document.documentElement.classList.add("mmt-perf-paused");
+    if (perfMod) perfMod.unmountPerformanceDashboard();
+  } else {
+    document.documentElement.classList.remove("mmt-perf-paused");
+    if (view === "performance" && perfMod) void perfMod.mountPerformanceDashboard();
+  }
   const badge = document.getElementById("irBadge");
   const dot = document.getElementById("irDot");
   const text = document.getElementById("irText");
@@ -1728,6 +1745,7 @@ function showView(next: typeof view): void {
     reference: "viewReference",
     strategy: "viewStrategy",
     overlays: "viewOverlays",
+    performance: "viewPerformance",
     hardware: "viewHardware",
     config: "viewConfig",
     team: "viewTeam",
@@ -1755,6 +1773,11 @@ function showView(next: typeof view): void {
   }
   if (next === "analysis" || next === "overlays" || next === "strategy" || next === "week" || next === "team" || next === "reference") {
     if (snapshot) void loadExtra().then((m) => m.paintExtras(snapshot!));
+  }
+  if (next === "performance") {
+    void loadPerf().then((m) => m.mountPerformanceDashboard());
+  } else if (perfMod) {
+    perfMod.unmountPerformanceDashboard();
   }
   if (next === "hardware") {
     void loadHardwareReport();
@@ -2562,9 +2585,37 @@ function bind(): void {
           if (bar) bar.style.width = `${pct}%`;
           if (txt) txt.textContent = `${pct}%`;
         });
+        await listen<any>("mmt-race-finished", async (ev) => {
+          const f = ev.payload || {};
+          const pMod = await loadPerf();
+          const best = Number(f.lapBestLapTime || f.lapLastLapTime || 0);
+          const avg = Number(f.lapLastLapTime || best || 0);
+          const cons = avg > 0 && best > 0 ? Math.max(0, Math.min(100, 100 - (Math.abs(avg - best) * 0.5 / avg) * 100)) : 98.0;
+          await pMod.showPostRaceRecapModal({
+            subSessionId: Number(f.sessionNum || Date.now()),
+            fecha: new Date().toISOString().slice(0, 10),
+            circuito: String(f.trackDisplayName || "iRacing Circuit"),
+            coche: String(f.carScreenName || "GT3"),
+            tipoSesion: "Race",
+            posSalida: Number(f.playerCarPosition || 1),
+            posFinal: Number(f.playerCarPosition || 1),
+            incidentes: Number(f.playerCarMyIncidentCount || 0),
+            deltaIRating: 0,
+            mejorVuelta: best,
+            vueltaMedia: avg,
+            consistenciaPct: Math.round(cons * 10) / 10,
+            vueltasValidas: Math.max(1, Number(f.lap || 1)),
+          });
+        });
       })
       .catch(() => {});
   }
+  document.getElementById("perfRefreshBtn")?.addEventListener("click", () => {
+    void loadPerf().then((m) => m.mountPerformanceDashboard());
+  });
+  document.addEventListener("visibilitychange", () => {
+    document.documentElement.classList.toggle("mmt-perf-paused", document.hidden);
+  });
   backend.onLive((sample) => updateLiveStatus(sample));
   if (backend.onIracingStatus) {
     backend.onIracingStatus((status) => applyIracingStatus(status));
