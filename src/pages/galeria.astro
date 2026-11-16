@@ -284,7 +284,7 @@ const gallerySchema = {
         });
         return;
       }
-      grid.innerHTML = data.photos.map((p, idx) => `
+      grid.innerHTML = data.photos.map((p: any, idx: number) => `
         <article data-category="${p.category}" data-index="${idx}" class="galeria-card group rounded-xl overflow-hidden bg-[var(--r-surface)] transition-all duration-200" style="border: 1px solid rgba(255, 255, 255, 0.08);">
           <button type="button" class="galeria-open-btn relative block w-full aspect-video overflow-hidden bg-[#090d12] cursor-zoom-in text-left" data-photo-id="${p.id}" data-src="${p.imageUrl}" data-title="${p.title}" data-sub="${p.car || ''} · ${p.track || 'iRacing'}" data-author="${p.authorName}" data-source-url="${p.sourceUrl || ''}">
             <img src="${p.imageUrl}" alt="${p.title}" width="640" height="360" loading="lazy" decoding="async" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" style="filter: contrast(1.04) saturate(1.06);" />
@@ -303,9 +303,9 @@ const gallerySchema = {
         </article>
       `).join('');
       cards.length = 0;
-      cards.push(...Array.from(grid.querySelectorAll('.galeria-card')));
+      cards.push(...Array.from(grid.querySelectorAll<HTMLElement>('.galeria-card')));
       cards.forEach((card) => {
-        const btn = card.querySelector('.galeria-open-btn');
+        const btn = card.querySelector<HTMLButtonElement>('.galeria-open-btn');
         btn?.addEventListener('click', () => {
           const list = visibleButtons();
           openAt(Math.max(0, list.indexOf(btn)));
