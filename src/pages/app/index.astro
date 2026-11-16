@@ -68,10 +68,12 @@ const appSchema = {
       <h1 data-i18n="app.title">MMT Sync</h1>
       <p class="r-lead" data-i18n="app.lead">La aplicación de escritorio oficial de Muntrume Motorsport. Sincroniza los setups de carrera, clasificación y lluvia en tus carpetas de iRacing y muestra en pista barras en directo de acelerador, freno, dirección, marcha y velocidad.</p>
       <div class="app-cta">
-        <a class="r-btn r-btn--primary" href="https://github.com/ATM-Software-Labs/muntrume-site/releases/latest" target="_blank" rel="noopener noreferrer" data-i18n="app.download">Descargar para Windows (64-bit)</a>
+        <button type="button" id="btnLaunchOverlaysWeb" class="r-btn r-btn--primary">Lanzar Overlays en iRacing</button>
+        <a class="r-btn app-btn" href="https://github.com/ATM-Software-Labs/muntrume-site/releases/latest" target="_blank" rel="noopener noreferrer" data-i18n="app.download">Descargar para Windows (64-bit)</a>
         <a class="r-btn app-btn" href="/app/install/">Guía de instalación</a>
         <a class="r-btn app-btn" href="/garage/" data-i18n="app.catalog">Ver catálogo web</a>
       </div>
+      <p id="mmtLocalBridgeStatus" class="app-bridge-status" hidden></p>
 
       <div class="app-winget-box">
         <span class="app-winget-label">Instalación alternativa por consola (sin aviso SmartScreen):</span>
@@ -143,7 +145,123 @@ const appSchema = {
         </li>
       </ol>
     </section>
+
+    <div id="mmtDownloadModal" class="app-modal-backdrop" hidden>
+      <div class="app-modal-card" role="dialog" aria-modal="true" aria-labelledby="mmtModalTitle">
+        <div class="app-modal-head">
+          <h3 id="mmtModalTitle">Instala o abre MMT Sync</h3>
+          <button type="button" id="mmtModalClose" class="app-modal-close" aria-label="Cerrar">✕</button>
+        </div>
+        <p>No hemos detectado MMT Sync abierto en tu PC. Si aún no lo tienes instalado, descarga el instalador oficial para Windows 10/11:</p>
+        <div class="app-cta" style="margin-top:8px">
+          <a id="mmtDirectDownloadBtn" class="r-btn r-btn--primary" href="https://github.com/ATM-Software-Labs/muntrume-site/releases/latest" target="_blank" rel="noopener noreferrer">Descargar último instalador (.exe)</a>
+          <a class="r-btn app-btn" href="/app/install/">Ver guía rápida</a>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <script is:inline>
+    (function () {
+      const BRIDGE_URL = "http://127.0.0.1:38421";
+      const btn = document.getElementById("btnLaunchOverlaysWeb");
+      const statusEl = document.getElementById("mmtLocalBridgeStatus");
+      const modal = document.getElementById("mmtDownloadModal");
+      const modalClose = document.getElementById("mmtModalClose");
+      const dlBtn = document.getElementById("mmtDirectDownloadBtn");
+      let bridgeReady = false;
+
+      async function pingLocalBridge() {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 400);
+        try {
+          const res = await fetch(BRIDGE_URL + "/ping", { method: "GET", signal: ctrl.signal });
+          clearTimeout(timer);
+          if (!res.ok) return null;
+          const data = await res.json();
+          if (data && data.status === "ready") return data;
+        } catch (_e) {
+          clearTimeout(timer);
+        }
+        return null;
+      }
+
+      function showStatus(msg, ok) {
+        if (!statusEl) return;
+        statusEl.hidden = false;
+        statusEl.textContent = msg;
+        statusEl.dataset.ok = ok ? "1" : "0";
+      }
+
+      async function initBridgeCheck() {
+        const info = await pingLocalBridge();
+        if (info && btn) {
+          bridgeReady = true;
+          btn.textContent = "LANZAR OVERLAYS EN PISTA";
+          showStatus(
+            info.inTrack
+              ? "MMT Sync v" + info.version + " conectado · iRacing en pista"
+              : "MMT Sync v" + info.version + " listo en segundo plano",
+            true
+          );
+        }
+      }
+
+      if (modalClose && modal) {
+        modalClose.addEventListener("click", () => {
+          modal.hidden = true;
+        });
+      }
+
+      if (btn) {
+        btn.addEventListener("click", async () => {
+          const info = bridgeReady ? { status: "ready" } : await pingLocalBridge();
+          if (info && info.status === "ready") {
+            bridgeReady = true;
+            try {
+              const ctrl = new AbortController();
+              const t = setTimeout(() => ctrl.abort(), 800);
+              const res = await fetch(BRIDGE_URL + "/command", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "launch-overlay" }),
+                signal: ctrl.signal,
+              });
+              clearTimeout(t);
+              if (res.ok) {
+                showStatus("Overlays activados en MMT Sync", true);
+                return;
+              }
+            } catch (_e) {}
+          }
+
+          showStatus("Despertando MMT Sync…", true);
+          window.location.href = "mmtsync://launch-overlay";
+
+          setTimeout(async () => {
+            const verify = await pingLocalBridge();
+            if (verify && verify.status === "ready") {
+              bridgeReady = true;
+              btn.textContent = "LANZAR OVERLAYS EN PISTA";
+              showStatus("Overlays activados en MMT Sync", true);
+            } else if (modal) {
+              try {
+                const r = await fetch("https://github.com/ATM-Software-Labs/muntrume-site/releases/latest/download/latest.json");
+                if (r.ok) {
+                  const j = await r.json();
+                  const winUrl = j?.platforms?.["windows-x86_64"]?.url;
+                  if (winUrl && dlBtn) dlBtn.href = winUrl;
+                }
+              } catch (_e) {}
+              modal.hidden = false;
+            }
+          }, 2000);
+        });
+      }
+
+      initBridgeCheck();
+    })();
+  </script>
 </Layout>
 
 <style>
@@ -165,6 +283,13 @@ const appSchema = {
   .app-btn { border-color: var(--r-line); color: var(--r-text); background: var(--r-surface); }
   .app-btn:hover { border-color: var(--r-accent); color: var(--r-accent); }
   .app-meta { margin: 0; display: flex; flex-wrap: wrap; gap: 8px 10px; justify-content: center; color: var(--r-muted); font: 600 12px/1.4 var(--r-mono); }
+  .app-bridge-status { margin: 2px 0 0; font: 600 12px/1.4 var(--r-mono); color: #10b981; }
+  .app-modal-backdrop { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.72); backdrop-filter: blur(4px); display: grid; place-items: center; padding: 16px; }
+  .app-modal-backdrop[hidden] { display: none !important; }
+  .app-modal-card { width: min(460px, 100%); padding: 22px; border-radius: 16px; border: 1px solid var(--r-line-2); background: var(--r-surface); display: grid; gap: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.65); }
+  .app-modal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .app-modal-head h3 { margin: 0; font-size: 18px; }
+  .app-modal-close { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--r-line); background: var(--r-bg); color: var(--r-muted); cursor: pointer; }
   .app-card { padding: 22px; border: 1px solid var(--r-line); border-radius: 16px; background: var(--r-surface); display: grid; gap: 10px; transition: border-color .2s ease, transform .2s ease; }
   .app-card:hover { border-color: var(--r-accent); }
   .app-card h2, .app-card h3 { margin: 0; }

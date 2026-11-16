@@ -66,8 +66,10 @@ enum PollView {
 pub fn run() {
     let mock = std::env::var("MMT_MOCK").ok().as_deref() == Some("1");
     tauri::Builder::default()
-        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            show_main(app);
+        .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
+            if !handle_cli_or_deep_link(app, &args) {
+                show_main(app);
+            }
         }))
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_autostart::init(
@@ -79,7 +81,10 @@ pub fn run() {
         .manage(AppState::new(mock).expect("cliente HTTP"))
         .setup(|app| {
             install_tray(app.handle())?;
-            if std::env::args().any(|arg| arg == "--minimized") {
+            register_mmtsync_protocol();
+            let startup_args: Vec<String> = std::env::args().collect();
+            let launched_by_deeplink = handle_cli_or_deep_link(app.handle(), &startup_args);
+            if startup_args.iter().any(|arg| arg == "--minimized") || launched_by_deeplink {
                 if let Some(window) = app.get_webview_window("main") {
                     let _ = window.hide();
                 }
@@ -91,6 +96,7 @@ pub fn run() {
             spawn_update_check(app.handle().clone());
             live::spawn(app.handle().clone());
             spawn_overlay_hotkeys(app.handle().clone());
+            spawn_local_bridge(app.handle().clone());
             Ok(())
         })
         .on_window_event(|window, event| match event {
@@ -646,6 +652,208 @@ pub(crate) fn trim_working_set() {
 pub(crate) fn trim_working_set() {}
 
 static OVERLAY_EDITING: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+static LAST_EXT_CMD_MS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
+#[cfg(windows)]
+fn register_mmtsync_protocol() {
+    use std::os::windows::process::CommandExt;
+    const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+    let Ok(exe) = std::env::current_exe() else {
+        return;
+    };
+    let exe_str = exe.to_string_lossy();
+    let cmd_val = format!("\"{}\" \"%1\"", exe_str);
+    std::thread::spawn(move || {
+        let _ = std::process::Command::new("reg")
+            .args(["add", "HKCU\\Software\\Classes\\mmtsync", "/ve", "/d", "URL:MMT Sync Protocol", "/f"])
+            .creation_flags(CREATE_NO_WINDOW)
+            .status();
+        let _ = std::process::Command::new("reg")
+            .args(["add", "HKCU\\Software\\Classes\\mmtsync", "/v", "URL Protocol", "/d", "", "/f"])
+            .creation_flags(CREATE_NO_WINDOW)
+            .status();
+        let _ = std::process::Command::new("reg")
+            .args([
+                "add",
+                "HKCU\\Software\\Classes\\mmtsync\\shell\\open\\command",
+                "/ve",
+                "/d",
+                &cmd_val,
+                "/f",
+            ])
+            .creation_flags(CREATE_NO_WINDOW)
+            .status();
+    });
+}
+
+#[cfg(not(windows))]
+fn register_mmtsync_protocol() {}
+
+fn sanitize_deeplink_action(raw: &str) -> Option<&'static str> {
+    let trimmed = raw.trim().trim_matches('"');
+    let without_scheme = trimmed.strip_prefix("mmtsync://").unwrap_or(trimmed);
+    let action = without_scheme
+        .split(&['/', '?', '#', '&'][..])
+        .find(|s| !s.is_empty())?;
+    match action {
+        "launch-overlay" => Some("launch-overlay"),
+        "edit-hud" => Some("edit-hud"),
+        "sync-week" => Some("sync-week"),
+        _ => None,
+    }
+}
+
+fn handle_external_command(app: &AppHandle, action: &str) -> bool {
+    let Some(clean) = sanitize_deeplink_action(action) else {
+        return false;
+    };
+    let now_ms = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_millis() as u64)
+        .unwrap_or(0);
+    let prev = LAST_EXT_CMD_MS.load(std::sync::atomic::Ordering::Relaxed);
+    if now_ms.saturating_sub(prev) < 1500 {
+        return true;
+    }
+    LAST_EXT_CMD_MS.store(now_ms, std::sync::atomic::Ordering::Relaxed);
+
+    let app_clone = app.clone();
+    match clean {
+        "launch-overlay" => {
+            tauri::async_runtime::spawn(async move {
+                let _ = toggle_overlay(app_clone, true).await;
+            });
+        }
+        "edit-hud" => {
+            tauri::async_runtime::spawn(async move {
+                if toggle_overlay(app_clone.clone(), true).await.is_ok() {
+                    if let Some(window) = app_clone.get_webview_window("overlay") {
+                        apply_overlay_edit_state(&app_clone, &window, true);
+                    }
+                }
+            });
+        }
+        "sync-week" => {
+            tauri::async_runtime::spawn(async move {
+                if let Ok(report) = syncer::synchronize(&app_clone).await {
+                    if report.downloaded > 0 {
+                        let _ = app_clone.emit_to("overlay", "mmt-setup-updated", report.downloaded);
+                    }
+                }
+                let _ = app_clone.emit("mmt-refresh", ());
+            });
+        }
+        _ => return false,
+    }
+    true
+}
+
+fn handle_cli_or_deep_link(app: &AppHandle, args: &[String]) -> bool {
+    for arg in args {
+        if arg.starts_with("mmtsync://") && handle_external_command(app, arg) {
+            return true;
+        }
+    }
+    false
+}
+
+fn spawn_local_bridge(app: AppHandle) {
+    use std::io::{Read, Write};
+    use std::net::TcpListener;
+    std::thread::Builder::new()
+        .name("mmt-local-bridge".into())
+        .spawn(move || {
+            let Ok(listener) = TcpListener::bind("127.0.0.1:38421") else {
+                return;
+            };
+            for stream in listener.incoming().flatten() {
+                let mut stream = stream;
+                let _ = stream.set_read_timeout(Some(Duration::from_millis(400)));
+                let _ = stream.set_write_timeout(Some(Duration::from_millis(400)));
+                let mut buf = [0u8; 2048];
+                let Ok(n) = stream.read(&mut buf) else {
+                    continue;
+                };
+                if n == 0 {
+                    continue;
+                }
+                let req = String::from_utf8_lossy(&buf[..n]);
+                let first_line = req.lines().next().unwrap_or("");
+                let origin = req
+                    .lines()
+                    .find_map(|l| {
+                        let (k, v) = l.split_once(':')?;
+                        if k.eq_ignore_ascii_case("origin") {
+                            Some(v.trim())
+                        } else {
+                            None
+                        }
+                    })
+                    .unwrap_or("https://muntru.me");
+                let allowed_origin = if origin == "https://muntru.me"
+                    || origin == "https://www.muntru.me"
+                    || origin.starts_with("http://localhost:")
+                    || origin.starts_with("http://127.0.0.1:")
+                {
+                    origin
+                } else {
+                    "https://muntru.me"
+                };
+
+                let cors_headers = format!(
+                    "Access-Control-Allow-Origin: {allowed_origin}\r\nAccess-Control-Allow-Methods: GET, POST, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type\r\nAccess-Control-Allow-Private-Network: true\r\nConnection: close\r\n"
+                );
+
+                if first_line.starts_with("OPTIONS ") {
+                    let resp = format!("HTTP/1.1 204 No Content\r\n{cors_headers}\r\n");
+                    let _ = stream.write_all(resp.as_bytes());
+                    continue;
+                }
+
+                if first_line.starts_with("GET /ping") {
+                    let in_track = live::current_status() == "on_track";
+                    let body = format!(
+                        "{{\"status\":\"ready\",\"version\":\"{}\",\"inTrack\":{}}}",
+                        env!("CARGO_PKG_VERSION"),
+                        in_track
+                    );
+                    let resp = format!(
+                        "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\n{cors_headers}\r\n{body}",
+                        body.len()
+                    );
+                    let _ = stream.write_all(resp.as_bytes());
+                    continue;
+                }
+
+                if first_line.starts_with("POST /command") {
+                    let body_part = req.split("\r\n\r\n").nth(1).unwrap_or("");
+                    let action = if body_part.contains("edit-hud") {
+                        "edit-hud"
+                    } else if body_part.contains("sync-week") {
+                        "sync-week"
+                    } else {
+                        "launch-overlay"
+                    };
+                    let ok = handle_external_command(&app, action);
+                    let resp_body = if ok {
+                        "{\"ok\":true,\"message\":\"Overlays activados en MMT Sync\"}"
+                    } else {
+                        "{\"ok\":false,\"message\":\"Comando ignorado\"}"
+                    };
+                    let resp = format!(
+                        "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\n{cors_headers}\r\n{resp_body}",
+                        resp_body.len()
+                    );
+                    let _ = stream.write_all(resp.as_bytes());
+                    continue;
+                }
+
+                let not_found = format!("HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n{cors_headers}\r\n");
+                let _ = stream.write_all(not_found.as_bytes());
+            }
+        })
+        .ok();
+}
 
 fn apply_overlay_edit_state(app: &AppHandle, window: &tauri::WebviewWindow, editing: bool) {
     OVERLAY_EDITING.store(editing, std::sync::atomic::Ordering::Relaxed);
