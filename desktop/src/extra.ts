@@ -2047,12 +2047,45 @@ export function paintOverlays(): void {
     }
   }
 
+function ensureLayoutSchemaV2(force = false): void {
+  if (typeof localStorage === "undefined") return;
+  if (!force && localStorage.getItem("mmt_layout_version") === "2") return;
+  localStorage.removeItem("mmt_float_hud_positions");
+  localStorage.removeItem("mmt-hud-disabled-widgets");
+  localStorage.setItem("mmt-rule-std-pit-only", "0");
+  localStorage.setItem("mmt-rule-rel-track-only", "0");
+  localStorage.setItem("mmt-rule-fuel-reserve-only", "0");
+  localStorage.setItem("mmt-hide-off-track", "0");
+  localStorage.setItem("mmt-kapps-std-rows", "9");
+  localStorage.setItem("mmt-kapps-rel-rows", "3");
+  ThemeEngine.getInstance().setCustomVars({ scale: 1.0, opacity: 0.88 });
+  localStorage.setItem("mmt_layout_version", "2");
+}
+
   const studio = document.getElementById("overlayCustomStudio");
   if (studio && !studio.dataset.wired) {
     studio.dataset.wired = "1";
+    ensureLayoutSchemaV2(false);
     const theme = ThemeEngine.getInstance();
     const layout = SmartLayoutManager.getInstance();
     const vars = theme.getActiveVariables();
+
+    document.getElementById("btnRestoreHudV2")?.addEventListener("click", () => {
+      ensureLayoutSchemaV2(true);
+      const scR = document.getElementById("hudScaleRange") as HTMLInputElement | null;
+      const scV = document.getElementById("hudScaleVal");
+      if (scR) scR.value = "100";
+      if (scV) scV.textContent = "100%";
+      const opR = document.getElementById("hudOpacityRange") as HTMLInputElement | null;
+      const opV = document.getElementById("hudOpacityVal");
+      if (opR) opR.value = "88";
+      if (opV) opV.textContent = "88%";
+      ["ruleStdPitOnly", "ruleRelTrackOnly", "ruleFuelReserveOnly", "chkHideOffTrack"].forEach((id) => {
+        const el = document.getElementById(id) as HTMLInputElement | null;
+        if (el) el.checked = false;
+      });
+      applyHudCustomAppearance();
+    });
 
     const presetSel = document.getElementById("hudPresetSelect") as HTMLSelectElement | null;
     if (presetSel) {
@@ -2526,6 +2559,16 @@ export function isFloatHudInEditMode(): boolean {
 }
 
 export function initFloatingOverlayControls(onClose?: () => void): void {
+  if (typeof localStorage !== "undefined" && localStorage.getItem("mmt_layout_version") !== "2") {
+    localStorage.removeItem("mmt_float_hud_positions");
+    localStorage.removeItem("mmt-hud-disabled-widgets");
+    localStorage.setItem("mmt-rule-std-pit-only", "0");
+    localStorage.setItem("mmt-rule-rel-track-only", "0");
+    localStorage.setItem("mmt-rule-fuel-reserve-only", "0");
+    localStorage.setItem("mmt-hide-off-track", "0");
+    ThemeEngine.getInstance().setCustomVars({ scale: 1.0, opacity: 0.88 });
+    localStorage.setItem("mmt_layout_version", "2");
+  }
   // Global shortcut for Streamer Mode (Ctrl+Shift+S or F8)
   window.addEventListener("keydown", (e: KeyboardEvent) => {
     if ((e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "s") || e.key === "F8") {

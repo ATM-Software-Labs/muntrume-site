@@ -924,6 +924,9 @@
                 <button type="button" id="btnResetLayout" class="h-11 px-3 rounded-xl border border-r-line bg-r-surface text-r-muted font-mono text-xs hover:text-r-text transition" title="Restablecer posiciones originales">
                   Restablecer
                 </button>
+                <button type="button" id="btnRestoreHudV2" class="h-11 px-3.5 rounded-xl border border-amber-500/50 bg-amber-500/15 text-amber-300 font-mono text-xs font-bold hover:bg-amber-500/25 transition" title="Reinicia el perfil a Layout v2 (escala 100%, todos visibles, retrovisor despejado)">
+                  ↺ Restaurar Posiciones y Tamaños
+                </button>
                 <button type="button" id="btnRecenterOverlay" class="h-11 px-3.5 rounded-xl border border-emerald-400/40 bg-emerald-500/10 text-emerald-300 font-mono text-xs font-bold hover:bg-emerald-500/20 transition" title="Recalcula posiciones dentro del monitor compensando escala DPI">
                   Recentrar y Ajustar a Pantalla
                 </button>
@@ -1891,18 +1894,18 @@
         <div id="ovRadarFloat"></div>
       </div>
 
-      <!-- 3b. Top-Center Track Conditions Micro-bar (top: 148px below Virtual Mirror) -->
-      <div id="floatTrackConditionsCard" class="mmt-float-widget fixed top-[148px] left-1/2 -translate-x-1/2 w-max h-[24px] pointer-events-none z-20" data-widget="conditions">
+      <!-- 3b. Top-Center Track Conditions Micro-bar (top: 152px below Virtual Mirror) -->
+      <div id="floatTrackConditionsCard" class="mmt-float-widget fixed top-[152px] left-1/2 -translate-x-1/2 w-max h-[24px] pointer-events-none z-20" data-widget="conditions">
         <div id="ovTrackConditionsFloat"></div>
       </div>
 
-      <!-- 3c. Live Delta Bar (200x22px Canvas below Track Conditions at top: 174px) -->
-      <div id="floatLiveDeltaCard" class="mmt-float-widget fixed top-[174px] left-1/2 -translate-x-1/2 w-[200px] h-[22px] rounded-[2px] pointer-events-none z-20 overflow-hidden" data-widget="delta">
+      <!-- 3c. Live Delta Bar (200x22px Canvas below Track Conditions at top: 178px) -->
+      <div id="floatLiveDeltaCard" class="mmt-float-widget fixed top-[178px] left-1/2 -translate-x-1/2 w-[200px] h-[22px] rounded-[2px] pointer-events-none z-20 overflow-hidden" data-widget="delta">
         <canvas id="ovLiveDeltaFloat" width="200" height="22" style="width:200px;height:22px;display:block;"></canvas>
       </div>
 
-      <!-- 4. Pit Helper (visible only when OnPitRoad === true, top: 200px below Mirror) -->
-      <div id="floatPitHelperCard" hidden class="mmt-float-widget fixed top-[200px] left-1/2 -translate-x-1/2 w-[280px] pointer-events-auto overflow-hidden" data-widget="pit">
+      <!-- 4. Pit Helper (visible only when OnPitRoad === true, top: 206px below Mirror) -->
+      <div id="floatPitHelperCard" hidden class="mmt-float-widget fixed top-[206px] left-1/2 -translate-x-1/2 w-[280px] pointer-events-auto overflow-hidden" data-widget="pit">
         <div id="ovPitboxFloat"></div>
       </div>
 
@@ -1921,8 +1924,8 @@
         <canvas id="ovTrackMapFloat" width="150" height="110"></canvas>
       </div>
 
-      <!-- 6. Bottom-Center Crisp 310x76 Canvas Inputs + Gear + Speed + Wheel (bottom: 18px) -->
-      <div id="floatInputsCard" class="mmt-float-widget fixed left-1/2 -translate-x-1/2 bottom-[18px] w-[310px] flex flex-col items-center gap-1 pointer-events-auto" data-widget="inputs">
+      <!-- 6. Bottom-Center Crisp 310x76 Canvas Inputs + Gear + Speed + Wheel (bottom: 24px) -->
+      <div id="floatInputsCard" class="mmt-float-widget fixed left-1/2 -translate-x-1/2 bottom-[24px] w-[310px] flex flex-col items-center gap-1 pointer-events-auto" data-widget="inputs">
         <div id="floatShiftLightsRow" class="flex flex-col items-center gap-1 w-full" data-widget="lights">
           <div id="ovDigiFlagFloat" class="w-full max-w-[260px]" style="display: none;"></div>
           <div class="flex items-center gap-0.5 px-2 py-0.5 rounded bg-[#0a0c10]/70" id="ovShiftLightsFloat"></div>
