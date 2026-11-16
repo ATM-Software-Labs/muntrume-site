@@ -338,35 +338,45 @@ const canonical = "https://muntru.me/calendar/";
       <section id="calPlannerPanel" class="mb-6 rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-5 space-y-5">
         <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-[var(--r-line)]">
           <div>
-            <p class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)] font-bold">iRacing Volume Discounts + Fiscal</p>
-            <h2 class="text-xl font-extrabold text-[var(--r-text)] font-display">Planificador de Temporada y Simulador de Carrito</h2>
+            <p class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)] font-bold">🛒 Planificador Inteligente · Volume Discounts + IVA</p>
+            <h2 class="text-xl font-extrabold text-[var(--r-text)] font-display">Qué comprar y qué podrás correr</h2>
           </div>
-          <div class="flex flex-wrap items-center gap-3 font-mono text-xs">
-            <label class="flex items-center gap-2 text-[var(--r-muted)]">
-              <span>País / IVA:</span>
-              <select id="plannerTaxSelect" class="h-8 rounded-lg border border-[var(--r-line)] bg-[var(--r-bg)] px-2.5 text-xs text-[var(--r-text)]">
+          <div class="flex flex-wrap items-center gap-2 font-mono text-xs">
+            <button type="button" id="plannerMarkBaseBtn" class="h-8 px-2.5 rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 font-bold cursor-pointer transition" title="Marca automáticamente circuitos y coches gratuitos incluidos en la suscripción base de iRacing">✔ Base Gratis iRacing</button>
+            <button type="button" id="plannerDetectMmtBtn" class="h-8 px-2.5 rounded-lg border border-[var(--r-line)] bg-[var(--r-bg)] hover:border-[var(--r-accent)] text-[var(--r-text)] cursor-pointer transition" title="Comprueba si MMT Sync está abierto localmente">⚡ Detectar MMT Sync</button>
+            <label class="flex items-center gap-1.5 text-[var(--r-muted)]">
+              <span>🌍</span>
+              <select id="plannerTaxSelect" class="h-8 rounded-lg border border-[var(--r-line)] bg-[var(--r-bg)] px-2 text-xs text-[var(--r-text)]">
                 {TAX_PROFILES.map((tp) => (
                   <option value={tp.id}>{tp.label}</option>
                 ))}
               </select>
             </label>
-            <label class="flex items-center gap-1.5 text-[var(--r-muted)]" title="Si ya tienes 40+ piezas en propiedad, desbloqueas el 20% permanente (Club 40)">
+            <label class="flex items-center gap-1 text-[var(--r-muted)]" title="40+ piezas en propiedad = 20% dto. permanente">
               <input id="plannerClub40" type="checkbox" class="accent-[#00e699]" />
-              <span>Club 40 (20%)</span>
+              <span>🏆 Club 40</span>
             </label>
-            <label class="flex items-center gap-1.5 text-[var(--r-muted)]">
-              <span>Credits ($):</span>
-              <input id="plannerCreditsInput" type="number" min="0" max="40" step="1" value="0" class="w-16 h-8 rounded-lg border border-[var(--r-line)] bg-[var(--r-bg)] px-2 text-xs text-[var(--r-text)]" />
+            <label class="flex items-center gap-1 text-[var(--r-muted)]">
+              <span>💳 $</span>
+              <input id="plannerCreditsInput" type="number" min="0" max="40" step="1" value="0" class="w-12 h-8 rounded-lg border border-[var(--r-line)] bg-[var(--r-bg)] px-1.5 text-xs text-[var(--r-text)]" />
             </label>
           </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          <!-- Columna 1 & 2: Matriz 12 Semanas + Top ROI Circuitos -->
+          <!-- Columna 1 & 2: Qué podrás correr + Matriz 12 Semanas + Top Circuitos & Coches -->
           <div class="lg:col-span-2 space-y-4">
+            <div id="plannerPlayableBox" class="p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-500/[0.06] space-y-1.5 font-mono text-xs">
+              <div class="flex items-center justify-between gap-2">
+                <strong class="text-emerald-300">🏁 Qué podrás correr con tu contenido + carrito</strong>
+                <span id="plannerPlayableCount" class="text-[var(--r-accent)] font-bold">0 series esta semana</span>
+              </div>
+              <div id="plannerPlayableList" class="flex flex-wrap gap-1.5 text-[11px]"></div>
+            </div>
+
             <div class="p-3.5 rounded-xl border border-[var(--r-line)] bg-[var(--r-bg)] space-y-2.5">
               <div class="flex items-center justify-between text-xs font-mono">
-                <strong class="text-[var(--r-text)]">Cobertura 12 Semanas (Race Participation Credits: 8/12)</strong>
+                <strong class="text-[var(--r-text)]">📅 Cobertura 12 Semanas (8/12 = Credits)</strong>
                 <span id="plannerWeeksCovered" class="text-[var(--r-accent)] font-bold">0/12 semanas</span>
               </div>
               <div id="plannerMatrix" class="grid grid-cols-6 sm:grid-cols-12 gap-1.5 font-mono text-[10px]"></div>
@@ -374,10 +384,18 @@ const canonical = "https://muntru.me/calendar/";
 
             <div class="space-y-2">
               <div class="flex items-center justify-between text-xs font-mono">
-                <strong class="text-[var(--r-text)]">Top Circuitos Recomendados (ROI Multi-Serie)</strong>
-                <span class="text-[var(--r-muted)]">Basado en tus series favoritas / top populares</span>
+                <strong class="text-[var(--r-text)]">🏁 Top Circuitos Recomendados ($14.95)</strong>
+                <span class="text-[var(--r-muted)]">Mayor ROI por semanas</span>
               </div>
               <div id="plannerRoiList" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+            </div>
+
+            <div class="space-y-2 pt-2 border-t border-[var(--r-line)]/50">
+              <div class="flex items-center justify-between text-xs font-mono">
+                <strong class="text-[var(--r-text)]">🏎 Top Coches Recomendados ($11.95)</strong>
+                <span class="text-[var(--r-muted)]">Multi-serie · Special Events</span>
+              </div>
+              <div id="plannerCarRoiList" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
             </div>
           </div>
 
@@ -413,6 +431,7 @@ const canonical = "https://muntru.me/calendar/";
               data-pop={s.pop}
               data-setup={s.fixed ? "FIXED" : "OPEN"}
               data-endurance={s.endurance ? "1" : "0"}
+              data-cars={JSON.stringify(s.cars)}
               data-search={searchBlob}
             >
               <header class="cal-card__head">
@@ -600,7 +619,7 @@ const canonical = "https://muntru.me/calendar/";
       let activeSetup = "ALL";
       let activeTier = "ALL";
       let onlyFavs = false;
-      let visibleLimit = 12;
+      let visibleLimit = 6;
       const loadMoreWrap = document.getElementById("calLoadMoreWrap");
       const showMoreBtn = document.getElementById("calShowMoreBtn");
       const showAllBtn = document.getElementById("calShowAllBtn");
@@ -654,7 +673,7 @@ const canonical = "https://muntru.me/calendar/";
       }
 
       function applyFilter(resetLimit = true) {
-        if (resetLimit) visibleLimit = 12;
+        if (resetLimit) visibleLimit = 6;
         const q = (searchInput?.value || "").trim().toLowerCase();
         const orderedCards = Array.from(grid.querySelectorAll(".cal-card"));
         let matching = 0;
@@ -682,12 +701,12 @@ const canonical = "https://muntru.me/calendar/";
             : matching + (matching === 1 ? " serie" : " series");
         }
         if (loadMoreWrap) loadMoreWrap.hidden = remaining === 0;
-        if (showMoreBtn) showMoreBtn.textContent = `Mostrar +12 series (${remaining} restantes)`;
+        if (showMoreBtn) showMoreBtn.textContent = `Mostrar +6 series (${remaining} restantes)`;
         if (emptyEl) emptyEl.hidden = matching > 0;
       }
 
       showMoreBtn?.addEventListener("click", () => {
-        visibleLimit += 12;
+        visibleLimit += 6;
         applyFilter(false);
       });
       showAllBtn?.addEventListener("click", () => {
@@ -775,20 +794,27 @@ const canonical = "https://muntru.me/calendar/";
     const matrixEl = document.getElementById("plannerMatrix");
     const weeksCoveredEl = document.getElementById("plannerWeeksCovered");
     const roiListEl = document.getElementById("plannerRoiList");
+    const carRoiListEl = document.getElementById("plannerCarRoiList");
     const cartItemsEl = document.getElementById("plannerCartItems");
     const upsellEl = document.getElementById("plannerUpsellHint");
     const ticketEl = document.getElementById("plannerTicket");
 
     if (panel && toggleBtn) {
       const OWNED_KEY = "mmt-owned-tracks-v1";
+      const OWNED_CARS_KEY = "mmt-owned-cars-v1";
       const CART_KEY = "mmt-planner-cart-v1";
+      const CART_CARS_KEY = "mmt-planner-cart-cars-v1";
       const FAV_KEY = "mmt_cal_favs_v1";
 
       let owned = new Set<string>();
+      let ownedCars = new Set<string>();
       let cart = new Set<string>();
+      let cartCars = new Set<string>();
       try {
         owned = new Set(JSON.parse(localStorage.getItem(OWNED_KEY) || "[]"));
+        ownedCars = new Set(JSON.parse(localStorage.getItem(OWNED_CARS_KEY) || "[]"));
         cart = new Set(JSON.parse(localStorage.getItem(CART_KEY) || "[]"));
+        cartCars = new Set(JSON.parse(localStorage.getItem(CART_CARS_KEY) || "[]"));
       } catch { /* ignore */ }
 
       const params = new URLSearchParams(window.location.search);
@@ -813,8 +839,62 @@ const canonical = "https://muntru.me/calendar/";
       creditsInput?.addEventListener("input", renderPlanner);
       document.getElementById("plannerClearCart")?.addEventListener("click", () => {
         cart.clear();
+        cartCars.clear();
         localStorage.setItem(CART_KEY, "[]");
+        localStorage.setItem(CART_CARS_KEY, "[]");
         renderPlanner();
+      });
+
+      const BASE_FREE_TRACKS = [
+        "Summit Point Raceway",
+        "Lime Rock Park",
+        "WeatherTech Raceway Laguna Seca",
+        "Okayama International Circuit",
+        "Oulton Park Circuit",
+        "Tsukuba Circuit",
+        "Charlotte Motor Speedway",
+        "Rudskogen Motorsenter",
+        "Virginia International Raceway",
+        "Motorsport Arena Oschersleben",
+        "Circuito de Navarra",
+        "Oran Park Raceway",
+      ];
+      const BASE_FREE_CARS = [
+        "Global Mazda MX-5 Cup",
+        "Formula Vee",
+        "Ray FF1600",
+        "BMW M2 CS Racing",
+        "Toyota GR86",
+        "Street Stock",
+        "Legends Ford '34 Coupe",
+      ];
+
+      document.getElementById("plannerMarkBaseBtn")?.addEventListener("click", () => {
+        BASE_FREE_TRACKS.forEach((t) => { owned.add(t); cart.delete(t); });
+        BASE_FREE_CARS.forEach((c) => { ownedCars.add(c); cartCars.delete(c); });
+        localStorage.setItem(OWNED_KEY, JSON.stringify(Array.from(owned)));
+        localStorage.setItem(OWNED_CARS_KEY, JSON.stringify(Array.from(ownedCars)));
+        localStorage.setItem(CART_KEY, JSON.stringify(Array.from(cart)));
+        localStorage.setItem(CART_CARS_KEY, JSON.stringify(Array.from(cartCars)));
+        renderPlanner();
+      });
+
+      const detectMmtBtn = document.getElementById("plannerDetectMmtBtn");
+      detectMmtBtn?.addEventListener("click", async () => {
+        detectMmtBtn.textContent = "⏳ Detectando...";
+        try {
+          const res = await fetch("http://127.0.0.1:38421/ping");
+          const data = await res.json();
+          if (data && data.status === "ready") {
+            detectMmtBtn.textContent = `✅ MMT Sync v${data.version || ""} activo`;
+            BASE_FREE_TRACKS.forEach((t) => owned.add(t));
+            localStorage.setItem(OWNED_KEY, JSON.stringify(Array.from(owned)));
+            renderPlanner();
+            return;
+          }
+        } catch { /* ignore */ }
+        detectMmtBtn.textContent = "⚠ Abre MMT Sync para detectar";
+        setTimeout(() => { detectMmtBtn.textContent = "⚡ Detectar MMT Sync"; }, 3000);
       });
 
       toggleBtn.addEventListener("click", () => {
@@ -838,9 +918,23 @@ const canonical = "https://muntru.me/calendar/";
 
         const weekCoverage = new Array<boolean>(12).fill(false);
         const roiMap = new Map<string, { track: string; weeksUnlocked: number; isSpecial: boolean }>();
+        const carRoiMap = new Map<string, { car: string; seriesCount: number; isSpecial: boolean }>();
 
         targetCards.forEach((card) => {
           const isEndu = card.dataset.endurance === "1";
+          let cardCars: string[] = [];
+          try {
+            cardCars = JSON.parse(card.dataset.cars || "[]");
+          } catch { /* ignore */ }
+          cardCars.forEach((carName) => {
+            const cleanCar = String(carName || "").trim();
+            if (!cleanCar || ownedCars.has(cleanCar)) return;
+            const curCar = carRoiMap.get(cleanCar) ?? { car: cleanCar, seriesCount: 0, isSpecial: isEndu };
+            curCar.seriesCount += 1;
+            if (isEndu) curCar.isSpecial = true;
+            carRoiMap.set(cleanCar, curCar);
+          });
+
           card.querySelectorAll<HTMLElement>("[data-week-num]").forEach((li) => {
             const w = Number(li.dataset.weekNum || 0);
             const trackName = (li.querySelector(".cal-week__track")?.textContent || "").trim();
@@ -908,23 +1002,105 @@ const canonical = "https://muntru.me/calendar/";
           });
         }
 
+        if (carRoiListEl) {
+          const topCars = Array.from(carRoiMap.values())
+            .sort((a, b) => (b.seriesCount + (b.isSpecial ? 2 : 0)) - (a.seriesCount + (a.isSpecial ? 2 : 0)))
+            .slice(0, 6);
+          carRoiListEl.innerHTML = topCars.map((item, i) => {
+            const inCart = cartCars.has(item.car);
+            const esc = item.car.replace(/"/g, "&quot;");
+            return `
+              <div class="p-2.5 rounded-xl border border-[var(--r-line)] bg-[var(--r-bg)] flex items-center justify-between gap-2 text-xs font-mono">
+                <div class="min-w-0">
+                  <div class="font-bold text-[var(--r-text)] truncate">${i + 1}º ${item.car}</div>
+                  <div class="text-[10px] text-[var(--r-muted)]">Válido en ${item.seriesCount} ${item.seriesCount === 1 ? "serie" : "series"}${item.isSpecial ? " · Special Event" : ""}</div>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                  <button type="button" data-own-car="${esc}" class="px-2 py-1 rounded border border-[var(--r-line)] text-[10px] text-[var(--r-muted)] hover:text-emerald-300 cursor-pointer">Tengo</button>
+                  <button type="button" data-cart-car="${esc}" class="px-2 py-1 rounded border text-[10px] font-bold cursor-pointer ${inCart ? "border-rose-400/50 text-rose-300" : "border-[var(--r-accent)] text-[var(--r-accent)]"}">${inCart ? "Quitar" : "+ Carrito"}</button>
+                </div>
+              </div>
+            `;
+          }).join("");
+
+          carRoiListEl.querySelectorAll<HTMLButtonElement>("[data-cart-car]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const c = btn.dataset.cartCar || "";
+              if (cartCars.has(c)) cartCars.delete(c);
+              else cartCars.add(c);
+              localStorage.setItem(CART_CARS_KEY, JSON.stringify(Array.from(cartCars)));
+              renderPlanner();
+            });
+          });
+          carRoiListEl.querySelectorAll<HTMLButtonElement>("[data-own-car]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const c = btn.dataset.ownCar || "";
+              ownedCars.add(c);
+              cartCars.delete(c);
+              localStorage.setItem(OWNED_CARS_KEY, JSON.stringify(Array.from(ownedCars)));
+              localStorage.setItem(CART_CARS_KEY, JSON.stringify(Array.from(cartCars)));
+              renderPlanner();
+            });
+          });
+        }
+
+        const totalCartItems = cart.size + cartCars.size;
+
+        // "Qué podrás correr con tu contenido + carrito"
+        const playableCountEl = document.getElementById("plannerPlayableCount");
+        const playableListEl = document.getElementById("plannerPlayableList");
+        const ownedPlusCartTracks = new Set([...owned, ...cart]);
+        const ownedPlusCartCars = new Set([...ownedCars, ...cartCars]);
+        const playableSeries: Array<{ name: string; weeksReady: number }> = [];
+        cards.forEach((card) => {
+          const title = (card.querySelector("[data-title-garage]")?.textContent || "").trim();
+          let cList: string[] = [];
+          try { cList = JSON.parse(card.dataset.cars || "[]"); } catch {}
+          const hasCar = cList.some((c) => ownedPlusCartCars.has(c));
+          if (!hasCar) return;
+          let weeksReady = 0;
+          card.querySelectorAll<HTMLElement>("[data-week-num]").forEach((li) => {
+            const trk = (li.querySelector(".cal-week__track")?.textContent || "").trim();
+            if (trk && ownedPlusCartTracks.has(trk)) weeksReady++;
+          });
+          if (weeksReady > 0 && title) {
+            playableSeries.push({ name: title, weeksReady });
+          }
+        });
+        if (playableCountEl) {
+          playableCountEl.textContent = `${playableSeries.length} ${playableSeries.length === 1 ? "serie desbloqueada" : "series desbloqueadas"}`;
+        }
+        if (playableListEl) {
+          playableListEl.innerHTML = playableSeries.length === 0
+            ? `<span class="text-[var(--r-muted)]">Pulsa "✔ Base Gratis iRacing" o añade 1 coche y 1 circuito al carrito para ver qué series puedes correr.</span>`
+            : playableSeries.slice(0, 8).map((s) =>
+                `<span class="px-2 py-1 rounded-lg border border-emerald-500/35 bg-emerald-500/10 text-emerald-200">✓ ${s.name} (${s.weeksReady}/12 sem.)</span>`
+              ).join("");
+        }
         if (cartItemsEl) {
-          if (cart.size === 0) {
-            cartItemsEl.innerHTML = `<p class="text-[var(--r-muted)]">Añade circuitos recomendados para simular tu pack con descuento.</p>`;
+          if (totalCartItems === 0) {
+            cartItemsEl.innerHTML = `<p class="text-[var(--r-muted)]">Añade circuitos o coches recomendados para simular tu pack con descuento.</p>`;
           } else {
-            cartItemsEl.innerHTML = Array.from(cart).map((t) => `
+            const trackRows = Array.from(cart).map((t) => `
               <div class="flex items-center justify-between gap-2 py-1 border-b border-[var(--r-line)]/40">
-                <span class="truncate text-[var(--r-text)]">${t}</span>
+                <span class="truncate text-[var(--r-text)]">🏁 ${t}</span>
                 <span class="text-[var(--r-muted)] shrink-0">$14.95</span>
               </div>
-            `).join("");
+            `);
+            const carRows = Array.from(cartCars).map((c) => `
+              <div class="flex items-center justify-between gap-2 py-1 border-b border-[var(--r-line)]/40">
+                <span class="truncate text-[var(--r-text)]">🏎 ${c}</span>
+                <span class="text-[var(--r-muted)] shrink-0">$11.95</span>
+              </div>
+            `);
+            cartItemsEl.innerHTML = [...trackRows, ...carRows].join("");
           }
         }
 
-        const ownedCount = club40Chk?.checked ? 40 : owned.size;
+        const ownedCount = club40Chk?.checked ? 40 : (owned.size + ownedCars.size);
         const credits = Number(creditsInput?.value || 0);
         const profileId = taxSelect?.value || "es";
-        const ck = calculateCheckout(cart.size, 0, ownedCount, credits, profileId);
+        const ck = calculateCheckout(cart.size, cartCars.size, ownedCount, credits, profileId);
 
         if (upsellEl) {
           upsellEl.hidden = !ck.upsellHint;
@@ -933,7 +1109,7 @@ const canonical = "https://muntru.me/calendar/";
 
         if (ticketEl) {
           ticketEl.innerHTML = `
-            <div class="flex justify-between text-[var(--r-muted)]"><span>Subtotal (${cart.size} piezas)</span><span>$${ck.subtotalUsd.toFixed(2)}</span></div>
+            <div class="flex justify-between text-[var(--r-muted)]"><span>Subtotal (${totalCartItems} piezas)</span><span>$${ck.subtotalUsd.toFixed(2)}</span></div>
             <div class="flex justify-between text-emerald-400"><span>Dto. Volumen (${ck.discountLabel})</span><span>-$${ck.discountUsd.toFixed(2)}</span></div>
             ${ck.creditsUsedUsd > 0 ? `<div class="flex justify-between text-sky-400"><span>Participation Credits</span><span>-$${ck.creditsUsedUsd.toFixed(2)}</span></div>` : ""}
             <div class="flex justify-between text-[var(--r-muted)]"><span>Base Imponible</span><span>$${ck.taxableBaseUsd.toFixed(2)}</span></div>
