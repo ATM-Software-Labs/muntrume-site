@@ -173,7 +173,6 @@ jobs:
           releaseBody: ${{ steps.notes.outputs.body }}
           releaseDraft: false
           prerelease: false
-          make_latest: true
           args: --bundles nsis,msi --config src-tauri/tauri.release.json
 
       - name: Check SignPath configuration
@@ -247,7 +246,7 @@ jobs:
           node -e "const fs=require('fs');const path=require('path');const dir='../signpath-signed';const all=[];(function walk(d){for(const e of fs.readdirSync(d,{withFileTypes:true})){const p=path.join(d,e.name);e.isDirectory()?walk(p):all.push(p);}})(dir);const j=JSON.parse(fs.readFileSync('../latest.json','utf8'));const norm=s=>s.replace(/ /g,'.');for(const k of Object.keys(j.platforms||{})){const url=j.platforms[k].url||'';const name=decodeURIComponent(url.split('/').pop());const hit=all.find(p=>p.endsWith('.sig')&&norm(path.basename(p,'.sig'))===name);if(hit){j.platforms[k].signature=fs.readFileSync(hit,'utf8').trim();console.log('updated',k);}else{console.log('no match',k,name);}}j.notes='Instalador de MMT Sync para Windows 10 y 11. Firmado digitalmente mediante SignPath Foundation.';fs.writeFileSync('../latest.json',JSON.stringify(j,null,2));"
           $upload = @($files | ForEach-Object { $_.FullName; "$($_.FullName).sig" }) + (Resolve-Path ../latest.json).Path
           gh release upload $env:TAG @upload --clobber
-          gh release edit $env:TAG --notes "Instalador de MMT Sync para Windows 10 y 11.`nFirmado digitalmente: Free code signing provided by SignPath.io, certificate by SignPath Foundation."
+          gh release edit $env:TAG --latest --notes "Instalador de MMT Sync para Windows 10 y 11.`nFirmado digitalmente: Free code signing provided by SignPath.io, certificate by SignPath Foundation."
 
       - name: Prune old desktop releases (keep latest 3)
         if: always()
