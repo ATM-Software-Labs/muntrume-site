@@ -9,7 +9,6 @@ import {
   renderStandingsWidget,
   renderFuelWidget,
   renderGpuPedalsWidget,
-  renderRadarWidget,
   renderPitboxWidget,
   renderDigiFlagWidget,
   SmartLayoutManager,
@@ -2928,18 +2927,11 @@ function updateHUDDisplay(sample: LiveSample): void {
 
     if (nowHudMs - lastRadarRenderMs >= 66) {
       lastRadarRenderMs = nowHudMs;
-      document.querySelectorAll<HTMLElement>("#ovRadar").forEach((radar) => {
+      document.querySelectorAll<HTMLElement>("#ovRadar, #ovRadarFloat").forEach((radar) => {
         if (radar.offsetParent !== null) {
-          renderRadarWidget(radar, {
-            carLeftRight: frame.carLeftRight ?? 0,
-            speedKmh: kmh,
-          });
+          renderMirrorProximityWings(radar, irsdkState);
         }
       });
-      const floatRadar = document.getElementById("ovRadarFloat");
-      if (floatRadar && floatRadar.offsetParent !== null) {
-        renderMirrorProximityWings(floatRadar, irsdkState);
-      }
       const trackMapCanvas = document.getElementById("ovTrackMapFloat") as HTMLCanvasElement | null;
       if (trackMapCanvas && trackMapCanvas.offsetParent !== null) {
         renderLiveTrackMapCanvas(trackMapCanvas, irsdkState);

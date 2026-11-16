@@ -999,8 +999,8 @@
                 <div id="ovRevLimiterAlert" class="hidden text-[10px] font-mono font-black uppercase tracking-widest text-rose-400 animate-pulse">¡CAMBIO DE MARCHA!</div>
               </div>
 
-              <!-- TOP-CENTER RADAR: Flanking Virtual Mirror Zone -->
-              <div class="mmt-hud-widget absolute top-11 left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-none" data-widget="radar">
+              <!-- TOP-CENTER RADAR: Flanking Virtual Mirror Zone (never overlaps Corner Bar) -->
+              <div class="mmt-hud-widget absolute top-2 left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-none" data-widget="radar">
                 <div id="ovRadar"></div>
               </div>
 
@@ -1020,15 +1020,15 @@
               </div>
 
               <!-- TOP-MID BELOW BRAKE: Compact Horizontal Corner Bar (340x36px, zero overlap) -->
-              <div id="widgetCorner" class="mmt-hud-widget absolute top-[96px] left-1/2 -translate-x-1/2 w-[340px] h-[36px] px-3 rounded-[4px] border border-white/[0.08] text-white font-mono text-[11px] flex items-center justify-between gap-2 whitespace-nowrap tabular-nums" style="background: rgba(9, 11, 15, 0.72);" data-widget="corner">
+              <div id="widgetCorner" class="mmt-hud-widget absolute top-[100px] left-1/2 -translate-x-1/2 w-[340px] h-[36px] px-3 rounded-[4px] border border-white/[0.08] text-white font-mono text-[11px] flex items-center justify-between gap-2 whitespace-nowrap tabular-nums" style="background: rgba(9, 11, 15, 0.72);" data-widget="corner">
                 <span id="ovNextTurnBadge" class="px-1.5 py-0.5 rounded-[3px] bg-r-accent/20 text-r-accent text-[10px] font-bold">Curva 1</span>
                 <span class="text-white/70 text-[10px]">Ápice: <strong id="ovCornerApexTarget" class="text-white">124 km/h</strong></span>
                 <strong id="ovCornerDelta" class="text-emerald-400 text-[11px]">-0.12s</strong>
                 <span id="ovCornerTip" class="hidden"></span>
               </div>
 
-              <!-- TOP LEFT: Standings (Kapps 1-line 375px) -->
-              <div id="widgetStandings" class="mmt-hud-widget absolute left-3 top-3 w-[375px] rounded-[4px] border border-white/[0.08] text-white p-1 text-[11px] font-mono tabular-nums overflow-hidden" style="background: rgba(9, 11, 15, 0.72);" data-widget="standings">
+              <!-- TOP LEFT: Standings (Kapps 1-line 390px) -->
+              <div id="widgetStandings" class="mmt-hud-widget absolute left-3 top-3 w-[390px] rounded-[4px] border border-white/[0.08] text-white p-1 text-[11px] font-mono tabular-nums overflow-hidden" style="background: rgba(9, 11, 15, 0.72);" data-widget="standings">
                 <div id="ovStandings"></div>
                 <div id="ovPitbox" class="mt-1"></div>
               </div>
@@ -1038,48 +1038,33 @@
                 <div id="ovRelative"></div>
               </div>
 
-              <!-- CENTER: Pro Digital Cluster -->
-              <div id="widgetCluster" class="mmt-hud-widget absolute left-1/2 top-[53%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center" data-widget="cluster">
-                <div id="ovClusterBrandPreview" class="mb-1.5 flex items-center gap-1.5 px-2.5 py-0.5 rounded-[4px] border border-white/[0.08] text-[10px] font-mono text-white/90" style="background: rgba(9, 11, 15, 0.72);"></div>
-                <div id="ovDelta" class="mb-2 px-4 py-1 rounded-[4px] border border-emerald-500/40 bg-emerald-950/75 text-emerald-400 font-mono text-xs font-bold tabular-nums">
-                  -0.34s · Sector 2 Púrpura
-                </div>
-                <div class="flex items-baseline gap-4 px-6 py-3.5 rounded-[4px] border border-white/[0.08]" style="background: rgba(9, 11, 15, 0.72);">
-                  <div class="flex flex-col items-center">
-                    <span class="text-[10px] font-mono text-r-muted uppercase tracking-[0.08em]">Marcha</span>
-                    <strong id="ovGear" class="font-mono text-6xl font-black text-white leading-none mt-1">4</strong>
+              <!-- BOTTOM CENTER: Unified Compact Driving Telemetry Bar (340x44px, zero duplicates) -->
+              <div id="widgetCluster" class="mmt-hud-widget absolute left-1/2 bottom-3 -translate-x-1/2 flex flex-col items-center gap-1.5" data-widget="cluster">
+                <div class="flex items-center gap-2">
+                  <div id="ovClusterBrandPreview" class="flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-white/[0.08] text-[10px] font-mono text-white/90" style="background: rgba(9, 11, 15, 0.72);"></div>
+                  <div id="ovDelta" class="px-3 py-0.5 rounded-[4px] border border-emerald-500/40 bg-emerald-950/75 text-emerald-400 font-mono text-[11px] font-bold tabular-nums">
+                    -0.34s · Sector 2
                   </div>
-                  <div class="h-14 w-px bg-white/15"></div>
-                  <div class="flex flex-col">
-                    <span class="text-[10px] font-mono text-r-muted uppercase tracking-[0.08em]">Velocidad</span>
-                    <div class="flex items-baseline gap-1 mt-1 tabular-nums">
-                      <strong id="ovSpeed" class="font-mono text-4xl font-black text-r-accent leading-none">198</strong>
-                      <span class="font-mono text-xs text-r-muted">km/h</span>
+                </div>
+                <div class="w-[360px] h-[48px] px-2.5 rounded-[4px] border border-white/[0.08] flex items-center justify-between gap-2 tabular-nums" style="background: rgba(9, 11, 15, 0.78);">
+                  <canvas id="ovWaveformCanvas" width="110" height="36" class="rounded-[3px] bg-black/50 border border-white/[0.06] shrink-0"></canvas>
+                  <div id="ovGpuPedals" class="flex-1 min-w-0"></div>
+                  <div class="w-[68px] shrink-0 flex items-center justify-end gap-1.5 pl-2 border-l border-white/10">
+                    <strong id="ovGear" class="font-mono text-2xl font-black text-white leading-none">4</strong>
+                    <div class="flex flex-col leading-none">
+                      <strong id="ovSpeed" class="font-mono text-xs font-black text-r-accent">198</strong>
+                      <span class="font-mono text-[8px] text-r-muted">km/h</span>
                     </div>
-                    <span id="ovRpm" class="text-[10px] font-mono text-r-muted mt-1 tabular-nums">7,420 RPM</span>
                   </div>
+                  <span id="ovRpm" class="hidden">7,420 RPM</span>
                 </div>
+                <canvas id="ovInputs" width="300" height="90" class="hidden"></canvas>
+                <div id="ovTyres" class="hidden"></div>
               </div>
 
               <!-- BOTTOM LEFT: Live Fuel & Stint Computer -->
-              <div id="widgetFuel" class="mmt-hud-widget absolute left-3 bottom-3 w-[250px] rounded-[4px] border border-white/[0.08] text-white p-2 text-xs font-mono" style="background: rgba(9, 11, 15, 0.72);" data-widget="fuel">
+              <div id="widgetFuel" class="mmt-float-widget absolute left-3 bottom-3 w-[250px] rounded-[4px] border border-white/[0.08] text-white p-2 text-xs font-mono" style="background: rgba(9, 11, 15, 0.72);" data-widget="fuel">
                 <div id="ovFuel"></div>
-              </div>
-
-              <!-- BOTTOM MID: Scrolling Live Input Waveform -->
-              <div id="widgetWaveform" class="mmt-hud-widget absolute left-1/2 bottom-3 -translate-x-1/2 rounded-[4px] border border-white/[0.08] p-2" style="background: rgba(9, 11, 15, 0.72);" data-widget="waveform">
-                <div class="flex items-center justify-between text-[10px] uppercase tracking-[0.08em] font-mono text-r-muted mb-1 px-1">
-                  <span>Pedales (Traza)</span>
-                  <span class="flex items-center gap-2"><span class="text-emerald-400">Gas</span> <span class="text-rose-400">Freno</span></span>
-                </div>
-                <canvas id="ovWaveformCanvas" width="280" height="58" class="rounded-[3px] bg-black/50 border border-white/[0.06]"></canvas>
-              </div>
-
-              <!-- BOTTOM RIGHT: High Precision Pedals & Steering -->
-              <div id="widgetPedals" class="mmt-hud-widget absolute right-3 bottom-3 rounded-[4px] border border-white/[0.08] p-2.5" style="background: rgba(9, 11, 15, 0.72);" data-widget="pedals">
-                <div id="ovGpuPedals"></div>
-                <canvas id="ovInputs" width="300" height="90" class="rounded-[3px] hidden"></canvas>
-                <div id="ovTyres" class="mt-1.5 text-center font-mono text-[10px] text-r-muted tabular-nums"></div>
               </div>
             </div>
 

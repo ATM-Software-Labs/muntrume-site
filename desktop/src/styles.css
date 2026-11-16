@@ -248,6 +248,112 @@ input[type="search"]:focus {
   transition: none !important;
 }
 
+/* Kapps-style 1-line tabular HUD rows (CSP-safe classes) */
+.mmt-std-header,
+.mmt-rel-header,
+.mmt-rel-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  height: 20px;
+  padding: 0 6px;
+  background: rgba(10, 12, 16, 0.72);
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+.mmt-std-header,
+.mmt-rel-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.mmt-rel-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.65);
+}
+.mmt-std-row {
+  display: grid;
+  grid-template-columns: 20px 20px minmax(90px, 1fr) 18px 74px 44px 44px 54px;
+  align-items: center;
+  gap: 3px;
+  height: 20px;
+  padding: 0 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+  border-left: 2px solid #38bdf8;
+}
+.mmt-rel-row {
+  display: grid;
+  grid-template-columns: 22px 34px 1fr 28px 46px 44px;
+  align-items: center;
+  gap: 3px;
+  height: 20px;
+  padding: 0 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+  border-left: 2px solid #00e699;
+}
+.mmt-std-row.is-alt,
+.mmt-rel-row.is-alt {
+  background: rgba(255, 255, 255, 0.03);
+}
+.mmt-std-row.is-self,
+.mmt-rel-row.is-self {
+  background: rgba(16, 185, 129, 0.2) !important;
+  border-left: 3px solid #10b981 !important;
+}
+.mmt-cell-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mmt-lic-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1.15;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+}
+.mmt-lic-A { background: #1d4ed8; }
+.mmt-lic-B { background: #15803d; }
+.mmt-lic-C { background: #b45309; }
+.mmt-lic-D { background: #c2410c; }
+.mmt-lic-R { background: #b91c1c; }
+.mmt-ir-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: #1e293b;
+  color: #e2e8f0;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+.mmt-fuel-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  white-space: nowrap;
+}
+
 html.overlay-mode,
 html.overlay-mode body {
   background: transparent !important;
