@@ -2376,6 +2376,9 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
     if ((e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "s") || e.key === "F8") {
       const active = SmartLayoutManager.getInstance().toggleStreamerMode();
       console.log(`[Streamer Mode] ${active ? "ACTIVADO" : "DESACTIVADO"}`);
+    } else if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "h") {
+      e.preventDefault();
+      onClose?.();
     } else if (e.ctrlKey && e.key.toLowerCase() === "h") {
       const active = VisibilityRulesEngine.getInstance().toggleBossKey();
       console.log(`[Clean Screen Boss Key] ${active ? "ACTIVADO" : "DESACTIVADO"}`);
@@ -2891,6 +2894,16 @@ function updateHUDDisplay(sample: LiveSample): void {
       : "Curva rápida: sostén gas de apoyo para asentar el alerón trasero.";
   }
 
+function safeRenderWidget(el: HTMLElement | null, fn: () => void): void {
+  if (!el) return;
+  try {
+    fn();
+  } catch (err) {
+    console.warn(`[WidgetErrorBoundary] ${el.id || "widget"}:`, err);
+    el.hidden = true;
+  }
+}
+
   // Render high-precision Relative, Standings, and Fuel at 4 Hz (250ms) and only when visible
   const nowHudMs = performance.now();
   const shouldRenderSlowHud = nowHudMs - lastSlowHudRenderMs >= 250;
@@ -2908,13 +2921,13 @@ function updateHUDDisplay(sample: LiveSample): void {
     if (floatFuelCard) floatFuelCard.hidden = !hasSessionField;
 
     document.querySelectorAll<HTMLElement>("#ovRelative, #ovRelativeFloat").forEach((rel) => {
-      if (rel.offsetParent !== null) renderRelativeWidget(rel, irsdkState);
+      if (rel.offsetParent !== null) safeRenderWidget(rel, () => renderRelativeWidget(rel, irsdkState));
     });
     document.querySelectorAll<HTMLElement>("#ovStandings, #ovStandingsFloat").forEach((standings) => {
-      if (standings.offsetParent !== null) renderStandingsWidget(standings, irsdkState);
+      if (standings.offsetParent !== null) safeRenderWidget(standings, () => renderStandingsWidget(standings, irsdkState));
     });
     document.querySelectorAll<HTMLElement>("#ovFuel, #ovFuelFloat").forEach((fuel) => {
-      if (fuel.offsetParent !== null) renderFuelWidget(fuel, irsdkState);
+      if (fuel.offsetParent !== null) safeRenderWidget(fuel, () => renderFuelWidget(fuel, irsdkState));
     });
 
     // Update minimalist Pro Live Metrics Strip in main app
@@ -3044,19 +3057,19 @@ function updateHUDDisplay(sample: LiveSample): void {
     ghostBrake: ghostPt?.brake,
   };
   document.querySelectorAll<HTMLElement>("#ovGpuPedals, #ovGpuPedalsFloat").forEach((container) => {
-    if (container.offsetParent !== null) renderGpuPedalsWidget(container, pedalSample);
+    if (container.offsetParent !== null) safeRenderWidget(container, () => renderGpuPedalsWidget(container, pedalSample));
   });
 
   // Live Delta Bar (30 FPS Canvas, Prompt 109)
   const deltaCanvas = document.getElementById("ovLiveDeltaFloat") as HTMLCanvasElement | null;
   if (deltaCanvas && deltaCanvas.offsetParent !== null) {
-    renderLiveDeltaCanvas(deltaCanvas, sample.lapDelta ?? 0, Boolean(sample.lapDeltaOk));
+    safeRenderWidget(deltaCanvas, () => renderLiveDeltaCanvas(deltaCanvas, sample.lapDelta ?? 0, Boolean(sample.lapDeltaOk)));
   }
 
   // Fallback for canvas inputs if visible
   document.querySelectorAll<HTMLCanvasElement>("#ovInputs, #ovInputsFloat").forEach((canvas) => {
     if (!canvas.classList.contains("hidden") && canvas.offsetParent !== null) {
-      drawInputsCanvas(canvas, sample);
+      safeRenderWidget(canvas, () => drawInputsCanvas(canvas, sample));
     }
   });
 
@@ -3069,41 +3082,43 @@ function updateHUDDisplay(sample: LiveSample): void {
       lastRadarRenderMs = nowHudMs;
       document.querySelectorAll<HTMLElement>("#ovRadar, #ovRadarFloat").forEach((radar) => {
         if (radar.offsetParent !== null) {
-          renderMirrorProximityWings(radar, irsdkState);
+          safeRenderWidget(radar, () => renderMirrorProximityWings(radar, irsdkState));
         }
       });
       const trackMapCanvas = document.getElementById("ovTrackMapFloat") as HTMLCanvasElement | null;
       if (trackMapCanvas && trackMapCanvas.offsetParent !== null) {
-        renderLiveTrackMapCanvas(trackMapCanvas, irsdkState);
+        safeRenderWidget(trackMapCanvas, () => renderLiveTrackMapCanvas(trackMapCanvas, irsdkState));
       }
     }
 
     if (shouldRenderSlowHud) {
       document.querySelectorAll<HTMLElement>("#ovPitbox, #ovPitboxFloat").forEach((pitbox) => {
         if (pitbox.offsetParent !== null) {
-          renderPitboxWidget(pitbox, {
-            onPitRoad: irsdkState.onPitRoad,
-            speedKmh: kmh,
-          pitSpeedLimitKmh: (frame as any).pitSpeedLimitKmh ?? 60,
-          distanceToStallMeters: (frame as any).playerCarPitLocation ?? 0,
-        });
+          safeRenderWidget(pitbox, () =>
+            renderPitboxWidget(pitbox, {
+              onPitRoad: irsdkState.onPitRoad,
+              speedKmh: kmh,
+              pitSpeedLimitKmh: (frame as any).pitSpeedLimitKmh ?? 60,
+              distanceToStallMeters: (frame as any).playerCarPitLocation ?? 0,
+            }),
+          );
         }
       });
 
       document.querySelectorAll<HTMLElement>("#ovDigiFlag, #ovDigiFlagFloat").forEach((flag) => {
         if (flag.parentElement && flag.parentElement.offsetParent !== null) {
-          renderDigiFlagWidget(flag, frame.sessionFlags ?? 0);
+          safeRenderWidget(flag, () => renderDigiFlagWidget(flag, frame.sessionFlags ?? 0));
         }
       });
 
       const condEl = document.getElementById("ovTrackConditionsFloat");
       if (condEl && condEl.offsetParent !== null) {
-        renderTrackConditionsWidget(condEl, irsdkState);
+        safeRenderWidget(condEl, () => renderTrackConditionsWidget(condEl, irsdkState));
       }
 
       const tireStatusEl = document.getElementById("ovTireStatusFloat");
       if (tireStatusEl && tireStatusEl.offsetParent !== null) {
-        renderTireStatusWidget(tireStatusEl, irsdkState);
+        safeRenderWidget(tireStatusEl, () => renderTireStatusWidget(tireStatusEl, irsdkState));
       }
 
       // Prompt 100: Auto-Fuel on Pit Road entry when enabled

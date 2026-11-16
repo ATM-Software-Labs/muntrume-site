@@ -908,6 +908,13 @@
                   <span id="floatingOverlayDot" class="w-2.5 h-2.5 rounded-full bg-emerald-950 border border-emerald-400"></span>
                   <span id="floatingOverlayText">Poner Overlay Flotante en iRacing</span>
                 </button>
+                <button type="button" id="btnKillFloatingOverlay" class="h-11 px-4 rounded-xl border border-red-500/50 bg-red-950/70 text-red-200 font-display font-extrabold uppercase tracking-wider text-xs hover:bg-red-900 transition shadow-md" title="Destruye la ventana del overlay al instante (Ctrl+Shift+H)">
+                  ✕ Quitar Overlays
+                </button>
+                <label class="h-11 px-3 rounded-xl border border-r-line bg-r-surface text-r-muted font-mono text-xs flex items-center gap-2 cursor-pointer hover:text-r-text transition" title="Cierra automáticamente los overlays al pulsar Esc o volver al garaje (IsOnTrack === false)">
+                  <input type="checkbox" id="chkHideOffTrack" class="accent-r-accent" />
+                  <span>Ocultar fuera de pista</span>
+                </label>
                 <button type="button" id="btnEditFloatingHud" hidden class="h-11 px-3.5 rounded-xl border border-cyan-400/50 bg-cyan-500/15 text-cyan-300 font-mono text-xs font-bold hover:bg-cyan-500/25 transition">
                   Editar HUD en iRacing
                 </button>
@@ -1761,7 +1768,7 @@
         </div>
         <button type="button" id="btnFloatEditLayout" class="px-2.5 py-1.5 rounded-xl bg-black/85 border border-white/15 text-r-muted hover:text-r-accent font-mono text-[10px] font-bold uppercase transition shadow-md">✥ Mover HUD</button>
         <button type="button" id="btnFloatResetLayout" class="px-2.5 py-1.5 rounded-xl bg-black/85 border border-white/15 text-r-muted hover:text-white font-mono text-[10px] font-bold uppercase transition shadow-md">↺</button>
-        <button type="button" id="btnCloseFloatOverlay" title="Ocultar overlay" class="px-2.5 py-1.5 rounded-xl bg-red-950/80 border border-red-500/40 text-red-300 font-mono text-[10px] font-bold hover:bg-red-900 transition shadow-lg">✕ Ocultar</button>
+        <button type="button" id="btnCloseFloatOverlay" title="Quitar Overlays (Ctrl+Shift+H)" class="px-2.5 py-1.5 rounded-xl bg-red-950/90 border border-red-500/50 text-red-200 font-mono text-[10px] font-bold hover:bg-red-900 transition shadow-lg">✕ Quitar Overlays</button>
       </div>
 
       <!-- Widget visibility bar (shown when Mover HUD is active) -->

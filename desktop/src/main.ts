@@ -1945,12 +1945,37 @@ function bind(): void {
   window.addEventListener("keydown", (event) => {
     if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === "h") {
       event.preventDefault();
-      void backend.toggleOverlay(true);
+      void backend.toggleOverlay(!floatingOverlayActive);
     }
   });
   let floatingOverlayActive = false;
   let floatingEditActive = false;
   const btnToggleFloat = document.getElementById("btnToggleFloatingOverlay");
+  const btnKillFloat = document.getElementById("btnKillFloatingOverlay");
+  const chkHideOffTrack = document.getElementById("chkHideOffTrack") as HTMLInputElement | null;
+  if (chkHideOffTrack) {
+    const savedHideOffTrack = localStorage.getItem("mmt-hide-off-track") === "1";
+    chkHideOffTrack.checked = savedHideOffTrack;
+    void import("@tauri-apps/api/core")
+      .then(({ invoke }) => invoke("set_hide_off_track", { enabled: savedHideOffTrack }))
+      .catch(() => {});
+    chkHideOffTrack.addEventListener("change", () => {
+      const enabled = chkHideOffTrack.checked;
+      localStorage.setItem("mmt-hide-off-track", enabled ? "1" : "0");
+      void import("@tauri-apps/api/core")
+        .then(({ invoke }) => invoke("set_hide_off_track", { enabled }))
+        .catch(() => {});
+    });
+  }
+  if (btnKillFloat) {
+    btnKillFloat.addEventListener("click", () => {
+      floatingOverlayActive = false;
+      floatingEditActive = false;
+      void backend.toggleOverlay(false).then(() => {
+        showNotice("Overlays cerrados por completo (0% GPU · <12 MB RAM).");
+      }).catch(() => {});
+    });
+  }
   const btnEditFloat = document.getElementById("btnEditFloatingHud");
   const dotFloat = document.getElementById("floatingOverlayDot");
   const textFloat = document.getElementById("floatingOverlayText");

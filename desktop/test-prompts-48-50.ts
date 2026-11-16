@@ -10,7 +10,7 @@ import {
 import { ActiveTrackCoach, buildReferenceCorners, isRaceSession } from "./src/telemetry/active-track-coach";
 import { getCalendarContentStatus } from "./src/features-48-50";
 import type { SignalSample } from "./src/telemetry/signal-cleaner";
-import { buildCompactStandingsWindow } from "./src/irsdk/overlay-renderer";
+import { buildCompactStandingsWindow, buildZeroBloatStandings } from "./src/irsdk/overlay-renderer";
 import type { LeaderboardEntry } from "./src/irsdk/types";
 
 // Polyfill browser globals for Node test runner
@@ -133,6 +133,31 @@ async function runTests() {
     compact.some((r) => r.kind === "entry" && r.entry.position === 22),
     "Should include active P22 car",
   );
+
+  // Prompt 121: Zero-Bloat 60-car multiclass Standings cap
+  const grid60 = Array.from({ length: 60 }, (_, i) => ({
+    carIdx: i,
+    position: i + 1,
+    classPosition: (i % 30) + 1,
+    carNumber: `${i + 1}`,
+    abbrevName: `D${i + 1}`,
+    teamName: `T${i + 1}`,
+    carClassShortName: i < 30 ? "GTP" : "GT3",
+    carClassColor: i < 30 ? "#ef4444" : "#38bdf8",
+    iRating: 2500,
+    licString: "A 4.99",
+    lastLapTime: 90,
+    bestLapTime: 89,
+    gapToLeader: i * 0.5,
+    onPitRoad: false,
+    isActiveCam: i === 51, // P22 in GT3
+    lapsCompleted: 5,
+  }));
+  const zb = buildZeroBloatStandings(grid60);
+  const zbEntries = zb.filter((r): r is Extract<typeof r, { kind: "entry" }> => r.kind === "entry");
+  assert(zbEntries.length <= 15, `Zero-bloat standings should have <= 15 driver rows, got ${zbEntries.length}`);
+  assert(zbEntries.every((r) => r.entry.carClassShortName === "GT3"), "Should filter to active GT3 class");
+  assert(zbEntries.some((r) => r.entry.carIdx === 51), "Should include active player car");
 
   console.log("ALL PROMPTS 48-50 TESTS PASSED");
 }

@@ -125,14 +125,14 @@ fn windows_loop(app: AppHandle) {
         let mapping = unsafe { OpenFileMappingW(FILE_MAP_READ, 0, wide("Local\\IRSDKMemMapFileName").as_ptr()) };
         if mapping.is_null() {
             emit_status_if_changed(&app, &mut last_status, "closed");
-            std::thread::sleep(Duration::from_millis(2000));
+            std::thread::sleep(Duration::from_millis(1000));
             continue;
         }
         let view = unsafe { MapViewOfFile(mapping, FILE_MAP_READ, 0, 0, 0) };
         if view.Value.is_null() {
             unsafe { CloseHandle(mapping); }
             emit_status_if_changed(&app, &mut last_status, "closed");
-            std::thread::sleep(Duration::from_millis(2000));
+            std::thread::sleep(Duration::from_millis(1000));
             continue;
         }
         let event = unsafe { OpenEventW(SYNCHRONIZE, 0, wide("Local\\IRSDKDataValidEvent").as_ptr()) };
@@ -170,7 +170,7 @@ fn windows_loop(app: AppHandle) {
                 }
                 waited == WAIT_OBJECT_0
             };
-            if last_proc.elapsed() >= Duration::from_millis(2000) {
+            if last_proc.elapsed() >= Duration::from_millis(1000) {
                 last_proc = Instant::now();
                 if !is_irsdk_mapped() {
                     emit_status_if_changed(&app, &mut last_status, "closed");
@@ -201,7 +201,9 @@ fn windows_loop(app: AppHandle) {
                 main_synced_yaml = false;
             }
             // Skip shared-memory deserialization & IPC completely when no window is visible
-            if !overlay_active && !main_active {
+            let waiting_reopen_on_track = crate::HIDE_OFF_TRACK.load(Ordering::Relaxed)
+                && crate::OVERLAY_AUTO_HIDDEN_OFF_TRACK.load(Ordering::Relaxed);
+            if !overlay_active && !main_active && !waiting_reopen_on_track {
                 last_emit = Instant::now();
                 std::thread::sleep(Duration::from_millis(100));
                 continue;
@@ -298,6 +300,25 @@ fn windows_loop(app: AppHandle) {
                     if let Ok(Ok(frame)) = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                         read_live_irsdk_frame_with(bytes, table)
                     })) {
+                        if crate::HIDE_OFF_TRACK.load(Ordering::Relaxed) {
+                            let editing = crate::OVERLAY_EDITING.load(Ordering::Relaxed);
+                            if overlay_active && !frame.is_on_track && !editing {
+                                crate::OVERLAY_AUTO_HIDDEN_OFF_TRACK.store(true, Ordering::Relaxed);
+                                let app_close = app.clone();
+                                tauri::async_runtime::spawn(async move {
+                                    let _ = crate::set_overlay_visible(app_close, false).await;
+                                });
+                            } else if !overlay_active
+                                && frame.is_on_track
+                                && crate::OVERLAY_AUTO_HIDDEN_OFF_TRACK.load(Ordering::Relaxed)
+                            {
+                                crate::OVERLAY_AUTO_HIDDEN_OFF_TRACK.store(false, Ordering::Relaxed);
+                                let app_open = app.clone();
+                                tauri::async_runtime::spawn(async move {
+                                    let _ = crate::set_overlay_visible(app_open, true).await;
+                                });
+                            }
+                        }
                         let checkered = (frame.session_flags & 0x0000_0001) != 0;
                         let cooldown = frame.session_state == 5;
                         if !race_finished_emitted && (cooldown || (checkered && frame.on_pit_road)) {
@@ -321,6 +342,7 @@ fn windows_loop(app: AppHandle) {
             }
         }
         drop(mapped);
+        std::thread::sleep(Duration::from_millis(1000));
     }
 }
 

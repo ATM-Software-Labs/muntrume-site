@@ -207,6 +207,44 @@ export function buildCompactStandingsWindow(leaderboard: LeaderboardEntry[]): Co
 }
 
 /**
+ * Zero-Bloat Standings (Prompt 121):
+ * On 50-60 car multiclass grids, focus on the active player's class and cap DOM rows to
+ * Top 12 of active class + player & ±2 immediate rivals (max 15 driver rows).
+ */
+export function buildZeroBloatStandings(leaderboard: LeaderboardEntry[]): CompactStandingsRow[] {
+  if (!leaderboard || leaderboard.length === 0) return [];
+  const active = leaderboard.find((e) => e.isActiveCam);
+  const activeClass = active?.carClassShortName || "";
+  const classBoard =
+    leaderboard.length > 15 && activeClass
+      ? leaderboard.filter((e) => e.carClassShortName === activeClass)
+      : leaderboard;
+  const list = classBoard.length > 0 ? classBoard : leaderboard;
+  if (list.length <= 15) {
+    return list.map((entry, rankIdx) => ({ kind: "entry", entry, rankIdx }));
+  }
+
+  const selfIdx = list.findIndex((e) => e.isActiveCam);
+  if (selfIdx < 0 || selfIdx <= 12) {
+    return list.slice(0, 15).map((entry, rankIdx) => ({ kind: "entry", entry, rankIdx }));
+  }
+
+  // Top 10 + separator + player & ±2 rivals = max 15 driver rows
+  const rows: CompactStandingsRow[] = list
+    .slice(0, 10)
+    .map((entry, rankIdx) => ({ kind: "entry", entry, rankIdx }));
+  const winStart = Math.max(10, selfIdx - 2);
+  const winEnd = Math.min(list.length, selfIdx + 3);
+  if (winStart > 10) {
+    rows.push({ kind: "separator" });
+  }
+  for (let i = winStart; i < winEnd; i++) {
+    rows.push({ kind: "entry", entry: list[i], rankIdx: i });
+  }
+  return rows;
+}
+
+/**
  * Renders the Multiclass Standings widget into target DOM container
  */
 export function renderStandingsWidget(container: HTMLElement, state: IrsdkComputedState | null): void {
@@ -280,7 +318,7 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
     return 9;
   };
 
-  const compactRows = buildCompactStandingsWindow(leaderboard);
+  const compactRows = buildZeroBloatStandings(leaderboard);
   const irDeltas = estimateAllDriversIRatingDeltas(state);
   const allDrivers = Object.values(state.session.driverInfo?.drivers ?? {});
   const classSofMap = new Map<string, { sum: number; count: number; color: string }>();

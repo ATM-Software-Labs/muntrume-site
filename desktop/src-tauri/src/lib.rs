@@ -66,6 +66,11 @@ enum PollView {
 }
 
 pub fn run() {
+    if std::env::var_os("WEBVIEW2_USER_DATA_FOLDER").is_none() {
+        let wv2_dir = std::env::temp_dir().join("mmt-sync-wv2");
+        let _ = std::fs::create_dir_all(&wv2_dir);
+        std::env::set_var("WEBVIEW2_USER_DATA_FOLDER", &wv2_dir);
+    }
     let mock = std::env::var("MMT_MOCK").ok().as_deref() == Some("1");
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
@@ -144,6 +149,7 @@ pub fn run() {
             toggle_overlay,
             recenter_overlay,
             set_overlay_edit,
+            set_hide_off_track,
             set_main_telemetry,
             parse_ibt_telemetry,
             read_latest_ibt,
@@ -646,7 +652,7 @@ fn detect_hardware() -> Result<hardware::HardwareReport, String> {
     Ok(hardware::detect())
 }
 
-const LOW_MEM_WEBVIEW_ARGS: &str = "--disable-gpu-vsync --disable-features=msWebOOUI,msPdfOOUI,Translate,BackForwardCache --disable-extensions --disable-background-networking --disable-sync --disable-translate --disable-default-apps --renderer-process-limit=1 --js-flags=--max-old-space-size=256";
+const LOW_MEM_WEBVIEW_ARGS: &str = "--disable-gpu-vsync --disable-features=msWebOOUI,msPdfOOUI,Translate,BackForwardCache --disable-extensions --disable-background-networking --disable-sync --disable-translate --disable-default-apps --disk-cache-size=1 --media-cache-size=1 --disable-application-cache --renderer-process-limit=1 --js-flags=--max-old-space-size=256";
 
 #[cfg(windows)]
 pub(crate) fn trim_working_set() {
@@ -660,7 +666,9 @@ pub(crate) fn trim_working_set() {
 #[cfg(not(windows))]
 pub(crate) fn trim_working_set() {}
 
-static OVERLAY_EDITING: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+pub(crate) static OVERLAY_EDITING: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+pub(crate) static HIDE_OFF_TRACK: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+pub(crate) static OVERLAY_AUTO_HIDDEN_OFF_TRACK: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 static LAST_EXT_CMD_MS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 
 #[cfg(windows)]
@@ -881,21 +889,26 @@ fn apply_overlay_edit_state(app: &AppHandle, window: &tauri::WebviewWindow, edit
 #[cfg(windows)]
 fn spawn_overlay_hotkeys(app: AppHandle) {
     use windows_sys::Win32::UI::Input::KeyboardAndMouse::{
-        GetAsyncKeyState, VK_F10, VK_F9, VK_MENU,
+        GetAsyncKeyState, VK_CONTROL, VK_F10, VK_F9, VK_MENU, VK_SHIFT,
     };
     std::thread::spawn(move || {
         let mut prev_f9 = false;
         let mut prev_f10 = false;
         let mut prev_alt_e = false;
         let mut prev_alt_h = false;
+        let mut prev_ctrl_shift_h = false;
         let mut prev_alt_r = false;
         loop {
             std::thread::sleep(std::time::Duration::from_millis(60));
             let f9_down = unsafe { (GetAsyncKeyState(VK_F9 as i32) as u16 & 0x8000) != 0 };
             let f10_down = unsafe { (GetAsyncKeyState(VK_F10 as i32) as u16 & 0x8000) != 0 };
             let alt_down = unsafe { (GetAsyncKeyState(VK_MENU as i32) as u16 & 0x8000) != 0 };
+            let ctrl_down = unsafe { (GetAsyncKeyState(VK_CONTROL as i32) as u16 & 0x8000) != 0 };
+            let shift_down = unsafe { (GetAsyncKeyState(VK_SHIFT as i32) as u16 & 0x8000) != 0 };
+            let h_down = unsafe { (GetAsyncKeyState(b'H' as i32) as u16 & 0x8000) != 0 };
             let alt_e = alt_down && unsafe { (GetAsyncKeyState(b'E' as i32) as u16 & 0x8000) != 0 };
-            let alt_h = alt_down && unsafe { (GetAsyncKeyState(b'H' as i32) as u16 & 0x8000) != 0 };
+            let alt_h = alt_down && h_down;
+            let ctrl_shift_h = ctrl_down && shift_down && h_down;
             let alt_r = alt_down && unsafe { (GetAsyncKeyState(b'R' as i32) as u16 & 0x8000) != 0 };
 
             if (f9_down && !prev_f9) || (alt_e && !prev_alt_e) {
@@ -904,7 +917,7 @@ fn spawn_overlay_hotkeys(app: AppHandle) {
                     apply_overlay_edit_state(&app, &window, next);
                 }
             }
-            if (f10_down && !prev_f10) || (alt_h && !prev_alt_h) {
+            if (f10_down && !prev_f10) || (alt_h && !prev_alt_h) || (ctrl_shift_h && !prev_ctrl_shift_h) {
                 let app_clone = app.clone();
                 let show = app.get_webview_window("overlay").is_none();
                 tauri::async_runtime::spawn(async move {
@@ -918,6 +931,7 @@ fn spawn_overlay_hotkeys(app: AppHandle) {
             prev_f10 = f10_down;
             prev_alt_e = alt_e;
             prev_alt_h = alt_h;
+            prev_ctrl_shift_h = ctrl_shift_h;
             prev_alt_r = alt_r;
         }
     });
@@ -928,7 +942,16 @@ fn spawn_overlay_hotkeys(_app: AppHandle) {}
 
 #[tauri::command]
 async fn toggle_overlay(app: AppHandle, show: bool) -> Result<bool, String> {
+    OVERLAY_AUTO_HIDDEN_OFF_TRACK.store(false, std::sync::atomic::Ordering::Relaxed);
     set_overlay_visible(app, show).await
+}
+
+#[tauri::command]
+fn set_hide_off_track(enabled: bool) {
+    HIDE_OFF_TRACK.store(enabled, std::sync::atomic::Ordering::Relaxed);
+    if !enabled {
+        OVERLAY_AUTO_HIDDEN_OFF_TRACK.store(false, std::sync::atomic::Ordering::Relaxed);
+    }
 }
 
 pub(crate) async fn set_overlay_visible(app: AppHandle, show: bool) -> Result<bool, String> {
