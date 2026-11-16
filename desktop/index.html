@@ -1028,18 +1028,18 @@
                 <span id="ovCornerTip" class="hidden"></span>
               </div>
 
-              <!-- TOP LEFT: Standings (Kapps 1-line 425px with ±iR & full BestLap) -->
-              <div id="widgetStandings" class="mmt-hud-widget absolute left-3 top-3 w-[425px] rounded-[4px] border border-white/[0.08] text-white p-1 text-[11px] font-mono tabular-nums overflow-hidden" style="background: rgba(9, 11, 15, 0.72);" data-widget="standings">
+              <!-- TOP LEFT: Standings (Kapps 1-line 552px with full surname, ±iR, Last & BestLap) -->
+              <div id="widgetStandings" class="mmt-hud-widget absolute left-3 top-3 w-[552px] rounded-[4px] border border-white/[0.08] text-white p-1 text-[11px] font-mono tabular-nums overflow-hidden" style="background: rgba(9, 11, 15, 0.72);" data-widget="standings">
                 <div id="ovStandings"></div>
                 <div id="ovPitbox" class="mt-1"></div>
               </div>
 
-              <!-- TOP RIGHT: Relative (Kapps 1-line 320px) -->
-              <div id="widgetRelative" class="mmt-hud-widget absolute right-3 top-3 w-[320px] rounded-[4px] border border-white/[0.08] text-white p-1 text-[11px] font-mono tabular-nums overflow-hidden" style="background: rgba(9, 11, 15, 0.72);" data-widget="relative">
+              <!-- TOP RIGHT: Relative (Kapps 1-line 380px with full surname & ±iR) -->
+              <div id="widgetRelative" class="mmt-hud-widget absolute right-3 top-3 w-[380px] rounded-[4px] border border-white/[0.08] text-white p-1 text-[11px] font-mono tabular-nums overflow-hidden" style="background: rgba(9, 11, 15, 0.72);" data-widget="relative">
                 <div id="ovRelative"></div>
               </div>
 
-              <!-- BOTTOM CENTER: Unified Compact Driving Telemetry Bar (340x44px, zero duplicates) -->
+              <!-- BOTTOM CENTER: Minimalist 280x38 Canvas Pedals + Gear/Speed + Wheel -->
               <div id="widgetCluster" class="mmt-hud-widget absolute left-1/2 bottom-3 -translate-x-1/2 flex flex-col items-center gap-1.5" data-widget="cluster">
                 <div class="flex items-center gap-2">
                   <div id="ovClusterBrandPreview" class="flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-white/[0.08] text-[10px] font-mono text-white/90" style="background: rgba(9, 11, 15, 0.72);"></div>
@@ -1047,18 +1047,11 @@
                     -0.34s · Sector 2
                   </div>
                 </div>
-                <div class="w-[360px] h-[48px] px-2.5 rounded-[4px] border border-white/[0.08] flex items-center justify-between gap-2 tabular-nums" style="background: rgba(9, 11, 15, 0.78);">
-                  <canvas id="ovWaveformCanvas" width="110" height="36" class="rounded-[3px] bg-black/50 border border-white/[0.06] shrink-0"></canvas>
-                  <div id="ovGpuPedals" class="flex-1 min-w-0"></div>
-                  <div class="w-[68px] shrink-0 flex items-center justify-end gap-1.5 pl-2 border-l border-white/10">
-                    <strong id="ovGear" class="font-mono text-2xl font-black text-white leading-none">4</strong>
-                    <div class="flex flex-col leading-none">
-                      <strong id="ovSpeed" class="font-mono text-xs font-black text-r-accent">198</strong>
-                      <span class="font-mono text-[8px] text-r-muted">km/h</span>
-                    </div>
-                  </div>
-                  <span id="ovRpm" class="hidden">7,420 RPM</span>
-                </div>
+                <div id="ovGpuPedals" class="w-[280px] h-[38px]"></div>
+                <canvas id="ovWaveformCanvas" width="110" height="36" class="hidden"></canvas>
+                <strong id="ovGear" class="hidden">4</strong>
+                <strong id="ovSpeed" class="hidden">198</strong>
+                <span id="ovRpm" class="hidden">7,420 RPM</span>
                 <canvas id="ovInputs" width="300" height="90" class="hidden"></canvas>
                 <div id="ovTyres" class="hidden"></div>
               </div>
@@ -1783,13 +1776,13 @@
         </div>
       </div>
 
-      <!-- 1. Top-Left (top: 6px, left: 6px): Kapps-style Standings (width 425px, 20px rows, ±iR & full BestLap) -->
-      <div id="floatStandingsCard" class="mmt-float-widget fixed top-[6px] left-[6px] w-[425px] rounded-[3px] text-white text-[11px] font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: rgba(10, 12, 16, 0.52); text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="standings">
+      <!-- 1. Top-Left (top: 6px, left: 6px): Kapps-style Standings (width 552px, 20px rows, full surnames, ±iR, Last & BestLap) -->
+      <div id="floatStandingsCard" class="mmt-float-widget fixed top-[6px] left-[6px] w-[552px] rounded-[3px] text-white text-[11px] font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: rgba(10, 12, 16, 0.52); text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="standings">
         <div id="ovStandingsFloat"></div>
       </div>
 
-      <!-- 2. Top-Right (top: 6px, right: 6px): Kapps-style Relative (width 320px, 19px rows, 0.52 alpha) -->
-      <div id="floatRelativeCard" class="mmt-float-widget fixed top-[6px] right-[6px] w-[320px] rounded-[3px] text-white text-[11px] font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: rgba(10, 12, 16, 0.52); text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="relative">
+      <!-- 2. Top-Right (top: 6px, right: 6px): Kapps-style Relative (width 380px, full surnames & ±iR) -->
+      <div id="floatRelativeCard" class="mmt-float-widget fixed top-[6px] right-[6px] w-[380px] rounded-[3px] text-white text-[11px] font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: rgba(10, 12, 16, 0.52); text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="relative">
         <div id="ovRelativeFloat"></div>
       </div>
 
@@ -1813,24 +1806,17 @@
         <canvas id="ovTrackMapFloat" width="150" height="110"></canvas>
       </div>
 
-      <!-- 6. Center over Dashboard DDU (bottom: 185px, centered): Compact Inputs + Gear + Speed (300x38px) -->
-      <div id="floatInputsCard" class="mmt-float-widget fixed left-1/2 -translate-x-1/2 bottom-[185px] w-[300px] flex flex-col items-center gap-1 pointer-events-auto" data-widget="inputs">
+      <!-- 6. Center over Dashboard DDU (bottom: 185px, centered): Minimalist 280x38 Canvas Inputs + Gear + Speed + Wheel -->
+      <div id="floatInputsCard" class="mmt-float-widget fixed left-1/2 -translate-x-1/2 bottom-[185px] w-[280px] flex flex-col items-center gap-1 pointer-events-auto" data-widget="inputs">
         <div id="floatShiftLightsRow" class="flex flex-col items-center gap-1 w-full" data-widget="lights">
           <div id="ovDigiFlagFloat" class="w-full max-w-[240px]" style="display: none;"></div>
-          <div class="flex items-center gap-0.5 px-2 py-0.5 rounded bg-[#0a0c10]/92 border border-white/10" id="ovShiftLightsFloat"></div>
+          <div class="flex items-center gap-0.5 px-2 py-0.5 rounded bg-[#0a0c10]/70" id="ovShiftLightsFloat"></div>
         </div>
-        <div class="w-[300px] h-[38px] rounded border border-white/12 bg-[#0a0c10]/92 px-2 flex items-center justify-between gap-2 shadow-[0_6px_24px_rgba(0,0,0,0.7)]">
-          <div id="ovGpuPedalsFloat" class="flex-1 min-w-0"></div>
-          <canvas id="ovInputsFloat" width="140" height="32" class="rounded hidden"></canvas>
-          <div class="flex items-center gap-2 shrink-0 pl-2 border-l border-white/10 tabular-nums">
-            <strong id="ovGearFloat" class="font-mono text-xl font-black text-white leading-none">—</strong>
-            <div class="flex items-baseline gap-0.5">
-              <strong id="ovSpeedFloat" class="font-mono text-sm font-black text-[#00e5ff] leading-none">—</strong>
-              <span class="font-mono text-[8px] text-white/50">km/h</span>
-            </div>
-            <span id="ovRpmFloat" class="hidden">—</span>
-          </div>
-        </div>
+        <div id="ovGpuPedalsFloat" class="w-[280px] h-[38px]"></div>
+        <canvas id="ovInputsFloat" width="140" height="32" class="hidden"></canvas>
+        <strong id="ovGearFloat" class="hidden">—</strong>
+        <strong id="ovSpeedFloat" class="hidden">—</strong>
+        <span id="ovRpmFloat" class="hidden">—</span>
         <div id="ovTyresFloat" class="hidden"></div>
       </div>
     </div>

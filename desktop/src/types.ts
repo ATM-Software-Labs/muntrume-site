@@ -115,6 +115,7 @@ export interface LiveSample {
   brake: number;
   gear: number;
   steering: number;
+  clutch?: number;
   lat?: number;
   lon?: number;
   vx?: number;

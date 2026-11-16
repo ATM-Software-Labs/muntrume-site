@@ -2921,7 +2921,7 @@ function updateHUDDisplay(sample: LiveSample): void {
   const pedalSample = {
     throttle: sample.throttle,
     brake: sample.brake,
-    clutch: (sample as any).clutch ?? 0,
+    clutch: sample.clutch ?? irsdkState?.frame.clutch ?? 0,
     steering: sample.steering,
     speedKmh: kmh,
     gear: sample.gear,

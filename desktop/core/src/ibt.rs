@@ -434,6 +434,7 @@ fn read_sample(bytes: &[u8], base: usize, vars: &[Var]) -> ReadSample {
             brake: value("Brake", &float_kinds),
             gear: value("Gear", &int_kinds).round() as i32,
             steering: value("SteeringWheelAngle", &float_kinds),
+            clutch: optional(vars, bytes, base, "Clutch"),
             lat,
             lon,
             vx: optional(vars, bytes, base, "VelocityX"),

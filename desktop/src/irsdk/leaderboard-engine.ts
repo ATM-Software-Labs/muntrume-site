@@ -8,7 +8,7 @@ import type { DriverInfo, IrsdkTelemetryFrame, LeaderboardEntry, SessionResultPo
 import { formatIRating } from "./relative-engine";
 
 export function formatLapTime(seconds: number): string {
-  if (!seconds || seconds <= 0 || !isFinite(seconds)) return "—:——.———";
+  if (!seconds || seconds <= 0 || !isFinite(seconds)) return "--:--.---";
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
   return `${mins}:${secs.toFixed(3).padStart(6, "0")}`;

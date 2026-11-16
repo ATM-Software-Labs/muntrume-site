@@ -56,6 +56,10 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
   const isStreamer = SmartLayoutManager.getInstance().isStreamerMode();
   const cols = ThemeEngine.getInstance().getColumnsConfig().relative;
   const irEst = estimateLiveIRating(state);
+  const irDeltas = estimateAllDriversIRatingDeltas(state);
+  const isPractice =
+    state.session.sessionType.toLowerCase().includes("practice") ||
+    state.session.sessionType.toLowerCase().includes("warmup");
   const posByCarIdx = new Map<number, number>();
   state.leaderboard.forEach((entry) => posByCarIdx.set(entry.carIdx, entry.position));
 
@@ -113,6 +117,10 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
       const licCell = cols.license
         ? `<span class="flex items-center justify-center">${renderLicenseBadge(e.licString)}</span>`
         : `<span></span>`;
+      const irDeltaVal = isPractice ? 0 : (irDeltas.get(e.carIdx) ?? 0);
+      const irDeltaText = isPractice ? "—" : irDeltaVal > 0 ? `+${Math.round(irDeltaVal)}` : `${Math.round(irDeltaVal)}`;
+      const irDeltaColor = isPractice || irDeltaVal === 0 ? "text-white/40" : irDeltaVal > 0 ? "text-emerald-400 font-bold" : "text-rose-400 font-bold";
+      const irDeltaCell = `<span class="text-right text-[10px] tabular-nums ${irDeltaColor}">${irDeltaText}</span>`;
       const deltaCell = cols.delta
         ? `<span class="text-right text-[11px] tabular-nums ${gapColor}">${gapClean}</span>`
         : `<span></span>`;
@@ -124,6 +132,7 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
           ${nameCell}
           ${tagCell}
           ${licCell}
+          ${irDeltaCell}
           ${deltaCell}
         </div>
       `;
@@ -310,7 +319,8 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
 
           const gapCell = `<span class="text-right text-[10px] ${isLeader ? "text-amber-300 font-bold" : "text-white/80 font-semibold"}">${isLeader ? "LDR" : (e.gapStr || "-")}</span>`;
           const intCell = `<span class="text-right text-[10px] text-white/65">${isLeader ? "-" : (e.intervalStr || "-")}</span>`;
-          const bestCell = `<span class="text-right text-[10px] ${isLeader && isPractice ? "text-amber-300 font-bold" : isSelf ? "text-emerald-400 font-bold" : "text-white/90 font-semibold"}">${e.bestLapStr || "--:--.--"}</span>`;
+          const lastCell = `<span class="text-right text-[10px] tabular-nums text-white/75">${e.lastLapStr || "--:--.---"}</span>`;
+          const bestCell = `<span class="text-right text-[10px] tabular-nums ${isLeader && isPractice ? "text-amber-300 font-bold" : isSelf ? "text-emerald-400 font-bold" : "text-white/90 font-semibold"}">${e.bestLapStr || "--:--.---"}</span>`;
 
           return `
             <div class="${rowCls}" style="border-left-color: ${isSelf ? "#10b981" : (e.carClassColor || "#38bdf8")}">
@@ -322,6 +332,7 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
               ${irDeltaCell}
               ${gapCell}
               ${intCell}
+              ${lastCell}
               ${bestCell}
             </div>
           `;
