@@ -1,0 +1,132 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import { buildSetupRoutePairs, getSetupTechSheet } from "../../../lib/setups-seo";
+
+export function getStaticPaths() {
+  return buildSetupRoutePairs().map(({ car, carSlug, track }) => ({
+    params: { car: carSlug, track: track.slug },
+    props: { car, carSlug, track },
+  }));
+}
+
+const { car, carSlug, track } = Astro.props;
+const sheet = getSetupTechSheet(car, track);
+const title = `Setup ${car.brand} ${car.model} en ${track.name} · iRacing`;
+const description = `Setup .sto y vuelta fantasma .blap para ${car.brand} ${car.model} en ${track.name}. Variantes Qualy, Race, Safe y Wet listas para MMT Sync.`;
+const relatedTracks = buildSetupRoutePairs()
+  .filter((p) => p.carSlug === carSlug && p.track.slug !== track.slug)
+  .slice(0, 6);
+---
+
+<Layout title={title} description={description} canonical={`https://muntru.me/setups/${carSlug}/${track.slug}/`}>
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-10">
+    <nav class="text-xs font-mono text-white/60 mb-4 flex flex-wrap gap-2">
+      <a href="/" class="hover:text-emerald-400">Inicio</a>
+      <span>/</span>
+      <a href="/garage/" class="hover:text-emerald-400">Garage</a>
+      <span>/</span>
+      <a href={`/setups/${carSlug}/`} class="hover:text-emerald-400">{car.brand} {car.model}</a>
+      <span>/</span>
+      <span class="text-emerald-400">{track.name}</span>
+    </nav>
+
+    <header class="rounded-2xl border border-white/10 bg-[#0d1117]/90 p-6 sm:p-8 mb-6">
+      <div class="flex flex-wrap items-center gap-2 mb-3">
+        <span class="px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-mono text-xs font-bold">
+          {car.carClass}
+        </span>
+        {sheet.variants.map((v) => (
+          <span class="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-white/80 font-mono text-[11px]">{v}</span>
+        ))}
+      </div>
+      <h1 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+        Setup {car.brand} {car.model} en {track.name} · iRacing
+      </h1>
+      <p class="mt-2 text-sm text-white/75">
+        Paquete técnico de Muntrume Motorsport con archivos <code class="text-emerald-300">.sto</code> y vuelta fantasma <code class="text-emerald-300">.blap</code> listos para sincronizar en tu carpeta de iRacing.
+      </p>
+
+      <div class="mt-5 flex flex-wrap gap-3">
+        <a
+          href={`mmtsync://sync?car=${encodeURIComponent(car.carFolder)}&track=${encodeURIComponent(track.slug)}`}
+          id="btnLocalSyncTrigger"
+          data-car={car.carFolder}
+          data-track={track.slug}
+          class="px-5 py-3 rounded-xl bg-emerald-500 text-slate-950 font-bold text-sm hover:bg-emerald-400 transition shadow-lg shadow-emerald-500/20"
+        >
+          Sincronizar en 1 clic con MMT Sync
+        </a>
+        <a href="/calendar/" class="px-4 py-3 rounded-xl border border-white/15 text-white/85 text-sm font-semibold hover:border-emerald-400 transition">
+          Ver semana en /calendar →
+        </a>
+        <a href={`/albumes/?brand=${encodeURIComponent(car.brand)}`} class="px-4 py-3 rounded-xl border border-white/15 text-white/85 text-sm font-semibold hover:border-emerald-400 transition">
+          Galería {car.brand} en /albumes →
+        </a>
+      </div>
+    </header>
+
+    <section class="rounded-2xl border border-white/10 bg-[#0d1117]/80 p-6 mb-6">
+      <h2 class="text-lg font-bold text-white mb-4">Ficha técnica y parámetros clave</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm border-collapse">
+          <tbody class="divide-y divide-white/10">
+            <tr>
+              <th class="py-2.5 pr-4 font-mono text-xs text-white/60 uppercase">Carga aerodinámica</th>
+              <td class="py-2.5 text-white font-medium">{sheet.downforce}</td>
+            </tr>
+            <tr>
+              <th class="py-2.5 pr-4 font-mono text-xs text-white/60 uppercase">Temperatura asfalto objetivo</th>
+              <td class="py-2.5 text-white font-medium">{sheet.targetTrackTemp}</td>
+            </tr>
+            <tr>
+              <th class="py-2.5 pr-4 font-mono text-xs text-white/60 uppercase">Consumo estimado</th>
+              <td class="py-2.5 text-white font-medium">{sheet.fuelPerLap}</td>
+            </tr>
+            <tr>
+              <th class="py-2.5 pr-4 font-mono text-xs text-white/60 uppercase">Presiones en frío / Brake Bias</th>
+              <td class="py-2.5 text-white font-medium">{sheet.coldPressure} · BB {sheet.brakeBias}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="rounded-2xl border border-white/10 bg-[#0d1117]/80 p-6 mb-6">
+      <h2 class="text-lg font-bold text-white mb-4">Guía rápida de frenada por sector</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {sheet.sectors.map((s) => (
+          <div class="rounded-xl border border-white/10 bg-black/30 p-4">
+            <h3 class="font-mono text-xs font-bold text-emerald-400 uppercase mb-1.5">{s.sector}</h3>
+            <p class="text-xs text-white/80 leading-relaxed">{s.tip}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section>
+      <h2 class="text-base font-bold text-white mb-3">Otros circuitos para {car.brand} {car.model}</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+        {relatedTracks.map((rel) => (
+          <a
+            href={`/setups/${carSlug}/${rel.track.slug}/`}
+            class="rounded-xl border border-white/10 bg-[#0d1117]/70 p-3.5 hover:border-emerald-400/50 transition text-sm text-white/90 hover:text-emerald-300"
+          >
+            {rel.track.name} →
+          </a>
+        ))}
+      </div>
+    </section>
+  </main>
+
+  <script is:inline>
+    (() => {
+      const btn = document.getElementById("btnLocalSyncTrigger");
+      if (!btn) return;
+      btn.addEventListener("click", () => {
+        const car = btn.getAttribute("data-car") || "";
+        const track = btn.getAttribute("data-track") || "";
+        fetch(`http://127.0.0.1:38421/sync?car=${encodeURIComponent(car)}&track=${encodeURIComponent(track)}`).catch(() => {});
+      });
+    })();
+  </script>
+</Layout>

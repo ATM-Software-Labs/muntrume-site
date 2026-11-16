@@ -963,13 +963,13 @@
                   </label>
                   <label class="flex items-center gap-1.5 font-mono text-[11px] text-r-muted">
                     <span>Opacidad:</span>
-                    <input id="hudOpacityRange" type="range" min="50" max="100" value="92" class="w-20 accent-[#00e699]" />
-                    <span id="hudOpacityVal" class="text-r-text tabular-nums w-8">92%</span>
+                    <input id="hudOpacityRange" type="range" min="0" max="100" value="88" class="w-20 accent-[#00e699]" />
+                    <span id="hudOpacityVal" class="text-r-text tabular-nums w-8">88%</span>
                   </label>
                   <label class="flex items-center gap-1.5 font-mono text-[11px] text-r-muted">
-                    <span>Escala:</span>
-                    <input id="hudScaleRange" type="range" min="75" max="130" value="100" class="w-20 accent-[#00e699]" />
-                    <span id="hudScaleVal" class="text-r-text tabular-nums w-9">100%</span>
+                    <span>Escala General del HUD:</span>
+                    <input id="hudScaleRange" type="range" min="70" max="115" value="85" class="w-20 accent-[#00e699]" />
+                    <span id="hudScaleVal" class="text-r-text tabular-nums w-9">85%</span>
                   </label>
                 </div>
                 <div class="flex flex-wrap items-center gap-3 font-mono text-[11px]">
@@ -1005,6 +1005,52 @@
                 <button type="button" data-widget-toggle="lights" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Shift Lights</button>
                 <button type="button" id="btnToggleLayersPanel" class="ml-auto h-7 px-3 rounded-lg border border-sky-400/50 bg-sky-400/10 text-sky-300 font-semibold transition">Control Panel HUD</button>
               </div>
+
+              <!-- Prompts 142 & 143: Ajustes Kapps por Widget (Columnas, Filas, Color y Reglas Auto) -->
+              <details class="pt-2 border-t border-r-line/60 font-mono text-[11px]">
+                <summary class="cursor-pointer text-r-accent font-bold select-none">⚙ Ajustes Kapps por Widget (Columnas, Filas, Color y Auto-Ocultado)</summary>
+                <div class="mt-2.5 grid grid-cols-1 md:grid-cols-3 gap-3 text-[11px]">
+                  <div class="p-2.5 rounded-xl border border-r-line/70 bg-r-bg/60 space-y-2">
+                    <strong class="block text-r-text uppercase">Columnas Standings / Relative</strong>
+                    <div class="flex flex-wrap gap-2 text-r-muted">
+                      <label class="flex items-center gap-1"><input type="checkbox" data-kapps-col="position" checked class="accent-[#10b981]" />Pos</label>
+                      <label class="flex items-center gap-1"><input type="checkbox" data-kapps-col="carNumber" checked class="accent-[#10b981]" />Dorsal</label>
+                      <label class="flex items-center gap-1"><input type="checkbox" data-kapps-col="driverName" checked class="accent-[#10b981]" />Nombre</label>
+                      <label class="flex items-center gap-1"><input type="checkbox" data-kapps-col="brandIcon" checked class="accent-[#10b981]" />Logo</label>
+                      <label class="flex items-center gap-1"><input type="checkbox" data-kapps-col="iRating" checked class="accent-[#10b981]" />Lic+iR</label>
+                      <label class="flex items-center gap-1"><input type="checkbox" data-kapps-col="pitStatus" checked class="accent-[#10b981]" />PIT</label>
+                      <label class="flex items-center gap-1"><input type="checkbox" data-kapps-col="delta" checked class="accent-[#10b981]" />GAP/Delta</label>
+                    </div>
+                  </div>
+                  <div class="p-2.5 rounded-xl border border-r-line/70 bg-r-bg/60 space-y-2">
+                    <strong class="block text-r-text uppercase">Filas, Clase y Color Piloto</strong>
+                    <label class="flex items-center justify-between text-r-muted">
+                      <span>Filas Standings: <strong id="kappsStdRowsVal" class="text-r-text">15</strong></span>
+                      <input id="kappsStdRows" type="range" min="5" max="25" value="15" class="w-24 accent-[#10b981]" />
+                    </label>
+                    <label class="flex items-center justify-between text-r-muted">
+                      <span>Relative (±): <strong id="kappsRelRowsVal" class="text-r-text">3</strong></span>
+                      <input id="kappsRelRows" type="range" min="2" max="6" value="3" class="w-24 accent-[#10b981]" />
+                    </label>
+                    <div class="flex items-center justify-between gap-2">
+                      <label class="flex items-center gap-1 text-r-muted"><input id="kappsOnlyMyClass" type="checkbox" class="accent-[#10b981]" />Solo mi clase</label>
+                      <div class="flex items-center gap-1">
+                        <button type="button" data-kapps-accent="#10b981" class="w-4 h-4 rounded-full bg-[#10b981] border border-white/40" title="Verde Neón"></button>
+                        <button type="button" data-kapps-accent="#fbbf24" class="w-4 h-4 rounded-full bg-[#fbbf24] border border-white/40" title="Dorado"></button>
+                        <button type="button" data-kapps-accent="#38bdf8" class="w-4 h-4 rounded-full bg-[#38bdf8] border border-white/40" title="Cyan"></button>
+                        <button type="button" data-kapps-accent="#f43f5e" class="w-4 h-4 rounded-full bg-[#f43f5e] border border-white/40" title="Rojo"></button>
+                        <button type="button" data-kapps-accent="#ffffff" class="w-4 h-4 rounded-full bg-white border border-white/40" title="Blanco"></button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="p-2.5 rounded-xl border border-r-line/70 bg-r-bg/60 space-y-1.5">
+                    <strong class="block text-r-text uppercase">Visibilidad Automática (Prompt 143)</strong>
+                    <label class="flex items-center gap-1.5 text-r-muted"><input id="ruleStdPitOnly" type="checkbox" class="accent-[#10b981]" />Standings solo en Boxes / Replay</label>
+                    <label class="flex items-center gap-1.5 text-r-muted"><input id="ruleRelTrackOnly" type="checkbox" class="accent-[#10b981]" />Relative e Inputs solo en Pista</label>
+                    <label class="flex items-center gap-1.5 text-r-muted"><input id="ruleFuelReserveOnly" type="checkbox" class="accent-[#10b981]" />FuelCalc solo últimas 5 vueltas / Reserva</label>
+                  </div>
+                </div>
+              </details>
 
               <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-r-line/60 font-mono text-[11px]">
                 <div class="flex flex-wrap items-center gap-1.5">
@@ -1533,6 +1579,7 @@
               MMT Sync opera bajo permisos estándar de usuario y solo lectura de telemetría de iRacing. Si Windows SmartScreen muestra un aviso en actualizaciones o primera instalación, pulsa «Más información» y «Ejecutar de todas formas».
             </div>
             <div class="mt-4 flex flex-wrap gap-2">
+              <button type="button" id="btnCheckUpdate" class="mmt-btn-ghost h-11 px-4 rounded-xl border border-r-accent/40 text-r-accent font-display uppercase tracking-wider text-sm hover:bg-r-accent/10 transition">Buscar actualizaciones</button>
               <button type="button" id="logoutBtn" class="mmt-btn-ghost h-11 px-4 rounded-xl border border-r-line font-display uppercase tracking-wider text-sm">Cerrar sesión</button>
               <button type="button" id="quitBtn" class="mmt-btn-ghost h-11 px-4 rounded-xl border border-r-line font-display uppercase tracking-wider text-sm">Salir</button>
             </div>
@@ -1829,13 +1876,13 @@
         </div>
       </div>
 
-      <!-- 1. Top-Left (top: 6px, left: 6px): Kapps Pro Standings (574px compact, 19px rows, ▲/▼, 112px name, Lic+iR exact, ±iR, Last & BestLap) -->
-      <div id="floatStandingsCard" class="mmt-float-widget fixed top-[6px] left-[6px] w-[574px] rounded-[2px] text-white text-[11.5px] font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: rgba(8, 10, 14, 0.88); text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="standings">
+      <!-- 1. Top-Left (top: 6px, left: 6px): Ultra-Tight Kapps Standings (w-max, ~340px Practice / ~410px Race) -->
+      <div id="floatStandingsCard" class="mmt-float-widget fixed top-[6px] left-[6px] w-max rounded-[2px] text-white text-[11px] font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: rgba(8, 10, 14, 0.88); text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="standings">
         <div id="ovStandingsFloat"></div>
       </div>
 
-      <!-- 2. Top-Right (top: 6px, right: 6px): Kapps Pro Relative (458px, 19px rows, F/XD/PIT, Lic+iR exact, ±iR & LastLap) -->
-      <div id="floatRelativeCard" class="mmt-float-widget fixed top-[6px] right-[6px] w-[458px] rounded-[2px] text-white text-[11.5px] font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: rgba(8, 10, 14, 0.88); text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="relative">
+      <!-- 2. Top-Right (top: 6px, right: 6px): Ultra-Tight Kapps Relative (w-max, ~275px) -->
+      <div id="floatRelativeCard" class="mmt-float-widget fixed top-[6px] right-[6px] w-max rounded-[2px] text-white text-[11px] font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: rgba(8, 10, 14, 0.88); text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="relative">
         <div id="ovRelativeFloat"></div>
       </div>
 
@@ -1844,8 +1891,8 @@
         <div id="ovRadarFloat"></div>
       </div>
 
-      <!-- 3b. Top-Center Track Conditions Micro-bar (360x24px below Virtual Mirror) -->
-      <div id="floatTrackConditionsCard" class="mmt-float-widget fixed top-[78px] left-1/2 -translate-x-1/2 w-[360px] h-[24px] pointer-events-none z-20" data-widget="conditions">
+      <!-- 3b. Top-Center Track Conditions Micro-bar (w-max ~210px below Virtual Mirror) -->
+      <div id="floatTrackConditionsCard" class="mmt-float-widget fixed top-[78px] left-1/2 -translate-x-1/2 w-max h-[24px] pointer-events-none z-20" data-widget="conditions">
         <div id="ovTrackConditionsFloat"></div>
       </div>
 

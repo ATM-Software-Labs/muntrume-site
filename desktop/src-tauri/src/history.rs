@@ -30,6 +30,8 @@ pub struct RaceSessionEntry {
     pub favorite: bool,
     #[serde(default)]
     pub ibt_path: String,
+    #[serde(default)]
+    pub laps_s: Vec<f64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]

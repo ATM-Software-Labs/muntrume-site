@@ -142,6 +142,7 @@ pub fn run() {
             pick_sto,
             clear_staged,
             upload_staged,
+            check_for_update,
             install_update,
             inspect_config,
             check_iracing_status,
@@ -608,6 +609,22 @@ async fn upload_staged(
         .map_err(|err| err.to_string())?;
     *state.staged.lock().map_err(|_| "No se pudo cerrar el envío.".to_string())? = None;
     Ok("Enviado a revisión en la Sala de ingenieros".into())
+}
+
+#[tauri::command]
+async fn check_for_update(app: AppHandle) -> Result<Option<String>, String> {
+    use tauri_plugin_updater::UpdaterExt;
+    let updater = app.updater().map_err(|err| err.to_string())?;
+    let Some(update) = updater.check().await.map_err(|err| err.to_string())? else {
+        return Ok(None);
+    };
+    let ver = update.version.clone();
+    let _ = app.emit_to(
+        "main",
+        "mmt-update",
+        serde_json::json!({ "version": ver, "notes": update.body.clone().unwrap_or_default() }),
+    );
+    Ok(Some(ver))
 }
 
 #[tauri::command]
@@ -1134,7 +1151,7 @@ async fn cleanup_old_ibt_files(max_age_days: u32) -> Result<IbtStorageStats, Str
 
 #[tauri::command]
 async fn list_ibt_sessions() -> Result<Vec<ibt_parser::IbtSessionMeta>, String> {
-    tauri::async_runtime::spawn_blocking(|| {
+    let task = tauri::async_runtime::spawn_blocking(|| {
         let Some(dir) = folders::detect_telemetry_dir() else {
             return Ok(Vec::new());
         };
@@ -1155,15 +1172,19 @@ async fn list_ibt_sessions() -> Result<Vec<ibt_parser::IbtSessionMeta>, String> 
         }
         files.sort_by(|a, b| b.0.cmp(&a.0));
         let mut out = Vec::new();
-        for (_, p) in files.into_iter().take(60) {
+        // Only scan the 5 most recent .ibt files (64 KB header + YAML only)
+        for (_, p) in files.into_iter().take(5) {
             if let Ok(meta) = ibt_parser::read_ibt_meta(&p) {
                 out.push(meta);
             }
         }
         Ok(out)
-    })
-    .await
-    .map_err(|e| format!("Error listando sesiones .ibt: {e}"))?
+    });
+    match tokio::time::timeout(std::time::Duration::from_millis(2000), task).await {
+        Ok(Ok(res)) => res,
+        Ok(Err(e)) => Err(format!("Error listando sesiones .ibt: {e}")),
+        Err(_) => Ok(Vec::new()),
+    }
 }
 
 #[tauri::command]
@@ -1172,14 +1193,17 @@ async fn read_ibt_file(path: String) -> Result<Option<ibt_parser::IbtSessionRepo
     if !pb.is_file() {
         return Ok(None);
     }
-    tauri::async_runtime::spawn_blocking(move || ibt_parser::parse_ibt_report(&pb).map(Some))
-        .await
-        .map_err(|e| format!("Error leyendo .ibt: {e}"))?
+    let task = tauri::async_runtime::spawn_blocking(move || ibt_parser::parse_ibt_report(&pb).map(Some));
+    match tokio::time::timeout(std::time::Duration::from_millis(2000), task).await {
+        Ok(Ok(res)) => res,
+        Ok(Err(e)) => Err(format!("Error leyendo .ibt: {e}")),
+        Err(_) => Err("Tiempo de espera agotado (2000 ms) al leer .ibt".into()),
+    }
 }
 
 #[tauri::command]
 async fn read_latest_ibt() -> Result<Option<ibt_parser::IbtSessionReport>, String> {
-    tauri::async_runtime::spawn_blocking(|| {
+    let task = tauri::async_runtime::spawn_blocking(|| {
         let Some(dir) = folders::detect_telemetry_dir() else {
             return Ok(None);
         };
@@ -1209,9 +1233,12 @@ async fn read_latest_ibt() -> Result<Option<ibt_parser::IbtSessionReport>, Strin
             Some((_, path)) => ibt_parser::parse_ibt_report(&path).map(Some),
             None => Ok(None),
         }
-    })
-    .await
-    .map_err(|e| format!("Error leyendo último .ibt: {e}"))?
+    });
+    match tokio::time::timeout(std::time::Duration::from_millis(2000), task).await {
+        Ok(Ok(res)) => res,
+        Ok(Err(e)) => Err(format!("Error leyendo último .ibt: {e}")),
+        Err(_) => Ok(None),
+    }
 }
 
 #[tauri::command]
@@ -1220,8 +1247,15 @@ fn redact_session_info(raw_yaml: String) -> String {
 }
 
 #[tauri::command]
-fn get_race_history() -> history::RaceHistoryResponse {
-    history::get_history()
+async fn get_race_history() -> history::RaceHistoryResponse {
+    let task = tauri::async_runtime::spawn_blocking(history::get_history);
+    match tokio::time::timeout(std::time::Duration::from_millis(2000), task).await {
+        Ok(Ok(res)) => res,
+        _ => history::RaceHistoryResponse {
+            sessions: Vec::new(),
+            streaks: history::StreakSummary::default(),
+        },
+    }
 }
 
 #[tauri::command]

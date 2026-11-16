@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import StatsGrid from '../components/StatsGrid.astro';
 import MediaLightbox from '../components/MediaLightbox.astro';
+import CommunityUploadModal from '../components/CommunityUploadModal.astro';
 import { PILOTOS } from '../lib/pilotos';
 import { PADDOCK_ALBUMS, TRACK_GALLERY_PHOTOS } from '../data/paddock-gallery';
 import { CAR_CATALOG_LIST, getBrandSvgMarkup, getCarPreviewBannerSvg, type CarMetadata } from '../../desktop/src/cars/catalog';
@@ -771,9 +772,16 @@ const topAlbums = [...PADDOCK_ALBUMS].sort((a, b) => (b.views ?? 0) - (a.views ?
           </p>
         </div>
 
-        <div class="flex items-center gap-2 shrink-0">
+        <div class="flex flex-wrap items-center gap-2 shrink-0">
           <button type="button" id="paddockSnapPrev" aria-label="Anterior" class="w-9 h-9 rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] hover:border-[var(--r-accent)] text-[var(--r-text)] font-bold cursor-pointer transition">&lsaquo;</button>
           <button type="button" id="paddockSnapNext" aria-label="Siguiente" class="w-9 h-9 rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] hover:border-[var(--r-accent)] text-[var(--r-text)] font-bold cursor-pointer transition">&rsaquo;</button>
+          <button
+            type="button"
+            data-open-community-upload
+            class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[var(--r-accent)] text-[var(--r-accent-ink)] text-xs font-mono font-bold hover:opacity-90 transition cursor-pointer"
+          >
+            + Subir captura
+          </button>
           <a
             href="/galeria/"
             class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono font-bold text-[var(--r-text)] hover:text-[var(--r-accent)] transition"
@@ -1168,6 +1176,61 @@ const topAlbums = [...PADDOCK_ALBUMS].sort((a, b) => (b.views ?? 0) - (a.views ?
   </section>
 
   <MediaLightbox />
+  <CommunityUploadModal />
+
+  <script is:inline>
+    (() => {
+      const trackEl = document.getElementById("paddockSnapTrack");
+      if (!trackEl) return;
+      const usedImgs = new Set(
+        Array.from(document.querySelectorAll('a[href^="/paddock/g/"] img')).map((img) => img.getAttribute("src") || "")
+      );
+      // Deduplicate static carousel cards against album covers (Prompt 131)
+      Array.from(trackEl.querySelectorAll("article")).forEach((card) => {
+        const src = card.querySelector("img")?.getAttribute("src") || "";
+        if (usedImgs.has(src)) card.remove();
+        else usedImgs.add(src);
+      });
+
+      fetch("https://muntru-api.trujillomingorance.com/api/gallery/public")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (!data || !Array.isArray(data.photos)) return;
+          const photos = data.photos.filter((p) => p.imageUrl && !usedImgs.has(p.imageUrl));
+          if (photos.length === 0) {
+            trackEl.innerHTML = `
+              <div class="w-full rounded-2xl border border-dashed border-[var(--r-line)] bg-[var(--r-surface)]/60 p-8 text-center space-y-3">
+                <p class="text-sm font-mono text-[var(--r-muted)]">Próximamente nuevas capturas oficiales del equipo</p>
+                <button type="button" data-open-community-upload class="px-4 py-2 rounded-xl bg-[var(--r-accent)] text-[var(--r-accent-ink)] text-xs font-mono font-bold cursor-pointer">+ Subir captura</button>
+              </div>
+            `;
+            trackEl.querySelector("[data-open-community-upload]")?.addEventListener("click", () => {
+              const m = document.getElementById("communityUploadModal");
+              if (m) m.hidden = false;
+            });
+            return;
+          }
+          trackEl.innerHTML = photos.map((p) => {
+            const safeSrc = p.sourceUrl ? `<a href="${p.sourceUrl}" target="_blank" rel="noopener noreferrer nofollow" class="underline hover:text-white">Ver fuente ↗</a>` : "";
+            return `
+              <article class="paddock-snap-item group rounded-xl overflow-hidden bg-[var(--r-surface)] transition-all duration-300" style="border: 1px solid rgba(255, 255, 255, 0.08);">
+                <button type="button" data-preview-src="${p.imageUrl}" data-preview-title="${p.title}" data-preview-sub="${p.track || p.car || 'Muntrume Motorsport'}" data-preview-id="community:${p.id}" class="relative block w-full aspect-video overflow-hidden bg-[#090d12] cursor-zoom-in text-left">
+                  <img src="${p.imageUrl}" alt="${p.title}" width="640" height="360" loading="lazy" decoding="async" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" style="filter: contrast(1.04) saturate(1.06);" />
+                  <div class="absolute inset-0 pointer-events-none" style="background: linear-gradient(to top, rgba(9,11,15,0.88) 0%, transparent 55%);"></div>
+                  <span class="absolute top-2.5 left-2.5 px-2 py-0.5 rounded bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">${p.category}</span>
+                  <span class="absolute bottom-2 left-2.5 text-[10px] font-mono text-white/85">📸 ${p.authorName}</span>
+                </button>
+                <div class="p-3.5 space-y-1">
+                  <h3 class="text-sm font-bold text-[var(--r-text)] font-display truncate">${p.title}</h3>
+                  <p class="text-[11px] text-[var(--r-muted)] flex items-center justify-between gap-2"><span>${p.car || p.track || 'iRacing'}</span>${safeSrc}</p>
+                </div>
+              </article>
+            `;
+          }).join("");
+        })
+        .catch(() => {});
+    })();
+  </script>
 </Layout>
 
 <script is:inline>

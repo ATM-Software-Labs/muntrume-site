@@ -92,6 +92,103 @@ fn is_window_focused(app: &AppHandle, label: &str) -> bool {
 }
 
 #[cfg(windows)]
+fn extract_yaml_scalar(yaml: &str, key: &str) -> String {
+    for line in yaml.lines() {
+        let t = line.trim();
+        if let Some(rest) = t.strip_prefix(key) {
+            return rest.trim().trim_matches('"').trim_matches('\'').to_string();
+        }
+    }
+    String::new()
+}
+
+#[cfg(windows)]
+#[derive(Default)]
+struct LiveSessionTracker {
+    sub_session_id: i64,
+    track_name: String,
+    car_name: String,
+    session_type: String,
+    last_lap: i32,
+    start_pos: i32,
+    finish_pos: i32,
+    valid_laps: Vec<f64>,
+    was_on_track: bool,
+    saved_on_finish: bool,
+}
+
+#[cfg(windows)]
+impl LiveSessionTracker {
+    fn update_from_yaml(&mut self, yaml: &str) {
+        if let Ok(sid) = extract_yaml_scalar(yaml, "SubSessionID:").parse::<i64>() {
+            if sid > 0 && sid != self.sub_session_id {
+                self.sub_session_id = sid;
+                self.last_lap = 0;
+                self.start_pos = 0;
+                self.finish_pos = 0;
+                self.valid_laps.clear();
+                self.saved_on_finish = false;
+            }
+        }
+        let track = extract_yaml_scalar(yaml, "TrackDisplayName:");
+        if !track.is_empty() {
+            self.track_name = track;
+        }
+        let car = extract_yaml_scalar(yaml, "CarScreenName:");
+        if !car.is_empty() {
+            self.car_name = car;
+        }
+        let stype = extract_yaml_scalar(yaml, "SessionType:");
+        if !stype.is_empty() {
+            self.session_type = stype;
+        }
+    }
+
+    fn flush_to_history(&self) {
+        if self.valid_laps.is_empty() {
+            return;
+        }
+        let best = self.valid_laps.iter().copied().fold(f64::INFINITY, f64::min);
+        let sum: f64 = self.valid_laps.iter().sum();
+        let mean = sum / self.valid_laps.len() as f64;
+        let sid = if self.sub_session_id > 0 {
+            self.sub_session_id
+        } else {
+            (std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_secs())
+                .unwrap_or(1) / 300) as i64
+        };
+        let fecha = format!(
+            "{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_secs())
+                .unwrap_or(0)
+        );
+        let entry = crate::history::RaceSessionEntry {
+            sub_session_id: sid,
+            fecha,
+            circuito: if self.track_name.is_empty() { "iRacing Track".into() } else { self.track_name.clone() },
+            coche: if self.car_name.is_empty() { "iRacing Car".into() } else { self.car_name.clone() },
+            tipo_sesion: if self.session_type.is_empty() { "Practice".into() } else { self.session_type.clone() },
+            pos_salida: self.start_pos,
+            pos_final: self.finish_pos,
+            incidentes: 0,
+            delta_i_rating: 0,
+            mejor_vuelta: if best.is_finite() { (best * 1000.0).round() / 1000.0 } else { 0.0 },
+            vuelta_media: (mean * 1000.0).round() / 1000.0,
+            consistencia_pct: 98.0,
+            vueltas_validas: self.valid_laps.len() as i32,
+            favorite: false,
+            ibt_path: String::new(),
+            laps_s: self.valid_laps.clone(),
+        };
+        let _ = crate::history::record_entry(entry);
+    }
+}
+
+#[cfg(windows)]
 fn emit_status_if_changed(app: &AppHandle, last_status: &mut Option<&'static str>, next: &'static str) {
     use tauri::Emitter;
     if *last_status != Some(next) {
@@ -159,6 +256,7 @@ fn windows_loop(app: AppHandle) {
         let mut last_proc = Instant::now();
         let mut last_frame_json = String::new();
         let mut race_finished_emitted = false;
+        let mut tracker = LiveSessionTracker::default();
         loop {
             let signaled = if mapped.event.is_null() {
                 std::thread::sleep(Duration::from_millis(FRAME_MS));
@@ -254,6 +352,7 @@ fn windows_loop(app: AppHandle) {
                 if let Ok(Ok((u, yaml))) = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                     read_session_info_yaml(bytes)
                 })) {
+                    tracker.update_from_yaml(&yaml);
                     let payload = serde_json::json!({ "update": u, "yaml": yaml });
                     if need_overlay_yaml {
                         let _ = app.emit_to("overlay", "mmt-session-info", &payload);
@@ -300,6 +399,30 @@ fn windows_loop(app: AppHandle) {
                     if let Ok(Ok(frame)) = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                         read_live_irsdk_frame_with(bytes, table)
                     })) {
+                        let p_idx = frame.player_car_idx.max(0) as usize;
+                        let cur_lap = frame.car_idx_lap.get(p_idx).copied().unwrap_or(0);
+                        let cur_pos = frame.car_idx_position.get(p_idx).copied().unwrap_or(0);
+                        if tracker.start_pos <= 0 && cur_pos > 0 {
+                            tracker.start_pos = cur_pos;
+                        }
+                        if cur_pos > 0 {
+                            tracker.finish_pos = cur_pos;
+                        }
+                        if cur_lap > tracker.last_lap && tracker.last_lap >= 0 {
+                            let last_t = frame.car_idx_last_lap_time.get(p_idx).copied().unwrap_or(0.0);
+                            if last_t > 5.0 && last_t < 600.0 {
+                                tracker.valid_laps.push((last_t * 1000.0).round() / 1000.0);
+                                tracker.flush_to_history();
+                            }
+                        }
+                        tracker.last_lap = cur_lap;
+                        let left_track = tracker.was_on_track && !frame.is_on_track;
+                        tracker.was_on_track = frame.is_on_track;
+                        if (frame.session_state == 5 || left_track) && !tracker.saved_on_finish && !tracker.valid_laps.is_empty() {
+                            tracker.flush_to_history();
+                            tracker.saved_on_finish = true;
+                        }
+
                         if crate::HIDE_OFF_TRACK.load(Ordering::Relaxed) {
                             let editing = crate::OVERLAY_EDITING.load(Ordering::Relaxed);
                             if overlay_active && !frame.is_on_track && !editing {

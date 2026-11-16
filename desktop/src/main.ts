@@ -2328,6 +2328,25 @@ function bind(): void {
       }
     }).catch((error: unknown) => showNotice(error instanceof Error ? error.message : "No pude detectar la carpeta."));
   });
+  const btnCheckUpdate = document.getElementById("btnCheckUpdate") as HTMLButtonElement | null;
+  if (btnCheckUpdate) {
+    btnCheckUpdate.addEventListener("click", () => {
+      btnCheckUpdate.disabled = true;
+      btnCheckUpdate.textContent = "Comprobando…";
+      void import("@tauri-apps/api/core")
+        .then(({ invoke }) => invoke<string | null>("check_for_update"))
+        .then((ver) => {
+          btnCheckUpdate.disabled = false;
+          btnCheckUpdate.textContent = "Buscar actualizaciones";
+          showNotice(ver ? `Nueva versión disponible: v${ver}` : "Ya tienes la última versión de MMT Sync.");
+        })
+        .catch(() => {
+          btnCheckUpdate.disabled = false;
+          btnCheckUpdate.textContent = "Buscar actualizaciones";
+          showNotice("No se pudo comprobar actualizaciones ahora mismo.");
+        });
+    });
+  }
   $("logoutBtn").addEventListener("click", () => {
     void backend.logout().then(() => refresh());
   });

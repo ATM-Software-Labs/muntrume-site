@@ -90,8 +90,19 @@ function computeLocalStreaks(sessions: RaceSessionEntry[]): StreakSummary {
 
 export async function fetchRaceHistory(): Promise<RaceHistoryResponse> {
   if (inTauri()) {
-    const { invoke } = await import("@tauri-apps/api/core");
-    return invoke<RaceHistoryResponse>("get_race_history");
+    try {
+      const { invoke } = await import("@tauri-apps/api/core");
+      const res = await Promise.race<RaceHistoryResponse>([
+        invoke<RaceHistoryResponse>("get_race_history"),
+        new Promise<RaceHistoryResponse>((_, reject) => setTimeout(() => reject(new Error("timeout")), 1500)),
+      ]);
+      try {
+        localStorage.setItem(LOCAL_FALLBACK_KEY, JSON.stringify(res.sessions || []));
+      } catch {}
+      return res;
+    } catch {
+      // Fallback immediately to cached race_history.json snapshot in localStorage
+    }
   }
   try {
     const raw = localStorage.getItem(LOCAL_FALLBACK_KEY);

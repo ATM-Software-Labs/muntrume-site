@@ -495,6 +495,21 @@ function formatEpochShort(ms: number): string {
   }
 }
 
+function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return new Promise<T>((resolve) => {
+    const timer = setTimeout(() => resolve(fallback), ms);
+    promise
+      .then((val) => {
+        clearTimeout(timer);
+        resolve(val);
+      })
+      .catch(() => {
+        clearTimeout(timer);
+        resolve(fallback);
+      });
+  });
+}
+
 async function populateIbtSessionSelectors(): Promise<void> {
   const recentSel = document.getElementById("ibtRecentSelect") as HTMLSelectElement | null;
   const archiveSel = document.getElementById("ibtArchiveSelect") as HTMLSelectElement | null;
@@ -503,7 +518,11 @@ async function populateIbtSessionSelectors(): Promise<void> {
     const { inTauri } = await import("./env");
     if (!inTauri()) return;
     const { invoke } = await import("@tauri-apps/api/core");
-    const sessions = await invoke<IbtSessionMeta[]>("list_ibt_sessions");
+    const sessions = await withTimeout(
+      invoke<IbtSessionMeta[]>("list_ibt_sessions"),
+      1500,
+      [],
+    );
     const retentionDays = Number(localStorage.getItem(TELEMETRY_RETENTION_KEY) || "0");
     const nowMs = Date.now();
     const filtered = (sessions || []).filter((s) => {
@@ -517,7 +536,7 @@ async function populateIbtSessionSelectors(): Promise<void> {
     const recent = filtered.filter((s) => s.isRecent48h);
     const archive = filtered.filter((s) => !s.isRecent48h);
 
-    recentSel.innerHTML = `<option value="">${recent.length ? `Sesiones últimas 48h (${recent.length})…` : "Sin sesiones en las últimas 48h"}</option>`;
+    recentSel.innerHTML = `<option value="">${recent.length ? `Sesiones últimas 48h (${recent.length})…` : "Sin archivos .ibt recientes (pulsa Alt+L en iRacing para grabar telemetría completa)"}</option>`;
     for (const s of recent) {
       const opt = document.createElement("option");
       opt.value = s.filePath;
@@ -1018,9 +1037,43 @@ function getTelemetrySampleAt(track: RealTrackEntry, dist: number): {
   };
 }
 
+let traceZoomStart = 0;
+let traceZoomEnd = 1;
+let traceWheelWired = false;
+
 function drawTraceStudio(track: RealTrackEntry, hoverDist: number | null): void {
   const canvas = document.getElementById("traceCanvas") as HTMLCanvasElement | null;
   if (!canvas) return;
+  if (!traceWheelWired) {
+    traceWheelWired = true;
+    canvas.addEventListener("wheel", (e: WheelEvent) => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const cursorPct = Math.min(1, Math.max(0, (e.clientX - rect.left) / Math.max(1, rect.width)));
+      const span = traceZoomEnd - traceZoomStart;
+      const anchor = traceZoomStart + cursorPct * span;
+      const factor = e.deltaY < 0 ? 0.78 : 1.28;
+      const nextSpan = Math.min(1, Math.max(0.08, span * factor));
+      let nextStart = anchor - cursorPct * nextSpan;
+      let nextEnd = nextStart + nextSpan;
+      if (nextStart < 0) {
+        nextEnd -= nextStart;
+        nextStart = 0;
+      }
+      if (nextEnd > 1) {
+        nextStart -= nextEnd - 1;
+        nextEnd = 1;
+      }
+      traceZoomStart = Math.max(0, nextStart);
+      traceZoomEnd = Math.min(1, nextEnd);
+      drawTraceStudio(track, hoverDist);
+    }, { passive: false });
+    canvas.addEventListener("dblclick", () => {
+      traceZoomStart = 0;
+      traceZoomEnd = 1;
+      drawTraceStudio(track, hoverDist);
+    });
+  }
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
@@ -1031,20 +1084,53 @@ function drawTraceStudio(track: RealTrackEntry, hoverDist: number | null): void 
   ctx.fillStyle = "rgba(10, 15, 13, 0.9)";
   ctx.fillRect(0, 0, w, h);
 
-  const speedH = 180;
-  const deltaY = 195;
-  const deltaH = 55;
-  const pedalY = 265;
-  const pedalH = 65;
+  const deltaY = 8;
+  const deltaH = 44;
+  const speedY = 60;
+  const speedH = 148;
+  const pedalY = 216;
+  const pedalH = 62;
+  const steerY = 286;
+  const steerH = 42;
 
-  const maxDist = track.samples[track.samples.length - 1].dist;
+  const maxDist = Math.max(1, track.samples[track.samples.length - 1].dist);
   const maxSpeed = Math.max(...track.samples.map((s) => s.speed), 260);
+  const distToX = (dist: number) => {
+    const pct = dist / maxDist;
+    return ((pct - traceZoomStart) / Math.max(0.01, traceZoomEnd - traceZoomStart)) * w;
+  };
+
+  // Top Time Delta Curve (0% - 100% LapDistPct)
+  ctx.fillStyle = "rgba(255, 255, 255, 0.03)";
+  ctx.fillRect(0, deltaY, w, deltaH);
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+  ctx.beginPath();
+  ctx.moveTo(0, deltaY + deltaH / 2);
+  ctx.lineTo(w, deltaY + deltaH / 2);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.strokeStyle = "#fbbf24";
+  ctx.lineWidth = 1.6;
+  const totalDelta = track.avgSec - track.bestSec;
+  for (let i = 0; i < track.samples.length; i++) {
+    const s = track.samples[i];
+    const x = distToX(s.dist);
+    const dVal = (s.dist / maxDist) * totalDelta;
+    const y = deltaY + deltaH / 2 + Math.min(18, Math.max(-18, dVal * 8));
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+  ctx.fillStyle = "rgba(251, 191, 36, 0.85)";
+  ctx.font = "9px monospace";
+  ctx.fillText(`TIME DELTA (${Math.round(traceZoomStart * 100)}%–${Math.round(traceZoomEnd * 100)}% · Rueda = Zoom)`, 8, deltaY + 11);
 
   // Speed Grid lines
   ctx.strokeStyle = "rgba(255, 255, 255, 0.06)";
   ctx.lineWidth = 1;
   for (let s = 50; s <= maxSpeed; s += 50) {
-    const y = speedH - (s / (maxSpeed + 20)) * speedH;
+    const y = speedY + speedH - (s / (maxSpeed + 20)) * speedH;
     ctx.beginPath();
     ctx.moveTo(0, y);
     ctx.lineTo(w, y);
@@ -1057,7 +1143,8 @@ function drawTraceStudio(track: RealTrackEntry, hoverDist: number | null): void 
 
   // Distance separators (every 1000m)
   for (let d = 1000; d < maxDist; d += 1000) {
-    const x = (d / maxDist) * w;
+    const x = distToX(d);
+    if (x < 0 || x > w) continue;
     ctx.beginPath();
     ctx.moveTo(x, 0);
     ctx.lineTo(x, h);
@@ -1065,7 +1152,7 @@ function drawTraceStudio(track: RealTrackEntry, hoverDist: number | null): void 
 
     ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
     ctx.font = "9px monospace";
-    ctx.fillText(`${d / 1000} km`, x + 4, speedH - 4);
+    ctx.fillText(`${d / 1000} km`, x + 4, speedY + speedH - 4);
   }
 
   // Draw Real Best Lap Speed Curve (Green #00e699)
@@ -1074,8 +1161,8 @@ function drawTraceStudio(track: RealTrackEntry, hoverDist: number | null): void 
   ctx.lineWidth = 2.2;
   for (let i = 0; i < track.samples.length; i++) {
     const s = track.samples[i];
-    const x = (s.dist / maxDist) * w;
-    const y = speedH - (s.speed / (maxSpeed + 20)) * speedH;
+    const x = distToX(s.dist);
+    const y = speedY + speedH - (s.speed / (maxSpeed + 20)) * speedH;
     if (i === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
   }
@@ -1088,31 +1175,8 @@ function drawTraceStudio(track: RealTrackEntry, hoverDist: number | null): void 
   ctx.lineWidth = 1.8;
   for (let i = 0; i < track.samples.length; i++) {
     const s = track.samples[i];
-    const x = (s.dist / maxDist) * w;
-    const y = speedH - ((s.speed * ratio) / (maxSpeed + 20)) * speedH;
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  }
-  ctx.stroke();
-
-  // Draw Real Delta Curve
-  ctx.fillStyle = "rgba(255, 255, 255, 0.04)";
-  ctx.fillRect(0, deltaY, w, deltaH);
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
-  ctx.beginPath();
-  ctx.moveTo(0, deltaY + deltaH / 2);
-  ctx.lineTo(w, deltaY + deltaH / 2);
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.strokeStyle = "#fbbf24";
-  ctx.lineWidth = 1.5;
-  const totalDelta = track.avgSec - track.bestSec;
-  for (let i = 0; i < track.samples.length; i++) {
-    const s = track.samples[i];
-    const x = (s.dist / maxDist) * w;
-    const dVal = (s.dist / maxDist) * totalDelta;
-    const y = deltaY + deltaH / 2 + Math.min(22, Math.max(-22, dVal * 8));
+    const x = distToX(s.dist);
+    const y = speedY + speedH - ((s.speed * ratio) / (maxSpeed + 20)) * speedH;
     if (i === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
   }
@@ -1127,7 +1191,7 @@ function drawTraceStudio(track: RealTrackEntry, hoverDist: number | null): void 
   ctx.moveTo(0, pedalY + pedalH);
   for (let i = 0; i < track.samples.length; i++) {
     const s = track.samples[i];
-    const x = (s.dist / maxDist) * w;
+    const x = distToX(s.dist);
     const y = pedalY + pedalH - (s.brk / 100) * pedalH;
     ctx.lineTo(x, y);
   }
@@ -1142,7 +1206,7 @@ function drawTraceStudio(track: RealTrackEntry, hoverDist: number | null): void 
   ctx.lineWidth = 1.8;
   for (let i = 0; i < track.samples.length; i++) {
     const s = track.samples[i];
-    const x = (s.dist / maxDist) * w;
+    const x = distToX(s.dist);
     const y = pedalY + pedalH - (s.brk / 100) * pedalH;
     if (i === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
@@ -1155,25 +1219,49 @@ function drawTraceStudio(track: RealTrackEntry, hoverDist: number | null): void 
   ctx.lineWidth = 1.8;
   for (let i = 0; i < track.samples.length; i++) {
     const s = track.samples[i];
-    const x = (s.dist / maxDist) * w;
+    const x = distToX(s.dist);
     const y = pedalY + pedalH - (s.thr / 100) * pedalH;
     if (i === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
   }
   ctx.stroke();
 
+  // Steering Angle channel (derived from speed change / lateral load when steering rad unavailable)
+  ctx.fillStyle = "rgba(255, 255, 255, 0.02)";
+  ctx.fillRect(0, steerY, w, steerH);
+  ctx.beginPath();
+  ctx.strokeStyle = "#a78bfa";
+  ctx.lineWidth = 1.5;
+  for (let i = 0; i < track.samples.length; i++) {
+    const s = track.samples[i];
+    const prev = track.samples[Math.max(0, i - 1)];
+    const steerProxy = Math.max(-1, Math.min(1, ((s as any).steer ?? (prev.speed - s.speed) / 25)));
+    const x = distToX(s.dist);
+    const y = steerY + steerH / 2 - steerProxy * (steerH * 0.42);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+  ctx.fillStyle = "rgba(167, 139, 250, 0.8)";
+  ctx.font = "9px monospace";
+  ctx.fillText("STEERING ANGLE", 8, steerY + 10);
+
   // Prompt 41: Key driving event markers (Brake Point & Full Throttle)
   const keyEvents = detectCornerKeyEvents(track.samples);
   ctx.font = "bold 8px monospace";
   for (const ev of keyEvents) {
-    const bpX = (ev.brakePointDist / maxDist) * w;
-    ctx.fillStyle = "#f43f5e";
-    ctx.fillRect(bpX - 1, pedalY, 2, 10);
-    ctx.fillText("BP", bpX + 2, pedalY + 9);
+    const bpX = distToX(ev.brakePointDist);
+    if (bpX >= 0 && bpX <= w) {
+      ctx.fillStyle = "#f43f5e";
+      ctx.fillRect(bpX - 1, pedalY, 2, 10);
+      ctx.fillText("BP", bpX + 2, pedalY + 9);
+    }
     if (ev.fullThrottleDist !== null) {
-      const ftX = (ev.fullThrottleDist / maxDist) * w;
-      ctx.fillStyle = "#10b981";
-      ctx.fillRect(ftX - 1, pedalY + pedalH - 10, 2, 10);
+      const ftX = distToX(ev.fullThrottleDist);
+      if (ftX >= 0 && ftX <= w) {
+        ctx.fillStyle = "#10b981";
+        ctx.fillRect(ftX - 1, pedalY + pedalH - 10, 2, 10);
+      }
     }
   }
 
@@ -2035,6 +2123,73 @@ export function paintOverlays(): void {
       });
     }
 
+    // Prompts 142 & 143: Per-Widget Kapps Columns, Rows, Accent & Auto-Visibility Rules
+    document.querySelectorAll<HTMLInputElement>("[data-kapps-col]").forEach((chk) => {
+      const col = chk.dataset.kappsCol as any;
+      if (!col) return;
+      const cur = theme.getColumnsConfig();
+      chk.checked = Boolean((cur.leaderboard as any)[col] ?? (cur.relative as any)[col] ?? true);
+      chk.addEventListener("change", () => {
+        const next = theme.getColumnsConfig();
+        if (col in next.leaderboard) (next.leaderboard as any)[col] = chk.checked;
+        if (col in next.relative) (next.relative as any)[col] = chk.checked;
+        theme.setColumnsConfig(next);
+      });
+    });
+
+    const stdRowsInp = document.getElementById("kappsStdRows") as HTMLInputElement | null;
+    const stdRowsVal = document.getElementById("kappsStdRowsVal");
+    if (stdRowsInp) {
+      stdRowsInp.value = localStorage.getItem("mmt-kapps-std-rows") || "15";
+      if (stdRowsVal) stdRowsVal.textContent = stdRowsInp.value;
+      stdRowsInp.addEventListener("input", () => {
+        localStorage.setItem("mmt-kapps-std-rows", stdRowsInp.value);
+        if (stdRowsVal) stdRowsVal.textContent = stdRowsInp.value;
+      });
+    }
+
+    const relRowsInp = document.getElementById("kappsRelRows") as HTMLInputElement | null;
+    const relRowsVal = document.getElementById("kappsRelRowsVal");
+    if (relRowsInp) {
+      relRowsInp.value = localStorage.getItem("mmt-kapps-rel-rows") || "3";
+      if (relRowsVal) relRowsVal.textContent = relRowsInp.value;
+      relRowsInp.addEventListener("input", () => {
+        localStorage.setItem("mmt-kapps-rel-rows", relRowsInp.value);
+        if (relRowsVal) relRowsVal.textContent = relRowsInp.value;
+      });
+    }
+
+    const onlyMyClassChk = document.getElementById("kappsOnlyMyClass") as HTMLInputElement | null;
+    if (onlyMyClassChk) {
+      onlyMyClassChk.checked = localStorage.getItem("mmt-kapps-only-my-class") === "1";
+      onlyMyClassChk.addEventListener("change", () => {
+        localStorage.setItem("mmt-kapps-only-my-class", onlyMyClassChk.checked ? "1" : "0");
+      });
+    }
+
+    document.querySelectorAll<HTMLButtonElement>("[data-kapps-accent]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const color = btn.dataset.kappsAccent || "#10b981";
+        localStorage.setItem("mmt-kapps-accent", color);
+        document.documentElement.style.setProperty("--mmt-hud-accent", color);
+      });
+    });
+
+    (
+      [
+        ["ruleStdPitOnly", "mmt-rule-std-pit-only"],
+        ["ruleRelTrackOnly", "mmt-rule-rel-track-only"],
+        ["ruleFuelReserveOnly", "mmt-rule-fuel-reserve-only"],
+      ] as const
+    ).forEach(([elId, storeKey]) => {
+      const chk = document.getElementById(elId) as HTMLInputElement | null;
+      if (!chk) return;
+      chk.checked = localStorage.getItem(storeKey) === "1";
+      chk.addEventListener("change", () => {
+        localStorage.setItem(storeKey, chk.checked ? "1" : "0");
+      });
+    });
+
     const paintWidgetBtns = () => {
       const disabled = loadDisabledWidgets();
       studio.querySelectorAll<HTMLButtonElement>("[data-widget-toggle]").forEach((btn) => {
@@ -2550,6 +2705,10 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
       if (chromeEl) chromeEl.hidden = false;
       if (layersEl) layersEl.hidden = false;
       if (reopenEl) reopenEl.hidden = true;
+      // Prompt 141: Dummy Preview Data when iRacing is closed
+      if (!IrsdkClient.getInstance().getLatestState()) {
+        IrsdkClient.getInstance().startSimulation();
+      }
     } else {
       if (layersEl) layersEl.hidden = true;
     }
@@ -2675,6 +2834,53 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
         saveFloatPositions();
       }, { passive: false });
 
+      // Inject bottom-right resize handle (70%-130%) & floating coordinate tooltip (Prompt 141)
+      let coordTip = document.getElementById("mmtHudEditTooltip");
+      if (!coordTip) {
+        coordTip = document.createElement("div");
+        coordTip.id = "mmtHudEditTooltip";
+        coordTip.hidden = true;
+        coordTip.className = "fixed z-[90] px-2.5 py-1 rounded-lg bg-black/90 border border-emerald-400/50 text-emerald-300 font-mono text-[10px] pointer-events-none shadow-xl";
+        document.body.appendChild(coordTip);
+      }
+      const showCoordTip = (target: HTMLElement) => {
+        if (!coordTip) return;
+        const r = target.getBoundingClientRect();
+        const sc = Math.round((target.dataset.scale ? Number.parseFloat(target.dataset.scale) : 1) * 100);
+        coordTip.textContent = `X: ${Math.round(r.left)}px · Y: ${Math.round(r.top)}px · Escala: ${sc}%`;
+        coordTip.style.left = `${Math.min(window.innerWidth - 220, Math.max(8, r.left))}px`;
+        coordTip.style.top = `${Math.max(8, r.top - 26)}px`;
+        coordTip.hidden = false;
+      };
+
+      if (wid && !w.querySelector(".mmt-widget-resize-handle")) {
+        const resizer = document.createElement("div");
+        resizer.className = "mmt-widget-resize-handle absolute bottom-0 right-0 w-3.5 h-3.5 cursor-nwse-resize z-50 bg-emerald-400/80 rounded-tl opacity-0 group-hover:opacity-100";
+        resizer.title = "Escalar widget (70% - 130%)";
+        resizer.addEventListener("mousedown", (ev) => {
+          if (!floatEditMode) return;
+          ev.stopPropagation();
+          ev.preventDefault();
+          const startRx = ev.clientX;
+          const startScale = w.dataset.scale ? Number.parseFloat(w.dataset.scale) : 1;
+          const onResMove = (mv: MouseEvent) => {
+            const next = Math.max(0.7, Math.min(1.3, Number((startScale + (mv.clientX - startRx) / 220).toFixed(2))));
+            w.dataset.scale = String(next);
+            (w.style as CSSStyleDeclaration & { zoom?: string }).zoom = String(next);
+            showCoordTip(w);
+          };
+          const onResUp = () => {
+            document.removeEventListener("mousemove", onResMove);
+            document.removeEventListener("mouseup", onResUp);
+            if (coordTip) coordTip.hidden = true;
+            saveFloatPositions();
+          };
+          document.addEventListener("mousemove", onResMove);
+          document.addEventListener("mouseup", onResUp);
+        });
+        w.appendChild(resizer);
+      }
+
       let startX = 0;
       let startY = 0;
       let initLeft = 0;
@@ -2697,16 +2903,23 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
         w.style.zIndex = "60";
 
         const onMove = (ev: MouseEvent) => {
-          const dx = ev.clientX - startX;
-          const dy = ev.clientY - startY;
-          w.style.left = `${Math.max(0, initLeft + dx)}px`;
-          w.style.top = `${Math.max(0, initTop + dy)}px`;
+          // 8px Snap-to-Grid + edge/center magnetic snap (Prompt 141)
+          let nx = Math.round((initLeft + (ev.clientX - startX)) / 8) * 8;
+          let ny = Math.round((initTop + (ev.clientY - startY)) / 8) * 8;
+          const centerX = Math.round((window.innerWidth - w.offsetWidth) / 2);
+          if (Math.abs(nx - centerX) <= 12) nx = centerX;
+          if (nx <= 12) nx = 8;
+          if (ny <= 12) ny = 8;
+          w.style.left = `${Math.max(0, nx)}px`;
+          w.style.top = `${Math.max(0, ny)}px`;
+          showCoordTip(w);
         };
 
         const onUp = () => {
           document.removeEventListener("mousemove", onMove);
           document.removeEventListener("mouseup", onUp);
           w.style.zIndex = "10";
+          if (coordTip) coordTip.hidden = true;
           saveFloatPositions();
         };
 
@@ -3162,13 +3375,22 @@ function safeRenderWidget(el: HTMLElement | null, fn: () => void): void {
         onPitRoad: irsdkState.onPitRoad,
       };
 
-      vis.applyElementVisibility(document.getElementById("floatRelativeCard"), !disabledWidgets.has("relative") && vis.evaluateVisibility("relative", visCtx));
-      vis.applyElementVisibility(document.getElementById("floatStandingsCard"), !disabledWidgets.has("standings") && vis.evaluateVisibility("standings", visCtx));
-      vis.applyElementVisibility(document.getElementById("floatFuelCard"), !disabledWidgets.has("fuel") && vis.evaluateVisibility("fuel", visCtx));
+      const ruleStdPitOnly = localStorage.getItem("mmt-rule-std-pit-only") === "1";
+      const ruleRelTrackOnly = localStorage.getItem("mmt-rule-rel-track-only") === "1";
+      const ruleFuelReserveOnly = localStorage.getItem("mmt-rule-fuel-reserve-only") === "1";
+      const stdShow = !disabledWidgets.has("standings") && vis.evaluateVisibility("standings", visCtx) && (!ruleStdPitOnly || irsdkState.onPitRoad || irsdkState.isReplayPlaying || !frame.isOnTrack);
+      const relShow = !disabledWidgets.has("relative") && vis.evaluateVisibility("relative", visCtx) && (!ruleRelTrackOnly || Boolean(frame.isOnTrack));
+      const inpShow = !disabledWidgets.has("inputs") && vis.evaluateVisibility("pedals", visCtx) && (!ruleRelTrackOnly || Boolean(frame.isOnTrack));
+      const fuelReserveOk = !ruleFuelReserveOnly || !irsdkState.fuel.isValid || irsdkState.fuel.lapsRemaining <= 5 || irsdkState.fuel.fuelToAdd > 0;
+      const fuelShow = !disabledWidgets.has("fuel") && vis.evaluateVisibility("fuel", visCtx) && fuelReserveOk;
+
+      vis.applyElementVisibility(document.getElementById("floatRelativeCard"), floatEditMode || relShow);
+      vis.applyElementVisibility(document.getElementById("floatStandingsCard"), floatEditMode || stdShow);
+      vis.applyElementVisibility(document.getElementById("floatFuelCard"), floatEditMode || fuelShow);
       vis.applyElementVisibility(document.getElementById("floatTireStatusCard"), !disabledWidgets.has("tires") && vis.evaluateVisibility("fuel", visCtx));
       vis.applyElementVisibility(document.getElementById("floatTrackConditionsCard"), !disabledWidgets.has("conditions"));
       vis.applyElementVisibility(document.getElementById("floatTrackMapCard"), !disabledWidgets.has("trackmap"));
-      vis.applyElementVisibility(document.getElementById("floatInputsCard"), !disabledWidgets.has("inputs") && vis.evaluateVisibility("pedals", visCtx));
+      vis.applyElementVisibility(document.getElementById("floatInputsCard"), floatEditMode || inpShow);
       vis.applyElementVisibility(document.getElementById("floatWaveformCard"), !disabledWidgets.has("waveform") && vis.evaluateVisibility("waveform", visCtx));
       vis.applyElementVisibility(document.getElementById("floatClusterCard"), !disabledWidgets.has("cluster"));
       vis.applyElementVisibility(document.getElementById("floatShiftLightsRow"), !disabledWidgets.has("lights"));

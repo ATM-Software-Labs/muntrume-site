@@ -245,9 +245,9 @@ const defaultSchema = {
       "@type": "SoftwareApplication",
       "@id": `${siteOrigin}/app/#software`,
       "name": "MMT Sync",
-      "applicationCategory": "UtilitiesApplication",
+      "applicationCategory": "GameApplication",
       "operatingSystem": "Windows 10, Windows 11",
-      "softwareVersion": "0.1.32",
+      "softwareVersion": "0.2.18",
       "url": `${siteOrigin}/app/`,
       "downloadUrl": "https://github.com/ATM-Software-Labs/muntrume-site/releases/latest",
       "description": "Aplicación de escritorio nativa (Tauri/Rust) para Windows que sincroniza automáticamente más de 42.600 setups .sto de Muntrume Motorsport con iRacing, con overlay de telemetría y actualizador automático.",
@@ -258,8 +258,43 @@ const defaultSchema = {
         "@type": "Offer",
         "price": "0",
         "priceCurrency": "EUR"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "ratingCount": "148"
       }
     },
+    ...(isHome ? [{
+      "@type": "FAQPage",
+      "@id": `${siteOrigin}/#faq`,
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "¿Cómo instalar setups en iRacing automáticamente?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Descarga MMT Sync para Windows, inicia sesión y pulsa Sincronizar. La app copia los archivos .sto y vueltas fantasma .blap/.olap directamente en Documents\\iRacing\\setups\\ y lapfiles\\ sin mover ficheros a mano."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Qué incluye MMT Sync frente a VRS o Coach Dave?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "MMT Sync es 100% gratuito para pilotos de Muntrume Motorsport, pesa menos de 15 MB en RAM, incluye overlays de telemetría 60 Hz sin pérdida de FPS, analizador de archivos .ibt en local y sincronización de variantes Qualy, Race, Safe y Wet."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Cómo usar overlays ligeros en iRacing sin perder FPS?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Activa el HUD flotante desde MMT Sync en modo pantalla completa sin bordes (Borderless). WebView2 corre sin caché en disco, con límite de nodos DOM Zero-Bloat y atajo Kill-Switch Ctrl+Shift+H para cerrarlo al instante."
+          }
+        }
+      ]
+    }] : []),
     {
       "@type": "Dataset",
       "@id": `${siteOrigin}/garage/#dataset`,

@@ -1,0 +1,191 @@
+---
+// Reusable Community Screenshot Upload Modal (Prompts 129 & 139)
+---
+
+<div id="communityUploadModal" hidden class="fixed inset-0 z-[120] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="w-full max-w-lg rounded-2xl border border-white/15 bg-[#0d1117] text-white p-6 shadow-2xl relative">
+    <button
+      type="button"
+      id="cuCloseBtn"
+      aria-label="Cerrar modal"
+      class="absolute top-4 right-4 w-8 h-8 rounded-lg border border-white/15 text-white/70 hover:text-white hover:border-emerald-400 transition"
+    >
+      ✕
+    </button>
+
+    <span class="text-[11px] font-mono uppercase tracking-widest text-emerald-400">Comunidad Muntrume</span>
+    <h2 class="text-xl font-extrabold font-display mt-1">Subir captura de iRacing</h2>
+    <p class="text-xs text-white/65 mt-1">
+      Se comprime automáticamente a WebP (máx. 1920px, &lt;350 KB) en tu navegador antes de enviarse a revisión.
+    </p>
+
+    <form id="cuForm" class="mt-4 space-y-3 text-xs">
+      <!-- Honeypot -->
+      <input type="text" name="website" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
+
+      <div>
+        <label class="block font-mono text-[11px] text-white/70 mb-1">Imagen (PNG / JPG / WebP) *</label>
+        <input
+          type="file"
+          id="cuFileInput"
+          accept="image/png,image/jpeg,image/webp"
+          required
+          class="w-full rounded-xl border border-white/15 bg-black/40 px-3 py-2 text-xs text-white file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-500 file:px-3 file:py-1 file:text-xs file:font-bold file:text-slate-950"
+        />
+        <p id="cuSizeInfo" class="mt-1 text-[11px] font-mono text-emerald-400 hidden"></p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block font-mono text-[11px] text-white/70 mb-1">Título de la captura *</label>
+          <input type="text" name="title" required maxlength="100" placeholder="Ej. Eau Rouge al amanecer" class="w-full rounded-xl border border-white/15 bg-black/40 px-3 py-2 text-white" />
+        </div>
+        <div>
+          <label class="block font-mono text-[11px] text-white/70 mb-1">Piloto / Autor *</label>
+          <input type="text" name="authorName" required maxlength="50" placeholder="Ej. @atrumin16" class="w-full rounded-xl border border-white/15 bg-black/40 px-3 py-2 text-white" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div>
+          <label class="block font-mono text-[11px] text-white/70 mb-1">Categoría *</label>
+          <select name="category" class="w-full rounded-xl border border-white/15 bg-[#090b0f] px-3 py-2 text-white">
+            <option value="gt3">GT3</option>
+            <option value="gtp">Prototipos GTP</option>
+            <option value="cup">Cup</option>
+            <option value="night">Noche / Endurance</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-mono text-[11px] text-white/70 mb-1">Coche</label>
+          <input type="text" name="car" maxlength="60" placeholder="Ferrari 296 GT3" class="w-full rounded-xl border border-white/15 bg-black/40 px-3 py-2 text-white" />
+        </div>
+        <div>
+          <label class="block font-mono text-[11px] text-white/70 mb-1">Circuito</label>
+          <input type="text" name="track" maxlength="60" placeholder="Spa-Francorchamps" class="w-full rounded-xl border border-white/15 bg-black/40 px-3 py-2 text-white" />
+        </div>
+      </div>
+
+      <label class="flex items-start gap-2.5 pt-1 text-[11px] text-white/80 cursor-pointer">
+        <input type="checkbox" id="cuConsent" required class="mt-0.5 accent-emerald-500" />
+        <span>Confirmo que soy el autor de esta captura de iRacing y autorizo su publicación en muntru.me con atribución a mi usuario.</span>
+      </label>
+
+      <p id="cuStatusMsg" class="text-xs font-mono hidden"></p>
+
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button type="button" id="cuCancelBtn" class="px-4 py-2 rounded-xl border border-white/15 text-white/75 hover:text-white">Cancelar</button>
+        <button type="submit" id="cuSubmitBtn" class="px-5 py-2 rounded-xl bg-emerald-500 text-slate-950 font-bold hover:bg-emerald-400 transition">
+          Enviar a revisión
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script is:inline>
+  (() => {
+    const API = "https://muntru-api.trujillomingorance.com";
+    const modal = document.getElementById("communityUploadModal");
+    const form = document.getElementById("cuForm");
+    const fileInput = document.getElementById("cuFileInput");
+    const sizeInfo = document.getElementById("cuSizeInfo");
+    const statusMsg = document.getElementById("cuStatusMsg");
+    const submitBtn = document.getElementById("cuSubmitBtn");
+    let compressedWebp = "";
+
+    const openModal = () => { if (modal) modal.hidden = false; };
+    const closeModal = () => { if (modal) modal.hidden = true; };
+
+    document.querySelectorAll("[data-open-community-upload]").forEach((btn) => {
+      btn.addEventListener("click", openModal);
+    });
+    document.getElementById("cuCloseBtn")?.addEventListener("click", closeModal);
+    document.getElementById("cuCancelBtn")?.addEventListener("click", closeModal);
+    modal?.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+
+    async function compressToWebp(file) {
+      const bitmap = await createImageBitmap(file);
+      const maxW = 1920;
+      const scale = bitmap.width > maxW ? maxW / bitmap.width : 1;
+      const w = Math.round(bitmap.width * scale);
+      const h = Math.round(bitmap.height * scale);
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(bitmap, 0, 0, w, h);
+      bitmap.close();
+      let quality = 0.84;
+      let dataUrl = canvas.toDataURL("image/webp", quality);
+      while (dataUrl.length > 480000 && quality > 0.5) {
+        quality -= 0.08;
+        dataUrl = canvas.toDataURL("image/webp", quality);
+      }
+      return { dataUrl, w, h, kb: Math.round((dataUrl.length * 0.75) / 1024) };
+    }
+
+    fileInput?.addEventListener("change", async () => {
+      const file = fileInput.files?.[0];
+      if (!file) return;
+      try {
+        const res = await compressToWebp(file);
+        compressedWebp = res.dataUrl;
+        if (sizeInfo) {
+          sizeInfo.textContent = `✓ WebP optimizado: ${res.w}×${res.h} · ~${res.kb} KB`;
+          sizeInfo.classList.remove("hidden");
+        }
+      } catch {
+        compressedWebp = "";
+      }
+    });
+
+    form?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!compressedWebp) return;
+      const fd = new FormData(form);
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Enviando…";
+      }
+      try {
+        const resp = await fetch(`${API}/api/gallery/upload`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: fd.get("title"),
+            authorName: fd.get("authorName"),
+            category: fd.get("category"),
+            car: fd.get("car"),
+            track: fd.get("track"),
+            website: fd.get("website"),
+            consent: document.getElementById("cuConsent")?.checked === true,
+            imageWebp: compressedWebp,
+          }),
+        });
+        const data = await resp.json();
+        if (statusMsg) {
+          statusMsg.textContent = data.message || data.error || "Listo";
+          statusMsg.className = resp.ok ? "text-xs font-mono text-emerald-400" : "text-xs font-mono text-rose-400";
+          statusMsg.classList.remove("hidden");
+        }
+        if (resp.ok) {
+          form.reset();
+          compressedWebp = "";
+          setTimeout(closeModal, 1400);
+        }
+      } catch {
+        if (statusMsg) {
+          statusMsg.textContent = "Error de red al enviar la captura.";
+          statusMsg.className = "text-xs font-mono text-rose-400";
+          statusMsg.classList.remove("hidden");
+        }
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Enviar a revisión";
+        }
+      }
+    });
+  })();
+</script>

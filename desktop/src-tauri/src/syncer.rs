@@ -308,6 +308,16 @@ async fn fetch_one(
                 return Err("el archivo supera 1 MB".into());
             }
             mmt_sync_core::atomic_write(&dest, &bytes).map_err(|err| err.to_string())?;
+            let rel_lower = item.relative.to_ascii_lowercase();
+            if rel_lower.ends_with(".blap") || rel_lower.ends_with(".olap") {
+                if let Some(iracing_root) = root.parent() {
+                    let lap_dir = iracing_root.join("lapfiles");
+                    let file_name = item.relative.rsplit('/').next().unwrap_or("ghost.blap");
+                    let lap_dest = lap_dir.join(file_name);
+                    let _ = fs::create_dir_all(&lap_dir);
+                    let _ = mmt_sync_core::atomic_write(&lap_dest, &bytes);
+                }
+            }
             bytes
         }
     };
