@@ -979,6 +979,13 @@
                     <input id="hudWheelPosY" type="range" min="0" max="160" value="24" class="w-20 accent-[#00e699]" />
                     <span id="hudWheelPosYVal" class="text-r-text tabular-nums w-10">24px</span>
                   </label>
+                  <label class="flex items-center gap-1.5 font-mono text-[11px] text-r-muted">
+                    <span>Barra Estado / Delta:</span>
+                    <select id="hudStatusAnchorSelect" class="h-8 rounded-lg border border-r-line bg-r-bg px-2 text-r-text font-mono text-[11px]">
+                      <option value="mirror">Debajo del Retrovisor (18%)</option>
+                      <option value="standings">Debajo del Standings (Izquierda)</option>
+                    </select>
+                  </label>
                 </div>
                 <div class="flex flex-wrap items-center gap-3 font-mono text-[11px]">
                   <label class="flex items-center gap-1.5 cursor-pointer text-r-text">
@@ -1899,29 +1906,22 @@
         <div id="ovRadarFloat"></div>
       </div>
 
-      <!-- 3b. Top-Center Track Conditions Micro-bar (top: 152px below Virtual Mirror) -->
-      <div id="floatTrackConditionsCard" class="mmt-float-widget fixed top-[152px] left-1/2 -translate-x-1/2 w-max h-[24px] pointer-events-none z-20" data-widget="conditions">
-        <div id="ovTrackConditionsFloat"></div>
+      <!-- 3b-4. Unified Status & Delta Dock (top: 18% below Virtual Mirror Safe-Zone, or below Standings) -->
+      <div id="floatCenterStatusDock" class="mmt-float-widget fixed top-[18%] left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 pointer-events-none z-20" data-widget="conditions">
+        <div id="floatTrackConditionsCard" class="w-max h-[26px]">
+          <div id="ovTrackConditionsFloat"></div>
+        </div>
+        <div id="floatLiveDeltaCard" class="w-[200px] h-[22px] rounded-[2px] overflow-hidden" data-widget="delta">
+          <canvas id="ovLiveDeltaFloat" width="200" height="22" style="width:200px;height:22px;display:block;"></canvas>
+        </div>
+        <div id="floatPitHelperCard" hidden class="w-[280px] pointer-events-auto overflow-hidden" data-widget="pit">
+          <div id="ovPitboxFloat"></div>
+        </div>
       </div>
 
-      <!-- 3c. Live Delta Bar (200x22px Canvas below Track Conditions at top: 178px) -->
-      <div id="floatLiveDeltaCard" class="mmt-float-widget fixed top-[178px] left-1/2 -translate-x-1/2 w-[200px] h-[22px] rounded-[2px] pointer-events-none z-20 overflow-hidden" data-widget="delta">
-        <canvas id="ovLiveDeltaFloat" width="200" height="22" style="width:200px;height:22px;display:block;"></canvas>
-      </div>
-
-      <!-- 4. Pit Helper (visible only when OnPitRoad === true, top: 206px below Mirror) -->
-      <div id="floatPitHelperCard" hidden class="mmt-float-widget fixed top-[206px] left-1/2 -translate-x-1/2 w-[280px] pointer-events-auto overflow-hidden" data-widget="pit">
-        <div id="ovPitboxFloat"></div>
-      </div>
-
-      <!-- 5. Bottom-Left Fuel (left: 8px, bottom: 8px, 0.52 alpha, no duplicate Delta box) -->
-      <div id="floatFuelCard" class="mmt-float-widget fixed bottom-2 left-2 w-[240px] rounded-[3px] text-white p-1.5 text-[11px] font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: rgba(10, 12, 16, 0.52); text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="fuel">
-        <div id="ovFuelFloat"></div>
-      </div>
-
-      <!-- 5a. Bottom-Left Tire Status & ABS/TC (260x68px) -->
-      <div id="floatTireStatusCard" class="mmt-float-widget fixed bottom-2 left-[256px] w-[260px] h-[68px] pointer-events-auto overflow-hidden" data-widget="tires">
-        <div id="ovTireStatusFloat"></div>
+      <!-- 5. Unified CarTelemetryDock (340x118px Fuel + 4-Tire IMO at bottom: 20px; left: 20px) -->
+      <div id="floatCarTelemetryDock" class="mmt-float-widget fixed bottom-[20px] left-[20px] w-[340px] min-h-[118px] rounded-[4px] border border-white/10 text-white p-2 font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: rgba(8, 10, 14, 0.88); text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="fuel">
+        <div id="ovCarTelemetryDockFloat"></div>
       </div>
 
       <!-- 5b. Bottom-Right Live Track Map Canvas (with Class Dots & Ghost PIT Exit marker) -->

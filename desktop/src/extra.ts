@@ -11,6 +11,7 @@ import {
   renderFuelWidget,
   renderTrackConditionsWidget,
   renderTireStatusWidget,
+  renderCarTelemetryDock,
   renderGpuPedalsWidget,
   renderLiveDeltaCanvas,
   GhostTraceRecorder,
@@ -2138,6 +2139,14 @@ function ensureLayoutSchemaV2(force = false): void {
       });
     }
 
+    const statusAnchorSel = document.getElementById("hudStatusAnchorSelect") as HTMLSelectElement | null;
+    if (statusAnchorSel) {
+      statusAnchorSel.value = localStorage.getItem("mmt-status-dock-anchor") || "mirror";
+      statusAnchorSel.addEventListener("change", () => {
+        localStorage.setItem("mmt-status-dock-anchor", statusAnchorSel.value);
+      });
+    }
+
     const repChk = document.getElementById("hudShowInReplays") as HTMLInputElement | null;
     if (repChk) {
       repChk.checked = localStorage.getItem("mmt-hud-show-replays") !== "0";
@@ -2590,6 +2599,16 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
   if (wheelCardInit && typeof localStorage !== "undefined") {
     const wy = localStorage.getItem("mmt-wheel-pos-y") || "24";
     wheelCardInit.style.bottom = `${wy}px`;
+  }
+  const centerDock = document.getElementById("floatCenterStatusDock");
+  if (centerDock && typeof localStorage !== "undefined") {
+    const anchor = localStorage.getItem("mmt-status-dock-anchor") || "mirror";
+    if (anchor === "standings") {
+      centerDock.style.top = "270px";
+      centerDock.style.left = "6px";
+      centerDock.style.transform = "none";
+      centerDock.style.alignItems = "flex-start";
+    }
   }
   // Global shortcut for Streamer Mode (Ctrl+Shift+S or F8)
   window.addEventListener("keydown", (e: KeyboardEvent) => {
@@ -3404,6 +3423,11 @@ function safeRenderWidget(el: HTMLElement | null, fn: () => void): void {
         safeRenderWidget(tireStatusEl, () => renderTireStatusWidget(tireStatusEl, irsdkState));
       }
 
+      const dockEl = document.getElementById("ovCarTelemetryDockFloat");
+      if (dockEl && dockEl.offsetParent !== null) {
+        safeRenderWidget(dockEl, () => renderCarTelemetryDock(dockEl, irsdkState));
+      }
+
       // Prompt 100: Auto-Fuel on Pit Road entry when enabled
       const pitNow = Boolean(irsdkState.onPitRoad);
       if (pitNow && !lastAutoFuelPitRoad) {
@@ -3456,9 +3480,10 @@ function safeRenderWidget(el: HTMLElement | null, fn: () => void): void {
 
       vis.applyElementVisibility(document.getElementById("floatRelativeCard"), floatEditMode || relShow);
       vis.applyElementVisibility(document.getElementById("floatStandingsCard"), floatEditMode || stdShow);
+      vis.applyElementVisibility(document.getElementById("floatCarTelemetryDock"), floatEditMode || fuelShow);
       vis.applyElementVisibility(document.getElementById("floatFuelCard"), floatEditMode || fuelShow);
       vis.applyElementVisibility(document.getElementById("floatTireStatusCard"), !disabledWidgets.has("tires") && vis.evaluateVisibility("fuel", visCtx));
-      vis.applyElementVisibility(document.getElementById("floatTrackConditionsCard"), !disabledWidgets.has("conditions"));
+      vis.applyElementVisibility(document.getElementById("floatCenterStatusDock"), !disabledWidgets.has("conditions"));
       vis.applyElementVisibility(document.getElementById("floatTrackMapCard"), !disabledWidgets.has("trackmap"));
       vis.applyElementVisibility(document.getElementById("floatInputsCard"), floatEditMode || inpShow);
       vis.applyElementVisibility(document.getElementById("floatWaveformCard"), !disabledWidgets.has("waveform") && vis.evaluateVisibility("waveform", visCtx));

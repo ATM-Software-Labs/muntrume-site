@@ -677,3 +677,102 @@ export function renderTireStatusWidget(container: HTMLElement, state: IrsdkCompu
     </div>
   `);
 }
+
+/**
+ * Unified CarTelemetryDock (340x118px): Large Fuel Computer + 2x2 4-Tire IMO & Wear Monitor (Prompt 151)
+ */
+export function renderCarTelemetryDock(container: HTMLElement, state: IrsdkComputedState | null): void {
+  if (!state) {
+    setHtmlIfChanged(container, `<div class="text-xs text-white/50 text-center py-8">Esperando telemetría de coche...</div>`);
+    return;
+  }
+
+  const fuel = state.fuel;
+  const frame = state.frame;
+  const fuelRemStr = fuel.fuelRemainingL > 0 ? `${fuel.fuelRemainingL.toFixed(1)} L` : "-- L";
+  const lapsRemStr = fuel.isValid ? `${fuel.stintLapsRemaining.toFixed(1)} vtas` : "-- vtas";
+  const avgStr = fuel.isValid ? `${fuel.avgBurnPerLap.toFixed(2)} L/vta` : "-- L/vta";
+  const surplus = fuel.fuelSurplusL ?? 0;
+  const needStop = fuel.isValid && fuel.fuelToAdd > 0;
+  const pitPillCls = !fuel.isValid
+    ? "bg-white/10 text-white/60"
+    : needStop
+      ? "bg-rose-500/25 border border-rose-400/60 text-rose-300"
+      : "bg-emerald-500/20 border border-emerald-400/60 text-emerald-300";
+  const pitPillTxt = !fuel.isValid
+    ? "--"
+    : needStop
+      ? `+${fuel.fuelToAdd.toFixed(1)} L`
+      : `OK · +${surplus.toFixed(1)} L`;
+
+  const temps = frame.tireTempsC && frame.tireTempsC.length === 12
+    ? frame.tireTempsC
+    : [78, 80, 76, 80, 79, 75, 74, 76, 75, 75, 76, 74];
+  const wear = frame.tireWearPct && frame.tireWearPct.length === 4
+    ? frame.tireWearPct
+    : [100, 100, 100, 100];
+
+  const tempColor = (c: number): string => {
+    if (c < 65) return "#38bdf8";
+    if (c <= 92) return "#10b981";
+    if (c <= 100) return "#f59e0b";
+    return "#ef4444";
+  };
+
+  const renderTire = (label: string, tIdx: number, wIdx: number) => {
+    const i = temps[tIdx] ?? 0;
+    const m = temps[tIdx + 1] ?? 0;
+    const o = temps[tIdx + 2] ?? 0;
+    const avgT = Math.round((i + m + o) / 3);
+    const w = Math.round(wear[wIdx] ?? 100);
+    return `
+      <div class="rounded-[3px] bg-white/[0.04] border border-white/10 px-2 py-1 space-y-1">
+        <div class="flex items-baseline justify-between gap-1">
+          <span class="text-[10px] font-bold text-white/60">${label}</span>
+          <span class="text-[14px] font-black leading-none ${w > 60 ? "text-emerald-400" : w > 30 ? "text-amber-400" : "text-rose-400"}">${w}%</span>
+          <span class="text-[11px] font-bold leading-none" style="color:${tempColor(avgT)}">${avgT}°C</span>
+        </div>
+        <div class="grid grid-cols-3 gap-1">
+          <div class="h-[6px] rounded-[1px]" style="background:${tempColor(i)}" title="Int ${Math.round(i)}°C"></div>
+          <div class="h-[6px] rounded-[1px]" style="background:${tempColor(m)}" title="Mid ${Math.round(m)}°C"></div>
+          <div class="h-[6px] rounded-[1px]" style="background:${tempColor(o)}" title="Ext ${Math.round(o)}°C"></div>
+        </div>
+      </div>
+    `;
+  };
+
+  const absOn = Boolean(frame.brakeAbsActive);
+  const tcOn = ((frame.engineWarnings ?? 0) & 0x10) !== 0 || ((frame.engineWarnings ?? 0) & 0x04) !== 0;
+
+  setHtmlIfChanged(container, `
+    <div class="space-y-2 select-none">
+      <div class="grid grid-cols-3 items-center gap-2 pb-1.5 border-b border-white/10">
+        <div>
+          <span class="block text-[9px] text-white/55 uppercase">Fuel Actual</span>
+          <strong class="block text-[16px] font-black text-white leading-tight">${fuelRemStr}</strong>
+          <span class="block text-[10px] text-white/70">${lapsRemStr}</span>
+        </div>
+        <div class="text-center">
+          <span class="block text-[9px] text-white/55 uppercase">Consumo</span>
+          <strong class="block text-[13px] font-bold text-sky-300 leading-tight">${avgStr}</strong>
+        </div>
+        <div class="text-right">
+          <span class="block text-[9px] text-white/55 uppercase mb-0.5">Añadir en Box</span>
+          <span class="inline-block px-2 py-0.5 rounded-[3px] text-[17px] font-black leading-none ${pitPillCls}">${pitPillTxt}</span>
+        </div>
+      </div>
+      <div class="flex items-stretch gap-2">
+        <div class="flex-1 grid grid-cols-2 gap-2">
+          ${renderTire("FL", 0, 0)}
+          ${renderTire("FR", 3, 1)}
+          ${renderTire("RL", 6, 2)}
+          ${renderTire("RR", 9, 3)}
+        </div>
+        <div class="flex flex-col justify-center gap-1.5 w-9 shrink-0">
+          <span class="py-1 text-center rounded-[2px] text-[9.5px] font-black ${absOn ? "bg-amber-400 text-black animate-pulse" : "bg-white/5 text-white/30"}">ABS</span>
+          <span class="py-1 text-center rounded-[2px] text-[9.5px] font-black ${tcOn ? "bg-sky-400 text-black animate-pulse" : "bg-white/5 text-white/30"}">TC</span>
+        </div>
+      </div>
+    </div>
+  `);
+}
