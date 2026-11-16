@@ -178,6 +178,12 @@ pub struct IrsdkFrame {
     pub tire_wear_pct: Vec<f64>,
     pub brake_abs_active: bool,
     pub engine_warnings: i32,
+    pub player_car_team_incident_count: i32,
+    pub player_car_my_incident_count: i32,
+    pub dc_brake_bias: f64,
+    pub dc_traction_control: f64,
+    pub dc_abs: f64,
+    pub dc_fuel_mixture: f64,
 }
 
 pub fn decode_irsdk_text(raw: &[u8]) -> String {
@@ -327,6 +333,12 @@ pub fn read_live_irsdk_frame_with(bytes: &[u8], table: &VarTable) -> Result<Irsd
         ],
         brake_abs_active: val_b("BrakeABSactive"),
         engine_warnings: val_i("EngineWarnings"),
+        player_car_team_incident_count: val_i("PlayerCarTeamIncidentCount"),
+        player_car_my_incident_count: val_i("PlayerCarMyIncidentCount"),
+        dc_brake_bias: val_f("dcBrakeBias"),
+        dc_traction_control: val_f("dcTractionControl"),
+        dc_abs: val_f("dcABS"),
+        dc_fuel_mixture: val_f("dcFuelMixture"),
     })
 }
 
@@ -470,6 +482,7 @@ fn read_sample(bytes: &[u8], base: usize, vars: &[Var]) -> ReadSample {
             lap_delta: optional(vars, bytes, base, "LapDeltaToSessionBestLap"),
             lap_delta_ok: optional(vars, bytes, base, "LapDeltaToSessionBestLap_OK").map(|v| v != 0.0),
             brake_abs_active: optional(vars, bytes, base, "BrakeABSactive").map(|v| v != 0.0),
+            car_left_right: optional(vars, bytes, base, "CarLeftRight").map(|v| v.round() as i32),
             lat,
             lon,
             vx: optional(vars, bytes, base, "VelocityX"),

@@ -1087,10 +1087,15 @@
               <div id="mmtStudioTopBar" class="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 border-b border-white/10 bg-black/40">
                 <div class="flex flex-wrap items-center gap-2.5">
                   <span class="font-display font-extrabold text-sm tracking-wider text-white uppercase">MMT <span class="text-[#10b981]">HUD STUDIO</span></span>
-                  <div class="flex items-center gap-1 bg-white/[0.04] p-1 rounded-xl border border-white/10 font-mono text-[10.5px]">
-                    <button type="button" data-hud-factory-preset="sprint_gt3" class="px-2.5 py-1 rounded-lg bg-[#10b981] text-slate-950 font-bold transition">Carrera GT3</button>
-                    <button type="button" data-hud-factory-preset="endurance_multi" class="px-2.5 py-1 rounded-lg text-white/75 hover:text-white transition">Endurance / Lluvia</button>
-                    <button type="button" data-hud-factory-preset="stream_minimal" class="px-2.5 py-1 rounded-lg text-white/75 hover:text-white transition">Minimalista Qualy</button>
+                  <div class="flex flex-wrap items-center gap-1 bg-white/[0.04] p-1 rounded-xl border border-white/10 font-mono text-[10.5px]">
+                    <button type="button" data-hud-factory-preset="sprint_gt3" class="px-2.5 py-1 rounded-lg bg-[#10b981] text-slate-950 font-bold transition cursor-pointer">Sprint / Carrera Corta</button>
+                    <button type="button" data-hud-factory-preset="endurance_multi" class="px-2.5 py-1 rounded-lg text-white/75 hover:text-white transition cursor-pointer">Resistencia / Clima</button>
+                    <button type="button" data-hud-factory-preset="practice_pace" class="px-2.5 py-1 rounded-lg text-white/75 hover:text-white transition cursor-pointer">Práctica / Análisis</button>
+                    <select id="mmtCustomPresetSelect" class="hidden ml-1 px-2 py-1 rounded-lg bg-black/70 border border-white/15 text-emerald-300 text-[10.5px] font-mono outline-none"></select>
+                    <button type="button" id="btnSaveCustomPreset" class="ml-1 px-2 py-1 rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 font-bold transition cursor-pointer">+ Guardar Perfil</button>
+                    <button type="button" id="btnExportHudPreset" class="px-2 py-1 rounded-lg border border-white/15 text-white/75 hover:text-white transition cursor-pointer" title="Exportar configuración JSON">Exportar JSON</button>
+                    <button type="button" id="btnImportHudPreset" class="px-2 py-1 rounded-lg border border-white/15 text-white/75 hover:text-white transition cursor-pointer" title="Importar configuración JSON">Importar JSON</button>
+                    <input type="file" id="inpImportHudPreset" accept=".json,application/json" class="hidden" />
                   </div>
                 </div>
                 <div class="flex flex-wrap items-center gap-2 font-mono text-[11px]">
@@ -1152,6 +1157,9 @@
                     <label class="flex items-center justify-between cursor-pointer"><span>Aviso Amarillo ABS / LOCK</span><input type="checkbox" checked class="accent-[#10b981]" data-insp-opt="abs" /></label>
                     <label class="flex items-center justify-between cursor-pointer"><span>Ghost Trace de Referencia</span><input type="checkbox" class="accent-[#10b981]" data-insp-opt="ghost" /></label>
                     <label class="flex items-center justify-between cursor-pointer"><span>Compuesto en Lluvia</span><input type="checkbox" checked class="accent-[#10b981]" data-insp-opt="rain" /></label>
+                    <button type="button" id="btnSimHaloRadar" class="w-full mt-1 py-1.5 rounded-lg border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-[10.5px] font-mono font-bold text-amber-300 transition cursor-pointer">
+                      Simular Radar LED: Off
+                    </button>
                   </div>
                 </aside>
 
@@ -1171,8 +1179,13 @@
                     <div id="overlayStage" class="relative select-none">
                       <!-- Track Scene Backdrop (Day / Night-Rain / Cockpit) -->
                       <div id="mmtStudioSceneBg" class="absolute inset-0 transition-all duration-300" style="background: radial-gradient(ellipse at 50% 45%, rgba(16, 185, 129, 0.12) 0%, rgba(5, 8, 12, 0.94) 72%), linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 100% 100%, 28px 28px, 28px 28px;"></div>
+                      <!-- Proximity Halo LED Bar (Prompt 161: above Virtual Mirror) -->
+                      <div id="mmtStageHaloBar" class="absolute top-[4px] left-1/2 -translate-x-1/2 w-[520px] h-[10px] flex items-center justify-between pointer-events-none z-20 opacity-0 transition-opacity duration-75" data-widget="halo">
+                        <div id="stageHaloLeft" class="w-[245px] h-full rounded-full"></div>
+                        <div id="stageHaloRight" class="w-[245px] h-full rounded-full"></div>
+                      </div>
                       <!-- Virtual Mirror Safe Zone Guide -->
-                      <div class="absolute top-2 left-1/2 -translate-x-1/2 w-[520px] h-[165px] rounded-xl border border-dashed border-emerald-400/35 bg-emerald-500/[0.03] pointer-events-none flex items-center justify-center">
+                      <div class="absolute top-4 left-1/2 -translate-x-1/2 w-[520px] h-[165px] rounded-xl border border-dashed border-emerald-400/35 bg-emerald-500/[0.03] pointer-events-none flex items-center justify-center">
                         <span class="text-[11px] font-mono uppercase tracking-widest text-emerald-300/60">Zona Retrovisor Virtual (Libre)</span>
                       </div>
 
@@ -1902,7 +1915,18 @@
 
     <!-- Floating In-Game Overlay Container (visible exclusively when index.html?overlay=1) -->
     <div id="floatingOverlayHost" hidden class="fixed inset-0 select-none overflow-hidden pointer-events-none" data-hud="closed">
+      <!-- Proximity Halo LED Bar (Prompt 161: 60Hz peripheral LEDs above Virtual Mirror) -->
+      <div id="floatProximityHaloBar" class="fixed top-[4px] left-1/2 -translate-x-1/2 w-[520px] h-[10px] flex items-center justify-between pointer-events-none z-30 opacity-0 transition-opacity duration-75">
+        <div id="haloLedLeft" class="w-[245px] h-full rounded-full"></div>
+        <div id="haloLedRight" class="w-[245px] h-full rounded-full"></div>
+      </div>
       <div id="hudStateBanner" class="fixed top-4 left-1/2 -translate-x-1/2 z-20 px-4 py-1.5 rounded-xl bg-black/80 border border-white/20 text-white font-mono text-xs font-bold tracking-wide">iRacing Cerrado</div>
+      <!-- Prompt 162: Modular Overlay Containers (0% CPU when OFF) -->
+      <div id="floatDigiFlagPanel" class="fixed top-[200px] left-[20px] z-20 pointer-events-auto" style="display:none;"></div>
+      <div id="floatRejoinHelper" class="fixed top-[252px] left-1/2 -translate-x-1/2 z-20 pointer-events-auto" style="display:none;"></div>
+      <div id="floatFasterCarAlert" class="fixed top-[292px] left-1/2 -translate-x-1/2 z-20 pointer-events-auto" style="display:none;"></div>
+      <div id="floatInCarControls" class="fixed bottom-[155px] left-1/2 -translate-x-1/2 z-20 pointer-events-auto" style="display:none;"></div>
+      <div id="floatLapTimesPanel" class="fixed bottom-[18px] right-[18px] z-20 pointer-events-auto" style="display:none;"></div>
 
       <!-- Discreet bottom-right reopen pill (never covers Relative at top-right) -->
       <button type="button" id="hudReopenBtn" hidden class="fixed bottom-2 right-2 z-40 px-2 py-0.5 rounded bg-black/65 border border-white/15 text-white/75 hover:text-r-accent font-mono text-[10px] font-bold pointer-events-auto transition" title="F9 Editar · F10 Ocultar">

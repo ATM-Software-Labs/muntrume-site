@@ -41,6 +41,7 @@ export interface WeekendInfo {
   trackConfigName: string;
   trackId: number;
   trackLengthM: number;
+  incidentLimit?: number;
   category: "Road" | "Oval" | "DirtRoad" | "DirtOval" | string;
   sessionType: string;
   seasonId?: number;
@@ -119,6 +120,12 @@ export interface IrsdkTelemetryFrame {
   tireWearPct?: number[];
   brakeAbsActive?: boolean;
   engineWarnings?: number;
+  playerCarTeamIncidentCount?: number;
+  playerCarMyIncidentCount?: number;
+  dcBrakeBias?: number;
+  dcTractionControl?: number;
+  dcABS?: number;
+  dcFuelMixture?: number;
 }
 
 export interface RelativeEntry {

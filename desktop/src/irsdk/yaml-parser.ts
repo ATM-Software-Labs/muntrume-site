@@ -176,6 +176,7 @@ export function parseSessionInfoYaml(yamlText: string, updateNum: number = 0): S
         else if (key === "TrackConfigName") weekendInfo.trackConfigName = val;
         else if (key === "TrackID") weekendInfo.trackId = parseInt(val, 10) || 0;
         else if (key === "Category") weekendInfo.category = val;
+        else if (key === "IncidentLimit") weekendInfo.incidentLimit = parseInt(val, 10) || 0;
         else if (key === "TrackLength") {
           // E.g. "4.65 km" or "2.89 mi"
           const num = parseFloat(val);

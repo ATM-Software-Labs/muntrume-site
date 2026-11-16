@@ -269,6 +269,26 @@ export function buildZeroBloatStandings(leaderboard: LeaderboardEntry[]): Compac
 /**
  * Renders the Multiclass Standings widget into target DOM container
  */
+function renderIncidentPill(state: IrsdkComputedState): string {
+  const cur = Math.max(
+    0,
+    Math.round(
+      state.frame.playerCarTeamIncidentCount ??
+      state.frame.playerCarMyIncidentCount ??
+      0
+    )
+  );
+  const limit = Math.max(0, Math.round(state.session.weekendInfo?.incidentLimit ?? 0));
+  const label = limit > 0 ? `INC ${cur}/${limit}x` : `INC ${cur}x`;
+  let colorStyle = "color:#10b981;border-color:rgba(16,185,129,0.4);background:rgba(16,185,129,0.12);";
+  if (limit > 0 && limit - cur <= 2) {
+    colorStyle = "color:#ef4444;border-color:rgba(239,68,68,0.6);background:rgba(239,68,68,0.18);";
+  } else if (limit > 0 && cur >= limit * 0.5) {
+    colorStyle = "color:#f59e0b;border-color:rgba(245,158,11,0.5);background:rgba(245,158,11,0.14);";
+  }
+  return `<span class="px-1.5 py-0.5 rounded-[2px] border font-mono text-[10px] font-black tabular-nums leading-none" style="${colorStyle}">${label}</span>`;
+}
+
 export function renderStandingsWidget(container: HTMLElement, state: IrsdkComputedState | null): void {
   if (!state || !state.leaderboard || state.leaderboard.length === 0) {
     container.innerHTML = `
@@ -323,6 +343,7 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
         <span class="text-emerald-300 font-bold">⏱ ${remClock}</span>
       </div>
       <div class="flex items-center gap-2 text-white/85">
+        ${renderIncidentPill(state)}
         ${tempPart ? `<span>${tempPart}</span>` : ""}
         <span>🕒 ${localClock}</span>
         <span>${leaderboard.length}/${totalSessionCars}</span>
@@ -592,6 +613,7 @@ export function renderTrackConditionsWidget(container: HTMLElement, state: Irsdk
       ${tempHtml}
       <span class="${wet.cls}">💧 ${wet.label}</span>
       ${optPill}
+      ${renderIncidentPill(state)}
     </div>
   `);
 }
@@ -803,6 +825,243 @@ export function renderCarTelemetryDock(container: HTMLElement, state: IrsdkCompu
           <span class="py-1 text-center rounded-[2px] text-[9.5px] font-black ${absOn ? "bg-amber-400 text-black animate-pulse" : "bg-white/5 text-white/30"}">ABS</span>
           <span class="py-1 text-center rounded-[2px] text-[9.5px] font-black ${tcOn ? "bg-sky-400 text-black animate-pulse" : "bg-white/5 text-white/30"}">TC</span>
         </div>
+      </div>
+    </div>
+  `);
+}
+
+export function renderDigiFlagPanelWidget(container: HTMLElement, state: IrsdkComputedState, forcePreview = false): void {
+  const flags = (state.frame.sessionFlags || 0) | (state.frame.carIdxSessionFlags?.[state.camCarIdx] ?? 0);
+  let bg = "";
+  let label = "";
+  let sub = "";
+  let extraStyle = "";
+
+  if (flags & 0x00200000) {
+    bg = "background:#ea580c;border-color:#fdba74;color:#fff;";
+    label = "MEAT";
+    sub = "BOX";
+  } else if (flags & 0x00010000) {
+    bg = "background:#090b0f;border-color:#ef4444;color:#f87171;";
+    label = "BLACK";
+    sub = "PEN";
+  } else if (flags & 0x00080000) {
+    bg = "background:#f59e0b;border-color:#fef08a;color:#090b0f;";
+    label = "SLOW";
+    sub = "DOWN";
+  } else if ((flags & 0x00004100) !== 0) {
+    bg = "background:#eab308;border-color:#fef08a;color:#090b0f;";
+    label = "FCY";
+    sub = "SC";
+  } else if (flags & 0x00000008) {
+    bg = "background:#facc15;border-color:#fef9c3;color:#090b0f;";
+    label = "YEL";
+    sub = "WARN";
+  } else if (flags & 0x00000020) {
+    bg = "background:#2563eb;border-color:#93c5fd;color:#fff;";
+    extraStyle = "background-image:linear-gradient(135deg,transparent 42%,rgba(250,204,21,0.92) 42%,rgba(250,204,21,0.92) 58%,transparent 58%);";
+    label = "BLUE";
+    sub = "PASS";
+  } else if (flags & 0x00000002) {
+    bg = "background:#f8fafc;border-color:#cbd5e1;color:#090b0f;";
+    label = "LAST";
+    sub = "LAP";
+  } else if (flags & 0x00000001) {
+    bg = "background:#111827;border-color:#fff;color:#fff;";
+    extraStyle = "background-image:repeating-conic-gradient(#fff 0% 25%,#111827 0% 50%);background-size:16px 16px;";
+    label = "FIN";
+    sub = "CHECK";
+  } else if ((flags & 0x00000004) || forcePreview) {
+    bg = "background:#10b981;border-color:#6ee7b7;color:#052e16;";
+    label = "GREEN";
+    sub = "TRACK";
+  }
+
+  if (!label) {
+    container.style.display = "none";
+    setHtmlIfChanged(container, "");
+    return;
+  }
+  container.style.display = "block";
+  setHtmlIfChanged(container, `
+    <div class="w-[64px] h-[64px] rounded-[6px] border-2 font-mono flex flex-col items-center justify-center shadow-2xl select-none" style="${bg}${extraStyle}">
+      <span class="text-[14px] font-black leading-none tracking-tight drop-shadow">${label}</span>
+      <span class="text-[9px] font-extrabold opacity-90 mt-0.5 drop-shadow">${sub}</span>
+    </div>
+  `);
+}
+
+export function renderRejoinHelperWidget(
+  container: HTMLElement,
+  state: IrsdkComputedState,
+  speedKmh: number,
+  forcePreview = false
+): void {
+  const surface = state.frame.carIdxTrackSurface?.[state.camCarIdx] ?? 3;
+  const isOffTrackSlow = surface === 0 && speedKmh < 45;
+  if (!isOffTrackSlow && !forcePreview) {
+    container.style.display = "none";
+    setHtmlIfChanged(container, "");
+    return;
+  }
+
+  const behind = state.relative.entries
+    .filter((r) => !r.isActiveCam && r.deltaSeconds < -0.05 && !r.onPitRoad)
+    .sort((a, b) => b.deltaSeconds - a.deltaSeconds);
+  const nearestSec = behind.length > 0 ? Math.abs(behind[0].deltaSeconds) : forcePreview ? 1.8 : 99;
+
+  let cls = "border-emerald-500/70 bg-emerald-950/92 text-emerald-200";
+  let msg = nearestSec >= 20 ? "✓ PISTA DESPEJADA (>20s)" : `✓ TRÁFICO LIBRE EN ${nearestSec.toFixed(1)}s`;
+  if (nearestSec < 3.0) {
+    cls = "border-rose-500 bg-rose-950/95 text-rose-100 animate-pulse";
+    msg = `⚠ ¡NO ENTRAR! COCHE EN ${nearestSec.toFixed(1)}s`;
+  } else if (nearestSec < 6.0) {
+    cls = "border-amber-500 bg-amber-950/95 text-amber-100";
+    msg = `PRECAUCIÓN · COCHE EN ${nearestSec.toFixed(1)}s`;
+  }
+
+  container.style.display = "block";
+  setHtmlIfChanged(container, `
+    <div class="px-3.5 py-2 rounded-[6px] border-2 font-mono text-[12px] font-black tracking-wide whitespace-nowrap shadow-2xl select-none ${cls}">
+      ${msg}
+    </div>
+  `);
+}
+
+export function renderFasterCarAlertWidget(
+  container: HTMLElement,
+  state: IrsdkComputedState,
+  forcePreview = false
+): void {
+  const myEst = state.activeDriver?.carClassEstLapTime || 100;
+  const fasterBehind = state.relative.entries
+    .filter((r) => !r.isActiveCam && r.deltaSeconds < 0 && r.deltaSeconds >= -1.5 && r.trackSurface > 0 && !r.onPitRoad)
+    .find((r) => {
+      const drv = state.session.driverInfo?.drivers[r.carIdx];
+      const est = drv?.carClassEstLapTime || myEst;
+      return myEst - est >= 2.5 || Boolean(state.frame.carIdxOnPitRoad?.[state.camCarIdx]);
+    });
+
+  if (!fasterBehind && !forcePreview) {
+    container.style.display = "none";
+    setHtmlIfChanged(container, "");
+    return;
+  }
+
+  const clsName = fasterBehind?.carClassShortName || "GTP";
+  const carNum = fasterBehind?.carNumber || "7";
+  const gap = fasterBehind ? Math.abs(fasterBehind.deltaSeconds).toFixed(1) : "1.1";
+
+  container.style.display = "block";
+  setHtmlIfChanged(container, `
+    <div class="px-3 py-1.5 rounded-[4px] border border-sky-400/70 bg-sky-950/90 text-sky-100 font-mono text-[11px] font-black whitespace-nowrap shadow-xl flex items-center gap-2 animate-pulse select-none">
+      <span class="px-1.5 py-0.5 rounded-[2px] bg-sky-400 text-slate-950 text-[10px]">${clsName}</span>
+      <span>▲ COCHE RÁPIDO #${carNum} EN ${gap}s</span>
+    </div>
+  `);
+}
+
+let prevInCar: { bb: number; tc: number; abs: number; map: number; init: boolean } = {
+  bb: 0,
+  tc: 0,
+  abs: 0,
+  map: 0,
+  init: false,
+};
+let inCarToast: { title: string; value: string; untilMs: number } | null = null;
+
+export function renderInCarControlsWidget(
+  container: HTMLElement,
+  state: IrsdkComputedState,
+  nowMs: number,
+  forcePreview = false
+): void {
+  const bb = Number((state.frame.dcBrakeBias ?? 0).toFixed(2));
+  const tc = Math.round(state.frame.dcTractionControl ?? 0);
+  const abs = Math.round(state.frame.dcABS ?? 0);
+  const map = Math.round(state.frame.dcFuelMixture ?? 0);
+
+  if (!prevInCar.init) {
+    prevInCar = { bb, tc, abs, map, init: true };
+  } else {
+    if (bb > 0 && Math.abs(bb - prevInCar.bb) >= 0.05) {
+      inCarToast = { title: "BRAKE BIAS", value: `${bb.toFixed(1)}%`, untilMs: nowMs + 3000 };
+    } else if (tc !== prevInCar.tc && tc > 0) {
+      inCarToast = { title: "TRACTION CTRL", value: `TC ${tc}`, untilMs: nowMs + 3000 };
+    } else if (abs !== prevInCar.abs && abs > 0) {
+      inCarToast = { title: "ABS SETTING", value: `ABS ${abs}`, untilMs: nowMs + 3000 };
+    } else if (map !== prevInCar.map && map > 0) {
+      inCarToast = { title: "ENGINE MAP", value: `MAP ${map}`, untilMs: nowMs + 3000 };
+    }
+    prevInCar = { bb, tc, abs, map, init: true };
+  }
+
+  const active = inCarToast && nowMs <= inCarToast.untilMs ? inCarToast : forcePreview ? { title: "BRAKE BIAS", value: "54.2%", untilMs: nowMs + 1 } : null;
+  if (!active) {
+    container.style.display = "none";
+    setHtmlIfChanged(container, "");
+    return;
+  }
+
+  container.style.display = "block";
+  setHtmlIfChanged(container, `
+    <div class="px-3.5 py-2 rounded-[5px] border border-emerald-400/60 bg-[#090b0f]/92 text-white font-mono flex items-center gap-3 shadow-2xl select-none">
+      <span class="text-[10px] uppercase tracking-widest text-emerald-400 font-bold">${active.title}</span>
+      <strong class="text-[16px] font-black text-white tabular-nums">${active.value}</strong>
+    </div>
+  `);
+}
+
+export interface LapHistoryEntry {
+  lap: number;
+  timeSec: number;
+}
+
+export function renderLapTimesWidget(
+  container: HTMLElement,
+  laps: LapHistoryEntry[],
+  bestLapSec: number,
+  optLapSec: number
+): void {
+  const recent = laps.slice(-5).reverse();
+  const valid = laps.filter((l) => l.timeSec > 10);
+  const avgSec = valid.length > 0 ? valid.reduce((a, b) => a + b.timeSec, 0) / valid.length : 0;
+
+  const fmt = (sec: number) => {
+    if (!(sec > 0)) return "--:--.---";
+    const m = Math.floor(sec / 60);
+    const s = (sec % 60).toFixed(3).padStart(6, "0");
+    return m > 0 ? `${m}:${s}` : s;
+  };
+  const rows =
+    recent.length > 0
+      ? recent
+          .map((l) => {
+            const delta = avgSec > 0 ? l.timeSec - avgSec : 0;
+            const dStr = avgSec > 0 ? `${delta >= 0 ? "+" : ""}${delta.toFixed(2)}s` : "—";
+            const dCls = delta <= -0.05 ? "text-emerald-400" : delta >= 0.15 ? "text-rose-400" : "text-white/75";
+            const isBest = bestLapSec > 0 && Math.abs(l.timeSec - bestLapSec) < 0.005;
+            return `
+              <div class="flex items-center justify-between text-[11px] leading-[17px] border-b border-white/[0.05]">
+                <span class="text-white/60">V${l.lap}</span>
+                <span class="font-bold ${isBest ? "text-fuchsia-400" : "text-white"}">${fmt(l.timeSec)}</span>
+                <span class="${dCls} w-12 text-right">${dStr}</span>
+              </div>
+            `;
+          })
+          .join("")
+      : `<div class="text-[10.5px] text-white/45 py-2 text-center">Completa una vuelta para ver ritmo</div>`;
+
+  setHtmlIfChanged(container, `
+    <div class="w-[240px] rounded-[4px] border border-white/10 bg-[#080a0e]/88 p-2 font-mono text-white select-none tabular-nums">
+      <div class="flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-emerald-400 pb-1 mb-1 border-b border-white/10">
+        <span>Historial Vueltas</span>
+        <span class="text-white/60">Últ. 5</span>
+      </div>
+      <div class="space-y-0.5">${rows}</div>
+      <div class="mt-1.5 pt-1 border-t border-white/10 flex items-center justify-between text-[10px]">
+        <span class="text-fuchsia-300">Mejor: <strong>${fmt(bestLapSec)}</strong></span>
+        <span class="text-sky-300">Ópt: <strong>${fmt(optLapSec)}</strong></span>
       </div>
     </div>
   `);

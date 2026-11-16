@@ -119,6 +119,7 @@ export interface LiveSample {
   lapDelta?: number;
   lapDeltaOk?: boolean;
   brakeAbsActive?: boolean;
+  carLeftRight?: number;
   lat?: number;
   lon?: number;
   vx?: number;

@@ -5,6 +5,14 @@ import { analyzeStintConsistency } from "./telemetry/consistency";
 import { setActiveCoachReference } from "./features-48-50";
 import { renderCenteredSteeringWheel } from "./irsdk/gpu-pedals";
 import {
+  renderDigiFlagPanelWidget,
+  renderRejoinHelperWidget,
+  renderFasterCarAlertWidget,
+  renderInCarControlsWidget,
+  renderLapTimesWidget,
+  type LapHistoryEntry,
+} from "./irsdk/overlay-renderer";
+import {
   IrsdkClient,
   renderRelativeWidget,
   renderStandingsWidget,
@@ -2274,24 +2282,135 @@ function ensureLayoutSchemaV2(force = false): void {
       });
     });
 
-    // Prompt 105: Factory Presets & Layout Export/Import
+    // Prompt 105 & 163: Factory Presets, Custom Profiles & JSON Export/Import
     const FACTORY_PRESETS: Record<string, { disabled: string[]; ghost: boolean }> = {
-      sprint_gt3: { disabled: ["tires", "trackmap", "conditions"], ghost: true },
-      endurance_multi: { disabled: [], ghost: false },
-      stream_minimal: { disabled: ["fuel", "tires", "trackmap", "conditions", "lights"], ghost: false },
+      sprint_gt3: {
+        disabled: ["fuel", "trackmap", "laptimes", "conditions", "fastercar", "cluster", "delta", "radar", "tires", "lights"],
+        ghost: false,
+      },
+      endurance_multi: {
+        disabled: ["trackmap", "laptimes", "cluster", "delta", "radar", "tires"],
+        ghost: false,
+      },
+      practice_pace: {
+        disabled: ["standings", "relative", "halo", "digiflag", "rejoin", "fastercar", "fuel", "radar", "tires"],
+        ghost: true,
+      },
+      stream_minimal: {
+        disabled: ["fuel", "tires", "trackmap", "conditions", "lights"],
+        ghost: false,
+      },
     };
 
-    studio.querySelectorAll<HTMLButtonElement>("[data-hud-factory-preset]").forEach((btn) => {
+    const applyPresetPayload = (disabledList: string[], ghost: boolean) => {
+      saveDisabledWidgets(new Set(disabledList));
+      localStorage.setItem("mmt-ghost-compare", ghost ? "1" : "0");
+      if (ghostChk) ghostChk.checked = ghost;
+      paintWidgetBtns();
+      applyHudCustomAppearance();
+      window.dispatchEvent(new CustomEvent("mmt-studio-refresh"));
+    };
+
+    const presetBtns = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-hud-factory-preset]"));
+    presetBtns.forEach((btn) => {
       btn.addEventListener("click", () => {
         const key = btn.dataset.hudFactoryPreset || "";
         const preset = FACTORY_PRESETS[key];
         if (!preset) return;
-        saveDisabledWidgets(new Set(preset.disabled));
-        localStorage.setItem("mmt-ghost-compare", preset.ghost ? "1" : "0");
-        if (ghostChk) ghostChk.checked = preset.ghost;
-        paintWidgetBtns();
-        applyHudCustomAppearance();
+        presetBtns.forEach((b) => {
+          b.className = b === btn
+            ? "px-2.5 py-1 rounded-lg bg-[#10b981] text-slate-950 font-bold transition cursor-pointer"
+            : "px-2.5 py-1 rounded-lg text-white/75 hover:text-white transition cursor-pointer";
+        });
+        applyPresetPayload(preset.disabled, preset.ghost);
       });
+    });
+
+    const CUSTOM_PRESETS_KEY = "mmt_studio_custom_presets_v1";
+    type CustomPreset = { name: string; disabled: string[]; ghost: boolean };
+    const loadCustomPresets = (): CustomPreset[] => {
+      try {
+        const raw = localStorage.getItem(CUSTOM_PRESETS_KEY);
+        return raw ? (JSON.parse(raw) as CustomPreset[]) : [];
+      } catch {
+        return [];
+      }
+    };
+    const customSelect = document.getElementById("mmtCustomPresetSelect") as HTMLSelectElement | null;
+    const refreshCustomSelect = () => {
+      if (!customSelect) return;
+      const list = loadCustomPresets();
+      if (list.length === 0) {
+        customSelect.classList.add("hidden");
+        return;
+      }
+      customSelect.classList.remove("hidden");
+      customSelect.innerHTML = `<option value="">Mis Perfiles (${list.length})</option>` +
+        list.map((p, i) => `<option value="${i}">${p.name}</option>`).join("");
+    };
+    refreshCustomSelect();
+
+    customSelect?.addEventListener("change", () => {
+      const idx = Number(customSelect.value);
+      const list = loadCustomPresets();
+      const chosen = list[idx];
+      if (!chosen) return;
+      applyPresetPayload(chosen.disabled, chosen.ghost);
+    });
+
+    document.getElementById("btnSaveCustomPreset")?.addEventListener("click", () => {
+      const name = window.prompt("Nombre del perfil personalizado (ej. IMSA Night):");
+      if (!name || !name.trim()) return;
+      const list = loadCustomPresets().filter((p) => p.name !== name.trim());
+      list.push({
+        name: name.trim(),
+        disabled: Array.from(loadDisabledWidgets()),
+        ghost: localStorage.getItem("mmt-ghost-compare") === "1",
+      });
+      localStorage.setItem(CUSTOM_PRESETS_KEY, JSON.stringify(list));
+      refreshCustomSelect();
+    });
+
+    document.getElementById("btnExportHudPreset")?.addEventListener("click", () => {
+      const payload = {
+        version: 2,
+        exportedAt: new Date().toISOString(),
+        disabledWidgets: Array.from(loadDisabledWidgets()),
+        ghostCompare: localStorage.getItem("mmt-ghost-compare") === "1",
+        opacity: localStorage.getItem("mmt-hud-opacity") || "92",
+        scale: localStorage.getItem("mmt-hud-scale") || "100",
+        positions: localStorage.getItem("mmt-hud-positions") || "{}",
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "mmt-hud-preset.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    const inpImport = document.getElementById("inpImportHudPreset") as HTMLInputElement | null;
+    document.getElementById("btnImportHudPreset")?.addEventListener("click", () => inpImport?.click());
+    inpImport?.addEventListener("change", () => {
+      const file = inpImport.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(String(reader.result || "{}"));
+          if (Array.isArray(parsed.disabledWidgets)) {
+            if (parsed.opacity) localStorage.setItem("mmt-hud-opacity", String(parsed.opacity));
+            if (parsed.scale) localStorage.setItem("mmt-hud-scale", String(parsed.scale));
+            if (parsed.positions) localStorage.setItem("mmt-hud-positions", String(parsed.positions));
+            applyPresetPayload(parsed.disabledWidgets.map(String), Boolean(parsed.ghostCompare));
+          }
+        } catch {
+          // ignore malformed JSON
+        }
+      };
+      reader.readAsText(file);
+      inpImport.value = "";
     });
 
     const btnCopyLayout = document.getElementById("btnCopyHudLayout");
@@ -2351,12 +2470,18 @@ function ensureLayoutSchemaV2(force = false): void {
     const STUDIO_MODULES = [
       { id: "standings", label: "Standings", stageSel: "#widgetStandings" },
       { id: "relative", label: "Relative", stageSel: "#widgetRelative" },
+      { id: "halo", label: "Radar LED Superior", stageSel: "#mmtStageHaloBar" },
+      { id: "digiflag", label: "Banderas Digitales", stageSel: "" },
+      { id: "rejoin", label: "Asistente Reincorporación", stageSel: "" },
+      { id: "fastercar", label: "Alerta Coche Rápido", stageSel: "" },
+      { id: "incar", label: "Ajustes Cabina (BB/TC/ABS)", stageSel: "" },
+      { id: "laptimes", label: "Historial de Vueltas", stageSel: "" },
       { id: "cluster", label: "Pedales & Volante", stageSel: "#widgetCluster" },
       { id: "trackmap", label: "Mapa de Circuito", stageSel: "" },
       { id: "fuel", label: "Telemetría Fuel & Ruedas", stageSel: "#widgetFuel" },
       { id: "delta", label: "Delta en Vivo", stageSel: "#widgetCorner" },
       { id: "conditions", label: "Clima & Neumático Óptimo", stageSel: "#widgetBrakeMarker" },
-      { id: "radar", label: "Alerta Banderas / Spotter", stageSel: "#widgetShiftLights" },
+      { id: "radar", label: "Alerta Spotter / Luces", stageSel: "#widgetShiftLights" },
     ];
     let selectedModId = "standings";
 
@@ -2399,13 +2524,17 @@ function ensureLayoutSchemaV2(force = false): void {
         .join("");
 
       studioCatalogList.innerHTML = STUDIO_MODULES.map(
-        (m) => `
-        <div class="group flex items-center justify-between gap-1 px-2 py-1 rounded-lg hover:bg-white/5 text-white/65 cursor-pointer" data-mod-select="${m.id}">
-          <span class="truncate">${m.label}</span>
-          ${disabled.has(m.id) ? `<button type="button" data-mod-add="${m.id}" class="px-1.5 py-0.5 rounded bg-[#10b981]/20 text-[#10b981] text-[10px] font-bold">+ Añadir</button>` : ""}
-        </div>`,
+        (m) => {
+          const on = !disabled.has(m.id);
+          return `
+        <div class="group flex items-center justify-between gap-1 px-2 py-1 rounded-lg hover:bg-white/5 text-white/80 cursor-pointer" data-mod-select="${m.id}">
+          <span class="truncate text-[10.5px]">${m.label}</span>
+          <button type="button" data-mod-toggle="${m.id}" class="px-1.5 py-0.5 rounded text-[9.5px] font-bold shrink-0 cursor-pointer ${on ? "bg-[#10b981]/20 text-[#10b981] border border-[#10b981]/40" : "bg-white/5 text-white/40 border border-white/10"}">${on ? "ON" : "OFF"}</button>
+        </div>`;
+        },
       ).join("");
     };
+    window.addEventListener("mmt-studio-refresh", renderLists);
 
     studioActiveList.addEventListener("click", (e) => {
       const t = e.target as HTMLElement;
@@ -2429,6 +2558,22 @@ function ensureLayoutSchemaV2(force = false): void {
 
     studioCatalogList.addEventListener("click", (e) => {
       const t = e.target as HTMLElement;
+      const tog = t.closest<HTMLElement>("[data-mod-toggle]");
+      if (tog) {
+        const id = tog.dataset.modToggle || "";
+        const disabled = loadDisabledWidgets();
+        if (disabled.has(id)) disabled.delete(id);
+        else disabled.add(id);
+        saveDisabledWidgets(disabled);
+        const mod = STUDIO_MODULES.find((m) => m.id === id);
+        if (mod?.stageSel) {
+          const el = document.querySelector<HTMLElement>(mod.stageSel);
+          if (el) el.hidden = disabled.has(id);
+        }
+        applyHudCustomAppearance();
+        selectModule(id);
+        return;
+      }
       const add = t.closest<HTMLElement>("[data-mod-add]");
       if (add) {
         const id = add.dataset.modAdd || "";
@@ -2497,6 +2642,22 @@ function ensureLayoutSchemaV2(force = false): void {
 
     document.getElementById("mmtStudioVisBtn")?.addEventListener("click", () => {
       document.getElementById("btnToggleFloatingOverlay")?.click();
+    });
+    const HALO_SIM_STATES: Array<{ val: number; label: string }> = [
+      { val: 0, label: "Simular Radar LED: Off" },
+      { val: 2, label: "Simular Radar LED: Izquierda" },
+      { val: 3, label: "Simular Radar LED: Derecha" },
+      { val: 4, label: "Simular Radar LED: 3-Wide" },
+      { val: 5, label: "Simular Radar LED: 2x Izquierda" },
+      { val: 6, label: "Simular Radar LED: 2x Derecha" },
+    ];
+    let haloSimIdx = 0;
+    const simHaloBtn = document.getElementById("btnSimHaloRadar");
+    simHaloBtn?.addEventListener("click", () => {
+      haloSimIdx = (haloSimIdx + 1) % HALO_SIM_STATES.length;
+      const cur = HALO_SIM_STATES[haloSimIdx];
+      simHaloBtn.textContent = cur.label;
+      renderProximityHaloBar(cur.val, true);
     });
     let studioLocked = true;
     const lockBtn = document.getElementById("mmtStudioLockBtn");
@@ -3248,6 +3409,47 @@ export function updateLiveOverlay(sample: LiveSample): void {
   updateHUDDisplay(sample);
 }
 
+function applyHaloStripStyle(el: HTMLElement | null, mode: "off" | "amber" | "red"): void {
+  if (!el) return;
+  if (mode === "amber") {
+    el.className = "w-[245px] h-full rounded-full";
+    el.style.background = "linear-gradient(90deg, rgba(245,158,11,0.98) 0%, rgba(251,191,36,0.92) 100%)";
+    el.style.boxShadow = "0 0 14px rgba(245,158,11,0.95)";
+  } else if (mode === "red") {
+    el.className = "w-[245px] h-full rounded-full animate-pulse";
+    el.style.background = "linear-gradient(90deg, rgba(239,68,68,1) 0%, rgba(248,113,113,0.95) 100%)";
+    el.style.boxShadow = "0 0 18px rgba(239,68,68,1)";
+  } else {
+    el.className = "w-[245px] h-full rounded-full";
+    el.style.background = "transparent";
+    el.style.boxShadow = "none";
+  }
+}
+
+function renderProximityHaloBar(carLeftRight: number, updateStage = false): void {
+  const leftMode: "off" | "amber" | "red" =
+    carLeftRight === 2 ? "amber" : carLeftRight === 4 || carLeftRight === 5 ? "red" : "off";
+  const rightMode: "off" | "amber" | "red" =
+    carLeftRight === 3 ? "amber" : carLeftRight === 4 || carLeftRight === 6 ? "red" : "off";
+  const active = leftMode !== "off" || rightMode !== "off";
+
+  const targets: Array<{ bar: string; left: string; right: string }> = [
+    { bar: "floatProximityHaloBar", left: "haloLedLeft", right: "haloLedRight" },
+  ];
+  if (updateStage) {
+    targets.push({ bar: "mmtStageHaloBar", left: "stageHaloLeft", right: "stageHaloRight" });
+  }
+  for (const t of targets) {
+    const barEl = document.getElementById(t.bar);
+    if (!barEl) continue;
+    barEl.style.opacity = active ? "1" : "0";
+    applyHaloStripStyle(document.getElementById(t.left), leftMode);
+    applyHaloStripStyle(document.getElementById(t.right), rightMode);
+  }
+}
+
+const studioLapHistory: LapHistoryEntry[] = [];
+
 function updateHUDDisplay(sample: LiveSample): void {
   if (typeof document !== "undefined" && document.hidden) return;
   const irsdkState = IrsdkClient.getInstance().getLatestState();
@@ -3528,6 +3730,9 @@ function safeRenderWidget(el: HTMLElement | null, fn: () => void): void {
   if (wheelCanvas && wheelCanvas.offsetParent !== null) {
     safeRenderWidget(wheelCanvas, () => renderCenteredSteeringWheel(wheelCanvas, sample.steering));
   }
+  const haloDisabled = loadDisabledWidgets().has("halo");
+  const carLeftRight = haloDisabled ? 0 : (sample.carLeftRight ?? irsdkState?.frame.carLeftRight ?? 0);
+  renderProximityHaloBar(carLeftRight);
 
   // Live Delta Bar (30 FPS Canvas, Prompt 109)
   const deltaCanvas = document.getElementById("ovLiveDeltaFloat") as HTMLCanvasElement | null;
@@ -3600,6 +3805,57 @@ function safeRenderWidget(el: HTMLElement | null, fn: () => void): void {
       const dockEl = document.getElementById("ovCarTelemetryDockFloat");
       if (dockEl && dockEl.offsetParent !== null) {
         safeRenderWidget(dockEl, () => renderCarTelemetryDock(dockEl, irsdkState));
+      }
+
+      // Prompt 162: Modular Overlays (0% CPU when OFF)
+      const disabledMods = loadDisabledWidgets();
+      const digiPanelEl = document.getElementById("floatDigiFlagPanel");
+      if (digiPanelEl) {
+        if (disabledMods.has("digiflag")) {
+          if (digiPanelEl.style.display !== "none") { digiPanelEl.style.display = "none"; digiPanelEl.innerHTML = ""; }
+        } else {
+          safeRenderWidget(digiPanelEl, () => renderDigiFlagPanelWidget(digiPanelEl, irsdkState));
+        }
+      }
+      const rejoinEl = document.getElementById("floatRejoinHelper");
+      if (rejoinEl) {
+        if (disabledMods.has("rejoin")) {
+          if (rejoinEl.style.display !== "none") { rejoinEl.style.display = "none"; rejoinEl.innerHTML = ""; }
+        } else {
+          safeRenderWidget(rejoinEl, () => renderRejoinHelperWidget(rejoinEl, irsdkState, kmh));
+        }
+      }
+      const fasterEl = document.getElementById("floatFasterCarAlert");
+      if (fasterEl) {
+        if (disabledMods.has("fastercar")) {
+          if (fasterEl.style.display !== "none") { fasterEl.style.display = "none"; fasterEl.innerHTML = ""; }
+        } else {
+          safeRenderWidget(fasterEl, () => renderFasterCarAlertWidget(fasterEl, irsdkState));
+        }
+      }
+      const inCarEl = document.getElementById("floatInCarControls");
+      if (inCarEl) {
+        if (disabledMods.has("incar")) {
+          if (inCarEl.style.display !== "none") { inCarEl.style.display = "none"; inCarEl.innerHTML = ""; }
+        } else {
+          safeRenderWidget(inCarEl, () => renderInCarControlsWidget(inCarEl, irsdkState, nowHudMs));
+        }
+      }
+      const lapTimesEl = document.getElementById("floatLapTimesPanel");
+      if (lapTimesEl) {
+        if (disabledMods.has("laptimes")) {
+          if (lapTimesEl.style.display !== "none") { lapTimesEl.style.display = "none"; lapTimesEl.innerHTML = ""; }
+        } else {
+          const cIdx = irsdkState.camCarIdx;
+          const curLap = frame.carIdxLap?.[cIdx] ?? 0;
+          const lastLapSec = frame.carIdxLastLapTime?.[cIdx] ?? 0;
+          const bestLapSec = frame.carIdxBestLapTime?.[cIdx] ?? 0;
+          if (curLap > 1 && lastLapSec > 10 && !studioLapHistory.some((l) => l.lap === curLap - 1)) {
+            studioLapHistory.push({ lap: curLap - 1, timeSec: lastLapSec });
+          }
+          lapTimesEl.style.display = "block";
+          safeRenderWidget(lapTimesEl, () => renderLapTimesWidget(lapTimesEl, studioLapHistory, bestLapSec, bestLapSec));
+        }
       }
 
       // Prompt 100: Auto-Fuel on Pit Road entry when enabled
