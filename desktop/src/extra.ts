@@ -28,6 +28,7 @@ import {
   renderBroadcastDirectorWidget,
 } from "./irsdk";
 import { renderLiveTrackMapCanvas, renderMirrorProximityWings } from "./irsdk/proximity-radar";
+import { observeTrackAutoMap } from "./irsdk/track-paths";
 import { estimateLiveIRating, formatIRatingDelta, formatSofShort } from "./irsdk/irating-calc";
 import { AeroSuspensionAnalyzer, renderAeroAnalysisPanel } from "./telemetry/aero-analyzer";
 import { LocalTelemetryBus } from "./plugins/telemetry-bus";
@@ -3389,6 +3390,13 @@ function safeRenderWidget(el: HTMLElement | null, fn: () => void): void {
       });
       const trackMapCanvas = document.getElementById("ovTrackMapFloat") as HTMLCanvasElement | null;
       if (trackMapCanvas && trackMapCanvas.offsetParent !== null) {
+        observeTrackAutoMap(
+          irsdkState.session.weekendInfo?.trackName || "",
+          frame.carIdxLap[irsdkState.camCarIdx] ?? 0,
+          frame.carIdxLapDistPct[irsdkState.camCarIdx] ?? -1,
+          sample.vx ?? 0,
+          sample.vy ?? 0,
+        );
         safeRenderWidget(trackMapCanvas, () => renderLiveTrackMapCanvas(trackMapCanvas, irsdkState));
       }
     }
@@ -3472,9 +3480,10 @@ function safeRenderWidget(el: HTMLElement | null, fn: () => void): void {
       const ruleStdPitOnly = localStorage.getItem("mmt-rule-std-pit-only") === "1";
       const ruleRelTrackOnly = localStorage.getItem("mmt-rule-rel-track-only") === "1";
       const ruleFuelReserveOnly = localStorage.getItem("mmt-rule-fuel-reserve-only") === "1";
+      const activeTrackOrReplay = Boolean(frame.isOnTrack || irsdkState.isReplayPlaying);
       const stdShow = !disabledWidgets.has("standings") && vis.evaluateVisibility("standings", visCtx) && (!ruleStdPitOnly || irsdkState.onPitRoad || irsdkState.isReplayPlaying || !frame.isOnTrack);
-      const relShow = !disabledWidgets.has("relative") && vis.evaluateVisibility("relative", visCtx) && (!ruleRelTrackOnly || Boolean(frame.isOnTrack));
-      const inpShow = !disabledWidgets.has("inputs") && vis.evaluateVisibility("pedals", visCtx) && (!ruleRelTrackOnly || Boolean(frame.isOnTrack));
+      const relShow = !disabledWidgets.has("relative") && vis.evaluateVisibility("relative", visCtx) && (!ruleRelTrackOnly || activeTrackOrReplay);
+      const inpShow = !disabledWidgets.has("inputs") && vis.evaluateVisibility("pedals", visCtx) && (!ruleRelTrackOnly || activeTrackOrReplay);
       const fuelReserveOk = !ruleFuelReserveOnly || !irsdkState.fuel.isValid || irsdkState.fuel.lapsRemaining <= 5 || irsdkState.fuel.fuelToAdd > 0;
       const fuelShow = !disabledWidgets.has("fuel") && vis.evaluateVisibility("fuel", visCtx) && fuelReserveOk;
 

@@ -425,14 +425,15 @@ fn windows_loop(app: AppHandle) {
 
                         if crate::HIDE_OFF_TRACK.load(Ordering::Relaxed) {
                             let editing = crate::OVERLAY_EDITING.load(Ordering::Relaxed);
-                            if overlay_active && !frame.is_on_track && !editing {
+                            let in_action = frame.is_on_track || frame.is_replay_playing;
+                            if overlay_active && !in_action && !editing {
                                 crate::OVERLAY_AUTO_HIDDEN_OFF_TRACK.store(true, Ordering::Relaxed);
                                 let app_close = app.clone();
                                 tauri::async_runtime::spawn(async move {
                                     let _ = crate::set_overlay_visible(app_close, false).await;
                                 });
                             } else if !overlay_active
-                                && frame.is_on_track
+                                && in_action
                                 && crate::OVERLAY_AUTO_HIDDEN_OFF_TRACK.load(Ordering::Relaxed)
                             {
                                 crate::OVERLAY_AUTO_HIDDEN_OFF_TRACK.store(false, Ordering::Relaxed);

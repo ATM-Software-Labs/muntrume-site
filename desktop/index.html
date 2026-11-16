@@ -498,7 +498,7 @@
               <div class="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <span class="font-mono text-[10px] uppercase tracking-wider text-r-accent font-bold">Hotlap Studio · Vídeo + Telemetría</span>
-                  <p class="text-xs text-r-muted">Compara tu mejor vuelta frente a la referencia oficial (HYMO / VRS / GnG) en YouTube sin ocupar RAM cuando no lo usas.</p>
+                  <p class="text-xs text-r-muted">Compara tu mejor vuelta frente a la referencia oficial del equipo en YouTube sin ocupar RAM cuando no lo usas.</p>
                 </div>
                 <button type="button" id="openHotlapStudioBtn" class="mmt-btn h-9 px-4 rounded-xl bg-r-accent text-r-ink font-mono text-xs font-bold uppercase">Abrir Hotlap Studio</button>
               </div>
@@ -831,7 +831,7 @@
             <div class="flex flex-wrap items-end justify-between gap-4">
               <div>
                 <p class="mmt-kicker">Planificación de Carrera</p>
-                <h1 id="strategyTitle" class="mmt-display text-4xl mt-1">Estrategia y Combustible (Coach Dave / GnG)</h1>
+                <h1 id="strategyTitle" class="mmt-display text-4xl mt-1">Estrategia y Combustible (MMT Race Engineer)</h1>
                 <p class="mt-2 text-sm text-r-muted max-w-2xl">
                   Calculador inteligente de stints, paradas en boxes, consumo por vuelta y ventanas óptimas de pit stop para iRacing.
                 </p>
@@ -844,7 +844,7 @@
               <button type="button" class="strat-preset px-3 py-1.5 rounded-xl border border-r-line bg-r-surface text-r-muted hover:text-r-text font-mono text-xs" data-preset="sprint20">Sprint 20m</button>
               <button type="button" class="strat-preset px-3 py-1.5 rounded-xl border border-r-accent bg-r-accent/15 text-r-accent font-mono text-xs font-bold" data-preset="feature40">Feature 40m</button>
               <button type="button" class="strat-preset px-3 py-1.5 rounded-xl border border-r-line bg-r-surface text-r-muted hover:text-r-text font-mono text-xs" data-preset="imsa45">IMSA 45m</button>
-              <button type="button" class="strat-preset px-3 py-1.5 rounded-xl border border-r-line bg-r-surface text-r-muted hover:text-r-text font-mono text-xs" data-preset="vrs144">VRS Special 2.4h</button>
+              <button type="button" class="strat-preset px-3 py-1.5 rounded-xl border border-r-line bg-r-surface text-r-muted hover:text-r-text font-mono text-xs" data-preset="vrs144">Endurance Special 2.4h</button>
               <button type="button" class="strat-preset px-3 py-1.5 rounded-xl border border-r-line bg-r-surface text-r-muted hover:text-r-text font-mono text-xs" data-preset="endur360">Endurance 6h</button>
               <button type="button" class="strat-preset px-3 py-1.5 rounded-xl border border-r-line bg-r-surface text-r-muted hover:text-r-text font-mono text-xs" data-preset="daytona24">24 Horas</button>
             </div>
@@ -898,7 +898,7 @@
             <div class="flex flex-wrap items-end justify-between gap-4">
               <div>
                 <p class="mmt-kicker">Telemetría en Pista en Tiempo Real</p>
-                <h1 id="overlayTitle" class="mmt-display text-4xl mt-1">Overlays de Carrera (VRS / Garage 61 HUD)</h1>
+                <h1 id="overlayTitle" class="mmt-display text-4xl mt-1">Overlays de Carrera (MMT Sync HUD)</h1>
                 <p class="mt-2 text-sm text-r-muted max-w-2xl">
                   Lectura directa de la memoria compartida del SDK de iRacing (modo solo lectura). Instrumentos modulares configurables con luces secuenciales, traza de pedales en vivo, avisos de distancia de frenada y radar de carrera.
                 </p>
@@ -951,7 +951,7 @@
               </div>
             </div>
 
-            <!-- Personalización Total del HUD (Kapps Pro Studio) -->
+            <!-- Personalización Total del HUD (MMT HUD Studio) -->
             <div id="overlayCustomStudio" class="mt-4 p-3.5 rounded-2xl border border-r-line bg-r-surface/80 flex flex-col gap-3 text-xs">
               <div class="flex flex-wrap items-center justify-between gap-3">
                 <div class="flex flex-wrap items-center gap-3">
@@ -1023,7 +1023,7 @@
 
               <!-- Prompts 142 & 143: Ajustes Kapps por Widget (Columnas, Filas, Color y Reglas Auto) -->
               <details class="pt-2 border-t border-r-line/60 font-mono text-[11px]">
-                <summary class="cursor-pointer text-r-accent font-bold select-none">⚙ Ajustes Kapps por Widget (Columnas, Filas, Color y Auto-Ocultado)</summary>
+                <summary class="cursor-pointer text-r-accent font-bold select-none">⚙ Ajustes por Widget (Columnas, Filas, Color y Auto-Ocultado)</summary>
                 <div class="mt-2.5 grid grid-cols-1 md:grid-cols-3 gap-3 text-[11px]">
                   <div class="p-2.5 rounded-xl border border-r-line/70 bg-r-bg/60 space-y-2">
                     <strong class="block text-r-text uppercase">Columnas Standings / Relative</strong>
@@ -1919,8 +1919,8 @@
         </div>
       </div>
 
-      <!-- 5. Unified CarTelemetryDock (340x118px Fuel + 4-Tire IMO at bottom: 20px; left: 20px) -->
-      <div id="floatCarTelemetryDock" class="mmt-float-widget fixed bottom-[20px] left-[20px] w-[340px] min-h-[118px] rounded-[4px] border border-white/10 text-white p-2 font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: rgba(8, 10, 14, 0.88); text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="fuel">
+      <!-- 5. Unified CarTelemetryDock (340x118px scaled 1.15x at bottom: 20px; left: 20px) -->
+      <div id="floatCarTelemetryDock" class="mmt-float-widget fixed bottom-[20px] left-[20px] w-[340px] min-h-[118px] rounded-[4px] border border-white/10 text-white p-2 font-mono tabular-nums pointer-events-auto overflow-hidden" style="zoom: 1.15; background: rgba(8, 10, 14, 0.88); text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="fuel">
         <div id="ovCarTelemetryDockFloat"></div>
       </div>
 
@@ -1929,8 +1929,8 @@
         <canvas id="ovTrackMapFloat" width="150" height="110"></canvas>
       </div>
 
-      <!-- 6. Bottom-Center Pedals (280x82px left of wheel) + Centered Steering Wheel (46x46px at left: 50%) -->
-      <div id="floatInputsCard" class="mmt-float-widget fixed right-[calc(50%+32px)] bottom-[24px] w-[280px] flex flex-col items-center gap-1 pointer-events-auto" data-widget="inputs">
+      <!-- 6. Bottom-Center Pedals (280x82px scaled 1.15x left of wheel) + Centered Steering Wheel (46x46px at left: 50%) -->
+      <div id="floatInputsCard" class="mmt-float-widget fixed right-[calc(50%+36px)] bottom-[24px] w-[280px] flex flex-col items-center gap-1 pointer-events-auto" style="zoom: 1.15;" data-widget="inputs">
         <div id="floatShiftLightsRow" class="flex flex-col items-center gap-1 w-full" data-widget="lights">
           <div id="ovDigiFlagFloat" class="w-full max-w-[260px]" style="display: none;"></div>
           <div class="flex items-center gap-0.5 px-2 py-0.5 rounded bg-[#0a0c10]/70" id="ovShiftLightsFloat"></div>

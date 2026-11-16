@@ -100,10 +100,13 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
 
   const headerHtml = `
     <div class="mmt-rel-header">
-      <span>${irEst ? `SOF ${formatSofShort(irEst.sof)}` : "REL"}</span>
-      <span>${trackTempStr ? `${trackTempStr} · ` : ""}${localClock}</span>
+      <span>${irEst ? `SOF ${formatSofShort(irEst.sof)}` : "REL"} · ⏱ ${sessionClock}</span>
+      <span>${trackTempStr ? `${trackTempStr} · ` : ""}🕒 ${localClock}</span>
     </div>
   `;
+
+  const anyWetCar = (state.frame.carIdxTireCompound || []).some((c) => c === 1);
+  const showCompounds = (state.frame.trackWetness ?? 1) >= 3 || (state.frame.precipitationPct ?? 0) > 0 || anyWetCar;
 
   const selfIdx = entries.findIndex((e) => e.isActiveCam);
   const displayEntries = selfIdx >= 0
@@ -151,7 +154,7 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
       const licIrCell = cols.license
         ? `<span class="w-[58px] shrink-0 flex items-center justify-end">${renderLicenseIrBlock(e.licString, e.iRatingExact, e.iRatingStr, true)}</span>`
         : ``;
-      const compoundCell = renderCompoundBadge(state.frame.carIdxTireCompound?.[e.carIdx]);
+      const compoundCell = showCompounds ? renderCompoundBadge(state.frame.carIdxTireCompound?.[e.carIdx]) : "";
       const irDeltaVal = isPractice ? 0 : (irDeltas.get(e.carIdx) ?? 0);
       const irDeltaText = isPractice ? "—" : irDeltaVal > 0 ? `+${Math.round(irDeltaVal)}` : `${Math.round(irDeltaVal)}`;
       const irDeltaColor = isPractice || irDeltaVal === 0 ? "text-white/40" : irDeltaVal > 0 ? "text-emerald-400 font-bold" : "text-rose-400 font-bold";
@@ -290,7 +293,6 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
   const activeLap = Math.max(0, rawLap);
   const remainLaps = state.frame.sessionLapsRemainEx;
   const validTotalLaps = remainLaps > 0 && remainLaps < 30000 ? activeLap + remainLaps : 0;
-  const lapStr = validTotalLaps > 0 ? `Lap ${activeLap}/${validTotalLaps}` : `Lap ${activeLap}`;
   const remSec = Math.max(0, Math.round(state.frame.sessionTimeRemain || 0));
   const remH = Math.floor(remSec / 3600);
   const remM = Math.floor((remSec % 3600) / 60);
@@ -308,17 +310,22 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
     Object.values(state.session.driverInfo?.drivers ?? {}).filter((d) => !d.isPaceCar && !d.isSpectator).length
   );
 
+  const localClock = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+  const anyWetCar = (state.frame.carIdxTireCompound || []).some((c) => c === 1);
+  const showCompounds = (state.frame.trackWetness ?? 1) >= 3 || (state.frame.precipitationPct ?? 0) > 0 || anyWetCar;
+
   const headerHtml = `
     <div class="mmt-std-header">
-      <div class="flex items-center gap-1.5">
+      <div class="flex items-center gap-2">
         <span class="font-bold text-white/90">${sessChar}</span>
-        <span class="px-1 rounded-[2px] text-[9px] font-extrabold" style="background:${leadColor}28;color:${leadColor}">${leadClass}</span>
-        <span class="text-white">${lapStr}</span>
-        <span class="text-white/70">${remClock}</span>
+        <span class="px-1 rounded-[2px] text-[10px] font-extrabold" style="background:${leadColor}28;color:${leadColor}">${leadClass}</span>
+        <span class="text-white">Vta ${activeLap}${validTotalLaps > 0 ? `/${validTotalLaps}` : ""}</span>
+        <span class="text-emerald-300 font-bold">⏱ ${remClock}</span>
       </div>
-      <div class="flex items-center gap-2 text-white/80">
+      <div class="flex items-center gap-2 text-white/85">
         ${tempPart ? `<span>${tempPart}</span>` : ""}
-        <span>🏎 ${leaderboard.length}/${totalSessionCars}</span>
+        <span>🕒 ${localClock}</span>
+        <span>${leaderboard.length}/${totalSessionCars}</span>
       </div>
     </div>
   `;
@@ -406,7 +413,7 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
             ? `<span class="w-[16px] shrink-0 flex items-center justify-center">${getCarBrandSvg(e.carPath, 14)}</span>`
             : ``;
           const licIrCell = `<span class="w-[62px] shrink-0 flex items-center justify-end">${renderLicenseIrBlock(e.licString, e.iRatingExact, e.iRatingStr, cols.iRating)}</span>`;
-          const compoundCell = renderCompoundBadge(state.frame.carIdxTireCompound?.[e.carIdx]);
+          const compoundCell = showCompounds ? renderCompoundBadge(state.frame.carIdxTireCompound?.[e.carIdx]) : "";
 
           const irDeltaVal = isPractice ? 0 : (irDeltas.get(e.carIdx) ?? 0);
           const irDeltaText = isPractice ? "—" : irDeltaVal > 0 ? `+${Math.round(irDeltaVal)}` : `${Math.round(irDeltaVal)}`;
@@ -687,8 +694,32 @@ export function renderCarTelemetryDock(container: HTMLElement, state: IrsdkCompu
     return;
   }
 
-  const fuel = state.fuel;
   const frame = state.frame;
+  const isRemoteCam = state.camCarIdx !== frame.playerCarIdx;
+  if (isRemoteCam) {
+    const drv = state.activeDriver;
+    const pos = frame.carIdxPosition[state.camCarIdx] ?? 0;
+    const lap = Math.max(0, frame.carIdxLap[state.camCarIdx] ?? 0);
+    const lastSec = frame.carIdxLastLapTime[state.camCarIdx] ?? 0;
+    const lastStr = lastSec > 0 ? `${Math.floor(lastSec / 60)}:${(lastSec % 60).toFixed(3).padStart(6, "0")}` : "--:--.---";
+    setHtmlIfChanged(container, `
+      <div class="space-y-2 select-none">
+        <div class="flex items-center justify-between border-b border-white/10 pb-1.5">
+          <span class="px-1.5 py-0.5 rounded bg-sky-500/20 border border-sky-400/50 text-sky-300 text-[10px] font-bold">REPLAY / CAM</span>
+          <strong class="text-[13px] text-white truncate max-w-[200px]">#${drv?.carNumber || "?"} ${drv?.abbrevName || "Piloto"}</strong>
+        </div>
+        <div class="grid grid-cols-3 gap-2 text-center py-2">
+          <div><span class="block text-[9px] text-white/55">POSICIÓN</span><strong class="text-[15px] text-emerald-400">P${pos > 0 ? pos : "-"}</strong></div>
+          <div><span class="block text-[9px] text-white/55">VUELTA</span><strong class="text-[15px] text-white">${lap}</strong></div>
+          <div><span class="block text-[9px] text-white/55">ÚLTIMA</span><strong class="text-[13px] text-sky-300">${lastStr}</strong></div>
+        </div>
+        <p class="text-[10px] text-white/50 text-center">Canales privados (Fuel / Desgaste IMO) ocultos en cámara remota.</p>
+      </div>
+    `);
+    return;
+  }
+
+  const fuel = state.fuel;
   const fuelRemStr = fuel.fuelRemainingL > 0 ? `${fuel.fuelRemainingL.toFixed(1)} L` : "-- L";
   const lapsRemStr = fuel.isValid ? `${fuel.stintLapsRemaining.toFixed(1)} vtas` : "-- vtas";
   const avgStr = fuel.isValid ? `${fuel.avgBurnPerLap.toFixed(2)} L/vta` : "-- L/vta";

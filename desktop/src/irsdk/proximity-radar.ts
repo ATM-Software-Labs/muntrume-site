@@ -1,4 +1,5 @@
 import type { IrsdkComputedState } from "./types";
+import { resolveTrackPolygon, samplePolygonAtPct } from "./track-paths";
 
 export interface ProximityStatus {
   leftActive: boolean;
@@ -197,7 +198,11 @@ export function renderLiveTrackMapCanvas(canvas: HTMLCanvasElement, state: Irsdk
   const rx = w * 0.4;
   const ry = h * 0.37;
 
+  const trackName = state?.session.weekendInfo?.trackName || "";
+  const poly = resolveTrackPolygon(trackName);
+
   const pointAtPct = (pct: number): { x: number; y: number } => {
+    if (poly) return samplePolygonAtPct(poly, pct, w, h);
     const a = pct * Math.PI * 2 - Math.PI / 2;
     const x = cx + rx * Math.cos(a) + 5 * Math.sin(a * 3);
     const y = cy + ry * Math.sin(a) + 3 * Math.cos(a * 2);
@@ -268,14 +273,14 @@ export function renderLiveTrackMapCanvas(canvas: HTMLCanvasElement, state: Irsdk
     }
   }
 
-  // Draw 3px vector trace split by sectors
-  ctx.lineWidth = 3;
+  // Draw 3.5px vector trace split by sectors (Purple/Green/Red/Gray)
+  ctx.lineWidth = 3.5;
   ctx.lineCap = "round";
   for (let s = 0; s < sectors.length; s++) {
     const startPct = sectors[s].startPct;
     const endPct = s + 1 < sectors.length ? sectors[s + 1].startPct : 1.0;
     const steps = Math.max(8, Math.round((endPct - startPct) * 64));
-    ctx.strokeStyle = trackSectorState.currentLapColors[s] || "rgba(255, 255, 255, 0.25)";
+    ctx.strokeStyle = trackSectorState.currentLapColors[s] || "rgba(255, 255, 255, 0.28)";
     ctx.beginPath();
     for (let i = 0; i <= steps; i++) {
       const p = pointAtPct(startPct + ((endPct - startPct) * i) / steps);
@@ -294,30 +299,30 @@ export function renderLiveTrackMapCanvas(canvas: HTMLCanvasElement, state: Irsdk
 
   const leaderIdx = state.leaderboard[0]?.carIdx ?? -1;
 
-  // Other cars as clean 4px dots (radius 2px = 4px diameter)
+  // Other cars as crisp 6px circles (#e2e8f0)
   for (let i = 0; i < state.frame.carIdxLapDistPct.length; i++) {
     if (i === myIdx) continue;
     const pct = state.frame.carIdxLapDistPct[i];
     if (pct < 0 || state.frame.carIdxOnPitRoad[i]) continue;
     const p = pointAtPct(pct);
     const isLeader = i === leaderIdx;
-    ctx.fillStyle = isLeader ? "#fbbf24" : "#94a3b8";
+    ctx.fillStyle = isLeader ? "#fbbf24" : "#e2e8f0";
     ctx.beginPath();
-    ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+    ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  // Player car (4px dot #10b981 + subtle halo)
+  // Player car (6px bright #10b981 dot + halo)
   if (myPct >= 0) {
     const me = pointAtPct(myPct);
-    ctx.fillStyle = "rgba(16, 185, 129, 0.3)";
+    ctx.fillStyle = "rgba(16, 185, 129, 0.35)";
     ctx.beginPath();
-    ctx.arc(me.x, me.y, 4.5, 0, Math.PI * 2);
+    ctx.arc(me.x, me.y, 5.5, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.fillStyle = "#10b981";
     ctx.beginPath();
-    ctx.arc(me.x, me.y, 2.2, 0, Math.PI * 2);
+    ctx.arc(me.x, me.y, 3, 0, Math.PI * 2);
     ctx.fill();
   }
 }
