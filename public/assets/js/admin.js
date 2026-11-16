@@ -566,8 +566,7 @@ function renderPendingRequests() {
           <p class="rc-muted" style="margin-top:4px">${rcEscape(req.message || "Solicitud de acceso al Setup Vault")}</p>
         </div>
         <div class="rc-btn-row" style="flex-wrap:wrap">
-          <button type="button" class="r-btn r-btn--primary r-btn--sm" data-request-id="${rcEscape(req.id)}" data-email="${rcEscape(req.email)}" data-name="${rcEscape(req.name || "")}" onclick="approvePendingRequestBtn(this, 'link')">✓ Aprobar (Enlace 72h)</button>
-          <button type="button" class="r-btn r-btn--sm" data-request-id="${rcEscape(req.id)}" data-email="${rcEscape(req.email)}" data-name="${rcEscape(req.name || "")}" onclick="approvePendingRequestBtn(this, 'temp_password')">🔑 Clave Temp.</button>
+          <button type="button" class="r-btn r-btn--primary r-btn--sm" data-request-id="${rcEscape(req.id)}" data-email="${rcEscape(req.email)}" data-name="${rcEscape(req.name || "")}" onclick="approvePendingRequestBtn(this, 'link')">✓ Aprobar y Enviar Acceso</button>
           <button type="button" class="r-btn r-btn--sm" style="border-color:rgba(239,68,68,.4);color:#f87171" data-request-id="${rcEscape(req.id)}" data-email="${rcEscape(req.email)}" data-name="${rcEscape(req.name || "")}" onclick="rejectPendingRequestBtn(this)">✕ Rechazar</button>
         </div>
       </div>
@@ -627,8 +626,7 @@ function renderDirectoryTable() {
         <td>${statusBadge}</td>
         <td class="text-right">
           <div class="rc-btn-row" style="justify-content:flex-end;flex-wrap:wrap">
-            ${!isBlocked ? `<button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" data-name="${rcEscape(m.name)}" onclick="generateDriverAccessFromBtn(this, 'link')">Reset / Enlace</button>` : ""}
-            ${!isBlocked ? `<button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" data-name="${rcEscape(m.name)}" onclick="generateDriverAccessFromBtn(this, 'temp_password')">Clave Temp.</button>` : ""}
+            ${!isBlocked ? `<button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" data-name="${rcEscape(m.name)}" onclick="generateDriverAccessFromBtn(this, 'link')">✉ Enviar Acceso</button>` : ""}
             ${!isPrincipal ? `<button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" data-access="${hasSetupAccess ? "1" : "0"}" onclick="toggleSetupAccessBtn(this)" style="${hasSetupAccess ? "border-color:rgba(16,185,129,.45);color:#34d399" : ""}">${hasSetupAccess ? "Setups: ON" : "Setups: OFF"}</button>` : ""}
             ${!isPrincipal ? `<button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" data-status="${isBlocked ? "active" : "inactive"}" onclick="toggleMemberStatusBtn(this)">${isBlocked ? "Reactivar" : "Bloquear"}</button>` : ""}
             ${!isPrincipal ? `<button type="button" class="r-btn r-btn--sm" style="border-color:rgba(239,68,68,.35);color:#f87171" data-email="${rcEscape(m.email)}" onclick="deleteMemberBtn(this)">Eliminar</button>` : ""}
@@ -671,15 +669,17 @@ async function issuePilotCredentials({ request_id = null, name, email, role = "d
 
     await refreshRaceControlData();
 
-    if (secret) {
-      openCredentialsResultModal({ name: data.pilot?.name || cleanName, email: data.pilot?.email || cleanEmail, secret, isTempPass });
-    }
     if (data.email_sent) {
-      showRcNotice("Operación completada", `Acceso emitido para ${cleanEmail} y correo enviado correctamente.`, "success");
-    } else if (data.email_error) {
-      showRcNotice("Acceso creado (revisa el correo)", `Cuenta activada en D1, pero el correo falló: ${data.email_error}. Puedes copiar el enlace/clave desde el modal.`, "warn");
-    } else if (data.message) {
-      showRcNotice("Solicitud actualizada", data.message, "info");
+      showRcNotice("Acceso enviado automáticamente", `Correo seguro enviado directamente a ${cleanEmail} (sin exponer credenciales en pantalla).`, "success");
+    } else {
+      if (secret) {
+        openCredentialsResultModal({ name: data.pilot?.name || cleanName, email: data.pilot?.email || cleanEmail, secret, isTempPass });
+      }
+      if (data.email_error) {
+        showRcNotice("Acceso creado (correo pendiente)", `Cuenta activada en D1, pero el correo falló: ${data.email_error}. Usa el modal de respaldo.`, "warn");
+      } else if (data.message) {
+        showRcNotice("Solicitud actualizada", data.message, "info");
+      }
     }
   } catch (err) {
     showRcNotice("No se pudo aprobar/generar acceso", err?.message || "Error al conectar con Cloudflare D1.", "err");
@@ -711,10 +711,14 @@ async function generateDriverAccessFromBtn(btn, method = "link") {
     const secret = data.set_password_link || "";
     appendAuditEvent("admin", "atrumin16@gmail.com", `Reset/enlace 72h enviado a ${email} · Email: ${data.email_sent ? "OK" : "error"}`, "RESET");
     await refreshRaceControlData();
-    if (secret) openCredentialsResultModal({ name, email, secret, isTempPass: false });
+    if (!data.email_sent && secret) {
+      openCredentialsResultModal({ name, email, secret, isTempPass: false });
+    }
     showRcNotice(
-      data.email_sent ? "Enlace de reset enviado" : "Enlace generado (correo pendiente)",
-      data.email_sent ? `Se ha enviado el enlace de contraseña a ${email}.` : `Enlace generado, pero el correo falló: ${data.email_error || "revisa Resend"}. Cópialo del modal.`,
+      data.email_sent ? "Acceso enviado automáticamente" : "Correo pendiente (respaldo abierto)",
+      data.email_sent
+        ? `Correo seguro enviado directamente a ${email} sin exponer enlaces en pantalla.`
+        : `El correo falló (${data.email_error || "revisa Resend"}). Usa el modal de respaldo.`,
       data.email_sent ? "success" : "warn"
     );
   } catch (err) {
