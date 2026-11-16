@@ -968,8 +968,8 @@
                   </label>
                   <label class="flex items-center gap-1.5 font-mono text-[11px] text-r-muted">
                     <span>Escala General del HUD:</span>
-                    <input id="hudScaleRange" type="range" min="70" max="115" value="85" class="w-20 accent-[#00e699]" />
-                    <span id="hudScaleVal" class="text-r-text tabular-nums w-9">85%</span>
+                    <input id="hudScaleRange" type="range" min="70" max="115" value="100" class="w-20 accent-[#00e699]" />
+                    <span id="hudScaleVal" class="text-r-text tabular-nums w-9">100%</span>
                   </label>
                 </div>
                 <div class="flex flex-wrap items-center gap-3 font-mono text-[11px]">
@@ -1891,18 +1891,18 @@
         <div id="ovRadarFloat"></div>
       </div>
 
-      <!-- 3b. Top-Center Track Conditions Micro-bar (w-max ~210px below Virtual Mirror) -->
-      <div id="floatTrackConditionsCard" class="mmt-float-widget fixed top-[78px] left-1/2 -translate-x-1/2 w-max h-[24px] pointer-events-none z-20" data-widget="conditions">
+      <!-- 3b. Top-Center Track Conditions Micro-bar (top: 148px below Virtual Mirror) -->
+      <div id="floatTrackConditionsCard" class="mmt-float-widget fixed top-[148px] left-1/2 -translate-x-1/2 w-max h-[24px] pointer-events-none z-20" data-widget="conditions">
         <div id="ovTrackConditionsFloat"></div>
       </div>
 
-      <!-- 3c. Live Delta Bar (220x24px Canvas below Track Conditions) -->
-      <div id="floatLiveDeltaCard" class="mmt-float-widget fixed top-[106px] left-1/2 -translate-x-1/2 w-[220px] h-[24px] rounded-[2px] pointer-events-none z-20 overflow-hidden" data-widget="delta">
-        <canvas id="ovLiveDeltaFloat" width="220" height="24" style="width:220px;height:24px;display:block;"></canvas>
+      <!-- 3c. Live Delta Bar (200x22px Canvas below Track Conditions at top: 174px) -->
+      <div id="floatLiveDeltaCard" class="mmt-float-widget fixed top-[174px] left-1/2 -translate-x-1/2 w-[200px] h-[22px] rounded-[2px] pointer-events-none z-20 overflow-hidden" data-widget="delta">
+        <canvas id="ovLiveDeltaFloat" width="200" height="22" style="width:200px;height:22px;display:block;"></canvas>
       </div>
 
-      <!-- 4. Pit Helper (visible only when OnPitRoad === true) -->
-      <div id="floatPitHelperCard" hidden class="mmt-float-widget fixed top-[136px] left-1/2 -translate-x-1/2 w-[280px] pointer-events-auto overflow-hidden" data-widget="pit">
+      <!-- 4. Pit Helper (visible only when OnPitRoad === true, top: 200px below Mirror) -->
+      <div id="floatPitHelperCard" hidden class="mmt-float-widget fixed top-[200px] left-1/2 -translate-x-1/2 w-[280px] pointer-events-auto overflow-hidden" data-widget="pit">
         <div id="ovPitboxFloat"></div>
       </div>
 
@@ -1921,13 +1921,13 @@
         <canvas id="ovTrackMapFloat" width="150" height="110"></canvas>
       </div>
 
-      <!-- 6. Center over Dashboard DDU (bottom: 185px, centered): Minimalist 280x38 Canvas Inputs + Gear + Speed + Wheel -->
-      <div id="floatInputsCard" class="mmt-float-widget fixed left-1/2 -translate-x-1/2 bottom-[185px] w-[280px] flex flex-col items-center gap-1 pointer-events-auto" data-widget="inputs">
+      <!-- 6. Bottom-Center Crisp 310x76 Canvas Inputs + Gear + Speed + Wheel (bottom: 18px) -->
+      <div id="floatInputsCard" class="mmt-float-widget fixed left-1/2 -translate-x-1/2 bottom-[18px] w-[310px] flex flex-col items-center gap-1 pointer-events-auto" data-widget="inputs">
         <div id="floatShiftLightsRow" class="flex flex-col items-center gap-1 w-full" data-widget="lights">
-          <div id="ovDigiFlagFloat" class="w-full max-w-[240px]" style="display: none;"></div>
+          <div id="ovDigiFlagFloat" class="w-full max-w-[260px]" style="display: none;"></div>
           <div class="flex items-center gap-0.5 px-2 py-0.5 rounded bg-[#0a0c10]/70" id="ovShiftLightsFloat"></div>
         </div>
-        <div id="ovGpuPedalsFloat" class="w-[280px] h-[38px]"></div>
+        <div id="ovGpuPedalsFloat" class="w-[310px] h-[76px]"></div>
         <canvas id="ovInputsFloat" width="140" height="32" class="hidden"></canvas>
         <strong id="ovGearFloat" class="hidden">—</strong>
         <strong id="ovSpeedFloat" class="hidden">—</strong>

@@ -44,6 +44,23 @@ const radar360Engine = new Radar360Engine();
 const pitboxEngine = new PitboxHelperEngine();
 const digiFlagEngine = new DigiFlagEngine();
 
+function renderCompoundBadge(compound: number | undefined): string {
+  if (compound === undefined || compound < 0) return "";
+  if (compound === 0) {
+    return `<span class="w-[16px] h-[16px] shrink-0 rounded-[2px] bg-[#e2e8f0] border border-rose-500 text-slate-950 font-black text-[9px] flex items-center justify-center" title="Slick / Dry">S</span>`;
+  }
+  if (compound === 1) {
+    return `<span class="w-[16px] h-[16px] shrink-0 rounded-[2px] bg-[#0284c7] text-white font-black text-[9px] flex items-center justify-center" title="Wet / Lluvia">W</span>`;
+  }
+  if (compound === 2) {
+    return `<span class="w-[16px] h-[16px] shrink-0 rounded-[2px] bg-[#facc15] text-slate-950 font-black text-[9px] flex items-center justify-center" title="Medium">M</span>`;
+  }
+  if (compound === 3) {
+    return `<span class="w-[16px] h-[16px] shrink-0 rounded-[2px] bg-white text-slate-950 font-black text-[9px] flex items-center justify-center" title="Hard">H</span>`;
+  }
+  return "";
+}
+
 /**
  * Renders the Relative Radar widget into target DOM container
  */
@@ -134,6 +151,7 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
       const licIrCell = cols.license
         ? `<span class="w-[58px] shrink-0 flex items-center justify-end">${renderLicenseIrBlock(e.licString, e.iRatingExact, e.iRatingStr, true)}</span>`
         : ``;
+      const compoundCell = renderCompoundBadge(state.frame.carIdxTireCompound?.[e.carIdx]);
       const irDeltaVal = isPractice ? 0 : (irDeltas.get(e.carIdx) ?? 0);
       const irDeltaText = isPractice ? "—" : irDeltaVal > 0 ? `+${Math.round(irDeltaVal)}` : `${Math.round(irDeltaVal)}`;
       const irDeltaColor = isPractice || irDeltaVal === 0 ? "text-white/40" : irDeltaVal > 0 ? "text-emerald-400 font-bold" : "text-rose-400 font-bold";
@@ -149,6 +167,7 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
           ${nameCell}
           ${tagCell}
           ${licIrCell}
+          ${compoundCell}
           ${irDeltaCell}
           ${deltaCell}
         </div>
@@ -207,35 +226,35 @@ export function buildCompactStandingsWindow(leaderboard: LeaderboardEntry[]): Co
 }
 
 /**
- * Zero-Bloat Standings (Prompt 121):
- * On 50-60 car multiclass grids, focus on the active player's class and cap DOM rows to
- * Top 12 of active class + player & ±2 immediate rivals (max 15 driver rows).
+ * Zero-Bloat Standings (Prompts 121 & 147):
+ * On multiclass grids, focus on the active player's class and cap DOM rows to
+ * Top 6 (P1-P6) + 2px divider + player & ±1 immediate rival (max 9 driver rows).
  */
 export function buildZeroBloatStandings(leaderboard: LeaderboardEntry[]): CompactStandingsRow[] {
   if (!leaderboard || leaderboard.length === 0) return [];
   const active = leaderboard.find((e) => e.isActiveCam);
   const activeClass = active?.carClassShortName || "";
   const classBoard =
-    leaderboard.length > 15 && activeClass
+    leaderboard.length > 9 && activeClass
       ? leaderboard.filter((e) => e.carClassShortName === activeClass)
       : leaderboard;
   const list = classBoard.length > 0 ? classBoard : leaderboard;
-  if (list.length <= 15) {
+  if (list.length <= 9) {
     return list.map((entry, rankIdx) => ({ kind: "entry", entry, rankIdx }));
   }
 
   const selfIdx = list.findIndex((e) => e.isActiveCam);
-  if (selfIdx < 0 || selfIdx <= 12) {
-    return list.slice(0, 15).map((entry, rankIdx) => ({ kind: "entry", entry, rankIdx }));
+  if (selfIdx < 0 || selfIdx <= 7) {
+    return list.slice(0, 9).map((entry, rankIdx) => ({ kind: "entry", entry, rankIdx }));
   }
 
-  // Top 10 + separator + player & ±2 rivals = max 15 driver rows
+  // Top 6 (P1-P6) + 2px divider + player ±1 rival (9 driver rows)
   const rows: CompactStandingsRow[] = list
-    .slice(0, 10)
+    .slice(0, 6)
     .map((entry, rankIdx) => ({ kind: "entry", entry, rankIdx }));
-  const winStart = Math.max(10, selfIdx - 2);
-  const winEnd = Math.min(list.length, selfIdx + 3);
-  if (winStart > 10) {
+  const winStart = Math.max(6, selfIdx - 1);
+  const winEnd = Math.min(list.length, selfIdx + 2);
+  if (winStart > 6) {
     rows.push({ kind: "separator" });
   }
   for (let i = winStart; i < winEnd; i++) {
@@ -387,6 +406,7 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
             ? `<span class="w-[16px] shrink-0 flex items-center justify-center">${getCarBrandSvg(e.carPath, 14)}</span>`
             : ``;
           const licIrCell = `<span class="w-[62px] shrink-0 flex items-center justify-end">${renderLicenseIrBlock(e.licString, e.iRatingExact, e.iRatingStr, cols.iRating)}</span>`;
+          const compoundCell = renderCompoundBadge(state.frame.carIdxTireCompound?.[e.carIdx]);
 
           const irDeltaVal = isPractice ? 0 : (irDeltas.get(e.carIdx) ?? 0);
           const irDeltaText = isPractice ? "—" : irDeltaVal > 0 ? `+${Math.round(irDeltaVal)}` : `${Math.round(irDeltaVal)}`;
@@ -412,6 +432,7 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
               ${nameCell}
               ${brandCell}
               ${licIrCell}
+              ${compoundCell}
               ${irDeltaCell}
               ${gapCell}
               ${intCell}
@@ -549,12 +570,21 @@ export function renderTrackConditionsWidget(container: HTMLElement, state: Irsdk
   else if (flags & 0x00000001) flagHtml = `<span class="px-1.5 rounded-[2px] bg-white text-black font-black">CUADROS</span>`;
 
   const tempHtml = temp > 0 ? `<span>🌡 ${temp.toFixed(1)}°C${trendStr}</span>` : `<span>🌡 --°C</span>`;
+  const wetness = frame.trackWetness ?? 1;
+  const playerCompound = frame.carIdxTireCompound?.[state.camCarIdx];
+  const optPill =
+    wetness >= 4
+      ? `<span class="px-1.5 py-0.5 rounded-[2px] bg-[#0ea5e9] text-white font-black text-[9.5px] tracking-wider">${playerCompound === 0 ? "⚠ WET" : "WET"}</span>`
+      : wetness === 3
+        ? `<span class="px-1.5 py-0.5 rounded-[2px] bg-[#f59e0b] text-black font-black text-[9.5px] tracking-wider animate-pulse">CROSSOVER</span>`
+        : `<span class="px-1.5 py-0.5 rounded-[2px] bg-[#f8fafc] text-black font-black text-[9.5px] tracking-wider">SLICK</span>`;
 
   setHtmlIfChanged(container, `
     <div class="h-[24px] rounded-[2px] border border-white/10 text-white font-mono text-[10.5px] tabular-nums flex items-center whitespace-nowrap select-none" style="width: max-content; padding: 3px 10px; gap: 10px; background: rgba(8, 10, 14, 0.88);">
       ${flagHtml}
       ${tempHtml}
       <span class="${wet.cls}">💧 ${wet.label}</span>
+      ${optPill}
     </div>
   `);
 }
