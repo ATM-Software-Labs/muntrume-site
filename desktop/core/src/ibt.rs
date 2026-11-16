@@ -183,7 +183,7 @@ pub fn decode_irsdk_text(raw: &[u8]) -> String {
     if raw.starts_with(&[0xEF, 0xBB, 0xBF]) {
         return String::from_utf8_lossy(&raw[3..]).into_owned();
     }
-    let (decoded, _, _) = encoding_rs::WINDOWS_1252.decode_without_bom_handling(raw);
+    let (decoded, _) = encoding_rs::WINDOWS_1252.decode_without_bom_handling(raw);
     decoded.into_owned()
 }
 
