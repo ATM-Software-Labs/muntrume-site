@@ -1,0 +1,113 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { PADDOCK_ALBUMS } from '../data/paddock-gallery';
+
+const pageTitle = 'Álbumes oficiales del Paddock | Muntrume Motorsport';
+const pageDescription =
+  'Archivo completo de álbumes y coches oficiales de Muntrume Motorsport en iRacing filtrables por marca y categoría.';
+
+const brands = Array.from(new Set(PADDOCK_ALBUMS.map((a) => a.brand)));
+const classes = Array.from(new Set(PADDOCK_ALBUMS.map((a) => a.carClass)));
+---
+
+<Layout
+  title={pageTitle}
+  description={pageDescription}
+  canonical="https://muntru.me/albumes/"
+  ogImage="https://muntru.me/assets/img/coche1.webp"
+  ogImageAlt="Álbumes oficiales Muntrume Motorsport"
+>
+  <div class="pt-8 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-5 border-b border-[var(--r-line)]">
+      <div class="space-y-2">
+        <div class="flex items-center gap-4 text-xs font-mono font-bold">
+          <a href="/" class="text-[var(--r-muted)] hover:text-[var(--r-accent)]">&larr; Volver al inicio</a>
+          <a href="/paddock/" class="text-[var(--r-accent)] hover:underline">&larr; Paddock</a>
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-[var(--r-text)] font-display tracking-tight">
+          Álbumes oficiales del Paddock
+        </h1>
+        <p class="text-xs sm:text-sm text-[var(--r-muted)] max-w-xl">
+          Colección completa de {PADDOCK_ALBUMS.length} vehículos de competición del equipo filtrable por marca y categoría.
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <select id="albumBrandFilter" class="h-9 rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] px-3 text-xs font-mono text-[var(--r-text)]">
+          <option value="ALL">Todas las marcas</option>
+          {brands.map((b) => (
+            <option value={b}>{b}</option>
+          ))}
+        </select>
+        <select id="albumClassFilter" class="h-9 rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] px-3 text-xs font-mono text-[var(--r-text)]">
+          <option value="ALL">Todas las categorías</option>
+          {classes.map((c) => (
+            <option value={c}>{c}</option>
+          ))}
+        </select>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" id="albumesGrid">
+      {PADDOCK_ALBUMS.map((album) => (
+        <a
+          href={`/paddock/g/${album.slug}/`}
+          data-brand={album.brand}
+          data-class={album.carClass}
+          class="album-card group rounded-2xl overflow-hidden bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-300 flex flex-col justify-between"
+        >
+          <div class="relative w-full aspect-video overflow-hidden bg-[#090d12]">
+            <img
+              src={album.cover}
+              alt={album.title}
+              width="640"
+              height="360"
+              loading="lazy"
+              decoding="async"
+              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+            <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase tracking-wider">
+              {album.brand} · {album.carClass}
+            </span>
+            <span class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded bg-black/75 border border-white/15 text-white text-[10px] font-mono font-bold">
+              {album.photos.length} fotos
+            </span>
+          </div>
+          <div class="p-4 space-y-1.5 flex-1 flex flex-col justify-between">
+            <div>
+              <h2 class="text-base font-bold text-[var(--r-text)] group-hover:text-[var(--r-accent)] transition-colors truncate">
+                {album.title}
+              </h2>
+              <p class="text-xs text-[var(--r-muted)] line-clamp-1 mt-0.5">
+                {album.summary}
+              </p>
+            </div>
+            <div class="pt-2 border-t border-[var(--r-line)] flex items-center justify-between text-xs font-mono text-[var(--r-accent)] font-bold">
+              <span>Abrir álbum</span>
+              <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+            </div>
+          </div>
+        </a>
+      ))}
+    </div>
+  </div>
+</Layout>
+
+<script>
+  const brandSel = document.getElementById('albumBrandFilter') as HTMLSelectElement | null;
+  const classSel = document.getElementById('albumClassFilter') as HTMLSelectElement | null;
+  const cards = Array.from(document.querySelectorAll<HTMLElement>('.album-card'));
+
+  const applyFilters = () => {
+    const b = brandSel?.value || 'ALL';
+    const c = classSel?.value || 'ALL';
+    cards.forEach((card) => {
+      const okB = b === 'ALL' || card.dataset.brand === b;
+      const okC = c === 'ALL' || card.dataset.class === c;
+      card.hidden = !(okB && okC);
+    });
+  };
+
+  brandSel?.addEventListener('change', applyFilters);
+  classSel?.addEventListener('change', applyFilters);
+</script>

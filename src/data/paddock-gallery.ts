@@ -17,12 +17,13 @@ export interface GalleryAlbum {
   readonly carClass: string;
   readonly cover: string;
   readonly summary: string;
+  readonly views?: number;
   readonly photos: readonly GalleryPhoto[];
 }
 
 export interface TrackGalleryPhoto {
   readonly id: string;
-  readonly category: "gt3" | "gtp" | "night";
+  readonly category: "gt3" | "gtp" | "cup" | "night";
   readonly badge: string;
   readonly title: string;
   readonly caption: string;
@@ -109,9 +110,9 @@ export const TRACK_GALLERY_PHOTOS: readonly TrackGalleryPhoto[] = [
   },
   {
     id: "night-cup-endurance",
-    category: "night",
-    badge: "Noche / Resistencia",
-    title: "Porsche Cup · Doble stint nocturno",
+    category: "cup",
+    badge: "Cup",
+    title: "Porsche Cup · Doble stint en carrera",
     caption: "Frenada sin ABS ni control de tracción bajo los focos de boxes.",
     circuit: "Nürburgring GP-Strecke",
     img: "/assets/img/series/porsche-cup.jpg",
@@ -127,6 +128,7 @@ export const PADDOCK_ALBUMS: readonly GalleryAlbum[] = [
     carClass: "GT3",
     cover: "/assets/img/coche1.webp",
     summary: "Programa oficial GT3 Sprint & Endurance · V6 Twin-Turbo.",
+    views: 1420,
     photos: [
       {
         id: "ferrari296gt3-track",
@@ -148,6 +150,7 @@ export const PADDOCK_ALBUMS: readonly GalleryAlbum[] = [
     carClass: "GT3",
     cover: "/assets/img/series/gt-sprint.jpg",
     summary: "Programa GT3 · Flat-6 4.2L en pista.",
+    views: 1180,
     photos: [
       {
         id: "porsche992rgt3-track",
@@ -274,6 +277,7 @@ export const PADDOCK_ALBUMS: readonly GalleryAlbum[] = [
     carClass: "GTP",
     cover: "/assets/img/race1.webp",
     summary: "Programa IMSA Endurance · LMDh Híbrido V8 Twin-Turbo.",
+    views: 1290,
     photos: [
       {
         id: "porsche963gtp-track",

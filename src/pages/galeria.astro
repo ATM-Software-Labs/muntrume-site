@@ -9,6 +9,7 @@ const pageDescription =
 const totalCount = TRACK_GALLERY_PHOTOS.length;
 const gt3Count = TRACK_GALLERY_PHOTOS.filter((p) => p.category === 'gt3').length;
 const gtpCount = TRACK_GALLERY_PHOTOS.filter((p) => p.category === 'gtp').length;
+const cupCount = TRACK_GALLERY_PHOTOS.filter((p) => p.category === 'cup').length;
 const nightCount = TRACK_GALLERY_PHOTOS.filter((p) => p.category === 'night').length;
 ---
 
@@ -22,12 +23,10 @@ const nightCount = TRACK_GALLERY_PHOTOS.filter((p) => p.category === 'night').le
   <div class="pt-8 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
     <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-5 border-b border-[var(--r-line)]">
       <div class="space-y-2">
-        <a
-          href="/paddock/"
-          class="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-[var(--r-accent)] hover:underline"
-        >
-          &larr; Volver al Paddock
-        </a>
+        <div class="flex items-center gap-4 text-xs font-mono font-bold">
+          <a href="/" class="text-[var(--r-muted)] hover:text-[var(--r-accent)]">&larr; Volver al inicio</a>
+          <a href="/paddock/" class="text-[var(--r-accent)] hover:underline">&larr; Paddock</a>
+        </div>
         <h1 class="text-3xl sm:text-4xl font-extrabold text-[var(--r-text)] font-display tracking-tight">
           Galería de competición
         </h1>
@@ -57,6 +56,13 @@ const nightCount = TRACK_GALLERY_PHOTOS.filter((p) => p.category === 'night').le
           class="galeria-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition cursor-pointer bg-[var(--r-surface)] text-[var(--r-muted)] border border-[var(--r-line)] hover:border-[var(--r-accent)]"
         >
           Prototipos GTP ({gtpCount})
+        </button>
+        <button
+          type="button"
+          data-filter="cup"
+          class="galeria-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition cursor-pointer bg-[var(--r-surface)] text-[var(--r-muted)] border border-[var(--r-line)] hover:border-[var(--r-accent)]"
+        >
+          Cup ({cupCount})
         </button>
         <button
           type="button"
