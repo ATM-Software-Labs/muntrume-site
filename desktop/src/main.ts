@@ -327,6 +327,16 @@ function loadPerf(): Promise<PerfModule> {
   });
 }
 
+type HotlapModule = typeof import("./hotlap-studio");
+let hotlapMod: HotlapModule | null = null;
+function loadHotlap(): Promise<HotlapModule> {
+  if (hotlapMod) return Promise.resolve(hotlapMod);
+  return import("./hotlap-studio").then((m) => {
+    hotlapMod = m;
+    return m;
+  });
+}
+
 let libraryGroupBy: "car" | "track" | "week" = (() => {
   try {
     const val = localStorage.getItem("mmt-library-groupby");
@@ -399,6 +409,7 @@ function applyIracingStatus(status: string): void {
   if (status === "on_track") {
     document.documentElement.classList.add("mmt-perf-paused");
     if (perfMod) perfMod.unmountPerformanceDashboard();
+    if (hotlapMod) hotlapMod.unmountHotlapStudio();
   } else {
     document.documentElement.classList.remove("mmt-perf-paused");
     if (view === "performance" && perfMod) void perfMod.mountPerformanceDashboard();
@@ -1779,6 +1790,9 @@ function showView(next: typeof view): void {
   } else if (perfMod) {
     perfMod.unmountPerformanceDashboard();
   }
+  if (next !== "analysis" && hotlapMod) {
+    hotlapMod.unmountHotlapStudio();
+  }
   if (next === "hardware") {
     void loadHardwareReport();
   }
@@ -2612,6 +2626,30 @@ function bind(): void {
   }
   document.getElementById("perfRefreshBtn")?.addEventListener("click", () => {
     void loadPerf().then((m) => m.mountPerformanceDashboard());
+  });
+  document.getElementById("openHotlapStudioBtn")?.addEventListener("click", () => {
+    const videosDir = ((snapshot?.settings as unknown as { videosDir?: string })?.videosDir) || "";
+    void loadHotlap().then((m) =>
+      m.mountHotlapStudio({
+        car: "Ferrari 296 GT3",
+        track: "Fuji Speedway",
+        season: "2026",
+        videosDir,
+      }),
+    );
+  });
+  document.getElementById("pickVideosDirBtn")?.addEventListener("click", () => {
+    if (!inTauri()) return;
+    void import("@tauri-apps/api/core")
+      .then(({ invoke }) => invoke<Settings | null>("pick_videos_folder"))
+      .then((saved) => {
+        if (saved && snapshot) {
+          snapshot.settings = saved;
+          const el = document.getElementById("videosDirPath");
+          if (el) el.textContent = (saved as unknown as { videosDir?: string }).videosDir || "Sin carpeta configurada";
+        }
+      })
+      .catch(() => {});
   });
   document.addEventListener("visibilitychange", () => {
     document.documentElement.classList.toggle("mmt-perf-paused", document.hidden);

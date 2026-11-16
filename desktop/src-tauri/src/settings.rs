@@ -24,6 +24,8 @@ pub struct Settings {
     pub modules: Modules,
     #[serde(default = "default_checklist")]
     pub checklist: Vec<CheckItem>,
+    #[serde(default)]
+    pub videos_dir: String,
 }
 
 fn default_modules() -> Modules {
@@ -94,6 +96,7 @@ impl Default for Settings {
             favourites: Vec::new(),
             modules: Modules::default(),
             checklist: CheckItem::defaults(),
+            videos_dir: String::new(),
         }
     }
 }
@@ -114,6 +117,8 @@ pub struct SettingsPatch {
     pub modules: Modules,
     #[serde(default = "default_checklist")]
     pub checklist: Vec<CheckItem>,
+    #[serde(default)]
+    pub videos_dir: String,
 }
 
 fn path() -> PathBuf {
@@ -149,6 +154,9 @@ pub fn update(patch: SettingsPatch) -> Result<Settings, String> {
     settings.favourites = patch.favourites;
     settings.modules = patch.modules;
     settings.checklist = patch.checklist;
+    if !patch.videos_dir.is_empty() {
+        settings.videos_dir = patch.videos_dir;
+    }
     save(&settings)?;
     Ok(settings)
 }

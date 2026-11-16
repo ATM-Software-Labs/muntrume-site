@@ -4,6 +4,7 @@ mod credentials;
 mod folders;
 mod hardware;
 mod history;
+mod hotlaps;
 mod ibt_parser;
 mod live;
 mod privacy;
@@ -154,6 +155,9 @@ pub fn run() {
             get_race_history,
             record_race_session,
             toggle_favorite_session,
+            find_reference_hotlap,
+            find_latest_replay_clip,
+            pick_videos_folder,
             quit
         ])
         .run(tauri::generate_context!())
@@ -1204,6 +1208,34 @@ fn record_race_session(entry: history::RaceSessionEntry) -> Result<history::Race
 #[tauri::command]
 fn toggle_favorite_session(sub_session_id: i64) -> Result<history::RaceHistoryResponse, String> {
     history::toggle_favorite(sub_session_id)
+}
+
+#[tauri::command]
+async fn find_reference_hotlap(car: String, track: String, season: String) -> Result<hotlaps::HotlapRefResult, String> {
+    hotlaps::find_reference_hotlap(car, track, season).await
+}
+
+#[tauri::command]
+fn find_latest_replay_clip(dir: String) -> Option<hotlaps::ReplayClipInfo> {
+    hotlaps::find_latest_replay_clip(&dir)
+}
+
+#[tauri::command]
+async fn pick_videos_folder() -> Result<Option<settings::Settings>, String> {
+    let picked = tauri::async_runtime::spawn_blocking(|| {
+        rfd::FileDialog::new()
+            .set_title("Carpeta de clips / repeticiones (ShadowPlay / OBS)")
+            .pick_folder()
+    })
+    .await
+    .map_err(|_| "No se pudo abrir el selector.".to_string())?;
+    let Some(path) = picked else {
+        return Ok(None);
+    };
+    let mut cfg = settings::load()?;
+    cfg.videos_dir = path.to_string_lossy().into_owned();
+    settings::save(&cfg)?;
+    Ok(Some(cfg))
 }
 
 #[tauri::command]
