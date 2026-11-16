@@ -173,6 +173,7 @@ pub struct IrsdkFrame {
     pub car_idx_lap: Vec<i32>,
     pub car_idx_on_pit_road: Vec<bool>,
     pub car_idx_session_flags: Vec<i32>,
+    pub car_idx_tire_compound: Vec<i32>,
     pub tire_temps_c: Vec<f64>,
     pub tire_wear_pct: Vec<f64>,
     pub brake_abs_active: bool,
@@ -301,6 +302,17 @@ pub fn read_live_irsdk_frame_with(bytes: &[u8], table: &VarTable) -> Result<Irsd
         car_idx_lap: arr_i("CarIdxLap"),
         car_idx_on_pit_road: arr_b("CarIdxOnPitRoad"),
         car_idx_session_flags: arr_i("CarIdxSessionFlags"),
+        car_idx_tire_compound: if let Some(v) = vars.iter().find(|v| v.name == "CarIdxTireCompound") {
+            let n = v.count.min(64);
+            let mut out = Vec::with_capacity(64);
+            for i in 0..n {
+                out.push(read_number_at(&copy, 0, v, i).map(|x| x.round() as i32).unwrap_or(-1));
+            }
+            out.resize(64, -1);
+            out
+        } else {
+            vec![-1; 64]
+        },
         tire_temps_c: vec![
             val_f("LFtempCL"), val_f("LFtempCM"), val_f("LFtempCR"),
             val_f("RFtempCL"), val_f("RFtempCM"), val_f("RFtempCR"),

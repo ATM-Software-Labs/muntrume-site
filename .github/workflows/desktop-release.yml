@@ -144,6 +144,7 @@ jobs:
           releaseBody: ${{ steps.notes.outputs.body }}
           releaseDraft: false
           prerelease: false
+          make_latest: true
           args: --bundles nsis,msi --config src-tauri/tauri.release.json
 
       - name: Check SignPath configuration
@@ -218,3 +219,18 @@ jobs:
           $upload = @($files | ForEach-Object { $_.FullName; "$($_.FullName).sig" }) + (Resolve-Path ../latest.json).Path
           gh release upload $env:TAG @upload --clobber
           gh release edit $env:TAG --notes "Instalador de MMT Sync para Windows 10 y 11.`nFirmado digitalmente: Free code signing provided by SignPath.io, certificate by SignPath Foundation."
+
+      - name: Prune old desktop releases (keep latest 3)
+        if: always()
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $releases = gh release list --limit 50 --json tagName,createdAt | ConvertFrom-Json | Sort-Object -Property createdAt -Descending
+          if ($releases.Count -gt 3) {
+            $toDelete = $releases | Select-Object -Skip 3
+            foreach ($r in $toDelete) {
+              Write-Host "Deleting old release $($r.tagName)..."
+              gh release delete $r.tagName --yes --cleanup-tag 2>$null
+            }
+          }
