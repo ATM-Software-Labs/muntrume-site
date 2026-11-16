@@ -334,6 +334,28 @@ function renderWeekItems(data: Snapshot): void {
   note.textContent = `${schedule.season} · Semana ${activeWeek} de 12 · Mostrando ${filtered.length} de ${schedule.total_series} series oficiales`;
   list.replaceChildren();
 
+  const knownTracks = new Set(data.library.map((l) => l.track.toLowerCase()));
+  const missingTracks: string[] = [];
+  for (const s of filtered.slice(0, 12)) {
+    const wk = s.weeks.find((w) => w.week_num === activeWeek);
+    if (!wk) continue;
+    const tLow = wk.track_name.toLowerCase();
+    const hasTrack = Array.from(knownTracks).some((kt) => tLow.includes(kt) || kt.includes(tLow));
+    if (!hasTrack && !missingTracks.includes(wk.track_name)) {
+      missingTracks.push(wk.track_name);
+    }
+  }
+  if (missingTracks.length > 0) {
+    const banner = document.createElement("div");
+    banner.className = "col-span-full rounded-xl border border-amber-400/30 bg-amber-500/10 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs font-mono";
+    const missingQuery = encodeURIComponent(missingTracks.slice(0, 6).join(","));
+    banner.innerHTML = `
+      <span class="text-amber-200">Semana ${activeWeek}: te faltan circuitos como <strong class="text-white">${missingTracks.slice(0, 2).join(", ")}</strong> en tu biblioteca local.</span>
+      <a href="https://muntru.me/calendar/?planner=1&missing=${missingQuery}" target="_blank" rel="noopener" class="px-3 py-1.5 rounded-lg bg-r-accent text-r-ink font-display font-extrabold uppercase tracking-wider text-[11px] hover:opacity-90 transition shrink-0">Ver pack óptimo (15% dto.) &rarr;</a>
+    `;
+    list.append(banner);
+  }
+
   const userCars = (data.lastCars || []).map((c) => c.toLowerCase());
   const carSetupMap = new Map<string, number>();
   for (const lib of data.library) {

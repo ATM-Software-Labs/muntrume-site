@@ -2,9 +2,8 @@
 import Layout from '../layouts/Layout.astro';
 import StatsGrid from '../components/StatsGrid.astro';
 import MediaLightbox from '../components/MediaLightbox.astro';
-import MediaCarousel from '../components/MediaCarousel.astro';
 import { PILOTOS } from '../lib/pilotos';
-import { PADDOCK_ALBUMS } from '../data/paddock-gallery';
+import { TRACK_GALLERY_PHOTOS } from '../data/paddock-gallery';
 import { CAR_CATALOG_LIST, getBrandSvgMarkup, getCarPreviewBannerSvg, type CarMetadata } from '../../desktop/src/cars/catalog';
 import { IRACING_TRACKS, getTrackGarageInfo, getTrackScheduleInfo, getHistoricTrackRank } from '../lib/track-matcher';
 
@@ -231,25 +230,7 @@ const allTracksWithPop = IRACING_TRACKS.map((t) => {
 }).sort((a, b) => b.popularityScore - a.popularityScore || a.name.localeCompare(b.name));
 
 const topHistoricTracks = allTracksWithPop.slice(0, 8);
-
-const allPaddockPhotos = PADDOCK_ALBUMS.flatMap((album) =>
-  album.photos.map((photo) => ({
-    ...photo,
-    albumSlug: album.slug,
-    albumTitle: album.title,
-    category: album.carClass === 'GT3' ? 'cars' : album.carClass === 'GTP' ? 'track' : 'tech',
-  }))
-);
-
-const paddockCarouselSlides = allPaddockPhotos.slice(0, 8).map((photo) => ({
-  src: photo.img,
-  title: photo.title,
-  subtitle: `${photo.subtitle} · iRacing Official`,
-  tag: photo.tag,
-  id: `gallery:${photo.albumSlug}:${photo.id}`,
-  downloadName: photo.img.split('/').pop(),
-  setupsUrl: `/garage/?car=${photo.carPath}`,
-}));
+const featuredGalleryPhotos = TRACK_GALLERY_PHOTOS.filter((p) => p.featured).slice(0, 3);
 ---
 
 <Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/paddock/" ogImage="https://muntru.me/assets/img/og-about.jpg" ogImageAlt="Paddock de Muntrume Motorsport" translated i18nTitle="paddock.meta.title" i18nDescription="paddock.meta.desc">
@@ -773,206 +754,68 @@ const paddockCarouselSlides = allPaddockPhotos.slice(0, 8).map((photo) => ({
       </div>
     </section>
 
-    <!-- 5. GALERÍA FOTOGRÁFICA OFICIAL (CAPTURA REAL DE IRACING) -->
-    <section id="gallery" class="space-y-8 pt-4">
+    <!-- 5. GALERÍA DE COMPETICIÓN (VISTA PREVIA LIMPIA DE 3 CAPTURAS) -->
+    <section id="gallery" class="space-y-6 pt-4">
       <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-[var(--r-line)]">
         <div>
           <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--r-accent)] mb-1">
             <span class="w-2 h-2 rounded-full bg-[var(--r-accent)]"></span>
             <span data-i18n="paddock.gallery.kicker">Galería de competición</span>
           </div>
-          <h2 class="text-2xl sm:text-4xl font-extrabold text-[var(--r-text)] font-display tracking-tight" data-i18n="paddock.gallery.title">
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-[var(--r-text)] font-display tracking-tight" data-i18n="paddock.gallery.title">
             Paddock y pista en competición
           </h2>
           <p class="text-xs sm:text-sm text-[var(--r-muted)] mt-1 max-w-xl" data-i18n="paddock.gallery.lead">
-            Fotografías oficiales de los GT3 en pista, stints nocturnos, el puesto de telemetría y los boxes de Muntrume Motorsport.
+            Capturas reales en pista de nuestros GT3, prototipos GTP nocturnos y telemetría de competición.
           </p>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2" id="galleryFilterBar">
-          <button type="button" class="gallery-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition cursor-pointer bg-[var(--r-accent)] text-[var(--r-accent-ink)] border border-[var(--r-accent)]" data-filter="all">
-            TODAS ({allPaddockPhotos.length})
-          </button>
-          <button type="button" class="gallery-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition cursor-pointer bg-[var(--r-surface)] text-[var(--r-muted)] border border-[var(--r-line)] hover:border-[var(--r-accent)]" data-filter="cars">
-            GT3 ({allPaddockPhotos.filter(p => p.category === 'cars').length})
-          </button>
-          <button type="button" class="gallery-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition cursor-pointer bg-[var(--r-surface)] text-[var(--r-muted)] border border-[var(--r-line)] hover:border-[var(--r-accent)]" data-filter="track">
-            PROTOTIPOS GTP ({allPaddockPhotos.filter(p => p.category === 'track').length})
-          </button>
-          <button type="button" class="gallery-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition cursor-pointer bg-[var(--r-surface)] text-[var(--r-muted)] border border-[var(--r-line)] hover:border-[var(--r-accent)]" data-filter="tech">
-            CUP ({allPaddockPhotos.filter(p => p.category === 'tech').length})
-          </button>
-        </div>
+        <a
+          href="/galeria/"
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono font-bold text-[var(--r-text)] hover:text-[var(--r-accent)] transition shrink-0"
+        >
+          <span>Ver galería completa ({TRACK_GALLERY_PHOTOS.length} fotos)</span>
+          <span>&rarr;</span>
+        </a>
       </div>
 
-      <!-- Auto-moving All-in-One Featured Showcase -->
-      <div class="space-y-2">
-        <div class="flex items-center justify-between text-xs font-mono">
-          <span class="text-[var(--r-accent)] font-bold flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-[var(--r-accent)] animate-pulse"></span>
-            Carrusel destacado automático ({paddockCarouselSlides.length} capturas en rotación)
-          </span>
-          <span class="text-[var(--r-muted)] hidden sm:inline">
-            Pausa al pasar el ratón · Haz clic para ampliar en HD
-          </span>
-        </div>
-        <MediaCarousel
-          id="paddock-showcase"
-          slides={paddockCarouselSlides}
-          intervalMs={4500}
-          aspectRatioClass="aspect-[16/9] sm:aspect-[21/9]"
-        />
-      </div>
-
-      <!-- 9 Official Muntrume Photos Grid -->
-      <div class="space-y-4">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-mono uppercase tracking-wider text-[var(--r-muted)] font-bold">
-            Capturas individuales ({allPaddockPhotos.length})
-          </span>
-          <span class="text-xs font-mono text-[var(--r-muted)]">
-            Haz clic en cualquier imagen para abrirla en alta resolución
-          </span>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="paddockGalleryGrid">
-          {allPaddockPhotos.map((photo) => (
-            <article
-              data-category={photo.category}
-              class="gallery-item group rounded-2xl overflow-hidden border border-[var(--r-line)] bg-[var(--r-surface)] hover:border-[var(--r-accent)] transition-all duration-300 flex flex-col justify-between shadow-sm hover:shadow-md"
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        {featuredGalleryPhotos.map((photo) => (
+          <article class="group rounded-xl overflow-hidden bg-[var(--r-surface)] transition-all duration-300" style="border: 1px solid rgba(255, 255, 255, 0.08);">
+            <button
+              type="button"
+              data-preview-src={photo.img}
+              data-preview-title={photo.title}
+              data-preview-sub={`${photo.circuit} · Muntrume Motorsport`}
+              data-preview-id={`gallery:${photo.id}`}
+              data-preview-download={photo.img.split('/').pop()}
+              class="relative block w-full aspect-video overflow-hidden bg-[#090d12] cursor-zoom-in text-left"
+              title={`Ampliar "${photo.title}" en HD`}
             >
-              <div>
-                <button
-                  type="button"
-                  data-preview-src={photo.img}
-                  data-preview-title={photo.title}
-                  data-preview-sub={`${photo.subtitle} · Muntrume Motorsport`}
-                  data-preview-id={`gallery:${photo.albumSlug}:${photo.id}`}
-                  data-preview-download={photo.img.split('/').pop()}
-                  data-preview-setups={photo.albumSlug === 'ferrari296gt3' ? '/garage?car=ferrari296gt3' : '/garage/'}
-                  class="relative block w-full aspect-video overflow-hidden bg-[#090d12] cursor-zoom-in text-left"
-                  title={`Ampliar "${photo.title}" en HD`}
-                >
-                  <img
-                    src={photo.thumb}
-                    alt={photo.title}
-                    width="640"
-                    height="360"
-                    loading="lazy"
-                    decoding="async"
-                    class="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div class="absolute inset-0 bg-gradient-to-t from-[var(--r-surface)] via-transparent to-transparent opacity-60 group-hover:opacity-30 transition-opacity"></div>
-                  <span class="absolute top-3 left-3 px-2.5 py-0.5 rounded-full bg-black/80 backdrop-blur-xs border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase tracking-wider">
-                    {photo.tag}
-                  </span>
-                  <span class="absolute bottom-3 right-3 px-2.5 py-1 rounded-lg bg-black/80 backdrop-blur-xs border border-white/15 text-[11px] font-mono text-white/90 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                    Ampliar HD ⤢
-                  </span>
-                </button>
-
-                <div class="p-5 space-y-2">
-                  <span class="block text-[11px] font-mono uppercase tracking-wider text-[var(--r-muted)]">
-                    {photo.subtitle}
-                  </span>
-                  <h3 class="text-base font-bold text-[var(--r-text)] font-display tracking-tight group-hover:text-[var(--r-accent)] transition-colors">
-                    {photo.title}
-                  </h3>
-                  <p class="text-xs text-[var(--r-muted)] leading-relaxed line-clamp-2">
-                    {photo.desc}
-                  </p>
-                </div>
-              </div>
-
-              <div class="px-5 pb-4 pt-2 border-t border-[var(--r-line)] flex items-center justify-between gap-2">
-                <button
-                  type="button"
-                  data-like-btn
-                  data-like-id={`gallery:${photo.albumSlug}:${photo.id}`}
-                  class="px-2.5 py-1 rounded-lg bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-rose-500/60 text-xs font-mono font-bold text-[var(--r-muted)] inline-flex items-center gap-1 transition cursor-pointer"
-                  title="Me gusta"
-                >
-                  <span data-heart>♡</span>
-                  <span data-count>0</span>
-                </button>
-
-                <div class="flex items-center gap-1.5">
-                  <a
-                    href={`/paddock/g/${photo.albumSlug}/`}
-                    class="px-2.5 py-1 rounded-lg bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-[11px] font-mono font-bold text-[var(--r-text)] hover:text-[var(--r-accent)] transition"
-                  >
-                    Álbum &rarr;
-                  </a>
-                  <button
-                    type="button"
-                    data-preview-src={photo.img}
-                    data-preview-title={photo.title}
-                    data-preview-sub={`${photo.subtitle} · Muntrume Motorsport`}
-                    data-preview-id={`gallery:${photo.albumSlug}:${photo.id}`}
-                    data-preview-download={photo.img.split('/').pop()}
-                    data-preview-setups={photo.albumSlug === 'ferrari296gt3' ? '/garage?car=ferrari296gt3' : '/garage/'}
-                    class="px-2.5 py-1 rounded-lg bg-[var(--r-accent)]/15 border border-[var(--r-accent)]/50 text-[11px] font-mono font-bold text-[var(--r-accent)] hover:bg-[var(--r-accent)]/25 transition cursor-pointer"
-                  >
-                    HD ⤢
-                  </button>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      </div>
-
-      <!-- Álbumes Temáticos Subpáginas -->
-      <div class="space-y-4 pt-6 border-t border-[var(--r-line)]">
-        <div class="flex items-center justify-between">
-          <div>
-            <span class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)]">Subpáginas dedicadas</span>
-            <h3 class="text-xl font-bold text-[var(--r-text)] font-display">Álbumes oficiales del Paddock</h3>
-          </div>
-          <span class="text-xs font-mono text-[var(--r-muted)]">3 colecciones indexadas</span>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          {PADDOCK_ALBUMS.map((album) => (
-            <a
-              href={`/paddock/g/${album.slug}/`}
-              class="group rounded-2xl overflow-hidden bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-300 shadow-sm hover:shadow-md flex flex-col justify-between"
-            >
-              <div class="relative w-full aspect-video overflow-hidden bg-[var(--r-bg-2)]">
-                <img
-                  src={album.cover}
-                  alt={album.title}
-                  width="640"
-                  height="360"
-                  loading="lazy"
-                  decoding="async"
-                  class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-md bg-black/80 backdrop-blur-xs border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase tracking-wider">
-                  {album.brand} · {album.carClass}
-                </span>
-                <span class="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-md bg-black/75 backdrop-blur-xs border border-white/15 text-white text-[10px] font-mono font-bold">
-                  {album.photos.length} fotos
-                </span>
-              </div>
-              <div class="p-4 space-y-1.5 flex-1 flex flex-col justify-between">
-                <div>
-                  <h4 class="text-sm font-bold text-[var(--r-text)] group-hover:text-[var(--r-accent)] transition-colors truncate">
-                    {album.title}
-                  </h4>
-                  <p class="text-xs text-[var(--r-muted)] line-clamp-1 mt-0.5">
-                    {album.summary}
-                  </p>
-                </div>
-                <div class="pt-2 border-t border-[var(--r-line)] flex items-center justify-between text-xs font-mono text-[var(--r-accent)] font-bold">
-                  <span>Abrir subpágina</span>
-                  <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
-                </div>
-              </div>
-            </a>
-          ))}
-        </div>
+              <img
+                src={photo.img}
+                alt={photo.title}
+                width="640"
+                height="360"
+                loading="lazy"
+                decoding="async"
+                onerror="const card = this.closest('article'); if (card) card.style.display='none';"
+                class="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+              />
+              <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase tracking-wider">
+                {photo.badge}
+              </span>
+            </button>
+            <div class="p-4 space-y-1">
+              <h3 class="text-sm font-bold text-[var(--r-text)] font-display tracking-tight group-hover:text-[var(--r-accent)] transition-colors truncate">
+                {photo.title}
+              </h3>
+              <p class="text-xs text-[var(--r-muted)] line-clamp-2">
+                {photo.caption}
+              </p>
+            </div>
+          </article>
+        ))}
       </div>
     </section>
 

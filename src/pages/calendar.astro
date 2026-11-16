@@ -2,6 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import schedule from "../../desktop/src/season_schedule_2026_s4.json";
 import catalog from "../../public/assets/data/catalog_index.json";
+import { TAX_PROFILES } from "../lib/iracing-store-planner";
 
 const SEASON_START_MS = Date.UTC(2026, 8, 15);
 const buildWeek = Math.max(1, Math.min(12, Math.floor((Date.now() - SEASON_START_MS) / 604_800_000) + 1));
@@ -287,6 +288,7 @@ const canonical = "https://muntru.me/calendar/";
         <div class="cal-bar__row">
           <div class="cal-group">
             <button type="button" class="cal-chip" id="btnFavFilter" aria-pressed="false">★ Favoritas</button>
+            <button type="button" class="cal-chip" id="btnPlannerToggle" aria-expanded="false">🛒 Planificador &amp; Compras</button>
             <button type="button" class="cal-chip" id="btnReset">↺ Reset</button>
           </div>
 
@@ -331,6 +333,69 @@ const canonical = "https://muntru.me/calendar/";
           </div>
         </div>
       </div>
+
+      <!-- Prompt 111, 112 & 114: Planificador de Temporada, Volume Discounts y Simulador Fiscal -->
+      <section id="calPlannerPanel" hidden class="mb-6 rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-5 space-y-5">
+        <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-[var(--r-line)]">
+          <div>
+            <p class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)] font-bold">iRacing Volume Discounts + Fiscal</p>
+            <h2 class="text-xl font-extrabold text-[var(--r-text)] font-display">Planificador de Temporada y Simulador de Carrito</h2>
+          </div>
+          <div class="flex flex-wrap items-center gap-3 font-mono text-xs">
+            <label class="flex items-center gap-2 text-[var(--r-muted)]">
+              <span>País / IVA:</span>
+              <select id="plannerTaxSelect" class="h-8 rounded-lg border border-[var(--r-line)] bg-[var(--r-bg)] px-2.5 text-xs text-[var(--r-text)]">
+                {TAX_PROFILES.map((tp) => (
+                  <option value={tp.id}>{tp.label}</option>
+                ))}
+              </select>
+            </label>
+            <label class="flex items-center gap-1.5 text-[var(--r-muted)]" title="Si ya tienes 40+ piezas en propiedad, desbloqueas el 20% permanente (Club 40)">
+              <input id="plannerClub40" type="checkbox" class="accent-[#00e699]" />
+              <span>Club 40 (20%)</span>
+            </label>
+            <label class="flex items-center gap-1.5 text-[var(--r-muted)]">
+              <span>Credits ($):</span>
+              <input id="plannerCreditsInput" type="number" min="0" max="40" step="1" value="0" class="w-16 h-8 rounded-lg border border-[var(--r-line)] bg-[var(--r-bg)] px-2 text-xs text-[var(--r-text)]" />
+            </label>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <!-- Columna 1 & 2: Matriz 12 Semanas + Top ROI Circuitos -->
+          <div class="lg:col-span-2 space-y-4">
+            <div class="p-3.5 rounded-xl border border-[var(--r-line)] bg-[var(--r-bg)] space-y-2.5">
+              <div class="flex items-center justify-between text-xs font-mono">
+                <strong class="text-[var(--r-text)]">Cobertura 12 Semanas (Race Participation Credits: 8/12)</strong>
+                <span id="plannerWeeksCovered" class="text-[var(--r-accent)] font-bold">0/12 semanas</span>
+              </div>
+              <div id="plannerMatrix" class="grid grid-cols-6 sm:grid-cols-12 gap-1.5 font-mono text-[10px]"></div>
+            </div>
+
+            <div class="space-y-2">
+              <div class="flex items-center justify-between text-xs font-mono">
+                <strong class="text-[var(--r-text)]">Top Circuitos Recomendados (ROI Multi-Serie)</strong>
+                <span class="text-[var(--r-muted)]">Basado en tus series favoritas / top populares</span>
+              </div>
+              <div id="plannerRoiList" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+            </div>
+          </div>
+
+          <!-- Columna 3: Ticket Fiscal en Vivo -->
+          <div class="p-4 rounded-xl border border-[var(--r-line)] bg-[var(--r-bg)] flex flex-col justify-between gap-4 font-mono text-xs">
+            <div class="space-y-3">
+              <div class="flex items-center justify-between border-b border-[var(--r-line)] pb-2">
+                <strong class="text-sm text-[var(--r-text)]">Carrito Simulado</strong>
+                <button type="button" id="plannerClearCart" class="text-[11px] text-[var(--r-muted)] hover:text-rose-400 cursor-pointer">Vaciar</button>
+              </div>
+              <div id="plannerCartItems" class="space-y-1.5 max-h-40 overflow-y-auto text-[11px]"></div>
+              <p id="plannerUpsellHint" hidden class="p-2 rounded-lg bg-amber-500/10 border border-amber-400/30 text-amber-300 text-[11px] leading-snug"></p>
+            </div>
+
+            <div id="plannerTicket" class="space-y-1.5 pt-3 border-t border-[var(--r-line)] tabular-nums"></div>
+          </div>
+        </div>
+      </section>
 
       <div id="calGrid" class="cal-grid">
         {cleanSeries.map((s) => {
@@ -662,5 +727,190 @@ const canonical = "https://muntru.me/calendar/";
       applySort();
       applyFilter();
     })();
+  </script>
+
+  <script>
+    import { calculateCheckout, detectDefaultTaxProfileId } from "../lib/iracing-store-planner";
+
+    const panel = document.getElementById("calPlannerPanel");
+    const toggleBtn = document.getElementById("btnPlannerToggle");
+    const taxSelect = document.getElementById("plannerTaxSelect") as HTMLSelectElement | null;
+    const club40Chk = document.getElementById("plannerClub40") as HTMLInputElement | null;
+    const creditsInput = document.getElementById("plannerCreditsInput") as HTMLInputElement | null;
+    const matrixEl = document.getElementById("plannerMatrix");
+    const weeksCoveredEl = document.getElementById("plannerWeeksCovered");
+    const roiListEl = document.getElementById("plannerRoiList");
+    const cartItemsEl = document.getElementById("plannerCartItems");
+    const upsellEl = document.getElementById("plannerUpsellHint");
+    const ticketEl = document.getElementById("plannerTicket");
+
+    if (panel && toggleBtn) {
+      const OWNED_KEY = "mmt-owned-tracks-v1";
+      const CART_KEY = "mmt-planner-cart-v1";
+      const FAV_KEY = "mmt_cal_favs_v1";
+
+      let owned = new Set<string>();
+      let cart = new Set<string>();
+      try {
+        owned = new Set(JSON.parse(localStorage.getItem(OWNED_KEY) || "[]"));
+        cart = new Set(JSON.parse(localStorage.getItem(CART_KEY) || "[]"));
+      } catch { /* ignore */ }
+
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("missing")) {
+        params.get("missing")!.split(",").map((s) => s.trim()).filter(Boolean).forEach((t) => cart.add(t));
+        localStorage.setItem(CART_KEY, JSON.stringify(Array.from(cart)));
+      }
+      if (params.get("planner") === "1" || params.get("missing")) {
+        panel.hidden = false;
+        toggleBtn.classList.add("is-on");
+        toggleBtn.setAttribute("aria-expanded", "true");
+      }
+
+      if (taxSelect) {
+        taxSelect.value = detectDefaultTaxProfileId();
+        taxSelect.addEventListener("change", () => {
+          localStorage.setItem("mmt-tax-profile", taxSelect.value);
+          renderPlanner();
+        });
+      }
+      club40Chk?.addEventListener("change", renderPlanner);
+      creditsInput?.addEventListener("input", renderPlanner);
+      document.getElementById("plannerClearCart")?.addEventListener("click", () => {
+        cart.clear();
+        localStorage.setItem(CART_KEY, "[]");
+        renderPlanner();
+      });
+
+      toggleBtn.addEventListener("click", () => {
+        const nextHidden = !panel.hidden;
+        panel.hidden = nextHidden;
+        toggleBtn.classList.toggle("is-on", !nextHidden);
+        toggleBtn.setAttribute("aria-expanded", String(!nextHidden));
+        if (!nextHidden) renderPlanner();
+      });
+
+      function renderPlanner() {
+        const cards = Array.from(document.querySelectorAll<HTMLElement>("#calGrid .cal-card"));
+        let favIds = new Set<string>();
+        try {
+          favIds = new Set(JSON.parse(localStorage.getItem(FAV_KEY) || "[]").map(String));
+        } catch { /* ignore */ }
+
+        const targetCards = favIds.size > 0
+          ? cards.filter((c) => favIds.has(c.dataset.id || ""))
+          : cards.slice(0, 6);
+
+        const weekCoverage = new Array<boolean>(12).fill(false);
+        const roiMap = new Map<string, { track: string; weeksUnlocked: number; isSpecial: boolean }>();
+
+        targetCards.forEach((card) => {
+          const isEndu = card.dataset.endurance === "1";
+          card.querySelectorAll<HTMLElement>("[data-week-num]").forEach((li) => {
+            const w = Number(li.dataset.weekNum || 0);
+            const trackName = (li.querySelector(".cal-week__track")?.textContent || "").trim();
+            if (!trackName || w < 1 || w > 12) return;
+            const hasIt = owned.has(trackName) || cart.has(trackName);
+            if (hasIt) weekCoverage[w - 1] = true;
+            if (!owned.has(trackName)) {
+              const cur = roiMap.get(trackName) ?? { track: trackName, weeksUnlocked: 0, isSpecial: isEndu };
+              cur.weeksUnlocked += 1;
+              if (isEndu) cur.isSpecial = true;
+              roiMap.set(trackName, cur);
+            }
+          });
+        });
+
+        const coveredCount = weekCoverage.filter(Boolean).length;
+        if (weeksCoveredEl) {
+          weeksCoveredEl.textContent = `${coveredCount}/12 semanas ${coveredCount >= 8 ? "✓ Participation Credits OK" : `(faltan ${8 - coveredCount} para 8/12)`}`;
+        }
+        if (matrixEl) {
+          matrixEl.innerHTML = weekCoverage
+            .map((ok, idx) => `<div class="h-7 rounded flex items-center justify-center font-bold border ${ok ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-300" : "bg-rose-500/10 border-rose-500/25 text-rose-300"}">S${idx + 1}</div>`)
+            .join("");
+        }
+
+        const topRoi = Array.from(roiMap.values())
+          .sort((a, b) => (b.weeksUnlocked + (b.isSpecial ? 2 : 0)) - (a.weeksUnlocked + (a.isSpecial ? 2 : 0)))
+          .slice(0, 8);
+
+        if (roiListEl) {
+          roiListEl.innerHTML = topRoi.map((item, i) => {
+            const inCart = cart.has(item.track);
+            return `
+              <div class="p-2.5 rounded-xl border border-[var(--r-line)] bg-[var(--r-bg)] flex items-center justify-between gap-2 text-xs font-mono">
+                <div class="min-w-0">
+                  <div class="font-bold text-[var(--r-text)] truncate">${i + 1}º ${item.track}</div>
+                  <div class="text-[10px] text-[var(--r-muted)]">Desbloquea ${item.weeksUnlocked} sem.${item.isSpecial ? " · Special Event" : ""}</div>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                  <button type="button" data-own-track="${item.track.replace(/"/g, "&quot;")}" class="px-2 py-1 rounded border border-[var(--r-line)] text-[10px] text-[var(--r-muted)] hover:text-emerald-300 cursor-pointer">Tengo</button>
+                  <button type="button" data-cart-track="${item.track.replace(/"/g, "&quot;")}" class="px-2 py-1 rounded border text-[10px] font-bold cursor-pointer ${inCart ? "border-rose-400/50 text-rose-300" : "border-[var(--r-accent)] text-[var(--r-accent)]"}">${inCart ? "Quitar" : "+ Carrito"}</button>
+                </div>
+              </div>
+            `;
+          }).join("");
+
+          roiListEl.querySelectorAll<HTMLButtonElement>("[data-cart-track]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const t = btn.dataset.cartTrack || "";
+              if (cart.has(t)) cart.delete(t);
+              else cart.add(t);
+              localStorage.setItem(CART_KEY, JSON.stringify(Array.from(cart)));
+              renderPlanner();
+            });
+          });
+          roiListEl.querySelectorAll<HTMLButtonElement>("[data-own-track]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const t = btn.dataset.ownTrack || "";
+              owned.add(t);
+              cart.delete(t);
+              localStorage.setItem(OWNED_KEY, JSON.stringify(Array.from(owned)));
+              localStorage.setItem(CART_KEY, JSON.stringify(Array.from(cart)));
+              renderPlanner();
+            });
+          });
+        }
+
+        if (cartItemsEl) {
+          if (cart.size === 0) {
+            cartItemsEl.innerHTML = `<p class="text-[var(--r-muted)]">Añade circuitos recomendados para simular tu pack con descuento.</p>`;
+          } else {
+            cartItemsEl.innerHTML = Array.from(cart).map((t) => `
+              <div class="flex items-center justify-between gap-2 py-1 border-b border-[var(--r-line)]/40">
+                <span class="truncate text-[var(--r-text)]">${t}</span>
+                <span class="text-[var(--r-muted)] shrink-0">$14.95</span>
+              </div>
+            `).join("");
+          }
+        }
+
+        const ownedCount = club40Chk?.checked ? 40 : owned.size;
+        const credits = Number(creditsInput?.value || 0);
+        const profileId = taxSelect?.value || "es";
+        const ck = calculateCheckout(cart.size, 0, ownedCount, credits, profileId);
+
+        if (upsellEl) {
+          upsellEl.hidden = !ck.upsellHint;
+          if (ck.upsellHint) upsellEl.textContent = ck.upsellHint;
+        }
+
+        if (ticketEl) {
+          ticketEl.innerHTML = `
+            <div class="flex justify-between text-[var(--r-muted)]"><span>Subtotal (${cart.size} piezas)</span><span>$${ck.subtotalUsd.toFixed(2)}</span></div>
+            <div class="flex justify-between text-emerald-400"><span>Dto. Volumen (${ck.discountLabel})</span><span>-$${ck.discountUsd.toFixed(2)}</span></div>
+            ${ck.creditsUsedUsd > 0 ? `<div class="flex justify-between text-sky-400"><span>Participation Credits</span><span>-$${ck.creditsUsedUsd.toFixed(2)}</span></div>` : ""}
+            <div class="flex justify-between text-[var(--r-muted)]"><span>Base Imponible</span><span>$${ck.taxableBaseUsd.toFixed(2)}</span></div>
+            <div class="flex justify-between text-[var(--r-muted)]"><span>${ck.taxName}</span><span>+$${ck.taxUsd.toFixed(2)}</span></div>
+            <div class="flex justify-between text-sm font-black text-[var(--r-text)] pt-1 border-t border-[var(--r-line)]"><span>TOTAL REAL (USD)</span><span class="text-[var(--r-accent)]">$${ck.totalUsd.toFixed(2)}</span></div>
+            <div class="text-right text-[11px] font-bold text-white/80">≈ ${ck.localAmountFormatted} ${ck.localCurrency}</div>
+            <p class="text-[9.5px] text-[var(--r-muted)] leading-tight pt-1">Conversión orientativa; el tipo de cambio final depende de Steam o de tu tarjeta/PayPal.</p>
+          `;
+        }
+      }
+
+      if (!panel.hidden) renderPlanner();
+    }
   </script>
 </Layout>

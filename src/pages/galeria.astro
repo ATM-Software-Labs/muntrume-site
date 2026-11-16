@@ -1,0 +1,251 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { TRACK_GALLERY_PHOTOS } from '../data/paddock-gallery';
+
+const pageTitle = 'Galería de competición | Muntrume Motorsport';
+const pageDescription =
+  'Capturas reales en pista de Muntrume Motorsport en iRacing: GT3, prototipos GTP y stints nocturnos de resistencia.';
+
+const totalCount = TRACK_GALLERY_PHOTOS.length;
+const gt3Count = TRACK_GALLERY_PHOTOS.filter((p) => p.category === 'gt3').length;
+const gtpCount = TRACK_GALLERY_PHOTOS.filter((p) => p.category === 'gtp').length;
+const nightCount = TRACK_GALLERY_PHOTOS.filter((p) => p.category === 'night').length;
+---
+
+<Layout
+  title={pageTitle}
+  description={pageDescription}
+  canonical="https://muntru.me/galeria/"
+  ogImage="https://muntru.me/assets/img/coche1.webp"
+  ogImageAlt="Galería de competición Muntrume Motorsport"
+>
+  <div class="pt-8 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-5 border-b border-[var(--r-line)]">
+      <div class="space-y-2">
+        <a
+          href="/paddock/"
+          class="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-[var(--r-accent)] hover:underline"
+        >
+          &larr; Volver al Paddock
+        </a>
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-[var(--r-text)] font-display tracking-tight">
+          Galería de competición
+        </h1>
+        <p class="text-xs sm:text-sm text-[var(--r-muted)] max-w-xl">
+          Capturas en pista de nuestros programas GT3, Prototipos GTP y stints nocturnos de resistencia en iRacing.
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2" id="galeriaFilterBar">
+        <button
+          type="button"
+          data-filter="all"
+          class="galeria-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition cursor-pointer bg-[var(--r-accent)] text-[var(--r-accent-ink)] border border-[var(--r-accent)]"
+        >
+          Todas ({totalCount})
+        </button>
+        <button
+          type="button"
+          data-filter="gt3"
+          class="galeria-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition cursor-pointer bg-[var(--r-surface)] text-[var(--r-muted)] border border-[var(--r-line)] hover:border-[var(--r-accent)]"
+        >
+          GT3 ({gt3Count})
+        </button>
+        <button
+          type="button"
+          data-filter="gtp"
+          class="galeria-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition cursor-pointer bg-[var(--r-surface)] text-[var(--r-muted)] border border-[var(--r-line)] hover:border-[var(--r-accent)]"
+        >
+          Prototipos GTP ({gtpCount})
+        </button>
+        <button
+          type="button"
+          data-filter="night"
+          class="galeria-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition cursor-pointer bg-[var(--r-surface)] text-[var(--r-muted)] border border-[var(--r-line)] hover:border-[var(--r-accent)]"
+        >
+          Noche / Resistencia ({nightCount})
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="galeriaGrid">
+      {TRACK_GALLERY_PHOTOS.map((photo, index) => (
+        <article
+          data-category={photo.category}
+          data-index={index}
+          class="galeria-card group rounded-xl overflow-hidden bg-[var(--r-surface)] transition-all duration-200"
+          style="border: 1px solid rgba(255, 255, 255, 0.08);"
+        >
+          <button
+            type="button"
+            class="galeria-open-btn relative block w-full aspect-video overflow-hidden bg-[#090d12] cursor-zoom-in text-left"
+            data-src={photo.img}
+            data-title={photo.title}
+            data-sub={`${photo.circuit} · ${photo.caption}`}
+            title={`Ampliar "${photo.title}" en HD`}
+          >
+            <img
+              src={photo.img}
+              alt={photo.title}
+              width="640"
+              height="360"
+              loading="lazy"
+              decoding="async"
+              onerror="const card = this.closest('article'); if (card) card.style.display='none';"
+              class="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+            />
+            <span class="absolute top-2.5 left-2.5 px-2 py-0.5 rounded bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase tracking-wider">
+              {photo.badge}
+            </span>
+          </button>
+          <div class="p-3.5 space-y-1">
+            <h2 class="text-sm font-bold text-[var(--r-text)] font-display truncate group-hover:text-[var(--r-accent)] transition-colors">
+              {photo.title}
+            </h2>
+            <p class="text-xs text-[var(--r-muted)] line-clamp-1">
+              {photo.circuit}
+            </p>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+
+  <!-- Lightbox HD con navegación ← / →, Esc y descarga -->
+  <div
+    id="galeriaLightbox"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-black/90 p-4 sm:p-6"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="glLbTitle"
+  >
+    <div class="relative w-full max-w-5xl rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] shadow-2xl overflow-hidden">
+      <div class="flex items-center justify-between gap-3 px-5 py-3 border-b border-[var(--r-line)]">
+        <div class="min-w-0">
+          <h3 id="glLbTitle" class="text-base font-extrabold text-[var(--r-text)] font-display truncate"></h3>
+          <p id="glLbSub" class="text-xs font-mono text-[var(--r-muted)] truncate"></p>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <a
+            id="glLbDownload"
+            href="#"
+            download
+            class="px-3 py-1.5 rounded-lg bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono font-bold text-[var(--r-text)] transition"
+          >
+            Descargar HD
+          </a>
+          <button
+            id="glLbClose"
+            type="button"
+            aria-label="Cerrar visor"
+            class="w-8 h-8 rounded-lg bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-[var(--r-text)] flex items-center justify-center font-bold cursor-pointer"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <div class="relative bg-[#090d12] flex items-center justify-center h-[62vh] sm:h-[72vh]">
+        <button
+          id="glLbPrev"
+          type="button"
+          aria-label="Foto anterior"
+          class="absolute left-3 z-10 w-10 h-10 rounded-full bg-black/75 border border-white/20 text-white hover:border-[var(--r-accent)] font-bold cursor-pointer"
+        >
+          &larr;
+        </button>
+        <img id="glLbImg" src="" alt="" class="w-full h-full object-contain" />
+        <button
+          id="glLbNext"
+          type="button"
+          aria-label="Foto siguiente"
+          class="absolute right-3 z-10 w-10 h-10 rounded-full bg-black/75 border border-white/20 text-white hover:border-[var(--r-accent)] font-bold cursor-pointer"
+        >
+          &rarr;
+        </button>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  const filterBtns = Array.from(document.querySelectorAll<HTMLButtonElement>('.galeria-filter-btn'));
+  const cards = Array.from(document.querySelectorAll<HTMLElement>('.galeria-card'));
+  const lb = document.getElementById('galeriaLightbox');
+  const lbImg = document.getElementById('glLbImg') as HTMLImageElement | null;
+  const lbTitle = document.getElementById('glLbTitle');
+  const lbSub = document.getElementById('glLbSub');
+  const lbDownload = document.getElementById('glLbDownload') as HTMLAnchorElement | null;
+  let activeFilter = 'all';
+  let currentVisibleIdx = 0;
+
+  const visibleButtons = () =>
+    cards
+      .filter((c) => !c.hidden && c.style.display !== 'none')
+      .map((c) => c.querySelector<HTMLButtonElement>('.galeria-open-btn'))
+      .filter((b): b is HTMLButtonElement => Boolean(b));
+
+  const openAt = (idx: number) => {
+    const list = visibleButtons();
+    if (!list.length || !lb || !lbImg) return;
+    currentVisibleIdx = ((idx % list.length) + list.length) % list.length;
+    const btn = list[currentVisibleIdx];
+    const src = btn.dataset.src || '';
+    const title = btn.dataset.title || '';
+    const sub = btn.dataset.sub || '';
+    lbImg.src = src;
+    lbImg.alt = title;
+    if (lbTitle) lbTitle.textContent = title;
+    if (lbSub) lbSub.textContent = sub;
+    if (lbDownload) {
+      lbDownload.href = src;
+      lbDownload.download = src.split('/').pop() || 'muntrume-hd.webp';
+    }
+    lb.classList.remove('hidden');
+    lb.classList.add('flex');
+  };
+
+  const closeLb = () => {
+    if (!lb) return;
+    lb.classList.add('hidden');
+    lb.classList.remove('flex');
+  };
+
+  filterBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      activeFilter = btn.dataset.filter || 'all';
+      filterBtns.forEach((b) => {
+        const on = b === btn;
+        b.className = on
+          ? 'galeria-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition cursor-pointer bg-[var(--r-accent)] text-[var(--r-accent-ink)] border border-[var(--r-accent)]'
+          : 'galeria-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition cursor-pointer bg-[var(--r-surface)] text-[var(--r-muted)] border border-[var(--r-line)] hover:border-[var(--r-accent)]';
+      });
+      cards.forEach((c) => {
+        c.hidden = activeFilter !== 'all' && c.dataset.category !== activeFilter;
+      });
+    });
+  });
+
+  cards.forEach((card) => {
+    const btn = card.querySelector<HTMLButtonElement>('.galeria-open-btn');
+    btn?.addEventListener('click', () => {
+      const list = visibleButtons();
+      const idx = list.indexOf(btn);
+      openAt(idx >= 0 ? idx : 0);
+    });
+  });
+
+  document.getElementById('glLbClose')?.addEventListener('click', closeLb);
+  document.getElementById('glLbPrev')?.addEventListener('click', () => openAt(currentVisibleIdx - 1));
+  document.getElementById('glLbNext')?.addEventListener('click', () => openAt(currentVisibleIdx + 1));
+  lb?.addEventListener('click', (e) => {
+    if (e.target === lb) closeLb();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (!lb || lb.classList.contains('hidden')) return;
+    if (e.key === 'Escape') closeLb();
+    else if (e.key === 'ArrowLeft') openAt(currentVisibleIdx - 1);
+    else if (e.key === 'ArrowRight') openAt(currentVisibleIdx + 1);
+  });
+</script>
