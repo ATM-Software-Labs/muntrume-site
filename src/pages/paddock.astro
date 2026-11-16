@@ -850,7 +850,7 @@ const topAlbums = [...PADDOCK_ALBUMS].sort((a, b) => (b.views ?? 0) - (a.views ?
           </a>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div id="paddockTopAlbumsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-5">
           {topAlbums.map((album) => (
             <a
               href={`/paddock/g/${album.slug}/`}
@@ -1192,11 +1192,37 @@ const topAlbums = [...PADDOCK_ALBUMS].sort((a, b) => (b.views ?? 0) - (a.views ?
         else usedImgs.add(src);
       });
 
-      fetch("https://muntru-api.trujillomingorance.com/api/gallery/public")
+      fetch("https://muntru-api.trujillomingorance.com/api/gallery?status=published")
         .then((r) => (r.ok ? r.json() : null))
         .then((data) => {
           if (!data || !Array.isArray(data.photos)) return;
-          const photos = data.photos.filter((p) => p.imageUrl && !usedImgs.has(p.imageUrl));
+          const usedForAlbums = new Set();
+          const albumsGrid = document.getElementById("paddockTopAlbumsGrid");
+          if (albumsGrid && Array.isArray(data.albums)) {
+            const top3 = data.albums.slice(0, 3);
+            if (top3.length === 0) {
+              albumsGrid.innerHTML = `<p class="col-span-full text-xs font-mono text-[var(--r-muted)]">Próximamente álbumes oficiales del equipo.</p>`;
+            } else {
+              albumsGrid.innerHTML = top3.map((a) => {
+                usedForAlbums.add(a.cover);
+                return `
+                  <a href="/albumes/?car=${encodeURIComponent(a.slug)}" class="group rounded-xl overflow-hidden bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-300 flex flex-col justify-between">
+                    <div class="relative w-full aspect-video overflow-hidden bg-[#090d12]">
+                      <img src="${a.cover}" alt="${a.car}" width="640" height="360" loading="lazy" decoding="async" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">${a.category}</span>
+                      <span class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded bg-black/75 border border-white/15 text-white text-[10px] font-mono font-bold">${a.count} fotos · ${a.views} vistas</span>
+                    </div>
+                    <div class="p-3.5 flex items-center justify-between gap-2">
+                      <h4 class="text-sm font-bold text-[var(--r-text)] group-hover:text-[var(--r-accent)] truncate">${a.car}</h4>
+                      <span class="text-xs font-mono text-[var(--r-accent)] font-bold shrink-0">&rarr;</span>
+                    </div>
+                  </a>
+                `;
+              }).join("");
+            }
+          }
+
+          const photos = data.photos.filter((p) => p.imageUrl && !usedForAlbums.has(p.imageUrl));
           if (photos.length === 0) {
             trackEl.innerHTML = `
               <div class="w-full rounded-2xl border border-dashed border-[var(--r-line)] bg-[var(--r-surface)]/60 p-8 text-center space-y-3">
