@@ -70,7 +70,7 @@ const appSchema = {
       <div class="app-cta">
         <button type="button" id="btnLaunchOverlaysWeb" class="r-btn r-btn--primary">Lanzar Overlays en iRacing</button>
         <button type="button" id="btnInstallPwaWeb" data-mmt-install-pwa class="r-btn app-btn">Instalar como App</button>
-        <a class="r-btn app-btn" href="https://github.com/ATM-Software-Labs/muntrume-site/releases/latest" target="_blank" rel="noopener noreferrer" data-i18n="app.download">Descargar para Windows (64-bit)</a>
+        <a id="mmtAppDownloadBtn" class="r-btn app-btn" href="https://muntrume.atrumin16.workers.dev/api/download/latest" target="_blank" rel="noopener noreferrer" data-i18n="app.download">Descargar MMT Sync (.exe)</a>
         <a class="r-btn app-btn" href="/app/install/">Guía de instalación</a>
         <a class="r-btn app-btn" href="/garage/" data-i18n="app.catalog">Ver catálogo web</a>
       </div>
@@ -315,3 +315,16 @@ const appSchema = {
     .app-card:hover { transform: none; }
   }
 </style>
+
+<script is:inline>
+  (() => {
+    const btn = document.getElementById("mmtAppDownloadBtn");
+    if (!btn) return;
+    fetch("https://muntrume.atrumin16.workers.dev/api/download/latest?info=1")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d && d.version) btn.textContent = `Descargar MMT Sync v${d.version} (.exe)`;
+      })
+      .catch(() => {});
+  })();
+</script>

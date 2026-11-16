@@ -4,10 +4,15 @@ on:
   push:
     tags:
       - "desktop-v*"
+      - "v*"
   workflow_dispatch:
     inputs:
+      version:
+        description: "Optional version number to sync (e.g. 0.3.8)"
+        required: false
+        type: string
       tag:
-        description: "Optional tag name (e.g. desktop-v0.2.2)"
+        description: "Optional tag name (e.g. desktop-v0.3.8)"
         required: false
         type: string
 
@@ -60,18 +65,42 @@ jobs:
           fi
           node -e "const c=require('./desktop/src-tauri/tauri.conf.json'); const k=c.plugins.updater.pubkey||''; if(!k || k.includes('REPLACE_WITH')) { console.error('Pega la clave pública en plugins.updater.pubkey'); process.exit(1); }"
 
-      - name: Tag
+      - name: Tag and Sync Version
         id: tag
         shell: bash
         run: |
+          INPUT_VER="${{ github.event.inputs.version }}"
           if [ "${{ github.ref_type }}" = "tag" ]; then
-            echo "name=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+            TAG_NAME="${{ github.ref_name }}"
+            SYNC_VER="${TAG_NAME#desktop-v}"
+            SYNC_VER="${SYNC_VER#v}"
           elif [ -n "${{ github.event.inputs.tag }}" ]; then
-            echo "name=${{ github.event.inputs.tag }}" >> "$GITHUB_OUTPUT"
+            TAG_NAME="${{ github.event.inputs.tag }}"
+            SYNC_VER="${INPUT_VER:-${TAG_NAME#desktop-v}}"
+            SYNC_VER="${SYNC_VER#v}"
+          elif [ -n "$INPUT_VER" ]; then
+            SYNC_VER="${INPUT_VER#v}"
+            TAG_NAME="desktop-v${SYNC_VER}"
           else
-            ver=$(node -p "require('./desktop/src-tauri/tauri.conf.json').version")
-            echo "name=desktop-v${ver}" >> "$GITHUB_OUTPUT"
+            SYNC_VER=$(node -p "require('./desktop/src-tauri/tauri.conf.json').version")
+            TAG_NAME="desktop-v${SYNC_VER}"
           fi
+          if [ -n "$SYNC_VER" ] && [[ "$SYNC_VER" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            node -e "
+              const fs = require('fs');
+              const v = process.argv[1];
+              const pkg = JSON.parse(fs.readFileSync('desktop/package.json', 'utf8'));
+              pkg.version = v;
+              fs.writeFileSync('desktop/package.json', JSON.stringify(pkg, null, 2) + '\n');
+              const tauri = JSON.parse(fs.readFileSync('desktop/src-tauri/tauri.conf.json', 'utf8'));
+              tauri.version = v;
+              fs.writeFileSync('desktop/src-tauri/tauri.conf.json', JSON.stringify(tauri, null, 2) + '\n');
+              let cargo = fs.readFileSync('desktop/Cargo.toml', 'utf8');
+              cargo = cargo.replace(/^version = \"[^\"]+\"/m, 'version = \"' + v + '\"');
+              fs.writeFileSync('desktop/Cargo.toml', cargo);
+            " "$SYNC_VER"
+          fi
+          echo "name=${TAG_NAME}" >> "$GITHUB_OUTPUT"
 
       - name: Generate Release Notes
         id: notes

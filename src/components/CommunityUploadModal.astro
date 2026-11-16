@@ -1,20 +1,21 @@
 ---
-// Reusable Community Screenshot Upload Modal (Prompts 129 & 139)
+// Reusable Community Screenshot Upload Modal (Prompts 129, 139 & 165)
 ---
 
 <div id="communityUploadModal" hidden class="fixed inset-0 z-[120] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
-  <div class="w-full max-w-lg rounded-2xl border border-white/15 bg-[#0d1117] text-white p-6 shadow-2xl relative">
+  <div class="w-full max-w-lg rounded-2xl border border-white/15 bg-[#0d1117] text-white p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto">
     <button
       type="button"
       id="cuCloseBtn"
       aria-label="Cerrar modal"
-      class="absolute top-4 right-4 w-8 h-8 rounded-lg border border-white/15 text-white/70 hover:text-white hover:border-emerald-400 transition"
+      style="position:absolute;top:16px;right:16px;left:auto;z-index:20;"
+      class="w-8 h-8 rounded-lg border border-white/15 bg-black/40 text-white/75 hover:text-white hover:border-emerald-400 flex items-center justify-center transition cursor-pointer"
     >
       ✕
     </button>
 
-    <span class="text-[11px] font-mono uppercase tracking-widest text-emerald-400">Comunidad Muntrume</span>
-    <h2 class="text-xl font-extrabold font-display mt-1">Subir captura de iRacing</h2>
+    <span class="block pr-10 text-[11px] font-mono uppercase tracking-widest text-emerald-400">Comunidad Muntrume</span>
+    <h2 class="text-xl font-extrabold font-display mt-1 pr-10">Subir captura de iRacing</h2>
     <p class="text-xs text-white/65 mt-1">
       Se comprime automáticamente a WebP (máx. 1920px, &lt;350 KB) en tu navegador antes de enviarse a revisión.
     </p>
@@ -25,14 +26,27 @@
 
       <div>
         <label class="block font-mono text-[11px] text-white/70 mb-1">Imagen (PNG / JPG / WebP) *</label>
-        <input
-          type="file"
-          id="cuFileInput"
-          accept="image/png,image/jpeg,image/webp"
-          required
-          class="w-full rounded-xl border border-white/15 bg-black/40 px-3 py-2 text-xs text-white file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-500 file:px-3 file:py-1 file:text-xs file:font-bold file:text-slate-950"
-        />
-        <p id="cuSizeInfo" class="mt-1 text-[11px] font-mono text-emerald-400 hidden"></p>
+        <div id="cuDropZone" class="rounded-xl border border-dashed border-white/20 bg-black/40 p-2.5 transition">
+          <input
+            type="file"
+            id="cuFileInput"
+            accept="image/png,image/jpeg,image/webp"
+            required
+            class="w-full text-xs text-white file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-500 file:px-3 file:py-1 file:text-xs file:font-bold file:text-slate-950 cursor-pointer"
+          />
+          <p class="mt-1 text-[10.5px] font-mono text-white/50">Arrastra o selecciona tu captura; detectamos coche, circuito y título automáticamente.</p>
+        </div>
+        <div id="cuPreviewWrap" class="hidden mt-2.5 rounded-xl border border-white/15 bg-black/60 p-2 space-y-2">
+          <div class="relative w-full aspect-video rounded-lg overflow-hidden bg-black">
+            <img id="cuPreviewImg" src="" alt="Vista previa WebP 16:9" class="w-full h-full object-cover object-center" />
+          </div>
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <p id="cuSizeInfo" class="text-[11px] font-mono text-emerald-400"></p>
+            <button type="button" id="cuCropCycleBtn" class="px-2.5 py-1 rounded-lg border border-white/20 bg-white/[0.06] hover:border-emerald-400 text-[11px] font-mono text-white/85 transition cursor-pointer">
+              Recortar / Ajustar encuadre (Centro)
+            </button>
+          </div>
+        </div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -67,7 +81,12 @@
       </div>
 
       <label class="flex items-start gap-2.5 pt-1 text-[11px] text-white/80 cursor-pointer">
-        <input type="checkbox" id="cuConsent" required class="mt-0.5 accent-emerald-500" />
+        <input
+          type="checkbox"
+          id="cuConsent"
+          required
+          style="width:16px;height:16px;min-width:16px;margin-top:2px;accent-color:#10b981;appearance:auto;-webkit-appearance:checkbox;opacity:1;position:static;"
+        />
         <span>Confirmo que soy el autor de esta captura de iRacing y autorizo su publicación en muntru.me con atribución a mi usuario.</span>
       </label>
 
@@ -86,15 +105,148 @@
 <script is:inline>
   (() => {
     const API = "https://muntrume.atrumin16.workers.dev";
+    const LAST_AUTHOR_KEY = "mmt_cu_last_author";
     const modal = document.getElementById("communityUploadModal");
     const form = document.getElementById("cuForm");
     const fileInput = document.getElementById("cuFileInput");
+    const dropZone = document.getElementById("cuDropZone");
+    const previewWrap = document.getElementById("cuPreviewWrap");
+    const previewImg = document.getElementById("cuPreviewImg");
     const sizeInfo = document.getElementById("cuSizeInfo");
+    const cropBtn = document.getElementById("cuCropCycleBtn");
     const statusMsg = document.getElementById("cuStatusMsg");
     const submitBtn = document.getElementById("cuSubmitBtn");
     let compressedWebp = "";
+    let currentFile = null;
+    const CROP_MODES = [
+      { key: "center", label: "Centro", yFactor: 0.5 },
+      { key: "top", label: "Arriba", yFactor: 0.15 },
+      { key: "bottom", label: "Abajo", yFactor: 0.85 },
+    ];
+    let cropIdx = 0;
 
-    const openModal = () => { if (modal) modal.hidden = false; };
+    const CAR_DICT = [
+      { re: /\b(296|ferrari.*gt3|ferrari296)\b/i, car: "Ferrari 296 GT3", cat: "gt3" },
+      { re: /\b(963|porsche.*gtp)\b/i, car: "Porsche 963 GTP", cat: "gtp" },
+      { re: /\b(992.*cup|gt3.*cup|cup)\b/i, car: "Porsche 911 GT3 Cup (992)", cat: "cup" },
+      { re: /\b(911.*gt3.*r|porsche.*gt3)\b/i, car: "Porsche 911 GT3 R (992)", cat: "gt3" },
+      { re: /\b(m4.*gt3|bmw.*gt3)\b/i, car: "BMW M4 GT3", cat: "gt3" },
+      { re: /\b(m.*hybrid|bmw.*gtp)\b/i, car: "BMW M Hybrid V8", cat: "gtp" },
+      { re: /\b(cadillac|v-?series\.?r)\b/i, car: "Cadillac V-Series.R", cat: "gtp" },
+      { re: /\b(acura|arx-?06)\b/i, car: "Acura ARX-06 GTP", cat: "gtp" },
+      { re: /\b(499p)\b/i, car: "Ferrari 499P", cat: "gtp" },
+      { re: /\b(huracan|lamborghini)\b/i, car: "Lamborghini Huracán GT3 EVO2", cat: "gt3" },
+      { re: /\b(720s|mclaren)\b/i, car: "McLaren 720S GT3 EVO", cat: "gt3" },
+      { re: /\b(corvette|z06)\b/i, car: "Chevrolet Corvette Z06 GT3.R", cat: "gt3" },
+      { re: /\b(mustang)\b/i, car: "Ford Mustang GT3", cat: "gt3" },
+      { re: /\b(amg|mercedes)\b/i, car: "Mercedes-AMG GT3 2020", cat: "gt3" },
+      { re: /\b(p217|lmp2)\b/i, car: "Dallara P217", cat: "gtp" },
+    ];
+
+    const TRACK_DICT = [
+      { re: /\bspa\b|francorchamps/i, track: "Spa-Francorchamps" },
+      { re: /\bmonza\b/i, track: "Autodromo Nazionale Monza" },
+      { re: /\bsebring\b/i, track: "Sebring International Raceway" },
+      { re: /\bdaytona\b/i, track: "Daytona International Speedway" },
+      { re: /\bbarcelona\b|catalunya|montmelo/i, track: "Circuit de Barcelona-Catalunya" },
+      { re: /\bimola\b/i, track: "Autodromo Enzo e Dino Ferrari (Imola)" },
+      { re: /\bsuzuka\b/i, track: "Suzuka International Racing Course" },
+      { re: /\bnurburgring\b|nordschleife/i, track: "Nürburgring" },
+      { re: /\bsilverstone\b/i, track: "Silverstone Circuit" },
+      { re: /\ble\s?mans\b|lemans|sarthe/i, track: "Circuit des 24 Heures du Mans" },
+      { re: /\binterlagos\b/i, track: "Autódromo José Carlos Pace (Interlagos)" },
+      { re: /\bwatkins\b/i, track: "Watkins Glen International" },
+      { re: /\bbathurst\b|panorama/i, track: "Mount Panorama (Bathurst)" },
+      { re: /\bfuji\b/i, track: "Fuji Speedway" },
+      { re: /\bportimao\b|algarve/i, track: "Autódromo Internacional do Algarve" },
+    ];
+
+    const formatBytesLabel = (bytes) => {
+      if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+      return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+    };
+
+    async function extractMetadataText(file) {
+      try {
+        const slice = file.slice(0, 65536);
+        const buf = await slice.arrayBuffer();
+        const bytes = new Uint8Array(buf);
+        let ascii = "";
+        for (let i = 0; i < bytes.length; i++) {
+          const b = bytes[i];
+          ascii += b >= 32 && b <= 126 ? String.fromCharCode(b) : " ";
+        }
+        return ascii;
+      } catch {
+        return "";
+      }
+    }
+
+    async function autofillFromFile(file) {
+      if (!form) return;
+      const metaText = await extractMetadataText(file);
+      const haystack = `${file.name} ${metaText}`;
+
+      const carInput = form.querySelector('input[name="car"]');
+      const catSelect = form.querySelector('select[name="category"]');
+      const trackInput = form.querySelector('input[name="track"]');
+      const titleInput = form.querySelector('input[name="title"]');
+      const authorInput = form.querySelector('input[name="authorName"]');
+
+      let detectedCar = "";
+      let detectedCat = "";
+      for (const entry of CAR_DICT) {
+        if (entry.re.test(haystack)) {
+          detectedCar = entry.car;
+          detectedCat = entry.cat;
+          break;
+        }
+      }
+      let detectedTrack = "";
+      for (const entry of TRACK_DICT) {
+        if (entry.re.test(haystack)) {
+          detectedTrack = entry.track;
+          break;
+        }
+      }
+
+      if (carInput && !carInput.value.trim() && detectedCar) {
+        carInput.value = detectedCar;
+      }
+      if (catSelect && detectedCat) {
+        catSelect.value = detectedCat;
+      }
+      if (trackInput && !trackInput.value.trim() && detectedTrack) {
+        trackInput.value = detectedTrack;
+      }
+      if (titleInput && !titleInput.value.trim()) {
+        if (detectedCar && detectedTrack) {
+          titleInput.value = `${detectedCar} en ${detectedTrack}`;
+        } else {
+          const cleaned = file.name
+            .replace(/\.[^.]+$/, "")
+            .replace(/^iRacing[_\-\s]*/i, "")
+            .replace(/\b\d{4}[-_]\d{2}[-_]\d{2}(?:[T_\-]\d{2}[-_]\d{2}(?:[-_]\d{2})?)?\b/g, "")
+            .replace(/[_\-]+/g, " ")
+            .replace(/\s+/g, " ")
+            .trim();
+          if (cleaned.length >= 3) titleInput.value = cleaned.slice(0, 96);
+        }
+      }
+      if (authorInput && !authorInput.value.trim()) {
+        const savedAuthor = localStorage.getItem(LAST_AUTHOR_KEY) || "";
+        if (savedAuthor) authorInput.value = savedAuthor;
+      }
+    }
+
+    const openModal = () => {
+      if (modal) modal.hidden = false;
+      const authorInput = form?.querySelector('input[name="authorName"]');
+      if (authorInput && !authorInput.value.trim()) {
+        const savedAuthor = localStorage.getItem(LAST_AUTHOR_KEY) || "";
+        if (savedAuthor) authorInput.value = savedAuthor;
+      }
+    };
     const closeModal = () => { if (modal) modal.hidden = true; };
 
     document.querySelectorAll("[data-open-community-upload]").forEach((btn) => {
@@ -104,17 +256,30 @@
     document.getElementById("cuCancelBtn")?.addEventListener("click", closeModal);
     modal?.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
 
-    async function compressToWebp(file) {
+    async function compressToWebp(file, yFactor = 0.5) {
       const bitmap = await createImageBitmap(file);
       const maxW = 1920;
-      const scale = bitmap.width > maxW ? maxW / bitmap.width : 1;
-      const w = Math.round(bitmap.width * scale);
-      const h = Math.round(bitmap.height * scale);
+      const targetW = Math.min(maxW, bitmap.width);
+      const targetH = Math.round((targetW * 9) / 16);
+      const srcAspect = bitmap.width / bitmap.height;
+      const dstAspect = 16 / 9;
+
+      let sx = 0, sy = 0, sw = bitmap.width, sh = bitmap.height;
+      if (Math.abs(srcAspect - dstAspect) > 0.03) {
+        if (srcAspect > dstAspect) {
+          sw = Math.round(bitmap.height * dstAspect);
+          sx = Math.round((bitmap.width - sw) / 2);
+        } else {
+          sh = Math.round(bitmap.width / dstAspect);
+          sy = Math.round((bitmap.height - sh) * yFactor);
+        }
+      }
+
       const canvas = document.createElement("canvas");
-      canvas.width = w;
-      canvas.height = h;
+      canvas.width = targetW;
+      canvas.height = targetH;
       const ctx = canvas.getContext("2d");
-      ctx.drawImage(bitmap, 0, 0, w, h);
+      ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, targetW, targetH);
       bitmap.close();
       let quality = 0.84;
       let dataUrl = canvas.toDataURL("image/webp", quality);
@@ -122,28 +287,68 @@
         quality -= 0.08;
         dataUrl = canvas.toDataURL("image/webp", quality);
       }
-      return { dataUrl, w, h, kb: Math.round((dataUrl.length * 0.75) / 1024) };
+      return { dataUrl, w: targetW, h: targetH, kb: Math.round((dataUrl.length * 0.75) / 1024) };
     }
 
-    fileInput?.addEventListener("change", async () => {
-      const file = fileInput.files?.[0];
+    async function handleSelectedFile(file, runAutofill = true) {
       if (!file) return;
+      currentFile = file;
       try {
-        const res = await compressToWebp(file);
+        if (runAutofill) await autofillFromFile(file);
+        const mode = CROP_MODES[cropIdx];
+        const res = await compressToWebp(file, mode.yFactor);
         compressedWebp = res.dataUrl;
+        if (previewImg) {
+          previewImg.src = res.dataUrl;
+          previewImg.style.objectPosition = `center ${mode.key}`;
+        }
+        if (previewWrap) previewWrap.classList.remove("hidden");
         if (sizeInfo) {
-          sizeInfo.textContent = `✓ WebP optimizado: ${res.w}×${res.h} · ~${res.kb} KB`;
-          sizeInfo.classList.remove("hidden");
+          const origLabel = `${formatBytesLabel(file.size)} ${(file.name.split(".").pop() || "IMG").toUpperCase()}`;
+          sizeInfo.textContent = `✓ ${origLabel} → ${res.kb} KB WebP (${res.w}×${res.h})`;
         }
       } catch {
         compressedWebp = "";
       }
+    }
+
+    fileInput?.addEventListener("change", () => {
+      const file = fileInput.files?.[0];
+      if (file) void handleSelectedFile(file, true);
+    });
+
+    dropZone?.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropZone.classList.add("border-emerald-400");
+    });
+    dropZone?.addEventListener("dragleave", () => {
+      dropZone.classList.remove("border-emerald-400");
+    });
+    dropZone?.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropZone.classList.remove("border-emerald-400");
+      const file = e.dataTransfer?.files?.[0];
+      if (file && fileInput) {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        fileInput.files = dt.files;
+        void handleSelectedFile(file, true);
+      }
+    });
+
+    cropBtn?.addEventListener("click", () => {
+      if (!currentFile) return;
+      cropIdx = (cropIdx + 1) % CROP_MODES.length;
+      cropBtn.textContent = `Recortar / Ajustar encuadre (${CROP_MODES[cropIdx].label})`;
+      void handleSelectedFile(currentFile, false);
     });
 
     form?.addEventListener("submit", async (e) => {
       e.preventDefault();
       if (!compressedWebp) return;
       const fd = new FormData(form);
+      const authorVal = String(fd.get("authorName") || "").trim();
+      if (authorVal) localStorage.setItem(LAST_AUTHOR_KEY, authorVal);
       if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.textContent = "Enviando…";
@@ -154,7 +359,7 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             title: fd.get("title"),
-            authorName: fd.get("authorName"),
+            authorName: authorVal,
             category: fd.get("category"),
             car: fd.get("car"),
             track: fd.get("track"),
@@ -172,6 +377,8 @@
         if (resp.ok) {
           form.reset();
           compressedWebp = "";
+          currentFile = null;
+          previewWrap?.classList.add("hidden");
           setTimeout(closeModal, 1400);
         }
       } catch {
