@@ -17,7 +17,8 @@ const classes = Array.from(new Set(PADDOCK_ALBUMS.map((a) => a.carClass)));
   ogImage="https://muntru.me/assets/img/coche1.webp"
   ogImageAlt="Álbumes oficiales Muntrume Motorsport"
 >
-  <div class="pt-8 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+  <section class="r-section" style="padding-top: clamp(96px, 11vw, 128px); padding-bottom: 80px; border-top: none;">
+    <div class="r-wrap space-y-8">
     <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-5 border-b border-[var(--r-line)]">
       <div class="space-y-2">
         <div class="flex items-center gap-4 text-xs font-mono font-bold">
@@ -90,7 +91,8 @@ const classes = Array.from(new Set(PADDOCK_ALBUMS.map((a) => a.carClass)));
         </a>
       ))}
     </div>
-  </div>
+    </div>
+  </section>
 </Layout>
 
 <script>

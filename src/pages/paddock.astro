@@ -234,7 +234,8 @@ const topAlbums = [...PADDOCK_ALBUMS].sort((a, b) => (b.views ?? 0) - (a.views ?
 ---
 
 <Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/paddock/" ogImage="https://muntru.me/assets/img/og-about.jpg" ogImageAlt="Paddock de Muntrume Motorsport" translated i18nTitle="paddock.meta.title" i18nDescription="paddock.meta.desc">
-  <div class="pt-8 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
+  <section class="r-section" style="padding-top: clamp(96px, 11vw, 128px); padding-bottom: 80px; border-top: none;">
+  <div class="r-wrap space-y-16">
 
     <section class="max-w-3xl space-y-4">
       <p class="r-kicker" data-i18n="paddock.kicker">Paddock · Sant Andreu, Barcelona</p>
@@ -1164,6 +1165,7 @@ const topAlbums = [...PADDOCK_ALBUMS].sort((a, b) => (b.views ?? 0) - (a.views ?
     </section>
 
   </div>
+  </section>
 
   <MediaLightbox />
 </Layout>
