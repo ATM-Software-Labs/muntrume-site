@@ -1081,11 +1081,100 @@
               </div>
             </div>
 
-            <!-- Stage (Proportional 16:9 Scaled Cockpit Simulator & Modular HUD Layout) -->
-            <div id="overlayStageViewport" class="mt-5 rounded-2xl border border-r-line shadow-2xl bg-[#05080c] select-none">
-            <div id="overlayStage" class="relative select-none">
-              <!-- Kapps / GO Broadcast Backdrop Grid -->
-              <div class="absolute inset-0" style="background: radial-gradient(ellipse at 50% 45%, rgba(0, 230, 153, 0.08) 0%, rgba(5, 8, 12, 0.96) 72%), linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px); background-size: 100% 100%, 28px 28px, 28px 28px;"></div>
+            <!-- Prompt 160: MMT HUD Studio (3-Column Visual Overlay Studio) -->
+            <div class="mt-5 rounded-2xl border border-white/10 bg-[#090b0f]/95 shadow-2xl overflow-hidden">
+              <!-- Top Control Bar -->
+              <div id="mmtStudioTopBar" class="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 border-b border-white/10 bg-black/40">
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <span class="font-display font-extrabold text-sm tracking-wider text-white uppercase">MMT <span class="text-[#10b981]">HUD STUDIO</span></span>
+                  <div class="flex items-center gap-1 bg-white/[0.04] p-1 rounded-xl border border-white/10 font-mono text-[10.5px]">
+                    <button type="button" data-hud-factory-preset="sprint_gt3" class="px-2.5 py-1 rounded-lg bg-[#10b981] text-slate-950 font-bold transition">Carrera GT3</button>
+                    <button type="button" data-hud-factory-preset="endurance_multi" class="px-2.5 py-1 rounded-lg text-white/75 hover:text-white transition">Endurance / Lluvia</button>
+                    <button type="button" data-hud-factory-preset="stream_minimal" class="px-2.5 py-1 rounded-lg text-white/75 hover:text-white transition">Minimalista Qualy</button>
+                  </div>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 font-mono text-[11px]">
+                  <span id="mmtStudioSimPill" class="px-2.5 py-1 rounded-full border border-amber-400/40 bg-amber-500/10 text-amber-300 font-bold">● Modo Vista Previa</span>
+                  <button type="button" id="mmtStudioVisBtn" class="px-2.5 py-1 rounded-full border border-white/15 bg-white/[0.04] text-white hover:border-[#10b981] transition cursor-pointer">👁 HUD Visible</button>
+                  <button type="button" id="mmtStudioLockBtn" class="px-2.5 py-1 rounded-full border border-emerald-400/40 bg-emerald-500/10 text-emerald-300 font-bold hover:bg-emerald-500/20 transition cursor-pointer">🔒 Bloqueado</button>
+                </div>
+              </div>
+
+              <!-- 3 Columns: Module Manager (190px) | Inspector (250px) | 16:9 Canvas (flex: 1) -->
+              <div class="grid grid-cols-1 xl:grid-cols-[190px_250px_1fr] min-h-[520px]">
+                <!-- Column 1: Module Manager -->
+                <aside class="border-b xl:border-b-0 xl:border-r border-white/10 p-3 space-y-4 bg-black/25 text-xs font-mono">
+                  <div>
+                    <span class="block text-[10px] uppercase tracking-widest text-[#10b981] font-bold mb-2">Activos en Pista</span>
+                    <div id="mmtStudioActiveList" class="space-y-1"></div>
+                  </div>
+                  <div class="pt-3 border-t border-white/10">
+                    <span class="block text-[10px] uppercase tracking-widest text-white/50 font-bold mb-2">Catálogo Disponible</span>
+                    <div id="mmtStudioCatalogList" class="space-y-1"></div>
+                  </div>
+                </aside>
+
+                <!-- Column 2: Selected Widget Inspector -->
+                <aside id="mmtStudioInspector" class="border-b xl:border-b-0 xl:border-r border-white/10 p-3.5 space-y-3 bg-[#0c1016]/90 text-xs font-mono">
+                  <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                    <strong id="mmtInspTitle" class="text-sm text-white font-display">Standings</strong>
+                    <span id="mmtInspBadge" class="px-1.5 py-0.5 rounded bg-[#10b981]/15 text-[#10b981] text-[10px]">ACTIVO</span>
+                  </div>
+
+                  <div class="p-2.5 rounded-xl border border-white/10 bg-black/30 space-y-2">
+                    <span class="block text-[10px] text-white/55 uppercase">Dimensiones y Posición</span>
+                    <label class="flex items-center justify-between text-[11px] text-white/80">
+                      <span>Escala: <strong id="mmtInspScaleVal" class="text-[#10b981]">100%</strong></span>
+                      <input id="mmtInspScale" type="range" min="70" max="135" value="100" class="w-24 accent-[#10b981]" />
+                    </label>
+                    <label class="flex items-center justify-between text-[11px] text-white/80">
+                      <span>Opacidad: <strong id="mmtInspOpacityVal" class="text-[#10b981]">88%</strong></span>
+                      <input id="mmtInspOpacity" type="range" min="0" max="100" value="88" class="w-24 accent-[#10b981]" />
+                    </label>
+                    <div class="grid grid-cols-2 gap-1.5 text-[10.5px] text-white/70">
+                      <div class="px-2 py-1 rounded bg-black/40 border border-white/10">X: <strong id="mmtInspX" class="text-white">12px</strong></div>
+                      <div class="px-2 py-1 rounded bg-black/40 border border-white/10">Y: <strong id="mmtInspY" class="text-white">12px</strong></div>
+                    </div>
+                    <button type="button" id="mmtInspCenterX" class="w-full py-1.5 rounded-lg border border-white/15 hover:border-[#10b981] text-[10.5px] text-white/85 hover:text-[#10b981] transition cursor-pointer">
+                      Centrar Horizontalmente
+                    </button>
+                  </div>
+
+                  <div class="p-2.5 rounded-xl border border-white/10 bg-black/30 space-y-1.5 text-[11px] text-white/80">
+                    <span class="block text-[10px] text-white/55 uppercase mb-1">Visibilidad Contextual</span>
+                    <label class="flex items-center justify-between cursor-pointer"><span>Mostrar en Pista</span><input id="mmtInspOnTrack" type="checkbox" checked class="accent-[#10b981]" /></label>
+                    <label class="flex items-center justify-between cursor-pointer"><span>Mostrar en Boxes</span><input id="mmtInspInPit" type="checkbox" checked class="accent-[#10b981]" /></label>
+                    <label class="flex items-center justify-between cursor-pointer"><span>Mostrar en Replay</span><input id="mmtInspReplay" type="checkbox" checked class="accent-[#10b981]" /></label>
+                  </div>
+
+                  <div id="mmtInspModuleOpts" class="p-2.5 rounded-xl border border-white/10 bg-black/30 space-y-1.5 text-[11px] text-white/80">
+                    <span class="block text-[10px] text-white/55 uppercase mb-1">Opciones del Módulo</span>
+                    <label class="flex items-center justify-between cursor-pointer"><span>Aviso Amarillo ABS / LOCK</span><input type="checkbox" checked class="accent-[#10b981]" data-insp-opt="abs" /></label>
+                    <label class="flex items-center justify-between cursor-pointer"><span>Ghost Trace de Referencia</span><input type="checkbox" class="accent-[#10b981]" data-insp-opt="ghost" /></label>
+                    <label class="flex items-center justify-between cursor-pointer"><span>Compuesto en Lluvia</span><input type="checkbox" checked class="accent-[#10b981]" data-insp-opt="rain" /></label>
+                  </div>
+                </aside>
+
+                <!-- Column 3: Interactive 16:9 Preview Canvas -->
+                <div class="p-3 flex flex-col gap-2 bg-[#05080c]">
+                  <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono">
+                    <span class="text-white/60">Arrastra cualquier widget · Guías magnéticas verdes (#10b981)</span>
+                    <div class="flex items-center gap-1" id="mmtStudioSceneBar">
+                      <button type="button" data-scene="day" class="px-2.5 py-1 rounded-lg bg-[#10b981] text-slate-950 font-bold cursor-pointer">Día seco</button>
+                      <button type="button" data-scene="night" class="px-2.5 py-1 rounded-lg border border-white/15 text-white/75 hover:text-white cursor-pointer">Noche / Lluvia</button>
+                      <button type="button" data-scene="cockpit" class="px-2.5 py-1 rounded-lg border border-white/15 text-white/75 hover:text-white cursor-pointer">Vista Cockpit</button>
+                    </div>
+                  </div>
+
+                  <!-- Stage (Proportional 16:9 Scaled Cockpit Simulator & Modular HUD Layout) -->
+                  <div id="overlayStageViewport" class="rounded-xl border border-white/15 shadow-2xl bg-[#05080c] select-none relative overflow-hidden">
+                    <div id="overlayStage" class="relative select-none">
+                      <!-- Track Scene Backdrop (Day / Night-Rain / Cockpit) -->
+                      <div id="mmtStudioSceneBg" class="absolute inset-0 transition-all duration-300" style="background: radial-gradient(ellipse at 50% 45%, rgba(16, 185, 129, 0.12) 0%, rgba(5, 8, 12, 0.94) 72%), linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 100% 100%, 28px 28px, 28px 28px;"></div>
+                      <!-- Virtual Mirror Safe Zone Guide -->
+                      <div class="absolute top-2 left-1/2 -translate-x-1/2 w-[520px] h-[165px] rounded-xl border border-dashed border-emerald-400/35 bg-emerald-500/[0.03] pointer-events-none flex items-center justify-center">
+                        <span class="text-[11px] font-mono uppercase tracking-widest text-emerald-300/60">Zona Retrovisor Virtual (Libre)</span>
+                      </div>
 
               <!-- TOP: Sequential Shift Light LEDs Widget -->
               <div id="widgetShiftLights" class="mmt-hud-widget absolute top-3 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 px-3 py-1.5 rounded-[4px] border border-white/[0.08]" style="background: rgba(9, 11, 15, 0.72);" data-widget="shiftLights">
@@ -1153,7 +1242,10 @@
               <div id="widgetFuel" class="mmt-hud-widget absolute left-3 bottom-3 w-[250px] rounded-[4px] border border-white/[0.08] text-white p-2 text-xs font-mono" style="background: rgba(9, 11, 15, 0.72);" data-widget="fuel">
                 <div id="ovFuel"></div>
               </div>
-            </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- Engineering Modules Dock (Prompts 34, 35, 37, 90) -->

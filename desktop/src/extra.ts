@@ -2342,6 +2342,172 @@ function ensureLayoutSchemaV2(force = false): void {
       }
     });
   }
+
+  // Prompt 160: MMT HUD Studio 3-Column Interactive Studio Wiring
+  const studioActiveList = document.getElementById("mmtStudioActiveList");
+  const studioCatalogList = document.getElementById("mmtStudioCatalogList");
+  if (studioActiveList && studioCatalogList && !studioActiveList.dataset.wired) {
+    studioActiveList.dataset.wired = "1";
+    const STUDIO_MODULES = [
+      { id: "standings", label: "Standings", stageSel: "#widgetStandings" },
+      { id: "relative", label: "Relative", stageSel: "#widgetRelative" },
+      { id: "cluster", label: "Pedales & Volante", stageSel: "#widgetCluster" },
+      { id: "trackmap", label: "Mapa de Circuito", stageSel: "" },
+      { id: "fuel", label: "Telemetría Fuel & Ruedas", stageSel: "#widgetFuel" },
+      { id: "delta", label: "Delta en Vivo", stageSel: "#widgetCorner" },
+      { id: "conditions", label: "Clima & Neumático Óptimo", stageSel: "#widgetBrakeMarker" },
+      { id: "radar", label: "Alerta Banderas / Spotter", stageSel: "#widgetShiftLights" },
+    ];
+    let selectedModId = "standings";
+
+    const selectModule = (id: string) => {
+      selectedModId = id;
+      const mod = STUDIO_MODULES.find((m) => m.id === id) || STUDIO_MODULES[0];
+      const titleEl = document.getElementById("mmtInspTitle");
+      if (titleEl) titleEl.textContent = mod.label;
+      const badgeEl = document.getElementById("mmtInspBadge");
+      const disabled = loadDisabledWidgets();
+      if (badgeEl) {
+        const active = !disabled.has(id);
+        badgeEl.textContent = active ? "ACTIVO" : "OCULTO";
+        badgeEl.className = active
+          ? "px-1.5 py-0.5 rounded bg-[#10b981]/15 text-[#10b981] text-[10px]"
+          : "px-1.5 py-0.5 rounded bg-white/10 text-white/50 text-[10px]";
+      }
+      const stageNode = mod.stageSel ? document.querySelector<HTMLElement>(mod.stageSel) : null;
+      const xEl = document.getElementById("mmtInspX");
+      const yEl = document.getElementById("mmtInspY");
+      if (stageNode && xEl && yEl) {
+        xEl.textContent = `${Math.round(stageNode.offsetLeft)}px`;
+        yEl.textContent = `${Math.round(stageNode.offsetTop)}px`;
+      }
+      renderLists();
+    };
+
+    const renderLists = () => {
+      const disabled = loadDisabledWidgets();
+      studioActiveList.innerHTML = STUDIO_MODULES.filter((m) => !disabled.has(m.id))
+        .map(
+          (m) => `
+          <div class="flex items-center justify-between gap-1 px-2 py-1.5 rounded-lg cursor-pointer ${selectedModId === m.id ? "bg-[#10b981]/15 border border-[#10b981]/50 text-white" : "hover:bg-white/5 text-white/80"}" data-mod-select="${m.id}">
+            <span class="flex items-center gap-1.5 truncate"><span class="w-1.5 h-1.5 rounded-full bg-[#10b981] shrink-0"></span><span class="truncate">${m.label}</span></span>
+            <span class="flex items-center gap-1 shrink-0">
+              <button type="button" data-mod-remove="${m.id}" class="text-white/45 hover:text-rose-400 px-1" title="Quitar">×</button>
+            </span>
+          </div>`,
+        )
+        .join("");
+
+      studioCatalogList.innerHTML = STUDIO_MODULES.map(
+        (m) => `
+        <div class="group flex items-center justify-between gap-1 px-2 py-1 rounded-lg hover:bg-white/5 text-white/65 cursor-pointer" data-mod-select="${m.id}">
+          <span class="truncate">${m.label}</span>
+          ${disabled.has(m.id) ? `<button type="button" data-mod-add="${m.id}" class="px-1.5 py-0.5 rounded bg-[#10b981]/20 text-[#10b981] text-[10px] font-bold">+ Añadir</button>` : ""}
+        </div>`,
+      ).join("");
+    };
+
+    studioActiveList.addEventListener("click", (e) => {
+      const t = e.target as HTMLElement;
+      const rm = t.closest<HTMLElement>("[data-mod-remove]");
+      if (rm) {
+        const id = rm.dataset.modRemove || "";
+        const disabled = loadDisabledWidgets();
+        disabled.add(id);
+        saveDisabledWidgets(disabled);
+        const mod = STUDIO_MODULES.find((m) => m.id === id);
+        if (mod?.stageSel) {
+          const el = document.querySelector<HTMLElement>(mod.stageSel);
+          if (el) el.hidden = true;
+        }
+        renderLists();
+        return;
+      }
+      const sel = t.closest<HTMLElement>("[data-mod-select]");
+      if (sel?.dataset.modSelect) selectModule(sel.dataset.modSelect);
+    });
+
+    studioCatalogList.addEventListener("click", (e) => {
+      const t = e.target as HTMLElement;
+      const add = t.closest<HTMLElement>("[data-mod-add]");
+      if (add) {
+        const id = add.dataset.modAdd || "";
+        const disabled = loadDisabledWidgets();
+        disabled.delete(id);
+        saveDisabledWidgets(disabled);
+        const mod = STUDIO_MODULES.find((m) => m.id === id);
+        if (mod?.stageSel) {
+          const el = document.querySelector<HTMLElement>(mod.stageSel);
+          if (el) el.hidden = false;
+        }
+        selectModule(id);
+        return;
+      }
+      const sel = t.closest<HTMLElement>("[data-mod-select]");
+      if (sel?.dataset.modSelect) selectModule(sel.dataset.modSelect);
+    });
+
+    document.getElementById("mmtInspCenterX")?.addEventListener("click", () => {
+      const mod = STUDIO_MODULES.find((m) => m.id === selectedModId);
+      const node = mod?.stageSel ? document.querySelector<HTMLElement>(mod.stageSel) : null;
+      if (node) {
+        node.style.left = "50%";
+        node.style.transform = "translateX(-50%)";
+        const xEl = document.getElementById("mmtInspX");
+        if (xEl) xEl.textContent = "50%";
+      }
+    });
+
+    const inspScale = document.getElementById("mmtInspScale") as HTMLInputElement | null;
+    const inspScaleVal = document.getElementById("mmtInspScaleVal");
+    inspScale?.addEventListener("input", () => {
+      if (inspScaleVal) inspScaleVal.textContent = `${inspScale.value}%`;
+      const mod = STUDIO_MODULES.find((m) => m.id === selectedModId);
+      const node = mod?.stageSel ? document.querySelector<HTMLElement>(mod.stageSel) : null;
+      if (node) (node.style as any).zoom = String(Number(inspScale.value) / 100);
+    });
+
+    const inspOp = document.getElementById("mmtInspOpacity") as HTMLInputElement | null;
+    const inspOpVal = document.getElementById("mmtInspOpacityVal");
+    inspOp?.addEventListener("input", () => {
+      if (inspOpVal) inspOpVal.textContent = `${inspOp.value}%`;
+      ThemeEngine.getInstance().setCustomVars({ opacity: Number(inspOp.value) / 100 });
+      applyHudCustomAppearance();
+    });
+
+    document.getElementById("mmtStudioSceneBar")?.addEventListener("click", (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>("[data-scene]");
+      if (!btn) return;
+      const scene = btn.dataset.scene || "day";
+      document.querySelectorAll<HTMLButtonElement>("#mmtStudioSceneBar [data-scene]").forEach((b) => {
+        b.className = b === btn
+          ? "px-2.5 py-1 rounded-lg bg-[#10b981] text-slate-950 font-bold cursor-pointer"
+          : "px-2.5 py-1 rounded-lg border border-white/15 text-white/75 hover:text-white cursor-pointer";
+      });
+      const bg = document.getElementById("mmtStudioSceneBg");
+      if (!bg) return;
+      if (scene === "night") {
+        bg.style.background = "radial-gradient(ellipse at 50% 45%, rgba(14, 165, 233, 0.18) 0%, rgba(4, 7, 14, 0.98) 72%), linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)";
+      } else if (scene === "cockpit") {
+        bg.style.background = "linear-gradient(180deg, rgba(16,185,129,0.08) 0%, rgba(9,11,15,0.96) 55%, rgba(0,0,0,1) 100%)";
+      } else {
+        bg.style.background = "radial-gradient(ellipse at 50% 45%, rgba(16, 185, 129, 0.12) 0%, rgba(5, 8, 12, 0.94) 72%), linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)";
+      }
+    });
+
+    document.getElementById("mmtStudioVisBtn")?.addEventListener("click", () => {
+      document.getElementById("btnToggleFloatingOverlay")?.click();
+    });
+    let studioLocked = true;
+    const lockBtn = document.getElementById("mmtStudioLockBtn");
+    lockBtn?.addEventListener("click", () => {
+      studioLocked = !studioLocked;
+      void setOverlayEdit(!studioLocked);
+      lockBtn.textContent = studioLocked ? "🔒 Bloqueado" : "🔓 Editar sobre iRacing";
+    });
+
+    renderLists();
+  }
   const toggleBtn = document.getElementById("overlayModeToggle");
   const btnUnlock = document.getElementById("btnUnlockLayout");
   const btnReset = document.getElementById("btnResetLayout");
