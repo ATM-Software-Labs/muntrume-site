@@ -22,3 +22,4 @@ export * from "./pit-exit-predictor";
 export * from "./tire-thermal-widget";
 export * from "./broadcast-director";
 export * from "./ghost-trace";
+export * from "./live-delta-bar";

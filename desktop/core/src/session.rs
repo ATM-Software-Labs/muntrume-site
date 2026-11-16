@@ -20,6 +20,10 @@ pub struct Sample {
     pub steering: f64,
     #[serde(default)]
     pub clutch: Option<f64>,
+    #[serde(default)]
+    pub lap_delta: Option<f64>,
+    #[serde(default)]
+    pub lap_delta_ok: Option<bool>,
     pub lat: Option<f64>,
     pub lon: Option<f64>,
     pub vx: Option<f64>,
@@ -221,6 +225,8 @@ fn blend(a: &Sample, b: &Sample, mix: f64) -> Sample {
         gear: if mix < 0.5 { a.gear } else { b.gear },
         steering: lerp(a.steering, b.steering),
         clutch: None,
+        lap_delta: None,
+        lap_delta_ok: None,
         lat: match (a.lat, b.lat) {
             (Some(left), Some(right)) => Some(lerp(left, right)),
             _ => None,
@@ -266,6 +272,8 @@ pub fn synthetic_session() -> Session {
                 gear: 4,
                 steering: (angle.sin() * 0.4 * scale),
                 clutch: None,
+                lap_delta: None,
+                lap_delta_ok: None,
                 lat: Some(41.5 + angle.sin() * 0.002),
                 lon: Some(2.1 + angle.cos() * 0.002),
                 vx: None,
@@ -322,6 +330,8 @@ mod tests {
                 gear: 1,
                 steering: 0.0,
                 clutch: None,
+                lap_delta: None,
+                lap_delta_ok: None,
                 lat: None,
                 lon: None,
                 vx: Some(10.0),
@@ -336,6 +346,8 @@ mod tests {
                 gear: 1,
                 steering: 0.0,
                 clutch: None,
+                lap_delta: None,
+                lap_delta_ok: None,
                 lat: None,
                 lon: None,
                 vx: Some(10.0),

@@ -173,8 +173,17 @@ export function renderMirrorProximityWings(container: HTMLElement, state: IrsdkC
   }
 }
 
+const trackSectorState = {
+  lastLap: -1,
+  lastSector: -1,
+  sectorStartMs: 0,
+  currentLapColors: [] as string[],
+  personalBestMs: [] as number[],
+  sessionBestMs: [] as number[],
+};
+
 /**
- * Renders the clean 2D <canvas> Track Map with Class Dots and Ghost PIT Exit marker (Prompt 74).
+ * Renders the clean 2D <canvas> Track Map with 3px sector-colored trace and 4px car dots (Prompt 110).
  */
 export function renderLiveTrackMapCanvas(canvas: HTMLCanvasElement, state: IrsdkComputedState | null): void {
   const ctx = canvas.getContext("2d");
@@ -185,84 +194,130 @@ export function renderLiveTrackMapCanvas(canvas: HTMLCanvasElement, state: Irsdk
 
   const cx = w / 2;
   const cy = h / 2;
-  const rx = w * 0.39;
-  const ry = h * 0.36;
+  const rx = w * 0.4;
+  const ry = h * 0.37;
 
   const pointAtPct = (pct: number): { x: number; y: number } => {
     const a = pct * Math.PI * 2 - Math.PI / 2;
-    const x = cx + rx * Math.cos(a) + 6 * Math.sin(a * 3);
-    const y = cy + ry * Math.sin(a) + 4 * Math.cos(a * 2);
+    const x = cx + rx * Math.cos(a) + 5 * Math.sin(a * 3);
+    const y = cy + ry * Math.sin(a) + 3 * Math.cos(a * 2);
     return { x, y };
   };
 
-  // Track circuit outline in translucent gray
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.22)";
-  ctx.lineWidth = 3.5;
-  ctx.beginPath();
-  for (let i = 0; i <= 64; i++) {
-    const p = pointAtPct(i / 64);
-    if (i === 0) ctx.moveTo(p.x, p.y);
-    else ctx.lineTo(p.x, p.y);
-  }
-  ctx.closePath();
-  ctx.stroke();
+  const sectors = state?.session.sectors && state.session.sectors.length >= 2
+    ? state.session.sectors
+    : [
+        { sectorNum: 0, startPct: 0 },
+        { sectorNum: 1, startPct: 0.333 },
+        { sectorNum: 2, startPct: 0.666 },
+      ];
 
-  // Start/Finish tick
+  const myIdx = state?.camCarIdx ?? 0;
+  const myPct = state ? (state.frame.carIdxLapDistPct[myIdx] ?? -1) : -1;
+  const myLap = state ? (state.frame.carIdxLap[myIdx] ?? 0) : 0;
+
+  if (state && myPct >= 0) {
+    let curSector = 0;
+    for (let s = sectors.length - 1; s >= 0; s--) {
+      if (myPct >= sectors[s].startPct) {
+        curSector = s;
+        break;
+      }
+    }
+    const nowMs = (state.frame.sessionTime || 0) * 1000 || performance.now();
+    if (trackSectorState.lastLap !== myLap) {
+      if (trackSectorState.lastLap !== -1 && trackSectorState.lastSector >= 0) {
+        const elapsed = nowMs - trackSectorState.sectorStartMs;
+        const prevSec = trackSectorState.lastSector;
+        if (elapsed > 2000 && elapsed < 300000) {
+          const sb = trackSectorState.sessionBestMs[prevSec] ?? Infinity;
+          const pb = trackSectorState.personalBestMs[prevSec] ?? Infinity;
+          if (elapsed <= sb) {
+            trackSectorState.sessionBestMs[prevSec] = elapsed;
+            trackSectorState.personalBestMs[prevSec] = elapsed;
+          } else if (elapsed <= pb) {
+            trackSectorState.personalBestMs[prevSec] = elapsed;
+          }
+        }
+      }
+      trackSectorState.lastLap = myLap;
+      trackSectorState.currentLapColors = new Array(sectors.length).fill("rgba(255, 255, 255, 0.25)");
+      trackSectorState.sectorStartMs = nowMs;
+      trackSectorState.lastSector = curSector;
+    } else if (curSector !== trackSectorState.lastSector && trackSectorState.lastSector >= 0) {
+      const prevSec = trackSectorState.lastSector;
+      const elapsed = nowMs - trackSectorState.sectorStartMs;
+      let col = "rgba(255, 255, 255, 0.25)";
+      if (elapsed > 2000 && elapsed < 300000) {
+        const sb = trackSectorState.sessionBestMs[prevSec] ?? Infinity;
+        const pb = trackSectorState.personalBestMs[prevSec] ?? Infinity;
+        if (elapsed <= sb) {
+          trackSectorState.sessionBestMs[prevSec] = elapsed;
+          trackSectorState.personalBestMs[prevSec] = elapsed;
+          col = "#a855f7"; // Purple: Session Best
+        } else if (elapsed <= pb) {
+          trackSectorState.personalBestMs[prevSec] = elapsed;
+          col = "#10b981"; // Green: Personal Best
+        } else {
+          col = "#ef4444"; // Red: Slower
+        }
+      }
+      trackSectorState.currentLapColors[prevSec] = col;
+      trackSectorState.lastSector = curSector;
+      trackSectorState.sectorStartMs = nowMs;
+    }
+  }
+
+  // Draw 3px vector trace split by sectors
+  ctx.lineWidth = 3;
+  ctx.lineCap = "round";
+  for (let s = 0; s < sectors.length; s++) {
+    const startPct = sectors[s].startPct;
+    const endPct = s + 1 < sectors.length ? sectors[s + 1].startPct : 1.0;
+    const steps = Math.max(8, Math.round((endPct - startPct) * 64));
+    ctx.strokeStyle = trackSectorState.currentLapColors[s] || "rgba(255, 255, 255, 0.25)";
+    ctx.beginPath();
+    for (let i = 0; i <= steps; i++) {
+      const p = pointAtPct(startPct + ((endPct - startPct) * i) / steps);
+      if (i === 0) ctx.moveTo(p.x, p.y);
+      else ctx.lineTo(p.x, p.y);
+    }
+    ctx.stroke();
+  }
+
+  // Subtle Start/Finish tick
   const sf = pointAtPct(0);
-  ctx.fillStyle = "rgba(255,255,255,0.65)";
-  ctx.fillRect(sf.x - 1, sf.y - 4, 2, 8);
+  ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
+  ctx.fillRect(sf.x - 1, sf.y - 3, 2, 6);
 
   if (!state) return;
 
-  const myIdx = state.camCarIdx;
-  const myPct = state.frame.carIdxLapDistPct[myIdx] ?? 0;
-  const myLap = state.frame.carIdxLap[myIdx] ?? 0;
   const leaderIdx = state.leaderboard[0]?.carIdx ?? -1;
 
-  // Ghost PIT Exit Marker (~24s pit loss on a ~90s lap)
-  if (myPct >= 0) {
-    const estLapSec = Math.max(45, state.session.driverInfo?.driverCarEstLapTime || 90);
-    const pitExitPct = (((myPct - 24 / estLapSec) % 1) + 1) % 1;
-    const pitPt = pointAtPct(pitExitPct);
-    ctx.strokeStyle = "rgba(251, 191, 36, 0.85)";
-    ctx.fillStyle = "rgba(10, 12, 16, 0.85)";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.arc(pitPt.x, pitPt.y, 4.5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-    ctx.fillStyle = "#fbbf24";
-    ctx.font = "bold 8px Consolas, monospace";
-    ctx.textAlign = "center";
-    ctx.fillText("PIT", pitPt.x, pitPt.y - 7);
-  }
-
-  // Other cars
+  // Other cars as clean 4px dots (radius 2px = 4px diameter)
   for (let i = 0; i < state.frame.carIdxLapDistPct.length; i++) {
     if (i === myIdx) continue;
     const pct = state.frame.carIdxLapDistPct[i];
     if (pct < 0 || state.frame.carIdxOnPitRoad[i]) continue;
     const p = pointAtPct(pct);
     const isLeader = i === leaderIdx;
-    const otherLap = state.frame.carIdxLap[i] ?? myLap;
-    const isLapped = otherLap < myLap;
-    ctx.fillStyle = isLeader ? "#f59e0b" : isLapped ? "#38bdf8" : "rgba(255, 255, 255, 0.65)";
+    ctx.fillStyle = isLeader ? "#fbbf24" : "#94a3b8";
     ctx.beginPath();
-    ctx.arc(p.x, p.y, isLeader ? 4 : 3, 0, Math.PI * 2);
+    ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  // Player car (bright emerald #10b981 + halo)
+  // Player car (4px dot #10b981 + subtle halo)
   if (myPct >= 0) {
     const me = pointAtPct(myPct);
-    ctx.fillStyle = "rgba(16, 185, 129, 0.28)";
+    ctx.fillStyle = "rgba(16, 185, 129, 0.3)";
     ctx.beginPath();
-    ctx.arc(me.x, me.y, 8, 0, Math.PI * 2);
+    ctx.arc(me.x, me.y, 4.5, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.fillStyle = "#10b981";
     ctx.beginPath();
-    ctx.arc(me.x, me.y, 4.5, 0, Math.PI * 2);
+    ctx.arc(me.x, me.y, 2.2, 0, Math.PI * 2);
     ctx.fill();
   }
 }

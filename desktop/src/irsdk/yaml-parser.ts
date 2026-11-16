@@ -88,6 +88,8 @@ export function parseSessionInfoYaml(yamlText: string, updateNum: number = 0): S
   let currentDriver: Partial<Driver> | null = null;
   let sessionType = "Practice";
   let sessionNum = 0;
+  const sectors: Array<{ sectorNum: number; startPct: number }> = [];
+  let currentSectorNum: number | null = null;
   const sessionResults: Record<number, Record<number, SessionResultPosition>> = {};
   let currentSessNum = 0;
   let inResultsPositions = false;
@@ -266,11 +268,24 @@ export function parseSessionInfoYaml(yamlText: string, updateNum: number = 0): S
           }
         }
       }
+    } else if (currentSection === "SplitTimeInfo") {
+      if (trimmed.startsWith("- SectorNum:")) {
+        currentSectorNum = parseInt(trimmed.slice(12).trim(), 10);
+      } else if (trimmed.startsWith("SectorNum:")) {
+        currentSectorNum = parseInt(trimmed.slice(10).trim(), 10);
+      } else if (trimmed.startsWith("SectorStartPct:") && currentSectorNum !== null) {
+        const startPct = parseFloat(trimmed.slice(15).trim());
+        if (!isNaN(startPct) && startPct >= 0 && startPct <= 1) {
+          sectors.push({ sectorNum: currentSectorNum, startPct });
+        }
+        currentSectorNum = null;
+      }
     }
   }
 
   commitDriver();
   commitResult();
+  sectors.sort((a, b) => a.startPct - b.startPct);
 
   return {
     update: updateNum,
@@ -283,6 +298,7 @@ export function parseSessionInfoYaml(yamlText: string, updateNum: number = 0): S
     sessionType,
     sessionNum,
     sessionResults,
+    sectors: sectors.length > 0 ? sectors : undefined,
   };
 }
 

@@ -65,6 +65,7 @@ export interface SessionInfoState {
   sessionType: "Practice" | "Qualify" | "Warmup" | "Race" | "Offline" | string;
   sessionNum: number;
   sessionResults?: Record<number, Record<number, SessionResultPosition>>;
+  sectors?: Array<{ sectorNum: number; startPct: number }>;
 }
 
 /**

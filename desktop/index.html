@@ -991,6 +991,7 @@
                 <button type="button" data-widget-toggle="standings" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Standings</button>
                 <button type="button" data-widget-toggle="fuel" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Fuel</button>
                 <button type="button" data-widget-toggle="tires" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Neumáticos</button>
+                <button type="button" data-widget-toggle="trackmap" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Track Map</button>
                 <button type="button" data-widget-toggle="inputs" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Pedales</button>
                 <button type="button" data-widget-toggle="waveform" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Traza</button>
                 <button type="button" data-widget-toggle="cluster" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Marcha/Vel</button>
@@ -1052,8 +1053,8 @@
                 <span id="ovCornerTip" class="hidden"></span>
               </div>
 
-              <!-- TOP LEFT: Standings (Kapps Pro 1-line 588px with ▲/▼, full surname, Lic+iR exact, ±iR, Last & BestLap) -->
-              <div id="widgetStandings" class="mmt-hud-widget absolute left-3 top-3 w-[588px] rounded-[2px] border border-white/[0.08] text-white p-1 text-[11.5px] font-mono tabular-nums overflow-hidden" style="background: rgba(8, 10, 14, 0.88);" data-widget="standings">
+              <!-- TOP LEFT: Standings (Kapps Pro 1-line 574px compact with ▲/▼, 112px name, Lic+iR exact, ±iR, Last & BestLap) -->
+              <div id="widgetStandings" class="mmt-hud-widget absolute left-3 top-3 w-[574px] rounded-[2px] border border-white/[0.08] text-white p-1 text-[11.5px] font-mono tabular-nums overflow-hidden" style="background: rgba(8, 10, 14, 0.88);" data-widget="standings">
                 <div id="ovStandings"></div>
                 <div id="ovPitbox" class="mt-1"></div>
               </div>
@@ -1821,8 +1822,8 @@
         </div>
       </div>
 
-      <!-- 1. Top-Left (top: 6px, left: 6px): Kapps Pro Standings (588px, 19px rows, ▲/▼, Lic+iR exact, ±iR, Last & BestLap) -->
-      <div id="floatStandingsCard" class="mmt-float-widget fixed top-[6px] left-[6px] w-[588px] rounded-[2px] text-white text-[11.5px] font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: rgba(8, 10, 14, 0.88); text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="standings">
+      <!-- 1. Top-Left (top: 6px, left: 6px): Kapps Pro Standings (574px compact, 19px rows, ▲/▼, 112px name, Lic+iR exact, ±iR, Last & BestLap) -->
+      <div id="floatStandingsCard" class="mmt-float-widget fixed top-[6px] left-[6px] w-[574px] rounded-[2px] text-white text-[11.5px] font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: rgba(8, 10, 14, 0.88); text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="standings">
         <div id="ovStandingsFloat"></div>
       </div>
 
@@ -1841,8 +1842,13 @@
         <div id="ovTrackConditionsFloat"></div>
       </div>
 
+      <!-- 3c. Live Delta Bar (220x24px Canvas below Track Conditions) -->
+      <div id="floatLiveDeltaCard" class="mmt-float-widget fixed top-[106px] left-1/2 -translate-x-1/2 w-[220px] h-[24px] rounded-[2px] pointer-events-none z-20 overflow-hidden" data-widget="delta">
+        <canvas id="ovLiveDeltaFloat" width="220" height="24" style="width:220px;height:24px;display:block;"></canvas>
+      </div>
+
       <!-- 4. Pit Helper (visible only when OnPitRoad === true) -->
-      <div id="floatPitHelperCard" hidden class="mmt-float-widget fixed top-[110px] left-1/2 -translate-x-1/2 w-[280px] pointer-events-auto overflow-hidden" data-widget="pit">
+      <div id="floatPitHelperCard" hidden class="mmt-float-widget fixed top-[136px] left-1/2 -translate-x-1/2 w-[280px] pointer-events-auto overflow-hidden" data-widget="pit">
         <div id="ovPitboxFloat"></div>
       </div>
 

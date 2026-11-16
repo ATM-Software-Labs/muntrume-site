@@ -293,9 +293,9 @@ input[type="search"]:focus {
 }
 .mmt-std-row {
   display: grid;
-  grid-template-columns: 20px 22px 28px 145px 18px 80px 36px 46px 46px 58px 58px;
+  grid-template-columns: 20px 22px 28px 112px 18px 80px 36px 46px 46px 58px 58px;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   height: 19px;
   padding: 0 4px;
   white-space: nowrap;
@@ -335,6 +335,9 @@ input[type="search"]:focus {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.mmt-std-row .mmt-cell-name {
+  max-width: 112px;
 }
 .mmt-lic-ir-block {
   display: inline-flex;

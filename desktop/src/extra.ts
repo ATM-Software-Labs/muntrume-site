@@ -11,6 +11,7 @@ import {
   renderTrackConditionsWidget,
   renderTireStatusWidget,
   renderGpuPedalsWidget,
+  renderLiveDeltaCanvas,
   GhostTraceRecorder,
   renderPitboxWidget,
   renderDigiFlagWidget,
@@ -3023,6 +3024,12 @@ function updateHUDDisplay(sample: LiveSample): void {
   document.querySelectorAll<HTMLElement>("#ovGpuPedals, #ovGpuPedalsFloat").forEach((container) => {
     if (container.offsetParent !== null) renderGpuPedalsWidget(container, pedalSample);
   });
+
+  // Live Delta Bar (30 FPS Canvas, Prompt 109)
+  const deltaCanvas = document.getElementById("ovLiveDeltaFloat") as HTMLCanvasElement | null;
+  if (deltaCanvas && deltaCanvas.offsetParent !== null) {
+    renderLiveDeltaCanvas(deltaCanvas, sample.lapDelta ?? 0, Boolean(sample.lapDeltaOk));
+  }
 
   // Fallback for canvas inputs if visible
   document.querySelectorAll<HTMLCanvasElement>("#ovInputs, #ovInputsFloat").forEach((canvas) => {
