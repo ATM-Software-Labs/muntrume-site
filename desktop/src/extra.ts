@@ -1643,9 +1643,24 @@ function recalculateStrategy(): void {
 let isLiveFromSDK = false;
 let demoAnimationTimer: number | null = null;
 let demoTick = 0;
-const liveWaveformHistory: { thr: number; brk: number }[] = [];
+const WAVEFORM_CAPACITY = 70;
+const waveformRing = new Float32Array(WAVEFORM_CAPACITY * 2);
+let waveformHead = 0;
+let waveformCount = 0;
 let layoutUnlocked = false;
 let previewDemoActive = true;
+
+if (typeof document !== "undefined" && typeof window !== "undefined" && !window.location.search.includes("overlay=1")) {
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden && demoAnimationTimer) {
+      clearInterval(demoAnimationTimer);
+      demoAnimationTimer = null;
+      IrsdkClient.getInstance().stopSimulation();
+    } else if (!document.hidden && previewDemoActive && !isLiveFromSDK) {
+      startDemoOverlayLoop();
+    }
+  });
+}
 
 function forcedDevHudMock(): boolean {
   return import.meta.env.DEV && new URLSearchParams(location.search).get("hudmock") === "1";
@@ -2495,7 +2510,8 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
           setTimeout(() => toast.remove(), 4000);
         });
         await listen("mmt-reset-delta", () => {
-          liveWaveformHistory.length = 0;
+          waveformHead = 0;
+          waveformCount = 0;
         });
       })
       .catch(() => {});
@@ -2654,15 +2670,16 @@ function updateHUDDisplay(sample: LiveSample): void {
   const liveRpm = irsdkState?.frame.rpm ?? 0;
   const rpmEst = liveRpm > 0 ? Math.round(liveRpm) : (mock ? Math.min(8600, Math.round(kmh * 38 + 2100)) : 0);
 
-  // Push to rolling waveform buffer
-  liveWaveformHistory.push({ thr: sample.throttle, brk: sample.brake });
-  if (liveWaveformHistory.length > 70) {
-    liveWaveformHistory.shift();
-  }
+  // Push to zero-allocation Float32Array circular buffer
+  const writeIdx = waveformHead * 2;
+  waveformRing[writeIdx] = sample.throttle;
+  waveformRing[writeIdx + 1] = sample.brake;
+  waveformHead = (waveformHead + 1) % WAVEFORM_CAPACITY;
+  if (waveformCount < WAVEFORM_CAPACITY) waveformCount++;
 
   // Draw scrolling live waveform only for visible canvases
   document.querySelectorAll<HTMLCanvasElement>("#ovWaveformCanvas, #ovWaveformCanvasFloat").forEach((c) => {
-    if (c.offsetParent !== null) drawWaveformCanvas(c, liveWaveformHistory);
+    if (c.offsetParent !== null) drawWaveformCanvas(c);
   });
 
   // Shift Lights
@@ -3069,7 +3086,7 @@ function updateBrakeMarkerCountdown(dist: number, speed: number): void {
   if (bmFloatAdvice) bmFloatAdvice.textContent = advice;
 }
 
-function drawWaveformCanvas(canvas: HTMLCanvasElement, history: { thr: number; brk: number }[]): void {
+function drawWaveformCanvas(canvas: HTMLCanvasElement): void {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
   const w = canvas.width;
@@ -3087,17 +3104,19 @@ function drawWaveformCanvas(canvas: HTMLCanvasElement, history: { thr: number; b
   ctx.lineTo(w, h * 0.5);
   ctx.stroke();
 
-  if (history.length < 2) return;
+  if (waveformCount < 2) return;
 
-  const step = w / 70;
+  const step = w / WAVEFORM_CAPACITY;
+  const startIdx = waveformCount === WAVEFORM_CAPACITY ? waveformHead : 0;
 
   // Brake curve (Red)
   ctx.beginPath();
   ctx.strokeStyle = "#f43f5e";
   ctx.lineWidth = 2;
-  for (let i = 0; i < history.length; i++) {
+  for (let i = 0; i < waveformCount; i++) {
+    const slot = ((startIdx + i) % WAVEFORM_CAPACITY) * 2;
     const x = i * step;
-    const y = h - history[i].brk * (h - 6) - 3;
+    const y = h - waveformRing[slot + 1] * (h - 6) - 3;
     if (i === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
   }
@@ -3107,9 +3126,10 @@ function drawWaveformCanvas(canvas: HTMLCanvasElement, history: { thr: number; b
   ctx.beginPath();
   ctx.strokeStyle = "#10b981";
   ctx.lineWidth = 2;
-  for (let i = 0; i < history.length; i++) {
+  for (let i = 0; i < waveformCount; i++) {
+    const slot = ((startIdx + i) % WAVEFORM_CAPACITY) * 2;
     const x = i * step;
-    const y = h - history[i].thr * (h - 6) - 3;
+    const y = h - waveformRing[slot] * (h - 6) - 3;
     if (i === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
   }

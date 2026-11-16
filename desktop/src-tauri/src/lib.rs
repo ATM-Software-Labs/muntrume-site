@@ -611,10 +611,10 @@ fn detect_hardware() -> Result<hardware::HardwareReport, String> {
     Ok(hardware::detect())
 }
 
-const LOW_MEM_WEBVIEW_ARGS: &str = "--disable-features=msWebOOUI,msPdfOOUI,Translate,BackForwardCache --disable-background-networking --disable-default-apps --disable-extensions --disable-sync --renderer-process-limit=1 --js-flags=--max-old-space-size=64";
+const LOW_MEM_WEBVIEW_ARGS: &str = "--disable-gpu-vsync --disable-features=msWebOOUI,msPdfOOUI,Translate,BackForwardCache --disable-extensions --disable-background-networking --disable-sync --disable-translate --disable-default-apps --renderer-process-limit=1 --js-flags=--max-old-space-size=48";
 
 #[cfg(windows)]
-fn trim_working_set() {
+pub(crate) fn trim_working_set() {
     use windows_sys::Win32::System::ProcessStatus::K32EmptyWorkingSet;
     use windows_sys::Win32::System::Threading::GetCurrentProcess;
     unsafe {
@@ -623,7 +623,7 @@ fn trim_working_set() {
 }
 
 #[cfg(not(windows))]
-fn trim_working_set() {}
+pub(crate) fn trim_working_set() {}
 
 static OVERLAY_EDITING: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 

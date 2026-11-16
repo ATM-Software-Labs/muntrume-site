@@ -157,6 +157,7 @@ fn windows_loop(app: AppHandle) {
         let mut last_frame_emit = Instant::now() - Duration::from_secs(1);
         let mut last_yaml_emit = Instant::now() - Duration::from_secs(2);
         let mut last_proc = Instant::now();
+        let mut last_frame_json = String::new();
         loop {
             let signaled = if mapped.event.is_null() {
                 std::thread::sleep(Duration::from_millis(FRAME_MS));
@@ -178,6 +179,7 @@ fn windows_loop(app: AppHandle) {
                             let _ = crate::toggle_overlay(app_close, false).await;
                         });
                     }
+                    crate::trim_working_set();
                     break;
                 }
             }
@@ -289,11 +291,16 @@ fn windows_loop(app: AppHandle) {
             if last_frame_emit.elapsed() >= Duration::from_millis(IRSDK_FRAME_MS) {
                 if let Some(table) = vars.as_ref() {
                     if let Ok(frame) = read_live_irsdk_frame_with(bytes, table) {
-                        if overlay_active {
-                            let _ = app.emit_to("overlay", "mmt-irsdk-frame", &frame);
-                        }
-                        if main_active {
-                            let _ = app.emit_to("main", "mmt-irsdk-frame", &frame);
+                        if let Ok(json_str) = serde_json::to_string(&frame) {
+                            if json_str != last_frame_json {
+                                last_frame_json = json_str;
+                                if overlay_active {
+                                    let _ = app.emit_to("overlay", "mmt-irsdk-frame", &frame);
+                                }
+                                if main_active {
+                                    let _ = app.emit_to("main", "mmt-irsdk-frame", &frame);
+                                }
+                            }
                         }
                         last_frame_emit = Instant::now();
                     }
