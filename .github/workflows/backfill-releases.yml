@@ -1,0 +1,55 @@
+name: Backfill Orphan Desktop Releases
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Mode: backfill (create releases for orphan tags) or consolidate (delete orphan tags)"
+        required: true
+        default: "backfill"
+        type: choice
+        options:
+          - backfill
+          - consolidate
+
+permissions:
+  contents: write
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Process orphan desktop-v* tags
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MODE: ${{ github.event.inputs.mode }}
+        run: |
+          TAGS=$(git tag -l 'desktop-v*' --sort=v:refname)
+          PREV=""
+          for TAG in $TAGS; do
+            if gh release view "$TAG" >/dev/null 2>&1; then
+              PREV="$TAG"
+              continue
+            fi
+            echo "Orphan tag found: $TAG (prev: ${PREV:-none})"
+            if [ "$MODE" = "consolidate" ]; then
+              git push --delete origin "$TAG" || true
+              continue
+            fi
+            RANGE="${PREV:+${PREV}..}${TAG}"
+            LOG=$(git log "$RANGE" --pretty=format:"- %s (%h)" || echo "- Cambios internos de versión.")
+            NOTES="### Novedades (${TAG})
+          ${LOG}
+
+          > Nota: Versión intermedia histórica sin instalador adjunto; descarga el instalador más reciente desde la release **Latest**."
+            gh release create "$TAG" \
+              --title "MMT Sync $TAG" \
+              --notes "$NOTES" \
+              --latest=false
+            PREV="$TAG"
+          done
