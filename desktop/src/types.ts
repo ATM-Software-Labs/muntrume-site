@@ -243,6 +243,7 @@ export interface Backend {
   recenterOverlay?(): Promise<boolean>;
   setOverlayEdit(editing: boolean): Promise<void>;
   setMainTelemetry?(enabled: boolean): Promise<void>;
+  sendIracingPitFuel?(liters: number): Promise<void>;
   readLatestIbt(): Promise<IbtSessionReport | null>;
   listIbtSessions?(): Promise<IbtSessionMeta[]>;
   readIbtFile?(path: string): Promise<IbtSessionReport | null>;

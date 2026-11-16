@@ -158,6 +158,7 @@ pub fn run() {
             find_reference_hotlap,
             find_latest_replay_clip,
             pick_videos_folder,
+            send_iracing_pit_fuel,
             quit
         ])
         .run(tauri::generate_context!())
@@ -1281,4 +1282,38 @@ fn stage_bytes(state: &AppState, filename: &str, bytes: Vec<u8>) -> Result<Stage
         filename: filename.to_string(),
         size,
     })
+}
+
+/// Envía `irsdk_BroadcastPitCommand(irsdk_PitCommand_Fuel, liters)` al simulador iRacing.
+#[tauri::command]
+fn send_iracing_pit_fuel(liters: i32) -> Result<(), String> {
+    #[cfg(windows)]
+    {
+        use std::ffi::OsStr;
+        use std::os::windows::ffi::OsStrExt;
+        use windows_sys::Win32::UI::WindowsAndMessaging::{
+            RegisterWindowMessageW, SendNotifyMessageW, HWND_BROADCAST,
+        };
+        let wide_name: Vec<u16> = OsStr::new("IRSDK_BROADCAST_MSG")
+            .encode_wide()
+            .chain(std::iter::once(0))
+            .collect();
+        let msg_id = unsafe { RegisterWindowMessageW(wide_name.as_ptr()) };
+        if msg_id == 0 {
+            return Err("No se pudo registrar IRSDK_BROADCAST_MSG".into());
+        }
+        // MAKEWPARAM(irsdk_BroadcastPitCommand = 2, irsdk_PitCommand_Fuel = 2)
+        let wparam: usize = (2usize & 0xFFFF) | ((2usize & 0xFFFF) << 16);
+        let lparam: isize = liters.clamp(0, 200) as isize;
+        let ok = unsafe { SendNotifyMessageW(HWND_BROADCAST, msg_id, wparam, lparam) };
+        if ok == 0 {
+            return Err("Error al enviar comando de combustible a iRacing".into());
+        }
+        Ok(())
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = liters;
+        Ok(())
+    }
 }

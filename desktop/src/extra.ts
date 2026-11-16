@@ -8,6 +8,7 @@ import {
   renderRelativeWidget,
   renderStandingsWidget,
   renderFuelWidget,
+  renderTrackConditionsWidget,
   renderGpuPedalsWidget,
   renderPitboxWidget,
   renderDigiFlagWidget,
@@ -40,6 +41,7 @@ const broadcastDirector = new BroadcastDirector();
 const aeroAnalyzer = new AeroSuspensionAnalyzer();
 let engButtonsWired = false;
 let lastSlowHudRenderMs = 0;
+let lastAutoFuelPitRoad = false;
 let lastRadarRenderMs = 0;
 
 interface ScheduleWeek {
@@ -2972,6 +2974,30 @@ function updateHUDDisplay(sample: LiveSample): void {
           renderDigiFlagWidget(flag, frame.sessionFlags ?? 0);
         }
       });
+
+      const condEl = document.getElementById("ovTrackConditionsFloat");
+      if (condEl && condEl.offsetParent !== null) {
+        renderTrackConditionsWidget(condEl, irsdkState);
+      }
+
+      // Prompt 100: Auto-Fuel on Pit Road entry when enabled
+      const pitNow = Boolean(irsdkState.onPitRoad);
+      if (pitNow && !lastAutoFuelPitRoad) {
+        lastAutoFuelPitRoad = true;
+        if (
+          typeof localStorage !== "undefined" &&
+          localStorage.getItem("mmt-auto-fuel-pit") === "1" &&
+          irsdkState.fuel.isValid &&
+          irsdkState.fuel.fuelToAdd > 0
+        ) {
+          const liters = Math.ceil(irsdkState.fuel.fuelToAdd);
+          void import("@tauri-apps/api/core")
+            .then(({ invoke }) => invoke("send_iracing_pit_fuel", { liters }))
+            .catch(() => {});
+        }
+      } else if (!pitNow) {
+        lastAutoFuelPitRoad = false;
+      }
     }
 
     if (shouldRenderSlowHud) {
@@ -3004,7 +3030,7 @@ function updateHUDDisplay(sample: LiveSample): void {
       vis.applyElementVisibility(document.getElementById("floatShiftLightsRow"), !disabledWidgets.has("lights"));
       const pitCard = document.getElementById("floatPitHelperCard");
       if (pitCard) {
-        pitCard.hidden = true;
+        pitCard.hidden = !Boolean(irsdkState.onPitRoad);
       }
       const carProximity = Number(frame.carLeftRight ?? 0);
       const radarVisible = !disabledWidgets.has("radar") && (floatEditMode || carProximity > 0);

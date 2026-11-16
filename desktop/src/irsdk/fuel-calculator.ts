@@ -10,8 +10,9 @@ import type { FuelCalculation, IrsdkTelemetryFrame } from "./types";
 export class FuelCalculator {
   private lastLapNumber: number = -1;
   private lapStartFuel: number = 0;
-  private completedLapsBurn: number[] = []; // Last 5 valid completed lap consumptions
+  private completedLapsBurn: number[] = []; // Last valid completed lap consumptions
   private wasOnPitRoad: boolean = false;
+  private wasCautionLap: boolean = false;
   private safetyMarginL: number = 0.2;
 
   /**
@@ -22,6 +23,7 @@ export class FuelCalculator {
     this.lapStartFuel = 0;
     this.completedLapsBurn = [];
     this.wasOnPitRoad = false;
+    this.wasCautionLap = false;
   }
 
   /**
@@ -33,6 +35,7 @@ export class FuelCalculator {
     const activeCarIdx = frame.camCarIdx >= 0 && frame.camCarIdx <= 63 ? frame.camCarIdx : frame.playerCarIdx;
     const lapNum = (frame.carIdxLap && frame.carIdxLap[activeCarIdx]) ?? 0;
     const onPit = !!frame.onPitRoad || (frame.carIdxOnPitRoad && !!frame.carIdxOnPitRoad[activeCarIdx]);
+    const isCaution = ((frame.sessionFlags || 0) & 0x00004100) !== 0; // irsdk_caution / irsdk_cautionWaving
     const isReplay = !!frame.isReplayPlaying;
 
     // Detect lap completion to track fuel burn per lap
@@ -40,10 +43,11 @@ export class FuelCalculator {
       if (lapNum > 0 && !onPit && !isReplay && currentFuel > 0) {
         this.lastLapNumber = lapNum;
         this.lapStartFuel = currentFuel;
+        this.wasCautionLap = isCaution;
       }
     } else if (lapNum > this.lastLapNumber) {
-      // Completed a lap! Check validity
-      if (!this.wasOnPitRoad && !onPit && !isReplay && this.lapStartFuel > currentFuel) {
+      // Completed a lap! Ignore OutLap (wasOnPitRoad) and Caution laps (wasCautionLap)
+      if (!this.wasOnPitRoad && !this.wasCautionLap && !onPit && !isReplay && this.lapStartFuel > currentFuel) {
         const burn = this.lapStartFuel - currentFuel;
         // Plausibility check (between 0.5 L and 15.0 L per lap)
         if (burn >= 0.5 && burn <= 15.0) {
@@ -56,10 +60,14 @@ export class FuelCalculator {
       this.lastLapNumber = lapNum;
       this.lapStartFuel = currentFuel;
       this.wasOnPitRoad = onPit;
+      this.wasCautionLap = isCaution;
     }
 
     if (onPit) {
       this.wasOnPitRoad = true;
+    }
+    if (isCaution) {
+      this.wasCautionLap = true;
     }
 
     // Shielding conditions: Pit road, Replay, or less than 1 valid lap
@@ -119,10 +127,18 @@ export class FuelCalculator {
     // 4. Stint laps remaining with current fuel onboard
     const stintLapsRemaining = avgBurn > 0 ? currentFuel / avgBurn : 0;
 
-    // 5. Fuel needed to finish with +0.2 L safety margin
-    const fuelNeeded = lapsRemaining * avgBurn;
+    // 5. Fuel needed to finish with safety margin (+ optional extra laps margin from settings)
+    let extraLapsMargin = 0;
+    try {
+      if (typeof localStorage !== "undefined") {
+        const raw = Number(localStorage.getItem("mmt-fuel-margin-laps") || "0");
+        if (isFinite(raw) && raw > 0 && raw <= 2.0) extraLapsMargin = raw;
+      }
+    } catch { /* ignore */ }
+    const fuelNeeded = lapsRemaining * avgBurn + extraLapsMargin * avgBurn;
     const fuelDeficit = fuelNeeded - currentFuel;
     const fuelToAdd = fuelDeficit > 0 ? fuelDeficit + this.safetyMarginL : 0;
+    const fuelSurplusL = fuelDeficit <= 0 ? Math.max(0, -fuelDeficit - this.safetyMarginL) : 0;
 
     // Guarantee finite, non-negative numbers
     const safeNum = (v: number, decimals: number = 2) => (isFinite(v) && v >= 0 ? Number(v.toFixed(decimals)) : 0);
@@ -138,6 +154,7 @@ export class FuelCalculator {
       lapsRemaining: safeNum(lapsRemaining, 0),
       fuelNeededToFinish: safeNum(fuelNeeded, 1),
       fuelToAdd: safeNum(fuelToAdd, 1),
+      fuelSurplusL: safeNum(fuelSurplusL, 1),
       safetyMarginL: this.safetyMarginL,
       stintLapsRemaining: safeNum(stintLapsRemaining, 1),
       completedLapsSampled: count,

@@ -419,24 +419,94 @@ export function renderFuelWidget(container: HTMLElement, state: IrsdkComputedSta
     return;
   }
 
-  const toAddStr = fuel.fuelToAdd > 0 ? `+${fuel.fuelToAdd} L` : "OK";
-  const toAddClass = fuel.fuelToAdd > 0 ? "text-amber-400" : "text-emerald-400";
+  const surplus = fuel.fuelSurplusL ?? 0;
+  const toAddStr = fuel.fuelToAdd > 0
+    ? `PARAR · +${fuel.fuelToAdd.toFixed(1)} L`
+    : `OK · +${surplus.toFixed(1)} L`;
+  const toAddClass = fuel.fuelToAdd > 0 ? "text-rose-400" : "text-emerald-400";
+  const addBadgeHtml = fuel.fuelToAdd > 0
+    ? `<span class="text-[#00ff88] font-black text-[12px]">+${fuel.fuelToAdd.toFixed(1)} L</span>`
+    : `<span class="text-emerald-400 font-black text-[11px]">OK</span>`;
 
   setHtmlIfChanged(container, `
     ${headerHtml}
     <div class="mt-1 grid gap-0.5 text-[10px] font-mono tabular-nums whitespace-nowrap">
-      <div class="mmt-fuel-row text-white/80">
-        <span>Last</span>
-        <span>${fuel.avgBurnPerLap} L/v</span>
+      <div class="mmt-fuel-row text-white/85">
+        <span>Media / Máx</span>
+        <span>${fuel.avgBurnPerLap} / ${fuel.maxBurnPerLap} L/v</span>
       </div>
-      <div class="mmt-fuel-row text-white/80">
-        <span>Stint (5v)</span>
-        <span>${fuel.maxBurnPerLap} L/v · ${fuel.stintLapsRemaining} v</span>
+      <div class="mmt-fuel-row text-white/85">
+        <span>Repostaje</span>
+        ${addBadgeHtml}
       </div>
-      <div class="mmt-fuel-row text-white/80">
-        <span>Session</span>
-        <span class="${toAddClass} font-bold">${toAddStr} · L&amp;C ${fuel.liftAndCoastTarget}</span>
+      <div class="mmt-fuel-row text-white/85">
+        <span>Meta (${fuel.lapsRemaining}v)</span>
+        <span class="${toAddClass} font-bold">${toAddStr}</span>
       </div>
+    </div>
+  `);
+}
+
+const trackTempHistory: Array<{ t: number; temp: number }> = [];
+
+/**
+ * Renders the compact 360x24 Track Conditions, Flags, Temp Trend & Wetness bar
+ */
+export function renderTrackConditionsWidget(container: HTMLElement, state: IrsdkComputedState | null): void {
+  if (!state) {
+    setHtmlIfChanged(container, "");
+    return;
+  }
+
+  const frame = state.frame;
+  const flags = frame.sessionFlags ?? 0;
+  const now = Date.now();
+  const temp = typeof frame.trackTempC === "number" && frame.trackTempC > 0 ? frame.trackTempC : 0;
+
+  if (temp > 0) {
+    if (trackTempHistory.length === 0 || now - trackTempHistory[trackTempHistory.length - 1].t >= 10_000) {
+      trackTempHistory.push({ t: now, temp });
+    }
+    const cutoff = now - 5 * 60 * 1000;
+    while (trackTempHistory.length > 1 && trackTempHistory[0].t < cutoff) {
+      trackTempHistory.shift();
+    }
+  }
+
+  const baseTemp = trackTempHistory.length > 0 ? trackTempHistory[0].temp : temp;
+  const tempDelta = temp > 0 && baseTemp > 0 ? temp - baseTemp : 0;
+  const trendStr = Math.abs(tempDelta) >= 0.1
+    ? ` <span class="${tempDelta < 0 ? "text-sky-400" : "text-amber-400"}">${tempDelta < 0 ? "▼" : "▲"} ${tempDelta > 0 ? "+" : ""}${tempDelta.toFixed(1)}°C</span>`
+    : "";
+
+  const wetMap: Record<number, { label: string; cls: string }> = {
+    0: { label: "Dry", cls: "text-white/70" },
+    1: { label: "Dry", cls: "text-white/70" },
+    2: { label: "Mostly Dry", cls: "text-sky-200" },
+    3: { label: "Damp", cls: "text-sky-300 font-bold" },
+    4: { label: "Wet", cls: "text-sky-400 font-black" },
+    5: { label: "Very Wet", cls: "text-blue-400 font-black" },
+  };
+  const wet = wetMap[frame.trackWetness ?? 1] ?? { label: "Dry", cls: "text-white/70" };
+
+  let flagHtml = `<span class="text-emerald-400 font-bold">GREEN</span>`;
+  if (flags & 0x00020000) flagHtml = `<span class="px-1.5 rounded-[2px] bg-rose-600 text-white font-black">DQ</span>`;
+  else if (flags & 0x00200000) flagHtml = `<span class="px-1.5 rounded-[2px] bg-orange-600 text-white font-black">MEATBALL</span>`;
+  else if (flags & 0x00010000) flagHtml = `<span class="px-1.5 rounded-[2px] bg-black border border-rose-500 text-rose-400 font-black">BLACK FLAG</span>`;
+  else if (flags & 0x00080000) flagHtml = `<span class="px-1.5 rounded-[2px] bg-amber-500 text-black font-black">SLOW DOWN</span>`;
+  else if ((flags & 0x00004100) !== 0) flagHtml = `<span class="px-1.5 rounded-[2px] bg-yellow-500 text-black font-black">CAUTION / FCY</span>`;
+  else if (flags & 0x00000008) flagHtml = `<span class="px-1.5 rounded-[2px] bg-yellow-400 text-black font-black">YELLOW</span>`;
+  else if (flags & 0x00000020) flagHtml = `<span class="px-1.5 rounded-[2px] bg-blue-600 text-white font-black">BLUE FLAG</span>`;
+  else if (flags & 0x00000002) flagHtml = `<span class="px-1.5 rounded-[2px] bg-white text-black font-black">ÚLTIMA VUELTA</span>`;
+  else if (flags & 0x00000001) flagHtml = `<span class="px-1.5 rounded-[2px] bg-white text-black font-black">CUADROS</span>`;
+
+  const tempHtml = temp > 0 ? `<span>🌡 ${temp.toFixed(1)}°C${trendStr}</span>` : `<span>🌡 --°C</span>`;
+
+  setHtmlIfChanged(container, `
+    <div class="w-[360px] h-[24px] px-2.5 rounded-[2px] border border-white/10 text-white font-mono text-[10.5px] tabular-nums flex items-center justify-between whitespace-nowrap select-none" style="background: rgba(8, 10, 14, 0.88);">
+      ${flagHtml}
+      ${tempHtml}
+      <span class="${wet.cls}">💧 ${wet.label}</span>
     </div>
   `);
 }

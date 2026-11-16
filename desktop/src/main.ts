@@ -2059,6 +2059,20 @@ function bind(): void {
   document.getElementById("unlinkedBannerBtn")?.addEventListener("click", () => {
     showView("library");
   });
+  const autoFuelEl = document.getElementById("toggleAutoFuelPit") as HTMLInputElement | null;
+  if (autoFuelEl) {
+    autoFuelEl.checked = localStorage.getItem("mmt-auto-fuel-pit") === "1";
+    autoFuelEl.addEventListener("change", () => {
+      localStorage.setItem("mmt-auto-fuel-pit", autoFuelEl.checked ? "1" : "0");
+    });
+  }
+  const marginSel = document.getElementById("selectFuelMarginLaps") as HTMLSelectElement | null;
+  if (marginSel) {
+    marginSel.value = localStorage.getItem("mmt-fuel-margin-laps") || "0";
+    marginSel.addEventListener("change", () => {
+      localStorage.setItem("mmt-fuel-margin-laps", marginSel.value);
+    });
+  }
   const quickLastSession = document.getElementById("quickLastSessionBtn");
   if (quickLastSession) {
     quickLastSession.addEventListener("click", () => {

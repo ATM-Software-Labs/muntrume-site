@@ -59,14 +59,35 @@ export class PitboxHelperEngine {
     }
 
     const ev = this.evaluatePitState(state);
-    const speedColor = ev.isSpeeding ? "text-rose-400 animate-pulse" : "text-emerald-300";
-    const borderColor = ev.isSpeeding ? "border-rose-500/80" : "border-amber-400/50";
+    const nearLimit = !ev.isSpeeding && ev.speedDelta >= -2.0;
+    const boxBg = ev.isSpeeding
+      ? "bg-rose-950/95 border-rose-500 animate-pulse"
+      : nearLimit
+      ? "bg-amber-950/90 border-amber-400"
+      : "bg-emerald-950/85 border-emerald-500/70";
+    const speedColor = ev.isSpeeding
+      ? "text-rose-300"
+      : nearLimit
+      ? "text-amber-300"
+      : "text-emerald-300";
+
+    const hasDist = ev.distToStall > 0;
+    const distPct = hasDist ? Math.max(0, Math.min(100, 100 - (ev.distToStall / 120) * 100)) : 0;
+    const distBarHtml = hasDist
+      ? `<div class="mt-1 w-full h-2.5 rounded-[2px] bg-black/60 overflow-hidden relative border border-white/10">
+           <div class="h-full transition-all duration-75 ${ev.shouldBrakeNow ? "bg-[#00ff88]" : "bg-amber-400"}" style="width:${distPct.toFixed(0)}%"></div>
+           <span class="absolute inset-0 flex items-center justify-center text-[8.5px] font-black tracking-wider ${ev.shouldBrakeNow ? "text-[#00ff88]" : "text-white"}">${ev.shouldBrakeNow ? "FRENA / STOP" : `CAJÓN ${ev.distToStall} m`}</span>
+         </div>`
+      : "";
 
     container.innerHTML = `
-      <div class="w-[280px] h-[26px] px-2.5 rounded border ${borderColor} bg-[#0a0c10]/94 text-white font-mono text-[11px] tabular-nums flex items-center justify-between select-none shadow-md whitespace-nowrap">
-        <span class="text-amber-400 font-extrabold tracking-wide">IN PIT LANE</span>
-        <span class="${speedColor} font-black">${ev.speedKmh}<span class="text-white/45 font-normal">/${ev.limitKmh}</span></span>
-        <span class="text-white/90 font-bold">${ev.stopSec.toFixed(1)}s</span>
+      <div class="w-[280px] px-2.5 py-1.5 rounded-[3px] border ${boxBg} text-white font-mono tabular-nums select-none shadow-lg">
+        <div class="flex items-center justify-between text-[11px] whitespace-nowrap">
+          <span class="text-amber-300 font-extrabold tracking-wide">${ev.isSpeeding ? "EXCESO PIT" : "PIT LIMITER"}</span>
+          <span class="${speedColor} text-sm font-black">${ev.speedKmh}<span class="text-white/55 text-[10px] font-normal">/${ev.limitKmh} km/h</span></span>
+          <span class="text-white/90 font-bold text-[10.5px]">${ev.stopSec.toFixed(1)}s</span>
+        </div>
+        ${distBarHtml}
       </div>
     `;
   }

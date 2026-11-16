@@ -1456,6 +1456,27 @@
                 </label>
               </div>
             </div>
+            <div class="mt-4 rounded-2xl border border-r-line bg-r-surface p-5">
+              <h3 class="font-display uppercase tracking-wide text-lg text-r-text mb-1">Combustible y Auto-Repostaje en Boxes</h3>
+              <p class="text-xs text-r-muted mb-3">Configura el margen de seguridad y el envío automático del repostaje calculado (`irsdk_PitCommand_Fuel`) al entrar en el pit lane.</p>
+              <div class="grid sm:grid-cols-2 gap-3 font-mono text-xs">
+                <label class="flex items-center gap-3 p-3 rounded-xl border border-r-line bg-r-bg cursor-pointer hover:border-r-accent/50 transition">
+                  <input type="checkbox" id="toggleAutoFuelPit" class="w-4 h-4 rounded text-r-accent bg-r-surface border-r-line focus:ring-r-accent" />
+                  <div>
+                    <strong class="block text-r-text">Auto-Repostaje en Pit Lane</strong>
+                    <span class="text-[11px] text-r-muted font-sans">Envía los litros exactos al entrar en boxes</span>
+                  </div>
+                </label>
+                <label class="flex items-center justify-between gap-3 p-3 rounded-xl border border-r-line bg-r-bg">
+                  <span class="text-r-text font-semibold">Margen extra</span>
+                  <select id="selectFuelMarginLaps" class="h-8 rounded-lg border border-r-line bg-r-surface px-2 text-xs text-r-text">
+                    <option value="0">+0.2 L (base)</option>
+                    <option value="0.5">+0.5 vueltas</option>
+                    <option value="1">+1.0 vuelta</option>
+                  </select>
+                </label>
+              </div>
+            </div>
             <div id="moduleFlags" class="mt-4 rounded-2xl border border-r-line bg-r-surface p-5 grid gap-2"></div>
             <!-- Prompt 49: UserProfileSync (Cloud Sync Ligero) -->
             <div id="cloudProfileSyncCard" class="mt-4 rounded-2xl border border-r-line bg-r-surface p-5 grid gap-3">
@@ -1797,8 +1818,13 @@
         <div id="ovRadarFloat"></div>
       </div>
 
-      <!-- 4. Pit Helper kept hidden on track (avoids duplicating iRacing native IN PIT LANE) -->
-      <div id="floatPitHelperCard" hidden class="mmt-float-widget fixed top-[110px] left-1/2 -translate-x-1/2 w-[280px] h-[26px] pointer-events-auto overflow-hidden" data-widget="pit">
+      <!-- 3b. Top-Center Track Conditions Micro-bar (360x24px below Virtual Mirror) -->
+      <div id="floatTrackConditionsCard" class="mmt-float-widget fixed top-[78px] left-1/2 -translate-x-1/2 w-[360px] h-[24px] pointer-events-none z-20" data-widget="conditions">
+        <div id="ovTrackConditionsFloat"></div>
+      </div>
+
+      <!-- 4. Pit Helper (visible only when OnPitRoad === true) -->
+      <div id="floatPitHelperCard" hidden class="mmt-float-widget fixed top-[110px] left-1/2 -translate-x-1/2 w-[280px] pointer-events-auto overflow-hidden" data-widget="pit">
         <div id="ovPitboxFloat"></div>
       </div>
 

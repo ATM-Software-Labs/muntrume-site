@@ -186,6 +186,7 @@ export interface FuelCalculation {
   lapsRemaining: number;
   fuelNeededToFinish: number;
   fuelToAdd: number;
+  fuelSurplusL?: number;
   safetyMarginL: number;
   stintLapsRemaining: number;
   completedLapsSampled: number;

@@ -63,6 +63,7 @@ export function createTauriBackend(): Backend {
     recenterOverlay: () => invoke<boolean>("recenter_overlay"),
     setOverlayEdit: (editing: boolean) => invoke("set_overlay_edit", { editing }),
     setMainTelemetry: (enabled: boolean) => invoke("set_main_telemetry", { enabled }),
+    sendIracingPitFuel: (liters: number) => invoke("send_iracing_pit_fuel", { liters }),
     readLatestIbt: () => invoke<IbtSessionReport | null>("read_latest_ibt"),
     listIbtSessions: () => invoke<IbtSessionMeta[]>("list_ibt_sessions"),
     readIbtFile: (path: string) => invoke<IbtSessionReport | null>("read_ibt_file", { path }),
