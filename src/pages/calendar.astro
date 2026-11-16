@@ -288,7 +288,7 @@ const canonical = "https://muntru.me/calendar/";
         <div class="cal-bar__row">
           <div class="cal-group">
             <button type="button" class="cal-chip" id="btnFavFilter" aria-pressed="false">★ Favoritas</button>
-            <button type="button" class="cal-chip" id="btnPlannerToggle" aria-expanded="false">🛒 Planificador &amp; Compras</button>
+            <button type="button" class="cal-chip is-on" id="btnPlannerToggle" aria-expanded="true">🛒 Planificador &amp; Compras</button>
             <button type="button" class="cal-chip" id="btnReset">↺ Reset</button>
           </div>
 
@@ -335,7 +335,7 @@ const canonical = "https://muntru.me/calendar/";
       </div>
 
       <!-- Prompt 111, 112 & 114: Planificador de Temporada, Volume Discounts y Simulador Fiscal -->
-      <section id="calPlannerPanel" hidden class="mb-6 rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-5 space-y-5">
+      <section id="calPlannerPanel" class="mb-6 rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-5 space-y-5">
         <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-[var(--r-line)]">
           <div>
             <p class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)] font-bold">iRacing Volume Discounts + Fiscal</p>
@@ -462,6 +462,11 @@ const canonical = "https://muntru.me/calendar/";
             </article>
           );
         })}
+      </div>
+
+      <div id="calLoadMoreWrap" hidden class="mt-6 flex flex-wrap items-center justify-center gap-3">
+        <button type="button" id="calShowMoreBtn" class="cal-chip is-on" style="padding:10px 18px;font-size:13px;">Mostrar más series</button>
+        <button type="button" id="calShowAllBtn" class="cal-chip" style="padding:10px 16px;font-size:13px;">Mostrar todas</button>
       </div>
 
       <p id="calEmptyState" class="r-empty" hidden>Ninguna serie coincide con los filtros actuales.</p>
@@ -595,6 +600,10 @@ const canonical = "https://muntru.me/calendar/";
       let activeSetup = "ALL";
       let activeTier = "ALL";
       let onlyFavs = false;
+      let visibleLimit = 12;
+      const loadMoreWrap = document.getElementById("calLoadMoreWrap");
+      const showMoreBtn = document.getElementById("calShowMoreBtn");
+      const showAllBtn = document.getElementById("calShowAllBtn");
 
       // Highlight live week dynamically
       cards.forEach((card) => {
@@ -644,22 +653,47 @@ const canonical = "https://muntru.me/calendar/";
         sorted.forEach((el) => grid.appendChild(el));
       }
 
-      function applyFilter() {
+      function applyFilter(resetLimit = true) {
+        if (resetLimit) visibleLimit = 12;
         const q = (searchInput?.value || "").trim().toLowerCase();
-        let visible = 0;
-        cards.forEach((card) => {
+        const orderedCards = Array.from(grid.querySelectorAll(".cal-card"));
+        let matching = 0;
+        let shown = 0;
+        orderedCards.forEach((card) => {
           const okCat = activeCat === "ALL" || (activeCat === "ENDURANCE" ? card.dataset.endurance === "1" : card.dataset.cat === activeCat);
           const okSetup = activeSetup === "ALL" || card.dataset.setup === activeSetup;
           const okTier = activeTier === "ALL" || card.dataset.tier === activeTier;
           const okFav = !onlyFavs || favs.has(card.dataset.id || "");
           const okQ = !q || (card.dataset.search || "").includes(q);
-          const show = okCat && okSetup && okTier && okFav && okQ;
+          const match = okCat && okSetup && okTier && okFav && okQ;
+          if (!match) {
+            card.hidden = true;
+            return;
+          }
+          matching++;
+          const show = q.length > 0 || matching <= visibleLimit;
           card.hidden = !show;
-          if (show) visible++;
+          if (show) shown++;
         });
-        if (countEl) countEl.textContent = visible + (visible === 1 ? " serie" : " series");
-        if (emptyEl) emptyEl.hidden = visible > 0;
+        const remaining = Math.max(0, matching - shown);
+        if (countEl) {
+          countEl.textContent = remaining > 0
+            ? `Mostrando ${shown} de ${matching} series`
+            : matching + (matching === 1 ? " serie" : " series");
+        }
+        if (loadMoreWrap) loadMoreWrap.hidden = remaining === 0;
+        if (showMoreBtn) showMoreBtn.textContent = `Mostrar +12 series (${remaining} restantes)`;
+        if (emptyEl) emptyEl.hidden = matching > 0;
       }
+
+      showMoreBtn?.addEventListener("click", () => {
+        visibleLimit += 12;
+        applyFilter(false);
+      });
+      showAllBtn?.addEventListener("click", () => {
+        visibleLimit = cards.length;
+        applyFilter(false);
+      });
 
       grid.addEventListener("click", (e) => {
         const btn = e.target.closest("[data-fav-btn]");
@@ -670,6 +704,7 @@ const canonical = "https://muntru.me/calendar/";
         else favs.add(id);
         try { localStorage.setItem(FAV_KEY, JSON.stringify([...favs])); } catch {}
         syncFavIcons();
+        window.dispatchEvent(new CustomEvent("mmt-planner-refresh"));
         if (onlyFavs) applyFilter();
       });
 
@@ -911,6 +946,9 @@ const canonical = "https://muntru.me/calendar/";
       }
 
       if (!panel.hidden) renderPlanner();
+      window.addEventListener("mmt-planner-refresh", () => {
+        if (!panel.hidden) renderPlanner();
+      });
     }
   </script>
 </Layout>
