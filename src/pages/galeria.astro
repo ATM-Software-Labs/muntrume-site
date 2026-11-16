@@ -7,24 +7,17 @@ const pageTitle = 'Galería de competición | Muntrume Motorsport';
 const pageDescription =
   'Capturas reales en pista de Muntrume Motorsport en iRacing: GT3, prototipos GTP y stints nocturnos de resistencia.';
 
-const totalCount = TRACK_GALLERY_PHOTOS.length;
-const gt3Count = TRACK_GALLERY_PHOTOS.filter((p) => p.category === 'gt3').length;
-const gtpCount = TRACK_GALLERY_PHOTOS.filter((p) => p.category === 'gtp').length;
-const cupCount = TRACK_GALLERY_PHOTOS.filter((p) => p.category === 'cup').length;
-const nightCount = TRACK_GALLERY_PHOTOS.filter((p) => p.category === 'night').length;
+const totalCount = 0;
+const gt3Count = 0;
+const gtpCount = 0;
+const cupCount = 0;
+const nightCount = 0;
 
 const gallerySchema = {
   '@context': 'https://schema.org',
   '@type': 'CollectionPage',
   name: pageTitle,
   url: 'https://muntru.me/galeria/',
-  hasPart: TRACK_GALLERY_PHOTOS.map((p) => ({
-    '@type': 'ImageObject',
-    name: p.title,
-    contentUrl: p.img.startsWith('http') ? p.img : `https://muntru.me${p.img}`,
-    creator: { '@type': 'Person', name: 'Muntrume Motorsport' },
-    creditText: 'Muntrume Motorsport · iRacing',
-  })),
 };
 ---
 
@@ -99,45 +92,10 @@ const gallerySchema = {
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="galeriaGrid">
-      {TRACK_GALLERY_PHOTOS.map((photo, index) => (
-        <article
-          data-category={photo.category}
-          data-index={index}
-          class="galeria-card group rounded-xl overflow-hidden bg-[var(--r-surface)] transition-all duration-200"
-          style="border: 1px solid rgba(255, 255, 255, 0.08);"
-        >
-          <button
-            type="button"
-            class="galeria-open-btn relative block w-full aspect-video overflow-hidden bg-[#090d12] cursor-zoom-in text-left"
-            data-src={photo.img}
-            data-title={photo.title}
-            data-sub={`${photo.circuit} · ${photo.caption}`}
-            title={`Ampliar "${photo.title}" en HD`}
-          >
-            <img
-              src={photo.img}
-              alt={photo.title}
-              width="640"
-              height="360"
-              loading="lazy"
-              decoding="async"
-              onerror="const card = this.closest('article'); if (card) card.style.display='none';"
-              class="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
-            />
-            <span class="absolute top-2.5 left-2.5 px-2 py-0.5 rounded bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase tracking-wider">
-              {photo.badge}
-            </span>
-          </button>
-          <div class="p-3.5 space-y-1">
-            <h2 class="text-sm font-bold text-[var(--r-text)] font-display truncate group-hover:text-[var(--r-accent)] transition-colors">
-              {photo.title}
-            </h2>
-            <p class="text-xs text-[var(--r-muted)] line-clamp-1">
-              {photo.circuit}
-            </p>
-          </div>
-        </article>
-      ))}
+      <div class="col-span-full rounded-2xl border border-dashed border-[var(--r-line)] bg-[var(--r-surface)]/60 p-10 text-center space-y-3">
+        <p class="text-sm font-mono text-[var(--r-muted)]">Todavía no hay capturas publicadas</p>
+        <button type="button" data-open-community-upload class="px-4 py-2 rounded-xl bg-emerald-500 text-slate-950 text-xs font-mono font-bold cursor-pointer">+ Subir captura</button>
+      </div>
     </div>
     </div>
   </section>

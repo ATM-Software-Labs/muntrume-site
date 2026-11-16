@@ -793,45 +793,10 @@ const topAlbums = [...PADDOCK_ALBUMS].sort((a, b) => (b.views ?? 0) - (a.views ?
       </div>
 
       <div id="paddockSnapTrack" class="paddock-snap-track">
-        {TRACK_GALLERY_PHOTOS.map((photo) => (
-          <article class="paddock-snap-item group rounded-xl overflow-hidden bg-[var(--r-surface)] transition-all duration-300" style="border: 1px solid rgba(255, 255, 255, 0.08);">
-            <button
-              type="button"
-              data-preview-src={photo.img}
-              data-preview-title={photo.title}
-              data-preview-sub={`${photo.circuit} · Muntrume Motorsport`}
-              data-preview-id={`gallery:${photo.id}`}
-              data-preview-download={photo.img.split('/').pop()}
-              class="relative block w-full aspect-video overflow-hidden bg-[#090d12] cursor-zoom-in text-left"
-              title={`Ampliar "${photo.title}" en HD`}
-            >
-              <img
-                src={photo.img}
-                alt={photo.title}
-                width="640"
-                height="360"
-                loading="lazy"
-                decoding="async"
-                onerror="const card = this.closest('article'); if (card) card.style.display='none';"
-                class="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
-              />
-              <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase tracking-wider">
-                {photo.badge}
-              </span>
-              <span class="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded bg-black/80 border border-white/15 text-[10px] font-mono text-white/90 opacity-0 group-hover:opacity-100 transition-opacity">
-                Ampliar HD ⤢
-              </span>
-            </button>
-            <div class="p-3.5 space-y-1">
-              <h3 class="text-sm font-bold text-[var(--r-text)] font-display tracking-tight group-hover:text-[var(--r-accent)] transition-colors truncate">
-                {photo.title}
-              </h3>
-              <p class="text-xs text-[var(--r-muted)] line-clamp-1">
-                {photo.circuit}
-              </p>
-            </div>
-          </article>
-        ))}
+        <div class="w-full rounded-2xl border border-dashed border-[var(--r-line)] bg-[var(--r-surface)]/60 p-8 text-center space-y-3">
+          <p class="text-sm font-mono text-[var(--r-muted)]">Todavía no hay capturas publicadas</p>
+          <button type="button" data-open-community-upload class="px-4 py-2 rounded-xl bg-[var(--r-accent)] text-[var(--r-accent-ink)] text-xs font-mono font-bold cursor-pointer">+ Subir captura</button>
+        </div>
       </div>
 
       <!-- Top 3 Álbumes Más Vistos -->
@@ -845,42 +810,13 @@ const topAlbums = [...PADDOCK_ALBUMS].sort((a, b) => (b.views ?? 0) - (a.views ?
             href="/albumes/"
             class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono font-bold text-[var(--r-text)] hover:text-[var(--r-accent)] transition"
           >
-            <span>Explorar todos los álbumes ({PADDOCK_ALBUMS.length})</span>
+            <span id="paddockExploreAlbumsLabel">Explorar todos los álbumes</span>
             <span>&rarr;</span>
           </a>
         </div>
 
         <div id="paddockTopAlbumsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {topAlbums.map((album) => (
-            <a
-              href={`/paddock/g/${album.slug}/`}
-              class="group rounded-xl overflow-hidden bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-300 flex flex-col justify-between"
-            >
-              <div class="relative w-full aspect-video overflow-hidden bg-[#090d12]">
-                <img
-                  src={album.cover}
-                  alt={album.title}
-                  width="640"
-                  height="360"
-                  loading="lazy"
-                  decoding="async"
-                  class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase tracking-wider">
-                  {album.brand} · {album.carClass}
-                </span>
-                <span class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded bg-black/75 border border-white/15 text-white text-[10px] font-mono font-bold">
-                  {album.photos.length} fotos
-                </span>
-              </div>
-              <div class="p-3.5 flex items-center justify-between gap-2">
-                <h4 class="text-sm font-bold text-[var(--r-text)] group-hover:text-[var(--r-accent)] transition-colors truncate">
-                  {album.title}
-                </h4>
-                <span class="text-xs font-mono text-[var(--r-accent)] font-bold shrink-0">&rarr;</span>
-              </div>
-            </a>
-          ))}
+          <p class="col-span-full text-xs font-mono text-[var(--r-muted)]">Todavía no hay álbumes publicados.</p>
         </div>
       </div>
     </section>
