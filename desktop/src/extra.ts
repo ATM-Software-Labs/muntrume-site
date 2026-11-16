@@ -22,7 +22,7 @@ import {
   BroadcastDirector,
   renderBroadcastDirectorWidget,
 } from "./irsdk";
-import { renderMirrorProximityWings } from "./irsdk/proximity-radar";
+import { renderLiveTrackMapCanvas, renderMirrorProximityWings } from "./irsdk/proximity-radar";
 import { estimateLiveIRating, formatIRatingDelta, formatSofShort } from "./irsdk/irating-calc";
 import { AeroSuspensionAnalyzer, renderAeroAnalysisPanel } from "./telemetry/aero-analyzer";
 import { LocalTelemetryBus } from "./plugins/telemetry-bus";
@@ -2939,6 +2939,10 @@ function updateHUDDisplay(sample: LiveSample): void {
       const floatRadar = document.getElementById("ovRadarFloat");
       if (floatRadar && floatRadar.offsetParent !== null) {
         renderMirrorProximityWings(floatRadar, irsdkState);
+      }
+      const trackMapCanvas = document.getElementById("ovTrackMapFloat") as HTMLCanvasElement | null;
+      if (trackMapCanvas && trackMapCanvas.offsetParent !== null) {
+        renderLiveTrackMapCanvas(trackMapCanvas, irsdkState);
       }
     }
 

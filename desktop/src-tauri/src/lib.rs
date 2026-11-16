@@ -260,7 +260,10 @@ fn spawn_scheduler(app: AppHandle) {
 
 fn spawn_update_check(app: AppHandle) {
     tauri::async_runtime::spawn(async move {
-        tokio::time::sleep(Duration::from_secs(4)).await;
+        tokio::time::sleep(Duration::from_secs(3)).await;
+        if live::current_status() == "on_track" {
+            return;
+        }
         use tauri_plugin_updater::UpdaterExt;
         let Ok(updater) = app.updater() else {
             return;
@@ -269,10 +272,14 @@ fn spawn_update_check(app: AppHandle) {
             return;
         };
         let version = update.version.clone();
+        let notes = update.body.clone().unwrap_or_default();
         if let Ok(mut slot) = app.state::<AppState>().update_version.lock() {
             *slot = Some(version.clone());
         }
         let _ = app.emit("mmt-update", version);
+        if !notes.trim().is_empty() {
+            let _ = app.emit("mmt-update-notes", notes);
+        }
     });
 }
 
@@ -589,8 +596,21 @@ async fn install_update(app: AppHandle) -> Result<(), String> {
     let Some(update) = updater.check().await.map_err(|err| err.to_string())? else {
         return Err("No hay una actualización publicada.".into());
     };
+    let mut downloaded: usize = 0;
+    let app_prog = app.clone();
     update
-        .download_and_install(|_chunk, _total| {}, || {})
+        .download_and_install(
+            move |chunk, total| {
+                downloaded = downloaded.saturating_add(chunk);
+                if let Some(total_bytes) = total {
+                    if total_bytes > 0 {
+                        let pct = ((downloaded as f64 / total_bytes as f64) * 100.0).round() as u32;
+                        let _ = app_prog.emit_to("main", "mmt-update-progress", pct.min(100));
+                    }
+                }
+            },
+            || {},
+        )
         .await
         .map_err(|err| err.to_string())?;
     app.restart();

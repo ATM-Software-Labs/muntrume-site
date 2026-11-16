@@ -2253,7 +2253,15 @@ function bind(): void {
     void backend.quit();
   });
   $("updateBtn").addEventListener("click", () => {
+    const btn = $("updateBtn") as HTMLButtonElement;
+    btn.disabled = true;
+    btn.textContent = "Descargando…";
+    const progWrap = document.getElementById("updateProgressWrap");
+    if (progWrap) progWrap.hidden = false;
     void backend.installUpdate().catch((error: unknown) => {
+      btn.disabled = false;
+      btn.textContent = "Actualizar y Reiniciar";
+      if (progWrap) progWrap.hidden = true;
       showNotice(error instanceof Error ? error.message : "No se pudo instalar la actualización.");
     });
   });
@@ -2531,8 +2539,32 @@ function bind(): void {
   backend.onNotice((message) => showNotice(message));
   backend.onUpdate((version) => {
     $("updateBar").hidden = false;
-    $("updateText").textContent = `Hay una actualización: ${version}`;
+    $("updateText").textContent = `Nueva versión disponible: v${version}`;
   });
+  if (inTauri() && !window.location.search.includes("overlay=1")) {
+    void import("@tauri-apps/api/event")
+      .then(async ({ listen }) => {
+        await listen<string>("mmt-update-notes", (ev) => {
+          const notes = (ev.payload || "").trim();
+          const details = document.getElementById("updateNotesDetails");
+          const body = document.getElementById("updateNotesBody");
+          if (details && body && notes) {
+            body.textContent = notes;
+            details.hidden = false;
+          }
+        });
+        await listen<number>("mmt-update-progress", (ev) => {
+          const pct = Math.max(0, Math.min(100, Number(ev.payload || 0)));
+          const wrap = document.getElementById("updateProgressWrap");
+          const bar = document.getElementById("updateProgressBar");
+          const txt = document.getElementById("updateProgressPct");
+          if (wrap) wrap.hidden = false;
+          if (bar) bar.style.width = `${pct}%`;
+          if (txt) txt.textContent = `${pct}%`;
+        });
+      })
+      .catch(() => {});
+  }
   backend.onLive((sample) => updateLiveStatus(sample));
   if (backend.onIracingStatus) {
     backend.onIracingStatus((status) => applyIracingStatus(status));
