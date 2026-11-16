@@ -978,6 +978,10 @@
                     <input id="hudStreamerMode" type="checkbox" class="accent-[#00e699]" />
                     <span>Modo Streamer</span>
                   </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer text-r-text" title="Superpone la trazada de tu mejor vuelta 1.5s por delante">
+                    <input id="hudGhostCompare" type="checkbox" class="accent-[#00e699]" />
+                    <span>Ghost Compare</span>
+                  </label>
                 </div>
               </div>
 
@@ -986,11 +990,25 @@
                 <button type="button" data-widget-toggle="relative" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Relative</button>
                 <button type="button" data-widget-toggle="standings" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Standings</button>
                 <button type="button" data-widget-toggle="fuel" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Fuel</button>
+                <button type="button" data-widget-toggle="tires" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Neumáticos</button>
                 <button type="button" data-widget-toggle="inputs" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Pedales</button>
                 <button type="button" data-widget-toggle="waveform" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Traza</button>
                 <button type="button" data-widget-toggle="cluster" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Marcha/Vel</button>
                 <button type="button" data-widget-toggle="lights" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Shift Lights</button>
                 <button type="button" id="btnToggleLayersPanel" class="ml-auto h-7 px-3 rounded-lg border border-sky-400/50 bg-sky-400/10 text-sky-300 font-semibold transition">Control Panel HUD</button>
+              </div>
+
+              <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-r-line/60 font-mono text-[11px]">
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <span class="text-r-muted mr-1">Presets:</span>
+                  <button type="button" data-hud-factory-preset="sprint_gt3" class="h-7 px-2.5 rounded-lg border border-r-line bg-r-bg hover:border-r-accent text-r-text transition">Sprint / GT3 Pro</button>
+                  <button type="button" data-hud-factory-preset="endurance_multi" class="h-7 px-2.5 rounded-lg border border-r-line bg-r-bg hover:border-r-accent text-r-text transition">Endurance / Multiclase</button>
+                  <button type="button" data-hud-factory-preset="stream_minimal" class="h-7 px-2.5 rounded-lg border border-r-line bg-r-bg hover:border-r-accent text-r-text transition">Stream / Minimalista</button>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <button type="button" id="btnCopyHudLayout" class="h-7 px-2.5 rounded-lg border border-emerald-400/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 font-semibold transition">Copiar Layout</button>
+                  <button type="button" id="btnImportHudLayout" class="h-7 px-2.5 rounded-lg border border-r-line bg-r-bg hover:border-r-accent text-r-text transition">Importar Layout</button>
+                </div>
               </div>
             </div>
 
@@ -1831,6 +1849,11 @@
       <!-- 5. Bottom-Left Fuel (left: 8px, bottom: 8px, 0.52 alpha, no duplicate Delta box) -->
       <div id="floatFuelCard" class="mmt-float-widget fixed bottom-2 left-2 w-[240px] rounded-[3px] text-white p-1.5 text-[11px] font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: rgba(10, 12, 16, 0.52); text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="fuel">
         <div id="ovFuelFloat"></div>
+      </div>
+
+      <!-- 5a. Bottom-Left Tire Status & ABS/TC (260x68px) -->
+      <div id="floatTireStatusCard" class="mmt-float-widget fixed bottom-2 left-[256px] w-[260px] h-[68px] pointer-events-auto overflow-hidden" data-widget="tires">
+        <div id="ovTireStatusFloat"></div>
       </div>
 
       <!-- 5b. Bottom-Right Live Track Map Canvas (with Class Dots & Ghost PIT Exit marker) -->

@@ -16,6 +16,9 @@ export interface PedalsSample {
   absActive?: boolean;
   tcActive?: boolean;
   ffbPct?: number; // 0.0 to 1.0 or percentage
+  ghostEnabled?: boolean;
+  ghostThrottle?: number;
+  ghostBrake?: number;
 }
 
 export class GpuPedalsEngine {
@@ -71,7 +74,7 @@ export class GpuPedalsEngine {
       canvas: HTMLCanvasElement;
       ctx: CanvasRenderingContext2D | null;
       dpr: number;
-      history: Array<{ thr: number; brk: number }>;
+      history: Array<{ thr: number; brk: number; gThr: number; gBrk: number; hasGhost: boolean }>;
       telemetry: PedalsSample;
       lastSampleMs: number;
       rafId: number | null;
@@ -92,7 +95,7 @@ export class GpuPedalsEngine {
       canvas,
       ctx,
       dpr,
-      history: [] as Array<{ thr: number; brk: number }>,
+      history: [] as Array<{ thr: number; brk: number; gThr: number; gBrk: number; hasGhost: boolean }>,
       telemetry: { throttle: 0, brake: 0, clutch: 0, steering: 0, speedKmh: 0, gear: 0 } as PedalsSample,
       lastSampleMs: 0,
       rafId: null as number | null,
@@ -105,7 +108,7 @@ export class GpuPedalsEngine {
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D | null;
     dpr: number;
-    history: Array<{ thr: number; brk: number }>;
+    history: Array<{ thr: number; brk: number; gThr: number; gBrk: number; hasGhost: boolean }>;
     telemetry: PedalsSample;
   }): void {
     const ctx = refs.ctx;
@@ -115,8 +118,11 @@ export class GpuPedalsEngine {
     const thr = Math.max(0, Math.min(1, sample.throttle || 0));
     const brk = Math.max(0, Math.min(1, sample.brake || 0));
     const clt = Math.max(0, Math.min(1, sample.clutch || 0));
+    const hasGhost = Boolean(sample.ghostEnabled && (sample.ghostBrake != null || sample.ghostThrottle != null));
+    const gThr = Math.max(0, Math.min(1, sample.ghostThrottle ?? 0));
+    const gBrk = Math.max(0, Math.min(1, sample.ghostBrake ?? 0));
 
-    refs.history.push({ thr, brk });
+    refs.history.push({ thr, brk, gThr, gBrk, hasGhost });
     if (refs.history.length > 130) refs.history.shift();
 
     ctx.clearRect(0, 0, 280, 38);
@@ -138,6 +144,38 @@ export class GpuPedalsEngine {
     if (len > 1) {
       const step = traceW / 129;
       const startX = traceX + traceW - (len - 1) * step;
+
+      // Ghost Compare dashed lines (1.5s ahead best-lap reference)
+      if (sample.ghostEnabled) {
+        ctx.save();
+        ctx.setLineDash([3, 3]);
+        ctx.lineWidth = 1.5;
+
+        ctx.strokeStyle = "rgba(239, 68, 68, 0.45)";
+        ctx.beginPath();
+        let startedBrk = false;
+        for (let i = 0; i < len; i++) {
+          if (!refs.history[i].hasGhost) continue;
+          const x = startX + i * step;
+          const y = traceY + traceH - 1 - refs.history[i].gBrk * (traceH - 2);
+          if (!startedBrk) { ctx.moveTo(x, y); startedBrk = true; }
+          else ctx.lineTo(x, y);
+        }
+        if (startedBrk) ctx.stroke();
+
+        ctx.strokeStyle = "rgba(16, 185, 129, 0.45)";
+        ctx.beginPath();
+        let startedThr = false;
+        for (let i = 0; i < len; i++) {
+          if (!refs.history[i].hasGhost) continue;
+          const x = startX + i * step;
+          const y = traceY + traceH - 1 - refs.history[i].gThr * (traceH - 2);
+          if (!startedThr) { ctx.moveTo(x, y); startedThr = true; }
+          else ctx.lineTo(x, y);
+        }
+        if (startedThr) ctx.stroke();
+        ctx.restore();
+      }
 
       // Brake (#ef4444, 2px)
       ctx.strokeStyle = "#ef4444";

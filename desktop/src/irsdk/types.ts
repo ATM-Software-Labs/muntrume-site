@@ -113,6 +113,10 @@ export interface IrsdkTelemetryFrame {
   carIdxOnPitRoad: boolean[];
   carIdxTrackSurface: number[];
   carIdxSessionFlags?: number[];
+  tireTempsC?: number[];
+  tireWearPct?: number[];
+  brakeAbsActive?: boolean;
+  engineWarnings?: number;
 }
 
 export interface RelativeEntry {

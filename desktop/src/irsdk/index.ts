@@ -21,3 +21,4 @@ export * from "./visibility-rules";
 export * from "./pit-exit-predictor";
 export * from "./tire-thermal-widget";
 export * from "./broadcast-director";
+export * from "./ghost-trace";

@@ -538,3 +538,64 @@ export function renderPitboxWidget(container: HTMLElement, state: PitboxInputSta
 export function renderDigiFlagWidget(container: HTMLElement, sessionFlags: number): void {
   digiFlagEngine.render(container, sessionFlags);
 }
+
+/**
+ * Renders the compact 260x68 Tire IMO, Wear & ABS/TC Electronics monitor (Prompt 104)
+ */
+export function renderTireStatusWidget(container: HTMLElement, state: IrsdkComputedState | null): void {
+  if (!state) {
+    setHtmlIfChanged(container, "");
+    return;
+  }
+
+  const frame = state.frame;
+  const temps = frame.tireTempsC && frame.tireTempsC.length === 12
+    ? frame.tireTempsC
+    : [78, 80, 76, 80, 79, 75, 74, 76, 75, 75, 76, 74];
+  const wear = frame.tireWearPct && frame.tireWearPct.length === 4
+    ? frame.tireWearPct
+    : [100, 100, 100, 100];
+
+  const tempColor = (c: number): string => {
+    if (c < 65) return "#38bdf8";
+    if (c <= 92) return "#10b981";
+    if (c <= 100) return "#f59e0b";
+    return "#ef4444";
+  };
+
+  const renderCorner = (label: string, tIdx: number, wIdx: number) => {
+    const i = temps[tIdx] ?? 0;
+    const m = temps[tIdx + 1] ?? 0;
+    const o = temps[tIdx + 2] ?? 0;
+    const w = Math.round(wear[wIdx] ?? 100);
+    return `
+      <div class="flex items-center justify-between gap-1 px-1.5 py-0.5 rounded-[2px] bg-white/[0.04] border border-white/10">
+        <span class="text-[8.5px] font-bold text-white/60 w-4">${label}</span>
+        <div class="flex items-center gap-0.5">
+          <span class="w-3 h-2.5 rounded-[1px] text-[7.5px] font-bold text-black flex items-center justify-center" style="background:${tempColor(i)}">${Math.round(i)}</span>
+          <span class="w-3 h-2.5 rounded-[1px] text-[7.5px] font-bold text-black flex items-center justify-center" style="background:${tempColor(m)}">${Math.round(m)}</span>
+          <span class="w-3 h-2.5 rounded-[1px] text-[7.5px] font-bold text-black flex items-center justify-center" style="background:${tempColor(o)}">${Math.round(o)}</span>
+        </div>
+        <span class="text-[8.5px] font-bold ${w > 60 ? "text-emerald-400" : w > 30 ? "text-amber-400" : "text-rose-400"}">${w}%</span>
+      </div>
+    `;
+  };
+
+  const absOn = Boolean(frame.brakeAbsActive);
+  const tcOn = ((frame.engineWarnings ?? 0) & 0x10) !== 0 || ((frame.engineWarnings ?? 0) & 0x04) !== 0;
+
+  setHtmlIfChanged(container, `
+    <div class="w-[260px] h-[68px] p-1 rounded-[2px] border border-white/10 text-white font-mono tabular-nums flex items-center gap-1.5 select-none" style="background: rgba(8, 10, 14, 0.88);">
+      <div class="flex-1 grid grid-cols-2 gap-1">
+        ${renderCorner("FL", 0, 0)}
+        ${renderCorner("FR", 3, 1)}
+        ${renderCorner("RL", 6, 2)}
+        ${renderCorner("RR", 9, 3)}
+      </div>
+      <div class="w-7 flex flex-col gap-1 shrink-0">
+        <span class="h-6 rounded-[2px] flex items-center justify-center text-[8.5px] font-black ${absOn ? "bg-amber-400 text-black animate-pulse" : "bg-white/5 text-white/30"}">ABS</span>
+        <span class="h-6 rounded-[2px] flex items-center justify-center text-[8.5px] font-black ${tcOn ? "bg-sky-400 text-black animate-pulse" : "bg-white/5 text-white/30"}">TC</span>
+      </div>
+    </div>
+  `);
+}

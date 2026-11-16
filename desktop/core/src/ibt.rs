@@ -173,6 +173,10 @@ pub struct IrsdkFrame {
     pub car_idx_lap: Vec<i32>,
     pub car_idx_on_pit_road: Vec<bool>,
     pub car_idx_session_flags: Vec<i32>,
+    pub tire_temps_c: Vec<f64>,
+    pub tire_wear_pct: Vec<f64>,
+    pub brake_abs_active: bool,
+    pub engine_warnings: i32,
 }
 
 pub fn decode_irsdk_text(raw: &[u8]) -> String {
@@ -297,6 +301,20 @@ pub fn read_live_irsdk_frame_with(bytes: &[u8], table: &VarTable) -> Result<Irsd
         car_idx_lap: arr_i("CarIdxLap"),
         car_idx_on_pit_road: arr_b("CarIdxOnPitRoad"),
         car_idx_session_flags: arr_i("CarIdxSessionFlags"),
+        tire_temps_c: vec![
+            val_f("LFtempCL"), val_f("LFtempCM"), val_f("LFtempCR"),
+            val_f("RFtempCL"), val_f("RFtempCM"), val_f("RFtempCR"),
+            val_f("LRtempCL"), val_f("LRtempCM"), val_f("LRtempCR"),
+            val_f("RRtempCL"), val_f("RRtempCM"), val_f("RRtempCR"),
+        ],
+        tire_wear_pct: vec![
+            ((val_f("LFwearL") + val_f("LFwearM") + val_f("LFwearR")) / 3.0 * 100.0).clamp(0.0, 100.0),
+            ((val_f("RFwearL") + val_f("RFwearM") + val_f("RFwearR")) / 3.0 * 100.0).clamp(0.0, 100.0),
+            ((val_f("LRwearL") + val_f("LRwearM") + val_f("LRwearR")) / 3.0 * 100.0).clamp(0.0, 100.0),
+            ((val_f("RRwearL") + val_f("RRwearM") + val_f("RRwearR")) / 3.0 * 100.0).clamp(0.0, 100.0),
+        ],
+        brake_abs_active: val_b("BrakeABSactive"),
+        engine_warnings: val_i("EngineWarnings"),
     })
 }
 

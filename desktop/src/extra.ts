@@ -9,7 +9,9 @@ import {
   renderStandingsWidget,
   renderFuelWidget,
   renderTrackConditionsWidget,
+  renderTireStatusWidget,
   renderGpuPedalsWidget,
+  GhostTraceRecorder,
   renderPitboxWidget,
   renderDigiFlagWidget,
   SmartLayoutManager,
@@ -42,6 +44,7 @@ const aeroAnalyzer = new AeroSuspensionAnalyzer();
 let engButtonsWired = false;
 let lastSlowHudRenderMs = 0;
 let lastAutoFuelPitRoad = false;
+const ghostTrace = new GhostTraceRecorder();
 let lastRadarRenderMs = 0;
 
 interface ScheduleWeek {
@@ -2001,6 +2004,14 @@ export function paintOverlays(): void {
       });
     }
 
+    const ghostChk = document.getElementById("hudGhostCompare") as HTMLInputElement | null;
+    if (ghostChk) {
+      ghostChk.checked = localStorage.getItem("mmt-ghost-compare") === "1";
+      ghostChk.addEventListener("change", () => {
+        localStorage.setItem("mmt-ghost-compare", ghostChk.checked ? "1" : "0");
+      });
+    }
+
     const paintWidgetBtns = () => {
       const disabled = loadDisabledWidgets();
       studio.querySelectorAll<HTMLButtonElement>("[data-widget-toggle]").forEach((btn) => {
@@ -2024,6 +2035,74 @@ export function paintOverlays(): void {
         paintWidgetBtns();
         applyHudCustomAppearance();
       });
+    });
+
+    // Prompt 105: Factory Presets & Layout Export/Import
+    const FACTORY_PRESETS: Record<string, { disabled: string[]; ghost: boolean }> = {
+      sprint_gt3: { disabled: ["tires", "trackmap", "conditions"], ghost: true },
+      endurance_multi: { disabled: [], ghost: false },
+      stream_minimal: { disabled: ["fuel", "tires", "trackmap", "conditions", "lights"], ghost: false },
+    };
+
+    studio.querySelectorAll<HTMLButtonElement>("[data-hud-factory-preset]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const key = btn.dataset.hudFactoryPreset || "";
+        const preset = FACTORY_PRESETS[key];
+        if (!preset) return;
+        saveDisabledWidgets(new Set(preset.disabled));
+        localStorage.setItem("mmt-ghost-compare", preset.ghost ? "1" : "0");
+        if (ghostChk) ghostChk.checked = preset.ghost;
+        paintWidgetBtns();
+        applyHudCustomAppearance();
+      });
+    });
+
+    const btnCopyLayout = document.getElementById("btnCopyHudLayout");
+    btnCopyLayout?.addEventListener("click", () => {
+      const payload = {
+        version: 1,
+        disabledWidgets: Array.from(loadDisabledWidgets()),
+        ghostCompare: localStorage.getItem("mmt-ghost-compare") === "1",
+        opacity: localStorage.getItem("mmt-hud-opacity") || "92",
+        scale: localStorage.getItem("mmt-hud-scale") || "100",
+        positions: localStorage.getItem("mmt-hud-positions") || "{}",
+      };
+      const json = JSON.stringify(payload);
+      if (navigator.clipboard?.writeText) {
+        void navigator.clipboard.writeText(json).then(() => {
+          btnCopyLayout.textContent = "¡Copiado!";
+          setTimeout(() => { btnCopyLayout.textContent = "Copiar Layout"; }, 1800);
+        });
+      }
+    });
+
+    const btnImportLayout = document.getElementById("btnImportHudLayout");
+    btnImportLayout?.addEventListener("click", () => {
+      const raw = window.prompt("Pega aquí el código JSON del layout de MMT Sync:");
+      if (!raw) return;
+      try {
+        const parsed = JSON.parse(raw) as {
+          disabledWidgets?: string[];
+          ghostCompare?: boolean;
+          opacity?: string;
+          scale?: string;
+          positions?: string;
+        };
+        if (Array.isArray(parsed.disabledWidgets)) {
+          saveDisabledWidgets(new Set(parsed.disabledWidgets.map(String)));
+        }
+        if (typeof parsed.ghostCompare === "boolean") {
+          localStorage.setItem("mmt-ghost-compare", parsed.ghostCompare ? "1" : "0");
+          if (ghostChk) ghostChk.checked = parsed.ghostCompare;
+        }
+        if (parsed.opacity) localStorage.setItem("mmt-hud-opacity", String(parsed.opacity));
+        if (parsed.scale) localStorage.setItem("mmt-hud-scale", String(parsed.scale));
+        if (parsed.positions) localStorage.setItem("mmt-hud-positions", String(parsed.positions));
+        paintWidgetBtns();
+        applyHudCustomAppearance();
+      } catch {
+        window.alert("Código de layout inválido.");
+      }
     });
   }
   const toggleBtn = document.getElementById("overlayModeToggle");
@@ -2919,7 +2998,17 @@ function updateHUDDisplay(sample: LiveSample): void {
     renderBroadcastDirectorWidget(bdEl, broadcastDirector);
   }
 
-  // Bloque 2: GPU-Accelerated Pedals & Steering (60 FPS, scaleY/translate3d)
+  // Bloque 2: GPU-Accelerated Pedals & Steering (60 FPS, Canvas) + Ghost Compare (Prompt 103)
+  const ghostEnabled = typeof localStorage !== "undefined" && localStorage.getItem("mmt-ghost-compare") === "1";
+  let ghostPt: { throttle: number; brake: number } | null = null;
+  if (irsdkState) {
+    const cIdx = irsdkState.camCarIdx;
+    const distPct = irsdkState.frame.carIdxLapDistPct[cIdx] ?? (sample.dist >= 0 && sample.dist <= 1 ? sample.dist : -1);
+    const lap = irsdkState.frame.carIdxLap[cIdx] ?? 0;
+    const lastLap = irsdkState.frame.carIdxLastLapTime[cIdx] ?? 0;
+    const estLap = irsdkState.activeDriver?.carClassEstLapTime || 90;
+    ghostPt = ghostTrace.update(distPct, lap, lastLap, sample.throttle, sample.brake, kmh, estLap);
+  }
   const pedalSample = {
     throttle: sample.throttle,
     brake: sample.brake,
@@ -2927,6 +3016,9 @@ function updateHUDDisplay(sample: LiveSample): void {
     steering: sample.steering,
     speedKmh: kmh,
     gear: sample.gear,
+    ghostEnabled,
+    ghostThrottle: ghostPt?.throttle,
+    ghostBrake: ghostPt?.brake,
   };
   document.querySelectorAll<HTMLElement>("#ovGpuPedals, #ovGpuPedalsFloat").forEach((container) => {
     if (container.offsetParent !== null) renderGpuPedalsWidget(container, pedalSample);
@@ -2980,6 +3072,11 @@ function updateHUDDisplay(sample: LiveSample): void {
         renderTrackConditionsWidget(condEl, irsdkState);
       }
 
+      const tireStatusEl = document.getElementById("ovTireStatusFloat");
+      if (tireStatusEl && tireStatusEl.offsetParent !== null) {
+        renderTireStatusWidget(tireStatusEl, irsdkState);
+      }
+
       // Prompt 100: Auto-Fuel on Pit Road entry when enabled
       const pitNow = Boolean(irsdkState.onPitRoad);
       if (pitNow && !lastAutoFuelPitRoad) {
@@ -3024,6 +3121,9 @@ function updateHUDDisplay(sample: LiveSample): void {
       vis.applyElementVisibility(document.getElementById("floatRelativeCard"), !disabledWidgets.has("relative") && vis.evaluateVisibility("relative", visCtx));
       vis.applyElementVisibility(document.getElementById("floatStandingsCard"), !disabledWidgets.has("standings") && vis.evaluateVisibility("standings", visCtx));
       vis.applyElementVisibility(document.getElementById("floatFuelCard"), !disabledWidgets.has("fuel") && vis.evaluateVisibility("fuel", visCtx));
+      vis.applyElementVisibility(document.getElementById("floatTireStatusCard"), !disabledWidgets.has("tires") && vis.evaluateVisibility("fuel", visCtx));
+      vis.applyElementVisibility(document.getElementById("floatTrackConditionsCard"), !disabledWidgets.has("conditions"));
+      vis.applyElementVisibility(document.getElementById("floatTrackMapCard"), !disabledWidgets.has("trackmap"));
       vis.applyElementVisibility(document.getElementById("floatInputsCard"), !disabledWidgets.has("inputs") && vis.evaluateVisibility("pedals", visCtx));
       vis.applyElementVisibility(document.getElementById("floatWaveformCard"), !disabledWidgets.has("waveform") && vis.evaluateVisibility("waveform", visCtx));
       vis.applyElementVisibility(document.getElementById("floatClusterCard"), !disabledWidgets.has("cluster"));
