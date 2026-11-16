@@ -140,11 +140,11 @@ fn windows_loop(app: AppHandle) {
         emit_status_if_changed(&app, &mut last_status, "on_track");
 
         // Lazy WebView2: create overlay window only when entering session if overlays enabled
-        let should_auto_overlay = crate::settings::load().map(|s| s.overlays).unwrap_or(true);
+        let should_auto_overlay = crate::settings::load().map(|s| s.modules.overlays).unwrap_or(true);
         if should_auto_overlay && !is_window_active(&app, "overlay") {
             let app_open = app.clone();
             tauri::async_runtime::spawn(async move {
-                let _ = crate::toggle_overlay(app_open, true).await;
+                let _ = crate::set_overlay_visible(app_open, true).await;
             });
         }
 
@@ -176,7 +176,7 @@ fn windows_loop(app: AppHandle) {
                     if is_window_active(&app, "overlay") {
                         let app_close = app.clone();
                         tauri::async_runtime::spawn(async move {
-                            let _ = crate::toggle_overlay(app_close, false).await;
+                            let _ = crate::set_overlay_visible(app_close, false).await;
                         });
                     }
                     crate::trim_working_set();

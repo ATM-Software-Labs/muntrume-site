@@ -5,6 +5,11 @@ on:
     tags:
       - "desktop-v*"
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Optional tag name (e.g. desktop-v0.2.2)"
+        required: false
+        type: string
 
 concurrency:
   group: desktop-release
@@ -61,6 +66,8 @@ jobs:
         run: |
           if [ "${{ github.ref_type }}" = "tag" ]; then
             echo "name=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          elif [ -n "${{ github.event.inputs.tag }}" ]; then
+            echo "name=${{ github.event.inputs.tag }}" >> "$GITHUB_OUTPUT"
           else
             ver=$(node -p "require('./desktop/src-tauri/tauri.conf.json').version")
             echo "name=desktop-v${ver}" >> "$GITHUB_OUTPUT"
