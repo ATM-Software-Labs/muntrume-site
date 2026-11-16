@@ -646,7 +646,7 @@ fn detect_hardware() -> Result<hardware::HardwareReport, String> {
     Ok(hardware::detect())
 }
 
-const LOW_MEM_WEBVIEW_ARGS: &str = "--disable-gpu-vsync --disable-features=msWebOOUI,msPdfOOUI,Translate,BackForwardCache --disable-extensions --disable-background-networking --disable-sync --disable-translate --disable-default-apps --renderer-process-limit=1 --js-flags=--max-old-space-size=48";
+const LOW_MEM_WEBVIEW_ARGS: &str = "--disable-gpu-vsync --disable-features=msWebOOUI,msPdfOOUI,Translate,BackForwardCache --disable-extensions --disable-background-networking --disable-sync --disable-translate --disable-default-apps --renderer-process-limit=1 --js-flags=--max-old-space-size=256";
 
 #[cfg(windows)]
 pub(crate) fn trim_working_set() {

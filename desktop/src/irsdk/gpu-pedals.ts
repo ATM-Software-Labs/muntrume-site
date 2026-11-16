@@ -74,7 +74,13 @@ export class GpuPedalsEngine {
       canvas: HTMLCanvasElement;
       ctx: CanvasRenderingContext2D | null;
       dpr: number;
-      history: Array<{ thr: number; brk: number; gThr: number; gBrk: number; hasGhost: boolean }>;
+      thrRing: Float32Array;
+      brkRing: Float32Array;
+      gThrRing: Float32Array;
+      gBrkRing: Float32Array;
+      gValidRing: Uint8Array;
+      ringHead: number;
+      ringCount: number;
       telemetry: PedalsSample;
       lastSampleMs: number;
       rafId: number | null;
@@ -91,11 +97,18 @@ export class GpuPedalsEngine {
       ctx.scale(dpr, dpr);
     }
 
+    const cap = 130;
     const refs = {
       canvas,
       ctx,
       dpr,
-      history: [] as Array<{ thr: number; brk: number; gThr: number; gBrk: number; hasGhost: boolean }>,
+      thrRing: new Float32Array(cap),
+      brkRing: new Float32Array(cap),
+      gThrRing: new Float32Array(cap),
+      gBrkRing: new Float32Array(cap),
+      gValidRing: new Uint8Array(cap),
+      ringHead: 0,
+      ringCount: 0,
       telemetry: { throttle: 0, brake: 0, clutch: 0, steering: 0, speedKmh: 0, gear: 0 } as PedalsSample,
       lastSampleMs: 0,
       rafId: null as number | null,
@@ -108,7 +121,13 @@ export class GpuPedalsEngine {
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D | null;
     dpr: number;
-    history: Array<{ thr: number; brk: number; gThr: number; gBrk: number; hasGhost: boolean }>;
+    thrRing: Float32Array;
+    brkRing: Float32Array;
+    gThrRing: Float32Array;
+    gBrkRing: Float32Array;
+    gValidRing: Uint8Array;
+    ringHead: number;
+    ringCount: number;
     telemetry: PedalsSample;
   }): void {
     const ctx = refs.ctx;
@@ -122,8 +141,14 @@ export class GpuPedalsEngine {
     const gThr = Math.max(0, Math.min(1, sample.ghostThrottle ?? 0));
     const gBrk = Math.max(0, Math.min(1, sample.ghostBrake ?? 0));
 
-    refs.history.push({ thr, brk, gThr, gBrk, hasGhost });
-    if (refs.history.length > 130) refs.history.shift();
+    const cap = refs.thrRing.length;
+    refs.thrRing[refs.ringHead] = thr;
+    refs.brkRing[refs.ringHead] = brk;
+    refs.gThrRing[refs.ringHead] = gThr;
+    refs.gBrkRing[refs.ringHead] = gBrk;
+    refs.gValidRing[refs.ringHead] = hasGhost ? 1 : 0;
+    refs.ringHead = (refs.ringHead + 1) % cap;
+    if (refs.ringCount < cap) refs.ringCount++;
 
     ctx.clearRect(0, 0, 280, 38);
 
@@ -140,10 +165,11 @@ export class GpuPedalsEngine {
     ctx.lineTo(traceX + traceW, traceY + traceH * 0.5);
     ctx.stroke();
 
-    const len = refs.history.length;
+    const len = refs.ringCount;
     if (len > 1) {
-      const step = traceW / 129;
+      const step = traceW / (cap - 1);
       const startX = traceX + traceW - (len - 1) * step;
+      const oldest = refs.ringCount < cap ? 0 : refs.ringHead;
 
       // Ghost Compare dashed lines (1.5s ahead best-lap reference)
       if (sample.ghostEnabled) {
@@ -155,9 +181,10 @@ export class GpuPedalsEngine {
         ctx.beginPath();
         let startedBrk = false;
         for (let i = 0; i < len; i++) {
-          if (!refs.history[i].hasGhost) continue;
+          const idx = (oldest + i) % cap;
+          if (!refs.gValidRing[idx]) continue;
           const x = startX + i * step;
-          const y = traceY + traceH - 1 - refs.history[i].gBrk * (traceH - 2);
+          const y = traceY + traceH - 1 - refs.gBrkRing[idx] * (traceH - 2);
           if (!startedBrk) { ctx.moveTo(x, y); startedBrk = true; }
           else ctx.lineTo(x, y);
         }
@@ -167,9 +194,10 @@ export class GpuPedalsEngine {
         ctx.beginPath();
         let startedThr = false;
         for (let i = 0; i < len; i++) {
-          if (!refs.history[i].hasGhost) continue;
+          const idx = (oldest + i) % cap;
+          if (!refs.gValidRing[idx]) continue;
           const x = startX + i * step;
-          const y = traceY + traceH - 1 - refs.history[i].gThr * (traceH - 2);
+          const y = traceY + traceH - 1 - refs.gThrRing[idx] * (traceH - 2);
           if (!startedThr) { ctx.moveTo(x, y); startedThr = true; }
           else ctx.lineTo(x, y);
         }
@@ -182,8 +210,9 @@ export class GpuPedalsEngine {
       ctx.lineWidth = 2;
       ctx.beginPath();
       for (let i = 0; i < len; i++) {
+        const idx = (oldest + i) % cap;
         const x = startX + i * step;
-        const y = traceY + traceH - 1 - refs.history[i].brk * (traceH - 2);
+        const y = traceY + traceH - 1 - refs.brkRing[idx] * (traceH - 2);
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       }
@@ -194,8 +223,9 @@ export class GpuPedalsEngine {
       ctx.lineWidth = 2;
       ctx.beginPath();
       for (let i = 0; i < len; i++) {
+        const idx = (oldest + i) % cap;
         const x = startX + i * step;
-        const y = traceY + traceH - 1 - refs.history[i].thr * (traceH - 2);
+        const y = traceY + traceH - 1 - refs.thrRing[idx] * (traceH - 2);
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       }

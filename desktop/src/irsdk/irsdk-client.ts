@@ -140,6 +140,7 @@ export class IrsdkClient {
     if (this.simTimer) return;
     this.isSimulated = true;
     this.simTimer = window.setInterval(() => {
+      if (typeof document !== "undefined" && document.hidden) return;
       const frame = this.mockProvider.nextFrame(false, false);
       this.processTelemetryFrame(frame);
     }, intervalMs);
