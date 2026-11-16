@@ -352,7 +352,7 @@ const finalSchema = {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="X-Content-Type-Options" content="nosniff" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; object-src 'none'; base-uri 'self'; img-src 'self' data: https:; frame-src 'self' https://discord.com https://*.discord.com; connect-src 'self' https://muntrume.atrumin16.workers.dev wss://muntrume.atrumin16.workers.dev https://muntru-api.trujillomingorance.com https://ai.trujillomingorance.com https://api.garage61.net https://api.brevo.com https://api.github.com;" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; object-src 'none'; base-uri 'self'; img-src 'self' data: https:; frame-src 'self' https://discord.com https://*.discord.com; connect-src 'self' http://127.0.0.1:38421 https://muntrume.atrumin16.workers.dev wss://muntrume.atrumin16.workers.dev https://muntru-api.trujillomingorance.com https://ai.trujillomingorance.com https://api.garage61.net https://api.brevo.com https://api.github.com;" />
   <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=()" />
   
   <title data-i18n={i18nTitle}>{seoTitle}</title>
@@ -398,9 +398,9 @@ const finalSchema = {
   <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16.png" />
   <link rel="icon" type="image/png" sizes="192x192" href="/assets/img/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon.png" />
-  <link rel="manifest" href="/site.webmanifest" />
-  <meta name="msapplication-TileColor" content="#080C0A" />
-  <meta name="theme-color" content="#080C0A" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <meta name="msapplication-TileColor" content="#090b0f" />
+  <meta name="theme-color" content="#10b981" />
 
   <!-- Fonts: self-hosted (latin + latin-ext, font-display: swap) — sin terceros ni CSS bloqueante externo -->
   <link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
@@ -505,5 +505,63 @@ const finalSchema = {
 
   <script is:inline src="/assets/js/notices.js?v=t272" defer></script>
   <script src="/assets/js/motion.js?v=t269" defer></script>
+  <script is:inline>
+    (function () {
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker.register("/sw.js").catch(function () {});
+        });
+      }
+      var deferredPrompt = null;
+      var isStandalone = window.matchMedia && window.matchMedia("(display-mode: standalone)").matches;
+      function syncPwaButtons() {
+        var btns = document.querySelectorAll("[data-mmt-install-pwa]");
+        btns.forEach(function (b) {
+          if (isStandalone) {
+            b.hidden = true;
+          } else {
+            b.hidden = false;
+          }
+        });
+      }
+      window.addEventListener("beforeinstallprompt", function (e) {
+        e.preventDefault();
+        deferredPrompt = e;
+        window.__mmtDeferredPwaPrompt = e;
+        syncPwaButtons();
+      });
+      window.addEventListener("appinstalled", function () {
+        deferredPrompt = null;
+        window.__mmtDeferredPwaPrompt = null;
+        isStandalone = true;
+        syncPwaButtons();
+      });
+      document.addEventListener("click", function (ev) {
+        var target = ev.target && ev.target.closest ? ev.target.closest("[data-mmt-install-pwa]") : null;
+        if (!target) return;
+        ev.preventDefault();
+        var promptEvent = deferredPrompt || window.__mmtDeferredPwaPrompt;
+        if (promptEvent && promptEvent.prompt) {
+          promptEvent.prompt();
+          promptEvent.userChoice.finally(function () {
+            deferredPrompt = null;
+            window.__mmtDeferredPwaPrompt = null;
+          });
+        } else {
+          var help = document.getElementById("mmtPwaInstallHint");
+          if (help) {
+            help.hidden = false;
+          } else {
+            alert("Para instalar Muntrume como App en Chrome, Brave o Edge: pulsa el icono «Instalar aplicación» (⊕) en el extremo derecho de la barra de direcciones.");
+          }
+        }
+      });
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", syncPwaButtons);
+      } else {
+        syncPwaButtons();
+      }
+    })();
+  </script>
 </body>
 </html>
