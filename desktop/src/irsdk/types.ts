@@ -159,6 +159,7 @@ export interface RelativeEntry {
 export interface LeaderboardEntry {
   position: number;
   classPosition: number;
+  carClassId?: number;
   posDelta?: number;
   lapDelta?: number;
   carIdx: number;
@@ -176,14 +177,18 @@ export interface LeaderboardEntry {
   iRatingStr: string;
   iRatingExact?: number;
   bestLapTime: number;
+  bestLapNum?: number;
   bestLapStr: string;
   lastLapTime: number;
   lastLapStr: string;
+  recentLaps?: number[];
   gapSeconds: number;
   gapStr: string;
   intervalSeconds: number;
   intervalStr: string;
   onPitRoad: boolean;
+  pitStatus?: "PIT" | "OUT" | "";
+  lapsSincePit?: number;
   isActiveCam: boolean;
   lapsCompleted: number;
 }

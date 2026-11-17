@@ -84,9 +84,17 @@ export function formatSofShort(sof: number): string {
   return `${sof}`;
 }
 
+export function computeClassSof(iRatings: number[]): number {
+  const valid = iRatings.filter((ir) => ir > 0);
+  if (valid.length === 0) return 0;
+  let expSum = 0;
+  for (const ir of valid) expSum += Math.exp(-ir / BR1);
+  return Math.round(BR1 * Math.log(valid.length / expSum));
+}
+
 /**
  * Estimates live projected iRating gain/loss for every driver in the leaderboard,
- * grouped by car class using iRacing's pairwise Elo model.
+ * grouped by CarClassID (or carClassShortName) using iRacing's pairwise Elo model.
  */
 export function estimateAllDriversIRatingDeltas(state: IrsdkComputedState | null): Map<number, number> {
   const result = new Map<number, number>();
@@ -99,20 +107,21 @@ export function estimateAllDriversIRatingDeltas(state: IrsdkComputedState | null
     }
   }
 
-  const byClass = new Map<string, Array<{ carIdx: number; ir: number }>>();
+  const byClass = new Map<string, Array<{ carIdx: number; ir: number; clsPos: number }>>();
   for (const entry of state.leaderboard) {
     const ir = driverByIdx.get(entry.carIdx) ?? 0;
     if (ir <= 0) continue;
-    const cls = entry.carClassShortName || "default";
+    const cls = entry.carClassId ? `id_${entry.carClassId}` : (entry.carClassShortName || "default");
     let list = byClass.get(cls);
     if (!list) {
       list = [];
       byClass.set(cls, list);
     }
-    list.push({ carIdx: entry.carIdx, ir });
+    list.push({ carIdx: entry.carIdx, ir, clsPos: entry.classPosition || entry.position });
   }
 
   for (const peers of byClass.values()) {
+    peers.sort((a, b) => a.clsPos - b.clsPos);
     const n = peers.length;
     if (n < 2) continue;
     const kFactor = 200 / n;

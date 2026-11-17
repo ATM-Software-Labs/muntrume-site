@@ -22,6 +22,10 @@ export function formatGap(seconds: number, isLeader: boolean): string {
 
 export class LeaderboardEngine {
   private initialPosByCarIdx = new Map<number, number>();
+  private recentLapsByCarIdx = new Map<number, number[]>();
+  private lastRecordedLapByCarIdx = new Map<number, number>();
+  private bestLapTrackByCarIdx = new Map<number, { time: number; lap: number }>();
+  private lastPitLapByCarIdx = new Map<number, number>();
   private lastSessionNum = -1;
 
   /**
@@ -56,6 +60,10 @@ export class LeaderboardEngine {
     if (frame.sessionNum !== this.lastSessionNum) {
       this.lastSessionNum = frame.sessionNum;
       this.initialPosByCarIdx.clear();
+      this.recentLapsByCarIdx.clear();
+      this.lastRecordedLapByCarIdx.clear();
+      this.bestLapTrackByCarIdx.clear();
+      this.lastPitLapByCarIdx.clear();
     }
     const activePlayerLap = lapsDone[activeCarIdx] ?? 0;
 
@@ -123,10 +131,9 @@ export class LeaderboardEngine {
       });
     }
 
-    // Build finalized leaderboard entries with GAP and INT
+    // Build finalized leaderboard entries with per-class GAP, INT, PIT/OUT & recent laps
     const result: LeaderboardEntry[] = [];
-    let leaderRefLapTime = 0;
-    let prevCarTime = 0;
+    const classLeaders = new Map<string, { bestLap: number; f2Gap: number; prevGap: number; count: number }>();
 
     for (let i = 0; i < rawList.length; i++) {
       const item = rawList[i];
@@ -134,47 +141,74 @@ export class LeaderboardEngine {
       if (!driver) continue;
 
       const rank = i + 1;
-      const isLeader = i === 0;
+      const clsKey = driver.carClassId ? `id_${driver.carClassId}` : (driver.carClassShortName || "ALL");
+      const clsState = classLeaders.get(clsKey) ?? { bestLap: 0, f2Gap: 0, prevGap: 0, count: 0 };
+      clsState.count += 1;
+      const clsRank = item.classPosition > 0 ? item.classPosition : clsState.count;
+      const isClassLeader = clsState.count === 1;
+
+      // Track last 3 valid laps, best lap number, and pit/out status
+      if (item.lastLap > 0 && item.laps > (this.lastRecordedLapByCarIdx.get(item.carIdx) ?? 0)) {
+        this.lastRecordedLapByCarIdx.set(item.carIdx, item.laps);
+        const hist = this.recentLapsByCarIdx.get(item.carIdx) ?? [];
+        hist.push(item.lastLap);
+        if (hist.length > 3) hist.shift();
+        this.recentLapsByCarIdx.set(item.carIdx, hist);
+      }
+      if (item.bestLap > 0) {
+        const prevBest = this.bestLapTrackByCarIdx.get(item.carIdx);
+        if (!prevBest || item.bestLap < prevBest.time - 0.0005) {
+          this.bestLapTrackByCarIdx.set(item.carIdx, { time: item.bestLap, lap: Math.max(1, item.laps) });
+        }
+      }
+      if (item.onPit) {
+        this.lastPitLapByCarIdx.set(item.carIdx, item.laps);
+      }
+      const lastPitLap = this.lastPitLapByCarIdx.get(item.carIdx);
+      const lapsSincePit = lastPitLap !== undefined && item.laps >= lastPitLap ? item.laps - lastPitLap : undefined;
+      const pitStatus: "PIT" | "OUT" | "" = item.onPit
+        ? "PIT"
+        : lapsSincePit !== undefined && lapsSincePit <= 1 && item.laps > 0
+          ? "OUT"
+          : "";
 
       let gap = 0;
       let interval = 0;
 
       if (isPracticeOrWarmup) {
-        if (isLeader) {
-          leaderRefLapTime = item.bestLap;
-          gap = 0;
-          interval = 0;
-          prevCarTime = item.bestLap;
-        } else if (item.bestLap > 0 && leaderRefLapTime > 0) {
-          gap = item.bestLap - leaderRefLapTime;
-          interval = prevCarTime > 0 ? item.bestLap - prevCarTime : gap;
-          prevCarTime = item.bestLap;
+        if (isClassLeader) {
+          clsState.bestLap = item.bestLap;
+          clsState.prevGap = item.bestLap;
+        } else if (item.bestLap > 0 && clsState.bestLap > 0) {
+          gap = item.bestLap - clsState.bestLap;
+          interval = clsState.prevGap > 0 ? Math.max(0, item.bestLap - clsState.prevGap) : gap;
+          clsState.prevGap = item.bestLap;
         }
       } else {
-        // Race: Use CarIdxF2Time or rank deltas
-        if (isLeader) {
-          gap = 0;
-          interval = 0;
-          prevCarTime = 0;
+        if (isClassLeader) {
+          clsState.f2Gap = item.f2Time > 0 ? item.f2Time : 0;
+          clsState.prevGap = 0;
         } else {
-          // f2Time in iRacing can be seconds behind leader or car ahead
-          gap = item.f2Time > 0 ? item.f2Time : (rank - 1) * 0.8;
-          interval = prevCarTime > 0 ? Math.max(0.05, gap - prevCarTime) : gap;
-          prevCarTime = gap;
+          const rawF2 = item.f2Time > 0 ? item.f2Time : (clsRank - 1) * 0.8;
+          gap = Math.max(0, rawF2 - clsState.f2Gap);
+          interval = clsState.prevGap > 0 ? Math.max(0.05, gap - clsState.prevGap) : gap;
+          clsState.prevGap = gap;
         }
       }
+      classLeaders.set(clsKey, clsState);
 
       const resolvedPos = item.position > 0 ? item.position : rank;
-      if (!isPracticeOrWarmup && resolvedPos > 0 && !this.initialPosByCarIdx.has(item.carIdx)) {
-        this.initialPosByCarIdx.set(item.carIdx, resolvedPos);
+      if (!isPracticeOrWarmup && clsRank > 0 && !this.initialPosByCarIdx.has(item.carIdx)) {
+        this.initialPosByCarIdx.set(item.carIdx, clsRank);
       }
-      const startPos = this.initialPosByCarIdx.get(item.carIdx) ?? resolvedPos;
-      const posDelta = !isPracticeOrWarmup && startPos > 0 && resolvedPos > 0 ? startPos - resolvedPos : 0;
+      const startPos = this.initialPosByCarIdx.get(item.carIdx) ?? clsRank;
+      const posDelta = !isPracticeOrWarmup && startPos > 0 && clsRank > 0 ? startPos - clsRank : 0;
       const lapDelta = activePlayerLap > 0 && item.laps > 0 ? item.laps - activePlayerLap : 0;
 
       result.push({
         position: resolvedPos,
-        classPosition: item.classPosition > 0 ? item.classPosition : rank,
+        classPosition: clsRank,
+        carClassId: driver.carClassId,
         posDelta,
         lapDelta,
         carIdx: item.carIdx,
@@ -192,14 +226,18 @@ export class LeaderboardEngine {
         iRatingStr: formatIRating(driver.iRating),
         iRatingExact: driver.iRating > 0 ? driver.iRating : 0,
         bestLapTime: item.bestLap,
+        bestLapNum: this.bestLapTrackByCarIdx.get(item.carIdx)?.lap,
         bestLapStr: formatLapTime(item.bestLap),
         lastLapTime: item.lastLap,
         lastLapStr: formatLapTime(item.lastLap),
+        recentLaps: [...(this.recentLapsByCarIdx.get(item.carIdx) ?? (item.lastLap > 0 ? [item.lastLap] : []))],
         gapSeconds: gap,
-        gapStr: formatGap(gap, isLeader),
+        gapStr: formatGap(gap, isClassLeader),
         intervalSeconds: interval,
-        intervalStr: isLeader ? "LÍDER" : interval > 0 ? `+${interval.toFixed(3)}` : "—",
+        intervalStr: isClassLeader ? "LÍDER" : interval > 0 ? `+${interval.toFixed(3)}` : "—",
         onPitRoad: item.onPit,
+        pitStatus,
+        lapsSincePit,
         isActiveCam: item.carIdx === activeCarIdx,
         lapsCompleted: item.laps,
       });
