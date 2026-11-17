@@ -69,6 +69,8 @@ const pageDescription =
         gt4: "GT4",
         cup: "Cup",
         formula: "Formula",
+        oval: "Oval",
+        dirt: "Dirt",
         night: "Noche / Resistencia",
       };
 
@@ -118,7 +120,7 @@ const pageDescription =
           const c = String(a.category || "").toLowerCase();
           if (c) counts[c] = (counts[c] || 0) + 1;
         }
-        const order = ["gt3", "gtp", "gte", "cup", "gt4", "formula", "night", ...Object.keys(counts)];
+        const order = ["gt3", "gtp", "gte", "cup", "gt4", "formula", "oval", "dirt", "night", ...Object.keys(counts)];
         const keys = Array.from(new Set(order)).filter((k) => (counts[k] || 0) >= 1);
 
         if (classSel) {

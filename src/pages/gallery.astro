@@ -517,6 +517,8 @@ const gallerySchema = {
         gt4: 'GT4',
         cup: 'Cup',
         formula: 'Formula',
+        oval: 'Oval',
+        dirt: 'Dirt',
         night: 'Noche / Resistencia',
       };
 
@@ -552,7 +554,7 @@ const gallerySchema = {
       };
 
       if (filterBar) {
-        const order = ['gt3', 'gtp', 'gte', 'cup', 'gt4', 'formula', 'night', ...Object.keys(counts)];
+        const order = ['gt3', 'gtp', 'gte', 'cup', 'gt4', 'formula', 'oval', 'dirt', 'night', ...Object.keys(counts)];
         const uniqueKeys = Array.from(new Set(order)).filter((k) => (counts[k] || 0) >= 1);
         const clearCarBtn = initCar
           ? `<a href="/gallery/" class="px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition cursor-pointer bg-white/10 text-white border border-white/20 hover:border-[var(--r-accent)]">&larr; Ver todos los coches</a>`
