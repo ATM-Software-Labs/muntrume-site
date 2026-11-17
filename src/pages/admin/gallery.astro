@@ -69,7 +69,8 @@ import Layout from "../../layouts/Layout.astro";
           <button type="button" data-status="archived" class="ag-tab px-4 py-2 rounded-xl text-xs font-mono font-bold border border-white/15 text-white/75">Archivo Antiguo</button>
         </div>
         <div class="flex flex-wrap items-center gap-2">
-          <button type="button" id="agFullArchiveBtn" class="px-3 py-1.5 rounded-lg bg-emerald-500 text-slate-950 text-xs font-mono font-bold hover:bg-emerald-400 transition cursor-pointer">🚀 Subir Todo el Archivo de iRacing</button>
+          <span id="agSyncStatusPill" class="px-3 py-1.5 rounded-lg border border-white/15 bg-black/50 text-[11px] font-mono text-emerald-300">Cola pendiente: … · Coches en D1: … · Fotos publicadas: …</span>
+          <button type="button" id="agFullArchiveBtn" class="px-3 py-1.5 rounded-lg bg-emerald-500 text-slate-950 text-xs font-mono font-bold hover:bg-emerald-400 transition cursor-pointer">🚀 Sincronizar Todo Automáticamente</button>
           <button type="button" id="agResetCursorBtn" class="px-3 py-1.5 rounded-lg border border-white/20 text-white/80 text-xs font-mono hover:border-emerald-400 transition cursor-pointer">↺ Reiniciar Cursor desde Página 1</button>
           <button type="button" id="agVerifyCarsBtn" class="px-3 py-1.5 rounded-lg border border-sky-400/40 bg-sky-500/15 text-sky-300 text-xs font-mono font-bold hover:bg-sky-500/25 transition cursor-pointer">🩺 Verificar Carga de Todos los Coches</button>
           <button type="button" id="agAutoSyncCatalogBtn" class="px-3 py-1.5 rounded-lg bg-sky-500/20 border border-sky-500/40 text-sky-300 text-xs font-mono font-bold hover:bg-sky-500/30 transition cursor-pointer">⚡ Sync por Marca</button>
@@ -241,11 +242,12 @@ import Layout from "../../layouts/Layout.astro";
         const textEl = document.getElementById("agArchiveProgressText");
         const pctEl = document.getElementById("agArchivePct");
         const barEl = document.getElementById("agArchiveProgressBar");
+        const pillEl = document.getElementById("agSyncStatusPill");
         btn.disabled = true;
-        btn.textContent = "Rastreando archivo…";
+        btn.textContent = "Sincronizando micro-lotes…";
         wrap?.classList.remove("hidden");
         let totalImported = 0;
-        let totalCars = 0;
+        let totalEnqueued = 0;
         let retries = 0;
         try {
           while (true) {
@@ -269,22 +271,38 @@ import Layout from "../../layouts/Layout.astro";
             retries = 0;
             const d = await resp.json().catch(() => ({}));
             totalImported += Number(d.imported || 0);
-            totalCars += Number(d.carsDetected || 0);
+            totalEnqueued += Number(d.enqueued || 0);
             const curP = Number(d.currentPage || 1);
             const totP = Math.max(curP, Number(d.totalPages || 1));
             const pct = d.completed ? 100 : Math.min(99, Math.round((curP / totP) * 100));
-            if (textEl) textEl.textContent = `${d.source} · Página ${curP} / ${totP} · ${totalImported} capturas guardadas · ${totalCars} coches`;
+            if (pillEl) {
+              pillEl.textContent = `Cola pendiente: ${d.queuePending ?? 0} fotos · Coches en D1: ${d.carsInDb ?? 0} · Fotos publicadas: ${d.totalPublished ?? 0}`;
+            }
+            if (textEl) textEl.textContent = `${d.source} · Pág ${curP}/${totP} · +${totalEnqueued} encoladas · +${totalImported} publicadas`;
             if (pctEl) pctEl.textContent = `${pct}%`;
             if (barEl) barEl.style.width = `${pct}%`;
-            if (d.completed) break;
+            if (d.completed && Number(d.queuePending || 0) === 0) break;
           }
-          currentStatus = "pending";
+          currentStatus = "published";
           loadList();
         } finally {
           btn.disabled = false;
-          btn.textContent = "🚀 Subir Todo el Archivo de iRacing";
+          btn.textContent = "🚀 Sincronizar Todo Automáticamente";
         }
       });
+
+      const refreshSyncPill = () => {
+        fetch(`${API}/api/gallery/sync-status`)
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => {
+            const pillEl = document.getElementById("agSyncStatusPill");
+            if (pillEl && d && d.success) {
+              pillEl.textContent = `Cola pendiente: ${d.queuePending ?? 0} fotos · Coches en D1: ${d.carsInDb ?? 0} · Fotos publicadas: ${d.totalPublished ?? 0}`;
+            }
+          })
+          .catch(() => {});
+      };
+      refreshSyncPill();
 
       document.getElementById("agAutoSyncCatalogBtn")?.addEventListener("click", async (e) => {
         const btn = e.currentTarget;
