@@ -189,6 +189,7 @@ export interface LeaderboardEntry {
   onPitRoad: boolean;
   pitStatus?: "PIT" | "OUT" | "";
   lapsSincePit?: number;
+  pitCount?: number;
   isActiveCam: boolean;
   lapsCompleted: number;
 }

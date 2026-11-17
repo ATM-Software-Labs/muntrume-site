@@ -111,7 +111,7 @@ export function estimateAllDriversIRatingDeltas(state: IrsdkComputedState | null
   for (const entry of state.leaderboard) {
     const ir = driverByIdx.get(entry.carIdx) ?? 0;
     if (ir <= 0) continue;
-    const cls = entry.carClassId ? `id_${entry.carClassId}` : (entry.carClassShortName || "default");
+    const cls = (entry.carClassShortName || "default").toUpperCase();
     let list = byClass.get(cls);
     if (!list) {
       list = [];

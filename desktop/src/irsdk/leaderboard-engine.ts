@@ -26,6 +26,8 @@ export class LeaderboardEngine {
   private lastRecordedLapByCarIdx = new Map<number, number>();
   private bestLapTrackByCarIdx = new Map<number, { time: number; lap: number }>();
   private lastPitLapByCarIdx = new Map<number, number>();
+  private pitCountByCarIdx = new Map<number, number>();
+  private wasInPitByCarIdx = new Map<number, boolean>();
   private lastSessionNum = -1;
 
   /**
@@ -65,6 +67,8 @@ export class LeaderboardEngine {
       this.lastRecordedLapByCarIdx.clear();
       this.bestLapTrackByCarIdx.clear();
       this.lastPitLapByCarIdx.clear();
+      this.pitCountByCarIdx.clear();
+      this.wasInPitByCarIdx.clear();
     }
     const activePlayerLap = lapsDone[activeCarIdx] ?? 0;
 
@@ -155,12 +159,18 @@ export class LeaderboardEngine {
       if (!driver) continue;
 
       const rank = i + 1;
-      const clsKey = driver.carClassId ? `id_${driver.carClassId}` : (driver.carClassShortName || "ALL");
+      const clsKey = (driver.carClassShortName || "ALL").toUpperCase();
       const clsState = classLeaders.get(clsKey) ?? { bestLap: 0, f2Gap: 0, prevGap: 0, count: 0 };
       clsState.count += 1;
       // Always assign sequential 1, 2, 3... within each class so P1 is strictly 1
       const clsRank = clsState.count;
       const isClassLeader = clsRank === 1;
+
+      const wasPit = this.wasInPitByCarIdx.get(item.carIdx) ?? false;
+      if (item.onPit && !wasPit && item.laps > 0) {
+        this.pitCountByCarIdx.set(item.carIdx, (this.pitCountByCarIdx.get(item.carIdx) ?? 0) + 1);
+      }
+      this.wasInPitByCarIdx.set(item.carIdx, item.onPit);
 
       // Track last 3 valid laps, best lap number, and pit/out status
       if (item.lastLap > 0 && item.laps > (this.lastRecordedLapByCarIdx.get(item.carIdx) ?? 0)) {
@@ -253,6 +263,7 @@ export class LeaderboardEngine {
         onPitRoad: item.onPit,
         pitStatus,
         lapsSincePit,
+        pitCount: this.pitCountByCarIdx.get(item.carIdx) ?? 0,
         isActiveCam: item.carIdx === activeCarIdx,
         lapsCompleted: item.laps,
       });

@@ -58,6 +58,27 @@ export function getLicenseColor(licString: string): string {
 /**
  * Parses DriverInfo.Drivers and WeekendInfo from iRacing SessionInfo YAML
  */
+export function resolveTrueCarClass(
+  carScreenName: string,
+  carClassShortName: string,
+  carPath = ""
+): { shortName: string; color: string } {
+  const hay = `${carScreenName || ""} ${carPath || ""} ${carClassShortName || ""}`.toLowerCase();
+  if (/\b(963|arx-?06|v-?series\.?r|hybrid[-_\s]*v8|499p|valkyrie|gtp|lmdh|lmh)\b/i.test(hay)) {
+    return { shortName: "GTP", color: "#facc15" };
+  }
+  if (/\b(p217|lmp2)\b/i.test(hay)) {
+    return { shortName: "LMP2", color: "#38bdf8" };
+  }
+  if (/\b(gt3|m4[-_\s]*gt3|296|911[-_\s]*gt3[-_\s]*r|mustang[-_\s]*gt3|z06[-_\s]*gt3|720s|amg[-_\s]*gt3|huracan|r8[-_\s]*lms|vantage[-_\s]*gt3|nsx[-_\s]*gt3)\b/i.test(hay)) {
+    return { shortName: "GT3", color: "#a855f7" };
+  }
+  if (/\b(gt4)\b/i.test(hay)) return { shortName: "GT4", color: "#10b981" };
+  if (/\b(lmp3|p320)\b/i.test(hay)) return { shortName: "LMP3", color: "#fb923c" };
+  if (/\b(gte|rsr|488[-_\s]*gte|c8\.?r|m8[-_\s]*gte)\b/i.test(hay)) return { shortName: "GTE", color: "#f472b6" };
+  return { shortName: carClassShortName || "RACE", color: "#38bdf8" };
+}
+
 export function parseSessionInfoYaml(yamlText: string, updateNum: number = 0): SessionInfoState {
   const drivers: Record<number, Driver> = {};
   let driverCarEstLapTime = 90.0;
@@ -122,6 +143,11 @@ export function parseSessionInfoYaml(yamlText: string, updateNum: number = 0): S
     const carIdx = currentDriver.carIdx;
     const licStr = currentDriver.licString || "R 0.0";
     const carPath = (currentDriver.carPath || "unknown").toLowerCase();
+    const resolvedClass = resolveTrueCarClass(
+      currentDriver.carScreenName || "",
+      currentDriver.carClassShortName || "Class",
+      carPath
+    );
 
     drivers[carIdx] = {
       carIdx,
@@ -137,8 +163,8 @@ export function parseSessionInfoYaml(yamlText: string, updateNum: number = 0): S
       carClassId: currentDriver.carClassId || 0,
       carScreenName: currentDriver.carScreenName || "iRacing Car",
       carScreenNameShort: currentDriver.carScreenNameShort || currentDriver.carScreenName || "Car",
-      carClassShortName: currentDriver.carClassShortName || "Class",
-      carClassColor: currentDriver.carClassColor || "#38bdf8",
+      carClassShortName: resolvedClass.shortName,
+      carClassColor: currentDriver.carClassColor || resolvedClass.color,
       carClassEstLapTime: currentDriver.carClassEstLapTime || 90.0,
       iRating: currentDriver.iRating || 1350,
       licLevel: currentDriver.licLevel || 0,

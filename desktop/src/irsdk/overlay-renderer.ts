@@ -267,18 +267,18 @@ const resolveRacelabClassColor = (cls: string, fallback: string): string => {
 export function buildMulticlassStandingsGroups(leaderboard: LeaderboardEntry[]): MulticlassStandingsBlock[] {
   if (!leaderboard || leaderboard.length === 0) return [];
   const active = leaderboard.find((e) => e.isActiveCam);
-  const activeKey = active ? (active.carClassId ? `id_${active.carClassId}` : active.carClassShortName) : "";
+  const activeKey = active ? (active.carClassShortName || "ALL").toUpperCase() : "";
 
   const grouped = new Map<string, { name: string; color: string; entries: LeaderboardEntry[] }>();
   for (const e of leaderboard) {
-    const key = e.carClassId ? `id_${e.carClassId}` : (e.carClassShortName || "ALL");
-    const g = grouped.get(key) ?? {
-      name: e.carClassShortName || "RACE",
-      color: resolveRacelabClassColor(e.carClassShortName || "", e.carClassColor),
+    const clsName = (e.carClassShortName || "ALL").toUpperCase();
+    const g = grouped.get(clsName) ?? {
+      name: clsName,
+      color: resolveRacelabClassColor(clsName, e.carClassColor),
       entries: [],
     };
     g.entries.push(e);
-    grouped.set(key, g);
+    grouped.set(clsName, g);
   }
 
   return Array.from(grouped.entries())
@@ -425,7 +425,7 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
   const classSofMap = new Map<string, { iRatings: number[]; registered: number }>();
   for (const d of allDrivers) {
     if (d.isPaceCar || d.isSpectator) continue;
-    const key = d.carClassId ? `id_${d.carClassId}` : (d.carClassShortName || "ALL");
+    const key = (d.carClassShortName || "ALL").toUpperCase();
     const cur = classSofMap.get(key) ?? { iRatings: [], registered: 0 };
     cur.registered += 1;
     if (d.iRating > 0) cur.iRatings.push(d.iRating);
@@ -580,6 +580,23 @@ export function renderFuelWidget(container: HTMLElement, state: IrsdkComputedSta
   }
 
   const fuel = state.fuel;
+  const isOtherCar = state.camCarIdx !== state.playerCarIdx || Boolean(state.isReplayPlaying);
+  if (isOtherCar) {
+    const camEntry = state.leaderboard.find((e) => e.carIdx === state.camCarIdx);
+    const stintLaps = camEntry?.lapsSincePit ?? camEntry?.lapsCompleted ?? 0;
+    const pits = camEntry?.pitCount ?? 0;
+    setHtmlIfChanged(container, `
+      <div class="h-[20px] flex items-center justify-between border-b border-white/10 text-[10px] font-mono tabular-nums whitespace-nowrap">
+        <span class="text-white/70 font-bold tracking-wider">FUEL · STINT</span>
+        <span class="text-sky-300 font-bold">Stint: L${stintLaps} · Pits: ${pits}</span>
+      </div>
+      <div class="mt-1.5 flex items-center justify-between text-[9.5px] font-mono text-white/60">
+        <span>#${camEntry?.carNumber || "--"} ${camEntry?.abbrevName || ""}</span>
+        <span class="px-1.5 py-0.5 rounded bg-white/10 text-white/75">Telemetría privada de rival</span>
+      </div>
+    `);
+    return;
+  }
 
   const headerHtml = `
     <div class="h-[20px] flex items-center justify-between border-b border-white/10 text-[10px] font-mono tabular-nums whitespace-nowrap">
@@ -740,6 +757,25 @@ export function renderTireStatusWidget(container: HTMLElement, state: IrsdkCompu
   }
 
   const frame = state.frame;
+  const isOtherCar = state.camCarIdx !== state.playerCarIdx || Boolean(state.isReplayPlaying);
+  if (isOtherCar) {
+    const camEntry = state.leaderboard.find((e) => e.carIdx === state.camCarIdx);
+    const stintLaps = camEntry?.lapsSincePit ?? camEntry?.lapsCompleted ?? 0;
+    const pits = camEntry?.pitCount ?? 0;
+    setHtmlIfChanged(container, `
+      <div class="w-[260px] h-[68px] p-2 rounded-[2px] border border-white/10 text-white font-mono tabular-nums flex flex-col justify-between select-none" style="background: rgba(8, 10, 14, 0.88);">
+        <div class="flex items-center justify-between text-[10px]">
+          <span class="text-white/70 font-bold">NEUMÁTICOS</span>
+          <span class="text-sky-300 font-bold">Stint: L${stintLaps} · Pits: ${pits}</span>
+        </div>
+        <div class="flex items-center justify-between text-[9.5px] text-white/60">
+          <span>#${camEntry?.carNumber || "--"} ${camEntry?.abbrevName || ""}</span>
+          <span class="px-1.5 py-0.5 rounded bg-white/10 text-white/75">Telemetría privada de rival</span>
+        </div>
+      </div>
+    `);
+    return;
+  }
   const temps = frame.tireTempsC && frame.tireTempsC.length === 12
     ? frame.tireTempsC
     : [78, 80, 76, 80, 79, 75, 74, 76, 75, 75, 76, 74];
@@ -801,9 +837,12 @@ export function renderCarTelemetryDock(container: HTMLElement, state: IrsdkCompu
   }
 
   const frame = state.frame;
-  const isRemoteCam = state.camCarIdx !== frame.playerCarIdx;
+  const isRemoteCam = state.camCarIdx !== frame.playerCarIdx || Boolean(state.isReplayPlaying);
   if (isRemoteCam) {
     const drv = state.activeDriver;
+    const camEntry = state.leaderboard.find((e) => e.carIdx === state.camCarIdx);
+    const stintLaps = camEntry?.lapsSincePit ?? camEntry?.lapsCompleted ?? 0;
+    const pits = camEntry?.pitCount ?? 0;
     const pos = frame.carIdxPosition[state.camCarIdx] ?? 0;
     const lap = Math.max(0, frame.carIdxLap[state.camCarIdx] ?? 0);
     const lastSec = frame.carIdxLastLapTime[state.camCarIdx] ?? 0;
@@ -811,7 +850,7 @@ export function renderCarTelemetryDock(container: HTMLElement, state: IrsdkCompu
     setHtmlIfChanged(container, `
       <div class="space-y-2 select-none">
         <div class="flex items-center justify-between border-b border-white/10 pb-1.5">
-          <span class="px-1.5 py-0.5 rounded bg-sky-500/20 border border-sky-400/50 text-sky-300 text-[10px] font-bold">REPLAY / CAM</span>
+          <span class="px-1.5 py-0.5 rounded bg-sky-500/20 border border-sky-400/50 text-sky-300 text-[10px] font-bold">Stint: L${stintLaps} · Pits: ${pits}</span>
           <strong class="text-[13px] text-white truncate max-w-[200px]">#${drv?.carNumber || "?"} ${drv?.abbrevName || "Piloto"}</strong>
         </div>
         <div class="grid grid-cols-3 gap-2 text-center py-2">
@@ -819,7 +858,7 @@ export function renderCarTelemetryDock(container: HTMLElement, state: IrsdkCompu
           <div><span class="block text-[9px] text-white/55">VUELTA</span><strong class="text-[15px] text-white">${lap}</strong></div>
           <div><span class="block text-[9px] text-white/55">ÚLTIMA</span><strong class="text-[13px] text-sky-300">${lastStr}</strong></div>
         </div>
-        <p class="text-[10px] text-white/50 text-center">Canales privados (Fuel / Desgaste IMO) ocultos en cámara remota.</p>
+        <p class="text-[10px] text-white/60 text-center">Telemetría privada de rival</p>
       </div>
     `);
     return;
