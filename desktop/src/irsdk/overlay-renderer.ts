@@ -1,8 +1,8 @@
-/**
- * MMT Sync — Kapps 2027 Style Overlay Renderers (Bloque 1 & 2)
+﻿/**
+ * MMT Sync â€” Kapps 2027 Style Overlay Renderers (Bloque 1 & 2)
  * High performance 60 FPS GPU-accelerated renderers, tabular numeric typography,
  * SVG local brand mappers, Driver Tags badges, Streamer Mode,
- * Radar 360°, Pitbox Helper, and DigiFlag.
+ * Radar 360Â°, Pitbox Helper, and DigiFlag.
  */
 
 import type { IrsdkComputedState, LeaderboardEntry, RelativeEntry } from "./types";
@@ -71,7 +71,7 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
         <span class="text-r-muted">Radar Relativo</span>
         <span class="px-1.5 py-0.5 rounded text-[9px] bg-white/10 text-white/50 font-mono">EN ESPERA</span>
       </div>
-      <div class="p-3 text-center text-xs text-white/50 font-mono">Esperando telemetría de iRacing...</div>
+      <div class="p-3 text-center text-xs text-white/50 font-mono">Esperando telemetrÃ­a de iRacing...</div>
     `;
     return;
   }
@@ -89,7 +89,7 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
   state.leaderboard.forEach((entry) => posByCarIdx.set(entry.carIdx, entry.position));
 
   const tTrack = state.frame.trackTempC;
-  const trackTempStr = typeof tTrack === "number" && tTrack > 0 ? `${tTrack.toFixed(0)}°C` : "";
+  const trackTempStr = typeof tTrack === "number" && tTrack > 0 ? `${tTrack.toFixed(0)}Â°C` : "";
   const activeLap = Math.max(0, state.frame.carIdxLap[state.camCarIdx] || 0);
   const remSec = Math.max(0, Math.round(state.frame.sessionTimeRemain || 0));
   const remMin = Math.floor(remSec / 60);
@@ -99,8 +99,8 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
 
   const headerHtml = `
     <div class="mmt-rel-header flex items-center justify-between gap-2 whitespace-nowrap">
-      <span>${irEst ? `SOF ${formatSofShort(irEst.sof)}` : "REL"} · ⏱ ${sessionClock}</span>
-      <span>${trackTempStr ? `${trackTempStr} · ` : ""}${isReplay ? "Replay" : sessType}</span>
+      <span>${irEst ? `SOF ${formatSofShort(irEst.sof)}` : "REL"} Â· â± ${sessionClock}</span>
+      <span>${trackTempStr ? `${trackTempStr} Â· ` : ""}${isReplay ? "Replay" : sessType}</span>
     </div>
   `;
 
@@ -133,7 +133,7 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
       if (cols.pitStatus && e.onPitRoad) badgeParts.push(`<span class="mmt-flag-pit">PIT</span>`);
 
       const displayName = isStreamer
-        ? isSelf ? "Piloto (Tú)" : `Piloto #${e.carNumber}`
+        ? isSelf ? "Piloto (TÃº)" : `Piloto #${e.carNumber}`
         : (e.driverName || e.abbrevName);
 
       const relPos = e.position && e.position > 0 ? e.position : (posByCarIdx.get(e.carIdx) ?? 0);
@@ -155,9 +155,9 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
         : ``;
       const compoundCell = showCompounds ? renderCompoundBadge(state.frame.carIdxTireCompound?.[e.carIdx]) : "";
       const irDeltaVal = isPractice ? 0 : (irDeltas.get(e.carIdx) ?? 0);
-      const irDeltaText = isPractice ? "—" : irDeltaVal > 0 ? `+${Math.round(irDeltaVal)}` : `${Math.round(irDeltaVal)}`;
+      const irDeltaText = isPractice ? "â€”" : irDeltaVal > 0 ? `+${Math.round(irDeltaVal)}` : `${Math.round(irDeltaVal)}`;
       const irDeltaColor = isPractice || irDeltaVal === 0 ? "text-white/40" : irDeltaVal > 0 ? "text-emerald-400 font-bold" : "text-rose-400 font-bold";
-      const irDeltaCell = isPractice ? `` : `<span class="w-[28px] shrink-0 text-right text-[10.5px] tabular-nums ${irDeltaColor}">${irDeltaText}</span>`;
+      const irDeltaCell = isPractice ? `` : `<span class="w-[36px] shrink-0 text-right text-[12.5px] font-extrabold tabular-nums ${irDeltaColor}">${irDeltaText}</span>`;
       const deltaCell = cols.delta
         ? `<span class="w-[36px] shrink-0 text-right text-[11px] tabular-nums ${gapColor}">${gapClean}</span>`
         : ``;
@@ -199,7 +199,7 @@ export type CompactStandingsRow =
   | { kind: "separator" };
 
 /**
- * Compact Standings window: Top 3 fixed + subtle divider + ±3 around CamCarIdx (max 11 rows total).
+ * Compact Standings window: Top 3 fixed + subtle divider + Â±3 around CamCarIdx (max 11 rows total).
  */
 export function buildCompactStandingsWindow(leaderboard: LeaderboardEntry[]): CompactStandingsRow[] {
   if (!leaderboard || leaderboard.length === 0) return [];
@@ -261,7 +261,7 @@ const resolveRacelabClassColor = (cls: string, fallback: string): string => {
 /**
  * Racelab-style Multiclass Standings window:
  * - Other classes (e.g. GTP, LMP2): Top 3
- * - Player's class (e.g. GT3/IMSA): Top 10 + player ±1 if outside Top 10
+ * - Player's class (e.g. GT3/IMSA): Top 10 + player Â±1 if outside Top 10
  */
 export function buildMulticlassStandingsGroups(leaderboard: LeaderboardEntry[]): MulticlassStandingsBlock[] {
   if (!leaderboard || leaderboard.length === 0) return [];
@@ -299,7 +299,7 @@ export function buildMulticlassStandingsGroups(leaderboard: LeaderboardEntry[]):
         if (selfIdx < 0 || g.entries.length <= 6) {
           g.entries.slice(0, 6).forEach((entry, rankIdx) => rows.push({ kind: "entry", entry, rankIdx }));
         } else {
-          // Union of Top 3 (0,1,2) and ±2 around player (selfIdx-2 .. selfIdx+2)
+          // Union of Top 3 (0,1,2) and Â±2 around player (selfIdx-2 .. selfIdx+2)
           const winStart = Math.max(0, selfIdx - 2);
           const winEnd = Math.min(g.entries.length - 1, selfIdx + 2);
           const topEnd = Math.min(2, g.entries.length - 1);
@@ -361,10 +361,10 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
   if (!state || !state.leaderboard || state.leaderboard.length === 0) {
     container.innerHTML = `
       <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-white/10 text-[10px] uppercase font-bold tracking-wider">
-        <span class="text-r-muted">Clasificación</span>
+        <span class="text-r-muted">ClasificaciÃ³n</span>
         <span class="text-[9px] text-r-muted font-mono">SIN DATOS</span>
       </div>
-      <div class="p-3 text-center text-xs text-white/50 font-mono">Esperando clasificación...</div>
+      <div class="p-3 text-center text-xs text-white/50 font-mono">Esperando clasificaciÃ³n...</div>
     `;
     return;
   }
@@ -389,7 +389,7 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
     ? `${remH}:${String(remM).padStart(2, "0")}:${String(remS).padStart(2, "0")}`
     : `${remM}:${String(remS).padStart(2, "0")}`;
   const tTrack = state.frame.trackTempC;
-  const tempPart = typeof tTrack === "number" && tTrack > 0 ? `🌡 ${tTrack.toFixed(0)}°C` : "";
+  const tempPart = typeof tTrack === "number" && tTrack > 0 ? `ðŸŒ¡ ${tTrack.toFixed(0)}Â°C` : "";
   const leadClass = leaderboard[0]?.carClassShortName || (isPractice ? "PRAC" : "RACE");
   const leadColor = leaderboard[0]?.carClassColor || "#38bdf8";
   const sessChar = isPractice ? "P" : "R";
@@ -408,12 +408,12 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
         <span class="font-bold text-white/90">${sessChar}</span>
         <span class="px-1 rounded-[2px] text-[10px] font-extrabold" style="background:${leadColor}28;color:${leadColor}">${leadClass}</span>
         <span class="text-white">Vta ${activeLap}${validTotalLaps > 0 ? `/${validTotalLaps}` : ""}</span>
-        <span class="text-emerald-300 font-bold">⏱ ${remClock}</span>
+        <span class="text-emerald-300 font-bold">â± ${remClock}</span>
       </div>
       <div class="flex items-center gap-2 text-white/85">
         ${renderIncidentPill(state)}
         ${tempPart ? `<span>${tempPart}</span>` : ""}
-        <span>🕒 ${localClock}</span>
+        <span>ðŸ•’ ${localClock}</span>
         <span>${leaderboard.length}/${totalSessionCars}</span>
       </div>
     </div>
@@ -445,12 +445,12 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
       const clsSofExact = sofData && sofData.iRatings.length > 0 ? computeClassSof(sofData.iRatings) : 0;
       const clsReg = sofData?.registered || group.totalActive;
       const classHeaderHtml = `
-        <div class="mmt-std-class-header flex items-center justify-between px-2 py-1 text-[10.5px] font-mono font-bold" style="border-left: 3px solid ${group.color}; background: ${group.color}1c;">
+        <div class="mmt-std-class-header flex items-center justify-between px-2 py-0.5 text-[10px] font-mono font-bold" style="border-left: 3px solid ${group.color}; background: ${group.color}1c;">
           <div class="flex items-center gap-2">
             <span class="px-1.5 py-0.5 rounded-[2px] text-[10px] font-black tracking-wide" style="background:${group.color};color:#090b0f;">${group.className}</span>
             <span class="text-white/80 tabular-nums">${group.totalActive}/${clsReg}</span>
             <span class="text-emerald-300 tabular-nums">${remClock}${validTotalLaps > 0 ? `/${validTotalLaps}v` : ""}</span>
-            ${typeof tTrack === "number" && tTrack > 0 ? `<span class="text-white/70 tabular-nums">${tTrack.toFixed(0)}°C</span>` : ""}
+            ${typeof tTrack === "number" && tTrack > 0 ? `<span class="text-white/70 tabular-nums">${tTrack.toFixed(0)}Â°C</span>` : ""}
           </div>
           <span class="text-white/90 font-extrabold tabular-nums">${clsSofExact > 0 ? `SOF ${clsSofExact}` : `${group.totalActive} coches`}</span>
         </div>
@@ -459,7 +459,7 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
       const clsRows = group.rows
         .map((row, clsIdx) => {
           if (row.kind === "separator") {
-            return `<div class="flex items-center justify-center h-[10px] text-[9px] text-white/35 tracking-[0.35em] border-y border-white/10">···</div>`;
+            return `<div class="flex items-center justify-center h-[10px] text-[9px] text-white/35 tracking-[0.35em] border-y border-white/10">Â·Â·Â·</div>`;
           }
           const e = row.entry;
           const idx = row.rankIdx;
@@ -477,14 +477,14 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
           const posDeltaCell = isPractice
             ? ``
             : deltaPos > 0
-            ? `<span class="w-[20px] shrink-0 text-center text-[9.5px] font-bold text-[#22c55e]">▲${deltaPos}</span>`
+            ? `<span class="w-[20px] shrink-0 text-center text-[9.5px] font-bold text-[#22c55e]">â–²${deltaPos}</span>`
             : deltaPos < 0
-            ? `<span class="w-[20px] shrink-0 text-center text-[9.5px] font-bold text-[#ef4444]">▼${Math.abs(deltaPos)}</span>`
-            : `<span class="w-[20px] shrink-0 text-center text-[9.5px] text-white/25">—</span>`;
+            ? `<span class="w-[20px] shrink-0 text-center text-[9.5px] font-bold text-[#ef4444]">â–¼${Math.abs(deltaPos)}</span>`
+            : `<span class="w-[20px] shrink-0 text-center text-[9.5px] text-white/25">â€”</span>`;
           const numCell = `<span class="w-[26px] shrink-0 text-center text-[10px] font-bold rounded-[2px] ${isSelf ? "bg-emerald-500/20 text-emerald-300" : isOffLap ? "text-[#fbbf24]" : "text-white/85"}">#${e.carNumber}</span>`;
 
           const displayName = isStreamer
-            ? isSelf ? "Piloto (Tú)" : `Piloto #${e.carNumber}`
+            ? isSelf ? "Piloto (TÃº)" : `Piloto #${e.carNumber}`
             : (cols.driverName ? (e.driverName || e.abbrevName) : "");
           const nameCell = cols.driverName
             ? `<span class="mmt-cell-name shrink-0 text-[10.5px] ${isSelf ? "text-white font-bold" : isOffLap ? "text-[#fbbf24]" : "text-[#f8fafc]"}">${displayName}</span>`
@@ -499,10 +499,10 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
           const irDeltaHtml = isPractice
             ? ``
             : irDeltaVal > 0
-            ? `<span class="w-[40px] shrink-0 mr-2.5 px-1 py-0.5 rounded-[3px] text-right tabular-nums leading-none" style="font-size:11px;font-weight:800;color:#22c55e;background:rgba(34,197,94,0.14);">+${irDeltaVal}</span>`
+            ? `<span class="w-[46px] shrink-0 mr-3 px-1.5 py-0.5 rounded-[4px] text-right tabular-nums leading-none" style="font-size:13px;font-weight:800;color:#22c55e;background:rgba(34,197,94,0.14);">+${irDeltaVal}</span>`
             : irDeltaVal < 0
-            ? `<span class="w-[40px] shrink-0 mr-2.5 px-1 py-0.5 rounded-[3px] text-right tabular-nums leading-none" style="font-size:11px;font-weight:800;color:#ef4444;background:rgba(239,68,68,0.14);">${irDeltaVal}</span>`
-            : `<span class="w-[40px] shrink-0 mr-2.5 px-1 py-0.5 rounded-[3px] text-right tabular-nums leading-none text-white/35" style="font-size:11px;font-weight:700;">0</span>`;
+            ? `<span class="w-[46px] shrink-0 mr-3 px-1.5 py-0.5 rounded-[4px] text-right tabular-nums leading-none" style="font-size:13px;font-weight:800;color:#ef4444;background:rgba(239,68,68,0.14);">${irDeltaVal}</span>`
+            : `<span class="w-[46px] shrink-0 mr-3 px-1.5 py-0.5 rounded-[4px] text-right tabular-nums leading-none text-white/35" style="font-size:12px;font-weight:700;">0</span>`;
 
           // Hide GAP & INT in Practice/Qualy (Prompt 140) to save ~90px of dead width
           const showRaceGaps = !isPractice && !state.session.sessionType.toLowerCase().includes("qual");
@@ -520,7 +520,7 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
             ? `<span class="w-[24px] shrink-0 text-center px-1 rounded-[2px] bg-sky-500/25 text-sky-300 text-[8.5px] font-black">OUT</span>`
             : e.lapsSincePit !== undefined && e.lapsSincePit > 0
             ? `<span class="w-[24px] shrink-0 text-center text-[8.5px] text-white/45">${e.lapsSincePit}v</span>`
-            : `<span class="w-[24px] shrink-0 text-center text-[8.5px] text-white/20">•</span>`;
+            : `<span class="w-[24px] shrink-0 text-center text-[8.5px] text-white/20">â€¢</span>`;
 
           const isClassBest = group.classBestLap > 0 && e.bestLapTime > 0 && Math.abs(e.bestLapTime - group.classBestLap) < 0.002;
           const bestPrefix = e.bestLapNum && e.bestLapTime > 0 ? `L${e.bestLapNum} ` : "";
@@ -542,7 +542,7 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
             .join("");
 
           return `
-            <div class="${rowCls}" data-car-idx="${e.carIdx}" style="height:22px;padding:1px 6px;border-left-color: ${isSelf ? "#10b981" : group.color};${isSelf ? "background:rgba(16,185,129,0.16);" : ""}">
+            <div class="${rowCls}" data-car-idx="${e.carIdx}" style="height:19px;padding:0px 5px;font-size:10.5px;border-left-color: ${isSelf ? "#10b981" : group.color};${isSelf ? "background:rgba(16,185,129,0.16);" : ""}">
               ${posGlobalCell}
               ${posDeltaCell}
               ${numCell}
@@ -581,7 +581,7 @@ export function renderFuelWidget(container: HTMLElement, state: IrsdkComputedSta
   if (!state) {
     container.innerHTML = `
       <div class="text-[10px] uppercase text-r-muted mb-1.5 font-bold tracking-wider">Ordenador de Combustible</div>
-      <div class="p-3 text-center text-xs text-white/50 font-mono">Esperando lectura de telemetría...</div>
+      <div class="p-3 text-center text-xs text-white/50 font-mono">Esperando lectura de telemetrÃ­a...</div>
     `;
     return;
   }
@@ -594,12 +594,12 @@ export function renderFuelWidget(container: HTMLElement, state: IrsdkComputedSta
     const pits = camEntry?.pitCount ?? 0;
     setHtmlIfChanged(container, `
       <div class="h-[20px] flex items-center justify-between border-b border-white/10 text-[10px] font-mono tabular-nums whitespace-nowrap">
-        <span class="text-white/70 font-bold tracking-wider">FUEL · STINT</span>
-        <span class="text-sky-300 font-bold">Stint: L${stintLaps} · Pits: ${pits}</span>
+        <span class="text-white/70 font-bold tracking-wider">FUEL Â· STINT</span>
+        <span class="text-sky-300 font-bold">Stint: L${stintLaps} Â· Pits: ${pits}</span>
       </div>
       <div class="mt-1.5 flex items-center justify-between text-[9.5px] font-mono text-white/60">
         <span>#${camEntry?.carNumber || "--"} ${camEntry?.abbrevName || ""}</span>
-        <span class="px-1.5 py-0.5 rounded bg-white/10 text-white/75">Telemetría privada de rival</span>
+        <span class="px-1.5 py-0.5 rounded bg-white/10 text-white/75">TelemetrÃ­a privada de rival</span>
       </div>
     `);
     return;
@@ -608,7 +608,7 @@ export function renderFuelWidget(container: HTMLElement, state: IrsdkComputedSta
   const headerHtml = `
     <div class="h-[20px] flex items-center justify-between border-b border-white/10 text-[10px] font-mono tabular-nums whitespace-nowrap">
       <span class="text-white/70 font-bold tracking-wider">FUEL</span>
-      <span class="text-white font-bold">${fuel.fuelRemainingL > 0 ? `${fuel.fuelRemainingL} L` : "-- L"} · ${fuel.isValid ? `${fuel.stintLapsRemaining} v` : "-- v"}</span>
+      <span class="text-white font-bold">${fuel.fuelRemainingL > 0 ? `${fuel.fuelRemainingL} L` : "-- L"} Â· ${fuel.isValid ? `${fuel.stintLapsRemaining} v` : "-- v"}</span>
     </div>
   `;
 
@@ -618,7 +618,7 @@ export function renderFuelWidget(container: HTMLElement, state: IrsdkComputedSta
     setHtmlIfChanged(container, `
       <div class="h-[20px] flex items-center justify-between border-b border-white/10 text-[10px] font-mono tabular-nums whitespace-nowrap">
         <span class="text-white/70 font-bold tracking-wider">FUEL</span>
-        <span class="text-white font-bold">${fuel.fuelRemainingL > 0 ? `${fuel.fuelRemainingL} L` : "-- L"} · ${estLaps}</span>
+        <span class="text-white font-bold">${fuel.fuelRemainingL > 0 ? `${fuel.fuelRemainingL} L` : "-- L"} Â· ${estLaps}</span>
       </div>
       <div class="mt-1 grid gap-0.5 text-[10px] font-mono tabular-nums text-white/65">
         <div class="mmt-fuel-row"><span>Consumo (Est.)</span><span>${estBurn}</span></div>
@@ -630,8 +630,8 @@ export function renderFuelWidget(container: HTMLElement, state: IrsdkComputedSta
 
   const surplus = fuel.fuelSurplusL ?? 0;
   const toAddStr = fuel.fuelToAdd > 0
-    ? `PARAR · +${fuel.fuelToAdd.toFixed(1)} L`
-    : `OK · +${surplus.toFixed(1)} L`;
+    ? `PARAR Â· +${fuel.fuelToAdd.toFixed(1)} L`
+    : `OK Â· +${surplus.toFixed(1)} L`;
   const toAddClass = fuel.fuelToAdd > 0 ? "text-rose-400" : "text-emerald-400";
   const addBadgeHtml = fuel.fuelToAdd > 0
     ? `<span class="text-[#00ff88] font-black text-[12px]">+${fuel.fuelToAdd.toFixed(1)} L</span>`
@@ -641,7 +641,7 @@ export function renderFuelWidget(container: HTMLElement, state: IrsdkComputedSta
     ${headerHtml}
     <div class="mt-1 grid gap-0.5 text-[10px] font-mono tabular-nums whitespace-nowrap">
       <div class="mmt-fuel-row text-white/85">
-        <span>Media / Máx</span>
+        <span>Media / MÃ¡x</span>
         <span>${fuel.avgBurnPerLap} / ${fuel.maxBurnPerLap} L/v</span>
       </div>
       <div class="mmt-fuel-row text-white/85">
@@ -685,7 +685,7 @@ export function renderTrackConditionsWidget(container: HTMLElement, state: Irsdk
   const baseTemp = trackTempHistory.length > 0 ? trackTempHistory[0].temp : temp;
   const tempDelta = temp > 0 && baseTemp > 0 ? temp - baseTemp : 0;
   const trendStr = Math.abs(tempDelta) >= 0.1
-    ? ` <span class="${tempDelta < 0 ? "text-sky-400" : "text-amber-400"}">${tempDelta < 0 ? "▼" : "▲"} ${tempDelta > 0 ? "+" : ""}${tempDelta.toFixed(1)}°C</span>`
+    ? ` <span class="${tempDelta < 0 ? "text-sky-400" : "text-amber-400"}">${tempDelta < 0 ? "â–¼" : "â–²"} ${tempDelta > 0 ? "+" : ""}${tempDelta.toFixed(1)}Â°C</span>`
     : "";
 
   const wetMap: Record<number, { label: string; cls: string }> = {
@@ -706,15 +706,15 @@ export function renderTrackConditionsWidget(container: HTMLElement, state: Irsdk
   else if ((flags & 0x00004100) !== 0) flagHtml = `<span class="px-1.5 rounded-[2px] bg-yellow-500 text-black font-black">CAUTION / FCY</span>`;
   else if (flags & 0x00000008) flagHtml = `<span class="px-1.5 rounded-[2px] bg-yellow-400 text-black font-black">YELLOW</span>`;
   else if (flags & 0x00000020) flagHtml = `<span class="px-1.5 rounded-[2px] bg-blue-600 text-white font-black">BLUE FLAG</span>`;
-  else if (flags & 0x00000002) flagHtml = `<span class="px-1.5 rounded-[2px] bg-white text-black font-black">ÚLTIMA VUELTA</span>`;
+  else if (flags & 0x00000002) flagHtml = `<span class="px-1.5 rounded-[2px] bg-white text-black font-black">ÃšLTIMA VUELTA</span>`;
   else if (flags & 0x00000001) flagHtml = `<span class="px-1.5 rounded-[2px] bg-white text-black font-black">CUADROS</span>`;
 
-  const tempHtml = temp > 0 ? `<span>🌡 ${temp.toFixed(1)}°C${trendStr}</span>` : `<span>🌡 --°C</span>`;
+  const tempHtml = temp > 0 ? `<span>ðŸŒ¡ ${temp.toFixed(1)}Â°C${trendStr}</span>` : `<span>ðŸŒ¡ --Â°C</span>`;
   const wetness = frame.trackWetness ?? 1;
   const playerCompound = frame.carIdxTireCompound?.[state.camCarIdx];
   const optPill =
     wetness >= 4
-      ? `<span class="px-1.5 py-0.5 rounded-[2px] bg-[#0ea5e9] text-white font-black text-[9.5px] tracking-wider">${playerCompound === 0 ? "⚠ WET" : "WET"}</span>`
+      ? `<span class="px-1.5 py-0.5 rounded-[2px] bg-[#0ea5e9] text-white font-black text-[9.5px] tracking-wider">${playerCompound === 0 ? "âš  WET" : "WET"}</span>`
       : wetness === 3
         ? `<span class="px-1.5 py-0.5 rounded-[2px] bg-[#f59e0b] text-black font-black text-[9.5px] tracking-wider animate-pulse">CROSSOVER</span>`
         : "";
@@ -723,7 +723,7 @@ export function renderTrackConditionsWidget(container: HTMLElement, state: Irsdk
     <div class="h-[26px] rounded-[2px] border border-white/10 text-white font-mono text-[13px] font-semibold tabular-nums flex items-center whitespace-nowrap select-none" style="width: max-content; padding: 3px 10px; gap: 10px; background: rgba(8, 10, 14, 0.88);">
       ${flagHtml}
       ${tempHtml}
-      <span class="${wet.cls}">💧 ${wet.label}</span>
+      <span class="${wet.cls}">ðŸ’§ ${wet.label}</span>
       ${optPill}
       ${renderIncidentPill(state)}
     </div>
@@ -738,7 +738,7 @@ export function renderGpuPedalsWidget(container: HTMLElement, sample: PedalsSamp
 }
 
 /**
- * Renders the 360° Proximity Radar & Spotter widget
+ * Renders the 360Â° Proximity Radar & Spotter widget
  */
 export function renderRadarWidget(container: HTMLElement, state: RadarInputState): void {
   radar360Engine.render(container, state);
@@ -776,12 +776,12 @@ export function renderTireStatusWidget(container: HTMLElement, state: IrsdkCompu
     setHtmlIfChanged(container, `
       <div class="w-[260px] h-[68px] p-2 rounded-[2px] border border-white/10 text-white font-mono tabular-nums flex flex-col justify-between select-none" style="background: rgba(8, 10, 14, 0.88);">
         <div class="flex items-center justify-between text-[10px]">
-          <span class="text-white/70 font-bold">NEUMÁTICOS</span>
-          <span class="text-sky-300 font-bold">Stint: L${stintLaps} · Pits: ${pits}</span>
+          <span class="text-white/70 font-bold">NEUMÃTICOS</span>
+          <span class="text-sky-300 font-bold">Stint: L${stintLaps} Â· Pits: ${pits}</span>
         </div>
         <div class="flex items-center justify-between text-[9.5px] text-white/60">
           <span>#${camEntry?.carNumber || "--"} ${camEntry?.abbrevName || ""}</span>
-          <span class="px-1.5 py-0.5 rounded bg-white/10 text-white/75">Telemetría privada de rival</span>
+          <span class="px-1.5 py-0.5 rounded bg-white/10 text-white/75">TelemetrÃ­a privada de rival</span>
         </div>
       </div>
     `);
@@ -843,7 +843,7 @@ export function renderTireStatusWidget(container: HTMLElement, state: IrsdkCompu
  */
 export function renderCarTelemetryDock(container: HTMLElement, state: IrsdkComputedState | null): void {
   if (!state) {
-    setHtmlIfChanged(container, `<div class="text-xs text-white/50 text-center py-8">Esperando telemetría de coche...</div>`);
+    setHtmlIfChanged(container, `<div class="text-xs text-white/50 text-center py-8">Esperando telemetrÃ­a de coche...</div>`);
     return;
   }
 
@@ -861,15 +861,15 @@ export function renderCarTelemetryDock(container: HTMLElement, state: IrsdkCompu
     setHtmlIfChanged(container, `
       <div class="space-y-2 select-none">
         <div class="flex items-center justify-between border-b border-white/10 pb-1.5">
-          <span class="px-1.5 py-0.5 rounded bg-sky-500/20 border border-sky-400/50 text-sky-300 text-[10px] font-bold">Stint: L${stintLaps} · Pits: ${pits}</span>
+          <span class="px-1.5 py-0.5 rounded bg-sky-500/20 border border-sky-400/50 text-sky-300 text-[10px] font-bold">Stint: L${stintLaps} Â· Pits: ${pits}</span>
           <strong class="text-[13px] text-white truncate max-w-[200px]">#${drv?.carNumber || "?"} ${drv?.abbrevName || "Piloto"}</strong>
         </div>
         <div class="grid grid-cols-3 gap-2 text-center py-2">
-          <div><span class="block text-[9px] text-white/55">POSICIÓN</span><strong class="text-[15px] text-emerald-400">P${pos > 0 ? pos : "-"}</strong></div>
+          <div><span class="block text-[9px] text-white/55">POSICIÃ“N</span><strong class="text-[15px] text-emerald-400">P${pos > 0 ? pos : "-"}</strong></div>
           <div><span class="block text-[9px] text-white/55">VUELTA</span><strong class="text-[15px] text-white">${lap}</strong></div>
-          <div><span class="block text-[9px] text-white/55">ÚLTIMA</span><strong class="text-[13px] text-sky-300">${lastStr}</strong></div>
+          <div><span class="block text-[9px] text-white/55">ÃšLTIMA</span><strong class="text-[13px] text-sky-300">${lastStr}</strong></div>
         </div>
-        <p class="text-[10px] text-white/60 text-center">Telemetría privada de rival</p>
+        <p class="text-[10px] text-white/60 text-center">TelemetrÃ­a privada de rival</p>
       </div>
     `);
     return;
@@ -890,7 +890,7 @@ export function renderCarTelemetryDock(container: HTMLElement, state: IrsdkCompu
     ? "--"
     : needStop
       ? `+${fuel.fuelToAdd.toFixed(1)} L`
-      : `OK · +${surplus.toFixed(1)} L`;
+      : `OK Â· +${surplus.toFixed(1)} L`;
 
   const temps = frame.tireTempsC && frame.tireTempsC.length === 12
     ? frame.tireTempsC
@@ -917,12 +917,12 @@ export function renderCarTelemetryDock(container: HTMLElement, state: IrsdkCompu
         <div class="flex items-baseline justify-between gap-1">
           <span class="text-[10px] font-bold text-white/60">${label}</span>
           <span class="text-[14px] font-black leading-none ${w > 60 ? "text-emerald-400" : w > 30 ? "text-amber-400" : "text-rose-400"}">${w}%</span>
-          <span class="text-[11px] font-bold leading-none" style="color:${tempColor(avgT)}">${avgT}°C</span>
+          <span class="text-[11px] font-bold leading-none" style="color:${tempColor(avgT)}">${avgT}Â°C</span>
         </div>
         <div class="grid grid-cols-3 gap-1">
-          <div class="h-[6px] rounded-[1px]" style="background:${tempColor(i)}" title="Int ${Math.round(i)}°C"></div>
-          <div class="h-[6px] rounded-[1px]" style="background:${tempColor(m)}" title="Mid ${Math.round(m)}°C"></div>
-          <div class="h-[6px] rounded-[1px]" style="background:${tempColor(o)}" title="Ext ${Math.round(o)}°C"></div>
+          <div class="h-[6px] rounded-[1px]" style="background:${tempColor(i)}" title="Int ${Math.round(i)}Â°C"></div>
+          <div class="h-[6px] rounded-[1px]" style="background:${tempColor(m)}" title="Mid ${Math.round(m)}Â°C"></div>
+          <div class="h-[6px] rounded-[1px]" style="background:${tempColor(o)}" title="Ext ${Math.round(o)}Â°C"></div>
         </div>
       </div>
     `;
@@ -944,7 +944,7 @@ export function renderCarTelemetryDock(container: HTMLElement, state: IrsdkCompu
           <strong class="block text-[13px] font-bold text-sky-300 leading-tight">${avgStr}</strong>
         </div>
         <div class="text-right">
-          <span class="block text-[9px] text-white/55 uppercase mb-0.5">Añadir en Box</span>
+          <span class="block text-[9px] text-white/55 uppercase mb-0.5">AÃ±adir en Box</span>
           <span class="inline-block px-2 py-0.5 rounded-[3px] text-[17px] font-black leading-none ${pitPillCls}">${pitPillTxt}</span>
         </div>
       </div>
@@ -1045,13 +1045,13 @@ export function renderRejoinHelperWidget(
   const nearestSec = behind.length > 0 ? Math.abs(behind[0].deltaSeconds) : forcePreview ? 1.8 : 99;
 
   let cls = "border-emerald-500/70 bg-emerald-950/92 text-emerald-200";
-  let msg = nearestSec >= 20 ? "✓ PISTA DESPEJADA (>20s)" : `✓ TRÁFICO LIBRE EN ${nearestSec.toFixed(1)}s`;
+  let msg = nearestSec >= 20 ? "âœ“ PISTA DESPEJADA (>20s)" : `âœ“ TRÃFICO LIBRE EN ${nearestSec.toFixed(1)}s`;
   if (nearestSec < 3.0) {
     cls = "border-rose-500 bg-rose-950/95 text-rose-100 animate-pulse";
-    msg = `⚠ ¡NO ENTRAR! COCHE EN ${nearestSec.toFixed(1)}s`;
+    msg = `âš  Â¡NO ENTRAR! COCHE EN ${nearestSec.toFixed(1)}s`;
   } else if (nearestSec < 6.0) {
     cls = "border-amber-500 bg-amber-950/95 text-amber-100";
-    msg = `PRECAUCIÓN · COCHE EN ${nearestSec.toFixed(1)}s`;
+    msg = `PRECAUCIÃ“N Â· COCHE EN ${nearestSec.toFixed(1)}s`;
   }
 
   container.style.display = "block";
@@ -1090,7 +1090,7 @@ export function renderFasterCarAlertWidget(
   setHtmlIfChanged(container, `
     <div class="px-3 py-1.5 rounded-[4px] border border-sky-400/70 bg-sky-950/90 text-sky-100 font-mono text-[11px] font-black whitespace-nowrap shadow-xl flex items-center gap-2 animate-pulse select-none">
       <span class="px-1.5 py-0.5 rounded-[2px] bg-sky-400 text-slate-950 text-[10px]">${clsName}</span>
-      <span>▲ COCHE RÁPIDO #${carNum} EN ${gap}s</span>
+      <span>â–² COCHE RÃPIDO #${carNum} EN ${gap}s</span>
     </div>
   `);
 }
@@ -1172,7 +1172,7 @@ export function renderLapTimesWidget(
       ? recent
           .map((l) => {
             const delta = avgSec > 0 ? l.timeSec - avgSec : 0;
-            const dStr = avgSec > 0 ? `${delta >= 0 ? "+" : ""}${delta.toFixed(2)}s` : "—";
+            const dStr = avgSec > 0 ? `${delta >= 0 ? "+" : ""}${delta.toFixed(2)}s` : "â€”";
             const dCls = delta <= -0.05 ? "text-emerald-400" : delta >= 0.15 ? "text-rose-400" : "text-white/75";
             const isBest = bestLapSec > 0 && Math.abs(l.timeSec - bestLapSec) < 0.005;
             return `
@@ -1190,12 +1190,12 @@ export function renderLapTimesWidget(
     <div class="w-[240px] rounded-[4px] border border-white/10 bg-[#080a0e]/88 p-2 font-mono text-white select-none tabular-nums">
       <div class="flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-emerald-400 pb-1 mb-1 border-b border-white/10">
         <span>Historial Vueltas</span>
-        <span class="text-white/60">Últ. 5</span>
+        <span class="text-white/60">Ãšlt. 5</span>
       </div>
       <div class="space-y-0.5">${rows}</div>
       <div class="mt-1.5 pt-1 border-t border-white/10 flex items-center justify-between text-[10px]">
         <span class="text-fuchsia-300">Mejor: <strong>${fmt(bestLapSec)}</strong></span>
-        <span class="text-sky-300">Ópt: <strong>${fmt(optLapSec)}</strong></span>
+        <span class="text-sky-300">Ã“pt: <strong>${fmt(optLapSec)}</strong></span>
       </div>
     </div>
   `);
@@ -1341,7 +1341,8 @@ export function renderRaceDualDeltaWidget(container: HTMLElement, state: IrsdkCo
   setHtmlIfChanged(container, `
     <div class="px-3 py-1 rounded-[3px] border border-white/10 bg-[#080a0e]/88 text-white font-mono text-[14px] font-bold tabular-nums flex items-center gap-4 whitespace-nowrap select-none shadow-lg">
       ${carAhead ? `<span>DELANTE (P${carAhead.classPosition || myClassRank}): <strong class="text-white">+${aheadGap.toFixed(2)}s</strong> ${fmtTrend(dualDeltaMemory.aheadTrend)}</span>` : ""}
-      ${classLeader ? `<span>LÍDER (P1): <strong class="text-amber-300">+${leaderGap.toFixed(2)}s</strong> ${fmtTrend(dualDeltaMemory.leaderTrend)}</span>` : ""}
+      ${classLeader ? `<span>LÃDER (P1): <strong class="text-amber-300">+${leaderGap.toFixed(2)}s</strong> ${fmtTrend(dualDeltaMemory.leaderTrend)}</span>` : ""}
     </div>
   `);
 }
+
