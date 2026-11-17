@@ -1167,7 +1167,25 @@ const topAlbums = [...PADDOCK_ALBUMS].sort((a, b) => (b.views ?? 0) - (a.views ?
             }
           }
 
-          const photos = data.photos.filter((p) => p.imageUrl && !usedForAlbums.has(p.imageUrl));
+          const rawPhotos = data.photos.filter((p) => p.imageUrl && !usedForAlbums.has(p.imageUrl));
+          // Interleave by car so the 3 visible cards show varied cars instead of 3-5 of the same model
+          const buckets = new Map();
+          for (const p of rawPhotos) {
+            const k = p.car || p.category || "other";
+            if (!buckets.has(k)) buckets.set(k, []);
+            buckets.get(k).push(p);
+          }
+          const photos = [];
+          let added = true;
+          while (added) {
+            added = false;
+            for (const list of buckets.values()) {
+              if (list.length > 0) {
+                photos.push(list.shift());
+                added = true;
+              }
+            }
+          }
           if (photos.length === 0) {
             trackEl.innerHTML = `
               <div class="w-full rounded-2xl border border-dashed border-[var(--r-line)] bg-[var(--r-surface)]/60 p-8 text-center space-y-3">
