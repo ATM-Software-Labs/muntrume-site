@@ -819,6 +819,11 @@ const topAlbums = [...PADDOCK_ALBUMS].sort((a, b) => (b.views ?? 0) - (a.views ?
           <p class="col-span-full text-xs font-mono text-[var(--r-muted)]">Todavía no hay álbumes publicados.</p>
         </div>
       </div>
+
+      <p class="pt-3 border-t border-[var(--r-line)]/60 text-[11px] font-mono text-[var(--r-muted)] flex flex-wrap items-center justify-between gap-2">
+        <span>Imágenes oficiales de prensa cortesía de iRacing.com Motorsport Simulations. Todos los derechos pertenecen a sus respectivos propietarios.</span>
+        <a href="https://www.iracing.com/brand-kit/" target="_blank" rel="noopener noreferrer nofollow" class="text-[var(--r-accent)] hover:underline">Brand Kit Oficial ↗</a>
+      </p>
     </section>
 
     <style>
@@ -1173,7 +1178,8 @@ const topAlbums = [...PADDOCK_ALBUMS].sort((a, b) => (b.views ?? 0) - (a.views ?
             return;
           }
           trackEl.innerHTML = photos.map((p) => {
-            const safeSrc = p.sourceUrl ? `<a href="${p.sourceUrl}" target="_blank" rel="noopener noreferrer nofollow" class="underline hover:text-white">Ver fuente ↗</a>` : "";
+            const officialLabel = p.isOfficialPress ? "Media Oficial · iRacing.com ↗" : "Ver fuente ↗";
+            const safeSrc = p.sourceUrl ? `<a href="${p.sourceUrl}" target="_blank" rel="noopener noreferrer nofollow" class="${p.isOfficialPress ? 'text-[var(--r-accent)] font-mono' : ''} underline hover:text-white">${officialLabel}</a>` : "";
             return `
               <article class="paddock-snap-item group rounded-xl overflow-hidden bg-[var(--r-surface)] transition-all duration-300" style="border: 1px solid rgba(255, 255, 255, 0.08);">
                 <button type="button" data-preview-src="${p.imageUrl}" data-preview-title="${p.title}" data-preview-sub="${p.track || p.car || 'Muntrume Motorsport'}" data-preview-id="community:${p.id}" class="relative block w-full aspect-video overflow-hidden bg-[#090d12] cursor-zoom-in text-left">
