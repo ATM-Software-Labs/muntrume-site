@@ -36,7 +36,7 @@ function renderLicenseIrBlock(licString: string | undefined, iRatingExact?: numb
   const irVal = iRatingExact && iRatingExact > 0 ? String(Math.round(iRatingExact)) : (iRatingStr || "");
   const irHtml = showIr && irVal ? `<span class="mmt-ir-exact">${irVal}</span>` : "";
   if (!licHtml && !irHtml) return "";
-  return `<span class="mmt-lic-ir-block">${licHtml}${irHtml}</span>`;
+  return `<span class="mmt-lic-ir-block inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[3px] bg-[#0284c7] text-white font-bold text-[10px] tabular-nums">${licHtml}${irHtml}</span>`;
 }
 
 const gpuPedalsEngine = new GpuPedalsEngine();
@@ -65,6 +65,7 @@ function renderCompoundBadge(compound: number | undefined): string {
  * Renders the Relative Radar widget into target DOM container
  */
 export function renderRelativeWidget(container: HTMLElement, state: IrsdkComputedState | null): void {
+  const relIncPill = renderIncidentPill(state);
   if (!state || !state.relative || state.relative.entries.length === 0) {
     container.innerHTML = `
       <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-white/10 text-[10px] uppercase font-bold tracking-wider">
@@ -101,7 +102,7 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
     <div class="mmt-rel-header flex items-center justify-between gap-2 whitespace-nowrap">
       <span>${irEst ? `SOF ${formatSofShort(irEst.sof)}` : "REL"} Â· â± ${sessionClock}</span>
       <span>${trackTempStr ? `${trackTempStr} Â· ` : ""}${isReplay ? "Replay" : sessType}</span>
-    </div>
+     ${relIncPill}</div>
   `;
 
   const anyWetCar = (state.frame.carIdxTireCompound || []).some((c) => c === 1);
@@ -178,11 +179,7 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
     .join("");
 
   const footerHtml = `
-    <div class="mmt-rel-footer">
-      <span>Lap: <strong class="text-white">${activeLap}</strong></span>
-      <span>${sessionClock}</span>
-      <span>${isReplay ? "Replay" : sessType}</span>
-    </div>
+    
   `;
 
   setHtmlWithFlipAnimation(container, `
