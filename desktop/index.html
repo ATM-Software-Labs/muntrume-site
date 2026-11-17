@@ -1004,6 +1004,7 @@
                     <input id="hudGhostCompare" type="checkbox" class="accent-[#00e699]" />
                     <span>Ghost Compare</span>
                   </label>
+                  <button id="btnCycleReplayHudMode" type="button" class="px-2.5 py-1 rounded-lg border border-r-line bg-r-bg/70 hover:border-r-accent text-[10.5px] font-mono font-bold text-r-text transition cursor-pointer" title="Alternar entre HUD Completo, HUD Limpio de Replay y Oculto (Ctrl+Alt+H)">HUD Replay: Completo (Ctrl+Alt+H)</button>
                 </div>
               </div>
 
@@ -1974,33 +1975,52 @@
           </div>
         </div>
         <div id="lcpBody" class="p-2.5 grid gap-1.5">
-          <div class="flex items-center gap-1.5" data-lcp-row="standings">
-            <span class="flex-1 px-2.5 py-1 rounded border border-white/15 bg-white/[0.03] text-xs font-medium text-center">Standings</span>
+          <div class="flex items-center gap-1" data-lcp-row="standings">
+            <span class="flex-1 px-2 py-1 rounded border border-white/15 bg-white/[0.03] text-xs font-medium text-center">Standings</span>
+            <button type="button" data-lcp-track="standings" class="px-1.5 h-6 rounded border border-white/20 text-[10px] font-mono font-bold" title="Mostrar en Pista">P</button>
+            <button type="button" data-lcp-replay="standings" class="px-1.5 h-6 rounded border border-white/20 text-[10px] font-mono font-bold" title="Mostrar en Replay">R</button>
             <button type="button" data-lcp-eye="standings" class="w-6 h-6 rounded-full border border-white/20 hover:border-r-accent text-[11px] flex items-center justify-center" title="Mostrar/Ocultar">👁</button>
             <button type="button" data-lcp-close="standings" class="w-6 h-6 rounded-full border border-white/20 hover:border-rose-400 text-[11px] flex items-center justify-center" title="Desactivar">✕</button>
           </div>
-          <div class="flex items-center gap-1.5" data-lcp-row="relative">
-            <span class="flex-1 px-2.5 py-1 rounded border border-white/15 bg-white/[0.03] text-xs font-medium text-center">Relatives</span>
+          <div class="flex items-center gap-1" data-lcp-row="relative">
+            <span class="flex-1 px-2 py-1 rounded border border-white/15 bg-white/[0.03] text-xs font-medium text-center">Relatives</span>
+            <button type="button" data-lcp-track="relative" class="px-1.5 h-6 rounded border border-white/20 text-[10px] font-mono font-bold" title="Mostrar en Pista">P</button>
+            <button type="button" data-lcp-replay="relative" class="px-1.5 h-6 rounded border border-white/20 text-[10px] font-mono font-bold" title="Mostrar en Replay">R</button>
             <button type="button" data-lcp-eye="relative" class="w-6 h-6 rounded-full border border-white/20 hover:border-r-accent text-[11px] flex items-center justify-center" title="Mostrar/Ocultar">👁</button>
             <button type="button" data-lcp-close="relative" class="w-6 h-6 rounded-full border border-white/20 hover:border-rose-400 text-[11px] flex items-center justify-center" title="Desactivar">✕</button>
           </div>
-          <div class="flex items-center gap-1.5" data-lcp-row="fuel">
-            <span class="flex-1 px-2.5 py-1 rounded border border-white/15 bg-white/[0.03] text-xs font-medium text-center">Fuel &amp; Pit Helper</span>
+          <div class="flex items-center gap-1" data-lcp-row="fuel">
+            <span class="flex-1 px-2 py-1 rounded border border-white/15 bg-white/[0.03] text-xs font-medium text-center">Fuel &amp; Pit</span>
+            <button type="button" data-lcp-track="fuel" class="px-1.5 h-6 rounded border border-white/20 text-[10px] font-mono font-bold" title="Mostrar en Pista">P</button>
+            <button type="button" data-lcp-replay="fuel" class="px-1.5 h-6 rounded border border-white/20 text-[10px] font-mono font-bold" title="Mostrar en Replay">R</button>
             <button type="button" data-lcp-eye="fuel" class="w-6 h-6 rounded-full border border-white/20 hover:border-r-accent text-[11px] flex items-center justify-center" title="Mostrar/Ocultar">👁</button>
             <button type="button" data-lcp-close="fuel" class="w-6 h-6 rounded-full border border-white/20 hover:border-rose-400 text-[11px] flex items-center justify-center" title="Desactivar">✕</button>
           </div>
-          <div class="flex items-center gap-1.5" data-lcp-row="radar">
-            <span class="flex-1 px-2.5 py-1 rounded border border-white/15 bg-white/[0.03] text-xs font-medium text-center">Proximity Radar</span>
+          <div class="flex items-center gap-1" data-lcp-row="trackmap">
+            <span class="flex-1 px-2 py-1 rounded border border-white/15 bg-white/[0.03] text-xs font-medium text-center">Track Map</span>
+            <button type="button" data-lcp-track="trackmap" class="px-1.5 h-6 rounded border border-white/20 text-[10px] font-mono font-bold" title="Mostrar en Pista">P</button>
+            <button type="button" data-lcp-replay="trackmap" class="px-1.5 h-6 rounded border border-white/20 text-[10px] font-mono font-bold" title="Mostrar en Replay">R</button>
+            <button type="button" data-lcp-eye="trackmap" class="w-6 h-6 rounded-full border border-white/20 hover:border-r-accent text-[11px] flex items-center justify-center" title="Mostrar/Ocultar">👁</button>
+            <button type="button" data-lcp-close="trackmap" class="w-6 h-6 rounded-full border border-white/20 hover:border-rose-400 text-[11px] flex items-center justify-center" title="Desactivar">✕</button>
+          </div>
+          <div class="flex items-center gap-1" data-lcp-row="radar">
+            <span class="flex-1 px-2 py-1 rounded border border-white/15 bg-white/[0.03] text-xs font-medium text-center">Radar</span>
+            <button type="button" data-lcp-track="radar" class="px-1.5 h-6 rounded border border-white/20 text-[10px] font-mono font-bold" title="Mostrar en Pista">P</button>
+            <button type="button" data-lcp-replay="radar" class="px-1.5 h-6 rounded border border-white/20 text-[10px] font-mono font-bold" title="Mostrar en Replay">R</button>
             <button type="button" data-lcp-eye="radar" class="w-6 h-6 rounded-full border border-white/20 hover:border-r-accent text-[11px] flex items-center justify-center" title="Mostrar/Ocultar">👁</button>
             <button type="button" data-lcp-close="radar" class="w-6 h-6 rounded-full border border-white/20 hover:border-rose-400 text-[11px] flex items-center justify-center" title="Desactivar">✕</button>
           </div>
-          <div class="flex items-center gap-1.5" data-lcp-row="inputs">
-            <span class="flex-1 px-2.5 py-1 rounded border border-white/15 bg-white/[0.03] text-xs font-medium text-center">Inputs + Marcha</span>
+          <div class="flex items-center gap-1" data-lcp-row="inputs">
+            <span class="flex-1 px-2 py-1 rounded border border-white/15 bg-white/[0.03] text-xs font-medium text-center">Inputs</span>
+            <button type="button" data-lcp-track="pedals" class="px-1.5 h-6 rounded border border-white/20 text-[10px] font-mono font-bold" title="Mostrar en Pista">P</button>
+            <button type="button" data-lcp-replay="pedals" class="px-1.5 h-6 rounded border border-white/20 text-[10px] font-mono font-bold" title="Mostrar en Replay">R</button>
             <button type="button" data-lcp-eye="inputs" class="w-6 h-6 rounded-full border border-white/20 hover:border-r-accent text-[11px] flex items-center justify-center" title="Mostrar/Ocultar">👁</button>
             <button type="button" data-lcp-close="inputs" class="w-6 h-6 rounded-full border border-white/20 hover:border-rose-400 text-[11px] flex items-center justify-center" title="Desactivar">✕</button>
           </div>
-          <div class="flex items-center gap-1.5" data-lcp-row="lights">
-            <span class="flex-1 px-2.5 py-1 rounded border border-white/15 bg-white/[0.03] text-xs font-medium text-center">Shift Lights &amp; Flags</span>
+          <div class="flex items-center gap-1" data-lcp-row="lights">
+            <span class="flex-1 px-2 py-1 rounded border border-white/15 bg-white/[0.03] text-xs font-medium text-center">Shift Lights</span>
+            <button type="button" data-lcp-track="digiflag" class="px-1.5 h-6 rounded border border-white/20 text-[10px] font-mono font-bold" title="Mostrar en Pista">P</button>
+            <button type="button" data-lcp-replay="digiflag" class="px-1.5 h-6 rounded border border-white/20 text-[10px] font-mono font-bold" title="Mostrar en Replay">R</button>
             <button type="button" data-lcp-eye="lights" class="w-6 h-6 rounded-full border border-white/20 hover:border-r-accent text-[11px] flex items-center justify-center" title="Mostrar/Ocultar">👁</button>
             <button type="button" data-lcp-close="lights" class="w-6 h-6 rounded-full border border-white/20 hover:border-rose-400 text-[11px] flex items-center justify-center" title="Desactivar">✕</button>
           </div>

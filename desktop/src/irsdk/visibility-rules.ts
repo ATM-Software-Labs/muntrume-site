@@ -10,12 +10,15 @@
  */
 
 export interface WidgetVisibilityRuleConfig {
+  hideInTrack?: boolean;
   hideInReplay: boolean;
   hideInQualy: boolean;
   hideInRaceLap1: boolean;
   hideInPitLane: boolean;
   lap1SectorThreshold: number; // default 0.33 (end of sector 1)
 }
+
+export type ReplayHudMode = "full" | "replay_clean" | "hidden";
 
 export type VisibilityWidgetId =
   | "relative"
@@ -25,7 +28,8 @@ export type VisibilityWidgetId =
   | "radar"
   | "pitbox"
   | "digiflag"
-  | "waveform";
+  | "waveform"
+  | "trackmap";
 
 export interface TelemetryContextState {
   isReplayPlaying: boolean;
@@ -39,6 +43,7 @@ export interface TelemetryContextState {
 
 export const DEFAULT_VISIBILITY_RULES: Record<VisibilityWidgetId, WidgetVisibilityRuleConfig> = {
   relative: {
+    hideInTrack: false,
     hideInReplay: true,
     hideInQualy: true,
     hideInRaceLap1: true,
@@ -46,13 +51,15 @@ export const DEFAULT_VISIBILITY_RULES: Record<VisibilityWidgetId, WidgetVisibili
     lap1SectorThreshold: 0.33,
   },
   standings: {
-    hideInReplay: true,
+    hideInTrack: false,
+    hideInReplay: false,
     hideInQualy: false,
     hideInRaceLap1: true,
     hideInPitLane: false,
     lap1SectorThreshold: 0.33,
   },
   fuel: {
+    hideInTrack: false,
     hideInReplay: true,
     hideInQualy: true,
     hideInRaceLap1: false,
@@ -60,13 +67,15 @@ export const DEFAULT_VISIBILITY_RULES: Record<VisibilityWidgetId, WidgetVisibili
     lap1SectorThreshold: 0.33,
   },
   pedals: {
-    hideInReplay: false,
+    hideInTrack: false,
+    hideInReplay: true,
     hideInQualy: false,
     hideInRaceLap1: false,
     hideInPitLane: false,
     lap1SectorThreshold: 0.33,
   },
   radar: {
+    hideInTrack: false,
     hideInReplay: true,
     hideInQualy: false,
     hideInRaceLap1: false,
@@ -74,6 +83,7 @@ export const DEFAULT_VISIBILITY_RULES: Record<VisibilityWidgetId, WidgetVisibili
     lap1SectorThreshold: 0.33,
   },
   pitbox: {
+    hideInTrack: false,
     hideInReplay: true,
     hideInQualy: false,
     hideInRaceLap1: false,
@@ -81,6 +91,7 @@ export const DEFAULT_VISIBILITY_RULES: Record<VisibilityWidgetId, WidgetVisibili
     lap1SectorThreshold: 0.33,
   },
   digiflag: {
+    hideInTrack: false,
     hideInReplay: true,
     hideInQualy: false,
     hideInRaceLap1: false,
@@ -88,6 +99,15 @@ export const DEFAULT_VISIBILITY_RULES: Record<VisibilityWidgetId, WidgetVisibili
     lap1SectorThreshold: 0.33,
   },
   waveform: {
+    hideInTrack: false,
+    hideInReplay: true,
+    hideInQualy: false,
+    hideInRaceLap1: false,
+    hideInPitLane: false,
+    lap1SectorThreshold: 0.33,
+  },
+  trackmap: {
+    hideInTrack: false,
     hideInReplay: false,
     hideInQualy: false,
     hideInRaceLap1: false,
@@ -102,6 +122,7 @@ export class VisibilityRulesEngine {
   private static instance: VisibilityRulesEngine;
   private rules: Record<VisibilityWidgetId, WidgetVisibilityRuleConfig>;
   private bossKeyActive = false; // Clean Screen panic mode
+  private replayHudMode: ReplayHudMode = "full";
   private listeners: Array<() => void> = [];
 
   private constructor() {
@@ -169,19 +190,45 @@ export class VisibilityRulesEngine {
     return this.bossKeyActive;
   }
 
+  public getReplayHudMode(): ReplayHudMode {
+    return this.replayHudMode;
+  }
+
+  public setReplayHudMode(mode: ReplayHudMode): void {
+    this.replayHudMode = mode;
+    this.notify();
+  }
+
+  public cycleReplayHudMode(): ReplayHudMode {
+    this.replayHudMode =
+      this.replayHudMode === "full"
+        ? "replay_clean"
+        : this.replayHudMode === "replay_clean"
+          ? "hidden"
+          : "full";
+    this.notify();
+    return this.replayHudMode;
+  }
+
   /**
    * Evaluates contextual conditions and decides whether widget should be visible
    */
   public evaluateVisibility(widgetId: VisibilityWidgetId, ctx: TelemetryContextState): boolean {
-    // 1. Boss Key / Clean Screen overrides everything
-    if (this.bossKeyActive) {
+    // 1. Boss Key / Clean Screen or "hidden" Replay HUD mode overrides everything
+    if (this.bossKeyActive || this.replayHudMode === "hidden") {
       return false;
     }
 
     const rule = this.rules[widgetId] || DEFAULT_VISIBILITY_RULES[widgetId];
+    const inReplay = ctx.isReplayPlaying || ctx.sessionState === 6 || this.replayHudMode === "replay_clean";
 
-    // 2. Hide in Replays (IsReplayPlaying === true or SessionState === 6 / InGarage)
-    if (rule.hideInReplay && (ctx.isReplayPlaying || ctx.sessionState === 6)) {
+    // 2a. Hide in Replays (IsReplayPlaying === true, SessionState === 6, or replay_clean)
+    if (rule.hideInReplay && inReplay) {
+      return false;
+    }
+
+    // 2b. Hide while driving on track
+    if (rule.hideInTrack && !inReplay) {
       return false;
     }
 

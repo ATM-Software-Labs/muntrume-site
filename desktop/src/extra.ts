@@ -1949,11 +1949,26 @@ function applyHudCustomAppearance(): void {
   });
   const panel = document.getElementById("floatLayersControlPanel");
   if (panel) {
+    const visRules = VisibilityRulesEngine.getInstance().getRules();
     panel.querySelectorAll<HTMLButtonElement>("[data-lcp-eye]").forEach((btn) => {
       const key = btn.dataset.lcpEye || "";
       const active = !disabled.has(key);
       btn.style.opacity = active ? "1" : "0.35";
       btn.style.borderColor = active ? "rgba(0,230,153,0.6)" : "rgba(255,255,255,0.2)";
+    });
+    panel.querySelectorAll<HTMLButtonElement>("[data-lcp-track]").forEach((btn) => {
+      const id = btn.dataset.lcpTrack as keyof typeof visRules;
+      const on = !visRules[id]?.hideInTrack;
+      btn.style.opacity = on ? "1" : "0.35";
+      btn.style.borderColor = on ? "rgba(16,185,129,0.75)" : "rgba(255,255,255,0.2)";
+      btn.style.color = on ? "#10b981" : "#94a3b8";
+    });
+    panel.querySelectorAll<HTMLButtonElement>("[data-lcp-replay]").forEach((btn) => {
+      const id = btn.dataset.lcpReplay as keyof typeof visRules;
+      const on = !visRules[id]?.hideInReplay;
+      btn.style.opacity = on ? "1" : "0.35";
+      btn.style.borderColor = on ? "rgba(56,189,248,0.75)" : "rgba(255,255,255,0.2)";
+      btn.style.color = on ? "#38bdf8" : "#94a3b8";
     });
   }
 }
@@ -1997,6 +2012,26 @@ function wireLayersControlPanel(): void {
         if (disabled.has(key)) disabled.delete(key);
         else disabled.add(key);
         saveDisabledWidgets(disabled);
+        applyHudCustomAppearance();
+      });
+    });
+    panel.querySelectorAll<HTMLButtonElement>("[data-lcp-track]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.lcpTrack as any;
+        if (!id) return;
+        const vis = VisibilityRulesEngine.getInstance();
+        const cur = vis.getWidgetRule(id);
+        vis.setWidgetRule(id, { hideInTrack: !cur.hideInTrack });
+        applyHudCustomAppearance();
+      });
+    });
+    panel.querySelectorAll<HTMLButtonElement>("[data-lcp-replay]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.lcpReplay as any;
+        if (!id) return;
+        const vis = VisibilityRulesEngine.getInstance();
+        const cur = vis.getWidgetRule(id);
+        vis.setWidgetRule(id, { hideInReplay: !cur.hideInReplay });
         applyHudCustomAppearance();
       });
     });
@@ -2950,11 +2985,33 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
       centerDock.style.alignItems = "flex-start";
     }
   }
-  // Global shortcut for Streamer Mode (Ctrl+Shift+S or F8)
+  const updateReplayHudModeBtn = () => {
+    const btn = document.getElementById("btnCycleReplayHudMode");
+    if (!btn) return;
+    const m = VisibilityRulesEngine.getInstance().getReplayHudMode();
+    btn.textContent =
+      m === "full"
+        ? "HUD Replay: Completo (Ctrl+Alt+H)"
+        : m === "replay_clean"
+          ? "HUD Replay: Limpio (Ctrl+Alt+H)"
+          : "HUD Replay: Oculto (Ctrl+Alt+H)";
+  };
+  document.getElementById("btnCycleReplayHudMode")?.addEventListener("click", () => {
+    VisibilityRulesEngine.getInstance().cycleReplayHudMode();
+    updateReplayHudModeBtn();
+  });
+  updateReplayHudModeBtn();
+
+  // Global shortcuts: Streamer (Ctrl+Shift+S / F8), Replay HUD 3-mode (Ctrl+Alt+H), Boss Key (Ctrl+H)
   window.addEventListener("keydown", (e: KeyboardEvent) => {
     if ((e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "s") || e.key === "F8") {
       const active = SmartLayoutManager.getInstance().toggleStreamerMode();
       console.log(`[Streamer Mode] ${active ? "ACTIVADO" : "DESACTIVADO"}`);
+    } else if (e.ctrlKey && e.altKey && e.key.toLowerCase() === "h") {
+      e.preventDefault();
+      const mode = VisibilityRulesEngine.getInstance().cycleReplayHudMode();
+      updateReplayHudModeBtn();
+      console.log(`[Replay HUD Mode] ${mode}`);
     } else if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "h") {
       e.preventDefault();
       onClose?.();
@@ -3900,13 +3957,14 @@ function safeRenderWidget(el: HTMLElement | null, fn: () => void): void {
       const carPath = irsdkState.activeDriver?.carPath || "";
       SmartLayoutManager.getInstance().matchAndActivate(category, sessionType, carPath);
 
-      // Bloque 21: Contextual visibility rules (evaluated at 4 Hz, not 60 Hz)
+      // Bloque 21 + Prompt 203: Contextual visibility rules & Replay Safe Zones (evaluated at 4 Hz)
       const vis = VisibilityRulesEngine.getInstance();
       const showReplays = localStorage.getItem("mmt-hud-show-replays") !== "0";
       const showAllSess = localStorage.getItem("mmt-hud-show-all-sessions") !== "0";
       const disabledWidgets = loadDisabledWidgets();
+      const isReplayMode = Boolean(irsdkState.isReplayPlaying || !frame.isOnTrack || frame.sessionState === 6);
       const visCtx = {
-        isReplayPlaying: showReplays ? false : irsdkState.isReplayPlaying,
+        isReplayPlaying: isReplayMode,
         sessionType: showAllSess ? "Race" : (session.sessionType || ""),
         sessionState: frame.sessionState || 4,
         camCarIdx: irsdkState.camCarIdx,
@@ -3915,27 +3973,61 @@ function safeRenderWidget(el: HTMLElement | null, fn: () => void): void {
         onPitRoad: irsdkState.onPitRoad,
       };
 
+      const replayAllowed = !isReplayMode || showReplays;
       const ruleStdPitOnly = localStorage.getItem("mmt-rule-std-pit-only") === "1";
       const ruleRelTrackOnly = localStorage.getItem("mmt-rule-rel-track-only") === "1";
       const ruleFuelReserveOnly = localStorage.getItem("mmt-rule-fuel-reserve-only") === "1";
       const activeTrackOrReplay = Boolean(frame.isOnTrack || irsdkState.isReplayPlaying);
-      const stdShow = !disabledWidgets.has("standings") && vis.evaluateVisibility("standings", visCtx) && (!ruleStdPitOnly || irsdkState.onPitRoad || irsdkState.isReplayPlaying || !frame.isOnTrack);
-      const relShow = !disabledWidgets.has("relative") && vis.evaluateVisibility("relative", visCtx) && (!ruleRelTrackOnly || activeTrackOrReplay);
-      const inpShow = !disabledWidgets.has("inputs") && vis.evaluateVisibility("pedals", visCtx) && (!ruleRelTrackOnly || activeTrackOrReplay);
+      const stdShow = replayAllowed && !disabledWidgets.has("standings") && vis.evaluateVisibility("standings", visCtx) && (!ruleStdPitOnly || irsdkState.onPitRoad || irsdkState.isReplayPlaying || !frame.isOnTrack);
+      const relShow = replayAllowed && !disabledWidgets.has("relative") && vis.evaluateVisibility("relative", visCtx) && (!ruleRelTrackOnly || activeTrackOrReplay);
+      const inpShow = replayAllowed && !disabledWidgets.has("inputs") && vis.evaluateVisibility("pedals", visCtx) && (!ruleRelTrackOnly || activeTrackOrReplay);
       const fuelReserveOk = !ruleFuelReserveOnly || !irsdkState.fuel.isValid || irsdkState.fuel.lapsRemaining <= 5 || irsdkState.fuel.fuelToAdd > 0;
-      const fuelShow = !disabledWidgets.has("fuel") && vis.evaluateVisibility("fuel", visCtx) && fuelReserveOk;
+      const fuelShow = replayAllowed && !disabledWidgets.has("fuel") && vis.evaluateVisibility("fuel", visCtx) && fuelReserveOk;
+      const mapShow = replayAllowed && !disabledWidgets.has("trackmap") && vis.evaluateVisibility("trackmap", visCtx);
+      const waveShow = replayAllowed && !disabledWidgets.has("waveform") && vis.evaluateVisibility("waveform", visCtx);
+      const cockpitVisible = replayAllowed && (!isReplayMode || vis.getReplayHudMode() === "full");
 
       vis.applyElementVisibility(document.getElementById("floatRelativeCard"), floatEditMode || relShow);
       vis.applyElementVisibility(document.getElementById("floatStandingsCard"), floatEditMode || stdShow);
       vis.applyElementVisibility(document.getElementById("floatCarTelemetryDock"), floatEditMode || fuelShow);
       vis.applyElementVisibility(document.getElementById("floatFuelCard"), floatEditMode || fuelShow);
-      vis.applyElementVisibility(document.getElementById("floatTireStatusCard"), !disabledWidgets.has("tires") && vis.evaluateVisibility("fuel", visCtx));
-      vis.applyElementVisibility(document.getElementById("floatCenterStatusDock"), !disabledWidgets.has("conditions"));
-      vis.applyElementVisibility(document.getElementById("floatTrackMapCard"), !disabledWidgets.has("trackmap"));
+      vis.applyElementVisibility(document.getElementById("floatTireStatusCard"), replayAllowed && !disabledWidgets.has("tires") && vis.evaluateVisibility("fuel", visCtx));
+      vis.applyElementVisibility(document.getElementById("floatCenterStatusDock"), replayAllowed && !disabledWidgets.has("conditions") && vis.getReplayHudMode() !== "hidden");
+      vis.applyElementVisibility(document.getElementById("floatTrackMapCard"), floatEditMode || mapShow);
       vis.applyElementVisibility(document.getElementById("floatInputsCard"), floatEditMode || inpShow);
-      vis.applyElementVisibility(document.getElementById("floatWaveformCard"), !disabledWidgets.has("waveform") && vis.evaluateVisibility("waveform", visCtx));
-      vis.applyElementVisibility(document.getElementById("floatClusterCard"), !disabledWidgets.has("cluster"));
-      vis.applyElementVisibility(document.getElementById("floatShiftLightsRow"), !disabledWidgets.has("lights"));
+      vis.applyElementVisibility(document.getElementById("floatWaveformCard"), floatEditMode || waveShow);
+      vis.applyElementVisibility(document.getElementById("floatClusterCard"), floatEditMode || (cockpitVisible && !disabledWidgets.has("cluster")));
+      vis.applyElementVisibility(document.getElementById("floatShiftLightsRow"), floatEditMode || (cockpitVisible && !disabledWidgets.has("lights")));
+
+      // Prompt 203: Automatic Replay Safe Zones (top >= 92px, bottom >= 140px)
+      const safeActive = isReplayMode && !floatEditMode;
+      for (const id of ["floatStandingsCard", "floatRelativeCard", "floatCenterStatusDock"]) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        if (safeActive) {
+          if (el.dataset.inCarTop === undefined) el.dataset.inCarTop = el.style.top || "";
+          const curTop = el.getBoundingClientRect().top;
+          if (curTop < 92) el.style.top = "92px";
+        } else if (el.dataset.inCarTop !== undefined) {
+          el.style.top = el.dataset.inCarTop;
+          delete el.dataset.inCarTop;
+        }
+      }
+      for (const id of ["floatCarTelemetryDock", "floatFuelCard", "floatInputsCard", "floatWaveformCard", "floatClusterCard", "floatTrackMapCard"]) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        if (safeActive) {
+          if (el.dataset.inCarBottom === undefined) el.dataset.inCarBottom = el.style.bottom || "";
+          const rect = el.getBoundingClientRect();
+          if (rect.height > 0 && rect.bottom > window.innerHeight - 135) {
+            el.style.top = "auto";
+            el.style.bottom = "140px";
+          }
+        } else if (el.dataset.inCarBottom !== undefined) {
+          el.style.bottom = el.dataset.inCarBottom;
+          delete el.dataset.inCarBottom;
+        }
+      }
       const pitCard = document.getElementById("floatPitHelperCard");
       if (pitCard) {
         pitCard.hidden = !Boolean(irsdkState.onPitRoad);
