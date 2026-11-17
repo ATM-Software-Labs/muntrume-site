@@ -70,7 +70,12 @@ import Layout from "../../layouts/Layout.astro";
         </div>
         <div class="flex flex-wrap items-center gap-2">
           <span id="agSyncStatusPill" class="px-3 py-1.5 rounded-lg border border-white/15 bg-black/50 text-[11px] font-mono text-emerald-300">Cola pendiente: … · Coches en D1: … · Fotos publicadas: …</span>
+          <label class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-white/15 bg-black/40 text-[11px] font-mono text-white/85 cursor-pointer">
+            <input type="checkbox" id="agIncludeHistorical" class="accent-emerald-500" />
+            <span>Incluir Archivo Histórico Completo (Todos los Años)</span>
+          </label>
           <button type="button" id="agFullArchiveBtn" class="px-3 py-1.5 rounded-lg bg-emerald-500 text-slate-950 text-xs font-mono font-bold hover:bg-emerald-400 transition cursor-pointer">🚀 Sincronizar Todo Automáticamente</button>
+          <button type="button" id="agAiEnhanceAllBtn" class="px-3 py-1.5 rounded-lg bg-violet-500 text-white text-xs font-mono font-bold hover:bg-violet-400 transition cursor-pointer">✨ Procesar Todas las Fotos con IA (0 / 0)</button>
           <button type="button" id="agResetCursorBtn" class="px-3 py-1.5 rounded-lg border border-white/20 text-white/80 text-xs font-mono hover:border-emerald-400 transition cursor-pointer">↺ Reiniciar Cursor desde Página 1</button>
           <button type="button" id="agVerifyCarsBtn" class="px-3 py-1.5 rounded-lg border border-sky-400/40 bg-sky-500/15 text-sky-300 text-xs font-mono font-bold hover:bg-sky-500/25 transition cursor-pointer">🩺 Verificar Carga de Todos los Coches</button>
           <button type="button" id="agAutoSyncCatalogBtn" class="px-3 py-1.5 rounded-lg bg-sky-500/20 border border-sky-500/40 text-sky-300 text-xs font-mono font-bold hover:bg-sky-500/30 transition cursor-pointer">⚡ Sync por Marca</button>
@@ -128,18 +133,20 @@ import Layout from "../../layouts/Layout.astro";
           }
           grid.innerHTML = photos.map((p) => `
             <article class="rounded-xl border border-white/10 bg-[#0d1117] overflow-hidden flex flex-col justify-between" data-photo-id="${p.id}">
-              <div class="relative aspect-video bg-black">
-                <img src="${p.imageUrl}" alt="${p.title}" class="w-full h-full object-cover" loading="lazy" />
+              <div class="relative aspect-video bg-black overflow-hidden">
+                <img src="${p.imageUrl}" alt="${p.title}" referrerpolicy="no-referrer" class="w-full h-full object-cover" style="${p.hasLegacyWatermark && p.cleanCrop && !p.aiEnhanced ? 'transform:scale(1.13);transform-origin:center;' : ''}" loading="lazy" />
                 <label class="absolute top-2 left-2 bg-black/75 px-2 py-1 rounded flex items-center gap-1.5 text-[11px] font-mono text-white">
                   <input type="checkbox" class="ag-bulk-chk accent-emerald-500" value="${p.id}" /> Sel.
                 </label>
-                ${p.featured ? '<span class="absolute top-2 right-2 px-2 py-0.5 rounded bg-amber-500 text-slate-950 text-[10px] font-bold">DESTACADA</span>' : ''}
+                ${p.aiEnhanced ? '<span class="absolute top-2 right-2 px-2 py-0.5 rounded bg-violet-500 text-white text-[10px] font-bold">IA HD</span>' : p.featured ? '<span class="absolute top-2 right-2 px-2 py-0.5 rounded bg-amber-500 text-slate-950 text-[10px] font-bold">DESTACADA</span>' : ''}
               </div>
               <div class="p-3 space-y-2 text-xs">
                 <strong class="block text-white truncate">${p.title}</strong>
                 <span class="block text-[11px] font-mono text-white/60">${p.authorName} · ${p.car || p.category}</span>
                 <div class="flex flex-wrap gap-1.5 pt-1">
-                  <button type="button" data-act="publish" data-id="${p.id}" class="px-2.5 py-1 rounded bg-emerald-500 text-slate-950 font-bold text-[11px] cursor-pointer">✓ Publicar en Paddock</button>
+                  <button type="button" data-act="publish" data-id="${p.id}" class="px-2.5 py-1 rounded bg-emerald-500 text-slate-950 font-bold text-[11px] cursor-pointer">✓ Publicar</button>
+                  <button type="button" data-act="toggle-crop" data-id="${p.id}" class="px-2.5 py-1 rounded border border-sky-400/50 text-sky-300 text-[11px] cursor-pointer">Recorte limpio sin sello: ${p.cleanCrop ? 'ON' : 'OFF'}</button>
+                  <button type="button" data-act="ai-enhance" data-id="${p.id}" class="px-2.5 py-1 rounded border border-violet-400/50 text-violet-300 text-[11px] cursor-pointer">✨ Mejorar y Quitar Marca de Agua con IA</button>
                   <button type="button" data-act="feature" data-id="${p.id}" class="px-2.5 py-1 rounded border border-amber-400/50 text-amber-300 text-[11px] cursor-pointer">Destacar</button>
                   <button type="button" data-act="delete" data-id="${p.id}" class="px-2.5 py-1 rounded border border-rose-500/50 text-rose-300 text-[11px] cursor-pointer">✕ Descartar</button>
                 </div>
@@ -156,12 +163,30 @@ import Layout from "../../layouts/Layout.astro";
         if (!btn) return;
         const action = btn.getAttribute("data-act");
         const id = btn.getAttribute("data-id");
-        await fetch(`${API}/api/gallery/admin/action`, {
-          method: "POST",
-          headers: authHeaders(),
-          credentials: "include",
-          body: JSON.stringify({ action, id }),
-        });
+        if (action === "toggle-crop") {
+          await fetch(`${API}/api/gallery/${encodeURIComponent(id)}/toggle-crop`, {
+            method: "POST",
+            headers: authHeaders(),
+            credentials: "include",
+            body: JSON.stringify({}),
+          });
+        } else if (action === "ai-enhance") {
+          btn.disabled = true;
+          btn.textContent = "Procesando IA…";
+          await fetch(`${API}/api/gallery/ai-enhance`, {
+            method: "POST",
+            headers: authHeaders(),
+            credentials: "include",
+            body: JSON.stringify({ photoId: id }),
+          });
+        } else {
+          await fetch(`${API}/api/gallery/admin/action`, {
+            method: "POST",
+            headers: authHeaders(),
+            credentials: "include",
+            body: JSON.stringify({ action, id }),
+          });
+        }
         loadList();
       });
 
@@ -243,6 +268,7 @@ import Layout from "../../layouts/Layout.astro";
         const pctEl = document.getElementById("agArchivePct");
         const barEl = document.getElementById("agArchiveProgressBar");
         const pillEl = document.getElementById("agSyncStatusPill");
+        const includeHist = Boolean(document.getElementById("agIncludeHistorical")?.checked);
         btn.disabled = true;
         btn.textContent = "Sincronizando micro-lotes…";
         wrap?.classList.remove("hidden");
@@ -250,6 +276,14 @@ import Layout from "../../layouts/Layout.astro";
         let totalEnqueued = 0;
         let retries = 0;
         try {
+          if (includeHist) {
+            await fetch(`${API}/api/gallery/sync-official`, {
+              method: "POST",
+              headers: authHeaders(),
+              credentials: "include",
+              body: JSON.stringify({ reset: true }),
+            }).catch(() => {});
+          }
           while (true) {
             let resp;
             try {
@@ -296,13 +330,51 @@ import Layout from "../../layouts/Layout.astro";
           .then((r) => (r.ok ? r.json() : null))
           .then((d) => {
             const pillEl = document.getElementById("agSyncStatusPill");
+            const aiBtn = document.getElementById("agAiEnhanceAllBtn");
             if (pillEl && d && d.success) {
               pillEl.textContent = `Cola pendiente: ${d.queuePending ?? 0} fotos · Coches en D1: ${d.carsInDb ?? 0} · Fotos publicadas: ${d.totalPublished ?? 0}`;
+            }
+            if (aiBtn && d && d.success && !aiBtn.disabled) {
+              aiBtn.textContent = `✨ Procesar Todas las Fotos con IA (${d.aiEnhancedCount ?? 0} / ${d.aiTotalCount ?? 0})`;
             }
           })
           .catch(() => {});
       };
       refreshSyncPill();
+
+      document.getElementById("agAiEnhanceAllBtn")?.addEventListener("click", async (e) => {
+        const btn = e.currentTarget;
+        const wrap = document.getElementById("agArchiveProgressWrap");
+        const textEl = document.getElementById("agArchiveProgressText");
+        const pctEl = document.getElementById("agArchivePct");
+        const barEl = document.getElementById("agArchiveProgressBar");
+        btn.disabled = true;
+        wrap?.classList.remove("hidden");
+        try {
+          while (true) {
+            const resp = await fetch(`${API}/api/gallery/ai-enhance-all`, {
+              method: "POST",
+              headers: authHeaders(),
+              credentials: "include",
+              body: JSON.stringify({}),
+            });
+            if (!resp.ok) break;
+            const d = await resp.json().catch(() => ({}));
+            const done = Number(d.aiEnhancedCount || 0);
+            const tot = Math.max(1, Number(d.aiTotalCount || 1));
+            const pct = Math.min(100, Math.round((done / tot) * 100));
+            btn.textContent = `✨ Procesar Todas las Fotos con IA (${done} / ${tot})`;
+            if (textEl) textEl.textContent = `Restauración IA: ${done} de ${tot} imágenes procesadas`;
+            if (pctEl) pctEl.textContent = `${pct}%`;
+            if (barEl) barEl.style.width = `${pct}%`;
+            if (!d.remaining || Number(d.remaining) <= 0 || Number(d.processed || 0) === 0) break;
+          }
+          loadList();
+        } finally {
+          btn.disabled = false;
+          refreshSyncPill();
+        }
+      });
 
       document.getElementById("agAutoSyncCatalogBtn")?.addEventListener("click", async (e) => {
         const btn = e.currentTarget;

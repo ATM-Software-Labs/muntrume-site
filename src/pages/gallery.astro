@@ -226,7 +226,8 @@ const gallerySchema = {
     const sub = btn.dataset.sub || '';
     lbImg.src = src;
     lbImg.alt = title;
-    lbImg.style.transform = 'scale(1)';
+    const baseScale = btn.dataset.cleanCrop === '1' ? 'scale(1.13)' : 'scale(1)';
+    lbImg.style.transform = baseScale;
     lbImg.dataset.zoomed = '0';
     lbImg.classList.remove('cursor-zoom-out');
     lbImg.classList.add('cursor-zoom-in');
@@ -382,10 +383,12 @@ const gallerySchema = {
 
   const renderCardHtml = (p: any, idx: number) => {
     const voted = loadVotedSet().has(String(p.id));
+    const useCrop = Boolean(p.hasLegacyWatermark && p.cleanCrop && !p.aiEnhanced);
+    const cropStyle = useCrop ? 'transform:scale(1.13);transform-origin:center;' : '';
     return `
     <article data-category="${p.category}" data-index="${idx}" class="galeria-card group rounded-xl overflow-hidden bg-[var(--r-surface)] transition-all duration-200" style="border: 1px solid rgba(255, 255, 255, 0.08);">
-      <button type="button" class="galeria-open-btn relative block w-full aspect-video overflow-hidden bg-[#090d12] cursor-zoom-in text-left" data-photo-id="${p.id}" data-likes="${p.likes || 0}" data-src="${p.imageUrl}" data-title="${p.title}" data-sub="${p.car || ''} · ${p.track || 'iRacing'}" data-author="${p.authorName}" data-source-url="${p.sourceUrl || ''}" data-car-slug="${p.carSlug || ''}" data-track-slug="${p.trackSlug || ''}">
-        <img src="${p.imageUrl}" alt="${p.title}" width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://muntrume.atrumin16.workers.dev/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" style="filter: contrast(1.04) saturate(1.06);" />
+      <button type="button" class="galeria-open-btn relative block w-full aspect-video overflow-hidden bg-[#090d12] cursor-zoom-in text-left" data-photo-id="${p.id}" data-likes="${p.likes || 0}" data-src="${p.imageUrl}" data-title="${p.title}" data-sub="${p.car || ''} · ${p.track || 'iRacing'}" data-author="${p.authorName}" data-source-url="${p.sourceUrl || ''}" data-car-slug="${p.carSlug || ''}" data-track-slug="${p.trackSlug || ''}" data-clean-crop="${useCrop ? '1' : '0'}">
+        <img src="${p.imageUrl}" alt="${p.title}" width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://muntrume.atrumin16.workers.dev/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" style="filter: contrast(1.04) saturate(1.06);${cropStyle}" />
         <div class="absolute inset-0 pointer-events-none" style="background: linear-gradient(to top, rgba(9,11,15,0.88) 0%, transparent 55%);"></div>
         <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">${p.category}</span>
         <span class="absolute bottom-2.5 left-2.5 text-[10px] font-mono text-white/85">📸 ${p.authorName}</span>
@@ -510,6 +513,7 @@ const gallerySchema = {
       const LABELS: Record<string, string> = {
         gt3: 'GT3',
         gtp: 'Prototipos GTP',
+        gte: 'GTE / Classic',
         gt4: 'GT4',
         cup: 'Cup',
         formula: 'Formula',
@@ -548,7 +552,7 @@ const gallerySchema = {
       };
 
       if (filterBar) {
-        const order = ['gt3', 'gtp', 'cup', 'gt4', 'formula', 'night', ...Object.keys(counts)];
+        const order = ['gt3', 'gtp', 'gte', 'cup', 'gt4', 'formula', 'night', ...Object.keys(counts)];
         const uniqueKeys = Array.from(new Set(order)).filter((k) => (counts[k] || 0) >= 1);
         const clearCarBtn = initCar
           ? `<a href="/gallery/" class="px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition cursor-pointer bg-white/10 text-white border border-white/20 hover:border-[var(--r-accent)]">&larr; Ver todos los coches</a>`
