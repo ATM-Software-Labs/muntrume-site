@@ -239,9 +239,9 @@ export interface MulticlassStandingsBlock {
 
 const classSpeedOrder = (cls: string): number => {
   const u = cls.toUpperCase();
-  if (u.includes("GTP") || u.includes("LMDH") || u.includes("HYP") || u.includes("LMH")) return 1;
-  if (u.includes("LMP2")) return 2;
-  if (u.includes("LMP3")) return 3;
+  if (u.includes("GTP") || u.includes("LMDH") || u.includes("HYP") || u.includes("LMH") || u.includes("963") || u.includes("499P")) return 1;
+  if (u.includes("LMP2") || u.includes("P217")) return 2;
+  if (u.includes("LMP3") || u.includes("P320")) return 3;
   if (u.includes("GTE")) return 4;
   if (u.includes("GT3") || u.includes("IMSA")) return 5;
   if (u.includes("GT4")) return 6;
@@ -296,13 +296,21 @@ export function buildMulticlassStandingsGroups(leaderboard: LeaderboardEntry[]):
         top3.forEach((entry, rankIdx) => rows.push({ kind: "entry", entry, rankIdx }));
       } else {
         const selfIdx = g.entries.findIndex((e) => e.isActiveCam);
-        const top10 = g.entries.slice(0, 10);
-        top10.forEach((entry, rankIdx) => rows.push({ kind: "entry", entry, rankIdx }));
-        if (selfIdx >= 10) {
-          rows.push({ kind: "separator" });
-          const winStart = Math.max(10, selfIdx - 1);
-          const winEnd = Math.min(g.entries.length, selfIdx + 2);
-          for (let i = winStart; i < winEnd; i++) {
+        if (selfIdx < 0 || g.entries.length <= 6) {
+          g.entries.slice(0, 6).forEach((entry, rankIdx) => rows.push({ kind: "entry", entry, rankIdx }));
+        } else {
+          // Union of Top 3 (0,1,2) and ±2 around player (selfIdx-2 .. selfIdx+2)
+          const winStart = Math.max(0, selfIdx - 2);
+          const winEnd = Math.min(g.entries.length - 1, selfIdx + 2);
+          const topEnd = Math.min(2, g.entries.length - 1);
+          for (let i = 0; i <= topEnd; i++) {
+            rows.push({ kind: "entry", entry: g.entries[i], rankIdx: i });
+          }
+          if (winStart > topEnd + 1) {
+            rows.push({ kind: "separator" });
+          }
+          const bodyStart = Math.max(topEnd + 1, winStart);
+          for (let i = bodyStart; i <= winEnd; i++) {
             rows.push({ kind: "entry", entry: g.entries[i], rankIdx: i });
           }
         }
@@ -451,7 +459,7 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
       const clsRows = group.rows
         .map((row, clsIdx) => {
           if (row.kind === "separator") {
-            return `<div class="h-[2px] my-0.5 bg-white/15"></div>`;
+            return `<div class="flex items-center justify-center h-[10px] text-[9px] text-white/35 tracking-[0.35em] border-y border-white/10">···</div>`;
           }
           const e = row.entry;
           const idx = row.rankIdx;
@@ -463,78 +471,78 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
           const rowCls = `mmt-std-row font-mono${isSelf ? " is-self" : clsIdx % 2 === 1 ? " is-alt" : ""}`;
 
           const posGlobalCell = cols.position
-            ? `<span class="w-[18px] shrink-0 text-center text-[11px] font-black ${posColor}">${clsPos}</span>`
+            ? `<span class="w-[16px] shrink-0 text-center text-[10.5px] font-black ${posColor}">${clsPos}</span>`
             : ``;
           const deltaPos = e.posDelta ?? 0;
           const posDeltaCell = isPractice
             ? ``
             : deltaPos > 0
-            ? `<span class="w-[24px] shrink-0 text-center text-[10px] font-bold text-[#22c55e]">▲${deltaPos}</span>`
+            ? `<span class="w-[20px] shrink-0 text-center text-[9.5px] font-bold text-[#22c55e]">▲${deltaPos}</span>`
             : deltaPos < 0
-            ? `<span class="w-[24px] shrink-0 text-center text-[10px] font-bold text-[#ef4444]">▼${Math.abs(deltaPos)}</span>`
-            : `<span class="w-[24px] shrink-0 text-center text-[10px] text-white/25">—</span>`;
-          const numCell = `<span class="w-[28px] shrink-0 text-center text-[10.5px] font-bold rounded-[2px] ${isSelf ? "bg-emerald-500/20 text-emerald-300" : isOffLap ? "text-[#fbbf24]" : "text-white/85"}">#${e.carNumber}</span>`;
+            ? `<span class="w-[20px] shrink-0 text-center text-[9.5px] font-bold text-[#ef4444]">▼${Math.abs(deltaPos)}</span>`
+            : `<span class="w-[20px] shrink-0 text-center text-[9.5px] text-white/25">—</span>`;
+          const numCell = `<span class="w-[26px] shrink-0 text-center text-[10px] font-bold rounded-[2px] ${isSelf ? "bg-emerald-500/20 text-emerald-300" : isOffLap ? "text-[#fbbf24]" : "text-white/85"}">#${e.carNumber}</span>`;
 
           const displayName = isStreamer
             ? isSelf ? "Piloto (Tú)" : `Piloto #${e.carNumber}`
             : (cols.driverName ? (e.driverName || e.abbrevName) : "");
           const nameCell = cols.driverName
-            ? `<span class="mmt-cell-name shrink-0 ${isSelf ? "text-white font-bold" : isOffLap ? "text-[#fbbf24]" : "text-[#f8fafc]"}">${displayName}</span>`
+            ? `<span class="mmt-cell-name shrink-0 text-[10.5px] ${isSelf ? "text-white font-bold" : isOffLap ? "text-[#fbbf24]" : "text-[#f8fafc]"}">${displayName}</span>`
             : ``;
           const brandCell = cols.brandIcon
-            ? `<span class="w-[16px] shrink-0 flex items-center justify-center">${getCarBrandSvg(e.carPath, 14)}</span>`
+            ? `<span class="w-[15px] shrink-0 flex items-center justify-center">${getCarBrandSvg(e.carPath, 13)}</span>`
             : ``;
-          const licIrCell = `<span class="w-[62px] shrink-0 flex items-center justify-end">${renderLicenseIrBlock(e.licString, e.iRatingExact, e.iRatingStr, cols.iRating)}</span>`;
+          const licIrCell = `<span class="w-[58px] shrink-0 flex items-center justify-end">${renderLicenseIrBlock(e.licString, e.iRatingExact, e.iRatingStr, cols.iRating)}</span>`;
           const compoundCell = showCompounds ? renderCompoundBadge(state.frame.carIdxTireCompound?.[e.carIdx]) : "";
 
           const irDeltaVal = isPractice ? 0 : Math.round(irDeltas.get(e.carIdx) ?? 0);
           const irDeltaHtml = isPractice
             ? ``
             : irDeltaVal > 0
-            ? `<span class="w-[44px] shrink-0 mr-3 px-1.5 py-0.5 rounded-[3px] text-right tabular-nums leading-none" style="font-size:12px;font-weight:800;color:#22c55e;background:rgba(34,197,94,0.14);">+${irDeltaVal}</span>`
+            ? `<span class="w-[40px] shrink-0 mr-2.5 px-1 py-0.5 rounded-[3px] text-right tabular-nums leading-none" style="font-size:11px;font-weight:800;color:#22c55e;background:rgba(34,197,94,0.14);">+${irDeltaVal}</span>`
             : irDeltaVal < 0
-            ? `<span class="w-[44px] shrink-0 mr-3 px-1.5 py-0.5 rounded-[3px] text-right tabular-nums leading-none" style="font-size:12px;font-weight:800;color:#ef4444;background:rgba(239,68,68,0.14);">${irDeltaVal}</span>`
-            : `<span class="w-[44px] shrink-0 mr-3 px-1.5 py-0.5 rounded-[3px] text-right tabular-nums leading-none text-white/35" style="font-size:12px;font-weight:700;">0</span>`;
+            ? `<span class="w-[40px] shrink-0 mr-2.5 px-1 py-0.5 rounded-[3px] text-right tabular-nums leading-none" style="font-size:11px;font-weight:800;color:#ef4444;background:rgba(239,68,68,0.14);">${irDeltaVal}</span>`
+            : `<span class="w-[40px] shrink-0 mr-2.5 px-1 py-0.5 rounded-[3px] text-right tabular-nums leading-none text-white/35" style="font-size:11px;font-weight:700;">0</span>`;
 
           // Hide GAP & INT in Practice/Qualy (Prompt 140) to save ~90px of dead width
           const showRaceGaps = !isPractice && !state.session.sessionType.toLowerCase().includes("qual");
           const gapCell = showRaceGaps
-            ? `<span class="w-[46px] shrink-0 text-right tabular-nums text-[10.5px] ${isLeader ? "text-white/55 font-bold" : isOffLap ? "text-[#fbbf24]/90" : "text-white/85 font-semibold"}">${isLeader ? "LDR" : (e.gapStr || "-")}</span>`
+            ? `<span class="w-[44px] shrink-0 text-right tabular-nums text-[10px] ${isLeader ? "text-white/55 font-bold" : isOffLap ? "text-[#fbbf24]/90" : "text-white/85 font-semibold"}">${isLeader ? "LDR" : (e.gapStr || "-")}</span>`
             : ``;
           const intCell = showRaceGaps
-            ? `<span class="w-[46px] shrink-0 text-right tabular-nums text-[10.5px] text-white/65">${isLeader ? "-" : (e.intervalStr || "-")}</span>`
+            ? `<span class="w-[42px] shrink-0 text-right tabular-nums text-[10px] text-white/65">${isLeader ? "-" : (e.intervalStr || "-")}</span>`
             : ``;
-          const lastCell = `<span class="w-[52px] shrink-0 text-right text-[10.5px] tabular-nums text-white/75">${e.lastLapStr || "--:--.---"}</span>`;
+          const lastCell = `<span class="w-[48px] shrink-0 text-right text-[10px] tabular-nums text-white/75">${e.lastLapStr || "--:--.---"}</span>`;
 
           const pitCell = e.pitStatus === "PIT"
-            ? `<span class="w-[26px] shrink-0 text-center px-1 rounded-[2px] bg-amber-500/25 text-amber-300 text-[9px] font-black">PIT</span>`
+            ? `<span class="w-[24px] shrink-0 text-center px-1 rounded-[2px] bg-amber-500/25 text-amber-300 text-[8.5px] font-black">PIT</span>`
             : e.pitStatus === "OUT"
-            ? `<span class="w-[26px] shrink-0 text-center px-1 rounded-[2px] bg-sky-500/25 text-sky-300 text-[9px] font-black">OUT</span>`
+            ? `<span class="w-[24px] shrink-0 text-center px-1 rounded-[2px] bg-sky-500/25 text-sky-300 text-[8.5px] font-black">OUT</span>`
             : e.lapsSincePit !== undefined && e.lapsSincePit > 0
-            ? `<span class="w-[26px] shrink-0 text-center text-[9px] text-white/45">${e.lapsSincePit}v</span>`
-            : `<span class="w-[26px] shrink-0 text-center text-[9px] text-white/20">•</span>`;
+            ? `<span class="w-[24px] shrink-0 text-center text-[8.5px] text-white/45">${e.lapsSincePit}v</span>`
+            : `<span class="w-[24px] shrink-0 text-center text-[8.5px] text-white/20">•</span>`;
 
           const isClassBest = group.classBestLap > 0 && e.bestLapTime > 0 && Math.abs(e.bestLapTime - group.classBestLap) < 0.002;
           const bestPrefix = e.bestLapNum && e.bestLapTime > 0 ? `L${e.bestLapNum} ` : "";
           const bestColor = isClassBest ? "text-[#c084fc] font-black" : isSelf ? "text-emerald-400 font-bold" : "text-[#f8fafc] font-semibold";
-          const bestCell = `<span class="w-[68px] shrink-0 text-right text-[10.5px] tabular-nums ${bestColor}">${e.bestLapTime > 0 ? `${bestPrefix}${e.bestLapStr}` : "--:--.---"}</span>`;
+          const bestCell = `<span class="w-[62px] shrink-0 text-right text-[10px] tabular-nums ${bestColor}">${e.bestLapTime > 0 ? `${bestPrefix}${e.bestLapStr}` : "--:--.---"}</span>`;
 
           const recent = e.recentLaps ?? [];
           const recentSlots = [recent[recent.length - 3], recent[recent.length - 2], recent[recent.length - 1]];
           const recentHtml = recentSlots
             .map((lt) => {
-              if (!lt || lt <= 0) return `<span class="w-[34px] text-right text-[9.5px] text-white/20">--.-</span>`;
+              if (!lt || lt <= 0) return `<span class="w-[32px] text-right text-[9px] text-white/20">--.-</span>`;
               const c = group.classBestLap > 0 && Math.abs(lt - group.classBestLap) < 0.002
                 ? "text-[#c084fc] font-bold"
                 : e.bestLapTime > 0 && Math.abs(lt - e.bestLapTime) < 0.002
                   ? "text-[#4ade80] font-bold"
                   : "text-white/70";
-              return `<span class="w-[34px] text-right text-[9.5px] tabular-nums ${c}">${formatShortLap(lt)}</span>`;
+              return `<span class="w-[32px] text-right text-[9px] tabular-nums ${c}">${formatShortLap(lt)}</span>`;
             })
             .join("");
 
           return `
-            <div class="${rowCls}" data-car-idx="${e.carIdx}" style="border-left-color: ${isSelf ? "#10b981" : group.color};${isSelf ? "background:rgba(16,185,129,0.16);" : ""}">
+            <div class="${rowCls}" data-car-idx="${e.carIdx}" style="height:22px;padding:1px 6px;border-left-color: ${isSelf ? "#10b981" : group.color};${isSelf ? "background:rgba(16,185,129,0.16);" : ""}">
               ${posGlobalCell}
               ${posDeltaCell}
               ${numCell}
