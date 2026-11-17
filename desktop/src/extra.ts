@@ -10,6 +10,7 @@ import {
   renderFasterCarAlertWidget,
   renderInCarControlsWidget,
   renderLapTimesWidget,
+  renderRaceDualDeltaWidget,
   type LapHistoryEntry,
 } from "./irsdk/overlay-renderer";
 import {
@@ -3603,6 +3604,10 @@ function safeRenderWidget(el: HTMLElement | null, fn: () => void): void {
     document.querySelectorAll<HTMLElement>("#ovStandings, #ovStandingsFloat").forEach((standings) => {
       if (standings.offsetParent !== null) safeRenderWidget(standings, () => renderStandingsWidget(standings, irsdkState));
     });
+    const raceDeltasEl = document.getElementById("ovRaceDeltasFloat");
+    if (raceDeltasEl && raceDeltasEl.offsetParent !== null) {
+      safeRenderWidget(raceDeltasEl, () => renderRaceDualDeltaWidget(raceDeltasEl, irsdkState));
+    }
     document.querySelectorAll<HTMLElement>("#ovFuel, #ovFuelFloat").forEach((fuel) => {
       if (fuel.offsetParent !== null) safeRenderWidget(fuel, () => renderFuelWidget(fuel, irsdkState));
     });

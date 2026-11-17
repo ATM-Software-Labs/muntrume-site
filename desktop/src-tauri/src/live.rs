@@ -215,7 +215,7 @@ fn windows_loop(app: AppHandle) {
     const WAIT_OBJECT_0: u32 = 0;
     const FRAME_MS: u64 = 33;
     const MAIN_FRAME_MS: u64 = 100;
-    const IRSDK_FRAME_MS: u64 = 250;
+    const IRSDK_FRAME_MS: u64 = 100;
     let mut last_status: Option<&'static str> = None;
 
     loop {

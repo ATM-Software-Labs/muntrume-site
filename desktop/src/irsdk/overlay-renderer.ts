@@ -164,7 +164,7 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
         : ``;
 
       return `
-        <div class="${rowCls}" style="border-left-color: ${isSelf ? "#10b981" : (e.carClassColor || "#00e699")}">
+        <div class="${rowCls}" data-car-idx="${e.carIdx}" style="border-left-color: ${isSelf ? "#10b981" : (e.carClassColor || "#00e699")}">
           ${classPosCell}
           ${numCell}
           ${nameCell}
@@ -186,7 +186,7 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
     </div>
   `;
 
-  setHtmlIfChanged(container, `
+  setHtmlWithFlipAnimation(container, `
     ${headerHtml}
     <div class="font-mono select-none overflow-hidden">
       ${rowsHtml}
@@ -453,7 +453,7 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
           const bestCell = `<span class="w-[52px] shrink-0 text-right text-[10.5px] tabular-nums ${isLeader && isPractice ? "text-amber-300 font-bold" : isSelf ? "text-emerald-400 font-bold" : "text-[#f8fafc] font-semibold"}">${e.bestLapStr || "--:--.---"}</span>`;
 
           return `
-            <div class="${rowCls}" style="border-left-color: ${isSelf ? "#10b981" : (e.carClassColor || "#38bdf8")}">
+            <div class="${rowCls}" data-car-idx="${e.carIdx}" style="border-left-color: ${isSelf ? "#10b981" : (e.carClassColor || "#38bdf8")}">
               ${posGlobalCell}
               ${posDeltaCell}
               ${numCell}
@@ -475,7 +475,7 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
     })
     .join("");
 
-  setHtmlIfChanged(container, `
+  setHtmlWithFlipAnimation(container, `
     ${headerHtml}
     <div class="font-mono tabular-nums select-none overflow-hidden max-h-[260px]">
       ${rowsHtml}
@@ -1063,6 +1063,151 @@ export function renderLapTimesWidget(
         <span class="text-fuchsia-300">Mejor: <strong>${fmt(bestLapSec)}</strong></span>
         <span class="text-sky-300">Ópt: <strong>${fmt(optLapSec)}</strong></span>
       </div>
+    </div>
+  `);
+}
+
+const flipPrevOrder = new WeakMap<HTMLElement, Map<string, { top: number; idx: number }>>();
+
+function setHtmlWithFlipAnimation(container: HTMLElement, html: string): void {
+  const prev = new Map<string, { top: number; idx: number }>();
+  const oldRows = container.querySelectorAll<HTMLElement>("[data-car-idx]");
+  oldRows.forEach((row, idx) => {
+    const id = row.dataset.carIdx;
+    if (id) prev.set(id, { top: row.offsetTop, idx });
+  });
+
+  setHtmlIfChanged(container, html);
+
+  const prevSnap = prev.size > 0 ? prev : flipPrevOrder.get(container);
+  if (!prevSnap || prevSnap.size === 0) {
+    const nextInit = new Map<string, { top: number; idx: number }>();
+    container.querySelectorAll<HTMLElement>("[data-car-idx]").forEach((row, idx) => {
+      if (row.dataset.carIdx) nextInit.set(row.dataset.carIdx, { top: row.offsetTop, idx });
+    });
+    flipPrevOrder.set(container, nextInit);
+    return;
+  }
+
+  const moved: Array<{ row: HTMLElement; dy: number; gained: boolean; lost: boolean }> = [];
+  const nextSnap = new Map<string, { top: number; idx: number }>();
+  container.querySelectorAll<HTMLElement>("[data-car-idx]").forEach((row, idx) => {
+    const id = row.dataset.carIdx;
+    if (!id) return;
+    const newTop = row.offsetTop;
+    nextSnap.set(id, { top: newTop, idx });
+    const old = prevSnap.get(id);
+    if (old) {
+      const dy = old.top - newTop;
+      if (Math.abs(dy) >= 2 && Math.abs(dy) <= 180) {
+        moved.push({ row, dy, gained: idx < old.idx, lost: idx > old.idx });
+      }
+    }
+  });
+  flipPrevOrder.set(container, nextSnap);
+
+  if (moved.length > 0 && typeof requestAnimationFrame === "function") {
+    for (const m of moved) {
+      m.row.style.transition = "none";
+      m.row.style.transform = `translateY(${m.dy}px)`;
+      if (m.gained) m.row.style.backgroundColor = "rgba(16, 185, 129, 0.24)";
+      else if (m.lost) m.row.style.backgroundColor = "rgba(239, 68, 68, 0.24)";
+    }
+    requestAnimationFrame(() => {
+      for (const m of moved) {
+        m.row.style.transition = "transform 220ms cubic-bezier(0.22, 1, 0.36, 1), background-color 400ms ease";
+        m.row.style.transform = "translateY(0)";
+        setTimeout(() => {
+          m.row.style.backgroundColor = "";
+        }, 400);
+      }
+    });
+  }
+}
+
+let dualDeltaMemory: {
+  aheadCarIdx: number;
+  aheadRefGap: number;
+  aheadTrend: number;
+  leaderRefGap: number;
+  leaderTrend: number;
+  lastSampleMs: number;
+} = {
+  aheadCarIdx: -1,
+  aheadRefGap: 0,
+  aheadTrend: 0,
+  leaderRefGap: 0,
+  leaderTrend: 0,
+  lastSampleMs: 0,
+};
+
+export function renderRaceDualDeltaWidget(container: HTMLElement, state: IrsdkComputedState | null): void {
+  if (!state || state.leaderboard.length === 0) {
+    container.style.display = "none";
+    return;
+  }
+  const sessLower = (state.session.sessionType || "").toLowerCase();
+  if (sessLower.includes("practice") || sessLower.includes("qual") || sessLower.includes("warmup")) {
+    container.style.display = "none";
+    return;
+  }
+
+  const myIdx = state.camCarIdx;
+  const me = state.leaderboard.find((e) => e.carIdx === myIdx);
+  if (!me) {
+    container.style.display = "none";
+    return;
+  }
+
+  const sameClass = state.leaderboard.filter((e) => e.carClassShortName === me.carClassShortName);
+  const myClassRank = sameClass.findIndex((e) => e.carIdx === myIdx);
+  const carAhead = myClassRank > 0 ? sameClass[myClassRank - 1] : null;
+  const classLeader = sameClass.length > 0 && myClassRank > 0 ? sameClass[0] : null;
+
+  if (!carAhead && !classLeader) {
+    container.style.display = "none";
+    return;
+  }
+
+  const parseGapSec = (gapStr?: string): number => {
+    if (!gapStr) return 0;
+    const clean = gapStr.replace(/[+s]/g, "").trim();
+    const val = parseFloat(clean);
+    return Number.isFinite(val) ? val : 0;
+  };
+
+  const aheadGap = carAhead ? parseGapSec(me.intervalStr) || Math.max(0, parseGapSec(me.gapStr) - parseGapSec(carAhead.gapStr)) : 0;
+  const leaderGap = classLeader ? parseGapSec(me.gapStr) : 0;
+
+  const now = Date.now();
+  if (now - dualDeltaMemory.lastSampleMs >= 1000) {
+    if (carAhead && dualDeltaMemory.aheadCarIdx === carAhead.carIdx && dualDeltaMemory.aheadRefGap > 0) {
+      dualDeltaMemory.aheadTrend = aheadGap - dualDeltaMemory.aheadRefGap;
+    } else {
+      dualDeltaMemory.aheadTrend = 0;
+    }
+    if (classLeader && dualDeltaMemory.leaderRefGap > 0) {
+      dualDeltaMemory.leaderTrend = leaderGap - dualDeltaMemory.leaderRefGap;
+    } else {
+      dualDeltaMemory.leaderTrend = 0;
+    }
+    dualDeltaMemory.aheadCarIdx = carAhead?.carIdx ?? -1;
+    dualDeltaMemory.aheadRefGap = aheadGap;
+    dualDeltaMemory.leaderRefGap = leaderGap;
+    dualDeltaMemory.lastSampleMs = now;
+  }
+
+  const fmtTrend = (val: number) => {
+    const sign = val <= 0 ? "" : "+";
+    const cls = val <= -0.02 ? "text-emerald-400" : val >= 0.02 ? "text-rose-400" : "text-white/60";
+    return `<span class="${cls}">(${sign}${val.toFixed(2)}s)</span>`;
+  };
+
+  container.style.display = "block";
+  setHtmlIfChanged(container, `
+    <div class="px-3 py-1 rounded-[3px] border border-white/10 bg-[#080a0e]/88 text-white font-mono text-[14px] font-bold tabular-nums flex items-center gap-4 whitespace-nowrap select-none shadow-lg">
+      ${carAhead ? `<span>DELANTE (P${carAhead.classPosition || myClassRank}): <strong class="text-white">+${aheadGap.toFixed(2)}s</strong> ${fmtTrend(dualDeltaMemory.aheadTrend)}</span>` : ""}
+      ${classLeader ? `<span>LÍDER (P1): <strong class="text-amber-300">+${leaderGap.toFixed(2)}s</strong> ${fmtTrend(dualDeltaMemory.leaderTrend)}</span>` : ""}
     </div>
   `);
 }
