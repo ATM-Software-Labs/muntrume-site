@@ -68,8 +68,10 @@ import Layout from "../../layouts/Layout.astro";
           <button type="button" data-status="published" class="ag-tab px-4 py-2 rounded-xl text-xs font-mono font-bold border border-white/15 text-white/75">Publicadas en Web</button>
           <button type="button" data-status="archived" class="ag-tab px-4 py-2 rounded-xl text-xs font-mono font-bold border border-white/15 text-white/75">Archivo Antiguo</button>
         </div>
-        <div class="flex flex-wrap gap-2">
-          <button type="button" id="agSyncOfficialBtn" class="px-3 py-1.5 rounded-lg bg-sky-500/20 border border-sky-500/40 text-sky-300 text-xs font-mono font-bold hover:bg-sky-500/30 transition cursor-pointer">↻ Sincronizar Press Kit (Pendientes)</button>
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" id="agAutoSyncCatalogBtn" class="px-3 py-1.5 rounded-lg bg-emerald-500 text-slate-950 text-xs font-mono font-bold hover:bg-emerald-400 transition cursor-pointer">⚡ Importar Todos los Coches Automáticamente</button>
+          <span id="agAutoSyncStatus" class="hidden px-2.5 py-1 rounded-lg bg-black/50 border border-emerald-500/30 text-[11px] font-mono text-emerald-300"></span>
+          <button type="button" id="agSyncOfficialBtn" class="px-3 py-1.5 rounded-lg bg-sky-500/20 border border-sky-500/40 text-sky-300 text-xs font-mono font-bold hover:bg-sky-500/30 transition cursor-pointer">↻ Sincronizar Lote 1</button>
           <button type="button" id="agBulkPublish" class="px-3 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-mono">Publicar seleccionadas</button>
           <button type="button" id="agBulkArchive" class="px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-mono">Archivar seleccionadas</button>
         </div>
@@ -173,13 +175,51 @@ import Layout from "../../layouts/Layout.astro";
             method: "POST",
             headers: authHeaders(),
             credentials: "include",
-            body: "{}",
+            body: JSON.stringify({ page: 1 }),
           });
           currentStatus = "pending";
           loadList();
         } finally {
           btn.disabled = false;
-          btn.textContent = "↻ Sincronizar Press Kit (Pendientes)";
+          btn.textContent = "↻ Sincronizar Lote 1";
+        }
+      });
+
+      document.getElementById("agAutoSyncCatalogBtn")?.addEventListener("click", async (e) => {
+        const btn = e.currentTarget;
+        const statusEl = document.getElementById("agAutoSyncStatus");
+        btn.disabled = true;
+        btn.textContent = "Importando catálogo…";
+        if (statusEl) {
+          statusEl.classList.remove("hidden");
+          statusEl.textContent = "Iniciando escaneo de 60+ coches…";
+        }
+        let batch = 1;
+        let totalImported = 0;
+        let totalCars = 0;
+        try {
+          while (batch <= 25) {
+            const resp = await fetch(`${API}/api/gallery/sync-official`, {
+              method: "POST",
+              headers: authHeaders(),
+              credentials: "include",
+              body: JSON.stringify({ page: batch }),
+            });
+            if (!resp.ok) break;
+            const d = await resp.json().catch(() => ({}));
+            totalImported += Number(d.imported || 0);
+            totalCars += Number(d.carsDetected || 0);
+            if (statusEl) {
+              statusEl.textContent = `Lote ${batch} (${d.term || ""}) · ${totalImported} capturas importadas · ${totalCars} coches detectados`;
+            }
+            if (!d.hasMore) break;
+            batch = Number(d.nextBatch || batch + 1);
+          }
+          currentStatus = "pending";
+          loadList();
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "⚡ Importar Todos los Coches Automáticamente";
         }
       });
       document.getElementById("agBulkArchive")?.addEventListener("click", () => runBulk("bulk_archive"));
