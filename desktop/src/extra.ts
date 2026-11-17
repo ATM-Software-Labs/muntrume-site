@@ -3194,10 +3194,6 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
       if (chromeEl) chromeEl.hidden = false;
       if (layersEl) layersEl.hidden = false;
       if (reopenEl) reopenEl.hidden = true;
-      // Prompt 141: Dummy Preview Data when iRacing is closed
-      if (!IrsdkClient.getInstance().getLatestState()) {
-        IrsdkClient.getInstance().startSimulation();
-      }
     } else {
       if (layersEl) layersEl.hidden = true;
     }

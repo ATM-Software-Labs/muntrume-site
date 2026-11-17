@@ -2328,25 +2328,47 @@ function bind(): void {
       }
     }).catch((error: unknown) => showNotice(error instanceof Error ? error.message : "No pude detectar la carpeta."));
   });
+  const showUpdateBanner = (ver: string, notes = "") => {
+    const cleanVer = ver.replace(/^v/i, "");
+    const banner = document.getElementById("updateBanner");
+    const txt = document.getElementById("updateText");
+    const notesDet = document.getElementById("updateNotesDetails");
+    const notesBody = document.getElementById("updateNotesBody");
+    if (txt) txt.textContent = `Nueva actualización v${cleanVer} disponible — Ver novedades · Actualizar ahora`;
+    if (notes && notesDet && notesBody) {
+      notesBody.textContent = notes;
+      notesDet.hidden = false;
+    }
+    if (banner) banner.hidden = false;
+  };
+
+  const runUpdateCheck = async (manual: boolean) => {
+    try {
+      const { invoke } = await import("@tauri-apps/api/core");
+      const ver = await invoke<string | null>("check_for_update");
+      if (ver) {
+        showUpdateBanner(ver);
+        if (manual) showNotice(`Nueva versión disponible: v${ver.replace(/^v/i, "")}`);
+        return;
+      }
+      if (manual) showNotice("Ya tienes la última versión de MMT Sync.");
+    } catch {
+      if (manual) showNotice("No se pudo comprobar actualizaciones ahora mismo.");
+    }
+  };
+
   const btnCheckUpdate = document.getElementById("btnCheckUpdate") as HTMLButtonElement | null;
   if (btnCheckUpdate) {
     btnCheckUpdate.addEventListener("click", () => {
       btnCheckUpdate.disabled = true;
       btnCheckUpdate.textContent = "Comprobando…";
-      void import("@tauri-apps/api/core")
-        .then(({ invoke }) => invoke<string | null>("check_for_update"))
-        .then((ver) => {
-          btnCheckUpdate.disabled = false;
-          btnCheckUpdate.textContent = "Buscar actualizaciones";
-          showNotice(ver ? `Nueva versión disponible: v${ver}` : "Ya tienes la última versión de MMT Sync.");
-        })
-        .catch(() => {
-          btnCheckUpdate.disabled = false;
-          btnCheckUpdate.textContent = "Buscar actualizaciones";
-          showNotice("No se pudo comprobar actualizaciones ahora mismo.");
-        });
+      void runUpdateCheck(true).finally(() => {
+        btnCheckUpdate.disabled = false;
+        btnCheckUpdate.textContent = "Buscar actualizaciones";
+      });
     });
   }
+  window.setTimeout(() => void runUpdateCheck(false), 1800);
   $("logoutBtn").addEventListener("click", () => {
     void backend.logout().then(() => refresh());
   });

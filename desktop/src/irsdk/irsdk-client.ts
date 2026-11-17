@@ -30,7 +30,7 @@ export class IrsdkClient {
   private sessionState: SessionInfoState;
   private lastSessionInfoUpdate: number = -1;
   private listeners: Set<IrsdkListener> = new Set();
-  private isSimulated: boolean = true;
+  private isSimulated: boolean = false;
   private simTimer: number | null = null;
 
   private latestState: IrsdkComputedState | null = null;
@@ -43,8 +43,25 @@ export class IrsdkClient {
   }
 
   constructor() {
-    this.sessionState = this.mockProvider.getSessionInfo();
-    this.lastSessionInfoUpdate = this.sessionState.update;
+    this.sessionState = {
+      update: -1,
+      weekendInfo: {
+        trackName: "",
+        trackConfigName: "",
+        trackId: 0,
+        trackLengthM: 0,
+        category: "Road",
+        sessionType: "Practice",
+      },
+      driverInfo: {
+        drivers: {},
+        driverCarEstLapTime: 90,
+        driverCarIdx: 0,
+      },
+      sessionType: "Practice",
+      sessionNum: 0,
+    };
+    this.lastSessionInfoUpdate = -1;
   }
 
   public subscribe(listener: IrsdkListener): () => void {
@@ -138,6 +155,8 @@ export class IrsdkClient {
    */
   public startSimulation(intervalMs: number = 70): void {
     if (this.simTimer) return;
+    this.sessionState = this.mockProvider.getSessionInfo();
+    this.lastSessionInfoUpdate = this.sessionState.update;
     this.isSimulated = true;
     this.simTimer = window.setInterval(() => {
       if (typeof document !== "undefined" && document.hidden) return;
