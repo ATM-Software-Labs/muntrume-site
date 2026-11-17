@@ -93,7 +93,7 @@ export class LeaderboardEngine {
 
       const res = sessionResults?.[idx];
       const surface = trackSurfaces[idx] ?? 3;
-      if (surface === -1 && !(res && (res.fastestTime > 0 || res.position > 0))) continue; // NotInWorld without results
+      if (!isPracticeOrWarmup && surface === -1 && !(res && (res.fastestTime > 0 || res.position > 0))) continue;
 
       const pos = (positions[idx] > 0 ? positions[idx] : 0) || res?.position || 0;
       const rawCp = classPositions[idx];

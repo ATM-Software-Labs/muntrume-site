@@ -90,7 +90,6 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
 
   const tTrack = state.frame.trackTempC;
   const trackTempStr = typeof tTrack === "number" && tTrack > 0 ? `${tTrack.toFixed(0)}°C` : "";
-  const localClock = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
   const activeLap = Math.max(0, state.frame.carIdxLap[state.camCarIdx] || 0);
   const remSec = Math.max(0, Math.round(state.frame.sessionTimeRemain || 0));
   const remMin = Math.floor(remSec / 60);
@@ -99,9 +98,9 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
   const sessType = (state.session.sessionType || "Practice").split(" ")[0];
 
   const headerHtml = `
-    <div class="mmt-rel-header">
+    <div class="mmt-rel-header flex items-center justify-between gap-2 whitespace-nowrap">
       <span>${irEst ? `SOF ${formatSofShort(irEst.sof)}` : "REL"} · ⏱ ${sessionClock}</span>
-      <span>${trackTempStr ? `${trackTempStr} · ` : ""}🕒 ${localClock}</span>
+      <span>${trackTempStr ? `${trackTempStr} · ` : ""}${isReplay ? "Replay" : sessType}</span>
     </div>
   `;
 
@@ -606,12 +605,16 @@ export function renderFuelWidget(container: HTMLElement, state: IrsdkComputedSta
   `;
 
   if (!fuel.isValid) {
+    const estBurn = fuel.avgBurnPerLap > 0 ? `~${fuel.avgBurnPerLap.toFixed(2)} L/v` : "-- L/v";
+    const estLaps = fuel.stintLapsRemaining > 0 ? `~${fuel.stintLapsRemaining} v` : "-- v";
     setHtmlIfChanged(container, `
-      ${headerHtml}
+      <div class="h-[20px] flex items-center justify-between border-b border-white/10 text-[10px] font-mono tabular-nums whitespace-nowrap">
+        <span class="text-white/70 font-bold tracking-wider">FUEL</span>
+        <span class="text-white font-bold">${fuel.fuelRemainingL > 0 ? `${fuel.fuelRemainingL} L` : "-- L"} · ${estLaps}</span>
+      </div>
       <div class="mt-1 grid gap-0.5 text-[10px] font-mono tabular-nums text-white/65">
-        <div class="mmt-fuel-row"><span>Last</span><span>-- L/v</span></div>
-        <div class="mmt-fuel-row"><span>Stint</span><span>-- L/v</span></div>
-        <div class="mmt-fuel-row"><span>Session</span><span class="truncate text-right">${fuel.reasonNotReady || "Calibrando"}</span></div>
+        <div class="mmt-fuel-row"><span>Consumo (Est.)</span><span>${estBurn}</span></div>
+        <div class="mmt-fuel-row"><span>Estado</span><span class="truncate text-right">${fuel.reasonNotReady || "Calibrando"}</span></div>
       </div>
     `);
     return;

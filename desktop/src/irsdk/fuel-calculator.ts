@@ -90,19 +90,22 @@ export class FuelCalculator {
 
     // Default safe values when not valid (avoiding NaN or Infinity)
     if (!isValid) {
+      const useRefEst = !isReplay && !onPit && currentFuel > 0 && isFinite(currentFuel);
+      const refBurn = useRefEst ? 2.8 : 0;
+      const refStint = useRefEst ? Number((currentFuel / refBurn).toFixed(1)) : 0;
       return {
         isValid: false,
         reasonNotReady,
         fuelRemainingL: isFinite(currentFuel) && currentFuel > 0 ? Number(currentFuel.toFixed(1)) : 0,
         fuelRemainingPct: isFinite(currentFuelPct) && currentFuelPct > 0 ? Number(currentFuelPct.toFixed(3)) : 0,
-        avgBurnPerLap: 0,
-        maxBurnPerLap: 0,
+        avgBurnPerLap: refBurn,
+        maxBurnPerLap: refBurn,
         liftAndCoastTarget: 0,
         lapsRemaining: 0,
         fuelNeededToFinish: 0,
         fuelToAdd: 0,
         safetyMarginL: this.safetyMarginL,
-        stintLapsRemaining: 0,
+        stintLapsRemaining: refStint,
         completedLapsSampled: this.completedLapsBurn.length,
       };
     }
