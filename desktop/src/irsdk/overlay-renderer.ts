@@ -1,4 +1,4 @@
-﻿/**
+/**
  * MMT Sync â€” Kapps 2027 Style Overlay Renderers (Bloque 1 & 2)
  * High performance 60 FPS GPU-accelerated renderers, tabular numeric typography,
  * SVG local brand mappers, Driver Tags badges, Streamer Mode,
@@ -115,7 +115,7 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
   const rowsHtml = displayEntries
     .map((e: RelativeEntry, rowIdx: number) => {
       const isSelf = e.isActiveCam;
-      const isClose = !isSelf && Math.abs(e.deltaSeconds ?? 99) <= 1.5; const rowCls = `mmt-rel-row font-mono${isSelf ? " is-self" : isClose ? " border-l-2 border-amber-400 bg-amber-500/10" : rowIdx % 2 === 1 ? " is-alt" : ""}`;
+      const rowCls = `mmt-rel-row font-mono${isSelf ? " is-self" : rowIdx % 2 === 1 ? " is-alt" : ""}`;
 
       const gapClean = (e.deltaStr || "0.0").replace(/s$/i, "");
       const gapColor = isSelf
@@ -151,7 +151,7 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
         ? `<span class="w-[24px] shrink-0 flex items-center justify-center gap-0.5">${badgeParts.join("")}</span>`
         : `<span class="w-[24px] shrink-0"></span>`;
       const licIrCell = cols.license
-        ? `<span class="w-[58px] shrink-0 flex items-center justify-end">${renderLicenseIrBlock(e.licString, e.iRatingExact, e.iRatingStr, true)}</span>`
+        ? `<span class="w-[80px] shrink-0 flex items-center justify-end gap-1">${renderLicenseIrBlock(e.licString, e.iRatingExact, e.iRatingStr, true)}</span>`
         : ``;
       const compoundCell = showCompounds ? renderCompoundBadge(state.frame.carIdxTireCompound?.[e.carIdx]) : "";
       const irDeltaVal = isPractice ? 0 : (irDeltas.get(e.carIdx) ?? 0);
@@ -492,7 +492,7 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
           const brandCell = cols.brandIcon
             ? `<span class="w-[15px] shrink-0 flex items-center justify-center">${getCarBrandSvg(e.carPath, 13)}</span>`
             : ``;
-          const licIrCell = `<span class="w-[58px] shrink-0 flex items-center justify-end">${renderLicenseIrBlock(e.licString, e.iRatingExact, e.iRatingStr, cols.iRating)}</span>`;
+          const licIrCell = `<span class="w-[80px] shrink-0 flex items-center justify-end gap-1">${renderLicenseIrBlock(e.licString, e.iRatingExact, e.iRatingStr, cols.iRating)}</span>`;
           const compoundCell = showCompounds ? renderCompoundBadge(state.frame.carIdxTireCompound?.[e.carIdx]) : "";
 
           const irDeltaVal = isPractice ? 0 : Math.round(irDeltas.get(e.carIdx) ?? 0);
@@ -1339,13 +1339,10 @@ export function renderRaceDualDeltaWidget(container: HTMLElement, state: IrsdkCo
 
   container.style.display = "block";
   setHtmlIfChanged(container, `
-    <div class="px-2.5 py-0.5 rounded-[4px] border border-white/15 bg-[#080a0e]/78 text-white font-mono text-[12px] font-bold tabular-nums flex items-center gap-4 whitespace-nowrap select-none shadow-lg">
+    <div class="px-3 py-1 rounded-[3px] border border-white/10 bg-[#080a0e]/88 text-white font-mono text-[14px] font-bold tabular-nums flex items-center gap-4 whitespace-nowrap select-none shadow-lg">
       ${carAhead ? `<span>DELANTE (P${carAhead.classPosition || myClassRank}): <strong class="text-white">+${aheadGap.toFixed(2)}s</strong> ${fmtTrend(dualDeltaMemory.aheadTrend)}</span>` : ""}
       ${classLeader ? `<span>LÃDER (P1): <strong class="text-amber-300">+${leaderGap.toFixed(2)}s</strong> ${fmtTrend(dualDeltaMemory.leaderTrend)}</span>` : ""}
     </div>
   `);
 }
-
-
-
 
