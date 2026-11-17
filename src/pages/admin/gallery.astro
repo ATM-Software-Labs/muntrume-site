@@ -69,11 +69,20 @@ import Layout from "../../layouts/Layout.astro";
           <button type="button" data-status="archived" class="ag-tab px-4 py-2 rounded-xl text-xs font-mono font-bold border border-white/15 text-white/75">Archivo Antiguo</button>
         </div>
         <div class="flex flex-wrap items-center gap-2">
-          <button type="button" id="agAutoSyncCatalogBtn" class="px-3 py-1.5 rounded-lg bg-emerald-500 text-slate-950 text-xs font-mono font-bold hover:bg-emerald-400 transition cursor-pointer">⚡ Importar Todos los Coches Automáticamente</button>
-          <span id="agAutoSyncStatus" class="hidden px-2.5 py-1 rounded-lg bg-black/50 border border-emerald-500/30 text-[11px] font-mono text-emerald-300"></span>
-          <button type="button" id="agSyncOfficialBtn" class="px-3 py-1.5 rounded-lg bg-sky-500/20 border border-sky-500/40 text-sky-300 text-xs font-mono font-bold hover:bg-sky-500/30 transition cursor-pointer">↻ Sincronizar Lote 1</button>
+          <button type="button" id="agFullArchiveBtn" class="px-3 py-1.5 rounded-lg bg-emerald-500 text-slate-950 text-xs font-mono font-bold hover:bg-emerald-400 transition cursor-pointer">🚀 Subir Todo el Archivo de iRacing</button>
+          <button type="button" id="agResetCursorBtn" class="px-3 py-1.5 rounded-lg border border-white/20 text-white/80 text-xs font-mono hover:border-emerald-400 transition cursor-pointer">↺ Reiniciar Cursor desde Página 1</button>
+          <button type="button" id="agAutoSyncCatalogBtn" class="px-3 py-1.5 rounded-lg bg-sky-500/20 border border-sky-500/40 text-sky-300 text-xs font-mono font-bold hover:bg-sky-500/30 transition cursor-pointer">⚡ Sync por Marca</button>
           <button type="button" id="agBulkPublish" class="px-3 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-mono">Publicar seleccionadas</button>
           <button type="button" id="agBulkArchive" class="px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-mono">Archivar seleccionadas</button>
+        </div>
+      </div>
+      <div id="agArchiveProgressWrap" class="hidden rounded-xl border border-emerald-500/30 bg-black/50 p-3 space-y-1.5">
+        <div class="flex items-center justify-between text-[11px] font-mono text-emerald-300">
+          <span id="agArchiveProgressText">Preparando…</span>
+          <span id="agArchivePct">0%</span>
+        </div>
+        <div class="w-full h-2 rounded-full bg-white/10 overflow-hidden">
+          <div id="agArchiveProgressBar" class="h-full bg-emerald-500 transition-all duration-200" style="width:0%"></div>
         </div>
       </div>
       <div id="agGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
@@ -182,6 +191,71 @@ import Layout from "../../layouts/Layout.astro";
         } finally {
           btn.disabled = false;
           btn.textContent = "↻ Sincronizar Lote 1";
+        }
+      });
+
+      document.getElementById("agResetCursorBtn")?.addEventListener("click", async () => {
+        const textEl = document.getElementById("agArchiveProgressText");
+        const wrap = document.getElementById("agArchiveProgressWrap");
+        wrap?.classList.remove("hidden");
+        if (textEl) textEl.textContent = "Reiniciando cursor a Página 1…";
+        await fetch(`${API}/api/gallery/sync-official`, {
+          method: "POST",
+          headers: authHeaders(),
+          credentials: "include",
+          body: JSON.stringify({ reset: true }),
+        });
+        if (textEl) textEl.textContent = "Cursor reiniciado a Página 1. Listo para Subir Todo.";
+      });
+
+      document.getElementById("agFullArchiveBtn")?.addEventListener("click", async (e) => {
+        const btn = e.currentTarget;
+        const wrap = document.getElementById("agArchiveProgressWrap");
+        const textEl = document.getElementById("agArchiveProgressText");
+        const pctEl = document.getElementById("agArchivePct");
+        const barEl = document.getElementById("agArchiveProgressBar");
+        btn.disabled = true;
+        btn.textContent = "Rastreando archivo…";
+        wrap?.classList.remove("hidden");
+        let totalImported = 0;
+        let totalCars = 0;
+        let retries = 0;
+        try {
+          while (true) {
+            let resp;
+            try {
+              resp = await fetch(`${API}/api/gallery/sync-official`, {
+                method: "POST",
+                headers: authHeaders(),
+                credentials: "include",
+                body: JSON.stringify({ mode: "full_archive" }),
+              });
+            } catch {
+              resp = null;
+            }
+            if (!resp || !resp.ok) {
+              retries += 1;
+              if (retries > 3) break;
+              await new Promise((r) => setTimeout(r, 1200));
+              continue;
+            }
+            retries = 0;
+            const d = await resp.json().catch(() => ({}));
+            totalImported += Number(d.imported || 0);
+            totalCars += Number(d.carsDetected || 0);
+            const curP = Number(d.currentPage || 1);
+            const totP = Math.max(curP, Number(d.totalPages || 1));
+            const pct = d.completed ? 100 : Math.min(99, Math.round((curP / totP) * 100));
+            if (textEl) textEl.textContent = `${d.source} · Página ${curP} / ${totP} · ${totalImported} capturas guardadas · ${totalCars} coches`;
+            if (pctEl) pctEl.textContent = `${pct}%`;
+            if (barEl) barEl.style.width = `${pct}%`;
+            if (d.completed) break;
+          }
+          currentStatus = "pending";
+          loadList();
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "🚀 Subir Todo el Archivo de iRacing";
         }
       });
 

@@ -71,6 +71,11 @@ const gallerySchema = {
         <button type="button" data-open-community-upload class="px-4 py-2 rounded-xl bg-emerald-500 text-slate-950 text-xs font-mono font-bold cursor-pointer">+ Subir captura</button>
       </div>
     </div>
+    <div class="mt-6 flex justify-center">
+      <button type="button" id="glLoadMoreBtn" hidden class="px-5 py-2.5 rounded-xl border border-white/15 bg-[var(--r-surface)] hover:border-[var(--r-accent)] text-xs font-mono font-bold text-white transition cursor-pointer">
+        Cargar más capturas ↓
+      </button>
+    </div>
     </div>
   </section>
 
@@ -345,8 +350,30 @@ const gallerySchema = {
     lbImg.style.transformOrigin = `${ox}% ${oy}%`;
   });
 
-  // Dynamic community gallery hydration (Prompts 131, 132, 136, 138, 156)
-  fetch('https://muntrume.atrumin16.workers.dev/api/gallery?status=published')
+  // Dynamic community gallery hydration with progressive pagination (limit=36)
+  const renderCardHtml = (p: any, idx: number) => `
+    <article data-category="${p.category}" data-index="${idx}" class="galeria-card group rounded-xl overflow-hidden bg-[var(--r-surface)] transition-all duration-200" style="border: 1px solid rgba(255, 255, 255, 0.08);">
+      <button type="button" class="galeria-open-btn relative block w-full aspect-video overflow-hidden bg-[#090d12] cursor-zoom-in text-left" data-photo-id="${p.id}" data-src="${p.imageUrl}" data-title="${p.title}" data-sub="${p.car || ''} · ${p.track || 'iRacing'}" data-author="${p.authorName}" data-source-url="${p.sourceUrl || ''}" data-car-slug="${p.carSlug || ''}" data-track-slug="${p.trackSlug || ''}">
+        <img src="${p.imageUrl}" alt="${p.title}" width="640" height="360" loading="lazy" decoding="async" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" style="filter: contrast(1.04) saturate(1.06);" />
+        <div class="absolute inset-0 pointer-events-none" style="background: linear-gradient(to top, rgba(9,11,15,0.88) 0%, transparent 55%);"></div>
+        <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">${p.category}</span>
+        <span class="absolute bottom-2.5 left-2.5 text-[10px] font-mono text-white/85">📸 ${p.authorName}</span>
+        <span class="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded bg-black/80 border border-white/15 text-[10px] font-mono text-white/90 opacity-0 group-hover:opacity-100 transition-opacity">Ampliar HD ⤢</span>
+      </button>
+      <div class="p-3.5 space-y-1">
+        <h2 class="text-sm font-bold text-[var(--r-text)] font-display truncate">${p.title}</h2>
+        <p class="text-[11px] text-[var(--r-muted)] flex items-center justify-between gap-2">
+          <span>${p.car || p.track || 'iRacing'}</span>
+          ${p.sourceUrl ? `<a href="${p.sourceUrl}" target="_blank" rel="noopener noreferrer nofollow" class="underline hover:text-white">Ver fuente ↗</a>` : ''}
+        </p>
+      </div>
+    </article>
+  `;
+
+  let nextOffset = 36;
+  const loadMoreBtn = document.getElementById('glLoadMoreBtn') as HTMLButtonElement | null;
+
+  fetch('https://muntrume.atrumin16.workers.dev/api/gallery?status=published&limit=36&offset=0')
     .then((r) => (r.ok ? r.json() : null))
     .then((data) => {
       if (!data || !Array.isArray(data.photos)) return;
@@ -365,24 +392,35 @@ const gallerySchema = {
         });
         return;
       }
-      grid.innerHTML = data.photos.map((p: any, idx: number) => `
-        <article data-category="${p.category}" data-index="${idx}" class="galeria-card group rounded-xl overflow-hidden bg-[var(--r-surface)] transition-all duration-200" style="border: 1px solid rgba(255, 255, 255, 0.08);">
-          <button type="button" class="galeria-open-btn relative block w-full aspect-video overflow-hidden bg-[#090d12] cursor-zoom-in text-left" data-photo-id="${p.id}" data-src="${p.imageUrl}" data-title="${p.title}" data-sub="${p.car || ''} · ${p.track || 'iRacing'}" data-author="${p.authorName}" data-source-url="${p.sourceUrl || ''}" data-car-slug="${p.carSlug || ''}" data-track-slug="${p.trackSlug || ''}">
-            <img src="${p.imageUrl}" alt="${p.title}" width="640" height="360" loading="lazy" decoding="async" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" style="filter: contrast(1.04) saturate(1.06);" />
-            <div class="absolute inset-0 pointer-events-none" style="background: linear-gradient(to top, rgba(9,11,15,0.88) 0%, transparent 55%);"></div>
-            <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">${p.category}</span>
-            <span class="absolute bottom-2.5 left-2.5 text-[10px] font-mono text-white/85">📸 ${p.authorName}</span>
-            <span class="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded bg-black/80 border border-white/15 text-[10px] font-mono text-white/90 opacity-0 group-hover:opacity-100 transition-opacity">Ampliar HD ⤢</span>
-          </button>
-          <div class="p-3.5 space-y-1">
-            <h2 class="text-sm font-bold text-[var(--r-text)] font-display truncate">${p.title}</h2>
-            <p class="text-[11px] text-[var(--r-muted)] flex items-center justify-between gap-2">
-              <span>${p.car || p.track || 'iRacing'}</span>
-              ${p.sourceUrl ? `<a href="${p.sourceUrl}" target="_blank" rel="noopener noreferrer nofollow" class="underline hover:text-white">Ver fuente ↗</a>` : ''}
-            </p>
-          </div>
-        </article>
-      `).join('');
+      grid.innerHTML = data.photos.map((p: any, idx: number) => renderCardHtml(p, idx)).join('');
+      if (loadMoreBtn) loadMoreBtn.hidden = !data.hasMore;
+      loadMoreBtn?.addEventListener('click', async () => {
+        loadMoreBtn.disabled = true;
+        loadMoreBtn.textContent = 'Cargando…';
+        try {
+          const more = await fetch(`https://muntrume.atrumin16.workers.dev/api/gallery?status=published&limit=36&offset=${nextOffset}`).then((r) => (r.ok ? r.json() : null));
+          if (more && Array.isArray(more.photos) && more.photos.length > 0) {
+            const startIdx = cards.length;
+            grid.insertAdjacentHTML('beforeend', more.photos.map((p: any, i: number) => renderCardHtml(p, startIdx + i)).join(''));
+            const newCards = Array.from(grid.querySelectorAll<HTMLElement>('.galeria-card')).slice(startIdx);
+            cards.push(...newCards);
+            newCards.forEach((card) => {
+              const btn = card.querySelector<HTMLButtonElement>('.galeria-open-btn');
+              btn?.addEventListener('click', () => {
+                const list = visibleButtons();
+                openAt(Math.max(0, list.indexOf(btn)));
+              });
+            });
+            nextOffset += more.photos.length;
+            loadMoreBtn.hidden = !more.hasMore;
+          } else {
+            loadMoreBtn.hidden = true;
+          }
+        } finally {
+          loadMoreBtn.disabled = false;
+          loadMoreBtn.textContent = 'Cargar más capturas ↓';
+        }
+      });
       cards.length = 0;
       cards.push(...Array.from(grid.querySelectorAll<HTMLElement>('.galeria-card')));
 
