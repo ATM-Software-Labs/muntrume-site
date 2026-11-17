@@ -153,7 +153,7 @@ const gallerySchema = {
   </div>
 
   <!-- Takedown Request Modal (Prompt 174) -->
-  <div id="glTakedownModal" class="fixed inset-0 z-[130] hidden items-center justify-center bg-black/85 backdrop-blur-sm p-4">
+  <div id="glTakedownModal" style="position:fixed;inset:0;z-index:220;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.86);backdrop-filter:blur(6px);padding:16px;">
     <div class="w-full max-w-md rounded-2xl border border-white/15 bg-[#0d1117] text-white p-6 shadow-2xl relative">
       <button type="button" id="glTdClose" aria-label="Cerrar" style="position:absolute;top:14px;right:14px;" class="w-8 h-8 rounded-lg border border-white/15 text-white/70 hover:text-white cursor-pointer">✕</button>
       <span class="text-[10.5px] font-mono uppercase tracking-widest text-rose-400">Derechos de Autor · Takedown</span>
@@ -288,8 +288,7 @@ const gallerySchema = {
   const tdStatus = document.getElementById('glTdStatus');
   const tdSubmit = document.getElementById('glTdSubmit') as HTMLButtonElement | null;
   const closeTd = () => {
-    tdModal?.classList.add('hidden');
-    tdModal?.classList.remove('flex');
+    if (tdModal) tdModal.style.display = 'none';
   };
   document.getElementById('glTdClose')?.addEventListener('click', closeTd);
   document.getElementById('glTdCancel')?.addEventListener('click', closeTd);
@@ -308,8 +307,7 @@ const gallerySchema = {
     if (tdModal) {
       tdModal.dataset.photoId = id;
       tdModal.dataset.photoTitle = title;
-      tdModal.classList.remove('hidden');
-      tdModal.classList.add('flex');
+      tdModal.style.display = 'flex';
     }
   });
 
