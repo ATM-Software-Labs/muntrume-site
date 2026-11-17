@@ -1,0 +1,6 @@
+/galeria /gallery/ 301
+/galeria/* /gallery/:splat 301
+/albumes /albums/ 301
+/albumes/* /albums/:splat 301
+/admin/galeria /admin/gallery/ 301
+/retirar-imagen /remove-image/ 301

@@ -1,0 +1,351 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout
+  title="Curación de Galería (/admin/gallery) · Muntrume Motorsport"
+  description="Panel privado de curación, aprobación, subida por lotes y descubrimiento de capturas de iRacing."
+  canonical="https://muntru.me/admin/gallery/"
+  noindex={true}
+>
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+    <header class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-white/10">
+      <div>
+        <a href="/admin/" class="text-xs font-mono text-emerald-400 hover:underline">&larr; Volver a /admin</a>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-white font-display mt-1">Panel de Curación de Galería</h1>
+        <p class="text-xs text-white/65">Revisa capturas pendientes, gestiona el archivo antiguo y sube lotes WebP optimizados.</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <input
+          type="password"
+          id="agAdminToken"
+          placeholder="Admin Token (o sesión Race Control)"
+          class="px-3 py-2 rounded-xl border border-white/15 bg-black/40 text-xs text-white font-mono w-64"
+        />
+        <button type="button" id="agRefreshBtn" class="px-4 py-2 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs hover:bg-emerald-400 transition">
+          Conectar / Recargar
+        </button>
+      </div>
+    </header>
+
+    <!-- Prompt 134: Drag & Drop Batch WebP Uploader -->
+    <section class="rounded-2xl border border-dashed border-emerald-500/40 bg-[#0d1117]/80 p-5 space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-sm font-bold text-white font-display">Subida múltiple por lotes (Drag &amp; Drop · WebP 1920px)</h2>
+          <p class="text-xs text-white/60">Suelta 10–20 PNG/JPG; edita título, coche y circuito en línea y súbelas 3 en paralelo como Publicadas.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="file" id="agBatchFiles" multiple accept="image/png,image/jpeg,image/webp" class="hidden" />
+          <button type="button" id="agPickBatchBtn" class="px-4 py-2 rounded-xl border border-emerald-400/50 text-emerald-300 text-xs font-mono font-bold hover:bg-emerald-500/10">
+            + Seleccionar capturas
+          </button>
+          <button type="button" id="agUploadBatchBtn" hidden class="px-4 py-2 rounded-xl bg-emerald-500 text-slate-950 text-xs font-bold hover:bg-emerald-400">
+            Subir lote publicado
+          </button>
+        </div>
+      </div>
+      <div id="agBatchQueue" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+    </section>
+
+    <!-- Prompt 137: Buscar en Comunidad -->
+    <section class="rounded-2xl border border-white/10 bg-[#0d1117]/80 p-5 space-y-3">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <h2 class="text-sm font-bold text-white font-display">Buscar en Comunidad (Reddit r/iRacing · HD Horizontal)</h2>
+        <form id="agDiscoverForm" class="flex items-center gap-2">
+          <input type="text" id="agDiscoverQuery" value="Ferrari 296 GT3 Spa" placeholder="Ej. Porsche 963 night, Sebring sunset" class="px-3 py-1.5 rounded-xl border border-white/15 bg-black/40 text-xs text-white w-64" />
+          <button type="submit" class="px-4 py-1.5 rounded-xl bg-sky-500 text-slate-950 font-bold text-xs hover:bg-sky-400">Buscar</button>
+        </form>
+      </div>
+      <div id="agDiscoverGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+    </section>
+
+    <!-- Prompt 133: Tabs & Bulk Actions -->
+    <section class="space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex flex-wrap gap-2" id="agTabs">
+          <button type="button" data-status="pending" class="ag-tab px-4 py-2 rounded-xl text-xs font-mono font-bold bg-emerald-500 text-slate-950">Pendientes de Revisión</button>
+          <button type="button" data-status="published" class="ag-tab px-4 py-2 rounded-xl text-xs font-mono font-bold border border-white/15 text-white/75">Publicadas en Web</button>
+          <button type="button" data-status="archived" class="ag-tab px-4 py-2 rounded-xl text-xs font-mono font-bold border border-white/15 text-white/75">Archivo Antiguo</button>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" id="agAutoSyncCatalogBtn" class="px-3 py-1.5 rounded-lg bg-emerald-500 text-slate-950 text-xs font-mono font-bold hover:bg-emerald-400 transition cursor-pointer">⚡ Importar Todos los Coches Automáticamente</button>
+          <span id="agAutoSyncStatus" class="hidden px-2.5 py-1 rounded-lg bg-black/50 border border-emerald-500/30 text-[11px] font-mono text-emerald-300"></span>
+          <button type="button" id="agSyncOfficialBtn" class="px-3 py-1.5 rounded-lg bg-sky-500/20 border border-sky-500/40 text-sky-300 text-xs font-mono font-bold hover:bg-sky-500/30 transition cursor-pointer">↻ Sincronizar Lote 1</button>
+          <button type="button" id="agBulkPublish" class="px-3 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-mono">Publicar seleccionadas</button>
+          <button type="button" id="agBulkArchive" class="px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-mono">Archivar seleccionadas</button>
+        </div>
+      </div>
+      <div id="agGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </section>
+  </main>
+
+  <script is:inline>
+    (() => {
+      const API = "https://muntrume.atrumin16.workers.dev";
+      let currentStatus = "pending";
+      const batchItems = [];
+
+      const tokenInput = document.getElementById("agAdminToken");
+      const savedToken = localStorage.getItem("mmt_admin_token") || "";
+      if (tokenInput && savedToken) tokenInput.value = savedToken;
+
+      const authHeaders = () => {
+        const t = tokenInput?.value?.trim() || "";
+        if (t) localStorage.setItem("mmt_admin_token", t);
+        return t ? { "Content-Type": "application/json", "X-Admin-Token": t } : { "Content-Type": "application/json" };
+      };
+
+      async function loadList() {
+        const grid = document.getElementById("agGrid");
+        if (!grid) return;
+        grid.innerHTML = '<p class="text-xs font-mono text-white/50">Cargando...</p>';
+        try {
+          const res = await fetch(`${API}/api/gallery/admin/list?status=${currentStatus}`, {
+            headers: authHeaders(),
+            credentials: "include",
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            grid.innerHTML = `<p class="text-xs font-mono text-rose-400">${data.error || "Requiere sesión admin"}</p>`;
+            return;
+          }
+          const photos = data.photos || [];
+          if (!photos.length) {
+            grid.innerHTML = `<p class="text-xs font-mono text-white/50">Sin capturas en "${currentStatus}".</p>`;
+            return;
+          }
+          grid.innerHTML = photos.map((p) => `
+            <article class="rounded-xl border border-white/10 bg-[#0d1117] overflow-hidden flex flex-col justify-between" data-photo-id="${p.id}">
+              <div class="relative aspect-video bg-black">
+                <img src="${p.imageUrl}" alt="${p.title}" class="w-full h-full object-cover" loading="lazy" />
+                <label class="absolute top-2 left-2 bg-black/75 px-2 py-1 rounded flex items-center gap-1.5 text-[11px] font-mono text-white">
+                  <input type="checkbox" class="ag-bulk-chk accent-emerald-500" value="${p.id}" /> Sel.
+                </label>
+                ${p.featured ? '<span class="absolute top-2 right-2 px-2 py-0.5 rounded bg-amber-500 text-slate-950 text-[10px] font-bold">DESTACADA</span>' : ''}
+              </div>
+              <div class="p-3 space-y-2 text-xs">
+                <strong class="block text-white truncate">${p.title}</strong>
+                <span class="block text-[11px] font-mono text-white/60">${p.authorName} · ${p.car || p.category}</span>
+                <div class="flex flex-wrap gap-1.5 pt-1">
+                  <button type="button" data-act="publish" data-id="${p.id}" class="px-2.5 py-1 rounded bg-emerald-500 text-slate-950 font-bold text-[11px] cursor-pointer">✓ Publicar en Paddock</button>
+                  <button type="button" data-act="feature" data-id="${p.id}" class="px-2.5 py-1 rounded border border-amber-400/50 text-amber-300 text-[11px] cursor-pointer">Destacar</button>
+                  <button type="button" data-act="delete" data-id="${p.id}" class="px-2.5 py-1 rounded border border-rose-500/50 text-rose-300 text-[11px] cursor-pointer">✕ Descartar</button>
+                </div>
+              </div>
+            </article>
+          `).join("");
+        } catch {
+          grid.innerHTML = '<p class="text-xs font-mono text-rose-400">Error de conexión con la API.</p>';
+        }
+      }
+
+      document.getElementById("agGrid")?.addEventListener("click", async (e) => {
+        const btn = e.target.closest("button[data-act]");
+        if (!btn) return;
+        const action = btn.getAttribute("data-act");
+        const id = btn.getAttribute("data-id");
+        await fetch(`${API}/api/gallery/admin/action`, {
+          method: "POST",
+          headers: authHeaders(),
+          credentials: "include",
+          body: JSON.stringify({ action, id }),
+        });
+        loadList();
+      });
+
+      const runBulk = async (action) => {
+        const ids = Array.from(document.querySelectorAll(".ag-bulk-chk:checked")).map((c) => c.value);
+        if (!ids.length) return;
+        await fetch(`${API}/api/gallery/admin/action`, {
+          method: "POST",
+          headers: authHeaders(),
+          credentials: "include",
+          body: JSON.stringify({ action, ids }),
+        });
+        loadList();
+      };
+      document.getElementById("agBulkPublish")?.addEventListener("click", () => runBulk("bulk_publish"));
+      document.getElementById("agSyncOfficialBtn")?.addEventListener("click", async (e) => {
+        const btn = e.currentTarget;
+        btn.disabled = true;
+        btn.textContent = "Sincronizando…";
+        try {
+          await fetch(`${API}/api/gallery/sync-official`, {
+            method: "POST",
+            headers: authHeaders(),
+            credentials: "include",
+            body: JSON.stringify({ page: 1 }),
+          });
+          currentStatus = "pending";
+          loadList();
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "↻ Sincronizar Lote 1";
+        }
+      });
+
+      document.getElementById("agAutoSyncCatalogBtn")?.addEventListener("click", async (e) => {
+        const btn = e.currentTarget;
+        const statusEl = document.getElementById("agAutoSyncStatus");
+        btn.disabled = true;
+        btn.textContent = "Importando catálogo…";
+        if (statusEl) {
+          statusEl.classList.remove("hidden");
+          statusEl.textContent = "Iniciando escaneo de 60+ coches…";
+        }
+        let batch = 1;
+        let totalImported = 0;
+        let totalCars = 0;
+        try {
+          while (batch <= 25) {
+            const resp = await fetch(`${API}/api/gallery/sync-official`, {
+              method: "POST",
+              headers: authHeaders(),
+              credentials: "include",
+              body: JSON.stringify({ page: batch }),
+            });
+            if (!resp.ok) break;
+            const d = await resp.json().catch(() => ({}));
+            totalImported += Number(d.imported || 0);
+            totalCars += Number(d.carsDetected || 0);
+            if (statusEl) {
+              statusEl.textContent = `Lote ${batch} (${d.term || ""}) · ${totalImported} capturas importadas · ${totalCars} coches detectados`;
+            }
+            if (!d.hasMore) break;
+            batch = Number(d.nextBatch || batch + 1);
+          }
+          currentStatus = "pending";
+          loadList();
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "⚡ Importar Todos los Coches Automáticamente";
+        }
+      });
+      document.getElementById("agBulkArchive")?.addEventListener("click", () => runBulk("bulk_archive"));
+
+      document.getElementById("agTabs")?.addEventListener("click", (e) => {
+        const btn = e.target.closest(".ag-tab");
+        if (!btn) return;
+        currentStatus = btn.getAttribute("data-status") || "pending";
+        document.querySelectorAll(".ag-tab").forEach((b) => {
+          b.className = b === btn
+            ? "ag-tab px-4 py-2 rounded-xl text-xs font-mono font-bold bg-emerald-500 text-slate-950"
+            : "ag-tab px-4 py-2 rounded-xl text-xs font-mono font-bold border border-white/15 text-white/75";
+        });
+        loadList();
+      });
+
+      document.getElementById("agRefreshBtn")?.addEventListener("click", loadList);
+
+      // Batch WebP Drag & Drop
+      const batchInput = document.getElementById("agBatchFiles");
+      const batchQueue = document.getElementById("agBatchQueue");
+      const uploadBatchBtn = document.getElementById("agUploadBatchBtn");
+      document.getElementById("agPickBatchBtn")?.addEventListener("click", () => batchInput?.click());
+
+      async function toWebp(file) {
+        const bmp = await createImageBitmap(file);
+        const s = bmp.width > 1920 ? 1920 / bmp.width : 1;
+        const c = document.createElement("canvas");
+        c.width = Math.round(bmp.width * s);
+        c.height = Math.round(bmp.height * s);
+        c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+        bmp.close();
+        return c.toDataURL("image/webp", 0.86);
+      }
+
+      batchInput?.addEventListener("change", async () => {
+        batchItems.length = 0;
+        for (const f of Array.from(batchInput.files || []).slice(0, 20)) {
+          const webp = await toWebp(f);
+          batchItems.push({ title: f.name.replace(/\.[^.]+$/, ""), car: "", track: "", webp });
+        }
+        if (batchQueue) {
+          batchQueue.innerHTML = batchItems.map((it, idx) => `
+            <div class="rounded-xl border border-white/10 bg-black/40 p-2.5 space-y-1.5 text-xs">
+              <img src="${it.webp}" class="w-full aspect-video object-cover rounded" />
+              <input type="text" data-bidx="${idx}" data-bf="title" value="${it.title}" class="w-full px-2 py-1 rounded bg-black/60 border border-white/10 text-white" />
+              <div class="grid grid-cols-2 gap-1.5">
+                <input type="text" data-bidx="${idx}" data-bf="car" placeholder="Coche" class="px-2 py-1 rounded bg-black/60 border border-white/10 text-white" />
+                <input type="text" data-bidx="${idx}" data-bf="track" placeholder="Circuito" class="px-2 py-1 rounded bg-black/60 border border-white/10 text-white" />
+              </div>
+            </div>
+          `).join("");
+        }
+        if (uploadBatchBtn) uploadBatchBtn.hidden = batchItems.length === 0;
+      });
+
+      batchQueue?.addEventListener("input", (e) => {
+        const inp = e.target;
+        const idx = Number(inp.getAttribute("data-bidx"));
+        const field = inp.getAttribute("data-bf");
+        if (!Number.isNaN(idx) && field && batchItems[idx]) batchItems[idx][field] = inp.value;
+      });
+
+      uploadBatchBtn?.addEventListener("click", async () => {
+        uploadBatchBtn.disabled = true;
+        uploadBatchBtn.textContent = "Subiendo lote...";
+        for (let i = 0; i < batchItems.length; i += 3) {
+          await Promise.all(batchItems.slice(i, i + 3).map((it) =>
+            fetch(`${API}/api/gallery/admin/upload`, {
+              method: "POST",
+              headers: authHeaders(),
+              credentials: "include",
+              body: JSON.stringify({ title: it.title, car: it.car, track: it.track, imageWebp: it.webp, category: "gt3" }),
+            }),
+          ));
+        }
+        batchItems.length = 0;
+        if (batchQueue) batchQueue.innerHTML = "";
+        uploadBatchBtn.hidden = true;
+        uploadBatchBtn.disabled = false;
+        uploadBatchBtn.textContent = "Subir lote publicado";
+        currentStatus = "published";
+        loadList();
+      });
+
+      // Discover from Reddit
+      document.getElementById("agDiscoverForm")?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const q = document.getElementById("agDiscoverQuery")?.value || "iRacing GT3";
+        const grid = document.getElementById("agDiscoverGrid");
+        if (grid) grid.innerHTML = '<p class="text-xs font-mono text-white/50">Buscando capturas HD...</p>';
+        const res = await fetch(`${API}/api/gallery/admin/discover?q=${encodeURIComponent(q)}`, {
+          headers: authHeaders(),
+          credentials: "include",
+        });
+        const data = await res.json();
+        const results = data.results || [];
+        if (grid) {
+          grid.innerHTML = results.map((r, i) => `
+            <div class="rounded-xl border border-white/10 bg-black/40 overflow-hidden text-xs">
+              <img src="${r.imageUrl}" class="w-full aspect-video object-cover" loading="lazy" />
+              <div class="p-2.5 space-y-1.5">
+                <strong class="block text-white truncate">${r.title}</strong>
+                <span class="block text-[11px] font-mono text-white/60">${r.authorName} · ${r.width}×${r.height}</span>
+                <button type="button" data-imp="${i}" class="w-full py-1.5 rounded bg-emerald-500 text-slate-950 font-bold text-[11px]">+ Guardar y Publicar</button>
+              </div>
+            </div>
+          `).join("") || '<p class="text-xs font-mono text-white/50">Sin resultados HD horizontales.</p>';
+          grid.onclick = async (ev) => {
+            const btn = ev.target.closest("button[data-imp]");
+            if (!btn) return;
+            const item = results[Number(btn.getAttribute("data-imp"))];
+            btn.disabled = true;
+            btn.textContent = "Guardando...";
+            await fetch(`${API}/api/gallery/admin/import`, {
+              method: "POST",
+              headers: authHeaders(),
+              credentials: "include",
+              body: JSON.stringify(item),
+            });
+            btn.textContent = "✓ Publicada";
+          };
+        }
+      });
+
+      loadList();
+    })();
+  </script>
+</Layout>

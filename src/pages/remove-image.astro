@@ -1,0 +1,89 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout
+  title="Remove Image / Takedown Request · Muntrume Motorsport"
+  description="Request removal of a screenshot or image published on muntru.me."
+  canonical="https://muntru.me/remove-image/"
+  noindex={true}
+>
+  <main class="max-w-lg mx-auto px-4 py-16 text-white">
+    <div class="rounded-2xl border border-white/15 bg-[#0d1117] p-6 shadow-2xl space-y-4">
+      <a href="/gallery/" class="text-xs font-mono text-emerald-400 hover:underline">&larr; Volver a la galería</a>
+      <div>
+        <span class="text-[10.5px] font-mono uppercase tracking-widest text-rose-400">Derechos de Autor · Takedown</span>
+        <h1 class="text-2xl font-extrabold font-display mt-1">Solicitar retirada de imagen</h1>
+      </div>
+      <form id="riForm" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-mono text-[11px] text-white/70 mb-1">ID de la captura *</label>
+          <input type="text" id="riId" name="id" required class="w-full rounded-xl border border-white/15 bg-black/40 px-3 py-2 text-white font-mono" />
+        </div>
+        <div>
+          <label class="block font-mono text-[11px] text-white/70 mb-1">Nombre o @usuario del autor *</label>
+          <input type="text" name="authorName" required maxlength="80" placeholder="Ej. @tu_usuario" class="w-full rounded-xl border border-white/15 bg-black/40 px-3 py-2 text-white" />
+        </div>
+        <div>
+          <label class="block font-mono text-[11px] text-white/70 mb-1">Correo electrónico de contacto *</label>
+          <input type="email" name="email" required maxlength="120" placeholder="tu@correo.com" class="w-full rounded-xl border border-white/15 bg-black/40 px-3 py-2 text-white" />
+        </div>
+        <div>
+          <label class="block font-mono text-[11px] text-white/70 mb-1">Enlace a la publicación original (opcional)</label>
+          <input type="url" name="originalUrl" maxlength="250" placeholder="https://..." class="w-full rounded-xl border border-white/15 bg-black/40 px-3 py-2 text-white" />
+        </div>
+        <div>
+          <label class="block font-mono text-[11px] text-white/70 mb-1">Motivo / Comentario *</label>
+          <textarea name="reason" required rows="3" maxlength="300" class="w-full rounded-xl border border-white/15 bg-black/40 px-3 py-2 text-white"></textarea>
+        </div>
+        <label class="flex items-start gap-2.5 text-[11px] text-white/80 cursor-pointer">
+          <input type="checkbox" required style="width:16px;height:16px;min-width:16px;margin-top:2px;accent-color:#f43f5e;appearance:auto;-webkit-appearance:checkbox;" />
+          <span>Declaro bajo mi responsabilidad que soy el autor o titular de derechos de esta captura.</span>
+        </label>
+        <p id="riStatus" class="text-xs font-mono hidden"></p>
+        <button type="submit" id="riSubmit" class="w-full py-2.5 rounded-xl bg-rose-500 text-white font-bold hover:bg-rose-400 transition cursor-pointer">
+          Enviar solicitud de retirada
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <script is:inline>
+    (() => {
+      const qs = new URLSearchParams(window.location.search);
+      const idInput = document.getElementById("riId");
+      if (idInput && qs.get("id")) idInput.value = qs.get("id");
+      const form = document.getElementById("riForm");
+      const status = document.getElementById("riStatus");
+      const btn = document.getElementById("riSubmit");
+      form?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const fd = new FormData(form);
+        if (btn) { btn.disabled = true; btn.textContent = "Enviando…"; }
+        try {
+          const r = await fetch("https://muntrume.atrumin16.workers.dev/api/gallery/takedown", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: fd.get("id"),
+              authorName: fd.get("authorName"),
+              email: fd.get("email"),
+              contact: `${fd.get("authorName")} <${fd.get("email")}>`,
+              originalUrl: fd.get("originalUrl"),
+              reason: fd.get("reason"),
+            }),
+          });
+          const d = await r.json().catch(() => ({}));
+          if (status) {
+            status.textContent = d.message || d.error || "Solicitud enviada.";
+            status.className = r.ok ? "text-xs font-mono text-emerald-400" : "text-xs font-mono text-rose-400";
+            status.classList.remove("hidden");
+          }
+          if (r.ok) form.reset();
+        } finally {
+          if (btn) { btn.disabled = false; btn.textContent = "Enviar solicitud de retirada"; }
+        }
+      });
+    })();
+  </script>
+</Layout>
