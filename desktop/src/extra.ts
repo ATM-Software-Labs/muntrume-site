@@ -1912,6 +1912,17 @@ export function updateOverlayBrandBadge(carFolder?: string): void {
 
 function loadDisabledWidgets(): Set<string> {
   try {
+    if (localStorage.getItem("mmt-hud-layout-version") !== "3") {
+      localStorage.setItem("mmt-hud-layout-version", "3");
+      localStorage.removeItem("mmt-hud-positions");
+      const rawPrev = localStorage.getItem("mmt-hud-disabled-widgets");
+      if (rawPrev) {
+        const s = new Set(JSON.parse(rawPrev) as string[]);
+        s.delete("trackmap");
+        localStorage.setItem("mmt-hud-disabled-widgets", JSON.stringify(Array.from(s)));
+        return s;
+      }
+    }
     const raw = localStorage.getItem("mmt-hud-disabled-widgets");
     if (raw) return new Set(JSON.parse(raw) as string[]);
   } catch {}
@@ -2285,11 +2296,11 @@ function ensureLayoutSchemaV2(force = false): void {
     // Prompt 105 & 163: Factory Presets, Custom Profiles & JSON Export/Import
     const FACTORY_PRESETS: Record<string, { disabled: string[]; ghost: boolean }> = {
       sprint_gt3: {
-        disabled: ["fuel", "trackmap", "laptimes", "conditions", "fastercar", "cluster", "delta", "radar", "tires", "lights"],
+        disabled: ["fuel", "laptimes", "conditions", "fastercar", "cluster", "delta", "radar", "tires", "lights"],
         ghost: false,
       },
       endurance_multi: {
-        disabled: ["trackmap", "laptimes", "cluster", "delta", "radar", "tires"],
+        disabled: ["laptimes", "cluster", "delta", "radar", "tires"],
         ghost: false,
       },
       practice_pace: {

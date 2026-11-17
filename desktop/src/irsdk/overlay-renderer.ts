@@ -605,7 +605,7 @@ export function renderTrackConditionsWidget(container: HTMLElement, state: Irsdk
       ? `<span class="px-1.5 py-0.5 rounded-[2px] bg-[#0ea5e9] text-white font-black text-[9.5px] tracking-wider">${playerCompound === 0 ? "⚠ WET" : "WET"}</span>`
       : wetness === 3
         ? `<span class="px-1.5 py-0.5 rounded-[2px] bg-[#f59e0b] text-black font-black text-[9.5px] tracking-wider animate-pulse">CROSSOVER</span>`
-        : `<span class="px-1.5 py-0.5 rounded-[2px] bg-[#f8fafc] text-black font-black text-[9.5px] tracking-wider">SLICK</span>`;
+        : "";
 
   setHtmlIfChanged(container, `
     <div class="h-[26px] rounded-[2px] border border-white/10 text-white font-mono text-[13px] font-semibold tabular-nums flex items-center whitespace-nowrap select-none" style="width: max-content; padding: 3px 10px; gap: 10px; background: rgba(8, 10, 14, 0.88);">
