@@ -115,7 +115,7 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
   const rowsHtml = displayEntries
     .map((e: RelativeEntry, rowIdx: number) => {
       const isSelf = e.isActiveCam;
-      const rowCls = `mmt-rel-row font-mono${isSelf ? " is-self" : rowIdx % 2 === 1 ? " is-alt" : ""}`;
+      const isClose = !isSelf && Math.abs(e.deltaSeconds ?? 99) <= 1.5; const rowCls = `mmt-rel-row font-mono${isSelf ? " is-self" : isClose ? " border-l-2 border-amber-400 bg-amber-500/10" : rowIdx % 2 === 1 ? " is-alt" : ""}`;
 
       const gapClean = (e.deltaStr || "0.0").replace(/s$/i, "");
       const gapColor = isSelf
@@ -1339,10 +1339,13 @@ export function renderRaceDualDeltaWidget(container: HTMLElement, state: IrsdkCo
 
   container.style.display = "block";
   setHtmlIfChanged(container, `
-    <div class="px-3 py-1 rounded-[3px] border border-white/10 bg-[#080a0e]/88 text-white font-mono text-[14px] font-bold tabular-nums flex items-center gap-4 whitespace-nowrap select-none shadow-lg">
+    <div class="px-2.5 py-0.5 rounded-[4px] border border-white/15 bg-[#080a0e]/78 text-white font-mono text-[12px] font-bold tabular-nums flex items-center gap-4 whitespace-nowrap select-none shadow-lg">
       ${carAhead ? `<span>DELANTE (P${carAhead.classPosition || myClassRank}): <strong class="text-white">+${aheadGap.toFixed(2)}s</strong> ${fmtTrend(dualDeltaMemory.aheadTrend)}</span>` : ""}
       ${classLeader ? `<span>LÃDER (P1): <strong class="text-amber-300">+${leaderGap.toFixed(2)}s</strong> ${fmtTrend(dualDeltaMemory.leaderTrend)}</span>` : ""}
     </div>
   `);
 }
+
+
+
 

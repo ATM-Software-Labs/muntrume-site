@@ -1225,13 +1225,13 @@
               </div>
 
               <!-- TOP LEFT: Standings (Kapps Pro 1-line 574px compact with â–²/â–¼, 112px name, Lic+iR exact, Â±iR, Last & BestLap) -->
-              <div id="widgetStandings" class="mmt-hud-widget absolute left-3 top-3 w-[574px] rounded-[2px] border border-white/[0.08] text-white p-1 text-[11.5px] font-mono tabular-nums overflow-hidden" style="background: rgba(8, 10, 14, 0.88);" data-widget="standings">
+              <div id="widgetStandings" class="mmt-hud-widget absolute left-3 top-3 w-[574px] rounded-[2px] border border-white/[0.08] text-white p-1 text-[11.5px] font-mono tabular-nums overflow-hidden" style="background: rgba(8, 10, 14, 0.78);" data-widget="standings">
                 <div id="ovStandings"></div>
                 <div id="ovPitbox" class="mt-1"></div>
               </div>
 
               <!-- TOP RIGHT: Relative (Kapps Pro 1-line 458px with F/XD/PIT, full surname, Lic+iR exact, Â±iR & LastLap) -->
-              <div id="widgetRelative" class="mmt-hud-widget absolute right-3 top-3 w-[458px] rounded-[2px] border border-white/[0.08] text-white p-1 text-[11.5px] font-mono tabular-nums overflow-hidden" style="background: rgba(8, 10, 14, 0.88);" data-widget="relative">
+              <div id="widgetRelative" class="mmt-hud-widget absolute right-3 top-3 w-[458px] rounded-[2px] border border-white/[0.08] text-white p-1 text-[11.5px] font-mono tabular-nums overflow-hidden" style="background: rgba(8, 10, 14, 0.78);" data-widget="relative">
                 <div id="ovRelative"></div>
               </div>
 
@@ -2028,12 +2028,12 @@
       </div>
 
       <!-- 1. Top-Left (top: 6px, left: 6px): Ultra-Tight Kapps Standings (w-max, ~340px Practice / ~410px Race) -->
-      <div id="floatStandingsCard" class="mmt-float-widget fixed top-[6px] left-[6px] w-max rounded-[2px] text-white text-[11px] font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: rgba(8, 10, 14, 0.88); text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="standings">
+      <div id="floatStandingsCard" class="mmt-float-widget fixed top-[6px] left-[6px] w-max rounded-[2px] text-white text-[11px] font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: rgba(8, 10, 14, 0.78); text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="standings">
         <div id="ovStandingsFloat"></div>
       </div>
 
       <!-- 2. Top-Right (top: 6px, right: 6px): Ultra-Tight Kapps Relative (w-max, ~275px) -->
-      <div id="floatRelativeCard" class="mmt-float-widget fixed top-[6px] right-[6px] w-max rounded-[2px] text-white text-[11px] font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: rgba(8, 10, 14, 0.88); text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="relative">
+      <div id="floatRelativeCard" class="mmt-float-widget fixed top-[6px] right-[6px] w-max rounded-[2px] text-white text-[11px] font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: rgba(8, 10, 14, 0.78); text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="relative">
         <div id="ovRelativeFloat"></div>
       </div>
 
@@ -2059,17 +2059,17 @@
       </div>
 
       <!-- 5. Unified CarTelemetryDock (340x118px scaled 1.15x at bottom: 18px; left: 265px beside Black Box) -->
-      <div id="floatCarTelemetryDock" class="mmt-float-widget fixed bottom-[165px] left-[18px] w-[340px] min-h-[118px] rounded-[4px] border border-white/10 text-white p-2 font-mono tabular-nums pointer-events-auto overflow-hidden" style="zoom: 1.15; background: rgba(8, 10, 14, 0.88); text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="fuel">
+      <div id="floatCarTelemetryDock" class="mmt-float-widget fixed bottom-[165px] left-[18px] w-[340px] min-h-[118px] rounded-[4px] border border-white/10 text-white p-2 font-mono tabular-nums pointer-events-auto overflow-hidden" style="zoom: 1.05; background: rgba(8, 10, 14, 0.78); text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="fuel">
         <div id="ovCarTelemetryDockFloat"></div>
       </div>
 
-      <!-- 5b. Bottom-Right Live Track Map Canvas (above iRacing FUEL Black Box at bottom: 255px; right: 18px) -->
+      <!-- 5b. Bottom-Right Live Track Map Canvas (above iRacing FUEL Black Box at bottom: 285px; right: 18px) -->
       <div id="floatTrackMapCard" class="mmt-float-widget fixed bottom-[255px] right-[18px] w-[180px] h-[132px] rounded-[4px] border border-white/10 pointer-events-auto overflow-hidden" style="background: rgba(10, 12, 16, 0.72);" data-widget="trackmap">
         <canvas id="ovTrackMapFloat" width="180" height="132"></canvas>
       </div>
 
       <!-- 6. Bottom-Center Pedals (280x82px scaled 1.15x left of wheel) + Centered Steering Wheel (46x46px at left: 50%) -->
-      <div id="floatInputsCard" class="mmt-float-widget fixed right-[calc(50%+36px)] bottom-[24px] w-[280px] flex flex-col items-center gap-1 pointer-events-auto" style="zoom: 1.15;" data-widget="inputs">
+      <div id="floatInputsCard" class="mmt-float-widget fixed right-[calc(50%+36px)] bottom-[24px] w-[280px] flex flex-col items-center gap-1 pointer-events-auto" style="zoom: 1.05;" data-widget="inputs">
         <div id="floatShiftLightsRow" class="flex flex-col items-center gap-1 w-full" data-widget="lights">
           <div id="ovDigiFlagFloat" class="w-full max-w-[260px]" style="display: none;"></div>
           <div class="flex items-center gap-0.5 px-2 py-0.5 rounded bg-[#0a0c10]/70" id="ovShiftLightsFloat"></div>
@@ -2188,6 +2188,9 @@
     <script type="module" src="./src/main.ts"></script>
   </body>
 </html>
+
+
+
 
 
 
