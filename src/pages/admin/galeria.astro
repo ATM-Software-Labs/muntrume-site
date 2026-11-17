@@ -64,11 +64,12 @@ import Layout from "../../layouts/Layout.astro";
     <section class="space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div class="flex flex-wrap gap-2" id="agTabs">
-          <button type="button" data-status="pending" class="ag-tab px-4 py-2 rounded-xl text-xs font-mono font-bold bg-emerald-500 text-slate-950">Pendientes de Aprobar</button>
+          <button type="button" data-status="pending" class="ag-tab px-4 py-2 rounded-xl text-xs font-mono font-bold bg-emerald-500 text-slate-950">Pendientes de Revisión</button>
           <button type="button" data-status="published" class="ag-tab px-4 py-2 rounded-xl text-xs font-mono font-bold border border-white/15 text-white/75">Publicadas en Web</button>
           <button type="button" data-status="archived" class="ag-tab px-4 py-2 rounded-xl text-xs font-mono font-bold border border-white/15 text-white/75">Archivo Antiguo</button>
         </div>
         <div class="flex flex-wrap gap-2">
+          <button type="button" id="agSyncOfficialBtn" class="px-3 py-1.5 rounded-lg bg-sky-500/20 border border-sky-500/40 text-sky-300 text-xs font-mono font-bold hover:bg-sky-500/30 transition cursor-pointer">↻ Sincronizar Press Kit (Pendientes)</button>
           <button type="button" id="agBulkPublish" class="px-3 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-mono">Publicar seleccionadas</button>
           <button type="button" id="agBulkArchive" class="px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-mono">Archivar seleccionadas</button>
         </div>
@@ -125,9 +126,9 @@ import Layout from "../../layouts/Layout.astro";
                 <strong class="block text-white truncate">${p.title}</strong>
                 <span class="block text-[11px] font-mono text-white/60">${p.authorName} · ${p.car || p.category}</span>
                 <div class="flex flex-wrap gap-1.5 pt-1">
-                  <button type="button" data-act="publish" data-id="${p.id}" class="px-2.5 py-1 rounded bg-emerald-500 text-slate-950 font-bold text-[11px]">Publicar en Web</button>
-                  <button type="button" data-act="feature" data-id="${p.id}" class="px-2.5 py-1 rounded border border-amber-400/50 text-amber-300 text-[11px]">Destacar</button>
-                  <button type="button" data-act="delete" data-id="${p.id}" class="px-2.5 py-1 rounded border border-rose-500/50 text-rose-300 text-[11px]">Eliminar</button>
+                  <button type="button" data-act="publish" data-id="${p.id}" class="px-2.5 py-1 rounded bg-emerald-500 text-slate-950 font-bold text-[11px] cursor-pointer">✓ Publicar en Paddock</button>
+                  <button type="button" data-act="feature" data-id="${p.id}" class="px-2.5 py-1 rounded border border-amber-400/50 text-amber-300 text-[11px] cursor-pointer">Destacar</button>
+                  <button type="button" data-act="delete" data-id="${p.id}" class="px-2.5 py-1 rounded border border-rose-500/50 text-rose-300 text-[11px] cursor-pointer">✕ Descartar</button>
                 </div>
               </div>
             </article>
@@ -163,6 +164,24 @@ import Layout from "../../layouts/Layout.astro";
         loadList();
       };
       document.getElementById("agBulkPublish")?.addEventListener("click", () => runBulk("bulk_publish"));
+      document.getElementById("agSyncOfficialBtn")?.addEventListener("click", async (e) => {
+        const btn = e.currentTarget;
+        btn.disabled = true;
+        btn.textContent = "Sincronizando…";
+        try {
+          await fetch(`${API}/api/gallery/sync-official`, {
+            method: "POST",
+            headers: authHeaders(),
+            credentials: "include",
+            body: "{}",
+          });
+          currentStatus = "pending";
+          loadList();
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "↻ Sincronizar Press Kit (Pendientes)";
+        }
+      });
       document.getElementById("agBulkArchive")?.addEventListener("click", () => runBulk("bulk_archive"));
 
       document.getElementById("agTabs")?.addEventListener("click", (e) => {
