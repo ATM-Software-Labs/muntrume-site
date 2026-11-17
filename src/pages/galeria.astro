@@ -310,6 +310,37 @@ const gallerySchema = {
       `).join('');
       cards.length = 0;
       cards.push(...Array.from(grid.querySelectorAll<HTMLElement>('.galeria-card')));
+
+      // Update dynamic category filter counts + apply ?car= / ?track= filter if present
+      const counts: Record<string, number> = { all: data.photos.length, gt3: 0, gtp: 0, cup: 0, night: 0 };
+      for (const p of data.photos) {
+        const c = String(p.category || '').toLowerCase();
+        if (c in counts) counts[c] += 1;
+      }
+      const labels: Record<string, string> = {
+        all: 'Todas',
+        gt3: 'GT3',
+        gtp: 'Prototipos GTP',
+        cup: 'Cup',
+        night: 'Noche / Resistencia',
+      };
+      document.querySelectorAll<HTMLButtonElement>('.galeria-filter-btn').forEach((b) => {
+        const f = b.dataset.filter || 'all';
+        if (labels[f]) b.textContent = `${labels[f]} (${counts[f] ?? 0})`;
+      });
+      const qs = new URLSearchParams(window.location.search);
+      const qCar = (qs.get('car') || '').toLowerCase();
+      const qTrack = (qs.get('track') || '').toLowerCase();
+      if (qCar || qTrack) {
+        cards.forEach((c) => {
+          const btn = c.querySelector<HTMLButtonElement>('.galeria-open-btn');
+          const cSlug = (btn?.dataset.carSlug || '').toLowerCase();
+          const tSlug = (btn?.dataset.trackSlug || '').toLowerCase();
+          const match = (!qCar || cSlug === qCar) && (!qTrack || tSlug === qTrack);
+          c.style.display = match ? '' : 'none';
+        });
+      }
+
       cards.forEach((card) => {
         const btn = card.querySelector<HTMLButtonElement>('.galeria-open-btn');
         btn?.addEventListener('click', () => {
