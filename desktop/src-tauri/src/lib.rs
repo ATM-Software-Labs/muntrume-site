@@ -177,10 +177,10 @@ fn install_tray(app: &AppHandle) -> tauri::Result<()> {
         app,
         &[
             &MenuItem::with_id(app, "open", "Abrir MMT Sync", true, None::<&str>)?,
-            &MenuItem::with_id(app, "toggle_overlays", "Activar/Pausar Overlays", true, None::<&str>)?,
-            &MenuItem::with_id(app, "edit_hud", "Modo Edición HUD", true, None::<&str>)?,
-            &MenuItem::with_id(app, "sync", "Sincronizar setups", true, None::<&str>)?,
-            &MenuItem::with_id(app, "quit", "Salir completamente", true, None::<&str>)?,
+            &MenuItem::with_id(app, "cycle_hud_mode", "Modo HUD: Pista / Replay / Oculto", true, None::<&str>)?,
+            &MenuItem::with_id(app, "sync", "Sincronizar Setups Ahora", true, None::<&str>)?,
+            &MenuItem::with_id(app, "check_updates", "Buscar Actualizaciones", true, None::<&str>)?,
+            &MenuItem::with_id(app, "quit", "Salir", true, None::<&str>)?,
         ],
     )?;
     let icon = tauri::image::Image::from_bytes(include_bytes!("../icons/32x32.png"))?;
@@ -200,18 +200,12 @@ fn install_tray(app: &AppHandle) -> tauri::Result<()> {
                     let _ = app.emit("mmt-refresh", ());
                 });
             }
-            "toggle_overlays" => {
-                let app_clone = app.clone();
-                let show = app.get_webview_window("overlay").is_none();
-                tauri::async_runtime::spawn(async move {
-                    let _ = toggle_overlay(app_clone, show).await;
-                });
+            "cycle_hud_mode" => {
+                let _ = app.emit("mmt-tray-cycle-hud-mode", ());
             }
-            "edit_hud" => {
-                if let Some(window) = app.get_webview_window("overlay") {
-                    let next = !OVERLAY_EDITING.load(std::sync::atomic::Ordering::Relaxed);
-                    apply_overlay_edit_state(app, &window, next);
-                }
+            "check_updates" => {
+                show_main(app);
+                let _ = app.emit("mmt-tray-check-updates", ());
             }
             "open" => show_main(app),
             "quit" => app.exit(0),

@@ -4,10 +4,7 @@ import { PADDOCK_ALBUMS } from '../data/paddock-gallery';
 
 const pageTitle = 'Álbumes oficiales del Paddock | Muntrume Motorsport';
 const pageDescription =
-  'Archivo completo de álbumes y coches oficiales de Muntrume Motorsport en iRacing filtrables por marca y categoría.';
-
-const brands = Array.from(new Set(PADDOCK_ALBUMS.map((a) => a.brand)));
-const classes = Array.from(new Set(PADDOCK_ALBUMS.map((a) => a.carClass)));
+  'Archivo completo de álbumes y coches oficiales de Muntrume Motorsport en iRacing filtrables por marca, búsqueda y categoría.';
 ---
 
 <Layout
@@ -18,62 +15,92 @@ const classes = Array.from(new Set(PADDOCK_ALBUMS.map((a) => a.carClass)));
   ogImageAlt="Álbumes oficiales Muntrume Motorsport"
 >
   <section class="r-section" style="padding-top: clamp(96px, 11vw, 128px); padding-bottom: 80px; border-top: none;">
-    <div class="r-wrap space-y-8">
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-5 border-b border-[var(--r-line)]">
-      <div class="space-y-2">
-        <div class="flex items-center gap-4 text-xs font-mono font-bold">
-          <a href="/" class="text-[var(--r-muted)] hover:text-[var(--r-accent)]">&larr; Volver al inicio</a>
-          <a href="/paddock/" class="text-[var(--r-accent)] hover:underline">&larr; Paddock</a>
+    <div class="r-wrap space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-5 border-b border-[var(--r-line)]">
+        <div class="space-y-2">
+          <div class="flex items-center gap-4 text-xs font-mono font-bold">
+            <a href="/" class="text-[var(--r-muted)] hover:text-[var(--r-accent)]">&larr; Volver al inicio</a>
+            <a href="/gallery/" class="text-[var(--r-accent)] hover:underline">Galería completa &rarr;</a>
+          </div>
+          <h1 class="text-3xl sm:text-4xl font-extrabold text-[var(--r-text)] font-display tracking-tight">
+            Álbumes oficiales del Paddock
+          </h1>
+          <p id="albumsCountLabel" class="text-xs sm:text-sm text-[var(--r-muted)] font-mono">
+            Cargando colecciones oficiales…
+          </p>
         </div>
-        <h1 class="text-3xl sm:text-4xl font-extrabold text-[var(--r-text)] font-display tracking-tight">
-          Álbumes oficiales del Paddock
-        </h1>
-        <p class="text-xs sm:text-sm text-[var(--r-muted)] max-w-xl">
-          Colección oficial de álbumes publicados por la comunidad y el equipo, agrupados por coche y categoría.
-        </p>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <input
+            type="search"
+            id="albumSearchInput"
+            placeholder="Buscar coche o marca (Lamborghini, Ferrari, Formula, NASCAR…)"
+            class="h-9 w-64 sm:w-72 rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] px-3 text-xs font-mono text-[var(--r-text)]"
+          />
+          <select id="albumClassFilter" class="h-9 rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] px-3 text-xs font-mono text-[var(--r-text)]">
+            <option value="ALL">Todas las categorías</option>
+          </select>
+        </div>
       </div>
 
-      <div class="flex flex-wrap items-center gap-2">
-        <select id="albumBrandFilter" class="h-9 rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] px-3 text-xs font-mono text-[var(--r-text)]">
-          <option value="ALL">Todas las marcas</option>
-          {brands.map((b) => (
-            <option value={b}>{b}</option>
-          ))}
-        </select>
-        <select id="albumClassFilter" class="h-9 rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] px-3 text-xs font-mono text-[var(--r-text)]">
-          <option value="ALL">Todas las categorías</option>
-          {classes.map((c) => (
-            <option value={c}>{c}</option>
-          ))}
-        </select>
-      </div>
-    </div>
+      <div id="albumCategoryPills" class="flex flex-wrap items-center gap-2"></div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" id="albumesGrid">
-      <div class="col-span-full rounded-2xl border border-dashed border-[var(--r-line)] p-10 text-center text-sm font-mono text-[var(--r-muted)]">
-        Todavía no hay álbumes publicados.
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" id="albumesGrid">
+        <div class="col-span-full rounded-2xl border border-dashed border-[var(--r-line)] p-10 text-center text-sm font-mono text-[var(--r-muted)]">
+          Cargando álbumes oficiales…
+        </div>
       </div>
-    </div>
     </div>
   </section>
 
   <script is:inline>
     (() => {
       const grid = document.getElementById("albumesGrid");
+      const countEl = document.getElementById("albumsCountLabel");
+      const searchEl = document.getElementById("albumSearchInput");
+      const classSel = document.getElementById("albumClassFilter");
+      const pillsEl = document.getElementById("albumCategoryPills");
       if (!grid) return;
-      fetch("https://muntrume.atrumin16.workers.dev/api/gallery?status=published&limit=200")
-        .then((r) => (r.ok ? r.json() : null))
-        .then((data) => {
-          if (!data || !Array.isArray(data.albums)) return;
-          if (data.albums.length === 0) {
-            grid.innerHTML = `<div class="col-span-full rounded-2xl border border-dashed border-[var(--r-line)] p-10 text-center text-sm font-mono text-[var(--r-muted)]">Próximamente álbumes oficiales del equipo.</div>`;
-            return;
-          }
-          grid.innerHTML = data.albums.map((album) => `
+
+      const LABELS = {
+        gt3: "GT3",
+        gtp: "Prototipos GTP",
+        gte: "GTE / Classic",
+        gt4: "GT4",
+        cup: "Cup",
+        formula: "Formula",
+        night: "Noche / Resistencia",
+      };
+
+      let allAlbums = [];
+      let activeCat = "ALL";
+
+      const render = () => {
+        const q = (searchEl?.value || "").trim().toLowerCase();
+        const filtered = allAlbums.filter((a) => {
+          const cat = String(a.category || "").toLowerCase();
+          const okCat = activeCat === "ALL" || cat === activeCat.toLowerCase();
+          const okSearch = !q || String(a.car || "").toLowerCase().includes(q) || cat.includes(q);
+          return okCat && okSearch;
+        });
+
+        if (countEl) {
+          countEl.textContent = `Mostrando ${filtered.length} de ${allAlbums.length} colecciones oficiales`;
+        }
+
+        if (!filtered.length) {
+          grid.innerHTML = `<div class="col-span-full rounded-2xl border border-dashed border-[var(--r-line)] p-10 text-center text-sm font-mono text-[var(--r-muted)]">No hay coches que coincidan con el filtro actual.</div>`;
+          return;
+        }
+
+        grid.innerHTML = filtered.map((album) => {
+          const useCrop = Boolean(album.hasLegacyWatermark && album.cleanCrop && !album.aiEnhanced);
+          const cropStyle = useCrop ? "transform:scale(1.13);transform-origin:center;" : "";
+          return `
             <a href="/gallery/?car=${encodeURIComponent(album.slug)}" data-brand="${album.car}" data-class="${album.category}" class="album-card group rounded-2xl overflow-hidden bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-300 flex flex-col justify-between">
               <div class="relative w-full aspect-video overflow-hidden bg-[#090d12]">
-                <img src="${album.cover}" alt="${album.car}" width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://muntrume.atrumin16.workers.dev/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">${album.category}</span>
+                <img src="${album.cover}" alt="${album.car}" width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://muntrume.atrumin16.workers.dev/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" style="${cropStyle}" />
+                <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">${LABELS[album.category] || album.category}</span>
                 <span class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded bg-black/75 border border-white/15 text-white text-[10px] font-mono font-bold">${album.count} fotos · ${album.views} vistas</span>
               </div>
               <div class="p-4 flex items-center justify-between text-xs font-mono">
@@ -81,28 +108,64 @@ const classes = Array.from(new Set(PADDOCK_ALBUMS.map((a) => a.carClass)));
                 <span class="text-[var(--r-accent)] font-bold">&rarr;</span>
               </div>
             </a>
-          `).join("");
+          `;
+        }).join("");
+      };
+
+      const renderPills = () => {
+        const counts = {};
+        for (const a of allAlbums) {
+          const c = String(a.category || "").toLowerCase();
+          if (c) counts[c] = (counts[c] || 0) + 1;
+        }
+        const order = ["gt3", "gtp", "gte", "cup", "gt4", "formula", "night", ...Object.keys(counts)];
+        const keys = Array.from(new Set(order)).filter((k) => (counts[k] || 0) >= 1);
+
+        if (classSel) {
+          classSel.innerHTML = [
+            `<option value="ALL">Todas (${allAlbums.length})</option>`,
+            ...keys.map((k) => `<option value="${k}">${LABELS[k] || k.toUpperCase()} (${counts[k]})</option>`),
+          ].join("");
+          classSel.value = activeCat;
+        }
+
+        if (pillsEl) {
+          const mkBtn = (k, label) => {
+            const on = activeCat === k;
+            return `<button type="button" data-album-cat="${k}" class="px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition cursor-pointer ${on ? "bg-[var(--r-accent)] text-[var(--r-accent-ink)] border border-[var(--r-accent)]" : "bg-[var(--r-surface)] text-[var(--r-muted)] border border-[var(--r-line)] hover:border-[var(--r-accent)]"}">${label}</button>`;
+          };
+          pillsEl.innerHTML = [
+            mkBtn("ALL", `Todas (${allAlbums.length})`),
+            ...keys.map((k) => mkBtn(k, `${LABELS[k] || k.toUpperCase()} (${counts[k]})`)),
+          ].join("");
+        }
+      };
+
+      pillsEl?.addEventListener("click", (e) => {
+        const b = e.target.closest("button[data-album-cat]");
+        if (!b) return;
+        activeCat = b.getAttribute("data-album-cat") || "ALL";
+        renderPills();
+        render();
+      });
+
+      classSel?.addEventListener("change", () => {
+        activeCat = classSel.value || "ALL";
+        renderPills();
+        render();
+      });
+
+      searchEl?.addEventListener("input", render);
+
+      fetch("https://muntrume.atrumin16.workers.dev/v1/albums")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (!data || !Array.isArray(data.albums)) return;
+          allAlbums = data.albums;
+          renderPills();
+          render();
         })
         .catch(() => {});
     })();
   </script>
 </Layout>
-
-<script>
-  const brandSel = document.getElementById('albumBrandFilter') as HTMLSelectElement | null;
-  const classSel = document.getElementById('albumClassFilter') as HTMLSelectElement | null;
-
-  const applyFilters = () => {
-    const b = brandSel?.value || 'ALL';
-    const c = classSel?.value || 'ALL';
-    const cards = Array.from(document.querySelectorAll<HTMLElement>('.album-card'));
-    cards.forEach((card) => {
-      const okB = b === 'ALL' || (card.dataset.brand || '').toLowerCase().includes(b.toLowerCase());
-      const okC = c === 'ALL' || (card.dataset.class || '').toLowerCase() === c.toLowerCase();
-      card.hidden = !(okB && okC);
-    });
-  };
-
-  brandSel?.addEventListener('change', applyFilters);
-  classSel?.addEventListener('change', applyFilters);
-</script>

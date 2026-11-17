@@ -1,3 +1,4 @@
+import { listen } from "@tauri-apps/api/event";
 import type { HardwareReport, IbtSessionMeta, IbtSessionReport, IracingAnalysis, LiveSample, Settings, Snapshot } from "./types";
 import { areSessionsCompatible, computeDistanceDelta, resampleTrackByDistance } from "./telemetry/alignment";
 import { cleanTelemetrySignals, detectCornerKeyEvents } from "./telemetry/signal-cleaner";
@@ -3001,6 +3002,13 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
     updateReplayHudModeBtn();
   });
   updateReplayHudModeBtn();
+  void listen("mmt-tray-cycle-hud-mode", () => {
+    VisibilityRulesEngine.getInstance().cycleReplayHudMode();
+    updateReplayHudModeBtn();
+  });
+  void listen("mmt-tray-check-updates", () => {
+    document.getElementById("btnCheckUpdate")?.click();
+  });
 
   // Global shortcuts: Streamer (Ctrl+Shift+S / F8), Replay HUD 3-mode (Ctrl+Alt+H), Boss Key (Ctrl+H)
   window.addEventListener("keydown", (e: KeyboardEvent) => {
