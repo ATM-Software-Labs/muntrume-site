@@ -71,6 +71,7 @@ import Layout from "../../layouts/Layout.astro";
         <div class="flex flex-wrap items-center gap-2">
           <button type="button" id="agFullArchiveBtn" class="px-3 py-1.5 rounded-lg bg-emerald-500 text-slate-950 text-xs font-mono font-bold hover:bg-emerald-400 transition cursor-pointer">🚀 Subir Todo el Archivo de iRacing</button>
           <button type="button" id="agResetCursorBtn" class="px-3 py-1.5 rounded-lg border border-white/20 text-white/80 text-xs font-mono hover:border-emerald-400 transition cursor-pointer">↺ Reiniciar Cursor desde Página 1</button>
+          <button type="button" id="agVerifyCarsBtn" class="px-3 py-1.5 rounded-lg border border-sky-400/40 bg-sky-500/15 text-sky-300 text-xs font-mono font-bold hover:bg-sky-500/25 transition cursor-pointer">🩺 Verificar Carga de Todos los Coches</button>
           <button type="button" id="agAutoSyncCatalogBtn" class="px-3 py-1.5 rounded-lg bg-sky-500/20 border border-sky-500/40 text-sky-300 text-xs font-mono font-bold hover:bg-sky-500/30 transition cursor-pointer">⚡ Sync por Marca</button>
           <button type="button" id="agBulkPublish" class="px-3 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-mono">Publicar seleccionadas</button>
           <button type="button" id="agBulkArchive" class="px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-mono">Archivar seleccionadas</button>
@@ -191,6 +192,32 @@ import Layout from "../../layouts/Layout.astro";
         } finally {
           btn.disabled = false;
           btn.textContent = "↻ Sincronizar Lote 1";
+        }
+      });
+
+      document.getElementById("agVerifyCarsBtn")?.addEventListener("click", async (e) => {
+        const btn = e.currentTarget;
+        const wrap = document.getElementById("agArchiveProgressWrap");
+        const textEl = document.getElementById("agArchiveProgressText");
+        btn.disabled = true;
+        btn.textContent = "Verificando…";
+        wrap?.classList.remove("hidden");
+        if (textEl) textEl.textContent = "Comprobando HEAD 200 OK de cada coche…";
+        try {
+          const r = await fetch(`${API}/api/gallery/verify-cars`, {
+            method: "POST",
+            headers: authHeaders(),
+            credentials: "include",
+            body: "{}",
+          });
+          const d = await r.json().catch(() => ({}));
+          if (textEl && Array.isArray(d.summary)) {
+            textEl.textContent = d.summary.map((s) => `${s.broken ? "⚠" : "✓"} ${s.car}: ${s.ok}/${s.total} OK`).join(" · ");
+          }
+          loadList();
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "🩺 Verificar Carga de Todos los Coches";
         }
       });
 

@@ -62,6 +62,11 @@ const gallerySchema = {
             Todas
           </button>
         </div>
+        <select id="glSortSelect" class="h-8 rounded-full border border-white/15 bg-[var(--r-surface)] px-3 text-[11px] font-mono text-white/90 outline-none cursor-pointer">
+          <option value="popular">Más Populares (iRacing + Likes)</option>
+          <option value="likes">Más Votadas</option>
+          <option value="recent">Más Recientes</option>
+        </select>
       </div>
     </div>
 
@@ -135,6 +140,10 @@ const gallerySchema = {
       <div class="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 border-t border-white/10 text-[11px] font-mono text-white/80" style="background: rgba(9, 11, 15, 0.72); backdrop-filter: blur(12px);">
         <div class="flex flex-wrap items-center gap-3">
           <span id="glLbCredit">Muntrume Motorsport · iRacing</span>
+          <button type="button" id="glLbLikeBtn" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-white font-mono text-[11px] font-bold tabular-nums transition cursor-pointer" style="background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.14);">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#ffffff;opacity:0.85;"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg>
+            <span id="glLbLikeCount">0</span>
+          </button>
         </div>
         <button type="button" id="glLbTakedownBtn" class="text-white/55 hover:text-rose-300 underline cursor-pointer">
           ¿Eres el autor y quieres retirarla?
@@ -254,6 +263,14 @@ const gallerySchema = {
       }).catch(() => {});
     }
     const creditEl = document.getElementById('glLbCredit');
+    const lbLikeBtn = document.getElementById('glLbLikeBtn') as HTMLButtonElement | null;
+    if (lbLikeBtn) {
+      const pid = btn.dataset.photoId || '';
+      const voted = loadVotedSet().has(pid);
+      lbLikeBtn.dataset.photoId = pid;
+      lbLikeBtn.setAttribute('style', likeBtnStyle(voted));
+      lbLikeBtn.innerHTML = `${thumbSvg(voted)}<span id="glLbLikeCount">${btn.dataset.likes || '0'}</span>`;
+    }
     if (creditEl) {
       const author = btn.dataset.author || 'Muntrume Motorsport';
       const sourceUrl = btn.dataset.sourceUrl || '';
@@ -350,10 +367,26 @@ const gallerySchema = {
     lbImg.style.transformOrigin = `${ox}% ${oy}%`;
   });
 
-  // Dynamic community gallery hydration with progressive pagination (limit=36)
-  const renderCardHtml = (p: any, idx: number) => `
+  // Dynamic community gallery hydration with progressive pagination + white SVG likes
+  const LIKES_KEY = 'mmt_gallery_likes_v1';
+  const loadVotedSet = (): Set<string> => {
+    try { return new Set(JSON.parse(localStorage.getItem(LIKES_KEY) || '[]')); } catch { return new Set(); }
+  };
+  const saveVotedSet = (s: Set<string>) => {
+    try { localStorage.setItem(LIKES_KEY, JSON.stringify(Array.from(s))); } catch {}
+  };
+  const thumbSvg = (voted: boolean) =>
+    `<svg width="15" height="15" viewBox="0 0 24 24" fill="${voted ? '#ffffff' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#ffffff;opacity:${voted ? '1' : '0.85'};"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg>`;
+  const likeBtnStyle = (voted: boolean) =>
+    voted
+      ? 'background:rgba(16,185,129,0.16);border-color:#10b981;color:#ffffff;'
+      : 'background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.14);color:#ffffff;';
+
+  const renderCardHtml = (p: any, idx: number) => {
+    const voted = loadVotedSet().has(String(p.id));
+    return `
     <article data-category="${p.category}" data-index="${idx}" class="galeria-card group rounded-xl overflow-hidden bg-[var(--r-surface)] transition-all duration-200" style="border: 1px solid rgba(255, 255, 255, 0.08);">
-      <button type="button" class="galeria-open-btn relative block w-full aspect-video overflow-hidden bg-[#090d12] cursor-zoom-in text-left" data-photo-id="${p.id}" data-src="${p.imageUrl}" data-title="${p.title}" data-sub="${p.car || ''} · ${p.track || 'iRacing'}" data-author="${p.authorName}" data-source-url="${p.sourceUrl || ''}" data-car-slug="${p.carSlug || ''}" data-track-slug="${p.trackSlug || ''}">
+      <button type="button" class="galeria-open-btn relative block w-full aspect-video overflow-hidden bg-[#090d12] cursor-zoom-in text-left" data-photo-id="${p.id}" data-likes="${p.likes || 0}" data-src="${p.imageUrl}" data-title="${p.title}" data-sub="${p.car || ''} · ${p.track || 'iRacing'}" data-author="${p.authorName}" data-source-url="${p.sourceUrl || ''}" data-car-slug="${p.carSlug || ''}" data-track-slug="${p.trackSlug || ''}">
         <img src="${p.imageUrl}" alt="${p.title}" width="640" height="360" loading="lazy" decoding="async" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" style="filter: contrast(1.04) saturate(1.06);" />
         <div class="absolute inset-0 pointer-events-none" style="background: linear-gradient(to top, rgba(9,11,15,0.88) 0%, transparent 55%);"></div>
         <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">${p.category}</span>
@@ -361,7 +394,10 @@ const gallerySchema = {
         <span class="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded bg-black/80 border border-white/15 text-[10px] font-mono text-white/90 opacity-0 group-hover:opacity-100 transition-opacity">Ampliar HD ⤢</span>
       </button>
       <div class="p-3.5 space-y-1">
-        <h2 class="text-sm font-bold text-[var(--r-text)] font-display truncate">${p.title}</h2>
+        <div class="flex items-center justify-between gap-2">
+          <h2 class="text-sm font-bold text-[var(--r-text)] font-display truncate">${p.title}</h2>
+          <button type="button" data-like-id="${p.id}" class="gl-like-btn inline-flex items-center gap-1 px-2 py-0.5 rounded-lg border font-mono text-[11px] font-bold tabular-nums shrink-0 transition cursor-pointer" style="${likeBtnStyle(voted)}">${thumbSvg(voted)}<span>${p.likes || 0}</span></button>
+        </div>
         <p class="text-[11px] text-[var(--r-muted)] flex items-center justify-between gap-2">
           <span>${p.car || p.track || 'iRacing'}</span>
           ${p.sourceUrl ? `<a href="${p.sourceUrl}" target="_blank" rel="noopener noreferrer nofollow" class="underline hover:text-white">Ver fuente ↗</a>` : ''}
@@ -369,11 +405,50 @@ const gallerySchema = {
       </div>
     </article>
   `;
+  };
 
   let nextOffset = 36;
+  let currentSort = 'popular';
   const loadMoreBtn = document.getElementById('glLoadMoreBtn') as HTMLButtonElement | null;
+  const sortSelect = document.getElementById('glSortSelect') as HTMLSelectElement | null;
 
-  fetch('https://muntrume.atrumin16.workers.dev/api/gallery?status=published&limit=36&offset=0')
+  document.getElementById('galeriaGrid')?.addEventListener('click', async (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('.gl-like-btn');
+    if (!btn) return;
+    e.stopPropagation();
+    const id = btn.dataset.likeId || '';
+    const voted = loadVotedSet();
+    if (!id || voted.has(id)) return;
+    voted.add(id);
+    saveVotedSet(voted);
+    const curVal = Number(btn.querySelector('span')?.textContent || '0') + 1;
+    btn.setAttribute('style', likeBtnStyle(true));
+    btn.innerHTML = `${thumbSvg(true)}<span>${curVal}</span>`;
+    await fetch(`https://muntrume.atrumin16.workers.dev/api/gallery/${encodeURIComponent(id)}/like`, { method: 'POST' }).catch(() => {});
+  });
+
+  const fetchGalleryPage = (sort = 'popular') =>
+    fetch(`https://muntrume.atrumin16.workers.dev/api/gallery?status=published&sort=${encodeURIComponent(sort)}&limit=36&offset=0`)
+      .then((r) => (r.ok ? r.json() : null));
+
+  sortSelect?.addEventListener('change', () => {
+    currentSort = sortSelect.value || 'popular';
+    nextOffset = 36;
+    void fetchGalleryPage(currentSort).then((data) => {
+      const grid = document.getElementById('galeriaGrid');
+      if (!grid || !data || !Array.isArray(data.photos)) return;
+      grid.innerHTML = data.photos.map((p: any, idx: number) => renderCardHtml(p, idx)).join('');
+      cards.length = 0;
+      cards.push(...Array.from(grid.querySelectorAll<HTMLElement>('.galeria-card')));
+      cards.forEach((card) => {
+        const b = card.querySelector<HTMLButtonElement>('.galeria-open-btn');
+        b?.addEventListener('click', () => { const list = visibleButtons(); openAt(Math.max(0, list.indexOf(b))); });
+      });
+      if (loadMoreBtn) loadMoreBtn.hidden = !data.hasMore;
+    });
+  });
+
+  fetchGalleryPage(currentSort)
     .then((r) => (r.ok ? r.json() : null))
     .then((data) => {
       if (!data || !Array.isArray(data.photos)) return;
@@ -537,6 +612,24 @@ const gallerySchema = {
       const idx = list.indexOf(btn);
       openAt(idx >= 0 ? idx : 0);
     });
+  });
+
+  document.getElementById('glLbLikeBtn')?.addEventListener('click', async () => {
+    const lbLikeBtn = document.getElementById('glLbLikeBtn') as HTMLButtonElement | null;
+    const pid = lbLikeBtn?.dataset.photoId || '';
+    const voted = loadVotedSet();
+    if (!lbLikeBtn || !pid || voted.has(pid)) return;
+    voted.add(pid);
+    saveVotedSet(voted);
+    const nextN = Number(document.getElementById('glLbLikeCount')?.textContent || '0') + 1;
+    lbLikeBtn.setAttribute('style', likeBtnStyle(true));
+    lbLikeBtn.innerHTML = `${thumbSvg(true)}<span id="glLbLikeCount">${nextN}</span>`;
+    const cardLike = document.querySelector<HTMLButtonElement>(`.gl-like-btn[data-like-id="${pid}"]`);
+    if (cardLike) {
+      cardLike.setAttribute('style', likeBtnStyle(true));
+      cardLike.innerHTML = `${thumbSvg(true)}<span>${nextN}</span>`;
+    }
+    await fetch(`https://muntrume.atrumin16.workers.dev/api/gallery/${encodeURIComponent(pid)}/like`, { method: 'POST' }).catch(() => {});
   });
 
   document.getElementById('glLbClose')?.addEventListener('click', closeLb);
