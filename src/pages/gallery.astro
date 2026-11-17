@@ -53,41 +53,15 @@ const gallerySchema = {
         >
           + Subir captura
         </button>
-        <button
-          type="button"
-          data-filter="all"
-          class="galeria-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition cursor-pointer bg-[var(--r-accent)] text-[var(--r-accent-ink)] border border-[var(--r-accent)]"
-        >
-          Todas ({totalCount})
-        </button>
-        <button
-          type="button"
-          data-filter="gt3"
-          class="galeria-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition cursor-pointer bg-[var(--r-surface)] text-[var(--r-muted)] border border-[var(--r-line)] hover:border-[var(--r-accent)]"
-        >
-          GT3 ({gt3Count})
-        </button>
-        <button
-          type="button"
-          data-filter="gtp"
-          class="galeria-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition cursor-pointer bg-[var(--r-surface)] text-[var(--r-muted)] border border-[var(--r-line)] hover:border-[var(--r-accent)]"
-        >
-          Prototipos GTP ({gtpCount})
-        </button>
-        <button
-          type="button"
-          data-filter="cup"
-          class="galeria-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition cursor-pointer bg-[var(--r-surface)] text-[var(--r-muted)] border border-[var(--r-line)] hover:border-[var(--r-accent)]"
-        >
-          Cup ({cupCount})
-        </button>
-        <button
-          type="button"
-          data-filter="night"
-          class="galeria-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition cursor-pointer bg-[var(--r-surface)] text-[var(--r-muted)] border border-[var(--r-line)] hover:border-[var(--r-accent)]"
-        >
-          Noche / Resistencia ({nightCount})
-        </button>
+        <div id="galleryFilterBar" class="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            data-filter="all"
+            class="galeria-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition cursor-pointer bg-[var(--r-accent)] text-[var(--r-accent-ink)] border border-[var(--r-accent)]"
+          >
+            Todas
+          </button>
+        </div>
       </div>
     </div>
 
@@ -412,24 +386,69 @@ const gallerySchema = {
       cards.length = 0;
       cards.push(...Array.from(grid.querySelectorAll<HTMLElement>('.galeria-card')));
 
-      // Update dynamic category filter counts + apply ?car= / ?track= filter if present
-      const counts: Record<string, number> = { all: data.photos.length, gt3: 0, gtp: 0, cup: 0, night: 0 };
-      for (const p of data.photos) {
-        const c = String(p.category || '').toLowerCase();
-        if (c in counts) counts[c] += 1;
-      }
-      const labels: Record<string, string> = {
-        all: 'Todas',
+      const normCat = (raw: string): string => {
+        const s = raw.trim().toLowerCase();
+        if (s === 'prototipos gtp' || s === 'gtp') return 'gtp';
+        if (s === 'noche / resistencia' || s === 'night') return 'night';
+        return s;
+      };
+      const LABELS: Record<string, string> = {
         gt3: 'GT3',
         gtp: 'Prototipos GTP',
         cup: 'Cup',
+        gt4: 'GT4',
+        formula: 'Fórmula',
         night: 'Noche / Resistencia',
       };
-      document.querySelectorAll<HTMLButtonElement>('.galeria-filter-btn').forEach((b) => {
-        const f = b.dataset.filter || 'all';
-        if (labels[f]) b.textContent = `${labels[f]} (${counts[f] ?? 0})`;
-      });
+
+      const counts: Record<string, number> = {};
+      for (const p of data.photos) {
+        const c = normCat(String(p.category || ''));
+        if (c) counts[c] = (counts[c] || 0) + 1;
+      }
+
       const qs = new URLSearchParams(window.location.search);
+      const qCat = normCat(qs.get('category') || '');
+      if (qCat && counts[qCat]) activeFilter = qCat;
+
+      const filterBar = document.getElementById('galleryFilterBar');
+      const applyFilter = (f: string, syncUrl = true) => {
+        activeFilter = f;
+        filterBar?.querySelectorAll<HTMLButtonElement>('.galeria-filter-btn').forEach((b) => {
+          const on = (b.dataset.filter || 'all') === activeFilter;
+          b.className = on
+            ? 'galeria-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition cursor-pointer bg-[var(--r-accent)] text-[var(--r-accent-ink)] border border-[var(--r-accent)]'
+            : 'galeria-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition cursor-pointer bg-[var(--r-surface)] text-[var(--r-muted)] border border-[var(--r-line)] hover:border-[var(--r-accent)]';
+        });
+        cards.forEach((c) => {
+          c.style.display = '';
+          c.hidden = activeFilter !== 'all' && normCat(c.dataset.category || '') !== activeFilter;
+        });
+        if (syncUrl) {
+          const nextUrl = new URL(window.location.href);
+          if (activeFilter === 'all') nextUrl.searchParams.delete('category');
+          else nextUrl.searchParams.set('category', activeFilter);
+          history.replaceState(null, '', nextUrl.toString());
+        }
+      };
+
+      if (filterBar) {
+        const order = ['gt3', 'gtp', 'cup', 'gt4', 'formula', 'night', ...Object.keys(counts)];
+        const uniqueKeys = Array.from(new Set(order)).filter((k) => (counts[k] || 0) >= 1);
+        filterBar.innerHTML = [
+          `<button type="button" data-filter="all" class="galeria-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition cursor-pointer">Todas (${data.photos.length})</button>`,
+          ...uniqueKeys.map(
+            (k) => `<button type="button" data-filter="${k}" class="galeria-filter-btn px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition cursor-pointer">${LABELS[k] || k.toUpperCase()} (${counts[k]})</button>`
+          ),
+        ].join('');
+        filterBar.addEventListener('click', (e) => {
+          const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-filter]');
+          if (btn) applyFilter(btn.dataset.filter || 'all', true);
+        });
+      }
+
+      applyFilter(activeFilter, false);
+
       const qCar = (qs.get('car') || '').toLowerCase();
       const qTrack = (qs.get('track') || '').toLowerCase();
       if (qCar || qTrack) {
