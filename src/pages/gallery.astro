@@ -447,7 +447,6 @@ const gallerySchema = {
   });
 
   fetchGalleryPage(currentSort)
-    .then((r) => (r.ok ? r.json() : null))
     .then((data) => {
       if (!data || !Array.isArray(data.photos)) return;
       const grid = document.getElementById('galeriaGrid');
