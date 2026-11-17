@@ -49,6 +49,7 @@ export class LeaderboardEngine {
     const bestLapTimes = frame.carIdxBestLapTime || [];
     const lastLapTimes = frame.carIdxLastLapTime || [];
     const lapsDone = frame.carIdxLap || [];
+    const lapDistPcts = frame.carIdxLapDistPct || [];
     const onPitRoads = frame.carIdxOnPitRoad || [];
     const trackSurfaces = frame.carIdxTrackSurface || [];
 
@@ -67,6 +68,9 @@ export class LeaderboardEngine {
     }
     const activePlayerLap = lapsDone[activeCarIdx] ?? 0;
 
+    // Detect if CarIdxClassPosition is 0-based (real iRacing SDK: 0 = P1, -1 = invalid)
+    const hasZeroClassPos = classPositions.some((cp, i) => cp === 0 && (trackSurfaces[i] ?? 3) >= 0 && !!drivers[i]);
+
     const rawList: Array<{
       carIdx: number;
       position: number;
@@ -75,6 +79,7 @@ export class LeaderboardEngine {
       lastLap: number;
       f2Time: number;
       laps: number;
+      lapDistPct: number;
       onPit: boolean;
     }> = [];
 
@@ -87,11 +92,19 @@ export class LeaderboardEngine {
       if (surface === -1 && !(res && (res.fastestTime > 0 || res.position > 0))) continue; // NotInWorld without results
 
       const pos = (positions[idx] > 0 ? positions[idx] : 0) || res?.position || 0;
-      const classPos = (classPositions[idx] > 0 ? classPositions[idx] : 0) || res?.classPosition || 0;
+      const rawCp = classPositions[idx];
+      const sdkClassPos = rawCp !== undefined && rawCp >= 0
+        ? (hasZeroClassPos ? rawCp + 1 : rawCp)
+        : 0;
+      const resClassPos = res && res.classPosition >= 0
+        ? (hasZeroClassPos && res.classPosition === 0 ? 1 : res.classPosition)
+        : 0;
+      const classPos = sdkClassPos || resClassPos || 0;
       const best = (bestLapTimes[idx] > 0 ? bestLapTimes[idx] : 0) || res?.fastestTime || 0;
       const last = (lastLapTimes[idx] > 0 ? lastLapTimes[idx] : 0) || res?.lastTime || 0;
       const f2 = (f2Times[idx] > 0 ? f2Times[idx] : 0) || res?.timeGap || 0;
       const laps = (lapsDone[idx] > 0 ? lapsDone[idx] : 0) || res?.lapsComplete || 0;
+      const lapDistPct = lapDistPcts[idx] ?? 0;
       const onPit = !!onPitRoads[idx];
 
       rawList.push({
@@ -102,6 +115,7 @@ export class LeaderboardEngine {
         lastLap: last,
         f2Time: f2,
         laps,
+        lapDistPct,
         onPit,
       });
     }
@@ -144,8 +158,9 @@ export class LeaderboardEngine {
       const clsKey = driver.carClassId ? `id_${driver.carClassId}` : (driver.carClassShortName || "ALL");
       const clsState = classLeaders.get(clsKey) ?? { bestLap: 0, f2Gap: 0, prevGap: 0, count: 0 };
       clsState.count += 1;
-      const clsRank = item.classPosition > 0 ? item.classPosition : clsState.count;
-      const isClassLeader = clsState.count === 1;
+      // Always assign sequential 1, 2, 3... within each class so P1 is strictly 1
+      const clsRank = clsState.count;
+      const isClassLeader = clsRank === 1;
 
       // Track last 3 valid laps, best lap number, and pit/out status
       if (item.lastLap > 0 && item.laps > (this.lastRecordedLapByCarIdx.get(item.carIdx) ?? 0)) {

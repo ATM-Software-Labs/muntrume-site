@@ -492,18 +492,18 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
           const irDeltaHtml = isPractice
             ? ``
             : irDeltaVal > 0
-            ? `<span class="w-[42px] shrink-0 text-right tabular-nums leading-none" style="font-size:13.5px;font-weight:800;color:#22c55e;">▲${irDeltaVal}</span>`
+            ? `<span class="w-[44px] shrink-0 mr-3 px-1.5 py-0.5 rounded-[3px] text-right tabular-nums leading-none" style="font-size:12px;font-weight:800;color:#22c55e;background:rgba(34,197,94,0.14);">+${irDeltaVal}</span>`
             : irDeltaVal < 0
-            ? `<span class="w-[42px] shrink-0 text-right tabular-nums leading-none" style="font-size:13.5px;font-weight:800;color:#ef4444;">▼${Math.abs(irDeltaVal)}</span>`
-            : `<span class="w-[42px] shrink-0 text-right tabular-nums leading-none text-white/35" style="font-size:13.5px;font-weight:800;">—</span>`;
+            ? `<span class="w-[44px] shrink-0 mr-3 px-1.5 py-0.5 rounded-[3px] text-right tabular-nums leading-none" style="font-size:12px;font-weight:800;color:#ef4444;background:rgba(239,68,68,0.14);">${irDeltaVal}</span>`
+            : `<span class="w-[44px] shrink-0 mr-3 px-1.5 py-0.5 rounded-[3px] text-right tabular-nums leading-none text-white/35" style="font-size:12px;font-weight:700;">0</span>`;
 
           // Hide GAP & INT in Practice/Qualy (Prompt 140) to save ~90px of dead width
           const showRaceGaps = !isPractice && !state.session.sessionType.toLowerCase().includes("qual");
           const gapCell = showRaceGaps
-            ? `<span class="w-[40px] shrink-0 text-right text-[10.5px] ${isLeader ? "text-amber-300 font-bold" : isOffLap ? "text-[#fbbf24]/90" : "text-white/85 font-semibold"}">${isLeader ? "LDR" : (e.gapStr || "-")}</span>`
+            ? `<span class="w-[46px] shrink-0 text-right tabular-nums text-[10.5px] ${isLeader ? "text-white/55 font-bold" : isOffLap ? "text-[#fbbf24]/90" : "text-white/85 font-semibold"}">${isLeader ? "LDR" : (e.gapStr || "-")}</span>`
             : ``;
           const intCell = showRaceGaps
-            ? `<span class="w-[40px] shrink-0 text-right text-[10.5px] text-white/65">${isLeader ? "-" : (e.intervalStr || "-")}</span>`
+            ? `<span class="w-[46px] shrink-0 text-right tabular-nums text-[10.5px] text-white/65">${isLeader ? "-" : (e.intervalStr || "-")}</span>`
             : ``;
           const lastCell = `<span class="w-[52px] shrink-0 text-right text-[10.5px] tabular-nums text-white/75">${e.lastLapStr || "--:--.---"}</span>`;
 
