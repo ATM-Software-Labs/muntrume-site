@@ -65,7 +65,6 @@ function renderCompoundBadge(compound: number | undefined): string {
  * Renders the Relative Radar widget into target DOM container
  */
 export function renderRelativeWidget(container: HTMLElement, state: IrsdkComputedState | null): void {
-  const relIncPill = renderIncidentPill(state);
   if (!state || !state.relative || state.relative.entries.length === 0) {
     container.innerHTML = `
       <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-white/10 text-[10px] uppercase font-bold tracking-wider">
@@ -91,7 +90,6 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
 
   const tTrack = state.frame.trackTempC;
   const trackTempStr = typeof tTrack === "number" && tTrack > 0 ? `${tTrack.toFixed(0)}Â°C` : "";
-  const activeLap = Math.max(0, state.frame.carIdxLap[state.camCarIdx] || 0);
   const remSec = Math.max(0, Math.round(state.frame.sessionTimeRemain || 0));
   const remMin = Math.floor(remSec / 60);
   const remSecPart = String(remSec % 60).padStart(2, "0");
@@ -102,7 +100,7 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
     <div class="mmt-rel-header flex items-center justify-between gap-2 whitespace-nowrap">
       <span>${irEst ? `SOF ${formatSofShort(irEst.sof)}` : "REL"} Â· â± ${sessionClock}</span>
       <span>${trackTempStr ? `${trackTempStr} Â· ` : ""}${isReplay ? "Replay" : sessType}</span>
-     ${relIncPill}</div>
+     ${renderIncidentPill(state)}</div>
   `;
 
   const anyWetCar = (state.frame.carIdxTireCompound || []).some((c) => c === 1);
