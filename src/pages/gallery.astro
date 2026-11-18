@@ -454,7 +454,21 @@ const gallerySchema = {
     const carParam = initCar ? `&car=${encodeURIComponent(initCar)}` : '';
     const primary = await fetch(`https://muntrume.atrumin16.workers.dev/api/gallery?status=published&sort=${encodeURIComponent(sort)}&limit=200&offset=0${carParam}`)
       .then((r) => (r.ok ? r.json() : null));
-    if (!primary || !Array.isArray(primary.photos) || extraSlugs.length === 0) return primary;
+    if (!primary || !Array.isArray(primary.photos)) return primary;
+    if (!initCar) {
+      // Exclude residual 1-photo promotional studio renders from the main gallery grid
+      const countsBySlug = new Map<string, number>();
+      for (const p of primary.photos) {
+        const s = String(p.carSlug || p.car || '').toLowerCase();
+        if (s) countsBySlug.set(s, (countsBySlug.get(s) || 0) + 1);
+      }
+      primary.photos = primary.photos.filter((p: any) => {
+        const s = String(p.carSlug || p.car || '').toLowerCase();
+        const isLegacyPromo = /s100\.iracing\.com/i.test(String(p.imageUrl || '')) && (countsBySlug.get(s) || 0) <= 1;
+        return !isLegacyPromo;
+      });
+    }
+    if (extraSlugs.length === 0) return primary;
     const seen = new Set(primary.photos.map((p: any) => p.imageUrl || p.id));
     const extras = await Promise.all(
       extraSlugs.map((slug) =>

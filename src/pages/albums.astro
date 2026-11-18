@@ -213,7 +213,7 @@ const pageDescription =
               cur.views = Number(cur.views || 0) + Number(raw.views || 0);
             }
           }
-          allAlbums = Array.from(merged.values());
+          allAlbums = Array.from(merged.values()).filter((a) => Number(a.count || 0) > 1);
           renderPills();
           render();
         })

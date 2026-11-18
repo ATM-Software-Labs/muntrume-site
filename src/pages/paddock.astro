@@ -1167,7 +1167,9 @@ const topAlbums = [...PADDOCK_ALBUMS].sort((a, b) => (b.views ?? 0) - (a.views ?
                 cur.views = Number(cur.views || 0) + Number(raw.views || 0);
               }
             }
-            const top3 = Array.from(mergedTop.values()).slice(0, 3);
+            const top3 = Array.from(mergedTop.values())
+              .filter((a) => Number(a.count || 0) > 1)
+              .slice(0, 3);
             if (top3.length === 0) {
               albumsGrid.innerHTML = `<p class="col-span-full text-xs font-mono text-[var(--r-muted)]">Próximamente álbumes oficiales del equipo.</p>`;
             } else {
