@@ -3805,7 +3805,7 @@ function safeRenderWidget(el: HTMLElement | null, fn: () => void): void {
   });
   const wheelCanvas = document.getElementById("ovSteeringWheelFloat") as HTMLCanvasElement | null;
   if (wheelCanvas && wheelCanvas.offsetParent !== null) {
-    safeRenderWidget(wheelCanvas, () => renderCenteredSteeringWheel(wheelCanvas, sample.steering));
+    safeRenderWidget(wheelCanvas, () => renderCenteredSteeringWheel(wheelCanvas, sample.steering, irsdkState?.activeDriver?.carPath));
   }
   const haloDisabled = loadDisabledWidgets().has("halo");
   const carLeftRight = haloDisabled ? 0 : (sample.carLeftRight ?? irsdkState?.frame.carLeftRight ?? 0);

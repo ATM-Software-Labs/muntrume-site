@@ -2104,7 +2104,7 @@
       </div>
 
       <!-- 6. Bottom-Center Pedals (280x82px scaled 1.15x left of wheel) + Centered Steering Wheel (46x46px at left: 50%) -->
-      <div id="floatInputsCard" class="mmt-float-widget fixed left-1/2 -translate-x-1/2 bottom-[24px] w-[280px] flex flex-col items-center gap-1 pointer-events-auto" style="zoom: 1.15;" data-widget="inputs">
+      <div id="floatInputsCard" class="mmt-float-widget fixed right-[calc(50%+42px)] bottom-[24px] w-[280px] flex flex-col items-center gap-1 pointer-events-auto" style="zoom: 1.15;" data-widget="inputs">
         <div id="floatShiftLightsRow" class="flex flex-col items-center gap-1 w-full" data-widget="lights">
           <div id="ovDigiFlagFloat" class="w-full max-w-[260px]" style="display: none;"></div>
           <div class="flex items-center gap-0.5 px-2 py-0.5 rounded bg-[#0a0c10]/70" id="ovShiftLightsFloat"></div>
@@ -2118,7 +2118,7 @@
       </div>
 
       <!-- 6b. Centered Steering Wheel (46x46px at left: 50%, adjustable Y) -->
-      <div id="floatSteeringWheelCard" class="hidden" style="display:none !important;" data-widget="wheel"><canvas id="ovSteeringWheelFloat" width="46" height="46" class="hidden"></canvas></div>
+      <div id="floatSteeringWheelCard" class="fixed left-1/2 -translate-x-1/2 bottom-[22px] w-[64px] h-[64px] pointer-events-none z-25" style="background:transparent !important;border:none !important;box-shadow:none !important;" data-widget="wheel"><canvas id="ovSteeringWheelFloat" width="128" height="128" style="width:64px;height:64px;display:block;"></canvas></div>
     </div>
 
     <!-- Prompt 48: FirstRunWizard Modal (Onboarding en 30 Segundos) -->

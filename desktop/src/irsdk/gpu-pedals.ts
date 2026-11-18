@@ -354,7 +354,116 @@ export class GpuPedalsEngine {
   }
 }
 
-export function renderCenteredSteeringWheel(canvas: HTMLCanvasElement, steeringRad: number): void {
+const wheelSvgImgCache = new Map<string, HTMLImageElement>();
+
+function resolveWheelProfile(carPath?: string): "lambo_gt3" | "ferrari_gt3" | "porsche_gt3" | "gt3_yoke" | "formula" | "round" {
+  const p = (carPath || "").toLowerCase();
+  if (p.includes("lamborghini") || p.includes("huracan")) return "lambo_gt3";
+  if (p.includes("ferrari") || p.includes("499p") || p.includes("296")) return "ferrari_gt3";
+  if (p.includes("porsche") || p.includes("992") || p.includes("963")) return "porsche_gt3";
+  if (p.includes("formula") || p.includes("dallara") || p.includes("ir18") || p.includes("sf23") || p.includes("sfl") || p.includes("f4") || p.includes("f3") || p.includes("lmp") || p.includes("cadillac") || p.includes("acura") || p.includes("bmwhybrid")) return "formula";
+  if (p.includes("gt3") || p.includes("gte") || p.includes("gt4") || p.includes("m4") || p.includes("amg") || p.includes("mclaren") || p.includes("aston") || p.includes("corvette") || p.includes("mustang") || p.includes("audi") || p.includes("nsx")) return "gt3_yoke";
+  return "round";
+}
+
+function buildSteeringWheelSvg(profile: ReturnType<typeof resolveWheelProfile>): string {
+  if (profile === "lambo_gt3") {
+    // Lamborghini Huracán GT3 EVO2: yugo abierto, carbono, detalles amarillos, cinta roja derecha y 3 diales (verde/amarillo/naranja)
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+      <defs>
+        <linearGradient id="cb" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#272b33"/><stop offset="100%" stop-color="#111317"/></linearGradient>
+      </defs>
+      <!-- Aro exterior tipo GT3 recortado arriba -->
+      <path d="M22 34 C12 48, 12 82, 24 96 C32 105, 48 108, 64 108 C80 108, 96 105, 104 96 C116 82, 116 48, 106 34 L94 40 C100 52, 100 76, 92 88 C85 95, 75 96, 64 96 C53 96, 43 95, 36 88 C28 76, 28 52, 34 40 Z" fill="#14171c" stroke="#2f3540" stroke-width="2"/>
+      <!-- Cinta superior roja lado derecho estilo Huracán GT3 EVO2 -->
+      <path d="M88 30 L103 36 L98 46 L84 39 Z" fill="#ef4444"/>
+      <path d="M25 36 L40 30 L44 39 L30 46 Z" fill="#eab308" opacity="0.85"/>
+      <!-- Cuerpo central fibra de carbono y placa amarilla -->
+      <rect x="30" y="46" width="68" height="36" rx="10" fill="url(#cb)" stroke="#3b4250" stroke-width="1.5"/>
+      <path d="M36 52 H92 L88 76 H40 Z" fill="#eab308" opacity="0.9"/>
+      <rect x="48" y="50" width="32" height="24" rx="4" fill="#181b20"/>
+      <!-- Empuñaduras grises laterales -->
+      <rect x="20" y="42" width="12" height="24" rx="5" fill="#64748b"/>
+      <rect x="96" y="42" width="12" height="24" rx="5" fill="#64748b"/>
+      <!-- Botones superiores -->
+      <circle cx="42" cy="48" r="3.5" fill="#22c55e"/>
+      <circle cx="86" cy="48" r="3.5" fill="#ef4444"/>
+      <circle cx="38" cy="64" r="3" fill="#eab308"/>
+      <circle cx="90" cy="64" r="3" fill="#38bdf8"/>
+      <!-- 3 Diales rotativos inferiores (Verde, Amarillo central, Naranja) -->
+      <circle cx="64" cy="62" r="7.5" fill="#eab308" stroke="#111" stroke-width="1.5"/>
+      <circle cx="64" cy="62" r="3" fill="#111"/>
+      <circle cx="49" cy="73" r="8" fill="#22c55e" stroke="#111" stroke-width="1.5"/>
+      <circle cx="49" cy="73" r="3.2" fill="#111"/>
+      <circle cx="79" cy="73" r="8" fill="#f97316" stroke="#111" stroke-width="1.5"/>
+      <circle cx="79" cy="73" r="3.2" fill="#111"/>
+    </svg>`;
+  }
+  if (profile === "ferrari_gt3") {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+      <path d="M22 36 C12 52, 12 80, 26 95 C38 106, 90 106, 102 95 C116 80, 116 52, 106 36 L94 42 C101 54, 100 76, 90 86 C78 95, 50 95, 38 86 C28 76, 27 54, 34 42 Z" fill="#16181d" stroke="#374151" stroke-width="2"/>
+      <rect x="32" y="48" width="64" height="32" rx="9" fill="#1f242d" stroke="#4b5563" stroke-width="1.5"/>
+      <rect x="56" y="46" width="16" height="6" rx="2" fill="#facc15"/>
+      <circle cx="46" cy="66" r="6.5" fill="#ef4444" stroke="#111" stroke-width="1.5"/>
+      <circle cx="64" cy="64" r="6.5" fill="#eab308" stroke="#111" stroke-width="1.5"/>
+      <circle cx="82" cy="66" r="6.5" fill="#38bdf8" stroke="#111" stroke-width="1.5"/>
+      <circle cx="40" cy="52" r="3" fill="#22c55e"/>
+      <circle cx="88" cy="52" r="3" fill="#ef4444"/>
+    </svg>`;
+  }
+  if (profile === "porsche_gt3") {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+      <path d="M24 38 C12 54, 14 82, 28 96 C42 106, 86 106, 100 96 C114 82, 116 54, 104 38 L92 44 C99 56, 98 76, 88 86 C76 94, 52 94, 40 86 C30 76, 29 56, 36 44 Z" fill="#14171c" stroke="#334155" stroke-width="2"/>
+      <rect x="32" y="48" width="64" height="32" rx="8" fill="#1e222a" stroke="#475569" stroke-width="1.5"/>
+      <rect x="58" y="47" width="12" height="5" rx="1.5" fill="#f8fafc"/>
+      <circle cx="48" cy="66" r="6.5" fill="#38bdf8" stroke="#111" stroke-width="1.5"/>
+      <circle cx="80" cy="66" r="6.5" fill="#eab308" stroke="#111" stroke-width="1.5"/>
+      <circle cx="64" cy="62" r="5" fill="#ef4444"/>
+    </svg>`;
+  }
+  if (profile === "formula") {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+      <rect x="16" y="38" width="96" height="52" rx="14" fill="#15181e" stroke="#3f4756" stroke-width="2.5"/>
+      <rect x="44" y="42" width="40" height="20" rx="3" fill="#090d14" stroke="#10b981" stroke-width="1.2"/>
+      <circle cx="32" cy="54" r="4" fill="#ef4444"/>
+      <circle cx="96" cy="54" r="4" fill="#22c55e"/>
+      <circle cx="48" cy="74" r="6" fill="#eab308"/>
+      <circle cx="64" cy="74" r="6" fill="#38bdf8"/>
+      <circle cx="80" cy="74" r="6" fill="#f97316"/>
+    </svg>`;
+  }
+  if (profile === "gt3_yoke") {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+      <path d="M22 36 C12 52, 12 80, 26 95 C38 106, 90 106, 102 95 C116 80, 116 52, 106 36 L94 42 C101 54, 100 76, 90 86 C78 95, 50 95, 38 86 C28 76, 27 54, 34 42 Z" fill="#15181e" stroke="#3b4250" stroke-width="2"/>
+      <rect x="32" y="48" width="64" height="32" rx="9" fill="#1e232b" stroke="#475569" stroke-width="1.5"/>
+      <rect x="58" y="46" width="12" height="5" rx="1.5" fill="#eab308"/>
+      <circle cx="48" cy="66" r="6.5" fill="#22c55e" stroke="#111" stroke-width="1.5"/>
+      <circle cx="64" cy="64" r="6" fill="#eab308" stroke="#111" stroke-width="1.5"/>
+      <circle cx="80" cy="66" r="6.5" fill="#f97316" stroke="#111" stroke-width="1.5"/>
+    </svg>`;
+  }
+  // Volante redondo deportivo (MX-5, TCR, Cup, calle)
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+    <circle cx="64" cy="64" r="48" fill="none" stroke="#1c2028" stroke-width="11"/>
+    <circle cx="64" cy="64" r="48" fill="none" stroke="#384152" stroke-width="2"/>
+    <rect x="59" y="10" width="10" height="11" rx="2" fill="#eab308"/>
+    <path d="M20 64 H108 M64 64 V108" stroke="#262c36" stroke-width="9" stroke-linecap="round"/>
+    <circle cx="64" cy="64" r="14" fill="#161920" stroke="#475569" stroke-width="2"/>
+  </svg>`;
+}
+
+function getCachedWheelImage(profile: ReturnType<typeof resolveWheelProfile>): HTMLImageElement | null {
+  if (typeof Image === "undefined") return null;
+  let img = wheelSvgImgCache.get(profile);
+  if (!img) {
+    img = new Image();
+    img.src = "data:image/svg+xml;utf8," + encodeURIComponent(buildSteeringWheelSvg(profile));
+    wheelSvgImgCache.set(profile, img);
+  }
+  return img.complete && img.naturalWidth > 0 ? img : null;
+}
+
+export function renderCenteredSteeringWheel(canvas: HTMLCanvasElement, steeringRad: number, carPath?: string): void {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
   const w = canvas.width;
@@ -363,32 +472,15 @@ export function renderCenteredSteeringWheel(canvas: HTMLCanvasElement, steeringR
 
   const cx = w / 2;
   const cy = h / 2;
-  const r = Math.min(cx, cy) - 4;
   const rot = -(Number.isFinite(steeringRad) ? steeringRad : 0);
+  const profile = resolveWheelProfile(carPath);
+  const img = getCachedWheelImage(profile);
 
   ctx.save();
   ctx.translate(cx, cy);
   ctx.rotate(rot);
-
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.92)";
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.arc(0, 0, r, 0, Math.PI * 2);
-  ctx.stroke();
-
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(-r + 3, 0);
-  ctx.lineTo(r - 3, 0);
-  ctx.stroke();
-
-  // 4px top center marker (red/green)
-  ctx.strokeStyle = Math.abs(rot) < 0.08 ? "#10b981" : "#ef4444";
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  ctx.arc(0, 0, r, -Math.PI / 2 - 0.25, -Math.PI / 2 + 0.25);
-  ctx.stroke();
-
+  if (img) {
+    ctx.drawImage(img, -w / 2, -h / 2, w, h);
+  }
   ctx.restore();
 }
