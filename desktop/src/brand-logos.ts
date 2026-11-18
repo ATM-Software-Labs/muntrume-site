@@ -34,7 +34,7 @@ const BRAND_ACCENT_OVERRIDE: Record<string, string> = {
   "logo-toyota": "#EF4444",
   "logo-mazda": "#F43F5E",
   "logo-honda": "#EF4444",
-  "logo-dallara": "#00E699",
+  "logo-dallara": "#F8FAFC",
 };
 
 const FALLBACK_BRAND_RULES: Array<[RegExp, { logo: string; name: string; color: string }]> = [
@@ -55,7 +55,7 @@ const FALLBACK_BRAND_RULES: Array<[RegExp, { logo: string; name: string; color: 
   [/honda|civic|hpd/i, { logo: "logo-honda", name: "Honda", color: "#EF4444" }],
   [/hyundai|elantra|veloster/i, { logo: "logo-hyundai", name: "Hyundai", color: "#38BDF8" }],
   [/renault|clio/i, { logo: "logo-renault", name: "Renault", color: "#CBD5E1" }],
-  [/dallara|superformula|sfl|324|sf23|p217|f3|ir04|ir18|ir01|dw12/i, { logo: "logo-dallara", name: "Dallara", color: "#00E699" }],
+  [/dallara|superformula|sfl|324|sf23|p217|f3|ir04|ir18|ir01|dw12/i, { logo: "logo-dallara", name: "Dallara", color: "#F8FAFC" }],
   [/ruf|rt12/i, { logo: "logo-ruf", name: "RUF", color: "#22C55E" }],
   [/kia|optima/i, { logo: "logo-kia", name: "Kia", color: "#EF4444" }],
   [/vw|volkswagen|beetle|jetta/i, { logo: "logo-vw", name: "Volkswagen", color: "#38BDF8" }],

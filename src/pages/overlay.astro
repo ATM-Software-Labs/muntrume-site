@@ -249,11 +249,18 @@ const overlaySchema = {
 
           <!-- Visor Ergonomía Real iRacing (16:9 Cockpit Layout) -->
           <div class="sim-cockpit-layer">
-            <!-- ARRIBA IZQUIERDA (top: 12px; left: 12px): STANDINGS MULTICLASE (w-[340px]) -->
+            <!-- ARRIBA IZQUIERDA (top: 12px; left: 12px): STANDINGS MULTICLASE KAPPS -->
             <div class="hud-box hud-standings hud-pos-standings" data-hud-mod="standings">
-              <div class="hud-box__head">
-                <span class="hud-box__title">STANDINGS · IMSA</span>
-                <span class="hud-box__meta">TICK GAP/INT · iR Δ</span>
+              <div class="hud-std-sessbar">
+                <div class="flex items-center gap-2">
+                  <span class="font-extrabold text-white">P</span>
+                  <span class="px-1 rounded-[2px] font-extrabold text-[9.5px] bg-[#facc15]/20 text-[#facc15]">GTP</span>
+                  <span class="text-white/90">1:12:58/2h</span>
+                </div>
+                <div class="flex items-center gap-2 text-white/80">
+                  <span>20°C</span>
+                  <span>11/11</span>
+                </div>
               </div>
               <div class="hud-standings__body" id="simStandingsBody"></div>
             </div>
@@ -270,25 +277,17 @@ const overlaySchema = {
               </div>
             </div>
 
-            <!-- ARRIBA DERECHA (top: 12px; right: 12px): RELATIVE COMPACTO (w-[320px]) -->
+            <!-- ARRIBA DERECHA (top: 12px; right: 12px): RELATIVE COMPACTO KAPPS (w-[275px]) -->
             <div class="hud-box hud-relative hud-pos-relative" data-hud-mod="relative">
-              <div class="hud-box__head">
-                <span class="hud-box__title">RELATIVE</span>
-                <span class="hud-box__meta">±3 COCHES · COLOR VUELTA</span>
-              </div>
               <div class="hud-relative__body" id="simRelativeBody"></div>
             </div>
 
-            <!-- DEBAJO DE RELATIVE (top: 215px; right: 12px): TRACK MAP CATMULL-ROM -->
+            <!-- DEBAJO DE RELATIVE (top: 170px; right: 12px): TRACK MAP KAPPS -->
             <div class="hud-box hud-trackmap hud-pos-trackmap" data-hud-mod="trackmap">
-              <div class="hud-box__head">
-                <span class="hud-box__title" id="simTrackMapTitle">TRACK MAP · SILVERSTONE GP</span>
-                <span class="hud-box__meta">CATMULL-ROM</span>
-              </div>
               <div class="hud-trackmap__canvas">
                 <svg id="simTrackSvg" viewBox="0 0 280 200" class="hud-trackmap__svg" aria-label="Mapa de circuito en vivo">
-                  <path id="simTrackOutline" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
-                  <path id="simTrackLine" fill="none" stroke="#1e293b" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+                  <path id="simTrackOutline" fill="none" stroke="rgba(248,250,252,0.55)" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
+                  <path id="simTrackLine" fill="none" stroke="#090b0f" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
                   <line id="simSfLine" x1="0" y1="0" x2="0" y2="0" stroke="#ffffff" stroke-width="2.5"/>
                   <g id="simTrackDots"></g>
                 </svg>
@@ -683,9 +682,9 @@ const overlaySchema = {
       const trackMapTitleEl = document.getElementById("simTrackMapTitle");
 
       const CLASSES = {
-        GTP:  { color: "#f59e0b", sof: "3.4k", lapSec: 94.5 },
-        LMP2: { color: "#06b6d4", sof: "2.8k", lapSec: 99.8 },
-        GT3:  { color: "#10b981", sof: "2.5k", lapSec: 112.4 },
+        GTP:  { color: "#facc15", sof: "3.4k", lapSec: 94.5, baseLap: "1:34.512" },
+        LMP2: { color: "#38bdf8", sof: "2.8k", lapSec: 99.8, baseLap: "1:39.840" },
+        GT3:  { color: "#a855f7", sof: "2.5k", lapSec: 112.4, baseLap: "1:52.418" },
       };
 
       function applyCircuit(idx) {
@@ -893,24 +892,25 @@ const overlaySchema = {
           const meta = CLASSES[clsKey];
           const group = drivers.filter((d) => d.cls === clsKey);
           if (!group.length) return;
-          html += `<div class="st-cls-head" style="border-left-color:${meta.color}">
+          html += `<div class="st-cls-head" style="border-left-color:${meta.color};background:${meta.color}24">
             <span class="st-cls-name" style="color:${meta.color}">${clsKey}</span>
-            <span class="st-cls-sof">SOF ${meta.sof} · ${group.length} CARS</span>
+            <span class="st-cls-sof">${group.length}/${group.length} · SOF ${meta.sof}</span>
           </div>`;
           group.forEach((d, idx) => {
-            const irCls = d.irDelta >= 0 ? "ir-pos" : "ir-neg";
-            const irStr = d.irDelta >= 0 ? `+${d.irDelta}` : `${d.irDelta}`;
             const licBg = LIC_COLOR[d.lic] || "#64748b";
-            html += `<div class="st-row ${d.isMe ? "is-me" : ""} ${d.isPit ? "is-pit" : ""}" data-st-id="${d.id}" style="border-left-color:${meta.color}">
+            const irExact = d.ir.endsWith("k") ? Math.round(parseFloat(d.ir) * 1000) : d.ir;
+            const lapMin = Math.floor((meta.lapSec + idx * 0.312) / 60);
+            const lapRem = ((meta.lapSec + idx * 0.312) % 60).toFixed(3).padStart(6, "0");
+            const lapStr = `${lapMin}:${lapRem}`;
+            html += `<div class="st-row ${d.isMe ? "is-me" : ""} ${d.isPit ? "is-pit" : ""}" data-st-id="${d.id}" style="border-left-color:${d.isMe ? "#10b981" : meta.color}">
               <span class="st-pos">${idx + 1}</span>
-              ${brandSvg(d.brand, 14)}
-              <span class="st-num">#${d.num}</span>
+              <span class="st-num" style="color:${meta.color}">#${d.num}</span>
               <span class="st-name">${d.name}</span>
-              <span class="st-lic" style="background:${licBg}">${d.lic} ${d.sr}</span>
-              <span class="st-ir">${d.ir}</span>
-              <span class="st-ird ${irCls}">${irStr}</span>
-              <span class="st-int">—</span>
+              ${brandSvg(d.brand, 13)}
+              <span class="st-lic-ir" style="background:${licBg}">${d.lic}${d.sr} <span>${irExact}</span></span>
               <span class="st-gap">LDR</span>
+              <span class="st-int">—</span>
+              <span class="st-lap">${lapStr}</span>
             </div>`;
           });
         });
@@ -955,8 +955,8 @@ const overlaySchema = {
             const gapSec = Math.max(0, (leaderDist - dist) * meta.lapSec);
             const prevDist = idx > 0 ? stGroupBuf[idx - 1].d.lap + stGroupBuf[idx - 1].d.pct : dist;
             const intSec = Math.max(0, (prevDist - dist) * meta.lapSec);
-            const gapStr = idx === 0 ? "LDR" : `+${gapSec.toFixed(1)}s`;
-            const intStr = idx === 0 ? "—" : `+${intSec.toFixed(1)}`;
+            const gapStr = idx === 0 ? "LDR" : gapSec.toFixed(3);
+            const intStr = idx === 0 ? "—" : intSec.toFixed(3);
             const posStr = String(idx + 1);
             if (slot.lastPos !== posStr && slot.posEl) {
               slot.posEl.textContent = posStr;
@@ -988,8 +988,8 @@ const overlaySchema = {
         let html = "";
         for (let i = 0; i < 7; i++) {
           html += `<div class="rel-row rel-row--same" data-rel-slot="${i}">
+            <span class="rel-pos"></span>
             <span class="rel-num"></span>
-            <span class="rel-brand-slot"></span>
             <span class="rel-name"></span>
             <span class="rel-pit" hidden>PIT</span>
             <span class="rel-lic"></span>
@@ -1002,8 +1002,8 @@ const overlaySchema = {
           const rowEl = relativeEl.querySelector(`[data-rel-slot="${i}"]`);
           relPool.push({
             rowEl,
+            posEl: rowEl.querySelector(".rel-pos"),
             numEl: rowEl.querySelector(".rel-num"),
-            brandEl: rowEl.querySelector(".rel-brand-slot"),
             nameEl: rowEl.querySelector(".rel-name"),
             pitEl: rowEl.querySelector(".rel-pit"),
             licEl: rowEl.querySelector(".rel-lic"),
@@ -1069,9 +1069,10 @@ const overlaySchema = {
           if (slot.lastKey !== slotKey) {
             slot.lastKey = slotKey;
             slot.rowEl.className = `rel-row rel-row--${tone}`;
-            slot.rowEl.style.borderLeftColor = CLASSES[d.cls].color;
+            slot.rowEl.style.borderLeftColor = d.isMe ? "#10b981" : CLASSES[d.cls].color;
+            slot.posEl.textContent = String(d.id);
             slot.numEl.textContent = `#${d.num}`;
-            slot.brandEl.innerHTML = brandSvg(d.brand, 13);
+            slot.numEl.style.color = CLASSES[d.cls].color;
             slot.nameEl.textContent = d.name;
             if (d.isPit) {
               slot.pitEl.hidden = false;
@@ -1082,11 +1083,11 @@ const overlaySchema = {
               slot.licEl.hidden = false;
               slot.irEl.hidden = false;
               slot.licEl.style.background = LIC_COLOR[d.lic] || "#64748b";
-              slot.licEl.textContent = d.lic;
+              slot.licEl.textContent = `${d.lic}${d.sr.slice(0, 3)}`;
               slot.irEl.textContent = d.ir;
             }
           }
-          const gapText = d.isMe ? "0.0s" : `${timeDelta >= 0 ? "+" : ""}${timeDelta.toFixed(1)}s`;
+          const gapText = d.isMe ? "0.0" : `${timeDelta >= 0 ? "+" : ""}${timeDelta.toFixed(1)}`;
           if (slot.lastGap !== gapText) {
             slot.lastGap = gapText;
             slot.gapEl.textContent = gapText;
@@ -1114,7 +1115,7 @@ const overlaySchema = {
             trackDotsEl.appendChild(halo);
           }
           const dot = document.createElementNS(ns, "circle");
-          dot.setAttribute("r", d.isMe ? "6.5" : "5.2");
+          dot.setAttribute("r", "6");
           dot.setAttribute("fill", color);
           dot.setAttribute("stroke", "#090b0f");
           dot.setAttribute("stroke-width", "1.2");
@@ -1122,10 +1123,10 @@ const overlaySchema = {
 
           const label = document.createElementNS(ns, "text");
           label.setAttribute("text-anchor", "middle");
-          label.setAttribute("font-size", "6.4");
+          label.setAttribute("font-size", "6.2");
           label.setAttribute("font-family", "ui-monospace,monospace");
           label.setAttribute("font-weight", "800");
-          label.setAttribute("fill", "#090b0f");
+          label.setAttribute("fill", "#ffffff");
           label.textContent = d.num;
           trackDotsEl.appendChild(label);
 
@@ -2399,19 +2400,19 @@ const overlaySchema = {
       position: absolute;
       top: 12px;
       left: 12px;
-      width: 364px;
+      width: 404px;
     }
     .hud-pos-relative {
       position: absolute;
       top: 12px;
       right: 12px;
-      width: 320px;
+      width: 275px;
     }
     .hud-pos-trackmap {
       position: absolute;
-      top: 215px;
+      top: 162px;
       right: 12px;
-      width: 220px;
+      width: 210px;
     }
     .hud-pos-delta {
       position: absolute;
@@ -2460,14 +2461,12 @@ const overlaySchema = {
   }
 
   .hud-box {
-    background: rgba(9, 11, 15, 0.86);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.09);
-    border-radius: 8px;
+    background: rgba(9, 11, 15, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 3px;
     overflow: hidden;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-variant-numeric: tabular-nums;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
     transition: opacity 0.2s ease, transform 0.2s ease;
   }
 
@@ -2500,39 +2499,73 @@ const overlaySchema = {
     letter-spacing: 0.05em;
   }
 
-  /* STANDINGS */
+  /* STANDINGS KAPPS */
+  .hud-std-sessbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 18px;
+    padding: 0 6px;
+    background: #090b0f;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 9.5px;
+    font-weight: 700;
+  }
+
   .hud-standings__body {
-    padding: 4px 0;
+    padding: 0;
   }
 
   .sim-stage :global(.st-cls-head) {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 3px 8px;
-    margin-top: 3px;
+    height: 18px;
+    padding: 0 6px;
+    margin-top: 0;
     border-left: 3px solid #10b981;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(255, 255, 255, 0.05);
     font-size: 9.5px;
     font-weight: 800;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
   }
 
   .sim-stage :global(.st-cls-sof) {
-    color: #94a3b8;
-    font-weight: 600;
+    color: #e2e8f0;
+    font-weight: 700;
   }
 
   .sim-stage :global(.st-row) {
     display: grid;
-    grid-template-columns: 14px 15px 24px minmax(68px, 1fr) 40px 26px 26px 32px 44px;
+    grid-template-columns: 16px 24px 118px 13px 72px 44px 40px 54px;
     align-items: center;
-    gap: 3px;
-    padding: 3px 7px;
+    gap: 0;
+    height: 19px;
+    padding: 0 5px;
     border-left: 3px solid transparent;
     font-size: 10.5px;
-    color: #e2e8f0;
+    color: #f8fafc;
     border-bottom: 1px solid rgba(255, 255, 255, 0.025);
+  }
+
+  .sim-stage :global(.st-lic-ir) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 14px;
+    padding: 0 4px;
+    margin-left: 4px;
+    border-radius: 2px;
+    font-size: 9px;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1;
+  }
+
+  .sim-stage :global(.st-lap) {
+    text-align: right;
+    color: #e2e8f0;
+    font-size: 10px;
   }
 
   .sim-stage :global(.st-row.is-me) {
@@ -2608,19 +2641,28 @@ const overlaySchema = {
     font-size: 10px;
   }
 
-  /* RELATIVE */
+  /* RELATIVE KAPPS */
   .hud-relative__body {
-    padding: 3px 0;
+    padding: 0;
   }
 
   .sim-stage :global(.rel-row) {
     display: grid;
-    grid-template-columns: 28px 15px minmax(80px, 1fr) 20px 30px 44px;
+    grid-template-columns: 16px 24px minmax(78px, 1fr) 32px 30px 36px;
     align-items: center;
-    gap: 5px;
-    padding: 3.5px 8px;
+    gap: 4px;
+    height: 19px;
+    padding: 0 5px;
     border-left: 3px solid transparent;
     font-size: 10.5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.025);
+  }
+
+  .sim-stage :global(.rel-pos) {
+    color: #94a3b8;
+    text-align: right;
+    font-weight: 700;
+    font-size: 10px;
   }
 
   .sim-stage :global(.rel-row--same) { color: #f1f5f9; }

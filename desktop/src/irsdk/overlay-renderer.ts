@@ -13,7 +13,7 @@ import { Radar360Engine, type RadarInputState } from "./radar-360";
 import { PitboxHelperEngine, type PitboxInputState } from "./pitbox-helper";
 import { DigiFlagEngine } from "./digi-flag";
 import { ThemeEngine } from "../theme/theme-engine";
-import { computeClassSof, estimateAllDriversIRatingDeltas, estimateLiveIRating, formatSofShort } from "./irating-calc";
+import { computeClassSof, estimateAllDriversIRatingDeltas } from "./irating-calc";
 
 const lastRenderedHtml = new WeakMap<HTMLElement, string>();
 function setHtmlIfChanged(container: HTMLElement, html: string): void {
@@ -22,21 +22,17 @@ function setHtmlIfChanged(container: HTMLElement, html: string): void {
   container.innerHTML = html;
 }
 
-function renderLicenseBadge(licString: string | undefined): string {
+const LIC_BG_MAP: Record<string, string> = { A: "#2563eb", B: "#16a34a", C: "#d97706", D: "#dc2626", R: "#dc2626" };
+
+function renderLicenseIrBlock(licString: string | undefined, iRatingExact?: number, iRatingStr?: string, showIr = true): string {
   const raw = (licString || "R 0.0").trim();
   const letter = raw.charAt(0).toUpperCase();
   const num = raw.slice(1).trim();
-  const label = num ? `${letter}${num}` : letter;
-  const cls = ["A", "B", "C", "D", "R"].includes(letter) ? `mmt-lic-${letter}` : "mmt-lic-R";
-  return `<span class="mmt-lic-pill ${cls}">${label}</span>`;
-}
-
-function renderLicenseIrBlock(licString: string | undefined, iRatingExact?: number, iRatingStr?: string, showIr = true): string {
-  const licHtml = licString ? renderLicenseBadge(licString) : "";
+  const licLabel = num ? `${letter}${num}` : letter;
+  const licBg = LIC_BG_MAP[letter] || "#dc2626";
   const irVal = iRatingExact && iRatingExact > 0 ? String(Math.round(iRatingExact)) : (iRatingStr || "");
-  const irHtml = showIr && irVal ? `<span class="mmt-ir-exact">${irVal}</span>` : "";
-  if (!licHtml && !irHtml) return "";
-  return `<span class="mmt-lic-ir-block inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[3px] bg-[#0284c7] text-white font-bold text-[10px] tabular-nums">${licHtml}${irHtml}</span>`;
+  if (!licLabel && !irVal) return "";
+  return `<span class="mmt-lic-ir-block inline-flex items-center gap-1 px-1.5 h-[14px] leading-[14px] rounded-[2px] text-white font-bold text-[9.5px] tabular-nums" style="background:${licBg};"><span>${licLabel}</span>${showIr && irVal ? `<span class="opacity-95">${irVal}</span>` : ""}</span>`;
 }
 
 const gpuPedalsEngine = new GpuPedalsEngine();
@@ -77,31 +73,14 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
   }
 
   const { entries } = state.relative;
-  const isReplay = state.isReplayPlaying;
   const isStreamer = SmartLayoutManager.getInstance().isStreamerMode();
   const cols = ThemeEngine.getInstance().getColumnsConfig().relative;
-  const irEst = estimateLiveIRating(state);
   const irDeltas = estimateAllDriversIRatingDeltas(state);
   const isPractice =
     state.session.sessionType.toLowerCase().includes("practice") ||
     state.session.sessionType.toLowerCase().includes("warmup");
   const posByCarIdx = new Map<number, number>();
   state.leaderboard.forEach((entry) => posByCarIdx.set(entry.carIdx, entry.position));
-
-  const tTrack = state.frame.trackTempC;
-  const trackTempStr = typeof tTrack === "number" && tTrack > 0 ? `${tTrack.toFixed(0)}°C` : "";
-  const remSec = Math.max(0, Math.round(state.frame.sessionTimeRemain || 0));
-  const remMin = Math.floor(remSec / 60);
-  const remSecPart = String(remSec % 60).padStart(2, "0");
-  const sessionClock = `${String(remMin).padStart(2, "0")}:${remSecPart}`;
-  const sessType = (state.session.sessionType || "Practice").split(" ")[0];
-
-  const headerHtml = `
-    <div class="mmt-rel-header flex items-center justify-between gap-2 whitespace-nowrap">
-      <span>${irEst ? `SOF ${formatSofShort(irEst.sof)}` : "REL"} · ⏱ ${sessionClock}</span>
-      <span>${trackTempStr ? `${trackTempStr} · ` : ""}${isReplay ? "Replay" : sessType}</span>
-     ${renderIncidentPill(state)}</div>
-  `;
 
   const anyWetCar = (state.frame.carIdxTireCompound || []).some((c) => c === 1);
   const showCompounds = (state.frame.trackWetness ?? 1) >= 3 || (state.frame.precipitationPct ?? 0) > 0 || anyWetCar;
@@ -182,7 +161,7 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
       const rowOpacity = e.onPitRoad && !isSelf ? "opacity:0.55;" : "";
 
       return `
-        <div class="${rowCls}" data-car-idx="${e.carIdx}" style="height:22px;font-size:11px;border-left:3px solid ${isSelf ? "#10b981" : (e.carClassColor || "#00e699")};${isSelf ? "background:rgba(16,185,129,0.16);" : ""}${rowOpacity}">
+        <div class="${rowCls}" data-car-idx="${e.carIdx}" style="height:19px;font-size:10.5px;border-left:3px solid ${isSelf ? "#10b981" : (e.carClassColor || "#00e699")};${isSelf ? "background:rgba(16,185,129,0.16);" : ""}${rowOpacity}">
           ${classPosCell}
           ${numCell}
           ${nameCell}
@@ -196,16 +175,10 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
     })
     .join("");
 
-  const footerHtml = `
-    
-  `;
-
   setHtmlWithFlipAnimation(container, `
-    ${headerHtml}
-    <div class="font-mono select-none overflow-hidden">
+    <div class="font-mono select-none overflow-hidden w-[275px]">
       ${rowsHtml}
     </div>
-    ${footerHtml}
   `);
 }
 
@@ -412,23 +385,19 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
     leaderboard.length,
     Object.values(state.session.driverInfo?.drivers ?? {}).filter((d) => !d.isPaceCar && !d.isSpectator).length
   );
-
-  const localClock = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
   const anyWetCar = (state.frame.carIdxTireCompound || []).some((c) => c === 1);
   const showCompounds = (state.frame.trackWetness ?? 1) >= 3 || (state.frame.precipitationPct ?? 0) > 0 || anyWetCar;
 
   const headerHtml = `
     <div class="mmt-std-header">
       <div class="flex items-center gap-2">
-        <span class="font-bold text-white/90">${sessChar}</span>
-        <span class="px-1 rounded-[2px] text-[10px] font-extrabold" style="background:${leadColor}28;color:${leadColor}">${leadClass}</span>
-        <span class="text-white">Vta ${activeLap}${validTotalLaps > 0 ? `/${validTotalLaps}` : ""}</span>
-        <span class="text-emerald-300 font-bold">⏱ ${remClock}</span>
+        <span class="font-bold text-white/95">${sessChar}</span>
+        <span class="px-1 rounded-[2px] text-[9.5px] font-extrabold" style="background:${leadColor}28;color:${leadColor}">${leadClass}</span>
+        <span class="text-white/90">${remClock}${validTotalLaps > 0 ? `/${validTotalLaps}L` : ""}</span>
       </div>
       <div class="flex items-center gap-2 text-white/85">
         ${renderIncidentPill(state)}
-        ${tempPart ? `<span>${tempPart}</span>` : ""}
-        <span>🕒 ${localClock}</span>
+        ${tempPart ? `<span>${tempPart.replace("🌡 ", "")}</span>` : ""}
         <span>${leaderboard.length}/${totalSessionCars}</span>
       </div>
     </div>
@@ -461,9 +430,9 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
         clsKeyUpper.includes("TCR") || clsKeyUpper.includes("CUP") ? "#10b981" :
         (group.color || "#38bdf8");
       const classHeaderHtml = `
-        <div class="mmt-std-class-header font-mono tabular-nums" style="height:20px;border-left:3px solid ${distinctClassColor};background:${distinctClassColor}2e;">
+        <div class="mmt-std-class-header font-mono tabular-nums" style="height:18px;border-left:3px solid ${distinctClassColor};background:${distinctClassColor}2e;">
           <span class="font-extrabold tracking-wider uppercase" style="color:${distinctClassColor};">${group.className}</span>
-          <span class="text-white/90 font-bold tabular-nums text-[10px]">${clsSofExact > 0 ? `SOF ${clsSofExact}` : `${group.totalActive}/${clsReg}`}</span>
+          <span class="text-white/90 font-bold tabular-nums text-[9.5px]">${group.totalActive}/${clsReg}${clsSofExact > 0 ? ` · SOF ${clsSofExact}` : ""}</span>
         </div>
       `;
 
@@ -484,15 +453,15 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
           const posColor = isLeader ? "text-amber-400" : clsPos === 2 ? "text-slate-200" : clsPos === 3 ? "text-amber-600" : "text-white/90";
           const rowCls = `mmt-std-row font-mono tabular-nums${isSelf ? " is-self" : clsIdx % 2 === 1 ? " is-alt" : ""}`;
 
-          // 1. Posición en clase (18px)
+          // 1. Posición en clase (16px)
           const posGlobalCell = cols.position
-            ? `<span class="w-[18px] shrink-0 text-right text-[11px] font-bold ${posColor}">${clsPos}</span>`
+            ? `<span class="w-[16px] shrink-0 text-right text-[10.5px] font-bold ${posColor}">${clsPos}</span>`
             : ``;
 
-          // 2. Dorsal (28px, color de clase)
-          const numCell = `<span class="w-[28px] shrink-0 text-center text-[11px] font-bold" style="color:${isSelf ? "#34d399" : rowClassColor}">#${e.carNumber}</span>`;
+          // 2. Dorsal (24px, color de clase)
+          const numCell = `<span class="w-[24px] shrink-0 text-center text-[10.5px] font-bold" style="color:${isSelf ? "#34d399" : rowClassColor}">#${e.carNumber}</span>`;
 
-          // 3. Nombre piloto (125px, truncado limpio)
+          // 3. Nombre piloto (118px, truncado limpio)
           const displayName = isStreamer
             ? isSelf ? "Piloto (Tú)" : `Piloto #${e.carNumber}`
             : (cols.driverName ? (e.driverName || e.abbrevName) : "");
@@ -504,16 +473,16 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
                 ? "text-[#38bdf8]"
                 : "text-[#f8fafc]";
           const nameCell = cols.driverName
-            ? `<span class="mmt-cell-name shrink-0 text-[11px] ${nameColorClass}">${displayName}</span>`
+            ? `<span class="mmt-cell-name shrink-0 text-[10.5px] ${nameColorClass}">${displayName}</span>`
             : ``;
 
-          // 4. Icono oficial de fabricante (14px)
+          // 4. Icono oficial de fabricante (13px)
           const brandCell = cols.brandIcon
-            ? `<span class="w-[14px] shrink-0 flex items-center justify-center">${getCarBrandSvg(e.carPath, 14)}</span>`
+            ? `<span class="w-[13px] shrink-0 flex items-center justify-center mr-1">${getCarBrandSvg(e.carPath, 13)}</span>`
             : ``;
 
-          // 5. Pill Licencia + iRating
-          const licIrCell = `<span class="w-[78px] shrink-0 flex items-center justify-end gap-1">${renderLicenseIrBlock(e.licString, e.iRatingExact, e.iRatingStr, cols.iRating)}</span>`;
+          // 5. Pill Licencia + iRating unificada
+          const licIrCell = `<span class="w-[74px] shrink-0 flex items-center justify-end">${renderLicenseIrBlock(e.licString, e.iRatingExact, e.iRatingStr, cols.iRating)}</span>`;
           const compoundCell = showCompounds ? renderCompoundBadge(state.frame.carIdxTireCompound?.[e.carIdx]) : "";
 
           // 6. Delta iRating (+65 en #22c55e / -24 en #ef4444)
@@ -575,7 +544,7 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
           const lapCell = `<span class="w-[56px] shrink-0 text-right text-[11px] tabular-nums ${lapColor}">${activeLapStr}</span>`;
 
           return `
-            <div class="${rowCls}" data-car-idx="${e.carIdx}" style="height:22px;font-size:11px;border-left:3px solid ${isSelf ? "#10b981" : rowClassColor};${isSelf ? "background:rgba(16,185,129,0.16);" : ""}">
+            <div class="${rowCls}" data-car-idx="${e.carIdx}" style="height:19px;font-size:10.5px;border-left:3px solid ${isSelf ? "#10b981" : rowClassColor};${isSelf ? "background:rgba(16,185,129,0.16);" : ""}">
               ${posGlobalCell}
               ${numCell}
               ${nameCell}
