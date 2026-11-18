@@ -174,15 +174,6 @@ export function renderMirrorProximityWings(container: HTMLElement, state: IrsdkC
   }
 }
 
-const trackSectorState = {
-  lastLap: -1,
-  lastSector: -1,
-  sectorStartMs: 0,
-  currentLapColors: [] as string[],
-  personalBestMs: [] as number[],
-  sessionBestMs: [] as number[],
-};
-
 /**
  * Renders the clean 2D <canvas> Track Map with 3px sector-colored trace and 4px car dots (Prompt 110).
  */
@@ -284,7 +275,7 @@ export function renderLiveTrackMapCanvas(canvas: HTMLCanvasElement, state: Irsdk
     const pct = pcts[i];
     if (pct === undefined || pct < 0 || pct > 1) continue;
     const drv = drivers[i];
-    if (!drv || drv.isSpectator || drv.carIsPaceCar) continue;
+    if (!drv || drv.isSpectator || drv.isPaceCar) continue;
     const p = pointAtPct(pct);
     const cls = (drv.carClassShortName || "").toUpperCase();
     const dotColor =
