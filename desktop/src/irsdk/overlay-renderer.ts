@@ -412,14 +412,7 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
         <span>${leaderboard.length}/${totalSessionCars}</span>
       </div>
     </div>
-  `;
-
-  const formatShortLap = (sec: number): string => {
-    if (!sec || sec <= 0 || !isFinite(sec)) return "--.-";
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    return m > 0 ? `${m}:${s.toFixed(1).padStart(4, "0")}` : s.toFixed(1);
-  };
+  `;
 
   const classBlocks = buildMulticlassStandingsGroups(leaderboard);
   const irDeltas = estimateAllDriversIRatingDeltas(state);
