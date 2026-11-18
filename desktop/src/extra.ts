@@ -36,7 +36,8 @@ import {
   BroadcastDirector,
   renderBroadcastDirectorWidget,
 } from "./irsdk";
-import { renderLiveTrackMapCanvas, renderMirrorProximityWings } from "./irsdk/proximity-radar";
+import { renderLiveTrackMapCanvas } from "./irsdk/proximity-radar";
+import { renderHelicorsaRadar } from "./irsdk/radar-360";
 import { observeTrackAutoMap } from "./irsdk/track-paths";
 import { estimateLiveIRating, formatIRatingDelta, formatSofShort } from "./irsdk/irating-calc";
 import { AeroSuspensionAnalyzer, renderAeroAnalysisPanel } from "./telemetry/aero-analyzer";
@@ -3828,7 +3829,7 @@ function safeRenderWidget(el: HTMLElement | null, fn: () => void): void {
       lastRadarRenderMs = nowHudMs;
       document.querySelectorAll<HTMLElement>("#ovRadar, #ovRadarFloat").forEach((radar) => {
         if (radar.offsetParent !== null) {
-          safeRenderWidget(radar, () => renderMirrorProximityWings(radar, irsdkState));
+          safeRenderWidget(radar, () => renderHelicorsaRadar(radar, irsdkState));
         }
       });
       const trackMapCanvas = document.getElementById("ovTrackMapFloat") as HTMLCanvasElement | null;
@@ -3988,13 +3989,16 @@ function safeRenderWidget(el: HTMLElement | null, fn: () => void): void {
 
       vis.applyElementVisibility(document.getElementById("floatRelativeCard"), floatEditMode || relShow);
       vis.applyElementVisibility(document.getElementById("floatStandingsCard"), floatEditMode || stdShow);
-      vis.applyElementVisibility(document.getElementById("floatCarTelemetryDock"), floatEditMode || fuelShow);
-      vis.applyElementVisibility(document.getElementById("floatFuelCard"), floatEditMode || fuelShow);
+      vis.applyElementVisibility(document.getElementById("floatCarTelemetryDock"), floatEditMode || (fuelShow && !isReplayMode));
+      vis.applyElementVisibility(document.getElementById("floatFuelCard"), floatEditMode || (fuelShow && !isReplayMode));
+      vis.applyElementVisibility(document.getElementById("floatDeltaBarCard"), floatEditMode || (inpShow && !isReplayMode && !disabledWidgets.has("delta")));
+      vis.applyElementVisibility(document.getElementById("floatRadarCard"), floatEditMode || (!isReplayMode && !disabledWidgets.has("radar")));
       vis.applyElementVisibility(document.getElementById("floatTireStatusCard"), replayAllowed && !disabledWidgets.has("tires") && vis.evaluateVisibility("fuel", visCtx));
       vis.applyElementVisibility(document.getElementById("floatCenterStatusDock"), replayAllowed && !disabledWidgets.has("conditions") && vis.getReplayHudMode() !== "hidden");
       vis.applyElementVisibility(document.getElementById("floatTrackMapCard"), floatEditMode || mapShow);
-      vis.applyElementVisibility(document.getElementById("floatInputsCard"), floatEditMode || inpShow);
-      vis.applyElementVisibility(document.getElementById("floatWaveformCard"), floatEditMode || waveShow);
+      vis.applyElementVisibility(document.getElementById("floatInputsCard"), floatEditMode || (inpShow && !isReplayMode));
+      vis.applyElementVisibility(document.getElementById("floatSteeringWheelCard"), floatEditMode || (inpShow && !isReplayMode));
+      vis.applyElementVisibility(document.getElementById("floatWaveformCard"), floatEditMode || (waveShow && !isReplayMode));
       vis.applyElementVisibility(document.getElementById("floatClusterCard"), floatEditMode || (cockpitVisible && !disabledWidgets.has("cluster")));
       vis.applyElementVisibility(document.getElementById("floatShiftLightsRow"), floatEditMode || (cockpitVisible && !disabledWidgets.has("lights")));
 

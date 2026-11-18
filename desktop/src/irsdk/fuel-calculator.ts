@@ -130,18 +130,21 @@ export class FuelCalculator {
     // 4. Stint laps remaining with current fuel onboard
     const stintLapsRemaining = avgBurn > 0 ? currentFuel / avgBurn : 0;
 
-    // 5. Fuel needed to finish with safety margin (+ optional extra laps margin from settings)
-    let extraLapsMargin = 0;
+    // 5. Fuel needed to finish with +0.5 laps default safety margin (configurable via localStorage)
+    let extraLapsMargin = 0.5;
     try {
       if (typeof localStorage !== "undefined") {
-        const raw = Number(localStorage.getItem("mmt-fuel-margin-laps") || "0");
-        if (isFinite(raw) && raw > 0 && raw <= 2.0) extraLapsMargin = raw;
+        const stored = localStorage.getItem("mmt-fuel-margin-laps");
+        if (stored !== null && stored !== "") {
+          const raw = Number(stored);
+          if (isFinite(raw) && raw >= 0 && raw <= 2.0) extraLapsMargin = raw;
+        }
       }
     } catch { /* ignore */ }
     const fuelNeeded = lapsRemaining * avgBurn + extraLapsMargin * avgBurn;
     const fuelDeficit = fuelNeeded - currentFuel;
-    const fuelToAdd = fuelDeficit > 0 ? fuelDeficit + this.safetyMarginL : 0;
-    const fuelSurplusL = fuelDeficit <= 0 ? Math.max(0, -fuelDeficit - this.safetyMarginL) : 0;
+    const fuelToAdd = fuelDeficit > 0 ? fuelDeficit : 0;
+    const fuelSurplusL = fuelDeficit <= 0 ? Math.max(0, -fuelDeficit) : 0;
 
     // Guarantee finite, non-negative numbers
     const safeNum = (v: number, decimals: number = 2) => (isFinite(v) && v >= 0 ? Number(v.toFixed(decimals)) : 0);

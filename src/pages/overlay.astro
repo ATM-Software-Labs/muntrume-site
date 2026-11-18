@@ -17,9 +17,9 @@ const SIM_BRAND_PATHS: Record<string, { path: string; color: string; name: strin
   ford: { path: OFFICIAL_BRAND_PATHS["logo-ford"] || "", color: "#3B82F6", name: "Ford" },
   porsche: { path: OFFICIAL_BRAND_PATHS["logo-porsche"] || "", color: "#E2E8F0", name: "Porsche" },
   mclaren: { path: OFFICIAL_BRAND_PATHS["logo-mclaren"] || "", color: "#FF8000", name: "McLaren" },
-  ferrari: { path: OFFICIAL_BRAND_PATHS["logo-ferrari"] || "", color: "#FACC15", name: "Ferrari" },
-  cadillac: { path: OFFICIAL_BRAND_PATHS["logo-cadillac"] || "", color: "#D4AF37", name: "Cadillac" },
-  bmw: { path: OFFICIAL_BRAND_PATHS["logo-bmw"] || "", color: "#3B82F6", name: "BMW" },
+  ferrari: { path: OFFICIAL_BRAND_PATHS["logo-ferrari"] || "", color: "#DC0000", name: "Ferrari" },
+  cadillac: { path: OFFICIAL_BRAND_PATHS["logo-cadillac"] || "", color: "#E2E8F0", name: "Cadillac" },
+  bmw: { path: OFFICIAL_BRAND_PATHS["logo-bmw"] || "", color: "#38BDF8", name: "BMW" },
   dallara: { path: OFFICIAL_BRAND_PATHS["logo-dallara"] || "", color: "#00E699", name: "Dallara" },
   mercedes: { path: OFFICIAL_BRAND_PATHS["logo-mercedes"] || "", color: "#00D2BE", name: "Mercedes-AMG" },
   aston: { path: OFFICIAL_BRAND_PATHS["logo-aston"] || "", color: "#10B981", name: "Aston Martin" },
@@ -279,8 +279,8 @@ const overlaySchema = {
               </div>
             </div>
 
-            <!-- CENTRO INFERIOR (bottom: 135px; left: 50%): RADAR CARLEFTRIGHT -->
-            <div class="hud-radar-wrap hud-pos-radar" data-hud-mod="radar" data-driving-only="true">
+            <!-- CENTRO INFERIOR (bottom: 128px; left: 50%): RADAR CARLEFTRIGHT -->
+            <div class="hud-radar-wrap hud-pos-radar" id="simRadarCard" data-hud-mod="radar" data-driving-only="true">
               <div class="hud-radar" id="simRadar" data-state="clear" aria-live="polite">
                 <svg viewBox="0 0 180 180" class="hud-radar__svg" aria-label="Radar de proximidad lateral">
                   <circle cx="90" cy="90" r="78" fill="rgba(9,11,15,0.78)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
@@ -293,9 +293,6 @@ const overlaySchema = {
                   <rect id="radarCarRight" x="126" y="74" width="20" height="44" rx="5" fill="#ef4444" fill-opacity="0" stroke="#ef4444" stroke-opacity="0" stroke-width="1.5"/>
                 </svg>
                 <div class="hud-radar__label" id="simRadarLabel">CLEAR</div>
-              </div>
-              <div class="hud-radar__hint" id="simRadarHint">
-                Radar <code>CarLeftRight</code> en espera
               </div>
             </div>
 
@@ -524,7 +521,7 @@ const overlaySchema = {
       function brandSvg(key, size = 15) {
         const b = brandMap[key];
         if (!b || !b.path) return "";
-        return `<span class="hud-brand" style="width:${size}px;height:${size}px;color:${b.color}" title="${b.name}"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="${b.path}"/></svg></span>`;
+        return `<span class="hud-brand" style="width:${size}px;height:${size}px;color:${b.color}" title="${b.name}"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="${b.color}" style="color:${b.color};fill:${b.color}" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" fill="${b.color}" d="${b.path}"/></svg></span>`;
       }
 
       // -----------------------------------------------------------------------
@@ -695,7 +692,7 @@ const overlaySchema = {
       let isReplay = false;
       let isPaused = false;
       let radarOverrideUntil = 0;
-      let radarOverrideMode = 3; // 1 = left, 2 = right, 3 = 3-wide
+      let radarOverrideMode = 1; // toggles to 3 on first "Simular 3-Wide" click
 
       // Pedal trace history
       const TRACE_LEN = 110;
@@ -708,7 +705,6 @@ const overlaySchema = {
       const relativeEl = document.getElementById("simRelativeBody");
       const trackDotsEl = document.getElementById("simTrackDots");
       const radarEl = document.getElementById("simRadar");
-      const radarHintEl = document.getElementById("simRadarHint");
       const radarLabelEl = document.getElementById("simRadarLabel");
       const radarArcLeft = document.getElementById("radarArcLeft");
       const radarArcRight = document.getElementById("radarArcRight");
@@ -733,17 +729,17 @@ const overlaySchema = {
       const pedalCtx = pedalCanvas ? pedalCanvas.getContext("2d") : null;
 
       function syncVisibility() {
-        let activeCount = 0;
+        const activeMods = new Set();
         document.querySelectorAll("[data-hud-mod]").forEach((el) => {
           const mod = el.getAttribute("data-hud-mod");
           const drivingOnly = el.getAttribute("data-driving-only") === "true";
           const visible = Boolean(enabledMods[mod]) && !(isReplay && drivingOnly);
           el.classList.toggle("is-hidden", !visible);
-          if (visible) activeCount++;
+          if (visible && mod) activeMods.add(mod);
         });
         if (replayBadgeEl) replayBadgeEl.hidden = !isReplay;
         if (cpuBadgeEl) {
-          cpuBadgeEl.textContent = `${isPaused ? "PAUSA" : "60 FPS"} · ${activeCount}/6 activos`;
+          cpuBadgeEl.textContent = `${isPaused ? "PAUSA" : "60 FPS"} · ${activeMods.size}/6 activos`;
         }
       }
 
@@ -788,8 +784,28 @@ const overlaySchema = {
             if (chip) chip.click();
           }
           radarOverrideMode = radarOverrideMode === 3 ? 1 : 3;
-          radarOverrideUntil = performance.now() + 3600;
+          const now = performance.now();
+          radarOverrideUntil = now + 3600;
           btnRadar.textContent = radarOverrideMode === 3 ? "Simular 1-Wide" : "Simular 3-Wide";
+          const meDrv = drivers.find((d) => d.isMe);
+          if (meDrv) {
+            const gt3Sec = CLASSES.GT3.lapSec;
+            const berbis = drivers.find((d) => d.num === "1");
+            const chongkan = drivers.find((d) => d.num === "22");
+            if (berbis) {
+              berbis.pct = (meDrv.pct + 0.1 / gt3Sec) % 1;
+              berbis.lap = meDrv.lap;
+            }
+            if (chongkan) {
+              const targetGapSec = radarOverrideMode === 3 ? -0.1 : -1.1;
+              chongkan.pct = (meDrv.pct + targetGapSec / gt3Sec + 1) % 1;
+              chongkan.lap = meDrv.lap;
+            }
+          }
+          renderRadar(now, simTimeSec);
+          renderRelative();
+          renderTrackMap();
+          renderTrackBackdrop(0, now, simTimeSec);
         });
       }
 
@@ -1003,7 +1019,6 @@ const overlaySchema = {
 
         const active = state > 0;
         radarEl.setAttribute("data-state", active ? (state === 3 ? "threewide" : "side") : "clear");
-        if (radarHintEl) radarHintEl.style.opacity = active ? "0" : "1";
 
         const leftOn = state === 1 || state === 3;
         const rightOn = state === 2 || state === 3;
@@ -1036,66 +1051,179 @@ const overlaySchema = {
       const backdropCtx = backdropCanvas ? backdropCanvas.getContext("2d") : null;
       let roadOffset = 0;
 
-      function drawRaceCarRear(ctx, x, y, scale, bodyColor, accentColor, numLabel, slipIntensity) {
+      function drawRaceCarRear(ctx, x, y, scale, bodyColor, accentColor, secondaryColor, numLabel, slipIntensity) {
         ctx.save();
         ctx.translate(x, y);
         ctx.scale(scale, scale);
 
         // Aerodynamic slipstream trails
         if (slipIntensity > 0) {
-          const gradL = ctx.createLinearGradient(-46, 0, -46, 70);
-          gradL.addColorStop(0, `rgba(255,255,255,${0.18 * slipIntensity})`);
+          const gradL = ctx.createLinearGradient(-50, -10, -50, 72);
+          gradL.addColorStop(0, `rgba(255,255,255,${0.16 * slipIntensity})`);
           gradL.addColorStop(1, "rgba(255,255,255,0)");
           ctx.fillStyle = gradL;
-          ctx.fillRect(-50, 12, 3, 62);
-          ctx.fillRect(47, 12, 3, 62);
+          ctx.fillRect(-54, -18, 2.5, 76);
+          ctx.fillRect(51.5, -18, 2.5, 76);
         }
 
-        // Shadow
-        ctx.fillStyle = "rgba(0,0,0,0.65)";
+        // Ground shadow projected on asphalt
+        const shadowGrad = ctx.createRadialGradient(0, 22, 10, 0, 22, 64);
+        shadowGrad.addColorStop(0, "rgba(0,0,0,0.82)");
+        shadowGrad.addColorStop(0.65, "rgba(0,0,0,0.48)");
+        shadowGrad.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = shadowGrad;
         ctx.beginPath();
-        ctx.ellipse(0, 22, 58, 12, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 22, 64, 14, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Rear diffuser & chassis
-        ctx.fillStyle = "#0b0e14";
-        ctx.fillRect(-46, -12, 92, 32);
-
-        // Wide GT3 fenders
-        ctx.fillStyle = bodyColor;
-        ctx.beginPath();
-        ctx.roundRect(-48, -22, 96, 36, 7);
-        ctx.fill();
-
-        // Cockpit roof
-        ctx.fillStyle = "#111827";
-        ctx.beginPath();
-        ctx.roundRect(-28, -36, 56, 20, 6);
-        ctx.fill();
-
-        // Rear wing
+        // Wide rear slick tires
         ctx.fillStyle = "#090b0f";
-        ctx.fillRect(-52, -32, 104, 6);
-        ctx.fillStyle = accentColor;
-        ctx.fillRect(-52, -33, 5, 11);
-        ctx.fillRect(47, -33, 5, 11);
+        ctx.beginPath();
+        ctx.roundRect(-52, 4, 18, 20, 4);
+        ctx.roundRect(34, 4, 18, 20, 4);
+        ctx.fill();
+        ctx.fillStyle = "rgba(148,163,184,0.16)";
+        ctx.fillRect(-49, 6, 3, 14);
+        ctx.fillRect(46, 6, 3, 14);
 
-        // Glowing LED taillights
+        // Lower carbon rear diffuser + vertical aero strakes + central exhaust
+        ctx.fillStyle = "#080a0e";
+        ctx.beginPath();
+        ctx.moveTo(-40, 12);
+        ctx.lineTo(40, 12);
+        ctx.lineTo(35, 22);
+        ctx.lineTo(-35, 22);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = "#1e293b";
+        [-22, -11, 11, 22].forEach((sx) => {
+          ctx.fillRect(sx - 1, 13, 2, 8);
+        });
+
+        // Central dual exhaust + FIA rain light
+        ctx.fillStyle = "#334155";
+        ctx.beginPath();
+        ctx.arc(-5, 17, 3, 0, Math.PI * 2);
+        ctx.arc(5, 17, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#020617";
+        ctx.beginPath();
+        ctx.arc(-5, 17, 1.8, 0, Math.PI * 2);
+        ctx.arc(5, 17, 1.8, 0, Math.PI * 2);
+        ctx.fill();
         ctx.fillStyle = "#ef4444";
-        ctx.shadowColor = "#ef4444";
-        ctx.shadowBlur = 10;
-        ctx.fillRect(-42, -8, 18, 5);
-        ctx.fillRect(24, -8, 18, 5);
-        ctx.shadowBlur = 0;
+        ctx.fillRect(-1.5, 13, 3, 2.5);
 
-        // Number plate
-        ctx.fillStyle = "rgba(9,11,15,0.88)";
-        ctx.fillRect(-13, -8, 26, 14);
+        // Sculpted GT3 widebody haunches & rear fascia
+        const bodyGrad = ctx.createLinearGradient(0, -24, 0, 16);
+        bodyGrad.addColorStop(0, bodyColor);
+        bodyGrad.addColorStop(1, secondaryColor);
+        ctx.fillStyle = bodyGrad;
+        ctx.beginPath();
+        ctx.moveTo(-48, 12);
+        ctx.quadraticCurveTo(-53, -4, -44, -17);
+        ctx.lineTo(-27, -23);
+        ctx.lineTo(27, -23);
+        ctx.lineTo(44, -17);
+        ctx.quadraticCurveTo(53, -4, 48, 12);
+        ctx.lineTo(36, 14);
+        ctx.lineTo(-36, 14);
+        ctx.closePath();
+        ctx.fill();
+
+        // Racing livery center stripe & shoulder accents
+        ctx.fillStyle = secondaryColor;
+        ctx.fillRect(-10, -23, 20, 35);
+        ctx.fillStyle = accentColor;
+        ctx.fillRect(-12, -23, 2.2, 35);
+        ctx.fillRect(9.8, -23, 2.2, 35);
+        ctx.fillRect(-45, 2, 10, 2.5);
+        ctx.fillRect(35, 2, 10, 2.5);
+
+        // Tapered greenhouse & dark tinted rear window
+        ctx.fillStyle = "#0b1120";
+        ctx.beginPath();
+        ctx.moveTo(-29, -19);
+        ctx.lineTo(-21, -37);
+        ctx.lineTo(21, -37);
+        ctx.lineTo(29, -19);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = "rgba(255,255,255,0.18)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Glass reflection highlight
+        ctx.fillStyle = "rgba(255,255,255,0.12)";
+        ctx.beginPath();
+        ctx.moveTo(-16, -34);
+        ctx.lineTo(-4, -34);
+        ctx.lineTo(-11, -21);
+        ctx.lineTo(-21, -21);
+        ctx.closePath();
+        ctx.fill();
+
+        // Intense LED GT3 taillights
+        ctx.save();
+        ctx.shadowColor = "#ef4444";
+        ctx.shadowBlur = 12;
+        ctx.fillStyle = "#dc2626";
+        ctx.beginPath();
+        ctx.roundRect(-43, -11, 20, 4.5, 2);
+        ctx.roundRect(23, -11, 20, 4.5, 2);
+        ctx.fill();
+        ctx.fillStyle = "#fca5a5";
+        ctx.fillRect(-40, -9.8, 14, 1.8);
+        ctx.fillRect(26, -9.8, 14, 1.8);
+        ctx.restore();
+
+        // Swan-neck GT3 rear wing pylons
+        ctx.fillStyle = "#0f172a";
+        ctx.beginPath();
+        ctx.moveTo(-18, -21);
+        ctx.lineTo(-21, -41);
+        ctx.lineTo(-16.5, -41);
+        ctx.lineTo(-14, -21);
+        ctx.closePath();
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(18, -21);
+        ctx.lineTo(21, -41);
+        ctx.lineTo(16.5, -41);
+        ctx.lineTo(14, -21);
+        ctx.closePath();
+        ctx.fill();
+
+        // Sculpted carbon rear wing mainplane + endplates
+        ctx.fillStyle = "#090b0f";
+        ctx.beginPath();
+        ctx.moveTo(-54, -42);
+        ctx.quadraticCurveTo(0, -45, 54, -42);
+        ctx.lineTo(52, -36);
+        ctx.quadraticCurveTo(0, -39, -52, -36);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,0.16)";
+        ctx.fillRect(-48, -42, 96, 1.2);
+
+        ctx.fillStyle = accentColor;
+        ctx.fillRect(-55, -44, 4, 13);
+        ctx.fillRect(51, -44, 4, 13);
+
+        // Rear number plate
+        ctx.fillStyle = "rgba(9,11,15,0.92)";
+        ctx.beginPath();
+        ctx.roundRect(-12, -13, 24, 13, 3);
+        ctx.fill();
+        ctx.strokeStyle = accentColor;
+        ctx.lineWidth = 1;
+        ctx.stroke();
         ctx.fillStyle = "#ffffff";
-        ctx.font = "800 10px ui-monospace, monospace";
+        ctx.font = "800 9.5px ui-monospace, monospace";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(numLabel, 0, -1);
+        ctx.fillText(numLabel, 0, -6.5);
 
         ctx.restore();
       }
@@ -1218,20 +1346,20 @@ const overlaySchema = {
         const roadCenter = w * 0.5 + curveFactor * w * 0.05;
         const carY = h * 0.64;
 
-        // #1 M. Berbis — Porsche 911 GT3 R (992) (White / Red Motorsport) on Left
+        // #1 M. Berbis — Porsche 911 GT3 R (992) (White/Silver Motorsport + Black/Red) on Left
         const leftPull = battle === 1 || battle === 3 ? 1 : 0.15;
         const porscheX = roadCenter - w * (0.145 - 0.04 * leftPull) + Math.sin(tSec * 2.1) * 3;
         const porscheY = carY - 36 + (1 - leftPull) * -55;
-        drawRaceCarRear(ctx, porscheX, porscheY, 0.88 * (0.78 + 0.22 * leftPull), "#e2e8f0", "#ef4444", "1", leftPull);
+        drawRaceCarRear(ctx, porscheX, porscheY, 0.88 * (0.78 + 0.22 * leftPull), "#e2e8f0", "#ef4444", "#111827", "1", leftPull);
 
-        // #22 E. Chongkan — McLaren 720S GT3 Evo (Papaya Orange / Black) on Right
+        // #22 E. Chongkan — McLaren 720S GT3 Evo (Papaya Orange #ff8000 / Carbon #111827) on Right
         const rightPull = battle === 3 ? 1 : 0.12;
         const mclarenX = roadCenter + w * (0.145 - 0.04 * rightPull) + Math.cos(tSec * 1.9) * 3;
         const mclarenY = carY - 32 + (1 - rightPull) * -65;
-        drawRaceCarRear(ctx, mclarenX, mclarenY, 0.88 * (0.78 + 0.22 * rightPull), "#ea580c", "#111827", "22", rightPull);
+        drawRaceCarRear(ctx, mclarenX, mclarenY, 0.88 * (0.78 + 0.22 * rightPull), "#ff8000", "#ff8000", "#111827", "22", rightPull);
 
-        // #16 A. Trujillo — Ford Mustang GT3 (Blue / Black with Muntrume Emerald accents) centered
-        drawRaceCarRear(ctx, roadCenter + Math.sin(tSec * 1.6) * 2, carY + 12, 1.0, "#1d4ed8", "#10b981", "16", 0.8);
+        // #16 A. Trujillo — Ford Mustang GT3 (Ford Performance Blue #1d4ed8 / Black + Emerald #10b981) centered
+        drawRaceCarRear(ctx, roadCenter + Math.sin(tSec * 1.6) * 2, carY + 12, 1.0, "#1d4ed8", "#10b981", "#0f172a", "16", 0.8);
 
         // Subtle sparks when 3-wide wheel-to-wheel
         if (battle === 3) {
@@ -1292,7 +1420,7 @@ const overlaySchema = {
               berbis.lap = meDrv.lap;
             }
             if (chongkan) {
-              const targetGapSec = battleNow === 3 ? -0.2 : -1.1;
+              const targetGapSec = battleNow === 3 ? -0.1 : -1.1;
               chongkan.pct = (meDrv.pct + targetGapSec / gt3Sec + 1) % 1;
               chongkan.lap = meDrv.lap;
             }
@@ -1788,7 +1916,7 @@ const overlaySchema = {
       position: absolute;
       top: 12px;
       left: 12px;
-      width: 340px;
+      width: 364px;
     }
     .hud-pos-relative {
       position: absolute;
@@ -1811,11 +1939,13 @@ const overlaySchema = {
     }
     .hud-pos-radar {
       position: absolute;
-      bottom: 135px;
+      bottom: 128px;
       left: 50%;
       transform: translateX(-50%);
       margin-top: 0 !important;
       min-height: 0 !important;
+      z-index: 6;
+      pointer-events: none;
     }
     .hud-pos-inputs {
       position: absolute;
@@ -1912,10 +2042,10 @@ const overlaySchema = {
 
   .sim-stage :global(.st-row) {
     display: grid;
-    grid-template-columns: 16px 16px 28px minmax(72px, 1fr) 42px 30px 28px 34px 40px;
+    grid-template-columns: 14px 15px 24px minmax(68px, 1fr) 40px 26px 26px 32px 44px;
     align-items: center;
-    gap: 4px;
-    padding: 3px 8px;
+    gap: 3px;
+    padding: 3px 7px;
     border-left: 3px solid transparent;
     font-size: 10.5px;
     color: #e2e8f0;
@@ -2058,8 +2188,9 @@ const overlaySchema = {
   }
 
   .hud-radar[data-state="clear"] {
-    opacity: 0.14;
-    transform: scale(0.95);
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.92);
   }
 
   .hud-radar[data-state="side"],

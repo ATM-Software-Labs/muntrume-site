@@ -16,7 +16,7 @@ export function formatIRating(ir: number): string {
 
 export function formatDeltaSeconds(sec: number): string {
   const abs = Math.abs(sec);
-  if (abs < 0.05) return "PACE";
+  if (abs < 0.05) return "0.0s";
   const sign = sec > 0 ? "+" : "-";
   return `${sign}${abs.toFixed(1)}s`;
 }
@@ -118,7 +118,7 @@ export class RelativeEngine {
         lapDelta,
         diffPct,
         deltaSeconds,
-        deltaStr: isActive ? "REF" : formatDeltaSeconds(deltaSeconds),
+        deltaStr: isActive ? "0.0s" : formatDeltaSeconds(deltaSeconds),
         isActiveCam: isActive,
         isAhead: diffPct > 0,
         onPitRoad: onPit,
@@ -144,10 +144,10 @@ export class RelativeEngine {
     const carAhead = ahead.length > 0 ? ahead[0].entry : null;
     const carBehind = behind.length > 0 ? behind[0].entry : null;
 
-    // Pick up to 4 ahead, in reverse so furthest ahead is on top:
-    // [Ahead 4, Ahead 3, Ahead 2, Ahead 1, ACTIVE, Behind 1, Behind 2, Behind 3, Behind 4]
-    const sliceAhead = ahead.slice(0, 4).reverse().map((c) => c.entry);
-    const sliceBehind = behind.slice(0, 4).map((c) => c.entry);
+    // Pick exactly up to 3 ahead and 3 behind (Kapps standard):
+    // [Ahead 3, Ahead 2, Ahead 1, ACTIVE, Behind 1, Behind 2, Behind 3]
+    const sliceAhead = ahead.slice(0, 3).reverse().map((c) => c.entry);
+    const sliceBehind = behind.slice(0, 3).map((c) => c.entry);
 
     const finalEntries: RelativeEntry[] = [];
     sliceAhead.forEach((e) => finalEntries.push(e));

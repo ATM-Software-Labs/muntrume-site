@@ -232,30 +232,37 @@ export function renderLiveTrackMapCanvas(canvas: HTMLCanvasElement, state: Irsdk
     return smoothPts[idx];
   };
 
-  // 1. Borde exterior oscuro de alto contraste
+  // 1. Contorno exterior negro Kapps (6px)
   ctx.save();
-  ctx.lineWidth = 6.5;
+  ctx.lineWidth = 6;
   ctx.lineJoin = "round";
   ctx.lineCap = "round";
-  ctx.strokeStyle = "rgba(8, 10, 15, 0.92)";
+  ctx.strokeStyle = "rgba(8, 10, 15, 0.95)";
   ctx.beginPath();
   smoothPts.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
   ctx.closePath();
   ctx.stroke();
 
-  // 2. Asfalto principal gris neutro nitido
-  ctx.lineWidth = 3.2;
-  ctx.strokeStyle = "rgba(203, 213, 225, 0.55)";
+  // 2. Línea interior gris neutro nítida (3px)
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = "rgba(226, 232, 240, 0.65)";
   ctx.stroke();
   ctx.restore();
 
-  // 3. Linea de meta blanca/roja en pct = 0
+  // 3. Marca perpendicular blanca/roja en salida/meta (pct = 0)
   const sf0 = pointAtPct(0);
   const sf1 = pointAtPct(0.01);
   const ang = Math.atan2(sf1.y - sf0.y, sf1.x - sf0.x) + Math.PI / 2;
   ctx.save();
+  ctx.strokeStyle = "#ffffff";
+  ctx.lineWidth = 3.5;
+  ctx.beginPath();
+  ctx.moveTo(sf0.x - Math.cos(ang) * 7, sf0.y - Math.sin(ang) * 7);
+  ctx.lineTo(sf0.x + Math.cos(ang) * 7, sf0.y + Math.sin(ang) * 7);
+  ctx.stroke();
+
   ctx.strokeStyle = "#ef4444";
-  ctx.lineWidth = 2.5;
+  ctx.lineWidth = 1.6;
   ctx.beginPath();
   ctx.moveTo(sf0.x - Math.cos(ang) * 6, sf0.y - Math.sin(ang) * 6);
   ctx.lineTo(sf0.x + Math.cos(ang) * 6, sf0.y + Math.sin(ang) * 6);
@@ -269,7 +276,7 @@ export function renderLiveTrackMapCanvas(canvas: HTMLCanvasElement, state: Irsdk
   const pcts = state.frame.carIdxLapDistPct || [];
   const onPit = state.frame.carIdxOnPitRoad || [];
 
-  // 4. Dibujar rivales con circulo de color por clase y dorsal legible
+  // 4. Rivales: burbujas circulares de 11px (r=5.5) con borde negro 1.5px, color de clase y 40% opacidad en boxes
   for (let i = 0; i < pcts.length; i++) {
     if (i === myIdx) continue;
     const pct = pcts[i];
@@ -279,50 +286,51 @@ export function renderLiveTrackMapCanvas(canvas: HTMLCanvasElement, state: Irsdk
     const p = pointAtPct(pct);
     const cls = (drv.carClassShortName || "").toUpperCase();
     const dotColor =
-      cls.includes("GTP") ? "#facc15" :
+      drv.carClassColor ||
+      (cls.includes("GTP") ? "#facc15" :
       cls.includes("LMP2") ? "#38bdf8" :
-      cls.includes("GT3") ? "#ef4444" :
-      "#a855f7";
+      cls.includes("GT3") ? "#a855f7" :
+      "#ef4444");
 
     ctx.save();
-    ctx.globalAlpha = onPit[i] ? 0.45 : 0.95;
+    ctx.globalAlpha = onPit[i] ? 0.4 : 0.96;
     ctx.fillStyle = dotColor;
     ctx.strokeStyle = "#090b0f";
-    ctx.lineWidth = 1.4;
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.arc(p.x, p.y, 5.2, 0, Math.PI * 2);
+    ctx.arc(p.x, p.y, 5.5, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
 
     ctx.fillStyle = cls.includes("GTP") ? "#090b0f" : "#ffffff";
-    ctx.font = "bold 6.5px monospace";
+    ctx.font = "800 6.5px ui-monospace, Consolas, monospace";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(String(drv.carNumber || i), p.x, p.y + 0.3);
     ctx.restore();
   }
 
-  // 5. Dibujar coche enfocado (CamCarIdx) encima de todos en verde esmeralda brillante
+  // 5. Coche enfocado (CamCarIdx) encima de todos en #10b981 con halo suave y borde blanco
   const myPct = pcts[myIdx];
   if (myPct !== undefined && myPct >= 0 && myPct <= 1) {
     const p = pointAtPct(myPct);
     const myDrv = drivers[myIdx];
     ctx.save();
-    ctx.fillStyle = "rgba(16, 185, 129, 0.3)";
+    ctx.fillStyle = "rgba(16, 185, 129, 0.32)";
     ctx.beginPath();
     ctx.arc(p.x, p.y, 9.5, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.fillStyle = "#10b981";
     ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 1.6;
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.arc(p.x, p.y, 6.2, 0, Math.PI * 2);
+    ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
 
     ctx.fillStyle = "#052e16";
-    ctx.font = "900 7px monospace";
+    ctx.font = "900 7px ui-monospace, Consolas, monospace";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(String(myDrv?.carNumber || myIdx), p.x, p.y + 0.3);

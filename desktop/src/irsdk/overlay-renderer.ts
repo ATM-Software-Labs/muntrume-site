@@ -114,55 +114,75 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
   const rowsHtml = displayEntries
     .map((e: RelativeEntry, rowIdx: number) => {
       const isSelf = e.isActiveCam;
-      const rowCls = `mmt-rel-row font-mono${isSelf ? " is-self" : rowIdx % 2 === 1 ? " is-alt" : ""}`;
+      const rowCls = `mmt-rel-row font-mono tabular-nums${isSelf ? " is-self" : rowIdx % 2 === 1 ? " is-alt" : ""}`;
 
-      const gapClean = (e.deltaStr || "0.0").replace(/s$/i, "");
-      const gapColor = isSelf
-        ? "text-emerald-400 font-bold"
-        : e.onPitRoad
-        ? "text-amber-300 font-bold"
-        : "text-[#f8fafc] font-semibold";
+      const gapStr = isSelf
+        ? "0.0s"
+        : (e.deltaStr || "0.0s").endsWith("s")
+          ? e.deltaStr
+          : `${e.deltaStr}s`;
 
       const flags = e.sessionFlags ?? 0;
-      const hasBlackFlag = (flags & 0x00010000) !== 0; // irsdk_black
-      const hasSlowDown = (flags & 0x00080000) !== 0;  // irsdk_furled
+      const hasBlackFlag = (flags & 0x00010000) !== 0;
+      const hasSlowDown = (flags & 0x00080000) !== 0;
       const badgeParts: string[] = [];
       if (hasBlackFlag) badgeParts.push(`<span class="mmt-flag-f" title="Bandera Negra">F</span>`);
       if (hasSlowDown) badgeParts.push(`<span class="mmt-flag-xd" title="Slow Down">XD</span>`);
-      if (cols.pitStatus && e.onPitRoad) badgeParts.push(`<span class="mmt-flag-pit">PIT</span>`);
+      if (cols.pitStatus && e.onPitRoad) {
+        badgeParts.push(`<span class="px-1 rounded-[2px] bg-amber-500/25 text-amber-300 text-[8.5px] font-black leading-[13px]">PIT</span>`);
+      }
 
       const displayName = isStreamer
         ? isSelf ? "Piloto (Tú)" : `Piloto #${e.carNumber}`
         : (e.driverName || e.abbrevName);
 
       const relPos = e.position && e.position > 0 ? e.position : (posByCarIdx.get(e.carIdx) ?? 0);
-      const isOffLap = !isSelf && (e.lapDelta ?? 0) !== 0;
-      const nameColor = isSelf ? "text-white font-bold" : isOffLap ? "text-[#fbbf24]" : "text-[#f8fafc]";
+      const lapDiff = !isSelf ? (e.lapDelta ?? 0) : 0;
+      const isLappingUs = lapDiff > 0; // 1+ laps ahead -> coral red #f87171
+      const isLapped = lapDiff < 0;    // 1+ laps behind -> cyan #38bdf8
 
-      const classPosCell = `<span class="w-[16px] shrink-0 text-center text-[10.5px] font-bold" style="color:${e.carClassColor || "#38bdf8"}">${relPos > 0 ? relPos : "-"}</span>`;
+      const textColor = isSelf
+        ? "#ffffff"
+        : isLappingUs
+          ? "#f87171"
+          : isLapped
+            ? "#38bdf8"
+            : "#f8fafc";
+
+      const gapColor = isSelf
+        ? "#10b981"
+        : e.onPitRoad
+          ? "#fbbf24"
+          : textColor;
+
+      const classPosCell = `<span class="w-[18px] shrink-0 text-right text-[11px] font-bold" style="color:${isSelf ? "#10b981" : (e.carClassColor || "#38bdf8")}">${relPos > 0 ? relPos : "-"}</span>`;
       const numCell = cols.carNumber
-        ? `<span class="w-[26px] shrink-0 text-center text-[10.5px] font-bold ${isSelf ? "text-emerald-400" : isOffLap ? "text-[#fbbf24]" : "text-white/85"}">#${e.carNumber}</span>`
+        ? `<span class="w-[26px] shrink-0 text-center text-[10.5px] font-bold" style="color:${isSelf ? "#34d399" : textColor}">#${e.carNumber}</span>`
         : ``;
       const nameCell = cols.driverName
-        ? `<span class="mmt-cell-name shrink-0 ${nameColor}">${displayName}</span>`
+        ? `<span class="mmt-cell-name text-[11px] ${isSelf ? "font-bold" : "font-semibold"}" style="color:${textColor}">${displayName}</span>`
         : ``;
       const tagCell = badgeParts.length > 0
-        ? `<span class="w-[24px] shrink-0 flex items-center justify-center gap-0.5">${badgeParts.join("")}</span>`
-        : `<span class="w-[24px] shrink-0"></span>`;
+        ? `<span class="shrink-0 flex items-center justify-center gap-0.5">${badgeParts.join("")}</span>`
+        : ``;
       const licIrCell = cols.license
-        ? `<span class="w-[80px] shrink-0 flex items-center justify-end gap-1">${renderLicenseIrBlock(e.licString, e.iRatingExact, e.iRatingStr, true)}</span>`
+        ? `<span class="w-[74px] shrink-0 flex items-center justify-end gap-1">${renderLicenseIrBlock(e.licString, e.iRatingExact, e.iRatingStr, true)}</span>`
         : ``;
       const compoundCell = showCompounds ? renderCompoundBadge(state.frame.carIdxTireCompound?.[e.carIdx]) : "";
-      const irDeltaVal = isPractice ? 0 : (irDeltas.get(e.carIdx) ?? 0);
-      const irDeltaText = isPractice ? "—" : irDeltaVal > 0 ? `+${Math.round(irDeltaVal)}` : `${Math.round(irDeltaVal)}`;
-      const irDeltaColor = isPractice || irDeltaVal === 0 ? "text-white/40" : irDeltaVal > 0 ? "text-emerald-400 font-bold" : "text-rose-400 font-bold";
-      const irDeltaCell = isPractice ? `` : `<span class="w-[36px] shrink-0 text-right text-[12.5px] font-extrabold tabular-nums ${irDeltaColor}">${irDeltaText}</span>`;
+      const irDeltaVal = isPractice ? 0 : Math.round(irDeltas.get(e.carIdx) ?? 0);
+      const irDeltaText = isPractice ? "" : irDeltaVal > 0 ? `+${irDeltaVal}` : `${irDeltaVal}`;
+      const irDeltaColor = irDeltaVal > 0 ? "#22c55e" : irDeltaVal < 0 ? "#ef4444" : "rgba(255,255,255,0.35)";
+      const irDeltaCell = isPractice
+        ? ``
+        : `<span class="w-[30px] shrink-0 text-right text-[10.5px] font-bold tabular-nums" style="color:${irDeltaColor}">${irDeltaText}</span>`;
       const deltaCell = cols.delta
-        ? `<span class="w-[36px] shrink-0 text-right text-[11px] tabular-nums ${gapColor}">${gapClean}</span>`
+        ? `<span class="w-[40px] shrink-0 text-right text-[11px] font-bold tabular-nums" style="color:${gapColor}">${gapStr}</span>`
         : ``;
 
+      const rowOpacity = e.onPitRoad && !isSelf ? "opacity:0.55;" : "";
+
       return `
-        <div class="${rowCls}" data-car-idx="${e.carIdx}" style="border-left-color: ${isSelf ? "#10b981" : (e.carClassColor || "#00e699")}">
+        <div class="${rowCls}" data-car-idx="${e.carIdx}" style="height:22px;font-size:11px;border-left:3px solid ${isSelf ? "#10b981" : (e.carClassColor || "#00e699")};${isSelf ? "background:rgba(16,185,129,0.16);" : ""}${rowOpacity}">
           ${classPosCell}
           ${numCell}
           ${nameCell}
@@ -441,12 +461,9 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
         clsKeyUpper.includes("TCR") || clsKeyUpper.includes("CUP") ? "#10b981" :
         (group.color || "#38bdf8");
       const classHeaderHtml = `
-        <div class="mmt-std-class-header flex items-center justify-between px-2 py-1 text-[10px] font-mono font-bold" style="border-left: 4px solid ${distinctClassColor}; background: linear-gradient(90deg, ${distinctClassColor}30 0%, rgba(12,15,22,0.85) 100%); border-top: 1px solid ${distinctClassColor}45;">
-          <div class="flex items-center gap-2">
-            <span class="px-1.5 py-0.5 rounded-[3px] text-[10px] font-black tracking-wider uppercase shadow-sm" style="background:${distinctClassColor};color:#090b0f;">${group.className}</span>
-            <span class="text-white/75 tabular-nums text-[9.5px]">${group.totalActive}/${clsReg} coches</span>
-          </div>
-          <span class="text-white/90 font-extrabold tabular-nums text-[10px]">${clsSofExact > 0 ? `SOF ${clsSofExact}` : ""}</span>
+        <div class="mmt-std-class-header font-mono tabular-nums" style="height:20px;border-left:3px solid ${distinctClassColor};background:${distinctClassColor}2e;">
+          <span class="font-extrabold tracking-wider uppercase" style="color:${distinctClassColor};">${group.className}</span>
+          <span class="text-white/90 font-bold tabular-nums text-[10px]">${clsSofExact > 0 ? `SOF ${clsSofExact}` : `${group.totalActive}/${clsReg}`}</span>
         </div>
       `;
 
@@ -460,72 +477,85 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
           const clsPos = e.classPosition > 0 ? e.classPosition : idx + 1;
           const isLeader = clsPos === 1;
           const isSelf = e.isActiveCam;
-          const isOffLap = !isSelf && !isPractice && (e.lapDelta ?? 0) !== 0;
-          const posColor = isLeader ? "text-amber-400" : clsPos === 2 ? "text-slate-200" : clsPos === 3 ? "text-amber-600" : "text-white/85";
-          const rowCls = `mmt-std-row font-mono${isSelf ? " is-self" : clsIdx % 2 === 1 ? " is-alt" : ""}`;
+          const lapDelta = !isSelf && !isPractice ? (e.lapDelta ?? 0) : 0;
+          const isLapDown = lapDelta < 0;
+          const isLapUp = lapDelta > 0;
+          const rowClassColor = e.carClassColor || distinctClassColor;
+          const posColor = isLeader ? "text-amber-400" : clsPos === 2 ? "text-slate-200" : clsPos === 3 ? "text-amber-600" : "text-white/90";
+          const rowCls = `mmt-std-row font-mono tabular-nums${isSelf ? " is-self" : clsIdx % 2 === 1 ? " is-alt" : ""}`;
 
+          // 1. Posición en clase (18px)
           const posGlobalCell = cols.position
-            ? `<span class="w-[16px] shrink-0 text-center text-[10.5px] font-black ${posColor}">${clsPos}</span>`
+            ? `<span class="w-[18px] shrink-0 text-right text-[11px] font-bold ${posColor}">${clsPos}</span>`
             : ``;
-          const deltaPos = e.posDelta ?? 0;
-          const posDeltaCell = isPractice
-            ? ``
-            : deltaPos > 0
-            ? `<span class="w-[20px] shrink-0 text-center text-[9.5px] font-bold text-[#22c55e]">▲${deltaPos}</span>`
-            : deltaPos < 0
-            ? `<span class="w-[20px] shrink-0 text-center text-[9.5px] font-bold text-[#ef4444]">▼${Math.abs(deltaPos)}</span>`
-            : `<span class="w-[20px] shrink-0 text-center text-[9.5px] text-white/25">—</span>`;
-          const numCell = `<span class="w-[26px] shrink-0 text-center text-[10px] font-bold rounded-[2px] ${isSelf ? "bg-emerald-500/20 text-emerald-300" : isOffLap ? "text-[#fbbf24]" : "text-white/85"}">#${e.carNumber}</span>`;
 
+          // 2. Dorsal (28px, color de clase)
+          const numCell = `<span class="w-[28px] shrink-0 text-center text-[11px] font-bold" style="color:${isSelf ? "#34d399" : rowClassColor}">#${e.carNumber}</span>`;
+
+          // 3. Nombre piloto (125px, truncado limpio)
           const displayName = isStreamer
             ? isSelf ? "Piloto (Tú)" : `Piloto #${e.carNumber}`
             : (cols.driverName ? (e.driverName || e.abbrevName) : "");
+          const nameColorClass = isSelf
+            ? "text-white font-bold"
+            : isLapDown
+              ? "text-[#fbbf24]"
+              : isLapUp
+                ? "text-[#38bdf8]"
+                : "text-[#f8fafc]";
           const nameCell = cols.driverName
-            ? `<span class="mmt-cell-name shrink-0 text-[10.5px] ${isSelf ? "text-white font-bold" : isOffLap ? "text-[#fbbf24]" : "text-[#f8fafc]"}">${displayName}</span>`
+            ? `<span class="mmt-cell-name shrink-0 text-[11px] ${nameColorClass}">${displayName}</span>`
             : ``;
+
+          // 4. Icono oficial de fabricante (14px)
           const brandCell = cols.brandIcon
-            ? `<span class="w-[15px] shrink-0 flex items-center justify-center">${getCarBrandSvg(e.carPath, 13)}</span>`
+            ? `<span class="w-[14px] shrink-0 flex items-center justify-center">${getCarBrandSvg(e.carPath, 14)}</span>`
             : ``;
-          const licIrCell = `<span class="w-[80px] shrink-0 flex items-center justify-end gap-1">${renderLicenseIrBlock(e.licString, e.iRatingExact, e.iRatingStr, cols.iRating)}</span>`;
+
+          // 5. Pill Licencia + iRating
+          const licIrCell = `<span class="w-[78px] shrink-0 flex items-center justify-end gap-1">${renderLicenseIrBlock(e.licString, e.iRatingExact, e.iRatingStr, cols.iRating)}</span>`;
           const compoundCell = showCompounds ? renderCompoundBadge(state.frame.carIdxTireCompound?.[e.carIdx]) : "";
 
+          // 6. Delta iRating (+65 en #22c55e / -24 en #ef4444)
           const irDeltaVal = isPractice ? 0 : Math.round(irDeltas.get(e.carIdx) ?? 0);
           const irDeltaHtml = isPractice
             ? ``
             : irDeltaVal > 0
-            ? `<span class="w-[46px] shrink-0 mr-3 px-1.5 py-0.5 rounded-[4px] text-right tabular-nums leading-none" style="font-size:13px;font-weight:800;color:#22c55e;background:rgba(34,197,94,0.14);">+${irDeltaVal}</span>`
+            ? `<span class="w-[34px] shrink-0 text-right tabular-nums text-[11px] font-bold" style="color:#22c55e;">+${irDeltaVal}</span>`
             : irDeltaVal < 0
-            ? `<span class="w-[46px] shrink-0 mr-3 px-1.5 py-0.5 rounded-[4px] text-right tabular-nums leading-none" style="font-size:13px;font-weight:800;color:#ef4444;background:rgba(239,68,68,0.14);">${irDeltaVal}</span>`
-            : `<span class="w-[46px] shrink-0 mr-3 px-1.5 py-0.5 rounded-[4px] text-right tabular-nums leading-none text-white/35" style="font-size:12px;font-weight:700;">0</span>`;
+            ? `<span class="w-[34px] shrink-0 text-right tabular-nums text-[11px] font-bold" style="color:#ef4444;">${irDeltaVal}</span>`
+            : `<span class="w-[34px] shrink-0 text-right tabular-nums text-[10.5px] text-white/35">0</span>`;
 
-          // Kapps-style compact columns: GAP (to class leader) + INT (to car ahead) + Single Lap Time
+          // 7. Tag PIT (badge ámbar compacto)
+          const pitCell = e.pitStatus === "PIT"
+            ? `<span class="w-[24px] shrink-0 text-center px-0.5 rounded-[2px] bg-amber-500/25 text-amber-300 text-[9px] font-black leading-[14px]">PIT</span>`
+            : e.pitStatus === "OUT"
+            ? `<span class="w-[24px] shrink-0 text-center px-0.5 rounded-[2px] bg-sky-500/25 text-sky-300 text-[9px] font-black leading-[14px]">OUT</span>`
+            : `<span class="w-[24px] shrink-0"></span>`;
+
+          // 8. GAP al líder e INT al coche de delante en tiempo real tick a tick
           const isRaceSession = state.session.sessionType.toLowerCase().includes("race");
           const classLeaderEntry = group.rows.find((r) => r.kind === "entry")?.entry;
           const prevEntry = clsIdx > 0 && group.rows[clsIdx - 1]?.kind === "entry"
             ? (group.rows[clsIdx - 1] as { kind: "entry"; entry: LeaderboardEntry }).entry
             : undefined;
 
-          let gapText = isLeader ? "GAP" : (e.gapStr || "-");
-          let intText = isLeader ? "INT" : (e.intervalStr || "-");
+          let gapText = isLeader ? "LDR" : (e.gapStr || "-");
+          let intText = isLeader ? "—" : (e.intervalStr || "-");
 
           if (!isRaceSession) {
             const leaderBest = classLeaderEntry?.bestLapTime ?? 0;
             const prevBest = prevEntry?.bestLapTime ?? 0;
             if (!isLeader) {
-              gapText = leaderBest > 0 && e.bestLapTime > 0 ? `${(e.bestLapTime - leaderBest).toFixed(3)}` : "-";
-              intText = prevBest > 0 && e.bestLapTime > 0 ? `${(e.bestLapTime - prevBest).toFixed(3)}` : "-";
+              gapText = leaderBest > 0 && e.bestLapTime > 0 ? `+${(e.bestLapTime - leaderBest).toFixed(3)}` : "-";
+              intText = prevBest > 0 && e.bestLapTime > 0 ? `+${(e.bestLapTime - prevBest).toFixed(3)}` : "-";
             }
           }
 
-          const gapCell = `<span class="w-[42px] shrink-0 text-right tabular-nums text-[10px] ${isLeader ? "text-white/45 font-bold" : isOffLap ? "text-[#fbbf24]/90" : "text-white/85 font-semibold"}">${gapText}</span>`;
-          const intCell = `<span class="w-[40px] shrink-0 text-right tabular-nums text-[10px] ${isLeader ? "text-white/45 font-bold" : "text-white/65"}">${intText}</span>`;
+          const gapCell = `<span class="w-[44px] shrink-0 text-right tabular-nums text-[11px] ${isLeader ? "text-white/45 font-bold" : isLapDown ? "text-[#fbbf24]" : isLapUp ? "text-[#38bdf8]" : "text-white/90 font-semibold"}">${gapText}</span>`;
+          const intCell = `<span class="w-[40px] shrink-0 text-right tabular-nums text-[11px] ${isLeader ? "text-white/35" : "text-white/65"}">${intText}</span>`;
 
-          const pitCell = e.pitStatus === "PIT"
-            ? `<span class="w-[24px] shrink-0 text-center px-0.5 rounded-[2px] bg-amber-500/25 text-amber-300 text-[8.5px] font-black">PIT</span>`
-            : e.pitStatus === "OUT"
-            ? `<span class="w-[24px] shrink-0 text-center px-0.5 rounded-[2px] bg-sky-500/25 text-sky-300 text-[8.5px] font-black">OUT</span>`
-            : `<span class="w-[24px] shrink-0"></span>`;
-
+          // 9. Última / Mejor vuelta
           const activeLapSec = isRaceSession
             ? (e.lastLapTime > 0 ? e.lastLapTime : e.bestLapTime)
             : (e.bestLapTime > 0 ? e.bestLapTime : e.lastLapTime);
@@ -538,16 +568,15 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
           const lapColor = isClassBest
             ? "text-[#c084fc] font-black"
             : isPersonalBest
-              ? "text-[#4ade80] font-bold"
+              ? "text-[#22c55e] font-bold"
               : isSelf
                 ? "text-white font-bold"
-                : "text-[#f8fafc] font-semibold";
-          const lapCell = `<span class="w-[54px] shrink-0 text-right text-[10.5px] tabular-nums ${lapColor}">${activeLapStr}</span>`;
+                : "text-[#f8fafc]";
+          const lapCell = `<span class="w-[56px] shrink-0 text-right text-[11px] tabular-nums ${lapColor}">${activeLapStr}</span>`;
 
           return `
-            <div class="${rowCls}" data-car-idx="${e.carIdx}" style="height:19px;padding:0px 5px;font-size:10.5px;border-left-color: ${isSelf ? "#10b981" : group.color};${isSelf ? "background:rgba(16,185,129,0.16);" : ""}">
+            <div class="${rowCls}" data-car-idx="${e.carIdx}" style="height:22px;font-size:11px;border-left:3px solid ${isSelf ? "#10b981" : rowClassColor};${isSelf ? "background:rgba(16,185,129,0.16);" : ""}">
               ${posGlobalCell}
-              ${posDeltaCell}
               ${numCell}
               ${nameCell}
               ${brandCell}
@@ -579,79 +608,57 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
  * Renders the Fuel Computer widget into target DOM container
  */
 export function renderFuelWidget(container: HTMLElement, state: IrsdkComputedState | null): void {
-  if (!state) {
-    container.innerHTML = `
-      <div class="text-[10px] uppercase text-r-muted mb-1.5 font-bold tracking-wider">Ordenador de Combustible</div>
-      <div class="p-3 text-center text-xs text-white/50 font-mono">Esperando lectura de telemetría...</div>
-    `;
+  if (!state || state.isReplayPlaying) {
+    container.innerHTML = "";
     return;
   }
 
   const fuel = state.fuel;
-  const isOtherCar = state.camCarIdx !== state.playerCarIdx || Boolean(state.isReplayPlaying);
-  if (isOtherCar) {
-    const camEntry = state.leaderboard.find((e) => e.carIdx === state.camCarIdx);
-    const stintLaps = camEntry?.lapsSincePit ?? camEntry?.lapsCompleted ?? 0;
-    const pits = camEntry?.pitCount ?? 0;
-    setHtmlIfChanged(container, `
-      <div class="h-[20px] flex items-center justify-between border-b border-white/10 text-[10px] font-mono tabular-nums whitespace-nowrap">
-        <span class="text-white/70 font-bold tracking-wider">FUEL · STINT</span>
-        <span class="text-sky-300 font-bold">Stint: L${stintLaps} · Pits: ${pits}</span>
-      </div>
-      <div class="mt-1.5 flex items-center justify-between text-[9.5px] font-mono text-white/60">
-        <span>#${camEntry?.carNumber || "--"} ${camEntry?.abbrevName || ""}</span>
-        <span class="px-1.5 py-0.5 rounded bg-white/10 text-white/75">Telemetría privada de rival</span>
-      </div>
-    `);
-    return;
-  }
+  const fuelStr = fuel.fuelRemainingL > 0 ? `${fuel.fuelRemainingL.toFixed(1)}L` : "--";
+  const burnStr = fuel.isValid && fuel.avgBurnPerLap > 0
+    ? `${fuel.avgBurnPerLap.toFixed(2)}`
+    : (fuel.avgBurnPerLap > 0 ? `~${fuel.avgBurnPerLap.toFixed(2)}` : "--");
 
-  const headerHtml = `
-    <div class="h-[20px] flex items-center justify-between border-b border-white/10 text-[10px] font-mono tabular-nums whitespace-nowrap">
-      <span class="text-white/70 font-bold tracking-wider">FUEL</span>
-      <span class="text-white font-bold">${fuel.fuelRemainingL > 0 ? `${fuel.fuelRemainingL} L` : "-- L"} · ${fuel.isValid ? `${fuel.stintLapsRemaining} v` : "-- v"}</span>
-    </div>
-  `;
+  const stintLaps = fuel.stintLapsRemaining ?? 0;
+  const lapsStr = stintLaps > 0 ? stintLaps.toFixed(1) : "--";
+  const lapsColor = !fuel.isValid
+    ? "rgba(255,255,255,0.65)"
+    : stintLaps <= 2
+      ? "#ef4444"
+      : stintLaps <= 5
+        ? "#f59e0b"
+        : "#22c55e";
 
-  if (!fuel.isValid) {
-    const estBurn = fuel.avgBurnPerLap > 0 ? `~${fuel.avgBurnPerLap.toFixed(2)} L/v` : "-- L/v";
-    const estLaps = fuel.stintLapsRemaining > 0 ? `~${fuel.stintLapsRemaining} v` : "-- v";
-    setHtmlIfChanged(container, `
-      <div class="h-[20px] flex items-center justify-between border-b border-white/10 text-[10px] font-mono tabular-nums whitespace-nowrap">
-        <span class="text-white/70 font-bold tracking-wider">FUEL</span>
-        <span class="text-white font-bold">${fuel.fuelRemainingL > 0 ? `${fuel.fuelRemainingL} L` : "-- L"} · ${estLaps}</span>
-      </div>
-      <div class="mt-1 grid gap-0.5 text-[10px] font-mono tabular-nums text-white/65">
-        <div class="mmt-fuel-row"><span>Consumo (Est.)</span><span>${estBurn}</span></div>
-        <div class="mmt-fuel-row"><span>Estado</span><span class="truncate text-right">${fuel.reasonNotReady || "Calibrando"}</span></div>
-      </div>
-    `);
-    return;
-  }
-
-  const surplus = fuel.fuelSurplusL ?? 0;
-  const toAddStr = fuel.fuelToAdd > 0
-    ? `PARAR · +${fuel.fuelToAdd.toFixed(1)} L`
-    : `OK · +${surplus.toFixed(1)} L`;
-  const toAddClass = fuel.fuelToAdd > 0 ? "text-rose-400" : "text-emerald-400";
-  const addBadgeHtml = fuel.fuelToAdd > 0
-    ? `<span class="text-[#00ff88] font-black text-[12px]">+${fuel.fuelToAdd.toFixed(1)} L</span>`
-    : `<span class="text-emerald-400 font-black text-[11px]">OK</span>`;
+  const addStr = !fuel.isValid
+    ? "--"
+    : fuel.fuelToAdd > 0
+      ? `+${fuel.fuelToAdd.toFixed(1)}L`
+      : "OK";
+  const addColor = !fuel.isValid
+    ? "rgba(255,255,255,0.5)"
+    : fuel.fuelToAdd > 0
+      ? "#f59e0b"
+      : "#22c55e";
 
   setHtmlIfChanged(container, `
-    ${headerHtml}
-    <div class="mt-1 grid gap-0.5 text-[10px] font-mono tabular-nums whitespace-nowrap">
-      <div class="mmt-fuel-row text-white/85">
-        <span>Media / Máx</span>
-        <span>${fuel.avgBurnPerLap} / ${fuel.maxBurnPerLap} L/v</span>
-      </div>
-      <div class="mmt-fuel-row text-white/85">
-        <span>Repostaje</span>
-        ${addBadgeHtml}
-      </div>
-      <div class="mmt-fuel-row text-white/85">
-        <span>Meta (${fuel.lapsRemaining}v)</span>
-        <span class="${toAddClass} font-bold">${toAddStr}</span>
+    <div class="font-mono tabular-nums select-none" style="background:rgba(9,11,15,0.88);border:1px solid rgba(255,255,255,0.12);border-radius:3px;">
+      <div class="grid grid-cols-4 divide-x divide-white/10">
+        <div class="px-2 py-1.5 flex flex-col items-center">
+          <span class="text-[8.5px] font-bold tracking-wider text-white/45 uppercase">FUEL</span>
+          <span class="text-[12px] font-extrabold text-white leading-tight mt-0.5">${fuelStr}</span>
+        </div>
+        <div class="px-2 py-1.5 flex flex-col items-center">
+          <span class="text-[8.5px] font-bold tracking-wider text-white/45 uppercase">L/LAP</span>
+          <span class="text-[12px] font-extrabold text-white/90 leading-tight mt-0.5">${burnStr}</span>
+        </div>
+        <div class="px-2 py-1.5 flex flex-col items-center">
+          <span class="text-[8.5px] font-bold tracking-wider text-white/45 uppercase">LAPS</span>
+          <span class="text-[12px] font-extrabold leading-tight mt-0.5" style="color:${lapsColor}">${lapsStr}</span>
+        </div>
+        <div class="px-2 py-1.5 flex flex-col items-center">
+          <span class="text-[8.5px] font-bold tracking-wider text-white/45 uppercase">ADD</span>
+          <span class="text-[12px] font-extrabold leading-tight mt-0.5" style="color:${addColor}">${addStr}</span>
+        </div>
       </div>
     </div>
   `);

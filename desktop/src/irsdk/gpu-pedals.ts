@@ -90,7 +90,7 @@ export class GpuPedalsEngine {
 
   private initContainer(container: HTMLElement) {
     const dpr = Math.min(2, typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1);
-    container.innerHTML = `<canvas data-mmt-pedals-canvas width="${280 * dpr}" height="${82 * dpr}" style="width:280px;height:82px;background:rgba(10,12,16,0.78);border-radius:4px;display:block;"></canvas>`;
+    container.innerHTML = `<canvas data-mmt-pedals-canvas width="${280 * dpr}" height="${82 * dpr}" style="width:280px;height:82px;background:rgba(9,11,15,0.88);border:1px solid rgba(255,255,255,0.12);border-radius:3px;display:block;"></canvas>`;
 
     const canvas = container.querySelector("[data-mmt-pedals-canvas]") as HTMLCanvasElement;
     const ctx = canvas.getContext("2d");

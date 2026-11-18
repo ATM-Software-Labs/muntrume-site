@@ -11,8 +11,8 @@ export function renderLiveDeltaCanvas(
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
-  const cssW = 220;
-  const cssH = 24;
+  const cssW = 240;
+  const cssH = 22;
   const dpr = Math.min(2, typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1);
   if (canvas.width !== cssW * dpr || canvas.height !== cssH * dpr) {
     canvas.width = cssW * dpr;
@@ -23,12 +23,12 @@ export function renderLiveDeltaCanvas(
   ctx.clearRect(0, 0, cssW, cssH);
 
   // Dark Kapps-style backdrop
-  ctx.fillStyle = "rgba(8, 10, 14, 0.88)";
+  ctx.fillStyle = "rgba(9, 11, 15, 0.88)";
   ctx.fillRect(0, 0, cssW, cssH);
 
   const barX = 8;
-  const barW = 140;
-  const barY = 7;
+  const barW = 160;
+  const barY = 6;
   const barH = 10;
   const midX = barX + barW / 2;
 
@@ -46,7 +46,7 @@ export function renderLiveDeltaCanvas(
 
   if (valid && Math.abs(clamped) > 0.005) {
     const fillW = (Math.abs(clamped) / 2.0) * (barW / 2);
-    ctx.fillStyle = isFaster ? "#10b981" : "#ef4444";
+    ctx.fillStyle = isFaster ? "#22c55e" : "#ef4444";
     if (isFaster) {
       ctx.fillRect(midX, barY, fillW, barH);
     } else {
@@ -58,13 +58,13 @@ export function renderLiveDeltaCanvas(
   const label = valid
     ? `${clamped > 0 ? "+" : ""}${clamped.toFixed(2)}s`
     : "--.--s";
-  ctx.font = "700 11.5px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace";
+  ctx.font = "700 11px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace";
   ctx.textAlign = "right";
   ctx.textBaseline = "middle";
   ctx.fillStyle = !valid
     ? "rgba(255, 255, 255, 0.5)"
     : isFaster
-    ? "#10b981"
+    ? "#22c55e"
     : "#ef4444";
   ctx.fillText(label, cssW - 8, cssH / 2 + 0.5);
 }

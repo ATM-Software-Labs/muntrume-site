@@ -48,34 +48,38 @@
     }
   </style>
   </head>
-  <body class="min-h-screen bg-r-bg text-r-text antialiased">
-    <div id="mainAppWrapper" class="w-full min-h-screen flex flex-col">
-      <header class="sticky top-0 z-40 w-full min-h-16 shrink-0 border-b border-r-line bg-r-surface/85 backdrop-blur-md flex items-center justify-between gap-3 px-5 py-2.5 shadow-sm">
-        <div class="flex items-center gap-3 shrink-0">
-          <img src="./favicon.svg" width="34" height="34" alt="Muntrume Motorsport" class="h-8 w-8 rounded-lg shadow-sm border border-r-line/60 bg-r-bg shrink-0" />
-          <div class="min-w-0">
-            <div class="flex items-center gap-2 whitespace-nowrap">
-              <div class="mmt-display text-[22px] leading-none tracking-wide whitespace-nowrap">MMT Sync</div>
-              <span id="irBadge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono tracking-wider uppercase border border-r-line bg-r-bg text-r-muted transition-colors whitespace-nowrap shrink-0">
-                <span id="irDot" class="w-2 h-2 rounded-full bg-r-muted"></span>
-                <span id="irText">iRacing cerrado</span>
-              </span>
-            </div>
-            <div id="pilotLine" class="font-mono text-[11px] tracking-wide text-r-muted truncate">Muntrume Motorsport</div>
-          </div>
+  <body class="h-screen overflow-hidden bg-[#0b0e14] text-r-text antialiased">
+    <div id="mainAppWrapper" class="w-full h-screen overflow-hidden flex flex-col bg-[#0b0e14]">
+      <header class="h-[44px] shrink-0 w-full border-b border-white/[0.08] bg-[#0d1118] flex items-center justify-between gap-2 px-3 select-none">
+        <div class="flex items-center gap-2.5 shrink-0">
+          <img src="./favicon.svg" width="22" height="22" alt="Muntrume Motorsport" class="h-[22px] w-[22px] rounded border border-white/15 bg-[#090b0f] shrink-0" />
+          <span class="font-display font-extrabold text-[14px] tracking-wider text-white whitespace-nowrap">MMT <span class="text-[#10b981]">SYNC</span></span>
+          <span id="irBadge" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono tracking-wider uppercase border border-white/10 bg-[#090b0f] text-r-muted whitespace-nowrap shrink-0">
+            <span id="irDot" class="w-1.5 h-1.5 rounded-full bg-r-muted"></span>
+            <span id="irText">Esperando iRacing</span>
+          </span>
+          <span id="pilotLine" class="hidden font-mono text-[10px] text-r-muted">Muntrume Motorsport</span>
         </div>
-        <div class="flex items-center justify-end gap-2 min-w-0">
-          <nav id="appNav" class="flex flex-nowrap items-center gap-1 p-1 rounded-xl border border-r-line bg-r-bg/90 overflow-x-auto max-w-full mmt-no-scrollbar" aria-label="Secciones">
-            <button type="button" data-nav="library" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap shrink-0">Biblioteca</button>
-            <button type="button" data-nav="week" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap shrink-0">Semana</button>
-            <button type="button" data-nav="analysis" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap shrink-0">Análisis</button>
-            <button type="button" data-nav="strategy" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap shrink-0">Estrategia</button>
-            <button type="button" data-nav="overlays" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap shrink-0">Overlays</button>
-            <button type="button" data-nav="performance" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap shrink-0">Rendimiento</button>
-            <button type="button" data-nav="hardware" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap shrink-0">Hardware</button>
-            <button type="button" data-nav="settings" class="mmt-chip px-2.5 py-1.5 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted whitespace-nowrap shrink-0">Ajustes</button>
-          </nav>
-          <button type="button" id="themeToggle" class="mmt-btn-ghost h-9 px-3 rounded-lg border border-r-line font-mono text-[11px] uppercase tracking-wider text-r-text whitespace-nowrap shrink-0" aria-pressed="false">Tema claro</button>
+
+        <nav id="appNav" class="flex items-center gap-1 bg-[#090b0f] p-0.5 rounded-lg border border-white/[0.08]" aria-label="Secciones">
+          <button type="button" data-nav="overlays" class="mmt-chip px-3 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Overlays</button>
+          <button type="button" data-nav="library" class="mmt-chip px-3 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Setups &amp; Sync</button>
+          <button type="button" data-nav="analysis" class="mmt-chip px-3 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Telemetría</button>
+          <button type="button" data-nav="settings" class="mmt-chip px-3 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Ajustes</button>
+        </nav>
+
+        <div class="flex items-center gap-1.5 shrink-0 font-mono text-[11px]">
+          <button type="button" id="btnTopLaunchHud" onclick="document.getElementById('btnToggleFloatingOverlay')?.click()" class="h-[28px] px-3 rounded-md bg-[#10b981] hover:bg-[#34d399] text-[#04130d] font-extrabold tracking-wide flex items-center gap-1.5 transition cursor-pointer">
+            <span id="floatingOverlayDot" class="w-2 h-2 rounded-full bg-[#04130d]"></span>
+            <span id="floatingOverlayTextTop">Lanzar HUD</span>
+          </button>
+          <button type="button" id="btnTopEditPos" onclick="document.getElementById('btnUnlockLayout')?.click()" class="h-[28px] px-2.5 rounded-md border border-white/10 bg-[#121722] hover:border-[#10b981]/50 text-white/85 font-semibold transition cursor-pointer">
+            Editar Posición
+          </button>
+          <button type="button" id="btnTopReset" onclick="document.getElementById('btnResetLayout')?.click()" class="h-[28px] px-2.5 rounded-md border border-white/10 bg-[#121722] hover:border-white/30 text-white/65 hover:text-white font-semibold transition cursor-pointer">
+            Reset
+          </button>
+          <button type="button" id="themeToggle" class="hidden" aria-pressed="false">Tema</button>
         </div>
       </header>
 
@@ -103,7 +107,7 @@
       </div>
       <p id="notice" role="status" aria-live="polite" hidden class="mx-5 mt-4 rounded-xl border border-r-line bg-r-surface px-4 py-3 text-sm"></p>
 
-      <main class="flex-1 w-full flex flex-col px-5 py-6">
+      <main class="flex-1 min-h-0 w-full flex flex-col overflow-hidden p-2.5">
         <section id="viewLogin" class="mmt-in flex-1 w-full flex items-center justify-center p-6">
           <div class="w-full max-w-[540px]">
           <div class="flex items-center gap-3.5 mb-6 pb-4 border-b border-r-line/60">
@@ -141,7 +145,7 @@
           </div>
         </section>
 
-        <section id="viewApp" hidden class="w-full">
+        <section id="viewApp" hidden class="w-full flex-1 min-h-0 flex flex-col overflow-hidden">
           <div id="unlinkedBanner" hidden class="mb-4 px-4 py-2.5 rounded-xl border border-r-accent/30 bg-r-surface flex flex-wrap items-center justify-between gap-3 text-xs">
             <span class="text-r-muted">Cuenta no vinculada · Estás usando las herramientas locales (<strong class="text-r-text">Overlays, Rendimiento, Hardware, Ajustes</strong>).</span>
             <button type="button" id="unlinkedBannerBtn" class="mmt-btn h-8 px-3 rounded-lg bg-r-accent text-r-ink font-display font-extrabold uppercase tracking-wider text-[11px]">Vincular cuenta</button>
@@ -157,7 +161,7 @@
             <button type="button" data-nav="settings" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Ajustes</button>
           </div>
 
-          <section id="viewLibrary" aria-labelledby="libraryTitle">
+          <section id="viewLibrary" aria-labelledby="libraryTitle" class="w-full h-full min-h-0 flex flex-col overflow-hidden text-xs gap-2">
             <div class="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <p class="mmt-kicker">Setups de competición</p>
@@ -531,7 +535,7 @@
             </div>
           </section>
 
-          <section id="viewAnalysis" hidden aria-labelledby="analysisTitle" class="w-full">
+          <section id="viewAnalysis" hidden aria-labelledby="analysisTitle" class="w-full h-full min-h-0 flex flex-col overflow-y-auto pr-1 text-xs">
             <div id="hotlapStudioCard" class="mb-4 rounded-2xl border border-r-line bg-r-surface p-4 space-y-3">
               <div class="flex flex-wrap items-center justify-between gap-3">
                 <div>
@@ -932,392 +936,294 @@
             <ul id="checklist" class="mt-3 grid gap-2"></ul>
           </section>
 
-          <section id="viewOverlays" hidden aria-labelledby="overlayTitle" class="w-full">
-            <div class="flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <p class="mmt-kicker">Telemetría en Pista en Tiempo Real</p>
-                <h1 id="overlayTitle" class="mmt-display text-4xl mt-1">Overlays de Carrera (MMT Sync HUD)</h1>
-                <p class="mt-2 text-sm text-r-muted max-w-2xl">
-                  Lectura directa de la memoria compartida del SDK de iRacing (modo solo lectura). Instrumentos modulares configurables con luces secuenciales, traza de pedales en vivo, avisos de distancia de frenada y radar de carrera.
-                </p>
-              </div>
-              <div class="flex flex-wrap items-center gap-2.5">
-                <button type="button" id="btnToggleFloatingOverlay" class="mmt-btn h-11 px-5 rounded-xl bg-r-accent text-r-ink font-display font-extrabold uppercase tracking-wider text-xs flex items-center gap-2 shadow-lg shadow-r-accent/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
-                  <span id="floatingOverlayDot" class="w-2.5 h-2.5 rounded-full bg-emerald-950 border border-emerald-400"></span>
-                  <span id="floatingOverlayText">Poner Overlay Flotante en iRacing</span>
-                </button>
-                <button type="button" id="btnKillFloatingOverlay" class="h-11 px-4 rounded-xl border border-red-500/50 bg-red-950/70 text-red-200 font-display font-extrabold uppercase tracking-wider text-xs hover:bg-red-900 transition shadow-md" title="Destruye la ventana del overlay al instante (Ctrl+Shift+H)">
-                  ✕ Quitar Overlays
-                </button>
-                <label class="h-11 px-3 rounded-xl border border-r-line bg-r-surface text-r-muted font-mono text-xs flex items-center gap-2 cursor-pointer hover:text-r-text transition" title="Cierra automáticamente los overlays al pulsar Esc o volver al garaje (IsOnTrack === false)">
-                  <input type="checkbox" id="chkHideOffTrack" class="accent-r-accent" />
-                  <span>Ocultar fuera de pista</span>
-                </label>
-                <button type="button" id="btnEditFloatingHud" hidden class="h-11 px-3.5 rounded-xl border border-cyan-400/50 bg-cyan-500/15 text-cyan-300 font-mono text-xs font-bold hover:bg-cyan-500/25 transition">
-                  Editar HUD en iRacing
-                </button>
-                <button type="button" id="btnUnlockLayout" class="h-11 px-3.5 rounded-xl border border-r-line bg-r-surface text-r-muted font-mono text-xs font-bold hover:text-r-text hover:border-r-accent transition">
-                  Colocar Widgets
-                </button>
-                <button type="button" id="btnResetLayout" class="h-11 px-3 rounded-xl border border-r-line bg-r-surface text-r-muted font-mono text-xs hover:text-r-text transition" title="Restablecer posiciones originales">
-                  Restablecer
-                </button>
-                <button type="button" id="btnRestoreHudV2" class="h-11 px-3.5 rounded-xl border border-amber-500/50 bg-amber-500/15 text-amber-300 font-mono text-xs font-bold hover:bg-amber-500/25 transition" title="Reinicia el perfil a Layout v2 (escala 100%, todos visibles, retrovisor despejado)">
-                  ↺ Restaurar Posiciones y Tamaños
-                </button>
-                <button type="button" id="btnRecenterOverlay" class="h-11 px-3.5 rounded-xl border border-emerald-400/40 bg-emerald-500/10 text-emerald-300 font-mono text-xs font-bold hover:bg-emerald-500/20 transition" title="Recalcula posiciones dentro del monitor compensando escala DPI">
-                  Recentrar y Ajustar a Pantalla
-                </button>
-                <button type="button" id="overlayModeToggle" class="h-11 px-3.5 rounded-xl border border-r-line bg-r-surface text-r-muted font-mono text-xs font-bold hover:text-r-text hover:border-r-accent transition">
-                  Modo Demo Activo (Pruébalo)
-                </button>
-              </div>
-            </div>
+          <section id="viewOverlays" hidden aria-labelledby="overlayTitle" class="w-full h-full min-h-0 flex flex-col overflow-hidden">
+            <h1 id="overlayTitle" class="sr-only">Overlays de Carrera</h1>
 
-            <!-- In-Game integration badge / guidance -->
-            <div class="mt-4 p-4 rounded-2xl border border-r-line bg-r-surface/70 flex flex-wrap items-center justify-between gap-3 text-xs">
-              <div class="flex items-center gap-3">
-                <span class="w-8 h-8 rounded-xl bg-r-accent/15 border border-r-accent/40 flex items-center justify-center font-bold text-r-accent text-sm">HUD</span>
-                <div>
-                  <strong class="text-r-text block font-mono">Ventana flotante Always-On-Top para iRacing</strong>
-                  <span class="text-r-muted">Pulsa el botón superior para superponer el HUD transparente en tiempo real sobre tu simulador. Compatible con pantalla completa sin bordes. Arrastra los widgets para ubicarlos donde prefieras.</span>
-                </div>
+            <!-- Preserved hidden controls for 100% compatibility with extra.ts & main.ts -->
+            <div hidden aria-hidden="true">
+              <button type="button" id="btnToggleFloatingOverlay"><span id="floatingOverlayText">Lanzar HUD</span></button>
+              <button type="button" id="btnKillFloatingOverlay">Quitar</button>
+              <input type="checkbox" id="chkHideOffTrack" />
+              <button type="button" id="btnEditFloatingHud">Editar HUD</button>
+              <button type="button" id="btnUnlockLayout">Colocar Widgets</button>
+              <button type="button" id="btnResetLayout">Restablecer</button>
+              <button type="button" id="btnRestoreHudV2">Restaurar</button>
+              <button type="button" id="btnRecenterOverlay">Recentrar</button>
+              <button type="button" id="overlayModeToggle">Demo</button>
+              <div id="overlayCustomStudio">
+                <select id="hudPresetSelect"><option value="dark-carbon">Dark Carbon</option><option value="minimal-transparent">Minimal</option></select>
+                <select id="hudStatusAnchorSelect"><option value="mirror">Mirror</option><option value="standings">Standings</option></select>
+                <input id="hudShowInReplays" type="checkbox" checked />
+                <input id="hudShowAllSessions" type="checkbox" checked />
+                <input id="hudStreamerMode" type="checkbox" />
+                <input id="hudGhostCompare" type="checkbox" />
+                <button id="btnCycleReplayHudMode" type="button">HUD Replay</button>
+                <button type="button" id="btnDisableAllWidgets"></button>
+                <button type="button" id="btnToggleLayersPanel"></button>
+                <input type="checkbox" data-kapps-col="position" checked />
+                <input type="checkbox" data-kapps-col="carNumber" checked />
+                <input type="checkbox" data-kapps-col="driverName" checked />
+                <input type="checkbox" data-kapps-col="brandIcon" checked />
+                <input type="checkbox" data-kapps-col="iRating" checked />
+                <input type="checkbox" data-kapps-col="pitStatus" checked />
+                <input type="checkbox" data-kapps-col="delta" checked />
+                <span id="kappsStdRowsVal">15</span><input id="kappsStdRows" type="range" min="5" max="25" value="15" />
+                <span id="kappsRelRowsVal">3</span><input id="kappsRelRows" type="range" min="2" max="6" value="3" />
+                <input id="kappsOnlyMyClass" type="checkbox" />
+                <button type="button" data-kapps-accent="#10b981"></button>
+                <input id="ruleStdPitOnly" type="checkbox" />
+                <input id="ruleRelTrackOnly" type="checkbox" />
+                <input id="ruleFuelReserveOnly" type="checkbox" />
+                <button type="button" data-hud-factory-preset="sprint_gt3"></button>
+                <button type="button" data-hud-factory-preset="endurance_multi"></button>
+                <button type="button" data-hud-factory-preset="stream_minimal"></button>
+                <button type="button" data-hud-factory-preset="practice_pace"></button>
+                <button type="button" id="btnCopyHudLayout"></button>
+                <button type="button" id="btnImportHudLayout"></button>
               </div>
-              <div class="flex items-center gap-2 font-mono text-[11px] text-r-muted">
-                <span class="w-2 h-2 rounded-full bg-r-accent animate-ping"></span>
-                <span>SDK C++ 60 Hz · Cero impacto en FPS</span>
+              <div id="mmtStudioTopBar">
+                <select id="mmtCustomPresetSelect"></select>
+                <button type="button" id="btnSaveCustomPreset"></button>
+                <button type="button" id="btnExportHudPreset"></button>
+                <button type="button" id="btnImportHudPreset"></button>
+                <input type="file" id="inpImportHudPreset" accept=".json,application/json" />
+                <span id="mmtStudioSimPill">Vista Previa</span>
+                <button type="button" id="mmtStudioVisBtn">HUD Visible</button>
+                <button type="button" id="mmtStudioLockBtn">Bloqueado</button>
               </div>
-            </div>
-
-            <!-- Personalización Total del HUD (MMT HUD Studio) -->
-            <div id="overlayCustomStudio" class="mt-4 p-3.5 rounded-2xl border border-r-line bg-r-surface/80 flex flex-col gap-3 text-xs">
-              <div class="flex flex-wrap items-center justify-between gap-3">
-                <div class="flex flex-wrap items-center gap-3">
-                  <label class="flex items-center gap-1.5 font-mono text-[11px] text-r-muted">
-                    <span>Tema:</span>
-                    <select id="hudPresetSelect" class="h-8 rounded-lg border border-r-line bg-r-bg px-2 text-r-text font-mono text-[11px]">
-                      <option value="dark-carbon">Dark Carbon</option>
-                      <option value="minimal-transparent">Minimal Transparent</option>
-                      <option value="high-contrast">High Contrast</option>
-                      <option value="retro-tv">Retro TV</option>
-                    </select>
-                  </label>
-                  <label class="flex items-center gap-1.5 font-mono text-[11px] text-r-muted">
-                    <span>Opacidad:</span>
-                    <input id="hudOpacityRange" type="range" min="0" max="100" value="88" class="w-20 accent-[#00e699]" />
-                    <span id="hudOpacityVal" class="text-r-text tabular-nums w-8">88%</span>
-                  </label>
-                  <label class="flex items-center gap-1.5 font-mono text-[11px] text-r-muted">
-                    <span>Escala General del HUD:</span>
-                    <input id="hudScaleRange" type="range" min="70" max="135" value="115" class="w-20 accent-[#00e699]" />
-                    <span id="hudScaleVal" class="text-r-text tabular-nums w-9">115%</span>
-                  </label>
-                  
-                  <label class="flex items-center gap-1.5 font-mono text-[11px] text-r-muted">
-                    <span>Barra Estado / Delta:</span>
-                    <select id="hudStatusAnchorSelect" class="h-8 rounded-lg border border-r-line bg-r-bg px-2 text-r-text font-mono text-[11px]">
-                      <option value="mirror">Debajo del Retrovisor (18%)</option>
-                      <option value="standings">Debajo del Standings (Izquierda)</option>
-                    </select>
-                  </label>
-                </div>
-                <div class="flex flex-wrap items-center gap-3 font-mono text-[11px]">
-                  <label class="flex items-center gap-1.5 cursor-pointer text-r-text">
-                    <input id="hudShowInReplays" type="checkbox" checked class="accent-[#00e699]" />
-                    <span>Activo en Replays</span>
-                  </label>
-                  <label class="flex items-center gap-1.5 cursor-pointer text-r-text">
-                    <input id="hudShowAllSessions" type="checkbox" checked class="accent-[#00e699]" />
-                    <span>Vuelta 1 / Qualy</span>
-                  </label>
-                  <label class="flex items-center gap-1.5 cursor-pointer text-r-text">
-                    <input id="hudStreamerMode" type="checkbox" class="accent-[#00e699]" />
-                    <span>Modo Streamer</span>
-                  </label>
-                  <label class="flex items-center gap-1.5 cursor-pointer text-r-text" title="Superpone la trazada de tu mejor vuelta 1.5s por delante">
-                    <input id="hudGhostCompare" type="checkbox" class="accent-[#00e699]" />
-                    <span>Ghost Compare</span>
-                  </label>
-                  <button id="btnCycleReplayHudMode" type="button" class="px-2.5 py-1 rounded-lg border border-r-line bg-r-bg/70 hover:border-r-accent text-[10.5px] font-mono font-bold text-r-text transition cursor-pointer" title="Alternar entre HUD Completo, HUD Limpio de Replay y Oculto (Ctrl+Alt+H)">HUD Replay: Completo (Ctrl+Alt+H)</button>
-                </div>
+              <div id="mmtStudioActiveList"></div>
+              <div id="mmtStudioCatalogList"></div>
+              <div id="mmtStudioSceneBar">
+                <button type="button" data-scene="day"></button>
+                <button type="button" data-scene="night"></button>
+                <button type="button" data-scene="cockpit"></button>
               </div>
-
-              <div class="flex flex-wrap items-center gap-1.5 pt-2 border-t border-r-line/60 font-mono text-[11px]">
-                <span class="text-r-muted mr-1">Widgets:</span>
-                <button type="button" data-widget-toggle="relative" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Relative</button>
-                <button type="button" data-widget-toggle="standings" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Standings</button>
-                <button type="button" data-widget-toggle="fuel" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Fuel</button>
-                <button type="button" data-widget-toggle="tires" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Neumáticos</button>
-                <button type="button" data-widget-toggle="trackmap" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Track Map</button>
-                <button type="button" data-widget-toggle="inputs" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Pedales</button>
-                <button type="button" data-widget-toggle="waveform" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Traza</button>
-                <button type="button" data-widget-toggle="cluster" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Marcha/Vel</button>
-                <button type="button" data-widget-toggle="lights" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Shift Lights</button>
-                <button type="button" id="btnDisableAllWidgets" onclick="document.querySelectorAll('[data-widget-toggle]').forEach(b=>{if(b.classList.contains('bg-r-accent/15')||b.getAttribute('aria-pressed')==='true')b.click()})" class="h-7 px-2.5 rounded-lg border border-rose-500/40 bg-rose-500/10 text-rose-300 font-semibold hover:bg-rose-500/20 transition">Apagar Todos</button>
-                <button type="button" id="btnToggleLayersPanel" class="ml-auto h-7 px-3 rounded-lg border border-sky-400/50 bg-sky-400/10 text-sky-300 font-semibold transition">Control Panel HUD</button>
-              </div>
-
-              <!-- Prompts 142 & 143: Ajustes Kapps por Widget (Columnas, Filas, Color y Reglas Auto) -->
-              <details class="pt-2 border-t border-r-line/60 font-mono text-[11px]">
-                <summary class="cursor-pointer text-r-accent font-bold select-none">⚙ Ajustes por Widget (Columnas, Filas, Color y Auto-Ocultado)</summary>
-                <div class="mt-2.5 grid grid-cols-1 md:grid-cols-3 gap-3 text-[11px]">
-                  <div class="p-2.5 rounded-xl border border-r-line/70 bg-r-bg/60 space-y-2">
-                    <strong class="block text-r-text uppercase">Columnas Standings / Relative</strong>
-                    <div class="flex flex-wrap gap-2 text-r-muted">
-                      <label class="flex items-center gap-1"><input type="checkbox" data-kapps-col="position" checked class="accent-[#10b981]" />Pos</label>
-                      <label class="flex items-center gap-1"><input type="checkbox" data-kapps-col="carNumber" checked class="accent-[#10b981]" />Dorsal</label>
-                      <label class="flex items-center gap-1"><input type="checkbox" data-kapps-col="driverName" checked class="accent-[#10b981]" />Nombre</label>
-                      <label class="flex items-center gap-1"><input type="checkbox" data-kapps-col="brandIcon" checked class="accent-[#10b981]" />Logo</label>
-                      <label class="flex items-center gap-1"><input type="checkbox" data-kapps-col="iRating" checked class="accent-[#10b981]" />Lic+iR</label>
-                      <label class="flex items-center gap-1"><input type="checkbox" data-kapps-col="pitStatus" checked class="accent-[#10b981]" />PIT</label>
-                      <label class="flex items-center gap-1"><input type="checkbox" data-kapps-col="delta" checked class="accent-[#10b981]" />GAP/Delta</label>
-                    </div>
-                  </div>
-                  <div class="p-2.5 rounded-xl border border-r-line/70 bg-r-bg/60 space-y-2">
-                    <strong class="block text-r-text uppercase">Filas, Clase y Color Piloto</strong>
-                    <label class="flex items-center justify-between text-r-muted">
-                      <span>Filas Standings: <strong id="kappsStdRowsVal" class="text-r-text">15</strong></span>
-                      <input id="kappsStdRows" type="range" min="5" max="25" value="15" class="w-24 accent-[#10b981]" />
-                    </label>
-                    <label class="flex items-center justify-between text-r-muted">
-                      <span>Relative (±): <strong id="kappsRelRowsVal" class="text-r-text">3</strong></span>
-                      <input id="kappsRelRows" type="range" min="2" max="6" value="3" class="w-24 accent-[#10b981]" />
-                    </label>
-                    <div class="flex items-center justify-between gap-2">
-                      <label class="flex items-center gap-1 text-r-muted"><input id="kappsOnlyMyClass" type="checkbox" class="accent-[#10b981]" />Solo mi clase</label>
-                      <div class="flex items-center gap-1">
-                        <button type="button" data-kapps-accent="#10b981" class="w-4 h-4 rounded-full bg-[#10b981] border border-white/40" title="Verde Neón"></button>
-                        <button type="button" data-kapps-accent="#fbbf24" class="w-4 h-4 rounded-full bg-[#fbbf24] border border-white/40" title="Dorado"></button>
-                        <button type="button" data-kapps-accent="#38bdf8" class="w-4 h-4 rounded-full bg-[#38bdf8] border border-white/40" title="Cyan"></button>
-                        <button type="button" data-kapps-accent="#f43f5e" class="w-4 h-4 rounded-full bg-[#f43f5e] border border-white/40" title="Rojo"></button>
-                        <button type="button" data-kapps-accent="#ffffff" class="w-4 h-4 rounded-full bg-white border border-white/40" title="Blanco"></button>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="p-2.5 rounded-xl border border-r-line/70 bg-r-bg/60 space-y-1.5">
-                    <strong class="block text-r-text uppercase">Visibilidad Automática (Prompt 143)</strong>
-                    <label class="flex items-center gap-1.5 text-r-muted"><input id="ruleStdPitOnly" type="checkbox" class="accent-[#10b981]" />Standings solo en Boxes / Replay</label>
-                    <label class="flex items-center gap-1.5 text-r-muted"><input id="ruleRelTrackOnly" type="checkbox" class="accent-[#10b981]" />Relative e Inputs solo en Pista</label>
-                    <label class="flex items-center gap-1.5 text-r-muted"><input id="ruleFuelReserveOnly" type="checkbox" class="accent-[#10b981]" />FuelCalc solo últimas 5 vueltas / Reserva</label>
-                  </div>
-                </div>
-              </details>
-
-              <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-r-line/60 font-mono text-[11px]">
-                <div class="flex flex-wrap items-center gap-1.5">
-                  <span class="text-r-muted mr-1">Presets:</span>
-                  <button type="button" data-hud-factory-preset="sprint_gt3" class="h-7 px-2.5 rounded-lg border border-r-line bg-r-bg hover:border-r-accent text-r-text transition">Sprint / GT3 Pro</button>
-                  <button type="button" data-hud-factory-preset="endurance_multi" class="h-7 px-2.5 rounded-lg border border-r-line bg-r-bg hover:border-r-accent text-r-text transition">Endurance / Multiclase</button>
-                  <button type="button" data-hud-factory-preset="stream_minimal" class="h-7 px-2.5 rounded-lg border border-r-line bg-r-bg hover:border-r-accent text-r-text transition">Stream / Minimalista</button>
-                </div>
-                <div class="flex items-center gap-1.5">
-                  <button type="button" id="btnCopyHudLayout" class="h-7 px-2.5 rounded-lg border border-emerald-400/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 font-semibold transition">Copiar Layout</button>
-                  <button type="button" id="btnImportHudLayout" class="h-7 px-2.5 rounded-lg border border-r-line bg-r-bg hover:border-r-accent text-r-text transition">Importar Layout</button>
-                </div>
+              <div id="engineeringOverlaysDock">
+                <div id="ovPitExitWidget"></div>
+                <div id="ovTireThermalWidget"></div>
+                <button type="button" id="btnResetColdTires"></button>
+                <div id="ovBroadcastDirectorWidget"></div>
+                <button type="button" id="btnToggleAutoCam"></button>
+                <button type="button" id="btnManualClip"></button>
+                <button type="button" id="btnExportClipsCsv"></button>
               </div>
             </div>
 
-            <!-- Prompt 160: MMT HUD Studio (3-Column Visual Overlay Studio) -->
-            <div class="mt-5 rounded-2xl border border-white/10 bg-[#090b0f]/95 shadow-2xl overflow-hidden">
-              <!-- Top Control Bar -->
-              <div id="mmtStudioTopBar" class="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 border-b border-white/10 bg-black/40">
-                <div class="flex flex-wrap items-center gap-2.5">
-                  <span class="font-display font-extrabold text-sm tracking-wider text-white uppercase">MMT <span class="text-[#10b981]">HUD STUDIO</span></span>
-                  <div class="flex flex-wrap items-center gap-1 bg-white/[0.04] p-1 rounded-xl border border-white/10 font-mono text-[10.5px]">
-                    <button type="button" data-hud-factory-preset="sprint_gt3" class="px-2.5 py-1 rounded-lg bg-[#10b981] text-slate-950 font-bold transition cursor-pointer">Sprint / Carrera Corta</button>
-                    <button type="button" data-hud-factory-preset="endurance_multi" class="px-2.5 py-1 rounded-lg text-white/75 hover:text-white transition cursor-pointer">Resistencia / Clima</button>
-                    <button type="button" data-hud-factory-preset="practice_pace" class="px-2.5 py-1 rounded-lg text-white/75 hover:text-white transition cursor-pointer">Práctica / Análisis</button>
-                    <select id="mmtCustomPresetSelect" class="hidden ml-1 px-2 py-1 rounded-lg bg-black/70 border border-white/15 text-emerald-300 text-[10.5px] font-mono outline-none"></select>
-                    <button type="button" id="btnSaveCustomPreset" class="ml-1 px-2 py-1 rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 font-bold transition cursor-pointer">+ Guardar Perfil</button>
-                    <button type="button" id="btnExportHudPreset" class="px-2 py-1 rounded-lg border border-white/15 text-white/75 hover:text-white transition cursor-pointer" title="Exportar configuración JSON">Exportar JSON</button>
-                    <button type="button" id="btnImportHudPreset" class="px-2 py-1 rounded-lg border border-white/15 text-white/75 hover:text-white transition cursor-pointer" title="Importar configuración JSON">Importar JSON</button>
-                    <input type="file" id="inpImportHudPreset" accept=".json,application/json" class="hidden" />
+            <!-- Unified 3-Column Full-Height Studio (220px | flex-1 | 240px) -->
+            <div class="flex-1 min-h-0 grid grid-cols-[220px_1fr_240px] rounded-xl border border-white/[0.08] bg-[#090b0f] overflow-hidden">
+              <!-- COLUMNA IZQUIERDA (220px): Lista compacta de los 7 widgets con toggle directo -->
+              <aside class="border-r border-white/[0.08] bg-[#0c0f15] flex flex-col min-h-0">
+                <div class="h-[32px] shrink-0 px-3 border-b border-white/[0.08] flex items-center justify-between font-mono text-[10px] font-bold uppercase tracking-wider text-white/60">
+                  <span>Widgets HUD</span>
+                  <span class="text-[#10b981]">7 Módulos</span>
+                </div>
+                <div id="mmtCompactWidgetList" class="flex-1 min-h-0 overflow-y-auto p-2 space-y-1 font-mono text-[11px]">
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-[#10b981]/40 bg-[#10b981]/10 cursor-pointer transition" data-compact-mod="standings">
+                    <span class="font-semibold text-white truncate">Standings</span>
+                    <button type="button" data-widget-toggle="standings" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Standings"></button>
+                  </div>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="relative">
+                    <span class="font-semibold text-white/85 truncate">Relative</span>
+                    <button type="button" data-widget-toggle="relative" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Relative"></button>
+                  </div>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="trackmap">
+                    <span class="font-semibold text-white/85 truncate">Track Map</span>
+                    <button type="button" data-widget-toggle="trackmap" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Track Map"></button>
+                  </div>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="fuel">
+                    <span class="font-semibold text-white/85 truncate">Fuel Calculator</span>
+                    <button type="button" data-widget-toggle="fuel" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Fuel Calculator"></button>
+                  </div>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="inputs">
+                    <span class="font-semibold text-white/85 truncate">Pedales &amp; Marcha</span>
+                    <button type="button" data-widget-toggle="inputs" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Pedales & Marcha"></button>
+                  </div>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="delta">
+                    <span class="font-semibold text-white/85 truncate">Delta Bar</span>
+                    <button type="button" data-widget-toggle="delta" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Delta Bar"></button>
+                  </div>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="radar">
+                    <span class="font-semibold text-white/85 truncate">Radar Proximidad</span>
+                    <button type="button" data-widget-toggle="radar" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Radar Proximidad"></button>
                   </div>
                 </div>
-                <div class="flex flex-wrap items-center gap-2 font-mono text-[11px]">
-                  <span id="mmtStudioSimPill" class="px-2.5 py-1 rounded-full border border-amber-400/40 bg-amber-500/10 text-amber-300 font-bold">â— Modo Vista Previa</span>
-                  <button type="button" id="mmtStudioVisBtn" class="px-2.5 py-1 rounded-full border border-white/15 bg-white/[0.04] text-white hover:border-[#10b981] transition cursor-pointer">ðŸ‘ HUD Visible</button>
-                  <button type="button" id="mmtStudioLockBtn" class="px-2.5 py-1 rounded-full border border-emerald-400/40 bg-emerald-500/10 text-emerald-300 font-bold hover:bg-emerald-500/20 transition cursor-pointer">🔒 Bloqueado</button>
-                </div>
-              </div>
+              </aside>
 
-              <!-- 3 Columns: Module Manager (190px) | Inspector (250px) | 16:9 Canvas (flex: 1) -->
-              <div class="grid grid-cols-1 xl:grid-cols-[190px_250px_1fr] min-h-[520px]">
-                <!-- Column 1: Module Manager -->
-                <aside class="border-b xl:border-b-0 xl:border-r border-white/10 p-3 space-y-4 bg-black/25 text-xs font-mono">
-                  <div>
-                    <span class="block text-[10px] uppercase tracking-widest text-[#10b981] font-bold mb-2">Activos en Pista</span>
-                    <div id="mmtStudioActiveList" class="space-y-1"></div>
-                  </div>
-                  <div class="pt-3 border-t border-white/10">
-                    <span class="block text-[10px] uppercase tracking-widest text-white/50 font-bold mb-2">Catálogo Disponible</span>
-                    <div id="mmtStudioCatalogList" class="space-y-1"></div>
-                  </div>
-                </aside>
-
-                <!-- Column 2: Selected Widget Inspector -->
-                <aside id="mmtStudioInspector" class="border-b xl:border-b-0 xl:border-r border-white/10 p-3.5 space-y-3 bg-[#0c1016]/90 text-xs font-mono">
-                  <div class="flex items-center justify-between border-b border-white/10 pb-2">
-                    <strong id="mmtInspTitle" class="text-sm text-white font-display">Standings</strong>
-                    <span id="mmtInspBadge" class="px-1.5 py-0.5 rounded bg-[#10b981]/15 text-[#10b981] text-[10px]">ACTIVO</span>
-                  </div>
-
-                  <div class="p-2.5 rounded-xl border border-white/10 bg-black/30 space-y-2">
-                    <span class="block text-[10px] text-white/55 uppercase">Dimensiones y Posición</span>
-                    <label class="flex items-center justify-between text-[11px] text-white/80">
-                      <span>Escala: <strong id="mmtInspScaleVal" class="text-[#10b981]">100%</strong></span>
-                      <input id="mmtInspScale" type="range" min="70" max="135" value="100" class="w-24 accent-[#10b981]" />
-                    </label>
-                    <label class="flex items-center justify-between text-[11px] text-white/80">
-                      <span>Opacidad: <strong id="mmtInspOpacityVal" class="text-[#10b981]">88%</strong></span>
-                      <input id="mmtInspOpacity" type="range" min="0" max="100" value="88" class="w-24 accent-[#10b981]" />
-                    </label>
-                    <div class="grid grid-cols-2 gap-1.5 text-[10.5px] text-white/70">
-                      <div class="px-2 py-1 rounded bg-black/40 border border-white/10">X: <strong id="mmtInspX" class="text-white">12px</strong></div>
-                      <div class="px-2 py-1 rounded bg-black/40 border border-white/10">Y: <strong id="mmtInspY" class="text-white">12px</strong></div>
+              <!-- COLUMNA CENTRAL (flex-1): Barra 32px + Stage de Cabina en vivo -->
+              <div class="min-w-0 flex flex-col min-h-0 bg-[#05080c]">
+                <div class="h-[32px] shrink-0 px-3 border-b border-white/[0.08] bg-[#0c0f15] flex items-center justify-between gap-2 font-mono text-[10.5px]">
+                  <div class="flex items-center gap-1.5">
+                    <div class="inline-flex rounded border border-white/10 bg-[#090b0f] p-0.5">
+                      <button type="button" id="btnShellTrackMode" onclick="document.getElementById('hudShowInReplays').checked=true;this.classList.add('bg-[#10b981]','text-[#04130d]');document.getElementById('btnShellReplayMode').classList.remove('bg-[#10b981]','text-[#04130d]');" class="px-2 py-0.5 rounded-[3px] bg-[#10b981] text-[#04130d] font-bold cursor-pointer">Pista (P)</button>
+                      <button type="button" id="btnShellReplayMode" onclick="document.getElementById('btnCycleReplayHudMode')?.click();this.classList.add('bg-[#10b981]','text-[#04130d]');document.getElementById('btnShellTrackMode').classList.remove('bg-[#10b981]','text-[#04130d]');" class="px-2 py-0.5 rounded-[3px] text-white/70 hover:text-white font-bold cursor-pointer">Replay (R)</button>
                     </div>
-                    <button type="button" id="mmtInspCenterX" class="w-full py-1.5 rounded-lg border border-white/15 hover:border-[#10b981] text-[10.5px] text-white/85 hover:text-[#10b981] transition cursor-pointer">
-                      Centrar Horizontalmente
+                  </div>
+                  <div class="flex items-center gap-3 text-white/70">
+                    <label class="flex items-center gap-1.5">
+                      <span>Opacidad</span>
+                      <input id="hudOpacityRange" type="range" min="0" max="100" value="88" class="w-16 accent-[#10b981]" />
+                      <span id="hudOpacityVal" class="text-white tabular-nums w-7">88%</span>
+                    </label>
+                    <label class="flex items-center gap-1.5">
+                      <span>Escala</span>
+                      <input id="hudScaleRange" type="range" min="70" max="135" value="100" class="w-16 accent-[#10b981]" />
+                      <span id="hudScaleVal" class="text-white tabular-nums w-8">100%</span>
+                    </label>
+                    <button type="button" onclick="document.getElementById('btnRestoreHudV2')?.click()" class="px-2 py-0.5 rounded border border-white/10 bg-[#090b0f] hover:border-[#10b981]/50 text-white/80 hover:text-[#10b981] font-semibold cursor-pointer">
+                      Centrar / Restaurar
                     </button>
                   </div>
+                </div>
 
-                  <div class="p-2.5 rounded-xl border border-white/10 bg-black/30 space-y-1.5 text-[11px] text-white/80">
-                    <span class="block text-[10px] text-white/55 uppercase mb-1">Visibilidad Contextual</span>
-                    <label class="flex items-center justify-between cursor-pointer"><span>Mostrar en Pista</span><input id="mmtInspOnTrack" type="checkbox" checked class="accent-[#10b981]" /></label>
-                    <label class="flex items-center justify-between cursor-pointer"><span>Mostrar en Boxes</span><input id="mmtInspInPit" type="checkbox" checked class="accent-[#10b981]" /></label>
-                    <label class="flex items-center justify-between cursor-pointer"><span>Mostrar en Replay</span><input id="mmtInspReplay" type="checkbox" checked class="accent-[#10b981]" /></label>
-                  </div>
-
-                  <div id="mmtInspModuleOpts" class="p-2.5 rounded-xl border border-white/10 bg-black/30 space-y-1.5 text-[11px] text-white/80">
-                    <span class="block text-[10px] text-white/55 uppercase mb-1">Opciones del Módulo</span>
-                    <label class="flex items-center justify-between cursor-pointer"><span>Aviso Amarillo ABS / LOCK</span><input type="checkbox" checked class="accent-[#10b981]" data-insp-opt="abs" /></label>
-                    <label class="flex items-center justify-between cursor-pointer"><span>Ghost Trace de Referencia</span><input type="checkbox" class="accent-[#10b981]" data-insp-opt="ghost" /></label>
-                    <label class="flex items-center justify-between cursor-pointer"><span>Compuesto en Lluvia</span><input type="checkbox" checked class="accent-[#10b981]" data-insp-opt="rain" /></label>
-                    <button type="button" id="btnSimHaloRadar" class="w-full mt-1 py-1.5 rounded-lg border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-[10.5px] font-mono font-bold text-amber-300 transition cursor-pointer">
-                      Simular Radar LED: Off
-                    </button>
-                  </div>
-                </aside>
-
-                <!-- Column 3: Interactive 16:9 Preview Canvas -->
-                <div class="p-3 flex flex-col gap-2 bg-[#05080c]">
-                  <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono">
-                    <span class="text-white/60">Arrastra cualquier widget · Guías magnéticas verdes (#10b981)</span>
-                    <div class="flex items-center gap-1" id="mmtStudioSceneBar">
-                      <button type="button" data-scene="day" class="px-2.5 py-1 rounded-lg bg-[#10b981] text-slate-950 font-bold cursor-pointer">Día seco</button>
-                      <button type="button" data-scene="night" class="px-2.5 py-1 rounded-lg border border-white/15 text-white/75 hover:text-white cursor-pointer">Noche / Lluvia</button>
-                      <button type="button" data-scene="cockpit" class="px-2.5 py-1 rounded-lg border border-white/15 text-white/75 hover:text-white cursor-pointer">Vista Cockpit</button>
-                    </div>
-                  </div>
-
-                  <!-- Stage (Proportional 16:9 Scaled Cockpit Simulator & Modular HUD Layout) -->
-                  <div id="overlayStageViewport" class="rounded-xl border border-white/15 shadow-2xl bg-[#05080c] select-none relative overflow-hidden">
+                <!-- Stage Viewport -->
+                <div class="flex-1 min-h-0 p-2 flex items-center justify-center overflow-hidden">
+                  <div id="overlayStageViewport" class="w-full h-full rounded-lg border border-white/10 bg-[#05080c] select-none relative overflow-hidden">
                     <div id="overlayStage" class="relative select-none">
-                      <!-- Track Scene Backdrop (Day / Night-Rain / Cockpit) -->
                       <div id="mmtStudioSceneBg" class="absolute inset-0 transition-all duration-300" style="background: radial-gradient(ellipse at 50% 45%, rgba(16, 185, 129, 0.12) 0%, rgba(5, 8, 12, 0.94) 72%), linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 100% 100%, 28px 28px, 28px 28px;"></div>
-                      <!-- Proximity Halo LED Bar (Prompt 161: above Virtual Mirror) -->
                       <div id="mmtStageHaloBar" class="absolute top-[4px] left-1/2 -translate-x-1/2 w-[520px] h-[10px] flex items-center justify-between pointer-events-none z-20 opacity-0 transition-opacity duration-75" data-widget="halo">
                         <div id="stageHaloLeft" class="w-[245px] h-full rounded-full"></div>
                         <div id="stageHaloRight" class="w-[245px] h-full rounded-full"></div>
                       </div>
-                      <!-- Virtual Mirror Safe Zone Guide -->
-                      <div class="absolute top-4 left-1/2 -translate-x-1/2 w-[520px] h-[165px] rounded-xl border border-dashed border-emerald-400/35 bg-emerald-500/[0.03] pointer-events-none flex items-center justify-center">
-                        <span class="text-[11px] font-mono uppercase tracking-widest text-emerald-300/60">Zona Retrovisor Virtual (Libre)</span>
+                      <div class="absolute top-4 left-1/2 -translate-x-1/2 w-[520px] h-[165px] rounded-xl border border-dashed border-emerald-400/25 bg-emerald-500/[0.02] pointer-events-none flex items-center justify-center">
+                        <span class="text-[10px] font-mono uppercase tracking-widest text-emerald-300/50">Retrovisor Virtual</span>
                       </div>
 
-              <!-- TOP: Sequential Shift Light LEDs Widget -->
-              <div id="widgetShiftLights" class="mmt-hud-widget absolute top-3 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 px-3 py-1.5 rounded-[4px] border border-white/[0.08]" style="background: rgba(9, 11, 15, 0.72);" data-widget="shiftLights">
-                <div class="flex items-center gap-1.5" id="ovShiftLights"></div>
-                <div id="ovRevLimiterAlert" class="hidden text-[10px] font-mono font-black uppercase tracking-widest text-rose-400 animate-pulse">¡CAMBIO DE MARCHA!</div>
-              </div>
+                      <div id="widgetShiftLights" class="mmt-hud-widget absolute top-3 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 px-3 py-1.5 rounded-[3px] border border-white/[0.08]" style="background: rgba(9, 11, 15, 0.72);" data-widget="shiftLights">
+                        <div class="flex items-center gap-1.5" id="ovShiftLights"></div>
+                        <div id="ovRevLimiterAlert" class="hidden text-[10px] font-mono font-black uppercase tracking-widest text-rose-400 animate-pulse">CAMBIO</div>
+                      </div>
 
-              <!-- TOP-CENTER RADAR: Flanking Virtual Mirror Zone (never overlaps Corner Bar) -->
-              <div class="mmt-hud-widget absolute top-2 left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-none" data-widget="radar">
-                <div id="ovRadar"></div>
-              </div>
+                      <div class="mmt-hud-widget absolute top-2 left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-none" data-widget="radar">
+                        <div id="ovRadar"></div>
+                      </div>
 
-              <!-- TOP-MID: Brake Distance Countdown Marker Widget -->
-              <div id="widgetBrakeMarker" class="mmt-hud-widget absolute top-[62px] left-1/2 -translate-x-1/2 flex items-center gap-2.5 px-3 py-1 rounded-[4px] border border-white/[0.08] font-mono text-[11px] whitespace-nowrap" style="background: rgba(9, 11, 15, 0.72);" data-widget="brakeMarker">
-                <div class="flex items-center gap-1.5">
-                  <span class="text-[10px] uppercase tracking-[0.08em] text-r-muted font-bold">Frenada:</span>
-                  <div class="flex items-center gap-1 font-bold tabular-nums">
-                    <span id="bm200" class="px-1.5 py-0.5 rounded-[3px] bg-white/10 text-white/50">200m</span>
-                    <span id="bm150" class="px-1.5 py-0.5 rounded-[3px] bg-white/10 text-white/50">150m</span>
-                    <span id="bm100" class="px-1.5 py-0.5 rounded-[3px] bg-amber-500/20 text-amber-300 border border-amber-500/40">100m</span>
-                    <span id="bm50" class="px-1.5 py-0.5 rounded-[3px] bg-rose-500/20 text-rose-300 border border-rose-500/40">50m</span>
-                  </div>
-                </div>
-                <span class="text-white/20">|</span>
-                <span id="bmAdvice" class="text-r-accent font-bold">Frenar 10m antes</span>
-              </div>
+                      <div id="widgetBrakeMarker" class="mmt-hud-widget absolute top-[62px] left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-1 rounded-[3px] border border-white/[0.08] font-mono text-[11px] whitespace-nowrap" style="background: rgba(9, 11, 15, 0.72);" data-widget="brakeMarker">
+                        <span class="text-[10px] uppercase tracking-[0.08em] text-r-muted font-bold">Frenada:</span>
+                        <span id="bm200" class="px-1.5 py-0.5 rounded-[2px] bg-white/10 text-white/50">200m</span>
+                        <span id="bm150" class="px-1.5 py-0.5 rounded-[2px] bg-white/10 text-white/50">150m</span>
+                        <span id="bm100" class="px-1.5 py-0.5 rounded-[2px] bg-amber-500/20 text-amber-300">100m</span>
+                        <span id="bm50" class="px-1.5 py-0.5 rounded-[2px] bg-rose-500/20 text-rose-300">50m</span>
+                        <span id="bmAdvice" class="text-r-accent font-bold">Frenar 10m antes</span>
+                      </div>
 
-              <!-- TOP-MID BELOW BRAKE: Compact Horizontal Corner Bar (340x36px, zero overlap) -->
-              <div id="widgetCorner" class="mmt-hud-widget absolute top-[100px] left-1/2 -translate-x-1/2 w-[340px] h-[36px] px-3 rounded-[4px] border border-white/[0.08] text-white font-mono text-[11px] flex items-center justify-between gap-2 whitespace-nowrap tabular-nums" style="background: rgba(9, 11, 15, 0.72);" data-widget="corner">
-                <span id="ovNextTurnBadge" class="px-1.5 py-0.5 rounded-[3px] bg-r-accent/20 text-r-accent text-[10px] font-bold">Curva 1</span>
-                <span class="text-white/70 text-[10px]">Ãpice: <strong id="ovCornerApexTarget" class="text-white">124 km/h</strong></span>
-                <strong id="ovCornerDelta" class="text-emerald-400 text-[11px]">-0.12s</strong>
-                <span id="ovCornerTip" class="hidden"></span>
-              </div>
+                      <div id="widgetCorner" class="mmt-hud-widget absolute top-[100px] left-1/2 -translate-x-1/2 w-[340px] h-[36px] px-3 rounded-[3px] border border-white/[0.08] text-white font-mono text-[11px] flex items-center justify-between gap-2 whitespace-nowrap tabular-nums" style="background: rgba(9, 11, 15, 0.72);" data-widget="corner">
+                        <span id="ovNextTurnBadge" class="px-1.5 py-0.5 rounded-[2px] bg-r-accent/20 text-r-accent text-[10px] font-bold">Curva 1</span>
+                        <span class="text-white/70 text-[10px]">Ápice: <strong id="ovCornerApexTarget" class="text-white">124 km/h</strong></span>
+                        <strong id="ovCornerDelta" class="text-emerald-400 text-[11px]">-0.12s</strong>
+                        <span id="ovCornerTip" class="hidden"></span>
+                      </div>
 
-              <!-- TOP LEFT: Standings (Kapps Pro 1-line 574px compact with ▲/▼, 112px name, Lic+iR exact, ±iR, Last & BestLap) -->
-              <div id="widgetStandings" class="mmt-hud-widget absolute left-3 top-3 w-[574px] rounded-[2px] border border-white/[0.08] text-white p-1 text-[11.5px] font-mono tabular-nums overflow-hidden" style="background: rgba(8, 10, 14, 0.88);" data-widget="standings">
-                <div id="ovStandings"></div>
-                <div id="ovPitbox" class="mt-1"></div>
-              </div>
+                      <div id="widgetStandings" class="mmt-hud-widget absolute left-3 top-3 w-[574px] rounded-[3px] border border-white/[0.08] text-white p-1 text-[11px] font-mono tabular-nums overflow-hidden" style="background: rgba(9, 11, 15, 0.88);" data-widget="standings">
+                        <div id="ovStandings"></div>
+                        <div id="ovPitbox" class="mt-1"></div>
+                      </div>
 
-              <!-- TOP RIGHT: Relative (Kapps Pro 1-line 458px with F/XD/PIT, full surname, Lic+iR exact, ±iR & LastLap) -->
-              <div id="widgetRelative" class="mmt-hud-widget absolute right-3 top-3 w-[458px] rounded-[2px] border border-white/[0.08] text-white p-1 text-[11.5px] font-mono tabular-nums overflow-hidden" style="background: rgba(8, 10, 14, 0.88);" data-widget="relative">
-                <div id="ovRelative"></div>
-              </div>
+                      <div id="widgetRelative" class="mmt-hud-widget absolute right-3 top-3 w-[340px] rounded-[3px] border border-white/[0.08] text-white p-1 text-[11px] font-mono tabular-nums overflow-hidden" style="background: rgba(9, 11, 15, 0.88);" data-widget="relative">
+                        <div id="ovRelative"></div>
+                      </div>
 
-              <!-- BOTTOM CENTER: Minimalist 280x38 Canvas Pedals + Gear/Speed + Wheel -->
-              <div id="widgetCluster" class="mmt-hud-widget absolute left-1/2 bottom-3 -translate-x-1/2 flex flex-col items-center gap-1.5" data-widget="cluster">
-                <div class="flex items-center gap-2">
-                  <div id="ovClusterBrandPreview" class="flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-white/[0.08] text-[10px] font-mono text-white/90" style="background: rgba(9, 11, 15, 0.72);"></div>
-                  <div id="ovDelta" class="px-3 py-0.5 rounded-[4px] border border-emerald-500/40 bg-emerald-950/75 text-emerald-400 font-mono text-[11px] font-bold tabular-nums">
-                    -0.34s · Sector 2
-                  </div>
-                </div>
-                <div id="ovGpuPedals" class="w-[280px] h-[38px]"></div>
-                <canvas id="ovWaveformCanvas" width="110" height="36" class="hidden"></canvas>
-                <strong id="ovGear" class="hidden">4</strong>
-                <strong id="ovSpeed" class="hidden">198</strong>
-                <span id="ovRpm" class="hidden">7,420 RPM</span>
-                <canvas id="ovInputs" width="300" height="90" class="hidden"></canvas>
-                <div id="ovTyres" class="hidden"></div>
-              </div>
+                      <div id="widgetCluster" class="mmt-hud-widget absolute left-1/2 bottom-3 -translate-x-1/2 flex flex-col items-center gap-1.5" data-widget="cluster">
+                        <div class="flex items-center gap-2">
+                          <div id="ovClusterBrandPreview" class="flex items-center gap-1.5 px-2 py-0.5 rounded-[3px] border border-white/[0.08] text-[10px] font-mono text-white/90" style="background: rgba(9, 11, 15, 0.72);"></div>
+                          <div id="ovDelta" class="px-3 py-0.5 rounded-[3px] border border-emerald-500/40 bg-emerald-950/75 text-emerald-400 font-mono text-[11px] font-bold tabular-nums">-0.34s</div>
+                        </div>
+                        <div id="ovGpuPedals" class="w-[280px] h-[38px]"></div>
+                        <canvas id="ovWaveformCanvas" width="110" height="36" class="hidden"></canvas>
+                        <strong id="ovGear" class="hidden">4</strong>
+                        <strong id="ovSpeed" class="hidden">198</strong>
+                        <span id="ovRpm" class="hidden">7,420 RPM</span>
+                        <canvas id="ovInputs" width="300" height="90" class="hidden"></canvas>
+                        <div id="ovTyres" class="hidden"></div>
+                      </div>
 
-              <!-- BOTTOM LEFT: Live Fuel & Stint Computer -->
-              <div id="widgetFuel" class="mmt-hud-widget absolute left-3 bottom-3 w-[250px] rounded-[4px] border border-white/[0.08] text-white p-2 text-xs font-mono" style="background: rgba(9, 11, 15, 0.72);" data-widget="fuel">
-                <div id="ovFuel"></div>
-              </div>
+                      <div id="widgetFuel" class="mmt-hud-widget absolute left-3 bottom-3 w-[244px] rounded-[3px] border border-white/[0.08] text-white p-1.5 text-xs font-mono" style="background: rgba(9, 11, 15, 0.88);" data-widget="fuel">
+                        <div id="ovFuel"></div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Engineering Modules Dock (Prompts 34, 35, 37, 90) -->
-            <div id="engineeringOverlaysDock" class="mt-6 mmt-responsive-grid">
-              <div class="mmt-panel">
-                <div id="ovPitExitWidget"></div>
-              </div>
-              <div class="mmt-panel space-y-2.5">
-                <div id="ovTireThermalWidget"></div>
-                <div class="flex justify-end">
-                  <button type="button" id="btnResetColdTires" class="px-2.5 py-1 rounded-lg border border-r-line bg-r-bg text-[10px] font-mono text-r-muted hover:text-r-text">Reiniciar Base Frío</button>
+              <!-- COLUMNA DERECHA (240px): Inspector contextual del widget seleccionado -->
+              <aside id="mmtStudioInspector" class="border-l border-white/[0.08] bg-[#0c0f15] flex flex-col min-h-0 overflow-y-auto p-3 space-y-3 text-xs font-mono">
+                <div class="flex items-center justify-between border-b border-white/[0.08] pb-2">
+                  <strong id="mmtInspTitle" class="text-xs font-bold text-white uppercase tracking-wide">Standings</strong>
+                  <span id="mmtInspBadge" class="px-1.5 py-0.5 rounded bg-[#10b981]/15 text-[#10b981] text-[10px] font-bold">ACTIVO</span>
                 </div>
-              </div>
-              <div class="mmt-panel space-y-2.5">
-                <div id="ovBroadcastDirectorWidget"></div>
-                <div class="flex flex-wrap items-center gap-1.5 pt-1">
-                  <button type="button" id="btnToggleAutoCam" class="px-2.5 py-1 rounded-lg border border-r-line bg-r-bg text-[10px] font-mono text-r-muted hover:text-r-text">Auto-Cam: OFF</button>
-                  <button type="button" id="btnManualClip" class="px-2.5 py-1 rounded-lg border border-r-accent/50 bg-r-accent/10 text-[10px] font-mono text-r-accent font-bold">Marcar Clip</button>
-                  <button type="button" id="btnExportClipsCsv" class="px-2.5 py-1 rounded-lg border border-r-line bg-r-bg text-[10px] font-mono text-r-muted hover:text-r-text">Exportar CSV</button>
+
+                <div class="p-2.5 rounded-lg border border-white/[0.08] bg-[#090b0f] space-y-2">
+                  <span class="block text-[9.5px] text-white/50 uppercase tracking-wider">Posición &amp; Escala</span>
+                  <div class="grid grid-cols-2 gap-1.5 text-[10.5px] text-white/70">
+                    <div class="px-2 py-1 rounded bg-white/[0.03] border border-white/[0.06]">X: <strong id="mmtInspX" class="text-white">12px</strong></div>
+                    <div class="px-2 py-1 rounded bg-white/[0.03] border border-white/[0.06]">Y: <strong id="mmtInspY" class="text-white">12px</strong></div>
+                  </div>
+                  <label class="flex items-center justify-between text-[10.5px] text-white/80">
+                    <span>Escala: <strong id="mmtInspScaleVal" class="text-[#10b981]">100%</strong></span>
+                    <input id="mmtInspScale" type="range" min="70" max="135" value="100" class="w-20 accent-[#10b981]" />
+                  </label>
+                  <label class="flex items-center justify-between text-[10.5px] text-white/80">
+                    <span>Opacidad: <strong id="mmtInspOpacityVal" class="text-[#10b981]">88%</strong></span>
+                    <input id="mmtInspOpacity" type="range" min="0" max="100" value="88" class="w-20 accent-[#10b981]" />
+                  </label>
+                  <button type="button" id="mmtInspCenterX" class="w-full py-1 rounded border border-white/10 hover:border-[#10b981] text-[10px] text-white/80 hover:text-[#10b981] transition cursor-pointer">
+                    Centrar Horizontalmente
+                  </button>
                 </div>
-              </div>
+
+                <div class="p-2.5 rounded-lg border border-white/[0.08] bg-[#090b0f] space-y-1.5 text-[10.5px] text-white/80">
+                  <span class="block text-[9.5px] text-white/50 uppercase tracking-wider mb-1">Visibilidad</span>
+                  <label class="flex items-center justify-between cursor-pointer"><span>Pista</span><input id="mmtInspOnTrack" type="checkbox" checked class="accent-[#10b981]" /></label>
+                  <label class="flex items-center justify-between cursor-pointer"><span>Boxes</span><input id="mmtInspInPit" type="checkbox" checked class="accent-[#10b981]" /></label>
+                  <label class="flex items-center justify-between cursor-pointer"><span>Replay</span><input id="mmtInspReplay" type="checkbox" checked class="accent-[#10b981]" /></label>
+                </div>
+
+                <div id="mmtInspModuleOpts" class="p-2.5 rounded-lg border border-white/[0.08] bg-[#090b0f] space-y-1.5 text-[10.5px] text-white/80">
+                  <span class="block text-[9.5px] text-white/50 uppercase tracking-wider mb-1">Opciones</span>
+                  <label class="flex items-center justify-between cursor-pointer"><span>Aviso ABS / LOCK</span><input type="checkbox" checked class="accent-[#10b981]" data-insp-opt="abs" /></label>
+                  <label class="flex items-center justify-between cursor-pointer"><span>Ghost Trace</span><input type="checkbox" class="accent-[#10b981]" data-insp-opt="ghost" /></label>
+                  <button type="button" id="btnSimHaloRadar" class="w-full mt-1 py-1 rounded border border-amber-500/35 bg-amber-500/10 hover:bg-amber-500/20 text-[10px] font-bold text-amber-300 transition cursor-pointer">
+                    Simular Radar: Off
+                  </button>
+                </div>
+              </aside>
             </div>
           </section>
+
+          <script>
+            (function () {
+              const list = document.getElementById("mmtCompactWidgetList");
+              if (!list) return;
+              const LABELS = {
+                standings: "Standings",
+                relative: "Relative",
+                trackmap: "Track Map",
+                fuel: "Fuel Calculator",
+                inputs: "Pedales & Marcha",
+                delta: "Delta Bar",
+                radar: "Radar Proximidad"
+              };
+              list.addEventListener("click", (e) => {
+                const toggleBtn = e.target.closest("[data-widget-toggle]");
+                if (toggleBtn) {
+                  toggleBtn.classList.toggle("is-on", toggleBtn.getAttribute("aria-pressed") === "true" || toggleBtn.classList.contains("bg-r-accent/15"));
+                  return;
+                }
+                const row = e.target.closest("[data-compact-mod]");
+                if (!row) return;
+                const mod = row.getAttribute("data-compact-mod");
+                list.querySelectorAll("[data-compact-mod]").forEach((el) => {
+                  const active = el === row;
+                  el.className = active
+                    ? "flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-[#10b981]/40 bg-[#10b981]/10 cursor-pointer transition"
+                    : "flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition";
+                });
+                const titleEl = document.getElementById("mmtInspTitle");
+                if (titleEl && mod) titleEl.textContent = LABELS[mod] || mod;
+                const hiddenSel = document.querySelector('#mmtStudioCatalogList [data-mod-select="' + mod + '"]');
+                if (hiddenSel) hiddenSel.click();
+              });
+            })();
+          </script>
 
           <section id="viewHardware" hidden aria-labelledby="hardwareTitle" class="w-full">
             <div class="flex flex-wrap items-end justify-between gap-4">
@@ -1582,7 +1488,7 @@
             <div id="configItemsList" class="mt-6 grid gap-3"></div>
           </section>
 
-          <section id="viewSettings" hidden aria-labelledby="settingsTitle" class="w-full max-w-4xl mx-auto">
+          <section id="viewSettings" hidden aria-labelledby="settingsTitle" class="w-full max-w-5xl mx-auto h-full min-h-0 flex flex-col overflow-y-auto pr-1 text-xs">
             <p class="mmt-kicker">Este ordenador</p>
             <h1 id="settingsTitle" class="mmt-display text-4xl mt-3">Ajustes</h1>
             <div class="mt-6 rounded-2xl border border-r-line bg-r-surface p-5 grid gap-3">
@@ -2063,27 +1969,29 @@
       </div>
 
       <!-- 1. Top-Left (top: 6px, left: 6px): Ultra-Tight Kapps Standings (w-max, ~340px Practice / ~410px Race) -->
-      <div id="floatStandingsCard" class="mmt-float-widget fixed top-[6px] left-[6px] w-max rounded-[2px] text-white text-[11px] font-mono tabular-nums pointer-events-auto overflow-hidden" style="zoom: 0.88; background: rgba(8, 10, 14, 0.88); text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="standings">
+      <div id="floatStandingsCard" class="mmt-float-widget fixed top-[6px] left-[6px] w-max rounded-[3px] text-white text-[11px] font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: rgba(9, 11, 15, 0.88); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: none !important; text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="standings">
         <div id="ovStandingsFloat"></div>
       </div>
 
       <!-- 2. Top-Right (top: 6px, right: 6px): Ultra-Tight Kapps Relative (w-max, ~275px) -->
-      <div id="floatRelativeCard" class="mmt-float-widget fixed top-[10px] right-[12px] w-[335px] max-w-[335px] rounded-[2px] text-white text-[11px] font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: rgba(8, 10, 14, 0.88); text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="relative">
+      <div id="floatRelativeCard" class="mmt-float-widget fixed top-[10px] right-[12px] w-[340px] max-w-[340px] rounded-[3px] text-white text-[11px] font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: rgba(9, 11, 15, 0.88); border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: none !important; text-shadow: 0 1px 2px rgba(0,0,0,0.9);" data-widget="relative">
         <div id="ovRelativeFloat"></div>
       </div>
 
       <!-- 3. Top-Center Flanking Virtual Mirror (top: 10px, 540px clear gap for iRacing Mirror) -->
-      <div id="floatRadarCard" class="mmt-float-widget fixed top-[10px] left-1/2 -translate-x-1/2 pointer-events-none z-20" data-widget="radar">
+      <div id="floatRadarCard" class="mmt-float-widget fixed left-1/2 -translate-x-1/2 bottom-[140px] pointer-events-none z-20" style="background: transparent !important; border: none !important; box-shadow: none !important;" data-widget="radar">
         <div id="ovRadarFloat"></div>
       </div>
 
       <!-- 3b-4. Unified Status & Delta Dock (top: 224px below iRacing yellow Pit/Escape text) -->
+      <!-- 3a. Top-Center Kapps Delta Bar (240x22 at top: 88px, hidden in Replay) -->
+      <div id="floatDeltaBarCard" class="mmt-float-widget fixed top-[88px] left-1/2 -translate-x-1/2 w-[240px] h-[22px] rounded-[3px] pointer-events-none overflow-hidden z-20" style="background: rgba(9, 11, 15, 0.88); border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: none !important;" data-widget="delta">
+        <canvas id="ovLiveDeltaFloat" width="240" height="22" style="width:240px;height:22px;display:block;"></canvas>
+      </div>
+
       <div id="floatCenterStatusDock" class="mmt-float-widget fixed top-[224px] left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 pointer-events-none z-20" data-widget="conditions">
         <div id="floatTrackConditionsCard" class="w-max h-[26px]">
           <div id="ovTrackConditionsFloat"></div>
-        </div>
-        <div id="floatLiveDeltaCard" class="w-[200px] h-[22px] rounded-[2px] overflow-hidden" data-widget="delta">
-          <canvas id="ovLiveDeltaFloat" width="200" height="22" style="width:200px;height:22px;display:block;"></canvas>
         </div>
         <div id="floatRaceDeltasCard" class="w-max" data-widget="delta">
           <div id="ovRaceDeltasFloat"></div>
@@ -2099,7 +2007,12 @@
       </div>
 
       <!-- 5b. Bottom-Right Live Track Map Canvas (above iRacing FUEL Black Box at bottom: 255px; right: 18px) -->
-      <div id="floatTrackMapCard" class="mmt-float-widget fixed bottom-[255px] right-[18px] w-[180px] h-[132px] rounded-[4px] border border-white/10 pointer-events-auto overflow-hidden" style="background: rgba(10, 12, 16, 0.72);" data-widget="trackmap">
+      <!-- 5a. Compact Kapps Fuel & Stint Calculator (4 cells, hidden in Replay) -->
+      <div id="floatFuelCard" class="mmt-float-widget fixed bottom-[18px] right-[18px] w-[244px] rounded-[3px] text-white font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: transparent !important; border: none !important; box-shadow: none !important;" data-widget="fuel">
+        <div id="ovFuelFloat"></div>
+      </div>
+
+      <div id="floatTrackMapCard" class="mmt-float-widget fixed bottom-[255px] right-[18px] w-[180px] h-[132px] rounded-[3px] pointer-events-auto overflow-hidden" style="background: rgba(9, 11, 15, 0.88); border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: none !important;" data-widget="trackmap">
         <canvas id="ovTrackMapFloat" width="180" height="132"></canvas>
       </div>
 
@@ -2118,7 +2031,7 @@
       </div>
 
       <!-- 6b. Centered Steering Wheel (46x46px at left: 50%, adjustable Y) -->
-      <div id="floatSteeringWheelCard" class="fixed left-[calc(50%+150px)] bottom-[24px] pointer-events-none z-25 flex items-center justify-center" data-widget="wheel"><div id="ovGearSpeedBadge" class="px-2 py-1 rounded-[5px] bg-[#0b0e14]/92 border border-white/15 flex flex-col items-center justify-center min-w-[42px] leading-none shadow-lg"><span id="ovGearText" class="text-[18px] font-black font-mono text-amber-400">N</span><span id="ovSpeedText" class="text-[9.5px] font-mono font-bold text-white/80 mt-0.5">0</span></div></div>
+      <div id="floatSteeringWheelCard" class="fixed left-[calc(50%+150px)] bottom-[24px] pointer-events-none z-25 flex items-center justify-center" data-widget="wheel"><div id="ovGearSpeedBadge" class="px-2.5 py-1.5 rounded-[3px] flex flex-col items-center justify-center min-w-[48px] leading-none font-mono tabular-nums" style="background: rgba(9, 11, 15, 0.88); border: 1px solid rgba(255, 255, 255, 0.12);"><span id="ovGearText" class="text-[18px] font-black font-mono text-amber-400">N</span><span id="ovSpeedText" class="text-[9.5px] font-mono font-bold text-white/80 mt-0.5">0</span></div></div>
 
     <!-- Prompt 48: FirstRunWizard Modal (Onboarding en 30 Segundos) -->
     <div id="firstRunWizardModal" hidden class="fixed inset-0 z-[10000] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
