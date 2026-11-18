@@ -1,0 +1,2182 @@
+---
+import Layout from "../layouts/Layout.astro";
+import desktopPkg from "../../desktop/package.json";
+import { OFFICIAL_BRAND_PATHS } from "../../desktop/src/cars/brand-icons";
+
+const appVersion = desktopPkg.version;
+const releaseUrl = "https://github.com/ATM-Software-Labs/muntrume-site/releases/latest";
+const repoUrl = "https://github.com/ATM-Software-Labs/muntrume-site/tree/main/desktop";
+
+const pageTitle = "MMT Sync Overlays · HUD Telemetría iRacing | Muntrume Motorsport";
+const pageDescription = `MMT Sync Overlays v${appVersion}: telemetría HUD nativa a 60 FPS para iRacing con Standings multiclase, Relative, Track Map Catmull-Rom, Fuel y Radar. Equipo MMT.`;
+const pageUrl = "https://muntru.me/overlay/";
+const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
+
+// Extract only the manufacturer SVG paths needed for the interactive HUD simulator
+const SIM_BRAND_PATHS: Record<string, { path: string; color: string; name: string }> = {
+  porsche: { path: OFFICIAL_BRAND_PATHS["logo-porsche"] || "", color: "#EF4444", name: "Porsche" },
+  ferrari: { path: OFFICIAL_BRAND_PATHS["logo-ferrari"] || "", color: "#FACC15", name: "Ferrari" },
+  cadillac: { path: OFFICIAL_BRAND_PATHS["logo-cadillac"] || "", color: "#D4AF37", name: "Cadillac" },
+  bmw: { path: OFFICIAL_BRAND_PATHS["logo-bmw"] || "", color: "#3B82F6", name: "BMW" },
+  dallara: { path: OFFICIAL_BRAND_PATHS["logo-dallara"] || "", color: "#00E699", name: "Dallara" },
+  mercedes: { path: OFFICIAL_BRAND_PATHS["logo-mercedes"] || "", color: "#00D2BE", name: "Mercedes-AMG" },
+  mclaren: { path: OFFICIAL_BRAND_PATHS["logo-mclaren"] || "", color: "#FF8000", name: "McLaren" },
+  aston: { path: OFFICIAL_BRAND_PATHS["logo-aston"] || "", color: "#10B981", name: "Aston Martin" },
+};
+
+const overlaySchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": `${pageUrl}#webpage`,
+      url: pageUrl,
+      name: pageTitle,
+      description: pageDescription,
+      isPartOf: { "@id": "https://muntru.me/#website" },
+      about: { "@id": `${pageUrl}#software` },
+      primaryImageOfPage: ogImage,
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": `${pageUrl}#software`,
+      name: "MMT Sync Overlays",
+      applicationCategory: "UtilitiesApplication",
+      operatingSystem: "Windows 10, Windows 11",
+      softwareVersion: appVersion,
+      url: pageUrl,
+      downloadUrl: releaseUrl,
+      description: pageDescription,
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "EUR",
+      },
+      publisher: { "@id": "https://muntru.me/#org" },
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": `${pageUrl}#breadcrumb`,
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Inicio", item: "https://muntru.me/" },
+        { "@type": "ListItem", position: 2, name: "Overlay HUD", item: pageUrl },
+      ],
+    },
+  ],
+};
+---
+
+<Layout
+  title={pageTitle}
+  description={pageDescription}
+  keywords="mmt sync overlays, iracing hud, iracing overlay gratis, kapps alternativa, racelab alternativa, iracing telemetry hud, standings multiclase iracing, track map iracing, radar helicorsa iracing, muntrume motorsport"
+  canonical={pageUrl}
+  ogImage={ogImage}
+  ogImageAlt="MMT Sync Overlays — Telemetría HUD de baja latencia para iRacing"
+  ogImageWidth={1200}
+  ogImageHeight={630}
+  schemaJson={overlaySchema}
+>
+  <div class="ov-page">
+    <!-- ===================================================================== -->
+    <!-- 1. HERO & DESCARGA DIRECTA                                            -->
+    <!-- ===================================================================== -->
+    <section class="ov-hero">
+      <div class="ov-container">
+        <div class="ov-hero__badges">
+          <span class="ov-pill ov-pill--live">
+            <span class="ov-dot" aria-hidden="true"></span>
+            <span>MMT Sync HUD · v{appVersion}</span>
+          </span>
+          <span class="ov-pill">Windows 10/11 · iRacing SDK nativo</span>
+          <span class="ov-pill">60 FPS · Click-Through</span>
+        </div>
+
+        <h1 class="ov-hero__title">
+          MMT Sync Overlays — <span class="ov-accent">Telemetría HUD</span> de baja latencia para iRacing
+        </h1>
+
+        <p class="ov-hero__lead">
+          Superposiciones nativas transparentes <code>click-through</code> a 60 FPS diseñadas con la densidad visual, legibilidad y ergonomía de los estándares clásicos de competición (Kapps / Racelab), con <strong>0 % de consumo de CPU</strong> cuando un módulo está desactivado.
+        </p>
+
+        <div class="ov-hero__actions">
+          <a
+            href={releaseUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="ov-btn ov-btn--primary"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" x2="12" y1="15" y2="3"/>
+            </svg>
+            <span>Descargar última release (v{appVersion})</span>
+          </a>
+
+          <a
+            href={repoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="ov-btn ov-btn--secondary"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="16 18 22 12 16 6"/>
+              <polyline points="8 6 2 12 8 18"/>
+            </svg>
+            <span>Código y documentación</span>
+          </a>
+
+          <a href="#simulador-hud" class="ov-btn ov-btn--ghost">
+            <span>Probar simulador en vivo ↓</span>
+          </a>
+        </div>
+
+        <div class="ov-specs">
+          <div class="ov-spec">
+            <span class="ov-spec__val">60 Hz</span>
+            <span class="ov-spec__lbl">Lectura memoria compartida iRSDK</span>
+          </div>
+          <div class="ov-spec">
+            <span class="ov-spec__val">0 % CPU</span>
+            <span class="ov-spec__lbl">En módulos desactivados</span>
+          </div>
+          <div class="ov-spec">
+            <span class="ov-spec__val">Tauri v2</span>
+            <span class="ov-spec__lbl">Core Rust + TypeScript nativo</span>
+          </div>
+          <div class="ov-spec">
+            <span class="ov-spec__val">SHA-256</span>
+            <span class="ov-spec__lbl">Releases verificadas en GitHub</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- 2. PREVISUALIZACIÓN INTERACTIVA EN VIVO DEL HUD                       -->
+    <!-- ===================================================================== -->
+    <section id="simulador-hud" class="ov-section">
+      <div class="ov-container">
+        <div class="ov-section__head">
+          <div>
+            <p class="ov-kicker">Simulador interactivo en navegador · Silverstone GP</p>
+            <h2 class="ov-section__title">Prueba los 6 módulos del HUD en tiempo real</h2>
+            <p class="ov-section__sub">
+              Activa o desactiva cada módulo, alterna entre perfil de <strong>Pista (P)</strong> y <strong>Replay (R)</strong>, o dispara una situación de coche en paralelo para ver el radar <code>CarLeftRight</code> en acción.
+            </p>
+          </div>
+        </div>
+
+        <!-- Barra de control interactiva -->
+        <div class="sim-toolbar" role="region" aria-label="Controles del simulador HUD">
+          <div class="sim-toolbar__group">
+            <span class="sim-toolbar__label">MÓDULOS:</span>
+            <button type="button" class="sim-chip is-on" data-toggle-mod="standings" aria-pressed="true">
+              <span class="sim-chip__dot"></span>Standings
+            </button>
+            <button type="button" class="sim-chip is-on" data-toggle-mod="relative" aria-pressed="true">
+              <span class="sim-chip__dot"></span>Relative
+            </button>
+            <button type="button" class="sim-chip is-on" data-toggle-mod="trackmap" aria-pressed="true">
+              <span class="sim-chip__dot"></span>Track Map
+            </button>
+            <button type="button" class="sim-chip is-on" data-toggle-mod="fuel" aria-pressed="true">
+              <span class="sim-chip__dot"></span>Fuel Calc
+            </button>
+            <button type="button" class="sim-chip is-on" data-toggle-mod="inputs" aria-pressed="true">
+              <span class="sim-chip__dot"></span>Inputs &amp; Delta
+            </button>
+            <button type="button" class="sim-chip is-on" data-toggle-mod="radar" aria-pressed="true">
+              <span class="sim-chip__dot"></span>Radar
+            </button>
+          </div>
+
+          <div class="sim-toolbar__group sim-toolbar__right">
+            <div class="sim-mode-switch" role="group" aria-label="Modo de sesión">
+              <button type="button" id="simModeTrack" class="sim-mode-btn is-active" aria-pressed="true">
+                Pista <kbd>P</kbd>
+              </button>
+              <button type="button" id="simModeReplay" class="sim-mode-btn" aria-pressed="false">
+                Replay <kbd>R</kbd>
+              </button>
+            </div>
+            <button type="button" id="simTriggerRadar" class="sim-action-btn" title="Simular coche en paralelo (1-wide / 3-wide)">
+              Simular 3-Wide
+            </button>
+            <button type="button" id="simPauseBtn" class="sim-action-btn" aria-pressed="false">
+              Pausar
+            </button>
+          </div>
+        </div>
+
+        <!-- Lienzo de Cabina Simulada (Silverstone GP) -->
+        <div class="sim-stage" id="simStage">
+          <!-- Fondo de pista estilizado (Silverstone GP · cockpit perspective SVG) -->
+          <svg class="sim-backdrop" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <defs>
+              <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#070a10"/>
+                <stop offset="55%" stop-color="#0d131d"/>
+                <stop offset="100%" stop-color="#090b0f"/>
+              </linearGradient>
+              <linearGradient id="asphaltGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#131822"/>
+                <stop offset="100%" stop-color="#0a0d12"/>
+              </linearGradient>
+              <radialGradient id="horizonGlow" cx="50%" cy="42%" r="48%">
+                <stop offset="0%" stop-color="rgba(16,185,129,0.12)"/>
+                <stop offset="100%" stop-color="rgba(9,11,15,0)"/>
+              </radialGradient>
+            </defs>
+            <rect width="1280" height="720" fill="url(#skyGrad)"/>
+            <rect width="1280" height="720" fill="url(#horizonGlow)"/>
+            <!-- Horizonte y silueta de gradas Silverstone -->
+            <line x1="0" y1="300" x2="1280" y2="300" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+            <path d="M0 300 L180 284 L380 292 L580 280 L820 288 L1080 278 L1280 294 L1280 300 Z" fill="#0c1118"/>
+            <!-- Asfalto en perspectiva hacia curva Maggotts / Becketts -->
+            <path d="M560 300 L720 300 L1220 720 L60 720 Z" fill="url(#asphaltGrad)"/>
+            <!-- Pianos (kerbs) rojo/blanco sutiles -->
+            <path d="M560 300 L548 300 L28 720 L60 720 Z" fill="rgba(239,68,68,0.16)"/>
+            <path d="M720 300 L732 300 L1252 720 L1220 720 Z" fill="rgba(255,255,255,0.08)"/>
+            <!-- Línea de trazada / referencia central -->
+            <line x1="640" y1="300" x2="640" y2="720" stroke="rgba(255,255,255,0.04)" stroke-width="2" stroke-dasharray="18 22"/>
+            <!-- Halo sutil de parabrisas / cockpit -->
+            <path d="M0 0 L1280 0 L1280 48 Q640 16 0 48 Z" fill="rgba(4,6,9,0.75)"/>
+          </svg>
+
+          <!-- Barra superior de estado del simulador -->
+          <div class="sim-statusbar">
+            <div class="sim-statusbar__left">
+              <span class="sim-status-tag">SILVERSTONE GP · IMSA MULTICLASS</span>
+              <span class="sim-status-meta" id="simLapClock">LAP 14/28 · 18:42 REM</span>
+            </div>
+            <div class="sim-statusbar__right">
+              <span class="sim-replay-badge" id="simReplayBadge" hidden>REPLAY · isReplayPlaying=true · Controles de pilotaje ocultos</span>
+              <span class="sim-fps-badge" id="simCpuBadge">60 FPS · 6/6 activos</span>
+            </div>
+          </div>
+
+          <!-- Grid HUD Responsive -->
+          <div class="sim-hud-grid">
+            <!-- COLUMNA IZQUIERDA: Standings + Relative -->
+            <div class="sim-col sim-col--left">
+              <!-- MÓDULO 1: STANDINGS MULTICLASE -->
+              <div class="hud-box hud-standings" data-hud-mod="standings">
+                <div class="hud-box__head">
+                  <span class="hud-box__title">STANDINGS · IMSA</span>
+                  <span class="hud-box__meta">TICK GAP/INT · iR Δ</span>
+                </div>
+                <div class="hud-standings__body" id="simStandingsBody"></div>
+              </div>
+
+              <!-- MÓDULO 2: RELATIVE COMPACTO -->
+              <div class="hud-box hud-relative" data-hud-mod="relative">
+                <div class="hud-box__head">
+                  <span class="hud-box__title">RELATIVE</span>
+                  <span class="hud-box__meta">±3 COCHES · COLOR VUELTA</span>
+                </div>
+                <div class="hud-relative__body" id="simRelativeBody"></div>
+              </div>
+            </div>
+
+            <!-- COLUMNA CENTRAL: Radar Proximidad + Inputs & Delta Bar -->
+            <div class="sim-col sim-col--center">
+              <!-- MÓDULO 6: RADAR DE PROXIMIDAD LATERAL (Helicorsa) -->
+              <div class="hud-radar-wrap" data-hud-mod="radar" data-driving-only="true">
+                <div class="hud-radar" id="simRadar" data-state="clear" aria-live="polite">
+                  <svg viewBox="0 0 180 180" class="hud-radar__svg" aria-label="Radar de proximidad lateral">
+                    <circle cx="90" cy="90" r="78" fill="rgba(9,11,15,0.72)" stroke="rgba(255,255,255,0.10)" stroke-width="1"/>
+                    <circle cx="90" cy="90" r="46" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1" stroke-dasharray="4 4"/>
+                    <!-- Arco Izquierdo -->
+                    <path id="radarArcLeft" d="M 38 38 A 74 74 0 0 0 38 142" fill="none" stroke="transparent" stroke-width="8" stroke-linecap="round"/>
+                    <!-- Arco Derecho -->
+                    <path id="radarArcRight" d="M 142 38 A 74 74 0 0 1 142 142" fill="none" stroke="transparent" stroke-width="8" stroke-linecap="round"/>
+                    <!-- Coche propio centrado -->
+                    <rect x="78" y="64" width="24" height="52" rx="6" fill="#10b981" fill-opacity="0.22" stroke="#10b981" stroke-width="1.6"/>
+                    <line x1="90" y1="68" x2="90" y2="78" stroke="#34d399" stroke-width="2" stroke-linecap="round"/>
+                    <!-- Coche rival izquierdo -->
+                    <rect id="radarCarLeft" x="34" y="70" width="20" height="44" rx="5" fill="#f59e0b" fill-opacity="0" stroke="#f59e0b" stroke-opacity="0" stroke-width="1.5"/>
+                    <!-- Coche rival derecho -->
+                    <rect id="radarCarRight" x="126" y="74" width="20" height="44" rx="5" fill="#ef4444" fill-opacity="0" stroke="#ef4444" stroke-opacity="0" stroke-width="1.5"/>
+                  </svg>
+                  <div class="hud-radar__label" id="simRadarLabel">CLEAR</div>
+                </div>
+                <div class="hud-radar__hint" id="simRadarHint">
+                  Radar <code>CarLeftRight</code> en espera (invisible en pista libre)
+                </div>
+              </div>
+
+              <!-- MÓDULO 5: INPUT TELEMETRY & DELTA BAR -->
+              <div class="hud-center-bottom" data-hud-mod="inputs" data-driving-only="true">
+                <!-- Delta Bar bidireccional -->
+                <div class="hud-box hud-delta">
+                  <div class="hud-delta__row">
+                    <span class="hud-delta__tag">SESSION BEST Δ</span>
+                    <span class="hud-delta__val" id="simDeltaVal">-0.28s</span>
+                  </div>
+                  <div class="hud-delta__track">
+                    <div class="hud-delta__center"></div>
+                    <div class="hud-delta__fill" id="simDeltaFill"></div>
+                  </div>
+                </div>
+
+                <!-- Input Telemetry (Trace + Pedals + Gear/Speed) -->
+                <div class="hud-box hud-inputs">
+                  <div class="hud-inputs__trace">
+                    <canvas id="simPedalCanvas" width="260" height="68" aria-label="Gráfica de pedales en vivo"></canvas>
+                  </div>
+                  <div class="hud-inputs__bars">
+                    <div class="pedal-col">
+                      <div class="pedal-bar"><div class="pedal-fill pedal-fill--clutch" id="simClutchBar" style="height:0%"></div></div>
+                      <span class="pedal-lbl">C</span>
+                    </div>
+                    <div class="pedal-col">
+                      <div class="pedal-bar"><div class="pedal-fill pedal-fill--brake" id="simBrakeBar" style="height:0%"></div></div>
+                      <span class="pedal-lbl">B</span>
+                    </div>
+                    <div class="pedal-col">
+                      <div class="pedal-bar"><div class="pedal-fill pedal-fill--throttle" id="simThrottleBar" style="height:82%"></div></div>
+                      <span class="pedal-lbl">T</span>
+                    </div>
+                  </div>
+                  <div class="hud-inputs__gear">
+                    <span class="gear-val" id="simGear">4</span>
+                    <span class="speed-val" id="simSpeed">214</span>
+                    <span class="speed-unit">KM/H</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- COLUMNA DERECHA: Track Map + Fuel & Stint Calculator -->
+            <div class="sim-col sim-col--right">
+              <!-- MÓDULO 3: TRACK MAP CATMULL-ROM -->
+              <div class="hud-box hud-trackmap" data-hud-mod="trackmap">
+                <div class="hud-box__head">
+                  <span class="hud-box__title">TRACK MAP · SILVERSTONE GP</span>
+                  <span class="hud-box__meta">CATMULL-ROM SPLINE</span>
+                </div>
+                <div class="hud-trackmap__canvas">
+                  <svg id="simTrackSvg" viewBox="0 0 280 200" class="hud-trackmap__svg" aria-label="Mapa de circuito Silverstone GP">
+                    <path id="simTrackOutline" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
+                    <path id="simTrackLine" fill="none" stroke="#1e293b" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+                    <line id="simSfLine" x1="0" y1="0" x2="0" y2="0" stroke="#ffffff" stroke-width="2.5"/>
+                    <g id="simTrackDots"></g>
+                  </svg>
+                </div>
+              </div>
+
+              <!-- MÓDULO 4: FUEL & STINT CALCULATOR -->
+              <div class="hud-box hud-fuel" data-hud-mod="fuel">
+                <div class="hud-box__head">
+                  <span class="hud-box__title">FUEL &amp; STINT CALC</span>
+                  <span class="hud-box__meta">FILTRO FCY / PIT</span>
+                </div>
+                <div class="hud-fuel__grid">
+                  <div class="fuel-cell">
+                    <span class="fuel-lbl">FUEL REM</span>
+                    <span class="fuel-val" id="simFuelRem">34.8 L</span>
+                  </div>
+                  <div class="fuel-cell">
+                    <span class="fuel-lbl">AVG L/LAP</span>
+                    <span class="fuel-val fuel-val--emerald" id="simFuelAvg">2.84 L</span>
+                  </div>
+                  <div class="fuel-cell">
+                    <span class="fuel-lbl">LAPS EST.</span>
+                    <span class="fuel-val" id="simFuelLaps">12.2</span>
+                  </div>
+                  <div class="fuel-cell fuel-cell--highlight">
+                    <span class="fuel-lbl">TO ADD (+1.5L)</span>
+                    <span class="fuel-val fuel-val--amber" id="simFuelAdd">+9.4 L</span>
+                  </div>
+                </div>
+                <div class="hud-fuel__bar-wrap">
+                  <div class="hud-fuel__bar" id="simFuelBar" style="width: 44%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resumen técnico de los 6 módulos -->
+        <div class="ov-mod-grid">
+          <article class="ov-card">
+            <span class="ov-card__num">01</span>
+            <h3>Standings Multiclase</h3>
+            <p>Cabeceras por categoría con SOF, barra lateral de color de clase, logos oficiales SVG con <code>fill-rule="evenodd"</code>, badges de Licencia + iRating de alto contraste, ganancia/pérdida de iR en tiempo real y cálculo continuo de <code>GAP</code> e <code>INT</code> tick a tick desde <code>CarIdxLap + CarIdxLapDistPct</code>.</p>
+          </article>
+          <article class="ov-card">
+            <span class="ov-card__num">02</span>
+            <h3>Relative Compacto</h3>
+            <p>3 coches por delante y 3 por detrás ordenados por distancia temporal (<code>±0.0s</code>) con código de colores por vuelta: misma vuelta en blanco, dobladores en rojo coral, doblados en cian y coches en pit lane atenuados.</p>
+          </article>
+          <article class="ov-card">
+            <span class="ov-card__num">03</span>
+            <h3>Track Map Catmull-Rom</h3>
+            <p>Trazado interpolado mediante splines Catmull-Rom cerrados, línea de salida/meta perpendicular y burbujas numeradas con el color de clase de cada piloto más halo esmeralda en el coche enfocado (<code>CamCarIdx</code>).</p>
+          </article>
+          <article class="ov-card">
+            <span class="ov-card__num">04</span>
+            <h3>Fuel &amp; Stint Calculator</h3>
+            <p>Consumo medio real (<code>L/LAP</code>) filtrando automáticamente vueltas bajo bandera amarilla o paso por boxes, vueltas restantes reales y litros exactos a repostar con margen de seguridad configurable.</p>
+          </article>
+          <article class="ov-card">
+            <span class="ov-card__num">05</span>
+            <h3>Input Telemetry &amp; Delta Bar</h3>
+            <p>Barras de pedales de alta precisión (Gas, Freno, Embrague) con traza continua en Canvas 2D, indicador de marcha/velocidad y barra bidireccional de delta contra mejor vuelta de sesión (<code>LapDeltaToSessionBestLap</code>).</p>
+          </article>
+          <article class="ov-card">
+            <span class="ov-card__num">06</span>
+            <h3>Radar de Proximidad Lateral</h3>
+            <p>Indicador tipo Helicorsa conectado a <code>CarLeftRight</code> que permanece completamente invisible en pista libre y alerta en ámbar o rojo cuando hay coches en paralelo (<code>1-wide</code> / <code>3-wide</code>).</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- 3. ARQUITECTURA TÉCNICA ("CÓMO ESTÁ CONSTRUIDO POR DENTRO")           -->
+    <!-- ===================================================================== -->
+    <section id="arquitectura" class="ov-section ov-section--alt">
+      <div class="ov-container">
+        <div class="ov-section__head">
+          <p class="ov-kicker">Ingeniería de software · Zero-overhead</p>
+          <h2 class="ov-section__title">Cómo está construido por dentro</h2>
+          <p class="ov-section__sub">
+            Diseñado desde cero para no robar ni un solo fotograma al simulador, eliminando navegadores embebidos pesados y capas intermedias innecesarias.
+          </p>
+        </div>
+
+        <div class="ov-arch-grid">
+          <article class="ov-arch-card">
+            <div class="ov-arch-card__top">
+              <span class="ov-arch-tag">MEMORIA COMPARTIDA</span>
+              <span class="ov-arch-metric">60 Hz nativo</span>
+            </div>
+            <h3>Lectura directa del iRacing SDK</h3>
+            <p>
+              Acceso sin latencia a las variables de telemetría de memoria mapeada de Windows (<code>CarIdxLapDistPct</code>, <code>CarIdxF2Time</code>, <code>CarLeftRight</code>, <code>SessionFlags</code>, <code>FuelLevel</code>) y parsing incremental del YAML de sesión (<code>DriverInfo</code>, <code>WeekendInfo</code>).
+            </p>
+          </article>
+
+          <article class="ov-arch-card">
+            <div class="ov-arch-card__top">
+              <span class="ov-arch-tag">SHELL NATIVO</span>
+              <span class="ov-arch-metric">Tauri v2 · Rust</span>
+            </div>
+            <h3>Ventanas transparentes Click-Through</h3>
+            <p>
+              Backend en Rust + TypeScript con ventanas overlay sin bordes (<code>decorations: false</code>), transparentes (<code>transparent: true</code>), siempre visibles (<code>alwaysOnTop</code>) y con paso de clic nativo (<code>setIgnoreCursorEvents</code>) para no interferir nunca con el simulador.
+            </p>
+          </article>
+
+          <article class="ov-arch-card">
+            <div class="ov-arch-card__top">
+              <span class="ov-arch-tag">MOTOR DE RENDER</span>
+              <span class="ov-arch-metric">DOM + Canvas 2D</span>
+            </div>
+            <h3>Renderizado híbrido con caché SVG</h3>
+            <p>
+              Arquitectura híbrida DOM + Canvas 2D con caché en memoria de vectores oficiales de fabricantes (<code>brand-helper.ts</code>), animaciones FLIP suaves en adelantamientos y limpieza automática de widgets de pilotaje durante repeticiones (<code>isReplayPlaying</code>) y garaje.
+            </p>
+          </article>
+
+          <article class="ov-arch-card">
+            <div class="ov-arch-card__top">
+              <span class="ov-arch-tag">SEGURIDAD Y CI/CD</span>
+              <span class="ov-arch-metric">SHA-256 verificado</span>
+            </div>
+            <h3>Distribución reproducible</h3>
+            <p>
+              Compilación automatizada en GitHub Actions con manifiestos de integridad SHA-256, actualizaciones modulares y persistencia local independiente de posiciones, escalas y perfiles de usuario.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- 4. GUÍA RÁPIDA DE CONFIGURACIÓN EN IRACING (3 PASOS)                  -->
+    <!-- ===================================================================== -->
+    <section id="configuracion" class="ov-section">
+      <div class="ov-container">
+        <div class="ov-section__head">
+          <p class="ov-kicker">Puesta en marcha en 2 minutos</p>
+          <h2 class="ov-section__title">Guía rápida de configuración en iRacing</h2>
+        </div>
+
+        <ol class="ov-steps">
+          <li class="ov-step">
+            <div class="ov-step__num">01</div>
+            <div class="ov-step__body">
+              <h3>Configura iRacing en Ventana sin bordes</h3>
+              <p>
+                En los ajustes gráficos de iRacing (o en <code>rendererDX11Monitor.ini</code>), activa el modo <strong>Borderless Windowed</strong> (<em>Fullscreen = 0</em>, <em>Border = 0</em>). Esto permite a Windows componer overlays transparentes a 60 FPS sin pérdida de rendimiento ni parpadeos.
+              </p>
+            </div>
+          </li>
+
+          <li class="ov-step">
+            <div class="ov-step__num">02</div>
+            <div class="ov-step__body">
+              <h3>Activa tus módulos y ajusta con <code>Edit UI</code></h3>
+              <p>
+                Abre <strong>MMT Sync</strong>, entra en la pestaña <em>Overlays</em> y activa únicamente los módulos que necesites (los inactivos consumen 0 % de CPU). Pulsa <strong>Edit UI</strong> para arrastrar cada ventana y ajustar su escala a tu monitor o triple pantalla.
+              </p>
+            </div>
+          </li>
+
+          <li class="ov-step">
+            <div class="ov-step__num">03</div>
+            <div class="ov-step__body">
+              <h3>Alterna perfiles Pista (<code>P</code>) y Replay (<code>R</code>)</h3>
+              <p>
+                Configura layouts independientes para conducción en <strong>Pista (<code>P</code>)</strong> y análisis en <strong>Replay (<code>R</code>)</strong>. Al revisar una repetición o entrar en garaje, MMT Sync limpia automáticamente los controles de pilotaje dejando la pantalla despejada.
+              </p>
+            </div>
+          </li>
+        </ol>
+
+        <!-- CTA Final -->
+        <div class="ov-cta-band">
+          <div>
+            <h3>Listo para correr con telemetría limpia en pista</h3>
+            <p>Descarga MMT Sync v{appVersion} gratis para Windows 10/11 — sin suscripciones, sin telemetría de terceros.</p>
+          </div>
+          <div class="ov-cta-band__actions">
+            <a href={releaseUrl} target="_blank" rel="noopener noreferrer" class="ov-btn ov-btn--primary">
+              Descargar MMT Sync v{appVersion}
+            </a>
+            <a href="/app/install/" class="ov-btn ov-btn--secondary">
+              Guía de instalación
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Datos de vectores SVG oficiales para el script del simulador -->
+  <script id="simBrandData" type="application/json" set:html={JSON.stringify(SIM_BRAND_PATHS)} />
+
+  <script is:inline>
+    (() => {
+      const brandMap = JSON.parse(document.getElementById("simBrandData")?.textContent || "{}");
+
+      function brandSvg(key, size = 15) {
+        const b = brandMap[key];
+        if (!b || !b.path) return "";
+        return `<span class="hud-brand" style="width:${size}px;height:${size}px;color:${b.color}" title="${b.name}"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="${b.path}"/></svg></span>`;
+      }
+
+      // -----------------------------------------------------------------------
+      // Catmull-Rom Closed Spline for Silverstone GP
+      // -----------------------------------------------------------------------
+      const silverstonePts = [
+        [118, 166], [156, 162], [186, 146], [202, 124], [192, 102],
+        [218, 86],  [248, 72],  [246, 46],  [222, 34],  [190, 44],
+        [164, 58],  [146, 78],  [118, 66],  [92, 48],   [64, 42],
+        [38, 56],   [34, 84],   [56, 100],  [78, 114],  [62, 134],
+        [44, 152],  [64, 170],  [92, 168]
+      ];
+
+      function sampleCatmullRomClosed(pts, segmentsPerSpan = 10) {
+        const n = pts.length;
+        const out = [];
+        for (let i = 0; i < n; i++) {
+          const p0 = pts[(i - 1 + n) % n];
+          const p1 = pts[i];
+          const p2 = pts[(i + 1) % n];
+          const p3 = pts[(i + 2) % n];
+          for (let s = 0; s < segmentsPerSpan; s++) {
+            const t = s / segmentsPerSpan;
+            const t2 = t * t;
+            const t3 = t2 * t;
+            const x = 0.5 * (
+              (2 * p1[0]) +
+              (-p0[0] + p2[0]) * t +
+              (2 * p0[0] - 5 * p1[0] + 4 * p2[0] - p3[0]) * t2 +
+              (-p0[0] + 3 * p1[0] - 3 * p2[0] + p3[0]) * t3
+            );
+            const y = 0.5 * (
+              (2 * p1[1]) +
+              (-p0[1] + p2[1]) * t +
+              (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * t2 +
+              (-p0[1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * t3
+            );
+            out.push([x, y]);
+          }
+        }
+        return out;
+      }
+
+      const splinePts = sampleCatmullRomClosed(silverstonePts, 10);
+      const trackPathD = splinePts.map((p, i) => `${i === 0 ? "M" : "L"}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(" ") + " Z";
+      const outlineEl = document.getElementById("simTrackOutline");
+      const lineEl = document.getElementById("simTrackLine");
+      const sfEl = document.getElementById("simSfLine");
+      if (outlineEl) outlineEl.setAttribute("d", trackPathD);
+      if (lineEl) lineEl.setAttribute("d", trackPathD);
+
+      // Perpendicular Start/Finish line at spline index 0
+      if (sfEl && splinePts.length > 2) {
+        const p0 = splinePts[0];
+        const p1 = splinePts[2];
+        const dx = p1[0] - p0[0];
+        const dy = p1[1] - p0[1];
+        const len = Math.hypot(dx, dy) || 1;
+        const nx = -dy / len;
+        const ny = dx / len;
+        sfEl.setAttribute("x1", (p0[0] - nx * 8).toFixed(1));
+        sfEl.setAttribute("y1", (p0[1] - ny * 8).toFixed(1));
+        sfEl.setAttribute("x2", (p0[0] + nx * 8).toFixed(1));
+        sfEl.setAttribute("y2", (p0[1] + ny * 8).toFixed(1));
+      }
+
+      function pointOnSpline(pct) {
+        const norm = ((pct % 1) + 1) % 1;
+        const idx = norm * splinePts.length;
+        const i0 = Math.floor(idx) % splinePts.length;
+        const i1 = (i0 + 1) % splinePts.length;
+        const f = idx - Math.floor(idx);
+        return [
+          splinePts[i0][0] + (splinePts[i1][0] - splinePts[i0][0]) * f,
+          splinePts[i0][1] + (splinePts[i1][1] - splinePts[i0][1]) * f,
+        ];
+      }
+
+      // -----------------------------------------------------------------------
+      // Simulated Multiclass Grid (Silverstone GP — GTP / LMP2 / GT3)
+      // -----------------------------------------------------------------------
+      const CLASSES = {
+        GTP:  { color: "#f59e0b", sof: "3.4k", lapSec: 94.5 },
+        LMP2: { color: "#06b6d4", sof: "2.8k", lapSec: 99.8 },
+        GT3:  { color: "#10b981", sof: "2.5k", lapSec: 112.4 },
+      };
+
+      const LIC_COLOR = { A: "#2563eb", B: "#16a34a", C: "#d97706", D: "#dc2626" };
+
+      const drivers = [
+        // GTP
+        { id: 1,  num: "01", name: "M. Lindqvist",  cls: "GTP",  brand: "cadillac", lic: "A", sr: "4.99", ir: "3.8k", irDelta: +58, lap: 15, pct: 0.54, speed: 1.003, isPit: false },
+        { id: 2,  num: "07", name: "K. Takahashi",  cls: "GTP",  brand: "porsche",  lic: "A", sr: "4.42", ir: "3.3k", irDelta: +24, lap: 15, pct: 0.51, speed: 1.001, isPit: false },
+        { id: 3,  num: "24", name: "L. Van Der Berg",cls: "GTP", brand: "bmw",      lic: "A", sr: "3.85", ir: "3.1k", irDelta: -19, lap: 15, pct: 0.45, speed: 0.998, isPit: false },
+        // LMP2
+        { id: 4,  num: "32", name: "R. Moretti",    cls: "LMP2", brand: "dallara",  lic: "A", sr: "4.10", ir: "2.9k", irDelta: +41, lap: 14, pct: 0.67, speed: 0.946, isPit: false },
+        { id: 5,  num: "48", name: "J. O'Connor",   cls: "LMP2", brand: "dallara",  lic: "B", sr: "3.64", ir: "2.7k", irDelta: -14, lap: 14, pct: 0.61, speed: 0.943, isPit: false },
+        // GT3 (Focused driver: #16 A. Trujillo)
+        { id: 6,  num: "51", name: "D. Rossi",      cls: "GT3",  brand: "ferrari",  lic: "A", sr: "4.65", ir: "2.9k", irDelta: +44, lap: 14, pct: 0.525, speed: 0.844, isPit: false },
+        { id: 7,  num: "16", name: "A. Trujillo",   cls: "GT3",  brand: "porsche",  lic: "A", sr: "4.99", ir: "2.7k", irDelta: +65, lap: 14, pct: 0.500, speed: 0.846, isPit: false, isMe: true },
+        { id: 8,  num: "88", name: "M. Berbis",     cls: "GT3",  brand: "mercedes", lic: "B", sr: "3.41", ir: "2.4k", irDelta: +18, lap: 14, pct: 0.482, speed: 0.843, isPit: false },
+        { id: 9,  num: "77", name: "E. Chongkan",   cls: "GT3",  brand: "mclaren",  lic: "B", sr: "3.12", ir: "2.3k", irDelta: -24, lap: 14, pct: 0.458, speed: 0.841, isPit: false },
+        { id: 10, num: "95", name: "T. Schneider",  cls: "GT3",  brand: "aston",    lic: "C", sr: "2.88", ir: "1.9k", irDelta: -36, lap: 13, pct: 0.435, speed: 0.835, isPit: false },
+        { id: 11, num: "63", name: "S. Dubois",     cls: "GT3",  brand: "bmw",      lic: "D", sr: "2.40", ir: "1.6k", irDelta: -42, lap: 13, pct: 0.545, speed: 0.420, isPit: true },
+      ];
+
+      // State
+      const enabledMods = { standings: true, relative: true, trackmap: true, fuel: true, inputs: true, radar: true };
+      let isReplay = false;
+      let isPaused = false;
+      let radarOverrideUntil = 0;
+      let radarOverrideMode = 3; // 1 = left, 2 = right, 3 = 3-wide
+
+      // Pedal trace history
+      const TRACE_LEN = 110;
+      const traceT = new Float32Array(TRACE_LEN).fill(0.8);
+      const traceB = new Float32Array(TRACE_LEN).fill(0);
+      const traceC = new Float32Array(TRACE_LEN).fill(0);
+
+      // DOM Refs
+      const standingsEl = document.getElementById("simStandingsBody");
+      const relativeEl = document.getElementById("simRelativeBody");
+      const trackDotsEl = document.getElementById("simTrackDots");
+      const radarEl = document.getElementById("simRadar");
+      const radarHintEl = document.getElementById("simRadarHint");
+      const radarLabelEl = document.getElementById("simRadarLabel");
+      const radarArcLeft = document.getElementById("radarArcLeft");
+      const radarArcRight = document.getElementById("radarArcRight");
+      const radarCarLeft = document.getElementById("radarCarLeft");
+      const radarCarRight = document.getElementById("radarCarRight");
+      const deltaValEl = document.getElementById("simDeltaVal");
+      const deltaFillEl = document.getElementById("simDeltaFill");
+      const clutchBar = document.getElementById("simClutchBar");
+      const brakeBar = document.getElementById("simBrakeBar");
+      const throttleBar = document.getElementById("simThrottleBar");
+      const gearEl = document.getElementById("simGear");
+      const speedEl = document.getElementById("simSpeed");
+      const fuelRemEl = document.getElementById("simFuelRem");
+      const fuelAvgEl = document.getElementById("simFuelAvg");
+      const fuelLapsEl = document.getElementById("simFuelLaps");
+      const fuelAddEl = document.getElementById("simFuelAdd");
+      const fuelBarEl = document.getElementById("simFuelBar");
+      const cpuBadgeEl = document.getElementById("simCpuBadge");
+      const replayBadgeEl = document.getElementById("simReplayBadge");
+      const lapClockEl = document.getElementById("simLapClock");
+      const pedalCanvas = document.getElementById("simPedalCanvas");
+      const pedalCtx = pedalCanvas ? pedalCanvas.getContext("2d") : null;
+
+      function syncVisibility() {
+        let activeCount = 0;
+        document.querySelectorAll("[data-hud-mod]").forEach((el) => {
+          const mod = el.getAttribute("data-hud-mod");
+          const drivingOnly = el.getAttribute("data-driving-only") === "true";
+          const visible = Boolean(enabledMods[mod]) && !(isReplay && drivingOnly);
+          el.classList.toggle("is-hidden", !visible);
+          if (visible) activeCount++;
+        });
+        if (replayBadgeEl) replayBadgeEl.hidden = !isReplay;
+        if (cpuBadgeEl) {
+          cpuBadgeEl.textContent = `${isPaused ? "PAUSA" : "60 FPS"} · ${activeCount}/6 activos`;
+        }
+      }
+
+      // Wire module toggle buttons
+      document.querySelectorAll("[data-toggle-mod]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const mod = btn.getAttribute("data-toggle-mod");
+          enabledMods[mod] = !enabledMods[mod];
+          btn.classList.toggle("is-on", enabledMods[mod]);
+          btn.setAttribute("aria-pressed", String(enabledMods[mod]));
+          syncVisibility();
+        });
+      });
+
+      const btnTrack = document.getElementById("simModeTrack");
+      const btnReplay = document.getElementById("simModeReplay");
+      if (btnTrack && btnReplay) {
+        btnTrack.addEventListener("click", () => {
+          isReplay = false;
+          btnTrack.classList.add("is-active");
+          btnReplay.classList.remove("is-active");
+          btnTrack.setAttribute("aria-pressed", "true");
+          btnReplay.setAttribute("aria-pressed", "false");
+          syncVisibility();
+        });
+        btnReplay.addEventListener("click", () => {
+          isReplay = true;
+          btnReplay.classList.add("is-active");
+          btnTrack.classList.remove("is-active");
+          btnReplay.setAttribute("aria-pressed", "true");
+          btnTrack.setAttribute("aria-pressed", "false");
+          syncVisibility();
+        });
+      }
+
+      const btnRadar = document.getElementById("simTriggerRadar");
+      if (btnRadar) {
+        btnRadar.addEventListener("click", () => {
+          if (isReplay && btnTrack) btnTrack.click();
+          if (!enabledMods.radar) {
+            const chip = document.querySelector('[data-toggle-mod="radar"]');
+            if (chip) chip.click();
+          }
+          radarOverrideMode = radarOverrideMode === 3 ? 1 : 3;
+          radarOverrideUntil = performance.now() + 3600;
+          btnRadar.textContent = radarOverrideMode === 3 ? "Simular 1-Wide" : "Simular 3-Wide";
+        });
+      }
+
+      const btnPause = document.getElementById("simPauseBtn");
+      if (btnPause) {
+        btnPause.addEventListener("click", () => {
+          isPaused = !isPaused;
+          btnPause.textContent = isPaused ? "Reanudar" : "Pausar";
+          btnPause.setAttribute("aria-pressed", String(isPaused));
+          syncVisibility();
+        });
+      }
+
+      // Render Standings Multiclase
+      function renderStandings() {
+        if (!standingsEl || !enabledMods.standings) return;
+        let html = "";
+        ["GTP", "LMP2", "GT3"].forEach((clsKey) => {
+          const meta = CLASSES[clsKey];
+          const group = drivers
+            .filter((d) => d.cls === clsKey)
+            .sort((a, b) => (b.lap + b.pct) - (a.lap + a.pct));
+          if (!group.length) return;
+
+          html += `<div class="st-cls-head" style="border-left-color:${meta.color}">
+            <span class="st-cls-name" style="color:${meta.color}">${clsKey}</span>
+            <span class="st-cls-sof">SOF ${meta.sof} · ${group.length} CARS</span>
+          </div>`;
+
+          const leaderDist = group[0].lap + group[0].pct;
+          group.forEach((d, idx) => {
+            const dist = d.lap + d.pct;
+            const gapSec = (leaderDist - dist) * meta.lapSec;
+            const prevDist = idx > 0 ? group[idx - 1].lap + group[idx - 1].pct : dist;
+            const intSec = (prevDist - dist) * meta.lapSec;
+            const gapStr = idx === 0 ? "LDR" : `+${gapSec.toFixed(1)}s`;
+            const intStr = idx === 0 ? "—" : `+${intSec.toFixed(1)}`;
+            const irCls = d.irDelta >= 0 ? "ir-pos" : "ir-neg";
+            const irStr = d.irDelta >= 0 ? `+${d.irDelta}` : `${d.irDelta}`;
+            const licBg = LIC_COLOR[d.lic] || "#64748b";
+
+            html += `<div class="st-row ${d.isMe ? "is-me" : ""} ${d.isPit ? "is-pit" : ""}" style="border-left-color:${meta.color}">
+              <span class="st-pos">${idx + 1}</span>
+              ${brandSvg(d.brand, 14)}
+              <span class="st-num">#${d.num}</span>
+              <span class="st-name">${d.name}</span>
+              <span class="st-lic" style="background:${licBg}">${d.lic} ${d.sr}</span>
+              <span class="st-ir">${d.ir}</span>
+              <span class="st-ird ${irCls}">${irStr}</span>
+              <span class="st-int">${intStr}</span>
+              <span class="st-gap">${gapStr}</span>
+            </div>`;
+          });
+        });
+        standingsEl.innerHTML = html;
+      }
+
+      // Render Relative Compacto (±3 cars around #16)
+      function renderRelative() {
+        if (!relativeEl || !enabledMods.relative) return;
+        const me = drivers.find((d) => d.isMe) || drivers[0];
+        const refLapSec = CLASSES[me.cls].lapSec;
+
+        const items = drivers.map((d) => {
+          let dp = d.pct - me.pct;
+          if (dp > 0.5) dp -= 1;
+          if (dp < -0.5) dp += 1;
+          const timeDelta = dp * refLapSec;
+          const lapDiff = d.lap - me.lap;
+          let tone = "same";
+          if (d.isPit) tone = "pit";
+          else if (d.isMe) tone = "me";
+          else if (lapDiff > 0) tone = "lapping";
+          else if (lapDiff < 0) tone = "lapped";
+          return { d, timeDelta, tone };
+        });
+
+        const ahead = items.filter((x) => !x.d.isMe && x.timeDelta >= 0).sort((a, b) => a.timeDelta - b.timeDelta).slice(0, 3).reverse();
+        const behind = items.filter((x) => !x.d.isMe && x.timeDelta < 0).sort((a, b) => b.timeDelta - a.timeDelta).slice(0, 3);
+        const meItem = items.find((x) => x.d.isMe);
+        const ordered = [...ahead, meItem, ...behind].filter(Boolean);
+
+        relativeEl.innerHTML = ordered.map(({ d, timeDelta, tone }) => {
+          const clsColor = CLASSES[d.cls].color;
+          const gapText = d.isMe ? "0.0s" : `${timeDelta >= 0 ? "+" : ""}${timeDelta.toFixed(1)}s`;
+          const licBg = LIC_COLOR[d.lic] || "#64748b";
+          return `<div class="rel-row rel-row--${tone}" style="border-left-color:${clsColor}">
+            <span class="rel-num">#${d.num}</span>
+            ${brandSvg(d.brand, 13)}
+            <span class="rel-name">${d.name}</span>
+            ${d.isPit ? '<span class="rel-pit">PIT</span>' : `<span class="rel-lic" style="background:${licBg}">${d.lic}</span><span class="rel-ir">${d.ir}</span>`}
+            <span class="rel-gap">${gapText}</span>
+          </div>`;
+        }).join("");
+      }
+
+      // Render Track Map Dots
+      function renderTrackMap() {
+        if (!trackDotsEl || !enabledMods.trackmap) return;
+        let svg = "";
+        drivers.forEach((d) => {
+          const [x, y] = pointOnSpline(d.pct);
+          const color = CLASSES[d.cls].color;
+          if (d.isMe) {
+            svg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="10.5" fill="rgba(16,185,129,0.28)" stroke="#10b981" stroke-width="1.6"/>`;
+          }
+          svg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${d.isMe ? 6.5 : 5.2}" fill="${color}" stroke="#090b0f" stroke-width="1.2"/>`;
+          svg += `<text x="${x.toFixed(1)}" y="${(y + 2.4).toFixed(1)}" text-anchor="middle" font-size="6.4" font-family="ui-monospace,monospace" font-weight="800" fill="#090b0f">${d.num}</text>`;
+        });
+        trackDotsEl.innerHTML = svg;
+      }
+
+      // Render Pedal Canvas + Telemetry
+      function renderInputs(tSec) {
+        if (!enabledMods.inputs || isReplay) return;
+        // Realistic Silverstone Maggotts/Becketts/Hangar Straight input curve
+        const phase = (tSec * 0.42) % (Math.PI * 2);
+        const s = Math.sin(phase);
+        const c = Math.cos(phase * 2);
+        let throttle = Math.max(0, Math.min(1, 0.58 + 0.48 * s + 0.14 * c));
+        let brake = s < -0.25 ? Math.min(0.92, (-s - 0.25) * 1.25) : 0;
+        if (brake > 0.08) throttle = Math.min(throttle, 0.06);
+        const clutch = brake > 0.72 ? 0.18 : 0;
+
+        traceT.copyWithin(0, 1); traceT[TRACE_LEN - 1] = throttle;
+        traceB.copyWithin(0, 1); traceB[TRACE_LEN - 1] = brake;
+        traceC.copyWithin(0, 1); traceC[TRACE_LEN - 1] = clutch;
+
+        if (throttleBar) throttleBar.style.height = `${Math.round(throttle * 100)}%`;
+        if (brakeBar) brakeBar.style.height = `${Math.round(brake * 100)}%`;
+        if (clutchBar) clutchBar.style.height = `${Math.round(clutch * 100)}%`;
+
+        const speed = Math.round(138 + throttle * 124 - brake * 68);
+        const gear = speed > 238 ? 6 : speed > 200 ? 5 : speed > 165 ? 4 : speed > 125 ? 3 : 2;
+        if (gearEl) gearEl.textContent = String(gear);
+        if (speedEl) speedEl.textContent = String(speed);
+
+        // Delta bar oscillation (-0.52s to +0.28s)
+        const delta = -0.14 + Math.sin(tSec * 0.35) * 0.34;
+        if (deltaValEl) {
+          deltaValEl.textContent = `${delta >= 0 ? "+" : ""}${delta.toFixed(2)}s`;
+          deltaValEl.style.color = delta <= 0 ? "#34d399" : "#f87171";
+        }
+        if (deltaFillEl) {
+          const pct = Math.min(50, (Math.abs(delta) / 0.8) * 50);
+          deltaFillEl.style.width = `${pct.toFixed(1)}%`;
+          deltaFillEl.style.left = delta <= 0 ? `${(50 - pct).toFixed(1)}%` : "50%";
+          deltaFillEl.style.background = delta <= 0 ? "#10b981" : "#ef4444";
+        }
+
+        if (pedalCtx && pedalCanvas) {
+          const w = pedalCanvas.width;
+          const h = pedalCanvas.height;
+          pedalCtx.clearRect(0, 0, w, h);
+          // Grid lines
+          pedalCtx.strokeStyle = "rgba(255,255,255,0.06)";
+          pedalCtx.lineWidth = 1;
+          [0.25, 0.5, 0.75].forEach((g) => {
+            pedalCtx.beginPath();
+            pedalCtx.moveTo(0, h * g);
+            pedalCtx.lineTo(w, h * g);
+            pedalCtx.stroke();
+          });
+
+          const drawSeries = (arr, color) => {
+            pedalCtx.beginPath();
+            pedalCtx.strokeStyle = color;
+            pedalCtx.lineWidth = 2;
+            for (let i = 0; i < TRACE_LEN; i++) {
+              const x = (i / (TRACE_LEN - 1)) * w;
+              const y = h - 4 - arr[i] * (h - 8);
+              if (i === 0) pedalCtx.moveTo(x, y);
+              else pedalCtx.lineTo(x, y);
+            }
+            pedalCtx.stroke();
+          };
+          drawSeries(traceC, "#38bdf8");
+          drawSeries(traceB, "#ef4444");
+          drawSeries(traceT, "#10b981");
+        }
+      }
+
+      // Render Radar (CarLeftRight)
+      function renderRadar(nowMs) {
+        if (!radarEl || !enabledMods.radar || isReplay) return;
+        const me = drivers.find((d) => d.isMe);
+        let state = 0; // 0 clear, 1 left, 2 right, 3 3-wide
+        if (nowMs < radarOverrideUntil) {
+          state = radarOverrideMode;
+        } else if (me) {
+          // Detect natural proximity with GTP/GT3 cars
+          const close = drivers.filter((d) => !d.isMe && !d.isPit && Math.abs(((d.pct - me.pct + 1.5) % 1) - 0.5) < 0.012);
+          if (close.length >= 2) state = 3;
+          else if (close.length === 1) state = close[0].id % 2 === 0 ? 1 : 2;
+        }
+
+        const active = state > 0;
+        radarEl.setAttribute("data-state", active ? (state === 3 ? "threewide" : "side") : "clear");
+        if (radarHintEl) radarHintEl.style.opacity = active ? "0" : "1";
+
+        const leftOn = state === 1 || state === 3;
+        const rightOn = state === 2 || state === 3;
+        const color = state === 3 ? "#ef4444" : "#f59e0b";
+
+        if (radarArcLeft) radarArcLeft.setAttribute("stroke", leftOn ? color : "transparent");
+        if (radarArcRight) radarArcRight.setAttribute("stroke", rightOn ? color : "transparent");
+        if (radarCarLeft) {
+          radarCarLeft.setAttribute("fill", color);
+          radarCarLeft.setAttribute("stroke", color);
+          radarCarLeft.setAttribute("fill-opacity", leftOn ? "0.35" : "0");
+          radarCarLeft.setAttribute("stroke-opacity", leftOn ? "1" : "0");
+        }
+        if (radarCarRight) {
+          radarCarRight.setAttribute("fill", color);
+          radarCarRight.setAttribute("stroke", color);
+          radarCarRight.setAttribute("fill-opacity", rightOn ? "0.35" : "0");
+          radarCarRight.setAttribute("stroke-opacity", rightOn ? "1" : "0");
+        }
+        if (radarLabelEl) {
+          radarLabelEl.textContent = state === 3 ? "3-WIDE!" : state === 1 ? "CAR LEFT" : state === 2 ? "CAR RIGHT" : "CLEAR";
+          radarLabelEl.style.color = state === 3 ? "#f87171" : active ? "#fbbf24" : "#64748b";
+        }
+      }
+
+      // Main animation loop
+      let lastMs = performance.now();
+      let lastDomMs = 0;
+      let fuelLevel = 34.8;
+      let simTimeSec = 0;
+
+      function tick(nowMs) {
+        const dt = Math.min(0.1, (nowMs - lastMs) / 1000);
+        lastMs = nowMs;
+
+        if (!isPaused) {
+          simTimeSec += dt;
+          drivers.forEach((d) => {
+            const step = (dt / 32) * d.speed;
+            d.pct += step;
+            if (d.pct >= 1) {
+              d.pct -= 1;
+              d.lap += 1;
+            }
+          });
+
+          // Burn fuel realistically
+          fuelLevel -= dt * 0.088;
+          if (fuelLevel < 12) fuelLevel = 38.4;
+
+          renderInputs(simTimeSec);
+          renderTrackMap();
+          renderRadar(nowMs);
+
+          // DOM tables at ~6 Hz for crisp readability without layout thrash
+          if (nowMs - lastDomMs > 160) {
+            lastDomMs = nowMs;
+            renderStandings();
+            renderRelative();
+
+            if (enabledMods.fuel) {
+              const avg = 2.84;
+              const lapsLeft = fuelLevel / avg;
+              const need = Math.max(0, (14 * avg + 1.5) - fuelLevel);
+              if (fuelRemEl) fuelRemEl.textContent = `${fuelLevel.toFixed(1)} L`;
+              if (fuelAvgEl) fuelAvgEl.textContent = `${avg.toFixed(2)} L`;
+              if (fuelLapsEl) fuelLapsEl.textContent = lapsLeft.toFixed(1);
+              if (fuelAddEl) fuelAddEl.textContent = need > 0.1 ? `+${need.toFixed(1)} L` : "OK";
+              if (fuelBarEl) fuelBarEl.style.width = `${Math.min(100, (fuelLevel / 80) * 100).toFixed(0)}%`;
+            }
+
+            const me = drivers.find((d) => d.isMe);
+            if (lapClockEl && me) {
+              const remMin = Math.max(1, 18 - Math.floor(simTimeSec / 60));
+              const remSec = 59 - (Math.floor(simTimeSec) % 60);
+              lapClockEl.textContent = `LAP ${me.lap}/28 · ${String(remMin).padStart(2, "0")}:${String(remSec).padStart(2, "0")} REM`;
+            }
+          }
+        }
+
+        requestAnimationFrame(tick);
+      }
+
+      syncVisibility();
+      renderStandings();
+      renderRelative();
+      renderTrackMap();
+      requestAnimationFrame(tick);
+    })();
+  </script>
+</Layout>
+
+<style>
+  .ov-page {
+    background: #090b0f;
+    color: #e2e8f0;
+    min-height: 100vh;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  .ov-container {
+    max-width: 1220px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* HERO */
+  .ov-hero {
+    padding: 56px 0 44px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    background:
+      radial-gradient(ellipse 70% 50% at 50% 0%, rgba(16, 185, 129, 0.11), transparent 70%),
+      #090b0f;
+  }
+
+  .ov-hero__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .ov-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: #94a3b8;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+  }
+
+  .ov-pill--live {
+    color: #34d399;
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.28);
+  }
+
+  .ov-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.65);
+    animation: ovPulse 2s infinite;
+  }
+
+  @keyframes ovPulse {
+    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.65); }
+    70% { box-shadow: 0 0 0 7px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  }
+
+  .ov-hero__title {
+    font-size: clamp(1.9rem, 3.8vw, 3.1rem);
+    font-weight: 850;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    color: #f8fafc;
+    max-width: 920px;
+    margin: 0 0 18px;
+  }
+
+  .ov-accent {
+    color: #10b981;
+  }
+
+  .ov-hero__lead {
+    font-size: 1.02rem;
+    line-height: 1.65;
+    color: #94a3b8;
+    max-width: 780px;
+    margin: 0 0 28px;
+  }
+
+  .ov-hero__lead code,
+  .ov-section__sub code,
+  .ov-card code,
+  .ov-arch-card code,
+  .ov-step code,
+  .hud-radar__hint code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.88em;
+    color: #34d399;
+    background: rgba(16, 185, 129, 0.09);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  .ov-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 34px;
+  }
+
+  .ov-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+    cursor: pointer;
+  }
+
+  .ov-btn:active {
+    transform: translateY(1px);
+  }
+
+  .ov-btn--primary {
+    background: #10b981;
+    color: #04130d;
+    border: 1px solid #34d399;
+    box-shadow: 0 8px 24px -8px rgba(16, 185, 129, 0.5);
+  }
+
+  .ov-btn--primary:hover {
+    background: #34d399;
+  }
+
+  .ov-btn--secondary {
+    background: #11161f;
+    color: #e2e8f0;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .ov-btn--secondary:hover {
+    background: #171e2a;
+    border-color: rgba(16, 185, 129, 0.4);
+  }
+
+  .ov-btn--ghost {
+    background: transparent;
+    color: #94a3b8;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .ov-btn--ghost:hover {
+    color: #f8fafc;
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .ov-specs {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .ov-spec {
+    background: #0d1117;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .ov-spec__val {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #10b981;
+  }
+
+  .ov-spec__lbl {
+    font-size: 12px;
+    color: #94a3b8;
+  }
+
+  /* SECTIONS */
+  .ov-section {
+    padding: 60px 0;
+  }
+
+  .ov-section--alt {
+    background: #0c0f15;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .ov-section__head {
+    margin-bottom: 26px;
+  }
+
+  .ov-kicker {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #10b981;
+    margin: 0 0 8px;
+  }
+
+  .ov-section__title {
+    font-size: clamp(1.5rem, 2.5vw, 2.1rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #f8fafc;
+    margin: 0 0 10px;
+  }
+
+  .ov-section__sub {
+    color: #94a3b8;
+    font-size: 0.96rem;
+    max-width: 760px;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* SIMULATOR TOOLBAR */
+  .sim-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: #0d1117;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-bottom: none;
+    border-radius: 14px 14px 0 0;
+    padding: 12px 14px;
+  }
+
+  .sim-toolbar__group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .sim-toolbar__label {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #64748b;
+    margin-right: 4px;
+  }
+
+  .sim-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 7px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    background: #090b0f;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .sim-chip__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #334155;
+  }
+
+  .sim-chip.is-on {
+    color: #e2e8f0;
+    border-color: rgba(16, 185, 129, 0.35);
+    background: rgba(16, 185, 129, 0.08);
+  }
+
+  .sim-chip.is-on .sim-chip__dot {
+    background: #10b981;
+  }
+
+  .sim-mode-switch {
+    display: inline-flex;
+    background: #090b0f;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 8px;
+    padding: 2px;
+  }
+
+  .sim-mode-btn {
+    padding: 4px 10px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #94a3b8;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .sim-mode-btn kbd {
+    font-size: 10px;
+    padding: 0 4px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.08);
+    color: inherit;
+  }
+
+  .sim-mode-btn.is-active {
+    background: #10b981;
+    color: #04130d;
+  }
+
+  .sim-mode-btn.is-active kbd {
+    background: rgba(4, 19, 13, 0.22);
+  }
+
+  .sim-action-btn {
+    padding: 6px 11px;
+    border-radius: 7px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: #131923;
+    color: #cbd5e1;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .sim-action-btn:hover {
+    border-color: rgba(16, 185, 129, 0.45);
+    color: #34d399;
+  }
+
+  /* SIMULATOR STAGE */
+  .sim-stage {
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0 0 14px 14px;
+    overflow: hidden;
+    background: #07090d;
+    min-height: 540px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.85);
+  }
+
+  .sim-backdrop {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .sim-statusbar {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 9px 14px;
+    background: rgba(9, 11, 15, 0.78);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 10.5px;
+  }
+
+  .sim-statusbar__left,
+  .sim-statusbar__right {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .sim-status-tag {
+    color: #f8fafc;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+  }
+
+  .sim-status-meta {
+    color: #94a3b8;
+  }
+
+  .sim-fps-badge {
+    color: #34d399;
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.28);
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 700;
+  }
+
+  .sim-replay-badge {
+    color: #fbbf24;
+    background: rgba(245, 158, 11, 0.14);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 700;
+  }
+
+  /* HUD GRID */
+  .sim-hud-grid {
+    position: relative;
+    z-index: 2;
+    flex: 1;
+    display: grid;
+    grid-template-columns: minmax(320px, 1.25fr) minmax(260px, 1fr) minmax(240px, 0.85fr);
+    gap: 14px;
+    padding: 14px;
+    align-items: stretch;
+  }
+
+  .sim-col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .sim-col--center {
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .sim-col--right {
+    justify-content: space-between;
+  }
+
+  .hud-box {
+    background: rgba(9, 11, 15, 0.86);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 8px;
+    overflow: hidden;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  .hud-box.is-hidden,
+  .hud-radar-wrap.is-hidden,
+  .hud-center-bottom.is-hidden {
+    display: none !important;
+  }
+
+  .hud-box__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 9px;
+    background: rgba(255, 255, 255, 0.035);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .hud-box__title {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: #e2e8f0;
+  }
+
+  .hud-box__meta {
+    font-size: 9px;
+    font-weight: 600;
+    color: #64748b;
+    letter-spacing: 0.05em;
+  }
+
+  /* STANDINGS */
+  .hud-standings__body {
+    padding: 4px 0;
+  }
+
+  .sim-stage :global(.st-cls-head) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 3px 8px;
+    margin-top: 3px;
+    border-left: 3px solid #10b981;
+    background: rgba(255, 255, 255, 0.03);
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+  }
+
+  .sim-stage :global(.st-cls-sof) {
+    color: #94a3b8;
+    font-weight: 600;
+  }
+
+  .sim-stage :global(.st-row) {
+    display: grid;
+    grid-template-columns: 16px 16px 28px minmax(72px, 1fr) 42px 30px 28px 34px 40px;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-left: 3px solid transparent;
+    font-size: 10.5px;
+    color: #e2e8f0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.025);
+  }
+
+  .sim-stage :global(.st-row.is-me) {
+    background: rgba(16, 185, 129, 0.14);
+    color: #ffffff;
+    font-weight: 700;
+  }
+
+  .sim-stage :global(.st-row.is-pit) {
+    opacity: 0.48;
+  }
+
+  .sim-stage :global(.st-pos) {
+    color: #94a3b8;
+    text-align: right;
+    font-weight: 700;
+  }
+
+  .sim-stage :global(.hud-brand) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .sim-stage :global(.st-num) {
+    color: #94a3b8;
+    font-size: 9.5px;
+  }
+
+  .sim-stage :global(.st-name) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sim-stage :global(.st-lic) {
+    display: inline-block;
+    text-align: center;
+    padding: 1px 3px;
+    border-radius: 3px;
+    font-size: 9px;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.25;
+  }
+
+  .sim-stage :global(.st-ir) {
+    text-align: right;
+    color: #cbd5e1;
+    font-size: 9.5px;
+  }
+
+  .sim-stage :global(.st-ird) {
+    text-align: right;
+    font-size: 9.5px;
+    font-weight: 800;
+  }
+
+  .sim-stage :global(.ir-pos) { color: #22c55e; }
+  .sim-stage :global(.ir-neg) { color: #f87171; }
+
+  .sim-stage :global(.st-int) {
+    text-align: right;
+    color: #64748b;
+    font-size: 9.5px;
+  }
+
+  .sim-stage :global(.st-gap) {
+    text-align: right;
+    color: #f8fafc;
+    font-weight: 700;
+    font-size: 10px;
+  }
+
+  /* RELATIVE */
+  .hud-relative__body {
+    padding: 3px 0;
+  }
+
+  .sim-stage :global(.rel-row) {
+    display: grid;
+    grid-template-columns: 28px 15px minmax(80px, 1fr) 20px 30px 44px;
+    align-items: center;
+    gap: 5px;
+    padding: 3.5px 8px;
+    border-left: 3px solid transparent;
+    font-size: 10.5px;
+  }
+
+  .sim-stage :global(.rel-row--same) { color: #f1f5f9; }
+  .sim-stage :global(.rel-row--me) { background: rgba(16, 185, 129, 0.16); color: #ffffff; font-weight: 800; }
+  .sim-stage :global(.rel-row--lapping) { color: #fb7185; }
+  .sim-stage :global(.rel-row--lapped) { color: #38bdf8; }
+  .sim-stage :global(.rel-row--pit) { color: #64748b; opacity: 0.65; }
+
+  .sim-stage :global(.rel-num) { font-size: 9.5px; opacity: 0.85; }
+  .sim-stage :global(.rel-name) { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sim-stage :global(.rel-lic) {
+    text-align: center;
+    border-radius: 3px;
+    font-size: 9px;
+    font-weight: 800;
+    color: #ffffff;
+    padding: 1px 0;
+  }
+  .sim-stage :global(.rel-ir) { text-align: right; font-size: 9.5px; opacity: 0.85; }
+  .sim-stage :global(.rel-pit) {
+    grid-column: span 2;
+    text-align: center;
+    font-size: 9px;
+    font-weight: 800;
+    color: #fbbf24;
+    background: rgba(245, 158, 11, 0.14);
+    border-radius: 3px;
+    padding: 1px 4px;
+  }
+  .sim-stage :global(.rel-gap) { text-align: right; font-weight: 700; }
+
+  /* RADAR */
+  .hud-radar-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 24px;
+    min-height: 185px;
+    position: relative;
+  }
+
+  .hud-radar {
+    position: relative;
+    width: 158px;
+    height: 158px;
+    transition: opacity 0.22s ease, transform 0.22s ease;
+  }
+
+  .hud-radar[data-state="clear"] {
+    opacity: 0.14;
+    transform: scale(0.95);
+  }
+
+  .hud-radar[data-state="side"],
+  .hud-radar[data-state="threewide"] {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .hud-radar__svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .hud-radar__label {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+
+  .hud-radar__hint {
+    margin-top: 4px;
+    font-size: 10.5px;
+    color: #64748b;
+    text-align: center;
+    transition: opacity 0.2s ease;
+  }
+
+  /* INPUTS & DELTA */
+  .hud-center-bottom {
+    width: 100%;
+    max-width: 390px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .hud-delta {
+    padding: 7px 10px;
+  }
+
+  .hud-delta__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 5px;
+  }
+
+  .hud-delta__tag {
+    font-size: 9.5px;
+    font-weight: 700;
+    color: #94a3b8;
+    letter-spacing: 0.08em;
+  }
+
+  .hud-delta__val {
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .hud-delta__track {
+    position: relative;
+    height: 7px;
+    background: rgba(255, 255, 255, 0.07);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .hud-delta__center {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: rgba(255, 255, 255, 0.35);
+    z-index: 2;
+  }
+
+  .hud-delta__fill {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-radius: 3px;
+    transition: width 0.08s linear, left 0.08s linear;
+  }
+
+  .hud-inputs {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+  }
+
+  .hud-inputs__trace canvas {
+    width: 100%;
+    height: 62px;
+    display: block;
+    background: rgba(4, 6, 9, 0.65);
+    border-radius: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .hud-inputs__bars {
+    display: flex;
+    gap: 5px;
+    height: 62px;
+  }
+
+  .pedal-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .pedal-bar {
+    width: 10px;
+    flex: 1;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 3px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pedal-fill {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 2px;
+  }
+
+  .pedal-fill--clutch { background: #38bdf8; }
+  .pedal-fill--brake { background: #ef4444; }
+  .pedal-fill--throttle { background: #10b981; }
+
+  .pedal-lbl {
+    font-size: 9px;
+    font-weight: 800;
+    color: #94a3b8;
+  }
+
+  .hud-inputs__gear {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 54px;
+    padding-left: 6px;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .gear-val {
+    font-size: 26px;
+    font-weight: 900;
+    line-height: 1;
+    color: #10b981;
+  }
+
+  .speed-val {
+    font-size: 13px;
+    font-weight: 800;
+    color: #f8fafc;
+    margin-top: 2px;
+  }
+
+  .speed-unit {
+    font-size: 8.5px;
+    color: #64748b;
+    letter-spacing: 0.06em;
+  }
+
+  /* TRACK MAP */
+  .hud-trackmap__canvas {
+    padding: 8px;
+  }
+
+  .hud-trackmap__svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* FUEL */
+  .hud-fuel__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .fuel-cell {
+    background: rgba(9, 11, 15, 0.92);
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .fuel-cell--highlight {
+    background: rgba(245, 158, 11, 0.06);
+  }
+
+  .fuel-lbl {
+    font-size: 9px;
+    font-weight: 700;
+    color: #64748b;
+    letter-spacing: 0.07em;
+  }
+
+  .fuel-val {
+    font-size: 14px;
+    font-weight: 800;
+    color: #f8fafc;
+  }
+
+  .fuel-val--emerald { color: #34d399; }
+  .fuel-val--amber { color: #fbbf24; }
+
+  .hud-fuel__bar-wrap {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.07);
+  }
+
+  .hud-fuel__bar {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #34d399);
+    transition: width 0.25s ease;
+  }
+
+  /* MODULE SUMMARY CARDS */
+  .ov-mod-grid {
+    margin-top: 28px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .ov-card {
+    background: #0d1117;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 18px 20px;
+  }
+
+  .ov-card__num {
+    display: inline-block;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 11px;
+    font-weight: 800;
+    color: #10b981;
+    margin-bottom: 8px;
+  }
+
+  .ov-card h3 {
+    font-size: 15px;
+    font-weight: 750;
+    color: #f8fafc;
+    margin: 0 0 8px;
+  }
+
+  .ov-card p {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #94a3b8;
+    margin: 0;
+  }
+
+  /* ARCHITECTURE */
+  .ov-arch-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .ov-arch-card {
+    background: #090b0f;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 22px 24px;
+  }
+
+  .ov-arch-card__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 10.5px;
+  }
+
+  .ov-arch-tag {
+    color: #34d399;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+  }
+
+  .ov-arch-metric {
+    color: #94a3b8;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+
+  .ov-arch-card h3 {
+    font-size: 17px;
+    font-weight: 750;
+    color: #f8fafc;
+    margin: 0 0 10px;
+  }
+
+  .ov-arch-card p {
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: #94a3b8;
+    margin: 0;
+  }
+
+  /* 3-STEP GUIDE */
+  .ov-steps {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 36px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .ov-step {
+    background: #0d1117;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .ov-step__num {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #34d399;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 13px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ov-step__body h3 {
+    font-size: 16px;
+    font-weight: 750;
+    color: #f8fafc;
+    margin: 0 0 8px;
+  }
+
+  .ov-step__body p {
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: #94a3b8;
+    margin: 0;
+  }
+
+  /* CTA BAND */
+  .ov-cta-band {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(13, 17, 23, 0.96) 55%);
+    border: 1px solid rgba(16, 185, 129, 0.26);
+    border-radius: 14px;
+    padding: 28px 30px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .ov-cta-band h3 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #f8fafc;
+    margin: 0 0 6px;
+  }
+
+  .ov-cta-band p {
+    font-size: 13.5px;
+    color: #94a3b8;
+    margin: 0;
+  }
+
+  .ov-cta-band__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 1040px) {
+    .sim-hud-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .sim-col--center {
+      grid-column: 1 / -1;
+      order: 3;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+    }
+    .hud-radar-wrap {
+      margin-top: 0;
+      min-height: auto;
+    }
+    .ov-mod-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 768px) {
+    .ov-specs {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .sim-hud-grid {
+      grid-template-columns: 1fr;
+    }
+    .ov-mod-grid,
+    .ov-arch-grid,
+    .ov-steps {
+      grid-template-columns: 1fr;
+    }
+    .ov-cta-band {
+      padding: 22px;
+    }
+  }
+</style>

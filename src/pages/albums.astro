@@ -98,12 +98,15 @@ const pageDescription =
         grid.innerHTML = filtered.map((album) => {
           const useCrop = Boolean(album.hasLegacyWatermark && album.cleanCrop && !album.aiEnhanced);
           const cropStyle = useCrop ? "transform:scale(1.13);transform-origin:center;" : "";
+          const altsParam = album.altSlugs && album.altSlugs.length ? `&alts=${encodeURIComponent(album.altSlugs.join(","))}` : "";
+          const photoLabel = album.count === 1 ? "foto" : "fotos";
+          const viewLabel = album.views === 1 ? "vista" : "vistas";
           return `
-            <a href="/gallery/?car=${encodeURIComponent(album.slug)}" data-brand="${album.car}" data-class="${album.category}" class="album-card group rounded-2xl overflow-hidden bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-300 flex flex-col justify-between">
+            <a href="/gallery/?car=${encodeURIComponent(album.slug)}${altsParam}" data-brand="${album.car}" data-class="${album.category}" class="album-card group rounded-2xl overflow-hidden bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-300 flex flex-col justify-between">
               <div class="relative w-full aspect-video overflow-hidden bg-[#090d12]">
                 <img src="${album.cover}" alt="${album.car}" width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://muntrume.atrumin16.workers.dev/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" style="${cropStyle}" />
                 <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">${LABELS[album.category] || album.category}</span>
-                <span class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded bg-black/75 border border-white/15 text-white text-[10px] font-mono font-bold">${album.count} fotos · ${album.views} vistas</span>
+                <span class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded bg-black/75 border border-white/15 text-white text-[10px] font-mono font-bold">${album.count} ${photoLabel} · ${album.views} ${viewLabel}</span>
               </div>
               <div class="p-4 flex items-center justify-between text-xs font-mono">
                 <h2 class="text-base font-bold text-[var(--r-text)] group-hover:text-[var(--r-accent)] truncate">${album.car}</h2>
@@ -163,7 +166,28 @@ const pageDescription =
         .then((r) => (r.ok ? r.json() : null))
         .then((data) => {
           if (!data || !Array.isArray(data.albums)) return;
-          allAlbums = data.albums;
+          // Merge split/duplicate slugs for the same car (e.g. chevrolet-corvette-z06-gt3r + chevrolet-corvette-z06-gt3-r)
+          const merged = new Map();
+          for (const raw of data.albums) {
+            const key = String(raw.car || raw.slug || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+            if (!merged.has(key)) {
+              merged.set(key, { ...raw, altSlugs: [] });
+            } else {
+              const cur = merged.get(key);
+              const rawCount = Number(raw.count || 0);
+              const curCount = Number(cur.count || 0);
+              if (rawCount > curCount) {
+                cur.altSlugs.push(cur.slug);
+                cur.slug = raw.slug;
+                cur.cover = raw.cover || cur.cover;
+              } else if (raw.slug && raw.slug !== cur.slug) {
+                cur.altSlugs.push(raw.slug);
+              }
+              cur.count = curCount + rawCount;
+              cur.views = Number(cur.views || 0) + Number(raw.views || 0);
+            }
+          }
+          allAlbums = Array.from(merged.values());
           renderPills();
           render();
         })

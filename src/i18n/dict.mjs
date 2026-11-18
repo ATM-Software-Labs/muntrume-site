@@ -3,6 +3,7 @@ export const dict = {
   "nav.home": { en: "Home", ca: "Inici", fr: "Accueil" },
   "nav.drivers": { en: "Drivers", ca: "Pilots", fr: "Pilotes" },
   "nav.garage": { en: "Garage", ca: "Garage", fr: "Garage" },
+  "nav.overlay": { en: "Overlay", ca: "Overlay", fr: "Overlay" },
   "nav.paddock": { en: "Paddock", ca: "Paddock", fr: "Paddock" },
   "nav.news": { en: "News", ca: "Notícies", fr: "Actualités" },
   "nav.account": { en: "Account", ca: "Compte", fr: "Compte" },

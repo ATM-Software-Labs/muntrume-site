@@ -430,10 +430,36 @@ const gallerySchema = {
     await fetch(`https://muntrume.atrumin16.workers.dev/api/gallery/${encodeURIComponent(id)}/like`, { method: 'POST' }).catch(() => {});
   });
 
-  const fetchGalleryPage = (sort = 'popular') => {
+  const fetchGalleryPage = async (sort = 'popular') => {
+    const altsRaw = new URLSearchParams(window.location.search).get('alts') || '';
+    const extraSlugs = altsRaw.split(',').map((s) => s.trim()).filter(Boolean);
+    if (initCar && (initCar === 'chevrolet-corvette-z06-gt3r' || initCar === 'chevrolet-corvette-z06-gt3-r')) {
+      const twin = initCar === 'chevrolet-corvette-z06-gt3r' ? 'chevrolet-corvette-z06-gt3-r' : 'chevrolet-corvette-z06-gt3r';
+      if (!extraSlugs.includes(twin)) extraSlugs.push(twin);
+    }
     const carParam = initCar ? `&car=${encodeURIComponent(initCar)}` : '';
-    return fetch(`https://muntrume.atrumin16.workers.dev/api/gallery?status=published&sort=${encodeURIComponent(sort)}&limit=200&offset=0${carParam}`)
+    const primary = await fetch(`https://muntrume.atrumin16.workers.dev/api/gallery?status=published&sort=${encodeURIComponent(sort)}&limit=200&offset=0${carParam}`)
       .then((r) => (r.ok ? r.json() : null));
+    if (!primary || !Array.isArray(primary.photos) || extraSlugs.length === 0) return primary;
+    const seen = new Set(primary.photos.map((p: any) => p.id || p.imageUrl));
+    const extras = await Promise.all(
+      extraSlugs.map((slug) =>
+        fetch(`https://muntrume.atrumin16.workers.dev/api/gallery?status=published&sort=${encodeURIComponent(sort)}&limit=200&offset=0&car=${encodeURIComponent(slug)}`)
+          .then((r) => (r.ok ? r.json() : null))
+          .catch(() => null)
+      )
+    );
+    for (const ex of extras) {
+      if (!ex || !Array.isArray(ex.photos)) continue;
+      for (const p of ex.photos) {
+        const k = p.id || p.imageUrl;
+        if (!seen.has(k)) {
+          seen.add(k);
+          primary.photos.push(p);
+        }
+      }
+    }
+    return primary;
   };
 
   sortSelect?.addEventListener('change', () => {
