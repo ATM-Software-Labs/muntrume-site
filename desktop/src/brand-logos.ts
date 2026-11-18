@@ -19,7 +19,7 @@ const CATALOG_BRAND_BY_KEY = new Map(
 );
 
 const BRAND_ACCENT_OVERRIDE: Record<string, string> = {
-  "logo-lambo": "#EAB308",
+  "logo-lambo": "#22C55E",
   "logo-ferrari": "#DC0000",
   "logo-porsche": "#E2E8F0",
   "logo-bmw": "#38BDF8",
@@ -27,7 +27,7 @@ const BRAND_ACCENT_OVERRIDE: Record<string, string> = {
   "logo-mclaren": "#FF8000",
   "logo-aston": "#10B981",
   "logo-audi": "#F8FAFC",
-  "logo-cadillac": "#E2E8F0",
+  "logo-cadillac": "#FACC15",
   "logo-acura": "#F8FAFC",
   "logo-chevy": "#FACC15",
   "logo-ford": "#3B82F6",
@@ -43,10 +43,10 @@ const FALLBACK_BRAND_RULES: Array<[RegExp, { logo: string; name: string; color: 
   [/ferrari|296|488|499p/i, { logo: "logo-ferrari", name: "Ferrari", color: "#DC0000" }],
   [/bmw|m4|m8|m2|hybridv8|lmdh/i, { logo: "logo-bmw", name: "BMW", color: "#38BDF8" }],
   [/audi|r8|rs3/i, { logo: "logo-audi", name: "Audi", color: "#F8FAFC" }],
-  [/lamborghini|lambo|huracan|sc63/i, { logo: "logo-lambo", name: "Lamborghini", color: "#EAB308" }],
+  [/lamborghini|lambo|huracan|sc63/i, { logo: "logo-lambo", name: "Lamborghini", color: "#22C55E" }],
   [/mclaren|720s|570s/i, { logo: "logo-mclaren", name: "McLaren", color: "#FF8000" }],
   [/aston|amvantage|amvalkyrie|dbr9/i, { logo: "logo-aston", name: "Aston Martin", color: "#10B981" }],
-  [/cadillac|vseries/i, { logo: "logo-cadillac", name: "Cadillac", color: "#E2E8F0" }],
+  [/cadillac|vseries/i, { logo: "logo-cadillac", name: "Cadillac", color: "#FACC15" }],
   [/acura|arx06|nsx/i, { logo: "logo-acura", name: "Acura", color: "#F8FAFC" }],
   [/corvette|chevy|chevrolet|camaro|silverado|impala|montecarlo|vette|c8r|c6r|z06/i, { logo: "logo-chevy", name: "Chevrolet", color: "#FACC15" }],
   [/ford|mustang|specracer|fiesta/i, { logo: "logo-ford", name: "Ford", color: "#3B82F6" }],
@@ -54,7 +54,7 @@ const FALLBACK_BRAND_RULES: Array<[RegExp, { logo: string; name: string; color: 
   [/mazda|mx5/i, { logo: "logo-mazda", name: "Mazda", color: "#F43F5E" }],
   [/honda|civic|hpd/i, { logo: "logo-honda", name: "Honda", color: "#EF4444" }],
   [/hyundai|elantra|veloster/i, { logo: "logo-hyundai", name: "Hyundai", color: "#38BDF8" }],
-  [/renault|clio/i, { logo: "logo-renault", name: "Renault", color: "#FACC15" }],
+  [/renault|clio/i, { logo: "logo-renault", name: "Renault", color: "#CBD5E1" }],
   [/dallara|superformula|sfl|324|sf23|p217|f3|ir04|ir18|ir01|dw12/i, { logo: "logo-dallara", name: "Dallara", color: "#00E699" }],
   [/ruf|rt12/i, { logo: "logo-ruf", name: "RUF", color: "#22C55E" }],
   [/kia|optima/i, { logo: "logo-kia", name: "Kia", color: "#EF4444" }],
@@ -150,4 +150,46 @@ export function createBrandLogoBadge(carNameOrFolder: string, size: "sm" | "md" 
   el.title = brand.name;
   el.innerHTML = brand.svg;
   return el;
+}
+
+export interface SupportedBrandEntry {
+  id: string;
+  logoId: string;
+  name: string;
+  color: string;
+  path: string;
+  carPath: string;
+  sampleModel: string;
+  svg: string;
+}
+
+export function getSupportedBrandsCatalog(): SupportedBrandEntry[] {
+  const seen = new Set<string>();
+  const out: SupportedBrandEntry[] = [];
+
+  for (const [regex, meta] of FALLBACK_BRAND_RULES) {
+    if (seen.has(meta.logo)) continue;
+    const d = OFFICIAL_BRAND_PATHS[meta.logo];
+    if (!d) continue;
+    const finalColor = BRAND_ACCENT_OVERRIDE[meta.logo] || meta.color;
+    const svg = buildOfficialSvg(meta.logo, finalColor);
+    if (!svg) continue;
+
+    const sample = CAR_CATALOG_LIST.find(
+      (c) => c.svgLogoId === meta.logo || regex.test(c.carFolder)
+    );
+    seen.add(meta.logo);
+    out.push({
+      id: meta.logo.replace(/^logo-/, ""),
+      logoId: meta.logo,
+      name: meta.name,
+      color: finalColor,
+      path: d,
+      carPath: sample ? sample.carFolder : meta.logo.replace(/^logo-/, ""),
+      sampleModel: sample ? `${sample.brand} ${sample.model}` : meta.name,
+      svg,
+    });
+  }
+
+  return out;
 }

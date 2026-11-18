@@ -2,6 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import desktopPkg from "../../desktop/package.json";
 import { OFFICIAL_BRAND_PATHS } from "../../desktop/src/cars/brand-icons";
+import { getCarBrandInfo, getSupportedBrandsCatalog } from "../../desktop/src/brand-logos";
 
 const appVersion = desktopPkg.version;
 const releaseUrl = "https://github.com/ATM-Software-Labs/muntrume-site/releases/latest";
@@ -12,18 +13,33 @@ const pageDescription = `MMT Sync Overlays v${appVersion}: telemetría HUD nativ
 const pageUrl = "https://muntru.me/overlay/";
 const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
 
-// Extract only the manufacturer SVG paths needed for the interactive HUD simulator
-const SIM_BRAND_PATHS: Record<string, { path: string; color: string; name: string }> = {
-  ford: { path: OFFICIAL_BRAND_PATHS["logo-ford"] || "", color: "#3B82F6", name: "Ford" },
-  porsche: { path: OFFICIAL_BRAND_PATHS["logo-porsche"] || "", color: "#E2E8F0", name: "Porsche" },
-  mclaren: { path: OFFICIAL_BRAND_PATHS["logo-mclaren"] || "", color: "#FF8000", name: "McLaren" },
-  ferrari: { path: OFFICIAL_BRAND_PATHS["logo-ferrari"] || "", color: "#DC0000", name: "Ferrari" },
-  cadillac: { path: OFFICIAL_BRAND_PATHS["logo-cadillac"] || "", color: "#E2E8F0", name: "Cadillac" },
-  bmw: { path: OFFICIAL_BRAND_PATHS["logo-bmw"] || "", color: "#38BDF8", name: "BMW" },
-  dallara: { path: OFFICIAL_BRAND_PATHS["logo-dallara"] || "", color: "#00E699", name: "Dallara" },
-  mercedes: { path: OFFICIAL_BRAND_PATHS["logo-mercedes"] || "", color: "#00D2BE", name: "Mercedes-AMG" },
-  aston: { path: OFFICIAL_BRAND_PATHS["logo-aston"] || "", color: "#10B981", name: "Aston Martin" },
+const supportedBrands = getSupportedBrandsCatalog();
+
+// Extract only the manufacturer SVG paths & colors from desktop/src/brand-logos.ts (single source of truth)
+const simBrandSamples: Record<string, string> = {
+  ford: "fordmustanggt3",
+  porsche: "porsche992rgt3",
+  mclaren: "mclaren720sgt3",
+  ferrari: "ferrari296gt3",
+  cadillac: "cadillacvseriesrgtp",
+  bmw: "bmwm4gt3",
+  dallara: "dallarap217",
+  mercedes: "mercedesamgevogt3",
+  aston: "amvantageevogt3",
 };
+const SIM_BRAND_PATHS: Record<string, { path: string; color: string; name: string }> = Object.fromEntries(
+  Object.entries(simBrandSamples).map(([key, sampleCar]) => {
+    const info = getCarBrandInfo(sampleCar);
+    return [
+      key,
+      {
+        path: OFFICIAL_BRAND_PATHS[`logo-${info.id}`] || OFFICIAL_BRAND_PATHS[`logo-${key}`] || "",
+        color: info.color,
+        name: info.name,
+      },
+    ];
+  })
+);
 
 const overlaySchema = {
   "@context": "https://schema.org",
@@ -446,6 +462,52 @@ const overlaySchema = {
               Compilación automatizada en GitHub Actions con manifiestos de integridad SHA-256, actualizaciones modulares y persistencia local independiente de posiciones, escalas y perfiles de usuario.
             </p>
           </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- 3B. MATRIZ OFICIAL DE FABRICANTES & COLORES HUD                       -->
+    <!-- ===================================================================== -->
+    <section id="fabricantes" class="ov-section ov-section--alt">
+      <div class="ov-container">
+        <div class="ov-section__head flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <p class="ov-kicker">Fuente única de verdad · desktop/src/brand-logos.ts</p>
+            <h2 class="ov-section__title">Catálogo de Fabricantes iRacing SDK</h2>
+            <p class="ov-section__sub">
+              Matriz oficial de marcas, SVGs vectoriales y códigos de color aplicados en Standings, Relative y Web.
+            </p>
+          </div>
+          <a
+            href="/overlay/brands/"
+            class="inline-flex items-center gap-2 px-3.5 py-2 rounded border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-mono text-xs font-bold tracking-wide transition shrink-0"
+          >
+            Ver todos los logos y colores (/overlay/brands) →
+          </a>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2.5">
+          {supportedBrands.map((b) => (
+            <div class="rounded border border-white/10 bg-[#090b0f] p-3 flex flex-col gap-2 font-mono tabular-nums">
+              <div class="flex items-center justify-between gap-2">
+                <span class="w-6 h-6 flex items-center justify-center shrink-0" style={`color:${b.color}`}>
+                  <svg viewBox="0 0 24 24" width="24" height="24" fill={b.color} fill-rule="evenodd" clip-rule="evenodd" aria-hidden="true">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d={b.path} />
+                  </svg>
+                </span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded border border-white/10 bg-white/[0.03] font-bold" style={`color:${b.color}`}>
+                  {b.color.toUpperCase()}
+                </span>
+              </div>
+              <div>
+                <div class="text-xs font-bold text-slate-100 truncate">{b.name}</div>
+                <div class="text-[10px] text-slate-400 truncate" title={`CarPath: ${b.carPath}`}>
+                  {b.carPath}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
