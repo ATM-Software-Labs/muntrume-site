@@ -9,6 +9,19 @@
     <link rel="alternate icon" href="./icon.png" />
     <script src="./theme-init.js"></script>
     <link rel="stylesheet" href="./src/styles.css" />
+  
+  <style id="mmt-minimal-hud-v2">
+    .mmt-float-widget {
+      background: rgba(8, 10, 14, 0.82) !important;
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.06) !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45) !important;
+    }
+    /* Ocultar el volante blanco grueso heredado del cluster antiguo */
+    [data-widget="cluster"] svg, #ovClusterFloat svg {
+      display: none !important;
+    }
+  </style>
   </head>
   <body class="min-h-screen bg-r-bg text-r-text antialiased">
     <div id="mainAppWrapper" class="w-full min-h-screen flex flex-col">
@@ -1019,6 +1032,7 @@
                 <button type="button" data-widget-toggle="waveform" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Traza</button>
                 <button type="button" data-widget-toggle="cluster" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Marcha/Vel</button>
                 <button type="button" data-widget-toggle="lights" class="h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition">Shift Lights</button>
+                <button type="button" id="btnDisableAllWidgets" onclick="document.querySelectorAll('[data-widget-toggle]').forEach(b=>{if(b.classList.contains('bg-r-accent/15')||b.getAttribute('aria-pressed')==='true')b.click()})" class="h-7 px-2.5 rounded-lg border border-rose-500/40 bg-rose-500/10 text-rose-300 font-semibold hover:bg-rose-500/20 transition">Apagar Todos</button>
                 <button type="button" id="btnToggleLayersPanel" class="ml-auto h-7 px-3 rounded-lg border border-sky-400/50 bg-sky-400/10 text-sky-300 font-semibold transition">Control Panel HUD</button>
               </div>
 
