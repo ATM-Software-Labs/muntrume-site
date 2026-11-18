@@ -14,13 +14,14 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
 
 // Extract only the manufacturer SVG paths needed for the interactive HUD simulator
 const SIM_BRAND_PATHS: Record<string, { path: string; color: string; name: string }> = {
-  porsche: { path: OFFICIAL_BRAND_PATHS["logo-porsche"] || "", color: "#EF4444", name: "Porsche" },
+  ford: { path: OFFICIAL_BRAND_PATHS["logo-ford"] || "", color: "#3B82F6", name: "Ford" },
+  porsche: { path: OFFICIAL_BRAND_PATHS["logo-porsche"] || "", color: "#E2E8F0", name: "Porsche" },
+  mclaren: { path: OFFICIAL_BRAND_PATHS["logo-mclaren"] || "", color: "#FF8000", name: "McLaren" },
   ferrari: { path: OFFICIAL_BRAND_PATHS["logo-ferrari"] || "", color: "#FACC15", name: "Ferrari" },
   cadillac: { path: OFFICIAL_BRAND_PATHS["logo-cadillac"] || "", color: "#D4AF37", name: "Cadillac" },
   bmw: { path: OFFICIAL_BRAND_PATHS["logo-bmw"] || "", color: "#3B82F6", name: "BMW" },
   dallara: { path: OFFICIAL_BRAND_PATHS["logo-dallara"] || "", color: "#00E699", name: "Dallara" },
   mercedes: { path: OFFICIAL_BRAND_PATHS["logo-mercedes"] || "", color: "#00D2BE", name: "Mercedes-AMG" },
-  mclaren: { path: OFFICIAL_BRAND_PATHS["logo-mclaren"] || "", color: "#FF8000", name: "McLaren" },
   aston: { path: OFFICIAL_BRAND_PATHS["logo-aston"] || "", color: "#10B981", name: "Aston Martin" },
 };
 
@@ -202,6 +203,9 @@ const overlaySchema = {
                 Replay <kbd>R</kbd>
               </button>
             </div>
+            <button type="button" id="simNextCircuitBtn" class="sim-action-btn" title="Rotar circuito (Silverstone / Spa / Daytona / Interlagos)">
+              Cambiar Circuito
+            </button>
             <button type="button" id="simTriggerRadar" class="sim-action-btn" title="Simular coche en paralelo (1-wide / 3-wide)">
               Simular 3-Wide
             </button>
@@ -211,45 +215,14 @@ const overlaySchema = {
           </div>
         </div>
 
-        <!-- Lienzo de Cabina Simulada (Silverstone GP) -->
+        <!-- Lienzo de Cabina Simulada 16:9 (60 FPS Canvas + Posición Real iRacing) -->
         <div class="sim-stage" id="simStage">
-          <!-- Fondo de pista estilizado (Silverstone GP · cockpit perspective SVG) -->
-          <svg class="sim-backdrop" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-            <defs>
-              <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#070a10"/>
-                <stop offset="55%" stop-color="#0d131d"/>
-                <stop offset="100%" stop-color="#090b0f"/>
-              </linearGradient>
-              <linearGradient id="asphaltGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#131822"/>
-                <stop offset="100%" stop-color="#0a0d12"/>
-              </linearGradient>
-              <radialGradient id="horizonGlow" cx="50%" cy="42%" r="48%">
-                <stop offset="0%" stop-color="rgba(16,185,129,0.12)"/>
-                <stop offset="100%" stop-color="rgba(9,11,15,0)"/>
-              </radialGradient>
-            </defs>
-            <rect width="1280" height="720" fill="url(#skyGrad)"/>
-            <rect width="1280" height="720" fill="url(#horizonGlow)"/>
-            <!-- Horizonte y silueta de gradas Silverstone -->
-            <line x1="0" y1="300" x2="1280" y2="300" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
-            <path d="M0 300 L180 284 L380 292 L580 280 L820 288 L1080 278 L1280 294 L1280 300 Z" fill="#0c1118"/>
-            <!-- Asfalto en perspectiva hacia curva Maggotts / Becketts -->
-            <path d="M560 300 L720 300 L1220 720 L60 720 Z" fill="url(#asphaltGrad)"/>
-            <!-- Pianos (kerbs) rojo/blanco sutiles -->
-            <path d="M560 300 L548 300 L28 720 L60 720 Z" fill="rgba(239,68,68,0.16)"/>
-            <path d="M720 300 L732 300 L1252 720 L1220 720 Z" fill="rgba(255,255,255,0.08)"/>
-            <!-- Línea de trazada / referencia central -->
-            <line x1="640" y1="300" x2="640" y2="720" stroke="rgba(255,255,255,0.04)" stroke-width="2" stroke-dasharray="18 22"/>
-            <!-- Halo sutil de parabrisas / cockpit -->
-            <path d="M0 0 L1280 0 L1280 48 Q640 16 0 48 Z" fill="rgba(4,6,9,0.75)"/>
-          </svg>
+          <canvas id="simTrackBackdropCanvas" class="sim-backdrop" aria-hidden="true"></canvas>
 
           <!-- Barra superior de estado del simulador -->
           <div class="sim-statusbar">
             <div class="sim-statusbar__left">
-              <span class="sim-status-tag">SILVERSTONE GP · IMSA MULTICLASS</span>
+              <span class="sim-status-tag" id="simCircuitBanner">SILVERSTONE GP · IMSA MULTICLASS</span>
               <span class="sim-status-meta" id="simLapClock">LAP 14/28 · 18:42 REM</span>
             </div>
             <div class="sim-statusbar__right">
@@ -258,143 +231,126 @@ const overlaySchema = {
             </div>
           </div>
 
-          <!-- Grid HUD Responsive -->
-          <div class="sim-hud-grid">
-            <!-- COLUMNA IZQUIERDA: Standings + Relative -->
-            <div class="sim-col sim-col--left">
-              <!-- MÓDULO 1: STANDINGS MULTICLASE -->
-              <div class="hud-box hud-standings" data-hud-mod="standings">
-                <div class="hud-box__head">
-                  <span class="hud-box__title">STANDINGS · IMSA</span>
-                  <span class="hud-box__meta">TICK GAP/INT · iR Δ</span>
-                </div>
-                <div class="hud-standings__body" id="simStandingsBody"></div>
+          <!-- Visor Ergonomía Real iRacing (16:9 Cockpit Layout) -->
+          <div class="sim-cockpit-layer">
+            <!-- ARRIBA IZQUIERDA (top: 12px; left: 12px): STANDINGS MULTICLASE (w-[340px]) -->
+            <div class="hud-box hud-standings hud-pos-standings" data-hud-mod="standings">
+              <div class="hud-box__head">
+                <span class="hud-box__title">STANDINGS · IMSA</span>
+                <span class="hud-box__meta">TICK GAP/INT · iR Δ</span>
               </div>
+              <div class="hud-standings__body" id="simStandingsBody"></div>
+            </div>
 
-              <!-- MÓDULO 2: RELATIVE COMPACTO -->
-              <div class="hud-box hud-relative" data-hud-mod="relative">
-                <div class="hud-box__head">
-                  <span class="hud-box__title">RELATIVE</span>
-                  <span class="hud-box__meta">±3 COCHES · COLOR VUELTA</span>
-                </div>
-                <div class="hud-relative__body" id="simRelativeBody"></div>
+            <!-- CENTRO SUPERIOR (top: 14px; left: 50%): DELTA BAR (Retrovisor) -->
+            <div class="hud-box hud-delta hud-pos-delta" data-hud-mod="inputs" data-driving-only="true">
+              <div class="hud-delta__row">
+                <span class="hud-delta__tag">SESSION BEST Δ</span>
+                <span class="hud-delta__val" id="simDeltaVal">-0.28s</span>
+              </div>
+              <div class="hud-delta__track">
+                <div class="hud-delta__center"></div>
+                <div class="hud-delta__fill" id="simDeltaFill"></div>
               </div>
             </div>
 
-            <!-- COLUMNA CENTRAL: Radar Proximidad + Inputs & Delta Bar -->
-            <div class="sim-col sim-col--center">
-              <!-- MÓDULO 6: RADAR DE PROXIMIDAD LATERAL (Helicorsa) -->
-              <div class="hud-radar-wrap" data-hud-mod="radar" data-driving-only="true">
-                <div class="hud-radar" id="simRadar" data-state="clear" aria-live="polite">
-                  <svg viewBox="0 0 180 180" class="hud-radar__svg" aria-label="Radar de proximidad lateral">
-                    <circle cx="90" cy="90" r="78" fill="rgba(9,11,15,0.72)" stroke="rgba(255,255,255,0.10)" stroke-width="1"/>
-                    <circle cx="90" cy="90" r="46" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1" stroke-dasharray="4 4"/>
-                    <!-- Arco Izquierdo -->
-                    <path id="radarArcLeft" d="M 38 38 A 74 74 0 0 0 38 142" fill="none" stroke="transparent" stroke-width="8" stroke-linecap="round"/>
-                    <!-- Arco Derecho -->
-                    <path id="radarArcRight" d="M 142 38 A 74 74 0 0 1 142 142" fill="none" stroke="transparent" stroke-width="8" stroke-linecap="round"/>
-                    <!-- Coche propio centrado -->
-                    <rect x="78" y="64" width="24" height="52" rx="6" fill="#10b981" fill-opacity="0.22" stroke="#10b981" stroke-width="1.6"/>
-                    <line x1="90" y1="68" x2="90" y2="78" stroke="#34d399" stroke-width="2" stroke-linecap="round"/>
-                    <!-- Coche rival izquierdo -->
-                    <rect id="radarCarLeft" x="34" y="70" width="20" height="44" rx="5" fill="#f59e0b" fill-opacity="0" stroke="#f59e0b" stroke-opacity="0" stroke-width="1.5"/>
-                    <!-- Coche rival derecho -->
-                    <rect id="radarCarRight" x="126" y="74" width="20" height="44" rx="5" fill="#ef4444" fill-opacity="0" stroke="#ef4444" stroke-opacity="0" stroke-width="1.5"/>
-                  </svg>
-                  <div class="hud-radar__label" id="simRadarLabel">CLEAR</div>
-                </div>
-                <div class="hud-radar__hint" id="simRadarHint">
-                  Radar <code>CarLeftRight</code> en espera (invisible en pista libre)
-                </div>
+            <!-- ARRIBA DERECHA (top: 12px; right: 12px): RELATIVE COMPACTO (w-[320px]) -->
+            <div class="hud-box hud-relative hud-pos-relative" data-hud-mod="relative">
+              <div class="hud-box__head">
+                <span class="hud-box__title">RELATIVE</span>
+                <span class="hud-box__meta">±3 COCHES · COLOR VUELTA</span>
               </div>
+              <div class="hud-relative__body" id="simRelativeBody"></div>
+            </div>
 
-              <!-- MÓDULO 5: INPUT TELEMETRY & DELTA BAR -->
-              <div class="hud-center-bottom" data-hud-mod="inputs" data-driving-only="true">
-                <!-- Delta Bar bidireccional -->
-                <div class="hud-box hud-delta">
-                  <div class="hud-delta__row">
-                    <span class="hud-delta__tag">SESSION BEST Δ</span>
-                    <span class="hud-delta__val" id="simDeltaVal">-0.28s</span>
-                  </div>
-                  <div class="hud-delta__track">
-                    <div class="hud-delta__center"></div>
-                    <div class="hud-delta__fill" id="simDeltaFill"></div>
-                  </div>
-                </div>
-
-                <!-- Input Telemetry (Trace + Pedals + Gear/Speed) -->
-                <div class="hud-box hud-inputs">
-                  <div class="hud-inputs__trace">
-                    <canvas id="simPedalCanvas" width="260" height="68" aria-label="Gráfica de pedales en vivo"></canvas>
-                  </div>
-                  <div class="hud-inputs__bars">
-                    <div class="pedal-col">
-                      <div class="pedal-bar"><div class="pedal-fill pedal-fill--clutch" id="simClutchBar" style="height:0%"></div></div>
-                      <span class="pedal-lbl">C</span>
-                    </div>
-                    <div class="pedal-col">
-                      <div class="pedal-bar"><div class="pedal-fill pedal-fill--brake" id="simBrakeBar" style="height:0%"></div></div>
-                      <span class="pedal-lbl">B</span>
-                    </div>
-                    <div class="pedal-col">
-                      <div class="pedal-bar"><div class="pedal-fill pedal-fill--throttle" id="simThrottleBar" style="height:82%"></div></div>
-                      <span class="pedal-lbl">T</span>
-                    </div>
-                  </div>
-                  <div class="hud-inputs__gear">
-                    <span class="gear-val" id="simGear">4</span>
-                    <span class="speed-val" id="simSpeed">214</span>
-                    <span class="speed-unit">KM/H</span>
-                  </div>
-                </div>
+            <!-- DEBAJO DE RELATIVE (top: 215px; right: 12px): TRACK MAP CATMULL-ROM -->
+            <div class="hud-box hud-trackmap hud-pos-trackmap" data-hud-mod="trackmap">
+              <div class="hud-box__head">
+                <span class="hud-box__title" id="simTrackMapTitle">TRACK MAP · SILVERSTONE GP</span>
+                <span class="hud-box__meta">CATMULL-ROM</span>
+              </div>
+              <div class="hud-trackmap__canvas">
+                <svg id="simTrackSvg" viewBox="0 0 280 200" class="hud-trackmap__svg" aria-label="Mapa de circuito en vivo">
+                  <path id="simTrackOutline" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
+                  <path id="simTrackLine" fill="none" stroke="#1e293b" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+                  <line id="simSfLine" x1="0" y1="0" x2="0" y2="0" stroke="#ffffff" stroke-width="2.5"/>
+                  <g id="simTrackDots"></g>
+                </svg>
               </div>
             </div>
 
-            <!-- COLUMNA DERECHA: Track Map + Fuel & Stint Calculator -->
-            <div class="sim-col sim-col--right">
-              <!-- MÓDULO 3: TRACK MAP CATMULL-ROM -->
-              <div class="hud-box hud-trackmap" data-hud-mod="trackmap">
-                <div class="hud-box__head">
-                  <span class="hud-box__title">TRACK MAP · SILVERSTONE GP</span>
-                  <span class="hud-box__meta">CATMULL-ROM SPLINE</span>
+            <!-- CENTRO INFERIOR (bottom: 135px; left: 50%): RADAR CARLEFTRIGHT -->
+            <div class="hud-radar-wrap hud-pos-radar" data-hud-mod="radar" data-driving-only="true">
+              <div class="hud-radar" id="simRadar" data-state="clear" aria-live="polite">
+                <svg viewBox="0 0 180 180" class="hud-radar__svg" aria-label="Radar de proximidad lateral">
+                  <circle cx="90" cy="90" r="78" fill="rgba(9,11,15,0.78)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+                  <circle cx="90" cy="90" r="46" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1" stroke-dasharray="4 4"/>
+                  <path id="radarArcLeft" d="M 38 38 A 74 74 0 0 0 38 142" fill="none" stroke="transparent" stroke-width="8" stroke-linecap="round"/>
+                  <path id="radarArcRight" d="M 142 38 A 74 74 0 0 1 142 142" fill="none" stroke="transparent" stroke-width="8" stroke-linecap="round"/>
+                  <rect x="78" y="64" width="24" height="52" rx="6" fill="#10b981" fill-opacity="0.22" stroke="#10b981" stroke-width="1.6"/>
+                  <line x1="90" y1="68" x2="90" y2="78" stroke="#34d399" stroke-width="2" stroke-linecap="round"/>
+                  <rect id="radarCarLeft" x="34" y="70" width="20" height="44" rx="5" fill="#f59e0b" fill-opacity="0" stroke="#f59e0b" stroke-opacity="0" stroke-width="1.5"/>
+                  <rect id="radarCarRight" x="126" y="74" width="20" height="44" rx="5" fill="#ef4444" fill-opacity="0" stroke="#ef4444" stroke-opacity="0" stroke-width="1.5"/>
+                </svg>
+                <div class="hud-radar__label" id="simRadarLabel">CLEAR</div>
+              </div>
+              <div class="hud-radar__hint" id="simRadarHint">
+                Radar <code>CarLeftRight</code> en espera
+              </div>
+            </div>
+
+            <!-- ABAJO CENTRO (bottom: 14px; left: 50%): INPUT TELEMETRY (Pedales + Marcha + Velocidad) -->
+            <div class="hud-box hud-inputs hud-pos-inputs" data-hud-mod="inputs" data-driving-only="true">
+              <div class="hud-inputs__trace">
+                <canvas id="simPedalCanvas" width="230" height="62" aria-label="Gráfica de pedales en vivo"></canvas>
+              </div>
+              <div class="hud-inputs__bars">
+                <div class="pedal-col">
+                  <div class="pedal-bar"><div class="pedal-fill pedal-fill--clutch" id="simClutchBar" style="height:0%"></div></div>
+                  <span class="pedal-lbl">C</span>
                 </div>
-                <div class="hud-trackmap__canvas">
-                  <svg id="simTrackSvg" viewBox="0 0 280 200" class="hud-trackmap__svg" aria-label="Mapa de circuito Silverstone GP">
-                    <path id="simTrackOutline" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
-                    <path id="simTrackLine" fill="none" stroke="#1e293b" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
-                    <line id="simSfLine" x1="0" y1="0" x2="0" y2="0" stroke="#ffffff" stroke-width="2.5"/>
-                    <g id="simTrackDots"></g>
-                  </svg>
+                <div class="pedal-col">
+                  <div class="pedal-bar"><div class="pedal-fill pedal-fill--brake" id="simBrakeBar" style="height:0%"></div></div>
+                  <span class="pedal-lbl">B</span>
+                </div>
+                <div class="pedal-col">
+                  <div class="pedal-bar"><div class="pedal-fill pedal-fill--throttle" id="simThrottleBar" style="height:82%"></div></div>
+                  <span class="pedal-lbl">T</span>
                 </div>
               </div>
+              <div class="hud-inputs__gear">
+                <span class="gear-val" id="simGear">4</span>
+                <span class="speed-val" id="simSpeed">214</span>
+                <span class="speed-unit">KM/H</span>
+              </div>
+            </div>
 
-              <!-- MÓDULO 4: FUEL & STINT CALCULATOR -->
-              <div class="hud-box hud-fuel" data-hud-mod="fuel">
-                <div class="hud-box__head">
-                  <span class="hud-box__title">FUEL &amp; STINT CALC</span>
-                  <span class="hud-box__meta">FILTRO FCY / PIT</span>
+            <!-- ABAJO DERECHA (bottom: 14px; right: 12px): FUEL & STINT CALCULATOR -->
+            <div class="hud-box hud-fuel hud-pos-fuel" data-hud-mod="fuel">
+              <div class="hud-box__head">
+                <span class="hud-box__title">FUEL &amp; STINT CALC</span>
+                <span class="hud-box__meta">FILTRO FCY / PIT</span>
+              </div>
+              <div class="hud-fuel__grid">
+                <div class="fuel-cell">
+                  <span class="fuel-lbl">FUEL REM</span>
+                  <span class="fuel-val" id="simFuelRem">34.8 L</span>
                 </div>
-                <div class="hud-fuel__grid">
-                  <div class="fuel-cell">
-                    <span class="fuel-lbl">FUEL REM</span>
-                    <span class="fuel-val" id="simFuelRem">34.8 L</span>
-                  </div>
-                  <div class="fuel-cell">
-                    <span class="fuel-lbl">AVG L/LAP</span>
-                    <span class="fuel-val fuel-val--emerald" id="simFuelAvg">2.84 L</span>
-                  </div>
-                  <div class="fuel-cell">
-                    <span class="fuel-lbl">LAPS EST.</span>
-                    <span class="fuel-val" id="simFuelLaps">12.2</span>
-                  </div>
-                  <div class="fuel-cell fuel-cell--highlight">
-                    <span class="fuel-lbl">TO ADD (+1.5L)</span>
-                    <span class="fuel-val fuel-val--amber" id="simFuelAdd">+9.4 L</span>
-                  </div>
+                <div class="fuel-cell">
+                  <span class="fuel-lbl">AVG L/LAP</span>
+                  <span class="fuel-val fuel-val--emerald" id="simFuelAvg">2.84 L</span>
                 </div>
-                <div class="hud-fuel__bar-wrap">
-                  <div class="hud-fuel__bar" id="simFuelBar" style="width: 44%"></div>
+                <div class="fuel-cell">
+                  <span class="fuel-lbl">LAPS EST.</span>
+                  <span class="fuel-val" id="simFuelLaps">12.2</span>
                 </div>
+                <div class="fuel-cell fuel-cell--highlight">
+                  <span class="fuel-lbl">TO ADD (+1.5L)</span>
+                  <span class="fuel-val fuel-val--amber" id="simFuelAdd">+9.4 L</span>
+                </div>
+              </div>
+              <div class="hud-fuel__bar-wrap">
+                <div class="hud-fuel__bar" id="simFuelBar" style="width: 44%"></div>
               </div>
             </div>
           </div>
@@ -572,14 +528,61 @@ const overlaySchema = {
       }
 
       // -----------------------------------------------------------------------
-      // Catmull-Rom Closed Spline for Silverstone GP
+      // 4 Iconic Endurance Circuits (12s auto-rotation + manual button)
       // -----------------------------------------------------------------------
-      const silverstonePts = [
-        [118, 166], [156, 162], [186, 146], [202, 124], [192, 102],
-        [218, 86],  [248, 72],  [246, 46],  [222, 34],  [190, 44],
-        [164, 58],  [146, 78],  [118, 66],  [92, 48],   [64, 42],
-        [38, 56],   [34, 84],   [56, 100],  [78, 114],  [62, 134],
-        [44, 152],  [64, 170],  [92, 168]
+      const CIRCUITS = [
+        {
+          id: "silverstone",
+          name: "SILVERSTONE GP",
+          series: "IMSA MULTICLASS",
+          avgFuel: 2.84,
+          lapSec: { GTP: 94.5, LMP2: 99.8, GT3: 112.4 },
+          pts: [
+            [118, 166], [156, 162], [186, 146], [202, 124], [192, 102],
+            [218, 86],  [248, 72],  [246, 46],  [222, 34],  [190, 44],
+            [164, 58],  [146, 78],  [118, 66],  [92, 48],   [64, 42],
+            [38, 56],   [34, 84],   [56, 100],  [78, 114],  [62, 134],
+            [44, 152],  [64, 170],  [92, 168]
+          ]
+        },
+        {
+          id: "spa",
+          name: "SPA-FRANCORCHAMPS",
+          series: "24H ENDURANCE",
+          avgFuel: 3.46,
+          lapSec: { GTP: 118.2, LMP2: 125.4, GT3: 137.8 },
+          pts: [
+            [78, 152], [116, 168], [154, 156], [198, 122], [236, 86],
+            [248, 56], [224, 34],  [184, 36],  [158, 62],  [136, 78],
+            [102, 68], [72, 46],   [42, 54],   [32, 82],   [54, 104],
+            [44, 130], [56, 152]
+          ]
+        },
+        {
+          id: "daytona",
+          name: "DAYTONA ROAD COURSE",
+          series: "ROLEX 24 IMSA",
+          avgFuel: 2.68,
+          lapSec: { GTP: 93.4, LMP2: 99.2, GT3: 108.6 },
+          pts: [
+            [92, 166], [178, 166], [234, 148], [250, 104], [236, 54],
+            [188, 34], [118, 34],  [56, 48],   [32, 88],   [48, 128],
+            [88, 118], [122, 92],  [158, 112], [124, 134], [78, 138],
+            [52, 156]
+          ]
+        },
+        {
+          id: "interlagos",
+          name: "INTERLAGOS",
+          series: "ENDURANCE BRAZIL",
+          avgFuel: 2.24,
+          lapSec: { GTP: 84.6, LMP2: 89.2, GT3: 95.4 },
+          pts: [
+            [98, 168], [154, 166], [216, 144], [244, 102], [232, 54],
+            [188, 36], [148, 56],  [162, 88],  [132, 108], [96, 84],
+            [68, 56],  [36, 72],   [34, 114],  [56, 146]
+          ]
+        }
       ];
 
       function sampleCatmullRomClosed(pts, segmentsPerSpan = 10) {
@@ -612,30 +615,51 @@ const overlaySchema = {
         return out;
       }
 
-      const splinePts = sampleCatmullRomClosed(silverstonePts, 10);
-      const trackPathD = splinePts.map((p, i) => `${i === 0 ? "M" : "L"}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(" ") + " Z";
+      let activeCircuitIdx = 0;
+      let splinePts = [];
       const outlineEl = document.getElementById("simTrackOutline");
       const lineEl = document.getElementById("simTrackLine");
       const sfEl = document.getElementById("simSfLine");
-      if (outlineEl) outlineEl.setAttribute("d", trackPathD);
-      if (lineEl) lineEl.setAttribute("d", trackPathD);
+      const circuitBannerEl = document.getElementById("simCircuitBanner");
+      const trackMapTitleEl = document.getElementById("simTrackMapTitle");
 
-      // Perpendicular Start/Finish line at spline index 0
-      if (sfEl && splinePts.length > 2) {
-        const p0 = splinePts[0];
-        const p1 = splinePts[2];
-        const dx = p1[0] - p0[0];
-        const dy = p1[1] - p0[1];
-        const len = Math.hypot(dx, dy) || 1;
-        const nx = -dy / len;
-        const ny = dx / len;
-        sfEl.setAttribute("x1", (p0[0] - nx * 8).toFixed(1));
-        sfEl.setAttribute("y1", (p0[1] - ny * 8).toFixed(1));
-        sfEl.setAttribute("x2", (p0[0] + nx * 8).toFixed(1));
-        sfEl.setAttribute("y2", (p0[1] + ny * 8).toFixed(1));
+      const CLASSES = {
+        GTP:  { color: "#f59e0b", sof: "3.4k", lapSec: 94.5 },
+        LMP2: { color: "#06b6d4", sof: "2.8k", lapSec: 99.8 },
+        GT3:  { color: "#10b981", sof: "2.5k", lapSec: 112.4 },
+      };
+
+      function applyCircuit(idx) {
+        activeCircuitIdx = ((idx % CIRCUITS.length) + CIRCUITS.length) % CIRCUITS.length;
+        const c = CIRCUITS[activeCircuitIdx];
+        CLASSES.GTP.lapSec = c.lapSec.GTP;
+        CLASSES.LMP2.lapSec = c.lapSec.LMP2;
+        CLASSES.GT3.lapSec = c.lapSec.GT3;
+        splinePts = sampleCatmullRomClosed(c.pts, 10);
+        const trackPathD = splinePts.map((p, i) => `${i === 0 ? "M" : "L"}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(" ") + " Z";
+        if (outlineEl) outlineEl.setAttribute("d", trackPathD);
+        if (lineEl) lineEl.setAttribute("d", trackPathD);
+        if (sfEl && splinePts.length > 2) {
+          const p0 = splinePts[0];
+          const p1 = splinePts[2];
+          const dx = p1[0] - p0[0];
+          const dy = p1[1] - p0[1];
+          const len = Math.hypot(dx, dy) || 1;
+          const nx = -dy / len;
+          const ny = dx / len;
+          sfEl.setAttribute("x1", (p0[0] - nx * 8).toFixed(1));
+          sfEl.setAttribute("y1", (p0[1] - ny * 8).toFixed(1));
+          sfEl.setAttribute("x2", (p0[0] + nx * 8).toFixed(1));
+          sfEl.setAttribute("y2", (p0[1] + ny * 8).toFixed(1));
+        }
+        if (circuitBannerEl) circuitBannerEl.textContent = `${c.name} · ${c.series}`;
+        if (trackMapTitleEl) trackMapTitleEl.textContent = `TRACK MAP · ${c.name}`;
       }
 
+      applyCircuit(0);
+
       function pointOnSpline(pct) {
+        if (!splinePts.length) return [140, 100];
         const norm = ((pct % 1) + 1) % 1;
         const idx = norm * splinePts.length;
         const i0 = Math.floor(idx) % splinePts.length;
@@ -647,15 +671,6 @@ const overlaySchema = {
         ];
       }
 
-      // -----------------------------------------------------------------------
-      // Simulated Multiclass Grid (Silverstone GP — GTP / LMP2 / GT3)
-      // -----------------------------------------------------------------------
-      const CLASSES = {
-        GTP:  { color: "#f59e0b", sof: "3.4k", lapSec: 94.5 },
-        LMP2: { color: "#06b6d4", sof: "2.8k", lapSec: 99.8 },
-        GT3:  { color: "#10b981", sof: "2.5k", lapSec: 112.4 },
-      };
-
       const LIC_COLOR = { A: "#2563eb", B: "#16a34a", C: "#d97706", D: "#dc2626" };
 
       const drivers = [
@@ -666,13 +681,13 @@ const overlaySchema = {
         // LMP2
         { id: 4,  num: "32", name: "R. Moretti",    cls: "LMP2", brand: "dallara",  lic: "A", sr: "4.10", ir: "2.9k", irDelta: +41, lap: 14, pct: 0.67, speed: 0.946, isPit: false },
         { id: 5,  num: "48", name: "J. O'Connor",   cls: "LMP2", brand: "dallara",  lic: "B", sr: "3.64", ir: "2.7k", irDelta: -14, lap: 14, pct: 0.61, speed: 0.943, isPit: false },
-        // GT3 (Focused driver: #16 A. Trujillo)
-        { id: 6,  num: "51", name: "D. Rossi",      cls: "GT3",  brand: "ferrari",  lic: "A", sr: "4.65", ir: "2.9k", irDelta: +44, lap: 14, pct: 0.525, speed: 0.844, isPit: false },
-        { id: 7,  num: "16", name: "A. Trujillo",   cls: "GT3",  brand: "porsche",  lic: "A", sr: "4.99", ir: "2.7k", irDelta: +65, lap: 14, pct: 0.500, speed: 0.846, isPit: false, isMe: true },
-        { id: 8,  num: "88", name: "M. Berbis",     cls: "GT3",  brand: "mercedes", lic: "B", sr: "3.41", ir: "2.4k", irDelta: +18, lap: 14, pct: 0.482, speed: 0.843, isPit: false },
-        { id: 9,  num: "77", name: "E. Chongkan",   cls: "GT3",  brand: "mclaren",  lic: "B", sr: "3.12", ir: "2.3k", irDelta: -24, lap: 14, pct: 0.458, speed: 0.841, isPit: false },
-        { id: 10, num: "95", name: "T. Schneider",  cls: "GT3",  brand: "aston",    lic: "C", sr: "2.88", ir: "1.9k", irDelta: -36, lap: 13, pct: 0.435, speed: 0.835, isPit: false },
-        { id: 11, num: "63", name: "S. Dubois",     cls: "GT3",  brand: "bmw",      lic: "D", sr: "2.40", ir: "1.6k", irDelta: -42, lap: 13, pct: 0.545, speed: 0.420, isPit: true },
+        // GT3 — Muntrume Motorsport trio (#16 A. Trujillo, #1 M. Berbis, #22 E. Chongkan)
+        { id: 6,  num: "1",  name: "M. Berbis",     cls: "GT3",  brand: "porsche",  lic: "A", sr: "4.65", ir: "2.9k", irDelta: +44, lap: 14, pct: 0.5015, speed: 0.846, isPit: false, battleSide: "left" },
+        { id: 7,  num: "16", name: "A. Trujillo",   cls: "GT3",  brand: "ford",     lic: "A", sr: "4.99", ir: "2.7k", irDelta: +65, lap: 14, pct: 0.5000, speed: 0.846, isPit: false, isMe: true },
+        { id: 8,  num: "22", name: "E. Chongkan",   cls: "GT3",  brand: "mclaren",  lic: "B", sr: "3.41", ir: "2.4k", irDelta: +18, lap: 14, pct: 0.4982, speed: 0.846, isPit: false, battleSide: "right" },
+        { id: 9,  num: "77", name: "D. Rossi",      cls: "GT3",  brand: "ferrari",  lic: "B", sr: "3.12", ir: "2.3k", irDelta: -24, lap: 14, pct: 0.4620, speed: 0.841, isPit: false },
+        { id: 10, num: "95", name: "T. Schneider",  cls: "GT3",  brand: "aston",    lic: "C", sr: "2.88", ir: "1.9k", irDelta: -36, lap: 13, pct: 0.4350, speed: 0.835, isPit: false },
+        { id: 11, num: "63", name: "S. Dubois",     cls: "GT3",  brand: "bmw",      lic: "D", sr: "2.40", ir: "1.6k", irDelta: -42, lap: 13, pct: 0.5450, speed: 0.420, isPit: true },
       ];
 
       // State
@@ -957,19 +972,34 @@ const overlaySchema = {
         }
       }
 
-      // Render Radar (CarLeftRight)
-      function renderRadar(nowMs) {
-        if (!radarEl || !enabledMods.radar || isReplay) return;
-        const me = drivers.find((d) => d.isMe);
-        let state = 0; // 0 clear, 1 left, 2 right, 3 3-wide
+      // Button: Cambiar Circuito manually
+      const btnNextCircuit = document.getElementById("simNextCircuitBtn");
+      let lastCircuitSwitchMs = performance.now();
+      if (btnNextCircuit) {
+        btnNextCircuit.addEventListener("click", () => {
+          applyCircuit(activeCircuitIdx + 1);
+          lastCircuitSwitchMs = performance.now();
+          renderStandings();
+          renderRelative();
+          renderTrackMap();
+        });
+      }
+
+      // Render Radar (CarLeftRight) synced with 3-wide track battle
+      function computeBattleState(nowMs, tSec) {
         if (nowMs < radarOverrideUntil) {
-          state = radarOverrideMode;
-        } else if (me) {
-          // Detect natural proximity with GTP/GT3 cars
-          const close = drivers.filter((d) => !d.isMe && !d.isPit && Math.abs(((d.pct - me.pct + 1.5) % 1) - 0.5) < 0.012);
-          if (close.length >= 2) state = 3;
-          else if (close.length === 1) state = close[0].id % 2 === 0 ? 1 : 2;
+          return radarOverrideMode; // manual trigger 1 or 3
         }
+        // Smooth 10s battle cycle: 0..3.5s clear -> 3.5..6s 1-wide (#51 left) -> 6..8.8s 3-wide (#51 + #88) -> 8.8..10s clear
+        const cyc = tSec % 10;
+        if (cyc >= 3.5 && cyc < 5.8) return 1;
+        if (cyc >= 5.8 && cyc < 8.8) return 3;
+        return 0;
+      }
+
+      function renderRadar(nowMs, tSec) {
+        if (!radarEl || !enabledMods.radar || isReplay) return;
+        const state = computeBattleState(nowMs, tSec);
 
         const active = state > 0;
         radarEl.setAttribute("data-state", active ? (state === 3 ? "threewide" : "side") : "clear");
@@ -984,19 +1014,243 @@ const overlaySchema = {
         if (radarCarLeft) {
           radarCarLeft.setAttribute("fill", color);
           radarCarLeft.setAttribute("stroke", color);
-          radarCarLeft.setAttribute("fill-opacity", leftOn ? "0.35" : "0");
+          radarCarLeft.setAttribute("fill-opacity", leftOn ? "0.38" : "0");
           radarCarLeft.setAttribute("stroke-opacity", leftOn ? "1" : "0");
         }
         if (radarCarRight) {
           radarCarRight.setAttribute("fill", color);
           radarCarRight.setAttribute("stroke", color);
-          radarCarRight.setAttribute("fill-opacity", rightOn ? "0.35" : "0");
+          radarCarRight.setAttribute("fill-opacity", rightOn ? "0.38" : "0");
           radarCarRight.setAttribute("stroke-opacity", rightOn ? "1" : "0");
         }
         if (radarLabelEl) {
           radarLabelEl.textContent = state === 3 ? "3-WIDE!" : state === 1 ? "CAR LEFT" : state === 2 ? "CAR RIGHT" : "CLEAR";
           radarLabelEl.style.color = state === 3 ? "#f87171" : active ? "#fbbf24" : "#64748b";
         }
+      }
+
+      // -----------------------------------------------------------------------
+      // 60 FPS Dynamic Track Canvas Backdrop + Visual 3-Wide Battle
+      // -----------------------------------------------------------------------
+      const backdropCanvas = document.getElementById("simTrackBackdropCanvas");
+      const backdropCtx = backdropCanvas ? backdropCanvas.getContext("2d") : null;
+      let roadOffset = 0;
+
+      function drawRaceCarRear(ctx, x, y, scale, bodyColor, accentColor, numLabel, slipIntensity) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(scale, scale);
+
+        // Aerodynamic slipstream trails
+        if (slipIntensity > 0) {
+          const gradL = ctx.createLinearGradient(-46, 0, -46, 70);
+          gradL.addColorStop(0, `rgba(255,255,255,${0.18 * slipIntensity})`);
+          gradL.addColorStop(1, "rgba(255,255,255,0)");
+          ctx.fillStyle = gradL;
+          ctx.fillRect(-50, 12, 3, 62);
+          ctx.fillRect(47, 12, 3, 62);
+        }
+
+        // Shadow
+        ctx.fillStyle = "rgba(0,0,0,0.65)";
+        ctx.beginPath();
+        ctx.ellipse(0, 22, 58, 12, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Rear diffuser & chassis
+        ctx.fillStyle = "#0b0e14";
+        ctx.fillRect(-46, -12, 92, 32);
+
+        // Wide GT3 fenders
+        ctx.fillStyle = bodyColor;
+        ctx.beginPath();
+        ctx.roundRect(-48, -22, 96, 36, 7);
+        ctx.fill();
+
+        // Cockpit roof
+        ctx.fillStyle = "#111827";
+        ctx.beginPath();
+        ctx.roundRect(-28, -36, 56, 20, 6);
+        ctx.fill();
+
+        // Rear wing
+        ctx.fillStyle = "#090b0f";
+        ctx.fillRect(-52, -32, 104, 6);
+        ctx.fillStyle = accentColor;
+        ctx.fillRect(-52, -33, 5, 11);
+        ctx.fillRect(47, -33, 5, 11);
+
+        // Glowing LED taillights
+        ctx.fillStyle = "#ef4444";
+        ctx.shadowColor = "#ef4444";
+        ctx.shadowBlur = 10;
+        ctx.fillRect(-42, -8, 18, 5);
+        ctx.fillRect(24, -8, 18, 5);
+        ctx.shadowBlur = 0;
+
+        // Number plate
+        ctx.fillStyle = "rgba(9,11,15,0.88)";
+        ctx.fillRect(-13, -8, 26, 14);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "800 10px ui-monospace, monospace";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(numLabel, 0, -1);
+
+        ctx.restore();
+      }
+
+      function renderTrackBackdrop(dt, nowMs, tSec) {
+        if (!backdropCanvas || !backdropCtx) return;
+        const rect = backdropCanvas.getBoundingClientRect();
+        const w = Math.max(640, Math.round(rect.width || 1180));
+        const h = Math.max(400, Math.round(rect.height || 640));
+        if (backdropCanvas.width !== w || backdropCanvas.height !== h) {
+          backdropCanvas.width = w;
+          backdropCanvas.height = h;
+        }
+
+        const speedKmh = Number(speedEl?.textContent || 214);
+        const speedNorm = Math.max(0.4, speedKmh / 200);
+        roadOffset = (roadOffset + dt * 6.5 * speedNorm) % 1;
+
+        const ctx = backdropCtx;
+        const horizonY = h * 0.42;
+
+        // Sky & dusk gradient
+        const sky = ctx.createLinearGradient(0, 0, 0, horizonY);
+        sky.addColorStop(0, "#05070b");
+        sky.addColorStop(0.65, "#0a1019");
+        sky.addColorStop(1, "#111c26");
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, w, horizonY + 2);
+
+        // Subtle horizon emerald glow
+        const glow = ctx.createRadialGradient(w * 0.5, horizonY, 20, w * 0.5, horizonY, w * 0.52);
+        glow.addColorStop(0, "rgba(16, 185, 129, 0.14)");
+        glow.addColorStop(1, "rgba(5, 7, 11, 0)");
+        ctx.fillStyle = glow;
+        ctx.fillRect(0, 0, w, horizonY + 40);
+
+        // Grass / runoff ground
+        ctx.fillStyle = "#080b10";
+        ctx.fillRect(0, horizonY, w, h - horizonY);
+
+        // Corner curve sway
+        const curveFactor = Math.sin(tSec * 0.42) * 0.24;
+
+        // Perspective road strips (moving kerbs, asphalt grain, braking marks, racing line)
+        const slices = 42;
+        for (let i = 0; i < slices; i++) {
+          const p0 = i / slices;
+          const p1 = (i + 1) / slices;
+          const z0 = p0 * p0;
+          const z1 = p1 * p1;
+          const y0 = horizonY + z0 * (h - horizonY);
+          const y1 = horizonY + z1 * (h - horizonY);
+
+          const cx0 = w * 0.5 + curveFactor * w * (1 - p0) * (1 - p0);
+          const cx1 = w * 0.5 + curveFactor * w * (1 - p1) * (1 - p1);
+          const halfW0 = w * (0.045 + z0 * 0.46);
+          const halfW1 = w * (0.045 + z1 * 0.46);
+
+          const stripePhase = Math.floor((p0 * 14 - roadOffset * 2 + 100) % 2);
+          const kerbColor = stripePhase === 0 ? "rgba(239, 68, 68, 0.65)" : "rgba(248, 250, 252, 0.55)";
+
+          // Kerbs left & right
+          const kw0 = halfW0 * 0.08;
+          const kw1 = halfW1 * 0.08;
+          ctx.fillStyle = kerbColor;
+          ctx.beginPath();
+          ctx.moveTo(cx0 - halfW0 - kw0, y0);
+          ctx.lineTo(cx0 - halfW0, y0);
+          ctx.lineTo(cx1 - halfW1, y1);
+          ctx.lineTo(cx1 - halfW1 - kw1, y1);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.moveTo(cx0 + halfW0, y0);
+          ctx.lineTo(cx0 + halfW0 + kw0, y0);
+          ctx.lineTo(cx1 + halfW1 + kw1, y1);
+          ctx.lineTo(cx1 + halfW1, y1);
+          ctx.closePath();
+          ctx.fill();
+
+          // Textured asphalt
+          ctx.fillStyle = stripePhase === 0 ? "#131822" : "#111620";
+          ctx.beginPath();
+          ctx.moveTo(cx0 - halfW0, y0);
+          ctx.lineTo(cx0 + halfW0, y0);
+          ctx.lineTo(cx1 + halfW1, y1);
+          ctx.lineTo(cx1 - halfW1, y1);
+          ctx.closePath();
+          ctx.fill();
+
+          // Braking rubber marks on entry
+          if (Math.sin(tSec * 0.42) < -0.2) {
+            ctx.fillStyle = "rgba(0,0,0,0.28)";
+            ctx.fillRect(cx1 - halfW1 * 0.44, y0, halfW1 * 0.06, Math.max(1, y1 - y0));
+            ctx.fillRect(cx1 + halfW1 * 0.38, y0, halfW1 * 0.06, Math.max(1, y1 - y0));
+          }
+
+          // Dynamic racing line
+          ctx.strokeStyle = "rgba(16, 185, 129, 0.12)";
+          ctx.lineWidth = Math.max(1, z1 * 3.5);
+          ctx.beginPath();
+          ctx.moveTo(cx0 + curveFactor * halfW0 * 0.45, y0);
+          ctx.lineTo(cx1 + curveFactor * halfW1 * 0.45, y1);
+          ctx.stroke();
+
+          // Center dashed line
+          if (stripePhase === 0) {
+            ctx.strokeStyle = "rgba(255,255,255,0.09)";
+            ctx.lineWidth = Math.max(1, z1 * 2.2);
+            ctx.beginPath();
+            ctx.moveTo(cx0, y0);
+            ctx.lineTo(cx1, y1);
+            ctx.stroke();
+          }
+        }
+
+        // Visual 3-Wide Muntrume Motorsport Battle on Asphalt synced with Radar
+        const battle = computeBattleState(nowMs, tSec);
+        const roadCenter = w * 0.5 + curveFactor * w * 0.05;
+        const carY = h * 0.64;
+
+        // #1 M. Berbis — Porsche 911 GT3 R (992) (White / Red Motorsport) on Left
+        const leftPull = battle === 1 || battle === 3 ? 1 : 0.15;
+        const porscheX = roadCenter - w * (0.145 - 0.04 * leftPull) + Math.sin(tSec * 2.1) * 3;
+        const porscheY = carY - 36 + (1 - leftPull) * -55;
+        drawRaceCarRear(ctx, porscheX, porscheY, 0.88 * (0.78 + 0.22 * leftPull), "#e2e8f0", "#ef4444", "1", leftPull);
+
+        // #22 E. Chongkan — McLaren 720S GT3 Evo (Papaya Orange / Black) on Right
+        const rightPull = battle === 3 ? 1 : 0.12;
+        const mclarenX = roadCenter + w * (0.145 - 0.04 * rightPull) + Math.cos(tSec * 1.9) * 3;
+        const mclarenY = carY - 32 + (1 - rightPull) * -65;
+        drawRaceCarRear(ctx, mclarenX, mclarenY, 0.88 * (0.78 + 0.22 * rightPull), "#ea580c", "#111827", "22", rightPull);
+
+        // #16 A. Trujillo — Ford Mustang GT3 (Blue / Black with Muntrume Emerald accents) centered
+        drawRaceCarRear(ctx, roadCenter + Math.sin(tSec * 1.6) * 2, carY + 12, 1.0, "#1d4ed8", "#10b981", "16", 0.8);
+
+        // Subtle sparks when 3-wide wheel-to-wheel
+        if (battle === 3) {
+          for (let s = 0; s < 5; s++) {
+            const sx = roadCenter + (s % 2 === 0 ? -52 : 52) + (Math.random() - 0.5) * 14;
+            const sy = carY + 18 + Math.random() * 18;
+            ctx.fillStyle = s % 2 === 0 ? "#fbbf24" : "#f97316";
+            ctx.fillRect(sx, sy, 3, 2);
+          }
+        }
+
+        // Cockpit windshield header vignette
+        const vign = ctx.createLinearGradient(0, 0, 0, h);
+        vign.addColorStop(0, "rgba(4,6,9,0.58)");
+        vign.addColorStop(0.2, "rgba(4,6,9,0)");
+        vign.addColorStop(0.82, "rgba(4,6,9,0)");
+        vign.addColorStop(1, "rgba(4,6,9,0.68)");
+        ctx.fillStyle = vign;
+        ctx.fillRect(0, 0, w, h);
       }
 
       // Main animation loop
@@ -1011,6 +1265,11 @@ const overlaySchema = {
 
         if (!isPaused) {
           simTimeSec += dt;
+          if (nowMs - lastCircuitSwitchMs >= 12000) {
+            lastCircuitSwitchMs = nowMs;
+            applyCircuit(activeCircuitIdx + 1);
+          }
+
           drivers.forEach((d) => {
             const step = (dt / 32) * d.speed;
             d.pct += step;
@@ -1020,13 +1279,33 @@ const overlaySchema = {
             }
           });
 
-          // Burn fuel realistically
-          fuelLevel -= dt * 0.088;
+          // Keep #1 M. Berbis and #22 E. Chongkan at ±0.1s / ±0.2s relative to #16 A. Trujillo during 1-wide / 3-wide
+          const meDrv = drivers.find((d) => d.isMe);
+          const battleNow = computeBattleState(nowMs, simTimeSec);
+          if (meDrv) {
+            const gt3Sec = CLASSES.GT3.lapSec;
+            const berbis = drivers.find((d) => d.num === "1");
+            const chongkan = drivers.find((d) => d.num === "22");
+            if (berbis) {
+              const targetGapSec = battleNow >= 1 ? 0.1 : 0.9;
+              berbis.pct = (meDrv.pct + targetGapSec / gt3Sec) % 1;
+              berbis.lap = meDrv.lap;
+            }
+            if (chongkan) {
+              const targetGapSec = battleNow === 3 ? -0.2 : -1.1;
+              chongkan.pct = (meDrv.pct + targetGapSec / gt3Sec + 1) % 1;
+              chongkan.lap = meDrv.lap;
+            }
+          }
+
+          const cMeta = CIRCUITS[activeCircuitIdx];
+          fuelLevel -= dt * (cMeta.avgFuel / 32);
           if (fuelLevel < 12) fuelLevel = 38.4;
 
+          renderTrackBackdrop(dt, nowMs, simTimeSec);
           renderInputs(simTimeSec);
           renderTrackMap();
-          renderRadar(nowMs);
+          renderRadar(nowMs, simTimeSec);
 
           // DOM tables at ~6 Hz for crisp readability without layout thrash
           if (nowMs - lastDomMs > 160) {
@@ -1035,7 +1314,7 @@ const overlaySchema = {
             renderRelative();
 
             if (enabledMods.fuel) {
-              const avg = 2.84;
+              const avg = cMeta.avgFuel;
               const lapsLeft = fuelLevel / avg;
               const need = Math.max(0, (14 * avg + 1.5) - fuelLevel);
               if (fuelRemEl) fuelRemEl.textContent = `${fuelLevel.toFixed(1)} L`;
@@ -1491,32 +1770,80 @@ const overlaySchema = {
     font-weight: 700;
   }
 
-  /* HUD GRID */
-  .sim-hud-grid {
+  /* 16:9 REAL COCKPIT ERGONOMIC STAGE */
+  .sim-cockpit-layer {
     position: relative;
     z-index: 2;
     flex: 1;
-    display: grid;
-    grid-template-columns: minmax(320px, 1.25fr) minmax(260px, 1fr) minmax(240px, 0.85fr);
-    gap: 14px;
-    padding: 14px;
-    align-items: stretch;
+    min-height: 620px;
+    padding: 12px;
   }
 
-  .sim-col {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    min-width: 0;
+  @media (min-width: 1041px) {
+    .sim-cockpit-layer {
+      min-height: 640px;
+      padding: 0;
+    }
+    .hud-pos-standings {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      width: 340px;
+    }
+    .hud-pos-relative {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 320px;
+    }
+    .hud-pos-trackmap {
+      position: absolute;
+      top: 215px;
+      right: 12px;
+      width: 220px;
+    }
+    .hud-pos-delta {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 240px;
+    }
+    .hud-pos-radar {
+      position: absolute;
+      bottom: 135px;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-top: 0 !important;
+      min-height: 0 !important;
+    }
+    .hud-pos-inputs {
+      position: absolute;
+      bottom: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 356px;
+    }
+    .hud-pos-fuel {
+      position: absolute;
+      bottom: 14px;
+      right: 12px;
+      width: 244px;
+    }
   }
 
-  .sim-col--center {
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .sim-col--right {
-    justify-content: space-between;
+  @media (max-width: 1040px) {
+    .sim-cockpit-layer {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      align-content: start;
+    }
+    .hud-pos-radar,
+    .hud-pos-inputs,
+    .hud-pos-delta {
+      grid-column: 1 / -1;
+    }
   }
 
   .hud-box {
@@ -2143,17 +2470,6 @@ const overlaySchema = {
 
   /* RESPONSIVE */
   @media (max-width: 1040px) {
-    .sim-hud-grid {
-      grid-template-columns: 1fr 1fr;
-    }
-    .sim-col--center {
-      grid-column: 1 / -1;
-      order: 3;
-      flex-direction: row;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 16px;
-    }
     .hud-radar-wrap {
       margin-top: 0;
       min-height: auto;
@@ -2167,7 +2483,7 @@ const overlaySchema = {
     .ov-specs {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-    .sim-hud-grid {
+    .sim-cockpit-layer {
       grid-template-columns: 1fr;
     }
     .ov-mod-grid,
