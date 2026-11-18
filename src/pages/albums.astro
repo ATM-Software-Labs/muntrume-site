@@ -162,26 +162,52 @@ const pageDescription =
 
       searchEl?.addEventListener("input", render);
 
+      const CANONICAL_ALBUM_MAP = {
+        "chevrolet-corvette-z06-gt3r": { slug: "chevrolet-corvette-z06-gt3-r", car: "Chevrolet Corvette Z06 GT3.R" },
+        "chevrolet-corvette-z06-gt3-r": { slug: "chevrolet-corvette-z06-gt3-r", car: "Chevrolet Corvette Z06 GT3.R" },
+        "chevyvettez06rgt3": { slug: "chevrolet-corvette-z06-gt3-r", car: "Chevrolet Corvette Z06 GT3.R" },
+        "super-formula-sf23": { slug: "super-formula-sf23", car: "Super Formula SF23" },
+        "super-formula-sf23-toyota": { slug: "super-formula-sf23", car: "Super Formula SF23" },
+        "porsche-911-cup-992-1": { slug: "porsche-911-cup-992-1", car: "Porsche 911 GT3 Cup (992.1)" },
+        "porsche-911-gt3-cup": { slug: "porsche-911-cup-992-1", car: "Porsche 911 GT3 Cup (992.1)" },
+        "porsche-911-gt3-cup-992": { slug: "porsche-911-cup-992-1", car: "Porsche 911 GT3 Cup (992.1)" },
+        "porsche992cup": { slug: "porsche-911-cup-992-1", car: "Porsche 911 GT3 Cup (992.1)" },
+        "porsche992rgt3": { slug: "porsche-911-gt3-r-992", car: "Porsche 911 GT3 R (992)" },
+        "dirt-micro-sprint": { slug: "dirt-micro-sprint", car: "Dirt Outlaw Micro Sprint (Winged)" },
+        "dirt-outlaw-micro-sprint-winged": { slug: "dirt-micro-sprint", car: "Dirt Outlaw Micro Sprint (Winged)" },
+        "dirt-micro-sprint-non-winged": { slug: "dirt-micro-sprint-non-winged", car: "Dirt Outlaw Micro Sprint (Non-Winged)" },
+        "dirt-outlaw-micro-sprint-non-winged": { slug: "dirt-micro-sprint-non-winged", car: "Dirt Outlaw Micro Sprint (Non-Winged)" },
+      };
+
       fetch("https://muntrume.atrumin16.workers.dev/v1/albums")
         .then((r) => (r.ok ? r.json() : null))
         .then((data) => {
           if (!data || !Array.isArray(data.albums)) return;
-          // Merge split/duplicate slugs for the same car (e.g. chevrolet-corvette-z06-gt3r + chevrolet-corvette-z06-gt3-r)
+          // Merge split/duplicate slugs for the same car model into one canonical card
           const merged = new Map();
           for (const raw of data.albums) {
-            const key = String(raw.car || raw.slug || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+            const rawSlug = String(raw.slug || "").toLowerCase();
+            const canon = CANONICAL_ALBUM_MAP[rawSlug];
+            const key = canon
+              ? `canon:${canon.slug}`
+              : String(raw.car || rawSlug).toLowerCase().replace(/[^a-z0-9]/g, "");
             if (!merged.has(key)) {
-              merged.set(key, { ...raw, altSlugs: [] });
+              merged.set(key, {
+                ...raw,
+                slug: canon ? canon.slug : raw.slug,
+                car: canon ? canon.car : raw.car,
+                altSlugs: canon && rawSlug !== canon.slug ? [rawSlug] : [],
+              });
             } else {
               const cur = merged.get(key);
               const rawCount = Number(raw.count || 0);
               const curCount = Number(cur.count || 0);
-              if (rawCount > curCount) {
-                cur.altSlugs.push(cur.slug);
+              if (!canon && rawCount > curCount) {
+                if (cur.slug) cur.altSlugs.push(cur.slug);
                 cur.slug = raw.slug;
                 cur.cover = raw.cover || cur.cover;
-              } else if (raw.slug && raw.slug !== cur.slug) {
-                cur.altSlugs.push(raw.slug);
+              } else if (rawSlug && rawSlug !== cur.slug && !cur.altSlugs.includes(rawSlug)) {
+                cur.altSlugs.push(rawSlug);
               }
               cur.count = curCount + rawCount;
               cur.views = Number(cur.views || 0) + Number(raw.views || 0);

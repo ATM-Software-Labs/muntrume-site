@@ -1142,7 +1142,32 @@ const topAlbums = [...PADDOCK_ALBUMS].sort((a, b) => (b.views ?? 0) - (a.views ?
           const usedForAlbums = new Set();
           const albumsGrid = document.getElementById("paddockTopAlbumsGrid");
           if (albumsGrid && Array.isArray(data.albums)) {
-            const top3 = data.albums.slice(0, 3);
+            const CANON_MAP = {
+              "chevrolet-corvette-z06-gt3r": { slug: "chevrolet-corvette-z06-gt3-r", car: "Chevrolet Corvette Z06 GT3.R" },
+              "chevrolet-corvette-z06-gt3-r": { slug: "chevrolet-corvette-z06-gt3-r", car: "Chevrolet Corvette Z06 GT3.R" },
+              "super-formula-sf23": { slug: "super-formula-sf23", car: "Super Formula SF23" },
+              "super-formula-sf23-toyota": { slug: "super-formula-sf23", car: "Super Formula SF23" },
+              "porsche-911-cup-992-1": { slug: "porsche-911-cup-992-1", car: "Porsche 911 GT3 Cup (992.1)" },
+              "porsche-911-gt3-cup": { slug: "porsche-911-cup-992-1", car: "Porsche 911 GT3 Cup (992.1)" },
+              "dirt-micro-sprint": { slug: "dirt-micro-sprint", car: "Dirt Outlaw Micro Sprint (Winged)" },
+              "dirt-outlaw-micro-sprint-winged": { slug: "dirt-micro-sprint", car: "Dirt Outlaw Micro Sprint (Winged)" },
+              "dirt-micro-sprint-non-winged": { slug: "dirt-micro-sprint-non-winged", car: "Dirt Outlaw Micro Sprint (Non-Winged)" },
+              "dirt-outlaw-micro-sprint-non-winged": { slug: "dirt-micro-sprint-non-winged", car: "Dirt Outlaw Micro Sprint (Non-Winged)" },
+            };
+            const mergedTop = new Map();
+            for (const raw of data.albums) {
+              const s = String(raw.slug || "").toLowerCase();
+              const c = CANON_MAP[s];
+              const k = c ? `canon:${c.slug}` : String(raw.car || s).toLowerCase().replace(/[^a-z0-9]/g, "");
+              if (!mergedTop.has(k)) {
+                mergedTop.set(k, { ...raw, slug: c ? c.slug : raw.slug, car: c ? c.car : raw.car });
+              } else {
+                const cur = mergedTop.get(k);
+                cur.count = Number(cur.count || 0) + Number(raw.count || 0);
+                cur.views = Number(cur.views || 0) + Number(raw.views || 0);
+              }
+            }
+            const top3 = Array.from(mergedTop.values()).slice(0, 3);
             if (top3.length === 0) {
               albumsGrid.innerHTML = `<p class="col-span-full text-xs font-mono text-[var(--r-muted)]">Próximamente álbumes oficiales del equipo.</p>`;
             } else {

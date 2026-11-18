@@ -430,18 +430,32 @@ const gallerySchema = {
     await fetch(`https://muntrume.atrumin16.workers.dev/api/gallery/${encodeURIComponent(id)}/like`, { method: 'POST' }).catch(() => {});
   });
 
+  const SLUG_GROUPS: string[][] = [
+    ['chevrolet-corvette-z06-gt3-r', 'chevrolet-corvette-z06-gt3r', 'chevyvettez06rgt3'],
+    ['super-formula-sf23', 'super-formula-sf23-toyota'],
+    ['porsche-911-cup-992-1', 'porsche-911-gt3-cup', 'porsche-911-gt3-cup-992', 'porsche992cup'],
+    ['porsche-911-gt3-r-992', 'porsche992rgt3'],
+    ['dirt-micro-sprint', 'dirt-outlaw-micro-sprint-winged'],
+    ['dirt-micro-sprint-non-winged', 'dirt-outlaw-micro-sprint-non-winged'],
+  ];
+
   const fetchGalleryPage = async (sort = 'popular') => {
     const altsRaw = new URLSearchParams(window.location.search).get('alts') || '';
     const extraSlugs = altsRaw.split(',').map((s) => s.trim()).filter(Boolean);
-    if (initCar && (initCar === 'chevrolet-corvette-z06-gt3r' || initCar === 'chevrolet-corvette-z06-gt3-r')) {
-      const twin = initCar === 'chevrolet-corvette-z06-gt3r' ? 'chevrolet-corvette-z06-gt3-r' : 'chevrolet-corvette-z06-gt3r';
-      if (!extraSlugs.includes(twin)) extraSlugs.push(twin);
+    if (initCar) {
+      const lower = initCar.toLowerCase();
+      const grp = SLUG_GROUPS.find((g) => g.includes(lower));
+      if (grp) {
+        for (const alias of grp) {
+          if (alias !== lower && !extraSlugs.includes(alias)) extraSlugs.push(alias);
+        }
+      }
     }
     const carParam = initCar ? `&car=${encodeURIComponent(initCar)}` : '';
     const primary = await fetch(`https://muntrume.atrumin16.workers.dev/api/gallery?status=published&sort=${encodeURIComponent(sort)}&limit=200&offset=0${carParam}`)
       .then((r) => (r.ok ? r.json() : null));
     if (!primary || !Array.isArray(primary.photos) || extraSlugs.length === 0) return primary;
-    const seen = new Set(primary.photos.map((p: any) => p.id || p.imageUrl));
+    const seen = new Set(primary.photos.map((p: any) => p.imageUrl || p.id));
     const extras = await Promise.all(
       extraSlugs.map((slug) =>
         fetch(`https://muntrume.atrumin16.workers.dev/api/gallery?status=published&sort=${encodeURIComponent(sort)}&limit=200&offset=0&car=${encodeURIComponent(slug)}`)
@@ -452,7 +466,7 @@ const gallerySchema = {
     for (const ex of extras) {
       if (!ex || !Array.isArray(ex.photos)) continue;
       for (const p of ex.photos) {
-        const k = p.id || p.imageUrl;
+        const k = p.imageUrl || p.id;
         if (!seen.has(k)) {
           seen.add(k);
           primary.photos.push(p);
