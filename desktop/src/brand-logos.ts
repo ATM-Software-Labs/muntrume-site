@@ -94,7 +94,7 @@ function buildOfficialSvg(logoId: string, color: string): string | null {
   const d = OFFICIAL_BRAND_PATHS[logoId];
   if (!d) return null;
   const finalColor = BRAND_ACCENT_OVERRIDE[logoId] || color;
-  return `<svg viewBox="0 0 24 24" fill="${finalColor}" style="color:${finalColor}" class="w-full h-full"><path d="${d}"/></svg>`;
+  return `<svg viewBox="0 0 24 24" fill="${finalColor}" fill-rule="evenodd" clip-rule="evenodd" style="color:${finalColor}" class="w-full h-full"><path fill-rule="evenodd" d="${d}"/></svg>`;
 }
 
 function computeCarBrandInfo(carNameOrFolder: string): CarBrandInfo {
