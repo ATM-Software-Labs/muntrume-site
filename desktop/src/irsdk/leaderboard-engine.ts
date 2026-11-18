@@ -210,13 +210,17 @@ export class LeaderboardEngine {
           clsState.prevGap = item.bestLap;
         }
       } else {
+        const refLapSec = clsState.bestLap > 10 ? clsState.bestLap : (item.bestLap > 10 ? item.bestLap : (item.lastLap > 10 ? item.lastLap : 105));
+        const curProgress = Math.max(0, item.laps) + Math.max(0, Math.min(0.9999, item.lapDistPct));
         if (isClassLeader) {
-          clsState.f2Gap = item.f2Time > 0 ? item.f2Time : 0;
+          clsState.bestLap = refLapSec;
+          clsState.f2Gap = curProgress;
           clsState.prevGap = 0;
         } else {
-          const rawF2 = item.f2Time > 0 ? item.f2Time : (clsRank - 1) * 0.8;
-          gap = Math.max(0, rawF2 - clsState.f2Gap);
-          interval = clsState.prevGap > 0 ? Math.max(0.05, gap - clsState.prevGap) : gap;
+          const lapDiff = Math.max(0, clsState.f2Gap - curProgress);
+          const liveGap = lapDiff * refLapSec;
+          gap = liveGap > 0.001 ? liveGap : (item.f2Time > 0 ? item.f2Time : 0);
+          interval = clsState.prevGap > 0 ? Math.max(0, gap - clsState.prevGap) : gap;
           clsState.prevGap = gap;
         }
       }
