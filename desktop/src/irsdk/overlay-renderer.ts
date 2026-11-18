@@ -432,15 +432,21 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
       const sofData = classSofMap.get(group.classKey);
       const clsSofExact = sofData && sofData.iRatings.length > 0 ? computeClassSof(sofData.iRatings) : 0;
       const clsReg = sofData?.registered || group.totalActive;
+      const clsKeyUpper = (group.className || "").toUpperCase();
+      const distinctClassColor =
+        clsKeyUpper.includes("GTP") || clsKeyUpper.includes("LMDH") || clsKeyUpper.includes("LMH") ? "#facc15" :
+        clsKeyUpper.includes("LMP2") ? "#38bdf8" :
+        clsKeyUpper.includes("GT3") ? "#a855f7" :
+        clsKeyUpper.includes("GT4") ? "#fb923c" :
+        clsKeyUpper.includes("TCR") || clsKeyUpper.includes("CUP") ? "#10b981" :
+        (group.color || "#38bdf8");
       const classHeaderHtml = `
-        <div class="mmt-std-class-header flex items-center justify-between px-2 py-0.5 text-[10px] font-mono font-bold" style="border-left: 3px solid ${group.color}; background: ${group.color}1c;">
+        <div class="mmt-std-class-header flex items-center justify-between px-2 py-1 text-[10px] font-mono font-bold" style="border-left: 4px solid ${distinctClassColor}; background: linear-gradient(90deg, ${distinctClassColor}30 0%, rgba(12,15,22,0.85) 100%); border-top: 1px solid ${distinctClassColor}45;">
           <div class="flex items-center gap-2">
-            <span class="px-1.5 py-0.5 rounded-[2px] text-[10px] font-black tracking-wide" style="background:${group.color};color:#090b0f;">${group.className}</span>
-            <span class="text-white/80 tabular-nums">${group.totalActive}/${clsReg}</span>
-            <span class="text-emerald-300 tabular-nums">${remClock}${validTotalLaps > 0 ? `/${validTotalLaps}v` : ""}</span>
-            ${typeof tTrack === "number" && tTrack > 0 ? `<span class="text-white/70 tabular-nums">${tTrack.toFixed(0)}°C</span>` : ""}
+            <span class="px-1.5 py-0.5 rounded-[3px] text-[10px] font-black tracking-wider uppercase shadow-sm" style="background:${distinctClassColor};color:#090b0f;">${group.className}</span>
+            <span class="text-white/75 tabular-nums text-[9.5px]">${group.totalActive}/${clsReg} coches</span>
           </div>
-          <span class="text-white/90 font-extrabold tabular-nums">${clsSofExact > 0 ? `SOF ${clsSofExact}` : `${group.totalActive} coches`}</span>
+          <span class="text-white/90 font-extrabold tabular-nums text-[10px]">${clsSofExact > 0 ? `SOF ${clsSofExact}` : ""}</span>
         </div>
       `;
 
@@ -515,10 +521,10 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
           const intCell = `<span class="w-[40px] shrink-0 text-right tabular-nums text-[10px] ${isLeader ? "text-white/45 font-bold" : "text-white/65"}">${intText}</span>`;
 
           const pitCell = e.pitStatus === "PIT"
-            ? `<span class="w-[22px] shrink-0 text-center px-0.5 rounded-[2px] bg-amber-500/25 text-amber-300 text-[8.5px] font-black">PIT</span>`
+            ? `<span class="w-[24px] shrink-0 text-center px-0.5 rounded-[2px] bg-amber-500/25 text-amber-300 text-[8.5px] font-black">PIT</span>`
             : e.pitStatus === "OUT"
-            ? `<span class="w-[22px] shrink-0 text-center px-0.5 rounded-[2px] bg-sky-500/25 text-sky-300 text-[8.5px] font-black">OUT</span>`
-            : ``;
+            ? `<span class="w-[24px] shrink-0 text-center px-0.5 rounded-[2px] bg-sky-500/25 text-sky-300 text-[8.5px] font-black">OUT</span>`
+            : `<span class="w-[24px] shrink-0"></span>`;
 
           const activeLapSec = isRaceSession
             ? (e.lastLapTime > 0 ? e.lastLapTime : e.bestLapTime)

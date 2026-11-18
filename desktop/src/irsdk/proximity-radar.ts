@@ -273,13 +273,30 @@ export function renderLiveTrackMapCanvas(canvas: HTMLCanvasElement, state: Irsdk
     }
   }
 
-  // Draw 3.5px vector trace split by sectors (Purple/Green/Red/Gray)
-  ctx.lineWidth = 3.5;
+  // Base oscura exterior para nitidez sobre cualquier fondo de pista
+  ctx.save();
+  ctx.lineWidth = 5.5;
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+  ctx.strokeStyle = "rgba(8, 10, 15, 0.85)";
+  ctx.beginPath();
+  for (let i = 0; i <= 240; i++) {
+    const p = pointAtPct(i / 240);
+    if (i === 0) ctx.moveTo(p.x, p.y);
+    else ctx.lineTo(p.x, p.y);
+  }
+  ctx.closePath();
+  ctx.stroke();
+  ctx.restore();
+
+  // Draw 3px vector trace split by sectors (Purple/Green/Red/Gray)
+  ctx.lineWidth = 3;
+  ctx.lineJoin = "round";
   ctx.lineCap = "round";
   for (let s = 0; s < sectors.length; s++) {
     const startPct = sectors[s].startPct;
     const endPct = s + 1 < sectors.length ? sectors[s + 1].startPct : 1.0;
-    const steps = Math.max(8, Math.round((endPct - startPct) * 64));
+    const steps = Math.max(24, Math.round((endPct - startPct) * 240));
     ctx.strokeStyle = trackSectorState.currentLapColors[s] || "rgba(255, 255, 255, 0.28)";
     ctx.beginPath();
     for (let i = 0; i <= steps; i++) {
