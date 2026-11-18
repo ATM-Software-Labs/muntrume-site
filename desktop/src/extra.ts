@@ -4,7 +4,6 @@ import { areSessionsCompatible, computeDistanceDelta, resampleTrackByDistance } 
 import { cleanTelemetrySignals, detectCornerKeyEvents } from "./telemetry/signal-cleaner";
 import { analyzeStintConsistency } from "./telemetry/consistency";
 import { setActiveCoachReference } from "./features-48-50";
-import { renderCenteredSteeringWheel } from "./irsdk/gpu-pedals";
 import {
   renderDigiFlagPanelWidget,
   renderRejoinHelperWidget,
@@ -3803,10 +3802,6 @@ function safeRenderWidget(el: HTMLElement | null, fn: () => void): void {
   document.querySelectorAll<HTMLElement>("#ovGpuPedals, #ovGpuPedalsFloat").forEach((container) => {
     if (container.offsetParent !== null) safeRenderWidget(container, () => renderGpuPedalsWidget(container, pedalSample));
   });
-  const wheelCanvas = document.getElementById("ovSteeringWheelFloat") as HTMLCanvasElement | null;
-  if (wheelCanvas && wheelCanvas.offsetParent !== null) {
-    safeRenderWidget(wheelCanvas, () => renderCenteredSteeringWheel(wheelCanvas, sample.steering, irsdkState?.activeDriver?.carPath));
-  }
   const haloDisabled = loadDisabledWidgets().has("halo");
   const carLeftRight = haloDisabled ? 0 : (sample.carLeftRight ?? irsdkState?.frame.carLeftRight ?? 0);
   renderProximityHaloBar(carLeftRight);

@@ -2104,7 +2104,7 @@
       </div>
 
       <!-- 6. Bottom-Center Pedals (280x82px scaled 1.15x left of wheel) + Centered Steering Wheel (46x46px at left: 50%) -->
-      <div id="floatInputsCard" class="mmt-float-widget fixed right-[calc(50%+38px)] bottom-[24px] w-[280px] flex flex-col items-center gap-1 pointer-events-auto" style="zoom: 1.15;" data-widget="inputs">
+      <div id="floatInputsCard" class="mmt-float-widget fixed left-1/2 -translate-x-1/2 bottom-[24px] w-[280px] flex flex-col items-center gap-1 pointer-events-auto" style="zoom: 1.15;" data-widget="inputs">
         <div id="floatShiftLightsRow" class="flex flex-col items-center gap-1 w-full" data-widget="lights">
           <div id="ovDigiFlagFloat" class="w-full max-w-[260px]" style="display: none;"></div>
           <div class="flex items-center gap-0.5 px-2 py-0.5 rounded bg-[#0a0c10]/70" id="ovShiftLightsFloat"></div>
@@ -2118,12 +2118,7 @@
       </div>
 
       <!-- 6b. Centered Steering Wheel (46x46px at left: 50%, adjustable Y) -->
-      <div id="floatSteeringWheelCard" class="fixed left-[calc(50%-28px)] bottom-[34px] w-[60px] h-[60px] pointer-events-none z-25 flex items-center justify-center" style="background:transparent !important;border:none !important;box-shadow:none !important;" data-widget="wheel"><div id="ovGearSpeedBadge" class="mr-1.5 px-1.5 py-0.5 rounded-[4px] bg-[#0b0e14]/90 border border-white/15 flex flex-col items-center justify-center min-w-[34px] leading-none">
-      <span id="ovGearText" class="text-[15px] font-black font-mono text-amber-400">N</span>
-      <span id="ovSpeedText" class="text-[8.5px] font-mono font-bold text-white/75 mt-0.5">0</span>
-    </div>
-    <canvas id="ovSteeringWheelFloat" width="128" height="128" style="width:60px;height:60px;display:block;"></canvas></div>
-    </div>
+      <div id="floatSteeringWheelCard" class="fixed left-[calc(50%+150px)] bottom-[24px] pointer-events-none z-25 flex items-center justify-center" data-widget="wheel"><div id="ovGearSpeedBadge" class="px-2 py-1 rounded-[5px] bg-[#0b0e14]/92 border border-white/15 flex flex-col items-center justify-center min-w-[42px] leading-none shadow-lg"><span id="ovGearText" class="text-[18px] font-black font-mono text-amber-400">N</span><span id="ovSpeedText" class="text-[9.5px] font-mono font-bold text-white/80 mt-0.5">0</span></div></div>
 
     <!-- Prompt 48: FirstRunWizard Modal (Onboarding en 30 Segundos) -->
     <div id="firstRunWizardModal" hidden class="fixed inset-0 z-[10000] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
