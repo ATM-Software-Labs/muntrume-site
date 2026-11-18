@@ -1012,11 +1012,7 @@
                     <input id="hudScaleRange" type="range" min="70" max="135" value="115" class="w-20 accent-[#00e699]" />
                     <span id="hudScaleVal" class="text-r-text tabular-nums w-9">115%</span>
                   </label>
-                  <label class="flex items-center gap-1.5 font-mono text-[11px] text-r-muted">
-                    <span>Posición Y del Volante:</span>
-                    <input id="hudWheelPosY" type="range" min="0" max="160" value="24" class="w-20 accent-[#00e699]" />
-                    <span id="hudWheelPosYVal" class="text-r-text tabular-nums w-10">24px</span>
-                  </label>
+                  
                   <label class="flex items-center gap-1.5 font-mono text-[11px] text-r-muted">
                     <span>Barra Estado / Delta:</span>
                     <select id="hudStatusAnchorSelect" class="h-8 rounded-lg border border-r-line bg-r-bg px-2 text-r-text font-mono text-[11px]">
@@ -2108,7 +2104,7 @@
       </div>
 
       <!-- 6. Bottom-Center Pedals (280x82px scaled 1.15x left of wheel) + Centered Steering Wheel (46x46px at left: 50%) -->
-      <div id="floatInputsCard" class="mmt-float-widget fixed right-[calc(50%+36px)] bottom-[24px] w-[280px] flex flex-col items-center gap-1 pointer-events-auto" style="zoom: 1.15;" data-widget="inputs">
+      <div id="floatInputsCard" class="mmt-float-widget fixed left-1/2 -translate-x-1/2 bottom-[24px] w-[280px] flex flex-col items-center gap-1 pointer-events-auto" style="zoom: 1.15;" data-widget="inputs">
         <div id="floatShiftLightsRow" class="flex flex-col items-center gap-1 w-full" data-widget="lights">
           <div id="ovDigiFlagFloat" class="w-full max-w-[260px]" style="display: none;"></div>
           <div class="flex items-center gap-0.5 px-2 py-0.5 rounded bg-[#0a0c10]/70" id="ovShiftLightsFloat"></div>
@@ -2122,9 +2118,7 @@
       </div>
 
       <!-- 6b. Centered Steering Wheel (46x46px at left: 50%, adjustable Y) -->
-      <div id="floatSteeringWheelCard" class="mmt-float-widget fixed left-1/2 -translate-x-1/2 bottom-[24px] w-[46px] h-[46px] pointer-events-none z-25" data-widget="wheel">
-        <canvas id="ovSteeringWheelFloat" width="46" height="46" style="width:46px;height:46px;display:block;"></canvas>
-      </div>
+      <div id="floatSteeringWheelCard" class="hidden" style="display:none !important;" data-widget="wheel"><canvas id="ovSteeringWheelFloat" width="46" height="46" class="hidden"></canvas></div>
     </div>
 
     <!-- Prompt 48: FirstRunWizard Modal (Onboarding en 30 Segundos) -->
