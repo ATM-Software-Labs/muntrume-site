@@ -734,16 +734,16 @@ const overlaySchema = {
 
       const drivers = [
         // GTP
-        { id: 1,  num: "01", name: "M. Lindqvist",  cls: "GTP",  brand: "cadillac", lic: "A", sr: "4.99", ir: "3.8k", irDelta: +58, lap: 15, pct: 0.54, speed: 1.003, isPit: false },
-        { id: 2,  num: "07", name: "K. Takahashi",  cls: "GTP",  brand: "porsche",  lic: "A", sr: "4.42", ir: "3.3k", irDelta: +24, lap: 15, pct: 0.51, speed: 1.001, isPit: false },
-        { id: 3,  num: "24", name: "L. Van Der Berg",cls: "GTP", brand: "bmw",      lic: "A", sr: "3.85", ir: "3.1k", irDelta: -19, lap: 15, pct: 0.45, speed: 0.998, isPit: false },
-        // LMP2
-        { id: 4,  num: "32", name: "R. Moretti",    cls: "LMP2", brand: "dallara",  lic: "A", sr: "4.10", ir: "2.9k", irDelta: +41, lap: 14, pct: 0.67, speed: 0.946, isPit: false },
-        { id: 5,  num: "48", name: "J. O'Connor",   cls: "LMP2", brand: "dallara",  lic: "B", sr: "3.64", ir: "2.7k", irDelta: -14, lap: 14, pct: 0.61, speed: 0.943, isPit: false },
-        // GT3 — Muntrume Motorsport trio (#16 A. Trujillo, #1 M. Berbis, #22 E. Chongkan)
-        { id: 6,  num: "1",  name: "M. Berbis",     cls: "GT3",  brand: "porsche",  lic: "A", sr: "4.65", ir: "2.9k", irDelta: +44, lap: 14, pct: 0.5015, speed: 0.846, isPit: false, battleSide: "left" },
+        { id: 1,  num: "01", name: "M. Lindqvist",  cls: "GTP",  brand: "cadillac", lic: "A", sr: "4.99", ir: "3.8k", irDelta: +58, lap: 15, pct: 0.5400, speed: 1.003, isPit: false },
+        { id: 2,  num: "07", name: "K. Takahashi",  cls: "GTP",  brand: "porsche",  lic: "A", sr: "4.42", ir: "3.3k", irDelta: +24, lap: 15, pct: 0.5180, speed: 1.001, isPit: false },
+        { id: 3,  num: "24", name: "L. Van Der Berg",cls: "GTP", brand: "bmw",      lic: "A", sr: "3.85", ir: "3.1k", irDelta: -19, lap: 15, pct: 0.4500, speed: 0.998, isPit: false },
+        // LMP2 (lap 15 lapping GT3)
+        { id: 4,  num: "32", name: "R. Moretti",    cls: "LMP2", brand: "dallara",  lic: "A", sr: "4.10", ir: "2.9k", irDelta: +41, lap: 15, pct: 0.6700, speed: 0.946, isPit: false },
+        { id: 5,  num: "48", name: "J. O'Connor",   cls: "LMP2", brand: "dallara",  lic: "B", sr: "3.64", ir: "2.7k", irDelta: -14, lap: 14, pct: 0.6100, speed: 0.943, isPit: false },
+        // GT3 — Podio 1-2-3 Muntrume Motorsport (#16 A. Trujillo P1, #1 M. Berbis P2 +0.6s, #22 E. Chongkan P3 +1.3s)
         { id: 7,  num: "16", name: "A. Trujillo",   cls: "GT3",  brand: "ford",     lic: "A", sr: "4.99", ir: "2.7k", irDelta: +65, lap: 14, pct: 0.5000, speed: 0.846, isPit: false, isMe: true },
-        { id: 8,  num: "22", name: "E. Chongkan",   cls: "GT3",  brand: "mclaren",  lic: "B", sr: "3.41", ir: "2.4k", irDelta: +18, lap: 14, pct: 0.4982, speed: 0.846, isPit: false, battleSide: "right" },
+        { id: 6,  num: "1",  name: "M. Berbis",     cls: "GT3",  brand: "porsche",  lic: "A", sr: "4.65", ir: "2.9k", irDelta: +44, lap: 14, pct: 0.4947, speed: 0.846, isPit: false, battleSide: "left" },
+        { id: 8,  num: "22", name: "E. Chongkan",   cls: "GT3",  brand: "mclaren",  lic: "B", sr: "3.41", ir: "2.4k", irDelta: +18, lap: 14, pct: 0.4884, speed: 0.846, isPit: false, battleSide: "right" },
         { id: 9,  num: "77", name: "D. Rossi",      cls: "GT3",  brand: "ferrari",  lic: "B", sr: "3.12", ir: "2.3k", irDelta: -24, lap: 14, pct: 0.4620, speed: 0.841, isPit: false },
         { id: 10, num: "95", name: "T. Schneider",  cls: "GT3",  brand: "aston",    lic: "C", sr: "2.88", ir: "1.9k", irDelta: -36, lap: 13, pct: 0.4350, speed: 0.835, isPit: false },
         { id: 11, num: "63", name: "S. Dubois",     cls: "GT3",  brand: "bmw",      lic: "D", sr: "2.40", ir: "1.6k", irDelta: -42, lap: 13, pct: 0.5450, speed: 0.420, isPit: true },
@@ -881,35 +881,27 @@ const overlaySchema = {
         });
       }
 
-      // Render Standings Multiclase
-      function renderStandings() {
-        if (!standingsEl || !enabledMods.standings) return;
+      // Render Standings Multiclase (DOM built once; only textContent updated at <= 4 Hz)
+      const standingsRows = [];
+      let standingsInit = false;
+
+      function initStandingsDom() {
+        if (!standingsEl || standingsInit) return;
+        standingsInit = true;
         let html = "";
         ["GTP", "LMP2", "GT3"].forEach((clsKey) => {
           const meta = CLASSES[clsKey];
-          const group = drivers
-            .filter((d) => d.cls === clsKey)
-            .sort((a, b) => (b.lap + b.pct) - (a.lap + a.pct));
+          const group = drivers.filter((d) => d.cls === clsKey);
           if (!group.length) return;
-
           html += `<div class="st-cls-head" style="border-left-color:${meta.color}">
             <span class="st-cls-name" style="color:${meta.color}">${clsKey}</span>
             <span class="st-cls-sof">SOF ${meta.sof} · ${group.length} CARS</span>
           </div>`;
-
-          const leaderDist = group[0].lap + group[0].pct;
           group.forEach((d, idx) => {
-            const dist = d.lap + d.pct;
-            const gapSec = (leaderDist - dist) * meta.lapSec;
-            const prevDist = idx > 0 ? group[idx - 1].lap + group[idx - 1].pct : dist;
-            const intSec = (prevDist - dist) * meta.lapSec;
-            const gapStr = idx === 0 ? "LDR" : `+${gapSec.toFixed(1)}s`;
-            const intStr = idx === 0 ? "—" : `+${intSec.toFixed(1)}`;
             const irCls = d.irDelta >= 0 ? "ir-pos" : "ir-neg";
             const irStr = d.irDelta >= 0 ? `+${d.irDelta}` : `${d.irDelta}`;
             const licBg = LIC_COLOR[d.lic] || "#64748b";
-
-            html += `<div class="st-row ${d.isMe ? "is-me" : ""} ${d.isPit ? "is-pit" : ""}" style="border-left-color:${meta.color}">
+            html += `<div class="st-row ${d.isMe ? "is-me" : ""} ${d.isPit ? "is-pit" : ""}" data-st-id="${d.id}" style="border-left-color:${meta.color}">
               <span class="st-pos">${idx + 1}</span>
               ${brandSvg(d.brand, 14)}
               <span class="st-num">#${d.num}</span>
@@ -917,21 +909,125 @@ const overlaySchema = {
               <span class="st-lic" style="background:${licBg}">${d.lic} ${d.sr}</span>
               <span class="st-ir">${d.ir}</span>
               <span class="st-ird ${irCls}">${irStr}</span>
-              <span class="st-int">${intStr}</span>
-              <span class="st-gap">${gapStr}</span>
+              <span class="st-int">—</span>
+              <span class="st-gap">LDR</span>
             </div>`;
           });
         });
         standingsEl.innerHTML = html;
+        ["GTP", "LMP2", "GT3"].forEach((clsKey) => {
+          const group = drivers.filter((d) => d.cls === clsKey);
+          group.forEach((d) => {
+            const rowEl = standingsEl.querySelector(`[data-st-id="${d.id}"]`);
+            if (rowEl) {
+              standingsRows.push({
+                d,
+                clsKey,
+                rowEl,
+                posEl: rowEl.querySelector(".st-pos"),
+                intEl: rowEl.querySelector(".st-int"),
+                gapEl: rowEl.querySelector(".st-gap"),
+                lastInt: "",
+                lastGap: "",
+                lastPos: "",
+              });
+            }
+          });
+        });
       }
 
-      // Render Relative Compacto (±3 cars around #16)
+      const stGroupBuf = [];
+      function renderStandings() {
+        if (!standingsEl || !enabledMods.standings) return;
+        if (!standingsInit) initStandingsDom();
+        ["GTP", "LMP2", "GT3"].forEach((clsKey) => {
+          const meta = CLASSES[clsKey];
+          stGroupBuf.length = 0;
+          for (let i = 0; i < standingsRows.length; i++) {
+            if (standingsRows[i].clsKey === clsKey) stGroupBuf.push(standingsRows[i]);
+          }
+          if (!stGroupBuf.length) return;
+          stGroupBuf.sort((a, b) => (b.d.lap + b.d.pct) - (a.d.lap + a.d.pct));
+          const leaderDist = stGroupBuf[0].d.lap + stGroupBuf[0].d.pct;
+          for (let idx = 0; idx < stGroupBuf.length; idx++) {
+            const slot = stGroupBuf[idx];
+            const dist = slot.d.lap + slot.d.pct;
+            const gapSec = Math.max(0, (leaderDist - dist) * meta.lapSec);
+            const prevDist = idx > 0 ? stGroupBuf[idx - 1].d.lap + stGroupBuf[idx - 1].d.pct : dist;
+            const intSec = Math.max(0, (prevDist - dist) * meta.lapSec);
+            const gapStr = idx === 0 ? "LDR" : `+${gapSec.toFixed(1)}s`;
+            const intStr = idx === 0 ? "—" : `+${intSec.toFixed(1)}`;
+            const posStr = String(idx + 1);
+            if (slot.lastPos !== posStr && slot.posEl) {
+              slot.posEl.textContent = posStr;
+              slot.lastPos = posStr;
+            }
+            if (slot.lastInt !== intStr && slot.intEl) {
+              slot.intEl.textContent = intStr;
+              slot.lastInt = intStr;
+            }
+            if (slot.lastGap !== gapStr && slot.gapEl) {
+              slot.gapEl.textContent = gapStr;
+              slot.lastGap = gapStr;
+            }
+          }
+        });
+      }
+
+      // Render Relative Compacto (fixed 7-slot DOM pool; zero per-tick allocations)
+      const relPool = [];
+      const relItems = drivers.map((d) => ({ d, timeDelta: 0, tone: "same" }));
+      const relAhead = [];
+      const relBehind = [];
+      const relOrdered = [];
+      let relInit = false;
+
+      function initRelativePool() {
+        if (!relativeEl || relInit) return;
+        relInit = true;
+        let html = "";
+        for (let i = 0; i < 7; i++) {
+          html += `<div class="rel-row rel-row--same" data-rel-slot="${i}">
+            <span class="rel-num"></span>
+            <span class="rel-brand-slot"></span>
+            <span class="rel-name"></span>
+            <span class="rel-pit" hidden>PIT</span>
+            <span class="rel-lic"></span>
+            <span class="rel-ir"></span>
+            <span class="rel-gap"></span>
+          </div>`;
+        }
+        relativeEl.innerHTML = html;
+        for (let i = 0; i < 7; i++) {
+          const rowEl = relativeEl.querySelector(`[data-rel-slot="${i}"]`);
+          relPool.push({
+            rowEl,
+            numEl: rowEl.querySelector(".rel-num"),
+            brandEl: rowEl.querySelector(".rel-brand-slot"),
+            nameEl: rowEl.querySelector(".rel-name"),
+            pitEl: rowEl.querySelector(".rel-pit"),
+            licEl: rowEl.querySelector(".rel-lic"),
+            irEl: rowEl.querySelector(".rel-ir"),
+            gapEl: rowEl.querySelector(".rel-gap"),
+            lastKey: "",
+            lastGap: "",
+          });
+        }
+      }
+
       function renderRelative() {
         if (!relativeEl || !enabledMods.relative) return;
+        if (!relInit) initRelativePool();
         const me = drivers.find((d) => d.isMe) || drivers[0];
         const refLapSec = CLASSES[me.cls].lapSec;
 
-        const items = drivers.map((d) => {
+        relAhead.length = 0;
+        relBehind.length = 0;
+        let meItem = null;
+
+        for (let i = 0; i < drivers.length; i++) {
+          const d = drivers[i];
+          const item = relItems[i];
           let dp = d.pct - me.pct;
           if (dp > 0.5) dp -= 1;
           if (dp < -0.5) dp += 1;
@@ -942,55 +1038,163 @@ const overlaySchema = {
           else if (d.isMe) tone = "me";
           else if (lapDiff > 0) tone = "lapping";
           else if (lapDiff < 0) tone = "lapped";
-          return { d, timeDelta, tone };
-        });
+          item.d = d;
+          item.timeDelta = timeDelta;
+          item.tone = tone;
+          if (d.isMe) meItem = item;
+          else if (timeDelta >= 0) relAhead.push(item);
+          else relBehind.push(item);
+        }
 
-        const ahead = items.filter((x) => !x.d.isMe && x.timeDelta >= 0).sort((a, b) => a.timeDelta - b.timeDelta).slice(0, 3).reverse();
-        const behind = items.filter((x) => !x.d.isMe && x.timeDelta < 0).sort((a, b) => b.timeDelta - a.timeDelta).slice(0, 3);
-        const meItem = items.find((x) => x.d.isMe);
-        const ordered = [...ahead, meItem, ...behind].filter(Boolean);
+        relAhead.sort((a, b) => a.timeDelta - b.timeDelta);
+        relBehind.sort((a, b) => b.timeDelta - a.timeDelta);
 
-        relativeEl.innerHTML = ordered.map(({ d, timeDelta, tone }) => {
-          const clsColor = CLASSES[d.cls].color;
+        relOrdered.length = 0;
+        const aheadCount = Math.min(3, relAhead.length);
+        for (let i = aheadCount - 1; i >= 0; i--) relOrdered.push(relAhead[i]);
+        if (meItem) relOrdered.push(meItem);
+        const behindCount = Math.min(3, relBehind.length);
+        for (let i = 0; i < behindCount; i++) relOrdered.push(relBehind[i]);
+
+        for (let i = 0; i < relPool.length; i++) {
+          const slot = relPool[i];
+          const entry = relOrdered[i];
+          if (!entry) {
+            slot.rowEl.style.display = "none";
+            continue;
+          }
+          slot.rowEl.style.display = "";
+          const { d, timeDelta, tone } = entry;
+          const slotKey = `${d.id}|${tone}`;
+          if (slot.lastKey !== slotKey) {
+            slot.lastKey = slotKey;
+            slot.rowEl.className = `rel-row rel-row--${tone}`;
+            slot.rowEl.style.borderLeftColor = CLASSES[d.cls].color;
+            slot.numEl.textContent = `#${d.num}`;
+            slot.brandEl.innerHTML = brandSvg(d.brand, 13);
+            slot.nameEl.textContent = d.name;
+            if (d.isPit) {
+              slot.pitEl.hidden = false;
+              slot.licEl.hidden = true;
+              slot.irEl.hidden = true;
+            } else {
+              slot.pitEl.hidden = true;
+              slot.licEl.hidden = false;
+              slot.irEl.hidden = false;
+              slot.licEl.style.background = LIC_COLOR[d.lic] || "#64748b";
+              slot.licEl.textContent = d.lic;
+              slot.irEl.textContent = d.ir;
+            }
+          }
           const gapText = d.isMe ? "0.0s" : `${timeDelta >= 0 ? "+" : ""}${timeDelta.toFixed(1)}s`;
-          const licBg = LIC_COLOR[d.lic] || "#64748b";
-          return `<div class="rel-row rel-row--${tone}" style="border-left-color:${clsColor}">
-            <span class="rel-num">#${d.num}</span>
-            ${brandSvg(d.brand, 13)}
-            <span class="rel-name">${d.name}</span>
-            ${d.isPit ? '<span class="rel-pit">PIT</span>' : `<span class="rel-lic" style="background:${licBg}">${d.lic}</span><span class="rel-ir">${d.ir}</span>`}
-            <span class="rel-gap">${gapText}</span>
-          </div>`;
-        }).join("");
+          if (slot.lastGap !== gapText) {
+            slot.lastGap = gapText;
+            slot.gapEl.textContent = gapText;
+          }
+        }
       }
 
-      // Render Track Map Dots
+      // Render Track Map Dots (SVG nodes created once; only cx/cy/x/y attributes updated)
+      const trackDotNodes = [];
+      let trackDotsInit = false;
+
+      function initTrackMapDom() {
+        if (!trackDotsEl || trackDotsInit) return;
+        trackDotsInit = true;
+        const ns = "http://www.w3.org/2000/svg";
+        drivers.forEach((d) => {
+          const color = CLASSES[d.cls].color;
+          let halo = null;
+          if (d.isMe) {
+            halo = document.createElementNS(ns, "circle");
+            halo.setAttribute("r", "10.5");
+            halo.setAttribute("fill", "rgba(16,185,129,0.28)");
+            halo.setAttribute("stroke", "#10b981");
+            halo.setAttribute("stroke-width", "1.6");
+            trackDotsEl.appendChild(halo);
+          }
+          const dot = document.createElementNS(ns, "circle");
+          dot.setAttribute("r", d.isMe ? "6.5" : "5.2");
+          dot.setAttribute("fill", color);
+          dot.setAttribute("stroke", "#090b0f");
+          dot.setAttribute("stroke-width", "1.2");
+          trackDotsEl.appendChild(dot);
+
+          const label = document.createElementNS(ns, "text");
+          label.setAttribute("text-anchor", "middle");
+          label.setAttribute("font-size", "6.4");
+          label.setAttribute("font-family", "ui-monospace,monospace");
+          label.setAttribute("font-weight", "800");
+          label.setAttribute("fill", "#090b0f");
+          label.textContent = d.num;
+          trackDotsEl.appendChild(label);
+
+          trackDotNodes.push({ d, halo, dot, label });
+        });
+      }
+
       function renderTrackMap() {
         if (!trackDotsEl || !enabledMods.trackmap) return;
-        let svg = "";
-        drivers.forEach((d) => {
-          const [x, y] = pointOnSpline(d.pct);
-          const color = CLASSES[d.cls].color;
-          if (d.isMe) {
-            svg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="10.5" fill="rgba(16,185,129,0.28)" stroke="#10b981" stroke-width="1.6"/>`;
+        if (!trackDotsInit) initTrackMapDom();
+        for (let i = 0; i < trackDotNodes.length; i++) {
+          const node = trackDotNodes[i];
+          const [x, y] = pointOnSpline(node.d.pct);
+          const xs = x.toFixed(1);
+          const ys = y.toFixed(1);
+          if (node.halo) {
+            node.halo.setAttribute("cx", xs);
+            node.halo.setAttribute("cy", ys);
           }
-          svg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${d.isMe ? 6.5 : 5.2}" fill="${color}" stroke="#090b0f" stroke-width="1.2"/>`;
-          svg += `<text x="${x.toFixed(1)}" y="${(y + 2.4).toFixed(1)}" text-anchor="middle" font-size="6.4" font-family="ui-monospace,monospace" font-weight="800" fill="#090b0f">${d.num}</text>`;
-        });
-        trackDotsEl.innerHTML = svg;
+          node.dot.setAttribute("cx", xs);
+          node.dot.setAttribute("cy", ys);
+          node.label.setAttribute("x", xs);
+          node.label.setAttribute("y", (y + 2.4).toFixed(1));
+        }
+      }
+
+      // Shared 10s lap-sector telemetry model (straight -> heavy braking + heel-toe downshifts -> apex)
+      function computeTelemetryState(tSec) {
+        const u = (tSec % 10) / 10;
+        let throttle = 1;
+        let brake = 0;
+        let clutch = 0;
+        let speed = 264;
+        let gear = 6;
+        let downshiftFlash = 0;
+
+        if (u < 0.48) {
+          // Flat-out straight acceleration
+          const p = u / 0.48;
+          throttle = Math.min(1, 0.88 + p * 0.12);
+          speed = Math.round(218 + p * 48);
+          gear = speed > 242 ? 6 : 5;
+        } else if (u < 0.74) {
+          // Heavy braking zone (85-95% brake + heel-and-toe downshift blips 6 -> 5 -> 4 -> 3 -> 2)
+          const b = (u - 0.48) / 0.26;
+          brake = b < 0.15 ? 0.55 + (b / 0.15) * 0.38 : b < 0.72 ? 0.88 + Math.sin(b * 28) * 0.05 : Math.max(0.18, 0.90 * (1 - (b - 0.72) / 0.28));
+          const blipPhase = (b * 4) % 1;
+          const isBlip = b > 0.16 && b < 0.86 && blipPhase < 0.24;
+          throttle = isBlip ? 0.42 : 0;
+          clutch = isBlip ? 0.22 : 0;
+          downshiftFlash = isBlip ? 1 : 0;
+          speed = Math.round(266 - b * 148);
+          gear = b < 0.22 ? 6 : b < 0.42 ? 5 : b < 0.62 ? 4 : b < 0.82 ? 3 : 2;
+        } else {
+          // Apex roll-on & corner exit
+          const e = (u - 0.74) / 0.26;
+          throttle = Math.min(1, 0.32 + e * 0.68);
+          brake = 0;
+          speed = Math.round(118 + e * 100);
+          gear = speed > 195 ? 5 : speed > 158 ? 4 : speed > 130 ? 3 : 2;
+        }
+
+        return { u, throttle, brake, clutch, speed, gear, downshiftFlash };
       }
 
       // Render Pedal Canvas + Telemetry
       function renderInputs(tSec) {
         if (!enabledMods.inputs || isReplay) return;
-        // Realistic Silverstone Maggotts/Becketts/Hangar Straight input curve
-        const phase = (tSec * 0.42) % (Math.PI * 2);
-        const s = Math.sin(phase);
-        const c = Math.cos(phase * 2);
-        let throttle = Math.max(0, Math.min(1, 0.58 + 0.48 * s + 0.14 * c));
-        let brake = s < -0.25 ? Math.min(0.92, (-s - 0.25) * 1.25) : 0;
-        if (brake > 0.08) throttle = Math.min(throttle, 0.06);
-        const clutch = brake > 0.72 ? 0.18 : 0;
+        const { throttle, brake, clutch, speed, gear } = computeTelemetryState(tSec);
 
         traceT.copyWithin(0, 1); traceT[TRACE_LEN - 1] = throttle;
         traceB.copyWithin(0, 1); traceB[TRACE_LEN - 1] = brake;
@@ -1000,8 +1204,6 @@ const overlaySchema = {
         if (brakeBar) brakeBar.style.height = `${Math.round(brake * 100)}%`;
         if (clutchBar) clutchBar.style.height = `${Math.round(clutch * 100)}%`;
 
-        const speed = Math.round(138 + throttle * 124 - brake * 68);
-        const gear = speed > 238 ? 6 : speed > 200 ? 5 : speed > 165 ? 4 : speed > 125 ? 3 : 2;
         if (gearEl) gearEl.textContent = String(gear);
         if (speedEl) speedEl.textContent = String(speed);
 
@@ -1063,15 +1265,37 @@ const overlaySchema = {
         });
       }
 
-      // Render Radar (CarLeftRight) synced with 3-wide track battle
+      // Prototype multiclass overtake cycle (GTP #01 or LMP2 #32 passing GT3 pack on the inside)
+      function computePrototypePass(tSec) {
+        const cycIdx = Math.floor(tSec / 10);
+        const cyc = tSec % 10;
+        // Prototype sweeps from -0.8s behind to +0.8s ahead between 3.0s and 5.6s
+        if (cyc >= 3.0 && cyc <= 5.6) {
+          const progress = (cyc - 3.0) / 2.6; // 0..1
+          const deltaSec = -0.8 + progress * 1.6; // -0.8s -> +0.8s
+          const isGtp = cycIdx % 2 === 0;
+          return {
+            active: true,
+            progress,
+            deltaSec,
+            protoNum: isGtp ? "01" : "32",
+            isGtp,
+          };
+        }
+        return { active: false, progress: 0, deltaSec: 2.4, protoNum: cycIdx % 2 === 0 ? "01" : "32", isGtp: cycIdx % 2 === 0 };
+      }
+
+      // Render Radar (CarLeftRight) synced with prototype overtake & 3-wide GT3 battle
       function computeBattleState(nowMs, tSec) {
         if (nowMs < radarOverrideUntil) {
           return radarOverrideMode; // manual trigger 1 or 3
         }
-        // Smooth 10s battle cycle: 0..3.5s clear -> 3.5..6s 1-wide (#51 left) -> 6..8.8s 3-wide (#51 + #88) -> 8.8..10s clear
+        const proto = computePrototypePass(tSec);
+        if (proto.active && Math.abs(proto.deltaSec) < 0.42) {
+          return 1; // Prototype alongside on the left inside!
+        }
         const cyc = tSec % 10;
-        if (cyc >= 3.5 && cyc < 5.8) return 1;
-        if (cyc >= 5.8 && cyc < 8.8) return 3;
+        if (cyc >= 6.4 && cyc < 8.8) return 3; // 3-wide GT3 pack into braking/exit
         return 0;
       }
 
@@ -1107,173 +1331,174 @@ const overlaySchema = {
       }
 
       // -----------------------------------------------------------------------
-      // 60 FPS Dynamic Track Canvas Backdrop + Visual 3-Wide Battle
+      // Offscreen Sprite & Background Cache (0 gradients / 0 shadowBlur per frame)
       // -----------------------------------------------------------------------
       const backdropCanvas = document.getElementById("simTrackBackdropCanvas");
-      const backdropCtx = backdropCanvas ? backdropCanvas.getContext("2d") : null;
+      const backdropCtx = backdropCanvas ? backdropCanvas.getContext("2d", { alpha: false }) : null;
       let roadOffset = 0;
 
-      function drawRaceCarRear(ctx, x, y, scale, bodyColor, accentColor, secondaryColor, numLabel, slipIntensity) {
-        ctx.save();
-        ctx.translate(x, y);
-        ctx.scale(scale, scale);
+      const SPRITE_W = 160;
+      const SPRITE_H = 116;
 
-        // Aerodynamic slipstream trails
-        if (slipIntensity > 0) {
-          const gradL = ctx.createLinearGradient(-50, -10, -50, 72);
-          gradL.addColorStop(0, `rgba(255,255,255,${0.16 * slipIntensity})`);
-          gradL.addColorStop(1, "rgba(255,255,255,0)");
-          ctx.fillStyle = gradL;
-          ctx.fillRect(-54, -18, 2.5, 76);
-          ctx.fillRect(51.5, -18, 2.5, 76);
-        }
+      function createGt3Sprite(model, bodyColor, accentColor, secondaryColor, numLabel, isBraking) {
+        const c = document.createElement("canvas");
+        c.width = SPRITE_W;
+        c.height = SPRITE_H;
+        const ctx = c.getContext("2d");
+        ctx.translate(SPRITE_W * 0.5, SPRITE_H * 0.62);
 
-        // Ground shadow projected on asphalt
-        const shadowGrad = ctx.createRadialGradient(0, 22, 10, 0, 22, 64);
-        shadowGrad.addColorStop(0, "rgba(0,0,0,0.82)");
-        shadowGrad.addColorStop(0.65, "rgba(0,0,0,0.48)");
-        shadowGrad.addColorStop(1, "rgba(0,0,0,0)");
-        ctx.fillStyle = shadowGrad;
+        // Ground shadow
+        const sg = ctx.createRadialGradient(0, 20, 8, 0, 20, 66);
+        sg.addColorStop(0, "rgba(0,0,0,0.84)");
+        sg.addColorStop(0.68, "rgba(0,0,0,0.45)");
+        sg.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = sg;
         ctx.beginPath();
-        ctx.ellipse(0, 22, 64, 14, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 20, 66, 13, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Wide rear slick tires
-        ctx.fillStyle = "#090b0f";
-        ctx.beginPath();
-        ctx.roundRect(-52, 4, 18, 20, 4);
-        ctx.roundRect(34, 4, 18, 20, 4);
-        ctx.fill();
-        ctx.fillStyle = "rgba(148,163,184,0.16)";
-        ctx.fillRect(-49, 6, 3, 14);
-        ctx.fillRect(46, 6, 3, 14);
-
-        // Lower carbon rear diffuser + vertical aero strakes + central exhaust
+        // Wide rear slick tires + glowing brake discs
         ctx.fillStyle = "#080a0e";
         ctx.beginPath();
-        ctx.moveTo(-40, 12);
-        ctx.lineTo(40, 12);
-        ctx.lineTo(35, 22);
-        ctx.lineTo(-35, 22);
+        ctx.roundRect(-53, 3, 18, 20, 4);
+        ctx.roundRect(35, 3, 18, 20, 4);
+        ctx.fill();
+        if (isBraking) {
+          ctx.fillStyle = "rgba(249, 115, 22, 0.72)";
+          ctx.fillRect(-38, 9, 4, 10);
+          ctx.fillRect(34, 9, 4, 10);
+        }
+
+        // Carbon rear diffuser with vertical aero fins + dual exhausts
+        ctx.fillStyle = "#090b0f";
+        ctx.beginPath();
+        ctx.moveTo(-40, 11);
+        ctx.lineTo(40, 11);
+        ctx.lineTo(35, 21);
+        ctx.lineTo(-35, 21);
         ctx.closePath();
         ctx.fill();
-
         ctx.fillStyle = "#1e293b";
-        [-22, -11, 11, 22].forEach((sx) => {
-          ctx.fillRect(sx - 1, 13, 2, 8);
-        });
+        [-24, -14, 14, 24].forEach((fx) => ctx.fillRect(fx - 1, 12, 2, 8));
 
-        // Central dual exhaust + FIA rain light
-        ctx.fillStyle = "#334155";
+        ctx.fillStyle = "#475569";
         ctx.beginPath();
-        ctx.arc(-5, 17, 3, 0, Math.PI * 2);
-        ctx.arc(5, 17, 3, 0, Math.PI * 2);
+        ctx.arc(-6, 16, 3, 0, Math.PI * 2);
+        ctx.arc(6, 16, 3, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = "#020617";
         ctx.beginPath();
-        ctx.arc(-5, 17, 1.8, 0, Math.PI * 2);
-        ctx.arc(5, 17, 1.8, 0, Math.PI * 2);
+        ctx.arc(-6, 16, 1.8, 0, Math.PI * 2);
+        ctx.arc(6, 16, 1.8, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = "#ef4444";
-        ctx.fillRect(-1.5, 13, 3, 2.5);
 
-        // Sculpted GT3 widebody haunches & rear fascia
-        const bodyGrad = ctx.createLinearGradient(0, -24, 0, 16);
-        bodyGrad.addColorStop(0, bodyColor);
-        bodyGrad.addColorStop(1, secondaryColor);
-        ctx.fillStyle = bodyGrad;
+        // FIA center brake/rain light
+        ctx.save();
+        if (isBraking) {
+          ctx.shadowColor = "#ef4444";
+          ctx.shadowBlur = 12;
+          ctx.fillStyle = "#ff2a2a";
+        } else {
+          ctx.fillStyle = "#991b1b";
+        }
+        ctx.fillRect(-2.5, 12, 5, 3.2);
+        ctx.restore();
+
+        // Wide, low GT3 body + flared rear wheel arches
+        const bg = ctx.createLinearGradient(0, -23, 0, 14);
+        bg.addColorStop(0, bodyColor);
+        bg.addColorStop(1, secondaryColor);
+        ctx.fillStyle = bg;
         ctx.beginPath();
-        ctx.moveTo(-48, 12);
-        ctx.quadraticCurveTo(-53, -4, -44, -17);
+        ctx.moveTo(-49, 11);
+        ctx.quadraticCurveTo(-55, -5, -44, -17);
         ctx.lineTo(-27, -23);
         ctx.lineTo(27, -23);
         ctx.lineTo(44, -17);
-        ctx.quadraticCurveTo(53, -4, 48, 12);
-        ctx.lineTo(36, 14);
-        ctx.lineTo(-36, 14);
+        ctx.quadraticCurveTo(55, -5, 49, 11);
+        ctx.lineTo(36, 13);
+        ctx.lineTo(-36, 13);
         ctx.closePath();
         ctx.fill();
 
-        // Racing livery center stripe & shoulder accents
+        // Center stripe & accents
         ctx.fillStyle = secondaryColor;
-        ctx.fillRect(-10, -23, 20, 35);
+        ctx.fillRect(-10, -23, 20, 34);
         ctx.fillStyle = accentColor;
-        ctx.fillRect(-12, -23, 2.2, 35);
-        ctx.fillRect(9.8, -23, 2.2, 35);
-        ctx.fillRect(-45, 2, 10, 2.5);
-        ctx.fillRect(35, 2, 10, 2.5);
+        ctx.fillRect(-12, -23, 2.2, 34);
+        ctx.fillRect(9.8, -23, 2.2, 34);
 
-        // Tapered greenhouse & dark tinted rear window
+        // Rounded GT3 roof & sloped rear window with visible roll cage
         ctx.fillStyle = "#0b1120";
         ctx.beginPath();
         ctx.moveTo(-29, -19);
-        ctx.lineTo(-21, -37);
-        ctx.lineTo(21, -37);
-        ctx.lineTo(29, -19);
+        ctx.quadraticCurveTo(-24, -37, -18, -38);
+        ctx.lineTo(18, -38);
+        ctx.quadraticCurveTo(24, -37, 29, -19);
         ctx.closePath();
         ctx.fill();
         ctx.strokeStyle = "rgba(255,255,255,0.18)";
         ctx.lineWidth = 1;
         ctx.stroke();
 
-        // Glass reflection highlight
-        ctx.fillStyle = "rgba(255,255,255,0.12)";
+        // Visible internal roll cage bars inside rear window
+        ctx.strokeStyle = "rgba(148, 163, 184, 0.35)";
+        ctx.lineWidth = 1.6;
         ctx.beginPath();
-        ctx.moveTo(-16, -34);
-        ctx.lineTo(-4, -34);
-        ctx.lineTo(-11, -21);
-        ctx.lineTo(-21, -21);
-        ctx.closePath();
-        ctx.fill();
+        ctx.moveTo(-18, -34);
+        ctx.lineTo(14, -20);
+        ctx.moveTo(18, -34);
+        ctx.lineTo(-14, -20);
+        ctx.stroke();
 
-        // Intense LED GT3 taillights
+        // Model-specific horizontal LED taillights
         ctx.save();
         ctx.shadowColor = "#ef4444";
-        ctx.shadowBlur = 12;
-        ctx.fillStyle = "#dc2626";
-        ctx.beginPath();
-        ctx.roundRect(-43, -11, 20, 4.5, 2);
-        ctx.roundRect(23, -11, 20, 4.5, 2);
-        ctx.fill();
-        ctx.fillStyle = "#fca5a5";
-        ctx.fillRect(-40, -9.8, 14, 1.8);
-        ctx.fillRect(26, -9.8, 14, 1.8);
+        ctx.shadowBlur = isBraking ? 18 : 8;
+        ctx.fillStyle = isBraking ? "#ff1f1f" : "#dc2626";
+        if (model === "mustang") {
+          // Mustang triple vertical LED bars on each side
+          [-43, -37, -31, 28, 34, 40].forEach((bx) => {
+            ctx.fillRect(bx, -13, 3.2, 7.5);
+          });
+        } else if (model === "porsche") {
+          // Porsche 911 continuous full-width LED light bar
+          ctx.beginPath();
+          ctx.roundRect(-44, -11, 88, 3.6, 1.5);
+          ctx.fill();
+        } else {
+          // McLaren 720S thin curved LED blades
+          ctx.lineWidth = 3.2;
+          ctx.strokeStyle = isBraking ? "#ff2a2a" : "#ef4444";
+          ctx.beginPath();
+          ctx.moveTo(-44, -8);
+          ctx.quadraticCurveTo(-34, -14, -23, -9);
+          ctx.moveTo(23, -9);
+          ctx.quadraticCurveTo(34, -14, 44, -8);
+          ctx.stroke();
+        }
         ctx.restore();
 
-        // Swan-neck GT3 rear wing pylons
+        // Swan-neck pylons + wide carbon GT3 rear wing with endplates
         ctx.fillStyle = "#0f172a";
-        ctx.beginPath();
-        ctx.moveTo(-18, -21);
-        ctx.lineTo(-21, -41);
-        ctx.lineTo(-16.5, -41);
-        ctx.lineTo(-14, -21);
-        ctx.closePath();
-        ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(18, -21);
-        ctx.lineTo(21, -41);
-        ctx.lineTo(16.5, -41);
-        ctx.lineTo(14, -21);
-        ctx.closePath();
-        ctx.fill();
+        ctx.fillRect(-19, -42, 4, 21);
+        ctx.fillRect(15, -42, 4, 21);
 
-        // Sculpted carbon rear wing mainplane + endplates
         ctx.fillStyle = "#090b0f";
         ctx.beginPath();
-        ctx.moveTo(-54, -42);
-        ctx.quadraticCurveTo(0, -45, 54, -42);
-        ctx.lineTo(52, -36);
-        ctx.quadraticCurveTo(0, -39, -52, -36);
+        ctx.moveTo(-55, -43);
+        ctx.quadraticCurveTo(0, -46, 55, -43);
+        ctx.lineTo(53, -37);
+        ctx.quadraticCurveTo(0, -40, -53, -37);
         ctx.closePath();
         ctx.fill();
         ctx.fillStyle = "rgba(255,255,255,0.16)";
-        ctx.fillRect(-48, -42, 96, 1.2);
-
+        ctx.fillRect(-48, -43, 96, 1.2);
         ctx.fillStyle = accentColor;
-        ctx.fillRect(-55, -44, 4, 13);
-        ctx.fillRect(51, -44, 4, 13);
+        ctx.fillRect(-56, -45, 4, 14);
+        ctx.fillRect(52, -45, 4, 14);
 
-        // Rear number plate
+        // Number plate
         ctx.fillStyle = "rgba(9,11,15,0.92)";
         ctx.beginPath();
         ctx.roundRect(-12, -13, 24, 13, 3);
@@ -1287,18 +1512,156 @@ const overlaySchema = {
         ctx.textBaseline = "middle";
         ctx.fillText(numLabel, 0, -6.5);
 
+        return c;
+      }
+
+      function createPrototypeSprite(bodyColor, accentColor, numLabel, isBraking) {
+        const c = document.createElement("canvas");
+        c.width = SPRITE_W;
+        c.height = SPRITE_H;
+        const ctx = c.getContext("2d");
+        ctx.translate(SPRITE_W * 0.5, SPRITE_H * 0.62);
+
+        // Narrower prototype proportions (~58px base width) + protruding wheel arches + bubble canopy + shark fin
+        ctx.fillStyle = "rgba(0,0,0,0.72)";
+        ctx.beginPath();
+        ctx.ellipse(0, 16, 48, 10, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Protruding front/rear wheel arches
+        ctx.fillStyle = "#090b0f";
+        ctx.beginPath();
+        ctx.roundRect(-42, 0, 84, 14, 4);
+        ctx.fill();
+
+        ctx.fillStyle = bodyColor;
+        ctx.beginPath();
+        ctx.moveTo(-42, 10);
+        ctx.quadraticCurveTo(-44, -9, -32, -13);
+        ctx.lineTo(-16, -13);
+        ctx.lineTo(-11, -24);
+        ctx.lineTo(11, -24);
+        ctx.lineTo(16, -13);
+        ctx.lineTo(32, -13);
+        ctx.quadraticCurveTo(44, -9, 42, 10);
+        ctx.closePath();
+        ctx.fill();
+
+        // Narrow central bubble canopy
+        ctx.fillStyle = "#0b1120";
+        ctx.beginPath();
+        ctx.ellipse(0, -18, 11, 11, 0, Math.PI, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "rgba(255,255,255,0.22)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Longitudinal shark fin along engine cover
+        ctx.fillStyle = accentColor;
+        ctx.beginPath();
+        ctx.moveTo(-1.5, -31);
+        ctx.lineTo(1.5, -31);
+        ctx.lineTo(2.5, -7);
+        ctx.lineTo(-2.5, -7);
+        ctx.closePath();
+        ctx.fill();
+
+        // Prototype LED light blades
+        ctx.save();
+        ctx.shadowColor = "#ef4444";
+        ctx.shadowBlur = isBraking ? 16 : 8;
+        ctx.fillStyle = isBraking ? "#ff2a2a" : "#dc2626";
+        ctx.fillRect(-38, -6, 12, 3);
+        ctx.fillRect(26, -6, 12, 3);
+        ctx.fillRect(-38, -11, 3, 8);
+        ctx.fillRect(35, -11, 3, 8);
         ctx.restore();
+
+        // Twin-plane prototype rear wing
+        ctx.fillStyle = "#090b0f";
+        ctx.fillRect(-44, -31, 88, 5);
+        ctx.fillStyle = accentColor;
+        ctx.fillRect(-45, -33, 3.5, 15);
+        ctx.fillRect(41.5, -33, 3.5, 15);
+
+        ctx.fillStyle = "rgba(9,11,15,0.92)";
+        ctx.beginPath();
+        ctx.roundRect(-11, -8, 22, 11, 3);
+        ctx.fill();
+        ctx.strokeStyle = accentColor;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "800 8.5px ui-monospace, monospace";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(numLabel, 0, -2.5);
+
+        return c;
+      }
+
+      const CAR_SPRITES = {
+        mustang:  [createGt3Sprite("mustang", "#1d4ed8", "#10b981", "#0f172a", "16", false), createGt3Sprite("mustang", "#1d4ed8", "#10b981", "#0f172a", "16", true)],
+        porsche:  [createGt3Sprite("porsche", "#e2e8f0", "#ef4444", "#111827", "1",  false), createGt3Sprite("porsche", "#e2e8f0", "#ef4444", "#111827", "1",  true)],
+        mclaren:  [createGt3Sprite("mclaren", "#ff8000", "#ff8000", "#111827", "22", false), createGt3Sprite("mclaren", "#ff8000", "#ff8000", "#111827", "22", true)],
+        gtp01:    [createPrototypeSprite("#facc15", "#111827", "01", false), createPrototypeSprite("#facc15", "#111827", "01", true)],
+        lmp232:   [createPrototypeSprite("#06b6d4", "#0284c7", "32", false), createPrototypeSprite("#06b6d4", "#0284c7", "32", true)],
+      };
+
+      const bgCacheCanvas = document.createElement("canvas");
+      let bgCacheW = 0;
+      let bgCacheH = 0;
+
+      function ensureBgCache(w, h) {
+        if (bgCacheW === w && bgCacheH === h) return;
+        bgCacheW = w;
+        bgCacheH = h;
+        bgCacheCanvas.width = w;
+        bgCacheCanvas.height = h;
+        const bctx = bgCacheCanvas.getContext("2d");
+        const horizonY = h * 0.42;
+
+        const sky = bctx.createLinearGradient(0, 0, 0, horizonY);
+        sky.addColorStop(0, "#05070b");
+        sky.addColorStop(0.65, "#0a1019");
+        sky.addColorStop(1, "#111c26");
+        bctx.fillStyle = sky;
+        bctx.fillRect(0, 0, w, horizonY + 2);
+
+        const glow = bctx.createRadialGradient(w * 0.5, horizonY, 20, w * 0.5, horizonY, w * 0.52);
+        glow.addColorStop(0, "rgba(16, 185, 129, 0.14)");
+        glow.addColorStop(1, "rgba(5, 7, 11, 0)");
+        bctx.fillStyle = glow;
+        bctx.fillRect(0, 0, w, horizonY + 40);
+
+        bctx.fillStyle = "#080b10";
+        bctx.fillRect(0, horizonY, w, h - horizonY);
+      }
+
+      function drawCarSprite(ctx, sprite, x, y, scale, downshiftFlash) {
+        const dw = SPRITE_W * scale * 0.84;
+        const dh = SPRITE_H * scale * 0.84;
+        ctx.drawImage(sprite, x - dw * 0.5, y - dh * 0.62, dw, dh);
+        if (downshiftFlash > 0) {
+          ctx.fillStyle = "#fed7aa";
+          ctx.fillRect(x - 8 * scale, y + 10 * scale, 4 * scale, 4 * scale);
+          ctx.fillRect(x + 4 * scale, y + 10 * scale, 4 * scale, 4 * scale);
+        }
       }
 
       function renderTrackBackdrop(dt, nowMs, tSec) {
         if (!backdropCanvas || !backdropCtx) return;
         const rect = backdropCanvas.getBoundingClientRect();
-        const w = Math.max(640, Math.round(rect.width || 1180));
-        const h = Math.max(400, Math.round(rect.height || 640));
-        if (backdropCanvas.width !== w || backdropCanvas.height !== h) {
-          backdropCanvas.width = w;
-          backdropCanvas.height = h;
+        const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+        const w = Math.min(1280, Math.max(640, Math.round(rect.width || 1180)));
+        const h = Math.min(720, Math.max(400, Math.round(rect.height || 640)));
+        const bw = Math.round(w * dpr);
+        const bh = Math.round(h * dpr);
+        if (backdropCanvas.width !== bw || backdropCanvas.height !== bh) {
+          backdropCanvas.width = bw;
+          backdropCanvas.height = bh;
         }
+        backdropCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
         const speedKmh = Number(speedEl?.textContent || 214);
         const speedNorm = Math.max(0.4, speedKmh / 200);
@@ -1306,28 +1669,14 @@ const overlaySchema = {
 
         const ctx = backdropCtx;
         const horizonY = h * 0.42;
-
-        // Sky & dusk gradient
-        const sky = ctx.createLinearGradient(0, 0, 0, horizonY);
-        sky.addColorStop(0, "#05070b");
-        sky.addColorStop(0.65, "#0a1019");
-        sky.addColorStop(1, "#111c26");
-        ctx.fillStyle = sky;
-        ctx.fillRect(0, 0, w, horizonY + 2);
-
-        // Subtle horizon emerald glow
-        const glow = ctx.createRadialGradient(w * 0.5, horizonY, 20, w * 0.5, horizonY, w * 0.52);
-        glow.addColorStop(0, "rgba(16, 185, 129, 0.14)");
-        glow.addColorStop(1, "rgba(5, 7, 11, 0)");
-        ctx.fillStyle = glow;
-        ctx.fillRect(0, 0, w, horizonY + 40);
-
-        // Grass / runoff ground
-        ctx.fillStyle = "#080b10";
-        ctx.fillRect(0, horizonY, w, h - horizonY);
+        ensureBgCache(w, h);
+        ctx.drawImage(bgCacheCanvas, 0, 0, w, h);
 
         // Corner curve sway
         const curveFactor = Math.sin(tSec * 0.42) * 0.24;
+
+        const tel = computeTelemetryState(tSec);
+        const isBrakingZone = tel.u >= 0.44 && tel.u <= 0.74;
 
         // Perspective road strips (moving kerbs, asphalt grain, braking marks, racing line)
         const slices = 42;
@@ -1377,11 +1726,13 @@ const overlaySchema = {
           ctx.closePath();
           ctx.fill();
 
-          // Braking rubber marks on entry
-          if (Math.sin(tSec * 0.42) < -0.2) {
-            ctx.fillStyle = "rgba(0,0,0,0.28)";
-            ctx.fillRect(cx1 - halfW1 * 0.44, y0, halfW1 * 0.06, Math.max(1, y1 - y0));
-            ctx.fillRect(cx1 + halfW1 * 0.38, y0, halfW1 * 0.06, Math.max(1, y1 - y0));
+          // Dark rubber braking marks on asphalt during braking zone
+          if (isBrakingZone) {
+            ctx.fillStyle = "rgba(0,0,0,0.42)";
+            ctx.fillRect(cx1 - halfW1 * 0.46, y0, halfW1 * 0.07, Math.max(1, y1 - y0));
+            ctx.fillRect(cx1 + halfW1 * 0.39, y0, halfW1 * 0.07, Math.max(1, y1 - y0));
+            ctx.fillRect(cx1 - halfW1 * 0.14, y0, halfW1 * 0.05, Math.max(1, y1 - y0));
+            ctx.fillRect(cx1 + halfW1 * 0.09, y0, halfW1 * 0.05, Math.max(1, y1 - y0));
           }
 
           // Dynamic racing line
@@ -1403,25 +1754,65 @@ const overlaySchema = {
           }
         }
 
-        // Visual 3-Wide Muntrume Motorsport Battle on Asphalt synced with Radar
+        // Trackside Braking Distance Marker Boards (200, 100, 50)
+        if (isBrakingZone) {
+          const boards = [
+            { label: "200", offset: 0.44 },
+            { label: "100", offset: 0.52 },
+            { label: "50",  offset: 0.60 },
+          ];
+          boards.forEach((b) => {
+            const p = (tel.u - b.offset) / 0.16;
+            if (p >= 0 && p <= 1) {
+              const z = p * p;
+              const by = horizonY + z * (h - horizonY);
+              const bx = w * 0.5 + curveFactor * w * (1 - p) * (1 - p) - w * (0.06 + z * 0.52);
+              const bw = 18 + z * 26;
+              const bh = 12 + z * 16;
+              ctx.fillStyle = "#f8fafc";
+              ctx.fillRect(bx - bw * 0.5, by - bh, bw, bh);
+              ctx.strokeStyle = "#090b0f";
+              ctx.lineWidth = 1.5;
+              ctx.strokeRect(bx - bw * 0.5, by - bh, bw, bh);
+              ctx.fillStyle = "#090b0f";
+              ctx.font = `900 ${Math.round(8 + z * 7)}px ui-monospace, monospace`;
+              ctx.textAlign = "center";
+              ctx.textBaseline = "middle";
+              ctx.fillText(b.label, bx, by - bh * 0.5);
+            }
+          });
+        }
+
+        // Visual 1-2-3 Muntrume Motorsport GT3 Formation + Multiclass Prototype Overtake (cached sprites)
         const battle = computeBattleState(nowMs, tSec);
+        const proto = computePrototypePass(tSec);
         const roadCenter = w * 0.5 + curveFactor * w * 0.05;
         const carY = h * 0.64;
+        const brakeState = tel.brake > 0.25 ? 1 : 0;
 
-        // #1 M. Berbis — Porsche 911 GT3 R (992) (White/Silver Motorsport + Black/Red) on Left
-        const leftPull = battle === 1 || battle === 3 ? 1 : 0.15;
-        const porscheX = roadCenter - w * (0.145 - 0.04 * leftPull) + Math.sin(tSec * 2.1) * 3;
-        const porscheY = carY - 36 + (1 - leftPull) * -55;
-        drawRaceCarRear(ctx, porscheX, porscheY, 0.88 * (0.78 + 0.22 * leftPull), "#e2e8f0", "#ef4444", "#111827", "1", leftPull);
+        // #16 A. Trujillo — Ford Mustang GT3 (P1 leading GT3 pack)
+        drawCarSprite(ctx, CAR_SPRITES.mustang[brakeState], roadCenter + Math.sin(tSec * 1.6) * 2, carY - 12, 0.92, tel.downshiftFlash);
 
-        // #22 E. Chongkan — McLaren 720S GT3 Evo (Papaya Orange #ff8000 / Carbon #111827) on Right
-        const rightPull = battle === 3 ? 1 : 0.12;
-        const mclarenX = roadCenter + w * (0.145 - 0.04 * rightPull) + Math.cos(tSec * 1.9) * 3;
-        const mclarenY = carY - 32 + (1 - rightPull) * -65;
-        drawRaceCarRear(ctx, mclarenX, mclarenY, 0.88 * (0.78 + 0.22 * rightPull), "#ff8000", "#ff8000", "#111827", "22", rightPull);
+        // #1 M. Berbis — Porsche 911 GT3 R (992) (P2 trailing diagonal-left in slipstream, or pulling alongside in 3-wide)
+        const leftPull = battle === 3 ? 1 : 0;
+        const porscheX = roadCenter - w * (0.095 + 0.03 * leftPull) + Math.sin(tSec * 2.1) * 3;
+        const porscheY = carY + 26 - leftPull * 34;
+        drawCarSprite(ctx, CAR_SPRITES.porsche[brakeState], porscheX, porscheY, 0.96, tel.downshiftFlash);
 
-        // #16 A. Trujillo — Ford Mustang GT3 (Ford Performance Blue #1d4ed8 / Black + Emerald #10b981) centered
-        drawRaceCarRear(ctx, roadCenter + Math.sin(tSec * 1.6) * 2, carY + 12, 1.0, "#1d4ed8", "#10b981", "#0f172a", "16", 0.8);
+        // #22 E. Chongkan — McLaren 720S GT3 Evo (P3 trailing diagonal-right in slipstream, or pulling alongside in 3-wide)
+        const rightPull = battle === 3 ? 1 : 0;
+        const mclarenX = roadCenter + w * (0.105 + 0.025 * rightPull) + Math.cos(tSec * 1.9) * 3;
+        const mclarenY = carY + 42 - rightPull * 50;
+        drawCarSprite(ctx, CAR_SPRITES.mclaren[brakeState], mclarenX, mclarenY, 1.0, tel.downshiftFlash);
+
+        // Multiclass Prototype (GTP #01 or LMP2 #32) overtaking on the inside left at high speed
+        if (proto.active) {
+          const protoX = roadCenter - w * 0.21 + Math.sin(proto.progress * Math.PI) * 14;
+          const protoY = h * 0.92 - proto.progress * h * 0.44;
+          const protoScale = 1.08 - proto.progress * 0.46;
+          const pSprite = proto.isGtp ? CAR_SPRITES.gtp01[brakeState] : CAR_SPRITES.lmp232[brakeState];
+          drawCarSprite(ctx, pSprite, protoX, protoY, protoScale, 0);
+        }
 
         // Subtle sparks when 3-wide wheel-to-wheel
         if (battle === 3) {
@@ -1432,24 +1823,32 @@ const overlaySchema = {
             ctx.fillRect(sx, sy, 3, 2);
           }
         }
-
-        // Cockpit windshield header vignette
-        const vign = ctx.createLinearGradient(0, 0, 0, h);
-        vign.addColorStop(0, "rgba(4,6,9,0.58)");
-        vign.addColorStop(0.2, "rgba(4,6,9,0)");
-        vign.addColorStop(0.82, "rgba(4,6,9,0)");
-        vign.addColorStop(1, "rgba(4,6,9,0.68)");
-        ctx.fillStyle = vign;
-        ctx.fillRect(0, 0, w, h);
       }
 
-      // Main animation loop
+      // Main animation loop (auto-paused when out of viewport or tab hidden; DOM updates capped at 4 Hz)
       let lastMs = performance.now();
       let lastDomMs = 0;
       let fuelLevel = 34.8;
       let simTimeSec = 0;
+      let isViewportVisible = true;
+      let isTabVisible = !document.hidden;
+      let rafId = 0;
+
+      function shouldAnimate() {
+        return isViewportVisible && isTabVisible;
+      }
+
+      function scheduleNextFrame() {
+        if (!rafId && shouldAnimate()) {
+          lastMs = performance.now();
+          rafId = requestAnimationFrame(tick);
+        }
+      }
 
       function tick(nowMs) {
+        rafId = 0;
+        if (!shouldAnimate()) return;
+
         const dt = Math.min(0.1, (nowMs - lastMs) / 1000);
         lastMs = nowMs;
 
@@ -1460,31 +1859,40 @@ const overlaySchema = {
             applyCircuit(activeCircuitIdx + 1);
           }
 
-          drivers.forEach((d) => {
-            const step = (dt / 32) * d.speed;
-            d.pct += step;
+          for (let i = 0; i < drivers.length; i++) {
+            const d = drivers[i];
+            d.pct += (dt / 32) * d.speed;
             if (d.pct >= 1) {
               d.pct -= 1;
               d.lap += 1;
             }
-          });
+          }
 
-          // Keep #1 M. Berbis and #22 E. Chongkan at ±0.1s / ±0.2s relative to #16 A. Trujillo during 1-wide / 3-wide
+          // Keep #16 P1, #1 M. Berbis P2 (+0.6s / +0.1s in 3-wide), #22 E. Chongkan P3 (+1.3s / -0.1s in 3-wide),
+          // and sync overtaking GTP/LMP2 prototype crossing -0.8s -> +0.8s in Relative
           const meDrv = drivers.find((d) => d.isMe);
           const battleNow = computeBattleState(nowMs, simTimeSec);
+          const protoPass = computePrototypePass(simTimeSec);
           if (meDrv) {
             const gt3Sec = CLASSES.GT3.lapSec;
             const berbis = drivers.find((d) => d.num === "1");
             const chongkan = drivers.find((d) => d.num === "22");
             if (berbis) {
-              const targetGapSec = battleNow >= 1 ? 0.1 : 0.9;
-              berbis.pct = (meDrv.pct + targetGapSec / gt3Sec) % 1;
+              const targetGapSec = battleNow === 3 ? 0.1 : -0.6;
+              berbis.pct = (meDrv.pct + targetGapSec / gt3Sec + 1) % 1;
               berbis.lap = meDrv.lap;
             }
             if (chongkan) {
-              const targetGapSec = battleNow === 3 ? -0.1 : -1.1;
+              const targetGapSec = battleNow === 3 ? -0.1 : -1.3;
               chongkan.pct = (meDrv.pct + targetGapSec / gt3Sec + 1) % 1;
               chongkan.lap = meDrv.lap;
+            }
+            if (protoPass.active) {
+              const protoDrv = drivers.find((d) => d.num === protoPass.protoNum);
+              if (protoDrv) {
+                protoDrv.pct = (meDrv.pct + protoPass.deltaSec / gt3Sec + 1) % 1;
+                protoDrv.lap = meDrv.lap + 1;
+              }
             }
           }
 
@@ -1494,14 +1902,14 @@ const overlaySchema = {
 
           renderTrackBackdrop(dt, nowMs, simTimeSec);
           renderInputs(simTimeSec);
-          renderTrackMap();
           renderRadar(nowMs, simTimeSec);
 
-          // DOM tables at ~6 Hz for crisp readability without layout thrash
-          if (nowMs - lastDomMs > 160) {
+          // DOM tables & Track Map SVG at 4 Hz (250 ms) using cached node updates only
+          if (nowMs - lastDomMs >= 250) {
             lastDomMs = nowMs;
             renderStandings();
             renderRelative();
+            renderTrackMap();
 
             if (enabledMods.fuel) {
               const avg = cMeta.avgFuel;
@@ -1523,14 +1931,27 @@ const overlaySchema = {
           }
         }
 
-        requestAnimationFrame(tick);
+        scheduleNextFrame();
       }
+
+      if ("IntersectionObserver" in window && backdropCanvas) {
+        const observer = new IntersectionObserver((entries) => {
+          isViewportVisible = entries.some((e) => e.isIntersecting);
+          if (isViewportVisible) scheduleNextFrame();
+        }, { threshold: 0.05 });
+        observer.observe(backdropCanvas);
+      }
+
+      document.addEventListener("visibilitychange", () => {
+        isTabVisible = !document.hidden;
+        if (isTabVisible) scheduleNextFrame();
+      });
 
       syncVisibility();
       renderStandings();
       renderRelative();
       renderTrackMap();
-      requestAnimationFrame(tick);
+      scheduleNextFrame();
     })();
   </script>
 </Layout>
