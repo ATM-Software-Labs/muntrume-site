@@ -499,42 +499,51 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
             ? `<span class="w-[46px] shrink-0 mr-3 px-1.5 py-0.5 rounded-[4px] text-right tabular-nums leading-none" style="font-size:13px;font-weight:800;color:#ef4444;background:rgba(239,68,68,0.14);">${irDeltaVal}</span>`
             : `<span class="w-[46px] shrink-0 mr-3 px-1.5 py-0.5 rounded-[4px] text-right tabular-nums leading-none text-white/35" style="font-size:12px;font-weight:700;">0</span>`;
 
-          // Hide GAP & INT in Practice/Qualy (Prompt 140) to save ~90px of dead width
-          const showRaceGaps = !isPractice && !state.session.sessionType.toLowerCase().includes("qual");
-          const gapCell = showRaceGaps
-            ? `<span class="w-[44px] shrink-0 text-right tabular-nums text-[10px] ${isLeader ? "text-white/55 font-bold" : isOffLap ? "text-[#fbbf24]/90" : "text-white/85 font-semibold"}">${isLeader ? "LDR" : (e.gapStr || "-")}</span>`
-            : ``;
-          const intCell = showRaceGaps
-            ? `<span class="w-[42px] shrink-0 text-right tabular-nums text-[10px] text-white/65">${isLeader ? "-" : (e.intervalStr || "-")}</span>`
-            : ``;
-          const lastCell = `<span class="w-[48px] shrink-0 text-right text-[10px] tabular-nums text-white/75">${e.lastLapStr || "--:--.---"}</span>`;
+          // Kapps-style compact columns: GAP (to class leader) + INT (to car ahead) + Single Lap Time
+          const isRaceSession = state.session.sessionType.toLowerCase().includes("race");
+          const classLeaderEntry = group.rows.find((r) => r.kind === "entry")?.entry;
+          const prevEntry = clsIdx > 0 && group.rows[clsIdx - 1]?.kind === "entry"
+            ? (group.rows[clsIdx - 1] as { kind: "entry"; entry: LeaderboardEntry }).entry
+            : undefined;
+
+          let gapText = isLeader ? "GAP" : (e.gapStr || "-");
+          let intText = isLeader ? "INT" : (e.intervalStr || "-");
+
+          if (!isRaceSession) {
+            const leaderBest = classLeaderEntry?.bestLapTime ?? 0;
+            const prevBest = prevEntry?.bestLapTime ?? 0;
+            if (!isLeader) {
+              gapText = leaderBest > 0 && e.bestLapTime > 0 ? `${(e.bestLapTime - leaderBest).toFixed(3)}` : "-";
+              intText = prevBest > 0 && e.bestLapTime > 0 ? `${(e.bestLapTime - prevBest).toFixed(3)}` : "-";
+            }
+          }
+
+          const gapCell = `<span class="w-[42px] shrink-0 text-right tabular-nums text-[10px] ${isLeader ? "text-white/45 font-bold" : isOffLap ? "text-[#fbbf24]/90" : "text-white/85 font-semibold"}">${gapText}</span>`;
+          const intCell = `<span class="w-[40px] shrink-0 text-right tabular-nums text-[10px] ${isLeader ? "text-white/45 font-bold" : "text-white/65"}">${intText}</span>`;
 
           const pitCell = e.pitStatus === "PIT"
-            ? `<span class="w-[24px] shrink-0 text-center px-1 rounded-[2px] bg-amber-500/25 text-amber-300 text-[8.5px] font-black">PIT</span>`
+            ? `<span class="w-[22px] shrink-0 text-center px-0.5 rounded-[2px] bg-amber-500/25 text-amber-300 text-[8.5px] font-black">PIT</span>`
             : e.pitStatus === "OUT"
-            ? `<span class="w-[24px] shrink-0 text-center px-1 rounded-[2px] bg-sky-500/25 text-sky-300 text-[8.5px] font-black">OUT</span>`
-            : e.lapsSincePit !== undefined && e.lapsSincePit > 0
-            ? `<span class="w-[24px] shrink-0 text-center text-[8.5px] text-white/45">${e.lapsSincePit}v</span>`
-            : `<span class="w-[24px] shrink-0 text-center text-[8.5px] text-white/20">•</span>`;
+            ? `<span class="w-[22px] shrink-0 text-center px-0.5 rounded-[2px] bg-sky-500/25 text-sky-300 text-[8.5px] font-black">OUT</span>`
+            : ``;
 
-          const isClassBest = group.classBestLap > 0 && e.bestLapTime > 0 && Math.abs(e.bestLapTime - group.classBestLap) < 0.002;
-          const bestPrefix = e.bestLapNum && e.bestLapTime > 0 ? `L${e.bestLapNum} ` : "";
-          const bestColor = isClassBest ? "text-[#c084fc] font-black" : isSelf ? "text-emerald-400 font-bold" : "text-[#f8fafc] font-semibold";
-          const bestCell = `<span class="w-[62px] shrink-0 text-right text-[10px] tabular-nums ${bestColor}">${e.bestLapTime > 0 ? `${bestPrefix}${e.bestLapStr}` : "--:--.---"}</span>`;
+          const activeLapSec = isRaceSession
+            ? (e.lastLapTime > 0 ? e.lastLapTime : e.bestLapTime)
+            : (e.bestLapTime > 0 ? e.bestLapTime : e.lastLapTime);
+          const activeLapStr = isRaceSession
+            ? (e.lastLapTime > 0 ? (e.lastLapStr || "--:--.---") : (e.bestLapStr || "--:--.---"))
+            : (e.bestLapTime > 0 ? (e.bestLapStr || "--:--.---") : (e.lastLapStr || "--:--.---"));
 
-          const recent = e.recentLaps ?? [];
-          const recentSlots = [recent[recent.length - 3], recent[recent.length - 2], recent[recent.length - 1]];
-          const recentHtml = recentSlots
-            .map((lt) => {
-              if (!lt || lt <= 0) return `<span class="w-[32px] text-right text-[9px] text-white/20">--.-</span>`;
-              const c = group.classBestLap > 0 && Math.abs(lt - group.classBestLap) < 0.002
-                ? "text-[#c084fc] font-bold"
-                : e.bestLapTime > 0 && Math.abs(lt - e.bestLapTime) < 0.002
-                  ? "text-[#4ade80] font-bold"
-                  : "text-white/70";
-              return `<span class="w-[32px] text-right text-[9px] tabular-nums ${c}">${formatShortLap(lt)}</span>`;
-            })
-            .join("");
+          const isClassBest = group.classBestLap > 0 && activeLapSec > 0 && Math.abs(activeLapSec - group.classBestLap) < 0.002;
+          const isPersonalBest = isSelf && e.bestLapTime > 0 && activeLapSec > 0 && Math.abs(activeLapSec - e.bestLapTime) < 0.002;
+          const lapColor = isClassBest
+            ? "text-[#c084fc] font-black"
+            : isPersonalBest
+              ? "text-[#4ade80] font-bold"
+              : isSelf
+                ? "text-white font-bold"
+                : "text-[#f8fafc] font-semibold";
+          const lapCell = `<span class="w-[54px] shrink-0 text-right text-[10.5px] tabular-nums ${lapColor}">${activeLapStr}</span>`;
 
           return `
             <div class="${rowCls}" data-car-idx="${e.carIdx}" style="height:19px;padding:0px 5px;font-size:10.5px;border-left-color: ${isSelf ? "#10b981" : group.color};${isSelf ? "background:rgba(16,185,129,0.16);" : ""}">
@@ -546,12 +555,10 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
               ${licIrCell}
               ${compoundCell}
               ${irDeltaHtml}
+              ${pitCell}
               ${gapCell}
               ${intCell}
-              ${lastCell}
-              ${pitCell}
-              ${bestCell}
-              <span class="hidden xl:inline-flex items-center gap-1 shrink-0 pl-1 border-l border-white/10">${recentHtml}</span>
+              ${lapCell}
             </div>
           `;
         })
