@@ -2973,7 +2973,7 @@ export function initFloatingOverlayControls(onClose?: () => void): void {
   }
   const wheelCardInit = document.getElementById("floatSteeringWheelCard");
   if (wheelCardInit && typeof localStorage !== "undefined") {
-    const wy = localStorage.getItem("mmt-wheel-pos-y") || "24";
+    const wy = localStorage.getItem("mmt-wheel-pos-y") || "34";
     wheelCardInit.style.bottom = `${wy}px`;
   }
   const centerDock = document.getElementById("floatCenterStatusDock");
