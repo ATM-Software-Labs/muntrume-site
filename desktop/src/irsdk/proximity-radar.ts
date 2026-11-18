@@ -201,145 +201,140 @@ export function renderLiveTrackMapCanvas(canvas: HTMLCanvasElement, state: Irsdk
   const trackName = state?.session.weekendInfo?.trackName || "";
   const poly = resolveTrackPolygon(trackName);
 
+  // Muestreo base de 64 puntos y suavizado Catmull-Rom cerrado para eliminar esquinas poligonales
+  const rawPts: Array<{ x: number; y: number }> = [];
+  const N = 64;
+  for (let i = 0; i < N; i++) {
+    const pct = i / N;
+    if (poly) {
+      rawPts.push(samplePolygonAtPct(poly, pct, w, h));
+    } else {
+      const a = pct * Math.PI * 2 - Math.PI / 2;
+      rawPts.push({
+        x: cx + rx * Math.cos(a) + 5 * Math.sin(a * 3),
+        y: cy + ry * Math.sin(a) + 3 * Math.cos(a * 2),
+      });
+    }
+  }
+
+  const smoothPts: Array<{ x: number; y: number }> = [];
+  const SUB = 6; // 64 * 6 = 384 puntos ultra suaves
+  for (let i = 0; i < N; i++) {
+    const p0 = rawPts[(i - 1 + N) % N];
+    const p1 = rawPts[i];
+    const p2 = rawPts[(i + 1) % N];
+    const p3 = rawPts[(i + 2) % N];
+    for (let s = 0; s < SUB; s++) {
+      const t = s / SUB;
+      const t2 = t * t;
+      const t3 = t2 * t;
+      const x = 0.5 * ((2 * p1.x) + (-p0.x + p2.x) * t + (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * t2 + (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * t3);
+      const y = 0.5 * ((2 * p1.y) + (-p0.y + p2.y) * t + (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * t2 + (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * t3);
+      smoothPts.push({ x, y });
+    }
+  }
+
+  const totalSmooth = smoothPts.length;
   const pointAtPct = (pct: number): { x: number; y: number } => {
-    if (poly) return samplePolygonAtPct(poly, pct, w, h);
-    const a = pct * Math.PI * 2 - Math.PI / 2;
-    const x = cx + rx * Math.cos(a) + 5 * Math.sin(a * 3);
-    const y = cy + ry * Math.sin(a) + 3 * Math.cos(a * 2);
-    return { x, y };
+    const norm = ((pct % 1) + 1) % 1;
+    const idx = Math.floor(norm * totalSmooth) % totalSmooth;
+    return smoothPts[idx];
   };
 
-  const sectors = state?.session.sectors && state.session.sectors.length >= 2
-    ? state.session.sectors
-    : [
-        { sectorNum: 0, startPct: 0 },
-        { sectorNum: 1, startPct: 0.333 },
-        { sectorNum: 2, startPct: 0.666 },
-      ];
-
-  const myIdx = state?.camCarIdx ?? 0;
-  const myPct = state ? (state.frame.carIdxLapDistPct[myIdx] ?? -1) : -1;
-  const myLap = state ? (state.frame.carIdxLap[myIdx] ?? 0) : 0;
-
-  if (state && myPct >= 0) {
-    let curSector = 0;
-    for (let s = sectors.length - 1; s >= 0; s--) {
-      if (myPct >= sectors[s].startPct) {
-        curSector = s;
-        break;
-      }
-    }
-    const nowMs = (state.frame.sessionTime || 0) * 1000 || performance.now();
-    if (trackSectorState.lastLap !== myLap) {
-      if (trackSectorState.lastLap !== -1 && trackSectorState.lastSector >= 0) {
-        const elapsed = nowMs - trackSectorState.sectorStartMs;
-        const prevSec = trackSectorState.lastSector;
-        if (elapsed > 2000 && elapsed < 300000) {
-          const sb = trackSectorState.sessionBestMs[prevSec] ?? Infinity;
-          const pb = trackSectorState.personalBestMs[prevSec] ?? Infinity;
-          if (elapsed <= sb) {
-            trackSectorState.sessionBestMs[prevSec] = elapsed;
-            trackSectorState.personalBestMs[prevSec] = elapsed;
-          } else if (elapsed <= pb) {
-            trackSectorState.personalBestMs[prevSec] = elapsed;
-          }
-        }
-      }
-      trackSectorState.lastLap = myLap;
-      trackSectorState.currentLapColors = new Array(sectors.length).fill("rgba(255, 255, 255, 0.25)");
-      trackSectorState.sectorStartMs = nowMs;
-      trackSectorState.lastSector = curSector;
-    } else if (curSector !== trackSectorState.lastSector && trackSectorState.lastSector >= 0) {
-      const prevSec = trackSectorState.lastSector;
-      const elapsed = nowMs - trackSectorState.sectorStartMs;
-      let col = "rgba(255, 255, 255, 0.25)";
-      if (elapsed > 2000 && elapsed < 300000) {
-        const sb = trackSectorState.sessionBestMs[prevSec] ?? Infinity;
-        const pb = trackSectorState.personalBestMs[prevSec] ?? Infinity;
-        if (elapsed <= sb) {
-          trackSectorState.sessionBestMs[prevSec] = elapsed;
-          trackSectorState.personalBestMs[prevSec] = elapsed;
-          col = "#a855f7"; // Purple: Session Best
-        } else if (elapsed <= pb) {
-          trackSectorState.personalBestMs[prevSec] = elapsed;
-          col = "#10b981"; // Green: Personal Best
-        } else {
-          col = "#ef4444"; // Red: Slower
-        }
-      }
-      trackSectorState.currentLapColors[prevSec] = col;
-      trackSectorState.lastSector = curSector;
-      trackSectorState.sectorStartMs = nowMs;
-    }
-  }
-
-  // Base oscura exterior para nitidez sobre cualquier fondo de pista
+  // 1. Borde exterior oscuro de alto contraste
   ctx.save();
-  ctx.lineWidth = 5.5;
+  ctx.lineWidth = 6.5;
   ctx.lineJoin = "round";
   ctx.lineCap = "round";
-  ctx.strokeStyle = "rgba(8, 10, 15, 0.85)";
+  ctx.strokeStyle = "rgba(8, 10, 15, 0.92)";
   ctx.beginPath();
-  for (let i = 0; i <= 240; i++) {
-    const p = pointAtPct(i / 240);
-    if (i === 0) ctx.moveTo(p.x, p.y);
-    else ctx.lineTo(p.x, p.y);
-  }
+  smoothPts.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
   ctx.closePath();
+  ctx.stroke();
+
+  // 2. Asfalto principal gris neutro nitido
+  ctx.lineWidth = 3.2;
+  ctx.strokeStyle = "rgba(203, 213, 225, 0.55)";
   ctx.stroke();
   ctx.restore();
 
-  // Draw 3px vector trace split by sectors (Purple/Green/Red/Gray)
-  ctx.lineWidth = 3;
-  ctx.lineJoin = "round";
-  ctx.lineCap = "round";
-  for (let s = 0; s < sectors.length; s++) {
-    const startPct = sectors[s].startPct;
-    const endPct = s + 1 < sectors.length ? sectors[s + 1].startPct : 1.0;
-    const steps = Math.max(24, Math.round((endPct - startPct) * 240));
-    ctx.strokeStyle = trackSectorState.currentLapColors[s] || "rgba(255, 255, 255, 0.28)";
-    ctx.beginPath();
-    for (let i = 0; i <= steps; i++) {
-      const p = pointAtPct(startPct + ((endPct - startPct) * i) / steps);
-      if (i === 0) ctx.moveTo(p.x, p.y);
-      else ctx.lineTo(p.x, p.y);
-    }
-    ctx.stroke();
-  }
-
-  // Subtle Start/Finish tick
-  const sf = pointAtPct(0);
-  ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
-  ctx.fillRect(sf.x - 1, sf.y - 3, 2, 6);
+  // 3. Linea de meta blanca/roja en pct = 0
+  const sf0 = pointAtPct(0);
+  const sf1 = pointAtPct(0.01);
+  const ang = Math.atan2(sf1.y - sf0.y, sf1.x - sf0.x) + Math.PI / 2;
+  ctx.save();
+  ctx.strokeStyle = "#ef4444";
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(sf0.x - Math.cos(ang) * 6, sf0.y - Math.sin(ang) * 6);
+  ctx.lineTo(sf0.x + Math.cos(ang) * 6, sf0.y + Math.sin(ang) * 6);
+  ctx.stroke();
+  ctx.restore();
 
   if (!state) return;
 
-  const leaderIdx = state.leaderboard[0]?.carIdx ?? -1;
+  const myIdx = state.camCarIdx ?? 0;
+  const drivers = state.session.driverInfo?.drivers || {};
+  const pcts = state.frame.carIdxLapDistPct || [];
+  const onPit = state.frame.carIdxOnPitRoad || [];
 
-  // Other cars as crisp 6px circles (#e2e8f0)
-  for (let i = 0; i < state.frame.carIdxLapDistPct.length; i++) {
+  // 4. Dibujar rivales con circulo de color por clase y dorsal legible
+  for (let i = 0; i < pcts.length; i++) {
     if (i === myIdx) continue;
-    const pct = state.frame.carIdxLapDistPct[i];
-    if (pct < 0 || state.frame.carIdxOnPitRoad[i]) continue;
+    const pct = pcts[i];
+    if (pct === undefined || pct < 0 || pct > 1) continue;
+    const drv = drivers[i];
+    if (!drv || drv.isSpectator || drv.carIsPaceCar) continue;
     const p = pointAtPct(pct);
-    const isLeader = i === leaderIdx;
-    ctx.fillStyle = isLeader ? "#fbbf24" : "#e2e8f0";
+    const cls = (drv.carClassShortName || "").toUpperCase();
+    const dotColor =
+      cls.includes("GTP") ? "#facc15" :
+      cls.includes("LMP2") ? "#38bdf8" :
+      cls.includes("GT3") ? "#ef4444" :
+      "#a855f7";
+
+    ctx.save();
+    ctx.globalAlpha = onPit[i] ? 0.45 : 0.95;
+    ctx.fillStyle = dotColor;
+    ctx.strokeStyle = "#090b0f";
+    ctx.lineWidth = 1.4;
     ctx.beginPath();
-    ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+    ctx.arc(p.x, p.y, 5.2, 0, Math.PI * 2);
     ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = cls.includes("GTP") ? "#090b0f" : "#ffffff";
+    ctx.font = "bold 6.5px monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(String(drv.carNumber || i), p.x, p.y + 0.3);
+    ctx.restore();
   }
 
-  // Player car (6px bright #10b981 dot + halo)
-  if (myPct >= 0) {
-    const me = pointAtPct(myPct);
-    ctx.fillStyle = "rgba(16, 185, 129, 0.35)";
+  // 5. Dibujar coche enfocado (CamCarIdx) encima de todos en verde esmeralda brillante
+  const myPct = pcts[myIdx];
+  if (myPct !== undefined && myPct >= 0 && myPct <= 1) {
+    const p = pointAtPct(myPct);
+    const myDrv = drivers[myIdx];
+    ctx.save();
+    ctx.fillStyle = "rgba(16, 185, 129, 0.3)";
     ctx.beginPath();
-    ctx.arc(me.x, me.y, 5.5, 0, Math.PI * 2);
+    ctx.arc(p.x, p.y, 9.5, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.fillStyle = "#10b981";
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 1.6;
     ctx.beginPath();
-    ctx.arc(me.x, me.y, 3, 0, Math.PI * 2);
+    ctx.arc(p.x, p.y, 6.2, 0, Math.PI * 2);
     ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = "#052e16";
+    ctx.font = "900 7px monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(String(myDrv?.carNumber || myIdx), p.x, p.y + 0.3);
+    ctx.restore();
   }
 }
