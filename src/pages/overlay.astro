@@ -107,6 +107,9 @@ const overlaySchema = {
           </span>
           <span class="ov-pill">Windows 10/11 · iRacing SDK nativo</span>
           <span class="ov-pill">60 FPS · Click-Through</span>
+          <a href="#opensource" class="ov-pill" style="border-color:rgba(16,185,129,0.45);color:#34d399;text-decoration:none;">
+            100 % Open Source · Licencia MIT
+          </a>
         </div>
 
         <h1 class="ov-hero__title">
@@ -461,6 +464,62 @@ const overlaySchema = {
               Compilación automatizada en GitHub Actions con manifiestos de integridad SHA-256, actualizaciones modulares y persistencia local independiente de posiciones, escalas y perfiles de usuario.
             </p>
           </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- 3A. 100 % OPEN SOURCE · LICENCIA MIT                                  -->
+    <!-- ===================================================================== -->
+    <section id="opensource" class="ov-section">
+      <div class="ov-container">
+        <div class="rounded-xl border border-emerald-500/30 bg-[#0d1118] p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div class="space-y-3 max-w-2xl">
+            <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-emerald-500/15 border border-emerald-500/35 text-emerald-400 font-mono text-[11px] font-extrabold uppercase tracking-wider">
+              100 % Open Source · Licencia MIT
+            </span>
+            <h2 class="text-2xl font-extrabold text-white tracking-tight">
+              Código abierto, cero suscripciones y cero DRM
+            </h2>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              MMT Sync Overlay es software libre bajo licencia MIT. Puedes auditar el parser nativo del SDK de iRacing, añadir nuevas marcas, crear tus propios módulos HUD o compilar el binario localmente en tu equipo sin cuentas de pago ni telemetría externa.
+            </p>
+            <div class="flex flex-wrap items-center gap-2.5 pt-1 font-mono text-xs">
+              <a
+                href="https://github.com/ATRUMIN16/muntrume-site/tree/main/desktop"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="px-3.5 py-2 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-extrabold transition"
+              >
+                Código Fuente (GitHub) ↗
+              </a>
+              <a
+                href="https://github.com/ATRUMIN16/muntrume-site/issues"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="px-3.5 py-2 rounded border border-white/15 hover:border-emerald-500/50 text-slate-200 font-bold transition"
+              >
+                Issues (Reportar / Pedir Widgets) ↗
+              </a>
+              <a
+                href="https://github.com/ATRUMIN16/muntrume-site/pulls"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="px-3.5 py-2 rounded border border-white/15 hover:border-emerald-500/50 text-slate-200 font-bold transition"
+              >
+                Pull Requests ↗
+              </a>
+            </div>
+          </div>
+
+          <div class="w-full lg:w-[400px] rounded-lg border border-white/10 bg-[#090b0f] p-4 font-mono text-xs space-y-2 shrink-0">
+            <div class="text-[10px] uppercase tracking-widest text-emerald-400 font-bold">
+              Compilación local en 3 pasos
+            </div>
+            <pre class="text-slate-200 leading-relaxed overflow-x-auto"><code>git clone https://github.com/ATRUMIN16/muntrume-site.git
+cd desktop &amp;&amp; npm install
+npm run tauri dev</code></pre>
+          </div>
         </div>
       </div>
     </section>
@@ -1176,40 +1235,40 @@ const overlaySchema = {
         }
       }
 
-      // Shared 10s lap-sector telemetry model (straight -> heavy braking + heel-toe downshifts -> apex)
+      // Shared 10s lap-sector telemetry model (fast straight 275 km/h -> 200m/100m heavy braking 90-98% to 85 km/h -> apex)
       function computeTelemetryState(tSec) {
         const u = (tSec % 10) / 10;
         let throttle = 1;
         let brake = 0;
         let clutch = 0;
-        let speed = 264;
+        let speed = 275;
         let gear = 6;
         let downshiftFlash = 0;
 
         if (u < 0.48) {
-          // Flat-out straight acceleration
+          // Flat-out straight acceleration up to 275 km/h
           const p = u / 0.48;
-          throttle = Math.min(1, 0.88 + p * 0.12);
-          speed = Math.round(218 + p * 48);
-          gear = speed > 242 ? 6 : 5;
+          throttle = Math.min(1, 0.90 + p * 0.10);
+          speed = Math.round(212 + p * 63);
+          gear = speed > 240 ? 6 : 5;
         } else if (u < 0.74) {
-          // Heavy braking zone (85-95% brake + heel-and-toe downshift blips 6 -> 5 -> 4 -> 3 -> 2)
+          // Heavy braking zone (90-98% brake + rapid 6->5->4->3->2 downshifts + heel-toe blip)
           const b = (u - 0.48) / 0.26;
-          brake = b < 0.15 ? 0.55 + (b / 0.15) * 0.38 : b < 0.72 ? 0.88 + Math.sin(b * 28) * 0.05 : Math.max(0.18, 0.90 * (1 - (b - 0.72) / 0.28));
+          brake = b < 0.12 ? 0.65 + (b / 0.12) * 0.30 : b < 0.76 ? 0.92 + Math.sin(b * 32) * 0.05 : Math.max(0.22, 0.94 * (1 - (b - 0.76) / 0.24));
           const blipPhase = (b * 4) % 1;
-          const isBlip = b > 0.16 && b < 0.86 && blipPhase < 0.24;
-          throttle = isBlip ? 0.42 : 0;
-          clutch = isBlip ? 0.22 : 0;
+          const isBlip = b > 0.14 && b < 0.88 && blipPhase < 0.25;
+          throttle = isBlip ? 0.46 : 0;
+          clutch = isBlip ? 0.24 : 0;
           downshiftFlash = isBlip ? 1 : 0;
-          speed = Math.round(266 - b * 148);
-          gear = b < 0.22 ? 6 : b < 0.42 ? 5 : b < 0.62 ? 4 : b < 0.82 ? 3 : 2;
+          speed = Math.round(275 - b * 190);
+          gear = b < 0.20 ? 6 : b < 0.40 ? 5 : b < 0.60 ? 4 : b < 0.80 ? 3 : 2;
         } else {
-          // Apex roll-on & corner exit
+          // Apex roll-on & corner exit (85 km/h -> 212 km/h)
           const e = (u - 0.74) / 0.26;
-          throttle = Math.min(1, 0.32 + e * 0.68);
+          throttle = Math.min(1, 0.36 + e * 0.64);
           brake = 0;
-          speed = Math.round(118 + e * 100);
-          gear = speed > 195 ? 5 : speed > 158 ? 4 : speed > 130 ? 3 : 2;
+          speed = Math.round(85 + e * 127);
+          gear = speed > 190 ? 5 : speed > 150 ? 4 : speed > 115 ? 3 : 2;
         }
 
         return { u, throttle, brake, clutch, speed, gear, downshiftFlash };
@@ -1416,41 +1475,51 @@ const overlaySchema = {
         ctx.arc(6, 16, 1.8, 0, Math.PI * 2);
         ctx.fill();
 
-        // FIA center brake/rain light
+        // Rectangular FIA center brake/rain light with pre-rendered soft halo
         ctx.save();
         if (isBraking) {
+          ctx.fillStyle = "rgba(239, 68, 68, 0.28)";
+          ctx.beginPath();
+          ctx.arc(0, 13.5, 9, 0, Math.PI * 2);
+          ctx.fill();
           ctx.shadowColor = "#ef4444";
-          ctx.shadowBlur = 12;
+          ctx.shadowBlur = 14;
           ctx.fillStyle = "#ff2a2a";
         } else {
-          ctx.fillStyle = "#991b1b";
+          ctx.fillStyle = "#7f1d1d";
         }
-        ctx.fillRect(-2.5, 12, 5, 3.2);
+        ctx.fillRect(-3.2, 11.5, 6.4, 3.6);
         ctx.restore();
 
-        // Wide, low GT3 body + flared rear wheel arches
+        // Wide, low GT3 body + flared rear wheel arches (extra wide hips on Porsche 911; side wheel vents on McLaren)
+        const hipExtra = model === "porsche" ? 3 : 0;
         const bg = ctx.createLinearGradient(0, -23, 0, 14);
         bg.addColorStop(0, bodyColor);
         bg.addColorStop(1, secondaryColor);
         ctx.fillStyle = bg;
         ctx.beginPath();
-        ctx.moveTo(-49, 11);
-        ctx.quadraticCurveTo(-55, -5, -44, -17);
+        ctx.moveTo(-49 - hipExtra, 11);
+        ctx.quadraticCurveTo(-55 - hipExtra, -5, -44, -17);
         ctx.lineTo(-27, -23);
         ctx.lineTo(27, -23);
         ctx.lineTo(44, -17);
-        ctx.quadraticCurveTo(55, -5, 49, 11);
+        ctx.quadraticCurveTo(55 + hipExtra, -5, 49 + hipExtra, 11);
         ctx.lineTo(36, 13);
         ctx.lineTo(-36, 13);
         ctx.closePath();
         ctx.fill();
 
-        // Center stripe & accents
-        ctx.fillStyle = secondaryColor;
-        ctx.fillRect(-10, -23, 20, 34);
+        // Center stripe & matte black hood/roof (Mustang) or wheel-arch carbon vents (McLaren)
+        ctx.fillStyle = model === "mustang" ? "#0f172a" : secondaryColor;
+        ctx.fillRect(-13, -23, 26, 34);
         ctx.fillStyle = accentColor;
-        ctx.fillRect(-12, -23, 2.2, 34);
-        ctx.fillRect(9.8, -23, 2.2, 34);
+        ctx.fillRect(-15, -23, 2.2, 34);
+        ctx.fillRect(12.8, -23, 2.2, 34);
+        if (model === "mclaren") {
+          ctx.fillStyle = "#090b0f";
+          ctx.fillRect(-47, -2, 7, 10);
+          ctx.fillRect(40, -2, 7, 10);
+        }
 
         // Rounded GT3 roof & sloped rear window with visible roll cage
         ctx.fillStyle = "#0b1120";
@@ -1662,17 +1731,32 @@ const overlaySchema = {
         bctx.fillRect(0, horizonY, w, h - horizonY);
       }
 
-      function drawCarSprite(ctx, sprite, x, y, scale, downshiftFlash, brakeAmount = 0) {
-        const pitchScale = 1 + brakeAmount * 0.038;
-        const pitchY = brakeAmount * 4.5 * scale;
+      function drawCarSprite(ctx, sprite, x, y, scale, downshiftFlash, brakeAmount = 0, rollRad = 0) {
+        const pitchScale = 1 + brakeAmount * 0.042;
+        const pitchY = brakeAmount * 5.2 * scale;
         const dw = SPRITE_W * scale * 0.84 * pitchScale;
-        const dh = SPRITE_H * scale * 0.84 * (1 - brakeAmount * 0.025);
-        ctx.drawImage(sprite, x - dw * 0.5, y + pitchY - dh * 0.62, dw, dh);
+        const dh = SPRITE_H * scale * 0.84 * (1 - brakeAmount * 0.03);
+        ctx.save();
+        ctx.translate(x, y + pitchY);
+        if (rollRad !== 0) ctx.rotate(rollRad);
+        ctx.drawImage(sprite, -dw * 0.5, -dh * 0.62, dw, dh);
+
+        // Front-wheel brake dust / smoke particles under heavy braking
+        if (brakeAmount > 0.55) {
+          const dustAlpha = ((brakeAmount - 0.5) * 0.65).toFixed(2);
+          ctx.fillStyle = `rgba(203, 213, 225, ${dustAlpha})`;
+          ctx.beginPath();
+          ctx.arc(-44 * scale, 12 * scale, 5 * scale, 0, Math.PI * 2);
+          ctx.arc(44 * scale, 12 * scale, 5 * scale, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
         if (downshiftFlash > 0) {
           ctx.fillStyle = "#fed7aa";
-          ctx.fillRect(x - 8 * scale, y + pitchY + 10 * scale, 4.5 * scale, 4.5 * scale);
-          ctx.fillRect(x + 3.5 * scale, y + pitchY + 10 * scale, 4.5 * scale, 4.5 * scale);
+          ctx.fillRect(-8 * scale, 10 * scale, 4.5 * scale, 4.5 * scale);
+          ctx.fillRect(3.5 * scale, 10 * scale, 4.5 * scale, 4.5 * scale);
         }
+        ctx.restore();
       }
 
       function renderTrackBackdrop(dt, nowMs, tSec) {
@@ -1810,41 +1894,58 @@ const overlaySchema = {
           });
         }
 
-        // Visual 1-2-3 Muntrume Motorsport GT3 Formation + Multiclass Prototype Overtake (cached sprites)
+        // Closed track-bound positioning helpers (laneOffset strictly clamped to [-0.68, +0.68])
+        const roadCenterX = (y) => {
+          const p = Math.max(0, Math.min(1, Math.sqrt(Math.max(0, (y - horizonY) / (h - horizonY)))));
+          return w * 0.5 + curveFactor * w * (1 - p) * (1 - p);
+        };
+        const roadHalfWidth = (y) => {
+          const z = Math.max(0, Math.min(1, (y - horizonY) / (h - horizonY)));
+          return w * (0.045 + z * 0.46);
+        };
+        const trackBoundX = (y, laneOffset) => {
+          const clamped = Math.max(-0.68, Math.min(0.68, laneOffset));
+          return roadCenterX(y) + clamped * roadHalfWidth(y);
+        };
+
+        // Visual 1-2-3 Muntrume Motorsport GT3 Formation + Multiclass Prototype Overtake (track-bound + body roll)
         const battle = computeBattleState(nowMs, tSec);
         const proto = computePrototypePass(tSec);
-        const roadCenter = w * 0.5 + curveFactor * w * 0.05;
         const carY = h * 0.64;
         const brakeState = tel.brake > 0.25 ? 1 : 0;
+        const rollRad = curveFactor * 0.16; // ±2.2° body roll into corners
 
         // #16 A. Trujillo — Ford Mustang GT3 (P1 leading GT3 pack)
-        drawCarSprite(ctx, CAR_SPRITES.mustang[brakeState], roadCenter + Math.sin(tSec * 1.6) * 2, carY - 12, 0.92, tel.downshiftFlash, tel.brake);
+        const mustangY = carY - 12;
+        const mustangX = trackBoundX(mustangY, Math.sin(tSec * 1.6) * 0.03);
+        drawCarSprite(ctx, CAR_SPRITES.mustang[brakeState], mustangX, mustangY, 0.92, tel.downshiftFlash, tel.brake, rollRad);
 
-        // #1 M. Berbis — Porsche 911 GT3 R (992) (P2 trailing diagonal-left in slipstream, or pulling alongside in 3-wide)
+        // #1 M. Berbis — Porsche 911 GT3 R (992) (P2 trailing diagonal-left or pulling alongside in 3-wide)
         const leftPull = battle === 3 ? 1 : 0;
-        const porscheX = roadCenter - w * (0.095 + 0.03 * leftPull) + Math.sin(tSec * 2.1) * 3;
         const porscheY = carY + 26 - leftPull * 34;
-        drawCarSprite(ctx, CAR_SPRITES.porsche[brakeState], porscheX, porscheY, 0.96, tel.downshiftFlash, tel.brake);
+        const porscheLane = -0.34 - 0.08 * leftPull + Math.sin(tSec * 2.1) * 0.02;
+        drawCarSprite(ctx, CAR_SPRITES.porsche[brakeState], trackBoundX(porscheY, porscheLane), porscheY, 0.96, tel.downshiftFlash, tel.brake, rollRad);
 
-        // #22 E. Chongkan — McLaren 720S GT3 Evo (P3 trailing diagonal-right in slipstream, or pulling alongside in 3-wide)
+        // #22 E. Chongkan — McLaren 720S GT3 Evo (P3 trailing diagonal-right or pulling alongside in 3-wide)
         const rightPull = battle === 3 ? 1 : 0;
-        const mclarenX = roadCenter + w * (0.105 + 0.025 * rightPull) + Math.cos(tSec * 1.9) * 3;
         const mclarenY = carY + 42 - rightPull * 50;
-        drawCarSprite(ctx, CAR_SPRITES.mclaren[brakeState], mclarenX, mclarenY, 1.0, tel.downshiftFlash, tel.brake);
+        const mclarenLane = 0.36 + 0.06 * rightPull + Math.cos(tSec * 1.9) * 0.02;
+        drawCarSprite(ctx, CAR_SPRITES.mclaren[brakeState], trackBoundX(mclarenY, mclarenLane), mclarenY, 1.0, tel.downshiftFlash, tel.brake, rollRad);
 
-        // Multiclass Prototype (GTP #01 or LMP2 #32) overtaking on the inside left at high speed
+        // Multiclass Prototype (GTP #01 or LMP2 #32) overtaking inside left within track bounds [-0.68, +0.68]
         if (proto.active) {
-          const protoX = roadCenter - w * 0.21 + Math.sin(proto.progress * Math.PI) * 14;
-          const protoY = h * 0.92 - proto.progress * h * 0.44;
-          const protoScale = 1.08 - proto.progress * 0.46;
+          const protoY = h * 0.90 - proto.progress * h * 0.42;
+          const protoLane = -0.62 + Math.sin(proto.progress * Math.PI) * 0.06;
+          const protoScale = 1.04 - proto.progress * 0.44;
           const pSprite = proto.isGtp ? CAR_SPRITES.gtp01[brakeState] : CAR_SPRITES.lmp232[brakeState];
-          drawCarSprite(ctx, pSprite, protoX, protoY, protoScale, 0, tel.brake * 0.5);
+          drawCarSprite(ctx, pSprite, trackBoundX(protoY, protoLane), protoY, protoScale, 0, tel.brake * 0.5, rollRad * 1.15);
         }
 
         // Subtle sparks when 3-wide wheel-to-wheel
         if (battle === 3) {
+          const cx = roadCenterX(carY);
           for (let s = 0; s < 5; s++) {
-            const sx = roadCenter + (s % 2 === 0 ? -52 : 52) + (Math.random() - 0.5) * 14;
+            const sx = cx + (s % 2 === 0 ? -52 : 52) + (Math.random() - 0.5) * 14;
             const sy = carY + 18 + Math.random() * 18;
             ctx.fillStyle = s % 2 === 0 ? "#fbbf24" : "#f97316";
             ctx.fillRect(sx, sy, 3, 2);
