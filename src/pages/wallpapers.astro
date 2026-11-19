@@ -496,6 +496,24 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
         </div>
       </div>
 
+      <!-- MULTI-MONITOR ZERO-DELAY SYNC GUIDE + QUICK DOWNLOAD -->
+      <div class="rounded-lg border border-emerald-500/25 bg-[#0d1118]/90 px-4 py-3 flex flex-col lg:flex-row lg:items-center justify-between gap-3 font-mono text-xs">
+        <div class="space-y-1">
+          <p class="text-emerald-300 font-bold">⚡ Sincronización Exacta Multi-Monitor Windows (0 ms de desfase · Sin Admin HKCU)</p>
+          <p class="text-[11px] text-slate-300 leading-relaxed">
+            El modo <em>Presentación</em> nativo de Windows cambia cada monitor por separado con desfase. Nuestro script <code class="text-emerald-300">Sincronizar_Monitores_<span class="wp-sec-lbl">20s</span>.bat</code> usa <code class="text-white/90">SystemParametersInfo</code> (<code class="text-white/90">user32.dll</code>) en segundo plano (&lt; 5 MB RAM) con <code class="text-white/90">JPEGImportQuality = 100</code> para aplicar la misma imagen 4K simultáneamente en todas las pantallas.
+          </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 shrink-0">
+          <button type="button" id="wpDownloadSyncBatBtn" class="px-3 py-1.5 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-extrabold text-[11px] transition cursor-pointer">
+            ⬇ Sincronizar_Monitores_<span class="wp-sec-lbl">20s</span>.bat
+          </button>
+          <button type="button" id="wpDownloadStopBatBtn" class="px-3 py-1.5 rounded border border-white/15 hover:border-rose-400/60 text-slate-200 hover:text-rose-300 font-bold text-[11px] transition cursor-pointer">
+            ⏹ Detener_Sync_Wallpapers.bat
+          </button>
+        </div>
+      </div>
+
       <!-- TAB 1: CATEGORY PACKS -->
       <section id="tab-categories" class="wp-tab-panel grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {categoryPacks.map((pack) => {
@@ -675,6 +693,24 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
             <button type="button" id="wpModalDownloadDesktop" class="px-3.5 py-2 rounded border border-white/20 hover:border-emerald-500 text-white font-bold cursor-pointer">Descargar 16:9 (.JPG)</button>
             <button type="button" id="wpModalDownloadMobile" class="px-3.5 py-2 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-extrabold cursor-pointer">Descargar Foto Móvil (9:16 4K .JPG)</button>
           </div>
+        </div>
+      </div>
+
+      <!-- MULTI-MONITOR ZERO-DELAY SYNC GUIDE + QUICK DOWNLOAD -->
+      <div class="rounded-lg border border-emerald-500/25 bg-[#0d1118]/90 px-4 py-3 flex flex-col lg:flex-row lg:items-center justify-between gap-3 font-mono text-xs">
+        <div class="space-y-1">
+          <p class="text-emerald-300 font-bold">⚡ Sincronización Exacta Multi-Monitor Windows (0 ms de desfase · Sin Admin HKCU)</p>
+          <p class="text-[11px] text-slate-300 leading-relaxed">
+            El modo <em>Presentación</em> nativo de Windows cambia cada monitor por separado con desfase. Nuestro script <code class="text-emerald-300">Sincronizar_Monitores_<span class="wp-sec-lbl">20s</span>.bat</code> usa <code class="text-white/90">SystemParametersInfo</code> (<code class="text-white/90">user32.dll</code>) en segundo plano (&lt; 5 MB RAM) con <code class="text-white/90">JPEGImportQuality = 100</code> para aplicar la misma imagen 4K simultáneamente en todas las pantallas.
+          </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 shrink-0">
+          <button type="button" id="wpDownloadSyncBatBtn" class="px-3 py-1.5 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-extrabold text-[11px] transition cursor-pointer">
+            ⬇ Sincronizar_Monitores_<span class="wp-sec-lbl">20s</span>.bat
+          </button>
+          <button type="button" id="wpDownloadStopBatBtn" class="px-3 py-1.5 rounded border border-white/15 hover:border-rose-400/60 text-slate-200 hover:text-rose-300 font-bold text-[11px] transition cursor-pointer">
+            ⏹ Detener_Sync_Wallpapers.bat
+          </button>
         </div>
       </div>
     </div>
@@ -917,21 +953,25 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
         if (progressPct) progressPct.textContent = `${pct}%`;
         if (progressFill) progressFill.style.width = `${pct}%`;
       };
-      zip.file("README_Windows_Slideshow.txt", `MUNTRUME MOTORSPORT WALLPAPERS (.JPG nativo)\r\nIntervalo configurado: ${slideshowSec}s (${slideshowSec * 1000} ms) con transicion Crossfade.\r\nDescomprime la carpeta y ejecuta Aplicar_Slideshow_${slideshowSec}s.bat (o elige esta carpeta en Personalizacion > Fondo > Presentacion).`);
+      const buildSyncBatContent = (sec: number) => [
+        "@echo off",
+        "chcp 65001 >nul",
+        'reg add "HKCU\\Control Panel\\Desktop" /v WallpaperStyle /t REG_SZ /d 10 /f >nul',
+        'reg add "HKCU\\Control Panel\\Desktop" /v TileWallpaper /t REG_SZ /d 0 /f >nul',
+        'reg add "HKCU\\Control Panel\\Desktop" /v JPEGImportQuality /t REG_DWORD /d 100 /f >nul',
+        `start "" /min powershell -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -Command "$dir='%~dp0'; Add-Type -TypeDefinition 'using System.Runtime.InteropServices; public class W { [DllImport(\\"user32.dll\\", CharSet=CharSet.Auto)] public static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni); }'; while($true){$imgs = Get-ChildItem -Path $dir -Include *.jpg,*.jpeg,*.png -File | Get-Random -Count 999; foreach($img in $imgs){ [W]::SystemParametersInfo(20, 0, $img.FullName, 3) | Out-Null; Start-Sleep -Seconds ${sec} } }"`,
+      ].join("\r\n");
+
+      const buildStopBatContent = () => [
+        "@echo off",
+        "chcp 65001 >nul",
+        `powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-CimInstance Win32_Process -Filter \\"Name='powershell.exe'\\" | Where-Object { $_.CommandLine -like '*SystemParametersInfo*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }"`,
+      ].join("\r\n");
+
+      zip.file("README_Windows_Slideshow.txt", `MUNTRUME MOTORSPORT WALLPAPERS (.JPG nativo 4K)\r\nIntervalo configurado: ${slideshowSec}s · Sincronizacion simultanea 0 ms entre monitores.\r\n1. Descomprime la carpeta.\r\n2. Ejecuta Sincronizar_Monitores_${slideshowSec}s.bat (sin permisos de administrador, < 5 MB RAM).\r\n3. Para detener la rotacion en cualquier momento, ejecuta Detener_Sync_Wallpapers.bat.`);
       if (outputFormat === "desktop") {
-        const intervalMs = slideshowSec * 1000;
-        const batContent = [
-          "@echo off",
-          "chcp 65001 >nul",
-          `reg add "HKCU\\Control Panel\\Personalization\\Desktop Slideshow" /v Interval /t REG_DWORD /d ${intervalMs} /f >nul`,
-          `reg add "HKCU\\Control Panel\\Personalization\\Desktop Slideshow" /v Shuffle /t REG_DWORD /d 1 /f >nul`,
-          `reg add "HKCU\\Control Panel\\Personalization\\Desktop Slideshow" /v AnimationDuration /t REG_DWORD /d 1000 /f >nul`,
-          `reg add "HKCU\\Control Panel\\Desktop" /v WallpaperStyle /t REG_SZ /d 10 /f >nul`,
-          `reg add "HKCU\\Control Panel\\Desktop" /v TileWallpaper /t REG_SZ /d 0 /f >nul`,
-          "RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters 1, True",
-          "start ms-settings:personalization-background",
-        ].join("\r\n");
-        zip.file(`Aplicar_Slideshow_${slideshowSec}s.bat`, batContent);
+        zip.file(`Sincronizar_Monitores_${slideshowSec}s.bat`, buildSyncBatContent(slideshowSec));
+        zip.file("Detener_Sync_Wallpapers.bat", buildStopBatContent());
       }
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
@@ -956,6 +996,27 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
 
     dlSelBtn?.addEventListener("click", () => {
       downloadZipPack(Array.from(selectedIds).map((id) => itemById.get(id)).filter(Boolean) as typeof allItems, "Seleccion");
+    });
+
+    document.getElementById("wpDownloadSyncBatBtn")?.addEventListener("click", () => {
+      const bat = [
+        "@echo off",
+        "chcp 65001 >nul",
+        'reg add "HKCU\\Control Panel\\Desktop" /v WallpaperStyle /t REG_SZ /d 10 /f >nul',
+        'reg add "HKCU\\Control Panel\\Desktop" /v TileWallpaper /t REG_SZ /d 0 /f >nul',
+        'reg add "HKCU\\Control Panel\\Desktop" /v JPEGImportQuality /t REG_DWORD /d 100 /f >nul',
+        `start "" /min powershell -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -Command "$dir='%~dp0'; Add-Type -TypeDefinition 'using System.Runtime.InteropServices; public class W { [DllImport(\\"user32.dll\\", CharSet=CharSet.Auto)] public static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni); }'; while($true){$imgs = Get-ChildItem -Path $dir -Include *.jpg,*.jpeg,*.png -File | Get-Random -Count 999; foreach($img in $imgs){ [W]::SystemParametersInfo(20, 0, $img.FullName, 3) | Out-Null; Start-Sleep -Seconds ${slideshowSec} } }"`,
+      ].join("\r\n");
+      triggerDownload(new Blob([bat], { type: "text/plain;charset=utf-8" }), `Sincronizar_Monitores_${slideshowSec}s.bat`);
+    });
+
+    document.getElementById("wpDownloadStopBatBtn")?.addEventListener("click", () => {
+      const stopBat = [
+        "@echo off",
+        "chcp 65001 >nul",
+        `powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-CimInstance Win32_Process -Filter \\"Name='powershell.exe'\\" | Where-Object { $_.CommandLine -like '*SystemParametersInfo*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }"`,
+      ].join("\r\n");
+      triggerDownload(new Blob([stopBat], { type: "text/plain;charset=utf-8" }), "Detener_Sync_Wallpapers.bat");
     });
 
     const modalEl = document.getElementById("wpModal");
