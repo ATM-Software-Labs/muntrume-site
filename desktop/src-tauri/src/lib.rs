@@ -1092,7 +1092,7 @@ async fn get_ibt_storage_stats(max_age_days: u32) -> Result<IbtStorageStats, Str
                     total_bytes += len;
                     if max_age_days > 0 {
                         if let Ok(modified) = meta.modified() {
-                            if now.duration_since(modified).map_or(false, |d| d > cutoff) {
+                            if now.duration_since(modified).is_ok_and(|d| d > cutoff) {
                                 old_files_count += 1;
                                 old_bytes += len;
                             }
@@ -1187,7 +1187,7 @@ async fn list_ibt_sessions() -> Result<Vec<ibt_parser::IbtSessionMeta>, String> 
                 }
             }
         }
-        files.sort_by(|a, b| b.0.cmp(&a.0));
+        files.sort_by_key(|entry| std::cmp::Reverse(entry.0));
         let mut out = Vec::new();
         // Only scan the 5 most recent .ibt files (64 KB header + YAML only)
         for (_, p) in files.into_iter().take(5) {
@@ -1238,7 +1238,7 @@ async fn read_latest_ibt() -> Result<Option<ibt_parser::IbtSessionReport>, Strin
             if p.extension().and_then(|e| e.to_str()).is_some_and(|e| e.eq_ignore_ascii_case("ibt")) {
                 if let Ok(meta) = entry.metadata() {
                     if let Ok(modified) = meta.modified() {
-                        let is_recent = now.duration_since(modified).map_or(false, |d| d <= cutoff);
+                        let is_recent = now.duration_since(modified).is_ok_and(|d| d <= cutoff);
                         if is_recent && newest.as_ref().is_none_or(|(t, _)| modified > *t) {
                             newest = Some((modified, p));
                         }

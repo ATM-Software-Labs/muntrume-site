@@ -618,7 +618,7 @@ pub fn list_captured_sessions() -> Vec<CapturedSessionMeta> {
     if let Ok(raw) = fs::read(&idx_path) {
         if let Ok(mut list) = serde_json::from_slice::<Vec<CapturedSessionMeta>>(&raw) {
             list.retain(|e| Path::new(&e.file_path).exists());
-            list.sort_by(|a, b| b.captured_epoch_ms.cmp(&a.captured_epoch_ms));
+            list.sort_by_key(|entry| std::cmp::Reverse(entry.captured_epoch_ms));
             return list;
         }
     }
@@ -649,7 +649,7 @@ pub fn list_captured_sessions() -> Vec<CapturedSessionMeta> {
             }
         }
     }
-    rebuilt.sort_by(|a, b| b.captured_epoch_ms.cmp(&a.captured_epoch_ms));
+    rebuilt.sort_by_key(|entry| std::cmp::Reverse(entry.captured_epoch_ms));
     if !rebuilt.is_empty() {
         if let Ok(raw) = serde_json::to_vec_pretty(&rebuilt) {
             let _ = fs::write(&idx_path, raw);

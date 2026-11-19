@@ -189,9 +189,9 @@ async fn run(app: &AppHandle) -> Result<SyncReport, String> {
                 downloaded_cars.push(item.car);
                 new_locals.push(local);
                 downloaded += 1;
-                if downloaded % 50 == 0 {
+                if downloaded.is_multiple_of(50) {
                     index.files.retain(|file| !replaced_ids.contains(&file.id) && !replaced_paths.contains(&file.relative_path));
-                    index.files.extend(new_locals.drain(..));
+                    index.files.append(&mut new_locals);
                     replaced_ids.clear();
                     replaced_paths.clear();
                     let _ = save_index(&index_path, &index);
