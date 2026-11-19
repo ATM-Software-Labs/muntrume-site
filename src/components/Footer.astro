@@ -47,12 +47,6 @@ const columns = [
     ],
   },
 ];
-const officialContacts = [
-  { name: "Alberto Trujillo (#16)", role: "Fundador & Piloto", email: "alberto@muntru.me" },
-  { name: "Mateo Berbis (#1)", role: "Piloto Oficial", email: "mateo@muntru.me" },
-  { name: "Muntrume Motorsport", role: "Administración / Soporte / Prensa", email: "admin@muntru.me" },
-  { name: "Departamento Legal", role: "Legal / Privacidad / DMCA", email: "legal@muntru.me" },
-];
 ---
 
 <footer class="mmt-footer">
@@ -79,24 +73,6 @@ const officialContacts = [
       ))}
     </div>
 
-    <div class="mmt-footer__contacts" aria-label="Contacto oficial">
-      <h2 class="mmt-footer__contacts-title">Contacto Directo · Equipo y Administración</h2>
-      <div class="mmt-footer__contacts-grid">
-        {officialContacts.map((c) => (
-          <div class="mmt-footer__contact-card">
-            <div class="mmt-footer__contact-meta">
-              <strong class="mmt-footer__contact-name">{c.name}</strong>
-              <span class="mmt-footer__contact-role">{c.role}</span>
-            </div>
-            <div class="mmt-footer__contact-actions">
-              <a href={`mailto:${c.email}`} class="mmt-footer__contact-mail">{c.email}</a>
-              <button type="button" class="mmt-footer__copy-btn" data-copy-footer-email={c.email}>Copiar email</button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-
     <div class="mmt-footer__bottom">
       <div class="mmt-footer__brand-row">
         <a class="mmt-footer__wordmark" href="/">
@@ -105,6 +81,7 @@ const officialContacts = [
         </a>
         <span class="mmt-footer__pill">iRacing · Endurance &amp; GT</span>
         <nav class="mmt-footer__legal" aria-label="Información legal" data-i18n-aria="footer.legal">
+          <a href="/contact/" data-i18n="footer.contact">Contacto</a>
           <a href="/privacy/" data-i18n="footer.privacy">Privacidad</a>
           <a href="/aviso-legal/" data-i18n="footer.aviso">Términos</a>
           <a href="/cookies/" data-i18n="footer.cookies">Cookies</a>
@@ -113,11 +90,6 @@ const officialContacts = [
       </div>
 
       <div class="mmt-footer__utils">
-        <a href="/contact/" class="mmt-footer__help">
-          <span>Ayuda</span>
-          <span class="mmt-footer__q" aria-hidden="true">?</span>
-        </a>
-
         <!-- Custom dark-themed language selector (replaces native white-popup <select>) -->
         <div class="mmt-footer__lang" id="footerLangWrap">
           <button
@@ -206,93 +178,6 @@ const officialContacts = [
     transform: translateX(2px);
   }
 
-  .mmt-footer__contacts {
-    padding: 20px 0 24px;
-    border-top: 1px solid var(--r-line);
-  }
-  .mmt-footer__contacts-title {
-    margin: 0 0 12px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--r-accent, #00e699);
-  }
-  .mmt-footer__contacts-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 12px;
-  }
-  .mmt-footer__contact-card {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 12px 14px;
-    border-radius: 10px;
-    border: 1px solid var(--r-line);
-    background: var(--r-surface, rgba(255, 255, 255, 0.02));
-  }
-  .mmt-footer__contact-meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 6px;
-  }
-  .mmt-footer__contact-name {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--r-text);
-  }
-  .mmt-footer__contact-role {
-    font-size: 11px;
-    color: var(--r-muted);
-  }
-  .mmt-footer__contact-actions {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    min-width: 0;
-  }
-  .mmt-footer__contact-mail {
-    font-size: 12.5px;
-    font-weight: 600;
-    color: var(--r-accent, #00e699);
-    text-decoration: none;
-    min-width: 0;
-    overflow-wrap: anywhere;
-  }
-  .mmt-footer__contact-mail:hover {
-    text-decoration: underline;
-  }
-  .mmt-footer__copy-btn {
-    padding: 4px 8px;
-    border-radius: 6px;
-    border: 1px solid var(--r-line);
-    background: transparent;
-    color: var(--r-muted);
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition: border-color 0.15s ease, color 0.15s ease;
-  }
-  .mmt-footer__copy-btn:hover {
-    border-color: var(--r-accent, #00e699);
-    color: var(--r-text);
-  }
-  @media (max-width: 1100px) {
-    .mmt-footer__contacts-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-  @media (max-width: 700px) {
-    .mmt-footer__contacts-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-
   .mmt-footer__bottom {
     border-top: 1px solid var(--r-line);
     padding-top: 22px;
@@ -307,7 +192,7 @@ const officialContacts = [
     flex-wrap: wrap;
     align-items: center;
     gap: 12px 18px;
-    flex: 1 1 520px;
+    flex: 1 1 320px;
     min-width: 0;
   }
   .mmt-footer__wordmark {
@@ -336,7 +221,8 @@ const officialContacts = [
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 16px;
+    gap: 12px 16px;
+    flex: 1 1 100%;
     font-size: 13px;
   }
   .mmt-footer__legal a {
@@ -358,34 +244,8 @@ const officialContacts = [
     align-items: center;
     gap: 12px 16px;
     margin-left: auto;
-    /* The copilot button is fixed at the bottom-right. Keep the language control clear of it. */
-    padding-right: 120px;
-  }
-  .mmt-footer__help {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    color: var(--r-muted);
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 500;
-    transition: color 0.15s ease;
-  }
-  .mmt-footer__help:hover {
-    color: var(--r-text);
-  }
-  .mmt-footer__q {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 18px;
-    height: 18px;
-    border-radius: 999px;
-    background: var(--r-muted);
-    color: var(--r-bg, #0e1211);
-    font-size: 11px;
-    font-weight: 700;
-    line-height: 1;
+    /* The copilot button is fixed at the bottom-right, about 164px wide. Keep the language control clear of it. */
+    padding-right: 180px;
   }
 
   .mmt-footer__lang {
@@ -474,7 +334,7 @@ const officialContacts = [
   }
   @media (max-width: 640px) {
     .mmt-footer {
-      padding: 36px 16px 96px;
+      padding: 36px 16px 112px;
     }
     .mmt-footer__grid {
       grid-template-columns: 1fr;
@@ -560,19 +420,5 @@ const officialContacts = [
   });
   document.addEventListener("muntru:i18n", syncMenu);
   syncMenu();
-
-  document.querySelectorAll("[data-copy-footer-email]").forEach(function (copyBtn) {
-    copyBtn.addEventListener("click", function () {
-      var mail = copyBtn.getAttribute("data-copy-footer-email");
-      if (!mail) return;
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(mail).catch(function () {});
-      }
-      var orig = copyBtn.getAttribute("data-orig-lbl") || copyBtn.textContent;
-      copyBtn.setAttribute("data-orig-lbl", orig);
-      copyBtn.textContent = "¡Copiado!";
-      setTimeout(function () { copyBtn.textContent = orig; }, 1800);
-    });
-  });
 })();
 </script>
