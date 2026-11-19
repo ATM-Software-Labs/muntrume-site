@@ -89,6 +89,12 @@ const driverSetups = (driver.topCars || []).map((carItem) => {
   };
 });
 
+const DRIVER_EMAILS: Record<string, string> = {
+  albertot: "alberto@muntru.me",
+  mateob: "mateo@muntru.me",
+};
+const driverEmail = DRIVER_EMAILS[driver.slug] || "admin@muntru.me";
+
 const personSchema = {
   "@context": "https://schema.org",
   "@graph": [
@@ -105,6 +111,7 @@ const personSchema = {
       "@id": `${pageUrl}#person`,
       "name": driver.fullName,
       "jobTitle": driver.role,
+      "email": driverEmail,
       "url": pageUrl,
       "memberOf": {
         "@type": "SportsTeam",
@@ -130,6 +137,11 @@ const personSchema = {
       "alternateName": ["MMT", "Muntrume", "MMT Motorsport"],
       "sport": "Sim Racing (iRacing)",
       "url": "https://muntru.me/",
+      "email": "admin@muntru.me",
+      "contactPoint": [
+        { "@type": "ContactPoint", "contactType": "customer support", "email": "admin@muntru.me" },
+        { "@type": "ContactPoint", "contactType": "legal", "email": "legal@muntru.me" }
+      ],
       "athlete": { "@id": `${pageUrl}#person` }
     }
   ]
@@ -157,6 +169,7 @@ const personSchema = {
         <a href="#bio">Perfil</a>
         <a href="#logros">Logros</a>
         <a href="#redes">Redes</a>
+        <a href="#contacto">Contacto</a>
         <a href="#setups">Setups</a>
         <a href="#comparativa">Equipo</a>
         <a href="#eventos" id="eventosTab">Calendario</a>
@@ -311,6 +324,36 @@ const personSchema = {
           <thead><tr><th scope="col">Date</th><th scope="col">Series</th><th scope="col">Circuit</th><th scope="col">Car</th><th scope="col" class="num">Start → Finish</th><th scope="col" class="num">Inc.</th><th scope="col" class="num">ΔiR</th></tr></thead>
           <tbody id="racesBody"></tbody>
         </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="r-section d-reveal" id="contacto" aria-labelledby="contactoTitle">
+    <div class="r-wrap max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+      <p class="r-kicker">Contacto oficial</p>
+      <h2 id="contactoTitle" class="d-block__title" style="margin-bottom:14px">Contacto directo con {driver.fullName} y Muntrume Motorsport</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;">
+        <div style="padding:14px 16px;border-radius:12px;border:1px solid var(--r-line);background:var(--r-surface);">
+          <div class="r-meta" style="margin-bottom:6px;">Correo directo · {driver.fullName} ({driver.dorsal})</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+            <a href={`mailto:${driverEmail}`} style="color:var(--r-accent);font-family:ui-monospace,monospace;font-weight:700;font-size:13.5px;text-decoration:none;">{driverEmail}</a>
+            <button type="button" data-copy-email={driverEmail} class="d-email-copy">Copiar email</button>
+          </div>
+        </div>
+        <div style="padding:14px 16px;border-radius:12px;border:1px solid var(--r-line);background:var(--r-surface);">
+          <div class="r-meta" style="margin-bottom:6px;">Administración / Soporte / Prensa</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+            <a href="mailto:admin@muntru.me" style="color:var(--r-accent);font-family:ui-monospace,monospace;font-weight:700;font-size:13.5px;text-decoration:none;">admin@muntru.me</a>
+            <button type="button" data-copy-email="admin@muntru.me" class="d-email-copy">Copiar email</button>
+          </div>
+        </div>
+        <div style="padding:14px 16px;border-radius:12px;border:1px solid var(--r-line);background:var(--r-surface);">
+          <div class="r-meta" style="margin-bottom:6px;">Legal / Privacidad / DMCA</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+            <a href="mailto:legal@muntru.me" style="color:var(--r-accent);font-family:ui-monospace,monospace;font-weight:700;font-size:13.5px;text-decoration:none;">legal@muntru.me</a>
+            <button type="button" data-copy-email="legal@muntru.me" class="d-email-copy">Copiar email</button>
+          </div>
+        </div>
       </div>
     </div>
   </section>
