@@ -198,12 +198,30 @@ const defaultSchema = {
       "founder": {
         "@type": "Person",
         "name": "Alberto Trujillo",
+        "email": "alberto@muntru.me",
         "url": `${siteOrigin}/d/albertot/`
       },
+      "email": "admin@muntru.me",
+      "contactPoint": [
+        {
+          "@type": "ContactPoint",
+          "contactType": "customer support",
+          "email": "admin@muntru.me",
+          "availableLanguage": ["Spanish", "Catalan", "English", "French"]
+        },
+        {
+          "@type": "ContactPoint",
+          "contactType": "legal",
+          "email": "legal@muntru.me",
+          "url": `${siteOrigin}/aviso-legal`,
+          "availableLanguage": ["Spanish", "English"]
+        }
+      ],
       "member": PILOTOS.map((p) => ({
         "@type": "Person",
         "name": p.fullName,
         "jobTitle": p.role,
+        ...(p.slug === "albertot" ? { "email": "alberto@muntru.me" } : p.slug === "mateob" ? { "email": "mateo@muntru.me" } : {}),
         "url": `${siteOrigin}/d/${p.slug}/`
       })),
       "knowsAbout": [

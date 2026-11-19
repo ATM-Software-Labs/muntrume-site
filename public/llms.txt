@@ -25,3 +25,10 @@ Muntrume Motorsport (also known as Equipo MMT) competes in iRacing endurance and
 ## Extended Context
 
 - [Full LLM Documentation](https://muntru.me/llms-full.txt)
+
+## Official Contact
+
+- **Administration / Support / Press**: `admin@muntru.me`
+- **Legal / Privacy / GDPR / DMCA Takedown**: `legal@muntru.me`
+- **Alberto Trujillo (#16, Founder & Driver)**: `alberto@muntru.me`
+- **Mateo Berbis (#1, Official Driver)**: `mateo@muntru.me`
