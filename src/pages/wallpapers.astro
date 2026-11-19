@@ -25,22 +25,23 @@ const allWallpapers: WallpaperItem[] = [];
 function isStudioOrBanner(src: string): boolean {
   const lower = src.toLowerCase();
   if (lower.startsWith("/assets/cars/")) return true;
-  if (/(series|banner|logo|simucube|imsa|production|challenge|lights|thumb|main|badge|og-)/i.test(lower)) return true;
+  if (/(series[-_]?banner|brand[-_]?logo|\/logo[._-]|thumb|main\.(webp|jpg|png)|badge|og-)/i.test(lower)) return true;
   return false;
 }
 
 function mapCategoryKey(rawCat: string, carName = "", title = ""): { key: string; label: string; accent: string } {
   const s = `${rawCat} ${carName} ${title}`.toLowerCase();
+  if (/296\s*challenge|ferrari.*challenge/i.test(s)) return { key: "ferrari_challenge", label: "Challenge", accent: "#ef4444" };
   if (/\bcup\b|992\.?1|992\.?2|porsche.*cup/i.test(s)) return { key: "pcup", label: "PCup", accent: "#e2e8f0" };
-  if (/\bgtp\b|hypercar|lmdh|lmh|499p|963|v-series|arx-06|hybrid v8|valkyrie/i.test(s)) return { key: "gtp", label: "GTP", accent: "#facc15" };
-  if (/\blmp2\b|\blmp3\b|p217|jsp320|arx-01/i.test(s)) return { key: "lmp2", label: "LMP2", accent: "#38bdf8" };
-  if (/\bgte\b|c8\.r|488 gte|911 rsr|m8 gte/i.test(s)) return { key: "gte", label: "GTE", accent: "#ef4444" };
-  if (/\bgt4\b|570s|718 cayman/i.test(s)) return { key: "gt4", label: "GT4", accent: "#fb923c" };
-  if (/\btcr\b|touring|rs3|elantra|veloster|civic/i.test(s)) return { key: "tcr", label: "TCR", accent: "#22c55e" };
-  if (/formula|sf23|\bsfl\b|ir18|ir04|\bf4\b|\bf3\b|ff1600|super formula/i.test(s)) return { key: "formulas", label: "Formula", accent: "#10b981" };
-  if (/nascar|stock|oval|camaro|silverado|tundra|indy|arca|late model/i.test(s)) return { key: "oval", label: "Oval", accent: "#fbbf24" };
-  if (/dirt|rallycross|\brx\b|sprint car|midget|micro sprint|pro 4|pro 2|fiesta/i.test(s)) return { key: "dirt", label: "Dirt", accent: "#f59e0b" };
-  if (/mx-?5|gr86|clio|vee|rookie|solstice|spec racer/i.test(s)) return { key: "rookie", label: "Copa", accent: "#38bdf8" };
+  if (/\bgtp\b|hypercar|lmdh|lmh|499p|963|v-series|arx-06|hybrid\s*v8|valkyrie/i.test(s)) return { key: "gtp", label: "GTP", accent: "#facc15" };
+  if (/\blmp2\b|p217/i.test(s)) return { key: "lmp2", label: "LMP2", accent: "#38bdf8" };
+  if (/\blmp3\b|ligier|jsp320|js\s*p320/i.test(s)) return { key: "lmp3", label: "LMP3", accent: "#06b6d4" };
+  if (/\bgte\b|c8\.r|488\s*gte|911\s*rsr|m8\s*gte/i.test(s)) return { key: "gte", label: "GTE", accent: "#ef4444" };
+  if (/\bgt4\b|570s|718\s*cayman/i.test(s)) return { key: "gt4", label: "GT4", accent: "#fb923c" };
+  if (/\btcr\b|touring|rs\s*3|rs3|elantra|veloster|civic/i.test(s)) return { key: "tcr", label: "TCR", accent: "#22c55e" };
+  if (/formula|sf23|\bsfl\b|ir18|ir04|\bf4\b|\bf3\b|ff1600|super\s*formula|vee/i.test(s)) return { key: "formulas", label: "Formula", accent: "#10b981" };
+  if (/nascar|stock|oval|camaro|silverado|tundra|arca|late\s*model/i.test(s)) return { key: "oval", label: "Oval", accent: "#fbbf24" };
+  if (/mx-?5|miata|gr86|clio|production/i.test(s)) return { key: "rookie", label: "PCC", accent: "#38bdf8" };
   if (/\bgt3\b/i.test(s)) return { key: "gt3", label: "GT3", accent: "#a855f7" };
   return { key: "gt3", label: "GT3", accent: "#a855f7" };
 }
@@ -171,23 +172,84 @@ for (const album of PADDOCK_ALBUMS) {
   }
 }
 
-// Category Packs
-const CATEGORY_DEFS = [
-  { id: "gt3", slug: "GT3-2026", title: "GT3 2026", badge: "GT3", accent: "#a855f7", match: (w: WallpaperItem) => w.categoryKey === "gt3" },
-  { id: "gtp", slug: "GTP-Hypercar", title: "GTP / Hypercar", badge: "GTP", accent: "#facc15", match: (w: WallpaperItem) => w.categoryKey === "gtp" },
-  { id: "lmp2", slug: "LMP2-Prototipos", title: "LMP2 & Prototipos", badge: "LMP2", accent: "#38bdf8", match: (w: WallpaperItem) => w.categoryKey === "lmp2" },
-  { id: "gte", slug: "GTE", title: "GTE", badge: "GTE", accent: "#ef4444", match: (w: WallpaperItem) => w.categoryKey === "gte" },
-  { id: "gt4", slug: "GT4", title: "GT4", badge: "GT4", accent: "#fb923c", match: (w: WallpaperItem) => w.categoryKey === "gt4" },
-  { id: "tcr", slug: "TCR-Touring", title: "TCR / Touring Car", badge: "TCR", accent: "#22c55e", match: (w: WallpaperItem) => w.categoryKey === "tcr" },
-  { id: "pcup", slug: "Porsche-Cup", title: "Porsche Cup (PCup)", badge: "PCUP", accent: "#e2e8f0", match: (w: WallpaperItem) => w.categoryKey === "pcup" },
-  { id: "formulas", slug: "Formulas", title: "Fórmulas", badge: "FORMULA", accent: "#10b981", match: (w: WallpaperItem) => w.categoryKey === "formulas" },
-  { id: "oval", slug: "NASCAR-Oval", title: "NASCAR / Oval", badge: "OVAL", accent: "#fbbf24", match: (w: WallpaperItem) => w.categoryKey === "oval" },
-  { id: "rookie", slug: "Copa-Rookie", title: "Copa / Rookie", badge: "ROOKIE", accent: "#38bdf8", match: (w: WallpaperItem) => w.categoryKey === "rookie" },
-  { id: "dirt", slug: "Rallycross-Dirt", title: "Rallycross & Dirt", badge: "DIRT", accent: "#f59e0b", match: (w: WallpaperItem) => w.categoryKey === "dirt" },
-  { id: "all", slug: "Muntrume-Completa", title: "Colección Completa Muntrume", badge: "ALL TRACK", accent: "#10b981", match: () => true },
+// Official iRacing Series Roster Matchers
+function itemText(w: WallpaperItem): string {
+  return `${w.brand} ${w.model} ${w.carSlug} ${w.carClass}`.toLowerCase();
+}
+function isLegacyCar(t: string): boolean {
+  return /\blegacy\b/i.test(t);
+}
+function isFerrari296Challenge(t: string): boolean {
+  return /296\s*challenge|ferrari.*challenge/i.test(t);
+}
+function isAudiOrMcLarenGt3(t: string): boolean {
+  return (/audi|r8\s*lms/i.test(t) || /mclaren|720s|mp4-12c/i.test(t)) && !/gt4|570s|tcr|rs\s*3|rs3/i.test(t);
+}
+function isGtp(w: WallpaperItem): boolean {
+  const t = itemText(w);
+  return w.categoryKey === "gtp" || /porsche\s*963|cadillac\s*v-?series|bmw\s*m\s*hybrid|ferrari\s*499p|acura\s*arx-?06|valkyrie/i.test(t);
+}
+function isLmp2(w: WallpaperItem): boolean {
+  const t = itemText(w);
+  return w.categoryKey === "lmp2" || /dallara\s*p217|p217/i.test(t);
+}
+function isLmp3(w: WallpaperItem): boolean {
+  const t = itemText(w);
+  return w.categoryKey === "lmp3" || /ligier|js\s*p320|jsp320/i.test(t);
+}
+function isPcup(w: WallpaperItem): boolean {
+  const t = itemText(w);
+  return w.categoryKey === "pcup" || /porsche.*cup|911\s*gt3\s*cup|992\.?2?\s*cup/i.test(t);
+}
+function isGt4(w: WallpaperItem): boolean {
+  const t = itemText(w);
+  return w.categoryKey === "gt4" || /cayman\s*gt4|718\s*cayman|570s\s*gt4|m4\s*gt4|vantage\s*gt4|amg\s*gt4/i.test(t);
+}
+function isTcr(w: WallpaperItem): boolean {
+  const t = itemText(w);
+  return w.categoryKey === "tcr" || /elantra|veloster|civic\s*type\s*r|rs\s*3\s*lms|rs3\s*lms|touring\s*car/i.test(t);
+}
+function isGt3Imsa(w: WallpaperItem): boolean {
+  const t = itemText(w);
+  if (isLegacyCar(t) || isFerrari296Challenge(t) || isAudiOrMcLarenGt3(t)) return false;
+  return (
+    /mustang\s*gt3|911\s*gt3\s*r|992\s*r?\s*gt3|296\s*gt3|corvette\s*z06\s*gt3|m4\s*gt3|mercedes.*gt3|amg\s*gt3|hurac[aá]n\s*gt3|vantage\s*gt3|nsx\s*gt3/i.test(t) ||
+    w.categoryKey === "gt3"
+  );
+}
+function isGt3All(w: WallpaperItem): boolean {
+  const t = itemText(w);
+  if (isLegacyCar(t) || isFerrari296Challenge(t)) return false;
+  return isGt3Imsa(w) || isAudiOrMcLarenGt3(t) || w.categoryKey === "gt3";
+}
+function isFormulas(w: WallpaperItem): boolean {
+  const t = itemText(w);
+  return w.categoryKey === "formulas" || /formula|sf23|\bsfl\b|super\s*formula|ir18|indycar|fia\s*f4|\bf4\b|formula\s*vee|ff1600|ray\s*ff/i.test(t);
+}
+function isPccRookie(w: WallpaperItem): boolean {
+  const t = itemText(w);
+  return w.categoryKey === "rookie" || /mx-?5|miata|gr86|clio|production\s*car/i.test(t);
+}
+function isNascar(w: WallpaperItem): boolean {
+  const t = itemText(w);
+  return w.categoryKey === "oval" || /nascar|stock\s*car|xfinity|truck|cup\s*series|camaro|silverado|tundra|arca|late\s*model/i.test(t);
+}
+
+const SERIES_DEFS = [
+  { id: "imsa", slug: "IMSA", title: "IMSA iRacing Series (GTP + LMP2 + GT3)", badge: "IMSA", accent: "#facc15", match: (w: WallpaperItem) => isGtp(w) || isLmp2(w) || isGt3Imsa(w) },
+  { id: "gt-sprint", slug: "GTSprint", title: "GT Sprint / GT Endurance Series", badge: "GT3", accent: "#a855f7", match: (w: WallpaperItem) => isGt3All(w) },
+  { id: "nec", slug: "NEC", title: "Nürburgring Endurance Championship (NEC)", badge: "NEC", accent: "#ef4444", match: (w: WallpaperItem) => isGt3All(w) || isPcup(w) || isGt4(w) || isTcr(w) },
+  { id: "pcup", slug: "PCup", title: "Porsche Cup (PCup)", badge: "PCUP", accent: "#e2e8f0", match: (w: WallpaperItem) => isPcup(w) },
+  { id: "ferrari-challenge", slug: "FerrariChallenge", title: "Ferrari 296 Challenge", badge: "CHALLENGE", accent: "#ef4444", match: (w: WallpaperItem) => isFerrari296Challenge(itemText(w)) },
+  { id: "falken-gt4", slug: "FalkenGT4", title: "Falken Tyre Sports Car Challenge (GT4 + LMP3)", badge: "GT4 + LMP3", accent: "#fb923c", match: (w: WallpaperItem) => isLmp3(w) || isGt4(w) },
+  { id: "tcr", slug: "TCR", title: "Touring Car Challenge (TCR)", badge: "TCR", accent: "#22c55e", match: (w: WallpaperItem) => isTcr(w) },
+  { id: "formulas", slug: "Formulas", title: "Fórmulas (SF23 / SFL / IR18 / F4)", badge: "FORMULA", accent: "#10b981", match: (w: WallpaperItem) => isFormulas(w) },
+  { id: "pcc", slug: "PCC", title: "Production Car Challenge / Rookie", badge: "PCC", accent: "#38bdf8", match: (w: WallpaperItem) => isPccRookie(w) },
+  { id: "nascar", slug: "NASCAR", title: "NASCAR / Oval & Stock Car", badge: "NASCAR", accent: "#fbbf24", match: (w: WallpaperItem) => isNascar(w) },
+  { id: "all", slug: "Muntrume", title: "Colección Completa Muntrume Motorsport", badge: "ALL TRACK", accent: "#10b981", match: () => true },
 ];
 
-const categoryPacks = CATEGORY_DEFS.map((d) => ({
+const categoryPacks = SERIES_DEFS.map((d) => ({
   ...d,
   items: allWallpapers.filter(d.match),
 })).filter((p) => p.items.length > 0);
@@ -212,7 +274,7 @@ const carPacks = Array.from(carMap.entries())
 
 // Console build audit
 console.log(`[wallpapers] Total real photos indexed (gallery + albums + track): ${allWallpapers.length}`);
-for (const p of categoryPacks) console.log(`[wallpapers]   Category ${p.title}: ${p.items.length}`);
+for (const p of categoryPacks) console.log(`[wallpapers]   Series ${p.slug} (${p.title}): ${p.items.length}`);
 console.log(`[wallpapers]   Cars with track photos: ${carPacks.length}, Albums: ${apiAlbums.length}`);
 
 const brandsList = Array.from(new Set(allWallpapers.map((w) => w.brand))).sort();
@@ -270,10 +332,10 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
         </div>
       </section>
 
-      <!-- SECTION TABS: Categorías | Por Coche | Álbumes -->
+      <!-- SECTION TABS: Series Oficiales | Por Coche | Álbumes -->
       <div class="flex flex-wrap items-center gap-2 font-mono text-xs border-b border-white/10 pb-3">
         <button type="button" data-view-tab="categories" class="wp-tab px-3.5 py-2 rounded-md bg-emerald-500 text-[#04130d] font-extrabold cursor-pointer">
-          Por Categoría ({categoryPacks.length})
+          Por Serie Oficial ({categoryPacks.length})
         </button>
         <button type="button" data-view-tab="cars" class="wp-tab px-3.5 py-2 rounded-md bg-[#0d1118] border border-white/10 text-slate-300 hover:text-white font-bold cursor-pointer">
           Por Coche ({carPacks.length})
