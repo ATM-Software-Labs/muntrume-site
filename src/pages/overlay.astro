@@ -586,7 +586,7 @@ const overlaySchema = {
       }
 
       // -----------------------------------------------------------------------
-      // 4 Iconic Endurance Circuits (12s auto-rotation + manual button)
+      // 4 Iconic Endurance Circuits (32s auto-rotation + manual button)
       // -----------------------------------------------------------------------
       const CIRCUITS = [
         {
@@ -596,11 +596,15 @@ const overlaySchema = {
           avgFuel: 2.84,
           lapSec: { GTP: 94.5, LMP2: 99.8, GT3: 112.4 },
           pts: [
-            [118, 166], [156, 162], [186, 146], [202, 124], [192, 102],
-            [218, 86],  [248, 72],  [246, 46],  [222, 34],  [190, 44],
-            [164, 58],  [146, 78],  [118, 66],  [92, 48],   [64, 42],
-            [38, 56],   [34, 84],   [56, 100],  [78, 114],  [62, 134],
-            [44, 152],  [64, 170],  [92, 168]
+            // Hamilton Straight -> Abbey -> Farm -> Village V-hairpin -> The Loop -> Wellington Straight
+            [92, 168], [134, 168], [176, 168], [202, 152], [190, 128],
+            [176, 118], [194, 108], [218, 122], [234, 114], [216, 94],
+            // Wellington Straight -> Brooklands -> Luffield -> Woodcote -> Copse
+            [176, 86], [136, 78], [122, 64], [148, 52], [182, 48],
+            [226, 40], [248, 46], [246, 68],
+            // Maggotts -> Becketts -> Chapel -> Hangar Straight -> Stowe -> Vale -> Club
+            [228, 78], [212, 68], [196, 82], [176, 70], [154, 86],
+            [118, 104], [82, 122], [46, 140], [36, 156], [56, 168], [74, 168]
           ]
         },
         {
@@ -610,10 +614,15 @@ const overlaySchema = {
           avgFuel: 3.46,
           lapSec: { GTP: 118.2, LMP2: 125.4, GT3: 137.8 },
           pts: [
-            [78, 152], [116, 168], [154, 156], [198, 122], [236, 86],
-            [248, 56], [224, 34],  [184, 36],  [158, 62],  [136, 78],
-            [102, 68], [72, 46],   [42, 54],   [32, 82],   [54, 104],
-            [44, 130], [56, 152]
+            // La Source V-hairpin -> Eau Rouge / Raidillon -> Kemmel Straight
+            [56, 156], [42, 168], [58, 174], [86, 158], [104, 142],
+            [128, 124], [164, 100], [200, 76], [234, 52],
+            // Les Combes chicane -> Malmedy -> Bruxelles -> Pouhon double-left
+            [248, 42], [238, 32], [220, 40], [204, 56], [186, 52],
+            [168, 66], [146, 78], [122, 68], [102, 54], [82, 44],
+            // Fagnes -> Stavelot -> Blanchimont -> Bus Stop chicane -> La Source
+            [62, 54], [48, 72], [38, 92], [52, 108], [76, 114],
+            [92, 126], [76, 140], [66, 146]
           ]
         },
         {
@@ -623,10 +632,13 @@ const overlaySchema = {
           avgFuel: 2.68,
           lapSec: { GTP: 93.4, LMP2: 99.2, GT3: 108.6 },
           pts: [
-            [92, 166], [178, 166], [234, 148], [250, 104], [236, 54],
-            [188, 34], [118, 34],  [56, 48],   [32, 88],   [48, 128],
-            [88, 118], [122, 92],  [158, 112], [124, 134], [78, 138],
-            [52, 156]
+            // Tri-oval S/F -> Turn 1 V-hairpin -> International Horseshoe -> West Horseshoe
+            [102, 168], [156, 168], [210, 164], [242, 142], [222, 124],
+            [184, 134], [152, 128], [168, 104], [142, 92], [116, 112],
+            // Kink -> Oval Turn 3-4 -> Backstretch Bus Stop Chicane -> Oval Turn 1-2
+            [94, 124], [76, 106], [88, 76], [124, 42], [176, 36],
+            [218, 40], [182, 34], [142, 36], [96, 38], [52, 52],
+            [32, 88], [36, 128], [62, 158]
           ]
         },
         {
@@ -636,9 +648,13 @@ const overlaySchema = {
           avgFuel: 2.24,
           lapSec: { GTP: 84.6, LMP2: 89.2, GT3: 95.4 },
           pts: [
-            [98, 168], [154, 166], [216, 144], [244, 102], [232, 54],
-            [188, 36], [148, 56],  [162, 88],  [132, 108], [96, 84],
-            [68, 56],  [36, 72],   [34, 114],  [56, 146]
+            // Main Straight -> Senna S -> Curva do Sol -> Reta Oposta -> Descida do Lago
+            [168, 168], [120, 168], [72, 168], [44, 158], [56, 140],
+            [42, 122], [36, 86], [56, 48], [96, 38], [144, 38], [192, 38],
+            // Descida do Lago -> Ferradura -> Laranjinha -> Pinheirinho -> Bico de Pato -> Mergulho -> Junção
+            [236, 46], [246, 68], [220, 82], [186, 74], [158, 90],
+            [176, 112], [148, 126], [124, 106], [116, 132], [154, 148],
+            [212, 152], [234, 162], [212, 168]
           ]
         }
       ];
@@ -646,28 +662,35 @@ const overlaySchema = {
       function sampleCatmullRomClosed(pts, segmentsPerSpan = 10) {
         const n = pts.length;
         const out = [];
+        const alpha = 0.5; // Centripetal Catmull-Rom: crisp straights, zero hairpin overshoot
+        const distPow = (a, b) => {
+          const dx = b[0] - a[0];
+          const dy = b[1] - a[1];
+          return Math.max(0.001, Math.pow(dx * dx + dy * dy, alpha * 0.5));
+        };
         for (let i = 0; i < n; i++) {
           const p0 = pts[(i - 1 + n) % n];
           const p1 = pts[i];
           const p2 = pts[(i + 1) % n];
           const p3 = pts[(i + 2) % n];
+          const t0 = 0;
+          const t1 = t0 + distPow(p0, p1);
+          const t2 = t1 + distPow(p1, p2);
+          const t3 = t2 + distPow(p2, p3);
+
           for (let s = 0; s < segmentsPerSpan; s++) {
-            const t = s / segmentsPerSpan;
-            const t2 = t * t;
-            const t3 = t2 * t;
-            const x = 0.5 * (
-              (2 * p1[0]) +
-              (-p0[0] + p2[0]) * t +
-              (2 * p0[0] - 5 * p1[0] + 4 * p2[0] - p3[0]) * t2 +
-              (-p0[0] + 3 * p1[0] - 3 * p2[0] + p3[0]) * t3
-            );
-            const y = 0.5 * (
-              (2 * p1[1]) +
-              (-p0[1] + p2[1]) * t +
-              (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * t2 +
-              (-p0[1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * t3
-            );
-            out.push([x, y]);
+            const t = t1 + (s / segmentsPerSpan) * (t2 - t1);
+            const lerpPt = (a, b, ta, tb) => {
+              const w = (t - ta) / (tb - ta);
+              return [a[0] + (b[0] - a[0]) * w, a[1] + (b[1] - a[1]) * w];
+            };
+            const A1 = lerpPt(p0, p1, t0, t1);
+            const A2 = lerpPt(p1, p2, t1, t2);
+            const A3 = lerpPt(p2, p3, t2, t3);
+            const B1 = lerpPt(A1, A2, t0, t2);
+            const B2 = lerpPt(A2, A3, t1, t3);
+            const C = lerpPt(B1, B2, t1, t2);
+            out.push(C);
           }
         }
         return out;
@@ -1639,14 +1662,16 @@ const overlaySchema = {
         bctx.fillRect(0, horizonY, w, h - horizonY);
       }
 
-      function drawCarSprite(ctx, sprite, x, y, scale, downshiftFlash) {
-        const dw = SPRITE_W * scale * 0.84;
-        const dh = SPRITE_H * scale * 0.84;
-        ctx.drawImage(sprite, x - dw * 0.5, y - dh * 0.62, dw, dh);
+      function drawCarSprite(ctx, sprite, x, y, scale, downshiftFlash, brakeAmount = 0) {
+        const pitchScale = 1 + brakeAmount * 0.038;
+        const pitchY = brakeAmount * 4.5 * scale;
+        const dw = SPRITE_W * scale * 0.84 * pitchScale;
+        const dh = SPRITE_H * scale * 0.84 * (1 - brakeAmount * 0.025);
+        ctx.drawImage(sprite, x - dw * 0.5, y + pitchY - dh * 0.62, dw, dh);
         if (downshiftFlash > 0) {
           ctx.fillStyle = "#fed7aa";
-          ctx.fillRect(x - 8 * scale, y + 10 * scale, 4 * scale, 4 * scale);
-          ctx.fillRect(x + 4 * scale, y + 10 * scale, 4 * scale, 4 * scale);
+          ctx.fillRect(x - 8 * scale, y + pitchY + 10 * scale, 4.5 * scale, 4.5 * scale);
+          ctx.fillRect(x + 3.5 * scale, y + pitchY + 10 * scale, 4.5 * scale, 4.5 * scale);
         }
       }
 
@@ -1727,13 +1752,14 @@ const overlaySchema = {
           ctx.closePath();
           ctx.fill();
 
-          // Dark rubber braking marks on asphalt during braking zone
+          // Dark rubber braking marks on asphalt during braking zone (intensifying with brake pressure)
           if (isBrakingZone) {
-            ctx.fillStyle = "rgba(0,0,0,0.42)";
-            ctx.fillRect(cx1 - halfW1 * 0.46, y0, halfW1 * 0.07, Math.max(1, y1 - y0));
-            ctx.fillRect(cx1 + halfW1 * 0.39, y0, halfW1 * 0.07, Math.max(1, y1 - y0));
-            ctx.fillRect(cx1 - halfW1 * 0.14, y0, halfW1 * 0.05, Math.max(1, y1 - y0));
-            ctx.fillRect(cx1 + halfW1 * 0.09, y0, halfW1 * 0.05, Math.max(1, y1 - y0));
+            const skidAlpha = (0.28 + 0.52 * tel.brake).toFixed(2);
+            ctx.fillStyle = `rgba(0,0,0,${skidAlpha})`;
+            ctx.fillRect(cx1 - halfW1 * 0.46, y0, halfW1 * 0.075, Math.max(1, y1 - y0));
+            ctx.fillRect(cx1 + halfW1 * 0.385, y0, halfW1 * 0.075, Math.max(1, y1 - y0));
+            ctx.fillRect(cx1 - halfW1 * 0.14, y0, halfW1 * 0.055, Math.max(1, y1 - y0));
+            ctx.fillRect(cx1 + halfW1 * 0.085, y0, halfW1 * 0.055, Math.max(1, y1 - y0));
           }
 
           // Dynamic racing line
@@ -1755,12 +1781,12 @@ const overlaySchema = {
           }
         }
 
-        // Trackside Braking Distance Marker Boards (200, 100, 50)
+        // Trackside Braking Distance Marker Boards (200m, 100m, 50m)
         if (isBrakingZone) {
           const boards = [
-            { label: "200", offset: 0.44 },
-            { label: "100", offset: 0.52 },
-            { label: "50",  offset: 0.60 },
+            { label: "200m", offset: 0.44 },
+            { label: "100m", offset: 0.52 },
+            { label: "50m",  offset: 0.60 },
           ];
           boards.forEach((b) => {
             const p = (tel.u - b.offset) / 0.16;
@@ -1768,15 +1794,15 @@ const overlaySchema = {
               const z = p * p;
               const by = horizonY + z * (h - horizonY);
               const bx = w * 0.5 + curveFactor * w * (1 - p) * (1 - p) - w * (0.06 + z * 0.52);
-              const bw = 18 + z * 26;
-              const bh = 12 + z * 16;
+              const bw = 24 + z * 30;
+              const bh = 13 + z * 16;
               ctx.fillStyle = "#f8fafc";
               ctx.fillRect(bx - bw * 0.5, by - bh, bw, bh);
               ctx.strokeStyle = "#090b0f";
               ctx.lineWidth = 1.5;
               ctx.strokeRect(bx - bw * 0.5, by - bh, bw, bh);
               ctx.fillStyle = "#090b0f";
-              ctx.font = `900 ${Math.round(8 + z * 7)}px ui-monospace, monospace`;
+              ctx.font = `900 ${Math.round(8 + z * 6)}px ui-monospace, monospace`;
               ctx.textAlign = "center";
               ctx.textBaseline = "middle";
               ctx.fillText(b.label, bx, by - bh * 0.5);
@@ -1792,19 +1818,19 @@ const overlaySchema = {
         const brakeState = tel.brake > 0.25 ? 1 : 0;
 
         // #16 A. Trujillo — Ford Mustang GT3 (P1 leading GT3 pack)
-        drawCarSprite(ctx, CAR_SPRITES.mustang[brakeState], roadCenter + Math.sin(tSec * 1.6) * 2, carY - 12, 0.92, tel.downshiftFlash);
+        drawCarSprite(ctx, CAR_SPRITES.mustang[brakeState], roadCenter + Math.sin(tSec * 1.6) * 2, carY - 12, 0.92, tel.downshiftFlash, tel.brake);
 
         // #1 M. Berbis — Porsche 911 GT3 R (992) (P2 trailing diagonal-left in slipstream, or pulling alongside in 3-wide)
         const leftPull = battle === 3 ? 1 : 0;
         const porscheX = roadCenter - w * (0.095 + 0.03 * leftPull) + Math.sin(tSec * 2.1) * 3;
         const porscheY = carY + 26 - leftPull * 34;
-        drawCarSprite(ctx, CAR_SPRITES.porsche[brakeState], porscheX, porscheY, 0.96, tel.downshiftFlash);
+        drawCarSprite(ctx, CAR_SPRITES.porsche[brakeState], porscheX, porscheY, 0.96, tel.downshiftFlash, tel.brake);
 
         // #22 E. Chongkan — McLaren 720S GT3 Evo (P3 trailing diagonal-right in slipstream, or pulling alongside in 3-wide)
         const rightPull = battle === 3 ? 1 : 0;
         const mclarenX = roadCenter + w * (0.105 + 0.025 * rightPull) + Math.cos(tSec * 1.9) * 3;
         const mclarenY = carY + 42 - rightPull * 50;
-        drawCarSprite(ctx, CAR_SPRITES.mclaren[brakeState], mclarenX, mclarenY, 1.0, tel.downshiftFlash);
+        drawCarSprite(ctx, CAR_SPRITES.mclaren[brakeState], mclarenX, mclarenY, 1.0, tel.downshiftFlash, tel.brake);
 
         // Multiclass Prototype (GTP #01 or LMP2 #32) overtaking on the inside left at high speed
         if (proto.active) {
@@ -1812,7 +1838,7 @@ const overlaySchema = {
           const protoY = h * 0.92 - proto.progress * h * 0.44;
           const protoScale = 1.08 - proto.progress * 0.46;
           const pSprite = proto.isGtp ? CAR_SPRITES.gtp01[brakeState] : CAR_SPRITES.lmp232[brakeState];
-          drawCarSprite(ctx, pSprite, protoX, protoY, protoScale, 0);
+          drawCarSprite(ctx, pSprite, protoX, protoY, protoScale, 0, tel.brake * 0.5);
         }
 
         // Subtle sparks when 3-wide wheel-to-wheel
@@ -1855,7 +1881,7 @@ const overlaySchema = {
 
         if (!isPaused) {
           simTimeSec += dt;
-          if (nowMs - lastCircuitSwitchMs >= 12000) {
+          if (nowMs - lastCircuitSwitchMs >= 32000) {
             lastCircuitSwitchMs = nowMs;
             applyCircuit(activeCircuitIdx + 1);
           }

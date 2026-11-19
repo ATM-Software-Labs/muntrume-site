@@ -1,0 +1,675 @@
+---
+import fs from "node:fs";
+import path from "node:path";
+import Layout from "../layouts/Layout.astro";
+import { CAR_CATALOG_LIST } from "../../desktop/src/cars/catalog";
+
+interface WallpaperItem {
+  id: string;
+  carFolder: string;
+  brand: string;
+  model: string;
+  carClass: string;
+  img: string;
+  cleanFileBase: string;
+  accentColor: string;
+}
+
+const publicDir = path.join(process.cwd(), "public");
+const seenFolders = new Set<string>();
+const allWallpapers: WallpaperItem[] = [];
+
+for (const c of CAR_CATALOG_LIST) {
+  const key = c.carFolder.toLowerCase();
+  if (seenFolders.has(key)) continue;
+  const imgPath = c.previewImg || `/assets/cars/${key}.webp`;
+  if (!fs.existsSync(path.join(publicDir, imgPath))) continue;
+  seenFolders.add(key);
+
+  const safeName = `${c.brand}_${c.model}`
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  allWallpapers.push({
+    id: key,
+    carFolder: c.carFolder,
+    brand: c.brand,
+    model: c.model,
+    carClass: c.carClass,
+    img: imgPath,
+    cleanFileBase: safeName,
+    accentColor: c.accentColor,
+  });
+}
+
+const packs = [
+  {
+    id: "gt3-2026",
+    slug: "GT3-2026",
+    title: "GT3 2026 Pack",
+    subtitle: "Mustang GT3, Porsche 992 GT3 R, McLaren 720S, Ferrari 296, Corvette Z06, BMW M4, AMG & más.",
+    badge: "GT3",
+    accent: "#a855f7",
+    items: allWallpapers.filter((w) => w.carClass === "GT3"),
+  },
+  {
+    id: "gtp-hypercar",
+    slug: "GTP-Hypercar",
+    title: "GTP / Hypercar Pack",
+    subtitle: "Porsche 963, Cadillac V-Series.R, BMW M Hybrid V8, Ferrari 499P y Acura ARX-06.",
+    badge: "GTP",
+    accent: "#facc15",
+    items: allWallpapers.filter((w) => w.carClass === "GTP"),
+  },
+  {
+    id: "lmp2-proto",
+    slug: "LMP2-Prototipos",
+    title: "LMP2 & Prototipos",
+    subtitle: "Dallara P217 LMP2, Ligier JS P320, HPD ARX-01c y prototipos históricos de resistencia.",
+    badge: "LMP2 / P3",
+    accent: "#38bdf8",
+    items: allWallpapers.filter((w) => ["LMP2", "LMP3", "Prototype"].includes(w.carClass)),
+  },
+  {
+    id: "pcup",
+    slug: "Porsche-Cup",
+    title: "Porsche Cup (PCup)",
+    subtitle: "Porsche 911 GT3 Cup (992 & 992.2) en configuración oficial de copa monomarca.",
+    badge: "PCUP",
+    accent: "#e2e8f0",
+    items: allWallpapers.filter((w) => w.brand === "Porsche" && /cup/i.test(w.carFolder)),
+  },
+  {
+    id: "formulas",
+    slug: "Formulas",
+    title: "Fórmulas",
+    subtitle: "Super Formula SF23, Super Formula Lights, Dallara IR18, FIA F4 y FF1600.",
+    badge: "FORMULA",
+    accent: "#10b981",
+    items: allWallpapers.filter((w) => w.carClass === "Formula"),
+  },
+  {
+    id: "coleccion-completa",
+    slug: "Muntrume-Completa",
+    title: "Colección Completa Muntrume",
+    subtitle: "Todo el catálogo oficial de vehículos de Muntrume Motorsport listo para rotación.",
+    badge: "ALL CARS",
+    accent: "#10b981",
+    items: allWallpapers,
+  },
+];
+
+const brandsList = Array.from(new Set(allWallpapers.map((w) => w.brand))).sort();
+
+const pageTitle = "Wallpapers Windows 16:9 & Móvil 9:16 · Muntrume Motorsport";
+const pageDescription = `Descarga packs de fondos de pantalla en .ZIP para Windows (16:9) y móvil (9:16 · 1440x2560) con ${allWallpapers.length} coches de iRacing de Muntrume Motorsport.`;
+const pageUrl = "https://muntru.me/wallpapers/";
+const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
+---
+
+<Layout
+  title={pageTitle}
+  description={pageDescription}
+  canonical={pageUrl}
+  ogImage={ogImage}
+>
+  <main class="min-h-screen bg-[#090b0f] text-slate-100 py-10 px-4 sm:px-6">
+    <div class="max-w-7xl mx-auto space-y-8">
+      <!-- HERO + FORMAT SWITCHER -->
+      <header class="border-b border-white/10 pb-6 flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+        <div class="space-y-2.5">
+          <div class="font-mono text-[11px] uppercase tracking-widest text-emerald-400 font-bold">
+            Muntrume Motorsport · Media &amp; Desktop Packs
+          </div>
+          <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+            Wallpapers para Windows &amp; Móvil
+          </h1>
+          <p class="text-xs sm:text-sm text-slate-400 max-w-2xl font-mono leading-relaxed">
+            Empaquetado instantáneo en <code class="text-emerald-400">.ZIP</code> directamente desde tu navegador (0 % carga de servidor), con guía de presentación automática para Windows y recorte <span class="text-white font-semibold">1440×2560</span> para pantalla de bloqueo móvil.
+          </p>
+        </div>
+
+        <!-- Format Switcher: Escritorio 16:9 vs Móvil 9:16 -->
+        <div class="flex flex-col items-start lg:items-end gap-2">
+          <span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">Formato de salida &amp; vista previa</span>
+          <div class="inline-flex p-1 rounded-lg bg-[#0d1118] border border-white/15 font-mono text-xs" role="group" aria-label="Formato de wallpaper">
+            <button
+              type="button"
+              id="fmtDesktopBtn"
+              data-fmt="desktop"
+              class="px-3.5 py-2 rounded-md font-bold bg-emerald-500 text-[#04130d] transition cursor-pointer"
+              aria-pressed="true"
+            >
+              Escritorio · 16:9
+            </button>
+            <button
+              type="button"
+              id="fmtMobileBtn"
+              data-fmt="mobile"
+              class="px-3.5 py-2 rounded-md font-bold text-slate-300 hover:text-white transition cursor-pointer"
+              aria-pressed="false"
+            >
+              Móvil · 9:16 (1440×2560)
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- PROGRESS BAR (HIDDEN WHEN IDLE) -->
+      <section id="zipProgressBarWrap" hidden class="rounded-lg border border-emerald-500/40 bg-[#0d1118] p-4 space-y-2 font-mono">
+        <div class="flex items-center justify-between text-xs">
+          <span id="zipProgressLabel" class="text-emerald-400 font-bold">Empaquetando...</span>
+          <span id="zipProgressPct" class="tabular-nums text-white font-bold">0%</span>
+        </div>
+        <div class="w-full h-2 rounded-full bg-black/60 overflow-hidden border border-white/10">
+          <div id="zipProgressFill" class="h-full bg-emerald-500 transition-all duration-150" style="width:0%"></div>
+        </div>
+      </section>
+
+      <!-- THEMATIC PACKS GRID -->
+      <section aria-labelledby="packsHeading" class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 id="packsHeading" class="font-mono text-xs uppercase tracking-widest text-slate-300 font-bold">
+            Packs Temáticos por Categoría ({packs.length})
+          </h2>
+          <span class="font-mono text-[11px] text-slate-500 tabular-nums">{allWallpapers.length} vehículos disponibles</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {packs.map((pack) => {
+            const thumbs = pack.items.slice(0, 4);
+            const estMb = Math.max(0.4, pack.items.length * 0.18).toFixed(1);
+            return (
+              <article class="rounded-lg border border-white/10 bg-[#0d1118] overflow-hidden flex flex-col justify-between hover:border-white/25 transition">
+                <!-- 4-thumbnail collage -->
+                <div class="grid grid-cols-2 gap-0.5 bg-[#090b0f] p-1">
+                  {thumbs.map((t) => (
+                    <div class="aspect-video bg-[#090b0f] overflow-hidden rounded-[2px]">
+                      <img
+                        src={t.img}
+                        alt={`${t.brand} ${t.model}`}
+                        loading="lazy"
+                        decoding="async"
+                        class="w-full h-full object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <div class="p-4 space-y-3 flex-1 flex flex-col justify-between">
+                  <div class="space-y-1.5">
+                    <div class="flex items-center justify-between gap-2 font-mono">
+                      <span
+                        class="text-[10px] font-extrabold px-2 py-0.5 rounded-[3px] border border-white/10"
+                        style={`color:${pack.accent};background:${pack.accent}18`}
+                      >
+                        {pack.badge}
+                      </span>
+                      <span class="text-[11px] text-slate-400 tabular-nums">
+                        {pack.items.length} fotos · ~{estMb} MB
+                      </span>
+                    </div>
+                    <h3 class="text-base font-extrabold text-white">{pack.title}</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed">{pack.subtitle}</p>
+                  </div>
+
+                  <div class="flex items-center gap-2 pt-2 font-mono text-xs">
+                    <button
+                      type="button"
+                      data-pack-download={pack.id}
+                      class="flex-1 px-3 py-2 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-extrabold transition cursor-pointer text-center"
+                    >
+                      Descargar Pack .ZIP
+                    </button>
+                    <button
+                      type="button"
+                      data-pack-filter={pack.id}
+                      class="px-3 py-2 rounded border border-white/15 hover:border-emerald-500/50 text-slate-200 font-semibold transition cursor-pointer"
+                      title="Ver y seleccionar fotos de este pack"
+                    >
+                      Explorar
+                    </button>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <!-- INDIVIDUAL FILTER + SELECTION BAR -->
+      <section aria-labelledby="galleryHeading" class="space-y-4 pt-4 border-t border-white/10">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div>
+            <h2 id="galleryHeading" class="font-mono text-xs uppercase tracking-widest text-slate-300 font-bold">
+              Galería Individual &amp; Selección Personalizada
+            </h2>
+            <p class="text-xs text-slate-400 font-mono mt-0.5">
+              Filtra por fabricante, busca un modelo o marca varios coches para crear tu propio .ZIP.
+            </p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 font-mono text-xs">
+            <select
+              id="wpBrandFilter"
+              class="bg-[#0d1118] border border-white/15 rounded px-2.5 py-1.5 text-slate-200 outline-none focus:border-emerald-500"
+              aria-label="Filtrar por fabricante"
+            >
+              <option value="all">Todos los fabricantes ({allWallpapers.length})</option>
+              {brandsList.map((brand) => (
+                <option value={brand}>{brand}</option>
+              ))}
+            </select>
+
+            <input
+              id="wpSearchInput"
+              type="search"
+              placeholder="Buscar modelo (ej. Mustang, 992, SF23)..."
+              class="bg-[#0d1118] border border-white/15 focus:border-emerald-500 rounded px-3 py-1.5 text-slate-100 placeholder-slate-500 outline-none w-56"
+            />
+
+            <button
+              type="button"
+              id="wpClearSelBtn"
+              class="px-2.5 py-1.5 rounded border border-white/15 text-slate-400 hover:text-white transition cursor-pointer"
+            >
+              Limpiar selección
+            </button>
+
+            <button
+              type="button"
+              id="wpDownloadSelBtn"
+              disabled
+              class="px-3.5 py-1.5 rounded bg-emerald-500 disabled:bg-white/10 disabled:text-slate-500 text-[#04130d] font-extrabold transition cursor-pointer tabular-nums"
+            >
+              Descargar Selección (<span id="wpSelCount">0</span>)
+            </button>
+          </div>
+        </div>
+
+        <!-- WALLPAPERS GRID -->
+        <div id="wpGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          {allWallpapers.map((w) => (
+            <article
+              class="wp-card group rounded-lg border border-white/10 bg-[#0d1118] overflow-hidden flex flex-col hover:border-emerald-500/40 transition"
+              data-id={w.id}
+              data-brand={w.brand}
+              data-class={w.carClass}
+              data-search={`${w.brand} ${w.model} ${w.carClass} ${w.carFolder}`.toLowerCase()}
+            >
+              <div class="wp-thumb-wrap relative aspect-video bg-[#090b0f] overflow-hidden transition-all">
+                <img
+                  src={w.img}
+                  alt={`${w.brand} ${w.model}`}
+                  loading="lazy"
+                  decoding="async"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <label class="absolute top-2 left-2 z-10 inline-flex items-center gap-1.5 px-2 py-1 rounded bg-black/75 border border-white/15 text-[10px] font-mono text-white cursor-pointer select-none">
+                  <input type="checkbox" class="wp-chk accent-emerald-500" value={w.id} />
+                  <span>Elegir</span>
+                </label>
+                <button
+                  type="button"
+                  data-preview-id={w.id}
+                  class="absolute bottom-2 right-2 px-2 py-1 rounded bg-black/80 border border-white/15 text-[10px] font-mono text-emerald-400 hover:bg-emerald-500 hover:text-[#04130d] font-bold transition cursor-pointer"
+                >
+                  Vista Previa ⤢
+                </button>
+              </div>
+              <div class="p-2.5 flex items-center justify-between gap-2 font-mono">
+                <div class="min-w-0">
+                  <div class="text-[11px] font-bold text-white truncate">{w.brand} {w.model}</div>
+                  <div class="text-[10px] text-slate-400 truncate">{w.carClass} · {w.carFolder}</div>
+                </div>
+                <span class="w-2 h-2 rounded-full shrink-0" style={`background:${w.accentColor}`}></span>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+    </div>
+
+    <!-- FULLSCREEN PREVIEW MODAL -->
+    <div
+      id="wpModal"
+      hidden
+      class="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="wpModalTitle"
+    >
+      <div class="w-full max-w-4xl rounded-xl border border-white/15 bg-[#0d1118] overflow-hidden shadow-2xl">
+        <div class="flex items-center justify-between px-4 py-3 border-b border-white/10 font-mono">
+          <div>
+            <h3 id="wpModalTitle" class="text-sm font-bold text-white"></h3>
+            <p id="wpModalSub" class="text-[11px] text-slate-400"></p>
+          </div>
+          <button
+            type="button"
+            id="wpModalClose"
+            class="px-2.5 py-1 rounded border border-white/15 text-xs text-slate-300 hover:text-white cursor-pointer"
+          >
+            Cerrar ✕
+          </button>
+        </div>
+
+        <div class="p-4 bg-[#090b0f] flex items-center justify-center max-h-[68vh] overflow-hidden">
+          <img id="wpModalImg" src="" alt="" class="max-h-[62vh] w-auto object-contain rounded border border-white/10" />
+        </div>
+
+        <div class="px-4 py-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 font-mono text-xs">
+          <span class="text-slate-400">Listo para fondo de escritorio (16:9) o bloqueo móvil (9:16 · 1440×2560).</span>
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              id="wpModalDownloadDesktop"
+              class="px-3.5 py-2 rounded border border-white/20 hover:border-emerald-500 text-white font-bold transition cursor-pointer"
+            >
+              Descargar 16:9 Escritorio
+            </button>
+            <button
+              type="button"
+              id="wpModalDownloadMobile"
+              class="px-3.5 py-2 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-extrabold transition cursor-pointer"
+            >
+              Descargar Foto Móvil (9:16)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script
+    type="application/json"
+    id="wpCatalogData"
+    set:html={JSON.stringify({
+      allWallpapers,
+      packs: packs.map((p) => ({ id: p.id, slug: p.slug, title: p.title, itemIds: p.items.map((i) => i.id) })),
+    })}
+  ></script>
+
+  <script>
+    import JSZip from "jszip";
+
+    const dataEl = document.getElementById("wpCatalogData");
+    const payload = JSON.parse(dataEl?.textContent || "{}");
+    const allItems: Array<{
+      id: string;
+      carFolder: string;
+      brand: string;
+      model: string;
+      carClass: string;
+      img: string;
+      cleanFileBase: string;
+    }> = payload.allWallpapers || [];
+    const packsMeta: Array<{ id: string; slug: string; title: string; itemIds: string[] }> = payload.packs || [];
+    const itemById = new Map(allItems.map((i) => [i.id, i]));
+
+    let outputFormat: "desktop" | "mobile" = "desktop";
+    let activePackFilter: string | null = null;
+    const selectedIds = new Set<string>();
+
+    const fmtDesktopBtn = document.getElementById("fmtDesktopBtn") as HTMLButtonElement | null;
+    const fmtMobileBtn = document.getElementById("fmtMobileBtn") as HTMLButtonElement | null;
+    const brandSelect = document.getElementById("wpBrandFilter") as HTMLSelectElement | null;
+    const searchInput = document.getElementById("wpSearchInput") as HTMLInputElement | null;
+    const clearSelBtn = document.getElementById("wpClearSelBtn") as HTMLButtonElement | null;
+    const dlSelBtn = document.getElementById("wpDownloadSelBtn") as HTMLButtonElement | null;
+    const selCountEl = document.getElementById("wpSelCount");
+    const progressWrap = document.getElementById("zipProgressBarWrap");
+    const progressLabel = document.getElementById("zipProgressLabel");
+    const progressPct = document.getElementById("zipProgressPct");
+    const progressFill = document.getElementById("zipProgressFill") as HTMLElement | null;
+
+    const modalEl = document.getElementById("wpModal");
+    const modalTitle = document.getElementById("wpModalTitle");
+    const modalSub = document.getElementById("wpModalSub");
+    const modalImg = document.getElementById("wpModalImg") as HTMLImageElement | null;
+    const modalClose = document.getElementById("wpModalClose");
+    const modalDlDesktop = document.getElementById("wpModalDownloadDesktop");
+    const modalDlMobile = document.getElementById("wpModalDownloadMobile");
+    let activeModalItem: (typeof allItems)[number] | null = null;
+
+    function setFormat(fmt: "desktop" | "mobile") {
+      outputFormat = fmt;
+      const isMob = fmt === "mobile";
+      if (fmtDesktopBtn && fmtMobileBtn) {
+        fmtDesktopBtn.className = `px-3.5 py-2 rounded-md font-bold transition cursor-pointer ${!isMob ? "bg-emerald-500 text-[#04130d]" : "text-slate-300 hover:text-white"}`;
+        fmtMobileBtn.className = `px-3.5 py-2 rounded-md font-bold transition cursor-pointer ${isMob ? "bg-emerald-500 text-[#04130d]" : "text-slate-300 hover:text-white"}`;
+        fmtDesktopBtn.setAttribute("aria-pressed", String(!isMob));
+        fmtMobileBtn.setAttribute("aria-pressed", String(isMob));
+      }
+      document.querySelectorAll(".wp-thumb-wrap").forEach((el) => {
+        el.classList.toggle("aspect-video", !isMob);
+        el.classList.toggle("aspect-[9/16]", isMob);
+      });
+    }
+
+    fmtDesktopBtn?.addEventListener("click", () => setFormat("desktop"));
+    fmtMobileBtn?.addEventListener("click", () => setFormat("mobile"));
+
+    function applyFilters() {
+      const brand = brandSelect?.value || "all";
+      const q = (searchInput?.value || "").trim().toLowerCase();
+      const packIds = activePackFilter ? new Set(packsMeta.find((p) => p.id === activePackFilter)?.itemIds || []) : null;
+
+      document.querySelectorAll<HTMLElement>(".wp-card").forEach((card) => {
+        const id = card.dataset.id || "";
+        const cBrand = card.dataset.brand || "";
+        const hay = card.dataset.search || "";
+        const okBrand = brand === "all" || cBrand === brand;
+        const okSearch = !q || hay.includes(q);
+        const okPack = !packIds || packIds.has(id);
+        card.style.display = okBrand && okSearch && okPack ? "" : "none";
+      });
+    }
+
+    brandSelect?.addEventListener("change", () => {
+      activePackFilter = null;
+      applyFilters();
+    });
+    searchInput?.addEventListener("input", applyFilters);
+
+    document.querySelectorAll<HTMLButtonElement>("[data-pack-filter]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        activePackFilter = btn.dataset.packFilter || null;
+        if (brandSelect) brandSelect.value = "all";
+        applyFilters();
+        document.getElementById("galleryHeading")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+
+    function syncSelectionUi() {
+      if (selCountEl) selCountEl.textContent = String(selectedIds.size);
+      if (dlSelBtn) dlSelBtn.disabled = selectedIds.size === 0;
+    }
+
+    document.querySelectorAll<HTMLInputElement>(".wp-chk").forEach((chk) => {
+      chk.addEventListener("change", () => {
+        if (chk.checked) selectedIds.add(chk.value);
+        else selectedIds.delete(chk.value);
+        syncSelectionUi();
+      });
+    });
+
+    clearSelBtn?.addEventListener("click", () => {
+      selectedIds.clear();
+      document.querySelectorAll<HTMLInputElement>(".wp-chk").forEach((c) => (c.checked = false));
+      syncSelectionUi();
+    });
+
+    // Convert image URL to 1440x2560 9:16 mobile JPEG (0.92) with subtle top 18% dark gradient
+    async function renderMobile916Blob(url: string): Promise<Blob> {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error(`No se pudo cargar ${url}`));
+        img.src = url;
+      });
+
+      const W = 1440;
+      const H = 2560;
+      const canvas = document.createElement("canvas");
+      canvas.width = W;
+      canvas.height = H;
+      const ctx = canvas.getContext("2d")!;
+
+      const scale = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+      const dw = img.naturalWidth * scale;
+      const dh = img.naturalHeight * scale;
+      const dx = (W - dw) * 0.5;
+      const dy = (H - dh) * 0.5;
+      ctx.drawImage(img, dx, dy, dw, dh);
+
+      // Subtle dark gradient across top 18% for crisp lockscreen clock readability
+      const grad = ctx.createLinearGradient(0, 0, 0, H * 0.18);
+      grad.addColorStop(0, "rgba(5, 7, 11, 0.55)");
+      grad.addColorStop(1, "rgba(5, 7, 11, 0)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H * 0.18);
+
+      return await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(
+          (blob) => (blob ? resolve(blob) : reject(new Error("Canvas toBlob failed"))),
+          "image/jpeg",
+          0.92
+        );
+      });
+    }
+
+    function triggerDownload(blob: Blob, filename: string) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+    }
+
+    async function downloadZipPack(items: typeof allItems, slug: string) {
+      if (!items.length) return;
+      const zip = new JSZip();
+      const isMob = outputFormat === "mobile";
+      const suffix = isMob ? "Mobile" : "Desktop";
+      const zipName = `Muntrume-Wallpapers-${slug}-${suffix}.zip`;
+
+      if (progressWrap) progressWrap.hidden = false;
+      const updateProg = (done: number, total: number, text: string) => {
+        const pct = Math.round((done / Math.max(1, total)) * 100);
+        if (progressLabel) progressLabel.textContent = text;
+        if (progressPct) progressPct.textContent = `${pct}%`;
+        if (progressFill) progressFill.style.width = `${pct}%`;
+      };
+
+      const readmeText = isMob
+        ? [
+            "MUNTRUME MOTORSPORT — WALLPAPERS MÓVIL (9:16 · 1440x2560)",
+            "===========================================================",
+            "",
+            "1. Descomprime esta carpeta en tu teléfono Android o iPhone.",
+            "2. Abre Ajustes -> Fondo de pantalla -> Seleccionar imágenes.",
+            "3. El degradado superior de cada foto mejora la lectura del reloj de bloqueo.",
+            "",
+            "https://muntru.me/wallpapers",
+          ].join("\r\n")
+        : [
+            "MUNTRUME MOTORSPORT — WINDOWS SLIDESHOW WALLPAPERS (16:9)",
+            "==========================================================",
+            "",
+            "Cómo activar la rotación automática en Windows 10 / 11:",
+            "1. Descomprime esta carpeta en Documentos o Imágenes.",
+            "2. Haz clic derecho en el Escritorio -> Personalizar -> Fondo.",
+            "3. En 'Personaliza tu fondo', selecciona 'Presentación'.",
+            "4. Pulsa 'Examinar' y elige esta carpeta descomprimida.",
+            "",
+            "https://muntru.me/wallpapers",
+          ].join("\r\n");
+
+      zip.file("README_Windows_Slideshow.txt", readmeText);
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        const idxStr = String(i + 1).padStart(2, "0");
+        updateProg(i, items.length, `Empaquetando ${i + 1}/${items.length} wallpapers (${suffix})...`);
+        try {
+          if (isMob) {
+            const blob = await renderMobile916Blob(item.img);
+            zip.file(`Muntrume_${slug}_${idxStr}_${item.cleanFileBase}_9x16.jpg`, blob);
+          } else {
+            const res = await fetch(item.img);
+            const blob = await res.blob();
+            const ext = item.img.split(".").pop() || "webp";
+            zip.file(`Muntrume_${slug}_${idxStr}_${item.cleanFileBase}.${ext}`, blob);
+          }
+        } catch (err) {
+          console.warn("Skip wallpaper:", item.img, err);
+        }
+      }
+
+      updateProg(items.length, items.length, `Comprimiendo ${zipName}...`);
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      triggerDownload(zipBlob, zipName);
+      setTimeout(() => {
+        if (progressWrap) progressWrap.hidden = true;
+      }, 1500);
+    }
+
+    document.querySelectorAll<HTMLButtonElement>("[data-pack-download]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const pack = packsMeta.find((p) => p.id === btn.dataset.packDownload);
+        if (!pack) return;
+        const items = pack.itemIds.map((id) => itemById.get(id)).filter(Boolean) as typeof allItems;
+        downloadZipPack(items, pack.slug);
+      });
+    });
+
+    dlSelBtn?.addEventListener("click", () => {
+      const items = Array.from(selectedIds).map((id) => itemById.get(id)).filter(Boolean) as typeof allItems;
+      downloadZipPack(items, "Seleccion");
+    });
+
+    // Preview Modal
+    document.querySelectorAll<HTMLButtonElement>("[data-preview-id]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const item = itemById.get(btn.dataset.previewId || "");
+        if (!item || !modalEl) return;
+        activeModalItem = item;
+        if (modalTitle) modalTitle.textContent = `${item.brand} ${item.model}`;
+        if (modalSub) modalSub.textContent = `${item.carClass} · ${item.carFolder}`;
+        if (modalImg) {
+          modalImg.src = item.img;
+          modalImg.alt = `${item.brand} ${item.model}`;
+        }
+        modalEl.hidden = false;
+      });
+    });
+
+    modalClose?.addEventListener("click", () => {
+      if (modalEl) modalEl.hidden = true;
+    });
+    modalEl?.addEventListener("click", (e) => {
+      if (e.target === modalEl) modalEl.hidden = true;
+    });
+
+    modalDlDesktop?.addEventListener("click", async () => {
+      if (!activeModalItem) return;
+      const res = await fetch(activeModalItem.img);
+      const blob = await res.blob();
+      const ext = activeModalItem.img.split(".").pop() || "webp";
+      triggerDownload(blob, `Muntrume_${activeModalItem.cleanFileBase}_16x9.${ext}`);
+    });
+
+    modalDlMobile?.addEventListener("click", async () => {
+      if (!activeModalItem) return;
+      const blob = await renderMobile916Blob(activeModalItem.img);
+      triggerDownload(blob, `Muntrume_${activeModalItem.cleanFileBase}_9x16.jpg`);
+    });
+  </script>
+</Layout>
