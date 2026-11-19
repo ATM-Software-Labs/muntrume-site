@@ -2,109 +2,250 @@
 import fs from "node:fs";
 import path from "node:path";
 import Layout from "../layouts/Layout.astro";
-import { CAR_CATALOG_LIST } from "../../desktop/src/cars/catalog";
+import { TRACK_GALLERY_PHOTOS, PADDOCK_ALBUMS } from "../data/paddock-gallery";
 
 interface WallpaperItem {
   id: string;
-  carFolder: string;
   brand: string;
   model: string;
   carClass: string;
+  categoryKey: string;
+  circuit: string;
   img: string;
   cleanFileBase: string;
   accentColor: string;
 }
 
 const publicDir = path.join(process.cwd(), "public");
-const seenFolders = new Set<string>();
+const seenImgs = new Set<string>();
 const allWallpapers: WallpaperItem[] = [];
 
-for (const c of CAR_CATALOG_LIST) {
-  const key = c.carFolder.toLowerCase();
-  if (seenFolders.has(key)) continue;
-  const imgPath = c.previewImg || `/assets/cars/${key}.webp`;
-  if (!fs.existsSync(path.join(publicDir, imgPath))) continue;
-  seenFolders.add(key);
+function isStudioOrThumb(src: string): boolean {
+  const lower = src.toLowerCase();
+  if (lower.startsWith("/assets/cars/")) return true;
+  if (/(^|[\/_-])(thumb|main|studio|logo|badge|og-)([\/_.-]|$)/i.test(lower)) return true;
+  return false;
+}
 
-  const safeName = `${c.brand}_${c.model}`
+function addTrackPhoto(item: {
+  id: string;
+  brand: string;
+  model: string;
+  carClass: string;
+  categoryKey: string;
+  circuit: string;
+  img: string;
+  accentColor: string;
+}) {
+  if (!item.img || isStudioOrThumb(item.img)) return;
+  if (seenImgs.has(item.img)) return;
+  if (!fs.existsSync(path.join(publicDir, item.img))) return;
+  seenImgs.add(item.img);
+
+  const cleanFileBase = `${item.brand}_${item.model}`
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-zA-Z0-9]+/g, "_")
     .replace(/^_+|_+$/g, "");
 
   allWallpapers.push({
-    id: key,
-    carFolder: c.carFolder,
-    brand: c.brand,
-    model: c.model,
-    carClass: c.carClass,
-    img: imgPath,
-    cleanFileBase: safeName,
-    accentColor: c.accentColor,
+    ...item,
+    cleanFileBase,
   });
 }
 
-const packs = [
+// 1. Real on-track photos from TRACK_GALLERY_PHOTOS
+for (const p of TRACK_GALLERY_PHOTOS) {
+  const catMap: Record<string, { carClass: string; categoryKey: string; brand: string; accent: string }> = {
+    gt3: { carClass: "GT3", categoryKey: "gt3", brand: p.title.includes("Porsche") ? "Porsche" : "Ferrari", accent: "#a855f7" },
+    gtp: { carClass: "GTP", categoryKey: "gtp", brand: p.title.includes("Cadillac") ? "Cadillac" : "Ferrari", accent: "#facc15" },
+    cup: { carClass: "PCup", categoryKey: "pcup", brand: "Porsche", accent: "#e2e8f0" },
+    night: {
+      carClass: p.title.includes("GTP") ? "GTP" : "GT3",
+      categoryKey: p.title.includes("GTP") ? "gtp" : "gt3",
+      brand: p.title.includes("Porsche") ? "Porsche" : "Muntrume",
+      accent: p.title.includes("GTP") ? "#facc15" : "#a855f7",
+    },
+  };
+  const meta = catMap[p.category] || catMap.gt3;
+  addTrackPhoto({
+    id: p.id,
+    brand: meta.brand,
+    model: p.title.replace(/·/g, "-"),
+    carClass: meta.carClass,
+    categoryKey: meta.categoryKey,
+    circuit: p.circuit,
+    img: p.img,
+    accentColor: meta.accent,
+  });
+}
+
+// 2. Non-studio real on-track photos from PADDOCK_ALBUMS
+for (const album of PADDOCK_ALBUMS) {
+  const clsLower = album.carClass.toLowerCase();
+  const categoryKey =
+    clsLower === "cup" ? "pcup" :
+    clsLower === "gt3" ? "gt3" :
+    clsLower === "gtp" ? "gtp" :
+    clsLower === "lmp2" || clsLower === "lmp3" ? "lmp2" :
+    "gt3";
+  for (const ph of album.photos) {
+    addTrackPhoto({
+      id: ph.id,
+      brand: album.brand,
+      model: album.title,
+      carClass: album.carClass,
+      categoryKey,
+      circuit: ph.subtitle || "Circuito Oficial iRacing",
+      img: ph.img,
+      accentColor: "#10b981",
+    });
+  }
+}
+
+// 3. Additional verified series on-track photos (Fórmulas & Copa/Rookie/Monomarca)
+addTrackPhoto({
+  id: "formula-sfl-track",
+  brand: "Dallara",
+  model: "Super Formula Lights 324",
+  carClass: "Formula",
+  categoryKey: "formulas",
+  circuit: "Circuito Oficial iRacing",
+  img: "/assets/img/series/sfl.jpg",
+  accentColor: "#10b981",
+});
+addTrackPhoto({
+  id: "rookie-pcc-track",
+  brand: "Toyota / Mazda",
+  model: "Production Car Challenge (GR86 & MX-5)",
+  carClass: "Monomarca",
+  categoryKey: "rookie",
+  circuit: "Circuito Oficial iRacing",
+  img: "/assets/img/series/pcc.jpg",
+  accentColor: "#38bdf8",
+});
+
+// All 12 complete iRacing categories (only categories with >= 1 real on-track photo are rendered)
+const CATEGORY_DEFS = [
   {
     id: "gt3-2026",
     slug: "GT3-2026",
-    title: "GT3 2026 Pack",
-    subtitle: "Mustang GT3, Porsche 992 GT3 R, McLaren 720S, Ferrari 296, Corvette Z06, BMW M4, AMG & más.",
+    title: "GT3 2026",
+    subtitle: "Capturas reales en pista de Mustang GT3, Porsche 992 GT3 R, Ferrari 296 GT3 y McLaren 720S.",
     badge: "GT3",
     accent: "#a855f7",
-    items: allWallpapers.filter((w) => w.carClass === "GT3"),
+    match: (w: WallpaperItem) => w.categoryKey === "gt3",
   },
   {
     id: "gtp-hypercar",
     slug: "GTP-Hypercar",
-    title: "GTP / Hypercar Pack",
-    subtitle: "Porsche 963, Cadillac V-Series.R, BMW M Hybrid V8, Ferrari 499P y Acura ARX-06.",
+    title: "GTP / Hypercar",
+    subtitle: "Prototipos híbridos LMDh / LMH rodando al límite en stints diurnos y nocturnos.",
     badge: "GTP",
     accent: "#facc15",
-    items: allWallpapers.filter((w) => w.carClass === "GTP"),
+    match: (w: WallpaperItem) => w.categoryKey === "gtp",
   },
   {
     id: "lmp2-proto",
     slug: "LMP2-Prototipos",
-    title: "LMP2 & Prototipos",
-    subtitle: "Dallara P217 LMP2, Ligier JS P320, HPD ARX-01c y prototipos históricos de resistencia.",
+    title: "LMP2 & Prototipos (P2 / P3)",
+    subtitle: "Dallara P217 LMP2 y Ligier JS P320 en carreras de resistencia.",
     badge: "LMP2 / P3",
     accent: "#38bdf8",
-    items: allWallpapers.filter((w) => ["LMP2", "LMP3", "Prototype"].includes(w.carClass)),
+    match: (w: WallpaperItem) => w.categoryKey === "lmp2",
+  },
+  {
+    id: "gte",
+    slug: "GTE",
+    title: "GTE",
+    subtitle: "Gran Turismo Endurance clásicos sin ABS.",
+    badge: "GTE",
+    accent: "#ef4444",
+    match: (w: WallpaperItem) => w.categoryKey === "gte",
+  },
+  {
+    id: "gt4",
+    slug: "GT4",
+    title: "GT4",
+    subtitle: "Categoría GT4 de resistencia y sprint multiclase.",
+    badge: "GT4",
+    accent: "#fb923c",
+    match: (w: WallpaperItem) => w.categoryKey === "gt4",
+  },
+  {
+    id: "tcr",
+    slug: "TCR-Touring",
+    title: "TCR / Touring Car",
+    subtitle: "Turismos de tracción delantera en duelos puerta con puerta.",
+    badge: "TCR",
+    accent: "#22c55e",
+    match: (w: WallpaperItem) => w.categoryKey === "tcr",
   },
   {
     id: "pcup",
     slug: "Porsche-Cup",
     title: "Porsche Cup (PCup)",
-    subtitle: "Porsche 911 GT3 Cup (992 & 992.2) en configuración oficial de copa monomarca.",
+    subtitle: "Porsche 911 GT3 Cup (992 & 992.2) en carrera oficial sin ayudas electrónicas.",
     badge: "PCUP",
     accent: "#e2e8f0",
-    items: allWallpapers.filter((w) => w.brand === "Porsche" && /cup/i.test(w.carFolder)),
+    match: (w: WallpaperItem) => w.categoryKey === "pcup",
   },
   {
     id: "formulas",
     slug: "Formulas",
-    title: "Fórmulas",
-    subtitle: "Super Formula SF23, Super Formula Lights, Dallara IR18, FIA F4 y FF1600.",
+    title: "Fórmulas (SF23, SFL, IR18, F4, FF1600, F3)",
+    subtitle: "Monoplazas de alta carga aerodinámica rodando en pista.",
     badge: "FORMULA",
     accent: "#10b981",
-    items: allWallpapers.filter((w) => w.carClass === "Formula"),
+    match: (w: WallpaperItem) => w.categoryKey === "formulas",
+  },
+  {
+    id: "nascar-oval",
+    slug: "NASCAR-Oval",
+    title: "NASCAR / Stock Car / Oval",
+    subtitle: "Stock cars y competición en óvalo.",
+    badge: "OVAL",
+    accent: "#fbbf24",
+    match: (w: WallpaperItem) => w.categoryKey === "oval",
+  },
+  {
+    id: "rookie-monomarca",
+    slug: "Copa-Rookie-Monomarca",
+    title: "Copa / Rookie / Monomarca (MX-5, GR86, Clio, Vee)",
+    subtitle: "Production Car Challenge y copas monomarca en circuito.",
+    badge: "COPA / ROOKIE",
+    accent: "#38bdf8",
+    match: (w: WallpaperItem) => w.categoryKey === "rookie",
+  },
+  {
+    id: "dirt-rx",
+    slug: "Rallycross-Dirt",
+    title: "Rallycross & Dirt (Off-Road / Dirt Oval)",
+    subtitle: "Derrapes y saltos en tierra y rallycross.",
+    badge: "DIRT / RX",
+    accent: "#f59e0b",
+    match: (w: WallpaperItem) => w.categoryKey === "dirt",
   },
   {
     id: "coleccion-completa",
     slug: "Muntrume-Completa",
-    title: "Colección Completa Muntrume",
-    subtitle: "Todo el catálogo oficial de vehículos de Muntrume Motorsport listo para rotación.",
-    badge: "ALL CARS",
+    title: "Colección Completa Muntrume Motorsport",
+    subtitle: "Todas las fotografías reales en pista capturadas en circuito (convertidas a .jpg nativo para Windows).",
+    badge: "ALL TRACK",
     accent: "#10b981",
-    items: allWallpapers,
+    match: () => true,
   },
 ];
 
+const packs = CATEGORY_DEFS.map((def) => ({
+  ...def,
+  items: allWallpapers.filter(def.match),
+})).filter((p) => p.items.length > 0);
+
 const brandsList = Array.from(new Set(allWallpapers.map((w) => w.brand))).sort();
 
-const pageTitle = "Wallpapers Windows 16:9 & Móvil 9:16 · Muntrume Motorsport";
-const pageDescription = `Descarga packs de fondos de pantalla en .ZIP para Windows (16:9) y móvil (9:16 · 1440x2560) con ${allWallpapers.length} coches de iRacing de Muntrume Motorsport.`;
+const pageTitle = "Wallpapers Reales en Pista (JPG Windows 16:9 & Móvil 9:16 4K) · Muntrume Motorsport";
+const pageDescription = `Descarga packs .ZIP en formato .JPG nativo para Windows (16:9) y móvil (9:16 · 2160x3840) con ${allWallpapers.length} capturas reales en pista de Muntrume Motorsport.`;
 const pageUrl = "https://muntru.me/wallpapers/";
 const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
 ---
@@ -121,28 +262,25 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
       <header class="border-b border-white/10 pb-6 flex flex-col lg:flex-row lg:items-end justify-between gap-6">
         <div class="space-y-2.5">
           <div class="font-mono text-[11px] uppercase tracking-widest text-emerald-400 font-bold">
-            Muntrume Motorsport · Media &amp; Desktop Packs
+            Muntrume Motorsport · Capturas Reales en Pista (Sin renders de estudio)
           </div>
           <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
-            Wallpapers para Windows &amp; Móvil
+            Wallpapers en Pista · Windows &amp; Móvil
           </h1>
           <p class="text-xs sm:text-sm text-slate-400 max-w-2xl font-mono leading-relaxed">
-            Empaquetado instantáneo en <code class="text-emerald-400">.ZIP</code> directamente desde tu navegador (0 % carga de servidor), con guía de presentación automática para Windows y recorte <span class="text-white font-semibold">1440×2560</span> para pantalla de bloqueo móvil.
+            Solo capturas reales en circuito convertidas automáticamente a <code class="text-emerald-400">.JPG</code> estándar 100 % compatible con Windows Presentation (16:9) y pantalla de bloqueo móvil (<span class="text-white font-semibold">2160×3840 4K</span>).
           </p>
         </div>
 
-        <!-- Format Switcher + Submit CTA -->
         <div class="flex flex-col items-start lg:items-end gap-2.5">
-          <div class="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              id="wpOpenSubmitBtn"
-              class="px-3.5 py-2 rounded-lg border border-emerald-500/45 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-mono text-xs font-extrabold tracking-wide transition cursor-pointer"
-            >
-              + Subir / Sugerir Wallpaper
-            </button>
-          </div>
-          <span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">Formato de salida &amp; vista previa</span>
+          <button
+            type="button"
+            id="wpOpenSubmitBtn"
+            class="px-3.5 py-2 rounded-lg border border-emerald-500/45 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-mono text-xs font-extrabold tracking-wide transition cursor-pointer"
+          >
+            + Subir / Sugerir Wallpaper
+          </button>
+          <span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">Formato de salida (.JPG nativo)</span>
           <div class="inline-flex p-1 rounded-lg bg-[#0d1118] border border-white/15 font-mono text-xs" role="group" aria-label="Formato de wallpaper">
             <button
               type="button"
@@ -151,7 +289,7 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
               class="px-3.5 py-2 rounded-md font-bold bg-emerald-500 text-[#04130d] transition cursor-pointer"
               aria-pressed="true"
             >
-              Escritorio · 16:9
+              Escritorio · 16:9 (.JPG)
             </button>
             <button
               type="button"
@@ -166,10 +304,10 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
         </div>
       </header>
 
-      <!-- PROGRESS BAR (HIDDEN WHEN IDLE) -->
+      <!-- PROGRESS BAR -->
       <section id="zipProgressBarWrap" hidden class="rounded-lg border border-emerald-500/40 bg-[#0d1118] p-4 space-y-2 font-mono">
         <div class="flex items-center justify-between text-xs">
-          <span id="zipProgressLabel" class="text-emerald-400 font-bold">Empaquetando...</span>
+          <span id="zipProgressLabel" class="text-emerald-400 font-bold">Convirtiendo a .JPG...</span>
           <span id="zipProgressPct" class="tabular-nums text-white font-bold">0%</span>
         </div>
         <div class="w-full h-2 rounded-full bg-black/60 overflow-hidden border border-white/10">
@@ -181,18 +319,17 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
       <section aria-labelledby="packsHeading" class="space-y-4">
         <div class="flex items-center justify-between">
           <h2 id="packsHeading" class="font-mono text-xs uppercase tracking-widest text-slate-300 font-bold">
-            Packs Temáticos por Categoría ({packs.length})
+            Packs por Categoría iRacing ({packs.length})
           </h2>
-          <span class="font-mono text-[11px] text-slate-500 tabular-nums">{allWallpapers.length} vehículos disponibles</span>
+          <span class="font-mono text-[11px] text-slate-500 tabular-nums">{allWallpapers.length} capturas reales en pista</span>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {packs.map((pack) => {
             const thumbs = pack.items.slice(0, 4);
-            const estMb = Math.max(0.4, pack.items.length * 0.18).toFixed(1);
+            const estMb = Math.max(0.5, pack.items.length * 0.45).toFixed(1);
             return (
               <article class="rounded-lg border border-white/10 bg-[#0d1118] overflow-hidden flex flex-col justify-between hover:border-white/25 transition">
-                <!-- 4-thumbnail collage -->
                 <div class="grid grid-cols-2 gap-0.5 bg-[#090b0f] p-1">
                   {thumbs.map((t) => (
                     <div class="aspect-video bg-[#090b0f] overflow-hidden rounded-[2px]">
@@ -217,7 +354,7 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
                         {pack.badge}
                       </span>
                       <span class="text-[11px] text-slate-400 tabular-nums">
-                        {pack.items.length} fotos · ~{estMb} MB
+                        {pack.items.length} fotos .JPG · ~{estMb} MB
                       </span>
                     </div>
                     <h3 class="text-base font-extrabold text-white">{pack.title}</h3>
@@ -230,13 +367,12 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
                       data-pack-download={pack.id}
                       class="flex-1 px-3 py-2 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-extrabold transition cursor-pointer text-center"
                     >
-                      Descargar Pack .ZIP
+                      Descargar Pack .ZIP (.JPG)
                     </button>
                     <button
                       type="button"
                       data-pack-filter={pack.id}
                       class="px-3 py-2 rounded border border-white/15 hover:border-emerald-500/50 text-slate-200 font-semibold transition cursor-pointer"
-                      title="Ver y seleccionar fotos de este pack"
                     >
                       Explorar
                     </button>
@@ -248,15 +384,15 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
         </div>
       </section>
 
-      <!-- INDIVIDUAL FILTER + SELECTION BAR -->
+      <!-- INDIVIDUAL FILTER + GALLERY -->
       <section aria-labelledby="galleryHeading" class="space-y-4 pt-4 border-t border-white/10">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           <div>
             <h2 id="galleryHeading" class="font-mono text-xs uppercase tracking-widest text-slate-300 font-bold">
-              Galería Individual &amp; Selección Personalizada
+              Galería Real en Pista &amp; Selección Personalizada
             </h2>
             <p class="text-xs text-slate-400 font-mono mt-0.5">
-              Filtra por fabricante, busca un modelo o marca varios coches para crear tu propio .ZIP.
+              Descarga cada captura al instante en .JPG estándar o marca varias para empaquetar tu propio .ZIP.
             </p>
           </div>
 
@@ -266,7 +402,7 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
               class="bg-[#0d1118] border border-white/15 rounded px-2.5 py-1.5 text-slate-200 outline-none focus:border-emerald-500"
               aria-label="Filtrar por fabricante"
             >
-              <option value="all">Todos los fabricantes ({allWallpapers.length})</option>
+              <option value="all">Todos ({allWallpapers.length})</option>
               {brandsList.map((brand) => (
                 <option value={brand}>{brand}</option>
               ))}
@@ -275,8 +411,8 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
             <input
               id="wpSearchInput"
               type="search"
-              placeholder="Buscar modelo (ej. Mustang, 992, SF23)..."
-              class="bg-[#0d1118] border border-white/15 focus:border-emerald-500 rounded px-3 py-1.5 text-slate-100 placeholder-slate-500 outline-none w-56"
+              placeholder="Buscar coche o circuito..."
+              class="bg-[#0d1118] border border-white/15 focus:border-emerald-500 rounded px-3 py-1.5 text-slate-100 placeholder-slate-500 outline-none w-52"
             />
 
             <button
@@ -284,7 +420,7 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
               id="wpClearSelBtn"
               class="px-2.5 py-1.5 rounded border border-white/15 text-slate-400 hover:text-white transition cursor-pointer"
             >
-              Limpiar selección
+              Limpiar
             </button>
 
             <button
@@ -298,15 +434,13 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
           </div>
         </div>
 
-        <!-- WALLPAPERS GRID -->
-        <div id="wpGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div id="wpGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {allWallpapers.map((w) => (
             <article
               class="wp-card group rounded-lg border border-white/10 bg-[#0d1118] overflow-hidden flex flex-col hover:border-emerald-500/40 transition"
               data-id={w.id}
               data-brand={w.brand}
-              data-class={w.carClass}
-              data-search={`${w.brand} ${w.model} ${w.carClass} ${w.carFolder}`.toLowerCase()}
+              data-search={`${w.brand} ${w.model} ${w.carClass} ${w.circuit}`.toLowerCase()}
             >
               <div class="wp-thumb-wrap relative aspect-video bg-[#090b0f] overflow-hidden transition-all">
                 <img
@@ -331,17 +465,16 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
                   type="button"
                   data-direct-dl={w.id}
                   class="absolute bottom-2 right-2 px-2.5 py-1 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] text-[10px] font-mono font-extrabold transition cursor-pointer shadow"
-                  title="Descarga directa en el formato activo"
                 >
-                  ↓ Descargar
+                  ↓ .JPG
                 </button>
               </div>
-              <div class="p-2.5 flex items-center justify-between gap-2 font-mono">
+              <div class="p-3 flex items-center justify-between gap-2 font-mono">
                 <div class="min-w-0">
-                  <div class="text-[11px] font-bold text-white truncate">{w.brand} {w.model}</div>
-                  <div class="text-[10px] text-slate-400 truncate">{w.carClass} · {w.carFolder}</div>
+                  <div class="text-xs font-bold text-white truncate">{w.model}</div>
+                  <div class="text-[10px] text-slate-400 truncate">{w.carClass} · {w.circuit}</div>
                 </div>
-                <span class="w-2 h-2 rounded-full shrink-0" style={`background:${w.accentColor}`}></span>
+                <span class="w-2.5 h-2.5 rounded-full shrink-0" style={`background:${w.accentColor}`}></span>
               </div>
             </article>
           ))}
@@ -378,21 +511,21 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
         </div>
 
         <div class="px-4 py-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 font-mono text-xs">
-          <span class="text-slate-400">Archivo nativo sin pérdida (16:9) o recorte 4K Vertical (2160×3840).</span>
+          <span class="text-slate-400">Exportado a .JPG estándar nativo para Windows (16:9) o Móvil (9:16 4K).</span>
           <div class="flex items-center gap-2">
             <button
               type="button"
               id="wpModalDownloadDesktop"
               class="px-3.5 py-2 rounded border border-white/20 hover:border-emerald-500 text-white font-bold transition cursor-pointer"
             >
-              Descargar 16:9 Original
+              Descargar 16:9 (.JPG)
             </button>
             <button
               type="button"
               id="wpModalDownloadMobile"
               class="px-3.5 py-2 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-extrabold transition cursor-pointer"
             >
-              Descargar Foto Móvil (9:16 4K)
+              Descargar Foto Móvil (9:16 4K .JPG)
             </button>
           </div>
         </div>
@@ -412,7 +545,7 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
         <div class="flex items-center justify-between px-4 py-3 border-b border-white/10">
           <div>
             <h3 id="wpSubmitTitle" class="text-sm font-extrabold text-white">Subir / Sugerir Wallpaper</h3>
-            <p class="text-[10px] text-slate-400">Mínimo recomendado 1920×1080 · JPG, PNG o WebP (máx. 15 MB)</p>
+            <p class="text-[10px] text-slate-400">Solo capturas en pista (mín. 1920×1080 · JPG, PNG o WebP)</p>
           </div>
           <button
             type="button"
@@ -424,7 +557,6 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
         </div>
 
         <form id="wpSubmitForm" class="p-4 space-y-3 text-xs">
-          <!-- Mode Switch -->
           <div class="grid grid-cols-2 gap-1.5 p-1 rounded-lg bg-[#090b0f] border border-white/10">
             <button type="button" id="wpModeCommunityBtn" class="py-1.5 rounded font-bold bg-emerald-500 text-[#04130d] cursor-pointer">
               Comunidad (Sugerir)
@@ -501,10 +633,10 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
     const payload = JSON.parse(dataEl?.textContent || "{}");
     const allItems: Array<{
       id: string;
-      carFolder: string;
       brand: string;
       model: string;
       carClass: string;
+      circuit: string;
       img: string;
       cleanFileBase: string;
     }> = payload.allWallpapers || [];
@@ -604,8 +736,7 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
       syncSelectionUi();
     });
 
-    // Convert image URL to 2160x3840 4K 9:16 mobile image (PNG lossless if original is PNG, else JPEG 0.96)
-    async function renderMobile916Blob(url: string): Promise<{ blob: Blob; ext: string }> {
+    async function loadImage(url: string): Promise<HTMLImageElement> {
       const img = new Image();
       img.crossOrigin = "anonymous";
       await new Promise<void>((resolve, reject) => {
@@ -613,41 +744,48 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
         img.onerror = () => reject(new Error(`No se pudo cargar ${url}`));
         img.src = url;
       });
+      return img;
+    }
 
-      const W = 2160;
-      const H = 3840;
+    // Decode any source (WebP/AVIF/PNG/JPG) into a standard native .JPG for Windows 16:9 or Mobile 9:16 (2160x3840)
+    async function renderNativeJpgBlob(url: string, fmt: "desktop" | "mobile"): Promise<Blob> {
+      const img = await loadImage(url);
       const canvas = document.createElement("canvas");
-      canvas.width = W;
-      canvas.height = H;
       const ctx = canvas.getContext("2d")!;
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = "high";
 
-      const scale = Math.max(W / img.naturalWidth, H / img.naturalHeight);
-      const dw = img.naturalWidth * scale;
-      const dh = img.naturalHeight * scale;
-      const dx = (W - dw) * 0.5;
-      const dy = (H - dh) * 0.5;
-      ctx.drawImage(img, dx, dy, dw, dh);
+      if (fmt === "mobile") {
+        const W = 2160;
+        const H = 3840;
+        canvas.width = W;
+        canvas.height = H;
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
 
-      // Subtle dark gradient across top 18% for crisp lockscreen clock readability
-      const grad = ctx.createLinearGradient(0, 0, 0, H * 0.18);
-      grad.addColorStop(0, "rgba(5, 7, 11, 0.55)");
-      grad.addColorStop(1, "rgba(5, 7, 11, 0)");
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, W, H * 0.18);
+        const scale = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+        const dw = img.naturalWidth * scale;
+        const dh = img.naturalHeight * scale;
+        ctx.drawImage(img, (W - dw) * 0.5, (H - dh) * 0.5, dw, dh);
 
-      const isPng = url.toLowerCase().endsWith(".png");
-      const mime = isPng ? "image/png" : "image/jpeg";
-      const ext = isPng ? "png" : "jpg";
-      const blob = await new Promise<Blob>((resolve, reject) => {
+        const grad = ctx.createLinearGradient(0, 0, 0, H * 0.18);
+        grad.addColorStop(0, "rgba(5, 7, 11, 0.55)");
+        grad.addColorStop(1, "rgba(5, 7, 11, 0)");
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W, H * 0.18);
+      } else {
+        canvas.width = img.naturalWidth || 1920;
+        canvas.height = img.naturalHeight || 1080;
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      }
+
+      return await new Promise<Blob>((resolve, reject) => {
         canvas.toBlob(
           (b) => (b ? resolve(b) : reject(new Error("Canvas toBlob failed"))),
-          mime,
-          isPng ? undefined : 0.96
+          "image/jpeg",
+          0.96
         );
       });
-      return { blob, ext };
     }
 
     function triggerDownload(blob: Blob, filename: string) {
@@ -678,24 +816,25 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
 
       const readmeText = isMob
         ? [
-            "MUNTRUME MOTORSPORT — WALLPAPERS MÓVIL (9:16 · 1440x2560)",
-            "===========================================================",
+            "MUNTRUME MOTORSPORT — WALLPAPERS MÓVIL (9:16 · 2160x3840 4K JPG)",
+            "==================================================================",
             "",
             "1. Descomprime esta carpeta en tu teléfono Android o iPhone.",
             "2. Abre Ajustes -> Fondo de pantalla -> Seleccionar imágenes.",
-            "3. El degradado superior de cada foto mejora la lectura del reloj de bloqueo.",
+            "3. Formato .JPG estándar con degradado superior para el reloj.",
             "",
             "https://muntru.me/wallpapers",
           ].join("\r\n")
         : [
-            "MUNTRUME MOTORSPORT — WINDOWS SLIDESHOW WALLPAPERS (16:9)",
-            "==========================================================",
+            "MUNTRUME MOTORSPORT — WINDOWS SLIDESHOW WALLPAPERS (16:9 .JPG)",
+            "==============================================================",
             "",
             "Cómo activar la rotación automática en Windows 10 / 11:",
             "1. Descomprime esta carpeta en Documentos o Imágenes.",
             "2. Haz clic derecho en el Escritorio -> Personalizar -> Fondo.",
             "3. En 'Personaliza tu fondo', selecciona 'Presentación'.",
             "4. Pulsa 'Examinar' y elige esta carpeta descomprimida.",
+            "   (Todos los archivos están en .JPG estándar nativo para Windows).",
             "",
             "https://muntru.me/wallpapers",
           ].join("\r\n");
@@ -705,17 +844,11 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
         const idxStr = String(i + 1).padStart(2, "0");
-        updateProg(i, items.length, `Empaquetando ${i + 1}/${items.length} wallpapers (${suffix})...`);
+        updateProg(i, items.length, `Convirtiendo ${i + 1}/${items.length} a .JPG estándar (${suffix})...`);
         try {
-          if (isMob) {
-            const { blob, ext } = await renderMobile916Blob(item.img);
-            zip.file(`Muntrume_${slug}_${idxStr}_${item.cleanFileBase}_9x16_4K.${ext}`, blob);
-          } else {
-            const res = await fetch(item.img);
-            const blob = await res.blob();
-            const ext = item.img.split(".").pop() || "webp";
-            zip.file(`Muntrume_${slug}_${idxStr}_${item.cleanFileBase}.${ext}`, blob);
-          }
+          const jpgBlob = await renderNativeJpgBlob(item.img, outputFormat);
+          const tag = isMob ? "_9x16_4K" : "";
+          zip.file(`Muntrume_${slug}_${idxStr}_${item.cleanFileBase}${tag}.jpg`, jpgBlob);
         } catch (err) {
           console.warn("Skip wallpaper:", item.img, err);
         }
@@ -743,17 +876,16 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
       downloadZipPack(items, "Seleccion");
     });
 
-    // Preview Modal
     document.querySelectorAll<HTMLButtonElement>("[data-preview-id]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const item = itemById.get(btn.dataset.previewId || "");
         if (!item || !modalEl) return;
         activeModalItem = item;
-        if (modalTitle) modalTitle.textContent = `${item.brand} ${item.model}`;
-        if (modalSub) modalSub.textContent = `${item.carClass} · ${item.carFolder}`;
+        if (modalTitle) modalTitle.textContent = item.model;
+        if (modalSub) modalSub.textContent = `${item.carClass} · ${item.circuit}`;
         if (modalImg) {
           modalImg.src = item.img;
-          modalImg.alt = `${item.brand} ${item.model}`;
+          modalImg.alt = item.model;
         }
         modalEl.hidden = false;
       });
@@ -766,17 +898,10 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
       if (e.target === modalEl) modalEl.hidden = true;
     });
 
-    // Direct individual download button on each card
     async function downloadSingleItem(item: (typeof allItems)[number], fmt: "desktop" | "mobile") {
-      if (fmt === "mobile") {
-        const { blob, ext } = await renderMobile916Blob(item.img);
-        triggerDownload(blob, `Muntrume_${item.cleanFileBase}_9x16_4K.${ext}`);
-      } else {
-        const res = await fetch(item.img);
-        const blob = await res.blob();
-        const ext = item.img.split(".").pop() || "webp";
-        triggerDownload(blob, `Muntrume_${item.cleanFileBase}_16x9.${ext}`);
-      }
+      const jpgBlob = await renderNativeJpgBlob(item.img, fmt);
+      const tag = fmt === "mobile" ? "_9x16_4K" : "_16x9";
+      triggerDownload(jpgBlob, `Muntrume_${item.cleanFileBase}${tag}.jpg`);
     }
 
     document.querySelectorAll<HTMLButtonElement>("[data-direct-dl]").forEach((btn) => {
