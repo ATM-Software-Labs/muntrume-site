@@ -22,40 +22,40 @@ const catalogByKey = new Map(
 );
 
 const FALLBACK_BRAND_BY_PREFIX: Array<[RegExp, { logo: string; color: string }]> = [
-  [/mercedes/i, { logo: "logo-mercedes", color: "#00D2BE" }],
-  [/porsche/i, { logo: "logo-porsche", color: "#D5001C" }],
-  [/ferrari/i, { logo: "logo-ferrari", color: "#DC0000" }],
-  [/bmw/i, { logo: "logo-bmw", color: "#1C69D4" }],
-  [/audi/i, { logo: "logo-audi", color: "#BB0A30" }],
-  [/lamborghini/i, { logo: "logo-lambo", color: "#DDB321" }],
-  [/mclaren/i, { logo: "logo-mclaren", color: "#FF8700" }],
-  [/aston|amvantage|amvalkyrie/i, { logo: "logo-aston", color: "#2dd4bf" }],
-  [/cadillac/i, { logo: "logo-cadillac", color: "#D4AF37" }],
-  [/acura/i, { logo: "logo-acura", color: "#E11D48" }],
-  [/corvette|chevy|camaro|silverado|c6r|c8r/i, { logo: "logo-chevy", color: "#EAB308" }],
-  [/ford|mustang/i, { logo: "logo-ford", color: "#003478" }],
+  [/raygr/i, { logo: "logo-ford", color: "#003478" }],
+  [/formulavee/i, { logo: "logo-vw", color: "#001E50" }],
+  [/mercedes/i, { logo: "logo-mercedes", color: "#A4A9AD" }],
+  [/porsche/i, { logo: "logo-porsche", color: "#C0C0C0" }],
+  [/ferrari/i, { logo: "logo-ferrari", color: "#FF2800" }],
+  [/bmw/i, { logo: "logo-bmw", color: "#0066B1" }],
+  [/audi/i, { logo: "logo-audi", color: "#C0C0C0" }],
+  [/lamborghini/i, { logo: "logo-lambo", color: "#C6A664" }],
+  [/mclaren/i, { logo: "logo-mclaren", color: "#FF8000" }],
+  [/aston|amvantage|amvalkyrie/i, { logo: "logo-aston", color: "#00594F" }],
+  [/cadillac/i, { logo: "logo-cadillac", color: "#C0C0C0" }],
+  [/acura/i, { logo: "logo-acura", color: "#C0C0C0" }],
+  [/corvette|chevy|camaro|silverado|c6r|c8r/i, { logo: "logo-chevy", color: "#C5A017" }],
+  [/ford|mustang|specracer/i, { logo: "logo-ford", color: "#003478" }],
   [/toyota|gr86|tundra/i, { logo: "logo-toyota", color: "#EB0A1E" }],
-  [/mazda|mx5|mx_/i, { logo: "logo-mazda", color: "#910A2D" }],
-  [/honda|hpd/i, { logo: "logo-honda", color: "#CC0000" }],
+  [/mazda|mx5|mx_/i, { logo: "logo-mazda", color: "#910A2A" }],
+  [/honda/i, { logo: "logo-honda", color: "#E40521" }],
   [/hyundai/i, { logo: "logo-hyundai", color: "#002C5F" }],
   [/renault/i, { logo: "logo-renault", color: "#FFCC00" }],
-  [/dallara|superformula|indy|formulair04/i, { logo: "logo-dallara", color: "#00E699" }],
-  [/ligier/i, { logo: "logo-ligier", color: "#38BDF8" }],
+  [/dallara|superformula|formulair04/i, { logo: "logo-dallara", color: "#C0C0C0" }],
+  [/indypro|pm18/i, { logo: "logo-tatuus", color: "#C0C0C0" }],
+  [/ligier/i, { logo: "logo-ligier", color: "#C0C0C0" }],
   [/nissan/i, { logo: "logo-nissan", color: "#C3002F" }],
-  [/lotus/i, { logo: "logo-lotus", color: "#22C55E" }],
-  [/radical/i, { logo: "logo-radical", color: "#F59E0B" }],
-  [/caterham/i, { logo: "logo-caterham", color: "#10B981" }],
-  [/formulavee|raygr|rt2000|specracer/i, { logo: "logo-formula", color: "#94A3B8" }],
-  [/pontiac/i, { logo: "logo-pontiac", color: "#DC2626" }],
-  [/buick/i, { logo: "logo-buick", color: "#2563EB" }],
+  [/lotus/i, { logo: "logo-lotus", color: "#004225" }],
+  [/radical/i, { logo: "logo-radical", color: "#C0C0C0" }],
+  [/caterham/i, { logo: "logo-caterham", color: "#C0C0C0" }],
+  [/rt2000/i, { logo: "logo-neutral", color: "#C0C0C0" }],
+  [/pontiac/i, { logo: "logo-pontiac", color: "#C0C0C0" }],
+  [/buick/i, { logo: "logo-buick", color: "#C0C0C0" }],
 ];
 
 function brandMetaFor(carId: string) {
   const hit = catalogByKey.get(normCarKey(carId));
-  if (hit && OFFICIAL_BRAND_PATHS[hit.logo]) {
-    if (hit.logo === "logo-aston") return { logo: "logo-aston", color: "#2dd4bf" };
-    return hit;
-  }
+  if (hit && OFFICIAL_BRAND_PATHS[hit.logo]) return hit;
   for (const [rx, meta] of FALLBACK_BRAND_BY_PREFIX) {
     if (rx.test(carId) && OFFICIAL_BRAND_PATHS[meta.logo]) return meta;
   }

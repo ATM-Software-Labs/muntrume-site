@@ -1,0 +1,42 @@
+[
+  {
+    "id": "gt3-monza-pack",
+    "img": "/assets/img/coche1.webp",
+    "title": "Parrilla GT3 · Curva 1 Monza",
+    "car": "Ferrari 296 GT3",
+    "circuit": "Autodromo Nazionale Monza",
+    "category": "gt3"
+  },
+  {
+    "id": "gt3-spa-raidillon",
+    "img": "/assets/img/coche2.webp",
+    "title": "En paralelo por Eau Rouge · Ferrari 296 GT3",
+    "car": "Ferrari 296 GT3",
+    "circuit": "Circuit de Spa-Francorchamps",
+    "category": "gt3"
+  },
+  {
+    "id": "night-daytona-infield",
+    "img": "/assets/img/coche3.webp",
+    "title": "Madrugada en Daytona · Stint de relevo",
+    "car": "",
+    "circuit": "Daytona International Speedway",
+    "category": "gt3"
+  },
+  {
+    "id": "gtp-cadillac-imola",
+    "img": "/assets/img/coche4.webp",
+    "title": "Cadillac V-Series.R · Curva Tamburello",
+    "car": "Cadillac V-Series.R",
+    "circuit": "Autodromo Enzo e Dino Ferrari",
+    "category": "gtp"
+  },
+  {
+    "id": "gtp-night-sebring",
+    "img": "/assets/img/race1.webp",
+    "title": "Stint nocturno · Porsche 963 GTP en Sebring",
+    "car": "Porsche 963 GTP",
+    "circuit": "Sebring International Raceway",
+    "category": "gtp"
+  }
+]

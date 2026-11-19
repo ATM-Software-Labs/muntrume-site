@@ -586,7 +586,7 @@ npm run tauri dev</code></pre>
             <p class="ov-kicker">Fuente única de verdad · desktop/src/brand-logos.ts</p>
             <h2 class="ov-section__title">Catálogo de Fabricantes iRacing SDK</h2>
             <p class="ov-section__sub">
-              Matriz oficial de marcas, SVGs vectoriales y códigos de color aplicados en Standings, Relative y Web.
+              Fabricantes del catálogo. El disco gris es una marca neutra: no hay vector verificable para esa marca.
             </p>
           </div>
           <a
@@ -612,8 +612,8 @@ npm run tauri dev</code></pre>
               </div>
               <div>
                 <div class="text-xs font-bold text-slate-100 truncate">{b.name}</div>
-                <div class="text-[10px] text-slate-400 truncate" title={`CarPath: ${b.carPath}`}>
-                  {b.carPath}
+                <div class="text-[10px] text-slate-400 truncate" title={b.carPaths.join(", ")}>
+                  {b.carPaths.length} {b.carPaths.length === 1 ? "coche" : "coches"}
                 </div>
               </div>
             </div>

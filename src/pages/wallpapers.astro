@@ -1,180 +1,97 @@
 ---
-import path from "node:path";
 import Layout from "../layouts/Layout.astro";
-import { loadOfficialMediaCatalog, type MediaCatalogItem as WallpaperItem } from "../lib/media-catalog";
+import { absoluteWallpaperUrl, getWallpaperCatalog } from "../lib/wallpaper-catalog";
 
-const publicDir = path.join(process.cwd(), "public");
-const { items: allWallpapers, albums: apiAlbums, audit: mediaAudit } = await loadOfficialMediaCatalog(publicDir);
+const catalog = await getWallpaperCatalog();
+const allWallpapers = catalog.items;
+const seriesGroups = catalog.series;
+const apiAlbums = catalog.albums;
 
-// Official iRacing Series Roster Matchers (reads ALL metadata together: album + folder + category + car + title + filename)
-function itemText(w: WallpaperItem): string {
-  return `${w.album} ${w.folder} ${w.rawCategory} ${w.carClass} ${w.brand} ${w.model} ${w.carSlug} ${w.title} ${w.circuit} ${w.filename}`.toLowerCase();
+const carMap = new Map<string, typeof allWallpapers>();
+for (const item of allWallpapers) {
+  const key = item.model;
+  const arr = carMap.get(key) || [];
+  arr.push(item);
+  carMap.set(key, arr);
 }
-function isLegacyCar(t: string): boolean {
-  return /\blegacy\b|ford\s*gt\s*gt3|mp4-?12c|bmw\s*z4|z4\s*gt3|audi\s*r8.*2016|r8\s*lms.*2016/i.test(t);
-}
-function isFerrari296Challenge(t: string): boolean {
-  return /296\s*challenge|ferrari.*challenge/i.test(t);
-}
-function isAudiOrMcLarenGt3(t: string): boolean {
-  return (/audi|r8\s*lms/i.test(t) || /mclaren|720s/i.test(t)) && !/gt4|570s|tcr|rs\s*3|rs3|mp4-?12c|2016/i.test(t);
-}
-function isGtp(w: WallpaperItem): boolean {
-  const t = itemText(w);
-  return /porsche\s*963|cadillac\s*v-?series|bmw\s*m\s*hybrid|ferrari\s*499p|acura\s*arx-?06|valkyrie|\bgtp\b|lmdh|hypercar/i.test(t);
-}
-function isLmp2(w: WallpaperItem): boolean {
-  const t = itemText(w);
-  return /dallara\s*p217|p217|\blmp2\b/i.test(t);
-}
-function isLmp3(w: WallpaperItem): boolean {
-  const t = itemText(w);
-  return /ligier|js\s*p320|jsp320|\blmp3\b/i.test(t);
-}
-function isPcup(w: WallpaperItem): boolean {
-  const t = itemText(w);
-  if (/(gt3\s*r|gt4|963|rsr|cayman|mission\s*r|bmw|\bm2\b|mx-?5|clio|nascar)/i.test(t)) return false;
-  return /\bporsche\b/i.test(t) && /(911\s*gt3\s*cup|992(\.?[12])?\s*cup|991\s*cup|\bpcup\b)/i.test(t);
-}
-function isGt4(w: WallpaperItem): boolean {
-  const t = itemText(w);
-  if (/\bm2\b|bmw\s*m2/i.test(t)) return false;
-  return /cayman\s*gt4|718\s*cayman|m4\s*gt4|amg\s*gt4|vantage\s*gt4|570s\s*gt4|\bgt4\b/i.test(t);
-}
-function isTcr(w: WallpaperItem): boolean {
-  const t = itemText(w);
-  return /elantra|veloster|civic\s*type\s*r|rs\s*3\s*lms|rs3\s*lms|touring\s*car|\btcr\b/i.test(t);
-}
-function isEnduranceRaceAlbum(t: string): boolean {
-  return /(24h\s*spa|spa-?francorchamps|daytona|sebring|imsa|le\s*mans|watkins\s*glen|endurance|resistencia)/i.test(t);
-}
-function isGt3Imsa(w: WallpaperItem): boolean {
-  const t = itemText(w);
-  if (isLegacyCar(t) || isFerrari296Challenge(t) || isAudiOrMcLarenGt3(t)) return false;
-  if (/(gt4|tcr|\bm2\b|gt3\s*cup)/i.test(t)) return false;
-  return /mustang\s*gt3|911\s*gt3\s*r|992\s*r?\s*gt3|296\s*gt3|corvette\s*z06\s*gt3|m4\s*gt3|mercedes.*gt3|amg\s*gt3|hurac[aá]n\s*gt3|vantage\s*gt3|nsx\s*gt3|\bgt3\b/i.test(t);
-}
-function isGt3All(w: WallpaperItem): boolean {
-  const t = itemText(w);
-  if (isLegacyCar(t) || isFerrari296Challenge(t)) return false;
-  if (/(gt4|tcr|\bm2\b|gt3\s*cup)/i.test(t)) return false;
-  return isGt3Imsa(w) || isAudiOrMcLarenGt3(t);
-}
-function isFormulas(w: WallpaperItem): boolean {
-  const t = itemText(w);
-  return /formula|sf23|\bsfl\b|super\s*formula|ir18|indycar|fia\s*f4|\bf4\b|\bf3\b|formula\s*vee|ff1600|ray\s*ff|dallara\s*ir-?01/i.test(t);
-}
-function isPccRookie(w: WallpaperItem): boolean {
-  const t = itemText(w);
-  return /bmw\s*m2|m2\s*cs|m2\s*racing|mx-?5|miata|gr86|clio/i.test(t);
-}
-function isNascar(w: WallpaperItem): boolean {
-  const t = itemText(w);
-  return /nascar|stock\s*car|xfinity|truck|cup\s*series|camaro|silverado|tundra|arca|late\s*model|gen\s*4|taurus|pontiac\s*grand\s*prix/i.test(t);
-}
-
-const SERIES_DEFS = [
-  { id: "imsa", slug: "IMSA", title: "IMSA iRacing Series / IMSA Endurance (GTP + LMP2 + GT3)", badge: "IMSA", accent: "#facc15", match: (w: WallpaperItem) => isGtp(w) || isLmp2(w) || isGt3All(w) || (!isPcup(w) && !isGt4(w) && !isTcr(w) && !isFormulas(w) && !isNascar(w) && !isPccRookie(w) && isEnduranceRaceAlbum(itemText(w))), coverSlots: [isGtp, isLmp2, isGt3All, (w: WallpaperItem) => isAudiOrMcLarenGt3(itemText(w))] },
-  { id: "gt-sprint", slug: "GTSprint", title: "GT Sprint / GT Endurance (Solo GT3)", badge: "GT3", accent: "#a855f7", match: (w: WallpaperItem) => isGt3All(w), coverSlots: [(w: WallpaperItem) => isAudiOrMcLarenGt3(itemText(w)), isGt3All, isGt3All, isGt3All] },
-  { id: "nec", slug: "NEC", title: "Nürburgring Endurance Championship (NEC)", badge: "NEC", accent: "#ef4444", match: (w: WallpaperItem) => !isGtp(w) && !isLmp2(w) && !isLmp3(w) && !isFormulas(w) && (isGt3All(w) || isPcup(w) || isGt4(w) || isTcr(w) || /n[uü]rburgring|nordschleife|\bnec\b/i.test(itemText(w))), coverSlots: [isGt3All, isPcup, isGt4, isTcr] },
-  { id: "pcup", slug: "PCup", title: "Porsche Cup (PCup)", badge: "PCUP", accent: "#e2e8f0", match: (w: WallpaperItem) => isPcup(w), coverSlots: [isPcup, isPcup, isPcup, isPcup] },
-  { id: "ferrari-challenge", slug: "FerrariChallenge", title: "Ferrari 296 Challenge", badge: "CHALLENGE", accent: "#ef4444", match: (w: WallpaperItem) => isFerrari296Challenge(itemText(w)), coverSlots: [] },
-  { id: "falken-gt4", slug: "FalkenGT4", title: "Falken Tyre Sports Car Challenge (GT4 + LMP3)", badge: "GT4 + LMP3", accent: "#fb923c", match: (w: WallpaperItem) => isLmp3(w) || isGt4(w), coverSlots: [isLmp3, isGt4, isGt4, isGt4] },
-  { id: "tcr", slug: "TCR", title: "Touring Car Challenge (TCR)", badge: "TCR", accent: "#22c55e", match: (w: WallpaperItem) => isTcr(w), coverSlots: [isTcr, isTcr, isTcr, isTcr] },
-  { id: "formulas", slug: "Formulas", title: "Fórmulas (SF23 / SFL / IR18 / F4)", badge: "FORMULA", accent: "#10b981", match: (w: WallpaperItem) => isFormulas(w), coverSlots: [isFormulas, isFormulas, isFormulas, isFormulas] },
-  { id: "pcc", slug: "PCC", title: "Monomarca / Rookie (M2 / MX-5 / GR86 / Clio)", badge: "PCC", accent: "#38bdf8", match: (w: WallpaperItem) => isPccRookie(w), coverSlots: [isPccRookie, isPccRookie, isPccRookie, isPccRookie] },
-  { id: "nascar", slug: "NASCAR", title: "NASCAR / Oval & Stock Car", badge: "NASCAR", accent: "#fbbf24", match: (w: WallpaperItem) => isNascar(w), coverSlots: [isNascar, isNascar, isNascar, isNascar] },
-  { id: "all", slug: "Muntrume", title: "Colección Completa Muntrume Motorsport", badge: "ALL TRACK", accent: "#10b981", match: () => true, coverSlots: [] },
-];
-
-const usedSeriesCoverImgs = new Set<string>();
-function pickUniqueSeriesCovers(items: WallpaperItem[], slots: Array<(w: WallpaperItem) => boolean>): WallpaperItem[] {
-  const chosen: WallpaperItem[] = [];
-  const chosenIds = new Set<string>();
-  const pickOne = (pred: (w: WallpaperItem) => boolean, preferUnused: boolean): WallpaperItem | undefined =>
-    items.find((w) => !chosenIds.has(w.id) && pred(w) && (!preferUnused || !usedSeriesCoverImgs.has(w.img)));
-
-  for (const slotPred of slots) {
-    if (chosen.length >= 4) break;
-    const hit = pickOne(slotPred, true) || pickOne(slotPred, false);
-    if (hit) {
-      chosen.push(hit);
-      chosenIds.add(hit.id);
-      usedSeriesCoverImgs.add(hit.img);
-    }
-  }
-  while (chosen.length < Math.min(4, items.length)) {
-    const hit = pickOne(() => true, true) || pickOne(() => true, false);
-    if (!hit) break;
-    chosen.push(hit);
-    chosenIds.add(hit.id);
-    usedSeriesCoverImgs.add(hit.img);
-  }
-  return chosen;
-}
-
-const categoryPacks = SERIES_DEFS.map((d) => {
-  const items = allWallpapers.filter(d.match);
-  return {
-    ...d,
-    items,
-    coverThumbs: pickUniqueSeriesCovers(items, d.coverSlots),
-  };
-}).filter((p) => p.items.length > 0);
-
-// Per-car Packs
-const carMap = new Map<string, WallpaperItem[]>();
-for (const w of allWallpapers) {
-  const arr = carMap.get(w.model) || [];
-  arr.push(w);
-  carMap.set(w.model, arr);
-}
-const carPacks = Array.from(carMap.entries())
+const carPacks = [...carMap.entries()]
   .map(([model, items]) => ({
     id: `car-${items[0].carSlug}`,
     slug: items[0].cleanFileBase,
     title: model,
     badge: items[0].carClass,
     accent: items[0].accentColor,
+    seriesOrder: Math.min(...items.map((item) => item.seriesOrder)),
     items,
   }))
-  .sort((a, b) => b.items.length - a.items.length);
+  .sort((a, b) => a.seriesOrder - b.seriesOrder || a.title.localeCompare(b.title, "es"));
 
-// Mandatory 3-part Console Build Audit
-const assignedIds = new Set<string>();
-for (const p of categoryPacks) {
-  if (p.id !== "all") p.items.forEach((item) => assignedIds.add(item.id));
-}
-const unassignedItems = allWallpapers.filter((w) => !assignedIds.has(w.id));
+const packs = [
+  ...seriesGroups.map((group) => ({
+    id: group.id,
+    slug: group.slug,
+    title: group.name,
+    itemIds: group.items.map((item) => item.id),
+  })),
+  ...carPacks.map((pack) => ({
+    id: pack.id,
+    slug: pack.slug,
+    title: pack.title,
+    itemIds: pack.items.map((item) => item.id),
+  })),
+  ...apiAlbums.map((album) => ({
+    id: `album-${album.slug}`,
+    slug: album.slug,
+    title: album.title,
+    itemIds: album.items.map((item) => item.id),
+  })),
+  {
+    id: "all",
+    slug: "Muntrume",
+    title: "Todos los wallpapers",
+    itemIds: allWallpapers.map((item) => item.id),
+  },
+];
 
-console.log(`[wallpapers] 1. Total bruto obtenido desde gallery + albums: ${mediaAudit.rawTotal}`);
-console.log(`[wallpapers] 2. Total tras quitar solo previews/interiores (descartadas ${mediaAudit.filteredStudioInteriorCount}): ${mediaAudit.afterFilterTotal}`);
-console.log(`[wallpapers] 3. Desglose por serie:`);
-for (const p of categoryPacks) console.log(`[wallpapers]    - ${p.slug} (${p.title}): ${p.items.length}`);
-console.log(`[wallpapers]    - Sin asignar a serie específica (solo en Colección Completa): ${unassignedItems.length}`);
-console.log(`[wallpapers]    - Coches con fotos: ${carPacks.length}, Álbumes sincronizados: ${apiAlbums.length}`);
-
-const brandsList = Array.from(new Set(allWallpapers.map((w) => w.brand))).sort();
-const pageTitle = "Wallpapers Reales en Pista (JPG Windows 16:9 & Móvil 9:16 4K) · Muntrume Motorsport";
-const pageDescription = `Descarga ${allWallpapers.length} wallpapers reales de iRacing en .JPG nativo para Windows (16:9) y Móvil (9:16 4K) por categoría, coche y álbum.`;
+const brandsList = [...new Set(allWallpapers.map((item) => item.brand).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
+const pageTitle = "Wallpapers iRacing por serie";
+const pageDescription = `${allWallpapers.length} wallpapers de iRacing agrupados por serie, en JPG 16:9 y móvil 9:16. Equipo MMT.`;
 const pageUrl = "https://muntru.me/wallpapers/";
-const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
+const ogImage = absoluteWallpaperUrl(allWallpapers[0]?.img || "/assets/img/coche2.webp");
+const pageSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "CollectionPage",
+      "@id": `${pageUrl}#webpage`,
+      url: pageUrl,
+      name: pageTitle,
+      description: pageDescription,
+      inLanguage: "es",
+      hasPart: seriesGroups.map((group) => ({
+        "@type": "ImageGallery",
+        name: group.name,
+        url: `https://muntru.me/wallpapers/${group.slug}/`,
+      })),
+    },
+  ],
+};
 ---
 
-<Layout title={pageTitle} description={pageDescription} canonical={pageUrl} ogImage={ogImage}>
+<Layout title={pageTitle} description={pageDescription} canonical={pageUrl} ogImage={ogImage} ogImageAlt={allWallpapers[0]?.alt || pageTitle} schemaJson={pageSchema}>
   <main class="min-h-screen bg-[#090b0f] text-slate-100 py-10 px-4 sm:px-6">
     <div class="max-w-7xl mx-auto space-y-8">
       <!-- HERO + FORMAT SWITCHER -->
       <header class="border-b border-white/10 pb-6 flex flex-col lg:flex-row lg:items-end justify-between gap-6">
         <div class="space-y-2.5">
           <div class="font-mono text-[11px] uppercase tracking-widest text-emerald-400 font-bold">
-            Muntrume Motorsport · {allWallpapers.length} Fotos Reales Indexadas (Gallery + Albums)
+            Muntrume Motorsport · {allWallpapers.length} wallpapers · {seriesGroups.length} grupos
           </div>
           <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
-            Wallpapers en Pista · Windows &amp; Móvil
+            Wallpapers en pista, serie por serie
           </h1>
           <p class="text-xs sm:text-sm text-slate-400 max-w-2xl font-mono leading-relaxed">
-            Conectado directamente a <a href="/gallery/" class="text-emerald-400 hover:underline">/gallery/</a> y <a href="/albums/" class="text-emerald-400 hover:underline">/albums/</a>. Conversión en cliente a <code class="text-emerald-400">.JPG</code> nativo para Windows (16:9) y Móvil (<span class="text-white font-semibold">2160×3840 4K</span>).
+            Solo media oficial de iRacing y las capturas en pista del manifiesto. JPG en el navegador para Windows (16:9) y móvil (<span class="text-white font-semibold">2160×3840</span>).
           </p>
         </div>
 
@@ -184,7 +101,7 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
             id="wpOpenSubmitBtn"
             class="px-3.5 py-2 rounded-lg border border-emerald-500/45 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-mono text-xs font-extrabold tracking-wide transition cursor-pointer"
           >
-            + Sugerir captura
+            + Subir / Sugerir Wallpaper
           </button>
           <span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">Formato de salida (.JPG nativo)</span>
           <div class="inline-flex p-1 rounded-lg bg-[#0d1118] border border-white/15 font-mono text-xs" role="group">
@@ -213,7 +130,7 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
       <div class="flex flex-wrap items-center justify-between gap-3 font-mono text-xs border-b border-white/10 pb-3">
         <div class="flex flex-wrap items-center gap-2">
           <button type="button" data-view-tab="categories" class="wp-tab px-3.5 py-2 rounded-md bg-emerald-500 text-[#04130d] font-extrabold cursor-pointer">
-            Por Serie Oficial ({categoryPacks.length})
+            Por serie ({seriesGroups.length})
           </button>
           <button type="button" data-view-tab="cars" class="wp-tab px-3.5 py-2 rounded-md bg-[#0d1118] border border-white/10 text-slate-300 hover:text-white font-bold cursor-pointer">
             Por Coche ({carPacks.length})
@@ -252,55 +169,27 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
         </div>
       </div>
 
-      <!-- TAB 1: CATEGORY PACKS -->
-      <section id="tab-categories" class="wp-tab-panel grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {categoryPacks.map((pack) => {
-          const thumbs = pack.coverThumbs;
-          const isThree = thumbs.length === 3;
-          const gridClass =
-            thumbs.length === 1
-              ? "grid-cols-1 grid-rows-1"
-              : thumbs.length === 2
-                ? "grid-cols-2 grid-rows-1"
-                : isThree
-                  ? "grid-cols-3 grid-rows-2"
-                  : "grid-cols-2 grid-rows-2";
-          return (
-            <article class="rounded-lg border border-white/10 bg-[#0d1118] overflow-hidden flex flex-col justify-between hover:border-white/25 transition">
-              <div class={`aspect-video grid ${gridClass} gap-0.5 bg-[#090b0f] p-1 overflow-hidden`}>
-                {thumbs.map((t, idx) => (
-                  <div class={`${isThree && idx === 0 ? "col-span-2 row-span-2" : ""} w-full h-full bg-[#090b0f] overflow-hidden rounded-[2px]`}>
-                    <img src={t.img} alt={t.model} loading="lazy" decoding="async" referrerpolicy="no-referrer" class="w-full h-full object-cover" />
-                  </div>
-                ))}
-              </div>
-              <div class="p-3.5 space-y-2.5 flex-1 flex flex-col justify-between">
-                <div class="flex items-center justify-between gap-2 font-mono">
-                  <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-[3px] border border-white/10" style={`color:${pack.accent};background:${pack.accent}18`}>{pack.badge}</span>
-                  <span class="text-[11px] text-slate-400 tabular-nums">{pack.items.length} fotos .JPG</span>
-                </div>
-                <h3 class="text-sm sm:text-base font-extrabold text-white leading-snug">{pack.title}</h3>
-                <div class="flex items-center gap-1.5 pt-1 font-mono text-[11px]">
-                  <button type="button" data-pack-download={pack.id} class="flex-1 px-2.5 py-2 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-extrabold transition cursor-pointer whitespace-nowrap">
-                    Descargar .ZIP
-                  </button>
-                  <button type="button" data-pack-slideshow={pack.id} class="px-2.5 py-2 rounded border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 font-bold transition cursor-pointer whitespace-nowrap" title="Previsualizar Slideshow">
-                    Slideshow <span class="wp-sec-lbl">20s</span>
-                  </button>
-                  <button type="button" data-pack-filter={pack.id} class="px-2.5 py-2 rounded border border-white/15 hover:border-emerald-500/50 text-slate-200 font-semibold transition cursor-pointer whitespace-nowrap">
-                    Explorar
-                  </button>
-                </div>
-              </div>
-            </article>
-          );
-        })}
-      </section>
+      <nav id="tab-categories" class="wp-tab-panel grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2" aria-label="Series">
+        {seriesGroups.map((group) => (
+          <div class="rounded-lg border border-white/10 bg-[#0d1118] px-3 py-2.5 flex flex-col gap-2">
+            <div class="flex items-start justify-between gap-2">
+              <a href={`/wallpapers/${group.slug}/`} class="text-sm font-extrabold text-white hover:text-emerald-300">{group.name}</a>
+              <span class="font-mono text-[10px] text-slate-400 tabular-nums shrink-0">{group.items.length}</span>
+            </div>
+            <p class="font-mono text-[10px] uppercase tracking-wider text-slate-500">{group.kind === "series" ? "Serie del calendario" : "Categoría del archivo"}</p>
+            <div class="flex flex-wrap gap-1.5 font-mono text-[11px]">
+              <button type="button" data-pack-download={group.id} class="px-2 py-1 rounded bg-emerald-500 text-[#04130d] font-extrabold cursor-pointer">.ZIP</button>
+              <button type="button" data-pack-slideshow={group.id} class="px-2 py-1 rounded border border-emerald-500/40 text-emerald-300 cursor-pointer">Slideshow</button>
+              <button type="button" data-pack-filter={group.id} class="px-2 py-1 rounded border border-white/15 text-slate-200 cursor-pointer">Ver aquí</button>
+            </div>
+          </div>
+        ))}
+      </nav>
 
       <!-- TAB 2: CAR PACKS -->
       <section id="tab-cars" hidden class="wp-tab-panel grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
         {carPacks.map((pack) => {
-          const thumbs = pack.items.slice(0, 4);
+          const thumbs = pack.items.slice(0, 1);
           const gridCols = thumbs.length === 1 ? "grid-cols-1" : thumbs.length === 3 ? "grid-cols-3" : "grid-cols-2";
           return (
             <article class="rounded-lg border border-white/10 bg-[#0d1118] overflow-hidden flex flex-col justify-between hover:border-white/25 transition">
@@ -347,7 +236,7 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
                 <span class="text-slate-400 tabular-nums">{alb.count} fotos reales</span>
               </div>
               <h3 class="text-sm font-extrabold text-white truncate">{alb.title}</h3>
-              <button type="button" data-pack-download={`car-${alb.slug}`} class="w-full py-2 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-extrabold text-xs cursor-pointer">
+              <button type="button" data-pack-download={`album-${alb.slug}`} class="w-full py-2 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-extrabold text-xs cursor-pointer">
                 Descargar Álbum .ZIP (.JPG)
               </button>
             </div>
@@ -360,7 +249,7 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           <div>
             <h2 id="galleryHeading" class="font-mono text-xs uppercase tracking-widest text-slate-300 font-bold">
-              Todas las Capturas Reales en Pista ({allWallpapers.length})
+              Wallpapers por serie ({allWallpapers.length})
             </h2>
             <p class="text-xs text-slate-400 font-mono mt-0.5">
               Descarga individual en .JPG o marca varias capturas para crear tu propio .ZIP.
@@ -379,42 +268,39 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
           </div>
         </div>
 
-        <div id="wpGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {allWallpapers.slice(0, 60).map((w) => (
-            <article id={w.slugId} class="wp-card group rounded-xl border border-white/10 bg-[#0d1118] overflow-hidden flex flex-col hover:border-emerald-500/50 hover:shadow-[0_0_24px_rgba(16,185,129,0.12)] transition-all duration-300" data-id={w.id} data-slug={w.slugId} data-brand={w.brand} data-search={`${w.brand} ${w.model} ${w.carClass} ${w.circuit} ${w.slugId}`.toLowerCase()}>
-              <div class="wp-thumb-wrap relative aspect-video bg-[#090b0f] overflow-hidden">
-                <img src={w.img} alt={w.model} loading="lazy" decoding="async" referrerpolicy="no-referrer" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out cursor-pointer" data-preview-id={w.id} />
-                <label class="absolute top-2.5 left-2.5 z-10 inline-flex items-center gap-1.5 px-2 py-1 rounded bg-black/75 backdrop-blur-sm border border-white/15 text-[10px] font-mono text-white cursor-pointer select-none">
-                  <input type="checkbox" class="wp-chk accent-emerald-500" value={w.id} />
-                  <span>Elegir</span>
-                </label>
-                <span class="absolute top-2.5 right-2.5 z-10 px-2 py-0.5 rounded bg-black/75 backdrop-blur-sm border border-white/15 text-[10px] font-mono font-bold text-slate-200 tabular-nums">
-                  {w.width}×{w.height} · {w.aspectRatio}
-                </span>
-                <div class="absolute inset-x-2.5 bottom-2.5 flex items-center justify-between gap-1.5">
-                  <button type="button" data-preview-id={w.id} class="px-2 py-1 rounded bg-black/80 hover:bg-black border border-white/15 text-[10px] font-mono text-slate-200 font-bold cursor-pointer transition">
-                    Vista Previa ⤢
-                  </button>
-                  <div class="flex items-center gap-1.5">
-                    <button type="button" data-copy-slug={w.slugId} class="px-2 py-1 rounded bg-black/80 hover:bg-black border border-white/20 hover:border-emerald-400/60 text-[10px] font-mono text-slate-200 font-bold cursor-pointer transition" title={`Copiar enlace directo #${w.slugId}`}>
-                      🔗 URL
-                    </button>
-                    <button type="button" data-direct-dl={w.id} class="px-2.5 py-1 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] text-[10px] font-mono font-extrabold cursor-pointer shadow transition">
-                      ↓ .JPG
-                    </button>
-                  </div>
-                </div>
+        <div id="wpGrid" class="space-y-8">
+          {seriesGroups.map((group) => (
+            <section class="wp-series space-y-3" data-series={group.id}>
+              <div class="flex items-end justify-between gap-3 border-b border-white/10 pb-2">
+                <h3 id={`serie-${group.slug}`} class="text-lg font-extrabold text-white">
+                  <a href={`/wallpapers/${group.slug}/`} class="hover:text-emerald-300">{group.name}</a>
+                </h3>
+                <span class="font-mono text-[11px] text-slate-400 tabular-nums">{group.items.length}</span>
               </div>
-              <div class="p-3.5 flex items-center justify-between gap-2 font-mono border-t border-white/5">
-                <div class="min-w-0 space-y-0.5">
-                  <div class="text-xs font-bold text-white truncate">{w.model}</div>
-                  <div class="text-[10px] text-slate-400 truncate">
-                    <span class="text-emerald-400 font-semibold">{w.carClass}</span> · {w.circuit} · <span class="text-slate-300">{w.width}×{w.height} ({w.aspectRatio})</span>
-                  </div>
-                </div>
-                <span class="w-2.5 h-2.5 rounded-full shrink-0" style={`background:${w.accentColor}`}></span>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {group.items.map((w) => (
+                  <article class="wp-card group rounded-lg border border-white/10 bg-[#0d1118] overflow-hidden flex flex-col hover:border-emerald-500/40 transition" data-id={w.id} data-brand={w.brand} data-search={`${w.brand} ${w.model} ${w.title} ${w.seriesName} ${w.carClass} ${w.circuit}`.toLowerCase()}>
+                    <div class="wp-thumb-wrap relative aspect-video bg-[#090b0f] overflow-hidden">
+                      <img src={w.img} alt={w.alt} width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="w-full h-full object-cover" />
+                      <label class="absolute top-2 left-2 z-10 inline-flex items-center gap-1.5 px-2 py-1 rounded bg-black/75 border border-white/15 text-[10px] font-mono text-white cursor-pointer select-none">
+                        <input type="checkbox" class="wp-chk accent-emerald-500" value={w.id} />
+                        <span>Elegir</span>
+                      </label>
+                      <button type="button" data-preview-id={w.id} class="absolute bottom-2 left-2 px-2 py-1 rounded bg-black/80 border border-white/15 text-[10px] font-mono text-slate-200 font-bold cursor-pointer">
+                        Vista Previa
+                      </button>
+                      <button type="button" data-direct-dl={w.id} class="absolute bottom-2 right-2 px-2.5 py-1 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] text-[10px] font-mono font-extrabold cursor-pointer shadow">
+                        .JPG
+                      </button>
+                    </div>
+                    <div class="p-3 font-mono">
+                      <div class="text-xs font-bold text-white">{w.title || w.model}</div>
+                      <div class="text-[10px] text-slate-400">{w.model}{w.circuit ? ` · ${w.circuit}` : ""}</div>
+                    </div>
+                  </article>
+                ))}
               </div>
-            </article>
+            </section>
           ))}
         </div>
       </section>
@@ -446,11 +332,10 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
           </div>
         </div>
         <div class="px-4 py-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 font-mono text-xs">
-          <span id="wpModalMeta" class="text-slate-400">Transición Crossfade 900ms + Ken Burns (GPU) · Exportado a .JPG HD sin pérdida perceptible.</span>
-          <div class="flex flex-wrap items-center gap-2">
-            <button type="button" id="wpModalCopyUrl" class="px-3 py-2 rounded border border-white/20 hover:border-emerald-500 text-slate-200 font-bold cursor-pointer transition">🔗 URL</button>
-            <button type="button" id="wpModalDownloadDesktop" class="px-3.5 py-2 rounded border border-white/20 hover:border-emerald-500 text-white font-bold cursor-pointer">↓ .JPG 16:9</button>
-            <button type="button" id="wpModalDownloadMobile" class="px-3.5 py-2 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-extrabold cursor-pointer">↓ .JPG Móvil 4K</button>
+          <span class="text-slate-400">Transición Crossfade 900ms + Ken Burns (GPU) · Exportado a .JPG estándar para Windows/Móvil.</span>
+          <div class="flex items-center gap-2">
+            <button type="button" id="wpModalDownloadDesktop" class="px-3.5 py-2 rounded border border-white/20 hover:border-emerald-500 text-white font-bold cursor-pointer">Descargar 16:9 (.JPG)</button>
+            <button type="button" id="wpModalDownloadMobile" class="px-3.5 py-2 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-extrabold cursor-pointer">Descargar Foto Móvil (9:16 4K .JPG)</button>
           </div>
         </div>
       </div>
@@ -494,15 +379,16 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
       <div class="w-full max-w-lg rounded-xl border border-white/15 bg-[#0d1118] overflow-hidden shadow-2xl font-mono">
         <div class="flex items-center justify-between px-4 py-3 border-b border-white/10">
           <div>
-            <h3 class="text-sm font-extrabold text-white">Sugerir captura en pista</h3>
-            <p class="text-[10px] text-slate-400">Cola privada de revisión (aprobación manual en repositorio · mín. 1920×1080)</p>
+            <h3 class="text-sm font-extrabold text-white">Subir / Sugerir Wallpaper</h3>
+            <p class="text-[10px] text-slate-400">Solo capturas en pista (mín. 1920×1080 · JPG, PNG o WebP)</p>
           </div>
           <button type="button" id="wpSubmitClose" class="px-2.5 py-1 rounded border border-white/15 text-xs text-slate-300 hover:text-white cursor-pointer">Cerrar ✕</button>
         </div>
         <form id="wpSubmitForm" class="p-4 space-y-3 text-xs">
-          <p class="text-[11px] text-slate-300 bg-[#090b0f] border border-white/10 rounded px-3 py-2">
-            Las capturas enviadas quedan aisladas en cola privada de revisión y nunca se muestran ni empaquetan automáticamente en los packs oficiales.
-          </p>
+          <div class="grid grid-cols-2 gap-1.5 p-1 rounded-lg bg-[#090b0f] border border-white/10">
+            <button type="button" id="wpModeCommunityBtn" class="py-1.5 rounded font-bold bg-emerald-500 text-[#04130d] cursor-pointer">Comunidad (Sugerir)</button>
+            <button type="button" id="wpModeTeamBtn" class="py-1.5 rounded font-bold text-slate-300 hover:text-white cursor-pointer">Equipo MMT (Directo)</button>
+          </div>
           <input type="hidden" id="wpSubmitMode" name="mode" value="community" />
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <div><label class="block text-[10px] text-slate-400 mb-1" for="wpSubCar">Coche</label><input id="wpSubCar" name="car" required placeholder="ej. Ford Mustang GT3" class="w-full bg-[#090b0f] border border-white/15 rounded px-2.5 py-1.5 text-white" /></div>
@@ -517,6 +403,7 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
             </div>
             <div><label class="block text-[10px] text-slate-400 mb-1" for="wpSubAuthor">Piloto (iRacing / Discord)</label><input id="wpSubAuthor" name="author" required placeholder="ej. A. Trujillo" class="w-full bg-[#090b0f] border border-white/15 rounded px-2.5 py-1.5 text-white" /></div>
           </div>
+          <div id="wpTeamTokenWrap" hidden><label class="block text-[10px] text-slate-400 mb-1" for="wpSubToken">Token de Equipo</label><input id="wpSubToken" name="teamToken" type="password" class="w-full bg-[#090b0f] border border-white/15 rounded px-2.5 py-1.5 text-white" /></div>
           <div><label class="block text-[10px] text-slate-400 mb-1" for="wpSubFile">Captura (mín. 1920×1080)</label><input id="wpSubFile" name="file" type="file" accept="image/jpeg,image/png,image/webp" required class="w-full bg-[#090b0f] border border-dashed border-white/25 rounded p-2.5 text-slate-300" /><p id="wpSubFileInfo" class="text-[10px] text-slate-400 mt-1"></p></div>
           <p id="wpSubmitStatus" hidden class="p-2.5 rounded border text-[11px]"></p>
           <button type="submit" id="wpSubmitSendBtn" class="w-full py-2.5 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-extrabold cursor-pointer">Enviar Captura</button>
@@ -530,7 +417,7 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
     id="wpCatalogData"
     set:html={JSON.stringify({
       allWallpapers,
-      packs: [...categoryPacks, ...carPacks].map((p) => ({ id: p.id, slug: p.slug, title: p.title, itemIds: p.items.map((i) => i.id) })),
+      packs,
     })}
   ></script>
 
@@ -539,10 +426,9 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
 
     const PROXY_BASE = "https://muntrume.atrumin16.workers.dev/api/media/proxy?url=";
     const payload = JSON.parse(document.getElementById("wpCatalogData")?.textContent || "{}");
-    const allItems: Array<{ id: string; slugId: string; brand: string; model: string; carClass: string; circuit: string; img: string; cleanFileBase: string; width: number; height: number; aspectRatio: string }> = payload.allWallpapers || [];
+    const allItems: Array<{ id: string; brand: string; model: string; carClass: string; circuit: string; img: string; cleanFileBase: string }> = payload.allWallpapers || [];
     const packsMeta: Array<{ id: string; slug: string; title: string; itemIds: string[] }> = payload.packs || [];
     const itemById = new Map(allItems.map((i) => [i.id, i]));
-    const itemBySlug = new Map(allItems.map((i) => [i.slugId, i]));
 
     let outputFormat: "desktop" | "mobile" = "desktop";
     let slideshowSec = 20;
@@ -617,6 +503,10 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
         const ok = (brand === "all" || card.dataset.brand === brand) && (!q || (card.dataset.search || "").includes(q)) && (!packIds || packIds.has(card.dataset.id || ""));
         card.style.display = ok ? "" : "none";
       });
+      document.querySelectorAll<HTMLElement>(".wp-series").forEach((section) => {
+        const visible = [...section.querySelectorAll<HTMLElement>(".wp-card")].some((card) => card.style.display !== "none");
+        section.hidden = !visible;
+      });
     }
     brandSelect?.addEventListener("change", () => { activePackFilter = null; applyFilters(); });
     searchInput?.addEventListener("input", applyFilters);
@@ -687,7 +577,7 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
       }
 
       return await new Promise<Blob>((resolve, reject) => {
-        canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("toBlob failed"))), "image/jpeg", 0.98);
+        canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("toBlob failed"))), "image/jpeg", 0.96);
       });
     }
 
@@ -780,8 +670,6 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
     const modalEl = document.getElementById("wpModal");
     const modalTitle = document.getElementById("wpModalTitle");
     const modalSub = document.getElementById("wpModalSub");
-    const modalMeta = document.getElementById("wpModalMeta");
-    const modalCopyUrlBtn = document.getElementById("wpModalCopyUrl");
     const modalImgA = document.getElementById("wpModalImgA") as HTMLImageElement | null;
     const modalImgB = document.getElementById("wpModalImgB") as HTMLImageElement | null;
     const slideProgress = document.getElementById("wpSlideProgress") as HTMLElement | null;
@@ -816,11 +704,7 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
       activeModalItem = item;
       if (modalTitle) modalTitle.textContent = item.model;
       if (modalSub) modalSub.textContent = `${item.carClass} · ${item.circuit}`;
-      if (modalMeta) modalMeta.textContent = `${item.carClass} · ${item.model} · ${item.width}×${item.height} (${item.aspectRatio}) · #${item.slugId}`;
       if (slideCounter) slideCounter.textContent = `${slideIndex + 1}/${slideItems.length}`;
-      if (item.slugId && window.location.hash !== `#${item.slugId}`) {
-        window.history.replaceState(null, "", `#${item.slugId}`);
-      }
 
       const incoming = activeLayerA ? modalImgA : modalImgB;
       const outgoing = activeLayerA ? modalImgB : modalImgA;
@@ -889,61 +773,15 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
     function closePreviewModal() {
       stopSlideshow();
       if (modalEl) modalEl.hidden = true;
-      if (window.location.hash && itemBySlug.has(window.location.hash.slice(1).replace(/^img-/, ""))) {
-        window.history.replaceState(null, "", window.location.pathname + window.location.search);
-      }
     }
 
-    async function copyShareUrl(slugId: string, btnEl: HTMLElement | null) {
-      const shareUrl = `${window.location.origin}/wallpapers#${slugId}`;
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-      } catch {
-        const ta = document.createElement("textarea");
-        ta.value = shareUrl;
-        ta.style.position = "fixed";
-        ta.style.opacity = "0";
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand("copy");
-        ta.remove();
-      }
-      if (btnEl) {
-        const prev = btnEl.textContent;
-        btnEl.textContent = "¡Enlace copiado!";
-        btnEl.classList.add("border-emerald-400", "text-emerald-300");
-        window.setTimeout(() => {
-          btnEl.textContent = prev;
-          btnEl.classList.remove("border-emerald-400", "text-emerald-300");
-        }, 2000);
-      }
-    }
-
-    document.querySelectorAll<HTMLElement>("[data-preview-id]").forEach((el) => {
-      el.addEventListener("click", () => {
-        const id = el.dataset.previewId || "";
+    document.querySelectorAll<HTMLButtonElement>("[data-preview-id]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.previewId || "";
         const idx = allItems.findIndex((i) => i.id === id);
         if (idx >= 0) openPreviewModal(allItems, idx, false);
       });
     });
-    document.querySelectorAll<HTMLButtonElement>("[data-copy-slug]").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const slug = btn.dataset.copySlug || "";
-        if (slug) copyShareUrl(slug, btn);
-      });
-    });
-    modalCopyUrlBtn?.addEventListener("click", () => {
-      if (activeModalItem?.slugId) copyShareUrl(activeModalItem.slugId, modalCopyUrlBtn);
-    });
-
-    // Auto-open direct shareable URL hash (#mmt-... or #img-mmt-...) on load
-    const initSlug = window.location.hash.replace(/^#/, "").replace(/^img-/, "");
-    if (initSlug && itemBySlug.has(initSlug)) {
-      const targetItem = itemBySlug.get(initSlug)!;
-      const idx = allItems.findIndex((i) => i.id === targetItem.id);
-      if (idx >= 0) openPreviewModal(allItems, idx, false);
-    }
     document.querySelectorAll<HTMLButtonElement>("[data-pack-slideshow]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const pack = packsMeta.find((p) => p.id === btn.dataset.packSlideshow);
@@ -980,11 +818,26 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
     document.getElementById("wpModalDownloadDesktop")?.addEventListener("click", () => { if (activeModalItem) downloadSingleItem(activeModalItem, "desktop"); });
     document.getElementById("wpModalDownloadMobile")?.addEventListener("click", () => { if (activeModalItem) downloadSingleItem(activeModalItem, "mobile"); });
 
-    // Submit Modal (cola privada de revisión)
+    // Submit Modal
     const subModal = document.getElementById("wpSubmitModal");
     document.getElementById("wpOpenSubmitBtn")?.addEventListener("click", () => { if (subModal) subModal.hidden = false; });
     document.getElementById("wpSubmitClose")?.addEventListener("click", () => { if (subModal) subModal.hidden = true; });
     subModal?.addEventListener("click", (e) => { if (e.target === subModal) subModal.hidden = true; });
+    const subModeInput = document.getElementById("wpSubmitMode") as HTMLInputElement | null;
+    const modeCommBtn = document.getElementById("wpModeCommunityBtn");
+    const modeTeamBtn = document.getElementById("wpModeTeamBtn");
+    const tokenWrap = document.getElementById("wpTeamTokenWrap");
+    const setSubmitMode = (mode: "community" | "team") => {
+      if (subModeInput) subModeInput.value = mode;
+      const isTeam = mode === "team";
+      if (tokenWrap) tokenWrap.hidden = !isTeam;
+      if (modeCommBtn && modeTeamBtn) {
+        modeCommBtn.className = `py-1.5 rounded font-bold cursor-pointer ${!isTeam ? "bg-emerald-500 text-[#04130d]" : "text-slate-300 hover:text-white"}`;
+        modeTeamBtn.className = `py-1.5 rounded font-bold cursor-pointer ${isTeam ? "bg-emerald-500 text-[#04130d]" : "text-slate-300 hover:text-white"}`;
+      }
+    };
+    modeCommBtn?.addEventListener("click", () => setSubmitMode("community"));
+    modeTeamBtn?.addEventListener("click", () => setSubmitMode("team"));
 
     const fileInput = document.getElementById("wpSubFile") as HTMLInputElement | null;
     const fileInfo = document.getElementById("wpSubFileInfo");

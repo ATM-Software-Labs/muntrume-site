@@ -12,3 +12,4 @@ Disallow: /app/vincular
 Disallow: /app/vincular/
 
 Sitemap: https://muntru.me/sitemap.xml
+Sitemap: https://muntru.me/sitemap-images.xml
