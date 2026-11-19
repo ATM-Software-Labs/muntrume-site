@@ -48,9 +48,9 @@
     }
   </style>
   </head>
-  <body class="h-screen overflow-hidden bg-[#0b0e14] text-r-text antialiased">
-    <div id="mainAppWrapper" class="w-full h-screen overflow-hidden flex flex-col bg-[#0b0e14]">
-      <header class="h-[44px] shrink-0 w-full border-b border-white/[0.08] bg-[#0d1118] flex items-center justify-between gap-2 px-3 select-none">
+  <body class="w-screen h-screen overflow-hidden bg-[#0b0e14] text-r-text antialiased">
+    <div id="mainAppWrapper" class="w-screen h-screen overflow-hidden grid grid-rows-[40px_minmax(0,1fr)] bg-[#0b0e14]">
+      <header class="h-[40px] shrink-0 w-full border-b border-white/[0.08] bg-[#0d1118] flex items-center justify-between gap-2 px-3 select-none">
         <div class="flex items-center gap-2.5 shrink-0">
           <img src="./favicon.svg" width="22" height="22" alt="Muntrume Motorsport" class="h-[22px] w-[22px] rounded border border-white/15 bg-[#090b0f] shrink-0" />
           <span class="font-display font-extrabold text-[14px] tracking-wider text-white whitespace-nowrap">MMT <span class="text-[#10b981]">SYNC</span></span>
@@ -535,199 +535,124 @@
             </div>
           </section>
 
-          <section id="viewAnalysis" hidden aria-labelledby="analysisTitle" class="w-full h-full min-h-0 flex flex-col overflow-y-auto pr-1 text-xs">
-            <div id="hotlapStudioCard" class="mb-4 rounded-2xl border border-r-line bg-r-surface p-4 space-y-3">
-              <div class="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <span class="font-mono text-[10px] uppercase tracking-wider text-r-accent font-bold">Hotlap Studio · Vídeo + Telemetría</span>
-                  <p class="text-xs text-r-muted">Compara tu mejor vuelta frente a la referencia oficial del equipo en YouTube sin ocupar RAM cuando no lo usas.</p>
-                </div>
-                <button type="button" id="openHotlapStudioBtn" class="mmt-btn h-9 px-4 rounded-xl bg-r-accent text-r-ink font-mono text-xs font-bold uppercase">Abrir Hotlap Studio</button>
+          <section id="viewAnalysis" hidden aria-labelledby="analysisTitle" class="w-full h-full min-h-0 flex flex-col overflow-hidden text-xs gap-2 p-2.5">
+            <!-- Cabecera compacta de Telemetría + Auto-captura IRSDK -->
+            <div class="shrink-0 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/[0.08] bg-[#0d1118] px-3 py-2">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <h1 id="analysisTitle" class="font-display font-extrabold text-sm uppercase tracking-wider text-white whitespace-nowrap">Telemetría IRSDK</h1>
+                <span id="irsdkCaptureBadge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono tracking-wide border border-white/10 bg-[#090b0f] text-r-muted whitespace-nowrap">
+                  <span id="irsdkCaptureDot" class="w-2 h-2 rounded-full bg-slate-500"></span>
+                  <span id="irsdkCaptureText">Auto-captura IRSDK: En espera</span>
+                </span>
               </div>
-              <div id="hotlapStudioMount" hidden></div>
+              <div class="flex items-center gap-2 min-w-0">
+                <select id="capturedSessionsSelect" aria-label="Sesiones capturadas automáticamente" class="h-7 rounded-lg border border-white/10 bg-[#090b0f] px-2 text-[11px] font-mono text-white max-w-[300px] truncate cursor-pointer">
+                  <option value="">Sesiones capturadas automáticamente (esperando tanda…)</option>
+                </select>
+                <select id="telemetryTrack" aria-label="Circuito de referencia" class="h-7 rounded-lg border border-white/10 bg-[#090b0f] px-2 text-[11px] font-mono text-r-muted max-w-[200px] truncate cursor-pointer">
+                  <option value="fuji" selected>Ref: Fuji Speedway</option>
+                  <option value="barcelona">Ref: Barcelona-Catalunya</option>
+                  <option value="spa">Ref: Spa-Francorchamps</option>
+                  <option value="indianapolis">Ref: Indianapolis</option>
+                  <option value="montreal">Ref: Gilles Villeneuve</option>
+                  <option value="interlagos">Ref: Interlagos</option>
+                  <option value="roadamerica">Ref: Road America</option>
+                  <option value="lemans">Ref: Le Mans</option>
+                  <option value="nurburgring">Ref: Nürburgring VLN</option>
+                </select>
+                <button type="button" id="openHotlapStudioBtn" class="h-7 px-2.5 rounded-lg bg-r-accent text-r-ink font-mono text-[10px] font-bold uppercase whitespace-nowrap cursor-pointer">Hotlap Studio</button>
+                <label class="inline-flex items-center gap-1.5 cursor-pointer text-[10px] font-mono text-r-muted whitespace-nowrap">
+                  <input type="checkbox" id="coachEnabledToggle" class="w-3.5 h-3.5 rounded text-r-accent bg-r-bg border-r-line" checked />
+                  <span>Coach</span>
+                </label>
+                <span id="coachLivePill" class="px-2 py-0.5 rounded-full border border-white/10 bg-[#090b0f] font-mono text-[10px] text-r-muted whitespace-nowrap">Listo</span>
+                <input id="coachVolumeSlider" type="range" min="0" max="100" value="35" title="Volumen Coach" class="w-12 accent-[#10b981] cursor-pointer" />
+              </div>
+              <div id="hotlapStudioMount" hidden class="w-full pt-2 border-t border-white/[0.08]"></div>
             </div>
-            <div class="flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <p class="mmt-kicker">Telemetría Real iRacing (.ibt) & Laser-Scanned Tracks</p>
-                <h1 id="analysisTitle" class="mmt-display text-4xl mt-1">Análisis de Telemetría</h1>
-                <p class="mt-2 text-sm text-r-muted max-w-2xl">
-                  Mapas del circuito 100% auténticos generados directamente desde tus archivos de telemetría .ibt de iRacing. Comparativa de tu mejor vuelta vs tu promedio de tanda con análisis de velocidad de ápice, acelerador y modulación de freno.
-                </p>
-              </div>
-              <div class="flex flex-wrap items-end gap-3">
-                <div>
-                  <label class="block text-xs font-mono text-r-muted uppercase mb-1">Sesión Reciente (.ibt ≤ 48h)</label>
-                  <select id="ibtRecentSelect" class="h-10 rounded-xl border border-r-line bg-r-surface px-3 text-sm font-sans text-r-text max-w-[260px]">
-                    <option value="">Sesión activa / últimas 48h…</option>
-                  </select>
+
+            <!-- Barra compacta de KPIs + Cursor -->
+            <div id="lapSummaryBanner" class="shrink-0 rounded-xl border border-white/[0.08] bg-[#0d1118] px-3 py-1.5 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-4 font-mono">
+                <div class="flex items-baseline gap-1.5">
+                  <span class="text-[10px] uppercase text-r-muted">Mejor:</span>
+                  <strong id="lapAlienTime" class="text-sm text-[#10b981]">--:--.---</strong>
+                  <span id="lapAlienBadge" class="text-[10px] text-r-muted">IRSDK</span>
                 </div>
-                <div>
-                  <label class="block text-xs font-mono text-r-muted uppercase mb-1">Archivo Histórico (&gt; 48h)</label>
-                  <select id="ibtArchiveSelect" class="h-10 rounded-xl border border-r-line bg-r-surface px-3 text-sm font-sans text-r-text max-w-[260px]">
-                    <option value="">Archivo Histórico (&gt; 48h)…</option>
-                  </select>
+                <div class="h-4 w-px bg-white/10"></div>
+                <div class="flex items-baseline gap-1.5">
+                  <span class="text-[10px] uppercase text-r-muted">Ritmo:</span>
+                  <strong id="lapUserTime" class="text-sm text-white">--:--.---</strong>
+                  <span id="lapCountBadge" class="text-[10px] text-r-muted">0 vueltas</span>
                 </div>
-                <div>
-                  <label class="block text-xs font-mono text-r-muted uppercase mb-1">Circuito (Referencia)</label>
-                  <select id="telemetryTrack" class="h-10 rounded-xl border border-r-line bg-r-surface px-3 text-sm font-sans text-r-text">
-                    <option value="fuji" selected>Fuji International Speedway (4.563 km · BMW M4 GT3 · 11 vueltas .ibt)</option>
-                    <option value="barcelona">Circuit de Barcelona-Catalunya (4.657 km · 8 vueltas .ibt)</option>
-                    <option value="spa">Spa-Francorchamps (6.929 km · 61 vueltas .ibt)</option>
-                    <option value="indianapolis">Indianapolis Motor Speedway (3.845 km · 132 vueltas .ibt)</option>
-                    <option value="montreal">Circuit Gilles Villeneuve (4.310 km · 95 vueltas .ibt)</option>
-                    <option value="interlagos">Autódromo José Carlos Pace (4.223 km · 32 vueltas .ibt)</option>
-                    <option value="roadamerica">Road America (6.414 km · 101 vueltas .ibt)</option>
-                    <option value="lemans">Circuit des 24 Heures du Mans (13.554 km · 58 vueltas .ibt)</option>
-                    <option value="nurburgring">Nürburgring Gesamtstrecke VLN (24.154 km · 16 vueltas .ibt)</option>
-                  </select>
+                <div class="h-4 w-px bg-white/10"></div>
+                <div class="flex items-baseline gap-1.5">
+                  <span class="text-[10px] uppercase text-r-muted">Delta:</span>
+                  <strong id="lapDeltaSummary" class="text-sm text-amber-400">+0.000s</strong>
+                  <span id="lapFileBadge" class="text-[10px] text-r-muted truncate max-w-[140px]">Auto-captura</span>
                 </div>
-                <button type="button" id="btnClearIbtSession" class="h-10 px-3.5 rounded-xl border border-r-line bg-r-surface hover:border-rose-400/60 text-xs font-mono text-r-muted hover:text-rose-300 transition">Limpiar sesión actual</button>
-              </div>
-              <div class="flex flex-wrap items-center gap-2 mt-1 w-full justify-between">
-                <div id="ibtSessionMetaBadge" class="text-[11px] font-mono text-r-muted"></div>
-                <div class="flex flex-wrap items-center gap-2">
-                  <button type="button" id="btnExportMmtLap" class="h-8 px-3 rounded-lg border border-r-line bg-r-surface hover:border-r-accent text-[11px] font-mono text-r-text transition">Exportar .mmt-lap</button>
-                  <button type="button" id="btnImportMmtLap" class="h-8 px-3 rounded-lg border border-r-line bg-r-surface hover:border-sky-400 text-[11px] font-mono text-r-text transition">Importar .mmt-lap</button>
-                  <input id="inputImportMmtLap" type="file" accept=".mmt-lap,.json" hidden />
+                <div class="h-4 w-px bg-white/10"></div>
+                <div class="flex items-center gap-3 text-[10px] text-r-muted">
+                  <span>Ópt: <strong id="stintOptimalLap" class="text-r-accent">--:--.---</strong></span>
+                  <span>Cons: <strong id="stintConsistencyScore" class="text-sky-400">--%</strong></span>
+                  <span>σ: <strong id="stintStdDev" class="text-amber-400">--</strong></span>
                 </div>
               </div>
-              <!-- Active Track Coach (Prompt 50) -->
-              <div id="activeCoachBar" class="mt-2 w-full rounded-xl border border-r-line bg-r-surface/80 px-3.5 py-2 flex flex-wrap items-center justify-between gap-3">
-                <div class="flex items-center gap-3">
-                  <label class="inline-flex items-center gap-2 cursor-pointer text-xs font-mono text-r-text">
-                    <input type="checkbox" id="coachEnabledToggle" class="w-4 h-4 rounded text-r-accent bg-r-bg border-r-line" checked />
-                    <span>Active Track Coach (Practice)</span>
-                  </label>
-                  <span class="text-[11px] font-mono text-r-muted hidden sm:inline">Alertas &gt;15m tarde / &gt;5 km/h vértice (auto-off en Race)</span>
-                </div>
-                <div class="flex items-center gap-3">
-                  <span id="coachLivePill" class="px-2.5 py-0.5 rounded-full border border-r-line bg-r-bg font-mono text-[11px] text-r-muted">Listo</span>
-                  <label class="flex items-center gap-1.5 text-[11px] font-mono text-r-muted">
-                    Vol
-                    <input id="coachVolumeSlider" type="range" min="0" max="100" value="35" class="w-20 accent-[#00d97e]" />
-                  </label>
-                </div>
+              <div id="telemetryCursorReadout" class="font-mono text-[10px] text-r-muted flex items-center gap-3 bg-[#090b0f] px-2.5 py-1 rounded-lg border border-white/10">
+                <span>Dist: <strong id="curDist" class="text-white">0 m</strong></span>
+                <span>Δ Vel: <strong id="curSpeed" class="text-[#10b981]">0 km/h</strong></span>
+                <span>Δ T: <strong id="curDelta" class="text-amber-400">+0.00s</strong></span>
+                <span id="curCorner" class="text-white font-bold truncate max-w-[160px]">Pasa el ratón por la gráfica</span>
               </div>
             </div>
 
-            <!-- Lap delta summary header banner -->
-            <div id="lapSummaryBanner" class="mt-5 rounded-2xl border border-r-line bg-r-surface p-4 flex flex-wrap items-center justify-between gap-4">
-              <div class="flex flex-wrap items-center gap-6">
-                <div>
-                  <span class="block text-[11px] font-mono uppercase text-r-muted">Referencia Óptima (.ibt)</span>
-                  <div class="flex items-baseline gap-2 mt-0.5">
-                    <span class="w-2.5 h-2.5 rounded-full bg-r-accent inline-block"></span>
-                    <strong id="lapAlienTime" class="font-mono text-xl text-r-accent">--:--.---</strong>
-                    <span id="lapAlienBadge" class="text-xs text-r-muted font-mono">Mejor Vuelta</span>
+            <!-- Grid Principal: Mapa (izq) + Gráficas sincronizadas (der), 100% sin scroll -->
+            <div class="flex-1 min-h-0 grid grid-cols-[260px_minmax(0,1fr)] gap-2.5 overflow-hidden">
+              <!-- Mapa del Circuito + Consistencia compacta -->
+              <div class="rounded-xl border border-white/[0.08] bg-[#0d1118] p-2.5 flex flex-col justify-between min-h-0 overflow-hidden gap-2">
+                <div class="flex items-center justify-between shrink-0">
+                  <h3 class="font-display uppercase tracking-wider text-xs text-white">Mapa del Circuito</h3>
+                  <span class="text-[10px] font-mono text-r-muted truncate" id="trackLengthBadge">-- km</span>
+                </div>
+                <div class="flex-1 min-h-0 flex items-center justify-center overflow-hidden">
+                  <canvas id="mapCanvas" width="240" height="240" class="max-w-full max-h-full aspect-square rounded-lg bg-[#090b0f]"></canvas>
+                </div>
+                <div class="shrink-0 border-t border-white/[0.08] pt-1.5 flex flex-col gap-1">
+                  <div class="flex items-center justify-between text-[10px] font-mono text-r-muted">
+                    <span id="ibtSessionMetaBadge" class="truncate">Auto-captura IRSDK activa</span>
+                  </div>
+                  <div id="stintBarsChart" class="flex items-end gap-1 h-9 overflow-hidden"></div>
+                  <p id="stintSummaryText" class="text-[10px] font-mono text-r-muted truncate">Completa una vuelta en iRacing para analizar la tanda automáticamente.</p>
+                </div>
+              </div>
+
+              <!-- Trazas Multi-Canal: Velocidad, Acelerador, Freno, Volante, Delta -->
+              <div class="rounded-xl border border-white/[0.08] bg-[#0d1118] p-2.5 flex flex-col min-h-0 overflow-hidden">
+                <div class="shrink-0 flex items-center justify-between gap-2 mb-1.5 pb-1.5 border-b border-white/[0.08]">
+                  <div class="flex items-center gap-3 text-[10px] font-mono">
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-0.5 bg-[#10b981]"></span> Referencia</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-0.5 bg-sky-400"></span> Tu Vuelta</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-1.5 bg-emerald-500/40 rounded-xs"></span> Acelerador</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-1.5 bg-rose-500/50 rounded-xs"></span> Freno</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-0.5 bg-amber-400"></span> Volante / Delta</span>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <button type="button" id="coachFilterAll" class="px-2 py-0.5 rounded border border-r-accent bg-r-accent/10 text-r-accent font-mono text-[10px] font-bold cursor-pointer">Todos</button>
+                    <button type="button" id="coachFilterLoss" class="px-2 py-0.5 rounded border border-white/10 bg-[#090b0f] text-r-muted hover:text-white font-mono text-[10px] cursor-pointer">Pérdidas &gt;0.1s</button>
                   </div>
                 </div>
-                <div class="h-8 w-px bg-r-line hidden sm:block"></div>
-                <div>
-                  <span class="block text-[11px] font-mono uppercase text-r-muted">Ritmo Promedio de Tanda</span>
-                  <div class="flex items-baseline gap-2 mt-0.5">
-                    <span class="w-2.5 h-2.5 rounded-full bg-sky-400 inline-block"></span>
-                    <strong id="lapUserTime" class="font-mono text-xl text-r-text">--:--.---</strong>
-                    <span id="lapCountBadge" class="text-xs text-r-muted font-mono">0 vueltas</span>
-                  </div>
-                </div>
-                <div class="h-8 w-px bg-r-line hidden sm:block"></div>
-                <div>
-                  <span class="block text-[11px] font-mono uppercase text-r-muted">Consistencia / Delta</span>
-                  <div class="flex items-baseline gap-2 mt-0.5">
-                    <strong id="lapDeltaSummary" class="font-mono text-xl text-amber-400">+3.868s</strong>
-                    <span id="lapFileBadge" class="text-xs text-r-muted font-mono truncate max-w-[180px]">Telemetría local</span>
-                  </div>
-                </div>
-              </div>
-              <div id="telemetryCursorReadout" class="font-mono text-xs text-r-muted flex flex-wrap items-center gap-4 bg-r-bg px-3.5 py-2 rounded-xl border border-r-line">
-                <span>Dist: <strong id="curDist" class="text-r-text">0 m</strong></span>
-                <span>Δ Vel: <strong id="curSpeed" class="text-r-accent">0 km/h</strong></span>
-                <span>Δ Tiempo: <strong id="curDelta" class="text-amber-400">+0.00s</strong></span>
-                <span id="curCorner" class="text-r-text font-bold">Pasa el ratón por la telemetría</span>
-              </div>
-            </div>
-
-            <!-- Studio Canvas Grid: Circuit map (left) & Synchronized traces (right) -->
-            <div class="mt-4 grid lg:grid-cols-[320px_1fr] gap-4">
-              <!-- Map & corner selector -->
-              <div class="rounded-2xl border border-r-line bg-r-surface p-4 flex flex-col justify-between">
-                <div class="flex items-center justify-between">
-                  <h3 class="font-display uppercase tracking-wider text-sm text-r-text">Mapa del Circuito</h3>
-                  <span class="text-[11px] font-mono text-r-muted" id="trackLengthBadge">7.004 km · 19 giros</span>
-                </div>
-                <div class="relative my-3 flex items-center justify-center">
-                  <canvas id="mapCanvas" width="300" height="300" class="w-full max-w-[300px] h-auto aspect-square rounded-xl bg-r-bg/40"></canvas>
-                </div>
-                <div class="text-[11px] font-mono text-r-muted flex items-center justify-between border-t border-r-line pt-2.5">
-                  <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-r-accent"></span> S1 / S2 / S3</span>
-                  <span>Clic en un giro para enfocar</span>
-                </div>
-              </div>
-
-              <!-- Telemetry Multi-channel traces -->
-              <div class="rounded-2xl border border-r-line bg-r-surface p-4 flex flex-col">
-                <div class="flex flex-wrap items-center justify-between gap-2 mb-2 pb-2 border-b border-r-line">
-                  <div class="flex flex-wrap items-center gap-4 text-xs font-mono">
-                    <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-r-accent"></span> Coach Alien</span>
-                    <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-sky-400"></span> Tu Telemetría</span>
-                    <span class="flex items-center gap-1.5"><span class="w-3 h-2 bg-emerald-500/30 rounded-xs"></span> Acelerador</span>
-                    <span class="flex items-center gap-1.5"><span class="w-3 h-2 bg-rose-500/40 rounded-xs"></span> Freno (Trail)</span>
-                  </div>
-                  <div class="text-[11px] font-mono text-r-muted">Pasa el ratón para inspeccionar cada metro</div>
-                </div>
-                <div class="relative w-full overflow-hidden">
-                  <canvas id="traceCanvas" width="900" height="340" class="w-full h-[340px] rounded-xl bg-r-bg/60 cursor-crosshair"></canvas>
-                  <div id="telemetryCursorTooltip" hidden class="pointer-events-none absolute top-2 right-2 z-20 rounded-xl border border-white/15 bg-[#0a0f14]/95 px-3 py-2 text-[11px] font-mono text-r-text shadow-xl"></div>
+                <div class="relative flex-1 min-h-0 w-full overflow-hidden">
+                  <canvas id="traceCanvas" width="900" height="360" class="w-full h-full rounded-lg bg-[#090b0f] cursor-crosshair"></canvas>
+                  <div id="telemetryCursorTooltip" hidden class="pointer-events-none absolute top-2 right-2 z-20 rounded-lg border border-white/15 bg-[#0a0f14]/95 px-2.5 py-1.5 text-[10px] font-mono text-r-text shadow-xl"></div>
                 </div>
               </div>
             </div>
 
-            <!-- Stint Consistency & Optimal Lap (Prompt 42) -->
-            <div id="stintConsistencyPanel" class="mt-4 rounded-2xl border border-r-line bg-r-surface p-4">
-              <div class="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h3 class="font-display uppercase tracking-wider text-sm text-r-text">Consistencia de Tanda &amp; Vuelta Teórica Óptima</h3>
-                  <p id="stintSummaryText" class="text-xs font-mono text-r-muted mt-0.5">Carga una sesión .ibt para calcular desviación estándar y ritmo vuelta a vuelta.</p>
-                </div>
-                <div class="flex flex-wrap items-center gap-4 font-mono text-xs">
-                  <span>Óptima Teórica: <strong id="stintOptimalLap" class="text-r-accent">--:--.---</strong></span>
-                  <span>Consistencia: <strong id="stintConsistencyScore" class="text-sky-400">--%</strong></span>
-                  <span>σ Desv: <strong id="stintStdDev" class="text-amber-400">--</strong></span>
-                </div>
-              </div>
-              <div id="stintBarsChart" class="mt-3 flex items-end gap-1.5 h-16 overflow-x-auto pb-1"></div>
-            </div>
-
-            <!-- Legacy select hooks hidden for backward compatibility -->
+            <!-- Compatibility hooks (hidden) -->
             <div hidden>
               <select id="lapA"></select>
               <select id="lapB"></select>
-            </div>
-
-            <!-- Corner by corner coaching table / cards (TrackTitan style) -->
-            <div class="mt-8">
-              <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
-                <div>
-                  <h2 class="mmt-display text-2xl">Coaching Curva a Curva (TrackTitan Insights)</h2>
-                  <p class="text-sm text-r-muted mt-0.5">Diagnóstico preciso de frenada, velocidad de ápice y compromiso de aceleración.</p>
-                </div>
-                <div class="flex items-center gap-2">
-                  <button type="button" id="coachFilterAll" class="px-3 py-1.5 rounded-xl border border-r-accent bg-r-accent/10 text-r-accent font-mono text-xs font-bold">Todos los giros</button>
-                  <button type="button" id="coachFilterLoss" class="px-3 py-1.5 rounded-xl border border-r-line bg-r-surface text-r-muted hover:text-r-text font-mono text-xs">Pérdidas > 0.1s</button>
-                </div>
-              </div>
-              <div id="cornerCoachingList" class="grid md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
-            </div>
-
-            <!-- Aero & Suspension Engineering (Prompt 36) -->
-            <div id="aeroEngineeringCard" class="mmt-panel mt-8">
-              <div class="mmt-panel-header">
-                <div>
-                  <p class="mmt-kicker">Ingeniería Aerodinámica &amp; Suspensiones (.mmt-lap)</p>
-                  <h2 class="mmt-display text-2xl mt-0.5">Altura al Suelo (Ride Height), Rake Dinámico &amp; Bottoming Out</h2>
-                </div>
-                <span class="px-2.5 py-1 rounded-lg border border-r-line bg-r-bg font-mono text-[11px] text-r-accent">LFrideHeight · RFrideHeight · ShockDefl</span>
-              </div>
+              <div id="cornerCoachingList"></div>
               <div id="aeroAnalysisPanel"></div>
             </div>
           </section>
@@ -1004,15 +929,15 @@
               </div>
             </div>
 
-            <!-- Unified 3-Column Full-Height Studio (220px | flex-1 | 240px) -->
-            <div class="flex-1 min-h-0 grid grid-cols-[220px_1fr_240px] rounded-xl border border-white/[0.08] bg-[#090b0f] overflow-hidden">
-              <!-- COLUMNA IZQUIERDA (220px): Lista compacta de los 7 widgets con toggle directo -->
-              <aside class="border-r border-white/[0.08] bg-[#0c0f15] flex flex-col min-h-0">
-                <div class="h-[32px] shrink-0 px-3 border-b border-white/[0.08] flex items-center justify-between font-mono text-[10px] font-bold uppercase tracking-wider text-white/60">
+            <!-- Unified 3-Column Full-Height Studio (210px | flex-1 | 210px) — 100% Zero Scroll -->
+            <div class="flex-1 min-h-0 grid grid-cols-[210px_minmax(0,1fr)_210px] rounded-xl border border-white/[0.08] bg-[#090b0f] overflow-hidden">
+              <!-- COLUMNA IZQUIERDA (210px): Lista compacta de los 9 widgets + Export/Import JSON -->
+              <aside class="border-r border-white/[0.08] bg-[#0c0f15] flex flex-col min-h-0 overflow-hidden">
+                <div class="h-[36px] shrink-0 px-2.5 border-b border-white/[0.08] flex items-center justify-between font-mono text-[10px] font-bold uppercase tracking-wider text-white/60">
                   <span>Widgets HUD</span>
                   <span class="text-[#10b981]">9 Módulos</span>
                 </div>
-                <div id="mmtCompactWidgetList" class="flex-1 min-h-0 overflow-y-auto p-2 space-y-1 font-mono text-[11px]">
+                <div id="mmtCompactWidgetList" class="flex-1 min-h-0 overflow-hidden p-1.5 space-y-0.5 font-mono text-[10.5px]">
                   <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-[#10b981]/40 bg-[#10b981]/10 cursor-pointer transition" data-compact-mod="standings">
                     <span class="font-semibold text-white truncate">Standings</span>
                     <button type="button" data-widget-toggle="standings" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Standings"></button>
@@ -1050,43 +975,49 @@
                     <button type="button" data-widget-toggle="tires" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Tire & Track Temp"></button>
                   </div>
                 </div>
+                <div class="shrink-0 p-1.5 border-t border-white/[0.08] grid grid-cols-2 gap-1 font-mono text-[9.5px]">
+                  <button type="button" id="btnShellExportJson" class="py-1 px-1.5 rounded border border-white/10 bg-[#090b0f] hover:border-[#10b981] text-white/80 hover:text-[#10b981] font-bold cursor-pointer truncate" title="Exportar perfil HUD (.json)">⬇ Exportar</button>
+                  <button type="button" id="btnShellImportJson" class="py-1 px-1.5 rounded border border-white/10 bg-[#090b0f] hover:border-[#10b981] text-white/80 hover:text-[#10b981] font-bold cursor-pointer truncate" title="Importar perfil HUD (.json)">⬆ Importar</button>
+                </div>
               </aside>
 
-              <!-- COLUMNA CENTRAL (flex-1): Barra 32px + Stage de Cabina en vivo -->
-              <div class="min-w-0 flex flex-col min-h-0 bg-[#05080c]">
-                <div class="h-[32px] shrink-0 px-3 border-b border-white/[0.08] bg-[#0c0f15] flex items-center justify-between gap-2 font-mono text-[10.5px]">
-                  <div class="flex items-center gap-2">
-                    <div class="inline-flex rounded border border-white/10 bg-[#090b0f] p-0.5">
-                      <button type="button" id="btnShellTrackMode" onclick="document.getElementById('hudShowInReplays').checked=true;this.classList.add('bg-[#10b981]','text-[#04130d]');document.getElementById('btnShellReplayMode').classList.remove('bg-[#10b981]','text-[#04130d]');" class="px-2 py-0.5 rounded-[3px] bg-[#10b981] text-[#04130d] font-bold cursor-pointer">Pista (P)</button>
-                      <button type="button" id="btnShellReplayMode" onclick="document.getElementById('btnCycleReplayHudMode')?.click();this.classList.add('bg-[#10b981]','text-[#04130d]');document.getElementById('btnShellTrackMode').classList.remove('bg-[#10b981]','text-[#04130d]');" class="px-2 py-0.5 rounded-[3px] text-white/70 hover:text-white font-bold cursor-pointer">Replay (R)</button>
+              <!-- COLUMNA CENTRAL (flex-1): Barra 36px sin overflow + Stage de Cabina en vivo -->
+              <div class="min-w-0 flex flex-col min-h-0 bg-[#05080c] overflow-hidden">
+                <div class="h-[36px] shrink-0 px-2 border-b border-white/[0.08] bg-[#0c0f15] flex items-center justify-between gap-1.5 font-mono text-[9.5px] overflow-hidden">
+                  <div class="flex items-center gap-1 min-w-0">
+                    <div class="inline-flex rounded border border-white/10 bg-[#090b0f] p-0.5 shrink-0">
+                      <button type="button" id="btnShellTrackMode" onclick="document.getElementById('hudShowInReplays').checked=true;this.classList.add('bg-[#10b981]','text-[#04130d]');document.getElementById('btnShellReplayMode').classList.remove('bg-[#10b981]','text-[#04130d]');" class="px-1.5 py-0.5 rounded-[3px] bg-[#10b981] text-[#04130d] font-bold cursor-pointer whitespace-nowrap">Pista (P)</button>
+                      <button type="button" id="btnShellReplayMode" onclick="document.getElementById('btnCycleReplayHudMode')?.click();this.classList.add('bg-[#10b981]','text-[#04130d]');document.getElementById('btnShellTrackMode').classList.remove('bg-[#10b981]','text-[#04130d]');" class="px-1.5 py-0.5 rounded-[3px] text-white/70 hover:text-white font-bold cursor-pointer whitespace-nowrap">Replay (R)</button>
                     </div>
-                    <div id="mmtStudioSceneBar" class="inline-flex items-center gap-1 rounded border border-white/10 bg-[#090b0f] p-0.5">
-                      <button type="button" data-scene="day" class="px-2 py-0.5 rounded-[3px] bg-[#10b981] text-[#04130d] font-bold cursor-pointer">Día seco</button>
-                      <button type="button" data-scene="night" class="px-2 py-0.5 rounded-[3px] text-white/70 hover:text-white font-bold cursor-pointer">Noche / Lluvia</button>
-                      <button type="button" data-scene="cockpit" aria-pressed="true" class="px-2 py-0.5 rounded-[3px] bg-[#10b981]/20 text-[#10b981] border border-[#10b981]/45 font-bold cursor-pointer">Vista Cockpit</button>
+                    <div id="mmtStudioSceneBar" class="inline-flex items-center gap-0.5 rounded border border-white/10 bg-[#090b0f] p-0.5 shrink-0">
+                      <button type="button" data-scene="day" class="px-1.5 py-0.5 rounded-[3px] bg-[#10b981] text-[#04130d] font-bold cursor-pointer whitespace-nowrap">Día</button>
+                      <button type="button" data-scene="night" class="px-1.5 py-0.5 rounded-[3px] text-white/70 hover:text-white font-bold cursor-pointer whitespace-nowrap">Noche</button>
+                      <button type="button" data-scene="cockpit" aria-pressed="true" class="px-1.5 py-0.5 rounded-[3px] bg-[#10b981]/20 text-[#10b981] border border-[#10b981]/45 font-bold cursor-pointer whitespace-nowrap">Cockpit</button>
                     </div>
-                    <div class="inline-flex items-center gap-1 rounded border border-white/10 bg-[#090b0f] p-0.5">
-                      <button type="button" onclick="document.querySelector('[data-hud-factory-preset=sprint_gt3]')?.click()" class="px-2 py-0.5 rounded-[3px] text-white/80 hover:text-white font-bold cursor-pointer">Sprint GT3</button>
-                      <button type="button" onclick="document.querySelector('[data-hud-factory-preset=endurance_multi]')?.click()" class="px-2 py-0.5 rounded-[3px] text-white/80 hover:text-white font-bold cursor-pointer">Endurance</button>
-                      <button type="button" onclick="document.querySelector('[data-hud-factory-preset=stream_minimal]')?.click()" class="px-2 py-0.5 rounded-[3px] text-white/80 hover:text-white font-bold cursor-pointer">Minimalist Qualy</button>
+                    <div class="inline-flex items-center gap-0.5 rounded border border-white/10 bg-[#090b0f] p-0.5 shrink-0">
+                      <button type="button" onclick="document.querySelector('[data-hud-factory-preset=sprint_gt3]')?.click()" class="px-1.5 py-0.5 rounded-[3px] text-white/80 hover:text-white font-bold cursor-pointer whitespace-nowrap">Sprint GT3</button>
+                      <button type="button" onclick="document.querySelector('[data-hud-factory-preset=endurance_multi]')?.click()" class="px-1.5 py-0.5 rounded-[3px] text-white/80 hover:text-white font-bold cursor-pointer whitespace-nowrap">Endurance</button>
+                      <button type="button" onclick="document.querySelector('[data-hud-factory-preset=stream_minimal]')?.click()" class="px-1.5 py-0.5 rounded-[3px] text-white/80 hover:text-white font-bold cursor-pointer whitespace-nowrap">Qualy</button>
                     </div>
                   </div>
-                  <div class="flex items-center gap-3 text-white/70">
-                    <label class="flex items-center gap-1.5">
-                      <span>Opacidad</span>
-                      <input id="hudOpacityRange" type="range" min="0" max="100" value="88" class="w-16 accent-[#10b981]" />
-                      <span id="hudOpacityVal" class="text-white tabular-nums w-7">88%</span>
+                  <div class="flex items-center gap-1.5 text-white/70 shrink-0">
+                    <label class="flex items-center gap-1">
+                      <span>Op.</span>
+                      <input id="hudOpacityRange" type="range" min="0" max="100" value="88" class="w-11 accent-[#10b981]" />
+                      <span id="hudOpacityVal" class="text-white tabular-nums w-6">88%</span>
                     </label>
-                    <label class="flex items-center gap-1.5">
-                      <span>Escala</span>
-                      <input id="hudScaleRange" type="range" min="70" max="135" value="100" class="w-16 accent-[#10b981]" />
-                      <span id="hudScaleVal" class="text-white tabular-nums w-8">100%</span>
+                    <label class="flex items-center gap-1">
+                      <span>Esc.</span>
+                      <input id="hudScaleRange" type="range" min="70" max="135" value="100" class="w-11 accent-[#10b981]" />
+                      <span id="hudScaleVal" class="text-white tabular-nums w-7">100%</span>
                     </label>
-                    <button type="button" id="btnShellLockHud" onclick="document.getElementById('mmtStudioLockBtn')?.click();const lk=this.dataset.locked!=='1';this.dataset.locked=lk?'1':'0';this.textContent=lk?'Desbloquear HUD':'Fijar / Bloquear HUD';" data-locked="1" class="px-2 py-0.5 rounded border border-emerald-500/40 bg-emerald-500/15 text-emerald-300 font-bold cursor-pointer">
-                      Desbloquear HUD
+                    <button type="button" id="btnShellSnapGrid" aria-pressed="true" class="px-1.5 py-0.5 rounded-[3px] border border-emerald-500/50 bg-emerald-500/20 text-emerald-300 font-bold cursor-pointer whitespace-nowrap" title="Imán / Grid 8px">⊞ 8px</button>
+                    <button type="button" id="btnShellClickThrough" aria-pressed="true" class="px-1.5 py-0.5 rounded-[3px] border border-emerald-500/50 bg-emerald-500/15 text-emerald-300 font-bold cursor-pointer whitespace-nowrap" title="Permitir clics a través del HUD">Click-Through: ON</button>
+                    <button type="button" id="btnShellLockHud" onclick="document.getElementById('mmtStudioLockBtn')?.click();const lk=this.dataset.locked!=='1';this.dataset.locked=lk?'1':'0';this.textContent=lk?'Desbloquear':'Bloquear';" data-locked="1" class="px-1.5 py-0.5 rounded-[3px] border border-emerald-500/40 bg-emerald-500/15 text-emerald-300 font-bold cursor-pointer whitespace-nowrap" title="Atajo Alt+H">
+                      Desbloquear
                     </button>
-                    <button type="button" onclick="document.getElementById('btnRestoreHudV2')?.click()" class="px-2 py-0.5 rounded border border-white/10 bg-[#090b0f] hover:border-[#10b981]/50 text-white/80 hover:text-[#10b981] font-semibold cursor-pointer">
-                      Centrar / Restaurar
+                    <button type="button" onclick="document.getElementById('btnRestoreHudV2')?.click()" class="px-1.5 py-0.5 rounded-[3px] border border-white/10 bg-[#090b0f] hover:border-[#10b981]/50 text-white/80 hover:text-[#10b981] font-semibold cursor-pointer whitespace-nowrap">
+                      Restaurar
                     </button>
                   </div>
                 </div>
@@ -1152,19 +1083,19 @@
                         <div id="ovTyres" class="hidden"></div>
                       </div>
 
-                      <div id="widgetFuel" class="mmt-hud-widget absolute left-3 bottom-3 w-[244px] rounded-[3px] border border-white/[0.08] text-white p-1.5 text-xs font-mono" style="background: rgba(9, 11, 15, 0.88);" data-widget="fuel">
+                      <div id="widgetFuel" class="mmt-hud-widget absolute left-3 bottom-3 w-[236px] rounded-[3px] border border-white/[0.08] text-white p-1.5 text-xs font-mono" style="background: rgba(9, 11, 15, 0.88);" data-widget="fuel">
                         <div id="ovFuel"></div>
                       </div>
 
-                      <div id="widgetPitStrategy" class="mmt-hud-widget absolute left-3 bottom-[84px] w-[260px] rounded-[3px] border border-white/[0.08] text-white p-2 text-xs font-mono" style="background: rgba(9, 11, 15, 0.88);" data-widget="pit">
+                      <div id="widgetPitStrategy" class="mmt-hud-widget absolute left-[256px] bottom-3 w-[248px] rounded-[3px] border border-white/[0.08] text-white p-2 text-xs font-mono" style="background: rgba(9, 11, 15, 0.88);" data-widget="pit">
                         <div id="ovPitStrategy"></div>
                       </div>
 
-                      <div id="widgetTireMonitor" class="mmt-hud-widget absolute right-3 bottom-[158px] w-[236px] rounded-[3px] border border-white/[0.08] text-white p-2 text-xs font-mono" style="background: rgba(9, 11, 15, 0.88);" data-widget="tires">
+                      <div id="widgetTireMonitor" class="mmt-hud-widget absolute right-[196px] bottom-3 w-[224px] rounded-[3px] border border-white/[0.08] text-white p-2 text-xs font-mono" style="background: rgba(9, 11, 15, 0.88);" data-widget="tires">
                         <div id="ovTireMonitor"></div>
                       </div>
 
-                      <div id="widgetTrackMap" class="mmt-hud-widget absolute bottom-4 right-4 w-[180px] h-[132px] rounded-[3px] border border-white/[0.12] overflow-hidden cursor-move" style="bottom: 16px; right: 16px; background: rgba(9, 11, 15, 0.86);" data-widget="trackmap">
+                      <div id="widgetTrackMap" class="mmt-hud-widget absolute bottom-3 right-3 w-[176px] h-[126px] rounded-[3px] border border-white/[0.12] overflow-hidden cursor-move" style="bottom: 12px; right: 12px; background: rgba(9, 11, 15, 0.86);" data-widget="trackmap">
                         <canvas id="ovTrackMap" width="180" height="132"></canvas>
                       </div>
                     </div>
@@ -1172,8 +1103,8 @@
                 </div>
               </div>
 
-              <!-- COLUMNA DERECHA (240px): Inspector contextual del widget seleccionado -->
-              <aside id="mmtStudioInspector" class="border-l border-white/[0.08] bg-[#0c0f15] flex flex-col min-h-0 overflow-y-auto p-3 space-y-3 text-xs font-mono">
+              <!-- COLUMNA DERECHA (210px): Inspector contextual compacto sin scroll -->
+              <aside id="mmtStudioInspector" class="border-l border-white/[0.08] bg-[#0c0f15] flex flex-col min-h-0 overflow-hidden p-2 space-y-2 text-xs font-mono">
                 <div class="flex items-center justify-between border-b border-white/[0.08] pb-2">
                   <strong id="mmtInspTitle" class="text-xs font-bold text-white uppercase tracking-wide">Standings</strong>
                   <span id="mmtInspBadge" class="px-1.5 py-0.5 rounded bg-[#10b981]/15 text-[#10b981] text-[10px] font-bold">ACTIVO</span>
@@ -1516,164 +1447,135 @@
             <div id="configItemsList" class="mt-6 grid gap-3"></div>
           </section>
 
-          <section id="viewSettings" hidden aria-labelledby="settingsTitle" class="w-full max-w-5xl mx-auto h-full min-h-0 flex flex-col overflow-y-auto pr-1 text-xs">
-            <p class="mmt-kicker">Este ordenador</p>
-            <h1 id="settingsTitle" class="mmt-display text-4xl mt-3">Ajustes</h1>
-            <div class="mt-6 rounded-2xl border border-r-line bg-r-surface p-5 grid gap-3">
-              <p class="font-mono text-[11px] uppercase tracking-[0.16em] text-r-muted">Carpeta de iRacing</p>
-              <p id="folderPath" class="font-mono text-sm break-all">Sin carpeta</p>
-              <p id="folderWarn" hidden class="text-sm text-r-muted">Esa carpeta todavía no existe. iRacing la crea al guardar un setup, o elige otra.</p>
-              <div class="flex flex-wrap gap-2">
-                <button type="button" id="pickFolder" class="mmt-btn h-11 px-4 rounded-xl bg-r-accent text-r-ink font-display uppercase tracking-wider text-sm">Cambiar carpeta</button>
-                <button type="button" id="detectFolder" class="mmt-btn-ghost h-11 px-4 rounded-xl border border-r-line font-display uppercase tracking-wider text-sm">Detectar de nuevo</button>
-                <button type="button" id="btnOpenOnboardingWizard" class="mmt-btn-ghost h-11 px-4 rounded-xl border border-r-line font-display uppercase tracking-wider text-sm">Asistente 30s</button>
+          <section id="viewSettings" hidden aria-labelledby="settingsTitle" class="w-full h-full min-h-0 flex flex-col overflow-hidden text-xs gap-2 p-2.5">
+            <div class="flex items-center justify-between gap-2 shrink-0">
+              <div class="flex items-baseline gap-2">
+                <h1 id="settingsTitle" class="font-display font-extrabold text-lg uppercase tracking-wider text-white">Ajustes</h1>
+                <span class="font-mono text-[10px] text-r-muted">Este ordenador · MMT Sync</span>
               </div>
-              <p class="text-sm text-r-muted">Los archivos se escriben solo en <span class="font-mono text-r-text">coche\MMT\temporada</span>. El resto de la carpeta no se toca.</p>
-            </div>
-            <div class="mt-4 rounded-2xl border border-r-line bg-r-surface p-5 grid gap-3">
-              <p class="font-mono text-[11px] uppercase tracking-[0.16em] text-r-muted">Carpeta de Vídeos (ShadowPlay / OBS)</p>
-              <p id="videosDirPath" class="font-mono text-xs break-all text-r-muted">Sin carpeta configurada</p>
-              <div>
-                <button type="button" id="pickVideosDirBtn" class="mmt-btn-ghost h-10 px-4 rounded-xl border border-r-line font-display uppercase tracking-wider text-xs">Seleccionar carpeta de clips</button>
+              <div class="flex items-center gap-1.5">
+                <button type="button" id="btnCheckUpdate" class="mmt-btn-ghost h-7 px-2.5 rounded-lg border border-r-accent/40 text-r-accent font-mono uppercase tracking-wider text-[10px] hover:bg-r-accent/10 transition cursor-pointer">Buscar actualizaciones</button>
+                <button type="button" id="logoutBtn" class="mmt-btn-ghost h-7 px-2.5 rounded-lg border border-r-line font-mono uppercase tracking-wider text-[10px] cursor-pointer">Cerrar sesión</button>
+                <button type="button" id="quitBtn" class="mmt-btn-ghost h-7 px-2.5 rounded-lg border border-r-line font-mono uppercase tracking-wider text-[10px] cursor-pointer">Salir</button>
               </div>
             </div>
-            <div class="mt-4 rounded-2xl border border-r-line bg-r-surface p-5 grid gap-4">
-              <label class="flex items-center justify-between gap-4">
-                <span>
-                  <span class="block font-semibold">Sincronizar automáticamente</span>
-                  <span class="block text-sm text-r-muted">Mientras la aplicación sigue abierta, también en la bandeja.</span>
-                </span>
-                <button type="button" id="autoSync" class="mmt-switch" role="switch" aria-pressed="true" aria-label="Sincronizar automáticamente"><span></span></button>
-              </label>
-              <label class="grid gap-1 text-sm">Cada cuántos minutos
-                <input id="interval" type="number" min="5" max="720" value="30" class="h-12 w-32 rounded-xl border border-r-line bg-r-bg px-3 font-mono" />
-              </label>
-              <label class="flex items-center justify-between gap-4">
-                <span>
-                  <span class="block font-semibold">Eliminar retirados</span>
-                  <span class="block text-sm text-r-muted">Apagado por defecto. Solo borra archivos dentro de las carpetas MMT que ya no están en el manifiesto.</span>
-                </span>
-                <button type="button" id="deleteRetired" class="mmt-switch" role="switch" aria-pressed="false" aria-label="Eliminar retirados"><span></span></button>
-              </label>
-              <label class="flex items-center justify-between gap-4">
-                <span>
-                  <span class="block font-semibold">Iniciar con Windows</span>
-                  <span class="block text-sm text-r-muted">Apagado por defecto. Arranca en la bandeja.</span>
-                </span>
-                <button type="button" id="startWindows" class="mmt-switch" role="switch" aria-pressed="false" aria-label="Iniciar con Windows"><span></span></button>
-              </label>
-              <label class="flex items-center justify-between gap-4">
-                <span>
-                  <span class="block font-semibold">Retención automática de telemetría local</span>
-                  <span class="block text-sm text-r-muted">Purga automáticamente sesiones locales no favoritas más antiguas que el plazo elegido.</span>
-                </span>
-                <select id="telemetryRetentionDays" class="h-10 rounded-xl border border-r-line bg-r-bg px-3 text-sm font-mono text-r-text">
-                  <option value="0">Desactivado</option>
-                  <option value="7">7 días</option>
-                  <option value="14">14 días</option>
-                </select>
-              </label>
-              <div id="ibtStoragePanel" class="pt-3 border-t border-r-line/60 flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <span class="block font-semibold text-sm">Almacenamiento de archivos .ibt en disco</span>
-                  <span id="ibtStorageSummary" class="block text-xs font-mono text-r-muted">Escaneando Documents\iRacing\telemetry…</span>
+            <div class="flex-1 min-h-0 grid grid-cols-3 gap-2.5 overflow-hidden">
+              <div class="flex flex-col gap-2 min-h-0 overflow-hidden">
+                <div class="rounded-xl border border-r-line bg-r-surface p-3 grid gap-2 shrink-0">
+                  <p class="font-mono text-[10px] uppercase tracking-[0.14em] text-r-muted">Carpeta de iRacing</p>
+                  <p id="folderPath" class="font-mono text-[11px] truncate text-white">Sin carpeta</p>
+                  <p id="folderWarn" hidden class="text-[10px] text-amber-300">Esa carpeta todavía no existe. iRacing la crea al guardar un setup.</p>
+                  <div class="flex flex-wrap gap-1.5">
+                    <button type="button" id="pickFolder" class="mmt-btn h-7 px-2.5 rounded-lg bg-r-accent text-r-ink font-mono font-bold uppercase text-[10px] cursor-pointer">Cambiar</button>
+                    <button type="button" id="detectFolder" class="mmt-btn-ghost h-7 px-2.5 rounded-lg border border-r-line font-mono uppercase text-[10px] cursor-pointer">Detectar</button>
+                    <button type="button" id="btnOpenOnboardingWizard" class="mmt-btn-ghost h-7 px-2.5 rounded-lg border border-r-line font-mono uppercase text-[10px] cursor-pointer">Asistente 30s</button>
+                  </div>
                 </div>
-                <div class="flex items-center gap-2">
-                  <button type="button" id="btnCleanupOldIbt" class="h-9 px-3.5 rounded-xl border border-r-line bg-r-bg hover:border-amber-400 text-xs font-mono text-r-text transition">Limpiar .ibt antiguos</button>
-                  <span id="ibtCleanupResult" class="text-xs font-mono text-r-accent"></span>
+                <div class="rounded-xl border border-r-line bg-r-surface p-3 grid gap-1.5 shrink-0">
+                  <p class="font-mono text-[10px] uppercase tracking-[0.14em] text-r-muted">Carpeta de Vídeos (OBS / ShadowPlay)</p>
+                  <p id="videosDirPath" class="font-mono text-[11px] truncate text-r-muted">Sin carpeta configurada</p>
+                  <div>
+                    <button type="button" id="pickVideosDirBtn" class="mmt-btn-ghost h-7 px-2.5 rounded-lg border border-r-line font-mono uppercase text-[10px] cursor-pointer">Seleccionar clips</button>
+                  </div>
+                </div>
+                <div class="rounded-xl border border-r-line bg-r-surface p-3 flex-1 min-h-0 flex flex-col gap-1.5 overflow-hidden">
+                  <h3 class="font-display uppercase tracking-wide text-xs text-r-text">Mis Categorías en iRacing</h3>
+                  <div id="settingsCatToggles" class="grid grid-cols-2 gap-1.5 font-mono text-[10px]">
+                    <label class="flex items-center gap-2 p-2 rounded-lg border border-r-line bg-r-bg cursor-pointer hover:border-r-accent/50 transition">
+                      <input type="checkbox" data-settings-cat="SPORTS CAR" class="w-3.5 h-3.5 rounded text-r-accent bg-r-surface border-r-line" checked />
+                      <span class="truncate text-r-text font-bold">Sports Car</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-2 rounded-lg border border-r-line bg-r-bg cursor-pointer hover:border-r-accent/50 transition">
+                      <input type="checkbox" data-settings-cat="FORMULA CAR" class="w-3.5 h-3.5 rounded text-r-accent bg-r-surface border-r-line" checked />
+                      <span class="truncate text-r-text font-bold">Formula</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-2 rounded-lg border border-r-line bg-r-bg cursor-pointer hover:border-r-accent/50 transition">
+                      <input type="checkbox" data-settings-cat="OVAL" class="w-3.5 h-3.5 rounded text-r-accent bg-r-surface border-r-line" checked />
+                      <span class="truncate text-r-text font-bold">Oval</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-2 rounded-lg border border-r-line bg-r-bg cursor-pointer hover:border-r-accent/50 transition">
+                      <input type="checkbox" data-settings-cat="DIRT" class="w-3.5 h-3.5 rounded text-r-accent bg-r-surface border-r-line" checked />
+                      <span class="truncate text-r-text font-bold">Dirt</span>
+                    </label>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="mt-4 rounded-2xl border border-r-line bg-r-surface p-5">
-              <h3 class="font-display uppercase tracking-wide text-lg text-r-text mb-1">Mis Categorías y Especialidad en iRacing</h3>
-              <p class="text-xs text-r-muted mb-4">Selecciona las categorías en las que compites habitualmente. La biblioteca y el calendario semanal se adaptarán automáticamente para mostrar solo tus disciplinas.</p>
-              <div id="settingsCatToggles" class="grid sm:grid-cols-2 gap-3 font-mono text-xs">
-                <label class="flex items-center gap-3 p-3 rounded-xl border border-r-line bg-r-bg cursor-pointer hover:border-r-accent/50 transition">
-                  <input type="checkbox" data-settings-cat="SPORTS CAR" class="w-4 h-4 rounded text-r-accent bg-r-surface border-r-line focus:ring-r-accent" checked />
-                  <div>
-                    <strong class="block text-r-text">ðŸŽï¸ Sports Car</strong>
-                    <span class="text-[11px] text-r-muted font-sans">IMSA GTP, GT3, GT4, TCR, Porsche Cup</span>
-                  </div>
-                </label>
-                <label class="flex items-center gap-3 p-3 rounded-xl border border-r-line bg-r-bg cursor-pointer hover:border-r-accent/50 transition">
-                  <input type="checkbox" data-settings-cat="FORMULA CAR" class="w-4 h-4 rounded text-r-accent bg-r-surface border-r-line focus:ring-r-accent" checked />
-                  <div>
-                    <strong class="block text-r-text">ðŸŽï¸ Formula</strong>
-                    <span class="text-[11px] text-r-muted font-sans">FIA F4, Super Formula, F3, Grand Prix</span>
-                  </div>
-                </label>
-                <label class="flex items-center gap-3 p-3 rounded-xl border border-r-line bg-r-bg cursor-pointer hover:border-r-accent/50 transition">
-                  <input type="checkbox" data-settings-cat="OVAL" class="w-4 h-4 rounded text-r-accent bg-r-surface border-r-line focus:ring-r-accent" checked />
-                  <div>
-                    <strong class="block text-r-text">ðŸ Oval</strong>
-                    <span class="text-[11px] text-r-muted font-sans">NASCAR Cup, Xfinity, Trucks, Late Model</span>
-                  </div>
-                </label>
-                <label class="flex items-center gap-3 p-3 rounded-xl border border-r-line bg-r-bg cursor-pointer hover:border-r-accent/50 transition">
-                  <input type="checkbox" data-settings-cat="DIRT" class="w-4 h-4 rounded text-r-accent bg-r-surface border-r-line focus:ring-r-accent" checked />
-                  <div>
-                    <strong class="block text-r-text">🚜 Dirt Oval & Road</strong>
-                    <span class="text-[11px] text-r-muted font-sans">Sprint Car, Pro Late Model, Rallycross</span>
-                  </div>
-                </label>
-              </div>
-            </div>
-            <div class="mt-4 rounded-2xl border border-r-line bg-r-surface p-5">
-              <h3 class="font-display uppercase tracking-wide text-lg text-r-text mb-1">Combustible y Auto-Repostaje en Boxes</h3>
-              <p class="text-xs text-r-muted mb-3">Configura el margen de seguridad y el envío automático del repostaje calculado (`irsdk_PitCommand_Fuel`) al entrar en el pit lane.</p>
-              <div class="grid sm:grid-cols-2 gap-3 font-mono text-xs">
-                <label class="flex items-center gap-3 p-3 rounded-xl border border-r-line bg-r-bg cursor-pointer hover:border-r-accent/50 transition">
-                  <input type="checkbox" id="toggleAutoFuelPit" class="w-4 h-4 rounded text-r-accent bg-r-surface border-r-line focus:ring-r-accent" />
-                  <div>
-                    <strong class="block text-r-text">Auto-Repostaje en Pit Lane</strong>
-                    <span class="text-[11px] text-r-muted font-sans">Envía los litros exactos al entrar en boxes</span>
-                  </div>
-                </label>
-                <label class="flex items-center justify-between gap-3 p-3 rounded-xl border border-r-line bg-r-bg">
-                  <span class="text-r-text font-semibold">Margen extra</span>
-                  <select id="selectFuelMarginLaps" class="h-8 rounded-lg border border-r-line bg-r-surface px-2 text-xs text-r-text">
-                    <option value="0">+0.2 L (base)</option>
-                    <option value="0.5">+0.5 vueltas</option>
-                    <option value="1">+1.0 vuelta</option>
-                  </select>
-                </label>
-              </div>
-            </div>
-            <div id="moduleFlags" class="mt-4 rounded-2xl border border-r-line bg-r-surface p-5 grid gap-2"></div>
-            <!-- Prompt 49: UserProfileSync (Cloud Sync Ligero) -->
-            <div id="cloudProfileSyncCard" class="mt-4 rounded-2xl border border-r-line bg-r-surface p-5 grid gap-3">
-              <div class="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <h3 class="font-display uppercase tracking-wide text-lg text-r-text">Sincronización en la Nube (Perfil &lt; 50 KB)</h3>
-                  <p class="text-xs text-r-muted">Respaldo cifrado AES-GCM de layouts de overlays, reglas de visibilidad, Driver Tags y notas de frenada (Track Walk).</p>
+
+              <div class="rounded-xl border border-r-line bg-r-surface p-3 flex flex-col justify-between gap-2 min-h-0 overflow-hidden">
+                <div class="grid gap-2.5">
+                  <p class="font-mono text-[10px] uppercase tracking-[0.14em] text-r-muted">Sincronización y Sistema</p>
+                  <label class="flex items-center justify-between gap-2">
+                    <span class="text-[11px] font-semibold">Sincronizar automáticamente</span>
+                    <button type="button" id="autoSync" class="mmt-switch" role="switch" aria-pressed="true" aria-label="Sincronizar automáticamente"><span></span></button>
+                  </label>
+                  <label class="flex items-center justify-between gap-2 text-[11px]">
+                    <span class="text-r-muted">Intervalo (min)</span>
+                    <input id="interval" type="number" min="5" max="720" value="30" class="h-7 w-20 rounded-lg border border-r-line bg-r-bg px-2 font-mono text-[11px]" />
+                  </label>
+                  <label class="flex items-center justify-between gap-2">
+                    <span class="text-[11px] font-semibold">Eliminar retirados</span>
+                    <button type="button" id="deleteRetired" class="mmt-switch" role="switch" aria-pressed="false" aria-label="Eliminar retirados"><span></span></button>
+                  </label>
+                  <label class="flex items-center justify-between gap-2">
+                    <span class="text-[11px] font-semibold">Iniciar con Windows</span>
+                    <button type="button" id="startWindows" class="mmt-switch" role="switch" aria-pressed="false" aria-label="Iniciar con Windows"><span></span></button>
+                  </label>
+                  <label class="flex items-center justify-between gap-2">
+                    <span class="text-[11px] font-semibold">Retención sesiones</span>
+                    <select id="telemetryRetentionDays" class="h-7 rounded-lg border border-r-line bg-r-bg px-2 text-[11px] font-mono text-r-text">
+                      <option value="0">Desactivado</option>
+                      <option value="7">7 días</option>
+                      <option value="14">14 días</option>
+                    </select>
+                  </label>
                 </div>
-                <span id="cloudProfileSizeBadge" class="px-2.5 py-1 rounded-lg border border-r-line bg-r-bg font-mono text-[11px] text-r-accent">— KB / 50 KB</span>
-              </div>
-              <div class="flex flex-wrap items-center justify-between gap-3">
-                <span id="cloudProfileSyncStatus" class="text-xs font-mono text-r-muted">Sin sincronizar aún</span>
-                <div class="flex flex-wrap gap-2">
-                  <button type="button" id="btnSyncProfileNow" class="mmt-btn h-9 px-4 rounded-xl bg-r-accent text-r-ink font-display uppercase tracking-wider text-xs">Sincronizar perfil</button>
+                <div id="ibtStoragePanel" class="pt-2 border-t border-r-line/60 grid gap-1.5">
+                  <span class="block font-semibold text-[11px]">Caché local de telemetría IRSDK</span>
+                  <span id="ibtStorageSummary" class="block text-[10px] font-mono text-r-muted truncate">Auto-captura en %LOCALAPPDATA%\MMT Sync\sessions</span>
+                  <div class="flex items-center gap-2">
+                    <button type="button" id="btnCleanupOldIbt" class="h-7 px-2.5 rounded-lg border border-r-line bg-r-bg hover:border-amber-400 text-[10px] font-mono text-r-text transition cursor-pointer">Limpiar antiguos</button>
+                    <span id="ibtCleanupResult" class="text-[10px] font-mono text-r-accent truncate"></span>
+                  </div>
                 </div>
               </div>
-              <div class="pt-2 border-t border-r-line/60 grid gap-2">
-                <label class="text-xs font-mono text-r-muted uppercase">Nota rápida de Track Walk (circuito actual)</label>
-                <div class="flex flex-wrap gap-2">
-                  <input id="trackWalkNoteTrack" type="text" placeholder="Ej: fuji_gp" class="h-9 w-36 rounded-lg border border-r-line bg-r-bg px-2.5 text-xs font-mono text-r-text" />
-                  <input id="trackWalkNoteText" type="text" placeholder="T1 frenada cartel 100m, T3 trail-brake suave..." class="h-9 flex-1 min-w-[200px] rounded-lg border border-r-line bg-r-bg px-2.5 text-xs text-r-text" />
-                  <button type="button" id="btnSaveTrackWalkNote" class="h-9 px-3 rounded-lg border border-r-line bg-r-bg hover:border-r-accent text-xs font-mono text-r-text">Guardar nota</button>
+
+              <div class="flex flex-col gap-2 min-h-0 overflow-hidden">
+                <div class="rounded-xl border border-r-line bg-r-surface p-3 grid gap-2 shrink-0">
+                  <h3 class="font-display uppercase tracking-wide text-xs text-r-text">Combustible y Auto-Repostaje</h3>
+                  <label class="flex items-center gap-2 p-2 rounded-lg border border-r-line bg-r-bg cursor-pointer">
+                    <input type="checkbox" id="toggleAutoFuelPit" class="w-3.5 h-3.5 rounded text-r-accent bg-r-surface border-r-line" />
+                    <span class="text-[11px] text-r-text font-semibold">Auto-Repostaje en Pit Lane</span>
+                  </label>
+                  <label class="flex items-center justify-between gap-2 text-[11px]">
+                    <span class="text-r-muted">Margen extra</span>
+                    <select id="selectFuelMarginLaps" class="h-7 rounded-lg border border-r-line bg-r-bg px-2 text-[11px] font-mono text-r-text">
+                      <option value="0">+0.2 L (base)</option>
+                      <option value="0.5">+0.5 vueltas</option>
+                      <option value="1">+1.0 vuelta</option>
+                    </select>
+                  </label>
+                </div>
+                <div id="cloudProfileSyncCard" class="rounded-xl border border-r-line bg-r-surface p-3 flex-1 min-h-0 flex flex-col justify-between gap-2 overflow-hidden">
+                  <div class="flex items-center justify-between gap-2">
+                    <h3 class="font-display uppercase tracking-wide text-xs text-r-text">Perfil en la Nube</h3>
+                    <span id="cloudProfileSizeBadge" class="px-2 py-0.5 rounded border border-r-line bg-r-bg font-mono text-[10px] text-r-accent">— KB / 50 KB</span>
+                  </div>
+                  <div class="flex items-center justify-between gap-2">
+                    <span id="cloudProfileSyncStatus" class="text-[10px] font-mono text-r-muted truncate">Sin sincronizar aún</span>
+                    <button type="button" id="btnSyncProfileNow" class="mmt-btn h-7 px-2.5 rounded-lg bg-r-accent text-r-ink font-mono font-bold uppercase text-[10px] cursor-pointer">Sincronizar</button>
+                  </div>
+                  <div class="pt-1.5 border-t border-r-line/60 grid gap-1.5">
+                    <label class="text-[10px] font-mono text-r-muted uppercase">Nota Track Walk</label>
+                    <div class="flex gap-1.5">
+                      <input id="trackWalkNoteTrack" type="text" placeholder="fuji_gp" class="h-7 w-20 rounded-lg border border-r-line bg-r-bg px-2 text-[10px] font-mono text-r-text" />
+                      <input id="trackWalkNoteText" type="text" placeholder="T1 frenada 100m..." class="h-7 flex-1 min-w-0 rounded-lg border border-r-line bg-r-bg px-2 text-[10px] text-r-text" />
+                      <button type="button" id="btnSaveTrackWalkNote" class="h-7 px-2 rounded-lg border border-r-line bg-r-bg hover:border-r-accent text-[10px] font-mono text-r-text cursor-pointer">OK</button>
+                    </div>
+                  </div>
+                  <div id="moduleFlags" class="hidden"></div>
                 </div>
               </div>
             </div>
-            <div class="mt-4 rounded-2xl border border-r-line bg-r-surface p-5 text-xs text-r-muted leading-relaxed">
-              <p class="font-mono text-[11px] uppercase tracking-wider text-r-accent font-semibold mb-1">Seguridad y verificación</p>
-              MMT Sync opera bajo permisos estándar de usuario y solo lectura de telemetría de iRacing. Si Windows SmartScreen muestra un aviso en actualizaciones o primera instalación, pulsa «Más información» y «Ejecutar de todas formas».
-            </div>
-            <div class="mt-4 flex flex-wrap gap-2">
-              <button type="button" id="btnCheckUpdate" class="mmt-btn-ghost h-11 px-4 rounded-xl border border-r-accent/40 text-r-accent font-display uppercase tracking-wider text-sm hover:bg-r-accent/10 transition">Buscar actualizaciones</button>
-              <button type="button" id="logoutBtn" class="mmt-btn-ghost h-11 px-4 rounded-xl border border-r-line font-display uppercase tracking-wider text-sm">Cerrar sesión</button>
-              <button type="button" id="quitBtn" class="mmt-btn-ghost h-11 px-4 rounded-xl border border-r-line font-display uppercase tracking-wider text-sm">Salir</button>
-            </div>
-            <p class="mt-4 text-sm text-r-muted">La bandeja tiene Sincronizar ahora, Abrir y Salir. Cerrar la ventana deja MMT Sync en marcha. No hay analítica de terceros.</p>
           </section>
         </section>
 

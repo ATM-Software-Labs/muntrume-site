@@ -7,6 +7,7 @@ mod history;
 mod hotlaps;
 mod ibt_parser;
 mod live;
+mod live_capture;
 mod privacy;
 mod settings;
 mod state;
@@ -156,6 +157,9 @@ pub fn run() {
             read_latest_ibt,
             list_ibt_sessions,
             read_ibt_file,
+            list_captured_sessions,
+            read_captured_session,
+            get_capture_status,
             get_ibt_storage_stats,
             cleanup_old_ibt_files,
             redact_session_info,
@@ -1141,6 +1145,25 @@ async fn cleanup_old_ibt_files(max_age_days: u32) -> Result<IbtStorageStats, Str
     })
     .await
     .map_err(|e| format!("Error limpiando .ibt antiguos: {e}"))?
+}
+
+#[tauri::command]
+async fn list_captured_sessions() -> Result<Vec<live_capture::CapturedSessionMeta>, String> {
+    tauri::async_runtime::spawn_blocking(live_capture::list_captured_sessions)
+        .await
+        .map_err(|e| format!("Error listando sesiones capturadas: {e}"))
+}
+
+#[tauri::command]
+async fn read_captured_session(path: String) -> Result<Option<ibt_parser::IbtSessionReport>, String> {
+    tauri::async_runtime::spawn_blocking(move || live_capture::read_captured_session(&path))
+        .await
+        .map_err(|e| format!("Error leyendo sesión capturada: {e}"))
+}
+
+#[tauri::command]
+fn get_capture_status() -> live_capture::CaptureStatusPayload {
+    live_capture::get_status()
 }
 
 #[tauri::command]

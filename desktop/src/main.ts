@@ -2802,6 +2802,10 @@ async function boot(): Promise<void> {
   }, 0);
 }
 
-void boot().catch((error: unknown) => {
+import { initStudioControls } from "./studio-controls";
+
+void boot().then(() => {
+  initStudioControls();
+}).catch((error: unknown) => {
   showNotice(error instanceof Error ? error.message : "MMT Sync no pudo arrancar.");
 });

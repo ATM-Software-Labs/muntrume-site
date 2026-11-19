@@ -213,6 +213,7 @@ fn windows_loop(app: AppHandle) {
 
     const SYNCHRONIZE: u32 = 0x0010_0000;
     const WAIT_OBJECT_0: u32 = 0;
+    const CAPTURE_MS: u64 = 16; // 60 Hz IRSDK live capture
     const FRAME_MS: u64 = 33;
     const MAIN_FRAME_MS: u64 = 100;
     const IRSDK_FRAME_MS: u64 = 100;
@@ -257,20 +258,20 @@ fn windows_loop(app: AppHandle) {
         let mut last_frame_json = String::new();
         let mut race_finished_emitted = false;
         let mut tracker = LiveSessionTracker::default();
+        let mut recorder = crate::live_capture::LiveTelemetryRecorder::default();
+        let mut last_capture = Instant::now() - Duration::from_secs(1);
         loop {
             let signaled = if mapped.event.is_null() {
-                std::thread::sleep(Duration::from_millis(FRAME_MS));
+                std::thread::sleep(Duration::from_millis(CAPTURE_MS));
                 true
             } else {
-                let waited = unsafe { WaitForSingleObject(mapped.event, FRAME_MS as u32) };
-                if waited == WAIT_OBJECT_0 {
-                    std::thread::sleep(Duration::from_millis(FRAME_MS));
-                }
+                let waited = unsafe { WaitForSingleObject(mapped.event, CAPTURE_MS as u32) };
                 waited == WAIT_OBJECT_0
             };
             if last_proc.elapsed() >= Duration::from_millis(1000) {
                 last_proc = Instant::now();
                 if !is_irsdk_mapped() {
+                    recorder.flush_on_disconnect(&app);
                     emit_status_if_changed(&app, &mut last_status, "closed");
                     if is_window_active(&app, "overlay") {
                         let app_close = app.clone();
@@ -285,9 +286,10 @@ fn windows_loop(app: AppHandle) {
             if !signaled {
                 continue;
             }
-            if last_emit.elapsed() < Duration::from_millis(FRAME_MS) {
+            if last_capture.elapsed() < Duration::from_millis(CAPTURE_MS) {
                 continue;
             }
+            last_capture = Instant::now();
             let overlay_active = is_window_active(&app, "overlay");
             let main_active = MAIN_TELEMETRY_ENABLED.load(Ordering::Relaxed)
                 && is_window_active(&app, "main")
@@ -298,19 +300,12 @@ fn windows_loop(app: AppHandle) {
             if !main_active {
                 main_synced_yaml = false;
             }
-            // Skip shared-memory deserialization & IPC completely when no window is visible
-            let waiting_reopen_on_track = crate::HIDE_OFF_TRACK.load(Ordering::Relaxed)
-                && crate::OVERLAY_AUTO_HIDDEN_OFF_TRACK.load(Ordering::Relaxed);
-            if !overlay_active && !main_active && !waiting_reopen_on_track {
-                last_emit = Instant::now();
-                std::thread::sleep(Duration::from_millis(100));
-                continue;
-            }
             let mut info = unsafe { std::mem::zeroed::<MEMORY_BASIC_INFORMATION>() };
             let queried = unsafe {
                 VirtualQuery(mapped.view.Value as *const _, &mut info, std::mem::size_of::<MEMORY_BASIC_INFORMATION>())
             };
             if queried == 0 || info.RegionSize < 112 {
+                recorder.flush_on_disconnect(&app);
                 emit_status_if_changed(&app, &mut last_status, "in_sim");
                 break;
             }
@@ -348,11 +343,12 @@ fn windows_loop(app: AppHandle) {
             let yaml_changed = last_yaml_update != Some(update);
             let need_overlay_yaml = overlay_active && (yaml_changed || !overlay_synced_yaml);
             let need_main_yaml = main_active && (yaml_changed || !main_synced_yaml);
-            if (need_overlay_yaml || need_main_yaml) && last_yaml_emit.elapsed() >= Duration::from_millis(1000) {
+            if (yaml_changed || need_overlay_yaml || need_main_yaml) && last_yaml_emit.elapsed() >= Duration::from_millis(1000) {
                 if let Ok(Ok((u, yaml))) = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                     read_session_info_yaml(bytes)
                 })) {
                     tracker.update_from_yaml(&yaml);
+                    recorder.update_from_yaml(&yaml);
                     let payload = serde_json::json!({ "update": u, "yaml": yaml });
                     if need_overlay_yaml {
                         let _ = app.emit_to("overlay", "mmt-session-info", &payload);
@@ -367,20 +363,24 @@ fn windows_loop(app: AppHandle) {
                 }
             }
             let mut clear_vars = false;
+            let mut latest_sample = None;
             if let Some(table) = vars.as_ref() {
                 match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                     read_live_sample_with(bytes, table)
                 })) {
                     Ok(Ok(sample)) => {
-                        if overlay_active {
-                            let _ = app.emit_to("overlay", "mmt-live", &sample);
+                        if last_emit.elapsed() >= Duration::from_millis(FRAME_MS) {
+                            if overlay_active {
+                                let _ = app.emit_to("overlay", "mmt-live", &sample);
+                            }
+                            if main_active && last_main_emit.elapsed() >= Duration::from_millis(MAIN_FRAME_MS) {
+                                let _ = app.emit_to("main", "mmt-live", &sample);
+                                last_main_emit = Instant::now();
+                            }
+                            emit_status_if_changed(&app, &mut last_status, "on_track");
+                            last_emit = Instant::now();
                         }
-                        if main_active && last_main_emit.elapsed() >= Duration::from_millis(MAIN_FRAME_MS) {
-                            let _ = app.emit_to("main", "mmt-live", &sample);
-                            last_main_emit = Instant::now();
-                        }
-                        emit_status_if_changed(&app, &mut last_status, "on_track");
-                        last_emit = Instant::now();
+                        latest_sample = Some(sample);
                     }
                     Ok(Err(IbtError::NotConnected)) => {
                         emit_status_if_changed(&app, &mut last_status, "in_sim");
@@ -394,11 +394,14 @@ fn windows_loop(app: AppHandle) {
             if clear_vars {
                 vars = None;
             }
-            if last_frame_emit.elapsed() >= Duration::from_millis(IRSDK_FRAME_MS) {
-                if let Some(table) = vars.as_ref() {
-                    if let Ok(Ok(frame)) = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                        read_live_irsdk_frame_with(bytes, table)
-                    })) {
+            if let Some(table) = vars.as_ref() {
+                if let Ok(Ok(frame)) = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    read_live_irsdk_frame_with(bytes, table)
+                })) {
+                    if let Some(sample) = latest_sample.as_ref() {
+                        recorder.push_frame(&app, sample, &frame);
+                    }
+                    if last_frame_emit.elapsed() >= Duration::from_millis(IRSDK_FRAME_MS) {
                         let p_idx = frame.player_car_idx.max(0) as usize;
                         let cur_lap = frame.car_idx_lap.get(p_idx).copied().unwrap_or(0);
                         let cur_pos = frame.car_idx_position.get(p_idx).copied().unwrap_or(0);
@@ -465,6 +468,7 @@ fn windows_loop(app: AppHandle) {
                 }
             }
         }
+        recorder.flush_on_disconnect(&app);
         drop(mapped);
         std::thread::sleep(Duration::from_millis(1000));
     }

@@ -3,12 +3,12 @@ use std::fs::File;
 use std::io::{BufReader, Read, Seek, SeekFrom};
 use std::path::Path;
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 const IRSDK_VAR_HEADER_SIZE: usize = 144;
 const IRSDK_HEADER_BASE_SIZE: usize = 112;
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TelemetrySample {
     pub dist_m: f32,
@@ -18,13 +18,15 @@ pub struct TelemetrySample {
     pub brake: f32,
     pub steering_rad: f32,
     pub gear: i32,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rpm: Option<f32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub x: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub y: Option<f32>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IbtLapSummary {
     pub lap_num: i32,
@@ -32,11 +34,11 @@ pub struct IbtLapSummary {
     pub top_speed_kmh: f32,
     pub delta_s: f32,
     pub is_valid: bool,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub invalid_reason: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IbtSessionMeta {
     pub file_path: String,
@@ -51,7 +53,7 @@ pub struct IbtSessionMeta {
     pub is_recent_48h: bool,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IbtSessionReport {
     pub file_name: String,
@@ -489,6 +491,7 @@ pub fn parse_ibt_report(path: &Path) -> Result<IbtSessionReport, String> {
                 brake: read_f32_le(&frame, v_brk.offset, v_brk.var_type).clamp(0.0, 1.0),
                 steering_rad: read_f32_le(&frame, v_str.offset, v_str.var_type),
                 gear,
+                rpm: None,
                 x: None,
                 y: None,
             },

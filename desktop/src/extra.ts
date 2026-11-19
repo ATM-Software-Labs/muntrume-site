@@ -1,6 +1,6 @@
 import { listen } from "@tauri-apps/api/event";
 import cockpitPorscheUrl from "./assets/cockpit-porsche-992-gt3r.jpg";
-import type { HardwareReport, IbtSessionMeta, IbtSessionReport, IracingAnalysis, LiveSample, Settings, Snapshot } from "./types";
+import type { HardwareReport, IbtSessionReport, IracingAnalysis, LiveSample, Settings, Snapshot } from "./types";
 import { areSessionsCompatible, computeDistanceDelta, resampleTrackByDistance } from "./telemetry/alignment";
 import { cleanTelemetrySignals, detectCornerKeyEvents } from "./telemetry/signal-cleaner";
 import { analyzeStintConsistency } from "./telemetry/consistency";
@@ -525,51 +525,96 @@ function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T
   });
 }
 
-async function populateIbtSessionSelectors(): Promise<void> {
-  const recentSel = document.getElementById("ibtRecentSelect") as HTMLSelectElement | null;
-  const archiveSel = document.getElementById("ibtArchiveSelect") as HTMLSelectElement | null;
-  if (!recentSel || !archiveSel) return;
+interface CapturedSessionMeta {
+  id: string;
+  filePath: string;
+  capturedEpochMs: number;
+  trackName: string;
+  carScreenName: string;
+  bestLapS: number;
+  totalLaps: number;
+}
+
+interface CaptureStatusPayload {
+  state: "idle" | "recording" | "saved" | string;
+  trackName: string;
+  carScreenName: string;
+  lapNum: number;
+  samplesCount: number;
+  savedLaps: number;
+}
+
+let captureEventsWired = false;
+
+function paintCaptureStatusBadge(status: CaptureStatusPayload): void {
+  const badge = document.getElementById("irsdkCaptureBadge");
+  const dot = document.getElementById("irsdkCaptureDot");
+  const text = document.getElementById("irsdkCaptureText");
+  if (!badge || !dot || !text) return;
+
+  if (status.state === "recording") {
+    dot.className = "w-2 h-2 rounded-full bg-[#10b981] animate-pulse shadow-[0_0_8px_#10b981]";
+    badge.className = "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono tracking-wide border border-[#10b981]/50 bg-[#10b981]/10 text-[#10b981] whitespace-nowrap";
+    const ctx = status.trackName ? ` · ${status.trackName}` : "";
+    const lap = status.lapNum > 0 ? ` (V${status.lapNum})` : "";
+    text.textContent = `Grabando tanda en vivo${ctx}${lap}`;
+  } else if (status.state === "saved") {
+    dot.className = "w-2 h-2 rounded-full bg-emerald-400";
+    badge.className = "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono tracking-wide border border-emerald-400/40 bg-emerald-500/10 text-emerald-300 whitespace-nowrap";
+    const lapsLabel = status.savedLaps > 0 ? ` (${status.savedLaps} v)` : "";
+    text.textContent = `Sesión procesada automáticamente${lapsLabel}`;
+  } else {
+    dot.className = "w-2 h-2 rounded-full bg-slate-500";
+    badge.className = "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono tracking-wide border border-white/10 bg-[#090b0f] text-r-muted whitespace-nowrap";
+    text.textContent = "Auto-captura IRSDK: En espera";
+  }
+}
+
+async function populateIbtSessionSelectors(autoLoadLatest = false): Promise<void> {
+  const sel = document.getElementById("capturedSessionsSelect") as HTMLSelectElement | null;
+  if (!sel) return;
   try {
     const { inTauri } = await import("./env");
     if (!inTauri()) return;
     const { invoke } = await import("@tauri-apps/api/core");
     const sessions = await withTimeout(
-      invoke<IbtSessionMeta[]>("list_ibt_sessions"),
+      invoke<CapturedSessionMeta[]>("list_captured_sessions"),
       1500,
       [],
     );
     const retentionDays = Number(localStorage.getItem(TELEMETRY_RETENTION_KEY) || "0");
     const nowMs = Date.now();
     const filtered = (sessions || []).filter((s) => {
-      if (retentionDays > 0 && s.modifiedEpochMs > 0) {
-        const ageDays = (nowMs - s.modifiedEpochMs) / (24 * 3600 * 1000);
+      if (retentionDays > 0 && s.capturedEpochMs > 0) {
+        const ageDays = (nowMs - s.capturedEpochMs) / (24 * 3600 * 1000);
         if (ageDays > retentionDays) return false;
       }
       return true;
     });
 
-    const recent = filtered.filter((s) => s.isRecent48h);
-    const archive = filtered.filter((s) => !s.isRecent48h);
+    const previousValue = sel.value;
+    sel.innerHTML = `<option value="">${
+      filtered.length
+        ? `Sesiones capturadas automáticamente (${filtered.length})…`
+        : "Sesiones capturadas automáticamente (esperando tanda…)"
+    }</option>`;
 
-    recentSel.innerHTML = `<option value="">${recent.length ? `Sesiones últimas 48h (${recent.length})…` : "Sin archivos .ibt recientes (pulsa Alt+L en iRacing para grabar telemetría completa)"}</option>`;
-    for (const s of recent) {
+    for (const s of filtered) {
       const opt = document.createElement("option");
       opt.value = s.filePath;
-      const sid = s.sessionUniqueId ? ` #${s.sessionUniqueId}` : "";
-      opt.textContent = `${formatEpochShort(s.modifiedEpochMs)} · ${s.trackName || s.fileName} · ${s.carScreenName || s.carPath}${sid}`;
-      recentSel.appendChild(opt);
+      const bestStr = s.bestLapS > 0 ? formatLapSec(s.bestLapS) : "--:--.---";
+      opt.textContent = `${formatEpochShort(s.capturedEpochMs)} · ${s.trackName} · ${s.carScreenName} · ${bestStr}`;
+      sel.appendChild(opt);
     }
 
-    archiveSel.innerHTML = `<option value="">${archive.length ? `Archivo Histórico > 48h (${archive.length})…` : "Archivo Histórico (> 48h) vacío"}</option>`;
-    for (const s of archive) {
-      const opt = document.createElement("option");
-      opt.value = s.filePath;
-      const sid = s.sessionUniqueId ? ` #${s.sessionUniqueId}` : "";
-      opt.textContent = `${formatEpochShort(s.modifiedEpochMs)} · ${s.trackName || s.fileName} · ${s.carScreenName || s.carPath}${sid}`;
-      archiveSel.appendChild(opt);
+    if (autoLoadLatest && filtered.length > 0) {
+      sel.value = filtered[0].filePath;
+      await loadSelectedIbtSession(filtered[0].filePath);
+    } else if (previousValue && filtered.some((s) => s.filePath === previousValue)) {
+      sel.value = previousValue;
     }
   } catch {
-    // Non-fatal in mock/browser mode
+    // Non-fatal in browser/mock mode
   }
 }
 
@@ -579,13 +624,47 @@ async function loadSelectedIbtSession(path: string): Promise<void> {
     const { inTauri } = await import("./env");
     if (!inTauri()) return;
     const { invoke } = await import("@tauri-apps/api/core");
-    const report = await invoke<IbtSessionReport | null>("read_ibt_file", { path });
+    const report = await invoke<IbtSessionReport | null>("read_captured_session", { path });
     if (report) {
       paintLastSession(report);
       renderTelemetryStudio();
     }
   } catch {
     // Keep current view on read failure
+  }
+}
+
+async function wireIrsdkCaptureEvents(): Promise<void> {
+  if (captureEventsWired) return;
+  captureEventsWired = true;
+  try {
+    const { inTauri } = await import("./env");
+    if (!inTauri()) return;
+    const { invoke } = await import("@tauri-apps/api/core");
+    const { listen } = await import("@tauri-apps/api/event");
+    const initial = await withTimeout(
+      invoke<CaptureStatusPayload>("get_capture_status"),
+      1000,
+      { state: "idle", trackName: "", carScreenName: "", lapNum: 0, samplesCount: 0, savedLaps: 0 },
+    );
+    paintCaptureStatusBadge(initial);
+
+    await listen<CaptureStatusPayload>("mmt-capture-state", (ev) => {
+      if (ev.payload) paintCaptureStatusBadge(ev.payload);
+    });
+    await listen<CapturedSessionMeta>("mmt-session-captured", (ev) => {
+      paintCaptureStatusBadge({
+        state: "saved",
+        trackName: ev.payload?.trackName || "",
+        carScreenName: ev.payload?.carScreenName || "",
+        lapNum: 0,
+        samplesCount: 0,
+        savedLaps: ev.payload?.totalLaps || 0,
+      });
+      void populateIbtSessionSelectors(true);
+    });
+  } catch {
+    // Ignore outside Tauri
   }
 }
 
@@ -646,79 +725,18 @@ function wireRetentionSetting(): void {
   }
 }
 
-function exportCurrentMmtLap(): void {
-  const track = getEffectiveTelemetryTrack();
-  const payload = {
-    format: "mmt-lap-v1",
-    exportedAt: new Date().toISOString(),
-    trackName: track.name,
-    carPath: lastIbtReport?.carPath || "",
-    carScreenName: lastIbtReport?.carScreenName || "",
-    bestLapS: track.bestSec,
-    avgLapS: track.avgSec,
-    trackLengthM: track.samples[track.samples.length - 1]?.dist || 0,
-    samples: track.samples.map((s) => ({
-      distM: s.dist,
-      lapTimeS: 0,
-      speedKmh: s.speed,
-      throttle: s.thr / 100,
-      brake: s.brk / 100,
-      steeringRad: (s as { steering?: number }).steering ?? 0,
-      gear: s.gear,
-      x: (s as { x?: number }).x,
-      y: (s as { y?: number }).y,
-    })),
-  };
-  const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  const slug = (track.name || "lap").toLowerCase().replace(/[^a-z0-9]+/g, "_");
-  a.href = url;
-  a.download = `${slug}.mmt-lap`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function loadMmtLapJson(rawText: string, fileName: string): void {
-  try {
-    const parsed = JSON.parse(rawText);
-    if (!parsed || !Array.isArray(parsed.samples) || parsed.samples.length < 10) return;
-    const report: IbtSessionReport = {
-      fileName: `${fileName} (.mmt-lap)`,
-      trackName: String(parsed.trackName || "Circuito importado"),
-      trackConfig: "",
-      trackLengthM: Number(parsed.trackLengthM) || 0,
-      trackTemp: "",
-      airTemp: "",
-      carPath: String(parsed.carPath || ""),
-      carScreenName: String(parsed.carScreenName || ""),
-      bestLapS: Number(parsed.bestLapS) || 0,
-      avgLapS: Number(parsed.avgLapS) || Number(parsed.bestLapS) || 0,
-      topSpeedKmh: Math.max(...parsed.samples.map((s: any) => Number(s.speedKmh) || 0), 0),
-      totalLaps: 1,
-      laps: [],
-      bestLapSamples: parsed.samples,
-    };
-    paintLastSession(report);
-    renderTelemetryStudio();
-  } catch {
-    // Ignore invalid file
-  }
-}
-
 function paintAnalysis(): void {
   const trackSel = document.getElementById("telemetryTrack") as HTMLSelectElement | null;
-  const recentSel = document.getElementById("ibtRecentSelect") as HTMLSelectElement | null;
-  const archiveSel = document.getElementById("ibtArchiveSelect") as HTMLSelectElement | null;
-  const clearBtn = document.getElementById("btnClearIbtSession");
+  const capturedSel = document.getElementById("capturedSessionsSelect") as HTMLSelectElement | null;
   const filterAll = document.getElementById("coachFilterAll");
   const filterLoss = document.getElementById("coachFilterLoss");
   const traceCanvas = document.getElementById("traceCanvas") as HTMLCanvasElement | null;
 
   wireRetentionSetting();
+  void wireIrsdkCaptureEvents();
   if (!ibtSessionsLoaded) {
     ibtSessionsLoaded = true;
-    void populateIbtSessionSelectors();
+    void populateIbtSessionSelectors(true);
   }
 
   if (trackSel && !studioInitialized) {
@@ -728,51 +746,15 @@ function paintAnalysis(): void {
       activeHoverDist = null;
       renderTelemetryStudio();
     });
-    if (recentSel) {
-      recentSel.addEventListener("change", () => {
-        if (archiveSel) archiveSel.value = "";
-        void loadSelectedIbtSession(recentSel.value);
-      });
-    }
-    if (archiveSel) {
-      archiveSel.addEventListener("change", () => {
-        if (recentSel) recentSel.value = "";
-        void loadSelectedIbtSession(archiveSel.value);
-      });
-    }
-    if (clearBtn) {
-      clearBtn.addEventListener("click", () => {
-        lastIbtReport = null;
-        activeHoverDist = null;
-        if (recentSel) recentSel.value = "";
-        if (archiveSel) archiveSel.value = "";
-        renderTelemetryStudio();
-      });
-    }
-    const exportBtn = document.getElementById("btnExportMmtLap");
-    if (exportBtn) exportBtn.addEventListener("click", exportCurrentMmtLap);
-    const importBtn = document.getElementById("btnImportMmtLap");
-    const importInput = document.getElementById("inputImportMmtLap") as HTMLInputElement | null;
-    if (importBtn && importInput) {
-      importBtn.addEventListener("click", () => importInput.click());
-      importInput.addEventListener("change", async () => {
-        const f = importInput.files?.[0];
-        if (!f) return;
-        loadMmtLapJson(await f.text(), f.name);
-        importInput.value = "";
-      });
-    }
-    const viewAnalysis = document.getElementById("viewAnalysis");
-    if (viewAnalysis) {
-      viewAnalysis.addEventListener("dragover", (e) => {
-        e.preventDefault();
-      });
-      viewAnalysis.addEventListener("drop", async (e) => {
-        e.preventDefault();
-        const f = e.dataTransfer?.files?.[0];
-        if (f && (f.name.endsWith(".mmt-lap") || f.name.endsWith(".json"))) {
-          loadMmtLapJson(await f.text(), f.name);
+    if (capturedSel) {
+      capturedSel.addEventListener("change", () => {
+        if (!capturedSel.value) {
+          lastIbtReport = null;
+          activeHoverDist = null;
+          renderTelemetryStudio();
+          return;
         }
+        void loadSelectedIbtSession(capturedSel.value);
       });
     }
 
@@ -921,7 +903,7 @@ function renderTelemetryStudio(): void {
       ].filter(Boolean);
       metaBadge.textContent = parts.join(" · ");
     } else {
-      metaBadge.textContent = "Sin .ibt reciente en las últimas 48h (mostrando referencia del circuito).";
+      metaBadge.textContent = "Auto-captura IRSDK activa · mostrando referencia del circuito.";
     }
   }
 
@@ -972,7 +954,7 @@ function renderTelemetryStudio(): void {
       stintStdNode.textContent = "--";
       stintSummaryNode.textContent = lastIbtReport
         ? "Sin suficientes vueltas limpias en este .ibt."
-        : "Carga una sesión .ibt para calcular desviación estándar y ritmo vuelta a vuelta.";
+        : "Completa una tanda en iRacing para calcular desviación estándar y ritmo vuelta a vuelta automáticamente.";
       stintBarsNode.replaceChildren();
     }
   }
@@ -5644,20 +5626,20 @@ export function paintLastSession(report?: IbtSessionReport | null): void {
   const tableBody = document.getElementById("lsLapTableBody");
 
   if (!report) {
-    if (trackName) trackName.textContent = "Sin archivo .ibt";
-    if (trackConfig) trackConfig.textContent = "Sin sesión";
+    if (trackName) trackName.textContent = "Auto-captura IRSDK en espera";
+    if (trackConfig) trackConfig.textContent = "Sin sesión todavía";
     if (trackConditions) {
-      trackConditions.innerHTML = `<span>Asfalto --°C · Aire --°C</span><br/><span>Guarda telemetría en iRacing (Alt+L)</span>`;
+      trackConditions.innerHTML = `<span>Asfalto --°C · Aire --°C</span><br/><span>Captura automática al salir a pista en iRacing</span>`;
     }
-    if (dateText) dateText.textContent = "Documents\\iRacing\\telemetry";
+    if (dateText) dateText.textContent = "%LOCALAPPDATA%\\MMT Sync\\sessions";
     if (brandIcon) brandIcon.textContent = "--";
     if (brandName) brandName.textContent = "Vehículo";
     if (carModel) carModel.textContent = "Sin coche detectado";
     if (carClass) carClass.textContent = "Clase --";
     if (pilot) pilot.textContent = "Anonimizado";
-    if (setup) setup.textContent = "Sin .ibt reciente";
+    if (setup) setup.textContent = "Auto-captura IRSDK";
     if (position) position.textContent = "--";
-    if (posBadge) posBadge.textContent = "Telemetría local";
+    if (posBadge) posBadge.textContent = "Telemetría IRSDK";
     if (iratingGain) iratingGain.textContent = "--";
     if (iratingTotal) iratingTotal.textContent = "Privado";
     if (safetyGain) safetyGain.textContent = "--";
@@ -5669,7 +5651,7 @@ export function paintLastSession(report?: IbtSessionReport | null): void {
     if (topSpeed) topSpeed.textContent = "-- km/h";
     if (fuel) fuel.textContent = "-- L/vuelta";
     if (tableBody) {
-      tableBody.innerHTML = `<tr><td colspan="9" class="py-12 text-center text-r-muted font-mono text-xs">No se encontraron archivos .ibt en Documents\\iRacing\\telemetry. Activa la telemetría en iRacing (Alt+L).</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="9" class="py-10 text-center text-r-muted font-mono text-xs">Auto-captura IRSDK lista. Sal a pista en iRacing y las vueltas se guardarán automáticamente al completar cada vuelta o entrar en boxes.</td></tr>`;
     }
     return;
   }
