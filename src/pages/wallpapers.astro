@@ -340,17 +340,29 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
         </div>
       </section>
 
-      <!-- SECTION TABS: Series Oficiales | Por Coche | Álbumes -->
-      <div class="flex flex-wrap items-center gap-2 font-mono text-xs border-b border-white/10 pb-3">
-        <button type="button" data-view-tab="categories" class="wp-tab px-3.5 py-2 rounded-md bg-emerald-500 text-[#04130d] font-extrabold cursor-pointer">
-          Por Serie Oficial ({categoryPacks.length})
-        </button>
-        <button type="button" data-view-tab="cars" class="wp-tab px-3.5 py-2 rounded-md bg-[#0d1118] border border-white/10 text-slate-300 hover:text-white font-bold cursor-pointer">
-          Por Coche ({carPacks.length})
-        </button>
-        <button type="button" data-view-tab="albums" class="wp-tab px-3.5 py-2 rounded-md bg-[#0d1118] border border-white/10 text-slate-300 hover:text-white font-bold cursor-pointer">
-          Álbumes / Eventos ({apiAlbums.length})
-        </button>
+      <!-- SECTION TABS + WINDOWS SLIDESHOW INTERVAL -->
+      <div class="flex flex-wrap items-center justify-between gap-3 font-mono text-xs border-b border-white/10 pb-3">
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" data-view-tab="categories" class="wp-tab px-3.5 py-2 rounded-md bg-emerald-500 text-[#04130d] font-extrabold cursor-pointer">
+            Por Serie Oficial ({categoryPacks.length})
+          </button>
+          <button type="button" data-view-tab="cars" class="wp-tab px-3.5 py-2 rounded-md bg-[#0d1118] border border-white/10 text-slate-300 hover:text-white font-bold cursor-pointer">
+            Por Coche ({carPacks.length})
+          </button>
+          <button type="button" data-view-tab="albums" class="wp-tab px-3.5 py-2 rounded-md bg-[#0d1118] border border-white/10 text-slate-300 hover:text-white font-bold cursor-pointer">
+            Álbumes / Eventos ({apiAlbums.length})
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2 bg-[#0d1118] border border-white/10 rounded-lg px-2.5 py-1.5">
+          <span class="text-[10px] uppercase tracking-wider text-slate-400">Slideshow Windows:</span>
+          <div class="inline-flex items-center gap-1" id="wpIntervalGroup" role="group" aria-label="Intervalo de slideshow">
+            <button type="button" data-interval-sec="15" class="wp-int-btn px-2 py-0.5 rounded text-[11px] font-bold text-slate-300 hover:text-white cursor-pointer" aria-pressed="false">15s</button>
+            <button type="button" data-interval-sec="20" class="wp-int-btn px-2 py-0.5 rounded text-[11px] font-extrabold bg-emerald-500 text-[#04130d] cursor-pointer" aria-pressed="true">20s</button>
+            <button type="button" data-interval-sec="30" class="wp-int-btn px-2 py-0.5 rounded text-[11px] font-bold text-slate-300 hover:text-white cursor-pointer" aria-pressed="false">30s</button>
+            <button type="button" data-interval-sec="60" class="wp-int-btn px-2 py-0.5 rounded text-[11px] font-bold text-slate-300 hover:text-white cursor-pointer" aria-pressed="false">60s</button>
+          </div>
+        </div>
       </div>
 
       <!-- TAB 1: CATEGORY PACKS -->
@@ -373,9 +385,12 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
                   <span class="text-[11px] text-slate-400 tabular-nums">{pack.items.length} fotos .JPG</span>
                 </div>
                 <h3 class="text-base font-extrabold text-white">{pack.title}</h3>
-                <div class="flex items-center gap-2 pt-2 font-mono text-xs">
+                <div class="flex flex-wrap items-center gap-2 pt-2 font-mono text-xs">
                   <button type="button" data-pack-download={pack.id} class="flex-1 px-3 py-2 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-extrabold transition cursor-pointer">
                     Descargar Pack .ZIP (.JPG)
+                  </button>
+                  <button type="button" data-pack-slideshow={pack.id} class="px-2.5 py-2 rounded border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 font-bold transition cursor-pointer" title="Previsualizar Slideshow (20s)">
+                    ▶ Slideshow (<span class="wp-sec-lbl">20s</span>)
                   </button>
                   <button type="button" data-pack-filter={pack.id} class="px-3 py-2 rounded border border-white/15 hover:border-emerald-500/50 text-slate-200 font-semibold transition cursor-pointer">
                     Explorar
@@ -410,6 +425,9 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
                 <div class="flex items-center gap-1.5 pt-1 text-[11px]">
                   <button type="button" data-pack-download={pack.id} class="flex-1 px-2.5 py-1.5 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-extrabold cursor-pointer">
                     .ZIP (.JPG)
+                  </button>
+                  <button type="button" data-pack-slideshow={pack.id} class="px-2 py-1.5 rounded border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 font-bold cursor-pointer" title="Previsualizar Slideshow">
+                    ▶
                   </button>
                   <button type="button" data-pack-filter={pack.id} class="px-2.5 py-1.5 rounded border border-white/15 text-slate-200 cursor-pointer">
                     Ver
@@ -495,21 +513,33 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
       </section>
     </div>
 
-    <!-- PREVIEW MODAL -->
-    <div id="wpModal" hidden class="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true">
-      <div class="w-full max-w-4xl rounded-xl border border-white/15 bg-[#0d1118] overflow-hidden shadow-2xl">
-        <div class="flex items-center justify-between px-4 py-3 border-b border-white/10 font-mono">
-          <div>
-            <h3 id="wpModalTitle" class="text-sm font-bold text-white"></h3>
-            <p id="wpModalSub" class="text-[11px] text-slate-400"></p>
+    <!-- PREVIEW & SLIDESHOW MODAL (Crossfade + Ken Burns GPU) -->
+    <div id="wpModal" hidden class="fixed inset-0 z-50 bg-black/92 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true">
+      <div class="w-full max-w-5xl rounded-xl border border-white/15 bg-[#0d1118] overflow-hidden shadow-2xl">
+        <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-white/10 font-mono">
+          <div class="min-w-0">
+            <h3 id="wpModalTitle" class="text-sm font-bold text-white truncate"></h3>
+            <p id="wpModalSub" class="text-[11px] text-slate-400 truncate"></p>
           </div>
-          <button type="button" id="wpModalClose" class="px-2.5 py-1 rounded border border-white/15 text-xs text-slate-300 hover:text-white cursor-pointer">Cerrar ✕</button>
+          <div class="flex items-center gap-2 shrink-0 text-xs">
+            <button type="button" id="wpSlidePrev" class="px-2 py-1 rounded border border-white/15 text-slate-300 hover:text-white cursor-pointer" aria-label="Anterior">‹</button>
+            <button type="button" id="wpSlideToggle" class="px-2.5 py-1 rounded border border-emerald-500/45 bg-emerald-500/15 text-emerald-300 font-bold cursor-pointer">
+              ▶ Slideshow (<span class="wp-sec-lbl">20s</span>)
+            </button>
+            <button type="button" id="wpSlideNext" class="px-2 py-1 rounded border border-white/15 text-slate-300 hover:text-white cursor-pointer" aria-label="Siguiente">›</button>
+            <span id="wpSlideCounter" class="text-[11px] text-slate-400 tabular-nums px-1">1/1</span>
+            <button type="button" id="wpModalClose" class="px-2.5 py-1 rounded border border-white/15 text-slate-300 hover:text-white cursor-pointer">Cerrar ✕</button>
+          </div>
         </div>
-        <div class="p-4 bg-[#090b0f] flex items-center justify-center max-h-[68vh] overflow-hidden">
-          <img id="wpModalImg" src="" alt="" referrerpolicy="no-referrer" class="max-h-[62vh] w-auto object-contain rounded border border-white/10" />
+        <div class="relative w-full aspect-video max-h-[68vh] bg-[#05070b] overflow-hidden flex items-center justify-center">
+          <img id="wpModalImgA" src="" alt="" referrerpolicy="no-referrer" class="wp-kb-layer absolute inset-0 w-full h-full object-cover opacity-0" />
+          <img id="wpModalImgB" src="" alt="" referrerpolicy="no-referrer" class="wp-kb-layer absolute inset-0 w-full h-full object-cover opacity-0" />
+          <div class="absolute inset-x-0 bottom-0 h-[3px] bg-white/10 z-20 pointer-events-none">
+            <div id="wpSlideProgress" class="h-full bg-emerald-500 origin-left" style="width: 0%;"></div>
+          </div>
         </div>
         <div class="px-4 py-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 font-mono text-xs">
-          <span class="text-slate-400">Exportado a .JPG estándar nativo para Windows (16:9) o Móvil (9:16 4K).</span>
+          <span class="text-slate-400">Transición Crossfade 900ms + Ken Burns (GPU) · Exportado a .JPG estándar para Windows/Móvil.</span>
           <div class="flex items-center gap-2">
             <button type="button" id="wpModalDownloadDesktop" class="px-3.5 py-2 rounded border border-white/20 hover:border-emerald-500 text-white font-bold cursor-pointer">Descargar 16:9 (.JPG)</button>
             <button type="button" id="wpModalDownloadMobile" class="px-3.5 py-2 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-extrabold cursor-pointer">Descargar Foto Móvil (9:16 4K .JPG)</button>
@@ -517,6 +547,21 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
         </div>
       </div>
     </div>
+
+    <style>
+      .wp-kb-layer {
+        transition: opacity 900ms cubic-bezier(0.22, 1, 0.36, 1);
+        will-change: transform, opacity;
+        transform: scale(1);
+      }
+      @keyframes wpKenBurns {
+        0% { transform: scale(1) translate3d(0, 0, 0); }
+        100% { transform: scale(1.04) translate3d(-0.6%, -0.4%, 0); }
+      }
+      .wp-kb-active {
+        animation: wpKenBurns var(--wp-kb-dur, 20s) linear forwards;
+      }
+    </style>
 
     <!-- SUBMIT / SUGGEST MODAL -->
     <div id="wpSubmitModal" hidden class="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true">
@@ -575,8 +620,25 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
     const itemById = new Map(allItems.map((i) => [i.id, i]));
 
     let outputFormat: "desktop" | "mobile" = "desktop";
+    let slideshowSec = 20;
     let activePackFilter: string | null = null;
     const selectedIds = new Set<string>();
+
+    document.querySelectorAll<HTMLButtonElement>(".wp-int-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const sec = Number(btn.dataset.intervalSec || "20");
+        slideshowSec = Number.isFinite(sec) && sec > 0 ? sec : 20;
+        document.querySelectorAll<HTMLButtonElement>(".wp-int-btn").forEach((b) => {
+          const on = b === btn;
+          b.setAttribute("aria-pressed", String(on));
+          b.className = `wp-int-btn px-2 py-0.5 rounded text-[11px] cursor-pointer ${on ? "font-extrabold bg-emerald-500 text-[#04130d]" : "font-bold text-slate-300 hover:text-white"}`;
+        });
+        document.querySelectorAll(".wp-sec-lbl").forEach((el) => {
+          el.textContent = `${slideshowSec}s`;
+        });
+        document.documentElement.style.setProperty("--wp-kb-dur", `${slideshowSec}s`);
+      });
+    });
 
     const fmtDesktopBtn = document.getElementById("fmtDesktopBtn") as HTMLButtonElement | null;
     const fmtMobileBtn = document.getElementById("fmtMobileBtn") as HTMLButtonElement | null;
@@ -724,7 +786,26 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
         if (progressPct) progressPct.textContent = `${pct}%`;
         if (progressFill) progressFill.style.width = `${pct}%`;
       };
-      zip.file("README_Windows_Slideshow.txt", "MUNTRUME MOTORSPORT WALLPAPERS (.JPG nativo)\r\nDescomprime en Windows -> Personalizar -> Fondo -> Presentacion -> Examinar.");
+      zip.file("README_Windows_Slideshow.txt", `MUNTRUME MOTORSPORT WALLPAPERS (.JPG nativo)\r\nIntervalo configurado: ${slideshowSec}s (${slideshowSec * 1000} ms) con transicion Crossfade.\r\nDescomprime la carpeta y ejecuta Aplicar_Slideshow_${slideshowSec}s.bat (o elige esta carpeta en Personalizacion > Fondo > Presentacion).`);
+      if (outputFormat === "desktop") {
+        const intervalMs = slideshowSec * 1000;
+        const batContent = [
+          "@echo off",
+          "setlocal",
+          `echo Configurando Slideshow de Windows a ${slideshowSec}s con transicion suave...`,
+          `reg add "HKCU\\Control Panel\\Personalization\\Desktop Slideshow" /v Interval /t REG_DWORD /d ${intervalMs} /f >nul 2>&1`,
+          `reg add "HKCU\\Control Panel\\Personalization\\Desktop Slideshow" /v Shuffle /t REG_DWORD /d 1 /f >nul 2>&1`,
+          `reg add "HKCU\\Control Panel\\Personalization\\Desktop Slideshow" /v AnimationDuration /t REG_DWORD /d 1000 /f >nul 2>&1`,
+          `reg add "HKCU\\Control Panel\\Desktop" /v UserPreferencesMask /t REG_BINARY /d 9e3e078012000000 /f >nul 2>&1`,
+          `reg add "HKCU\\Control Panel\\Desktop" /v Animations /t REG_DWORD /d 1 /f >nul 2>&1`,
+          `reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v ListviewAlphaSelect /t REG_DWORD /d 1 /f >nul 2>&1`,
+          `RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters 1, True`,
+          `start "" "ms-settings:personalization-background"`,
+          `echo Listo! Selecciona "Presentacion" y elige esta carpeta: %~dp0`,
+          "pause",
+        ].join("\r\n");
+        zip.file(`Aplicar_Slideshow_${slideshowSec}s.bat`, batContent);
+      }
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
         updateProg(i, items.length, `Convirtiendo ${i + 1}/${items.length} a .JPG estándar (${suffix})...`);
@@ -753,22 +834,140 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
     const modalEl = document.getElementById("wpModal");
     const modalTitle = document.getElementById("wpModalTitle");
     const modalSub = document.getElementById("wpModalSub");
-    const modalImg = document.getElementById("wpModalImg") as HTMLImageElement | null;
+    const modalImgA = document.getElementById("wpModalImgA") as HTMLImageElement | null;
+    const modalImgB = document.getElementById("wpModalImgB") as HTMLImageElement | null;
+    const slideProgress = document.getElementById("wpSlideProgress") as HTMLElement | null;
+    const slideToggleBtn = document.getElementById("wpSlideToggle");
+    const slideCounter = document.getElementById("wpSlideCounter");
     let activeModalItem: (typeof allItems)[number] | null = null;
+    let slideItems: (typeof allItems) = [];
+    let slideIndex = 0;
+    let slidePlaying = false;
+    let slideTimer: number | null = null;
+    let activeLayerA = true;
+
+    function stopSlideshow() {
+      slidePlaying = false;
+      if (slideTimer !== null) {
+        clearTimeout(slideTimer);
+        slideTimer = null;
+      }
+      if (slideToggleBtn) {
+        slideToggleBtn.innerHTML = `▶ Slideshow (<span class="wp-sec-lbl">${slideshowSec}s</span>)`;
+      }
+      if (slideProgress) {
+        slideProgress.style.transition = "none";
+        slideProgress.style.width = "0%";
+      }
+    }
+
+    function showSlideAt(idx: number, animateKenBurns: boolean) {
+      if (!slideItems.length || !modalImgA || !modalImgB) return;
+      slideIndex = ((idx % slideItems.length) + slideItems.length) % slideItems.length;
+      const item = slideItems[slideIndex];
+      activeModalItem = item;
+      if (modalTitle) modalTitle.textContent = item.model;
+      if (modalSub) modalSub.textContent = `${item.carClass} · ${item.circuit}`;
+      if (slideCounter) slideCounter.textContent = `${slideIndex + 1}/${slideItems.length}`;
+
+      const incoming = activeLayerA ? modalImgA : modalImgB;
+      const outgoing = activeLayerA ? modalImgB : modalImgA;
+      activeLayerA = !activeLayerA;
+
+      incoming.classList.remove("wp-kb-active");
+      incoming.style.setProperty("--wp-kb-dur", `${slideshowSec}s`);
+      incoming.src = item.img;
+      incoming.alt = item.model;
+
+      const reveal = () => {
+        if (animateKenBurns) {
+          void incoming.offsetWidth;
+          incoming.classList.add("wp-kb-active");
+        }
+        incoming.style.opacity = "1";
+        incoming.style.zIndex = "2";
+        outgoing.style.opacity = "0";
+        outgoing.style.zIndex = "1";
+      };
+
+      if (incoming.complete) reveal();
+      else incoming.onload = reveal;
+
+      if (slideProgress) {
+        slideProgress.style.transition = "none";
+        slideProgress.style.width = "0%";
+        if (animateKenBurns) {
+          void slideProgress.offsetWidth;
+          slideProgress.style.transition = `width ${slideshowSec}s linear`;
+          slideProgress.style.width = "100%";
+        }
+      }
+    }
+
+    function scheduleNextSlide() {
+      if (!slidePlaying) return;
+      if (slideTimer !== null) clearTimeout(slideTimer);
+      slideTimer = window.setTimeout(() => {
+        if (!slidePlaying) return;
+        showSlideAt(slideIndex + 1, true);
+        scheduleNextSlide();
+      }, slideshowSec * 1000);
+    }
+
+    function startSlideshow() {
+      if (!slideItems.length) return;
+      slidePlaying = true;
+      if (slideToggleBtn) {
+        slideToggleBtn.innerHTML = `⏸ Pausar (<span class="wp-sec-lbl">${slideshowSec}s</span>)`;
+      }
+      showSlideAt(slideIndex, true);
+      scheduleNextSlide();
+    }
+
+    function openPreviewModal(items: typeof allItems, startIdx: number, autoPlay: boolean) {
+      if (!items.length || !modalEl) return;
+      stopSlideshow();
+      slideItems = items;
+      slideIndex = startIdx;
+      modalEl.hidden = false;
+      if (autoPlay) startSlideshow();
+      else showSlideAt(startIdx, false);
+    }
+
+    function closePreviewModal() {
+      stopSlideshow();
+      if (modalEl) modalEl.hidden = true;
+    }
 
     document.querySelectorAll<HTMLButtonElement>("[data-preview-id]").forEach((btn) => {
       btn.addEventListener("click", () => {
-        const item = itemById.get(btn.dataset.previewId || "");
-        if (!item || !modalEl) return;
-        activeModalItem = item;
-        if (modalTitle) modalTitle.textContent = item.model;
-        if (modalSub) modalSub.textContent = `${item.carClass} · ${item.circuit}`;
-        if (modalImg) { modalImg.src = item.img; modalImg.alt = item.model; }
-        modalEl.hidden = false;
+        const id = btn.dataset.previewId || "";
+        const idx = allItems.findIndex((i) => i.id === id);
+        if (idx >= 0) openPreviewModal(allItems, idx, false);
       });
     });
-    document.getElementById("wpModalClose")?.addEventListener("click", () => { if (modalEl) modalEl.hidden = true; });
-    modalEl?.addEventListener("click", (e) => { if (e.target === modalEl) modalEl.hidden = true; });
+    document.querySelectorAll<HTMLButtonElement>("[data-pack-slideshow]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const pack = packsMeta.find((p) => p.id === btn.dataset.packSlideshow);
+        if (!pack) return;
+        const items = pack.itemIds.map((id) => itemById.get(id)).filter(Boolean) as typeof allItems;
+        openPreviewModal(items, 0, true);
+      });
+    });
+    slideToggleBtn?.addEventListener("click", () => {
+      if (slidePlaying) stopSlideshow();
+      else startSlideshow();
+    });
+    document.getElementById("wpSlidePrev")?.addEventListener("click", () => {
+      showSlideAt(slideIndex - 1, slidePlaying);
+      if (slidePlaying) scheduleNextSlide();
+    });
+    document.getElementById("wpSlideNext")?.addEventListener("click", () => {
+      showSlideAt(slideIndex + 1, slidePlaying);
+      if (slidePlaying) scheduleNextSlide();
+    });
+    document.getElementById("wpModalClose")?.addEventListener("click", closePreviewModal);
+    modalEl?.addEventListener("click", (e) => { if (e.target === modalEl) closePreviewModal(); });
 
     async function downloadSingleItem(item: (typeof allItems)[number], fmt: "desktop" | "mobile") {
       const jpgBlob = await renderNativeJpgBlob(item.img, fmt);
