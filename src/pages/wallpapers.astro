@@ -205,16 +205,16 @@ async function evaluatePhotoQuality(item: WallpaperItem): Promise<ScoredCandidat
     return { item, score: -1, width: 0, height: 0, reason: `interior/cockpit keyword (${label})` };
   }
 
-  let buf: Buffer | null = null;
+  let buf: Uint8Array | null = null;
   try {
     if (item.img.startsWith("/")) {
-      buf = fs.readFileSync(path.join(publicDir, item.img));
+      buf = new Uint8Array(fs.readFileSync(path.join(publicDir, item.img)));
     } else {
       const ac = new AbortController();
       const timer = setTimeout(() => ac.abort(), 4500);
       const res = await fetch(item.img, { signal: ac.signal });
       clearTimeout(timer);
-      if (res.ok) buf = Buffer.from(await res.arrayBuffer());
+      if (res.ok) buf = new Uint8Array(await res.arrayBuffer());
     }
   } catch {
     buf = null;
