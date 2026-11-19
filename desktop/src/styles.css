@@ -552,6 +552,23 @@ html:not(.overlay-mode) body {
   will-change: transform;
 }
 
+#overlayStage .mmt-hud-widget {
+  backdrop-filter: blur(8px);
+}
+
+#overlayStage:has(#mmtStudioSceneBg.is-cockpit) #widgetStandings,
+#overlayStage:has(#mmtStudioSceneBg.is-cockpit) #widgetRelative,
+#overlayStage:has(#mmtStudioSceneBg.is-cockpit) #widgetFuel,
+#overlayStage:has(#mmtStudioSceneBg.is-cockpit) #widgetTrackMap,
+#overlayStage:has(#mmtStudioSceneBg.is-cockpit) #widgetBrakeMarker,
+#overlayStage:has(#mmtStudioSceneBg.is-cockpit) #widgetCorner,
+#overlayStage:has(#mmtStudioSceneBg.is-cockpit) #widgetShiftLights,
+#overlayStage:has(#mmtStudioSceneBg.is-cockpit) #ovClusterBrandPreview {
+  background: rgba(9, 11, 15, 0.86) !important;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+}
+
 html.overlay-mode,
 html.overlay-mode body {
   background: transparent !important;

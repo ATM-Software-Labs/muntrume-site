@@ -57,8 +57,8 @@ DriverInfo:
     UserName: "Alberto (Tú)"
     AbbrevName: "Alberto"
     CarNumber: "16"
-    CarPath: "ferrari296gt3"
-    CarScreenName: "Ferrari 296 GT3"
+    CarPath: "porsche992rgt3"
+    CarScreenName: "Porsche 911 GT3 R (992)"
     CarClassShortName: "GT3"
     CarClassColor: 0x38bdf8
     CarClassEstLapTime: 119.5
@@ -329,6 +329,7 @@ export class MockTelemetryProvider {
       brake: Math.max(0, -Math.sin(t * 1.5)),
       clutch: 0,
       steering: Math.sin(t * 0.8) * 0.35,
+      carLeftRight: 1,
 
       fuelLevel: this.fuelRemaining,
       fuelLevelPct: this.fuelRemaining / 100.0,

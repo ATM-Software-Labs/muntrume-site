@@ -14,15 +14,23 @@ export interface TireCornerInput {
   pressureKpa: number;
 }
 
+export interface TireThermalEnv {
+  trackTempC?: number;
+  windSpeedKmh?: number;
+  windDirDeg?: number;
+  trackWetnessPct?: number;
+}
+
 export interface TireThermalInput {
   onPitRoad: boolean;
   LF: TireCornerInput;
   RF: TireCornerInput;
   LR: TireCornerInput;
   RR: TireCornerInput;
+  env?: TireThermalEnv;
 }
 
-export type ThermalZoneState = "cold" | "optimal" | "hot";
+export type ThermalZoneState = "cold" | "optimal" | "warm" | "hot";
 
 export interface TireCornerComputed {
   corner: TireCorner;
@@ -44,6 +52,12 @@ export interface TireCornerComputed {
 export interface TireThermalSnapshot {
   corners: Record<TireCorner, TireCornerComputed>;
   optimalWindowC: [number, number];
+  env: {
+    trackTempC: number;
+    windSpeedKmh: number;
+    windDirDeg: number;
+    trackWetnessPct: number;
+  };
 }
 
 const KPA_TO_PSI = 0.1450377;
@@ -51,12 +65,12 @@ const KPA_TO_PSI = 0.1450377;
 export class TireThermalEngine {
   private coldBaseline: Partial<Record<TireCorner, number>> = {};
   private wasOnPitRoad = true;
-  private optimalMinC = 60;
-  private optimalMaxC = 95;
+  private optimalMinC = 75;
+  private optimalMaxC = 92;
 
   public setOptimalWindow(minC: number, maxC: number): void {
-    this.optimalMinC = finiteOr(minC, 60);
-    this.optimalMaxC = Math.max(this.optimalMinC + 5, finiteOr(maxC, 95));
+    this.optimalMinC = finiteOr(minC, 75);
+    this.optimalMaxC = Math.max(this.optimalMinC + 5, finiteOr(maxC, 92));
   }
 
   public resetColdBaseline(): void {
@@ -64,14 +78,16 @@ export class TireThermalEngine {
   }
 
   public classifyTemp(tempC: number): ThermalZoneState {
-    if (tempC < this.optimalMinC) return "cold";
-    if (tempC > this.optimalMaxC) return "hot";
+    if (tempC < 70) return "cold";
+    if (tempC > 98) return "hot";
+    if (tempC > this.optimalMaxC || tempC < this.optimalMinC) return "warm";
     return "optimal";
   }
 
   public colorForState(state: ThermalZoneState): string {
     if (state === "cold") return "#38bdf8";
-    if (state === "hot") return "#f87171";
+    if (state === "hot") return "#ef4444";
+    if (state === "warm") return "#f59e0b";
     return "#34d399";
   }
 
@@ -128,6 +144,12 @@ export class TireThermalEngine {
     return {
       corners: computed,
       optimalWindowC: [this.optimalMinC, this.optimalMaxC],
+      env: {
+        trackTempC: Number(finiteOr(input.env?.trackTempC, 28.4).toFixed(1)),
+        windSpeedKmh: Number(finiteOr(input.env?.windSpeedKmh, 14.0).toFixed(0)),
+        windDirDeg: Math.round(finiteOr(input.env?.windDirDeg, 45)),
+        trackWetnessPct: Math.round(finiteOr(input.env?.trackWetnessPct, 0)),
+      },
     };
   }
 }
@@ -138,62 +160,44 @@ export function renderTireThermalWidget(container: HTMLElement, snap: TireTherma
     return;
   }
 
+  const labelMap: Record<TireCorner, string> = { LF: "FL", RF: "FR", LR: "RL", RR: "RR" };
   const order: TireCorner[] = ["LF", "RF", "LR", "RR"];
   const cards = order
     .map((key) => {
       const t = snap.corners[key];
-      const isLeft = key.startsWith("L");
-      const zones = isLeft
-        ? [
-            { label: "O", temp: t.outerC, state: t.outerState },
-            { label: "M", temp: t.middleC, state: t.middleState },
-            { label: "I", temp: t.innerC, state: t.innerState },
-          ]
-        : [
-            { label: "I", temp: t.innerC, state: t.innerState },
-            { label: "M", temp: t.middleC, state: t.middleState },
-            { label: "O", temp: t.outerC, state: t.outerState },
-          ];
-
-      const bars = zones
-        .map((z) => {
-          const col = engine.colorForState(z.state);
-          return `
-            <div class="flex-1 rounded p-1 text-center border border-white/10" style="background:${col}22;border-color:${col}66">
-              <div class="text-[8px] text-white/60">${z.label}</div>
-              <div class="text-[11px] font-bold" style="color:${col}">${z.temp.toFixed(0)}°</div>
-            </div>
-          `;
-        })
-        .join("");
-
-      const signKpa = t.deltaKpa >= 0 ? "+" : "";
-      const signPsi = t.deltaPsi >= 0 ? "+" : "";
-      const signCamber = t.camberDeltaC >= 0 ? "+" : "";
+      const avgState = engine.classifyTemp(t.avgC);
+      const avgColor = engine.colorForState(avgState);
+      const hotPsi = (t.hotKpa * KPA_TO_PSI).toFixed(1);
 
       return `
-        <div class="p-2.5 rounded-lg bg-black/50 border border-white/10 space-y-1.5">
+        <div class="p-1.5 rounded bg-black/55 border border-white/10 space-y-1">
           <div class="flex items-center justify-between text-[10px]">
-            <span class="font-bold text-white">${key}</span>
-            <span class="text-white/60">ΔCamber ${signCamber}${t.camberDeltaC.toFixed(1)}°C</span>
+            <span class="font-bold text-white">${labelMap[key]}</span>
+            <span class="font-extrabold tabular-nums" style="color:${avgColor}">${t.avgC.toFixed(0)}°C</span>
           </div>
-          <div class="flex gap-1">${bars}</div>
-          <div class="flex items-center justify-between text-[10px] pt-0.5">
-            <span class="text-white/75">${t.hotKpa.toFixed(1)} kPa <span class="text-white/40">(frío ${t.coldKpa.toFixed(0)})</span></span>
-            <span class="font-bold text-amber-300">${signKpa}${t.deltaKpa.toFixed(1)} kPa / ${signPsi}${t.deltaPsi.toFixed(2)} PSI</span>
+          <div class="flex items-center justify-between text-[9.5px] text-white/75 tabular-nums">
+            <span>${t.hotKpa.toFixed(0)} kPa</span>
+            <span class="text-white/55">${hotPsi} PSI</span>
           </div>
         </div>
       `;
     })
     .join("");
 
+  const dirArrowStyle = `display:inline-block;transform:rotate(${snap.env.windDirDeg}deg);`;
+
   container.innerHTML = `
-    <div class="space-y-2 font-mono">
-      <div class="flex items-center justify-between text-[10px] border-b border-white/10 pb-1.5">
-        <span class="uppercase tracking-wider text-white/60">Térmico IMO &amp; Presiones</span>
-        <span class="text-emerald-300">Ventana ${snap.optimalWindowC[0]}–${snap.optimalWindowC[1]}°C</span>
+    <div class="space-y-1.5 font-mono">
+      <div class="flex items-center justify-between text-[9.5px] border-b border-white/10 pb-1">
+        <span class="uppercase tracking-wider text-white/75 font-bold">Tire &amp; Track Monitor</span>
+        <span class="text-emerald-300 font-bold">${snap.optimalWindowC[0]}–${snap.optimalWindowC[1]}°C</span>
       </div>
-      <div class="grid grid-cols-2 gap-2">${cards}</div>
+      <div class="grid grid-cols-2 gap-1.5">${cards}</div>
+      <div class="flex items-center justify-between text-[9.5px] text-white/80 pt-0.5 border-t border-white/10 tabular-nums">
+        <span>Pista <strong class="text-amber-300">${snap.env.trackTempC.toFixed(1)}°C</strong></span>
+        <span>Viento <strong class="text-white">${snap.env.windSpeedKmh} km/h</strong> <span style="${dirArrowStyle}">↑</span></span>
+        <span>Lluvia <strong class="text-sky-300">${snap.env.trackWetnessPct}%</strong></span>
+      </div>
     </div>
   `;
 }

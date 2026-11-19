@@ -67,6 +67,12 @@ const sparklines: Record<string, string> = {
 };
 const sparkPath = sparklines[driver.slug] || "M2,20 Q30,16 65,12 T126,5";
 
+const DRIVER_EMAILS: Record<string, string> = {
+  albertot: "alberto@muntru.me",
+  mateob: "mateo@muntru.me",
+};
+const driverEmail = DRIVER_EMAILS[driver.slug] || "admin@muntru.me";
+
 function safeUrl(url: string) {
   const value = url.trim();
   if (!value) return "";
@@ -162,7 +168,16 @@ const socials = (
                 <span data-i18n="card.updated">Actualizado:</span> <time datetime="2026-11-07">{LICENCE_UPDATED_LABEL}</time>
               </span>
             </div>
-            <div id="redes" data-block="socials">
+            <div id="redes" data-block="socials" class="space-y-2">
+              <div class="flex flex-wrap items-center gap-2 font-mono text-xs">
+                <a href={`mailto:${driverEmail}`} class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-[var(--r-line)] bg-[var(--r-bg)] text-[var(--r-accent)] hover:underline font-semibold">
+                  <span aria-hidden="true">✉</span>
+                  <span>{driverEmail}</span>
+                </a>
+                <button type="button" data-copy-email={driverEmail} class="px-2 py-1 rounded-md border border-[var(--r-line)] bg-[var(--r-surface)] text-[var(--r-muted)] hover:text-[var(--r-text)] hover:border-[var(--r-accent)] text-[11px] font-bold transition cursor-pointer">
+                  Copiar email
+                </button>
+              </div>
               {socials.length > 0 ? (
                 <ul class="d-socials">
                   {socials.map((s) => (
@@ -417,6 +432,16 @@ const socials = (
             </div>
           </details>
 
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-1 pb-1 font-mono text-[11px]">
+            <a href={`mailto:${driverEmail}`} class="inline-flex items-center gap-1.5 text-[var(--r-accent)] hover:underline font-semibold truncate">
+              <span aria-hidden="true">✉</span>
+              <span class="truncate">{driverEmail}</span>
+            </a>
+            <button type="button" data-copy-email={driverEmail} class="px-2 py-0.5 rounded border border-[var(--r-line)] bg-[var(--r-bg)] text-[var(--r-muted)] hover:text-[var(--r-text)] hover:border-[var(--r-accent)] text-[10px] font-bold transition cursor-pointer shrink-0">
+              Copiar email
+            </button>
+          </div>
+
           <div class="d-actions-row">
             <a class="d-card__link" href={profileHref}>
               <span data-i18n="card.profile">Ver ficha</span>
@@ -428,3 +453,31 @@ const socials = (
     </>
   )}
 </article>
+
+<script is:inline>
+  if (!window.__mmtCopyEmailBound) {
+    window.__mmtCopyEmailBound = true;
+    document.addEventListener("click", function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest("[data-copy-email]") : null;
+      if (!btn) return;
+      var email = btn.getAttribute("data-copy-email");
+      if (!email) return;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(email).catch(function () {});
+      } else {
+        var ta = document.createElement("textarea");
+        ta.value = email;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand("copy"); } catch (err) {}
+        ta.remove();
+      }
+      var orig = btn.getAttribute("data-orig-lbl") || btn.textContent;
+      btn.setAttribute("data-orig-lbl", orig);
+      btn.textContent = "¡Copiado!";
+      setTimeout(function () { btn.textContent = orig; }, 1800);
+    });
+  }
+</script>

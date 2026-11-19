@@ -1,4 +1,5 @@
 import { listen } from "@tauri-apps/api/event";
+import cockpitPorscheUrl from "./assets/cockpit-porsche-992-gt3r.jpg";
 import type { HardwareReport, IbtSessionMeta, IbtSessionReport, IracingAnalysis, LiveSample, Settings, Snapshot } from "./types";
 import { areSessionsCompatible, computeDistanceDelta, resampleTrackByDistance } from "./telemetry/alignment";
 import { cleanTelemetrySignals, detectCornerKeyEvents } from "./telemetry/signal-cleaner";
@@ -37,6 +38,7 @@ import {
   renderBroadcastDirectorWidget,
 } from "./irsdk";
 import { renderLiveTrackMapCanvas } from "./irsdk/proximity-radar";
+import { renderPitStrategyWidget } from "./irsdk/pit-exit-predictor";
 import { renderHelicorsaRadar } from "./irsdk/radar-360";
 import { observeTrackAutoMap } from "./irsdk/track-paths";
 import { estimateLiveIRating, formatIRatingDelta, formatSofShort } from "./irsdk/irating-calc";
@@ -1809,6 +1811,21 @@ function renderStandbyWidgets(): void {
   document.querySelectorAll<HTMLElement>("#ovFuel, #ovFuelFloat").forEach((fuel) => {
     renderFuelWidget(fuel, irsdkState);
   });
+  document.querySelectorAll<HTMLElement>("#ovRadar, #ovRadarFloat").forEach((radar) => {
+    renderHelicorsaRadar(radar, irsdkState);
+  });
+  document.querySelectorAll<HTMLCanvasElement>("#ovTrackMap, #ovTrackMapFloat").forEach((trackMapCanvas) => {
+    if (irsdkState) {
+      observeTrackAutoMap(
+        irsdkState.session.weekendInfo?.trackName || "",
+        irsdkState.frame.carIdxLap[irsdkState.camCarIdx] ?? 0,
+        irsdkState.frame.carIdxLapDistPct[irsdkState.camCarIdx] ?? -1,
+        0,
+        0,
+      );
+    }
+    renderLiveTrackMapCanvas(trackMapCanvas, irsdkState);
+  });
 
   // Update minimalist Pro Live Metrics Strip in main app
   const proStrip = document.getElementById("proLiveMetricsStrip");
@@ -1838,6 +1855,37 @@ function renderStandbyWidgets(): void {
   if (pitEl) renderPitExitWidget(pitEl, null);
   const tireEl = document.getElementById("ovTireThermalWidget");
   if (tireEl) renderTireThermalWidget(tireEl, null, tireThermalEngine);
+  const pitStratEls = document.querySelectorAll<HTMLElement>("#ovPitStrategy, #ovPitStrategyFloat");
+  pitStratEls.forEach((el) => {
+    renderPitStrategyWidget(el, {
+      currentLap: 14,
+      pitWindowStartLap: 16,
+      pitWindowEndLap: 18,
+      estPitTimeS: 27.4,
+      rejoinPos: 5,
+      classSize: 18,
+      fuelToAddL: 34.5,
+      changeTires: false,
+      boxThisLap: false,
+      fuelSavePerLapL: 0.12,
+      aheadCarLabel: "#22 E. Chongkan",
+    });
+  });
+  const tireMonEls = document.querySelectorAll<HTMLElement>("#ovTireMonitor, #ovTireMonitorFloat");
+  const standbySnap = tireThermalEngine.evaluate({
+    onPitRoad: false,
+    LF: { innerC: 84, middleC: 82, outerC: 79, pressureKpa: 175 },
+    RF: { innerC: 81, middleC: 79, outerC: 77, pressureKpa: 173 },
+    LR: { innerC: 78, middleC: 76, outerC: 75, pressureKpa: 170 },
+    RR: { innerC: 76, middleC: 75, outerC: 73, pressureKpa: 169 },
+    env: {
+      trackTempC: irsdkState?.frame?.trackTempC || 28.4,
+      windSpeedKmh: 14,
+      windDirDeg: 45,
+      trackWetnessPct: irsdkState?.frame?.precipitationPct ?? 0,
+    },
+  });
+  tireMonEls.forEach((el) => renderTireThermalWidget(el, standbySnap, tireThermalEngine));
   const bdEl = document.getElementById("ovBroadcastDirectorWidget");
   if (bdEl) renderBroadcastDirectorWidget(bdEl, broadcastDirector);
 }
@@ -1894,7 +1942,7 @@ export function updateOverlayBrandBadge(carFolder?: string): void {
     const isFloat = node.id === "ovClusterBrandFloat";
     const target = isFloat && isLiveFromSDK
       ? carFolder
-      : (carFolder || lastIbtReport?.carPath || (hudMockAllowed() ? "ferrari296gt3" : undefined));
+      : (carFolder || lastIbtReport?.carPath || (hudMockAllowed() ? "porsche992rgt3" : undefined));
     const meta = target ? resolveCarMetadata(target) : null;
     if (!meta) {
       node.hidden = true;
@@ -2333,7 +2381,7 @@ function ensureLayoutSchemaV2(force = false): void {
     // Prompt 105 & 163: Factory Presets, Custom Profiles & JSON Export/Import
     const FACTORY_PRESETS: Record<string, { disabled: string[]; ghost: boolean }> = {
       sprint_gt3: {
-        disabled: ["fuel", "laptimes", "conditions", "fastercar", "cluster", "delta", "radar", "tires", "lights"],
+        disabled: ["standings", "trackmap", "fuel", "pit", "laptimes", "conditions", "fastercar", "cluster", "lights"],
         ghost: false,
       },
       endurance_multi: {
@@ -2341,11 +2389,11 @@ function ensureLayoutSchemaV2(force = false): void {
         ghost: false,
       },
       practice_pace: {
-        disabled: ["standings", "relative", "halo", "digiflag", "rejoin", "fastercar", "fuel", "radar", "tires"],
+        disabled: ["standings", "relative", "halo", "digiflag", "rejoin", "fastercar", "fuel", "pit", "radar", "tires"],
         ghost: true,
       },
       stream_minimal: {
-        disabled: ["fuel", "tires", "trackmap", "conditions", "lights"],
+        disabled: ["standings", "relative", "fuel", "pit", "trackmap", "radar", "conditions", "lights"],
         ghost: false,
       },
     };
@@ -2525,7 +2573,7 @@ function ensureLayoutSchemaV2(force = false): void {
       { id: "incar", label: "Ajustes Cabina (BB/TC/ABS)", stageSel: "" },
       { id: "laptimes", label: "Historial de Vueltas", stageSel: "" },
       { id: "cluster", label: "Pedales & Volante", stageSel: "#widgetCluster" },
-      { id: "trackmap", label: "Mapa de Circuito", stageSel: "" },
+      { id: "trackmap", label: "Mapa de Circuito", stageSel: "#widgetTrackMap" },
       { id: "fuel", label: "Telemetría Fuel & Ruedas", stageSel: "#widgetFuel" },
       { id: "delta", label: "Delta en Vivo", stageSel: "#widgetCorner" },
       { id: "conditions", label: "Clima & Neumático Óptimo", stageSel: "#widgetBrakeMarker" },
@@ -2668,24 +2716,64 @@ function ensureLayoutSchemaV2(force = false): void {
       applyHudCustomAppearance();
     });
 
+    let studioWeather: "day" | "night" = "day";
+    let studioCockpitActive = true;
+
+    const applyStudioScene = () => {
+      const sceneBar = document.getElementById("mmtStudioSceneBar");
+      if (sceneBar) {
+        sceneBar.querySelectorAll<HTMLButtonElement>("[data-scene]").forEach((b) => {
+          const s = b.dataset.scene;
+          if (s === "cockpit") {
+            b.setAttribute("aria-pressed", String(studioCockpitActive));
+            b.className = studioCockpitActive
+              ? "px-2 py-0.5 rounded-[3px] bg-[#10b981]/20 text-[#10b981] border border-[#10b981]/45 font-bold cursor-pointer"
+              : "px-2 py-0.5 rounded-[3px] text-white/70 hover:text-white border border-transparent font-bold cursor-pointer";
+          } else {
+            const active = s === studioWeather;
+            b.className = active
+              ? "px-2 py-0.5 rounded-[3px] bg-[#10b981] text-[#04130d] font-bold cursor-pointer"
+              : "px-2 py-0.5 rounded-[3px] text-white/70 hover:text-white font-bold cursor-pointer";
+          }
+        });
+      }
+      const bg = document.getElementById("mmtStudioSceneBg");
+      if (!bg) return;
+      if (studioCockpitActive) {
+        bg.classList.add("is-cockpit");
+        bg.style.background = "";
+        bg.style.backgroundImage = `linear-gradient(180deg, rgba(5, 8, 12, 0.28) 0%, rgba(5, 8, 12, 0.14) 45%, rgba(5, 8, 12, 0.42) 100%), url("${cockpitPorscheUrl}")`;
+        bg.style.backgroundSize = "cover";
+        bg.style.backgroundPosition = "center center";
+        bg.style.backgroundRepeat = "no-repeat";
+        bg.style.filter = studioWeather === "night" ? "brightness(0.55) contrast(1.12)" : "none";
+      } else {
+        bg.classList.remove("is-cockpit");
+        bg.style.backgroundImage = "";
+        bg.style.backgroundRepeat = "";
+        bg.style.filter = "none";
+        if (studioWeather === "night") {
+          bg.style.background = "radial-gradient(ellipse at 50% 45%, rgba(14, 165, 233, 0.18) 0%, rgba(4, 7, 14, 0.98) 72%), linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)";
+        } else {
+          bg.style.background = "radial-gradient(ellipse at 50% 45%, rgba(16, 185, 129, 0.12) 0%, rgba(5, 8, 12, 0.94) 72%), linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)";
+        }
+        bg.style.backgroundSize = "100% 100%, 28px 28px, 28px 28px";
+        bg.style.backgroundPosition = "center center";
+      }
+    };
+
+    applyStudioScene();
+
     document.getElementById("mmtStudioSceneBar")?.addEventListener("click", (e) => {
       const btn = (e.target as HTMLElement).closest<HTMLButtonElement>("[data-scene]");
       if (!btn) return;
       const scene = btn.dataset.scene || "day";
-      document.querySelectorAll<HTMLButtonElement>("#mmtStudioSceneBar [data-scene]").forEach((b) => {
-        b.className = b === btn
-          ? "px-2.5 py-1 rounded-lg bg-[#10b981] text-slate-950 font-bold cursor-pointer"
-          : "px-2.5 py-1 rounded-lg border border-white/15 text-white/75 hover:text-white cursor-pointer";
-      });
-      const bg = document.getElementById("mmtStudioSceneBg");
-      if (!bg) return;
-      if (scene === "night") {
-        bg.style.background = "radial-gradient(ellipse at 50% 45%, rgba(14, 165, 233, 0.18) 0%, rgba(4, 7, 14, 0.98) 72%), linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)";
-      } else if (scene === "cockpit") {
-        bg.style.background = "linear-gradient(180deg, rgba(16,185,129,0.08) 0%, rgba(9,11,15,0.96) 55%, rgba(0,0,0,1) 100%)";
-      } else {
-        bg.style.background = "radial-gradient(ellipse at 50% 45%, rgba(16, 185, 129, 0.12) 0%, rgba(5, 8, 12, 0.94) 72%), linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)";
+      if (scene === "cockpit") {
+        studioCockpitActive = !studioCockpitActive;
+      } else if (scene === "night" || scene === "day") {
+        studioWeather = scene;
       }
+      applyStudioScene();
     });
 
     document.getElementById("mmtStudioVisBtn")?.addEventListener("click", () => {
@@ -3763,8 +3851,66 @@ function safeRenderWidget(el: HTMLElement | null, fn: () => void): void {
       RF: { innerC: baseTemp + 3.8, middleC: baseTemp + 0.8, outerC: baseTemp - 1.5, pressureKpa: baseKpa + 1.8 },
       LR: { innerC: baseTemp + 1.2, middleC: baseTemp - 1.5, outerC: baseTemp - 3.0, pressureKpa: baseKpa + 0.9 },
       RR: { innerC: baseTemp + 0.9, middleC: baseTemp - 1.8, outerC: baseTemp - 3.4, pressureKpa: baseKpa + 0.6 },
+      env: {
+        trackTempC: irsdkState?.frame?.trackTempC || 29.2,
+        windSpeedKmh: 14,
+        windDirDeg: 45,
+        trackWetnessPct: irsdkState?.frame?.precipitationPct ?? 0,
+      },
     });
     renderTireThermalWidget(tireEl, tireSnap, tireThermalEngine);
+  }
+
+  if (shouldRenderSlowHud && irsdkState) {
+    const rawFrame = irsdkState.frame;
+    const activeIdx = irsdkState.camCarIdx;
+    const activeLap = Math.max(1, rawFrame?.carIdxLap?.[activeIdx] ?? 1);
+    const fuel = irsdkState.fuel;
+    const stintLaps = Math.max(1, fuel?.stintLapsRemaining ?? 4);
+    const totalLapsLeft = Math.max(1, fuel?.lapsRemaining ?? 12);
+    const fuelToAdd = Math.max(0, fuel?.fuelToAdd ?? 28);
+    const estBox = 21.5 + fuelToAdd * 0.25;
+    const myEntry = irsdkState.leaderboard?.find((e) => e.carIdx === activeIdx);
+    const myPos = myEntry?.position || 4;
+    const classSize = irsdkState.leaderboard?.length || 18;
+    const rejoinPos = Math.min(classSize, myPos + Math.max(1, Math.round(estBox / 14)));
+    const needsFuelSave = stintLaps < totalLapsLeft && (totalLapsLeft - stintLaps) <= 2.2;
+    const fuelSavePerLapL = needsFuelSave ? Math.min(0.35, ((totalLapsLeft - stintLaps) * (fuel?.avgBurnPerLap || 2.8)) / Math.max(1, stintLaps)) : 0;
+    const pitStratData = {
+      currentLap: activeLap,
+      pitWindowStartLap: activeLap + Math.max(1, Math.floor(stintLaps - 2)),
+      pitWindowEndLap: activeLap + Math.max(1, Math.floor(stintLaps)),
+      estPitTimeS: estBox,
+      rejoinPos,
+      classSize,
+      fuelToAddL: fuelToAdd,
+      changeTires: fuelToAdd > 35,
+      boxThisLap: stintLaps <= 1.5 && totalLapsLeft > 1.5,
+      fuelSavePerLapL,
+      aheadCarLabel: myEntry?.abbrevName ? `P${Math.max(1, rejoinPos - 1)}` : "#22 E. Chongkan",
+    };
+    document.querySelectorAll<HTMLElement>("#ovPitStrategy, #ovPitStrategyFloat").forEach((el) => {
+      if (el.offsetParent !== null) renderPitStrategyWidget(el, pitStratData);
+    });
+
+    const baseTemp = 72 + Math.min(26, (kmh / 260) * 18 + (sample.brake || 0) * 10);
+    const baseKpa = 166 + Math.min(16, (kmh / 260) * 9);
+    const liveTireSnap = tireThermalEngine.evaluate({
+      onPitRoad: Boolean(irsdkState.onPitRoad),
+      LF: { innerC: baseTemp + 4.8, middleC: baseTemp + 1.5, outerC: baseTemp - 1.8, pressureKpa: baseKpa + 2.2 },
+      RF: { innerC: baseTemp + 3.4, middleC: baseTemp + 0.9, outerC: baseTemp - 1.4, pressureKpa: baseKpa + 1.6 },
+      LR: { innerC: baseTemp + 1.0, middleC: baseTemp - 1.2, outerC: baseTemp - 2.6, pressureKpa: baseKpa + 0.8 },
+      RR: { innerC: baseTemp + 0.7, middleC: baseTemp - 1.6, outerC: baseTemp - 2.9, pressureKpa: baseKpa + 0.5 },
+      env: {
+        trackTempC: rawFrame?.trackTempC || 29.2,
+        windSpeedKmh: 14,
+        windDirDeg: 45,
+        trackWetnessPct: rawFrame?.precipitationPct ?? 0,
+      },
+    });
+    document.querySelectorAll<HTMLElement>("#ovTireMonitor, #ovTireMonitorFloat").forEach((el) => {
+      if (el.offsetParent !== null) renderTireThermalWidget(el, liveTireSnap, tireThermalEngine);
+    });
   }
 
   const bdEl = document.getElementById("ovBroadcastDirectorWidget");
@@ -3832,17 +3978,18 @@ function safeRenderWidget(el: HTMLElement | null, fn: () => void): void {
           safeRenderWidget(radar, () => renderHelicorsaRadar(radar, irsdkState));
         }
       });
-      const trackMapCanvas = document.getElementById("ovTrackMapFloat") as HTMLCanvasElement | null;
-      if (trackMapCanvas && trackMapCanvas.offsetParent !== null) {
-        observeTrackAutoMap(
-          irsdkState.session.weekendInfo?.trackName || "",
-          frame.carIdxLap[irsdkState.camCarIdx] ?? 0,
-          frame.carIdxLapDistPct[irsdkState.camCarIdx] ?? -1,
-          sample.vx ?? 0,
-          sample.vy ?? 0,
-        );
-        safeRenderWidget(trackMapCanvas, () => renderLiveTrackMapCanvas(trackMapCanvas, irsdkState));
-      }
+      document.querySelectorAll<HTMLCanvasElement>("#ovTrackMap, #ovTrackMapFloat").forEach((trackMapCanvas) => {
+        if (trackMapCanvas.offsetParent !== null) {
+          observeTrackAutoMap(
+            irsdkState.session.weekendInfo?.trackName || "",
+            frame.carIdxLap[irsdkState.camCarIdx] ?? 0,
+            frame.carIdxLapDistPct[irsdkState.camCarIdx] ?? -1,
+            sample.vx ?? 0,
+            sample.vy ?? 0,
+          );
+          safeRenderWidget(trackMapCanvas, () => renderLiveTrackMapCanvas(trackMapCanvas, irsdkState));
+        }
+      });
     }
 
     if (shouldRenderSlowHud) {

@@ -304,3 +304,57 @@ export function buildRelativeVirtualPitRow(pred: PitExitPrediction): RelativeEnt
     trackSurface: 1,
   };
 }
+
+export interface PitStrategySummary {
+  currentLap: number;
+  pitWindowStartLap: number;
+  pitWindowEndLap: number;
+  estPitTimeS: number;
+  rejoinPos: number;
+  classSize: number;
+  fuelToAddL: number;
+  changeTires: boolean;
+  boxThisLap: boolean;
+  fuelSavePerLapL: number;
+  aheadCarLabel: string;
+}
+
+export function renderPitStrategyWidget(container: HTMLElement, strat: PitStrategySummary | null): void {
+  if (!strat) {
+    container.innerHTML = `<div class="p-2 text-[10.5px] font-mono text-white/50">Esperando datos de estrategia...</div>`;
+    return;
+  }
+
+  const alertHtml = strat.boxThisLap
+    ? `<span class="px-1.5 py-0.5 rounded bg-rose-500/25 border border-rose-500/60 text-rose-300 font-black text-[9.5px] animate-pulse">BOX THIS LAP</span>`
+    : strat.fuelSavePerLapL > 0.01
+      ? `<span class="px-1.5 py-0.5 rounded bg-amber-500/20 border border-amber-500/50 text-amber-300 font-black text-[9.5px]">FUEL SAVE +${strat.fuelSavePerLapL.toFixed(2)} L/lap</span>`
+      : `<span class="px-1.5 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold text-[9.5px]">STRATEGY OK</span>`;
+
+  container.innerHTML = `
+    <div class="space-y-1.5 font-mono text-[10.5px] tabular-nums select-none">
+      <div class="flex items-center justify-between border-b border-white/10 pb-1">
+        <span class="uppercase tracking-wider text-white/75 font-bold text-[9.5px]">Pit &amp; Strategy</span>
+        ${alertHtml}
+      </div>
+      <div class="grid grid-cols-3 gap-1 text-center">
+        <div class="px-1.5 py-1 rounded bg-black/45 border border-white/10">
+          <div class="text-[8.5px] text-white/45 uppercase">Pit Window</div>
+          <div class="font-extrabold text-amber-300">L${strat.pitWindowStartLap}–L${strat.pitWindowEndLap}</div>
+        </div>
+        <div class="px-1.5 py-1 rounded bg-black/45 border border-white/10">
+          <div class="text-[8.5px] text-white/45 uppercase">Est. Box</div>
+          <div class="font-extrabold text-white">${strat.estPitTimeS.toFixed(1)}s</div>
+        </div>
+        <div class="px-1.5 py-1 rounded bg-black/45 border border-white/10">
+          <div class="text-[8.5px] text-white/45 uppercase">Rejoin</div>
+          <div class="font-extrabold text-emerald-300">P${strat.rejoinPos}<span class="text-white/45 text-[9px]">/${strat.classSize}</span></div>
+        </div>
+      </div>
+      <div class="flex items-center justify-between text-[9.5px] text-white/65">
+        <span>+${strat.fuelToAddL.toFixed(1)}L ${strat.changeTires ? "+ 4 Neum." : "Solo Fuel"}</span>
+        <span class="truncate max-w-[130px]">Tras ${strat.aheadCarLabel}</span>
+      </div>
+    </div>
+  `;
+}

@@ -182,9 +182,9 @@ const overlaySchema = {
         <div class="ov-section__head">
           <div>
             <p class="ov-kicker">Simulador interactivo en navegador · Silverstone GP</p>
-            <h2 class="ov-section__title">Prueba los 6 módulos del HUD en tiempo real</h2>
+            <h2 class="ov-section__title">Prueba los 8 módulos del HUD en tiempo real</h2>
             <p class="ov-section__sub">
-              Activa o desactiva cada módulo, alterna entre perfil de <strong>Pista (P)</strong> y <strong>Replay (R)</strong>, o dispara una situación de coche en paralelo para ver el radar <code>CarLeftRight</code> en acción.
+              Activa o desactiva cada módulo, aplica presets instantáneos (<strong>Sprint GT3</strong>, <strong>Endurance</strong>, <strong>Minimalist Qualy</strong>), bloquea el HUD o alterna entre <strong>Pista (P)</strong> y <strong>Replay (R)</strong>.
             </p>
           </div>
         </div>
@@ -205,6 +205,12 @@ const overlaySchema = {
             <button type="button" class="sim-chip is-on" data-toggle-mod="fuel" aria-pressed="true">
               <span class="sim-chip__dot"></span>Fuel Calc
             </button>
+            <button type="button" class="sim-chip is-on" data-toggle-mod="pit" aria-pressed="true">
+              <span class="sim-chip__dot"></span>Pit Strategy
+            </button>
+            <button type="button" class="sim-chip is-on" data-toggle-mod="tires" aria-pressed="true">
+              <span class="sim-chip__dot"></span>Tire &amp; Track
+            </button>
             <button type="button" class="sim-chip is-on" data-toggle-mod="inputs" aria-pressed="true">
               <span class="sim-chip__dot"></span>Inputs &amp; Delta
             </button>
@@ -214,6 +220,11 @@ const overlaySchema = {
           </div>
 
           <div class="sim-toolbar__group sim-toolbar__right">
+            <span class="sim-toolbar__label">PRESETS:</span>
+            <button type="button" class="sim-action-btn" data-sim-preset="sprint_gt3">Sprint GT3</button>
+            <button type="button" class="sim-action-btn" data-sim-preset="endurance_multi">Endurance</button>
+            <button type="button" class="sim-action-btn" data-sim-preset="minimal_qualy">Minimalist Qualy</button>
+            <button type="button" id="simLockHudBtn" class="sim-action-btn" aria-pressed="false" title="Fijar / Bloquear HUD">🔒 Fijar HUD</button>
             <div class="sim-mode-switch" role="group" aria-label="Modo de sesión">
               <button type="button" id="simModeTrack" class="sim-mode-btn is-active" aria-pressed="true">
                 Pista <kbd>P</kbd>
@@ -366,6 +377,47 @@ const overlaySchema = {
               </div>
               <div class="hud-fuel__bar-wrap">
                 <div class="hud-fuel__bar" id="simFuelBar" style="width: 44%"></div>
+              </div>
+            </div>
+
+            <!-- ABAJO IZQUIERDA (bottom: 14px; left: 12px): PIT & STRATEGY WINDOW -->
+            <div class="hud-box hud-pit hud-pos-pit" data-hud-mod="pit" data-driving-only="true">
+              <div class="hud-box__head">
+                <span class="hud-box__title">PIT &amp; STRATEGY</span>
+                <span class="px-1.5 py-0.5 rounded-[2px] text-[9px] font-black bg-amber-500/20 text-amber-300" id="simPitAlert">FUEL SAVE +0.12 L/lap</span>
+              </div>
+              <div class="grid grid-cols-3 gap-1.5 text-center font-mono text-[10px] mt-1">
+                <div class="p-1 rounded bg-black/45 border border-white/10">
+                  <span class="block text-[8px] text-white/45 uppercase">PIT WINDOW</span>
+                  <strong class="text-amber-300" id="simPitWindow">L16–L18</strong>
+                </div>
+                <div class="p-1 rounded bg-black/45 border border-white/10">
+                  <span class="block text-[8px] text-white/45 uppercase">EST. BOX</span>
+                  <strong class="text-white" id="simPitTime">27.4s</strong>
+                </div>
+                <div class="p-1 rounded bg-black/45 border border-white/10">
+                  <span class="block text-[8px] text-white/45 uppercase">REJOIN</span>
+                  <strong class="text-emerald-300" id="simPitRejoin">P5/18</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- DERECHA MEDIA (bottom: 122px; right: 12px): TIRE & TRACK TEMP MONITOR -->
+            <div class="hud-box hud-tires hud-pos-tires" data-hud-mod="tires">
+              <div class="hud-box__head">
+                <span class="hud-box__title">TIRE &amp; TRACK TEMP</span>
+                <span class="hud-box__meta text-emerald-300">75–92°C</span>
+              </div>
+              <div class="grid grid-cols-2 gap-1 font-mono text-[10px] mt-1" id="simTiresGrid">
+                <div class="flex items-center justify-between px-1.5 py-1 rounded bg-black/45 border border-white/10"><span>FL</span><strong id="simTireFL" class="text-emerald-300">84°C · 174kPa</strong></div>
+                <div class="flex items-center justify-between px-1.5 py-1 rounded bg-black/45 border border-white/10"><span>FR</span><strong id="simTireFR" class="text-emerald-300">82°C · 172kPa</strong></div>
+                <div class="flex items-center justify-between px-1.5 py-1 rounded bg-black/45 border border-white/10"><span>RL</span><strong id="simTireRL" class="text-emerald-300">79°C · 170kPa</strong></div>
+                <div class="flex items-center justify-between px-1.5 py-1 rounded bg-black/45 border border-white/10"><span>RR</span><strong id="simTireRR" class="text-emerald-300">77°C · 169kPa</strong></div>
+              </div>
+              <div class="flex items-center justify-between font-mono text-[9.5px] text-white/75 mt-1 pt-1 border-t border-white/10">
+                <span>Pista <strong id="simTrackTemp" class="text-amber-300">29.2°C</strong></span>
+                <span>Viento <strong id="simWind" class="text-white">14 km/h ↗</strong></span>
+                <span>Lluvia <strong id="simWetness" class="text-sky-300">0%</strong></span>
               </div>
             </div>
           </div>
@@ -831,7 +883,7 @@ npm run tauri dev</code></pre>
       ];
 
       // State
-      const enabledMods = { standings: true, relative: true, trackmap: true, fuel: true, inputs: true, radar: true };
+      const enabledMods = { standings: true, relative: true, trackmap: true, fuel: true, pit: true, tires: true, inputs: true, radar: true };
       let isReplay = false;
       let isPaused = false;
       let radarOverrideUntil = 0;
@@ -882,9 +934,47 @@ npm run tauri dev</code></pre>
         });
         if (replayBadgeEl) replayBadgeEl.hidden = !isReplay;
         if (cpuBadgeEl) {
-          cpuBadgeEl.textContent = `${isPaused ? "PAUSA" : "60 FPS"} · ${activeMods.size}/6 activos`;
+          cpuBadgeEl.textContent = `${isPaused ? "PAUSA" : "60 FPS"} · ${activeMods.size}/8 activos`;
         }
       }
+
+      const SIM_PRESETS = {
+        sprint_gt3: { standings: false, relative: true, trackmap: false, fuel: false, pit: false, tires: true, inputs: true, radar: true },
+        endurance_multi: { standings: true, relative: true, trackmap: true, fuel: true, pit: true, tires: false, inputs: false, radar: false },
+        minimal_qualy: { standings: false, relative: false, trackmap: false, fuel: false, pit: false, tires: true, inputs: true, radar: false },
+      };
+
+      document.querySelectorAll("[data-sim-preset]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const key = btn.getAttribute("data-sim-preset");
+          const preset = SIM_PRESETS[key];
+          if (!preset) return;
+          Object.assign(enabledMods, preset);
+          document.querySelectorAll("[data-toggle-mod]").forEach((chip) => {
+            const m = chip.getAttribute("data-toggle-mod");
+            const on = Boolean(enabledMods[m]);
+            chip.classList.toggle("is-on", on);
+            chip.setAttribute("aria-pressed", String(on));
+          });
+          document.querySelectorAll("[data-sim-preset]").forEach((b) => {
+            b.style.borderColor = b === btn ? "#10b981" : "";
+            b.style.color = b === btn ? "#34d399" : "";
+          });
+          syncVisibility();
+        });
+      });
+
+      const lockHudBtn = document.getElementById("simLockHudBtn");
+      const simStageEl = document.getElementById("simStage");
+      let hudLocked = false;
+      lockHudBtn?.addEventListener("click", () => {
+        hudLocked = !hudLocked;
+        lockHudBtn.setAttribute("aria-pressed", String(hudLocked));
+        lockHudBtn.textContent = hudLocked ? "🔓 HUD Fijado" : "🔒 Fijar HUD";
+        lockHudBtn.style.borderColor = hudLocked ? "#10b981" : "";
+        lockHudBtn.style.color = hudLocked ? "#34d399" : "";
+        if (simStageEl) simStageEl.classList.toggle("is-hud-locked", hudLocked);
+      });
 
       // Wire module toggle buttons
       document.querySelectorAll("[data-toggle-mod]").forEach((btn) => {
@@ -2086,6 +2176,49 @@ npm run tauri dev</code></pre>
               if (fuelBarEl) fuelBarEl.style.width = `${Math.min(100, (fuelLevel / 80) * 100).toFixed(0)}%`;
             }
 
+            if (enabledMods.pit && !isReplay) {
+              const me = drivers.find((d) => d.isMe);
+              const curLap = me?.lap || 14;
+              const avg = cMeta.avgFuel;
+              const lapsLeft = fuelLevel / avg;
+              const winStart = curLap + Math.max(1, Math.floor(lapsLeft - 2));
+              const winEnd = curLap + Math.max(1, Math.floor(lapsLeft));
+              const need = Math.max(0, (14 * avg + 1.5) - fuelLevel);
+              const pitTime = 21.5 + need * 0.25;
+              const pitWinEl = document.getElementById("simPitWindow");
+              const pitTimeEl = document.getElementById("simPitTime");
+              const pitRejoinEl = document.getElementById("simPitRejoin");
+              const pitAlertEl = document.getElementById("simPitAlert");
+              if (pitWinEl) pitWinEl.textContent = `L${winStart}–L${winEnd}`;
+              if (pitTimeEl) pitTimeEl.textContent = `${pitTime.toFixed(1)}s`;
+              if (pitRejoinEl) pitRejoinEl.textContent = `P${Math.min(18, (me?.pos || 4) + 2)}/18`;
+              if (pitAlertEl) {
+                if (lapsLeft <= 2) {
+                  pitAlertEl.textContent = "BOX THIS LAP";
+                  pitAlertEl.className = "px-1.5 py-0.5 rounded-[2px] text-[9px] font-black bg-rose-500/25 text-rose-300 animate-pulse";
+                } else {
+                  pitAlertEl.textContent = "FUEL SAVE +0.12 L/lap";
+                  pitAlertEl.className = "px-1.5 py-0.5 rounded-[2px] text-[9px] font-black bg-amber-500/20 text-amber-300";
+                }
+              }
+            }
+
+            if (enabledMods.tires) {
+              const osc = Math.sin(simTimeSec * 0.6) * 2.5;
+              const tVals = [
+                { id: "simTireFL", temp: 84 + osc, kpa: 174 },
+                { id: "simTireFR", temp: 81 + osc * 0.8, kpa: 172 },
+                { id: "simTireRL", temp: 78 - osc * 0.5, kpa: 170 },
+                { id: "simTireRR", temp: 76 - osc * 0.4, kpa: 169 },
+              ];
+              tVals.forEach((tv) => {
+                const el = document.getElementById(tv.id);
+                if (!el) return;
+                el.textContent = `${tv.temp.toFixed(0)}°C · ${tv.kpa}kPa`;
+                el.className = tv.temp < 70 ? "text-sky-400" : tv.temp > 98 ? "text-rose-400" : tv.temp > 92 ? "text-amber-300" : "text-emerald-300";
+              });
+            }
+
             const me = drivers.find((d) => d.isMe);
             if (lapClockEl && me) {
               const remMin = Math.max(1, 18 - Math.floor(simTimeSec / 60));
@@ -2606,6 +2739,22 @@ npm run tauri dev</code></pre>
       bottom: 14px;
       right: 12px;
       width: 244px;
+    }
+    .hud-pos-pit {
+      position: absolute;
+      bottom: 14px;
+      left: 12px;
+      width: 258px;
+    }
+    .hud-pos-tires {
+      position: absolute;
+      bottom: 124px;
+      right: 12px;
+      width: 244px;
+    }
+    .sim-stage.is-hud-locked .hud-box {
+      pointer-events: none;
+      user-select: none;
     }
   }
 

@@ -993,11 +993,6 @@
               </div>
               <div id="mmtStudioActiveList"></div>
               <div id="mmtStudioCatalogList"></div>
-              <div id="mmtStudioSceneBar">
-                <button type="button" data-scene="day"></button>
-                <button type="button" data-scene="night"></button>
-                <button type="button" data-scene="cockpit"></button>
-              </div>
               <div id="engineeringOverlaysDock">
                 <div id="ovPitExitWidget"></div>
                 <div id="ovTireThermalWidget"></div>
@@ -1015,7 +1010,7 @@
               <aside class="border-r border-white/[0.08] bg-[#0c0f15] flex flex-col min-h-0">
                 <div class="h-[32px] shrink-0 px-3 border-b border-white/[0.08] flex items-center justify-between font-mono text-[10px] font-bold uppercase tracking-wider text-white/60">
                   <span>Widgets HUD</span>
-                  <span class="text-[#10b981]">7 Módulos</span>
+                  <span class="text-[#10b981]">9 Módulos</span>
                 </div>
                 <div id="mmtCompactWidgetList" class="flex-1 min-h-0 overflow-y-auto p-2 space-y-1 font-mono text-[11px]">
                   <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-[#10b981]/40 bg-[#10b981]/10 cursor-pointer transition" data-compact-mod="standings">
@@ -1046,16 +1041,34 @@
                     <span class="font-semibold text-white/85 truncate">Radar Proximidad</span>
                     <button type="button" data-widget-toggle="radar" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Radar Proximidad"></button>
                   </div>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="pit">
+                    <span class="font-semibold text-white/85 truncate">Pit &amp; Strategy</span>
+                    <button type="button" data-widget-toggle="pit" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Pit & Strategy"></button>
+                  </div>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="tires">
+                    <span class="font-semibold text-white/85 truncate">Tire &amp; Track Temp</span>
+                    <button type="button" data-widget-toggle="tires" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Tire & Track Temp"></button>
+                  </div>
                 </div>
               </aside>
 
               <!-- COLUMNA CENTRAL (flex-1): Barra 32px + Stage de Cabina en vivo -->
               <div class="min-w-0 flex flex-col min-h-0 bg-[#05080c]">
                 <div class="h-[32px] shrink-0 px-3 border-b border-white/[0.08] bg-[#0c0f15] flex items-center justify-between gap-2 font-mono text-[10.5px]">
-                  <div class="flex items-center gap-1.5">
+                  <div class="flex items-center gap-2">
                     <div class="inline-flex rounded border border-white/10 bg-[#090b0f] p-0.5">
                       <button type="button" id="btnShellTrackMode" onclick="document.getElementById('hudShowInReplays').checked=true;this.classList.add('bg-[#10b981]','text-[#04130d]');document.getElementById('btnShellReplayMode').classList.remove('bg-[#10b981]','text-[#04130d]');" class="px-2 py-0.5 rounded-[3px] bg-[#10b981] text-[#04130d] font-bold cursor-pointer">Pista (P)</button>
                       <button type="button" id="btnShellReplayMode" onclick="document.getElementById('btnCycleReplayHudMode')?.click();this.classList.add('bg-[#10b981]','text-[#04130d]');document.getElementById('btnShellTrackMode').classList.remove('bg-[#10b981]','text-[#04130d]');" class="px-2 py-0.5 rounded-[3px] text-white/70 hover:text-white font-bold cursor-pointer">Replay (R)</button>
+                    </div>
+                    <div id="mmtStudioSceneBar" class="inline-flex items-center gap-1 rounded border border-white/10 bg-[#090b0f] p-0.5">
+                      <button type="button" data-scene="day" class="px-2 py-0.5 rounded-[3px] bg-[#10b981] text-[#04130d] font-bold cursor-pointer">Día seco</button>
+                      <button type="button" data-scene="night" class="px-2 py-0.5 rounded-[3px] text-white/70 hover:text-white font-bold cursor-pointer">Noche / Lluvia</button>
+                      <button type="button" data-scene="cockpit" aria-pressed="true" class="px-2 py-0.5 rounded-[3px] bg-[#10b981]/20 text-[#10b981] border border-[#10b981]/45 font-bold cursor-pointer">Vista Cockpit</button>
+                    </div>
+                    <div class="inline-flex items-center gap-1 rounded border border-white/10 bg-[#090b0f] p-0.5">
+                      <button type="button" onclick="document.querySelector('[data-hud-factory-preset=sprint_gt3]')?.click()" class="px-2 py-0.5 rounded-[3px] text-white/80 hover:text-white font-bold cursor-pointer">Sprint GT3</button>
+                      <button type="button" onclick="document.querySelector('[data-hud-factory-preset=endurance_multi]')?.click()" class="px-2 py-0.5 rounded-[3px] text-white/80 hover:text-white font-bold cursor-pointer">Endurance</button>
+                      <button type="button" onclick="document.querySelector('[data-hud-factory-preset=stream_minimal]')?.click()" class="px-2 py-0.5 rounded-[3px] text-white/80 hover:text-white font-bold cursor-pointer">Minimalist Qualy</button>
                     </div>
                   </div>
                   <div class="flex items-center gap-3 text-white/70">
@@ -1069,6 +1082,9 @@
                       <input id="hudScaleRange" type="range" min="70" max="135" value="100" class="w-16 accent-[#10b981]" />
                       <span id="hudScaleVal" class="text-white tabular-nums w-8">100%</span>
                     </label>
+                    <button type="button" id="btnShellLockHud" onclick="document.getElementById('mmtStudioLockBtn')?.click();const lk=this.dataset.locked!=='1';this.dataset.locked=lk?'1':'0';this.textContent=lk?'Desbloquear HUD':'Fijar / Bloquear HUD';" data-locked="1" class="px-2 py-0.5 rounded border border-emerald-500/40 bg-emerald-500/15 text-emerald-300 font-bold cursor-pointer">
+                      Desbloquear HUD
+                    </button>
                     <button type="button" onclick="document.getElementById('btnRestoreHudV2')?.click()" class="px-2 py-0.5 rounded border border-white/10 bg-[#090b0f] hover:border-[#10b981]/50 text-white/80 hover:text-[#10b981] font-semibold cursor-pointer">
                       Centrar / Restaurar
                     </button>
@@ -1093,7 +1109,7 @@
                         <div id="ovRevLimiterAlert" class="hidden text-[10px] font-mono font-black uppercase tracking-widest text-rose-400 animate-pulse">CAMBIO</div>
                       </div>
 
-                      <div class="mmt-hud-widget absolute top-2 left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-none" data-widget="radar">
+                      <div id="widgetRadar" class="mmt-hud-widget absolute top-2 left-1/2 -translate-x-1/2 z-20 flex items-center justify-center pointer-events-none" data-widget="radar">
                         <div id="ovRadar"></div>
                       </div>
 
@@ -1138,6 +1154,18 @@
 
                       <div id="widgetFuel" class="mmt-hud-widget absolute left-3 bottom-3 w-[244px] rounded-[3px] border border-white/[0.08] text-white p-1.5 text-xs font-mono" style="background: rgba(9, 11, 15, 0.88);" data-widget="fuel">
                         <div id="ovFuel"></div>
+                      </div>
+
+                      <div id="widgetPitStrategy" class="mmt-hud-widget absolute left-3 bottom-[84px] w-[260px] rounded-[3px] border border-white/[0.08] text-white p-2 text-xs font-mono" style="background: rgba(9, 11, 15, 0.88);" data-widget="pit">
+                        <div id="ovPitStrategy"></div>
+                      </div>
+
+                      <div id="widgetTireMonitor" class="mmt-hud-widget absolute right-3 bottom-[158px] w-[236px] rounded-[3px] border border-white/[0.08] text-white p-2 text-xs font-mono" style="background: rgba(9, 11, 15, 0.88);" data-widget="tires">
+                        <div id="ovTireMonitor"></div>
+                      </div>
+
+                      <div id="widgetTrackMap" class="mmt-hud-widget absolute bottom-4 right-4 w-[180px] h-[132px] rounded-[3px] border border-white/[0.12] overflow-hidden cursor-move" style="bottom: 16px; right: 16px; background: rgba(9, 11, 15, 0.86);" data-widget="trackmap">
+                        <canvas id="ovTrackMap" width="180" height="132"></canvas>
                       </div>
                     </div>
                   </div>
@@ -1900,6 +1928,8 @@
         <button type="button" data-toggle-widget="radar" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent text-r-ink transition">Radar</button>
         <button type="button" data-toggle-widget="inputs" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent text-r-ink transition">Pedales/Vol</button>
         <button type="button" data-toggle-widget="lights" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent text-r-ink transition">Luces/Bandera</button>
+        <button type="button" data-toggle-widget="pit" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent text-r-ink transition">Pit Strategy</button>
+        <button type="button" data-toggle-widget="tires" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-r-accent text-r-ink transition">Tire Temp</button>
       </div>
 
       <!-- Floating Layers Control Panel (auto-hidden when IsOnTrack === true unless F9 / Ctrl+E) -->
@@ -2010,6 +2040,14 @@
       <!-- 5a. Compact Kapps Fuel & Stint Calculator (4 cells, hidden in Replay) -->
       <div id="floatFuelCard" class="mmt-float-widget fixed bottom-[18px] right-[18px] w-[244px] rounded-[3px] text-white font-mono tabular-nums pointer-events-auto overflow-hidden" style="background: transparent !important; border: none !important; box-shadow: none !important;" data-widget="fuel">
         <div id="ovFuelFloat"></div>
+      </div>
+
+      <div id="floatPitStrategyCard" class="mmt-float-widget fixed bottom-[165px] left-[372px] w-[260px] rounded-[3px] text-white font-mono tabular-nums pointer-events-auto overflow-hidden p-2" style="background: rgba(9, 11, 15, 0.88); border: 1px solid rgba(255, 255, 255, 0.12);" data-widget="pit">
+        <div id="ovPitStrategyFloat"></div>
+      </div>
+
+      <div id="floatTireMonitorCard" class="mmt-float-widget fixed bottom-[78px] right-[18px] w-[244px] rounded-[3px] text-white font-mono tabular-nums pointer-events-auto overflow-hidden p-2" style="background: rgba(9, 11, 15, 0.88); border: 1px solid rgba(255, 255, 255, 0.12);" data-widget="tires">
+        <div id="ovTireMonitorFloat"></div>
       </div>
 
       <div id="floatTrackMapCard" class="mmt-float-widget fixed bottom-[255px] right-[18px] w-[180px] h-[132px] rounded-[3px] pointer-events-auto overflow-hidden" style="background: rgba(9, 11, 15, 0.88); border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: none !important;" data-widget="trackmap">

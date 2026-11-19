@@ -47,6 +47,11 @@ const columns = [
     ],
   },
 ];
+const officialContacts = [
+  { name: "Alberto Trujillo (#16)", role: "Fundador & Piloto", email: "alberto@muntru.me" },
+  { name: "Mateo Berbis (#1)", role: "Piloto Oficial", email: "mateo@muntru.me" },
+  { name: "Muntrume Motorsport", role: "Administración / Soporte / Prensa", email: "admin@muntru.me" },
+];
 ---
 
 <footer class="mmt-footer">
@@ -71,6 +76,24 @@ const columns = [
           </ul>
         </div>
       ))}
+    </div>
+
+    <div class="mmt-footer__contacts" aria-label="Contacto oficial">
+      <h2 class="mmt-footer__contacts-title">Contacto Directo · Equipo y Administración</h2>
+      <div class="mmt-footer__contacts-grid">
+        {officialContacts.map((c) => (
+          <div class="mmt-footer__contact-card">
+            <div class="mmt-footer__contact-meta">
+              <strong class="mmt-footer__contact-name">{c.name}</strong>
+              <span class="mmt-footer__contact-role">{c.role}</span>
+            </div>
+            <div class="mmt-footer__contact-actions">
+              <a href={`mailto:${c.email}`} class="mmt-footer__contact-mail">{c.email}</a>
+              <button type="button" class="mmt-footer__copy-btn" data-copy-footer-email={c.email}>Copiar email</button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
 
     <div class="mmt-footer__bottom">
@@ -180,6 +203,87 @@ const columns = [
   .mmt-footer__list a:hover {
     color: var(--r-text);
     transform: translateX(2px);
+  }
+
+  .mmt-footer__contacts {
+    padding: 20px 0 24px;
+    border-top: 1px solid var(--r-line);
+  }
+  .mmt-footer__contacts-title {
+    margin: 0 0 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--r-accent, #00e699);
+  }
+  .mmt-footer__contacts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .mmt-footer__contact-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--r-line);
+    background: var(--r-surface, rgba(255, 255, 255, 0.02));
+  }
+  .mmt-footer__contact-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .mmt-footer__contact-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--r-text);
+  }
+  .mmt-footer__contact-role {
+    font-size: 11px;
+    color: var(--r-muted);
+  }
+  .mmt-footer__contact-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .mmt-footer__contact-mail {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--r-accent, #00e699);
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mmt-footer__contact-mail:hover {
+    text-decoration: underline;
+  }
+  .mmt-footer__copy-btn {
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--r-line);
+    background: transparent;
+    color: var(--r-muted);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+  .mmt-footer__copy-btn:hover {
+    border-color: var(--r-accent, #00e699);
+    color: var(--r-text);
+  }
+  @media (max-width: 900px) {
+    .mmt-footer__contacts-grid {
+      grid-template-columns: 1fr;
+    }
   }
 
   .mmt-footer__bottom {
@@ -427,5 +531,19 @@ const columns = [
   });
   document.addEventListener("muntru:i18n", syncMenu);
   syncMenu();
+
+  document.querySelectorAll("[data-copy-footer-email]").forEach(function (copyBtn) {
+    copyBtn.addEventListener("click", function () {
+      var mail = copyBtn.getAttribute("data-copy-footer-email");
+      if (!mail) return;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(mail).catch(function () {});
+      }
+      var orig = copyBtn.getAttribute("data-orig-lbl") || copyBtn.textContent;
+      copyBtn.setAttribute("data-orig-lbl", orig);
+      copyBtn.textContent = "¡Copiado!";
+      setTimeout(function () { copyBtn.textContent = orig; }, 1800);
+    });
+  });
 })();
 </script>
