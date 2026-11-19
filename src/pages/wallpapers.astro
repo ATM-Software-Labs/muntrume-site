@@ -37,18 +37,22 @@ function isStudioOrBanner(src: string): boolean {
 function mapCategoryKey(rawCat: string, carName = "", title = ""): { key: string; label: string; accent: string } {
   const s = `${rawCat} ${carName} ${title}`.toLowerCase();
   if (/296\s*challenge|ferrari.*challenge/i.test(s)) return { key: "ferrari_challenge", label: "Challenge", accent: "#ef4444" };
-  if (/\bcup\b|992\.?1|992\.?2|porsche.*cup/i.test(s)) return { key: "pcup", label: "PCup", accent: "#e2e8f0" };
+  if (/nascar|stock|oval|camaro|silverado|tundra|arca|late\s*model|gen\s*4|taurus|pontiac\s*grand\s*prix/i.test(s)) return { key: "oval", label: "Oval", accent: "#fbbf24" };
+  if (/bmw\s*m2|m2\s*cs|m2\s*racing|mx-?5|miata|gr86|clio|production/i.test(s)) return { key: "rookie", label: "PCC", accent: "#38bdf8" };
+  if (/porsche/i.test(s) && /(911\s*gt3\s*cup|992(\.?[12])?\s*cup|991\s*cup|\bpcup\b)/i.test(s) && !/(gt3\s*r|gt4|963|rsr|cayman|mission\s*r)/i.test(s)) {
+    return { key: "pcup", label: "PCup", accent: "#e2e8f0" };
+  }
   if (/\bgtp\b|hypercar|lmdh|lmh|499p|963|v-series|arx-06|hybrid\s*v8|valkyrie/i.test(s)) return { key: "gtp", label: "GTP", accent: "#facc15" };
   if (/\blmp2\b|p217/i.test(s)) return { key: "lmp2", label: "LMP2", accent: "#38bdf8" };
   if (/\blmp3\b|ligier|jsp320|js\s*p320/i.test(s)) return { key: "lmp3", label: "LMP3", accent: "#06b6d4" };
   if (/\bgte\b|c8\.r|488\s*gte|911\s*rsr|m8\s*gte/i.test(s)) return { key: "gte", label: "GTE", accent: "#ef4444" };
   if (/\bgt4\b|570s|718\s*cayman/i.test(s)) return { key: "gt4", label: "GT4", accent: "#fb923c" };
   if (/\btcr\b|touring|rs\s*3|rs3|elantra|veloster|civic/i.test(s)) return { key: "tcr", label: "TCR", accent: "#22c55e" };
-  if (/formula|sf23|\bsfl\b|ir18|ir04|\bf4\b|\bf3\b|ff1600|super\s*formula|vee/i.test(s)) return { key: "formulas", label: "Formula", accent: "#10b981" };
-  if (/nascar|stock|oval|camaro|silverado|tundra|arca|late\s*model/i.test(s)) return { key: "oval", label: "Oval", accent: "#fbbf24" };
-  if (/mx-?5|miata|gr86|clio|production/i.test(s)) return { key: "rookie", label: "PCC", accent: "#38bdf8" };
+  if (/formula|sf23|\bsfl\b|ir18|ir04|\bf4\b|\bf3\b|ff1600|super\s*formula|vee|dallara\s*ir-?01/i.test(s)) return { key: "formulas", label: "Formula", accent: "#10b981" };
+  if (/mission\s*r/i.test(s)) return { key: "electric", label: "Track", accent: "#38bdf8" };
+  if (/dirt/i.test(s)) return { key: "dirt", label: "Dirt", accent: "#f59e0b" };
   if (/\bgt3\b/i.test(s)) return { key: "gt3", label: "GT3", accent: "#a855f7" };
-  return { key: "gt3", label: "GT3", accent: "#a855f7" };
+  return { key: "track", label: "Track", accent: "#10b981" };
 }
 
 function addPhoto(item: {
@@ -357,72 +361,103 @@ function isAudiOrMcLarenGt3(t: string): boolean {
 }
 function isGtp(w: WallpaperItem): boolean {
   const t = itemText(w);
-  return w.categoryKey === "gtp" || /porsche\s*963|cadillac\s*v-?series|bmw\s*m\s*hybrid|ferrari\s*499p|acura\s*arx-?06|valkyrie/i.test(t);
+  return /porsche\s*963|cadillac\s*v-?series|bmw\s*m\s*hybrid|ferrari\s*499p|acura\s*arx|valkyrie/i.test(t);
 }
 function isLmp2(w: WallpaperItem): boolean {
   const t = itemText(w);
-  return w.categoryKey === "lmp2" || /dallara\s*p217|p217/i.test(t);
+  return /dallara\s*p217|p217/i.test(t);
 }
 function isLmp3(w: WallpaperItem): boolean {
   const t = itemText(w);
-  return w.categoryKey === "lmp3" || /ligier|js\s*p320|jsp320/i.test(t);
+  return /ligier|js\s*p320|jsp320/i.test(t);
 }
 function isPcup(w: WallpaperItem): boolean {
   const t = itemText(w);
-  return w.categoryKey === "pcup" || /porsche.*cup|911\s*gt3\s*cup|992\.?2?\s*cup/i.test(t);
+  if (/(gt3\s*r|gt4|963|rsr|cayman|mission\s*r|bmw|\bm2\b|mx-?5|clio|nascar)/i.test(t)) return false;
+  return /\bporsche\b/i.test(t) && /(911\s*gt3\s*cup|992(\.?[12])?\s*cup|991\s*cup|\bpcup\b)/i.test(t);
 }
 function isGt4(w: WallpaperItem): boolean {
   const t = itemText(w);
-  return w.categoryKey === "gt4" || /cayman\s*gt4|718\s*cayman|570s\s*gt4|m4\s*gt4|vantage\s*gt4|amg\s*gt4/i.test(t);
+  if (/\bm2\b|bmw\s*m2/i.test(t)) return false;
+  return /cayman\s*gt4|718\s*cayman|m4\s*gt4|amg\s*gt4|vantage\s*gt4|570s\s*gt4/i.test(t);
 }
 function isTcr(w: WallpaperItem): boolean {
   const t = itemText(w);
-  return w.categoryKey === "tcr" || /elantra|veloster|civic\s*type\s*r|rs\s*3\s*lms|rs3\s*lms|touring\s*car/i.test(t);
+  return /elantra|veloster|civic\s*type\s*r|rs\s*3\s*lms|rs3\s*lms|touring\s*car/i.test(t);
 }
 function isGt3Imsa(w: WallpaperItem): boolean {
   const t = itemText(w);
   if (isLegacyCar(t) || isFerrari296Challenge(t) || isAudiOrMcLarenGt3(t)) return false;
-  return (
-    /mustang\s*gt3|911\s*gt3\s*r|992\s*r?\s*gt3|296\s*gt3|corvette\s*z06\s*gt3|m4\s*gt3|mercedes.*gt3|amg\s*gt3|hurac[aá]n\s*gt3|vantage\s*gt3|nsx\s*gt3/i.test(t) ||
-    w.categoryKey === "gt3"
-  );
+  if (/(gt4|tcr|\bm2\b|gt3\s*cup)/i.test(t)) return false;
+  return /mustang\s*gt3|911\s*gt3\s*r|992\s*r?\s*gt3|296\s*gt3|corvette\s*z06\s*gt3|m4\s*gt3|mercedes.*gt3|amg\s*gt3|hurac[aá]n\s*gt3|vantage\s*gt3|nsx\s*gt3/i.test(t);
 }
 function isGt3All(w: WallpaperItem): boolean {
   const t = itemText(w);
   if (isLegacyCar(t) || isFerrari296Challenge(t)) return false;
-  return isGt3Imsa(w) || isAudiOrMcLarenGt3(t) || w.categoryKey === "gt3";
+  if (/(gt4|tcr|\bm2\b|gt3\s*cup)/i.test(t)) return false;
+  return isGt3Imsa(w) || isAudiOrMcLarenGt3(t);
 }
 function isFormulas(w: WallpaperItem): boolean {
   const t = itemText(w);
-  return w.categoryKey === "formulas" || /formula|sf23|\bsfl\b|super\s*formula|ir18|indycar|fia\s*f4|\bf4\b|formula\s*vee|ff1600|ray\s*ff/i.test(t);
+  return /formula|sf23|\bsfl\b|super\s*formula|ir18|indycar|fia\s*f4|\bf4\b|\bf3\b|formula\s*vee|ff1600|ray\s*ff|dallara\s*ir-?01/i.test(t);
 }
 function isPccRookie(w: WallpaperItem): boolean {
   const t = itemText(w);
-  return w.categoryKey === "rookie" || /mx-?5|miata|gr86|clio|production\s*car/i.test(t);
+  return /bmw\s*m2|m2\s*cs|m2\s*racing|mx-?5|miata|gr86|clio/i.test(t);
 }
 function isNascar(w: WallpaperItem): boolean {
   const t = itemText(w);
-  return w.categoryKey === "oval" || /nascar|stock\s*car|xfinity|truck|cup\s*series|camaro|silverado|tundra|arca|late\s*model/i.test(t);
+  return /nascar|stock\s*car|xfinity|truck|cup\s*series|camaro|silverado|tundra|arca|late\s*model|gen\s*4|taurus|pontiac\s*grand\s*prix/i.test(t);
 }
 
 const SERIES_DEFS = [
-  { id: "imsa", slug: "IMSA", title: "IMSA iRacing Series (GTP + LMP2 + GT3)", badge: "IMSA", accent: "#facc15", match: (w: WallpaperItem) => isGtp(w) || isLmp2(w) || isGt3Imsa(w) },
-  { id: "gt-sprint", slug: "GTSprint", title: "GT Sprint / GT Endurance Series", badge: "GT3", accent: "#a855f7", match: (w: WallpaperItem) => isGt3All(w) },
-  { id: "nec", slug: "NEC", title: "Nürburgring Endurance Championship (NEC)", badge: "NEC", accent: "#ef4444", match: (w: WallpaperItem) => isGt3All(w) || isPcup(w) || isGt4(w) || isTcr(w) },
-  { id: "pcup", slug: "PCup", title: "Porsche Cup (PCup)", badge: "PCUP", accent: "#e2e8f0", match: (w: WallpaperItem) => isPcup(w) },
-  { id: "ferrari-challenge", slug: "FerrariChallenge", title: "Ferrari 296 Challenge", badge: "CHALLENGE", accent: "#ef4444", match: (w: WallpaperItem) => isFerrari296Challenge(itemText(w)) },
-  { id: "falken-gt4", slug: "FalkenGT4", title: "Falken Tyre Sports Car Challenge (GT4 + LMP3)", badge: "GT4 + LMP3", accent: "#fb923c", match: (w: WallpaperItem) => isLmp3(w) || isGt4(w) },
-  { id: "tcr", slug: "TCR", title: "Touring Car Challenge (TCR)", badge: "TCR", accent: "#22c55e", match: (w: WallpaperItem) => isTcr(w) },
-  { id: "formulas", slug: "Formulas", title: "Fórmulas (SF23 / SFL / IR18 / F4)", badge: "FORMULA", accent: "#10b981", match: (w: WallpaperItem) => isFormulas(w) },
-  { id: "pcc", slug: "PCC", title: "Production Car Challenge / Rookie", badge: "PCC", accent: "#38bdf8", match: (w: WallpaperItem) => isPccRookie(w) },
-  { id: "nascar", slug: "NASCAR", title: "NASCAR / Oval & Stock Car", badge: "NASCAR", accent: "#fbbf24", match: (w: WallpaperItem) => isNascar(w) },
-  { id: "all", slug: "Muntrume", title: "Colección Completa Muntrume Motorsport", badge: "ALL TRACK", accent: "#10b981", match: () => true },
+  { id: "imsa", slug: "IMSA", title: "IMSA iRacing Series (GTP + LMP2 + GT3)", badge: "IMSA", accent: "#facc15", match: (w: WallpaperItem) => isGtp(w) || isLmp2(w) || isGt3Imsa(w), coverSlots: [isGtp, isLmp2, isGt3Imsa, isGt3Imsa] },
+  { id: "gt-sprint", slug: "GTSprint", title: "GT Sprint / GT Endurance (GT3)", badge: "GT3", accent: "#a855f7", match: (w: WallpaperItem) => isGt3All(w), coverSlots: [(w: WallpaperItem) => isAudiOrMcLarenGt3(itemText(w)), isGt3All, isGt3All, isGt3All] },
+  { id: "nec", slug: "NEC", title: "Nürburgring Endurance Championship (NEC)", badge: "NEC", accent: "#ef4444", match: (w: WallpaperItem) => !isGtp(w) && !isLmp2(w) && !isLmp3(w) && !isFormulas(w) && (isGt3All(w) || isPcup(w) || isGt4(w) || isTcr(w)), coverSlots: [isGt3All, isPcup, isGt4, isTcr] },
+  { id: "pcup", slug: "PCup", title: "Porsche Cup (PCup)", badge: "PCUP", accent: "#e2e8f0", match: (w: WallpaperItem) => isPcup(w), coverSlots: [isPcup, isPcup, isPcup, isPcup] },
+  { id: "ferrari-challenge", slug: "FerrariChallenge", title: "Ferrari 296 Challenge", badge: "CHALLENGE", accent: "#ef4444", match: (w: WallpaperItem) => isFerrari296Challenge(itemText(w)), coverSlots: [] },
+  { id: "falken-gt4", slug: "FalkenGT4", title: "Falken Tyre Sports Car Challenge (GT4 + LMP3)", badge: "GT4 + LMP3", accent: "#fb923c", match: (w: WallpaperItem) => isLmp3(w) || isGt4(w), coverSlots: [isLmp3, isGt4, isGt4, isGt4] },
+  { id: "tcr", slug: "TCR", title: "Touring Car Challenge (TCR)", badge: "TCR", accent: "#22c55e", match: (w: WallpaperItem) => isTcr(w), coverSlots: [isTcr, isTcr, isTcr, isTcr] },
+  { id: "formulas", slug: "Formulas", title: "Fórmulas (SF23 / SFL / IR18 / F4)", badge: "FORMULA", accent: "#10b981", match: (w: WallpaperItem) => isFormulas(w), coverSlots: [isFormulas, isFormulas, isFormulas, isFormulas] },
+  { id: "pcc", slug: "PCC", title: "Monomarca / Rookie (M2 / MX-5 / GR86 / Clio)", badge: "PCC", accent: "#38bdf8", match: (w: WallpaperItem) => isPccRookie(w), coverSlots: [isPccRookie, isPccRookie, isPccRookie, isPccRookie] },
+  { id: "nascar", slug: "NASCAR", title: "NASCAR / Oval & Stock Car", badge: "NASCAR", accent: "#fbbf24", match: (w: WallpaperItem) => isNascar(w), coverSlots: [isNascar, isNascar, isNascar, isNascar] },
+  { id: "all", slug: "Muntrume", title: "Colección Completa Muntrume Motorsport", badge: "ALL TRACK", accent: "#10b981", match: () => true, coverSlots: [] },
 ];
 
-const categoryPacks = SERIES_DEFS.map((d) => ({
-  ...d,
-  items: allWallpapers.filter(d.match),
-})).filter((p) => p.items.length > 0);
+const usedSeriesCoverImgs = new Set<string>();
+function pickUniqueSeriesCovers(items: WallpaperItem[], slots: Array<(w: WallpaperItem) => boolean>): WallpaperItem[] {
+  const chosen: WallpaperItem[] = [];
+  const chosenIds = new Set<string>();
+  const pickOne = (pred: (w: WallpaperItem) => boolean, preferUnused: boolean): WallpaperItem | undefined =>
+    items.find((w) => !chosenIds.has(w.id) && pred(w) && (!preferUnused || !usedSeriesCoverImgs.has(w.img)));
+
+  for (const slotPred of slots) {
+    if (chosen.length >= 4) break;
+    const hit = pickOne(slotPred, true) || pickOne(slotPred, false);
+    if (hit) {
+      chosen.push(hit);
+      chosenIds.add(hit.id);
+      usedSeriesCoverImgs.add(hit.img);
+    }
+  }
+  while (chosen.length < Math.min(4, items.length)) {
+    const hit = pickOne(() => true, true) || pickOne(() => true, false);
+    if (!hit) break;
+    chosen.push(hit);
+    chosenIds.add(hit.id);
+    usedSeriesCoverImgs.add(hit.img);
+  }
+  return chosen;
+}
+
+const categoryPacks = SERIES_DEFS.map((d) => {
+  const items = allWallpapers.filter(d.match).slice(0, 50);
+  return {
+    ...d,
+    items,
+    coverThumbs: pickUniqueSeriesCovers(items, d.coverSlots),
+  };
+}).filter((p) => p.items.length > 0);
 
 // Per-car Packs
 const carMap = new Map<string, WallpaperItem[]>();
@@ -445,6 +480,8 @@ const carPacks = Array.from(carMap.entries())
 // Console build audit
 console.log(`[wallpapers] Total real photos indexed (gallery + albums + track): ${allWallpapers.length}`);
 for (const p of categoryPacks) console.log(`[wallpapers]   Series ${p.slug} (${p.title}): ${p.items.length}`);
+const pcupPack = categoryPacks.find((p) => p.id === "pcup");
+console.log(`[wallpapers]   PCup models audit -> ${(pcupPack?.items || []).map((x) => x.model).join(", ") || "0"}`);
 const gt3Pack = categoryPacks.find((p) => p.id === "gt-sprint");
 const necPack = categoryPacks.find((p) => p.id === "nec");
 const imsaPack = categoryPacks.find((p) => p.id === "imsa");
@@ -556,31 +593,39 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
       <!-- TAB 1: CATEGORY PACKS -->
       <section id="tab-categories" class="wp-tab-panel grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {categoryPacks.map((pack) => {
-          const thumbs = pack.items.slice(0, 4);
-          const gridCols = thumbs.length === 1 ? "grid-cols-1" : thumbs.length === 3 ? "grid-cols-3" : "grid-cols-2";
+          const thumbs = pack.coverThumbs;
+          const isThree = thumbs.length === 3;
+          const gridClass =
+            thumbs.length === 1
+              ? "grid-cols-1 grid-rows-1"
+              : thumbs.length === 2
+                ? "grid-cols-2 grid-rows-1"
+                : isThree
+                  ? "grid-cols-3 grid-rows-2"
+                  : "grid-cols-2 grid-rows-2";
           return (
             <article class="rounded-lg border border-white/10 bg-[#0d1118] overflow-hidden flex flex-col justify-between hover:border-white/25 transition">
-              <div class={`grid ${gridCols} gap-0.5 bg-[#090b0f] p-1`}>
-                {thumbs.map((t) => (
-                  <div class="aspect-video bg-[#090b0f] overflow-hidden rounded-[2px]">
+              <div class={`aspect-video grid ${gridClass} gap-0.5 bg-[#090b0f] p-1 overflow-hidden`}>
+                {thumbs.map((t, idx) => (
+                  <div class={`${isThree && idx === 0 ? "col-span-2 row-span-2" : ""} w-full h-full bg-[#090b0f] overflow-hidden rounded-[2px]`}>
                     <img src={t.img} alt={t.model} loading="lazy" decoding="async" referrerpolicy="no-referrer" class="w-full h-full object-cover" />
                   </div>
                 ))}
               </div>
-              <div class="p-4 space-y-3 flex-1 flex flex-col justify-between">
+              <div class="p-3.5 space-y-2.5 flex-1 flex flex-col justify-between">
                 <div class="flex items-center justify-between gap-2 font-mono">
                   <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-[3px] border border-white/10" style={`color:${pack.accent};background:${pack.accent}18`}>{pack.badge}</span>
                   <span class="text-[11px] text-slate-400 tabular-nums">{pack.items.length} fotos .JPG</span>
                 </div>
-                <h3 class="text-base font-extrabold text-white">{pack.title}</h3>
-                <div class="flex flex-wrap items-center gap-2 pt-2 font-mono text-xs">
-                  <button type="button" data-pack-download={pack.id} class="flex-1 px-3 py-2 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-extrabold transition cursor-pointer">
-                    Descargar Pack .ZIP (.JPG)
+                <h3 class="text-sm sm:text-base font-extrabold text-white leading-snug">{pack.title}</h3>
+                <div class="flex items-center gap-1.5 pt-1 font-mono text-[11px]">
+                  <button type="button" data-pack-download={pack.id} class="flex-1 px-2.5 py-2 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-extrabold transition cursor-pointer whitespace-nowrap">
+                    Descargar .ZIP
                   </button>
-                  <button type="button" data-pack-slideshow={pack.id} class="px-2.5 py-2 rounded border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 font-bold transition cursor-pointer" title="Previsualizar Slideshow (20s)">
-                    ▶ Slideshow (<span class="wp-sec-lbl">20s</span>)
+                  <button type="button" data-pack-slideshow={pack.id} class="px-2.5 py-2 rounded border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 font-bold transition cursor-pointer whitespace-nowrap" title="Previsualizar Slideshow">
+                    Slideshow <span class="wp-sec-lbl">20s</span>
                   </button>
-                  <button type="button" data-pack-filter={pack.id} class="px-3 py-2 rounded border border-white/15 hover:border-emerald-500/50 text-slate-200 font-semibold transition cursor-pointer">
+                  <button type="button" data-pack-filter={pack.id} class="px-2.5 py-2 rounded border border-white/15 hover:border-emerald-500/50 text-slate-200 font-semibold transition cursor-pointer whitespace-nowrap">
                     Explorar
                   </button>
                 </div>
