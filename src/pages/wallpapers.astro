@@ -177,13 +177,13 @@ function itemText(w: WallpaperItem): string {
   return `${w.brand} ${w.model} ${w.carSlug} ${w.carClass}`.toLowerCase();
 }
 function isLegacyCar(t: string): boolean {
-  return /\blegacy\b/i.test(t);
+  return /\blegacy\b|ford\s*gt\s*gt3|mp4-?12c|bmw\s*z4|z4\s*gt3/i.test(t);
 }
 function isFerrari296Challenge(t: string): boolean {
   return /296\s*challenge|ferrari.*challenge/i.test(t);
 }
 function isAudiOrMcLarenGt3(t: string): boolean {
-  return (/audi|r8\s*lms/i.test(t) || /mclaren|720s|mp4-12c/i.test(t)) && !/gt4|570s|tcr|rs\s*3|rs3/i.test(t);
+  return (/audi|r8\s*lms/i.test(t) || /mclaren|720s/i.test(t)) && !/gt4|570s|tcr|rs\s*3|rs3|mp4-?12c/i.test(t);
 }
 function isGtp(w: WallpaperItem): boolean {
   const t = itemText(w);
@@ -275,6 +275,14 @@ const carPacks = Array.from(carMap.entries())
 // Console build audit
 console.log(`[wallpapers] Total real photos indexed (gallery + albums + track): ${allWallpapers.length}`);
 for (const p of categoryPacks) console.log(`[wallpapers]   Series ${p.slug} (${p.title}): ${p.items.length}`);
+const gt3Pack = categoryPacks.find((p) => p.id === "gt-sprint");
+const necPack = categoryPacks.find((p) => p.id === "nec");
+const imsaPack = categoryPacks.find((p) => p.id === "imsa");
+const isAudiR8 = (w: WallpaperItem) => /audi|r8\s*lms/i.test(itemText(w)) && !isTcr(w);
+const audiGt3 = gt3Pack ? gt3Pack.items.filter(isAudiR8) : [];
+const audiNec = necPack ? necPack.items.filter(isAudiR8) : [];
+const audiImsa = imsaPack ? imsaPack.items.filter(isAudiR8) : [];
+console.log(`[wallpapers]   Audi R8 LMS Evo II verification -> GTSprint: ${audiGt3.length} (${audiGt3.map((x) => x.model).slice(0, 2).join(", ")}), NEC: ${audiNec.length}, IMSA: ${audiImsa.length}`);
 console.log(`[wallpapers]   Cars with track photos: ${carPacks.length}, Albums: ${apiAlbums.length}`);
 
 const brandsList = Array.from(new Set(allWallpapers.map((w) => w.brand))).sort();
