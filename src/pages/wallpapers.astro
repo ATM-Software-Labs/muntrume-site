@@ -1,6 +1,7 @@
 ---
 import fs from "node:fs";
 import path from "node:path";
+import sharp from "sharp";
 import Layout from "../layouts/Layout.astro";
 import { TRACK_GALLERY_PHOTOS, PADDOCK_ALBUMS } from "../data/paddock-gallery";
 
@@ -170,6 +171,136 @@ for (const album of PADDOCK_ALBUMS) {
       accentColor: mapped.accent,
     });
   }
+}
+
+// Curate Top 50 exterior trackside shots (exclude cockpit/interior, black bars, odd aspect ratios)
+const INTERIOR_RE = /(cockpit|interior|onboard|dash|wheel|volante|salpicadero|cabina|habitaculo|retrovisor|mirror)/i;
+
+interface ScoredCandidate {
+  item: WallpaperItem;
+  score: number;
+  width: number;
+  height: number;
+  reason?: string;
+}
+
+async function evaluatePhotoQuality(item: WallpaperItem): Promise<ScoredCandidate> {
+  const label = `${item.model} (${item.img.split("/").pop() || item.id})`;
+  if (INTERIOR_RE.test(`${item.model} ${item.circuit} ${item.img}`)) {
+    return { item, score: -1, width: 0, height: 0, reason: `interior/cockpit keyword (${label})` };
+  }
+
+  let buf: Buffer | null = null;
+  try {
+    if (item.img.startsWith("/")) {
+      buf = fs.readFileSync(path.join(publicDir, item.img));
+    } else {
+      const ac = new AbortController();
+      const timer = setTimeout(() => ac.abort(), 4500);
+      const res = await fetch(item.img, { signal: ac.signal });
+      clearTimeout(timer);
+      if (res.ok) buf = Buffer.from(await res.arrayBuffer());
+    }
+  } catch {
+    buf = null;
+  }
+
+  if (!buf) {
+    return { item, score: 35, width: 1920, height: 1080 };
+  }
+
+  try {
+    const img = sharp(buf);
+    const meta = await img.metadata();
+    const w = meta.width || 1920;
+    const h = meta.height || 1080;
+    const ratio = w / Math.max(1, h);
+
+    if (w < 1280 || ratio < 1.35 || ratio > 2.55) {
+      return { item, score: -1, width: w, height: h, reason: `resolución/aspecto raro (${w}x${h})` };
+    }
+
+    const W = 160;
+    const H = 90;
+    const { data } = await img.resize(W, H, { fit: "fill" }).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+
+    let darkBorder = 0;
+    let borderTotal = 0;
+    let sumLuma = 0;
+    let sumSq = 0;
+    let centerCount = 0;
+
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        const idx = (y * W + x) * 3;
+        const luma = 0.2126 * data[idx] + 0.7152 * data[idx + 1] + 0.0722 * data[idx + 2];
+        const isTopOrBottom = y < Math.floor(H * 0.16) || y >= Math.floor(H * 0.84);
+        const isSide = x < Math.floor(W * 0.1) || x >= Math.floor(W * 0.9);
+        if (isTopOrBottom || isSide) {
+          borderTotal++;
+          if (luma < 24) darkBorder++;
+        } else {
+          centerCount++;
+          sumLuma += luma;
+          sumSq += luma * luma;
+        }
+      }
+    }
+
+    const darkBorderRatio = darkBorder / Math.max(1, borderTotal);
+    const mean = sumLuma / Math.max(1, centerCount);
+    const stdDev = Math.sqrt(Math.max(0, sumSq / Math.max(1, centerCount) - mean * mean));
+
+    // Thick dark cockpit/roll-cage frame around edges
+    if (darkBorderRatio > 0.74) {
+      return { item, score: -1, width: w, height: h, reason: `interior/cockpit o bandas negras (${Math.round(darkBorderRatio * 100)}% marco oscuro)` };
+    }
+    if (stdDev < 16) {
+      return { item, score: -1, width: w, height: h, reason: `baja nitidez/contraste (std=${stdDev.toFixed(1)})` };
+    }
+
+    const mpScore = Math.min(4, (w * h) / 1_000_000) * 15;
+    const aspectScore = Math.max(0, 25 - Math.abs(ratio - 16 / 9) * 40);
+    const contrastScore = stdDev * 0.45;
+    const borderPenalty = darkBorderRatio * 20;
+    const score = mpScore + aspectScore + contrastScore - borderPenalty;
+
+    return { item, score, width: w, height: h };
+  } catch {
+    return { item, score: 30, width: 1920, height: 1080 };
+  }
+}
+
+const evaluated: ScoredCandidate[] = [];
+const BATCH_SIZE = 16;
+for (let i = 0; i < allWallpapers.length; i += BATCH_SIZE) {
+  const chunk = allWallpapers.slice(i, i + BATCH_SIZE);
+  const res = await Promise.all(chunk.map((item) => evaluatePhotoQuality(item)));
+  evaluated.push(...res);
+}
+
+const excludedShots = evaluated.filter((e) => e.score < 0);
+const validShots = evaluated.filter((e) => e.score >= 0).sort((a, b) => b.score - a.score);
+const top50 = validShots.slice(0, 50);
+const overflowExcluded = validShots.slice(50);
+
+for (const ex of excludedShots) {
+  console.log(`[EXCLUDED] ${ex.item.img.split("/").pop() || ex.item.id} (${ex.item.model}) -> ${ex.reason}`);
+}
+if (overflowExcluded.length > 0) {
+  console.log(`[EXCLUDED] ${overflowExcluded.length} capturas adicionales descartadas por corte Top 50 (menor puntuación/resolución).`);
+}
+top50.forEach((s, idx) => {
+  console.log(`[SELECTED ${String(idx + 1).padStart(2, "0")}/50] ${s.item.model} (${s.width}x${s.height}, score=${s.score.toFixed(1)}) -> ${s.item.img.split("/").pop() || s.item.id}`);
+});
+
+allWallpapers.splice(0, allWallpapers.length, ...top50.map((s) => s.item));
+const curatedIds = new Set(allWallpapers.map((w) => w.id));
+for (let i = apiAlbums.length - 1; i >= 0; i--) {
+  apiAlbums[i].items = apiAlbums[i].items.filter((w) => curatedIds.has(w.id));
+  apiAlbums[i].count = apiAlbums[i].items.length;
+  if (apiAlbums[i].count === 0) apiAlbums.splice(i, 1);
+  else apiAlbums[i].cover = apiAlbums[i].items[0].img;
 }
 
 // Official iRacing Series Roster Matchers
@@ -791,18 +922,14 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
         const intervalMs = slideshowSec * 1000;
         const batContent = [
           "@echo off",
-          "setlocal",
-          `echo Configurando Slideshow de Windows a ${slideshowSec}s con transicion suave...`,
-          `reg add "HKCU\\Control Panel\\Personalization\\Desktop Slideshow" /v Interval /t REG_DWORD /d ${intervalMs} /f >nul 2>&1`,
-          `reg add "HKCU\\Control Panel\\Personalization\\Desktop Slideshow" /v Shuffle /t REG_DWORD /d 1 /f >nul 2>&1`,
-          `reg add "HKCU\\Control Panel\\Personalization\\Desktop Slideshow" /v AnimationDuration /t REG_DWORD /d 1000 /f >nul 2>&1`,
-          `reg add "HKCU\\Control Panel\\Desktop" /v UserPreferencesMask /t REG_BINARY /d 9e3e078012000000 /f >nul 2>&1`,
-          `reg add "HKCU\\Control Panel\\Desktop" /v Animations /t REG_DWORD /d 1 /f >nul 2>&1`,
-          `reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" /v ListviewAlphaSelect /t REG_DWORD /d 1 /f >nul 2>&1`,
-          `RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters 1, True`,
-          `start "" "ms-settings:personalization-background"`,
-          `echo Listo! Selecciona "Presentacion" y elige esta carpeta: %~dp0`,
-          "pause",
+          "chcp 65001 >nul",
+          `reg add "HKCU\\Control Panel\\Personalization\\Desktop Slideshow" /v Interval /t REG_DWORD /d ${intervalMs} /f >nul`,
+          `reg add "HKCU\\Control Panel\\Personalization\\Desktop Slideshow" /v Shuffle /t REG_DWORD /d 1 /f >nul`,
+          `reg add "HKCU\\Control Panel\\Personalization\\Desktop Slideshow" /v AnimationDuration /t REG_DWORD /d 1000 /f >nul`,
+          `reg add "HKCU\\Control Panel\\Desktop" /v WallpaperStyle /t REG_SZ /d 10 /f >nul`,
+          `reg add "HKCU\\Control Panel\\Desktop" /v TileWallpaper /t REG_SZ /d 0 /f >nul`,
+          "RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters 1, True",
+          "start ms-settings:personalization-background",
         ].join("\r\n");
         zip.file(`Aplicar_Slideshow_${slideshowSec}s.bat`, batContent);
       }
