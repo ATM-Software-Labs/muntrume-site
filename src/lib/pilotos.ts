@@ -66,18 +66,23 @@ const EMPTY_SOCIALS: Socials = { twitch: "", youtube: "", instagram: "", x: "" }
 
 /**
  * Asymptotic / logarithmic iRating -> EA Sports F1 25 Rating (1 to 98, strictly < 99).
- * Mathematical calibration:
- *  - Baseline: 1,500 iRating === 40
+ * Mathematical calibration (generous competitive curve):
+ *  - Baseline: 1,500 iRating === 54
  *  - Reference ceiling: 12,000 iRating === 97
+ *  - SR & Track Hours modifier: up to +3 for clean high-SR endurance experience (or -2 if SR < 2.0)
  *  - Strict upper cap: Math.min(98, ...) so it NEVER reaches or exceeds 99.
  */
-export function computeAsymptoticRating(irating: number): number {
+export function computeAsymptoticRating(irating: number, sr = 3.0, trackHours = 100): number {
   const safeIr = Math.max(100, Number(irating) || 1500);
-  const raw =
+  const safeSr = Math.min(4.99, Math.max(1.0, Number(sr) || 3.0));
+  const safeHours = Math.max(0, Number(trackHours) || 0);
+  const base =
     safeIr >= 1500
-      ? 40 + 57 * (Math.log(safeIr / 1500) / Math.log(12000 / 1500))
-      : Math.max(1, 40 * (safeIr / 1500));
-  return Math.min(98, Math.max(1, Math.round(raw)));
+      ? 54 + 43 * (Math.log(safeIr / 1500) / Math.log(12000 / 1500))
+      : Math.max(20, 54 * (safeIr / 1500));
+  const srAdj = safeSr >= 3.0 ? Math.min(2.0, (safeSr - 3.0) * 1.0) : safeSr < 2.0 ? -2.0 : 0;
+  const expAdj = Math.min(1.8, Math.log1p(safeHours) * 0.3);
+  return Math.min(98, Math.max(1, Math.round(base + srAdj + expAdj)));
 }
 
 /**
@@ -90,15 +95,15 @@ export function computeF1DriverStats(
   trackHours = 100,
   peakIrating?: number
 ): F1DriverStats {
-  const overall = computeAsymptoticRating(irating);
-  const peakBase = computeAsymptoticRating(Math.max(irating, peakIrating || irating));
+  const overall = computeAsymptoticRating(irating, sr, trackHours);
+  const peakBase = computeAsymptoticRating(Math.max(irating, peakIrating || irating), sr, trackHours);
   const safeSr = Math.min(4.99, Math.max(1.0, Number(sr) || 3.0));
   const srNorm = (safeSr - 1.0) / 3.99; // 0..1
-  const expBoost = Math.min(18, Math.log1p(Math.max(0, trackHours)) * 2.8);
+  const expBoost = Math.min(20, Math.log1p(Math.max(0, trackHours)) * 3.1);
 
-  const pace = Math.min(98, Math.max(1, Math.round(peakBase + 2)));
-  const awareness = Math.min(98, Math.max(1, Math.round(overall * 0.72 + srNorm * 26)));
-  const racecraft = Math.min(98, Math.max(1, Math.round(overall * 0.86 + srNorm * 12)));
+  const pace = Math.min(98, Math.max(1, Math.round(peakBase + 3)));
+  const awareness = Math.min(98, Math.max(1, Math.round(overall * 0.74 + srNorm * 24)));
+  const racecraft = Math.min(98, Math.max(1, Math.round(overall * 0.88 + srNorm * 11)));
   const experience = Math.min(98, Math.max(1, Math.round(overall * 0.78 + expBoost)));
 
   return {

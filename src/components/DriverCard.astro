@@ -59,7 +59,7 @@ const fav = (driver.favoriteTrack || "").trim();
 
 const srNum = Number(lic?.sr) || 3.0;
 const srProgress = Math.min(100, Math.max(12, Math.round((srNum / 4.99) * 100)));
-const ovrScore = computeAsymptoticRating(lic?.irating || 1500);
+const ovrScore = computeAsymptoticRating(lic?.irating || 1500, srNum, sumTrackHours);
 const sparklines: Record<string, string> = {
   albertot: "M2,20 Q28,17 55,14 T95,9 T126,4",
   mateob: "M2,21 Q30,18 60,14 T98,10 T126,6",

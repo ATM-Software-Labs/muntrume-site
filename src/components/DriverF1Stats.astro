@@ -119,26 +119,30 @@ const attributes = [
 
 <script is:inline>
   (function initF1AsymptoticEngine() {
-    function computeAsymptoticRating(irating) {
+    function computeAsymptoticRating(irating, sr, trackHours) {
       var safeIr = Math.max(100, Number(irating) || 1500);
-      var raw = safeIr >= 1500
-        ? 40 + 57 * (Math.log(safeIr / 1500) / Math.log(12000 / 1500))
-        : Math.max(1, 40 * (safeIr / 1500));
-      return Math.min(98, Math.max(1, Math.round(raw)));
+      var safeSr = Math.min(4.99, Math.max(1.0, Number(sr) || 3.0));
+      var safeHours = Math.max(0, Number(trackHours) || 0);
+      var base = safeIr >= 1500
+        ? 54 + 43 * (Math.log(safeIr / 1500) / Math.log(12000 / 1500))
+        : Math.max(20, 54 * (safeIr / 1500));
+      var srAdj = safeSr >= 3.0 ? Math.min(2.0, (safeSr - 3.0) * 1.0) : safeSr < 2.0 ? -2.0 : 0;
+      var expAdj = Math.min(1.8, Math.log1p(safeHours) * 0.3);
+      return Math.min(98, Math.max(1, Math.round(base + srAdj + expAdj)));
     }
 
     function computeF1Stats(irating, sr, trackHours, peakIr) {
-      var overall = computeAsymptoticRating(irating);
-      var peakBase = computeAsymptoticRating(Math.max(irating, peakIr || irating));
+      var overall = computeAsymptoticRating(irating, sr, trackHours);
+      var peakBase = computeAsymptoticRating(Math.max(irating, peakIr || irating), sr, trackHours);
       var safeSr = Math.min(4.99, Math.max(1.0, Number(sr) || 3.0));
       var srNorm = (safeSr - 1.0) / 3.99;
-      var expBoost = Math.min(18, Math.log1p(Math.max(0, Number(trackHours) || 0)) * 2.8);
+      var expBoost = Math.min(20, Math.log1p(Math.max(0, Number(trackHours) || 0)) * 3.1);
 
       return {
         overall: Math.min(98, overall),
-        pace: Math.min(98, Math.max(1, Math.round(peakBase + 2))),
-        awareness: Math.min(98, Math.max(1, Math.round(overall * 0.72 + srNorm * 26))),
-        racecraft: Math.min(98, Math.max(1, Math.round(overall * 0.86 + srNorm * 12))),
+        pace: Math.min(98, Math.max(1, Math.round(peakBase + 3))),
+        awareness: Math.min(98, Math.max(1, Math.round(overall * 0.74 + srNorm * 24))),
+        racecraft: Math.min(98, Math.max(1, Math.round(overall * 0.88 + srNorm * 11))),
         experience: Math.min(98, Math.max(1, Math.round(overall * 0.78 + expBoost)))
       };
     }
