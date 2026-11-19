@@ -131,8 +131,17 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
           </p>
         </div>
 
-        <!-- Format Switcher: Escritorio 16:9 vs Móvil 9:16 -->
-        <div class="flex flex-col items-start lg:items-end gap-2">
+        <!-- Format Switcher + Submit CTA -->
+        <div class="flex flex-col items-start lg:items-end gap-2.5">
+          <div class="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              id="wpOpenSubmitBtn"
+              class="px-3.5 py-2 rounded-lg border border-emerald-500/45 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-mono text-xs font-extrabold tracking-wide transition cursor-pointer"
+            >
+              + Subir / Sugerir Wallpaper
+            </button>
+          </div>
           <span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">Formato de salida &amp; vista previa</span>
           <div class="inline-flex p-1 rounded-lg bg-[#0d1118] border border-white/15 font-mono text-xs" role="group" aria-label="Formato de wallpaper">
             <button
@@ -151,7 +160,7 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
               class="px-3.5 py-2 rounded-md font-bold text-slate-300 hover:text-white transition cursor-pointer"
               aria-pressed="false"
             >
-              Móvil · 9:16 (1440×2560)
+              Móvil · 9:16 (2160×3840 4K)
             </button>
           </div>
         </div>
@@ -314,9 +323,17 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
                 <button
                   type="button"
                   data-preview-id={w.id}
-                  class="absolute bottom-2 right-2 px-2 py-1 rounded bg-black/80 border border-white/15 text-[10px] font-mono text-emerald-400 hover:bg-emerald-500 hover:text-[#04130d] font-bold transition cursor-pointer"
+                  class="absolute bottom-2 left-2 px-2 py-1 rounded bg-black/80 border border-white/15 text-[10px] font-mono text-slate-200 hover:border-emerald-500/60 font-bold transition cursor-pointer"
                 >
                   Vista Previa ⤢
+                </button>
+                <button
+                  type="button"
+                  data-direct-dl={w.id}
+                  class="absolute bottom-2 right-2 px-2.5 py-1 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] text-[10px] font-mono font-extrabold transition cursor-pointer shadow"
+                  title="Descarga directa en el formato activo"
+                >
+                  ↓ Descargar
                 </button>
               </div>
               <div class="p-2.5 flex items-center justify-between gap-2 font-mono">
@@ -361,24 +378,109 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
         </div>
 
         <div class="px-4 py-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 font-mono text-xs">
-          <span class="text-slate-400">Listo para fondo de escritorio (16:9) o bloqueo móvil (9:16 · 1440×2560).</span>
+          <span class="text-slate-400">Archivo nativo sin pérdida (16:9) o recorte 4K Vertical (2160×3840).</span>
           <div class="flex items-center gap-2">
             <button
               type="button"
               id="wpModalDownloadDesktop"
               class="px-3.5 py-2 rounded border border-white/20 hover:border-emerald-500 text-white font-bold transition cursor-pointer"
             >
-              Descargar 16:9 Escritorio
+              Descargar 16:9 Original
             </button>
             <button
               type="button"
               id="wpModalDownloadMobile"
               class="px-3.5 py-2 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-extrabold transition cursor-pointer"
             >
-              Descargar Foto Móvil (9:16)
+              Descargar Foto Móvil (9:16 4K)
             </button>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- SUBMIT / SUGGEST WALLPAPER MODAL -->
+    <div
+      id="wpSubmitModal"
+      hidden
+      class="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="wpSubmitTitle"
+    >
+      <div class="w-full max-w-lg rounded-xl border border-white/15 bg-[#0d1118] overflow-hidden shadow-2xl font-mono">
+        <div class="flex items-center justify-between px-4 py-3 border-b border-white/10">
+          <div>
+            <h3 id="wpSubmitTitle" class="text-sm font-extrabold text-white">Subir / Sugerir Wallpaper</h3>
+            <p class="text-[10px] text-slate-400">Mínimo recomendado 1920×1080 · JPG, PNG o WebP (máx. 15 MB)</p>
+          </div>
+          <button
+            type="button"
+            id="wpSubmitClose"
+            class="px-2.5 py-1 rounded border border-white/15 text-xs text-slate-300 hover:text-white cursor-pointer"
+          >
+            Cerrar ✕
+          </button>
+        </div>
+
+        <form id="wpSubmitForm" class="p-4 space-y-3 text-xs">
+          <!-- Mode Switch -->
+          <div class="grid grid-cols-2 gap-1.5 p-1 rounded-lg bg-[#090b0f] border border-white/10">
+            <button type="button" id="wpModeCommunityBtn" class="py-1.5 rounded font-bold bg-emerald-500 text-[#04130d] cursor-pointer">
+              Comunidad (Sugerir)
+            </button>
+            <button type="button" id="wpModeTeamBtn" class="py-1.5 rounded font-bold text-slate-300 hover:text-white cursor-pointer">
+              Equipo MMT (Directo)
+            </button>
+          </div>
+          <input type="hidden" id="wpSubmitMode" name="mode" value="community" />
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div>
+              <label class="block text-[10px] text-slate-400 mb-1" for="wpSubCar">Coche</label>
+              <input id="wpSubCar" name="car" required placeholder="ej. Ford Mustang GT3" class="w-full bg-[#090b0f] border border-white/15 rounded px-2.5 py-1.5 text-white outline-none focus:border-emerald-500" />
+            </div>
+            <div>
+              <label class="block text-[10px] text-slate-400 mb-1" for="wpSubTrack">Circuito</label>
+              <input id="wpSubTrack" name="track" required placeholder="ej. Spa-Francorchamps" class="w-full bg-[#090b0f] border border-white/15 rounded px-2.5 py-1.5 text-white outline-none focus:border-emerald-500" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div>
+              <label class="block text-[10px] text-slate-400 mb-1" for="wpSubCategory">Categoría</label>
+              <select id="wpSubCategory" name="category" class="w-full bg-[#090b0f] border border-white/15 rounded px-2.5 py-1.5 text-white outline-none focus:border-emerald-500">
+                <option value="GT3 2026">GT3 2026</option>
+                <option value="GTP">GTP / Hypercar</option>
+                <option value="LMP2">LMP2 &amp; Prototipos</option>
+                <option value="PCup">Porsche Cup</option>
+                <option value="Fórmulas">Fórmulas</option>
+                <option value="Equipo MMT">Equipo MMT</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] text-slate-400 mb-1" for="wpSubAuthor">Piloto (iRacing / Discord)</label>
+              <input id="wpSubAuthor" name="author" required placeholder="ej. A. Trujillo" class="w-full bg-[#090b0f] border border-white/15 rounded px-2.5 py-1.5 text-white outline-none focus:border-emerald-500" />
+            </div>
+          </div>
+
+          <div id="wpTeamTokenWrap" hidden>
+            <label class="block text-[10px] text-slate-400 mb-1" for="wpSubToken">Token de Equipo (si no usas Zero Trust)</label>
+            <input id="wpSubToken" name="teamToken" type="password" placeholder="Token privado MMT" class="w-full bg-[#090b0f] border border-white/15 rounded px-2.5 py-1.5 text-white outline-none focus:border-emerald-500" />
+          </div>
+
+          <div>
+            <label class="block text-[10px] text-slate-400 mb-1" for="wpSubFile">Captura (mín. 1920×1080)</label>
+            <input id="wpSubFile" name="file" type="file" accept="image/jpeg,image/png,image/webp" required class="w-full bg-[#090b0f] border border-dashed border-white/25 rounded p-2.5 text-slate-300 file:mr-3 file:px-2.5 file:py-1 file:rounded file:border-0 file:bg-emerald-500/20 file:text-emerald-400 file:font-bold cursor-pointer" />
+            <p id="wpSubFileInfo" class="text-[10px] text-slate-400 mt-1"></p>
+          </div>
+
+          <p id="wpSubmitStatus" hidden class="p-2.5 rounded border text-[11px]"></p>
+
+          <button type="submit" id="wpSubmitSendBtn" class="w-full py-2.5 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-extrabold transition cursor-pointer">
+            Enviar Captura
+          </button>
+        </form>
       </div>
     </div>
   </main>
@@ -502,8 +604,8 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
       syncSelectionUi();
     });
 
-    // Convert image URL to 1440x2560 9:16 mobile JPEG (0.92) with subtle top 18% dark gradient
-    async function renderMobile916Blob(url: string): Promise<Blob> {
+    // Convert image URL to 2160x3840 4K 9:16 mobile image (PNG lossless if original is PNG, else JPEG 0.96)
+    async function renderMobile916Blob(url: string): Promise<{ blob: Blob; ext: string }> {
       const img = new Image();
       img.crossOrigin = "anonymous";
       await new Promise<void>((resolve, reject) => {
@@ -512,12 +614,14 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
         img.src = url;
       });
 
-      const W = 1440;
-      const H = 2560;
+      const W = 2160;
+      const H = 3840;
       const canvas = document.createElement("canvas");
       canvas.width = W;
       canvas.height = H;
       const ctx = canvas.getContext("2d")!;
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
 
       const scale = Math.max(W / img.naturalWidth, H / img.naturalHeight);
       const dw = img.naturalWidth * scale;
@@ -533,13 +637,17 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, W, H * 0.18);
 
-      return await new Promise<Blob>((resolve, reject) => {
+      const isPng = url.toLowerCase().endsWith(".png");
+      const mime = isPng ? "image/png" : "image/jpeg";
+      const ext = isPng ? "png" : "jpg";
+      const blob = await new Promise<Blob>((resolve, reject) => {
         canvas.toBlob(
-          (blob) => (blob ? resolve(blob) : reject(new Error("Canvas toBlob failed"))),
-          "image/jpeg",
-          0.92
+          (b) => (b ? resolve(b) : reject(new Error("Canvas toBlob failed"))),
+          mime,
+          isPng ? undefined : 0.96
         );
       });
+      return { blob, ext };
     }
 
     function triggerDownload(blob: Blob, filename: string) {
@@ -600,8 +708,8 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
         updateProg(i, items.length, `Empaquetando ${i + 1}/${items.length} wallpapers (${suffix})...`);
         try {
           if (isMob) {
-            const blob = await renderMobile916Blob(item.img);
-            zip.file(`Muntrume_${slug}_${idxStr}_${item.cleanFileBase}_9x16.jpg`, blob);
+            const { blob, ext } = await renderMobile916Blob(item.img);
+            zip.file(`Muntrume_${slug}_${idxStr}_${item.cleanFileBase}_9x16_4K.${ext}`, blob);
           } else {
             const res = await fetch(item.img);
             const blob = await res.blob();
@@ -658,18 +766,130 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
       if (e.target === modalEl) modalEl.hidden = true;
     });
 
-    modalDlDesktop?.addEventListener("click", async () => {
-      if (!activeModalItem) return;
-      const res = await fetch(activeModalItem.img);
-      const blob = await res.blob();
-      const ext = activeModalItem.img.split(".").pop() || "webp";
-      triggerDownload(blob, `Muntrume_${activeModalItem.cleanFileBase}_16x9.${ext}`);
+    // Direct individual download button on each card
+    async function downloadSingleItem(item: (typeof allItems)[number], fmt: "desktop" | "mobile") {
+      if (fmt === "mobile") {
+        const { blob, ext } = await renderMobile916Blob(item.img);
+        triggerDownload(blob, `Muntrume_${item.cleanFileBase}_9x16_4K.${ext}`);
+      } else {
+        const res = await fetch(item.img);
+        const blob = await res.blob();
+        const ext = item.img.split(".").pop() || "webp";
+        triggerDownload(blob, `Muntrume_${item.cleanFileBase}_16x9.${ext}`);
+      }
+    }
+
+    document.querySelectorAll<HTMLButtonElement>("[data-direct-dl]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const item = itemById.get(btn.dataset.directDl || "");
+        if (item) downloadSingleItem(item, outputFormat);
+      });
     });
 
-    modalDlMobile?.addEventListener("click", async () => {
-      if (!activeModalItem) return;
-      const blob = await renderMobile916Blob(activeModalItem.img);
-      triggerDownload(blob, `Muntrume_${activeModalItem.cleanFileBase}_9x16.jpg`);
+    modalDlDesktop?.addEventListener("click", () => {
+      if (activeModalItem) downloadSingleItem(activeModalItem, "desktop");
+    });
+
+    modalDlMobile?.addEventListener("click", () => {
+      if (activeModalItem) downloadSingleItem(activeModalItem, "mobile");
+    });
+
+    // Submit / Suggest Wallpaper Modal
+    const openSubBtn = document.getElementById("wpOpenSubmitBtn");
+    const subModal = document.getElementById("wpSubmitModal");
+    const subClose = document.getElementById("wpSubmitClose");
+    const subForm = document.getElementById("wpSubmitForm") as HTMLFormElement | null;
+    const subModeInput = document.getElementById("wpSubmitMode") as HTMLInputElement | null;
+    const modeCommBtn = document.getElementById("wpModeCommunityBtn");
+    const modeTeamBtn = document.getElementById("wpModeTeamBtn");
+    const tokenWrap = document.getElementById("wpTeamTokenWrap");
+    const fileInput = document.getElementById("wpSubFile") as HTMLInputElement | null;
+    const fileInfo = document.getElementById("wpSubFileInfo");
+    const subStatus = document.getElementById("wpSubmitStatus");
+    const subSendBtn = document.getElementById("wpSubmitSendBtn") as HTMLButtonElement | null;
+
+    openSubBtn?.addEventListener("click", () => {
+      if (subModal) subModal.hidden = false;
+    });
+    subClose?.addEventListener("click", () => {
+      if (subModal) subModal.hidden = true;
+    });
+    subModal?.addEventListener("click", (e) => {
+      if (e.target === subModal) subModal.hidden = true;
+    });
+
+    function setSubmitMode(mode: "community" | "team") {
+      if (subModeInput) subModeInput.value = mode;
+      const isTeam = mode === "team";
+      if (tokenWrap) tokenWrap.hidden = !isTeam;
+      if (modeCommBtn && modeTeamBtn) {
+        modeCommBtn.className = `py-1.5 rounded font-bold cursor-pointer ${!isTeam ? "bg-emerald-500 text-[#04130d]" : "text-slate-300 hover:text-white"}`;
+        modeTeamBtn.className = `py-1.5 rounded font-bold cursor-pointer ${isTeam ? "bg-emerald-500 text-[#04130d]" : "text-slate-300 hover:text-white"}`;
+      }
+    }
+    modeCommBtn?.addEventListener("click", () => setSubmitMode("community"));
+    modeTeamBtn?.addEventListener("click", () => setSubmitMode("team"));
+
+    let fileDimsValid = false;
+    fileInput?.addEventListener("change", () => {
+      fileDimsValid = false;
+      const f = fileInput.files?.[0];
+      if (!f) return;
+      const objUrl = URL.createObjectURL(f);
+      const probe = new Image();
+      probe.onload = () => {
+        URL.revokeObjectURL(objUrl);
+        const ok = probe.naturalWidth >= 1920 && probe.naturalHeight >= 1080;
+        fileDimsValid = ok;
+        if (fileInfo) {
+          fileInfo.textContent = ok
+            ? `Resolución verificada: ${probe.naturalWidth}×${probe.naturalHeight} px · ${(f.size / 1048576).toFixed(2)} MB`
+            : `Resolución insuficiente (${probe.naturalWidth}×${probe.naturalHeight}). Mínimo requerido: 1920×1080.`;
+          fileInfo.className = `text-[10px] mt-1 ${ok ? "text-emerald-400" : "text-rose-400"}`;
+        }
+      };
+      probe.src = objUrl;
+    });
+
+    subForm?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!fileDimsValid) {
+        if (subStatus) {
+          subStatus.hidden = false;
+          subStatus.className = "p-2.5 rounded border border-rose-500/40 bg-rose-500/10 text-rose-300 text-[11px]";
+          subStatus.textContent = "La captura debe tener una resolución mínima de 1920×1080 píxeles.";
+        }
+        return;
+      }
+      if (subSendBtn) subSendBtn.disabled = true;
+      try {
+        const resp = await fetch("/api/wallpapers/submit", {
+          method: "POST",
+          body: new FormData(subForm),
+        });
+        const data = await resp.json().catch(() => ({ ok: false, error: "Error de red o servidor." }));
+        if (subStatus) {
+          subStatus.hidden = false;
+          if (resp.ok && data.ok) {
+            subStatus.className = "p-2.5 rounded border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 text-[11px]";
+            subStatus.textContent = data.message || "Enviado correctamente.";
+            subForm.reset();
+            fileDimsValid = false;
+            if (fileInfo) fileInfo.textContent = "";
+          } else {
+            subStatus.className = "p-2.5 rounded border border-rose-500/40 bg-rose-500/10 text-rose-300 text-[11px]";
+            subStatus.textContent = data.error || "No se pudo completar la subida.";
+          }
+        }
+      } catch {
+        if (subStatus) {
+          subStatus.hidden = false;
+          subStatus.className = "p-2.5 rounded border border-rose-500/40 bg-rose-500/10 text-rose-300 text-[11px]";
+          subStatus.textContent = "No se pudo conectar con /api/wallpapers/submit.";
+        }
+      } finally {
+        if (subSendBtn) subSendBtn.disabled = false;
+      }
     });
   </script>
 </Layout>
