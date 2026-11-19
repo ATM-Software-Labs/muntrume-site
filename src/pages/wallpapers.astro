@@ -351,17 +351,17 @@ function itemText(w: WallpaperItem): string {
   return `${w.brand} ${w.model} ${w.carSlug} ${w.carClass}`.toLowerCase();
 }
 function isLegacyCar(t: string): boolean {
-  return /\blegacy\b|ford\s*gt\s*gt3|mp4-?12c|bmw\s*z4|z4\s*gt3/i.test(t);
+  return /\blegacy\b|ford\s*gt\s*gt3|mp4-?12c|bmw\s*z4|z4\s*gt3|audi\s*r8.*2016|r8\s*lms.*2016/i.test(t);
 }
 function isFerrari296Challenge(t: string): boolean {
   return /296\s*challenge|ferrari.*challenge/i.test(t);
 }
 function isAudiOrMcLarenGt3(t: string): boolean {
-  return (/audi|r8\s*lms/i.test(t) || /mclaren|720s/i.test(t)) && !/gt4|570s|tcr|rs\s*3|rs3|mp4-?12c/i.test(t);
+  return (/audi|r8\s*lms/i.test(t) || /mclaren|720s/i.test(t)) && !/gt4|570s|tcr|rs\s*3|rs3|mp4-?12c|2016/i.test(t);
 }
 function isGtp(w: WallpaperItem): boolean {
   const t = itemText(w);
-  return /porsche\s*963|cadillac\s*v-?series|bmw\s*m\s*hybrid|ferrari\s*499p|acura\s*arx|valkyrie/i.test(t);
+  return /porsche\s*963|cadillac\s*v-?series|bmw\s*m\s*hybrid|ferrari\s*499p|acura\s*arx-?06|valkyrie/i.test(t);
 }
 function isLmp2(w: WallpaperItem): boolean {
   const t = itemText(w);
@@ -411,8 +411,8 @@ function isNascar(w: WallpaperItem): boolean {
 }
 
 const SERIES_DEFS = [
-  { id: "imsa", slug: "IMSA", title: "IMSA iRacing Series (GTP + LMP2 + GT3)", badge: "IMSA", accent: "#facc15", match: (w: WallpaperItem) => isGtp(w) || isLmp2(w) || isGt3Imsa(w), coverSlots: [isGtp, isLmp2, isGt3Imsa, isGt3Imsa] },
-  { id: "gt-sprint", slug: "GTSprint", title: "GT Sprint / GT Endurance (GT3)", badge: "GT3", accent: "#a855f7", match: (w: WallpaperItem) => isGt3All(w), coverSlots: [(w: WallpaperItem) => isAudiOrMcLarenGt3(itemText(w)), isGt3All, isGt3All, isGt3All] },
+  { id: "imsa", slug: "IMSA", title: "IMSA iRacing Series / IMSA Endurance (GTP + LMP2 + GT3)", badge: "IMSA", accent: "#facc15", match: (w: WallpaperItem) => isGtp(w) || isLmp2(w) || isGt3All(w), coverSlots: [isGtp, isLmp2, isGt3All, (w: WallpaperItem) => isAudiOrMcLarenGt3(itemText(w))] },
+  { id: "gt-sprint", slug: "GTSprint", title: "GT Sprint / GT Endurance (Solo GT3)", badge: "GT3", accent: "#a855f7", match: (w: WallpaperItem) => isGt3All(w), coverSlots: [(w: WallpaperItem) => isAudiOrMcLarenGt3(itemText(w)), isGt3All, isGt3All, isGt3All] },
   { id: "nec", slug: "NEC", title: "Nürburgring Endurance Championship (NEC)", badge: "NEC", accent: "#ef4444", match: (w: WallpaperItem) => !isGtp(w) && !isLmp2(w) && !isLmp3(w) && !isFormulas(w) && (isGt3All(w) || isPcup(w) || isGt4(w) || isTcr(w)), coverSlots: [isGt3All, isPcup, isGt4, isTcr] },
   { id: "pcup", slug: "PCup", title: "Porsche Cup (PCup)", badge: "PCUP", accent: "#e2e8f0", match: (w: WallpaperItem) => isPcup(w), coverSlots: [isPcup, isPcup, isPcup, isPcup] },
   { id: "ferrari-challenge", slug: "FerrariChallenge", title: "Ferrari 296 Challenge", badge: "CHALLENGE", accent: "#ef4444", match: (w: WallpaperItem) => isFerrari296Challenge(itemText(w)), coverSlots: [] },
