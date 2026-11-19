@@ -1,354 +1,14 @@
 ---
-import fs from "node:fs";
 import path from "node:path";
-import sharp from "sharp";
 import Layout from "../layouts/Layout.astro";
-import { TRACK_GALLERY_PHOTOS, PADDOCK_ALBUMS } from "../data/paddock-gallery";
+import { loadOfficialMediaCatalog, type MediaCatalogItem as WallpaperItem } from "../lib/media-catalog";
 
-interface WallpaperItem {
-  id: string;
-  slugId: string;
-  brand: string;
-  model: string;
-  carSlug: string;
-  carClass: string;
-  categoryKey: string;
-  circuit: string;
-  img: string;
-  cleanFileBase: string;
-  accentColor: string;
-  width: number;
-  height: number;
-  aspectRatio: string;
-}
-
-const API_BASE = "https://muntrume.atrumin16.workers.dev";
 const publicDir = path.join(process.cwd(), "public");
-const seenImgs = new Set<string>();
-const allWallpapers: WallpaperItem[] = [];
+const { items: allWallpapers, albums: apiAlbums, audit: mediaAudit } = await loadOfficialMediaCatalog(publicDir);
 
-function isStudioOrBanner(src: string): boolean {
-  const lower = src.toLowerCase();
-  if (lower.startsWith("/assets/cars/")) return true;
-  if (/(series[-_]?banner|brand[-_]?logo|\/logo[._-]|thumb|main\.(webp|jpg|png)|badge|og-)/i.test(lower)) return true;
-  return false;
-}
-
-function mapCategoryKey(rawCat: string, carName = "", title = ""): { key: string; label: string; accent: string } {
-  const s = `${rawCat} ${carName} ${title}`.toLowerCase();
-  if (/296\s*challenge|ferrari.*challenge/i.test(s)) return { key: "ferrari_challenge", label: "Challenge", accent: "#ef4444" };
-  if (/nascar|stock|oval|camaro|silverado|tundra|arca|late\s*model|gen\s*4|taurus|pontiac\s*grand\s*prix/i.test(s)) return { key: "oval", label: "Oval", accent: "#fbbf24" };
-  if (/bmw\s*m2|m2\s*cs|m2\s*racing|mx-?5|miata|gr86|clio|production/i.test(s)) return { key: "rookie", label: "PCC", accent: "#38bdf8" };
-  if (/porsche/i.test(s) && /(911\s*gt3\s*cup|992(\.?[12])?\s*cup|991\s*cup|\bpcup\b)/i.test(s) && !/(gt3\s*r|gt4|963|rsr|cayman|mission\s*r)/i.test(s)) {
-    return { key: "pcup", label: "PCup", accent: "#e2e8f0" };
-  }
-  if (/\bgtp\b|hypercar|lmdh|lmh|499p|963|v-series|arx-06|hybrid\s*v8|valkyrie/i.test(s)) return { key: "gtp", label: "GTP", accent: "#facc15" };
-  if (/\blmp2\b|p217/i.test(s)) return { key: "lmp2", label: "LMP2", accent: "#38bdf8" };
-  if (/\blmp3\b|ligier|jsp320|js\s*p320/i.test(s)) return { key: "lmp3", label: "LMP3", accent: "#06b6d4" };
-  if (/\bgte\b|c8\.r|488\s*gte|911\s*rsr|m8\s*gte/i.test(s)) return { key: "gte", label: "GTE", accent: "#ef4444" };
-  if (/\bgt4\b|570s|718\s*cayman/i.test(s)) return { key: "gt4", label: "GT4", accent: "#fb923c" };
-  if (/\btcr\b|touring|rs\s*3|rs3|elantra|veloster|civic/i.test(s)) return { key: "tcr", label: "TCR", accent: "#22c55e" };
-  if (/formula|sf23|\bsfl\b|ir18|ir04|\bf4\b|\bf3\b|ff1600|super\s*formula|vee|dallara\s*ir-?01/i.test(s)) return { key: "formulas", label: "Formula", accent: "#10b981" };
-  if (/mission\s*r/i.test(s)) return { key: "electric", label: "Track", accent: "#38bdf8" };
-  if (/dirt/i.test(s)) return { key: "dirt", label: "Dirt", accent: "#f59e0b" };
-  if (/\bgt3\b/i.test(s)) return { key: "gt3", label: "GT3", accent: "#a855f7" };
-  return { key: "track", label: "Track", accent: "#10b981" };
-}
-
-function addPhoto(item: {
-  id: string;
-  brand: string;
-  model: string;
-  carSlug: string;
-  carClass: string;
-  categoryKey: string;
-  circuit: string;
-  img: string;
-  accentColor: string;
-}) {
-  if (!item.img || isStudioOrBanner(item.img)) return;
-  if (seenImgs.has(item.img)) return;
-  if (item.img.startsWith("/") && !fs.existsSync(path.join(publicDir, item.img))) return;
-  seenImgs.add(item.img);
-
-  const cleanFileBase = `${item.brand}_${item.model}`
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-zA-Z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "");
-
-  allWallpapers.push({
-    ...item,
-    slugId: "",
-    cleanFileBase: cleanFileBase || item.id,
-    width: 1920,
-    height: 1080,
-    aspectRatio: "16:9",
-  });
-}
-
-// 1. Fetch ALL published official photos from live gallery API (/api/gallery) — strictly exclude community uploads
-for (let offset = 0; offset <= 1000; offset += 200) {
-  try {
-    const res = await fetch(`${API_BASE}/api/gallery?status=published&sort=popular&limit=200&offset=${offset}`);
-    if (!res.ok) break;
-    const data = await res.json();
-    const list = Array.isArray(data?.items) ? data.items : Array.isArray(data?.photos) ? data.photos : [];
-    if (!list.length) break;
-    for (const p of list) {
-      const st = String(p.sourceType || "").toLowerCase();
-      const sp = String(p.sourcePlatform || "").toLowerCase();
-      if (st === "community" || sp.includes("comunidad") || sp === "user_upload") continue;
-      const url = String(p.imageUrl || p.url || "");
-      const carName = String(p.car || p.title || "iRacing").trim();
-      const brand = carName.split(" ")[0] || "Muntrume";
-      const mapped = mapCategoryKey(String(p.category || ""), carName, String(p.title || ""));
-      addPhoto({
-        id: String(p.id || `gal_${allWallpapers.length}`),
-        brand,
-        model: carName,
-        carSlug: String(p.carSlug || carName.toLowerCase().replace(/[^a-z0-9]+/g, "-")),
-        carClass: mapped.label,
-        categoryKey: mapped.key,
-        circuit: String(p.track || p.authorName || "Circuito Oficial iRacing"),
-        img: url,
-        accentColor: mapped.accent,
-      });
-    }
-    if (list.length < 200) break;
-  } catch {
-    break;
-  }
-}
-
-// 2. Fetch live albums from /v1/albums
-interface AlbumPack {
-  slug: string;
-  title: string;
-  carClass: string;
-  count: number;
-  cover: string;
-  items: WallpaperItem[];
-}
-const apiAlbums: AlbumPack[] = [];
-try {
-  const res = await fetch(`${API_BASE}/v1/albums`);
-  if (res.ok) {
-    const data = await res.json();
-    const rawAlbums = Array.isArray(data?.albums) ? data.albums : [];
-    for (const a of rawAlbums) {
-      const slug = String(a.slug || "").toLowerCase();
-      const carName = String(a.car || a.title || slug);
-      const matched = allWallpapers.filter(
-        (w) => w.carSlug === slug || w.model.toLowerCase() === carName.toLowerCase()
-      );
-      if (matched.length > 0) {
-        apiAlbums.push({
-          slug,
-          title: carName,
-          carClass: String(a.category || matched[0].carClass).toUpperCase(),
-          count: matched.length,
-          cover: matched[0].img,
-          items: matched,
-        });
-      }
-    }
-  }
-} catch {}
-
-// 3. Static local on-track fallback photos (TRACK_GALLERY_PHOTOS + non-studio PADDOCK_ALBUMS)
-for (const p of TRACK_GALLERY_PHOTOS) {
-  const mapped = mapCategoryKey(p.category, p.title, p.caption);
-  addPhoto({
-    id: p.id,
-    brand: p.title.includes("Porsche") ? "Porsche" : p.title.includes("Cadillac") ? "Cadillac" : "Ferrari",
-    model: p.title.replace(/·/g, "-"),
-    carSlug: p.id,
-    carClass: mapped.label,
-    categoryKey: mapped.key,
-    circuit: p.circuit,
-    img: p.img,
-    accentColor: mapped.accent,
-  });
-}
-for (const album of PADDOCK_ALBUMS) {
-  const mapped = mapCategoryKey(album.carClass, album.title, "");
-  for (const ph of album.photos) {
-    addPhoto({
-      id: ph.id,
-      brand: album.brand,
-      model: album.title,
-      carSlug: album.slug,
-      carClass: mapped.label,
-      categoryKey: mapped.key,
-      circuit: ph.subtitle || "Circuito Oficial iRacing",
-      img: ph.img,
-      accentColor: mapped.accent,
-    });
-  }
-}
-
-// Curate Top 50 exterior trackside shots (exclude cockpit/interior, black bars, odd aspect ratios)
-const INTERIOR_RE = /(cockpit|interior|onboard|dash|wheel|volante|salpicadero|cabina|habitaculo|retrovisor|mirror)/i;
-
-interface ScoredCandidate {
-  item: WallpaperItem;
-  score: number;
-  width: number;
-  height: number;
-  reason?: string;
-}
-
-async function evaluatePhotoQuality(item: WallpaperItem): Promise<ScoredCandidate> {
-  const label = `${item.model} (${item.img.split("/").pop() || item.id})`;
-  if (INTERIOR_RE.test(`${item.model} ${item.circuit} ${item.img}`)) {
-    return { item, score: -1, width: 0, height: 0, reason: `interior/cockpit keyword (${label})` };
-  }
-
-  let buf: Uint8Array | null = null;
-  try {
-    if (item.img.startsWith("/")) {
-      buf = new Uint8Array(fs.readFileSync(path.join(publicDir, item.img)));
-    } else {
-      const ac = new AbortController();
-      const timer = setTimeout(() => ac.abort(), 4500);
-      const res = await fetch(item.img, { signal: ac.signal });
-      clearTimeout(timer);
-      if (res.ok) buf = new Uint8Array(await res.arrayBuffer());
-    }
-  } catch {
-    buf = null;
-  }
-
-  if (!buf) {
-    return { item, score: 35, width: 1920, height: 1080 };
-  }
-
-  try {
-    const img = sharp(buf);
-    const meta = await img.metadata();
-    const w = meta.width || 1920;
-    const h = meta.height || 1080;
-    const ratio = w / Math.max(1, h);
-
-    if (w < 1280 || ratio < 1.35 || ratio > 2.55) {
-      return { item, score: -1, width: w, height: h, reason: `resolución/aspecto raro (${w}x${h})` };
-    }
-
-    const W = 160;
-    const H = 90;
-    const { data } = await img.resize(W, H, { fit: "fill" }).removeAlpha().raw().toBuffer({ resolveWithObject: true });
-
-    let darkBorder = 0;
-    let borderTotal = 0;
-    let sumLuma = 0;
-    let sumSq = 0;
-    let centerCount = 0;
-
-    for (let y = 0; y < H; y++) {
-      for (let x = 0; x < W; x++) {
-        const idx = (y * W + x) * 3;
-        const luma = 0.2126 * data[idx] + 0.7152 * data[idx + 1] + 0.0722 * data[idx + 2];
-        const isTopOrBottom = y < Math.floor(H * 0.16) || y >= Math.floor(H * 0.84);
-        const isSide = x < Math.floor(W * 0.1) || x >= Math.floor(W * 0.9);
-        if (isTopOrBottom || isSide) {
-          borderTotal++;
-          if (luma < 24) darkBorder++;
-        } else {
-          centerCount++;
-          sumLuma += luma;
-          sumSq += luma * luma;
-        }
-      }
-    }
-
-    const darkBorderRatio = darkBorder / Math.max(1, borderTotal);
-    const mean = sumLuma / Math.max(1, centerCount);
-    const stdDev = Math.sqrt(Math.max(0, sumSq / Math.max(1, centerCount) - mean * mean));
-
-    // Thick dark cockpit/roll-cage frame around edges
-    if (darkBorderRatio > 0.74) {
-      return { item, score: -1, width: w, height: h, reason: `interior/cockpit o bandas negras (${Math.round(darkBorderRatio * 100)}% marco oscuro)` };
-    }
-    if (stdDev < 16) {
-      return { item, score: -1, width: w, height: h, reason: `baja nitidez/contraste (std=${stdDev.toFixed(1)})` };
-    }
-
-    const mpScore = Math.min(4, (w * h) / 1_000_000) * 15;
-    const aspectScore = Math.max(0, 25 - Math.abs(ratio - 16 / 9) * 40);
-    const contrastScore = stdDev * 0.45;
-    const borderPenalty = darkBorderRatio * 20;
-    const score = mpScore + aspectScore + contrastScore - borderPenalty;
-
-    return { item, score, width: w, height: h };
-  } catch {
-    return { item, score: 30, width: 1920, height: 1080 };
-  }
-}
-
-const evaluated: ScoredCandidate[] = [];
-const BATCH_SIZE = 16;
-for (let i = 0; i < allWallpapers.length; i += BATCH_SIZE) {
-  const chunk = allWallpapers.slice(i, i + BATCH_SIZE);
-  const res = await Promise.all(chunk.map((item) => evaluatePhotoQuality(item)));
-  evaluated.push(...res);
-}
-
-const excludedShots = evaluated.filter((e) => e.score < 0);
-const validShots = evaluated.filter((e) => e.score >= 0).sort((a, b) => b.score - a.score);
-const top50 = validShots.slice(0, 50);
-const overflowExcluded = validShots.slice(50);
-
-for (const ex of excludedShots) {
-  console.log(`[EXCLUDED] ${ex.item.img.split("/").pop() || ex.item.id} (${ex.item.model}) -> ${ex.reason}`);
-}
-if (overflowExcluded.length > 0) {
-  console.log(`[EXCLUDED] ${overflowExcluded.length} capturas adicionales descartadas por corte Top 50 (menor puntuación/resolución).`);
-}
-function formatAspectRatio(w: number, h: number): string {
-  const r = w / Math.max(1, h);
-  if (Math.abs(r - 16 / 9) < 0.08) return "16:9";
-  if (Math.abs(r - 21 / 9) < 0.14) return "21:9";
-  if (Math.abs(r - 16 / 10) < 0.08) return "16:10";
-  if (Math.abs(r - 32 / 9) < 0.2) return "32:9";
-  const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
-  const d = gcd(w, h);
-  return `${Math.round(w / d)}:${Math.round(h / d)}`;
-}
-
-const usedSlugs = new Set<string>();
-const slugCounter = new Map<string, number>();
-top50.forEach((s, idx) => {
-  s.item.width = s.width;
-  s.item.height = s.height;
-  s.item.aspectRatio = formatAspectRatio(s.width, s.height);
-  const baseClass = s.item.carClass.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "track";
-  const baseModel = s.item.model.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").split("-").slice(0, 3).join("-") || "car";
-  const prefix = `mmt-${baseClass}-${baseModel}`;
-  let seq = (slugCounter.get(prefix) || 0) + 1;
-  let candidate = `${prefix}-${String(seq).padStart(2, "0")}`;
-  while (usedSlugs.has(candidate)) {
-    seq++;
-    candidate = `${prefix}-${String(seq).padStart(2, "0")}`;
-  }
-  slugCounter.set(prefix, seq);
-  usedSlugs.add(candidate);
-  s.item.slugId = candidate;
-  console.log(`[SELECTED ${String(idx + 1).padStart(2, "0")}/50] ${s.item.model} (${s.width}x${s.height} · ${s.item.aspectRatio}, #${s.item.slugId}, score=${s.score.toFixed(1)}) -> ${s.item.img.split("/").pop() || s.item.id}`);
-});
-
-allWallpapers.splice(0, allWallpapers.length, ...top50.map((s) => s.item));
-const curatedIds = new Set(allWallpapers.map((w) => w.id));
-for (let i = apiAlbums.length - 1; i >= 0; i--) {
-  apiAlbums[i].items = apiAlbums[i].items.filter((w) => curatedIds.has(w.id));
-  apiAlbums[i].count = apiAlbums[i].items.length;
-  if (apiAlbums[i].count === 0) apiAlbums.splice(i, 1);
-  else apiAlbums[i].cover = apiAlbums[i].items[0].img;
-}
-
-// Official iRacing Series Roster Matchers
+// Official iRacing Series Roster Matchers (reads ALL metadata together: album + folder + category + car + title + filename)
 function itemText(w: WallpaperItem): string {
-  return `${w.brand} ${w.model} ${w.carSlug} ${w.carClass}`.toLowerCase();
+  return `${w.album} ${w.folder} ${w.rawCategory} ${w.carClass} ${w.brand} ${w.model} ${w.carSlug} ${w.title} ${w.circuit} ${w.filename}`.toLowerCase();
 }
 function isLegacyCar(t: string): boolean {
   return /\blegacy\b|ford\s*gt\s*gt3|mp4-?12c|bmw\s*z4|z4\s*gt3|audi\s*r8.*2016|r8\s*lms.*2016/i.test(t);
@@ -361,15 +21,15 @@ function isAudiOrMcLarenGt3(t: string): boolean {
 }
 function isGtp(w: WallpaperItem): boolean {
   const t = itemText(w);
-  return /porsche\s*963|cadillac\s*v-?series|bmw\s*m\s*hybrid|ferrari\s*499p|acura\s*arx-?06|valkyrie/i.test(t);
+  return /porsche\s*963|cadillac\s*v-?series|bmw\s*m\s*hybrid|ferrari\s*499p|acura\s*arx-?06|valkyrie|\bgtp\b|lmdh|hypercar/i.test(t);
 }
 function isLmp2(w: WallpaperItem): boolean {
   const t = itemText(w);
-  return /dallara\s*p217|p217/i.test(t);
+  return /dallara\s*p217|p217|\blmp2\b/i.test(t);
 }
 function isLmp3(w: WallpaperItem): boolean {
   const t = itemText(w);
-  return /ligier|js\s*p320|jsp320/i.test(t);
+  return /ligier|js\s*p320|jsp320|\blmp3\b/i.test(t);
 }
 function isPcup(w: WallpaperItem): boolean {
   const t = itemText(w);
@@ -379,17 +39,20 @@ function isPcup(w: WallpaperItem): boolean {
 function isGt4(w: WallpaperItem): boolean {
   const t = itemText(w);
   if (/\bm2\b|bmw\s*m2/i.test(t)) return false;
-  return /cayman\s*gt4|718\s*cayman|m4\s*gt4|amg\s*gt4|vantage\s*gt4|570s\s*gt4/i.test(t);
+  return /cayman\s*gt4|718\s*cayman|m4\s*gt4|amg\s*gt4|vantage\s*gt4|570s\s*gt4|\bgt4\b/i.test(t);
 }
 function isTcr(w: WallpaperItem): boolean {
   const t = itemText(w);
-  return /elantra|veloster|civic\s*type\s*r|rs\s*3\s*lms|rs3\s*lms|touring\s*car/i.test(t);
+  return /elantra|veloster|civic\s*type\s*r|rs\s*3\s*lms|rs3\s*lms|touring\s*car|\btcr\b/i.test(t);
+}
+function isEnduranceRaceAlbum(t: string): boolean {
+  return /(24h\s*spa|spa-?francorchamps|daytona|sebring|imsa|le\s*mans|watkins\s*glen|endurance|resistencia)/i.test(t);
 }
 function isGt3Imsa(w: WallpaperItem): boolean {
   const t = itemText(w);
   if (isLegacyCar(t) || isFerrari296Challenge(t) || isAudiOrMcLarenGt3(t)) return false;
   if (/(gt4|tcr|\bm2\b|gt3\s*cup)/i.test(t)) return false;
-  return /mustang\s*gt3|911\s*gt3\s*r|992\s*r?\s*gt3|296\s*gt3|corvette\s*z06\s*gt3|m4\s*gt3|mercedes.*gt3|amg\s*gt3|hurac[aá]n\s*gt3|vantage\s*gt3|nsx\s*gt3/i.test(t);
+  return /mustang\s*gt3|911\s*gt3\s*r|992\s*r?\s*gt3|296\s*gt3|corvette\s*z06\s*gt3|m4\s*gt3|mercedes.*gt3|amg\s*gt3|hurac[aá]n\s*gt3|vantage\s*gt3|nsx\s*gt3|\bgt3\b/i.test(t);
 }
 function isGt3All(w: WallpaperItem): boolean {
   const t = itemText(w);
@@ -411,9 +74,9 @@ function isNascar(w: WallpaperItem): boolean {
 }
 
 const SERIES_DEFS = [
-  { id: "imsa", slug: "IMSA", title: "IMSA iRacing Series / IMSA Endurance (GTP + LMP2 + GT3)", badge: "IMSA", accent: "#facc15", match: (w: WallpaperItem) => isGtp(w) || isLmp2(w) || isGt3All(w), coverSlots: [isGtp, isLmp2, isGt3All, (w: WallpaperItem) => isAudiOrMcLarenGt3(itemText(w))] },
+  { id: "imsa", slug: "IMSA", title: "IMSA iRacing Series / IMSA Endurance (GTP + LMP2 + GT3)", badge: "IMSA", accent: "#facc15", match: (w: WallpaperItem) => isGtp(w) || isLmp2(w) || isGt3All(w) || (!isPcup(w) && !isGt4(w) && !isTcr(w) && !isFormulas(w) && !isNascar(w) && !isPccRookie(w) && isEnduranceRaceAlbum(itemText(w))), coverSlots: [isGtp, isLmp2, isGt3All, (w: WallpaperItem) => isAudiOrMcLarenGt3(itemText(w))] },
   { id: "gt-sprint", slug: "GTSprint", title: "GT Sprint / GT Endurance (Solo GT3)", badge: "GT3", accent: "#a855f7", match: (w: WallpaperItem) => isGt3All(w), coverSlots: [(w: WallpaperItem) => isAudiOrMcLarenGt3(itemText(w)), isGt3All, isGt3All, isGt3All] },
-  { id: "nec", slug: "NEC", title: "Nürburgring Endurance Championship (NEC)", badge: "NEC", accent: "#ef4444", match: (w: WallpaperItem) => !isGtp(w) && !isLmp2(w) && !isLmp3(w) && !isFormulas(w) && (isGt3All(w) || isPcup(w) || isGt4(w) || isTcr(w)), coverSlots: [isGt3All, isPcup, isGt4, isTcr] },
+  { id: "nec", slug: "NEC", title: "Nürburgring Endurance Championship (NEC)", badge: "NEC", accent: "#ef4444", match: (w: WallpaperItem) => !isGtp(w) && !isLmp2(w) && !isLmp3(w) && !isFormulas(w) && (isGt3All(w) || isPcup(w) || isGt4(w) || isTcr(w) || /n[uü]rburgring|nordschleife|\bnec\b/i.test(itemText(w))), coverSlots: [isGt3All, isPcup, isGt4, isTcr] },
   { id: "pcup", slug: "PCup", title: "Porsche Cup (PCup)", badge: "PCUP", accent: "#e2e8f0", match: (w: WallpaperItem) => isPcup(w), coverSlots: [isPcup, isPcup, isPcup, isPcup] },
   { id: "ferrari-challenge", slug: "FerrariChallenge", title: "Ferrari 296 Challenge", badge: "CHALLENGE", accent: "#ef4444", match: (w: WallpaperItem) => isFerrari296Challenge(itemText(w)), coverSlots: [] },
   { id: "falken-gt4", slug: "FalkenGT4", title: "Falken Tyre Sports Car Challenge (GT4 + LMP3)", badge: "GT4 + LMP3", accent: "#fb923c", match: (w: WallpaperItem) => isLmp3(w) || isGt4(w), coverSlots: [isLmp3, isGt4, isGt4, isGt4] },
@@ -451,7 +114,7 @@ function pickUniqueSeriesCovers(items: WallpaperItem[], slots: Array<(w: Wallpap
 }
 
 const categoryPacks = SERIES_DEFS.map((d) => {
-  const items = allWallpapers.filter(d.match).slice(0, 50);
+  const items = allWallpapers.filter(d.match);
   return {
     ...d,
     items,
@@ -477,20 +140,19 @@ const carPacks = Array.from(carMap.entries())
   }))
   .sort((a, b) => b.items.length - a.items.length);
 
-// Console build audit
-console.log(`[wallpapers] Total real photos indexed (gallery + albums + track): ${allWallpapers.length}`);
-for (const p of categoryPacks) console.log(`[wallpapers]   Series ${p.slug} (${p.title}): ${p.items.length}`);
-const pcupPack = categoryPacks.find((p) => p.id === "pcup");
-console.log(`[wallpapers]   PCup models audit -> ${(pcupPack?.items || []).map((x) => x.model).join(", ") || "0"}`);
-const gt3Pack = categoryPacks.find((p) => p.id === "gt-sprint");
-const necPack = categoryPacks.find((p) => p.id === "nec");
-const imsaPack = categoryPacks.find((p) => p.id === "imsa");
-const isAudiR8 = (w: WallpaperItem) => /audi|r8\s*lms/i.test(itemText(w)) && !isTcr(w);
-const audiGt3 = gt3Pack ? gt3Pack.items.filter(isAudiR8) : [];
-const audiNec = necPack ? necPack.items.filter(isAudiR8) : [];
-const audiImsa = imsaPack ? imsaPack.items.filter(isAudiR8) : [];
-console.log(`[wallpapers]   Audi R8 LMS Evo II verification -> GTSprint: ${audiGt3.length} (${audiGt3.map((x) => x.model).slice(0, 2).join(", ")}), NEC: ${audiNec.length}, IMSA: ${audiImsa.length}`);
-console.log(`[wallpapers]   Cars with track photos: ${carPacks.length}, Albums: ${apiAlbums.length}`);
+// Mandatory 3-part Console Build Audit
+const assignedIds = new Set<string>();
+for (const p of categoryPacks) {
+  if (p.id !== "all") p.items.forEach((item) => assignedIds.add(item.id));
+}
+const unassignedItems = allWallpapers.filter((w) => !assignedIds.has(w.id));
+
+console.log(`[wallpapers] 1. Total bruto obtenido desde gallery + albums: ${mediaAudit.rawTotal}`);
+console.log(`[wallpapers] 2. Total tras quitar solo previews/interiores (descartadas ${mediaAudit.filteredStudioInteriorCount}): ${mediaAudit.afterFilterTotal}`);
+console.log(`[wallpapers] 3. Desglose por serie:`);
+for (const p of categoryPacks) console.log(`[wallpapers]    - ${p.slug} (${p.title}): ${p.items.length}`);
+console.log(`[wallpapers]    - Sin asignar a serie específica (solo en Colección Completa): ${unassignedItems.length}`);
+console.log(`[wallpapers]    - Coches con fotos: ${carPacks.length}, Álbumes sincronizados: ${apiAlbums.length}`);
 
 const brandsList = Array.from(new Set(allWallpapers.map((w) => w.brand))).sort();
 const pageTitle = "Wallpapers Reales en Pista (JPG Windows 16:9 & Móvil 9:16 4K) · Muntrume Motorsport";
