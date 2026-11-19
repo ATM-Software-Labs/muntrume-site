@@ -20,10 +20,10 @@ const publicDir = path.join(process.cwd(), "public");
 const seenImgs = new Set<string>();
 const allWallpapers: WallpaperItem[] = [];
 
-function isStudioOrThumb(src: string): boolean {
+function isStudioOrBanner(src: string): boolean {
   const lower = src.toLowerCase();
   if (lower.startsWith("/assets/cars/")) return true;
-  if (/(^|[\/_-])(thumb|main|studio|logo|badge|og-)([\/_.-]|$)/i.test(lower)) return true;
+  if (/(series|banner|logo|simucube|imsa|production|challenge|lights|thumb|main|badge|og-)/i.test(lower)) return true;
   return false;
 }
 
@@ -37,7 +37,7 @@ function addTrackPhoto(item: {
   img: string;
   accentColor: string;
 }) {
-  if (!item.img || isStudioOrThumb(item.img)) return;
+  if (!item.img || isStudioOrBanner(item.img)) return;
   if (seenImgs.has(item.img)) return;
   if (!fs.existsSync(path.join(publicDir, item.img))) return;
   seenImgs.add(item.img);
@@ -103,27 +103,7 @@ for (const album of PADDOCK_ALBUMS) {
   }
 }
 
-// 3. Additional verified series on-track photos (Fórmulas & Copa/Rookie/Monomarca)
-addTrackPhoto({
-  id: "formula-sfl-track",
-  brand: "Dallara",
-  model: "Super Formula Lights 324",
-  carClass: "Formula",
-  categoryKey: "formulas",
-  circuit: "Circuito Oficial iRacing",
-  img: "/assets/img/series/sfl.jpg",
-  accentColor: "#10b981",
-});
-addTrackPhoto({
-  id: "rookie-pcc-track",
-  brand: "Toyota / Mazda",
-  model: "Production Car Challenge (GR86 & MX-5)",
-  carClass: "Monomarca",
-  categoryKey: "rookie",
-  circuit: "Circuito Oficial iRacing",
-  img: "/assets/img/series/pcc.jpg",
-  accentColor: "#38bdf8",
-});
+// 3. Only categories with real on-track photos (> 0) are kept; series banners are excluded.
 
 // All 12 complete iRacing categories (only categories with >= 1 real on-track photo are rendered)
 const CATEGORY_DEFS = [
@@ -242,6 +222,11 @@ const packs = CATEGORY_DEFS.map((def) => ({
   items: allWallpapers.filter(def.match),
 })).filter((p) => p.items.length > 0);
 
+console.log("[wallpapers] Real on-track photos:", allWallpapers.length);
+for (const p of packs) {
+  console.log(`[wallpapers]   - ${p.title}: ${p.items.length} fotos`);
+}
+
 const brandsList = Array.from(new Set(allWallpapers.map((w) => w.brand))).sort();
 
 const pageTitle = "Wallpapers Reales en Pista (JPG Windows 16:9 & Móvil 9:16 4K) · Muntrume Motorsport";
@@ -327,10 +312,16 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {packs.map((pack) => {
             const thumbs = pack.items.slice(0, 4);
+            const gridCols =
+              thumbs.length === 1
+                ? "grid-cols-1"
+                : thumbs.length === 3
+                ? "grid-cols-3"
+                : "grid-cols-2";
             const estMb = Math.max(0.5, pack.items.length * 0.45).toFixed(1);
             return (
               <article class="rounded-lg border border-white/10 bg-[#0d1118] overflow-hidden flex flex-col justify-between hover:border-white/25 transition">
-                <div class="grid grid-cols-2 gap-0.5 bg-[#090b0f] p-1">
+                <div class={`grid ${gridCols} gap-0.5 bg-[#090b0f] p-1`}>
                   {thumbs.map((t) => (
                     <div class="aspect-video bg-[#090b0f] overflow-hidden rounded-[2px]">
                       <img
