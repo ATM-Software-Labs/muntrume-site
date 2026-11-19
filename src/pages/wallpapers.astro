@@ -104,7 +104,7 @@ const pageSchema = {
             + Subir / Sugerir Wallpaper
           </button>
           <span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">Formato de salida (.JPG nativo)</span>
-          <div class="inline-flex p-1 rounded-lg bg-[#0d1118] border border-white/15 font-mono text-xs" role="group">
+          <div class="inline-flex flex-wrap p-1 rounded-lg bg-[#0d1118] border border-white/15 font-mono text-xs max-w-full" role="group">
             <button type="button" id="fmtDesktopBtn" class="px-3.5 py-2 rounded-md font-bold bg-emerald-500 text-[#04130d] transition cursor-pointer" aria-pressed="true">
               Escritorio · 16:9 (.JPG)
             </button>
@@ -260,7 +260,7 @@ const pageSchema = {
               <option value="all">Todas las marcas ({allWallpapers.length})</option>
               {brandsList.map((brand) => <option value={brand}>{brand}</option>)}
             </select>
-            <input id="wpSearchInput" type="search" placeholder="Buscar coche o circuito..." class="bg-[#0d1118] border border-white/15 rounded px-3 py-1.5 text-slate-100 placeholder-slate-500 outline-none w-52" />
+            <input id="wpSearchInput" type="search" placeholder="Buscar coche o circuito..." class="bg-[#0d1118] border border-white/15 rounded px-3 py-1.5 text-slate-100 placeholder-slate-500 outline-none w-full sm:w-52 max-w-full" />
             <button type="button" id="wpClearSelBtn" class="px-2.5 py-1.5 rounded border border-white/15 text-slate-400 hover:text-white cursor-pointer">Limpiar</button>
             <button type="button" id="wpDownloadSelBtn" disabled class="px-3.5 py-1.5 rounded bg-emerald-500 disabled:bg-white/10 disabled:text-slate-500 text-[#04130d] font-extrabold cursor-pointer tabular-nums">
               Descargar Selección (<span id="wpSelCount">0</span>)

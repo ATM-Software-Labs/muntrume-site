@@ -19,12 +19,12 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
   <main class="min-h-screen bg-[#090b0f] text-slate-100 py-10 px-4 sm:px-6">
     <div class="max-w-7xl mx-auto space-y-6">
       <!-- Header -->
-      <header class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/10 pb-5">
+      <header class="flex flex-col gap-4 border-b border-white/10 pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div class="space-y-2">
           <div class="flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest text-emerald-400">
             <a href="/overlay/" class="hover:underline">← Volver a /overlay</a>
-            <span class="text-slate-600">·</span>
-            <span>desktop/src/brand-logos.ts</span>
+            <span class="text-slate-600 hidden sm:inline">·</span>
+            <span class="hidden sm:inline">desktop/src/brand-logos.ts</span>
           </div>
           <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
             Fabricantes y colores HUD
@@ -36,7 +36,7 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
         </div>
 
         <!-- Instant Filter -->
-        <div class="w-full md:w-80">
+        <div class="w-full lg:w-80 lg:shrink-0">
           <label for="brandSearchInput" class="sr-only">Buscar marca, CarPath o color hex</label>
           <div class="relative">
             <input

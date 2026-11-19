@@ -558,8 +558,10 @@ html.light .d-f1__ovr-num-badge, [data-theme="light"] .d-f1__ovr-num-badge{backg
 @media (max-width:640px){
   .r-section{padding:40px 0}
   .r-head{margin-bottom:24px;gap:12px}
-  .r-hero .r-wrap{padding-top:96px;padding-bottom:32px}
-  .r-hero__meta div{padding:12px 16px 0 0;margin-right:16px}
+  .r-hero .r-wrap{padding-top:88px;padding-bottom:132px}
+  .r-hero__meta{display:grid;grid-template-columns:1fr 1fr;gap:14px 12px}
+  .r-hero__meta div{margin:0;padding:12px 0 0;min-width:0;letter-spacing:.06em}
+  .r-hero__meta strong{font-size:26px}
   .d-stage{height:176px;padding:12px}
   .d-hero-card .d-stage{min-height:190px}
   .driver-helmet{max-height:150px}
@@ -568,7 +570,7 @@ html.light .d-f1__ovr-num-badge, [data-theme="light"] .d-f1__ovr-num-badge{backg
   .d-tabs a,.d-share button{padding:0 12px;min-height:44px}
   .d-ratings__toolbar{align-items:stretch;gap:8px}
   .d-ratings__cats,.d-ratings__metrics{width:100%}
-  .d-rcat-btn,.d-rmetric-btn{min-height:44px;padding:10px 14px}
+  .d-rcat-btn,.d-rmetric-btn{min-height:44px;padding:10px 14px;white-space:normal;text-align:center}
   .d-ratings__card{padding:16px}
   .r-link{min-height:44px;display:inline-flex;align-items:center}
 }

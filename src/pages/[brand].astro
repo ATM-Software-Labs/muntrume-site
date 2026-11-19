@@ -25,6 +25,8 @@ export function getStaticPaths() {
   const bySlug = new Map<string, { brand: string; cars: CarMetadata[] }>();
   for (const car of uniqueCars) {
     const slug = slugify(car.brand);
+    // Cars without a single constructor stay off the public brand index.
+    if (slug === "sin-fabricante-unico") continue;
     const existing = bySlug.get(slug);
     if (existing) {
       existing.cars.push(car);
