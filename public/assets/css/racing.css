@@ -476,9 +476,10 @@ html,body,main,.r-section,.d-grid,.d-card,.d-hero-wrap,.d-setups__grid,.d-vs-gri
 .d-mini--muted > span{background:var(--r-muted);opacity:.65}
 .d-ratings{margin-top:32px;padding-top:24px;border-top:1px solid var(--r-line);display:grid;gap:18px;max-width:100%;overflow-x:hidden}
 .d-ratings__toolbar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px}
-.d-ratings__cats,.d-ratings__metrics{display:flex;flex-wrap:wrap;gap:6px}
-.d-rcat-btn,.d-rmetric-btn{min-height:36px;padding:0 12px;border:1px solid var(--r-line);border-radius:999px;background:var(--r-bg-2);color:var(--r-muted);font:700 11px/1 var(--r-mono);letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:border-color .2s,color .2s,background-color .2s}
+.d-ratings__cats,.d-ratings__metrics{display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-width:0}
+.d-rcat-btn,.d-rmetric-btn{appearance:none;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;min-height:36px;max-width:100%;padding:8px 14px;border:1px solid var(--r-line);border-radius:999px;background:var(--r-bg-2);color:var(--r-muted);font:700 11px/1.2 var(--r-mono);letter-spacing:.05em;text-transform:uppercase;white-space:nowrap;cursor:pointer;transition:border-color .2s,color .2s,background-color .2s}
 .d-rcat-btn:hover,.d-rmetric-btn:hover{border-color:var(--r-text);color:var(--r-text)}
+.d-rcat-btn:focus-visible,.d-rmetric-btn:focus-visible{outline:2px solid var(--r-accent);outline-offset:2px}
 .d-rcat-btn.is-active{background:rgba(56,189,248,.14);border-color:#38bdf8;color:#38bdf8}
 html.light .d-rcat-btn.is-active, [data-theme="light"] .d-rcat-btn.is-active{background:rgba(2,132,199,.12);border-color:#0284c7;color:#0284c7}
 .d-rmetric-btn.is-active{background:rgba(0,230,153,.14);border-color:var(--r-accent);color:var(--r-accent)}
@@ -565,6 +566,10 @@ html.light .d-f1__ovr-num-badge, [data-theme="light"] .d-f1__ovr-num-badge{backg
   .d-card__body{padding:16px}
   .d-laps{padding:16px;gap:18px}
   .d-tabs a,.d-share button{padding:0 12px;min-height:44px}
+  .d-ratings__toolbar{align-items:stretch;gap:8px}
+  .d-ratings__cats,.d-ratings__metrics{width:100%}
+  .d-rcat-btn,.d-rmetric-btn{min-height:44px;padding:10px 14px}
+  .d-ratings__card{padding:16px}
   .r-link{min-height:44px;display:inline-flex;align-items:center}
 }
 @media (prefers-reduced-motion:no-preference){
