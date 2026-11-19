@@ -1,4 +1,5 @@
 import { OFFICIAL_BRAND_PATHS } from "./brand-icons";
+import { colorForLogo } from "./brand-colors";
 
 export type CarClass = "GTP" | "LMP2" | "LMP3" | "GT3" | "GT4" | "GTE" | "Formula" | "Touring" | "Oval" | "Dirt" | "Prototype";
 export type CarCategory = "Sports Car" | "Formula Car" | "Oval" | "Dirt";
@@ -372,8 +373,10 @@ function enrichCar(entry: RawCarEntry): CarMetadata {
   const category = categoryFromClass(entry.carClass);
   const key = entry.carFolder.toLowerCase().replace(/[^a-z0-9]/g, "");
   const forumSlug = FORUM_SLUG_BY_KEY[key] ?? defaultForumSlugForClass(entry.carClass);
+  const brandColor = colorForLogo(entry.svgLogoId);
   return {
     ...entry,
+    accentColor: brandColor.hex,
     category,
     specs: entry.specs ?? defaultSpecsForClass(entry.carClass),
     manualUrl: MANUAL_PDF_BY_KEY[key] ?? "https://www.iracing.com/resources/user-manuals/",
@@ -457,14 +460,14 @@ const RAW_CAR_CATALOG: readonly RawCarEntry[] = [
   { carFolder: "dallaraf3", brand: "Dallara", model: "F3", carClass: "Formula", svgLogoId: "logo-dallara", accentColor: "#00E699" },
   { carFolder: "dallarair18", brand: "Dallara", model: "IR18 IndyCar", carClass: "Formula", svgLogoId: "logo-dallara", accentColor: "#00E699" },
   { carFolder: "dallarair01", brand: "Dallara", model: "iR-01", carClass: "Formula", svgLogoId: "logo-dallara", accentColor: "#00E699" },
-  { carFolder: "indypropm18", brand: "Dallara", model: "Indy Pro 2000 PM-18", carClass: "Formula", svgLogoId: "logo-dallara", accentColor: "#00E699" },
+  { carFolder: "indypropm18", brand: "Tatuus", model: "PM-18", carClass: "Formula", svgLogoId: "logo-tatuus", accentColor: "#C0C0C0" },
   { carFolder: "mercedesw13", brand: "Mercedes-AMG", model: "F1 W13 E Performance", carClass: "Formula", svgLogoId: "logo-mercedes", accentColor: "#00D2BE" },
-  { carFolder: "formulair04", brand: "FIA", model: "Formula 4", carClass: "Formula", svgLogoId: "logo-fia", accentColor: "#22d3ee" },
-  { carFolder: "raygr22", brand: "Ray", model: "FF1600", carClass: "Formula", svgLogoId: "logo-fia", accentColor: "#22d3ee" },
-  { carFolder: "formulavee", brand: "Formula Vee", model: "FVee", carClass: "Formula", svgLogoId: "logo-fia", accentColor: "#22d3ee" },
-  { carFolder: "formulaveeformulavee2", brand: "Formula Vee", model: "FVee (Spec 2)", carClass: "Formula", svgLogoId: "logo-fia", accentColor: "#22d3ee" },
-  { carFolder: "formulaveeformulavee3", brand: "Formula Vee", model: "FVee (Spec 3)", carClass: "Formula", svgLogoId: "logo-fia", accentColor: "#22d3ee" },
-  { carFolder: "rt2000", brand: "Skip Barber", model: "Formula 2000", carClass: "Formula", svgLogoId: "logo-fia", accentColor: "#22d3ee" },
+  { carFolder: "formulair04", brand: "Dallara", model: "iR-04", carClass: "Formula", svgLogoId: "logo-dallara", accentColor: "#C0C0C0" },
+  { carFolder: "raygr22", brand: "Ford", model: "Ray GR22 FF1600", carClass: "Formula", svgLogoId: "logo-ford", accentColor: "#003478" },
+  { carFolder: "formulavee", brand: "Volkswagen", model: "Formula Vee", carClass: "Formula", svgLogoId: "logo-vw", accentColor: "#001E50" },
+  { carFolder: "formulaveeformulavee2", brand: "Volkswagen", model: "Formula Vee (Spec 2)", carClass: "Formula", svgLogoId: "logo-vw", accentColor: "#001E50" },
+  { carFolder: "formulaveeformulavee3", brand: "Volkswagen", model: "Formula Vee (Spec 3)", carClass: "Formula", svgLogoId: "logo-vw", accentColor: "#001E50" },
+  { carFolder: "rt2000", brand: "Skip Barber", model: "RT2000", carClass: "Formula", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
   { carFolder: "lotus79", brand: "Lotus", model: "Type 79", carClass: "Formula", svgLogoId: "logo-lotus", accentColor: "#facc15" },
   // Prototype
   { carFolder: "radicalsr8", brand: "Radical", model: "SR8", carClass: "Prototype", svgLogoId: "logo-radical", accentColor: "#10b981" },
@@ -487,21 +490,21 @@ const RAW_CAR_CATALOG: readonly RawCarEntry[] = [
   { carFolder: "stockcarsfordthunderbird87", brand: "Ford", model: "1987 Thunderbird Stock Car", carClass: "Oval", svgLogoId: "logo-ford", accentColor: "#3b82f6" },
   { carFolder: "stockcarspontiacgrandprix87", brand: "Pontiac", model: "1987 Grand Prix Stock Car", carClass: "Oval", svgLogoId: "logo-pontiac", accentColor: "#ef4444" },
   { carFolder: "legendsford34c", brand: "Ford", model: "Legends Ford '34 Coupe", carClass: "Oval", svgLogoId: "logo-ford", accentColor: "#3b82f6" },
-  { carFolder: "latemodel2023", brand: "NASCAR", model: "Late Model Stock", carClass: "Oval", svgLogoId: "logo-oval", accentColor: "#f59e0b" },
-  { carFolder: "superlatemodel", brand: "NASCAR", model: "Super Late Model", carClass: "Oval", svgLogoId: "logo-oval", accentColor: "#f59e0b" },
-  { carFolder: "skmodified", brand: "NASCAR", model: "SK Modified", carClass: "Oval", svgLogoId: "logo-oval", accentColor: "#f59e0b" },
-  { carFolder: "skmodifiedtour", brand: "NASCAR", model: "Whelen Tour Modified", carClass: "Oval", svgLogoId: "logo-oval", accentColor: "#f59e0b" },
-  { carFolder: "ministock", brand: "Stock", model: "Mini Stock", carClass: "Oval", svgLogoId: "logo-oval", accentColor: "#f59e0b" },
-  { carFolder: "euronascar", brand: "EuroNASCAR", model: "EuroNASCAR", carClass: "Oval", svgLogoId: "logo-oval", accentColor: "#f59e0b" },
-  // Dirt
-  { carFolder: "dirtlatemodel358", brand: "DIRTcar", model: "Dirt Late Model 358", carClass: "Dirt", svgLogoId: "logo-dirt", accentColor: "#fb923c" },
-  { carFolder: "dirtlatemodel438", brand: "DIRTcar", model: "Dirt Late Model Pro / 438", carClass: "Dirt", svgLogoId: "logo-dirt", accentColor: "#fb923c" },
-  { carFolder: "dirtmicrosprintnonwinged", brand: "DIRTcar", model: "Micro Sprint Non-Winged", carClass: "Dirt", svgLogoId: "logo-dirt", accentColor: "#fb923c" },
-  { carFolder: "dirtmicrosprintwinged", brand: "DIRTcar", model: "Micro Sprint Winged", carClass: "Dirt", svgLogoId: "logo-dirt", accentColor: "#fb923c" },
-  { carFolder: "dirtmodifiedbigblock", brand: "DIRTcar", model: "Big Block Modified", carClass: "Dirt", svgLogoId: "logo-dirt", accentColor: "#fb923c" },
-  { carFolder: "dirtsprintwinged360", brand: "DIRTcar", model: "360 Winged Sprint Car", carClass: "Dirt", svgLogoId: "logo-dirt", accentColor: "#fb923c" },
-  { carFolder: "dirtsprintwinged410", brand: "DIRTcar", model: "410 Winged Sprint Car", carClass: "Dirt", svgLogoId: "logo-dirt", accentColor: "#fb923c" },
-  { carFolder: "dirtumpmod", brand: "DIRTcar", model: "Dirt UMP Modified", carClass: "Dirt", svgLogoId: "logo-dirt", accentColor: "#fb923c" },
+  { carFolder: "latemodel2023", brand: "Sin fabricante único", model: "Late Model Stock", carClass: "Oval", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
+  { carFolder: "superlatemodel", brand: "Sin fabricante único", model: "Super Late Model", carClass: "Oval", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
+  { carFolder: "skmodified", brand: "Sin fabricante único", model: "SK Modified", carClass: "Oval", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
+  { carFolder: "skmodifiedtour", brand: "Sin fabricante único", model: "Whelen Tour Modified", carClass: "Oval", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
+  { carFolder: "ministock", brand: "Sin fabricante único", model: "Mini Stock", carClass: "Oval", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
+  { carFolder: "euronascar", brand: "Sin fabricante único", model: "EuroNASCAR", carClass: "Oval", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
+  // Dirt: DIRTcar es un organismo de competición, no el constructor del chasis.
+  { carFolder: "dirtlatemodel358", brand: "Sin fabricante único", model: "Dirt Late Model 358", carClass: "Dirt", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
+  { carFolder: "dirtlatemodel438", brand: "Sin fabricante único", model: "Dirt Late Model Pro / 438", carClass: "Dirt", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
+  { carFolder: "dirtmicrosprintnonwinged", brand: "Sin fabricante único", model: "Micro Sprint Non-Winged", carClass: "Dirt", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
+  { carFolder: "dirtmicrosprintwinged", brand: "Sin fabricante único", model: "Micro Sprint Winged", carClass: "Dirt", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
+  { carFolder: "dirtmodifiedbigblock", brand: "Sin fabricante único", model: "Big Block Modified", carClass: "Dirt", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
+  { carFolder: "dirtsprintwinged360", brand: "Sin fabricante único", model: "360 Winged Sprint Car", carClass: "Dirt", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
+  { carFolder: "dirtsprintwinged410", brand: "Sin fabricante único", model: "410 Winged Sprint Car", carClass: "Dirt", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
+  { carFolder: "dirtumpmod", brand: "Sin fabricante único", model: "Dirt UMP Modified", carClass: "Dirt", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
 ];
 
 export const CAR_CATALOG_LIST: readonly CarMetadata[] = RAW_CAR_CATALOG.map(enrichCar);

@@ -205,13 +205,14 @@ pub fn read_ibt_meta(path: &Path) -> Result<IbtSessionMeta, String> {
     let session_info_len = i32::from_le_bytes(hdr[16..20].try_into().unwrap()).max(0) as usize;
     let session_info_offset = i32::from_le_bytes(hdr[20..24].try_into().unwrap()).max(0) as u64;
     let mut yaml = String::new();
-    if session_info_len > 0 && session_info_len <= 2 * 1024 * 1024 {
-        if reader.seek(SeekFrom::Start(session_info_offset)).is_ok() {
-            let mut raw_yaml = vec![0u8; session_info_len];
-            if reader.read_exact(&mut raw_yaml).is_ok() {
-                let end = raw_yaml.iter().position(|&b| b == 0).unwrap_or(raw_yaml.len());
-                yaml = mmt_sync_core::decode_irsdk_text(&raw_yaml[..end]);
-            }
+    if session_info_len > 0
+        && session_info_len <= 2 * 1024 * 1024
+        && reader.seek(SeekFrom::Start(session_info_offset)).is_ok()
+    {
+        let mut raw_yaml = vec![0u8; session_info_len];
+        if reader.read_exact(&mut raw_yaml).is_ok() {
+            let end = raw_yaml.iter().position(|&b| b == 0).unwrap_or(raw_yaml.len());
+            yaml = mmt_sync_core::decode_irsdk_text(&raw_yaml[..end]);
         }
     }
     let modified_epoch_ms = file_modified_epoch_ms(path);
@@ -269,13 +270,14 @@ pub fn parse_ibt_report(path: &Path) -> Result<IbtSessionReport, String> {
     }
 
     let mut yaml = String::new();
-    if session_info_len > 0 && session_info_len <= 2 * 1024 * 1024 {
-        if reader.seek(SeekFrom::Start(session_info_offset)).is_ok() {
-            let mut raw_yaml = vec![0u8; session_info_len];
-            if reader.read_exact(&mut raw_yaml).is_ok() {
-                let end = raw_yaml.iter().position(|&b| b == 0).unwrap_or(raw_yaml.len());
-                yaml = mmt_sync_core::decode_irsdk_text(&raw_yaml[..end]);
-            }
+    if session_info_len > 0
+        && session_info_len <= 2 * 1024 * 1024
+        && reader.seek(SeekFrom::Start(session_info_offset)).is_ok()
+    {
+        let mut raw_yaml = vec![0u8; session_info_len];
+        if reader.read_exact(&mut raw_yaml).is_ok() {
+            let end = raw_yaml.iter().position(|&b| b == 0).unwrap_or(raw_yaml.len());
+            yaml = mmt_sync_core::decode_irsdk_text(&raw_yaml[..end]);
         }
     }
 

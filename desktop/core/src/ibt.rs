@@ -506,7 +506,7 @@ fn read_number_at(bytes: &[u8], base: usize, var: &Var, index: usize) -> Option<
     }
     let stride = match var.kind {
         0 | 1 => 1,
-        2 | 3 | 4 => 4,
+        2..=4 => 4,
         5 => 8,
         _ => return None,
     };

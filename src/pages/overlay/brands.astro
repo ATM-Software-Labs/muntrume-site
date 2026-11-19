@@ -4,8 +4,8 @@ import { getSupportedBrandsCatalog } from "../../../desktop/src/brand-logos";
 
 const brands = getSupportedBrandsCatalog();
 
-const pageTitle = "Fabricantes & Colores HUD · MMT Sync Overlays | Muntrume Motorsport";
-const pageDescription = `Catálogo oficial de ${brands.length} fabricantes soportados por el parser del iRacing SDK en MMT Sync Overlays, con SVG vectorial, preview de Standings y códigos HEX.`;
+const pageTitle = "Fabricantes y colores HUD";
+const pageDescription = `${brands.length} fabricantes del catálogo iRacing en MMT Sync. Logo real cuando existe; disco neutro si no hay vector verificable. Equipo MMT.`;
 const pageUrl = "https://muntru.me/overlay/brands/";
 const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
 ---
@@ -19,24 +19,24 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
   <main class="min-h-screen bg-[#090b0f] text-slate-100 py-10 px-4 sm:px-6">
     <div class="max-w-7xl mx-auto space-y-6">
       <!-- Header -->
-      <header class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/10 pb-5">
+      <header class="flex flex-col gap-4 border-b border-white/10 pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div class="space-y-2">
           <div class="flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest text-emerald-400">
             <a href="/overlay/" class="hover:underline">← Volver a /overlay</a>
-            <span class="text-slate-600">·</span>
-            <span>desktop/src/brand-logos.ts</span>
+            <span class="text-slate-600 hidden sm:inline">·</span>
+            <span class="hidden sm:inline">desktop/src/brand-logos.ts</span>
           </div>
           <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-            Matriz Oficial de Fabricantes &amp; Colores HUD
+            Fabricantes y colores HUD
           </h1>
           <p class="text-xs sm:text-sm text-slate-400 max-w-2xl font-mono">
-            Fuente única de verdad compartida entre la app de escritorio MMT Sync y la web.
-            <span class="text-emerald-400 font-bold ml-1">{brands.length} marcas indexadas</span>.
+            Cada tarjeta es un fabricante real del catálogo. El disco gris no es un logo: falta un vector verificable.
+            <span class="text-emerald-400 font-bold ml-1">{brands.length} fabricantes</span>.
           </p>
         </div>
 
         <!-- Instant Filter -->
-        <div class="w-full md:w-80">
+        <div class="w-full lg:w-80 lg:shrink-0">
           <label for="brandSearchInput" class="sr-only">Buscar marca, CarPath o color hex</label>
           <div class="relative">
             <input
@@ -53,18 +53,18 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
       </header>
 
       <!-- Brands Grid -->
-      <section id="brandGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+      <section id="brandGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {brands.map((b, idx) => (
           <article
             class="brand-card rounded border border-white/10 bg-[#0d1118] p-3 flex flex-col gap-3 font-mono tabular-nums hover:border-white/25 transition"
-            data-search={`${b.name} ${b.carPath} ${b.color} ${b.sampleModel}`.toLowerCase()}
+            data-search={`${b.name} ${b.carPaths.join(" ")} ${b.color}`.toLowerCase()}
           >
             <!-- Top: 32x32 Official SVG + HEX Badge -->
             <div class="flex items-start justify-between gap-2">
               <span
                 class="w-9 h-9 rounded border border-white/10 bg-[#090b0f] flex items-center justify-center shrink-0"
                 style={`color:${b.color}`}
-                title={b.name}
+                title={b.logoVerified ? b.name : `${b.name}: marca neutra, sin logo verificable`}
               >
                 <svg viewBox="0 0 24 24" width="32" height="32" fill={b.color} fill-rule="evenodd" clip-rule="evenodd" aria-hidden="true">
                   <path fill-rule="evenodd" clip-rule="evenodd" d={b.path} />
@@ -74,16 +74,18 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
                 class="text-[10px] px-1.5 py-0.5 rounded border border-white/10 bg-[#090b0f] font-bold tracking-wide"
                 style={`color:${b.color}`}
               >
-                {b.color.toUpperCase()}
+                {b.color.toUpperCase()}{b.colorKind === "neutral" ? " · neutro" : ""}
               </span>
             </div>
 
-            <!-- Middle: Brand Name & SDK CarPath -->
             <div>
-              <h2 class="text-xs font-bold text-white truncate">{b.name}</h2>
-              <p class="text-[10px] text-slate-400 truncate" title={b.sampleModel}>
-                CarPath: <span class="text-slate-300">{b.carPath}</span>
-              </p>
+              <h2 class="text-xs font-bold text-white">{b.name}</h2>
+              <p class="text-[10px] text-slate-500">{b.logoVerified ? "Logo de marca" : "Sin logo verificable"}</p>
+              <ul class="mt-1 space-y-0.5">
+                {b.carPaths.map((id) => (
+                  <li class="text-[10px] text-slate-300 break-all">{id}</li>
+                ))}
+              </ul>
             </div>
 
             <!-- Bottom: Real Standings 22px Row Preview -->
@@ -97,10 +99,10 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
                 <svg viewBox="0 0 24 24" width="14" height="14" fill={b.color} fill-rule="evenodd" clip-rule="evenodd" class="shrink-0" aria-hidden="true">
                   <path fill-rule="evenodd" clip-rule="evenodd" d={b.path} />
                 </svg>
-                <span class="text-slate-200 font-semibold truncate">MMT #{(idx + 1) * 3}</span>
+                <span class="text-slate-200 font-semibold truncate">{b.name}</span>
               </div>
-              <span class="text-[9px] px-1 rounded bg-emerald-500/15 text-emerald-400 font-bold shrink-0">
-                3.8k
+              <span class="text-[9px] px-1 rounded bg-white/5 text-slate-300 font-bold shrink-0">
+                {b.carPaths.length}
               </span>
             </div>
           </article>

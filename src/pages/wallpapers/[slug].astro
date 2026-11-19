@@ -1,0 +1,86 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { absoluteWallpaperUrl, getWallpaperCatalog, type WallpaperSeries } from "../../lib/wallpaper-catalog";
+
+export async function getStaticPaths() {
+  const catalog = await getWallpaperCatalog();
+  return catalog.series.map((series) => ({
+    params: { slug: series.slug },
+    props: { series },
+  }));
+}
+
+interface Props {
+  series: WallpaperSeries;
+}
+
+const { series } = Astro.props;
+const pageUrl = `https://muntru.me/wallpapers/${series.slug}/`;
+const kindLabel = series.kind === "series" ? "Serie" : "Categoría";
+const pageTitle = `Wallpapers ${series.name}`;
+const pageDescription = `${series.items.length} wallpapers de ${series.name} (${kindLabel.toLowerCase()}) en iRacing, JPG 16:9 y móvil 9:16. Equipo MMT.`;
+const ogImage = absoluteWallpaperUrl(series.items[0]?.img || "/assets/img/coche2.webp");
+
+const pageSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "ImageGallery",
+      "@id": `${pageUrl}#gallery`,
+      url: pageUrl,
+      name: `${series.name} · Wallpapers`,
+      description: pageDescription,
+      inLanguage: "es",
+      image: series.items.map((item) => ({
+        "@type": "ImageObject",
+        contentUrl: absoluteWallpaperUrl(item.img),
+        url: pageUrl,
+        name: item.title || item.model,
+        caption: item.alt,
+        representativeOfPage: item.id === series.items[0]?.id,
+      })),
+    },
+  ],
+};
+---
+
+<Layout
+  title={pageTitle}
+  description={pageDescription}
+  canonical={pageUrl}
+  ogImage={ogImage}
+  ogImageAlt={series.items[0]?.alt || series.name}
+  schemaJson={pageSchema}
+>
+  <main class="min-h-screen bg-[#090b0f] text-slate-100 py-10 px-4 sm:px-6">
+    <div class="max-w-7xl mx-auto space-y-6">
+      <header class="border-b border-white/10 pb-5 space-y-2">
+        <p class="font-mono text-[11px] uppercase tracking-widest text-emerald-400">
+          <a href="/wallpapers/" class="hover:underline">Wallpapers</a>
+          <span class="text-slate-600"> · {kindLabel}</span>
+        </p>
+        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">{series.name}</h1>
+        <p class="text-sm text-slate-400 font-mono">{series.items.length} wallpapers en este grupo, en el orden del coche y del número de toma.</p>
+      </header>
+      <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {series.items.map((item, index) => (
+          <li class="rounded-lg border border-white/10 bg-[#0d1118] overflow-hidden">
+            <img
+              src={item.img}
+              alt={item.alt}
+              width="640"
+              height="360"
+              loading={index === 0 ? "eager" : "lazy"}
+              decoding="async"
+              class="w-full aspect-video object-cover bg-[#090b0f]"
+            />
+            <div class="p-3 font-mono">
+              <p class="text-xs font-bold text-white">{item.title || item.model}</p>
+              {item.circuit && <p class="text-[10px] text-slate-400">{item.circuit}</p>}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </main>
+</Layout>

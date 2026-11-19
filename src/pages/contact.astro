@@ -1,3 +1,88 @@
 ---
-return Astro.redirect('/paddock', 301);
+import Layout from '../layouts/Layout.astro';
+
+const contacts = [
+  { name: "Alberto Trujillo (#16)", role: "Fundador y piloto", roleKey: "contact.role.alberto", email: "alberto@muntru.me" },
+  { name: "Mateo Berbis (#1)", role: "Piloto oficial", roleKey: "contact.role.mateo", email: "mateo@muntru.me" },
+  { name: "Muntrume Motorsport", role: "Administración, soporte y prensa", roleKey: "contact.role.admin", email: "admin@muntru.me" },
+  { name: "Departamento legal", role: "Legal, privacidad y DMCA", roleKey: "contact.role.legal", email: "legal@muntru.me" },
+];
 ---
+<Layout
+  title="Contacto"
+  description="Correos de Muntrume Motorsport (MMT): pilotos, administración y departamento legal."
+  canonical="https://muntru.me/contact/"
+  ogImage="https://muntru.me/assets/img/og-contact.jpg"
+  ogImageAlt="Contacto de Muntrume Motorsport"
+  translated
+  i18nTitle="contact.meta.title"
+  i18nDescription="contact.meta.desc"
+>
+  <section class="r-section lg" style="border-top:0;padding-top:clamp(104px,13vw,150px)" aria-labelledby="contactTitle">
+    <div class="r-wrap lg-wrap">
+      <nav class="r-meta" aria-label="Breadcrumb"><a href="/" style="color:inherit" data-i18n="nav.home">Inicio</a> / <span data-i18n="footer.contact">Contacto</span></nav>
+      <p class="r-kicker" data-i18n="contact.kicker">El equipo</p>
+      <h1 id="contactTitle" class="r-h1 lg-title" data-i18n="contact.title">Contacto</h1>
+      <p class="r-lead" data-i18n="contact.lead">Escribe a un piloto, a la administración del equipo o al departamento legal.</p>
+      <nav class="lg-tabs" aria-label="Información legal" data-i18n-aria="footer.legal">
+        <a href="/aviso-legal/" data-i18n="footer.aviso">Aviso legal</a>
+        <a href="/privacy/" data-i18n="footer.privacy">Privacidad</a>
+        <a href="/cookies/" data-i18n="footer.cookies">Cookies</a>
+        <a href="/contact/" aria-current="page" data-i18n="footer.contact">Contacto</a>
+      </nav>
+      <ul class="contact-list">
+        {contacts.map((person) => (
+          <li>
+            <p class="contact-name">{person.name}</p>
+            <p class="contact-role" data-i18n={person.roleKey}>{person.role}</p>
+            <a class="contact-mail" href={`mailto:${person.email}`}>{person.email}</a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .contact-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 12px;
+  }
+  .contact-list li {
+    display: grid;
+    gap: 4px;
+    padding: 16px 18px;
+    border: 1px solid var(--r-line);
+    border-radius: var(--r-radius, 12px);
+    background: var(--r-surface, transparent);
+  }
+  .contact-name {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--r-text);
+  }
+  .contact-role {
+    margin: 0;
+    font-size: 13px;
+    color: var(--r-muted);
+  }
+  .contact-mail {
+    width: fit-content;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    color: var(--r-text);
+    font: 600 14px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+    letter-spacing: 0;
+    text-transform: none;
+    text-decoration: none;
+    border-bottom: 2px solid var(--r-accent, #00e699);
+    padding-bottom: 2px;
+  }
+  .contact-mail:hover {
+    color: var(--r-accent, #00e699);
+  }
+</style>

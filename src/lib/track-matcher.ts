@@ -329,7 +329,7 @@ const carBrandMap = new Map<string, { path: string; color: string }>(
     normCarKey(c.carFolder),
     {
       path: OFFICIAL_BRAND_PATHS[c.svgLogoId] || "",
-      color: c.svgLogoId === "logo-aston" ? "#2dd4bf" : c.accentColor,
+      color: c.accentColor,
     },
   ])
 );
@@ -338,7 +338,7 @@ const FALLBACK_BRANDS: Array<[RegExp, { logo: string; color: string }]> = [
   [/honda/i, { logo: "logo-honda", color: "#CC0000" }],
   [/toyota|gr86/i, { logo: "logo-toyota", color: "#EB0A1E" }],
   [/mazda|mx5|mx_/i, { logo: "logo-mazda", color: "#E11D48" }],
-  [/dallara|superformula|indy|formulair04/i, { logo: "logo-dallara", color: "#00E699" }],
+  [/dallara|superformula|formulair04/i, { logo: "logo-dallara", color: "#C0C0C0" }],
   [/ligier/i, { logo: "logo-ligier", color: "#38BDF8" }],
   [/lotus/i, { logo: "logo-lotus", color: "#22C55E" }],
   [/radical/i, { logo: "logo-radical", color: "#F59E0B" }],
@@ -355,7 +355,9 @@ const FALLBACK_BRANDS: Array<[RegExp, { logo: string; color: string }]> = [
   [/acura/i, { logo: "logo-acura", color: "#E11D48" }],
   [/corvette|chevy|camaro|silverado|c6r|c8r/i, { logo: "logo-chevy", color: "#EAB308" }],
   [/ford|mustang/i, { logo: "logo-ford", color: "#3B82F6" }],
-  [/formulavee|raygr|rt2000|specracer/i, { logo: "logo-formula", color: "#94A3B8" }],
+  [/raygr|specracer/i, { logo: "logo-ford", color: "#003478" }],
+  [/formulavee/i, { logo: "logo-vw", color: "#001E50" }],
+  [/rt2000/i, { logo: "logo-neutral", color: "#C0C0C0" }],
 ];
 
 function brandForCarId(carId: string): { path: string; color: string } {
