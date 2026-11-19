@@ -653,7 +653,7 @@ npm run tauri dev</code></pre>
           name: "SILVERSTONE GP",
           series: "IMSA MULTICLASS",
           avgFuel: 2.84,
-          lapSec: { GTP: 94.5, LMP2: 99.8, GT3: 112.4 },
+          lapSec: { GTP: 103.820, LMP2: 109.410, GT3: 117.920 },
           pts: [
             // Hamilton Straight -> Abbey -> Farm -> Village V-hairpin -> The Loop -> Wellington Straight
             [92, 168], [134, 168], [176, 168], [202, 152], [190, 128],
@@ -671,7 +671,7 @@ npm run tauri dev</code></pre>
           name: "SPA-FRANCORCHAMPS",
           series: "24H ENDURANCE",
           avgFuel: 3.46,
-          lapSec: { GTP: 118.2, LMP2: 125.4, GT3: 137.8 },
+          lapSec: { GTP: 122.180, LMP2: 128.940, GT3: 136.640 },
           pts: [
             // La Source V-hairpin -> Eau Rouge / Raidillon -> Kemmel Straight
             [56, 156], [42, 168], [58, 174], [86, 158], [104, 142],
@@ -689,7 +689,7 @@ npm run tauri dev</code></pre>
           name: "DAYTONA ROAD COURSE",
           series: "ROLEX 24 IMSA",
           avgFuel: 2.68,
-          lapSec: { GTP: 93.4, LMP2: 99.2, GT3: 108.6 },
+          lapSec: { GTP: 95.410, LMP2: 99.850, GT3: 104.380 },
           pts: [
             // Tri-oval S/F -> Turn 1 V-hairpin -> International Horseshoe -> West Horseshoe
             [102, 168], [156, 168], [210, 164], [242, 142], [222, 124],
@@ -705,7 +705,7 @@ npm run tauri dev</code></pre>
           name: "INTERLAGOS",
           series: "ENDURANCE BRAZIL",
           avgFuel: 2.24,
-          lapSec: { GTP: 84.6, LMP2: 89.2, GT3: 95.4 },
+          lapSec: { GTP: 83.950, LMP2: 88.120, GT3: 93.480 },
           pts: [
             // Main Straight -> Senna S -> Curva do Sol -> Reta Oposta -> Descida do Lago
             [168, 168], [120, 168], [72, 168], [44, 158], [56, 140],
@@ -764,9 +764,9 @@ npm run tauri dev</code></pre>
       const trackMapTitleEl = document.getElementById("simTrackMapTitle");
 
       const CLASSES = {
-        GTP:  { color: "#facc15", sof: "3.4k", lapSec: 94.5, baseLap: "1:34.512" },
-        LMP2: { color: "#38bdf8", sof: "2.8k", lapSec: 99.8, baseLap: "1:39.840" },
-        GT3:  { color: "#a855f7", sof: "2.5k", lapSec: 112.4, baseLap: "1:52.418" },
+        GTP:  { color: "#facc15", sof: "3.4k", lapSec: 103.820 },
+        LMP2: { color: "#38bdf8", sof: "2.8k", lapSec: 109.410 },
+        GT3:  { color: "#a855f7", sof: "2.5k", lapSec: 117.920 },
       };
 
       function applyCircuit(idx) {
@@ -1009,13 +1009,21 @@ npm run tauri dev</code></pre>
                 posEl: rowEl.querySelector(".st-pos"),
                 intEl: rowEl.querySelector(".st-int"),
                 gapEl: rowEl.querySelector(".st-gap"),
+                lapEl: rowEl.querySelector(".st-lap"),
                 lastInt: "",
                 lastGap: "",
                 lastPos: "",
+                lastLap: "",
               });
             }
           });
         });
+      }
+
+      function formatLapSec(sec) {
+        const m = Math.floor(sec / 60);
+        const rem = (sec % 60).toFixed(3).padStart(6, "0");
+        return `${m}:${rem}`;
       }
 
       const stGroupBuf = [];
@@ -1030,16 +1038,19 @@ npm run tauri dev</code></pre>
           }
           if (!stGroupBuf.length) return;
           stGroupBuf.sort((a, b) => (b.d.lap + b.d.pct) - (a.d.lap + a.d.pct));
-          const leaderDist = stGroupBuf[0].d.lap + stGroupBuf[0].d.pct;
+          let cumGap = 0;
           for (let idx = 0; idx < stGroupBuf.length; idx++) {
             const slot = stGroupBuf[idx];
             const dist = slot.d.lap + slot.d.pct;
-            const gapSec = Math.max(0, (leaderDist - dist) * meta.lapSec);
             const prevDist = idx > 0 ? stGroupBuf[idx - 1].d.lap + stGroupBuf[idx - 1].d.pct : dist;
-            const intSec = Math.max(0, (prevDist - dist) * meta.lapSec);
-            const gapStr = idx === 0 ? "LDR" : gapSec.toFixed(3);
-            const intStr = idx === 0 ? "—" : intSec.toFixed(3);
+            const intRounded = idx === 0 ? 0 : Math.max(0, Number(((prevDist - dist) * meta.lapSec).toFixed(3)));
+            cumGap = idx === 0 ? 0 : Number((cumGap + intRounded).toFixed(3));
+            const gapStr = idx === 0 ? "LDR" : cumGap.toFixed(3);
+            const intStr = idx === 0 ? "—" : intRounded.toFixed(3);
             const posStr = String(idx + 1);
+            // Realistic deterministic lap variation (±0.15s to ±0.45s across positions/laps)
+            const lapVar = idx * 0.28 + ((slot.d.lap + slot.d.id) % 3) * 0.14;
+            const lapStr = formatLapSec(meta.lapSec + lapVar);
             if (slot.lastPos !== posStr && slot.posEl) {
               slot.posEl.textContent = posStr;
               slot.lastPos = posStr;
@@ -1051,6 +1062,10 @@ npm run tauri dev</code></pre>
             if (slot.lastGap !== gapStr && slot.gapEl) {
               slot.gapEl.textContent = gapStr;
               slot.lastGap = gapStr;
+            }
+            if (slot.lastLap !== lapStr && slot.lapEl) {
+              slot.lapEl.textContent = lapStr;
+              slot.lastLap = lapStr;
             }
           }
         });
@@ -1491,25 +1506,26 @@ npm run tauri dev</code></pre>
         ctx.fillRect(-3.2, 11.5, 6.4, 3.6);
         ctx.restore();
 
-        // Wide, low GT3 body + flared rear wheel arches (extra wide hips on Porsche 911; side wheel vents on McLaren)
-        const hipExtra = model === "porsche" ? 3 : 0;
+        // Wide, low GT3 body + rounded widebody rear wheel arches using Bezier curves
+        const hipExtra = model === "porsche" ? 3.5 : 0;
         const bg = ctx.createLinearGradient(0, -23, 0, 14);
         bg.addColorStop(0, bodyColor);
         bg.addColorStop(1, secondaryColor);
         ctx.fillStyle = bg;
         ctx.beginPath();
         ctx.moveTo(-49 - hipExtra, 11);
-        ctx.quadraticCurveTo(-55 - hipExtra, -5, -44, -17);
-        ctx.lineTo(-27, -23);
+        ctx.bezierCurveTo(-56 - hipExtra, 3, -55 - hipExtra, -10, -44, -17);
+        ctx.bezierCurveTo(-38, -21, -32, -23, -27, -23);
         ctx.lineTo(27, -23);
-        ctx.lineTo(44, -17);
-        ctx.quadraticCurveTo(55 + hipExtra, -5, 49 + hipExtra, 11);
-        ctx.lineTo(36, 13);
+        ctx.bezierCurveTo(32, -23, 38, -21, 44, -17);
+        ctx.bezierCurveTo(55 + hipExtra, -10, 56 + hipExtra, 3, 49 + hipExtra, 11);
+        ctx.bezierCurveTo(44, 13, 40, 13.5, 36, 13);
         ctx.lineTo(-36, 13);
+        ctx.bezierCurveTo(-40, 13.5, -44, 13, -49 - hipExtra, 11);
         ctx.closePath();
         ctx.fill();
 
-        // Center stripe & matte black hood/roof (Mustang) or wheel-arch carbon vents (McLaren)
+        // Center stripe & matte black hood/roof (Mustang) or wheel-arch aero vents (McLaren)
         ctx.fillStyle = model === "mustang" ? "#0f172a" : secondaryColor;
         ctx.fillRect(-13, -23, 26, 34);
         ctx.fillStyle = accentColor;
@@ -1517,24 +1533,34 @@ npm run tauri dev</code></pre>
         ctx.fillRect(12.8, -23, 2.2, 34);
         if (model === "mclaren") {
           ctx.fillStyle = "#090b0f";
-          ctx.fillRect(-47, -2, 7, 10);
-          ctx.fillRect(40, -2, 7, 10);
+          ctx.beginPath();
+          ctx.moveTo(-47, -3);
+          ctx.bezierCurveTo(-42, -3, -40, 2, -40, 8);
+          ctx.lineTo(-47, 8);
+          ctx.closePath();
+          ctx.fill();
+          ctx.beginPath();
+          ctx.moveTo(47, -3);
+          ctx.bezierCurveTo(42, -3, 40, 2, 40, 8);
+          ctx.lineTo(47, 8);
+          ctx.closePath();
+          ctx.fill();
         }
 
-        // Rounded GT3 roof & sloped rear window with visible roll cage
+        // Domed trapezoidal GT3 greenhouse tapering upward with sloped C-pillars & meshed rear window
         ctx.fillStyle = "#0b1120";
         ctx.beginPath();
-        ctx.moveTo(-29, -19);
-        ctx.quadraticCurveTo(-24, -37, -18, -38);
-        ctx.lineTo(18, -38);
-        ctx.quadraticCurveTo(24, -37, 29, -19);
+        ctx.moveTo(-30, -19);
+        ctx.bezierCurveTo(-27, -29, -23, -37, -17, -38.5);
+        ctx.bezierCurveTo(-8, -40, 8, -40, 17, -38.5);
+        ctx.bezierCurveTo(23, -37, 27, -29, 30, -19);
         ctx.closePath();
         ctx.fill();
-        ctx.strokeStyle = "rgba(255,255,255,0.18)";
+        ctx.strokeStyle = "rgba(255,255,255,0.20)";
         ctx.lineWidth = 1;
         ctx.stroke();
 
-        // Visible internal roll cage bars inside rear window
+        // Internal roll cage & subtle rear glass mesh
         ctx.strokeStyle = "rgba(148, 163, 184, 0.35)";
         ctx.lineWidth = 1.6;
         ctx.beginPath();
@@ -1782,8 +1808,11 @@ npm run tauri dev</code></pre>
         ensureBgCache(w, h);
         ctx.drawImage(bgCacheCanvas, 0, 0, w, h);
 
-        // Corner curve sway
-        const curveFactor = Math.sin(tSec * 0.42) * 0.24;
+        // Master lapProgress-driven smooth curvature & exponential lerped car formation (0 wobble/jumps)
+        const targetCurve = Math.sin(lapProgress * Math.PI * 2) * 0.24;
+        const lerpK = dt > 0 ? 1 - Math.exp(-6 * dt) : 1;
+        smoothCurve += (targetCurve - smoothCurve) * lerpK;
+        const curveFactor = smoothCurve;
 
         const tel = computeTelemetryState(tSec);
         const isBrakingZone = tel.u >= 0.44 && tel.u <= 0.74;
@@ -1908,56 +1937,59 @@ npm run tauri dev</code></pre>
           return roadCenterX(y) + clamped * roadHalfWidth(y);
         };
 
-        // Visual 1-2-3 Muntrume Motorsport GT3 Formation + Multiclass Prototype Overtake (track-bound + body roll)
+        // Chase Cam perspective: #16 A. Trujillo foreground at y = 74%, scale 1.15x;
+        // clean track ahead in P1 except overtaking GTP/LMP2 prototype pulling away ahead;
+        // #1 M. Berbis (-0.6s) and #22 E. Chongkan (-1.2s) enter alongside smoothly during 3-Wide
         const battle = computeBattleState(nowMs, tSec);
         const proto = computePrototypePass(tSec);
-        const carY = h * 0.64;
         const brakeState = tel.brake > 0.25 ? 1 : 0;
-        const rollRad = curveFactor * 0.16; // ±2.2° body roll into corners
+        const rollRad = curveFactor * 0.16; // ±2.2° body roll tangential to corner
 
-        // #16 A. Trujillo — Ford Mustang GT3 (P1 leading GT3 pack)
-        const mustangY = carY - 12;
-        const mustangX = trackBoundX(mustangY, Math.sin(tSec * 1.6) * 0.03);
-        drawCarSprite(ctx, CAR_SPRITES.mustang[brakeState], mustangX, mustangY, 0.92, tel.downshiftFlash, tel.brake, rollRad);
+        const targetPull = battle === 3 ? 1 : 0;
+        const pullLerp = dt > 0 ? 1 - Math.exp(-5 * dt) : 1;
+        smoothLeftPull += (targetPull - smoothLeftPull) * pullLerp;
+        smoothRightPull += (targetPull - smoothRightPull) * pullLerp;
 
-        // #1 M. Berbis — Porsche 911 GT3 R (992) (P2 trailing diagonal-left or pulling alongside in 3-wide)
-        const leftPull = battle === 3 ? 1 : 0;
-        const porscheY = carY + 26 - leftPull * 34;
-        const porscheLane = -0.34 - 0.08 * leftPull + Math.sin(tSec * 2.1) * 0.02;
-        drawCarSprite(ctx, CAR_SPRITES.porsche[brakeState], trackBoundX(porscheY, porscheLane), porscheY, 0.96, tel.downshiftFlash, tel.brake, rollRad);
-
-        // #22 E. Chongkan — McLaren 720S GT3 Evo (P3 trailing diagonal-right or pulling alongside in 3-wide)
-        const rightPull = battle === 3 ? 1 : 0;
-        const mclarenY = carY + 42 - rightPull * 50;
-        const mclarenLane = 0.36 + 0.06 * rightPull + Math.cos(tSec * 1.9) * 0.02;
-        drawCarSprite(ctx, CAR_SPRITES.mclaren[brakeState], trackBoundX(mclarenY, mclarenLane), mclarenY, 1.0, tel.downshiftFlash, tel.brake, rollRad);
-
-        // Multiclass Prototype (GTP #01 or LMP2 #32) overtaking inside left within track bounds [-0.68, +0.68]
+        // Multiclass Prototype (GTP #01 or LMP2 #32) overtaking on inside left and pulling away ahead
         if (proto.active) {
-          const protoY = h * 0.90 - proto.progress * h * 0.42;
-          const protoLane = -0.62 + Math.sin(proto.progress * Math.PI) * 0.06;
-          const protoScale = 1.04 - proto.progress * 0.44;
+          const protoY = h * 0.84 - proto.progress * h * 0.42;
+          const protoLane = -0.58 + Math.sin(proto.progress * Math.PI) * 0.04;
+          const protoScale = 1.06 - proto.progress * 0.48;
           const pSprite = proto.isGtp ? CAR_SPRITES.gtp01[brakeState] : CAR_SPRITES.lmp232[brakeState];
           drawCarSprite(ctx, pSprite, trackBoundX(protoY, protoLane), protoY, protoScale, 0, tel.brake * 0.5, rollRad * 1.15);
         }
 
-        // Subtle sparks when 3-wide wheel-to-wheel
-        if (battle === 3) {
-          const cx = roadCenterX(carY);
-          for (let s = 0; s < 5; s++) {
-            const sx = cx + (s % 2 === 0 ? -52 : 52) + (Math.random() - 0.5) * 14;
-            const sy = carY + 18 + Math.random() * 18;
-            ctx.fillStyle = s % 2 === 0 ? "#fbbf24" : "#f97316";
-            ctx.fillRect(sx, sy, 3, 2);
-          }
+        // #1 M. Berbis — Porsche 911 GT3 R (992) (enters frame smoothly alongside left in 3-Wide)
+        if (smoothLeftPull > 0.04) {
+          const porscheY = h * (0.94 - smoothLeftPull * 0.22);
+          const porscheLane = -0.44 + curveFactor * 0.16;
+          drawCarSprite(ctx, CAR_SPRITES.porsche[brakeState], trackBoundX(porscheY, porscheLane), porscheY, 1.08, tel.downshiftFlash, tel.brake, rollRad);
         }
+
+        // #22 E. Chongkan — McLaren 720S GT3 Evo (enters frame smoothly alongside right in 3-Wide)
+        if (smoothRightPull > 0.04) {
+          const mclarenY = h * (0.94 - smoothRightPull * 0.21);
+          const mclarenLane = 0.44 + curveFactor * 0.16;
+          drawCarSprite(ctx, CAR_SPRITES.mclaren[brakeState], trackBoundX(mclarenY, mclarenLane), mclarenY, 1.08, tel.downshiftFlash, tel.brake, rollRad);
+        }
+
+        // #16 A. Trujillo — Ford Mustang GT3 (P1 leading GT3 pack, Chase Cam foreground y = 74%, scale 1.15x)
+        const mustangY = h * 0.74;
+        const mustangLane = curveFactor * 0.22;
+        drawCarSprite(ctx, CAR_SPRITES.mustang[brakeState], trackBoundX(mustangY, mustangLane), mustangY, 1.15, tel.downshiftFlash, tel.brake, rollRad);
       }
 
-      // Main animation loop (auto-paused when out of viewport or tab hidden; DOM updates capped at 4 Hz)
+      // Main animation loop (bounded dt <= 0.05s, exponential lerp, master lapProgress 0..1, 4 Hz DOM)
       let lastMs = performance.now();
       let lastDomMs = 0;
       let fuelLevel = 34.8;
       let simTimeSec = 0;
+      let lapProgress = 0;
+      let smoothCurve = 0;
+      let smoothLeftPull = 0;
+      let smoothRightPull = 0;
+      let smoothBerbisGap = -0.6;
+      let smoothChongkanGap = -1.3;
       let isViewportVisible = true;
       let isTabVisible = !document.hidden;
       let rafId = 0;
@@ -1977,11 +2009,12 @@ npm run tauri dev</code></pre>
         rafId = 0;
         if (!shouldAnimate()) return;
 
-        const dt = Math.min(0.1, (nowMs - lastMs) / 1000);
+        const dt = Math.min(0.05, Math.max(0, (nowMs - lastMs) / 1000));
         lastMs = nowMs;
 
         if (!isPaused) {
           simTimeSec += dt;
+          lapProgress = (simTimeSec % 10) / 10;
           if (nowMs - lastCircuitSwitchMs >= 32000) {
             lastCircuitSwitchMs = nowMs;
             applyCircuit(activeCircuitIdx + 1);
@@ -1996,23 +2029,26 @@ npm run tauri dev</code></pre>
             }
           }
 
-          // Keep #16 P1, #1 M. Berbis P2 (+0.6s / +0.1s in 3-wide), #22 E. Chongkan P3 (+1.3s / -0.1s in 3-wide),
-          // and sync overtaking GTP/LMP2 prototype crossing -0.8s -> +0.8s in Relative
+          // Smooth exponential interpolation of Relative deltas (#1 Berbis & #22 Chongkan) + Prototype pass
           const meDrv = drivers.find((d) => d.isMe);
           const battleNow = computeBattleState(nowMs, simTimeSec);
           const protoPass = computePrototypePass(simTimeSec);
           if (meDrv) {
             const gt3Sec = CLASSES.GT3.lapSec;
+            const gapLerp = 1 - Math.exp(-4.5 * dt);
+            const targetBerbisGap = battleNow === 3 ? 0.1 : -0.6;
+            const targetChongkanGap = battleNow === 3 ? -0.1 : -1.2;
+            smoothBerbisGap += (targetBerbisGap - smoothBerbisGap) * gapLerp;
+            smoothChongkanGap += (targetChongkanGap - smoothChongkanGap) * gapLerp;
+
             const berbis = drivers.find((d) => d.num === "1");
             const chongkan = drivers.find((d) => d.num === "22");
             if (berbis) {
-              const targetGapSec = battleNow === 3 ? 0.1 : -0.6;
-              berbis.pct = (meDrv.pct + targetGapSec / gt3Sec + 1) % 1;
+              berbis.pct = (meDrv.pct + smoothBerbisGap / gt3Sec + 1) % 1;
               berbis.lap = meDrv.lap;
             }
             if (chongkan) {
-              const targetGapSec = battleNow === 3 ? -0.1 : -1.3;
-              chongkan.pct = (meDrv.pct + targetGapSec / gt3Sec + 1) % 1;
+              chongkan.pct = (meDrv.pct + smoothChongkanGap / gt3Sec + 1) % 1;
               chongkan.lap = meDrv.lap;
             }
             if (protoPass.active) {
@@ -2550,12 +2586,12 @@ npm run tauri dev</code></pre>
     }
     .hud-pos-radar {
       position: absolute;
-      bottom: 128px;
+      bottom: 136px;
       left: 50%;
       transform: translateX(-50%);
-      margin-top: 0 !important;
+      margin: 0 !important;
       min-height: 0 !important;
-      z-index: 6;
+      z-index: 25;
       pointer-events: none;
     }
     .hud-pos-inputs {
@@ -2827,9 +2863,6 @@ npm run tauri dev</code></pre>
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin-top: 24px;
-    min-height: 185px;
-    position: relative;
   }
 
   .hud-radar {
