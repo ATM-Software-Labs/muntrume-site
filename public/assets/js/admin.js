@@ -491,10 +491,9 @@ function renderOverviewSection() {
           </td>
           <td><span class="rc-badge ${p.status === "active" ? "rc-badge--ok" : "rc-badge--err"}">${p.status === "active" ? (p.has_password ? "Activa" : "Pendiente clave") : "Bloqueada"}</span></td>
           <td class="text-right">
-            <div class="rc-btn-row" style="justify-content:flex-end;flex-wrap:wrap">
-              <button type="button" class="r-btn r-btn--primary r-btn--sm" data-email="${rcEscape(p.email)}" data-name="${rcEscape(p.name)}" onclick="generateDriverAccessFromBtn(this, 'link')" title="Reenviar correo con enlace de reseteo de contraseña (72h)">🔑 Enviar Reset</button>
-              <button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(p.email)}" data-name="${rcEscape(p.name)}" onclick="generateDriverAccessFromBtn(this, 'copy_link')" title="Generar y copiar enlace directo de 72h para Discord/WhatsApp">📋 Copiar Link</button>
-              <button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(p.email)}" data-name="${rcEscape(p.name)}" onclick="generateDriverAccessFromBtn(this, 'temp_password')" title="Generar contraseña temporal de 1 uso">⚡ Clave Temp</button>
+            <div class="rc-row-actions">
+              <button type="button" class="r-btn r-btn--primary r-btn--sm" data-email="${rcEscape(p.email)}" data-name="${rcEscape(p.name)}" onclick="generateDriverAccessFromBtn(this, 'link')" title="Reenviar correo con enlace de reseteo de contraseña (72h)">Enviar Reset</button>
+              <button type="button" class="rc-menu-btn" aria-haspopup="menu" aria-expanded="false" aria-label="Más acciones para ${rcEscape(p.name)}" data-email="${rcEscape(p.email)}" data-scope="overview" onclick="openRowActionMenu(this, event)">⋮</button>
             </div>
           </td>
         </tr>
@@ -602,9 +601,7 @@ function renderDirectoryTable() {
 
   tbody.innerHTML = filtered.map((m) => {
     const numBadge = m.number ? `#${m.number}` : (m.name || "MMT").slice(0, 2).toUpperCase();
-    const isPrincipal = m.email.toLowerCase() === "atrumin16@gmail.com";
     const isBlocked = m.status === "inactive";
-    const hasSetupAccess = Boolean(m.has_setup_access) || ["admin", "team_driver", "driver", "pilot", "academy", "engineer"].includes(String(m.role || "").toLowerCase());
     const statusBadge = isBlocked
       ? `<span class="rc-badge rc-badge--err">Bloqueada</span>`
       : m.has_password
@@ -632,14 +629,9 @@ function renderDirectoryTable() {
         </td>
         <td>${statusBadge}</td>
         <td class="text-right">
-          <div class="rc-btn-row" style="justify-content:flex-end;flex-wrap:wrap">
-            ${!isBlocked ? `<button type="button" class="r-btn r-btn--primary r-btn--sm" data-email="${rcEscape(m.email)}" data-name="${rcEscape(m.name)}" onclick="generateDriverAccessFromBtn(this, 'link')" title="Enviar correo de reseteo de credenciales (72h)">🔑 Enviar Reset</button>` : ""}
-            ${!isBlocked ? `<button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" data-name="${rcEscape(m.name)}" onclick="generateDriverAccessFromBtn(this, 'copy_link')" title="Generar y copiar link de reseteo para Discord/WhatsApp">📋 Copiar Link</button>` : ""}
-            ${!isBlocked ? `<button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" data-name="${rcEscape(m.name)}" onclick="generateDriverAccessFromBtn(this, 'temp_password')" title="Emitir contraseña temporal">⚡ Clave Temp</button>` : ""}
-            ${!isBlocked ? `<button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" onclick="revokePilotSessionsBtn(this)" title="Cerrar todas las sesiones activas de este piloto">⎋ Sesiones</button>` : ""}
-            ${!isPrincipal ? `<button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" data-access="${hasSetupAccess ? "1" : "0"}" onclick="toggleSetupAccessBtn(this)" style="${hasSetupAccess ? "border-color:rgba(16,185,129,.45);color:#34d399" : ""}">${hasSetupAccess ? "Setups: ON" : "Setups: OFF"}</button>` : ""}
-            ${!isPrincipal ? `<button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" data-status="${isBlocked ? "active" : "inactive"}" onclick="toggleMemberStatusBtn(this)">${isBlocked ? "Reactivar" : "Bloquear"}</button>` : ""}
-            ${!isPrincipal ? `<button type="button" class="r-btn r-btn--sm" style="border-color:rgba(239,68,68,.35);color:#f87171" data-email="${rcEscape(m.email)}" onclick="deleteMemberBtn(this)">Eliminar</button>` : ""}
+          <div class="rc-row-actions">
+            ${!isBlocked ? `<button type="button" class="r-btn r-btn--primary r-btn--sm" data-email="${rcEscape(m.email)}" data-name="${rcEscape(m.name)}" onclick="generateDriverAccessFromBtn(this, 'link')" title="Enviar correo de reseteo de credenciales (72h)">Enviar Reset</button>` : `<button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" data-status="active" onclick="toggleMemberStatusBtn(this)">Reactivar</button>`}
+            <button type="button" class="rc-menu-btn" aria-haspopup="menu" aria-expanded="false" aria-label="Más acciones para ${rcEscape(m.name)}" data-email="${rcEscape(m.email)}" data-scope="directory" onclick="openRowActionMenu(this, event)">⋮</button>
           </div>
         </td>
       </tr>
@@ -1667,38 +1659,97 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
+let rcActiveMenuBtn = null;
+
+function closeRowActionMenu() {
+  const pop = document.getElementById("rcRowActionPopover");
+  if (pop) pop.classList.add("hidden");
+  if (rcActiveMenuBtn) {
+    rcActiveMenuBtn.setAttribute("aria-expanded", "false");
+    rcActiveMenuBtn = null;
+  }
+}
+
+function openRowActionMenu(btn, ev) {
+  if (ev) ev.stopPropagation();
+  const pop = document.getElementById("rcRowActionPopover");
+  if (!pop || !btn) return;
+  if (rcActiveMenuBtn === btn && !pop.classList.contains("hidden")) {
+    closeRowActionMenu();
+    return;
+  }
+  closeRowActionMenu();
+
+  const email = (btn.dataset.email || "").trim().toLowerCase();
+  const member = rcState.members.find((m) => String(m.email).toLowerCase() === email);
+  if (!member) return;
+
+  const isPrincipal = email === "atrumin16@gmail.com";
+  const isBlocked = member.status === "inactive";
+  const hasSetupAccess = Boolean(member.has_setup_access) || ["admin", "team_driver", "driver", "pilot", "academy", "engineer"].includes(String(member.role || "").toLowerCase());
+
+  const items = [];
+  if (!isBlocked) {
+    items.push(`<button type="button" class="rc-action-popover__item" data-email="${rcEscape(member.email)}" data-name="${rcEscape(member.name)}" onclick="closeRowActionMenu(); generateDriverAccessFromBtn(this, 'copy_link')">📋 Copiar enlace (72 h)</button>`);
+    items.push(`<button type="button" class="rc-action-popover__item" data-email="${rcEscape(member.email)}" data-name="${rcEscape(member.name)}" onclick="closeRowActionMenu(); generateDriverAccessFromBtn(this, 'temp_password')">⚡ Emitir clave temporal</button>`);
+    items.push(`<button type="button" class="rc-action-popover__item" data-email="${rcEscape(member.email)}" onclick="closeRowActionMenu(); revokePilotSessionsBtn(this)">⎋ Cerrar sesiones activas</button>`);
+  }
+  if (!isPrincipal) {
+    if (items.length) items.push(`<div class="rc-action-popover__sep"></div>`);
+    items.push(`<button type="button" class="rc-action-popover__item ${hasSetupAccess ? "rc-action-popover__item--ok" : ""}" data-email="${rcEscape(member.email)}" data-access="${hasSetupAccess ? "1" : "0"}" onclick="closeRowActionMenu(); toggleSetupAccessBtn(this)">${hasSetupAccess ? "✓ Setups Vault: Activo" : "○ Setups Vault: Bloqueado"}</button>`);
+    items.push(`<button type="button" class="rc-action-popover__item" data-email="${rcEscape(member.email)}" data-status="${isBlocked ? "active" : "inactive"}" onclick="closeRowActionMenu(); toggleMemberStatusBtn(this)">${isBlocked ? "✓ Reactivar cuenta" : "⊘ Bloquear cuenta"}</button>`);
+    items.push(`<button type="button" class="rc-action-popover__item rc-action-popover__item--danger" data-email="${rcEscape(member.email)}" onclick="closeRowActionMenu(); deleteMemberBtn(this)">🗑 Eliminar cuenta</button>`);
+  }
+
+  pop.innerHTML = items.join("");
+  pop.classList.remove("hidden");
+  btn.setAttribute("aria-expanded", "true");
+  rcActiveMenuBtn = btn;
+
+  const rect = btn.getBoundingClientRect();
+  const popW = pop.offsetWidth || 220;
+  const popH = pop.offsetHeight || 180;
+  let left = rect.right - popW;
+  if (left < 12) left = 12;
+  let top = rect.bottom + 6;
+  if (top + popH > window.innerHeight - 12) {
+    top = Math.max(12, rect.top - popH - 6);
+  }
+  pop.style.left = `${Math.round(left)}px`;
+  pop.style.top = `${Math.round(top)}px`;
+}
+
+document.addEventListener("click", (e) => {
+  const pop = document.getElementById("rcRowActionPopover");
+  if (!pop || pop.classList.contains("hidden")) return;
+  if (!pop.contains(e.target) && e.target !== rcActiveMenuBtn) closeRowActionMenu();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeRowActionMenu();
+});
+window.addEventListener("scroll", closeRowActionMenu, true);
+
 async function runStewardBotSweep() {
   const btn = document.getElementById("btnStewardBotSweep");
   const prev = btn ? btn.textContent : "";
   if (btn) { btn.disabled = true; btn.textContent = "🛡 Analizando comentarios…"; }
   try {
-    const token = getVaultToken();
-    const res = await fetch(`${WORKER_URL}/api/admin/moderation/sweep`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify({}),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (res.ok && data.success) {
-      showRcNotice(
-        "MMT Steward Bot completado",
-        `Revisados: ${data.scanned ?? 0} · Limpiados: ${data.cleaned ?? 0} · Retirados: ${data.rejected ?? 0}.`,
-        "success"
-      );
-    } else {
-      showRcNotice("MMT Steward Bot", data.error || "Requiere sesión de administrador activa.", "warning");
-    }
-  } catch (e) {
-    showRcNotice("Error de conexión", "No se pudo contactar con el bot moderador.", "error");
+    const data = await rcAdminFetch("/api/admin/moderation/sweep", {});
+    showRcNotice(
+      "MMT Steward Bot completado",
+      `Revisados: ${data.scanned ?? 0} · Limpiados: ${data.cleaned ?? 0} · Retirados: ${data.rejected ?? 0}.`,
+      "success"
+    );
+  } catch (err) {
+    showRcNotice("MMT Steward Bot", err?.message || "No se pudo contactar con el bot moderador.", "err");
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = prev || "🛡 Pasar Steward Bot"; }
   }
 }
 
 if (typeof window !== "undefined") {
+  window.openRowActionMenu = openRowActionMenu;
+  window.closeRowActionMenu = closeRowActionMenu;
   window.runStewardBotSweep = runStewardBotSweep;
   window.verifyAdminSession = verifyAdminSession;
   window.secureAdminLogout = secureAdminLogout;

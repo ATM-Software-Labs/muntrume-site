@@ -43,22 +43,21 @@ const totalCircuits = catalog.circuits?.length || 128;
   </Fragment>
 
   <div class="rc-shell" id="rcShell">
-    <!-- Top Sub-Header / Telemetry Command Bar -->
+    <!-- Google Admin Console Top Bar -->
     <div class="rc-topbar">
-      <div class="r-wrap rc-topbar__inner">
+      <div class="rc-container rc-topbar__inner">
         <div class="rc-brand">
-          <span class="rc-badge rc-badge--live">
-            <span class="rc-dot"></span>
-            RACE CONTROL v4.2
-          </span>
+          <div class="rc-brand__icon" aria-hidden="true">
+            <img src="/assets/img/icon-192.png" alt="" width="28" height="28" />
+          </div>
           <div class="rc-brand__titles">
-            <h1 class="rc-brand__title">Consola de Dirección &amp; Telemetría</h1>
-            <p class="rc-brand__sub">Alberto Trujillo (#16 · Team Principal) · <code id="rcSessionEmail">atrumin16@gmail.com</code></p>
+            <h1 class="rc-brand__title">Muntrume Admin</h1>
+            <p class="rc-brand__sub"><code id="rcSessionEmail">alberto@muntru.me</code></p>
           </div>
         </div>
 
         <div class="rc-search-box">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <circle cx="11" cy="11" r="8"></circle>
             <path d="M21 21l-4.35-4.35"></path>
           </svg>
@@ -66,8 +65,8 @@ const totalCircuits = catalog.circuits?.length || 128;
             type="search"
             id="adminGlobalSearch"
             class="rc-search-input"
-            placeholder="Buscar piloto, setup MMT, circuito, buzón o log… (Pulsa '/' para enfocar)"
-            aria-label="Buscar en Race Control"
+            placeholder="Buscar pilotos, setups, correos o actividad…"
+            aria-label="Buscar en Muntrume Admin"
           />
           <kbd class="rc-kbd">/</kbd>
         </div>
@@ -75,19 +74,19 @@ const totalCircuits = catalog.circuits?.length || 128;
         <div class="rc-topbar__actions">
           <span id="rcBackendBadge" class="rc-badge rc-badge--ok" title="Estado de conexión con Cloudflare D1 y Worker">
             <span class="rc-dot"></span>
-            <span id="rcBackendBadgeText">D1 Edge: Online</span>
+            <span id="rcBackendBadgeText">D1 Online</span>
           </span>
-          <a href="/garage" class="r-btn r-btn--sm">Ir al Garage →</a>
-          <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="openAddDriverModal()">+ Alta de Piloto</button>
-          <button type="button" class="r-btn r-btn--sm" style="border-color:rgba(239,68,68,0.4);color:#f87171" onclick="secureAdminLogout()" title="Cerrar sesión de administrador de forma segura">
-            🔒 Salir
+          <a href="/garage/" class="rc-btn-ghost">Garage ↗</a>
+          <button type="button" class="rc-btn-primary" onclick="openAddDriverModal()">+ Alta piloto</button>
+          <button type="button" class="rc-btn-danger" onclick="secureAdminLogout()" title="Cerrar sesión de administrador">
+            Salir
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Main Workspace Grid (Sidebar + Active Module) -->
-    <div class="r-wrap rc-workspace">
+    <!-- Main Google Admin Workspace (Left Drawer + Spacious Main Canvas) -->
+    <div class="rc-container rc-workspace">
       <!-- Left Navigation Sidebar -->
       <aside class="rc-sidebar" aria-label="Módulos de Race Control">
         <div class="rc-sidebar__group">
@@ -941,198 +940,293 @@ const totalCircuits = catalog.circuits?.length || 128;
   </div>
 
   <style is:global>
-    /* Race Control Theme-Adaptive Design System (100% Light & Dark Mode Compatible) */
+    /* ========================================================================= */
+    /* MUNTRUME ADMIN — GOOGLE ADMIN CONSOLE DESIGN SYSTEM (LIGHT & DARK)        */
+    /* ========================================================================= */
     .rc-shell {
-      min-height: calc(100svh - 64px);
+      min-height: calc(100svh - 60px);
       background: var(--r-bg);
       color: var(--r-text);
-      padding-bottom: 64px;
+      font-family: var(--r-sans, system-ui, -apple-system, sans-serif);
+      padding-bottom: 72px;
     }
+
+    .rc-container {
+      width: 100%;
+      max-width: 1460px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Sticky Google-style Top App Bar */
     .rc-topbar {
+      position: sticky;
+      top: 60px;
+      z-index: 30;
       background: var(--r-surface);
       border-bottom: 1px solid var(--r-line);
-      padding: 16px 0;
+      padding: 12px 0;
     }
     .rc-topbar__inner {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: auto minmax(220px, 520px) auto;
       align-items: center;
-      justify-content: space-between;
-      gap: 16px;
+      gap: 20px;
     }
     .rc-brand {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 11px;
+      min-width: 0;
+    }
+    .rc-brand__icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--r-bg-2);
+      border: 1px solid var(--r-line);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .rc-brand__icon img {
+      border-radius: 6px;
     }
     .rc-brand__title {
       margin: 0;
-      font: 800 clamp(20px, 2.4vw, 26px)/1 var(--r-display);
-      text-transform: uppercase;
-      letter-spacing: 0.02em;
+      font: 700 16px/1.2 var(--r-sans, system-ui, sans-serif);
+      letter-spacing: -0.02em;
       color: var(--r-text);
+      white-space: nowrap;
     }
     .rc-brand__sub {
-      margin: 3px 0 0;
-      font: 500 12px/1.3 var(--r-mono);
+      margin: 2px 0 0;
+      font: 500 11.5px/1.2 var(--r-mono);
       color: var(--r-muted);
     }
     .rc-brand__sub code {
-      color: var(--r-accent);
-      font-weight: 700;
+      color: var(--r-muted);
+      font-weight: 500;
     }
+
+    /* Google Pill Search Bar */
     .rc-search-box {
-      flex: 1 1 280px;
-      max-width: 440px;
+      width: 100%;
       display: flex;
       align-items: center;
-      gap: 8px;
-      background: var(--r-bg);
+      gap: 10px;
+      background: var(--r-bg-2);
       border: 1px solid var(--r-line);
-      border-radius: 10px;
-      padding: 0 12px;
-      min-height: 40px;
+      border-radius: 999px;
+      padding: 0 16px;
+      height: 42px;
       color: var(--r-muted);
-      transition: border-color 0.2s;
+      transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
     }
     .rc-search-box:focus-within {
+      background: var(--r-surface);
       border-color: var(--r-accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--r-accent) 16%, transparent);
     }
     .rc-search-input {
       flex: 1;
       border: 0;
       background: transparent;
       color: var(--r-text);
-      font: 500 13px/1.3 var(--r-sans);
+      font: 400 13.5px/1.3 var(--r-sans, system-ui, sans-serif);
       outline: none;
       min-width: 0;
     }
+    .rc-search-input::placeholder {
+      color: var(--r-muted);
+    }
     .rc-kbd {
-      font: 700 10px/1 var(--r-mono);
-      padding: 3px 6px;
-      border-radius: 5px;
+      font: 600 11px/1 var(--r-mono);
+      padding: 3px 7px;
+      border-radius: 6px;
       border: 1px solid var(--r-line);
       background: var(--r-surface);
       color: var(--r-muted);
     }
+
     .rc-topbar__actions {
       display: flex;
-      flex-wrap: wrap;
       align-items: center;
-      gap: 10px;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: nowrap;
     }
+    .rc-btn-primary,
+    .rc-btn-ghost,
+    .rc-btn-danger {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 36px;
+      padding: 0 15px;
+      border-radius: 999px;
+      font: 600 12.5px/1 var(--r-sans, system-ui, sans-serif);
+      text-decoration: none;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+    }
+    .rc-btn-primary {
+      border: 0;
+      background: var(--r-accent);
+      color: var(--r-accent-ink, #04130d);
+      font-weight: 700;
+    }
+    .rc-btn-primary:hover { opacity: 0.9; }
+    .rc-btn-ghost {
+      border: 1px solid var(--r-line);
+      background: transparent;
+      color: var(--r-text);
+    }
+    .rc-btn-ghost:hover {
+      border-color: var(--r-accent);
+      color: var(--r-accent);
+    }
+    .rc-btn-danger {
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      background: rgba(239, 68, 68, 0.08);
+      color: #ef4444;
+    }
+    .rc-btn-danger:hover {
+      background: rgba(239, 68, 68, 0.16);
+    }
+
+    /* Main Workspace: 252px Left Drawer + Clean Fluid Canvas */
     .rc-workspace {
       display: grid;
-      grid-template-columns: 250px minmax(0, 1fr);
-      gap: 24px;
+      grid-template-columns: 252px minmax(0, 1fr);
+      gap: 28px;
       padding-top: 24px;
       align-items: start;
     }
+
+    /* Left Navigation Drawer (Google Admin Pill Style) */
     .rc-sidebar {
-      display: grid;
+      display: flex;
+      flex-direction: column;
       gap: 16px;
       position: sticky;
-      top: 84px;
+      top: 138px;
     }
     .rc-sidebar__group {
       background: var(--r-surface);
       border: 1px solid var(--r-line);
-      border-radius: 14px;
-      padding: 12px;
+      border-radius: 16px;
+      padding: 12px 10px;
     }
     .rc-sidebar__label {
-      margin: 0 0 8px;
-      padding: 0 8px;
-      font: 700 10px/1.2 var(--r-mono);
-      letter-spacing: 0.14em;
+      margin: 4px 0 6px;
+      padding: 0 12px;
+      font: 700 10.5px/1.2 var(--r-sans, system-ui, sans-serif);
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       color: var(--r-muted);
     }
     .rc-nav {
-      display: grid;
-      gap: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
     .rc-nav__btn {
       width: 100%;
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 10px 12px;
-      border-radius: 10px;
-      border: 1px solid transparent;
+      gap: 11px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 0;
       background: transparent;
       color: var(--r-muted);
-      font: 600 13px/1.2 var(--r-sans);
+      font: 500 13.5px/1.25 var(--r-sans, system-ui, sans-serif);
       text-align: left;
       cursor: pointer;
-      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      transition: background 0.14s ease, color 0.14s ease;
     }
+    .rc-nav__btn svg { flex-shrink: 0; opacity: 0.85; }
     .rc-nav__btn:hover {
-      background: var(--r-bg);
+      background: var(--r-bg-2);
       color: var(--r-text);
     }
     .rc-nav__btn.is-active {
-      background: var(--r-bg);
+      background: color-mix(in srgb, var(--r-accent) 14%, transparent);
       color: var(--r-accent);
-      border-color: var(--r-accent);
       font-weight: 700;
     }
+    .rc-nav__btn.is-active svg { opacity: 1; }
     .rc-nav__pill {
       margin-left: auto;
-      font: 700 10px/1 var(--r-mono);
-      padding: 3px 7px;
+      font: 700 10.5px/1 var(--r-mono);
+      padding: 3px 8px;
       border-radius: 999px;
-      background: var(--r-surface);
-      border: 1px solid var(--r-line);
-      color: var(--r-text);
+      background: var(--r-bg-2);
+      color: var(--r-muted);
     }
     .rc-nav__btn.is-active .rc-nav__pill {
-      border-color: var(--r-accent);
+      background: color-mix(in srgb, var(--r-accent) 20%, transparent);
       color: var(--r-accent);
     }
+
     .rc-sidebar__card {
       background: var(--r-surface);
       border: 1px solid var(--r-line);
-      border-radius: 14px;
-      padding: 14px;
-      display: grid;
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
       gap: 12px;
     }
     .rc-sidebar__card-head {
       display: flex;
       align-items: center;
       gap: 8px;
-      font: 700 10px/1 var(--r-mono);
-      letter-spacing: 0.12em;
+      font: 700 10.5px/1 var(--r-mono);
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--r-accent);
     }
     .rc-sidebar__dl {
       margin: 0;
-      display: grid;
-      gap: 6px;
-      font: 500 12px/1.3 var(--r-mono);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font: 500 12px/1.3 var(--r-sans, system-ui, sans-serif);
     }
     .rc-sidebar__dl div {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       gap: 8px;
-      padding-bottom: 5px;
-      border-bottom: 1px dashed var(--r-line);
+      padding-bottom: 7px;
+      border-bottom: 1px solid var(--r-line);
     }
-    .rc-sidebar__dl dt {
-      color: var(--r-muted);
-    }
-    .rc-sidebar__dl dd {
-      margin: 0;
-      color: var(--r-text);
-      font-weight: 700;
-    }
+    .rc-sidebar__dl div:last-child { border-bottom: 0; padding-bottom: 0; }
+    .rc-sidebar__dl dt { color: var(--r-muted); }
+    .rc-sidebar__dl dd { margin: 0; color: var(--r-text); font-weight: 600; font-family: var(--r-mono); font-size: 11.5px; }
+
+    /* Main Content Area */
     .rc-main {
       min-width: 0;
-      display: grid;
+      display: flex;
+      flex-direction: column;
       gap: 20px;
     }
+    .rc-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      min-width: 0;
+    }
+    .rc-panel.hidden {
+      display: none !important;
+    }
+
     .rc-section-head {
       display: flex;
       flex-wrap: wrap;
@@ -1142,10 +1236,18 @@ const totalCircuits = catalog.circuits?.length || 128;
       padding-bottom: 16px;
       border-bottom: 1px solid var(--r-line);
     }
+    .rc-section-head .r-h3 {
+      font-family: var(--r-sans, system-ui, sans-serif);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      text-transform: none;
+      margin: 4px 0 0;
+    }
     .rc-muted {
       margin: 4px 0 0;
       color: var(--r-muted);
-      font-size: 13px;
+      font-size: 13.5px;
       line-height: 1.5;
     }
     .rc-btn-row {
@@ -1154,25 +1256,28 @@ const totalCircuits = catalog.circuits?.length || 128;
       align-items: center;
       gap: 8px;
     }
+
+    /* Clean 4-Column KPI Row */
     .rc-kpi-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 14px;
+      gap: 16px;
     }
     .rc-kpi-card {
       background: var(--r-surface);
       border: 1px solid var(--r-line);
-      border-radius: 14px;
-      padding: 18px;
+      border-radius: 16px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      gap: 8px;
-      transition: border-color 0.2s, transform 0.2s;
+      gap: 10px;
+      min-width: 0;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
     .rc-kpi-card:hover {
       border-color: var(--r-accent);
-      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
     }
     .rc-kpi-card__top {
       display: flex;
@@ -1181,64 +1286,289 @@ const totalCircuits = catalog.circuits?.length || 128;
       gap: 8px;
     }
     .rc-kpi-tag {
-      font: 700 10px/1.2 var(--r-mono);
-      letter-spacing: 0.12em;
+      font: 600 11px/1.2 var(--r-sans, system-ui, sans-serif);
+      letter-spacing: 0.04em;
       text-transform: uppercase;
       color: var(--r-muted);
     }
     .rc-kpi-val {
-      font: 800 clamp(26px, 3vw, 34px)/1.05 var(--r-display);
+      font: 700 28px/1.1 var(--r-sans, system-ui, sans-serif);
+      font-variant-numeric: tabular-nums;
       color: var(--r-text);
-      letter-spacing: 0.01em;
+      letter-spacing: -0.02em;
     }
     .rc-kpi-sub {
       margin: 0;
-      font-size: 12px;
-      line-height: 1.45;
+      font-size: 12.5px;
+      line-height: 1.4;
       color: var(--r-muted);
     }
     .rc-kpi-link {
-      margin-top: 4px;
+      margin-top: 2px;
       padding: 0;
       border: 0;
       background: transparent;
       color: var(--r-accent);
-      font: 700 11px/1.2 var(--r-mono);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
+      font: 600 12.5px/1.2 var(--r-sans, system-ui, sans-serif);
       text-align: left;
       cursor: pointer;
     }
-    .rc-kpi-link:hover {
-      text-decoration: underline;
-    }
+    .rc-kpi-link:hover { text-decoration: underline; }
+
+    /* Google Material 3 Cards */
     .rc-card {
       background: var(--r-surface);
       border: 1px solid var(--r-line);
-      border-radius: 14px;
-      padding: 20px;
-      display: grid;
+      border-radius: 16px;
+      padding: 22px 24px;
+      display: flex;
+      flex-direction: column;
       gap: 16px;
+      min-width: 0;
+      overflow: hidden;
     }
     .rc-card__head {
       display: flex;
       flex-wrap: wrap;
-      align-items: flex-start;
+      align-items: center;
       justify-content: space-between;
       gap: 12px;
     }
     .rc-card__title {
       margin: 0;
-      font: 800 20px/1.15 var(--r-display);
-      text-transform: uppercase;
-      letter-spacing: 0.02em;
+      font: 700 16px/1.3 var(--r-sans, system-ui, sans-serif);
+      letter-spacing: -0.01em;
+      text-transform: none;
       color: var(--r-text);
     }
+
+    /* Two-column summary: only side-by-side on wide screens, never squished */
     .rc-two-col {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
+      gap: 20px;
+      align-items: start;
     }
+
+    /* Clean Google Admin Data Tables (zero squished columns or broken rows) */
+    .rc-shell .r-scroll {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border: 1px solid var(--r-line);
+      border-radius: 12px;
+      background: var(--r-surface);
+    }
+    .rc-shell .r-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      text-align: left;
+    }
+    .rc-shell .r-table thead th {
+      padding: 12px 16px;
+      font: 600 11.5px/1.2 var(--r-sans, system-ui, sans-serif);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--r-muted);
+      background: var(--r-bg-2);
+      border-bottom: 1px solid var(--r-line);
+      white-space: nowrap;
+    }
+    .rc-shell .r-table tbody td {
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--r-line);
+      color: var(--r-text);
+      vertical-align: middle;
+    }
+    .rc-shell .r-table tbody tr:last-child td {
+      border-bottom: 0;
+    }
+    .rc-shell .r-table tbody tr:hover td {
+      background: color-mix(in srgb, var(--r-accent) 4%, transparent);
+    }
+    .rc-shell .r-table td.text-right,
+    .rc-shell .r-table th.text-right {
+      text-align: right;
+      white-space: nowrap;
+    }
+    .rc-shell .r-table code {
+      font-family: var(--r-mono);
+      font-size: 12px;
+      color: var(--r-accent);
+      background: var(--r-bg-2);
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    /* Clean Google Admin Button, Filter & Field System (overrides racing.css display uppercase) */
+    .rc-shell .r-kicker {
+      font: 700 11px/1.2 var(--r-sans, system-ui, sans-serif);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--r-accent);
+      margin: 0;
+    }
+    .rc-shell .r-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 36px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid var(--r-line);
+      background: var(--r-surface);
+      color: var(--r-text);
+      font: 600 12.5px/1 var(--r-sans, system-ui, sans-serif);
+      letter-spacing: 0;
+      text-transform: none;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+    .rc-shell .r-btn:hover {
+      background: var(--r-bg-2);
+      border-color: var(--r-accent);
+      color: var(--r-accent);
+      box-shadow: none;
+    }
+    .rc-shell .r-btn--sm {
+      min-height: 32px;
+      padding: 0 12px;
+      font-size: 12px;
+    }
+    .rc-shell .r-btn--primary {
+      border-color: transparent;
+      background: var(--r-accent);
+      color: var(--r-accent-ink, #04130d);
+      font-weight: 700;
+    }
+    .rc-shell .r-btn--primary:hover {
+      background: var(--r-accent);
+      color: var(--r-accent-ink, #04130d);
+      filter: brightness(1.06);
+      box-shadow: none;
+    }
+    .rc-shell .g-views {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .rc-shell .g-views button {
+      min-height: 34px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid var(--r-line);
+      background: var(--r-surface);
+      color: var(--r-muted);
+      font: 600 12.5px/1 var(--r-sans, system-ui, sans-serif);
+      letter-spacing: 0;
+      text-transform: none;
+      cursor: pointer;
+      transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+    }
+    .rc-shell .g-views button:hover {
+      background: var(--r-bg-2);
+      color: var(--r-text);
+    }
+    .rc-shell .g-views button.is-on {
+      background: color-mix(in srgb, var(--r-accent) 16%, transparent);
+      border-color: color-mix(in srgb, var(--r-accent) 55%, transparent);
+      color: var(--r-accent);
+      font-weight: 700;
+    }
+    .rc-shell .g-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+    }
+    .rc-shell .g-field label {
+      font: 600 12px/1.2 var(--r-sans, system-ui, sans-serif);
+      color: var(--r-muted);
+    }
+
+    /* Google Admin Row Action Menu (⋮) & Floating Popover */
+    .rc-row-actions {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+      flex-wrap: nowrap;
+    }
+    .rc-menu-btn {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      border-radius: 999px;
+      border: 1px solid var(--r-line);
+      background: var(--r-surface);
+      color: var(--r-muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+      transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+    }
+    .rc-menu-btn:hover,
+    .rc-menu-btn[aria-expanded="true"] {
+      background: var(--r-bg-2);
+      border-color: var(--r-accent);
+      color: var(--r-text);
+    }
+    .rc-action-popover {
+      position: fixed;
+      z-index: 120;
+      min-width: 215px;
+      padding: 6px;
+      border-radius: 12px;
+      background: var(--r-surface);
+      border: 1px solid var(--r-line);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.24);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .rc-action-popover.hidden {
+      display: none !important;
+    }
+    .rc-action-popover__item {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 11px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--r-text);
+      font: 500 12.5px/1.2 var(--r-sans, system-ui, sans-serif);
+      text-align: left;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .rc-action-popover__item:hover {
+      background: var(--r-bg-2);
+    }
+    .rc-action-popover__item--ok {
+      color: var(--r-accent);
+    }
+    .rc-action-popover__item--danger {
+      color: #ef4444;
+    }
+    .rc-action-popover__item--danger:hover {
+      background: rgba(239, 68, 68, 0.1);
+    }
+    .rc-action-popover__sep {
+      height: 1px;
+      background: var(--r-line);
+      margin: 4px 6px;
+    }
+
+    /* Badges & Avatars */
     .rc-badge {
       display: inline-flex;
       align-items: center;
@@ -1246,25 +1576,26 @@ const totalCircuits = catalog.circuits?.length || 128;
       padding: 4px 10px;
       border-radius: 999px;
       border: 1px solid var(--r-line);
-      background: var(--r-bg);
+      background: var(--r-bg-2);
       color: var(--r-text);
-      font: 700 10px/1.1 var(--r-mono);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
+      font: 600 11px/1.1 var(--r-sans, system-ui, sans-serif);
       white-space: nowrap;
     }
     .rc-badge--live,
     .rc-badge--ok {
-      border-color: var(--r-accent);
+      border-color: color-mix(in srgb, var(--r-accent) 45%, transparent);
+      background: color-mix(in srgb, var(--r-accent) 12%, transparent);
       color: var(--r-accent);
     }
     .rc-badge--warn {
-      border-color: var(--m-warn, #E8B04A);
-      color: var(--m-warn, #E8B04A);
+      border-color: rgba(245, 158, 11, 0.45);
+      background: rgba(245, 158, 11, 0.12);
+      color: #f59e0b;
     }
     .rc-badge--err {
-      border-color: var(--m-err, #f87171);
-      color: var(--m-err, #f87171);
+      border-color: rgba(239, 68, 68, 0.45);
+      background: rgba(239, 68, 68, 0.12);
+      color: #ef4444;
     }
     .rc-dot {
       width: 7px;
@@ -1272,57 +1603,76 @@ const totalCircuits = catalog.circuits?.length || 128;
       border-radius: 50%;
       background: var(--r-accent);
       display: inline-block;
+      flex-shrink: 0;
     }
     .rc-user-cell {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 11px;
+      min-width: 180px;
     }
     .rc-avatar {
-      min-width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      background: var(--r-bg);
-      border: 1px solid var(--r-accent);
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--r-accent) 14%, transparent);
       color: var(--r-accent);
-      font: 800 13px/1 var(--r-mono);
+      font: 700 12px/1 var(--r-mono);
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 0 6px;
+      flex-shrink: 0;
     }
     .rc-strong {
-      font-weight: 700;
+      font-weight: 600;
       color: var(--r-text);
+      overflow-wrap: anywhere;
+    }
+    .rc-user-cell .rc-strong,
+    .rc-nec-card .rc-strong {
+      white-space: nowrap;
     }
     .rc-mono-sub {
-      font: 500 11px/1.35 var(--r-mono);
+      font: 500 11.5px/1.35 var(--r-mono);
       color: var(--r-muted);
     }
-    .rc-accent {
-      color: var(--r-accent);
-    }
+    .rc-accent { color: var(--r-accent); }
+
+    /* Clean Lists (BoP & Activity) */
     .rc-check-list,
     .rc-activity-list {
       list-style: none;
       margin: 0;
       padding: 0;
-      display: grid;
-      gap: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
     .rc-check-list li,
     .rc-activity-list li {
       display: flex;
-      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
-      padding: 10px 12px;
-      border-radius: 10px;
-      background: var(--r-bg);
+      gap: 12px;
+      padding: 11px 14px;
+      border-radius: 12px;
+      background: var(--r-bg-2);
       border: 1px solid var(--r-line);
       font-size: 13px;
     }
+    .rc-check-list li > span,
+    .rc-activity-list li > div {
+      flex: 1 1 auto;
+      min-width: 0;
+      line-height: 1.4;
+    }
+    .rc-check-list li > strong {
+      flex-shrink: 0;
+      white-space: nowrap;
+      font-size: 12.5px;
+    }
+
+    /* Toolbars, Inputs & Forms inside Admin */
     .rc-toolbar {
       display: flex;
       flex-wrap: wrap;
@@ -1331,9 +1681,43 @@ const totalCircuits = catalog.circuits?.length || 128;
       gap: 12px;
     }
     .rc-search-inline {
-      flex: 1 1 240px;
-      max-width: 360px;
+      flex: 1 1 260px;
+      max-width: 380px;
     }
+    .rc-shell .g-search,
+    .rc-shell select,
+    .rc-shell input[type="email"],
+    .rc-shell input[type="text"],
+    .rc-shell input[type="search"],
+    .rc-shell textarea {
+      border-radius: 10px;
+      border: 1px solid var(--r-line);
+      background: var(--r-bg-2);
+      color: var(--r-text);
+      font-size: 13px;
+      padding: 9px 12px;
+    }
+    .rc-shell .rc-search-input {
+      border: 0 !important;
+      background: transparent !important;
+      padding: 0 !important;
+    }
+
+    /* Quick Credential Reset Bar */
+    .rc-quick-reset-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .rc-quick-reset-inputs {
+      width: 100%;
+      max-width: 520px;
+    }
+    .rc-quick-reset-inputs .g-search {
+      width: 100%;
+    }
+
+    /* Simulator, BoP & NEC Grids */
     .rc-sim-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1345,13 +1729,13 @@ const totalCircuits = catalog.circuits?.length || 128;
       align-items: center;
       justify-content: space-between;
       gap: 14px;
-      padding: 16px;
+      padding: 16px 18px;
       border-radius: 12px;
-      background: var(--r-bg);
-      border: 1px solid var(--r-accent);
+      background: var(--r-bg-2);
+      border: 1px solid color-mix(in srgb, var(--r-accent) 50%, transparent);
     }
     .rc-sim-filename {
-      font: 800 clamp(18px, 2.4vw, 24px)/1.2 var(--r-mono);
+      font: 700 clamp(16px, 2vw, 22px)/1.2 var(--r-mono);
       color: var(--r-accent);
       margin-top: 4px;
       word-break: break-all;
@@ -1359,21 +1743,22 @@ const totalCircuits = catalog.circuits?.length || 128;
     .rc-bop-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
+      gap: 12px;
     }
     .rc-bop-item {
-      padding: 12px;
-      border-radius: 10px;
-      background: var(--r-bg);
+      padding: 13px 14px;
+      border-radius: 12px;
+      background: var(--r-bg-2);
       border: 1px solid var(--r-line);
-      display: grid;
+      display: flex;
+      flex-direction: column;
       gap: 4px;
     }
     .rc-bop-item__top {
       display: flex;
       justify-content: space-between;
       gap: 8px;
-      font: 700 11px/1.2 var(--r-mono);
+      font: 600 11px/1.2 var(--r-mono);
       color: var(--r-muted);
     }
     .rc-bop-item__val {
@@ -1382,24 +1767,22 @@ const totalCircuits = catalog.circuits?.length || 128;
     }
     .rc-nec-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       gap: 10px;
     }
     .rc-nec-card {
-      padding: 12px 14px;
-      border-radius: 10px;
-      background: var(--r-bg);
+      padding: 13px 14px;
+      border-radius: 12px;
+      background: var(--r-bg-2);
       border: 1px solid var(--r-line);
       text-decoration: none;
       color: var(--r-text);
-      display: grid;
+      display: flex;
+      flex-direction: column;
       gap: 6px;
-      transition: border-color 0.2s, transform 0.15s;
+      transition: border-color 0.15s ease;
     }
-    .rc-nec-card:hover {
-      border-color: var(--r-accent);
-      transform: translateY(-2px);
-    }
+    .rc-nec-card:hover { border-color: var(--r-accent); }
     .rc-nec-card__top {
       display: flex;
       align-items: center;
@@ -1407,15 +1790,18 @@ const totalCircuits = catalog.circuits?.length || 128;
       gap: 6px;
     }
     .rc-nec-card__codes {
-      font: 700 10px/1.2 var(--r-mono);
+      font: 700 10.5px/1.2 var(--r-mono);
       color: var(--r-accent);
     }
+
+    /* Credentials & Email Studio Modals */
     .rc-cred-box {
-      padding: 14px;
-      border-radius: 10px;
-      background: var(--r-bg);
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: var(--r-bg-2);
       border: 1px solid var(--r-accent);
-      display: grid;
+      display: flex;
+      flex-direction: column;
       gap: 6px;
     }
     .rc-cred-secret {
@@ -1428,7 +1814,7 @@ const totalCircuits = catalog.circuits?.length || 128;
     }
     .rc-email-preview {
       border: 1px solid var(--r-line);
-      border-radius: 12px;
+      border-radius: 14px;
       background: var(--r-bg);
       overflow: hidden;
     }
@@ -1437,7 +1823,8 @@ const totalCircuits = catalog.circuits?.length || 128;
       border-bottom: 1px solid var(--r-line);
       background: var(--r-surface);
       font-size: 12px;
-      display: grid;
+      display: flex;
+      flex-direction: column;
       gap: 4px;
     }
     .rc-email-preview__body {
@@ -1447,20 +1834,6 @@ const totalCircuits = catalog.circuits?.length || 128;
       color: var(--r-text);
       white-space: pre-wrap;
       word-break: break-word;
-    }
-    .rc-quick-reset-bar {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-    .rc-quick-reset-inputs {
-      flex: 1 1 260px;
-      min-width: 240px;
-    }
-    .rc-quick-reset-inputs .g-search {
-      width: 100%;
     }
     .rc-email-visual-card {
       padding: 18px;
@@ -1476,28 +1849,43 @@ const totalCircuits = catalog.circuits?.length || 128;
       background: var(--r-surface);
       user-select: none;
     }
-    .rc-email-raw-details summary:hover {
-      color: var(--r-accent);
+    .rc-email-raw-details summary:hover { color: var(--r-accent); }
+
+    /* Responsive Breakpoints (Google Admin clean stacking) */
+    @media (max-width: 1200px) {
+      .rc-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .rc-two-col { grid-template-columns: 1fr; }
     }
     @media (max-width: 1024px) {
+      .rc-topbar__inner {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .rc-topbar__actions {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+      }
       .rc-workspace {
         grid-template-columns: 1fr;
+        gap: 20px;
       }
       .rc-sidebar {
         position: static;
       }
       .rc-nav {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 6px;
       }
-      .rc-kpi-grid,
       .rc-sim-grid,
       .rc-bop-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
     @media (max-width: 640px) {
+      .rc-container { padding: 0 14px; }
+      .rc-card { padding: 16px; }
       .rc-kpi-grid,
-      .rc-two-col,
       .rc-sim-grid,
       .rc-bop-grid {
         grid-template-columns: 1fr;
@@ -1505,6 +1893,8 @@ const totalCircuits = catalog.circuits?.length || 128;
     }
   </style>
 
+  <div id="rcRowActionPopover" class="rc-action-popover hidden" role="menu"></div>
+
   <script is:inline src="/assets/js/driver-ids.js?v=t350"></script>
-  <script is:inline src="/assets/js/admin.js?v=t352"></script>
+  <script is:inline src="/assets/js/admin.js?v=t353"></script>
 </Layout>
