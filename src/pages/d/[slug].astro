@@ -64,22 +64,23 @@ const CAR_SLUG_MAP: Record<string, string> = {
 type CatalogRow = [number, string, string, string, string, string, string, number];
 const allRows = (catalog.initial_rows || []) as CatalogRow[];
 
-const driverSetups = (driver.topCars || []).map((carItem) => {
+const driverSetups = (driver.topCars || []).slice(0, 3).map((carItem) => {
   const carKey = CAR_SLUG_MAP[carItem.name] || "";
   const matching = allRows.filter((r) => r[1] === carKey && isRoadTrack(r[4]));
-  const tracks = Array.from(new Set(matching.map((r) => r[4]))).slice(0, 3);
-  const qualyRow = matching.find((r) => String(r[6]).toLowerCase() === "qualy" && !String(r[5]).includes("Safe"));
+  const tracks = Array.from(new Set(matching.map((r) => r[4]))).slice(0, 2);
   const endurRow = matching.find((r) => String(r[6]).toLowerCase() === "race" && String(r[5]).includes("Endur") && !String(r[5]).includes("Safe"));
   const sprintRow = matching.find((r) => String(r[6]).toLowerCase() === "race" && String(r[5]).includes("Sprint") && !String(r[5]).includes("Safe"));
-  const picked = [qualyRow, endurRow, sprintRow].filter((r): r is CatalogRow => Boolean(r));
-  const finalRows = picked.length === 3 ? picked : matching.slice(0, 3);
-  const sampleFiles = finalRows.map((r) => ({
-    season: r[2],
-    week: r[3],
-    track: r[4],
-    file: r[5],
-    type: r[6],
-  }));
+  const qualyRow = matching.find((r) => String(r[6]).toLowerCase() === "qualy" && !String(r[5]).includes("Safe"));
+  const bestRow = endurRow || sprintRow || qualyRow || matching[0];
+  const sampleFiles = bestRow
+    ? [{
+        season: bestRow[2],
+        week: bestRow[3],
+        track: bestRow[4],
+        file: bestRow[5],
+        type: bestRow[6],
+      }]
+    : [];
   return {
     carName: carItem.name,
     carKey,
@@ -226,44 +227,63 @@ const personSchema = {
         <section class="d-setups d-reveal" id="setups" aria-labelledby="setupsTitle">
           <div class="d-section-head">
             <div>
-              <p class="r-kicker">Setup Vault · Sports Car</p>
-              <h2 id="setupsTitle" class="d-block__title">Setups del piloto (.sto)</h2>
-              <p class="r-meta">Archivos del catálogo para los coches de {driver.name}. La descarga está en el Garage, con sesión.</p>
+              <p class="r-kicker">Setup Vault · Top Destacados</p>
+              <h2 id="setupsTitle" class="d-block__title">Setups destacados ({driverSetups.length})</h2>
+              <p class="r-meta">Solo los setups que mejor funcionan para {driver.name}, con sensaciones, delta vs Top Split y notas desde MMT Sync.</p>
             </div>
-            <a href="/garage" class="r-link">Open Setup Vault →</a>
+            <a href="/garage" class="r-link">Ver catálogo completo →</a>
           </div>
-          <div class="d-setups__grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch">
-            {driverSetups.map((item) => (
+          <div class="d-setups__grid grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
+            {driverSetups.map((item) => {
+              const topFile = item.sampleFiles[0];
+              return (
               <article class="d-setup-card flex flex-col justify-between h-full">
                 <div class="d-setup-card__content flex flex-col gap-3">
                   <div class="d-setup-card__top">
                     <h3 class="d-setup-card__title">{item.carName}</h3>
-                    <span class="d-setup-card__hours"><span data-approx="h" data-n={item.hours}>{formatoAprox(item.hours, "h", loc)}</span> on track</span>
+                    <span class="d-setup-card__hours"><span data-approx="h" data-n={item.hours}>{formatoAprox(item.hours, "h", loc)}</span> en pista</span>
                   </div>
-                  {item.sampleFiles.length > 0 ? (
+                  {topFile ? (
                     <ul class="d-setup-card__files">
-                      {item.sampleFiles.map((f) => (
-                        <li>
-                          <div class="d-setup-file__row">
-                            <span class="sto-type" data-type={String(f.type || "").toUpperCase()}>{f.type}</span>
-                            <code title={f.file}>{f.file}</code>
-                          </div>
-                          <span class="d-setup-file__meta">{f.season} · {f.track}</span>
-                        </li>
-                      ))}
+                      <li>
+                        <div class="d-setup-file__row">
+                          <span class="sto-type" data-type={String(topFile.type || "").toUpperCase()}>{topFile.type}</span>
+                          <code title={topFile.file}>{topFile.file}</code>
+                        </div>
+                        <span class="d-setup-file__meta">{topFile.season} · {topFile.track}</span>
+                      </li>
                     </ul>
                   ) : (
-                    <p class="r-meta">Available in the general Setup Vault catalog ({item.carKey || "GT"}).</p>
+                    <p class="r-meta">Disponible en el catálogo general del Garage ({item.carKey || "GT"}).</p>
                   )}
+                  <div
+                    class="rounded-xl border border-[var(--r-line)] bg-[var(--r-bg-2)] p-2.5"
+                    data-setup-rating-slot
+                    data-car-key={item.carKey}
+                    data-setup-file={topFile?.file || ""}
+                  >
+                    <span class="text-[11px] font-mono text-[var(--r-muted)]">Cargando valoraciones de pista…</span>
+                  </div>
                 </div>
-                <div class="d-setup-card__footer">
+                <div class="d-setup-card__footer flex items-center justify-between gap-2 flex-wrap">
                   <a class="r-link d-setup-card__cta" href={item.carKey ? `/garage?car=${encodeURIComponent(item.carKey)}` : "/garage"}>
-                    <span>Browse {item.carName} setups</span>
+                    <span>Ver más en Garage</span>
                     <span aria-hidden="true">→</span>
                   </a>
+                  <button
+                    type="button"
+                    data-open-setup-review
+                    data-setup={topFile?.file || item.carName}
+                    data-car={item.carKey}
+                    data-track={topFile?.track || ""}
+                    class="px-2.5 py-1 rounded-lg border border-[var(--r-line)] bg-[var(--r-bg-2)] hover:border-[var(--r-accent)] text-[11px] font-mono font-bold text-[var(--r-text)] cursor-pointer transition"
+                  >
+                    ⭐ Valorar
+                  </button>
                 </div>
               </article>
-            ))}
+              );
+            })}
           </div>
         </section>
       )}
@@ -369,6 +389,7 @@ const personSchema = {
   </section>
 
   <script is:inline src="/assets/js/driver-page.js?v=t295" defer></script>
+  <script is:inline src="/assets/js/setup-reviews.js?v=1" defer></script>
   <script is:inline>
     (function () {
       var url = location.href;

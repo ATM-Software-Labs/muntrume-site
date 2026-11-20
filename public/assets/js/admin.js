@@ -1667,7 +1667,39 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
+async function runStewardBotSweep() {
+  const btn = document.getElementById("btnStewardBotSweep");
+  const prev = btn ? btn.textContent : "";
+  if (btn) { btn.disabled = true; btn.textContent = "🛡 Analizando comentarios…"; }
+  try {
+    const token = getVaultToken();
+    const res = await fetch(`${WORKER_URL}/api/admin/moderation/sweep`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({}),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.success) {
+      showRcNotice(
+        "MMT Steward Bot completado",
+        `Revisados: ${data.scanned ?? 0} · Limpiados: ${data.cleaned ?? 0} · Retirados: ${data.rejected ?? 0}.`,
+        "success"
+      );
+    } else {
+      showRcNotice("MMT Steward Bot", data.error || "Requiere sesión de administrador activa.", "warning");
+    }
+  } catch (e) {
+    showRcNotice("Error de conexión", "No se pudo contactar con el bot moderador.", "error");
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = prev || "🛡 Pasar Steward Bot"; }
+  }
+}
+
 if (typeof window !== "undefined") {
+  window.runStewardBotSweep = runStewardBotSweep;
   window.verifyAdminSession = verifyAdminSession;
   window.secureAdminLogout = secureAdminLogout;
   window.switchAdminTab = switchAdminTab;

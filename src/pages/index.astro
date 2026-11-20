@@ -136,7 +136,6 @@ const appVersion = desktopPkg.version;
           </button>
         </div>
 
-        <p class="r-kicker">MMT · Sant Andreu, Barcelona</p>
         <h1 id="heroTitle" class="r-h1 g-hero-title">Muntrume Motorsport</h1>
         <p class="r-lead" data-i18n="home.lead">Sim racing con criterio de ingeniería. Equipo oficial de iRacing en resistencia y sprint: telemetría, setups .sto y trabajo de equipo en Sports Car, GT3 y GT4.</p>
 
@@ -159,68 +158,6 @@ const appVersion = desktopPkg.version;
           ))}
         </div>
       </div>
-
-      <!-- Interactive Google-Hardware-Style Telemetry Pod -->
-      <aside class="g-telemetry-pod" aria-label="Telemetría en vivo Muntrume Motorsport">
-        <div class="g-pod-head">
-          <div class="g-pod-status">
-            <span class="g-live-dot" aria-hidden="true"></span>
-            <span class="g-pod-tag">IRSDK SHARED MEMORY · 60 HZ</span>
-          </div>
-          <span class="g-pod-badge" id="heroPodTrack">SPA-FRANCORCHAMPS · GT3</span>
-        </div>
-
-        <div class="g-pod-delta">
-          <div class="g-pod-delta__top">
-            <span>SESSION BEST Δ</span>
-            <strong id="heroPodDelta">-0.24s</strong>
-          </div>
-          <div class="g-pod-delta__bar">
-            <span class="g-pod-delta__mid"></span>
-            <div class="g-pod-delta__fill" id="heroPodDeltaFill" style="left:22%;width:28%"></div>
-          </div>
-        </div>
-
-        <div class="g-pod-cockpit">
-          <div class="g-pod-trace-wrap">
-            <canvas id="heroTelemetryCanvas" width="320" height="88" aria-label="Curva de acelerador y freno en tiempo real"></canvas>
-            <div class="g-pod-trace-legend">
-              <span><i style="background:#00E699"></i>THR</span>
-              <span><i style="background:#EF4444"></i>BRK</span>
-              <span><i style="background:#38BDF8"></i>RPM</span>
-            </div>
-          </div>
-
-          <div class="g-pod-pedals" aria-hidden="true">
-            <div class="g-pod-pedal">
-              <div class="g-pod-pedal__track"><div id="heroBrkBar" class="g-pod-pedal__fill g-pod-pedal__fill--brk" style="height:8%"></div></div>
-              <span>B</span>
-            </div>
-            <div class="g-pod-pedal">
-              <div class="g-pod-pedal__track"><div id="heroThrBar" class="g-pod-pedal__fill g-pod-pedal__fill--thr" style="height:94%"></div></div>
-              <span>T</span>
-            </div>
-          </div>
-
-          <div class="g-pod-gear">
-            <span class="g-pod-gear__lbl">GEAR</span>
-            <strong class="g-pod-gear__val" id="heroGearVal">5</strong>
-            <span class="g-pod-speed"><b id="heroSpeedVal">246</b> km/h</span>
-          </div>
-        </div>
-
-        <div class="g-pod-setup-row">
-          <div class="g-pod-setup-code">
-            <span class="g-pod-setup-kicker">SETUP ACTIVO (.STO)</span>
-            <code id="heroSetupCode">MMT_F296_SPA_END_V2.sto</code>
-          </div>
-          <div class="g-pod-setup-pills">
-            <span>2.84 L/lap</span>
-            <span>84°C FL</span>
-            <a href="/overlay/">Probar HUD →</a>
-          </div>
-        </div>
-      </aside>
     </div>
   </section>
 
@@ -396,6 +333,86 @@ const appVersion = desktopPkg.version;
           <p>Capturas reales en pista exportadas a <code>.JPG</code> nativo y sincronizador multi-monitor para Windows sin permisos de administrador (<code>user32.dll</code>) con 0 ms de desfase entre pantallas.</p>
           <div class="g-bento-actions" style="margin-top:auto">
             <a href="/wallpapers/" class="r-link">Descargar packs 4K →</a>
+          </div>
+        </article>
+
+        <!-- BENTO 6: TELEMETRÍA EN VIVO 60 HZ (MOVED FROM HERO TO ECOSYSTEM SHOWCASE) -->
+        <article class="g-bento-card g-bento-card--full" data-g-reveal>
+          <div class="g-bento-split g-bento-split--telemetry">
+            <div class="g-bento-copy">
+              <div class="g-bento-badges">
+                <span class="g-chip-accent">IRSDK Shared Memory</span>
+                <span class="g-chip-muted">60 Hz En Vivo</span>
+                <span class="g-chip-muted">Feedback Post-Stint</span>
+              </div>
+              <h3 class="r-h3">Telemetría en directo y valoración de setups</h3>
+              <p>Lectura directa de acelerador, freno, marcha, delta de vuelta y setup <code>.sto</code> activo desde la memoria compartida de iRacing. Al terminar tu tanda en <strong>MMT Sync</strong>, valora cómo se sintió el setup frente al mejor tiempo en Top Split y compártelo con el equipo en la web.</p>
+              <div class="g-bento-actions">
+                <a href="/overlay/" class="r-btn r-btn--primary r-btn--sm">Abrir Simulador HUD</a>
+                <a href="/garage/#valoraciones" class="r-btn r-btn--ghost r-btn--sm">Ver setups mejor valorados</a>
+              </div>
+            </div>
+
+            <aside class="g-telemetry-pod" aria-label="Telemetría en vivo Muntrume Motorsport">
+              <div class="g-pod-head">
+                <div class="g-pod-status">
+                  <span class="g-live-dot" aria-hidden="true"></span>
+                  <span class="g-pod-tag">IRSDK SHARED MEMORY · 60 HZ</span>
+                </div>
+                <span class="g-pod-badge" id="heroPodTrack">SPA-FRANCORCHAMPS · GT3</span>
+              </div>
+
+              <div class="g-pod-delta">
+                <div class="g-pod-delta__top">
+                  <span>SESSION BEST Δ</span>
+                  <strong id="heroPodDelta">-0.24s</strong>
+                </div>
+                <div class="g-pod-delta__bar">
+                  <span class="g-pod-delta__mid"></span>
+                  <div class="g-pod-delta__fill" id="heroPodDeltaFill" style="left:22%;width:28%"></div>
+                </div>
+              </div>
+
+              <div class="g-pod-cockpit">
+                <div class="g-pod-trace-wrap">
+                  <canvas id="heroTelemetryCanvas" width="320" height="88" aria-label="Curva de acelerador y freno en tiempo real"></canvas>
+                  <div class="g-pod-trace-legend">
+                    <span><i style="background:#00E699"></i>THR</span>
+                    <span><i style="background:#EF4444"></i>BRK</span>
+                    <span><i style="background:#38BDF8"></i>RPM</span>
+                  </div>
+                </div>
+
+                <div class="g-pod-pedals" aria-hidden="true">
+                  <div class="g-pod-pedal">
+                    <div class="g-pod-pedal__track"><div id="heroBrkBar" class="g-pod-pedal__fill g-pod-pedal__fill--brk" style="height:8%"></div></div>
+                    <span>B</span>
+                  </div>
+                  <div class="g-pod-pedal">
+                    <div class="g-pod-pedal__track"><div id="heroThrBar" class="g-pod-pedal__fill g-pod-pedal__fill--thr" style="height:94%"></div></div>
+                    <span>T</span>
+                  </div>
+                </div>
+
+                <div class="g-pod-gear">
+                  <span class="g-pod-gear__lbl">GEAR</span>
+                  <strong class="g-pod-gear__val" id="heroGearVal">5</strong>
+                  <span class="g-pod-speed"><b id="heroSpeedVal">246</b> km/h</span>
+                </div>
+              </div>
+
+              <div class="g-pod-setup-row">
+                <div class="g-pod-setup-code">
+                  <span class="g-pod-setup-kicker">SETUP ACTIVO (.STO)</span>
+                  <code id="heroSetupCode">MMT_F296_SPA_END_V2.sto</code>
+                </div>
+                <div class="g-pod-setup-pills">
+                  <span>2.84 L/lap</span>
+                  <span>84°C FL</span>
+                  <a href="/overlay/">Probar HUD →</a>
+                </div>
+              </div>
+            </aside>
           </div>
         </article>
       </div>
@@ -614,9 +631,21 @@ const appVersion = desktopPkg.version;
     }
     .g-hero-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1.2fr) minmax(320px, 430px);
-      gap: clamp(24px, 4vw, 48px);
+      grid-template-columns: minmax(0, 760px);
+      gap: clamp(20px, 3vw, 32px);
       align-items: end;
+    }
+    .g-bento-card--full {
+      grid-column: span 12;
+    }
+    .g-bento-split--telemetry {
+      grid-template-columns: minmax(0, 1fr) minmax(300px, 440px);
+      align-items: center;
+      gap: clamp(20px, 3vw, 36px);
+    }
+    @media (max-width: 900px) {
+      .g-bento-card--full { grid-column: span 12; }
+      .g-bento-split--telemetry { grid-template-columns: 1fr; }
     }
     .g-hero-copy {
       display: grid;

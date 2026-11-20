@@ -305,6 +305,24 @@ const garageSchema = {
     </div>
   </section>
 
+  <!-- VALORACIONES DE SETUPS DESDE MMT SYNC + MMT STEWARD BOT -->
+  <section class="r-section r-section--alt" id="valoraciones" aria-labelledby="valoracionesTitle">
+    <div class="r-wrap" style="display:grid;gap:18px">
+      <div class="r-head" style="margin-bottom:0">
+        <div>
+          <p class="r-kicker">Feedback Post-Stint · 🛡 MMT Steward Bot</p>
+          <h2 id="valoracionesTitle" class="r-h2">Valoraciones de pista &amp; Delta vs Top Split</h2>
+          <p class="r-lead" id="garageReviewsStat">Comentarios reales enviados desde MMT Sync y moderados automáticamente por nuestro bot.</p>
+        </div>
+        <button type="button" class="r-btn r-btn--primary" data-open-setup-review>
+          ⭐ Valorar un setup
+        </button>
+      </div>
+      <div id="garageReviewsFeed" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px"></div>
+    </div>
+  </section>
+  <script is:inline src="/assets/js/setup-reviews.js?v=1" defer></script>
+
   <style is:global>
     .g2-carcell { display: inline-flex; align-items: center; gap: 10px; }
     .g2-brand { display: inline-block; flex-shrink: 0; width: 22px; height: 22px; opacity: 0.96; }

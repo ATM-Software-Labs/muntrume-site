@@ -164,6 +164,7 @@ const totalCircuits = catalog.circuits?.length || 128;
               <p class="rc-muted">Supervisión unificada de pilotos oficiales, escrutinio BoP 26S4, catálogo MMT (.STO), paquetes semanales NEC VLN y correo institucional.</p>
             </div>
             <div class="rc-btn-row">
+              <button type="button" class="r-btn r-btn--sm" id="btnStewardBotSweep" onclick="runStewardBotSweep()">🛡 Pasar Steward Bot</button>
               <button type="button" class="r-btn r-btn--sm" onclick="openEmailPreviewModal('welcome')">✉️ Plantillas Correo</button>
               <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="openAddDriverModal()">+ Alta de Piloto</button>
             </div>

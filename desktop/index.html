@@ -270,6 +270,9 @@
                     <button type="button" data-nav="upload" class="mmt-btn-ghost h-10 px-3.5 rounded-xl border border-r-line bg-r-bg/70 hover:border-r-accent font-display font-extrabold uppercase tracking-wider text-xs cursor-pointer">
                       + Subir .sto
                     </button>
+                    <button type="button" data-open-setup-feedback class="mmt-btn-ghost h-10 px-3.5 rounded-xl border border-amber-400/40 bg-amber-400/10 hover:border-amber-400 text-amber-300 font-display font-extrabold uppercase tracking-wider text-xs cursor-pointer" title="Valora tu último setup y compártelo en muntru.me">
+                      ⭐ Valorar Setup
+                    </button>
                   </div>
                 </div>
 
@@ -581,6 +584,23 @@
                       <strong id="lsSetup" class="text-r-muted text-xs truncate block" title="Esperando telemetría">Esperando a iRacing</strong>
                     </div>
                   </div>
+                  <div class="pt-2 border-t border-r-line/50 flex items-center justify-between gap-2">
+                    <span class="text-[11px] font-mono text-r-muted">¿Cómo se sintió en pista?</span>
+                    <button type="button" data-open-setup-feedback class="px-3 py-1.5 rounded-lg bg-r-accent/15 border border-r-accent/45 hover:bg-r-accent/25 text-r-accent font-mono text-[11px] font-bold cursor-pointer transition">
+                      ⭐ Valorar Setup
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Post-Stint Proactive Feedback Prompt (shown automatically after >= 3 laps) -->
+                <div id="lsFeedbackPrompt" hidden class="rounded-2xl border border-r-accent/45 bg-r-accent/10 p-3.5 flex items-center justify-between gap-3">
+                  <div class="min-w-0">
+                    <p class="font-mono text-[10px] uppercase tracking-wider text-r-accent font-bold">Feedback Post-Stint</p>
+                    <p class="text-xs text-white font-semibold">¿Qué tal fue este setup vs Top Split? Comparte tus sensaciones en muntru.me.</p>
+                  </div>
+                  <button type="button" data-open-setup-feedback class="shrink-0 px-3 py-1.5 rounded-lg bg-r-accent text-r-ink font-mono text-xs font-extrabold cursor-pointer">
+                    Valorar →
+                  </button>
                 </div>
 
                 <!-- Live Results Big Cards -->
