@@ -1,7 +1,10 @@
 /**
- * Muntrume AI — Mini-Preview Copilot Widget (v3.1 — Clean Monochrome, Zero Emojis, Theme-Synced)
+ * Muntrume AI — Mini-Preview Copilot Widget (v4.0 — Calm Animated Pacing, Rich Formats, ai.muntru.me Handoff)
  */
-const API = "https://muntrume.atrumin16.workers.dev/api/ai";
+const API = (typeof location !== "undefined" && location.hostname === "ai.muntru.me")
+  ? "/api/ai"
+  : "https://muntrume.atrumin16.workers.dev/api/ai";
+const STUDIO_URL = "https://ai.muntru.me/";
 const HANDOFF_KEY = "muntrume_ai_handoff";
 
 const TIERS = [
@@ -11,28 +14,37 @@ const TIERS = [
 ];
 
 const CSS = `
-#mmChat{--bg:#111315;--hd:#0b0d0f;--sf:#1a1d21;--bd:rgba(255,255,255,.1);--tx:#f3f4f6;--mu:#9ca3af;--ac:#10b981;--acTx:#04130d;position:fixed;z-index:60;right:max(1rem,env(safe-area-inset-right));bottom:max(1rem,env(safe-area-inset-bottom));width:min(430px,calc(100vw - 2rem));height:min(620px,calc(100dvh - 2rem));display:flex;flex-direction:column;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:18px;box-shadow:0 24px 64px rgba(0,0,0,.5);overflow:hidden;font:13.5px/1.5 system-ui,-apple-system,sans-serif;transition:width .2s ease,height .2s ease}
+#mmChat{--bg:#0f1114;--hd:#0a0c0e;--sf:#171a1f;--bd:rgba(255,255,255,.1);--tx:#f3f5f8;--mu:#8b94a3;--ac:#10b981;--acTx:#04130d;position:fixed;z-index:60;right:max(1rem,env(safe-area-inset-right));bottom:max(1rem,env(safe-area-inset-bottom));width:min(440px,calc(100vw - 2rem));height:min(640px,calc(100dvh - 2rem));display:flex;flex-direction:column;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:18px;box-shadow:0 24px 64px rgba(0,0,0,.52);overflow:hidden;font:13.5px/1.6 system-ui,-apple-system,sans-serif;transition:width .2s ease,height .2s ease}
 #mmChat.is-wide{width:min(680px,calc(100vw - 2rem));height:min(760px,calc(100dvh - 2rem))}
-html.light #mmChat,html[data-theme="light"] #mmChat{--bg:#f8f9fa;--hd:#f1f3f5;--sf:#ffffff;--bd:rgba(15,23,42,.12);--tx:#111827;--mu:#5b6470;--ac:#059669;--acTx:#fff}
+html.light #mmChat,html[data-theme="light"] #mmChat{--bg:#f9fafb;--hd:#f1f3f6;--sf:#ffffff;--bd:rgba(15,23,42,.12);--tx:#0f172a;--mu:#64748b;--ac:#059669;--acTx:#fff}
 #mmChat[hidden]{display:none}
 #mmChat header{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--hd);border-bottom:1px solid var(--bd)}
-#mmChat .mm-mark{width:26px;height:26px;border-radius:8px;background:rgba(16,185,129,.14);color:var(--ac);display:grid;place-items:center;flex-shrink:0}
+#mmChat .mm-mark{width:27px;height:27px;border-radius:8px;background:rgba(16,185,129,.14);color:var(--ac);display:grid;place-items:center;flex-shrink:0}
 #mmChat .mm-ttl{min-width:0}
 #mmChat .mm-ttl b{display:block;font-size:13px;line-height:1.2;color:var(--tx)}
 #mmChat .mm-tier{border:0;background:transparent;color:var(--ac);font:600 11px/1.2 system-ui,sans-serif;padding:0;cursor:pointer}
 #mmChat .mm-ic{margin-left:auto;display:flex;align-items:center;gap:3px}
 #mmChat .mm-ib{width:30px;height:30px;border:0;border-radius:8px;background:transparent;color:var(--mu);display:grid;place-items:center;cursor:pointer}
 #mmChat .mm-ib:hover{background:var(--sf);color:var(--tx)}
-#mmChat .mm-log{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;overscroll-behavior:contain}
-#mmChat .mm-m{max-width:90%;padding:10px 13px;border-radius:14px;word-break:break-word}
+#mmChat .mm-log{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:13px;overscroll-behavior:contain}
+#mmChat .mm-m{max-width:92%;padding:10px 13px;border-radius:14px;word-break:break-word;animation:mmIn .22s ease}
+@keyframes mmIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 #mmChat .mm-u{align-self:flex-end;background:var(--sf);border:1px solid var(--bd);border-top-right-radius:4px;color:var(--tx)}
 #mmChat .mm-a{align-self:flex-start;background:transparent;padding:4px 2px;max-width:100%;color:var(--tx)}
-#mmChat .mm-a p{margin:4px 0}
-#mmChat .mm-a pre{margin:8px 0;padding:10px;border-radius:10px;background:#101113;color:#e5e7eb;overflow-x:auto;font:400 12px/1.45 ui-monospace,monospace}
+#mmChat .mm-a p{margin:5px 0}
+#mmChat .mm-a h1,#mmChat .mm-a h2,#mmChat .mm-a h3{margin:10px 0 4px;font-size:14px;font-weight:700;color:var(--tx)}
+#mmChat .mm-a ul,#mmChat .mm-a ol{padding-left:18px;margin:5px 0}
+#mmChat .mm-a blockquote{margin:6px 0;padding:6px 10px;border-left:2.5px solid var(--ac);background:var(--sf);border-radius:0 8px 8px 0;color:var(--mu)}
+#mmChat .mm-a table{width:100%;border-collapse:collapse;margin:8px 0;font-size:12px;border:1px solid var(--bd)}
+#mmChat .mm-a th,#mmChat .mm-a td{padding:5px 8px;border-bottom:1px solid var(--bd);text-align:left}
+#mmChat .mm-a th{background:var(--sf);color:var(--ac);font-size:11px;text-transform:uppercase}
+#mmChat .mm-a pre{margin:8px 0;padding:10px;border-radius:10px;background:#0c0e12;color:#e5e7eb;overflow-x:auto;font:400 12px/1.5 ui-monospace,monospace}
 #mmChat .mm-a code{font-family:ui-monospace,monospace;font-size:12px;background:var(--sf);color:var(--ac);padding:1px 5px;border-radius:4px}
 #mmChat .mm-a pre code{background:transparent;color:inherit;padding:0}
 #mmChat .mm-a img,#mmChat .mm-u img{max-width:200px;max-height:120px;border-radius:8px;margin-bottom:6px;display:block;border:1px solid var(--bd)}
-#mmChat .mm-acts{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+#mmChat .mm-caret{display:inline-block;width:2px;height:1.05em;margin-left:2px;vertical-align:-.15em;background:var(--ac);border-radius:2px;animation:mmCaret .85s infinite ease-in-out}
+@keyframes mmCaret{0%,100%{opacity:1}50%{opacity:.15}}
+#mmChat .mm-acts{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
 #mmChat .mm-acts button{border:1px solid var(--bd);background:var(--sf);color:var(--mu);border-radius:7px;padding:3px 8px;font-size:11px;font-weight:600;cursor:pointer}
 #mmChat .mm-acts button:hover{border-color:var(--ac);color:var(--tx)}
 #mmChat .mm-chips{display:flex;gap:6px;padding:6px 12px;overflow-x:auto;border-top:1px solid var(--bd);background:var(--hd)}
@@ -67,17 +79,69 @@ let ctrl = null;
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-function mdToHtml(md) {
-  let t = esc(md || "");
-  t = t.replace(/```[a-zA-Z0-9_-]*\n([\s\S]*?)```/g, "<pre><code>$1</code></pre>");
-  t = t.replace(/`([^`]+)`/g, "<code>$1</code>");
-  t = t.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-  t = t.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="color:var(--ac)">$1</a>');
-  return t.split(/\n{2,}/).map((p) => p.startsWith("<pre>") ? p : `<p>${p.replace(/\n/g, "<br>")}</p>`).join("");
+function inlineMd(s) {
+  return esc(s)
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/(^|[^\w*])\*([^*\n]+?)\*(?!\*)/g, "$1<em>$2</em>")
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color:var(--ac)">$1</a>');
+}
+
+function mdToHtml(md, showCaret = false) {
+  const blocks = [];
+  let t = String(md || "").replace(/\r\n/g, "\n");
+  t = t.replace(/```[a-zA-Z0-9_-]*\n([\s\S]*?)```/g, (_, code) => {
+    const idx = blocks.length;
+    blocks.push(`<pre><code>${esc(code.trim())}</code></pre>`);
+    return `\n@@CB_${idx}@@\n`;
+  });
+  const lines = t.split("\n");
+  const out = [];
+  for (let i = 0; i < lines.length; i++) {
+    const ln = lines[i].trim();
+    if (!ln) continue;
+    if (/^@@CB_\d+@@$/.test(ln)) { out.push(ln); continue; }
+    if (ln.includes("|") && i + 1 < lines.length && /^\|?[\s:|-]+\|?$/.test(lines[i + 1].trim()) && lines[i + 1].includes("-")) {
+      const cells = (r) => r.replace(/^\||\|$/g, "").split("|").map((c) => c.trim());
+      const hdr = cells(ln).map((c) => `<th>${inlineMd(c)}</th>`).join("");
+      i += 2;
+      const rows = [];
+      while (i < lines.length && lines[i].trim() && lines[i].includes("|")) {
+        rows.push(`<tr>${cells(lines[i].trim()).map((c) => `<td>${inlineMd(c)}</td>`).join("")}</tr>`);
+        i++;
+      }
+      i--;
+      out.push(`<table><thead><tr>${hdr}</tr></thead><tbody>${rows.join("")}</tbody></table>`);
+      continue;
+    }
+    if (/^#{1,3}\s+/.test(ln)) { out.push(`<h3>${inlineMd(ln.replace(/^#{1,3}\s+/, ""))}</h3>`); continue; }
+    if (/^>\s?/.test(ln)) { out.push(`<blockquote>${inlineMd(ln.replace(/^>\s?/, ""))}</blockquote>`); continue; }
+    if (/^[-*]\s+/.test(ln)) {
+      const items = [];
+      while (i < lines.length && /^[-*]\s+/.test(lines[i].trim())) { items.push(`<li>${inlineMd(lines[i].trim().replace(/^[-*]\s+/, ""))}</li>`); i++; }
+      i--;
+      out.push(`<ul>${items.join("")}</ul>`);
+      continue;
+    }
+    if (/^\d+\.\s+/.test(ln)) {
+      const items = [];
+      while (i < lines.length && /^\d+\.\s+/.test(lines[i].trim())) { items.push(`<li>${inlineMd(lines[i].trim().replace(/^\d+\.\s+/, ""))}</li>`); i++; }
+      i--;
+      out.push(`<ol>${items.join("")}</ol>`);
+      continue;
+    }
+    out.push(`<p>${inlineMd(ln)}</p>`);
+  }
+  let html = out.join("").replace(/@@CB_(\d+)@@/g, (_, idx) => blocks[Number(idx)] || "");
+  if (showCaret) {
+    const caret = '<span class="mm-caret" aria-hidden="true"></span>';
+    html = /<\/(p|li|h3|blockquote)>\s*$/i.test(html) ? html.replace(/(<\/(?:p|li|h3|blockquote)>)\s*$/i, `${caret}$1`) : html + caret;
+  }
+  return html;
 }
 
 function quickExport(kind, md) {
-  const html = `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Muntrume AI</title><style>body{font-family:system-ui,sans-serif;max-width:780px;margin:32px auto;padding:0 20px;color:#111;line-height:1.6}pre{background:#f3f4f6;padding:12px;border-radius:8px;overflow:auto}</style></head><body><h1>Muntrume AI · Nota Técnica</h1>${mdToHtml(md)}</body></html>`;
+  const html = `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Muntrume AI</title><style>body{font-family:system-ui,sans-serif;max-width:780px;margin:32px auto;padding:0 20px;color:#111;line-height:1.6}table{width:100%;border-collapse:collapse;margin:12px 0}th,td{border:1px solid #ddd;padding:6px 10px;text-align:left}pre{background:#f3f4f6;padding:12px;border-radius:8px;overflow:auto}</style></head><body><h1>Muntrume AI · Nota Técnica</h1>${mdToHtml(md)}</body></html>`;
   if (kind === "pdf") {
     const iframe = document.createElement("iframe");
     iframe.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden";
@@ -139,12 +203,13 @@ function renderLog() {
   messages.forEach((m, idx) => {
     const d = document.createElement("div");
     d.className = "mm-m " + (m.role === "user" ? "mm-u" : "mm-a");
+    d.dataset.mmIdx = String(idx);
     if (m.role === "user") {
       d.innerHTML = (m.image ? `<img src="${esc(m.image)}" alt="Adjunto">` : "") + esc(m.content).replace(/\n/g, "<br>");
     } else {
       d.innerHTML = m.pending
-        ? `<div class="mm-dots"><i></i><i></i><i></i> <span>Muntrume ${esc(tier.replace("_", " "))} procesando…</span></div>`
-        : `${mdToHtml(m.content)}<div class="mm-acts"><button type="button" data-c="${idx}">Copiar</button><button type="button" data-d="${idx}">DOC</button><button type="button" data-p="${idx}">PDF</button><button type="button" data-f="${idx}">Abrir Studio</button></div>`;
+        ? `<div class="mm-dots"><i></i><i></i><i></i> <span>Muntrume ${esc(tier.replace("_", " "))} preparando respuesta…</span></div>`
+        : `${mdToHtml(m.content, Boolean(m.typing))}${m.typing ? "" : `<div class="mm-acts"><button type="button" data-c="${idx}">Copiar</button><button type="button" data-d="${idx}">DOC</button><button type="button" data-p="${idx}">PDF</button><button type="button" data-f="${idx}">Abrir Studio</button></div>`}`;
     }
     log.appendChild(d);
   });
@@ -152,12 +217,23 @@ function renderLog() {
 }
 
 function openInFullStudio() {
+  const cleanMsgs = messages.filter((m) => !m.pending).map(({ role, content, modelBrand }) => ({ role, content, modelBrand }));
   try {
-    if (messages.length) {
-      localStorage.setItem(HANDOFF_KEY, JSON.stringify({ tier, messages: messages.filter((m) => !m.pending) }));
+    if (cleanMsgs.length) {
+      localStorage.setItem(HANDOFF_KEY, JSON.stringify({ tier, messages: cleanMsgs }));
     }
   } catch {}
-  window.location.href = "/ai/";
+  let target = STUDIO_URL;
+  try {
+    if (cleanMsgs.length) {
+      const payload = JSON.stringify({ tier, messages: cleanMsgs.slice(-6) });
+      if (payload.length < 3200) {
+        const b64 = btoa(unescape(encodeURIComponent(payload))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+        target = `${STUDIO_URL}#handoff=${b64}`;
+      }
+    }
+  } catch {}
+  window.location.href = target;
 }
 
 async function send(raw) {
@@ -170,12 +246,60 @@ async function send(raw) {
   chips.hidden = true;
 
   messages.push({ role: "user", content: txt || "Analiza esta imagen.", image: att?.kind === "image" ? att.dataUrl : undefined });
-  const bot = { role: "assistant", content: "", pending: true, modelBrand: `Muntrume ${TIERS.find((x) => x.id === tier)?.label || "1.0 Pro"}` };
+  const bot = { role: "assistant", content: "", pending: true, typing: true, modelBrand: `Muntrume ${TIERS.find((x) => x.id === tier)?.label || "1.0 Pro"}` };
   messages.push(bot);
   renderLog();
 
   streaming = true; sendBtn.disabled = true;
   ctrl = new AbortController();
+
+  let targetText = "";
+  let shownText = "";
+  let netDone = false;
+  let rafId = null;
+  let lastTs = 0;
+  let lastPaint = 0;
+  let carry = 0;
+  let resolveReveal;
+  const revealDone = new Promise((r) => { resolveReveal = r; });
+
+  const paintLive = (withCaret) => {
+    const node = log.querySelector(`[data-mm-idx="${messages.length - 1}"]`);
+    if (node) {
+      node.innerHTML = mdToHtml(shownText, withCaret);
+      if (log.scrollHeight - log.scrollTop - log.clientHeight < 120) log.scrollTop = log.scrollHeight;
+    }
+  };
+
+  const tick = (ts) => {
+    rafId = null;
+    const dt = lastTs ? Math.min(80, Math.max(8, ts - lastTs)) : 16;
+    lastTs = ts;
+    if (shownText.length < targetText.length) {
+      const backlog = targetText.length - shownText.length;
+      const cps = backlog > 1200 ? 90 : 44;
+      carry += (cps * dt) / 1000;
+      const take = Math.floor(carry);
+      if (take > 0) {
+        carry -= take;
+        shownText = targetText.slice(0, Math.min(targetText.length, shownText.length + take));
+        bot.content = shownText;
+        bot.pending = false;
+        if (ts - lastPaint >= 45 || shownText.length >= targetText.length) {
+          lastPaint = ts;
+          paintLive(true);
+        }
+      }
+    }
+    if (netDone && shownText.length >= targetText.length) {
+      resolveReveal();
+      return;
+    }
+    rafId = requestAnimationFrame(tick);
+  };
+
+  const kick = () => { if (!rafId) { lastTs = performance.now(); rafId = requestAnimationFrame(tick); } };
+
   try {
     const res = await fetch(API, {
       method: "POST",
@@ -198,7 +322,6 @@ async function send(raw) {
     if (cType.includes("event-stream") && res.body) {
       const reader = res.body.getReader(), dec = new TextDecoder();
       let buf = "";
-      bot.pending = false;
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
@@ -210,19 +333,27 @@ async function send(raw) {
           try {
             const j = JSON.parse(d);
             const delta = j.content || j.token || j.delta || j.choices?.[0]?.delta?.content || "";
-            if (delta) { bot.content += delta; renderLog(); }
+            if (delta) { targetText += delta; kick(); }
           } catch {}
         }
       }
+      netDone = true;
+      kick();
+      await revealDone;
     } else {
       const j = await res.json().catch(() => ({}));
-      bot.pending = false;
-      bot.content = j.markdown || j.answer || j.result || "Sin respuesta.";
+      targetText = j.markdown || j.answer || j.result || "Sin respuesta.";
+      netDone = true;
+      kick();
+      await revealDone;
     }
   } catch {
+    if (rafId) cancelAnimationFrame(rafId);
     bot.pending = false;
-    bot.content = bot.content || "No pude conectar ahora mismo. Prueba a abrir Muntrume AI Studio (/ai/) o reintenta.";
+    bot.content = bot.content || "No pude conectar ahora mismo. Prueba a abrir Muntrume AI Studio (ai.muntru.me) o reintenta.";
   } finally {
+    bot.pending = false;
+    bot.typing = false;
     streaming = false; sendBtn.disabled = false;
     renderLog();
     input.focus();
@@ -245,14 +376,14 @@ function build() {
       </div>
       <div class="mm-ic">
         <button type="button" id="mmWideBtn" class="mm-ib" title="Ampliar vista previa"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
-        <button type="button" id="mmFullBtn" class="mm-ib" title="Abrir en Muntrume AI Studio (/ai/)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+        <button type="button" id="mmFullBtn" class="mm-ib" title="Abrir en ai.muntru.me"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
         <button type="button" id="mmResetBtn" class="mm-ib" title="Nueva conversación"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button>
         <button type="button" id="mmCloseBtn" class="mm-ib" title="Cerrar"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
     </header>
     <div id="mmLog" class="mm-log" role="log" aria-live="polite"></div>
     <div id="mmChips" class="mm-chips">
-      <button type="button" data-chip="Dame ajustes rápidos para reducir subviraje en GT3.">Setup GT3</button>
+      <button type="button" data-chip="Dame ajustes rápidos en tabla para reducir subviraje en GT3.">Setup GT3</button>
       <button type="button" data-chip="Calcula combustible para 45 min GT3 (2.9 L/vuelta, 2:17).">Estrategia</button>
       <button type="button" data-chip="¿Quiénes son los pilotos y qué incluye MMT Sync?">Equipo MMT</button>
     </div>
