@@ -491,13 +491,20 @@ function renderOverviewSection() {
           </td>
           <td><span class="rc-badge ${p.status === "active" ? "rc-badge--ok" : "rc-badge--err"}">${p.status === "active" ? (p.has_password ? "Activa" : "Pendiente clave") : "Bloqueada"}</span></td>
           <td class="text-right">
-            <div class="rc-btn-row" style="justify-content:flex-end">
-              <button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(p.email)}" data-name="${rcEscape(p.name)}" onclick="generateDriverAccessFromBtn(this, 'link')">Reset / Enlace</button>
+            <div class="rc-btn-row" style="justify-content:flex-end;flex-wrap:wrap">
+              <button type="button" class="r-btn r-btn--primary r-btn--sm" data-email="${rcEscape(p.email)}" data-name="${rcEscape(p.name)}" onclick="generateDriverAccessFromBtn(this, 'link')" title="Reenviar correo con enlace de reseteo de contraseña (72h)">🔑 Enviar Reset</button>
+              <button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(p.email)}" data-name="${rcEscape(p.name)}" onclick="generateDriverAccessFromBtn(this, 'copy_link')" title="Generar y copiar enlace directo de 72h para Discord/WhatsApp">📋 Copiar Link</button>
+              <button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(p.email)}" data-name="${rcEscape(p.name)}" onclick="generateDriverAccessFromBtn(this, 'temp_password')" title="Generar contraseña temporal de 1 uso">⚡ Clave Temp</button>
             </div>
           </td>
         </tr>
       `;
     }).join("");
+  }
+
+  const dl = document.getElementById("quickResetDriversDatalist");
+  if (dl && rcState.members.length > 0) {
+    dl.innerHTML = rcState.members.map((m) => `<option value="${rcEscape(m.email)}">${rcEscape(m.name)} (${rcEscape(m.roleLabel || m.role)})</option>`).join("");
   }
 
   renderOverviewActivity();
@@ -626,7 +633,10 @@ function renderDirectoryTable() {
         <td>${statusBadge}</td>
         <td class="text-right">
           <div class="rc-btn-row" style="justify-content:flex-end;flex-wrap:wrap">
-            ${!isBlocked ? `<button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" data-name="${rcEscape(m.name)}" onclick="generateDriverAccessFromBtn(this, 'link')">✉ Enviar Acceso</button>` : ""}
+            ${!isBlocked ? `<button type="button" class="r-btn r-btn--primary r-btn--sm" data-email="${rcEscape(m.email)}" data-name="${rcEscape(m.name)}" onclick="generateDriverAccessFromBtn(this, 'link')" title="Enviar correo de reseteo de credenciales (72h)">🔑 Enviar Reset</button>` : ""}
+            ${!isBlocked ? `<button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" data-name="${rcEscape(m.name)}" onclick="generateDriverAccessFromBtn(this, 'copy_link')" title="Generar y copiar link de reseteo para Discord/WhatsApp">📋 Copiar Link</button>` : ""}
+            ${!isBlocked ? `<button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" data-name="${rcEscape(m.name)}" onclick="generateDriverAccessFromBtn(this, 'temp_password')" title="Emitir contraseña temporal">⚡ Clave Temp</button>` : ""}
+            ${!isBlocked ? `<button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" onclick="revokePilotSessionsBtn(this)" title="Cerrar todas las sesiones activas de este piloto">⎋ Sesiones</button>` : ""}
             ${!isPrincipal ? `<button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" data-access="${hasSetupAccess ? "1" : "0"}" onclick="toggleSetupAccessBtn(this)" style="${hasSetupAccess ? "border-color:rgba(16,185,129,.45);color:#34d399" : ""}">${hasSetupAccess ? "Setups: ON" : "Setups: OFF"}</button>` : ""}
             ${!isPrincipal ? `<button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" data-status="${isBlocked ? "active" : "inactive"}" onclick="toggleMemberStatusBtn(this)">${isBlocked ? "Reactivar" : "Bloquear"}</button>` : ""}
             ${!isPrincipal ? `<button type="button" class="r-btn r-btn--sm" style="border-color:rgba(239,68,68,.35);color:#f87171" data-email="${rcEscape(m.email)}" onclick="deleteMemberBtn(this)">Eliminar</button>` : ""}
@@ -706,23 +716,63 @@ async function generateDriverAccessFromBtn(btn, method = "link") {
     await issuePilotCredentials({ name, email, method: "temp_password", send_email: true, force: true });
     return;
   }
+  const alwaysOpenModal = method === "copy_link";
   try {
-    const data = await rcAdminFetch("/api/setups/admin/resend-invite", { email });
+    const data = await rcAdminFetch("/api/setups/admin/resend-invite", { email, kind: "reset" });
     const secret = data.set_password_link || "";
-    appendAuditEvent("admin", "atrumin16@gmail.com", `Reset/enlace 72h enviado a ${email} · Email: ${data.email_sent ? "OK" : "error"}`, "RESET");
+    appendAuditEvent("admin", "atrumin16@gmail.com", `Reset/enlace 72h emitido para ${email} · Email: ${data.email_sent ? "OK" : "manual"}`, "RESET");
     await refreshRaceControlData();
-    if (!data.email_sent && secret) {
+    if (secret && (alwaysOpenModal || !data.email_sent)) {
       openCredentialsResultModal({ name, email, secret, isTempPass: false });
+      try { await navigator.clipboard.writeText(secret); } catch {}
     }
     showRcNotice(
-      data.email_sent ? "Acceso enviado automáticamente" : "Correo pendiente (respaldo abierto)",
-      data.email_sent
-        ? `Correo seguro enviado directamente a ${email} sin exponer enlaces en pantalla.`
-        : `El correo falló (${data.email_error || "revisa Resend"}). Usa el modal de respaldo.`,
-      data.email_sent ? "success" : "warn"
+      alwaysOpenModal
+        ? "Enlace 72h generado y copiado"
+        : (data.email_sent ? "Correo de reseteo enviado" : "Correo pendiente (respaldo abierto)"),
+      alwaysOpenModal
+        ? `Enlace de reseteo copiado al portapapeles para ${email} (y correo enviado en paralelo).`
+        : data.email_sent
+          ? `Correo con enlace de reseteo (72 h) enviado directamente a ${email}.`
+          : `El correo falló (${data.email_error || "revisa Resend"}). Copia el enlace desde el modal.`,
+      data.email_sent || alwaysOpenModal ? "success" : "warn"
     );
   } catch (err) {
     showRcNotice("No se pudo enviar el reset", err?.message || "Error al generar enlace.", "err");
+  }
+}
+
+async function revokePilotSessionsBtn(btn) {
+  const email = (btn?.dataset?.email || "").trim().toLowerCase();
+  if (!email) return;
+  try {
+    await rcAdminFetch("/api/setups/admin/user/revoke", { email });
+    appendAuditEvent("admin", "atrumin16@gmail.com", `Sesiones activas cerradas para ${email}`, "REVOKED");
+    showRcNotice("Sesiones cerradas", `Se han invalidado todos los tokens y sesiones activas de ${email}.`, "success");
+  } catch (err) {
+    showRcNotice("No se pudieron cerrar las sesiones", err?.message || "Error al revocar sesiones en D1.", "err");
+  }
+}
+
+async function runQuickCredentialAction(action) {
+  const input = document.getElementById("quickResetEmailInput");
+  const email = (input?.value || "").trim().toLowerCase();
+  if (!email || !email.includes("@")) {
+    showRcNotice("Introduce un correo", "Selecciona o escribe el correo del piloto en la barra rápida.", "warn");
+    input?.focus();
+    return;
+  }
+  const found = rcState.members.find((m) => String(m.email).toLowerCase() === email);
+  const name = found?.name || email.split("@")[0];
+  const fakeBtn = { dataset: { email, name } };
+  if (action === "send_reset") {
+    await generateDriverAccessFromBtn(fakeBtn, "link");
+  } else if (action === "copy_link") {
+    await generateDriverAccessFromBtn(fakeBtn, "copy_link");
+  } else if (action === "temp_password") {
+    await generateDriverAccessFromBtn(fakeBtn, "temp_password");
+  } else if (action === "revoke_sessions") {
+    await revokePilotSessionsBtn(fakeBtn);
   }
 }
 
@@ -937,58 +987,207 @@ function renderMailboxesTable() {
 
 const EMAIL_TEMPLATES = {
   welcome: {
-    subject: "Bienvenido al Setup Vault Oficial — Muntrume Motorsport",
+    badge: "ACCESO APROBADO",
+    previewKey: "approved",
+    subject: "Acceso aprobado · Crea tu contraseña del Setup Vault",
+    title: "¡Bienvenido al equipo!",
+    tldr: "Tu cuenta oficial de piloto está aprobada. Crea tu contraseña con el enlace personal de 72 h.",
+    ctaLabel: "Crear mi contraseña →",
+    ctaUrl: "https://muntru.me/garage?setpw=TOKEN_UNICO_72H",
+    rows: [
+      ["Usuario", "{CORREO_PILOTO}"],
+      ["Catálogo", "42,654 setups .sto (BoP 26S4 · 100% Pass Tech)"],
+      ["App Desktop", "MMT Sync v0.6.5 (winget install Muntrume.MMTSync)"]
+    ],
     body: `Hola {NOMBRE_PILOTO},
 
-Tu cuenta oficial de piloto en Muntrume Motorsport ha sido activada por Dirección de Carrera.
+Control de Carrera ha aprobado tu solicitud. Ya tienes acceso al Setup Vault de Muntrume Motorsport.
 
 • Usuario: {CORREO_PILOTO}
-• Acceso al Garage: https://muntru.me/garage
-• Catálogo activo: 42,654 setups .sto (Nomenclatura MMT_ + BoP 26S4 100% Pass Tech)
-• Especial NEC: 1,638 setups semanales en Nürburgring Combined Gesamtstrecke VLN
+• Enlace personal para crear tu contraseña (válido 72 h):
+  https://muntru.me/garage?setpw={TOKEN_UNICO}
+• Catálogo activo: 42,654 setups .sto (Nomenclatura MMT_ + BoP 26S4)
 
 Nos vemos en pista,
-Alberto Trujillo (#16)
-Team Principal · Muntrume Motorsport (muntru.me)`
+Alberto Trujillo (#16) · Muntrume Motorsport (muntru.me)`
+  },
+  reset: {
+    badge: "SEGURIDAD · RESET",
+    previewKey: "reset",
+    subject: "Restablece tu contraseña · Muntrume Setup Vault",
+    title: "Restablecer credenciales de acceso",
+    tldr: "Enlace personal de un solo uso para definir una nueva contraseña en el Setup Vault.",
+    ctaLabel: "Crear nueva contraseña →",
+    ctaUrl: "https://muntru.me/garage?setpw=TOKEN_RESET_UNICO",
+    rows: [
+      ["Cuenta", "{CORREO_PILOTO}"],
+      ["Validez", "72 horas (enlace de un solo uso)"],
+      ["Seguridad", "PBKDF2-SHA256 · Tu clave actual no cambia hasta completar el enlace"]
+    ],
+    body: `Hola {NOMBRE_PILOTO},
+
+Hemos recibido una petición desde Race Control para crear o restablecer la contraseña de tu cuenta de piloto en Muntrume Motorsport.
+
+• Enlace personal (un solo uso, válido durante 72 horas):
+  https://muntru.me/garage?setpw={TOKEN_UNICO}
+
+Si el botón del correo no se abre, copia y pega el enlace directamente en tu navegador.
+Seguridad Zero-Trust · Muntrume Motorsport (muntru.me)`
+  },
+  code: {
+    badge: "CÓDIGO 6 DÍGITOS",
+    previewKey: "code",
+    subject: "482910 es tu código de acceso · Muntrume Setup Vault",
+    title: "Tu código de acceso",
+    tldr: "Introduce el código de 6 dígitos en muntru.me/garage o entra con un clic desde el botón.",
+    ctaLabel: "Entrar al Setup Vault →",
+    ctaUrl: "https://muntru.me/garage#magic=TOKEN_MAGIC_10M",
+    codeBox: "482910",
+    rows: [
+      ["Caducidad", "10 minutos (un solo uso)"],
+      ["Protección", "Nunca te pediremos este código por Discord ni por chat"]
+    ],
+    body: `Hola {NOMBRE_PILOTO},
+
+Tu código de acceso de un solo uso al Setup Vault es:
+
+    482910
+
+O entra directamente con este enlace mágico (caduca en 10 minutos):
+https://muntru.me/garage#magic={TOKEN_MAGIC}
+
+Muntrume Motorsport · muntru.me`
+  },
+  temp_password: {
+    badge: "CLAVE TEMPORAL",
+    previewKey: "temp_password",
+    subject: "Acceso aprobado · Tu contraseña temporal del Setup Vault",
+    title: "Credenciales temporales de acceso",
+    tldr: "Inicia sesión con tu contraseña temporal. El sistema te pedirá elegir una clave personal al entrar.",
+    ctaLabel: "Entrar al Setup Vault →",
+    ctaUrl: "https://muntru.me/garage",
+    rows: [
+      ["Usuario", "{CORREO_PILOTO}"],
+      ["Contraseña temporal", "MTM-2026-X9K4-VAULT"],
+      ["Política", "Cambio obligatorio en el primer inicio de sesión"]
+    ],
+    body: `Hola {NOMBRE_PILOTO},
+
+Control de Carrera ha emitido una contraseña temporal para tu cuenta del Setup Vault:
+
+• Usuario: {CORREO_PILOTO}
+• Contraseña temporal: {CLAVE_TEMPORAL}
+• Acceso: https://muntru.me/garage
+
+En tu primer inicio de sesión el sistema te pedirá definir tu contraseña personal definitiva.
+Muntrume Motorsport · muntru.me`
   },
   nec: {
-    subject: "[Briefing NEC W01–W13] Setups Nürburgring Combined Gesamtstrecke VLN listos",
+    badge: "BRIEFING OFICIAL",
+    previewKey: "digest",
+    subject: "🏁 Briefing Oficial: NEC W01–W13 · Nürburgring Combined VLN · Muntrume",
+    title: "Briefing: Nürburgring Endurance Championship",
+    tldr: "1,638 setups verificados para las 21 monturas de la NEC en Nürburgring Combined Gesamtstrecke VLN.",
+    ctaLabel: "Descargar Setups en el Vault →",
+    ctaUrl: "https://muntru.me/garage?nec=W01",
+    rows: [
+      ["Circuito", "Nürburgring Combined Gesamtstrecke VLN"],
+      ["Nomenclatura", "MMT_[MODELO]_VLN_[SESIÓN].sto (Q, Q2_SAFE, R, END, S, W)"],
+      ["Escrutinio BoP", "Altura estática ≥ 70.5 mm (0 Failed Tech en Karussell / Fuchsröhre)"]
+    ],
     body: `Equipo,
 
 Ya están disponibles en https://muntru.me/garage los paquetes semanales para la Nürburgring Endurance Championship (NEC) en Nürburgring Combined Gesamtstrecke VLN:
 
 • Nomenclatura: MMT_[MODELO]_VLN_[SESIÓN].sto (Q, Q2_SAFE, R, END, S, W)
-• Escrutinio BoP: Altura estática calibrada ≥ 70.5 mm para absorber las compresiones de Fuchsröhre y Karussell sin Failed Tech.
+• Escrutinio BoP: Altura estática calibrada ≥ 70.5 mm para absorber las compresiones sin Failed Tech.
 • Telemetría en vivo sincronizada en Garage 61: https://garage61.net/app/teams/muntrume-motorsport
 
 Confirmad vuestro stint en el canal de Discord Radio.
 Muntrume Race Control · racecontrol@muntru.me`
-  },
-  reset: {
-    subject: "Restablecimiento de credenciales — Muntrume Setup Vault",
-    body: `Hola {NOMBRE_PILOTO},
-
-Has solicitado renovar tu contraseña de acceso al Setup Vault de Muntrume Motorsport.
-
-• Enlace único (válido durante 72 horas):
-  https://muntru.me/garage?set_password={TOKEN_UNICO}
-
-Si no has solicitado este cambio, ignora este mensaje.
-Seguridad Zero-Trust · Muntrume Motorsport`
   }
 };
 
 function openEmailPreviewModal(key = "welcome") {
   rcState.currentTemplateKey = EMAIL_TEMPLATES[key] ? key : "welcome";
   const tpl = EMAIL_TEMPLATES[rcState.currentTemplateKey];
-  ["welcome", "nec", "reset"].forEach((k) => {
+  ["welcome", "reset", "code", "temp_password", "nec"].forEach((k) => {
     document.getElementById(`tplBtn-${k}`)?.classList.toggle("is-on", k === rcState.currentTemplateKey);
   });
   const subj = document.getElementById("tplSubjectText");
+  const badgeEl = document.getElementById("tplBadgeText");
   const body = document.getElementById("tplBodyText");
+  const visualBox = document.getElementById("tplVisualHtmlBox");
   if (subj) subj.textContent = tpl.subject;
+  if (badgeEl) badgeEl.textContent = tpl.badge || "RACE CONTROL";
   if (body) body.textContent = tpl.body;
+  if (visualBox) {
+    const rowsHtml = (tpl.rows || []).map(([k, v]) => `
+      <div style="display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:12.5px">
+        <span style="font-family:var(--r-mono);font-size:11px;text-transform:uppercase;color:#94a3b8;font-weight:700">${rcEscape(k)}</span>
+        <span style="font-weight:700;color:#f8fafc;text-align:right">${rcEscape(v)}</span>
+      </div>
+    `).join("");
+    const codeHtml = tpl.codeBox
+      ? `<div style="margin:12px 0;text-align:center"><span style="display:inline-block;padding:12px 24px;border-radius:12px;border:1.5px solid #00e699;background:#061a14;color:#00e699;font-family:var(--r-mono);font-size:26px;font-weight:800;letter-spacing:8px">${rcEscape(tpl.codeBox)}</span></div>`
+      : "";
+    visualBox.innerHTML = `
+      <div style="max-width:540px;margin:0 auto;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.12);background:#0f141c;box-shadow:0 12px 30px rgba(0,0,0,0.45)">
+        <div style="padding:14px 20px;background:#080b10;display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <img src="/assets/img/email-logo.png" width="28" height="28" alt="" style="border-radius:6px" />
+            <div>
+              <div style="font-size:12.5px;font-weight:800;letter-spacing:0.7px;color:#fff">MUNTRUME MOTORSPORT</div>
+              <div style="font-size:10.5px;color:#00e699;font-weight:600">Setup Vault &amp; Race Control · muntru.me</div>
+            </div>
+          </div>
+          <span style="padding:3px 9px;border-radius:999px;background:#062319;border:1px solid #059669;color:#00e699;font-family:var(--r-mono);font-size:9.5px;font-weight:700">${rcEscape(tpl.badge)}</span>
+        </div>
+        <div style="height:3px;background:linear-gradient(90deg,#00e699 0%,#10b981 55%,#0ea5e9 100%)"></div>
+        <div style="padding:20px;display:grid;gap:12px">
+          <h4 style="margin:0;font-size:18px;font-weight:800;color:#fff">${rcEscape(tpl.title)}</h4>
+          <div style="padding:10px 12px;border-radius:8px;background:rgba(16,185,129,0.1);border-left:3px solid #10b981;font-size:12.5px;color:#a7f3d0">
+            <strong>Resumen rápido:</strong> ${rcEscape(tpl.tldr)}
+          </div>
+          ${codeHtml}
+          <div style="padding:10px 14px;border-radius:10px;background:#090d13;border:1px solid rgba(255,255,255,0.07)">
+            ${rowsHtml}
+          </div>
+          <div style="text-align:center;padding-top:4px">
+            <span style="display:inline-block;padding:11px 24px;border-radius:10px;background:linear-gradient(135deg,#00e699,#10b981);color:#031d14;font-weight:800;font-size:13.5px">${rcEscape(tpl.ctaLabel)}</span>
+            <div style="margin-top:8px;font-family:var(--r-mono);font-size:10.5px;color:#64748b">Enlace directo de respaldo: <code style="color:#00e699">${rcEscape(tpl.ctaUrl)}</code></div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
   document.getElementById("emailTemplateModal")?.classList.remove("hidden");
+}
+
+async function sendTestEmailFromAdmin() {
+  const btn = document.getElementById("btnSendPreviewEmail");
+  const tpl = EMAIL_TEMPLATES[rcState.currentTemplateKey] || EMAIL_TEMPLATES.welcome;
+  const onlyKey = tpl.previewKey || "reset";
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Enviando prueba…";
+  }
+  try {
+    const data = await rcAdminFetch("/api/setups/admin/email-preview", { only: [onlyKey] });
+    const resItem = (data.results || [])[0];
+    if (resItem && resItem.ok) {
+      showRcNotice("Correo de prueba enviado", `Se ha enviado [PRUEBA] "${tpl.subject}" a ${data.to}.`, "success");
+    } else {
+      showRcNotice("Aviso al enviar prueba", resItem?.error || "Revisa la configuración de Resend en el Worker.", "warn");
+    }
+  } catch (err) {
+    showRcNotice("No se pudo enviar la prueba", err?.message || "Error al conectar con /api/setups/admin/email-preview.", "err");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "🚀 Enviarme prueba real a mi correo";
+    }
+  }
 }
 
 function closeEmailPreviewModal() {
@@ -1493,6 +1692,9 @@ if (typeof window !== "undefined") {
   window.openEmailPreviewModal = openEmailPreviewModal;
   window.closeEmailPreviewModal = closeEmailPreviewModal;
   window.copyCurrentEmailTemplate = copyCurrentEmailTemplate;
+  window.sendTestEmailFromAdmin = sendTestEmailFromAdmin;
+  window.runQuickCredentialAction = runQuickCredentialAction;
+  window.revokePilotSessionsBtn = revokePilotSessionsBtn;
   window.saveIracingMappings = saveIracingMappings;
   window.copyDriverIdsConfig = copyDriverIdsConfig;
   window.copyIracingConsoleSnippet = copyIracingConsoleSnippet;

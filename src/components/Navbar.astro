@@ -27,16 +27,24 @@ const ICONS: Record<string, string> = {
   sync: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>',
   theme: '<circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20z"/>',
   logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',
+  ai: '<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>',
+  calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/>',
 };
 
 const links = [
   { href: "/", label: "Inicio", key: "nav.home", icon: "home", on: active(currentPath) },
+  { href: "/garage/", label: "Garage", key: "nav.garage", icon: "garage", on: active(currentPath, "/garage", "/setups", "/setup-builder", "/calendar") },
+  { href: "/app/", label: "MMT Sync", key: "nav.app", icon: "overlay", on: active(currentPath, "/app", "/overlay") },
   { href: "/pilotos/", label: "Pilotos", key: "nav.drivers", icon: "drivers", on: active(currentPath, "/pilotos", "/drivers", "/d/", "/team", "/p/") },
-  { href: "/garage/", label: "Garage", key: "nav.garage", icon: "garage", on: active(currentPath, "/garage", "/setups", "/setup-builder") },
-  { href: "/overlay/", label: "Overlay", key: "nav.overlay", icon: "overlay", on: active(currentPath, "/overlay") },
-  { href: "/wallpapers/", label: "Wallpapers", icon: "wallpapers", on: active(currentPath, "/wallpapers") },
-  { href: "/paddock/", label: "Paddock", key: "nav.paddock", icon: "paddock", on: active(currentPath, "/paddock", "/about") },
-  { href: "/noticias/", label: "Noticias", key: "nav.news", icon: "news", on: active(currentPath, "/noticias", "/news", "/article") },
+  { href: "/paddock/", label: "Paddock", key: "nav.paddock", icon: "paddock", on: active(currentPath, "/paddock", "/about", "/wallpapers", "/gallery", "/albums", "/noticias", "/news", "/article", "/ai") },
+];
+
+const secondaryLinks = [
+  { href: "/ai/", label: "Muntrume AI", icon: "ai", on: active(currentPath, "/ai") },
+  { href: "/overlay/", label: "Simulador HUD 60Hz", icon: "overlay", on: active(currentPath, "/overlay") },
+  { href: "/calendar/", label: "Calendario 2026 S4", icon: "calendar", on: active(currentPath, "/calendar") },
+  { href: "/wallpapers/", label: "Wallpapers 4K", icon: "wallpapers", on: active(currentPath, "/wallpapers") },
+  { href: "/noticias/", label: "Sala de prensa", icon: "news", on: active(currentPath, "/noticias", "/news", "/article") },
 ];
 
 const roster = PILOTOS.map((p) => ({ slug: p.slug, name: p.fullName, helmet: p.helmet_url || `/img/helmets/${p.slug}.webp` }));
@@ -142,6 +150,13 @@ const roster = PILOTOS.map((p) => ({ slug: p.slug, name: p.fullName, helmet: p.h
       <a href={link.href} aria-current={link.on ? "page" : undefined}>
         <svg class="nav-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS[link.icon]} />
         <span data-i18n={link.key}>{link.label}</span>
+      </a>
+    ))}
+    <div class="nav-panel__subhead">Ecosistema &amp; Herramientas</div>
+    {secondaryLinks.map((sub) => (
+      <a href={sub.href} aria-current={sub.on ? "page" : undefined} class="nav-panel__sublink">
+        <svg class="nav-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS[sub.icon]} />
+        <span>{sub.label}</span>
       </a>
     ))}
   </nav>
@@ -518,5 +533,18 @@ const roster = PILOTOS.map((p) => ({ slug: p.slug, name: p.fullName, helmet: p.h
     display: inline-flex;
     align-items: center;
     gap: 0.45rem;
+  }
+  .nav-panel__subhead {
+    margin: 10px 0 4px;
+    padding: 8px 10px 0;
+    border-top: 1px solid var(--r-line, rgba(255,255,255,0.08));
+    font: 700 10px/1.2 var(--r-mono, monospace);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--r-muted, #94a3b8);
+  }
+  .nav-panel__sublink {
+    font-size: 13px !important;
+    opacity: 0.9;
   }
 </style>

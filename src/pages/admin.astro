@@ -203,13 +203,55 @@ const totalCircuits = catalog.circuits?.length || 128;
 
             <article class="rc-kpi-card">
               <div class="rc-kpi-card__top">
-                <span class="rc-kpi-tag">BASE DE DATOS D1</span>
-                <span class="rc-badge rc-badge--ok">Edge Online</span>
+                <span class="rc-kpi-tag">CORREOS @MUNTRU.ME</span>
+                <span class="rc-badge rc-badge--ok">Resend + DKIM</span>
               </div>
-              <div class="rc-kpi-val">10,162</div>
-              <p class="rc-kpi-sub">Cloudflare D1 &amp; Workers API</p>
-              <button type="button" class="rc-kpi-link" onclick="refreshRaceControlData()">Sincronizar D1 →</button>
+              <div class="rc-kpi-val">5 Plantillas</div>
+              <p class="rc-kpi-sub">Reset, Bienvenida, Código 6 dígitos y Briefing</p>
+              <button type="button" class="rc-kpi-link" onclick="openEmailPreviewModal('reset')">Probar y Previsualizar →</button>
             </article>
+          </div>
+
+          <!-- QUICK CREDENTIAL RESET & INVITE COMMAND BAR -->
+          <div class="rc-card" id="quickCredResetCard" style="border-left:3px solid var(--r-accent)">
+            <div class="rc-card__head">
+              <div>
+                <h3 class="rc-card__title">🔑 Centro Rápido de Credenciales &amp; Reseteo en 1 Clic</h3>
+                <p class="rc-muted">Selecciona o escribe el correo de cualquier piloto para reenviarle el enlace de reseteo de contraseña (72 h), copiar el link directo para Discord/WhatsApp, generar una clave temporal o cerrar sus sesiones activas.</p>
+              </div>
+              <span class="rc-badge rc-badge--ok">PBKDF2 · Zero-Trust</span>
+            </div>
+            <div class="rc-quick-reset-bar">
+              <div class="rc-quick-reset-inputs">
+                <input
+                  type="email"
+                  id="quickResetEmailInput"
+                  list="quickResetDriversDatalist"
+                  class="g-search"
+                  placeholder="Correo del piloto (ej. mateo@muntru.me, eduardo@muntru.me)…"
+                />
+                <datalist id="quickResetDriversDatalist">
+                  <option value="mateo@muntru.me">Mateo Berbis (#1)</option>
+                  <option value="eduardo@muntru.me">Eduardo Chongkan (#22)</option>
+                  <option value="juanlu@muntru.me">Juanlu Confirmado (#14)</option>
+                  <option value="alberto@muntru.me">Alberto Trujillo (#16)</option>
+                </datalist>
+              </div>
+              <div class="rc-btn-row">
+                <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="runQuickCredentialAction('send_reset')">
+                  ✉️ Reenviar Link Reset por Correo
+                </button>
+                <button type="button" class="r-btn r-btn--sm" onclick="runQuickCredentialAction('copy_link')">
+                  📋 Generar y Copiar Link (72h)
+                </button>
+                <button type="button" class="r-btn r-btn--sm" onclick="runQuickCredentialAction('temp_password')">
+                  ⚡ Emitir Clave Temporal
+                </button>
+                <button type="button" class="r-btn r-btn--sm" onclick="runQuickCredentialAction('revoke_sessions')" title="Invalida todos los tokens y sesiones activas del piloto">
+                  ⎋ Cerrar Sesiones
+                </button>
+              </div>
+            </div>
           </div>
 
           <!-- Roster Oficial en Vivo + Acciones Rápidas -->
@@ -859,29 +901,40 @@ const totalCircuits = catalog.circuits?.length || 128;
   </div>
 
   <!-- ===================================================================== -->
-  <!-- MODAL 3: PREVISUALIZADOR DE PLANTILLAS DE CORREO @MUNTRU.ME           -->
+  <!-- MODAL 3: PREVISUALIZADOR VISUAL DE CORREOS HTML @MUNTRU.ME            -->
   <!-- ===================================================================== -->
   <div id="emailTemplateModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="emailTemplateModalTitle">
-    <div class="g-dialog g-dialog--wide">
+    <div class="g-dialog g-dialog--wide" style="max-width:760px">
       <div class="g-dialog__bar">
-        <h2 id="emailTemplateModalTitle">Plantillas Oficiales @muntru.me</h2>
+        <h2 id="emailTemplateModalTitle">Estudio de Correos Oficiales @muntru.me</h2>
         <button type="button" class="m-notice__close" onclick="closeEmailPreviewModal()" aria-label="Cerrar">×</button>
       </div>
-      <div class="g-views" role="group">
-        <button type="button" id="tplBtn-welcome" class="is-on" onclick="openEmailPreviewModal('welcome')">Bienvenida al Vault</button>
-        <button type="button" id="tplBtn-nec" onclick="openEmailPreviewModal('nec')">Convocatoria NEC VLN</button>
-        <button type="button" id="tplBtn-reset" onclick="openEmailPreviewModal('reset')">Recuperación de Clave</button>
+      <div class="g-views" role="group" style="flex-wrap:wrap">
+        <button type="button" id="tplBtn-welcome" class="is-on" onclick="openEmailPreviewModal('welcome')">Bienvenida (72h)</button>
+        <button type="button" id="tplBtn-reset" onclick="openEmailPreviewModal('reset')">Reseteo de Clave</button>
+        <button type="button" id="tplBtn-code" onclick="openEmailPreviewModal('code')">Código 6 Dígitos</button>
+        <button type="button" id="tplBtn-temp_password" onclick="openEmailPreviewModal('temp_password')">Clave Temporal</button>
+        <button type="button" id="tplBtn-nec" onclick="openEmailPreviewModal('nec')">Briefing NEC VLN</button>
       </div>
       <div class="rc-email-preview">
         <div class="rc-email-preview__meta">
-          <div><strong>De:</strong> <code>Muntrume Race Control &lt;racecontrol@muntru.me&gt;</code></div>
+          <div><strong>De:</strong> <code>Muntrume Race Control &lt;racecontrol@muntru.me&gt;</code> · <span class="rc-badge rc-badge--ok" id="tplBadgeText">ACCESO APROBADO</span></div>
           <div><strong>Asunto:</strong> <span id="tplSubjectText">Bienvenido al Setup Vault de Muntrume Motorsport</span></div>
         </div>
-        <pre id="tplBodyText" class="rc-email-preview__body"></pre>
+        <div id="tplVisualHtmlBox" class="rc-email-visual-card"></div>
+        <details class="rc-email-raw-details">
+          <summary>Ver versión texto plano / mensaje copiable para Discord</summary>
+          <pre id="tplBodyText" class="rc-email-preview__body"></pre>
+        </details>
       </div>
-      <div class="rc-btn-row" style="justify-content:flex-end">
-        <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="copyCurrentEmailTemplate()">📋 Copiar Plantilla</button>
-        <button type="button" class="r-btn r-btn--sm" onclick="closeEmailPreviewModal()">Cerrar</button>
+      <div class="rc-btn-row" style="justify-content:space-between;flex-wrap:wrap">
+        <button type="button" id="btnSendPreviewEmail" class="r-btn r-btn--sm" onclick="sendTestEmailFromAdmin()">
+          🚀 Enviarme prueba real a mi correo
+        </button>
+        <div class="rc-btn-row">
+          <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="copyCurrentEmailTemplate()">📋 Copiar Texto</button>
+          <button type="button" class="r-btn r-btn--sm" onclick="closeEmailPreviewModal()">Cerrar</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1393,6 +1446,37 @@ const totalCircuits = catalog.circuits?.length || 128;
       color: var(--r-text);
       white-space: pre-wrap;
       word-break: break-word;
+    }
+    .rc-quick-reset-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .rc-quick-reset-inputs {
+      flex: 1 1 260px;
+      min-width: 240px;
+    }
+    .rc-quick-reset-inputs .g-search {
+      width: 100%;
+    }
+    .rc-email-visual-card {
+      padding: 18px;
+      background: #0b0f17;
+      color: #e2e8f0;
+      border-bottom: 1px solid var(--r-line);
+    }
+    .rc-email-raw-details summary {
+      cursor: pointer;
+      padding: 10px 16px;
+      font: 700 11px/1.2 var(--r-mono);
+      color: var(--r-muted);
+      background: var(--r-surface);
+      user-select: none;
+    }
+    .rc-email-raw-details summary:hover {
+      color: var(--r-accent);
     }
     @media (max-width: 1024px) {
       .rc-workspace {

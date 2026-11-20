@@ -286,16 +286,25 @@
     });
     if (!list.length) { box.innerHTML = `<div class="adm-empty">${(adminData.members || []).length ? "Ningún usuario coincide con el filtro." : "Todavía no hay usuarios."}</div>`; return; }
     const me = (currentUser?.email || "").toLowerCase();
-    box.innerHTML = `<table class="adm-table"><thead><tr><th>Usuario</th><th>Rol</th><th>Estado</th><th>Equipo · Clase</th><th>Último acceso</th></tr></thead><tbody>${
+    box.innerHTML = `<table class="adm-table"><thead><tr><th>Usuario</th><th>Rol</th><th>Estado</th><th>Equipo · Clase</th><th>Último acceso</th><th style="text-align:right">Acción rápida</th></tr></thead><tbody>${
       list.map((m) => `<tr data-email="${esc(m.email)}" tabindex="0">
         <td><div class="adm-user">${avatar(m)}<div style="min-width:0"><div class="adm-name">${esc(m.name || String(m.email).split("@")[0])}${String(m.email).toLowerCase() === me ? ' <span class="adm-muted">(tú)</span>' : ""}</div><div class="adm-email">${esc(m.email)}</div></div></div></td>
         <td class="adm-col-meta">${roleBadge(m.role)} <span class="adm-only-sm"></span>${window.innerWidth < 768 ? STATE_BADGE[memberState(m)] : ""}</td>
         <td class="adm-col-hide">${STATE_BADGE[memberState(m)]}</td>
         <td class="adm-col-hide">${esc([m.team, m.car_class].filter(Boolean).join(" · ")) || '<span class="adm-muted">—</span>'}</td>
-        <td class="adm-col-hide">${when(m.last_login_at)}</td></tr>`).join("")
+        <td class="adm-col-hide">${when(m.last_login_at)}</td>
+        <td style="text-align:right;white-space:nowrap">${memberState(m) !== "inactive" ? `<button type="button" class="adm-btn adm-btn-ghost adm-btn-sm" data-reset-email="${esc(m.email)}" title="Reenviar enlace de reseteo de credenciales (72h)">🔑 Reset 72h</button>` : ""}</td></tr>`).join("")
     }</tbody></table>`;
   };
   document.addEventListener("click", (ev) => {
+    const resetBtn = ev.target.closest && ev.target.closest("#adminMembersList button[data-reset-email]");
+    if (resetBtn) {
+      ev.stopPropagation();
+      if (typeof window.confirmResendInvite === "function") {
+        window.confirmResendInvite(resetBtn.dataset.resetEmail);
+      }
+      return;
+    }
     const tr = ev.target.closest && ev.target.closest("#adminMembersList tr[data-email]");
     if (tr) openAdminUser(tr.dataset.email);
   });
