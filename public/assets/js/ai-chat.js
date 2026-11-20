@@ -1,4 +1,4 @@
-/* Muntrume AI — Claude & Antigravity Agentic Workspace Engine (Verified Team KB + Tool Traces + Interactive Artifact Studio + Live Streaming + Ollama) */
+/* Muntrume AI — Simplified Claude.ai Workspace & Multi-Style Artifact Export Engine (DOC, PDF, Slides 16:9, CSV, MD) */
 (function () {
   "use strict";
   var API = "https://muntrume.atrumin16.workers.dev/api/ai";
@@ -13,14 +13,13 @@
   } catch (e) { kb = {}; }
 
   var SYSTEM_TEAM = [
-    "Eres Muntrume AI (Agentic 3.7), el ingeniero de pista y copiloto oficial de Muntrume Motorsport (Equipo MMT) en Sant Andreu, Barcelona.",
+    "Eres Muntrume AI (Claude-Style Engineer 3.7), el ingeniero de pista y copiloto oficial de Muntrume Motorsport (Equipo MMT) en Sant Andreu, Barcelona.",
     "Pilotos oficiales: #16 Alberto Trujillo (alberto@muntru.me, Fundador, GT3/Endurance), #1 Mateo Berbis (mateo@muntru.me, GT3/Porsche Cup), #22 Eduardo Chongkan (admin@muntru.me, Endurance/Setup Engineering). Legal: legal@muntru.me.",
-    "Herramientas Open Source (MIT): MMT Sync v0.6.5 en Rust/Tauri (/app/ y /overlay/, <15 MB RAM, 60 FPS, 9 widgets incluyendo Pit & Strategy Window, Tire & Track Temp Monitor, Radar 360 y Mapa Catmull-Rom), Setup Vault (/garage/, 42.654+ archivos .sto con nomenclatura MMT_COCHE_CIRCUITO_SESION_V#.sto), Setup Builder (/setup-builder/), Wallpapers 4K (/wallpapers/) y Galería (/gallery/).",
-    "Series: IMSA, GT Sprint/Endurance (Mustang GT3, Porsche 911 GT3 R 992, McLaren 720S GT3, Ferrari 296 GT3, Audi R8 LMS Evo II, BMW M4 GT3), NEC y Porsche Cup.",
-    "Responde en Markdown estructurado, técnico, conciso y directo en el idioma del usuario."
+    "Herramientas Open Source (MIT): MMT Sync v0.6.5 en Rust/Tauri (/app/ y /overlay/, <15 MB RAM, 60 FPS, 9 widgets), Setup Vault (/garage/, 42.654+ archivos .sto con nomenclatura MMT_COCHE_CIRCUITO_SESION_V#.sto), Setup Builder (/setup-builder/), Wallpapers 4K (/wallpapers/) y Galería (/gallery/).",
+    "Estructura siempre tus respuestas con títulos ### claros, listas y tablas Markdown para que se vean perfectas tanto en vista Documento (Word/PDF) como en vista Presentación (Slides 16:9)."
   ].join("\n");
 
-  var SYSTEM_ASSISTANT = "Eres Muntrume AI en modo Antigravity Open Source. Ayuda con programación, ingeniería de software, análisis técnico, matemáticas y redacción con precisión quirúrgica, bloques de código limpios y formato Markdown estructurado.";
+  var SYSTEM_ASSISTANT = "Eres Muntrume AI en modo Open Source. Ayuda con programación, informes técnicos, presentaciones y análisis estructurando tus respuestas con secciones ### claras, tablas y bloques de código limpios.";
 
   var stage = document.getElementById("aiStage");
   var emptyEl = document.getElementById("aiEmpty");
@@ -41,7 +40,6 @@
   var artifactPane = document.getElementById("aiArtifactPane");
   var artifactToggle = document.getElementById("aiArtifactToggle");
   var artifactClose = document.getElementById("aiArtifactClose");
-  var quickOpenArtifact = document.getElementById("aiQuickOpenArtifact");
   if (!stage || !log || !form || !input || !sendBtn) return;
 
   var currentMode = "team";
@@ -54,7 +52,33 @@
   var renderTimer = null;
   var pendingReply = null;
   var stickToEnd = true;
-  var lastCanvasMarkdown = "";
+
+  var currentArtifactTitle = "Informe Técnico · Muntrume Motorsport";
+  var lastCanvasMarkdown = [
+    "### Briefing Ejecutivo · Muntrume Motorsport (2026 S4)",
+    "",
+    "Bienvenido al **Artifact Studio** de Muntrume AI. Cualquier respuesta del chat se sincroniza aquí automáticamente y puede visualizarse como **Documento**, **Presentación 16:9**, **Simulador de Stint** o **Hoja de Setup .STO**.",
+    "",
+    "| Módulo Oficial | Especificación Técnica | Estado |",
+    "|---|---|---|",
+    "| **MMT Sync v0.6.5** | Cliente nativo Tauri v2 + Rust (`< 15 MB RAM`) | `60 Hz Activo` |",
+    "| **Setup Vault (.sto)** | 42.654+ reglajes verificados (`BoP 26S4`) | `100% Pass Tech` |",
+    "| **Overlays iRSDK** | 9 widgets (`FILE_MAP_READ` · `0% GPU Idle`) | `Click-Through` |",
+    "| **Exportación** | Word (`.doc`), PDF A4, Presentación 16:9, Excel (`.csv`) | `1 Clic` |",
+    "",
+    "### Nomenclatura Oficial de Setups (.STO)",
+    "",
+    "- **Formato:** `MMT_COCHE_CIRCUITO_SESION_V#.sto` (ej. `MMT_F296_SPA_END_V2.sto`).",
+    "- **Variantes:** `Q / Q2` (Clasificación), `R` (Sprint), `END` (Resistencia), `SAFE` (Alta estabilidad), `W` (Lluvia).",
+    "",
+    "### Estrategia Tipo GT3 (45 Minutos · Sprint)",
+    "",
+    "- **Combustible total:** `75.3 L` (`25 vueltas` a `2.85 L/vuelta` + `1.5v` margen).",
+    "- **Ventana de parada:** Vueltas `12 a 18` sin cambio de neumáticos (`-14 s` en pit lane)."
+  ].join("\n");
+
+  var slidesList = [];
+  var activeSlideIdx = 0;
 
   function loadStore() {
     try {
@@ -75,6 +99,14 @@
     return null;
   }
 
+  function escHtml(str) {
+    return String(str || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
   function setMode(mode) {
     currentMode = mode === "assistant" ? "assistant" : "team";
     document.querySelectorAll("[data-ai-mode]").forEach(function (btn) {
@@ -83,15 +115,15 @@
       btn.setAttribute("aria-pressed", on ? "true" : "false");
     });
     if (statusText && !streaming) {
-      statusText.textContent = currentMode === "team" ? "KB + Groq LPU" : (useOllama ? "Ollama Local" : "Antigravity OSS");
+      statusText.textContent = currentMode === "team" ? "Listo" : (useOllama ? "Ollama" : "OSS Live");
     }
     if (composerModelLabel) {
       composerModelLabel.innerHTML = '<span class="ai-status-dot"></span><span>' +
         (useOllama
-          ? "Ollama Local (127.0.0.1:11434) · Privacidad Total"
+          ? "Ollama Local"
           : currentMode === "team"
-            ? "Muntrume Engineer 3.7 · 0ms KB + Streaming"
-            : "Antigravity Open Source · Llama 3.3 / Qwen 2.5") +
+            ? "Claude-Style Engineer 3.7"
+            : "Open Source Assistant") +
         "</span>";
     }
   }
@@ -104,7 +136,7 @@
     ollamaBtn.addEventListener("click", function () {
       useOllama = !useOllama;
       ollamaBtn.setAttribute("aria-pressed", useOllama ? "true" : "false");
-      ollamaBtn.textContent = useOllama ? "Ollama Local: On" : "Ollama Local: Off";
+      ollamaBtn.textContent = useOllama ? "Ollama: On" : "Ollama: Off";
       setMode(currentMode);
     });
   }
@@ -163,56 +195,59 @@
     });
   }
 
+  function extractTitleFromMarkdown(md) {
+    var m = String(md || "").match(/^#{1,3}\s+(.+)$/m);
+    return m ? m[1].replace(/[*_`]/g, "").trim() : "Informe Técnico · Muntrume AI";
+  }
+
   /* ===================================================================== */
-  /* ANTIGRAVITY THINKING & TOOL CALL TRACE BUILDER                        */
+  /* TRACE & INLINE CLAUDE ARTIFACT CARD                                   */
   /* ===================================================================== */
   function buildTraceForQuery(q, mode) {
     var s = String(q || "").toLowerCase();
+    if (/(presentaci[oó]n|diapositiva|slide|deck|24h)/.test(s)) {
+      return {
+        label: "Artifact · Presentación 16:9 generada",
+        artifactTab: "slides",
+        artifactType: "Presentación interactiva · 16:9 Slides",
+        artifactIcon: "📽️",
+        steps: [
+          "✓ tool:slide_deck_builder.compile({ aspect: '16:9', theme: 'Muntrume Carbon' })",
+          "✓ export:ready({ formats: ['HTML Slides', 'PDF Landscape', 'DOC'] })"
+        ]
+      };
+    }
     if (/(45\s*min|combustible|gasolina|fuel|stint|estrategia|pit|\/stint)/.test(s)) {
       return {
-        label: "Antigravity Trace · 2 tools executed (0.3 ms)",
+        label: "Artifact · Estrategia de Stint & Combustible",
         artifactTab: "stint",
+        artifactType: "Simulador Stint + Tabla exportable (CSV / PDF)",
+        artifactIcon: "📊",
         steps: [
-          "✓ tool:iracing_stint_engine.compute({ durationMin: 45, burnRateL: 2.85, safetyMarginL: 2.0 })",
-          "✓ artifact:stint_simulator.sync({ pitWindow: 'L10–L13', tires: 'no_change' })"
+          "✓ tool:iracing_stint_engine.compute({ durationMin: 45, burnRateL: 2.85 })",
+          "✓ artifact:stint_simulator.sync({ pitWindow: 'V12–V18' })"
         ]
       };
     }
-    if (/(nomenclatura|\.sto|setup|subviraje|sobreviraje|understeer|oversteer|arb|bias|rake|\/nomenclatura|\/subviraje)/.test(s)) {
+    if (/(nomenclatura|\.sto|setup|subviraje|sobreviraje|understeer|oversteer|arb|bias|rake)/.test(s)) {
       return {
-        label: "Antigravity Trace · 2 tools executed (0.4 ms)",
+        label: "Artifact · Ficha de Setup .STO & Chasis",
         artifactTab: "sto",
+        artifactType: "Hoja de Setup & Diagnóstico (DOC / PDF)",
+        artifactIcon: "🔧",
         steps: [
-          "✓ tool:mmt_setup_vault.inspect({ catalogSize: 42654, schema: 'MMT_CAR_TRK_SES_V#.sto' })",
-          "✓ tool:handling_doctor.prescribe({ targetHotPressureKpa: '165–175', tempWindowC: '75–92' })"
-        ]
-      };
-    }
-    if (/(overlay|mmt\s*sync|instalo|hud|winget|\/overlay)/.test(s)) {
-      return {
-        label: "Antigravity Trace · 2 tools executed (0.2 ms)",
-        artifactTab: "canvas",
-        steps: [
-          "✓ tool:mmt_sync_bridge.inspect({ version: '0.6.5', sdk: 'FILE_MAP_READ 60Hz' })",
-          "✓ tool:muntrume_kb.get_tool({ id: 'overlay', modules: 9 })"
-        ]
-      };
-    }
-    if (/(piloto|alberto|mateo|eduardo|dorsal|contacto|correo|email|equipo)/.test(s)) {
-      return {
-        label: "Antigravity Trace · 1 tool executed (0.2 ms)",
-        artifactTab: "canvas",
-        steps: [
-          "✓ tool:muntrume_kb.query_roster({ drivers: ['#16', '#1', '#22'], source: 'verified_ssot' })"
+          "✓ tool:mmt_setup_vault.inspect({ catalogSize: 42654 })",
+          "✓ tool:handling_doctor.prescribe({ targetHotKpa: '165–175' })"
         ]
       };
     }
     return {
-      label: mode === "assistant" ? "Antigravity Open Source · Streaming Engine" : "Muntrume Engineer · Context + Streaming",
-      artifactTab: "canvas",
+      label: mode === "assistant" ? "Artifact · Documento Open Source" : "Artifact · Documento Técnico MMT",
+      artifactTab: "doc",
+      artifactType: "Documento Técnico (Exportable a Word .DOC y PDF)",
+      artifactIcon: "📄",
       steps: [
-        "✓ context:system_prompt.loaded({ mode: '" + mode + "', markdown: true })",
-        "✓ stream:inference_pipeline.dispatch()"
+        "✓ tool:document_composer.format({ exportable: ['DOC', 'PDF', 'Slides', 'MD'] })"
       ]
     };
   }
@@ -222,21 +257,69 @@
     details.className = "ai-thought";
     var summary = document.createElement("summary");
     summary.innerHTML =
-      '<span class="ai-thought__left"><span class="ai-thought__badge">TRACE</span><span>' +
-      (trace && trace.label ? trace.label : "Antigravity Reasoning Trace") +
+      '<span class="ai-thought__left"><span class="ai-thought__badge">ARTIFACT</span><span>' +
+      escHtml(trace && trace.label ? trace.label : "Razonamiento y herramientas") +
       "</span></span><span>▾</span>";
     var stepsBox = document.createElement("div");
     stepsBox.className = "ai-thought__steps";
     var steps = (trace && trace.steps) || ["✓ tool:muntrume_kb.verify()"];
     steps.forEach(function (st) {
       var d = document.createElement("div");
-      d.className = "ai-thought__step";
       d.textContent = st;
       stepsBox.appendChild(d);
     });
     details.appendChild(summary);
     details.appendChild(stepsBox);
     return details;
+  }
+
+  function makeInlineArtifactCard(msg) {
+    var trace = msg.trace || buildTraceForQuery(msg.content, currentMode);
+    var title = extractTitleFromMarkdown(msg.content);
+    var card = document.createElement("div");
+    card.className = "ai-inline-artifact";
+
+    var info = document.createElement("div");
+    info.className = "ai-inline-artifact__info";
+    info.innerHTML =
+      '<div class="ai-inline-artifact__ico">' + (trace.artifactIcon || "📄") + "</div>" +
+      '<div style="min-width:0">' +
+        '<strong class="ai-inline-artifact__title">' + escHtml(title) + "</strong>" +
+        '<span class="ai-inline-artifact__sub">' + escHtml(trace.artifactType || "Documento · DOC / PDF / Slides") + "</span>" +
+      "</div>";
+
+    var btns = document.createElement("div");
+    btns.className = "ai-inline-artifact__btns";
+
+    function addBtn(label, onClick) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "ai-action";
+      b.textContent = label;
+      b.addEventListener("click", onClick);
+      btns.appendChild(b);
+    }
+
+    addBtn("Abrir Artifact ↗", function () {
+      updateCanvasArtifact(msg.content);
+      openArtifactPane(trace.artifactTab || "doc");
+    });
+    addBtn("📝 DOC", function () {
+      updateCanvasArtifact(msg.content);
+      exportArtifactAs("doc");
+    });
+    addBtn("📕 PDF", function () {
+      updateCanvasArtifact(msg.content);
+      exportArtifactAs("pdf");
+    });
+    addBtn("📽️ Slides", function () {
+      updateCanvasArtifact(msg.content);
+      openArtifactPane("slides");
+    });
+
+    card.appendChild(info);
+    card.appendChild(btns);
+    return card;
   }
 
   function makeTurn(msg) {
@@ -268,32 +351,26 @@
     host.className = "ai-mdhost";
     bb.appendChild(host);
 
+    var isFinished = Boolean(msg.content) && !(streaming && current() && current().messages[current().messages.length - 1].id === msg.id);
     var acts = document.createElement("div");
     acts.className = "ai-actions";
-    acts.hidden = !msg.content || (streaming && current() && current().messages[current().messages.length - 1].id === msg.id);
+    acts.hidden = !isFinished;
+
+    if (msg.content) {
+      bb.appendChild(makeInlineArtifactCard(msg));
+    }
 
     var copyBtn = document.createElement("button");
     copyBtn.type = "button";
     copyBtn.className = "ai-action";
-    copyBtn.textContent = "Copiar respuesta";
+    copyBtn.textContent = "📋 Copiar texto";
     copyBtn.addEventListener("click", function () {
       if (navigator.clipboard) navigator.clipboard.writeText(msg.content).catch(function () {});
       copyBtn.textContent = "¡Copiado!";
-      setTimeout(function () { copyBtn.textContent = "Copiar respuesta"; }, 1500);
-    });
-
-    var artBtn = document.createElement("button");
-    artBtn.type = "button";
-    artBtn.className = "ai-action";
-    artBtn.textContent = "Abrir en Artifact Studio ↗";
-    artBtn.addEventListener("click", function () {
-      updateCanvasArtifact(msg.content);
-      var targetTab = (msg.trace && msg.trace.artifactTab) ? msg.trace.artifactTab : "canvas";
-      openArtifactPane(targetTab);
+      setTimeout(function () { copyBtn.textContent = "📋 Copiar texto"; }, 1500);
     });
 
     acts.appendChild(copyBtn);
-    acts.appendChild(artBtn);
     bb.appendChild(acts);
     wrap.appendChild(av);
     wrap.appendChild(bb);
@@ -365,112 +442,151 @@
     });
   }
 
+  /* ===================================================================== */
+  /* VERIFIED KNOWLEDGE & PRESENTATION GENERATORS                          */
+  /* ===================================================================== */
   function matchInstantTeamAnswer(q) {
     var s = q.toLowerCase();
-    if (/(nomenclatura|\/nomenclatura|c[oó]digo.*sto|est[aá]ndar.*mmt)/.test(s)) {
+    if (/(presentaci[oó]n|diapositiva|slide|24h)/.test(s)) {
       return [
-        "### Estándar Oficial de Nomenclatura `.sto` · Muntrume Motorsport",
+        "### 01 · Muntrume Motorsport: Ingeniería & Resistencia 24h",
         "",
-        "Todos los setups oficiales en `Documents\\iRacing\\setups\\<coche>\\MMT` siguen la sintaxis de 5 bloques:",
+        "- **Identidad:** Escudería oficial de sim racing en iRacing nacida en Sant Andreu (Barcelona).",
+        "- **Filosofía:** Preparación empírica basada en telemetría de 60 Hz, cero suscripciones y software 100 % Open Source (MIT).",
+        "- **Especialidad:** Eventos especiales de 24 horas (Daytona, Spa, Nürburgring NEC, Le Mans) y series IMSA / GT Sprint.",
+        "",
+        "### 02 · MMT Sync v0.6.5 & HUD 60 Hz (Rust + Tauri v2)",
+        "",
+        "| Métrica | Valor en Pista |",
+        "|---|---|",
+        "| Consumo de memoria RAM | `< 15 MB` (frente a 450+ MB en Electron) |",
+        "| Latencia iRSDK | `60 Hz` lectura directa `FILE_MAP_READ` |",
+        "| Módulos transparentes | `9 widgets` (Standings, Relative, Radar 360°, Mapa GPS, Fuel, Tires) |",
+        "",
+        "### 03 · Setup Vault (.STO) & Estándar de Nomenclatura",
+        "",
+        "- **42.654+ archivos `.sto`** sincronizados por hash SHA-256 en `Documents\\iRacing\\setups\\MMT`.",
+        "- **Nomenclatura oficial:** `MMT_F296_SPA_END_V2.sto` (`Q`, `Q2`, `R`, `END`, `SAFE`, `W`).",
+        "- **Escrutinio BoP 26S4:** 100 % Pass Tech garantizado, incluyendo alturas calibradas `>= 70.5 mm` para NEC VLN.",
+        "",
+        "### 04 · Estrategia de Combustible, Relevos y Telemetría",
+        "",
+        "- **Cálculo de Stints:** Consumo medio GT3 (`2.75 – 2.95 L/vuelta`), margen de seguridad `+1.5 vueltas` y auto-repostaje `IRSDK_BROADCAST_MSG`.",
+        "- **Control Térmico:** Ventana óptima de neumáticos en caliente entre `165–175 kPa` y `75–92 °C`.",
+        "- **Relevos y Radio:** Coordinación en directo en Discord Paddock y comparación metro a metro en Garage 61.",
+        "",
+        "### 05 · Plantilla Oficial y Canales de Contacto",
+        "",
+        "- **#16 Alberto Trujillo** — Fundador & Lead Telemetry (`alberto@muntru.me`)",
+        "- **#1 Mateo Berbis** — Piloto Oficial GT3 & Porsche Cup (`mateo@muntru.me`)",
+        "- **#22 Eduardo Chongkan** — Piloto Oficial Endurance & Setup Engineering (`admin@muntru.me`)"
+      ].join("\n");
+    }
+    if (/(briefing.*spa|informe.*briefing)/.test(s)) {
+      return [
+        "### Briefing Oficial de Carrera · GT3 Spa-Francorchamps (2026 S4)",
+        "",
+        "Documento técnico preparado por **Muntrume Race Control** para sesiones Sprint (40 min) y Endurance (3h / 24h) en el Circuit de Spa-Francorchamps.",
+        "",
+        "### Parámetros de Estrategia y Combustible",
+        "",
+        "| Parámetro | Sprint (45 min) | Endurance (Stint 65 min) |",
+        "|---|---|---|",
+        "| Setup `.sto` recomendado | `MMT_F296_SPA_R_V2.sto` | `MMT_F296_SPA_END_V2.sto` |",
+        "| Tiempo de vuelta objetivo | `2:16.8 – 2:17.5` | `2:17.8 – 2:18.4` |",
+        "| Consumo medio estimado | `3.35 L / vuelta` | `3.28 L / vuelta` |",
+        "| Combustible total requerido | `72.0 L` (`20 vueltas + 1.5v`) | `104.0 L` (`31 vueltas`) |",
+        "| Ventana de Box (`Pit Window`) | **Vueltas 10 – 13** (sin cambio gomas) | **Vuelta 29 – 30** (cambio 4 neumáticos) |",
+        "",
+        "### Presiones y Balance de Chasis en Spa",
+        "",
+        "- **Presión objetivo en caliente:** `168 – 172 kPa` (`24.4 – 24.9 PSI`) tras 3 vueltas lanzadas.",
+        "- **Eau Rouge / Raidillon:** Si el fondo plano roza en la compresión a depósito lleno, sube `+1 mm` la altura delantera o añade `+1 click` al packer delantero.",
+        "- **Sector 2 (Pouhon / Stavelot):** Para reducir subviraje en curva rápida, baja `Brake Bias -0.4%` o sube `+1 mm` el rake trasero."
+      ].join("\n");
+    }
+    if (/(nomenclatura|\/nomenclatura|c[oó]digo.*sto|est[aá]ndar.*mmt|subviraje|sobreviraje)/.test(s)) {
+      return [
+        "### Estándar Oficial de Setups `.STO` y Diagnóstico de Chasis · MMT",
+        "",
+        "Todos los reglajes oficiales en `Documents\\iRacing\\setups\\<coche>\\MMT` siguen la sintaxis de 5 bloques:",
         "",
         "```text",
         "MMT_F296_SPA_END_V2.sto",
         " │   │    │   │   └── Versión verificada (V1, V2, V3…)",
-        " │   │    │   └────── Tipo de sesión: Q, Q2, R, END, W, SAFE",
+        " │   │    │   └────── Sesión: Q, Q2, R, END, W, SAFE",
         " │   │    └────────── Circuito oficial (SPA, DAYTONA, NORDS, LEMANS…)",
-        " │   └─────────────── Código de chasis (F296, P911, M4, P963, F499P…)",
+        " │   └─────────────── Chasis (F296, P911, M4, P963, F499P…)",
         " └─────────────────── Escudería Muntrume Motorsport",
         "```",
         "",
-        "| Código de Sesión | Uso en Pista |",
-        "|---|---|",
-        "| `Q` / `Q2` | **Clasificación:** depósito mínimo (`12–15 L`), rake agresivo y máxima rotación en 1–2 vueltas lanzadas |",
-        "| `R` | **Race Sprint (40–45 min):** equilibrio aerodinámico y degradación controlada |",
-        "| `END` | **Resistencia (2h – 24h):** depósito lleno, estabilidad en baches y protección térmica del tren trasero |",
-        "| `SAFE` | **Alta Estabilidad:** mayor convergencia trasera y ARB trasera más blanda para stints largos sin riesgo |",
-        "| `W` | **Wet / Lluvia:** altura subida, barras blandas y máxima tracción con neumático de agua |",
+        "### Tabla de Corrección Rápida (Handling Doctor)",
         "",
-        "Puedes generar y probar variantes en el panel **Artifact Studio → Setup .STO** a la derecha o descargar los archivos en [`/garage/`](/garage/)."
-      ].join("\n");
-    }
-    if (/(subviraje|sobreviraje|understeer|oversteer|\/subviraje|arb|brake\s*bias|rake)/.test(s)) {
-      return [
-        "### Diagnóstico de Chasis y Balance · Ingeniería MMT",
-        "",
-        "| Síntoma en Pista | Fase de Curva | Corrección Mecánica Recomendada |",
+        "| Síntoma en Pista | Fase de Curva | Ajuste Mecánico Recomendado |",
         "|---|---|---|",
-        "| **Subviraje (no gira)** | Entrada (frenando) | Baja `Brake Bias -0.4% a -0.8%`, ablanda `1 click` ARB delantera o sube `+1 mm` altura trasera (*rake*) |",
-        "| **Subviraje (empuja)** | Mitad / Ápice | Aumenta caída delantera (`-0.1° camber`), baja altura delantera `-1 mm` o ablanda muelle delantero |",
-        "| **Sobreviraje (suelta trasera)** | Entrada (frenando) | Sube `Brake Bias +0.5%`, sube `+1 click` precarga de diferencial (*Diff Preload*) o baja altura trasera |",
-        "| **Sobreviraje (tracción)** | Salida (acelerando) | Ablanda `1–2 clicks` ARB trasera, sube `TC1 / TC2 +1` o reduce altura trasera `-1 mm` |",
-        "",
-        "- **Ventana óptima GT3 en caliente:** `165 – 175 kPa` (`24.0 – 25.4 PSI`) y `75 – 92 °C` en el widget **Tire & Track Temp Monitor** de [`/overlay/`](/overlay/)."
+        "| **Subviraje (no gira)** | Entrada (frenando) | Baja `Brake Bias -0.5%`, ablanda `1 click` ARB delantera o sube `+1 mm` rake trasero |",
+        "| **Subviraje (empuja)** | Ápice / Mitad curva | Aumenta caída delantera `-0.1°`, baja altura delantera `-1 mm` |",
+        "| **Sobreviraje (suelta trasera)** | Entrada (frenando) | Sube `Brake Bias +0.5%` y añade `+1 click` a `Diff Preload` |",
+        "| **Sobreviraje (tracción)** | Salida (acelerando) | Ablanda `1–2 clicks` ARB trasera y sube `TC1 / TC2 +1` |"
       ].join("\n");
     }
-    if (/(piloto|alberto|mateo|eduardo|dorsal|contacto|correo|email|equipo|muntrume)/.test(s) && !/(45\s*min|combustible|gasolina|fuel|overlay|instalo|nomenclatura)/.test(s)) {
+    if (/(piloto|alberto|mateo|eduardo|dorsal|contacto|correo|email|equipo|muntrume)/.test(s) && !/(45\s*min|combustible|gasolina|fuel|overlay|instalo|nomenclatura|presentaci)/.test(s)) {
       var pilots = (kb.pilots || []).map(function (p) {
-        return "- **" + p.dorsal + " " + p.name + "** — *" + p.role + "* (" + p.categories.join(", ") + ") · [" + p.email + "](mailto:" + p.email + ") · [Ver ficha](" + p.profileUrl + ")";
+        return "| **" + p.dorsal + "** | **" + p.name + "** | " + p.role + " | " + p.categories.join(", ") + " | `" + p.email + "` |";
       }).join("\n");
       return [
-        "### Pilotos Oficiales y Contacto · Muntrume Motorsport",
+        "### Plantilla Oficial de Pilotos y Contacto · Muntrume Motorsport",
         "",
+        "| Dorsal | Piloto Oficial | Rol en el Equipo | Categorías | Correo Oficial |",
+        "|---|---|---|---|---|",
         pilots,
         "",
-        "### Canales Oficiales",
+        "### Canales y Telemetría Oficial",
         "- **Administración / Soporte / Prensa:** [admin@muntru.me](mailto:admin@muntru.me)",
-        "- **Legal / Privacidad / DMCA:** [legal@muntru.me](mailto:legal@muntru.me)",
+        "- **Legal / Privacidad / RGPD:** [legal@muntru.me](mailto:legal@muntru.me)",
         "- **Discord Paddock:** [discord.gg/ehX6B8JUtE](https://discord.gg/ehX6B8JUtE)",
         "- **Telemetría Garage 61:** [Equipo Muntrume Motorsport](https://garage61.net/app/teams/muntrume-motorsport)"
       ].join("\n");
     }
-    if (/(overlay|mmt\s*sync|instalo|hud|kapps|pit\s*window|tire\s*monitor|presiones\s*en\s*caliente|\/overlay)/.test(s)) {
+    if (/(overlay|mmt\s*sync|instalo|hud|kapps|pit\s*window|tire\s*monitor|\/overlay)/.test(s)) {
       return [
-        "### MMT Sync v0.6.5 & Overlays 60 Hz (Rust + Tauri v2 · MIT)",
+        "### Manual Técnico: MMT Sync v0.6.5 & Overlays 60 Hz",
         "",
-        "- **Rendimiento nativo:** `< 15 MB` RAM, `0.0% GPU idle` y `60 FPS` reales mediante lectura directa `FILE_MAP_READ` del SDK de iRacing.",
-        "- **Instalación recomendada (sin aviso SmartScreen):**",
+        "- **Arquitectura:** Cliente nativo en **Tauri v2 + Rust** (`< 15 MB` RAM, `0.0% GPU idle`, licencia MIT).",
+        "- **Instalación directa por consola (Windows Package Manager):**",
         "  ```powershell",
         "  winget install Muntrume.MMTSync",
         "  ```",
-        "  O descarga el instalador directo desde [`/app/`](/app/) y prueba el simulador interactivo en [`/overlay/`](/overlay/).",
-        "- **9 Módulos incluidos en el HUD Studio:**",
-        "  1. `Standings` multiclase (`Top 3` + ventana `±2`, SOF y licencias)",
-        "  2. `Relative` en tiempo real con filtro de Pace Car y radar de proximidad",
-        "  3. `Track Map GPS` con splines Catmull-Rom a 60 FPS",
-        "  4. `Input Telemetry` (curvas de acelerador, freno, embrague, ABS y clipping FFB)",
-        "  5. `Pit & Strategy Window` + auto-repostaje directo en iRacing (`IRSDK_BROADCAST_MSG`)",
-        "  6. `Tire & Track Temp Monitor` (`FL/FR/RL/RR` en `°C` y `kPa/PSI`)",
-        "  7. `Radar 360°`, `Delta Bar` y `Spotter Lateral`"
+        "",
+        "### Módulos del HUD Studio (60 FPS · Click-Through)",
+        "",
+        "| Módulo | Función en Pista |",
+        "|---|---|",
+        "| **01 · Standings** | Clasificación multiclase (`Top 3` + ventana `±2`), SOF e iRating en vivo |",
+        "| **02 · Relative** | Distancias en segundos con filtro de Pace Car y alerta de doblados |",
+        "| **03 · Pit & Strategy** | Ventana de parada, litros a añadir y auto-repostaje `IRSDK_BROADCAST_MSG` |",
+        "| **04 · Tire & Temp Monitor** | Temperaturas `FL/FR/RL/RR` (`75–92 °C`) y presiones en caliente `kPa/PSI` |",
+        "| **05 · Track Map & Radar** | Mapa GPS con splines Catmull-Rom e indicador de proximidad 360° |"
       ].join("\n");
     }
     if (/(45\s*min|combustible|gasolina|fuel|stint|estrategia|pit|\/stint)/.test(s)) {
       return [
-        "### Estrategia GT3 · Carrera de 45 minutos (iRacing)",
+        "### Hoja de Estrategia GT3 · Carrera de 45 Minutos",
         "",
-        "| Parámetro | Valor Calculado (Referencia GT3) |",
-        "|---|---|",
-        "| Duración / Vueltas est. | `45 min` (~25 vueltas a `1:48.5`) |",
-        "| Consumo medio GT3 | `2.85 L / vuelta` |",
-        "| Combustible total (+1.5v margen) | **`75.3 L`** |",
-        "| Ventana de Box (`Pit Window`) | **Vueltas 12 – 18** (con depósito Sprint capado a `55 L`) |",
-        "| Cambio de neumáticos | **No recomendado** en `45 min` (ahorra `~14 s` en el carril de boxes) |",
+        "| Parámetro de Ingeniería | Valor Calculado | Notas Operativas |",
+        "|---|---|---|",
+        "| **Duración de Sesión** | `45 minutos` | ~25 vueltas (ritmo medio `1:48.5`) |",
+        "| **Consumo por Vuelta** | `2.85 L / vuelta` | Mapa de motor estándar (Dry) |",
+        "| **Combustible Total (+1.5v)** | **`75.3 L`** | Incluye vuelta de formación y margen |",
+        "| **Capacidad Depósito Sprint** | `55.0 L` | Restricción BoP serie GT Sprint |",
+        "| **Ventana de Parada (Pit Window)** | **Vueltas 12 – 18** | Repostar `+21.5 L` en parada única |",
+        "| **Cambio de Neumáticos** | **No cambiar** | Ahorro de `~14.0 s` en carril de boxes |",
         "",
-        "```text",
-        "Fórmula MMT Race Engineer:",
-        "Total_L = ceil(Duración_seg / Vuelta_seg) * Consumo_L + (1.5 * Consumo_L)",
-        "```",
+        "### Recomendaciones de Stint",
         "",
-        "He sincronizado estos datos en el **Artifact Studio (Stint & Fuel)** a la derecha para que ajustes tu tiempo de vuelta o consumo en vivo."
-      ].join("\n");
-    }
-    if (/(wallpaper|fondo|setup|\.sto|garage|serie|imsa|nec|pcc|pcup|galer[ií]a)/.test(s)) {
-      return [
-        "### Ecosistema Muntrume Motorsport",
-        "",
-        "- **Setups `.sto` ([`/garage/`](/garage/)):** Más de **42.654 reglajes** organizados por serie y circuito (`IMSA`, `GT Sprint/Endurance`, `NEC`, `Porsche Cup`).",
-        "- **MMT Sync Desktop ([`/app/`](/app/)):** Sincronizador SHA-256 en 1 clic, analizador `.ibt` y Overlays 60 Hz.",
-        "- **Setup Builder ([`/setup-builder/`](/setup-builder/)):** Asistente interactivo de chasis y aerodinámica.",
-        "- **Wallpapers 4K ([`/wallpapers/`](/wallpapers/)):** Capturas reales en pista `16:9` y móvil `9:16 4K` con sincronizador multi-monitor `0 ms`."
+        "- **Vueltas 1–3:** Calentamiento progresivo de frenos y neumáticos hasta alcanzar `168 kPa`.",
+        "- **Vueltas 12–15:** Ventana ideal de *undercut* si hay tráfico delante.",
+        "- **Auto-Fuel:** Activa el envío automático en **MMT Sync** o ajusta los parámetros en la pestaña **📊 Stint Sim**."
       ].join("\n");
     }
     return null;
@@ -478,17 +594,422 @@
 
   function buildSmartFallback(q) {
     return matchInstantTeamAnswer(q) || [
-      "### Muntrume AI · Respuesta Local Verificada",
+      "### Informe Técnico · Muntrume AI",
       "",
-      "El nodo externo de streaming no respondió a tiempo, pero el motor local de ingeniería está activo:",
-      "- **Abrir Simulador de Stint o Decodificador `.STO`:** pulsa el botón **Artifacts** arriba a la derecha.",
-      "- **MMT Sync & Overlays 60 Hz:** [`/app/`](/app/) y [`/overlay/`](/overlay/)",
-      "- **Setup Vault (42.654+ `.sto`):** [`/garage/`](/garage/)",
+      "Resumen verificado del ecosistema **Muntrume Motorsport** listo para exportar a **Word (.doc)**, **PDF** o **Presentación**:",
       "",
-      "Para inferencia LLM 100 % local sin red, activa **Ollama Local** en la barra superior (`http://localhost:11434`)."
+      "| Herramienta | Ruta | Descripción |",
+      "|---|---|---|",
+      "| **MMT Sync v0.6.5** | `/app/` | Cliente nativo Rust + Tauri v2 con sincronización SHA-256 |",
+      "| **Simulador HUD 60Hz** | `/overlay/` | 9 widgets de telemetría transparente para iRacing |",
+      "| **Setup Vault (.sto)** | `/garage/` | 42.654+ reglajes verificados con BoP 26S4 |",
+      "| **Calendario 2026 S4** | `/calendar/` | Planificador de las 12 semanas oficiales |"
     ].join("\n");
   }
 
+  /* ===================================================================== */
+  /* MULTI-STYLE ARTIFACT STUDIO & SLIDE DECK ENGINE                       */
+  /* ===================================================================== */
+  function setArtifactTab(tabName) {
+    var tabs = ["doc", "slides", "stint", "sto", "code"];
+    var target = tabs.indexOf(tabName) >= 0 ? tabName : "doc";
+    document.querySelectorAll("[data-art-tab]").forEach(function (btn) {
+      var on = btn.getAttribute("data-art-tab") === target;
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    var map = {
+      doc: "artPanelDoc",
+      slides: "artPanelSlides",
+      stint: "artPanelStint",
+      sto: "artPanelSto",
+      code: "artPanelCode"
+    };
+    Object.keys(map).forEach(function (k) {
+      var el = document.getElementById(map[k]);
+      if (el) el.hidden = k !== target;
+    });
+    if (target === "slides") {
+      rebuildSlidesFromMarkdown(lastCanvasMarkdown);
+    }
+  }
+
+  function openArtifactPane(tabName) {
+    if (!artifactPane) return;
+    artifactPane.hidden = false;
+    if (artifactToggle) artifactToggle.setAttribute("aria-pressed", "true");
+    setArtifactTab(tabName || "doc");
+  }
+
+  function closeArtifactPane() {
+    if (!artifactPane) return;
+    artifactPane.hidden = true;
+    if (artifactToggle) artifactToggle.setAttribute("aria-pressed", "false");
+  }
+
+  function parseMarkdownIntoSlides(md) {
+    var raw = String(md || "").trim();
+    if (!raw) {
+      return [{ title: "Muntrume Motorsport", body: "Genera una consulta en el chat para ver las diapositivas." }];
+    }
+    var chunks = raw.split(/\n(?=###?\s+)/);
+    var out = [];
+    chunks.forEach(function (c) {
+      var trimmed = c.trim();
+      if (!trimmed) return;
+      var lines = trimmed.split("\n");
+      var first = lines[0].replace(/^#{1,4}\s*/, "").trim();
+      var rest = lines.slice(1).join("\n").trim();
+      if (!rest && out.length === 0) {
+        out.push({ title: currentArtifactTitle, body: first });
+      } else {
+        out.push({ title: first || currentArtifactTitle, body: rest || first });
+      }
+    });
+    if (out.length === 1 && out[0].body.split("\n\n").length >= 3) {
+      var paras = out[0].body.split("\n\n");
+      var multi = [];
+      for (var i = 0; i < paras.length; i += 2) {
+        multi.push({
+          title: i === 0 ? out[0].title : (out[0].title + " (" + (Math.floor(i / 2) + 1) + ")"),
+          body: paras.slice(i, i + 2).join("\n\n")
+        });
+      }
+      return multi;
+    }
+    return out;
+  }
+
+  function renderActiveSlide() {
+    if (!slidesList.length) slidesList = parseMarkdownIntoSlides(lastCanvasMarkdown);
+    if (activeSlideIdx >= slidesList.length) activeSlideIdx = 0;
+    if (activeSlideIdx < 0) activeSlideIdx = slidesList.length - 1;
+
+    var slide = slidesList[activeSlideIdx];
+    var counterEl = document.getElementById("artSlideCounter");
+    var numBadge = document.getElementById("artSlideNumBadge");
+    var bodyEl = document.getElementById("artSlideBody");
+    var footTitle = document.getElementById("artSlideTitleFoot");
+    var dotsEl = document.getElementById("artSlideDots");
+
+    if (counterEl) counterEl.textContent = "Diapositiva " + (activeSlideIdx + 1) + " / " + slidesList.length;
+    if (numBadge) numBadge.textContent = String(activeSlideIdx + 1).padStart(2, "0");
+    if (footTitle) footTitle.textContent = currentArtifactTitle;
+
+    var slideMd = "### " + slide.title + "\n\n" + slide.body;
+    if (bodyEl) {
+      if (window.MuntrumeMarkdown && window.MuntrumeMarkdown.renderMarkdown) {
+        bodyEl.innerHTML = "";
+        bodyEl.appendChild(window.MuntrumeMarkdown.renderMarkdown(slideMd, { copy: "Copiar", copied: "¡Copiado!" }));
+      } else {
+        bodyEl.innerHTML = "<h3>" + escHtml(slide.title) + "</h3><pre>" + escHtml(slide.body) + "</pre>";
+        loadMd().then(function (lib) {
+          if (lib && bodyEl) {
+            bodyEl.innerHTML = "";
+            bodyEl.appendChild(lib.renderMarkdown(slideMd, { copy: "Copiar", copied: "¡Copiado!" }));
+          }
+        });
+      }
+    }
+
+    if (dotsEl) {
+      dotsEl.innerHTML = "";
+      slidesList.forEach(function (_, idx) {
+        var dot = document.createElement("button");
+        dot.type = "button";
+        dot.className = "ai-slide-dot" + (idx === activeSlideIdx ? " is-active" : "");
+        dot.setAttribute("aria-label", "Ir a diapositiva " + (idx + 1));
+        dot.addEventListener("click", function () {
+          activeSlideIdx = idx;
+          renderActiveSlide();
+        });
+        dotsEl.appendChild(dot);
+      });
+    }
+  }
+
+  function rebuildSlidesFromMarkdown(md) {
+    slidesList = parseMarkdownIntoSlides(md);
+    activeSlideIdx = 0;
+    renderActiveSlide();
+  }
+
+  function updateCanvasArtifact(markdownText) {
+    lastCanvasMarkdown = String(markdownText || "").trim() || lastCanvasMarkdown;
+    currentArtifactTitle = extractTitleFromMarkdown(lastCanvasMarkdown);
+
+    var titleEl = document.getElementById("artCanvasTitle");
+    if (titleEl) titleEl.textContent = currentArtifactTitle;
+
+    var rawPre = document.getElementById("artRawMarkdownPre");
+    if (rawPre) rawPre.textContent = lastCanvasMarkdown;
+
+    var host = document.getElementById("artCanvasBody");
+    if (host) {
+      if (window.MuntrumeMarkdown && window.MuntrumeMarkdown.renderMarkdown) {
+        host.innerHTML = "";
+        host.appendChild(window.MuntrumeMarkdown.renderMarkdown(lastCanvasMarkdown, { copy: "Copiar", copied: "¡Copiado!" }));
+      } else {
+        loadMd().then(function (lib) {
+          if (lib && host) {
+            host.innerHTML = "";
+            host.appendChild(lib.renderMarkdown(lastCanvasMarkdown, { copy: "Copiar", copied: "¡Copiado!" }));
+          }
+        });
+      }
+    }
+    rebuildSlidesFromMarkdown(lastCanvasMarkdown);
+  }
+
+  /* ===================================================================== */
+  /* UNIVERSAL EXPORT ENGINE: WORD (.DOC), PDF, SLIDES (.HTML), CSV, .MD   */
+  /* ===================================================================== */
+  function slugifyFile(title) {
+    var clean = String(title || "Muntrume_AI")
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-zA-Z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "")
+      .slice(0, 48);
+    return clean || "Muntrume_Artifact";
+  }
+
+  function triggerBlobDownload(blob, filename) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () {
+      a.remove();
+      URL.revokeObjectURL(url);
+    }, 800);
+  }
+
+  function getRenderedArtifactHtml() {
+    var host = document.getElementById("artCanvasBody");
+    if (host && host.innerHTML.trim()) return host.innerHTML;
+    return "<pre>" + escHtml(lastCanvasMarkdown) + "</pre>";
+  }
+
+  function exportArtifactAs(format) {
+    var fnameBase = slugifyFile(currentArtifactTitle);
+    var dateStr = new Date().toLocaleDateString("es-ES", { dateStyle: "long" });
+    var contentHtml = getRenderedArtifactHtml();
+
+    if (format === "md") {
+      var mdBlob = new Blob([lastCanvasMarkdown], { type: "text/markdown;charset=utf-8" });
+      triggerBlobDownload(mdBlob, fnameBase + ".md");
+      return;
+    }
+
+    if (format === "csv") {
+      var rows = [];
+      var lines = lastCanvasMarkdown.split("\n");
+      lines.forEach(function (ln) {
+        var t = ln.trim();
+        if (t.charAt(0) === "|" && t.charAt(t.length - 1) === "|") {
+          if (/^\|[\s\-:|]+\|$/.test(t)) return;
+          var cells = t.slice(1, -1).split("|").map(function (c) {
+            return c.replace(/[*_`]/g, "").trim();
+          });
+          rows.push(cells);
+        }
+      });
+      if (rows.length === 0) {
+        var st = recalcStintArtifact();
+        rows = [
+          ["Parametro", "Valor"],
+          ["Titulo", currentArtifactTitle],
+          ["Duracion Carrera (min)", st ? st.raceMin : 45],
+          ["Tiempo por Vuelta (s)", st ? st.lapSec : 108.5],
+          ["Consumo (L/vuelta)", st ? st.fuelLap : 2.85],
+          ["Capacidad Deposito (L)", st ? st.tankCap : 55],
+          ["Vueltas Totales", st ? st.totalLaps : 25],
+          ["Combustible Total (L)", st ? st.totalFuel : 75.3],
+          ["Paradas Estimadas", st ? st.stops : 1]
+        ];
+      }
+      var csvContent = "\uFEFF" + rows.map(function (r) {
+        return r.map(function (cell) {
+          return '"' + String(cell ?? "").replace(/"/g, '""') + '"';
+        }).join(",");
+      }).join("\r\n");
+      var csvBlob = new Blob([csvContent], { type: "text/csv;charset=utf-8" });
+      triggerBlobDownload(csvBlob, fnameBase + ".csv");
+      return;
+    }
+
+    if (format === "doc") {
+      var wordHtml = [
+        '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">',
+        '<head><meta charset="utf-8"><title>' + escHtml(currentArtifactTitle) + '</title>',
+        '<style>',
+        'body { font-family: Calibri, Arial, sans-serif; color: #0f172a; line-height: 1.55; margin: 24pt; }',
+        '.head { border-bottom: 3pt solid #059669; padding-bottom: 10pt; margin-bottom: 16pt; }',
+        '.brand { font-size: 10pt; font-weight: bold; color: #059669; letter-spacing: 1pt; text-transform: uppercase; }',
+        'h1 { font-size: 20pt; color: #0f172a; margin: 4pt 0 6pt; }',
+        'h2, h3 { font-size: 13.5pt; color: #059669; margin-top: 14pt; margin-bottom: 6pt; }',
+        'table { width: 100%; border-collapse: collapse; margin: 10pt 0; }',
+        'th { background-color: #0f172a; color: #ffffff; font-weight: bold; text-align: left; padding: 6pt 8pt; border: 1pt solid #cbd5e1; font-size: 10pt; }',
+        'td { padding: 6pt 8pt; border: 1pt solid #cbd5e1; font-size: 10.5pt; }',
+        'code, pre { font-family: Consolas, monospace; background-color: #f1f5f9; padding: 2pt 4pt; }',
+        'pre { padding: 10pt; border: 1pt solid #cbd5e1; }',
+        '.foot { margin-top: 24pt; padding-top: 10pt; border-top: 1pt solid #cbd5e1; font-size: 9pt; color: #64748b; }',
+        '</style></head><body>',
+        '<div class="head"><div class="brand">MUNTRUME MOTORSPORT · TECHNICAL ARTIFACT (muntru.me)</div>',
+        '<h1>' + escHtml(currentArtifactTitle) + '</h1>',
+        '<div style="font-size:9.5pt;color:#64748b">Generado por Muntrume AI · ' + escHtml(dateStr) + ' · Sant Andreu, Barcelona</div></div>',
+        contentHtml,
+        '<div class="foot">Muntrume Motorsport · Sim Racing Engineering · https://muntru.me</div>',
+        '</body></html>'
+      ].join("\n");
+      var docBlob = new Blob(["\uFEFF", wordHtml], { type: "application/msword;charset=utf-8" });
+      triggerBlobDownload(docBlob, fnameBase + ".doc");
+      return;
+    }
+
+    if (format === "pdf") {
+      var printWin = window.open("", "_blank", "width=920,height=780");
+      if (!printWin) {
+        window.print();
+        return;
+      }
+      var pdfHtml = [
+        '<!DOCTYPE html><html lang="es"><head><meta charset="utf-8">',
+        '<title>' + escHtml(currentArtifactTitle) + ' · Muntrume Motorsport</title>',
+        '<style>',
+        '@page { size: A4; margin: 16mm; }',
+        'body { font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #0f172a; line-height: 1.6; margin: 0; padding: 24px; }',
+        '.top { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #059669; padding-bottom: 12px; margin-bottom: 20px; }',
+        '.brand { font-size: 11px; font-weight: 800; color: #059669; letter-spacing: 0.1em; text-transform: uppercase; }',
+        'h1 { font-size: 22px; margin: 4px 0 0; color: #0f172a; }',
+        'h2, h3 { font-size: 15px; color: #047857; margin: 18px 0 8px; }',
+        'table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 12.5px; }',
+        'th { background: #0f172a; color: #fff; text-align: left; padding: 8px 10px; font-size: 11px; text-transform: uppercase; }',
+        'td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; }',
+        'pre, code { font-family: "JetBrains Mono", Consolas, monospace; font-size: 12px; background: #f8fafc; }',
+        'pre { padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; overflow-x: auto; }',
+        '.ai-codecopy { display: none !important; }',
+        '.foot { margin-top: 28px; padding-top: 10px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b; display: flex; justify-content: space-between; }',
+        '</style></head><body>',
+        '<div class="top"><div><div class="brand">MUNTRUME MOTORSPORT · ENGINEERING DOCUMENT</div><h1>' + escHtml(currentArtifactTitle) + '</h1></div>',
+        '<div style="text-align:right;font-size:11px;color:#64748b"><strong>muntru.me</strong><br>' + escHtml(dateStr) + '</div></div>',
+        contentHtml,
+        '<div class="foot"><span>Muntrume Motorsport · Sant Andreu, Barcelona</span><span>Generado con Muntrume AI</span></div>',
+        '<script>window.onload=function(){setTimeout(function(){window.print();},250);};<\/script>',
+        '</body></html>'
+      ].join("\n");
+      printWin.document.open();
+      printWin.document.write(pdfHtml);
+      printWin.document.close();
+      return;
+    }
+
+    if (format === "slides") {
+      var slides = parseMarkdownIntoSlides(lastCanvasMarkdown);
+      var slidesMarkup = slides.map(function (sl, i) {
+        return [
+          '<section class="slide' + (i === 0 ? " active" : "") + '">',
+          '  <header class="s-top"><span>MUNTRUME MOTORSPORT · 2026 S4</span><span class="s-num">' + String(i + 1).padStart(2, "0") + " / " + String(slides.length).padStart(2, "0") + '</span></header>',
+          '  <div class="s-body"><h2>' + escHtml(sl.title) + '</h2><div class="s-content">' + escHtml(sl.body).replace(/\n/g, "<br>") + '</div></div>',
+          '  <footer class="s-foot"><span>muntru.me · Sim Racing Engineering</span><span>' + escHtml(currentArtifactTitle) + '</span></footer>',
+          '</section>'
+        ].join("\n");
+      }).join("\n");
+
+      var deckHtml = [
+        '<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">',
+        '<title>Presentación: ' + escHtml(currentArtifactTitle) + ' · Muntrume Motorsport</title>',
+        '<style>',
+        '*{box-sizing:border-box}body{margin:0;background:#06080c;color:#f8fafc;font-family:Inter,system-ui,sans-serif;overflow:hidden;height:100vh;display:flex;flex-direction:column}',
+        '.deck{flex:1;display:grid;place-items:center;padding:28px}',
+        '.slide{display:none;width:min(1100px,94vw);aspect-ratio:16/9;border-radius:22px;border:1px solid rgba(0,230,153,0.4);background:radial-gradient(700px circle at 85% 15%,rgba(0,230,153,0.15),transparent 60%),linear-gradient(160deg,#0f141d 0%,#080b10 100%);padding:36px 44px;flex-direction:column;justify-content:space-between;box-shadow:0 28px 70px rgba(0,0,0,0.75)}',
+        '.slide.active{display:flex}',
+        '.s-top,.s-foot{display:flex;justify-content:space-between;align-items:center;font-family:monospace;font-size:12px;color:#94a3b8}',
+        '.s-top{border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:14px;color:#00e699;font-weight:800;letter-spacing:0.12em}',
+        '.s-foot{border-top:1px solid rgba(255,255,255,0.1);padding-top:14px}',
+        '.s-body{margin:auto 0;max-height:72%;overflow-y:auto}',
+        '.s-body h2{margin:0 0 18px;font-size:clamp(24px,3.2vw,38px);color:#fff}',
+        '.s-content{font-size:clamp(15px,1.7vw,20px);line-height:1.65;color:#cbd5e1;white-space:pre-wrap}',
+        '.controls{height:54px;background:#0b0f16;border-top:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;gap:12px;font-family:monospace}',
+        'button{height:34px;padding:0 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.18);background:#131924;color:#fff;cursor:pointer;font-weight:700}',
+        'button:hover{border-color:#00e699;color:#00e699}',
+        '@media print{@page{size:landscape;margin:8mm}body{height:auto;overflow:visible;background:#06080c}.controls{display:none}.deck{display:block;padding:0}.slide{display:flex !important;page-break-after:always;width:100%;margin-bottom:16px}}',
+        '</style></head><body>',
+        '<div class="deck">' + slidesMarkup + '</div>',
+        '<div class="controls">',
+        '  <button onclick="go(-1)">← Anterior</button>',
+        '  <span id="cnt">1 / ' + slides.length + '</span>',
+        '  <button onclick="go(1)">Siguiente →</button>',
+        '  <button onclick="document.documentElement.requestFullscreen()">⛶ Pantalla Completa</button>',
+        '  <button onclick="window.print()">📕 Guardar PDF Slides</button>',
+        '</div>',
+        '<script>',
+        'var idx=0,all=document.querySelectorAll(".slide"),cnt=document.getElementById("cnt");',
+        'function go(d){all[idx].classList.remove("active");idx=(idx+d+all.length)%all.length;all[idx].classList.add("active");cnt.textContent=(idx+1)+" / "+all.length;}',
+        'document.addEventListener("keydown",function(e){if(e.key==="ArrowRight"||e.key===" ")go(1);if(e.key==="ArrowLeft")go(-1);});',
+        '<\/script></body></html>'
+      ].join("\n");
+      var slidesBlob = new Blob([deckHtml], { type: "text/html;charset=utf-8" });
+      triggerBlobDownload(slidesBlob, fnameBase + "_Presentacion.html");
+    }
+  }
+
+  document.getElementById("btnExportDoc")?.addEventListener("click", function () { exportArtifactAs("doc"); });
+  document.getElementById("btnExportPdf")?.addEventListener("click", function () { exportArtifactAs("pdf"); });
+  document.getElementById("btnExportSlides")?.addEventListener("click", function () { exportArtifactAs("slides"); });
+  document.getElementById("btnExportCsv")?.addEventListener("click", function () { exportArtifactAs("csv"); });
+  document.getElementById("btnExportMd")?.addEventListener("click", function () { exportArtifactAs("md"); });
+
+  document.getElementById("btnSlidePrev")?.addEventListener("click", function () {
+    activeSlideIdx--;
+    renderActiveSlide();
+  });
+  document.getElementById("btnSlideNext")?.addEventListener("click", function () {
+    activeSlideIdx++;
+    renderActiveSlide();
+  });
+  document.getElementById("btnSlideFullscreen")?.addEventListener("click", function () {
+    var st = document.getElementById("artSlideStage");
+    if (!st) return;
+    if (document.fullscreenElement) document.exitFullscreen().catch(function () {});
+    else if (st.requestFullscreen) st.requestFullscreen().catch(function () {});
+  });
+
+  if (artifactToggle) {
+    artifactToggle.addEventListener("click", function () {
+      if (artifactPane && artifactPane.hidden) openArtifactPane("doc");
+      else closeArtifactPane();
+    });
+  }
+  if (artifactClose) {
+    artifactClose.addEventListener("click", closeArtifactPane);
+  }
+  document.querySelectorAll("[data-art-tab]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      setArtifactTab(btn.getAttribute("data-art-tab"));
+    });
+  });
+  document.querySelectorAll("[data-open-artifact]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      openArtifactPane(btn.getAttribute("data-open-artifact") || "doc");
+    });
+  });
+
+  var copyCanvasBtn = document.getElementById("artCopyCanvasBtn");
+  if (copyCanvasBtn) {
+    copyCanvasBtn.addEventListener("click", function () {
+      if (!lastCanvasMarkdown || !navigator.clipboard) return;
+      navigator.clipboard.writeText(lastCanvasMarkdown).catch(function () {});
+      copyCanvasBtn.textContent = "¡Copiado!";
+      setTimeout(function () { copyCanvasBtn.textContent = "📋 Copiar Markdown"; }, 1500);
+    });
+  }
+
+  /* ===================================================================== */
+  /* STREAMING & SEND PIPELINE                                             */
+  /* ===================================================================== */
   function takeSse(line) {
     var trimmed = line.trim();
     if (!trimmed.startsWith("data:")) return "";
@@ -540,14 +1061,13 @@
   function finishReply(chat, reply, label) {
     if (statusBadge) statusBadge.classList.remove("is-busy");
     if (statusText) statusText.textContent = label;
-    var actions = log.querySelector('[data-id="' + reply.id + '"] .ai-actions');
-    if (actions) actions.hidden = false;
     if (reply.content) updateCanvasArtifact(reply.content);
     save();
     streaming = false;
     ctrl = null;
     paintSend();
     log.setAttribute("aria-busy", "false");
+    renderThread();
     renderList();
   }
 
@@ -582,9 +1102,8 @@
       var instant = matchInstantTeamAnswer(text);
       if (instant) {
         reply.content = instant;
-        var el = log.querySelector('[data-id="' + reply.id + '"]');
-        if (el) paintBotMessage(el, instant);
-        finishReply(chat, reply, "KB Oficial • 0 ms");
+        finishReply(chat, reply, "0 ms · Verificado");
+        if (preferredArtifactTab) setArtifactTab(preferredArtifactTab);
         return;
       }
     }
@@ -592,7 +1111,7 @@
     streaming = true;
     paintSend();
     if (statusBadge) statusBadge.classList.add("is-busy");
-    if (statusText) statusText.textContent = useOllama ? "Ollama • Pensando…" : "Agent • Streaming…";
+    if (statusText) statusText.textContent = "Generando…";
     log.setAttribute("aria-busy", "true");
     ctrl = new AbortController();
     var startTime = Date.now();
@@ -619,101 +1138,17 @@
       return readStreamAnswer(res, reply);
     }).then(function (acc) {
       if (!acc) throw new Error("fallback");
-      finishReply(chat, reply, "Agent • " + (Date.now() - startTime) + " ms");
+      finishReply(chat, reply, (Date.now() - startTime) + " ms");
     }).catch(function () {
       var fb = matchInstantTeamAnswer(text) || buildSmartFallback(text);
       reply.content = fb;
-      var el = log.querySelector('[data-id="' + reply.id + '"]');
-      if (el) paintBotMessage(el, fb);
-      finishReply(chat, reply, "Motor Local • Listo");
+      finishReply(chat, reply, "Listo");
     });
   }
 
   /* ===================================================================== */
-  /* CLAUDE-STYLE ARTIFACT STUDIO CONTROLLER                               */
+  /* STINT & STO INTERACTIVE ARTIFACT TOOLS                                */
   /* ===================================================================== */
-  function setArtifactTab(tabName) {
-    var tabs = ["stint", "sto", "canvas"];
-    var target = tabs.indexOf(tabName) >= 0 ? tabName : "stint";
-    document.querySelectorAll("[data-art-tab]").forEach(function (btn) {
-      var on = btn.getAttribute("data-art-tab") === target;
-      btn.classList.toggle("is-active", on);
-      btn.setAttribute("aria-selected", on ? "true" : "false");
-    });
-    var pStint = document.getElementById("artPanelStint");
-    var pSto = document.getElementById("artPanelSto");
-    var pCanvas = document.getElementById("artPanelCanvas");
-    if (pStint) pStint.hidden = target !== "stint";
-    if (pSto) pSto.hidden = target !== "sto";
-    if (pCanvas) pCanvas.hidden = target !== "canvas";
-  }
-
-  function openArtifactPane(tabName) {
-    if (!artifactPane) return;
-    artifactPane.hidden = false;
-    if (artifactToggle) artifactToggle.setAttribute("aria-pressed", "true");
-    if (tabName) setArtifactTab(tabName);
-  }
-
-  function closeArtifactPane() {
-    if (!artifactPane) return;
-    artifactPane.hidden = true;
-    if (artifactToggle) artifactToggle.setAttribute("aria-pressed", "false");
-  }
-
-  function updateCanvasArtifact(markdownText) {
-    lastCanvasMarkdown = String(markdownText || "");
-    var host = document.getElementById("artCanvasBody");
-    if (!host || !lastCanvasMarkdown) return;
-    if (window.MuntrumeMarkdown && window.MuntrumeMarkdown.renderMarkdown) {
-      host.innerHTML = "";
-      host.appendChild(window.MuntrumeMarkdown.renderMarkdown(lastCanvasMarkdown, { copy: "Copiar", copied: "¡Copiado!" }));
-    } else {
-      loadMd().then(function (lib) {
-        if (lib) {
-          host.innerHTML = "";
-          host.appendChild(lib.renderMarkdown(lastCanvasMarkdown, { copy: "Copiar", copied: "¡Copiado!" }));
-        }
-      });
-    }
-  }
-
-  if (artifactToggle) {
-    artifactToggle.addEventListener("click", function () {
-      if (artifactPane && artifactPane.hidden) openArtifactPane();
-      else closeArtifactPane();
-    });
-  }
-  if (quickOpenArtifact) {
-    quickOpenArtifact.addEventListener("click", function () {
-      openArtifactPane("stint");
-    });
-  }
-  if (artifactClose) {
-    artifactClose.addEventListener("click", closeArtifactPane);
-  }
-  document.querySelectorAll("[data-art-tab]").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      setArtifactTab(btn.getAttribute("data-art-tab"));
-    });
-  });
-  document.querySelectorAll("[data-open-artifact]").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      openArtifactPane(btn.getAttribute("data-open-artifact") || "stint");
-    });
-  });
-
-  var copyCanvasBtn = document.getElementById("artCopyCanvasBtn");
-  if (copyCanvasBtn) {
-    copyCanvasBtn.addEventListener("click", function () {
-      if (!lastCanvasMarkdown || !navigator.clipboard) return;
-      navigator.clipboard.writeText(lastCanvasMarkdown).catch(function () {});
-      copyCanvasBtn.textContent = "¡Copiado!";
-      setTimeout(function () { copyCanvasBtn.textContent = "Copiar MD"; }, 1500);
-    });
-  }
-
-  /* Live Stint & Fuel Artifact Math */
   function recalcStintArtifact() {
     var minEl = document.getElementById("artRaceMin");
     var lapEl = document.getElementById("artLapSec");
@@ -755,14 +1190,11 @@
   });
   recalcStintArtifact();
 
-  var sendStintBtn = document.getElementById("artSendStintToChat");
-  if (sendStintBtn) {
-    sendStintBtn.addEventListener("click", function () {
-      var r = recalcStintArtifact();
-      if (!r) return;
-      send("Calcula combustible y estrategia para una carrera GT3 de " + r.raceMin + " min (" + r.totalLaps + " vueltas a " + r.lapSec + "s, consumo " + r.fuelLap + " L/v, depósito " + r.tankCap + " L → Total " + r.totalFuel.toFixed(1) + " L)", "stint");
-    });
-  }
+  document.getElementById("artSendStintToChat")?.addEventListener("click", function () {
+    var r = recalcStintArtifact();
+    if (!r) return;
+    send("Calcula combustible y estrategia para una carrera GT3 de " + r.raceMin + " min (" + r.totalLaps + " vueltas a " + r.lapSec + "s, consumo " + r.fuelLap + " L/v, depósito " + r.tankCap + " L → Total " + r.totalFuel.toFixed(1) + " L)", "doc");
+  });
 
   var sendFuelIrBtn = document.getElementById("artSendFuelToIracing");
   if (sendFuelIrBtn) {
@@ -774,15 +1206,14 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "launch-overlay" })
       }).then(function () {
-        sendFuelIrBtn.textContent = "✓ Enviado a MMT Sync (" + r.totalFuel.toFixed(1) + " L)";
-        setTimeout(function () { sendFuelIrBtn.textContent = "⚡ Enviar Fuel a iRacing"; }, 2200);
+        sendFuelIrBtn.textContent = "✓ Enviado (" + r.totalFuel.toFixed(1) + " L)";
+        setTimeout(function () { sendFuelIrBtn.textContent = "⚡ Enviar a iRacing"; }, 2200);
       }).catch(function () {
         window.location.href = "mmtsync://launch-overlay";
       });
     });
   }
 
-  /* Live Setup .STO Decoder & Handling Doctor */
   var PRESCRIPTIONS = {
     entry_under: "<strong>Subviraje en entrada:</strong> Baja <code>Brake Bias -0.5%</code> hacia atrás, ablanda <code>1 click</code> la ARB delantera o sube <code>+1 mm</code> la altura trasera (rake).",
     mid_under: "<strong>Subviraje en ápice:</strong> Aumenta caída delantera (<code>-0.1° camber</code>), baja altura delantera <code>-1 mm</code> o ablanda el muelle delantero.",
@@ -810,15 +1241,12 @@
   });
   recalcStoArtifact();
 
-  var askStoBtn = document.getElementById("artAskStoInChat");
-  if (askStoBtn) {
-    askStoBtn.addEventListener("click", function () {
-      var st = recalcStoArtifact();
-      send("Explica la nomenclatura del setup " + st.filename + " y qué ajustes hacer en ARB, Brake Bias y Rake", "sto");
-    });
-  }
+  document.getElementById("artAskStoInChat")?.addEventListener("click", function () {
+    var st = recalcStoArtifact();
+    send("Explica la nomenclatura del setup " + st.filename + " y la guía de ajustes para subviraje y sobreviraje", "doc");
+  });
 
-  /* Local Rust Bridge Detection (127.0.0.1:38421) */
+  /* Local Rust Bridge Detection */
   var bridgeBadge = document.getElementById("aiBridgeBadge");
   var bridgeText = document.getElementById("aiBridgeText");
   if (bridgeBadge && bridgeText) {
@@ -830,7 +1258,7 @@
         clearTimeout(bTimer);
         if (info && info.status === "ready") {
           bridgeBadge.hidden = false;
-          bridgeText.textContent = info.inTrack ? "MMT Sync v" + info.version + " · En Pista" : "MMT Sync v" + info.version + " Ready";
+          bridgeText.textContent = info.inTrack ? "MMT Sync · En Pista" : "MMT Sync v" + info.version;
           bridgeBadge.addEventListener("click", function () {
             fetch(BRIDGE_URL + "/command", {
               method: "POST",
@@ -917,6 +1345,7 @@
   if (sideClose) sideClose.addEventListener("click", closeSide);
   if (scrim) scrim.addEventListener("click", closeSide);
 
+  updateCanvasArtifact(lastCanvasMarkdown);
   renderList();
   renderThread();
   paintSend();
