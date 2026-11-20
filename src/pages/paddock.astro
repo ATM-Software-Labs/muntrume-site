@@ -4,7 +4,7 @@ import StatsGrid from '../components/StatsGrid.astro';
 import MediaLightbox from '../components/MediaLightbox.astro';
 import CommunityUploadModal from '../components/CommunityUploadModal.astro';
 import { PILOTOS } from '../lib/pilotos';
-import { CAR_CATALOG_LIST, getBrandSvgMarkup, getCarPreviewBannerSvg, type CarMetadata } from '../../desktop/src/cars/catalog';
+import { CAR_CATALOG_LIST, type CarMetadata } from '../../desktop/src/cars/catalog';
 import { IRACING_TRACKS, getTrackGarageInfo, getTrackScheduleInfo, getHistoricTrackRank } from '../lib/track-matcher';
 
 const pageTitle = "Paddock | Muntrume Motorsport";
@@ -188,6 +188,7 @@ const popRankOf = (folder: string) => COMMUNITY_POPULARITY[folder.toLowerCase()]
 
 const seenModels = new Set<string>();
 const directoryCars: CarMetadata[] = CAR_CATALOG_LIST.filter((car) => {
+  if (!car.previewImg) return false;
   const key = `${car.brand}|${car.model}`;
   if (seenModels.has(key)) return false;
   seenModels.add(key);
@@ -480,31 +481,22 @@ const topHistoricTracks = allTracksWithPop.slice(0, 8);
               <!-- Car Preview (Official studio banner -> opens dedicated car technical dossier) -->
               <a
                 href={`/car/${car.carFolder.toLowerCase()}/`}
-                class="relative block aspect-[344/182] w-full bg-[#090d12] border-b border-[var(--r-line)] overflow-hidden"
+                class="relative block aspect-[16/9] w-full bg-[var(--r-bg-2)] border-b border-[var(--r-line)] overflow-hidden"
                 title={`Ver ficha técnica completa de ${car.brand} ${car.model}`}
               >
-                {car.previewImg ? (
-                  <img
-                    src={car.previewImg}
-                    alt={`${car.brand} ${car.model}`}
-                    width="344"
-                    height="182"
-                    loading="lazy"
-                    decoding="async"
-                    class="w-full h-full object-contain object-center transition-transform duration-500 group-hover:scale-[1.03]"
-                  />
-                ) : (
-                  <>
-                    <Fragment set:html={getCarPreviewBannerSvg(car)} />
-                    <div class="absolute bottom-2.5 left-3 flex items-center gap-2 px-2.5 py-1 rounded-lg bg-black/80 backdrop-blur-xs border border-white/10">
-                      <Fragment set:html={getBrandSvgMarkup(car, 18)} />
-                      <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-white/90">{car.brand}</span>
-                    </div>
-                  </>
-                )}
+                <img
+                  src={car.previewImg}
+                  alt={`${car.brand} ${car.model}`}
+                  width="640"
+                  height="360"
+                  loading="lazy"
+                  decoding="async"
+                  onerror="this.closest('article')?.remove()"
+                  class="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.04]"
+                />
                 <span class="absolute top-2 right-2.5 flex items-center gap-1">
                   {car.legacy && (
-                    <span class="px-2 py-0.5 rounded-md bg-amber-400/15 border border-amber-300/40 text-amber-100 text-[10px] font-mono font-bold uppercase">Legacy</span>
+                    <span class="px-2 py-0.5 rounded-md bg-amber-400/20 border border-amber-300/45 text-amber-100 text-[10px] font-mono font-bold uppercase">Legacy</span>
                   )}
                   <span class="px-2 py-0.5 rounded-md bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">
                     {car.carClass}

@@ -11,6 +11,7 @@ import catalogIndex from '../../../public/assets/data/catalog_index.json';
 export function getStaticPaths() {
   const seen = new Set<string>();
   const uniqueCars = CAR_CATALOG_LIST.filter((c) => {
+    if (!c.previewImg) return false;
     const slug = c.carFolder.toLowerCase();
     if (seen.has(slug)) return false;
     seen.add(slug);
@@ -128,15 +129,15 @@ const pageDescription = `${car.brand} ${car.model} (${car.carClass}): ${dossier.
           data-preview-sub={`${car.carClass} · ${origin.flag} ${origin.country} · ${car.specs}`}
           data-preview-id={`car:${car.carFolder}`}
           data-preview-setups={`/garage?car=${encodeURIComponent(car.carFolder)}`}
-          class="relative block w-full aspect-[344/182] rounded-2xl bg-[#090d12] border border-[var(--r-line)] hover:border-[var(--r-accent)] overflow-hidden cursor-zoom-in group transition"
+          class="relative block w-full aspect-[16/9] rounded-2xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] overflow-hidden cursor-zoom-in group transition"
           title="Ampliar imagen completa"
         >
           <img
-            src={car.previewImg || carSlides[0]?.src || '/assets/img/hero-bg.webp'}
+            src={car.previewImg || carSlides[0]?.src}
             alt={`${car.brand} ${car.model}`}
             width="688"
-            height="364"
-            class="w-full h-full object-contain object-center transition-transform duration-500 group-hover:scale-[1.03]"
+            height="387"
+            class="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
           />
           <span class="absolute bottom-3 right-3 px-2.5 py-1 rounded-lg bg-black/80 border border-white/15 text-[11px] font-mono text-white/90">
             Ampliar foto completa ⤢

@@ -52,19 +52,19 @@ const pageSchema = {
   ogImageAlt={series.items[0]?.alt || series.name}
   schemaJson={pageSchema}
 >
-  <main class="min-h-screen bg-[#090b0f] text-slate-100 py-10 px-4 sm:px-6">
-    <div class="max-w-7xl mx-auto space-y-6">
-      <header class="border-b border-white/10 pb-5 space-y-2">
-        <p class="font-mono text-[11px] uppercase tracking-widest text-emerald-400">
+  <main class="min-h-screen bg-[var(--r-bg)] text-[var(--r-text)] py-12 px-4 sm:px-6">
+    <div class="r-wrap space-y-6">
+      <header class="border-b border-[var(--r-line)] pb-5 space-y-2">
+        <p class="font-mono text-[11px] uppercase tracking-widest text-[var(--r-accent)] font-bold">
           <a href="/wallpapers/" class="hover:underline">Wallpapers</a>
-          <span class="text-slate-600"> · {kindLabel}</span>
+          <span class="text-[var(--r-muted)]"> · {kindLabel}</span>
         </p>
-        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">{series.name}</h1>
-        <p class="text-sm text-slate-400 font-mono">{series.items.length} wallpapers en este grupo, en el orden del coche y del número de toma.</p>
+        <h1 class="text-3xl sm:text-4xl font-extrabold font-display tracking-tight text-[var(--r-text)]">{series.name}</h1>
+        <p class="text-sm text-[var(--r-muted)] font-mono">{series.items.length} wallpapers en este grupo, en el orden del coche y del número de toma.</p>
       </header>
       <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {series.items.map((item, index) => (
-          <li class="rounded-lg border border-white/10 bg-[#0d1118] overflow-hidden">
+          <li class="rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] overflow-hidden hover:border-[var(--r-accent)] transition">
             <img
               src={item.img}
               alt={item.alt}
@@ -72,11 +72,12 @@ const pageSchema = {
               height="360"
               loading={index === 0 ? "eager" : "lazy"}
               decoding="async"
-              class="w-full aspect-video object-cover bg-[#090b0f]"
+              onerror="this.closest('li')?.remove()"
+              class="w-full aspect-video object-cover object-center bg-[var(--r-bg-2)]"
             />
             <div class="p-3 font-mono">
-              <p class="text-xs font-bold text-white">{item.title || item.model}</p>
-              {item.circuit && <p class="text-[10px] text-slate-400">{item.circuit}</p>}
+              <p class="text-xs font-bold text-[var(--r-text)]">{item.title || item.model}</p>
+              {item.circuit && <p class="text-[10px] text-[var(--r-muted)]">{item.circuit}</p>}
             </div>
           </li>
         ))}

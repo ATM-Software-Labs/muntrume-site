@@ -18,64 +18,85 @@ const description = `Descarga setups .sto (${car.carClass}) para ${car.brand} ${
 ---
 
 <Layout title={title} description={description} canonical={`https://muntru.me/setups/${carSlug}/`}>
-  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
-    <nav class="text-xs font-mono text-white/60 mb-4 flex flex-wrap gap-2">
-      <a href="/" class="hover:text-emerald-400">Inicio</a>
+  <main class="r-wrap py-10 sm:py-14">
+    <nav class="text-xs font-mono text-[var(--r-muted)] mb-4 flex flex-wrap gap-2">
+      <a href="/" class="hover:text-[var(--r-accent)]">Inicio</a>
       <span>/</span>
-      <a href="/garage/" class="hover:text-emerald-400">Garage</a>
+      <a href="/garage/" class="hover:text-[var(--r-accent)]">Garage</a>
       <span>/</span>
-      <span class="text-emerald-400">{car.brand} {car.model}</span>
+      <span class="text-[var(--r-accent)] font-bold">{car.brand} {car.model}</span>
     </nav>
 
-    <header class="rounded-2xl border border-white/10 bg-[#0d1117]/90 p-6 sm:p-8 mb-8">
-      <div class="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <span class="inline-block px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-mono text-xs font-bold mb-3">
+    <header class="rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-6 sm:p-8 mb-8">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+        <div class={car.previewImg ? "lg:col-span-7" : "lg:col-span-12"}>
+          <span class="inline-block px-2.5 py-1 rounded-lg bg-[var(--r-accent)]/15 border border-[var(--r-accent)]/35 text-[var(--r-accent)] font-mono text-xs font-bold mb-3">
             {car.carClass} · {car.category}
           </span>
-          <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+          <h1 class="text-3xl sm:text-4xl font-extrabold text-[var(--r-text)] font-display tracking-tight">
             Setups {car.brand} {car.model} · iRacing
           </h1>
-          <p class="mt-2 text-sm text-white/70 max-w-2xl">
+          <p class="mt-2 text-sm text-[var(--r-muted)] max-w-2xl">
             {car.specs || `Reglajes .sto verificados por el equipo Muntrume Motorsport para ${car.brand} ${car.model} en todas las variantes (Qualy, Race, Safe y Wet).`}
           </p>
+          <div class="mt-5 flex flex-wrap items-center gap-3">
+            <a
+              href={`mmtsync://sync?car=${encodeURIComponent(car.carFolder)}`}
+              class="px-5 py-3 rounded-xl bg-[var(--r-accent)] text-[var(--r-accent-ink,#04130d)] font-bold text-sm hover:opacity-90 transition shadow-lg"
+            >
+              Sincronizar en 1 clic con MMT Sync
+            </a>
+            <a href={`/car/${car.carFolder.toLowerCase()}/`} class="px-4 py-3 rounded-xl border border-[var(--r-line)] bg-[var(--r-bg-2)] text-[var(--r-text)] hover:border-[var(--r-accent)] text-xs font-mono font-bold transition">
+              Ficha técnica →
+            </a>
+          </div>
         </div>
-        <a
-          href={`mmtsync://sync?car=${encodeURIComponent(car.carFolder)}`}
-          class="px-5 py-3 rounded-xl bg-emerald-500 text-slate-950 font-bold text-sm hover:bg-emerald-400 transition shadow-lg shadow-emerald-500/20"
-        >
-          Sincronizar en 1 clic con MMT Sync
-        </a>
+        {car.previewImg && (
+          <div class="lg:col-span-5">
+            <div class="aspect-[16/9] rounded-xl overflow-hidden border border-[var(--r-line)] bg-[var(--r-bg-2)]">
+              <img
+                src={car.previewImg}
+                alt={`${car.brand} ${car.model}`}
+                width="640"
+                height="360"
+                loading="eager"
+                decoding="async"
+                onerror="this.parentElement.parentElement.remove()"
+                class="w-full h-full object-cover object-center"
+              />
+            </div>
+          </div>
+        )}
       </div>
 
-      <div class="mt-5 flex flex-wrap gap-3 text-xs font-mono">
-        <a href="/calendar/" class="px-3 py-1.5 rounded-lg border border-white/15 text-white/80 hover:border-emerald-400 hover:text-emerald-300 transition">
+      <div class="mt-5 pt-5 border-t border-[var(--r-line)] flex flex-wrap gap-3 text-xs font-mono">
+        <a href="/calendar/" class="px-3 py-1.5 rounded-lg border border-[var(--r-line)] bg-[var(--r-bg-2)] text-[var(--r-text)] hover:border-[var(--r-accent)] hover:text-[var(--r-accent)] transition">
           Ver calendario 2026 →
         </a>
-        <a href="/albumes/" class="px-3 py-1.5 rounded-lg border border-white/15 text-white/80 hover:border-emerald-400 hover:text-emerald-300 transition">
+        <a href="/albums/" class="px-3 py-1.5 rounded-lg border border-[var(--r-line)] bg-[var(--r-bg-2)] text-[var(--r-text)] hover:border-[var(--r-accent)] hover:text-[var(--r-accent)] transition">
           Álbumes {car.brand} →
         </a>
-        <a href="/app/" class="px-3 py-1.5 rounded-lg border border-white/15 text-white/80 hover:border-emerald-400 hover:text-emerald-300 transition">
+        <a href="/app/" class="px-3 py-1.5 rounded-lg border border-[var(--r-line)] bg-[var(--r-bg-2)] text-[var(--r-text)] hover:border-[var(--r-accent)] hover:text-[var(--r-accent)] transition">
           Descargar MMT Sync →
         </a>
       </div>
     </header>
 
     <section aria-labelledby="tracks-heading">
-      <h2 id="tracks-heading" class="text-xl font-bold text-white mb-4">
+      <h2 id="tracks-heading" class="text-xl font-bold text-[var(--r-text)] font-display mb-4">
         Circuitos disponibles para {car.brand} {car.model} ({tracks.length})
       </h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {tracks.map((track) => (
           <a
             href={`/setups/${carSlug}/${track.slug}/`}
-            class="group rounded-xl border border-white/10 bg-[#0d1117]/80 p-4 hover:border-emerald-400/50 transition flex flex-col justify-between gap-2"
+            class="group rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] p-4 hover:border-[var(--r-accent)] transition flex flex-col justify-between gap-2"
           >
             <div>
-              <span class="text-[11px] font-mono text-emerald-400 uppercase">{car.carClass} · .STO + .BLAP</span>
-              <h3 class="text-base font-bold text-white group-hover:text-emerald-300 mt-1">{track.name}</h3>
+              <span class="text-[11px] font-mono text-[var(--r-accent)] uppercase">{car.carClass} · .STO + .BLAP</span>
+              <h3 class="text-base font-bold text-[var(--r-text)] group-hover:text-[var(--r-accent)] mt-1">{track.name}</h3>
             </div>
-            <span class="text-xs font-mono text-white/60 group-hover:text-white">Ver tabla técnica y sincronizar →</span>
+            <span class="text-xs font-mono text-[var(--r-muted)] group-hover:text-[var(--r-text)]">Ver tabla técnica y sincronizar →</span>
           </a>
         ))}
       </div>

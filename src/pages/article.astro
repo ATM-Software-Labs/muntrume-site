@@ -13,16 +13,16 @@ const pageDescription = "Muntrume Motorsport";
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
       <!-- Breadcrumb & Back Navigation -->
-      <nav class="flex items-center justify-between gap-4 mb-8 text-xs font-medium text-neutral-400" aria-label="Breadcrumb">
+      <nav class="flex items-center justify-between gap-4 mb-8 text-xs font-medium text-[var(--r-muted)]" aria-label="Breadcrumb">
         <div class="flex items-center gap-2 overflow-x-auto py-1">
-          <a href="/" class="hover:text-white transition">Overview</a>
+          <a href="/" class="hover:text-[var(--r-text)] transition">Overview</a>
           <span>/</span>
-          <a href="/news" class="hover:text-white transition">Press Room</a>
+          <a href="/noticias/" class="hover:text-[var(--r-text)] transition">Press Room</a>
           <span>/</span>
-          <span class="text-emerald-400 truncate max-w-[200px] sm:max-w-none" id="breadcrumbCategory">Team Dispatch</span>
+          <span class="text-[var(--r-accent)] truncate max-w-[200px] sm:max-w-none" id="breadcrumbCategory">Team Dispatch</span>
         </div>
 
-        <a href="/news" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#161c24] border border-white/10 text-neutral-300 hover:text-white hover:border-white/20 transition flex-shrink-0">
+        <a href="/noticias/" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--r-surface)] border border-[var(--r-line)] text-[var(--r-text)] hover:border-[var(--r-accent)] transition flex-shrink-0">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
           </svg>
@@ -31,44 +31,44 @@ const pageDescription = "Muntrume Motorsport";
       </nav>
 
       <div id="articleNotFound" style="display:none" class="text-center py-16">
-        <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">Dispatch not found</h2>
-        <p class="text-sm text-neutral-400 mb-8">There are no team dispatches published yet, or this link no longer exists.</p>
-        <a href="/news" class="inline-flex items-center justify-center px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold text-sm transition min-h-[48px]">Go to the Press Room</a>
+        <h2 class="text-3xl sm:text-4xl font-extrabold font-display text-[var(--r-text)] mb-4">Dispatch not found</h2>
+        <p class="text-sm text-[var(--r-muted)] mb-8">There are no team dispatches published yet, or this link no longer exists.</p>
+        <a href="/noticias/" class="inline-flex items-center justify-center px-6 rounded-xl bg-[var(--r-accent)] hover:opacity-90 text-[var(--r-accent-ink,#04130d)] font-bold text-sm transition min-h-[48px]">Go to the Press Room</a>
       </div>
       <div id="articleWrap" style="display:none">
       <!-- Article Header -->
       <header class="mb-8">
         <!-- Badges & Reading Meta -->
         <div class="flex items-center gap-3 mb-4 flex-wrap text-xs">
-          <span id="articleCategoryBadge" class="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold text-[11px] tracking-wider uppercase">
+          <span id="articleCategoryBadge" class="px-3 py-1 rounded-full bg-[var(--r-accent)]/15 text-[var(--r-accent)] border border-[var(--r-accent)]/30 font-bold text-[11px] tracking-wider uppercase">
             Team Dispatch
           </span>
-          <span class="text-neutral-400" id="articleDate"></span>
-          <span class="text-neutral-600">•</span>
-          <span class="text-neutral-400" id="articleReadTime">3 min read</span>
+          <span class="text-[var(--r-muted)]" id="articleDate"></span>
+          <span class="text-[var(--r-muted)]">•</span>
+          <span class="text-[var(--r-muted)]" id="articleReadTime">3 min read</span>
           
         </div>
 
         <!-- Main Title -->
-        <h1 id="articleTitle" class="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight mb-6">
+        <h1 id="articleTitle" class="text-3xl sm:text-5xl font-extrabold font-display tracking-tight text-[var(--r-text)] leading-tight mb-6">
           Team dispatch
         </h1>
 
         <!-- Author & Dispatch Signature -->
-        <div class="flex items-center justify-between gap-4 py-4 border-y border-white/10 text-xs">
+        <div class="flex items-center justify-between gap-4 py-4 border-y border-[var(--r-line)] text-xs">
           <div class="flex items-center gap-3">
-            <div id="authorAvatar" class="w-10 h-10 rounded-full bg-[#1c232d] border border-emerald-500/30 flex items-center justify-center font-extrabold text-emerald-400 text-sm">
+            <div id="authorAvatar" class="w-10 h-10 rounded-full bg-[var(--r-bg-2)] border border-[var(--r-accent)]/40 flex items-center justify-center font-extrabold text-[var(--r-accent)] text-sm">
               MM
             </div>
             <div>
-              <div class="font-bold text-white text-sm" id="articleAuthor">Muntrume Motorsport</div>
-              <div class="text-neutral-400 text-xs" id="authorRole"></div>
+              <div class="font-bold text-[var(--r-text)] text-sm" id="articleAuthor">Muntrume Motorsport</div>
+              <div class="text-[var(--r-muted)] text-xs" id="authorRole"></div>
             </div>
           </div>
 
           <!-- Share Button with Toast Feedback -->
           <div class="flex items-center gap-2">
-            <button onclick="shareArticle()" id="shareBtn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#161c24] border border-white/10 hover:border-emerald-500/30 text-neutral-300 hover:text-white transition">
+            <button onclick="shareArticle()" id="shareBtn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-[var(--r-text)] transition cursor-pointer">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
               </svg>
@@ -79,24 +79,23 @@ const pageDescription = "Muntrume Motorsport";
       </header>
 
       <!-- Featured Image Banner -->
-      <div class="mb-10 rounded-3xl overflow-hidden bg-[#161c24] border border-white/10 shadow-2xl relative">
-        <div class="h-64 sm:h-96 w-full overflow-hidden bg-[#0e1217] relative">
-          <img id="articleImage" src="/assets/img/race1.webp" onerror="this.onerror=null;this.src='/assets/img/coche1.webp';" alt="Dispatch cover" width="1600" height="900" class="w-full h-full object-cover">
-          <div class="absolute inset-0 bg-gradient-to-t from-[#161c24] via-transparent to-transparent opacity-60"></div>
+      <div class="mb-10 rounded-3xl overflow-hidden bg-[var(--r-surface)] border border-[var(--r-line)] shadow-xl relative">
+        <div class="h-64 sm:h-96 w-full overflow-hidden bg-[var(--r-bg-2)] relative">
+          <img id="articleImage" src="/assets/img/race1.webp" onerror="this.onerror=null;this.src='/assets/img/coche1.webp';" alt="Dispatch cover" width="1600" height="900" class="w-full h-full object-cover object-center">
         </div>
-        <div class="p-4 bg-[#161c24] border-t border-white/5 flex items-center justify-between text-[11px] text-neutral-400">
+        <div class="p-4 bg-[var(--r-surface)] border-t border-[var(--r-line)] flex items-center justify-between text-[11px] text-[var(--r-muted)]">
           <span id="imageCaption"></span>
           <span>Muntrume Motorsport Media</span>
         </div>
       </div>
 
       <!-- Article Body Container -->
-      <article id="articleContent" class="article-body bg-[#161c24] border border-white/10 rounded-3xl p-6 sm:p-10 shadow-xl mb-12">
+      <article id="articleContent" class="article-body bg-[var(--r-surface)] border border-[var(--r-line)] rounded-3xl p-6 sm:p-10 shadow-xl mb-12 text-[var(--r-text)]">
         <!-- Rendered via JavaScript from Markdown -->
       </article>
 
       <!-- Bottom Actions & Verification Badge -->
-      <div class="bg-[#161c24] border border-white/10 rounded-2xl p-6 mb-16 flex flex-col sm:flex-row items-center justify-between gap-6">
+      <div class="bg-[var(--r-surface)] border border-[var(--r-line)] rounded-2xl p-6 mb-16 flex flex-col sm:flex-row items-center justify-between gap-6">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

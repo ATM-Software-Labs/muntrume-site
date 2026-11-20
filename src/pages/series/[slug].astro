@@ -54,13 +54,15 @@ const normCar = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
 const carLinks = (series.cars ?? []).map((carName) => {
   const nc = normCar(carName);
   const hit = CAR_CATALOG_LIST.find((c) => {
+    if (!c.previewImg) return false;
     const full = normCar(`${c.brand} ${c.model}`);
     const model = normCar(c.model);
     return full === nc || nc.includes(full) || (model.length >= 6 && nc.includes(model));
   });
   return {
     name: carName,
-    href: hit ? `/car/${hit.carFolder}/` : null,
+    href: hit ? `/car/${hit.carFolder.toLowerCase()}/` : null,
+    previewImg: hit?.previewImg || null,
   };
 });
 
@@ -129,8 +131,22 @@ const canonical = `https://muntru.me/series/${series.id}/`;
             {carLinks.map((c) =>
               c.href ? (
                 <a href={c.href} class="sd-car sd-car--link">
-                  <span>{c.name}</span>
-                  <span>Ficha →</span>
+                  <span class="sd-car__main">
+                    {c.previewImg && (
+                      <img
+                        src={c.previewImg}
+                        alt={c.name}
+                        width="64"
+                        height="36"
+                        loading="lazy"
+                        decoding="async"
+                        onerror="this.remove()"
+                        class="sd-car__thumb"
+                      />
+                    )}
+                    <span>{c.name}</span>
+                  </span>
+                  <span class="sd-car__cta">Ficha →</span>
                 </a>
               ) : (
                 <div class="sd-car">
@@ -150,18 +166,18 @@ const canonical = `https://muntru.me/series/${series.id}/`;
       gap: 0.5rem;
       font-family: var(--font-mono, monospace);
       font-size: 0.78rem;
-      color: #94a3b8;
+      color: var(--r-muted);
       margin-bottom: 1.1rem;
     }
-    .sd-crumb a { color: #34d399; text-decoration: none; }
+    .sd-crumb a { color: var(--r-accent); text-decoration: none; }
     .sd-hero {
       display: grid;
       grid-template-columns: minmax(220px, 320px) 1fr;
       gap: 1.5rem;
       padding: 1.35rem;
       border-radius: 1rem;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--r-line);
+      background: var(--r-surface);
       align-items: center;
       margin-bottom: 1.75rem;
     }
@@ -169,11 +185,11 @@ const canonical = `https://muntru.me/series/${series.id}/`;
     .sd-hero__logo {
       border-radius: 0.75rem;
       overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: #020617;
+      border: 1px solid var(--r-line);
+      background: var(--r-bg-2);
       aspect-ratio: 16 / 9;
     }
-    .sd-hero__logo img { width: 100%; height: 100%; object-fit: cover; }
+    .sd-hero__logo img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
     .sd-badges { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-bottom: 0.6rem; }
     .sd-badge {
       font-family: var(--font-mono, monospace);
@@ -181,34 +197,34 @@ const canonical = `https://muntru.me/series/${series.id}/`;
       font-weight: 700;
       padding: 0.2rem 0.55rem;
       border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.16);
+      border: 1px solid var(--r-line);
     }
-    .sd-badge--muted { color: #cbd5e1; background: rgba(255, 255, 255, 0.06); }
-    .sd-badge--live { color: #34d399; border-color: rgba(16, 185, 129, 0.45); background: rgba(16, 185, 129, 0.14); }
-    .sd-sub { margin: 0.45rem 0 1rem; color: #94a3b8; font-size: 0.9rem; }
+    .sd-badge--muted { color: var(--r-muted); background: var(--r-bg-2); }
+    .sd-badge--live { color: var(--r-accent); border-color: rgba(16, 185, 129, 0.45); background: rgba(16, 185, 129, 0.12); }
+    .sd-sub { margin: 0.45rem 0 1rem; color: var(--r-muted); font-size: 0.9rem; }
     .sd-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
     .sd-btn {
       display: inline-flex;
       align-items: center;
       padding: 0.55rem 0.95rem;
       border-radius: 0.6rem;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      background: rgba(255, 255, 255, 0.04);
-      color: #e2e8f0;
+      border: 1px solid var(--r-line);
+      background: var(--r-bg-2);
+      color: var(--r-text);
       font-size: 0.8rem;
       font-weight: 700;
       text-decoration: none;
     }
-    .sd-btn--primary { background: #10b981; border-color: #10b981; color: #052e16; }
+    .sd-btn--primary { background: var(--r-accent); border-color: var(--r-accent); color: var(--r-accent-ink, #04130d); }
     .sd-layout { display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.25rem; }
     @media (max-width: 860px) { .sd-layout { grid-template-columns: 1fr; } }
     .sd-panel {
       padding: 1.2rem;
       border-radius: 0.9rem;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--r-line);
+      background: var(--r-surface);
     }
-    .sd-h2 { margin: 0 0 0.9rem; font-size: 1.05rem; font-weight: 800; }
+    .sd-h2 { margin: 0 0 0.9rem; font-size: 1.05rem; font-weight: 800; color: var(--r-text); }
     .sd-weeks { display: grid; gap: 0.5rem; }
     .sd-week {
       display: flex;
@@ -216,45 +232,57 @@ const canonical = `https://muntru.me/series/${series.id}/`;
       gap: 0.8rem;
       padding: 0.6rem 0.75rem;
       border-radius: 0.6rem;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(2, 6, 23, 0.5);
+      border: 1px solid var(--r-line);
+      background: var(--r-bg-2);
     }
     .sd-week.is-now {
-      border-color: rgba(16, 185, 129, 0.55);
+      border-color: var(--r-accent);
       background: rgba(16, 185, 129, 0.1);
     }
     .sd-week__num {
       font-family: var(--font-mono, monospace);
       font-size: 0.78rem;
       font-weight: 800;
-      color: #34d399;
+      color: var(--r-accent);
       min-width: 2.3rem;
     }
     .sd-week__track { flex: 1; min-width: 0; }
-    .sd-week__track strong { display: block; font-size: 0.86rem; }
-    .sd-week__track small { color: #94a3b8; font-size: 0.74rem; }
+    .sd-week__track strong { display: block; font-size: 0.86rem; color: var(--r-text); }
+    .sd-week__track small { color: var(--r-muted); font-size: 0.74rem; }
     .sd-week__now {
       font-family: var(--font-mono, monospace);
       font-size: 0.66rem;
       font-weight: 800;
       padding: 0.15rem 0.45rem;
       border-radius: 999px;
-      background: #10b981;
-      color: #052e16;
+      background: var(--r-accent);
+      color: var(--r-accent-ink, #04130d);
     }
-    .sd-cars { display: grid; gap: 0.45rem; }
+    .sd-cars { display: grid; gap: 0.5rem; }
     .sd-car {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.55rem 0.75rem;
-      border-radius: 0.55rem;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(2, 6, 23, 0.45);
+      gap: 0.75rem;
+      padding: 0.5rem 0.7rem;
+      border-radius: 0.6rem;
+      border: 1px solid var(--r-line);
+      background: var(--r-bg-2);
       font-size: 0.82rem;
-      color: #e2e8f0;
+      color: var(--r-text);
       text-decoration: none;
     }
-    .sd-car--link:hover { border-color: rgba(16, 185, 129, 0.5); color: #34d399; }
+    .sd-car__main { display: flex; align-items: center; gap: 0.65rem; min-width: 0; }
+    .sd-car__thumb {
+      width: 64px;
+      height: 36px;
+      border-radius: 0.4rem;
+      object-fit: cover;
+      object-position: center;
+      flex-shrink: 0;
+      border: 1px solid var(--r-line);
+    }
+    .sd-car__cta { font-family: var(--font-mono, monospace); font-size: 0.72rem; color: var(--r-accent); flex-shrink: 0; }
+    .sd-car--link:hover { border-color: var(--r-accent); color: var(--r-accent); }
   </style>
 </Layout>

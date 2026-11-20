@@ -17,22 +17,22 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
   canonical={pageUrl}
   ogImage={ogImage}
 >
-  <main class="brand-hud min-h-screen bg-[#090b0f] text-slate-100 py-10 px-4 sm:px-6">
-    <div class="max-w-7xl mx-auto space-y-6">
+  <main class="brand-hud min-h-screen bg-[var(--r-bg)] text-[var(--r-text)] py-12 px-4 sm:px-6">
+    <div class="r-wrap space-y-6">
       <!-- Header -->
-      <header class="flex flex-col gap-4 border-b border-white/10 pb-5 lg:flex-row lg:items-end lg:justify-between">
+      <header class="flex flex-col gap-4 border-b border-[var(--r-line)] pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div class="space-y-2">
-          <div class="flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest text-emerald-400">
+          <div class="flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest text-[var(--r-accent)] font-bold">
             <a href="/overlay/" class="hover:underline">← Volver a /overlay</a>
-            <span class="text-slate-600 hidden sm:inline">·</span>
-            <span class="hidden sm:inline">desktop/src/brand-logos.ts</span>
+            <span class="text-[var(--r-muted)] hidden sm:inline">·</span>
+            <span class="hidden sm:inline text-[var(--r-muted)]">desktop/src/brand-logos.ts</span>
           </div>
-          <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+          <h1 class="text-2xl sm:text-3xl font-extrabold font-display tracking-tight text-[var(--r-text)]">
             Fabricantes y colores HUD
           </h1>
-          <p class="text-xs sm:text-sm text-slate-400 max-w-2xl font-mono">
-            Cada tarjeta es un fabricante del catálogo. El emblema conserva la forma y los colores reales; las letras del logo van en blanco para leerse aquí.
-            <span class="text-emerald-400 font-bold ml-1">{withLogo} con logo</span>.
+          <p class="text-xs sm:text-sm text-[var(--r-muted)] max-w-2xl font-mono">
+            Cada tarjeta es un fabricante del catálogo. El emblema conserva la forma y los colores reales.
+            <span class="text-[var(--r-accent)] font-bold ml-1">{withLogo} con logo</span>.
           </p>
         </div>
 
@@ -44,9 +44,9 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
               id="brandSearchInput"
               type="search"
               placeholder="Buscar marca, CarPath o #HEX..."
-              class="w-full bg-[#0d1118] border border-white/15 focus:border-emerald-500 rounded px-3 py-2 text-xs font-mono text-white placeholder-slate-500 outline-none transition"
+              class="w-full bg-[var(--r-surface)] border border-[var(--r-line)] focus:border-[var(--r-accent)] rounded-xl px-3 py-2 text-xs font-mono text-[var(--r-text)] placeholder-[var(--r-muted)] outline-none transition"
             />
-            <span id="brandCountBadge" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono tabular-nums text-emerald-400">
+            <span id="brandCountBadge" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono tabular-nums text-[var(--r-accent)]">
               {brands.length}/{brands.length}
             </span>
           </div>
@@ -57,19 +57,19 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
       <section id="brandGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {brands.map((b, idx) => (
           <article
-            class="brand-card rounded border border-white/10 bg-[#0d1118] p-3 flex flex-col gap-3 font-mono tabular-nums hover:border-white/25 transition"
+            class="brand-card rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] p-3.5 flex flex-col gap-3 font-mono tabular-nums hover:border-[var(--r-accent)] transition"
             data-search={`${b.name} ${b.carPaths.join(" ")} ${b.color}`.toLowerCase()}
           >
             <!-- Top: 32x32 Official SVG + HEX Badge -->
             <div class="flex items-start justify-between gap-2">
               <span
-                class="brand-mark w-11 h-11 rounded border border-white/10 bg-[#090b0f] flex items-center justify-center shrink-0 p-1"
+                class="brand-mark w-11 h-11 rounded-lg border border-[var(--r-line)] bg-[#090b0f] flex items-center justify-center shrink-0 p-1"
                 title={b.logoVerified ? b.name : `${b.name}: sin emblema verificable`}
               >
                 <Fragment set:html={b.svg} />
               </span>
               <span
-                class="text-[10px] px-1.5 py-0.5 rounded border border-white/10 bg-[#090b0f] font-bold tracking-wide"
+                class="text-[10px] px-1.5 py-0.5 rounded border border-[var(--r-line)] bg-[var(--r-bg-2)] font-bold tracking-wide"
                 style={`color:${b.color}`}
               >
                 {b.color.toUpperCase()}{b.colorKind === "neutral" ? " · neutro" : ""}
@@ -77,14 +77,14 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
             </div>
 
             <div>
-              <h2 class="text-xs font-bold text-white">{b.name}</h2>
-              <p class="text-[10px] text-slate-500" data-i18n={b.logoVerified ? "brands.logo" : "brands.nologo"}>{b.logoVerified ? "Logo de marca" : "Sin logo verificable"}</p>
+              <h2 class="text-xs font-bold text-[var(--r-text)]">{b.name}</h2>
+              <p class="text-[10px] text-[var(--r-muted)]" data-i18n={b.logoVerified ? "brands.logo" : "brands.nologo"}>{b.logoVerified ? "Logo de marca" : "Sin logo verificable"}</p>
               <ul class="mt-1 space-y-0.5">
                 {b.cars.map((car) => (
-                  <li class="text-[10px] text-slate-300 break-all flex items-baseline gap-1.5">
+                  <li class="text-[10px] text-[var(--r-muted)] break-all flex items-baseline gap-1.5">
                     <span>{car.carFolder}</span>
                     {car.legacy && (
-                      <span data-i18n="brands.legacy" class="shrink-0 rounded border border-amber-400/40 bg-amber-400/10 px-1 text-[9px] font-bold uppercase tracking-wide text-amber-200">Legacy</span>
+                      <span data-i18n="brands.legacy" class="shrink-0 rounded border border-amber-400/40 bg-amber-400/10 px-1 text-[9px] font-bold uppercase tracking-wide text-amber-500">Legacy</span>
                     )}
                   </li>
                 ))}

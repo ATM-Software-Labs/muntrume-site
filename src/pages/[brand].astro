@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import MediaLightbox from '../components/MediaLightbox.astro';
 import MediaCarousel from '../components/MediaCarousel.astro';
-import { CAR_CATALOG_LIST, getBrandSvgMarkup, getCarPreviewBannerSvg, type CarMetadata } from '../../desktop/src/cars/catalog';
+import { CAR_CATALOG_LIST, getBrandSvgMarkup, type CarMetadata } from '../../desktop/src/cars/catalog';
 import { getBrandGallerySlides } from '../lib/car-gallery';
 
 export function getStaticPaths() {
@@ -16,6 +16,7 @@ export function getStaticPaths() {
 
   const seenModels = new Set<string>();
   const uniqueCars: CarMetadata[] = CAR_CATALOG_LIST.filter((car) => {
+    if (!car.previewImg) return false;
     const key = `${car.brand}|${car.model}`;
     if (seenModels.has(key)) return false;
     seenModels.add(key);
@@ -147,28 +148,25 @@ const brandSchema = {
             <div>
               <a
                 href={`/car/${car.carFolder.toLowerCase()}/`}
-                class="relative block aspect-[344/182] w-full bg-[#090d12] border-b border-[var(--r-line)] overflow-hidden"
+                class="relative block aspect-[16/9] w-full bg-[var(--r-bg-2)] border-b border-[var(--r-line)] overflow-hidden"
                 title={`Ver ficha técnica completa de ${car.brand} ${car.model}`}
               >
-                {carImg ? (
-                  <img
-                    src={carImg}
-                    alt={`${car.brand} ${car.model}`}
-                    width="344"
-                    height="182"
-                    loading="lazy"
-                    decoding="async"
-                    class="w-full h-full object-contain object-center transition-transform duration-500 group-hover:scale-[1.03]"
-                  />
-                ) : (
-                  <Fragment set:html={getCarPreviewBannerSvg(car)} />
-                )}
+                <img
+                  src={carImg}
+                  alt={`${car.brand} ${car.model}`}
+                  width="640"
+                  height="360"
+                  loading="lazy"
+                  decoding="async"
+                  onerror="this.closest('article')?.remove()"
+                  class="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.04]"
+                />
                 <span class="absolute top-2 left-2.5 inline-flex items-center gap-1">
                   <span class="w-5 h-5 inline-flex [&>svg]:w-full [&>svg]:h-full" set:html={getBrandSvgMarkup(car, 18)} />
                 </span>
                 <span class="absolute top-2 right-2.5 flex items-center gap-1">
                   {car.legacy && (
-                    <span class="px-2 py-0.5 rounded-md bg-amber-400/15 border border-amber-300/40 text-amber-100 text-[10px] font-mono font-bold uppercase">Legacy</span>
+                    <span class="px-2 py-0.5 rounded-md bg-amber-400/20 border border-amber-300/45 text-amber-100 text-[10px] font-mono font-bold uppercase">Legacy</span>
                   )}
                   <span class="px-2 py-0.5 rounded-md bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">
                     {car.carClass}

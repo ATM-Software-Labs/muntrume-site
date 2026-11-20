@@ -122,16 +122,18 @@ export function getCarGallerySlides(car: CarMetadata): CarGallerySlide[] {
  * Muestra exclusivamente los coches oficiales de esa marca en iRacing.
  */
 export function getBrandGallerySlides(_brandName: string, cars: CarMetadata[]): CarGallerySlide[] {
-  return cars.map((car) => {
-    const preview = car.previewImg || `/assets/cars/${car.carFolder.toLowerCase()}.webp`;
-    return {
-      src: preview,
-      title: `${car.brand} ${car.model} · Oficial iRacing`,
-      subtitle: `${car.carClass} (${car.category}) · ${car.specs}`,
-      tag: `${car.carClass} iRacing`,
-      id: `brand:${car.carFolder}`,
-      setupsUrl: `/garage?car=${encodeURIComponent(car.carFolder)}`,
-      downloadName: `${car.carFolder}.webp`,
-    };
-  });
+  return cars
+    .filter((car) => Boolean(car.previewImg))
+    .map((car) => {
+      const preview = car.previewImg!;
+      return {
+        src: preview,
+        title: `${car.brand} ${car.model} · Oficial iRacing`,
+        subtitle: `${car.carClass} (${car.category}) · ${car.specs}`,
+        tag: `${car.carClass} iRacing`,
+        id: `brand:${car.carFolder}`,
+        setupsUrl: `/garage?car=${encodeURIComponent(car.carFolder)}`,
+        downloadName: `${car.carFolder}.webp`,
+      };
+    });
 }

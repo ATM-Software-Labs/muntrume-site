@@ -61,7 +61,7 @@ const gallerySchema = {
             Todas
           </button>
         </div>
-        <select id="glSortSelect" class="h-8 rounded-full border border-white/15 bg-[var(--r-surface)] px-3 text-[11px] font-mono text-white/90 outline-none cursor-pointer">
+        <select id="glSortSelect" class="h-8 rounded-full border border-[var(--r-line)] bg-[var(--r-surface)] px-3 text-[11px] font-mono text-[var(--r-text)] outline-none cursor-pointer">
           <option value="popular">Más Populares (iRacing + Likes)</option>
           <option value="likes">Más Votadas</option>
           <option value="recent">Más Recientes</option>
@@ -76,7 +76,7 @@ const gallerySchema = {
       </div>
     </div>
     <div class="mt-6 flex justify-center">
-      <button type="button" id="glLoadMoreBtn" hidden class="px-5 py-2.5 rounded-xl border border-white/15 bg-[var(--r-surface)] hover:border-[var(--r-accent)] text-xs font-mono font-bold text-white transition cursor-pointer">
+      <button type="button" id="glLoadMoreBtn" hidden class="px-5 py-2.5 rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] hover:border-[var(--r-accent)] text-xs font-mono font-bold text-[var(--r-text)] transition cursor-pointer">
         Cargar más capturas ↓
       </button>
     </div>
@@ -387,7 +387,7 @@ const gallerySchema = {
     return `
     <article data-category="${p.category}" data-index="${idx}" class="galeria-card group rounded-xl overflow-hidden bg-[var(--r-surface)] transition-all duration-200" style="border: 1px solid rgba(255, 255, 255, 0.08);">
       <button type="button" class="galeria-open-btn relative block w-full aspect-video overflow-hidden bg-[#090d12] cursor-zoom-in text-left" data-photo-id="${p.id}" data-likes="${p.likes || 0}" data-src="${p.imageUrl}" data-title="${p.title}" data-sub="${p.car || ''} · ${p.track || 'iRacing'}" data-author="${p.authorName}" data-source-url="${p.sourceUrl || ''}" data-car-slug="${p.carSlug || ''}" data-track-slug="${p.trackSlug || ''}" data-clean-crop="${useCrop ? '1' : '0'}">
-        <img src="${p.imageUrl}" alt="${p.title}" width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://muntrume.atrumin16.workers.dev/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" style="filter: contrast(1.04) saturate(1.06);${cropStyle}" />
+        <img src="${p.imageUrl}" alt="${p.title}" width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://muntrume.atrumin16.workers.dev/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}else{this.closest('article')?.remove();}" class="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105" style="filter: contrast(1.04) saturate(1.06);${cropStyle}" />
         <div class="absolute inset-0 pointer-events-none" style="background: linear-gradient(to top, rgba(9,11,15,0.88) 0%, transparent 55%);"></div>
         <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">${p.category}</span>
         <span class="absolute bottom-2.5 left-2.5 text-[10px] font-mono text-white/85">📸 ${p.authorName}</span>

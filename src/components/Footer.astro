@@ -7,9 +7,10 @@ const columns = [
     links: [
       { href: "/", label: "Inicio", key: "nav.home" },
       { href: "/pilotos/", label: "Pilotos", key: "nav.drivers" },
-      { href: "/team/", label: "El equipo" },
       { href: "/about/", label: "Quiénes somos" },
       { href: "/noticias/", label: "Sala de prensa", key: "nav.news" },
+      { href: "/communications/", label: "Comunicaciones" },
+      { href: "/contact/", label: "Contacto", key: "footer.contact" },
     ],
   },
   {
@@ -17,33 +18,38 @@ const columns = [
     links: [
       { href: "/garage/", label: "Garage (.sto)", key: "nav.garage" },
       { href: "/setup-builder/", label: "Setup Builder" },
-      { href: "/overlay/", label: "MMT Sync Overlays" },
-      { href: "/app/", label: "MMT Sync (App)", key: "footer.app" },
       { href: "/ai/", label: "Muntrume AI" },
+      { href: "/app/", label: "MMT Sync (App)", key: "footer.app" },
+      { href: "/app/install/", label: "Instalar MMT Sync" },
+      { href: "/overlay/", label: "MMT Sync Overlays" },
+      { href: "/overlay/brands/", label: "Marcas de Overlay" },
+    ],
+  },
+  {
+    title: "Paddock y Competición",
+    links: [
+      { href: "/paddock/", label: "Paddock", key: "nav.paddock" },
       { href: "/calendar/", label: "Calendario 2026 S4" },
       { href: "/calendar/special-events/", label: "Special Events 2026" },
       { href: "/series/", label: "Series Oficiales" },
-    ],
-  },
-  {
-    title: "Paddock y Comunidad",
-    links: [
-      { href: "/paddock/", label: "Paddock", key: "nav.paddock" },
+      { href: "/tracks/", label: "Circuitos" },
+      { href: "/albums/", label: "Álbumes de Coches" },
+      { href: "/gallery/", label: "Galería en Pista" },
       { href: "/wallpapers/", label: "Wallpapers 16:9 & 9:16" },
       { href: "/paddock/marca/", label: "Branding y Marca" },
-      { href: "/tracks/", label: "Circuitos" },
-      { href: "https://discord.gg/ehX6B8JUtE", label: "Discord oficial", external: true },
-      { href: "https://garage61.net/app/teams/muntrume-motorsport", label: "Garage 61", external: true },
     ],
   },
   {
-    title: "Acceso y Transparencia",
+    title: "Acceso, Comunidad y Legal",
     links: [
       { href: "/login/", label: "Acceso piloto" },
       { href: "/app/vincular/", label: "Vincular App" },
+      { href: "/email-preferences/", label: "Preferencias de email" },
       { href: "/legal/fuentes/", label: "Fuentes RSS", key: "footer.sources" },
       { href: "/legal/retirada/", label: "Política de retirada", key: "footer.takedown" },
-      { href: "/email-preferences/", label: "Preferencias de email" },
+      { href: "/remove-image/", label: "Retirar imagen" },
+      { href: "https://discord.gg/ehX6B8JUtE", label: "Discord oficial", external: true },
+      { href: "https://garage61.net/app/teams/muntrume-motorsport", label: "Garage 61", external: true },
     ],
   },
 ];
@@ -291,9 +297,9 @@ const columns = [
     min-width: 176px;
     padding: 6px;
     border-radius: 12px;
-    border: 1px solid var(--r-line-2, #25332d);
-    background: #101714;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+    border: 1px solid var(--r-line-2, var(--r-line));
+    background: var(--r-surface);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
     display: grid;
     gap: 4px;
     z-index: 60;
@@ -310,7 +316,7 @@ const columns = [
     border: 0;
     border-radius: 8px;
     background: transparent;
-    color: #d6e2dc;
+    color: var(--r-text);
     font-size: 13px;
     font-weight: 600;
     text-align: left;
@@ -318,8 +324,8 @@ const columns = [
     transition: background 0.12s ease, color 0.12s ease;
   }
   .mmt-footer__lang-opt:hover {
-    background: rgba(255, 255, 255, 0.06);
-    color: #ffffff;
+    background: var(--r-bg-2, rgba(128, 128, 128, 0.12));
+    color: var(--r-accent);
   }
   .mmt-footer__lang-opt[aria-selected="true"] {
     background: rgba(0, 230, 153, 0.14);

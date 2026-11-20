@@ -79,19 +79,19 @@ const pageSchema = {
 ---
 
 <Layout title={pageTitle} description={pageDescription} canonical={pageUrl} ogImage={ogImage} ogImageAlt={allWallpapers[0]?.alt || pageTitle} schemaJson={pageSchema}>
-  <main class="min-h-screen bg-[#090b0f] text-slate-100 py-10 px-4 sm:px-6">
+  <main class="min-h-screen bg-[var(--r-bg)] text-[var(--r-text)] py-10 px-4 sm:px-6">
     <div class="max-w-7xl mx-auto space-y-8">
       <!-- HERO + FORMAT SWITCHER -->
-      <header class="border-b border-white/10 pb-6 flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+      <header class="border-b border-[var(--r-line)] pb-6 flex flex-col lg:flex-row lg:items-end justify-between gap-6">
         <div class="space-y-2.5">
-          <div class="font-mono text-[11px] uppercase tracking-widest text-emerald-400 font-bold">
+          <div class="font-mono text-[11px] uppercase tracking-widest text-[var(--r-accent)] font-bold">
             Muntrume Motorsport · {allWallpapers.length} wallpapers · {seriesGroups.length} grupos
           </div>
-          <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+          <h1 class="text-3xl sm:text-4xl font-extrabold font-display tracking-tight text-[var(--r-text)]">
             Wallpapers en pista, serie por serie
           </h1>
-          <p class="text-xs sm:text-sm text-slate-400 max-w-2xl font-mono leading-relaxed">
-            Solo media oficial de iRacing y las capturas en pista del manifiesto. JPG en el navegador para Windows (16:9) y móvil (<span class="text-white font-semibold">2160×3840</span>).
+          <p class="text-xs sm:text-sm text-[var(--r-muted)] max-w-2xl font-mono leading-relaxed">
+            Solo media oficial de iRacing y las capturas en pista del manifiesto. JPG en el navegador para Windows (16:9) y móvil (<span class="text-[var(--r-text)] font-semibold">2160×3840</span>).
           </p>
         </div>
 
@@ -99,16 +99,16 @@ const pageSchema = {
           <button
             type="button"
             id="wpOpenSubmitBtn"
-            class="px-3.5 py-2 rounded-lg border border-emerald-500/45 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-mono text-xs font-extrabold tracking-wide transition cursor-pointer"
+            class="px-3.5 py-2 rounded-lg border border-emerald-500/45 bg-emerald-500/10 hover:bg-emerald-500/20 text-[var(--r-accent)] font-mono text-xs font-extrabold tracking-wide transition cursor-pointer"
           >
             + Subir / Sugerir Wallpaper
           </button>
-          <span class="font-mono text-[10px] uppercase tracking-wider text-slate-400">Formato de salida (.JPG nativo)</span>
-          <div class="inline-flex flex-wrap p-1 rounded-lg bg-[#0d1118] border border-white/15 font-mono text-xs max-w-full" role="group">
+          <span class="font-mono text-[10px] uppercase tracking-wider text-[var(--r-muted)]">Formato de salida (.JPG nativo)</span>
+          <div class="inline-flex flex-wrap p-1 rounded-lg bg-[var(--r-surface)] border border-[var(--r-line)] font-mono text-xs max-w-full" role="group">
             <button type="button" id="fmtDesktopBtn" class="px-3.5 py-2 rounded-md font-bold bg-emerald-500 text-[#04130d] transition cursor-pointer" aria-pressed="true">
               Escritorio · 16:9 (.JPG)
             </button>
-            <button type="button" id="fmtMobileBtn" class="px-3.5 py-2 rounded-md font-bold text-slate-300 hover:text-white transition cursor-pointer" aria-pressed="false">
+            <button type="button" id="fmtMobileBtn" class="px-3.5 py-2 rounded-md font-bold text-[var(--r-muted)] hover:text-[var(--r-text)] transition cursor-pointer" aria-pressed="false">
               Móvil · 9:16 (2160×3840 4K)
             </button>
           </div>
@@ -193,10 +193,10 @@ const pageSchema = {
           const gridCols = thumbs.length === 1 ? "grid-cols-1" : thumbs.length === 3 ? "grid-cols-3" : "grid-cols-2";
           return (
             <article class="rounded-lg border border-white/10 bg-[#0d1118] overflow-hidden flex flex-col justify-between hover:border-white/25 transition">
-              <div class={`grid ${gridCols} gap-0.5 bg-[#090b0f] p-1`}>
+              <div class={`grid ${gridCols} gap-0.5 bg-[var(--r-bg-2)] p-1`}>
                 {thumbs.map((t) => (
-                  <div class="aspect-video bg-[#090b0f] overflow-hidden rounded-[2px]">
-                    <img src={t.img} alt={t.model} loading="lazy" decoding="async" referrerpolicy="no-referrer" class="w-full h-full object-cover" />
+                  <div class="aspect-video bg-[var(--r-bg-2)] overflow-hidden rounded-[2px]">
+                    <img src={t.img} alt={t.model} loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('article')?.remove()" class="w-full h-full object-cover object-center" />
                   </div>
                 ))}
               </div>

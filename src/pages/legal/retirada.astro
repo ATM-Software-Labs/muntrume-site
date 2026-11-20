@@ -7,83 +7,83 @@ const pageUrl = "https://muntru.me/legal/retirada";
 ---
 
 <Layout title={pageTitle} description={pageDescription} canonical={pageUrl}>
-  <div class="min-h-screen bg-[#0E1211] text-[#F5F5F5] pt-24 pb-20 selection:bg-[#00E699] selection:text-black">
+  <div class="min-h-screen bg-[var(--r-bg)] text-[var(--r-text)] pt-24 pb-20 selection:bg-[var(--r-accent)] selection:text-black">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 space-y-10">
       
       <!-- Breadcrumb -->
-      <nav class="flex items-center gap-2 text-xs font-mono text-[#9AA8A3]">
-        <a href="/" class="hover:text-white transition">Inicio</a>
+      <nav class="flex items-center gap-2 text-xs font-mono text-[var(--r-muted)]">
+        <a href="/" class="hover:text-[var(--r-text)] transition">Inicio</a>
         <span>/</span>
-        <a href="/news" class="hover:text-[#00E699] transition">Media Wire</a>
+        <a href="/noticias/" class="hover:text-[var(--r-accent)] transition">Media Wire</a>
         <span>/</span>
-        <a href="/legal/fuentes" class="hover:text-white transition">Fuentes</a>
+        <a href="/legal/fuentes/" class="hover:text-[var(--r-text)] transition">Fuentes</a>
         <span>/</span>
-        <span class="text-[#00E699] font-bold">Retirada Inmediata</span>
+        <span class="text-[var(--r-accent)] font-bold">Retirada Inmediata</span>
       </nav>
 
       <!-- Header -->
-      <div class="space-y-3 border-b border-[#242E2C] pb-6">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded bg-[#1A2120] text-red-400 border border-red-500/20 text-xs font-mono font-semibold">
+      <div class="space-y-3 border-b border-[var(--r-line)] pb-6">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded bg-[var(--r-surface)] text-red-500 border border-red-500/25 text-xs font-mono font-semibold">
           <span>●</span>
           <span>TAKEDOWN &amp; AVISO DE RETIRADA INMEDIATA</span>
         </div>
-        <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+        <h1 class="text-3xl sm:text-4xl font-extrabold font-display text-[var(--r-text)] tracking-tight">
           Formulario de Despublicación Inmediata
         </h1>
-        <p class="text-sm text-[#9AA8A3] leading-relaxed">
-          Si eres el autor, medio o titular de derechos de un artículo referenciado en nuestra sala de prensa y deseas que sea despublicado, completa el siguiente formulario o escríbenos directamente a <a href="mailto:legal@muntru.me" class="text-[#00E699] font-mono hover:underline">legal@muntru.me</a>. La retirada de nuestra base de datos es instantánea.
+        <p class="text-sm text-[var(--r-muted)] leading-relaxed">
+          Si eres el autor, medio o titular de derechos de un artículo referenciado en nuestra sala de prensa y deseas que sea despublicado, completa el siguiente formulario o escríbenos directamente a <a href="mailto:legal@muntru.me" class="text-[var(--r-accent)] font-mono hover:underline">legal@muntru.me</a>. La retirada de nuestra base de datos es instantánea.
         </p>
       </div>
 
       <!-- Formulario interactivo -->
-      <form id="takedownForm" class="p-6 sm:p-8 rounded-3xl bg-[#1A2120] border border-[#242E2C] space-y-6 shadow-xl">
+      <form id="takedownForm" class="p-6 sm:p-8 rounded-3xl bg-[var(--r-surface)] border border-[var(--r-line)] space-y-6 shadow-xl">
         
         <div class="space-y-2">
-          <label for="articleUrl" class="block text-xs font-mono uppercase text-[#BAC5C1] font-semibold">
-            URL del artículo a retirar <span class="text-red-400">*</span>
+          <label for="articleUrl" class="block text-xs font-mono uppercase text-[var(--r-muted)] font-semibold">
+            URL del artículo a retirar <span class="text-red-500">*</span>
           </label>
           <input
             type="url"
             id="articleUrl"
             required
             placeholder="https://muntru.me/noticias/... o URL de la fuente original"
-            class="w-full px-4 py-3 rounded-xl bg-[#0E1211] border border-[#242E2C] text-white placeholder-[#7A8A87] text-sm font-mono focus:outline-none focus:border-[#00E699] transition"
+            class="w-full px-4 py-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] text-[var(--r-text)] placeholder-[var(--r-muted)] text-sm font-mono focus:outline-none focus:border-[var(--r-accent)] transition"
           />
-          <p class="text-[11px] font-mono text-[#7A8A87]">
+          <p class="text-[11px] font-mono text-[var(--r-muted)]">
             Puedes introducir tanto la URL interna de muntru.me como el enlace de la fuente original externa.
           </p>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="space-y-2">
-            <label for="claimantName" class="block text-xs font-mono uppercase text-[#BAC5C1] font-semibold">
-              Nombre o Medio Titular <span class="text-red-400">*</span>
+            <label for="claimantName" class="block text-xs font-mono uppercase text-[var(--r-muted)] font-semibold">
+              Nombre o Medio Titular <span class="text-red-500">*</span>
             </label>
             <input
               type="text"
               id="claimantName"
               required
               placeholder="Ej. Redacción SimRacer / Motorsport"
-              class="w-full px-4 py-3 rounded-xl bg-[#0E1211] border border-[#242E2C] text-white placeholder-[#7A8A87] text-sm font-mono focus:outline-none focus:border-[#00E699] transition"
+              class="w-full px-4 py-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] text-[var(--r-text)] placeholder-[var(--r-muted)] text-sm font-mono focus:outline-none focus:border-[var(--r-accent)] transition"
             />
           </div>
 
           <div class="space-y-2">
-            <label for="claimantEmail" class="block text-xs font-mono uppercase text-[#BAC5C1] font-semibold">
-              Email de Contacto <span class="text-red-400">*</span>
+            <label for="claimantEmail" class="block text-xs font-mono uppercase text-[var(--r-muted)] font-semibold">
+              Email de Contacto <span class="text-red-500">*</span>
             </label>
             <input
               type="email"
               id="claimantEmail"
               required
               placeholder="redaccion@tudominio.com"
-              class="w-full px-4 py-3 rounded-xl bg-[#0E1211] border border-[#242E2C] text-white placeholder-[#7A8A87] text-sm font-mono focus:outline-none focus:border-[#00E699] transition"
+              class="w-full px-4 py-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] text-[var(--r-text)] placeholder-[var(--r-muted)] text-sm font-mono focus:outline-none focus:border-[var(--r-accent)] transition"
             />
           </div>
         </div>
 
         <div class="space-y-2">
-          <label for="takedownReason" class="block text-xs font-mono uppercase text-[#BAC5C1] font-semibold">
+          <label for="takedownReason" class="block text-xs font-mono uppercase text-[var(--r-muted)] font-semibold">
             Motivo de la Notificación
           </label>
           <select
