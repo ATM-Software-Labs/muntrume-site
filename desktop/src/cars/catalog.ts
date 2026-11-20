@@ -1,5 +1,7 @@
 import { OFFICIAL_BRAND_PATHS } from "./brand-icons";
 import { colorForLogo } from "./brand-colors";
+import { brandLogoSvg, BRAND_LOGO_ASSETS } from "./brand-logo-assets";
+import { EXTRA_IRACING_CARS } from "./extra-cars";
 
 export type CarClass = "GTP" | "LMP2" | "LMP3" | "GT3" | "GT4" | "GTE" | "Formula" | "Touring" | "Oval" | "Dirt" | "Prototype";
 export type CarCategory = "Sports Car" | "Formula Car" | "Oval" | "Dirt";
@@ -16,6 +18,8 @@ export interface CarMetadata {
   readonly manualUrl: string;
   readonly forumUrl: string;
   readonly previewImg?: string;
+  /** iRacing marks the car [Legacy] or it has left official series. */
+  readonly legacy: boolean;
 }
 
 const PREVIEW_IMG_BY_KEY: Record<string, string> = {
@@ -131,7 +135,7 @@ const PREVIEW_IMG_BY_KEY: Record<string, string> = {
   dirtumpmod: "/assets/cars/dirtumpmod.webp",
 };
 
-interface RawCarEntry {
+export interface RawCarEntry {
   readonly carFolder: string;
   readonly brand: string;
   readonly model: string;
@@ -139,7 +143,20 @@ interface RawCarEntry {
   readonly svgLogoId: string;
   readonly accentColor: string;
   readonly specs?: string;
+  readonly legacy?: boolean;
 }
+
+/**
+ * Cars the May 2026 iRacing filepath list already tags [Legacy],
+ * matched to folders that were already in this catalog.
+ */
+const LEGACY_PATCH: Record<string, { model?: string }> = {
+  ferrari488gt3: { model: "488 GT3" },
+  mercedesamggt3: { model: "AMG GT3" },
+  stockcarsfordfusion: { model: "NASCAR Cup Fusion 2016" },
+  truckssilverado: { model: "NASCAR Truck Silverado 2008" },
+  porsche992cup: { model: "911 GT3 Cup (992.1)" },
+};
 
 function categoryFromClass(carClass: CarClass): CarCategory {
   if (carClass === "Formula") return "Formula Car";
@@ -374,8 +391,11 @@ function enrichCar(entry: RawCarEntry): CarMetadata {
   const key = entry.carFolder.toLowerCase().replace(/[^a-z0-9]/g, "");
   const forumSlug = FORUM_SLUG_BY_KEY[key] ?? defaultForumSlugForClass(entry.carClass);
   const brandColor = colorForLogo(entry.svgLogoId);
+  const patch = LEGACY_PATCH[key];
   return {
     ...entry,
+    model: patch?.model ?? entry.model,
+    legacy: entry.legacy === true || Boolean(patch),
     accentColor: brandColor.hex,
     category,
     specs: entry.specs ?? defaultSpecsForClass(entry.carClass),
@@ -467,7 +487,7 @@ const RAW_CAR_CATALOG: readonly RawCarEntry[] = [
   { carFolder: "formulavee", brand: "Volkswagen", model: "Formula Vee", carClass: "Formula", svgLogoId: "logo-vw", accentColor: "#001E50" },
   { carFolder: "formulaveeformulavee2", brand: "Volkswagen", model: "Formula Vee (Spec 2)", carClass: "Formula", svgLogoId: "logo-vw", accentColor: "#001E50" },
   { carFolder: "formulaveeformulavee3", brand: "Volkswagen", model: "Formula Vee (Spec 3)", carClass: "Formula", svgLogoId: "logo-vw", accentColor: "#001E50" },
-  { carFolder: "rt2000", brand: "Skip Barber", model: "RT2000", carClass: "Formula", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
+  { carFolder: "rt2000", brand: "Skip Barber", model: "Formula 2000", carClass: "Formula", svgLogoId: "logo-skip", accentColor: "#EC2028" },
   { carFolder: "lotus79", brand: "Lotus", model: "Type 79", carClass: "Formula", svgLogoId: "logo-lotus", accentColor: "#facc15" },
   // Prototype
   { carFolder: "radicalsr8", brand: "Radical", model: "SR8", carClass: "Prototype", svgLogoId: "logo-radical", accentColor: "#10b981" },
@@ -505,6 +525,7 @@ const RAW_CAR_CATALOG: readonly RawCarEntry[] = [
   { carFolder: "dirtsprintwinged360", brand: "Sin fabricante único", model: "360 Winged Sprint Car", carClass: "Dirt", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
   { carFolder: "dirtsprintwinged410", brand: "Sin fabricante único", model: "410 Winged Sprint Car", carClass: "Dirt", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
   { carFolder: "dirtumpmod", brand: "Sin fabricante único", model: "Dirt UMP Modified", carClass: "Dirt", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
+  ...EXTRA_IRACING_CARS,
 ];
 
 export const CAR_CATALOG_LIST: readonly CarMetadata[] = RAW_CAR_CATALOG.map(enrichCar);
@@ -604,6 +625,8 @@ export function filterCarsByClass(carClass?: CarClass): readonly CarMetadata[] {
  * Returns raw inner SVG markup for a manufacturer logo, preferring official vector paths.
  */
 export function brandSvgInner(meta: CarMetadata): string {
+  const asset = BRAND_LOGO_ASSETS[meta.svgLogoId];
+  if (asset) return asset.inner;
   const officialPath = OFFICIAL_BRAND_PATHS[meta.svgLogoId];
   if (officialPath) {
     return `<path d="${officialPath}" fill="${meta.accentColor}"/>`;
@@ -618,6 +641,8 @@ export function brandSvgInner(meta: CarMetadata): string {
  * Returns a complete standalone `<svg>` string for SSR / Astro rendering.
  */
 export function getBrandSvgMarkup(meta: CarMetadata, size = 20): string {
+  const colored = brandLogoSvg(meta.svgLogoId, size);
+  if (colored) return colored.replace("<svg ", '<svg class="shrink-0" ');
   return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" class="shrink-0">${brandSvgInner(meta)}</svg>`;
 }
 
@@ -625,13 +650,16 @@ export function getBrandSvgMarkup(meta: CarMetadata, size = 20): string {
  * Generates an inline SVG element for the car's manufacturer emblem.
  */
 export function createBrandBadgeElement(meta: CarMetadata, size = 20): SVGSVGElement {
+  const html = getBrandSvgMarkup(meta, size);
+  const tpl = document.createElement("template");
+  tpl.innerHTML = html.trim();
+  const node = tpl.content.firstElementChild;
+  if (node instanceof SVGSVGElement) return node;
   const ns = "http://www.w3.org/2000/svg";
   const svg = document.createElementNS(ns, "svg");
   svg.setAttribute("viewBox", "0 0 24 24");
   svg.setAttribute("width", String(size));
   svg.setAttribute("height", String(size));
-  svg.setAttribute("aria-hidden", "true");
-  svg.classList.add("shrink-0");
   svg.innerHTML = brandSvgInner(meta);
   return svg;
 }
@@ -649,6 +677,6 @@ export function getCarPreviewBannerSvg(meta: CarMetadata): string {
     </defs>
     <rect width="356" height="168" fill="#090d12"/>
     <rect width="356" height="168" fill="url(#g-${meta.carFolder})"/>
-    <svg x="146" y="46" width="64" height="64" viewBox="0 0 24 24">${brandSvgInner(meta)}</svg>
+    <svg x="146" y="46" width="64" height="64" viewBox="${BRAND_LOGO_ASSETS[meta.svgLogoId]?.viewBox ?? "0 0 24 24"}">${brandSvgInner(meta)}</svg>
   </svg>`;
 }

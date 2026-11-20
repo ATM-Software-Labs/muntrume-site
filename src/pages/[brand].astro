@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import MediaLightbox from '../components/MediaLightbox.astro';
 import MediaCarousel from '../components/MediaCarousel.astro';
-import { CAR_CATALOG_LIST, type CarMetadata } from '../../desktop/src/cars/catalog';
+import { CAR_CATALOG_LIST, getBrandSvgMarkup, getCarPreviewBannerSvg, type CarMetadata } from '../../desktop/src/cars/catalog';
 import { getBrandGallerySlides } from '../lib/car-gallery';
 
 export function getStaticPaths() {
@@ -62,12 +62,29 @@ const categories = Array.from(new Set(cars.map((c) => c.carClass)));
 const brandSlides = getBrandGallerySlides(brandName, cars);
 const pageTitle = `${brandName} en iRacing · Todos los modelos | Muntrume Motorsport`;
 const pageDescription = `Catálogo completo de vehículos ${brandName} en iRacing (${cars.length} modelos: ${categories.join(', ')}). Previews oficiales, setups (.sto), User Manual PDF y Car Forum.`;
+const brandSchema = {
+  "@type": "CollectionPage",
+  "@id": `https://muntru.me/${brandSlug}/#collection`,
+  name: `${brandName} en iRacing`,
+  url: `https://muntru.me/${brandSlug}/`,
+  description: pageDescription,
+  inLanguage: ["es", "en", "ca", "fr"],
+  isPartOf: { "@id": "https://muntru.me/#website" },
+  about: { "@type": "Brand", name: brandName },
+  hasPart: cars.map((car) => ({
+    "@type": "Car",
+    name: `${car.brand} ${car.model}`,
+    brand: { "@type": "Brand", name: car.brand },
+    url: `https://muntru.me/car/${car.carFolder.toLowerCase()}/`,
+  })),
+};
 ---
 
 <Layout
   title={pageTitle}
   description={pageDescription}
   canonical={`https://muntru.me/${brandSlug}/`}
+  schemaJson={brandSchema}
 >
   <main class="r-wrap py-12 sm:py-16 space-y-10">
     <nav aria-label="Breadcrumb" class="r-kicker flex flex-wrap items-center gap-2">
@@ -124,7 +141,7 @@ const pageDescription = `Catálogo completo de vehículos ${brandName} en iRacin
 
     <section aria-label={`Modelos ${brandName}`} class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
       {cars.map((car) => {
-        const carImg = car.previewImg || `/assets/cars/${car.carFolder.toLowerCase()}.webp`;
+        const carImg = car.previewImg;
         return (
           <article class="rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-200 overflow-hidden flex flex-col justify-between group">
             <div>
@@ -133,17 +150,29 @@ const pageDescription = `Catálogo completo de vehículos ${brandName} en iRacin
                 class="relative block aspect-[344/182] w-full bg-[#090d12] border-b border-[var(--r-line)] overflow-hidden"
                 title={`Ver ficha técnica completa de ${car.brand} ${car.model}`}
               >
-                <img
-                  src={carImg}
-                  alt={`${car.brand} ${car.model}`}
-                  width="344"
-                  height="182"
-                  loading="lazy"
-                  decoding="async"
-                  class="w-full h-full object-contain object-center transition-transform duration-500 group-hover:scale-[1.03]"
-                />
-                <span class="absolute top-2 right-2.5 px-2 py-0.5 rounded-md bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">
-                  {car.carClass}
+                {carImg ? (
+                  <img
+                    src={carImg}
+                    alt={`${car.brand} ${car.model}`}
+                    width="344"
+                    height="182"
+                    loading="lazy"
+                    decoding="async"
+                    class="w-full h-full object-contain object-center transition-transform duration-500 group-hover:scale-[1.03]"
+                  />
+                ) : (
+                  <Fragment set:html={getCarPreviewBannerSvg(car)} />
+                )}
+                <span class="absolute top-2 left-2.5 inline-flex items-center gap-1">
+                  <span class="w-5 h-5 inline-flex [&>svg]:w-full [&>svg]:h-full" set:html={getBrandSvgMarkup(car, 18)} />
+                </span>
+                <span class="absolute top-2 right-2.5 flex items-center gap-1">
+                  {car.legacy && (
+                    <span class="px-2 py-0.5 rounded-md bg-amber-400/15 border border-amber-300/40 text-amber-100 text-[10px] font-mono font-bold uppercase">Legacy</span>
+                  )}
+                  <span class="px-2 py-0.5 rounded-md bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">
+                    {car.carClass}
+                  </span>
                 </span>
               </a>
 

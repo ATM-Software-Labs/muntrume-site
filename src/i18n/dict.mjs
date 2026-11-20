@@ -522,5 +522,9 @@ export const dict = {
   "g.g8.desc": { en: "The team identity: neon green (#00E699), charcoal and the sporting type.", ca: "La identitat de l'equip: verd neó (#00E699), gris carbó i la tipografia esportiva.", fr: "L'identité de l'équipe : vert néon (#00E699), gris charbon et la typographie sportive." },
   "g.g9.title": { en: "Setup vault (.sto)", ca: "Setup vault (.sto)", fr: "Coffre de setups (.sto)" },
   "g.g9.sub": { en: "Official setup bank", ca: "Banc de reglatges oficials", fr: "Banque de réglages officiels" },
-  "g.g9.desc": { en: "Technical catalogue with more than 41,000 checked .STO setups, ready for local sync.", ca: "Catàleg tècnic amb més de 41.000 configuracions .STO revisades i llestes per a la sincronització local.", fr: "Catalogue technique de plus de 41 000 setups .STO vérifiés, prêts pour la synchro locale." }
+  "g.g9.desc": { en: "Technical catalogue with more than 41,000 checked .STO setups, ready for local sync.", ca: "Catàleg tècnic amb més de 41.000 configuracions .STO revisades i llestes per a la sincronització local.", fr: "Catalogue technique de plus de 41 000 setups .STO vérifiés, prêts pour la synchro locale." },
+  "brands.legacy": { en: "Legacy", ca: "Legacy", fr: "Héritage" },
+  "brands.logo": { en: "Brand logo", ca: "Logo de marca", fr: "Logo de marque" },
+  "brands.nologo": { en: "No verified logo", ca: "Sense logo verificable", fr: "Pas de logo vérifiable" },
+  "brands.withLogo": { en: "with a logo", ca: "amb logo", fr: "avec logo" }
 };

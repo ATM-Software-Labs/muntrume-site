@@ -1,6 +1,7 @@
-import { NEUTRAL_BRAND_MARK, OFFICIAL_BRAND_PATHS, VERIFIED_BRAND_LOGO_IDS } from "./cars/brand-icons";
+import { NEUTRAL_BRAND_MARK, OFFICIAL_BRAND_PATHS } from "./cars/brand-icons";
 import { colorForLogo, NEUTRAL_BRAND_HEX } from "./cars/brand-colors";
 import { CAR_CATALOG_LIST } from "./cars/catalog";
+import { BRAND_LOGO_ASSETS, brandLogoSvg } from "./cars/brand-logo-assets";
 
 export interface CarBrandInfo {
   id: string;
@@ -54,7 +55,13 @@ const FALLBACK_BRAND_RULES: Array<[RegExp, BrandRule]> = [
   [/pontiac/i, { logo: "logo-pontiac", name: "Pontiac" }],
   [/buick/i, { logo: "logo-buick", name: "Buick" }],
   [/holden|commodore/i, { logo: "logo-holden", name: "Holden" }],
-  [/skip|rt2000/i, { logo: "logo-neutral", name: "Skip Barber" }],
+  [/skip|rt2000/i, { logo: "logo-skip", name: "Skip Barber" }],
+  [/kia|optima/i, { logo: "logo-kia", name: "Kia" }],
+  [/subaru|wrx/i, { logo: "logo-subaru", name: "Subaru" }],
+  [/williams|fw31/i, { logo: "logo-williams", name: "Williams" }],
+  [/ruf|rt12/i, { logo: "logo-ruf", name: "Ruf" }],
+  [/riley/i, { logo: "logo-riley", name: "Riley" }],
+  [/lotus49|lotus79|lotus/i, { logo: "logo-lotus", name: "Lotus" }],
 ];
 
 function neutralSvg(color: string): string {
@@ -82,8 +89,10 @@ export function getCarBrandInfo(carNameOrFolder: string): CarBrandInfo {
 }
 
 function buildOfficialSvg(logoId: string, color: string): string | null {
+  const colored = brandLogoSvg(logoId, 32);
+  if (colored) return colored;
   const d = OFFICIAL_BRAND_PATHS[logoId];
-  if (!d) return null;
+  if (!d || d === NEUTRAL_BRAND_MARK) return null;
   return `<svg viewBox="0 0 24 24" fill="${color}" fill-rule="evenodd" clip-rule="evenodd" style="color:${color}" class="w-full h-full"><path fill-rule="evenodd" d="${d}"/></svg>`;
 }
 
@@ -92,16 +101,14 @@ function computeCarBrandInfo(carNameOrFolder: string): CarBrandInfo {
   const catalogHit = CATALOG_BRAND_BY_KEY.get(key);
   if (catalogHit) {
     const finalColor = colorForLogo(catalogHit.logo).hex;
-    const svg = buildOfficialSvg(catalogHit.logo, finalColor);
-    if (svg) {
-      return {
-        id: catalogHit.logo.replace(/^logo-/, ""),
-        name: catalogHit.name,
-        color: finalColor,
-        bg: `${finalColor}22`,
-        svg,
-      };
-    }
+    const svg = buildOfficialSvg(catalogHit.logo, finalColor) ?? neutralSvg(finalColor);
+    return {
+      id: catalogHit.logo.replace(/^logo-/, ""),
+      name: catalogHit.name,
+      color: finalColor,
+      bg: `${finalColor}22`,
+      svg,
+    };
   }
 
   for (const [regex, meta] of FALLBACK_BRAND_RULES) {
@@ -135,6 +142,12 @@ export function createBrandLogoBadge(carNameOrFolder: string, size: "sm" | "md" 
   return el;
 }
 
+export interface SupportedBrandCar {
+  carFolder: string;
+  model: string;
+  legacy: boolean;
+}
+
 export interface SupportedBrandEntry {
   id: string;
   logoId: string;
@@ -145,8 +158,11 @@ export interface SupportedBrandEntry {
   path: string;
   carPath: string;
   carPaths: string[];
+  cars: SupportedBrandCar[];
   sampleModel: string;
   svg: string;
+  sourceUrl: string;
+  license: string;
 }
 
 export function getSupportedBrandsCatalog(): SupportedBrandEntry[] {
@@ -160,6 +176,7 @@ export function getSupportedBrandsCatalog(): SupportedBrandEntry[] {
     let entry = groups.get(key);
     if (!entry) {
       const color = colorForLogo(logoId);
+      const asset = BRAND_LOGO_ASSETS[logoId];
       const path = OFFICIAL_BRAND_PATHS[logoId] || NEUTRAL_BRAND_MARK;
       entry = {
         id: info.id,
@@ -167,16 +184,22 @@ export function getSupportedBrandsCatalog(): SupportedBrandEntry[] {
         name: info.name,
         color: info.color,
         colorKind: color.kind,
-        logoVerified: VERIFIED_BRAND_LOGO_IDS.has(logoId),
+        logoVerified: Boolean(asset),
         path,
         carPath: car.carFolder,
         carPaths: [],
+        cars: [],
         sampleModel: `${car.brand} ${car.model}`,
         svg: info.svg,
+        sourceUrl: asset?.sourceUrl ?? "",
+        license: asset?.license ?? "",
       };
       groups.set(key, entry);
     }
-    if (!entry.carPaths.includes(car.carFolder)) entry.carPaths.push(car.carFolder);
+    if (!entry.carPaths.includes(car.carFolder)) {
+      entry.carPaths.push(car.carFolder);
+      entry.cars.push({ carFolder: car.carFolder, model: car.model, legacy: car.legacy });
+    }
   }
 
   for (const entry of groups.values()) {

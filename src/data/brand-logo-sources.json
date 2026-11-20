@@ -1,0 +1,206 @@
+{
+  "logo-acura": {
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Acura_logo.svg",
+    "license": "Wikimedia Commons, File:Acura logo.svg. Source is black; rendered silver/white so the caliper reads.",
+    "note": "Pinza Acura. El archivo es negro. Se pasa a plata para el fondo oscuro. No hay letras.",
+    "viewBox": "0 0 160 86.3931"
+  },
+  "logo-aston": {
+    "sourceUrl": "https://en.wikipedia.org/wiki/File:Aston_Martin_Lagonda_brand_logo.svg",
+    "license": "English Wikipedia, File:Aston Martin Lagonda brand logo.svg (fair use).",
+    "note": "Alas en verde Aston #00594F. El wordmark ASTON MARTIN en blanco.",
+    "viewBox": "0 0 546.7 123.9"
+  },
+  "logo-audi": {
+    "sourceUrl": "https://simpleicons.org/?q=audi",
+    "license": "CC0-1.0, Simple Icons (audi). Rings rendered silver so they read on black; the rings have no single fill.",
+    "note": "Cuatro aros en plata. No hay letras.",
+    "viewBox": "0 0 24 24"
+  },
+  "logo-bmw": {
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:BMW_Roundel.svg",
+    "license": "Wikimedia Commons, File:BMW Roundel.svg (logo geometry). Letters kept white; quadrants BMW blue #1C69D4 and white.",
+    "note": "Roundel real. Cuadrantes azul BMW y blanco. Letras BMW en blanco sobre el aro oscuro, con filo plateado para que el aro se lea.",
+    "viewBox": "0 0 402 402"
+  },
+  "logo-buick": {
+    "sourceUrl": "https://en.wikipedia.org/wiki/File:Buick_logo_2023.svg",
+    "license": "English Wikipedia, File:Buick logo 2023.svg (fair use), rasterized.",
+    "note": "Tri-shield 2023: rojo, plata y azul reales. La palabra BUICK pasa de gris a blanco.",
+    "viewBox": "0 0 507 114"
+  },
+  "logo-cadillac": {
+    "sourceUrl": "https://en.wikipedia.org/wiki/File:Cadillac_logo_BW.svg",
+    "license": "English Wikipedia, File:Cadillac logo BW.svg (fair use). Black monochrome crest rendered silver.",
+    "note": "Escudo Cadillac en versión blanco y negro del archivo, en plata para el fondo oscuro.",
+    "viewBox": "0 0 82 32"
+  },
+  "logo-caterham": {
+    "sourceUrl": "https://en.wikipedia.org/wiki/File:Caterham_Logo_2019.svg",
+    "license": "English Wikipedia, File:Caterham Logo 2019.svg (public domain).",
+    "note": "Wordmark Caterham en blanco.",
+    "viewBox": "0 0 146.419 11.391"
+  },
+  "logo-chevy": {
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Chevrolet_bowtie_2023.svg",
+    "license": "Wikimedia Commons, File:Chevrolet bowtie 2023.svg",
+    "note": "Geometría del lazo 2023. El archivo es negro (#262626); se pinta en el oro del emblema físico #C5A017 para que se lea en el azulejo oscuro. No hay letras.",
+    "viewBox": "0 0 94 30"
+  },
+  "logo-dallara": {
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Dallara_logo.svg",
+    "license": "Wikimedia Commons, File:Dallara logo.svg. Source fill #fdc300; lettering set to white.",
+    "note": "Wordmark Dallara. En el archivo es oro #FDC300; las letras se pintan de blanco. El oro queda como color de acento.",
+    "viewBox": "0 0 105.1514 18.8392"
+  },
+  "logo-ferrari": {
+    "sourceUrl": "https://en.wikipedia.org/wiki/File:Prancing_horse.svg",
+    "license": "English Wikipedia, File:Prancing horse.svg (fair use) on the Scuderia shield (yellow, Italian tricolor).",
+    "note": "Caballo rampante negro sobre escudo amarillo y franja italiana. El archivo del caballo no trae las letras S/F como trazos separados, así que no se han dibujado.",
+    "viewBox": "0 0 200 240"
+  },
+  "logo-ford": {
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ford_logo_flat.svg",
+    "license": "Wikimedia Commons, File:Ford logo flat.svg",
+    "note": "Óvalo Ford azul #003478. El script Ford ya es blanco en el archivo oficial.",
+    "viewBox": "0 0 264.58333 95.227339"
+  },
+  "logo-holden": {
+    "sourceUrl": "https://en.wikipedia.org/wiki/File:Holden_(car_brand)_logo.png",
+    "license": "English Wikipedia, File:Holden (car brand) logo.png (fair use).",
+    "note": "León Holden en plata. No tiene wordmark. Se recorta el vacío negro de la derecha.",
+    "viewBox": "0 0 165 165"
+  },
+  "logo-honda": {
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Honda.svg",
+    "license": "Wikimedia Commons, File:Honda.svg",
+    "note": "La H alada sigue en rojo Honda #E40521. Las letras HONDA del archivo pasan a blanco.",
+    "viewBox": "0 0 2200.59 2130.34"
+  },
+  "logo-hyundai": {
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Hyundai_Motor_Company_logo.svg",
+    "license": "Wikimedia Commons, File:Hyundai Motor Company logo.svg",
+    "note": "Óvalo H en azul Hyundai #002C5F. Wordmark HYUNDAI en blanco.",
+    "viewBox": "0 0 24 24"
+  },
+  "logo-kia": {
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:KIA_logo3.svg",
+    "license": "Wikimedia Commons, File:KIA logo3.svg. Source ink #131E29; lettering set to white.",
+    "note": "Wordmark Kia. Las letras pasan a blanco.",
+    "viewBox": "0 0 100 25"
+  },
+  "logo-lambo": {
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Lamborghini_-_logo_wordmark%2Bpayoff_(Italy,_1963-).svg",
+    "license": "Wordmark: Wikimedia Commons (Lamborghini wordmark). Bull geometry: CC0 Simple Icons lamborghini. Shield colours as on the badge: black, gold bull, gold border.",
+    "note": "Escudo negro, toro y borde oro #C6A664. Letras LAMBORGHINI del wordmark oficial en blanco.",
+    "viewBox": "0 0 120 148"
+  },
+  "logo-ligier": {
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Logo_Ligier.svg",
+    "license": "Wikimedia Commons, File:Logo Ligier.svg",
+    "note": "Banderas reales. LIGIER y AUTOMOBILES en blanco. El azul de la bandera francesa comparte el navy del wordmark en el archivo y también queda claro.",
+    "viewBox": "0 0 548.94 396.85"
+  },
+  "logo-lotus": {
+    "sourceUrl": "https://en.wikipedia.org/wiki/File:Lotus_Cars_logo.svg",
+    "license": "English Wikipedia, File:Lotus Cars logo.svg (public domain mark on the file page).",
+    "note": "Disco amarillo Lotus #FFF200. Las letras del roundel pasan de negro a blanco.",
+    "viewBox": "0 0 64 64"
+  },
+  "logo-mazda": {
+    "sourceUrl": "https://simpleicons.org/?q=mazda",
+    "license": "CC0-1.0, Simple Icons (mazda). Color #910A2A.",
+    "note": "Emblema M de Mazda, sin wordmark.",
+    "viewBox": "0 0 24 24"
+  },
+  "logo-mclaren": {
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:McLaren_Speedmark.svg",
+    "license": "Wikimedia Commons, File:McLaren Speedmark.svg",
+    "note": "Speedmark papaya #FF8000. No tiene letras.",
+    "viewBox": "0 0 823.93 452.27"
+  },
+  "logo-mercedes": {
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mercedes-Benz_Star_(1969-1986,_2025-).svg",
+    "license": "Wikimedia Commons, Mercedes-Benz star. Source fill is black; rendered in the silver of the badge.",
+    "note": "Estrella de tres puntas en plata. El archivo oficial es negro y desaparecería en el fondo oscuro. No hay wordmark.",
+    "viewBox": "0 0 1000 1000"
+  },
+  "logo-nissan": {
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Nissan_logo.svg",
+    "license": "Wikimedia Commons, File:Nissan logo.svg. Original fill is Nissan red; lettering set to white.",
+    "note": "El archivo es el wordmark NISSAN. Las letras se pintan de blanco. El rojo de marca #C3002F queda como acento.",
+    "viewBox": "0 0 300 44.174264"
+  },
+  "logo-pontiac": {
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Pontiac_logo_and_wordmark_1981.svg",
+    "license": "Wikimedia Commons, File:Pontiac logo and wordmark 1981.svg",
+    "note": "Punta de flecha roja con estrella blanca. Sin wordmark en el emblema.",
+    "viewBox": "0 0 1057.0311 1003.0208"
+  },
+  "logo-porsche": {
+    "sourceUrl": "https://en.wikipedia.org/wiki/File:Porsche_Logo_2024.png",
+    "license": "English Wikipedia, File:Porsche Logo 2024.png (fair use).",
+    "note": "Escudo Porsche 2024. El fondo negro exterior pasa a transparente. Las letras PORSCHE, negras en el archivo, pasan a blanco. El resto del escudo conserva oro, rojo, negro y el caballo.",
+    "viewBox": "0 0 272 362"
+  },
+  "logo-radical": {
+    "sourceUrl": "https://en.wikipedia.org/wiki/File:Radical_Sportscars_Logo.png",
+    "license": "English Wikipedia, File:Radical Sportscars Logo.png (fair use).",
+    "note": "Placa amarilla y la carretera roja/negra se conservan. Las letras RADICAL pasan a blanco.",
+    "viewBox": "0 0 196 300"
+  },
+  "logo-ram": {
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ram_Trucks_2025_wordmark.svg",
+    "license": "Wikimedia Commons, File:Ram Trucks 2025 wordmark.svg. Lettering set to white.",
+    "note": "Wordmark Ram en blanco.",
+    "viewBox": "0 0 132.29169 12.4734"
+  },
+  "logo-renault": {
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Renault_2021.svg",
+    "license": "Wikimedia Commons, File:Renault 2021.svg. File fill is black; painted Renault yellow #FFCC00.",
+    "note": "Rombo Renault. El archivo 2021 es negro; se usa el amarillo de marca #FFCC00 para que se lea. No es un wordmark.",
+    "viewBox": "0 0 954 1255"
+  },
+  "logo-riley": {
+    "sourceUrl": "https://en.wikipedia.org/wiki/File:Riley_Technologies_Logo.png",
+    "license": "English Wikipedia, File:Riley Technologies Logo.png (fair use).",
+    "note": "Logotipo lineal de Riley. El negro del archivo (letras y el dibujo) pasa a blanco.",
+    "viewBox": "0 0 952 352"
+  },
+  "logo-ruf": {
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ruf_Automobile_logo.svg",
+    "license": "Wikimedia Commons, File:Ruf Automobile logo.svg. Source fill #185533; lettering set to white.",
+    "note": "Wordmark RUF. En el archivo es verde #185533; las letras se pintan de blanco.",
+    "viewBox": "-2.83763556 -2.83763556 229.37460112 100.26312312"
+  },
+  "logo-skip": {
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Skip_Barber_Racing_School_logo.svg",
+    "license": "Wikimedia Commons, File:Skip Barber Racing School logo.svg",
+    "note": "Barras roja y blanca. Skip Barber y Racing School en blanco. El campo blanco del archivo pasa a transparente.",
+    "viewBox": "0 0 478.3 267.2"
+  },
+  "logo-subaru": {
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Subaru_logo_(transparent).svg",
+    "license": "Wikimedia Commons, File:Subaru logo (transparent).svg",
+    "note": "Óvalo de estrellas en azul y plata. Se omite el wordmark SUBARU gris del archivo (en el azulejo el óvalo es el emblema).",
+    "viewBox": "0 0 228 104"
+  },
+  "logo-toyota": {
+    "sourceUrl": "https://simpleicons.org/?q=toyota",
+    "license": "CC0-1.0, Simple Icons (toyota). Color Toyota Red #EB0A1E.",
+    "note": "Emblema de las tres elipses, sin wordmark. Rojo oficial Toyota.",
+    "viewBox": "0 0 24 24"
+  },
+  "logo-vw": {
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Volkswagen_logo_2019.svg",
+    "license": "Wikimedia Commons, File:Volkswagen logo 2019.svg",
+    "note": "Monograma VW en azul #001E50, con anillo claro para separarlo del fondo. Las contraformas del monograma dejan ver el fondo.",
+    "viewBox": "0 0 1024 1024"
+  },
+  "logo-williams": {
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Atlassian_Williams_F1_Team_logo.svg",
+    "license": "Wikimedia Commons, File:Atlassian Williams F1 Team logo.svg. Only the Williams wordmark is used; the Atlassian sponsor line is omitted. Lettering white.",
+    "note": "Wordmark WILLIAMS en blanco. Se omite la línea ATLASSIAN del lockup de 2025: es un patrocinador, no el fabricante del FW31.",
+    "viewBox": "0 0 500 257"
+  }
+}

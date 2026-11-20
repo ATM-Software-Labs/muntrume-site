@@ -586,7 +586,7 @@ npm run tauri dev</code></pre>
             <p class="ov-kicker">Fuente única de verdad · desktop/src/brand-logos.ts</p>
             <h2 class="ov-section__title">Catálogo de Fabricantes iRacing SDK</h2>
             <p class="ov-section__sub">
-              Fabricantes del catálogo. El disco gris es una marca neutra: no hay vector verificable para esa marca.
+              Fabricantes del catálogo con su emblema real. Las letras del logo van en blanco para leerse sobre el fondo oscuro.
             </p>
           </div>
           <a
@@ -601,10 +601,8 @@ npm run tauri dev</code></pre>
           {supportedBrands.map((b) => (
             <div class="rounded border border-white/10 bg-[#090b0f] p-3 flex flex-col gap-2 font-mono tabular-nums">
               <div class="flex items-center justify-between gap-2">
-                <span class="w-6 h-6 flex items-center justify-center shrink-0" style={`color:${b.color}`}>
-                  <svg viewBox="0 0 24 24" width="24" height="24" fill={b.color} fill-rule="evenodd" clip-rule="evenodd" aria-hidden="true">
-                    <path fill-rule="evenodd" clip-rule="evenodd" d={b.path} />
-                  </svg>
+                <span class="w-7 h-7 flex items-center justify-center shrink-0 [&>svg]:w-full [&>svg]:h-full">
+                  <Fragment set:html={b.svg} />
                 </span>
                 <span class="text-[10px] px-1.5 py-0.5 rounded border border-white/10 bg-white/[0.03] font-bold" style={`color:${b.color}`}>
                   {b.color.toUpperCase()}
