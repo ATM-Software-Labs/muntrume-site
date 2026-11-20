@@ -13,13 +13,13 @@
   } catch (e) { kb = {}; }
 
   var SYSTEM_TEAM = [
-    "Eres Muntrume AI (Claude-Style Engineer 3.7), el ingeniero de pista y copiloto oficial de Muntrume Motorsport (Equipo MMT) en Sant Andreu, Barcelona.",
+    "Eres Muntrume 1.0 Pro, el ingeniero de pista y copiloto oficial de Muntrume Motorsport (Equipo MMT) en Sant Andreu, Barcelona.",
     "Pilotos oficiales: #16 Alberto Trujillo (alberto@muntru.me, Fundador, GT3/Endurance), #1 Mateo Berbis (mateo@muntru.me, GT3/Porsche Cup), #22 Eduardo Chongkan (admin@muntru.me, Endurance/Setup Engineering). Legal: legal@muntru.me.",
     "Herramientas Open Source (MIT): MMT Sync v0.6.5 en Rust/Tauri (/app/ y /overlay/, <15 MB RAM, 60 FPS, 9 widgets), Setup Vault (/garage/, 42.654+ archivos .sto con nomenclatura MMT_COCHE_CIRCUITO_SESION_V#.sto), Setup Builder (/setup-builder/), Wallpapers 4K (/wallpapers/) y Galería (/gallery/).",
     "Estructura siempre tus respuestas con títulos ### claros, listas y tablas Markdown para que se vean perfectas tanto en vista Documento (Word/PDF) como en vista Presentación (Slides 16:9)."
   ].join("\n");
 
-  var SYSTEM_ASSISTANT = "Eres Muntrume AI en modo Open Source. Ayuda con programación, informes técnicos, presentaciones y análisis estructurando tus respuestas con secciones ### claras, tablas y bloques de código limpios.";
+  var SYSTEM_ASSISTANT = "Eres Muntrume 1.0 Apex, el motor de razonamiento avanzado y análisis técnico de Muntrume Motorsport. Ayuda con programación, informes técnicos, presentaciones y análisis estructurando tus respuestas con secciones ### claras, tablas y bloques de código limpios.";
 
   var stage = document.getElementById("aiStage");
   var emptyEl = document.getElementById("aiEmpty");
@@ -115,15 +115,15 @@
       btn.setAttribute("aria-pressed", on ? "true" : "false");
     });
     if (statusText && !streaming) {
-      statusText.textContent = currentMode === "team" ? "Listo" : (useOllama ? "Ollama" : "OSS Live");
+      statusText.textContent = useOllama ? "1.0 PitWall" : (currentMode === "team" ? "1.0 Pro" : "1.0 Apex");
     }
     if (composerModelLabel) {
       composerModelLabel.innerHTML = '<span class="ai-status-dot"></span><span>' +
         (useOllama
-          ? "Ollama Local"
+          ? "Muntrume 1.0 PitWall · Cockpit Local"
           : currentMode === "team"
-            ? "Claude-Style Engineer 3.7"
-            : "Open Source Assistant") +
+            ? "Muntrume 1.0 Pro · Race Engineer"
+            : "Muntrume 1.0 Apex · Deep Telemetry") +
         "</span>";
     }
   }
@@ -136,7 +136,7 @@
     ollamaBtn.addEventListener("click", function () {
       useOllama = !useOllama;
       ollamaBtn.setAttribute("aria-pressed", useOllama ? "true" : "false");
-      ollamaBtn.textContent = useOllama ? "Ollama: On" : "Ollama: Off";
+      ollamaBtn.textContent = useOllama ? "PitWall Local: On" : "PitWall Local: Off";
       setMode(currentMode);
     });
   }
@@ -242,12 +242,12 @@
       };
     }
     return {
-      label: mode === "assistant" ? "Artifact · Documento Open Source" : "Artifact · Documento Técnico MMT",
+      label: mode === "assistant" ? "Muntrume 1.0 Apex · Documento Técnico" : "Muntrume 1.0 Pro · Briefing de Pista",
       artifactTab: "doc",
       artifactType: "Documento Técnico (Exportable a Word .DOC y PDF)",
       artifactIcon: "📄",
       steps: [
-        "✓ tool:document_composer.format({ exportable: ['DOC', 'PDF', 'Slides', 'MD'] })"
+        "✓ engine:muntrume_1_0_" + (mode === "assistant" ? "apex" : "pro") + ".execute({ exportable: ['DOC', 'PDF', 'Slides', 'MD'] })"
       ]
     };
   }

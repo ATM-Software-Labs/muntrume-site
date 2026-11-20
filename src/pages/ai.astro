@@ -52,9 +52,9 @@ const pageDescription = "Workspace de IA de Muntrume Motorsport al estilo Claude
             <h1>Muntrume AI</h1>
           </div>
 
-          <div class="ai-mode-tabs" role="group" aria-label="Modo de agente">
-            <button type="button" class="ai-mode-tab is-active" data-ai-mode="team" aria-pressed="true">Ingeniero MMT</button>
-            <button type="button" class="ai-mode-tab" data-ai-mode="assistant" aria-pressed="false">Open Source</button>
+          <div class="ai-mode-tabs" role="group" aria-label="Selector de modelo Muntrume">
+            <button type="button" class="ai-mode-tab is-active" data-ai-mode="team" aria-pressed="true" title="Muntrume 1.0 Pro · Ingeniería de Pista, Estrategia y Setups .STO">Muntrume 1.0 Pro</button>
+            <button type="button" class="ai-mode-tab" data-ai-mode="assistant" aria-pressed="false" title="Muntrume 1.0 Apex · Razonamiento Avanzado, Código y Documentos">Muntrume 1.0 Apex</button>
           </div>
         </div>
 
@@ -63,12 +63,12 @@ const pageDescription = "Workspace de IA de Muntrume Motorsport al estilo Claude
             <span class="ai-status-dot"></span>
             <span id="aiBridgeText">MMT Sync</span>
           </button>
-          <button type="button" id="aiOllamaToggle" class="ai-ollama-btn" aria-pressed="false" title="Usar Ollama local (http://localhost:11434)">
-            Ollama: Off
+          <button type="button" id="aiOllamaToggle" class="ai-ollama-btn" aria-pressed="false" title="Activar motor local de cockpit Muntrume 1.0 PitWall">
+            PitWall Local: Off
           </button>
-          <div id="aiEngineStatus" class="ai-status-badge" title="Estado del motor">
+          <div id="aiEngineStatus" class="ai-status-badge" title="Motor activo">
             <span class="ai-status-dot"></span>
-            <span id="aiStatusText">Listo</span>
+            <span id="aiStatusText">1.0 Pro</span>
           </div>
           <button type="button" id="aiArtifactToggle" class="ai-artifact-btn" aria-pressed="false" title="Abrir o cerrar panel de Artifacts y Exportación (DOC, PDF, Slides)">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M15 3v18"/></svg>
@@ -158,7 +158,7 @@ const pageDescription = "Workspace de IA de Muntrume Motorsport al estilo Claude
             <div class="ai-composer__meta">
               <span class="ai-model-chip" id="aiComposerModelLabel">
                 <span class="ai-status-dot"></span>
-                <span>Claude-Style Engineer 3.7</span>
+                <span>Muntrume 1.0 Pro · Race Engineer</span>
               </span>
               <button type="button" class="ai-composer-toolbtn" data-open-artifact="doc" title="Abrir vista de Documento exportable a Word y PDF">📄 Doc</button>
               <button type="button" class="ai-composer-toolbtn" data-open-artifact="slides" title="Abrir vista de Presentación / Diapositivas 16:9">📽️ Slides</button>
