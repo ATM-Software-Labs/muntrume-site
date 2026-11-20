@@ -135,6 +135,84 @@ const appSchema = {
       </div>
     </section>
 
+    <!-- LIVE 60 HZ TELEMETRY & POST-STINT SETUP FEEDBACK SHOWCASE -->
+    <section class="app-card app-telemetry-card" data-g-reveal aria-label="Telemetría en directo y valoración de setups">
+      <div class="app-tel-copy">
+        <div class="app-hero__pills" style="justify-content:flex-start">
+          <span class="g-chip-accent">IRSDK Shared Memory</span>
+          <span class="g-chip-muted">60 Hz En Vivo</span>
+          <span class="g-chip-muted">Feedback Post-Stint</span>
+        </div>
+        <h2>Telemetría en directo y valoración de setups</h2>
+        <p>Lectura directa de acelerador, freno, marcha, delta de vuelta y setup <code>.sto</code> activo desde la memoria compartida de iRacing (<code>FILE_MAP_READ</code>). Al terminar tu tanda en <strong>MMT Sync</strong>, valora el setup con sensaciones, delta frente a Top Split y notas moderadas automáticamente por <strong>MMT Steward Bot</strong>.</p>
+        <div class="app-cta" style="justify-content:flex-start">
+          <a href="/overlay/" class="r-btn r-btn--primary">Abrir Simulador HUD</a>
+          <a href="/garage/#valoraciones" class="r-btn app-btn">Ver valoraciones en Garage →</a>
+        </div>
+      </div>
+
+      <aside class="app-pod" aria-label="Vista previa telemetría 60 Hz">
+        <div class="app-pod__head">
+          <div class="app-pod__status">
+            <span class="app-pod__dot" aria-hidden="true"></span>
+            <span class="app-pod__tag">IRSDK SHARED MEMORY · 60 HZ</span>
+          </div>
+          <span class="app-pod__badge" id="appPodTrack">SPA-FRANCORCHAMPS · GT3</span>
+        </div>
+
+        <div class="app-pod__delta">
+          <div class="app-pod__delta-top">
+            <span>SESSION BEST Δ</span>
+            <strong id="appPodDelta">-0.24s</strong>
+          </div>
+          <div class="app-pod__delta-bar">
+            <span class="app-pod__delta-mid"></span>
+            <div class="app-pod__delta-fill" id="appPodDeltaFill" style="left:22%;width:28%"></div>
+          </div>
+        </div>
+
+        <div class="app-pod__cockpit">
+          <div class="app-pod__trace">
+            <canvas id="appTelemetryCanvas" width="320" height="84" aria-label="Curva de acelerador y freno en tiempo real"></canvas>
+            <div class="app-pod__legend">
+              <span><i style="background:#00E699"></i>THR</span>
+              <span><i style="background:#EF4444"></i>BRK</span>
+              <span><i style="background:#38BDF8"></i>RPM</span>
+            </div>
+          </div>
+
+          <div class="app-pod__pedals" aria-hidden="true">
+            <div class="app-pod__pedal">
+              <div class="app-pod__pedal-track"><div id="appBrkBar" class="app-pod__pedal-fill app-pod__pedal-fill--brk" style="height:8%"></div></div>
+              <span>B</span>
+            </div>
+            <div class="app-pod__pedal">
+              <div class="app-pod__pedal-track"><div id="appThrBar" class="app-pod__pedal-fill app-pod__pedal-fill--thr" style="height:94%"></div></div>
+              <span>T</span>
+            </div>
+          </div>
+
+          <div class="app-pod__gear">
+            <span class="app-pod__gear-lbl">GEAR</span>
+            <strong class="app-pod__gear-val" id="appGearVal">5</strong>
+            <span class="app-pod__speed"><b id="appSpeedVal">246</b> km/h</span>
+          </div>
+        </div>
+
+        <div class="app-pod__foot">
+          <div>
+            <span class="app-pod__kicker">SETUP ACTIVO (.STO)</span>
+            <code id="appSetupCode">MMT_F296_SPA_END_V2.sto</code>
+          </div>
+          <div class="app-pod__pills">
+            <span>2.84 L/lap</span>
+            <span>84°C FL</span>
+            <a href="/overlay/">Probar HUD →</a>
+          </div>
+        </div>
+      </aside>
+    </section>
+
     <section class="app-card" data-g-reveal>
       <h2 data-i18n="app.safe.title">Revisado por el equipo</h2>
       <p class="app-sub" data-i18n="app.safe.sub">Sin publicidad · sin rastreadores de terceros · no modifica tus archivos privados</p>
@@ -402,6 +480,51 @@ const appSchema = {
   .app-cmd-kicker { font: 800 10px/1.1 var(--r-mono); letter-spacing: .08em; color: var(--r-accent); text-transform: uppercase; }
   .app-cmd-tile strong { font: 800 16px/1.2 var(--r-display); text-transform: uppercase; letter-spacing: .02em; }
   .app-cmd-tile small { font-size: 12px; color: var(--r-muted); line-height: 1.4; }
+  .app-telemetry-card { grid-template-columns: 1fr; gap: 22px; align-items: center; }
+  .app-tel-copy { display: grid; gap: 12px; }
+  .app-pod {
+    background: #0a0e0d; border: 1px solid rgba(0, 230, 153, 0.34); border-radius: 16px;
+    padding: 16px; display: grid; gap: 12px; font-family: var(--r-mono);
+    font-variant-numeric: tabular-nums; color: #f2f5f4;
+    box-shadow: 0 20px 48px -18px rgba(0, 0, 0, 0.65);
+  }
+  .app-pod__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .app-pod__status { display: inline-flex; align-items: center; gap: 7px; }
+  .app-pod__dot { width: 7px; height: 7px; border-radius: 50%; background: #00e699; box-shadow: 0 0 10px #00e699; }
+  .app-pod__tag { font-size: 10px; font-weight: 800; letter-spacing: .08em; color: #00e699; }
+  .app-pod__badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 6px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); color: #e2e8f0; }
+  .app-pod__delta { background: rgba(5,8,7,0.75); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 8px 11px; display: grid; gap: 6px; }
+  .app-pod__delta-top { display: flex; align-items: center; justify-content: space-between; font-size: 10px; color: #9aa8a3; font-weight: 700; }
+  .app-pod__delta-top strong { font-size: 13px; color: #00e699; font-weight: 800; }
+  .app-pod__delta-bar { position: relative; height: 6px; border-radius: 999px; background: rgba(255,255,255,0.08); overflow: hidden; }
+  .app-pod__delta-mid { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.45); z-index: 2; }
+  .app-pod__delta-fill { position: absolute; top: 0; bottom: 0; border-radius: 999px; background: linear-gradient(90deg, #00e699, #34d399); transition: left .12s linear, width .12s linear; }
+  .app-pod__cockpit { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; align-items: center; background: rgba(5,8,7,0.75); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 10px; }
+  .app-pod__trace { min-width: 0; display: grid; gap: 5px; }
+  .app-pod__trace canvas { width: 100%; height: 76px; display: block; border-radius: 8px; background: rgba(3,5,5,0.85); border: 1px solid rgba(255,255,255,0.06); }
+  .app-pod__legend { display: flex; gap: 10px; font-size: 9.5px; color: #9aa8a3; font-weight: 700; }
+  .app-pod__legend span { display: inline-flex; align-items: center; gap: 4px; }
+  .app-pod__legend i { width: 7px; height: 7px; border-radius: 2px; display: inline-block; }
+  .app-pod__pedals { display: flex; gap: 5px; height: 76px; }
+  .app-pod__pedal { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 9px; font-weight: 800; color: #9aa8a3; }
+  .app-pod__pedal-track { width: 9px; flex: 1; border-radius: 3px; background: rgba(255,255,255,0.08); position: relative; overflow: hidden; }
+  .app-pod__pedal-fill { position: absolute; left: 0; right: 0; bottom: 0; border-radius: 2px; transition: height .08s linear; }
+  .app-pod__pedal-fill--brk { background: #ef4444; }
+  .app-pod__pedal-fill--thr { background: #00e699; }
+  .app-pod__gear { min-width: 64px; padding-left: 8px; border-left: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .app-pod__gear-lbl { font-size: 9px; color: #9aa8a3; letter-spacing: .08em; }
+  .app-pod__gear-val { font: 900 30px/1 var(--r-display); color: #00e699; margin: 2px 0; }
+  .app-pod__speed { font-size: 10px; color: #c9d2cf; }
+  .app-pod__speed b { font-size: 13px; color: #fff; }
+  .app-pod__foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+  .app-pod__kicker { display: block; font-size: 9px; color: #9aa8a3; letter-spacing: .08em; }
+  .app-pod__foot code { font-size: 11.5px; font-weight: 800; color: #00e699; }
+  .app-pod__pills { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 10px; }
+  .app-pod__pills span { padding: 3px 7px; border-radius: 6px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; }
+  .app-pod__pills a { padding: 3px 8px; border-radius: 6px; background: rgba(0,230,153,0.15); border: 1px solid rgba(0,230,153,0.4); color: #00e699; font-weight: 800; text-decoration: none; }
+  @media (min-width: 860px) {
+    .app-telemetry-card { grid-template-columns: minmax(0, 1fr) minmax(340px, 430px); }
+  }
   @media (min-width: 800px) {
     .app-split, .app-grid, .app-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .app-split { grid-template-columns: 1fr 1fr; }
@@ -415,12 +538,105 @@ const appSchema = {
 <script is:inline>
   (() => {
     const btn = document.getElementById("mmtAppDownloadBtn");
-    if (!btn) return;
-    fetch("https://muntrume.atrumin16.workers.dev/api/download/latest?info=1")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        if (d && d.version) btn.textContent = `Descargar MMT Sync v${d.version} (.exe)`;
-      })
-      .catch(() => {});
+    if (btn) {
+      fetch("https://muntrume.atrumin16.workers.dev/api/download/latest?info=1")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (d && d.version) btn.textContent = `Descargar MMT Sync v${d.version} (.exe)`;
+        })
+        .catch(() => {});
+    }
+
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const canvas = document.getElementById("appTelemetryCanvas");
+    if (!canvas || !canvas.getContext) return;
+    const ctx = canvas.getContext("2d");
+    const thrBar = document.getElementById("appThrBar");
+    const brkBar = document.getElementById("appBrkBar");
+    const gearEl = document.getElementById("appGearVal");
+    const speedEl = document.getElementById("appSpeedVal");
+    const deltaEl = document.getElementById("appPodDelta");
+    const deltaFill = document.getElementById("appPodDeltaFill");
+    const trackEl = document.getElementById("appPodTrack");
+    const setupEl = document.getElementById("appSetupCode");
+
+    const STINTS = [
+      { track: "SPA-FRANCORCHAMPS · GT3", setup: "MMT_F296_SPA_END_V2.sto" },
+      { track: "DAYTONA 24H · GTP", setup: "MMT_P963_DAYTONA_END.sto" },
+      { track: "NÜRBURGRING 24H · GT3", setup: "MMT_M4_NORDS_END_SAFE.sto" },
+      { track: "LE MANS 24H · HYPERCAR", setup: "MMT_F499P_LEMANS_Q2_V2.sto" },
+    ];
+    let stintIdx = 0;
+    setInterval(() => {
+      stintIdx = (stintIdx + 1) % STINTS.length;
+      if (trackEl) trackEl.textContent = STINTS[stintIdx].track;
+      if (setupEl) setupEl.textContent = STINTS[stintIdx].setup;
+    }, 7500);
+
+    const N = 80;
+    const thrHist = new Array(N).fill(0.85);
+    const brkHist = new Array(N).fill(0.0);
+    let t = 0;
+    let visible = true;
+    if ("IntersectionObserver" in window) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => { visible = e.isIntersecting; });
+      });
+      io.observe(canvas);
+    }
+    function step() {
+      if (visible && !document.hidden) {
+        t += 0.045;
+        const wave = Math.sin(t * 0.7) * Math.cos(t * 0.35);
+        const brakingZone = wave < -0.42;
+        const thr = brakingZone ? Math.max(0.04, 0.25 + (wave + 0.42) * 0.9) : Math.min(1, 0.72 + Math.sin(t * 0.9) * 0.28);
+        const brk = brakingZone ? Math.min(0.96, Math.abs(wave + 0.35) * 1.45) : 0;
+        thrHist.push(thr); thrHist.shift();
+        brkHist.push(brk); brkHist.shift();
+
+        const spd = Math.round(118 + thr * 154 - brk * 82);
+        const gear = spd < 115 ? 2 : spd < 155 ? 3 : spd < 195 ? 4 : spd < 235 ? 5 : 6;
+        const delta = (-0.18 - Math.sin(t * 0.3) * 0.16).toFixed(2);
+
+        if (thrBar) thrBar.style.height = Math.round(thr * 100) + "%";
+        if (brkBar) brkBar.style.height = Math.round(brk * 100) + "%";
+        if (gearEl) gearEl.textContent = String(gear);
+        if (speedEl) speedEl.textContent = String(spd);
+        if (deltaEl) deltaEl.textContent = (Number(delta) <= 0 ? delta : "+" + delta) + "s";
+        if (deltaFill) {
+          const pct = Math.min(44, Math.max(8, Math.abs(Number(delta)) * 110));
+          deltaFill.style.left = (50 - pct) + "%";
+          deltaFill.style.width = pct + "%";
+        }
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+        ctx.strokeStyle = "rgba(255,255,255,0.05)";
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(0, h * 0.5); ctx.lineTo(w, h * 0.5); ctx.stroke();
+
+        ctx.strokeStyle = "#00E699";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (let i = 0; i < N; i++) {
+          const x = (i / (N - 1)) * w;
+          const y = h - 6 - thrHist[i] * (h - 14);
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        ctx.strokeStyle = "#EF4444";
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        for (let i = 0; i < N; i++) {
+          const x = (i / (N - 1)) * w;
+          const y = h - 6 - brkHist[i] * (h - 14);
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+      requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
   })();
 </script>
