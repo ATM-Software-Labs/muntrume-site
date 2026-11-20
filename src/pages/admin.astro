@@ -258,8 +258,8 @@ const totalCircuits = catalog.circuits?.length || 128;
           <div class="rc-card">
             <div class="rc-card__head">
               <div>
-                <h3 class="rc-card__title">Plantilla Oficial &amp; Telemetría en Vivo (iRacing / Garage 61)</h3>
-                <p class="rc-muted">Datos sincronizados desde <code>/api/drivers</code> y vinculación de cuenta del Setup Vault.</p>
+                <h3 class="rc-card__title">Plantilla Oficial, Perfiles &amp; iRating en Vivo</h3>
+                <p class="rc-muted">Edita nombres, dorsales, roles, iRating, Safety Rating y biografías con efecto inmediato en <code>/drivers</code> y <code>/api/drivers</code>.</p>
               </div>
               <div class="rc-btn-row">
                 <a href="/drivers" class="r-btn r-btn--sm">Ver Roster Público ↗</a>
@@ -271,10 +271,10 @@ const totalCircuits = catalog.circuits?.length || 128;
                 <thead>
                   <tr>
                     <th>Dorsal &amp; Piloto</th>
-                    <th>Rol Institucional</th>
+                    <th>Rol / Ficha</th>
                     <th>iRacing cust_id</th>
-                    <th>Sports Car iRating / SR</th>
-                    <th>Estado Vault</th>
+                    <th>iRating &amp; Licencia</th>
+                    <th>Estado</th>
                     <th class="text-right">Acciones</th>
                   </tr>
                 </thead>
@@ -847,8 +847,10 @@ const totalCircuits = catalog.circuits?.length || 128;
             <label for="newDriverRole">Rol en el Equipo</label>
             <select id="newDriverRole">
               <option value="driver">Official Driver (Titular)</option>
+              <option value="team_driver">Team Endurance Driver</option>
               <option value="academy">Academy Driver</option>
               <option value="engineer">Race Engineer</option>
+              <option value="staff">Staff / Prensa</option>
               <option value="admin">Team Principal / Admin</option>
             </select>
           </div>
@@ -1409,7 +1411,8 @@ const totalCircuits = catalog.circuits?.length || 128;
       color: var(--r-accent);
       margin: 0;
     }
-    .rc-shell .r-btn {
+    .rc-shell .r-btn,
+    .g-modal .r-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -1427,24 +1430,28 @@ const totalCircuits = catalog.circuits?.length || 128;
       cursor: pointer;
       transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     }
-    .rc-shell .r-btn:hover {
+    .rc-shell .r-btn:hover,
+    .g-modal .r-btn:hover {
       background: var(--r-bg-2);
       border-color: var(--r-accent);
       color: var(--r-accent);
       box-shadow: none;
     }
-    .rc-shell .r-btn--sm {
+    .rc-shell .r-btn--sm,
+    .g-modal .r-btn--sm {
       min-height: 32px;
       padding: 0 12px;
       font-size: 12px;
     }
-    .rc-shell .r-btn--primary {
+    .rc-shell .r-btn--primary,
+    .g-modal .r-btn--primary {
       border-color: transparent;
       background: var(--r-accent);
       color: var(--r-accent-ink, #04130d);
       font-weight: 700;
     }
-    .rc-shell .r-btn--primary:hover {
+    .rc-shell .r-btn--primary:hover,
+    .g-modal .r-btn--primary:hover {
       background: var(--r-accent);
       color: var(--r-accent-ink, #04130d);
       filter: brightness(1.06);
@@ -1851,6 +1858,45 @@ const totalCircuits = catalog.circuits?.length || 128;
     }
     .rc-email-raw-details summary:hover { color: var(--r-accent); }
 
+    /* Admin Modals (Clean Google Admin Dialogs) */
+    .rc-modal-dialog {
+      max-width: 680px !important;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .rc-modal-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .rc-modal-form input[type="text"],
+    .rc-modal-form input[type="email"],
+    .rc-modal-form input[type="number"],
+    .rc-modal-form select,
+    .rc-modal-form textarea {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--r-line);
+      background: var(--r-bg-2);
+      color: var(--r-text);
+      font-size: 13px;
+      padding: 9px 12px;
+    }
+    .rc-modal-form label {
+      font: 600 12px/1.2 var(--r-sans, system-ui, sans-serif);
+      color: var(--r-muted);
+    }
+    .rc-modal-divider {
+      margin: 4px 0 0;
+      padding-top: 12px;
+      border-top: 1px solid var(--r-line);
+      font: 700 11px/1.2 var(--r-sans, system-ui, sans-serif);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--r-muted);
+    }
+
     /* Responsive Breakpoints (Google Admin clean stacking) */
     @media (max-width: 1200px) {
       .rc-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1893,8 +1939,175 @@ const totalCircuits = catalog.circuits?.length || 128;
     }
   </style>
 
+  <!-- ===================================================================== -->
+  <!-- MODAL 4: EDITAR CUENTA, NOMBRE, ROL Y PERFIL PÚBLICO (D1)             -->
+  <!-- ===================================================================== -->
+  <div id="editUserModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="editUserModalTitle">
+    <div class="g-dialog g-dialog--wide rc-modal-dialog">
+      <div class="g-dialog__bar">
+        <h2 id="editUserModalTitle">Editar Cuenta, Nombre y Rol</h2>
+        <button type="button" class="m-notice__close" onclick="closeEditUserModal()" aria-label="Cerrar">×</button>
+      </div>
+      <p class="rc-muted">Actualiza los datos de la cuenta en Cloudflare D1. Cambiar el rol renueva automáticamente la sesión del usuario.</p>
+      <form id="editUserForm" class="rc-modal-form" onsubmit="submitEditUserForm(event)">
+        <input type="hidden" id="editUserEmailHidden" />
+        <div class="rc-two-col" style="gap:12px">
+          <div class="g-field">
+            <label for="editUserEmailReadonly">Correo de acceso</label>
+            <input type="email" id="editUserEmailReadonly" readonly style="opacity:0.75;cursor:not-allowed" />
+          </div>
+          <div class="g-field">
+            <label for="editUserName">Nombre completo</label>
+            <input type="text" id="editUserName" required maxlength="80" placeholder="Ej. Mateo Berbis" />
+          </div>
+        </div>
+        <div class="rc-two-col" style="gap:12px">
+          <div class="g-field">
+            <label for="editUserRole">Rol en Muntrume</label>
+            <select id="editUserRole">
+              <option value="driver">Official Driver (Titular)</option>
+              <option value="team_driver">Team Endurance Driver</option>
+              <option value="academy">Academy Driver</option>
+              <option value="engineer">Race Engineer</option>
+              <option value="staff">Staff / Prensa</option>
+              <option value="admin">Team Principal / Admin</option>
+            </select>
+          </div>
+          <div class="g-field">
+            <label for="editUserTeam">Equipo / División</label>
+            <input type="text" id="editUserTeam" maxlength="80" placeholder="Ej. Muntrume Motorsport · GT3" />
+          </div>
+        </div>
+        <div class="g-field">
+          <label for="editUserCarClass">Categoría / Montura principal</label>
+          <input type="text" id="editUserCarClass" maxlength="80" placeholder="Ej. Ferrari 296 GT3 · IMSA &amp; NEC" />
+        </div>
+        <label class="g-check" for="editUserSetupAccess">
+          <input type="checkbox" id="editUserSetupAccess" />
+          Permitir descarga y sincronización de setups (.sto) en Setup Vault y MMT Sync
+        </label>
+
+        <div class="rc-modal-divider">
+          <span>Perfil público opcional (<code>/p/alias/</code>)</span>
+        </div>
+        <label class="g-check" for="editUserPublicVisible">
+          <input type="checkbox" id="editUserPublicVisible" />
+          Publicar ficha comunitaria en <code>/p/alias/</code>
+        </label>
+        <div class="rc-two-col" style="gap:12px">
+          <div class="g-field">
+            <label for="editUserPublicName">Nombre público</label>
+            <input type="text" id="editUserPublicName" maxlength="60" placeholder="Ej. Mateo Berbis" />
+          </div>
+          <div class="g-field">
+            <label for="editUserPublicSlug">Alias URL (slug)</label>
+            <input type="text" id="editUserPublicSlug" maxlength="40" placeholder="ej. mateo-berbis" />
+          </div>
+        </div>
+        <div class="g-field">
+          <label for="editUserPublicBio">Biografía corta (máx. 280 caracteres)</label>
+          <textarea id="editUserPublicBio" rows="2" maxlength="280" placeholder="Piloto oficial GT3 y resistencia en Muntrume Motorsport…"></textarea>
+        </div>
+
+        <div class="rc-btn-row" style="justify-content:flex-end;margin-top:6px">
+          <button type="button" class="r-btn r-btn--sm" onclick="closeEditUserModal()">Cancelar</button>
+          <button type="submit" id="editUserSubmitBtn" class="r-btn r-btn--primary r-btn--sm">Guardar cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 5: EDITAR PERFIL OFICIAL, DORSAL, IRATING Y LICENCIA            -->
+  <!-- ===================================================================== -->
+  <div id="editDriverProfileModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="editDriverProfileTitle">
+    <div class="g-dialog g-dialog--wide rc-modal-dialog">
+      <div class="g-dialog__bar">
+        <h2 id="editDriverProfileTitle">Editar Perfil Oficial &amp; iRating</h2>
+        <button type="button" class="m-notice__close" onclick="closeEditDriverProfileModal()" aria-label="Cerrar">×</button>
+      </div>
+      <p class="rc-muted">Los cambios se guardan en Cloudflare D1 y se reflejan en vivo en <code>/drivers</code>, la ficha del piloto y <code>/api/drivers</code>.</p>
+      <form id="editDriverProfileForm" class="rc-modal-form" onsubmit="submitEditDriverProfileForm(event)">
+        <input type="hidden" id="editProfSlug" />
+        <div class="rc-two-col" style="gap:12px">
+          <div class="g-field">
+            <label for="editProfFullName">Nombre visible en la web</label>
+            <input type="text" id="editProfFullName" required maxlength="80" placeholder="Ej. Alberto Trujillo" />
+          </div>
+          <div class="rc-two-col" style="gap:10px">
+            <div class="g-field">
+              <label for="editProfDorsal">Dorsal</label>
+              <input type="text" id="editProfDorsal" maxlength="8" placeholder="#16" />
+            </div>
+            <div class="g-field">
+              <label for="editProfKind">Tipo de ficha</label>
+              <select id="editProfKind">
+                <option value="driver">Piloto oficial</option>
+                <option value="staff">Staff interno</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="rc-two-col" style="gap:12px">
+          <div class="g-field">
+            <label for="editProfIrating">iRating Sports Car <span id="editProfOvrPreview" class="rc-badge rc-badge--ok" style="margin-left:6px">OVR —</span></label>
+            <input type="number" id="editProfIrating" min="100" max="25000" step="1" placeholder="Ej. 3141" oninput="updateEditProfOvrPreview()" />
+          </div>
+          <div class="g-field">
+            <label for="editProfLicense">Licencia &amp; Safety Rating</label>
+            <input type="text" id="editProfLicense" maxlength="32" placeholder="Ej. Class A 3.45" />
+          </div>
+        </div>
+
+        <div class="rc-two-col" style="gap:12px">
+          <div class="g-field">
+            <label for="editProfCustId">iRacing cust_id</label>
+            <input type="text" id="editProfCustId" inputmode="numeric" maxlength="10" placeholder="Ej. 993381" />
+          </div>
+          <div class="g-field">
+            <label for="editProfEmail">Correo vinculado</label>
+            <input type="email" id="editProfEmail" placeholder="piloto@muntru.me" />
+          </div>
+        </div>
+
+        <div class="rc-two-col" style="gap:12px">
+          <div class="g-field">
+            <label for="editProfRole">Rol visible en la ficha</label>
+            <input type="text" id="editProfRole" maxlength="80" placeholder="Ej. Team Principal &amp; Lead Telemetry" />
+          </div>
+          <div class="g-field">
+            <label for="editProfSpecialty">Especialidad</label>
+            <input type="text" id="editProfSpecialty" maxlength="120" placeholder="Ej. GT3 &amp; Multiclass Endurance" />
+          </div>
+        </div>
+
+        <div class="rc-two-col" style="gap:12px">
+          <div class="g-field">
+            <label for="editProfClub">Club / Región iRacing</label>
+            <input type="text" id="editProfClub" maxlength="80" placeholder="Ej. Iberia" />
+          </div>
+          <div class="g-field">
+            <label for="editProfCountry">País</label>
+            <input type="text" id="editProfCountry" maxlength="60" placeholder="Ej. Spain" />
+          </div>
+        </div>
+
+        <div class="g-field">
+          <label for="editProfBio">Biografía del piloto</label>
+          <textarea id="editProfBio" rows="3" maxlength="400" placeholder="Resumen deportivo y especialidad del piloto en pista…"></textarea>
+        </div>
+
+        <div class="rc-btn-row" style="justify-content:flex-end;margin-top:6px">
+          <button type="button" class="r-btn r-btn--sm" onclick="closeEditDriverProfileModal()">Cancelar</button>
+          <button type="submit" id="editProfSubmitBtn" class="r-btn r-btn--primary r-btn--sm">Guardar perfil en D1</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <div id="rcRowActionPopover" class="rc-action-popover hidden" role="menu"></div>
 
   <script is:inline src="/assets/js/driver-ids.js?v=t350"></script>
-  <script is:inline src="/assets/js/admin.js?v=t353"></script>
+  <script is:inline src="/assets/js/admin.js?v=t354"></script>
 </Layout>

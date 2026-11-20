@@ -106,7 +106,7 @@ const socials = (
       <!-- 1. HERO HEADER CARD: Symmetrical 2-Column Grid, Vertically & Horizontally Balanced -->
       <div class="d-hero-card">
         <div class="d-stage" data-team={driver.slug}>
-          <span class="d-stage-dorsal" aria-label={`Official Number ${driver.dorsal}`}>{driver.dorsal}</span>
+          <span class="d-stage-dorsal" data-f="dorsal" aria-label={`Official Number ${driver.dorsal}`}>{driver.dorsal}</span>
           <DriverHelmet slug={driver.slug} name={driver.fullName} eager={true} />
         </div>
 
@@ -114,13 +114,13 @@ const socials = (
           <div class="d-hero-identity">
             <p class="d-kicker">
               <span class="d-flag" aria-hidden="true">{driver.flag}</span>
-              <span>{driver.country}</span>
+              <span data-f="country">{driver.country}</span>
               <span>·</span>
               <span data-f="role" data-i18n={roleKey}>{roleText}</span>
             </p>
             <Tag class="d-name" id={headingId}>
-              <span class="d-num-pill">{driver.dorsal}</span>
-              <span>{driver.fullName}</span>
+              <span class="d-num-pill" data-f="dorsal">{driver.dorsal}</span>
+              <span data-f="name">{driver.fullName}</span>
             </Tag>
             <div class="d-badges-row">
               {lic && <p class="sc-badge"><span data-lic-f="class">{lic.classLabel}</span></p>}
@@ -143,7 +143,7 @@ const socials = (
           <dl class="d-stats d-stats--hero" id="stats">
             <div>
               <dt data-i18n="card.dorsal">Dorsal</dt>
-              <dd class="d-stats__dorsal">{driver.dorsal}</dd>
+              <dd class="d-stats__dorsal" data-f="dorsal">{driver.dorsal}</dd>
               <span class="d-stats__sub">Muntrume Roster</span>
             </div>
             <div>
@@ -354,7 +354,7 @@ const socials = (
     <>
       <!-- OVERVIEW GRID CARD (!hero): Equal Height Flex Column with Bottom-Aligned CTA -->
       <div class="d-stage" data-team={driver.slug}>
-        <span class="d-stage-dorsal" aria-label={`Official Number ${driver.dorsal}`}>{driver.dorsal}</span>
+        <span class="d-stage-dorsal" data-f="dorsal" aria-label={`Official Number ${driver.dorsal}`}>{driver.dorsal}</span>
         <DriverHelmet slug={driver.slug} name={driver.fullName} eager={eagerHelmet} />
       </div>
 
@@ -363,11 +363,11 @@ const socials = (
         <div class="d-card__top">
           <p class="d-kicker">
             <span class="d-flag" aria-hidden="true">{driver.flag}</span>
-            <span>{driver.country}</span> · <span data-f="role" data-i18n={roleKey}>{roleText}</span>
+            <span data-f="country">{driver.country}</span> · <span data-f="role" data-i18n={roleKey}>{roleText}</span>
           </p>
           <Tag class="d-name" id={headingId}>
-            <span class="d-num-pill d-num-pill--sm">{driver.dorsal}</span>
-            <span>{driver.fullName}</span>
+            <span class="d-num-pill d-num-pill--sm" data-f="dorsal">{driver.dorsal}</span>
+            <span data-f="name">{driver.fullName}</span>
           </Tag>
           <div class="d-badges-row">
             {lic && <p class="sc-badge"><span data-lic-f="class">{lic.classLabel}</span></p>}

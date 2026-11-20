@@ -161,6 +161,29 @@ const MMT_CIRCUIT_MAP = {
   "Interlagos": "INTERLAGOS"
 };
 
+const ROLE_LABELS = {
+  admin: "Team Principal / Admin",
+  driver: "Official Driver",
+  team_driver: "Team Endurance Driver",
+  academy: "Academy Driver",
+  engineer: "Race Engineer",
+  staff: "Staff / Prensa"
+};
+
+function getRoleLabel(role) {
+  const key = String(role || "driver").toLowerCase();
+  return ROLE_LABELS[key] || role || "Official Driver";
+}
+
+function computePreviewOvr(irating) {
+  const ir = Number(irating);
+  if (!Number.isFinite(ir) || ir < 100) return null;
+  const base = ir >= 1500
+    ? 54 + 43 * (Math.log(ir / 1500) / Math.log(12000 / 1500))
+    : Math.max(20, 54 * (ir / 1500));
+  return Math.min(98, Math.max(1, Math.round(base + 1)));
+}
+
 let rcState = {
   activeTab: "overview",
   directoryFilter: "all",
@@ -168,6 +191,7 @@ let rcState = {
   galleryFilter: "all",
   galleryPhotos: [],
   members: [],
+  profiles: [],
   pendingRequests: [],
   auditLogs: [],
   liveTelemetryBySlug: {},
@@ -390,18 +414,45 @@ async function refreshRaceControlData() {
       data.members.forEach((dbM) => {
         if (!dbM || !dbM.email) return;
         const key = String(dbM.email).toLowerCase();
+        const roleKey = String(dbM.role || "driver").toLowerCase();
         byEmail.set(key, {
           name: dbM.name || key.split("@")[0],
           email: dbM.email,
-          role: dbM.role || "driver",
-          roleLabel: dbM.role === "admin" ? "Team Principal & Admin" : "Official Driver",
+          role: roleKey,
+          roleLabel: getRoleLabel(roleKey),
+          team: dbM.team || "",
+          car_class: dbM.car_class || "",
+          public_visible: Boolean(dbM.public_visible),
+          public_name: dbM.public_name || "",
+          public_slug: dbM.public_slug || "",
+          public_bio: dbM.public_bio || "",
           status: dbM.status || "active",
           has_password: Boolean(dbM.has_password),
-          has_setup_access: Boolean(dbM.has_setup_access) || ["admin", "team_driver", "driver", "pilot", "academy", "engineer"].includes(String(dbM.role || "").toLowerCase()),
+          has_setup_access: dbM.has_setup_access != null ? Boolean(dbM.has_setup_access) : ["admin", "team_driver", "driver", "pilot", "academy", "engineer"].includes(roleKey),
           last_login_at: dbM.last_login_at || null,
           created_at: dbM.created_at || new Date().toISOString()
         });
       });
+    }
+    if (Array.isArray(data.profiles) && data.profiles.length > 0) {
+      rcState.profiles = data.profiles;
+    } else if (rcState.profiles.length === 0) {
+      rcState.profiles = OFFICIAL_ROSTER_DEFAULTS.map((p) => ({
+        slug: p.slug,
+        name: p.name,
+        fullName: p.name,
+        dorsal: p.number ? `#${p.number}` : null,
+        kind: p.slug === "juanluc" ? "staff" : "driver",
+        role: p.roleLabel,
+        specialty: "",
+        bio: "",
+        club: "",
+        country: "Spain",
+        cust_id: p.cust_id ? String(p.cust_id) : null,
+        email: p.email,
+        irating: null,
+        license: p.sr || null
+      }));
     }
     if (Array.isArray(data.requests)) {
       rcState.pendingRequests = data.requests.filter((r) => r && r.status === "pending");
@@ -468,32 +519,38 @@ function renderOverviewSection() {
 
   const tbody = document.getElementById("overviewRosterBody");
   if (tbody) {
-    tbody.innerHTML = rcState.members.map((p) => {
-      const initial = (p.name || p.email || "M").slice(0, 2).toUpperCase();
+    const profiles = rcState.profiles && rcState.profiles.length > 0 ? rcState.profiles : [];
+    tbody.innerHTML = profiles.map((p) => {
       const tInfo = rcState.liveTelemetryBySlug[p.slug] || {};
-      const irating = tInfo.irating || p.irating || "";
-      const sr = tInfo.sr || p.sr || "";
+      const displayName = p.fullName || p.name || p.slug;
+      const dorsalText = p.dorsal || (displayName || "M").slice(0, 2).toUpperCase();
+      const irVal = p.irating ?? tInfo.irating ?? null;
+      const licVal = p.license || tInfo.license || "";
+      const irFormatted = irVal ? `${Number(irVal).toLocaleString("en-US")} iR` : "Sin iRating";
+      const isDriver = (p.kind || "driver") === "driver";
+      const roleDisplay = p.role || (isDriver ? "Piloto Oficial" : "Staff Interno");
+      const linkedEmail = p.email || "";
       return `
         <tr>
           <td>
             <div class="rc-user-cell">
-              <span class="rc-avatar">${rcEscape(initial)}</span>
+              <span class="rc-avatar">${rcEscape(dorsalText)}</span>
               <div>
-                <div class="rc-strong">${rcEscape(p.name)}</div>
-                <div class="rc-mono-sub">${rcEscape(p.email)}</div>
+                <div class="rc-strong">${rcEscape(displayName)}</div>
+                <div class="rc-mono-sub">${rcEscape(linkedEmail || `/drivers/${p.slug}/`)}</div>
               </div>
             </div>
           </td>
-          <td><span class="rc-badge ${p.role === "admin" ? "rc-badge--ok" : ""}">${rcEscape(p.roleLabel)}</span></td>
+          <td><span class="rc-badge ${isDriver ? "rc-badge--ok" : ""}">${rcEscape(roleDisplay)}</span></td>
           <td><code>${rcEscape(p.cust_id || tInfo.cust_id || "—")}</code></td>
           <td>
-            <div class="rc-mono-sub">${irating ? `${irating} iR · ${sr}` : "Sincronizado"}</div>
+            <div class="rc-mono-sub">${rcEscape(licVal ? `${irFormatted} · ${licVal}` : irFormatted)}</div>
           </td>
-          <td><span class="rc-badge ${p.status === "active" ? "rc-badge--ok" : "rc-badge--err"}">${p.status === "active" ? (p.has_password ? "Activa" : "Pendiente clave") : "Bloqueada"}</span></td>
+          <td><span class="rc-badge ${isDriver ? "rc-badge--ok" : ""}">${isDriver ? "En parrilla" : "Staff"}</span></td>
           <td class="text-right">
             <div class="rc-row-actions">
-              <button type="button" class="r-btn r-btn--primary r-btn--sm" data-email="${rcEscape(p.email)}" data-name="${rcEscape(p.name)}" onclick="generateDriverAccessFromBtn(this, 'link')" title="Reenviar correo con enlace de reseteo de contraseña (72h)">Enviar Reset</button>
-              <button type="button" class="rc-menu-btn" aria-haspopup="menu" aria-expanded="false" aria-label="Más acciones para ${rcEscape(p.name)}" data-email="${rcEscape(p.email)}" data-scope="overview" onclick="openRowActionMenu(this, event)">⋮</button>
+              <button type="button" class="r-btn r-btn--primary r-btn--sm" data-slug="${rcEscape(p.slug)}" onclick="openEditDriverProfileModal(this.dataset.slug)">Editar perfil</button>
+              <a href="/drivers/${rcEscape(p.slug)}/" class="r-btn r-btn--sm" title="Ver ficha pública">Ficha ↗</a>
             </div>
           </td>
         </tr>
@@ -600,13 +657,17 @@ function renderDirectoryTable() {
   }
 
   tbody.innerHTML = filtered.map((m) => {
-    const numBadge = m.number ? `#${m.number}` : (m.name || "MMT").slice(0, 2).toUpperCase();
+    const linkedProf = (rcState.profiles || []).find((pr) => pr.email && String(pr.email).toLowerCase() === String(m.email).toLowerCase());
+    const numBadge = linkedProf?.dorsal || (m.number ? `#${m.number}` : (m.name || "MMT").slice(0, 2).toUpperCase());
     const isBlocked = m.status === "inactive";
     const statusBadge = isBlocked
       ? `<span class="rc-badge rc-badge--err">Bloqueada</span>`
       : m.has_password
       ? `<span class="rc-badge rc-badge--ok">Activa</span>`
       : `<span class="rc-badge rc-badge--warn">Pendiente clave</span>`;
+    const metaSub = linkedProf?.irating
+      ? `${Number(linkedProf.irating).toLocaleString("en-US")} iR${linkedProf.license ? ` · ${linkedProf.license}` : ""}`
+      : (m.car_class || m.team || "Vault & Setup Builder");
     return `
       <tr>
         <td>
@@ -614,7 +675,7 @@ function renderDirectoryTable() {
             <span class="rc-avatar">${rcEscape(numBadge)}</span>
             <div>
               <div class="rc-strong">${rcEscape(m.name)}</div>
-              <div class="rc-mono-sub">${m.cust_id ? `iRacing ID: ${rcEscape(m.cust_id)}` : "Miembro Autorizado D1"}</div>
+              <div class="rc-mono-sub">${linkedProf?.cust_id ? `iRacing ID: ${rcEscape(linkedProf.cust_id)}` : (m.team ? rcEscape(m.team) : "Miembro Autorizado D1")}</div>
             </div>
           </div>
         </td>
@@ -622,15 +683,15 @@ function renderDirectoryTable() {
           <div><code>${rcEscape(m.email)}</code></div>
         </td>
         <td>
-          <span class="rc-badge ${m.role === "admin" ? "rc-badge--ok" : ""}">${rcEscape(m.roleLabel || (m.role === "admin" ? "Admin" : "Official Driver"))}</span>
+          <span class="rc-badge ${m.role === "admin" ? "rc-badge--ok" : ""}">${rcEscape(getRoleLabel(m.role))}</span>
         </td>
         <td>
-          <div class="rc-mono-sub">${rcEscape(m.irating ? `${m.irating} iR · SR ${m.sr || "A"}` : "Vault & Setup Builder")}</div>
+          <div class="rc-mono-sub">${rcEscape(metaSub)}</div>
         </td>
         <td>${statusBadge}</td>
         <td class="text-right">
           <div class="rc-row-actions">
-            ${!isBlocked ? `<button type="button" class="r-btn r-btn--primary r-btn--sm" data-email="${rcEscape(m.email)}" data-name="${rcEscape(m.name)}" onclick="generateDriverAccessFromBtn(this, 'link')" title="Enviar correo de reseteo de credenciales (72h)">Enviar Reset</button>` : `<button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" data-status="active" onclick="toggleMemberStatusBtn(this)">Reactivar</button>`}
+            <button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" onclick="openEditUserModal(this.dataset.email)" title="Editar nombre, rol, categoría y perfil público">Editar</button>
             <button type="button" class="rc-menu-btn" aria-haspopup="menu" aria-expanded="false" aria-label="Más acciones para ${rcEscape(m.name)}" data-email="${rcEscape(m.email)}" data-scope="directory" onclick="openRowActionMenu(this, event)">⋮</button>
           </div>
         </td>
@@ -1207,18 +1268,32 @@ function renderIracingBridgeTable() {
     }
   })();
 
-  tbody.innerHTML = OFFICIAL_ROSTER_DEFAULTS.map((p) => {
-    const cid = savedMap[p.slug]?.cust_id ?? p.cust_id;
-    const mail = savedMap[p.slug]?.email ?? p.email;
+  const list = rcState.profiles && rcState.profiles.length > 0
+    ? rcState.profiles
+    : OFFICIAL_ROSTER_DEFAULTS.map((p) => ({
+        slug: p.slug,
+        fullName: p.name,
+        dorsal: `#${p.number}`,
+        cust_id: p.cust_id,
+        email: p.email,
+        irating: p.irating,
+        license: p.sr
+      }));
+
+  tbody.innerHTML = list.map((p) => {
+    const cid = p.cust_id ?? savedMap[p.slug]?.cust_id ?? "";
+    const mail = p.email ?? savedMap[p.slug]?.email ?? "";
+    const dorsalLabel = p.dorsal ? `${p.dorsal} · ` : "";
+    const irLabel = p.irating ? `${Number(p.irating).toLocaleString("en-US")} iR${p.license ? ` · ${p.license}` : ""}` : "Sin iRating";
     return `
       <tr>
-        <td><span class="rc-strong">#${rcEscape(p.number)} · ${rcEscape(p.name)}</span></td>
+        <td><span class="rc-strong">${rcEscape(dorsalLabel + (p.fullName || p.name || p.slug))}</span></td>
         <td><code>${rcEscape(p.slug)}</code></td>
         <td>
           <input
             type="number"
             class="g-search"
-            style="max-width:160px;padding:6px 10px;font-family:var(--r-mono);font-size:13px"
+            style="max-width:150px;padding:6px 10px;font-family:var(--r-mono);font-size:13px"
             data-slug-cid="${rcEscape(p.slug)}"
             value="${rcEscape(cid)}"
           />
@@ -1227,12 +1302,17 @@ function renderIracingBridgeTable() {
           <input
             type="email"
             class="g-search"
-            style="max-width:240px;padding:6px 10px;font-family:var(--r-mono);font-size:13px"
+            style="max-width:230px;padding:6px 10px;font-family:var(--r-mono);font-size:13px"
             data-slug-email="${rcEscape(p.slug)}"
             value="${rcEscape(mail)}"
           />
         </td>
-        <td><span class="rc-badge rc-badge--ok">Sincronizado (${rcEscape(p.irating)} iR)</span></td>
+        <td>
+          <div class="rc-row-actions" style="justify-content:flex-start">
+            <span class="rc-badge rc-badge--ok">${rcEscape(irLabel)}</span>
+            <button type="button" class="r-btn r-btn--sm" data-slug="${rcEscape(p.slug)}" onclick="openEditDriverProfileModal(this.dataset.slug)">Editar perfil</button>
+          </div>
+        </td>
       </tr>
     `;
   }).join("");
@@ -1240,29 +1320,44 @@ function renderIracingBridgeTable() {
 
 function buildDriverIdsObjectFromInputs() {
   const result = {};
-  OFFICIAL_ROSTER_DEFAULTS.forEach((p) => {
+  const list = rcState.profiles && rcState.profiles.length > 0 ? rcState.profiles : OFFICIAL_ROSTER_DEFAULTS;
+  list.forEach((p) => {
     const cidInput = document.querySelector(`[data-slug-cid="${p.slug}"]`);
     const emailInput = document.querySelector(`[data-slug-email="${p.slug}"]`);
-    const cidVal = cidInput ? parseInt(cidInput.value, 10) || p.cust_id : p.cust_id;
-    const emailVal = emailInput ? emailInput.value.trim() || p.email : p.email;
+    const cidRaw = cidInput ? cidInput.value.trim() : String(p.cust_id || "");
+    const cidVal = cidRaw ? parseInt(cidRaw, 10) || null : null;
+    const emailVal = emailInput ? emailInput.value.trim() : (p.email || "");
     result[p.slug] = {
       cust_id: cidVal,
-      name: p.name,
-      number: p.number,
-      role: p.roleLabel,
+      name: p.fullName || p.name,
+      number: p.dorsal || p.number || "",
+      role: p.role || p.roleLabel || "",
       email: emailVal
     };
   });
   return result;
 }
 
-function saveIracingMappings() {
+async function saveIracingMappings() {
   const mapObj = buildDriverIdsObjectFromInputs();
   try {
     localStorage.setItem("muntrume_driver_ids_override", JSON.stringify(mapObj));
   } catch {}
-  appendAuditEvent("admin", "atrumin16@gmail.com", "Mapeo de cust_id de iRacing actualizado en Race Control", "GUARDADO");
-  showRcNotice("Mapeo guardado", "Los cust_id de iRacing se han actualizado en Race Control.", "success");
+  try {
+    for (const [slug, info] of Object.entries(mapObj)) {
+      await rcAdminFetch("/api/setups/admin/driver/profile", {
+        slug,
+        cust_id: info.cust_id ? String(info.cust_id) : null,
+        email: info.email || null,
+        sync_account_name: false
+      });
+    }
+    await refreshRaceControlData();
+    appendAuditEvent("admin", "atrumin16@gmail.com", "Mapeo de cust_id y correos sincronizado en Cloudflare D1", "D1 OK");
+    showRcNotice("Mapeo guardado en D1", "Los cust_id y correos de iRacing se han guardado en Cloudflare D1.", "success");
+  } catch (err) {
+    showRcNotice("Guardado parcial", err?.message || "Se guardó en local, pero falló la sincronización con D1.", "warn");
+  }
 }
 
 function copyDriverIdsConfig() {
@@ -1687,9 +1782,16 @@ function openRowActionMenu(btn, ev) {
   const isPrincipal = email === "atrumin16@gmail.com";
   const isBlocked = member.status === "inactive";
   const hasSetupAccess = Boolean(member.has_setup_access) || ["admin", "team_driver", "driver", "pilot", "academy", "engineer"].includes(String(member.role || "").toLowerCase());
+  const linkedProf = (rcState.profiles || []).find((pr) => pr.email && String(pr.email).toLowerCase() === email);
 
   const items = [];
+  items.push(`<button type="button" class="rc-action-popover__item" data-email="${rcEscape(member.email)}" onclick="closeRowActionMenu(); openEditUserModal(this.dataset.email)">✏️ Editar cuenta, nombre y rol</button>`);
+  if (linkedProf) {
+    items.push(`<button type="button" class="rc-action-popover__item" data-slug="${rcEscape(linkedProf.slug)}" onclick="closeRowActionMenu(); openEditDriverProfileModal(this.dataset.slug)">🏎️ Editar ficha, dorsal e iRating</button>`);
+  }
   if (!isBlocked) {
+    items.push(`<div class="rc-action-popover__sep"></div>`);
+    items.push(`<button type="button" class="rc-action-popover__item" data-email="${rcEscape(member.email)}" data-name="${rcEscape(member.name)}" onclick="closeRowActionMenu(); generateDriverAccessFromBtn(this, 'link')">🔑 Enviar enlace de reset (72 h)</button>`);
     items.push(`<button type="button" class="rc-action-popover__item" data-email="${rcEscape(member.email)}" data-name="${rcEscape(member.name)}" onclick="closeRowActionMenu(); generateDriverAccessFromBtn(this, 'copy_link')">📋 Copiar enlace (72 h)</button>`);
     items.push(`<button type="button" class="rc-action-popover__item" data-email="${rcEscape(member.email)}" data-name="${rcEscape(member.name)}" onclick="closeRowActionMenu(); generateDriverAccessFromBtn(this, 'temp_password')">⚡ Emitir clave temporal</button>`);
     items.push(`<button type="button" class="rc-action-popover__item" data-email="${rcEscape(member.email)}" onclick="closeRowActionMenu(); revokePilotSessionsBtn(this)">⎋ Cerrar sesiones activas</button>`);
@@ -1729,6 +1831,187 @@ document.addEventListener("keydown", (e) => {
 });
 window.addEventListener("scroll", closeRowActionMenu, true);
 
+// ============================================================================
+// EDIT USER ACCOUNT (NAME, ROLE, TEAM, SETUP ACCESS, PUBLIC PROFILE)
+// ============================================================================
+function openEditUserModal(email) {
+  const cleanEmail = String(email || "").trim().toLowerCase();
+  const member = rcState.members.find((m) => String(m.email).toLowerCase() === cleanEmail);
+  if (!member) return;
+  const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v ?? ""; };
+  const setChk = (id, v) => { const el = document.getElementById(id); if (el) el.checked = Boolean(v); };
+
+  setVal("editUserEmailHidden", member.email);
+  setVal("editUserEmailReadonly", member.email);
+  setVal("editUserName", member.name || "");
+  setVal("editUserRole", member.role || "driver");
+  setVal("editUserTeam", member.team || "");
+  setVal("editUserCarClass", member.car_class || "");
+  setChk("editUserSetupAccess", member.has_setup_access);
+  setChk("editUserPublicVisible", member.public_visible);
+  setVal("editUserPublicName", member.public_name || "");
+  setVal("editUserPublicSlug", member.public_slug || "");
+  setVal("editUserPublicBio", member.public_bio || "");
+
+  document.getElementById("editUserModal")?.classList.remove("hidden");
+  document.getElementById("editUserName")?.focus();
+}
+
+function closeEditUserModal() {
+  document.getElementById("editUserModal")?.classList.add("hidden");
+}
+
+async function submitEditUserForm(e) {
+  e.preventDefault();
+  const btn = document.getElementById("editUserSubmitBtn");
+  const email = document.getElementById("editUserEmailHidden")?.value || "";
+  const name = document.getElementById("editUserName")?.value.trim() || "";
+  const role = document.getElementById("editUserRole")?.value || "driver";
+  const team = document.getElementById("editUserTeam")?.value.trim() || "";
+  const car_class = document.getElementById("editUserCarClass")?.value.trim() || "";
+  const has_setup_access = Boolean(document.getElementById("editUserSetupAccess")?.checked);
+
+  const public_visible = Boolean(document.getElementById("editUserPublicVisible")?.checked);
+  const public_name = document.getElementById("editUserPublicName")?.value.trim() || "";
+  const public_slug = document.getElementById("editUserPublicSlug")?.value.trim() || "";
+  const public_bio = document.getElementById("editUserPublicBio")?.value.trim() || "";
+
+  if (!email || !name) return;
+  if (btn) { btn.disabled = true; btn.textContent = "Guardando…"; }
+  try {
+    await rcAdminFetch("/api/setups/admin/user/update", {
+      email,
+      name,
+      role,
+      team,
+      car_class,
+      has_setup_access
+    });
+
+    const prev = rcState.members.find((m) => String(m.email).toLowerCase() === email.toLowerCase());
+    const publicChanged = prev && (
+      Boolean(prev.public_visible) !== public_visible ||
+      (prev.public_name || "") !== public_name ||
+      (prev.public_slug || "") !== public_slug ||
+      (prev.public_bio || "") !== public_bio
+    );
+    if (publicChanged || public_visible) {
+      await rcAdminFetch("/api/setups/admin/user/public", {
+        email,
+        visible: public_visible,
+        public_name,
+        slug: public_slug || undefined,
+        bio: public_bio
+      });
+    }
+
+    closeEditUserModal();
+    appendAuditEvent("admin", "atrumin16@gmail.com", `Cuenta actualizada: ${name} (${email}) · Rol: ${getRoleLabel(role)}`, "ACTUALIZADO");
+    await refreshRaceControlData();
+    showRcNotice("Cuenta actualizada", `Se han guardado los cambios de ${name} (${getRoleLabel(role)}) en Cloudflare D1.`, "success");
+  } catch (err) {
+    showRcNotice("No se pudieron guardar los cambios", err?.message || "Error al actualizar el usuario en D1.", "err");
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "Guardar cambios"; }
+  }
+}
+
+// ============================================================================
+// EDIT OFFICIAL DRIVER PROFILE (NAME, DORSAL, IRATING, LICENSE, ROLE, BIO)
+// ============================================================================
+function updateEditProfOvrPreview() {
+  const ir = document.getElementById("editProfIrating")?.value;
+  const badge = document.getElementById("editProfOvrPreview");
+  if (!badge) return;
+  const ovr = computePreviewOvr(ir);
+  badge.textContent = ovr ? `OVR ${ovr}` : "OVR —";
+}
+
+function openEditDriverProfileModal(slug) {
+  const cleanSlug = String(slug || "").trim().toLowerCase();
+  const prof = (rcState.profiles || []).find((p) => p.slug === cleanSlug);
+  if (!prof) return;
+  const tInfo = rcState.liveTelemetryBySlug[cleanSlug] || {};
+  const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v ?? ""; };
+
+  setVal("editProfSlug", prof.slug);
+  setVal("editProfFullName", prof.fullName || prof.name || "");
+  setVal("editProfDorsal", prof.dorsal || "");
+  setVal("editProfKind", prof.kind || "driver");
+  setVal("editProfIrating", prof.irating ?? tInfo.irating ?? "");
+  setVal("editProfLicense", prof.license || tInfo.license || "");
+  setVal("editProfCustId", prof.cust_id || tInfo.cust_id || "");
+  setVal("editProfEmail", prof.email || "");
+  setVal("editProfRole", prof.role || "");
+  setVal("editProfSpecialty", prof.specialty || "");
+  setVal("editProfClub", prof.club || "");
+  setVal("editProfCountry", prof.country || "Spain");
+  setVal("editProfBio", prof.bio || "");
+
+  updateEditProfOvrPreview();
+  document.getElementById("editDriverProfileModal")?.classList.remove("hidden");
+  document.getElementById("editProfFullName")?.focus();
+}
+
+function closeEditDriverProfileModal() {
+  document.getElementById("editDriverProfileModal")?.classList.add("hidden");
+}
+
+async function submitEditDriverProfileForm(e) {
+  e.preventDefault();
+  const btn = document.getElementById("editProfSubmitBtn");
+  const slug = document.getElementById("editProfSlug")?.value || "";
+  const fullName = document.getElementById("editProfFullName")?.value.trim() || "";
+  const dorsal = document.getElementById("editProfDorsal")?.value.trim() || "";
+  const kind = document.getElementById("editProfKind")?.value || "driver";
+  const irRaw = document.getElementById("editProfIrating")?.value.trim() || "";
+  const license = document.getElementById("editProfLicense")?.value.trim() || "";
+  const cust_id = document.getElementById("editProfCustId")?.value.trim() || "";
+  const email = document.getElementById("editProfEmail")?.value.trim() || "";
+  const role = document.getElementById("editProfRole")?.value.trim() || "";
+  const specialty = document.getElementById("editProfSpecialty")?.value.trim() || "";
+  const club = document.getElementById("editProfClub")?.value.trim() || "";
+  const country = document.getElementById("editProfCountry")?.value.trim() || "";
+  const bio = document.getElementById("editProfBio")?.value.trim() || "";
+
+  if (!slug || !fullName) return;
+  if (btn) { btn.disabled = true; btn.textContent = "Guardando…"; }
+  try {
+    const payload = {
+      slug,
+      fullName,
+      name: fullName,
+      dorsal: dorsal || null,
+      kind,
+      cust_id: cust_id || null,
+      email: email || null,
+      role: role || null,
+      specialty: specialty || null,
+      club: club || null,
+      country: country || null,
+      bio: bio || null,
+      sync_account_name: true
+    };
+    if (irRaw !== "") payload.irating = parseInt(irRaw, 10);
+    if (license !== "") payload.license = license;
+
+    await rcAdminFetch("/api/setups/admin/driver/profile", payload);
+    closeEditDriverProfileModal();
+    appendAuditEvent(
+      "admin",
+      "atrumin16@gmail.com",
+      `Perfil oficial actualizado: ${fullName} (${dorsal || slug})${irRaw ? ` · ${irRaw} iR` : ""}${license ? ` · ${license}` : ""}`,
+      "PERFIL OK"
+    );
+    await refreshRaceControlData();
+    showRcNotice("Perfil actualizado en vivo", `Cambios de ${fullName} guardados en D1 y publicados en /drivers y /api/drivers.`, "success");
+  } catch (err) {
+    showRcNotice("No se pudo guardar el perfil", err?.message || "Error al actualizar la ficha del piloto en D1.", "err");
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "Guardar perfil en D1"; }
+  }
+}
+
 async function runStewardBotSweep() {
   const btn = document.getElementById("btnStewardBotSweep");
   const prev = btn ? btn.textContent : "";
@@ -1748,6 +2031,13 @@ async function runStewardBotSweep() {
 }
 
 if (typeof window !== "undefined") {
+  window.openEditUserModal = openEditUserModal;
+  window.closeEditUserModal = closeEditUserModal;
+  window.submitEditUserForm = submitEditUserForm;
+  window.openEditDriverProfileModal = openEditDriverProfileModal;
+  window.closeEditDriverProfileModal = closeEditDriverProfileModal;
+  window.updateEditProfOvrPreview = updateEditProfOvrPreview;
+  window.submitEditDriverProfileForm = submitEditDriverProfileForm;
   window.openRowActionMenu = openRowActionMenu;
   window.closeRowActionMenu = closeRowActionMenu;
   window.runStewardBotSweep = runStewardBotSweep;

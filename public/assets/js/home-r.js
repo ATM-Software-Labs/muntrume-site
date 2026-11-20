@@ -80,6 +80,15 @@
         licenses.push({ category: "sports_car", class_label: parsed && parsed.classLabel, sr: parsed && parsed.sr, irating: d.irating > 0 ? d.irating : undefined });
       }
       licenses.forEach(function (lic) { paintLic(card, lic); });
+      if (d.fullName || d.name) {
+        card.querySelectorAll('[data-f="name"]').forEach(function (el) { el.textContent = d.fullName || d.name; });
+      }
+      if (d.dorsal) {
+        card.querySelectorAll('[data-f="dorsal"]').forEach(function (el) { el.textContent = d.dorsal; });
+      }
+      if (d.country) {
+        card.querySelectorAll('[data-f="country"]').forEach(function (el) { el.textContent = d.country; });
+      }
       if (d.irating > 0) {
         approx(card.querySelector('[data-f="irating"]'), "k", d.irating);
         irSum += Number(d.irating);

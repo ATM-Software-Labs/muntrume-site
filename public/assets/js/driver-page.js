@@ -117,6 +117,15 @@
       licenses.push({ category: "sports_car", class_label: parsed && parsed.classLabel, sr: parsed && parsed.sr, irating: d.irating > 0 ? d.irating : undefined });
     }
     licenses.forEach(paintLic);
+    if (d.fullName || d.name) {
+      root.querySelectorAll('[data-f="name"]').forEach(function (el) { el.textContent = d.fullName || d.name; });
+    }
+    if (d.dorsal) {
+      root.querySelectorAll('[data-f="dorsal"]').forEach(function (el) { el.textContent = d.dorsal; });
+    }
+    if (d.country) {
+      root.querySelectorAll('[data-f="country"]').forEach(function (el) { el.textContent = d.country; });
+    }
     if (d.role && !/\bgtp\b/i.test(d.role)) set("role", d.role);
     if (d.specialty) set("specialty", sanitizeSpecialty(d.specialty));
     if (d.irating > 0) {
