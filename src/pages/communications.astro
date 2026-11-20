@@ -1,8 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-const pageTitle = "Communications & Corporate Webmail | Muntrume Motorsport";
-const pageDescription = "Official Team Communications Hub, Corporate Webmail (mail.trujillomingorance.com), and internal Driver Mailbox synchronized with your active Garage session.";
+const pageTitle = "Communications & Official Mailboxes | Muntrume Motorsport";
+const pageDescription = "Official Team Communications Hub, @muntru.me Direct Mail Infrastructure (Resend & Cloudflare Email Routing), and internal Driver Mailbox synchronized with your active Garage session.";
 ---
 
 <Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/communications">
@@ -24,12 +24,10 @@ const pageDescription = "Official Team Communications Hub, Corporate Webmail (ma
 
       <div class="flex flex-wrap items-center gap-2.5 shrink-0">
         <a
-          href="https://mail.trujillomingorance.com"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="mailto:racecontrol@muntru.me"
           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--r-accent)] hover:opacity-90 text-neutral-950 font-black text-xs font-mono uppercase tracking-wider transition shadow-lg"
         >
-          <span>Corporate Webmail</span>
+          <span>racecontrol@muntru.me</span>
           <span>↗</span>
         </a>
         <a
@@ -59,12 +57,10 @@ const pageDescription = "Official Team Communications Hub, Corporate Webmail (ma
           Sign In via Garage
         </a>
         <a
-          href="https://mail.trujillomingorance.com"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="/email-preferences"
           class="px-3.5 py-2 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono text-[var(--r-accent)] transition"
         >
-          mail.trujillomingorance.com ↗
+          Preferencias @muntru.me ↗
         </a>
       </div>
     </div>
@@ -74,18 +70,16 @@ const pageDescription = "Official Team Communications Hub, Corporate Webmail (ma
       <!-- Left Column: Direct Channels (4 Cols) -->
       <aside class="lg:col-span-4 space-y-4">
         <div class="p-5 rounded-2xl bg-[var(--r-surface)] border border-[var(--r-line)] space-y-4">
-          <span class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)] font-bold">Corporate Mail Server</span>
-          <h2 class="text-lg font-extrabold text-[var(--r-text)] font-display">Corporate Webmail</h2>
+          <span class="text-[11px] font-mono uppercase tracking-widest text-[var(--r-accent)] font-bold">Direct Mail Infrastructure</span>
+          <h2 class="text-lg font-extrabold text-[var(--r-text)] font-display">Buzones Oficiales @muntru.me</h2>
           <p class="text-xs text-[var(--r-muted)] leading-relaxed">
-            Direct encrypted access to the official corporate mail server (<code class="text-[var(--r-accent)]">mail.trujillomingorance.com</code>) for team principals, engineers, and official drivers.
+            Infraestructura de correo directa sobre <code class="text-[var(--r-accent)]">muntru.me</code> (Resend SPF/DKIM + Cloudflare Email Routing) para dirección deportiva, ingeniería y pilotos oficiales.
           </p>
           <a
-            href="https://mail.trujillomingorance.com"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="mailto:racecontrol@muntru.me"
             class="w-full py-3 px-4 rounded-xl bg-[var(--r-accent)] hover:opacity-90 text-neutral-950 font-black text-xs font-mono uppercase tracking-wider transition flex items-center justify-center gap-2"
           >
-            <span>Launch Corporate Webmail</span>
+            <span>Escribir a Race Control</span>
             <span>↗</span>
           </a>
         </div>
@@ -174,14 +168,14 @@ const pageDescription = "Official Team Communications Hub, Corporate Webmail (ma
               <span class="text-[var(--r-muted)]">From: Systems &amp; IT</span>
             </div>
             <h3 class="text-sm sm:text-base font-bold text-[var(--r-text)]">
-              Direct Corporate Mail Access via mail.trujillomingorance.com
+              Direct Mail Dispatch via @muntru.me (Resend &amp; Cloudflare Email Routing)
             </h3>
             <p class="text-xs text-[var(--r-muted)] leading-relaxed">
-              Official team mailboxes are accessible directly via <code class="text-[var(--r-accent)]">https://mail.trujillomingorance.com</code>. Your Garage session remains active across Setup Vault, Setup Builder, and Communications.
+              Todos los correos transaccionales y comunicaciones oficiales salen directamente desde <code class="text-[var(--r-accent)]">@muntru.me</code> (<code class="text-[var(--r-accent)]">racecontrol@muntru.me</code>, <code class="text-[var(--r-accent)]">alberto@muntru.me</code>, <code class="text-[var(--r-accent)]">mateo@muntru.me</code>, <code class="text-[var(--r-accent)]">eduardo@muntru.me</code>, <code class="text-[var(--r-accent)]">juanlu@muntru.me</code>).
             </p>
             <div class="pt-1">
-              <a href="https://mail.trujillomingorance.com" target="_blank" rel="noopener noreferrer" class="text-xs font-mono text-[var(--r-accent)] hover:underline">
-                Open Corporate Webmail ↗
+              <a href="/email-preferences" class="text-xs font-mono text-[var(--r-accent)] hover:underline">
+                Gestionar preferencias de correo @muntru.me →
               </a>
             </div>
           </article>

@@ -978,7 +978,7 @@ function renderMailboxesTable() {
       <td class="text-right">
         <div class="rc-btn-row" style="justify-content:flex-end">
           <button type="button" class="r-btn r-btn--sm" data-addr="${rcEscape(mb.address)}" onclick="navigator.clipboard.writeText(this.dataset.addr); showRcNotice('Buzón copiado', this.dataset.addr, 'info')">Copiar dirección</button>
-          <a href="https://mail.trujillomingorance.com" target="_blank" rel="noopener noreferrer" class="r-btn r-btn--sm">Webmail ↗</a>
+          <a href="mailto:${rcEscape(mb.address)}" class="r-btn r-btn--sm">Escribir ↗</a>
         </div>
       </td>
     </tr>

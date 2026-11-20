@@ -152,7 +152,7 @@ function build() {
   const st = el('style'); st.textContent = CSS; document.head.appendChild(st);
   root = el('section', { id: 'mmChat', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'mmChatTitle', hidden: '' });
   const hd = el('header');
-  const ttl = el('div'); const b = el('b', { id: 'mmChatTitle' }, t.title); const sm = el('small'); const a = el('a', { href: 'https://ai.trujillomingorance.com/', target: '_blank', rel: 'noopener noreferrer' }, t.engine); sm.appendChild(a); ttl.append(b, sm);
+  const ttl = el('div'); const b = el('b', { id: 'mmChatTitle' }, t.title); const sm = el('small'); const a = el('a', { href: '/ai/' }, t.engine); sm.appendChild(a); ttl.append(b, sm);
   const ic = el('div', { class: 'ic' });
   const ex = el('a', { href: '/ai', class: 'ib', 'aria-label': 'Abrir pantalla completa', title: 'Abrir Muntrume AI (/ai)' }); ex.appendChild(svg('M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7'));
   const rs = el('button', { type: 'button', class: 'ib', 'aria-label': t.reset, title: t.reset }); rs.appendChild(svg('M4 4v6h6M20 20v-6h-6M5 15a8 8 0 0 0 14 3M19 9A8 8 0 0 0 5 6'));
