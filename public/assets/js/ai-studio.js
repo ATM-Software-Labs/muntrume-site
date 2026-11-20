@@ -5,9 +5,10 @@
 (function (rootScope) {
   "use strict";
 
-  const API_URL = (typeof location !== "undefined" && location.hostname === "ai.muntru.me")
-    ? "/api/ai"
-    : "https://muntrume.atrumin16.workers.dev/api/ai";
+  const API_ORIGIN = (typeof location !== "undefined" && location.hostname === "ai.muntru.me")
+    ? ""
+    : "https://muntrume.atrumin16.workers.dev";
+  const API_URL = `${API_ORIGIN}/api/ai`;
   const STORAGE_KEY = "muntrume_ai_studio_v3";
   const HANDOFF_KEY = "muntrume_ai_handoff";
 
@@ -214,6 +215,9 @@
     // Escape remaining raw HTML
     s = esc(s);
 
+    // Allow safe line breaks (<br> / <br/>) that LLMs emit inside table cells and lists
+    s = s.replace(/&lt;br\s*\/?&gt;/gi, "<br />");
+
     // 5. Bare URLs
     s = s.replace(/(^|[\s(])(https?:\/\/[^\s<>"')]+)/g, (_, pre, url) => {
       const clean = url.replace(/[.,;:!?]+$/, "");
@@ -223,14 +227,14 @@
       return `${pre}${stash(`<a href="${esc(safeUrl)}" target="_blank" rel="noopener noreferrer">${esc(clean)}</a>`)}${trail}`;
     });
 
-    // 6. Emphasis & strikethrough
+    // 6. Emphasis & strikethrough (safe against snake_case identifiers and 2.95 * 33 multiplication)
     s = s
-      .replace(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>")
-      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-      .replace(/__(.+?)__/g, "<strong>$1</strong>")
-      .replace(/~~(.+?)~~/g, "<del>$1</del>")
-      .replace(/(^|[^\w*])\*([^*\n]+?)\*(?!\*)/g, "$1<em>$2</em>")
-      .replace(/(^|[^\w_])_([^_\n]+?)_(?!_)/g, "$1<em>$2</em>");
+      .replace(/\*\*\*([^\s*](?:[^*\n]*?[^\s*])?)\*\*\*/g, "<strong><em>$1</em></strong>")
+      .replace(/\*\*([^\s*](?:[^*\n]*?[^\s*])?)\*\*/g, "<strong>$1</strong>")
+      .replace(/(^|[^\w_])__([^\s_](?:[^_\n]*?[^\s_])?)__(?=$|[^\w_])/g, "$1<strong>$2</strong>")
+      .replace(/~~([^\s~](?:[^~\n]*?[^\s~])?)~~/g, "<del>$1</del>")
+      .replace(/(^|[^\w*])\*([^\s*](?:[^*\n]*?[^\s*])?)\*(?!\*)/g, "$1<em>$2</em>")
+      .replace(/(^|[^\w_])_([^\s_](?:[^_\n]*?[^\s_])?)_(?=$|[^\w_])/g, "$1<em>$2</em>");
 
     return s.replace(/@@TOK_(\d+)@@/g, (_, i) => tokens[Number(i)] || "");
   }
@@ -258,9 +262,9 @@
 
   function isTableSeparator(line) {
     const t = String(line || "").trim();
-    if (!t.includes("|") && !/^:?-+:?$/.test(t)) return false;
+    if (!t.includes("|") && !/^:?\s*-+\s*:?$/.test(t)) return false;
     const cells = splitTableRow(t);
-    return cells.length >= 2 && cells.every((c) => /^:?-{2,}:?$/.test(c));
+    return cells.length >= 2 && cells.every((c) => /^:?\s*-{1,}\s*:?$/.test(c));
   }
 
   function renderTableCard(headers, aligns, rows) {
@@ -326,7 +330,14 @@
     let text = String(md || "").replace(/\r\n/g, "\n");
     const blocks = [];
 
-    // Closed fenced code blocks
+    // 4-backtick outer fenced code blocks first (protects nested ``` blocks)
+    text = text.replace(/````([a-zA-Z0-9_+-]*)[ \t]*\n([\s\S]*?)````/g, (_, lang, code) => {
+      const i = blocks.length;
+      blocks.push({ kind: "code", lang: (lang || "markdown").toLowerCase(), code: code.replace(/\n$/, ""), closed: true });
+      return `\n@@BLOCK_${i}@@\n`;
+    });
+
+    // Closed 3-backtick fenced code blocks
     text = text.replace(/```([a-zA-Z0-9_+-]*)[ \t]*\n([\s\S]*?)```/g, (_, lang, code) => {
       const i = blocks.length;
       blocks.push({ kind: "code", lang: (lang || "text").toLowerCase(), code: code.replace(/\n$/, ""), closed: true });
@@ -346,12 +357,22 @@
       text = `${before}\n@@BLOCK_${i}@@\n`;
     }
 
-    // Display math blocks $$...$$
+    // Closed display math blocks $$...$$
     text = text.replace(/\$\$\s*\n?([\s\S]+?)\n?\s*\$\$/g, (_, expr) => {
       const i = blocks.length;
       blocks.push({ kind: "math", expr: expr.trim() });
       return `\n@@BLOCK_${i}@@\n`;
     });
+
+    // Unclosed display math block mid-stream
+    const openMathIdx = text.indexOf("$$");
+    if (openMathIdx !== -1) {
+      const before = text.slice(0, openMathIdx);
+      const expr = text.slice(openMathIdx + 2).trim();
+      const i = blocks.length;
+      blocks.push({ kind: "math", expr: expr || "…" });
+      text = `${before}\n@@BLOCK_${i}@@\n`;
+    }
 
     const lines = text.split("\n");
     const out = [];
@@ -377,18 +398,18 @@
         continue;
       }
 
-      // Headings H1 - H4
-      if (/^####\s+/.test(trim)) { out.push(`<h4>${inlineFmt(trim.replace(/^####\s+/, ""))}</h4>`); i++; continue; }
-      if (/^###\s+/.test(trim)) { out.push(`<h3>${inlineFmt(trim.replace(/^###\s+/, ""))}</h3>`); i++; continue; }
-      if (/^##\s+/.test(trim)) { out.push(`<h2>${inlineFmt(trim.replace(/^##\s+/, ""))}</h2>`); i++; continue; }
-      if (/^#\s+/.test(trim)) { out.push(`<h1>${inlineFmt(trim.replace(/^#\s+/, ""))}</h1>`); i++; continue; }
+      // Headings H1 - H4 (strip optional trailing #)
+      if (/^####\s+/.test(trim)) { out.push(`<h4>${inlineFmt(trim.replace(/^####\s+/, "").replace(/\s+#+$/, ""))}</h4>`); i++; continue; }
+      if (/^###\s+/.test(trim)) { out.push(`<h3>${inlineFmt(trim.replace(/^###\s+/, "").replace(/\s+#+$/, ""))}</h3>`); i++; continue; }
+      if (/^##\s+/.test(trim)) { out.push(`<h2>${inlineFmt(trim.replace(/^##\s+/, "").replace(/\s+#+$/, ""))}</h2>`); i++; continue; }
+      if (/^#\s+/.test(trim)) { out.push(`<h1>${inlineFmt(trim.replace(/^#\s+/, "").replace(/\s+#+$/, ""))}</h1>`); i++; continue; }
 
       // GFM Table
       if (trim.includes("|") && i + 1 < lines.length && isTableSeparator(lines[i + 1])) {
         const headers = splitTableRow(trim);
         const sepCells = splitTableRow(lines[i + 1]);
         const aligns = headers.map((_, ci) => {
-          const sc = sepCells[ci] || "";
+          const sc = (sepCells[ci] || "").replace(/\s+/g, "");
           if (sc.startsWith(":") && sc.endsWith(":")) return "center";
           if (sc.endsWith(":")) return "right";
           return "left";
@@ -410,17 +431,35 @@
           qLines.push(lines[i].trim().replace(/^>\s?/, ""));
           i++;
         }
+        const renderQBody = (arr) => {
+          const inner = [];
+          let j = 0;
+          while (j < arr.length) {
+            const ql = arr[j].trim();
+            if (!ql) { j++; continue; }
+            if (/^[-*+]\s+/.test(ql)) {
+              const lis = [];
+              while (j < arr.length && /^[-*+]\s+/.test(arr[j].trim())) {
+                lis.push(`<li>${inlineFmt(arr[j].trim().replace(/^[-*+]\s+/, ""))}</li>`);
+                j++;
+              }
+              inner.push(`<ul>${lis.join("")}</ul>`);
+            } else {
+              inner.push(`<p>${inlineFmt(ql)}</p>`);
+              j++;
+            }
+          }
+          return inner.join("");
+        };
         const firstM = qLines[0]?.match(/^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*(.*)$/i);
         if (firstM) {
           const meta = CALLOUT_META[firstM[1].toUpperCase()] || CALLOUT_META.NOTE;
           const bodyLines = [];
           if (firstM[2]) bodyLines.push(firstM[2]);
           bodyLines.push(...qLines.slice(1));
-          const bodyHtml = bodyLines.filter(Boolean).map((l) => `<p>${inlineFmt(l)}</p>`).join("");
-          out.push(`<div class="ai-callout ai-callout--${meta.cls}"><div class="ai-callout__head">${meta.svg}<span>${meta.label}</span></div><div class="ai-callout__body">${bodyHtml}</div></div>`);
+          out.push(`<div class="ai-callout ai-callout--${meta.cls}"><div class="ai-callout__head">${meta.svg}<span>${meta.label}</span></div><div class="ai-callout__body">${renderQBody(bodyLines)}</div></div>`);
         } else {
-          const bodyHtml = qLines.filter(Boolean).map((l) => `<p>${inlineFmt(l)}</p>`).join("");
-          out.push(`<blockquote>${bodyHtml}</blockquote>`);
+          out.push(`<blockquote>${renderQBody(qLines)}</blockquote>`);
         }
         continue;
       }
@@ -521,8 +560,8 @@
 
     if (opts.showCaret && !html.includes('class="ai-caret"')) {
       const caret = '<span class="ai-caret" aria-hidden="true"></span>';
-      if (/<\/(p|li|h[1-4]|td|blockquote)>\s*$/i.test(html)) {
-        html = html.replace(/(<\/(?:p|li|h[1-4]|td|blockquote)>)\s*$/i, `${caret}$1`);
+      if (/<\/(p|li|h[1-4]|blockquote)>\s*$/i.test(html)) {
+        html = html.replace(/(<\/(?:p|li|h[1-4]|blockquote)>)\s*$/i, `${caret}$1`);
       } else {
         html += caret;
       }
@@ -1112,17 +1151,64 @@
     scrollFeedToBottom(true);
   }
 
-  function openArtifactPane(artifact) {
-    currentArtifact = artifact;
-    const pane = $("aiArtifactPane");
-    const ws = $("aiWorkspace");
-    if (!pane || !ws) return;
+  // ============================================================================
+  // USEFUL INTERACTIVE ARTIFACT TEMPLATES + PROFILE CLOUD PUBLISHING (ai.muntru.me/a/<slug>)
+  // ============================================================================
+  const ARTIFACT_TEMPLATES = [
+    {
+      title: "Planificador de Stints & Combustible GT3",
+      type: "html",
+      lang: "html",
+      desc: "App interactiva lista para compartir por URL con cálculo en vivo de vueltas, combustible, paradas y ahorro.",
+      code: `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Planificador de Stints GT3</title><style>*{box-sizing:border-box}body{margin:0;padding:24px;background:#0f1114;color:#f3f5f8;font-family:system-ui,-apple-system,sans-serif}.wrap{max-width:720px;margin:0 auto;display:grid;gap:16px}.card{background:#171a1f;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:18px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px}label{display:block;font-size:11.5px;color:#8b94a3;margin-bottom:4px;font-weight:600}input{width:100%;padding:9px 10px;border-radius:9px;border:1px solid rgba(255,255,255,.12);background:#0c0e12;color:#f3f5f8;font:600 14px ui-monospace,monospace}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.kpi{background:#0c0e12;border:1px solid rgba(16,185,129,.28);border-radius:12px;padding:12px}.kpi span{display:block;font:600 10.5px ui-monospace,monospace;color:#8b94a3;text-transform:uppercase}.kpi strong{display:block;margin-top:4px;font:700 20px ui-monospace,monospace;color:#10b981}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left}th{color:#10b981;font:700 11px ui-monospace,monospace;text-transform:uppercase}@media(max-width:600px){.kpis{grid-template-columns:repeat(2,1fr)}}</style></head><body><div class="wrap"><div class="card"><h1 style="margin:0 0 6px;font-size:20px">Planificador de Stints · iRacing</h1><p style="margin:0 0 14px;font-size:13px;color:#8b94a3">Ajusta los parámetros y comparte esta herramienta mediante su enlace en ai.muntru.me.</p><div class="grid"><div><label>Duración (min)</label><input id="m" type="number" value="180" min="10"></div><div><label>Vuelta (seg)</label><input id="l" type="number" value="137.5" step="0.1" min="20"></div><div><label>Consumo (L/v)</label><input id="f" type="number" value="2.95" step="0.05" min="0.2"></div><div><label>Depósito (L)</label><input id="t" type="number" value="100" min="10"></div></div></div><div class="kpis" id="k"></div><div class="card"><table><thead><tr><th>Stint</th><th>Vueltas</th><th>Combustible</th><th>Ventana aprox.</th></tr></thead><tbody id="tb"></tbody></table></div></div><script>const $=id=>document.getElementById(id);function calc(){const mins=+$('m').value||60,lap=Math.max(20,+$('l').value||130),fl=Math.max(.2,+$('f').value||2.9),tk=Math.max(10,+$('t').value||100);const laps=Math.ceil((mins*60)/lap)+2,tot=+(laps*fl).toFixed(1),stops=Math.max(0,Math.ceil(tot/tk)-1),st=stops+1,perSt=+(tot/st).toFixed(1),lapsSt=Math.ceil(laps/st);$('k').innerHTML='<div class="kpi"><span>Vueltas</span><strong>'+laps+'</strong></div><div class="kpi"><span>Total Fuel</span><strong>'+tot+' L</strong></div><div class="kpi"><span>Paradas</span><strong>'+stops+'</strong></div><div class="kpi"><span>Por Stint</span><strong>'+perSt+' L</strong></div>';let rows='';for(let i=1;i<=st;i++){const minAt=Math.round((i*lapsSt*lap)/60);rows+='<tr><td>Stint '+i+'</td><td>'+lapsSt+' v</td><td>'+perSt+' L</td><td>Min '+Math.min(mins,minAt)+'</td></tr>';}$('tb').innerHTML=rows;}['m','l','f','t'].forEach(id=>$(id).addEventListener('input',calc));calc();</script></body></html>`
+    },
+    {
+      title: "Ficha Interactiva de Setup y Presiones GT3",
+      type: "html",
+      lang: "html",
+      desc: "Hoja editable de presiones en frío/caliente, ARB, camber y notas por circuito lista para compartir con el equipo.",
+      code: `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ficha de Setup GT3</title><style>*{box-sizing:border-box}body{margin:0;padding:24px;background:#0f1114;color:#f3f5f8;font-family:system-ui,-apple-system,sans-serif}.wrap{max-width:740px;margin:0 auto;display:grid;gap:14px}.card{background:#171a1f;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:18px}.g4{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.tire{background:#0c0e12;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px}.tire b{color:#10b981;font:700 12px ui-monospace,monospace}.row{display:flex;gap:8px;margin-top:8px}input,textarea{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:#12151b;color:#f3f5f8;font:600 13px ui-monospace,monospace}.ok{color:#10b981;font-size:12px;margin-top:6px}.warn{color:#f59e0b;font-size:12px;margin-top:6px}</style></head><body><div class="wrap"><div class="card"><h1 style="margin:0 0 4px;font-size:20px">Control de Presiones y Balance · GT3</h1><p style="margin:0;font-size:13px;color:#8b94a3">Objetivo caliente iRacing GT3: 168–174 kPa. Introduce lecturas tras 5 vueltas.</p></div><div class="card g4" id="tires"></div><div class="card"><b style="font-size:12px;color:#8b94a3">NOTAS DE PISTA</b><textarea rows="3" placeholder="Ej. Subviraje en Pouhon -> bajar Front ARB 1 clic, Brake Bias 53.6%..."></textarea></div></div><script>const pos=['FL · Delantera Izq','FR · Delantera Der','RL · Trasera Izq','RR · Trasera Der'];const box=document.getElementById('tires');box.innerHTML=pos.map((p,i)=>'<div class="tire"><b>'+p+'</b><div class="row"><input type="number" step="0.5" value="152" data-c="'+i+'" placeholder="Frío kPa"><input type="number" step="0.5" value="171" data-h="'+i+'" placeholder="Caliente kPa"></div><div id="st'+i+'" class="ok">En ventana óptima (168–174 kPa)</div></div>').join('');function upd(){for(let i=0;i<4;i++){const h=+box.querySelector('[data-h="'+i+'"]').value||0;const el=document.getElementById('st'+i);if(h<168){el.className='warn';el.textContent='Subir frío +'+(170-h).toFixed(1)+' kPa';}else if(h>174){el.className='warn';el.textContent='Bajar frío -'+(h-172).toFixed(1)+' kPa';}else{el.className='ok';el.textContent='Ventana óptima ('+h+' kPa)';}}}box.addEventListener('input',upd);upd();</script></body></html>`
+    },
+    {
+      title: "Briefing Ejecutivo de Resistencia 6h",
+      type: "slides",
+      lang: "slides",
+      desc: "Presentación 16:9 navegable con teclado y barra de progreso lista para compartir con pilotos.",
+      code: `# Muntrume Motorsport · Briefing 6h GT3\n\n- **Circuito**: Spa-Francorchamps\n- **Objetivo**: Ritmo constante y 0 incidentes en primeros 30 minutos\n- **Telemetría**: MMT Sync 60 Hz + Garage 61\n\n---\n\n# Plan de Combustible y Stints\n\n| Stint | Piloto | Combustible | Neumáticos |\n| :--- | :--- | :---: | ---: |\n| Stint 1 | Alberto Trujillo | 98 L | Nuevos |\n| Stint 2 | Mateo Berbis | 98 L | Doble stint |\n| Stint 3 | Eduardo Chongkan | 98 L | Nuevos |\n\n---\n\n# Reglas de Box y Tráfico\n\n- Mantener margen mínimo de **1.5 vueltas** de combustible\n- No forzar adelantamientos en Eau Rouge / Raidillon\n- Reportar degradación trasera al pasar de 175 kPa`
+    },
+    {
+      title: "Checklist Técnico Pre-Carrera",
+      type: "doc",
+      lang: "md",
+      desc: "Informe técnico en Markdown con tablas, callouts y checklist exportable a DOC, PDF o enlace web.",
+      code: `> [!IMPORTANT]\n> Verificar paquete .sto activo en MMT Sync antes de entrar al servidor de clasificación.\n\n## Verificación previa a parrilla\n\n- [x] Cargar setup de carrera (\`MMT_GT3_RACE_SAFE.sto\`)\n- [x] Confirmar combustible inicial + vuelta de formación\n- [ ] Comprobar Brake Bias inicial y mapa TC1/TC2\n- [ ] Verificar presiones tras 5 vueltas en ventana 168–174 kPa\n\n## Parámetros de referencia\n\n| Parámetro | Qualy | Carrera |\n| :--- | :---: | :---: |\n| Combustible | 18 L | 98 L |\n| Brake Bias | 53.2% | 53.8% |\n| TC1 / TC2 | 3 / 4 | 4 / 5 |`
+    }
+  ];
 
-    $("aiArtTitle").textContent = artifact.title || "Artefacto";
-    $("aiArtBadge").textContent = (artifact.type || "doc").toUpperCase();
-    $("aiArtCode").textContent = artifact.code || "";
+  let cloudArtifacts = [];
+  let cloudProfile = null;
+  let activeArtifactsTab = "cloud";
+  let pendingPostLoginAction = null;
+  let editorDebounce = null;
 
+  function getVaultToken() {
+    try {
+      const t = localStorage.getItem("mrt_vault_token") || sessionStorage.getItem("mrt_vault_token") || "";
+      if (!t || t === "guest_token" || t === "local_session") return "";
+      return t;
+    } catch { return ""; }
+  }
+
+  function getVaultUser() {
+    try {
+      const raw = localStorage.getItem("mrt_vault_user") || sessionStorage.getItem("mrt_vault_user");
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  }
+
+  function renderArtifactFrame(artifact) {
     const frame = $("aiArtFrame");
+    if (!frame || !artifact) return;
     let srcDoc = "";
     if (artifact.type === "html") {
       srcDoc = /<html|<body|<!doctype/i.test(artifact.code)
@@ -1137,16 +1223,169 @@
     } else {
       srcDoc = buildDocHtml(artifact.title || "Documento Muntrume AI", artifact.code);
     }
-    if (frame) frame.srcdoc = srcDoc;
+    frame.srcdoc = srcDoc;
+  }
 
+  function syncPublishedBar() {
+    const bar = $("aiArtPublishedBar");
+    const link = $("aiArtPubLink");
+    const visBtn = $("aiArtPubVis");
+    const pubBtn = $("aiArtPublishBtn");
+    if (!bar || !link || !pubBtn) return;
+    if (currentArtifact?.publishedUrl) {
+      bar.hidden = false;
+      link.href = currentArtifact.publishedUrl;
+      link.textContent = currentArtifact.publishedUrl.replace(/^https?:\/\//, "");
+      if (visBtn) visBtn.textContent = currentArtifact.isPublic === false ? "Privado" : "Público";
+      pubBtn.textContent = "Actualizar URL";
+    } else {
+      bar.hidden = true;
+      pubBtn.textContent = "Publicar en ai.muntru.me";
+    }
+  }
+
+  function openArtifactPane(artifact) {
+    currentArtifact = {
+      ...artifact,
+      title: artifact.title || "Artefacto",
+      type: artifact.type || "doc",
+      lang: artifact.lang || artifact.type || "md",
+      code: artifact.code || "",
+      isPublic: artifact.isPublic !== false
+    };
+    const pane = $("aiArtifactPane");
+    const ws = $("aiWorkspace");
+    if (!pane || !ws) return;
+
+    const titleIn = $("aiArtTitleInput");
+    if (titleIn) titleIn.value = currentArtifact.title;
+    $("aiArtBadge").textContent = currentArtifact.type.toUpperCase();
+    const ed = $("aiArtEditor");
+    if (ed) ed.value = currentArtifact.code;
+
+    renderArtifactFrame(currentArtifact);
+    syncPublishedBar();
     switchArtifactTab("preview");
     pane.hidden = false;
     ws.classList.add("has-artifact");
 
-    if (!state.artifacts.some((a) => a.code === artifact.code)) {
-      state.artifacts.unshift({ ...artifact, createdAt: Date.now() });
+    if (!state.artifacts.some((a) => a.code === currentArtifact.code)) {
+      state.artifacts.unshift({ ...currentArtifact, createdAt: Date.now() });
       saveState();
     }
+  }
+
+  async function publishCurrentArtifact() {
+    if (!currentArtifact) return;
+    const token = getVaultToken();
+    if (!token) {
+      pendingPostLoginAction = () => publishCurrentArtifact();
+      openModal("aiLoginModal");
+      $("aiLoginEmail")?.focus();
+      return;
+    }
+    const pubBtn = $("aiArtPublishBtn");
+    if (pubBtn) { pubBtn.disabled = true; pubBtn.textContent = "Publicando…"; }
+    try {
+      const res = await fetch(`${API_ORIGIN}/api/ai/artifacts/publish`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          id: currentArtifact.cloudId || undefined,
+          slug: currentArtifact.slug || undefined,
+          title: ($("aiArtTitleInput")?.value || currentArtifact.title || "Artefacto").trim(),
+          type: currentArtifact.type || "doc",
+          lang: currentArtifact.lang || currentArtifact.type || "md",
+          code: $("aiArtEditor")?.value ?? currentArtifact.code,
+          is_public: currentArtifact.isPublic !== false
+        })
+      });
+      const j = await res.json().catch(() => ({}));
+      if (res.status === 401) {
+        pendingPostLoginAction = () => publishCurrentArtifact();
+        openModal("aiLoginModal");
+        return;
+      }
+      if (!res.ok || !j.success) throw new Error(j.error || "Error al publicar");
+      currentArtifact.cloudId = j.artifact.id;
+      currentArtifact.slug = j.artifact.slug;
+      currentArtifact.publishedUrl = j.artifact.url;
+      currentArtifact.isPublic = j.artifact.is_public;
+      currentArtifact.title = j.artifact.title;
+      syncPublishedBar();
+      const localMatch = state.artifacts.find((a) => a.code === currentArtifact.code || (a.slug && a.slug === currentArtifact.slug));
+      if (localMatch) Object.assign(localMatch, { cloudId: currentArtifact.cloudId, slug: currentArtifact.slug, publishedUrl: currentArtifact.publishedUrl, title: currentArtifact.title });
+      saveState();
+      try { await navigator.clipboard.writeText(j.artifact.url); } catch {}
+      showToast(j.updated ? "URL actualizada y copiada al portapapeles" : `Publicado en ${j.artifact.url.replace(/^https?:\/\//, "")}`);
+    } catch (err) {
+      showToast(err?.message || "No se pudo publicar el artefacto");
+    } finally {
+      if (pubBtn) pubBtn.disabled = false;
+      syncPublishedBar();
+    }
+  }
+
+  async function loadCloudArtifacts() {
+    const token = getVaultToken();
+    if (!token) { cloudArtifacts = []; cloudProfile = null; return false; }
+    try {
+      const res = await fetch(`${API_ORIGIN}/api/ai/artifacts/mine`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) return false;
+      const j = await res.json().catch(() => ({}));
+      if (j.success) {
+        cloudArtifacts = Array.isArray(j.artifacts) ? j.artifacts : [];
+        cloudProfile = j.profile || null;
+        return true;
+      }
+    } catch {}
+    return false;
+  }
+
+  async function togglePublishedVisibility() {
+    if (!currentArtifact?.cloudId) return;
+    const token = getVaultToken();
+    if (!token) return;
+    const next = currentArtifact.isPublic === false;
+    try {
+      const res = await fetch(`${API_ORIGIN}/api/ai/artifacts/visibility`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ id: currentArtifact.cloudId, is_public: next })
+      });
+      const j = await res.json().catch(() => ({}));
+      if (res.ok && j.success) {
+        currentArtifact.isPublic = j.is_public;
+        syncPublishedBar();
+        showToast(j.is_public ? "Artefacto visible públicamente" : "Artefacto cambiado a privado");
+      }
+    } catch {}
+  }
+
+  async function checkCloneHash() {
+    try {
+      if (!location.hash || !location.hash.startsWith("#clone=")) return;
+      const slug = location.hash.slice(7).replace(/[^a-z0-9_-]/gi, "");
+      history.replaceState(null, "", location.pathname + location.search);
+      if (!slug) return;
+      const headers = {};
+      const token = getVaultToken();
+      if (token) headers.Authorization = `Bearer ${token}`;
+      const res = await fetch(`${API_ORIGIN}/api/ai/artifacts/get/${encodeURIComponent(slug)}`, { headers });
+      const j = await res.json().catch(() => ({}));
+      if (res.ok && j.success && j.artifact) {
+        openArtifactPane({
+          title: j.artifact.title,
+          type: j.artifact.type,
+          lang: j.artifact.lang,
+          code: j.artifact.code,
+          isPublic: true
+        });
+        showToast(`Artefacto "${j.artifact.title}" cargado en Studio`);
+      }
+    } catch {}
   }
 
   function closeArtifactPane() {
@@ -1455,7 +1694,7 @@
   }
 
   function closeAllModals() {
-    ["aiProjectsModal", "aiArtifactsModal", "aiPersonalizeModal", "aiGithubModal", "aiCalcModal"].forEach((id) => {
+    ["aiProjectsModal", "aiArtifactsModal", "aiPersonalizeModal", "aiGithubModal", "aiCalcModal", "aiLoginModal"].forEach((id) => {
       const m = $(id);
       if (m) m.hidden = true;
     });
@@ -1516,20 +1755,90 @@
     `).join("");
   }
 
-  function renderArtifactsGallery() {
+  async function renderArtifactsGallery(tab = activeArtifactsTab) {
+    activeArtifactsTab = tab;
+    $("artTabCloud")?.classList.toggle("is-active", tab === "cloud");
+    $("artTabTemplates")?.classList.toggle("is-active", tab === "templates");
+    $("artTabLocal")?.classList.toggle("is-active", tab === "local");
     const box = $("aiArtifactsGallery");
+    const profBar = $("aiArtifactsProfileBar");
     if (!box) return;
-    if (!state.artifacts.length) {
-      box.innerHTML = `<p style="color:var(--ai-muted);font-size:13px">Aún no has generado artefactos. Pide una calculadora HTML, un diagrama SVG, una tabla CSV, una presentación o un documento.</p>`;
+
+    if (tab === "templates") {
+      if (profBar) profBar.hidden = true;
+      box.innerHTML = ARTIFACT_TEMPLATES.map((tpl, i) => `
+        <div class="ai-proj-card">
+          <div style="flex:1;min-width:0">
+            <strong>${esc(tpl.title)}</strong>
+            <p>${esc(tpl.type.toUpperCase())} · ${esc(tpl.desc)}</p>
+          </div>
+          <button type="button" class="ai-mini-btn ai-mini-btn--accent" data-open-tpl="${i}">Usar</button>
+        </div>
+      `).join("");
       return;
     }
-    box.innerHTML = state.artifacts.map((a, i) => `
+
+    if (tab === "local") {
+      if (profBar) profBar.hidden = true;
+      if (!state.artifacts.length) {
+        box.innerHTML = `<p style="color:var(--ai-muted);font-size:13px">Aún no has generado artefactos locales. Prueba una plantilla útil o pide una calculadora HTML, diagrama SVG, tabla CSV o presentación.</p>`;
+        return;
+      }
+      box.innerHTML = state.artifacts.map((a, i) => `
+        <div class="ai-proj-card">
+          <div style="flex:1;min-width:0">
+            <strong>${esc(a.title)}</strong>
+            <p>${esc((a.type || "doc").toUpperCase())}${a.publishedUrl ? ` · ${esc(a.publishedUrl.replace(/^https?:\/\//, ""))}` : ""}</p>
+          </div>
+          <button type="button" class="ai-mini-btn ai-mini-btn--accent" data-reopen-art="${i}">Abrir</button>
+        </div>
+      `).join("");
+      return;
+    }
+
+    // Cloud tab (saved per authenticated Muntrume profile in Cloudflare D1)
+    const token = getVaultToken();
+    if (!token) {
+      if (profBar) profBar.hidden = true;
+      box.innerHTML = `
+        <div class="ai-proj-card" style="flex-direction:column;align-items:flex-start;gap:10px">
+          <div>
+            <strong>Guarda y publica tus artefactos por perfil</strong>
+            <p>Inicia sesión con tu cuenta de piloto para guardar tus apps, informes y presentaciones en la nube con URL propia <code>ai.muntru.me/a/…</code>.</p>
+          </div>
+          <button type="button" class="ai-btn-accent" id="artLoginPromptBtn">Conectar perfil Muntrume</button>
+        </div>
+      `;
+      $("artLoginPromptBtn")?.addEventListener("click", () => {
+        closeAllModals();
+        pendingPostLoginAction = () => { openModal("aiArtifactsModal"); renderArtifactsGallery("cloud"); };
+        openModal("aiLoginModal");
+        $("aiLoginEmail")?.focus();
+      });
+      return;
+    }
+
+    box.innerHTML = `<p style="color:var(--ai-muted);font-size:13px">Cargando artefactos de tu perfil…</p>`;
+    await loadCloudArtifacts();
+    if (profBar && cloudProfile) {
+      profBar.hidden = false;
+      profBar.innerHTML = `<span>Perfil conectado: <strong style="color:var(--ai-text)">${esc(cloudProfile.name)}</strong> (${cloudArtifacts.length} guardados)</span><a href="${esc(cloudProfile.profile_url)}" target="_blank" rel="noopener noreferrer">${esc(cloudProfile.profile_url.replace(/^https?:\/\//, ""))}</a>`;
+    }
+    if (!cloudArtifacts.length) {
+      box.innerHTML = `<p style="color:var(--ai-muted);font-size:13px">Todavía no has publicado ningún artefacto en tu perfil. Abre una plantilla o genera uno en el chat y pulsa <strong>Publicar en ai.muntru.me</strong>.</p>`;
+      return;
+    }
+    box.innerHTML = cloudArtifacts.map((a, i) => `
       <div class="ai-proj-card">
         <div style="flex:1;min-width:0">
           <strong>${esc(a.title)}</strong>
-          <p>${esc((a.type || "doc").toUpperCase())} · ${esc((a.code || "").slice(0, 90))}…</p>
+          <p>${esc(a.type.toUpperCase())} · ${a.is_public ? "Público" : "Privado"} · ${a.views} vistas · <a href="${esc(a.url)}" target="_blank" rel="noopener noreferrer" style="color:var(--ai-accent);text-decoration:none">${esc(a.url.replace(/^https?:\/\//, ""))}</a></p>
         </div>
-        <button type="button" class="ai-mini-btn ai-mini-btn--accent" data-reopen-art="${i}">Abrir</button>
+        <div style="display:flex;gap:5px;flex-shrink:0">
+          <button type="button" class="ai-mini-btn ai-mini-btn--accent" data-open-cloud-art="${i}">Editar</button>
+          <button type="button" class="ai-mini-btn" data-copy-cloud-url="${esc(a.url)}">URL</button>
+          <button type="button" class="ai-mini-btn" style="color:#ef4444" data-del-cloud-art="${esc(a.id)}">Borrar</button>
+        </div>
       </div>
     `).join("");
   }
@@ -1567,6 +1876,7 @@
     syncComposerControls();
     renderChatList();
     renderMessages();
+    checkCloneHash();
 
     const feedEl = $("aiFeed");
     feedEl?.addEventListener("scroll", () => {
@@ -1599,7 +1909,40 @@
     });
     $("aiSearchInput")?.addEventListener("input", renderChatList);
     $("aiProjectsBtn")?.addEventListener("click", () => { renderProjectsModal(); openModal("aiProjectsModal"); });
-    $("aiArtifactsBtn")?.addEventListener("click", () => { renderArtifactsGallery(); openModal("aiArtifactsModal"); });
+    $("aiArtifactsBtn")?.addEventListener("click", () => { openModal("aiArtifactsModal"); renderArtifactsGallery(getVaultToken() ? "cloud" : "templates"); });
+    $("artTabCloud")?.addEventListener("click", () => renderArtifactsGallery("cloud"));
+    $("artTabTemplates")?.addEventListener("click", () => renderArtifactsGallery("templates"));
+    $("artTabLocal")?.addEventListener("click", () => renderArtifactsGallery("local"));
+    $("aiLoginForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = ($("aiLoginEmail")?.value || "").trim();
+      const password = $("aiLoginPass")?.value || "";
+      const errEl = $("aiLoginErr");
+      const subBtn = $("aiLoginSubmit");
+      if (errEl) errEl.hidden = true;
+      if (subBtn) { subBtn.disabled = true; subBtn.textContent = "Conectando…"; }
+      try {
+        const res = await fetch(`${API_ORIGIN}/api/setups/auth`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+        const j = await res.json().catch(() => ({}));
+        if (!res.ok || !j.token) throw new Error(j.error || "Credenciales incorrectas.");
+        localStorage.setItem("mrt_vault_token", j.token);
+        if (j.user) localStorage.setItem("mrt_vault_user", JSON.stringify(j.user));
+        if ($("aiLoginPass")) $("aiLoginPass").value = "";
+        closeAllModals();
+        showToast(`Perfil conectado: ${j.user?.name || email}`);
+        const act = pendingPostLoginAction;
+        pendingPostLoginAction = null;
+        if (typeof act === "function") act();
+      } catch (err) {
+        if (errEl) { errEl.textContent = err?.message || "No se pudo iniciar sesión."; errEl.hidden = false; }
+      } finally {
+        if (subBtn) { subBtn.disabled = false; subBtn.textContent = "Entrar y guardar"; }
+      }
+    });
     $("aiCodeModeBtn")?.addEventListener("click", () => {
       state.skill = "code"; state.projectId = "dev"; state.activeChatId = null;
       saveState(); syncComposerControls(); renderMessages(); $("aiInput")?.focus();
@@ -1757,8 +2100,28 @@
     });
 
     $("aiArtClose")?.addEventListener("click", closeArtifactPane);
-    $("aiArtTabPreview")?.addEventListener("click", () => switchArtifactTab("preview"));
+    $("aiArtTabPreview")?.addEventListener("click", () => {
+      if (currentArtifact && $("aiArtEditor")) {
+        currentArtifact.code = $("aiArtEditor").value;
+        renderArtifactFrame(currentArtifact);
+      }
+      switchArtifactTab("preview");
+    });
     $("aiArtTabCode")?.addEventListener("click", () => switchArtifactTab("code"));
+    $("aiArtTitleInput")?.addEventListener("input", (e) => {
+      if (currentArtifact) currentArtifact.title = e.target.value.trim() || "Artefacto";
+    });
+    $("aiArtEditor")?.addEventListener("input", (e) => {
+      if (!currentArtifact) return;
+      currentArtifact.code = e.target.value;
+      clearTimeout(editorDebounce);
+      editorDebounce = setTimeout(() => renderArtifactFrame(currentArtifact), 350);
+    });
+    $("aiArtPublishBtn")?.addEventListener("click", publishCurrentArtifact);
+    $("aiArtPubCopy")?.addEventListener("click", () => {
+      if (currentArtifact?.publishedUrl) { navigator.clipboard.writeText(currentArtifact.publishedUrl); showToast("URL copiada al portapapeles"); }
+    });
+    $("aiArtPubVis")?.addEventListener("click", togglePublishedVisibility);
     $("aiArtCopy")?.addEventListener("click", () => {
       if (currentArtifact?.code) { navigator.clipboard.writeText(currentArtifact.code); showToast("Código copiado"); }
     });
@@ -1817,6 +2180,45 @@
       if (reopenArt) {
         const a = state.artifacts[Number(reopenArt.dataset.reopenArt)];
         if (a) { closeAllModals(); openArtifactPane(a); }
+        return;
+      }
+
+      const openTpl = t.closest("[data-open-tpl]");
+      if (openTpl) {
+        const tpl = ARTIFACT_TEMPLATES[Number(openTpl.dataset.openTpl)];
+        if (tpl) { closeAllModals(); openArtifactPane({ ...tpl }); }
+        return;
+      }
+
+      const openCloud = t.closest("[data-open-cloud-art]");
+      if (openCloud) {
+        const a = cloudArtifacts[Number(openCloud.dataset.openCloudArt)];
+        if (a) {
+          closeAllModals();
+          openArtifactPane({ cloudId: a.id, slug: a.slug, publishedUrl: a.url, isPublic: a.is_public, title: a.title, type: a.type, lang: a.lang, code: a.code });
+        }
+        return;
+      }
+
+      const copyCloudUrl = t.closest("[data-copy-cloud-url]");
+      if (copyCloudUrl) {
+        navigator.clipboard.writeText(copyCloudUrl.dataset.copyCloudUrl || "");
+        showToast("URL pública copiada");
+        return;
+      }
+
+      const delCloud = t.closest("[data-del-cloud-art]");
+      if (delCloud) {
+        const id = delCloud.dataset.delCloudArt;
+        if (!window.confirm("¿Eliminar este artefacto publicado de tu perfil?")) return;
+        fetch(`${API_ORIGIN}/api/ai/artifacts/delete`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${getVaultToken()}` },
+          body: JSON.stringify({ id })
+        }).then((r) => r.json()).then((j) => {
+          if (j.success) { showToast("Artefacto eliminado"); renderArtifactsGallery("cloud"); }
+          else showToast(j.error || "Error al eliminar");
+        }).catch(() => showToast("Error de red"));
         return;
       }
 

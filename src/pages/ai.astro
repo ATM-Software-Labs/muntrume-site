@@ -282,29 +282,36 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT) en ai.mun
     <!-- SPLIT-SCREEN ARTIFACTS & EXPORT STUDIO -->
     <aside id="aiArtifactPane" class="ai-art-pane" hidden aria-label="Estudio de Artefactos">
       <div class="ai-art-head">
-        <div style="min-width:0;display:flex;align-items:center;gap:8px">
+        <div style="min-width:0;flex:1;display:flex;align-items:center;gap:8px">
           <span id="aiArtBadge" class="ai-art-badge">HTML</span>
-          <strong id="aiArtTitle" class="ai-art-title">Artefacto</strong>
+          <input type="text" id="aiArtTitleInput" class="ai-art-title-input" value="Artefacto" maxlength="90" aria-label="Título del artefacto" />
         </div>
         <div class="ai-art-tabs">
           <button type="button" id="aiArtTabPreview" class="is-active">Vista previa</button>
-          <button type="button" id="aiArtTabCode">Código</button>
+          <button type="button" id="aiArtTabCode">Editar código</button>
         </div>
         <button type="button" id="aiArtClose" class="ai-ico-btn" aria-label="Cerrar panel">
           <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
       <div class="ai-art-export-bar">
-        <button type="button" id="aiArtExportDoc" class="ai-mini-btn">Exportar DOC</button>
-        <button type="button" id="aiArtExportPdf" class="ai-mini-btn">Exportar PDF</button>
-        <button type="button" id="aiArtExportSlides" class="ai-mini-btn">Presentación</button>
-        <button type="button" id="aiArtExportMd" class="ai-mini-btn">Markdown</button>
+        <button type="button" id="aiArtPublishBtn" class="ai-mini-btn ai-mini-btn--accent">Publicar en ai.muntru.me</button>
+        <button type="button" id="aiArtExportDoc" class="ai-mini-btn">DOC</button>
+        <button type="button" id="aiArtExportPdf" class="ai-mini-btn">PDF</button>
+        <button type="button" id="aiArtExportSlides" class="ai-mini-btn">Slides</button>
+        <button type="button" id="aiArtExportMd" class="ai-mini-btn">MD</button>
         <button type="button" id="aiArtDownload" class="ai-mini-btn">Descargar</button>
         <button type="button" id="aiArtCopy" class="ai-mini-btn">Copiar</button>
       </div>
-      <iframe id="aiArtFrame" class="ai-art-frame" sandbox="allow-scripts" title="Vista previa del artefacto"></iframe>
+      <div id="aiArtPublishedBar" class="ai-art-pub-bar" hidden>
+        <span class="ai-dot"></span>
+        <a id="aiArtPubLink" href="#" target="_blank" rel="noopener noreferrer" class="ai-art-pub-url"></a>
+        <button type="button" id="aiArtPubCopy" class="ai-mini-btn">Copiar URL</button>
+        <button type="button" id="aiArtPubVis" class="ai-mini-btn">Público</button>
+      </div>
+      <iframe id="aiArtFrame" class="ai-art-frame" sandbox="allow-scripts allow-forms allow-downloads" title="Vista previa del artefacto"></iframe>
       <div id="aiArtCodeWrap" class="ai-art-code-wrap" hidden>
-        <pre><code id="aiArtCode"></code></pre>
+        <textarea id="aiArtEditor" class="ai-art-editor" spellcheck="false" aria-label="Editor de código del artefacto"></textarea>
       </div>
     </aside>
   </div>
@@ -417,14 +424,44 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT) en ai.mun
     </div>
   </div>
 
-  <!-- MODAL: ARTEFACTOS -->
+  <!-- MODAL: ARTEFACTOS (NUBE POR PERFIL + PLANTILLAS ÚTILES + LOCALES) -->
   <div id="aiArtifactsModal" class="ai-modal" hidden role="dialog" aria-modal="true">
-    <div class="ai-modal__card">
+    <div class="ai-modal__card" style="width:min(650px,100%)">
       <div class="ai-modal__head">
-        <h2>Biblioteca de Artefactos</h2>
+        <h2>Artefactos y Apps en ai.muntru.me</h2>
         <button type="button" class="ai-ico-btn" data-close-ai-modal aria-label="Cerrar">×</button>
       </div>
+      <div class="ai-art-tabs" style="width:fit-content">
+        <button type="button" id="artTabCloud" class="is-active">Mi perfil (Nube)</button>
+        <button type="button" id="artTabTemplates">Plantillas útiles</button>
+        <button type="button" id="artTabLocal">Locales</button>
+      </div>
+      <div id="aiArtifactsProfileBar" class="ai-prof-banner" hidden></div>
       <div id="aiArtifactsGallery" class="ai-proj-list"></div>
+    </div>
+  </div>
+
+  <!-- MODAL: INICIO DE SESIÓN RÁPIDO EN AI.MUNTRU.ME -->
+  <div id="aiLoginModal" class="ai-modal" hidden role="dialog" aria-modal="true">
+    <div class="ai-modal__card" style="width:min(440px,100%)">
+      <div class="ai-modal__head">
+        <h2>Conectar perfil Muntrume</h2>
+        <button type="button" class="ai-ico-btn" data-close-ai-modal aria-label="Cerrar">×</button>
+      </div>
+      <p style="margin:0;font-size:13px;color:var(--ai-muted);line-height:1.5">
+        Inicia sesión con tu cuenta de piloto para guardar y publicar artefactos con URL propia en <code>ai.muntru.me/a/…</code> bajo tu perfil.
+      </p>
+      <form id="aiLoginForm" class="ai-modal-form">
+        <label for="aiLoginEmail">Correo electrónico</label>
+        <input type="email" id="aiLoginEmail" required placeholder="tu@muntru.me" autocomplete="email" />
+        <label for="aiLoginPass">Contraseña</label>
+        <input type="password" id="aiLoginPass" required placeholder="Tu contraseña del Vault" autocomplete="current-password" />
+        <div id="aiLoginErr" style="font-size:12.5px;color:#ef4444" hidden></div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px">
+          <button type="button" class="ai-mini-btn" data-close-ai-modal>Cancelar</button>
+          <button type="submit" id="aiLoginSubmit" class="ai-btn-accent">Entrar y guardar</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -1005,13 +1042,42 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT) en ai.mun
     .ai-art-pane[hidden] { display: none !important; }
     .ai-art-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--ai-line); }
     .ai-art-badge { font: 700 10px var(--r-mono); padding: 3px 8px; border-radius: 999px; background: var(--ai-accent-soft); color: var(--ai-accent); }
-    .ai-art-title { font-size: 13.5px; color: var(--ai-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ai-art-title-input {
+      flex: 1; min-width: 0; border: 1px solid transparent; border-radius: 7px;
+      background: transparent; color: var(--ai-text); font: 600 13.5px/1.2 var(--r-sans, system-ui, sans-serif);
+      padding: 4px 7px; outline: none;
+    }
+    .ai-art-title-input:hover, .ai-art-title-input:focus { background: var(--ai-surface); border-color: var(--ai-line-strong); }
+    .ai-art-pub-bar {
+      display: flex; align-items: center; gap: 8px; padding: 7px 14px;
+      background: var(--ai-accent-soft); border-bottom: 1px solid color-mix(in srgb, var(--ai-accent) 32%, var(--ai-line));
+      font-size: 12px;
+    }
+    .ai-art-pub-bar[hidden] { display: none !important; }
+    .ai-art-pub-url {
+      flex: 1; min-width: 0; font: 600 11.5px var(--r-mono); color: var(--ai-accent);
+      text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .ai-art-pub-url:hover { text-decoration: underline; }
     .ai-art-tabs { display: inline-flex; gap: 4px; background: var(--ai-surface); padding: 2px; border-radius: 8px; border: 1px solid var(--ai-line); }
     .ai-art-tabs button { border: 0; background: transparent; color: var(--ai-muted); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
     .ai-art-tabs button.is-active { background: var(--ai-surface-2); color: var(--ai-text); }
     .ai-art-export-bar { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 14px; border-bottom: 1px solid var(--ai-line); background: var(--ai-surface); }
     .ai-art-frame { flex: 1; width: 100%; border: 0; background: #fff; }
-    .ai-art-code-wrap { flex: 1; overflow: auto; padding: 16px; background: var(--ai-code-bg); color: #e5e7eb; font: 400 12.5px/1.55 var(--r-mono); }
+    .ai-art-code-wrap { flex: 1; display: flex; overflow: hidden; background: var(--ai-code-bg); }
+    .ai-art-code-wrap[hidden] { display: none !important; }
+    .ai-art-editor {
+      flex: 1; width: 100%; height: 100%; border: 0; outline: none; resize: none;
+      padding: 16px; background: var(--ai-code-bg); color: #e5e7eb;
+      font: 400 12.8px/1.58 var(--r-mono, ui-monospace, monospace); tab-size: 2;
+    }
+    .ai-prof-banner {
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+      padding: 10px 13px; border-radius: 12px; background: var(--ai-bg); border: 1px solid var(--ai-line);
+      font-size: 12.5px; color: var(--ai-muted);
+    }
+    .ai-prof-banner a { color: var(--ai-accent); text-decoration: none; font: 600 11.5px var(--r-mono); }
+    .ai-prof-banner a:hover { text-decoration: underline; }
 
     /* Modals */
     .ai-modal { position: fixed; inset: 0; z-index: 90; background: rgba(0, 0, 0, 0.62); backdrop-filter: blur(4px); display: grid; place-items: center; padding: 20px; }
@@ -1077,5 +1143,5 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT) en ai.mun
     }
   </style>
 
-  <script is:inline src="/assets/js/ai-studio.js?v=t370"></script>
+  <script is:inline src="/assets/js/ai-studio.js?v=t375"></script>
 </Layout>
