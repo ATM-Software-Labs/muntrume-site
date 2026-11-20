@@ -5,7 +5,8 @@ import { getSupportedBrandsCatalog } from "../../../desktop/src/brand-logos";
 const brands = getSupportedBrandsCatalog();
 
 const pageTitle = "Fabricantes y colores HUD";
-const pageDescription = `${brands.length} fabricantes del catálogo iRacing en MMT Sync. Logo real cuando existe; disco neutro si no hay vector verificable. Equipo MMT.`;
+const withLogo = brands.filter((b) => b.logoVerified).length;
+const pageDescription = `${withLogo} fabricantes del catálogo iRacing con su emblema real, adaptado al fondo oscuro. Equipo MMT.`;
 const pageUrl = "https://muntru.me/overlay/brands/";
 const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
 ---
@@ -16,7 +17,7 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
   canonical={pageUrl}
   ogImage={ogImage}
 >
-  <main class="min-h-screen bg-[#090b0f] text-slate-100 py-10 px-4 sm:px-6">
+  <main class="brand-hud min-h-screen bg-[#090b0f] text-slate-100 py-10 px-4 sm:px-6">
     <div class="max-w-7xl mx-auto space-y-6">
       <!-- Header -->
       <header class="flex flex-col gap-4 border-b border-white/10 pb-5 lg:flex-row lg:items-end lg:justify-between">
@@ -30,8 +31,8 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
             Fabricantes y colores HUD
           </h1>
           <p class="text-xs sm:text-sm text-slate-400 max-w-2xl font-mono">
-            Cada tarjeta es un fabricante real del catálogo. El disco gris no es un logo: falta un vector verificable.
-            <span class="text-emerald-400 font-bold ml-1">{brands.length} fabricantes</span>.
+            Cada tarjeta es un fabricante del catálogo. El emblema conserva la forma y los colores reales; las letras del logo van en blanco para leerse aquí.
+            <span class="text-emerald-400 font-bold ml-1">{withLogo} con logo</span>.
           </p>
         </div>
 
@@ -62,13 +63,10 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
             <!-- Top: 32x32 Official SVG + HEX Badge -->
             <div class="flex items-start justify-between gap-2">
               <span
-                class="w-9 h-9 rounded border border-white/10 bg-[#090b0f] flex items-center justify-center shrink-0"
-                style={`color:${b.color}`}
-                title={b.logoVerified ? b.name : `${b.name}: marca neutra, sin logo verificable`}
+                class="brand-mark w-11 h-11 rounded border border-white/10 bg-[#090b0f] flex items-center justify-center shrink-0 p-1"
+                title={b.logoVerified ? b.name : `${b.name}: sin emblema verificable`}
               >
-                <svg viewBox="0 0 24 24" width="32" height="32" fill={b.color} fill-rule="evenodd" clip-rule="evenodd" aria-hidden="true">
-                  <path fill-rule="evenodd" clip-rule="evenodd" d={b.path} />
-                </svg>
+                <Fragment set:html={b.svg} />
               </span>
               <span
                 class="text-[10px] px-1.5 py-0.5 rounded border border-white/10 bg-[#090b0f] font-bold tracking-wide"
@@ -80,10 +78,15 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
 
             <div>
               <h2 class="text-xs font-bold text-white">{b.name}</h2>
-              <p class="text-[10px] text-slate-500">{b.logoVerified ? "Logo de marca" : "Sin logo verificable"}</p>
+              <p class="text-[10px] text-slate-500" data-i18n={b.logoVerified ? "brands.logo" : "brands.nologo"}>{b.logoVerified ? "Logo de marca" : "Sin logo verificable"}</p>
               <ul class="mt-1 space-y-0.5">
-                {b.carPaths.map((id) => (
-                  <li class="text-[10px] text-slate-300 break-all">{id}</li>
+                {b.cars.map((car) => (
+                  <li class="text-[10px] text-slate-300 break-all flex items-baseline gap-1.5">
+                    <span>{car.carFolder}</span>
+                    {car.legacy && (
+                      <span data-i18n="brands.legacy" class="shrink-0 rounded border border-amber-400/40 bg-amber-400/10 px-1 text-[9px] font-bold uppercase tracking-wide text-amber-200">Legacy</span>
+                    )}
+                  </li>
                 ))}
               </ul>
             </div>
@@ -96,9 +99,9 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
             >
               <div class="flex items-center gap-1 min-w-0">
                 <span class="text-slate-400 font-bold w-3 text-right">{idx + 1}</span>
-                <svg viewBox="0 0 24 24" width="14" height="14" fill={b.color} fill-rule="evenodd" clip-rule="evenodd" class="shrink-0" aria-hidden="true">
-                  <path fill-rule="evenodd" clip-rule="evenodd" d={b.path} />
-                </svg>
+                <span class="w-3.5 h-3.5 shrink-0 inline-flex [&>svg]:w-full [&>svg]:h-full">
+                  <Fragment set:html={b.svg} />
+                </span>
                 <span class="text-slate-200 font-semibold truncate">{b.name}</span>
               </div>
               <span class="text-[9px] px-1 rounded bg-white/5 text-slate-300 font-bold shrink-0">
@@ -111,6 +114,9 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
     </div>
   </main>
 
+  <style is:global>
+    .brand-mark > svg { width: 100%; height: 100%; }
+  </style>
   <script is:inline>
     (() => {
       const input = document.getElementById("brandSearchInput");

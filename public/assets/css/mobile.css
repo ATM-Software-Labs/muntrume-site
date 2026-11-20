@@ -89,6 +89,41 @@ html.light .bg-\[\#0A0F0D\], [data-theme="light"] .bg-\[\#0A0F0D\],
 html.light .bg-\[\#090b0f\], [data-theme="light"] .bg-\[\#090b0f\] {
   background-color: #FFFFFF !important;
 }
+/* /overlay/brands/ stays dark: the marks use white lettering. */
+html.light .brand-hud,
+html[data-theme="light"] .brand-hud,
+html.light .brand-hud .bg-\[\#090b0f\],
+html[data-theme="light"] .brand-hud .bg-\[\#090b0f\] {
+  background-color: #090b0f !important;
+  color: #e2e8f0 !important;
+}
+html.light .brand-hud .bg-\[\#0d1118\],
+html[data-theme="light"] .brand-hud .bg-\[\#0d1118\] {
+  background-color: #0d1118 !important;
+  color: #e2e8f0 !important;
+}
+html.light .brand-hud .text-white,
+html[data-theme="light"] .brand-hud .text-white,
+html.light .brand-hud .text-slate-100,
+html[data-theme="light"] .brand-hud .text-slate-100,
+html.light .brand-hud .text-slate-200,
+html[data-theme="light"] .brand-hud .text-slate-200,
+html.light .brand-hud .text-slate-300,
+html[data-theme="light"] .brand-hud .text-slate-300 {
+  color: #e2e8f0 !important;
+}
+html.light .brand-hud .text-slate-400,
+html[data-theme="light"] .brand-hud .text-slate-400,
+html.light .brand-hud .text-slate-500,
+html[data-theme="light"] .brand-hud .text-slate-500 {
+  color: #94a3b8 !important;
+}
+html.light .brand-hud .border-white\/10,
+html[data-theme="light"] .brand-hud .border-white\/10,
+html.light .brand-hud .border-white\/15,
+html[data-theme="light"] .brand-hud .border-white\/15 {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
 
 html.light .bg-\[\#1A2120\], [data-theme="light"] .bg-\[\#1A2120\],
 html.light .bg-\[\#121A17\], [data-theme="light"] .bg-\[\#121A17\],
@@ -114,17 +149,17 @@ html.light .border-white\/15, [data-theme="light"] .border-white\/15 {
   border-color: #E2E8E5 !important;
 }
 
-html.light .text-slate-100, [data-theme="light"] .text-slate-100,
-html.light .text-slate-200, [data-theme="light"] .text-slate-200 {
+html.light :not(.brand-hud) .text-slate-100, [data-theme="light"] :not(.brand-hud) .text-slate-100,
+html.light :not(.brand-hud) .text-slate-200, [data-theme="light"] :not(.brand-hud) .text-slate-200 {
   color: #0E1412 !important;
 }
-html.light .text-slate-300, [data-theme="light"] .text-slate-300,
-html.light .text-slate-400, [data-theme="light"] .text-slate-400 {
+html.light :not(.brand-hud) .text-slate-300, [data-theme="light"] :not(.brand-hud) .text-slate-300,
+html.light :not(.brand-hud) .text-slate-400, [data-theme="light"] :not(.brand-hud) .text-slate-400 {
   color: #4A5854 !important;
 }
 
-html.light :not(footer):not(.r-footer):not(.r-hero):not(.race-control-console):not(.race-control-console *) > .text-white,
-[data-theme="light"] :not(footer):not(.r-footer):not(.r-hero):not(.race-control-console):not(.race-control-console *) > .text-white,
+html.light :not(footer):not(.r-footer):not(.r-hero):not(.race-control-console):not(.race-control-console *):not(.brand-hud):not(.brand-hud *) > .text-white,
+[data-theme="light"] :not(footer):not(.r-footer):not(.r-hero):not(.race-control-console):not(.race-control-console *):not(.brand-hud):not(.brand-hud *) > .text-white,
 html.light :not(.race-control-console):not(.race-control-console *) .text-\[\#F5F5F5\], [data-theme="light"] :not(.race-control-console):not(.race-control-console *) .text-\[\#F5F5F5\],
 html.light :not(.race-control-console):not(.race-control-console *) .text-\[\#E0E6E4\], [data-theme="light"] :not(.race-control-console):not(.race-control-console *) .text-\[\#E0E6E4\] {
   color: #0E1412 !important;

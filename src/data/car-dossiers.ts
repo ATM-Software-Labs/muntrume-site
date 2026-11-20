@@ -169,6 +169,12 @@ const BRAND_ORIGINS: Record<string, BrandOrigin> = {
   'Super Formula': { flag: '🇯🇵', country: 'Japón / Italia', hq: 'Tokio (JRP) · Chasis Dallara' },
   Supercars: { flag: '🇦🇺', country: 'Australia', hq: 'Gold Coast / Melbourne' },
   Toyota: { flag: '🇯🇵', country: 'Japón', hq: 'Toyota City (TOYOTA GAZOO Racing)' },
+  Kia: { flag: '🇰🇷', country: 'Corea del Sur', hq: 'Seúl (Kia)' },
+  Subaru: { flag: '🇯🇵', country: 'Japón', hq: 'Ōta, Gunma' },
+  Williams: { flag: '🇬🇧', country: 'Reino Unido', hq: 'Grove, Oxfordshire' },
+  Ruf: { flag: '🇩🇪', country: 'Alemania', hq: 'Pfaffenhausen' },
+  Riley: { flag: '🇺🇸', country: 'Estados Unidos', hq: 'Mooresville, Carolina del Norte' },
+  Ram: { flag: '🇺🇸', country: 'Estados Unidos', hq: 'Auburn Hills, Míchigan' },
 };
 
 const CURATED_DOSSIERS: Record<string, Partial<CarDossier>> = {
