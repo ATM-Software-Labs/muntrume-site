@@ -3,90 +3,79 @@ import Layout from '../layouts/Layout.astro';
 import { MUNTRUME_KB } from '../data/muntrume-kb';
 
 const pageTitle = "Muntrume AI · Studio Open Source | Muntrume Motorsport";
-const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): interfaz avanzada con proyectos, artefactos interactivos, exportación a DOC/PDF/Presentaciones, visión por imagen, búsqueda web en vivo, GitHub y motores Muntrume 1.0 Lite, Pro, Ultra Max y Local.";
+const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): asistente técnico con proyectos, artefactos interactivos, exportación DOC/PDF/Presentaciones, visión por imagen, búsqueda web en vivo, GitHub y motores Muntrume 1.0 Lite, Pro, Ultra Max y Local.";
 ---
 
 <Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/ai/" hideFooter>
-  <div class="ai-shell" id="aiWorkspace" data-ai-theme="dark">
-    <!-- CLAUDE-STYLE LEFT SIDEBAR -->
+  <div class="ai-shell" id="aiWorkspace">
+    <!-- LEFT SIDEBAR (100 % REAL OPEN-SOURCE TOOLS, ZERO EMOJIS) -->
     <aside id="aiSide" class="ai-side" aria-label="Navegación de Muntrume AI">
       <div class="ai-side__head">
-        <a href="/" class="ai-brand" title="Volver a Muntrume Motorsport">
-          <span class="ai-brand__mark" aria-hidden="true">✦</span>
+        <a href="/ai/" class="ai-brand">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" class="ai-brand__ico" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
           <span>Muntrume AI</span>
         </a>
         <button type="button" id="aiSideClose" class="ai-ico-btn" aria-label="Ocultar barra lateral" title="Ocultar barra lateral">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18"/></svg>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18"/></svg>
         </button>
       </div>
 
       <nav class="ai-side__nav" aria-label="Herramientas">
         <button type="button" id="aiNewChatBtn" class="ai-side-btn ai-side-btn--primary">
-          <span class="ai-side-ico">+</span>
-          <span>Nuevo</span>
-          <kbd>Ctrl K</kbd>
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          <span>Nuevo chat</span>
+          <kbd class="ai-kbd-pill">Ctrl K</kbd>
         </button>
         <button type="button" id="aiSearchBtn" class="ai-side-btn">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
           <span>Buscar</span>
         </button>
         <div id="aiSearchWrap" class="ai-search-wrap" hidden>
-          <input type="search" id="aiSearchInput" placeholder="Filtrar chats…" aria-label="Buscar conversaciones" />
+          <input type="search" id="aiSearchInput" placeholder="Filtrar conversaciones…" aria-label="Buscar conversaciones" />
         </div>
         <button type="button" id="aiProjectsBtn" class="ai-side-btn">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
           <span>Proyectos</span>
         </button>
         <button type="button" id="aiArtifactsBtn" class="ai-side-btn">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
           <span>Artefactos</span>
         </button>
         <button type="button" id="aiCodeModeBtn" class="ai-side-btn">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
           <span>Code</span>
           <span class="ai-side-pill">Live</span>
         </button>
         <button type="button" id="aiPersonalizeBtn" class="ai-side-btn">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.85 1 1.51 1H21a2 2 0 1 1 0 4h-.09c-.66 0-1.25.4-1.51 1z"/></svg>
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.85 1 1.51 1H21a2 2 0 1 1 0 4h-.09c-.66 0-1.25.4-1.51 1z"/></svg>
           <span>Personalización</span>
         </button>
       </nav>
 
-      <div class="ai-side__label">Chats y tareas</div>
+      <div class="ai-side__label">Chats</div>
       <div id="aiChatList" class="ai-chat-list"></div>
 
       <div class="ai-side__foot">
-        <button type="button" id="aiThemeBtn" class="ai-side-btn">
-          <span id="aiThemeIcon" aria-hidden="true">☀</span>
-          <span id="aiThemeLabel">Modo claro</span>
-        </button>
         <a href={MUNTRUME_KB.team.githubUrl} target="_blank" rel="noopener noreferrer" class="ai-mit-link">
           <span class="ai-dot"></span>
           <span>100 % Open Source · MIT</span>
-          <span>↗</span>
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:auto"><path d="M7 17L17 7M7 7h10v10"/></svg>
         </a>
       </div>
     </aside>
 
     <!-- MAIN CHAT STAGE -->
     <main class="ai-stage" id="aiStage">
-      <header class="ai-topbar">
-        <div class="ai-topbar__left">
-          <button type="button" id="aiSideToggle" class="ai-ico-btn" aria-label="Mostrar u ocultar barra lateral" title="Menú lateral">
-            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18"/></svg>
-          </button>
-          <span class="ai-top-pill">100 % Open Source · Sin límites de pago</span>
-        </div>
-        <div class="ai-topbar__right">
-          <a href="/garage/" class="ai-top-link">Garage</a>
-          <a href="/drivers/" class="ai-top-link">Pilotos</a>
-          <a href="/app/" class="ai-top-link">MMT Sync</a>
-        </div>
-      </header>
+      <div class="ai-topbar">
+        <button type="button" id="aiSideToggle" class="ai-ico-btn" aria-label="Mostrar u ocultar barra lateral" title="Menú lateral">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18"/></svg>
+        </button>
+        <span class="ai-top-pill">Open Source · MIT</span>
+      </div>
 
-      <!-- Local Ollama Bar -->
+      <!-- Local Ollama Bar (shown only when Muntrume Local is selected) -->
       <div id="aiLocalBar" class="ai-local-bar" hidden>
-        <span>🔒 Muntrume Local (100 % privado)</span>
+        <span>Muntrume Local (100 % privado)</span>
         <input type="url" id="aiOllamaUrl" value="http://localhost:11434/api/chat" aria-label="Endpoint Ollama" />
         <input type="text" id="aiOllamaModel" value="llama3.1:8b" aria-label="Modelo Ollama" style="max-width:150px" />
       </div>
@@ -94,12 +83,12 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): interfaz
       <!-- Messages Feed -->
       <div id="aiFeed" class="ai-feed" hidden></div>
 
-      <!-- Centered Empty Greeting + Composer Wrapper -->
+      <!-- Centered Welcome + Pro Composer -->
       <div class="ai-composer-wrap">
         <div id="aiEmptyState" class="ai-empty">
           <div class="ai-empty__title">
-            <span class="ai-emblem" aria-hidden="true">✦</span>
-            <h1 id="aiGreeting">Pensamientos de la noche</h1>
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" class="ai-emblem" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            <h1 id="aiGreeting">¿En qué trabajamos hoy?</h1>
           </div>
         </div>
 
@@ -109,53 +98,81 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): interfaz
           <textarea
             id="aiInput"
             rows="2"
-            placeholder="¿En qué puedo ayudarte hoy?"
-            aria-label="Escribe tu mensaje para Muntrume AI"
+            placeholder="Escribe una consulta, pega una captura (Ctrl+V) o adjunta un archivo…"
+            aria-label="Mensaje para Muntrume AI"
           ></textarea>
 
           <input type="file" id="aiFileInput" class="hidden" accept="image/png,image/jpeg,image/webp,.txt,.md,.csv,.json,.js,.ts,.py,.html,.css,.sto,.xml,.yml,.yaml" />
 
           <div class="ai-composer__bar">
             <div class="ai-composer__left">
-              <!-- Claude-style "+" Action Menu -->
+              <!-- Clean Monochrome "+" Tools Menu -->
               <div class="ai-pop-anchor">
-                <button type="button" id="aiPlusBtn" class="ai-plus-btn" aria-label="Añadir archivos, GitHub, skills o búsqueda web" title="Adjuntar y herramientas">+</button>
+                <button type="button" id="aiPlusBtn" class="ai-plus-btn" aria-label="Herramientas y adjuntos" title="Adjuntar y herramientas">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                </button>
                 <div id="aiPlusMenu" class="ai-popover" hidden>
-                  <button type="button" id="aiActUpload" class="ai-pop-item"><span>📎</span><span>Subir o añadir archivos</span><kbd>Ctrl+U</kbd></button>
-                  <button type="button" id="aiActPaste" class="ai-pop-item"><span>📷</span><span>Pegar captura de pantalla</span><kbd>Ctrl+V</kbd></button>
-                  <button type="button" id="aiActProject" class="ai-pop-item"><span>📁</span><span>Añadir al proyecto</span><span>›</span></button>
-                  <button type="button" id="aiActGithub" class="ai-pop-item"><span>🐙</span><span>Añadir desde GitHub</span></button>
+                  <button type="button" id="aiActUpload" class="ai-pop-item">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                    <span class="ai-pop-txt">Subir archivo o imagen</span>
+                    <kbd class="ai-pop-kbd">Ctrl+U</kbd>
+                  </button>
+                  <button type="button" id="aiActGithub" class="ai-pop-item">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+                    <span class="ai-pop-txt">Importar desde GitHub</span>
+                  </button>
+                  <button type="button" id="aiActProject" class="ai-pop-item">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                    <span class="ai-pop-txt">Cambiar proyecto</span>
+                  </button>
                   <div class="ai-pop-sep"></div>
-                  <div class="ai-pop-label">Skills rápidas</div>
-                  <button type="button" class="ai-pop-item" data-select-skill="setup"><span>🏎️</span><span>Ingeniero de Setups iRacing</span></button>
-                  <button type="button" class="ai-pop-item" data-select-skill="strategy"><span>📊</span><span>Estrategia &amp; Combustible</span></button>
-                  <button type="button" class="ai-pop-item" data-select-skill="code"><span>💻</span><span>Código &amp; Artefactos UI</span></button>
-                  <button type="button" class="ai-pop-item" data-select-skill="slides"><span>📽️</span><span>Presentación Slides</span></button>
-                  <button type="button" class="ai-pop-item" data-select-skill="doc"><span>📄</span><span>Documento Word / PDF</span></button>
+                  <div class="ai-pop-label">Skills Open Source</div>
+                  <button type="button" class="ai-pop-item" data-select-skill="setup">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                    <span class="ai-pop-txt">Ingeniero de Setups iRacing</span>
+                  </button>
+                  <button type="button" class="ai-pop-item" data-select-skill="strategy">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                    <span class="ai-pop-txt">Estrategia y combustible</span>
+                  </button>
+                  <button type="button" class="ai-pop-item" data-select-skill="code">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                    <span class="ai-pop-txt">Código y artefacto HTML</span>
+                  </button>
+                  <button type="button" class="ai-pop-item" data-select-skill="slides">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                    <span class="ai-pop-txt">Presentación Slides</span>
+                  </button>
+                  <button type="button" class="ai-pop-item" data-select-skill="doc">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <span class="ai-pop-txt">Documento Word / PDF</span>
+                  </button>
                   <div class="ai-pop-sep"></div>
-                  <button type="button" id="aiActWebToggle" class="ai-pop-item"><span>🌐</span><span>Búsqueda web</span><span id="aiMenuWebCheck" class="ai-check-mark is-on">✓</span></button>
-                  <button type="button" id="aiActMemToggle" class="ai-pop-item"><span>🧠</span><span>Memoria</span><span id="aiMenuMemCheck" class="ai-check-mark is-on">✓</span></button>
+                  <button type="button" id="aiActWebToggle" class="ai-pop-item">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    <span class="ai-pop-txt">Búsqueda web en vivo</span>
+                    <span id="aiMenuWebCheck" class="ai-check-mark is-on">✓</span>
+                  </button>
+                  <button type="button" id="aiActMemToggle" class="ai-pop-item">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                    <span class="ai-pop-txt">Memoria persistente</span>
+                    <span id="aiMenuMemCheck" class="ai-check-mark is-on">✓</span>
+                  </button>
                 </div>
-              </div>
-
-              <!-- Chat / Cowork Segmented Switch -->
-              <div class="ai-seg">
-                <button type="button" id="aiModeChatBtn" class="is-active">Chat</button>
-                <button type="button" id="aiModeCoworkBtn">Cowork</button>
               </div>
             </div>
 
             <div class="ai-composer__right">
-              <!-- Racing Model Selector -->
+              <!-- Racing-Branded Open Source Model Selector -->
               <div class="ai-pop-anchor">
                 <button type="button" id="aiModelBtn" class="ai-model-btn" title="Cambiar motor Muntrume">
                   <span id="aiModelBtnLabel">Muntrume 1.0 Pro</span>
-                  <span aria-hidden="true">▾</span>
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                 </button>
                 <div id="aiModelMenu" class="ai-popover ai-popover--right" hidden>
                   <button type="button" class="ai-model-opt" data-select-tier="lite">
                     <strong>Muntrume 1.0 Lite</strong>
-                    <span>Instantáneo · Respuestas en milisegundos y cálculos</span>
+                    <span>Instantáneo · Respuestas rápidas y cálculos</span>
                   </button>
                   <button type="button" class="ai-model-opt is-active" data-select-tier="pro">
                     <strong>Muntrume 1.0 Pro</strong>
@@ -163,7 +180,7 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): interfaz
                   </button>
                   <button type="button" class="ai-model-opt" data-select-tier="ultra_max">
                     <strong>Muntrume 1.0 Ultra Max</strong>
-                    <span>Razonamiento profundo paso a paso con análisis</span>
+                    <span>Razonamiento profundo paso a paso</span>
                   </button>
                   <button type="button" class="ai-model-opt" data-select-tier="local">
                     <strong>Muntrume Local</strong>
@@ -173,18 +190,31 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): interfaz
               </div>
 
               <button type="button" id="aiEffortBtn" class="ai-effort-btn" title="Nivel de detalle">Medio</button>
-              <button type="button" id="aiVoiceBtn" class="ai-ico-btn" aria-label="Dictar por voz" title="Dictado por voz">🎤</button>
-              <button type="submit" id="aiSendBtn" class="ai-send-btn" data-state="send" aria-label="Enviar">↑</button>
+              <button type="submit" id="aiSendBtn" class="ai-send-btn" data-state="send" aria-label="Enviar">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+              </button>
             </div>
           </div>
         </form>
 
-        <!-- Quick Starter Chips (shown when empty) -->
+        <!-- Clean Monochrome Starter Chips (0 emojis) -->
         <div class="ai-starters">
-          <button type="button" data-starter-skill="setup" data-starter-prompt="Tengo subviraje en entrada de curva lenta y sobreviraje saliendo en Ferrari 296 GT3 en Spa. Dame diagnóstico y clics exactos.">🏎️ Ingeniería iRacing</button>
-          <button type="button" data-starter-skill="strategy" data-starter-prompt="Calcula estrategia completa de combustible y paradas para una carrera de resistencia de 6 horas en GT3 (tanque 100 L, consumo 2.95 L/vuelta, vuelta de 2:17).">📊 Estrategia &amp; Fuel</button>
-          <button type="button" data-starter-skill="code" data-starter-prompt="Crea un artefacto HTML interactivo de calculadora de combustible y stints para iRacing con modo oscuro limpio.">💻 Código &amp; Artefacto</button>
-          <button type="button" data-starter-skill="slides" data-starter-prompt="Prepara una presentación ejecutiva de 5 diapositivas sobre Muntrume Motorsport, su ecosistema MMT Sync y la temporada IMSA 2026 S4.">📽️ Presentación</button>
+          <button type="button" data-starter-skill="setup" data-starter-prompt="Tengo subviraje en entrada de curva lenta y sobreviraje saliendo en Ferrari 296 GT3 en Spa. Dame diagnóstico y clics exactos.">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            <span>Ingeniería iRacing</span>
+          </button>
+          <button type="button" data-starter-skill="strategy" data-starter-prompt="Calcula estrategia completa de combustible y paradas para una carrera de resistencia de 6 horas en GT3 (tanque 100 L, consumo 2.95 L/vuelta, vuelta de 2:17).">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <span>Estrategia y combustible</span>
+          </button>
+          <button type="button" data-starter-skill="code" data-starter-prompt="Crea un artefacto HTML interactivo de calculadora de combustible y stints para iRacing con modo oscuro limpio.">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            <span>Código y artefacto</span>
+          </button>
+          <button type="button" data-starter-skill="slides" data-starter-prompt="Prepara una presentación ejecutiva de 5 diapositivas sobre Muntrume Motorsport, su ecosistema MMT Sync y la temporada IMSA 2026 S4.">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            <span>Presentación</span>
+          </button>
         </div>
       </div>
     </main>
@@ -192,7 +222,7 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): interfaz
     <!-- SPLIT-SCREEN ARTIFACTS & EXPORT STUDIO -->
     <aside id="aiArtifactPane" class="ai-art-pane" hidden aria-label="Estudio de Artefactos">
       <div class="ai-art-head">
-        <div style="min-width:0">
+        <div style="min-width:0;display:flex;align-items:center;gap:6px">
           <span id="aiArtBadge" class="ai-art-badge">HTML</span>
           <strong id="aiArtTitle" class="ai-art-title">Artefacto</strong>
         </div>
@@ -200,14 +230,16 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): interfaz
           <button type="button" id="aiArtTabPreview" class="is-active">Vista previa</button>
           <button type="button" id="aiArtTabCode">Código</button>
         </div>
-        <button type="button" id="aiArtClose" class="ai-ico-btn" aria-label="Cerrar panel">×</button>
+        <button type="button" id="aiArtClose" class="ai-ico-btn" aria-label="Cerrar panel">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div>
       <div class="ai-art-export-bar">
-        <button type="button" id="aiArtExportDoc" class="ai-mini-btn">📄 Word (.doc)</button>
-        <button type="button" id="aiArtExportPdf" class="ai-mini-btn">🖨️ PDF</button>
-        <button type="button" id="aiArtExportSlides" class="ai-mini-btn">📽️ Slides</button>
-        <button type="button" id="aiArtDownload" class="ai-mini-btn">⬇ Archivo</button>
-        <button type="button" id="aiArtCopy" class="ai-mini-btn">📋 Copiar</button>
+        <button type="button" id="aiArtExportDoc" class="ai-mini-btn">Exportar DOC</button>
+        <button type="button" id="aiArtExportPdf" class="ai-mini-btn">Exportar PDF</button>
+        <button type="button" id="aiArtExportSlides" class="ai-mini-btn">Presentación</button>
+        <button type="button" id="aiArtDownload" class="ai-mini-btn">Descargar</button>
+        <button type="button" id="aiArtCopy" class="ai-mini-btn">Copiar</button>
       </div>
       <iframe id="aiArtFrame" class="ai-art-frame" sandbox="allow-scripts" title="Vista previa del artefacto"></iframe>
       <div id="aiArtCodeWrap" class="ai-art-code-wrap" hidden>
@@ -216,28 +248,46 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): interfaz
     </aside>
   </div>
 
+  <!-- MODAL: GITHUB IMPORT -->
+  <div id="aiGithubModal" class="ai-modal" hidden role="dialog" aria-modal="true">
+    <div class="ai-modal__card">
+      <div class="ai-modal__head">
+        <h2>Importar contexto desde GitHub</h2>
+        <button type="button" class="ai-ico-btn" data-close-ai-modal aria-label="Cerrar">×</button>
+      </div>
+      <form id="aiGithubForm" class="ai-modal-form">
+        <label for="aiGithubUrlInput">URL de repositorio o archivo público en GitHub</label>
+        <input type="url" id="aiGithubUrlInput" required placeholder="https://github.com/ATM-Software-Labs/muntrume-site" />
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px">
+          <button type="button" class="ai-mini-btn" data-close-ai-modal>Cancelar</button>
+          <button type="submit" class="ai-btn-accent">Adjuntar al chat</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- MODAL: PROYECTOS -->
   <div id="aiProjectsModal" class="ai-modal" hidden role="dialog" aria-modal="true">
     <div class="ai-modal__card">
       <div class="ai-modal__head">
         <h2>Proyectos</h2>
-        <button type="button" class="ai-ico-btn" data-close-ai-modal>×</button>
+        <button type="button" class="ai-ico-btn" data-close-ai-modal aria-label="Cerrar">×</button>
       </div>
       <div id="aiProjectsList" class="ai-proj-list"></div>
       <form id="aiNewProjectForm" class="ai-modal-form">
         <input type="text" id="aiNewProjName" required placeholder="Nombre del nuevo proyecto…" />
         <textarea id="aiNewProjPrompt" rows="2" placeholder="Instrucciones fijas para este proyecto (opcional)…"></textarea>
-        <button type="submit" class="ai-btn-accent">+ Crear y activar proyecto</button>
+        <button type="submit" class="ai-btn-accent">Crear y activar proyecto</button>
       </form>
     </div>
   </div>
 
-  <!-- MODAL: ARTEFACTOS GUARDADOS -->
+  <!-- MODAL: ARTEFACTOS -->
   <div id="aiArtifactsModal" class="ai-modal" hidden role="dialog" aria-modal="true">
     <div class="ai-modal__card">
       <div class="ai-modal__head">
         <h2>Biblioteca de Artefactos</h2>
-        <button type="button" class="ai-ico-btn" data-close-ai-modal>×</button>
+        <button type="button" class="ai-ico-btn" data-close-ai-modal aria-label="Cerrar">×</button>
       </div>
       <div id="aiArtifactsGallery" class="ai-proj-list"></div>
     </div>
@@ -247,15 +297,15 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): interfaz
   <div id="aiPersonalizeModal" class="ai-modal" hidden role="dialog" aria-modal="true">
     <div class="ai-modal__card">
       <div class="ai-modal__head">
-        <h2>Personalización &amp; Memoria</h2>
-        <button type="button" class="ai-ico-btn" data-close-ai-modal>×</button>
+        <h2>Personalización y Memoria</h2>
+        <button type="button" class="ai-ico-btn" data-close-ai-modal aria-label="Cerrar">×</button>
       </div>
       <form id="aiPersonalizeForm" class="ai-modal-form">
-        <label>Instrucciones personalizadas (cómo quieres que responda Muntrume AI)</label>
+        <label for="aiCustomInstrInput">Instrucciones personalizadas</label>
         <textarea id="aiCustomInstrInput" rows="3" placeholder="Ej. Sé directo, usa tablas para setups y responde siempre en español…"></textarea>
-        <label>Memoria persistente (hechos que recordará entre chats)</label>
-        <textarea id="aiMemoryInput" rows="3" placeholder="Ej. Piloto GT3 en iRacing, Ferrari 296 GT3, volante Fanatec…"></textarea>
-        <div style="display:flex;justify-content:flex-end;gap:8px">
+        <label for="aiMemoryInput">Memoria persistente (hechos que recordará entre chats)</label>
+        <textarea id="aiMemoryInput" rows="3" placeholder="Ej. Piloto GT3 en iRacing, Ferrari 296 GT3…"></textarea>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px">
           <button type="button" class="ai-mini-btn" data-close-ai-modal>Cancelar</button>
           <button type="submit" class="ai-btn-accent">Guardar preferencias</button>
         </div>
@@ -264,37 +314,39 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): interfaz
   </div>
 
   <style is:global>
+    /* Synced 100 % with the global header theme toggle (html.light / html[data-theme="light"]) */
     .ai-shell {
-      --ai-bg: #1a1917;
-      --ai-side: #141311;
-      --ai-surface: #252421;
-      --ai-surface-2: #2f2e2a;
+      --ai-bg: #111315;
+      --ai-side: #0b0d0f;
+      --ai-surface: #1a1d21;
+      --ai-surface-2: #24282e;
       --ai-line: rgba(255, 255, 255, 0.09);
-      --ai-text: #f3f1ec;
-      --ai-muted: #9e9a92;
+      --ai-text: #f3f4f6;
+      --ai-muted: #9ca3af;
       --ai-accent: #10b981;
       --ai-accent-ink: #04130d;
       display: grid;
-      grid-template-columns: 260px minmax(0, 1fr);
-      height: calc(100dvh - 60px);
+      grid-template-columns: 256px minmax(0, 1fr);
+      height: calc(100dvh - 56px);
       background: var(--ai-bg);
       color: var(--ai-text);
       font-family: var(--r-sans, system-ui, -apple-system, sans-serif);
       overflow: hidden;
     }
-    .ai-shell[data-ai-theme="light"] {
-      --ai-bg: #f8f7f4;
-      --ai-side: #f1efe9;
+    html.light .ai-shell,
+    html[data-theme="light"] .ai-shell {
+      --ai-bg: #f8f9fa;
+      --ai-side: #f1f3f5;
       --ai-surface: #ffffff;
-      --ai-surface-2: #edeae2;
-      --ai-line: rgba(15, 23, 42, 0.1);
-      --ai-text: #1c1b18;
-      --ai-muted: #64615a;
+      --ai-surface-2: #e9ecef;
+      --ai-line: rgba(15, 23, 42, 0.11);
+      --ai-text: #111827;
+      --ai-muted: #5b6470;
       --ai-accent: #059669;
       --ai-accent-ink: #ffffff;
     }
     .ai-shell.is-side-collapsed { grid-template-columns: 0px minmax(0, 1fr); }
-    .ai-shell.has-artifact { grid-template-columns: 240px minmax(0, 1fr) minmax(380px, 46%); }
+    .ai-shell.has-artifact { grid-template-columns: 236px minmax(0, 1fr) minmax(380px, 46%); }
     .ai-shell.is-side-collapsed.has-artifact { grid-template-columns: 0px minmax(0, 1fr) minmax(380px, 48%); }
 
     /* Sidebar */
@@ -305,8 +357,8 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): interfaz
     }
     .ai-shell.is-side-collapsed .ai-side { padding: 0; border-right: 0; }
     .ai-side__head { display: flex; align-items: center; justify-content: space-between; padding: 4px 6px 8px; }
-    .ai-brand { display: inline-flex; align-items: center; gap: 8px; color: var(--ai-text); text-decoration: none; font: 700 16px/1 var(--r-sans, system-ui, sans-serif); letter-spacing: -0.02em; }
-    .ai-brand__mark { color: var(--ai-accent); font-size: 18px; }
+    .ai-brand { display: inline-flex; align-items: center; gap: 8px; color: var(--ai-text); text-decoration: none; font: 700 15.5px/1 var(--r-sans, system-ui, sans-serif); letter-spacing: -0.02em; }
+    .ai-brand__ico { color: var(--ai-accent); flex-shrink: 0; }
     .ai-side__nav { display: flex; flex-direction: column; gap: 2px; }
     .ai-side-btn {
       width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px 10px;
@@ -314,20 +366,19 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): interfaz
       font: 500 13.5px/1.2 var(--r-sans, system-ui, sans-serif); text-align: left; cursor: pointer;
     }
     .ai-side-btn:hover { background: var(--ai-surface); color: var(--ai-text); }
-    .ai-side-btn--primary { background: var(--ai-surface); color: var(--ai-text); font-weight: 600; margin-bottom: 4px; }
-    .ai-side-btn kbd, .ai-side-pill {
+    .ai-side-btn--primary { background: var(--ai-surface); color: var(--ai-text); font-weight: 600; margin-bottom: 4px; border: 1px solid var(--ai-line); }
+    .ai-kbd-pill, .ai-side-pill {
       margin-left: auto; font: 600 10.5px/1 var(--r-mono); padding: 2px 6px;
       border-radius: 5px; background: var(--ai-surface-2); color: var(--ai-muted);
     }
     .ai-side-pill { color: var(--ai-accent); }
-    .ai-side-ico { width: 15px; text-align: center; font-weight: 700; font-size: 16px; }
     .ai-search-wrap input {
       width: 100%; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--ai-line);
       background: var(--ai-surface); color: var(--ai-text); font-size: 12.5px; margin: 4px 0;
     }
     .ai-side__label { font: 600 11px/1.2 var(--r-sans, system-ui, sans-serif); color: var(--ai-muted); padding: 12px 10px 4px; }
     .ai-chat-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
-    .ai-chat-empty { padding: 12px 10px; font-size: 12px; color: var(--ai-muted); }
+    .ai-chat-empty { padding: 10px; font-size: 12px; color: var(--ai-muted); }
     .ai-chat-item { display: flex; align-items: center; border-radius: 8px; }
     .ai-chat-item:hover, .ai-chat-item.is-active { background: var(--ai-surface); }
     .ai-chat-item__btn {
@@ -337,27 +388,20 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): interfaz
     .ai-chat-item__del { border: 0; background: transparent; color: var(--ai-muted); padding: 4px 8px; cursor: pointer; opacity: 0; }
     .ai-chat-item:hover .ai-chat-item__del { opacity: 1; }
     .ai-chat-item__del:hover { color: #ef4444; }
-    .ai-side__foot { border-top: 1px solid var(--ai-line); padding-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+    .ai-side__foot { border-top: 1px solid var(--ai-line); padding-top: 8px; }
     .ai-mit-link { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 8px; font-size: 12px; color: var(--ai-muted); text-decoration: none; }
     .ai-mit-link:hover { background: var(--ai-surface); color: var(--ai-text); }
-    .ai-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ai-accent); }
+    .ai-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ai-accent); flex-shrink: 0; }
 
     /* Main Stage */
     .ai-stage { display: flex; flex-direction: column; min-width: 0; height: 100%; overflow: hidden; position: relative; }
-    .ai-topbar {
-      display: flex; align-items: center; justify-content: space-between; gap: 12px;
-      padding: 10px 18px; flex-shrink: 0;
-    }
-    .ai-topbar__left, .ai-topbar__right { display: flex; align-items: center; gap: 10px; }
-    .ai-top-pill { font: 600 11.5px/1 var(--r-sans, system-ui, sans-serif); padding: 5px 11px; border-radius: 999px; background: var(--ai-surface); border: 1px solid var(--ai-line); color: var(--ai-muted); }
-    .ai-top-link { font-size: 12.5px; color: var(--ai-muted); text-decoration: none; padding: 5px 8px; border-radius: 7px; }
-    .ai-top-link:hover { background: var(--ai-surface); color: var(--ai-text); }
+    .ai-topbar { display: flex; align-items: center; gap: 10px; padding: 10px 18px; flex-shrink: 0; }
+    .ai-top-pill { font: 600 11.5px/1 var(--r-mono); padding: 5px 10px; border-radius: 999px; background: var(--ai-surface); border: 1px solid var(--ai-line); color: var(--ai-muted); }
     .ai-ico-btn {
       width: 32px; height: 32px; border-radius: 8px; border: 0; background: transparent;
       color: var(--ai-muted); display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
     }
     .ai-ico-btn:hover { background: var(--ai-surface); color: var(--ai-text); }
-    .ai-ico-btn.is-rec { color: #ef4444; background: rgba(239, 68, 68, 0.14); }
 
     .ai-local-bar {
       display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px;
@@ -368,19 +412,25 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): interfaz
     /* Centered Welcome vs Active Chat */
     .ai-composer-wrap {
       flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 20px 20px 32px; gap: 18px; width: 100%; max-width: 780px; margin: 0 auto;
+      padding: 16px 20px 36px; gap: 18px; width: 100%; max-width: 760px; margin: 0 auto;
     }
     .ai-stage.is-chatting .ai-composer-wrap { flex: 0 0 auto; padding: 10px 20px 16px; gap: 8px; }
     .ai-stage.is-chatting .ai-starters { display: none; }
-    .ai-empty__title { display: flex; align-items: center; gap: 12px; }
-    .ai-emblem { font-size: 32px; color: var(--ai-accent); line-height: 1; }
-    .ai-empty h1 { margin: 0; font: 400 clamp(26px, 3.4vw, 38px)/1.15 Georgia, "Times New Roman", serif; color: var(--ai-text); letter-spacing: -0.02em; }
+    .ai-empty__title { display: flex; align-items: center; gap: 11px; }
+    .ai-emblem { color: var(--ai-accent); flex-shrink: 0; }
+    .ai-empty h1 {
+      margin: 0;
+      font: 600 clamp(24px, 3vw, 34px)/1.2 var(--r-sans, system-ui, sans-serif) !important;
+      text-transform: none !important;
+      letter-spacing: -0.025em !important;
+      color: var(--ai-text);
+    }
 
-    /* Pro Composer Box */
+    /* Composer Card */
     .ai-composer {
       width: 100%; background: var(--ai-surface); border: 1px solid var(--ai-line);
       border-radius: 18px; padding: 12px 14px 10px; display: flex; flex-direction: column; gap: 8px;
-      box-shadow: 0 10px 34px rgba(0, 0, 0, 0.18);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.14);
     }
     .ai-composer:focus-within { border-color: color-mix(in srgb, var(--ai-accent) 55%, var(--ai-line)); }
     .ai-ctx-bar { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -401,13 +451,10 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): interfaz
 
     .ai-plus-btn {
       width: 32px; height: 32px; border-radius: 9px; border: 1px solid var(--ai-line);
-      background: var(--ai-surface-2); color: var(--ai-text); font-size: 18px; line-height: 1;
+      background: var(--ai-surface-2); color: var(--ai-text);
       display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
     }
     .ai-plus-btn:hover { border-color: var(--ai-accent); color: var(--ai-accent); }
-    .ai-seg { display: inline-flex; padding: 2px; border-radius: 9px; background: var(--ai-surface-2); border: 1px solid var(--ai-line); }
-    .ai-seg button { border: 0; background: transparent; color: var(--ai-muted); padding: 5px 10px; border-radius: 7px; font: 600 12px/1 var(--r-sans, system-ui, sans-serif); cursor: pointer; }
-    .ai-seg button.is-active { background: var(--ai-surface); color: var(--ai-text); }
 
     .ai-model-btn, .ai-effort-btn {
       border: 0; background: transparent; color: var(--ai-muted); padding: 6px 9px;
@@ -416,31 +463,36 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): interfaz
     .ai-model-btn:hover, .ai-effort-btn:hover { background: var(--ai-surface-2); color: var(--ai-text); }
     .ai-send-btn {
       width: 34px; height: 34px; border-radius: 10px; border: 0;
-      background: var(--ai-accent); color: var(--ai-accent-ink); font-size: 16px; font-weight: 800; cursor: pointer;
+      background: var(--ai-accent); color: var(--ai-accent-ink);
+      display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
     }
     .ai-send-btn[data-state="stop"] { background: #ef4444; color: #fff; }
 
-    /* Popover Menus */
+    /* Popover Menus: Opens DOWNWARD in empty state, UPWARD when chatting — NEVER clips into header */
     .ai-pop-anchor { position: relative; }
     .ai-popover {
-      position: absolute; bottom: calc(100% + 8px); left: 0; z-index: 60;
-      min-width: 265px; padding: 6px; border-radius: 14px;
+      position: absolute; top: calc(100% + 8px); left: 0; z-index: 45;
+      min-width: 260px; max-height: 360px; overflow-y: auto; padding: 6px; border-radius: 14px;
       background: var(--ai-surface); border: 1px solid var(--ai-line);
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.36); display: flex; flex-direction: column; gap: 2px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3); display: flex; flex-direction: column; gap: 2px;
     }
-    .ai-popover--right { left: auto; right: 0; min-width: 280px; }
+    .ai-stage.is-chatting .ai-popover { top: auto; bottom: calc(100% + 8px); }
+    .ai-popover--right { left: auto; right: 0; min-width: 276px; }
     .ai-popover[hidden] { display: none !important; }
     .ai-pop-item {
-      width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px 10px;
-      border: 0; border-radius: 8px; background: transparent; color: var(--ai-text);
+      width: 100%; display: flex; align-items: center; justify-content: flex-start; gap: 10px;
+      padding: 8px 10px; border: 0; border-radius: 8px; background: transparent; color: var(--ai-text);
       font-size: 13px; text-align: left; cursor: pointer;
     }
+    .ai-pop-item svg { flex-shrink: 0; color: var(--ai-muted); }
     .ai-pop-item:hover { background: var(--ai-surface-2); }
-    .ai-pop-item kbd, .ai-pop-item > :last-child { margin-left: auto; font-size: 11px; color: var(--ai-muted); }
+    .ai-pop-item:hover svg { color: var(--ai-text); }
+    .ai-pop-txt { flex: 1; text-align: left; white-space: nowrap; }
+    .ai-pop-kbd { margin-left: auto; font: 600 10.5px/1 var(--r-mono); color: var(--ai-muted); }
     .ai-pop-sep { height: 1px; background: var(--ai-line); margin: 4px 6px; }
-    .ai-pop-label { font: 700 10.5px/1 var(--r-mono); text-transform: uppercase; color: var(--ai-muted); padding: 4px 10px; }
-    .ai-check-mark { color: transparent !important; font-weight: 800; }
-    .ai-check-mark.is-on { color: var(--ai-accent) !important; }
+    .ai-pop-label { font: 700 10px/1 var(--r-mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--ai-muted); padding: 4px 10px; }
+    .ai-check-mark { margin-left: auto; color: transparent; font-weight: 800; font-size: 13px; }
+    .ai-check-mark.is-on { color: var(--ai-accent); }
     .ai-model-opt {
       width: 100%; display: flex; flex-direction: column; gap: 2px; padding: 9px 11px;
       border: 0; border-radius: 9px; background: transparent; color: var(--ai-text); text-align: left; cursor: pointer;
@@ -453,8 +505,9 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): interfaz
     /* Starters */
     .ai-starters { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
     .ai-starters button {
+      display: inline-flex; align-items: center; gap: 7px;
       padding: 8px 14px; border-radius: 999px; border: 1px solid var(--ai-line);
-      background: var(--ai-surface); color: var(--ai-muted); font-size: 12.5px; cursor: pointer;
+      background: var(--ai-surface); color: var(--ai-muted); font-size: 12.5px; font-weight: 500; cursor: pointer;
     }
     .ai-starters button:hover { border-color: var(--ai-accent); color: var(--ai-text); }
 
@@ -475,7 +528,7 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): interfaz
     .ai-bot-avatar {
       width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
       background: color-mix(in srgb, var(--ai-accent) 16%, transparent); color: var(--ai-accent);
-      display: grid; place-items: center; font-size: 15px; margin-top: 2px;
+      display: grid; place-items: center; margin-top: 2px;
     }
     .ai-bot-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
     .ai-bot-meta { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--ai-muted); }
@@ -487,7 +540,7 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): interfaz
 
     /* Markdown inside AI */
     .ai-md { font-size: 14.5px; line-height: 1.65; color: var(--ai-text); }
-    .ai-md h1, .ai-md h2, .ai-md h3 { margin: 14px 0 6px; font-weight: 700; color: var(--ai-text); }
+    .ai-md h1, .ai-md h2, .ai-md h3 { margin: 14px 0 6px; font-weight: 700; color: var(--ai-text); text-transform: none !important; }
     .ai-md p { margin: 6px 0; }
     .ai-md ul, .ai-md ol { padding-left: 20px; margin: 6px 0; }
     .ai-md code { font-family: var(--r-mono); font-size: 12.5px; background: var(--ai-surface); padding: 2px 5px; border-radius: 5px; color: var(--ai-accent); }
@@ -521,7 +574,7 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): interfaz
     }
     .ai-art-pane[hidden] { display: none !important; }
     .ai-art-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--ai-line); }
-    .ai-art-badge { font: 700 10px var(--r-mono); padding: 2px 7px; border-radius: 999px; background: color-mix(in srgb, var(--ai-accent) 16%, transparent); color: var(--ai-accent); margin-right: 6px; }
+    .ai-art-badge { font: 700 10px var(--r-mono); padding: 2px 7px; border-radius: 999px; background: color-mix(in srgb, var(--ai-accent) 16%, transparent); color: var(--ai-accent); }
     .ai-art-title { font-size: 13.5px; color: var(--ai-text); }
     .ai-art-tabs { display: inline-flex; gap: 4px; background: var(--ai-surface); padding: 2px; border-radius: 8px; }
     .ai-art-tabs button { border: 0; background: transparent; color: var(--ai-muted); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
@@ -539,7 +592,7 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): interfaz
       border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 14px;
     }
     .ai-modal__head { display: flex; align-items: center; justify-content: space-between; }
-    .ai-modal__head h2 { margin: 0; font-size: 18px; }
+    .ai-modal__head h2 { margin: 0; font-size: 17px; font-weight: 700; text-transform: none !important; }
     .ai-proj-list { display: flex; flex-direction: column; gap: 8px; }
     .ai-proj-card {
       display: flex; align-items: center; gap: 12px; padding: 11px 13px; border-radius: 12px;
@@ -561,11 +614,11 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): interfaz
 
     @media (max-width: 960px) {
       .ai-shell { grid-template-columns: 0px minmax(0, 1fr); }
-      .ai-shell:not(.is-side-collapsed) .ai-side { position: fixed; left: 0; top: 60px; bottom: 0; width: 260px; z-index: 70; box-shadow: 12px 0 36px rgba(0,0,0,.45); }
+      .ai-shell:not(.is-side-collapsed) .ai-side { position: fixed; left: 0; top: 56px; bottom: 0; width: 256px; z-index: 70; box-shadow: 12px 0 36px rgba(0,0,0,.45); }
       .ai-shell.has-artifact { grid-template-columns: 0px minmax(0, 1fr); }
-      .ai-art-pane { position: fixed; inset: 60px 0 0 0; z-index: 80; }
+      .ai-art-pane { position: fixed; inset: 56px 0 0 0; z-index: 80; }
     }
   </style>
 
-  <script is:inline src="/assets/js/ai-studio.js?v=t360"></script>
+  <script is:inline src="/assets/js/ai-studio.js?v=t361"></script>
 </Layout>

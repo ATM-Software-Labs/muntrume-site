@@ -1,9 +1,5 @@
 /**
- * Muntrume AI — Mini-Preview Copilot Widget (v3.0 Claude-inspired)
- * Loaded on demand from MuntrumeChatbot.astro.
- * Supports Muntrume 1.0 Lite/Pro/Ultra Max, image/file attach + Ctrl+V paste,
- * Web Search toggle, wide preview toggle, DOC/PDF quick export, and 1-click
- * seamless handoff into full Muntrume AI Studio (/ai/).
+ * Muntrume AI — Mini-Preview Copilot Widget (v3.1 — Clean Monochrome, Zero Emojis, Theme-Synced)
  */
 const API = "https://muntrume.atrumin16.workers.dev/api/ai";
 const HANDOFF_KEY = "muntrume_ai_handoff";
@@ -15,17 +11,17 @@ const TIERS = [
 ];
 
 const CSS = `
-#mmChat{--bg:#1a1917;--hd:#141311;--sf:#252421;--bd:rgba(255,255,255,.1);--tx:#f3f1ec;--mu:#9e9a92;--ac:#10b981;--acTx:#04130d;position:fixed;z-index:60;right:max(1rem,env(safe-area-inset-right));bottom:max(1rem,env(safe-area-inset-bottom));width:min(430px,calc(100vw - 2rem));height:min(620px,calc(100dvh - 2rem));display:flex;flex-direction:column;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:18px;box-shadow:0 24px 64px rgba(0,0,0,.55);overflow:hidden;font:13.5px/1.5 system-ui,-apple-system,sans-serif;transition:width .2s ease,height .2s ease}
+#mmChat{--bg:#111315;--hd:#0b0d0f;--sf:#1a1d21;--bd:rgba(255,255,255,.1);--tx:#f3f4f6;--mu:#9ca3af;--ac:#10b981;--acTx:#04130d;position:fixed;z-index:60;right:max(1rem,env(safe-area-inset-right));bottom:max(1rem,env(safe-area-inset-bottom));width:min(430px,calc(100vw - 2rem));height:min(620px,calc(100dvh - 2rem));display:flex;flex-direction:column;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:18px;box-shadow:0 24px 64px rgba(0,0,0,.5);overflow:hidden;font:13.5px/1.5 system-ui,-apple-system,sans-serif;transition:width .2s ease,height .2s ease}
 #mmChat.is-wide{width:min(680px,calc(100vw - 2rem));height:min(760px,calc(100dvh - 2rem))}
-html.light #mmChat,[data-theme="light"] #mmChat{--bg:#f8f7f4;--hd:#f1efe9;--sf:#ffffff;--bd:rgba(15,23,42,.12);--tx:#1c1b18;--mu:#64615a;--ac:#059669;--acTx:#fff}
+html.light #mmChat,html[data-theme="light"] #mmChat{--bg:#f8f9fa;--hd:#f1f3f5;--sf:#ffffff;--bd:rgba(15,23,42,.12);--tx:#111827;--mu:#5b6470;--ac:#059669;--acTx:#fff}
 #mmChat[hidden]{display:none}
 #mmChat header{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--hd);border-bottom:1px solid var(--bd)}
-#mmChat .mm-mark{width:26px;height:26px;border-radius:8px;background:rgba(16,185,129,.15);color:var(--ac);display:grid;place-items:center;font-size:14px;flex-shrink:0}
+#mmChat .mm-mark{width:26px;height:26px;border-radius:8px;background:rgba(16,185,129,.14);color:var(--ac);display:grid;place-items:center;flex-shrink:0}
 #mmChat .mm-ttl{min-width:0}
 #mmChat .mm-ttl b{display:block;font-size:13px;line-height:1.2;color:var(--tx)}
 #mmChat .mm-tier{border:0;background:transparent;color:var(--ac);font:600 11px/1.2 system-ui,sans-serif;padding:0;cursor:pointer}
 #mmChat .mm-ic{margin-left:auto;display:flex;align-items:center;gap:3px}
-#mmChat .mm-ib{width:30px;height:30px;border:0;border-radius:8px;background:transparent;color:var(--mu);display:grid;place-items:center;cursor:pointer;text-decoration:none}
+#mmChat .mm-ib{width:30px;height:30px;border:0;border-radius:8px;background:transparent;color:var(--mu);display:grid;place-items:center;cursor:pointer}
 #mmChat .mm-ib:hover{background:var(--sf);color:var(--tx)}
 #mmChat .mm-log{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;overscroll-behavior:contain}
 #mmChat .mm-m{max-width:90%;padding:10px 13px;border-radius:14px;word-break:break-word}
@@ -49,10 +45,10 @@ html.light #mmChat,[data-theme="light"] #mmChat{--bg:#f8f7f4;--hd:#f1efe9;--sf:#
 #mmChat .mm-inrow{display:flex;align-items:center;gap:6px;background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:4px 6px}
 #mmChat .mm-inrow:focus-within{border-color:var(--ac)}
 #mmChat input[type="text"]{flex:1;min-width:0;border:0;background:transparent;color:var(--tx);font-size:14px;padding:6px;outline:none}
-#mmChat .mm-tool{border:0;background:transparent;color:var(--mu);width:28px;height:28px;border-radius:7px;display:grid;place-items:center;cursor:pointer;font-size:15px}
+#mmChat .mm-tool{border:0;background:transparent;color:var(--mu);width:28px;height:28px;border-radius:7px;display:grid;place-items:center;cursor:pointer}
 #mmChat .mm-tool:hover{background:rgba(127,127,127,.14);color:var(--tx)}
 #mmChat .mm-tool.is-on{color:var(--ac)}
-#mmChat .mm-send{border:0;border-radius:9px;width:30px;height:30px;background:var(--ac);color:var(--acTx);font-weight:800;cursor:pointer;display:grid;place-items:center}
+#mmChat .mm-send{border:0;border-radius:9px;width:30px;height:30px;background:var(--ac);color:var(--acTx);cursor:pointer;display:grid;place-items:center}
 #mmChat .mm-send:disabled{opacity:.45;cursor:not-allowed}
 #mmChat .mm-dots{display:inline-flex;align-items:center;gap:5px;color:var(--mu);font-size:12px}
 #mmChat .mm-dots i{width:5px;height:5px;border-radius:50%;background:var(--ac);animation:mmd .9s infinite ease-in-out}
@@ -76,7 +72,7 @@ function mdToHtml(md) {
   t = t.replace(/```[a-zA-Z0-9_-]*\n([\s\S]*?)```/g, "<pre><code>$1</code></pre>");
   t = t.replace(/`([^`]+)`/g, "<code>$1</code>");
   t = t.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-  t = t.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="color:var(--ac)">$1 ↗</a>');
+  t = t.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="color:var(--ac)">$1</a>');
   return t.split(/\n{2,}/).map((p) => p.startsWith("<pre>") ? p : `<p>${p.replace(/\n/g, "<br>")}</p>`).join("");
 }
 
@@ -120,7 +116,7 @@ async function attachFile(file) {
   } else {
     pendingAtt = { kind: "text", name: file.name, text: (await file.text().catch(() => "")).slice(0, 6000) };
   }
-  attLbl.textContent = `${pendingAtt.kind === "image" ? "🖼️" : "📎"} ${pendingAtt.name}`;
+  attLbl.textContent = `${pendingAtt.kind === "image" ? "Imagen" : "Archivo"}: ${pendingAtt.name}`;
   attBar.hidden = false;
   input.focus();
 }
@@ -130,7 +126,7 @@ function renderLog() {
   if (!messages.length) {
     const hello = document.createElement("div");
     hello.className = "mm-m mm-a";
-    hello.innerHTML = "<p><strong>¡Hola! Soy Muntrume AI.</strong> Pregúntame sobre setups iRacing, estrategia de combustible, código o pega una captura con <code>Ctrl+V</code>.</p>";
+    hello.innerHTML = "<p><strong>Muntrume AI</strong> · Pregunta sobre setups iRacing, estrategia de combustible, código o pega una captura con <code>Ctrl+V</code>.</p>";
     log.appendChild(hello);
     return;
   }
@@ -141,8 +137,8 @@ function renderLog() {
       d.innerHTML = (m.image ? `<img src="${esc(m.image)}" alt="Adjunto">` : "") + esc(m.content).replace(/\n/g, "<br>");
     } else {
       d.innerHTML = m.pending
-        ? `<div class="mm-dots"><i></i><i></i><i></i> <span>Muntrume ${esc(tier.replace("_", " "))} pensando…</span></div>`
-        : `${mdToHtml(m.content)}<div class="mm-acts"><button type="button" data-c="${idx}">📋 Copiar</button><button type="button" data-d="${idx}">📄 DOC</button><button type="button" data-p="${idx}">🖨️ PDF</button><button type="button" data-f="${idx}">↗ Studio</button></div>`;
+        ? `<div class="mm-dots"><i></i><i></i><i></i> <span>Muntrume ${esc(tier.replace("_", " "))} procesando…</span></div>`
+        : `${mdToHtml(m.content)}<div class="mm-acts"><button type="button" data-c="${idx}">Copiar</button><button type="button" data-d="${idx}">DOC</button><button type="button" data-p="${idx}">PDF</button><button type="button" data-f="${idx}">Abrir Studio</button></div>`;
     }
     log.appendChild(d);
   });
@@ -219,7 +215,7 @@ async function send(raw) {
     }
   } catch {
     bot.pending = false;
-    bot.content = bot.content || "No pude conectar ahora mismo. Prueba a abrir **Muntrume AI Studio (/ai/)** o reintenta.";
+    bot.content = bot.content || "No pude conectar ahora mismo. Prueba a abrir Muntrume AI Studio (/ai/) o reintenta.";
   } finally {
     streaming = false; sendBtn.disabled = false;
     renderLog();
@@ -234,34 +230,34 @@ function build() {
 
   root.innerHTML = `
     <header>
-      <div class="mm-mark" aria-hidden="true">✦</div>
+      <div class="mm-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
       <div class="mm-ttl">
         <b>Muntrume AI</b>
         <select id="mmTierSel" class="mm-tier" aria-label="Modelo Muntrume">
-          ${TIERS.map((t) => `<option value="${t.id}" ${t.id === tier ? "selected" : ""}>Muntrume ${t.label} ▾</option>`).join("")}
+          ${TIERS.map((t) => `<option value="${t.id}" ${t.id === tier ? "selected" : ""}>Muntrume ${t.label}</option>`).join("")}
         </select>
       </div>
       <div class="mm-ic">
-        <button type="button" id="mmWideBtn" class="mm-ib" title="Ampliar vista previa">⤢</button>
-        <button type="button" id="mmFullBtn" class="mm-ib" title="Continuar en Muntrume AI Studio (/ai/)">↗</button>
-        <button type="button" id="mmResetBtn" class="mm-ib" title="Nueva conversación">↻</button>
-        <button type="button" id="mmCloseBtn" class="mm-ib" title="Cerrar">✕</button>
+        <button type="button" id="mmWideBtn" class="mm-ib" title="Ampliar vista previa"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
+        <button type="button" id="mmFullBtn" class="mm-ib" title="Abrir en Muntrume AI Studio (/ai/)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+        <button type="button" id="mmResetBtn" class="mm-ib" title="Nueva conversación"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button>
+        <button type="button" id="mmCloseBtn" class="mm-ib" title="Cerrar"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
     </header>
     <div id="mmLog" class="mm-log" role="log" aria-live="polite"></div>
     <div id="mmChips" class="mm-chips">
-      <button type="button" data-chip="Dame ajustes rápidos para reducir subviraje en GT3.">🏎️ Setup GT3</button>
-      <button type="button" data-chip="Calcula combustible para 45 min GT3 (2.9 L/vuelta, 2:17).">⛽ Estrategia</button>
-      <button type="button" data-chip="¿Quiénes son los pilotos y qué incluye MMT Sync?">🏁 Equipo MMT</button>
+      <button type="button" data-chip="Dame ajustes rápidos para reducir subviraje en GT3.">Setup GT3</button>
+      <button type="button" data-chip="Calcula combustible para 45 min GT3 (2.9 L/vuelta, 2:17).">Estrategia</button>
+      <button type="button" data-chip="¿Quiénes son los pilotos y qué incluye MMT Sync?">Equipo MMT</button>
     </div>
     <div id="mmAttBar" class="mm-attbar" hidden><span id="mmAttLbl"></span><button type="button" id="mmAttClear">×</button></div>
     <form id="mmForm" autocomplete="off">
       <input type="file" id="mmFile" hidden accept="image/png,image/jpeg,image/webp,.txt,.md,.csv,.json,.js,.ts,.py,.sto" />
       <div class="mm-inrow">
-        <button type="button" id="mmPlusBtn" class="mm-tool" title="Adjuntar archivo o foto (o Ctrl+V)">+</button>
-        <button type="button" id="mmWebBtn" class="mm-tool is-on" title="Búsqueda web en vivo">🌐</button>
+        <button type="button" id="mmPlusBtn" class="mm-tool" title="Adjuntar archivo o imagen (o Ctrl+V)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+        <button type="button" id="mmWebBtn" class="mm-tool is-on" title="Búsqueda web en vivo"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></button>
         <input type="text" id="mmInput" placeholder="Pregunta o pega una captura (Ctrl+V)…" maxlength="2000" />
-        <button type="submit" id="mmSend" class="mm-send" aria-label="Enviar">↑</button>
+        <button type="submit" id="mmSend" class="mm-send" aria-label="Enviar"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></button>
       </div>
     </form>
   `;
@@ -296,7 +292,7 @@ function build() {
   log.addEventListener("click", (e) => {
     const btn = e.target.closest("button");
     if (!btn) return;
-    if (btn.dataset.c != null) { navigator.clipboard.writeText(messages[Number(btn.dataset.c)]?.content || ""); btn.textContent = "✓ Copiado"; setTimeout(() => { btn.textContent = "📋 Copiar"; }, 1200); }
+    if (btn.dataset.c != null) { navigator.clipboard.writeText(messages[Number(btn.dataset.c)]?.content || ""); btn.textContent = "Copiado"; setTimeout(() => { btn.textContent = "Copiar"; }, 1200); }
     else if (btn.dataset.d != null) quickExport("doc", messages[Number(btn.dataset.d)]?.content || "");
     else if (btn.dataset.p != null) quickExport("pdf", messages[Number(btn.dataset.p)]?.content || "");
     else if (btn.dataset.f != null) openInFullStudio();
