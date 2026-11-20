@@ -160,10 +160,12 @@ const socials = (
             </div>
             <div>
               <dt data-i18n="card.trackHours">Horas en pista</dt>
-              <dd data-approx="h" data-n={sumTrackHours}>{hoursText(sumTrackHours)}</dd>
+              <dd data-approx="h" data-n={sumTrackHours} data-f="total_track_hours">{hoursText(sumTrackHours)}</dd>
               <span class="d-stats__sub">Garage 61</span>
             </div>
           </dl>
+
+          <div id="driverAllLicenses" class="flex flex-wrap gap-2 mt-2" hidden></div>
 
           <div class="d-hero-meta">
             <div class="d-hero-meta__items">

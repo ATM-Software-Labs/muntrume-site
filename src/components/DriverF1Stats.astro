@@ -73,7 +73,7 @@ const attributes = [
     <div class="d-f1__ovr-card">
       <div class="d-f1__ovr-top">
         <span class="d-f1__ovr-tag">OVERALL RATING</span>
-        <span class="d-f1__ovr-num-badge">{driver.dorsal}</span>
+        <span class="d-f1__ovr-num-badge" data-f="dorsal">{driver.dorsal}</span>
       </div>
       <div class="d-f1__ovr-center">
         <div class="d-f1__ovr-score-wrap">
@@ -95,7 +95,7 @@ const attributes = [
         </div>
         <div>
           <span>Sports Car Hours</span>
-          <strong>{trackHours.toFixed(1)} h</strong>
+          <strong data-f1-meta="hours">{trackHours.toFixed(1)} h</strong>
         </div>
       </div>
     </div>
@@ -153,13 +153,17 @@ const attributes = [
     document.addEventListener("muntrume:driver-live-stats", function (ev) {
       var d = (ev && ev.detail) || {};
       var root = document.querySelector('[data-f1-root="' + d.slug + '"]');
-      if (!root || !(d.irating > 0)) return;
-      var sr = d.sr || Number(root.getAttribute("data-f1-sr")) || 3.0;
-      var hours = Number(root.getAttribute("data-f1-hours")) || 100;
-      var peak = Math.max(Number(d.irating), Number(root.getAttribute("data-f1-peak")) || 1500);
-      var stats = computeF1Stats(d.irating, sr, hours, peak);
+      if (!root) return;
+      var ir = d.irating > 0 ? Number(d.irating) : Number(root.getAttribute("data-f1-ir")) || 1500;
+      var sr = d.sr > 0 ? Number(d.sr) : Number(root.getAttribute("data-f1-sr")) || 3.0;
+      var hours = d.hours > 0 ? Number(d.hours) : Number(root.getAttribute("data-f1-hours")) || 100;
+      var peak = Math.max(ir, Number(root.getAttribute("data-f1-peak")) || 1500);
+      var stats = (d.f1_stats && d.f1_stats.overall)
+        ? d.f1_stats
+        : computeF1Stats(ir, sr, hours, peak);
 
       ["overall", "pace", "awareness", "racecraft", "experience"].forEach(function (k) {
+        if (stats[k] == null) return;
         root.querySelectorAll('[data-f1-val="' + k + '"]').forEach(function (el) {
           el.textContent = String(stats[k]);
         });
@@ -168,7 +172,14 @@ const attributes = [
         });
       });
       var irMeta = root.querySelector('[data-f1-meta="ir"]');
-      if (irMeta) irMeta.textContent = Number(d.irating).toLocaleString("en-US");
+      if (irMeta && ir > 0) irMeta.textContent = ir.toLocaleString("en-US");
+      var srMeta = root.querySelector('[data-f1-meta="sr"]');
+      if (srMeta && sr > 0) srMeta.textContent = (d.classShort || "A") + " " + sr.toFixed(2);
+      var hrsMeta = root.querySelector('[data-f1-meta="hours"]');
+      if (hrsMeta && hours > 0) hrsMeta.textContent = hours.toFixed(1) + " h";
+      if (d.dorsal) {
+        root.querySelectorAll('[data-f="dorsal"]').forEach(function (el) { el.textContent = d.dorsal; });
+      }
     });
   })();
 </script>

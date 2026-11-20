@@ -94,6 +94,14 @@
         irSum += Number(d.irating);
         irCount += 1;
       }
+      var ovrEl = card.querySelector('[data-f="ovr"]');
+      if (ovrEl && ((d.f1_stats && d.f1_stats.overall) || d.irating > 0)) {
+        var computedOvr = (d.f1_stats && d.f1_stats.overall) ? d.f1_stats.overall : (function (ir) {
+          var base = ir >= 1500 ? 54 + 43 * (Math.log(ir / 1500) / Math.log(12000 / 1500)) : Math.max(20, 54 * (ir / 1500));
+          return Math.min(98, Math.max(1, Math.round(base + 1)));
+        })(Number(d.irating));
+        ovrEl.textContent = String(computedOvr);
+      }
       if (d.role && !/\bgtp\b/i.test(d.role)) {
         var roleEl = card.querySelector('[data-f="role"]');
         if (roleEl) roleEl.textContent = d.role;

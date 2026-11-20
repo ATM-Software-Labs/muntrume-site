@@ -1,165 +1,18 @@
 /**
- * Muntrume Motorsport — Race Control Console Engine (v4.2)
- * Real-time integration with Cloudflare D1 (/api/setups/admin/*),
- * Live Telemetry (/api/drivers), MMT Nomenclature & BoP Validator,
- * @muntru.me Mailboxes, and Zero-Trust Audit Logs.
+ * Muntrume Motorsport — Google Admin Console Engine (v5.0 All-in-One)
+ * Unified D1 accounts + official pilot profiles + 5 iRacing licenses +
+ * Garage 61 Vision AI screenshot importer + live MTI/F1 stats recalculator.
  */
 
 const RC_API_BASE = "https://muntrume.atrumin16.workers.dev";
 
-function rcStoreSession(token, user) {
-  try {
-    if (token) {
-      localStorage.setItem("mrt_vault_token", token);
-      sessionStorage.setItem("mrt_vault_token", token);
-    }
-    if (user) {
-      const raw = JSON.stringify(user);
-      localStorage.setItem("mrt_vault_user", raw);
-      sessionStorage.setItem("mrt_vault_user", raw);
-    }
-  } catch {}
-}
-
-async function rcRawPost(path, body) {
-  const token = getAdminToken();
-  const headers = { "Content-Type": "application/json" };
-  if (token) headers.Authorization = `Bearer ${token}`;
-  const res = await fetch(`${RC_API_BASE}${path}`, { method: "POST", headers, body: JSON.stringify(body || {}) });
-  const data = await res.json().catch(() => ({}));
-  return { res, data };
-}
-
-async function rcAdminFetch(path, body = {}) {
-  const { res, data } = await rcRawPost(path, body);
-  if (res.status === 401) {
-    secureAdminLogout("invalid_token");
-    throw new Error(data.error || "Sesión caducada. Vuelve a iniciar sesión.");
-  }
-  if (!res.ok || data.success === false) {
-    throw new Error(data.error || `Error HTTP ${res.status}`);
-  }
-  return data;
-}
-
-const OFFICIAL_ROSTER_DEFAULTS = [
-  {
-    slug: "albertot",
-    number: "16",
-    name: "Alberto Trujillo Mingorance",
-    role: "admin",
-    roleLabel: "Team Principal & Lead Telemetry",
-    email: "atrumin16@gmail.com",
-    mailbox: "alberto@muntru.me",
-    cust_id: 1126458,
-    irating: "3,141",
-    sr: "A 3.13",
-    hours: "503 h",
-    status: "active",
-    has_password: true,
-    created_at: "2024-01-15T10:00:00Z"
-  },
-  {
-    slug: "mateob",
-    number: "19",
-    name: "Mateo Berbis",
-    role: "driver",
-    roleLabel: "Official Endurance Driver",
-    email: "mateo@muntru.me",
-    mailbox: "mateo@muntru.me",
-    cust_id: 1094821,
-    irating: "1,711",
-    sr: "B 2.55",
-    hours: "218 h",
-    status: "active",
-    has_password: true,
-    created_at: "2024-03-10T14:20:00Z"
-  },
-  {
-    slug: "eduardoc",
-    number: "69",
-    name: "Eduardo Chongkan",
-    role: "driver",
-    roleLabel: "Official GT3 & Multiclass Driver",
-    email: "eduardo@muntru.me",
-    mailbox: "eduardo@muntru.me",
-    cust_id: 1148902,
-    irating: "1,491",
-    sr: "C 2.48",
-    hours: "164 h",
-    status: "active",
-    has_password: true,
-    created_at: "2024-05-22T18:10:00Z"
-  },
-  {
-    slug: "juanluc",
-    number: "14",
-    name: "Juanlu Confirmado",
-    role: "driver",
-    roleLabel: "Official Endurance Driver",
-    email: "juanlu@muntru.me",
-    mailbox: "juanlu@muntru.me",
-    cust_id: 1182045,
-    irating: "1,520",
-    sr: "C 2.60",
-    hours: "92 h",
-    status: "active",
-    has_password: true,
-    created_at: "2025-01-12T11:30:00Z"
-  }
+const LICENSE_META = [
+  { key: "sports_car", short: "SC", label: "Sports Car" },
+  { key: "formula_car", short: "FC", label: "Formula Car" },
+  { key: "oval", short: "OV", label: "Oval" },
+  { key: "dirt_road", short: "DR", label: "Dirt Road" },
+  { key: "dirt_oval", short: "DO", label: "Dirt Oval" }
 ];
-
-const OFFICIAL_MAILBOXES = [
-  { address: "alberto@muntru.me", owner: "Alberto Trujillo (#16)", role: "Team Principal & Admin", forwarding: "atrumin16@gmail.com", status: "Activo · TLS 1.3" },
-  { address: "mateo@muntru.me", owner: "Mateo Berbis (#19)", role: "Official Driver", forwarding: "Cloudflare Routing + Webmail", status: "Activo · TLS 1.3" },
-  { address: "eduardo@muntru.me", owner: "Eduardo Chongkan (#69)", role: "Official Driver", forwarding: "Cloudflare Routing + Webmail", status: "Activo · TLS 1.3" },
-  { address: "juanlu@muntru.me", owner: "Juanlu Confirmado (#14)", role: "Official Driver", forwarding: "Cloudflare Routing + Webmail", status: "Activo · TLS 1.3" },
-  { address: "racecontrol@muntru.me", owner: "Muntrume Race Control", role: "Sistema Transaccional (Resend)", forwarding: "atrumin16@gmail.com", status: "SPF + DKIM + DMARC OK" }
-];
-
-const MMT_MODEL_MAP = {
-  ferrari296gt3: { code: "F296", label: "Ferrari 296 GT3", cat: "GT3" },
-  porsche992rgt3: { code: "P911", label: "Porsche 911 GT3 R (992)", cat: "GT3" },
-  bmwm4gt3: { code: "M4", label: "BMW M4 GT3", cat: "GT3" },
-  mercedesamgevogt3: { code: "AMG", label: "Mercedes-AMG GT3 2020", cat: "GT3" },
-  audir8lmsevo2gt3: { code: "R8", label: "Audi R8 LMS EVO II GT3", cat: "GT3" },
-  lamborghinievogt3: { code: "LAMBO", label: "Lamborghini Huracán GT3 EVO", cat: "GT3" },
-  mclaren720sgt3: { code: "MACLA", label: "McLaren 720S GT3 EVO", cat: "GT3" },
-  chevyvettez06rgt3: { code: "Z06", label: "Chevrolet Corvette Z06 GT3.R", cat: "GT3" },
-  fordmustanggt3: { code: "MUST", label: "Ford Mustang GT3", cat: "GT3" },
-  amvantageevogt3: { code: "AMR", label: "Aston Martin Vantage GT3 EVO", cat: "GT3" },
-  amvalkyriegtp: { code: "VALK", label: "Aston Martin Valkyrie AMR-LMH", cat: "GTP" },
-  ferrari499p: { code: "F499P", label: "Ferrari 499P Hypercar", cat: "GTP" },
-  cadillacvseriesrgtp: { code: "CADDY", label: "Cadillac V-Series.R GTP", cat: "GTP" },
-  porsche963gtp: { code: "P963", label: "Porsche 963 GTP", cat: "GTP" },
-  bmwlmdh: { code: "BMWH", label: "BMW M Hybrid V8 GTP", cat: "GTP" },
-  acuraarx06gtp: { code: "ACURA", label: "Acura ARX-06 GTP", cat: "GTP" },
-  porsche718gt4: { code: "PORS", label: "Porsche 718 Cayman GT4", cat: "GT4" },
-  audirs3lmsgen2: { code: "RS3", label: "Audi RS 3 LMS TCR", cat: "TCR" },
-  hyundaielantracn7: { code: "HYUN", label: "Hyundai Elantra N TCR", cat: "TCR" },
-  hondacivictyper: { code: "CIVIC", label: "Honda Civic Type R TCR", cat: "TCR" },
-  toyotagr86: { code: "GR86", label: "Toyota GR86 Cup", cat: "CUP" },
-  "superformulasf23 toyota": { code: "SF23", label: "Super Formula SF23", cat: "FORMULA" },
-  dallaraf3: { code: "F3", label: "Dallara F3", cat: "FORMULA" },
-  formulair04: { code: "F4", label: "FIA F4", cat: "FORMULA" },
-  raygr22: { code: "FF1600", label: "Ray FF1600", cat: "FORMULA" },
-  "mx5 cup": { code: "MX5", label: "Global Mazda MX-5 Cup", cat: "MX5" }
-};
-
-const MMT_CIRCUIT_MAP = {
-  "Nürburgring Combined Gesamtstrecke VLN": "VLN",
-  "Spa": "SPA",
-  "Le Mans": "LEMANS",
-  "Daytona": "DAYTONA",
-  "Sebring": "SEBRING",
-  "Watkins Glen": "WGLEN",
-  "Road Atlanta": "RATLANTA",
-  "Monza": "MONZA",
-  "Imola": "IMOLA",
-  "Suzuka": "SUZUKA",
-  "Bathurst": "BATHURST",
-  "Interlagos": "INTERLAGOS"
-};
 
 const ROLE_LABELS = {
   admin: "Team Principal / Admin",
@@ -170,26 +23,96 @@ const ROLE_LABELS = {
   staff: "Staff / Prensa"
 };
 
-function getRoleLabel(role) {
-  const key = String(role || "driver").toLowerCase();
-  return ROLE_LABELS[key] || role || "Official Driver";
-}
+const OFFICIAL_MAILBOXES = [
+  { address: "alberto@muntru.me", owner: "Alberto Trujillo (#16)", role: "Team Principal & Admin", status: "Activo · TLS 1.3" },
+  { address: "mateo@muntru.me", owner: "Mateo Berbis (#1)", role: "Official Driver", status: "Activo · TLS 1.3" },
+  { address: "eduardo@muntru.me", owner: "Eduardo Chongkan (#22)", role: "Official Driver", status: "Activo · TLS 1.3" },
+  { address: "admin@muntru.me", owner: "Administración & Prensa", role: "Equipo Muntrume", status: "Activo · TLS 1.3" },
+  { address: "racecontrol@muntru.me", owner: "Muntrume Race Control", role: "Transaccional (Resend)", status: "SPF + DKIM + DMARC OK" }
+];
 
-function computePreviewOvr(irating) {
-  const ir = Number(irating);
-  if (!Number.isFinite(ir) || ir < 100) return null;
-  const base = ir >= 1500
-    ? 54 + 43 * (Math.log(ir / 1500) / Math.log(12000 / 1500))
-    : Math.max(20, 54 * (ir / 1500));
-  return Math.min(98, Math.max(1, Math.round(base + 1)));
-}
+const EMAIL_TEMPLATES = {
+  welcome: {
+    badge: "ACCESO APROBADO",
+    previewKey: "approved",
+    subject: "Acceso aprobado · Crea tu contraseña del Setup Vault",
+    title: "¡Bienvenido al equipo!",
+    tldr: "Tu cuenta oficial de piloto está aprobada. Crea tu contraseña con el enlace personal de 72 h.",
+    ctaLabel: "Crear mi contraseña →",
+    ctaUrl: "https://muntru.me/garage?setpw=TOKEN_UNICO_72H",
+    rows: [
+      ["Usuario", "{CORREO_PILOTO}"],
+      ["Catálogo", "42,654 setups .sto (BoP 26S4 · 100% Pass Tech)"],
+      ["App Desktop", "MMT Sync (winget install Muntrume.MMTSync)"]
+    ],
+    body: "Hola {NOMBRE_PILOTO},\n\nControl de Carrera ha aprobado tu solicitud. Ya tienes acceso al Setup Vault de Muntrume Motorsport.\n\n• Usuario: {CORREO_PILOTO}\n• Enlace personal (72 h): https://muntru.me/garage?setpw={TOKEN_UNICO}\n\nNos vemos en pista,\nMuntrume Motorsport (muntru.me)"
+  },
+  reset: {
+    badge: "SEGURIDAD · RESET",
+    previewKey: "reset",
+    subject: "Restablece tu contraseña · Muntrume Setup Vault",
+    title: "Restablecer credenciales de acceso",
+    tldr: "Enlace personal de un solo uso para definir una nueva contraseña en el Setup Vault.",
+    ctaLabel: "Crear nueva contraseña →",
+    ctaUrl: "https://muntru.me/garage?setpw=TOKEN_RESET_UNICO",
+    rows: [
+      ["Cuenta", "{CORREO_PILOTO}"],
+      ["Validez", "72 horas (un solo uso)"],
+      ["Seguridad", "PBKDF2-SHA256"]
+    ],
+    body: "Hola {NOMBRE_PILOTO},\n\nEnlace personal para restablecer tu contraseña (72 h):\nhttps://muntru.me/garage?setpw={TOKEN_UNICO}\n\nMuntrume Motorsport (muntru.me)"
+  },
+  code: {
+    badge: "CÓDIGO 6 DÍGITOS",
+    previewKey: "code",
+    subject: "482910 es tu código de acceso · Muntrume Setup Vault",
+    title: "Tu código de acceso",
+    tldr: "Introduce el código de 6 dígitos en muntru.me/garage.",
+    ctaLabel: "Entrar al Setup Vault →",
+    ctaUrl: "https://muntru.me/garage#magic=TOKEN_MAGIC_10M",
+    codeBox: "482910",
+    rows: [
+      ["Caducidad", "10 minutos (un solo uso)"],
+      ["Protección", "No compartas este código por chat"]
+    ],
+    body: "Hola {NOMBRE_PILOTO},\n\nTu código de acceso es: 482910\n\nMuntrume Motorsport · muntru.me"
+  },
+  temp_password: {
+    badge: "CLAVE TEMPORAL",
+    previewKey: "temp_password",
+    subject: "Acceso aprobado · Tu contraseña temporal del Setup Vault",
+    title: "Credenciales temporales de acceso",
+    tldr: "Inicia sesión con tu contraseña temporal y elige una clave personal al entrar.",
+    ctaLabel: "Entrar al Setup Vault →",
+    ctaUrl: "https://muntru.me/garage",
+    rows: [
+      ["Usuario", "{CORREO_PILOTO}"],
+      ["Contraseña temporal", "MTM-2026-X9K4-VAULT"],
+      ["Política", "Cambio obligatorio en el primer inicio"]
+    ],
+    body: "Hola {NOMBRE_PILOTO},\n\n• Usuario: {CORREO_PILOTO}\n• Contraseña temporal: {CLAVE_TEMPORAL}\n• Acceso: https://muntru.me/garage\n\nMuntrume Motorsport · muntru.me"
+  },
+  nec: {
+    badge: "BRIEFING OFICIAL",
+    previewKey: "digest",
+    subject: "🏁 Briefing Oficial: NEC VLN · Muntrume Motorsport",
+    title: "Briefing: Nürburgring Endurance Championship",
+    tldr: "Paquetes semanales NEC disponibles en el Setup Vault.",
+    ctaLabel: "Abrir Setup Vault →",
+    ctaUrl: "https://muntru.me/garage?nec=W01",
+    rows: [
+      ["Circuito", "Nürburgring Combined Gesamtstrecke VLN"],
+      ["Nomenclatura", "MMT_[MODELO]_VLN_[SESIÓN].sto"],
+      ["BoP", "Altura estática ≥ 70.5 mm (PASS TECH)"]
+    ],
+    body: "Equipo,\n\nYa tenéis disponibles en https://muntru.me/garage los setups NEC VLN.\n\nMuntrume Race Control · racecontrol@muntru.me"
+  }
+};
 
 let rcState = {
   activeTab: "overview",
   directoryFilter: "all",
   auditFilter: "all",
-  galleryFilter: "all",
-  galleryPhotos: [],
   members: [],
   profiles: [],
   pendingRequests: [],
@@ -198,6 +121,17 @@ let rcState = {
   lastCredentials: null,
   currentTemplateKey: "welcome"
 };
+
+let umState = {
+  slug: "",
+  email: "",
+  topCars: [],
+  topTracks: [],
+  g61ImageDataUrl: "",
+  subTab: "identity"
+};
+
+let rcActiveMenuBtn = null;
 
 function rcEscape(str) {
   return String(str ?? "")
@@ -208,16 +142,65 @@ function rcEscape(str) {
     .replace(/'/g, "&#39;");
 }
 
+function getRoleLabel(role) {
+  const key = String(role || "driver").toLowerCase();
+  return ROLE_LABELS[key] || role || "Official Driver";
+}
+
+function computeF1Stats(irating, sr = 3.0, trackHours = 100, peakIr = null) {
+  const safeIr = Math.max(100, Number(irating) || 1500);
+  const safeSr = Math.min(4.99, Math.max(1.0, Number(sr) || 3.0));
+  const safeHours = Math.max(0, Number(trackHours) || 0);
+  const calc = (ir) => {
+    const base = ir >= 1500
+      ? 54 + 43 * (Math.log(ir / 1500) / Math.log(12000 / 1500))
+      : Math.max(20, 54 * (ir / 1500));
+    const srAdj = safeSr >= 3.0 ? Math.min(2.0, (safeSr - 3.0) * 1.0) : safeSr < 2.0 ? -2.0 : 0;
+    const expAdj = Math.min(1.8, Math.log1p(safeHours) * 0.3);
+    return Math.min(98, Math.max(1, Math.round(base + srAdj + expAdj)));
+  };
+  const overall = calc(safeIr);
+  const peakBase = calc(Math.max(safeIr, Number(peakIr) || safeIr));
+  const srNorm = (safeSr - 1.0) / 3.99;
+  const expBoost = Math.min(20, Math.log1p(safeHours) * 3.1);
+  return {
+    overall,
+    pace: Math.min(98, Math.max(1, Math.round(peakBase + 3))),
+    awareness: Math.min(98, Math.max(1, Math.round(overall * 0.74 + srNorm * 24))),
+    racecraft: Math.min(98, Math.max(1, Math.round(overall * 0.88 + srNorm * 11))),
+    experience: Math.min(98, Math.max(1, Math.round(overall * 0.78 + expBoost)))
+  };
+}
+
+function parseLicenseStr(str) {
+  const m = String(str || "").match(/^(?:Class\s+)?(Pro|[A-D]|Rookie)\s*([0-9]+(?:\.[0-9]+)?)/i);
+  if (!m) return { class_label: "", sr: null };
+  const cls = /^pro$/i.test(m[1]) ? "Pro" : /^rookie$/i.test(m[1]) ? "Rookie" : `Class ${m[1].toUpperCase()}`;
+  return { class_label: cls, sr: Number(m[2]) };
+}
+
 function getAdminToken() {
   try {
-    return (
-      localStorage.getItem("mrt_vault_token") ||
-      sessionStorage.getItem("mrt_vault_token") ||
-      ""
-    );
+    return localStorage.getItem("mrt_vault_token") || sessionStorage.getItem("mrt_vault_token") || "";
   } catch {
     return "";
   }
+}
+
+async function rcAdminFetch(path, body = {}) {
+  const token = getAdminToken();
+  const headers = { "Content-Type": "application/json" };
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const res = await fetch(`${RC_API_BASE}${path}`, { method: "POST", headers, body: JSON.stringify(body || {}) });
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 401) {
+    secureAdminLogout("invalid_token");
+    throw new Error(data.error || "Sesión caducada. Vuelve a iniciar sesión.");
+  }
+  if (!res.ok || data.success === false) {
+    throw new Error(data.error || `Error HTTP ${res.status}`);
+  }
+  return data;
 }
 
 function verifyAdminSession() {
@@ -231,126 +214,30 @@ function verifyAdminSession() {
     const rawUser = localStorage.getItem("mrt_vault_user") || sessionStorage.getItem("mrt_vault_user");
     user = rawUser ? JSON.parse(rawUser) : null;
   } catch {}
-
   const email = (user && user.email ? String(user.email) : (localStorage.getItem("muntrume_user_email") || "")).trim().toLowerCase();
   const isAdmin = Boolean(user && (email === "atrumin16@gmail.com" || user.role === "admin"));
-
   if (!isAdmin) {
     secureAdminLogout("unauthorized");
     return false;
   }
+  const emailEl = document.getElementById("rcSessionEmail");
+  if (emailEl && email) emailEl.textContent = email;
   return true;
 }
 
 function secureAdminLogout(reason) {
   try {
-    localStorage.removeItem("mrt_vault_token");
-    localStorage.removeItem("mrt_vault_user");
-    localStorage.removeItem("muntrume_user_email");
-    localStorage.removeItem("muntrume_auth_state");
-    localStorage.removeItem("muntrume_is_admin");
-    localStorage.removeItem("muntrume_rc_audit_logs");
-    localStorage.removeItem("muntrume_rc_custom_members");
+    ["mrt_vault_token", "mrt_vault_user", "muntrume_user_email", "muntrume_auth_state", "muntrume_is_admin", "muntrume_rc_audit_logs"].forEach((k) => localStorage.removeItem(k));
     sessionStorage.clear();
   } catch {}
-
   const shell = document.getElementById("rcShell") || document.querySelector(".rc-shell");
   if (shell) shell.innerHTML = "";
-
   const dest = reason === "unauthorized"
     ? "/garage?auth=admin&redirect=" + encodeURIComponent(window.location.pathname)
     : reason === "invalid_token"
     ? "/garage?auth=expired&redirect=" + encodeURIComponent(window.location.pathname)
     : "/garage?logged_out=1";
-
-  try {
-    window.location.replace(dest);
-  } catch {
-    window.location.href = dest;
-  }
-}
-
-function loadLocalCustomMembers() {
-  try {
-    const raw = localStorage.getItem("muntrume_rc_custom_members");
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveLocalCustomMembers(list) {
-  try {
-    localStorage.setItem("muntrume_rc_custom_members", JSON.stringify(list));
-  } catch {}
-}
-
-function appendAuditEvent(category, actor, detail, status = "OK") {
-  const entry = {
-    timestamp: new Date().toISOString(),
-    category,
-    actor,
-    detail,
-    status
-  };
-  rcState.auditLogs.unshift(entry);
-  try {
-    localStorage.setItem("muntrume_rc_audit_logs", JSON.stringify(rcState.auditLogs.slice(0, 60)));
-  } catch {}
-  renderOverviewActivity();
-  renderAuditLogsTable();
-}
-
-function initDefaultAuditLogs() {
-  try {
-    const saved = localStorage.getItem("muntrume_rc_audit_logs");
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        rcState.auditLogs = parsed;
-        return;
-      }
-    }
-  } catch {}
-
-  const now = Date.now();
-  rcState.auditLogs = [
-    {
-      timestamp: new Date(now - 2 * 60000).toISOString(),
-      category: "admin",
-      actor: "atrumin16@gmail.com",
-      detail: "Auditoría BoP 26S4 completada: 42,654 setups MMT_ verificados (0 Failed Tech)",
-      status: "PASS TECH"
-    },
-    {
-      timestamp: new Date(now - 14 * 60000).toISOString(),
-      category: "download",
-      actor: "alberto@muntru.me",
-      detail: "Pack NEC W01–W13 generado en Nürburgring Combined Gesamtstrecke VLN (1,638 archivos .sto)",
-      status: "SYNCED"
-    },
-    {
-      timestamp: new Date(now - 42 * 60000).toISOString(),
-      category: "auth",
-      actor: "atrumin16@gmail.com",
-      detail: "Sesión de Team Principal verificada en Race Control (PBKDF2-SHA256)",
-      status: "OK"
-    },
-    {
-      timestamp: new Date(now - 95 * 60000).toISOString(),
-      category: "download",
-      actor: "mateo@muntru.me",
-      detail: "Descarga directa en carpeta iRacing: MMT_F296_VLN_END.sto (Marca de agua UTF-16LE)",
-      status: "OK"
-    },
-    {
-      timestamp: new Date(now - 180 * 60000).toISOString(),
-      category: "admin",
-      actor: "racecontrol@muntru.me",
-      detail: "Verificación de registros DNS Cloudflare Email Routing (SPF + DKIM + DMARC)",
-      status: "ACTIVO"
-    }
-  ];
+  try { window.location.replace(dest); } catch { window.location.href = dest; }
 }
 
 function showRcNotice(title, msg, tone = "info") {
@@ -369,22 +256,37 @@ function hideRcNotice() {
   document.getElementById("rcFeedbackBanner")?.classList.add("hidden");
 }
 
+function appendAuditEvent(category, actor, detail, status = "OK") {
+  rcState.auditLogs.unshift({ timestamp: new Date().toISOString(), category, actor, detail, status });
+  try { localStorage.setItem("muntrume_rc_audit_logs", JSON.stringify(rcState.auditLogs.slice(0, 60))); } catch {}
+  renderAuditLogsTable();
+}
+
+function initDefaultAuditLogs() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("muntrume_rc_audit_logs") || "[]");
+    if (Array.isArray(saved) && saved.length > 0) {
+      rcState.auditLogs = saved;
+      return;
+    }
+  } catch {}
+  const now = Date.now();
+  rcState.auditLogs = [
+    { timestamp: new Date(now - 5 * 60000).toISOString(), category: "auth", actor: "atrumin16@gmail.com", detail: "Sesión de Team Principal verificada (PBKDF2-SHA256)", status: "OK" },
+    { timestamp: new Date(now - 30 * 60000).toISOString(), category: "admin", actor: "racecontrol@muntru.me", detail: "Consola Muntrume Admin sincronizada con Cloudflare D1", status: "ACTIVO" }
+  ];
+}
+
 function switchAdminTab(tabId) {
-  const validTabs = ["overview", "directory", "setups", "iracing", "gallery", "security"];
-  const chosen = validTabs.includes(tabId) ? tabId : "overview";
+  const mapLegacy = { directory: "overview", setups: "overview", iracing: "overview", gallery: "overview" };
+  const normalized = mapLegacy[tabId] || tabId;
+  const validTabs = ["overview", "access", "security"];
+  const chosen = validTabs.includes(normalized) ? normalized : "overview";
   rcState.activeTab = chosen;
-
   validTabs.forEach((t) => {
-    const panel = document.getElementById(`tab-${t}`);
-    const btn = document.getElementById(`nav-${t}`);
-    if (panel) panel.classList.toggle("hidden", t !== chosen);
-    if (btn) btn.classList.toggle("is-active", t === chosen);
+    document.getElementById(`tab-${t}`)?.classList.toggle("hidden", t !== chosen);
+    document.getElementById(`nav-${t}`)?.classList.toggle("is-active", t === chosen);
   });
-
-  if (chosen === "gallery") {
-    renderAdminGalleryGrid();
-  }
-
   try {
     const url = new URL(window.location.href);
     if (chosen === "overview") url.searchParams.delete("tab");
@@ -394,22 +296,19 @@ function switchAdminTab(tabId) {
 }
 
 // ============================================================================
-// DATA LOADING: CLOUDFLARE D1 OVERVIEW + LIVE /API/DRIVERS TELEMETRY
+// LIVE SYNC WITH CLOUDFLARE D1 & /API/DRIVERS
 // ============================================================================
 async function refreshRaceControlData() {
   const badge = document.getElementById("rcBackendBadgeText");
   const d1Side = document.getElementById("rcSidebarD1Status");
-  if (badge) badge.textContent = "D1 Edge: Sincronizando…";
-
-  // 1. Members come from real D1 database (no hardcoded fake members)
-  const byEmail = new Map();
-
-  // 2. Strict Session Verification + Live D1 Admin Panel
+  if (badge) badge.textContent = "Sincronizando…";
   if (!verifyAdminSession()) return;
+
   let d1Online = false;
   try {
     const data = await rcAdminFetch("/api/setups/admin/panel", {});
     d1Online = true;
+    const byEmail = new Map();
     if (Array.isArray(data.members)) {
       data.members.forEach((dbM) => {
         if (!dbM || !dbM.email) return;
@@ -434,102 +333,106 @@ async function refreshRaceControlData() {
         });
       });
     }
-    if (Array.isArray(data.profiles) && data.profiles.length > 0) {
-      rcState.profiles = data.profiles;
-    } else if (rcState.profiles.length === 0) {
-      rcState.profiles = OFFICIAL_ROSTER_DEFAULTS.map((p) => ({
-        slug: p.slug,
-        name: p.name,
-        fullName: p.name,
-        dorsal: p.number ? `#${p.number}` : null,
-        kind: p.slug === "juanluc" ? "staff" : "driver",
-        role: p.roleLabel,
-        specialty: "",
-        bio: "",
-        club: "",
-        country: "Spain",
-        cust_id: p.cust_id ? String(p.cust_id) : null,
-        email: p.email,
-        irating: null,
-        license: p.sr || null
-      }));
-    }
-    if (Array.isArray(data.requests)) {
-      rcState.pendingRequests = data.requests.filter((r) => r && r.status === "pending");
-    } else if (Array.isArray(data.pending_requests)) {
-      rcState.pendingRequests = data.pending_requests;
-    } else {
-      rcState.pendingRequests = [];
-    }
+    rcState.members = Array.from(byEmail.values());
+    rcState.profiles = Array.isArray(data.profiles) ? data.profiles : [];
+    rcState.pendingRequests = Array.isArray(data.requests)
+      ? data.requests.filter((r) => r && r.status === "pending")
+      : Array.isArray(data.pending_requests)
+      ? data.pending_requests
+      : [];
   } catch (err) {
-    showRcNotice("Error al sincronizar con Cloudflare D1", err?.message || "No se pudo cargar /api/setups/admin/panel.", "err");
+    showRcNotice("Error al sincronizar con Cloudflare D1", err?.message || "No se pudo cargar el panel.", "err");
   }
 
-  if (byEmail.size === 0) {
-    OFFICIAL_ROSTER_DEFAULTS.forEach((m) => byEmail.set(m.email.toLowerCase(), m));
-  }
-  rcState.members = Array.from(byEmail.values());
-
-  // 3. Fetch live driver telemetry from /api/drivers
   try {
     const res = await fetch(`${RC_API_BASE}/api/drivers`, { headers: { Accept: "application/json" } });
     if (res.ok) {
       const payload = await res.json();
       const drivers = Array.isArray(payload) ? payload : payload.drivers || [];
-      drivers.forEach((d) => {
-        if (d && d.slug) rcState.liveTelemetryBySlug[d.slug] = d;
-      });
+      drivers.forEach((d) => { if (d && d.slug) rcState.liveTelemetryBySlug[d.slug] = d; });
     }
   } catch {}
 
-  if (badge) badge.textContent = d1Online ? "D1 Edge: Online" : "D1 Edge: Error";
+  if (badge) badge.textContent = d1Online ? "D1 Online" : "D1 Error";
   if (d1Side) d1Side.textContent = `${rcState.members.filter((m) => m.status === "active").length} activos · ${rcState.pendingRequests.length} pend.`;
 
   renderOverviewSection();
-  renderDirectoryTable();
   renderPendingRequests();
+  renderDirectoryTable();
   renderMailboxesTable();
-  renderIracingBridgeTable();
   renderAuditLogsTable();
 }
 
 function renderOverviewSection() {
-  const kpiDrivers = document.getElementById("kpiDriversCount");
-  const kpiPendingSub = document.getElementById("kpiPendingSub");
-  const kpiPendingCount = document.getElementById("kpiPendingCount");
-  const kpiPendingStatus = document.getElementById("kpiPendingStatusBadge");
-  const sidebarBadge = document.getElementById("sidebarPendingBadge");
   const pendingCount = rcState.pendingRequests.length;
+  const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
 
-  if (kpiDrivers) kpiDrivers.textContent = String(rcState.members.length);
-  if (kpiPendingCount) kpiPendingCount.textContent = String(pendingCount);
+  setTxt("kpiDriversCount", String(rcState.members.length));
+  setTxt("kpiPendingCount", String(pendingCount));
+  setTxt("kpiPendingSub", pendingCount > 0 ? `${rcState.members.length} cuentas · ${pendingCount} pendiente(s)` : `${rcState.members.length} cuentas activas en D1`);
+  setTxt("sidebarPendingBadge", pendingCount > 0 ? `${rcState.members.length}+${pendingCount}` : String(rcState.members.length));
+
+  const kpiPendingStatus = document.getElementById("kpiPendingStatusBadge");
   if (kpiPendingStatus) {
     kpiPendingStatus.textContent = pendingCount > 0 ? `${pendingCount} nuevas` : "Al día";
     kpiPendingStatus.className = `rc-badge ${pendingCount > 0 ? "rc-badge--warn" : "rc-badge--ok"}`;
   }
-  if (kpiPendingSub) {
-    kpiPendingSub.textContent =
-      pendingCount > 0
-        ? `${rcState.members.length} titulares activos · ${pendingCount} solicitud(es) pendiente(s)`
-        : `${rcState.members.length} pilotos oficiales del equipo`;
+
+  // Live Team Average iRating & OVR across official active drivers
+  const driverProfiles = (rcState.profiles || []).filter((p) => (p.kind || "driver") === "driver");
+  const irValues = [];
+  const ovrValues = [];
+  driverProfiles.forEach((p) => {
+    const tInfo = rcState.liveTelemetryBySlug[p.slug] || {};
+    const ir = Number(p.irating ?? tInfo.irating) || 0;
+    const ovr = p.f1_stats?.overall || (ir > 0 ? computeF1Stats(ir, parseLicenseStr(p.license || tInfo.license).sr || 3.0, p.total_track_hours || 100).overall : 0);
+    if (ir > 0) irValues.push(ir);
+    if (ovr > 0) ovrValues.push(ovr);
+  });
+
+  if (irValues.length > 0) {
+    const avgIr = Math.round(irValues.reduce((a, b) => a + b, 0) / irValues.length);
+    setTxt("kpiTeamAvgIr", `${avgIr.toLocaleString("en-US")} iR`);
+    setTxt("kpiTeamAvgSub", `Media de ${irValues.length} piloto(s) con iRating`);
+  } else {
+    setTxt("kpiTeamAvgIr", "—");
+    setTxt("kpiTeamAvgSub", "Edita el iRating para calcular media");
   }
-  if (sidebarBadge) {
-    sidebarBadge.textContent = pendingCount > 0 ? `${rcState.members.length}+${pendingCount}` : String(rcState.members.length);
+  if (ovrValues.length > 0) {
+    const avgOvr = Math.round(ovrValues.reduce((a, b) => a + b, 0) / ovrValues.length);
+    setTxt("kpiTeamAvgOvrBadge", `OVR ${avgOvr}`);
+  } else {
+    setTxt("kpiTeamAvgOvrBadge", "OVR —");
   }
 
+  // Render Official Roster Table
   const tbody = document.getElementById("overviewRosterBody");
   if (tbody) {
-    const profiles = rcState.profiles && rcState.profiles.length > 0 ? rcState.profiles : [];
-    tbody.innerHTML = profiles.map((p) => {
+    tbody.innerHTML = (rcState.profiles || []).map((p) => {
       const tInfo = rcState.liveTelemetryBySlug[p.slug] || {};
       const displayName = p.fullName || p.name || p.slug;
-      const dorsalText = p.dorsal || (displayName || "M").slice(0, 2).toUpperCase();
-      const irVal = p.irating ?? tInfo.irating ?? null;
-      const licVal = p.license || tInfo.license || "";
-      const irFormatted = irVal ? `${Number(irVal).toLocaleString("en-US")} iR` : "Sin iRating";
+      const dorsalText = p.dorsal || displayName.slice(0, 2).toUpperCase();
       const isDriver = (p.kind || "driver") === "driver";
       const roleDisplay = p.role || (isDriver ? "Piloto Oficial" : "Staff Interno");
-      const linkedEmail = p.email || "";
+
+      const lics = Array.isArray(p.licenses) && p.licenses.length > 0 ? p.licenses : [];
+      const licBadges = lics.length > 0
+        ? lics.map((l) => {
+            const meta = LICENSE_META.find((m) => m.key === l.category) || { short: l.category.slice(0, 2).toUpperCase() };
+            const clsShort = String(l.class_label || "").replace(/^Class\s+/i, "");
+            return `<span class="rc-badge ${l.category === "sports_car" ? "rc-badge--ok" : ""}" title="${rcEscape(meta.label || l.category)}">${rcEscape(meta.short)} ${rcEscape(clsShort)}${l.sr != null ? ` ${Number(l.sr).toFixed(2)}` : ""}</span>`;
+          }).join("")
+        : (p.license || tInfo.license ? `<span class="rc-badge rc-badge--ok">SC ${rcEscape(p.license || tInfo.license)}</span>` : `<span class="rc-mono-sub">Sin licencias</span>`);
+
+      const irVal = p.irating ?? tInfo.irating ?? null;
+      const ovrVal = p.f1_stats?.overall || (irVal ? computeF1Stats(irVal, parseLicenseStr(p.license || tInfo.license).sr || 3.0, p.total_track_hours || 100).overall : null);
+      const irText = irVal ? `${Number(irVal).toLocaleString("en-US")} iR` : "—";
+      const carsCount = Array.isArray(p.top_cars) ? p.top_cars.length : 0;
+      const tracksCount = Array.isArray(p.top_tracks) ? p.top_tracks.length : 0;
+      const g61Label = (carsCount || tracksCount)
+        ? `${carsCount} coches · ${tracksCount} circ.${p.total_track_hours ? ` · ${p.total_track_hours}h` : ""}`
+        : "Subir foto G61";
+
       return `
         <tr>
           <td>
@@ -537,20 +440,23 @@ function renderOverviewSection() {
               <span class="rc-avatar">${rcEscape(dorsalText)}</span>
               <div>
                 <div class="rc-strong">${rcEscape(displayName)}</div>
-                <div class="rc-mono-sub">${rcEscape(linkedEmail || `/drivers/${p.slug}/`)}</div>
+                <div class="rc-mono-sub">${rcEscape(p.email || `/drivers/${p.slug}/`)}</div>
               </div>
             </div>
           </td>
           <td><span class="rc-badge ${isDriver ? "rc-badge--ok" : ""}">${rcEscape(roleDisplay)}</span></td>
-          <td><code>${rcEscape(p.cust_id || tInfo.cust_id || "—")}</code></td>
+          <td><div class="rc-lic-pills">${licBadges}</div></td>
           <td>
-            <div class="rc-mono-sub">${rcEscape(licVal ? `${irFormatted} · ${licVal}` : irFormatted)}</div>
+            <div style="display:flex;align-items:center;gap:6px;white-space:nowrap">
+              <strong style="font-family:var(--r-mono);font-size:12.5px">${rcEscape(irText)}</strong>
+              ${ovrVal ? `<span class="rc-badge rc-badge--ok">OVR ${ovrVal}</span>` : ""}
+            </div>
           </td>
-          <td><span class="rc-badge ${isDriver ? "rc-badge--ok" : ""}">${isDriver ? "En parrilla" : "Staff"}</span></td>
+          <td><span class="rc-mono-sub">${rcEscape(g61Label)}</span></td>
           <td class="text-right">
             <div class="rc-row-actions">
-              <button type="button" class="r-btn r-btn--primary r-btn--sm" data-slug="${rcEscape(p.slug)}" onclick="openEditDriverProfileModal(this.dataset.slug)">Editar perfil</button>
-              <a href="/drivers/${rcEscape(p.slug)}/" class="r-btn r-btn--sm" title="Ver ficha pública">Ficha ↗</a>
+              <button type="button" class="r-btn r-btn--primary r-btn--sm" data-slug="${rcEscape(p.slug)}" onclick="openUnifiedPilotModal({ slug: this.dataset.slug })">Editar todo</button>
+              <a href="/drivers/${rcEscape(p.slug)}/" class="r-btn r-btn--sm" title="Abrir ficha pública">Ficha ↗</a>
             </div>
           </td>
         </tr>
@@ -560,39 +466,8 @@ function renderOverviewSection() {
 
   const dl = document.getElementById("quickResetDriversDatalist");
   if (dl && rcState.members.length > 0) {
-    dl.innerHTML = rcState.members.map((m) => `<option value="${rcEscape(m.email)}">${rcEscape(m.name)} (${rcEscape(m.roleLabel || m.role)})</option>`).join("");
+    dl.innerHTML = rcState.members.map((m) => `<option value="${rcEscape(m.email)}">${rcEscape(m.name)} (${rcEscape(getRoleLabel(m.role))})</option>`).join("");
   }
-
-  renderOverviewActivity();
-}
-
-function renderOverviewActivity() {
-  const list = document.getElementById("overviewActivityList");
-  if (!list) return;
-  list.innerHTML = rcState.auditLogs.slice(0, 5).map((item) => {
-    const timeStr = new Date(item.timestamp).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
-    return `
-      <li>
-        <div>
-          <strong class="rc-strong">${rcEscape(item.detail)}</strong>
-          <div class="rc-mono-sub">${rcEscape(item.actor)} · ${rcEscape(timeStr)}</div>
-        </div>
-        <span class="rc-badge rc-badge--ok">${rcEscape(item.status)}</span>
-      </li>
-    `;
-  }).join("");
-}
-
-// ============================================================================
-// TAB 2: DIRECTORY, PENDING REQUESTS & CREDENTIAL ISSUANCE
-// ============================================================================
-function filterDirectory(mode) {
-  rcState.directoryFilter = mode;
-  ["all", "active", "admin", "inactive", "pending"].forEach((m) => {
-    document.getElementById(`dirFilter-${m}`)?.classList.toggle("is-on", m === mode);
-  });
-  renderPendingRequests();
-  renderDirectoryTable();
 }
 
 function renderPendingRequests() {
@@ -600,65 +475,59 @@ function renderPendingRequests() {
   const badge = document.getElementById("pendingRequestsCountBadge");
   const container = document.getElementById("pendingRequestsList");
   if (!card || !container) return;
-
   const list = rcState.pendingRequests || [];
   if (badge) badge.textContent = `${list.length} pendiente(s)`;
-
-  if (list.length === 0 && rcState.directoryFilter !== "pending") {
+  if (list.length === 0) {
     card.classList.add("hidden");
     return;
   }
-
   card.classList.remove("hidden");
-  if (list.length === 0) {
-    container.innerHTML = `<p class="rc-muted">No hay solicitudes pendientes en este momento. Puedes dar de alta directamente a cualquier piloto con el botón «+ Alta de Piloto».</p>`;
-    return;
-  }
-
   container.innerHTML = list.map((req) => {
-    const meta = [
-      req.iracing_id ? `iRacing ID: ${req.iracing_id}` : null,
-      req.car_category ? `Categoría: ${req.car_category}` : null,
-      req.created_at ? new Date(req.created_at).toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" }) : null
-    ].filter(Boolean).join(" · ");
+    const meta = [req.iracing_id ? `iRacing ID: ${req.iracing_id}` : null, req.car_category ? `Categoría: ${req.car_category}` : null].filter(Boolean).join(" · ");
     return `
-      <div class="rc-sim-output" style="flex-wrap:wrap;gap:12px">
-        <div style="flex:1;min-width:240px">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-radius:12px;background:var(--r-bg-2);border:1px solid var(--r-line)">
+        <div style="flex:1;min-width:220px">
           <div class="rc-strong">${rcEscape(req.name || "Solicitante")} · <code>${rcEscape(req.email)}</code></div>
           ${meta ? `<div class="rc-mono-sub">${rcEscape(meta)}</div>` : ""}
-          <p class="rc-muted" style="margin-top:4px">${rcEscape(req.message || "Solicitud de acceso al Setup Vault")}</p>
+          <p class="rc-muted" style="margin-top:3px;font-size:12.5px">${rcEscape(req.message || "Solicitud de acceso al Setup Vault")}</p>
         </div>
-        <div class="rc-btn-row" style="flex-wrap:wrap">
-          <button type="button" class="r-btn r-btn--primary r-btn--sm" data-request-id="${rcEscape(req.id)}" data-email="${rcEscape(req.email)}" data-name="${rcEscape(req.name || "")}" onclick="approvePendingRequestBtn(this, 'link')">✓ Aprobar y Enviar Acceso</button>
-          <button type="button" class="r-btn r-btn--sm" style="border-color:rgba(239,68,68,.4);color:#f87171" data-request-id="${rcEscape(req.id)}" data-email="${rcEscape(req.email)}" data-name="${rcEscape(req.name || "")}" onclick="rejectPendingRequestBtn(this)">✕ Rechazar</button>
+        <div class="rc-btn-row">
+          <button type="button" class="r-btn r-btn--primary r-btn--sm" data-request-id="${rcEscape(req.id)}" data-email="${rcEscape(req.email)}" data-name="${rcEscape(req.name || "")}" onclick="approvePendingRequestBtn(this, 'link')">✓ Aprobar</button>
+          <button type="button" class="r-btn r-btn--sm" style="border-color:rgba(239,68,68,.4);color:#ef4444" data-request-id="${rcEscape(req.id)}" data-email="${rcEscape(req.email)}" onclick="rejectPendingRequestBtn(this)">✕ Rechazar</button>
         </div>
       </div>
     `;
   }).join("");
 }
 
+function filterDirectory(mode) {
+  rcState.directoryFilter = mode;
+  ["all", "active", "admin", "inactive"].forEach((m) => {
+    document.getElementById(`dirFilter-${m}`)?.classList.toggle("is-on", m === mode);
+  });
+  renderDirectoryTable();
+}
+
 function renderDirectoryTable() {
   const tbody = document.getElementById("directoryTableBody");
   if (!tbody) return;
   const q = (document.getElementById("directorySearchInput")?.value || "").trim().toLowerCase();
-
   const filtered = rcState.members.filter((m) => {
     if (rcState.directoryFilter === "admin" && m.role !== "admin") return false;
     if (rcState.directoryFilter === "active" && m.status !== "active") return false;
     if (rcState.directoryFilter === "inactive" && m.status !== "inactive") return false;
     if (!q) return true;
-    const hay = `${m.name} ${m.email} ${m.mailbox || ""} ${m.roleLabel || ""} ${m.number || ""}`.toLowerCase();
-    return hay.includes(q);
+    return `${m.name} ${m.email} ${getRoleLabel(m.role)} ${m.team || ""} ${m.car_class || ""}`.toLowerCase().includes(q);
   });
 
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" class="r-empty">Ningún miembro coincide con el filtro actual.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--r-muted);padding:24px">Ninguna cuenta coincide con el filtro.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = filtered.map((m) => {
     const linkedProf = (rcState.profiles || []).find((pr) => pr.email && String(pr.email).toLowerCase() === String(m.email).toLowerCase());
-    const numBadge = linkedProf?.dorsal || (m.number ? `#${m.number}` : (m.name || "MMT").slice(0, 2).toUpperCase());
+    const numBadge = linkedProf?.dorsal || (m.name || "MMT").slice(0, 2).toUpperCase();
     const isBlocked = m.status === "inactive";
     const statusBadge = isBlocked
       ? `<span class="rc-badge rc-badge--err">Bloqueada</span>`
@@ -667,7 +536,8 @@ function renderDirectoryTable() {
       : `<span class="rc-badge rc-badge--warn">Pendiente clave</span>`;
     const metaSub = linkedProf?.irating
       ? `${Number(linkedProf.irating).toLocaleString("en-US")} iR${linkedProf.license ? ` · ${linkedProf.license}` : ""}`
-      : (m.car_class || m.team || "Vault & Setup Builder");
+      : (m.car_class || m.team || "Setup Vault");
+
     return `
       <tr>
         <td>
@@ -675,24 +545,18 @@ function renderDirectoryTable() {
             <span class="rc-avatar">${rcEscape(numBadge)}</span>
             <div>
               <div class="rc-strong">${rcEscape(m.name)}</div>
-              <div class="rc-mono-sub">${linkedProf?.cust_id ? `iRacing ID: ${rcEscape(linkedProf.cust_id)}` : (m.team ? rcEscape(m.team) : "Miembro Autorizado D1")}</div>
+              <div class="rc-mono-sub">${linkedProf ? `Ficha: /drivers/${rcEscape(linkedProf.slug)}/` : (m.team ? rcEscape(m.team) : "Cuenta D1")}</div>
             </div>
           </div>
         </td>
-        <td>
-          <div><code>${rcEscape(m.email)}</code></div>
-        </td>
-        <td>
-          <span class="rc-badge ${m.role === "admin" ? "rc-badge--ok" : ""}">${rcEscape(getRoleLabel(m.role))}</span>
-        </td>
-        <td>
-          <div class="rc-mono-sub">${rcEscape(metaSub)}</div>
-        </td>
+        <td><code>${rcEscape(m.email)}</code></td>
+        <td><span class="rc-badge ${m.role === "admin" ? "rc-badge--ok" : ""}">${rcEscape(getRoleLabel(m.role))}</span></td>
+        <td><div class="rc-mono-sub">${rcEscape(metaSub)}</div></td>
         <td>${statusBadge}</td>
         <td class="text-right">
           <div class="rc-row-actions">
-            <button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" onclick="openEditUserModal(this.dataset.email)" title="Editar nombre, rol, categoría y perfil público">Editar</button>
-            <button type="button" class="rc-menu-btn" aria-haspopup="menu" aria-expanded="false" aria-label="Más acciones para ${rcEscape(m.name)}" data-email="${rcEscape(m.email)}" data-scope="directory" onclick="openRowActionMenu(this, event)">⋮</button>
+            <button type="button" class="r-btn r-btn--sm" data-email="${rcEscape(m.email)}" data-slug="${rcEscape(linkedProf?.slug || "")}" onclick="openUnifiedPilotModal({ email: this.dataset.email, slug: this.dataset.slug })">Editar</button>
+            <button type="button" class="rc-menu-btn" aria-haspopup="menu" aria-expanded="false" aria-label="Acciones para ${rcEscape(m.name)}" data-email="${rcEscape(m.email)}" onclick="openRowActionMenu(this, event)">⋮</button>
           </div>
         </td>
       </tr>
@@ -700,1062 +564,454 @@ function renderDirectoryTable() {
   }).join("");
 }
 
-function openAddDriverModal() {
-  document.getElementById("addDriverModal")?.classList.remove("hidden");
-  document.getElementById("newDriverName")?.focus();
+// ============================================================================
+// UNIFIED ALL-IN-ONE PILOT EDITOR MODAL (IDENTITY + 5 LICENSES + G61 + STATS)
+// ============================================================================
+function switchUnifiedModalTab(tab) {
+  umState.subTab = tab;
+  ["identity", "licenses", "g61", "stats"].forEach((t) => {
+    document.getElementById(`umPanel-${t}`)?.classList.toggle("hidden", t !== tab);
+    document.getElementById(`umTabBtn-${t}`)?.classList.toggle("is-on", t === tab);
+  });
 }
 
-function closeAddDriverModal() {
-  document.getElementById("addDriverModal")?.classList.add("hidden");
-}
-
-async function issuePilotCredentials({ request_id = null, name, email, role = "driver", method = "link", send_email = true, force = true }) {
+function openUnifiedPilotModal({ slug = "", email = "" } = {}) {
+  const cleanSlug = String(slug || "").trim().toLowerCase();
   const cleanEmail = String(email || "").trim().toLowerCase();
-  const cleanName = String(name || cleanEmail.split("@")[0]).trim();
-  if (!cleanEmail) return;
 
-  try {
-    const payload = request_id
-      ? { request_id: Number(request_id), method, send_email, force }
-      : { email: cleanEmail, name: cleanName, role, method, send_email, force };
+  const prof = cleanSlug
+    ? (rcState.profiles || []).find((p) => p.slug === cleanSlug)
+    : (cleanEmail ? (rcState.profiles || []).find((p) => p.email && String(p.email).toLowerCase() === cleanEmail) : null);
 
-    const data = await rcAdminFetch("/api/setups/admin/approve", payload);
-    const secret = data.temp_password || data.set_password_link || "";
-    const isTempPass = Boolean(data.temp_password);
+  const lookupEmail = cleanEmail || (prof?.email ? String(prof.email).toLowerCase() : "");
+  const member = lookupEmail
+    ? (rcState.members || []).find((m) => String(m.email).toLowerCase() === lookupEmail)
+    : null;
 
-    appendAuditEvent(
-      "admin",
-      "atrumin16@gmail.com",
-      `Credenciales emitidas para ${cleanName} (${cleanEmail}) · ${isTempPass ? "Clave temporal" : "Enlace 72h"} · Email: ${data.email_sent ? "enviado" : "no enviado"}`,
-      data.email_sent ? "ENVIADO" : "LISTO"
-    );
+  const tInfo = prof ? (rcState.liveTelemetryBySlug[prof.slug] || {}) : {};
 
-    await refreshRaceControlData();
+  umState = {
+    slug: prof?.slug || "",
+    email: member?.email || prof?.email || cleanEmail || "",
+    topCars: Array.isArray(prof?.top_cars) ? prof.top_cars.map((x) => ({ ...x })) : [],
+    topTracks: Array.isArray(prof?.top_tracks) ? prof.top_tracks.map((x) => ({ ...x })) : [],
+    g61ImageDataUrl: "",
+    subTab: "identity"
+  };
 
-    if (data.email_sent) {
-      showRcNotice("Acceso enviado automáticamente", `Correo seguro enviado directamente a ${cleanEmail} (sin exponer credenciales en pantalla).`, "success");
-    } else {
-      if (secret) {
-        openCredentialsResultModal({ name: data.pilot?.name || cleanName, email: data.pilot?.email || cleanEmail, secret, isTempPass });
-      }
-      if (data.email_error) {
-        showRcNotice("Acceso creado (correo pendiente)", `Cuenta activada en D1, pero el correo falló: ${data.email_error}. Usa el modal de respaldo.`, "warn");
-      } else if (data.message) {
-        showRcNotice("Solicitud actualizada", data.message, "info");
-      }
-    }
-  } catch (err) {
-    showRcNotice("No se pudo aprobar/generar acceso", err?.message || "Error al conectar con Cloudflare D1.", "err");
+  const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v ?? ""; };
+  const setChk = (id, v) => { const el = document.getElementById(id); if (el) el.checked = Boolean(v); };
+
+  const titleEl = document.getElementById("unifiedPilotTitle");
+  const subEl = document.getElementById("unifiedPilotSub");
+  const displayName = prof?.fullName || member?.name || umState.email || "Piloto";
+  if (titleEl) titleEl.textContent = `Editar · ${displayName}`;
+  if (subEl) {
+    subEl.textContent = prof
+      ? `Ficha oficial /drivers/${prof.slug}/ + cuenta D1. Edita licencias, sube captura Garage 61 y recalcula la media OVR.`
+      : `Cuenta de usuario en Cloudflare D1 (${umState.email}).`;
   }
-}
 
-async function submitAddDriverForm(e) {
-  e.preventDefault();
-  const name = document.getElementById("newDriverName")?.value || "";
-  const email = document.getElementById("newDriverEmail")?.value || "";
-  const role = document.getElementById("newDriverRole")?.value || "driver";
-  const method = document.getElementById("newDriverMethod")?.value || "link";
-  const send_email = Boolean(document.getElementById("newDriverSendEmail")?.checked);
-
-  closeAddDriverModal();
-  await issuePilotCredentials({ name, email, role, method, send_email, force: true });
-}
-
-async function generateDriverAccessFromBtn(btn, method = "link") {
-  const email = (btn?.dataset?.email || "").trim().toLowerCase();
-  const name = btn?.dataset?.name || email.split("@")[0];
-  if (!email) return;
-  if (method === "temp_password") {
-    await issuePilotCredentials({ name, email, method: "temp_password", send_email: true, force: true });
-    return;
-  }
-  const alwaysOpenModal = method === "copy_link";
-  try {
-    const data = await rcAdminFetch("/api/setups/admin/resend-invite", { email, kind: "reset" });
-    const secret = data.set_password_link || "";
-    appendAuditEvent("admin", "atrumin16@gmail.com", `Reset/enlace 72h emitido para ${email} · Email: ${data.email_sent ? "OK" : "manual"}`, "RESET");
-    await refreshRaceControlData();
-    if (secret && (alwaysOpenModal || !data.email_sent)) {
-      openCredentialsResultModal({ name, email, secret, isTempPass: false });
-      try { await navigator.clipboard.writeText(secret); } catch {}
-    }
-    showRcNotice(
-      alwaysOpenModal
-        ? "Enlace 72h generado y copiado"
-        : (data.email_sent ? "Correo de reseteo enviado" : "Correo pendiente (respaldo abierto)"),
-      alwaysOpenModal
-        ? `Enlace de reseteo copiado al portapapeles para ${email} (y correo enviado en paralelo).`
-        : data.email_sent
-          ? `Correo con enlace de reseteo (72 h) enviado directamente a ${email}.`
-          : `El correo falló (${data.email_error || "revisa Resend"}). Copia el enlace desde el modal.`,
-      data.email_sent || alwaysOpenModal ? "success" : "warn"
-    );
-  } catch (err) {
-    showRcNotice("No se pudo enviar el reset", err?.message || "Error al generar enlace.", "err");
-  }
-}
-
-async function revokePilotSessionsBtn(btn) {
-  const email = (btn?.dataset?.email || "").trim().toLowerCase();
-  if (!email) return;
-  try {
-    await rcAdminFetch("/api/setups/admin/user/revoke", { email });
-    appendAuditEvent("admin", "atrumin16@gmail.com", `Sesiones activas cerradas para ${email}`, "REVOKED");
-    showRcNotice("Sesiones cerradas", `Se han invalidado todos los tokens y sesiones activas de ${email}.`, "success");
-  } catch (err) {
-    showRcNotice("No se pudieron cerrar las sesiones", err?.message || "Error al revocar sesiones en D1.", "err");
-  }
-}
-
-async function runQuickCredentialAction(action) {
-  const input = document.getElementById("quickResetEmailInput");
-  const email = (input?.value || "").trim().toLowerCase();
-  if (!email || !email.includes("@")) {
-    showRcNotice("Introduce un correo", "Selecciona o escribe el correo del piloto en la barra rápida.", "warn");
-    input?.focus();
-    return;
-  }
-  const found = rcState.members.find((m) => String(m.email).toLowerCase() === email);
-  const name = found?.name || email.split("@")[0];
-  const fakeBtn = { dataset: { email, name } };
-  if (action === "send_reset") {
-    await generateDriverAccessFromBtn(fakeBtn, "link");
-  } else if (action === "copy_link") {
-    await generateDriverAccessFromBtn(fakeBtn, "copy_link");
-  } else if (action === "temp_password") {
-    await generateDriverAccessFromBtn(fakeBtn, "temp_password");
-  } else if (action === "revoke_sessions") {
-    await revokePilotSessionsBtn(fakeBtn);
-  }
-}
-
-function approvePendingRequestBtn(btn, method = "link") {
-  const request_id = btn?.dataset?.requestId || null;
-  const email = btn?.dataset?.email || "";
-  const name = btn?.dataset?.name || "";
-  issuePilotCredentials({ request_id, name, email, role: "driver", method, send_email: true, force: true });
-}
-
-async function rejectPendingRequestBtn(btn) {
-  const request_id = btn?.dataset?.requestId;
-  const email = btn?.dataset?.email || "";
-  if (!request_id) return;
-  const reason = window.prompt(`Motivo opcional para rechazar a ${email} (déjalo vacío si no quieres indicar motivo):`, "");
-  if (reason === null) return;
-  try {
-    const data = await rcAdminFetch("/api/setups/admin/reject", { request_id: Number(request_id), notify: true, reason });
-    appendAuditEvent("admin", "atrumin16@gmail.com", `Solicitud rechazada: ${email}`, "RECHAZADA");
-    await refreshRaceControlData();
-    showRcNotice("Solicitud rechazada", data.email_sent ? `Solicitud de ${email} rechazada y piloto notificado.` : `Solicitud de ${email} rechazada.`, "info");
-  } catch (err) {
-    showRcNotice("Error al rechazar solicitud", err?.message || "No se pudo rechazar la solicitud.", "err");
-  }
-}
-
-async function toggleSetupAccessBtn(btn) {
-  const email = (btn?.dataset?.email || "").trim().toLowerCase();
-  const current = btn?.dataset?.access === "1";
-  const nextAccess = !current;
-  if (!email) return;
-  try {
-    await rcAdminFetch("/api/admin/setups-access", { email, has_setup_access: nextAccess });
-    appendAuditEvent("admin", "atrumin16@gmail.com", `Acceso setups (.sto) ${nextAccess ? "concedido" : "revocado"}: ${email}`, nextAccess ? "SETUPS ON" : "SETUPS OFF");
-    await refreshRaceControlData();
-    showRcNotice(nextAccess ? "Acceso a setups concedido" : "Acceso a setups revocado", `${email} ahora tiene ${nextAccess ? "permitida" : "bloqueada"} la descarga y sync de .sto.`, nextAccess ? "success" : "info");
-  } catch (err) {
-    showRcNotice("No se pudo cambiar el acceso a setups", err?.message || "Error en D1.", "err");
-  }
-}
-
-async function toggleMemberStatusBtn(btn) {
-  const email = (btn?.dataset?.email || "").trim().toLowerCase();
-  const nextStatus = btn?.dataset?.status === "active" ? "active" : "inactive";
-  if (!email || email === "atrumin16@gmail.com") return;
-  const actionLabel = nextStatus === "inactive" ? "bloquear" : "reactivar";
-  if (!window.confirm(`¿Seguro que quieres ${actionLabel} la cuenta de ${email}?`)) return;
-  try {
-    await rcAdminFetch("/api/setups/admin/set-status", { email, status: nextStatus });
-    appendAuditEvent("admin", "atrumin16@gmail.com", `Cuenta ${nextStatus === "inactive" ? "bloqueada" : "reactivada"}: ${email}`, nextStatus === "inactive" ? "BLOQUEADA" : "ACTIVA");
-    await refreshRaceControlData();
-    showRcNotice(nextStatus === "inactive" ? "Cuenta bloqueada" : "Cuenta reactivada", `${email} ahora está ${nextStatus === "inactive" ? "bloqueada y con sesión cerrada" : "activa"}.`, "info");
-  } catch (err) {
-    showRcNotice("No se pudo cambiar el estado", err?.message || "Error en D1.", "err");
-  }
-}
-
-async function deleteMemberBtn(btn) {
-  const email = (btn?.dataset?.email || "").trim().toLowerCase();
-  if (!email || email === "atrumin16@gmail.com") return;
-  if (!window.confirm(`¿Eliminar definitivamente la cuenta de ${email} de Cloudflare D1? Esta acción no se puede deshacer.`)) return;
-  try {
-    await rcAdminFetch("/api/setups/admin/user/delete", { email, confirm: email });
-    const custom = loadLocalCustomMembers().filter((x) => String(x.email).toLowerCase() !== email);
-    saveLocalCustomMembers(custom);
-    appendAuditEvent("admin", "atrumin16@gmail.com", `Cuenta eliminada: ${email}`, "ELIMINADA");
-    await refreshRaceControlData();
-    showRcNotice("Cuenta eliminada", `Se ha eliminado la cuenta de ${email}.`, "info");
-  } catch (err) {
-    showRcNotice("No se pudo eliminar la cuenta", err?.message || "Error en D1.", "err");
-  }
-}
-
-function revokeDriverAccessBtn(btn) {
-  return toggleMemberStatusBtn(btn);
-}
-
-function openCredentialsResultModal({ name, email, secret, isTempPass }) {
-  const modal = document.getElementById("credentialsResultModal");
-  const label = document.getElementById("credSecretLabel");
-  const code = document.getElementById("credSecretCode");
-  const textarea = document.getElementById("credWelcomeTemplate");
-  if (!modal || !code || !textarea) return;
-
-  if (label) {
-    label.textContent = isTempPass
-      ? "CONTRASEÑA TEMPORAL DE 1 USO"
-      : "ENLACE PERSONAL DE CREACIÓN DE CONTRASEÑA (72H)";
-  }
-  code.textContent = secret;
-
-  const accessBlock = isTempPass
-    ? `• Usuario: ${email}\n• Contraseña temporal: ${secret}\n• Acceso directo: https://muntru.me/garage`
-    : `• Usuario: ${email}\n• Enlace personal para activar contraseña (72h):\n  ${secret}`;
-
-  const msg = `Hola ${name},\n\nBienvenido a Muntrume Motorsport. Tu cuenta de piloto oficial ya está activa en el Setup Vault (+42,600 setups .sto verificados con BoP 26S4 y packs semanales NEC VLN).\n\n${accessBlock}\n\nUna vez dentro de https://muntru.me/garage, pulsa «Vincular carpeta de iRacing» y selecciona Documentos\\iRacing\\setups para que los archivos .sto se escriban directamente en tu simulador.\n\n¡Nos vemos en pista!\nAlberto Trujillo (#16) · Muntrume Motorsport Race Control`;
-
-  textarea.value = msg;
-  rcState.lastCredentials = { name, email, secret, msg };
-  modal.classList.remove("hidden");
-}
-
-function closeCredentialsResultModal() {
-  document.getElementById("credentialsResultModal")?.classList.add("hidden");
-}
-
-function copyCredentialSecretOnly() {
-  if (!rcState.lastCredentials?.secret) return;
-  navigator.clipboard.writeText(rcState.lastCredentials.secret).then(() => {
-    showRcNotice("Enlace/clave copiado", "Se ha copiado el secreto al portapapeles.", "success");
+  // Show/hide official profile tabs if account has no roster slug
+  const hasProfile = Boolean(prof);
+  ["licenses", "g61", "stats"].forEach((t) => {
+    const b = document.getElementById(`umTabBtn-${t}`);
+    if (b) b.style.display = hasProfile ? "" : "none";
   });
-}
 
-function copyWelcomeMessageTemplate() {
-  if (!rcState.lastCredentials?.msg) return;
-  navigator.clipboard.writeText(rcState.lastCredentials.msg).then(() => {
-    showRcNotice("Mensaje copiado", "Mensaje de bienvenida copiado al portapapeles.", "success");
-  });
-}
+  // Identity & Role fields
+  setVal("umSlug", umState.slug);
+  setVal("umOrigEmail", umState.email);
+  setVal("umFullName", prof?.fullName || member?.name || "");
+  setVal("umDorsal", prof?.dorsal || "");
+  setVal("umKind", prof?.kind || "driver");
+  setVal("umAccountRole", member?.role || "driver");
+  setVal("umRoleTitle", prof?.role || "");
+  setVal("umEmail", member?.email || prof?.email || "");
+  setVal("umCustId", prof?.cust_id || tInfo.cust_id || "");
+  setVal("umSpecialty", prof?.specialty || "");
+  setVal("umClub", prof?.club || "");
+  setVal("umCountry", prof?.country || "Spain");
+  setVal("umTeam", member?.team || "");
+  setVal("umCarClass", member?.car_class || "");
+  setVal("umBio", prof?.bio || member?.public_bio || "");
+  setChk("umSetupAccess", member ? member.has_setup_access : true);
 
-// ============================================================================
-// TAB 3: MMT NOMENCLATURE SIMULATOR & BOP TECH INSPECTOR
-// ============================================================================
-function updateMmtSimulator() {
-  const carKey = document.getElementById("simCarSelect")?.value || "ferrari296gt3";
-  const circuitName = document.getElementById("simCircuitSelect")?.value || "Nürburgring Combined Gesamtstrecke VLN";
-  const sessionCode = document.getElementById("simSessionSelect")?.value || "R";
-  const versionCode = document.getElementById("simVersionSelect")?.value || "";
-
-  const model = MMT_MODEL_MAP[carKey] || { code: "F296", label: carKey, cat: "GT3" };
-  const circuitCode = MMT_CIRCUIT_MAP[circuitName] || "SPA";
-  const parts = ["MMT", model.code, circuitCode, sessionCode];
-  if (versionCode) parts.push(versionCode);
-  const filename = `${parts.join("_")}.sto`;
-
-  const isNec = circuitCode === "VLN";
-  const folderWeek = isNec ? "W01_NEC_VLN" : "W01";
-  const fullPath = `Documentos\\iRacing\\setups\\${carKey}\\Muntrume_Motorsport\\26S4\\${folderWeek}\\${filename}`;
-
-  const fnEl = document.getElementById("simGeneratedFilename");
-  const pathEl = document.getElementById("simGeneratedPath");
-  const openBtn = document.getElementById("simOpenInGarageBtn");
-  const grid = document.getElementById("simBopChecksGrid");
-
-  if (fnEl) fnEl.textContent = filename;
-  if (pathEl) pathEl.innerHTML = `Ruta en iRacing: <code>${rcEscape(fullPath)}</code>`;
-  if (openBtn) {
-    openBtn.href = isNec ? `/garage?nec=W01` : `/garage?q=${encodeURIComponent(filename.replace(/\.sto$/i, ""))}`;
-  }
-
-  if (grid) {
-    const isWet = sessionCode === "W";
-    const isQualy = sessionCode.startsWith("Q");
-    const rideHeight = isNec
-      ? "Del: 71.0 mm · Tras: 73.5 mm (Mín. VLN ≥ 70.0 mm)"
-      : model.cat === "GTP"
-      ? "Del: 31.0 mm · Tras: 34.5 mm (Mín. GTP ≥ 28.0 mm)"
-      : "Del: 52.0 mm · Tras: 56.5 mm (Mín. GT3 ≥ 50.0 mm)";
-    const fuel = isQualy ? "12.5 L (2.2 vueltas · Out + Push)" : sessionCode === "END" ? "100% Tanque lleno (Stint completo)" : "54.0 L (Sprint BoP 26S4)";
-    const pressure = isWet ? "172.0 kPa lluvia (Mín. ≥ 165.5 kPa)" : isQualy ? "163.5 kPa frío → 169.5 kPa T1" : "158.5 kPa frío → 170.0 kPa caliente";
-
-    const checks = [
-      { label: "Altura Estática (Ride Height)", val: rideHeight },
-      { label: "Presiones en Frío (iRacing 26S4)", val: pressure },
-      { label: "Carga de Combustible", val: fuel },
-      { label: "Caídas & Convergencia (Camber/Toe)", val: "Del: -3.4° · Tras: -2.6° (Dentro de límite BoP)" },
-      { label: "Firma Binaria UTF-16LE", val: "Muntrume Motorsport by Alberto Trujillo | muntru.me" },
-      { label: "Resultado Escrutinio iRacing", val: "✓ PASS TECH (0 Failed Tech)" }
-    ];
-
-    grid.innerHTML = checks.map((c) => `
-      <div class="rc-bop-item">
-        <div class="rc-bop-item__top">
-          <span>${rcEscape(c.label)}</span>
-          <span class="rc-accent">✓ OK</span>
-        </div>
-        <div class="rc-bop-item__val">${rcEscape(c.val)}</div>
-      </div>
-    `).join("");
-  }
-}
-
-function copySimulatedFilename() {
-  const fn = document.getElementById("simGeneratedFilename")?.textContent || "";
-  if (!fn) return;
-  navigator.clipboard.writeText(fn).then(() => {
-    showRcNotice("Nombre copiado", `Archivo ${fn} copiado al portapapeles.`, "success");
-  });
-}
-
-// ============================================================================
-// TAB 4: @MUNTRU.ME MAILBOXES & EMAIL TEMPLATES
-// ============================================================================
-function renderMailboxesTable() {
-  const tbody = document.getElementById("mailboxesTableBody");
-  if (!tbody) return;
-  tbody.innerHTML = OFFICIAL_MAILBOXES.map((mb) => `
-    <tr>
-      <td><code>${rcEscape(mb.address)}</code></td>
-      <td><span class="rc-strong">${rcEscape(mb.owner)}</span></td>
-      <td><span class="rc-badge">${rcEscape(mb.role)}</span></td>
-      <td><span class="rc-badge rc-badge--ok">${rcEscape(mb.status)}</span></td>
-      <td class="text-right">
-        <div class="rc-btn-row" style="justify-content:flex-end">
-          <button type="button" class="r-btn r-btn--sm" data-addr="${rcEscape(mb.address)}" onclick="navigator.clipboard.writeText(this.dataset.addr); showRcNotice('Buzón copiado', this.dataset.addr, 'info')">Copiar dirección</button>
-          <a href="mailto:${rcEscape(mb.address)}" class="r-btn r-btn--sm">Escribir ↗</a>
-        </div>
-      </td>
-    </tr>
-  `).join("");
-}
-
-const EMAIL_TEMPLATES = {
-  welcome: {
-    badge: "ACCESO APROBADO",
-    previewKey: "approved",
-    subject: "Acceso aprobado · Crea tu contraseña del Setup Vault",
-    title: "¡Bienvenido al equipo!",
-    tldr: "Tu cuenta oficial de piloto está aprobada. Crea tu contraseña con el enlace personal de 72 h.",
-    ctaLabel: "Crear mi contraseña →",
-    ctaUrl: "https://muntru.me/garage?setpw=TOKEN_UNICO_72H",
-    rows: [
-      ["Usuario", "{CORREO_PILOTO}"],
-      ["Catálogo", "42,654 setups .sto (BoP 26S4 · 100% Pass Tech)"],
-      ["App Desktop", "MMT Sync v0.6.5 (winget install Muntrume.MMTSync)"]
-    ],
-    body: `Hola {NOMBRE_PILOTO},
-
-Control de Carrera ha aprobado tu solicitud. Ya tienes acceso al Setup Vault de Muntrume Motorsport.
-
-• Usuario: {CORREO_PILOTO}
-• Enlace personal para crear tu contraseña (válido 72 h):
-  https://muntru.me/garage?setpw={TOKEN_UNICO}
-• Catálogo activo: 42,654 setups .sto (Nomenclatura MMT_ + BoP 26S4)
-
-Nos vemos en pista,
-Alberto Trujillo (#16) · Muntrume Motorsport (muntru.me)`
-  },
-  reset: {
-    badge: "SEGURIDAD · RESET",
-    previewKey: "reset",
-    subject: "Restablece tu contraseña · Muntrume Setup Vault",
-    title: "Restablecer credenciales de acceso",
-    tldr: "Enlace personal de un solo uso para definir una nueva contraseña en el Setup Vault.",
-    ctaLabel: "Crear nueva contraseña →",
-    ctaUrl: "https://muntru.me/garage?setpw=TOKEN_RESET_UNICO",
-    rows: [
-      ["Cuenta", "{CORREO_PILOTO}"],
-      ["Validez", "72 horas (enlace de un solo uso)"],
-      ["Seguridad", "PBKDF2-SHA256 · Tu clave actual no cambia hasta completar el enlace"]
-    ],
-    body: `Hola {NOMBRE_PILOTO},
-
-Hemos recibido una petición desde Race Control para crear o restablecer la contraseña de tu cuenta de piloto en Muntrume Motorsport.
-
-• Enlace personal (un solo uso, válido durante 72 horas):
-  https://muntru.me/garage?setpw={TOKEN_UNICO}
-
-Si el botón del correo no se abre, copia y pega el enlace directamente en tu navegador.
-Seguridad Zero-Trust · Muntrume Motorsport (muntru.me)`
-  },
-  code: {
-    badge: "CÓDIGO 6 DÍGITOS",
-    previewKey: "code",
-    subject: "482910 es tu código de acceso · Muntrume Setup Vault",
-    title: "Tu código de acceso",
-    tldr: "Introduce el código de 6 dígitos en muntru.me/garage o entra con un clic desde el botón.",
-    ctaLabel: "Entrar al Setup Vault →",
-    ctaUrl: "https://muntru.me/garage#magic=TOKEN_MAGIC_10M",
-    codeBox: "482910",
-    rows: [
-      ["Caducidad", "10 minutos (un solo uso)"],
-      ["Protección", "Nunca te pediremos este código por Discord ni por chat"]
-    ],
-    body: `Hola {NOMBRE_PILOTO},
-
-Tu código de acceso de un solo uso al Setup Vault es:
-
-    482910
-
-O entra directamente con este enlace mágico (caduca en 10 minutos):
-https://muntru.me/garage#magic={TOKEN_MAGIC}
-
-Muntrume Motorsport · muntru.me`
-  },
-  temp_password: {
-    badge: "CLAVE TEMPORAL",
-    previewKey: "temp_password",
-    subject: "Acceso aprobado · Tu contraseña temporal del Setup Vault",
-    title: "Credenciales temporales de acceso",
-    tldr: "Inicia sesión con tu contraseña temporal. El sistema te pedirá elegir una clave personal al entrar.",
-    ctaLabel: "Entrar al Setup Vault →",
-    ctaUrl: "https://muntru.me/garage",
-    rows: [
-      ["Usuario", "{CORREO_PILOTO}"],
-      ["Contraseña temporal", "MTM-2026-X9K4-VAULT"],
-      ["Política", "Cambio obligatorio en el primer inicio de sesión"]
-    ],
-    body: `Hola {NOMBRE_PILOTO},
-
-Control de Carrera ha emitido una contraseña temporal para tu cuenta del Setup Vault:
-
-• Usuario: {CORREO_PILOTO}
-• Contraseña temporal: {CLAVE_TEMPORAL}
-• Acceso: https://muntru.me/garage
-
-En tu primer inicio de sesión el sistema te pedirá definir tu contraseña personal definitiva.
-Muntrume Motorsport · muntru.me`
-  },
-  nec: {
-    badge: "BRIEFING OFICIAL",
-    previewKey: "digest",
-    subject: "🏁 Briefing Oficial: NEC W01–W13 · Nürburgring Combined VLN · Muntrume",
-    title: "Briefing: Nürburgring Endurance Championship",
-    tldr: "1,638 setups verificados para las 21 monturas de la NEC en Nürburgring Combined Gesamtstrecke VLN.",
-    ctaLabel: "Descargar Setups en el Vault →",
-    ctaUrl: "https://muntru.me/garage?nec=W01",
-    rows: [
-      ["Circuito", "Nürburgring Combined Gesamtstrecke VLN"],
-      ["Nomenclatura", "MMT_[MODELO]_VLN_[SESIÓN].sto (Q, Q2_SAFE, R, END, S, W)"],
-      ["Escrutinio BoP", "Altura estática ≥ 70.5 mm (0 Failed Tech en Karussell / Fuchsröhre)"]
-    ],
-    body: `Equipo,
-
-Ya están disponibles en https://muntru.me/garage los paquetes semanales para la Nürburgring Endurance Championship (NEC) en Nürburgring Combined Gesamtstrecke VLN:
-
-• Nomenclatura: MMT_[MODELO]_VLN_[SESIÓN].sto (Q, Q2_SAFE, R, END, S, W)
-• Escrutinio BoP: Altura estática calibrada ≥ 70.5 mm para absorber las compresiones sin Failed Tech.
-• Telemetría en vivo sincronizada en Garage 61: https://garage61.net/app/teams/muntrume-motorsport
-
-Confirmad vuestro stint en el canal de Discord Radio.
-Muntrume Race Control · racecontrol@muntru.me`
-  }
-};
-
-function openEmailPreviewModal(key = "welcome") {
-  rcState.currentTemplateKey = EMAIL_TEMPLATES[key] ? key : "welcome";
-  const tpl = EMAIL_TEMPLATES[rcState.currentTemplateKey];
-  ["welcome", "reset", "code", "temp_password", "nec"].forEach((k) => {
-    document.getElementById(`tplBtn-${k}`)?.classList.toggle("is-on", k === rcState.currentTemplateKey);
-  });
-  const subj = document.getElementById("tplSubjectText");
-  const badgeEl = document.getElementById("tplBadgeText");
-  const body = document.getElementById("tplBodyText");
-  const visualBox = document.getElementById("tplVisualHtmlBox");
-  if (subj) subj.textContent = tpl.subject;
-  if (badgeEl) badgeEl.textContent = tpl.badge || "RACE CONTROL";
-  if (body) body.textContent = tpl.body;
-  if (visualBox) {
-    const rowsHtml = (tpl.rows || []).map(([k, v]) => `
-      <div style="display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:12.5px">
-        <span style="font-family:var(--r-mono);font-size:11px;text-transform:uppercase;color:#94a3b8;font-weight:700">${rcEscape(k)}</span>
-        <span style="font-weight:700;color:#f8fafc;text-align:right">${rcEscape(v)}</span>
-      </div>
-    `).join("");
-    const codeHtml = tpl.codeBox
-      ? `<div style="margin:12px 0;text-align:center"><span style="display:inline-block;padding:12px 24px;border-radius:12px;border:1.5px solid #00e699;background:#061a14;color:#00e699;font-family:var(--r-mono);font-size:26px;font-weight:800;letter-spacing:8px">${rcEscape(tpl.codeBox)}</span></div>`
-      : "";
-    visualBox.innerHTML = `
-      <div style="max-width:540px;margin:0 auto;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.12);background:#0f141c;box-shadow:0 12px 30px rgba(0,0,0,0.45)">
-        <div style="padding:14px 20px;background:#080b10;display:flex;align-items:center;justify-content:space-between;gap:10px">
-          <div style="display:flex;align-items:center;gap:10px">
-            <img src="/assets/img/email-logo.png" width="28" height="28" alt="" style="border-radius:6px" />
-            <div>
-              <div style="font-size:12.5px;font-weight:800;letter-spacing:0.7px;color:#fff">MUNTRUME MOTORSPORT</div>
-              <div style="font-size:10.5px;color:#00e699;font-weight:600">Setup Vault &amp; Race Control · muntru.me</div>
-            </div>
-          </div>
-          <span style="padding:3px 9px;border-radius:999px;background:#062319;border:1px solid #059669;color:#00e699;font-family:var(--r-mono);font-size:9.5px;font-weight:700">${rcEscape(tpl.badge)}</span>
-        </div>
-        <div style="height:3px;background:linear-gradient(90deg,#00e699 0%,#10b981 55%,#0ea5e9 100%)"></div>
-        <div style="padding:20px;display:grid;gap:12px">
-          <h4 style="margin:0;font-size:18px;font-weight:800;color:#fff">${rcEscape(tpl.title)}</h4>
-          <div style="padding:10px 12px;border-radius:8px;background:rgba(16,185,129,0.1);border-left:3px solid #10b981;font-size:12.5px;color:#a7f3d0">
-            <strong>Resumen rápido:</strong> ${rcEscape(tpl.tldr)}
-          </div>
-          ${codeHtml}
-          <div style="padding:10px 14px;border-radius:10px;background:#090d13;border:1px solid rgba(255,255,255,0.07)">
-            ${rowsHtml}
-          </div>
-          <div style="text-align:center;padding-top:4px">
-            <span style="display:inline-block;padding:11px 24px;border-radius:10px;background:linear-gradient(135deg,#00e699,#10b981);color:#031d14;font-weight:800;font-size:13.5px">${rcEscape(tpl.ctaLabel)}</span>
-            <div style="margin-top:8px;font-family:var(--r-mono);font-size:10.5px;color:#64748b">Enlace directo de respaldo: <code style="color:#00e699">${rcEscape(tpl.ctaUrl)}</code></div>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-  document.getElementById("emailTemplateModal")?.classList.remove("hidden");
-}
-
-async function sendTestEmailFromAdmin() {
-  const btn = document.getElementById("btnSendPreviewEmail");
-  const tpl = EMAIL_TEMPLATES[rcState.currentTemplateKey] || EMAIL_TEMPLATES.welcome;
-  const onlyKey = tpl.previewKey || "reset";
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = "Enviando prueba…";
-  }
-  try {
-    const data = await rcAdminFetch("/api/setups/admin/email-preview", { only: [onlyKey] });
-    const resItem = (data.results || [])[0];
-    if (resItem && resItem.ok) {
-      showRcNotice("Correo de prueba enviado", `Se ha enviado [PRUEBA] "${tpl.subject}" a ${data.to}.`, "success");
-    } else {
-      showRcNotice("Aviso al enviar prueba", resItem?.error || "Revisa la configuración de Resend en el Worker.", "warn");
-    }
-  } catch (err) {
-    showRcNotice("No se pudo enviar la prueba", err?.message || "Error al conectar con /api/setups/admin/email-preview.", "err");
-  } finally {
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = "🚀 Enviarme prueba real a mi correo";
-    }
-  }
-}
-
-function closeEmailPreviewModal() {
-  document.getElementById("emailTemplateModal")?.classList.add("hidden");
-}
-
-function copyCurrentEmailTemplate() {
-  const tpl = EMAIL_TEMPLATES[rcState.currentTemplateKey] || EMAIL_TEMPLATES.welcome;
-  navigator.clipboard.writeText(`Asunto: ${tpl.subject}\n\n${tpl.body}`).then(() => {
-    showRcNotice("Plantilla copiada", "Texto copiado al portapapeles.", "success");
-  });
-}
-
-// ============================================================================
-// TAB 5: IRACING SYNC BRIDGE (CUST_ID)
-// ============================================================================
-function renderIracingBridgeTable() {
-  const tbody = document.getElementById("iracingBridgeTableBody");
-  if (!tbody) return;
-  const savedMap = (() => {
-    try {
-      return JSON.parse(localStorage.getItem("muntrume_driver_ids_override") || "{}");
-    } catch {
-      return {};
-    }
-  })();
-
-  const list = rcState.profiles && rcState.profiles.length > 0
-    ? rcState.profiles
-    : OFFICIAL_ROSTER_DEFAULTS.map((p) => ({
-        slug: p.slug,
-        fullName: p.name,
-        dorsal: `#${p.number}`,
-        cust_id: p.cust_id,
-        email: p.email,
-        irating: p.irating,
-        license: p.sr
-      }));
-
-  tbody.innerHTML = list.map((p) => {
-    const cid = p.cust_id ?? savedMap[p.slug]?.cust_id ?? "";
-    const mail = p.email ?? savedMap[p.slug]?.email ?? "";
-    const dorsalLabel = p.dorsal ? `${p.dorsal} · ` : "";
-    const irLabel = p.irating ? `${Number(p.irating).toLocaleString("en-US")} iR${p.license ? ` · ${p.license}` : ""}` : "Sin iRating";
-    return `
-      <tr>
-        <td><span class="rc-strong">${rcEscape(dorsalLabel + (p.fullName || p.name || p.slug))}</span></td>
-        <td><code>${rcEscape(p.slug)}</code></td>
-        <td>
-          <input
-            type="number"
-            class="g-search"
-            style="max-width:150px;padding:6px 10px;font-family:var(--r-mono);font-size:13px"
-            data-slug-cid="${rcEscape(p.slug)}"
-            value="${rcEscape(cid)}"
-          />
-        </td>
-        <td>
-          <input
-            type="email"
-            class="g-search"
-            style="max-width:230px;padding:6px 10px;font-family:var(--r-mono);font-size:13px"
-            data-slug-email="${rcEscape(p.slug)}"
-            value="${rcEscape(mail)}"
-          />
-        </td>
-        <td>
-          <div class="rc-row-actions" style="justify-content:flex-start">
-            <span class="rc-badge rc-badge--ok">${rcEscape(irLabel)}</span>
-            <button type="button" class="r-btn r-btn--sm" data-slug="${rcEscape(p.slug)}" onclick="openEditDriverProfileModal(this.dataset.slug)">Editar perfil</button>
-          </div>
-        </td>
-      </tr>
-    `;
-  }).join("");
-}
-
-function buildDriverIdsObjectFromInputs() {
-  const result = {};
-  const list = rcState.profiles && rcState.profiles.length > 0 ? rcState.profiles : OFFICIAL_ROSTER_DEFAULTS;
-  list.forEach((p) => {
-    const cidInput = document.querySelector(`[data-slug-cid="${p.slug}"]`);
-    const emailInput = document.querySelector(`[data-slug-email="${p.slug}"]`);
-    const cidRaw = cidInput ? cidInput.value.trim() : String(p.cust_id || "");
-    const cidVal = cidRaw ? parseInt(cidRaw, 10) || null : null;
-    const emailVal = emailInput ? emailInput.value.trim() : (p.email || "");
-    result[p.slug] = {
-      cust_id: cidVal,
-      name: p.fullName || p.name,
-      number: p.dorsal || p.number || "",
-      role: p.role || p.roleLabel || "",
-      email: emailVal
+  // 5 iRacing Licenses
+  const licMap = {};
+  (Array.isArray(prof?.licenses) ? prof.licenses : []).forEach((l) => { if (l && l.category) licMap[l.category] = l; });
+  if (!licMap.sports_car && (prof?.irating || prof?.license || tInfo.irating || tInfo.license)) {
+    const parsed = parseLicenseStr(prof?.license || tInfo.license);
+    licMap.sports_car = {
+      category: "sports_car",
+      class_label: parsed.class_label || "Class A",
+      sr: parsed.sr,
+      irating: prof?.irating ?? tInfo.irating ?? null
     };
-  });
-  return result;
-}
-
-async function saveIracingMappings() {
-  const mapObj = buildDriverIdsObjectFromInputs();
-  try {
-    localStorage.setItem("muntrume_driver_ids_override", JSON.stringify(mapObj));
-  } catch {}
-  try {
-    for (const [slug, info] of Object.entries(mapObj)) {
-      await rcAdminFetch("/api/setups/admin/driver/profile", {
-        slug,
-        cust_id: info.cust_id ? String(info.cust_id) : null,
-        email: info.email || null,
-        sync_account_name: false
-      });
-    }
-    await refreshRaceControlData();
-    appendAuditEvent("admin", "atrumin16@gmail.com", "Mapeo de cust_id y correos sincronizado en Cloudflare D1", "D1 OK");
-    showRcNotice("Mapeo guardado en D1", "Los cust_id y correos de iRacing se han guardado en Cloudflare D1.", "success");
-  } catch (err) {
-    showRcNotice("Guardado parcial", err?.message || "Se guardó en local, pero falló la sincronización con D1.", "warn");
   }
-}
-
-function copyDriverIdsConfig() {
-  const mapObj = buildDriverIdsObjectFromInputs();
-  const code = `window.MUNTRUME_DRIVER_IDS = ${JSON.stringify(mapObj, null, 2)};\n`;
-  navigator.clipboard.writeText(code).then(() => {
-    showRcNotice("driver-ids.js copiado", "Configuración copiada al portapapeles.", "success");
+  LICENSE_META.forEach(({ key }) => {
+    const row = licMap[key] || {};
+    setVal(`umLicClass-${key}`, row.class_label || "");
+    setVal(`umLicSr-${key}`, row.sr != null ? Number(row.sr).toFixed(2) : "");
+    setVal(`umLicIr-${key}`, row.irating != null ? String(row.irating) : "");
   });
-}
 
-function copyIracingConsoleSnippet() {
-  const snippet = `(async()=>{const r=await fetch('/data/member/info',{credentials:'include'});const d=await r.json();console.log('Muntrume iRacing cust_id:',d.cust_id,d.display_name);navigator.clipboard.writeText(JSON.stringify({cust_id:d.cust_id,display_name:d.display_name,licenses:d.licenses},null,2));alert('Copiado cust_id: '+d.cust_id);})();`;
-  navigator.clipboard.writeText(snippet).then(() => {
-    showRcNotice("Script copiado", "Pega este script en la consola (F12) dentro de members-ng.iracing.com.", "info");
-  });
-}
+  // Garage 61 lists & preview reset
+  setVal("umFavoriteTrack", prof?.favorite_track || "");
+  setVal("umTotalHours", prof?.total_track_hours != null ? String(prof.total_track_hours) : "");
+  const prevWrap = document.getElementById("umG61PreviewWrap");
+  if (prevWrap) prevWrap.classList.add("hidden");
+  const fileIn = document.getElementById("umG61FileInput");
+  if (fileIn) fileIn.value = "";
+  const analyzeBtn = document.getElementById("umG61AnalyzeBtn");
+  if (analyzeBtn) analyzeBtn.disabled = true;
 
-async function testLiveDriversEndpoint() {
-  try {
-    const res = await fetch(`${RC_API_BASE}/api/drivers`, { headers: { Accept: "application/json" } });
-    const data = await res.json();
-    const count = Array.isArray(data) ? data.length : (data.drivers || []).length;
-    showRcNotice("Endpoint /api/drivers OK", `Respuesta HTTP ${res.status}: ${count} pilotos recibidos en vivo.`, "success");
-  } catch (err) {
-    showRcNotice("Aviso de red", "El endpoint /api/drivers se resuelve en el Edge de Cloudflare.", "info");
+  renderG61Lists();
+
+  // MTI / F1 Stats
+  const isAuto = prof?.f1_stats ? prof.f1_stats.auto !== false : true;
+  setChk("umStatsAuto", isAuto);
+  if (!isAuto && prof?.f1_stats) {
+    setVal("umStatOverall", prof.f1_stats.overall);
+    setVal("umStatPace", prof.f1_stats.pace);
+    setVal("umStatAwareness", prof.f1_stats.awareness);
+    setVal("umStatRacecraft", prof.f1_stats.racecraft);
+    setVal("umStatExperience", prof.f1_stats.experience);
+    syncOvrBigFromInput();
+  } else {
+    recalcUnifiedPilotStats(true);
   }
+  toggleUnifiedStatsAuto();
+
+  switchUnifiedModalTab("identity");
+  document.getElementById("unifiedPilotModal")?.classList.remove("hidden");
+  document.getElementById("umFullName")?.focus();
 }
 
-// ============================================================================
-// TAB 6: SECURITY & AUDIT LOGS
-// ============================================================================
-function filterAuditLogs(cat) {
-  rcState.auditFilter = cat;
-  ["all", "auth", "download", "admin"].forEach((c) => {
-    document.getElementById(`auditFilter-${c}`)?.classList.toggle("is-on", c === cat);
-  });
-  renderAuditLogsTable();
+function closeUnifiedPilotModal() {
+  document.getElementById("unifiedPilotModal")?.classList.add("hidden");
 }
 
-function renderAuditLogsTable() {
-  const tbody = document.getElementById("auditLogsTableBody");
-  if (!tbody) return;
-  const list = rcState.auditLogs.filter((item) =>
-    rcState.auditFilter === "all" ? true : item.category === rcState.auditFilter
-  );
-
-  tbody.innerHTML = list.map((item) => {
-    const d = new Date(item.timestamp);
-    const fmtDate = d.toLocaleString("es-ES", {
-      day: "2-digit",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit"
+function readLicensesFromModal() {
+  const out = [];
+  LICENSE_META.forEach(({ key }) => {
+    const cls = document.getElementById(`umLicClass-${key}`)?.value || "";
+    const srRaw = document.getElementById(`umLicSr-${key}`)?.value?.trim() || "";
+    const irRaw = document.getElementById(`umLicIr-${key}`)?.value?.trim() || "";
+    if (!cls && !srRaw && !irRaw) return;
+    out.push({
+      category: key,
+      class_label: cls || "Class D",
+      sr: srRaw !== "" ? Number(srRaw) : null,
+      irating: irRaw !== "" ? Math.round(Number(irRaw)) : null
     });
-    return `
-      <tr>
-        <td style="font-family:var(--r-mono);font-size:12px;white-space:nowrap">${rcEscape(fmtDate)}</td>
-        <td><span class="rc-badge">${rcEscape(item.category.toUpperCase())}</span></td>
-        <td><code>${rcEscape(item.actor)}</code></td>
-        <td>${rcEscape(item.detail)}</td>
-        <td><span class="rc-badge rc-badge--ok">${rcEscape(item.status)}</span></td>
-      </tr>
-    `;
-  }).join("");
+  });
+  return out;
+}
+
+function recalcUnifiedPilotStats(forceAuto = false) {
+  const autoChecked = forceAuto || Boolean(document.getElementById("umStatsAuto")?.checked);
+  const scIr = Number(document.getElementById("umLicIr-sports_car")?.value) || 0;
+  const scSr = Number(document.getElementById("umLicSr-sports_car")?.value) || 3.0;
+  const hours = Number(document.getElementById("umTotalHours")?.value) || 100;
+
+  if (autoChecked) {
+    const stats = computeF1Stats(scIr || 1500, scSr, hours);
+    const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = String(v); };
+    setVal("umStatOverall", stats.overall);
+    setVal("umStatPace", stats.pace);
+    setVal("umStatAwareness", stats.awareness);
+    setVal("umStatRacecraft", stats.racecraft);
+    setVal("umStatExperience", stats.experience);
+  }
+  syncOvrBigFromInput();
+}
+
+function syncOvrBigFromInput() {
+  const ovr = document.getElementById("umStatOverall")?.value || "—";
+  const scIr = Number(document.getElementById("umLicIr-sports_car")?.value) || 0;
+  const hours = Number(document.getElementById("umTotalHours")?.value) || 0;
+  const big = document.getElementById("umOvrBig");
+  if (big) big.textContent = String(ovr);
+  const sum = document.getElementById("umLiveSummary");
+  if (sum) {
+    sum.textContent = `iRating SC: ${scIr ? scIr.toLocaleString("en-US") : "—"} · Horas: ${hours ? `${hours} h` : "—"} · OVR: ${ovr}`;
+  }
+}
+
+function toggleUnifiedStatsAuto() {
+  const isAuto = Boolean(document.getElementById("umStatsAuto")?.checked);
+  ["umStatOverall", "umStatPace", "umStatAwareness", "umStatRacecraft", "umStatExperience"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.readOnly = isAuto;
+  });
+  if (isAuto) recalcUnifiedPilotStats(true);
 }
 
 // ============================================================================
-// TAB 5: GALERÍA OFICIAL & DEPURADOR CARPATH (BLOQUE 28)
+// GARAGE 61 SCREENSHOT UPLOAD, PASTE, VISION AI PARSING & LIST EDITOR
 // ============================================================================
-const OFFICIAL_GALLERY_DEFAULTS = [
-  { id: "ferrari-studio", carPath: "ferrari296gt3", title: "Ferrari 296 GT3 · Render Oficial", img: "/assets/cars/ferrari296gt3.webp", tag: "Estudio" },
-  { id: "ferrari-pista", carPath: "ferrari296gt3", title: "Ferrari 296 GT3 en Pista", img: "/assets/img/coche1.webp", tag: "Pista" },
-  { id: "ferrari-nocturna", carPath: "ferrari296gt3", title: "Stint Nocturno y Ópticas LED", img: "/assets/img/coche3.webp", tag: "Nocturna" },
-  { id: "ferrari-vertice", carPath: "ferrari296gt3", title: "Apoyo Aerodinámico en Vértice", img: "/assets/img/coche4.webp", tag: "Telemetría" },
-  { id: "porsche-studio", carPath: "porsche992rgt3", title: "Porsche 911 GT3 R (992) · Render de Estudio", img: "/assets/cars/porsche992rgt3.webp", tag: "Estudio" },
-  { id: "porsche-peloton", carPath: "porsche992rgt3", title: "Pelotón GT3 en Curva Rápida", img: "/assets/img/coche2.webp", tag: "Carrera" },
-  { id: "porsche-cup-studio", carPath: "porsche9922cup", title: "Porsche 911 GT3 Cup (992.2) · Asset Oficial", img: "/assets/cars/porsche9922cup.webp", tag: "Estudio" },
-  { id: "porsche-cup-track", carPath: "porsche9922cup", title: "Porsche Cup Supercup en Trazado GP", img: "/assets/img/series/porsche-cup.jpg", tag: "Competición" },
-  { id: "bmw-studio", carPath: "bmwm4gt3", title: "BMW M4 GT3 · Render de Estudio Oficial", img: "/assets/cars/bmwm4gt3.webp", tag: "Estudio" },
-  { id: "bmw-series", carPath: "bmwm4gt3", title: "GT Sprint Series Oficial iRacing", img: "/assets/img/series/gt-sprint.jpg", tag: "GT Sprint" }
-];
-
-function sanitizeGalleryEntries(entries) {
-  if (!Array.isArray(entries)) return [];
-  const foreignByCar = {
-    porsche: ["ferrari", "296", "coche1", "coche3", "coche4", "bmw", "mercedes", "amg", "lamborghini", "huracan", "audi", "mclaren", "ford", "mustang", "corvette", "aston"],
-    ferrari: ["porsche", "992", "911", "bmw", "mercedes", "amg", "lamborghini", "huracan", "audi", "mclaren", "ford", "mustang", "corvette", "aston"],
-    bmw: ["ferrari", "296", "porsche", "992", "911", "coche1", "coche3", "coche4", "mercedes", "amg", "lamborghini", "audi", "mclaren", "ford", "corvette", "aston"],
-  };
-  return entries.filter((item) => {
-    if (!item || !item.img) return false;
-    const cp = String(item.carPath || "").toLowerCase();
-    const hay = `${item.img} ${item.title || ""} ${item.id || ""}`.toLowerCase();
-    for (const [owner, badList] of Object.entries(foreignByCar)) {
-      if (cp.includes(owner) && badList.some((kw) => hay.includes(kw))) {
-        return false;
-      }
-    }
-    return true;
+function compressImageToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("No se pudo leer la imagen."));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("Archivo de imagen no válido."));
+      img.onload = () => {
+        const maxDim = 1400;
+        let w = img.width;
+        let h = img.height;
+        if (w > maxDim || h > maxDim) {
+          const ratio = Math.min(maxDim / w, maxDim / h);
+          w = Math.round(w * ratio);
+          h = Math.round(h * ratio);
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", 0.84));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
   });
 }
 
-function initGalleryData() {
+async function loadG61ImageFile(file) {
+  if (!file || !file.type.startsWith("image/")) return;
   try {
-    const raw = localStorage.getItem("muntrume_admin_gallery");
-    if (raw) {
-      const parsed = sanitizeGalleryEntries(JSON.parse(raw));
-      if (parsed.length > 0) {
-        rcState.galleryPhotos = parsed;
-        saveAdminGallery();
-        return;
-      }
-    }
-  } catch {}
-  rcState.galleryPhotos = [...OFFICIAL_GALLERY_DEFAULTS];
+    const dataUrl = await compressImageToDataUrl(file);
+    umState.g61ImageDataUrl = dataUrl;
+    const prevWrap = document.getElementById("umG61PreviewWrap");
+    const prevImg = document.getElementById("umG61PreviewImg");
+    const msg = document.getElementById("umG61StatusMsg");
+    const btn = document.getElementById("umG61AnalyzeBtn");
+    if (prevImg) prevImg.src = dataUrl;
+    if (prevWrap) prevWrap.classList.remove("hidden");
+    if (msg) msg.textContent = `Captura cargada (${Math.round(dataUrl.length / 1024)} KB). Pulsa «Analizar y recalcular».`;
+    if (btn) btn.disabled = false;
+  } catch (err) {
+    showRcNotice("Imagen no válida", err?.message || "Prueba con PNG, JPG o WebP.", "warn");
+  }
 }
 
-function saveAdminGallery() {
+function handleG61FileSelected(ev) {
+  const file = ev?.target?.files?.[0];
+  if (file) loadG61ImageFile(file);
+}
+
+async function analyzeG61Screenshot() {
+  if (!umState.g61ImageDataUrl) return;
+  const btn = document.getElementById("umG61AnalyzeBtn");
+  const msg = document.getElementById("umG61StatusMsg");
+  const kind = document.getElementById("umG61Kind")?.value || "auto";
+  if (btn) { btn.disabled = true; btn.textContent = "⏳ Leyendo con IA…"; }
+  if (msg) msg.textContent = "Analizando tabla de Garage 61 / iRacing con Visión IA…";
+
   try {
-    localStorage.setItem("muntrume_admin_gallery", JSON.stringify(rcState.galleryPhotos));
-  } catch {}
-}
+    const data = await rcAdminFetch("/api/setups/admin/driver/parse-g61-image", {
+      image: umState.g61ImageDataUrl,
+      kind
+    });
 
-function resetGalleryToDefaults() {
-  rcState.galleryPhotos = [...OFFICIAL_GALLERY_DEFAULTS];
-  saveAdminGallery();
-  renderAdminGalleryGrid();
-  showRcNotice("Catálogo Restaurado", "Galería reseteada a los valores de fábrica con CarPath estricto.", "success");
-}
-
-function filterAdminGalleryByCar() {
-  const sel = document.getElementById("adminGalleryCarSelect");
-  rcState.galleryFilter = sel ? sel.value : "all";
-  renderAdminGalleryGrid();
-}
-
-function renderAdminGalleryGrid() {
-  const grid = document.getElementById("adminGalleryGrid");
-  if (!grid) return;
-
-  const filter = rcState.galleryFilter || "all";
-  const photos = filter === "all"
-    ? rcState.galleryPhotos
-    : rcState.galleryPhotos.filter((p) => p.carPath && p.carPath.toLowerCase() === filter.toLowerCase());
-
-  if (photos.length === 0) {
-    grid.innerHTML = `
-      <div style="grid-column:1/-1;text-align:center;padding:40px;border:1px dashed var(--r-line);border-radius:12px;color:var(--r-muted)">
-        <p style="font-weight:600;margin-bottom:6px">No hay fotos asociadas a este vehículo (${rcEscape(filter)})</p>
-        <p style="font-size:12px">Utiliza el formulario inferior para subir o arrastrar capturas verificadas de este coche.</p>
-      </div>
-    `;
-    return;
-  }
-
-  const carOptions = [
-    { id: "porsche9922cup", label: "Porsche 911 GT3 Cup (992.2)" },
-    { id: "porsche992rgt3", label: "Porsche 911 GT3 R (992)" },
-    { id: "ferrari296gt3", label: "Ferrari 296 GT3" },
-    { id: "bmwm4gt3", label: "BMW M4 GT3" },
-    { id: "mercedesamgevogt3", label: "Mercedes-AMG GT3 2020" },
-    { id: "mclaren720sgt3", label: "McLaren 720S GT3 EVO" },
-    { id: "chevyvettez06rgt3", label: "Corvette Z06 GT3.R" },
-    { id: "amvantageevogt3", label: "Aston Martin Vantage GT3 EVO" },
-    { id: "multiclass", label: "Multiclase / Parrilla" },
-    { id: "team_engineering", label: "Muntrume Tech / Pit Wall" }
-  ];
-
-  grid.innerHTML = photos.map((p) => {
-    const isUnassigned = !p.carPath || p.carPath === "unassigned";
-    const carBadgeClass = isUnassigned ? "rc-badge rc-badge--warn" : "rc-badge rc-badge--ok";
-
-    return `
-      <div class="rc-card" style="padding:12px;display:flex;flex-direction:column;gap:10px;border-radius:10px">
-        <div style="position:relative;width:100%;height:160px;border-radius:8px;overflow:hidden;background:#000">
-          <img src="${rcEscape(p.img)}" alt="${rcEscape(p.title)}" style="width:100%;height:100%;object-fit:cover" onerror="this.onerror=null;this.style.display='none'" />
-          <span class="${carBadgeClass}" style="position:absolute;top:8px;left:8px;font-size:10px">
-            ${rcEscape(p.carPath || "SIN ASIGNAR")}
-          </span>
-          <span class="rc-badge" style="position:absolute;top:8px;right:8px;font-size:10px">
-            ${rcEscape(p.tag || "Foto")}
-          </span>
-        </div>
-        <div style="flex:1">
-          <h4 style="font-size:13px;font-weight:700;margin:0 0 4px 0">${rcEscape(p.title)}</h4>
-          <code style="font-size:10px;color:var(--r-muted);display:block;word-break:break-all">${rcEscape(p.id)}</code>
-        </div>
-        <div class="rc-btn-row" style="flex-direction:column;gap:6px;width:100%">
-          <div style="display:flex;gap:6px;width:100%">
-            <select class="r-input" style="font-size:11px;padding:4px 8px;flex:1" onchange="reassignPhotoCarPath('${rcEscape(p.id)}', this.value)">
-              <option value="">Mover a...</option>
-              ${carOptions.map((c) => `<option value="${c.id}" ${c.id === p.carPath ? "selected" : ""}>${c.label}</option>`).join("")}
-            </select>
-            <button type="button" class="r-btn r-btn--sm" style="padding:4px 8px;font-size:11px" onclick="unassignPhoto('${rcEscape(p.id)}')" title="Desasociar de este coche">
-              Desasociar
-            </button>
-            <button type="button" class="r-btn r-btn--sm" style="padding:4px 8px;font-size:11px;color:#ef4444;border-color:rgba(239,68,68,0.3)" onclick="deleteGalleryPhoto('${rcEscape(p.id)}')" title="Eliminar foto">
-              ✕
-            </button>
-          </div>
-        </div>
-      </div>
-    `;
-  }).join("");
-}
-
-function reassignPhotoCarPath(photoId, newCarPath) {
-  if (!newCarPath) return;
-  const item = rcState.galleryPhotos.find((p) => p.id === photoId);
-  if (!item) return;
-  const oldCar = item.carPath;
-  item.carPath = newCarPath;
-  saveAdminGallery();
-  renderAdminGalleryGrid();
-  appendAuditEvent("gallery", "atrumin16@gmail.com", `Foto '${photoId}' reasignada de '${oldCar}' a '${newCarPath}' (CarPath estricto)`, "OK");
-  showRcNotice("Foto Reubicada", `La foto se ha movido correctamente a ${newCarPath}.`, "success");
-}
-
-function unassignPhoto(photoId) {
-  const item = rcState.galleryPhotos.find((p) => p.id === photoId);
-  if (!item) return;
-  item.carPath = "unassigned";
-  saveAdminGallery();
-  renderAdminGalleryGrid();
-  appendAuditEvent("gallery", "atrumin16@gmail.com", `Foto '${photoId}' desasociada`, "OK");
-  showRcNotice("Foto Desasociada", "La foto ya no se mostrará en ningún álbum de vehículo.", "warn");
-}
-
-function deleteGalleryPhoto(photoId) {
-  const idx = rcState.galleryPhotos.findIndex((p) => p.id === photoId);
-  if (idx < 0) return;
-  rcState.galleryPhotos.splice(idx, 1);
-  saveAdminGallery();
-  renderAdminGalleryGrid();
-  appendAuditEvent("gallery", "atrumin16@gmail.com", `Foto '${photoId}' eliminada de la galería`, "OK");
-  showRcNotice("Foto Eliminada", "La foto ha sido eliminada de la galería.", "warn");
-}
-
-function submitAdminPhotoUpload() {
-  const targetCar = document.getElementById("adminUploadCarPath")?.value;
-  const titleInput = document.getElementById("adminUploadPhotoTitle")?.value.trim();
-  const fileInput = document.getElementById("adminUploadFileInput");
-  const warnEl = document.getElementById("adminUploadWarning");
-
-  if (!targetCar) {
-    if (warnEl) {
-      warnEl.textContent = "Error: Debes seleccionar un coche de destino obligatorio (CarPath) antes de subir.";
-      warnEl.classList.remove("hidden");
+    let foundSummary = [];
+    if (Array.isArray(data.top_cars) && data.top_cars.length > 0) {
+      umState.topCars = data.top_cars;
+      foundSummary.push(`${data.top_cars.length} coches`);
     }
-    showRcNotice("Falta Selección", "Selecciona el coche de destino antes de subir.", "err");
-    return;
-  }
-
-  const file = fileInput?.files?.[0];
-  if (!file) {
-    if (warnEl) {
-      warnEl.textContent = "Error: Elige un archivo de imagen válido para subir.";
-      warnEl.classList.remove("hidden");
+    if (Array.isArray(data.top_tracks) && data.top_tracks.length > 0) {
+      umState.topTracks = data.top_tracks;
+      foundSummary.push(`${data.top_tracks.length} circuitos`);
+      const sumHours = Number(data.top_tracks.reduce((a, t) => a + (Number(t.hours) || 0), 0).toFixed(1));
+      const hoursEl = document.getElementById("umTotalHours");
+      if (hoursEl && sumHours > 0) hoursEl.value = String(sumHours);
+      const favEl = document.getElementById("umFavoriteTrack");
+      if (favEl && data.top_tracks[0]?.name) favEl.value = data.top_tracks[0].name;
     }
-    showRcNotice("Falta Archivo", "Elige un archivo de imagen.", "err");
-    return;
-  }
-
-  // Detector de discordancias de marca (Prompt 28 Punto 4)
-  const BRAND_PATTERNS = {
-    ferrari: /(ferrari|296|488|499p|f296)/i,
-    porsche: /(porsche|911|992|718|cayman|963)/i,
-    bmw: /(bmw|m4|m2|m8|lmdh)/i,
-    mercedes: /(mercedes|amg)/i,
-    mclaren: /(mclaren|720s|570s|macla)/i,
-    chevrolet: /(corvette|chevy|z06|c8r|c6r|camaro)/i,
-    astonmartin: /(aston|vantage|valkyrie|dbr9)/i,
-    lamborghini: /(lamborghini|lambo|huracan|hurac[aá]n)/i,
-    audi: /(audi|r8|rs3)/i,
-    ford: /(ford|mustang)/i,
-    toyota: /(toyota|gr86|supra|sf23)/i,
-    honda: /(honda|civic|nsx|acura)/i,
-  };
-
-  let targetBrand = "";
-  for (const [brand, pattern] of Object.entries(BRAND_PATTERNS)) {
-    if (pattern.test(targetCar)) {
-      targetBrand = brand;
-      break;
+    if (Array.isArray(data.licenses) && data.licenses.length > 0) {
+      data.licenses.forEach((l) => {
+        const clsEl = document.getElementById(`umLicClass-${l.category}`);
+        const srEl = document.getElementById(`umLicSr-${l.category}`);
+        const irEl = document.getElementById(`umLicIr-${l.category}`);
+        if (clsEl && l.class_label) clsEl.value = l.class_label;
+        if (srEl && l.sr != null) srEl.value = Number(l.sr).toFixed(2);
+        if (irEl && l.irating != null) irEl.value = String(l.irating);
+      });
+      foundSummary.push(`${data.licenses.length} licencias`);
     }
-  }
 
-  let detectedBrand = "";
-  for (const [brand, pattern] of Object.entries(BRAND_PATTERNS)) {
-    if (pattern.test(file.name)) {
-      detectedBrand = brand;
-      break;
+    renderG61Lists();
+    recalcUnifiedPilotStats();
+
+    if (foundSummary.length > 0) {
+      if (msg) msg.textContent = `✓ Extraído: ${foundSummary.join(" · ")} (${data.engine || "Vision AI"}). Media MTI recalculada.`;
+      showRcNotice("Captura analizada", `Se extrajeron ${foundSummary.join(", ")} y se recalculó la media del piloto.`, "success");
+    } else {
+      if (msg) msg.textContent = "No se detectaron filas numéricas en la foto. Puedes añadirlas manualmente abajo.";
     }
+  } catch (err) {
+    if (msg) msg.textContent = err?.message || "Error al analizar la imagen.";
+    showRcNotice("No se pudo leer la foto", err?.message || "Prueba con un recorte más nítido.", "warn");
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "✨ Analizar y recalcular"; }
   }
+}
 
-  if (detectedBrand && targetBrand && detectedBrand !== targetBrand) {
-    const confirmUpload = window.confirm(
-      `AVISO DE DISCORDANCIA DE MARCA:\n\nEl archivo '${file.name}' contiene identificadores de ${detectedBrand.toUpperCase()}, pero intentas asociarlo a un vehículo ${targetBrand.toUpperCase()} (${targetCar}).\n\n¿Estás completamente seguro de forzar esta asignación?`
-    );
-    if (!confirmUpload) {
-      if (warnEl) {
-        warnEl.textContent = `Subida cancelada: Detectada discordancia de marca (${detectedBrand.toUpperCase()} ≠ ${targetBrand.toUpperCase()}).`;
-        warnEl.classList.remove("hidden");
-      }
+function renderG61Lists() {
+  const renderOne = (containerId, arr, kind) => {
+    const box = document.getElementById(containerId);
+    if (!box) return;
+    if (!arr.length) {
+      box.innerHTML = `<p class="rc-mono-sub" style="margin:6px 0">Sin filas aún. Sube una foto de Garage 61 o pulsa «+ Añadir».</p>`;
       return;
     }
-  }
-
-  if (warnEl) warnEl.classList.add("hidden");
-
-  // Añadir la foto validada a la galería
-  const newId = `user_${Date.now()}`;
-  const newTitle = titleInput || file.name.replace(/\.[^.]+$/, "");
-  const newPhoto = {
-    id: newId,
-    carPath: targetCar,
-    title: newTitle,
-    img: URL.createObjectURL(file),
-    tag: "Subida Verificada"
+    box.innerHTML = arr.map((item, idx) => `
+      <div class="rc-g61-item">
+        <input type="text" value="${rcEscape(item.name || "")}" placeholder="Nombre" onchange="updateG61ListRow('${kind}', ${idx}, 'name', this.value)" />
+        <input type="number" min="0" value="${rcEscape(item.laps ?? 0)}" placeholder="Laps" title="Vueltas" onchange="updateG61ListRow('${kind}', ${idx}, 'laps', this.value)" />
+        <input type="number" min="0" step="0.1" value="${rcEscape(item.hours ?? 0)}" placeholder="Horas" title="Horas" onchange="updateG61ListRow('${kind}', ${idx}, 'hours', this.value)" />
+        <button type="button" class="rc-g61-del" onclick="removeG61ListRow('${kind}', ${idx})" title="Eliminar fila">×</button>
+      </div>
+    `).join("");
   };
-
-  rcState.galleryPhotos.unshift(newPhoto);
-  saveAdminGallery();
-  renderAdminGalleryGrid();
-  if (fileInput) fileInput.value = "";
-  if (document.getElementById("adminUploadPhotoTitle")) document.getElementById("adminUploadPhotoTitle").value = "";
-  appendAuditEvent("gallery", "atrumin16@gmail.com", `Nueva foto '${newTitle}' asociada a '${targetCar}'`, "PASS TECH");
-  showRcNotice("Foto Validada y Registrada", `La foto se ha asociado estrictamente al modelo ${targetCar}.`, "success");
+  renderOne("umTopCarsList", umState.topCars, "cars");
+  renderOne("umTopTracksList", umState.topTracks, "tracks");
 }
 
-function exportAuditLogsCsv() {
-  const rows = [
-    ["timestamp", "category", "actor", "detail", "status"],
-    ...rcState.auditLogs.map((l) => [l.timestamp, l.category, l.actor, l.detail, l.status])
-  ];
-  const csv = rows.map((r) => r.map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = `muntrume_race_control_audit_${new Date().toISOString().slice(0, 10)}.csv`;
-  a.click();
-  showRcNotice("Auditoría exportada", "Archivo CSV descargado correctamente.", "success");
+function addG61ListRow(kind) {
+  const arr = kind === "cars" ? umState.topCars : umState.topTracks;
+  arr.push({ name: "", laps: 0, hours: 0 });
+  renderG61Lists();
 }
 
-// ============================================================================
-// INITIALIZATION & GLOBAL SHORTCUTS
-// ============================================================================
-document.addEventListener("DOMContentLoaded", () => {
-  if (!verifyAdminSession()) return;
-  initDefaultAuditLogs();
-  initGalleryData();
-  updateMmtSimulator();
-  refreshRaceControlData();
-
-  const params = new URLSearchParams(window.location.search);
-  const initialTab = params.get("tab");
-  if (initialTab) switchAdminTab(initialTab);
-
-  const globalSearch = document.getElementById("adminGlobalSearch");
-  if (globalSearch) {
-    globalSearch.addEventListener("input", () => {
-      const q = globalSearch.value.trim();
-      const dirInput = document.getElementById("directorySearchInput");
-      if (dirInput) {
-        dirInput.value = q;
-        if (rcState.activeTab !== "directory" && q.length >= 2) {
-          switchAdminTab("directory");
-        }
-        renderDirectoryTable();
-      }
-    });
+function updateG61ListRow(kind, idx, field, val) {
+  const arr = kind === "cars" ? umState.topCars : umState.topTracks;
+  if (!arr[idx]) return;
+  if (field === "name") arr[idx].name = String(val || "").trim();
+  else arr[idx][field] = Number(val) || 0;
+  if (kind === "tracks") {
+    const sum = Number(arr.reduce((a, t) => a + (Number(t.hours) || 0), 0).toFixed(1));
+    const hoursEl = document.getElementById("umTotalHours");
+    if (hoursEl && sum > 0) hoursEl.value = String(sum);
+    recalcUnifiedPilotStats();
   }
+}
 
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "/" && document.activeElement !== globalSearch && !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName || "")) {
-      e.preventDefault();
-      globalSearch?.focus();
+function removeG61ListRow(kind, idx) {
+  const arr = kind === "cars" ? umState.topCars : umState.topTracks;
+  arr.splice(idx, 1);
+  renderG61Lists();
+  if (kind === "tracks") {
+    const sum = Number(arr.reduce((a, t) => a + (Number(t.hours) || 0), 0).toFixed(1));
+    const hoursEl = document.getElementById("umTotalHours");
+    if (hoursEl) hoursEl.value = sum > 0 ? String(sum) : "";
+    recalcUnifiedPilotStats();
+  }
+}
+
+async function submitUnifiedPilotForm(e) {
+  e.preventDefault();
+  const btn = document.getElementById("umSubmitBtn");
+  const slug = document.getElementById("umSlug")?.value.trim() || "";
+  const origEmail = document.getElementById("umOrigEmail")?.value.trim().toLowerCase() || "";
+  const fullName = document.getElementById("umFullName")?.value.trim() || "";
+  const dorsal = document.getElementById("umDorsal")?.value.trim() || "";
+  const kind = document.getElementById("umKind")?.value || "driver";
+  const accountRole = document.getElementById("umAccountRole")?.value || "driver";
+  const roleTitle = document.getElementById("umRoleTitle")?.value.trim() || "";
+  const email = document.getElementById("umEmail")?.value.trim().toLowerCase() || "";
+  const cust_id = document.getElementById("umCustId")?.value.trim() || "";
+  const specialty = document.getElementById("umSpecialty")?.value.trim() || "";
+  const club = document.getElementById("umClub")?.value.trim() || "";
+  const country = document.getElementById("umCountry")?.value.trim() || "";
+  const team = document.getElementById("umTeam")?.value.trim() || "";
+  const car_class = document.getElementById("umCarClass")?.value.trim() || "";
+  const bio = document.getElementById("umBio")?.value.trim() || "";
+  const has_setup_access = Boolean(document.getElementById("umSetupAccess")?.checked);
+
+  if (!fullName) return;
+  if (btn) { btn.disabled = true; btn.textContent = "Guardando…"; }
+
+  try {
+    // 1. Update D1 Account if an account exists for origEmail or email
+    const targetEmail = origEmail || email;
+    const matchedMember = targetEmail
+      ? rcState.members.find((m) => String(m.email).toLowerCase() === targetEmail)
+      : null;
+
+    if (matchedMember) {
+      await rcAdminFetch("/api/setups/admin/user/update", {
+        email: matchedMember.email,
+        name: fullName,
+        role: accountRole,
+        team,
+        car_class,
+        has_setup_access
+      });
     }
-  });
-});
 
-// Hardened BFCache protection & Visibility checks
-window.addEventListener("pageshow", (event) => {
-  if (!verifyAdminSession()) return;
-  if (event.persisted) {
-    refreshRaceControlData();
+    // 2. Update Official Pilot Profile (5 Licenses + Garage 61 + MTI Stats)
+    if (slug) {
+      const licenses = readLicensesFromModal();
+      const top_cars = umState.topCars.filter((c) => c.name && (c.laps > 0 || c.hours > 0));
+      const top_tracks = umState.topTracks.filter((t) => t.name && (t.laps > 0 || t.hours > 0));
+      const totalHoursRaw = Number(document.getElementById("umTotalHours")?.value);
+      const favorite_track = document.getElementById("umFavoriteTrack")?.value.trim() || "";
+      const isAutoStats = Boolean(document.getElementById("umStatsAuto")?.checked);
+      const f1_stats = isAutoStats
+        ? { auto: true }
+        : {
+            auto: false,
+            overall: Number(document.getElementById("umStatOverall")?.value) || 60,
+            pace: Number(document.getElementById("umStatPace")?.value) || 60,
+            awareness: Number(document.getElementById("umStatAwareness")?.value) || 60,
+            racecraft: Number(document.getElementById("umStatRacecraft")?.value) || 60,
+            experience: Number(document.getElementById("umStatExperience")?.value) || 60
+          };
+
+      const scLic = licenses.find((l) => l.category === "sports_car") || licenses[0] || null;
+      await rcAdminFetch("/api/setups/admin/driver/profile", {
+        slug,
+        fullName,
+        name: fullName,
+        dorsal: dorsal || null,
+        kind,
+        role: roleTitle || null,
+        specialty: specialty || null,
+        club: club || null,
+        country: country || null,
+        bio: bio || null,
+        cust_id: cust_id || null,
+        email: email || null,
+        licenses,
+        irating: scLic?.irating ?? undefined,
+        license: scLic ? `${scLic.class_label}${scLic.sr != null ? ` ${Number(scLic.sr).toFixed(2)}` : ""}` : undefined,
+        top_cars,
+        top_tracks,
+        total_track_hours: Number.isFinite(totalHoursRaw) && totalHoursRaw > 0 ? totalHoursRaw : undefined,
+        favorite_track: favorite_track || undefined,
+        f1_stats,
+        sync_account_name: true
+      });
+    }
+
+    closeUnifiedPilotModal();
+    appendAuditEvent("admin", "atrumin16@gmail.com", `Actualizado todo-en-uno: ${fullName} (${slug || targetEmail})`, "GUARDADO");
+    await refreshRaceControlData();
+    showRcNotice("Cambios guardados en vivo", `${fullName} actualizado en Cloudflare D1, /drivers y /api/drivers.`, "success");
+  } catch (err) {
+    showRcNotice("Error al guardar", err?.message || "No se pudo actualizar en D1.", "err");
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "Guardar todo en D1"; }
   }
-});
+}
 
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible") {
-    verifyAdminSession();
-  }
-});
-
-let rcActiveMenuBtn = null;
-
+// ============================================================================
+// ROW POPOVER MENU & ACCOUNT ACTIONS
+// ============================================================================
 function closeRowActionMenu() {
   const pop = document.getElementById("rcRowActionPopover");
   if (pop) pop.classList.add("hidden");
@@ -1781,23 +1037,21 @@ function openRowActionMenu(btn, ev) {
 
   const isPrincipal = email === "atrumin16@gmail.com";
   const isBlocked = member.status === "inactive";
-  const hasSetupAccess = Boolean(member.has_setup_access) || ["admin", "team_driver", "driver", "pilot", "academy", "engineer"].includes(String(member.role || "").toLowerCase());
+  const hasSetupAccess = Boolean(member.has_setup_access);
   const linkedProf = (rcState.profiles || []).find((pr) => pr.email && String(pr.email).toLowerCase() === email);
 
-  const items = [];
-  items.push(`<button type="button" class="rc-action-popover__item" data-email="${rcEscape(member.email)}" onclick="closeRowActionMenu(); openEditUserModal(this.dataset.email)">✏️ Editar cuenta, nombre y rol</button>`);
-  if (linkedProf) {
-    items.push(`<button type="button" class="rc-action-popover__item" data-slug="${rcEscape(linkedProf.slug)}" onclick="closeRowActionMenu(); openEditDriverProfileModal(this.dataset.slug)">🏎️ Editar ficha, dorsal e iRating</button>`);
-  }
+  const items = [
+    `<button type="button" class="rc-action-popover__item" data-email="${rcEscape(member.email)}" data-slug="${rcEscape(linkedProf?.slug || "")}" onclick="closeRowActionMenu(); openUnifiedPilotModal({ email: this.dataset.email, slug: this.dataset.slug })">✏️ Editar todo (rol, licencias, G61)</button>`
+  ];
   if (!isBlocked) {
     items.push(`<div class="rc-action-popover__sep"></div>`);
-    items.push(`<button type="button" class="rc-action-popover__item" data-email="${rcEscape(member.email)}" data-name="${rcEscape(member.name)}" onclick="closeRowActionMenu(); generateDriverAccessFromBtn(this, 'link')">🔑 Enviar enlace de reset (72 h)</button>`);
-    items.push(`<button type="button" class="rc-action-popover__item" data-email="${rcEscape(member.email)}" data-name="${rcEscape(member.name)}" onclick="closeRowActionMenu(); generateDriverAccessFromBtn(this, 'copy_link')">📋 Copiar enlace (72 h)</button>`);
+    items.push(`<button type="button" class="rc-action-popover__item" data-email="${rcEscape(member.email)}" data-name="${rcEscape(member.name)}" onclick="closeRowActionMenu(); generateDriverAccessFromBtn(this, 'link')">🔑 Enviar enlace reset (72h)</button>`);
+    items.push(`<button type="button" class="rc-action-popover__item" data-email="${rcEscape(member.email)}" data-name="${rcEscape(member.name)}" onclick="closeRowActionMenu(); generateDriverAccessFromBtn(this, 'copy_link')">📋 Copiar enlace (72h)</button>`);
     items.push(`<button type="button" class="rc-action-popover__item" data-email="${rcEscape(member.email)}" data-name="${rcEscape(member.name)}" onclick="closeRowActionMenu(); generateDriverAccessFromBtn(this, 'temp_password')">⚡ Emitir clave temporal</button>`);
     items.push(`<button type="button" class="rc-action-popover__item" data-email="${rcEscape(member.email)}" onclick="closeRowActionMenu(); revokePilotSessionsBtn(this)">⎋ Cerrar sesiones activas</button>`);
   }
   if (!isPrincipal) {
-    if (items.length) items.push(`<div class="rc-action-popover__sep"></div>`);
+    items.push(`<div class="rc-action-popover__sep"></div>`);
     items.push(`<button type="button" class="rc-action-popover__item ${hasSetupAccess ? "rc-action-popover__item--ok" : ""}" data-email="${rcEscape(member.email)}" data-access="${hasSetupAccess ? "1" : "0"}" onclick="closeRowActionMenu(); toggleSetupAccessBtn(this)">${hasSetupAccess ? "✓ Setups Vault: Activo" : "○ Setups Vault: Bloqueado"}</button>`);
     items.push(`<button type="button" class="rc-action-popover__item" data-email="${rcEscape(member.email)}" data-status="${isBlocked ? "active" : "inactive"}" onclick="closeRowActionMenu(); toggleMemberStatusBtn(this)">${isBlocked ? "✓ Reactivar cuenta" : "⊘ Bloquear cuenta"}</button>`);
     items.push(`<button type="button" class="rc-action-popover__item rc-action-popover__item--danger" data-email="${rcEscape(member.email)}" onclick="closeRowActionMenu(); deleteMemberBtn(this)">🗑 Eliminar cuenta</button>`);
@@ -1809,279 +1063,465 @@ function openRowActionMenu(btn, ev) {
   rcActiveMenuBtn = btn;
 
   const rect = btn.getBoundingClientRect();
-  const popW = pop.offsetWidth || 220;
-  const popH = pop.offsetHeight || 180;
-  let left = rect.right - popW;
-  if (left < 12) left = 12;
-  let top = rect.bottom + 6;
-  if (top + popH > window.innerHeight - 12) {
-    top = Math.max(12, rect.top - popH - 6);
-  }
+  const popW = pop.offsetWidth || 225;
+  const popH = pop.offsetHeight || 200;
+  const left = Math.max(12, rect.right - popW);
+  const top = rect.bottom + 6 + popH > window.innerHeight - 12 ? Math.max(12, rect.top - popH - 6) : rect.bottom + 6;
   pop.style.left = `${Math.round(left)}px`;
   pop.style.top = `${Math.round(top)}px`;
 }
 
-document.addEventListener("click", (e) => {
-  const pop = document.getElementById("rcRowActionPopover");
-  if (!pop || pop.classList.contains("hidden")) return;
-  if (!pop.contains(e.target) && e.target !== rcActiveMenuBtn) closeRowActionMenu();
-});
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") closeRowActionMenu();
-});
-window.addEventListener("scroll", closeRowActionMenu, true);
+function openAddDriverModal() {
+  document.getElementById("addDriverModal")?.classList.remove("hidden");
+  document.getElementById("newDriverName")?.focus();
+}
 
-// ============================================================================
-// EDIT USER ACCOUNT (NAME, ROLE, TEAM, SETUP ACCESS, PUBLIC PROFILE)
-// ============================================================================
-function openEditUserModal(email) {
+function closeAddDriverModal() {
+  document.getElementById("addDriverModal")?.classList.add("hidden");
+}
+
+async function issuePilotCredentials({ request_id = null, name, email, role = "driver", method = "link", send_email = true, force = true }) {
   const cleanEmail = String(email || "").trim().toLowerCase();
-  const member = rcState.members.find((m) => String(m.email).toLowerCase() === cleanEmail);
-  if (!member) return;
-  const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v ?? ""; };
-  const setChk = (id, v) => { const el = document.getElementById(id); if (el) el.checked = Boolean(v); };
-
-  setVal("editUserEmailHidden", member.email);
-  setVal("editUserEmailReadonly", member.email);
-  setVal("editUserName", member.name || "");
-  setVal("editUserRole", member.role || "driver");
-  setVal("editUserTeam", member.team || "");
-  setVal("editUserCarClass", member.car_class || "");
-  setChk("editUserSetupAccess", member.has_setup_access);
-  setChk("editUserPublicVisible", member.public_visible);
-  setVal("editUserPublicName", member.public_name || "");
-  setVal("editUserPublicSlug", member.public_slug || "");
-  setVal("editUserPublicBio", member.public_bio || "");
-
-  document.getElementById("editUserModal")?.classList.remove("hidden");
-  document.getElementById("editUserName")?.focus();
-}
-
-function closeEditUserModal() {
-  document.getElementById("editUserModal")?.classList.add("hidden");
-}
-
-async function submitEditUserForm(e) {
-  e.preventDefault();
-  const btn = document.getElementById("editUserSubmitBtn");
-  const email = document.getElementById("editUserEmailHidden")?.value || "";
-  const name = document.getElementById("editUserName")?.value.trim() || "";
-  const role = document.getElementById("editUserRole")?.value || "driver";
-  const team = document.getElementById("editUserTeam")?.value.trim() || "";
-  const car_class = document.getElementById("editUserCarClass")?.value.trim() || "";
-  const has_setup_access = Boolean(document.getElementById("editUserSetupAccess")?.checked);
-
-  const public_visible = Boolean(document.getElementById("editUserPublicVisible")?.checked);
-  const public_name = document.getElementById("editUserPublicName")?.value.trim() || "";
-  const public_slug = document.getElementById("editUserPublicSlug")?.value.trim() || "";
-  const public_bio = document.getElementById("editUserPublicBio")?.value.trim() || "";
-
-  if (!email || !name) return;
-  if (btn) { btn.disabled = true; btn.textContent = "Guardando…"; }
+  const cleanName = String(name || cleanEmail.split("@")[0]).trim();
+  if (!cleanEmail) return;
   try {
-    await rcAdminFetch("/api/setups/admin/user/update", {
-      email,
-      name,
-      role,
-      team,
-      car_class,
-      has_setup_access
-    });
-
-    const prev = rcState.members.find((m) => String(m.email).toLowerCase() === email.toLowerCase());
-    const publicChanged = prev && (
-      Boolean(prev.public_visible) !== public_visible ||
-      (prev.public_name || "") !== public_name ||
-      (prev.public_slug || "") !== public_slug ||
-      (prev.public_bio || "") !== public_bio
-    );
-    if (publicChanged || public_visible) {
-      await rcAdminFetch("/api/setups/admin/user/public", {
-        email,
-        visible: public_visible,
-        public_name,
-        slug: public_slug || undefined,
-        bio: public_bio
-      });
+    const payload = request_id
+      ? { request_id: Number(request_id), method, send_email, force }
+      : { email: cleanEmail, name: cleanName, role, method, send_email, force };
+    const data = await rcAdminFetch("/api/setups/admin/approve", payload);
+    const secret = data.temp_password || data.set_password_link || "";
+    const isTempPass = Boolean(data.temp_password);
+    appendAuditEvent("admin", "atrumin16@gmail.com", `Credenciales emitidas: ${cleanName} (${cleanEmail})`, data.email_sent ? "ENVIADO" : "LISTO");
+    await refreshRaceControlData();
+    if (data.email_sent) {
+      showRcNotice("Acceso enviado", `Correo seguro enviado a ${cleanEmail}.`, "success");
+    } else if (secret) {
+      openCredentialsResultModal({ name: data.pilot?.name || cleanName, email: data.pilot?.email || cleanEmail, secret, isTempPass });
+      showRcNotice("Acceso creado", data.email_error ? `Correo pendiente (${data.email_error}). Usa el modal de respaldo.` : "Credenciales listas.", "warn");
     }
-
-    closeEditUserModal();
-    appendAuditEvent("admin", "atrumin16@gmail.com", `Cuenta actualizada: ${name} (${email}) · Rol: ${getRoleLabel(role)}`, "ACTUALIZADO");
-    await refreshRaceControlData();
-    showRcNotice("Cuenta actualizada", `Se han guardado los cambios de ${name} (${getRoleLabel(role)}) en Cloudflare D1.`, "success");
   } catch (err) {
-    showRcNotice("No se pudieron guardar los cambios", err?.message || "Error al actualizar el usuario en D1.", "err");
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = "Guardar cambios"; }
+    showRcNotice("No se pudo aprobar/generar acceso", err?.message || "Error en D1.", "err");
   }
 }
 
-// ============================================================================
-// EDIT OFFICIAL DRIVER PROFILE (NAME, DORSAL, IRATING, LICENSE, ROLE, BIO)
-// ============================================================================
-function updateEditProfOvrPreview() {
-  const ir = document.getElementById("editProfIrating")?.value;
-  const badge = document.getElementById("editProfOvrPreview");
-  if (!badge) return;
-  const ovr = computePreviewOvr(ir);
-  badge.textContent = ovr ? `OVR ${ovr}` : "OVR —";
-}
-
-function openEditDriverProfileModal(slug) {
-  const cleanSlug = String(slug || "").trim().toLowerCase();
-  const prof = (rcState.profiles || []).find((p) => p.slug === cleanSlug);
-  if (!prof) return;
-  const tInfo = rcState.liveTelemetryBySlug[cleanSlug] || {};
-  const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v ?? ""; };
-
-  setVal("editProfSlug", prof.slug);
-  setVal("editProfFullName", prof.fullName || prof.name || "");
-  setVal("editProfDorsal", prof.dorsal || "");
-  setVal("editProfKind", prof.kind || "driver");
-  setVal("editProfIrating", prof.irating ?? tInfo.irating ?? "");
-  setVal("editProfLicense", prof.license || tInfo.license || "");
-  setVal("editProfCustId", prof.cust_id || tInfo.cust_id || "");
-  setVal("editProfEmail", prof.email || "");
-  setVal("editProfRole", prof.role || "");
-  setVal("editProfSpecialty", prof.specialty || "");
-  setVal("editProfClub", prof.club || "");
-  setVal("editProfCountry", prof.country || "Spain");
-  setVal("editProfBio", prof.bio || "");
-
-  updateEditProfOvrPreview();
-  document.getElementById("editDriverProfileModal")?.classList.remove("hidden");
-  document.getElementById("editProfFullName")?.focus();
-}
-
-function closeEditDriverProfileModal() {
-  document.getElementById("editDriverProfileModal")?.classList.add("hidden");
-}
-
-async function submitEditDriverProfileForm(e) {
+async function submitAddDriverForm(e) {
   e.preventDefault();
-  const btn = document.getElementById("editProfSubmitBtn");
-  const slug = document.getElementById("editProfSlug")?.value || "";
-  const fullName = document.getElementById("editProfFullName")?.value.trim() || "";
-  const dorsal = document.getElementById("editProfDorsal")?.value.trim() || "";
-  const kind = document.getElementById("editProfKind")?.value || "driver";
-  const irRaw = document.getElementById("editProfIrating")?.value.trim() || "";
-  const license = document.getElementById("editProfLicense")?.value.trim() || "";
-  const cust_id = document.getElementById("editProfCustId")?.value.trim() || "";
-  const email = document.getElementById("editProfEmail")?.value.trim() || "";
-  const role = document.getElementById("editProfRole")?.value.trim() || "";
-  const specialty = document.getElementById("editProfSpecialty")?.value.trim() || "";
-  const club = document.getElementById("editProfClub")?.value.trim() || "";
-  const country = document.getElementById("editProfCountry")?.value.trim() || "";
-  const bio = document.getElementById("editProfBio")?.value.trim() || "";
+  const name = document.getElementById("newDriverName")?.value || "";
+  const email = document.getElementById("newDriverEmail")?.value || "";
+  const role = document.getElementById("newDriverRole")?.value || "driver";
+  const method = document.getElementById("newDriverMethod")?.value || "link";
+  const send_email = Boolean(document.getElementById("newDriverSendEmail")?.checked);
+  closeAddDriverModal();
+  await issuePilotCredentials({ name, email, role, method, send_email, force: true });
+}
 
-  if (!slug || !fullName) return;
-  if (btn) { btn.disabled = true; btn.textContent = "Guardando…"; }
-  try {
-    const payload = {
-      slug,
-      fullName,
-      name: fullName,
-      dorsal: dorsal || null,
-      kind,
-      cust_id: cust_id || null,
-      email: email || null,
-      role: role || null,
-      specialty: specialty || null,
-      club: club || null,
-      country: country || null,
-      bio: bio || null,
-      sync_account_name: true
-    };
-    if (irRaw !== "") payload.irating = parseInt(irRaw, 10);
-    if (license !== "") payload.license = license;
-
-    await rcAdminFetch("/api/setups/admin/driver/profile", payload);
-    closeEditDriverProfileModal();
-    appendAuditEvent(
-      "admin",
-      "atrumin16@gmail.com",
-      `Perfil oficial actualizado: ${fullName} (${dorsal || slug})${irRaw ? ` · ${irRaw} iR` : ""}${license ? ` · ${license}` : ""}`,
-      "PERFIL OK"
-    );
-    await refreshRaceControlData();
-    showRcNotice("Perfil actualizado en vivo", `Cambios de ${fullName} guardados en D1 y publicados en /drivers y /api/drivers.`, "success");
-  } catch (err) {
-    showRcNotice("No se pudo guardar el perfil", err?.message || "Error al actualizar la ficha del piloto en D1.", "err");
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = "Guardar perfil en D1"; }
+async function generateDriverAccessFromBtn(btn, method = "link") {
+  const email = (btn?.dataset?.email || "").trim().toLowerCase();
+  const name = btn?.dataset?.name || email.split("@")[0];
+  if (!email) return;
+  if (method === "temp_password") {
+    await issuePilotCredentials({ name, email, method: "temp_password", send_email: true, force: true });
+    return;
   }
+  const alwaysOpenModal = method === "copy_link";
+  try {
+    const data = await rcAdminFetch("/api/setups/admin/resend-invite", { email, kind: "reset" });
+    const secret = data.set_password_link || "";
+    appendAuditEvent("admin", "atrumin16@gmail.com", `Reset 72h emitido para ${email}`, "RESET");
+    await refreshRaceControlData();
+    if (secret && (alwaysOpenModal || !data.email_sent)) {
+      openCredentialsResultModal({ name, email, secret, isTempPass: false });
+      try { await navigator.clipboard.writeText(secret); } catch {}
+    }
+    showRcNotice(
+      alwaysOpenModal ? "Enlace 72h copiado" : (data.email_sent ? "Correo de reseteo enviado" : "Correo pendiente"),
+      alwaysOpenModal ? `Enlace copiado al portapapeles para ${email}.` : (data.email_sent ? `Correo enviado a ${email}.` : `Copia el enlace desde el modal.`),
+      data.email_sent || alwaysOpenModal ? "success" : "warn"
+    );
+  } catch (err) {
+    showRcNotice("No se pudo enviar el reset", err?.message || "Error al generar enlace.", "err");
+  }
+}
+
+async function revokePilotSessionsBtn(btn) {
+  const email = (btn?.dataset?.email || "").trim().toLowerCase();
+  if (!email) return;
+  try {
+    await rcAdminFetch("/api/setups/admin/user/revoke", { email });
+    appendAuditEvent("admin", "atrumin16@gmail.com", `Sesiones cerradas: ${email}`, "REVOKED");
+    showRcNotice("Sesiones cerradas", `Tokens invalidados para ${email}.`, "success");
+  } catch (err) {
+    showRcNotice("Error", err?.message || "No se pudieron cerrar las sesiones.", "err");
+  }
+}
+
+async function runQuickCredentialAction(action) {
+  const input = document.getElementById("quickResetEmailInput");
+  const email = (input?.value || "").trim().toLowerCase();
+  if (!email || !email.includes("@")) {
+    showRcNotice("Introduce un correo", "Selecciona o escribe el correo del piloto.", "warn");
+    input?.focus();
+    return;
+  }
+  const found = rcState.members.find((m) => String(m.email).toLowerCase() === email);
+  const fakeBtn = { dataset: { email, name: found?.name || email.split("@")[0] } };
+  if (action === "send_reset") await generateDriverAccessFromBtn(fakeBtn, "link");
+  else if (action === "copy_link") await generateDriverAccessFromBtn(fakeBtn, "copy_link");
+  else if (action === "temp_password") await generateDriverAccessFromBtn(fakeBtn, "temp_password");
+  else if (action === "revoke_sessions") await revokePilotSessionsBtn(fakeBtn);
+}
+
+function approvePendingRequestBtn(btn, method = "link") {
+  issuePilotCredentials({ request_id: btn?.dataset?.requestId || null, name: btn?.dataset?.name || "", email: btn?.dataset?.email || "", role: "driver", method, send_email: true, force: true });
+}
+
+async function rejectPendingRequestBtn(btn) {
+  const request_id = btn?.dataset?.requestId;
+  const email = btn?.dataset?.email || "";
+  if (!request_id) return;
+  const reason = window.prompt(`Motivo opcional para rechazar a ${email}:`, "");
+  if (reason === null) return;
+  try {
+    await rcAdminFetch("/api/setups/admin/reject", { request_id: Number(request_id), notify: true, reason });
+    appendAuditEvent("admin", "atrumin16@gmail.com", `Solicitud rechazada: ${email}`, "RECHAZADA");
+    await refreshRaceControlData();
+    showRcNotice("Solicitud rechazada", `Solicitud de ${email} rechazada.`, "info");
+  } catch (err) {
+    showRcNotice("Error", err?.message || "No se pudo rechazar.", "err");
+  }
+}
+
+async function toggleSetupAccessBtn(btn) {
+  const email = (btn?.dataset?.email || "").trim().toLowerCase();
+  const nextAccess = btn?.dataset?.access !== "1";
+  if (!email) return;
+  try {
+    await rcAdminFetch("/api/admin/setups-access", { email, has_setup_access: nextAccess });
+    appendAuditEvent("admin", "atrumin16@gmail.com", `Setups .sto ${nextAccess ? "activados" : "bloqueados"}: ${email}`, nextAccess ? "ON" : "OFF");
+    await refreshRaceControlData();
+    showRcNotice("Permiso actualizado", `Acceso a setups ${nextAccess ? "activo" : "bloqueado"} para ${email}.`, "success");
+  } catch (err) {
+    showRcNotice("Error", err?.message || "No se pudo cambiar el acceso.", "err");
+  }
+}
+
+async function toggleMemberStatusBtn(btn) {
+  const email = (btn?.dataset?.email || "").trim().toLowerCase();
+  const nextStatus = btn?.dataset?.status === "active" ? "active" : "inactive";
+  if (!email || email === "atrumin16@gmail.com") return;
+  if (!window.confirm(`¿Seguro que quieres ${nextStatus === "inactive" ? "bloquear" : "reactivar"} a ${email}?`)) return;
+  try {
+    await rcAdminFetch("/api/setups/admin/set-status", { email, status: nextStatus });
+    appendAuditEvent("admin", "atrumin16@gmail.com", `Cuenta ${nextStatus === "inactive" ? "bloqueada" : "reactivada"}: ${email}`, nextStatus.toUpperCase());
+    await refreshRaceControlData();
+    showRcNotice("Estado actualizado", `${email} ahora está ${nextStatus === "inactive" ? "bloqueada" : "activa"}.`, "info");
+  } catch (err) {
+    showRcNotice("Error", err?.message || "No se pudo cambiar el estado.", "err");
+  }
+}
+
+async function deleteMemberBtn(btn) {
+  const email = (btn?.dataset?.email || "").trim().toLowerCase();
+  if (!email || email === "atrumin16@gmail.com") return;
+  if (!window.confirm(`¿Eliminar definitivamente la cuenta de ${email} de Cloudflare D1?`)) return;
+  try {
+    await rcAdminFetch("/api/setups/admin/user/delete", { email, confirm: email });
+    appendAuditEvent("admin", "atrumin16@gmail.com", `Cuenta eliminada: ${email}`, "ELIMINADA");
+    await refreshRaceControlData();
+    showRcNotice("Cuenta eliminada", `${email} eliminada de D1.`, "info");
+  } catch (err) {
+    showRcNotice("Error", err?.message || "No se pudo eliminar la cuenta.", "err");
+  }
+}
+
+// ============================================================================
+// CREDENTIALS MODAL, MAILBOXES, EMAIL STUDIO, AUDIT & STEWARD BOT
+// ============================================================================
+function openCredentialsResultModal({ name, email, secret, isTempPass }) {
+  const modal = document.getElementById("credentialsResultModal");
+  const label = document.getElementById("credSecretLabel");
+  const code = document.getElementById("credSecretCode");
+  const textarea = document.getElementById("credWelcomeTemplate");
+  if (!modal || !code || !textarea) return;
+  if (label) label.textContent = isTempPass ? "CONTRASEÑA TEMPORAL (1 USO)" : "ENLACE PERSONAL DE ACCESO (72H)";
+  code.textContent = secret;
+  const msg = isTempPass
+    ? `Hola ${name},\n\n• Usuario: ${email}\n• Contraseña temporal: ${secret}\n• Acceso: https://muntru.me/garage`
+    : `Hola ${name},\n\n• Usuario: ${email}\n• Enlace personal (72 h): ${secret}\n\nMuntrume Motorsport · muntru.me`;
+  textarea.value = msg;
+  rcState.lastCredentials = { name, email, secret, msg };
+  modal.classList.remove("hidden");
+}
+
+function closeCredentialsResultModal() { document.getElementById("credentialsResultModal")?.classList.add("hidden"); }
+function copyCredentialSecretOnly() {
+  if (!rcState.lastCredentials?.secret) return;
+  navigator.clipboard.writeText(rcState.lastCredentials.secret).then(() => showRcNotice("Copiado", "Enlace/clave copiado.", "success"));
+}
+function copyWelcomeMessageTemplate() {
+  if (!rcState.lastCredentials?.msg) return;
+  navigator.clipboard.writeText(rcState.lastCredentials.msg).then(() => showRcNotice("Copiado", "Mensaje copiado al portapapeles.", "success"));
+}
+
+function renderMailboxesTable() {
+  const tbody = document.getElementById("mailboxesTableBody");
+  if (!tbody) return;
+  tbody.innerHTML = OFFICIAL_MAILBOXES.map((mb) => `
+    <tr>
+      <td><code>${rcEscape(mb.address)}</code></td>
+      <td><span class="rc-strong">${rcEscape(mb.owner)}</span></td>
+      <td><span class="rc-badge">${rcEscape(mb.role)}</span></td>
+      <td><span class="rc-badge rc-badge--ok">${rcEscape(mb.status)}</span></td>
+      <td class="text-right">
+        <div class="rc-row-actions">
+          <button type="button" class="r-btn r-btn--sm" data-addr="${rcEscape(mb.address)}" onclick="navigator.clipboard.writeText(this.dataset.addr); showRcNotice('Buzón copiado', this.dataset.addr, 'info')">Copiar</button>
+          <a href="mailto:${rcEscape(mb.address)}" class="r-btn r-btn--sm">Escribir ↗</a>
+        </div>
+      </td>
+    </tr>
+  `).join("");
+}
+
+function openEmailPreviewModal(key = "welcome") {
+  rcState.currentTemplateKey = EMAIL_TEMPLATES[key] ? key : "welcome";
+  const tpl = EMAIL_TEMPLATES[rcState.currentTemplateKey];
+  ["welcome", "reset", "code", "temp_password", "nec"].forEach((k) => {
+    document.getElementById(`tplBtn-${k}`)?.classList.toggle("is-on", k === rcState.currentTemplateKey);
+  });
+  const subj = document.getElementById("tplSubjectText");
+  const badgeEl = document.getElementById("tplBadgeText");
+  const body = document.getElementById("tplBodyText");
+  const visualBox = document.getElementById("tplVisualHtmlBox");
+  if (subj) subj.textContent = tpl.subject;
+  if (badgeEl) badgeEl.textContent = tpl.badge || "RACE CONTROL";
+  if (body) body.textContent = tpl.body;
+  if (visualBox) {
+    const rowsHtml = (tpl.rows || []).map(([k, v]) => `
+      <div style="display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:12.5px">
+        <span style="font-family:var(--r-mono);font-size:11px;text-transform:uppercase;color:#94a3b8;font-weight:700">${rcEscape(k)}</span>
+        <span style="font-weight:700;color:#f8fafc;text-align:right">${rcEscape(v)}</span>
+      </div>`).join("");
+    const codeHtml = tpl.codeBox ? `<div style="margin:12px 0;text-align:center"><span style="display:inline-block;padding:10px 22px;border-radius:12px;border:1.5px solid #00e699;background:#061a14;color:#00e699;font-family:var(--r-mono);font-size:24px;font-weight:800;letter-spacing:8px">${rcEscape(tpl.codeBox)}</span></div>` : "";
+    visualBox.innerHTML = `
+      <div style="max-width:520px;margin:0 auto;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.12);background:#0f141c">
+        <div style="padding:14px 18px;background:#080b10;display:flex;align-items:center;justify-content:space-between">
+          <strong style="color:#fff;font-size:13px">MUNTRUME MOTORSPORT · muntru.me</strong>
+          <span style="padding:3px 9px;border-radius:999px;background:#062319;border:1px solid #059669;color:#00e699;font-family:var(--r-mono);font-size:10px">${rcEscape(tpl.badge)}</span>
+        </div>
+        <div style="padding:18px;display:grid;gap:10px">
+          <h4 style="margin:0;font-size:17px;color:#fff">${rcEscape(tpl.title)}</h4>
+          <p style="margin:0;font-size:12.5px;color:#a7f3d0">${rcEscape(tpl.tldr)}</p>
+          ${codeHtml}
+          <div style="padding:8px 12px;border-radius:10px;background:#090d13">${rowsHtml}</div>
+        </div>
+      </div>`;
+  }
+  document.getElementById("emailTemplateModal")?.classList.remove("hidden");
+}
+
+function closeEmailPreviewModal() { document.getElementById("emailTemplateModal")?.classList.add("hidden"); }
+
+async function sendTestEmailFromAdmin() {
+  const btn = document.getElementById("btnSendPreviewEmail");
+  const tpl = EMAIL_TEMPLATES[rcState.currentTemplateKey] || EMAIL_TEMPLATES.welcome;
+  if (btn) { btn.disabled = true; btn.textContent = "Enviando…"; }
+  try {
+    const data = await rcAdminFetch("/api/setups/admin/email-preview", { only: [tpl.previewKey || "reset"] });
+    const resItem = (data.results || [])[0];
+    if (resItem?.ok) showRcNotice("Correo de prueba enviado", `Enviado a ${data.to}.`, "success");
+    else showRcNotice("Aviso", resItem?.error || "Revisa la configuración de Resend.", "warn");
+  } catch (err) {
+    showRcNotice("Error", err?.message || "No se pudo enviar la prueba.", "err");
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "🚀 Enviarme prueba real"; }
+  }
+}
+
+function copyCurrentEmailTemplate() {
+  const tpl = EMAIL_TEMPLATES[rcState.currentTemplateKey] || EMAIL_TEMPLATES.welcome;
+  navigator.clipboard.writeText(`Asunto: ${tpl.subject}\n\n${tpl.body}`).then(() => showRcNotice("Copiado", "Plantilla copiada.", "success"));
+}
+
+function filterAuditLogs(cat) {
+  rcState.auditFilter = cat;
+  ["all", "auth", "download", "admin"].forEach((c) => {
+    document.getElementById(`auditFilter-${c}`)?.classList.toggle("is-on", c === cat);
+  });
+  renderAuditLogsTable();
+}
+
+function renderAuditLogsTable() {
+  const tbody = document.getElementById("auditLogsTableBody");
+  if (!tbody) return;
+  const list = rcState.auditLogs.filter((item) => rcState.auditFilter === "all" ? true : item.category === rcState.auditFilter);
+  tbody.innerHTML = list.map((item) => {
+    const fmtDate = new Date(item.timestamp).toLocaleString("es-ES", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+    return `
+      <tr>
+        <td style="font-family:var(--r-mono);font-size:12px;white-space:nowrap">${rcEscape(fmtDate)}</td>
+        <td><span class="rc-badge">${rcEscape(item.category.toUpperCase())}</span></td>
+        <td><code>${rcEscape(item.actor)}</code></td>
+        <td>${rcEscape(item.detail)}</td>
+        <td><span class="rc-badge rc-badge--ok">${rcEscape(item.status)}</span></td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function exportAuditLogsCsv() {
+  const rows = [["timestamp", "category", "actor", "detail", "status"], ...rcState.auditLogs.map((l) => [l.timestamp, l.category, l.actor, l.detail, l.status])];
+  const csv = rows.map((r) => r.map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+  a.download = `muntrume_admin_audit_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  showRcNotice("Auditoría exportada", "CSV descargado.", "success");
 }
 
 async function runStewardBotSweep() {
   const btn = document.getElementById("btnStewardBotSweep");
   const prev = btn ? btn.textContent : "";
-  if (btn) { btn.disabled = true; btn.textContent = "🛡 Analizando comentarios…"; }
+  if (btn) { btn.disabled = true; btn.textContent = "🛡 Analizando…"; }
   try {
     const data = await rcAdminFetch("/api/admin/moderation/sweep", {});
-    showRcNotice(
-      "MMT Steward Bot completado",
-      `Revisados: ${data.scanned ?? 0} · Limpiados: ${data.cleaned ?? 0} · Retirados: ${data.rejected ?? 0}.`,
-      "success"
-    );
+    showRcNotice("MMT Steward Bot completado", `Revisados: ${data.scanned ?? 0} · Limpiados: ${data.cleaned ?? 0} · Retirados: ${data.rejected ?? 0}.`, "success");
   } catch (err) {
-    showRcNotice("MMT Steward Bot", err?.message || "No se pudo contactar con el bot moderador.", "err");
+    showRcNotice("MMT Steward Bot", err?.message || "No se pudo contactar con el bot.", "err");
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = prev || "🛡 Pasar Steward Bot"; }
   }
 }
 
+// ============================================================================
+// INIT, SHORTCUTS, DRAG/DROP & CLIPBOARD PASTE FOR GARAGE 61 SCREENSHOTS
+// ============================================================================
+document.addEventListener("DOMContentLoaded", () => {
+  if (!verifyAdminSession()) return;
+  initDefaultAuditLogs();
+  refreshRaceControlData();
+
+  const initialTab = new URLSearchParams(window.location.search).get("tab");
+  if (initialTab) switchAdminTab(initialTab);
+
+  const globalSearch = document.getElementById("adminGlobalSearch");
+  if (globalSearch) {
+    globalSearch.addEventListener("input", () => {
+      const q = globalSearch.value.trim();
+      const dirInput = document.getElementById("directorySearchInput");
+      if (dirInput) {
+        dirInput.value = q;
+        if (rcState.activeTab !== "overview" && q.length >= 2) switchAdminTab("overview");
+        renderDirectoryTable();
+      }
+    });
+  }
+
+  // Drag & drop on Garage 61 dropzone
+  const dz = document.getElementById("umG61Dropzone");
+  if (dz) {
+    dz.addEventListener("dragover", (e) => { e.preventDefault(); dz.style.borderColor = "var(--r-accent)"; });
+    dz.addEventListener("dragleave", () => { dz.style.borderColor = ""; });
+    dz.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dz.style.borderColor = "";
+      const file = e.dataTransfer?.files?.[0];
+      if (file) loadG61ImageFile(file);
+    });
+  }
+
+  // Paste screenshot with Ctrl+V while modal is open
+  document.addEventListener("paste", (e) => {
+    const modal = document.getElementById("unifiedPilotModal");
+    if (!modal || modal.classList.contains("hidden")) return;
+    const items = e.clipboardData?.items || [];
+    for (const item of items) {
+      if (item.type && item.type.startsWith("image/")) {
+        const file = item.getAsFile();
+        if (file) {
+          switchUnifiedModalTab("g61");
+          loadG61ImageFile(file);
+        }
+        break;
+      }
+    }
+  });
+
+  document.addEventListener("click", (e) => {
+    const pop = document.getElementById("rcRowActionPopover");
+    if (!pop || pop.classList.contains("hidden")) return;
+    if (!pop.contains(e.target) && e.target !== rcActiveMenuBtn) closeRowActionMenu();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeRowActionMenu();
+      closeUnifiedPilotModal();
+      closeAddDriverModal();
+      closeCredentialsResultModal();
+      closeEmailPreviewModal();
+    }
+    if (e.key === "/" && document.activeElement !== globalSearch && !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName || "")) {
+      e.preventDefault();
+      globalSearch?.focus();
+    }
+  });
+
+  window.addEventListener("scroll", closeRowActionMenu, true);
+});
+
+window.addEventListener("pageshow", (event) => {
+  if (!verifyAdminSession()) return;
+  if (event.persisted) refreshRaceControlData();
+});
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") verifyAdminSession();
+});
+
 if (typeof window !== "undefined") {
-  window.openEditUserModal = openEditUserModal;
-  window.closeEditUserModal = closeEditUserModal;
-  window.submitEditUserForm = submitEditUserForm;
-  window.openEditDriverProfileModal = openEditDriverProfileModal;
-  window.closeEditDriverProfileModal = closeEditDriverProfileModal;
-  window.updateEditProfOvrPreview = updateEditProfOvrPreview;
-  window.submitEditDriverProfileForm = submitEditDriverProfileForm;
-  window.openRowActionMenu = openRowActionMenu;
-  window.closeRowActionMenu = closeRowActionMenu;
-  window.runStewardBotSweep = runStewardBotSweep;
-  window.verifyAdminSession = verifyAdminSession;
-  window.secureAdminLogout = secureAdminLogout;
-  window.switchAdminTab = switchAdminTab;
-  window.refreshRaceControlData = refreshRaceControlData;
-  window.filterDirectory = filterDirectory;
-  window.renderDirectoryTable = renderDirectoryTable;
-  window.openAddDriverModal = openAddDriverModal;
-  window.closeAddDriverModal = closeAddDriverModal;
-  window.submitAddDriverForm = submitAddDriverForm;
-  window.generateDriverAccessFromBtn = generateDriverAccessFromBtn;
-  window.approvePendingRequestBtn = approvePendingRequestBtn;
-  window.rejectPendingRequestBtn = rejectPendingRequestBtn;
-  window.toggleMemberStatusBtn = toggleMemberStatusBtn;
-  window.toggleSetupAccessBtn = toggleSetupAccessBtn;
-  window.deleteMemberBtn = deleteMemberBtn;
-  window.revokeDriverAccessBtn = revokeDriverAccessBtn;
-  window.closeCredentialsResultModal = closeCredentialsResultModal;
-  window.copyCredentialSecretOnly = copyCredentialSecretOnly;
-  window.copyWelcomeMessageTemplate = copyWelcomeMessageTemplate;
-  window.updateMmtSimulator = updateMmtSimulator;
-  window.copySimulatedFilename = copySimulatedFilename;
-  window.openEmailPreviewModal = openEmailPreviewModal;
-  window.closeEmailPreviewModal = closeEmailPreviewModal;
-  window.copyCurrentEmailTemplate = copyCurrentEmailTemplate;
-  window.sendTestEmailFromAdmin = sendTestEmailFromAdmin;
-  window.runQuickCredentialAction = runQuickCredentialAction;
-  window.revokePilotSessionsBtn = revokePilotSessionsBtn;
-  window.saveIracingMappings = saveIracingMappings;
-  window.copyDriverIdsConfig = copyDriverIdsConfig;
-  window.copyIracingConsoleSnippet = copyIracingConsoleSnippet;
-  window.testLiveDriversEndpoint = testLiveDriversEndpoint;
-  window.filterAuditLogs = filterAuditLogs;
-  window.exportAuditLogsCsv = exportAuditLogsCsv;
-  window.showRcNotice = showRcNotice;
-  window.hideRcNotice = hideRcNotice;
-  window.initGalleryData = initGalleryData;
-  window.renderAdminGalleryGrid = renderAdminGalleryGrid;
-  window.filterAdminGalleryByCar = filterAdminGalleryByCar;
-  window.reassignPhotoCarPath = reassignPhotoCarPath;
-  window.unassignPhoto = unassignPhoto;
-  window.deleteGalleryPhoto = deleteGalleryPhoto;
-  window.submitAdminPhotoUpload = submitAdminPhotoUpload;
-  window.resetGalleryToDefaults = resetGalleryToDefaults;
+  Object.assign(window, {
+    verifyAdminSession,
+    secureAdminLogout,
+    switchAdminTab,
+    refreshRaceControlData,
+    filterDirectory,
+    renderDirectoryTable,
+    openUnifiedPilotModal,
+    closeUnifiedPilotModal,
+    switchUnifiedModalTab,
+    submitUnifiedPilotForm,
+    recalcUnifiedPilotStats,
+    syncOvrBigFromInput,
+    toggleUnifiedStatsAuto,
+    handleG61FileSelected,
+    analyzeG61Screenshot,
+    addG61ListRow,
+    updateG61ListRow,
+    removeG61ListRow,
+    openRowActionMenu,
+    closeRowActionMenu,
+    openAddDriverModal,
+    closeAddDriverModal,
+    submitAddDriverForm,
+    generateDriverAccessFromBtn,
+    approvePendingRequestBtn,
+    rejectPendingRequestBtn,
+    toggleSetupAccessBtn,
+    toggleMemberStatusBtn,
+    deleteMemberBtn,
+    revokePilotSessionsBtn,
+    runQuickCredentialAction,
+    openCredentialsResultModal,
+    closeCredentialsResultModal,
+    copyCredentialSecretOnly,
+    copyWelcomeMessageTemplate,
+    openEmailPreviewModal,
+    closeEmailPreviewModal,
+    sendTestEmailFromAdmin,
+    copyCurrentEmailTemplate,
+    filterAuditLogs,
+    exportAuditLogsCsv,
+    runStewardBotSweep,
+    showRcNotice,
+    hideRcNotice
+  });
 }

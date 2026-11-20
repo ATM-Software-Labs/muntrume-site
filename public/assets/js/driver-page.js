@@ -128,13 +128,106 @@
     }
     if (d.role && !/\bgtp\b/i.test(d.role)) set("role", d.role);
     if (d.specialty) set("specialty", sanitizeSpecialty(d.specialty));
-    if (d.irating > 0) {
-      approx(root.querySelector('[data-f="irating"]'), "k", d.irating);
-      if (typeof window.muntruComputeAsymptoticRating === "function") {
-        set("ovr", String(window.muntruComputeAsymptoticRating(d.irating)));
+
+    var licLabels = {
+      sports_car: "Sports Car",
+      formula_car: "Formula Car",
+      oval: "Oval",
+      dirt_road: "Dirt Road",
+      dirt_oval: "Dirt Oval"
+    };
+    var licBox = document.getElementById("driverAllLicenses");
+    if (licBox && licenses.length > 0) {
+      var extraLics = licenses.filter(function (l) { return l && (l.irating || l.sr != null || l.class_label); });
+      if (extraLics.length > 1) {
+        licBox.innerHTML = extraLics.map(function (l) {
+          var catName = licLabels[l.category] || l.category;
+          var cls = l.class_label || l.classLabel || "";
+          var srTxt = l.sr != null ? Number(l.sr).toFixed(2) : "";
+          var irTxt = l.irating ? Number(l.irating).toLocaleString(loc()) + " iR" : "";
+          return '<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid var(--r-line);background:var(--r-bg-2);font:600 11px/1.2 var(--r-mono);color:var(--r-text)">' +
+            '<span style="color:var(--r-accent)">' + esc(catName) + '</span>' +
+            (cls ? '<span>' + esc(cls) + (srTxt ? ' ' + esc(srTxt) : '') + '</span>' : '') +
+            (irTxt ? '<span style="color:var(--r-muted)">· ' + esc(irTxt) + '</span>' : '') +
+            '</span>';
+        }).join("");
+        licBox.hidden = false;
       }
+    }
+
+    var primaryLic = licenses.find(function (l) { return l && l.category === "sports_car"; }) || licenses[0] || null;
+    var srVal = primaryLic && primaryLic.sr != null ? Number(primaryLic.sr) : null;
+    var classShort = primaryLic && (primaryLic.class_label || primaryLic.classLabel)
+      ? String(primaryLic.class_label || primaryLic.classLabel).replace(/^Class\s+/i, "")
+      : "A";
+    var hoursVal = d.total_track_hours > 0 ? Number(d.total_track_hours) : null;
+
+    if (hoursVal > 0) {
+      approx(root.querySelector('[data-f="total_track_hours"]'), "h", hoursVal);
+    }
+    if (d.favorite_track) set("favorite_track", d.favorite_track);
+
+    if (Array.isArray(d.top_tracks) && d.top_tracks.length > 0) {
+      var tracksSum = d.top_tracks.reduce(function (a, t) { return a + (Number(t.hours) || 0); }, 0);
+      var tracksMax = Math.max.apply(null, d.top_tracks.map(function (t) { return Number(t.hours) || 0; }).concat([1]));
+      set("top_track_name", d.top_tracks[0].name);
+      approx(root.querySelector('[data-f="top_track_hours"]'), "h", d.top_tracks[0].hours);
+      var tList = document.getElementById("tracksList-" + slug);
+      if (tList) {
+        tList.innerHTML = d.top_tracks.map(function (item, idx) {
+          var hrs = Number(item.hours) || 0;
+          var sh = tracksSum > 0 ? Math.round((hrs / tracksSum) * 100) : 0;
+          var bw = Math.max(4, Math.round((hrs / tracksMax) * 100));
+          return '<li data-track="' + esc(item.name) + '"' + (idx >= 5 ? ' data-extra-bar="true" hidden' : '') + '>' +
+            '<span class="d-bars__name">' + esc(item.name) + '</span>' +
+            '<span class="d-bars__val"><span>' + esc(hrs.toFixed(1)) + ' h</span> <span>en pista</span>' + (item.laps ? ' · ' + esc(item.laps) + ' laps' : '') + '</span>' +
+            '<span class="d-bars__share">' + sh + '% <span>del total</span></span>' +
+            '<span class="d-bar" aria-hidden="true"><span style="width:' + bw + '%"></span></span>' +
+            '</li>';
+        }).join("");
+      }
+    }
+
+    if (Array.isArray(d.top_cars) && d.top_cars.length > 0) {
+      var carsSum = d.top_cars.reduce(function (a, c) { return a + (Number(c.hours) || 0); }, 0);
+      var carsMax = Math.max.apply(null, d.top_cars.map(function (c) { return Number(c.hours) || 0; }).concat([1]));
+      showList("cars", d.top_cars.slice(0, 5).map(function (c) { return c.name; }));
+      var cList = document.getElementById("carsList-" + slug);
+      if (cList) {
+        cList.innerHTML = d.top_cars.map(function (item, idx) {
+          var hrs = Number(item.hours) || 0;
+          var sh = carsSum > 0 ? Math.round((hrs / carsSum) * 100) : 0;
+          var bw = Math.max(4, Math.round((hrs / carsMax) * 100));
+          return '<li data-car="' + esc(item.name) + '"' + (idx >= 5 ? ' data-extra-bar="true" hidden' : '') + '>' +
+            '<span class="d-bars__name">' + esc(item.name) + '</span>' +
+            '<span class="d-bars__val"><span>' + esc(hrs.toFixed(1)) + ' h</span> <span>en pista</span>' + (item.laps ? ' · ' + esc(item.laps) + ' laps' : '') + '</span>' +
+            '<span class="d-bars__share">' + sh + '% <span>del total</span></span>' +
+            '<span class="d-bar" aria-hidden="true"><span style="width:' + bw + '%"></span></span>' +
+            '</li>';
+        }).join("");
+      }
+    }
+
+    if (d.irating > 0 || d.f1_stats) {
+      if (d.irating > 0) approx(root.querySelector('[data-f="irating"]'), "k", d.irating);
+      var ovrVal = (d.f1_stats && d.f1_stats.overall)
+        ? d.f1_stats.overall
+        : (typeof window.muntruComputeAsymptoticRating === "function" && d.irating > 0
+          ? window.muntruComputeAsymptoticRating(d.irating, srVal || 3.0, hoursVal || 100)
+          : null);
+      if (ovrVal) set("ovr", String(ovrVal));
       try {
-        document.dispatchEvent(new CustomEvent("muntrume:driver-live-stats", { detail: { slug: slug, irating: d.irating } }));
+        document.dispatchEvent(new CustomEvent("muntrume:driver-live-stats", {
+          detail: {
+            slug: slug,
+            irating: d.irating,
+            sr: srVal,
+            hours: hoursVal,
+            classShort: classShort,
+            dorsal: d.dorsal,
+            f1_stats: d.f1_stats || null
+          }
+        }));
       } catch (e) {}
     }
     if (d.fav_car && d.fav_car.name && isSportsCarVehicle(d.fav_car.name)) showList("cars", [d.fav_car.name]);

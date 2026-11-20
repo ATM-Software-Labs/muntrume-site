@@ -7,11 +7,19 @@ const fmt = (n: number) => n.toLocaleString('en-US');
 const totalSetups = catalog.total_setups || 42654;
 const totalCars = catalog.cars?.length || 105;
 const totalCircuits = catalog.circuits?.length || 128;
+
+const LICENSE_CATEGORIES = [
+  { key: 'sports_car', label: 'Sports Car', hint: 'GT3, GT4, Cup, Resistencia (principal)' },
+  { key: 'formula_car', label: 'Formula Car', hint: 'F4, F3, SF23, IndyCar' },
+  { key: 'oval', label: 'Oval', hint: 'NASCAR, Indy Oval, Stock Cars' },
+  { key: 'dirt_road', label: 'Dirt Road', hint: 'Rallycross, Pro 2/4 Off-Road' },
+  { key: 'dirt_oval', label: 'Dirt Oval', hint: 'Sprint Cars, Midget, Late Model' },
+];
 ---
 
 <Layout
-  title="Race Control | Consola de Administración · Muntrume Motorsport"
-  description="Consola de dirección de equipo y administración técnica de Muntrume Motorsport: gestión de pilotos D1, auditoría BoP 26S4, nomenclatura MMT, NEC VLN y buzones @muntru.me."
+  title="Muntrume Admin | Consola de Equipo · Muntrume Motorsport"
+  description="Consola unificada de administración de Muntrume Motorsport: pilotos, roles, 5 licencias iRacing, importador de capturas Garage 61, stats MTI y seguridad D1."
   noindex={true}
 >
   <Fragment slot="head">
@@ -43,7 +51,7 @@ const totalCircuits = catalog.circuits?.length || 128;
   </Fragment>
 
   <div class="rc-shell" id="rcShell">
-    <!-- Google Admin Console Top Bar -->
+    <!-- Sticky Google Admin Top Bar -->
     <div class="rc-topbar">
       <div class="rc-container rc-topbar__inner">
         <div class="rc-brand">
@@ -65,61 +73,43 @@ const totalCircuits = catalog.circuits?.length || 128;
             type="search"
             id="adminGlobalSearch"
             class="rc-search-input"
-            placeholder="Buscar pilotos, setups, correos o actividad…"
+            placeholder="Buscar piloto, correo, dorsal o rol…"
             aria-label="Buscar en Muntrume Admin"
           />
           <kbd class="rc-kbd">/</kbd>
         </div>
 
         <div class="rc-topbar__actions">
-          <span id="rcBackendBadge" class="rc-badge rc-badge--ok" title="Estado de conexión con Cloudflare D1 y Worker">
+          <span id="rcBackendBadge" class="rc-badge rc-badge--ok" title="Estado de conexión con Cloudflare D1">
             <span class="rc-dot"></span>
             <span id="rcBackendBadgeText">D1 Online</span>
           </span>
+          <a href="/drivers/" class="rc-btn-ghost">Pilotos ↗</a>
           <a href="/garage/" class="rc-btn-ghost">Garage ↗</a>
           <button type="button" class="rc-btn-primary" onclick="openAddDriverModal()">+ Alta piloto</button>
-          <button type="button" class="rc-btn-danger" onclick="secureAdminLogout()" title="Cerrar sesión de administrador">
-            Salir
-          </button>
+          <button type="button" class="rc-btn-danger" onclick="secureAdminLogout()" title="Cerrar sesión de administrador">Salir</button>
         </div>
       </div>
     </div>
 
-    <!-- Main Google Admin Workspace (Left Drawer + Spacious Main Canvas) -->
+    <!-- Main Google Admin Workspace (3 Clean Sections Only) -->
     <div class="rc-container rc-workspace">
-      <!-- Left Navigation Sidebar -->
-      <aside class="rc-sidebar" aria-label="Módulos de Race Control">
+      <aside class="rc-sidebar" aria-label="Navegación de administración">
         <div class="rc-sidebar__group">
-          <p class="rc-sidebar__label">Esenciales</p>
-          <nav class="rc-nav" role="tablist" aria-label="Secciones de administración">
+          <p class="rc-sidebar__label">Consola</p>
+          <nav class="rc-nav" role="tablist" aria-label="Secciones">
             <button type="button" id="nav-overview" data-rc-tab="overview" class="rc-nav__btn is-active" onclick="switchAdminTab('overview')">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
-              <span>Panel General</span>
-              <span class="rc-nav__pill">LIVE</span>
-            </button>
-            <button type="button" id="nav-directory" data-rc-tab="directory" class="rc-nav__btn" onclick="switchAdminTab('directory')">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              <span>Pilotos &amp; Solicitudes</span>
-              <span id="sidebarPendingBadge" class="rc-nav__pill">4</span>
+              <span>Pilotos &amp; Perfiles</span>
+              <span id="sidebarPendingBadge" class="rc-nav__pill">{PILOTOS.length}</span>
+            </button>
+            <button type="button" id="nav-access" data-rc-tab="access" class="rc-nav__btn" onclick="switchAdminTab('access')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span>Accesos &amp; Correos</span>
             </button>
             <button type="button" id="nav-security" data-rc-tab="security" class="rc-nav__btn" onclick="switchAdminTab('security')">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              <span>Seguridad &amp; Auditoría</span>
-            </button>
-
-            <p class="rc-sidebar__label" style="margin-top:12px">Avanzado</p>
-            <button type="button" id="nav-setups" data-rc-tab="setups" class="rc-nav__btn" onclick="switchAdminTab('setups')">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-6"/></svg>
-              <span>Vault MMT (.STO)</span>
-              <span class="rc-nav__pill">42.6k</span>
-            </button>
-            <button type="button" id="nav-iracing" data-rc-tab="iracing" class="rc-nav__btn" onclick="switchAdminTab('iracing')">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-              <span>iRacing Sync Bridge</span>
-            </button>
-            <button type="button" id="nav-gallery" data-rc-tab="gallery" class="rc-nav__btn" onclick="switchAdminTab('gallery')">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-              <span>Galería &amp; CarPath</span>
+              <span>Seguridad &amp; Logs</span>
             </button>
           </nav>
         </div>
@@ -127,23 +117,21 @@ const totalCircuits = catalog.circuits?.length || 128;
         <div class="rc-sidebar__card">
           <div class="rc-sidebar__card-head">
             <span class="rc-dot"></span>
-            <span>INFRAESTRUCTURA EDGE</span>
+            <span>ESTADO EN VIVO</span>
           </div>
           <dl class="rc-sidebar__dl">
             <div><dt>Dominio</dt><dd>muntru.me</dd></div>
             <div><dt>Base D1</dt><dd id="rcSidebarD1Status">Sincronizada</dd></div>
-            <div><dt>Escrutinio BoP</dt><dd class="rc-accent">100% PASS TECH</dd></div>
-            <div><dt>NEC VLN 26S4</dt><dd>W01–W13 (1,638)</dd></div>
+            <div><dt>Vault .STO</dt><dd class="rc-accent">{fmt(totalSetups)}</dd></div>
+            <div><dt>Steward Bot</dt><dd>Activo</dd></div>
           </dl>
-          <div class="rc-sidebar__btns">
-            <button type="button" class="r-btn r-btn--sm" style="width:100%" onclick="refreshRaceControlData()">↻ Sincronizar D1 Ahora</button>
-          </div>
+          <button type="button" class="r-btn r-btn--sm" style="width:100%" onclick="refreshRaceControlData()">↻ Sincronizar D1</button>
+          <button type="button" class="r-btn r-btn--sm" id="btnStewardBotSweep" style="width:100%" onclick="runStewardBotSweep()">🛡 Pasar Steward Bot</button>
         </div>
       </aside>
 
-      <!-- Right Content Area -->
       <div class="rc-main">
-        <!-- Notice Banner (Feedback for Admin Operations) -->
+        <!-- Notice Banner -->
         <div id="rcFeedbackBanner" class="m-notice m-notice--info hidden" role="status">
           <div class="m-notice__body">
             <p class="m-notice__title" id="rcFeedbackTitle">Estado</p>
@@ -153,71 +141,160 @@ const totalCircuits = catalog.circuits?.length || 128;
         </div>
 
         <!-- =============================================================== -->
-        <!-- TAB 1: PANEL GENERAL (OVERVIEW)                                 -->
+        <!-- TAB 1: PILOTOS, PERFILES, LICENCIAS & GARAGE 61 (TODO EN UNO)   -->
         <!-- =============================================================== -->
-        <section id="tab-overview" class="rc-panel space-y-6">
+        <section id="tab-overview" class="rc-panel">
           <div class="rc-section-head">
             <div>
-              <p class="r-kicker">Centro de Mando · Tiempo Real</p>
-              <h2 class="r-h3">Estado Global de Muntrume Motorsport</h2>
-              <p class="rc-muted">Supervisión unificada de pilotos oficiales, escrutinio BoP 26S4, catálogo MMT (.STO), paquetes semanales NEC VLN y correo institucional.</p>
+              <p class="r-kicker">Panel Todo en Uno · Cloudflare D1</p>
+              <h2 class="r-h3">Pilotos, Licencias, Garage 61 &amp; Cuentas</h2>
+              <p class="rc-muted">Edita en un solo modal nombres, roles, las 5 licencias de iRacing, sube capturas de Garage 61 para coches/circuitos y recalcula la media OVR en vivo.</p>
             </div>
             <div class="rc-btn-row">
-              <button type="button" class="r-btn r-btn--sm" id="btnStewardBotSweep" onclick="runStewardBotSweep()">🛡 Pasar Steward Bot</button>
-              <button type="button" class="r-btn r-btn--sm" onclick="openEmailPreviewModal('welcome')">✉️ Plantillas Correo</button>
+              <button type="button" class="r-btn r-btn--sm" onclick="refreshRaceControlData()">↻ Actualizar</button>
               <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="openAddDriverModal()">+ Alta de Piloto</button>
             </div>
           </div>
 
-          <!-- 4 KPI Cards -->
+          <!-- 4 Clean KPIs (including live Team Average iRating & OVR) -->
           <div class="rc-kpi-grid">
             <article class="rc-kpi-card">
               <div class="rc-kpi-card__top">
-                <span class="rc-kpi-tag">PLANTILLA &amp; ACCESOS</span>
+                <span class="rc-kpi-tag">CUENTAS D1</span>
                 <span class="rc-badge rc-badge--ok" id="kpiDriversBadge">D1 Activo</span>
               </div>
               <div class="rc-kpi-val" id="kpiDriversCount">{PILOTOS.length}</div>
-              <p class="rc-kpi-sub" id="kpiPendingSub">Pilotos oficiales del equipo</p>
-              <button type="button" class="rc-kpi-link" onclick="switchAdminTab('directory')">Gestionar Directorio →</button>
+              <p class="rc-kpi-sub" id="kpiPendingSub">Pilotos y cuentas autorizadas</p>
             </article>
 
             <article class="rc-kpi-card">
               <div class="rc-kpi-card__top">
-                <span class="rc-kpi-tag">SOLICITUDES PENDIENTES</span>
+                <span class="rc-kpi-tag">MEDIA DEL EQUIPO</span>
+                <span class="rc-badge rc-badge--ok" id="kpiTeamAvgOvrBadge">OVR —</span>
+              </div>
+              <div class="rc-kpi-val" id="kpiTeamAvgIr">—</div>
+              <p class="rc-kpi-sub" id="kpiTeamAvgSub">iRating medio Sports Car en vivo</p>
+            </article>
+
+            <article class="rc-kpi-card">
+              <div class="rc-kpi-card__top">
+                <span class="rc-kpi-tag">SOLICITUDES</span>
                 <span class="rc-badge rc-badge--ok" id="kpiPendingStatusBadge">Al día</span>
               </div>
               <div class="rc-kpi-val" id="kpiPendingCount">0</div>
-              <p class="rc-kpi-sub">Solicitudes de acceso al Vault</p>
-              <button type="button" class="rc-kpi-link" onclick="switchAdminTab('directory')">Revisar Solicitudes →</button>
+              <p class="rc-kpi-sub">Pendientes de aprobar en el Vault</p>
             </article>
 
             <article class="rc-kpi-card">
               <div class="rc-kpi-card__top">
-                <span class="rc-kpi-tag">VAULT MMT (.STO)</span>
+                <span class="rc-kpi-tag">SETUP VAULT</span>
                 <span class="rc-badge rc-badge--ok">26S4</span>
               </div>
-              <div class="rc-kpi-val" id="kpiSetupsCount">{fmt(totalSetups)}</div>
-              <p class="rc-kpi-sub">{totalCars} coches · {totalCircuits} circuitos oficiales</p>
-              <button type="button" class="rc-kpi-link" onclick="switchAdminTab('setups')">Ver Setups →</button>
-            </article>
-
-            <article class="rc-kpi-card">
-              <div class="rc-kpi-card__top">
-                <span class="rc-kpi-tag">CORREOS @MUNTRU.ME</span>
-                <span class="rc-badge rc-badge--ok">Resend + DKIM</span>
-              </div>
-              <div class="rc-kpi-val">5 Plantillas</div>
-              <p class="rc-kpi-sub">Reset, Bienvenida, Código 6 dígitos y Briefing</p>
-              <button type="button" class="rc-kpi-link" onclick="openEmailPreviewModal('reset')">Probar y Previsualizar →</button>
+              <div class="rc-kpi-val">{fmt(totalSetups)}</div>
+              <p class="rc-kpi-sub">{totalCars} coches · {totalCircuits} circuitos</p>
             </article>
           </div>
 
-          <!-- QUICK CREDENTIAL RESET & INVITE COMMAND BAR -->
-          <div class="rc-card" id="quickCredResetCard" style="border-left:3px solid var(--r-accent)">
+          <!-- Pending Requests (only visible when > 0) -->
+          <div id="pendingRequestsCard" class="rc-card hidden" style="border-left:3px solid var(--r-accent)">
             <div class="rc-card__head">
               <div>
-                <h3 class="rc-card__title">🔑 Centro Rápido de Credenciales &amp; Reseteo en 1 Clic</h3>
-                <p class="rc-muted">Selecciona o escribe el correo de cualquier piloto para reenviarle el enlace de reseteo de contraseña (72 h), copiar el link directo para Discord/WhatsApp, generar una clave temporal o cerrar sus sesiones activas.</p>
+                <h3 class="rc-card__title">Solicitudes de Acceso Pendientes</h3>
+                <p class="rc-muted">Aprobación directa desde <code>/garage</code>.</p>
+              </div>
+              <span id="pendingRequestsCountBadge" class="rc-badge rc-badge--warn">0 pendientes</span>
+            </div>
+            <div id="pendingRequestsList" class="space-y-3"></div>
+          </div>
+
+          <!-- Official Team Profiles (All-in-One: 5 Licenses, Garage 61, OVR Stats) -->
+          <div class="rc-card">
+            <div class="rc-card__head">
+              <div>
+                <h3 class="rc-card__title">Plantilla Oficial · Perfiles, Licencias &amp; Stats en Vivo</h3>
+                <p class="rc-muted">Pulsa <strong>Editar todo</strong> en cualquier piloto para cambiar nombre, dorsal, rol, las 5 licencias iRacing, subir foto de Garage 61 y recalcular su media MTI.</p>
+              </div>
+              <a href="/drivers/" class="r-btn r-btn--sm">Ver Roster Público ↗</a>
+            </div>
+            <div class="r-scroll">
+              <table class="r-table">
+                <thead>
+                  <tr>
+                    <th>Dorsal &amp; Piloto</th>
+                    <th>Rol / Ficha</th>
+                    <th>Licencias Activas</th>
+                    <th>iRating · OVR</th>
+                    <th>Garage 61</th>
+                    <th class="text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="overviewRosterBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Unified Accounts Directory (D1 allowed_users) -->
+          <div class="rc-card">
+            <div class="rc-card__head">
+              <div>
+                <h3 class="rc-card__title">Directorio de Cuentas &amp; Permisos (Cloudflare D1)</h3>
+                <p class="rc-muted">Gestiona todas las cuentas con acceso al Vault, cambia roles, permisos <code>.sto</code> o credenciales.</p>
+              </div>
+              <div class="rc-toolbar" style="gap:8px">
+                <div class="g-views" role="group" aria-label="Filtrar cuentas">
+                  <button type="button" id="dirFilter-all" class="is-on" onclick="filterDirectory('all')">Todos</button>
+                  <button type="button" id="dirFilter-active" onclick="filterDirectory('active')">Activos</button>
+                  <button type="button" id="dirFilter-admin" onclick="filterDirectory('admin')">Admins</button>
+                  <button type="button" id="dirFilter-inactive" onclick="filterDirectory('inactive')">Bloqueadas</button>
+                </div>
+                <input
+                  type="search"
+                  id="directorySearchInput"
+                  class="g-search"
+                  style="width:220px"
+                  placeholder="Filtrar cuentas…"
+                  oninput="renderDirectoryTable()"
+                />
+              </div>
+            </div>
+            <div class="r-scroll">
+              <table class="r-table">
+                <thead>
+                  <tr>
+                    <th>Usuario</th>
+                    <th>Correo de Acceso</th>
+                    <th>Rol</th>
+                    <th>Categoría / iRating</th>
+                    <th>Estado</th>
+                    <th class="text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="directoryTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- =============================================================== -->
+        <!-- TAB 2: ACCESOS RÁPIDOS & CORREOS @MUNTRU.ME                     -->
+        <!-- =============================================================== -->
+        <section id="tab-access" class="rc-panel hidden">
+          <div class="rc-section-head">
+            <div>
+              <p class="r-kicker">Credenciales &amp; Comunicaciones · @muntru.me</p>
+              <h2 class="r-h3">Accesos en 1 Clic &amp; Estudio de Correos</h2>
+              <p class="rc-muted">Envía enlaces de reseteo de 72 h, genera claves temporales, revoca sesiones o prueba plantillas transaccionales de Resend.</p>
+            </div>
+            <div class="rc-btn-row">
+              <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="openEmailPreviewModal('welcome')">✉️ Abrir Plantillas de Correo</button>
+            </div>
+          </div>
+
+          <div class="rc-card" style="border-left:3px solid var(--r-accent)">
+            <div class="rc-card__head">
+              <div>
+                <h3 class="rc-card__title">🔑 Centro Rápido de Credenciales</h3>
+                <p class="rc-muted">Selecciona el correo del piloto y ejecuta la acción en un clic.</p>
               </div>
               <span class="rc-badge rc-badge--ok">PBKDF2 · Zero-Trust</span>
             </div>
@@ -228,589 +305,101 @@ const totalCircuits = catalog.circuits?.length || 128;
                   id="quickResetEmailInput"
                   list="quickResetDriversDatalist"
                   class="g-search"
-                  placeholder="Correo del piloto (ej. mateo@muntru.me, eduardo@muntru.me)…"
+                  placeholder="Correo del piloto (ej. mateo@muntru.me)…"
                 />
-                <datalist id="quickResetDriversDatalist">
-                  <option value="mateo@muntru.me">Mateo Berbis (#1)</option>
-                  <option value="eduardo@muntru.me">Eduardo Chongkan (#22)</option>
-                  <option value="juanlu@muntru.me">Juanlu Confirmado (#14)</option>
-                  <option value="alberto@muntru.me">Alberto Trujillo (#16)</option>
-                </datalist>
+                <datalist id="quickResetDriversDatalist"></datalist>
               </div>
               <div class="rc-btn-row">
-                <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="runQuickCredentialAction('send_reset')">
-                  ✉️ Reenviar Link Reset por Correo
-                </button>
-                <button type="button" class="r-btn r-btn--sm" onclick="runQuickCredentialAction('copy_link')">
-                  📋 Generar y Copiar Link (72h)
-                </button>
-                <button type="button" class="r-btn r-btn--sm" onclick="runQuickCredentialAction('temp_password')">
-                  ⚡ Emitir Clave Temporal
-                </button>
-                <button type="button" class="r-btn r-btn--sm" onclick="runQuickCredentialAction('revoke_sessions')" title="Invalida todos los tokens y sesiones activas del piloto">
-                  ⎋ Cerrar Sesiones
-                </button>
+                <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="runQuickCredentialAction('send_reset')">✉️ Enviar Link Reset</button>
+                <button type="button" class="r-btn r-btn--sm" onclick="runQuickCredentialAction('copy_link')">📋 Copiar Link (72h)</button>
+                <button type="button" class="r-btn r-btn--sm" onclick="runQuickCredentialAction('temp_password')">⚡ Clave Temporal</button>
+                <button type="button" class="r-btn r-btn--sm" onclick="runQuickCredentialAction('revoke_sessions')">⎋ Cerrar Sesiones</button>
               </div>
             </div>
           </div>
 
-          <!-- Roster Oficial en Vivo + Acciones Rápidas -->
           <div class="rc-card">
             <div class="rc-card__head">
               <div>
-                <h3 class="rc-card__title">Plantilla Oficial, Perfiles &amp; iRating en Vivo</h3>
-                <p class="rc-muted">Edita nombres, dorsales, roles, iRating, Safety Rating y biografías con efecto inmediato en <code>/drivers</code> y <code>/api/drivers</code>.</p>
+                <h3 class="rc-card__title">Buzones Institucionales @muntru.me</h3>
+                <p class="rc-muted">Infraestructura Resend + Cloudflare Email Routing con SPF, DKIM y DMARC activos.</p>
               </div>
-              <div class="rc-btn-row">
-                <a href="/drivers" class="r-btn r-btn--sm">Ver Roster Público ↗</a>
-                <button type="button" class="r-btn r-btn--sm" onclick="switchAdminTab('directory')">Directorio Completo →</button>
-              </div>
+              <button type="button" class="r-btn r-btn--sm" onclick="openEmailPreviewModal('reset')">Previsualizar correos →</button>
             </div>
             <div class="r-scroll">
               <table class="r-table">
                 <thead>
                   <tr>
-                    <th>Dorsal &amp; Piloto</th>
-                    <th>Rol / Ficha</th>
-                    <th>iRacing cust_id</th>
-                    <th>iRating &amp; Licencia</th>
+                    <th>Buzón</th>
+                    <th>Titular</th>
+                    <th>Función</th>
                     <th>Estado</th>
                     <th class="text-right">Acciones</th>
                   </tr>
                 </thead>
-                <tbody id="overviewRosterBody">
-                  {PILOTOS.map((p) => (
-                    <tr>
-                      <td>
-                        <div class="rc-user-cell">
-                          <span class="rc-avatar">#{p.dorsal}</span>
-                          <div>
-                            <div class="rc-strong">{p.fullName}</div>
-                            <div class="rc-mono-sub">cust_id: {p.cust_id || 'Sin vincular'}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td><span class="rc-badge">{p.role}</span></td>
-                      <td><code>{p.cust_id || 'Sin vincular'}</code></td>
-                      <td><span class="rc-mono-sub">Sincronizado</span></td>
-                      <td><span class="rc-badge rc-badge--ok">Verificado</span></td>
-                      <td class="text-right">
-                        <a href={`/drivers/${p.slug}/`} class="r-btn r-btn--sm">Perfil ↗</a>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Two-Column Operational Summary: BoP Health & Recent Activity -->
-          <div class="rc-two-col">
-            <div class="rc-card">
-              <div class="rc-card__head">
-                <div>
-                  <h3 class="rc-card__title">✓ Estado de Escrutinio BoP 26S4 &amp; Nomenclatura MMT</h3>
-                  <p class="rc-muted">Auditoría automática sobre los {fmt(totalSetups)} archivos <code>.sto</code> del Vault.</p>
-                </div>
-                <span class="rc-badge rc-badge--ok">0 FAILED TECH</span>
-              </div>
-              <ul class="rc-check-list">
-                <li>
-                  <span>Estructura Oficial <code>MMT_[MODELO]_[CIRCUITO]_[SESIÓN].sto</code></span>
-                  <strong class="rc-accent">42,654 / 42,654 (100%)</strong>
-                </li>
-                <li>
-                  <span>Alturas Estáticas y Caídas dentro de límites iRacing 26S4</span>
-                  <strong class="rc-accent">PASS TECH (100%)</strong>
-                </li>
-                <li>
-                  <span>Nürburgring Combined Gesamtstrecke VLN (Altura NEC &ge; 70.5 mm)</span>
-                  <strong class="rc-accent">1,638 / 1,638 OK</strong>
-                </li>
-                <li>
-                  <span>Presión Fría Mínima (&ge; 151.7 kPa Dry / &ge; 165.5 kPa Wet)</span>
-                  <strong class="rc-accent">Verificado</strong>
-                </li>
-                <li>
-                  <span>Marca de agua institucional UTF-16LE (<code>muntru.me</code>)</span>
-                  <strong class="rc-accent">Activa en descarga</strong>
-                </li>
-              </ul>
-            </div>
-
-            <div class="rc-card">
-              <div class="rc-card__head">
-                <div>
-                  <h3 class="rc-card__title">Actividad Reciente en Race Control</h3>
-                  <p class="rc-muted">Últimos eventos registrados en Cloudflare D1 y consola.</p>
-                </div>
-                <button type="button" class="r-btn r-btn--sm" onclick="switchAdminTab('security')">Ver Auditoría →</button>
-              </div>
-              <ul id="overviewActivityList" class="rc-activity-list"></ul>
-            </div>
-          </div>
-        </section>
-
-        <!-- =============================================================== -->
-        <!-- TAB 2: DIRECTORIO DE PILOTOS, SOLICITUDES & ALTAS D1            -->
-        <!-- =============================================================== -->
-        <section id="tab-directory" class="rc-panel space-y-6 hidden">
-          <div class="rc-section-head">
-            <div>
-              <p class="r-kicker">Gestión de Miembros · Cloudflare D1</p>
-              <h2 class="r-h3">Directorio de Pilotos &amp; Solicitudes de Acceso</h2>
-              <p class="rc-muted">Autoriza solicitudes de ingreso al Garage, genera enlaces únicos de contraseña (72 h) o contraseñas temporales de 1 uso y administra permisos.</p>
-            </div>
-            <div class="rc-btn-row">
-              <button type="button" class="r-btn r-btn--sm" onclick="refreshRaceControlData()">↻ Actualizar D1</button>
-              <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="openAddDriverModal()">+ Alta de Piloto</button>
-            </div>
-          </div>
-
-          <!-- Solicitudes Pendientes (Se muestra si hay pendientes o al filtrar) -->
-          <div id="pendingRequestsCard" class="rc-card hidden" style="border-left:3px solid var(--r-accent)">
-            <div class="rc-card__head">
-              <div>
-                <h3 class="rc-card__title">Solicitudes de Acceso Pendientes de Aprobación</h3>
-                <p class="rc-muted">Solicitudes enviadas desde el formulario «Solicitar acceso» de <code>/garage</code>.</p>
-              </div>
-              <span id="pendingRequestsCountBadge" class="rc-badge rc-badge--warn">0 pendientes</span>
-            </div>
-            <div id="pendingRequestsList" class="space-y-3"></div>
-          </div>
-
-          <!-- Filtros de Directorio -->
-          <div class="rc-toolbar">
-            <div class="g-views" role="group" aria-label="Filtrar miembros">
-              <button type="button" id="dirFilter-all" class="is-on" onclick="filterDirectory('all')">Todos</button>
-              <button type="button" id="dirFilter-active" onclick="filterDirectory('active')">Titulares Activos</button>
-              <button type="button" id="dirFilter-admin" onclick="filterDirectory('admin')">Administradores</button>
-              <button type="button" id="dirFilter-inactive" onclick="filterDirectory('inactive')">Bloqueadas</button>
-              <button type="button" id="dirFilter-pending" onclick="filterDirectory('pending')">Solicitudes</button>
-            </div>
-            <div class="rc-search-inline">
-              <input
-                type="search"
-                id="directorySearchInput"
-                class="g-search"
-                placeholder="Filtrar por nombre, correo, dorsal o rol…"
-                oninput="renderDirectoryTable()"
-              />
-            </div>
-          </div>
-
-          <div class="rc-card">
-            <div class="r-scroll">
-              <table class="r-table">
-                <thead>
-                  <tr>
-                    <th>Piloto &amp; Identidad</th>
-                    <th>Correo de Acceso</th>
-                    <th>Rol &amp; Dorsal</th>
-                    <th>Licencia / Telemetría</th>
-                    <th>Estado Credencial</th>
-                    <th class="text-right">Acciones de Cuenta</th>
-                  </tr>
-                </thead>
-                <tbody id="directoryTableBody"></tbody>
+                <tbody id="mailboxesTableBody"></tbody>
               </table>
             </div>
           </div>
         </section>
 
         <!-- =============================================================== -->
-        <!-- TAB 3: VAULT SETUPS, NOMENCLATURA MMT & ESPECIAL NEC VLN        -->
+        <!-- TAB 3: SEGURIDAD ZERO-TRUST & LOGS DE AUDITORÍA                 -->
         <!-- =============================================================== -->
-        <section id="tab-setups" class="rc-panel space-y-6 hidden">
-          <div class="rc-section-head">
-            <div>
-              <p class="r-kicker">Ingeniería de Pista · BoP 26S4</p>
-              <h2 class="r-h3">Vault Setups, Nomenclatura MMT &amp; Especial NEC VLN</h2>
-              <p class="rc-muted">Inspector de cumplimiento del estándar <code>MMT_[MODELO]_[CIRCUITO]_[SESIÓN]_[VERSIÓN].sto</code> y verificación de escrutinio técnico sin <em>Failed Tech</em>.</p>
-            </div>
-            <div class="rc-btn-row">
-              <a href="/garage" class="r-btn r-btn--primary r-btn--sm">Abrir Catálogo en /garage →</a>
-            </div>
-          </div>
-
-          <!-- Interactive MMT Nomenclature Generator & Live BoP Validator -->
-          <div class="rc-card" style="border-left:3px solid var(--r-accent)">
-            <div class="rc-card__head">
-              <div>
-                <h3 class="rc-card__title">🔬 Simulador de Nomenclatura Oficial MMT &amp; Escrutinio BoP</h3>
-                <p class="rc-muted">Prueba cualquier combinación de modelo, circuito, sesión y versión para validar su nombre oficial y sus parámetros técnicos BoP 26S4.</p>
-              </div>
-              <span class="rc-badge rc-badge--ok">PASS TECH · 0 FAILED TECH</span>
-            </div>
-
-            <div class="rc-sim-grid">
-              <div class="g-field">
-                <label for="simCarSelect">Modelo MMT</label>
-                <select id="simCarSelect" onchange="updateMmtSimulator()">
-                  <option value="ferrari296gt3">F296 · Ferrari 296 GT3</option>
-                  <option value="porsche992rgt3">P911 · Porsche 911 GT3 R (992)</option>
-                  <option value="bmwm4gt3">M4 · BMW M4 GT3</option>
-                  <option value="mercedesamgevogt3">AMG · Mercedes-AMG GT3 2020</option>
-                  <option value="audir8lmsevo2gt3">R8 · Audi R8 LMS EVO II GT3</option>
-                  <option value="lamborghinievogt3">LAMBO · Lamborghini Huracán GT3 EVO</option>
-                  <option value="mclaren720sgt3">MACLA · McLaren 720S GT3 EVO</option>
-                  <option value="chevyvettez06rgt3">Z06 · Chevrolet Corvette Z06 GT3.R</option>
-                  <option value="fordmustanggt3">MUST · Ford Mustang GT3</option>
-                  <option value="amvantageevogt3">AMR · Aston Martin Vantage GT3 EVO</option>
-                  <option value="amvalkyriegtp">VALK · Aston Martin Valkyrie AMR-LMH</option>
-                  <option value="ferrari499p">F499P · Ferrari 499P Hypercar</option>
-                  <option value="cadillacvseriesrgtp">CADDY · Cadillac V-Series.R GTP</option>
-                  <option value="porsche963gtp">P963 · Porsche 963 GTP</option>
-                  <option value="bmwlmdh">BMWH · BMW M Hybrid V8 GTP</option>
-                  <option value="acuraarx06gtp">ACURA · Acura ARX-06 GTP</option>
-                  <option value="porsche718gt4">PORS · Porsche 718 Cayman GT4</option>
-                  <option value="audirs3lmsgen2">RS3 · Audi RS 3 LMS TCR</option>
-                  <option value="hyundaielantracn7">HYUN · Hyundai Elantra N TCR</option>
-                  <option value="hondacivictyper">CIVIC · Honda Civic Type R TCR</option>
-                  <option value="toyotagr86">GR86 · Toyota GR86 Cup</option>
-                  <option value="superformulasf23 toyota">SF23 · Super Formula SF23</option>
-                  <option value="dallaraf3">F3 · Dallara F3</option>
-                  <option value="formulair04">F4 · FIA F4</option>
-                  <option value="raygr22">FF1600 · Ray FF1600</option>
-                  <option value="mx5 cup">MX5 · Global Mazda MX-5 Cup</option>
-                </select>
-              </div>
-
-              <div class="g-field">
-                <label for="simCircuitSelect">Circuito</label>
-                <select id="simCircuitSelect" onchange="updateMmtSimulator()">
-                  <option value="Nürburgring Combined Gesamtstrecke VLN">VLN · Nürburgring Combined Gesamtstrecke VLN (NEC)</option>
-                  <option value="Spa">SPA · Circuit de Spa-Francorchamps</option>
-                  <option value="Le Mans">LEMANS · Circuit des 24 Heures du Mans</option>
-                  <option value="Daytona">DAYTONA · Daytona International Speedway</option>
-                  <option value="Sebring">SEBRING · Sebring International Raceway</option>
-                  <option value="Watkins Glen">WGLEN · Watkins Glen International</option>
-                  <option value="Road Atlanta">RATLANTA · Michelin Raceway Road Atlanta</option>
-                  <option value="Monza">MONZA · Autodromo Nazionale Monza</option>
-                  <option value="Imola">IMOLA · Autodromo Internazionale Enzo e Dino Ferrari</option>
-                  <option value="Suzuka">SUZUKA · Suzuka International Racing Course</option>
-                  <option value="Bathurst">BATHURST · Mount Panorama Circuit</option>
-                  <option value="Interlagos">INTERLAGOS · Autódromo José Carlos Pace</option>
-                </select>
-              </div>
-
-              <div class="g-field">
-                <label for="simSessionSelect">Código de Sesión MMT</label>
-                <select id="simSessionSelect" onchange="updateMmtSimulator()">
-                  <option value="R">R · Race (Carrera estándar / Sprint)</option>
-                  <option value="END">END · Endurance / Eventos Especiales / NEC</option>
-                  <option value="S">S · Safe (Alta estabilidad para carrera)</option>
-                  <option value="Q">Q · Quali estándar (1 vuelta / mínima carga)</option>
-                  <option value="Q2">Q2 · Quali de 2 vueltas (out-lap + push)</option>
-                  <option value="Q_SAFE">Q_SAFE · Quali alta estabilidad</option>
-                  <option value="Q2_SAFE">Q2_SAFE · Quali 2 vueltas alta estabilidad</option>
-                  <option value="W">W · Wet (Lluvia)</option>
-                </select>
-              </div>
-
-              <div class="g-field">
-                <label for="simVersionSelect">Versión (Opcional)</label>
-                <select id="simVersionSelect" onchange="updateMmtSimulator()">
-                  <option value="">Estándar (Sin sufijo)</option>
-                  <option value="V2">V2 · Revisión BoP 2</option>
-                  <option value="V3">V3 · Revisión BoP 3</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="rc-sim-output">
-              <div class="rc-sim-output__file">
-                <span class="rc-kpi-tag">ARCHIVO OFICIAL GENERADO</span>
-                <div class="rc-sim-filename" id="simGeneratedFilename">MMT_F296_VLN_R.sto</div>
-                <p class="rc-muted" id="simGeneratedPath">Ruta en iRacing: <code>Documentos\iRacing\setups\ferrari296gt3\Muntrume_Motorsport\26S4\W01_VLN\MMT_F296_VLN_R.sto</code></p>
-              </div>
-              <div class="rc-btn-row">
-                <button type="button" class="r-btn r-btn--sm" onclick="copySimulatedFilename()">Copiar nombre .sto</button>
-                <a id="simOpenInGarageBtn" href="/garage" class="r-btn r-btn--primary r-btn--sm">Buscar en /garage →</a>
-              </div>
-            </div>
-
-            <div id="simBopChecksGrid" class="rc-bop-grid"></div>
-          </div>
-
-          <!-- NEC Weekly Schedule & Coverage (W01 - W13) -->
-          <div class="rc-card">
-            <div class="rc-card__head">
-              <div>
-                <h3 class="rc-card__title">🏁 Cobertura Semanal NEC · Nürburgring Combined Gesamtstrecke VLN (W01–W13)</h3>
-                <p class="rc-muted">1,638 setups verificados para las 21 monturas de la Nürburgring Endurance Championship (6 variantes por coche cada semana: <code>Q</code>, <code>Q2_SAFE</code>, <code>R</code>, <code>END</code>, <code>S</code>, <code>W</code>).</p>
-              </div>
-              <a href="/garage" class="r-btn r-btn--sm">Ver NEC en Garage →</a>
-            </div>
-            <div class="rc-nec-grid">
-              {Array.from({ length: 13 }, (_, i) => {
-                const w = `W${String(i + 1).padStart(2, '0')}`;
-                return (
-                  <a href={`/garage?nec=${w}`} class="rc-nec-card">
-                    <div class="rc-nec-card__top">
-                      <span class="rc-strong">NEC {w}</span>
-                      <span class="rc-badge rc-badge--ok">PASS TECH</span>
-                    </div>
-                    <div class="rc-mono-sub">VLN · 21 coches · 126 setups</div>
-                    <div class="rc-nec-card__codes">Q · Q2_SAFE · R · END · S · W</div>
-                  </a>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-
-        <!-- =============================================================== -->
-        <!-- TAB 5: IRACING SYNC BRIDGE (CUST_ID & TELEMETRY)                -->
-        <!-- =============================================================== -->
-        <section id="tab-iracing" class="rc-panel space-y-6 hidden">
-          <div class="rc-section-head">
-            <div>
-              <p class="r-kicker">Telemetría Oficial · Cero Riesgo de Baneo</p>
-              <h2 class="r-h3">iRacing Sync Bridge &amp; Vinculación de cust_id</h2>
-              <p class="rc-muted">Vincula el <code>cust_id</code> oficial de cada piloto para sincronizar iRating, Safety Rating y telemetría de Garage 61 sin almacenar contraseñas de iRacing.</p>
-            </div>
-            <div class="rc-btn-row">
-              <button type="button" class="r-btn r-btn--sm" onclick="testLiveDriversEndpoint()">⚡ Probar /api/drivers en Vivo</button>
-              <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="copyDriverIdsConfig()">📋 Copiar driver-ids.js</button>
-            </div>
-          </div>
-
-          <div class="rc-two-col">
-            <div class="rc-card">
-              <div class="rc-card__head">
-                <div>
-                  <h3 class="rc-card__title">Método 1 · Marcador Anti-Ban en 1 Clic</h3>
-                  <p class="rc-muted">Arrastra el botón a tu barra de marcadores y púlsalo dentro de <code>members-ng.iracing.com</code>.</p>
-                </div>
-                <span class="rc-badge rc-badge--ok">Recomendado</span>
-              </div>
-              <p class="rc-muted">El navegador lee únicamente tu resumen público de licencia (`cust_id`, iRating y SR) y lo envía al endpoint oficial de Muntrume.</p>
-              <div class="rc-btn-row" style="margin-top:8px">
-                <a
-                  id="iracingBookmarkletLink"
-                  href="javascript:(function(){alert('Muntrume iRacing Sync Bridge: Ejecuta este marcador dentro de members-ng.iracing.com');})();"
-                  class="r-btn r-btn--primary r-btn--sm"
-                  onclick="event.preventDefault(); showRcNotice('Arrastra el botón', 'Arrastra este botón a la barra de marcadores de tu navegador y púlsalo cuando estés en members-ng.iracing.com.', 'info');"
-                >
-                  ⚡ Sync Muntrume iRacing
-                </a>
-                <button type="button" class="r-btn r-btn--sm" onclick="copyIracingConsoleSnippet()">Copiar Script Consola (F12)</button>
-              </div>
-            </div>
-
-            <div class="rc-card">
-              <div class="rc-card__head">
-                <div>
-                  <h3 class="rc-card__title">Método 2 · Mapeo Directo en driver-ids.js</h3>
-                  <p class="rc-muted">Edita los <code>cust_id</code> en la tabla inferior y guarda o exporta el archivo <code>public/assets/js/driver-ids.js</code>.</p>
-                </div>
-                <span class="rc-badge">Instantáneo</span>
-              </div>
-              <p class="rc-muted">Los cambios se guardan inmediatamente en tu sesión local de Race Control y puedes copiar el bloque listo para producción en 1 clic.</p>
-            </div>
-          </div>
-
-          <div class="rc-card">
-            <div class="rc-card__head">
-              <div>
-                <h3 class="rc-card__title">Vinculación de Pilotos Oficiales (cust_id &amp; Correo)</h3>
-                <p class="rc-muted">Introduce el número de cliente de iRacing (<code>cust_id</code>) de cada piloto titular.</p>
-              </div>
-              <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="saveIracingMappings()">Guardar Mapeo Local</button>
-            </div>
-            <div class="r-scroll">
-              <table class="r-table">
-                <thead>
-                  <tr>
-                    <th>Piloto &amp; Dorsal</th>
-                    <th>Slug</th>
-                    <th>iRacing cust_id</th>
-                    <th>Correo Asignado</th>
-                    <th>Estado Telemetría</th>
-                  </tr>
-                </thead>
-                 <tbody id="iracingBridgeTableBody"></tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <!-- =============================================================== -->
-        <!-- TAB 5: GALERÍA & DEPURADOR CARPATH (BLOQUE 28)                  -->
-        <!-- =============================================================== -->
-        <section id="tab-gallery" class="rc-panel space-y-6 hidden">
-          <div class="rc-section-head">
-            <div>
-              <p class="r-kicker">Mapeo iRacing SDK &bull; DriverInfo.CarPath</p>
-              <h2 class="r-h3">Galería Oficial &amp; Depurador de Vehículos</h2>
-              <p class="rc-muted">Saneamiento estricto: relación 1:1 entre imágenes y <code>DriverInfo.Drivers[CamCarIdx].CarPath</code>. Evita mezclas de fotos entre marcas.</p>
-            </div>
-            <div class="rc-btn-row">
-              <button type="button" class="r-btn r-btn--sm" onclick="resetGalleryToDefaults()">↻ Restaurar Catálogo</button>
-            </div>
-          </div>
-
-          <!-- Mapeador y Selector de Coche -->
-          <div class="rc-card">
-            <div class="rc-card__head" style="flex-wrap:wrap;gap:12px">
-              <div>
-                <h3 class="rc-card__title">Depurador y Clasificador por Coche</h3>
-                <p class="rc-muted">Filtra las imágenes asignadas a un modelo. Si detectas una foto incorrecta, reubícala o desasóciala con 1 clic.</p>
-              </div>
-              <div class="rc-btn-row">
-                <label for="adminGalleryCarSelect" class="sr-only">Seleccionar Coche</label>
-                <select id="adminGalleryCarSelect" class="r-input" style="min-width:240px" onchange="filterAdminGalleryByCar()">
-                  <option value="all">Todos los vehículos (Vista global)</option>
-                  <option value="porsche9922cup">Porsche 911 GT3 Cup (992.2)</option>
-                  <option value="porsche992rgt3">Porsche 911 GT3 R (992)</option>
-                  <option value="ferrari296gt3">Ferrari 296 GT3</option>
-                  <option value="bmwm4gt3">BMW M4 GT3</option>
-                  <option value="mercedesamgevogt3">Mercedes-AMG GT3 2020</option>
-                  <option value="mclaren720sgt3">McLaren 720S GT3 EVO</option>
-                  <option value="chevyvettez06rgt3">Chevrolet Corvette Z06 GT3.R</option>
-                  <option value="amvantageevogt3">Aston Martin Vantage GT3 EVO</option>
-                  <option value="fordmustanggt3">Ford Mustang GT3</option>
-                  <option value="lamborghinievogt3">Lamborghini Huracán GT3 EVO</option>
-                  <option value="audir8lmsevo2gt3">Audi R8 LMS EVO II GT3</option>
-                  <option value="cadillacvseriesrgtp">Cadillac V-Series.R GTP</option>
-                  <option value="porsche963gtp">Porsche 963 GTP</option>
-                  <option value="bmwlmdh">BMW M Hybrid V8 GTP</option>
-                  <option value="acuraarx06gtp">Acura ARX-06 GTP</option>
-                  <option value="amvalkyriegtp">Aston Martin Valkyrie AMR-LMH</option>
-                  <option value="dallarap217">Dallara P217 LMP2</option>
-                  <option value="ligierjsp320">Ligier JS P320 LMP3</option>
-                  <option value="superformulasf23toyota">Super Formula SF23</option>
-                  <option value="dallaraf3">Dallara F3</option>
-                  <option value="formulair04">FIA F4</option>
-                  <option value="mx5cup">Global Mazda MX-5 Cup</option>
-                  <option value="toyotagr86">Toyota GR86 Cup</option>
-                  <option value="multiclass">Multiclase &amp; Parrilla</option>
-                  <option value="team_engineering">Muntrume Tech &amp; Pit Wall</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Grid de Fotos del Coche -->
-            <div id="adminGalleryGrid" class="rc-gallery-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:16px">
-              <!-- Renderizado dinámico desde admin.js -->
-            </div>
-          </div>
-
-          <!-- Validador de Subida con Detector de Discordancias (Prompt 28 Punto 4) -->
-          <div class="rc-card">
-            <div class="rc-card__head">
-              <div>
-                <h3 class="rc-card__title">Subir Nueva Foto con Validación Estricta</h3>
-                <p class="rc-muted">Obliga a seleccionar el coche de destino. Si el archivo contiene palabras de otra marca (ej. 'Ferrari' subiendo a 'Porsche'), lanzará aviso de advertencia.</p>
-              </div>
-            </div>
-            <div class="rc-upload-box" style="padding:20px;border:2px dashed var(--r-line);border-radius:12px;display:grid;gap:14px;background:var(--r-surface)">
-              <div class="rc-two-col">
-                <div class="g-field">
-                  <label for="adminUploadCarPath"><strong>Coche de Destino (Obligatorio · CarPath) *</strong></label>
-                  <select id="adminUploadCarPath" class="r-input">
-                    <option value="">-- Elige el modelo exacto de iRacing --</option>
-                    <option value="porsche9922cup">Porsche 911 GT3 Cup (992.2)</option>
-                    <option value="porsche992rgt3">Porsche 911 GT3 R (992)</option>
-                    <option value="ferrari296gt3">Ferrari 296 GT3</option>
-                    <option value="bmwm4gt3">BMW M4 GT3</option>
-                    <option value="mercedesamgevogt3">Mercedes-AMG GT3 2020</option>
-                    <option value="mclaren720sgt3">McLaren 720S GT3 EVO</option>
-                    <option value="chevyvettez06rgt3">Chevrolet Corvette Z06 GT3.R</option>
-                    <option value="amvantageevogt3">Aston Martin Vantage GT3 EVO</option>
-                    <option value="fordmustanggt3">Ford Mustang GT3</option>
-                    <option value="lamborghinievogt3">Lamborghini Huracán GT3 EVO</option>
-                    <option value="audir8lmsevo2gt3">Audi R8 LMS EVO II GT3</option>
-                    <option value="cadillacvseriesrgtp">Cadillac V-Series.R GTP</option>
-                    <option value="porsche963gtp">Porsche 963 GTP</option>
-                    <option value="bmwlmdh">BMW M Hybrid V8 GTP</option>
-                    <option value="acuraarx06gtp">Acura ARX-06 GTP</option>
-                    <option value="amvalkyriegtp">Aston Martin Valkyrie AMR-LMH</option>
-                    <option value="dallarap217">Dallara P217 LMP2</option>
-                    <option value="ligierjsp320">Ligier JS P320 LMP3</option>
-                    <option value="superformulasf23toyota">Super Formula SF23</option>
-                    <option value="dallaraf3">Dallara F3</option>
-                    <option value="formulair04">FIA F4</option>
-                    <option value="mx5cup">Global Mazda MX-5 Cup</option>
-                    <option value="toyotagr86">Toyota GR86 Cup</option>
-                  </select>
-                </div>
-                <div class="g-field">
-                  <label for="adminUploadPhotoTitle">Título de la Foto</label>
-                  <input type="text" id="adminUploadPhotoTitle" class="r-input" placeholder="ej. Stint Nocturno Turn 1" />
-                </div>
-              </div>
-              <div class="g-field">
-                <label for="adminUploadFileInput">Seleccionar o Arrastrar Archivo de Imagen (.webp, .jpg, .png)</label>
-                <input type="file" id="adminUploadFileInput" class="r-input" accept="image/png,image/jpeg,image/webp" />
-              </div>
-              <div id="adminUploadWarning" class="m-notice m-notice--warning hidden" role="alert"></div>
-              <div class="rc-btn-row" style="justify-content:flex-end">
-                <button type="button" class="r-btn r-btn--primary" onclick="submitAdminPhotoUpload()">Validar y Registrar en Galería</button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- =============================================================== -->
-        <!-- TAB 6: SEGURIDAD ZERO-TRUST & REGISTROS DE AUDITORÍA            -->
-        <!-- =============================================================== -->
-        <section id="tab-security" class="rc-panel space-y-6 hidden">
+        <section id="tab-security" class="rc-panel hidden">
           <div class="rc-section-head">
             <div>
               <p class="r-kicker">Criptografía &amp; Trazabilidad</p>
-              <h2 class="r-h3">Seguridad Zero-Trust &amp; Registros de Auditoría</h2>
-              <p class="rc-muted">Políticas activas en el Worker de Cloudflare y registro cronológico de accesos, descargas <code>.sto</code> y cambios administrativos.</p>
+              <h2 class="r-h3">Seguridad Zero-Trust &amp; Auditoría</h2>
+              <p class="rc-muted">Registro cronológico de cambios en perfiles, roles, accesos y moderación automática.</p>
             </div>
             <div class="rc-btn-row">
               <button type="button" class="r-btn r-btn--sm" onclick="exportAuditLogsCsv()">⬇ Exportar CSV</button>
-              <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="refreshRaceControlData()">↻ Refrescar Logs</button>
+              <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="refreshRaceControlData()">↻ Refrescar</button>
             </div>
           </div>
 
           <div class="rc-kpi-grid">
             <div class="rc-kpi-card">
-              <span class="rc-kpi-tag">CIFRADO DE CREDENCIALES</span>
+              <span class="rc-kpi-tag">CIFRADO</span>
               <div class="rc-kpi-val">PBKDF2</div>
-              <p class="rc-kpi-sub">100,000 iteraciones SHA-256 + Salt único</p>
+              <p class="rc-kpi-sub">100,000 iteraciones SHA-256</p>
             </div>
             <div class="rc-kpi-card">
-              <span class="rc-kpi-tag">PROTECCIÓN ANTI-FUERZA BRUTA</span>
+              <span class="rc-kpi-tag">RATE LIMITING</span>
               <div class="rc-kpi-val">10 req/m</div>
-              <p class="rc-kpi-sub">Rate Limiting por IP en Cloudflare Edge</p>
+              <p class="rc-kpi-sub">Protección Edge por IP</p>
             </div>
             <div class="rc-kpi-card">
               <span class="rc-kpi-tag">MARCA DE AGUA .STO</span>
               <div class="rc-kpi-val">UTF-16LE</div>
-              <p class="rc-kpi-sub">Firma <code>muntru.me</code> inyectada en cabecera</p>
+              <p class="rc-kpi-sub">Firma <code>muntru.me</code></p>
             </div>
             <div class="rc-kpi-card">
-              <span class="rc-kpi-tag">CABECERAS HTTP</span>
-              <div class="rc-kpi-val">CSP Strict</div>
-              <p class="rc-kpi-sub">nosniff · strict-origin · TLS 1.3</p>
-            </div>
-          </div>
-
-          <div class="rc-toolbar">
-            <div class="g-views" role="group" aria-label="Filtrar eventos de auditoría">
-              <button type="button" id="auditFilter-all" class="is-on" onclick="filterAuditLogs('all')">Todos los Eventos</button>
-              <button type="button" id="auditFilter-auth" onclick="filterAuditLogs('auth')">Autenticación</button>
-              <button type="button" id="auditFilter-download" onclick="filterAuditLogs('download')">Descargas .STO</button>
-              <button type="button" id="auditFilter-admin" onclick="filterAuditLogs('admin')">Altas &amp; Permisos</button>
+              <span class="rc-kpi-tag">STEWARD BOT</span>
+              <div class="rc-kpi-val">Auto</div>
+              <p class="rc-kpi-sub">Moderación de comentarios</p>
             </div>
           </div>
 
           <div class="rc-card">
+            <div class="rc-card__head">
+              <h3 class="rc-card__title">Registro de Actividad</h3>
+              <div class="g-views" role="group" aria-label="Filtrar eventos">
+                <button type="button" id="auditFilter-all" class="is-on" onclick="filterAuditLogs('all')">Todos</button>
+                <button type="button" id="auditFilter-auth" onclick="filterAuditLogs('auth')">Auth</button>
+                <button type="button" id="auditFilter-download" onclick="filterAuditLogs('download')">Descargas</button>
+                <button type="button" id="auditFilter-admin" onclick="filterAuditLogs('admin')">Admin</button>
+              </div>
+            </div>
             <div class="r-scroll">
               <table class="r-table">
                 <thead>
                   <tr>
-                    <th>Fecha / Hora (UTC)</th>
+                    <th>Fecha / Hora</th>
                     <th>Categoría</th>
-                    <th>Actor / Usuario</th>
-                    <th>Evento &amp; Detalle Técnico</th>
+                    <th>Actor</th>
+                    <th>Detalle</th>
                     <th>Estado</th>
                   </tr>
                 </thead>
@@ -824,22 +413,291 @@ const totalCircuits = catalog.circuits?.length || 128;
   </div>
 
   <!-- ===================================================================== -->
-  <!-- MODAL 1: ALTA DE PILOTO / GENERADOR DE INVITACIÓN                     -->
+  <!-- MODAL UNIFICADO TODO-EN-UNO: PILOTO, LICENCIAS, GARAGE 61 & STATS     -->
   <!-- ===================================================================== -->
+  <div id="unifiedPilotModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="unifiedPilotTitle">
+    <div class="g-dialog g-dialog--wide rc-modal-dialog rc-modal-dialog--xl">
+      <div class="g-dialog__bar">
+        <div>
+          <h2 id="unifiedPilotTitle">Editor Todo-en-Uno del Piloto</h2>
+          <p class="rc-muted" id="unifiedPilotSub" style="margin:2px 0 0;font-size:12px">Identidad, rol, 5 licencias iRacing, captura Garage 61 y recálculo automático de media MTI.</p>
+        </div>
+        <button type="button" class="m-notice__close" onclick="closeUnifiedPilotModal()" aria-label="Cerrar">×</button>
+      </div>
+
+      <!-- Inner Section Pills -->
+      <div class="rc-modal-tabs" role="tablist">
+        <button type="button" id="umTabBtn-identity" class="is-on" onclick="switchUnifiedModalTab('identity')">1. Identidad &amp; Rol</button>
+        <button type="button" id="umTabBtn-licenses" onclick="switchUnifiedModalTab('licenses')">2. Licencias (5)</button>
+        <button type="button" id="umTabBtn-g61" onclick="switchUnifiedModalTab('g61')">3. Foto Garage 61</button>
+        <button type="button" id="umTabBtn-stats" onclick="switchUnifiedModalTab('stats')">4. Media &amp; Stats</button>
+      </div>
+
+      <form id="unifiedPilotForm" class="rc-modal-form" onsubmit="submitUnifiedPilotForm(event)">
+        <input type="hidden" id="umSlug" />
+        <input type="hidden" id="umOrigEmail" />
+
+        <!-- SUBTAB 1: IDENTIDAD, ROL & CUENTA -->
+        <div id="umPanel-identity" class="rc-um-panel">
+          <div class="rc-two-col" style="gap:12px">
+            <div class="g-field">
+              <label for="umFullName">Nombre visible *</label>
+              <input type="text" id="umFullName" required maxlength="80" placeholder="Ej. Alberto Trujillo" />
+            </div>
+            <div class="rc-two-col" style="gap:10px">
+              <div class="g-field">
+                <label for="umDorsal">Dorsal</label>
+                <input type="text" id="umDorsal" maxlength="8" placeholder="#16" />
+              </div>
+              <div class="g-field">
+                <label for="umKind">En parrilla</label>
+                <select id="umKind">
+                  <option value="driver">Piloto oficial</option>
+                  <option value="staff">Staff interno</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="rc-two-col" style="gap:12px">
+            <div class="g-field">
+              <label for="umAccountRole">Rol de cuenta (permisos)</label>
+              <select id="umAccountRole">
+                <option value="driver">Official Driver (Titular)</option>
+                <option value="team_driver">Team Endurance Driver</option>
+                <option value="academy">Academy Driver</option>
+                <option value="engineer">Race Engineer</option>
+                <option value="staff">Staff / Prensa</option>
+                <option value="admin">Team Principal / Admin</option>
+              </select>
+            </div>
+            <div class="g-field">
+              <label for="umRoleTitle">Cargo visible en la ficha</label>
+              <input type="text" id="umRoleTitle" maxlength="80" placeholder="Ej. Team Principal &amp; Lead Telemetry" />
+            </div>
+          </div>
+
+          <div class="rc-two-col" style="gap:12px">
+            <div class="g-field">
+              <label for="umEmail">Correo de acceso / vinculado</label>
+              <input type="email" id="umEmail" placeholder="piloto@muntru.me" />
+            </div>
+            <div class="g-field">
+              <label for="umCustId">iRacing cust_id</label>
+              <input type="text" id="umCustId" inputmode="numeric" maxlength="10" placeholder="Ej. 993381" />
+            </div>
+          </div>
+
+          <div class="rc-two-col" style="gap:12px">
+            <div class="g-field">
+              <label for="umSpecialty">Especialidad</label>
+              <input type="text" id="umSpecialty" maxlength="120" placeholder="Ej. GT3 &amp; Multiclass Endurance" />
+            </div>
+            <div class="rc-two-col" style="gap:10px">
+              <div class="g-field">
+                <label for="umClub">Club iRacing</label>
+                <input type="text" id="umClub" maxlength="80" placeholder="Iberia" />
+              </div>
+              <div class="g-field">
+                <label for="umCountry">País</label>
+                <input type="text" id="umCountry" maxlength="60" placeholder="Spain" />
+              </div>
+            </div>
+          </div>
+
+          <div class="rc-two-col" style="gap:12px">
+            <div class="g-field">
+              <label for="umTeam">Equipo / División (cuenta D1)</label>
+              <input type="text" id="umTeam" maxlength="80" placeholder="Muntrume Motorsport" />
+            </div>
+            <div class="g-field">
+              <label for="umCarClass">Categoría principal</label>
+              <input type="text" id="umCarClass" maxlength="80" placeholder="GT3 · IMSA &amp; NEC" />
+            </div>
+          </div>
+
+          <div class="g-field">
+            <label for="umBio">Biografía pública</label>
+            <textarea id="umBio" rows="2" maxlength="400" placeholder="Resumen deportivo del piloto…"></textarea>
+          </div>
+
+          <label class="g-check" for="umSetupAccess">
+            <input type="checkbox" id="umSetupAccess" checked />
+            Permitir descarga y sincronización de setups (.sto) en Setup Vault y MMT Sync
+          </label>
+        </div>
+
+        <!-- SUBTAB 2: LAS 5 LICENCIAS DE IRACING -->
+        <div id="umPanel-licenses" class="rc-um-panel hidden">
+          <p class="rc-muted" style="margin:0">Completa las licencias que tenga activas el piloto. <strong>Sports Car</strong> alimenta el cálculo automático de su media OVR.</p>
+          <div class="rc-lic-grid">
+            {LICENSE_CATEGORIES.map((cat) => (
+              <div class="rc-lic-row" data-lic-row={cat.key}>
+                <div class="rc-lic-row__meta">
+                  <strong>{cat.label}</strong>
+                  <span>{cat.hint}</span>
+                </div>
+                <select id={`umLicClass-${cat.key}`} aria-label={`Clase ${cat.label}`} onchange="recalcUnifiedPilotStats()">
+                  <option value="">Sin licencia</option>
+                  <option value="Pro">Pro / WC</option>
+                  <option value="Class A">Class A</option>
+                  <option value="Class B">Class B</option>
+                  <option value="Class C">Class C</option>
+                  <option value="Class D">Class D</option>
+                  <option value="Rookie">Rookie</option>
+                </select>
+                <input
+                  type="number"
+                  id={`umLicSr-${cat.key}`}
+                  step="0.01"
+                  min="0"
+                  max="4.99"
+                  placeholder="SR (ej. 3.45)"
+                  aria-label={`Safety Rating ${cat.label}`}
+                  oninput="recalcUnifiedPilotStats()"
+                />
+                <input
+                  type="number"
+                  id={`umLicIr-${cat.key}`}
+                  step="1"
+                  min="100"
+                  max="25000"
+                  placeholder="iRating (ej. 2450)"
+                  aria-label={`iRating ${cat.label}`}
+                  oninput="recalcUnifiedPilotStats()"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <!-- SUBTAB 3: GARAGE 61 SCREENSHOT IMPORTER + EDITABLE CARS & TRACKS -->
+        <div id="umPanel-g61" class="rc-um-panel hidden">
+          <div class="rc-g61-drop" id="umG61Dropzone">
+            <div class="rc-g61-drop__top">
+              <div>
+                <strong style="font-size:13.5px;color:var(--r-text)">📸 Cargar captura de Garage 61 o iRacing</strong>
+                <p class="rc-muted" style="margin:2px 0 0;font-size:12px">Sube una foto de <em>Coches más usados</em>, <em>Circuitos más corridos</em> o <em>Licencias</em> (también puedes pegarla con <code>Ctrl+V</code> aquí).</p>
+              </div>
+              <div class="rc-btn-row">
+                <select id="umG61Kind" style="width:auto;min-width:165px">
+                  <option value="auto">Detección automática</option>
+                  <option value="cars">Coches más usados</option>
+                  <option value="tracks">Circuitos más corridos</option>
+                  <option value="licenses">Licencias iRacing</option>
+                </select>
+                <label class="r-btn r-btn--sm" for="umG61FileInput" style="cursor:pointer">Elegir foto…</label>
+                <input type="file" id="umG61FileInput" accept="image/png,image/jpeg,image/webp" class="hidden" onchange="handleG61FileSelected(event)" />
+                <button type="button" id="umG61AnalyzeBtn" class="r-btn r-btn--primary r-btn--sm" onclick="analyzeG61Screenshot()" disabled>✨ Analizar y recalcular</button>
+              </div>
+            </div>
+            <div id="umG61PreviewWrap" class="rc-g61-preview hidden">
+              <img id="umG61PreviewImg" alt="Vista previa captura Garage 61" />
+              <span id="umG61StatusMsg" class="rc-mono-sub">Lista para analizar con Visión IA.</span>
+            </div>
+          </div>
+
+          <div class="rc-two-col" style="gap:12px">
+            <div class="g-field">
+              <label for="umFavoriteTrack">Circuito favorito</label>
+              <input type="text" id="umFavoriteTrack" maxlength="90" placeholder="Se autocompleta con el #1 de Garage 61" />
+            </div>
+            <div class="g-field">
+              <label for="umTotalHours">Horas totales en pista (auto-sumado)</label>
+              <input type="number" id="umTotalHours" step="0.1" min="0" placeholder="Ej. 184.5" oninput="recalcUnifiedPilotStats()" />
+            </div>
+          </div>
+
+          <div class="rc-two-col" style="gap:14px">
+            <div class="rc-subcard">
+              <div class="rc-subcard__head">
+                <strong>🏎️ Coches más usados</strong>
+                <button type="button" class="r-btn r-btn--sm" onclick="addG61ListRow('cars')">+ Añadir coche</button>
+              </div>
+              <div id="umTopCarsList" class="rc-g61-list"></div>
+            </div>
+
+            <div class="rc-subcard">
+              <div class="rc-subcard__head">
+                <strong>🏁 Circuitos más corridos</strong>
+                <button type="button" class="r-btn r-btn--sm" onclick="addG61ListRow('tracks')">+ Añadir circuito</button>
+              </div>
+              <div id="umTopTracksList" class="rc-g61-list"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBTAB 4: STATS & MEDIA DEL PILOTO (MTI / F1 25) -->
+        <div id="umPanel-stats" class="rc-um-panel hidden">
+          <div class="rc-stats-banner">
+            <div class="rc-stats-ovr-box">
+              <span>OVERALL</span>
+              <strong id="umOvrBig">—</strong>
+            </div>
+            <div style="flex:1;min-width:200px">
+              <div class="rc-strong">Motor de Media MTI (F1 25)</div>
+              <p class="rc-muted" style="margin:3px 0 8px;font-size:12.5px">Se recalcula en tiempo real usando el iRating, Safety Rating y las horas acumuladas de Garage 61 (máximo 98).</p>
+              <div class="rc-btn-row">
+                <label class="g-check" for="umStatsAuto" style="margin:0">
+                  <input type="checkbox" id="umStatsAuto" checked onchange="toggleUnifiedStatsAuto()" />
+                  Recalcular automáticamente
+                </label>
+                <button type="button" class="r-btn r-btn--sm" onclick="recalcUnifiedPilotStats(true)">↻ Recalcular ahora</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="rc-stats-inputs">
+            <div class="g-field">
+              <label for="umStatOverall">OVERALL (1–98)</label>
+              <input type="number" id="umStatOverall" min="1" max="98" oninput="syncOvrBigFromInput()" />
+            </div>
+            <div class="g-field">
+              <label for="umStatPace">PACE (1–98)</label>
+              <input type="number" id="umStatPace" min="1" max="98" />
+            </div>
+            <div class="g-field">
+              <label for="umStatAwareness">AWARENESS (1–98)</label>
+              <input type="number" id="umStatAwareness" min="1" max="98" />
+            </div>
+            <div class="g-field">
+              <label for="umStatRacecraft">RACECRAFT (1–98)</label>
+              <input type="number" id="umStatRacecraft" min="1" max="98" />
+            </div>
+            <div class="g-field">
+              <label for="umStatExperience">EXPERIENCE (1–98)</label>
+              <input type="number" id="umStatExperience" min="1" max="98" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Sticky Modal Footer -->
+        <div class="rc-modal-foot">
+          <div class="rc-mono-sub" id="umLiveSummary">iRating: — · Horas: — · OVR: —</div>
+          <div class="rc-btn-row">
+            <button type="button" class="r-btn r-btn--sm" onclick="closeUnifiedPilotModal()">Cancelar</button>
+            <button type="submit" id="umSubmitBtn" class="r-btn r-btn--primary r-btn--sm">Guardar todo en D1</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ALTA DE PILOTO -->
   <div id="addDriverModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="addDriverModalTitle">
-    <div class="g-dialog">
+    <div class="g-dialog rc-modal-dialog">
       <div class="g-dialog__bar">
         <h2 id="addDriverModalTitle">Alta de Piloto en el Vault</h2>
         <button type="button" class="m-notice__close" onclick="closeAddDriverModal()" aria-label="Cerrar">×</button>
       </div>
-      <p>Autoriza a un nuevo piloto en Cloudflare D1 o genera credenciales de acceso para un miembro del equipo.</p>
-      <form id="addDriverForm" onsubmit="submitAddDriverForm(event)">
+      <p class="rc-muted">Autoriza a un nuevo piloto en Cloudflare D1 y emite sus credenciales.</p>
+      <form id="addDriverForm" class="rc-modal-form" onsubmit="submitAddDriverForm(event)">
         <div class="g-field">
           <label for="newDriverName">Nombre y Apellido</label>
           <input type="text" id="newDriverName" required placeholder="Ej. Carlos Sainz" />
         </div>
         <div class="g-field">
-          <label for="newDriverEmail">Correo Electrónico de Acceso</label>
+          <label for="newDriverEmail">Correo Electrónico</label>
           <input type="email" id="newDriverEmail" required placeholder="piloto@dominio.com" />
         </div>
         <div class="rc-two-col" style="gap:10px">
@@ -864,7 +722,7 @@ const totalCircuits = catalog.circuits?.length || 128;
         </div>
         <label class="g-check" for="newDriverSendEmail">
           <input type="checkbox" id="newDriverSendEmail" checked />
-          Enviar correo automático de bienvenida (vía Resend @muntru.me)
+          Enviar correo automático de bienvenida (@muntru.me)
         </label>
         <div class="rc-btn-row" style="justify-content:flex-end;margin-top:8px">
           <button type="button" class="r-btn r-btn--sm" onclick="closeAddDriverModal()">Cancelar</button>
@@ -874,65 +732,59 @@ const totalCircuits = catalog.circuits?.length || 128;
     </div>
   </div>
 
-  <!-- ===================================================================== -->
-  <!-- MODAL 2: CREDENCIALES GENERADAS / MENSAJE DE BIENVENIDA COPIABLE      -->
-  <!-- ===================================================================== -->
+  <!-- MODAL: CREDENCIALES GENERADAS -->
   <div id="credentialsResultModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="credModalTitle">
-    <div class="g-dialog g-dialog--wide">
+    <div class="g-dialog g-dialog--wide rc-modal-dialog">
       <div class="g-dialog__bar">
         <h2 id="credModalTitle">Credenciales Listas para el Piloto</h2>
         <button type="button" class="m-notice__close" onclick="closeCredentialsResultModal()" aria-label="Cerrar">×</button>
       </div>
-      <p id="credModalSub">Se ha autorizado el acceso al Setup Vault. Copia el mensaje inferior para enviárselo por Discord, WhatsApp o correo.</p>
+      <p id="credModalSub" class="rc-muted">Copia el enlace o el mensaje para enviárselo por Discord o WhatsApp.</p>
       <div class="rc-cred-box">
         <div class="rc-kpi-tag" id="credSecretLabel">ENLACE PERSONAL DE ACCESO (72H)</div>
         <code id="credSecretCode" class="rc-cred-secret">https://muntru.me/garage?set_password=...</code>
       </div>
-      <div class="g-field">
-        <label for="credWelcomeTemplate">Mensaje de Bienvenida Formateado</label>
-        <textarea id="credWelcomeTemplate" rows="6" readonly class="rc-mono-textarea"></textarea>
+      <div class="g-field" style="margin-top:10px">
+        <label for="credWelcomeTemplate">Mensaje de Bienvenida</label>
+        <textarea id="credWelcomeTemplate" rows="5" readonly class="rc-mono-textarea"></textarea>
       </div>
-      <div class="rc-btn-row" style="justify-content:space-between">
-        <button type="button" class="r-btn r-btn--sm" onclick="copyCredentialSecretOnly()">Copiar solo enlace/clave</button>
+      <div class="rc-btn-row" style="justify-content:space-between;margin-top:10px">
+        <button type="button" class="r-btn r-btn--sm" onclick="copyCredentialSecretOnly()">Copiar enlace/clave</button>
         <div class="rc-btn-row">
-          <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="copyWelcomeMessageTemplate()">📋 Copiar Mensaje Completo</button>
+          <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="copyWelcomeMessageTemplate()">📋 Copiar Mensaje</button>
           <button type="button" class="r-btn r-btn--sm" onclick="closeCredentialsResultModal()">Cerrar</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ===================================================================== -->
-  <!-- MODAL 3: PREVISUALIZADOR VISUAL DE CORREOS HTML @MUNTRU.ME            -->
-  <!-- ===================================================================== -->
+  <!-- MODAL: ESTUDIO DE PLANTILLAS DE CORREO @MUNTRU.ME -->
   <div id="emailTemplateModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="emailTemplateModalTitle">
-    <div class="g-dialog g-dialog--wide" style="max-width:760px">
+    <div class="g-dialog g-dialog--wide rc-modal-dialog" style="max-width:760px !important">
       <div class="g-dialog__bar">
-        <h2 id="emailTemplateModalTitle">Estudio de Correos Oficiales @muntru.me</h2>
+        <h2 id="emailTemplateModalTitle">Plantillas de Correo @muntru.me</h2>
         <button type="button" class="m-notice__close" onclick="closeEmailPreviewModal()" aria-label="Cerrar">×</button>
       </div>
-      <div class="g-views" role="group" style="flex-wrap:wrap">
-        <button type="button" id="tplBtn-welcome" class="is-on" onclick="openEmailPreviewModal('welcome')">Bienvenida (72h)</button>
-        <button type="button" id="tplBtn-reset" onclick="openEmailPreviewModal('reset')">Reseteo de Clave</button>
-        <button type="button" id="tplBtn-code" onclick="openEmailPreviewModal('code')">Código 6 Dígitos</button>
-        <button type="button" id="tplBtn-temp_password" onclick="openEmailPreviewModal('temp_password')">Clave Temporal</button>
-        <button type="button" id="tplBtn-nec" onclick="openEmailPreviewModal('nec')">Briefing NEC VLN</button>
+      <div class="g-views" role="group" style="flex-wrap:wrap;margin-bottom:10px">
+        <button type="button" id="tplBtn-welcome" class="is-on" onclick="openEmailPreviewModal('welcome')">Bienvenida</button>
+        <button type="button" id="tplBtn-reset" onclick="openEmailPreviewModal('reset')">Reseteo</button>
+        <button type="button" id="tplBtn-code" onclick="openEmailPreviewModal('code')">Código 6D</button>
+        <button type="button" id="tplBtn-temp_password" onclick="openEmailPreviewModal('temp_password')">Clave Temp</button>
+        <button type="button" id="tplBtn-nec" onclick="openEmailPreviewModal('nec')">Briefing NEC</button>
       </div>
       <div class="rc-email-preview">
         <div class="rc-email-preview__meta">
-          <div><strong>De:</strong> <code>Muntrume Race Control &lt;racecontrol@muntru.me&gt;</code> · <span class="rc-badge rc-badge--ok" id="tplBadgeText">ACCESO APROBADO</span></div>
-          <div><strong>Asunto:</strong> <span id="tplSubjectText">Bienvenido al Setup Vault de Muntrume Motorsport</span></div>
+          <div><strong>De:</strong> <code>Muntrume Race Control &lt;racecontrol@muntru.me&gt;</code> · <span class="rc-badge rc-badge--ok" id="tplBadgeText">ACCESO</span></div>
+          <div><strong>Asunto:</strong> <span id="tplSubjectText"></span></div>
         </div>
         <div id="tplVisualHtmlBox" class="rc-email-visual-card"></div>
         <details class="rc-email-raw-details">
-          <summary>Ver versión texto plano / mensaje copiable para Discord</summary>
+          <summary>Ver texto plano / mensaje para Discord</summary>
           <pre id="tplBodyText" class="rc-email-preview__body"></pre>
         </details>
       </div>
-      <div class="rc-btn-row" style="justify-content:space-between;flex-wrap:wrap">
-        <button type="button" id="btnSendPreviewEmail" class="r-btn r-btn--sm" onclick="sendTestEmailFromAdmin()">
-          🚀 Enviarme prueba real a mi correo
-        </button>
+      <div class="rc-btn-row" style="justify-content:space-between;margin-top:12px">
+        <button type="button" id="btnSendPreviewEmail" class="r-btn r-btn--sm" onclick="sendTestEmailFromAdmin()">🚀 Enviarme prueba real</button>
         <div class="rc-btn-row">
           <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="copyCurrentEmailTemplate()">📋 Copiar Texto</button>
           <button type="button" class="r-btn r-btn--sm" onclick="closeEmailPreviewModal()">Cerrar</button>
@@ -941,9 +793,11 @@ const totalCircuits = catalog.circuits?.length || 128;
     </div>
   </div>
 
+  <div id="rcRowActionPopover" class="rc-action-popover hidden" role="menu"></div>
+
   <style is:global>
     /* ========================================================================= */
-    /* MUNTRUME ADMIN — GOOGLE ADMIN CONSOLE DESIGN SYSTEM (LIGHT & DARK)        */
+    /* MUNTRUME ADMIN — GOOGLE ADMIN CONSOLE (ALL-IN-ONE, LIGHT & DARK)          */
     /* ========================================================================= */
     .rc-shell {
       min-height: calc(100svh - 60px);
@@ -952,7 +806,6 @@ const totalCircuits = catalog.circuits?.length || 128;
       font-family: var(--r-sans, system-ui, -apple-system, sans-serif);
       padding-bottom: 72px;
     }
-
     .rc-container {
       width: 100%;
       max-width: 1460px;
@@ -960,7 +813,7 @@ const totalCircuits = catalog.circuits?.length || 128;
       padding: 0 24px;
     }
 
-    /* Sticky Google-style Top App Bar */
+    /* Sticky Top Bar */
     .rc-topbar {
       position: sticky;
       top: 60px;
@@ -971,1143 +824,316 @@ const totalCircuits = catalog.circuits?.length || 128;
     }
     .rc-topbar__inner {
       display: grid;
-      grid-template-columns: auto minmax(220px, 520px) auto;
+      grid-template-columns: auto minmax(200px, 480px) auto;
       align-items: center;
       gap: 20px;
     }
-    .rc-brand {
-      display: flex;
-      align-items: center;
-      gap: 11px;
-      min-width: 0;
-    }
+    .rc-brand { display: flex; align-items: center; gap: 11px; min-width: 0; }
     .rc-brand__icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      background: var(--r-bg-2);
-      border: 1px solid var(--r-line);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
+      width: 36px; height: 36px; border-radius: 10px;
+      background: var(--r-bg-2); border: 1px solid var(--r-line);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
-    .rc-brand__icon img {
-      border-radius: 6px;
-    }
-    .rc-brand__title {
-      margin: 0;
-      font: 700 16px/1.2 var(--r-sans, system-ui, sans-serif);
-      letter-spacing: -0.02em;
-      color: var(--r-text);
-      white-space: nowrap;
-    }
-    .rc-brand__sub {
-      margin: 2px 0 0;
-      font: 500 11.5px/1.2 var(--r-mono);
-      color: var(--r-muted);
-    }
-    .rc-brand__sub code {
-      color: var(--r-muted);
-      font-weight: 500;
-    }
+    .rc-brand__icon img { border-radius: 6px; }
+    .rc-brand__title { margin: 0; font: 700 16px/1.2 var(--r-sans, system-ui, sans-serif); letter-spacing: -0.02em; color: var(--r-text); white-space: nowrap; }
+    .rc-brand__sub { margin: 2px 0 0; font: 500 11.5px/1.2 var(--r-mono); color: var(--r-muted); }
 
-    /* Google Pill Search Bar */
     .rc-search-box {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--r-bg-2);
-      border: 1px solid var(--r-line);
-      border-radius: 999px;
-      padding: 0 16px;
-      height: 42px;
-      color: var(--r-muted);
+      width: 100%; display: flex; align-items: center; gap: 10px;
+      background: var(--r-bg-2); border: 1px solid var(--r-line);
+      border-radius: 999px; padding: 0 16px; height: 40px; color: var(--r-muted);
       transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
     }
     .rc-search-box:focus-within {
-      background: var(--r-surface);
-      border-color: var(--r-accent);
+      background: var(--r-surface); border-color: var(--r-accent);
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--r-accent) 16%, transparent);
     }
-    .rc-search-input {
-      flex: 1;
-      border: 0;
-      background: transparent;
-      color: var(--r-text);
-      font: 400 13.5px/1.3 var(--r-sans, system-ui, sans-serif);
-      outline: none;
-      min-width: 0;
-    }
-    .rc-search-input::placeholder {
-      color: var(--r-muted);
-    }
-    .rc-kbd {
-      font: 600 11px/1 var(--r-mono);
-      padding: 3px 7px;
-      border-radius: 6px;
-      border: 1px solid var(--r-line);
-      background: var(--r-surface);
-      color: var(--r-muted);
-    }
+    .rc-search-input { flex: 1; border: 0 !important; background: transparent !important; padding: 0 !important; color: var(--r-text); font: 400 13.5px/1.3 var(--r-sans, system-ui, sans-serif); outline: none; min-width: 0; }
+    .rc-kbd { font: 600 11px/1 var(--r-mono); padding: 3px 7px; border-radius: 6px; border: 1px solid var(--r-line); background: var(--r-surface); color: var(--r-muted); }
 
-    .rc-topbar__actions {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 8px;
-      flex-wrap: nowrap;
-    }
-    .rc-btn-primary,
-    .rc-btn-ghost,
-    .rc-btn-danger {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      height: 36px;
-      padding: 0 15px;
-      border-radius: 999px;
+    .rc-topbar__actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: nowrap; }
+    .rc-btn-primary, .rc-btn-ghost, .rc-btn-danger {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      height: 36px; padding: 0 14px; border-radius: 999px;
       font: 600 12.5px/1 var(--r-sans, system-ui, sans-serif);
-      text-decoration: none;
-      cursor: pointer;
-      white-space: nowrap;
+      text-decoration: none; cursor: pointer; white-space: nowrap;
       transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
     }
-    .rc-btn-primary {
-      border: 0;
-      background: var(--r-accent);
-      color: var(--r-accent-ink, #04130d);
-      font-weight: 700;
-    }
+    .rc-btn-primary { border: 0; background: var(--r-accent); color: var(--r-accent-ink, #04130d); font-weight: 700; }
     .rc-btn-primary:hover { opacity: 0.9; }
-    .rc-btn-ghost {
-      border: 1px solid var(--r-line);
-      background: transparent;
-      color: var(--r-text);
-    }
-    .rc-btn-ghost:hover {
-      border-color: var(--r-accent);
-      color: var(--r-accent);
-    }
-    .rc-btn-danger {
-      border: 1px solid rgba(239, 68, 68, 0.35);
-      background: rgba(239, 68, 68, 0.08);
-      color: #ef4444;
-    }
-    .rc-btn-danger:hover {
-      background: rgba(239, 68, 68, 0.16);
-    }
+    .rc-btn-ghost { border: 1px solid var(--r-line); background: transparent; color: var(--r-text); }
+    .rc-btn-ghost:hover { border-color: var(--r-accent); color: var(--r-accent); }
+    .rc-btn-danger { border: 1px solid rgba(239, 68, 68, 0.35); background: rgba(239, 68, 68, 0.08); color: #ef4444; }
+    .rc-btn-danger:hover { background: rgba(239, 68, 68, 0.16); }
 
-    /* Main Workspace: 252px Left Drawer + Clean Fluid Canvas */
+    /* Workspace */
     .rc-workspace {
       display: grid;
-      grid-template-columns: 252px minmax(0, 1fr);
-      gap: 28px;
+      grid-template-columns: 236px minmax(0, 1fr);
+      gap: 24px;
       padding-top: 24px;
       align-items: start;
     }
-
-    /* Left Navigation Drawer (Google Admin Pill Style) */
-    .rc-sidebar {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      position: sticky;
-      top: 138px;
+    .rc-sidebar { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 136px; }
+    .rc-sidebar__group, .rc-sidebar__card {
+      background: var(--r-surface); border: 1px solid var(--r-line); border-radius: 16px; padding: 14px 12px;
     }
-    .rc-sidebar__group {
-      background: var(--r-surface);
-      border: 1px solid var(--r-line);
-      border-radius: 16px;
-      padding: 12px 10px;
-    }
-    .rc-sidebar__label {
-      margin: 4px 0 6px;
-      padding: 0 12px;
-      font: 700 10.5px/1.2 var(--r-sans, system-ui, sans-serif);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--r-muted);
-    }
-    .rc-nav {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
+    .rc-sidebar__card { display: flex; flex-direction: column; gap: 10px; padding: 16px; }
+    .rc-sidebar__label { margin: 2px 0 8px; padding: 0 12px; font: 700 10.5px/1.2 var(--r-sans, system-ui, sans-serif); letter-spacing: 0.06em; text-transform: uppercase; color: var(--r-muted); }
+    .rc-nav { display: flex; flex-direction: column; gap: 3px; }
     .rc-nav__btn {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      gap: 11px;
-      padding: 10px 14px;
-      border-radius: 999px;
-      border: 0;
-      background: transparent;
-      color: var(--r-muted);
-      font: 500 13.5px/1.25 var(--r-sans, system-ui, sans-serif);
-      text-align: left;
-      cursor: pointer;
-      transition: background 0.14s ease, color 0.14s ease;
+      width: 100%; display: flex; align-items: center; gap: 10px;
+      padding: 10px 13px; border-radius: 999px; border: 0; background: transparent;
+      color: var(--r-muted); font: 500 13.5px/1.25 var(--r-sans, system-ui, sans-serif);
+      text-align: left; cursor: pointer; transition: background 0.14s ease, color 0.14s ease;
     }
-    .rc-nav__btn svg { flex-shrink: 0; opacity: 0.85; }
-    .rc-nav__btn:hover {
-      background: var(--r-bg-2);
-      color: var(--r-text);
-    }
-    .rc-nav__btn.is-active {
-      background: color-mix(in srgb, var(--r-accent) 14%, transparent);
-      color: var(--r-accent);
-      font-weight: 700;
-    }
-    .rc-nav__btn.is-active svg { opacity: 1; }
-    .rc-nav__pill {
-      margin-left: auto;
-      font: 700 10.5px/1 var(--r-mono);
-      padding: 3px 8px;
-      border-radius: 999px;
-      background: var(--r-bg-2);
-      color: var(--r-muted);
-    }
-    .rc-nav__btn.is-active .rc-nav__pill {
-      background: color-mix(in srgb, var(--r-accent) 20%, transparent);
-      color: var(--r-accent);
-    }
-
-    .rc-sidebar__card {
-      background: var(--r-surface);
-      border: 1px solid var(--r-line);
-      border-radius: 16px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .rc-sidebar__card-head {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font: 700 10.5px/1 var(--r-mono);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--r-accent);
-    }
-    .rc-sidebar__dl {
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      font: 500 12px/1.3 var(--r-sans, system-ui, sans-serif);
-    }
-    .rc-sidebar__dl div {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      padding-bottom: 7px;
-      border-bottom: 1px solid var(--r-line);
-    }
+    .rc-nav__btn svg { flex-shrink: 0; }
+    .rc-nav__btn:hover { background: var(--r-bg-2); color: var(--r-text); }
+    .rc-nav__btn.is-active { background: color-mix(in srgb, var(--r-accent) 14%, transparent); color: var(--r-accent); font-weight: 700; }
+    .rc-nav__pill { margin-left: auto; font: 700 10.5px/1 var(--r-mono); padding: 3px 8px; border-radius: 999px; background: var(--r-bg-2); color: var(--r-muted); }
+    .rc-nav__btn.is-active .rc-nav__pill { background: color-mix(in srgb, var(--r-accent) 20%, transparent); color: var(--r-accent); }
+    .rc-sidebar__card-head { display: flex; align-items: center; gap: 8px; font: 700 10.5px/1 var(--r-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--r-accent); }
+    .rc-sidebar__dl { margin: 0; display: flex; flex-direction: column; gap: 7px; font-size: 12px; }
+    .rc-sidebar__dl div { display: flex; justify-content: space-between; gap: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--r-line); }
     .rc-sidebar__dl div:last-child { border-bottom: 0; padding-bottom: 0; }
     .rc-sidebar__dl dt { color: var(--r-muted); }
-    .rc-sidebar__dl dd { margin: 0; color: var(--r-text); font-weight: 600; font-family: var(--r-mono); font-size: 11.5px; }
+    .rc-sidebar__dl dd { margin: 0; color: var(--r-text); font: 600 11.5px/1.2 var(--r-mono); }
 
-    /* Main Content Area */
-    .rc-main {
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-    .rc-panel {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      min-width: 0;
-    }
-    .rc-panel.hidden {
-      display: none !important;
-    }
-
+    /* Main Content */
+    .rc-main, .rc-panel { min-width: 0; display: flex; flex-direction: column; gap: 18px; }
+    .rc-panel.hidden { display: none !important; }
     .rc-section-head {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 16px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--r-line);
+      display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;
+      gap: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--r-line);
     }
-    .rc-section-head .r-h3 {
-      font-family: var(--r-sans, system-ui, sans-serif);
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      text-transform: none;
-      margin: 4px 0 0;
-    }
-    .rc-muted {
-      margin: 4px 0 0;
-      color: var(--r-muted);
-      font-size: 13.5px;
-      line-height: 1.5;
-    }
-    .rc-btn-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 8px;
-    }
+    .rc-section-head .r-h3 { font: 700 22px/1.2 var(--r-sans, system-ui, sans-serif); letter-spacing: -0.02em; text-transform: none; margin: 4px 0 0; }
+    .rc-muted { margin: 4px 0 0; color: var(--r-muted); font-size: 13.5px; line-height: 1.5; }
+    .rc-btn-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 
-    /* Clean 4-Column KPI Row */
-    .rc-kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 16px;
-    }
+    /* KPIs & Cards */
+    .rc-kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
     .rc-kpi-card {
-      background: var(--r-surface);
-      border: 1px solid var(--r-line);
-      border-radius: 16px;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 10px;
-      min-width: 0;
-      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      background: var(--r-surface); border: 1px solid var(--r-line); border-radius: 16px;
+      padding: 18px 20px; display: flex; flex-direction: column; gap: 8px; min-width: 0;
     }
-    .rc-kpi-card:hover {
-      border-color: var(--r-accent);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-    }
-    .rc-kpi-card__top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-    }
-    .rc-kpi-tag {
-      font: 600 11px/1.2 var(--r-sans, system-ui, sans-serif);
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      color: var(--r-muted);
-    }
-    .rc-kpi-val {
-      font: 700 28px/1.1 var(--r-sans, system-ui, sans-serif);
-      font-variant-numeric: tabular-nums;
-      color: var(--r-text);
-      letter-spacing: -0.02em;
-    }
-    .rc-kpi-sub {
-      margin: 0;
-      font-size: 12.5px;
-      line-height: 1.4;
-      color: var(--r-muted);
-    }
-    .rc-kpi-link {
-      margin-top: 2px;
-      padding: 0;
-      border: 0;
-      background: transparent;
-      color: var(--r-accent);
-      font: 600 12.5px/1.2 var(--r-sans, system-ui, sans-serif);
-      text-align: left;
-      cursor: pointer;
-    }
-    .rc-kpi-link:hover { text-decoration: underline; }
+    .rc-kpi-card__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .rc-kpi-tag { font: 600 11px/1.2 var(--r-sans, system-ui, sans-serif); letter-spacing: 0.04em; text-transform: uppercase; color: var(--r-muted); }
+    .rc-kpi-val { font: 700 26px/1.1 var(--r-sans, system-ui, sans-serif); font-variant-numeric: tabular-nums; color: var(--r-text); letter-spacing: -0.02em; }
+    .rc-kpi-sub { margin: 0; font-size: 12.5px; color: var(--r-muted); }
 
-    /* Google Material 3 Cards */
     .rc-card {
-      background: var(--r-surface);
-      border: 1px solid var(--r-line);
-      border-radius: 16px;
-      padding: 22px 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      min-width: 0;
-      overflow: hidden;
+      background: var(--r-surface); border: 1px solid var(--r-line); border-radius: 16px;
+      padding: 20px 22px; display: flex; flex-direction: column; gap: 14px; min-width: 0; overflow: hidden;
     }
-    .rc-card__head {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-    .rc-card__title {
-      margin: 0;
-      font: 700 16px/1.3 var(--r-sans, system-ui, sans-serif);
-      letter-spacing: -0.01em;
-      text-transform: none;
-      color: var(--r-text);
-    }
+    .rc-card__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+    .rc-card__title { margin: 0; font: 700 16px/1.3 var(--r-sans, system-ui, sans-serif); letter-spacing: -0.01em; color: var(--r-text); }
+    .rc-two-col { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
 
-    /* Two-column summary: only side-by-side on wide screens, never squished */
-    .rc-two-col {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 20px;
-      align-items: start;
-    }
-
-    /* Clean Google Admin Data Tables (zero squished columns or broken rows) */
-    .rc-shell .r-scroll {
-      width: 100%;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      border: 1px solid var(--r-line);
-      border-radius: 12px;
-      background: var(--r-surface);
-    }
-    .rc-shell .r-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13.5px;
-      text-align: left;
-    }
+    /* Clean Data Tables */
+    .rc-shell .r-scroll { width: 100%; overflow-x: auto; border: 1px solid var(--r-line); border-radius: 12px; background: var(--r-surface); }
+    .rc-shell .r-table { width: 100%; border-collapse: collapse; font-size: 13.5px; text-align: left; }
     .rc-shell .r-table thead th {
-      padding: 12px 16px;
-      font: 600 11.5px/1.2 var(--r-sans, system-ui, sans-serif);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      color: var(--r-muted);
-      background: var(--r-bg-2);
-      border-bottom: 1px solid var(--r-line);
-      white-space: nowrap;
+      padding: 11px 15px; font: 600 11px/1.2 var(--r-sans, system-ui, sans-serif);
+      text-transform: uppercase; letter-spacing: 0.04em; color: var(--r-muted);
+      background: var(--r-bg-2); border-bottom: 1px solid var(--r-line); white-space: nowrap;
     }
-    .rc-shell .r-table tbody td {
-      padding: 13px 16px;
-      border-bottom: 1px solid var(--r-line);
-      color: var(--r-text);
-      vertical-align: middle;
-    }
-    .rc-shell .r-table tbody tr:last-child td {
-      border-bottom: 0;
-    }
-    .rc-shell .r-table tbody tr:hover td {
-      background: color-mix(in srgb, var(--r-accent) 4%, transparent);
-    }
-    .rc-shell .r-table td.text-right,
-    .rc-shell .r-table th.text-right {
-      text-align: right;
-      white-space: nowrap;
-    }
-    .rc-shell .r-table code {
-      font-family: var(--r-mono);
-      font-size: 12px;
-      color: var(--r-accent);
-      background: var(--r-bg-2);
-      padding: 2px 6px;
-      border-radius: 6px;
-    }
+    .rc-shell .r-table tbody td { padding: 12px 15px; border-bottom: 1px solid var(--r-line); color: var(--r-text); vertical-align: middle; }
+    .rc-shell .r-table tbody tr:last-child td { border-bottom: 0; }
+    .rc-shell .r-table tbody tr:hover td { background: color-mix(in srgb, var(--r-accent) 4%, transparent); }
+    .rc-shell .r-table td.text-right, .rc-shell .r-table th.text-right { text-align: right; white-space: nowrap; }
+    .rc-shell .r-table code { font-family: var(--r-mono); font-size: 12px; color: var(--r-accent); background: var(--r-bg-2); padding: 2px 6px; border-radius: 6px; }
 
-    /* Clean Google Admin Button, Filter & Field System (overrides racing.css display uppercase) */
-    .rc-shell .r-kicker {
-      font: 700 11px/1.2 var(--r-sans, system-ui, sans-serif);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--r-accent);
-      margin: 0;
-    }
-    .rc-shell .r-btn,
-    .g-modal .r-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      min-height: 36px;
-      padding: 0 14px;
-      border-radius: 999px;
-      border: 1px solid var(--r-line);
-      background: var(--r-surface);
-      color: var(--r-text);
-      font: 600 12.5px/1 var(--r-sans, system-ui, sans-serif);
-      letter-spacing: 0;
-      text-transform: none;
-      white-space: nowrap;
-      cursor: pointer;
+    /* Google Admin Buttons, Pills & Inputs */
+    .rc-shell .r-kicker { font: 700 11px/1.2 var(--r-sans, system-ui, sans-serif); letter-spacing: 0.06em; text-transform: uppercase; color: var(--r-accent); margin: 0; }
+    .rc-shell .r-btn, .g-modal .r-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      min-height: 36px; padding: 0 14px; border-radius: 999px;
+      border: 1px solid var(--r-line); background: var(--r-surface); color: var(--r-text);
+      font: 600 12.5px/1 var(--r-sans, system-ui, sans-serif); letter-spacing: 0; text-transform: none;
+      white-space: nowrap; cursor: pointer; text-decoration: none;
       transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     }
-    .rc-shell .r-btn:hover,
-    .g-modal .r-btn:hover {
-      background: var(--r-bg-2);
-      border-color: var(--r-accent);
-      color: var(--r-accent);
-      box-shadow: none;
+    .rc-shell .r-btn:hover, .g-modal .r-btn:hover { background: var(--r-bg-2); border-color: var(--r-accent); color: var(--r-accent); box-shadow: none; }
+    .rc-shell .r-btn--sm, .g-modal .r-btn--sm { min-height: 32px; padding: 0 12px; font-size: 12px; }
+    .rc-shell .r-btn--primary, .g-modal .r-btn--primary { border-color: transparent; background: var(--r-accent); color: var(--r-accent-ink, #04130d); font-weight: 700; }
+    .rc-shell .r-btn--primary:hover, .g-modal .r-btn--primary:hover { background: var(--r-accent); color: var(--r-accent-ink, #04130d); filter: brightness(1.06); box-shadow: none; }
+    .rc-shell .r-btn:disabled, .g-modal .r-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .rc-shell .g-views, .g-modal .g-views { display: flex; flex-wrap: wrap; gap: 6px; }
+    .rc-shell .g-views button, .g-modal .g-views button {
+      min-height: 32px; padding: 0 13px; border-radius: 999px;
+      border: 1px solid var(--r-line); background: var(--r-surface); color: var(--r-muted);
+      font: 600 12px/1 var(--r-sans, system-ui, sans-serif); letter-spacing: 0; text-transform: none; cursor: pointer;
     }
-    .rc-shell .r-btn--sm,
-    .g-modal .r-btn--sm {
-      min-height: 32px;
-      padding: 0 12px;
-      font-size: 12px;
-    }
-    .rc-shell .r-btn--primary,
-    .g-modal .r-btn--primary {
-      border-color: transparent;
-      background: var(--r-accent);
-      color: var(--r-accent-ink, #04130d);
-      font-weight: 700;
-    }
-    .rc-shell .r-btn--primary:hover,
-    .g-modal .r-btn--primary:hover {
-      background: var(--r-accent);
-      color: var(--r-accent-ink, #04130d);
-      filter: brightness(1.06);
-      box-shadow: none;
-    }
-    .rc-shell .g-views {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-    .rc-shell .g-views button {
-      min-height: 34px;
-      padding: 0 14px;
-      border-radius: 999px;
-      border: 1px solid var(--r-line);
-      background: var(--r-surface);
-      color: var(--r-muted);
-      font: 600 12.5px/1 var(--r-sans, system-ui, sans-serif);
-      letter-spacing: 0;
-      text-transform: none;
-      cursor: pointer;
-      transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
-    }
-    .rc-shell .g-views button:hover {
-      background: var(--r-bg-2);
-      color: var(--r-text);
-    }
-    .rc-shell .g-views button.is-on {
+    .rc-shell .g-views button.is-on, .g-modal .g-views button.is-on {
       background: color-mix(in srgb, var(--r-accent) 16%, transparent);
       border-color: color-mix(in srgb, var(--r-accent) 55%, transparent);
-      color: var(--r-accent);
-      font-weight: 700;
-    }
-    .rc-shell .g-field {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      min-width: 0;
-    }
-    .rc-shell .g-field label {
-      font: 600 12px/1.2 var(--r-sans, system-ui, sans-serif);
-      color: var(--r-muted);
+      color: var(--r-accent); font-weight: 700;
     }
 
-    /* Google Admin Row Action Menu (⋮) & Floating Popover */
-    .rc-row-actions {
-      display: inline-flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 6px;
-      flex-wrap: nowrap;
-    }
-    .rc-menu-btn {
-      width: 32px;
-      height: 32px;
-      padding: 0;
-      border-radius: 999px;
-      border: 1px solid var(--r-line);
-      background: var(--r-surface);
-      color: var(--r-muted);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      line-height: 1;
-      cursor: pointer;
-      transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
-    }
-    .rc-menu-btn:hover,
-    .rc-menu-btn[aria-expanded="true"] {
-      background: var(--r-bg-2);
-      border-color: var(--r-accent);
-      color: var(--r-text);
-    }
-    .rc-action-popover {
-      position: fixed;
-      z-index: 120;
-      min-width: 215px;
-      padding: 6px;
-      border-radius: 12px;
-      background: var(--r-surface);
-      border: 1px solid var(--r-line);
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.24);
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .rc-action-popover.hidden {
-      display: none !important;
-    }
-    .rc-action-popover__item {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      padding: 8px 11px;
-      border: 0;
-      border-radius: 8px;
-      background: transparent;
-      color: var(--r-text);
-      font: 500 12.5px/1.2 var(--r-sans, system-ui, sans-serif);
-      text-align: left;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    .rc-action-popover__item:hover {
-      background: var(--r-bg-2);
-    }
-    .rc-action-popover__item--ok {
-      color: var(--r-accent);
-    }
-    .rc-action-popover__item--danger {
-      color: #ef4444;
-    }
-    .rc-action-popover__item--danger:hover {
-      background: rgba(239, 68, 68, 0.1);
-    }
-    .rc-action-popover__sep {
-      height: 1px;
-      background: var(--r-line);
-      margin: 4px 6px;
-    }
-
-    /* Badges & Avatars */
+    /* Badges, Avatars, License Pills */
     .rc-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--r-line);
-      background: var(--r-bg-2);
-      color: var(--r-text);
-      font: 600 11px/1.1 var(--r-sans, system-ui, sans-serif);
-      white-space: nowrap;
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 9px; border-radius: 999px; border: 1px solid var(--r-line);
+      background: var(--r-bg-2); color: var(--r-text);
+      font: 600 11px/1.15 var(--r-sans, system-ui, sans-serif); white-space: nowrap;
     }
-    .rc-badge--live,
-    .rc-badge--ok {
-      border-color: color-mix(in srgb, var(--r-accent) 45%, transparent);
-      background: color-mix(in srgb, var(--r-accent) 12%, transparent);
-      color: var(--r-accent);
-    }
-    .rc-badge--warn {
-      border-color: rgba(245, 158, 11, 0.45);
-      background: rgba(245, 158, 11, 0.12);
-      color: #f59e0b;
-    }
-    .rc-badge--err {
-      border-color: rgba(239, 68, 68, 0.45);
-      background: rgba(239, 68, 68, 0.12);
-      color: #ef4444;
-    }
-    .rc-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--r-accent);
-      display: inline-block;
-      flex-shrink: 0;
-    }
-    .rc-user-cell {
-      display: flex;
-      align-items: center;
-      gap: 11px;
-      min-width: 180px;
-    }
+    .rc-badge--ok { border-color: color-mix(in srgb, var(--r-accent) 45%, transparent); background: color-mix(in srgb, var(--r-accent) 12%, transparent); color: var(--r-accent); }
+    .rc-badge--warn { border-color: rgba(245, 158, 11, 0.45); background: rgba(245, 158, 11, 0.12); color: #f59e0b; }
+    .rc-badge--err { border-color: rgba(239, 68, 68, 0.45); background: rgba(239, 68, 68, 0.12); color: #ef4444; }
+    .rc-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--r-accent); display: inline-block; flex-shrink: 0; }
+    .rc-user-cell { display: flex; align-items: center; gap: 11px; min-width: 180px; }
     .rc-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 999px;
-      background: color-mix(in srgb, var(--r-accent) 14%, transparent);
-      color: var(--r-accent);
-      font: 700 12px/1 var(--r-mono);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
+      width: 36px; height: 36px; border-radius: 999px;
+      background: color-mix(in srgb, var(--r-accent) 14%, transparent); color: var(--r-accent);
+      font: 700 12px/1 var(--r-mono); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
-    .rc-strong {
-      font-weight: 600;
-      color: var(--r-text);
-      overflow-wrap: anywhere;
-    }
-    .rc-user-cell .rc-strong,
-    .rc-nec-card .rc-strong {
-      white-space: nowrap;
-    }
-    .rc-mono-sub {
-      font: 500 11.5px/1.35 var(--r-mono);
-      color: var(--r-muted);
-    }
+    .rc-strong { font-weight: 600; color: var(--r-text); }
+    .rc-user-cell .rc-strong { white-space: nowrap; }
+    .rc-mono-sub { font: 500 11.5px/1.35 var(--r-mono); color: var(--r-muted); }
     .rc-accent { color: var(--r-accent); }
+    .rc-lic-pills { display: flex; flex-wrap: wrap; gap: 5px; max-width: 300px; }
+    .rc-row-actions { display: inline-flex; align-items: center; justify-content: flex-end; gap: 6px; flex-wrap: nowrap; }
+    .rc-menu-btn {
+      width: 32px; height: 32px; padding: 0; border-radius: 999px;
+      border: 1px solid var(--r-line); background: var(--r-surface); color: var(--r-muted);
+      display: inline-flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer;
+    }
+    .rc-menu-btn:hover, .rc-menu-btn[aria-expanded="true"] { background: var(--r-bg-2); border-color: var(--r-accent); color: var(--r-text); }
 
-    /* Clean Lists (BoP & Activity) */
-    .rc-check-list,
-    .rc-activity-list {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+    /* Popover */
+    .rc-action-popover {
+      position: fixed; z-index: 120; min-width: 220px; padding: 6px;
+      border-radius: 12px; background: var(--r-surface); border: 1px solid var(--r-line);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.26); display: flex; flex-direction: column; gap: 2px;
     }
-    .rc-check-list li,
-    .rc-activity-list li {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 11px 14px;
-      border-radius: 12px;
-      background: var(--r-bg-2);
-      border: 1px solid var(--r-line);
-      font-size: 13px;
+    .rc-action-popover.hidden { display: none !important; }
+    .rc-action-popover__item {
+      width: 100%; display: flex; align-items: center; gap: 9px; padding: 8px 11px;
+      border: 0; border-radius: 8px; background: transparent; color: var(--r-text);
+      font: 500 12.5px/1.2 var(--r-sans, system-ui, sans-serif); text-align: left; cursor: pointer; white-space: nowrap;
     }
-    .rc-check-list li > span,
-    .rc-activity-list li > div {
-      flex: 1 1 auto;
-      min-width: 0;
-      line-height: 1.4;
-    }
-    .rc-check-list li > strong {
-      flex-shrink: 0;
-      white-space: nowrap;
-      font-size: 12.5px;
-    }
+    .rc-action-popover__item:hover { background: var(--r-bg-2); }
+    .rc-action-popover__item--ok { color: var(--r-accent); }
+    .rc-action-popover__item--danger { color: #ef4444; }
+    .rc-action-popover__item--danger:hover { background: rgba(239, 68, 68, 0.1); }
+    .rc-action-popover__sep { height: 1px; background: var(--r-line); margin: 4px 6px; }
 
-    /* Toolbars, Inputs & Forms inside Admin */
-    .rc-toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
+    /* Inputs & Toolbars */
+    .rc-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+    .rc-shell .g-search, .rc-shell select, .rc-shell input[type="email"], .rc-shell input[type="text"], .rc-shell input[type="search"], .rc-shell textarea {
+      border-radius: 10px; border: 1px solid var(--r-line); background: var(--r-bg-2); color: var(--r-text); font-size: 13px; padding: 8px 12px;
     }
-    .rc-search-inline {
-      flex: 1 1 260px;
-      max-width: 380px;
-    }
-    .rc-shell .g-search,
-    .rc-shell select,
-    .rc-shell input[type="email"],
-    .rc-shell input[type="text"],
-    .rc-shell input[type="search"],
-    .rc-shell textarea {
-      border-radius: 10px;
-      border: 1px solid var(--r-line);
-      background: var(--r-bg-2);
-      color: var(--r-text);
-      font-size: 13px;
-      padding: 9px 12px;
-    }
-    .rc-shell .rc-search-input {
-      border: 0 !important;
-      background: transparent !important;
-      padding: 0 !important;
-    }
+    .rc-quick-reset-bar { display: flex; flex-direction: column; gap: 12px; }
+    .rc-quick-reset-inputs { width: 100%; max-width: 520px; }
+    .rc-quick-reset-inputs .g-search { width: 100%; }
 
-    /* Quick Credential Reset Bar */
-    .rc-quick-reset-bar {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+    /* Unified All-in-One Modal */
+    .rc-modal-dialog { max-width: 680px !important; max-height: 90vh; overflow-y: auto; }
+    .rc-modal-dialog--xl { max-width: 860px !important; }
+    .rc-modal-tabs {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      padding: 8px 0 12px; border-bottom: 1px solid var(--r-line); margin-bottom: 4px;
     }
-    .rc-quick-reset-inputs {
-      width: 100%;
-      max-width: 520px;
+    .rc-modal-tabs button {
+      padding: 8px 14px; border-radius: 999px; border: 1px solid var(--r-line);
+      background: var(--r-bg-2); color: var(--r-muted);
+      font: 600 12.5px/1 var(--r-sans, system-ui, sans-serif); cursor: pointer;
     }
-    .rc-quick-reset-inputs .g-search {
-      width: 100%;
+    .rc-modal-tabs button.is-on {
+      background: color-mix(in srgb, var(--r-accent) 16%, transparent);
+      border-color: color-mix(in srgb, var(--r-accent) 55%, transparent);
+      color: var(--r-accent); font-weight: 700;
+    }
+    .rc-modal-form { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
+    .rc-um-panel { display: flex; flex-direction: column; gap: 12px; }
+    .rc-um-panel.hidden { display: none !important; }
+    .rc-modal-form .g-field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+    .rc-modal-form label { font: 600 12px/1.2 var(--r-sans, system-ui, sans-serif); color: var(--r-muted); }
+    .rc-modal-form input[type="text"], .rc-modal-form input[type="email"], .rc-modal-form input[type="number"], .rc-modal-form select, .rc-modal-form textarea {
+      width: 100%; border-radius: 10px; border: 1px solid var(--r-line); background: var(--r-bg-2); color: var(--r-text); font-size: 13px; padding: 9px 11px;
+    }
+    .rc-modal-foot {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+      gap: 10px; padding-top: 14px; border-top: 1px solid var(--r-line); margin-top: 4px;
     }
 
-    /* Simulator, BoP & NEC Grids */
-    .rc-sim-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
+    /* 5 Licenses Grid */
+    .rc-lic-grid { display: flex; flex-direction: column; gap: 8px; }
+    .rc-lic-row {
+      display: grid; grid-template-columns: minmax(150px, 1.3fr) minmax(120px, 1fr) 110px 125px;
+      gap: 10px; align-items: center; padding: 10px 12px;
+      border-radius: 12px; background: var(--r-bg-2); border: 1px solid var(--r-line);
     }
-    .rc-sim-output {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      padding: 16px 18px;
-      border-radius: 12px;
-      background: var(--r-bg-2);
-      border: 1px solid color-mix(in srgb, var(--r-accent) 50%, transparent);
+    .rc-lic-row__meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .rc-lic-row__meta strong { font-size: 13px; color: var(--r-text); }
+    .rc-lic-row__meta span { font-size: 11px; color: var(--r-muted); }
+
+    /* Garage 61 Dropzone & Editable Lists */
+    .rc-g61-drop {
+      padding: 14px 16px; border: 1.5px dashed color-mix(in srgb, var(--r-accent) 55%, var(--r-line));
+      border-radius: 14px; background: color-mix(in srgb, var(--r-accent) 4%, var(--r-bg-2));
+      display: flex; flex-direction: column; gap: 12px;
     }
-    .rc-sim-filename {
-      font: 700 clamp(16px, 2vw, 22px)/1.2 var(--r-mono);
-      color: var(--r-accent);
-      margin-top: 4px;
-      word-break: break-all;
+    .rc-g61-drop__top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+    .rc-g61-preview { display: flex; align-items: center; gap: 12px; padding-top: 8px; border-top: 1px solid var(--r-line); }
+    .rc-g61-preview.hidden { display: none !important; }
+    .rc-g61-preview img { max-height: 84px; max-width: 180px; border-radius: 8px; border: 1px solid var(--r-line); object-fit: cover; }
+
+    .rc-subcard {
+      padding: 12px; border-radius: 12px; border: 1px solid var(--r-line); background: var(--r-bg-2);
+      display: flex; flex-direction: column; gap: 8px;
     }
-    .rc-bop-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
+    .rc-subcard__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; }
+    .rc-g61-list { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; }
+    .rc-g61-item { display: grid; grid-template-columns: minmax(110px, 1fr) 68px 72px 28px; gap: 6px; align-items: center; }
+    .rc-g61-item input { padding: 6px 8px !important; font-size: 12px !important; }
+    .rc-g61-del { width: 28px; height: 28px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.35); background: transparent; color: #ef4444; cursor: pointer; font-weight: 700; }
+
+    /* MTI Stats Panel */
+    .rc-stats-banner {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 18px;
+      padding: 16px; border-radius: 14px; background: var(--r-bg-2); border: 1px solid var(--r-line);
     }
-    .rc-bop-item {
-      padding: 13px 14px;
-      border-radius: 12px;
-      background: var(--r-bg-2);
-      border: 1px solid var(--r-line);
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
+    .rc-stats-ovr-box {
+      width: 86px; height: 86px; border-radius: 16px;
+      background: color-mix(in srgb, var(--r-accent) 16%, transparent);
+      border: 1.5px solid color-mix(in srgb, var(--r-accent) 55%, transparent);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0;
     }
-    .rc-bop-item__top {
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      font: 600 11px/1.2 var(--r-mono);
-      color: var(--r-muted);
-    }
-    .rc-bop-item__val {
-      font: 700 13px/1.3 var(--r-mono);
-      color: var(--r-text);
-    }
-    .rc-nec-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 10px;
-    }
-    .rc-nec-card {
-      padding: 13px 14px;
-      border-radius: 12px;
-      background: var(--r-bg-2);
-      border: 1px solid var(--r-line);
-      text-decoration: none;
-      color: var(--r-text);
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      transition: border-color 0.15s ease;
-    }
-    .rc-nec-card:hover { border-color: var(--r-accent); }
-    .rc-nec-card__top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-    }
-    .rc-nec-card__codes {
-      font: 700 10.5px/1.2 var(--r-mono);
-      color: var(--r-accent);
-    }
+    .rc-stats-ovr-box span { font: 700 10px/1 var(--r-mono); letter-spacing: 0.08em; color: var(--r-accent); }
+    .rc-stats-ovr-box strong { font: 800 34px/1.05 var(--r-sans, system-ui, sans-serif); color: var(--r-text); }
+    .rc-stats-inputs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
 
     /* Credentials & Email Studio Modals */
-    .rc-cred-box {
-      padding: 14px 16px;
-      border-radius: 12px;
-      background: var(--r-bg-2);
-      border: 1px solid var(--r-accent);
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .rc-cred-secret {
-      font: 700 13px/1.4 var(--r-mono);
-      color: var(--r-accent);
-      word-break: break-all;
-    }
-    .rc-mono-textarea {
-      font: 500 12px/1.45 var(--r-mono) !important;
-    }
-    .rc-email-preview {
-      border: 1px solid var(--r-line);
-      border-radius: 14px;
-      background: var(--r-bg);
-      overflow: hidden;
-    }
-    .rc-email-preview__meta {
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--r-line);
-      background: var(--r-surface);
-      font-size: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .rc-email-preview__body {
-      margin: 0;
-      padding: 16px;
-      font: 500 12px/1.55 var(--r-mono);
-      color: var(--r-text);
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-    .rc-email-visual-card {
-      padding: 18px;
-      background: #0b0f17;
-      color: #e2e8f0;
-      border-bottom: 1px solid var(--r-line);
-    }
-    .rc-email-raw-details summary {
-      cursor: pointer;
-      padding: 10px 16px;
-      font: 700 11px/1.2 var(--r-mono);
-      color: var(--r-muted);
-      background: var(--r-surface);
-      user-select: none;
-    }
-    .rc-email-raw-details summary:hover { color: var(--r-accent); }
+    .rc-cred-box { padding: 14px 16px; border-radius: 12px; background: var(--r-bg-2); border: 1px solid var(--r-accent); display: flex; flex-direction: column; gap: 6px; }
+    .rc-cred-secret { font: 700 13px/1.4 var(--r-mono); color: var(--r-accent); word-break: break-all; }
+    .rc-mono-textarea { font: 500 12px/1.45 var(--r-mono) !important; }
+    .rc-email-preview { border: 1px solid var(--r-line); border-radius: 14px; background: var(--r-bg); overflow: hidden; }
+    .rc-email-preview__meta { padding: 12px 16px; border-bottom: 1px solid var(--r-line); background: var(--r-surface); font-size: 12px; display: flex; flex-direction: column; gap: 4px; }
+    .rc-email-preview__body { margin: 0; padding: 16px; font: 500 12px/1.55 var(--r-mono); color: var(--r-text); white-space: pre-wrap; word-break: break-word; }
+    .rc-email-visual-card { padding: 18px; background: #0b0f17; color: #e2e8f0; border-bottom: 1px solid var(--r-line); }
+    .rc-email-raw-details summary { cursor: pointer; padding: 10px 16px; font: 700 11px/1.2 var(--r-mono); color: var(--r-muted); background: var(--r-surface); user-select: none; }
 
-    /* Admin Modals (Clean Google Admin Dialogs) */
-    .rc-modal-dialog {
-      max-width: 680px !important;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-    .rc-modal-form {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-top: 8px;
-    }
-    .rc-modal-form input[type="text"],
-    .rc-modal-form input[type="email"],
-    .rc-modal-form input[type="number"],
-    .rc-modal-form select,
-    .rc-modal-form textarea {
-      width: 100%;
-      border-radius: 10px;
-      border: 1px solid var(--r-line);
-      background: var(--r-bg-2);
-      color: var(--r-text);
-      font-size: 13px;
-      padding: 9px 12px;
-    }
-    .rc-modal-form label {
-      font: 600 12px/1.2 var(--r-sans, system-ui, sans-serif);
-      color: var(--r-muted);
-    }
-    .rc-modal-divider {
-      margin: 4px 0 0;
-      padding-top: 12px;
-      border-top: 1px solid var(--r-line);
-      font: 700 11px/1.2 var(--r-sans, system-ui, sans-serif);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--r-muted);
-    }
-
-    /* Responsive Breakpoints (Google Admin clean stacking) */
     @media (max-width: 1200px) {
       .rc-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .rc-two-col { grid-template-columns: 1fr; }
     }
     @media (max-width: 1024px) {
-      .rc-topbar__inner {
-        grid-template-columns: 1fr;
-        gap: 12px;
-      }
-      .rc-topbar__actions {
-        justify-content: flex-start;
-        flex-wrap: wrap;
-      }
-      .rc-workspace {
-        grid-template-columns: 1fr;
-        gap: 20px;
-      }
-      .rc-sidebar {
-        position: static;
-      }
-      .rc-nav {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-        gap: 6px;
-      }
-      .rc-sim-grid,
-      .rc-bop-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
+      .rc-topbar__inner { grid-template-columns: 1fr; gap: 10px; }
+      .rc-topbar__actions { justify-content: flex-start; flex-wrap: wrap; }
+      .rc-workspace { grid-template-columns: 1fr; }
+      .rc-sidebar { position: static; }
+      .rc-nav { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 6px; }
+      .rc-lic-row { grid-template-columns: 1fr 1fr; }
+      .rc-stats-inputs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
     @media (max-width: 640px) {
       .rc-container { padding: 0 14px; }
       .rc-card { padding: 16px; }
-      .rc-kpi-grid,
-      .rc-sim-grid,
-      .rc-bop-grid {
-        grid-template-columns: 1fr;
-      }
+      .rc-kpi-grid { grid-template-columns: 1fr; }
     }
   </style>
 
-  <!-- ===================================================================== -->
-  <!-- MODAL 4: EDITAR CUENTA, NOMBRE, ROL Y PERFIL PÚBLICO (D1)             -->
-  <!-- ===================================================================== -->
-  <div id="editUserModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="editUserModalTitle">
-    <div class="g-dialog g-dialog--wide rc-modal-dialog">
-      <div class="g-dialog__bar">
-        <h2 id="editUserModalTitle">Editar Cuenta, Nombre y Rol</h2>
-        <button type="button" class="m-notice__close" onclick="closeEditUserModal()" aria-label="Cerrar">×</button>
-      </div>
-      <p class="rc-muted">Actualiza los datos de la cuenta en Cloudflare D1. Cambiar el rol renueva automáticamente la sesión del usuario.</p>
-      <form id="editUserForm" class="rc-modal-form" onsubmit="submitEditUserForm(event)">
-        <input type="hidden" id="editUserEmailHidden" />
-        <div class="rc-two-col" style="gap:12px">
-          <div class="g-field">
-            <label for="editUserEmailReadonly">Correo de acceso</label>
-            <input type="email" id="editUserEmailReadonly" readonly style="opacity:0.75;cursor:not-allowed" />
-          </div>
-          <div class="g-field">
-            <label for="editUserName">Nombre completo</label>
-            <input type="text" id="editUserName" required maxlength="80" placeholder="Ej. Mateo Berbis" />
-          </div>
-        </div>
-        <div class="rc-two-col" style="gap:12px">
-          <div class="g-field">
-            <label for="editUserRole">Rol en Muntrume</label>
-            <select id="editUserRole">
-              <option value="driver">Official Driver (Titular)</option>
-              <option value="team_driver">Team Endurance Driver</option>
-              <option value="academy">Academy Driver</option>
-              <option value="engineer">Race Engineer</option>
-              <option value="staff">Staff / Prensa</option>
-              <option value="admin">Team Principal / Admin</option>
-            </select>
-          </div>
-          <div class="g-field">
-            <label for="editUserTeam">Equipo / División</label>
-            <input type="text" id="editUserTeam" maxlength="80" placeholder="Ej. Muntrume Motorsport · GT3" />
-          </div>
-        </div>
-        <div class="g-field">
-          <label for="editUserCarClass">Categoría / Montura principal</label>
-          <input type="text" id="editUserCarClass" maxlength="80" placeholder="Ej. Ferrari 296 GT3 · IMSA &amp; NEC" />
-        </div>
-        <label class="g-check" for="editUserSetupAccess">
-          <input type="checkbox" id="editUserSetupAccess" />
-          Permitir descarga y sincronización de setups (.sto) en Setup Vault y MMT Sync
-        </label>
-
-        <div class="rc-modal-divider">
-          <span>Perfil público opcional (<code>/p/alias/</code>)</span>
-        </div>
-        <label class="g-check" for="editUserPublicVisible">
-          <input type="checkbox" id="editUserPublicVisible" />
-          Publicar ficha comunitaria en <code>/p/alias/</code>
-        </label>
-        <div class="rc-two-col" style="gap:12px">
-          <div class="g-field">
-            <label for="editUserPublicName">Nombre público</label>
-            <input type="text" id="editUserPublicName" maxlength="60" placeholder="Ej. Mateo Berbis" />
-          </div>
-          <div class="g-field">
-            <label for="editUserPublicSlug">Alias URL (slug)</label>
-            <input type="text" id="editUserPublicSlug" maxlength="40" placeholder="ej. mateo-berbis" />
-          </div>
-        </div>
-        <div class="g-field">
-          <label for="editUserPublicBio">Biografía corta (máx. 280 caracteres)</label>
-          <textarea id="editUserPublicBio" rows="2" maxlength="280" placeholder="Piloto oficial GT3 y resistencia en Muntrume Motorsport…"></textarea>
-        </div>
-
-        <div class="rc-btn-row" style="justify-content:flex-end;margin-top:6px">
-          <button type="button" class="r-btn r-btn--sm" onclick="closeEditUserModal()">Cancelar</button>
-          <button type="submit" id="editUserSubmitBtn" class="r-btn r-btn--primary r-btn--sm">Guardar cambios</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ===================================================================== -->
-  <!-- MODAL 5: EDITAR PERFIL OFICIAL, DORSAL, IRATING Y LICENCIA            -->
-  <!-- ===================================================================== -->
-  <div id="editDriverProfileModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="editDriverProfileTitle">
-    <div class="g-dialog g-dialog--wide rc-modal-dialog">
-      <div class="g-dialog__bar">
-        <h2 id="editDriverProfileTitle">Editar Perfil Oficial &amp; iRating</h2>
-        <button type="button" class="m-notice__close" onclick="closeEditDriverProfileModal()" aria-label="Cerrar">×</button>
-      </div>
-      <p class="rc-muted">Los cambios se guardan en Cloudflare D1 y se reflejan en vivo en <code>/drivers</code>, la ficha del piloto y <code>/api/drivers</code>.</p>
-      <form id="editDriverProfileForm" class="rc-modal-form" onsubmit="submitEditDriverProfileForm(event)">
-        <input type="hidden" id="editProfSlug" />
-        <div class="rc-two-col" style="gap:12px">
-          <div class="g-field">
-            <label for="editProfFullName">Nombre visible en la web</label>
-            <input type="text" id="editProfFullName" required maxlength="80" placeholder="Ej. Alberto Trujillo" />
-          </div>
-          <div class="rc-two-col" style="gap:10px">
-            <div class="g-field">
-              <label for="editProfDorsal">Dorsal</label>
-              <input type="text" id="editProfDorsal" maxlength="8" placeholder="#16" />
-            </div>
-            <div class="g-field">
-              <label for="editProfKind">Tipo de ficha</label>
-              <select id="editProfKind">
-                <option value="driver">Piloto oficial</option>
-                <option value="staff">Staff interno</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div class="rc-two-col" style="gap:12px">
-          <div class="g-field">
-            <label for="editProfIrating">iRating Sports Car <span id="editProfOvrPreview" class="rc-badge rc-badge--ok" style="margin-left:6px">OVR —</span></label>
-            <input type="number" id="editProfIrating" min="100" max="25000" step="1" placeholder="Ej. 3141" oninput="updateEditProfOvrPreview()" />
-          </div>
-          <div class="g-field">
-            <label for="editProfLicense">Licencia &amp; Safety Rating</label>
-            <input type="text" id="editProfLicense" maxlength="32" placeholder="Ej. Class A 3.45" />
-          </div>
-        </div>
-
-        <div class="rc-two-col" style="gap:12px">
-          <div class="g-field">
-            <label for="editProfCustId">iRacing cust_id</label>
-            <input type="text" id="editProfCustId" inputmode="numeric" maxlength="10" placeholder="Ej. 993381" />
-          </div>
-          <div class="g-field">
-            <label for="editProfEmail">Correo vinculado</label>
-            <input type="email" id="editProfEmail" placeholder="piloto@muntru.me" />
-          </div>
-        </div>
-
-        <div class="rc-two-col" style="gap:12px">
-          <div class="g-field">
-            <label for="editProfRole">Rol visible en la ficha</label>
-            <input type="text" id="editProfRole" maxlength="80" placeholder="Ej. Team Principal &amp; Lead Telemetry" />
-          </div>
-          <div class="g-field">
-            <label for="editProfSpecialty">Especialidad</label>
-            <input type="text" id="editProfSpecialty" maxlength="120" placeholder="Ej. GT3 &amp; Multiclass Endurance" />
-          </div>
-        </div>
-
-        <div class="rc-two-col" style="gap:12px">
-          <div class="g-field">
-            <label for="editProfClub">Club / Región iRacing</label>
-            <input type="text" id="editProfClub" maxlength="80" placeholder="Ej. Iberia" />
-          </div>
-          <div class="g-field">
-            <label for="editProfCountry">País</label>
-            <input type="text" id="editProfCountry" maxlength="60" placeholder="Ej. Spain" />
-          </div>
-        </div>
-
-        <div class="g-field">
-          <label for="editProfBio">Biografía del piloto</label>
-          <textarea id="editProfBio" rows="3" maxlength="400" placeholder="Resumen deportivo y especialidad del piloto en pista…"></textarea>
-        </div>
-
-        <div class="rc-btn-row" style="justify-content:flex-end;margin-top:6px">
-          <button type="button" class="r-btn r-btn--sm" onclick="closeEditDriverProfileModal()">Cancelar</button>
-          <button type="submit" id="editProfSubmitBtn" class="r-btn r-btn--primary r-btn--sm">Guardar perfil en D1</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <div id="rcRowActionPopover" class="rc-action-popover hidden" role="menu"></div>
-
-  <script is:inline src="/assets/js/driver-ids.js?v=t350"></script>
-  <script is:inline src="/assets/js/admin.js?v=t354"></script>
+  <script is:inline src="/assets/js/admin.js?v=t355"></script>
 </Layout>
