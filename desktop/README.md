@@ -1,16 +1,18 @@
 <p align="center">
-  <strong>MMT Sync</strong><br/>
-  Aplicación de Windows para copiar los setups de Muntrume Motorsport a la carpeta de iRacing.
+  <strong>MMT Sync v0.6.5 · Muntrume Motorsport</strong><br/>
+  Centro de mando nativo en Rust + Tauri v2 para Windows: sincronización SHA-256 de setups <code>.sto</code>, Overlays 60 Hz y análisis de telemetría <code>.ibt</code> para iRacing.
 </p>
 
 <p align="center">
   <a href="https://muntru.me/app/"><b>muntru.me/app</b></a> ·
-  <a href="https://muntru.me/garage/#mmt-sync">Descarga</a> ·
-  <a href="docs/feature-parity.md">Paridad</a>
+  <a href="https://muntru.me/overlay/">Simulador HUD</a> ·
+  <a href="https://muntru.me/garage/">Setup Vault</a> ·
+  <a href="docs/feature-parity.md">Arquitectura y Paridad</a>
 </p>
 
 <p align="center">
-  <img alt="Tauri" src="https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white" />
+  <img alt="Versión" src="https://img.shields.io/badge/versi%C3%B3n-0.6.5-10B981" />
+  <img alt="Tauri" src="https://img.shields.io/badge/Tauri-2.0-24C8DB?logo=tauri&logoColor=white" />
   <img alt="Rust" src="https://img.shields.io/badge/Rust-1.77+-000000?logo=rust&logoColor=white" />
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white" />
   <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss&logoColor=white" />
@@ -18,14 +20,13 @@
 
 ---
 
-## Qué hace
+## Módulos Principales
 
-- Vincula el ordenador con muntru.me. El token queda en el Administrador de credenciales de Windows.
-- Escribe solo en `setups\<coche>\MMT\<temporada>\<archivo>.sto`.
-- Compara el sha256 y baja lo nuevo o lo cambiado. El borrado de retirados está apagado hasta que el piloto lo enciende.
-- Deja subir un `.sto` de como máximo 1 MB a la sala de ingenieros.
-- Lee `.ibt` y, en Windows, la memoria del SDK de iRacing. Solo lectura.
-- Bandeja, aviso de Windows cuando entran setups, e inicio con Windows apagado por defecto.
+- **Centro de Mando & Vinculación Segura:** Vincula el ordenador con `muntru.me` mediante OAuth Device Flow. El token se almacena cifrado en el **Administrador de credenciales de Windows** (nunca en texto plano).
+- **Sincronización Diferencial SHA-256:** Descarga únicamente los reglajes `.sto` nuevos o modificados en `Documents\iRacing\setups\<coche>\MMT\<temporada>\`, filtrando automáticamente las series Fixed.
+- **Overlays Flotantes 60 Hz (`FILE_MAP_READ`):** Ventana única transparente `Always-On-Top` y `Click-Through` con 9 widgets modulares (Standings multiclase, Relative, Mapa GPS Catmull-Rom, Pedales + FFB, Radar 360°, Calculadora de Combustible, Neumáticos, Delta y Spotter).
+- **Puente Local (`127.0.0.1:38421`) y Protocolo `mmtsync://`:** Permite activar los overlays, desbloquear el modo edición (`F9`) o lanzar una sincronización directamente desde [muntru.me](https://muntru.me) o [muntru.me/app/](https://muntru.me/app/).
+- **Analizador Local `.ibt` y Diagnóstico de Hardware:** Parseo de telemetría de iRacing en disco sin subir datos privados, calculadora de estrategia con envío `IRSDK_BROADCAST_MSG` de auto-repostaje e inspección sin parpadeos (`CREATE_NO_WINDOW`) de periféricos DirectInput y audio XAudio2.
 
 El API es el mismo que usa la web: `https://muntrume.atrumin16.workers.dev`.
 

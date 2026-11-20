@@ -4,7 +4,6 @@ import StatsGrid from '../components/StatsGrid.astro';
 import MediaLightbox from '../components/MediaLightbox.astro';
 import CommunityUploadModal from '../components/CommunityUploadModal.astro';
 import { PILOTOS } from '../lib/pilotos';
-import { PADDOCK_ALBUMS, TRACK_GALLERY_PHOTOS } from '../data/paddock-gallery';
 import { CAR_CATALOG_LIST, getBrandSvgMarkup, getCarPreviewBannerSvg, type CarMetadata } from '../../desktop/src/cars/catalog';
 import { IRACING_TRACKS, getTrackGarageInfo, getTrackScheduleInfo, getHistoricTrackRank } from '../lib/track-matcher';
 
@@ -231,7 +230,6 @@ const allTracksWithPop = IRACING_TRACKS.map((t) => {
 }).sort((a, b) => b.popularityScore - a.popularityScore || a.name.localeCompare(b.name));
 
 const topHistoricTracks = allTracksWithPop.slice(0, 8);
-const topAlbums = [...PADDOCK_ALBUMS].sort((a, b) => (b.views ?? 0) - (a.views ?? 0)).slice(0, 3);
 ---
 
 <Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/paddock/" ogImage="https://muntru.me/assets/img/og-about.jpg" ogImageAlt="Paddock de Muntrume Motorsport" translated i18nTitle="paddock.meta.title" i18nDescription="paddock.meta.desc">

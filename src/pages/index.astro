@@ -130,6 +130,10 @@ const appVersion = desktopPkg.version;
             <span>60 Hz Native Rust</span>
             <span aria-hidden="true">→</span>
           </a>
+          <button type="button" id="heroLocalBridgeBadge" hidden class="g-bridge-live-pill" title="Lanzar Overlays directamente en tu iRacing local">
+            <span class="g-live-dot" aria-hidden="true"></span>
+            <span id="heroLocalBridgeText">MMT Sync Detectado · Lanzar HUD</span>
+          </button>
         </div>
 
         <p class="r-kicker">MMT · Sant Andreu, Barcelona</p>
@@ -526,19 +530,40 @@ const appVersion = desktopPkg.version;
       </div>
       <div class="r-cols">
         <div class="r-value g-method-card" data-g-reveal>
-          <span class="g-method-num">01 · SETUP ENGINEERING</span>
+          <div class="g-method-head">
+            <span class="g-method-num">01 · SETUP ENGINEERING</span>
+            <span class="g-chip-accent">SHA-256 Sync</span>
+          </div>
           <h3 class="r-h3" data-i18n="home.team.prep.title">Preparación</h3>
           <p><span data-i18n-num={catalog.total_setups}>{es(catalog.total_setups)}</span> <span data-i18n="home.team.prep.body">setups .sto, ordenados por coche, circuito y temporada, en el Garage del equipo y en el Setup Builder.</span></p>
+          <div class="g-method-spec">
+            <code>Documents\iRacing\setups\MMT</code>
+            <a href="/garage/">Explorar →</a>
+          </div>
         </div>
         <div class="r-value g-method-card" data-g-reveal>
-          <span class="g-method-num">02 · 60 HZ TELEMETRY</span>
+          <div class="g-method-head">
+            <span class="g-method-num">02 · 60 HZ TELEMETRY</span>
+            <span class="g-chip-accent">FILE_MAP_READ</span>
+          </div>
           <h3 class="r-h3" data-i18n="home.team.tel.title">Telemetría</h3>
           <p data-i18n="home.team.tel.body">Telemetría de carretera ponderada por horas reales en pista, y licencias de iRacing, vía Garage 61.</p>
+          <div class="g-method-spec">
+            <code>&lt; 15 MB RAM · 0.0% GPU Idle</code>
+            <a href="/overlay/">Simulador →</a>
+          </div>
         </div>
         <div class="r-value g-method-card" data-g-reveal>
-          <span class="g-method-num">03 · ENDURANCE STRATEGY</span>
+          <div class="g-method-head">
+            <span class="g-method-num">03 · ENDURANCE STRATEGY</span>
+            <span class="g-chip-accent">Stints 45m–24h</span>
+          </div>
           <h3 class="r-h3" data-i18n="home.team.work.title">Trabajo de equipo</h3>
           <p data-i18n="home.team.work.body">Radio de carrera en Discord, planes compartidos de combustible y stint de neumáticos, y relevos coordinados en carreras de resistencia de 24 h.</p>
+          <div class="g-method-spec">
+            <code>Auto-Fuel iRSDK + Muntrume AI</code>
+            <a href="/ai/">Copiloto →</a>
+          </div>
         </div>
       </div>
     </div>
@@ -633,6 +658,29 @@ const appVersion = desktopPkg.version;
       border-color: #00E699;
       background: rgba(0, 230, 153, 0.14);
       transform: translateY(-1px);
+    }
+    .g-bridge-live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font: 800 11px/1 var(--r-mono);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: rgba(0, 230, 153, 0.18);
+      border: 1px solid #00E699;
+      color: #00E699;
+      cursor: pointer;
+      box-shadow: 0 0 22px -4px rgba(0, 230, 153, 0.45);
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+    .g-bridge-live-pill:hover {
+      background: rgba(0, 230, 153, 0.28);
+      transform: translateY(-1px);
+    }
+    .g-bridge-live-pill[hidden] {
+      display: none !important;
     }
     .g-pill-sep { opacity: 0.45; }
     .g-live-dot {
@@ -1254,6 +1302,31 @@ const appVersion = desktopPkg.version;
       letter-spacing: 0.12em;
       color: var(--r-accent);
     }
+    .g-method-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .g-method-spec {
+      margin-top: auto;
+      padding-top: 12px;
+      border-top: 1px solid var(--r-line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-family: var(--r-mono);
+      font-size: 11px;
+    }
+    .g-method-spec code {
+      color: var(--r-muted);
+    }
+    .g-method-spec a {
+      color: var(--r-accent);
+      font-weight: 800;
+      text-decoration: none;
+    }
     .g-media-cta {
       display: flex;
       flex-wrap: wrap;
@@ -1415,6 +1488,35 @@ const appVersion = desktopPkg.version;
         requestAnimationFrame(step);
       }
       requestAnimationFrame(step);
+
+      // Local Rust Bridge Live Detection on Home Hero (127.0.0.1:38421)
+      const bridgeBadge = document.getElementById('heroLocalBridgeBadge');
+      const bridgeTxt = document.getElementById('heroLocalBridgeText');
+      if (bridgeBadge && bridgeTxt) {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 450);
+        fetch('http://127.0.0.1:38421/ping', { method: 'GET', signal: ctrl.signal })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((info) => {
+            clearTimeout(timer);
+            if (info && info.status === 'ready') {
+              bridgeBadge.hidden = false;
+              bridgeTxt.textContent = info.inTrack
+                ? `MMT Sync v${info.version} · iRacing en Pista`
+                : `MMT Sync v${info.version} Activo · Lanzar HUD`;
+              bridgeBadge.addEventListener('click', () => {
+                fetch('http://127.0.0.1:38421/command', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ action: 'launch-overlay' }),
+                })
+                  .then(() => { bridgeTxt.textContent = '✓ HUD 60Hz Lanzado en iRacing'; })
+                  .catch(() => {});
+              });
+            }
+          })
+          .catch(() => { clearTimeout(timer); });
+      }
     })();
   </script>
 

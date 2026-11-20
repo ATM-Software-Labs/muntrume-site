@@ -62,10 +62,13 @@
         </div>
 
         <nav id="appNav" class="flex items-center gap-1 bg-[#090b0f] p-0.5 rounded-lg border border-white/[0.08]" aria-label="Secciones">
-          <button type="button" data-nav="overlays" class="mmt-chip px-3 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Overlays</button>
-          <button type="button" data-nav="library" class="mmt-chip px-3 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Setups &amp; Sync</button>
-          <button type="button" data-nav="analysis" class="mmt-chip px-3 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Telemetría</button>
-          <button type="button" data-nav="settings" class="mmt-chip px-3 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Ajustes</button>
+          <button type="button" data-nav="overlays" class="mmt-chip px-2.5 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Overlays</button>
+          <button type="button" data-nav="library" class="mmt-chip px-2.5 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Setups &amp; Sync</button>
+          <button type="button" data-nav="week" class="mmt-chip px-2.5 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Semana S4</button>
+          <button type="button" data-nav="analysis" class="mmt-chip px-2.5 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Telemetría</button>
+          <button type="button" data-nav="strategy" class="mmt-chip px-2.5 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Estrategia</button>
+          <button type="button" data-nav="hardware" class="mmt-chip px-2.5 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Hardware</button>
+          <button type="button" data-nav="settings" class="mmt-chip px-2.5 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Ajustes</button>
         </nav>
 
         <div class="flex items-center gap-1.5 shrink-0 font-mono text-[11px]">
@@ -108,40 +111,111 @@
       <p id="notice" role="status" aria-live="polite" hidden class="mx-5 mt-4 rounded-xl border border-r-line bg-r-surface px-4 py-3 text-sm"></p>
 
       <main class="flex-1 min-h-0 w-full flex flex-col overflow-hidden p-2.5">
-        <section id="viewLogin" class="mmt-in flex-1 w-full flex items-center justify-center p-6">
-          <div class="w-full max-w-[540px]">
-          <div class="flex items-center gap-3.5 mb-6 pb-4 border-b border-r-line/60">
-            <img src="./favicon.svg" width="44" height="44" alt="Muntrume Motorsport" class="h-11 w-11 rounded-xl shadow-md border border-r-line bg-r-surface" />
-            <div>
-              <div class="mmt-display text-2xl leading-tight">Muntrume Motorsport</div>
-              <div class="font-mono text-[10px] uppercase tracking-widest text-r-accent font-bold">MMT Sync Desktop Client</div>
-            </div>
-          </div>
-          <p class="mmt-kicker">Acceso de piloto</p>
-          <h1 class="mmt-display text-5xl mt-3">Vincular este ordenador</h1>
-          <p class="mt-4 text-r-muted leading-relaxed max-w-prose">El token se guarda de forma segura en el Administrador de credenciales de Windows. No se escribe en un archivo de texto plano.</p>
+        <section id="viewLogin" class="mmt-in flex-1 w-full flex items-center justify-center p-4 overflow-y-auto">
+          <div class="w-full max-w-5xl mmt-hero-bento p-6 sm:p-8">
+            <div class="grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-6 items-center">
+              <div>
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-5 pb-4 border-b border-r-line/60">
+                  <div class="flex items-center gap-3.5">
+                    <img src="./favicon.svg" width="44" height="44" alt="Muntrume Motorsport" class="h-11 w-11 rounded-xl shadow-md border border-r-line bg-r-surface" />
+                    <div>
+                      <div class="mmt-display text-2xl leading-tight text-white">Muntrume Motorsport</div>
+                      <div class="font-mono text-[10px] uppercase tracking-widest text-r-accent font-bold">MMT Sync v0.6.5 · Native Rust Engine</div>
+                    </div>
+                  </div>
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-r-accent/15 border border-r-accent/40 font-mono text-[10px] font-bold uppercase tracking-wider text-r-accent">
+                    <span class="mmt-pulse-dot" aria-hidden="true"></span>
+                    <span>60 HZ · &lt; 15 MB RAM</span>
+                  </span>
+                </div>
 
-          <div class="mt-4 p-4 rounded-xl border border-r-line bg-r-surface text-xs text-r-muted leading-relaxed">
-            <div class="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-r-accent font-semibold mb-1">
-              <span class="inline-block w-2 h-2 rounded-full bg-r-accent"></span>
-              Software oficial y seguro · Muntrume Motorsport
+                <p class="mmt-kicker">Acceso de piloto &amp; Centro de mando</p>
+                <h1 class="mmt-display text-4xl sm:text-5xl mt-2 text-white">Vincular este ordenador</h1>
+                <p class="mt-3 text-xs sm:text-sm text-r-muted leading-relaxed">El token se guarda cifrado en el Administrador de credenciales de Windows. No se escribe en ningún archivo de texto plano.</p>
+
+                <div class="mt-4 p-3.5 rounded-xl border border-r-line bg-r-surface/80 text-xs text-r-muted leading-relaxed">
+                  <div class="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-r-accent font-semibold mb-1">
+                    <span class="inline-block w-2 h-2 rounded-full bg-r-accent"></span>
+                    Software oficial y seguro · SDK Solo Lectura
+                  </div>
+                  Conexión directa con iRacing mediante memoria compartida (<span class="font-mono text-r-text">FILE_MAP_READ</span>) y sincronización SHA-256 en <span class="font-mono text-r-text">Documents\iRacing\setups\coche\MMT</span>.
+                </div>
+
+                <div id="loginStart" class="mt-6 flex flex-wrap items-center gap-3">
+                  <button type="button" id="linkBtn" class="mmt-btn h-11 px-6 rounded-xl bg-r-accent text-r-ink font-display font-extrabold tracking-wider uppercase text-sm shadow-lg shadow-r-accent/20 cursor-pointer">Vincular con muntru.me</button>
+                  <button type="button" data-nav="overlays" class="mmt-btn-ghost h-11 px-4 rounded-xl border border-r-line bg-r-bg/70 hover:border-r-accent text-white font-display font-extrabold tracking-wider uppercase text-xs cursor-pointer">Usar Overlays y Telemetría sin vincular →</button>
+                </div>
+
+                <div id="loginPending" hidden class="mt-6 rounded-2xl border border-r-accent/40 bg-r-surface p-5">
+                  <div class="flex items-center justify-between gap-2">
+                    <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-r-muted">Código de vinculación OAuth</p>
+                    <span class="px-2 py-0.5 rounded bg-r-accent/15 text-r-accent font-mono text-[10px] font-bold">SHA-256 VERIFIED</span>
+                  </div>
+                  <p id="userCode" class="mmt-display text-5xl sm:text-6xl mt-2 text-r-accent">MMT-0000</p>
+                  <p class="mt-3 text-xs sm:text-sm text-r-muted leading-relaxed">Abre muntru.me, entra con tu cuenta de piloto y pulsa «Autorizar este dispositivo».</p>
+                  <p id="pollStatus" class="mt-2 font-mono text-xs text-r-text">Esperando autorización…</p>
+                  <div class="mt-4 flex flex-wrap gap-2.5">
+                    <button type="button" id="openBrowser" class="mmt-btn h-10 px-4 rounded-xl bg-r-accent text-r-ink font-display font-extrabold tracking-wider uppercase text-xs cursor-pointer">Abrir muntru.me</button>
+                    <button type="button" id="cancelLink" class="mmt-btn-ghost h-10 px-4 rounded-xl border border-r-line font-display font-extrabold tracking-wider uppercase text-xs cursor-pointer">Cancelar</button>
+                  </div>
+                  <button type="button" id="mockApprove" hidden class="mt-3 font-mono text-[11px] uppercase tracking-wider text-r-muted underline cursor-pointer">Simular autorización (solo demostración)</button>
+                </div>
+              </div>
+
+              <!-- Google Hardware Launch Bento Showcase inside Welcome Screen -->
+              <div class="grid grid-cols-2 gap-2.5">
+                <div class="col-span-2 mmt-bento-tile p-3.5 flex flex-col gap-2.5">
+                  <div class="flex items-center justify-between text-[10px] font-mono">
+                    <span class="text-r-accent font-bold flex items-center gap-1.5">
+                      <span class="mmt-pulse-dot"></span>
+                      IRSDK SHARED MEMORY · 60 FPS
+                    </span>
+                    <span class="text-r-muted">0.0% GPU · CLICK-THROUGH</span>
+                  </div>
+                  <canvas id="loginTelemetryCanvas" data-mmt-live-trace width="340" height="56" class="w-full h-[56px] rounded-lg bg-black/70 border border-white/[0.07] block"></canvas>
+                  <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-white/[0.07] font-mono text-[10px]">
+                    <span class="text-r-muted">ESTÁNDAR MMT: <code class="text-r-accent font-bold">MMT_F296_SPA_END_V2.sto</code></span>
+                    <span class="text-white/75">42.654+ Setups</span>
+                  </div>
+                </div>
+
+                <button type="button" data-nav="overlays" class="mmt-bento-tile p-3 text-left cursor-pointer group">
+                  <div class="flex items-center justify-between font-mono text-[10px] text-r-accent font-bold">
+                    <span>01 · HUD STUDIO</span>
+                    <span class="group-hover:translate-x-0.5 transition-transform">→</span>
+                  </div>
+                  <div class="font-display font-extrabold text-base text-white uppercase mt-1">Overlays 60 Hz</div>
+                  <p class="font-mono text-[10px] text-r-muted mt-0.5">Standings, Relative, Radar 360°, Mapa Catmull-Rom y Pedales</p>
+                </button>
+
+                <button type="button" data-nav="analysis" class="mmt-bento-tile p-3 text-left cursor-pointer group">
+                  <div class="flex items-center justify-between font-mono text-[10px] text-sky-400 font-bold">
+                    <span>02 · TELEMETRÍA .IBT</span>
+                    <span class="group-hover:translate-x-0.5 transition-transform">→</span>
+                  </div>
+                  <div class="font-display font-extrabold text-base text-white uppercase mt-1">Analizador Local</div>
+                  <p class="font-mono text-[10px] text-r-muted mt-0.5">Comparador metro a metro, rake aerodinámico y temperaturas</p>
+                </button>
+
+                <button type="button" data-nav="strategy" class="mmt-bento-tile p-3 text-left cursor-pointer group">
+                  <div class="flex items-center justify-between font-mono text-[10px] text-amber-400 font-bold">
+                    <span>03 · RACE ENGINEER</span>
+                    <span class="group-hover:translate-x-0.5 transition-transform">→</span>
+                  </div>
+                  <div class="font-display font-extrabold text-base text-white uppercase mt-1">Estrategia &amp; Fuel</div>
+                  <p class="font-mono text-[10px] text-r-muted mt-0.5">Cálculo de stints, ventanas de parada y auto-repostaje iRSDK</p>
+                </button>
+
+                <button type="button" data-nav="hardware" class="mmt-bento-tile p-3 text-left cursor-pointer group">
+                  <div class="flex items-center justify-between font-mono text-[10px] text-purple-400 font-bold">
+                    <span>04 · HARDWARE &amp; FFB</span>
+                    <span class="group-hover:translate-x-0.5 transition-transform">→</span>
+                  </div>
+                  <div class="font-display font-extrabold text-base text-white uppercase mt-1">Diagnóstico PC</div>
+                  <p class="font-mono text-[10px] text-r-muted mt-0.5">Detección DirectInput, célula de carga y XAudio2 48 kHz</p>
+                </button>
+              </div>
             </div>
-            Esta herramienta está creada exclusivamente para los pilotos de Muntrume. No contiene virus ni software espía. Solo lee la memoria del SDK de iRacing para la telemetría en directo y sincroniza los reglajes oficiales dentro de tu carpeta <span class="font-mono text-r-text">iRacing\setups\coche\MMT by Muntrume</span>.
-          </div>
-          <div id="loginStart" class="mt-8">
-            <button type="button" id="linkBtn" class="mmt-btn h-12 px-6 rounded-xl bg-r-accent text-r-ink font-display font-extrabold tracking-wider uppercase">Vincular con muntru.me</button>
-          </div>
-          <div id="loginPending" hidden class="mt-8 rounded-2xl border border-r-line bg-r-surface p-6">
-            <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-r-muted">Código de vinculación</p>
-            <p id="userCode" class="mmt-display text-6xl mt-2 text-r-accent">MMT-0000</p>
-            <p class="mt-4 text-sm text-r-muted leading-relaxed">Abre muntru.me, entra con tu cuenta de piloto y pulsa «Autorizar este dispositivo».</p>
-            <p id="pollStatus" class="mt-3 font-mono text-xs text-r-text">Esperando autorización…</p>
-            <div class="mt-5 flex flex-wrap gap-3">
-              <button type="button" id="openBrowser" class="mmt-btn h-11 px-4 rounded-xl bg-r-accent text-r-ink font-display font-extrabold tracking-wider uppercase text-sm">Abrir muntru.me</button>
-              <button type="button" id="cancelLink" class="mmt-btn-ghost h-11 px-4 rounded-xl border border-r-line font-display font-extrabold tracking-wider uppercase text-sm">Cancelar</button>
-            </div>
-            <button type="button" id="mockApprove" hidden class="mt-4 font-mono text-[11px] uppercase tracking-wider text-r-muted underline">Simular autorización (solo demostración)</button>
-          </div>
           </div>
         </section>
 
@@ -209,7 +283,7 @@
                           <span class="px-1.5 py-0.5 rounded bg-r-bg border border-r-line/70">iRacing en espera</span>
                         </span>
                       </div>
-                      <canvas id="appHeroTelemetryCanvas" width="280" height="44" class="w-full h-[44px] rounded bg-black/60 border border-white/[0.06] block"></canvas>
+                      <canvas id="appHeroTelemetryCanvas" data-mmt-live-trace width="280" height="44" class="w-full h-[44px] rounded bg-black/60 border border-white/[0.06] block"></canvas>
                     </div>
                     <div class="text-right font-mono shrink-0 pl-2 border-l border-white/10">
                       <span class="block text-[9px] text-r-muted uppercase">ESTÁNDAR MMT</span>
@@ -2151,17 +2225,16 @@
           card.style.setProperty("--my", (ev.clientY - r.top) + "px");
         }, { passive: true });
 
-        // Live 60 FPS Telemetry Trace inside Command Center Hero
-        const canvas = document.getElementById("appHeroTelemetryCanvas");
-        if (!canvas || !canvas.getContext) return;
-        const ctx = canvas.getContext("2d");
+        // Live 60 FPS Telemetry Trace inside Command Center & Welcome Hero
+        const canvases = Array.from(document.querySelectorAll("canvas[data-mmt-live-trace]"));
+        if (!canvases.length) return;
         const N = 64;
         const thr = new Array(N).fill(0.82);
         const brk = new Array(N).fill(0.0);
         let t = 0;
 
         function tick() {
-          if (!document.hidden && !canvas.closest("[hidden]")) {
+          if (!document.hidden) {
             t += 0.05;
             const wave = Math.sin(t * 0.72) * Math.cos(t * 0.36);
             const braking = wave < -0.4;
@@ -2170,29 +2243,34 @@
             thr.push(tv); thr.shift();
             brk.push(bv); brk.shift();
 
-            const w = canvas.width;
-            const h = canvas.height;
-            ctx.clearRect(0, 0, w, h);
+            for (const canvas of canvases) {
+              if (canvas.closest("[hidden]")) continue;
+              const ctx = canvas.getContext && canvas.getContext("2d");
+              if (!ctx) continue;
+              const w = canvas.width;
+              const h = canvas.height;
+              ctx.clearRect(0, 0, w, h);
 
-            ctx.strokeStyle = "#00E699";
-            ctx.lineWidth = 1.8;
-            ctx.beginPath();
-            for (let i = 0; i < N; i++) {
-              const x = (i / (N - 1)) * w;
-              const y = h - 4 - thr[i] * (h - 10);
-              if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-            }
-            ctx.stroke();
+              ctx.strokeStyle = "#00E699";
+              ctx.lineWidth = 1.8;
+              ctx.beginPath();
+              for (let i = 0; i < N; i++) {
+                const x = (i / (N - 1)) * w;
+                const y = h - 4 - thr[i] * (h - 10);
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+              }
+              ctx.stroke();
 
-            ctx.strokeStyle = "#EF4444";
-            ctx.lineWidth = 1.6;
-            ctx.beginPath();
-            for (let i = 0; i < N; i++) {
-              const x = (i / (N - 1)) * w;
-              const y = h - 4 - brk[i] * (h - 10);
-              if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+              ctx.strokeStyle = "#EF4444";
+              ctx.lineWidth = 1.6;
+              ctx.beginPath();
+              for (let i = 0; i < N; i++) {
+                const x = (i / (N - 1)) * w;
+                const y = h - 4 - brk[i] * (h - 10);
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+              }
+              ctx.stroke();
             }
-            ctx.stroke();
           }
           requestAnimationFrame(tick);
         }

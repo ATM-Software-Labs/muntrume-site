@@ -100,7 +100,42 @@ const appSchema = {
       </p>
     </section>
 
-    <section class="app-card">
+    <!-- INTERACTIVE REMOTE COMMAND CENTER & RUST ENGINE SHOWCASE -->
+    <section class="app-card g-bento-card" data-g-reveal>
+      <div class="app-cmd-head">
+        <div>
+          <span class="g-chip-accent">Local Bridge · 127.0.0.1:38421</span>
+          <h2 style="margin-top:8px">Centro de Mando Remoto · MMT Sync v{appVersion}</h2>
+          <p class="app-sub">Controla la aplicación de escritorio en Rust directamente desde el navegador o lanza los módulos en iRacing con un clic.</p>
+        </div>
+        <span id="appBridgePill" class="g-chip-muted">Esperando conexión local…</span>
+      </div>
+
+      <div class="app-cmd-grid">
+        <button type="button" data-bridge-cmd="launch-overlay" class="app-cmd-tile">
+          <span class="app-cmd-kicker">01 · OVERLAYS 60 HZ</span>
+          <strong>Lanzar HUD en Pista</strong>
+          <small>Activa la ventana transparente Click-Through sobre iRacing</small>
+        </button>
+        <button type="button" data-bridge-cmd="edit-hud" class="app-cmd-tile">
+          <span class="app-cmd-kicker">02 · LAYOUT STUDIO</span>
+          <strong>Editar Posición HUD</strong>
+          <small>Desbloquea los 9 widgets para arrastrarlos con el ratón (F9)</small>
+        </button>
+        <button type="button" data-bridge-cmd="sync-week" class="app-cmd-tile">
+          <span class="app-cmd-kicker">03 · SHA-256 VAULT</span>
+          <strong>Sincronizar Semana S4</strong>
+          <small>Descarga los setups .sto Open nuevos o actualizados en 1 clic</small>
+        </button>
+        <button type="button" data-bridge-cmd="open-app" class="app-cmd-tile">
+          <span class="app-cmd-kicker">04 · DESKTOP CLIENT</span>
+          <strong>Abrir Ventana Nativa</strong>
+          <small>Restaura MMT Sync desde la bandeja del sistema de Windows</small>
+        </button>
+      </div>
+    </section>
+
+    <section class="app-card" data-g-reveal>
       <h2 data-i18n="app.safe.title">Revisado por el equipo</h2>
       <p class="app-sub" data-i18n="app.safe.sub">Sin publicidad · sin rastreadores de terceros · no modifica tus archivos privados</p>
       <div class="app-split">
@@ -203,10 +238,17 @@ const appSchema = {
 
       async function initBridgeCheck() {
         const isStandalone = window.matchMedia && window.matchMedia("(display-mode: standalone)").matches;
+        const pill = document.getElementById("appBridgePill");
         const info = await pingLocalBridge();
         if (info && btn) {
           bridgeReady = true;
           btn.textContent = "LANZAR OVERLAYS EN PISTA";
+          if (pill) {
+            pill.className = "g-chip-accent";
+            pill.textContent = info.inTrack
+              ? `● MMT Sync v${info.version} · En pista`
+              : `● MMT Sync v${info.version} · Conectado`;
+          }
           showStatus(
             info.inTrack
               ? "MMT Sync v" + info.version + " conectado · iRacing en pista"
@@ -217,6 +259,39 @@ const appSchema = {
           showStatus("Modo App Independiente activo · Abre MMT Sync para conectar overlays en pista", false);
         }
       }
+
+      async function sendBridgeAction(action) {
+        const info = bridgeReady ? { status: "ready" } : await pingLocalBridge();
+        if (info && info.status === "ready") {
+          bridgeReady = true;
+          try {
+            const ctrl = new AbortController();
+            const t = setTimeout(() => ctrl.abort(), 800);
+            const res = await fetch(BRIDGE_URL + "/command", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ action }),
+              signal: ctrl.signal,
+            });
+            clearTimeout(t);
+            if (res.ok) {
+              const data = await res.json().catch(() => ({}));
+              showStatus(data.message || "Comando ejecutado en MMT Sync", true);
+              return true;
+            }
+          } catch (_e) {}
+        }
+        showStatus("Despertando MMT Sync…", true);
+        window.location.href = "mmtsync://" + action;
+        return false;
+      }
+
+      document.querySelectorAll("[data-bridge-cmd]").forEach((tile) => {
+        tile.addEventListener("click", () => {
+          const action = tile.getAttribute("data-bridge-cmd") || "launch-overlay";
+          sendBridgeAction(action);
+        });
+      });
 
       if (modalClose && modal) {
         modalClose.addEventListener("click", () => {
@@ -316,6 +391,17 @@ const appSchema = {
   .app-split article, .app-steps li { padding: 14px; border: 1px solid var(--r-line); border-radius: 12px; background: var(--r-bg); display: grid; gap: 6px; }
   .app-steps { list-style: none; margin: 8px 0 0; padding: 0; }
   .app-steps span { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 8px; background: color-mix(in srgb, var(--r-accent) 14%, transparent); color: var(--r-accent); font: 800 13px/1 var(--r-mono); }
+  .app-cmd-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .app-cmd-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-top: 6px; }
+  .app-cmd-tile {
+    text-align: left; padding: 14px; border-radius: 14px; border: 1px solid var(--r-line);
+    background: var(--r-bg); color: var(--r-text); display: grid; gap: 5px; cursor: pointer;
+    transition: border-color .2s ease, transform .2s ease, background .2s ease;
+  }
+  .app-cmd-tile:hover { border-color: var(--r-accent); transform: translateY(-2px); background: color-mix(in srgb, var(--r-accent) 6%, var(--r-bg)); }
+  .app-cmd-kicker { font: 800 10px/1.1 var(--r-mono); letter-spacing: .08em; color: var(--r-accent); text-transform: uppercase; }
+  .app-cmd-tile strong { font: 800 16px/1.2 var(--r-display); text-transform: uppercase; letter-spacing: .02em; }
+  .app-cmd-tile small { font-size: 12px; color: var(--r-muted); line-height: 1.4; }
   @media (min-width: 800px) {
     .app-split, .app-grid, .app-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .app-split { grid-template-columns: 1fr 1fr; }

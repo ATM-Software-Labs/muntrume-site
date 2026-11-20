@@ -3,8 +3,13 @@
 use std::fs;
 use std::path::Path;
 #[cfg(windows)]
+use std::os::windows::process::CommandExt;
+#[cfg(windows)]
 use std::process::Command;
 use serde::{Deserialize, Serialize};
+
+#[cfg(windows)]
+const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -38,6 +43,7 @@ pub fn detect() -> HardwareReport {
         ] {
             if let Ok(output) = Command::new("reg")
                 .args(["query", hive, "/s", "/f", "OEMName"])
+                .creation_flags(CREATE_NO_WINDOW)
                 .output()
             {
                 let text = String::from_utf8_lossy(&output.stdout);
@@ -61,6 +67,7 @@ pub fn detect() -> HardwareReport {
                 "-Command",
                 "Get-PnpDevice -PresentOnly | Where-Object Class -in @('HIDClass','Media','USB') | Select-Object -ExpandProperty FriendlyName",
             ])
+            .creation_flags(CREATE_NO_WINDOW)
             .output()
         {
             let text = String::from_utf8_lossy(&output.stdout);

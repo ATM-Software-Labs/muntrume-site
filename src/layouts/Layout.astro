@@ -4,6 +4,7 @@ import Footer from '../components/Footer.astro';
 import MuntrumeChatbot from '../components/MuntrumeChatbot.astro';
 import { PILOTOS } from '../lib/pilotos';
 import { formatoAprox, localeDeIdioma } from '../lib/formato-licencia.js';
+import desktopPkg from '../../desktop/package.json';
 import '../styles/tokens.css';
 
 interface Props {
@@ -268,7 +269,7 @@ const defaultSchema = {
       "name": "MMT Sync",
       "applicationCategory": "GameApplication",
       "operatingSystem": "Windows 10, Windows 11",
-      "softwareVersion": "0.2.18",
+      "softwareVersion": desktopPkg.version,
       "url": `${siteOrigin}/app/`,
       "downloadUrl": "https://github.com/ATM-Software-Labs/muntrume-site/releases/latest",
       "description": "Aplicación de escritorio nativa (Tauri/Rust) para Windows que sincroniza automáticamente más de 42.600 setups .sto de Muntrume Motorsport con iRacing, con overlay de telemetría y actualizador automático.",

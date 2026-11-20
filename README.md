@@ -9,18 +9,23 @@
 
 <p align="center">
   <a href="https://muntru.me"><b>muntru.me</b></a> ·
-  <a href="https://muntru.me/garage/">Garage</a> ·
+  <a href="https://muntru.me/app/">MMT Sync</a> ·
+  <a href="https://muntru.me/overlay/">HUD 60Hz</a> ·
+  <a href="https://muntru.me/garage/">Garage (.sto)</a> ·
+  <a href="https://muntru.me/ai/">Muntrume AI</a> ·
+  <a href="https://muntru.me/calendar/">Calendario S4</a> ·
   <a href="https://muntru.me/pilotos/">Pilotos</a> ·
-  <a href="https://muntru.me/noticias/">Noticias</a> ·
   <a href="https://muntru.me/paddock/">Paddock</a>
 </p>
 
 <p align="center">
   <a href="https://github.com/ATM-Software-Labs/muntrume-site/actions/workflows/deploy.yml"><img alt="Deploy" src="https://github.com/ATM-Software-Labs/muntrume-site/actions/workflows/deploy.yml/badge.svg" /></a>
+  <a href="https://github.com/ATM-Software-Labs/muntrume-site/actions/workflows/desktop-ci.yml"><img alt="Desktop CI" src="https://github.com/ATM-Software-Labs/muntrume-site/actions/workflows/desktop-ci.yml/badge.svg" /></a>
   <img alt="Astro" src="https://img.shields.io/badge/Astro-7-BC52EE?logo=astro&logoColor=white" />
+  <img alt="Tauri" src="https://img.shields.io/badge/Tauri-2.0-24C8DB?logo=tauri&logoColor=white" />
+  <img alt="Rust" src="https://img.shields.io/badge/Rust-Native%2060Hz-000000?logo=rust&logoColor=white" />
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white" />
   <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss&logoColor=white" />
-  <img alt="GitHub Pages" src="https://img.shields.io/badge/GitHub%20Pages-222222?logo=githubpages&logoColor=white" />
   <a href="LICENSE"><img alt="Licencia" src="https://img.shields.io/badge/licencia-MIT-10B981" /></a>
 </p>
 
@@ -38,36 +43,41 @@ Tomadas en [muntru.me](https://muntru.me).
 |:-:|:-:|
 | <img src="docs/screenshots/garage-dark.webp" width="420" alt="Garage de setups en tema oscuro. La descarga pide cuenta de piloto." /> | <img src="docs/screenshots/garage-light.webp" width="420" alt="Garage de setups en tema claro. La descarga pide cuenta de piloto." /> |
 
-## Funciones
+## Ecosistema Muntrume Motorsport
 
-- **Pilotos y fichas:** la plantilla pública está en `/pilotos/` y `/drivers/`. Cada piloto tiene su ficha.
-- **Garage y setups:** `/garage/` lista los archivos `.sto` por coche, circuito y temporada. La descarga pide cuenta de piloto.
-- **Paddock:** `/paddock/` reúne los enlaces del equipo, incluida la radio y la telemetría.
-- **Noticias:** la sala de prensa vive en `/noticias/`. `/news/` redirige ahí.
-- **Tema claro y oscuro:** la preferencia se guarda en el navegador. Si no hay ninguna, se usa `prefers-color-scheme`.
-- **SEO:** título y descripción por página, URL canónica, `hreflang` (inglés, español, catalán y francés), Open Graph y un sitemap que genera el build.
+- **Landing & Experiencia Visual:** Diseño estilo lanzamiento de hardware con pod de telemetría iRSDK en vivo a 60 FPS, Bento Grid interactivo, decodificador oficial de nomenclatura `.sto` (`MMT_COCHE_CIRCUITO_SESION_V#.sto`), motor de animaciones `motion.js` (`IntersectionObserver` con física spring + spotlight radial) y soporte completo para temas claro/oscuro y dispositivos móviles.
+- **MMT Sync Desktop (`desktop/`):** Aplicación nativa para Windows en **Tauri v2 + Rust** (`< 15 MB RAM`, `0% GPU idle`) que sincroniza por SHA-256 más de **42.654 setups `.sto`** en `Documents\iRacing\setups\`, analiza telemetría `.ibt` en local, calcula estrategia de combustible/stints, detecta hardware DirectInput/XAudio2 y renderiza **9 módulos de Overlays transparentes a 60 Hz** (`FILE_MAP_READ`).
+- **Garage & Setup Builder (`/garage/`, `/setup-builder/`):** Catálogo completo de archivos `.sto` por coche, circuito y temporada con diagnóstico interactivo de subviraje/sobreviraje.
+- **Simulador Web de Overlays (`/overlay/`):** Previsualización interactiva en el navegador de los 9 widgets del HUD (Standings, Relative, Mapa Catmull-Rom, Pedales, Radar 360°, Fuel Calculator, Neumáticos, Delta y Spotter).
+- **Muntrume AI (`/ai/`):** Copiloto de ingeniería en pista con base de conocimiento verificada (`0 ms`) e inferencia streaming (Groq LPU / Ollama).
+- **Calendario 2026 S4 & Store Planner (`/calendar/`):** Planificador de las 12 semanas oficiales de iRacing con calculadora de Participation Credits y descuentos por volumen.
+- **Pilotos, Noticias, Paddock y Wallpapers 4K (`/pilotos/`, `/noticias/`, `/paddock/`, `/wallpapers/`):** Plantilla oficial con telemetría de Garage 61, sala de prensa y packs de fondos 16:9 / 9:16 con sincronizador multi-monitor `0 ms`.
 
 ## Stack
 
 | Capa | Tecnología |
 |---|---|
-| Frontend | Astro 7 · TypeScript · Tailwind CSS 4 |
-| Sitio | HTML estático en `_site/` |
-| Hosting | **GitHub Pages** · [muntru.me](https://muntru.me) (`public/CNAME`) |
-| CI | GitHub Actions · `.github/workflows/deploy.yml` |
+| Web Frontend | Astro 7 · TypeScript · Tailwind CSS 4 · Canvas 60 FPS |
+| Desktop App (`desktop/`) | Tauri v2 · Rust (`mmt-sync`, `mmt-sync-core`) · Windows iRSDK Shared Memory |
+| Sitio estático | HTML estático en `_site/` con compresión Brotli/Gzip y CSP estricta |
+| Hosting & API | **GitHub Pages** (`muntru.me`) + Cloudflare Workers API |
+| CI / CD | GitHub Actions (`deploy.yml`, `desktop-ci.yml`, `desktop-release.yml`) |
 
-## Estructura
+## Estructura del Repositorio
 
 ```
-src/pages/            inicio, pilotos, garage, paddock, noticias
-src/components/       fichas, navegación y piezas del garage
-src/layouts/          documento, SEO y tema
-src/lib/              pilotos y catálogo del garage
-src/styles/           tokens y Tailwind
-public/               imágenes, i18n, catálogo público y CNAME
-scripts/              sitemap, minificado y compresión del build
-docs/                 banner y capturas de este README
-.github/workflows/    deploy a GitHub Pages
+src/pages/            landing, app, overlay, garage, setup-builder, ai, calendar, pilotos, paddock, wallpapers, noticias
+src/components/       navegación, fichas de piloto, chatbot IA, calculadora de combustible y modales
+src/layouts/          documento base, JSON-LD SEO, temas claro/oscuro y barra de progreso
+src/lib/              catálogo del garage, pilotos, telemetría y utilidades
+public/assets/        CSS (racing.css, mobile.css), motor de animaciones (motion.js), i18n y catálogo
+desktop/              cliente nativo MMT Sync para Windows (Tauri v2 + Rust + TypeScript)
+  ├── core/           crate Rust mmt-sync-core (hashing SHA-256, rutas seguras, parser .ibt, combustible)
+  ├── src-tauri/      binario Rust Tauri v2 (iRSDK 60Hz, puente local 127.0.0.1:38421, bandeja, Credential Manager)
+  └── src/            interfaz del Centro de Mando MMT, HUD Studio y analizador de sesiones
+scripts/              generación de sitemap, sincronización de calendarios y optimización del build
+docs/                 documentación técnica, contratos de API y capturas
+.github/workflows/    CI/CD de la web estática y compilación de instaladores Windows (.exe / .msi)
 ```
 
 ## Desarrollo local

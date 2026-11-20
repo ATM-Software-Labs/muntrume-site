@@ -731,6 +731,7 @@ fn sanitize_deeplink_action(raw: &str) -> Option<&'static str> {
         "launch-overlay" => Some("launch-overlay"),
         "edit-hud" => Some("edit-hud"),
         "sync-week" => Some("sync-week"),
+        "open-app" => Some("open-app"),
         _ => None,
     }
 }
@@ -774,6 +775,9 @@ fn handle_external_command(app: &AppHandle, action: &str) -> bool {
                 }
                 let _ = app_clone.emit("mmt-refresh", ());
             });
+        }
+        "open-app" => {
+            show_main(&app_clone);
         }
         _ => return false,
     }
@@ -843,11 +847,18 @@ fn spawn_local_bridge(app: AppHandle) {
                 }
 
                 if first_line.starts_with("GET /ping") {
-                    let in_track = live::current_status() == "on_track";
+                    let ir_status = live::current_status();
+                    let in_track = ir_status == "on_track";
+                    let overlay_active = app
+                        .get_webview_window("overlay")
+                        .and_then(|w| w.is_visible().ok())
+                        .unwrap_or(false);
                     let body = format!(
-                        "{{\"status\":\"ready\",\"version\":\"{}\",\"inTrack\":{}}}",
+                        "{{\"status\":\"ready\",\"version\":\"{}\",\"inTrack\":{},\"iracingStatus\":\"{}\",\"overlayActive\":{}}}",
                         env!("CARGO_PKG_VERSION"),
-                        in_track
+                        in_track,
+                        ir_status,
+                        overlay_active
                     );
                     let resp = format!(
                         "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\n{cors_headers}\r\n{body}",
@@ -863,12 +874,19 @@ fn spawn_local_bridge(app: AppHandle) {
                         "edit-hud"
                     } else if body_part.contains("sync-week") {
                         "sync-week"
+                    } else if body_part.contains("open-app") {
+                        "open-app"
                     } else {
                         "launch-overlay"
                     };
                     let ok = handle_external_command(&app, action);
                     let resp_body = if ok {
-                        "{\"ok\":true,\"message\":\"Overlays activados en MMT Sync\"}"
+                        match action {
+                            "edit-hud" => "{\"ok\":true,\"message\":\"Modo edición de HUD activado en MMT Sync\"}",
+                            "sync-week" => "{\"ok\":true,\"message\":\"Sincronización de setups iniciada en MMT Sync\"}",
+                            "open-app" => "{\"ok\":true,\"message\":\"Ventana de MMT Sync abierta\"}",
+                            _ => "{\"ok\":true,\"message\":\"Overlays activados en MMT Sync\"}",
+                        }
                     } else {
                         "{\"ok\":false,\"message\":\"Comando ignorado\"}"
                     };
