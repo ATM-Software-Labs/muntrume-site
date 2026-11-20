@@ -70,6 +70,8 @@
       if (!raw) return false;
       var user = JSON.parse(raw);
       if (!user || !user.email || user.role === "guest") return false;
+      var email = String(user.email || "").trim().toLowerCase();
+      if (email === "atrumin16@gmail.com" || email === "alberto@muntru.me") return true;
       var role = String(user.role || "").toLowerCase();
       if (role === "admin" || role === "team_driver" || role === "driver" || role === "pilot" || role === "academy" || role === "engineer") return true;
       return user.has_setup_access === true || Number(user.has_setup_access) === 1;
@@ -188,6 +190,7 @@
         " data-id=\"" + esc(row.id) + "\"" +
         " data-file=\"" + esc(row.file) + "\"" +
         " data-car=\"" + esc(row.carLabel) + "\"" +
+        " data-car-id=\"" + esc(row.car) + "\"" +
         " data-track=\"" + esc(row.track) + "\"" +
         " data-season=\"" + esc(row.season) + "\"" +
         " data-week=\"" + esc(row.week) + "\"" +

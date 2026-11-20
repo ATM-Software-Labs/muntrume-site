@@ -10,6 +10,8 @@ interface VaultUser {
 
 function hasSetupAccess(session: { user?: VaultUser | null } | null): boolean {
   if (!session?.user) return false;
+  const email = String(session.user.email || "").trim().toLowerCase();
+  if (email === "atrumin16@gmail.com" || email === "alberto@muntru.me") return true;
   const role = String(session.user.role || "").toLowerCase();
   if (
     role === "admin" ||
@@ -163,9 +165,12 @@ async function paintButtons(root: ParentNode): Promise<void> {
   });
 }
 
-async function downloadFile(id: string, file: string, car = ""): Promise<"ok" | "retry" | "forbidden"> {
+async function downloadFile(id: string, file: string, car = ""): Promise<"ok" | "retry" | "forbidden" | "expired"> {
   const session = await getSession();
-  if (!session?.token || !hasSetupAccess(session)) {
+  if (!session?.token) {
+    return "expired";
+  }
+  if (!hasSetupAccess(session)) {
     return "forbidden";
   }
 
@@ -186,7 +191,12 @@ async function downloadFile(id: string, file: string, car = ""): Promise<"ok" | 
         car: car || undefined,
       }),
     });
-    if (res.status === 403 || res.status === 401) {
+    if (res.status === 401) {
+      return "expired";
+    }
+    if (res.status === 403) {
+      const errData = (await res.json().catch(() => ({}))) as { code?: string };
+      if (errData.code === "session_expired") return "expired";
       return "forbidden";
     }
     if (res.ok) {
@@ -314,6 +324,7 @@ export function initSessionGate(root: ParentNode = document): void {
           id: preview.dataset.id || "",
           file: preview.dataset.file || "",
           car: preview.dataset.car || "",
+          carId: preview.dataset.carId || "",
           track: preview.dataset.track || "",
           season: preview.dataset.season || "",
           week: preview.dataset.week || "",
@@ -333,6 +344,18 @@ export function initSessionGate(root: ParentNode = document): void {
       if (result === "ok") {
         setAuthState(btn, "in", "Descargado");
         setTimeout(() => setAuthState(btn, "in", "Descargar"), 3000);
+      } else if (result === "expired") {
+        setAuthState(btn, "in", "Iniciar sesión");
+        const opener = (window as unknown as { openAuthModal?: (tab?: string) => void }).openAuthModal;
+        if (typeof opener === "function") {
+          opener("login");
+          const errEl = document.getElementById("loginError");
+          if (errEl) {
+            errEl.textContent = "Tu sesión ha caducado o se actualizó tu cuenta. Inicia sesión de nuevo para descargar.";
+            errEl.classList.remove("hidden");
+            errEl.removeAttribute("hidden");
+          }
+        }
       } else if (result === "forbidden") {
         btn.hidden = true;
         const badge = ensureLockedBadge(btn);
@@ -355,6 +378,7 @@ interface GaragePreviewInfo {
   id: string;
   file: string;
   car: string;
+  carId?: string;
   track: string;
   season: string;
   week: string;
@@ -380,7 +404,7 @@ function openGaragePreviewModal(info: GaragePreviewInfo): void {
   if (dlBtn) {
     dlBtn.dataset.id = info.id;
     dlBtn.dataset.file = info.file;
-    dlBtn.dataset.car = info.car;
+    dlBtn.dataset.car = info.carId || info.car;
     dlBtn.dataset.busy = "0";
     void getSession().then((session) => {
       if (hasSetupAccess(session)) {
