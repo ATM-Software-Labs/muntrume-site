@@ -161,33 +161,99 @@
             <button type="button" data-nav="settings" class="mmt-chip px-3 py-2 rounded-lg font-mono text-[11px] uppercase tracking-wider text-r-muted">Ajustes</button>
           </div>
 
-          <section id="viewLibrary" aria-labelledby="libraryTitle" class="w-full h-full min-h-0 flex flex-col overflow-hidden text-xs gap-2">
-            <div class="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <p class="mmt-kicker">Setups de competición</p>
-                <h1 id="libraryTitle" class="mmt-display text-4xl mt-2">Biblioteca</h1>
-              </div>
-              <div class="flex items-center gap-3">
-                <button type="button" data-nav="upload" class="mmt-btn-ghost h-11 px-4 rounded-xl border border-r-line font-display font-extrabold uppercase tracking-wider text-sm">Subir setup</button>
-                <button type="button" id="syncBtn" class="mmt-btn h-11 px-5 rounded-xl bg-r-accent text-r-ink font-display font-extrabold uppercase tracking-wider text-sm flex items-center gap-2 shadow-lg shadow-r-accent/10">
-                  <span id="syncIcon">⟳</span>
-                  <span id="syncText">Sincronizar ahora</span>
-                </button>
-              </div>
-            </div>
-            
-            <p id="syncStatus" class="mt-2 font-mono text-xs text-r-muted">Todavía no se ha sincronizado.</p>
+          <section id="viewLibrary" aria-labelledby="libraryTitle" class="w-full h-full min-h-0 flex flex-col overflow-y-auto text-xs gap-2.5 pr-1">
+            <!-- GOOGLE-STYLE PRODUCT SHOWCASE HERO & BENTO COMMAND CENTER -->
+            <div class="mmt-hero-bento p-4 shrink-0">
+              <div class="grid grid-cols-1 lg:grid-cols-[1.25fr_1fr] gap-4 items-center">
+                <div class="space-y-2.5">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-r-accent/15 border border-r-accent/40 font-mono text-[10px] font-bold uppercase tracking-wider text-r-accent">
+                      <span class="mmt-pulse-dot" aria-hidden="true"></span>
+                      <span>MMT SYNC ENGINE · 60 HZ NATIVE</span>
+                    </span>
+                    <span class="px-2 py-0.5 rounded-full bg-white/[0.05] border border-white/10 font-mono text-[10px] text-r-muted">
+                      Tauri v2 · Rust + iRSDK Shared Memory
+                    </span>
+                  </div>
 
-            <!-- Minimalist Pro Command & Live Telemetry Strip -->
-            <div class="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-r-line bg-r-surface/80 px-3 py-2">
-              <div class="flex flex-wrap items-center gap-1.5">
-                <button type="button" data-nav="strategy" class="h-7 px-2.5 rounded-lg border border-r-line bg-r-bg/80 hover:border-r-accent/60 font-mono text-[11px] text-r-text hover:text-r-accent transition">Estrategia &amp; Fuel</button>
-                <button type="button" data-nav="analysis" class="h-7 px-2.5 rounded-lg border border-r-line bg-r-bg/80 hover:border-r-accent/60 font-mono text-[11px] text-r-text hover:text-r-accent transition">Telemetría &amp; Aero</button>
-                <button type="button" data-nav="hardware" class="h-7 px-2.5 rounded-lg border border-r-line bg-r-bg/80 hover:border-r-accent/60 font-mono text-[11px] text-r-text hover:text-r-accent transition">FFB &amp; Pedales</button>
-                <button type="button" data-nav="overlays" class="h-7 px-2.5 rounded-lg border border-r-line bg-r-bg/80 hover:border-r-accent/60 font-mono text-[11px] text-r-text hover:text-r-accent transition">Overlays Pro</button>
-              </div>
-              <div id="proLiveMetricsStrip" class="flex items-center gap-2 font-mono text-[11px] tabular-nums text-r-muted">
-                <span class="px-2 py-0.5 rounded bg-r-bg border border-r-line/70">iRacing en espera</span>
+                  <div class="flex flex-wrap items-end justify-between gap-3">
+                    <div>
+                      <p class="mmt-kicker">Setups de competición &amp; Telemetría</p>
+                      <h1 id="libraryTitle" class="mmt-display text-3xl sm:text-4xl mt-1 text-white">Centro de Mando MMT</h1>
+                    </div>
+                  </div>
+
+                  <p id="syncStatus" class="font-mono text-[11px] text-r-muted">Todavía no se ha sincronizado.</p>
+
+                  <div class="flex flex-wrap items-center gap-2 pt-0.5">
+                    <button type="button" id="syncBtn" class="mmt-btn h-10 px-4 rounded-xl bg-r-accent text-r-ink font-display font-extrabold uppercase tracking-wider text-xs flex items-center gap-2 shadow-lg shadow-r-accent/20 cursor-pointer">
+                      <span id="syncIcon">⟳</span>
+                      <span id="syncText">Sincronizar Setups (.sto)</span>
+                    </button>
+                    <button type="button" onclick="document.getElementById('btnToggleFloatingOverlay')?.click()" class="mmt-btn-ghost h-10 px-3.5 rounded-xl border border-r-accent/45 bg-r-accent/10 hover:bg-r-accent/20 text-r-accent font-display font-extrabold uppercase tracking-wider text-xs cursor-pointer">
+                      ⚡ Lanzar HUD 60Hz
+                    </button>
+                    <button type="button" data-nav="upload" class="mmt-btn-ghost h-10 px-3.5 rounded-xl border border-r-line bg-r-bg/70 hover:border-r-accent font-display font-extrabold uppercase tracking-wider text-xs cursor-pointer">
+                      + Subir .sto
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Live 60 FPS Telemetry & Quick Bento Modules inside Desktop App -->
+                <div class="grid grid-cols-2 gap-2">
+                  <div class="col-span-2 mmt-bento-tile p-2.5 flex items-center justify-between gap-3">
+                    <div class="min-w-0 flex-1">
+                      <div class="flex items-center justify-between text-[10px] font-mono text-r-muted mb-1">
+                        <span class="text-r-accent font-bold">TELEMETRÍA EN DIRECTO</span>
+                        <span id="proLiveMetricsStrip" class="tabular-nums text-[10px] text-r-muted">
+                          <span class="px-1.5 py-0.5 rounded bg-r-bg border border-r-line/70">iRacing en espera</span>
+                        </span>
+                      </div>
+                      <canvas id="appHeroTelemetryCanvas" width="280" height="44" class="w-full h-[44px] rounded bg-black/60 border border-white/[0.06] block"></canvas>
+                    </div>
+                    <div class="text-right font-mono shrink-0 pl-2 border-l border-white/10">
+                      <span class="block text-[9px] text-r-muted uppercase">ESTÁNDAR MMT</span>
+                      <code class="text-[10.5px] font-bold text-r-accent block mt-0.5">MMT_F296_SPA_END</code>
+                      <span class="text-[9.5px] text-white/70">Q · R · END · W · SAFE</span>
+                    </div>
+                  </div>
+
+                  <button type="button" data-nav="overlays" class="mmt-bento-tile p-2.5 text-left cursor-pointer group">
+                    <div class="flex items-center justify-between font-mono text-[10px] text-r-accent font-bold">
+                      <span>01 · HUD STUDIO</span>
+                      <span class="group-hover:translate-x-0.5 transition-transform">→</span>
+                    </div>
+                    <div class="font-display font-extrabold text-sm text-white uppercase mt-0.5">9 Módulos 60 FPS</div>
+                    <div class="font-mono text-[10px] text-r-muted truncate">Standings, Relative, Radar, Fuel</div>
+                  </button>
+
+                  <button type="button" data-nav="analysis" class="mmt-bento-tile p-2.5 text-left cursor-pointer group">
+                    <div class="flex items-center justify-between font-mono text-[10px] text-sky-400 font-bold">
+                      <span>02 · TELEMETRÍA .IBT</span>
+                      <span class="group-hover:translate-x-0.5 transition-transform">→</span>
+                    </div>
+                    <div class="font-display font-extrabold text-sm text-white uppercase mt-0.5">Análisis &amp; Aero</div>
+                    <div class="font-mono text-[10px] text-r-muted truncate">Comparador metro a metro</div>
+                  </button>
+
+                  <button type="button" data-nav="strategy" class="mmt-bento-tile p-2.5 text-left cursor-pointer group">
+                    <div class="flex items-center justify-between font-mono text-[10px] text-amber-400 font-bold">
+                      <span>03 · RACE ENGINEER</span>
+                      <span class="group-hover:translate-x-0.5 transition-transform">→</span>
+                    </div>
+                    <div class="font-display font-extrabold text-sm text-white uppercase mt-0.5">Estrategia &amp; Fuel</div>
+                    <div class="font-mono text-[10px] text-r-muted truncate">Stints, Pit Window &amp; Burn Rate</div>
+                  </button>
+
+                  <button type="button" data-nav="hardware" class="mmt-bento-tile p-2.5 text-left cursor-pointer group">
+                    <div class="flex items-center justify-between font-mono text-[10px] text-purple-400 font-bold">
+                      <span>04 · HARDWARE &amp; FFB</span>
+                      <span class="group-hover:translate-x-0.5 transition-transform">→</span>
+                    </div>
+                    <div class="font-display font-extrabold text-sm text-white uppercase mt-0.5">Volante &amp; Pedales</div>
+                    <div class="font-mono text-[10px] text-r-muted truncate">Célula de carga &amp; XAudio2 48kHz</div>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -2070,6 +2136,69 @@
       </div>
     </div>
 
+    <script>
+      (function () {
+        if (window.location.search.includes("overlay=1")) return;
+        const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (reduce) return;
+
+        // Interactive Spotlight on Desktop Hero Bento
+        document.addEventListener("pointermove", (ev) => {
+          const card = ev.target && ev.target.closest ? ev.target.closest(".mmt-hero-bento") : null;
+          if (!card) return;
+          const r = card.getBoundingClientRect();
+          card.style.setProperty("--mx", (ev.clientX - r.left) + "px");
+          card.style.setProperty("--my", (ev.clientY - r.top) + "px");
+        }, { passive: true });
+
+        // Live 60 FPS Telemetry Trace inside Command Center Hero
+        const canvas = document.getElementById("appHeroTelemetryCanvas");
+        if (!canvas || !canvas.getContext) return;
+        const ctx = canvas.getContext("2d");
+        const N = 64;
+        const thr = new Array(N).fill(0.82);
+        const brk = new Array(N).fill(0.0);
+        let t = 0;
+
+        function tick() {
+          if (!document.hidden && !canvas.closest("[hidden]")) {
+            t += 0.05;
+            const wave = Math.sin(t * 0.72) * Math.cos(t * 0.36);
+            const braking = wave < -0.4;
+            const tv = braking ? Math.max(0.05, 0.25 + (wave + 0.4) * 0.85) : Math.min(1, 0.74 + Math.sin(t * 0.9) * 0.25);
+            const bv = braking ? Math.min(0.95, Math.abs(wave + 0.35) * 1.4) : 0;
+            thr.push(tv); thr.shift();
+            brk.push(bv); brk.shift();
+
+            const w = canvas.width;
+            const h = canvas.height;
+            ctx.clearRect(0, 0, w, h);
+
+            ctx.strokeStyle = "#00E699";
+            ctx.lineWidth = 1.8;
+            ctx.beginPath();
+            for (let i = 0; i < N; i++) {
+              const x = (i / (N - 1)) * w;
+              const y = h - 4 - thr[i] * (h - 10);
+              if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            ctx.strokeStyle = "#EF4444";
+            ctx.lineWidth = 1.6;
+            ctx.beginPath();
+            for (let i = 0; i < N; i++) {
+              const x = (i / (N - 1)) * w;
+              const y = h - 4 - brk[i] * (h - 10);
+              if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+          }
+          requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+      })();
+    </script>
     <script type="module" src="./src/main.ts"></script>
   </body>
 </html>

@@ -5,6 +5,8 @@ import TeamBand from '../components/TeamBand.astro';
 import { PILOTOS, LICENCE_UPDATED_LABEL } from '../lib/pilotos';
 import catalog from '../../public/assets/data/catalog_index.json';
 import schedule from '../../desktop/src/season_schedule_2026_s4.json';
+import desktopPkg from '../../desktop/package.json';
+import { OFFICIAL_BRAND_PATHS } from '../../desktop/src/cars/brand-icons';
 
 // "Esta semana": Top 5 series Open con mayor participación semanal en iRacing 2026 S4 (incluyendo GT Sprint GT3; las Fixed usan el setup oficial de iRacing).
 const GT3_CARS = 'acuransxevo22gt3,amvantageevogt3,audir8gt3,audir8lmsevo2gt3,bmwm4gt3,chevyvettez06rgt3,ferrari296gt3,fordmustanggt3,lamborghinievogt3,mclaren720sgt3,mercedesamgevogt3,mercedesamggt3,porsche992rgt3';
@@ -12,12 +14,27 @@ const IMSA_CARS = `acuraarx06gtp,amvalkyriegtp,bmwlmdh,cadillacvseriesrgtp,dalla
 const PCC_CARS = 'mx5 cup,toyotagr86,bmwm2csr,bmwm2g87,renaultcliocup';
 
 const FEATURED = [
-  { prefix: 'IMSA iRacing Series by GO Fast', schedule: '45 min · Cada 2h (:45 UTC)', img: '/assets/img/series/imsa.jpg', cars: IMSA_CARS },
-  { prefix: 'GT Sprint Series by Simucube', schedule: '40 min · Cada 2h (:00 UTC)', img: '/assets/img/series/gt-sprint.jpg', cars: GT3_CARS },
-  { prefix: 'Production Car Challenge by Sim-Lab', schedule: '25 min · Cada 1h (:30 UTC)', img: '/assets/img/series/pcc.jpg', cars: PCC_CARS },
-  { prefix: 'iRacing Porsche Cup by CONSPIT', schedule: '19 vueltas · Cada 2h (:45 UTC)', img: '/assets/img/series/porsche-cup.jpg', car: 'porsche992cup' },
-  { prefix: 'Formula C - Super Formula Lights by RSS', schedule: '30 min · Cada 2h (:15 UTC)', img: '/assets/img/series/sfl.jpg', car: 'superformulalights324' },
+  { prefix: 'IMSA iRacing Series by GO Fast', schedule: '45 min · Cada 2h (:45 UTC)', img: '/assets/img/series/imsa.jpg', cars: IMSA_CARS, badge: 'MULTICLASS · GTP/LMP2/GT3' },
+  { prefix: 'GT Sprint Series by Simucube', schedule: '40 min · Cada 2h (:00 UTC)', img: '/assets/img/series/gt-sprint.jpg', cars: GT3_CARS, badge: 'GT3 OPEN · SPRINT' },
+  { prefix: 'Production Car Challenge by Sim-Lab', schedule: '25 min · Cada 1h (:30 UTC)', img: '/assets/img/series/pcc.jpg', cars: PCC_CARS, badge: 'MULTICLASS · TOURING' },
+  { prefix: 'iRacing Porsche Cup by CONSPIT', schedule: '19 vueltas · Cada 2h (:45 UTC)', img: '/assets/img/series/porsche-cup.jpg', car: 'porsche992cup', badge: '992 GT3 CUP · OPEN' },
+  { prefix: 'Formula C - Super Formula Lights by RSS', schedule: '30 min · Cada 2h (:15 UTC)', img: '/assets/img/series/sfl.jpg', car: 'superformulalights324', badge: 'SFL 324 · OPEN' },
 ];
+
+const SHOWCASE_BRANDS = [
+  { name: 'Porsche', code: 'P911 / P963', color: '#D5001C', path: OFFICIAL_BRAND_PATHS['logo-porsche'] },
+  { name: 'Ferrari', code: 'F296 / F499P', color: '#DC0000', path: OFFICIAL_BRAND_PATHS['logo-ferrari'] },
+  { name: 'BMW M', code: 'M4 / BMWH', color: '#1C69D4', path: OFFICIAL_BRAND_PATHS['logo-bmw'] },
+  { name: 'Ford', code: 'FORD GT3', color: '#38BDF8', path: OFFICIAL_BRAND_PATHS['logo-ford'] },
+  { name: 'McLaren', code: 'MACLA 720S', color: '#FF8700', path: OFFICIAL_BRAND_PATHS['logo-mclaren'] },
+  { name: 'Mercedes-AMG', code: 'AMG GT3', color: '#00D2BE', path: OFFICIAL_BRAND_PATHS['logo-mercedes'] },
+  { name: 'Aston Martin', code: 'AMR / VALK', color: '#2DD4BF', path: OFFICIAL_BRAND_PATHS['logo-aston'] },
+  { name: 'Cadillac', code: 'CADDY GTP', color: '#D4AF37', path: OFFICIAL_BRAND_PATHS['logo-cadillac'] },
+  { name: 'Corvette', code: 'VETTE Z06', color: '#EAB308', path: OFFICIAL_BRAND_PATHS['logo-chevy'] },
+  { name: 'Audi Sport', code: 'R8 EVO II', color: '#F43F5E', path: OFFICIAL_BRAND_PATHS['logo-audi'] },
+  { name: 'Lamborghini', code: 'HUR EVO2', color: '#DDB321', path: OFFICIAL_BRAND_PATHS['logo-lambo'] },
+  { name: 'Acura', code: 'ACURA GTP', color: '#E11D48', path: OFFICIAL_BRAND_PATHS['logo-acura'] },
+].filter((b) => Boolean(b.path));
 
 function trackQuery(rawTrack: string): string {
   const t = rawTrack || '';
@@ -60,6 +77,7 @@ const weekly = FEATURED
     return {
       name: s.name.replace(/\s*-?\s*2026 Season.*$/i, '').trim(),
       schedule: item.schedule,
+      badge: item.badge,
       img: item.img,
       car: item.car ?? '',
       cars: item.cars ?? '',
@@ -80,37 +98,309 @@ const figs = [
   { n: catalog.cars.length, k: "home.fig.cars", l: "Coches" },
   { n: catalog.circuits.length, k: "home.fig.tracks", l: "Circuitos" },
 ];
+const appVersion = desktopPkg.version;
 ---
 
 <Layout title={pageTitle} description={pageDescription} keywords={pageKeywords} canonical="https://muntru.me/" ogImage="https://muntru.me/assets/img/og-home.jpg" ogImageAlt="Muntrume Motorsport (MMT)" translated i18nTitle="home.meta.title" i18nDescription="home.meta.desc">
   <link slot="head" rel="preload" as="image" type="image/avif" fetchpriority="high" imagesrcset="/assets/img/hero-bg-640.avif 640w, /assets/img/hero-bg-960.avif 960w, /assets/img/hero-bg-1280.avif 1280w" imagesizes="100vw" />
 
-  <section class="r-hero" aria-labelledby="heroTitle">
+  <!-- ===================================================================== -->
+  <!-- 1. GOOGLE-STYLE CINEMATIC HERO + LIVE TELEMETRY COCKPIT STAGE          -->
+  <!-- ===================================================================== -->
+  <section class="r-hero g-hero-stage" aria-labelledby="heroTitle">
     <picture>
       <source type="image/avif" srcset="/assets/img/hero-bg-640.avif 640w, /assets/img/hero-bg-960.avif 960w, /assets/img/hero-bg-1280.avif 1280w" sizes="100vw" />
       <source type="image/webp" srcset="/assets/img/hero-bg-640.webp 640w, /assets/img/hero-bg-960.webp 960w, /assets/img/hero-bg-1280.webp 1280w, /assets/img/hero-bg.webp 1920w" sizes="100vw" />
-      <img src="/assets/img/hero-bg-1280.webp" width="1920" height="1080" alt="Muntrume Motorsport en pista" fetchpriority="high" decoding="async" />
+      <img src="/assets/img/hero-bg-1280.webp" width="1920" height="1080" alt="Muntrume Motorsport en pista" fetchpriority="high" decoding="async" class="g-hero-bg" />
     </picture>
-    <div class="r-wrap">
-      <p class="r-kicker">MMT · Sant Andreu, Barcelona</p>
-      <h1 id="heroTitle" class="r-h1">Muntrume Motorsport</h1>
-      <p class="r-lead" data-i18n="home.lead">Sim racing con criterio de ingeniería. Equipo oficial de iRacing en resistencia y sprint: telemetría, setups .sto y trabajo de equipo en Sports Car, GT3 y GT4.</p>
-      <div class="r-hero__cta">
-        <a href="/app/" class="r-btn r-btn--primary">Descargar MMT Sync</a>
-        <a href="/garage/" class="r-btn r-btn--ghost" data-i18n="home.cta.vault">Entrar al Garage</a>
-        <a href="/login" class="r-btn r-btn--ghost">Acceso piloto</a>
+
+    <!-- Animated ambient aurora & telemetry laser lines -->
+    <div class="g-hero-aurora" aria-hidden="true"></div>
+
+    <div class="r-wrap g-hero-grid">
+      <div class="g-hero-copy">
+        <div class="g-hero-pills">
+          <span class="g-live-pill">
+            <span class="g-live-dot" aria-hidden="true"></span>
+            <span>MMT · Sant Andreu, Barcelona</span>
+          </span>
+          <a href="/app/" class="g-version-pill">
+            <span>MMT Sync v{appVersion}</span>
+            <span class="g-pill-sep">·</span>
+            <span>60 Hz Native Rust</span>
+            <span aria-hidden="true">→</span>
+          </a>
+        </div>
+
+        <p class="r-kicker">MMT · Sant Andreu, Barcelona</p>
+        <h1 id="heroTitle" class="r-h1 g-hero-title">Muntrume Motorsport</h1>
+        <p class="r-lead" data-i18n="home.lead">Sim racing con criterio de ingeniería. Equipo oficial de iRacing en resistencia y sprint: telemetría, setups .sto y trabajo de equipo en Sports Car, GT3 y GT4.</p>
+
+        <div class="r-hero__cta">
+          <a href="/app/" class="r-btn r-btn--primary g-btn-glow">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+            <span>Descargar MMT Sync</span>
+          </a>
+          <a href="/garage/" class="r-btn r-btn--ghost" data-i18n="home.cta.vault">Entrar al Garage</a>
+          <a href="/overlay/" class="r-btn r-btn--ghost">Simulador HUD 60Hz</a>
+          <a href="/login" class="r-btn r-btn--ghost">Acceso piloto</a>
+        </div>
+
+        <div class="r-hero__meta">
+          {figs.map(f => (
+            <div>
+              <strong data-i18n-num={f.n} data-g-count={f.n}>{es(f.n)}</strong>
+              <span data-i18n={f.k}>{f.l}</span>
+            </div>
+          ))}
+        </div>
       </div>
-      <div class="r-hero__meta">
-        {figs.map(f => (
-          <div>
-            <strong data-i18n-num={f.n}>{es(f.n)}</strong>
-            <span data-i18n={f.k}>{f.l}</span>
+
+      <!-- Interactive Google-Hardware-Style Telemetry Pod -->
+      <aside class="g-telemetry-pod" aria-label="Telemetría en vivo Muntrume Motorsport">
+        <div class="g-pod-head">
+          <div class="g-pod-status">
+            <span class="g-live-dot" aria-hidden="true"></span>
+            <span class="g-pod-tag">IRSDK SHARED MEMORY · 60 HZ</span>
           </div>
-        ))}
+          <span class="g-pod-badge" id="heroPodTrack">SPA-FRANCORCHAMPS · GT3</span>
+        </div>
+
+        <div class="g-pod-delta">
+          <div class="g-pod-delta__top">
+            <span>SESSION BEST Δ</span>
+            <strong id="heroPodDelta">-0.24s</strong>
+          </div>
+          <div class="g-pod-delta__bar">
+            <span class="g-pod-delta__mid"></span>
+            <div class="g-pod-delta__fill" id="heroPodDeltaFill" style="left:22%;width:28%"></div>
+          </div>
+        </div>
+
+        <div class="g-pod-cockpit">
+          <div class="g-pod-trace-wrap">
+            <canvas id="heroTelemetryCanvas" width="320" height="88" aria-label="Curva de acelerador y freno en tiempo real"></canvas>
+            <div class="g-pod-trace-legend">
+              <span><i style="background:#00E699"></i>THR</span>
+              <span><i style="background:#EF4444"></i>BRK</span>
+              <span><i style="background:#38BDF8"></i>RPM</span>
+            </div>
+          </div>
+
+          <div class="g-pod-pedals" aria-hidden="true">
+            <div class="g-pod-pedal">
+              <div class="g-pod-pedal__track"><div id="heroBrkBar" class="g-pod-pedal__fill g-pod-pedal__fill--brk" style="height:8%"></div></div>
+              <span>B</span>
+            </div>
+            <div class="g-pod-pedal">
+              <div class="g-pod-pedal__track"><div id="heroThrBar" class="g-pod-pedal__fill g-pod-pedal__fill--thr" style="height:94%"></div></div>
+              <span>T</span>
+            </div>
+          </div>
+
+          <div class="g-pod-gear">
+            <span class="g-pod-gear__lbl">GEAR</span>
+            <strong class="g-pod-gear__val" id="heroGearVal">5</strong>
+            <span class="g-pod-speed"><b id="heroSpeedVal">246</b> km/h</span>
+          </div>
+        </div>
+
+        <div class="g-pod-setup-row">
+          <div class="g-pod-setup-code">
+            <span class="g-pod-setup-kicker">SETUP ACTIVO (.STO)</span>
+            <code id="heroSetupCode">MMT_F296_SPA_END_V2.sto</code>
+          </div>
+          <div class="g-pod-setup-pills">
+            <span>2.84 L/lap</span>
+            <span>84°C FL</span>
+            <a href="/overlay/">Probar HUD →</a>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- 1B. INFINITE MANUFACTURER & TELEMETRY TICKER                          -->
+  <!-- ===================================================================== -->
+  <div class="g-brand-ribbon" aria-label="Fabricantes soportados en el Garage y HUD">
+    <div class="g-brand-ribbon__track">
+      {[...SHOWCASE_BRANDS, ...SHOWCASE_BRANDS].map((b, idx) => (
+        <a href="/garage/" class="g-brand-chip" tabindex={idx >= SHOWCASE_BRANDS.length ? -1 : undefined} aria-hidden={idx >= SHOWCASE_BRANDS.length ? "true" : undefined}>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill={b.color} aria-hidden="true">
+            <path fill-rule="evenodd" clip-rule="evenodd" d={b.path} />
+          </svg>
+          <strong>{b.name}</strong>
+          <span>{b.code}</span>
+        </a>
+      ))}
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 2. GOOGLE HARDWARE BENTO SHOWCASE (ECOSISTEMA MUNTRUME)               -->
+  <!-- ===================================================================== -->
+  <section class="r-section r-section--alt" aria-labelledby="ecosystemTitle">
+    <div class="r-wrap">
+      <div class="r-head">
+        <div>
+          <p class="r-kicker">Ingeniería Open Source · Ecosistema MMT</p>
+          <h2 id="ecosystemTitle" class="r-h2">Tecnología de competición diseñada al milímetro</h2>
+          <p class="r-lead">Herramientas nativas creadas en Sant Andreu (Barcelona) para reducir la carga cognitiva en pista: cero suscripciones, cero telemetría espía y máximo rendimiento.</p>
+        </div>
+        <a href="/app/" class="r-link">Explorar suite MMT Sync →</a>
+      </div>
+
+      <div class="g-bento-grid">
+        <!-- BENTO 1: MMT SYNC & OVERLAYS 60 FPS (Wide Span 7) -->
+        <article class="g-bento-card g-bento-card--wide" data-g-reveal>
+          <div class="g-bento-card__top">
+            <div class="g-bento-badges">
+              <span class="g-chip-accent">Tauri v2 + Rust</span>
+              <span class="g-chip-muted">&lt; 15 MB RAM · 60 FPS</span>
+              <span class="g-chip-muted">MIT Open Source</span>
+            </div>
+            <a href="/overlay/" class="g-bento-arrow" aria-label="Abrir simulador de Overlays">↗</a>
+          </div>
+
+          <div class="g-bento-split">
+            <div class="g-bento-copy">
+              <h3 class="r-h3">MMT Sync &amp; Overlays 60 Hz</h3>
+              <p>Superposiciones transparentes <code>click-through</code> conectadas directamente a la memoria compartida del SDK de iRacing (<code>FILE_MAP_READ</code>). Standings multiclase, Relative, Track Map Catmull-Rom, calculadora de Stints, temperaturas de neumáticos y Radar 360°.</p>
+              <div class="g-bento-actions">
+                <a href="/overlay/" class="r-btn r-btn--primary r-btn--sm">Simulador interactivo</a>
+                <a href="/app/" class="r-btn r-btn--ghost r-btn--sm">Descargar v{appVersion}</a>
+              </div>
+            </div>
+
+            <!-- Interactive Live Track Map & Radar Mini-Widget -->
+            <div class="g-bento-visual" aria-hidden="true">
+              <div class="g-mini-hud">
+                <div class="g-mini-hud__bar">
+                  <span>STANDINGS · SOF 3.4K</span>
+                  <span class="g-mini-hud__fps">0% CPU IDLE</span>
+                </div>
+                <div class="g-mini-hud__rows">
+                  <div class="g-mini-row is-leader">
+                    <span class="pos">P1</span>
+                    <span class="cls gtp">GTP</span>
+                    <span class="drv">#16 A. Trujillo</span>
+                    <span class="ir">A 4.42</span>
+                    <span class="gap">LEADER</span>
+                  </div>
+                  <div class="g-mini-row">
+                    <span class="pos">P2</span>
+                    <span class="cls gt3">GT3</span>
+                    <span class="drv">#1 M. Berbis</span>
+                    <span class="ir">A 3.85</span>
+                    <span class="gap">+0.42s</span>
+                  </div>
+                  <div class="g-mini-row">
+                    <span class="pos">P3</span>
+                    <span class="cls gt3">GT3</span>
+                    <span class="drv">#22 E. Chongkan</span>
+                    <span class="ir">A 3.61</span>
+                    <span class="gap">+1.18s</span>
+                  </div>
+                </div>
+                <div class="g-mini-hud__foot">
+                  <span>PIT WINDOW: <b>L16–L18</b></span>
+                  <span>TO ADD: <b>+9.4 L</b></span>
+                  <span class="ok">CLEAR 360°</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- BENTO 2: SETUP VAULT .STO + NOMENCLATURA OFICIAL (Span 5) -->
+        <article class="g-bento-card g-bento-card--tall" data-g-reveal>
+          <div class="g-bento-card__top">
+            <div class="g-bento-badges">
+              <span class="g-chip-accent">{es(catalog.total_setups)} archivos .sto</span>
+              <span class="g-chip-muted">{catalog.cars.length} coches</span>
+            </div>
+            <a href="/garage/" class="g-bento-arrow" aria-label="Abrir Setup Vault">↗</a>
+          </div>
+
+          <h3 class="r-h3">Setup Vault &amp; Estándar MMT</h3>
+          <p>Catálogo sincronizado en un clic en <code>Documents\iRacing\setups\MMT</code> con nomenclatura oficial de ingeniería para identificar cada reglaje al instante en el box:</p>
+
+          <!-- Interactive Setup Filename Decoder (from Google Drive MMT_Nomenclatura_Setups) -->
+          <div class="g-sto-decoder" aria-label="Estructura oficial de archivos de setup MMT">
+            <div class="g-sto-code">
+              <span class="t-team" title="Escudería Muntrume Motorsport">MMT</span>_<span class="t-car" title="Modelo (4-5 letras: F296, P911, M4, P963)">F296</span>_<span class="t-trk" title="Circuito oficial">SPA</span>_<span class="t-ses" title="Sesión: Q, Q2, R, END, W, SAFE">END</span>_<span class="t-ver" title="Iteración verificada">V2</span><small>.sto</small>
+            </div>
+            <div class="g-sto-pills">
+              <span><b>Q / Q2</b> Qualy 1–2 vueltas</span>
+              <span><b>R</b> Race Sprint</span>
+              <span><b>END</b> Resistencia</span>
+              <span><b>W</b> Wet / Lluvia</span>
+              <span><b>SAFE</b> Alta estabilidad</span>
+            </div>
+          </div>
+
+          <div class="g-bento-actions" style="margin-top:auto">
+            <a href="/garage/" class="r-btn r-btn--primary r-btn--sm">Abrir el Garage</a>
+            <a href="/setup-builder/" class="r-btn r-btn--ghost r-btn--sm">Setup Builder</a>
+          </div>
+        </article>
+
+        <!-- BENTO 3: MUNTRUME AI COPILOT (Span 4) -->
+        <article class="g-bento-card" data-g-reveal>
+          <div class="g-bento-card__top">
+            <div class="g-bento-badges">
+              <span class="g-chip-accent">0 ms KB + Streaming</span>
+              <span class="g-chip-muted">Groq LPU &amp; Ollama</span>
+            </div>
+            <a href="/ai/" class="g-bento-arrow" aria-label="Abrir Muntrume AI">↗</a>
+          </div>
+          <h3 class="r-h3">Muntrume AI · Copiloto de pista</h3>
+          <p>Base de conocimiento verificada sin alucinaciones y cálculo instantáneo de combustible, ventanas de parada, presiones y balance aerodinámico para stints de 45 min a 24 horas.</p>
+          <div class="g-ai-prompt-preview">
+            <code>"Calcula combustible y estrategia GT3 para 8h Indy"</code>
+            <a href="/ai/">Preguntar →</a>
+          </div>
+        </article>
+
+        <!-- BENTO 4: CALENDARIO 2026 S4 & ROI PLANNER (Span 4) -->
+        <article class="g-bento-card" data-g-reveal>
+          <div class="g-bento-card__top">
+            <div class="g-bento-badges">
+              <span class="g-chip-accent">{schedule.series.length} series oficiales</span>
+              <span class="g-chip-muted">{catalog.circuits.length} circuitos</span>
+            </div>
+            <a href="/calendar/" class="g-bento-arrow" aria-label="Abrir Calendario">↗</a>
+          </div>
+          <h3 class="r-h3">Calendario S4 &amp; Store Planner</h3>
+          <p>Planificador inteligente de las 12 semanas de temporada con matriz de Participation Credits (8/12 semanas), cálculo de descuentos por volumen e impuestos locales.</p>
+          <div class="g-bento-actions" style="margin-top:auto">
+            <a href="/calendar/" class="r-link">Planificar temporada 2026 S4 →</a>
+          </div>
+        </article>
+
+        <!-- BENTO 5: WALLPAPERS 4K & MULTI-MONITOR 0ms SYNC (Span 4) -->
+        <article class="g-bento-card" data-g-reveal>
+          <div class="g-bento-card__top">
+            <div class="g-bento-badges">
+              <span class="g-chip-accent">16:9 HD &amp; 9:16 4K</span>
+              <span class="g-chip-muted">0 ms Multi-Monitor</span>
+            </div>
+            <a href="/wallpapers/" class="g-bento-arrow" aria-label="Abrir Wallpapers">↗</a>
+          </div>
+          <h3 class="r-h3">Wallpapers &amp; Paddock Gallery</h3>
+          <p>Capturas reales en pista exportadas a <code>.JPG</code> nativo y sincronizador multi-monitor para Windows sin permisos de administrador (<code>user32.dll</code>) con 0 ms de desfase entre pantallas.</p>
+          <div class="g-bento-actions" style="margin-top:auto">
+            <a href="/wallpapers/" class="r-link">Descargar packs 4K →</a>
+          </div>
+        </article>
       </div>
     </div>
   </section>
 
+  <!-- ===================================================================== -->
+  <!-- 3. ESTA SEMANA EN IRACING (TOP 5 SERIES OPEN)                         -->
+  <!-- ===================================================================== -->
   <section class="r-section" aria-labelledby="weekTitle">
     <div class="r-wrap">
       <div class="r-head">
@@ -124,15 +414,19 @@ const figs = [
         {weekly.map((s) => {
           const w = s.weeks.find((x) => x[0] === buildWeek);
           return (
-            <a href={w?.[3] ?? '/garage/'} class="mmt-week-card">
+            <a href={w?.[3] ?? '/garage/'} class="mmt-week-card" data-g-reveal>
               <div class="mmt-week-card__media">
                 <img src={s.img} alt={s.name} loading="lazy" decoding="async" />
+                <span class="mmt-week-card__pill">{s.badge}</span>
               </div>
               <div class="mmt-week-card__body">
                 <span class="mmt-week-card__series">{s.name}</span>
                 <strong class="mmt-week-card__track" data-track>{w?.[1] ?? '—'}</strong>
                 <span class="mmt-week-card__config" data-config>{w?.[2] ?? ''}</span>
-                <span class="mmt-week-card__time">{s.schedule}</span>
+                <div class="mmt-week-card__foot">
+                  <span class="mmt-week-card__time">{s.schedule}</span>
+                  <span class="mmt-week-card__go">Setups →</span>
+                </div>
               </div>
             </a>
           );
@@ -141,33 +435,12 @@ const figs = [
       <div class="mmt-week-foot">
         <p class="r-meta">Top 5 series Open por participación semanal (incluyendo GT Sprint GT3). Las series Fixed (ej. GT3 Regional Tour) usan setup oficial de iRacing.</p>
         <div class="mmt-week-links">
-          <a href="/calendar/" class="r-link">Calendario completo (154 series) →</a>
+          <a href="/calendar/" class="r-link">Calendario completo ({schedule.series.length} series) →</a>
           <a href="https://www.iracing.com/series/" target="_blank" rel="noopener noreferrer" class="r-link">Series oficiales en iRacing.com ↗</a>
         </div>
       </div>
     </div>
   </section>
-
-  <style>
-    .mmt-week-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-    .mmt-week-card {
-      display: flex; flex-direction: column; overflow: hidden; border-radius: 12px;
-      border: 1px solid var(--r-line); border-top: 2px solid var(--r-accent, #00e5ff);
-      background: var(--r-surface, rgba(255,255,255,0.03)); color: var(--r-text); text-decoration: none;
-      transition: border-color .15s ease, transform .15s ease;
-    }
-    .mmt-week-card:hover { border-color: var(--r-line-2); transform: translateY(-2px); }
-    .mmt-week-card__media { aspect-ratio: 16 / 9; width: 100%; overflow: hidden; background: rgba(0, 0, 0, 0.25); }
-    .mmt-week-card__media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .25s ease; }
-    .mmt-week-card:hover .mmt-week-card__media img { transform: scale(1.03); }
-    .mmt-week-card__body { display: grid; gap: 6px; padding: 14px 16px 16px; flex: 1; }
-    .mmt-week-card__series { font: 600 11px/1.3 ui-monospace, monospace; text-transform: uppercase; letter-spacing: .06em; color: var(--r-muted); }
-    .mmt-week-card__track { font-size: 17px; line-height: 1.25; }
-    .mmt-week-card__config { font-size: 13px; color: var(--r-muted); }
-    .mmt-week-card__time { font: 600 11px/1.3 ui-monospace, monospace; color: var(--r-accent, #00e5ff); margin-top: auto; padding-top: 6px; }
-    .mmt-week-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; }
-    .mmt-week-links { display: flex; flex-wrap: wrap; gap: 16px; }
-  </style>
 
   <script is:inline>
     (() => {
@@ -191,7 +464,10 @@ const figs = [
     })();
   </script>
 
-  <section class="r-section" aria-labelledby="driversTitle">
+  <!-- ===================================================================== -->
+  <!-- 4. PLANTILLA OFICIAL DE PILOTOS 2026                                  -->
+  <!-- ===================================================================== -->
+  <section class="r-section r-section--alt" aria-labelledby="driversTitle">
     <div class="r-wrap max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
       <div class="r-head">
         <div>
@@ -210,7 +486,10 @@ const figs = [
     </div>
   </section>
 
-  <section class="r-section r-section--alt" aria-labelledby="calTitle">
+  <!-- ===================================================================== -->
+  <!-- 5. CALENDARIO OFICIAL IRACING 2026 S4                                 -->
+  <!-- ===================================================================== -->
+  <section class="r-section" aria-labelledby="calTitle">
     <div class="r-wrap">
       <div class="r-head">
         <div>
@@ -220,27 +499,23 @@ const figs = [
         <a href="/calendar/" class="r-link">Ver las {schedule.series.length} series →</a>
       </div>
       <ul class="r-list" id="calList" hidden></ul>
-      <div id="calEmpty" class="mmt-cal-banner">
+      <div id="calEmpty" class="mmt-cal-banner g-bento-card">
         <div>
           <strong>Temporada completa 2026 Season 4 · {schedule.series.length} series · 12 semanas</strong>
           <p class="r-meta">Consulta todas las categorías oficiales (Sports Car, Formula, Oval, Dirt Oval y Dirt Road), licencias, meteorología y acceso directo a los setups de cada circuito.</p>
         </div>
-        <a href="/calendar/" class="r-btn r-btn--primary">Abrir calendario completo →</a>
+        <div class="mmt-cal-banner__actions">
+          <a href="/calendar/" class="r-btn r-btn--primary">Abrir calendario completo →</a>
+          <a href="/calendar/special-events/" class="r-btn r-btn--ghost">Special Events 2026</a>
+        </div>
       </div>
     </div>
   </section>
 
-  <style>
-    .mmt-cal-banner {
-      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;
-      padding: 20px 22px; border-radius: 14px; border: 1px solid var(--r-line);
-      background: var(--r-surface, rgba(255,255,255,0.03));
-    }
-    .mmt-cal-banner strong { display: block; font-size: 16px; margin-bottom: 4px; color: var(--r-text); }
-    .mmt-cal-banner p { margin: 0; max-width: 62ch; }
-  </style>
-
-  <section class="r-section" aria-labelledby="aboutTitle">
+  <!-- ===================================================================== -->
+  <!-- 6. MÉTODO DE INGENIERÍA & TELEMETRÍA EN PISTA                         -->
+  <!-- ===================================================================== -->
+  <section class="r-section r-section--alt" aria-labelledby="aboutTitle">
     <div class="r-wrap">
       <div class="r-head">
         <div>
@@ -250,15 +525,18 @@ const figs = [
         </div>
       </div>
       <div class="r-cols">
-        <div class="r-value">
+        <div class="r-value g-method-card" data-g-reveal>
+          <span class="g-method-num">01 · SETUP ENGINEERING</span>
           <h3 class="r-h3" data-i18n="home.team.prep.title">Preparación</h3>
           <p><span data-i18n-num={catalog.total_setups}>{es(catalog.total_setups)}</span> <span data-i18n="home.team.prep.body">setups .sto, ordenados por coche, circuito y temporada, en el Garage del equipo y en el Setup Builder.</span></p>
         </div>
-        <div class="r-value">
+        <div class="r-value g-method-card" data-g-reveal>
+          <span class="g-method-num">02 · 60 HZ TELEMETRY</span>
           <h3 class="r-h3" data-i18n="home.team.tel.title">Telemetría</h3>
           <p data-i18n="home.team.tel.body">Telemetría de carretera ponderada por horas reales en pista, y licencias de iRacing, vía Garage 61.</p>
         </div>
-        <div class="r-value">
+        <div class="r-value g-method-card" data-g-reveal>
+          <span class="g-method-num">03 · ENDURANCE STRATEGY</span>
           <h3 class="r-h3" data-i18n="home.team.work.title">Trabajo de equipo</h3>
           <p data-i18n="home.team.work.body">Radio de carrera en Discord, planes compartidos de combustible y stint de neumáticos, y relevos coordinados en carreras de resistencia de 24 h.</p>
         </div>
@@ -266,21 +544,879 @@ const figs = [
     </div>
   </section>
 
-  <section class="r-section r-section--alt" aria-labelledby="pressTitle">
+  <!-- ===================================================================== -->
+  <!-- 7. SALA DE PRENSA Y COPILOTO IA                                       -->
+  <!-- ===================================================================== -->
+  <section class="r-section" aria-labelledby="pressTitle">
     <div class="r-wrap r-cols" style="align-items:end">
       <div style="display:grid;gap:16px">
         <p class="r-kicker" data-i18n="home.media.kicker">Medios</p>
         <h2 id="pressTitle" class="r-h2" data-i18n="home.media.title">Sala de prensa y copiloto</h2>
         <p class="r-lead" data-i18n="home.media.lead">Despachos de carrera, titulares de motor y el copiloto de ingeniería Muntrume AI (Groq LPU).</p>
       </div>
-      <div style="display:flex;flex-wrap:wrap;gap:12px">
+      <div class="g-media-cta">
         <a href="/noticias/" class="r-btn r-btn--primary" data-i18n="home.media.news">Sala de prensa</a>
-        <a href="/app/" class="r-btn" style="border-color:var(--r-line-2);color:var(--r-text)" data-i18n="home.media.app">MMT Sync</a>
-        <a href="/paddock/" class="r-btn" style="border-color:var(--r-line-2);color:var(--r-text)" data-i18n="home.media.paddock">Paddock</a>
-        <a href="/ai/" class="r-btn" style="border-color:var(--r-line-2);color:var(--r-text)" data-i18n="home.media.ai">Copiloto AI</a>
+        <a href="/app/" class="r-btn r-btn--ghost" data-i18n="home.media.app">MMT Sync</a>
+        <a href="/paddock/" class="r-btn r-btn--ghost" data-i18n="home.media.paddock">Paddock</a>
+        <a href="/ai/" class="r-btn r-btn--ghost" data-i18n="home.media.ai">Copiloto AI</a>
       </div>
     </div>
   </section>
+
+  <style>
+    /* ===================================================================== */
+    /* GOOGLE PRODUCT SHOWCASE LANDING STYLES                                */
+    /* ===================================================================== */
+    .g-hero-stage {
+      min-height: min(100svh, 920px);
+      align-items: center;
+    }
+    .g-hero-bg {
+      transform: scale(1.03);
+      animation: g-hero-zoom 22s ease-in-out infinite alternate;
+      will-change: transform;
+    }
+    @keyframes g-hero-zoom {
+      0% { transform: scale(1.02) translate3d(0, 0, 0); }
+      100% { transform: scale(1.08) translate3d(-1%, -0.5%, 0); }
+    }
+    .g-hero-aurora {
+      position: absolute; inset: 0; z-index: -1; pointer-events: none;
+      background:
+        radial-gradient(650px circle at 78% 36%, rgba(0, 230, 153, 0.22), transparent 62%),
+        radial-gradient(520px circle at 18% 72%, rgba(56, 189, 248, 0.14), transparent 60%);
+      mix-blend-mode: screen;
+    }
+    .g-hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(320px, 430px);
+      gap: clamp(24px, 4vw, 48px);
+      align-items: end;
+    }
+    .g-hero-copy {
+      display: grid;
+      gap: var(--r-s3);
+      min-width: 0;
+    }
+    .g-hero-pills {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+    .g-live-pill,
+    .g-version-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font: 700 11px/1 var(--r-mono);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .g-live-pill {
+      background: rgba(9, 13, 12, 0.72);
+      border: 1px solid rgba(0, 230, 153, 0.42);
+      color: #00E699;
+    }
+    .g-version-pill {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #F2F5F4;
+      text-decoration: none;
+      transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+    }
+    .g-version-pill:hover {
+      border-color: #00E699;
+      background: rgba(0, 230, 153, 0.14);
+      transform: translateY(-1px);
+    }
+    .g-pill-sep { opacity: 0.45; }
+    .g-live-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #00E699;
+      box-shadow: 0 0 10px #00E699;
+      animation: r-pulse 2s infinite;
+    }
+    .g-hero-title {
+      background: linear-gradient(180deg, #FFFFFF 0%, #E2ECE8 65%, #9CE8CC 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: #FFFFFF;
+    }
+    .g-btn-glow {
+      box-shadow: 0 10px 32px -8px rgba(0, 230, 153, 0.55);
+    }
+
+    /* LIVE TELEMETRY POD */
+    .g-telemetry-pod {
+      background: rgba(10, 14, 13, 0.84);
+      border: 1px solid rgba(0, 230, 153, 0.34);
+      border-radius: 18px;
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 28px 64px -20px rgba(0, 0, 0, 0.85), 0 0 36px -12px rgba(0, 230, 153, 0.25);
+      font-family: var(--r-mono);
+      font-variant-numeric: tabular-nums;
+      color: #F2F5F4;
+    }
+    .g-pod-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .g-pod-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .g-pod-tag {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: #00E699;
+    }
+    .g-pod-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #E2E8F0;
+    }
+    .g-pod-delta {
+      background: rgba(5, 8, 7, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 8px 11px;
+      display: grid;
+      gap: 6px;
+    }
+    .g-pod-delta__top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 10px;
+      color: #9AA8A3;
+      font-weight: 700;
+    }
+    .g-pod-delta__top strong {
+      font-size: 13px;
+      color: #00E699;
+      font-weight: 800;
+    }
+    .g-pod-delta__bar {
+      position: relative;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
+    .g-pod-delta__mid {
+      position: absolute;
+      left: 50%; top: 0; bottom: 0;
+      width: 2px;
+      background: rgba(255, 255, 255, 0.45);
+      z-index: 2;
+    }
+    .g-pod-delta__fill {
+      position: absolute;
+      top: 0; bottom: 0;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #00E699, #34D399);
+      transition: left 0.12s linear, width 0.12s linear;
+    }
+    .g-pod-cockpit {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 10px;
+      align-items: center;
+      background: rgba(5, 8, 7, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 10px;
+    }
+    .g-pod-trace-wrap {
+      min-width: 0;
+      display: grid;
+      gap: 5px;
+    }
+    .g-pod-trace-wrap canvas {
+      width: 100%;
+      height: 76px;
+      display: block;
+      border-radius: 8px;
+      background: rgba(3, 5, 5, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .g-pod-trace-legend {
+      display: flex;
+      gap: 10px;
+      font-size: 9.5px;
+      color: #9AA8A3;
+      font-weight: 700;
+    }
+    .g-pod-trace-legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .g-pod-trace-legend i {
+      width: 7px; height: 7px; border-radius: 2px; display: inline-block;
+    }
+    .g-pod-pedals {
+      display: flex;
+      gap: 5px;
+      height: 76px;
+    }
+    .g-pod-pedal {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      font-size: 9px;
+      font-weight: 800;
+      color: #9AA8A3;
+    }
+    .g-pod-pedal__track {
+      width: 9px;
+      flex: 1;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.08);
+      position: relative;
+      overflow: hidden;
+    }
+    .g-pod-pedal__fill {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      border-radius: 2px;
+      transition: height 0.08s linear;
+    }
+    .g-pod-pedal__fill--brk { background: #EF4444; }
+    .g-pod-pedal__fill--thr { background: #00E699; }
+    .g-pod-gear {
+      min-width: 66px;
+      padding-left: 8px;
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .g-pod-gear__lbl {
+      font-size: 9px;
+      color: #9AA8A3;
+      letter-spacing: 0.08em;
+    }
+    .g-pod-gear__val {
+      font: 900 32px/1 var(--r-display);
+      color: #00E699;
+      margin: 2px 0;
+    }
+    .g-pod-speed {
+      font-size: 10px;
+      color: #C9D2CF;
+    }
+    .g-pod-speed b {
+      font-size: 13px;
+      color: #FFFFFF;
+    }
+    .g-pod-setup-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-top: 4px;
+    }
+    .g-pod-setup-code {
+      display: grid;
+      gap: 2px;
+    }
+    .g-pod-setup-kicker {
+      font-size: 9px;
+      color: #9AA8A3;
+      letter-spacing: 0.08em;
+    }
+    .g-pod-setup-code code {
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #00E699;
+    }
+    .g-pod-setup-pills {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+    }
+    .g-pod-setup-pills span {
+      padding: 3px 7px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #E2E8F0;
+    }
+    .g-pod-setup-pills a {
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(0, 230, 153, 0.15);
+      border: 1px solid rgba(0, 230, 153, 0.4);
+      color: #00E699;
+      font-weight: 800;
+      text-decoration: none;
+    }
+    .g-pod-setup-pills a:hover {
+      background: rgba(0, 230, 153, 0.25);
+    }
+
+    /* INFINITE MANUFACTURER RIBBON */
+    .g-brand-ribbon {
+      position: relative;
+      overflow: hidden;
+      background: var(--r-bg-2);
+      border-top: 1px solid var(--r-line);
+      border-bottom: 1px solid var(--r-line);
+      padding: 12px 0;
+      mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+      -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+    }
+    .g-brand-ribbon__track {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: max-content;
+      animation: g-ribbon-scroll 38s linear infinite;
+    }
+    .g-brand-ribbon:hover .g-brand-ribbon__track {
+      animation-play-state: paused;
+    }
+    @keyframes g-ribbon-scroll {
+      0% { transform: translate3d(0, 0, 0); }
+      100% { transform: translate3d(-50%, 0, 0); }
+    }
+    .g-brand-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      background: var(--r-surface);
+      border: 1px solid var(--r-line);
+      color: var(--r-text);
+      text-decoration: none;
+      font: 600 11.5px/1 var(--r-mono);
+      white-space: nowrap;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+    .g-brand-chip:hover {
+      border-color: var(--r-accent);
+      transform: translateY(-1px);
+    }
+    .g-brand-chip span {
+      color: var(--r-muted);
+      font-size: 10.5px;
+    }
+
+    /* GOOGLE HARDWARE BENTO GRID */
+    .g-bento-grid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 18px;
+    }
+    .g-bento-card {
+      grid-column: span 4 / span 4;
+      background: var(--r-surface);
+      border: 1px solid var(--r-line);
+      border-radius: 20px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+    .g-bento-card--wide {
+      grid-column: span 7 / span 7;
+    }
+    .g-bento-card--tall {
+      grid-column: span 5 / span 5;
+    }
+    .g-bento-card__top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .g-bento-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .g-chip-accent,
+    .g-chip-muted {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font: 700 10.5px/1.1 var(--r-mono);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .g-chip-accent {
+      background: color-mix(in srgb, var(--r-accent) 14%, transparent);
+      border: 1px solid color-mix(in srgb, var(--r-accent) 42%, transparent);
+      color: var(--r-accent);
+    }
+    .g-chip-muted {
+      background: var(--r-bg);
+      border: 1px solid var(--r-line);
+      color: var(--r-muted);
+    }
+    .g-bento-arrow {
+      width: 34px; height: 34px;
+      border-radius: 10px;
+      border: 1px solid var(--r-line);
+      background: var(--r-bg);
+      color: var(--r-text);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      font-weight: 800;
+      flex-shrink: 0;
+      transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    }
+    .g-bento-card:hover .g-bento-arrow {
+      border-color: var(--r-accent);
+      color: var(--r-accent);
+      transform: translate(2px, -2px);
+    }
+    .g-bento-card p {
+      margin: 0;
+      color: var(--r-muted);
+      font-size: 14.5px;
+      line-height: 1.6;
+    }
+    .g-bento-card code {
+      font-family: var(--r-mono);
+      font-size: 12px;
+      color: var(--r-accent);
+      background: var(--r-bg);
+      padding: 2px 6px;
+      border-radius: 5px;
+      border: 1px solid var(--r-line);
+    }
+    .g-bento-split {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 18px;
+      align-items: center;
+      flex: 1;
+    }
+    .g-bento-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      height: 100%;
+    }
+    .g-bento-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: auto;
+      padding-top: 4px;
+    }
+
+    /* MINI HUD PREVIEW IN BENTO 1 */
+    .g-mini-hud {
+      background: #080B0E;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 12px;
+      font-family: var(--r-mono);
+      font-size: 11px;
+      color: #F1F5F9;
+      display: grid;
+      gap: 8px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+    .g-mini-hud__bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 10px;
+      font-weight: 800;
+      color: #94A3B8;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .g-mini-hud__fps {
+      color: #00E699;
+      background: rgba(0, 230, 153, 0.12);
+      padding: 2px 7px;
+      border-radius: 999px;
+    }
+    .g-mini-hud__rows {
+      display: grid;
+      gap: 5px;
+    }
+    .g-mini-row {
+      display: grid;
+      grid-template-columns: 24px 34px 1fr auto auto;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 8px;
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.03);
+      font-size: 10.5px;
+    }
+    .g-mini-row.is-leader {
+      background: rgba(0, 230, 153, 0.14);
+      border-left: 2px solid #00E699;
+      font-weight: 700;
+    }
+    .g-mini-row .pos { color: #94A3B8; font-weight: 800; }
+    .g-mini-row .cls {
+      text-align: center;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+    .g-mini-row .cls.gtp { background: rgba(250, 204, 21, 0.2); color: #FACC15; }
+    .g-mini-row .cls.gt3 { background: rgba(168, 85, 247, 0.22); color: #C084FC; }
+    .g-mini-row .drv { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .g-mini-row .ir {
+      font-size: 9.5px;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: rgba(59, 130, 246, 0.25);
+      color: #93C5FD;
+      font-weight: 700;
+    }
+    .g-mini-row .gap { color: #00E699; font-weight: 800; }
+    .g-mini-hud__foot {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      padding-top: 6px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 10px;
+      color: #94A3B8;
+    }
+    .g-mini-hud__foot b { color: #F8FAFC; }
+    .g-mini-hud__foot .ok { color: #00E699; font-weight: 800; }
+
+    /* SETUP FILENAME DECODER IN BENTO 2 */
+    .g-sto-decoder {
+      background: var(--r-bg);
+      border: 1px solid var(--r-line);
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: grid;
+      gap: 10px;
+      font-family: var(--r-mono);
+    }
+    .g-sto-code {
+      font-size: clamp(13px, 1.5vw, 15px);
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      color: var(--r-text);
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    .g-sto-code .t-team { color: #00E699; }
+    .g-sto-code .t-car { color: #38BDF8; }
+    .g-sto-code .t-trk { color: #FACC15; }
+    .g-sto-code .t-ses { color: #F472B6; }
+    .g-sto-code .t-ver { color: #A78BFA; }
+    .g-sto-code small { color: var(--r-muted); font-weight: 600; }
+    .g-sto-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 10.5px;
+      color: var(--r-muted);
+    }
+    .g-sto-pills span {
+      padding: 3px 7px;
+      border-radius: 6px;
+      background: var(--r-surface);
+      border: 1px solid var(--r-line);
+    }
+    .g-sto-pills b { color: var(--r-text); }
+
+    /* AI PROMPT PREVIEW IN BENTO 3 */
+    .g-ai-prompt-preview {
+      margin-top: auto;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: var(--r-bg);
+      border: 1px solid var(--r-line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-family: var(--r-mono);
+      font-size: 11.5px;
+    }
+    .g-ai-prompt-preview code {
+      background: transparent;
+      border: 0;
+      padding: 0;
+      color: var(--r-text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .g-ai-prompt-preview a {
+      color: var(--r-accent);
+      font-weight: 800;
+      text-decoration: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* WEEKLY CARDS UPGRADE */
+    .mmt-week-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(228px, 1fr)); }
+    .mmt-week-card {
+      display: flex; flex-direction: column; overflow: hidden; border-radius: 16px;
+      border: 1px solid var(--r-line); border-top: 2px solid var(--r-accent, #00e699);
+      background: var(--r-surface); color: var(--r-text); text-decoration: none;
+    }
+    .mmt-week-card:hover {
+      border-color: var(--r-accent);
+      transform: translateY(-4px);
+      box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.45);
+    }
+    .mmt-week-card__media { position: relative; aspect-ratio: 16 / 9; width: 100%; overflow: hidden; background: rgba(0, 0, 0, 0.25); }
+    .mmt-week-card__media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .45s var(--g-ease, ease); }
+    .mmt-week-card:hover .mmt-week-card__media img { transform: scale(1.06); }
+    .mmt-week-card__pill {
+      position: absolute; top: 10px; left: 10px;
+      padding: 3px 8px; border-radius: 6px;
+      background: rgba(9, 13, 12, 0.82); border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #00E699; font: 700 9.5px/1.2 var(--r-mono); letter-spacing: 0.06em;
+      backdrop-filter: blur(8px);
+    }
+    .mmt-week-card__body { display: flex; flex-direction: column; gap: 6px; padding: 16px; flex: 1; }
+    .mmt-week-card__series { font: 600 11px/1.3 var(--r-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--r-muted); }
+    .mmt-week-card__track { font-size: 17px; line-height: 1.25; }
+    .mmt-week-card__config { font-size: 13px; color: var(--r-muted); }
+    .mmt-week-card__foot {
+      margin-top: auto; padding-top: 10px; border-top: 1px solid var(--r-line);
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    }
+    .mmt-week-card__time { font: 600 11px/1.3 var(--r-mono); color: var(--r-accent); }
+    .mmt-week-card__go { font: 700 11px/1 var(--r-mono); color: var(--r-text); }
+    .mmt-week-card:hover .mmt-week-card__go { color: var(--r-accent); }
+    .mmt-week-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; }
+    .mmt-week-links { display: flex; flex-wrap: wrap; gap: 16px; }
+
+    /* CALENDAR BANNER & METHOD CARDS */
+    .mmt-cal-banner {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px;
+      padding: 24px; border-radius: 18px; border: 1px solid var(--r-line);
+      background: var(--r-surface);
+      grid-column: auto;
+      flex-direction: row;
+    }
+    .mmt-cal-banner strong { display: block; font-size: 17px; margin-bottom: 6px; color: var(--r-text); }
+    .mmt-cal-banner p { margin: 0; max-width: 62ch; }
+    .mmt-cal-banner__actions { display: flex; flex-wrap: wrap; gap: 10px; }
+
+    .g-method-card {
+      background: var(--r-surface);
+      border: 1px solid var(--r-line);
+      border-top: 3px solid var(--r-accent);
+      border-radius: 16px;
+      padding: 22px;
+      transition: transform 0.3s ease, border-color 0.3s ease;
+    }
+    .g-method-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--r-accent);
+    }
+    .g-method-num {
+      font: 700 11px/1 var(--r-mono);
+      letter-spacing: 0.12em;
+      color: var(--r-accent);
+    }
+    .g-media-cta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    /* RESPONSIVE BREAKPOINTS */
+    @media (max-width: 1120px) {
+      .g-hero-grid {
+        grid-template-columns: 1fr;
+      }
+      .g-bento-card,
+      .g-bento-card--wide,
+      .g-bento-card--tall {
+        grid-column: span 6 / span 6;
+      }
+      .g-bento-card--wide {
+        grid-column: span 12 / span 12;
+      }
+    }
+    @media (max-width: 767px) {
+      .g-bento-grid {
+        grid-template-columns: 1fr;
+      }
+      .g-bento-card,
+      .g-bento-card--wide,
+      .g-bento-card--tall {
+        grid-column: 1 / -1;
+        padding: 18px;
+      }
+      .g-bento-split {
+        grid-template-columns: 1fr;
+      }
+      .g-pod-cockpit {
+        grid-template-columns: 1fr auto;
+      }
+      .g-pod-pedals {
+        display: none;
+      }
+      .mmt-cal-banner {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .mmt-cal-banner__actions .r-btn,
+      .g-media-cta .r-btn {
+        flex: 1 1 100%;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .g-hero-bg,
+      .g-brand-ribbon__track {
+        animation: none !important;
+      }
+    }
+  </style>
+
+  <!-- Live 60 FPS Telemetry Pod Animation (Pauses offscreen & respects reduced-motion) -->
+  <script is:inline>
+    (() => {
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const canvas = document.getElementById('heroTelemetryCanvas');
+      if (!canvas || !canvas.getContext) return;
+      const ctx = canvas.getContext('2d');
+      const thrBar = document.getElementById('heroThrBar');
+      const brkBar = document.getElementById('heroBrkBar');
+      const gearEl = document.getElementById('heroGearVal');
+      const speedEl = document.getElementById('heroSpeedVal');
+      const deltaEl = document.getElementById('heroPodDelta');
+      const deltaFill = document.getElementById('heroPodDeltaFill');
+      const trackEl = document.getElementById('heroPodTrack');
+      const setupEl = document.getElementById('heroSetupCode');
+
+      const STINTS = [
+        { track: 'SPA-FRANCORCHAMPS · GT3', setup: 'MMT_F296_SPA_END_V2.sto' },
+        { track: 'DAYTONA 24H · GTP', setup: 'MMT_P963_DAYTONA_END.sto' },
+        { track: 'NÜRBURGRING 24H · GT3', setup: 'MMT_M4_NORDS_END_SAFE.sto' },
+        { track: 'LE MANS 24H · HYPERCAR', setup: 'MMT_F499P_LEMANS_Q2_V2.sto' },
+      ];
+      let stintIdx = 0;
+      setInterval(() => {
+        stintIdx = (stintIdx + 1) % STINTS.length;
+        if (trackEl) trackEl.textContent = STINTS[stintIdx].track;
+        if (setupEl) setupEl.textContent = STINTS[stintIdx].setup;
+      }, 7500);
+
+      const N = 80;
+      const thrHist = new Array(N).fill(0.85);
+      const brkHist = new Array(N).fill(0.0);
+      let t = 0;
+      let visible = true;
+
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver((entries) => {
+          entries.forEach((e) => { visible = e.isIntersecting; });
+        });
+        io.observe(canvas);
+      }
+
+      function step() {
+        if (visible && !document.hidden) {
+          t += 0.045;
+          // Synthetic realistic cornering & straight telemetry profile
+          const wave = Math.sin(t * 0.7) * Math.cos(t * 0.35);
+          const brakingZone = wave < -0.42;
+          const thr = brakingZone ? Math.max(0.04, 0.25 + (wave + 0.42) * 0.9) : Math.min(1, 0.72 + Math.sin(t * 0.9) * 0.28);
+          const brk = brakingZone ? Math.min(0.96, Math.abs(wave + 0.35) * 1.45) : 0;
+
+          thrHist.push(thr); thrHist.shift();
+          brkHist.push(brk); brkHist.shift();
+
+          const spd = Math.round(118 + thr * 154 - brk * 82);
+          const gear = spd < 115 ? 2 : spd < 155 ? 3 : spd < 195 ? 4 : spd < 235 ? 5 : 6;
+          const delta = (-0.18 - Math.sin(t * 0.3) * 0.16).toFixed(2);
+
+          if (thrBar) thrBar.style.height = Math.round(thr * 100) + '%';
+          if (brkBar) brkBar.style.height = Math.round(brk * 100) + '%';
+          if (gearEl) gearEl.textContent = String(gear);
+          if (speedEl) speedEl.textContent = String(spd);
+          if (deltaEl) deltaEl.textContent = (Number(delta) <= 0 ? delta : '+' + delta) + 's';
+          if (deltaFill) {
+            const pct = Math.min(44, Math.max(8, Math.abs(Number(delta)) * 110));
+            deltaFill.style.left = (50 - pct) + '%';
+            deltaFill.style.width = pct + '%';
+          }
+
+          const w = canvas.width;
+          const h = canvas.height;
+          ctx.clearRect(0, 0, w, h);
+
+          // Grid lines
+          ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(0, h * 0.5); ctx.lineTo(w, h * 0.5);
+          ctx.stroke();
+
+          // Throttle trace
+          ctx.strokeStyle = '#00E699';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          for (let i = 0; i < N; i++) {
+            const x = (i / (N - 1)) * w;
+            const y = h - 6 - thrHist[i] * (h - 14);
+            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+
+          // Brake trace
+          ctx.strokeStyle = '#EF4444';
+          ctx.lineWidth = 1.8;
+          ctx.beginPath();
+          for (let i = 0; i < N; i++) {
+            const x = (i / (N - 1)) * w;
+            const y = h - 6 - brkHist[i] * (h - 14);
+            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+        }
+        requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    })();
+  </script>
 
   <script is:inline src="/assets/js/home-r.js?v=t330" defer></script>
 </Layout>
