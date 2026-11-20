@@ -2,125 +2,409 @@
 import Layout from '../layouts/Layout.astro';
 import { MUNTRUME_KB } from '../data/muntrume-kb';
 
-const pageTitle = "Muntrume AI · Copiloto Open Source & Conocimiento MMT | Muntrume Motorsport";
-const pageDescription = "Asistente híbrido 100 % Open Source (Licencia MIT) de Muntrume Motorsport: base de conocimiento oficial instantánea del equipo, estrategia GT3/Endurance y motor IA en streaming.";
+const pageTitle = "Muntrume AI · Copiloto Agentic & Conocimiento MMT | Muntrume Motorsport";
+const pageDescription = "Workspace de ingeniería e IA 100 % Open Source (Licencia MIT) de Muntrume Motorsport al estilo Claude y Antigravity: razonamiento paso a paso, Artifact Studio interactivo de stints y setups .sto, y streaming en vivo.";
 ---
 
 <Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/ai/" hideFooter>
-  <div class="ai-app">
+  <div class="ai-app" id="aiWorkspace">
     <div id="aiScrim" class="ai-scrim" hidden></div>
+
+    <!-- LEFT SIDEBAR: CONVERSATION HISTORY & ECOSYSTEM -->
     <aside id="aiSide" class="ai-side" aria-label="Conversaciones" hidden>
       <div class="ai-side__bar">
         <div class="ai-side__brand">
           <img src="/assets/img/icon-192.png" alt="Muntrume AI" width="24" height="24" />
-          <p>Historial</p>
+          <div>
+            <p>Workspace</p>
+            <span>Historial de sesión</span>
+          </div>
         </div>
         <button type="button" id="aiSideClose" class="ai-icon" aria-label="Cerrar historial">×</button>
       </div>
+
       <div class="ai-side__new">
         <button type="button" class="ai-side__newbtn" onclick="document.getElementById('aiNew')?.click()">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
           <span>Nueva conversación</span>
+          <kbd>⌘K</kbd>
         </button>
       </div>
+
       <div id="aiChatList" class="ai-list" role="list"></div>
+
       <div class="ai-side__foot">
-        <a href="/overlay/">MMT Sync Overlay</a>
-        <a href="/garage/">Setup Vault (.sto)</a>
-        <a href="/wallpapers/">Wallpapers HD</a>
-        <a href="/gallery/">Galería Paddock</a>
+        <a href="/overlay/"><span>⚡</span> MMT Sync HUD</a>
+        <a href="/garage/"><span>🔧</span> Setup Vault</a>
+        <a href="/setup-builder/"><span>📐</span> Setup Builder</a>
+        <a href="/calendar/"><span>📅</span> Calendario S4</a>
+        <a href="/app/"><span>🦀</span> App Rust v0.6.5</a>
+        <a href="/wallpapers/"><span>🖼️</span> Wallpapers 4K</a>
       </div>
     </aside>
 
+    <!-- CENTER WORKSPACE: CLAUDE / ANTIGRAVITY CONVERSATION STAGE -->
     <div class="ai-main">
       <header class="ai-top">
         <div class="ai-top__left">
-          <button type="button" id="aiSideOpen" class="ai-icon" aria-expanded="false" aria-controls="aiSide" aria-label="Abrir historial">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          <button type="button" id="aiSideOpen" class="ai-icon" aria-expanded="false" aria-controls="aiSide" aria-label="Abrir historial" title="Historial de conversaciones">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18"/></svg>
           </button>
           <div class="ai-top__brand">
-            <img src="/assets/img/icon-192.png" alt="Muntrume AI" width="28" height="28" class="ai-top__logo" />
-            <h1>Muntrume AI</h1>
+            <div class="ai-top__orb" aria-hidden="true">
+              <img src="/assets/img/icon-192.png" alt="" width="24" height="24" class="ai-top__logo" />
+            </div>
+            <div>
+              <div class="ai-top__title-row">
+                <h1>Muntrume AI</h1>
+                <span class="ai-agent-version">Agentic 3.7</span>
+              </div>
+              <span class="ai-top__sub">Race Engineer &amp; Open Source Workspace</span>
+            </div>
             <a href="https://github.com/ATM-Software-Labs/muntrume-site" target="_blank" rel="noopener noreferrer" class="ai-oss-badge" title="Código fuente abierto en GitHub (MIT)">
-              100 % Open Source · Licencia MIT
+              MIT Open Source
             </a>
           </div>
         </div>
 
-        <div class="ai-mode-tabs" role="group" aria-label="Selector de modo">
-          <button type="button" class="ai-mode-tab is-active" data-ai-mode="team" aria-pressed="true">Equipo &amp; iRacing</button>
-          <button type="button" class="ai-mode-tab" data-ai-mode="assistant" aria-pressed="false">Asistente Open Source</button>
+        <div class="ai-mode-tabs" role="group" aria-label="Selector de agente">
+          <button type="button" class="ai-mode-tab is-active" data-ai-mode="team" aria-pressed="true">
+            <span class="ai-tab-dot"></span>
+            <span>Ingeniero iRacing &amp; MMT</span>
+          </button>
+          <button type="button" class="ai-mode-tab" data-ai-mode="assistant" aria-pressed="false">
+            <span>✦</span>
+            <span>Antigravity Open Source</span>
+          </button>
         </div>
 
         <div class="ai-top__actions">
-          <button type="button" id="aiOllamaToggle" class="ai-ollama-btn" aria-pressed="false" title="Usar Ollama local (http://localhost:11434) en modo privacidad total">
+          <button type="button" id="aiBridgeBadge" hidden class="ai-bridge-pill" title="MMT Sync detectado en 127.0.0.1:38421 · Pulsa para lanzar HUD 60Hz">
+            <span class="ai-status-dot"></span>
+            <span id="aiBridgeText">MMT Sync Ready</span>
+          </button>
+          <button type="button" id="aiOllamaToggle" class="ai-ollama-btn" aria-pressed="false" title="Conectar con Ollama local (http://localhost:11434) en modo privacidad total">
             Ollama Local: Off
           </button>
-          <div id="aiEngineStatus" class="ai-status-badge" title="Estado de Muntrume AI">
+          <div id="aiEngineStatus" class="ai-status-badge" title="Motor activo">
             <span class="ai-status-dot"></span>
-            <span id="aiStatusText">KB + Open Source</span>
+            <span id="aiStatusText">KB + Groq LPU</span>
           </div>
-          <button type="button" id="aiNew" class="ai-new-btn" title="Nueva conversación">
-            + Nueva conversación
+          <button type="button" id="aiArtifactToggle" class="ai-artifact-btn" aria-pressed="false" title="Abrir Artifact Studio (Calculadora Stint, Decodificador .STO y Canvas)">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M15 3v18"/></svg>
+            <span>Artifacts</span>
+          </button>
+          <button type="button" id="aiNew" class="ai-new-btn" title="Nueva conversación (Ctrl+K)">
+            + Nueva
           </button>
         </div>
       </header>
 
       <div id="aiStage" class="ai-stage is-empty">
         <div id="aiEmpty" class="ai-empty">
+          <!-- CLAUDE / ANTIGRAVITY HERO HEADER -->
           <div class="ai-hero">
-            <div class="ai-hero__emblem">
-              <img src="/assets/img/icon-192.png" alt="Muntrume Motorsport" width="48" height="48" />
+            <div class="ai-hero__halo" aria-hidden="true">
+              <div class="ai-hero__emblem">
+                <img src="/assets/img/icon-192.png" alt="Muntrume Motorsport" width="44" height="44" />
+              </div>
             </div>
-            <p class="ai-kicker">MUNTRUME MOTORSPORT · OPEN SOURCE AI</p>
-            <h2 class="ai-hero__title">¿En qué te ayudo hoy?</h2>
+            <div class="ai-hero__pills">
+              <span class="ai-pill-accent">● AGENTIC RACE ENGINEER</span>
+              <span class="ai-pill-muted">0 ms Verified KB</span>
+              <span class="ai-pill-muted">Artifact Studio</span>
+            </div>
+            <h2 class="ai-hero__title" id="aiGreetingTitle">¿Qué preparamos hoy para pista?</h2>
             <p class="ai-empty__lead">
-              Respuestas instantáneas sobre el equipo, pilotos, <strong>MMT Sync Overlay</strong> y setups, más asistente Open Source en streaming (sin paywalls).
+              Copiloto con <strong>traza de razonamiento tipo Antigravity</strong> y <strong>Artifacts interactivos tipo Claude</strong>: calcula stints y ventanas de parada, decodifica reglajes <code>.sto</code>, diagnostica subviraje/sobreviraje o programa en streaming.
             </p>
           </div>
 
+          <!-- QUICK SLASH SKILLS BAR -->
+          <div class="ai-skills-bar" aria-label="Comandos rápidos de ingeniería">
+            <span class="ai-skills-bar__label">Skills:</span>
+            <button type="button" class="ai-skill-chip" data-prompt="/stint Calcula combustible, paradas y estrategia GT3 para 45 minutos con vuelta de 1:48 y consumo de 2.85 L">
+              <code>/stint</code> <span>Estrategia 45m</span>
+            </button>
+            <button type="button" class="ai-skill-chip" data-prompt="/nomenclatura Explica el estándar oficial de nombres de setups .sto de Muntrume Motorsport (MMT_F296_SPA_END_V2.sto)">
+              <code>/nomenclatura</code> <span>Estándar .sto</span>
+            </button>
+            <button type="button" class="ai-skill-chip" data-prompt="/subviraje Tengo subviraje en entrada y mitad de curva con el Ferrari 296 GT3, ¿qué toco en el setup?">
+              <code>/subviraje</code> <span>Diagnóstico chasis</span>
+            </button>
+            <button type="button" class="ai-skill-chip" data-prompt="/overlay ¿Cómo instalo y uso el MMT Sync Overlay Open Source a 60 Hz en iRacing?">
+              <code>/overlay</code> <span>HUD 60 Hz</span>
+            </button>
+            <button type="button" class="ai-skill-chip" data-open-artifact="stint">
+              <code>⚡ Artifact</code> <span>Abrir Simulador Stint ↗</span>
+            </button>
+          </div>
+
+          <!-- BENTO STARTER CARDS -->
           <div class="ai-starters" id="aiTopicButtons">
-            <button type="button" data-prompt="¿Quiénes son los pilotos y cómo contacto con el equipo?">
-              <span class="ai-starter__tag">Conocimiento Oficial · 0 ms</span>
-              <strong>¿Quiénes son los pilotos y cómo contacto con el equipo?</strong>
-              <span>Dorsales #16, #1, #22 y correos oficiales @muntru.me</span>
-            </button>
-            <button type="button" data-prompt="¿Cómo instalo y uso el MMT Sync Overlay Open Source?">
-              <span class="ai-starter__tag">Overlay MIT · 60 FPS</span>
-              <strong>¿Cómo instalo y uso el MMT Sync Overlay Open Source?</strong>
-              <span>Requisitos, Pit Strategy, Tire Monitor y presets 1-clic</span>
-            </button>
-            <button type="button" data-prompt="Calcula combustible y estrategia para una carrera GT3 de 45 min">
-              <span class="ai-starter__tag">Ingeniería · Estrategia</span>
+            <button type="button" data-prompt="Calcula combustible y estrategia para una carrera GT3 de 45 min" data-artifact-tab="stint">
+              <div class="ai-starter__head">
+                <span class="ai-starter__tag">tool:stint_engine · Artifact</span>
+                <span class="ai-starter__arrow">↗</span>
+              </div>
               <strong>Calcula combustible y estrategia para una carrera GT3 de 45 min</strong>
-              <span>Litros totales, consumo por vuelta, ventana de box y presiones</span>
+              <span>Litros totales, consumo por vuelta, ventana de box y simulador interactivo</span>
             </button>
+
+            <button type="button" data-prompt="Explica la nomenclatura oficial de setups .sto de Muntrume y cómo elegir entre Q, R, END y SAFE" data-artifact-tab="sto">
+              <div class="ai-starter__head">
+                <span class="ai-starter__tag">tool:sto_decoder · 42.654+ .sto</span>
+                <span class="ai-starter__arrow">↗</span>
+              </div>
+              <strong>Decodificador de setups .sto y estándar de ingeniería MMT</strong>
+              <span>Estructura MMT_COCHE_CIRCUITO_SESION_V#.sto y diagnóstico de balance</span>
+            </button>
+
+            <button type="button" data-prompt="¿Cómo instalo y uso el MMT Sync Overlay Open Source?">
+              <div class="ai-starter__head">
+                <span class="ai-starter__tag">tool:hud_studio · 60 FPS Rust</span>
+                <span class="ai-starter__arrow">↗</span>
+              </div>
+              <strong>¿Cómo instalo y configuro MMT Sync &amp; Overlays 60 Hz?</strong>
+              <span>Instalación winget, memoria compartida FILE_MAP_READ y 9 widgets</span>
+            </button>
+
+            <button type="button" data-prompt="¿Quiénes son los pilotos y cómo contacto con el equipo?">
+              <div class="ai-starter__head">
+                <span class="ai-starter__tag">tool:muntrume_kb · 0 ms</span>
+                <span class="ai-starter__arrow">↗</span>
+              </div>
+              <strong>¿Quiénes son los pilotos oficiales y canales del equipo?</strong>
+              <span>Dorsales #16, #1, #22, Garage 61, Discord y correos @muntru.me</span>
+            </button>
+
+            <button type="button" data-prompt="Tengo subviraje entrando a curva y sobreviraje al acelerar en GT3, ¿qué ajustes hago en ARB, Brake Bias y Rake?" data-artifact-tab="sto">
+              <div class="ai-starter__head">
+                <span class="ai-starter__tag">tool:handling_doctor · Aero &amp; Susp</span>
+                <span class="ai-starter__arrow">↗</span>
+              </div>
+              <strong>Diagnóstico mecánico de subviraje, sobreviraje y presiones</strong>
+              <span>Tabla de correcciones rápidas en Brake Bias, ARBs, diferencial y rake</span>
+            </button>
+
             <button type="button" data-prompt="Ayúdame como asistente Open Source general" data-switch-mode="assistant">
-              <span class="ai-starter__tag">Asistente Open Source</span>
-              <strong>Ayúdame como asistente Open Source general</strong>
-              <span>Código, dudas técnicas, análisis y redacción en streaming</span>
+              <div class="ai-starter__head">
+                <span class="ai-starter__tag">agent:open_source · Streaming</span>
+                <span class="ai-starter__arrow">↗</span>
+              </div>
+              <strong>Modo Antigravity Open Source (Código, Análisis &amp; Redacción)</strong>
+              <span>Asistente general en streaming con bloques de código y tablas Markdown</span>
             </button>
           </div>
         </div>
+
         <div id="aiLog" class="ai-log" role="log" aria-busy="false" hidden></div>
       </div>
 
       <button type="button" id="aiJump" class="ai-jump" hidden>Ir al final ↓</button>
 
+      <!-- CLAUDE / ANTIGRAVITY FLOATING COMPOSER CARD -->
       <form id="aiForm" class="ai-composer" autocomplete="off">
         <p id="aiLive" class="sr-only" aria-live="polite"></p>
-        <div class="ai-composer__box">
-          <label class="sr-only" for="aiInput">Escribe tu consulta para Muntrume AI</label>
-          <textarea id="aiInput" rows="1" maxlength="1200" placeholder="Pregunta sobre Muntrume Motorsport, iRacing, setups o cualquier duda técnica…"></textarea>
-          <button type="button" id="aiSend" aria-label="Enviar">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-          </button>
+        <div class="ai-composer__card">
+          <div class="ai-composer__box">
+            <label class="sr-only" for="aiInput">Escribe tu consulta para Muntrume AI</label>
+            <textarea id="aiInput" rows="1" maxlength="1600" placeholder="Pregunta a Muntrume AI o escribe /stint, /setup, /overlay, /pilotos…"></textarea>
+            <button type="button" id="aiSend" aria-label="Enviar">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+            </button>
+          </div>
+          <div class="ai-composer__bar">
+            <div class="ai-composer__meta">
+              <span class="ai-model-chip" id="aiComposerModelLabel">
+                <span class="ai-status-dot"></span>
+                <span>Muntrume Engineer 3.7 · 0ms KB + Streaming</span>
+              </span>
+              <button type="button" class="ai-composer-toolbtn" id="aiQuickOpenArtifact" title="Abrir simulador interactivo en el panel lateral">
+                <span>⚡ Artifact Studio</span>
+              </button>
+            </div>
+            <div class="ai-composer__hints">
+              <span><kbd>Enter</kbd> enviar</span>
+              <span><kbd>Shift+Enter</kbd> línea</span>
+              <span><kbd>Ctrl+K</kbd> nuevo</span>
+            </div>
+          </div>
         </div>
         <p class="ai-note">
-          Modo <strong>Equipo &amp; iRacing</strong> (KB verificada + estrategia) · Modo <strong>Asistente Open Source</strong> (Llama/Qwen/Ollama). <a href="/overlay/">Overlay</a> · <a href="/garage/">Setups</a> · <a href="/wallpapers/">Wallpapers</a> · <a href="/gallery/">Galería</a>
+          Muntrume AI puede ejecutar cálculos locales de ingeniería y consultar la base verificada del equipo. <a href="/overlay/">HUD 60Hz</a> · <a href="/garage/">42.654+ Setups</a> · <a href="/setup-builder/">Setup Builder</a> · <a href="/app/">MMT Sync Rust</a>
         </p>
       </form>
     </div>
+
+    <!-- RIGHT SIDEBAR: CLAUDE-STYLE ARTIFACT STUDIO DRAWER -->
+    <aside id="aiArtifactPane" class="ai-artifact" aria-label="Artifact Studio interactivo" hidden>
+      <div class="ai-artifact__head">
+        <div class="ai-artifact__title">
+          <span class="ai-artifact__badge">ARTIFACT STUDIO</span>
+          <strong id="aiArtifactHeading">Ingeniería en Pista</strong>
+        </div>
+        <div class="ai-artifact__tabs" role="tablist">
+          <button type="button" role="tab" class="ai-art-tab is-active" data-art-tab="stint" aria-selected="true">Stint &amp; Fuel</button>
+          <button type="button" role="tab" class="ai-art-tab" data-art-tab="sto" aria-selected="false">Setup .STO</button>
+          <button type="button" role="tab" class="ai-art-tab" data-art-tab="canvas" aria-selected="false">Canvas MD</button>
+        </div>
+        <button type="button" id="aiArtifactClose" class="ai-icon" aria-label="Cerrar Artifact Studio">×</button>
+      </div>
+
+      <div class="ai-artifact__body">
+        <!-- ARTIFACT TAB 1: INTERACTIVE STINT & FUEL CALCULATOR -->
+        <section id="artPanelStint" class="ai-art-panel">
+          <div class="ai-art-card">
+            <div class="ai-art-card__top">
+              <span class="ai-starter__tag">iracing_stint_engine · Real-Time</span>
+              <span class="ai-art-live">LIVE</span>
+            </div>
+            <h3>Simulador de Stint &amp; Combustible</h3>
+            <p class="ai-art-sub">Ajusta los parámetros de tu serie para calcular litros exactos, paradas y ventana óptima.</p>
+
+            <div class="ai-art-form">
+              <label>
+                <span>Duración carrera (min)</span>
+                <input type="number" id="artRaceMin" value="45" min="10" max="1440" step="5" />
+              </label>
+              <label>
+                <span>Tiempo por vuelta (seg)</span>
+                <input type="number" id="artLapSec" value="108.5" min="35" max="540" step="0.5" />
+              </label>
+              <label>
+                <span>Consumo (L / vuelta)</span>
+                <input type="number" id="artFuelLap" value="2.85" min="0.5" max="15" step="0.05" />
+              </label>
+              <label>
+                <span>Capacidad depósito (L)</span>
+                <input type="number" id="artTankCap" value="55" min="15" max="125" step="1" />
+              </label>
+            </div>
+
+            <div class="ai-art-metrics">
+              <div class="ai-art-metric is-highlight">
+                <span>COMBUSTIBLE TOTAL (+1.5v)</span>
+                <strong id="artOutTotalFuel">75.3 L</strong>
+              </div>
+              <div class="ai-art-metric">
+                <span>VUELTAS ESTIMADAS</span>
+                <strong id="artOutTotalLaps">25 vueltas</strong>
+              </div>
+              <div class="ai-art-metric">
+                <span>AUTONOMÍA / STINT</span>
+                <strong id="artOutStintLaps">19 vueltas</strong>
+              </div>
+              <div class="ai-art-metric">
+                <span>PARADAS &amp; PIT WINDOW</span>
+                <strong id="artOutPitWindow">1 parada · V12–V18</strong>
+              </div>
+            </div>
+
+            <div class="ai-art-actions">
+              <button type="button" id="artSendStintToChat" class="ai-art-btn ai-art-btn--primary">
+                Insertar informe en el chat →
+              </button>
+              <button type="button" id="artSendFuelToIracing" class="ai-art-btn" title="Envía los litros a recargar directamente a iRacing si MMT Sync está abierto">
+                ⚡ Enviar Fuel a iRacing
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ARTIFACT TAB 2: INTERACTIVE SETUP .STO DECODER & HANDLING DOCTOR -->
+        <section id="artPanelSto" class="ai-art-panel" hidden>
+          <div class="ai-art-card">
+            <div class="ai-art-card__top">
+              <span class="ai-starter__tag">mmt_nomenclatura_setups · Vault</span>
+              <a href="/garage/" class="ai-art-link">Abrir Garage ↗</a>
+            </div>
+            <h3>Generador &amp; Decodificador .STO</h3>
+            <p class="ai-art-sub">Construye o interpreta el código oficial de reglajes de Muntrume Motorsport.</p>
+
+            <div class="ai-art-form">
+              <label>
+                <span>Coche</span>
+                <select id="artStoCar">
+                  <option value="F296">F296 · Ferrari 296 GT3</option>
+                  <option value="P911">P911 · Porsche 911 GT3.R (992)</option>
+                  <option value="M4">M4 · BMW M4 GT3</option>
+                  <option value="AMG">AMG · Mercedes-AMG GT3</option>
+                  <option value="MCL">MCL · McLaren 720S GT3 EVO</option>
+                  <option value="MUST">MUST · Ford Mustang GT3</option>
+                  <option value="P963">P963 · Porsche 963 GTP</option>
+                  <option value="F499P">F499P · Ferrari 499P GTP</option>
+                  <option value="P217">P217 · Dallara P217 LMP2</option>
+                </select>
+              </label>
+              <label>
+                <span>Circuito</span>
+                <select id="artStoTrack">
+                  <option value="SPA">SPA · Spa-Francorchamps</option>
+                  <option value="DAYTONA">DAYTONA · Daytona Intl</option>
+                  <option value="NORDS">NORDS · Nürburgring 24h</option>
+                  <option value="LEMANS">LEMANS · 24h Le Mans</option>
+                  <option value="MONZA">MONZA · Autodromo Monza</option>
+                  <option value="SEBRING">SEBRING · Sebring Intl</option>
+                  <option value="WATKINS">WATKINS · Watkins Glen</option>
+                  <option value="ROADATL">ROADATL · Road Atlanta</option>
+                </select>
+              </label>
+              <label>
+                <span>Tipo de sesión</span>
+                <select id="artStoSession">
+                  <option value="END">END · Resistencia (Stint completo)</option>
+                  <option value="R">R · Race Sprint (40–45 min)</option>
+                  <option value="Q2">Q2 · Clasificación (2 vueltas lanzadas)</option>
+                  <option value="SAFE">SAFE · Alta estabilidad trasera</option>
+                  <option value="W">W · Wet / Lluvia extrema</option>
+                </select>
+              </label>
+              <label>
+                <span>Síntoma en pista (Handling Doctor)</span>
+                <select id="artStoSymptom">
+                  <option value="entry_under">Subviraje en entrada (frenando)</option>
+                  <option value="mid_under">Subviraje en ápice (mitad curva)</option>
+                  <option value="exit_over">Sobreviraje al acelerar (salida)</option>
+                  <option value="entry_over">Trasera inestable en frenada</option>
+                  <option value="top_speed">Falta velocidad punta en recta</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="ai-art-codebox">
+              <span class="ai-art-codebox__lbl">ARCHIVO OFICIAL GENERADO</span>
+              <code id="artStoFilename">MMT_F296_SPA_END_V2.sto</code>
+            </div>
+
+            <div class="ai-art-prescription" id="artStoPrescription">
+              <strong>Ajuste recomendado:</strong> Baja <code>Brake Bias -0.5%</code> hacia atrás, ablanda <code>1 click</code> la ARB delantera o sube <code>+1 mm</code> la altura trasera (rake).
+            </div>
+
+            <div class="ai-art-actions">
+              <button type="button" id="artAskStoInChat" class="ai-art-btn ai-art-btn--primary">
+                Consultar este setup en el chat →
+              </button>
+              <a href="/setup-builder/" class="ai-art-btn">Abrir Setup Builder</a>
+            </div>
+          </div>
+        </section>
+
+        <!-- ARTIFACT TAB 3: LIVE MARKDOWN / RESPONSE CANVAS -->
+        <section id="artPanelCanvas" class="ai-art-panel" hidden>
+          <div class="ai-art-card">
+            <div class="ai-art-card__top">
+              <span class="ai-starter__tag">artifact:markdown_canvas</span>
+              <button type="button" id="artCopyCanvasBtn" class="ai-art-mini-btn">Copiar MD</button>
+            </div>
+            <h3 id="artCanvasTitle">Último informe del Agente</h3>
+            <div id="artCanvasBody" class="ai-md ai-art-canvas-body">
+              <p class="ai-art-sub">Selecciona cualquier respuesta del chat con «Abrir en Artifact ↗» o haz una consulta técnica para inspeccionarla aquí en pantalla dividida.</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </aside>
   </div>
 </Layout>
 
@@ -129,125 +413,261 @@ const pageDescription = "Asistente híbrido 100 % Open Source (Licencia MIT) de 
 <style is:global>
   body:has(.ai-app) { height: 100dvh; min-height: 0; overflow: hidden; }
   body:has(.ai-app) #main-content { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
-  .ai-app { flex: 1; min-height: 0; display: flex; background: #090b0f; color: #e2e8f0; }
+
+  /* CLAUDE / ANTIGRAVITY THEME TOKENS */
+  .ai-app {
+    --ai-bg: #080a0e;
+    --ai-surface: #0e1218;
+    --ai-surface-2: #131922;
+    --ai-card: rgba(18, 24, 33, 0.78);
+    --ai-border: rgba(255, 255, 255, 0.09);
+    --ai-border-strong: rgba(0, 230, 153, 0.38);
+    --ai-text: #f1f5f9;
+    --ai-muted: #94a3b8;
+    --ai-accent: #00e699;
+    --ai-accent-soft: rgba(0, 230, 153, 0.12);
+    --ai-ink: #04130d;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    background:
+      radial-gradient(900px circle at 50% -10%, rgba(0, 230, 153, 0.08), transparent 55%),
+      radial-gradient(700px circle at 88% 20%, rgba(56, 189, 248, 0.05), transparent 50%),
+      var(--ai-bg);
+    color: var(--ai-text);
+  }
+
+  html[data-theme="light"] .ai-app {
+    --ai-bg: #f6f5f2;
+    --ai-surface: #ffffff;
+    --ai-surface-2: #efede8;
+    --ai-card: rgba(255, 255, 255, 0.92);
+    --ai-border: rgba(15, 23, 42, 0.11);
+    --ai-border-strong: rgba(5, 150, 105, 0.42);
+    --ai-text: #0f172a;
+    --ai-muted: #475569;
+    --ai-accent: #059669;
+    --ai-accent-soft: rgba(5, 150, 105, 0.1);
+    --ai-ink: #ffffff;
+  }
+
   .ai-scrim { position: fixed; inset: var(--site-header, 56px) 0 0 0; background: rgba(4, 8, 7, .65); backdrop-filter: blur(4px); z-index: 30; }
-  .ai-scrim[hidden], .ai-side[hidden], .ai-jump[hidden], .ai-actions[hidden] { display: none !important; }
+  .ai-scrim[hidden], .ai-side[hidden], .ai-artifact[hidden], .ai-jump[hidden], .ai-actions[hidden], .ai-bridge-pill[hidden], .ai-art-panel[hidden] { display: none !important; }
 
-  .ai-side { width: min(264px, 86vw); flex: 0 0 auto; display: flex; flex-direction: column; min-height: 0; background: #0c0f15; border-right: 1px solid rgba(255,255,255,.08); }
-  .ai-side__bar { display: flex; align-items: center; justify-content: space-between; min-height: 52px; padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,.08); }
-  .ai-side__brand { display: flex; align-items: center; gap: 8px; }
-  .ai-side__brand img { width: 22px; height: 22px; border-radius: 6px; object-fit: contain; }
-  .ai-side__bar p { margin: 0; font: 700 11px/1 ui-monospace, monospace; letter-spacing: .1em; text-transform: uppercase; color: #94a3b8; }
-  .ai-side__new { padding: 10px 10px 4px; }
-  .ai-side__newbtn { width: 100%; display: flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.12); background: #090b0f; color: #f8fafc; font: 600 12.5px/1 sans-serif; cursor: pointer; }
-  .ai-side__newbtn:hover { border-color: #10b981; color: #10b981; }
-  .ai-list { flex: 1; min-height: 0; overflow: auto; padding: 8px; display: grid; align-content: start; gap: 4px; }
-  .ai-list__empty { margin: 8px; color: #64748b; font-size: 12.5px; }
-  .ai-chat { display: grid; grid-template-columns: 1fr auto auto; gap: 2px; align-items: center; }
-  .ai-chat__open, .ai-rename { min-height: 36px; border: 0; border-radius: 8px; background: transparent; color: #cbd5e1; text-align: left; padding: 0 10px; cursor: pointer; font: 500 13px/1.3 sans-serif; }
-  .ai-chat__open { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ai-chat__open[aria-current="true"] { background: rgba(16, 185, 129, .14); color: #34d399; font-weight: 600; }
-  .ai-side__foot { padding: 10px 12px; border-top: 1px solid rgba(255,255,255,.08); display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-  .ai-side__foot a { font: 600 11px/1.2 ui-monospace, monospace; color: #94a3b8; text-decoration: none; padding: 5px 6px; border-radius: 6px; }
-  .ai-side__foot a:hover { color: #10b981; background: rgba(255,255,255,.04); }
+  /* LEFT SIDEBAR */
+  .ai-side { width: min(268px, 86vw); flex: 0 0 auto; display: flex; flex-direction: column; min-height: 0; background: var(--ai-surface); border-right: 1px solid var(--ai-border); }
+  .ai-side__bar { display: flex; align-items: center; justify-content: space-between; min-height: 54px; padding: 8px 14px; border-bottom: 1px solid var(--ai-border); }
+  .ai-side__brand { display: flex; align-items: center; gap: 10px; }
+  .ai-side__brand img { width: 24px; height: 24px; border-radius: 7px; object-fit: contain; }
+  .ai-side__bar p { margin: 0; font: 800 11px/1.1 var(--r-mono, ui-monospace, monospace); letter-spacing: .1em; text-transform: uppercase; color: var(--ai-text); }
+  .ai-side__bar span { font-size: 11px; color: var(--ai-muted); }
+  .ai-side__new { padding: 12px 12px 6px; }
+  .ai-side__newbtn { width: 100%; display: flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--ai-border); background: var(--ai-bg); color: var(--ai-text); font: 600 12.5px/1 sans-serif; cursor: pointer; transition: border-color .15s, transform .15s; }
+  .ai-side__newbtn:hover { border-color: var(--ai-accent); color: var(--ai-accent); transform: translateY(-1px); }
+  .ai-side__newbtn kbd { margin-left: auto; font: 600 10px/1 var(--r-mono, monospace); padding: 3px 6px; border-radius: 5px; background: var(--ai-surface-2); color: var(--ai-muted); border: 1px solid var(--ai-border); }
+  .ai-list { flex: 1; min-height: 0; overflow: auto; padding: 8px 10px; display: grid; align-content: start; gap: 4px; }
+  .ai-list__empty { margin: 8px; color: var(--ai-muted); font-size: 12.5px; }
+  .ai-chat { display: grid; grid-template-columns: 1fr auto; gap: 4px; align-items: center; }
+  .ai-chat__open { min-height: 36px; border: 0; border-radius: 8px; background: transparent; color: var(--ai-muted); text-align: left; padding: 0 10px; cursor: pointer; font: 500 13px/1.3 sans-serif; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: background .15s, color .15s; }
+  .ai-chat__open:hover { background: var(--ai-surface-2); color: var(--ai-text); }
+  .ai-chat__open[aria-current="true"] { background: var(--ai-accent-soft); color: var(--ai-accent); font-weight: 700; }
+  .ai-side__foot { padding: 10px 12px; border-top: 1px solid var(--ai-border); display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+  .ai-side__foot a { font: 600 11px/1.2 var(--r-mono, monospace); color: var(--ai-muted); text-decoration: none; padding: 6px 8px; border-radius: 7px; display: flex; align-items: center; gap: 5px; transition: background .15s, color .15s; }
+  .ai-side__foot a:hover { color: var(--ai-accent); background: var(--ai-surface-2); }
 
-  .ai-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; min-height: 56px; padding: 8px 16px; border-bottom: 1px solid rgba(255,255,255,.08); background: #0c0f15; }
+  /* TOP AGENT HEADER */
+  .ai-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; min-height: 56px; padding: 8px 16px; border-bottom: 1px solid var(--ai-border); background: color-mix(in srgb, var(--ai-surface) 88%, transparent); backdrop-filter: blur(14px); }
   .ai-top__left { display: flex; align-items: center; gap: 10px; min-width: 0; }
-  .ai-top__brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
-  .ai-top__logo { width: 26px; height: 26px; border-radius: 7px; object-fit: contain; }
-  .ai-top h1 { margin: 0; font-size: 15px; font-weight: 800; color: #ffffff; white-space: nowrap; }
-  .ai-oss-badge { font: 700 10.5px/1 ui-monospace, monospace; padding: 5px 9px; border-radius: 999px; background: rgba(16, 185, 129, .12); border: 1px solid rgba(16, 185, 129, .35); color: #34d399; text-decoration: none; white-space: nowrap; }
-  .ai-oss-badge:hover { background: rgba(16, 185, 129, .2); }
+  .ai-top__brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .ai-top__orb { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; background: var(--ai-accent-soft); border: 1px solid var(--ai-border-strong); flex-shrink: 0; }
+  .ai-top__logo { width: 22px; height: 22px; border-radius: 5px; object-fit: contain; }
+  .ai-top__title-row { display: flex; align-items: center; gap: 6px; }
+  .ai-top h1 { margin: 0; font-size: 14.5px; font-weight: 800; color: var(--ai-text); white-space: nowrap; }
+  .ai-agent-version { font: 700 10px/1 var(--r-mono, monospace); padding: 2px 6px; border-radius: 5px; background: var(--ai-surface-2); border: 1px solid var(--ai-border); color: var(--ai-accent); }
+  .ai-top__sub { display: block; font-size: 11px; color: var(--ai-muted); white-space: nowrap; }
+  .ai-oss-badge { font: 700 10px/1 var(--r-mono, monospace); padding: 4px 8px; border-radius: 999px; background: var(--ai-accent-soft); border: 1px solid var(--ai-border-strong); color: var(--ai-accent); text-decoration: none; white-space: nowrap; }
 
-  .ai-mode-tabs { display: inline-flex; padding: 3px; border-radius: 10px; background: #090b0f; border: 1px solid rgba(255,255,255,.1); gap: 4px; }
-  .ai-mode-tab { padding: 6px 12px; border-radius: 7px; border: 0; background: transparent; color: #94a3b8; font: 700 12px/1 ui-monospace, monospace; cursor: pointer; transition: background .15s, color .15s; }
-  .ai-mode-tab.is-active { background: #10b981; color: #04130d; }
-  .ai-mode-tab:not(.is-active):hover { color: #ffffff; }
+  .ai-mode-tabs { display: inline-flex; padding: 3px; border-radius: 11px; background: var(--ai-bg); border: 1px solid var(--ai-border); gap: 3px; }
+  .ai-mode-tab { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; border: 0; background: transparent; color: var(--ai-muted); font: 700 11.5px/1 var(--r-mono, monospace); cursor: pointer; transition: background .18s, color .18s; }
+  .ai-mode-tab.is-active { background: var(--ai-accent); color: var(--ai-ink); }
+  .ai-mode-tab:not(.is-active):hover { color: var(--ai-text); }
+  .ai-tab-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
-  .ai-top__actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .ai-ollama-btn { padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,.12); background: #090b0f; color: #94a3b8; font: 700 11px/1 ui-monospace, monospace; cursor: pointer; }
-  .ai-ollama-btn[aria-pressed="true"] { border-color: #10b981; color: #34d399; background: rgba(16, 185, 129, .1); }
-  .ai-status-badge { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 999px; background: rgba(16, 185, 129, .08); border: 1px solid rgba(16, 185, 129, .28); color: #34d399; font: 700 11px/1 ui-monospace, monospace; white-space: nowrap; }
-  .ai-status-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; }
-  .ai-status-badge.is-busy { border-color: rgba(250, 204, 21, .35); color: #facc15; }
+  .ai-top__actions { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+  .ai-bridge-pill { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border-radius: 999px; background: var(--ai-accent-soft); border: 1px solid var(--ai-border-strong); color: var(--ai-accent); font: 700 10.5px/1 var(--r-mono, monospace); cursor: pointer; }
+  .ai-ollama-btn, .ai-artifact-btn, .ai-new-btn { height: 30px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--ai-border); background: var(--ai-bg); color: var(--ai-muted); font: 700 11px/1 var(--r-mono, monospace); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: border-color .15s, color .15s, background .15s; }
+  .ai-ollama-btn:hover, .ai-artifact-btn:hover, .ai-new-btn:hover { border-color: var(--ai-accent); color: var(--ai-text); }
+  .ai-ollama-btn[aria-pressed="true"], .ai-artifact-btn[aria-pressed="true"] { border-color: var(--ai-accent); color: var(--ai-accent); background: var(--ai-accent-soft); }
+  .ai-status-badge { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border-radius: 999px; background: var(--ai-surface-2); border: 1px solid var(--ai-border); color: var(--ai-text); font: 700 10.5px/1 var(--r-mono, monospace); white-space: nowrap; }
+  .ai-status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ai-accent); box-shadow: 0 0 8px var(--ai-accent); }
+  .ai-status-badge.is-busy { border-color: rgba(250, 204, 21, .45); color: #facc15; }
   .ai-status-badge.is-busy .ai-status-dot { background: #facc15; animation: ai-dot .9s infinite ease-in-out; }
-  .ai-new-btn { height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,.14); background: #090b0f; color: #e2e8f0; font: 700 11.5px/1 ui-monospace, monospace; cursor: pointer; }
-  .ai-new-btn:hover { border-color: #10b981; color: #10b981; }
 
-  .ai-icon, .ai-action, .ai-codecopy, .ai-jump { min-height: 32px; border-radius: 8px; border: 1px solid rgba(255,255,255,.12); background: #0d1118; color: #e2e8f0; cursor: pointer; font: 600 12px/1 sans-serif; }
-  .ai-icon { width: 34px; display: inline-grid; place-items: center; }
-  .ai-icon:hover, .ai-action:hover, .ai-codecopy:hover { border-color: #10b981; color: #10b981; }
+  .ai-icon, .ai-action, .ai-codecopy, .ai-jump { min-height: 30px; border-radius: 8px; border: 1px solid var(--ai-border); background: var(--ai-surface-2); color: var(--ai-text); cursor: pointer; font: 600 11.5px/1 sans-serif; transition: border-color .15s, color .15s; }
+  .ai-icon { width: 32px; display: inline-grid; place-items: center; }
+  .ai-icon:hover, .ai-action:hover, .ai-codecopy:hover { border-color: var(--ai-accent); color: var(--ai-accent); }
 
+  /* MAIN STAGE & EMPTY WORKSPACE */
   .ai-main { position: relative; flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
   .ai-stage { flex: 1; min-height: 0; overflow: auto; scroll-behavior: smooth; }
-  .ai-stage.is-empty { display: grid; place-items: center; padding: 16px 0; }
-  .ai-empty { width: min(760px, calc(100% - 32px)); display: grid; gap: 22px; padding: 12px 0; }
-  .ai-hero { text-align: center; display: grid; justify-items: center; gap: 8px; }
-  .ai-hero__emblem { width: 60px; height: 60px; border-radius: 16px; display: grid; place-items: center; background: rgba(16, 185, 129, .1); border: 1px solid rgba(16, 185, 129, .35); }
-  .ai-kicker { margin: 0; font: 700 11px/1 ui-monospace, monospace; letter-spacing: .12em; color: #10b981; }
-  .ai-hero__title { margin: 0; font-size: clamp(22px, 3vw, 30px); font-weight: 800; color: #ffffff; }
-  .ai-empty__lead { margin: 0; max-width: 560px; color: #94a3b8; font-size: 14.5px; line-height: 1.5; }
+  .ai-stage.is-empty { display: grid; place-items: center; padding: 18px 0; }
+  .ai-empty { width: min(860px, calc(100% - 32px)); display: grid; gap: 18px; padding: 8px 0; }
 
-  .ai-starters { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .ai-starters button { text-align: left; padding: 14px 16px; border: 1px solid rgba(255,255,255,.1); border-radius: 14px; background: #0d1118; cursor: pointer; display: grid; gap: 5px; color: #f1f5f9; transition: border-color .15s, transform .15s; }
-  .ai-starters button:hover { border-color: #10b981; transform: translateY(-1px); }
-  .ai-starter__tag { font: 700 10px/1 ui-monospace, monospace; text-transform: uppercase; letter-spacing: .08em; color: #10b981; }
-  .ai-starters strong { font-size: 14px; font-weight: 700; line-height: 1.3; }
-  .ai-starters span:last-child { color: #94a3b8; font-size: 12.5px; line-height: 1.4; }
+  .ai-hero { text-align: center; display: grid; justify-items: center; gap: 10px; }
+  .ai-hero__halo { position: relative; padding: 6px; border-radius: 22px; background: radial-gradient(circle, rgba(0,230,153,0.18), transparent 70%); }
+  .ai-hero__emblem { width: 58px; height: 58px; border-radius: 16px; display: grid; place-items: center; background: var(--ai-surface); border: 1px solid var(--ai-border-strong); box-shadow: 0 14px 34px -10px rgba(0, 230, 153, 0.35); }
+  .ai-hero__pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+  .ai-pill-accent, .ai-pill-muted { padding: 4px 10px; border-radius: 999px; font: 700 10px/1.1 var(--r-mono, monospace); letter-spacing: .06em; text-transform: uppercase; }
+  .ai-pill-accent { background: var(--ai-accent-soft); border: 1px solid var(--ai-border-strong); color: var(--ai-accent); }
+  .ai-pill-muted { background: var(--ai-surface); border: 1px solid var(--ai-border); color: var(--ai-muted); }
+  .ai-hero__title { margin: 0; font-size: clamp(24px, 3.4vw, 34px); font-weight: 800; letter-spacing: -0.02em; color: var(--ai-text); }
+  .ai-empty__lead { margin: 0; max-width: 640px; color: var(--ai-muted); font-size: 14px; line-height: 1.55; }
+  .ai-empty__lead code { font-family: var(--r-mono, monospace); font-size: 12px; color: var(--ai-accent); background: var(--ai-surface); padding: 2px 6px; border-radius: 5px; border: 1px solid var(--ai-border); }
 
-  .ai-log { width: min(780px, calc(100% - 32px)); margin: 0 auto; padding: 24px 0 18px; display: flex; flex-direction: column; gap: 20px; }
-  .ai-turn { display: grid; gap: 8px; }
+  /* SLASH SKILLS CHIP BAR */
+  .ai-skills-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 7px; }
+  .ai-skills-bar__label { font: 700 10.5px/1 var(--r-mono, monospace); text-transform: uppercase; letter-spacing: .08em; color: var(--ai-muted); margin-right: 2px; }
+  .ai-skill-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; border-radius: 999px; border: 1px solid var(--ai-border); background: var(--ai-surface); color: var(--ai-text); font-size: 12px; cursor: pointer; transition: border-color .15s, transform .15s, background .15s; }
+  .ai-skill-chip:hover { border-color: var(--ai-accent); background: var(--ai-accent-soft); transform: translateY(-1px); }
+  .ai-skill-chip code { font: 700 11px/1 var(--r-mono, monospace); color: var(--ai-accent); }
+
+  /* BENTO STARTER GRID */
+  .ai-starters { display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ai-starters button { text-align: left; padding: 14px 15px; border: 1px solid var(--ai-border); border-radius: 14px; background: var(--ai-card); backdrop-filter: blur(10px); cursor: pointer; display: flex; flex-direction: column; gap: 6px; color: var(--ai-text); transition: border-color .18s, transform .18s, box-shadow .18s; }
+  .ai-starters button:hover { border-color: var(--ai-accent); transform: translateY(-2px); box-shadow: 0 14px 30px -16px rgba(0, 0, 0, 0.5); }
+  .ai-starter__head { display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%; }
+  .ai-starter__tag { font: 700 10px/1 var(--r-mono, monospace); text-transform: uppercase; letter-spacing: .06em; color: var(--ai-accent); }
+  .ai-starter__arrow { font-size: 12px; color: var(--ai-muted); transition: transform .18s, color .18s; }
+  .ai-starters button:hover .ai-starter__arrow { color: var(--ai-accent); transform: translate(2px, -2px); }
+  .ai-starters strong { font-size: 13.5px; font-weight: 700; line-height: 1.35; }
+  .ai-starters span:last-child { color: var(--ai-muted); font-size: 12px; line-height: 1.4; margin-top: auto; }
+
+  /* CONVERSATION LOG & ANTIGRAVITY THINKING STEPS */
+  .ai-log { width: min(800px, calc(100% - 32px)); margin: 0 auto; padding: 24px 0 18px; display: flex; flex-direction: column; gap: 22px; }
+  .ai-turn { display: grid; gap: 8px; animation: ai-turn-in .24s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  @keyframes ai-turn-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   .ai-turn--user .ai-turn__body { justify-items: end; }
   .ai-turn--bot { grid-template-columns: 34px minmax(0, 1fr); column-gap: 12px; align-items: start; }
-  .ai-avatar { width: 34px; height: 34px; border-radius: 9px; object-fit: contain; background: rgba(16, 185, 129, .08); border: 1px solid rgba(16, 185, 129, .3); padding: 4px; }
-  .ai-bubble { max-width: min(82%, 560px); padding: 10px 15px; border-radius: 18px 18px 4px 18px; background: rgba(16, 185, 129, .15); border: 1px solid rgba(16, 185, 129, .35); color: #f8fafc; white-space: pre-wrap; font-size: 14.5px; line-height: 1.5; }
+  .ai-avatar { width: 34px; height: 34px; border-radius: 10px; object-fit: contain; background: var(--ai-accent-soft); border: 1px solid var(--ai-border-strong); padding: 4px; }
+  .ai-bubble { max-width: min(84%, 580px); padding: 11px 16px; border-radius: 18px 18px 4px 18px; background: var(--ai-accent-soft); border: 1px solid var(--ai-border-strong); color: var(--ai-text); white-space: pre-wrap; font-size: 14.5px; line-height: 1.5; }
   .ai-turn__body { min-width: 0; display: grid; gap: 8px; }
-  .ai-actions { display: flex; gap: 6px; opacity: .8; }
-  .ai-action { padding: 0 10px; font-size: 11.5px; }
 
-  .ai-md { min-width: 0; font-size: 15px; line-height: 1.65; color: #e2e8f0; }
-  .ai-md :is(h1, h2, h3, h4) { font-weight: 700; margin: 14px 0 6px; color: #ffffff; }
-  .ai-md h3, .ai-md h4 { color: #34d399; font-size: 1rem; }
+  /* ANTIGRAVITY THINKING / TOOL CALL TRACE */
+  .ai-thought { border: 1px solid var(--ai-border); border-radius: 11px; background: var(--ai-surface); overflow: hidden; font-size: 12px; }
+  .ai-thought summary { list-style: none; cursor: pointer; padding: 7px 11px; display: flex; align-items: center; justify-content: space-between; gap: 8px; font: 600 11px/1.2 var(--r-mono, monospace); color: var(--ai-muted); user-select: none; }
+  .ai-thought summary::-webkit-details-marker { display: none; }
+  .ai-thought summary:hover { color: var(--ai-text); background: var(--ai-surface-2); }
+  .ai-thought__left { display: inline-flex; align-items: center; gap: 7px; }
+  .ai-thought__badge { padding: 2px 6px; border-radius: 4px; background: var(--ai-accent-soft); color: var(--ai-accent); font-weight: 700; font-size: 10px; }
+  .ai-thought__steps { padding: 8px 12px 10px; border-top: 1px solid var(--ai-border); display: grid; gap: 5px; font: 500 11px/1.4 var(--r-mono, monospace); color: var(--ai-muted); background: var(--ai-bg); }
+  .ai-thought__step { display: flex; align-items: center; gap: 7px; }
+  .ai-thought__step code { color: var(--ai-accent); }
+
+  .ai-actions { display: flex; flex-wrap: wrap; gap: 6px; opacity: .92; padding-top: 2px; }
+  .ai-action { padding: 0 10px; font-size: 11.5px; display: inline-flex; align-items: center; gap: 5px; }
+
+  /* MARKDOWN TYPOGRAPHY */
+  .ai-md { min-width: 0; font-size: 15px; line-height: 1.65; color: var(--ai-text); }
+  .ai-md :is(h1, h2, h3, h4) { font-weight: 800; margin: 14px 0 6px; color: var(--ai-text); letter-spacing: -0.01em; }
+  .ai-md h3, .ai-md h4 { color: var(--ai-accent); font-size: 1.02rem; }
   .ai-md p { margin: 8px 0; }
   .ai-md ul, .ai-md ol { margin: 8px 0 8px 1.2em; padding-left: 1em; }
   .ai-md ul { list-style: disc; }
   .ai-md ol { list-style: decimal; }
-  .ai-md a { color: #34d399; text-underline-offset: 3px; }
-  .ai-md :not(pre) > code { font-family: ui-monospace, monospace; font-size: .86em; background: #0d1118; border: 1px solid rgba(255,255,255,.12); padding: 1px 6px; border-radius: 5px; color: #34d399; }
+  .ai-md a { color: var(--ai-accent); text-underline-offset: 3px; font-weight: 600; }
+  .ai-md :not(pre) > code { font-family: var(--r-mono, ui-monospace, monospace); font-size: .86em; background: var(--ai-surface-2); border: 1px solid var(--ai-border); padding: 1px 6px; border-radius: 5px; color: var(--ai-accent); }
   .ai-code { position: relative; margin: 12px 0; }
-  .ai-code pre, .ai-plain { margin: 0; padding: 14px 12px; overflow: auto; background: #0d1118; border: 1px solid rgba(255,255,255,.12); border-radius: 10px; font-family: ui-monospace, monospace; font-size: 13px; line-height: 1.45; white-space: pre; }
+  .ai-code pre, .ai-plain { margin: 0; padding: 14px 12px; overflow: auto; background: var(--ai-surface); border: 1px solid var(--ai-border); border-radius: 12px; font-family: var(--r-mono, ui-monospace, monospace); font-size: 12.5px; line-height: 1.5; white-space: pre; }
   .ai-codecopy { position: absolute; top: 8px; right: 8px; padding: 0 10px; }
-  .ai-table { overflow-x: auto; margin: 12px 0; border: 1px solid rgba(255,255,255,.12); border-radius: 10px; }
+  .ai-table { overflow-x: auto; margin: 12px 0; border: 1px solid var(--ai-border); border-radius: 12px; background: var(--ai-surface); }
   .ai-table table { width: 100%; border-collapse: collapse; }
-  .ai-table th, .ai-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,.08); font-size: 13.5px; }
-  .ai-table th { background: #0d1118; font: 700 11.5px/1.2 ui-monospace, monospace; color: #34d399; }
+  .ai-table th, .ai-table td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--ai-border); font-size: 13.5px; }
+  .ai-table th { background: var(--ai-surface-2); font: 700 11px/1.2 var(--r-mono, monospace); text-transform: uppercase; letter-spacing: .04em; color: var(--ai-accent); }
 
   .ai-dots { display: inline-flex; gap: 5px; padding: 8px 0; }
-  .ai-dots i { width: 7px; height: 7px; border-radius: 50%; background: #10b981; animation: ai-dot .9s infinite ease-in-out; }
+  .ai-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--ai-accent); animation: ai-dot .9s infinite ease-in-out; }
   .ai-dots i:nth-child(2) { animation-delay: .15s; }
   .ai-dots i:nth-child(3) { animation-delay: .3s; }
-  .ai-jump { position: absolute; left: 50%; bottom: 108px; transform: translateX(-50%); z-index: 5; padding: 0 14px; border-radius: 999px; }
+  .ai-jump { position: absolute; left: 50%; bottom: 118px; transform: translateX(-50%); z-index: 5; padding: 0 14px; border-radius: 999px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
 
-  .ai-composer { width: min(780px, calc(100% - 24px)); margin: 0 auto; padding: 8px 0 max(12px, env(safe-area-inset-bottom)); }
-  .ai-composer__box { display: flex; align-items: flex-end; gap: 8px; padding: 8px 10px 8px 14px; border: 1px solid rgba(255,255,255,.12); border-radius: 22px; background: #0d1118; }
-  .ai-composer__box:focus-within { border-color: #10b981; }
-  .ai-composer textarea { flex: 1; min-height: 38px; max-height: 150px; resize: none; border: 0; background: transparent; color: #f8fafc; font-size: 14.5px; line-height: 1.45; padding: 7px 4px; }
+  /* CLAUDE-STYLE COMPOSER CARD */
+  .ai-composer { width: min(820px, calc(100% - 24px)); margin: 0 auto; padding: 6px 0 max(12px, env(safe-area-inset-bottom)); }
+  .ai-composer__card { border: 1px solid var(--ai-border); border-radius: 20px; background: var(--ai-surface); box-shadow: 0 18px 42px -18px rgba(0, 0, 0, 0.55); overflow: hidden; transition: border-color .18s, box-shadow .18s; }
+  .ai-composer__card:focus-within { border-color: var(--ai-accent); box-shadow: 0 20px 48px -18px rgba(0, 230, 153, 0.22); }
+  .ai-composer__box { display: flex; align-items: flex-end; gap: 8px; padding: 10px 12px 6px 16px; }
+  .ai-composer textarea { flex: 1; min-height: 38px; max-height: 160px; resize: none; border: 0; background: transparent; color: var(--ai-text); font-size: 14.5px; line-height: 1.45; padding: 6px 2px; }
   .ai-composer textarea:focus { outline: none; }
-  #aiSend { width: 38px; height: 38px; min-width: 38px; padding: 0; border-radius: 999px; border: 0; background: #10b981; color: #04130d; cursor: pointer; display: inline-grid; place-items: center; }
-  #aiSend:disabled { opacity: .35; cursor: default; }
-  #aiSend[data-mode="stop"] { background: #0d1118; color: #f8fafc; border: 1px solid rgba(255,255,255,.15); width: auto; padding: 0 12px; font: 700 12px/1 ui-monospace, monospace; }
-  .ai-note { margin: 8px 6px 0; text-align: center; color: #64748b; font-size: 11.5px; line-height: 1.4; }
-  .ai-note a { color: #34d399; text-decoration: none; }
+  #aiSend { width: 36px; height: 36px; min-width: 36px; padding: 0; border-radius: 11px; border: 0; background: var(--ai-accent); color: var(--ai-ink); cursor: pointer; display: inline-grid; place-items: center; transition: transform .15s, opacity .15s; }
+  #aiSend:not(:disabled):hover { transform: translateY(-1px); }
+  #aiSend:disabled { opacity: .32; cursor: default; }
+  #aiSend[data-mode="stop"] { background: var(--ai-surface-2); color: var(--ai-text); border: 1px solid var(--ai-border); width: auto; padding: 0 12px; font: 700 11.5px/1 var(--r-mono, monospace); }
+
+  .ai-composer__bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 14px 8px; border-top: 1px solid var(--ai-border); background: color-mix(in srgb, var(--ai-bg) 45%, var(--ai-surface)); font: 600 11px/1 var(--r-mono, monospace); color: var(--ai-muted); }
+  .ai-composer__meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .ai-model-chip { display: inline-flex; align-items: center; gap: 6px; color: var(--ai-text); }
+  .ai-composer-toolbtn { padding: 3px 8px; border-radius: 6px; border: 1px solid var(--ai-border); background: var(--ai-surface); color: var(--ai-accent); font: 700 10.5px/1 var(--r-mono, monospace); cursor: pointer; }
+  .ai-composer-toolbtn:hover { border-color: var(--ai-accent); background: var(--ai-accent-soft); }
+  .ai-composer__hints { display: flex; align-items: center; gap: 10px; font-size: 10.5px; }
+  .ai-composer__hints kbd { padding: 2px 5px; border-radius: 4px; background: var(--ai-surface); border: 1px solid var(--ai-border); font-size: 10px; }
+
+  .ai-note { margin: 7px 6px 0; text-align: center; color: var(--ai-muted); font-size: 11.5px; line-height: 1.4; }
+  .ai-note a { color: var(--ai-accent); text-decoration: none; font-weight: 600; }
   .ai-note a:hover { text-decoration: underline; }
+
+  /* RIGHT ARTIFACT STUDIO DRAWER (CLAUDE ARTIFACTS STYLE) */
+  .ai-artifact { width: min(410px, 92vw); flex: 0 0 auto; display: flex; flex-direction: column; min-height: 0; background: var(--ai-surface); border-left: 1px solid var(--ai-border); box-shadow: -16px 0 40px rgba(0, 0, 0, 0.35); animation: ai-art-slide .22s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  @keyframes ai-art-slide { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: translateX(0); } }
+  .ai-artifact__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--ai-border); background: var(--ai-bg); }
+  .ai-artifact__title { display: flex; align-items: center; gap: 8px; }
+  .ai-artifact__badge { padding: 3px 7px; border-radius: 5px; background: var(--ai-accent-soft); border: 1px solid var(--ai-border-strong); color: var(--ai-accent); font: 800 9.5px/1 var(--r-mono, monospace); letter-spacing: .08em; }
+  .ai-artifact__title strong { font-size: 13px; color: var(--ai-text); }
+  .ai-artifact__tabs { display: inline-flex; padding: 2px; border-radius: 8px; background: var(--ai-surface); border: 1px solid var(--ai-border); gap: 2px; }
+  .ai-art-tab { padding: 5px 9px; border-radius: 6px; border: 0; background: transparent; color: var(--ai-muted); font: 700 10.5px/1 var(--r-mono, monospace); cursor: pointer; }
+  .ai-art-tab.is-active { background: var(--ai-accent); color: var(--ai-ink); }
+  .ai-artifact__body { flex: 1; min-height: 0; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 14px; }
+  .ai-art-card { border: 1px solid var(--ai-border); border-radius: 16px; background: var(--ai-bg); padding: 16px; display: grid; gap: 12px; }
+  .ai-art-card__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .ai-art-live { padding: 2px 7px; border-radius: 999px; background: var(--ai-accent-soft); color: var(--ai-accent); font: 800 9.5px/1 var(--r-mono, monospace); }
+  .ai-art-link, .ai-art-mini-btn { font: 700 11px/1 var(--r-mono, monospace); color: var(--ai-accent); text-decoration: none; background: var(--ai-surface); border: 1px solid var(--ai-border); padding: 4px 8px; border-radius: 6px; cursor: pointer; }
+  .ai-art-card h3 { margin: 0; font-size: 16px; font-weight: 800; color: var(--ai-text); }
+  .ai-art-sub { margin: 0; font-size: 12.5px; color: var(--ai-muted); line-height: 1.45; }
+  .ai-art-form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ai-art-form label { display: grid; gap: 5px; font: 600 11px/1.2 var(--r-mono, monospace); color: var(--ai-muted); }
+  .ai-art-form input, .ai-art-form select { height: 34px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--ai-border); background: var(--ai-surface); color: var(--ai-text); font: 700 12.5px/1 var(--r-mono, monospace); }
+  .ai-art-form select { grid-column: span 2; }
+  .ai-art-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .ai-art-metric { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--ai-border); background: var(--ai-surface); display: grid; gap: 4px; }
+  .ai-art-metric.is-highlight { border-color: var(--ai-border-strong); background: var(--ai-accent-soft); }
+  .ai-art-metric span { font: 700 9.5px/1 var(--r-mono, monospace); color: var(--ai-muted); letter-spacing: .05em; }
+  .ai-art-metric strong { font: 800 16px/1.1 var(--r-mono, monospace); color: var(--ai-text); }
+  .ai-art-metric.is-highlight strong { color: var(--ai-accent); }
+  .ai-art-codebox { padding: 11px 12px; border-radius: 10px; border: 1px solid var(--ai-border-strong); background: var(--ai-surface); display: grid; gap: 4px; font-family: var(--r-mono, monospace); }
+  .ai-art-codebox__lbl { font-size: 9.5px; font-weight: 700; color: var(--ai-muted); letter-spacing: .06em; }
+  .ai-art-codebox code { font-size: 14px; font-weight: 800; color: var(--ai-accent); }
+  .ai-art-prescription { padding: 11px 12px; border-radius: 10px; border: 1px solid var(--ai-border); background: var(--ai-surface); font-size: 12.5px; line-height: 1.5; color: var(--ai-text); }
+  .ai-art-prescription code { font-family: var(--r-mono, monospace); color: var(--ai-accent); font-size: 11.5px; }
+  .ai-art-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .ai-art-btn { flex: 1 1 auto; min-height: 36px; padding: 0 12px; border-radius: 9px; border: 1px solid var(--ai-border); background: var(--ai-surface); color: var(--ai-text); font: 700 11.5px/1 var(--r-mono, monospace); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: border-color .15s, background .15s; }
+  .ai-art-btn:hover { border-color: var(--ai-accent); }
+  .ai-art-btn--primary { background: var(--ai-accent); color: var(--ai-ink); border-color: var(--ai-accent); }
+  .ai-art-canvas-body { max-height: 62vh; overflow-y: auto; padding-right: 4px; }
+
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
   @keyframes ai-dot { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
 
-  @media (min-width: 960px) { .ai-scrim { display: none !important; } }
-  @media (max-width: 720px) {
-    .ai-starters { grid-template-columns: 1fr; }
-    .ai-oss-badge, .ai-ollama-btn { display: none; }
+  @media (min-width: 1120px) { .ai-scrim { display: none !important; } }
+  @media (max-width: 1119px) {
+    .ai-side { position: fixed; z-index: 35; top: var(--site-header, 56px); bottom: 0; left: 0; }
+    .ai-artifact { position: fixed; z-index: 35; top: var(--site-header, 56px); bottom: 0; right: 0; }
   }
-  @media (max-width: 959px) { .ai-side { position: fixed; z-index: 35; top: var(--site-header, 56px); bottom: 0; left: 0; } }
+  @media (max-width: 860px) {
+    .ai-starters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .ai-composer__hints { display: none; }
+  }
+  @media (max-width: 640px) {
+    .ai-starters { grid-template-columns: 1fr; }
+    .ai-oss-badge, .ai-ollama-btn, .ai-top__sub { display: none; }
+  }
 </style>
 
-<script is:inline src="/assets/js/ai-chat.js?v=t400" defer></script>
+<script is:inline src="/assets/js/ai-chat.js?v=t410" defer></script>
