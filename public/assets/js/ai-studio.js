@@ -705,12 +705,121 @@
   }
 
   function closeAllModals() {
-    ["aiProjectsModal", "aiArtifactsModal", "aiPersonalizeModal", "aiGithubModal"].forEach((id) => {
+    ["aiProjectsModal", "aiArtifactsModal", "aiPersonalizeModal", "aiGithubModal", "aiCalcModal"].forEach((id) => {
       const m = $(id);
       if (m) m.hidden = true;
     });
     const pm = $("aiPlusMenu"); if (pm) pm.hidden = true;
     const mm = $("aiModelMenu"); if (mm) mm.hidden = true;
+  }
+
+  // ============================================================================
+  // INTERACTIVE IRACING ENGINEERING CALCULATORS (FUEL & SETUP DIAGNOSTIC)
+  // ============================================================================
+  const BALANCE_GUIDES = {
+    entry_understeer: {
+      title: "Subviraje en entrada (turn-in / frenada)",
+      steps: [
+        "Retrasa el Brake Bias 0.4% – 0.8% hacia atrás para ayudar a rotar en frenada.",
+        "Ablanda la barra estabilizadora delantera (Front ARB) 1–2 posiciones o endurece la trasera.",
+        "Baja la altura delantera (Front Ride Height) 1 mm o aumenta el rake trasero.",
+        "Aumenta ligeramente el camber delantero (-0.1° a -0.2°) si la goma interior va fría."
+      ]
+    },
+    mid_understeer: {
+      title: "Subviraje en mitad de curva (vértice)",
+      steps: [
+        "Reduce rigidez de Front ARB o sube Rear ARB 1 clic.",
+        "Reduce la precarga del diferencial (Diff Preload) 10–20 Nm para liberar la rotación en coast.",
+        "Comprueba presiones calientes delanteras (objetivo GT3 iRacing: ~168–174 kPa)."
+      ]
+    },
+    exit_oversteer: {
+      title: "Sobreviraje en salida (aceleración)",
+      steps: [
+        "Ablanda la barra trasera (Rear ARB) 1–2 clics o muelles traseros.",
+        "Sube el control de tracción (TC1/TC2) 1 punto o suaviza el mapa de acelerador.",
+        "Aumenta la precarga del diferencial (Diff Preload) +15 Nm o reduce el ángulo de rampa en drive.",
+        "Añade +1° de ala trasera (Rear Wing) si ocurre en curvas medias/rápidas."
+      ]
+    },
+    entry_oversteer: {
+      title: "Sobreviraje en frenada / entrada",
+      steps: [
+        "Adelanta el Brake Bias +0.5% a +1.0% hacia el eje delantero.",
+        "Aumenta la compresión a baja velocidad delantera (Front LS Comp) +2 clics y extensión trasera (Rear LS Reb) +2 clics para frenar el cabeceo.",
+        "Aumenta el Diff Preload +15 Nm para dar estabilidad al soltar gas."
+      ]
+    },
+    brake_lock: {
+      title: "Bloqueo temprano de frenos",
+      steps: [
+        "Ajusta el Brake Bias alejándolo del eje que bloquea primero (0.5% por paso).",
+        "Reduce la presión máxima de frenada (Brake Pressure) o activa/sube 1 punto el ABS.",
+        "Suaviza los muelles delanteros o baja la compresión rápida (HS Comp) si bloquea sobre baches."
+      ]
+    },
+    rear_wear: {
+      title: "Sobrecalentamiento y degradación trasera",
+      steps: [
+        "Reduce el deslizamiento en tracción: sube TC 1 clic y ablanda Rear ARB.",
+        "Ajusta presiones en frío traseras (-2 kPa si superan 176 kPa en caliente).",
+        "Reduce ligeramente el camber trasero (+0.2°) si el borde interior supera en >12°C al exterior."
+      ]
+    }
+  };
+
+  function parseLapSeconds(str) {
+    const clean = String(str || "").trim();
+    const parts = clean.split(":");
+    if (parts.length === 2) return (Number(parts[0]) || 0) * 60 + (Number(parts[1]) || 0);
+    return Number(clean) || 135;
+  }
+
+  function computeFuelCalc() {
+    const mins = Math.max(1, Number($("calcRaceMins")?.value) || 45);
+    const lapSec = Math.max(20, parseLapSeconds($("calcLapTime")?.value || "2:17.5"));
+    const fuelLap = Math.max(0.1, Number($("calcFuelLap")?.value) || 2.95);
+    const tank = Math.max(5, Number($("calcTankSize")?.value) || 100);
+    const formLap = $("calcFormLap")?.checked ? 1 : 0;
+    const margin = Math.max(0, Number($("calcMarginLaps")?.value) || 1);
+
+    const raceLaps = Math.ceil((mins * 60) / lapSec);
+    const totalLaps = raceLaps + formLap + margin;
+    const totalFuel = Number((totalLaps * fuelLap).toFixed(1));
+    const maxLapsStint = Math.max(1, Math.floor(tank / fuelLap));
+    const stops = Math.max(0, Math.ceil(totalFuel / tank) - 1);
+    const stints = stops + 1;
+    const fuelPerStint = Number((totalFuel / stints).toFixed(1));
+
+    const box = $("calcFuelResult");
+    if (box) {
+      box.innerHTML = `
+        <div class="ai-calc-kpis">
+          <div class="ai-calc-kpi"><span>Vueltas carrera</span><strong>${raceLaps} laps</strong></div>
+          <div class="ai-calc-kpi"><span>Combustible total</span><strong>${totalFuel} L</strong></div>
+          <div class="ai-calc-kpi"><span>Paradas en box</span><strong>${stops} pit${stops === 1 ? "" : "s"}</strong></div>
+          <div class="ai-calc-kpi"><span>Stint equilibrado</span><strong>${fuelPerStint} L</strong></div>
+        </div>
+        <div style="margin-top:8px;font-size:12px;color:var(--ai-muted)">
+          Autonomía máxima por depósito: <strong>${maxLapsStint} vueltas</strong> · Incluye ${formLap ? "1 vuelta de formación + " : ""}${margin} vuelta(s) de margen.
+        </div>
+      `;
+    }
+    return { mins, lapStr: $("calcLapTime")?.value || "2:17.5", fuelLap, tank, raceLaps, totalFuel, stops, stints, fuelPerStint, maxLapsStint };
+  }
+
+  function renderBalanceCalc() {
+    const key = $("calcSymptom")?.value || "entry_understeer";
+    const guide = BALANCE_GUIDES[key] || BALANCE_GUIDES.entry_understeer;
+    const box = $("calcBalanceResult");
+    if (box) {
+      box.innerHTML = `
+        <strong style="display:block;margin-bottom:6px;color:var(--ai-accent)">${esc(guide.title)}</strong>
+        <ul style="margin:0;padding-left:18px">${guide.steps.map((s) => `<li>${esc(s)}</li>`).join("")}</ul>
+      `;
+    }
+    return { car: $("calcCarCat")?.value || "GT3", guide };
   }
 
   function renderProjectsModal() {
@@ -787,6 +896,55 @@
       if ($("aiCustomInstrInput")) $("aiCustomInstrInput").value = state.customInstructions || "";
       if ($("aiMemoryInput")) $("aiMemoryInput").value = state.memory || "";
       openModal("aiPersonalizeModal");
+    });
+    $("aiCalcBtn")?.addEventListener("click", () => {
+      computeFuelCalc();
+      renderBalanceCalc();
+      openModal("aiCalcModal");
+    });
+    $("calcTabFuel")?.addEventListener("click", () => {
+      $("calcTabFuel")?.classList.add("is-active");
+      $("calcTabBalance")?.classList.remove("is-active");
+      if ($("calcPanelFuel")) $("calcPanelFuel").hidden = false;
+      if ($("calcPanelBalance")) $("calcPanelBalance").hidden = true;
+    });
+    $("calcTabBalance")?.addEventListener("click", () => {
+      $("calcTabBalance")?.classList.add("is-active");
+      $("calcTabFuel")?.classList.remove("is-active");
+      if ($("calcPanelFuel")) $("calcPanelFuel").hidden = true;
+      if ($("calcPanelBalance")) $("calcPanelBalance").hidden = false;
+      renderBalanceCalc();
+    });
+    ["calcRaceMins", "calcLapTime", "calcFuelLap", "calcTankSize", "calcFormLap", "calcMarginLaps"].forEach((id) => {
+      $(id)?.addEventListener("input", computeFuelCalc);
+      $(id)?.addEventListener("change", computeFuelCalc);
+    });
+    ["calcCarCat", "calcSymptom"].forEach((id) => {
+      $(id)?.addEventListener("change", renderBalanceCalc);
+    });
+    $("calcSendFuelToAi")?.addEventListener("click", () => {
+      const c = computeFuelCalc();
+      closeAllModals();
+      state.skill = "strategy";
+      syncComposerControls();
+      sendMessage(`Prepara un plan de carrera completo (ventanas de box, cambio de neumáticos y ahorro de combustible) para una carrera de ${c.mins} min en iRacing con vuelta de ${c.lapStr}, consumo de ${c.fuelLap} L/vuelta, depósito de ${c.tank} L (${c.raceLaps} vueltas estimadas, ${c.totalFuel} L totales, ${c.stops} parada(s)).`);
+    });
+    $("calcSendBalanceToAi")?.addEventListener("click", () => {
+      const b = renderBalanceCalc();
+      closeAllModals();
+      state.skill = "setup";
+      syncComposerControls();
+      sendMessage(`Conduzco un ${b.car} en iRacing y sufro de "${b.guide.title}". Dame una tabla ordenada de ajustes por prioridad (con valores aproximados en clics/porcentaje y qué vigilar en telemetría Garage 61).`);
+    });
+    $("aiClearHistoryBtn")?.addEventListener("click", () => {
+      if (!window.confirm("¿Borrar todas las conversaciones guardadas en este navegador?")) return;
+      state.chats = [];
+      state.activeChatId = null;
+      saveState();
+      renderChatList();
+      renderMessages();
+      closeAllModals();
+      showToast("Historial local borrado");
     });
 
     $("aiPlusBtn")?.addEventListener("click", (e) => {
@@ -884,6 +1042,11 @@
     $("aiArtExportDoc")?.addEventListener("click", () => { if (currentArtifact) exportDoc(currentArtifact.title, currentArtifact.code); });
     $("aiArtExportPdf")?.addEventListener("click", () => { if (currentArtifact) exportPdf(currentArtifact.title, currentArtifact.code); });
     $("aiArtExportSlides")?.addEventListener("click", () => { if (currentArtifact) exportSlides(currentArtifact.title, currentArtifact.code); });
+    $("aiArtExportMd")?.addEventListener("click", () => {
+      if (!currentArtifact) return;
+      downloadBlob(`${(currentArtifact.title || "muntrume_ai").toLowerCase().replace(/[^a-z0-9]+/g, "_").slice(0, 40)}.md`, currentArtifact.code, "text/markdown;charset=utf-8");
+      showToast("Archivo Markdown (.md) descargado");
+    });
     $("aiArtDownload")?.addEventListener("click", () => {
       if (!currentArtifact) return;
       const ext = currentArtifact.type === "html" || currentArtifact.type === "slides" ? "html" : currentArtifact.type === "svg" ? "svg" : "md";

@@ -46,6 +46,10 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): asistent
           <span>Code</span>
           <span class="ai-side-pill">Live</span>
         </button>
+        <button type="button" id="aiCalcBtn" class="ai-side-btn">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8.01" y2="10"/><line x1="12" y1="10" x2="12.01" y2="10"/><line x1="16" y1="10" x2="16.01" y2="10"/><line x1="8" y1="14" x2="8.01" y2="14"/><line x1="12" y1="14" x2="12.01" y2="14"/><line x1="16" y1="14" x2="16.01" y2="14"/><line x1="8" y1="18" x2="16" y2="18"/></svg>
+          <span>Calculadoras</span>
+        </button>
         <button type="button" id="aiPersonalizeBtn" class="ai-side-btn">
           <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.85 1 1.51 1H21a2 2 0 1 1 0 4h-.09c-.66 0-1.25.4-1.51 1z"/></svg>
           <span>Personalización</span>
@@ -238,6 +242,7 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): asistent
         <button type="button" id="aiArtExportDoc" class="ai-mini-btn">Exportar DOC</button>
         <button type="button" id="aiArtExportPdf" class="ai-mini-btn">Exportar PDF</button>
         <button type="button" id="aiArtExportSlides" class="ai-mini-btn">Presentación</button>
+        <button type="button" id="aiArtExportMd" class="ai-mini-btn">Markdown</button>
         <button type="button" id="aiArtDownload" class="ai-mini-btn">Descargar</button>
         <button type="button" id="aiArtCopy" class="ai-mini-btn">Copiar</button>
       </div>
@@ -246,6 +251,80 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): asistent
         <pre><code id="aiArtCode"></code></pre>
       </div>
     </aside>
+  </div>
+
+  <!-- MODAL: CALCULADORAS DE INGENIERÍA IRACING -->
+  <div id="aiCalcModal" class="ai-modal" hidden role="dialog" aria-modal="true">
+    <div class="ai-modal__card" style="width:min(620px,100%)">
+      <div class="ai-modal__head">
+        <h2>Calculadoras de Ingeniería iRacing</h2>
+        <button type="button" class="ai-ico-btn" data-close-ai-modal aria-label="Cerrar">×</button>
+      </div>
+      <div class="ai-art-tabs" style="width:fit-content">
+        <button type="button" id="calcTabFuel" class="is-active">Combustible y Stints</button>
+        <button type="button" id="calcTabBalance">Diagnóstico Setup</button>
+      </div>
+
+      <div id="calcPanelFuel" class="ai-modal-form">
+        <div class="ai-calc-grid">
+          <div>
+            <label for="calcRaceMins">Duración carrera (min)</label>
+            <input type="number" id="calcRaceMins" value="45" min="5" max="1440" />
+          </div>
+          <div>
+            <label for="calcLapTime">Tiempo de vuelta (m:ss)</label>
+            <input type="text" id="calcLapTime" value="2:17.5" placeholder="2:17.5" />
+          </div>
+          <div>
+            <label for="calcFuelLap">Consumo (L / vuelta)</label>
+            <input type="number" id="calcFuelLap" value="2.95" step="0.05" min="0.2" max="20" />
+          </div>
+          <div>
+            <label for="calcTankSize">Depósito máximo (L)</label>
+            <input type="number" id="calcTankSize" value="100" step="1" min="10" max="200" />
+          </div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--ai-muted)">
+          <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="calcFormLap" checked style="width:auto" /> +1 vuelta formación</label>
+          <label style="display:inline-flex;align-items:center;gap:6px">Margen extra (vueltas): <input type="number" id="calcMarginLaps" value="1" min="0" max="5" step="0.5" style="width:64px;padding:4px 7px" /></label>
+        </div>
+        <div id="calcFuelResult" class="ai-calc-out"></div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px">
+          <button type="button" class="ai-mini-btn" data-close-ai-modal>Cerrar</button>
+          <button type="button" id="calcSendFuelToAi" class="ai-btn-accent">Analizar estrategia con Muntrume AI</button>
+        </div>
+      </div>
+
+      <div id="calcPanelBalance" class="ai-modal-form" hidden>
+        <div class="ai-calc-grid">
+          <div>
+            <label for="calcCarCat">Categoría / Coche</label>
+            <select id="calcCarCat" class="ai-select">
+              <option value="GT3">GT3 (Ferrari 296, Porsche 992, BMW M4…)</option>
+              <option value="GTP">GTP / Hypercar (499P, 963, Valkyrie…)</option>
+              <option value="Porsche Cup">Porsche 911 GT3 Cup (992)</option>
+              <option value="GT4">GT4 / TCR</option>
+            </select>
+          </div>
+          <div>
+            <label for="calcSymptom">Síntoma principal en pista</label>
+            <select id="calcSymptom" class="ai-select">
+              <option value="entry_understeer">Subviraje en entrada (frenada / turn-in)</option>
+              <option value="mid_understeer">Subviraje en vértice (mitad de curva)</option>
+              <option value="exit_oversteer">Sobreviraje en salida (aceleración)</option>
+              <option value="entry_oversteer">Sobreviraje en frenada / entrada</option>
+              <option value="brake_lock">Bloqueo temprano de ruedas al frenar</option>
+              <option value="rear_wear">Sobrecalentamiento / degradación trasera</option>
+            </select>
+          </div>
+        </div>
+        <div id="calcBalanceResult" class="ai-calc-out"></div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px">
+          <button type="button" class="ai-mini-btn" data-close-ai-modal>Cerrar</button>
+          <button type="button" id="calcSendBalanceToAi" class="ai-btn-accent">Pedir clics exactos a Muntrume 1.0 Pro</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- MODAL: GITHUB IMPORT -->
@@ -305,9 +384,12 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): asistent
         <textarea id="aiCustomInstrInput" rows="3" placeholder="Ej. Sé directo, usa tablas para setups y responde siempre en español…"></textarea>
         <label for="aiMemoryInput">Memoria persistente (hechos que recordará entre chats)</label>
         <textarea id="aiMemoryInput" rows="3" placeholder="Ej. Piloto GT3 en iRacing, Ferrari 296 GT3…"></textarea>
-        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px">
-          <button type="button" class="ai-mini-btn" data-close-ai-modal>Cancelar</button>
-          <button type="submit" class="ai-btn-accent">Guardar preferencias</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap">
+          <button type="button" id="aiClearHistoryBtn" class="ai-mini-btn" style="color:#ef4444;border-color:rgba(239,68,68,.35)">Borrar historial local</button>
+          <div style="display:flex;gap:8px">
+            <button type="button" class="ai-mini-btn" data-close-ai-modal>Cancelar</button>
+            <button type="submit" class="ai-btn-accent">Guardar preferencias</button>
+          </div>
         </div>
       </form>
     </div>
@@ -603,10 +685,21 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): asistent
     .ai-proj-card p { margin: 2px 0 0; font-size: 12px; color: var(--ai-muted); }
     .ai-modal-form { display: flex; flex-direction: column; gap: 8px; }
     .ai-modal-form label { font-size: 12px; font-weight: 600; color: var(--ai-muted); }
-    .ai-modal-form input, .ai-modal-form textarea {
+    .ai-modal-form input, .ai-modal-form textarea, .ai-select {
       width: 100%; padding: 9px 11px; border-radius: 10px; border: 1px solid var(--ai-line);
       background: var(--ai-bg); color: var(--ai-text); font-size: 13px;
     }
+    .ai-calc-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .ai-calc-out {
+      padding: 12px 14px; border-radius: 12px; background: var(--ai-bg);
+      border: 1px solid color-mix(in srgb, var(--ai-accent) 40%, var(--ai-line));
+      font-size: 13px; line-height: 1.55; color: var(--ai-text);
+    }
+    .ai-calc-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    .ai-calc-kpi { padding: 8px 10px; border-radius: 9px; background: var(--ai-surface); border: 1px solid var(--ai-line); }
+    .ai-calc-kpi span { display: block; font: 600 10px/1.2 var(--r-mono); text-transform: uppercase; color: var(--ai-muted); }
+    .ai-calc-kpi strong { display: block; margin-top: 3px; font: 700 15px/1.2 var(--r-mono); color: var(--ai-accent); }
+    @media (max-width: 640px) { .ai-calc-grid, .ai-calc-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     .ai-btn-accent {
       padding: 9px 16px; border-radius: 999px; border: 0;
       background: var(--ai-accent); color: var(--ai-accent-ink); font-weight: 700; font-size: 13px; cursor: pointer;
@@ -631,5 +724,5 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT): asistent
     }
   </style>
 
-  <script is:inline src="/assets/js/ai-studio.js?v=t362"></script>
+  <script is:inline src="/assets/js/ai-studio.js?v=t363"></script>
 </Layout>
