@@ -79,8 +79,14 @@ function mdToHtml(md) {
 function quickExport(kind, md) {
   const html = `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Muntrume AI</title><style>body{font-family:system-ui,sans-serif;max-width:780px;margin:32px auto;padding:0 20px;color:#111;line-height:1.6}pre{background:#f3f4f6;padding:12px;border-radius:8px;overflow:auto}</style></head><body><h1>Muntrume AI · Nota Técnica</h1>${mdToHtml(md)}</body></html>`;
   if (kind === "pdf") {
-    const w = window.open("", "_blank", "width=850,height=680");
-    if (w) { w.document.write(html); w.document.close(); setTimeout(() => { try { w.print(); } catch {} }, 300); }
+    const iframe = document.createElement("iframe");
+    iframe.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden";
+    document.body.appendChild(iframe);
+    const d = iframe.contentWindow?.document;
+    if (d) {
+      d.open(); d.write(html); d.close();
+      setTimeout(() => { try { iframe.contentWindow.focus(); iframe.contentWindow.print(); } catch {} setTimeout(() => iframe.remove(), 2000); }, 250);
+    }
   } else {
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob(["\ufeff" + html], { type: "application/msword" }));
@@ -203,7 +209,7 @@ async function send(raw) {
           const d = l.slice(5).trim(); if (d === "[DONE]") break;
           try {
             const j = JSON.parse(d);
-            const delta = j.token || j.delta || j.choices?.[0]?.delta?.content || "";
+            const delta = j.content || j.token || j.delta || j.choices?.[0]?.delta?.content || "";
             if (delta) { bot.content += delta; renderLog(); }
           } catch {}
         }

@@ -330,6 +330,7 @@
             <div class="ai-md">${renderMarkdownHtml(msg.content)}</div>
             <div class="ai-msg-actions">
               <button type="button" class="ai-act-btn" data-copy-md="${encodedMd}">Copiar</button>
+              <button type="button" class="ai-act-btn" data-regen-msg="${idx}">Regenerar</button>
               <button type="button" class="ai-act-btn" data-open-doc-artifact="${idx}">Artefacto</button>
               <button type="button" class="ai-act-btn" data-export-doc="${idx}">DOC</button>
               <button type="button" class="ai-act-btn" data-export-pdf="${idx}">PDF</button>
@@ -452,20 +453,46 @@
     setTimeout(() => URL.revokeObjectURL(a.href), 1500);
   }
 
+  function showToast(msg) {
+    let el = document.getElementById("aiToast");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "aiToast";
+      el.className = "ai-toast";
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.classList.add("is-show");
+    clearTimeout(el._t);
+    el._t = setTimeout(() => el.classList.remove("is-show"), 2400);
+  }
+
   function exportDoc(title, md) {
     downloadBlob(`${title.toLowerCase().replace(/[^a-z0-9]+/g, "_").slice(0, 40) || "muntrume_doc"}.doc`, "\ufeff" + buildDocHtml(title, md), "application/msword");
+    showToast("Documento Word (.doc) descargado");
   }
 
   function exportPdf(title, md) {
-    const w = window.open("", "_blank", "width=900,height=720");
-    if (!w) return;
-    w.document.write(buildDocHtml(title, md));
-    w.document.close();
-    setTimeout(() => { try { w.focus(); w.print(); } catch {} }, 350);
+    const iframe = document.createElement("iframe");
+    iframe.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden";
+    document.body.appendChild(iframe);
+    const doc = iframe.contentWindow?.document;
+    if (!doc) { iframe.remove(); return; }
+    doc.open();
+    doc.write(buildDocHtml(title, md));
+    doc.close();
+    setTimeout(() => {
+      try {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+      } catch {}
+      setTimeout(() => iframe.remove(), 2000);
+    }, 250);
   }
 
   function exportSlides(title, md) {
     downloadBlob(`${title.toLowerCase().replace(/[^a-z0-9]+/g, "_").slice(0, 40) || "muntrume_slides"}.html`, buildSlidesHtml(title, md), "text/html;charset=utf-8");
+    showToast("Presentación interactiva (.html) descargada");
   }
 
   // ============================================================================
@@ -577,13 +604,27 @@
               if (d === "[DONE]") break;
               try {
                 const j = JSON.parse(d);
+                if (j.meta) {
+                  if (j.meta.model_brand) botMsg.modelBrand = j.meta.model_brand;
+                  if (j.meta.used_web) botMsg.usedWeb = true;
+                  if (j.meta.used_github) botMsg.usedGithub = true;
+                  if (j.meta.used_vision) botMsg.usedVision = true;
+                }
                 const tDelta = j.reasoning || j.thinking || "";
-                const cDelta = j.token || j.delta || j.choices?.[0]?.delta?.content || "";
-                if (tDelta) botMsg.reasoning += tDelta;
-                if (cDelta) botMsg.content += cDelta;
-                if (mdNode && botMsg.content) {
-                  mdNode.innerHTML = renderMarkdownHtml(botMsg.content);
-                  feedEl.scrollTop = feedEl.scrollHeight;
+                const cDelta = j.content || j.token || j.delta || j.choices?.[0]?.delta?.content || "";
+                if (tDelta) {
+                  botMsg.reasoning += tDelta;
+                  if (mdNode && !botMsg.content) {
+                    mdNode.innerHTML = `<details class="ai-think" open><summary>Razonando (${esc(mBrand)})…</summary><pre>${esc(botMsg.reasoning)}</pre></details>`;
+                    feedEl.scrollTop = feedEl.scrollHeight;
+                  }
+                }
+                if (cDelta) {
+                  botMsg.content += cDelta;
+                  if (mdNode) {
+                    mdNode.innerHTML = renderMarkdownHtml(botMsg.content);
+                    feedEl.scrollTop = feedEl.scrollHeight;
+                  }
                 }
               } catch {}
             }
@@ -912,12 +953,22 @@
       const copyMd = t.closest("[data-copy-md]");
       if (copyMd) {
         navigator.clipboard.writeText(decodeURIComponent(copyMd.dataset.copyMd || ""));
-        copyMd.textContent = "Copiado";
-        setTimeout(() => { copyMd.textContent = "Copiar"; }, 1400);
+        showToast("Respuesta copiada al portapapeles");
         return;
       }
 
       const chat = getActiveChat();
+      const regenBtn = t.closest("[data-regen-msg]");
+      if (regenBtn && chat && !streaming) {
+        const idx = Number(regenBtn.dataset.regenMsg);
+        const prevUser = chat.messages.slice(0, idx).reverse().find((m) => m.role === "user");
+        if (prevUser) {
+          chat.messages = chat.messages.slice(0, idx - 1);
+          saveState();
+          sendMessage(prevUser.content);
+        }
+        return;
+      }
       const docArt = t.closest("[data-open-doc-artifact]");
       if (docArt && chat) {
         const m = chat.messages[Number(docArt.dataset.openDocArtifact)];
