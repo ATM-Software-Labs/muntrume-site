@@ -71,14 +71,14 @@ export const MUNTRUME_KB = {
   tools: [
     {
       id: "overlay",
-      name: "MMT Sync & Overlays",
-      license: "MIT (Open Source)",
+      name: "MMT Sync Overlay",
+      license: "MIT (100 % Open Source)",
       url: "/overlay/",
       highlights: [
-        "< 80 MB RAM y renderizado fluido a 60 FPS sin suscripciones",
+        "Licencia MIT 100 % Open Source, < 80 MB RAM y 60 FPS estables",
+        "Captura automática de telemetría IRSDK (memoria compartida de iRacing)",
         "Standings Multiclase, Relative, Track Map Catmull-Rom, Fuel Calc, Radar 360°",
         "Pit & Strategy Window (Pit Window, Est. Box, Rejoin Pos, BOX THIS LAP / FUEL SAVE)",
-        "Tire & Track Temp Monitor (FL/FR/RL/RR en °C y kPa/PSI + Track Temp, viento y humedad)",
         "Presets 1-clic (Sprint GT3, Endurance, Minimalist Qualy) y bloqueo Lock HUD",
       ],
     },
@@ -88,8 +88,8 @@ export const MUNTRUME_KB = {
       license: "Acceso equipo / público",
       url: "/garage/",
       highlights: [
-        "Más de 42.654 setups .sto verificados organizados por categoría y circuito",
-        "Variantes Safe, Endurance, Sprint, LDF, MDF y HDF",
+        "Setups .sto verificados por coche y circuito (42.654+ archivos en catálogo)",
+        "Variantes Safe, Endurance, Sprint, Qualy, LDF, MDF y HDF",
         "Sincronización automática en Documents\\iRacing\\setups\\MMT vía MMT Sync",
       ],
     },
@@ -99,9 +99,9 @@ export const MUNTRUME_KB = {
       license: "Gratuito (.JPG HD)",
       url: "/wallpapers/",
       highlights: [
-        "Capturas reales en pista 16:9 (Escritorio) y 9:16 4K (2160×3840 Móvil)",
+        "Packs por series oficiales de iRacing en 16:9 (Escritorio) y 9:16 4K (2160×3840 Móvil)",
         "URL directa compartible por captura (#mmt-...)",
-        "Script Sincronizar_Monitores_20s.bat sin permisos de admin (HKCU) para 0 ms de desfase",
+        "Script sincronizado para Windows (Sincronizar_Monitores_20s.bat, sin admin HKCU) con 0 ms de desfase",
       ],
     },
     {
@@ -117,11 +117,27 @@ export const MUNTRUME_KB = {
   seriesAndCars: [
     {
       series: "IMSA iRacing Series",
-      cars: ["Porsche 963 GTP", "Cadillac V-Series.R", "BMW M Hybrid V8", "Ferrari 499P", "Dallara P217 LMP2", "Ford Mustang GT3", "Porsche 911 GT3 R (992)", "Ferrari 296 GT3"],
+      cars: [
+        "GTP: Aston Martin Valkyrie GTP, Porsche 963 GTP, Cadillac V-Series.R, BMW M Hybrid V8, Ferrari 499P, Acura ARX-06",
+        "LMP2: Dallara P217 LMP2",
+        "11 GT3: Audi R8 LMS Evo II, McLaren 720S GT3 EVO, Ferrari 296 GT3, Porsche 911 GT3 R (992), Ford Mustang GT3, BMW M4 GT3, Mercedes-AMG GT3 EVO, Corvette Z06 GT3.R, Aston Martin Vantage EVO GT3, Lamborghini Huracán EVO GT3, Acura NSX EVO22 GT3",
+      ],
     },
     {
       series: "GT Sprint / GT Endurance",
-      cars: ["Ford Mustang GT3", "Porsche 911 GT3 R (992)", "McLaren 720S GT3 EVO", "Ferrari 296 GT3", "Audi R8 LMS Evo II", "BMW M4 GT3", "Mercedes-AMG GT3"],
+      cars: [
+        "Ford Mustang GT3",
+        "Porsche 911 GT3 R (992)",
+        "McLaren 720S GT3 EVO",
+        "Ferrari 296 GT3",
+        "Audi R8 LMS Evo II",
+        "BMW M4 GT3",
+        "Mercedes-AMG GT3 EVO",
+        "Corvette Z06 GT3.R",
+        "Aston Martin Vantage EVO GT3",
+        "Lamborghini Huracán EVO GT3",
+        "Acura NSX EVO22 GT3",
+      ],
     },
     {
       series: "Nürburgring Endurance Championship (NEC)",

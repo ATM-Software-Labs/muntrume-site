@@ -2,677 +2,937 @@
 import Layout from '../layouts/Layout.astro';
 import { MUNTRUME_KB } from '../data/muntrume-kb';
 
-const pageTitle = "Muntrume AI · Claude-Style Workspace & Artifacts (DOC, PDF, Slides) | Muntrume Motorsport";
-const pageDescription = "Workspace de IA de Muntrume Motorsport al estilo Claude simplificado: Artifacts interactivos en tiempo real (Documento, Presentación/Slides, Hoja de Stint, Setup .STO) con exportación en 1 clic a Word (.doc), PDF, Presentación, CSV y Markdown.";
+const pageTitle = "Muntrume AI · Pro Light Ultra Max (100 % Open Source) | Muntrume Motorsport";
+const pageDescription = "Muntrume AI Pro Light Ultra Max: asistente 100 % Open Source (MIT) con motores Lite, Pro, Ultra Max (razonamiento paso a paso) y Local Ollama, streaming instantáneo y base de conocimiento verificada de Muntrume Motorsport e iRacing.";
 ---
 
 <Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/ai/" hideFooter>
-  <div class="ai-app" id="aiWorkspace">
+  <div class="ai-shell" id="aiWorkspace" data-ai-theme="dark">
     <div id="aiScrim" class="ai-scrim" hidden></div>
 
-    <!-- LEFT SIDEBAR: MINIMAL CLAUDE HISTORY DRAWER -->
-    <aside id="aiSide" class="ai-side" aria-label="Conversaciones" hidden>
-      <div class="ai-side__bar">
-        <div class="ai-side__brand">
+    <!-- COLLAPSIBLE LEFT SIDEBAR (localStorage history) -->
+    <aside id="aiSide" class="ai-side" aria-label="Historial de conversaciones">
+      <div class="ai-side__head">
+        <a href="/" class="ai-side__brand" title="Volver a Muntrume Motorsport">
           <img src="/assets/img/icon-192.png" alt="Muntrume AI" width="22" height="22" />
-          <p>Conversaciones</p>
-        </div>
-        <button type="button" id="aiSideClose" class="ai-icon" aria-label="Cerrar historial">×</button>
-      </div>
-
-      <div class="ai-side__new">
-        <button type="button" class="ai-side__newbtn" onclick="document.getElementById('aiNew')?.click()">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-          <span>Nuevo chat</span>
-          <kbd>⌘K</kbd>
+          <span>Muntrume AI</span>
+        </a>
+        <button type="button" id="aiSideClose" class="ai-icon-btn" aria-label="Ocultar barra lateral" title="Ocultar barra lateral">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
 
-      <div id="aiChatList" class="ai-list" role="list"></div>
+      <div class="ai-side__actions">
+        <button type="button" id="aiNewChatSide" class="ai-new-chat-btn">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          <span>Nueva conversación</span>
+          <kbd>Ctrl K</kbd>
+        </button>
+      </div>
+
+      <div class="ai-side__section-label">Conversaciones guardadas</div>
+      <div id="aiChatList" class="ai-chat-list" role="list"></div>
 
       <div class="ai-side__foot">
-        <a href="/garage/">Setup Vault (.sto)</a>
-        <a href="/app/">MMT Sync Rust</a>
-        <a href="/overlay/">HUD 60Hz</a>
-        <a href="/calendar/">Calendario S4</a>
+        <a
+          href={MUNTRUME_KB.team.githubUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="ai-oss-badge"
+          title="Ver código fuente en GitHub (Licencia MIT)"
+        >
+          <span class="ai-oss-dot"></span>
+          <span>100 % Open Source · MIT</span>
+          <span aria-hidden="true">↗</span>
+        </a>
+        <nav class="ai-side__links" aria-label="Ecosistema Muntrume">
+          <a href="/garage/">Garage</a>
+          <a href="/overlay/">Overlay</a>
+          <a href="/wallpapers/">Wallpapers</a>
+          <a href="/pilotos/">Pilotos</a>
+        </nav>
       </div>
     </aside>
 
-    <!-- CENTER WORKSPACE: SIMPLIFIED CLAUDE STAGE -->
+    <!-- MAIN FULLSCREEN 100dvh STAGE -->
     <div class="ai-main">
-      <!-- ULTRA-CLEAN CLAUDE HEADER -->
-      <header class="ai-top">
-        <div class="ai-top__left">
-          <button type="button" id="aiSideOpen" class="ai-icon" aria-expanded="false" aria-controls="aiSide" aria-label="Abrir historial" title="Historial de conversaciones">
-            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18"/></svg>
+      <!-- COMPACT PRO HEADER -->
+      <header class="ai-topbar">
+        <div class="ai-topbar__left">
+          <button type="button" id="aiSideToggle" class="ai-icon-btn" aria-expanded="true" aria-controls="aiSide" aria-label="Mostrar u ocultar historial" title="Historial">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18"/></svg>
           </button>
 
-          <div class="ai-top__brand">
-            <img src="/assets/img/icon-192.png" alt="" width="24" height="24" class="ai-top__logo" />
-            <h1>Muntrume AI</h1>
-          </div>
-
-          <div class="ai-mode-tabs" role="group" aria-label="Selector de modelo Muntrume">
-            <button type="button" class="ai-mode-tab is-active" data-ai-mode="team" aria-pressed="true" title="Muntrume 1.0 Pro · Ingeniería de Pista, Estrategia y Setups .STO">Muntrume 1.0 Pro</button>
-            <button type="button" class="ai-mode-tab" data-ai-mode="assistant" aria-pressed="false" title="Muntrume 1.0 Apex · Razonamiento Avanzado, Código y Documentos">Muntrume 1.0 Apex</button>
+          <!-- Mode Selector: Equipo & iRacing vs Open Source General -->
+          <div class="ai-segmented" role="group" aria-label="Modo de conocimiento">
+            <button type="button" class="ai-seg-btn is-active" data-ai-mode="team" aria-pressed="true">Equipo &amp; iRacing</button>
+            <button type="button" class="ai-seg-btn" data-ai-mode="general" aria-pressed="false">Open Source General</button>
           </div>
         </div>
 
-        <div class="ai-top__actions">
-          <button type="button" id="aiBridgeBadge" hidden class="ai-bridge-pill" title="MMT Sync detectado en 127.0.0.1:38421 · Pulsa para lanzar HUD">
-            <span class="ai-status-dot"></span>
-            <span id="aiBridgeText">MMT Sync</span>
-          </button>
-          <button type="button" id="aiOllamaToggle" class="ai-ollama-btn" aria-pressed="false" title="Activar motor local de cockpit Muntrume 1.0 PitWall">
-            PitWall Local: Off
-          </button>
-          <div id="aiEngineStatus" class="ai-status-badge" title="Motor activo">
-            <span class="ai-status-dot"></span>
-            <span id="aiStatusText">1.0 Pro</span>
+        <!-- 4-Tier Open Source Engine Selector -->
+        <div class="ai-topbar__center">
+          <div class="ai-tier-bar" role="group" aria-label="Selector de motor Open Source">
+            <button type="button" class="ai-tier-btn" data-ai-tier="lite" aria-pressed="false" title="Lite · Instantáneo (respuestas en ms, cálculos y consultas rápidas)">
+              <span class="ai-tier-dot ai-tier-dot--lite"></span>
+              <span>Lite</span>
+            </button>
+            <button type="button" class="ai-tier-btn is-active" data-ai-tier="pro" aria-pressed="true" title="Pro · Equilibrado (ingeniería iRacing, código y análisis técnico)">
+              <span class="ai-tier-dot ai-tier-dot--pro"></span>
+              <span>Pro</span>
+            </button>
+            <button type="button" class="ai-tier-btn" data-ai-tier="ultra_max" aria-pressed="false" title="Ultra Max · Razonamiento profundo paso a paso">
+              <span class="ai-tier-dot ai-tier-dot--ultra"></span>
+              <span>Ultra Max</span>
+            </button>
+            <button type="button" class="ai-tier-btn" data-ai-tier="local" aria-pressed="false" title="Local Ollama · 100 % privado vía http://localhost:11434">
+              <span class="ai-tier-dot ai-tier-dot--local"></span>
+              <span>Local Ollama</span>
+            </button>
           </div>
-          <button type="button" id="aiArtifactToggle" class="ai-artifact-btn" aria-pressed="false" title="Abrir o cerrar panel de Artifacts y Exportación (DOC, PDF, Slides)">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M15 3v18"/></svg>
-            <span>Artifacts</span>
+        </div>
+
+        <div class="ai-topbar__right">
+          <button type="button" id="aiThemeBtn" class="ai-theme-btn" aria-label="Cambiar entre Dark Pro y Light Pro" title="Cambiar entre Dark Pro y Light Pro">
+            <span id="aiThemeIcon" aria-hidden="true">☀</span>
+            <span id="aiThemeLabel">Light Pro</span>
           </button>
-          <button type="button" id="aiNew" class="ai-new-btn" title="Nueva conversación (Ctrl+K)">
-            + Nuevo
-          </button>
+          <a
+            href={MUNTRUME_KB.team.githubUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="ai-mit-pill"
+            title="Repositorio Open Source MIT"
+          >
+            MIT ↗
+          </a>
         </div>
       </header>
 
-      <!-- CONVERSATION & EMPTY STAGE -->
+      <!-- OPTIONAL LOCAL OLLAMA BAR (shown only when Local Ollama tier is active) -->
+      <div id="aiLocalBar" class="ai-local-bar" hidden>
+        <div class="ai-local-bar__inner">
+          <span class="ai-local-bar__badge">🔒 100 % Privado · Local</span>
+          <label class="ai-local-bar__field">
+            <span>Endpoint</span>
+            <input type="url" id="aiOllamaUrl" value="http://localhost:11434/api/chat" spellcheck="false" />
+          </label>
+          <label class="ai-local-bar__field">
+            <span>Modelo</span>
+            <input type="text" id="aiOllamaModel" value="llama3.2" placeholder="llama3.2 / qwen2.5 / deepseek-r1" spellcheck="false" />
+          </label>
+          <span class="ai-local-bar__hint">Ningún dato sale de tu PC (con fallback local automático si Ollama está apagado).</span>
+        </div>
+      </div>
+
+      <!-- SCROLLABLE CHAT VIEWPORT (SINGLE SCROLL, NO DOUBLE SCROLL) -->
       <div id="aiStage" class="ai-stage is-empty">
         <div id="aiEmpty" class="ai-empty">
           <div class="ai-hero">
-            <div class="ai-hero__emblem">
-              <img src="/assets/img/icon-192.png" alt="Muntrume Motorsport" width="40" height="40" />
+            <div class="ai-hero__badge">
+              <span class="ai-oss-dot"></span>
+              <span>Muntrume AI · Pro Light Ultra Max</span>
             </div>
-            <h2 class="ai-hero__title">¿Qué creamos o analizamos hoy?</h2>
-            <p class="ai-empty__lead">
-              Genera informes técnicos, presentaciones de carrera, simulaciones de stint o setups <code>.sto</code> y expórtalos en un clic a <strong>Word (.DOC), PDF, Presentación (Slides) o Excel (.CSV)</strong>.
+            <h1 class="ai-hero__title">Ingeniería de pista y código Open Source, al instante.</h1>
+            <p class="ai-hero__sub">
+              Elige potencia entre <strong>Lite</strong>, <strong>Pro</strong>, <strong>Ultra Max</strong> o <strong>Local Ollama</strong>. Cero paywalls, base oficial verificada de Muntrume Motorsport y calculadoras reales de iRacing.
             </p>
           </div>
 
-          <!-- SIMPLIFIED CLAUDE ARTIFACT STYLE PILLS -->
-          <div class="ai-style-pills" aria-label="Estilos rápidos de Artifact">
-            <button type="button" class="ai-style-pill" data-prompt="Genera un informe técnico completo de Briefing de Carrera GT3 en Spa-Francorchamps con estrategia de paradas, presiones objetivo y reparto de stints" data-artifact-tab="doc">
-              <span class="ai-style-pill__ico">📄</span>
-              <span>Documento / Briefing (DOC · PDF)</span>
+          <!-- 4 QUICK START CHIPS -->
+          <div class="ai-chips" id="aiQuickChips">
+            <button type="button" class="ai-chip" data-mode="team" data-tier="lite" data-prompt="¿Quiénes son los pilotos oficiales de Muntrume Motorsport y cuáles son los correos de contacto?">
+              <span class="ai-chip__eyebrow">Equipo &amp; Contacto</span>
+              <strong>Pilotos oficiales y canales @muntru.me</strong>
+              <span>#16 Alberto, #1 Mateo, #22 Eduardo, administración y series oficiales</span>
             </button>
-            <button type="button" class="ai-style-pill" data-prompt="Crea una presentación en diapositivas del ecosistema Muntrume Motorsport: MMT Sync 60Hz, Setup Vault 42.6k .sto, Estrategia Endurance y Plantilla de Pilotos" data-artifact-tab="slides">
-              <span class="ai-style-pill__ico">📽️</span>
-              <span>Presentación / Slides (16:9)</span>
+            <button type="button" class="ai-chip" data-mode="team" data-tier="pro" data-prompt="Explica la arquitectura y características del MMT Sync Overlay Open Source (MIT, RAM, FPS e IRSDK)">
+              <span class="ai-chip__eyebrow">MMT Sync Overlay</span>
+              <strong>HUD 60 FPS Open Source (&lt; 80 MB RAM)</strong>
+              <span>Licencia MIT, captura IRSDK, Setup Vault y wallpapers sincronizados</span>
             </button>
-            <button type="button" class="ai-style-pill" data-prompt="Calcula combustible y estrategia para una carrera GT3 de 45 min" data-artifact-tab="stint">
-              <span class="ai-style-pill__ico">📊</span>
-              <span>Hoja de Stint &amp; Fuel (CSV · PDF)</span>
+            <button type="button" class="ai-chip" data-mode="team" data-tier="ultra_max" data-prompt="Calcula combustible y estrategia detallada para una carrera GT3 de 45 minutos (vuelta 2:18, consumo 2.85 L/vuelta, depósito 104 L)">
+              <span class="ai-chip__eyebrow">Estrategia GT3</span>
+              <strong>Calculadora de combustible y ventana de pit</strong>
+              <span>Litros exactos, vuelta de margen, parada y reparto de stints</span>
             </button>
-            <button type="button" class="ai-style-pill" data-prompt="Explica la nomenclatura oficial de setups .sto de Muntrume y la guía de ajustes rápidos para subviraje y sobreviraje" data-artifact-tab="sto">
-              <span class="ai-style-pill__ico">🔧</span>
-              <span>Setup .STO &amp; Chasis</span>
-            </button>
-          </div>
-
-          <!-- 4 SIMPLIFIED CLAUDE STARTER CARDS -->
-          <div class="ai-starters" id="aiTopicButtons">
-            <button type="button" data-prompt="Calcula combustible y estrategia para una carrera GT3 de 45 min" data-artifact-tab="stint">
-              <span class="ai-starter__tag">📊 Artifact · Estrategia &amp; CSV</span>
-              <strong>Estrategia GT3 de 45 min y ventana de box</strong>
-              <span>Cálculo de litros, paradas y simulador interactivo exportable a PDF/Excel</span>
-            </button>
-            <button type="button" data-prompt="Crea una presentación ejecutiva en 5 diapositivas sobre la preparación de una carrera de resistencia de 24h en iRacing con Muntrume Motorsport" data-artifact-tab="slides">
-              <span class="ai-starter__tag">📽️ Artifact · Presentación 16:9</span>
-              <strong>Presentación: Preparación 24h Endurance</strong>
-              <span>Genera diapositivas navegables y descárgalas en HTML/PDF horizontal</span>
-            </button>
-            <button type="button" data-prompt="¿Cómo instalo y uso el MMT Sync Overlay Open Source?" data-artifact-tab="doc">
-              <span class="ai-starter__tag">📄 Artifact · Guía Técnica</span>
-              <strong>Manual de instalación MMT Sync &amp; HUD 60Hz</strong>
-              <span>Guía paso a paso con winget, memoria compartida y 9 widgets</span>
-            </button>
-            <button type="button" data-prompt="¿Quiénes son los pilotos y cómo contacto con el equipo?" data-artifact-tab="doc">
-              <span class="ai-starter__tag">🏎️ Conocimiento Oficial · 0 ms</span>
-              <strong>Plantilla oficial de pilotos y canales MMT</strong>
-              <span>Dorsales #16, #1, #22, Garage 61, Discord y correos @muntru.me</span>
+            <button type="button" class="ai-chip" data-mode="general" data-tier="pro" data-prompt="Escribe una función en TypeScript limpia para calcular el ritmo medio por stint descartando vueltas de entrada y salida de boxes">
+              <span class="ai-chip__eyebrow">Asistente Open Source</span>
+              <strong>Código, arquitectura y razonamiento técnico</strong>
+              <span>Markdown con resaltado de sintaxis y botón copiar en cada bloque</span>
             </button>
           </div>
         </div>
 
-        <div id="aiLog" class="ai-log" role="log" aria-busy="false" hidden></div>
+        <div id="aiLog" class="ai-log" role="log" aria-live="polite" aria-busy="false" hidden></div>
       </div>
 
       <button type="button" id="aiJump" class="ai-jump" hidden>↓ Ir al final</button>
 
-      <!-- CLAUDE MINIMAL COMPOSER -->
+      <!-- COMPOSER -->
       <form id="aiForm" class="ai-composer" autocomplete="off">
         <p id="aiLive" class="sr-only" aria-live="polite"></p>
-        <div class="ai-composer__card">
-          <div class="ai-composer__box">
-            <label class="sr-only" for="aiInput">Escribe a Muntrume AI</label>
-            <textarea id="aiInput" rows="1" maxlength="2000" placeholder="Responde o pide un documento, presentación, tabla de estrategia o código…"></textarea>
-            <button type="button" id="aiSend" aria-label="Enviar">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-            </button>
-          </div>
-          <div class="ai-composer__bar">
-            <div class="ai-composer__meta">
-              <span class="ai-model-chip" id="aiComposerModelLabel">
-                <span class="ai-status-dot"></span>
-                <span>Muntrume 1.0 Pro · Race Engineer</span>
-              </span>
-              <button type="button" class="ai-composer-toolbtn" data-open-artifact="doc" title="Abrir vista de Documento exportable a Word y PDF">📄 Doc</button>
-              <button type="button" class="ai-composer-toolbtn" data-open-artifact="slides" title="Abrir vista de Presentación / Diapositivas 16:9">📽️ Slides</button>
-              <button type="button" class="ai-composer-toolbtn" data-open-artifact="stint" title="Abrir Simulador de Stint y Combustible">📊 Stint</button>
-              <button type="button" class="ai-composer-toolbtn" data-open-artifact="sto" title="Abrir Decodificador Setup .STO">🔧 .STO</button>
-            </div>
-            <div class="ai-composer__hints">
-              <span>Exporta a <strong>DOC · PDF · Slides · CSV · MD</strong></span>
-            </div>
-          </div>
+        <div class="ai-composer__box">
+          <label class="sr-only" for="aiInput">Escribe tu consulta para Muntrume AI</label>
+          <textarea
+            id="aiInput"
+            rows="1"
+            maxlength="3000"
+            placeholder="Pregunta sobre Muntrume Motorsport, calcula combustible GT3 o pide código Open Source…"
+          ></textarea>
+          <button type="button" id="aiSend" class="ai-send-btn" aria-label="Enviar mensaje">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+          </button>
+        </div>
+        <div class="ai-composer__meta">
+          <span id="aiStatusChip" class="ai-status-chip">
+            <span class="ai-oss-dot"></span>
+            <span id="aiStatusText">Pro · Equipo &amp; iRacing</span>
+          </span>
+          <span class="ai-composer__hint">Enter para enviar · Shift+Enter nueva línea · 100 % Open Source</span>
         </div>
       </form>
     </div>
-
-    <!-- RIGHT PANEL: CLAUDE MULTI-STYLE ARTIFACT STUDIO & EXPORT ENGINE -->
-    <aside id="aiArtifactPane" class="ai-artifact" aria-label="Artifact Studio y Exportación" hidden>
-      <!-- Artifact Header: Style Tabs + Close -->
-      <div class="ai-artifact__head">
-        <div class="ai-artifact__tabs" role="tablist" aria-label="Estilo de Artifact">
-          <button type="button" role="tab" class="ai-art-tab is-active" data-art-tab="doc" aria-selected="true">📄 Documento</button>
-          <button type="button" role="tab" class="ai-art-tab" data-art-tab="slides" aria-selected="false">📽️ Presentación</button>
-          <button type="button" role="tab" class="ai-art-tab" data-art-tab="stint" aria-selected="false">📊 Stint Sim</button>
-          <button type="button" role="tab" class="ai-art-tab" data-art-tab="sto" aria-selected="false">🔧 Setup .STO</button>
-          <button type="button" role="tab" class="ai-art-tab" data-art-tab="code" aria-selected="false">💻 Markdown</button>
-        </div>
-        <button type="button" id="aiArtifactClose" class="ai-icon" aria-label="Cerrar Artifact Studio">×</button>
-      </div>
-
-      <!-- Universal 1-Click Export Toolbar (DOC, PDF, Slides, CSV, MD) -->
-      <div class="ai-export-bar" aria-label="Exportar Artifact">
-        <span class="ai-export-bar__lbl">Exportar:</span>
-        <button type="button" id="btnExportDoc" class="ai-export-btn" title="Descargar documento editable en Microsoft Word / Google Docs (.doc)">
-          <span>📝</span> <span>Word (.doc)</span>
-        </button>
-        <button type="button" id="btnExportPdf" class="ai-export-btn" title="Exportar o guardar como PDF vectorial A4">
-          <span>📕</span> <span>PDF</span>
-        </button>
-        <button type="button" id="btnExportSlides" class="ai-export-btn" title="Descargar presentación interactiva 16:9 (.html / PDF Slides)">
-          <span>📽️</span> <span>Presentación</span>
-        </button>
-        <button type="button" id="btnExportCsv" class="ai-export-btn" title="Exportar tablas o datos de estrategia a Excel (.csv)">
-          <span>📊</span> <span>CSV</span>
-        </button>
-        <button type="button" id="btnExportMd" class="ai-export-btn" title="Descargar código fuente Markdown (.md)">
-          <span>⬇️</span> <span>.MD</span>
-        </button>
-      </div>
-
-      <div class="ai-artifact__body">
-        <!-- STYLE 1: EDITORIAL DOCUMENT ARTIFACT (CLAUDE DOC VIEW) -->
-        <section id="artPanelDoc" class="ai-art-panel">
-          <article class="ai-doc-sheet" id="artDocSheet">
-            <header class="ai-doc-sheet__head">
-              <div class="ai-doc-sheet__brand">
-                <img src="/assets/img/icon-192.png" alt="" width="26" height="26" />
-                <div>
-                  <strong>MUNTRUME MOTORSPORT</strong>
-                  <span>Engineering Artifact &amp; Race Briefing · Sant Andreu, Barcelona</span>
-                </div>
-              </div>
-              <span class="ai-doc-sheet__badge" id="artDocDateBadge">2026 S4 · VERIFIED</span>
-            </header>
-            <h3 class="ai-doc-sheet__title" id="artCanvasTitle">Informe Técnico de Ingeniería</h3>
-            <div id="artCanvasBody" class="ai-md ai-doc-sheet__content">
-              <p>Haz cualquier consulta en el chat o pulsa uno de los botones rápidos para generar un documento técnico listo para exportar a <strong>Word (.doc)</strong>, <strong>PDF</strong> o <strong>Presentación</strong>.</p>
-            </div>
-          </article>
-        </section>
-
-        <!-- STYLE 2: INTERACTIVE 16:9 PRESENTATION / SLIDES DECK -->
-        <section id="artPanelSlides" class="ai-art-panel" hidden>
-          <div class="ai-slides-studio">
-            <div class="ai-slides-toolbar">
-              <div class="ai-slides-nav">
-                <button type="button" id="btnSlidePrev" class="ai-art-mini-btn" aria-label="Diapositiva anterior">← Anterior</button>
-                <span id="artSlideCounter" class="ai-slides-counter">Diapositiva 1 / 4</span>
-                <button type="button" id="btnSlideNext" class="ai-art-mini-btn" aria-label="Siguiente diapositiva">Siguiente →</button>
-              </div>
-              <button type="button" id="btnSlideFullscreen" class="ai-art-mini-btn" title="Presentar a pantalla completa">⛶ Pantalla completa</button>
-            </div>
-
-            <div id="artSlideStage" class="ai-slide-stage">
-              <div class="ai-slide-card" id="artSlideCard">
-                <div class="ai-slide-card__top">
-                  <span class="ai-slide-card__brand">MUNTRUME MOTORSPORT · 2026 S4</span>
-                  <span class="ai-slide-card__num" id="artSlideNumBadge">01</span>
-                </div>
-                <div class="ai-slide-card__body" id="artSlideBody"></div>
-                <div class="ai-slide-card__foot">
-                  <span>muntru.me · Sim Racing Engineering</span>
-                  <span id="artSlideTitleFoot">Briefing Oficial</span>
-                </div>
-              </div>
-            </div>
-
-            <div id="artSlideDots" class="ai-slide-dots"></div>
-          </div>
-        </section>
-
-        <!-- STYLE 3: INTERACTIVE STINT & FUEL SIMULATOR -->
-        <section id="artPanelStint" class="ai-art-panel" hidden>
-          <div class="ai-art-card">
-            <div class="ai-art-card__top">
-              <span class="ai-starter__tag">iracing_stint_engine · Real-Time</span>
-              <span class="ai-art-live">LIVE</span>
-            </div>
-            <h3>Simulador de Stint &amp; Combustible</h3>
-            <p class="ai-art-sub">Ajusta los parámetros y conviértelos en Documento Word, PDF, Presentación o CSV.</p>
-
-            <div class="ai-art-form">
-              <label>
-                <span>Duración carrera (min)</span>
-                <input type="number" id="artRaceMin" value="45" min="10" max="1440" step="5" />
-              </label>
-              <label>
-                <span>Tiempo vuelta (seg)</span>
-                <input type="number" id="artLapSec" value="108.5" min="35" max="540" step="0.5" />
-              </label>
-              <label>
-                <span>Consumo (L / vuelta)</span>
-                <input type="number" id="artFuelLap" value="2.85" min="0.5" max="15" step="0.05" />
-              </label>
-              <label>
-                <span>Depósito máx. (L)</span>
-                <input type="number" id="artTankCap" value="55" min="15" max="125" step="1" />
-              </label>
-            </div>
-
-            <div class="ai-art-metrics">
-              <div class="ai-art-metric is-highlight">
-                <span>COMBUSTIBLE TOTAL (+1.5v)</span>
-                <strong id="artOutTotalFuel">75.3 L</strong>
-              </div>
-              <div class="ai-art-metric">
-                <span>VUELTAS ESTIMADAS</span>
-                <strong id="artOutTotalLaps">25 vueltas</strong>
-              </div>
-              <div class="ai-art-metric">
-                <span>AUTONOMÍA / STINT</span>
-                <strong id="artOutStintLaps">19 vueltas</strong>
-              </div>
-              <div class="ai-art-metric">
-                <span>PARADAS &amp; PIT WINDOW</span>
-                <strong id="artOutPitWindow">1 parada · V12–V18</strong>
-              </div>
-            </div>
-
-            <div class="ai-art-actions">
-              <button type="button" id="artSendStintToChat" class="ai-art-btn ai-art-btn--primary">
-                Generar Informe y Diapositivas →
-              </button>
-              <button type="button" id="artSendFuelToIracing" class="ai-art-btn">
-                ⚡ Enviar a iRacing
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <!-- STYLE 4: SETUP .STO DECODER & HANDLING SHEET -->
-        <section id="artPanelSto" class="ai-art-panel" hidden>
-          <div class="ai-art-card">
-            <div class="ai-art-card__top">
-              <span class="ai-starter__tag">mmt_setup_sheet · 42.654+ .sto</span>
-              <a href="/garage/" class="ai-art-link">Abrir Garage ↗</a>
-            </div>
-            <h3>Hoja de Setup .STO &amp; Diagnóstico</h3>
-            <p class="ai-art-sub">Configura el código oficial y genera la ficha mecánica exportable a PDF/DOC.</p>
-
-            <div class="ai-art-form">
-              <label>
-                <span>Coche</span>
-                <select id="artStoCar">
-                  <option value="F296">F296 · Ferrari 296 GT3</option>
-                  <option value="P911">P911 · Porsche 911 GT3.R (992)</option>
-                  <option value="M4">M4 · BMW M4 GT3</option>
-                  <option value="AMG">AMG · Mercedes-AMG GT3</option>
-                  <option value="MCL">MCL · McLaren 720S GT3 EVO</option>
-                  <option value="MUST">MUST · Ford Mustang GT3</option>
-                  <option value="P963">P963 · Porsche 963 GTP</option>
-                  <option value="F499P">F499P · Ferrari 499P GTP</option>
-                </select>
-              </label>
-              <label>
-                <span>Circuito</span>
-                <select id="artStoTrack">
-                  <option value="SPA">SPA · Spa-Francorchamps</option>
-                  <option value="DAYTONA">DAYTONA · Daytona Intl</option>
-                  <option value="NORDS">NORDS · Nürburgring 24h</option>
-                  <option value="LEMANS">LEMANS · 24h Le Mans</option>
-                  <option value="MONZA">MONZA · Autodromo Monza</option>
-                  <option value="SEBRING">SEBRING · Sebring Intl</option>
-                </select>
-              </label>
-              <label>
-                <span>Tipo de sesión</span>
-                <select id="artStoSession">
-                  <option value="END">END · Resistencia (Stint completo)</option>
-                  <option value="R">R · Race Sprint (40–45 min)</option>
-                  <option value="Q2">Q2 · Clasificación (2 vueltas)</option>
-                  <option value="SAFE">SAFE · Alta estabilidad trasera</option>
-                  <option value="W">W · Wet / Lluvia</option>
-                </select>
-              </label>
-              <label>
-                <span>Síntoma en pista (Handling Doctor)</span>
-                <select id="artStoSymptom">
-                  <option value="entry_under">Subviraje en entrada (frenando)</option>
-                  <option value="mid_under">Subviraje en ápice (mitad curva)</option>
-                  <option value="exit_over">Sobreviraje al acelerar (salida)</option>
-                  <option value="entry_over">Trasera inestable en frenada</option>
-                  <option value="top_speed">Falta velocidad punta en recta</option>
-                </select>
-              </label>
-            </div>
-
-            <div class="ai-art-codebox">
-              <span class="ai-art-codebox__lbl">ARCHIVO OFICIAL GENERADO</span>
-              <code id="artStoFilename">MMT_F296_SPA_END_V2.sto</code>
-            </div>
-
-            <div class="ai-art-prescription" id="artStoPrescription">
-              <strong>Ajuste recomendado:</strong> Baja <code>Brake Bias -0.5%</code> hacia atrás, ablanda <code>1 click</code> la ARB delantera o sube <code>+1 mm</code> la altura trasera (rake).
-            </div>
-
-            <div class="ai-art-actions">
-              <button type="button" id="artAskStoInChat" class="ai-art-btn ai-art-btn--primary">
-                Generar Ficha Técnica en Documento →
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <!-- STYLE 5: RAW MARKDOWN / SOURCE CODE VIEW -->
-        <section id="artPanelCode" class="ai-art-panel" hidden>
-          <div class="ai-art-card">
-            <div class="ai-art-card__top">
-              <span class="ai-starter__tag">source:markdown_raw</span>
-              <button type="button" id="artCopyCanvasBtn" class="ai-art-mini-btn">📋 Copiar Markdown</button>
-            </div>
-            <pre id="artRawMarkdownPre" class="ai-raw-md-box"></pre>
-          </div>
-        </section>
-      </div>
-    </aside>
   </div>
+
+  <script id="muntrumeKbData" type="application/json" set:html={JSON.stringify(MUNTRUME_KB)}></script>
+  <script defer src="/assets/js/ai-chat.js?v=pluma1"></script>
 </Layout>
 
-<script type="application/json" id="muntrumeKbData" set:html={JSON.stringify(MUNTRUME_KB)}></script>
-
 <style is:global>
-  body:has(.ai-app) { height: 100dvh; min-height: 0; overflow: hidden; }
-  body:has(.ai-app) #main-content { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+  /* Lock viewport to 100dvh on /ai/ for zero double scroll */
+  html:has(#aiWorkspace),
+  body:has(#aiWorkspace) {
+    height: 100dvh;
+    overflow: hidden;
+  }
+  body:has(#aiWorkspace) main {
+    height: calc(100dvh - 60px);
+    overflow: hidden;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
 
-  /* CLAUDE SIMPLIFIED WARM & DARK DESIGN TOKENS */
-  .ai-app {
-    --ai-bg: #0b0d11;
-    --ai-surface: #11151c;
-    --ai-surface-2: #171c26;
-    --ai-card: rgba(20, 25, 34, 0.85);
+  /* ===== PRO LIGHT ULTRA MAX TOKENS ===== */
+  .ai-shell {
+    --ai-bg: #090b0f;
+    --ai-surface: #0f131a;
+    --ai-surface-2: #151b24;
     --ai-border: rgba(255, 255, 255, 0.08);
-    --ai-border-strong: rgba(0, 230, 153, 0.36);
-    --ai-text: #f1f5f9;
-    --ai-muted: #94a3b8;
-    --ai-accent: #00e699;
-    --ai-accent-soft: rgba(0, 230, 153, 0.12);
-    --ai-ink: #04130d;
-    flex: 1;
-    min-height: 0;
+    --ai-border-strong: rgba(255, 255, 255, 0.16);
+    --ai-text: #f3f6fa;
+    --ai-muted: #93a1b5;
+    --ai-accent: #10b981;
+    --ai-accent-ink: #04130d;
+    --ai-accent-soft: rgba(16, 185, 129, 0.13);
+    --ai-code-bg: #0b0e14;
+    --ai-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+
+    position: relative;
     display: flex;
+    width: 100%;
+    height: 100%;
     background: var(--ai-bg);
     color: var(--ai-text);
+    font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
+    overflow: hidden;
   }
 
-  html[data-theme="light"] .ai-app {
-    --ai-bg: #f5f4ef;
+  .ai-shell[data-ai-theme="light"] {
+    --ai-bg: #f8fafc;
     --ai-surface: #ffffff;
-    --ai-surface-2: #eceae3;
-    --ai-card: rgba(255, 255, 255, 0.94);
-    --ai-border: rgba(15, 23, 42, 0.1);
-    --ai-border-strong: rgba(5, 150, 105, 0.4);
-    --ai-text: #141413;
-    --ai-muted: #575653;
+    --ai-surface-2: #f1f5f9;
+    --ai-border: rgba(15, 23, 42, 0.09);
+    --ai-border-strong: rgba(15, 23, 42, 0.18);
+    --ai-text: #0f172a;
+    --ai-muted: #475569;
     --ai-accent: #059669;
+    --ai-accent-ink: #ffffff;
     --ai-accent-soft: rgba(5, 150, 105, 0.1);
-    --ai-ink: #ffffff;
+    --ai-code-bg: #0f172a;
+    --ai-shadow: 0 10px 28px rgba(15, 23, 42, 0.07);
   }
 
-  .ai-scrim { position: fixed; inset: var(--site-header, 56px) 0 0 0; background: rgba(4, 8, 7, .65); backdrop-filter: blur(4px); z-index: 30; }
-  .ai-scrim[hidden], .ai-side[hidden], .ai-artifact[hidden], .ai-jump[hidden], .ai-actions[hidden], .ai-bridge-pill[hidden], .ai-art-panel[hidden] { display: none !important; }
+  /* ===== SIDEBAR ===== */
+  .ai-side {
+    width: 264px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--ai-surface);
+    border-right: 1px solid var(--ai-border);
+    transition: width 0.2s ease, transform 0.2s ease;
+    z-index: 30;
+  }
+  .ai-side.is-collapsed {
+    width: 0;
+    overflow: hidden;
+    border-right-width: 0;
+  }
+  .ai-side__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--ai-border);
+  }
+  .ai-side__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: -0.02em;
+    color: var(--ai-text);
+    text-decoration: none;
+  }
+  .ai-side__brand img { border-radius: 6px; }
+  .ai-side__actions { padding: 12px 12px 8px; }
+  .ai-new-chat-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 11px;
+    border-radius: 10px;
+    border: 1px solid var(--ai-border-strong);
+    background: var(--ai-surface-2);
+    color: var(--ai-text);
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .ai-new-chat-btn:hover { border-color: var(--ai-accent); }
+  .ai-new-chat-btn kbd {
+    margin-left: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10px;
+    color: var(--ai-muted);
+    padding: 2px 5px;
+    border-radius: 5px;
+    border: 1px solid var(--ai-border);
+  }
+  .ai-side__section-label {
+    padding: 8px 14px 4px;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ai-muted);
+  }
+  .ai-chat-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .ai-chat-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border-radius: 9px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--ai-muted);
+    font-size: 12.5px;
+    text-align: left;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.12s ease, color 0.12s ease;
+  }
+  .ai-chat-item:hover { background: var(--ai-surface-2); color: var(--ai-text); }
+  .ai-chat-item.is-active {
+    background: var(--ai-accent-soft);
+    border-color: rgba(16, 185, 129, 0.28);
+    color: var(--ai-text);
+    font-weight: 600;
+  }
+  .ai-chat-item__title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ai-chat-item__del {
+    opacity: 0;
+    border: 0;
+    background: transparent;
+    color: var(--ai-muted);
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
+  .ai-chat-item:hover .ai-chat-item__del,
+  .ai-chat-item.is-active .ai-chat-item__del { opacity: 0.85; }
+  .ai-chat-item__del:hover { color: #f43f5e; background: rgba(244, 63, 94, 0.12); }
 
-  /* LEFT SIDEBAR */
-  .ai-side { width: min(256px, 86vw); flex: 0 0 auto; display: flex; flex-direction: column; min-height: 0; background: var(--ai-surface); border-right: 1px solid var(--ai-border); }
-  .ai-side__bar { display: flex; align-items: center; justify-content: space-between; min-height: 50px; padding: 8px 14px; border-bottom: 1px solid var(--ai-border); }
-  .ai-side__brand { display: flex; align-items: center; gap: 8px; }
-  .ai-side__brand img { width: 22px; height: 22px; border-radius: 6px; object-fit: contain; }
-  .ai-side__bar p { margin: 0; font: 700 12px/1 var(--r-sans, sans-serif); color: var(--ai-text); }
-  .ai-side__new { padding: 10px 10px 4px; }
-  .ai-side__newbtn { width: 100%; display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 11px; border-radius: 9px; border: 1px solid var(--ai-border); background: var(--ai-bg); color: var(--ai-text); font: 600 12.5px/1 sans-serif; cursor: pointer; }
-  .ai-side__newbtn:hover { border-color: var(--ai-accent); color: var(--ai-accent); }
-  .ai-side__newbtn kbd { margin-left: auto; font: 600 10px/1 var(--r-mono, monospace); padding: 2px 5px; border-radius: 4px; background: var(--ai-surface-2); color: var(--ai-muted); }
-  .ai-list { flex: 1; min-height: 0; overflow: auto; padding: 8px; display: grid; align-content: start; gap: 3px; }
-  .ai-list__empty { margin: 8px; color: var(--ai-muted); font-size: 12px; }
-  .ai-chat { display: grid; grid-template-columns: 1fr auto; gap: 3px; align-items: center; }
-  .ai-chat__open { min-height: 34px; border: 0; border-radius: 7px; background: transparent; color: var(--ai-muted); text-align: left; padding: 0 10px; cursor: pointer; font: 500 12.5px/1.3 sans-serif; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ai-chat__open:hover { background: var(--ai-surface-2); color: var(--ai-text); }
-  .ai-chat__open[aria-current="true"] { background: var(--ai-accent-soft); color: var(--ai-accent); font-weight: 700; }
-  .ai-side__foot { padding: 10px 12px; border-top: 1px solid var(--ai-border); display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
-  .ai-side__foot a { font: 600 11px/1.2 var(--r-mono, monospace); color: var(--ai-muted); text-decoration: none; padding: 5px 6px; border-radius: 6px; }
-  .ai-side__foot a:hover { color: var(--ai-accent); background: var(--ai-surface-2); }
+  .ai-side__foot {
+    padding: 12px;
+    border-top: 1px solid var(--ai-border);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .ai-oss-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 7px 10px;
+    border-radius: 9px;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    background: var(--ai-accent-soft);
+    color: var(--ai-accent);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: opacity 0.15s ease;
+  }
+  .ai-oss-badge:hover { opacity: 0.88; }
+  .ai-oss-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: var(--ai-accent);
+    flex-shrink: 0;
+  }
+  .ai-side__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    justify-content: center;
+    font-size: 11px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .ai-side__links a { color: var(--ai-muted); text-decoration: none; }
+  .ai-side__links a:hover { color: var(--ai-accent); }
 
-  /* MINIMAL CLAUDE TOP BAR */
-  .ai-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 50px; padding: 6px 14px; border-bottom: 1px solid var(--ai-border); background: var(--ai-surface); }
-  .ai-top__left { display: flex; align-items: center; gap: 10px; min-width: 0; }
-  .ai-top__brand { display: flex; align-items: center; gap: 8px; }
-  .ai-top__logo { width: 22px; height: 22px; border-radius: 6px; object-fit: contain; }
-  .ai-top h1 { margin: 0; font-size: 14px; font-weight: 700; color: var(--ai-text); white-space: nowrap; }
-  .ai-mode-tabs { display: inline-flex; padding: 2px; border-radius: 8px; background: var(--ai-bg); border: 1px solid var(--ai-border); gap: 2px; }
-  .ai-mode-tab { padding: 4px 10px; border-radius: 6px; border: 0; background: transparent; color: var(--ai-muted); font: 600 11.5px/1 sans-serif; cursor: pointer; }
-  .ai-mode-tab.is-active { background: var(--ai-accent); color: var(--ai-ink); font-weight: 700; }
+  /* ===== MAIN AREA & TOPBAR ===== */
+  .ai-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+  }
+  .ai-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--ai-border);
+    background: var(--ai-surface);
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+  .ai-topbar__left,
+  .ai-topbar__center,
+  .ai-topbar__right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ai-icon-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    border: 1px solid var(--ai-border);
+    background: var(--ai-surface-2);
+    color: var(--ai-text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+  }
+  .ai-icon-btn:hover { border-color: var(--ai-accent); }
 
-  .ai-top__actions { display: flex; align-items: center; gap: 6px; }
-  .ai-bridge-pill { display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 9px; border-radius: 999px; background: var(--ai-accent-soft); border: 1px solid var(--ai-border-strong); color: var(--ai-accent); font: 700 10.5px/1 var(--r-mono, monospace); cursor: pointer; }
-  .ai-ollama-btn, .ai-artifact-btn, .ai-new-btn { height: 28px; padding: 0 10px; border-radius: 7px; border: 1px solid var(--ai-border); background: var(--ai-bg); color: var(--ai-text); font: 600 11.5px/1 sans-serif; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
-  .ai-ollama-btn:hover, .ai-artifact-btn:hover, .ai-new-btn:hover { border-color: var(--ai-accent); }
-  .ai-ollama-btn[aria-pressed="true"], .ai-artifact-btn[aria-pressed="true"] { border-color: var(--ai-accent); color: var(--ai-accent); background: var(--ai-accent-soft); }
-  .ai-status-badge { display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 9px; border-radius: 999px; background: var(--ai-surface-2); border: 1px solid var(--ai-border); color: var(--ai-muted); font: 600 10.5px/1 var(--r-mono, monospace); }
-  .ai-status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ai-accent); }
-  .ai-status-badge.is-busy { color: #facc15; }
-  .ai-status-badge.is-busy .ai-status-dot { background: #facc15; animation: ai-dot .9s infinite ease-in-out; }
+  .ai-segmented,
+  .ai-tier-bar {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px;
+    border-radius: 10px;
+    background: var(--ai-surface-2);
+    border: 1px solid var(--ai-border);
+    gap: 2px;
+  }
+  .ai-seg-btn,
+  .ai-tier-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border-radius: 7px;
+    border: 0;
+    background: transparent;
+    color: var(--ai-muted);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.14s ease, color 0.14s ease;
+  }
+  .ai-seg-btn:hover,
+  .ai-tier-btn:hover { color: var(--ai-text); }
+  .ai-seg-btn.is-active,
+  .ai-tier-btn.is-active {
+    background: var(--ai-surface);
+    color: var(--ai-text);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  }
+  .ai-tier-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+  }
+  .ai-tier-dot--lite { background: #38bdf8; }
+  .ai-tier-dot--pro { background: #10b981; }
+  .ai-tier-dot--ultra { background: #a855f7; }
+  .ai-tier-dot--local { background: #f59e0b; }
 
-  .ai-icon, .ai-action, .ai-codecopy, .ai-jump { min-height: 28px; border-radius: 7px; border: 1px solid var(--ai-border); background: var(--ai-surface-2); color: var(--ai-text); cursor: pointer; font: 600 11.5px/1 sans-serif; }
-  .ai-icon { width: 30px; display: inline-grid; place-items: center; }
-  .ai-icon:hover, .ai-action:hover, .ai-codecopy:hover { border-color: var(--ai-accent); color: var(--ai-accent); }
+  .ai-theme-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 9px;
+    border: 1px solid var(--ai-border);
+    background: var(--ai-surface-2);
+    color: var(--ai-text);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+  }
+  .ai-theme-btn:hover { border-color: var(--ai-accent); }
+  .ai-mit-pill {
+    padding: 6px 9px;
+    border-radius: 9px;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    background: var(--ai-accent-soft);
+    color: var(--ai-accent);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+  }
 
-  /* MAIN STAGE & SIMPLIFIED EMPTY HOME */
-  .ai-main { position: relative; flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
-  .ai-stage { flex: 1; min-height: 0; overflow: auto; scroll-behavior: smooth; }
-  .ai-stage.is-empty { display: grid; place-items: center; padding: 16px 0; }
-  .ai-empty { width: min(740px, calc(100% - 32px)); display: grid; gap: 18px; }
-  .ai-hero { text-align: center; display: grid; justify-items: center; gap: 8px; }
-  .ai-hero__emblem { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; background: var(--ai-surface); border: 1px solid var(--ai-border-strong); }
-  .ai-hero__title { margin: 0; font-size: clamp(22px, 3vw, 30px); font-weight: 700; letter-spacing: -0.02em; color: var(--ai-text); }
-  .ai-empty__lead { margin: 0; max-width: 560px; color: var(--ai-muted); font-size: 13.5px; line-height: 1.5; }
-  .ai-empty__lead code { font-family: var(--r-mono, monospace); font-size: 12px; color: var(--ai-accent); }
+  /* Local Ollama bar */
+  .ai-local-bar {
+    border-bottom: 1px solid var(--ai-border);
+    background: var(--ai-surface-2);
+    padding: 8px 16px;
+    flex-shrink: 0;
+  }
+  .ai-local-bar__inner {
+    max-width: 920px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    font-size: 11.5px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .ai-local-bar__badge {
+    color: #f59e0b;
+    font-weight: 700;
+  }
+  .ai-local-bar__field {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--ai-muted);
+  }
+  .ai-local-bar__field input {
+    background: var(--ai-surface);
+    border: 1px solid var(--ai-border-strong);
+    color: var(--ai-text);
+    border-radius: 7px;
+    padding: 4px 8px;
+    font-size: 11.5px;
+    font-family: inherit;
+    width: 195px;
+  }
+  .ai-local-bar__hint { color: var(--ai-muted); font-size: 11px; }
 
-  /* CLAUDE ARTIFACT STYLE PILLS */
-  .ai-style-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
-  .ai-style-pill { display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--ai-border); background: var(--ai-surface); color: var(--ai-text); font: 600 12.5px/1 sans-serif; cursor: pointer; transition: border-color .15s, transform .15s, background .15s; }
-  .ai-style-pill:hover { border-color: var(--ai-accent); background: var(--ai-accent-soft); transform: translateY(-1px); }
+  /* ===== STAGE & EMPTY HERO ===== */
+  .ai-stage {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 16px 20px;
+    scroll-behavior: smooth;
+  }
+  .ai-stage.is-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ai-empty {
+    width: 100%;
+    max-width: 780px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+  .ai-hero { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .ai-hero__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    background: var(--ai-accent-soft);
+    color: var(--ai-accent);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11.5px;
+    font-weight: 700;
+  }
+  .ai-hero__title {
+    margin: 0;
+    font-size: clamp(1.65rem, 3.2vw, 2.35rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    color: var(--ai-text);
+  }
+  .ai-hero__sub {
+    margin: 0;
+    max-width: 580px;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ai-muted);
+  }
 
-  /* 2x2 SIMPLIFIED STARTER GRID */
-  .ai-starters { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .ai-starters button { text-align: left; padding: 14px 16px; border: 1px solid var(--ai-border); border-radius: 14px; background: var(--ai-surface); cursor: pointer; display: grid; gap: 5px; color: var(--ai-text); transition: border-color .15s, transform .15s; }
-  .ai-starters button:hover { border-color: var(--ai-accent); transform: translateY(-1px); }
-  .ai-starter__tag { font: 700 10px/1 var(--r-mono, monospace); text-transform: uppercase; letter-spacing: .05em; color: var(--ai-accent); }
-  .ai-starters strong { font-size: 13.5px; font-weight: 700; line-height: 1.3; }
-  .ai-starters span:last-child { color: var(--ai-muted); font-size: 12px; line-height: 1.4; }
+  .ai-chips {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .ai-chip {
+    text-align: left;
+    padding: 15px 16px;
+    border-radius: 14px;
+    border: 1px solid var(--ai-border);
+    background: var(--ai-surface);
+    color: var(--ai-text);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .ai-chip:hover {
+    border-color: var(--ai-accent);
+    transform: translateY(-2px);
+    box-shadow: var(--ai-shadow);
+  }
+  .ai-chip__eyebrow {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ai-accent);
+  }
+  .ai-chip strong { font-size: 13.5px; font-weight: 700; }
+  .ai-chip span:last-child { font-size: 12px; color: var(--ai-muted); line-height: 1.4; }
 
-  /* CONVERSATION LOG & INLINE ARTIFACT CARDS */
-  .ai-log { width: min(740px, calc(100% - 32px)); margin: 0 auto; padding: 20px 0 16px; display: flex; flex-direction: column; gap: 20px; }
-  .ai-turn { display: grid; gap: 8px; }
-  .ai-turn--user .ai-turn__body { justify-items: end; }
-  .ai-turn--bot { grid-template-columns: 32px minmax(0, 1fr); column-gap: 12px; align-items: start; }
-  .ai-avatar { width: 32px; height: 32px; border-radius: 9px; object-fit: contain; background: var(--ai-accent-soft); border: 1px solid var(--ai-border-strong); padding: 4px; }
-  .ai-bubble { max-width: min(84%, 560px); padding: 10px 15px; border-radius: 16px 16px 4px 16px; background: var(--ai-surface-2); border: 1px solid var(--ai-border); color: var(--ai-text); white-space: pre-wrap; font-size: 14.5px; line-height: 1.5; }
-  .ai-turn__body { min-width: 0; display: grid; gap: 8px; }
+  /* ===== CHAT LOG & MESSAGES ===== */
+  .ai-log {
+    max-width: 820px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .ai-msg {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .ai-msg--user { align-items: flex-end; }
+  .ai-msg--user .ai-bubble {
+    max-width: min(82%, 620px);
+    padding: 11px 15px;
+    border-radius: 16px 16px 4px 16px;
+    background: var(--ai-accent);
+    color: var(--ai-accent-ink);
+    font-size: 14px;
+    line-height: 1.5;
+    font-weight: 500;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .ai-msg--assistant {
+    padding: 16px 18px;
+    border-radius: 16px;
+    border: 1px solid var(--ai-border);
+    background: var(--ai-surface);
+    box-shadow: var(--ai-shadow);
+  }
+  .ai-msg__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 11.5px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--ai-muted);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--ai-border);
+  }
+  .ai-msg__meta { display: inline-flex; align-items: center; gap: 7px; font-weight: 700; color: var(--ai-text); }
+  .ai-msg__tier {
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: var(--ai-accent-soft);
+    color: var(--ai-accent);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .ai-copy-btn {
+    border: 1px solid var(--ai-border);
+    background: var(--ai-surface-2);
+    color: var(--ai-muted);
+    border-radius: 7px;
+    padding: 3px 8px;
+    font-size: 11px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .ai-copy-btn:hover { color: var(--ai-accent); border-color: var(--ai-accent); }
 
-  /* INLINE CLAUDE ARTIFACT CARD INSIDE CHAT */
-  .ai-inline-artifact { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--ai-border-strong); background: var(--ai-surface); margin-top: 4px; }
-  .ai-inline-artifact__info { display: flex; align-items: center; gap: 10px; min-width: 0; }
-  .ai-inline-artifact__ico { width: 34px; height: 34px; border-radius: 9px; background: var(--ai-accent-soft); color: var(--ai-accent); display: grid; place-items: center; font-size: 16px; flex-shrink: 0; }
-  .ai-inline-artifact__title { font-weight: 700; font-size: 13px; color: var(--ai-text); display: block; }
-  .ai-inline-artifact__sub { font: 600 10.5px/1.2 var(--r-mono, monospace); color: var(--ai-muted); }
-  .ai-inline-artifact__btns { display: flex; flex-wrap: wrap; gap: 6px; }
+  /* Reasoning collapsible block (Ultra Max) */
+  .ai-think {
+    border: 1px solid rgba(168, 85, 247, 0.28);
+    background: rgba(168, 85, 247, 0.06);
+    border-radius: 11px;
+    padding: 8px 12px;
+    font-size: 12.5px;
+  }
+  .ai-think summary {
+    cursor: pointer;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #a855f7;
+    user-select: none;
+  }
+  .ai-think__body {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(168, 85, 247, 0.18);
+    color: var(--ai-muted);
+    white-space: pre-wrap;
+    line-height: 1.55;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11.5px;
+  }
 
-  /* THINKING TRACE */
-  .ai-thought { border: 1px solid var(--ai-border); border-radius: 9px; background: var(--ai-surface); overflow: hidden; font-size: 11.5px; }
-  .ai-thought summary { list-style: none; cursor: pointer; padding: 6px 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; font: 600 10.5px/1.2 var(--r-mono, monospace); color: var(--ai-muted); user-select: none; }
-  .ai-thought summary::-webkit-details-marker { display: none; }
-  .ai-thought__left { display: inline-flex; align-items: center; gap: 6px; }
-  .ai-thought__badge { padding: 2px 5px; border-radius: 4px; background: var(--ai-accent-soft); color: var(--ai-accent); font-weight: 700; font-size: 9.5px; }
-  .ai-thought__steps { padding: 7px 10px; border-top: 1px solid var(--ai-border); display: grid; gap: 4px; font: 500 10.5px/1.4 var(--r-mono, monospace); color: var(--ai-muted); background: var(--ai-bg); }
-
-  .ai-actions { display: flex; flex-wrap: wrap; gap: 6px; }
-  .ai-action { padding: 0 9px; font-size: 11px; display: inline-flex; align-items: center; gap: 4px; }
-
-  /* MARKDOWN */
-  .ai-md { min-width: 0; font-size: 14.5px; line-height: 1.65; color: var(--ai-text); }
-  .ai-md :is(h1, h2, h3, h4) { font-weight: 700; margin: 14px 0 6px; color: var(--ai-text); }
-  .ai-md h3, .ai-md h4 { color: var(--ai-accent); font-size: 1rem; }
+  /* Markdown typography */
+  .ai-md {
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--ai-text);
+    word-break: break-word;
+  }
+  .ai-md > :first-child { margin-top: 0; }
+  .ai-md > :last-child { margin-bottom: 0; }
+  .ai-md h1, .ai-md h2, .ai-md h3 {
+    margin: 16px 0 8px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--ai-text);
+  }
+  .ai-md h3 { font-size: 15px; color: var(--ai-accent); }
   .ai-md p { margin: 8px 0; }
-  .ai-md ul, .ai-md ol { margin: 8px 0 8px 1.2em; padding-left: 1em; }
-  .ai-md ul { list-style: disc; }
-  .ai-md ol { list-style: decimal; }
-  .ai-md a { color: var(--ai-accent); text-underline-offset: 3px; }
-  .ai-md :not(pre) > code { font-family: var(--r-mono, monospace); font-size: .86em; background: var(--ai-surface-2); border: 1px solid var(--ai-border); padding: 1px 6px; border-radius: 5px; color: var(--ai-accent); }
-  .ai-code { position: relative; margin: 12px 0; }
-  .ai-code pre, .ai-plain { margin: 0; padding: 12px; overflow: auto; background: var(--ai-surface); border: 1px solid var(--ai-border); border-radius: 10px; font-family: var(--r-mono, monospace); font-size: 12.5px; line-height: 1.45; white-space: pre; }
-  .ai-codecopy { position: absolute; top: 8px; right: 8px; padding: 0 10px; }
-  .ai-table { overflow-x: auto; margin: 12px 0; border: 1px solid var(--ai-border); border-radius: 10px; background: var(--ai-surface); }
-  .ai-table table { width: 100%; border-collapse: collapse; }
-  .ai-table th, .ai-table td { text-align: left; padding: 8px 11px; border-bottom: 1px solid var(--ai-border); font-size: 13px; }
-  .ai-table th { background: var(--ai-surface-2); font: 700 11px/1.2 var(--r-mono, monospace); color: var(--ai-accent); }
-
-  .ai-dots { display: inline-flex; gap: 5px; padding: 8px 0; }
-  .ai-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--ai-accent); animation: ai-dot .9s infinite ease-in-out; }
-  .ai-dots i:nth-child(2) { animation-delay: .15s; }
-  .ai-dots i:nth-child(3) { animation-delay: .3s; }
-  .ai-jump { position: absolute; left: 50%; bottom: 108px; transform: translateX(-50%); z-index: 5; padding: 0 14px; border-radius: 999px; }
-
-  /* CLAUDE COMPOSER */
-  .ai-composer { width: min(740px, calc(100% - 24px)); margin: 0 auto; padding: 6px 0 max(12px, env(safe-area-inset-bottom)); }
-  .ai-composer__card { border: 1px solid var(--ai-border); border-radius: 18px; background: var(--ai-surface); box-shadow: 0 12px 32px -14px rgba(0, 0, 0, 0.45); overflow: hidden; }
-  .ai-composer__card:focus-within { border-color: var(--ai-accent); }
-  .ai-composer__box { display: flex; align-items: flex-end; gap: 8px; padding: 8px 10px 6px 14px; }
-  .ai-composer textarea { flex: 1; min-height: 36px; max-height: 150px; resize: none; border: 0; background: transparent; color: var(--ai-text); font-size: 14.5px; line-height: 1.45; padding: 6px 2px; }
-  .ai-composer textarea:focus { outline: none; }
-  #aiSend { width: 34px; height: 34px; min-width: 34px; padding: 0; border-radius: 10px; border: 0; background: var(--ai-accent); color: var(--ai-ink); cursor: pointer; display: inline-grid; place-items: center; }
-  #aiSend:disabled { opacity: .3; cursor: default; }
-  #aiSend[data-mode="stop"] { background: var(--ai-surface-2); color: var(--ai-text); border: 1px solid var(--ai-border); width: auto; padding: 0 11px; font: 700 11px/1 var(--r-mono, monospace); }
-
-  .ai-composer__bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 12px 7px; border-top: 1px solid var(--ai-border); background: var(--ai-bg); font: 600 11px/1 var(--r-mono, monospace); color: var(--ai-muted); }
-  .ai-composer__meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-  .ai-model-chip { display: inline-flex; align-items: center; gap: 5px; color: var(--ai-text); margin-right: 4px; }
-  .ai-composer-toolbtn { padding: 3px 8px; border-radius: 6px; border: 1px solid var(--ai-border); background: var(--ai-surface); color: var(--ai-text); font: 600 11px/1 sans-serif; cursor: pointer; }
-  .ai-composer-toolbtn:hover { border-color: var(--ai-accent); color: var(--ai-accent); }
-  .ai-composer__hints { font-size: 10.5px; }
-
-  /* RIGHT ARTIFACT STUDIO & EXPORT BAR */
-  .ai-artifact { width: min(490px, 94vw); flex: 0 0 auto; display: flex; flex-direction: column; min-height: 0; background: var(--ai-surface); border-left: 1px solid var(--ai-border); box-shadow: -14px 0 36px rgba(0, 0, 0, 0.35); }
-  .ai-artifact__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--ai-border); background: var(--ai-bg); overflow-x: auto; }
-  .ai-artifact__tabs { display: inline-flex; gap: 3px; }
-  .ai-art-tab { padding: 5px 9px; border-radius: 7px; border: 1px solid transparent; background: transparent; color: var(--ai-muted); font: 600 11.5px/1 sans-serif; cursor: pointer; white-space: nowrap; }
-  .ai-art-tab:hover { color: var(--ai-text); background: var(--ai-surface-2); }
-  .ai-art-tab.is-active { background: var(--ai-accent-soft); border-color: var(--ai-border-strong); color: var(--ai-accent); font-weight: 700; }
-
-  /* EXPORT BAR (DOC, PDF, SLIDES, CSV, MD) */
-  .ai-export-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 12px; border-bottom: 1px solid var(--ai-border); background: var(--ai-surface-2); }
-  .ai-export-bar__lbl { font: 700 10px/1 var(--r-mono, monospace); text-transform: uppercase; letter-spacing: .06em; color: var(--ai-muted); margin-right: 2px; }
-  .ai-export-btn { display: inline-flex; align-items: center; gap: 4px; height: 27px; padding: 0 9px; border-radius: 6px; border: 1px solid var(--ai-border); background: var(--ai-surface); color: var(--ai-text); font: 600 11px/1 sans-serif; cursor: pointer; transition: border-color .15s, background .15s, transform .12s; }
-  .ai-export-btn:hover { border-color: var(--ai-accent); background: var(--ai-accent-soft); color: var(--ai-accent); transform: translateY(-1px); }
-
-  .ai-artifact__body { flex: 1; min-height: 0; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 14px; }
-
-  /* STYLE 1: EDITORIAL DOCUMENT SHEET */
-  .ai-doc-sheet { border: 1px solid var(--ai-border); border-radius: 14px; background: var(--ai-bg); padding: 20px 22px; display: grid; gap: 14px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2); }
-  .ai-doc-sheet__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 12px; border-bottom: 2px solid var(--ai-accent); }
-  .ai-doc-sheet__brand { display: flex; align-items: center; gap: 10px; }
-  .ai-doc-sheet__brand img { border-radius: 6px; }
-  .ai-doc-sheet__brand strong { display: block; font-size: 12.5px; letter-spacing: .06em; color: var(--ai-text); }
-  .ai-doc-sheet__brand span { display: block; font-size: 10.5px; color: var(--ai-muted); }
-  .ai-doc-sheet__badge { padding: 3px 8px; border-radius: 999px; background: var(--ai-accent-soft); border: 1px solid var(--ai-border-strong); color: var(--ai-accent); font: 700 9.5px/1 var(--r-mono, monospace); }
-  .ai-doc-sheet__title { margin: 0; font-size: 19px; font-weight: 800; color: var(--ai-text); letter-spacing: -0.01em; }
-  .ai-doc-sheet__content { font-size: 14px; }
-
-  /* STYLE 2: 16:9 SLIDE PRESENTATION VIEWER */
-  .ai-slides-studio { display: grid; gap: 12px; }
-  .ai-slides-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  .ai-slides-nav { display: flex; align-items: center; gap: 8px; }
-  .ai-slides-counter { font: 700 11.5px/1 var(--r-mono, monospace); color: var(--ai-text); }
-  .ai-slide-stage { width: 100%; }
-  .ai-slide-stage:fullscreen { display: grid; place-items: center; background: #05070a; padding: 32px; }
-  .ai-slide-card { aspect-ratio: 16 / 10; width: 100%; max-width: 960px; border-radius: 16px; border: 1px solid var(--ai-border-strong); background: radial-gradient(600px circle at 85% 15%, rgba(0, 230, 153, 0.14), transparent 60%), linear-gradient(160deg, #0d1219 0%, #080b10 100%); color: #f8fafc; padding: 22px 24px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; box-shadow: 0 18px 40px -16px rgba(0,0,0,0.65); overflow-y: auto; }
-  .ai-slide-card__top { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
-  .ai-slide-card__brand { font: 800 10px/1 var(--r-mono, monospace); letter-spacing: .12em; color: #00e699; }
-  .ai-slide-card__num { font: 800 12px/1 var(--r-mono, monospace); padding: 2px 7px; border-radius: 5px; background: rgba(0,230,153,0.15); color: #00e699; }
-  .ai-slide-card__body { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 10px; font-size: 13.5px; line-height: 1.55; }
-  .ai-slide-card__body :is(h1, h2, h3) { margin: 0 0 6px; font-size: 19px; font-weight: 800; color: #ffffff; }
-  .ai-slide-card__body ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
-  .ai-slide-card__foot { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 8px; font: 600 10px/1 var(--r-mono, monospace); color: #94a3b8; }
-  .ai-slide-dots { display: flex; justify-content: center; gap: 6px; }
-  .ai-slide-dot { width: 22px; height: 6px; border-radius: 999px; border: 0; background: var(--ai-border); cursor: pointer; transition: background .15s, width .15s; }
-  .ai-slide-dot.is-active { width: 34px; background: var(--ai-accent); }
-
-  /* STYLE 3 & 4 & 5 CARDS */
-  .ai-art-card { border: 1px solid var(--ai-border); border-radius: 14px; background: var(--ai-bg); padding: 16px; display: grid; gap: 12px; }
-  .ai-art-card__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  .ai-art-live { padding: 2px 7px; border-radius: 999px; background: var(--ai-accent-soft); color: var(--ai-accent); font: 800 9.5px/1 var(--r-mono, monospace); }
-  .ai-art-link, .ai-art-mini-btn { font: 600 11px/1 sans-serif; color: var(--ai-text); text-decoration: none; background: var(--ai-surface); border: 1px solid var(--ai-border); padding: 5px 10px; border-radius: 7px; cursor: pointer; }
-  .ai-art-mini-btn:hover, .ai-art-link:hover { border-color: var(--ai-accent); color: var(--ai-accent); }
-  .ai-art-card h3 { margin: 0; font-size: 16px; font-weight: 800; color: var(--ai-text); }
-  .ai-art-sub { margin: 0; font-size: 12.5px; color: var(--ai-muted); line-height: 1.45; }
-  .ai-art-form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .ai-art-form label { display: grid; gap: 5px; font: 600 11px/1.2 var(--r-mono, monospace); color: var(--ai-muted); }
-  .ai-art-form input, .ai-art-form select { height: 34px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--ai-border); background: var(--ai-surface); color: var(--ai-text); font: 700 12.5px/1 var(--r-mono, monospace); }
-  .ai-art-form select { grid-column: span 2; }
-  .ai-art-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .ai-art-metric { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--ai-border); background: var(--ai-surface); display: grid; gap: 4px; }
-  .ai-art-metric.is-highlight { border-color: var(--ai-border-strong); background: var(--ai-accent-soft); }
-  .ai-art-metric span { font: 700 9.5px/1 var(--r-mono, monospace); color: var(--ai-muted); }
-  .ai-art-metric strong { font: 800 16px/1.1 var(--r-mono, monospace); color: var(--ai-text); }
-  .ai-art-metric.is-highlight strong { color: var(--ai-accent); }
-  .ai-art-codebox { padding: 11px 12px; border-radius: 10px; border: 1px solid var(--ai-border-strong); background: var(--ai-surface); display: grid; gap: 4px; font-family: var(--r-mono, monospace); }
-  .ai-art-codebox__lbl { font-size: 9.5px; font-weight: 700; color: var(--ai-muted); }
-  .ai-art-codebox code { font-size: 14px; font-weight: 800; color: var(--ai-accent); }
-  .ai-art-prescription { padding: 11px 12px; border-radius: 10px; border: 1px solid var(--ai-border); background: var(--ai-surface); font-size: 12.5px; line-height: 1.5; color: var(--ai-text); }
-  .ai-art-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-  .ai-art-btn { flex: 1 1 auto; min-height: 36px; padding: 0 12px; border-radius: 9px; border: 1px solid var(--ai-border); background: var(--ai-surface); color: var(--ai-text); font: 700 11.5px/1 sans-serif; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
-  .ai-art-btn:hover { border-color: var(--ai-accent); }
-  .ai-art-btn--primary { background: var(--ai-accent); color: var(--ai-ink); border-color: var(--ai-accent); }
-  .ai-raw-md-box { margin: 0; padding: 12px; border-radius: 10px; background: var(--ai-surface); border: 1px solid var(--ai-border); font: 500 12px/1.5 var(--r-mono, monospace); color: var(--ai-text); white-space: pre-wrap; word-break: break-word; max-height: 58vh; overflow-y: auto; }
-
-  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
-  @keyframes ai-dot { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
-
-  @media (min-width: 1120px) { .ai-scrim { display: none !important; } }
-  @media (max-width: 1119px) {
-    .ai-side { position: fixed; z-index: 35; top: var(--site-header, 56px); bottom: 0; left: 0; }
-    .ai-artifact { position: fixed; z-index: 35; top: var(--site-header, 56px); bottom: 0; right: 0; }
+  .ai-md ul, .ai-md ol { margin: 8px 0; padding-left: 20px; }
+  .ai-md li { margin: 4px 0; }
+  .ai-md a { color: var(--ai-accent); text-decoration: underline; text-underline-offset: 2px; }
+  .ai-md code:not(pre code) {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12.5px;
+    padding: 1px 5px;
+    border-radius: 5px;
+    background: var(--ai-surface-2);
+    border: 1px solid var(--ai-border);
+    color: var(--ai-accent);
   }
-  @media (max-width: 680px) {
-    .ai-starters { grid-template-columns: 1fr; }
-    .ai-ollama-btn, .ai-composer__hints { display: none; }
+  .ai-md table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 12.5px;
+    display: block;
+    overflow-x: auto;
+  }
+  .ai-md th, .ai-md td {
+    padding: 8px 10px;
+    border: 1px solid var(--ai-border);
+    text-align: left;
+  }
+  .ai-md th {
+    background: var(--ai-surface-2);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--ai-muted);
+  }
+  .ai-code-wrap {
+    margin: 12px 0;
+    border-radius: 11px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--ai-code-bg);
+  }
+  .ai-code-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    color: #94a3b8;
+  }
+  .ai-code-wrap pre {
+    margin: 0;
+    padding: 12px 14px;
+    overflow-x: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: #e2e8f0;
+  }
+  /* Minimal lightweight syntax tokens */
+  .tok-kw { color: #c084fc; font-weight: 600; }
+  .tok-str { color: #34d399; }
+  .tok-num { color: #f59e0b; }
+  .tok-com { color: #64748b; font-style: italic; }
+
+  .ai-jump {
+    position: absolute;
+    bottom: 108px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--ai-border-strong);
+    background: var(--ai-surface);
+    color: var(--ai-text);
+    font-size: 12px;
+    font-weight: 700;
+    box-shadow: var(--ai-shadow);
+    cursor: pointer;
+    z-index: 20;
+  }
+
+  /* ===== COMPOSER ===== */
+  .ai-composer {
+    flex-shrink: 0;
+    padding: 10px 16px 14px;
+    background: var(--ai-bg);
+    border-top: 1px solid var(--ai-border);
+  }
+  .ai-composer__box {
+    max-width: 820px;
+    margin: 0 auto;
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    padding: 8px 10px 8px 14px;
+    border-radius: 16px;
+    border: 1px solid var(--ai-border-strong);
+    background: var(--ai-surface);
+    box-shadow: var(--ai-shadow);
+    transition: border-color 0.15s ease;
+  }
+  .ai-composer__box:focus-within { border-color: var(--ai-accent); }
+  .ai-composer__box textarea {
+    flex: 1;
+    border: 0;
+    outline: 0;
+    resize: none;
+    background: transparent;
+    color: var(--ai-text);
+    font-size: 14px;
+    line-height: 1.5;
+    max-height: 160px;
+    padding: 5px 0;
+    font-family: inherit;
+  }
+  .ai-composer__box textarea::placeholder { color: var(--ai-muted); }
+  .ai-send-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+    border: 0;
+    background: var(--ai-accent);
+    color: var(--ai-accent-ink);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: opacity 0.15s ease, transform 0.12s ease;
+  }
+  .ai-send-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  .ai-send-btn.is-stop { background: #f43f5e; color: #ffffff; }
+  .ai-composer__meta {
+    max-width: 820px;
+    margin: 7px auto 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 11px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--ai-muted);
+    padding: 0 4px;
+  }
+  .ai-status-chip { display: inline-flex; align-items: center; gap: 6px; color: var(--ai-text); font-weight: 600; }
+
+  .ai-scrim {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 25;
+  }
+
+  @media (max-width: 900px) {
+    .ai-side {
+      position: fixed;
+      top: 60px;
+      bottom: 0;
+      left: 0;
+      width: 272px;
+      transform: translateX(0);
+    }
+    .ai-side.is-collapsed {
+      width: 272px;
+      transform: translateX(-100%);
+    }
+    .ai-chips { grid-template-columns: 1fr; }
+    .ai-composer__hint { display: none; }
+    .ai-topbar { padding: 8px 10px; }
+    .ai-topbar__center { order: 3; width: 100%; overflow-x: auto; }
   }
 </style>
-
-<script is:inline src="/assets/js/ai-chat.js?v=t420" defer></script>
