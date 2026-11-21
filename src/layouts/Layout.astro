@@ -68,7 +68,8 @@ function absoluteCanonical(input: string): string {
 }
 
 const canon = absoluteCanonical(canonical);
-const isHome = new URL(canon).pathname === "/";
+const canonUrl = new URL(canon);
+const isHome = canonUrl.hostname === "muntru.me" && canonUrl.pathname === "/";
 const BRAND = "Muntrume Motorsport";
 const HOME_TITLE = "Muntrume Motorsport (MMT) · Equipo iRacing";
 

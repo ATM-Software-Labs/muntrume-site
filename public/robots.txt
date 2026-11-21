@@ -6,6 +6,15 @@ Disallow: /email-preferences
 Disallow: /email-preferences/
 Disallow: /login
 Disallow: /login/
+Disallow: /ajustes
+Disallow: /ajustes/
+Disallow: /galeria/
+Disallow: /about/
+Disallow: /legal/
+Disallow: /calendario/
+Disallow: /news/
+Disallow: /team/
+Disallow: /pilotos/
 Disallow: /paddock/sala
 Disallow: /paddock/sala/
 Disallow: /app/vincular
