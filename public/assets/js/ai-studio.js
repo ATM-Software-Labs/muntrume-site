@@ -2520,6 +2520,71 @@
       }
     });
 
+    $("aiPasskeyLoginBtn")?.addEventListener("click", async () => {
+      const errEl = $("aiLoginErr");
+      const pkBtn = $("aiPasskeyLoginBtn");
+      if (errEl) { errEl.hidden = true; errEl.textContent = ""; }
+      if (!window.PublicKeyCredential || !navigator.credentials?.get) {
+        if (errEl) { errEl.textContent = "Este navegador no soporta Passkeys (WebAuthn)."; errEl.hidden = false; }
+        return;
+      }
+      const b64uDec = (s) => {
+        const b = String(s || "").replace(/-/g, "+").replace(/_/g, "/");
+        const p = b.length % 4 === 0 ? "" : "=".repeat(4 - (b.length % 4));
+        const bin = atob(b + p);
+        const u = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+        return u;
+      };
+      const b64uEnc = (buf) => {
+        const u = new Uint8Array(buf);
+        let s = "";
+        for (let i = 0; i < u.length; i++) s += String.fromCharCode(u[i]);
+        return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+      };
+      if (pkBtn) { pkBtn.disabled = true; pkBtn.textContent = "Verificando Passkey…"; }
+      try {
+        const email = ($("aiLoginEmail")?.value || "").trim();
+        const optRes = await fetch(`${API_ORIGIN}/api/auth/passkey/login/options`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email })
+        });
+        const optJ = await optRes.json().catch(() => ({}));
+        if (!optRes.ok || !optJ.options) throw new Error(optJ.error || "No se pudo iniciar Passkey.");
+        const pubKeyOpts = {
+          challenge: b64uDec(optJ.options.challenge),
+          rpId: optJ.options.rpId || "muntru.me",
+          timeout: optJ.options.timeout || 60000,
+          userVerification: "preferred",
+          allowCredentials: (optJ.options.allowCredentials || []).map((c) => ({ type: "public-key", id: b64uDec(c.id) }))
+        };
+        const assertion = await navigator.credentials.get({ publicKey: pubKeyOpts });
+        if (!assertion) throw new Error("Passkey cancelada.");
+        const verRes = await fetch(`${API_ORIGIN}/api/auth/passkey/login/verify`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            credential_id: assertion.id,
+            authenticator_data: b64uEnc(assertion.response.authenticatorData),
+            client_data_json: b64uEnc(assertion.response.clientDataJSON),
+            signature: b64uEnc(assertion.response.signature)
+          })
+        });
+        const verJ = await verRes.json().catch(() => ({}));
+        if (!verRes.ok || !verJ.token) throw new Error(verJ.error || "Passkey no válida.");
+        localStorage.setItem("mrt_vault_token", verJ.token);
+        if (verJ.user) localStorage.setItem("mrt_vault_user", JSON.stringify(verJ.user));
+        closeAllModals();
+        syncTeamGate();
+        window.dispatchEvent(new Event("muntrume-auth-change"));
+        showToast(`Passkey verificada: ${verJ.user?.name || verJ.user?.email || "Piloto"}`);
+      } catch (err) {
+        if (errEl) { errEl.textContent = err?.message || "No se pudo iniciar sesión con Passkey."; errEl.hidden = false; }
+      } finally {
+        if (pkBtn) { pkBtn.disabled = false; pkBtn.textContent = "Entrar con Passkey"; }
+      }
+    });
     $("aiGateLoginBtn")?.addEventListener("click", () => {
       openModal("aiLoginModal");
       $("aiLoginEmail")?.focus();
