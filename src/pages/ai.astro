@@ -496,21 +496,43 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT) en ai.mun
 
   <style is:global>
     /* Synced 100 % with the global header theme toggle (html.light / html[data-theme="light"]) */
-    .ai-shell {
+    /* Defined on :root so .ai-shell, ALL .ai-modal dialogs, and #aiToast always receive every token */
+    :root {
       --ai-bg: #0f1114;
       --ai-side: #0a0c0e;
       --ai-surface: #171a1f;
-      --ai-surface-2: #20242b;
+      --ai-surface-2: #22262e;
       --ai-code-bg: #0c0e12;
       --ai-code-bar: #14171d;
-      --ai-line: rgba(255, 255, 255, 0.085);
-      --ai-line-strong: rgba(255, 255, 255, 0.16);
+      --ai-line: rgba(255, 255, 255, 0.10);
+      --ai-line-strong: rgba(255, 255, 255, 0.18);
       --ai-text: #f3f5f8;
       --ai-text-soft: #cfd5df;
       --ai-muted: #8b94a3;
       --ai-accent: #10b981;
-      --ai-accent-soft: rgba(16, 185, 129, 0.12);
+      --ai-accent-soft: rgba(16, 185, 129, 0.14);
       --ai-accent-ink: #04130d;
+      --ai-scheme: dark;
+    }
+    html.light,
+    html[data-theme="light"] {
+      --ai-bg: #f8f9fb;
+      --ai-side: #f1f3f6;
+      --ai-surface: #ffffff;
+      --ai-surface-2: #e9edf3;
+      --ai-code-bg: #11141a;
+      --ai-code-bar: #1a1f28;
+      --ai-line: rgba(15, 23, 42, 0.11);
+      --ai-line-strong: rgba(15, 23, 42, 0.20);
+      --ai-text: #0f172a;
+      --ai-text-soft: #334155;
+      --ai-muted: #64748b;
+      --ai-accent: #059669;
+      --ai-accent-soft: rgba(5, 150, 105, 0.11);
+      --ai-accent-ink: #ffffff;
+      --ai-scheme: light;
+    }
+    .ai-shell {
       display: grid;
       grid-template-columns: 260px minmax(0, 1fr);
       height: calc(100dvh - 56px);
@@ -518,28 +540,17 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT) en ai.mun
       color: var(--ai-text);
       font-family: var(--r-sans, system-ui, -apple-system, sans-serif);
       overflow: hidden;
+      color-scheme: var(--ai-scheme);
       transition: grid-template-columns 0.22s cubic-bezier(0.22, 1, 0.36, 1);
     }
-    html.light .ai-shell,
-    html[data-theme="light"] .ai-shell {
-      --ai-bg: #f9fafb;
-      --ai-side: #f1f3f6;
-      --ai-surface: #ffffff;
-      --ai-surface-2: #eceff4;
-      --ai-code-bg: #11141a;
-      --ai-code-bar: #1a1f28;
-      --ai-line: rgba(15, 23, 42, 0.10);
-      --ai-line-strong: rgba(15, 23, 42, 0.18);
-      --ai-text: #0f172a;
-      --ai-text-soft: #334155;
-      --ai-muted: #64748b;
-      --ai-accent: #059669;
-      --ai-accent-soft: rgba(5, 150, 105, 0.10);
-      --ai-accent-ink: #ffffff;
-    }
     .ai-shell.is-side-collapsed { grid-template-columns: 0px minmax(0, 1fr); }
-    .ai-shell.has-artifact { grid-template-columns: 236px minmax(0, 1fr) minmax(400px, 47%); }
-    .ai-shell.is-side-collapsed.has-artifact { grid-template-columns: 0px minmax(0, 1fr) minmax(400px, 49%); }
+    .ai-shell.has-artifact { grid-template-columns: 216px minmax(380px, 1fr) minmax(420px, 47%); }
+    .ai-shell.is-side-collapsed.has-artifact { grid-template-columns: 0px minmax(380px, 1fr) minmax(420px, 50%); }
+    .ai-shell.has-artifact .ai-starters-grid { grid-template-columns: 1fr; }
+    @media (max-width: 1280px) {
+      .ai-shell.has-artifact { grid-template-columns: 0px minmax(340px, 1fr) minmax(400px, 50%); }
+      .ai-shell.has-artifact .ai-side { padding: 0; border-right: 0; }
+    }
 
     /* Sidebar */
     .ai-side {
@@ -619,7 +630,7 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT) en ai.mun
       max-width: 280px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .ai-pace-btn {
-      display: inline-flex; align-items: center; gap: 6px;
+      display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0;
       padding: 6px 11px; border-radius: 999px; border: 1px solid var(--ai-line);
       background: var(--ai-surface); color: var(--ai-muted);
       font: 600 11.5px/1 var(--r-sans, system-ui, sans-serif); cursor: pointer;
@@ -741,6 +752,7 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT) en ai.mun
     .ai-model-btn, .ai-effort-btn {
       border: 1px solid transparent; background: transparent; color: var(--ai-muted); padding: 6px 10px;
       border-radius: 9px; font: 600 12.5px/1 var(--r-sans, system-ui, sans-serif); cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+      white-space: nowrap; flex-shrink: 0;
       transition: background 0.14s ease, color 0.14s ease;
     }
     .ai-model-btn:hover, .ai-effort-btn:hover { background: var(--ai-surface-2); color: var(--ai-text); }
@@ -1080,51 +1092,81 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT) en ai.mun
     .ai-prof-banner a:hover { text-decoration: underline; }
 
     /* Modals */
-    .ai-modal { position: fixed; inset: 0; z-index: 90; background: rgba(0, 0, 0, 0.62); backdrop-filter: blur(4px); display: grid; place-items: center; padding: 20px; }
+    .ai-modal {
+      position: fixed; inset: 0; z-index: 90;
+      background: rgba(5, 7, 10, 0.72); backdrop-filter: blur(6px);
+      display: grid; place-items: center; padding: 20px;
+      color: var(--ai-text); color-scheme: var(--ai-scheme);
+      font-family: var(--r-sans, system-ui, -apple-system, sans-serif);
+    }
     .ai-modal[hidden] { display: none !important; }
     .ai-modal__card {
-      width: min(560px, 100%); max-height: 86vh; overflow-y: auto;
+      width: min(580px, 100%); max-height: 86vh; overflow-y: auto;
       background: var(--ai-surface); color: var(--ai-text); border: 1px solid var(--ai-line-strong);
-      border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 14px;
-      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.42);
+      border-radius: 18px; padding: 22px; display: flex; flex-direction: column; gap: 15px;
+      box-shadow: 0 24px 68px rgba(0, 0, 0, 0.55);
       animation: aiPopIn 0.16s ease;
     }
-    .ai-modal__head { display: flex; align-items: center; justify-content: space-between; }
-    .ai-modal__head h2 { margin: 0; font-size: 17px; font-weight: 700; text-transform: none !important; }
-    .ai-proj-list { display: flex; flex-direction: column; gap: 8px; }
+    .ai-modal__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 4px; border-bottom: 1px solid var(--ai-line); }
+    .ai-modal__head h2 { margin: 0; font-size: 17px; font-weight: 700; color: var(--ai-text); text-transform: none !important; letter-spacing: -0.015em !important; }
+    .ai-modal .ai-art-tabs { background: var(--ai-bg); border: 1px solid var(--ai-line-strong); padding: 3px; border-radius: 10px; }
+    .ai-modal .ai-art-tabs button { padding: 6px 12px; border-radius: 7px; font-size: 12.5px; color: var(--ai-muted); transition: background 0.14s ease, color 0.14s ease; }
+    .ai-modal .ai-art-tabs button.is-active { background: var(--ai-surface-2); color: var(--ai-text); box-shadow: 0 1px 4px rgba(0,0,0,0.18); }
+    .ai-proj-list { display: flex; flex-direction: column; gap: 9px; }
     .ai-proj-card {
-      display: flex; align-items: center; gap: 12px; padding: 11px 13px; border-radius: 12px;
-      background: var(--ai-bg); border: 1px solid var(--ai-line);
+      display: flex; align-items: center; gap: 14px; padding: 13px 15px; border-radius: 13px;
+      background: var(--ai-bg); border: 1px solid var(--ai-line-strong);
+      transition: border-color 0.14s ease;
     }
-    .ai-proj-card.is-active { border-color: var(--ai-accent); }
-    .ai-proj-card strong { display: block; font-size: 13.5px; }
-    .ai-proj-card p { margin: 2px 0 0; font-size: 12px; color: var(--ai-muted); }
-    .ai-modal-form { display: flex; flex-direction: column; gap: 8px; }
-    .ai-modal-form label { font-size: 12px; font-weight: 600; color: var(--ai-muted); }
+    .ai-proj-card:hover { border-color: color-mix(in srgb, var(--ai-accent) 45%, var(--ai-line-strong)); }
+    .ai-proj-card.is-active { border-color: var(--ai-accent); background: color-mix(in srgb, var(--ai-accent) 6%, var(--ai-bg)); }
+    .ai-proj-card strong { display: block; font-size: 13.5px; font-weight: 650; color: var(--ai-text); }
+    .ai-proj-card p { margin: 3px 0 0; font-size: 12.5px; line-height: 1.45; color: var(--ai-muted); }
+    .ai-modal-form { display: flex; flex-direction: column; gap: 10px; }
+    .ai-modal-form label { display: block; font-size: 12px; font-weight: 600; color: var(--ai-muted); margin-bottom: 4px; }
     .ai-modal-form input, .ai-modal-form textarea, .ai-select {
-      width: 100%; padding: 9px 11px; border-radius: 10px; border: 1px solid var(--ai-line);
-      background: var(--ai-bg); color: var(--ai-text); font-size: 13px;
+      width: 100%; padding: 9px 12px; border-radius: 10px;
+      border: 1px solid var(--ai-line-strong);
+      background: var(--ai-bg); color: var(--ai-text); font-size: 13.5px; line-height: 1.45;
+      outline: none; transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
-    .ai-calc-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .ai-modal-form input:focus, .ai-modal-form textarea:focus, .ai-select:focus {
+      border-color: var(--ai-accent);
+      box-shadow: 0 0 0 3px var(--ai-accent-soft);
+    }
+    .ai-modal-form input::placeholder, .ai-modal-form textarea::placeholder { color: var(--ai-muted); }
+    .ai-select option { background: var(--ai-surface); color: var(--ai-text); }
+    .ai-calc-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
     .ai-calc-out {
-      padding: 12px 14px; border-radius: 12px; background: var(--ai-bg);
-      border: 1px solid color-mix(in srgb, var(--ai-accent) 40%, var(--ai-line));
+      padding: 14px; border-radius: 13px; background: var(--ai-bg);
+      border: 1px solid color-mix(in srgb, var(--ai-accent) 42%, var(--ai-line-strong));
       font-size: 13px; line-height: 1.55; color: var(--ai-text);
     }
-    .ai-calc-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
-    .ai-calc-kpi { padding: 8px 10px; border-radius: 9px; background: var(--ai-surface); border: 1px solid var(--ai-line); }
-    .ai-calc-kpi span { display: block; font: 600 10px/1.2 var(--r-mono); text-transform: uppercase; color: var(--ai-muted); }
-    .ai-calc-kpi strong { display: block; margin-top: 3px; font: 700 15px/1.2 var(--r-mono); color: var(--ai-accent); }
+    .ai-calc-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; }
+    .ai-calc-kpi { padding: 10px 11px; border-radius: 10px; background: var(--ai-surface); border: 1px solid var(--ai-line-strong); }
+    .ai-calc-kpi span { display: block; font: 600 10px/1.2 var(--r-mono); text-transform: uppercase; letter-spacing: 0.04em; color: var(--ai-muted); }
+    .ai-calc-kpi strong { display: block; margin-top: 4px; font: 700 15.5px/1.2 var(--r-mono); color: var(--ai-accent); }
     .ai-btn-accent {
-      padding: 9px 16px; border-radius: 999px; border: 0;
-      background: var(--ai-accent); color: var(--ai-accent-ink); font-weight: 700; font-size: 13px; cursor: pointer;
+      padding: 9px 18px; border-radius: 999px; border: 0;
+      background: var(--ai-accent); color: var(--ai-accent-ink); font-weight: 700; font-size: 13px;
+      cursor: pointer; transition: opacity 0.14s ease, transform 0.14s ease;
+    }
+    .ai-btn-accent:hover { opacity: 0.92; transform: translateY(-1px); }
+    .ai-btn-accent:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+    .ai-modal .ai-mini-btn {
+      padding: 7px 12px; border-radius: 9px; border: 1px solid var(--ai-line-strong);
+      background: var(--ai-surface-2); color: var(--ai-text); font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+    .ai-modal .ai-mini-btn:hover { border-color: var(--ai-accent); color: var(--ai-accent); }
+    .ai-modal .ai-mini-btn--accent {
+      background: var(--ai-accent-soft); border-color: color-mix(in srgb, var(--ai-accent) 55%, transparent); color: var(--ai-accent);
     }
     .ai-toast {
       position: fixed; right: 20px; bottom: 20px; z-index: 120;
-      padding: 9px 14px; border-radius: 10px;
-      background: var(--r-surface, #1a1d21); color: var(--r-text, #f3f4f6);
-      border: 1px solid var(--r-accent, #10b981);
-      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+      padding: 10px 15px; border-radius: 11px;
+      background: var(--ai-surface); color: var(--ai-text);
+      border: 1px solid var(--ai-accent);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.42);
       font: 600 12.5px/1.2 var(--r-sans, system-ui, sans-serif);
       opacity: 0; transform: translateY(8px); pointer-events: none;
       transition: opacity 0.18s ease, transform 0.18s ease;
