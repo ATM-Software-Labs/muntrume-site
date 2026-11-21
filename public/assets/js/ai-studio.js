@@ -1313,6 +1313,24 @@
     } catch { return null; }
   }
 
+  function syncTeamGate() {
+    const authed = Boolean(getVaultToken());
+    const gate = $("aiTeamGate");
+    if (gate) gate.hidden = authed;
+    const lockedIds = [
+      "aiInput", "aiSendBtn", "aiModelBtn", "aiPlusBtn", "aiSkillBtn",
+      "aiNewChatBtn", "aiSearchBtn", "aiProjectsBtn", "aiArtifactsBtn",
+      "aiCodeModeBtn", "aiPersonalizeBtn"
+    ];
+    lockedIds.forEach((id) => {
+      const el = $(id);
+      if (el) el.disabled = !authed;
+    });
+    const side = $("aiSide");
+    if (side) side.toggleAttribute("inert", !authed);
+    return authed;
+  }
+
   function renderArtifactFrame(artifact) {
     const frame = $("aiArtFrame");
     if (!frame || !artifact) return;
@@ -1570,6 +1588,13 @@
   // SEND MESSAGE WITH CALM ANIMATED STREAMING
   // ============================================================================
   async function sendMessage(overrideText) {
+    const token = getVaultToken();
+    if (!token) {
+      syncTeamGate();
+      openModal("aiLoginModal");
+      $("aiLoginEmail")?.focus();
+      return;
+    }
     const input = $("aiInput");
     const rawText = typeof overrideText === "string" ? overrideText : (input?.value || "");
     let text = rawText.trim();
@@ -1678,10 +1703,19 @@
 
       const res = await fetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
         signal: activeCtrl.signal,
         body: JSON.stringify(payload)
       });
+      if (res.status === 401) {
+        try { localStorage.removeItem("mrt_vault_token"); sessionStorage.removeItem("mrt_vault_token"); } catch {}
+        syncTeamGate();
+        openModal("aiLoginModal");
+        throw new Error("Sesión de equipo requerida o caducada. Inicia sesión para usar los modelos.");
+      }
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
       const cType = (res.headers.get("content-type") || "").toLowerCase();
@@ -2036,6 +2070,8 @@
         if (j.user) localStorage.setItem("mrt_vault_user", JSON.stringify(j.user));
         if ($("aiLoginPass")) $("aiLoginPass").value = "";
         closeAllModals();
+        syncTeamGate();
+        window.dispatchEvent(new Event("muntrume-auth-change"));
         showToast(`Perfil conectado: ${j.user?.name || email}`);
         const act = pendingPostLoginAction;
         pendingPostLoginAction = null;
@@ -2483,6 +2519,14 @@
         closeAllModals();
       }
     });
+
+    $("aiGateLoginBtn")?.addEventListener("click", () => {
+      openModal("aiLoginModal");
+      $("aiLoginEmail")?.focus();
+    });
+    window.addEventListener("muntrume-auth-change", syncTeamGate);
+    window.addEventListener("storage", syncTeamGate);
+    syncTeamGate();
 
     document.addEventListener("paste", (e) => {
       for (const item of e.clipboardData?.items || []) {

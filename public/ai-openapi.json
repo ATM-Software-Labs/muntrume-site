@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Muntrume AI Public API",
+    "title": "Muntrume AI API",
     "version": "1.0.0",
-    "description": "Public technical assistant, vision analysis, and published Artifacts API for Muntrume AI Studio (https://ai.muntru.me/).",
+    "description": "Technical assistant, vision analysis, and published Artifacts API for Muntrume AI Studio (https://ai.muntru.me/). Inference endpoints require verified Muntrume Motorsport team JWT authentication; documentation and public artifacts are openly accessible.",
     "license": { "name": "MIT", "url": "https://opensource.org/licenses/MIT" },
     "contact": { "name": "Muntrume Motorsport", "email": "admin@muntru.me", "url": "https://muntru.me/ai-docs/" }
   },
@@ -11,11 +11,22 @@
     { "url": "https://ai.muntru.me", "description": "Production Edge Custom Domain" },
     { "url": "https://muntrume.atrumin16.workers.dev", "description": "Cloudflare Workers Origin" }
   ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Active Muntrume Motorsport team session JWT issued by the Setup Vault."
+      }
+    }
+  },
   "paths": {
     "/api/ai": {
       "post": {
         "operationId": "runMuntrumeAI",
-        "summary": "Query Muntrume AI (JSON or SSE streaming)",
+        "summary": "Query Muntrume AI (Team-authenticated, JSON or SSE streaming)",
+        "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -39,6 +50,7 @@
         },
         "responses": {
           "200": { "description": "Markdown answer payload (JSON) or Server-Sent Events stream" },
+          "401": { "description": "Unauthorized — verified Muntrume Motorsport team JWT required" },
           "429": { "description": "Rate limit exceeded" }
         }
       }
@@ -46,7 +58,7 @@
     "/api/ai/artifacts/get/{slug}": {
       "get": {
         "operationId": "getPublicArtifact",
-        "summary": "Fetch a published public artifact by slug",
+        "summary": "Fetch a published public artifact by slug (no auth required for public artifacts)",
         "parameters": [
           { "name": "slug", "in": "path", "required": true, "schema": { "type": "string" } }
         ],

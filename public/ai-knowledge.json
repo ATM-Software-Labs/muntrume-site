@@ -51,6 +51,9 @@
     },
     "api": {
       "endpoint": "POST https://ai.muntru.me/api/ai",
+      "authentication": "Team-only Bearer JWT (verified active Muntrume Motorsport members via Cloudflare D1); unauthenticated requests receive HTTP 401",
+      "public_access": "Documentation (/ai-docs/, ai.muntru.me/docs/), public artifacts (/a/<slug>), and discovery manifests (llms.txt, ai-knowledge.json, ai-openapi.json, .well-known/ai-plugin.json) are openly accessible without login",
+      "security_controls": ["JWT HMAC-SHA256", "PBKDF2-SHA256 (100k iterations)", "Strict Content-Security-Policy", "Sandboxed artifact iframes", "Edge rate limiting"],
       "response_modes": ["application/json", "text/event-stream"],
       "capabilities": ["chat", "sse_streaming", "image_vision", "github_context", "web_search", "file_attachments"]
     }

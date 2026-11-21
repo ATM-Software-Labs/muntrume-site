@@ -58,6 +58,7 @@ const jsonLd = [
 
 const codeCurl = `curl -X POST https://ai.muntru.me/api/ai \\
   -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer <TEAM_JWT_TOKEN>" \\
   -d '{
     "prompt": "Calcula estrategia de combustible para 6h de Spa en GT3 (2.95 L/vuelta, 2:17.5)",
     "tier": "pro",
@@ -69,7 +70,10 @@ const codeCurl = `curl -X POST https://ai.muntru.me/api/ai \\
 
 const codeJs = `const res = await fetch("https://ai.muntru.me/api/ai", {
   method: "POST",
-  headers: { "Content-Type": "application/json" },
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer <TEAM_JWT_TOKEN>"
+  },
   body: JSON.stringify({
     prompt: "Diagnostica subviraje en entrada en curva rápida con Porsche 992 GT3 R",
     tier: "pro",
@@ -87,6 +91,7 @@ const codePython = `import requests
 
 response = requests.post(
     "https://ai.muntru.me/api/ai",
+    headers={"Authorization": "Bearer <TEAM_JWT_TOKEN>"},
     json={
         "prompt": "Crea un diagrama mermaid de decisión de pit-stop en lluvia",
         "tier": "pro",
@@ -99,10 +104,13 @@ response = requests.post(
 payload = response.json()
 print(payload["markdown"])`;
 
-const codeSse = `// Streaming Server-Sent Events (stream: true)
+const codeSse = `// Streaming Server-Sent Events (requiere JWT de miembro Muntrume)
 const res = await fetch("https://ai.muntru.me/api/ai", {
   method: "POST",
-  headers: { "Content-Type": "application/json" },
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer <TEAM_JWT_TOKEN>"
+  },
   body: JSON.stringify({ prompt: "Plan de stints 12h Sebring", tier: "ultra_max", stream: true })
 });
 
@@ -147,6 +155,7 @@ while (true) {
 
           <div class="mdoc-nav-group">
             <div class="mdoc-nav-group__title">Referencia técnica</div>
+            <a href="#seguridad" class="mdoc-nav-link" data-doc-link="seguridad">Seguridad y Zero-Trust</a>
             <a href="#api" class="mdoc-nav-link" data-doc-link="api">API POST /api/ai</a>
             <a href="#parametros" class="mdoc-nav-link" data-doc-link="parametros">Parámetros del esquema</a>
             <a href="#indexacion" class="mdoc-nav-link" data-doc-link="indexacion">SEO, LLMs y OpenAPI</a>
@@ -351,6 +360,33 @@ while (true) {
           </ul>
         </section>
 
+        <!-- SEGURIDAD Y ZERO-TRUST -->
+        <section class="mdoc-section" id="seguridad" data-doc-section="seguridad" data-g-reveal>
+          <h2>Seguridad y control de acceso (Zero-Trust)</h2>
+          <p class="mdoc-sub">
+            Muntrume AI separa estrictamente el acceso público a la documentación del acceso privado a los motores de inferencia del equipo.
+          </p>
+
+          <div class="mdoc-feature-list">
+            <div class="mdoc-feature">
+              <div class="mdoc-feature__k">Acceso a modelos (Privado)</div>
+              <div class="mdoc-feature__v"><code>POST /api/ai</code> y los menús del Studio en <code>ai.muntru.me</code> exigen sesión verificada de miembro activo de Muntrume Motorsport mediante token <strong>JWT HMAC-SHA256</strong> (<code>Authorization: Bearer</code>) validado contra D1 (<code>allowed_users</code>). Las peticiones sin sesión devuelven <code>HTTP 401</code>.</div>
+            </div>
+            <div class="mdoc-feature">
+              <div class="mdoc-feature__k">Documentación (Pública)</div>
+              <div class="mdoc-feature__v">Visitantes externos, buscadores e IAs externas tienen acceso abierto y sin autenticación a <code>/ai-docs/</code>, <code>ai.muntru.me/docs/</code>, artefactos públicos <code>/a/&lt;slug&gt;</code>, <code>llms.txt</code>, <code>ai-knowledge.json</code> y <code>ai-openapi.json</code>.</div>
+            </div>
+            <div class="mdoc-feature">
+              <div class="mdoc-feature__k">Aislamiento y CSP</div>
+              <div class="mdoc-feature__v">Todos los artefactos HTML/SVG/Mermaid se ejecutan en iframes aislados (<code>sandbox="allow-scripts allow-forms allow-downloads"</code>) con <code>Content-Security-Policy</code> estricta, <code>X-Content-Type-Options: nosniff</code> y limitación de tasa por usuario en edge.</div>
+            </div>
+            <div class="mdoc-feature">
+              <div class="mdoc-feature__k">Credenciales</div>
+              <div class="mdoc-feature__v">Las contraseñas del Vault se almacenan con <strong>PBKDF2-SHA256</strong> (100.000 iteraciones) y las claves de inferencia residen exclusivamente como secretos cifrados en Cloudflare Workers, nunca en repositorios Git.</div>
+            </div>
+          </div>
+        </section>
+
         <!-- API REFERENCE WITH MULTI-LANG TABS -->
         <section class="mdoc-section" id="api" data-doc-section="api" data-g-reveal>
           <h2>Referencia de API · <code>POST /api/ai</code></h2>
@@ -462,6 +498,7 @@ while (true) {
             <a href="#skills" data-rail-link="skills">Skills &amp; Slash</a>
             <a href="#artefactos" data-rail-link="artefactos">Artifacts Studio</a>
             <a href="#vision" data-rail-link="vision">Visión y telemetría</a>
+            <a href="#seguridad" data-rail-link="seguridad">Seguridad Zero-Trust</a>
             <a href="#api" data-rail-link="api">API /api/ai</a>
             <a href="#parametros" data-rail-link="parametros">Parámetros</a>
             <a href="#indexacion" data-rail-link="indexacion">SEO &amp; LLMs</a>

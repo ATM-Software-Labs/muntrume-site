@@ -36,6 +36,36 @@ const aiJsonLd = {
 <Layout title={pageTitle} description={pageDescription} canonical="https://ai.muntru.me/" hideFooter>
   <script type="application/ld+json" set:html={JSON.stringify(aiJsonLd)} />
   <div class="ai-shell" id="aiWorkspace">
+    <!-- TEAM SECURITY GATE (Blocks models & menus for unauthenticated external visitors; Docs remain 100% public) -->
+    <div id="aiTeamGate" class="ai-team-gate" hidden role="region" aria-label="Acceso restringido al equipo Muntrume Motorsport">
+      <div class="ai-team-gate__card">
+        <div class="ai-team-gate__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+        </div>
+        <span class="ai-team-gate__badge">ZERO-TRUST · SOLO EQUIPO MUNTRUME</span>
+        <h2>Acceso protegido a Muntrume AI Studio</h2>
+        <p>
+          Los motores de inferencia (<strong>Muntrume 1.0 Lite, Pro y Ultra Max</strong>), las skills de ingeniería, los proyectos y el estudio de artefactos están reservados a miembros verificados de <strong>Muntrume Motorsport</strong>.
+        </p>
+        <p class="ai-team-gate__sub">
+          Si eres visitante externo, desarrollador o buscador, puedes consultar toda la documentación técnica, arquitectura y especificaciones OpenAPI de forma abierta.
+        </p>
+        <div class="ai-team-gate__actions">
+          <button type="button" id="aiGateLoginBtn" class="ai-btn-accent">Iniciar sesión de equipo</button>
+          <a href="/ai-docs/" class="ai-gate-docs-btn">Ver Documentación Pública →</a>
+        </div>
+        <div class="ai-team-gate__links">
+          <a href="/llms.txt">llms.txt</a>
+          <span>·</span>
+          <a href="/ai-knowledge.json">ai-knowledge.json</a>
+          <span>·</span>
+          <a href="/ai-openapi.json">OpenAPI 3.1</a>
+          <span>·</span>
+          <a href={MUNTRUME_KB.team.githubUrl} target="_blank" rel="noopener noreferrer">GitHub (MIT)</a>
+        </div>
+      </div>
+    </div>
+
     <!-- LEFT SIDEBAR (100 % REAL OPEN-SOURCE TOOLS, ZERO EMOJIS) -->
     <aside id="aiSide" class="ai-side" aria-label="Navegación de Muntrume AI">
       <div class="ai-side__head">
@@ -1120,6 +1150,52 @@ const aiJsonLd = {
     .ai-art-tabs button { border: 0; background: transparent; color: var(--ai-muted); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
     .ai-art-tabs button.is-active { background: var(--ai-surface-2); color: var(--ai-text); }
     .ai-art-export-bar { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 14px; border-bottom: 1px solid var(--ai-line); background: var(--ai-surface); }
+    .ai-team-gate {
+      position: fixed; inset: 56px 0 0 0; z-index: 120;
+      display: grid; place-items: center; padding: 24px;
+      background: color-mix(in srgb, var(--ai-bg) 88%, transparent);
+      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    }
+    .ai-team-gate[hidden] { display: none !important; }
+    .ai-team-gate__card {
+      width: min(520px, 100%); background: var(--ai-surface);
+      border: 1px solid var(--ai-line-strong, var(--ai-line)); border-radius: 22px;
+      padding: 32px 30px; text-align: center;
+      box-shadow: 0 28px 80px -24px rgba(0, 0, 0, 0.55);
+    }
+    .ai-team-gate__icon {
+      width: 52px; height: 52px; margin: 0 auto 14px; border-radius: 14px;
+      display: grid; place-items: center;
+      background: var(--ai-accent-soft); color: var(--ai-accent);
+      border: 1px solid color-mix(in srgb, var(--ai-accent) 32%, transparent);
+    }
+    .ai-team-gate__badge {
+      display: inline-block; font: 700 10.5px/1 var(--r-mono, ui-monospace, monospace);
+      letter-spacing: .1em; color: var(--ai-accent);
+      padding: 5px 11px; border-radius: 999px;
+      background: var(--ai-accent-soft); margin-bottom: 12px;
+    }
+    .ai-team-gate__card h2 { margin: 0 0 10px; font-size: 22px; letter-spacing: -.02em; color: var(--ai-text); }
+    .ai-team-gate__card p { margin: 0 0 10px; font-size: 14.5px; line-height: 1.6; color: var(--ai-muted); }
+    .ai-team-gate__card strong { color: var(--ai-text); }
+    .ai-team-gate__sub { font-size: 13.5px !important; margin-bottom: 20px !important; }
+    .ai-team-gate__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 18px; }
+    .ai-gate-docs-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 9px 16px; border-radius: 10px; font-size: 13.5px; font-weight: 600;
+      text-decoration: none; color: var(--ai-text);
+      border: 1px solid var(--ai-line); background: var(--ai-bg);
+      transition: border-color .18s ease, color .18s ease;
+    }
+    .ai-gate-docs-btn:hover { border-color: var(--ai-accent); color: var(--ai-accent); }
+    .ai-team-gate__links {
+      display: flex; justify-content: center; flex-wrap: wrap; gap: 8px;
+      padding-top: 14px; border-top: 1px solid var(--ai-line);
+      font: 600 12px/1 var(--r-mono, ui-monospace, monospace); color: var(--ai-muted);
+    }
+    .ai-team-gate__links a { color: var(--ai-muted); text-decoration: none; }
+    .ai-team-gate__links a:hover { color: var(--ai-accent); }
+
     .ai-art-pane.is-fullscreen { position: fixed; inset: 0; z-index: 140; border-left: 0; }
     .ai-art-vp { display: inline-flex; gap: 3px; }
     .ai-art-vp .ai-mini-btn.is-on { border-color: var(--ai-accent); color: var(--ai-accent); background: var(--ai-accent-soft); }
