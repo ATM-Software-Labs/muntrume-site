@@ -15,8 +15,7 @@
   const MODELS = {
     lite: { id: "lite", label: "Muntrume 1.0 Lite" },
     pro: { id: "pro", label: "Muntrume 1.0 Pro" },
-    ultra_max: { id: "ultra_max", label: "Muntrume 1.0 Ultra Max" },
-    local: { id: "local", label: "Muntrume Local" }
+    ultra_max: { id: "ultra_max", label: "Muntrume 1.0 Ultra Max" }
   };
 
   const PACE_PRESETS = {
@@ -953,8 +952,6 @@
       projects: DEFAULT_PROJECTS.slice(),
       customInstructions: "",
       memory: "Equipo: Muntrume Motorsport (Barcelona). Pilotos: #16 Alberto Trujillo, #1 Mateo Berbis, #22 Eduardo Chongkan.",
-      ollamaUrl: "http://localhost:11434/api/chat",
-      ollamaModel: "llama3.1:8b",
       chats: [],
       activeChatId: null,
       artifacts: []
@@ -966,6 +963,7 @@
       return {
         ...fallback,
         ...parsed,
+        tier: MODELS[parsed.tier] ? parsed.tier : "pro",
         pace: PACE_PRESETS[parsed.pace] ? parsed.pace : "calm",
         projects: Array.isArray(parsed.projects) && parsed.projects.length ? parsed.projects : fallback.projects,
         chats: Array.isArray(parsed.chats) ? parsed.chats : [],
@@ -1009,14 +1007,16 @@
   }
 
   function syncComposerControls() {
+    if (!MODELS[state.tier]) state.tier = "pro";
     const m = MODELS[state.tier] || MODELS.pro;
     const mLbl = $("aiModelBtnLabel");
     if (mLbl) mLbl.textContent = m.label;
     document.querySelectorAll("[data-select-tier]").forEach((b) => {
       b.classList.toggle("is-active", b.dataset.selectTier === state.tier);
     });
-    const localBar = $("aiLocalBar");
-    if (localBar) localBar.hidden = state.tier !== "local";
+    document.querySelectorAll("[data-select-skill]").forEach((b) => {
+      b.classList.toggle("is-active", Boolean(state.skill) && b.dataset.selectSkill === state.skill);
+    });
 
     const effortLabels = { low: "Rápido", medium: "Medio", high: "Profundo" };
     const effBtn = $("aiEffortBtn");
@@ -1026,8 +1026,8 @@
     const paceLbl = $("aiPaceLabel");
     if (paceLbl) paceLbl.textContent = `Ritmo: ${paceCfg.label}`;
 
-    $("aiMenuWebCheck")?.classList.toggle("is-on", state.webSearch);
-    $("aiMenuMemCheck")?.classList.toggle("is-on", state.memoryOn);
+    $("aiActWebToggle")?.classList.toggle("is-on", state.webSearch);
+    $("aiActMemToggle")?.classList.toggle("is-on", state.memoryOn);
     renderContextPills();
   }
 
@@ -1168,6 +1168,34 @@
       lang: "html",
       desc: "Hoja editable de presiones en frío/caliente, ARB, camber y notas por circuito lista para compartir con el equipo.",
       code: `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ficha de Setup GT3</title><style>*{box-sizing:border-box}body{margin:0;padding:24px;background:#0f1114;color:#f3f5f8;font-family:system-ui,-apple-system,sans-serif}.wrap{max-width:740px;margin:0 auto;display:grid;gap:14px}.card{background:#171a1f;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:18px}.g4{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.tire{background:#0c0e12;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px}.tire b{color:#10b981;font:700 12px ui-monospace,monospace}.row{display:flex;gap:8px;margin-top:8px}input,textarea{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:#12151b;color:#f3f5f8;font:600 13px ui-monospace,monospace}.ok{color:#10b981;font-size:12px;margin-top:6px}.warn{color:#f59e0b;font-size:12px;margin-top:6px}</style></head><body><div class="wrap"><div class="card"><h1 style="margin:0 0 4px;font-size:20px">Control de Presiones y Balance · GT3</h1><p style="margin:0;font-size:13px;color:#8b94a3">Objetivo caliente iRacing GT3: 168–174 kPa. Introduce lecturas tras 5 vueltas.</p></div><div class="card g4" id="tires"></div><div class="card"><b style="font-size:12px;color:#8b94a3">NOTAS DE PISTA</b><textarea rows="3" placeholder="Ej. Subviraje en Pouhon -> bajar Front ARB 1 clic, Brake Bias 53.6%..."></textarea></div></div><script>const pos=['FL · Delantera Izq','FR · Delantera Der','RL · Trasera Izq','RR · Trasera Der'];const box=document.getElementById('tires');box.innerHTML=pos.map((p,i)=>'<div class="tire"><b>'+p+'</b><div class="row"><input type="number" step="0.5" value="152" data-c="'+i+'" placeholder="Frío kPa"><input type="number" step="0.5" value="171" data-h="'+i+'" placeholder="Caliente kPa"></div><div id="st'+i+'" class="ok">En ventana óptima (168–174 kPa)</div></div>').join('');function upd(){for(let i=0;i<4;i++){const h=+box.querySelector('[data-h="'+i+'"]').value||0;const el=document.getElementById('st'+i);if(h<168){el.className='warn';el.textContent='Subir frío +'+(170-h).toFixed(1)+' kPa';}else if(h>174){el.className='warn';el.textContent='Bajar frío -'+(h-172).toFixed(1)+' kPa';}else{el.className='ok';el.textContent='Ventana óptima ('+h+' kPa)';}}}box.addEventListener('input',upd);upd();</script></body></html>`
+    },
+    {
+      title: "Rotación de Pilotos 6h / 12h / 24h",
+      type: "html",
+      lang: "html",
+      desc: "Generador interactivo de turnos de resistencia con hora CET, duración por stint y copia directa para Discord.",
+      code: `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rotación de Pilotos Resistencia</title><style>*{box-sizing:border-box}body{margin:0;padding:24px;background:#0f1114;color:#f3f5f8;font-family:system-ui,-apple-system,sans-serif}.wrap{max-width:760px;margin:0 auto;display:grid;gap:14px}.card{background:#171a1f;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:18px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}label{display:block;font-size:11.5px;color:#8b94a3;margin-bottom:4px;font-weight:600}input,select{width:100%;padding:8px 10px;border-radius:9px;border:1px solid rgba(255,255,255,.12);background:#0c0e12;color:#f3f5f8;font:600 13px ui-monospace,monospace}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left}th{color:#10b981;font:700 11px ui-monospace,monospace;text-transform:uppercase}.btn{border:0;border-radius:999px;background:#10b981;color:#04130d;padding:8px 16px;font-weight:700;cursor:pointer;font-size:12.5px}</style></head><body><div class="wrap"><div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px"><h1 style="margin:0;font-size:19px">Rotación de Pilotos · Endurance</h1><button class="btn" id="cp">Copiar para Discord</button></div><div class="grid"><div><label>Pilotos (separados por coma)</label><input id="dr" value="Alberto, Mateo, Eduardo"></div><div><label>Duración carrera (h)</label><select id="hrs"><option value="6" selected>6 horas</option><option value="12">12 horas</option><option value="24">24 horas</option></select></div><div><label>Minutos por stint</label><input id="st" type="number" value="60" min="30" max="120"></div><div><label>Hora inicio (HH:MM)</label><input id="t0" value="15:00"></div></div></div><div class="card"><table><thead><tr><th>Stint</th><th>Hora CET</th><th>Piloto</th><th>Spotter</th></tr></thead><tbody id="tb"></tbody></table></div></div><script>const $=id=>document.getElementById(id);let txt='';function render(){const names=$('dr').value.split(',').map(s=>s.trim()).filter(Boolean);if(!names.length)return;const totalM=+$('hrs').value*60,stM=Math.max(25,+$('st').value||60);const [sh,sm]=($('t0').value||'15:00').split(':').map(Number);const baseM=(sh||15)*60+(sm||0);const n=Math.ceil(totalM/stM);let rows='',lines=['**Horario de Stints ('+$('hrs').value+'h)**'];for(let i=0;i<n;i++){const m=baseM+i*stM;const hh=String(Math.floor(m/60)%24).padStart(2,'0'),mm=String(m%60).padStart(2,'0');const p=names[i%names.length],sp=names[(i+1)%names.length];rows+='<tr><td>#'+(i+1)+'</td><td>'+hh+':'+mm+'</td><td><strong>'+p+'</strong></td><td>'+sp+'</td></tr>';lines.push('- Stint '+(i+1)+' ('+hh+':'+mm+'): **'+p+'** (Spotter: '+sp+')');}$('tb').innerHTML=rows;txt=lines.join('\\n');}['dr','hrs','st','t0'].forEach(id=>$(id).addEventListener('input',render));$('cp').addEventListener('click',()=>{navigator.clipboard.writeText(txt);$('cp').textContent='Copiado';setTimeout(()=>$('cp').textContent='Copiar para Discord',1400);});render();</script></body></html>`
+    },
+    {
+      title: "Analizador de Ritmo y Degradación",
+      type: "html",
+      lang: "html",
+      desc: "Pega tiempos de un stint y visualiza la curva de caída de goma en SVG, media del stint y brecha frente a Top Split.",
+      code: `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Analizador de Ritmo</title><style>*{box-sizing:border-box}body{margin:0;padding:24px;background:#0f1114;color:#f3f5f8;font-family:system-ui,-apple-system,sans-serif}.wrap{max-width:740px;margin:0 auto;display:grid;gap:14px}.card{background:#171a1f;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:18px}textarea,input{width:100%;padding:9px 10px;border-radius:9px;border:1px solid rgba(255,255,255,.12);background:#0c0e12;color:#f3f5f8;font:600 13px ui-monospace,monospace}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.kpi{background:#0c0e12;border:1px solid rgba(16,185,129,.25);border-radius:11px;padding:11px}.kpi span{display:block;font:600 10px ui-monospace,monospace;color:#8b94a3;text-transform:uppercase}.kpi strong{display:block;margin-top:4px;font:700 18px ui-monospace,monospace;color:#10b981}svg{width:100%;height:190px;background:#0c0e12;border-radius:12px;border:1px solid rgba(255,255,255,.08)}@media(max-width:600px){.kpis{grid-template-columns:repeat(2,1fr)}}</style></head><body><div class="wrap"><div class="card"><h1 style="margin:0 0 8px;font-size:19px">Analizador de Ritmo y Caída de Neumático</h1><div style="display:grid;grid-template-columns:2fr 1fr;gap:10px"><div><label style="font-size:11.5px;color:#8b94a3;display:block;margin-bottom:4px">Vueltas del stint (m:ss.xxx, una por línea)</label><textarea id="laps" rows="5">2:16.82\n2:16.95\n2:17.10\n2:17.24\n2:17.48\n2:17.75\n2:17.92\n2:18.21</textarea></div><div><label style="font-size:11.5px;color:#8b94a3;display:block;margin-bottom:4px">Referencia Top Split</label><input id="ref" value="2:16.20"></div></div></div><div class="kpis" id="k"></div><div class="card"><svg id="chart" viewBox="0 0 640 190"></svg></div></div><script>const $=id=>document.getElementById(id);const toS=s=>{const p=String(s||'').trim().split(':');return p.length===2?(+p[0]*60+ +p[1]):+p[0];};const fmt=s=>{const m=Math.floor(s/60),r=(s-m*60).toFixed(2).padStart(5,'0');return m+':'+r;};function run(){const arr=$('laps').value.split(/\\n+/).map(toS).filter(x=>isFinite(x)&&x>20);if(arr.length<2)return;const best=Math.min(...arr),avg=arr.reduce((a,b)=>a+b,0)/arr.length,drop=arr[arr.length-1]-arr[0],ref=toS($('ref').value)||best,gap=avg-ref;$('k').innerHTML='<div class="kpi"><span>Mejor</span><strong>'+fmt(best)+'</strong></div><div class="kpi"><span>Promedio</span><strong>'+fmt(avg)+'</strong></div><div class="kpi"><span>Degradación</span><strong>+'+drop.toFixed(2)+'s</strong></div><div class="kpi"><span>vs Top Split</span><strong>'+(gap>=0?'+':'')+gap.toFixed(2)+'s</strong></div>';const mn=Math.min(...arr,ref)-0.2,mx=Math.max(...arr)+0.2;const pts=arr.map((v,i)=>{const x=40+(i/(arr.length-1))*570,y=165-((v-mn)/(mx-mn))*135;return [x,y];});const poly=pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');const ry=165-((ref-mn)/(mx-mn))*135;$('chart').innerHTML='<line x1="40" y1="'+ry+'" x2="610" y2="'+ry+'" stroke="#3b82f6" stroke-dasharray="5 5" stroke-width="1.5"/><polyline fill="none" stroke="#10b981" stroke-width="3" points="'+poly+'"/>'+pts.map(p=>'<circle cx="'+p[0]+'" cy="'+p[1]+'" r="4" fill="#10b981"/>').join('');}['laps','ref'].forEach(id=>$(id).addEventListener('input',run));run();</script></body></html>`
+    },
+    {
+      title: "Diagrama SVG de Balance Aerodinámico y Mecánico",
+      type: "svg",
+      lang: "svg",
+      desc: "Guía visual vectorial de ingeniería GT3 para corregir subviraje y sobreviraje en entrada, vértice y salida.",
+      code: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 420" width="820" height="420" style="font-family:system-ui,-apple-system,sans-serif;background:#0f1114;border-radius:14px"><rect x="14" y="14" width="792" height="392" rx="14" fill="#171a1f" stroke="#2c323d"/><text x="38" y="54" fill="#f3f5f8" font-size="20" font-weight="700">Matriz Rápida de Balance · iRacing GT3</text><text x="38" y="76" fill="#8b94a3" font-size="12.5">Ajustes recomendados por fase de curva · Muntrume Motorsport Engineering</text><g transform="translate(38,100)"><rect width="236" height="278" rx="12" fill="#0f1114" stroke="#10b981" stroke-opacity="0.45"/><text x="16" y="30" fill="#10b981" font-size="13" font-weight="700">1. ENTRADA (FRENADA)</text><text x="16" y="60" fill="#f3f5f8" font-size="12.5" font-weight="700">Subviraje (no gira):</text><text x="16" y="82" fill="#cfd5df" font-size="12">- Brake Bias -0.5% atrás</text><text x="16" y="102" fill="#cfd5df" font-size="12">- Bajar Front ARB 1 clic</text><text x="16" y="122" fill="#cfd5df" font-size="12">- Front Ride Height -1 mm</text><line x1="16" y1="146" x2="220" y2="146" stroke="#262b34"/><text x="16" y="174" fill="#f59e0b" font-size="12.5" font-weight="700">Sobreviraje (se cruza):</text><text x="16" y="196" fill="#cfd5df" font-size="12">- Brake Bias +0.6% delante</text><text x="16" y="216" fill="#cfd5df" font-size="12">- Diff Preload +15 Nm</text><text x="16" y="236" fill="#cfd5df" font-size="12">- Front LS Comp +2 clics</text></g><g transform="translate(292,100)"><rect width="236" height="278" rx="12" fill="#0f1114" stroke="#3b82f6" stroke-opacity="0.45"/><text x="16" y="30" fill="#3b82f6" font-size="13" font-weight="700">2. VÉRTICE (MID-CORNER)</text><text x="16" y="60" fill="#f3f5f8" font-size="12.5" font-weight="700">Subviraje constante:</text><text x="16" y="82" fill="#cfd5df" font-size="12">- Front ARB -1 / Rear ARB +1</text><text x="16" y="102" fill="#cfd5df" font-size="12">- Diff Preload -10 Nm</text><text x="16" y="122" fill="#cfd5df" font-size="12">- Revisar 168-174 kPa</text><line x1="16" y1="146" x2="220" y2="146" stroke="#262b34"/><text x="16" y="174" fill="#f59e0b" font-size="12.5" font-weight="700">Inestable en rápida:</text><text x="16" y="196" fill="#cfd5df" font-size="12">- Rear Wing +1 grado</text><text x="16" y="216" fill="#cfd5df" font-size="12">- Rear Ride Height -1 mm</text><text x="16" y="236" fill="#cfd5df" font-size="12">- Subir Front ARB +1 clic</text></g><g transform="translate(546,100)"><rect width="236" height="278" rx="12" fill="#0f1114" stroke="#a855f7" stroke-opacity="0.45"/><text x="16" y="30" fill="#a855f7" font-size="13" font-weight="700">3. SALIDA (TRACCIÓN)</text><text x="16" y="60" fill="#f3f5f8" font-size="12.5" font-weight="700">Sobreviraje al dar gas:</text><text x="16" y="82" fill="#cfd5df" font-size="12">- Rear ARB -1 a -2 clics</text><text x="16" y="102" fill="#cfd5df" font-size="12">- Subir TC1 / TC2 +1</text><text x="16" y="122" fill="#cfd5df" font-size="12">- Rear LS Comp -2 clics</text><line x1="16" y1="146" x2="220" y2="146" stroke="#262b34"/><text x="16" y="174" fill="#10b981" font-size="12.5" font-weight="700">Falta de rotación salida:</text><text x="16" y="196" fill="#cfd5df" font-size="12">- Rear ARB +1 clic</text><text x="16" y="216" fill="#cfd5df" font-size="12">- Bajar TC1 -1 punto</text><text x="16" y="236" fill="#cfd5df" font-size="12">- Diff Preload -10 Nm</text></g></svg>`
+    },
+    {
+      title: "Planilla de Estrategia Endurance (CSV)",
+      type: "csv",
+      lang: "csv",
+      desc: "Hoja de cálculo limpia lista para ver en tabla, descargar en .csv e importar a Excel o Google Sheets.",
+      code: `Stint,Piloto,Vueltas,Combustible_L,Neumaticos,Ventana_Min,Notas\n1,Alberto Trujillo,33,97.4,Nuevos,0-75,Salida conservadora sin incidentes\n2,Mateo Berbis,33,97.4,Doble stint,75-150,Vigilar presiones traseras >175 kPa\n3,Eduardo Chongkan,33,97.4,Nuevos,150-225,Ritmo constante y ahorro 0.05 L/v\n4,Alberto Trujillo,33,97.4,Doble stint,225-300,Evaluar mapa motor si cae temperatura\n5,Mateo Berbis,28,84.0,Nuevos,300-360,Splash & Dash final a fondo`
     },
     {
       title: "Briefing Ejecutivo de Resistencia 6h",
@@ -1533,100 +1561,78 @@
       const proj = state.projects.find((p) => p.id === state.projectId);
       const history = chat.messages.slice(0, -2).slice(-8).map((m) => ({ role: m.role, content: m.content }));
 
-      if (state.tier === "local") {
-        const res = await fetch(state.ollamaUrl || "http://localhost:11434/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          signal: activeCtrl.signal,
-          body: JSON.stringify({
-            model: state.ollamaModel || "llama3.1:8b",
-            stream: false,
-            messages: [
-              { role: "system", content: "Eres Muntrume Local AI, asistente privado de Muntrume Motorsport." },
-              ...history,
-              { role: "user", content: text }
-            ]
-          })
-        });
-        const j = await res.json().catch(() => ({}));
-        const outTxt = j?.message?.content || j?.response || "No se recibió respuesta desde Ollama local.";
-        activeRevealer.pushContent(outTxt);
+      const payload = {
+        prompt: text || "Analiza esta imagen con detalle.",
+        tier: MODELS[state.tier] ? state.tier : "pro",
+        effort: state.effort,
+        mode: state.projectId === "dev" ? "general" : "team",
+        skill: state.skill,
+        web_search: state.webSearch,
+        project_prompt: proj?.prompt || "",
+        custom_instructions: state.customInstructions || "",
+        memory: state.memoryOn ? state.memory : "",
+        chat_history: history,
+        stream: true,
+        image: att?.kind === "image" ? att.dataUrl : undefined,
+        github_url: att?.kind === "github" ? att.url : undefined,
+        attachment_name: att?.kind === "text" ? att.name : undefined,
+        attachment_text: att?.kind === "text" ? att.text : undefined
+      };
+
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: activeCtrl.signal,
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const cType = (res.headers.get("content-type") || "").toLowerCase();
+      if (cType.includes("event-stream") && res.body) {
+        const reader = res.body.getReader();
+        const dec = new TextDecoder();
+        let buf = "";
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buf += dec.decode(value, { stream: true });
+          const lines = buf.split("\n");
+          buf = lines.pop() || "";
+          for (const ln of lines) {
+            const l = ln.trim();
+            if (!l.startsWith("data:")) continue;
+            const d = l.slice(5).trim();
+            if (d === "[DONE]") break;
+            try {
+              const j = JSON.parse(d);
+              if (j.meta) {
+                if (j.meta.model_brand) botMsg.modelBrand = j.meta.model_brand;
+                if (j.meta.used_web) botMsg.usedWeb = true;
+                if (j.meta.used_github) botMsg.usedGithub = true;
+                if (j.meta.used_vision) botMsg.usedVision = true;
+              }
+              const tDelta = j.reasoning || j.thinking || "";
+              const cDelta = j.content || j.token || j.delta || j.choices?.[0]?.delta?.content || "";
+              if (tDelta) activeRevealer.pushReasoning(tDelta);
+              if (cDelta) activeRevealer.pushContent(cDelta);
+            } catch {}
+          }
+        }
         activeRevealer.markNetworkDone();
         await activeRevealer.waitUntilIdle();
       } else {
-        const payload = {
-          prompt: text || "Analiza esta imagen con detalle.",
-          tier: state.tier,
-          effort: state.effort,
-          mode: state.projectId === "dev" ? "general" : "team",
-          skill: state.skill,
-          web_search: state.webSearch,
-          project_prompt: proj?.prompt || "",
-          custom_instructions: state.customInstructions || "",
-          memory: state.memoryOn ? state.memory : "",
-          chat_history: history,
-          stream: true,
-          image: att?.kind === "image" ? att.dataUrl : undefined,
-          github_url: att?.kind === "github" ? att.url : undefined,
-          attachment_name: att?.kind === "text" ? att.name : undefined,
-          attachment_text: att?.kind === "text" ? att.text : undefined
-        };
-
-        const res = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          signal: activeCtrl.signal,
-          body: JSON.stringify(payload)
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-        const cType = (res.headers.get("content-type") || "").toLowerCase();
-        if (cType.includes("event-stream") && res.body) {
-          const reader = res.body.getReader();
-          const dec = new TextDecoder();
-          let buf = "";
-          while (true) {
-            const { value, done } = await reader.read();
-            if (done) break;
-            buf += dec.decode(value, { stream: true });
-            const lines = buf.split("\n");
-            buf = lines.pop() || "";
-            for (const ln of lines) {
-              const l = ln.trim();
-              if (!l.startsWith("data:")) continue;
-              const d = l.slice(5).trim();
-              if (d === "[DONE]") break;
-              try {
-                const j = JSON.parse(d);
-                if (j.meta) {
-                  if (j.meta.model_brand) botMsg.modelBrand = j.meta.model_brand;
-                  if (j.meta.used_web) botMsg.usedWeb = true;
-                  if (j.meta.used_github) botMsg.usedGithub = true;
-                  if (j.meta.used_vision) botMsg.usedVision = true;
-                }
-                const tDelta = j.reasoning || j.thinking || "";
-                const cDelta = j.content || j.token || j.delta || j.choices?.[0]?.delta?.content || "";
-                if (tDelta) activeRevealer.pushReasoning(tDelta);
-                if (cDelta) activeRevealer.pushContent(cDelta);
-              } catch {}
-            }
-          }
-          activeRevealer.markNetworkDone();
-          await activeRevealer.waitUntilIdle();
-        } else {
-          const j = await res.json().catch(() => ({}));
-          if (j.reasoning) activeRevealer.pushReasoning(j.reasoning);
-          activeRevealer.pushContent(j.markdown || j.answer || j.result || "Sin respuesta del motor.");
-          botMsg.usedWeb = Boolean(j.used_web);
-          botMsg.usedGithub = Boolean(j.used_github);
-          botMsg.usedVision = Boolean(j.used_vision);
-          activeRevealer.markNetworkDone();
-          await activeRevealer.waitUntilIdle();
-        }
-        if (att?.kind === "image") botMsg.usedVision = true;
-        if (att?.kind === "github") botMsg.usedGithub = true;
-        if (state.webSearch) botMsg.usedWeb = true;
+        const j = await res.json().catch(() => ({}));
+        if (j.reasoning) activeRevealer.pushReasoning(j.reasoning);
+        activeRevealer.pushContent(j.markdown || j.answer || j.result || "Sin respuesta del motor.");
+        botMsg.usedWeb = Boolean(j.used_web);
+        botMsg.usedGithub = Boolean(j.used_github);
+        botMsg.usedVision = Boolean(j.used_vision);
+        activeRevealer.markNetworkDone();
+        await activeRevealer.waitUntilIdle();
       }
+      if (att?.kind === "image") botMsg.usedVision = true;
+      if (att?.kind === "github") botMsg.usedGithub = true;
+      if (state.webSearch) botMsg.usedWeb = true;
     } catch (err) {
       activeRevealer?.stop();
       if (err?.name !== "AbortError") {
@@ -2045,14 +2051,32 @@
       e.target.value = "";
     });
 
-    if ($("aiOllamaUrl")) {
-      $("aiOllamaUrl").value = state.ollamaUrl;
-      $("aiOllamaUrl").addEventListener("change", (e) => { state.ollamaUrl = e.target.value.trim(); saveState(); });
-    }
-    if ($("aiOllamaModel")) {
-      $("aiOllamaModel").value = state.ollamaModel;
-      $("aiOllamaModel").addEventListener("change", (e) => { state.ollamaModel = e.target.value.trim(); saveState(); });
-    }
+    $("aiArtNewBlankBtn")?.addEventListener("click", () => {
+      closeAllModals();
+      openArtifactPane({
+        title: "Mi nuevo artefacto HTML",
+        type: "html",
+        lang: "html",
+        code: `<!doctype html>\n<html lang="es">\n<head>\n  <meta charset="utf-8">\n  <meta name="viewport" content="width=device-width,initial-scale=1">\n  <title>Mi Artefacto Muntrume</title>\n  <style>body{margin:0;padding:32px;background:#0f1114;color:#f3f5f8;font-family:system-ui,sans-serif}.card{max-width:640px;margin:0 auto;padding:24px;border-radius:16px;background:#171a1f;border:1px solid rgba(16,185,129,.35)}h1{margin:0 0 8px;color:#10b981}</style>\n</head>\n<body>\n  <div class="card">\n    <h1>Nuevo artefacto en ai.muntru.me</h1>\n    <p>Edita este código o pulsa «Mejorar con IA» y publícalo con tu propia URL.</p>\n  </div>\n</body>\n</html>`
+      });
+      switchArtifactTab("code");
+    });
+    $("aiArtAskAiBtn")?.addEventListener("click", () => {
+      if (!currentArtifact) return;
+      pendingAttachment = {
+        kind: "text",
+        name: `${safeFilename(currentArtifact.title, "artefacto")}.${currentArtifact.lang || "html"}`,
+        text: String(currentArtifact.code || "").slice(0, 7500)
+      };
+      state.skill = currentArtifact.type === "slides" ? "slides" : "code";
+      syncComposerControls();
+      const inp = $("aiInput");
+      if (inp) {
+        inp.value = `Mejora este artefacto "${currentArtifact.title}" y devuélvelo completo listo para vista previa: `;
+        inp.focus();
+      }
+      showToast("Artefacto adjuntado al chat para iterar con IA");
+    });
 
     const input = $("aiInput");
     input?.addEventListener("input", () => {
@@ -2148,7 +2172,11 @@
       if (tierBtn) { state.tier = tierBtn.dataset.selectTier; saveState(); syncComposerControls(); closeAllModals(); return; }
 
       const skillBtn = t.closest("[data-select-skill]");
-      if (skillBtn) { state.skill = skillBtn.dataset.selectSkill || ""; saveState(); syncComposerControls(); closeAllModals(); return; }
+      if (skillBtn) {
+        const picked = skillBtn.dataset.selectSkill || "";
+        state.skill = state.skill === picked ? "" : picked;
+        saveState(); syncComposerControls(); closeAllModals(); return;
+      }
 
       const starter = t.closest("[data-starter-prompt]");
       if (starter) {

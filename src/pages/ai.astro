@@ -93,13 +93,6 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT) en ai.mun
         </div>
       </div>
 
-      <!-- Local Ollama Bar (shown only when Muntrume Local is selected) -->
-      <div id="aiLocalBar" class="ai-local-bar" hidden>
-        <span>Muntrume Local (100 % privado)</span>
-        <input type="url" id="aiOllamaUrl" value="http://localhost:11434/api/chat" aria-label="Endpoint Ollama" />
-        <input type="text" id="aiOllamaModel" value="llama3.1:8b" aria-label="Modelo Ollama" style="max-width:150px" />
-      </div>
-
       <!-- Messages Feed -->
       <div id="aiFeed" class="ai-feed" hidden></div>
 
@@ -146,64 +139,50 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT) en ai.mun
 
           <div class="ai-composer__bar">
             <div class="ai-composer__left">
-              <!-- Clean Monochrome "+" Tools Menu -->
+              <!-- Clean Simplified "+" Tools Menu (Compact, Zero Scrollbar) -->
               <div class="ai-pop-anchor">
                 <button type="button" id="aiPlusBtn" class="ai-plus-btn" aria-label="Herramientas y adjuntos" title="Adjuntar y herramientas">
                   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
                 </button>
-                <div id="aiPlusMenu" class="ai-popover" hidden>
+                <div id="aiPlusMenu" class="ai-popover ai-popover--compact" hidden>
                   <button type="button" id="aiActUpload" class="ai-pop-item">
                     <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-                    <span class="ai-pop-txt">Subir archivo o imagen</span>
+                    <span class="ai-pop-txt">Archivo o imagen</span>
                     <kbd class="ai-pop-kbd">Ctrl+U</kbd>
                   </button>
                   <button type="button" id="aiActGithub" class="ai-pop-item">
                     <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
-                    <span class="ai-pop-txt">Importar desde GitHub</span>
+                    <span class="ai-pop-txt">Importar GitHub</span>
                   </button>
                   <button type="button" id="aiActProject" class="ai-pop-item">
                     <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
                     <span class="ai-pop-txt">Cambiar proyecto</span>
                   </button>
                   <div class="ai-pop-sep"></div>
-                  <div class="ai-pop-label">Skills Open Source</div>
-                  <button type="button" class="ai-pop-item" data-select-skill="setup">
-                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-                    <span class="ai-pop-txt">Ingeniero de Setups iRacing</span>
-                  </button>
-                  <button type="button" class="ai-pop-item" data-select-skill="strategy">
-                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                    <span class="ai-pop-txt">Estrategia y combustible</span>
-                  </button>
-                  <button type="button" class="ai-pop-item" data-select-skill="code">
-                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-                    <span class="ai-pop-txt">Código y artefacto HTML</span>
-                  </button>
-                  <button type="button" class="ai-pop-item" data-select-skill="slides">
-                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                    <span class="ai-pop-txt">Presentación Slides</span>
-                  </button>
-                  <button type="button" class="ai-pop-item" data-select-skill="doc">
-                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                    <span class="ai-pop-txt">Documento Word / PDF</span>
-                  </button>
+                  <div class="ai-pop-label">Modo rápido</div>
+                  <div class="ai-pop-grid">
+                    <button type="button" class="ai-pop-chip" data-select-skill="setup">Setups iRacing</button>
+                    <button type="button" class="ai-pop-chip" data-select-skill="strategy">Estrategia</button>
+                    <button type="button" class="ai-pop-chip" data-select-skill="code">Artefacto Live</button>
+                    <button type="button" class="ai-pop-chip" data-select-skill="slides">Slides / Docs</button>
+                  </div>
                   <div class="ai-pop-sep"></div>
-                  <button type="button" id="aiActWebToggle" class="ai-pop-item">
-                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                    <span class="ai-pop-txt">Búsqueda web en vivo</span>
-                    <span id="aiMenuWebCheck" class="ai-check-mark is-on">✓</span>
-                  </button>
-                  <button type="button" id="aiActMemToggle" class="ai-pop-item">
-                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
-                    <span class="ai-pop-txt">Memoria persistente</span>
-                    <span id="aiMenuMemCheck" class="ai-check-mark is-on">✓</span>
-                  </button>
+                  <div class="ai-pop-toggles">
+                    <button type="button" id="aiActWebToggle" class="ai-pop-toggle is-on">
+                      <span class="ai-pop-toggle__dot"></span>
+                      <span>Web en vivo</span>
+                    </button>
+                    <button type="button" id="aiActMemToggle" class="ai-pop-toggle is-on">
+                      <span class="ai-pop-toggle__dot"></span>
+                      <span>Memoria</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
 
             <div class="ai-composer__right">
-              <!-- Racing-Branded Open Source Model Selector -->
+              <!-- Optimized 3-Tier Open Source Model Selector -->
               <div class="ai-pop-anchor">
                 <button type="button" id="aiModelBtn" class="ai-model-btn" title="Cambiar motor Muntrume">
                   <span id="aiModelBtnLabel">Muntrume 1.0 Pro</span>
@@ -212,19 +191,15 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT) en ai.mun
                 <div id="aiModelMenu" class="ai-popover ai-popover--right" hidden>
                   <button type="button" class="ai-model-opt" data-select-tier="lite">
                     <strong>Muntrume 1.0 Lite</strong>
-                    <span>Ágil · Respuestas rápidas y cálculos</span>
+                    <span>Ultrarrápido · Resúmenes y cálculos al instante</span>
                   </button>
                   <button type="button" class="ai-model-opt is-active" data-select-tier="pro">
                     <strong>Muntrume 1.0 Pro</strong>
-                    <span>Equilibrado · Setups iRacing, código y documentos</span>
+                    <span>Óptimo · Setups iRacing, artefactos HTML y código</span>
                   </button>
                   <button type="button" class="ai-model-opt" data-select-tier="ultra_max">
                     <strong>Muntrume 1.0 Ultra Max</strong>
-                    <span>Razonamiento profundo paso a paso</span>
-                  </button>
-                  <button type="button" class="ai-model-opt" data-select-tier="local">
-                    <strong>Muntrume Local</strong>
-                    <span>100 % Privado en tu PC (Ollama localhost:11434)</span>
+                    <span>Razonamiento profundo paso a paso · Análisis complejo</span>
                   </button>
                 </div>
               </div>
@@ -296,6 +271,7 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT) en ai.mun
       </div>
       <div class="ai-art-export-bar">
         <button type="button" id="aiArtPublishBtn" class="ai-mini-btn ai-mini-btn--accent">Publicar en ai.muntru.me</button>
+        <button type="button" id="aiArtAskAiBtn" class="ai-mini-btn">Mejorar con IA</button>
         <button type="button" id="aiArtExportDoc" class="ai-mini-btn">DOC</button>
         <button type="button" id="aiArtExportPdf" class="ai-mini-btn">PDF</button>
         <button type="button" id="aiArtExportSlides" class="ai-mini-btn">Slides</button>
@@ -431,10 +407,13 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT) en ai.mun
         <h2>Artefactos y Apps en ai.muntru.me</h2>
         <button type="button" class="ai-ico-btn" data-close-ai-modal aria-label="Cerrar">×</button>
       </div>
-      <div class="ai-art-tabs" style="width:fit-content">
-        <button type="button" id="artTabCloud" class="is-active">Mi perfil (Nube)</button>
-        <button type="button" id="artTabTemplates">Plantillas útiles</button>
-        <button type="button" id="artTabLocal">Locales</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <div class="ai-art-tabs" style="width:fit-content">
+          <button type="button" id="artTabCloud" class="is-active">Mi perfil (Nube)</button>
+          <button type="button" id="artTabTemplates">Plantillas útiles (8)</button>
+          <button type="button" id="artTabLocal">Locales</button>
+        </div>
+        <button type="button" id="aiArtNewBlankBtn" class="ai-mini-btn ai-mini-btn--accent">+ Crear en blanco</button>
       </div>
       <div id="aiArtifactsProfileBar" class="ai-prof-banner" hidden></div>
       <div id="aiArtifactsGallery" class="ai-proj-list"></div>
@@ -788,7 +767,26 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT) en ai.mun
     .ai-pop-txt { flex: 1; text-align: left; white-space: nowrap; }
     .ai-pop-kbd { margin-left: auto; font: 600 10.5px/1 var(--r-mono); color: var(--ai-muted); }
     .ai-pop-sep { height: 1px; background: var(--ai-line); margin: 4px 6px; }
-    .ai-pop-label { font: 700 10px/1 var(--r-mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--ai-muted); padding: 4px 10px; }
+    .ai-popover--compact { min-width: 264px; max-height: none; overflow: visible; padding: 7px; gap: 3px; }
+    .ai-pop-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; padding: 2px 4px; }
+    .ai-pop-chip {
+      border: 1px solid var(--ai-line); background: var(--ai-bg); color: var(--ai-text-soft);
+      border-radius: 8px; padding: 6px 8px; font: 600 11.5px/1.2 var(--r-sans, system-ui, sans-serif);
+      text-align: center; cursor: pointer; transition: border-color 0.14s ease, color 0.14s ease, background 0.14s ease;
+    }
+    .ai-pop-chip:hover { border-color: var(--ai-accent); color: var(--ai-text); }
+    .ai-pop-chip.is-active { background: var(--ai-accent-soft); border-color: var(--ai-accent); color: var(--ai-accent); }
+    .ai-pop-toggles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; padding: 2px 4px; }
+    .ai-pop-toggle {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 6px 8px; border-radius: 8px; border: 1px solid var(--ai-line);
+      background: var(--ai-bg); color: var(--ai-muted); font: 600 11.5px/1.2 var(--r-sans, system-ui, sans-serif);
+      cursor: pointer; transition: border-color 0.14s ease, color 0.14s ease, background 0.14s ease;
+    }
+    .ai-pop-toggle__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ai-muted); opacity: 0.45; }
+    .ai-pop-toggle.is-on { border-color: color-mix(in srgb, var(--ai-accent) 55%, transparent); background: var(--ai-accent-soft); color: var(--ai-accent); }
+    .ai-pop-toggle.is-on .ai-pop-toggle__dot { background: var(--ai-accent); opacity: 1; }
+    .ai-pop-label { font: 700 10px/1 var(--r-mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--ai-muted); padding: 4px 8px; }
     .ai-check-mark { margin-left: auto; color: transparent; font-weight: 800; font-size: 13px; }
     .ai-check-mark.is-on { color: var(--ai-accent); }
     .ai-model-opt {
@@ -1185,5 +1183,5 @@ const pageDescription = "Muntrume AI Studio (100 % Open Source · MIT) en ai.mun
     }
   </style>
 
-  <script is:inline src="/assets/js/ai-studio.js?v=t375"></script>
+  <script is:inline src="/assets/js/ai-studio.js?v=t380"></script>
 </Layout>
