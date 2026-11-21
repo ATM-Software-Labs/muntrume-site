@@ -52,9 +52,11 @@ const aiJsonLd = {
         </p>
         <div class="ai-team-gate__actions">
           <button type="button" id="aiGateLoginBtn" class="ai-btn-accent">Iniciar sesión de equipo</button>
-          <a href="/ai-docs/" class="ai-gate-docs-btn">Ver Documentación Pública →</a>
+          <button type="button" id="aiGateCloseBtn" class="ai-gate-docs-btn">Seguir con Muntrume 1.0 Open (gratis)</button>
         </div>
         <div class="ai-team-gate__links">
+          <a href="https://docs.muntru.me/">Documentación</a>
+          <span>·</span>
           <a href="/llms.txt">llms.txt</a>
           <span>·</span>
           <a href="/ai-knowledge.json">ai-knowledge.json</a>
@@ -256,16 +258,20 @@ const aiJsonLd = {
                   <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                 </button>
                 <div id="aiModelMenu" class="ai-popover ai-popover--right" hidden>
-                  <button type="button" class="ai-model-opt" data-select-tier="lite">
-                    <strong>Muntrume 1.0 Lite</strong>
+                  <button type="button" class="ai-model-opt" data-select-tier="open">
+                    <strong>Muntrume 1.0 Open <small style="opacity:.75;font-weight:600">· GRATIS</small></strong>
+                    <span>Abierto para todos los visitantes · Consultas generales (0 €)</span>
+                  </button>
+                  <button type="button" class="ai-model-opt" data-select-tier="lite" data-team-only="1">
+                    <strong>Muntrume 1.0 Lite <small class="ai-lock-tag">· Solo equipo</small></strong>
                     <span>Ultrarrápido · Resúmenes y cálculos al instante</span>
                   </button>
-                  <button type="button" class="ai-model-opt is-active" data-select-tier="pro">
-                    <strong>Muntrume 1.0 Pro</strong>
+                  <button type="button" class="ai-model-opt is-active" data-select-tier="pro" data-team-only="1">
+                    <strong>Muntrume 1.0 Pro <small class="ai-lock-tag">· Solo equipo</small></strong>
                     <span>Óptimo · Setups iRacing, artefactos HTML y código</span>
                   </button>
-                  <button type="button" class="ai-model-opt" data-select-tier="ultra_max">
-                    <strong>Muntrume 1.0 Ultra Max</strong>
+                  <button type="button" class="ai-model-opt" data-select-tier="ultra_max" data-team-only="1">
+                    <strong>Muntrume 1.0 Ultra Max <small class="ai-lock-tag">· Solo equipo</small></strong>
                     <span>Razonamiento profundo paso a paso · Análisis complejo</span>
                   </button>
                 </div>

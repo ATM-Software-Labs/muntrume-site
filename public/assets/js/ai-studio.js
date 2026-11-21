@@ -13,9 +13,10 @@
   const HANDOFF_KEY = "muntrume_ai_handoff";
 
   const MODELS = {
-    lite: { id: "lite", label: "Muntrume 1.0 Lite" },
-    pro: { id: "pro", label: "Muntrume 1.0 Pro" },
-    ultra_max: { id: "ultra_max", label: "Muntrume 1.0 Ultra Max" }
+    open: { id: "open", label: "Muntrume 1.0 Open", isPublic: true },
+    lite: { id: "lite", label: "Muntrume 1.0 Lite", isPublic: false },
+    pro: { id: "pro", label: "Muntrume 1.0 Pro", isPublic: false },
+    ultra_max: { id: "ultra_max", label: "Muntrume 1.0 Ultra Max", isPublic: false }
   };
 
   const PACE_PRESETS = {
@@ -1316,18 +1317,21 @@
   function syncTeamGate() {
     const authed = Boolean(getVaultToken());
     const gate = $("aiTeamGate");
-    if (gate) gate.hidden = authed;
-    const lockedIds = [
-      "aiInput", "aiSendBtn", "aiModelBtn", "aiPlusBtn", "aiSkillBtn",
-      "aiNewChatBtn", "aiSearchBtn", "aiProjectsBtn", "aiArtifactsBtn",
-      "aiCodeModeBtn", "aiPersonalizeBtn"
-    ];
-    lockedIds.forEach((id) => {
-      const el = $(id);
-      if (el) el.disabled = !authed;
+    if (gate) gate.hidden = true; // Abierto por defecto con Muntrume 1.0 Open; solo se abre si un invitado pulsa un modelo de equipo
+    if (!authed && state.tier !== "open") {
+      state.tier = "open";
+      state.webSearch = false;
+      saveState();
+      syncComposerControls();
+    }
+    document.querySelectorAll("[data-team-only='1'] .ai-lock-tag").forEach((el) => {
+      el.hidden = authed;
     });
-    const side = $("aiSide");
-    if (side) side.toggleAttribute("inert", !authed);
+    const gateClose = $("aiGateCloseBtn");
+    if (gateClose && !gateClose.dataset.bound) {
+      gateClose.dataset.bound = "1";
+      gateClose.addEventListener("click", () => { if (gate) gate.hidden = true; });
+    }
     return authed;
   }
 
@@ -2347,7 +2351,20 @@
       if (!(t instanceof Element)) return;
 
       const tierBtn = t.closest("[data-select-tier]");
-      if (tierBtn) { state.tier = tierBtn.dataset.selectTier; saveState(); syncComposerControls(); closeAllModals(); return; }
+      if (tierBtn) {
+        const picked = tierBtn.dataset.selectTier || "open";
+        if (picked !== "open" && !getVaultToken()) {
+          closeAllModals();
+          const gate = $("aiTeamGate");
+          if (gate) gate.hidden = false;
+          return;
+        }
+        state.tier = picked;
+        saveState();
+        syncComposerControls();
+        closeAllModals();
+        return;
+      }
 
       const skillBtn = t.closest("[data-select-skill]");
       if (skillBtn) {
