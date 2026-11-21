@@ -1,5 +1,698 @@
 ---
-const next = Astro.url.searchParams.get("next") || "/garage/";
-const safe = next.startsWith("/") && !next.startsWith("//") && !next.includes("\\") ? next : "/garage/";
-return Astro.redirect(`/garage/?mode=login&redirect=${encodeURIComponent(safe)}`);
+import Layout from '../layouts/Layout.astro';
 ---
+
+<Layout
+  title="Iniciar sesión · Muntrume Motorsport"
+  description="Acceso seguro Zero-Trust al Setup Vault, Muntrume AI Studio y Race Control mediante Passkey WebAuthn, contraseña, código por correo o MFA Open Source."
+  canonical="https://muntru.me/login/"
+  noindex={true}
+>
+  <main class="mm-login-page">
+    <div class="mm-login-shell">
+      <!-- LEFT BRANDING / SECURITY PANEL -->
+      <section class="mm-login-aside" aria-label="Seguridad Muntrume">
+        <div class="mm-login-badge">
+          <span class="mm-login-dot" aria-hidden="true"></span>
+          <span>MUNTRUME ID · ZERO-TRUST</span>
+        </div>
+        <h1>Acceso unificado del equipo</h1>
+        <p class="mm-login-aside__lead">
+          Una sola sesión verificada para <strong>Setup Vault</strong> (+42.600 setups <code>.sto</code>), <strong>Muntrume AI Studio</strong>, <strong>MMT Sync</strong> y <strong>Race Control</strong>.
+        </p>
+
+        <div class="mm-login-pillars">
+          <div class="mm-login-pillar">
+            <div class="mm-login-pillar__icon" aria-hidden="true">🔑</div>
+            <div>
+              <strong>Passkeys FIDO2 / WebAuthn</strong>
+              <p>Inicia sesión en 1 toque con Windows Hello, Touch ID, Face ID o llave de seguridad.</p>
+            </div>
+          </div>
+          <div class="mm-login-pillar">
+            <div class="mm-login-pillar__icon" aria-hidden="true">🛡️</div>
+            <div>
+              <strong>MFA 100 % Open Source</strong>
+              <p>Compatible con TOTP RFC 6238, <code>ntfy.sh</code>, Discord DM, Android SMS Gateway y WhatsApp self-hosted.</p>
+            </div>
+          </div>
+          <div class="mm-login-pillar">
+            <div class="mm-login-pillar__icon" aria-hidden="true">📚</div>
+            <div>
+              <strong>Documentación siempre abierta</strong>
+              <p>¿Solo quieres consultar la arquitectura o la API? Visita <a href="https://docs.muntru.me/">docs.muntru.me</a> sin iniciar sesión.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT AUTH CARD -->
+      <section class="mm-login-card" aria-label="Formulario de acceso">
+        <div class="mm-login-card__head">
+          <h2>Iniciar sesión</h2>
+          <p id="loginNextHint">Accede con tu cuenta autorizada de piloto o ingeniero.</p>
+        </div>
+
+        <!-- 1-TAP PASSKEY CTA -->
+        <button type="button" id="btnPasskeyLogin" class="mm-btn-passkey">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg>
+          <span>Entrar con Passkey (Windows Hello / Touch ID)</span>
+        </button>
+
+        <div class="mm-login-divider"><span>o continúa con</span></div>
+
+        <!-- METHOD TABS -->
+        <div class="mm-login-tabs" role="tablist">
+          <button type="button" class="mm-login-tab is-active" data-auth-tab="password" role="tab" aria-selected="true">Contraseña</button>
+          <button type="button" class="mm-login-tab" data-auth-tab="code" role="tab" aria-selected="false">Código email</button>
+          <button type="button" class="mm-login-tab" data-auth-tab="otp" role="tab" aria-selected="false">MFA Open Source</button>
+        </div>
+
+        <!-- STATUS / ERROR BANNER -->
+        <div id="loginStatus" class="mm-login-alert" hidden role="status" aria-live="polite"></div>
+
+        <!-- TAB 1: PASSWORD -->
+        <form id="formPassword" class="mm-login-form" data-auth-panel="password" novalidate>
+          <label class="mm-field">
+            <span>Correo electrónico</span>
+            <input type="email" id="pwEmail" name="email" autocomplete="username webauthn" placeholder="piloto@muntru.me" required />
+          </label>
+          <label class="mm-field">
+            <div class="mm-field__row">
+              <span>Contraseña</span>
+              <button type="button" id="btnForgotToggle" class="mm-link-btn">¿Primer acceso u olvidaste tu contraseña?</button>
+            </div>
+            <div class="mm-pw-wrap">
+              <input type="password" id="pwPass" name="password" autocomplete="current-password" placeholder="••••••••••••" required />
+              <button type="button" id="btnTogglePw" class="mm-pw-eye" aria-label="Mostrar u ocultar contraseña">Ver</button>
+            </div>
+          </label>
+          <button type="submit" id="btnSubmitPw" class="mm-btn-submit">Iniciar sesión</button>
+        </form>
+
+        <!-- TAB 2: EMAIL MAGIC CODE -->
+        <form id="formEmailCode" class="mm-login-form" data-auth-panel="code" hidden novalidate>
+          <label class="mm-field">
+            <span>Correo electrónico autorizado</span>
+            <input type="email" id="codeEmail" autocomplete="email" placeholder="piloto@muntru.me" required />
+          </label>
+          <div id="codeStepVerify" hidden>
+            <label class="mm-field">
+              <span>Código de 6 dígitos recibido en tu correo</span>
+              <input type="text" id="codeInput" inputmode="numeric" maxlength="8" autocomplete="one-time-code" placeholder="123456" />
+            </label>
+          </div>
+          <div class="mm-form-actions">
+            <button type="button" id="btnRequestCode" class="mm-btn-submit">Enviar código por correo</button>
+            <button type="submit" id="btnVerifyCode" class="mm-btn-submit" hidden>Verificar código y entrar</button>
+          </div>
+        </form>
+
+        <!-- TAB 3: OPEN-SOURCE OTP (ntfy / Discord / SMS / WhatsApp) -->
+        <form id="formOssOtp" class="mm-login-form" data-auth-panel="otp" hidden novalidate>
+          <label class="mm-field">
+            <span>Correo electrónico autorizado</span>
+            <input type="email" id="otpEmail" autocomplete="email" placeholder="piloto@muntru.me" required />
+          </label>
+          <label class="mm-field">
+            <span>Canal Open Source configurado en tu perfil</span>
+            <select id="otpChannel">
+              <option value="ntfy">ntfy.sh (Notificación push móvil)</option>
+              <option value="discord">Discord DM (Bot oficial MMT)</option>
+              <option value="sms">Android SMS Gateway (SMS propio)</option>
+              <option value="whatsapp">WhatsApp self-hosted (Evolution / WAHA)</option>
+            </select>
+          </label>
+          <div id="otpStepVerify" hidden>
+            <label class="mm-field">
+              <span>Código OTP recibido</span>
+              <input type="text" id="otpCodeInput" inputmode="numeric" maxlength="8" autocomplete="one-time-code" placeholder="123456" />
+            </label>
+          </div>
+          <div class="mm-form-actions">
+            <button type="button" id="btnSendOtp" class="mm-btn-submit">Enviar OTP al canal</button>
+            <button type="submit" id="btnVerifyOtp" class="mm-btn-submit" hidden>Validar OTP y entrar</button>
+          </div>
+        </form>
+
+        <!-- INLINE FORGOT PASSWORD -->
+        <div id="forgotBox" class="mm-forgot-box" hidden>
+          <div class="mm-forgot-box__head">
+            <strong>Restablecer o crear contraseña</strong>
+            <button type="button" id="btnForgotClose" class="mm-link-btn">Cerrar</button>
+          </div>
+          <p>Introduce tu correo autorizado y te enviaremos un enlace firmado desde <code>mail.muntru.me</code>.</p>
+          <div class="mm-forgot-row">
+            <input type="email" id="forgotEmail" placeholder="piloto@muntru.me" />
+            <button type="button" id="btnSendForgot" class="mm-btn-mini">Enviar enlace</button>
+          </div>
+        </div>
+
+        <div class="mm-login-card__foot">
+          <span>¿Aún no eres piloto del equipo?</span>
+          <a href="/paddock/#tryouts">Solicitar acceso al Paddock →</a>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script is:inline>
+    (function () {
+      var API = "https://muntrume.atrumin16.workers.dev";
+      var params = new URLSearchParams(location.search);
+      var nextRaw = params.get("next") || params.get("redirect") || "/garage/";
+      var nextUrl = /^https:\/\/(ai|docs|muntru)\.muntru\.me(\/|$)/i.test(nextRaw)
+        ? nextRaw
+        : (nextRaw.startsWith("/") && !nextRaw.startsWith("//") && !nextRaw.includes("\\") ? nextRaw : "/garage/");
+
+      var statusEl = document.getElementById("loginStatus");
+      function setStatus(msg, type) {
+        if (!statusEl) return;
+        if (!msg) { statusEl.hidden = true; return; }
+        statusEl.textContent = msg;
+        statusEl.className = "mm-login-alert mm-login-alert--" + (type || "info");
+        statusEl.hidden = false;
+      }
+
+      function saveSessionAndGo(data) {
+        if (!data || !data.token) {
+          setStatus("No se recibió token de sesión.", "error");
+          return;
+        }
+        try {
+          localStorage.setItem("mrt_vault_token", data.token);
+          localStorage.setItem("mm_token", data.token);
+          if (data.user) {
+            localStorage.setItem("mrt_vault_user", JSON.stringify(data.user));
+          }
+        } catch (e) {}
+        setStatus("Sesión verificada. Redirigiendo…", "ok");
+        setTimeout(function () { location.href = nextUrl; }, 350);
+      }
+
+      async function postJson(path, body) {
+        var r = await fetch(API + path, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body || {})
+        });
+        var data = await r.json().catch(function () { return {}; });
+        if (!r.ok || data.success === false) {
+          throw new Error(data.error || ("Error HTTP " + r.status));
+        }
+        return data;
+      }
+
+      // Tabs
+      document.querySelectorAll("[data-auth-tab]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var id = btn.getAttribute("data-auth-tab");
+          setStatus("");
+          document.querySelectorAll("[data-auth-tab]").forEach(function (t) {
+            var active = t === btn;
+            t.classList.toggle("is-active", active);
+            t.setAttribute("aria-selected", active ? "true" : "false");
+          });
+          document.querySelectorAll("[data-auth-panel]").forEach(function (p) {
+            p.hidden = p.getAttribute("data-auth-panel") !== id;
+          });
+        });
+      });
+
+      // Toggle password visibility
+      var pwPass = document.getElementById("pwPass");
+      var btnTogglePw = document.getElementById("btnTogglePw");
+      if (btnTogglePw && pwPass) {
+        btnTogglePw.addEventListener("click", function () {
+          var show = pwPass.type === "password";
+          pwPass.type = show ? "text" : "password";
+          btnTogglePw.textContent = show ? "Ocultar" : "Ver";
+        });
+      }
+
+      // Password login
+      var formPw = document.getElementById("formPassword");
+      if (formPw) {
+        formPw.addEventListener("submit", async function (e) {
+          e.preventDefault();
+          var email = (document.getElementById("pwEmail").value || "").trim();
+          var password = pwPass.value || "";
+          if (!email || !password) { setStatus("Introduce tu correo y contraseña.", "error"); return; }
+          var btn = document.getElementById("btnSubmitPw");
+          btn.disabled = true;
+          setStatus("Verificando credenciales…", "info");
+          try {
+            var data = await postJson("/api/setups/auth", { email: email, password: password });
+            saveSessionAndGo(data);
+          } catch (err) {
+            setStatus(err.message || "Error al iniciar sesión.", "error");
+            btn.disabled = false;
+          }
+        });
+      }
+
+      // Email magic code
+      var btnReqCode = document.getElementById("btnRequestCode");
+      var btnVerCode = document.getElementById("btnVerifyCode");
+      var codeStep = document.getElementById("codeStepVerify");
+      if (btnReqCode) {
+        btnReqCode.addEventListener("click", async function () {
+          var email = (document.getElementById("codeEmail").value || "").trim();
+          if (!email) { setStatus("Introduce tu correo autorizado.", "error"); return; }
+          btnReqCode.disabled = true;
+          setStatus("Enviando código a tu correo…", "info");
+          try {
+            await postJson("/api/setups/code/request", { email: email });
+            codeStep.hidden = false;
+            btnVerCode.hidden = false;
+            btnReqCode.textContent = "Reenviar código";
+            setStatus("Código enviado. Revisa tu bandeja de entrada.", "ok");
+          } catch (err) {
+            setStatus(err.message || "No se pudo enviar el código.", "error");
+          } finally {
+            btnReqCode.disabled = false;
+          }
+        });
+      }
+      var formCode = document.getElementById("formEmailCode");
+      if (formCode) {
+        formCode.addEventListener("submit", async function (e) {
+          e.preventDefault();
+          var email = (document.getElementById("codeEmail").value || "").trim();
+          var code = (document.getElementById("codeInput").value || "").trim();
+          if (!email || !code) { setStatus("Introduce el correo y el código de 6 dígitos.", "error"); return; }
+          btnVerCode.disabled = true;
+          try {
+            var data = await postJson("/api/setups/code/verify", { email: email, code: code });
+            saveSessionAndGo(data);
+          } catch (err) {
+            setStatus(err.message || "Código inválido o caducado.", "error");
+            btnVerCode.disabled = false;
+          }
+        });
+      }
+
+      // Open-Source OTP
+      var btnSendOtp = document.getElementById("btnSendOtp");
+      var btnVerifyOtp = document.getElementById("btnVerifyOtp");
+      var otpStep = document.getElementById("otpStepVerify");
+      if (btnSendOtp) {
+        btnSendOtp.addEventListener("click", async function () {
+          var email = (document.getElementById("otpEmail").value || "").trim();
+          var channel = document.getElementById("otpChannel").value;
+          if (!email) { setStatus("Introduce tu correo autorizado.", "error"); return; }
+          btnSendOtp.disabled = true;
+          setStatus("Enviando código OTP por " + channel + "…", "info");
+          try {
+            await postJson("/api/auth/mfa/otp/send", { email: email, channel: channel });
+            otpStep.hidden = false;
+            btnVerifyOtp.hidden = false;
+            setStatus("Código OTP enviado a tu canal " + channel + ".", "ok");
+          } catch (err) {
+            setStatus(err.message || "No se pudo enviar el OTP.", "error");
+          } finally {
+            btnSendOtp.disabled = false;
+          }
+        });
+      }
+      var formOtp = document.getElementById("formOssOtp");
+      if (formOtp) {
+        formOtp.addEventListener("submit", async function (e) {
+          e.preventDefault();
+          var email = (document.getElementById("otpEmail").value || "").trim();
+          var code = (document.getElementById("otpCodeInput").value || "").trim();
+          if (!email || !code) { setStatus("Introduce correo y código OTP.", "error"); return; }
+          btnVerifyOtp.disabled = true;
+          try {
+            var data = await postJson("/api/auth/mfa/otp/verify", { email: email, code: code });
+            saveSessionAndGo(data);
+          } catch (err) {
+            setStatus(err.message || "Código OTP inválido.", "error");
+            btnVerifyOtp.disabled = false;
+          }
+        });
+      }
+
+      // Passkey WebAuthn Login
+      function b64uToBytes(s) {
+        var b = String(s).replace(/-/g, "+").replace(/_/g, "/");
+        var bin = atob(b + "===".slice((b.length + 3) % 4));
+        var arr = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+        return arr;
+      }
+      function bytesToB64u(buf) {
+        var arr = new Uint8Array(buf);
+        var s = "";
+        for (var i = 0; i < arr.length; i++) s += String.fromCharCode(arr[i]);
+        return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+      }
+      var btnPk = document.getElementById("btnPasskeyLogin");
+      if (btnPk) {
+        btnPk.addEventListener("click", async function () {
+          if (!window.PublicKeyCredential) {
+            setStatus("Este navegador no soporta Passkeys WebAuthn.", "error");
+            return;
+          }
+          var email = (document.getElementById("pwEmail").value || "").trim();
+          btnPk.disabled = true;
+          setStatus("Esperando confirmación biométrica o llave de seguridad…", "info");
+          try {
+            var opts = await postJson("/api/auth/passkey/login/options", email ? { email: email } : {});
+            var pk = opts.publicKey || opts.options || opts;
+            pk.challenge = b64uToBytes(pk.challenge);
+            if (Array.isArray(pk.allowCredentials)) {
+              pk.allowCredentials = pk.allowCredentials.map(function (c) {
+                return Object.assign({}, c, { id: b64uToBytes(c.id) });
+              });
+            }
+            var cred = await navigator.credentials.get({ publicKey: pk });
+            if (!cred) throw new Error("Autenticación cancelada.");
+            var payload = {
+              email: email || undefined,
+              id: cred.id,
+              rawId: bytesToB64u(cred.rawId),
+              type: cred.type,
+              response: {
+                clientDataJSON: bytesToB64u(cred.response.clientDataJSON),
+                authenticatorData: bytesToB64u(cred.response.authenticatorData),
+                signature: bytesToB64u(cred.response.signature),
+                userHandle: cred.response.userHandle ? bytesToB64u(cred.response.userHandle) : null
+              }
+            };
+            var data = await postJson("/api/auth/passkey/login/verify", payload);
+            saveSessionAndGo(data);
+          } catch (err) {
+            setStatus(err.message || "No se pudo completar el inicio con Passkey.", "error");
+            btnPk.disabled = false;
+          }
+        });
+      }
+
+      // Forgot password inline
+      var forgotBox = document.getElementById("forgotBox");
+      var btnForgotToggle = document.getElementById("btnForgotToggle");
+      var btnForgotClose = document.getElementById("btnForgotClose");
+      var btnSendForgot = document.getElementById("btnSendForgot");
+      if (btnForgotToggle && forgotBox) {
+        btnForgotToggle.addEventListener("click", function () {
+          forgotBox.hidden = !forgotBox.hidden;
+          var cur = (document.getElementById("pwEmail").value || "").trim();
+          if (cur) document.getElementById("forgotEmail").value = cur;
+        });
+      }
+      if (btnForgotClose && forgotBox) {
+        btnForgotClose.addEventListener("click", function () { forgotBox.hidden = true; });
+      }
+      if (btnSendForgot) {
+        btnSendForgot.addEventListener("click", async function () {
+          var email = (document.getElementById("forgotEmail").value || "").trim();
+          if (!email) { setStatus("Introduce tu correo para recibir el enlace.", "error"); return; }
+          btnSendForgot.disabled = true;
+          try {
+            await postJson("/api/setups/password/forgot", { email: email });
+            setStatus("Si la cuenta está autorizada, hemos enviado el enlace a tu correo.", "ok");
+            forgotBox.hidden = true;
+          } catch (err) {
+            setStatus(err.message || "Error al solicitar el enlace.", "error");
+          } finally {
+            btnSendForgot.disabled = false;
+          }
+        });
+      }
+    })();
+  </script>
+</Layout>
+
+<style>
+  .mm-login-page {
+    min-height: calc(100vh - 64px);
+    padding: 96px 20px 64px;
+    background: var(--r-bg);
+    color: var(--r-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .mm-login-shell {
+    width: 100%;
+    max-width: 1040px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 440px);
+    gap: 56px;
+    align-items: center;
+  }
+  .mm-login-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--r-line);
+    background: var(--r-surface);
+    font: 700 11px/1 var(--r-mono, ui-monospace, monospace);
+    letter-spacing: 0.08em;
+    color: var(--r-accent, #10b981);
+    margin-bottom: 18px;
+  }
+  .mm-login-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--r-accent, #10b981);
+  }
+  .mm-login-aside h1 {
+    font-family: var(--r-sans, system-ui, sans-serif);
+    text-transform: none;
+    font-size: clamp(30px, 4vw, 44px);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin: 0 0 14px;
+    color: var(--r-text);
+  }
+  .mm-login-aside__lead {
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--r-muted);
+    margin: 0 0 28px;
+  }
+  .mm-login-aside__lead strong { color: var(--r-text); }
+  .mm-login-pillars { display: grid; gap: 14px; }
+  .mm-login-pillar {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 1px solid var(--r-line);
+    background: var(--r-surface);
+  }
+  .mm-login-pillar__icon { font-size: 18px; line-height: 1.2; }
+  .mm-login-pillar strong { display: block; font-size: 14px; color: var(--r-text); margin-bottom: 3px; }
+  .mm-login-pillar p { margin: 0; font-size: 13.2px; line-height: 1.55; color: var(--r-muted); }
+  .mm-login-pillar a { color: var(--r-accent, #10b981); font-weight: 600; text-decoration: none; }
+  .mm-login-pillar a:hover { text-decoration: underline; }
+
+  .mm-login-card {
+    background: var(--r-surface);
+    border: 1px solid var(--r-line);
+    border-radius: 18px;
+    padding: 28px 28px 24px;
+    box-shadow: 0 22px 50px -28px rgba(0, 0, 0, 0.45);
+  }
+  .mm-login-card__head h2 {
+    margin: 0 0 4px;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--r-text);
+  }
+  .mm-login-card__head p {
+    margin: 0 0 18px;
+    font-size: 13.5px;
+    color: var(--r-muted);
+  }
+
+  .mm-btn-passkey {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 11px;
+    border: 1px solid color-mix(in srgb, var(--r-accent, #10b981) 45%, var(--r-line));
+    background: color-mix(in srgb, var(--r-accent, #10b981) 14%, var(--r-bg));
+    color: var(--r-text);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .15s ease, background .15s ease, border-color .15s ease;
+  }
+  .mm-btn-passkey:hover {
+    transform: translateY(-1px);
+    background: color-mix(in srgb, var(--r-accent, #10b981) 22%, var(--r-bg));
+    border-color: var(--r-accent, #10b981);
+  }
+  .mm-btn-passkey:disabled { opacity: 0.6; cursor: wait; }
+
+  .mm-login-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 18px 0 14px;
+    font-size: 12px;
+    color: var(--r-muted);
+  }
+  .mm-login-divider::before, .mm-login-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--r-line);
+  }
+
+  .mm-login-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+    padding: 4px;
+    border-radius: 11px;
+    background: var(--r-bg);
+    border: 1px solid var(--r-line);
+    margin-bottom: 16px;
+  }
+  .mm-login-tab {
+    border: 0;
+    background: transparent;
+    color: var(--r-muted);
+    padding: 8px 6px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .mm-login-tab.is-active {
+    background: var(--r-surface);
+    color: var(--r-text);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+
+  .mm-login-alert {
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.45;
+    margin-bottom: 14px;
+    border: 1px solid var(--r-line);
+  }
+  .mm-login-alert--info { background: color-mix(in srgb, #3b82f6 12%, var(--r-bg)); border-color: rgba(59, 130, 246, .35); color: var(--r-text); }
+  .mm-login-alert--ok { background: color-mix(in srgb, #10b981 14%, var(--r-bg)); border-color: rgba(16, 185, 129, .4); color: var(--r-text); }
+  .mm-login-alert--error { background: color-mix(in srgb, #ef4444 12%, var(--r-bg)); border-color: rgba(239, 68, 68, .4); color: var(--r-text); }
+
+  .mm-login-form { display: grid; gap: 14px; }
+  .mm-login-form[hidden] { display: none; }
+  .mm-field { display: grid; gap: 6px; }
+  .mm-field span { font-size: 12.5px; font-weight: 600; color: var(--r-text); }
+  .mm-field__row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .mm-field input, .mm-field select {
+    width: 100%;
+    padding: 11px 13px;
+    border-radius: 10px;
+    border: 1px solid var(--r-line);
+    background: var(--r-bg);
+    color: var(--r-text);
+    font-size: 14px;
+    outline: none;
+  }
+  .mm-field input:focus, .mm-field select:focus { border-color: var(--r-accent, #10b981); }
+  .mm-pw-wrap { position: relative; display: flex; }
+  .mm-pw-wrap input { padding-right: 64px; }
+  .mm-pw-eye {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 0;
+    background: transparent;
+    color: var(--r-muted);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 8px;
+  }
+  .mm-link-btn {
+    border: 0;
+    background: transparent;
+    color: var(--r-accent, #10b981);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+  }
+  .mm-btn-submit {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 11px;
+    border: 0;
+    background: var(--r-accent, #10b981);
+    color: #04130d;
+    font-size: 14.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity .15s ease, transform .15s ease;
+  }
+  .mm-btn-submit:hover { opacity: 0.94; transform: translateY(-1px); }
+  .mm-btn-submit:disabled { opacity: 0.55; cursor: wait; }
+  .mm-form-actions { display: grid; gap: 8px; }
+
+  .mm-forgot-box {
+    margin-top: 16px;
+    padding: 14px;
+    border-radius: 12px;
+    background: var(--r-bg);
+    border: 1px solid var(--r-line);
+  }
+  .mm-forgot-box__head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 13px; }
+  .mm-forgot-box p { margin: 0 0 10px; font-size: 12.5px; color: var(--r-muted); line-height: 1.5; }
+  .mm-forgot-row { display: flex; gap: 8px; }
+  .mm-forgot-row input {
+    flex: 1;
+    padding: 9px 11px;
+    border-radius: 9px;
+    border: 1px solid var(--r-line);
+    background: var(--r-surface);
+    color: var(--r-text);
+    font-size: 13px;
+  }
+  .mm-btn-mini {
+    border: 0;
+    border-radius: 9px;
+    padding: 9px 13px;
+    background: var(--r-accent, #10b981);
+    color: #04130d;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .mm-login-card__foot {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--r-line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.8px;
+    color: var(--r-muted);
+  }
+  .mm-login-card__foot a { color: var(--r-accent, #10b981); font-weight: 600; text-decoration: none; }
+  .mm-login-card__foot a:hover { text-decoration: underline; }
+
+  @media (max-width: 900px) {
+    .mm-login-shell { grid-template-columns: 1fr; gap: 28px; }
+    .mm-login-aside { order: 2; }
+    .mm-login-card { order: 1; }
+  }
+</style>

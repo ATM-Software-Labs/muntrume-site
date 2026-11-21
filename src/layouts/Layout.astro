@@ -399,7 +399,7 @@ const finalSchema = {
           var preload = document.createElement('link');
           preload.rel = 'preload';
           preload.as = 'fetch';
-          preload.href = '/assets/i18n/' + lang + '.json?v=t332';
+          preload.href = '/assets/i18n/' + lang + '.json?v=t350';
           preload.crossOrigin = 'anonymous';
           document.head.appendChild(preload);
         }
@@ -536,7 +536,7 @@ const finalSchema = {
   <!-- Core Scripts -->
   <script is:inline src="/assets/js/vpfix.js?v=m9" defer></script>
   <script is:inline set:html={`window.muntruFormato=${formatoAprox.toString()};window.muntruLocale=${localeDeIdioma.toString()};`}></script>
-  <script is:inline src="/assets/js/i18n.js?v=t332" defer></script>
+  <script is:inline src="/assets/js/i18n.js?v=t350" defer></script>
 </head>
 <body class="bg-[var(--r-bg)] text-[var(--r-text)] antialiased selection:bg-[var(--r-accent)] selection:text-[var(--r-accent-ink)] font-sans min-h-screen flex flex-col justify-between relative max-w-full overflow-x-hidden" data-i18n-coverage={translated ? "full" : "chrome"}>
   

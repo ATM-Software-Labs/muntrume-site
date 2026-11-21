@@ -3,9 +3,10 @@
 (function () {
   "use strict";
   var LANGS = ["es", "en", "ca", "fr"];
-  var V = "t332";
+  var V = "t350";
   var dict = null;
   var lang = "es";
+  var TRANSLATE_API = "https://muntrume.atrumin16.workers.dev/api/i18n/translate";
 
   function allowed(code) {
     code = String(code || "").toLowerCase();
@@ -143,6 +144,94 @@
     });
     document.addEventListener("muntru:close-lang", closeMenus);
   }
+  function isTranslatableText(str) {
+    var s = String(str || "").trim();
+    if (s.length < 2 || s.length > 580) return false;
+    if (/^[\d\s.,:%+\-–—/()[\]<>→←↗·•|]+$/.test(s)) return false;
+    if (/^(https?:\/\/|mailto:|\/[a-z0-9/_-]+$)/i.test(s)) return false;
+    if (/^(ES|EN|CA|FR|MIT|API|SSE|JWT|MFA|TOTP|HTTP|CSV|SVG|HTML|JSON|DNS|CSP|URL|PC|PDF|XML|OK)$/i.test(s)) return false;
+    return /[a-zA-ZáéíóúÁÉÍÓÚñÑüÜçÇ]{2,}/.test(s);
+  }
+  function collectAutoNodes() {
+    var roots = document.querySelectorAll("main, article, .mdoc-page, .mm-login-page");
+    if (!roots.length) roots = [document.body];
+    var skipTags = { SCRIPT: 1, STYLE: 1, CODE: 1, PRE: 1, SVG: 1, NOSCRIPT: 1, TEXTAREA: 1, INPUT: 1, OPTION: 1, KBD: 1 };
+    var out = [];
+    var seen = new Set();
+    for (var r = 0; r < roots.length; r++) {
+      var root = roots[r];
+      if (!root) continue;
+      var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+      var node;
+      while ((node = walker.nextNode())) {
+        if (seen.has(node)) continue;
+        var p = node.parentElement;
+        if (!p || skipTags[p.tagName]) continue;
+        if (p.closest("code, pre, script, style, svg, [data-i18n], [data-no-translate], [data-lang-root]")) continue;
+        var raw = node.nodeValue || "";
+        if (!isTranslatableText(raw)) continue;
+        seen.add(node);
+        out.push({ node: node, raw: raw, trimmed: raw.trim() });
+      }
+    }
+    return out;
+  }
+  function cacheKey(code, txt) {
+    return "mm_tr_" + code + "_" + txt.slice(0, 120) + "_" + txt.length;
+  }
+  function applyEdgeTranslation(entries) {
+    if (!entries.length) return;
+    var uncachedMap = {};
+    var uncachedList = [];
+    for (var i = 0; i < entries.length; i++) {
+      var e = entries[i];
+      var hit = null;
+      try { hit = sessionStorage.getItem(cacheKey(lang, e.trimmed)); } catch (err) {}
+      if (hit) {
+        e.node.nodeValue = e.raw.replace(e.trimmed, hit);
+      } else if (!uncachedMap[e.trimmed]) {
+        uncachedMap[e.trimmed] = [];
+        uncachedList.push(e.trimmed);
+        uncachedMap[e.trimmed].push(e);
+      } else {
+        uncachedMap[e.trimmed].push(e);
+      }
+    }
+    if (!uncachedList.length) {
+      document.querySelectorAll("[data-lang-fallback]").forEach(function (el) { el.setAttribute("hidden", ""); });
+      return;
+    }
+    var batches = [];
+    for (var b = 0; b < uncachedList.length; b += 28) batches.push(uncachedList.slice(b, b + 28));
+    var chain = Promise.resolve();
+    batches.forEach(function (batch) {
+      chain = chain.then(function () {
+        return fetch(TRANSLATE_API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ target: lang, texts: batch })
+        })
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (data) {
+            if (!data || !Array.isArray(data.translations)) return;
+            for (var k = 0; k < batch.length; k++) {
+              var src = batch[k];
+              var tr = data.translations[k];
+              if (!tr || typeof tr !== "string") continue;
+              try { sessionStorage.setItem(cacheKey(lang, src), tr); } catch (err) {}
+              var targets = uncachedMap[src] || [];
+              for (var t = 0; t < targets.length; t++) {
+                targets[t].node.nodeValue = targets[t].raw.replace(src, tr);
+              }
+            }
+          })
+          .catch(function () {});
+      });
+    });
+    chain.then(function () {
+      document.querySelectorAll("[data-lang-fallback]").forEach(function (el) { el.setAttribute("hidden", ""); });
+    });
+  }
   function apply() {
     if (lang !== "es") {
       applyText();
@@ -151,6 +240,10 @@
     applyNums();
     applyLocale();
     paintSwitch();
+    if (lang !== "es") {
+      var full = document.body && document.body.getAttribute("data-i18n-coverage") === "full";
+      if (!full) applyEdgeTranslation(collectAutoNodes());
+    }
     try { document.dispatchEvent(new CustomEvent("muntru:i18n", { detail: { lang: lang } })); } catch (e) {}
   }
   function whenReady(fn) {

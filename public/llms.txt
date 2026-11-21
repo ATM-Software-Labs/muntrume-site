@@ -13,7 +13,7 @@ Muntrume Motorsport (also known as Equipo MMT) competes in iRacing endurance and
 - [Cars & Brands Catalog (108 Cars)](https://muntru.me/porsche/): Brand-by-brand and car-by-car technical directory covering 108 iRacing cars with studio previews, official iRacing PDF manuals, and setup counts.
 - [Paddock & Race Radio](https://muntru.me/paddock/): Team hub with live race radio, Garage 61 telemetry integration, MTI (Muntrume Telemetry Index), official gallery, and driver tryout applications.
 - [Muntrume AI Studio (ai.muntru.me)](https://ai.muntru.me/): 100% Open Source (MIT) technical AI Studio with Muntrume 1.0 Lite, Pro & Ultra Max tiers, specialized iRacing setup/strategy/code/slides/doc skills, image vision analysis (telemetry & Garage 61 charts), live web search, and a split-screen interactive Artifacts Studio (HTML, SVG, Mermaid, 16:9 Slides, CSV, Word .doc, PDF) with permanent published URLs at `https://ai.muntru.me/a/<slug>`.
-- [Muntrume AI Documentation Portal](https://muntru.me/ai-docs/): Multi-page public technical documentation (also mirrored at `https://ai.muntru.me/docs/`):
+- [Muntrume AI Documentation Portal](https://docs.muntru.me/): Multi-page public technical documentation at `https://docs.muntru.me/` (also mirrored at `https://muntru.me/ai-docs/` and `https://ai.muntru.me/docs/`):
   - [Introduction & Architecture](https://muntru.me/ai-docs/)
   - [Muntrume 1.0 Models, Skills & Slash Commands](https://muntru.me/ai-docs/modelos/)
   - [Artifacts Studio & Edge Hosting](https://muntru.me/ai-docs/artefactos/)
