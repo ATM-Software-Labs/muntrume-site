@@ -119,6 +119,10 @@ const aiJsonLd = {
         </div>
 
         <div class="ai-topbar__right">
+          <button type="button" id="aiExportChatBtn" class="ai-pace-btn" title="Exportar conversación activa en Markdown (.md)">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Exportar .md</span>
+          </button>
           <button type="button" id="aiPaceBtn" class="ai-pace-btn" title="Cambiar velocidad de lectura en vivo">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 14l4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>
             <span id="aiPaceLabel">Ritmo: Lectura</span>
@@ -306,6 +310,7 @@ const aiJsonLd = {
         <button type="button" id="aiArtPublishBtn" class="ai-mini-btn ai-mini-btn--accent">Publicar en ai.muntru.me</button>
         <button type="button" id="aiArtAskAiBtn" class="ai-mini-btn">Mejorar con IA</button>
         <button type="button" id="aiArtReload" class="ai-mini-btn" title="Reiniciar vista previa">Recargar</button>
+        <button type="button" id="aiArtNewTab" class="ai-mini-btn" title="Abrir vista previa en una pestaña nueva">Pestaña nueva</button>
         <div class="ai-art-vp" role="group" aria-label="Tamaño de vista previa">
           <button type="button" class="ai-mini-btn is-on" data-art-vp="desktop" title="Vista escritorio (100%)">PC</button>
           <button type="button" class="ai-mini-btn" data-art-vp="tablet" title="Vista tablet (768px)">Tab</button>

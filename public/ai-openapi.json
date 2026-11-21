@@ -1,0 +1,60 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Muntrume AI Public API",
+    "version": "1.0.0",
+    "description": "Public technical assistant, vision analysis, and published Artifacts API for Muntrume AI Studio (https://ai.muntru.me/).",
+    "license": { "name": "MIT", "url": "https://opensource.org/licenses/MIT" },
+    "contact": { "name": "Muntrume Motorsport", "email": "admin@muntru.me", "url": "https://muntru.me/ai-docs/" }
+  },
+  "servers": [
+    { "url": "https://ai.muntru.me", "description": "Production Edge Custom Domain" },
+    { "url": "https://muntrume.atrumin16.workers.dev", "description": "Cloudflare Workers Origin" }
+  ],
+  "paths": {
+    "/api/ai": {
+      "post": {
+        "operationId": "runMuntrumeAI",
+        "summary": "Query Muntrume AI (JSON or SSE streaming)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "prompt": { "type": "string", "description": "User question or instruction (max 8000 chars)" },
+                  "tier": { "type": "string", "enum": ["lite", "pro", "ultra_max"], "default": "pro" },
+                  "mode": { "type": "string", "enum": ["team", "general", "ai_setup"], "default": "team" },
+                  "skill": { "type": "string", "enum": ["", "setup", "strategy", "code", "slides", "doc"] },
+                  "lang": { "type": "string", "enum": ["es", "ca", "en", "fr"], "default": "es" },
+                  "stream": { "type": "boolean", "default": false },
+                  "web_search": { "type": "boolean", "default": false },
+                  "image": { "type": "string", "description": "Optional base64 data URL (png/jpeg/webp) for Vision analysis" },
+                  "github_url": { "type": "string", "description": "Optional public GitHub repo or blob URL for code context" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Markdown answer payload (JSON) or Server-Sent Events stream" },
+          "429": { "description": "Rate limit exceeded" }
+        }
+      }
+    },
+    "/api/ai/artifacts/get/{slug}": {
+      "get": {
+        "operationId": "getPublicArtifact",
+        "summary": "Fetch a published public artifact by slug",
+        "parameters": [
+          { "name": "slug", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Artifact metadata and source code" },
+          "404": { "description": "Artifact not found or private" }
+        }
+      }
+    }
+  }
+}

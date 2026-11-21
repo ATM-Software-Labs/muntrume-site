@@ -1263,6 +1263,13 @@
       code: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 420" width="820" height="420" style="font-family:system-ui,-apple-system,sans-serif;background:#0f1114;border-radius:14px"><rect x="14" y="14" width="792" height="392" rx="14" fill="#171a1f" stroke="#2c323d"/><text x="38" y="54" fill="#f3f5f8" font-size="20" font-weight="700">Matriz Rápida de Balance · iRacing GT3</text><text x="38" y="76" fill="#8b94a3" font-size="12.5">Ajustes recomendados por fase de curva · Muntrume Motorsport Engineering</text><g transform="translate(38,100)"><rect width="236" height="278" rx="12" fill="#0f1114" stroke="#10b981" stroke-opacity="0.45"/><text x="16" y="30" fill="#10b981" font-size="13" font-weight="700">1. ENTRADA (FRENADA)</text><text x="16" y="60" fill="#f3f5f8" font-size="12.5" font-weight="700">Subviraje (no gira):</text><text x="16" y="82" fill="#cfd5df" font-size="12">- Brake Bias -0.5% atrás</text><text x="16" y="102" fill="#cfd5df" font-size="12">- Bajar Front ARB 1 clic</text><text x="16" y="122" fill="#cfd5df" font-size="12">- Front Ride Height -1 mm</text><line x1="16" y1="146" x2="220" y2="146" stroke="#262b34"/><text x="16" y="174" fill="#f59e0b" font-size="12.5" font-weight="700">Sobreviraje (se cruza):</text><text x="16" y="196" fill="#cfd5df" font-size="12">- Brake Bias +0.6% delante</text><text x="16" y="216" fill="#cfd5df" font-size="12">- Diff Preload +15 Nm</text><text x="16" y="236" fill="#cfd5df" font-size="12">- Front LS Comp +2 clics</text></g><g transform="translate(292,100)"><rect width="236" height="278" rx="12" fill="#0f1114" stroke="#3b82f6" stroke-opacity="0.45"/><text x="16" y="30" fill="#3b82f6" font-size="13" font-weight="700">2. VÉRTICE (MID-CORNER)</text><text x="16" y="60" fill="#f3f5f8" font-size="12.5" font-weight="700">Subviraje constante:</text><text x="16" y="82" fill="#cfd5df" font-size="12">- Front ARB -1 / Rear ARB +1</text><text x="16" y="102" fill="#cfd5df" font-size="12">- Diff Preload -10 Nm</text><text x="16" y="122" fill="#cfd5df" font-size="12">- Revisar 168-174 kPa</text><line x1="16" y1="146" x2="220" y2="146" stroke="#262b34"/><text x="16" y="174" fill="#f59e0b" font-size="12.5" font-weight="700">Inestable en rápida:</text><text x="16" y="196" fill="#cfd5df" font-size="12">- Rear Wing +1 grado</text><text x="16" y="216" fill="#cfd5df" font-size="12">- Rear Ride Height -1 mm</text><text x="16" y="236" fill="#cfd5df" font-size="12">- Subir Front ARB +1 clic</text></g><g transform="translate(546,100)"><rect width="236" height="278" rx="12" fill="#0f1114" stroke="#a855f7" stroke-opacity="0.45"/><text x="16" y="30" fill="#a855f7" font-size="13" font-weight="700">3. SALIDA (TRACCIÓN)</text><text x="16" y="60" fill="#f3f5f8" font-size="12.5" font-weight="700">Sobreviraje al dar gas:</text><text x="16" y="82" fill="#cfd5df" font-size="12">- Rear ARB -1 a -2 clics</text><text x="16" y="102" fill="#cfd5df" font-size="12">- Subir TC1 / TC2 +1</text><text x="16" y="122" fill="#cfd5df" font-size="12">- Rear LS Comp -2 clics</text><line x1="16" y1="146" x2="220" y2="146" stroke="#262b34"/><text x="16" y="174" fill="#10b981" font-size="12.5" font-weight="700">Falta de rotación salida:</text><text x="16" y="196" fill="#cfd5df" font-size="12">- Rear ARB +1 clic</text><text x="16" y="216" fill="#cfd5df" font-size="12">- Bajar TC1 -1 punto</text><text x="16" y="236" fill="#cfd5df" font-size="12">- Diff Preload -10 Nm</text></g></svg>`
     },
     {
+      title: "Flujo de Decisión Pit-Wall (Mermaid)",
+      type: "mermaid",
+      lang: "mermaid",
+      desc: "Diagrama de flujo interactivo para decisiones de boxes, doble stint y cambio a neumáticos de lluvia.",
+      code: `flowchart TD\n  A[Vuelta de Stint >= 28] --> B{¿Llueve en pista?}\n  B -- Sí --> C[Box inmediato: Wet + Mapa motor suave]\n  B -- No --> D{¿Presión trasera > 176 kPa?}\n  D -- Sí --> E[Box: 4 gomas nuevas + Full Fuel]\n  D -- No --> F[Doble Stint: Solo Fuel + ajustar BB +0.4%]`
+    },
+    {
       title: "Planilla de Estrategia Endurance (CSV)",
       type: "csv",
       lang: "csv",
@@ -1565,8 +1572,24 @@
   async function sendMessage(overrideText) {
     const input = $("aiInput");
     const rawText = typeof overrideText === "string" ? overrideText : (input?.value || "");
-    const text = rawText.trim();
+    let text = rawText.trim();
     if ((!text && !pendingAttachment) || streaming) return;
+
+    // Quick slash-command shortcuts: /setup, /strategy, /code, /slides, /doc, /mermaid
+    const slashM = text.match(/^\/(setup|strategy|code|slides|doc|mermaid)\b\s*([\s\S]*)$/i);
+    if (slashM) {
+      const cmd = slashM[1].toLowerCase();
+      const rest = (slashM[2] || "").trim();
+      if (cmd === "mermaid") {
+        state.skill = "code";
+        text = rest ? `Genera un diagrama en bloque \`\`\`mermaid sobre: ${rest}` : "Genera un diagrama de flujo en bloque ```mermaid de estrategia de carrera endurance.";
+      } else {
+        state.skill = cmd;
+        text = rest || `Ayúdame con ${SKILLS[cmd]?.label || cmd}.`;
+      }
+      saveState();
+      syncComposerControls();
+    }
 
     let chat = getActiveChat();
     if (!chat) chat = createNewChat((text || pendingAttachment?.name || "Nueva conversación").slice(0, 46));
@@ -2205,6 +2228,24 @@
       if (!currentArtifact) return;
       renderArtifactFrame(currentArtifact);
       showToast("Vista previa reiniciada");
+    });
+    $("aiArtNewTab")?.addEventListener("click", () => {
+      const frame = $("aiArtFrame");
+      if (!frame?.srcdoc) return;
+      const blobUrl = URL.createObjectURL(new Blob([frame.srcdoc], { type: "text/html;charset=utf-8" }));
+      window.open(blobUrl, "_blank", "noopener");
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+    });
+    $("aiExportChatBtn")?.addEventListener("click", () => {
+      const chat = getActiveChat();
+      if (!chat || !chat.messages.length) { showToast("No hay mensajes para exportar"); return; }
+      const lines = [`# ${chat.title || "Conversación Muntrume AI"}`, `> Exportado desde ai.muntru.me · ${new Date().toISOString()}`, ""];
+      chat.messages.forEach((m) => {
+        lines.push(m.role === "user" ? "## Usuario" : `## ${m.modelBrand || "Muntrume AI"}`);
+        lines.push("", m.content || "", "");
+      });
+      downloadBlob(`${safeFilename(chat.title, "muntrume_chat")}.md`, lines.join("\n"), "text/markdown;charset=utf-8");
+      showToast("Conversación exportada (.md)");
     });
     $("aiArtFullscreen")?.addEventListener("click", () => {
       const pane = $("aiArtifactPane");

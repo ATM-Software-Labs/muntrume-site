@@ -1,0 +1,68 @@
+{
+  "schema": "https://muntru.me/ai-knowledge.json",
+  "version": "2026.11",
+  "updated_at": "2026-11-21",
+  "organization": {
+    "name": "Muntrume Motorsport",
+    "short_name": "Equipo MMT",
+    "location": "Sant Andreu, Barcelona, Catalonia, Spain",
+    "website": "https://muntru.me/",
+    "ai_studio": "https://ai.muntru.me/",
+    "docs": "https://muntru.me/ai-docs/",
+    "github": "https://github.com/ATM-Software-Labs/muntrume-site",
+    "license": "MIT",
+    "languages": ["es", "ca", "en", "fr"],
+    "contacts": {
+      "admin": "admin@muntru.me",
+      "legal": "legal@muntru.me",
+      "founder": "alberto@muntru.me"
+    }
+  },
+  "muntrume_ai": {
+    "name": "Muntrume AI",
+    "url": "https://ai.muntru.me/",
+    "docs_url": "https://muntru.me/ai-docs/",
+    "openapi_url": "https://muntru.me/ai-openapi.json",
+    "llms_txt": "https://muntru.me/llms.txt",
+    "llms_full_txt": "https://muntru.me/llms-full.txt",
+    "tiers": [
+      { "id": "lite", "brand": "Muntrume 1.0 Lite", "use_case": "Ultra-low latency pit-lane answers and quick lookups" },
+      { "id": "pro", "brand": "Muntrume 1.0 Pro", "use_case": "iRacing setup engineering, software architecture, tables, and interactive artifacts" },
+      { "id": "ultra_max", "brand": "Muntrume 1.0 Ultra Max", "use_case": "24h endurance race strategy, complex debugging, and visible step-by-step reasoning" }
+    ],
+    "skills": [
+      { "id": "setup", "command": "/setup", "description": "Senior iRacing Setup & Telemetry Engineer (aero, ARB, diff preload, dampers, pressures, brake bias)" },
+      { "id": "strategy", "command": "/strategy", "description": "Endurance Race Strategist (fuel per lap, stint windows, tire double-stinting, driver swaps)" },
+      { "id": "code", "command": "/code", "description": "Principal Software Architect outputting live HTML, SVG, and Mermaid artifacts" },
+      { "id": "slides", "command": "/slides", "description": "Executive 16:9 interactive presentation decks separated by ---" },
+      { "id": "doc", "command": "/doc", "description": "Structured technical reports exportable to Word (.doc), PDF, and Markdown" },
+      { "id": "mermaid", "command": "/mermaid", "description": "Interactive Mermaid flowcharts, sequence diagrams, and pit-wall decision trees" }
+    ],
+    "artifacts_studio": {
+      "supported_types": ["html", "svg", "mermaid", "slides", "csv", "doc", "code"],
+      "features": [
+        "Live sandboxed iframe preview",
+        "Responsive viewport switcher (Desktop, Tablet 768px, Mobile 390px)",
+        "Fullscreen preview, reload preview, and open in new browser tab",
+        "Live code editor with real-time refresh and AI iteration",
+        "Multi-format export (.html, .svg, .mmd, .csv, .doc, PDF, .md) and full chat Markdown export",
+        "Permanent D1-backed public URLs at https://ai.muntru.me/a/<slug>, /a/<slug>/raw, and /u/<handle>"
+      ]
+    },
+    "api": {
+      "endpoint": "POST https://ai.muntru.me/api/ai",
+      "response_modes": ["application/json", "text/event-stream"],
+      "capabilities": ["chat", "sse_streaming", "image_vision", "github_context", "web_search", "file_attachments"]
+    }
+  },
+  "platform_catalog": {
+    "garage_vault_url": "https://muntru.me/garage/",
+    "setup_count": 42654,
+    "cars_count": 108,
+    "tracks_count": 150,
+    "desktop_app_url": "https://muntru.me/app/",
+    "calendar_url": "https://muntru.me/calendar/",
+    "drivers_url": "https://muntru.me/drivers/",
+    "paddock_url": "https://muntru.me/paddock/"
+  }
+}
