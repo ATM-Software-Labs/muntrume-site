@@ -189,10 +189,13 @@
     // 1. Inline code first (immune to inner markdown)
     s = s.replace(/`([^`\n]+)`/g, (_, code) => stash(`<code>${esc(code)}</code>`));
 
-    // 2. Inline math $...$ (avoid matching prices like $50 or $100)
-    s = s.replace(/(^|[\s(])\$([^\s$][^$\n]{0,80}?[^\s$]|[^\s$\d])\$(?=[\s.,;:!?)]|$)/g, (full, pre, expr) => {
+    // 2. Inline math $...$ and \(...\) (converted cleanly to readable math, never raw LaTeX)
+    s = s.replace(/\\\(([\s\S]{1,160}?)\\\)/g, (_, expr) => {
+      return stash(`<span class="ai-math-inline">${esc(formatLatexToHuman(expr))}</span>`);
+    });
+    s = s.replace(/(^|[\s(])\$([^\s$][^$\n]{0,120}?[^\s$]|[^\s$\d])\$(?=[\s.,;:!?)]|$)/g, (full, pre, expr) => {
       if (/^\d+([.,]\d+)?$/.test(expr.trim())) return full;
-      return `${pre}${stash(`<span class="ai-math-inline">${esc(expr.trim())}</span>`)}`;
+      return `${pre}${stash(`<span class="ai-math-inline">${esc(formatLatexToHuman(expr))}</span>`)}`;
     });
 
     // 3. Images ![alt](url)
@@ -325,6 +328,43 @@
     return found;
   }
 
+  function formatLatexToHuman(raw) {
+    let s = String(raw || "").trim();
+    if (!s) return "";
+    // Unwrap \boxed{...}, \text{...}, \mathrm{...}, \mathbf{...}, \operatorname{...}
+    for (let pass = 0; pass < 4; pass++) {
+      s = s
+        .replace(/\\(?:boxed|text|mathrm|mathbf|mathit|textbf|operatorname)\{([^{}]*)\}/g, "$1")
+        .replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, (_, a, b) => {
+          const left = /[+\-×÷=]/.test(a.trim()) ? `(${a.trim()})` : a.trim();
+          const right = /[+\-×÷=]/.test(b.trim()) ? `(${b.trim()})` : b.trim();
+          return `${left} / ${right}`;
+        })
+        .replace(/\\sqrt\{([^{}]+)\}/g, "√($1)");
+    }
+    s = s
+      .replace(/\{,\}/g, ",")
+      .replace(/\\left\s*/g, "")
+      .replace(/\\right\s*/g, "")
+      .replace(/\\times\b/g, "×")
+      .replace(/\\cdot\b/g, "·")
+      .replace(/\\div\b/g, "÷")
+      .replace(/\\approx\b/g, "≈")
+      .replace(/\\leq?\b/g, "≤")
+      .replace(/\\geq?\b/g, "≥")
+      .replace(/\\neq?\b/g, "≠")
+      .replace(/\\pm\b/g, "±")
+      .replace(/\\(?:rightarrow|to)\b/g, "→")
+      .replace(/\\(?:quad|qquad|enspace|thinspace)\b/g, " ")
+      .replace(/\\[,;:! ]/g, " ")
+      .replace(/\\%/g, "%")
+      .replace(/\\([a-zA-Z]+)/g, "")
+      .replace(/[{}]/g, "")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+    return s;
+  }
+
   function renderMarkdownHtml(md, opts = {}) {
     let text = String(md || "").replace(/\r\n/g, "\n");
     const blocks = [];
@@ -356,10 +396,15 @@
       text = `${before}\n@@BLOCK_${i}@@\n`;
     }
 
-    // Closed display math blocks $$...$$
+    // Closed display math blocks \[...\] and $$...$$
+    text = text.replace(/\\\[\s*\n?([\s\S]+?)\n?\s*\\\]/g, (_, expr) => {
+      const i = blocks.length;
+      blocks.push({ kind: "math", expr: formatLatexToHuman(expr) });
+      return `\n@@BLOCK_${i}@@\n`;
+    });
     text = text.replace(/\$\$\s*\n?([\s\S]+?)\n?\s*\$\$/g, (_, expr) => {
       const i = blocks.length;
-      blocks.push({ kind: "math", expr: expr.trim() });
+      blocks.push({ kind: "math", expr: formatLatexToHuman(expr) });
       return `\n@@BLOCK_${i}@@\n`;
     });
 
@@ -367,10 +412,18 @@
     const openMathIdx = text.indexOf("$$");
     if (openMathIdx !== -1) {
       const before = text.slice(0, openMathIdx);
-      const expr = text.slice(openMathIdx + 2).trim();
+      const expr = formatLatexToHuman(text.slice(openMathIdx + 2));
       const i = blocks.length;
       blocks.push({ kind: "math", expr: expr || "…" });
       text = `${before}\n@@BLOCK_${i}@@\n`;
+    }
+
+    // Strip orphaned/truncated single table header line at the very end of a completed reply
+    if (!opts.streaming) {
+      text = text.replace(/\n+(?:#{1,4}\s+[^\n]+\n+)?\|[^\n]+\s*$/, (match) => {
+        const pipeLines = match.trim().split("\n").filter((l) => l.trim().startsWith("|"));
+        return pipeLines.length === 1 ? "" : match;
+      });
     }
 
     const lines = text.split("\n");
