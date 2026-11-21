@@ -6,9 +6,10 @@ name: Refresh iRacing ratings
 # The script stamps the point with the Europe/Madrid calendar date. A failed
 # fetch does not rewrite src/data/rating-history.json.
 on:
-  schedule:
-    - cron: "15 5 * * *"
-    - cron: "15 6 * * *"
+  # Schedule paused until iRacing OAuth API credentials (IRACING_CLIENT_ID/SECRET) are issued.
+  # schedule:
+  #   - cron: "15 5 * * *"
+  #   - cron: "15 6 * * *"
   workflow_dispatch:
 
 permissions:
