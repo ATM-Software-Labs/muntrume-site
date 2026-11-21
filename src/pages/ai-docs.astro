@@ -1,8 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-const pageTitle = "Documentación de Muntrume AI · Arquitectura, Artefactos y API | Muntrume Motorsport";
-const pageDescription = "Documentación técnica oficial de Muntrume AI (ai.muntru.me): asistente 100 % Open Source (MIT) de Muntrume Motorsport con motores Lite/Pro/Ultra Max, Artifacts Studio (HTML, SVG, Mermaid, Slides, CSV, DOC/PDF), visión por imagen y API SSE.";
+const pageTitle = "Muntrume AI Docs · Arquitectura, Artefactos y API | Muntrume Motorsport";
+const pageDescription = "Documentación técnica oficial de Muntrume AI (ai.muntru.me): asistente 100 % Open Source (MIT) con motores Lite/Pro/Ultra Max, Artifacts Studio (HTML, SVG, Mermaid, Slides, CSV, DOC/PDF), visión por imagen y API REST/SSE.";
 
 const jsonLd = [
   {
@@ -56,612 +56,1047 @@ const jsonLd = [
   },
 ];
 
-const apiSample = `POST https://ai.muntru.me/api/ai
-Content-Type: application/json
+const codeCurl = `curl -X POST https://ai.muntru.me/api/ai \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "prompt": "Calcula estrategia de combustible para 6h de Spa en GT3 (2.95 L/vuelta, 2:17.5)",
+    "tier": "pro",
+    "mode": "team",
+    "skill": "strategy",
+    "lang": "es",
+    "stream": false
+  }'`;
 
-{
-  "prompt": "Calcula estrategia de combustible para 6h de Spa en GT3 (2.95 L/vuelta, 2:17.5)",
-  "tier": "pro",
-  "mode": "team",
-  "skill": "strategy",
-  "lang": "es",
-  "web_search": false,
-  "stream": true
+const codeJs = `const res = await fetch("https://ai.muntru.me/api/ai", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    prompt: "Diagnostica subviraje en entrada en curva rápida con Porsche 992 GT3 R",
+    tier: "pro",
+    mode: "team",
+    skill: "setup",
+    lang: "es",
+    stream: false
+  })
+});
+
+const data = await res.json();
+console.log(data.model_brand, data.markdown);`;
+
+const codePython = `import requests
+
+response = requests.post(
+    "https://ai.muntru.me/api/ai",
+    json={
+        "prompt": "Crea un diagrama mermaid de decisión de pit-stop en lluvia",
+        "tier": "pro",
+        "skill": "code",
+        "lang": "es",
+        "stream": False,
+    },
+    timeout=30,
+)
+payload = response.json()
+print(payload["markdown"])`;
+
+const codeSse = `// Streaming Server-Sent Events (stream: true)
+const res = await fetch("https://ai.muntru.me/api/ai", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ prompt: "Plan de stints 12h Sebring", tier: "ultra_max", stream: true })
+});
+
+const reader = res.body.getReader();
+const decoder = new TextDecoder();
+while (true) {
+  const { value, done } = await reader.read();
+  if (done) break;
+  process.stdout.write(decoder.decode(value));
 }`;
 ---
 
 <Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/ai-docs/">
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
-  <div class="aidocs-shell">
-    <div class="aidocs-glow" aria-hidden="true"></div>
+  <div class="mdoc-page">
+    <div class="mdoc-grid">
+      <!-- LEFT NAVIGATION SIDEBAR (MSFT / ANTHROPIC STYLE) -->
+      <aside class="mdoc-sidebar" aria-label="Navegación de documentación">
+        <div class="mdoc-sidebar__inner">
+          <div class="mdoc-sidebar__brand">
+            <span class="mdoc-brand-dot" aria-hidden="true"></span>
+            <div>
+              <strong>Muntrume AI</strong>
+              <span>Docs · v1.0 MIT</span>
+            </div>
+          </div>
 
-    <main class="aidocs">
-      <!-- HERO -->
-      <header class="aidocs-hero" data-g-reveal>
-        <div class="aidocs-badge">
-          <span class="aidocs-dot" aria-hidden="true"></span>
-          <span>MUNTRUME AI · DOCUMENTACIÓN OFICIAL (OPEN SOURCE · MIT)</span>
-        </div>
-        <h1>Cómo funciona <span class="aidocs-accent">Muntrume AI</span></h1>
-        <p class="aidocs-lead">
-          Referencia técnica pública de <strong>Muntrume AI Studio</strong> (<a href="https://ai.muntru.me/">ai.muntru.me</a>), el asistente técnico y estudio de artefactos interactivos desarrollado por <strong>Muntrume Motorsport</strong> en Barcelona. Diseñada para pilotos, desarrolladores, buscadores e IAs externas.
-        </p>
+          <div class="mdoc-nav-group">
+            <div class="mdoc-nav-group__title">Primeros pasos</div>
+            <a href="#overview" class="mdoc-nav-link is-active" data-doc-link="overview">Introducción</a>
+            <a href="#quickstart" class="mdoc-nav-link" data-doc-link="quickstart">Inicio rápido</a>
+            <a href="#modelos" class="mdoc-nav-link" data-doc-link="modelos">Motores Muntrume 1.0</a>
+          </div>
 
-        <div class="aidocs-actions">
-          <a href="https://ai.muntru.me/" class="r-btn r-btn--primary">Abrir Muntrume AI Studio →</a>
-          <a href="/llms.txt" class="r-btn">llms.txt</a>
-          <a href="/ai-knowledge.json" class="r-btn">ai-knowledge.json</a>
-          <a href="/ai-openapi.json" class="r-btn">OpenAPI 3.1</a>
-          <a href="https://github.com/ATM-Software-Labs/muntrume-site" target="_blank" rel="noopener noreferrer" class="r-btn">GitHub (MIT)</a>
-        </div>
+          <div class="mdoc-nav-group">
+            <div class="mdoc-nav-group__title">Capacidades</div>
+            <a href="#skills" class="mdoc-nav-link" data-doc-link="skills">Skills y comandos slash</a>
+            <a href="#artefactos" class="mdoc-nav-link" data-doc-link="artefactos">Artifacts Studio</a>
+            <a href="#vision" class="mdoc-nav-link" data-doc-link="vision">Visión y telemetría</a>
+          </div>
 
-        <nav class="aidocs-toc" aria-label="Índice de secciones">
-          <a href="#arquitectura">1. Motores 1.0</a>
-          <a href="#skills">2. Skills &amp; Slash</a>
-          <a href="#artefactos">3. Artifacts Studio</a>
-          <a href="#api">4. API /api/ai</a>
-          <a href="#indexacion">5. SEO &amp; IAs Externas</a>
-        </nav>
-      </header>
+          <div class="mdoc-nav-group">
+            <div class="mdoc-nav-group__title">Referencia técnica</div>
+            <a href="#api" class="mdoc-nav-link" data-doc-link="api">API POST /api/ai</a>
+            <a href="#parametros" class="mdoc-nav-link" data-doc-link="parametros">Parámetros del esquema</a>
+            <a href="#indexacion" class="mdoc-nav-link" data-doc-link="indexacion">SEO, LLMs y OpenAPI</a>
+            <a href="#faq" class="mdoc-nav-link" data-doc-link="faq">Preguntas frecuentes</a>
+          </div>
 
-      <!-- 1. ARQUITECTURA Y MOTORES -->
-      <section class="r-section aidocs-sec" id="arquitectura">
-        <div class="aidocs-sec__head" data-g-reveal>
-          <span class="aidocs-num">01</span>
-          <div>
-            <h2>Arquitectura y motores (Muntrume 1.0)</h2>
-            <p>Enrutamiento edge sin servidor en Cloudflare Workers + D1 + streaming SSE progresivo.</p>
+          <div class="mdoc-sidebar__foot">
+            <a href="https://ai.muntru.me/" class="mdoc-cta-mini">Abrir AI Studio ↗</a>
           </div>
         </div>
+      </aside>
 
-        <div class="aidocs-grid aidocs-grid--3">
-          <article class="aidocs-card glow-card" data-g-reveal data-g-delay="0">
-            <div class="aidocs-card__top">
-              <span class="aidocs-pill">lite</span>
-              <span class="aidocs-meta">≤ 900 tokens</span>
-            </div>
-            <h3>Muntrume 1.0 Lite</h3>
-            <p>Latencia ultrabaja para consultas rápidas en boxes, ajustes inmediatos, definiciones y traducciones.</p>
-          </article>
-
-          <article class="aidocs-card aidocs-card--featured glow-card" data-g-reveal data-g-delay="80">
-            <div class="aidocs-card__top">
-              <span class="aidocs-pill aidocs-pill--acc">pro · default</span>
-              <span class="aidocs-meta">≤ 3.400 tokens</span>
-            </div>
-            <h3>Muntrume 1.0 Pro</h3>
-            <p>Balance óptimo velocidad/precisión para ingeniería de setups iRacing, código completo, tablas y artefactos interactivos.</p>
-          </article>
-
-          <article class="aidocs-card glow-card" data-g-reveal data-g-delay="160">
-            <div class="aidocs-card__top">
-              <span class="aidocs-pill">ultra_max</span>
-              <span class="aidocs-meta">Razonamiento</span>
-            </div>
-            <h3>Muntrume 1.0 Ultra Max</h3>
-            <p>Análisis profundo con razonamiento paso a paso visible para estrategia endurance 24h y arquitectura compleja.</p>
-          </article>
-        </div>
-      </section>
-
-      <!-- 2. SKILLS Y COMANDOS SLASH -->
-      <section class="r-section aidocs-sec" id="skills">
-        <div class="aidocs-sec__head" data-g-reveal>
-          <span class="aidocs-num">02</span>
-          <div>
-            <h2>Skills especializadas y comandos slash</h2>
-            <p>Actívalas desde el menú o escribiendo el comando directamente al inicio del chat.</p>
+      <!-- CENTER EDITORIAL CONTENT -->
+      <article class="mdoc-article">
+        <!-- BREADCRUMB & HERO -->
+        <header class="mdoc-hero" id="overview" data-doc-section="overview">
+          <div class="mdoc-crumb">
+            <a href="https://muntru.me/">Muntrume</a>
+            <span aria-hidden="true">/</span>
+            <a href="https://ai.muntru.me/">Muntrume AI</a>
+            <span aria-hidden="true">/</span>
+            <span>Documentación</span>
           </div>
-        </div>
 
-        <div class="aidocs-grid aidocs-grid--2">
-          <article class="aidocs-card glow-card" data-g-reveal data-g-delay="0">
-            <div class="aidocs-cmd"><code>/setup</code> · Ingeniero de Setups iRacing</div>
-            <p>Diagnóstico concreto de balance aerodinámico, barras estabilizadoras (ARB), precarga de diferencial, amortiguadores, presiones en caliente y reparto de frenada para GT3, GTP, LMP2 y Porsche Cup.</p>
-          </article>
-
-          <article class="aidocs-card glow-card" data-g-reveal data-g-delay="60">
-            <div class="aidocs-cmd"><code>/strategy</code> · Estrategia Endurance</div>
-            <p>Cálculo exacto de consumo por vuelta, stints por depósito, ventanas de pit stop, doble stint de neumáticos y rotación de pilotos.</p>
-          </article>
-
-          <article class="aidocs-card glow-card" data-g-reveal data-g-delay="120">
-            <div class="aidocs-cmd"><code>/code</code> · Código y Artefactos Live</div>
-            <p>Genera aplicaciones web autocontenidas en bloques <code>```html</code> y gráficos vectoriales <code>```svg</code> listos para previsualizar en vivo.</p>
-          </article>
-
-          <article class="aidocs-card glow-card" data-g-reveal data-g-delay="180">
-            <div class="aidocs-cmd"><code>/mermaid</code> · Diagramas de Flujo</div>
-            <p>Crea diagramas de arquitectura, flujos de decisión en muro de boxes y secuencias interactivas en bloques <code>```mermaid</code>.</p>
-          </article>
-
-          <article class="aidocs-card glow-card" data-g-reveal data-g-delay="240">
-            <div class="aidocs-cmd"><code>/slides</code> · Presentaciones 16:9</div>
-            <p>Genera decks navegables con teclado y barra de progreso separados por <code>---</code> dentro de bloques <code>```slides</code>.</p>
-          </article>
-
-          <article class="aidocs-card glow-card" data-g-reveal data-g-delay="300">
-            <div class="aidocs-cmd"><code>/doc</code> · Documentos Técnicos</div>
-            <p>Informes ejecutivos con encabezados, tablas y checklists exportables en 1 clic a Word (<code>.doc</code>), PDF y Markdown (<code>.md</code>).</p>
-          </article>
-        </div>
-      </section>
-
-      <!-- 3. ARTIFACTS STUDIO -->
-      <section class="r-section aidocs-sec" id="artefactos">
-        <div class="aidocs-sec__head" data-g-reveal>
-          <span class="aidocs-num">03</span>
-          <div>
-            <h2>Artifacts Studio y publicación en <code>ai.muntru.me</code></h2>
-            <p>Panel lateral en pantalla dividida con ejecución aislada en sandbox y URLs permanentes en D1.</p>
+          <div class="mdoc-kicker">
+            <span class="mdoc-kicker__dot" aria-hidden="true"></span>
+            <span>DOCUMENTACIÓN OFICIAL · OPEN SOURCE (MIT)</span>
           </div>
-        </div>
 
-        <div class="aidocs-panel glow-card" data-g-reveal>
-          <ul class="aidocs-list">
-            <li><strong>Formatos nativos</strong>: <code>html</code>, <code>svg</code>, <code>mermaid</code>, <code>slides</code> (16:9), <code>csv</code>, <code>doc</code> (Markdown enriquecido) y <code>code</code>.</li>
-            <li><strong>Vista previa responsive</strong>: selector instantáneo <strong>PC (100 %)</strong>, <strong>Tablet (768 px)</strong> y <strong>Móvil (390 px)</strong>, botón <strong>Recargar</strong>, <strong>Pestaña nueva</strong> y <strong>Pantalla completa</strong>.</li>
-            <li><strong>Edición en vivo e iteración con IA</strong>: editor de código integrado con recarga automática y botón <em>Mejorar con IA</em>.</li>
-            <li><strong>Exportación multi-formato</strong>: descarga directa en <code>.html</code>, <code>.svg</code>, <code>.mmd</code>, <code>.csv</code>, <code>.doc</code>, impresión a <code>PDF</code>, <code>.md</code> y exportación de conversación completa.</li>
-            <li><strong>Publicación permanente en D1</strong>: URL corta en <code>https://ai.muntru.me/a/&lt;slug&gt;</code>, código crudo en <code>/a/&lt;slug&gt;/raw</code> y perfil público de creador en <code>https://ai.muntru.me/u/&lt;handle&gt;</code> con control público/privado.</li>
+          <h1>Documentación de Muntrume AI</h1>
+          <p class="mdoc-lead">
+            Aprende a usar, integrar y extender <strong>Muntrume AI Studio</strong> (<a href="https://ai.muntru.me/">ai.muntru.me</a>), la plataforma de ingeniería sim racing, generación de código y artefactos interactivos desarrollada por Muntrume Motorsport sobre Cloudflare Workers y D1.
+          </p>
+
+          <div class="mdoc-hero-actions">
+            <a href="https://ai.muntru.me/" class="r-btn r-btn--primary">Abrir Muntrume AI Studio →</a>
+            <a href="#api" class="r-btn">Referencia de API</a>
+            <a href="https://github.com/ATM-Software-Labs/muntrume-site" target="_blank" rel="noopener noreferrer" class="r-btn">Código fuente (MIT)</a>
+          </div>
+
+          <div class="mdoc-callout mdoc-callout--info">
+            <div class="mdoc-callout__title">Optimizado para humanos, buscadores y agentes de IA</div>
+            <p>
+              Toda esta especificación está disponible en formato legible por máquina en <a href="/llms.txt">llms.txt</a>, <a href="/llms-full.txt">llms-full.txt</a>, <a href="/ai-knowledge.json">ai-knowledge.json</a> y <a href="/ai-openapi.json">ai-openapi.json</a>.
+            </p>
+          </div>
+        </header>
+
+        <!-- QUICKSTART -->
+        <section class="mdoc-section" id="quickstart" data-doc-section="quickstart" data-g-reveal>
+          <h2>Inicio rápido</h2>
+          <p class="mdoc-sub">Tres formas de empezar a trabajar con Muntrume AI en menos de un minuto.</p>
+
+          <div class="mdoc-cards mdoc-cards--3">
+            <a href="https://ai.muntru.me/" class="mdoc-card mdoc-card--link glow-card">
+              <span class="mdoc-step">01</span>
+              <h3>Estudio Web</h3>
+              <p>Abre <code>ai.muntru.me</code> sin registro previo para consultas de setups, estrategia, código y artefactos.</p>
+              <span class="mdoc-card__more">Ir al Studio →</span>
+            </a>
+
+            <a href="#skills" class="mdoc-card mdoc-card--link glow-card">
+              <span class="mdoc-step">02</span>
+              <h3>Comandos Slash</h3>
+              <p>Escribe <code>/setup</code>, <code>/strategy</code>, <code>/code</code>, <code>/mermaid</code> o <code>/slides</code> directo en el chat.</p>
+              <span class="mdoc-card__more">Ver comandos →</span>
+            </a>
+
+            <a href="#api" class="mdoc-card mdoc-card--link glow-card">
+              <span class="mdoc-step">03</span>
+              <h3>API REST &amp; SSE</h3>
+              <p>Integra <code>POST /api/ai</code> en tus scripts, bots o herramientas con respuesta JSON o streaming SSE.</p>
+              <span class="mdoc-card__more">Ver ejemplos →</span>
+            </a>
+          </div>
+        </section>
+
+        <!-- MODELOS -->
+        <section class="mdoc-section" id="modelos" data-doc-section="modelos" data-g-reveal>
+          <h2>Motores Muntrume 1.0</h2>
+          <p class="mdoc-sub">
+            El enrutador edge selecciona el perfil de inferencia según el parámetro <code>tier</code>, con conmutación automática ante saturación y cero exposición de proveedores internos.
+          </p>
+
+          <div class="mdoc-table-wrap">
+            <table class="mdoc-table">
+              <thead>
+                <tr>
+                  <th>Modelo</th>
+                  <th>Parámetro <code>tier</code></th>
+                  <th>Límite salida</th>
+                  <th>Caso de uso recomendado</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Muntrume 1.0 Lite</strong></td>
+                  <td><code>lite</code></td>
+                  <td>900 tokens</td>
+                  <td>Diagnósticos rápidos en boxes, definiciones y traducciones con latencia mínima.</td>
+                </tr>
+                <tr>
+                  <td><strong>Muntrume 1.0 Pro</strong> <span class="mdoc-tag">Recomendado</span></td>
+                  <td><code>pro</code></td>
+                  <td>2.400 – 3.400 tokens</td>
+                  <td>Ingeniería de setups iRacing, desarrollo de software, tablas y artefactos interactivos.</td>
+                </tr>
+                <tr>
+                  <td><strong>Muntrume 1.0 Ultra Max</strong></td>
+                  <td><code>ultra_max</code></td>
+                  <td>3.200 – 3.800 tokens</td>
+                  <td>Estrategia endurance 12h/24h, arquitectura avanzada y razonamiento paso a paso visible.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- SKILLS Y COMANDOS SLASH -->
+        <section class="mdoc-section" id="skills" data-doc-section="skills" data-g-reveal>
+          <h2>Skills especializadas y comandos slash</h2>
+          <p class="mdoc-sub">
+            Las skills inyectan contexto de ingeniería y reglas de formato específicas. Puedes activarlas desde la interfaz o escribiendo el prefijo slash al inicio de tu consulta.
+          </p>
+
+          <div class="mdoc-cards mdoc-cards--2">
+            <div class="mdoc-card glow-card">
+              <div class="mdoc-card__head"><code>/setup</code><span>skill: setup</span></div>
+              <h3>Ingeniero de Setups iRacing</h3>
+              <p>Ajustes de balance aerodinámico, barras estabilizadoras (ARB), precarga de diferencial, amortiguadores, presiones en caliente y brake bias.</p>
+            </div>
+
+            <div class="mdoc-card glow-card">
+              <div class="mdoc-card__head"><code>/strategy</code><span>skill: strategy</span></div>
+              <h3>Estrategia Endurance</h3>
+              <p>Consumo por vuelta, cálculo de stints por depósito, ventanas de pit stop, doble stint de neumáticos y rotación de pilotos.</p>
+            </div>
+
+            <div class="mdoc-card glow-card">
+              <div class="mdoc-card__head"><code>/code</code><span>skill: code</span></div>
+              <h3>Código y Artefactos Live</h3>
+              <p>Genera aplicaciones web autocontenidas en bloques <code>```html</code> y gráficos vectoriales <code>```svg</code> previsualizables en vivo.</p>
+            </div>
+
+            <div class="mdoc-card glow-card">
+              <div class="mdoc-card__head"><code>/mermaid</code><span>artefacto: mermaid</span></div>
+              <h3>Diagramas de Flujo Mermaid</h3>
+              <p>Genera diagramas de flujo, secuencias y árboles de decisión pit-wall en <code>```mermaid</code> listos para renderizar en el Studio.</p>
+            </div>
+
+            <div class="mdoc-card glow-card">
+              <div class="mdoc-card__head"><code>/slides</code><span>skill: slides</span></div>
+              <h3>Presentaciones 16:9</h3>
+              <p>Construye decks navegables con teclado y barra de progreso separados por <code>---</code> dentro de bloques <code>```slides</code>.</p>
+            </div>
+
+            <div class="mdoc-card glow-card">
+              <div class="mdoc-card__head"><code>/doc</code><span>skill: doc</span></div>
+              <h3>Documentos Técnicos</h3>
+              <p>Informes estructurados con tablas, callouts y checklists exportables en 1 clic a Word (<code>.doc</code>), PDF y Markdown (<code>.md</code>).</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ARTIFACTS STUDIO -->
+        <section class="mdoc-section" id="artefactos" data-doc-section="artefactos" data-g-reveal>
+          <h2>Artifacts Studio y publicación permanente</h2>
+          <p class="mdoc-sub">
+            El panel lateral en pantalla dividida ejecuta y previsualiza bloques generados por la IA en un entorno aislado (<code>sandbox="allow-scripts allow-forms allow-downloads"</code>).
+          </p>
+
+          <div class="mdoc-feature-list">
+            <div class="mdoc-feature">
+              <div class="mdoc-feature__k">Formatos soportados</div>
+              <div class="mdoc-feature__v"><code>html</code>, <code>svg</code>, <code>mermaid</code>, <code>slides</code> (16:9), <code>csv</code>, <code>doc</code> (Markdown) y <code>code</code>.</div>
+            </div>
+            <div class="mdoc-feature">
+              <div class="mdoc-feature__k">Vista previa responsive</div>
+              <div class="mdoc-feature__v">Selector instantáneo <strong>PC (100 %)</strong>, <strong>Tablet (768 px)</strong> y <strong>Móvil (390 px)</strong>, botón <strong>Recargar</strong>, <strong>Pestaña nueva</strong> y <strong>Pantalla completa</strong>.</div>
+            </div>
+            <div class="mdoc-feature">
+              <div class="mdoc-feature__k">Edición e iteración</div>
+              <div class="mdoc-feature__v">Editor de código integrado con recarga automática y botón <em>Mejorar con IA</em> para iterar sobre el artefacto activo.</div>
+            </div>
+            <div class="mdoc-feature">
+              <div class="mdoc-feature__k">Exportación y hosting D1</div>
+              <div class="mdoc-feature__v">Descarga en <code>.html</code>, <code>.svg</code>, <code>.mmd</code>, <code>.csv</code>, <code>.doc</code>, PDF y <code>.md</code>. Publicación permanente en <code>https://ai.muntru.me/a/&lt;slug&gt;</code>, código crudo en <code>/raw</code> y perfil de autor en <code>/u/&lt;handle&gt;</code>.</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VISIÓN Y TELEMETRÍA -->
+        <section class="mdoc-section" id="vision" data-doc-section="vision" data-g-reveal>
+          <h2>Visión por imagen y contexto externo</h2>
+          <p class="mdoc-sub">
+            Muntrume AI admite entradas multimodales y enriquecimiento de contexto en tiempo real desde la misma petición:
+          </p>
+          <ul class="mdoc-bullets">
+            <li><strong>Análisis visual (Vision AI)</strong>: adjunta o pega (<code>Ctrl+V</code>) capturas PNG/JPG/WebP de telemetría Garage 61, gráficos de barras, licencias iRacing o interfaces de código.</li>
+            <li><strong>Contexto GitHub</strong>: pasa una URL pública de repositorio o archivo en <code>github_url</code> para analizar código real o READMEs.</li>
+            <li><strong>Búsqueda web y datos D1 en vivo</strong>: activa <code>web_search: true</code> para cruzar consultas del equipo con datos en vivo de pilotos y resultados públicos.</li>
           </ul>
-        </div>
-      </section>
+        </section>
 
-      <!-- 4. REFERENCIA API -->
-      <section class="r-section aidocs-sec" id="api">
-        <div class="aidocs-sec__head" data-g-reveal>
-          <span class="aidocs-num">04</span>
-          <div>
-            <h2>Referencia de API pública (<code>POST /api/ai</code>)</h2>
-            <p>Responde en JSON o streaming SSE (<code>text/event-stream</code>) desde <code>ai.muntru.me/api/ai</code>.</p>
+        <!-- API REFERENCE WITH MULTI-LANG TABS -->
+        <section class="mdoc-section" id="api" data-doc-section="api" data-g-reveal>
+          <h2>Referencia de API · <code>POST /api/ai</code></h2>
+          <p class="mdoc-sub">
+            Endpoint público disponible en <code>https://ai.muntru.me/api/ai</code> y <code>https://muntrume.atrumin16.workers.dev/api/ai</code>.
+          </p>
+
+          <div class="mdoc-code-box">
+            <div class="mdoc-code-box__bar">
+              <div class="mdoc-code-tabs" role="tablist" aria-label="Lenguaje de ejemplo">
+                <button type="button" role="tab" class="mdoc-code-tab is-active" data-code-tab="curl" aria-selected="true">cURL</button>
+                <button type="button" role="tab" class="mdoc-code-tab" data-code-tab="js" aria-selected="false">JavaScript</button>
+                <button type="button" role="tab" class="mdoc-code-tab" data-code-tab="python" aria-selected="false">Python</button>
+                <button type="button" role="tab" class="mdoc-code-tab" data-code-tab="sse" aria-selected="false">SSE Stream</button>
+              </div>
+              <button type="button" id="mdocCopyBtn" class="mdoc-copy-btn">Copiar</button>
+            </div>
+            <pre class="mdoc-pre" data-code-panel="curl"><code>{codeCurl}</code></pre>
+            <pre class="mdoc-pre" data-code-panel="js" hidden><code>{codeJs}</code></pre>
+            <pre class="mdoc-pre" data-code-panel="python" hidden><code>{codePython}</code></pre>
+            <pre class="mdoc-pre" data-code-panel="sse" hidden><code>{codeSse}</code></pre>
+          </div>
+        </section>
+
+        <!-- PARAMETROS -->
+        <section class="mdoc-section" id="parametros" data-doc-section="parametros" data-g-reveal>
+          <h2>Parámetros de solicitud</h2>
+          <div class="mdoc-table-wrap">
+            <table class="mdoc-table">
+              <thead>
+                <tr>
+                  <th>Campo</th>
+                  <th>Tipo</th>
+                  <th>Por defecto</th>
+                  <th>Descripción</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><code>prompt</code></td><td><code>string</code></td><td><em>requerido*</em></td><td>Instrucción o pregunta del usuario (máx. 8.000 caracteres).</td></tr>
+                <tr><td><code>tier</code></td><td><code>string</code></td><td><code>"pro"</code></td><td>Nivel de motor: <code>lite</code>, <code>pro</code> o <code>ultra_max</code>.</td></tr>
+                <tr><td><code>mode</code></td><td><code>string</code></td><td><code>"team"</code></td><td>Contexto: <code>team</code> (ingeniero Muntrume), <code>general</code> o <code>ai_setup</code>.</td></tr>
+                <tr><td><code>skill</code></td><td><code>string</code></td><td><code>""</code></td><td>Skill opcional: <code>setup</code>, <code>strategy</code>, <code>code</code>, <code>slides</code> o <code>doc</code>.</td></tr>
+                <tr><td><code>lang</code></td><td><code>string</code></td><td><em>auto</em></td><td>Idioma de respuesta: <code>es</code>, <code>ca</code>, <code>en</code> o <code>fr</code>.</td></tr>
+                <tr><td><code>stream</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Si es <code>true</code>, devuelve eventos <code>text/event-stream</code> progresivos.</td></tr>
+                <tr><td><code>image</code></td><td><code>string</code></td><td><code>""</code></td><td>Data URL base64 (PNG/JPG/WebP, máx. 2.4 MB) para análisis visual.</td></tr>
+                <tr><td><code>github_url</code></td><td><code>string</code></td><td><code>""</code></td><td>URL pública de repositorio o archivo en GitHub para contexto de código.</td></tr>
+                <tr><td><code>web_search</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Activa consulta a datos en vivo D1 y resultados públicos.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- SEO, LLMS Y OPENAPI -->
+        <section class="mdoc-section" id="indexacion" data-doc-section="indexacion" data-g-reveal>
+          <h2>SEO, LLMs y especificaciones abiertas</h2>
+          <p class="mdoc-sub">
+            Todos los manifiestos de descubrimiento se sirven con CORS y caché edge tanto en <code>muntru.me</code> como en <code>ai.muntru.me</code>.
+          </p>
+
+          <div class="mdoc-table-wrap">
+            <table class="mdoc-table">
+              <thead>
+                <tr>
+                  <th>Estándar</th>
+                  <th>Endpoint</th>
+                  <th>Propósito</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><strong>llms.txt</strong></td><td><a href="/llms.txt">/llms.txt</a></td><td>Resumen conciso para crawlers de ChatGPT, Claude, Perplexity y Gemini.</td></tr>
+                <tr><td><strong>llms-full.txt</strong></td><td><a href="/llms-full.txt">/llms-full.txt</a></td><td>Documentación extendida de toda la plataforma y arquitectura.</td></tr>
+                <tr><td><strong>Knowledge JSON</strong></td><td><a href="/ai-knowledge.json">/ai-knowledge.json</a></td><td>Base estructurada para indexadores semánticos y pipelines RAG.</td></tr>
+                <tr><td><strong>OpenAPI 3.1</strong></td><td><a href="/ai-openapi.json">/ai-openapi.json</a></td><td>Contrato formal de <code>POST /api/ai</code> y <code>GET /api/ai/artifacts/get/&#123;slug&#125;</code>.</td></tr>
+                <tr><td><strong>AI Plugin</strong></td><td><a href="/.well-known/ai-plugin.json">/.well-known/ai-plugin.json</a></td><td>Manifiesto estándar de descubrimiento para agentes externos.</td></tr>
+                <tr><td><strong>Robots &amp; Sitemap</strong></td><td><a href="/robots.txt">/robots.txt</a> · <a href="/sitemap.xml">/sitemap.xml</a></td><td>Permiso explícito para Googlebot, GPTBot, OAI-SearchBot, ClaudeBot y PerplexityBot.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- FAQ -->
+        <section class="mdoc-section" id="faq" data-doc-section="faq" data-g-reveal>
+          <h2>Preguntas frecuentes</h2>
+          <div class="mdoc-faq">
+            <details class="mdoc-faq__item" open>
+              <summary>¿Muntrume AI es gratuito y de código abierto?</summary>
+              <p>Sí. Tanto la interfaz de Muntrume AI Studio como la documentación y la app MMT Sync están publicadas bajo licencia <strong>MIT</strong>. El servicio web en <code>ai.muntru.me</code> es gratuito con protección anti-abuso por tasa de peticiones.</p>
+            </details>
+            <details class="mdoc-faq__item">
+              <summary>¿Necesito cuenta para publicar artefactos con URL propia?</summary>
+              <p>Puedes generar, editar, previsualizar y descargar artefactos sin cuenta. Para publicarlos con enlace permanente en <code>ai.muntru.me/a/&lt;slug&gt;</code> y gestionar su visibilidad (público/privado), inicia sesión con tu cuenta de piloto del Setup Vault.</p>
+            </details>
+            <details class="mdoc-faq__item">
+              <summary>¿Cómo puedo exportar un informe o presentación generada?</summary>
+              <p>Desde la barra superior de Artifacts Studio puedes descargar el resultado en <strong>Word (.doc)</strong>, imprimirlo como <strong>PDF</strong>, exportarlo como <strong>Slides 16:9 (.html)</strong>, <strong>CSV</strong>, <strong>Mermaid (.mmd)</strong> o exportar la conversación entera en <strong>Markdown (.md)</strong>.</p>
+            </details>
+          </div>
+        </section>
+      </article>
+
+      <!-- RIGHT STICKY "ON THIS PAGE" RAIL -->
+      <aside class="mdoc-rail" aria-label="En esta página">
+        <div class="mdoc-rail__inner">
+          <div class="mdoc-rail__title">En esta página</div>
+          <nav class="mdoc-rail__nav">
+            <a href="#overview" data-rail-link="overview" class="is-active">Introducción</a>
+            <a href="#quickstart" data-rail-link="quickstart">Inicio rápido</a>
+            <a href="#modelos" data-rail-link="modelos">Motores 1.0</a>
+            <a href="#skills" data-rail-link="skills">Skills &amp; Slash</a>
+            <a href="#artefactos" data-rail-link="artefactos">Artifacts Studio</a>
+            <a href="#vision" data-rail-link="vision">Visión y telemetría</a>
+            <a href="#api" data-rail-link="api">API /api/ai</a>
+            <a href="#parametros" data-rail-link="parametros">Parámetros</a>
+            <a href="#indexacion" data-rail-link="indexacion">SEO &amp; LLMs</a>
+            <a href="#faq" data-rail-link="faq">FAQ</a>
+          </nav>
+
+          <div class="mdoc-rail__box">
+            <div class="mdoc-rail__title">Recursos máquina</div>
+            <a href="/llms.txt">llms.txt ↗</a>
+            <a href="/ai-knowledge.json">ai-knowledge.json ↗</a>
+            <a href="/ai-openapi.json">ai-openapi.json ↗</a>
+            <a href="/.well-known/ai-plugin.json">ai-plugin.json ↗</a>
           </div>
         </div>
-
-        <div class="aidocs-code-card" data-g-reveal>
-          <div class="aidocs-code-card__bar">
-            <span>HTTP · JSON / SSE</span>
-            <button type="button" id="aiDocsCopyApi" class="aidocs-copy-btn">Copiar ejemplo</button>
-          </div>
-          <pre><code id="aiDocsApiSnippet">{apiSample}</code></pre>
-        </div>
-
-        <p class="aidocs-note" data-g-reveal>
-          Admite además análisis visual pasando <code>image</code> (Data URL base64 PNG/JPG/WebP), contexto de repositorio con <code>github_url</code>, archivos adjuntos de texto (<code>attachment_text</code>) e historial conversacional (<code>chat_history</code>).
-        </p>
-      </section>
-
-      <!-- 5. SEO & DESCUBRIMIENTO IA -->
-      <section class="r-section aidocs-sec" id="indexacion">
-        <div class="aidocs-sec__head" data-g-reveal>
-          <span class="aidocs-num">05</span>
-          <div>
-            <h2>Descubrimiento para buscadores e IAs externas</h2>
-            <p>Todos los manifiestos y especificaciones abiertas están servidos en <code>muntru.me</code> y <code>ai.muntru.me</code>.</p>
-          </div>
-        </div>
-
-        <div class="aidocs-table-wrap glow-card" data-g-reveal>
-          <table>
-            <thead>
-              <tr>
-                <th>Recurso</th>
-                <th>Ruta pública</th>
-                <th>Uso</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Resumen LLM</strong></td>
-                <td><a href="/llms.txt">/llms.txt</a></td>
-                <td>Índice estándar para ChatGPT, Claude, Perplexity y Gemini</td>
-              </tr>
-              <tr>
-                <td><strong>Referencia extendida</strong></td>
-                <td><a href="/llms-full.txt">/llms-full.txt</a></td>
-                <td>Contexto completo de arquitectura, plataformas y API</td>
-              </tr>
-              <tr>
-                <td><strong>Base JSON (RAG)</strong></td>
-                <td><a href="/ai-knowledge.json">/ai-knowledge.json</a></td>
-                <td>Datos estructurados para crawlers semánticos y agentes</td>
-              </tr>
-              <tr>
-                <td><strong>OpenAPI 3.1</strong></td>
-                <td><a href="/ai-openapi.json">/ai-openapi.json</a></td>
-                <td>Esquema formal de <code>/api/ai</code> y <code>/api/ai/artifacts/get/&#123;slug&#125;</code></td>
-              </tr>
-              <tr>
-                <td><strong>AI Plugin Manifest</strong></td>
-                <td><a href="/.well-known/ai-plugin.json">/.well-known/ai-plugin.json</a></td>
-                <td>Descubrimiento automático estándar para agentes</td>
-              </tr>
-              <tr>
-                <td><strong>Sitemap &amp; Robots</strong></td>
-                <td><a href="/sitemap.xml">/sitemap.xml</a> · <a href="/robots.txt">/robots.txt</a></td>
-                <td>Permiso explícito para Googlebot, GPTBot, ClaudeBot y PerplexityBot</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </main>
+      </aside>
+    </div>
   </div>
 
   <script is:inline>
     (function () {
-      var btn = document.getElementById('aiDocsCopyApi');
-      var code = document.getElementById('aiDocsApiSnippet');
-      if (btn && code) {
-        btn.addEventListener('click', function () {
-          navigator.clipboard.writeText(code.textContent || '').then(function () {
-            btn.textContent = 'Copiado ✓';
-            setTimeout(function () { btn.textContent = 'Copiar ejemplo'; }, 1600);
+      // 1. Multi-language API Code Tabs + Copy
+      var tabs = document.querySelectorAll('[data-code-tab]');
+      var panels = document.querySelectorAll('[data-code-panel]');
+      var copyBtn = document.getElementById('mdocCopyBtn');
+      var activeTab = 'curl';
+
+      tabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+          activeTab = tab.getAttribute('data-code-tab') || 'curl';
+          tabs.forEach(function (t) {
+            var on = t === tab;
+            t.classList.toggle('is-active', on);
+            t.setAttribute('aria-selected', on ? 'true' : 'false');
+          });
+          panels.forEach(function (p) {
+            p.hidden = p.getAttribute('data-code-panel') !== activeTab;
           });
         });
+      });
+
+      if (copyBtn) {
+        copyBtn.addEventListener('click', function () {
+          var panel = document.querySelector('[data-code-panel="' + activeTab + '"] code');
+          if (!panel) return;
+          navigator.clipboard.writeText(panel.textContent || '').then(function () {
+            copyBtn.textContent = 'Copiado ✓';
+            setTimeout(function () { copyBtn.textContent = 'Copiar'; }, 1600);
+          });
+        });
+      }
+
+      // 2. Scroll-Spy for Left Sidebar & Right "On this page" Rail
+      var sections = document.querySelectorAll('[data-doc-section]');
+      if ('IntersectionObserver' in window && sections.length) {
+        var setActive = function (id) {
+          document.querySelectorAll('[data-doc-link]').forEach(function (a) {
+            a.classList.toggle('is-active', a.getAttribute('data-doc-link') === id);
+          });
+          document.querySelectorAll('[data-rail-link]').forEach(function (a) {
+            a.classList.toggle('is-active', a.getAttribute('data-rail-link') === id);
+          });
+        };
+        var spy = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              var id = entry.target.getAttribute('data-doc-section');
+              if (id) setActive(id);
+            }
+          });
+        }, { rootMargin: '-18% 0px -68% 0px', threshold: 0 });
+        sections.forEach(function (sec) { spy.observe(sec); });
       }
     })();
   </script>
 </Layout>
 
 <style>
-  .aidocs-shell {
-    position: relative;
-    overflow-x: clip;
+  .mdoc-page {
     background: var(--r-bg);
     color: var(--r-text);
     min-height: 100vh;
+    padding-top: 64px;
   }
 
-  .aidocs-glow {
-    position: absolute;
-    top: -120px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: min(960px, 120vw);
-    height: 420px;
-    background: radial-gradient(ellipse at center, color-mix(in srgb, var(--r-accent, #10b981) 18%, transparent), transparent 68%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .aidocs {
-    position: relative;
-    z-index: 1;
-    max-width: 1020px;
+  .mdoc-grid {
+    max-width: 1380px;
     margin: 0 auto;
-    padding: 112px 24px 96px;
+    padding: 0 24px 96px;
+    display: grid;
+    grid-template-columns: 248px minmax(0, 1fr) 210px;
+    gap: 44px;
+    align-items: start;
   }
 
-  .aidocs-hero {
-    padding-bottom: 36px;
-    border-bottom: 1px solid var(--r-line);
-    animation: aidocsFadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  /* LEFT SIDEBAR */
+  .mdoc-sidebar {
+    position: sticky;
+    top: 84px;
+    max-height: calc(100vh - 104px);
+    overflow-y: auto;
+    padding-right: 12px;
+    border-right: 1px solid var(--r-line);
   }
 
-  @keyframes aidocsFadeUp {
-    from { opacity: 0; transform: translateY(14px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .aidocs-badge {
-    display: inline-flex;
+  .mdoc-sidebar__brand {
+    display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 6px 12px;
-    border-radius: 999px;
-    border: 1px solid var(--r-line);
-    background: var(--r-surface);
-    font: 700 11px/1 var(--r-mono, ui-monospace, monospace);
-    letter-spacing: 0.08em;
-    color: var(--r-accent, #10b981);
+    gap: 10px;
+    padding: 0 8px 16px;
     margin-bottom: 16px;
+    border-bottom: 1px solid var(--r-line);
   }
 
-  .aidocs-dot {
-    width: 7px;
-    height: 7px;
+  .mdoc-sidebar__brand strong {
+    display: block;
+    font-size: 14px;
+    line-height: 1.2;
+    color: var(--r-text);
+  }
+
+  .mdoc-sidebar__brand span {
+    display: block;
+    font: 600 11px/1.3 var(--r-mono, ui-monospace, monospace);
+    color: var(--r-muted);
+  }
+
+  .mdoc-brand-dot {
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
     background: var(--r-accent, #10b981);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--r-accent, #10b981) 22%, transparent);
-    animation: aidocsPulse 2.4s ease-in-out infinite;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--r-accent, #10b981) 18%, transparent);
+    flex-shrink: 0;
   }
 
-  @keyframes aidocsPulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.6; transform: scale(0.88); }
-  }
+  .mdoc-nav-group { margin-bottom: 20px; }
 
-  .aidocs h1 {
-    font-size: clamp(32px, 5vw, 50px);
-    line-height: 1.08;
-    letter-spacing: -0.03em;
-    margin: 0 0 16px;
-    color: var(--r-text);
-  }
-
-  .aidocs-accent {
-    color: var(--r-accent, #10b981);
-  }
-
-  .aidocs-lead {
-    max-width: 740px;
-    font-size: 16.5px;
-    line-height: 1.68;
+  .mdoc-nav-group__title {
+    font: 700 11px/1 var(--r-mono, ui-monospace, monospace);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
     color: var(--r-muted);
-    margin: 0 0 24px;
+    padding: 0 10px 8px;
   }
 
-  .aidocs-lead strong { color: var(--r-text); }
-  .aidocs-lead a { color: var(--r-accent, #10b981); text-decoration: none; font-weight: 600; }
-  .aidocs-lead a:hover { text-decoration: underline; }
-
-  .aidocs-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 22px;
-  }
-
-  .aidocs-toc {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding-top: 16px;
-    border-top: 1px dashed var(--r-line);
-  }
-
-  .aidocs-toc a {
-    font: 600 12.5px/1 var(--r-mono, ui-monospace, monospace);
+  .mdoc-nav-link {
+    display: block;
+    padding: 7px 10px;
+    margin-bottom: 2px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-weight: 500;
     color: var(--r-muted);
     text-decoration: none;
-    padding: 7px 12px;
-    border-radius: 999px;
-    border: 1px solid var(--r-line);
-    background: var(--r-surface);
-    transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    border-left: 2px solid transparent;
+    transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
   }
 
-  .aidocs-toc a:hover {
-    border-color: var(--r-accent, #10b981);
+  .mdoc-nav-link:hover {
     color: var(--r-text);
+    background: color-mix(in srgb, var(--r-text) 5%, transparent);
+  }
+
+  .mdoc-nav-link.is-active {
+    color: var(--r-accent, #10b981);
+    font-weight: 600;
+    background: color-mix(in srgb, var(--r-accent, #10b981) 10%, transparent);
+    border-left-color: var(--r-accent, #10b981);
+  }
+
+  .mdoc-sidebar__foot {
+    padding-top: 12px;
+    border-top: 1px solid var(--r-line);
+  }
+
+  .mdoc-cta-mini {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9px 12px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--r-accent, #10b981) 12%, var(--r-surface));
+    border: 1px solid color-mix(in srgb, var(--r-accent, #10b981) 30%, transparent);
+    color: var(--r-accent, #10b981);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.18s ease, transform 0.18s ease;
+  }
+
+  .mdoc-cta-mini:hover {
+    background: color-mix(in srgb, var(--r-accent, #10b981) 18%, var(--r-surface));
     transform: translateY(-1px);
   }
 
-  .aidocs-sec {
-    padding: 48px 0 0;
-    scroll-margin-top: 84px;
+  /* CENTER ARTICLE */
+  .mdoc-article {
+    min-width: 0;
+    max-width: 800px;
+    padding-top: 24px;
   }
 
-  .aidocs-sec__head {
+  .mdoc-crumb {
     display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    margin-bottom: 20px;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    color: var(--r-muted);
+    margin-bottom: 16px;
   }
 
-  .aidocs-num {
-    flex-shrink: 0;
-    font: 700 12px/1 var(--r-mono, ui-monospace, monospace);
+  .mdoc-crumb a { color: var(--r-muted); text-decoration: none; }
+  .mdoc-crumb a:hover { color: var(--r-text); }
+
+  .mdoc-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    border: 1px solid var(--r-line);
+    background: var(--r-surface);
+    font: 700 10.5px/1 var(--r-mono, ui-monospace, monospace);
+    letter-spacing: 0.08em;
     color: var(--r-accent, #10b981);
-    background: color-mix(in srgb, var(--r-accent, #10b981) 12%, transparent);
-    border: 1px solid color-mix(in srgb, var(--r-accent, #10b981) 30%, transparent);
-    padding: 7px 9px;
-    border-radius: 10px;
-    margin-top: 2px;
+    margin-bottom: 14px;
   }
 
-  .aidocs-sec__head h2 {
-    margin: 0 0 6px;
-    font-size: clamp(20px, 2.5vw, 26px);
-    letter-spacing: -0.02em;
+  .mdoc-kicker__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--r-accent, #10b981);
+  }
+
+  .mdoc-hero h1 {
+    font-family: var(--r-sans, system-ui, -apple-system, sans-serif);
+    text-transform: none;
+    font-size: clamp(30px, 4vw, 44px);
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -0.03em;
+    margin: 0 0 14px;
     color: var(--r-text);
   }
 
-  .aidocs-sec__head p {
+  .mdoc-lead {
+    font-size: 16.5px;
+    line-height: 1.68;
+    color: var(--r-muted);
+    margin: 0 0 22px;
+  }
+
+  .mdoc-lead strong { color: var(--r-text); }
+  .mdoc-lead a { color: var(--r-accent, #10b981); text-decoration: none; font-weight: 600; }
+  .mdoc-lead a:hover { text-decoration: underline; }
+
+  .mdoc-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .mdoc-callout {
+    border: 1px solid var(--r-line);
+    border-left: 3px solid var(--r-accent, #10b981);
+    background: var(--r-surface);
+    border-radius: 12px;
+    padding: 14px 18px;
+  }
+
+  .mdoc-callout__title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--r-text);
+    margin-bottom: 4px;
+  }
+
+  .mdoc-callout p {
     margin: 0;
-    font-size: 14.5px;
+    font-size: 13.5px;
+    line-height: 1.6;
     color: var(--r-muted);
   }
 
-  .aidocs-grid {
-    display: grid;
-    gap: 16px;
+  .mdoc-callout a { color: var(--r-accent, #10b981); text-decoration: none; font-weight: 600; }
+  .mdoc-callout a:hover { text-decoration: underline; }
+
+  /* SECTIONS */
+  .mdoc-section {
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid var(--r-line);
+    scroll-margin-top: 86px;
   }
 
-  .aidocs-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .aidocs-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mdoc-section h2 {
+    font-family: var(--r-sans, system-ui, -apple-system, sans-serif);
+    text-transform: none;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 8px;
+    color: var(--r-text);
+  }
 
-  .aidocs-card,
-  .aidocs-panel {
+  .mdoc-sub {
+    margin: 0 0 20px;
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--r-muted);
+  }
+
+  .mdoc-article code {
+    font-family: var(--r-mono, ui-monospace, Consolas, monospace);
+    font-size: 0.86em;
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--r-text) 6%, var(--r-surface));
+    color: var(--r-text);
+    border: 1px solid var(--r-line);
+  }
+
+  /* CARDS */
+  .mdoc-cards { display: grid; gap: 14px; }
+  .mdoc-cards--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .mdoc-cards--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .mdoc-card {
     background: var(--r-surface);
     border: 1px solid var(--r-line);
-    border-radius: 16px;
-    padding: 20px 22px;
-    transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.24s ease, box-shadow 0.24s ease;
+    border-radius: 14px;
+    padding: 18px 20px;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s ease, box-shadow 0.2s ease;
   }
 
-  .aidocs-card:hover {
-    transform: translateY(-3px);
+  .mdoc-card:hover {
+    transform: translateY(-2px);
     border-color: color-mix(in srgb, var(--r-accent, #10b981) 45%, var(--r-line));
-    box-shadow: 0 14px 34px -18px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 12px 28px -18px rgba(0, 0, 0, 0.35);
   }
 
-  .aidocs-card--featured {
-    border-color: color-mix(in srgb, var(--r-accent, #10b981) 42%, var(--r-line));
+  .mdoc-step {
+    font: 700 11px/1 var(--r-mono, ui-monospace, monospace);
+    color: var(--r-accent, #10b981);
+    margin-bottom: 10px;
   }
 
-  .aidocs-card__top {
+  .mdoc-card__head {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
 
-  .aidocs-pill {
-    font: 700 11px/1 var(--r-mono, ui-monospace, monospace);
-    padding: 4px 9px;
-    border-radius: 999px;
-    border: 1px solid var(--r-line);
-    color: var(--r-muted);
-    background: var(--r-bg);
-  }
-
-  .aidocs-pill--acc {
-    color: var(--r-accent, #10b981);
-    border-color: color-mix(in srgb, var(--r-accent, #10b981) 38%, transparent);
-    background: color-mix(in srgb, var(--r-accent, #10b981) 12%, transparent);
-  }
-
-  .aidocs-meta {
-    font: 600 11.5px/1 var(--r-mono, ui-monospace, monospace);
+  .mdoc-card__head span {
+    font: 600 11px/1 var(--r-mono, ui-monospace, monospace);
     color: var(--r-muted);
   }
 
-  .aidocs-card h3 {
-    margin: 0 0 8px;
-    font-size: 17px;
+  .mdoc-card h3 {
+    margin: 0 0 6px;
+    font-size: 15.5px;
+    font-weight: 700;
     color: var(--r-text);
   }
 
-  .aidocs-card p,
-  .aidocs-note {
+  .mdoc-card p {
     margin: 0;
+    font-size: 13.8px;
+    line-height: 1.6;
+    color: var(--r-muted);
+    flex: 1;
+  }
+
+  .mdoc-card__more {
+    margin-top: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--r-accent, #10b981);
+  }
+
+  /* FEATURE LIST */
+  .mdoc-feature-list {
+    border: 1px solid var(--r-line);
+    border-radius: 14px;
+    background: var(--r-surface);
+    overflow: hidden;
+  }
+
+  .mdoc-feature {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 16px;
+    padding: 15px 18px;
+    border-bottom: 1px solid var(--r-line);
+  }
+
+  .mdoc-feature:last-child { border-bottom: 0; }
+  .mdoc-feature__k { font-size: 13.5px; font-weight: 700; color: var(--r-text); }
+  .mdoc-feature__v { font-size: 14px; line-height: 1.6; color: var(--r-muted); }
+  .mdoc-feature__v strong { color: var(--r-text); }
+
+  .mdoc-bullets {
+    margin: 0;
+    padding-left: 20px;
+    display: grid;
+    gap: 10px;
     font-size: 14.5px;
     line-height: 1.65;
     color: var(--r-muted);
   }
 
-  .aidocs-cmd {
-    font-size: 14.5px;
-    font-weight: 700;
-    color: var(--r-text);
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
+  .mdoc-bullets strong { color: var(--r-text); }
+
+  /* TABLES */
+  .mdoc-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--r-line);
+    border-radius: 14px;
+    background: var(--r-surface);
   }
 
-  .aidocs-list {
-    margin: 0;
-    padding-left: 20px;
-    display: grid;
-    gap: 11px;
-    font-size: 14.5px;
-    line-height: 1.66;
+  .mdoc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.8px;
+  }
+
+  .mdoc-table th,
+  .mdoc-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--r-line);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .mdoc-table tbody tr:last-child td { border-bottom: 0; }
+  .mdoc-table tbody tr:hover { background: color-mix(in srgb, var(--r-text) 3%, transparent); }
+
+  .mdoc-table th {
+    font: 700 11px/1 var(--r-mono, ui-monospace, monospace);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
     color: var(--r-muted);
+    background: color-mix(in srgb, var(--r-text) 3%, var(--r-surface));
   }
 
-  .aidocs-list strong { color: var(--r-text); }
+  .mdoc-table td { color: var(--r-muted); line-height: 1.55; }
+  .mdoc-table td strong { color: var(--r-text); }
+  .mdoc-table td a { color: var(--r-accent, #10b981); text-decoration: none; font-weight: 600; }
+  .mdoc-table td a:hover { text-decoration: underline; }
 
-  .aidocs code {
-    font-family: var(--r-mono, ui-monospace, Consolas, monospace);
-    font-size: 0.87em;
-    padding: 2px 6px;
-    border-radius: 6px;
-    background: color-mix(in srgb, var(--r-accent, #10b981) 12%, var(--r-surface));
+  .mdoc-tag {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    font: 700 10px/1.2 var(--r-mono, ui-monospace, monospace);
     color: var(--r-accent, #10b981);
-    border: 1px solid color-mix(in srgb, var(--r-accent, #10b981) 20%, transparent);
+    background: color-mix(in srgb, var(--r-accent, #10b981) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--r-accent, #10b981) 30%, transparent);
   }
 
-  .aidocs-code-card {
+  /* CODE TABS BOX */
+  .mdoc-code-box {
     border: 1px solid var(--r-line);
     border-radius: 14px;
     overflow: hidden;
     background: #0d1016;
-    margin-bottom: 14px;
   }
 
-  .aidocs-code-card__bar {
+  .mdoc-code-box__bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 9px 14px;
+    gap: 10px;
+    padding: 8px 12px;
     background: #141923;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    font: 700 11px/1 var(--r-mono, ui-monospace, monospace);
-    color: #9aa4b2;
   }
 
-  .aidocs-copy-btn {
+  .mdoc-code-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+
+  .mdoc-code-tab {
+    border: 0;
+    background: transparent;
+    color: #9aa4b2;
+    padding: 6px 11px;
+    border-radius: 8px;
+    font: 600 12px/1 system-ui, sans-serif;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .mdoc-code-tab:hover { color: #f3f5f8; background: rgba(255, 255, 255, 0.06); }
+  .mdoc-code-tab.is-active { color: #10b981; background: rgba(16, 185, 129, 0.14); }
+
+  .mdoc-copy-btn {
     border: 1px solid rgba(255, 255, 255, 0.14);
     background: rgba(255, 255, 255, 0.05);
     color: #e5e7eb;
-    padding: 5px 10px;
+    padding: 5px 11px;
     border-radius: 8px;
-    font: 600 11.5px/1 system-ui, sans-serif;
+    font: 600 12px/1 system-ui, sans-serif;
     cursor: pointer;
-    transition: border-color 0.2s ease, color 0.2s ease;
+    transition: border-color 0.18s ease, color 0.18s ease;
   }
 
-  .aidocs-copy-btn:hover {
-    border-color: #10b981;
-    color: #10b981;
-  }
+  .mdoc-copy-btn:hover { border-color: #10b981; color: #10b981; }
 
-  .aidocs-code-card pre {
+  .mdoc-pre {
     margin: 0;
-    padding: 16px 18px;
+    padding: 18px 20px;
     overflow-x: auto;
   }
 
-  .aidocs-code-card pre code {
+  .mdoc-pre[hidden] { display: none; }
+
+  .mdoc-pre code {
     background: transparent;
     border: 0;
     padding: 0;
     color: #e5e7eb;
     font-size: 13px;
-    line-height: 1.6;
+    line-height: 1.62;
   }
 
-  .aidocs-table-wrap {
-    overflow-x: auto;
+  /* FAQ ACCORDION */
+  .mdoc-faq { display: grid; gap: 10px; }
+
+  .mdoc-faq__item {
     border: 1px solid var(--r-line);
-    border-radius: 16px;
+    border-radius: 12px;
     background: var(--r-surface);
+    padding: 14px 18px;
   }
 
-  .aidocs table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
+  .mdoc-faq__item summary {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--r-text);
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
   }
 
-  .aidocs th,
-  .aidocs td {
-    padding: 13px 16px;
-    border-bottom: 1px solid var(--r-line);
-    text-align: left;
-  }
-
-  .aidocs tbody tr:last-child td { border-bottom: 0; }
-  .aidocs tbody tr { transition: background 0.15s ease; }
-  .aidocs tbody tr:hover { background: color-mix(in srgb, var(--r-accent, #10b981) 5%, transparent); }
-
-  .aidocs th {
-    font: 700 11.5px/1 var(--r-mono, ui-monospace, monospace);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
+  .mdoc-faq__item summary::after {
+    content: "+";
+    font: 700 16px/1 var(--r-mono, monospace);
     color: var(--r-accent, #10b981);
-    background: color-mix(in srgb, var(--r-text) 3%, var(--r-surface));
+    transition: transform 0.2s ease;
   }
 
-  .aidocs td { color: var(--r-muted); }
-  .aidocs td strong { color: var(--r-text); }
-  .aidocs td a { color: var(--r-accent, #10b981); text-decoration: none; font-weight: 600; }
-  .aidocs td a:hover { text-decoration: underline; }
+  .mdoc-faq__item[open] summary::after { content: "−"; }
+
+  .mdoc-faq__item p {
+    margin: 10px 0 0;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--r-muted);
+  }
+
+  .mdoc-faq__item strong { color: var(--r-text); }
+
+  /* RIGHT RAIL */
+  .mdoc-rail {
+    position: sticky;
+    top: 84px;
+  }
+
+  .mdoc-rail__title {
+    font: 700 11px/1 var(--r-mono, ui-monospace, monospace);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--r-muted);
+    margin-bottom: 10px;
+  }
+
+  .mdoc-rail__nav {
+    display: grid;
+    gap: 4px;
+    border-left: 1px solid var(--r-line);
+    padding-left: 12px;
+    margin-bottom: 24px;
+  }
+
+  .mdoc-rail__nav a {
+    font-size: 12.5px;
+    color: var(--r-muted);
+    text-decoration: none;
+    padding: 3px 0;
+    transition: color 0.15s ease;
+  }
+
+  .mdoc-rail__nav a:hover,
+  .mdoc-rail__nav a.is-active {
+    color: var(--r-accent, #10b981);
+    font-weight: 600;
+  }
+
+  .mdoc-rail__box {
+    display: grid;
+    gap: 6px;
+    padding-top: 16px;
+    border-top: 1px solid var(--r-line);
+  }
+
+  .mdoc-rail__box a {
+    font: 600 12px/1.3 var(--r-mono, ui-monospace, monospace);
+    color: var(--r-muted);
+    text-decoration: none;
+  }
+
+  .mdoc-rail__box a:hover { color: var(--r-accent, #10b981); }
+
+  /* RESPONSIVE */
+  @media (max-width: 1180px) {
+    .mdoc-grid { grid-template-columns: 220px minmax(0, 1fr); gap: 32px; }
+    .mdoc-rail { display: none; }
+  }
 
   @media (max-width: 860px) {
-    .aidocs-grid--3 { grid-template-columns: 1fr; }
-    .aidocs-grid--2 { grid-template-columns: 1fr; }
-    .aidocs { padding: 92px 16px 72px; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .aidocs-hero, .aidocs-dot { animation: none; }
-    .aidocs-card, .aidocs-toc a { transition: none; }
+    .mdoc-grid { grid-template-columns: 1fr; padding: 0 16px 72px; }
+    .mdoc-sidebar { display: none; }
+    .mdoc-cards--3, .mdoc-cards--2 { grid-template-columns: 1fr; }
+    .mdoc-feature { grid-template-columns: 1fr; gap: 4px; }
   }
 </style>
