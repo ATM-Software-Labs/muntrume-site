@@ -485,20 +485,227 @@ const garageSchema = {
   </div>
 
   <div id="garagePreviewModal" class="g-modal hidden" role="dialog" aria-modal="true" aria-labelledby="gpvFile" hidden>
-    <div class="g-dialog">
-      <div class="g-dialog__bar">
-        <h2 id="gpvFile">Setup .sto</h2>
-        <button type="button" class="m-notice__close" data-close-modal="garagePreviewModal" aria-label="Cerrar" data-i18n-aria="garage.auth.close">×</button>
+    <div class="g-dialog gpv-iracing-dialog">
+      <div class="g-dialog__bar gpv-ir-head">
+        <div class="gpv-ir-title">
+          <span class="gpv-ir-kicker">IRACING GARAGE INSPECTOR · .STO</span>
+          <h2 id="gpvFile">Setup .sto</h2>
+        </div>
+        <div class="gpv-ir-head-actions">
+          <button type="button" id="gpvDownloadBtn" class="r-btn r-btn--primary" data-download data-id="" data-file="" data-auth="pending">Descargar .sto</button>
+          <button type="button" class="m-notice__close" data-close-modal="garagePreviewModal" aria-label="Cerrar" data-i18n-aria="garage.auth.close">×</button>
+        </div>
       </div>
-      <div class="gpv-grid">
-        <div class="gpv-item"><span>Coche</span><strong id="gpvCar">—</strong></div>
-        <div class="gpv-item"><span>Circuito</span><strong id="gpvTrack">—</strong></div>
-        <div class="gpv-item"><span>Temporada / Semana</span><strong id="gpvSeasonWeek">—</strong></div>
-        <div class="gpv-item"><span>Tipo · Tamaño</span><strong><span id="gpvType" style="display:inline;color:inherit;font-size:inherit;margin:0">—</span> · <span id="gpvSize" style="display:inline;color:inherit;font-size:inherit;margin:0">—</span></strong></div>
+
+      <div class="gpv-meta-strip">
+        <div class="gpv-meta-chip"><span>Coche</span><strong id="gpvCar">—</strong></div>
+        <div class="gpv-meta-chip"><span>Circuito</span><strong id="gpvTrack">—</strong></div>
+        <div class="gpv-meta-chip"><span>Temporada</span><strong id="gpvSeasonWeek">—</strong></div>
+        <div class="gpv-meta-chip"><span>Tipo · Tamaño</span><strong><span id="gpvType">—</span> · <span id="gpvSize">—</span></strong></div>
       </div>
-      <button type="button" id="gpvDownloadBtn" class="r-btn r-btn--primary" data-download data-id="" data-file="" data-auth="pending">Descargar .sto</button>
+
+      <div class="gpv-ir-toolbar">
+        <div id="gpvIrTabs" class="gpv-ir-tabs" role="tablist" aria-label="Secciones del setup iRacing">
+          <button type="button" role="tab" class="is-active" data-gpv-tab="all">Todo el Setup</button>
+          <button type="button" role="tab" data-gpv-tab="tires">Neumáticos (4)</button>
+          <button type="button" role="tab" data-gpv-tab="chassis">Chasis</button>
+          <button type="button" role="tab" data-gpv-tab="dampers">Amortiguadores</button>
+          <button type="button" role="tab" data-gpv-tab="aero">Aero / Frenos / Diff</button>
+          <button type="button" role="tab" data-gpv-tab="notes">Notas</button>
+        </div>
+        <input type="search" id="gpvIrSearch" class="gpv-ir-search" placeholder="Filtrar parámetro (ej. camber, pressure, wing, fuel)…" aria-label="Filtrar parámetro del setup" />
+      </div>
+
+      <div id="gpvIrBody" class="gpv-ir-body">
+        <div class="gpv-ir-loading">Cargando hoja de garage .sto…</div>
+      </div>
     </div>
   </div>
+
+  <style is:global>
+    .gpv-iracing-dialog {
+      width: min(980px, 96vw) !important;
+      max-width: 980px !important;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      padding: 0 !important;
+      overflow: hidden;
+      border-radius: 16px !important;
+      border: 1px solid var(--r-line) !important;
+      background: var(--r-bg) !important;
+    }
+    .gpv-ir-head {
+      padding: 16px 20px !important;
+      margin: 0 !important;
+      border-bottom: 1px solid var(--r-line);
+      background: var(--r-surface);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .gpv-ir-title { min-width: 0; flex: 1; }
+    .gpv-ir-kicker {
+      display: block;
+      font: 700 10.5px/1 var(--r-mono, ui-monospace, monospace);
+      letter-spacing: 0.1em;
+      color: var(--r-accent, #10b981);
+      margin-bottom: 5px;
+    }
+    .gpv-ir-title h2 {
+      margin: 0 !important;
+      font-size: 17px !important;
+      word-break: break-all;
+      color: var(--r-text);
+    }
+    .gpv-ir-head-actions { display: flex; align-items: center; gap: 10px; }
+    .gpv-meta-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1px;
+      background: var(--r-line);
+      border-bottom: 1px solid var(--r-line);
+    }
+    .gpv-meta-chip {
+      background: var(--r-bg);
+      padding: 10px 14px;
+      min-width: 0;
+    }
+    .gpv-meta-chip span {
+      display: block;
+      font: 600 10px/1 var(--r-mono, ui-monospace, monospace);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--r-muted);
+      margin-bottom: 4px;
+    }
+    .gpv-meta-chip strong {
+      display: block;
+      font-size: 13px;
+      color: var(--r-text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .gpv-ir-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 10px 16px;
+      background: var(--r-surface);
+      border-bottom: 1px solid var(--r-line);
+    }
+    .gpv-ir-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+    .gpv-ir-tabs button {
+      border: 1px solid var(--r-line);
+      background: var(--r-bg);
+      color: var(--r-muted);
+      padding: 6px 11px;
+      border-radius: 8px;
+      font: 600 12px/1 var(--r-sans, system-ui, sans-serif);
+      cursor: pointer;
+      transition: border-color .15s ease, color .15s ease, background .15s ease;
+    }
+    .gpv-ir-tabs button:hover { color: var(--r-text); border-color: var(--r-accent, #10b981); }
+    .gpv-ir-tabs button.is-active {
+      background: color-mix(in srgb, var(--r-accent, #10b981) 14%, var(--r-bg));
+      border-color: var(--r-accent, #10b981);
+      color: var(--r-accent, #10b981);
+    }
+    .gpv-ir-search {
+      min-width: 210px;
+      flex: 0 1 260px;
+      padding: 7px 11px;
+      border-radius: 8px;
+      border: 1px solid var(--r-line);
+      background: var(--r-bg);
+      color: var(--r-text);
+      font-size: 12.5px;
+    }
+    .gpv-ir-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 18px 22px;
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+    .gpv-ir-loading, .gpv-ir-empty {
+      padding: 28px 16px;
+      text-align: center;
+      color: var(--r-muted);
+      font-size: 14px;
+    }
+    .gpv-ir-notes {
+      border: 1px solid color-mix(in srgb, var(--r-accent, #10b981) 35%, var(--r-line));
+      background: color-mix(in srgb, var(--r-accent, #10b981) 6%, var(--r-surface));
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+    .gpv-ir-notes__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font: 700 11px/1 var(--r-mono, ui-monospace, monospace);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--r-accent, #10b981);
+    }
+    .gpv-ir-notes pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font: 500 13px/1.6 var(--r-mono, ui-monospace, monospace);
+      color: var(--r-text);
+    }
+    .gpv-ir-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .gpv-ir-card {
+      border: 1px solid var(--r-line);
+      border-radius: 12px;
+      background: var(--r-surface);
+      overflow: hidden;
+    }
+    .gpv-ir-card__hdr {
+      padding: 9px 13px;
+      background: color-mix(in srgb, var(--r-text) 4%, var(--r-surface));
+      border-bottom: 1px solid var(--r-line);
+      font: 700 11.5px/1 var(--r-mono, ui-monospace, monospace);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--r-accent, #10b981);
+    }
+    .gpv-ir-kv {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      padding: 7px 13px;
+      border-bottom: 1px solid color-mix(in srgb, var(--r-line) 65%, transparent);
+      font-size: 13px;
+    }
+    .gpv-ir-kv:last-child { border-bottom: 0; }
+    .gpv-ir-kv span { color: var(--r-muted); }
+    .gpv-ir-kv strong {
+      font-family: var(--r-mono, ui-monospace, monospace);
+      font-size: 12.5px;
+      color: var(--r-text);
+      text-align: right;
+    }
+    @media (max-width: 720px) {
+      .gpv-meta-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .gpv-ir-grid { grid-template-columns: 1fr; }
+      .gpv-ir-search { width: 100%; flex: 1 1 100%; }
+    }
+  </style>
 
   <script is:inline src="/assets/js/garage-list.js?v=t351" defer></script>
   <script is:inline src="/assets/js/garage-auth.js?v=t350" defer></script>
