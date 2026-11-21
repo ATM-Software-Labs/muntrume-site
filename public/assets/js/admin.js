@@ -759,7 +759,7 @@ function compressImageToDataUrl(file) {
       const img = new Image();
       img.onerror = () => reject(new Error("Archivo de imagen no válido."));
       img.onload = () => {
-        const maxDim = 1400;
+        const maxDim = 1800;
         let w = img.width;
         let h = img.height;
         if (w > maxDim || h > maxDim) {
@@ -772,7 +772,9 @@ function compressImageToDataUrl(file) {
         canvas.height = h;
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL("image/jpeg", 0.84));
+        let out = canvas.toDataURL("image/jpeg", 0.90);
+        if (out.length > 820000) out = canvas.toDataURL("image/jpeg", 0.80);
+        resolve(out);
       };
       img.src = reader.result;
     };
@@ -808,8 +810,8 @@ async function analyzeG61Screenshot() {
   const btn = document.getElementById("umG61AnalyzeBtn");
   const msg = document.getElementById("umG61StatusMsg");
   const kind = document.getElementById("umG61Kind")?.value || "auto";
-  if (btn) { btn.disabled = true; btn.textContent = "⏳ Leyendo con IA…"; }
-  if (msg) msg.textContent = "Analizando tabla de Garage 61 / iRacing con Visión IA…";
+  if (btn) { btn.disabled = true; btn.textContent = "Leyendo con IA…"; }
+  if (msg) msg.textContent = "Analizando gráfico o tabla de Garage 61 / iRacing con Visión IA…";
 
   try {
     const data = await rcAdminFetch("/api/setups/admin/driver/parse-g61-image", {
@@ -825,12 +827,12 @@ async function analyzeG61Screenshot() {
     if (Array.isArray(data.top_tracks) && data.top_tracks.length > 0) {
       umState.topTracks = data.top_tracks;
       foundSummary.push(`${data.top_tracks.length} circuitos`);
-      const sumHours = Number(data.top_tracks.reduce((a, t) => a + (Number(t.hours) || 0), 0).toFixed(1));
-      const hoursEl = document.getElementById("umTotalHours");
-      if (hoursEl && sumHours > 0) hoursEl.value = String(sumHours);
       const favEl = document.getElementById("umFavoriteTrack");
       if (favEl && data.top_tracks[0]?.name) favEl.value = data.top_tracks[0].name;
     }
+    const inferredHours = Number(data.total_track_hours) || 0;
+    const hoursEl = document.getElementById("umTotalHours");
+    if (hoursEl && inferredHours > 0) hoursEl.value = String(inferredHours);
     if (Array.isArray(data.licenses) && data.licenses.length > 0) {
       data.licenses.forEach((l) => {
         const clsEl = document.getElementById(`umLicClass-${l.category}`);
@@ -856,7 +858,7 @@ async function analyzeG61Screenshot() {
     if (msg) msg.textContent = err?.message || "Error al analizar la imagen.";
     showRcNotice("No se pudo leer la foto", err?.message || "Prueba con un recorte más nítido.", "warn");
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = "✨ Analizar y recalcular"; }
+    if (btn) { btn.disabled = false; btn.textContent = "Analizar y recalcular"; }
   }
 }
 
