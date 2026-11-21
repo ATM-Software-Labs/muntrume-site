@@ -63,16 +63,30 @@ import Layout from '../layouts/Layout.astro';
 
         <!-- METHOD TABS -->
         <div class="mm-login-tabs" role="tablist">
-          <button type="button" class="mm-login-tab is-active" data-auth-tab="password" role="tab" aria-selected="true">Contraseña</button>
-          <button type="button" class="mm-login-tab" data-auth-tab="code" role="tab" aria-selected="false">Código email</button>
-          <button type="button" class="mm-login-tab" data-auth-tab="otp" role="tab" aria-selected="false">MFA Open Source</button>
+          <button type="button" class="mm-login-tab is-active" data-auth-tab="totp" role="tab" aria-selected="true">Authenticator</button>
+          <button type="button" class="mm-login-tab" data-auth-tab="code" role="tab" aria-selected="false">Email</button>
+          <button type="button" class="mm-login-tab" data-auth-tab="otp" role="tab" aria-selected="false">MFA OSS</button>
+          <button type="button" class="mm-login-tab" data-auth-tab="password" role="tab" aria-selected="false">Contraseña</button>
         </div>
 
         <!-- STATUS / ERROR BANNER -->
         <div id="loginStatus" class="mm-login-alert" hidden role="status" aria-live="polite"></div>
 
-        <!-- TAB 1: PASSWORD -->
-        <form id="formPassword" class="mm-login-form" data-auth-panel="password" novalidate>
+        <!-- TAB 1: AUTHENTICATOR (TOTP PASSWORDLESS) -->
+        <form id="formTotp" class="mm-login-form" data-auth-panel="totp" novalidate>
+          <label class="mm-field">
+            <span>Correo electrónico autorizado</span>
+            <input type="email" id="totpEmail" autocomplete="username" placeholder="piloto@muntru.me" required />
+          </label>
+          <label class="mm-field">
+            <span>Código de 6 dígitos (o código de recuperación XXXX-XXXX)</span>
+            <input type="text" id="totpCode" inputmode="text" maxlength="12" autocomplete="one-time-code" placeholder="123456" required />
+          </label>
+          <button type="submit" id="btnSubmitTotp" class="mm-btn-submit">Entrar sin contraseña con Authenticator</button>
+        </form>
+
+        <!-- TAB 2: PASSWORD -->
+        <form id="formPassword" class="mm-login-form" data-auth-panel="password" hidden novalidate>
           <label class="mm-field">
             <span>Correo electrónico</span>
             <input type="email" id="pwEmail" name="email" autocomplete="username webauthn" placeholder="piloto@muntru.me" required />
@@ -119,8 +133,8 @@ import Layout from '../layouts/Layout.astro';
             <select id="otpChannel">
               <option value="ntfy">ntfy.sh (Notificación push móvil)</option>
               <option value="discord">Discord DM (Bot oficial MMT)</option>
-              <option value="sms">Android SMS Gateway (SMS propio)</option>
-              <option value="whatsapp">WhatsApp self-hosted (Evolution / WAHA)</option>
+              <option value="sms_gateway">Android SMS Gateway (SMS propio)</option>
+              <option value="whatsapp_oss">WhatsApp self-hosted (Evolution / WAHA)</option>
             </select>
           </label>
           <div id="otpStepVerify" hidden>
@@ -227,6 +241,27 @@ import Layout from '../layouts/Layout.astro';
           var show = pwPass.type === "password";
           pwPass.type = show ? "text" : "password";
           btnTogglePw.textContent = show ? "Ocultar" : "Ver";
+        });
+      }
+
+      // Authenticator (TOTP passwordless)
+      var formTotp = document.getElementById("formTotp");
+      if (formTotp) {
+        formTotp.addEventListener("submit", async function (e) {
+          e.preventDefault();
+          var email = (document.getElementById("totpEmail").value || "").trim();
+          var code = (document.getElementById("totpCode").value || "").trim();
+          if (!email || !code) { setStatus("Introduce tu correo y el código de 6 dígitos.", "error"); return; }
+          var btn = document.getElementById("btnSubmitTotp");
+          btn.disabled = true;
+          setStatus("Verificando código Authenticator…", "info");
+          try {
+            var data = await postJson("/api/auth/mfa/totp/login", { email: email, code: code });
+            saveSessionAndGo(data);
+          } catch (err) {
+            setStatus(err.message || "Código Authenticator inválido.", "error");
+            btn.disabled = false;
+          }
         });
       }
 
@@ -354,7 +389,7 @@ import Layout from '../layouts/Layout.astro';
             setStatus("Este navegador no soporta Passkeys WebAuthn.", "error");
             return;
           }
-          var email = (document.getElementById("pwEmail").value || "").trim();
+          var email = (document.getElementById("totpEmail").value || document.getElementById("pwEmail").value || "").trim();
           btnPk.disabled = true;
           setStatus("Esperando confirmación biométrica o llave de seguridad…", "info");
           try {
@@ -369,16 +404,10 @@ import Layout from '../layouts/Layout.astro';
             var cred = await navigator.credentials.get({ publicKey: pk });
             if (!cred) throw new Error("Autenticación cancelada.");
             var payload = {
-              email: email || undefined,
-              id: cred.id,
-              rawId: bytesToB64u(cred.rawId),
-              type: cred.type,
-              response: {
-                clientDataJSON: bytesToB64u(cred.response.clientDataJSON),
-                authenticatorData: bytesToB64u(cred.response.authenticatorData),
-                signature: bytesToB64u(cred.response.signature),
-                userHandle: cred.response.userHandle ? bytesToB64u(cred.response.userHandle) : null
-              }
+              credential_id: cred.id,
+              authenticator_data: bytesToB64u(cred.response.authenticatorData),
+              client_data_json: bytesToB64u(cred.response.clientDataJSON),
+              signature: bytesToB64u(cred.response.signature)
             };
             var data = await postJson("/api/auth/passkey/login/verify", payload);
             saveSessionAndGo(data);
@@ -554,7 +583,7 @@ import Layout from '../layouts/Layout.astro';
 
   .mm-login-tabs {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 4px;
     padding: 4px;
     border-radius: 11px;
