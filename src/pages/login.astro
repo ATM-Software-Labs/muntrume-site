@@ -201,7 +201,13 @@ import Layout from '../layouts/Layout.astro';
           }
         } catch (e) {}
         setStatus("Sesión verificada. Redirigiendo…", "ok");
-        setTimeout(function () { location.href = nextUrl; }, 350);
+        var target = nextUrl;
+        if (/^https:\/\/ai\.muntru\.me(\/|$)/i.test(target)) {
+          var uEnc = "";
+          try { if (data.user) uEnc = "&mm_user=" + encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(data.user))))); } catch (e) {}
+          target = target.split("#")[0] + "#mm_auth=" + encodeURIComponent(data.token) + uEnc;
+        }
+        setTimeout(function () { location.href = target; }, 350);
       }
 
       async function postJson(path, body) {

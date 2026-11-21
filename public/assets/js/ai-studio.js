@@ -2602,7 +2602,25 @@
         if (pkBtn) { pkBtn.disabled = false; pkBtn.textContent = "Entrar con Passkey"; }
       }
     });
+    // Cross-subdomain session handoff from muntru.me/login/ via URL hash (never sent to servers)
+    try {
+      if (location.hash && location.hash.includes("mm_auth=")) {
+        const hp = new URLSearchParams(location.hash.slice(1));
+        const tk = hp.get("mm_auth");
+        const ub = hp.get("mm_user");
+        if (tk) {
+          localStorage.setItem("mrt_vault_token", tk);
+          localStorage.setItem("mm_token", tk);
+          if (ub) {
+            try { localStorage.setItem("mrt_vault_user", decodeURIComponent(escape(atob(ub)))); } catch {}
+          }
+          history.replaceState(null, "", location.pathname + location.search);
+        }
+      }
+    } catch {}
+
     $("aiGateLoginBtn")?.addEventListener("click", () => {
+      if ($("aiTeamGate")) $("aiTeamGate").hidden = true;
       openModal("aiLoginModal");
       $("aiLoginEmail")?.focus();
     });
