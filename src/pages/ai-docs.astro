@@ -1,0 +1,199 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const pageTitle = "Documentación de Muntrume AI · Arquitectura, Artefactos y API | Muntrume Motorsport";
+const pageDescription = "Documentación técnica oficial de Muntrume AI (ai.muntru.me): asistente 100 % Open Source (MIT) de Muntrume Motorsport con motores Lite/Pro/Ultra Max, Artifacts Studio (HTML, SVG, Mermaid, Slides, CSV, DOC/PDF), visión por imagen y API SSE.";
+
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    headline: "Documentación oficial de Muntrume AI (ai.muntru.me)",
+    description: pageDescription,
+    url: "https://muntru.me/ai-docs/",
+    inLanguage: "es",
+    author: { "@type": "Organization", name: "Muntrume Motorsport", url: "https://muntru.me/" },
+    publisher: { "@type": "Organization", name: "Muntrume Motorsport", url: "https://muntru.me/" },
+    about: {
+      "@type": "SoftwareApplication",
+      name: "Muntrume AI",
+      url: "https://ai.muntru.me/",
+      applicationCategory: "DeveloperApplication",
+      operatingSystem: "Web",
+      isAccessibleForFree: true,
+      license: "https://opensource.org/licenses/MIT",
+    },
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: "¿Qué es Muntrume AI y cómo funciona?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Muntrume AI (ai.muntru.me) es un estudio de inteligencia artificial 100 % Open Source bajo licencia MIT desarrollado por Muntrume Motorsport en Barcelona. Combina enrutamiento inteligente en Cloudflare Workers, skills de ingeniería iRacing/software, visión por imagen y un Artifacts Studio en pantalla dividida para ejecutar y publicar aplicaciones HTML, diagramas SVG/Mermaid, presentaciones 16:9, hojas CSV y documentos exportables a DOC y PDF.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "¿Qué tipos de artefactos soporta Muntrume AI Studio?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Soporta aplicaciones web HTML/CSS/JS interactivas en sandbox, gráficos vectoriales SVG, diagramas de flujo Mermaid, presentaciones navegables 16:9 (slides), tablas CSV descargables, documentos técnicos exportables a Word (.doc), PDF y Markdown, y bloques de código con resaltado sintáctico. Cualquier piloto autenticado puede publicarlos con URL permanente en ai.muntru.me/a/<slug>.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "¿Cómo pueden las IAs externas y buscadores indexar Muntrume AI?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Muntrume publica documentación estructurada en https://muntru.me/ai-docs/, https://ai.muntru.me/docs/, https://muntru.me/llms.txt y https://muntru.me/llms-full.txt, con marcado Schema.org JSON-LD (SoftwareApplication, TechArticle, CreativeWork) y permiso explícito en robots.txt para rastreadores de buscadores e IAs.",
+        },
+      },
+    ],
+  },
+];
+---
+
+<Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/ai-docs/">
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+  <main class="aidocs">
+    <header class="aidocs__hero">
+      <div class="aidocs__eyebrow">MUNTRUME AI · DOCUMENTACIÓN OFICIAL (OPEN SOURCE · MIT)</div>
+      <h1>Cómo funciona Muntrume AI</h1>
+      <p class="aidocs__lead">
+        Referencia técnica pública de <strong>Muntrume AI Studio</strong> (<a href="https://ai.muntru.me/">ai.muntru.me</a>), el asistente técnico y estudio de artefactos interactivos desarrollado por <strong>Muntrume Motorsport</strong> en Barcelona. Diseñada tanto para pilotos y desarrolladores como para motores de búsqueda e IAs externas.
+      </p>
+      <div class="aidocs__cta">
+        <a href="https://ai.muntru.me/" class="aidocs__btn aidocs__btn--primary">Abrir Muntrume AI Studio →</a>
+        <a href="/llms.txt" class="aidocs__btn">llms.txt</a>
+        <a href="/llms-full.txt" class="aidocs__btn">llms-full.txt</a>
+        <a href="https://github.com/ATM-Software-Labs/muntrume-site" target="_blank" rel="noopener noreferrer" class="aidocs__btn">GitHub (MIT)</a>
+      </div>
+    </header>
+
+    <section class="aidocs__section" id="arquitectura">
+      <h2>1. Arquitectura y motores (Muntrume 1.0)</h2>
+      <p>
+        Muntrume AI opera sobre una arquitectura edge sin servidor en <strong>Cloudflare Workers</strong> con base de datos <strong>Cloudflare D1</strong>, almacenamiento de artefactos publicados y streaming progresivo vía Server-Sent Events (SSE). El enrutador selecciona automáticamente el perfil de inferencia según el nivel elegido por el usuario:
+      </p>
+      <div class="aidocs__table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Motor</th>
+              <th>Tier API</th>
+              <th>Uso recomendado</th>
+              <th>Capacidades clave</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Muntrume 1.0 Lite</strong></td>
+              <td><code>lite</code></td>
+              <td>Consultas rápidas en boxes, dudas cortas y traducciones</td>
+              <td>Latencia ultrabaja, respuestas directas hasta 900 tokens</td>
+            </tr>
+            <tr>
+              <td><strong>Muntrume 1.0 Pro</strong></td>
+              <td><code>pro</code></td>
+              <td>Ingeniería de setups iRacing, desarrollo web, tablas y artefactos</td>
+              <td>Balance velocidad/precisión, generación de artefactos hasta 3.400 tokens</td>
+            </tr>
+            <tr>
+              <td><strong>Muntrume 1.0 Ultra Max</strong></td>
+              <td><code>ultra_max</code></td>
+              <td>Estrategia de resistencia 24h, arquitectura de software y análisis profundo</td>
+              <td>Razonamiento paso a paso visible y contexto extendido</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="aidocs__section" id="skills">
+      <h2>2. Skills especializadas</h2>
+      <ul>
+        <li><code>setup</code> — <strong>Ingeniero de Setups iRacing</strong>: diagnóstico de balance aerodinámico, barras estabilizadoras (ARB), precarga de diferencial, amortiguadores, presiones en caliente y reparto de frenada para GT3, GTP, LMP2 y Porsche Cup.</li>
+        <li><code>strategy</code> — <strong>Estrategia de Resistencia</strong>: cálculo de consumo por vuelta, stints por depósito, ventanas de pit stop, doble stint de neumáticos y relevos de piloto.</li>
+        <li><code>code</code> — <strong>Código y Artefacto Live</strong>: generación de aplicaciones web autocontenidas en bloques <code>```html</code>, gráficos <code>```svg</code> y diagramas <code>```mermaid</code> previsualizables al instante.</li>
+        <li><code>slides</code> — <strong>Presentaciones 16:9</strong>: genera decks navegables con teclado separados por <code>---</code> dentro de <code>```slides</code>.</li>
+        <li><code>doc</code> — <strong>Documentos Técnicos</strong>: informes con encabezados, tablas y checklists listos para exportar a Word (<code>.doc</code>), PDF o Markdown (<code>.md</code>).</li>
+      </ul>
+    </section>
+
+    <section class="aidocs__section" id="artefactos">
+      <h2>3. Artifacts Studio y publicación en ai.muntru.me</h2>
+      <p>
+        Cuando Muntrume AI genera un bloque interactivo, el panel lateral <strong>Artifacts Studio</strong> lo renderiza en tiempo real dentro de un iframe aislado (<code>sandbox="allow-scripts allow-forms allow-downloads"</code>) con las siguientes funciones:
+      </p>
+      <ul>
+        <li><strong>Formatos nativos</strong>: <code>html</code>, <code>svg</code>, <code>mermaid</code>, <code>slides</code> (presentación 16:9), <code>csv</code> (tabla interactiva), <code>doc</code> (Markdown enriquecido) y <code>code</code>.</li>
+        <li><strong>Vista previa responsive</strong>: selector instantáneo de viewport <strong>PC (100 %)</strong>, <strong>Tablet (768 px)</strong> y <strong>Móvil (390 px)</strong>, botón de recarga y modo pantalla completa.</li>
+        <li><strong>Edición en vivo e iteración con IA</strong>: editor de código integrado con recarga automática y botón <em>Mejorar con IA</em> para iterar sobre el artefacto actual.</li>
+        <li><strong>Exportación multi-formato</strong>: descarga directa en <code>.html</code>, <code>.svg</code>, <code>.mmd</code>, <code>.csv</code>, <code>.doc</code> (Word), impresión a <code>PDF</code> y <code>.md</code>.</li>
+        <li><strong>Publicación permanente en D1</strong>: los pilotos autenticados pueden publicar cualquier artefacto con URL corta permanente en <code>https://ai.muntru.me/a/&lt;slug&gt;</code>, vista cruda en <code>/a/&lt;slug&gt;/raw</code> y perfil público de autor en <code>https://ai.muntru.me/u/&lt;handle&gt;</code>, con control de visibilidad público/privado.</li>
+      </ul>
+    </section>
+
+    <section class="aidocs__section" id="api">
+      <h2>4. Referencia de API pública (<code>POST /api/ai</code>)</h2>
+      <p>
+        El endpoint principal responde en <code>https://ai.muntru.me/api/ai</code> (y <code>https://muntrume.atrumin16.workers.dev/api/ai</code>) aceptando JSON y devolviendo JSON o streaming SSE (<code>text/event-stream</code>):
+      </p>
+      <pre><code>{`POST https://ai.muntru.me/api/ai
+Content-Type: application/json
+
+{
+  "prompt": "Calcula estrategia de combustible para 6h de Spa en GT3 (2.95 L/vuelta, 2:17.5)",
+  "tier": "pro",
+  "mode": "team",
+  "skill": "strategy",
+  "lang": "es",
+  "web_search": false,
+  "stream": true
+}`}</code></pre>
+      <p>
+        También admite análisis visual pasando <code>image</code> (Data URL base64 PNG/JPG/WebP), contexto de repositorio con <code>github_url</code>, archivos adjuntos de texto (<code>attachment_text</code>) e historial conversacional (<code>chat_history</code>).
+      </p>
+    </section>
+
+    <section class="aidocs__section" id="indexacion">
+      <h2>5. Descubrimiento para buscadores e IAs externas</h2>
+      <ul>
+        <li><strong>Resumen LLM estándar</strong>: <a href="https://muntru.me/llms.txt">https://muntru.me/llms.txt</a> y <a href="https://ai.muntru.me/llms.txt">https://ai.muntru.me/llms.txt</a></li>
+        <li><strong>Documentación LLM extendida</strong>: <a href="https://muntru.me/llms-full.txt">https://muntru.me/llms-full.txt</a></li>
+        <li><strong>Mapa del sitio XML</strong>: <a href="https://muntru.me/sitemap.xml">https://muntru.me/sitemap.xml</a></li>
+        <li><strong>Política de rastreo</strong>: <a href="https://muntru.me/robots.txt">https://muntru.me/robots.txt</a> (permite explícitamente Googlebot, GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot y Google-Extended).</li>
+      </ul>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .aidocs { max-width: 880px; margin: 0 auto; padding: 108px 22px 84px; color: var(--r-text, #f3f5f8); }
+  .aidocs__hero { margin-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,.1); padding-bottom: 28px; }
+  .aidocs__eyebrow { font: 700 11px/1 ui-monospace, monospace; letter-spacing: .12em; color: #10b981; margin-bottom: 10px; }
+  .aidocs h1 { font-size: clamp(28px, 4vw, 42px); line-height: 1.12; margin: 0 0 14px; letter-spacing: -.02em; }
+  .aidocs__lead { font-size: 16.5px; line-height: 1.65; color: var(--r-muted, #9aa4b2); margin: 0 0 22px; }
+  .aidocs__lead a { color: #10b981; text-decoration: none; }
+  .aidocs__cta { display: flex; flex-wrap: wrap; gap: 10px; }
+  .aidocs__btn { display: inline-flex; align-items: center; padding: 9px 15px; border-radius: 999px; font-size: 13px; font-weight: 600; text-decoration: none; border: 1px solid rgba(255,255,255,.14); color: inherit; background: rgba(255,255,255,.03); }
+  .aidocs__btn:hover { border-color: #10b981; }
+  .aidocs__btn--primary { background: #10b981; color: #04130d; border-color: #10b981; }
+  .aidocs__section { margin-top: 34px; }
+  .aidocs__section h2 { font-size: 21px; margin: 0 0 12px; color: var(--r-text, #fff); }
+  .aidocs__section p, .aidocs__section li { font-size: 15px; line-height: 1.68; color: var(--r-muted, #b9c2cf); }
+  .aidocs__section ul { padding-left: 20px; display: grid; gap: 8px; }
+  .aidocs__section a { color: #10b981; }
+  .aidocs code { font-family: ui-monospace, Consolas, monospace; font-size: .88em; padding: 2px 6px; border-radius: 5px; background: rgba(16,185,129,.12); color: #34d399; }
+  .aidocs pre { background: #0c0e12; border: 1px solid rgba(255,255,255,.1); border-radius: 12px; padding: 16px; overflow-x: auto; margin: 14px 0; }
+  .aidocs pre code { background: transparent; padding: 0; color: #e5e7eb; font-size: 13px; line-height: 1.55; }
+  .aidocs__table-wrap { overflow-x: auto; border: 1px solid rgba(255,255,255,.1); border-radius: 12px; margin: 14px 0; }
+  .aidocs table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .aidocs th, .aidocs td { padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,.08); text-align: left; }
+  .aidocs th { background: rgba(255,255,255,.04); color: #10b981; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+</style>

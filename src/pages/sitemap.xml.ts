@@ -16,6 +16,8 @@ export const GET: APIRoute = async () => {
     { path: "/noticias/", priority: "0.8", changefreq: "daily" },
     { path: "/tracks/", priority: "0.8", changefreq: "weekly" },
     { path: "/app/", priority: "0.9", changefreq: "weekly" },
+    { path: "/ai/", priority: "0.95", changefreq: "daily" },
+    { path: "/ai-docs/", priority: "0.9", changefreq: "weekly" },
   ];
 
   const carRoutes = getProgrammaticSetupCars().map((car) => ({

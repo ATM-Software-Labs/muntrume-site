@@ -31,7 +31,20 @@ Muntrume Motorsport (MMT) is a competitive sim racing team and sim racing engine
 ## 5. Cars & Brands Technical Directory
 - **Coverage**: 108 iRacing cars grouped by manufacturer (`/porsche/`, `/ferrari/`, `/bmw/`, `/aston-martin/`, `/mercedes-amg/`, `/audi/`, `/mclaren/`, `/lamborghini/`, `/acura/`, `/cadillac/`, `/chevrolet/`, `/ford/`, `/dallara/`, `/ligier/`, `/lotus/`, `/mazda/`, `/toyota/`, etc.) with individual `/car/<id>/` pages, official PDF user manuals, and setup counts.
 
-## 6. Telemetry, AI Copilot & Paddock
-- **Garage 61 Telemetry**: Team telemetry team at `https://garage61.net/app/teams/muntrume-motorsport` and MTI (Muntrume Telemetry Index).
-- **AI Race Engineer (`/ai/`)**: Sim racing AI copilot for setup balance diagnosis, tyre pressure/camber tuning, and endurance stint strategy.
+## 6. Muntrume AI Studio (`ai.muntru.me`) — Open Source (MIT)
+- **Web App**: https://ai.muntru.me/ (mirrored at https://muntru.me/ai/)
+- **Public Technical Docs**: https://muntru.me/ai-docs/ (mirrored at https://ai.muntru.me/docs/)
+- **License**: 100% Open Source (MIT License)
+- **Inference Tiers**:
+  - `lite` (**Muntrume 1.0 Lite**): ultra-low latency pit-lane answers and quick lookups.
+  - `pro` (**Muntrume 1.0 Pro**): balanced engineering, code generation, tables, and interactive artifacts.
+  - `ultra_max` (**Muntrume 1.0 Ultra Max**): deep endurance race strategy, architecture, and visible step-by-step reasoning.
+- **Specialized Skills**: `setup` (iRacing setup/telemetry engineer), `strategy` (fuel/stint/pit windows), `code` (live HTML/SVG/Mermaid artifacts), `slides` (16:9 interactive presentations), `doc` (executive reports exportable to `.doc`/PDF/Markdown).
+- **Artifacts Studio**:
+  - Live sandboxed preview (`html`, `svg`, `mermaid`, `slides`, `csv`, `doc`, `code`) with responsive viewport switcher (Desktop, Tablet 768px, Mobile 390px), fullscreen mode, live code editor, and AI iteration.
+  - Profile-scoped permanent publishing to `https://ai.muntru.me/a/<slug>`, raw source at `/a/<slug>/raw`, and public creator profiles at `https://ai.muntru.me/u/<handle>`.
+- **API Endpoint**: `POST https://ai.muntru.me/api/ai` (accepts `prompt`, `tier`, `mode`, `skill`, `lang`, `stream`, `image`, `github_url`, `web_search`, `chat_history`; returns JSON or SSE `text/event-stream`).
+
+## 7. Telemetry & Paddock
+- **Garage 61 Telemetry**: Team telemetry hub at `https://garage61.net/app/teams/muntrume-motorsport` and MTI (Muntrume Telemetry Index).
 - **Paddock (`/paddock/`)**: Race radio, live telemetry desk, official photo gallery, and driver tryout intake.

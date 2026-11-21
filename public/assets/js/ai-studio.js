@@ -176,7 +176,7 @@
     });
   }
 
-  function inlineFmt(raw) {
+  function inlineFmt(raw, opts = {}) {
     const tokens = [];
     const stash = (html) => {
       const idx = tokens.length;
@@ -185,6 +185,13 @@
     };
 
     let s = String(raw || "");
+    if (opts.streaming) {
+      // Stabilize unclosed inline code or bold markers at the streaming tail
+      const ticks = (s.match(/`/g) || []).length;
+      if (ticks % 2 === 1) s += "`";
+      const bolds = (s.match(/\*\*/g) || []).length;
+      if (bolds % 2 === 1) s += "**";
+    }
 
     // 1. Inline code first (immune to inner markdown)
     s = s.replace(/`([^`\n]+)`/g, (_, code) => stash(`<code>${esc(code)}</code>`));
@@ -229,10 +236,10 @@
       return `${pre}${stash(`<a href="${esc(safeUrl)}" target="_blank" rel="noopener noreferrer">${esc(clean)}</a>`)}${trail}`;
     });
 
-    // 6. Emphasis & strikethrough (safe against snake_case identifiers and 2.95 * 33 multiplication)
+    // 6. Emphasis & strikethrough (tolerant with tokens/punctuation, safe against snake_case and 2 * 3)
     s = s
-      .replace(/\*\*\*([^\s*](?:[^*\n]*?[^\s*])?)\*\*\*/g, "<strong><em>$1</em></strong>")
-      .replace(/\*\*([^\s*](?:[^*\n]*?[^\s*])?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\*\*\*([^\n]+?)\*\*\*/g, (_, inner) => (inner.trim() ? `<strong><em>${inner.trim()}</em></strong>` : _))
+      .replace(/\*\*([^\n]+?)\*\*/g, (_, inner) => (inner.trim() ? `<strong>${inner.trim()}</strong>` : _))
       .replace(/(^|[^\w_])__([^\s_](?:[^_\n]*?[^\s_])?)__(?=$|[^\w_])/g, "$1<strong>$2</strong>")
       .replace(/~~([^\s~](?:[^~\n]*?[^\s~])?)~~/g, "<del>$1</del>")
       .replace(/(^|[^\w*])\*([^\s*](?:[^*\n]*?[^\s*])?)\*(?!\*)/g, "$1<em>$2</em>")
@@ -263,10 +270,10 @@
   }
 
   function isTableSeparator(line) {
-    const t = String(line || "").trim();
-    if (!t.includes("|") && !/^:?\s*-+\s*:?$/.test(t)) return false;
+    const t = String(line || "").trim().replace(/[—–]/g, "-");
+    if (!t.includes("|")) return false;
     const cells = splitTableRow(t);
-    return cells.length >= 2 && cells.every((c) => /^:?\s*-{1,}\s*:?$/.test(c));
+    return cells.length >= 1 && cells.every((c) => /^:?\s*-{1,}\s*:?$/.test(c));
   }
 
   function renderTableCard(headers, aligns, rows) {
@@ -304,7 +311,7 @@
 
   function extractArtifactsFromMarkdown(md) {
     const found = [];
-    const re = /```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g;
+    const re = /```([a-zA-Z0-9_+-]*)[^\n]*\n([\s\S]*?)```/g;
     let m, idx = 0;
     while ((m = re.exec(String(md || ""))) !== null) {
       const lang = (m[1] || "text").toLowerCase();
@@ -312,10 +319,12 @@
       if (!code) continue;
       idx++;
       if (lang === "html" || lang === "htm") {
-        const tm = code.match(/<title>([^<]{1,60})<\/title>/i);
+        const tm = code.match(/<title>([^<]{1,60})<\/title>/i) || code.match(/<h1[^>]*>([^<]{1,60})<\/h1>/i);
         found.push({ id: `art_${Date.now()}_${idx}`, type: "html", lang, title: tm ? tm[1].trim() : "Aplicación HTML interactiva", code });
       } else if (lang === "svg") {
         found.push({ id: `art_${Date.now()}_${idx}`, type: "svg", lang, title: "Diagrama vectorial SVG", code });
+      } else if (lang === "mermaid") {
+        found.push({ id: `art_${Date.now()}_${idx}`, type: "mermaid", lang, title: "Diagrama de flujo Mermaid", code });
       } else if (lang === "slides") {
         const hm = code.match(/^#\s+(.+)$/m);
         found.push({ id: `art_${Date.now()}_${idx}`, type: "slides", lang, title: hm ? hm[1].trim().slice(0, 56) : "Presentación 16:9", code });
@@ -370,17 +379,17 @@
     const blocks = [];
 
     // 4-backtick outer fenced code blocks first (protects nested ``` blocks)
-    text = text.replace(/````([a-zA-Z0-9_+-]*)[ \t]*\n([\s\S]*?)````/g, (_, lang, code) => {
+    text = text.replace(/````([a-zA-Z0-9_+-]*)[^\n]*\n([\s\S]*?)````/g, (_, lang, code) => {
       const i = blocks.length;
       blocks.push({ kind: "code", lang: (lang || "markdown").toLowerCase(), code: code.replace(/\n$/, ""), closed: true });
-      return `\n@@BLOCK_${i}@@\n`;
+      return `\n\n@@BLOCK_${i}@@\n\n`;
     });
 
-    // Closed 3-backtick fenced code blocks
-    text = text.replace(/```([a-zA-Z0-9_+-]*)[ \t]*\n([\s\S]*?)```/g, (_, lang, code) => {
+    // Closed 3-backtick fenced code blocks (supports optional info attributes & leading indent)
+    text = text.replace(/```([a-zA-Z0-9_+-]*)[^\n]*\n([\s\S]*?)```/g, (_, lang, code) => {
       const i = blocks.length;
       blocks.push({ kind: "code", lang: (lang || "text").toLowerCase(), code: code.replace(/\n$/, ""), closed: true });
-      return `\n@@BLOCK_${i}@@\n`;
+      return `\n\n@@BLOCK_${i}@@\n\n`;
     });
 
     // Unclosed fenced code block (during live streaming)
@@ -450,11 +459,15 @@
         continue;
       }
 
-      // Headings H1 - H4 (strip optional trailing #)
-      if (/^####\s+/.test(trim)) { out.push(`<h4>${inlineFmt(trim.replace(/^####\s+/, "").replace(/\s+#+$/, ""))}</h4>`); i++; continue; }
-      if (/^###\s+/.test(trim)) { out.push(`<h3>${inlineFmt(trim.replace(/^###\s+/, "").replace(/\s+#+$/, ""))}</h3>`); i++; continue; }
-      if (/^##\s+/.test(trim)) { out.push(`<h2>${inlineFmt(trim.replace(/^##\s+/, "").replace(/\s+#+$/, ""))}</h2>`); i++; continue; }
-      if (/^#\s+/.test(trim)) { out.push(`<h1>${inlineFmt(trim.replace(/^#\s+/, "").replace(/\s+#+$/, ""))}</h1>`); i++; continue; }
+      // Headings H1 - H6 (strip optional trailing #, tolerate missing space)
+      const hMatch = trim.match(/^(#{1,6})\s*([^\s#][\s\S]*)$/);
+      if (hMatch) {
+        const lvl = hMatch[1].length;
+        const hText = hMatch[2].replace(/\s+#+$/, "");
+        out.push(`<h${lvl}>${inlineFmt(hText, opts)}</h${lvl}>`);
+        i++;
+        continue;
+      }
 
       // GFM Table
       if (trim.includes("|") && i + 1 < lines.length && isTableSeparator(lines[i + 1])) {
@@ -547,12 +560,18 @@
         continue;
       }
 
-      // Ordered list
+      // Ordered list (supports nested sub-bullets without resetting numbering)
       if (/^\d+[.)]\s+/.test(trim)) {
         const items = [];
-        while (i < lines.length && /^\s*\d+[.)]\s+/.test(lines[i])) {
-          const itemText = inlineFmt(lines[i].trim().replace(/^\d+[.)]\s+/, ""));
-          items.push(`<li>${itemText}</li>`);
+        while (i < lines.length && (/^\s*\d+[.)]\s+/.test(lines[i]) || (/^\s{2,}[-*+]\s+/.test(lines[i]) && items.length > 0))) {
+          const rawLine = lines[i];
+          if (/^\s{2,}[-*+]\s+/.test(rawLine) && items.length > 0) {
+            const subText = inlineFmt(rawLine.trim().replace(/^[-*+]\s+/, ""), opts);
+            items[items.length - 1] = items[items.length - 1].replace(/<\/li>$/, `<ul><li>${subText}</li></ul></li>`);
+          } else {
+            const itemText = inlineFmt(rawLine.trim().replace(/^\d+[.)]\s+/, ""), opts);
+            items.push(`<li>${itemText}</li>`);
+          }
           i++;
         }
         out.push(`<ol>${items.join("")}</ol>`);
@@ -565,13 +584,13 @@
       while (
         i < lines.length &&
         lines[i].trim() &&
-        !/^(?:#{1,4}\s+|>\s?|[-*+]\s+|\d+[.)]\s+|@@BLOCK_\d+@@$|(?:-{3,}|\*{3,}|_{3,})$)/.test(lines[i].trim()) &&
+        !/^(?:#{1,6}\s*|>\s?|[-*+]\s+|\d+[.)]\s+|@@BLOCK_\d+@@$|(?:-{3,}|\*{3,}|_{3,})$)/.test(lines[i].trim()) &&
         !(lines[i].includes("|") && i + 1 < lines.length && isTableSeparator(lines[i + 1]))
       ) {
         pLines.push(lines[i]);
         i++;
       }
-      out.push(`<p>${pLines.map((pl) => inlineFmt(pl)).join("<br />")}</p>`);
+      out.push(`<p>${pLines.map((pl) => inlineFmt(pl, opts)).join("<br />")}</p>`);
     }
 
     let html = out.join("\n");
@@ -587,7 +606,7 @@
           return renderTableCard(parsed[0], parsed[0].map(() => "left"), parsed.slice(1));
         }
       }
-      const isPreviewable = b.lang === "html" || b.lang === "htm" || b.lang === "svg" || b.lang === "slides";
+      const isPreviewable = b.lang === "html" || b.lang === "htm" || b.lang === "svg" || b.lang === "slides" || b.lang === "mermaid";
       const encoded = encodeURIComponent(b.code);
       const lineCount = b.code ? b.code.split("\n").length : 0;
       const highlighted = highlightCode(b.code, b.lang);
@@ -1297,6 +1316,8 @@
         : `<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;padding:20px;font-family:system-ui,sans-serif;background:#111317;color:#f3f5f8}</style></head><body>${artifact.code}</body></html>`;
     } else if (artifact.type === "svg") {
       srcDoc = `<!doctype html><html><body style="margin:0;min-height:100vh;display:grid;place-items:center;background:#111317;padding:24px">${artifact.code}</body></html>`;
+    } else if (artifact.type === "mermaid") {
+      srcDoc = `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0f1114;color:#f3f5f8;font-family:system-ui,sans-serif;padding:24px}.mermaid{max-width:100%}</style><script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script></head><body><pre class="mermaid">${esc(artifact.code)}</pre><script>mermaid.initialize({startOnLoad:true,theme:'dark',securityLevel:'strict'});</script></body></html>`;
     } else if (artifact.type === "slides") {
       srcDoc = buildSlidesHtml(artifact.title || "Presentación Muntrume", artifact.code);
     } else if (artifact.type === "csv") {
@@ -1480,9 +1501,9 @@
     const isCode = tab === "code";
     $("aiArtTabPreview")?.classList.toggle("is-active", !isCode);
     $("aiArtTabCode")?.classList.toggle("is-active", isCode);
-    const frame = $("aiArtFrame");
+    const frameWrap = $("aiArtFrameWrap") || $("aiArtFrame");
     const codeWrap = $("aiArtCodeWrap");
-    if (frame) frame.hidden = isCode;
+    if (frameWrap) frameWrap.hidden = isCode;
     if (codeWrap) codeWrap.hidden = !isCode;
   }
 
@@ -1601,7 +1622,7 @@
           thinkSlot.innerHTML = `<details class="ai-think"${isOpen ? " open" : ""}><summary>${isOpen ? '<span class="ai-think__pulse"></span>' : ""}Razonando paso a paso · ${esc(botMsg.modelBrand || mBrand)}</summary><pre>${esc(reasoning)}</pre></details>`;
         }
         if (content && mdNode) {
-          mdNode.innerHTML = renderMarkdownHtml(content, { showCaret: isTyping });
+          mdNode.innerHTML = renderMarkdownHtml(content, { showCaret: isTyping, streaming: isTyping });
           if (streamBarTxt) streamBarTxt.textContent = `Escribiendo a ritmo ${paceLabel}…`;
         } else if (reasoning && streamBarTxt) {
           streamBarTxt.textContent = `Razonando paso a paso (${botMsg.modelBrand || mBrand})…`;
@@ -2176,7 +2197,34 @@
       showToast("Preferencias guardadas");
     });
 
-    $("aiArtClose")?.addEventListener("click", closeArtifactPane);
+    $("aiArtClose")?.addEventListener("click", () => {
+      $("aiArtifactPane")?.classList.remove("is-fullscreen");
+      closeArtifactPane();
+    });
+    $("aiArtReload")?.addEventListener("click", () => {
+      if (!currentArtifact) return;
+      renderArtifactFrame(currentArtifact);
+      showToast("Vista previa reiniciada");
+    });
+    $("aiArtFullscreen")?.addEventListener("click", () => {
+      const pane = $("aiArtifactPane");
+      if (!pane) return;
+      const fs = pane.classList.toggle("is-fullscreen");
+      const btn = $("aiArtFullscreen");
+      if (btn) btn.textContent = fs ? "Salir" : "Ampliar";
+    });
+    document.querySelectorAll("[data-art-vp]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const vp = btn.dataset.artVp || "desktop";
+        document.querySelectorAll("[data-art-vp]").forEach((b) => b.classList.toggle("is-on", b === btn));
+        const frame = $("aiArtFrame");
+        if (frame) {
+          frame.classList.remove("vp-tablet", "vp-mobile");
+          if (vp === "tablet") frame.classList.add("vp-tablet");
+          if (vp === "mobile") frame.classList.add("vp-mobile");
+        }
+      });
+    });
     $("aiArtTabPreview")?.addEventListener("click", () => {
       if (currentArtifact && $("aiArtEditor")) {
         currentArtifact.code = $("aiArtEditor").value;
@@ -2212,7 +2260,7 @@
     });
     $("aiArtDownload")?.addEventListener("click", () => {
       if (!currentArtifact) return;
-      const ext = currentArtifact.type === "html" || currentArtifact.type === "slides" ? "html" : currentArtifact.type === "svg" ? "svg" : currentArtifact.type === "csv" ? "csv" : "md";
+      const ext = currentArtifact.type === "html" || currentArtifact.type === "slides" ? "html" : currentArtifact.type === "svg" ? "svg" : currentArtifact.type === "csv" ? "csv" : currentArtifact.type === "mermaid" ? "mmd" : "md";
       const content = currentArtifact.type === "slides" ? buildSlidesHtml(currentArtifact.title, currentArtifact.code) : currentArtifact.code;
       downloadBlob(`${safeFilename(currentArtifact.title, "muntrume_artifact")}.${ext}`, content, "text/plain;charset=utf-8");
     });

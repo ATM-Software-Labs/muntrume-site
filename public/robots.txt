@@ -11,5 +11,23 @@ Disallow: /paddock/sala/
 Disallow: /app/vincular
 Disallow: /app/vincular/
 
+# Explicit welcome for AI search & documentation crawlers
+User-agent: GPTBot
+Allow: /
+User-agent: OAI-SearchBot
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: Google-Extended
+Allow: /
+User-agent: Applebot-Extended
+Allow: /
+User-agent: CCBot
+Allow: /
+
+# LLM Documentation: https://muntru.me/llms.txt
+# Extended LLM Reference: https://muntru.me/llms-full.txt
 Sitemap: https://muntru.me/sitemap.xml
 Sitemap: https://muntru.me/sitemap-images.xml
