@@ -280,7 +280,7 @@ function initDefaultAuditLogs() {
 function switchAdminTab(tabId) {
   const mapLegacy = { directory: "overview", setups: "overview", iracing: "overview", gallery: "overview" };
   const normalized = mapLegacy[tabId] || tabId;
-  const validTabs = ["overview", "access", "security"];
+  const validTabs = ["overview", "access", "security", "season"];
   const chosen = validTabs.includes(normalized) ? normalized : "overview";
   rcState.activeTab = chosen;
   validTabs.forEach((t) => {
@@ -747,6 +747,145 @@ function toggleUnifiedStatsAuto() {
   });
   if (isAuto) recalcUnifiedPilotStats(true);
 }
+
+// ============================================================================
+// NEW SEASON AUTO-SETUPS GENERATOR (MMT SYNC + GARAGE)
+// ============================================================================
+const SEASON_CAR_PRESETS = {
+  gt3: "porsche992rgt3, ferrari296gt3, bmwm4gt3, mercedesamgevogt3, audir8lmsevo2gt3, mclaren720sgt3, lamborghinievogt3, fordmustanggt3, chevyvettez06rgt3, acuransxevo22gt3, amvantageevogt3",
+  gtp: "porsche963gtp, ferrari499p, bmwmhybridv8, cadillacvseriesrgtp, acuraarx06gtp, astonmartinvalkyriegtp",
+  pcup: "porsche992cup",
+  lmp2: "dallarap217",
+  gt4: "porsche718gt4, bmwm4evogt4, mercedesamggt4, amvantagegt4, mclaren570sgt4, fordmustanggt4"
+};
+
+function applySeasonCarPreset() {
+  const sel = document.getElementById("rcSeasonPreset")?.value || "gt3";
+  const inp = document.getElementById("rcSeasonCars");
+  if (inp && SEASON_CAR_PRESETS[sel]) inp.value = SEASON_CAR_PRESETS[sel];
+}
+
+function parseSeasonScheduleText(raw, defaultCars) {
+  const s = String(raw || "").trim();
+  if (!s) return [];
+  if (s.startsWith("[") || s.startsWith("{")) {
+    try {
+      const parsed = JSON.parse(s);
+      const arr = Array.isArray(parsed) ? parsed : (parsed.entries || parsed.weeks || []);
+      return arr.map((it, idx) => ({
+        week: it.week || `W${String(idx + 1).padStart(2, "0")}`,
+        circuit: String(it.circuit || it.track || "").trim(),
+        cars: Array.isArray(it.cars) && it.cars.length ? it.cars : defaultCars
+      })).filter((e) => e.circuit);
+    } catch {}
+  }
+  const lines = s.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  const out = [];
+  lines.forEach((line, idx) => {
+    const parts = line.split("|").map((p) => p.trim());
+    if (parts.length >= 2) {
+      const week = parts[0];
+      const circuit = parts[1];
+      const cars = parts[2] ? parts[2].split(",").map((c) => c.trim()).filter(Boolean) : defaultCars;
+      if (circuit) out.push({ week, circuit, cars });
+      return;
+    }
+    const m = line.match(/^(?:week|semana|w)\s*(\d{1,2})\s*[:\-–—.]?\s*(.+)$/i);
+    if (m) {
+      out.push({ week: `W${String(Number(m[1])).padStart(2, "0")}`, circuit: m[2].trim(), cars: defaultCars });
+    } else {
+      out.push({ week: `W${String(idx + 1).padStart(2, "0")}`, circuit: line, cars: defaultCars });
+    }
+  });
+  return out;
+}
+
+async function runSeasonAutoGenerate(dryRun) {
+  const season = (document.getElementById("rcSeasonCode")?.value || "").trim().toUpperCase();
+  const status = document.getElementById("rcSeasonStatus")?.value || "provisional";
+  const carsRaw = document.getElementById("rcSeasonCars")?.value || "";
+  const defaultCars = carsRaw.split(",").map((c) => c.trim().toLowerCase()).filter(Boolean);
+  const scheduleRaw = document.getElementById("rcSeasonSchedule")?.value || "";
+  const entries = parseSeasonScheduleText(scheduleRaw, defaultCars);
+  const prog = document.getElementById("rcSeasonProgress");
+  const outEl = document.getElementById("rcSeasonOutput");
+  const dryBtn = document.getElementById("rcSeasonDryRunBtn");
+  const pubBtn = document.getElementById("rcSeasonPublishBtn");
+
+  if (!season || season.length < 3) {
+    showRcNotice("Temporada requerida", "Introduce un código válido como 27S1.", "warn");
+    return;
+  }
+  if (!entries.length || !defaultCars.length) {
+    showRcNotice("Calendario vacío", "Pega al menos una semana/circuito y selecciona coches.", "warn");
+    return;
+  }
+
+  if (dryBtn) dryBtn.disabled = true;
+  if (pubBtn) pubBtn.disabled = true;
+  if (outEl) { outEl.hidden = false; outEl.innerHTML = ""; }
+
+  let totalMatched = 0, totalMissing = 0, totalInserted = 0, totalSkipped = 0;
+  const allSamples = [];
+  const allMissing = [];
+
+  try {
+    // Process 2 weeks per batch to stay well within Cloudflare Worker CPU limits
+    for (let i = 0; i < entries.length; i += 2) {
+      const batch = entries.slice(i, i + 2);
+      if (prog) prog.textContent = `${dryRun ? "Simulando" : "Generando"} semanas ${i + 1}–${Math.min(entries.length, i + 2)} de ${entries.length}…`;
+      const data = await rcAdminFetch("/api/setups/admin/season/generate", {
+        season,
+        status,
+        entries: batch,
+        dry_run: Boolean(dryRun)
+      });
+      totalMatched += Number(data.matched_count || 0);
+      totalMissing += Number(data.missing_count || 0);
+      totalInserted += Number(data.inserted || 0);
+      totalSkipped += Number(data.skipped_existing || 0);
+      if (Array.isArray(data.sample)) allSamples.push(...data.sample);
+      if (Array.isArray(data.missing)) allMissing.push(...data.missing);
+    }
+
+    if (prog) {
+      prog.textContent = dryRun
+        ? `Simulación lista: ${totalMatched} setups emparejados · ${totalMissing} combinaciones sin base.`
+        : `✓ Publicado ${season} (${status}): ${totalInserted} nuevos en D1 · ${totalSkipped} ya existentes · MMT Sync actualizado.`;
+    }
+    if (outEl) {
+      const rowsHtml = allSamples.slice(0, 60).map((s) =>
+        `<tr><td><code>${escRc(s.week)}</code></td><td>${escRc(s.circuit)}</td><td><code>${escRc(s.car)}</code></td><td>${escRc(s.setup_type)}</td><td><code>${escRc(s.filename)}</code></td></tr>`
+      ).join("");
+      const missHtml = allMissing.length
+        ? `<p class="rc-muted" style="margin:12px 0 0;font-size:12.5px">Sin base previa (${allMissing.length}): ${allMissing.slice(0, 12).map((m) => `${escRc(m.week)} ${escRc(m.circuit)} (${escRc(m.car)})`).join(", ")}</p>`
+        : "";
+      outEl.innerHTML = `
+        <div class="r-scroll">
+          <table class="r-table">
+            <thead><tr><th>Semana</th><th>Circuito</th><th>Coche</th><th>Tipo</th><th>Archivo MMT generado</th></tr></thead>
+            <tbody>${rowsHtml || '<tr><td colspan="5">No se encontraron bases .sto para los circuitos indicados.</td></tr>'}</tbody>
+          </table>
+        </div>
+        ${missHtml}
+      `;
+    }
+    showRcNotice(
+      dryRun ? "Simulación completada" : `Season ${season} generada`,
+      dryRun ? `${totalMatched} setups listos para publicar.` : `${totalInserted} setups publicados en D1 para MMT Sync y /garage/.`,
+      "success"
+    );
+  } catch (err) {
+    if (prog) prog.textContent = err?.message || "Error al generar la temporada.";
+    showRcNotice("Error en generador de Season", err?.message || "Revisa el formato del calendario.", "warn");
+  } finally {
+    if (dryBtn) dryBtn.disabled = false;
+    if (pubBtn) pubBtn.disabled = false;
+  }
+}
+
+window.applySeasonCarPreset = applySeasonCarPreset;
+window.runSeasonAutoGenerate = runSeasonAutoGenerate;
 
 // ============================================================================
 // GARAGE 61 SCREENSHOT UPLOAD, PASTE, VISION AI PARSING & LIST EDITOR
