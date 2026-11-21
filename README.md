@@ -49,9 +49,20 @@ Tomadas en [muntru.me](https://muntru.me).
 - **MMT Sync Desktop (`desktop/`):** Aplicación nativa para Windows en **Tauri v2 + Rust** (`< 15 MB RAM`, `0% GPU idle`) que sincroniza por SHA-256 más de **42.654 setups `.sto`** en `Documents\iRacing\setups\`, analiza telemetría `.ibt` en local, calcula estrategia de combustible/stints, detecta hardware DirectInput/XAudio2 y renderiza **9 módulos de Overlays transparentes a 60 Hz** (`FILE_MAP_READ`).
 - **Garage & Setup Builder (`/garage/`, `/setup-builder/`):** Catálogo completo de archivos `.sto` por coche, circuito y temporada con diagnóstico interactivo de subviraje/sobreviraje.
 - **Simulador Web de Overlays (`/overlay/`):** Previsualización interactiva en el navegador de los 9 widgets del HUD (Standings, Relative, Mapa Catmull-Rom, Pedales, Radar 360°, Fuel Calculator, Neumáticos, Delta y Spotter).
-- **Muntrume AI (`/ai/`):** Copiloto de ingeniería en pista con modelos propios (**Muntrume 1.0 Pro**, **Muntrume 1.0 Apex** y **Muntrume 1.0 PitWall**) y *Artifact Studio* exportable en 1 clic a Word (`.doc`), PDF, Presentación 16:9 (`.html` / PDF Slides), Excel (`.csv`) y Markdown.
+- **Muntrume AI (`/ai/` · [ai.muntru.me](https://ai.muntru.me/)):** Estudio de IA 100 % Open Source (MIT) con motores **Muntrume 1.0 Lite, Pro y Ultra Max**, comandos rápidos (`/setup`, `/strategy`, `/code`, `/slides`, `/doc`, `/mermaid`), visión por imagen, exportación de conversaciones `.md` y *Artifacts Studio* en pantalla dividida (HTML, SVG, Mermaid, Slides 16:9, CSV, Word `.doc` y PDF) con publicación permanente en `ai.muntru.me/a/<slug>`.
 - **Calendario 2026 S4 & Store Planner (`/calendar/`):** Planificador de las 12 semanas oficiales de iRacing con calculadora de Participation Credits y descuentos por volumen.
 - **Pilotos, Noticias, Paddock y Wallpapers 4K (`/pilotos/`, `/noticias/`, `/paddock/`, `/wallpapers/`):** Plantilla oficial con telemetría de Garage 61, sala de prensa y packs de fondos 16:9 / 9:16 con sincronizador multi-monitor `0 ms`.
+
+## Documentación Interna y Descubrimiento IA
+
+| Recurso | Descripción |
+|---|---|
+| [docs/README.md](docs/README.md) | Índice central de la documentación técnica interna |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Arquitectura del ecosistema (`muntru.me`, `ai.muntru.me`, D1 y MMT Sync) |
+| [docs/AI_STUDIO.md](docs/AI_STUDIO.md) | Referencia interna de Muntrume AI Studio, Markdown y Artifacts |
+| [docs/SEO_AND_LLMS.md](docs/SEO_AND_LLMS.md) | Guía de SEO, JSON-LD y ficheros para IAs externas |
+| [muntru.me/ai-docs/](https://muntru.me/ai-docs/) | Documentación pública oficial de Muntrume AI |
+| [llms.txt](public/llms.txt) · [ai-knowledge.json](public/ai-knowledge.json) · [ai-openapi.json](public/ai-openapi.json) | Especificaciones legibles por buscadores, agentes RAG e IAs externas |
 
 ## Stack
 
