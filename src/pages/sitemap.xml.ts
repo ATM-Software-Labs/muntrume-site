@@ -18,6 +18,11 @@ export const GET: APIRoute = async () => {
     { path: "/app/", priority: "0.9", changefreq: "weekly" },
     { path: "/ai/", priority: "0.95", changefreq: "daily" },
     { path: "/ai-docs/", priority: "0.9", changefreq: "weekly" },
+    { path: "/ai-docs/modelos/", priority: "0.85", changefreq: "weekly" },
+    { path: "/ai-docs/artefactos/", priority: "0.85", changefreq: "weekly" },
+    { path: "/ai-docs/seguridad/", priority: "0.85", changefreq: "weekly" },
+    { path: "/ai-docs/api/", priority: "0.85", changefreq: "weekly" },
+    { path: "/ai-docs/seo-llms/", priority: "0.85", changefreq: "weekly" },
   ];
 
   const carRoutes = getProgrammaticSetupCars().map((car) => ({

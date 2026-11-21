@@ -1,0 +1,247 @@
+---
+import AiDocsShell from '../../components/AiDocsShell.astro';
+
+const toc = [
+  { id: 'endpoint-ai', label: 'POST /api/ai (Streaming y JSON)' },
+  { id: 'parametros', label: 'Parámetros y códigos HTTP' },
+  { id: 'artifacts-api', label: 'Endpoints de Artifacts' },
+  { id: 'auth-api', label: 'Endpoints Passkeys y MFA' },
+  { id: 'garage-season', label: 'Garage y Race Control Season' },
+];
+
+const curlCode = `curl -N https://ai.muntru.me/api/ai \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer <TEAM_JWT_TOKEN>" \\
+  -d '{
+    "model": "pro",
+    "skill": "engineer",
+    "stream": true,
+    "messages": [
+      { "role": "user", "content": "/setup BMW M4 GT3 en Spa con 38C de pista: subviraje en Pouhon" }
+    ]
+  }'`;
+
+const jsCode = `const res = await fetch("https://ai.muntru.me/api/ai", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": \`Bearer \${localStorage.getItem("mm_token")}\`
+  },
+  body: JSON.stringify({
+    model: "pro",
+    stream: true,
+    messages: [{ role: "user", content: "Calcula estrategia 6h Watkins Glen GT3" }]
+  })
+});
+
+const reader = res.body.getReader();
+const decoder = new TextDecoder();
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+  console.log(decoder.decode(value, { stream: true }));
+}`;
+
+const pyCode = `import requests
+
+r = requests.post(
+    "https://ai.muntru.me/api/ai",
+    headers={
+        "Authorization": "Bearer <TEAM_JWT_TOKEN>",
+        "Content-Type": "application/json",
+    },
+    json={
+        "model": "ultra",
+        "stream": False,
+        "messages": [{"role": "user", "content": "Analiza el desgaste trasero en Daytona"}],
+    },
+    timeout=60,
+)
+r.raise_for_status()
+print(r.json()["reply"])`;
+
+const sseCode = `data: {"delta":"Para corregir el subviraje en Pouhon..."}
+
+data: {"delta":"\\n1. Baja la ARB delantera 1 clic."}
+
+data: {"done":true,"model":"pro","usage":{"tokens":284}}`;
+---
+
+<AiDocsShell
+  title="Referencia API REST & SSE"
+  description="Referencia completa de la API de Muntrume AI: POST /api/ai con streaming SSE, ejemplos en cURL, JavaScript y Python, endpoints de Artifacts, Passkeys WebAuthn, MFA y Race Control."
+  slug="api"
+  toc={toc}
+  prev={{ href: "/ai-docs/seguridad/", label: "Seguridad, Passkeys y MFA" }}
+  next={{ href: "/ai-docs/seo-llms/", label: "SEO, LLMs y OpenAPI" }}
+>
+  <h1 id="endpoint-ai" data-doc-section="endpoint-ai">Referencia API REST &amp; SSE</h1>
+  <p class="mdoc-lead">
+    Base URL de producción: <code>https://ai.muntru.me</code> (alias equivalente: <code>https://api.muntru.me</code>). Todas las rutas de inferencia, publicación y administración exigen cabecera <code>Authorization: Bearer &lt;JWT&gt;</code> emitida para una cuenta de miembro del equipo.
+  </p>
+
+  <div class="mdoc-code-box" data-code-box>
+    <div class="mdoc-code-box__bar">
+      <div class="mdoc-code-tabs" role="tablist">
+        <button type="button" class="mdoc-code-tab is-active" data-tab="curl">cURL</button>
+        <button type="button" class="mdoc-code-tab" data-tab="js">JavaScript</button>
+        <button type="button" class="mdoc-code-tab" data-tab="py">Python</button>
+        <button type="button" class="mdoc-code-tab" data-tab="sse">SSE Stream</button>
+      </div>
+      <button type="button" class="mdoc-copy-btn" data-copy-btn>Copiar</button>
+    </div>
+    <pre class="mdoc-pre" data-panel="curl"><code>{curlCode}</code></pre>
+    <pre class="mdoc-pre" data-panel="js" hidden><code>{jsCode}</code></pre>
+    <pre class="mdoc-pre" data-panel="py" hidden><code>{pyCode}</code></pre>
+    <pre class="mdoc-pre" data-panel="sse" hidden><code>{sseCode}</code></pre>
+  </div>
+
+  <section id="parametros" data-doc-section="parametros" class="mdoc-section">
+    <h2>Parámetros de <code>POST /api/ai</code> y códigos HTTP</h2>
+    <p class="mdoc-sub">El esquema formal en formato OpenAPI 3.1 está publicado en <a href="/ai-openapi.json">/ai-openapi.json</a>.</p>
+
+    <div class="mdoc-table-wrap">
+      <table class="mdoc-table">
+        <thead>
+          <tr>
+            <th>Campo JSON</th>
+            <th>Tipo</th>
+            <th>Descripción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>messages</code> <span class="mdoc-tag">REQUERIDO</span></td>
+            <td><code>Array&lt;Message&gt;</code></td>
+            <td>Historial de conversación con <code>role</code> (<code>user</code> | <code>assistant</code>) y <code>content</code> (texto o bloques multimodales con imagen base64).</td>
+          </tr>
+          <tr>
+            <td><code>model</code></td>
+            <td><code>"lite" | "pro" | "ultra"</code></td>
+            <td>Perfil de motor Muntrume 1.0. Por defecto <code>pro</code>.</td>
+          </tr>
+          <tr>
+            <td><code>skill</code></td>
+            <td><code>string</code></td>
+            <td>Skill opcional (<code>engineer</code>, <code>strategy</code>, <code>artifacts</code>, <code>telemetry</code>, <code>code</code>, <code>press</code>).</td>
+          </tr>
+          <tr>
+            <td><code>stream</code></td>
+            <td><code>boolean</code></td>
+            <td>Si es <code>true</code> (recomendado), responde en <code>text/event-stream</code> token a token.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Códigos de respuesta HTTP</h3>
+    <div class="mdoc-table-wrap">
+      <table class="mdoc-table">
+        <thead>
+          <tr>
+            <th>Estado</th>
+            <th>Significado</th>
+            <th>Acción recomendada</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>200 OK</strong></td><td>Inferencia completada o stream SSE abierto.</td><td>Procesar chunks <code>data: &#123;...&#125;</code> hasta <code>done: true</code>.</td></tr>
+          <tr><td><strong>400 Bad Request</strong></td><td>Payload JSON inválido o lista <code>messages</code> vacía.</td><td>Validar estructura del cuerpo enviado.</td></tr>
+          <tr><td><strong>401 Unauthorized</strong></td><td>Token ausente, expirado o cuenta no autorizada.</td><td>Iniciar sesión en <code>/login/</code> o mediante Passkey.</td></tr>
+          <tr><td><strong>429 Too Many Requests</strong></td><td>Límite de ráfaga superado para el piloto actual.</td><td>Esperar unos segundos y reintentar con backoff.</td></tr>
+          <tr><td><strong>502 / 503</strong></td><td>Todos los proveedores de la cascada temporalmente saturados.</td><td>Cambiar temporalmente a perfil <code>lite</code> o reintentar.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="artifacts-api" data-doc-section="artifacts-api" class="mdoc-section">
+    <h2>Endpoints de Artifacts Studio</h2>
+    <div class="mdoc-table-wrap">
+      <table class="mdoc-table">
+        <thead>
+          <tr>
+            <th>Método y Ruta</th>
+            <th>Auth</th>
+            <th>Función</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>POST /api/ai/artifacts</code></td><td>Equipo (JWT)</td><td>Publica un artefacto (<code>html</code>, <code>svg</code>, <code>mermaid</code>, <code>slides</code>, <code>csv</code>, <code>doc</code>, <code>code</code>) en D1 y devuelve su <code>slug</code> y URL pública.</td></tr>
+          <tr><td><code>GET /a/:slug</code></td><td>Público</td><td>Renderiza la página pública del artefacto con marco editorial y Open Graph.</td></tr>
+          <tr><td><code>GET /a/:slug/raw</code></td><td>Público</td><td>Devuelve el contenido crudo del artefacto con su tipo MIME nativo.</td></tr>
+          <tr><td><code>GET /u/:handle</code></td><td>Público</td><td>Muestra el catálogo público de artefactos publicados por un autor.</td></tr>
+          <tr><td><code>DELETE /api/ai/artifacts/:slug</code></td><td>Autor / Admin</td><td>Elimina permanentemente el artefacto de D1.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="auth-api" data-doc-section="auth-api" class="mdoc-section">
+    <h2>Endpoints de Passkeys WebAuthn y MFA</h2>
+    <div class="mdoc-table-wrap">
+      <table class="mdoc-table">
+        <thead>
+          <tr>
+            <th>Método y Ruta</th>
+            <th>Función</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>POST /api/auth/passkey/register/options</code></td><td>Genera reto WebAuthn para registrar una nueva Passkey en la cuenta autenticada.</td></tr>
+          <tr><td><code>POST /api/auth/passkey/register/verify</code></td><td>Verifica la atestación y almacena la clave pública COSE en D1.</td></tr>
+          <tr><td><code>POST /api/auth/passkey/login/options</code></td><td>Inicia sesión sin contraseña generando reto para credenciales registradas.</td></tr>
+          <tr><td><code>POST /api/auth/passkey/login/verify</code></td><td>Verifica firma ECDSA P-256 y devuelve JWT de equipo.</td></tr>
+          <tr><td><code>POST /api/auth/mfa/totp/setup</code> &amp; <code>/verify</code></td><td>Genera secreto Base32 + URI <code>otpauth://</code> y activa TOTP RFC 6238 + 8 códigos de recuperación.</td></tr>
+          <tr><td><code>POST /api/auth/mfa/otp/send</code> &amp; <code>/verify</code></td><td>Envía y valida códigos OTP de un solo uso por <code>ntfy.sh</code>, Discord DM, Android SMS Gateway o WhatsApp Evolution/WAHA.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="garage-season" data-doc-section="garage-season" class="mdoc-section">
+    <h2>Garage Vault y Race Control Season</h2>
+    <div class="mdoc-table-wrap">
+      <table class="mdoc-table">
+        <thead>
+          <tr>
+            <th>Método y Ruta</th>
+            <th>Auth</th>
+            <th>Función</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>GET /api/download?file=...</code></td><td>Equipo (JWT)</td><td>Descarga autenticada de setups <code>.sto</code> desde el Vault hacia el navegador o MMT Sync.</td></tr>
+          <tr><td><code>POST /api/admin/season/generate</code></td><td>Admin</td><td>Importa calendario provisional/oficial de iRacing en Race Control y genera la estructura de setups de la nueva temporada para Garage y MMT Sync.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <script is:inline>
+    (function () {
+      document.querySelectorAll('[data-code-box]').forEach(function (box) {
+        var tabs = box.querySelectorAll('[data-tab]');
+        var panels = box.querySelectorAll('[data-panel]');
+        var copyBtn = box.querySelector('[data-copy-btn]');
+        tabs.forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var id = btn.getAttribute('data-tab');
+            tabs.forEach(function (t) { t.classList.toggle('is-active', t === btn); });
+            panels.forEach(function (p) { p.hidden = p.getAttribute('data-panel') !== id; });
+          });
+        });
+        if (copyBtn) {
+          copyBtn.addEventListener('click', function () {
+            var active = box.querySelector('[data-panel]:not([hidden]) code');
+            if (!active) return;
+            navigator.clipboard.writeText(active.textContent || '').then(function () {
+              copyBtn.textContent = '¡Copiado!';
+              setTimeout(function () { copyBtn.textContent = 'Copiar'; }, 1600);
+            });
+          });
+        }
+      });
+    })();
+  </script>
+</AiDocsShell>

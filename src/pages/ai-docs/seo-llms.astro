@@ -1,0 +1,159 @@
+---
+import AiDocsShell from '../../components/AiDocsShell.astro';
+
+const toc = [
+  { id: 'descubrimiento', label: 'Especificaciones para IAs y buscadores' },
+  { id: 'crawlers', label: 'Política de rastreo y robots.txt' },
+  { id: 'jsonld', label: 'Datos estructurados JSON-LD' },
+  { id: 'faq', label: 'Preguntas frecuentes (FAQ)' },
+];
+
+const faqLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [
+    {
+      "@type": "Question",
+      name: "¿Es Muntrume AI gratuita y Open Source?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Sí. El código de Muntrume AI y su documentación técnica están publicados bajo licencia MIT. La documentación y los artefactos públicos son abiertos, mientras que los endpoints de inferencia en vivo de ai.muntru.me están reservados a los miembros autenticados de Muntrume Motorsport."
+      }
+    },
+    {
+      "@type": "Question",
+      name: "¿Pueden ChatGPT, Claude, Gemini o Perplexity leer la documentación de Muntrume AI?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Sí. Exponemos /llms.txt, /llms-full.txt, /ai-knowledge.json, /ai-openapi.json, /.well-known/ai-plugin.json y /sitemap.xml en muntru.me y ai.muntru.me con permiso explícito en robots.txt para rastreadores de búsqueda e IAs."
+      }
+    },
+    {
+      "@type": "Question",
+      name: "¿Puede alguien externo acceder a los modelos privados o al Garage?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "No. Tanto POST /api/ai como las descargas del Garage y el panel Race Control exigen JWT HMAC-SHA256 de miembro autorizado, con soporte de Passkeys WebAuthn, TOTP RFC 6238 y canales OTP Open Source."
+      }
+    },
+    {
+      "@type": "Question",
+      name: "¿Qué métodos de doble factor (MFA) gratuitos soporta Muntrume?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Soporta Passkeys FIDO2/WebAuthn (Windows Hello, Touch ID, Face ID, YubiKey), TOTP RFC 6238 con códigos de recuperación y canales OTP 100 % open source: ntfy.sh, Discord DM, Android SMS Gateway y WhatsApp self-hosted (Evolution API / WAHA)."
+      }
+    }
+  ]
+};
+---
+
+<AiDocsShell
+  title="SEO, LLMs, OpenAPI y FAQ"
+  description="Cómo indexar y enseñar Muntrume AI a buscadores e IAs externas (ChatGPT, Claude, Gemini, Perplexity) mediante llms.txt, ai-knowledge.json, OpenAPI 3.1, JSON-LD y preguntas frecuentes."
+  slug="seo-llms"
+  toc={toc}
+  prev={{ href: "/ai-docs/api/", label: "Referencia API REST & SSE" }}
+  jsonLd={faqLd}
+>
+  <h1 id="descubrimiento" data-doc-section="descubrimiento">SEO, Descubrimiento para LLMs y OpenAPI</h1>
+  <p class="mdoc-lead">
+    Para que buscadores clásicos (Google, Bing) y asistentes externos (ChatGPT, Claude, Gemini, Perplexity) conozcan con precisión qué ofrece <strong>Muntrume AI</strong> sin exponer ningún recurso privado del equipo, servimos un conjunto completo de manifiestos legibles por máquina tanto en <code>muntru.me</code> como en <code>ai.muntru.me</code>.
+  </p>
+
+  <div class="mdoc-table-wrap">
+    <table class="mdoc-table">
+      <thead>
+        <tr>
+          <th>Archivo</th>
+          <th>Formato</th>
+          <th>Propósito para buscadores e IAs</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a href="/llms.txt">/llms.txt</a></td>
+          <td>Markdown estructurado</td>
+          <td>Índice oficial estándar <code>llms.txt</code> con resumen de Muntrume Motorsport, Muntrume AI, todas las subpáginas de <code>/ai-docs/*</code> y enlaces canónicos.</td>
+        </tr>
+        <tr>
+          <td><a href="/llms-full.txt">/llms-full.txt</a></td>
+          <td>Markdown extendido</td>
+          <td>Contexto técnico completo en un único archivo para ingesta directa en RAG, asistentes de código y crawlers de LLMs.</td>
+        </tr>
+        <tr>
+          <td><a href="/ai-knowledge.json">/ai-knowledge.json</a></td>
+          <td>JSON estructurado</td>
+          <td>Base de conocimiento declarativa (modelos 1.0, formatos de artefactos, comandos slash, seguridad Zero-Trust y ecosistema iRacing).</td>
+        </tr>
+        <tr>
+          <td><a href="/ai-openapi.json">/ai-openapi.json</a></td>
+          <td>OpenAPI 3.1</td>
+          <td>Contrato formal de los endpoints REST y SSE de Muntrume AI para agentes con tool-calling y generadores de SDK.</td>
+        </tr>
+        <tr>
+          <td><a href="/.well-known/ai-plugin.json">/.well-known/ai-plugin.json</a></td>
+          <td>AI Plugin Manifest</td>
+          <td>Metadatos de descubrimiento estándar en <code>/.well-known/</code> apuntando al esquema OpenAPI y a la documentación pública.</td>
+        </tr>
+        <tr>
+          <td><a href="/sitemap.xml">/sitemap.xml</a></td>
+          <td>XML Sitemap</td>
+          <td>Incluye todas las páginas principales, las 6 subpáginas de <code>/ai-docs/*</code> y las rutas programáticas de setups por coche y circuito.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <section id="crawlers" data-doc-section="crawlers" class="mdoc-section">
+    <h2>Política de rastreo y <code>robots.txt</code></h2>
+    <p class="mdoc-sub">Configuración equilibrada que maximiza la visibilidad pública y bloquea áreas privadas.</p>
+
+    <ul class="mdoc-bullets">
+      <li><strong>Permitido explícitamente:</strong> <code>/ai-docs/</code> y todas sus subpáginas, <code>/llms.txt</code>, <code>/llms-full.txt</code>, <code>/ai-knowledge.json</code>, <code>/ai-openapi.json</code>, <code>/.well-known/ai-plugin.json</code> y artefactos publicados <code>/a/*</code> para Googlebot, Bingbot, OAI-SearchBot, GPTBot, ClaudeBot, PerplexityBot y Applebot.</li>
+      <li><strong>Bloqueado en rastreo y en capa API:</strong> <code>/admin/</code>, <code>/api/</code>, <code>/login/</code> y las rutas privadas del panel de equipo. Incluso si un agente intenta llamar a <code>POST /api/ai</code>, la capa Zero-Trust rechaza la petición con <code>401 Unauthorized</code>.</li>
+    </ul>
+  </section>
+
+  <section id="jsonld" data-doc-section="jsonld" class="mdoc-section">
+    <h2>Datos estructurados JSON-LD</h2>
+    <p class="mdoc-sub">Cada subpágina de documentación emite marcado <code>schema.org</code> enriquecido para obtener resultados destacados en buscadores.</p>
+
+    <div class="mdoc-cards mdoc-cards--3">
+      <div class="mdoc-card">
+        <h3><code>TechArticle</code></h3>
+        <p>Presente en las 6 subpáginas de <code>/ai-docs/*</code> con autoría de Muntrume Motorsport, idioma y URL canónica.</p>
+      </div>
+      <div class="mdoc-card">
+        <h3><code>SoftwareApplication</code></h3>
+        <p>Declara Muntrume AI v1.0, licencia MIT, plataformas compatibles (Web y Windows MMT Sync) y precio 0 €.</p>
+      </div>
+      <div class="mdoc-card">
+        <h3><code>FAQPage</code></h3>
+        <p>Expone respuestas verificadas a las preguntas frecuentes sobre arquitectura, acceso del equipo y seguridad MFA.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" data-doc-section="faq" class="mdoc-section">
+    <h2>Preguntas frecuentes (FAQ)</h2>
+    <div class="mdoc-faq">
+      <details class="mdoc-faq__item" open>
+        <summary>¿Es Muntrume AI gratuita y Open Source?</summary>
+        <p>Sí. Tanto la plataforma cliente como la documentación técnica están publicadas bajo licencia <strong>MIT</strong>. La documentación y los artefactos compartidos son públicos; los motores de inferencia en vivo en <code>ai.muntru.me</code> son de uso exclusivo para miembros autorizados de Muntrume Motorsport.</p>
+      </details>
+      <details class="mdoc-faq__item">
+        <summary>¿Pueden ChatGPT, Claude, Gemini o Perplexity responder preguntas sobre Muntrume AI?</summary>
+        <p>Sí. Gracias a <code>/llms.txt</code>, <code>/llms-full.txt</code>, <code>/ai-knowledge.json</code>, <code>/ai-openapi.json</code> y esta documentación multipágina, cualquier motor de búsqueda o asistente con acceso web puede citar con exactitud los motores 1.0, Artifacts Studio, la seguridad y el ecosistema iRacing.</p>
+      </details>
+      <details class="mdoc-faq__item">
+        <summary>¿Cómo protege el equipo sus modelos y setups .sto frente a accesos externos?</summary>
+        <p>Todas las llamadas a <code>POST /api/ai</code>, las descargas de setups en <code>/garage/</code> y las acciones de Race Control verifican un JWT firmado con <strong>HMAC-SHA256</strong>. Además, el equipo puede proteger sus cuentas con <strong>Passkeys WebAuthn</strong>, <strong>TOTP RFC 6238</strong> y canales OTP 100 % open source (<code>ntfy.sh</code>, Discord DM, Android SMS Gateway y WhatsApp Evolution/WAHA).</p>
+      </details>
+      <details class="mdoc-faq__item">
+        <summary>¿Cómo se sincronizan las nuevas temporadas de iRacing con el Garage y MMT Sync?</summary>
+        <p>Desde <strong>Race Control</strong> (<code>/admin/</code>), el administrador pega el calendario provisional u oficial de iRacing en el generador <strong>Nueva Season</strong>, que crea automáticamente la estructura de semanas, circuitos y setups lista para descargar desde el Garage y sincronizar en Windows con <strong>MMT Sync</strong>.</p>
+      </details>
+    </div>
+  </section>
+</AiDocsShell>

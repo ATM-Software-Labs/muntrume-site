@@ -1,0 +1,182 @@
+---
+import AiDocsShell from '../../components/AiDocsShell.astro';
+
+const toc = [
+  { id: 'overview', label: 'Qué es Muntrume AI' },
+  { id: 'explorar', label: 'Mapa de documentación' },
+  { id: 'arquitectura', label: 'Arquitectura completa' },
+  { id: 'inicio-rapido', label: 'Inicio rápido (3 pasos)' },
+  { id: 'ecosistema', label: 'Integración con el ecosistema' },
+];
+
+const softwareLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Muntrume AI",
+  applicationCategory: "DeveloperApplication",
+  operatingSystem: "Web, Windows (MMT Sync)",
+  url: "https://ai.muntru.me/",
+  softwareVersion: "1.0",
+  license: "https://opensource.org/licenses/MIT",
+  offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
+  creator: { "@type": "Organization", name: "Muntrume Motorsport", url: "https://muntru.me/" },
+};
+---
+
+<AiDocsShell
+  title="Introducción y Arquitectura"
+  description="Documentación técnica oficial de Muntrume AI (ai.muntru.me): arquitectura edge en Cloudflare Workers, motores 1.0 Lite/Pro/Ultra Max, Artifacts Studio, seguridad Zero-Trust y ecosistema iRacing."
+  slug=""
+  toc={toc}
+  next={{ href: "/ai-docs/modelos/", label: "Motores 1.0, Skills y Slash" }}
+  jsonLd={softwareLd}
+>
+  <h1 id="overview" data-doc-section="overview">Documentación oficial de Muntrume AI</h1>
+  <p class="mdoc-lead">
+    <strong>Muntrume AI</strong> (<a href="https://ai.muntru.me/">ai.muntru.me</a>) es la plataforma de inteligencia artificial 100 % <strong>Open Source (licencia MIT)</strong> desarrollada por <strong>Muntrume Motorsport</strong> para ingeniería de sim racing en iRacing, análisis de telemetría Garage 61, estrategia de resistencia, generación de código y publicación de artefactos interactivos en el edge.
+  </p>
+
+  <div class="mdoc-hero-actions">
+    <a href="https://ai.muntru.me/" class="mm-btn mm-btn-primary">Abrir Muntrume AI Studio ↗</a>
+    <a href="/ai-docs/modelos/" class="mm-btn mm-btn-ghost">Explorar motores 1.0 →</a>
+    <a href="/ai-docs/api/" class="mm-btn mm-btn-ghost">Referencia API</a>
+  </div>
+
+  <div class="mdoc-callout">
+    <div class="mdoc-callout__title">Acceso público a la documentación · Inferencia Zero-Trust solo para el equipo</div>
+    <p>
+      Todas las guías de <code>/ai-docs/</code>, los archivos de descubrimiento (<code>/llms.txt</code>, <code>/ai-knowledge.json</code>, <code>/ai-openapi.json</code>) y los artefactos publicados en <code>ai.muntru.me/a/&lt;slug&gt;</code> son <strong>100 % públicos</strong> para motores de búsqueda, pilotos e IAs externas. Los endpoints de inferencia (<code>POST /api/ai</code>) y los modelos requieren autenticación obligatoria de miembro del equipo con <strong>JWT HMAC-SHA256</strong>, <strong>Passkey WebAuthn</strong> o <strong>MFA TOTP / Open Source</strong>.
+    </p>
+  </div>
+
+  <section id="explorar" data-doc-section="explorar" class="mdoc-section">
+    <h2>Mapa de la documentación</h2>
+    <p class="mdoc-sub">Cada subsistema cuenta con su propia guía técnica detallada, tablas de referencia y ejemplos listos para copiar.</p>
+
+    <div class="mdoc-cards mdoc-cards--2">
+      <a href="/ai-docs/modelos/" class="mdoc-card">
+        <div class="mdoc-card__head"><strong>Motores 1.0, Skills y Slash</strong><span>01 · INFERENCIA</span></div>
+        <p>Comparativa técnica de <strong>Lite</strong>, <strong>Pro</strong> y <strong>Ultra Max</strong>, enrutamiento con fallback automático, 6 skills especializadas, comandos <code>/setup</code>, <code>/strategy</code>, <code>/code</code>, <code>/mermaid</code>, visión por imagen y lectura de repositorios GitHub.</p>
+        <div class="mdoc-card__more">Leer guía de modelos →</div>
+      </a>
+
+      <a href="/ai-docs/artefactos/" class="mdoc-card">
+        <div class="mdoc-card__head"><strong>Artifacts Studio y Hosting</strong><span>02 · STUDIO</span></div>
+        <p>Renderizado en sandbox aislado de 7 formatos (<code>html</code>, <code>svg</code>, <code>mermaid</code>, <code>slides</code>, <code>csv</code>, <code>doc</code>, <code>code</code>), vista responsive PC/Tablet/Móvil, editor en vivo y publicación en <code>ai.muntru.me/a/&lt;slug&gt;</code> respaldada por Cloudflare D1.</p>
+        <div class="mdoc-card__more">Leer guía de artefactos →</div>
+      </a>
+
+      <a href="/ai-docs/seguridad/" class="mdoc-card">
+        <div class="mdoc-card__head"><strong>Seguridad, Passkeys y MFA</strong><span>03 · ZERO-TRUST</span></div>
+        <p>Team Access Gate en <code>ai.muntru.me</code>, tokens JWT HMAC-SHA256, PBKDF2-SHA256 (100k iteraciones), Passkeys FIDO2/WebAuthn, TOTP RFC 6238 y canales OTP 100 % gratuitos y open source (<code>ntfy.sh</code>, Discord DM, Android SMS Gateway y WhatsApp Evolution/WAHA).</p>
+        <div class="mdoc-card__more">Leer guía de seguridad →</div>
+      </a>
+
+      <a href="/ai-docs/api/" class="mdoc-card">
+        <div class="mdoc-card__head"><strong>Referencia API REST & SSE</strong><span>04 · DESARROLLADORES</span></div>
+        <p>Especificación completa de <code>POST /api/ai</code> en streaming SSE y JSON, gestión de artefactos, endpoints de autenticación Passkey/MFA, ejemplos interactivos en cURL, JavaScript y Python y matriz de códigos HTTP.</p>
+        <div class="mdoc-card__more">Ver referencia API →</div>
+      </a>
+
+      <a href="/ai-docs/seo-llms/" class="mdoc-card">
+        <div class="mdoc-card__head"><strong>SEO, LLMs y OpenAPI</strong><span>05 · DESCUBRIMIENTO</span></div>
+        <p>Cómo entrenar e indexar Muntrume AI en Google, Bing, ChatGPT, Claude y Perplexity mediante <code>llms.txt</code>, <code>llms-full.txt</code>, <code>ai-knowledge.json</code>, <code>ai-openapi.json</code>, JSON-LD y preguntas frecuentes.</p>
+        <div class="mdoc-card__more">Ver guía SEO e IAs →</div>
+      </a>
+    </div>
+  </section>
+
+  <section id="arquitectura" data-doc-section="arquitectura" class="mdoc-section">
+    <h2>Arquitectura completa</h2>
+    <p class="mdoc-sub">Diseñada para latencia mínima en el edge (&lt; 10 ms de CPU en arranque del Worker), coste cero en infraestructura fija y aislamiento total entre frontend estático y lógica autenticada.</p>
+
+    <div class="mdoc-feature-list">
+      <div class="mdoc-feature">
+        <div class="mdoc-feature__k">Frontend estático (Astro)</div>
+        <div class="mdoc-feature__v">Generado en <code>muntrume-site</code> y servido desde GitHub Pages (<code>muntru.me</code>). Incluye el cliente <code>ai-studio.js</code>, la documentación multipágina <code>/ai-docs/*</code>, el inspector de setups <code>.sto</code> del Garage y el panel Race Control.</div>
+      </div>
+      <div class="mdoc-feature">
+        <div class="mdoc-feature__k">Edge Runtime (Cloudflare Workers)</div>
+        <div class="mdoc-feature__v">Worker <code>muntrume</code> (<code>ai.muntru.me</code> y <code>api.muntru.me</code>) con bundle optimizado (~700 KB, arranque en 5–7 ms). Proxea las vistas HTML de <code>ai.muntru.me</code> con CSP explícita y ejecuta todas las rutas <code>/api/*</code>.</div>
+      </div>
+      <div class="mdoc-feature">
+        <div class="mdoc-feature__k">Base de datos (Cloudflare D1)</div>
+        <div class="mdoc-feature__v">SQLite distribuido que almacena cuentas de pilotos, credenciales WebAuthn/Passkey, secretos TOTP, códigos de recuperación, artefactos publicados (<code>ai_artifacts</code>), catálogo de +42.600 setups <code>.sto</code> y temporadas de iRacing.</div>
+      </div>
+      <div class="mdoc-feature">
+        <div class="mdoc-feature__k">Estado en tiempo real (Durable Objects)</div>
+        <div class="mdoc-feature__v">Sincronización por WebSocket para chat de equipo, presencia en pista y coordinación de stints de resistencia en Race Control.</div>
+      </div>
+      <div class="mdoc-feature">
+        <div class="mdoc-feature__k">Orquestador de inferencia</div>
+        <div class="mdoc-feature__v">Enrutador multi-proveedor (Cloudflare Workers AI + proveedores acelerados de baja latencia) con fallback automático, streaming SSE token a token y validación de identidad antes de consumir cuota.</div>
+      </div>
+      <div class="mdoc-feature">
+        <div class="mdoc-feature__k">App de escritorio (MMT Sync)</div>
+        <div class="mdoc-feature__v">Cliente nativo para Windows que sincroniza automáticamente los setups <code>.sto</code> del Garage y los paquetes generados por Race Control directamente a <code>Documents\iRacing\setups\</code>.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="inicio-rapido" data-doc-section="inicio-rapido" class="mdoc-section">
+    <h2>Inicio rápido en 3 pasos</h2>
+    <p class="mdoc-sub">Flujo recomendado para pilotos e ingenieros de pista del equipo Muntrume Motorsport.</p>
+
+    <div class="mdoc-cards mdoc-cards--3">
+      <div class="mdoc-card">
+        <div class="mdoc-step">PASO 01</div>
+        <h3>Inicia sesión con Passkey o MFA</h3>
+        <p>Accede a <a href="https://ai.muntru.me/">ai.muntru.me</a> o <a href="https://muntru.me/login/">muntru.me/login</a> con tu cuenta de piloto autorizada. Recomendamos registrar una <strong>Passkey</strong> (Windows Hello / Touch ID) o <strong>TOTP</strong> para acceso en 1 toque.</p>
+      </div>
+      <div class="mdoc-card">
+        <div class="mdoc-step">PASO 02</div>
+        <h3>Elige motor y lanza un comando</h3>
+        <p>Selecciona <strong>Lite</strong>, <strong>Pro</strong> o <strong>Ultra Max</strong>, o escribe un comando slash como <code>/setup</code>, <code>/strategy</code>, <code>/mermaid</code> o <code>/code</code>. Puedes adjuntar capturas de telemetría Garage 61 o pegar enlaces de GitHub.</p>
+      </div>
+      <div class="mdoc-card">
+        <div class="mdoc-step">PASO 03</div>
+        <h3>Inspecciona, exporta o publica</h3>
+        <p>Abre cualquier artefacto en el panel lateral responsive (PC / Tablet / Móvil), edita el código en vivo, descarga la conversación en Markdown o publícalo con URL permanente en <code>ai.muntru.me/a/&lt;slug&gt;</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="ecosistema" data-doc-section="ecosistema" class="mdoc-section">
+    <h2>Integración con el ecosistema Muntrume</h2>
+    <p class="mdoc-sub">Muntrume AI no es un chat aislado: está conectado a las herramientas reales del equipo.</p>
+
+    <div class="mdoc-table-wrap">
+      <table class="mdoc-table">
+        <thead>
+          <tr>
+            <th>Módulo</th>
+            <th>Ruta</th>
+            <th>Integración con Muntrume AI</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Garage &amp; Vault</strong></td>
+            <td><a href="https://muntru.me/garage/">/garage/</a></td>
+            <td>+42.600 setups <code>.sto</code> con inspector visual estilo iRacing (Chasis, Presiones, Suspensiones, Notas) y descarga autenticada.</td>
+          </tr>
+          <tr>
+            <td><strong>Race Control · Nueva Season</strong></td>
+            <td><a href="https://muntru.me/admin/">/admin/</a></td>
+            <td>Importa el calendario provisional u oficial de iRacing y genera automáticamente paquetes de setups para el Garage y MMT Sync.</td>
+          </tr>
+          <tr>
+            <td><strong>Telemetría Garage 61</strong></td>
+            <td><code>/api/drivers</code></td>
+            <td>Extracción OCR por visión IA (<code>qwen3.8-27b</code> + Workers AI <code>llama-4-scout</code>) de capturas de vuelta, sectores y combustible.</td>
+          </tr>
+          <tr>
+            <td><strong>Comunicaciones y Alertas</strong></td>
+            <td><code>worker/emails.js</code></td>
+            <td>Correos transaccionales editoriales y avisos OTP en tiempo real por <code>ntfy.sh</code>, Discord DM, Android SMS Gateway y WhatsApp self-hosted.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</AiDocsShell>

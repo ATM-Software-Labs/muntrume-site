@@ -1,0 +1,153 @@
+---
+import AiDocsShell from '../../components/AiDocsShell.astro';
+
+const toc = [
+  { id: 'estudio', label: 'Cómo funciona Artifacts Studio' },
+  { id: 'formatos', label: 'Los 7 formatos soportados' },
+  { id: 'controles', label: 'Controles del panel lateral' },
+  { id: 'hosting', label: 'Publicación permanente en D1' },
+  { id: 'aislamiento', label: 'Sandbox y seguridad de ejecución' },
+];
+---
+
+<AiDocsShell
+  title="Artifacts Studio y Hosting en el Edge"
+  description="Guía completa de Artifacts Studio en Muntrume AI: 7 formatos interactivos (HTML, SVG, Mermaid, Slides, CSV, Doc, Code), vista responsive, editor en vivo y publicación permanente en ai.muntru.me/a/<slug>."
+  slug="artefactos"
+  toc={toc}
+  prev={{ href: "/ai-docs/modelos/", label: "Motores 1.0, Skills y Slash" }}
+  next={{ href: "/ai-docs/seguridad/", label: "Seguridad, Passkeys y MFA" }}
+>
+  <h1 id="estudio" data-doc-section="estudio">Artifacts Studio y Hosting en el Edge</h1>
+  <p class="mdoc-lead">
+    <strong>Artifacts Studio</strong> transforma las respuestas del asistente en piezas interactivas listas para previsualizar, editar, descargar o publicar en internet con una URL permanente bajo <code>https://ai.muntru.me/a/&lt;slug&gt;</code>.
+  </p>
+
+  <div class="mdoc-callout">
+    <div class="mdoc-callout__title">Detección automática durante el streaming</div>
+    <p>
+      Cuando Muntrume AI genera un bloque autocontenido (HTML, SVG, diagrama Mermaid, tabla CSV o presentación), el cliente <code>ai-studio.js</code> abre automáticamente el panel lateral dividido, manteniendo la conversación a la izquierda y el renderizado en vivo a la derecha.
+    </p>
+  </div>
+
+  <section id="formatos" data-doc-section="formatos" class="mdoc-section">
+    <h2>Los 7 formatos soportados</h2>
+    <p class="mdoc-sub">Cada tipo de artefacto cuenta con su propio renderizador optimizado y opciones de exportación.</p>
+
+    <div class="mdoc-table-wrap">
+      <table class="mdoc-table">
+        <thead>
+          <tr>
+            <th>Formato</th>
+            <th>Identificador</th>
+            <th>Renderizador</th>
+            <th>Casos de uso típicos</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Aplicación Web / HTML</strong></td>
+            <td><code>html</code></td>
+            <td><code>iframe</code> sandbox aislado</td>
+            <td>Calculadoras de combustible, dashboards de stints, landings, prototipos interactivos y visualizaciones Canvas/Chart.</td>
+          </tr>
+          <tr>
+            <td><strong>Gráfico Vectorial SVG</strong></td>
+            <td><code>svg</code></td>
+            <td>Contenedor SVG con zoom</td>
+            <td>Trazados de circuito, esquemas de suspensión, iconos vectoriales y diagramas limpios descargables en <code>.svg</code>.</td>
+          </tr>
+          <tr>
+            <td><strong>Diagrama Mermaid</strong></td>
+            <td><code>mermaid</code></td>
+            <td>Motor Mermaid en vivo</td>
+            <td>Arquitecturas de red, flujos de pit-stop, diagramas de secuencia API y máquinas de estado.</td>
+          </tr>
+          <tr>
+            <td><strong>Presentación / Slides</strong></td>
+            <td><code>slides</code></td>
+            <td>Visor de diapositivas</td>
+            <td>Briefings pre-carrera de resistencia, informes de temporada y presentaciones técnicas.</td>
+          </tr>
+          <tr>
+            <td><strong>Tabla de Datos CSV</strong></td>
+            <td><code>csv</code></td>
+            <td>Tabla interactiva ordenable</td>
+            <td>Tablas de tiempos por vuelta, planificación de turnos, presiones por temperatura de pista y exportación a Excel/Sheets.</td>
+          </tr>
+          <tr>
+            <td><strong>Documento Editorial</strong></td>
+            <td><code>doc</code></td>
+            <td>Vista Markdown tipográfica</td>
+            <td>Runbooks de ingeniería, guías de circuito, notas de setup y documentación imprimible.</td>
+          </tr>
+          <tr>
+            <td><strong>Código Fuente</strong></td>
+            <td><code>code</code></td>
+            <td>Visor con resaltado y copia</td>
+            <td>Scripts Python/JS/TS, consultas SQL D1, configuración Cloudflare Workers y utilidades de telemetría.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="controles" data-doc-section="controles" class="mdoc-section">
+    <h2>Controles avanzados del panel lateral</h2>
+    <p class="mdoc-sub">Inspirado en los entornos de Claude Artifacts y VS Code Live Preview para iterar sin salir del chat.</p>
+
+    <div class="mdoc-cards mdoc-cards--2">
+      <div class="mdoc-card">
+        <h3>Selector responsive (PC · Tablet · Móvil)</h3>
+        <p>Alterna el ancho del viewport del artefacto entre escritorio (100 %), tablet (<code>768 px</code>) y móvil (<code>390 px</code>) para comprobar el diseño antes de publicarlo.</p>
+      </div>
+      <div class="mdoc-card">
+        <h3>Editor de código en vivo</h3>
+        <p>Cambia entre las pestañas <strong>Vista previa</strong> y <strong>Código</strong> para ajustar estilos, textos o fórmulas directamente y recargar el render al instante.</p>
+      </div>
+      <div class="mdoc-card">
+        <h3>Recargar, Pantalla completa y Nueva pestaña</h3>
+        <p>Reinicia el estado JS del sandbox con un clic, expande el artefacto a pantalla completa o ábrelo en una pestaña independiente vía <code>Blob URL</code>.</p>
+      </div>
+      <div class="mdoc-card">
+        <h3>Exportación y conversación en Markdown</h3>
+        <p>Descarga el artefacto individual en su extensión nativa (<code>.html</code>, <code>.svg</code>, <code>.mmd</code>, <code>.csv</code>, <code>.md</code>) o exporta todo el hilo del chat en un archivo <code>.md</code> limpio.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="hosting" data-doc-section="hosting" class="mdoc-section">
+    <h2>Publicación permanente en Cloudflare D1</h2>
+    <p class="mdoc-sub">Los miembros autenticados pueden publicar cualquier artefacto para compartirlo con pilotos externos, comisarios o la comunidad.</p>
+
+    <div class="mdoc-feature-list">
+      <div class="mdoc-feature">
+        <div class="mdoc-feature__k">URL pública con marco</div>
+        <div class="mdoc-feature__v"><code>https://ai.muntru.me/a/&lt;slug&gt;</code> — Sirve una página con cabecera de autoría, metadatos Open Graph para compartir en Discord/X y el artefacto incrustado de forma segura.</div>
+      </div>
+      <div class="mdoc-feature">
+        <div class="mdoc-feature__k">URL cruda (Raw)</div>
+        <div class="mdoc-feature__v"><code>https://ai.muntru.me/a/&lt;slug&gt;/raw</code> — Devuelve el contenido directo con su <code>Content-Type</code> nativo para incrustación o inspección.</div>
+      </div>
+      <div class="mdoc-feature">
+        <div class="mdoc-feature__k">Perfil público del autor</div>
+        <div class="mdoc-feature__v"><code>https://ai.muntru.me/u/&lt;handle&gt;</code> — Lista los artefactos públicos creados por un piloto o ingeniero del equipo.</div>
+      </div>
+      <div class="mdoc-feature">
+        <div class="mdoc-feature__k">Ciclo de vida y borrado</div>
+        <div class="mdoc-feature__v">Solo el autor propietario o un administrador del equipo puede actualizar o eliminar un artefacto mediante <code>DELETE /api/ai/artifacts/:slug</code>.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="aislamiento" data-doc-section="aislamiento" class="mdoc-section">
+    <h2>Sandbox y seguridad de ejecución</h2>
+    <p class="mdoc-sub">Los artefactos generados por IA nunca comparten cookies, <code>localStorage</code> ni credenciales JWT con la sesión principal de Muntrume AI.</p>
+
+    <ul class="mdoc-bullets">
+      <li><strong>Atributo <code>sandbox</code> estricto:</strong> El <code>iframe</code> de vista previa ejecuta scripts aislados sin <code>allow-same-origin</code> cuando se renderiza desde origen local, impidiendo lectura del DOM padre o robo del token de sesión.</li>
+      <li><strong>CSP de borde en el Worker:</strong> Todas las páginas <code>/a/&lt;slug&gt;</code> incluyen cabeceras <code>Content-Security-Policy</code>, <code>X-Content-Type-Options: nosniff</code> y <code>Referrer-Policy: strict-origin-when-cross-origin</code>.</li>
+      <li><strong>Sin ejecución automática en el chat:</strong> El código solo se ejecuta dentro del visor de artefactos; el flujo de mensajes del chat únicamente renderiza Markdown sanitizado.</li>
+    </ul>
+  </section>
+</AiDocsShell>

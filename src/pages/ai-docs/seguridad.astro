@@ -1,0 +1,131 @@
+---
+import AiDocsShell from '../../components/AiDocsShell.astro';
+
+const toc = [
+  { id: 'zero-trust', label: 'Arquitectura Zero-Trust' },
+  { id: 'passkeys', label: 'Passkeys (WebAuthn / FIDO2)' },
+  { id: 'totp', label: 'TOTP RFC 6238 y recuperación' },
+  { id: 'canales-oss', label: 'Canales OTP 100 % Open Source' },
+  { id: 'cabeceras', label: 'Criptografía, CSP y protección Edge' },
+];
+---
+
+<AiDocsShell
+  title="Seguridad, Passkeys y MFA Open Source"
+  description="Arquitectura de ciberseguridad Zero-Trust de Muntrume AI: acceso exclusivo para el equipo por JWT HMAC-SHA256, Passkeys FIDO2/WebAuthn, TOTP RFC 6238 y canales OTP 100 % gratuitos y Open Source."
+  slug="seguridad"
+  toc={toc}
+  prev={{ href: "/ai-docs/artefactos/", label: "Artifacts Studio y Hosting" }}
+  next={{ href: "/ai-docs/api/", label: "Referencia API REST & SSE" }}
+>
+  <h1 id="zero-trust" data-doc-section="zero-trust">Seguridad, Passkeys y MFA 100 % Open Source</h1>
+  <p class="mdoc-lead">
+    Muntrume AI aplica un modelo <strong>Zero-Trust</strong> que separa de forma estricta la capa pública (documentación, metadatos SEO/LLM y artefactos compartidos) de los modelos de inferencia, el Garage privado y Race Control, que exigen identidad verificada del equipo.
+  </p>
+
+  <div class="mdoc-callout mdoc-callout--warn">
+    <div class="mdoc-callout__title">Protección estricta de los modelos de inferencia</div>
+    <p>
+      Cualquier petición sin token JWT válido a <code>POST /api/ai</code> o sin sesión activa en <code>https://ai.muntru.me/</code> recibe inmediatamente <strong>HTTP 401 Unauthorized</strong> y se muestra el <strong>Team Access Gate</strong>. Ningún visitante externo puede consultar los modelos, listar sesiones privadas ni consumir cuota del equipo.
+    </p>
+  </div>
+
+  <section id="passkeys" data-doc-section="passkeys" class="mdoc-section">
+    <h2>Passkeys (WebAuthn / FIDO2) sin contraseña</h2>
+    <p class="mdoc-sub">Autenticación resistente a phishing mediante criptografía de clave pública <strong>ECDSA P-256</strong> almacenada en el enclave seguro del dispositivo (Windows Hello, Touch ID, Face ID, Android Biometrics o YubiKey).</p>
+
+    <div class="mdoc-feature-list">
+      <div class="mdoc-feature">
+        <div class="mdoc-feature__k">Registro (Attestation)</div>
+        <div class="mdoc-feature__v">El servidor genera un reto aleatorio de 32 bytes con caducidad de 5 minutos (<code>POST /api/auth/passkey/register/options</code>), valida <code>origin</code> y <code>rpId</code> (<code>muntru.me</code> / <code>ai.muntru.me</code>) y guarda únicamente la clave pública COSE y el contador de firmas en D1.</div>
+      </div>
+      <div class="mdoc-feature">
+        <div class="mdoc-feature__k">Inicio de sesión (Assertion)</div>
+        <div class="mdoc-feature__v">Verifica la firma <code>authenticatorData || SHA-256(clientDataJSON)</code> mediante <code>crypto.subtle.verify</code> nativo de Web Crypto API, incrementa el contador anti-clonado y emite un JWT de equipo.</div>
+      </div>
+      <div class="mdoc-feature">
+        <div class="mdoc-feature__k">Coste operativo</div>
+        <div class="mdoc-feature__v"><strong>0 € / mes</strong> — Sin proveedores de terceros (sin Auth0, sin Okta, sin Clerk); implementado 100 % en <code>worker/mfa.js</code> sobre Web Crypto API.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="totp" data-doc-section="totp" class="mdoc-section">
+    <h2>TOTP RFC 6238 y códigos de recuperación</h2>
+    <p class="mdoc-sub">Compatible con cualquier app autenticadora estándar (Google Authenticator, Microsoft Authenticator, Ente Auth, Aegis, Bitwarden, 1Password).</p>
+
+    <ul class="mdoc-bullets">
+      <li><strong>Estándar RFC 6238:</strong> Códigos de 6 dígitos con ventana de 30 segundos y HMAC-SHA1 (tolerancia de ±1 paso de reloj).</li>
+      <li><strong>URI <code>otpauth://</code> directa:</strong> Generación instantánea de código QR en el perfil del piloto para vincular el dispositivo en segundos.</li>
+      <li><strong>8 códigos de recuperación de un solo uso:</strong> Generados criptográficamente al activar MFA y almacenados con hash SHA-256; cada código queda invalidado inmediatamente tras su uso.</li>
+    </ul>
+  </section>
+
+  <section id="canales-oss" data-doc-section="canales-oss" class="mdoc-section">
+    <h2>Canales OTP 100 % gratuitos y Open Source</h2>
+    <p class="mdoc-sub">Para pilotos que prefieran recibir códigos de verificación de un solo uso por notificación push, Discord, SMS propio o WhatsApp self-hosted sin pagar cuotas a Twilio ni plataformas propietarias.</p>
+
+    <div class="mdoc-table-wrap">
+      <table class="mdoc-table">
+        <thead>
+          <tr>
+            <th>Canal</th>
+            <th>Tecnología Open Source</th>
+            <th>Secretos / Variables en Worker</th>
+            <th>Ventajas</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Push móvil instantáneo</strong> <span class="mdoc-tag">RECOMENDADO</span></td>
+            <td><strong>ntfy.sh</strong> (o servidor propio)</td>
+            <td><code>NTFY_SERVER_URL</code>, <code>NTFY_AUTH_TOKEN</code></td>
+            <td>App Android/iOS gratuita, sin registro ni límites comerciales, entrega en &lt; 1 s.</td>
+          </tr>
+          <tr>
+            <td><strong>Discord DM</strong></td>
+            <td>Bot oficial de Discord del equipo</td>
+            <td><code>DISCORD_BOT_TOKEN</code></td>
+            <td>Envía el código OTP directamente por mensaje privado al usuario Discord vinculado al piloto.</td>
+          </tr>
+          <tr>
+            <td><strong>SMS real con tu SIM</strong></td>
+            <td><strong>Android SMS Gateway</strong> (<code>capcom6/android-sms-gateway</code>)</td>
+            <td><code>SMS_GATEWAY_URL</code>, <code>SMS_GATEWAY_USER</code>, <code>SMS_GATEWAY_PASS</code></td>
+            <td>Usa un móvil Android conectado por Wi-Fi para enviar SMS reales con coste 0 € por mensaje.</td>
+          </tr>
+          <tr>
+            <td><strong>WhatsApp self-hosted</strong></td>
+            <td><strong>Evolution API</strong> o <strong>WAHA</strong></td>
+            <td><code>WHATSAPP_API_URL</code>, <code>WHATSAPP_API_KEY</code>, <code>WHATSAPP_INSTANCE</code></td>
+            <td>Envío directo a WhatsApp desde tu propia instancia Docker, compatible con formato Evolution y WAHA.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="cabeceras" data-doc-section="cabeceras" class="mdoc-section">
+    <h2>Criptografía, CSP y protección en el Edge</h2>
+    <p class="mdoc-sub">Defensa en profundidad aplicada en todas las capas de <code>muntru.me</code> y <code>ai.muntru.me</code>.</p>
+
+    <div class="mdoc-feature-list">
+      <div class="mdoc-feature">
+        <div class="mdoc-feature__k">Hash de contraseñas</div>
+        <div class="mdoc-feature__v"><strong>PBKDF2-SHA256</strong> con 100.000 iteraciones y salt aleatorio único por cuenta (<code>crypto.subtle.deriveBits</code>).</div>
+      </div>
+      <div class="mdoc-feature">
+        <div class="mdoc-feature__k">Sesiones JWT</div>
+        <div class="mdoc-feature__v">Firmados con <strong>HMAC-SHA256</strong> y secreto rotatorio en Cloudflare Secrets. Verificados en cada llamada privada a <code>/api/*</code>.</div>
+      </div>
+      <div class="mdoc-feature">
+        <div class="mdoc-feature__k">Content-Security-Policy</div>
+        <div class="mdoc-feature__v">El envoltorio global del Worker inyecta cabeceras estrictas (<code>X-Content-Type-Options: nosniff</code>, <code>X-Frame-Options: SAMEORIGIN</code>, <code>Permissions-Policy</code>, <code>Referrer-Policy</code>) y una CSP explícita por ruta HTML.</div>
+      </div>
+      <div class="mdoc-feature">
+        <div class="mdoc-feature__k">Correos editoriales firmados</div>
+        <div class="mdoc-feature__v">Las notificaciones transaccionales (<code>worker/emails.js</code>) siguen diseño limpio estilo Microsoft/Anthropic con SPF, DKIM y DMARC activos sobre <code>@muntru.me</code>.</div>
+      </div>
+    </div>
+  </section>
+</AiDocsShell>

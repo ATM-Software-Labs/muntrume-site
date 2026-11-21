@@ -1,0 +1,174 @@
+---
+import AiDocsShell from '../../components/AiDocsShell.astro';
+
+const toc = [
+  { id: 'familia-10', label: 'Familia Muntrume 1.0' },
+  { id: 'enrutamiento', label: 'Enrutamiento y fallback' },
+  { id: 'slash', label: 'Comandos slash (/)' },
+  { id: 'skills', label: 'Skills de ingeniería' },
+  { id: 'vision-contexto', label: 'Visión, GitHub y D1' },
+];
+---
+
+<AiDocsShell
+  title="Motores 1.0, Skills y Comandos Slash"
+  description="Especificaciones técnicas de Muntrume 1.0 Lite, Pro y Ultra Max, enrutamiento con fallback automático, 6 comandos slash, skills de ingeniería iRacing y análisis visual de telemetría."
+  slug="modelos"
+  toc={toc}
+  prev={{ href: "/ai-docs/", label: "Introducción y Arquitectura" }}
+  next={{ href: "/ai-docs/artefactos/", label: "Artifacts Studio y Hosting" }}
+>
+  <h1 id="familia-10" data-doc-section="familia-10">Motores Muntrume 1.0, Skills y Comandos Slash</h1>
+  <p class="mdoc-lead">
+    La familia <strong>Muntrume 1.0</strong> divide la inferencia en tres perfiles optimizados por latencia, profundidad de razonamiento y ventana de contexto. Todos soportan streaming <strong>SSE token a token</strong>, generación estructurada de artefactos y visión multimodal.
+  </p>
+
+  <div class="mdoc-table-wrap">
+    <table class="mdoc-table">
+      <thead>
+        <tr>
+          <th>Perfil</th>
+          <th>ID API</th>
+          <th>Latencia objetivo</th>
+          <th>Capacidades destacadas</th>
+          <th>Cuándo elegirlo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Muntrume 1.0 Lite</strong> <span class="mdoc-tag">RÁPIDO</span></td>
+          <td><code>lite</code></td>
+          <td>&lt; 0.6 s TTFT</td>
+          <td>Respuestas concisas, cálculos de combustible, consultas rápidas de reglamento, resúmenes y formato Markdown.</td>
+          <td>Durante prácticas o clasificación cuando necesitas un cálculo inmediato en pista.</td>
+        </tr>
+        <tr>
+          <td><strong>Muntrume 1.0 Pro</strong> <span class="mdoc-tag">ESTÁNDAR</span></td>
+          <td><code>pro</code></td>
+          <td>~1.0 s TTFT</td>
+          <td>Equilibrio óptimo entre ingeniería de setups GT3/GTP/GT4, desarrollo web/Astro/JS, diagramas Mermaid y visión de telemetría.</td>
+          <td>Modelo por defecto para trabajo diario, creación de artefactos HTML/SVG y análisis de stints.</td>
+        </tr>
+        <tr>
+          <td><strong>Muntrume 1.0 Ultra Max</strong> <span class="mdoc-tag">RAZONAMIENTO</span></td>
+          <td><code>ultra</code></td>
+          <td>~1.8 s TTFT</td>
+          <td>Razonamiento profundo multi-paso, auditoría de código compleja, estrategia completa de 24h con lluvia y generación de aplicaciones completas.</td>
+          <td>Planificación de eventos especiales (24h Spa, Daytona, Nürburgring) y refactorizaciones grandes.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <section id="enrutamiento" data-doc-section="enrutamiento" class="mdoc-section">
+    <h2>Enrutamiento inteligente y fallback automático</h2>
+    <p class="mdoc-sub">El orquestador en <code>worker/ai.js</code> garantiza disponibilidad continua sin exponer claves ni proveedores internos al cliente.</p>
+
+    <ul class="mdoc-bullets">
+      <li><strong>Cascada multi-proveedor sin cortes:</strong> Si el proveedor primario de un perfil supera el timeout o devuelve cuota agotada (<code>429</code>/<code>503</code>), el Worker conmuta automáticamente al motor de respaldo equivalente dentro de la misma petición HTTP.</li>
+      <li><strong>Presupuesto estricto de CPU en Cloudflare Workers:</strong> El streaming reenvía chunks SSE directamente mediante <code>TransformStream</code>, manteniendo el consumo de CPU del Worker por debajo de 10 ms incluso en respuestas de miles de tokens.</li>
+      <li><strong>Normalización de bloques y Markdown:</strong> El cliente <code>ai-studio.js</code> sanitiza HTML en tiempo real, detecta automáticamente bloques de artefactos (<code>html</code>, <code>svg</code>, <code>mermaid</code>, <code>slides</code>, <code>csv</code>) y evita parpadeos durante el streaming.</li>
+    </ul>
+  </section>
+
+  <section id="slash" data-doc-section="slash" class="mdoc-section">
+    <h2>Comandos slash integrados</h2>
+    <p class="mdoc-sub">Escribe <code>/</code> en el compositor de <a href="https://ai.muntru.me/">ai.muntru.me</a> para invocar plantillas estructuradas con contexto de ingeniería precargado.</p>
+
+    <div class="mdoc-table-wrap">
+      <table class="mdoc-table">
+        <thead>
+          <tr>
+            <th>Comando</th>
+            <th>Propósito</th>
+            <th>Salida esperada</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>/setup</code></td>
+            <td>Diagnóstico y ajuste de setups iRacing</td>
+            <td>Tabla de cambios por eje (presiones, camber, ARB, muelles, alerón, mapa motor) con impacto esperado en subviraje/sobreviraje y desgaste.</td>
+          </tr>
+          <tr>
+            <td><code>/strategy</code></td>
+            <td>Planificación de stints y combustible</td>
+            <td>Cálculo de vueltas por stint, ventanas de pit, paradas de neumáticos, cambio de piloto y contingencias de lluvia.</td>
+          </tr>
+          <tr>
+            <td><code>/code</code></td>
+            <td>Desarrollo e ingeniería de software</td>
+            <td>Código completo con explicación mínima, buenas prácticas y previsualización en vivo si es HTML/CSS/JS.</td>
+          </tr>
+          <tr>
+            <td><code>/mermaid</code></td>
+            <td>Arquitecturas y flujos visuales</td>
+            <td>Diagrama Mermaid (<code>flowchart</code>, <code>sequenceDiagram</code>, <code>stateDiagram-v2</code>) renderizado automáticamente en el panel Artifacts Studio.</td>
+          </tr>
+          <tr>
+            <td><code>/slides</code></td>
+            <td>Briefings de carrera y presentaciones</td>
+            <td>Deck interactivo navegable por teclado listo para compartir en <code>ai.muntru.me/a/&lt;slug&gt;</code>.</td>
+          </tr>
+          <tr>
+            <td><code>/doc</code></td>
+            <td>Documentación técnica y runbooks</td>
+            <td>Documento estructurado exportable a Markdown (<code>.md</code>) o HTML limpio.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="skills" data-doc-section="skills" class="mdoc-section">
+    <h2>Las 6 skills especializadas</h2>
+    <p class="mdoc-sub">Además de los comandos slash, el selector de skills inyecta directrices de sistema dedicadas para cada disciplina del equipo.</p>
+
+    <div class="mdoc-cards mdoc-cards--2">
+      <div class="mdoc-card">
+        <h3>1. Ingeniero de Pista iRacing</h3>
+        <p>Domina la física de neumáticos de iRacing, ventanas de temperatura (75–95 °C en GT3), balance aerodinámico, altura de chasis (ride height) y lectura de notas de archivos <code>.sto</code>.</p>
+      </div>
+      <div class="mdoc-card">
+        <h3>2. Estratega de Resistencia</h3>
+        <p>Calcula fuel saving (lift &amp; coast), duración de stints en 6h/12h/24h, turnos de pilotos en zona horaria CET/CEST y paradas bajo Safety Car o lluvia dinámica.</p>
+      </div>
+      <div class="mdoc-card">
+        <h3>3. Arquitecto Frontend &amp; Artifacts</h3>
+        <p>Produce interfaces HTML/CSS/JS autocontenidas con tipografía editorial, gráficos interactivos y diseño responsive que se renderizan al instante en el sandbox.</p>
+      </div>
+      <div class="mdoc-card">
+        <h3>4. Analista de Telemetría Garage 61</h3>
+        <p>Interpreta capturas de trazadas de freno/acelerador, velocidad mínima en ápice, delta por sector y consumo de combustible por vuelta.</p>
+      </div>
+      <div class="mdoc-card">
+        <h3>5. Revisor de Código &amp; Cloudflare Edge</h3>
+        <p>Optimiza Workers, consultas SQL en D1, encabezados CSP, scripts Astro y seguridad Zero-Trust siguiendo los estándares de ATM Software Labs.</p>
+      </div>
+      <div class="mdoc-card">
+        <h3>6. Redactor Técnico &amp; Prensa MMT</h3>
+        <p>Genera crónicas de carrera, notas de versión, comunicados de equipo y documentación estructurada en español, inglés, catalán o francés.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="vision-contexto" data-doc-section="vision-contexto" class="mdoc-section">
+    <h2>Visión multimodal, GitHub y datos en vivo</h2>
+    <p class="mdoc-sub">Muntrume AI combina entradas visuales y contexto estructurado en una misma conversación.</p>
+
+    <div class="mdoc-feature-list">
+      <div class="mdoc-feature">
+        <div class="mdoc-feature__k">Visión OCR y Telemetría</div>
+        <div class="mdoc-feature__v">Arrastra o pega capturas PNG/JPEG/WebP directamente en el chat. El pipeline de visión (<code>qwen/qwen3.8-27b</code> con respaldo Cloudflare Workers AI <code>@cf/meta/llama-4-scout-17b-16e-instruct</code>) procesa pantallas completas sin el antiguo límite de 240 KB.</div>
+      </div>
+      <div class="mdoc-feature">
+        <div class="mdoc-feature__k">Contexto de GitHub</div>
+        <div class="mdoc-feature__v">Pega URLs de repositorios, issues o archivos públicos de GitHub para que el modelo inspeccione el código fuente real antes de proponer cambios.</div>
+      </div>
+      <div class="mdoc-feature">
+        <div class="mdoc-feature__k">Consulta al Vault D1</div>
+        <div class="mdoc-feature__v">Permite cruzar preguntas sobre circuitos, coches y temporadas activas con el catálogo oficial de Muntrume Motorsport almacenado en D1.</div>
+      </div>
+    </div>
+  </section>
+</AiDocsShell>
