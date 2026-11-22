@@ -62,13 +62,18 @@
         </div>
 
         <nav id="appNav" class="flex items-center gap-1 bg-[#090b0f] p-0.5 rounded-lg border border-white/[0.08]" aria-label="Secciones">
-          <button type="button" data-nav="overlays" class="mmt-chip px-2.5 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Overlays</button>
-          <button type="button" data-nav="library" class="mmt-chip px-2.5 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Setups &amp; Sync</button>
-          <button type="button" data-nav="week" class="mmt-chip px-2.5 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Semana S4</button>
-          <button type="button" data-nav="analysis" class="mmt-chip px-2.5 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Telemetría</button>
-          <button type="button" data-nav="strategy" class="mmt-chip px-2.5 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Estrategia</button>
-          <button type="button" data-nav="hardware" class="mmt-chip px-2.5 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Hardware</button>
-          <button type="button" data-nav="settings" class="mmt-chip px-2.5 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Ajustes</button>
+          <button type="button" data-nav="overlays" class="mmt-chip px-3 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Overlays</button>
+          <button type="button" data-nav="library" class="mmt-chip px-3 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Setups</button>
+          <button type="button" data-nav="analysis" class="mmt-chip px-3 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Telemetría</button>
+          <button type="button" data-nav="strategy" class="mmt-chip px-3 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Estrategia</button>
+          <button type="button" data-nav="settings" class="mmt-chip px-3 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Ajustes</button>
+          <details id="appNavMore" class="relative">
+            <summary class="list-none px-2.5 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer select-none">Más ▾</summary>
+            <div class="absolute right-0 mt-1.5 w-36 rounded-lg border border-white/15 bg-[#0d1118] shadow-xl p-1 flex flex-col gap-0.5 z-50">
+              <button type="button" data-nav="week" onclick="document.getElementById('appNavMore')?.removeAttribute('open')" class="mmt-chip w-full text-left px-2.5 py-1.5 rounded-md font-mono text-[11px] font-semibold text-r-muted hover:text-white hover:bg-white/[0.06] whitespace-nowrap transition cursor-pointer">Semana S4</button>
+              <button type="button" data-nav="hardware" onclick="document.getElementById('appNavMore')?.removeAttribute('open')" class="mmt-chip w-full text-left px-2.5 py-1.5 rounded-md font-mono text-[11px] font-semibold text-r-muted hover:text-white hover:bg-white/[0.06] whitespace-nowrap transition cursor-pointer">Hardware</button>
+            </div>
+          </details>
         </nav>
 
         <div class="flex items-center gap-1.5 shrink-0 font-mono text-[11px]">
@@ -1095,9 +1100,9 @@
               <aside class="border-r border-white/[0.08] bg-[#0c0f15] flex flex-col min-h-0 overflow-hidden">
                 <div class="h-[36px] shrink-0 px-2.5 border-b border-white/[0.08] flex items-center justify-between font-mono text-[10px] font-bold uppercase tracking-wider text-white/60">
                   <span>Widgets HUD</span>
-                  <span class="text-[#10b981]">9 Módulos</span>
+                  <span class="text-[#10b981]">11 Módulos</span>
                 </div>
-                <div id="mmtCompactWidgetList" class="flex-1 min-h-0 overflow-hidden p-1.5 space-y-0.5 font-mono text-[10.5px]">
+                <div id="mmtCompactWidgetList" class="flex-1 min-h-0 overflow-y-auto p-1.5 space-y-0.5 font-mono text-[10.5px]">
                   <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-[#10b981]/40 bg-[#10b981]/10 cursor-pointer transition" data-compact-mod="standings">
                     <span class="font-semibold text-white truncate">Standings</span>
                     <button type="button" data-widget-toggle="standings" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Standings"></button>
@@ -1134,10 +1139,21 @@
                     <span class="font-semibold text-white/85 truncate">Tire &amp; Track Temp</span>
                     <button type="button" data-widget-toggle="tires" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Tire & Track Temp"></button>
                   </div>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="flatmap">
+                    <span class="font-semibold text-white/85 truncate">Flat Track Map</span>
+                    <button type="button" data-widget-toggle="flatmap" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Flat Track Map"></button>
+                  </div>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="traffic">
+                    <span class="font-semibold text-white/85 truncate">Traffic Indicator</span>
+                    <button type="button" data-widget-toggle="traffic" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Traffic Indicator"></button>
+                  </div>
                 </div>
-                <div class="shrink-0 p-1.5 border-t border-white/[0.08] grid grid-cols-2 gap-1 font-mono text-[9.5px]">
-                  <button type="button" id="btnShellExportJson" class="py-1 px-1.5 rounded border border-white/10 bg-[#090b0f] hover:border-[#10b981] text-white/80 hover:text-[#10b981] font-bold cursor-pointer truncate" title="Exportar perfil HUD (.json)">⬇ Exportar</button>
-                  <button type="button" id="btnShellImportJson" class="py-1 px-1.5 rounded border border-white/10 bg-[#090b0f] hover:border-[#10b981] text-white/80 hover:text-[#10b981] font-bold cursor-pointer truncate" title="Importar perfil HUD (.json)">⬆ Importar</button>
+                <div class="shrink-0 p-1.5 border-t border-white/[0.08] space-y-1 font-mono text-[9.5px]">
+                  <button type="button" id="btnShellCopyObsUrl" class="w-full py-1 px-2 rounded border border-[#10b981]/35 bg-[#10b981]/10 hover:bg-[#10b981]/20 text-[#10b981] font-bold cursor-pointer truncate" title="Copiar URL única para OBS Browser Source (127.0.0.1:38421/stream)">📺 Copiar URL OBS (/stream)</button>
+                  <div class="grid grid-cols-2 gap-1">
+                    <button type="button" id="btnShellExportJson" class="py-1 px-1.5 rounded border border-white/10 bg-[#090b0f] hover:border-[#10b981] text-white/80 hover:text-[#10b981] font-bold cursor-pointer truncate" title="Exportar perfil HUD (.json)">⬇ Exportar</button>
+                    <button type="button" id="btnShellImportJson" class="py-1 px-1.5 rounded border border-white/10 bg-[#090b0f] hover:border-[#10b981] text-white/80 hover:text-[#10b981] font-bold cursor-pointer truncate" title="Importar perfil HUD (.json)">⬆ Importar</button>
+                  </div>
                 </div>
               </aside>
 
@@ -1171,6 +1187,7 @@
                       <input id="hudScaleRange" type="range" min="70" max="135" value="100" class="w-11 accent-[#10b981]" />
                       <span id="hudScaleVal" class="text-white tabular-nums w-7">100%</span>
                     </label>
+                    <button type="button" id="btnShellFocusMode" aria-pressed="false" class="px-1.5 py-0.5 rounded-[3px] border border-white/10 bg-[#090b0f] text-white/75 hover:text-white font-bold cursor-pointer whitespace-nowrap" title="Focus Mode: oculta widgets secundarios al entrar en pista">🎯 Focus</button>
                     <button type="button" id="btnShellSnapGrid" aria-pressed="true" class="px-1.5 py-0.5 rounded-[3px] border border-emerald-500/50 bg-emerald-500/20 text-emerald-300 font-bold cursor-pointer whitespace-nowrap" title="Imán / Grid 8px">⊞ 8px</button>
                     <button type="button" id="btnShellClickThrough" aria-pressed="true" class="px-1.5 py-0.5 rounded-[3px] border border-emerald-500/50 bg-emerald-500/15 text-emerald-300 font-bold cursor-pointer whitespace-nowrap" title="Permitir clics a través del HUD">Click-Through: ON</button>
                     <button type="button" id="btnShellLockHud" onclick="document.getElementById('mmtStudioLockBtn')?.click();const lk=this.dataset.locked!=='1';this.dataset.locked=lk?'1':'0';this.textContent=lk?'Desbloquear':'Bloquear';" data-locked="1" class="px-1.5 py-0.5 rounded-[3px] border border-emerald-500/40 bg-emerald-500/15 text-emerald-300 font-bold cursor-pointer whitespace-nowrap" title="Atajo Alt+H">
@@ -1258,6 +1275,14 @@
                       <div id="widgetTrackMap" class="mmt-hud-widget absolute bottom-3 right-3 w-[176px] h-[126px] rounded-[3px] border border-white/[0.12] overflow-hidden cursor-move" style="bottom: 12px; right: 12px; background: rgba(9, 11, 15, 0.86);" data-widget="trackmap">
                         <canvas id="ovTrackMap" width="180" height="132"></canvas>
                       </div>
+
+                      <div id="widgetFlatMap" class="mmt-hud-widget absolute top-[146px] left-1/2 -translate-x-1/2 w-[380px] h-[44px] rounded-[10px] overflow-hidden cursor-move" data-widget="flatmap">
+                        <canvas id="ovFlatMap" width="380" height="44"></canvas>
+                      </div>
+
+                      <div id="widgetTraffic" class="mmt-hud-widget absolute top-[198px] left-1/2 -translate-x-1/2 cursor-move" data-widget="traffic">
+                        <div id="ovTraffic"></div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1327,7 +1352,11 @@
                 fuel: "Fuel Calculator",
                 inputs: "Pedales & Marcha",
                 delta: "Delta Bar",
-                radar: "Radar Proximidad"
+                radar: "Radar Proximidad",
+                pit: "Pit & Strategy",
+                tires: "Tire & Track Temp",
+                flatmap: "Flat Track Map",
+                traffic: "Traffic Indicator"
               };
               list.addEventListener("click", (e) => {
                 const toggleBtn = e.target.closest("[data-widget-toggle]");
@@ -2130,6 +2159,14 @@
 
       <div id="floatTrackMapCard" class="mmt-float-widget fixed bottom-[255px] right-[18px] w-[180px] h-[132px] rounded-[3px] pointer-events-auto overflow-hidden" style="background: rgba(9, 11, 15, 0.88); border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: none !important;" data-widget="trackmap">
         <canvas id="ovTrackMapFloat" width="180" height="132"></canvas>
+      </div>
+
+      <div id="floatFlatMapCard" class="mmt-float-widget fixed top-[14px] left-1/2 -translate-x-1/2 w-[420px] h-[46px] rounded-[10px] pointer-events-auto overflow-hidden" style="box-shadow: none !important;" data-widget="flatmap">
+        <canvas id="ovFlatMapFloat" width="420" height="46"></canvas>
+      </div>
+
+      <div id="floatTrafficCard" class="mmt-float-widget fixed top-[68px] left-1/2 -translate-x-1/2 pointer-events-auto" data-widget="traffic">
+        <div id="ovTrafficFloat"></div>
       </div>
 
       <!-- 6. Bottom-Center Pedals (280x82px scaled 1.15x left of wheel) + Centered Steering Wheel (46x46px at left: 50%) -->

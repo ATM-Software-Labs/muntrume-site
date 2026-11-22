@@ -1821,7 +1821,8 @@ function renderStandbyWidgets(): void {
     renderFlatTrackMapCanvas(flatCanvas, irsdkState);
   });
   document.querySelectorAll<HTMLElement>("#ovTraffic, #ovTrafficFloat").forEach((trafficEl) => {
-    renderTrafficIndicator(trafficEl, irsdkState, false);
+    const isPreview = trafficEl.id === "ovTraffic" || document.documentElement.classList.contains("overlay-editing");
+    renderTrafficIndicator(trafficEl, irsdkState, isPreview);
   });
   // Push lightweight live snapshot to Rust OBS Single-Canvas bridge (127.0.0.1:38421/stream) at ~6 Hz
   if (irsdkState) {
@@ -2281,6 +2282,41 @@ function ensureLayoutSchemaV2(force = false): void {
       });
     });
     theme.subscribe(() => syncBrandLogoModeBtns());
+
+    const focusBtn = document.getElementById("btnShellFocusMode") as HTMLButtonElement | null;
+    if (focusBtn) {
+      const syncFocusUi = () => {
+        const on = layout.isFocusMode();
+        focusBtn.setAttribute("aria-pressed", on ? "true" : "false");
+        focusBtn.classList.toggle("border-amber-400/60", on);
+        focusBtn.classList.toggle("bg-amber-500/20", on);
+        focusBtn.classList.toggle("text-amber-300", on);
+        focusBtn.classList.toggle("border-white/10", !on);
+        focusBtn.classList.toggle("bg-[#090b0f]", !on);
+        focusBtn.classList.toggle("text-white/75", !on);
+        focusBtn.textContent = on ? "🎯 Focus: ON" : "🎯 Focus";
+      };
+      syncFocusUi();
+      focusBtn.addEventListener("click", () => {
+        layout.setFocusMode(!layout.isFocusMode());
+        syncFocusUi();
+        applyHudCustomAppearance();
+      });
+    }
+
+    const obsUrlBtn = document.getElementById("btnShellCopyObsUrl") as HTMLButtonElement | null;
+    if (obsUrlBtn) {
+      obsUrlBtn.addEventListener("click", () => {
+        const obsUrl = "http://127.0.0.1:38421/stream";
+        void navigator.clipboard?.writeText(obsUrl).then(() => {
+          const orig = obsUrlBtn.textContent;
+          obsUrlBtn.textContent = "✓ URL OBS Copiada";
+          setTimeout(() => {
+            obsUrlBtn.textContent = orig || "📺 Copiar URL OBS (/stream)";
+          }, 1800);
+        });
+      });
+    }
 
     const opRange = document.getElementById("hudOpacityRange") as HTMLInputElement | null;
     const opVal = document.getElementById("hudOpacityVal");
