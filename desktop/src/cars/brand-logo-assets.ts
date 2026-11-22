@@ -270,14 +270,47 @@ export const BRAND_LOGO_ASSETS: Record<string, BrandLogoAsset> = {
 
 export type BrandLogoTheme = "original" | "white" | "black";
 
+/**
+ * Multi-layer / filled-badge / raster emblems that contain internal contrast
+ * (e.g. VW, BMW, Ford, Subaru, Ram, Riley, Tatuus, FIA, Caterham, Lotus, Radical).
+ * In monochrome White / Black modes these use high-contrast luminance desaturation
+ * instead of flat silhouette flattening so internal details never turn into solid blobs.
+ */
+export const MULTI_LAYER_BADGE_IDS = new Set<string>([
+  "logo-aston",
+  "logo-bmw",
+  "logo-buick",
+  "logo-caterham",
+  "logo-fia",
+  "logo-ford",
+  "logo-holden",
+  "logo-ligier",
+  "logo-lotus",
+  "logo-pontiac",
+  "logo-radical",
+  "logo-ram",
+  "logo-riley",
+  "logo-subaru",
+  "logo-tatuus",
+  "logo-vw",
+]);
+
 export function brandLogoSvg(id: string, size = 32, theme: BrandLogoTheme = "original"): string | null {
   const asset = BRAND_LOGO_ASSETS[id];
   if (!asset) return null;
+  const isBadge = MULTI_LAYER_BADGE_IDS.has(id);
+  const kindAttr = `data-logo-kind="${isBadge ? "badge" : "silhouette"}"`;
   if (theme === "white") {
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${asset.viewBox}" width="${size}" height="${size}" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><defs><filter id="mmt-w"><feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/></filter></defs><g filter="url(#mmt-w)">${asset.inner}</g></svg>`;
+    const filterDef = isBadge
+      ? `<filter id="mmt-w"><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="linear" slope="1.45" intercept="-0.12"/><feFuncG type="linear" slope="1.45" intercept="-0.12"/><feFuncB type="linear" slope="1.45" intercept="-0.12"/></feComponentTransfer></filter>`
+      : `<filter id="mmt-w"><feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/></filter>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" ${kindAttr} viewBox="${asset.viewBox}" width="${size}" height="${size}" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><defs>${filterDef}</defs><g filter="url(#mmt-w)">${asset.inner}</g></svg>`;
   }
   if (theme === "black") {
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${asset.viewBox}" width="${size}" height="${size}" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><defs><filter id="mmt-b"><feColorMatrix type="matrix" values="0 0 0 0 0.06 0 0 0 0 0.09 0 0 0 0 0.16 0 0 0 1 0"/></filter></defs><g filter="url(#mmt-b)">${asset.inner}</g></svg>`;
+    const filterDef = isBadge
+      ? `<filter id="mmt-b"><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="linear" slope="1.4" intercept="-0.22"/><feFuncG type="linear" slope="1.4" intercept="-0.22"/><feFuncB type="linear" slope="1.4" intercept="-0.22"/></feComponentTransfer></filter>`
+      : `<filter id="mmt-b"><feColorMatrix type="matrix" values="0 0 0 0 0.06 0 0 0 0 0.09 0 0 0 0 0.16 0 0 0 1 0"/></filter>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" ${kindAttr} viewBox="${asset.viewBox}" width="${size}" height="${size}" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><defs>${filterDef}</defs><g filter="url(#mmt-b)">${asset.inner}</g></svg>`;
   }
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${asset.viewBox}" width="${size}" height="${size}" preserveAspectRatio="xMidYMid meet" aria-hidden="true">${asset.inner}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" ${kindAttr} viewBox="${asset.viewBox}" width="${size}" height="${size}" preserveAspectRatio="xMidYMid meet" aria-hidden="true">${asset.inner}</svg>`;
 }

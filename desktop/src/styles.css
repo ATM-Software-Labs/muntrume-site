@@ -605,9 +605,19 @@ html[data-brand-logo-mode="white"] .mmt-brand-badge > svg {
   filter: brightness(0) invert(1) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.85)) !important;
 }
 
+html[data-brand-logo-mode="white"] .mmt-brand-svg > svg[data-logo-kind="badge"],
+html[data-brand-logo-mode="white"] .mmt-brand-badge > svg[data-logo-kind="badge"] {
+  filter: grayscale(1) contrast(1.45) brightness(1.18) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.85)) !important;
+}
+
 html[data-brand-logo-mode="black"] .mmt-brand-svg > svg,
 html[data-brand-logo-mode="black"] .mmt-brand-badge > svg {
   filter: brightness(0) !important;
+}
+
+html[data-brand-logo-mode="black"] .mmt-brand-svg > svg[data-logo-kind="badge"],
+html[data-brand-logo-mode="black"] .mmt-brand-badge > svg[data-logo-kind="badge"] {
+  filter: grayscale(1) contrast(1.55) brightness(0.75) !important;
 }
 
 html[data-brand-logo-mode="black"] .mmt-brand-svg {

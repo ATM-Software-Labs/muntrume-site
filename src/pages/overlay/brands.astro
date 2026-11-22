@@ -373,11 +373,15 @@ const brandsSchema = {
     .logo-tone-btn[aria-pressed="true"] { background: var(--r-accent); color: #04140d; }
     main.brand-hud[data-logo-tone="white"] .brand-mark > svg,
     main.brand-hud[data-logo-tone="white"] .brand-standings-row svg { filter: brightness(0) invert(1); }
+    main.brand-hud[data-logo-tone="white"] .brand-mark > svg[data-logo-kind="badge"],
+    main.brand-hud[data-logo-tone="white"] .brand-standings-row svg[data-logo-kind="badge"] { filter: grayscale(1) contrast(1.45) brightness(1.18); }
     main.brand-hud[data-logo-tone="black"] .brand-mark { background-color: #f1f5f9 !important; border-color: rgba(15, 23, 42, 0.16) !important; }
     main.brand-hud[data-logo-tone="black"] .brand-mark > svg { filter: brightness(0); }
+    main.brand-hud[data-logo-tone="black"] .brand-mark > svg[data-logo-kind="badge"] { filter: grayscale(1) contrast(1.55) brightness(0.75); }
     main.brand-hud[data-logo-tone="black"] .brand-standings-row { background-color: #f1f5f9 !important; color: #0f172a !important; border-color: rgba(15, 23, 42, 0.16) !important; }
     main.brand-hud[data-logo-tone="black"] .brand-standings-row span { color: #0f172a !important; }
     main.brand-hud[data-logo-tone="black"] .brand-standings-row svg { filter: brightness(0); }
+    main.brand-hud[data-logo-tone="black"] .brand-standings-row svg[data-logo-kind="badge"] { filter: grayscale(1) contrast(1.55) brightness(0.75); }
   </style>
   <script is:inline>
     (() => {
@@ -420,10 +424,16 @@ const brandsSchema = {
         if (!rawSvg || tone === "original") return rawSvg;
         const m = rawSvg.match(/^(<svg[^>]*>)([\s\S]*)(<\/svg>)$/i);
         if (!m) return rawSvg;
+        const isBadge = /data-logo-kind="badge"/i.test(m[1]);
+        const fid = tone === "white" ? "mmt-mono-w" : "mmt-mono-b";
+        if (isBadge) {
+          const slope = tone === "white" ? "1.45" : "1.4";
+          const intercept = tone === "white" ? "-0.12" : "-0.22";
+          return `${m[1]}<defs><filter id="${fid}"><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="linear" slope="${slope}" intercept="${intercept}"/><feFuncG type="linear" slope="${slope}" intercept="${intercept}"/><feFuncB type="linear" slope="${slope}" intercept="${intercept}"/></feComponentTransfer></filter></defs><g filter="url(#${fid})">${m[2]}</g>${m[3]}`;
+        }
         const matrix = tone === "white"
           ? "0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"
           : "0 0 0 0 0.06 0 0 0 0 0.09 0 0 0 0 0.16 0 0 0 1 0";
-        const fid = tone === "white" ? "mmt-mono-w" : "mmt-mono-b";
         return `${m[1]}<defs><filter id="${fid}"><feColorMatrix type="matrix" values="${matrix}"/></filter></defs><g filter="url(#${fid})">${m[2]}</g>${m[3]}`;
       };
 
