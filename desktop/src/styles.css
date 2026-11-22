@@ -599,15 +599,20 @@ html.overlay-mode.overlay-editing #floatLayersControlPanel {
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.85));
 }
 
-/* Brand logo color mode: Original (default), Blanco (monochrome white), Negro (monochrome black) */
+/* Brand logo color mode: Original (default), Blanco (white body + black interior), Negro (black body + white interior) */
 html[data-brand-logo-mode="white"] .mmt-brand-svg > svg,
 html[data-brand-logo-mode="white"] .mmt-brand-badge > svg {
   filter: brightness(0) invert(1) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.85)) !important;
 }
 
-html[data-brand-logo-mode="white"] .mmt-brand-svg > svg[data-logo-kind="badge"],
-html[data-brand-logo-mode="white"] .mmt-brand-badge > svg[data-logo-kind="badge"] {
-  filter: grayscale(1) contrast(1.45) brightness(1.18) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.85)) !important;
+html[data-brand-logo-mode="white"] .mmt-brand-svg > svg[data-logo-kind="badge-dark"],
+html[data-brand-logo-mode="white"] .mmt-brand-badge > svg[data-logo-kind="badge-dark"] {
+  filter: grayscale(1) invert(1) contrast(2.6) brightness(1.08) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.85)) !important;
+}
+
+html[data-brand-logo-mode="white"] .mmt-brand-svg > svg[data-logo-kind="badge-light"],
+html[data-brand-logo-mode="white"] .mmt-brand-badge > svg[data-logo-kind="badge-light"] {
+  filter: grayscale(1) contrast(2.4) brightness(1.15) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.85)) !important;
 }
 
 html[data-brand-logo-mode="black"] .mmt-brand-svg > svg,
@@ -615,9 +620,14 @@ html[data-brand-logo-mode="black"] .mmt-brand-badge > svg {
   filter: brightness(0) !important;
 }
 
-html[data-brand-logo-mode="black"] .mmt-brand-svg > svg[data-logo-kind="badge"],
-html[data-brand-logo-mode="black"] .mmt-brand-badge > svg[data-logo-kind="badge"] {
-  filter: grayscale(1) contrast(1.55) brightness(0.75) !important;
+html[data-brand-logo-mode="black"] .mmt-brand-svg > svg[data-logo-kind="badge-dark"],
+html[data-brand-logo-mode="black"] .mmt-brand-badge > svg[data-logo-kind="badge-dark"] {
+  filter: grayscale(1) contrast(2.6) brightness(0.92) !important;
+}
+
+html[data-brand-logo-mode="black"] .mmt-brand-svg > svg[data-logo-kind="badge-light"],
+html[data-brand-logo-mode="black"] .mmt-brand-badge > svg[data-logo-kind="badge-light"] {
+  filter: grayscale(1) invert(1) contrast(2.4) brightness(0.95) !important;
 }
 
 html[data-brand-logo-mode="black"] .mmt-brand-svg {

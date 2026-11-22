@@ -271,23 +271,18 @@ export const BRAND_LOGO_ASSETS: Record<string, BrandLogoAsset> = {
 export type BrandLogoTheme = "original" | "white" | "black";
 
 /**
- * Multi-layer / filled-badge / raster emblems that contain internal contrast
- * (e.g. VW, BMW, Ford, Subaru, Ram, Riley, Tatuus, FIA, Caterham, Lotus, Radical).
- * In monochrome White / Black modes these use high-contrast luminance desaturation
- * instead of flat silhouette flattening so internal details never turn into solid blobs.
+ * Multi-layer emblems with a dark outer body and bright inner symbol/text
+ * (BMW, VW, Subaru, Ford, FIA, Caterham, Ram, Riley, Tatuus, Pontiac, Holden).
+ * - White mode: inverted high-contrast B&W (white body, black interior details)
+ * - Black mode: high-contrast B&W (black body, white interior details)
  */
-export const MULTI_LAYER_BADGE_IDS = new Set<string>([
-  "logo-aston",
+export const DARK_BODY_BADGE_IDS = new Set<string>([
   "logo-bmw",
-  "logo-buick",
   "logo-caterham",
   "logo-fia",
   "logo-ford",
   "logo-holden",
-  "logo-ligier",
-  "logo-lotus",
   "logo-pontiac",
-  "logo-radical",
   "logo-ram",
   "logo-riley",
   "logo-subaru",
@@ -295,21 +290,43 @@ export const MULTI_LAYER_BADGE_IDS = new Set<string>([
   "logo-vw",
 ]);
 
+/**
+ * Multi-layer emblems with a light outer body and dark inner detail
+ * (Lotus, Radical, Aston Martin, Buick, Ligier).
+ * - White mode: high-contrast B&W (white body, black interior details)
+ * - Black mode: inverted high-contrast B&W (black body, white interior details)
+ */
+export const LIGHT_BODY_BADGE_IDS = new Set<string>([
+  "logo-aston",
+  "logo-buick",
+  "logo-ligier",
+  "logo-lotus",
+  "logo-radical",
+]);
+
 export function brandLogoSvg(id: string, size = 32, theme: BrandLogoTheme = "original"): string | null {
   const asset = BRAND_LOGO_ASSETS[id];
   if (!asset) return null;
-  const isBadge = MULTI_LAYER_BADGE_IDS.has(id);
-  const kindAttr = `data-logo-kind="${isBadge ? "badge" : "silhouette"}"`;
+  const kind = DARK_BODY_BADGE_IDS.has(id)
+    ? "badge-dark"
+    : LIGHT_BODY_BADGE_IDS.has(id)
+      ? "badge-light"
+      : "silhouette";
+  const kindAttr = `data-logo-kind="${kind}"`;
   if (theme === "white") {
-    const filterDef = isBadge
-      ? `<filter id="mmt-w"><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="linear" slope="1.45" intercept="-0.12"/><feFuncG type="linear" slope="1.45" intercept="-0.12"/><feFuncB type="linear" slope="1.45" intercept="-0.12"/></feComponentTransfer></filter>`
-      : `<filter id="mmt-w"><feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/></filter>`;
+    const filterDef = kind === "badge-dark"
+      ? `<filter id="mmt-w"><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="linear" slope="-2.4" intercept="1.8"/><feFuncG type="linear" slope="-2.4" intercept="1.8"/><feFuncB type="linear" slope="-2.4" intercept="1.8"/></feComponentTransfer></filter>`
+      : kind === "badge-light"
+        ? `<filter id="mmt-w"><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="linear" slope="2.2" intercept="-0.55"/><feFuncG type="linear" slope="2.2" intercept="-0.55"/><feFuncB type="linear" slope="2.2" intercept="-0.55"/></feComponentTransfer></filter>`
+        : `<filter id="mmt-w"><feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/></filter>`;
     return `<svg xmlns="http://www.w3.org/2000/svg" ${kindAttr} viewBox="${asset.viewBox}" width="${size}" height="${size}" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><defs>${filterDef}</defs><g filter="url(#mmt-w)">${asset.inner}</g></svg>`;
   }
   if (theme === "black") {
-    const filterDef = isBadge
-      ? `<filter id="mmt-b"><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="linear" slope="1.4" intercept="-0.22"/><feFuncG type="linear" slope="1.4" intercept="-0.22"/><feFuncB type="linear" slope="1.4" intercept="-0.22"/></feComponentTransfer></filter>`
-      : `<filter id="mmt-b"><feColorMatrix type="matrix" values="0 0 0 0 0.06 0 0 0 0 0.09 0 0 0 0 0.16 0 0 0 1 0"/></filter>`;
+    const filterDef = kind === "badge-dark"
+      ? `<filter id="mmt-b"><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="linear" slope="2.4" intercept="-0.75"/><feFuncG type="linear" slope="2.4" intercept="-0.75"/><feFuncB type="linear" slope="2.4" intercept="-0.75"/></feComponentTransfer></filter>`
+      : kind === "badge-light"
+        ? `<filter id="mmt-b"><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="linear" slope="-2.2" intercept="1.65"/><feFuncG type="linear" slope="-2.2" intercept="1.65"/><feFuncB type="linear" slope="-2.2" intercept="1.65"/></feComponentTransfer></filter>`
+        : `<filter id="mmt-b"><feColorMatrix type="matrix" values="0 0 0 0 0.06 0 0 0 0 0.09 0 0 0 0 0.16 0 0 0 1 0"/></filter>`;
     return `<svg xmlns="http://www.w3.org/2000/svg" ${kindAttr} viewBox="${asset.viewBox}" width="${size}" height="${size}" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><defs>${filterDef}</defs><g filter="url(#mmt-b)">${asset.inner}</g></svg>`;
   }
   return `<svg xmlns="http://www.w3.org/2000/svg" ${kindAttr} viewBox="${asset.viewBox}" width="${size}" height="${size}" preserveAspectRatio="xMidYMid meet" aria-hidden="true">${asset.inner}</svg>`;
