@@ -60,51 +60,53 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
             class="brand-card rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] p-3.5 flex flex-col gap-3 font-mono tabular-nums hover:border-[var(--r-accent)] transition"
             data-search={`${b.name} ${b.carPaths.join(" ")} ${b.color}`.toLowerCase()}
           >
-            <!-- Top: 32x32 Official SVG + HEX Badge -->
+            <!-- Top: 48x48 Official SVG + HEX Badge -->
             <div class="flex items-start justify-between gap-2">
               <span
-                class="brand-mark w-11 h-11 rounded-lg border border-[var(--r-line)] bg-[#090b0f] flex items-center justify-center shrink-0 p-1"
+                class="brand-mark w-12 h-12 rounded-xl border border-white/15 bg-[#090b0f] shadow-inner flex items-center justify-center shrink-0 p-1.5"
                 title={b.logoVerified ? b.name : `${b.name}: sin emblema verificable`}
               >
                 <Fragment set:html={b.svg} />
               </span>
               <span
-                class="text-[10px] px-1.5 py-0.5 rounded border border-[var(--r-line)] bg-[var(--r-bg-2)] font-bold tracking-wide"
-                style={`color:${b.color}`}
+                data-no-translate
+                class="inline-flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-md border border-[var(--r-line)] bg-[var(--r-bg-2)] font-bold tracking-wide text-[var(--r-text)]"
               >
-                {b.color.toUpperCase()}{b.colorKind === "neutral" ? " · neutro" : ""}
+                <span class="w-2.5 h-2.5 rounded-full shrink-0 border border-black/20 dark:border-white/20" style={`background:${b.color}`}></span>
+                <span>{b.color.toUpperCase()}{b.colorKind === "neutral" ? " · Neutro" : ""}</span>
               </span>
             </div>
 
             <div>
-              <h2 class="text-xs font-bold text-[var(--r-text)]">{b.name}</h2>
-              <p class="text-[10px] text-[var(--r-muted)]" data-i18n={b.logoVerified ? "brands.logo" : "brands.nologo"}>{b.logoVerified ? "Logo de marca" : "Sin logo verificable"}</p>
-              <ul class="mt-1 space-y-0.5">
+              <h2 data-no-translate class="text-sm font-bold text-[var(--r-text)]">{b.name}</h2>
+              <p class="text-[10px] text-[var(--r-muted)]" data-i18n={b.logoVerified ? "brands.logo" : "brands.nologo"}>{b.logoVerified ? "Emblema oficial HUD" : "Marca neutra HUD"}</p>
+              <ul data-no-translate class="mt-1.5 space-y-0.5 max-h-40 overflow-y-auto pr-1">
                 {b.cars.map((car) => (
                   <li class="text-[10px] text-[var(--r-muted)] break-all flex items-baseline gap-1.5">
                     <span>{car.carFolder}</span>
                     {car.legacy && (
-                      <span data-i18n="brands.legacy" class="shrink-0 rounded border border-amber-400/40 bg-amber-400/10 px-1 text-[9px] font-bold uppercase tracking-wide text-amber-500">Legacy</span>
+                      <span data-i18n="brands.legacy" class="shrink-0 rounded border border-amber-500/40 bg-amber-500/10 px-1 text-[9px] font-bold uppercase tracking-wide text-amber-600 dark:text-amber-400">Legacy</span>
                     )}
                   </li>
                 ))}
               </ul>
             </div>
 
-            <!-- Bottom: Real Standings 22px Row Preview -->
+            <!-- Bottom: Real Standings 24px Row Preview -->
             <div
-              class="h-[22px] rounded-[3px] bg-[rgba(9,11,15,0.88)] border border-white/10 border-l-[3px] px-1.5 flex items-center justify-between gap-1.5 text-[10px]"
+              data-no-translate
+              class="brand-standings-row mt-auto h-[24px] rounded-[4px] bg-[#090b0f] border border-white/10 border-l-[3px] px-2 flex items-center justify-between gap-1.5 text-[10px]"
               style={`border-left-color:${b.color}`}
-              title="Vista previa en fila Standings (22px)"
+              title="Vista previa en fila Standings (24px)"
             >
-              <div class="flex items-center gap-1 min-w-0">
-                <span class="text-slate-400 font-bold w-3 text-right">{idx + 1}</span>
-                <span class="w-3.5 h-3.5 shrink-0 inline-flex [&>svg]:w-full [&>svg]:h-full">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="text-slate-400 font-bold w-3.5 text-right">{idx + 1}</span>
+                <span class="w-4 h-4 shrink-0 inline-flex items-center justify-center [&>svg]:w-full [&>svg]:h-full">
                   <Fragment set:html={b.svg} />
                 </span>
                 <span class="text-slate-200 font-semibold truncate">{b.name}</span>
               </div>
-              <span class="text-[9px] px-1 rounded bg-white/5 text-slate-300 font-bold shrink-0">
+              <span class="text-[9px] px-1.5 py-0.2 rounded bg-white/10 text-slate-300 font-bold shrink-0">
                 {b.carPaths.length}
               </span>
             </div>

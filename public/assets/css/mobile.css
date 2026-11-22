@@ -89,40 +89,39 @@ html.light .bg-\[\#0A0F0D\], [data-theme="light"] .bg-\[\#0A0F0D\],
 html.light .bg-\[\#090b0f\], [data-theme="light"] .bg-\[\#090b0f\] {
   background-color: #FFFFFF !important;
 }
-/* /overlay/brands/ stays dark: the marks use white lettering. */
-html.light .brand-hud,
-html[data-theme="light"] .brand-hud,
-html.light .brand-hud .bg-\[\#090b0f\],
-html[data-theme="light"] .brand-hud .bg-\[\#090b0f\] {
+/* /overlay/brands/ adapts to Light/Dark theme, while its HUD preview pods (.brand-mark, .brand-standings-row, .brand-mini-card) stay dark (#090b0f). */
+html.light .brand-mark,
+html[data-theme="light"] .brand-mark,
+html.light .brand-standings-row,
+html[data-theme="light"] .brand-standings-row,
+html.light .brand-mini-card,
+html[data-theme="light"] .brand-mini-card {
   background-color: #090b0f !important;
-  color: #e2e8f0 !important;
+  color: #f1f5f9 !important;
 }
-html.light .brand-hud .bg-\[\#0d1118\],
-html[data-theme="light"] .brand-hud .bg-\[\#0d1118\] {
-  background-color: #0d1118 !important;
-  color: #e2e8f0 !important;
+html.light .brand-standings-row .text-slate-200,
+html[data-theme="light"] .brand-standings-row .text-slate-200,
+html.light .brand-mini-card .text-slate-100,
+html[data-theme="light"] .brand-mini-card .text-slate-100,
+html.light .brand-mini-card .text-slate-200,
+html[data-theme="light"] .brand-mini-card .text-slate-200 {
+  color: #f1f5f9 !important;
 }
-html.light .brand-hud .text-white,
-html[data-theme="light"] .brand-hud .text-white,
-html.light .brand-hud .text-slate-100,
-html[data-theme="light"] .brand-hud .text-slate-100,
-html.light .brand-hud .text-slate-200,
-html[data-theme="light"] .brand-hud .text-slate-200,
-html.light .brand-hud .text-slate-300,
-html[data-theme="light"] .brand-hud .text-slate-300 {
-  color: #e2e8f0 !important;
+html.light .brand-standings-row .text-slate-300,
+html[data-theme="light"] .brand-standings-row .text-slate-300 {
+  color: #cbd5e1 !important;
 }
-html.light .brand-hud .text-slate-400,
-html[data-theme="light"] .brand-hud .text-slate-400,
-html.light .brand-hud .text-slate-500,
-html[data-theme="light"] .brand-hud .text-slate-500 {
+html.light .brand-standings-row .text-slate-400,
+html[data-theme="light"] .brand-standings-row .text-slate-400,
+html.light .brand-mini-card .text-slate-400,
+html[data-theme="light"] .brand-mini-card .text-slate-400 {
   color: #94a3b8 !important;
 }
-html.light .brand-hud .border-white\/10,
-html[data-theme="light"] .brand-hud .border-white\/10,
-html.light .brand-hud .border-white\/15,
-html[data-theme="light"] .brand-hud .border-white\/15 {
-  border-color: rgba(255, 255, 255, 0.12) !important;
+html.light .brand-standings-row.border-white\/10,
+html[data-theme="light"] .brand-standings-row.border-white\/10 {
+  border-top-color: rgba(255, 255, 255, 0.12) !important;
+  border-right-color: rgba(255, 255, 255, 0.12) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.12) !important;
 }
 
 html.light .bg-\[\#1A2120\], [data-theme="light"] .bg-\[\#1A2120\],
@@ -144,17 +143,17 @@ html.light .border-\[\#242E2C\], [data-theme="light"] .border-\[\#242E2C\],
 html.light .border-\[\#232C2A\], [data-theme="light"] .border-\[\#232C2A\],
 html.light .border-\[\#1C2523\], [data-theme="light"] .border-\[\#1C2523\],
 html.light .border-\[\#2A3331\], [data-theme="light"] .border-\[\#2A3331\],
-html.light .border-white\/10, [data-theme="light"] .border-white\/10,
-html.light .border-white\/15, [data-theme="light"] .border-white\/15 {
+html.light :not(.brand-standings-row):not(.sim-stage *) > .border-white\/10, [data-theme="light"] :not(.brand-standings-row):not(.sim-stage *) > .border-white\/10,
+html.light :not(.brand-standings-row):not(.sim-stage *) > .border-white\/15, [data-theme="light"] :not(.brand-standings-row):not(.sim-stage *) > .border-white\/15 {
   border-color: #E2E8E5 !important;
 }
 
-html.light :not(.brand-hud) .text-slate-100, [data-theme="light"] :not(.brand-hud) .text-slate-100,
-html.light :not(.brand-hud) .text-slate-200, [data-theme="light"] :not(.brand-hud) .text-slate-200 {
+html.light .text-slate-100:not(.brand-standings-row *):not(.sim-stage *):not(.sim-toolbar *), [data-theme="light"] .text-slate-100:not(.brand-standings-row *):not(.sim-stage *):not(.sim-toolbar *),
+html.light .text-slate-200:not(.brand-standings-row *):not(.sim-stage *):not(.sim-toolbar *), [data-theme="light"] .text-slate-200:not(.brand-standings-row *):not(.sim-stage *):not(.sim-toolbar *) {
   color: #0E1412 !important;
 }
-html.light :not(.brand-hud) .text-slate-300, [data-theme="light"] :not(.brand-hud) .text-slate-300,
-html.light :not(.brand-hud) .text-slate-400, [data-theme="light"] :not(.brand-hud) .text-slate-400 {
+html.light .text-slate-300:not(.brand-standings-row *):not(.sim-stage *):not(.sim-toolbar *), [data-theme="light"] .text-slate-300:not(.brand-standings-row *):not(.sim-stage *):not(.sim-toolbar *),
+html.light .text-slate-400:not(.brand-standings-row *):not(.sim-stage *):not(.sim-toolbar *), [data-theme="light"] .text-slate-400:not(.brand-standings-row *):not(.sim-stage *):not(.sim-toolbar *) {
   color: #4A5854 !important;
 }
 

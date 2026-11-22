@@ -144,15 +144,27 @@
     });
     document.addEventListener("muntru:close-lang", closeMenus);
   }
+  // Purge any old m2m100 caches (mm_tr_, mm_tr2_, mm_tr3_) that may contain mangled short strings
+  try {
+    for (var sIdx = sessionStorage.length - 1; sIdx >= 0; sIdx--) {
+      var sk = sessionStorage.key(sIdx);
+      if (sk && /^mm_tr[0-3]?_/.test(sk)) sessionStorage.removeItem(sk);
+    }
+  } catch (e) {}
+
   function isTranslatableText(str) {
     var s = String(str || "").trim();
-    if (s.length < 3 || s.length > 580) return false;
-    if (/^[\d\s.,:%+\-–—/()[\]<>→←↗·•|]+$/.test(s)) return false;
+    // Neural MT (m2m100-1.2b) hallucinates prefixes ("by ...", "Tagged with ...", "The kids are.") on short 1-2 word labels, slugs, and acronyms.
+    // Only auto-translate genuine multi-word prose sentences/phrases (>= 14 chars and >= 3 words). Short UI labels must use explicit data-i18n keys.
+    if (s.length < 14 || s.length > 580) return false;
+    var words = s.split(/\s+/);
+    if (words.length < 3) return false;
+    // Skip lowercase/alphanumeric slugs or file paths
+    if (/^[a-z0-9_./-]+$/i.test(s)) return false;
+    if (/^[\d\s.,:%+\-–—/()[\]<>→←↗·•|#]+$/.test(s)) return false;
     if (/^(https?:\/\/|mailto:|\/[a-z0-9/_-]+$)/i.test(s)) return false;
-    if (/^(ES|EN|CA|FR|MIT|API|SSE|JWT|MFA|TOTP|HTTP|CSV|SVG|HTML|JSON|DNS|CSP|URL|PC|PDF|XML|OK|HUD|STO|IBT|RAM|CPU|GPU|FPS|SDK|iRSDK|IRSDK)$/i.test(s)) return false;
-    // Skip technical specs, version tags, and product proper nouns so m2m100 doesn't mangle "60 Hz" or "Tauri v2"
-    if (/^(\d+(\.\d+)?\s*(%|Hz|FPS|MB|GB|KB|ms|s|min|h|x|kPa|PSI|L|iR|RPM)(\s+(CPU|RAM|GPU))?|SHA-\d+|Tauri\s*v?\d+(\.\d+)?|WebView2|Cloudflare(\s+D1)?|D1(\s+Online)?|MMT(\s+(Sync|HUD|Companion|Motorsport|Steward\s+Bot))?|Muntrume(\s+(Motorsport|AI|Security|Admin|ID))?|Garage\s*61|iRacing(\s+SDK)?|Standings|Relative|Track\s*Map|Fuel\s*Calc|Pit\s*Strategy|Inputs\s*&\s*Delta|Radar|Sprint\s*GT3|Endurance|Minimalist\s*Qualy|Replay\s*\(R\))$/i.test(s)) return false;
-    return /[a-zA-ZáéíóúÁÉÍÓÚñÑüÜçÇ]{2,}/.test(s);
+    if (/^#[0-9A-Fa-f]{3,8}\b/.test(s)) return false;
+    return /[a-zA-ZáéíóúÁÉÍÓÚñÑüÜçÇ]{3,}/.test(s);
   }
   function collectAutoNodes() {
     var roots = document.querySelectorAll("main, article, .mdoc-page, .mm-login-page");
@@ -169,7 +181,7 @@
         if (seen.has(node)) continue;
         var p = node.parentElement;
         if (!p || skipTags[p.tagName]) continue;
-        if (p.closest("code, pre, script, style, svg, [data-i18n], [data-no-translate], [data-lang-root], .ov-spec__val, .rc-brand")) continue;
+        if (p.closest("code, pre, script, style, svg, kbd, [data-i18n], [data-no-translate], [data-lang-root], .ov-spec__val, .rc-brand, .sim-stage, .sim-toolbar, .brand-card, .brand-mini-card, .brand-standings-row, .hud-box")) continue;
         var raw = node.nodeValue || "";
         if (!isTranslatableText(raw)) continue;
         seen.add(node);
@@ -178,8 +190,17 @@
     }
     return out;
   }
+  function sanitizeTranslation(src, tr) {
+    if (!tr || typeof tr !== "string") return null;
+    var clean = tr.trim();
+    // Guard against m2m100 hallucinating "by X" or "Tagged with X" when original Spanish did not start with "por " or "etiquetado"
+    if (/^(by|tagged(\s+with)?)\s+/i.test(clean) && !/^(por|etiquetad)/i.test(src.trim())) {
+      clean = clean.replace(/^(by|tagged(\s+with)?)\s+/i, "");
+    }
+    return clean;
+  }
   function cacheKey(code, txt) {
-    return "mm_tr2_" + code + "_" + txt.slice(0, 120) + "_" + txt.length;
+    return "mm_tr4_" + code + "_" + txt.slice(0, 120) + "_" + txt.length;
   }
   function applyEdgeTranslation(entries) {
     if (!entries.length) return;
@@ -218,8 +239,8 @@
             if (!data || !Array.isArray(data.translations)) return;
             for (var k = 0; k < batch.length; k++) {
               var src = batch[k];
-              var tr = data.translations[k];
-              if (!tr || typeof tr !== "string") continue;
+              var tr = sanitizeTranslation(src, data.translations[k]);
+              if (!tr) continue;
               try { sessionStorage.setItem(cacheKey(lang, src), tr); } catch (err) {}
               var targets = uncachedMap[src] || [];
               for (var t = 0; t < targets.length; t++) {

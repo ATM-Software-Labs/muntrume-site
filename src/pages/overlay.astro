@@ -27,13 +27,13 @@ const simBrandSamples: Record<string, string> = {
   mercedes: "mercedesamgevogt3",
   aston: "amvantageevogt3",
 };
-const SIM_BRAND_PATHS: Record<string, { path: string; color: string; name: string }> = Object.fromEntries(
+const SIM_BRAND_PATHS: Record<string, { svg: string; color: string; name: string }> = Object.fromEntries(
   Object.entries(simBrandSamples).map(([key, sampleCar]) => {
     const info = getCarBrandInfo(sampleCar);
     return [
       key,
       {
-        path: OFFICIAL_BRAND_PATHS[`logo-${info.id}`] || OFFICIAL_BRAND_PATHS[`logo-${key}`] || "",
+        svg: info.svg,
         color: info.color,
         name: info.name,
       },
@@ -190,9 +190,9 @@ const overlaySchema = {
         </div>
 
         <!-- Barra de control interactiva -->
-        <div class="sim-toolbar" role="region" aria-label="Controles del simulador HUD">
+        <div class="sim-toolbar" data-no-translate role="region" aria-label="Controles del simulador HUD">
           <div class="sim-toolbar__group">
-            <span class="sim-toolbar__label">MÓDULOS:</span>
+            <span class="sim-toolbar__label" data-i18n="ov.modules">MÓDULOS:</span>
             <button type="button" class="sim-chip is-on" data-toggle-mod="standings" aria-pressed="true">
               <span class="sim-chip__dot"></span>Standings
             </button>
@@ -220,33 +220,33 @@ const overlaySchema = {
           </div>
 
           <div class="sim-toolbar__group sim-toolbar__right">
-            <span class="sim-toolbar__label">PRESETS:</span>
+            <span class="sim-toolbar__label" data-i18n="ov.presets">PRESETS:</span>
             <button type="button" class="sim-action-btn" data-sim-preset="sprint_gt3">Sprint GT3</button>
             <button type="button" class="sim-action-btn" data-sim-preset="endurance_multi">Endurance</button>
             <button type="button" class="sim-action-btn" data-sim-preset="minimal_qualy">Minimalist Qualy</button>
-            <button type="button" id="simLockHudBtn" class="sim-action-btn" aria-pressed="false" title="Fijar / Bloquear HUD">🔒 Fijar HUD</button>
+            <button type="button" id="simLockHudBtn" class="sim-action-btn" aria-pressed="false" title="Lock HUD">🔒 Lock HUD</button>
             <div class="sim-mode-switch" role="group" aria-label="Modo de sesión">
               <button type="button" id="simModeTrack" class="sim-mode-btn is-active" aria-pressed="true">
-                Pista <kbd>P</kbd>
+                Track <kbd>P</kbd>
               </button>
               <button type="button" id="simModeReplay" class="sim-mode-btn" aria-pressed="false">
                 Replay <kbd>R</kbd>
               </button>
             </div>
             <button type="button" id="simNextCircuitBtn" class="sim-action-btn" title="Rotar circuito (Silverstone / Spa / Daytona / Interlagos)">
-              Cambiar Circuito
+              Circuit ↻
             </button>
             <button type="button" id="simTriggerRadar" class="sim-action-btn" title="Simular coche en paralelo (1-wide / 3-wide)">
-              Simular 3-Wide
+              3-Wide
             </button>
             <button type="button" id="simPauseBtn" class="sim-action-btn" aria-pressed="false">
-              Pausar
+              Pause
             </button>
           </div>
         </div>
 
         <!-- Lienzo de Cabina Simulada 16:9 (60 FPS Canvas + Posición Real iRacing) -->
-        <div class="sim-stage" id="simStage">
+        <div class="sim-stage" id="simStage" data-no-translate>
           <canvas id="simTrackBackdropCanvas" class="sim-backdrop" aria-hidden="true"></canvas>
 
           <!-- Barra superior de estado del simulador -->
@@ -597,21 +597,22 @@ npm run tauri dev</code></pre>
           </a>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2.5">
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2.5" data-no-translate>
           {supportedBrands.map((b) => (
-            <div class="rounded border border-white/10 bg-[#090b0f] p-3 flex flex-col gap-2 font-mono tabular-nums">
+            <div class="brand-mini-card rounded-lg border border-white/10 bg-[#090b0f] p-3 flex flex-col gap-2 font-mono tabular-nums">
               <div class="flex items-center justify-between gap-2">
-                <span class="w-7 h-7 flex items-center justify-center shrink-0 [&>svg]:w-full [&>svg]:h-full">
+                <span class="w-8 h-8 flex items-center justify-center shrink-0 [&>svg]:w-full [&>svg]:h-full">
                   <Fragment set:html={b.svg} />
                 </span>
-                <span class="text-[10px] px-1.5 py-0.5 rounded border border-white/10 bg-white/[0.03] font-bold" style={`color:${b.color}`}>
-                  {b.color.toUpperCase()}
+                <span class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border border-white/10 bg-white/[0.04] font-bold text-slate-200">
+                  <span class="w-2 h-2 rounded-full shrink-0" style={`background:${b.color}`}></span>
+                  <span>{b.color.toUpperCase()}</span>
                 </span>
               </div>
               <div>
                 <div class="text-xs font-bold text-slate-100 truncate">{b.name}</div>
                 <div class="text-[10px] text-slate-400 truncate" title={b.carPaths.join(", ")}>
-                  {b.carPaths.length} {b.carPaths.length === 1 ? "coche" : "coches"}
+                  {b.carPaths.length} {b.carPaths.length === 1 ? "car" : "cars"}
                 </div>
               </div>
             </div>
@@ -690,8 +691,8 @@ npm run tauri dev</code></pre>
 
       function brandSvg(key, size = 15) {
         const b = brandMap[key];
-        if (!b || !b.path) return "";
-        return `<span class="hud-brand" style="width:${size}px;height:${size}px;color:${b.color}" title="${b.name}"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="${b.color}" style="color:${b.color};fill:${b.color}" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" fill="${b.color}" d="${b.path}"/></svg></span>`;
+        if (!b || !b.svg) return "";
+        return `<span class="hud-brand" style="width:${size}px;height:${size}px;display:inline-flex;align-items:center;justify-content:center" title="${b.name}">${b.svg}</span>`;
       }
 
       // -----------------------------------------------------------------------
