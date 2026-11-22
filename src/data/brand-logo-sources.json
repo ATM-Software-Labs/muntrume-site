@@ -55,9 +55,9 @@
   },
   "logo-ferrari": {
     "sourceUrl": "https://en.wikipedia.org/wiki/File:Prancing_horse.svg",
-    "license": "English Wikipedia, File:Prancing horse.svg (fair use) on the Scuderia shield (yellow, Italian tricolor).",
-    "note": "Caballo rampante negro sobre escudo amarillo y franja italiana. El archivo del caballo no trae las letras S/F como trazos separados, así que no se han dibujado.",
-    "viewBox": "0 0 200 240"
+    "license": "English Wikipedia, File:Prancing horse.svg (fair use). Pure minimalist silhouette in Ferrari Rosso Corsa (#FF2800).",
+    "note": "Cavallino Rampante puro en rojo Ferrari (#FF2800) sin escudo rectangular, compatible con modo Original, Blanco y Negro.",
+    "viewBox": "-8 -6 184 240"
   },
   "logo-ford": {
     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ford_logo_flat.svg",
@@ -127,9 +127,9 @@
   },
   "logo-nissan": {
     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Nissan_logo.svg",
-    "license": "Wikimedia Commons, File:Nissan logo.svg. Original fill is Nissan red; lettering set to white.",
-    "note": "El archivo es el wordmark NISSAN. Las letras se pintan de blanco. El rojo de marca #C3002F queda como acento.",
-    "viewBox": "0 0 300 44.174264"
+    "license": "Wikimedia Commons, File:Nissan logo.svg. Rendered in Nissan Red (#E11D48).",
+    "note": "Emblema oficial NISSAN en rojo de marca (#E11D48), compatible con modo Original, Blanco y Negro.",
+    "viewBox": "0 0 24 24"
   },
   "logo-pontiac": {
     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Pontiac_logo_and_wordmark_1981.svg",

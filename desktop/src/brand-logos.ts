@@ -137,7 +137,7 @@ export function createBrandLogoBadge(carNameOrFolder: string, size: "sm" | "md" 
   const brand = getCarBrandInfo(carNameOrFolder);
   const el = document.createElement("span");
   const dims = size === "sm" ? "w-6 h-6 p-1 rounded-lg" : "w-8 h-8 p-1.5 rounded-xl";
-  el.className = `inline-flex items-center justify-center shrink-0 border ${dims}`;
+  el.className = `mmt-brand-badge inline-flex items-center justify-center shrink-0 border ${dims}`;
   el.style.background = brand.bg;
   el.style.borderColor = `${brand.color}44`;
   el.title = brand.name;

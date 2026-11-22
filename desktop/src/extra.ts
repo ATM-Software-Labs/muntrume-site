@@ -47,7 +47,7 @@ import { estimateLiveIRating, formatIRatingDelta, formatSofShort } from "./irsdk
 import { AeroSuspensionAnalyzer, renderAeroAnalysisPanel } from "./telemetry/aero-analyzer";
 import { LocalTelemetryBus } from "./plugins/telemetry-bus";
 import { PluginLoader } from "./plugins/plugin-loader";
-import { ThemeEngine } from "./theme/theme-engine";
+import { ThemeEngine, type BrandLogoMode } from "./theme/theme-engine";
 import { I18nManager } from "./i18n/i18n-manager";
 import rawSchedule from "./season_schedule_2026_s4.json";
 import rawRealTracks from "./real_telemetry_tracks.json";
@@ -2251,6 +2251,36 @@ function ensureLayoutSchemaV2(force = false): void {
         applyHudCustomAppearance();
       });
     }
+
+    const syncBrandLogoModeBtns = (): void => {
+      const activeMode = theme.getBrandLogoMode();
+      document.querySelectorAll<HTMLButtonElement>("[data-brand-logo-mode-btn]").forEach((btn) => {
+        const mode = btn.dataset.brandLogoModeBtn as BrandLogoMode;
+        const isActive = mode === activeMode;
+        btn.setAttribute("aria-pressed", isActive ? "true" : "false");
+        btn.classList.toggle("border-[#10b981]/50", isActive);
+        btn.classList.toggle("bg-[#10b981]/20", isActive);
+        btn.classList.toggle("text-[#10b981]", isActive);
+        btn.classList.toggle("font-bold", isActive);
+        btn.classList.toggle("border-white/10", !isActive && btn.closest("#mmtInspModuleOpts") !== null);
+        btn.classList.toggle("bg-white/[0.03]", !isActive && btn.closest("#mmtInspModuleOpts") !== null);
+        btn.classList.toggle("text-white/70", !isActive && btn.closest("#mmtInspModuleOpts") !== null);
+        btn.classList.toggle("border-r-line", !isActive && btn.closest("#mmtInspModuleOpts") === null);
+        btn.classList.toggle("bg-r-bg", !isActive && btn.closest("#mmtInspModuleOpts") === null);
+        btn.classList.toggle("text-r-muted", !isActive && btn.closest("#mmtInspModuleOpts") === null);
+      });
+    };
+    syncBrandLogoModeBtns();
+    document.querySelectorAll<HTMLButtonElement>("[data-brand-logo-mode-btn]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const mode = btn.dataset.brandLogoModeBtn as BrandLogoMode;
+        if (mode === "original" || mode === "white" || mode === "black") {
+          theme.setBrandLogoMode(mode);
+          syncBrandLogoModeBtns();
+        }
+      });
+    });
+    theme.subscribe(() => syncBrandLogoModeBtns());
 
     const opRange = document.getElementById("hudOpacityRange") as HTMLInputElement | null;
     const opVal = document.getElementById("hudOpacityVal");

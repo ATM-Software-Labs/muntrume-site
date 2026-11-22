@@ -599,6 +599,29 @@ html.overlay-mode.overlay-editing #floatLayersControlPanel {
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.85));
 }
 
+/* Brand logo color mode: Original (default), Blanco (monochrome white), Negro (monochrome black) */
+html[data-brand-logo-mode="white"] .mmt-brand-svg > svg,
+html[data-brand-logo-mode="white"] .mmt-brand-badge > svg {
+  filter: brightness(0) invert(1) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.85)) !important;
+}
+
+html[data-brand-logo-mode="black"] .mmt-brand-svg > svg,
+html[data-brand-logo-mode="black"] .mmt-brand-badge > svg {
+  filter: brightness(0) !important;
+}
+
+html[data-brand-logo-mode="black"] .mmt-brand-svg {
+  background: rgba(248, 250, 252, 0.92);
+  border-radius: 3px;
+  padding: 1px;
+  filter: none;
+}
+
+html[data-brand-logo-mode="black"] .mmt-brand-badge {
+  background: rgba(248, 250, 252, 0.92) !important;
+  border-color: rgba(15, 23, 42, 0.25) !important;
+}
+
 /* Unified Engineering & Panel System (Calendario, Análisis, Referencia, Estrategia, Overlays, Equipo) */
 .mmt-panel {
   border-radius: 0.75rem;

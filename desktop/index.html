@@ -1298,6 +1298,14 @@
 
                 <div id="mmtInspModuleOpts" class="p-2.5 rounded-lg border border-white/[0.08] bg-[#090b0f] space-y-1.5 text-[10.5px] text-white/80">
                   <span class="block text-[9.5px] text-white/50 uppercase tracking-wider mb-1">Opciones</span>
+                  <div class="space-y-1">
+                    <span class="block text-[9.5px] text-white/60">Color de logos</span>
+                    <div class="grid grid-cols-3 gap-1" role="group" aria-label="Color de logos HUD">
+                      <button type="button" data-brand-logo-mode-btn="original" aria-pressed="true" class="py-1 px-1 rounded border border-[#10b981]/50 bg-[#10b981]/20 text-[#10b981] font-bold text-[9.5px] transition cursor-pointer">Original</button>
+                      <button type="button" data-brand-logo-mode-btn="white" aria-pressed="false" class="py-1 px-1 rounded border border-white/10 bg-white/[0.03] text-white/70 hover:text-white font-semibold text-[9.5px] transition cursor-pointer">Blanco</button>
+                      <button type="button" data-brand-logo-mode-btn="black" aria-pressed="false" class="py-1 px-1 rounded border border-white/10 bg-white/[0.03] text-white/70 hover:text-white font-semibold text-[9.5px] transition cursor-pointer">Negro</button>
+                    </div>
+                  </div>
                   <label class="flex items-center justify-between cursor-pointer"><span>Aviso ABS / LOCK</span><input type="checkbox" checked class="accent-[#10b981]" data-insp-opt="abs" /></label>
                   <label class="flex items-center justify-between cursor-pointer"><span>Ghost Trace</span><input type="checkbox" class="accent-[#10b981]" data-insp-opt="ghost" /></label>
                   <button type="button" id="btnSimHaloRadar" class="w-full mt-1 py-1 rounded border border-amber-500/35 bg-amber-500/10 hover:bg-amber-500/20 text-[10px] font-bold text-amber-300 transition cursor-pointer">
@@ -1688,6 +1696,14 @@
                       <option value="14">14 días</option>
                     </select>
                   </label>
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-[11px] font-semibold">Color de logos</span>
+                    <div class="inline-flex items-center gap-1" role="group" aria-label="Color de logos">
+                      <button type="button" data-brand-logo-mode-btn="original" aria-pressed="true" class="h-6 px-2 rounded-md border border-[#10b981]/50 bg-[#10b981]/20 text-[#10b981] font-mono font-bold text-[10px] transition cursor-pointer">Original</button>
+                      <button type="button" data-brand-logo-mode-btn="white" aria-pressed="false" class="h-6 px-2 rounded-md border border-r-line bg-r-bg text-r-muted hover:text-r-text font-mono font-semibold text-[10px] transition cursor-pointer">Blanco</button>
+                      <button type="button" data-brand-logo-mode-btn="black" aria-pressed="false" class="h-6 px-2 rounded-md border border-r-line bg-r-bg text-r-muted hover:text-r-text font-mono font-semibold text-[10px] transition cursor-pointer">Negro</button>
+                    </div>
+                  </div>
                 </div>
                 <div id="ibtStoragePanel" class="pt-2 border-t border-r-line/60 grid gap-1.5">
                   <span class="block font-semibold text-[11px]">Caché local de telemetría IRSDK</span>

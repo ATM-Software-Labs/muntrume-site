@@ -7,6 +7,7 @@
  */
 
 export type ThemePreset = "dark-carbon" | "minimal-transparent" | "high-contrast" | "retro-tv";
+export type BrandLogoMode = "original" | "white" | "black";
 
 export interface ThemeVariables {
   bg: string;
@@ -175,10 +176,12 @@ export interface MmtExportableLayout {
 const THEME_STORAGE_KEY = "mmt_theme_config_v1";
 const COLUMNS_STORAGE_KEY = "mmt_columns_config_v1";
 const CUSTOM_CSS_KEY = "mmt_custom_css_v1";
+const BRAND_LOGO_MODE_KEY = "mmt_brand_logo_mode_v1";
 
 export class ThemeEngine {
   private static instance: ThemeEngine;
   private currentPreset: ThemePreset = "dark-carbon";
+  private brandLogoMode: BrandLogoMode = "original";
   private customVars: Partial<ThemeVariables> = {};
   private customCss = "";
   private columns: WidgetColumnsConfig = JSON.parse(JSON.stringify(DEFAULT_COLUMNS_CONFIG));
@@ -187,6 +190,15 @@ export class ThemeEngine {
   private constructor() {
     this.loadFromStorage();
     this.applyToDom();
+    if (typeof window !== "undefined") {
+      window.addEventListener("storage", (e) => {
+        if (e.key === BRAND_LOGO_MODE_KEY || e.key === THEME_STORAGE_KEY) {
+          this.loadFromStorage();
+          this.applyToDom();
+          this.notify();
+        }
+      });
+    }
   }
 
   public static getInstance(): ThemeEngine {
@@ -208,6 +220,11 @@ export class ThemeEngine {
         if (parsed.customVars && typeof parsed.customVars === "object") {
           this.customVars = parsed.customVars;
         }
+      }
+
+      const rawLogoMode = localStorage.getItem(BRAND_LOGO_MODE_KEY);
+      if (rawLogoMode === "original" || rawLogoMode === "white" || rawLogoMode === "black") {
+        this.brandLogoMode = rawLogoMode;
       }
 
       const rawCustomCss = localStorage.getItem(CUSTOM_CSS_KEY);
@@ -241,6 +258,7 @@ export class ThemeEngine {
           customVars: this.customVars,
         })
       );
+      localStorage.setItem(BRAND_LOGO_MODE_KEY, this.brandLogoMode);
       localStorage.setItem(CUSTOM_CSS_KEY, this.customCss);
       localStorage.setItem(COLUMNS_STORAGE_KEY, JSON.stringify(this.columns));
     } catch (e) {
@@ -256,6 +274,17 @@ export class ThemeEngine {
   public setPreset(preset: ThemePreset): void {
     if (!THEME_PRESETS[preset]) return;
     this.currentPreset = preset;
+    this.applyToDom();
+    this.saveToStorage();
+  }
+
+  public getBrandLogoMode(): BrandLogoMode {
+    return this.brandLogoMode;
+  }
+
+  public setBrandLogoMode(mode: BrandLogoMode): void {
+    if (mode !== "original" && mode !== "white" && mode !== "black") return;
+    this.brandLogoMode = mode;
     this.applyToDom();
     this.saveToStorage();
   }
@@ -297,6 +326,7 @@ export class ThemeEngine {
     root.style.setProperty("--mmt-opacity", String(vars.opacity));
 
     root.setAttribute("data-mmt-theme", this.currentPreset);
+    root.setAttribute("data-brand-logo-mode", this.brandLogoMode);
 
     // Apply or update custom CSS style tag
     let styleEl = document.getElementById("mmt-custom-css-host") as HTMLStyleElement | null;
