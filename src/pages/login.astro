@@ -104,6 +104,7 @@ import Layout from '../layouts/Layout.astro';
         <!-- SEGMENTED METHOD TABS -->
         <div class="ml-tabs" role="tablist">
           <button type="button" class="ml-tab is-active" data-auth-tab="totp" role="tab" aria-selected="true">Authenticator</button>
+          <button type="button" class="ml-tab" data-auth-tab="app" role="tab" aria-selected="false">App Móvil</button>
           <button type="button" class="ml-tab" data-auth-tab="code" role="tab" aria-selected="false">Email</button>
           <button type="button" class="ml-tab" data-auth-tab="otp" role="tab" aria-selected="false">MFA OSS</button>
           <button type="button" class="ml-tab" data-auth-tab="password" role="tab" aria-selected="false">Contraseña</button>
@@ -123,6 +124,29 @@ import Layout from '../layouts/Layout.astro';
             <input type="text" id="totpCode" class="ml-code-input" inputmode="text" maxlength="12" autocomplete="one-time-code" placeholder="000 000" required />
           </label>
           <button type="submit" id="btnSubmitTotp" class="ml-btn-primary">Entrar con Authenticator</button>
+        </form>
+
+        <!-- TAB 1B: MOBILE APP APPROVAL & ACCOUNT RECOVERY -->
+        <form id="formAppApprove" class="ml-form" data-auth-panel="app" hidden novalidate>
+          <label class="ml-field">
+            <span>Correo de equipo</span>
+            <input type="email" id="appApproveEmail" data-sync-email autocomplete="email" placeholder="piloto@muntru.me" required />
+          </label>
+          <label class="ml-field">
+            <span>Acción</span>
+            <select id="appApprovePurpose">
+              <option value="login">Iniciar sesión desde la App Móvil (1 toque)</option>
+              <option value="recovery">Recuperar cuenta y crear nueva contraseña</option>
+            </select>
+          </label>
+          <div id="appApproveWaitBox" hidden style="padding:14px;border-radius:12px;border:1px solid var(--r-line);background:var(--r-bg);text-align:center;display:grid;gap:10px;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--r-muted);">Número de confirmación</div>
+            <div id="appApproveCode" style="font:800 36px/1 var(--r-mono,monospace);color:var(--r-accent);letter-spacing:0.12em;">--</div>
+            <p style="margin:0;font-size:12.5px;color:var(--r-muted);line-height:1.45;">Abre la <strong>App Muntrume</strong> en tu teléfono (<a href="/app/" style="color:var(--r-accent);">muntru.me/app</a>), comprueba este número y pulsa <strong>Aprobar</strong>, o escanea este QR:</p>
+            <img id="appApproveQr" alt="QR de aprobación móvil" width="150" height="150" style="margin:0 auto;border-radius:10px;background:#fff;padding:6px;border:1px solid var(--r-line);" />
+            <div id="appApproveState" style="font-size:12px;font-weight:600;color:var(--r-accent);">⏳ Esperando aprobación en tu teléfono…</div>
+          </div>
+          <button type="submit" id="btnStartAppApprove" class="ml-btn-primary">Enviar solicitud a mi App Móvil</button>
         </form>
 
         <!-- TAB 2: EMAIL MAGIC CODE -->
@@ -485,6 +509,73 @@ import Layout from '../layouts/Layout.astro';
         } catch (err) {
           setStatus(err.message || "No se pudo completar el inicio con Passkey.", "error");
           btnPk.disabled = false;
+        }
+      });
+
+      // Mobile App Approval & Account Recovery (Muntrume Guard)
+      var appApproveTimer = null;
+      document.getElementById("formAppApprove")?.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        if (appApproveTimer) { clearInterval(appApproveTimer); appApproveTimer = null; }
+        var email = (document.getElementById("appApproveEmail")?.value || "").trim();
+        var purpose = document.getElementById("appApprovePurpose")?.value || "login";
+        if (!email) { setStatus("Introduce tu correo de equipo.", "error"); return; }
+        var btn = document.getElementById("btnStartAppApprove");
+        var waitBox = document.getElementById("appApproveWaitBox");
+        var codeEl = document.getElementById("appApproveCode");
+        var qrEl = document.getElementById("appApproveQr");
+        var stateEl = document.getElementById("appApproveState");
+        if (btn) btn.disabled = true;
+        setStatus("Enviando solicitud a tu App Muntrume…", "info");
+        try {
+          var res = await postJson("/api/auth/app-approve/start", { email: email, purpose: purpose });
+          if (codeEl) codeEl.textContent = res.match_code || "--";
+          if (qrEl && res.approve_url) {
+            qrEl.src = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=" + encodeURIComponent(res.approve_url);
+          }
+          if (stateEl) stateEl.textContent = "⏳ Esperando aprobación en tu teléfono…";
+          if (waitBox) waitBox.hidden = false;
+          setStatus("Solicitud enviada. Confirma el número " + res.match_code + " en tu App Muntrume.", "info");
+
+          var cid = res.challenge_id;
+          appApproveTimer = setInterval(async function () {
+            try {
+              var pr = await fetch(API + "/api/auth/app-approve/poll?id=" + encodeURIComponent(cid));
+              var pd = await pr.json().catch(function () { return {}; });
+              if (pd.status === "approved" && pd.token) {
+                clearInterval(appApproveTimer);
+                appApproveTimer = null;
+                if (stateEl) stateEl.textContent = "✅ ¡Aprobado desde tu teléfono!";
+                if (pd.purpose === "recovery" && pd.set_password_link) {
+                  try {
+                    var cu = sanitizeUser(pd.user);
+                    localStorage.setItem("mrt_vault_token", pd.token);
+                    localStorage.setItem("mm_token", pd.token);
+                    if (cu) localStorage.setItem("mrt_vault_user", JSON.stringify(cu));
+                    if (window.__mmtSyncSsoCookie) window.__mmtSyncSsoCookie(pd.token, cu);
+                  } catch (err) {}
+                  setStatus("Cuenta recuperada desde tu App. Abriendo cambio de contraseña…", "ok");
+                  setTimeout(function () { location.href = pd.set_password_link; }, 450);
+                } else {
+                  saveSessionAndGo(pd);
+                }
+              } else if (pd.status === "denied") {
+                clearInterval(appApproveTimer);
+                appApproveTimer = null;
+                if (stateEl) stateEl.textContent = "✕ Solicitud rechazada desde tu teléfono.";
+                setStatus("El inicio de sesión fue rechazado desde la App Móvil.", "error");
+              } else if (pd.status === "expired") {
+                clearInterval(appApproveTimer);
+                appApproveTimer = null;
+                if (stateEl) stateEl.textContent = "⌛ Solicitud caducada. Vuelve a enviarla.";
+                setStatus("La solicitud ha caducado. Pulsa el botón para generar una nueva.", "error");
+              }
+            } catch (err) {}
+          }, 2200);
+        } catch (err) {
+          setStatus(err.message || "No se pudo iniciar la aprobación móvil.", "error");
+        } finally {
+          if (btn) btn.disabled = false;
         }
       });
 

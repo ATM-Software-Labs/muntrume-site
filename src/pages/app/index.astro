@@ -128,6 +128,17 @@ const appSchema = {
 
       <!-- Shown when signed in -->
       <div id="compAuthedBox" data-no-translate>
+        <!-- MUNTRUME GUARD: 1-TAP MOBILE LOGIN & ACCOUNT RECOVERY APPROVER -->
+        <div id="compGuardBox" class="app-comp-debrief" style="margin-bottom:14px;display:none;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
+            <div>
+              <div class="app-cmd-kicker">🛡 MUNTRUME GUARD · ACCESO Y RECUPERACIÓN DESDE ESTE TELÉFONO</div>
+              <strong style="font-size:15px;color:var(--r-text);">Tienes una solicitud pendiente de aprobación</strong>
+            </div>
+          </div>
+          <div id="compGuardList" style="display:grid;gap:10px;"></div>
+        </div>
+
         <div class="app-comp-statusbar">
           <div><span class="app-cmd-kicker">PILOTO CONECTADO</span><strong id="compPilotBadge">Cargando piloto…</strong></div>
           <div><span class="app-cmd-kicker">PC VINCULADO (MMT SYNC)</span><strong id="compDeviceStatus">Desktop PC · Online</strong></div>
@@ -612,6 +623,88 @@ const appSchema = {
       }
 
       initBridgeCheck();
+
+      // Muntrume Guard: poll pending mobile login / account recovery approvals
+      (function initMuntrumeGuard() {
+        const API = "https://muntrume.atrumin16.workers.dev";
+        const guardBox = document.getElementById("compGuardBox");
+        const guardList = document.getElementById("compGuardList");
+        if (!guardBox || !guardList) return;
+        const urlApproveId = new URLSearchParams(location.search).get("approve") || "";
+
+        function getTok() {
+          return localStorage.getItem("mrt_vault_token") || localStorage.getItem("mm_token") || "";
+        }
+
+        async function respondChallenge(id, action, btnEl) {
+          const tk = getTok();
+          if (!tk) return;
+          if (btnEl) btnEl.disabled = true;
+          try {
+            const r = await fetch(API + "/api/auth/app-approve/respond", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: "Bearer " + tk },
+              body: JSON.stringify({ challenge_id: id, action }),
+            });
+            const d = await r.json().catch(() => ({}));
+            if (r.ok && d.success) {
+              if (urlApproveId === id) {
+                try { history.replaceState({}, "", location.pathname); } catch {}
+              }
+              await pollPending();
+            }
+          } catch {}
+        }
+
+        async function pollPending() {
+          const tk = getTok();
+          if (!tk) {
+            guardBox.style.display = "none";
+            return;
+          }
+          try {
+            const r = await fetch(API + "/api/auth/app-approve/pending", {
+              headers: { Authorization: "Bearer " + tk },
+            });
+            if (!r.ok) return;
+            const d = await r.json().catch(() => ({}));
+            const list = Array.isArray(d.pending) ? d.pending : [];
+            if (!list.length) {
+              guardBox.style.display = "none";
+              return;
+            }
+            guardBox.style.display = "block";
+            guardList.innerHTML = list.map((item) => {
+              const isRec = item.purpose === "recovery";
+              const label = isRec ? "🔑 Recuperación de cuenta / cambio de clave" : "💻 Inicio de sesión en otro dispositivo";
+              const hl = urlApproveId && item.id === urlApproveId ? "border-color:var(--r-accent);" : "";
+              return `<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 14px;border-radius:12px;background:var(--r-surface);border:1px solid var(--r-line);${hl}">
+                <div style="display:flex;align-items:center;gap:12px;">
+                  <span style="min-width:48px;height:48px;border-radius:10px;display:grid;place-items:center;background:color-mix(in srgb, var(--r-accent) 16%, var(--r-bg));border:1px solid var(--r-accent);font:800 20px/1 var(--r-mono,monospace);color:var(--r-accent);">${item.match_code}</span>
+                  <div>
+                    <div style="font-weight:700;font-size:13.5px;color:var(--r-text);">${label}</div>
+                    <div style="font-size:12px;color:var(--r-muted);">${item.requester_ua || "Navegador"} · Confirma el número <strong>${item.match_code}</strong></div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:8px;">
+                  <button type="button" data-guard-ok="${item.id}" class="r-btn r-btn--primary" style="padding:7px 14px;font-size:12.5px;">✔ Aprobar</button>
+                  <button type="button" data-guard-deny="${item.id}" class="r-btn app-btn" style="padding:7px 12px;font-size:12.5px;color:#ef4444;border-color:rgba(239,68,68,.4);">✕ Rechazar</button>
+                </div>
+              </div>`;
+            }).join("");
+
+            guardList.querySelectorAll("[data-guard-ok]").forEach((b) => {
+              b.addEventListener("click", () => respondChallenge(b.getAttribute("data-guard-ok"), "approve", b));
+            });
+            guardList.querySelectorAll("[data-guard-deny]").forEach((b) => {
+              b.addEventListener("click", () => respondChallenge(b.getAttribute("data-guard-deny"), "deny", b));
+            });
+          } catch {}
+        }
+
+        pollPending();
+        setInterval(() => { if (!document.hidden) pollPending(); }, 5000);
+      })();
     })();
   </script>
 </Layout>
