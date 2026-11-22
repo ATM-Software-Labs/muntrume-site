@@ -248,6 +248,13 @@ impl Api {
         Ok(())
     }
 
+    pub async fn push_companion(&self, token: &str, payload: &serde_json::Value) -> Result<serde_json::Value, ApiError> {
+        if self.mock {
+            return Ok(serde_json::json!({ "ok": true, "remote_queue": [] }));
+        }
+        self.post_json("/api/desktop/companion/push", payload, Some(token)).await
+    }
+
     fn authed(&self, request: reqwest::RequestBuilder, token: &str) -> Result<reqwest::RequestBuilder, ApiError> {
         if !token_ok(token) {
             return Err(ApiError::Unauthorized);

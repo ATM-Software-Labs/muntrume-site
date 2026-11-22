@@ -242,7 +242,7 @@ async fn run(app: &AppHandle) -> Result<SyncReport, String> {
         }
     }
 
-    Ok(SyncReport {
+    let report = SyncReport {
         downloaded,
         unchanged,
         deleted,
@@ -253,7 +253,28 @@ async fn run(app: &AppHandle) -> Result<SyncReport, String> {
         errors,
         message,
         at,
-    })
+    };
+
+    // Push telemetry, race history, streaks, and setup sync snapshot to D1 Cloud for mobile PWA companion
+    let hist = crate::history::get_history();
+    let latest_tel = crate::live_capture::list_captured_sessions()
+        .first()
+        .and_then(|meta| crate::live_capture::read_captured_session(&meta.file_path));
+    let companion_payload = serde_json::json!({
+        "sync_status": {
+            "last_sync_at": &report.at,
+            "synced_setups_count": index.files.len(),
+            "downloaded_last_run": report.downloaded,
+            "cars_synced": &report.cars,
+            "irsdk_status": "ready"
+        },
+        "recent_sessions": hist.sessions,
+        "streaks": hist.streaks,
+        "latest_telemetry": latest_tel,
+    });
+    let _ = state.api.push_companion(&token, &companion_payload).await;
+
+    Ok(report)
 }
 
 async fn fetch_one(

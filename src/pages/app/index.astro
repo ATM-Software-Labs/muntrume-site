@@ -92,12 +92,175 @@ const appSchema = {
       </div>
 
       <p class="app-meta">
-        <span data-i18n="app.meta.os">Windows 10 / 11 (64-bit)</span>
+        <span data-i18n="app.meta.os">Windows 10 / 11 (64-bit) · iOS &amp; Android Companion PWA</span>
         <span aria-hidden="true">·</span>
         <span>Versión {appVersion}</span>
         <span aria-hidden="true">·</span>
         <span data-i18n="app.meta.free">Gratis</span>
       </p>
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- MMT MOBILE & CLOUD COMPANION HUB (PHONE PWA <-> D1 <-> MMT SYNC <-> IRACING) -->
+    <!-- ======================================================================= -->
+    <section class="app-card g-bento-card app-comp-shell" data-g-reveal aria-label="MMT Companion Cloud & Mobile">
+      <div class="app-cmd-head">
+        <div>
+          <span class="g-chip-accent">Cloud Companion · iOS / Android PWA + PC</span>
+          <h2 style="margin-top:8px">MMT Companion en Vivo · Telemetría, Última Carrera y Setups</h2>
+          <p class="app-sub">Lleva tu telemetría <code>.ibt</code>, tu última carrera de iRacing, tus rachas y la cola remota de setups en el bolsillo al instalar la app en tu móvil.</p>
+        </div>
+        <div class="app-comp-top-actions">
+          <input type="file" id="compIbtInput" accept=".ibt" hidden />
+          <button type="button" class="r-btn app-btn" onclick="document.getElementById('compIbtInput')?.click()">📊 Subir .IBT iRacing</button>
+          <button type="button" id="btnCompRefresh" class="r-btn r-btn--primary">↻ Sincronizar Cloud</button>
+        </div>
+      </div>
+
+      <div id="mmtCompMsg" class="app-comp-msg" hidden></div>
+
+      <!-- Shown if not signed in -->
+      <div id="compNeedAuth" class="app-comp-authgate" hidden>
+        <div>
+          <strong>Inicia sesión para ver tu telemetría, última carrera y setups sincronizados</strong>
+          <p>Tu cuenta conecta automáticamente <strong>MMT Sync</strong> en tu PC de simracing con la app de tu teléfono.</p>
+        </div>
+        <a href="/login/?next=/app/" class="r-btn r-btn--primary">Iniciar sesión →</a>
+      </div>
+
+      <!-- Shown when signed in -->
+      <div id="compAuthedBox">
+        <div class="app-comp-statusbar">
+          <div><span class="app-cmd-kicker">PILOTO CONECTADO</span><strong id="compPilotBadge">Cargando piloto…</strong></div>
+          <div><span class="app-cmd-kicker">PC VINCULADO (MMT SYNC)</span><strong id="compDeviceStatus">Desktop PC · Online</strong></div>
+          <div><span class="app-cmd-kicker">SETUPS .STO EN VAULT</span><strong id="compSetupsCount">42.654</strong></div>
+          <div><a href="/app/vincular/" class="r-btn app-btn" style="padding:7px 14px;font-size:12.5px">+ Vincular otro PC</a></div>
+        </div>
+
+        <div class="app-comp-tabs" role="tablist">
+          <button type="button" class="app-comp-tab is-active" data-comp-tab="race">1. Última Carrera y Rachas</button>
+          <button type="button" class="app-comp-tab" data-comp-tab="telemetry">2. Telemetría .IBT (60 Hz)</button>
+          <button type="button" class="app-comp-tab" data-comp-tab="queue">3. Enviar Setup a mi PC</button>
+        </div>
+
+        <!-- PANEL 1: LAST RACE & STREAKS -->
+        <div class="app-comp-panel" data-comp-panel="race">
+          <div class="app-comp-racehero">
+            <div>
+              <span class="app-cmd-kicker">ÚLTIMA SESIÓN SINCRONIZADA</span>
+              <h3 id="compLrTrack" style="margin:4px 0;font-size:20px">Circuit de Spa-Francorchamps</h3>
+              <p id="compLrMeta" style="margin:0;color:var(--r-muted);font-size:13px">Ferrari 296 GT3 · Official Race</p>
+            </div>
+            <code id="compLrSetup" class="app-comp-setupbadge">MMT_26S4_W08_SPA_R.sto</code>
+          </div>
+
+          <div class="app-comp-kpis">
+            <div class="app-comp-kpi"><span>RESULTADO</span><strong id="compLrPos">P4 → P2 (+2)</strong></div>
+            <div class="app-comp-kpi"><span>DELTA iRATING</span><strong id="compLrIrDelta" style="color:#10b981">+48 iR</strong></div>
+            <div class="app-comp-kpi"><span>INCIDENTES</span><strong id="compLrInc">0x</strong></div>
+            <div class="app-comp-kpi"><span>MEJOR VUELTA</span><strong id="compLrBestLap">2:16.412</strong></div>
+            <div class="app-comp-kpi"><span>VUELTA MEDIA</span><strong id="compLrAvgLap">2:17.185</strong></div>
+            <div class="app-comp-kpi"><span>CONSISTENCIA</span><strong id="compLrCons">98.6%</strong></div>
+          </div>
+
+          <div class="app-comp-streaks">
+            <div class="app-comp-streak"><span>RACHA LIMPIA (&lt;4x)</span><strong id="compStreakClean">4 seguidas</strong></div>
+            <div class="app-comp-streak"><span>RACHA TOP 5</span><strong id="compStreakTop5">3 podios/Top 5</strong></div>
+            <div class="app-comp-streak"><span>VUELTAS 0x</span><strong id="compStreakLaps">89 vueltas 0x</strong></div>
+            <div class="app-comp-streak"><span>BALANCE 10 CARR.</span><strong id="compStreakGain">+14 pos.</strong></div>
+          </div>
+
+          <div class="r-scroll" style="margin-top:14px">
+            <table class="r-table">
+              <thead><tr><th>Circuito / Sesión</th><th>Coche / Setup .sto</th><th>Posición</th><th>Inc.</th><th>iR Δ</th><th>Mejor Vuelta</th></tr></thead>
+              <tbody id="compSessionsTbody"></tbody>
+            </table>
+          </div>
+
+          <details class="app-comp-details">
+            <summary>+ Registrar carrera / tanda manualmente desde el móvil</summary>
+            <form id="formCompAddRace" class="app-comp-formgrid">
+              <input type="text" id="compRaceTrack" placeholder="Circuito (ej. Sebring International)" required />
+              <input type="text" id="compRaceCar" placeholder="Coche (ej. Ferrari 296 GT3)" required />
+              <input type="number" id="compRaceStart" placeholder="P. Salida (ej. 5)" min="1" max="60" value="5" />
+              <input type="number" id="compRaceFinish" placeholder="P. Final (ej. 2)" min="1" max="60" value="2" />
+              <input type="number" id="compRaceInc" placeholder="Incidentes (ej. 0)" min="0" max="30" value="0" />
+              <input type="number" id="compRaceIr" placeholder="Delta iR (ej. 45)" value="45" />
+              <input type="number" step="0.001" id="compRaceLap" placeholder="Mejor vuelta seg (ej. 118.420)" value="118.420" />
+              <input type="text" id="compRaceSetup" placeholder="Setup .sto usado" value="MMT_26S4_R.sto" />
+              <button type="submit" class="r-btn r-btn--primary">Guardar en Cloud</button>
+            </form>
+          </details>
+        </div>
+
+        <!-- PANEL 2: 60 HZ TELEMETRY TRACE -->
+        <div class="app-comp-panel" data-comp-panel="telemetry" hidden>
+          <div class="app-comp-racehero">
+            <div>
+              <span class="app-cmd-kicker">TELEMETRÍA DE MEJOR VUELTA (.IBT / IRSDK)</span>
+              <h3 id="compTelTitle" style="margin:4px 0;font-size:19px">Circuit de Spa-Francorchamps · Ferrari 296 GT3</h3>
+              <p id="compTelSub" style="margin:0;color:var(--r-muted);font-size:12.5px">Cargando canales…</p>
+            </div>
+            <button type="button" class="r-btn app-btn" onclick="document.getElementById('compIbtInput')?.click()">Subir archivo .IBT</button>
+          </div>
+
+          <div class="app-comp-canvasbox">
+            <div class="app-comp-legend">
+              <span><i style="background:#38BDF8"></i>Velocidad (km/h)</span>
+              <span><i style="background:#10B981"></i>Acelerador (%)</span>
+              <span><i style="background:#EF4444"></i>Freno (%)</span>
+              <code id="compTelReadout">Desliza el dedo o el ratón sobre la gráfica para inspeccionar metro a metro</code>
+            </div>
+            <canvas id="compTelCanvas" width="860" height="210" style="width:100%;height:210px;display:block;cursor:crosshair"></canvas>
+          </div>
+
+          <div class="r-scroll" style="margin-top:14px">
+            <table class="r-table">
+              <thead><tr><th>Vuelta</th><th>Tiempo</th><th>Delta</th><th>Vel. Punta</th><th>Estado</th></tr></thead>
+              <tbody id="compTelLapsTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- PANEL 3: REMOTE SETUP QUEUE TO PC -->
+        <div class="app-comp-panel" data-comp-panel="queue" hidden>
+          <p style="margin:0 0 12px;color:var(--r-muted);font-size:13.5px">Elige desde el móvil qué setup quieres tener listo en tu simulador. <strong>MMT Sync</strong> lo descargará directamente en <code>Documents\iRacing\setups\</code> al encender tu PC.</p>
+          <form id="formCompQueueSetup" class="app-comp-formgrid">
+            <select id="compQueueCar">
+              <option value="ferrari296gt3">Ferrari 296 GT3</option>
+              <option value="porsche992rgt3">Porsche 911 GT3 R (992)</option>
+              <option value="bmwm4gt3">BMW M4 GT3 EVO</option>
+              <option value="mercedesamgevogt3">Mercedes-AMG GT3 2020</option>
+              <option value="mclaren720sgt3">McLaren 720S GT3 EVO</option>
+              <option value="fordmustanggt3">Ford Mustang GT3</option>
+              <option value="chevyvettez06rgt3">Corvette Z06 GT3.R</option>
+              <option value="lamborghinievogt3">Lamborghini Huracán GT3 EVO</option>
+              <option value="audir8lmsevo2gt3">Audi R8 LMS EVO II GT3</option>
+              <option value="acuransxevo22gt3">Acura NSX GT3 EVO 22</option>
+              <option value="amvantageevogt3">Aston Martin Vantage GT3 EVO</option>
+              <option value="porsche963gtp">Porsche 963 GTP</option>
+              <option value="ferrari499p">Ferrari 499P</option>
+              <option value="bmwlmdh">BMW M Hybrid V8</option>
+              <option value="cadillacvseriesrgtp">Cadillac V-Series.R GTP</option>
+              <option value="acuraarx06gtp">Acura ARX-06 GTP</option>
+              <option value="dallarap217">Dallara P217 LMP2</option>
+              <option value="porsche9922cup">Porsche 911 Cup (992.2)</option>
+              <option value="porsche718gt4">Porsche 718 Cayman GT4</option>
+            </select>
+            <input type="text" id="compQueueTrack" placeholder="Circuito (ej. Silverstone, Road Atlanta, Spa)" value="Silverstone Circuit - Grand Prix" required />
+            <select id="compQueueType">
+              <option value="race">Race (Carrera)</option>
+              <option value="quali">Qualy (Clasificación)</option>
+              <option value="endurance">Endurance (Resistencia)</option>
+              <option value="wet">Wet (Lluvia)</option>
+              <option value="safe">Safe (Seguro)</option>
+            </select>
+            <button type="submit" class="r-btn r-btn--primary">📲 Enviar a mi PC (MMT Sync)</button>
+          </form>
+
+          <div id="compQueueList" class="app-comp-qlist" style="margin-top:14px"></div>
+        </div>
+      </div>
     </section>
 
     <!-- INTERACTIVE REMOTE COMMAND CENTER & RUST ENGINE SHOWCASE -->
@@ -640,3 +803,41 @@ const appSchema = {
     requestAnimationFrame(step);
   })();
 </script>
+<script is:inline src="/assets/js/companion.js?v=t360"></script>
+
+<style is:global>
+  .app-comp-shell { display: flex; flex-direction: column; gap: 16px; }
+  .app-comp-top-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .app-comp-msg { padding: 10px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; }
+  .app-comp-msg.is-ok { background: rgba(16,185,129,.12); border: 1px solid rgba(16,185,129,.4); color: #34d399; }
+  .app-comp-msg.is-err { background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.4); color: #fca5a5; }
+  .app-comp-authgate { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; padding: 16px 18px; border-radius: 14px; background: var(--r-bg); border: 1px solid var(--r-line); }
+  .app-comp-authgate p { margin: 4px 0 0; font-size: 13px; color: var(--r-muted); }
+  .app-comp-statusbar { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; padding: 14px 16px; border-radius: 14px; background: var(--r-bg); border: 1px solid var(--r-line); align-items: center; margin-bottom: 14px; }
+  .app-comp-statusbar strong { display: block; font-size: 14px; margin-top: 3px; color: var(--r-text); }
+  .app-comp-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; border-bottom: 1px solid var(--r-line); padding-bottom: 10px; }
+  .app-comp-tab { padding: 9px 16px; border-radius: 999px; border: 1px solid var(--r-line); background: var(--r-bg); color: var(--r-muted); font-size: 13px; font-weight: 700; cursor: pointer; }
+  .app-comp-tab.is-active { background: color-mix(in srgb, var(--r-accent, #10b981) 16%, var(--r-bg)); border-color: var(--r-accent, #10b981); color: var(--r-accent, #10b981); }
+  .app-comp-racehero { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  .app-comp-setupbadge { padding: 6px 12px; border-radius: 8px; background: rgba(16,185,129,.12); border: 1px solid rgba(16,185,129,.35); color: #10b981; font-size: 12.5px; font-weight: 700; }
+  .app-comp-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 12px; }
+  .app-comp-kpi { padding: 12px 14px; border-radius: 12px; background: var(--r-bg); border: 1px solid var(--r-line); }
+  .app-comp-kpi span { display: block; font: 700 10px/1 var(--r-mono, monospace); color: var(--r-muted); letter-spacing: .06em; }
+  .app-comp-kpi strong { display: block; margin-top: 6px; font: 800 18px/1.1 var(--r-mono, monospace); color: var(--r-text); }
+  .app-comp-streaks { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+  .app-comp-streak { padding: 10px 14px; border-radius: 10px; background: color-mix(in srgb, var(--r-accent, #10b981) 8%, var(--r-bg)); border: 1px solid color-mix(in srgb, var(--r-accent, #10b981) 30%, var(--r-line)); }
+  .app-comp-streak span { display: block; font: 700 10px/1 var(--r-mono, monospace); color: var(--r-accent, #10b981); }
+  .app-comp-streak strong { display: block; margin-top: 4px; font-size: 14.5px; color: var(--r-text); }
+  .app-comp-details { margin-top: 14px; padding: 12px 14px; border-radius: 12px; background: var(--r-bg); border: 1px solid var(--r-line); font-size: 13px; }
+  .app-comp-details summary { cursor: pointer; font-weight: 700; color: var(--r-accent, #10b981); }
+  .app-comp-formgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-top: 12px; align-items: center; }
+  .app-comp-formgrid input, .app-comp-formgrid select { padding: 9px 11px; border-radius: 10px; border: 1px solid var(--r-line); background: var(--r-surface); color: var(--r-text); font-size: 13px; }
+  .app-comp-canvasbox { padding: 14px; border-radius: 14px; background: #090c10; border: 1px solid var(--r-line); }
+  .app-comp-legend { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 12px; color: var(--r-muted); }
+  .app-comp-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .app-comp-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+  .app-comp-qlist { display: grid; gap: 8px; }
+  .app-comp-qitem { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding: 11px 14px; border-radius: 12px; background: var(--r-bg); border: 1px solid var(--r-line); }
+  .app-comp-qitem strong { display: block; font-size: 13.5px; }
+  .app-comp-qitem span { font-size: 12px; color: var(--r-muted); }
+</style>
