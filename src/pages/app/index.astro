@@ -146,6 +146,40 @@ const appSchema = {
           <div><a href="/app/vincular/" class="r-btn app-btn" style="padding:7px 14px;font-size:12.5px">+ Vincular otro PC</a></div>
         </div>
 
+        <!-- PERFIL IRACING & TIEMPO DE JUEGO SINCRONIZADO (MÓVIL & TABLET FIRST) -->
+        <div class="app-comp-irpanel" id="compIrPanel">
+          <div class="app-comp-irhead">
+            <div>
+              <span class="app-cmd-kicker">PERFIL IRACING &amp; TIEMPO EN PISTA · MMT SYNC LIVE</span>
+              <div class="app-comp-irfavs" id="compIrFavs">Sincronizando perfil de iRacing y tiempo de conducción…</div>
+            </div>
+            <span class="app-comp-livepill" id="compLivePill">● MMT Sync listo</span>
+          </div>
+          <div class="app-comp-irgrid">
+            <div class="app-comp-ircard">
+              <span>PERFIL IRACING</span>
+              <strong id="compIrRating">—</strong>
+              <small id="compIrCust">Cust ID pendiente</small>
+            </div>
+            <div class="app-comp-ircard">
+              <span>TIEMPO HOY</span>
+              <strong id="compPtToday">0m</strong>
+              <small id="compPtLastHb">Sin sesión hoy</small>
+            </div>
+            <div class="app-comp-ircard">
+              <span>ESTA SEMANA</span>
+              <strong id="compPtWeek">0m</strong>
+              <small>Capturado por MMT Sync</small>
+            </div>
+            <div class="app-comp-ircard">
+              <span>TOTAL EN PISTA</span>
+              <strong id="compPtTotal" style="color:#10b981">—</strong>
+              <small id="compPtLaps">0 vueltas registradas</small>
+            </div>
+          </div>
+          <div class="app-comp-lics" id="compIrLicenses" hidden></div>
+        </div>
+
         <div class="app-comp-tabs" role="tablist">
           <button type="button" class="app-comp-tab is-active" data-comp-tab="race">1. Última Carrera y Debrief</button>
           <button type="button" class="app-comp-tab" data-comp-tab="telemetry">2. Telemetría en Caché (60 Hz)</button>
@@ -923,9 +957,33 @@ const appSchema = {
     requestAnimationFrame(step);
   })();
 </script>
-<script is:inline src="/assets/js/companion.js?v=t361"></script>
+<script is:inline src="/assets/js/companion.js?v=t373"></script>
 
 <style is:global>
+  .app-comp-irpanel { padding: 14px 16px; border-radius: 14px; background: var(--r-bg); border: 1px solid var(--r-line); margin-bottom: 14px; display: flex; flex-direction: column; gap: 12px; }
+  .app-comp-irhead { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .app-comp-irfavs { font-size: 12.5px; color: var(--r-muted); margin-top: 2px; }
+  .app-comp-livepill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; font: 700 11px/1 var(--r-mono, monospace); border: 1px solid var(--r-line); background: var(--r-surface); color: var(--r-muted); white-space: nowrap; }
+  .app-comp-livepill.is-live { border-color: rgba(16,185,129,.55); background: rgba(16,185,129,.14); color: #10b981; }
+  .app-comp-irgrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+  .app-comp-ircard { padding: 11px 13px; border-radius: 12px; background: var(--r-surface); border: 1px solid var(--r-line); min-width: 0; }
+  .app-comp-ircard span { display: block; font: 700 10px/1 var(--r-mono, monospace); color: var(--r-muted); letter-spacing: .06em; }
+  .app-comp-ircard strong { display: block; margin-top: 5px; font: 800 17px/1.15 var(--r-mono, monospace); color: var(--r-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .app-comp-ircard small { display: block; margin-top: 3px; font-size: 11px; color: var(--r-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .app-comp-lics { display: flex; flex-wrap: wrap; gap: 8px; }
+  .app-comp-licpill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 8px; background: var(--r-surface); border: 1px solid var(--r-line); font: 700 11.5px/1.2 var(--r-mono, monospace); color: var(--r-text); }
+  .app-comp-licpill em { font-style: normal; color: var(--r-accent, #10b981); }
+  @media (max-width: 1024px) {
+    .app-comp-irgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .app-comp-tabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scroll-snap-type: x proximity; padding-bottom: 10px; scrollbar-width: none; }
+    .app-comp-tabs::-webkit-scrollbar { display: none; }
+    .app-comp-tab { white-space: nowrap; flex-shrink: 0; min-height: 42px; scroll-snap-align: start; }
+  }
+  @media (max-width: 640px) {
+    .app-comp-kpis, .app-comp-streaks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .app-comp-statusbar { grid-template-columns: 1fr; }
+    .app-comp-kpi strong, .app-comp-ircard strong { font-size: 15.5px; }
+  }
   .app-comp-debrief { padding: 14px 16px; border-radius: 12px; background: var(--r-bg); border: 1px solid var(--r-line); border-left: 3px solid var(--r-accent, #10b981); }
   .app-comp-shell { display: flex; flex-direction: column; gap: 16px; min-width: 0; max-width: 100%; }
   .app-comp-panel, .app-comp-shell .r-scroll { min-width: 0; max-width: 100%; }

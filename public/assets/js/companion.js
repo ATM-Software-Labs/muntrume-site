@@ -72,9 +72,19 @@
     el.hidden = false;
   }
 
+  function fmtDuration(sec) {
+    const s = Math.max(0, Math.round(Number(sec) || 0));
+    if (s < 60) return s > 0 ? `${s}s` : "0m";
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    return h > 0 ? `${h}h ${String(m).padStart(2, "0")}m` : `${m}m`;
+  }
+
   function renderCompanion() {
     if (!compState) return;
     const p = compState.pilot || {};
+    const ir = compState.iracing_profile || {};
+    const pt = compState.playtime || {};
     const sync = compState.sync_status || {};
     const lr = compState.last_race || {};
     const st = compState.streaks || {};
@@ -87,9 +97,45 @@
       if (el) el.textContent = v;
     };
 
-    setTxt("compPilotBadge", `${p.name || "Piloto MMT"} · ${p.irating || 8235} iR (${p.sr || "A 4.99"})`);
+    setTxt("compPilotBadge", `${p.name || "Piloto MMT"} · ${ir.irating || p.irating || 8235} iR (${ir.safety_rating || p.sr || "A 4.99"})`);
     setTxt("compDeviceStatus", `${sync.device_name || "Desktop PC"} · Sync ${fmtAgo(sync.last_sync_at)}`);
     setTxt("compSetupsCount", Number(sync.synced_setups_count || 42654).toLocaleString("es-ES"));
+
+    // iRacing Profile & Synced Playtime card
+    const irVal = ir.irating || p.irating;
+    const srVal = ir.safety_rating || p.sr;
+    setTxt("compIrRating", irVal ? `${Number(irVal).toLocaleString("es-ES")} iR · ${srVal || "SR"}` : "Sincronizar iRacing");
+    setTxt("compIrCust", ir.cust_id ? `iRacing ID #${ir.cust_id}` : `Perfil ${ir.slug || p.slug || "MMT"}`);
+    setTxt("compPtToday", fmtDuration(pt.today_sec || 0));
+    setTxt("compPtLastHb", pt.last_heartbeat ? `Sync ${fmtAgo(pt.last_heartbeat)}` : "Esperando sesión");
+    setTxt("compPtWeek", fmtDuration(pt.week_sec || 0));
+    const totalHours = Number(pt.combined_hours || 0);
+    setTxt("compPtTotal", totalHours > 0 ? `${totalHours.toLocaleString("es-ES")} h` : fmtDuration(pt.total_sec || 0));
+    setTxt("compPtLaps", `${Number(pt.laps_recorded || 0).toLocaleString("es-ES")} vueltas registradas`);
+    setTxt("compIrFavs", `${ir.favorite_car || lr.coche || "GT3"} · ${ir.favorite_track || lr.circuito || "Spa-Francorchamps"}`);
+
+    const livePill = document.getElementById("compLivePill");
+    if (livePill) {
+      if (pt.live_now && pt.live_session) {
+        const ls = pt.live_session;
+        livePill.className = "app-comp-livepill is-live";
+        livePill.textContent = `● EN PISTA · ${ls.track || "iRacing"} · V${ls.lap || 1} (${ls.fuel_l || 0}L)`;
+      } else {
+        livePill.className = "app-comp-livepill";
+        livePill.textContent = `● MMT Sync · ${sync.device_name || "PC"}`;
+      }
+    }
+
+    const licsWrap = document.getElementById("compIrLicenses");
+    if (licsWrap && Array.isArray(ir.licenses) && ir.licenses.length > 0) {
+      licsWrap.hidden = false;
+      licsWrap.innerHTML = ir.licenses.slice(0, 5).map((l) => {
+        const cat = l.category_name || l.category || "Road";
+        const rating = l.irating ? `${l.irating} iR` : "";
+        const sr = l.safety_rating || l.sr || "";
+        return `<span class="app-comp-licpill">${esc(cat)} <em>${esc(rating)}</em> ${esc(sr)}</span>`;
+      }).join("");
+    }
 
     // Last Race KPIs
     setTxt("compLrTrack", lr.circuito || "Circuit de Spa-Francorchamps");

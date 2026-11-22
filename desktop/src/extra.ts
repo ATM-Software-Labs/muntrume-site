@@ -4108,6 +4108,59 @@ function safeRenderWidget(el: HTMLElement | null, fn: () => void): void {
         }
       }
       lastAutoFuelPitRoad = pitNow;
+
+      // MMT Companion Live Playtime & Session Heartbeat (every 60s while actively driving in iRacing)
+      if (!frame.isReplayPlaying) {
+        const wComp = window as unknown as {
+          __mmtPtLastTs?: number;
+          __mmtPtAccumSec?: number;
+          __mmtPtLastLap?: number;
+          __mmtPtLapsDelta?: number;
+          __mmtPtLastPushTs?: number;
+        };
+        const nowMs = Date.now();
+        if (wComp.__mmtPtLastTs && nowMs - wComp.__mmtPtLastTs < 10_000) {
+          wComp.__mmtPtAccumSec = (wComp.__mmtPtAccumSec || 0) + (nowMs - wComp.__mmtPtLastTs) / 1000;
+        }
+        wComp.__mmtPtLastTs = nowMs;
+        const lapNow = frame.carIdxLap?.[irsdkState.camCarIdx] ?? 0;
+        if (wComp.__mmtPtLastLap != null && lapNow > wComp.__mmtPtLastLap && lapNow - wComp.__mmtPtLastLap <= 2) {
+          wComp.__mmtPtLapsDelta = (wComp.__mmtPtLapsDelta || 0) + (lapNow - wComp.__mmtPtLastLap);
+        }
+        if (lapNow > 0) wComp.__mmtPtLastLap = lapNow;
+
+        if (!wComp.__mmtPtLastPushTs || nowMs - wComp.__mmtPtLastPushTs >= 60_000) {
+          const deltaSec = Math.round(wComp.__mmtPtAccumSec || 0);
+          const deltaLaps = wComp.__mmtPtLapsDelta || 0;
+          const tk = typeof localStorage !== "undefined"
+            ? (localStorage.getItem("mmt_desktop_token") || localStorage.getItem("mrt_vault_token") || localStorage.getItem("mm_token") || "")
+            : "";
+          if (tk && (deltaSec >= 10 || deltaLaps > 0)) {
+            wComp.__mmtPtLastPushTs = nowMs;
+            wComp.__mmtPtAccumSec = 0;
+            wComp.__mmtPtLapsDelta = 0;
+            const liveTrack = session.weekendInfo?.trackName || "";
+            const liveCar = session.driverInfo?.drivers?.[irsdkState.camCarIdx]?.carScreenName || "";
+            void fetch("https://muntrume.atrumin16.workers.dev/api/desktop/companion/push", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${tk}` },
+              body: JSON.stringify({
+                playtime_delta_sec: deltaSec,
+                laps_delta: deltaLaps,
+                live_session: {
+                  active: true,
+                  track: liveTrack,
+                  car: liveCar,
+                  lap: lapNow,
+                  on_pit_road: pitNow,
+                  fuel_l: Number((frame.fuelLevel ?? 0).toFixed(2)),
+                  speed_kph: Math.round(frame.speedKmh ?? 0),
+                },
+              }),
+            }).catch(() => {});
+          }
+        }
+      }
     }
 
     if (shouldRenderSlowHud) {
