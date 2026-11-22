@@ -457,6 +457,44 @@ async function buildWallpaperCatalog(): Promise<WallpaperCatalog> {
   items.sort(compareItems);
 
   // Build Many-to-Many official 2026 S4 series groups: every official series receives ALL wallpapers of ALL eligible cars.
+  const BARE_BRANDS = new Set([
+    "mclaren", "aston", "astonmartin", "chevrolet", "dallara", "mercedes", "mercedesamg",
+    "porsche", "ferrari", "bmw", "audi", "ford", "toyota", "honda", "hyundai", "lamborghini",
+    "acura", "cadillac", "mazda", "subaru", "renault", "lotus", "ligier", "nascars", "nascarcup",
+    "evo", "tcr", "gt4", "gt3", "cup", "camry",
+  ]);
+
+  const SPLIT_PREFIX_RE = /^(?:aston(?:\s+martin)?|mclaren|chevrolet|dallara|mercedes(?:-amg)?|ford|hyundai|porsche\s+(?:911|718)|honda\s+civic|honda\s+civic\s+type\s+r|audi\s+rs3\s+lms\s+gen2|hyundai\s+elantra\s+n|bmw\s+m4\s+g82\s+gt4|bmw\s+m4\s+gt3|aston\s+martin\s+vantage\s+gt3|lamborghini\s+hurac[aá]n|global\s+mazda\s+mx-5|nascar\s+cup(?:\s+series\s+next\s+gen\s+toyota)?|\[legacy\]\s+mazda\s+mx-5)$/i;
+  const SPLIT_SUFFIX_RE = /^(?:evo|tcr|gt4|gt3|cup|camry|p217|570s\s+gt4|amg\s+gt4|gt3\s+evo|mustang\s+gt3|gt3\s+r\s*\(992\)|cayman\s+gt4.*|martin\s+vantage.*|corvette\s+z06.*|valkyrie\s+amr.*|type\s+r\s+tcr|veloster\s+n\s+tcr|series\s+next\s+gen.*|roadster.*)$/i;
+
+  function repairSplitCarNames(rawCars: string[]): string[] {
+    const out: string[] = [];
+    for (let i = 0; i < rawCars.length; i++) {
+      const cur = (rawCars[i] || "").trim();
+      const next = (rawCars[i + 1] || "").trim();
+      if (!cur) continue;
+      if (next && (cur.endsWith("-") || SPLIT_PREFIX_RE.test(cur) || SPLIT_SUFFIX_RE.test(next))) {
+        const joined = cur.endsWith("-") ? `${cur}${next}` : `${cur} ${next}`;
+        out.push(joined);
+        i++;
+      } else {
+        out.push(cur);
+      }
+    }
+    return out;
+  }
+
+  const CLASS_TOKENS = ["gt4", "gt3", "gte", "gtp", "lmp2", "lmp3", "tcr"] as const;
+  function extractClassTokens(n: string): string[] {
+    return CLASS_TOKENS.filter((tok) => n.includes(tok));
+  }
+  function hasConflictingClass(a: string, b: string): boolean {
+    const ca = extractClassTokens(a);
+    const cb = extractClassTokens(b);
+    if (!ca.length || !cb.length) return false;
+    return !ca.some((tok) => cb.includes(tok));
+  }
+
   const allScheduleSeries = (schedule as { series?: ScheduleSeries[] }).series ?? [];
   const itemMetaCache = items.map((item) => {
     const car = findCatalogCar(item.model);
@@ -465,7 +503,7 @@ async function buildWallpaperCatalog(): Promise<WallpaperCatalog> {
       norm(item.model),
       car ? norm(`${car.brand} ${car.model}`) : "",
       car ? norm(car.model) : "",
-    ].filter((x) => x.length >= 4));
+    ].filter((x) => x.length >= 4 && !BARE_BRANDS.has(x)));
     return { item, car, officialIds, norms };
   });
 
@@ -473,7 +511,8 @@ async function buildWallpaperCatalog(): Promise<WallpaperCatalog> {
   allScheduleSeries.forEach((sched, idx) => {
     const displayName = cleanSeriesName(sched.name);
     if (!displayName) return;
-    const schedCarNorms = (sched.cars ?? []).map((c) => norm(c)).filter((x) => x.length >= 4);
+    const repairedCars = repairSplitCarNames(sched.cars ?? []);
+    const schedCarNorms = repairedCars.map((c) => norm(c)).filter((x) => x.length >= 4 && !BARE_BRANDS.has(x));
     const matchedItems: WallpaperItem[] = [];
     const seenItemIds = new Set<string>();
 
@@ -482,7 +521,8 @@ async function buildWallpaperCatalog(): Promise<WallpaperCatalog> {
       if (!match && schedCarNorms.length > 0) {
         for (const sn of schedCarNorms) {
           for (const cn of entry.norms) {
-            if (cn === sn || (cn.length >= 7 && sn.includes(cn)) || (sn.length >= 7 && cn.includes(sn))) {
+            if (hasConflictingClass(cn, sn)) continue;
+            if (cn === sn || (cn.length >= 8 && sn.includes(cn)) || (sn.length >= 8 && cn.includes(sn))) {
               match = true;
               break;
             }

@@ -101,13 +101,29 @@ function normalizeCarToken(value: string): string {
     .trim();
 }
 
+const BARE_BRAND_TOKENS = new Set([
+  'mclaren', 'aston', 'aston martin', 'chevrolet', 'dallara', 'mercedes', 'mercedes amg',
+  'porsche', 'ferrari', 'bmw', 'audi', 'ford', 'toyota', 'honda', 'hyundai', 'lamborghini',
+  'acura', 'cadillac', 'mazda', 'subaru', 'renault', 'lotus', 'ligier', 'nascar cup',
+]);
+
+const STRICT_CLASS_RE = /\b(gt4|gt3|gte|gtp|lmp2|lmp3|tcr)\b/g;
+
+function hasConflictingRaceClass(a: string, b: string): boolean {
+  const ca = Array.from(new Set(a.match(STRICT_CLASS_RE) || []));
+  const cb = Array.from(new Set(b.match(STRICT_CLASS_RE) || []));
+  if (!ca.length || !cb.length) return false;
+  return !ca.some((tok) => cb.includes(tok));
+}
+
 function matchesScheduleCar(car: CarMetadata, scheduleCarName: string): boolean {
   const fullNorm = normalizeCarToken(`${car.brand} ${car.model}`);
   const modelNorm = normalizeCarToken(car.model);
   const schedNorm = normalizeCarToken(scheduleCarName);
 
-  if (schedNorm.length < 2) return false;
+  if (schedNorm.length < 2 || BARE_BRAND_TOKENS.has(schedNorm)) return false;
   if (!fullNorm.includes('legacy') && schedNorm.includes('legacy')) return false;
+  if (hasConflictingRaceClass(fullNorm, schedNorm)) return false;
 
   const carKey = (car.carFolder || '').toLowerCase();
   const aliases = CAR_SCHEDULE_ALIASES[carKey];
