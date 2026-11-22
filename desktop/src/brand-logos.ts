@@ -44,7 +44,8 @@ const FALLBACK_BRAND_RULES: Array<[RegExp, BrandRule]> = [
   [/mazda|mx5/i, { logo: "logo-mazda", name: "Mazda" }],
   [/honda|civic/i, { logo: "logo-honda", name: "Honda" }],
   [/hyundai|elantra|veloster/i, { logo: "logo-hyundai", name: "Hyundai" }],
-  [/renault|clio/i, { logo: "logo-renault", name: "Renault" }],
+  [/renault|clio|formularenault/i, { logo: "logo-renault", name: "Renault" }],
+  [/trucksram|ram1500/i, { logo: "logo-ram", name: "Ram" }],
   [/formulair04|dallara|superformula|sfl|sf23|p217|ir18|ir01|dw12/i, { logo: "logo-dallara", name: "Dallara" }],
   [/tatuus|usf2000|indypro|pm18/i, { logo: "logo-tatuus", name: "Tatuus" }],
   [/ligier|jsp320/i, { logo: "logo-ligier", name: "Ligier" }],
@@ -65,7 +66,7 @@ const FALLBACK_BRAND_RULES: Array<[RegExp, BrandRule]> = [
 ];
 
 function neutralSvg(color: string): string {
-  return `<svg viewBox="0 0 24 24" fill="${color}" fill-rule="evenodd" clip-rule="evenodd" style="color:${color}" class="w-full h-full"><path fill-rule="evenodd" d="${NEUTRAL_BRAND_MARK}"/></svg>`;
+  return `<svg viewBox="0 0 24 24" fill="none" style="color:${color}" class="w-full h-full" aria-hidden="true"><circle cx="12" cy="12" r="8.8" stroke="${color}" stroke-width="2"/><circle cx="12" cy="12" r="2.8" stroke="${color}" stroke-width="1.8"/><path d="M3.5 10.8h5.8m5.4 0h5.8M12 14.8v5.7" stroke="${color}" stroke-width="2" stroke-linecap="round"/></svg>`;
 }
 
 const DEFAULT_BRAND: CarBrandInfo = {

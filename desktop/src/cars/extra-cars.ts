@@ -53,8 +53,9 @@ export const EXTRA_IRACING_CARS: readonly RawCarEntry[] = [
   { carFolder: "dallaradw12", brand: "Dallara", model: "DW12", carClass: "Formula", svgLogoId: "logo-dallara", accentColor: "#FDC300", specs: "IndyCar 2012–2017", legacy: true },
   { carFolder: "dallarair05", brand: "Dallara", model: "IR-05", carClass: "Formula", svgLogoId: "logo-dallara", accentColor: "#FDC300", specs: "IndyCar circa 2009", legacy: true },
   { carFolder: "formulamazda", brand: "Mazda", model: "Pro Mazda", carClass: "Formula", svgLogoId: "logo-mazda", accentColor: "#910A2A", specs: "Star Mazda / Pro Mazda · Renesis", legacy: true },
-  { carFolder: "formularenault20", brand: U, model: "Formula Renault 2.0", carClass: "Formula", svgLogoId: N, accentColor: "#C0C0C0", specs: "Formula Renault 2.0" },
-  { carFolder: "formularenault35", brand: U, model: "Formula Renault 3.5", carClass: "Formula", svgLogoId: N, accentColor: "#C0C0C0", specs: "Formula Renault 3.5" },
+  { carFolder: "formularenault20", brand: "Renault", model: "Formula Renault 2.0", carClass: "Formula", svgLogoId: "logo-renault", accentColor: "#FFCC00", specs: "Formula Renault 2.0" },
+  { carFolder: "formularenault35", brand: "Renault", model: "Formula Renault 3.5", carClass: "Formula", svgLogoId: "logo-renault", accentColor: "#FFCC00", specs: "Formula Renault 3.5" },
+  { carFolder: "trucksram1500", brand: "Ram", model: "NASCAR Truck Ram 1500", carClass: "Oval", svgLogoId: "logo-ram", accentColor: "#FFFFFF", specs: "NASCAR Craftsman Truck Series" },
 
   // Oval stock cars named on the filepath list.
   { carFolder: "stockcars2arcachevy", brand: "Chevrolet", model: "ARCA SS", carClass: "Oval", svgLogoId: "logo-chevy", accentColor: "#C5A017", specs: "ARCA Menards" },

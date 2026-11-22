@@ -21,7 +21,9 @@ const simBrandSamples: Record<string, string> = {
   porsche: "porsche992rgt3",
   mclaren: "mclaren720sgt3",
   ferrari: "ferrari296gt3",
+  lambo: "lamborghinievogt3",
   cadillac: "cadillacvseriesrgtp",
+  acura: "acuraarx06gtp",
   bmw: "bmwm4gt3",
   dallara: "dallarap217",
   mercedes: "mercedesamgevogt3",
@@ -221,10 +223,12 @@ const overlaySchema = {
 
           <div class="sim-toolbar__group sim-toolbar__right">
             <span class="sim-toolbar__label" data-i18n="ov.presets">PRESETS:</span>
+            <button type="button" class="sim-action-btn" data-sim-preset="all_on">Full HUD (8/8)</button>
             <button type="button" class="sim-action-btn" data-sim-preset="sprint_gt3">Sprint GT3</button>
             <button type="button" class="sim-action-btn" data-sim-preset="endurance_multi">Endurance</button>
             <button type="button" class="sim-action-btn" data-sim-preset="minimal_qualy">Minimalist Qualy</button>
-            <button type="button" id="simLockHudBtn" class="sim-action-btn" aria-pressed="false" title="Lock HUD">🔒 Lock HUD</button>
+            <button type="button" id="simResetPosBtn" class="sim-action-btn" title="Restaurar posiciones originales del HUD">↺ Reset Layout</button>
+            <button type="button" id="simLockHudBtn" class="sim-action-btn" aria-pressed="false" title="Bloquear o desbloquear arrastre de widgets">🔒 Lock HUD</button>
             <div class="sim-mode-switch" role="group" aria-label="Modo de sesión">
               <button type="button" id="simModeTrack" class="sim-mode-btn is-active" aria-pressed="true">
                 Track <kbd>P</kbd>
@@ -254,27 +258,38 @@ const overlaySchema = {
             <div class="sim-statusbar__left">
               <span class="sim-status-tag" id="simCircuitBanner">SILVERSTONE GP · IMSA MULTICLASS</span>
               <span class="sim-status-meta" id="simLapClock">LAP 14/28 · 18:42 REM</span>
+              <span class="sim-status-hint" id="simDragHint">⠿ Arrastra cualquier widget · Clic en piloto para enfocar</span>
             </div>
             <div class="sim-statusbar__right">
               <span class="sim-replay-badge" id="simReplayBadge" hidden>REPLAY · isReplayPlaying=true · Controles de pilotaje ocultos</span>
-              <span class="sim-fps-badge" id="simCpuBadge">60 FPS · 6/6 activos</span>
+              <span class="sim-fps-badge" id="simCpuBadge">60 FPS · 8/8 activos</span>
             </div>
           </div>
 
           <!-- Visor Ergonomía Real iRacing (16:9 Cockpit Layout) -->
-          <div class="sim-cockpit-layer">
+          <div class="sim-cockpit-layer" id="simCockpitLayer">
             <!-- ARRIBA IZQUIERDA (top: 12px; left: 12px): STANDINGS MULTICLASE KAPPS -->
             <div class="hud-box hud-standings hud-pos-standings" data-hud-mod="standings">
               <div class="hud-std-sessbar">
                 <div class="flex items-center gap-2">
-                  <span class="font-extrabold text-white">P</span>
-                  <span class="px-1 rounded-[2px] font-extrabold text-[9.5px] bg-[#facc15]/20 text-[#facc15]">GTP</span>
+                  <span class="font-extrabold text-white">RACE</span>
+                  <span class="px-1 rounded-[2px] font-extrabold text-[9.5px] bg-[#facc15]/20 text-[#facc15]">IMSA</span>
                   <span class="text-white/90">1:12:58/2h</span>
                 </div>
                 <div class="flex items-center gap-2 text-white/80">
                   <span>20°C</span>
                   <span>11/11</span>
                 </div>
+              </div>
+              <div class="hud-std-colbar">
+                <span>P</span>
+                <span>#</span>
+                <span>PILOTO</span>
+                <span></span>
+                <span>LIC / iR</span>
+                <span class="text-right">GAP</span>
+                <span class="text-right">INT</span>
+                <span class="text-right">LAST</span>
               </div>
               <div class="hud-standings__body" id="simStandingsBody"></div>
             </div>
@@ -291,13 +306,21 @@ const overlaySchema = {
               </div>
             </div>
 
-            <!-- ARRIBA DERECHA (top: 12px; right: 12px): RELATIVE COMPACTO KAPPS (w-[275px]) -->
+            <!-- ARRIBA DERECHA (top: 12px; right: 12px): RELATIVE COMPACTO KAPPS -->
             <div class="hud-box hud-relative hud-pos-relative" data-hud-mod="relative">
+              <div class="hud-box__head">
+                <span class="hud-box__title">RELATIVE · Δ PISTA</span>
+                <span class="hud-box__meta" id="simRelFocusTag">#16 A. Trujillo</span>
+              </div>
               <div class="hud-relative__body" id="simRelativeBody"></div>
             </div>
 
-            <!-- DEBAJO DE RELATIVE (top: 170px; right: 12px): TRACK MAP KAPPS -->
+            <!-- DEBAJO DE RELATIVE (top: 184px; right: 12px): TRACK MAP KAPPS -->
             <div class="hud-box hud-trackmap hud-pos-trackmap" data-hud-mod="trackmap">
+              <div class="hud-box__head">
+                <span class="hud-box__title" id="simTrackMapTitle">TRACK MAP · SILVERSTONE GP</span>
+                <span class="hud-box__meta">GPS 60Hz</span>
+              </div>
               <div class="hud-trackmap__canvas">
                 <svg id="simTrackSvg" viewBox="0 0 280 200" class="hud-trackmap__svg" aria-label="Mapa de circuito en vivo">
                   <path id="simTrackOutline" fill="none" stroke="rgba(248,250,252,0.55)" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
@@ -525,50 +548,56 @@ const overlaySchema = {
     <!-- ===================================================================== -->
     <section id="opensource" class="ov-section">
       <div class="ov-container">
-        <div class="rounded-xl border border-emerald-500/30 bg-[#0d1118] p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div class="ov-card rounded-xl border border-emerald-500/30 p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div class="space-y-3 max-w-2xl">
             <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-emerald-500/15 border border-emerald-500/35 text-emerald-400 font-mono text-[11px] font-extrabold uppercase tracking-wider">
               100 % Open Source · Licencia MIT
             </span>
-            <h2 class="text-2xl font-extrabold text-white tracking-tight">
+            <h3 class="text-2xl font-extrabold tracking-tight" style="font-size:1.5rem;margin:0">
               Código abierto, cero suscripciones y cero DRM
-            </h2>
-            <p class="text-sm text-slate-300 leading-relaxed">
+            </h3>
+            <p class="text-sm leading-relaxed">
               MMT Sync Overlay es software libre bajo licencia MIT. Puedes auditar el parser nativo del SDK de iRacing, añadir nuevas marcas, crear tus propios módulos HUD o compilar el binario localmente en tu equipo sin cuentas de pago ni telemetría externa.
             </p>
             <div class="flex flex-wrap items-center gap-2.5 pt-1 font-mono text-xs">
               <a
-                href="https://github.com/ATRUMIN16/muntrume-site/tree/main/desktop"
+                href="https://github.com/ATM-Software-Labs/muntrume-site/tree/main/desktop"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="px-3.5 py-2 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-extrabold transition"
+                class="ov-btn ov-btn--primary"
+                style="padding:8px 14px;font-size:12px"
               >
                 Código Fuente (GitHub) ↗
               </a>
               <a
-                href="https://github.com/ATRUMIN16/muntrume-site/issues"
+                href="https://github.com/ATM-Software-Labs/muntrume-site/issues"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="px-3.5 py-2 rounded border border-white/15 hover:border-emerald-500/50 text-slate-200 font-bold transition"
+                class="ov-btn ov-btn--secondary"
+                style="padding:8px 14px;font-size:12px"
               >
                 Issues (Reportar / Pedir Widgets) ↗
               </a>
               <a
-                href="https://github.com/ATRUMIN16/muntrume-site/pulls"
+                href="https://github.com/ATM-Software-Labs/muntrume-site/pulls"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="px-3.5 py-2 rounded border border-white/15 hover:border-emerald-500/50 text-slate-200 font-bold transition"
+                class="ov-btn ov-btn--secondary"
+                style="padding:8px 14px;font-size:12px"
               >
                 Pull Requests ↗
               </a>
             </div>
           </div>
 
-          <div class="w-full lg:w-[400px] rounded-lg border border-white/10 bg-[#090b0f] p-4 font-mono text-xs space-y-2 shrink-0">
-            <div class="text-[10px] uppercase tracking-widest text-emerald-400 font-bold">
+          <div
+            class="ov-code-pod w-full lg:w-[400px] rounded-lg border border-white/10 bg-[#090b0f] p-4 font-mono text-xs space-y-2 shrink-0"
+            style="background-color:#090b0f;border-color:rgba(255,255,255,0.12);color:#e2e8f0"
+          >
+            <div class="text-[10px] uppercase tracking-widest font-bold" style="color:#34d399">
               Compilación local en 3 pasos
             </div>
-            <pre class="text-slate-200 leading-relaxed overflow-x-auto"><code>git clone https://github.com/ATRUMIN16/muntrume-site.git
+            <pre class="leading-relaxed overflow-x-auto" style="color:#e2e8f0;margin:0"><code>git clone https://github.com/ATM-Software-Labs/muntrume-site.git
 cd desktop &amp;&amp; npm install
 npm run tauri dev</code></pre>
           </div>
@@ -586,7 +615,7 @@ npm run tauri dev</code></pre>
             <p class="ov-kicker">Fuente única de verdad · desktop/src/brand-logos.ts</p>
             <h2 class="ov-section__title">Catálogo de Fabricantes iRacing SDK</h2>
             <p class="ov-section__sub">
-              Fabricantes del catálogo con su emblema real. Las letras del logo van en blanco para leerse sobre el fondo oscuro.
+              Fabricantes del catálogo con su emblema real optimizado para el HUD a 60 FPS sobre fondo oscuro.
             </p>
           </div>
           <a
@@ -599,23 +628,30 @@ npm run tauri dev</code></pre>
 
         <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2.5" data-no-translate>
           {supportedBrands.map((b) => (
-            <div class="brand-mini-card rounded-lg border border-white/10 bg-[#090b0f] p-3 flex flex-col gap-2 font-mono tabular-nums">
+            <a
+              href="/overlay/brands/"
+              class="brand-mini-card rounded-lg border border-white/10 bg-[#090b0f] hover:border-emerald-500/50 p-3 flex flex-col gap-2 font-mono tabular-nums transition no-underline"
+              style="background-color:#090b0f;border-color:rgba(255,255,255,0.12);color:#f8fafc"
+            >
               <div class="flex items-center justify-between gap-2">
-                <span class="w-8 h-8 flex items-center justify-center shrink-0 [&>svg]:w-full [&>svg]:h-full">
+                <span class="w-9 h-9 flex items-center justify-center shrink-0 [&>svg]:w-full [&>svg]:h-full">
                   <Fragment set:html={b.svg} />
                 </span>
-                <span class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border border-white/10 bg-white/[0.04] font-bold text-slate-200">
+                <span
+                  class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border border-white/10 bg-white/[0.05] font-bold"
+                  style="color:#e2e8f0;border-color:rgba(255,255,255,0.14)"
+                >
                   <span class="w-2 h-2 rounded-full shrink-0" style={`background:${b.color}`}></span>
                   <span>{b.color.toUpperCase()}</span>
                 </span>
               </div>
               <div>
-                <div class="text-xs font-bold text-slate-100 truncate">{b.name}</div>
-                <div class="text-[10px] text-slate-400 truncate" title={b.carPaths.join(", ")}>
+                <div class="text-xs font-bold truncate" style="color:#f8fafc">{b.name}</div>
+                <div class="text-[10px] truncate" style="color:#94a3b8" title={b.carPaths.join(", ")}>
                   {b.carPaths.length} {b.carPaths.length === 1 ? "car" : "cars"}
                 </div>
               </div>
-            </div>
+            </a>
           ))}
         </div>
       </div>
@@ -867,7 +903,7 @@ npm run tauri dev</code></pre>
       const drivers = [
         // GTP
         { id: 1,  num: "01", name: "M. Lindqvist",  cls: "GTP",  brand: "cadillac", lic: "A", sr: "4.99", ir: "3.8k", irDelta: +58, lap: 15, pct: 0.5400, speed: 1.003, isPit: false },
-        { id: 2,  num: "07", name: "K. Takahashi",  cls: "GTP",  brand: "porsche",  lic: "A", sr: "4.42", ir: "3.3k", irDelta: +24, lap: 15, pct: 0.5180, speed: 1.001, isPit: false },
+        { id: 2,  num: "07", name: "K. Takahashi",  cls: "GTP",  brand: "acura",    lic: "A", sr: "4.42", ir: "3.3k", irDelta: +24, lap: 15, pct: 0.5180, speed: 1.001, isPit: false },
         { id: 3,  num: "24", name: "L. Van Der Berg",cls: "GTP", brand: "bmw",      lic: "A", sr: "3.85", ir: "3.1k", irDelta: -19, lap: 15, pct: 0.4500, speed: 0.998, isPit: false },
         // LMP2 (lap 15 lapping GT3)
         { id: 4,  num: "32", name: "R. Moretti",    cls: "LMP2", brand: "dallara",  lic: "A", sr: "4.10", ir: "2.9k", irDelta: +41, lap: 15, pct: 0.6700, speed: 0.946, isPit: false },
@@ -877,8 +913,8 @@ npm run tauri dev</code></pre>
         { id: 6,  num: "1",  name: "M. Berbis",     cls: "GT3",  brand: "porsche",  lic: "A", sr: "4.65", ir: "2.9k", irDelta: +44, lap: 14, pct: 0.4947, speed: 0.846, isPit: false, battleSide: "left" },
         { id: 8,  num: "22", name: "E. Chongkan",   cls: "GT3",  brand: "mclaren",  lic: "B", sr: "3.41", ir: "2.4k", irDelta: +18, lap: 14, pct: 0.4884, speed: 0.846, isPit: false, battleSide: "right" },
         { id: 9,  num: "77", name: "D. Rossi",      cls: "GT3",  brand: "ferrari",  lic: "B", sr: "3.12", ir: "2.3k", irDelta: -24, lap: 14, pct: 0.4620, speed: 0.841, isPit: false },
-        { id: 10, num: "95", name: "T. Schneider",  cls: "GT3",  brand: "aston",    lic: "C", sr: "2.88", ir: "1.9k", irDelta: -36, lap: 13, pct: 0.4350, speed: 0.835, isPit: false },
-        { id: 11, num: "63", name: "S. Dubois",     cls: "GT3",  brand: "bmw",      lic: "D", sr: "2.40", ir: "1.6k", irDelta: -42, lap: 13, pct: 0.5450, speed: 0.420, isPit: true },
+        { id: 10, num: "95", name: "T. Schneider",  cls: "GT3",  brand: "lambo",    lic: "C", sr: "2.88", ir: "1.9k", irDelta: -36, lap: 13, pct: 0.4350, speed: 0.835, isPit: false },
+        { id: 11, num: "63", name: "S. Dubois",     cls: "GT3",  brand: "aston",    lic: "D", sr: "2.40", ir: "1.6k", irDelta: -42, lap: 13, pct: 0.5450, speed: 0.420, isPit: true },
       ];
 
       // State
@@ -938,6 +974,7 @@ npm run tauri dev</code></pre>
       }
 
       const SIM_PRESETS = {
+        all_on: { standings: true, relative: true, trackmap: true, fuel: true, pit: true, tires: true, inputs: true, radar: true },
         sprint_gt3: { standings: false, relative: true, trackmap: false, fuel: false, pit: false, tires: true, inputs: true, radar: true },
         endurance_multi: { standings: true, relative: true, trackmap: true, fuel: true, pit: true, tires: false, inputs: false, radar: false },
         minimal_qualy: { standings: false, relative: false, trackmap: false, fuel: false, pit: false, tires: true, inputs: true, radar: false },
@@ -964,6 +1001,9 @@ npm run tauri dev</code></pre>
       });
 
       const lockHudBtn = document.getElementById("simLockHudBtn");
+      const resetPosBtn = document.getElementById("simResetPosBtn");
+      const cockpitLayerEl = document.getElementById("simCockpitLayer");
+      const relFocusTagEl = document.getElementById("simRelFocusTag");
       const simStageEl = document.getElementById("simStage");
       let hudLocked = false;
       lockHudBtn?.addEventListener("click", () => {
@@ -974,6 +1014,81 @@ npm run tauri dev</code></pre>
         lockHudBtn.style.color = hudLocked ? "#34d399" : "";
         if (simStageEl) simStageEl.classList.toggle("is-hud-locked", hudLocked);
       });
+
+      // Interactive HUD Widget Dragging & Layout Reset
+      if (cockpitLayerEl) {
+        const draggableWidgets = cockpitLayerEl.querySelectorAll(".hud-box, .hud-radar-wrap");
+        draggableWidgets.forEach((widget) => {
+          let dragging = false;
+          let startX = 0;
+          let startY = 0;
+          let baseDx = 0;
+          let baseDy = 0;
+
+          widget.addEventListener("pointerdown", (e) => {
+            if (hudLocked || window.innerWidth <= 1040) return;
+            if (e.target.closest("[data-st-id], [data-rel-slot], button")) return;
+            dragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            baseDx = Number(widget.dataset.dx || 0);
+            baseDy = Number(widget.dataset.dy || 0);
+            widget.setPointerCapture(e.pointerId);
+            widget.classList.add("is-dragging");
+          });
+
+          widget.addEventListener("pointermove", (e) => {
+            if (!dragging) return;
+            const dx = baseDx + (e.clientX - startX);
+            const dy = baseDy + (e.clientY - startY);
+            widget.dataset.dx = String(dx);
+            widget.dataset.dy = String(dy);
+            widget.style.translate = `${dx}px ${dy}px`;
+          });
+
+          const endDrag = () => {
+            if (!dragging) return;
+            dragging = false;
+            widget.classList.remove("is-dragging");
+          };
+          widget.addEventListener("pointerup", endDrag);
+          widget.addEventListener("pointercancel", endDrag);
+        });
+
+        resetPosBtn?.addEventListener("click", () => {
+          cockpitLayerEl.querySelectorAll(".hud-box, .hud-radar-wrap").forEach((w) => {
+            delete w.dataset.dx;
+            delete w.dataset.dy;
+            w.style.translate = "";
+          });
+        });
+      }
+
+      function focusDriverById(targetId) {
+        const target = drivers.find((d) => d.id === targetId);
+        if (!target) return;
+        drivers.forEach((d) => {
+          d.isMe = d.id === targetId;
+        });
+        if (relFocusTagEl) {
+          relFocusTagEl.textContent = `#${target.num} ${target.name}`;
+        }
+        standingsRows.forEach((slot) => {
+          const isMe = slot.d.isMe;
+          slot.rowEl.classList.toggle("is-me", Boolean(isMe));
+          slot.rowEl.style.borderLeftColor = isMe ? "#10b981" : CLASSES[slot.clsKey].color;
+        });
+        relPool.forEach((s) => { s.lastKey = ""; });
+        if (trackDotsEl) {
+          trackDotsEl.innerHTML = "";
+          trackDotNodes.length = 0;
+          trackDotsInit = false;
+          initTrackMapDom();
+        }
+        renderStandings();
+        renderRelative();
+        renderTrackMap();
+      }
 
       // Wire module toggle buttons
       document.querySelectorAll("[data-toggle-mod]").forEach((btn) => {
@@ -1073,11 +1188,11 @@ npm run tauri dev</code></pre>
             const lapMin = Math.floor((meta.lapSec + idx * 0.312) / 60);
             const lapRem = ((meta.lapSec + idx * 0.312) % 60).toFixed(3).padStart(6, "0");
             const lapStr = `${lapMin}:${lapRem}`;
-            html += `<div class="st-row ${d.isMe ? "is-me" : ""} ${d.isPit ? "is-pit" : ""}" data-st-id="${d.id}" style="border-left-color:${d.isMe ? "#10b981" : meta.color}">
+            html += `<div class="st-row ${d.isMe ? "is-me" : ""} ${d.isPit ? "is-pit" : ""}" data-st-id="${d.id}" title="Clic para seguir cámara y Relative de #${d.num} ${d.name}" style="border-left-color:${d.isMe ? "#10b981" : meta.color}">
               <span class="st-pos">${idx + 1}</span>
               <span class="st-num" style="color:${meta.color}">#${d.num}</span>
               <span class="st-name">${d.name}</span>
-              ${brandSvg(d.brand, 13)}
+              ${brandSvg(d.brand, 16)}
               <span class="st-lic-ir" style="background:${licBg}">${d.lic}${d.sr} <span>${irExact}</span></span>
               <span class="st-gap">LDR</span>
               <span class="st-int">—</span>
@@ -1086,6 +1201,12 @@ npm run tauri dev</code></pre>
           });
         });
         standingsEl.innerHTML = html;
+        standingsEl.querySelectorAll("[data-st-id]").forEach((rowEl) => {
+          rowEl.addEventListener("click", () => {
+            const id = Number(rowEl.getAttribute("data-st-id"));
+            if (id) focusDriverById(id);
+          });
+        });
         ["GTP", "LMP2", "GT3"].forEach((clsKey) => {
           const group = drivers.filter((d) => d.cls === clsKey);
           group.forEach((d) => {
@@ -1177,6 +1298,7 @@ npm run tauri dev</code></pre>
             <span class="rel-pos"></span>
             <span class="rel-num"></span>
             <span class="rel-name"></span>
+            <span class="rel-brand"></span>
             <span class="rel-pit" hidden>PIT</span>
             <span class="rel-lic"></span>
             <span class="rel-ir"></span>
@@ -1186,11 +1308,16 @@ npm run tauri dev</code></pre>
         relativeEl.innerHTML = html;
         for (let i = 0; i < 7; i++) {
           const rowEl = relativeEl.querySelector(`[data-rel-slot="${i}"]`);
+          rowEl?.addEventListener("click", () => {
+            const drvId = Number(rowEl.dataset.drvId || 0);
+            if (drvId) focusDriverById(drvId);
+          });
           relPool.push({
             rowEl,
             posEl: rowEl.querySelector(".rel-pos"),
             numEl: rowEl.querySelector(".rel-num"),
             nameEl: rowEl.querySelector(".rel-name"),
+            brandEl: rowEl.querySelector(".rel-brand"),
             pitEl: rowEl.querySelector(".rel-pit"),
             licEl: rowEl.querySelector(".rel-lic"),
             irEl: rowEl.querySelector(".rel-ir"),
@@ -1254,12 +1381,14 @@ npm run tauri dev</code></pre>
           const slotKey = `${d.id}|${tone}`;
           if (slot.lastKey !== slotKey) {
             slot.lastKey = slotKey;
+            slot.rowEl.dataset.drvId = String(d.id);
             slot.rowEl.className = `rel-row rel-row--${tone}`;
             slot.rowEl.style.borderLeftColor = d.isMe ? "#10b981" : CLASSES[d.cls].color;
             slot.posEl.textContent = String(d.id);
             slot.numEl.textContent = `#${d.num}`;
             slot.numEl.style.color = CLASSES[d.cls].color;
             slot.nameEl.textContent = d.name;
+            if (slot.brandEl) slot.brandEl.innerHTML = brandSvg(d.brand, 14);
             if (d.isPit) {
               slot.pitEl.hidden = false;
               slot.licEl.hidden = true;
@@ -2659,6 +2788,13 @@ npm run tauri dev</code></pre>
     color: #94a3b8;
   }
 
+  .sim-status-hint {
+    color: #34d399;
+    font-size: 9.5px;
+    font-weight: 600;
+    opacity: 0.85;
+  }
+
   .sim-fps-badge {
     color: #34d399;
     background: rgba(16, 185, 129, 0.12);
@@ -2695,19 +2831,19 @@ npm run tauri dev</code></pre>
       position: absolute;
       top: 12px;
       left: 12px;
-      width: 404px;
+      width: 416px;
     }
     .hud-pos-relative {
       position: absolute;
       top: 12px;
       right: 12px;
-      width: 275px;
+      width: 296px;
     }
     .hud-pos-trackmap {
       position: absolute;
-      top: 162px;
+      top: 184px;
       right: 12px;
-      width: 210px;
+      width: 216px;
     }
     .hud-pos-delta {
       position: absolute;
@@ -2772,13 +2908,22 @@ npm run tauri dev</code></pre>
   }
 
   .hud-box {
-    background: rgba(9, 11, 15, 0.88);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 3px;
+    background: rgba(9, 11, 15, 0.90);
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    border-radius: 4px;
     overflow: hidden;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-variant-numeric: tabular-nums;
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    transition: opacity 0.2s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    cursor: grab;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  }
+
+  .hud-box.is-dragging {
+    cursor: grabbing;
+    border-color: rgba(16, 185, 129, 0.65);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(16, 185, 129, 0.35);
+    z-index: 40;
   }
 
   .hud-box.is-hidden,
@@ -2815,12 +2960,27 @@ npm run tauri dev</code></pre>
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 18px;
+    height: 19px;
     padding: 0 6px;
     background: #090b0f;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     font-size: 9.5px;
     font-weight: 700;
+  }
+
+  .hud-std-colbar {
+    display: grid;
+    grid-template-columns: 16px 26px 114px 18px 72px 44px 40px 54px;
+    align-items: center;
+    height: 16px;
+    padding: 0 5px;
+    border-left: 3px solid transparent;
+    background: rgba(255, 255, 255, 0.025);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    font-size: 8.5px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: #64748b;
   }
 
   .hud-standings__body {
@@ -2848,15 +3008,21 @@ npm run tauri dev</code></pre>
 
   .sim-stage :global(.st-row) {
     display: grid;
-    grid-template-columns: 16px 24px 118px 13px 72px 44px 40px 54px;
+    grid-template-columns: 16px 26px 114px 18px 72px 44px 40px 54px;
     align-items: center;
     gap: 0;
-    height: 19px;
+    height: 21px;
     padding: 0 5px;
     border-left: 3px solid transparent;
     font-size: 10.5px;
     color: #f8fafc;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.025);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+  }
+
+  .sim-stage :global(.st-row:hover) {
+    background: rgba(255, 255, 255, 0.06);
   }
 
   .sim-stage :global(.st-lic-ir) {
@@ -2959,14 +3125,26 @@ npm run tauri dev</code></pre>
 
   .sim-stage :global(.rel-row) {
     display: grid;
-    grid-template-columns: 16px 24px minmax(78px, 1fr) 32px 30px 36px;
+    grid-template-columns: 16px 24px minmax(74px, 1fr) 16px 32px 30px 36px;
     align-items: center;
     gap: 4px;
-    height: 19px;
+    height: 20px;
     padding: 0 5px;
     border-left: 3px solid transparent;
     font-size: 10.5px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.025);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+  }
+
+  .sim-stage :global(.rel-row:hover) {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .sim-stage :global(.rel-brand) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .sim-stage :global(.rel-pos) {
