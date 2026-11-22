@@ -8,6 +8,8 @@ Disallow: /login
 Disallow: /login/
 Disallow: /ajustes
 Disallow: /ajustes/
+Disallow: /settings
+Disallow: /settings/
 Disallow: /galeria/
 Disallow: /about/
 Disallow: /legal/

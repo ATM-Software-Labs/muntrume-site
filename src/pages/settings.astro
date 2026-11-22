@@ -1,0 +1,781 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="Configuración de cuenta · Muntrume Motorsport"
+  description="Gestiona tu cuenta de Muntrume Motorsport, Passkeys, Authenticator, canales OTP y sesiones activas de hasta 30 días."
+  canonical="https://muntru.me/settings/"
+  noindex={true}
+>
+  <main class="ms-page">
+    <div class="ms-shell">
+      <!-- LOGIN REQUIRED -->
+      <section id="setNeedLogin" class="ms-login-card" hidden>
+        <div class="ms-login-ico" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <h1>Inicia sesión para gestionar tu cuenta</h1>
+        <p>Accede con tu cuenta de miembro de Muntrume Motorsport para administrar tu perfil, Passkeys, Authenticator y sesiones.</p>
+        <a href="/login/?next=/settings/" class="ms-btn ms-btn--primary">Iniciar sesión →</a>
+      </section>
+
+      <!-- AUTHENTICATED 2-COLUMN GOOGLE / MSFT / X.COM SETTINGS -->
+      <div id="setMain" class="ms-layout" hidden>
+        <!-- LEFT SIDEBAR -->
+        <aside class="ms-sidebar" aria-label="Menú de configuración">
+          <div class="ms-user-chip">
+            <div id="setAvatar" class="ms-avatar" aria-hidden="true">MM</div>
+            <div class="ms-user-meta">
+              <strong id="setName">Cargando…</strong>
+              <span id="setEmail">—</span>
+            </div>
+          </div>
+
+          <nav class="ms-nav" role="tablist" aria-orientation="vertical">
+            <button type="button" class="ms-nav-item is-active" role="tab" aria-selected="true" data-tab="account">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 12 0v1"/><path d="M16 21v-1a6 6 0 0 1 4-5.65"/></svg>
+              <span>Tu cuenta</span>
+            </button>
+            <button type="button" class="ms-nav-item" role="tab" aria-selected="false" data-tab="security">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span>Seguridad y acceso</span>
+            </button>
+            <button type="button" class="ms-nav-item" role="tab" aria-selected="false" data-tab="channels">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              <span>Canales OTP</span>
+            </button>
+            <button type="button" class="ms-nav-item" role="tab" aria-selected="false" data-tab="sessions">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+              <span>Sesiones y accesos</span>
+            </button>
+          </nav>
+
+          <div class="ms-sidebar-foot">
+            <div id="stepupPill" class="ms-sec-pill" hidden>
+              <span class="ms-dot"></span>
+              <span id="stepupPillText">Verificado · 15 min</span>
+            </div>
+            <a href="/garage/" class="ms-side-link">Garage Vault ↗</a>
+            <a href="https://ai.muntru.me/" class="ms-side-link">Muntrume AI ↗</a>
+            <button type="button" id="btnLogoutAll" class="ms-side-link ms-side-link--danger">Cerrar sesión</button>
+          </div>
+        </aside>
+
+        <!-- RIGHT CONTENT -->
+        <section class="ms-content">
+          <div id="setBanner" class="ms-toast" hidden role="status" aria-live="polite"></div>
+
+          <!-- TAB 1: TU CUENTA -->
+          <div class="ms-panel" id="panel-account" role="tabpanel">
+            <header class="ms-panel-head">
+              <h1>Tu cuenta</h1>
+              <p>Información básica visible en Paddock, Garage Vault, Race Control y Muntrume AI.</p>
+            </header>
+
+            <div class="ms-card">
+              <div class="ms-card-head">
+                <h2>Información personal</h2>
+              </div>
+              <form id="formProfile" class="ms-list-form">
+                <div class="ms-row">
+                  <div class="ms-row-label">
+                    <strong>Nombre visible</strong>
+                    <span>Cómo apareces ante el resto del equipo.</span>
+                  </div>
+                  <div class="ms-row-ctrl">
+                    <input type="text" id="profName" maxlength="80" required />
+                  </div>
+                </div>
+                <div class="ms-row">
+                  <div class="ms-row-label">
+                    <strong>Correo de la cuenta</strong>
+                    <span>Usado para códigos de acceso y verificación de seguridad.</span>
+                  </div>
+                  <div class="ms-row-ctrl">
+                    <input type="email" id="profEmail" disabled />
+                  </div>
+                </div>
+                <div class="ms-row">
+                  <div class="ms-row-label">
+                    <strong>Rol en Muntrume Motorsport</strong>
+                    <span>Permisos asignados en D1 Race Control.</span>
+                  </div>
+                  <div class="ms-row-ctrl">
+                    <span id="profRole" class="ms-badge">—</span>
+                  </div>
+                </div>
+                <div class="ms-card-foot">
+                  <button type="submit" id="btnSaveProfile" class="ms-btn ms-btn--primary">Guardar cambios</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- TAB 2: SEGURIDAD Y ACCESO -->
+          <div class="ms-panel" id="panel-security" role="tabpanel" hidden>
+            <header class="ms-panel-head">
+              <h1>Seguridad y acceso</h1>
+              <p>Configura el acceso sin contraseña. Si realizas un cambio sensible, enviaremos automáticamente un código de 6 dígitos a <strong id="secAccountEmail">tu correo</strong>.</p>
+            </header>
+
+            <!-- PASSKEYS -->
+            <div class="ms-card">
+              <div class="ms-card-head">
+                <div>
+                  <h2>Passkeys (Windows Hello, Touch ID, Face ID)</h2>
+                  <p>Inicia sesión en 1 toque sin contraseña ni códigos.</p>
+                </div>
+                <span id="pkCountBadge" class="ms-badge">0 activas</span>
+              </div>
+              <div id="passkeysList" class="ms-pk-list"></div>
+              <div class="ms-inline-add">
+                <input type="text" id="pkDeviceName" maxlength="60" placeholder="Nombre del dispositivo (ej. PC Simulador, iPhone)" />
+                <button type="button" id="btnAddPasskey" class="ms-btn ms-btn--primary">+ Añadir Passkey</button>
+              </div>
+            </div>
+
+            <!-- AUTHENTICATOR TOTP -->
+            <div class="ms-card">
+              <div class="ms-card-head">
+                <div>
+                  <h2>App Authenticator (TOTP)</h2>
+                  <p>Compatible con Google Authenticator, Microsoft Authenticator, Ente Auth, Aegis o Bitwarden.</p>
+                </div>
+                <span id="totpStateBadge" class="ms-badge">Inactivo</span>
+              </div>
+              <div class="ms-btn-row">
+                <button type="button" id="btnTotpSetup" class="ms-btn ms-btn--primary">Configurar Authenticator</button>
+                <button type="button" id="btnTotpDisable" class="ms-btn ms-btn--danger" hidden>Desactivar</button>
+              </div>
+              <div id="totpSetupBox" class="ms-subbox" hidden>
+                <p><strong>1.</strong> Añade esta clave secreta en tu app Authenticator:</p>
+                <code id="totpSecretVal" class="ms-secret"></code>
+                <p style="margin-top:12px"><strong>2.</strong> Guarda tus <strong>8 códigos de recuperación</strong> de un solo uso:</p>
+                <pre id="totpRecoveryVal" class="ms-recovery"></pre>
+                <div class="ms-inline-add" style="margin-top:12px">
+                  <input type="text" id="totpConfirmCode" inputmode="numeric" maxlength="6" placeholder="Código de 6 dígitos" />
+                  <button type="button" id="btnTotpConfirm" class="ms-btn ms-btn--primary">Activar Authenticator</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- PASSWORD -->
+            <div class="ms-card">
+              <div class="ms-card-head">
+                <div>
+                  <h2>Contraseña de respaldo</h2>
+                  <p>Opcional si ya usas Passkey o Authenticator.</p>
+                </div>
+              </div>
+              <form id="formChangePw" class="ms-pw-grid">
+                <label class="ms-field">
+                  <span>Contraseña actual</span>
+                  <input type="password" id="curPw" autocomplete="current-password" required />
+                </label>
+                <label class="ms-field">
+                  <span>Nueva contraseña (mín. 10 caracteres)</span>
+                  <input type="password" id="newPw" autocomplete="new-password" minlength="10" required />
+                </label>
+                <button type="submit" id="btnChangePw" class="ms-btn ms-btn--ghost">Actualizar</button>
+              </form>
+            </div>
+          </div>
+
+          <!-- TAB 3: CANALES OTP -->
+          <div class="ms-panel" id="panel-channels" role="tabpanel" hidden>
+            <header class="ms-panel-head">
+              <h1>Canales OTP alternativos</h1>
+              <p>Además del correo de tu cuenta, puedes recibir códigos de 6 dígitos en canales 100 % Open Source.</p>
+            </header>
+
+            <div class="ms-card">
+              <form id="formChannels" class="ms-list-form">
+                <div class="ms-row">
+                  <div class="ms-row-label">
+                    <strong>Canal preferido</strong>
+                    <span>Medio por defecto para códigos OTP.</span>
+                  </div>
+                  <div class="ms-row-ctrl">
+                    <select id="chPreferred">
+                      <option value="email">Correo de mi cuenta (recomendado)</option>
+                      <option value="ntfy">ntfy.sh (Push móvil 0 €)</option>
+                      <option value="discord">Discord DM (Bot MMT)</option>
+                      <option value="sms_gateway">Android SMS Gateway</option>
+                      <option value="whatsapp_oss">WhatsApp self-hosted</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="ms-row">
+                  <div class="ms-row-label">
+                    <strong>Tema privado ntfy.sh</strong>
+                    <span>Notificaciones push instantáneas sin coste.</span>
+                  </div>
+                  <div class="ms-row-ctrl">
+                    <div class="ms-inline-add">
+                      <input type="text" id="chNtfy" placeholder="Se genera automáticamente" />
+                      <button type="button" id="btnGenNtfy" class="ms-btn ms-btn--ghost">Generar</button>
+                    </div>
+                    <small id="chNtfyHint" class="ms-hint"></small>
+                  </div>
+                </div>
+                <div class="ms-row">
+                  <div class="ms-row-label">
+                    <strong>Discord User ID</strong>
+                    <span>Opcional, para recibir códigos por DM.</span>
+                  </div>
+                  <div class="ms-row-ctrl">
+                    <input type="text" id="chDiscord" placeholder="Ej. 123456789012345678" />
+                  </div>
+                </div>
+                <div class="ms-row">
+                  <div class="ms-row-label">
+                    <strong>Teléfono internacional</strong>
+                    <span>Para Android SMS Gateway o WhatsApp OSS.</span>
+                  </div>
+                  <div class="ms-row-ctrl">
+                    <input type="tel" id="chPhone" placeholder="+34600111222" />
+                  </div>
+                </div>
+                <div class="ms-card-foot">
+                  <button type="submit" id="btnSaveChannels" class="ms-btn ms-btn--primary">Guardar canales</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- TAB 4: SESIONES -->
+          <div class="ms-panel" id="panel-sessions" role="tabpanel" hidden>
+            <header class="ms-panel-head">
+              <h1>Sesiones y accesos</h1>
+              <p>Tu sesión se mantiene iniciada automáticamente hasta 30 días en este navegador y se sincroniza con Muntrume AI.</p>
+            </header>
+
+            <div class="ms-card">
+              <div class="ms-row">
+                <div class="ms-row-label">
+                  <strong>Sesión actual</strong>
+                  <span id="sessBrowserInfo">Navegador actual · Activa (30 días)</span>
+                </div>
+                <div class="ms-row-ctrl">
+                  <span class="ms-badge ms-badge--ok">Activa</span>
+                </div>
+              </div>
+              <div class="ms-row">
+                <div class="ms-row-label">
+                  <strong>Verificación de seguridad (15 min)</strong>
+                  <span>Desbloquea cambios de Passkeys y Authenticator sin volver a pedir código durante 15 min.</span>
+                </div>
+                <div class="ms-row-ctrl">
+                  <button type="button" id="btnQuickVerify" class="ms-btn ms-btn--ghost">Verificar ahora por correo</button>
+                </div>
+              </div>
+              <div class="ms-card-foot">
+                <button type="button" id="btnLogoutCard" class="ms-btn ms-btn--danger">Cerrar sesión en este dispositivo</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- ON-DEMAND STEP-UP VERIFICATION MODAL (GOOGLE / MSFT STYLE) -->
+    <div id="stepupModal" class="ms-modal" hidden role="dialog" aria-modal="true" aria-labelledby="stepupModalTitle">
+      <div class="ms-modal-card">
+        <div class="ms-modal-head">
+          <h2 id="stepupModalTitle">Confirma que eres tú</h2>
+          <button type="button" id="btnCloseStepup" class="ms-icon-btn" aria-label="Cerrar">×</button>
+        </div>
+        <p id="stepupModalDesc" class="ms-modal-desc">Hemos enviado un código de 6 dígitos a <strong id="stepupTargetEmail">tu correo</strong>. Introdúcelo para confirmar este cambio.</p>
+
+        <form id="formStepupVerify" class="ms-modal-form">
+          <input type="text" id="stepupCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" required />
+          <div id="stepupModalMsg" class="ms-modal-msg" hidden></div>
+          <div class="ms-modal-actions">
+            <button type="button" id="btnStepupResend" class="ms-btn ms-btn--ghost">Reenviar código</button>
+            <button type="submit" id="btnStepupVerify" class="ms-btn ms-btn--primary">Confirmar</button>
+          </div>
+        </form>
+
+        <details class="ms-alt-channel">
+          <summary>Usar otro canal (ntfy / Discord / SMS)</summary>
+          <div class="ms-inline-add" style="margin-top:8px">
+            <select id="stepupChannel">
+              <option value="email">Correo de mi cuenta</option>
+              <option value="ntfy">ntfy.sh (Push móvil)</option>
+              <option value="discord">Discord DM</option>
+              <option value="sms_gateway">Android SMS Gateway</option>
+              <option value="whatsapp_oss">WhatsApp self-hosted</option>
+            </select>
+            <button type="button" id="btnStepupAltSend" class="ms-btn ms-btn--ghost">Enviar</button>
+          </div>
+        </details>
+      </div>
+    </div>
+  </main>
+
+  <script is:inline>
+    (function () {
+      var API = "https://muntrume.atrumin16.workers.dev";
+      var token = "";
+      try { token = localStorage.getItem("mrt_vault_token") || localStorage.getItem("mm_token") || ""; } catch (e) {}
+      var stepupToken = "";
+      var stepupExpiresAt = 0;
+      var accountEmail = "";
+      var pendingAction = null;
+
+      var banner = document.getElementById("setBanner");
+      function notify(msg, type) {
+        if (!banner) return;
+        if (!msg) { banner.hidden = true; return; }
+        banner.textContent = msg;
+        banner.className = "ms-toast ms-toast--" + (type || "info");
+        banner.hidden = false;
+      }
+
+      // Sidebar tabs
+      document.querySelectorAll(".ms-nav-item").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var tab = btn.getAttribute("data-tab");
+          document.querySelectorAll(".ms-nav-item").forEach(function (b) {
+            var active = b === btn;
+            b.classList.toggle("is-active", active);
+            b.setAttribute("aria-selected", active ? "true" : "false");
+          });
+          document.querySelectorAll(".ms-panel").forEach(function (p) {
+            p.hidden = p.id !== "panel-" + tab;
+          });
+          notify("");
+        });
+      });
+
+      function isStepupActive() {
+        return Boolean(stepupToken && Date.now() < stepupExpiresAt);
+      }
+
+      function paintStepup() {
+        var ok = isStepupActive();
+        var pill = document.getElementById("stepupPill");
+        var txt = document.getElementById("stepupPillText");
+        if (pill) pill.hidden = !ok;
+        if (ok && txt) {
+          var mins = Math.max(1, Math.ceil((stepupExpiresAt - Date.now()) / 60000));
+          txt.textContent = "Verificado · " + mins + " min";
+        }
+      }
+
+      function setModalMsg(text, isErr) {
+        var el = document.getElementById("stepupModalMsg");
+        if (!el) return;
+        if (!text) { el.hidden = true; return; }
+        el.textContent = text;
+        el.className = "ms-modal-msg " + (isErr ? "is-err" : "is-ok");
+        el.hidden = false;
+      }
+
+      async function sendStepupCode(channel) {
+        var ch = channel || "email";
+        setModalMsg("Enviando código a " + (ch === "email" ? accountEmail : ch) + "…", false);
+        try {
+          await apiCall("/api/auth/security/stepup/send", "POST", { channel: ch });
+          setModalMsg("Código enviado a " + (ch === "email" ? accountEmail : ch) + ". Revisa tu bandeja de entrada.", false);
+        } catch (err) {
+          setModalMsg(err.message || "No se pudo enviar el código.", true);
+        }
+      }
+
+      function openStepupModal(afterFn) {
+        pendingAction = afterFn || null;
+        var modal = document.getElementById("stepupModal");
+        var target = document.getElementById("stepupTargetEmail");
+        var input = document.getElementById("stepupCode");
+        if (target) target.textContent = accountEmail || "tu correo";
+        if (input) input.value = "";
+        if (modal) modal.hidden = false;
+        setTimeout(function () { if (input) input.focus(); }, 60);
+        // Auto-send immediately to user's own account email — zero typing required
+        sendStepupCode("email");
+      }
+
+      function closeStepupModal() {
+        var modal = document.getElementById("stepupModal");
+        if (modal) modal.hidden = true;
+        pendingAction = null;
+      }
+
+      async function withStepup(fn) {
+        if (isStepupActive()) return fn();
+        openStepupModal(fn);
+      }
+
+      async function apiCall(path, method, body) {
+        var headers = { "Content-Type": "application/json", "Authorization": "Bearer " + token };
+        if (isStepupActive()) headers["X-Stepup-Token"] = stepupToken;
+        var res = await fetch(API + path, {
+          method: method || "POST",
+          headers: headers,
+          body: method === "GET" ? undefined : JSON.stringify(body || {})
+        });
+        var data = await res.json().catch(function () { return {}; });
+        if (!res.ok || data.success === false) {
+          var err = new Error(data.error || ("HTTP " + res.status));
+          err.code = data.code || "";
+          throw err;
+        }
+        return data;
+      }
+
+      function b64uToBytes(s) {
+        var b = String(s).replace(/-/g, "+").replace(/_/g, "/");
+        var bin = atob(b + "===".slice((b.length + 3) % 4));
+        var arr = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+        return arr;
+      }
+      function bytesToB64u(buf) {
+        var arr = new Uint8Array(buf);
+        var s = "";
+        for (var i = 0; i < arr.length; i++) s += String.fromCharCode(arr[i]);
+        return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+      }
+
+      function renderPasskeys(list) {
+        var box = document.getElementById("passkeysList");
+        var badge = document.getElementById("pkCountBadge");
+        if (badge) badge.textContent = (list ? list.length : 0) + (list && list.length === 1 ? " activa" : " activas");
+        if (!box) return;
+        if (!list || !list.length) {
+          box.innerHTML = '<div class="ms-empty">Aún no tienes Passkeys registradas. Añade Windows Hello, Touch ID o Face ID abajo.</div>';
+          return;
+        }
+        box.innerHTML = list.map(function (pk) {
+          var created = (pk.created_at || "").slice(0, 10);
+          return '<div class="ms-pk-item"><div><strong>' + (pk.device_name || "Passkey") + '</strong><span>Registrada el ' + created + '</span></div><button type="button" class="ms-btn ms-btn--xs" data-del-pk="' + pk.credential_id + '">Eliminar</button></div>';
+        }).join("");
+        box.querySelectorAll("[data-del-pk]").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            var credId = btn.getAttribute("data-del-pk");
+            withStepup(async function () {
+              try {
+                await apiCall("/api/auth/passkey/delete", "POST", { credential_id: credId });
+                notify("Passkey eliminada.", "ok");
+                loadAll();
+              } catch (err) { notify(err.message, "error"); }
+            });
+          });
+        });
+      }
+
+      async function loadAll() {
+        if (!token) {
+          document.getElementById("setNeedLogin").hidden = false;
+          return;
+        }
+        try {
+          var st = await apiCall("/api/auth/mfa/status", "GET");
+          accountEmail = st.email || "";
+          var storedUser = {};
+          try { storedUser = JSON.parse(localStorage.getItem("mrt_vault_user") || "{}"); } catch (e) {}
+          var name = storedUser.name || accountEmail.split("@")[0];
+          var initials = name.split(/\s+/).map(function (w) { return w[0] || ""; }).join("").slice(0, 2).toUpperCase() || "MM";
+          document.getElementById("setAvatar").textContent = initials;
+          document.getElementById("setName").textContent = name;
+          document.getElementById("setEmail").textContent = accountEmail;
+          document.getElementById("secAccountEmail").textContent = accountEmail;
+          document.getElementById("profName").value = name;
+          document.getElementById("profEmail").value = accountEmail;
+          document.getElementById("profRole").textContent = (storedUser.role || "piloto").toUpperCase();
+
+          renderPasskeys(st.passkeys || []);
+          var totpBadge = document.getElementById("totpStateBadge");
+          totpBadge.textContent = st.totp_enabled ? "Activo" : "Inactivo";
+          totpBadge.className = "ms-badge " + (st.totp_enabled ? "ms-badge--ok" : "");
+          document.getElementById("btnTotpDisable").hidden = !st.totp_enabled;
+
+          var ch = st.channels || {};
+          document.getElementById("chPreferred").value = ch.preferred || "email";
+          document.getElementById("chNtfy").value = ch.ntfy_topic || "";
+          document.getElementById("chNtfyHint").textContent = ch.ntfy_topic ? ("App ntfy → https://ntfy.sh/" + ch.ntfy_topic) : "";
+          document.getElementById("chDiscord").value = ch.discord_user_id || "";
+          document.getElementById("chPhone").value = ch.phone || "";
+
+          document.getElementById("setMain").hidden = false;
+          paintStepup();
+        } catch (err) {
+          document.getElementById("setNeedLogin").hidden = false;
+        }
+      }
+
+      // Modal events
+      document.getElementById("btnCloseStepup")?.addEventListener("click", closeStepupModal);
+      document.getElementById("btnStepupResend")?.addEventListener("click", function () { sendStepupCode("email"); });
+      document.getElementById("btnStepupAltSend")?.addEventListener("click", function () {
+        sendStepupCode(document.getElementById("stepupChannel").value);
+      });
+      document.getElementById("btnQuickVerify")?.addEventListener("click", function () { openStepupModal(null); });
+
+      document.getElementById("formStepupVerify")?.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        var code = (document.getElementById("stepupCode").value || "").trim();
+        try {
+          var r = await apiCall("/api/auth/security/stepup/verify", "POST", { code: code });
+          stepupToken = r.stepup_token;
+          stepupExpiresAt = Date.now() + (r.expires_in || 900) * 1000;
+          paintStepup();
+          var next = pendingAction;
+          closeStepupModal();
+          notify("Identidad verificada durante 15 minutos.", "ok");
+          if (typeof next === "function") next();
+        } catch (err) {
+          setModalMsg(err.message || "Código incorrecto.", true);
+        }
+      });
+
+      // Profile update
+      document.getElementById("formProfile")?.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        var name = (document.getElementById("profName").value || "").trim();
+        try {
+          var r = await apiCall("/api/auth/profile/update", "POST", { name: name });
+          if (r.user) localStorage.setItem("mrt_vault_user", JSON.stringify(r.user));
+          notify("Perfil guardado correctamente.", "ok");
+          loadAll();
+        } catch (err) { notify(err.message, "error"); }
+      });
+
+      // Add Passkey (auto step-up if needed)
+      document.getElementById("btnAddPasskey")?.addEventListener("click", function () {
+        if (!window.PublicKeyCredential) { notify("Este navegador no soporta Passkeys.", "error"); return; }
+        withStepup(async function () {
+          var dev = (document.getElementById("pkDeviceName").value || "Passkey Muntrume").trim();
+          try {
+            var optsRes = await apiCall("/api/auth/passkey/register/options", "POST", {});
+            var opts = optsRes.options;
+            opts.challenge = b64uToBytes(opts.challenge);
+            opts.user.id = b64uToBytes(opts.user.id);
+            if (Array.isArray(opts.excludeCredentials)) {
+              opts.excludeCredentials = opts.excludeCredentials.map(function (c) {
+                return Object.assign({}, c, { id: b64uToBytes(c.id) });
+              });
+            }
+            var cred = await navigator.credentials.create({ publicKey: opts });
+            if (!cred) throw new Error("Registro cancelado.");
+            var spki = cred.response.getPublicKey ? cred.response.getPublicKey() : null;
+            if (!spki) throw new Error("Tu navegador no expone getPublicKey() SPKI.");
+            await apiCall("/api/auth/passkey/register/verify", "POST", {
+              credential_id: cred.id,
+              public_key_spki: bytesToB64u(spki),
+              client_data_json: bytesToB64u(cred.response.clientDataJSON),
+              device_name: dev
+            });
+            document.getElementById("pkDeviceName").value = "";
+            notify("Passkey añadida. Ya puedes entrar en 1 toque desde /login/.", "ok");
+            loadAll();
+          } catch (err) { notify(err.message, "error"); }
+        });
+      });
+
+      // TOTP Setup / Confirm / Disable
+      document.getElementById("btnTotpSetup")?.addEventListener("click", function () {
+        withStepup(async function () {
+          try {
+            var r = await apiCall("/api/auth/mfa/totp/setup", "POST", {});
+            document.getElementById("totpSecretVal").textContent = r.secret;
+            document.getElementById("totpRecoveryVal").textContent = (r.recovery_codes || []).join("\n");
+            document.getElementById("totpSetupBox").hidden = false;
+            notify("Añade la clave en tu app Authenticator y confirma con el código de 6 dígitos.", "info");
+          } catch (err) { notify(err.message, "error"); }
+        });
+      });
+
+      document.getElementById("btnTotpConfirm")?.addEventListener("click", async function () {
+        var code = (document.getElementById("totpConfirmCode").value || "").trim();
+        try {
+          await apiCall("/api/auth/mfa/totp/verify", "POST", { code: code });
+          document.getElementById("totpSetupBox").hidden = true;
+          notify("Authenticator activado correctamente.", "ok");
+          loadAll();
+        } catch (err) { notify(err.message, "error"); }
+      });
+
+      document.getElementById("btnTotpDisable")?.addEventListener("click", function () {
+        withStepup(async function () {
+          var code = prompt("Introduce el código actual de 6 dígitos de tu Authenticator:");
+          if (!code) return;
+          try {
+            await apiCall("/api/auth/mfa/totp/disable", "POST", { code: code });
+            notify("Authenticator desactivado.", "ok");
+            loadAll();
+          } catch (err) { notify(err.message, "error"); }
+        });
+      });
+
+      // Open-Source MFA channels
+      document.getElementById("btnGenNtfy")?.addEventListener("click", function () {
+        withStepup(async function () {
+          try {
+            var r = await apiCall("/api/auth/mfa/channels/save", "POST", { generate_ntfy: true, preferred_channel: "ntfy" });
+            document.getElementById("chNtfy").value = r.ntfy_topic || "";
+            document.getElementById("chNtfyHint").textContent = r.ntfy_subscribe_url ? ("App ntfy → " + r.ntfy_subscribe_url) : "";
+            notify("Canal privado ntfy generado.", "ok");
+          } catch (err) { notify(err.message, "error"); }
+        });
+      });
+
+      document.getElementById("formChannels")?.addEventListener("submit", function (e) {
+        e.preventDefault();
+        withStepup(async function () {
+          try {
+            var r = await apiCall("/api/auth/mfa/channels/save", "POST", {
+              preferred_channel: document.getElementById("chPreferred").value,
+              ntfy_topic: (document.getElementById("chNtfy").value || "").trim(),
+              discord_user_id: (document.getElementById("chDiscord").value || "").trim(),
+              phone: (document.getElementById("chPhone").value || "").trim()
+            });
+            notify("Canales OTP guardados.", "ok");
+            if (r.ntfy_subscribe_url) document.getElementById("chNtfyHint").textContent = "App ntfy → " + r.ntfy_subscribe_url;
+          } catch (err) { notify(err.message, "error"); }
+        });
+      });
+
+      // Password change
+      document.getElementById("formChangePw")?.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        try {
+          await apiCall("/api/setups/change-password", "POST", {
+            currentPassword: document.getElementById("curPw").value,
+            newPassword: document.getElementById("newPw").value
+          });
+          document.getElementById("curPw").value = "";
+          document.getElementById("newPw").value = "";
+          notify("Contraseña actualizada.", "ok");
+        } catch (err) { notify(err.message, "error"); }
+      });
+
+      function doLogout() {
+        try {
+          localStorage.removeItem("mrt_vault_token");
+          localStorage.removeItem("mm_token");
+          localStorage.removeItem("mrt_vault_user");
+        } catch (e) {}
+        location.href = "/login/";
+      }
+      document.getElementById("btnLogoutAll")?.addEventListener("click", doLogout);
+      document.getElementById("btnLogoutCard")?.addEventListener("click", doLogout);
+
+      loadAll();
+    })();
+  </script>
+</Layout>
+
+<style>
+  .ms-page { min-height: 100vh; padding: 88px 20px 80px; background: var(--r-bg); color: var(--r-text); }
+  .ms-shell { max-width: 1080px; margin: 0 auto; }
+
+  .ms-login-card { max-width: 440px; margin: 48px auto; padding: 36px 32px; border-radius: 18px; background: var(--r-surface); border: 1px solid var(--r-line); text-align: center; }
+  .ms-login-ico { width: 52px; height: 52px; border-radius: 14px; margin: 0 auto 16px; display: grid; place-items: center; background: color-mix(in srgb, var(--r-accent, #10b981) 14%, var(--r-bg)); color: var(--r-accent, #10b981); }
+  .ms-login-card h1 { margin: 0 0 8px; font-size: 22px; font-weight: 700; text-transform: none; }
+  .ms-login-card p { margin: 0 0 22px; font-size: 14px; line-height: 1.55; color: var(--r-muted); }
+
+  /* 2-Column Google / Microsoft / X.com Settings Layout */
+  .ms-layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 32px; align-items: start; }
+  .ms-sidebar { position: sticky; top: 88px; display: flex; flex-direction: column; gap: 18px; }
+  .ms-user-chip { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 14px; background: var(--r-surface); border: 1px solid var(--r-line); }
+  .ms-avatar { width: 42px; height: 42px; border-radius: 999px; background: color-mix(in srgb, var(--r-accent, #10b981) 18%, var(--r-bg)); color: var(--r-accent, #10b981); font: 800 15px/1 var(--r-sans, system-ui); display: grid; place-items: center; flex-shrink: 0; }
+  .ms-user-meta { min-width: 0; }
+  .ms-user-meta strong { display: block; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ms-user-meta span { display: block; font-size: 12px; color: var(--r-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .ms-nav { display: flex; flex-direction: column; gap: 4px; }
+  .ms-nav-item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 14px; border: 0; border-radius: 999px; background: transparent; color: var(--r-muted); font-size: 14px; font-weight: 600; cursor: pointer; text-align: left; transition: background .15s, color .15s; }
+  .ms-nav-item:hover { background: var(--r-surface); color: var(--r-text); }
+  .ms-nav-item.is-active { background: color-mix(in srgb, var(--r-accent, #10b981) 14%, var(--r-surface)); color: var(--r-accent, #10b981); }
+
+  .ms-sidebar-foot { padding-top: 14px; border-top: 1px solid var(--r-line); display: flex; flex-direction: column; gap: 6px; }
+  .ms-sec-pill { display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px; background: rgba(16,185,129,.12); border: 1px solid rgba(16,185,129,.35); color: #10b981; font: 600 12px/1 var(--r-mono, monospace); margin-bottom: 6px; }
+  .ms-dot { width: 7px; height: 7px; border-radius: 50%; background: #10b981; }
+  .ms-side-link { padding: 8px 12px; border-radius: 10px; border: 0; background: transparent; color: var(--r-muted); font-size: 13px; font-weight: 600; text-decoration: none; text-align: left; cursor: pointer; }
+  .ms-side-link:hover { background: var(--r-surface); color: var(--r-text); }
+  .ms-side-link--danger:hover { color: #f87171; background: rgba(239,68,68,.1); }
+
+  /* Right content */
+  .ms-content { min-width: 0; }
+  .ms-panel-head { margin-bottom: 20px; }
+  .ms-panel-head h1 { margin: 0 0 6px; font-size: clamp(22px, 2.5vw, 28px); font-weight: 700; letter-spacing: -0.02em; text-transform: none; }
+  .ms-panel-head p { margin: 0; font-size: 14px; color: var(--r-muted); line-height: 1.55; }
+
+  .ms-card { background: var(--r-surface); border: 1px solid var(--r-line); border-radius: 16px; padding: 22px 24px; margin-bottom: 18px; }
+  .ms-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; margin-bottom: 16px; }
+  .ms-card-head h2 { margin: 0 0 4px; font-size: 16.5px; font-weight: 700; text-transform: none; }
+  .ms-card-head p { margin: 0; font-size: 13px; color: var(--r-muted); }
+
+  .ms-list-form { display: flex; flex-direction: column; }
+  .ms-row { display: grid; grid-template-columns: minmax(180px, 260px) minmax(0, 1fr); gap: 16px; align-items: center; padding: 14px 0; border-top: 1px solid var(--r-line); }
+  .ms-row:first-child { border-top: 0; padding-top: 4px; }
+  .ms-row-label strong { display: block; font-size: 13.5px; font-weight: 600; color: var(--r-text); }
+  .ms-row-label span { display: block; font-size: 12px; color: var(--r-muted); margin-top: 2px; }
+  .ms-row-ctrl { min-width: 0; }
+  .ms-card-foot { padding-top: 16px; margin-top: 6px; border-top: 1px solid var(--r-line); display: flex; justify-content: flex-end; }
+
+  .ms-page input, .ms-page select { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--r-line); background: var(--r-bg); color: var(--r-text); font-size: 13.5px; }
+  .ms-page input:disabled { opacity: .65; cursor: not-allowed; }
+  .ms-badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 999px; font: 700 11px/1.2 var(--r-mono, monospace); border: 1px solid var(--r-line); background: var(--r-bg); color: var(--r-muted); white-space: nowrap; }
+  .ms-badge--ok { color: #10b981; border-color: rgba(16,185,129,.4); background: rgba(16,185,129,.12); }
+
+  .ms-btn { border: 1px solid transparent; border-radius: 999px; padding: 9px 18px; font-size: 13.5px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; transition: opacity .15s, background .15s; }
+  .ms-btn--primary { background: var(--r-accent, #10b981); color: #04130d; }
+  .ms-btn--primary:hover { opacity: .92; }
+  .ms-btn--ghost { background: var(--r-bg); border-color: var(--r-line); color: var(--r-text); }
+  .ms-btn--ghost:hover { background: var(--r-surface); }
+  .ms-btn--danger { background: rgba(239,68,68,.1); border-color: rgba(239,68,68,.35); color: #f87171; }
+  .ms-btn--xs { padding: 5px 12px; font-size: 12px; background: transparent; border-color: rgba(239,68,68,.35); color: #f87171; }
+  .ms-btn-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .ms-inline-add { display: flex; gap: 8px; align-items: center; }
+  .ms-inline-add input, .ms-inline-add select { flex: 1; }
+  .ms-pk-list { display: grid; gap: 8px; margin-bottom: 14px; }
+  .ms-pk-item { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 11px 14px; border-radius: 12px; background: var(--r-bg); border: 1px solid var(--r-line); }
+  .ms-pk-item strong { display: block; font-size: 13.5px; }
+  .ms-pk-item span { font-size: 12px; color: var(--r-muted); }
+  .ms-empty { font-size: 13px; color: var(--r-muted); padding: 12px 14px; border-radius: 12px; border: 1px dashed var(--r-line); }
+
+  .ms-subbox { margin-top: 14px; padding: 16px; border-radius: 12px; background: var(--r-bg); border: 1px solid var(--r-line); font-size: 13px; }
+  .ms-secret { display: block; padding: 10px 12px; border-radius: 8px; background: var(--r-surface); border: 1px solid var(--r-line); font-family: var(--r-mono, monospace); font-size: 14px; letter-spacing: 0.08em; word-break: break-all; }
+  .ms-recovery { margin: 6px 0 0; padding: 10px 12px; border-radius: 8px; background: var(--r-surface); border: 1px solid var(--r-line); font-family: var(--r-mono, monospace); font-size: 12.5px; columns: 2; }
+  .ms-pw-grid { display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: end; }
+  .ms-field { display: grid; gap: 6px; }
+  .ms-field span { font-size: 12.5px; font-weight: 600; color: var(--r-text); }
+  .ms-hint { display: block; margin-top: 6px; font-size: 12px; color: var(--r-accent, #10b981); word-break: break-all; }
+
+  .ms-toast { margin-bottom: 16px; padding: 11px 16px; border-radius: 12px; font-size: 13.5px; border: 1px solid var(--r-line); }
+  .ms-toast--ok { background: rgba(16,185,129,.12); border-color: rgba(16,185,129,.4); color: #34d399; }
+  .ms-toast--error { background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.4); color: #fca5a5; }
+  .ms-toast--info { background: rgba(59,130,246,.12); border-color: rgba(59,130,246,.4); color: #93c5fd; }
+
+  /* Modal */
+  .ms-modal { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,.65); backdrop-filter: blur(6px); display: grid; place-items: center; padding: 20px; }
+  .ms-modal[hidden] { display: none; }
+  .ms-modal-card { width: 100%; max-width: 420px; background: var(--r-surface); border: 1px solid var(--r-line); border-radius: 18px; padding: 24px; box-shadow: 0 24px 60px rgba(0,0,0,.45); }
+  .ms-modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .ms-modal-head h2 { margin: 0; font-size: 18px; font-weight: 700; text-transform: none; }
+  .ms-icon-btn { width: 32px; height: 32px; border-radius: 999px; border: 0; background: transparent; color: var(--r-muted); font-size: 20px; cursor: pointer; }
+  .ms-icon-btn:hover { background: var(--r-bg); color: var(--r-text); }
+  .ms-modal-desc { margin: 0 0 16px; font-size: 13.5px; line-height: 1.55; color: var(--r-muted); }
+  .ms-modal-form input { text-align: center; font: 700 22px/1 var(--r-mono, monospace); letter-spacing: 0.3em; padding: 12px; }
+  .ms-modal-msg { margin-top: 10px; font-size: 12.5px; padding: 8px 10px; border-radius: 8px; }
+  .ms-modal-msg.is-ok { background: rgba(16,185,129,.12); color: #34d399; }
+  .ms-modal-msg.is-err { background: rgba(239,68,68,.12); color: #fca5a5; }
+  .ms-modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+  .ms-alt-channel { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--r-line); font-size: 12.5px; color: var(--r-muted); }
+  .ms-alt-channel summary { cursor: pointer; }
+
+  @media (max-width: 860px) {
+    .ms-layout { grid-template-columns: 1fr; gap: 20px; }
+    .ms-sidebar { position: static; }
+    .ms-nav { flex-direction: row; overflow-x: auto; padding-bottom: 4px; }
+    .ms-nav-item { width: auto; white-space: nowrap; }
+    .ms-row { grid-template-columns: 1fr; gap: 8px; }
+    .ms-pw-grid { grid-template-columns: 1fr; }
+    .ms-inline-add { flex-direction: column; align-items: stretch; }
+  }
+</style>
