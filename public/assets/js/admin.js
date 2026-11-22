@@ -1002,14 +1002,14 @@ function renderSeasonPdfSeriesSelect(filterQuery) {
     : _rcPdfParsedSeries;
 
   if (!filtered.length) {
-    sel.innerHTML = `<option value="">Sin coincidencias para "${escRc(q)}"</option>`;
+    sel.innerHTML = `<option value="">Sin coincidencias para "${rcEscape(q)}"</option>`;
     return;
   }
 
   sel.innerHTML = filtered.map((s) => {
     const idx = _rcPdfParsedSeries.indexOf(s);
     const star = s.priority === 0 ? "★ " : "";
-    return `<option value="${idx}">${escRc(star + s.shortName)} (${s.weeks.length} sem.)</option>`;
+    return `<option value="${idx}">${rcEscape(star + s.shortName)} (${s.weeks.length} sem.)</option>`;
   }).join("");
 }
 
@@ -1245,10 +1245,10 @@ async function runSeasonAutoGenerate(dryRun) {
     }
     if (outEl) {
       const rowsHtml = allSamples.slice(0, 60).map((s) =>
-        `<tr><td><code>${escRc(s.week)}</code></td><td>${escRc(s.circuit)}</td><td><code>${escRc(s.car)}</code></td><td>${escRc(s.setup_type)}</td><td><code>${escRc(s.filename)}</code></td></tr>`
+        `<tr><td><code>${rcEscape(s.week)}</code></td><td>${rcEscape(s.circuit)}</td><td><code>${rcEscape(s.car)}</code></td><td>${rcEscape(s.setup_type)}</td><td><code>${rcEscape(s.filename)}</code></td></tr>`
       ).join("");
       const missHtml = allMissing.length
-        ? `<p class="rc-muted" style="margin:12px 0 0;font-size:12.5px">Sin base previa (${allMissing.length}): ${allMissing.slice(0, 12).map((m) => `${escRc(m.week)} ${escRc(m.circuit)} (${escRc(m.car)})`).join(", ")}</p>`
+        ? `<p class="rc-muted" style="margin:12px 0 0;font-size:12.5px">Sin base previa (${allMissing.length}): ${allMissing.slice(0, 12).map((m) => `${rcEscape(m.week)} ${rcEscape(m.circuit)} (${rcEscape(m.car)})`).join(", ")}</p>`
         : "";
       outEl.innerHTML = `
         <div class="r-scroll">
