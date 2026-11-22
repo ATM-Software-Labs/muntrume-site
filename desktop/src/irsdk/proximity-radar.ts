@@ -192,36 +192,19 @@ export function renderLiveTrackMapCanvas(canvas: HTMLCanvasElement, state: Irsdk
   const trackName = state?.session.weekendInfo?.trackName || "";
   const poly = resolveTrackPolygon(trackName);
 
-  // Muestreo base de 64 puntos y suavizado Catmull-Rom cerrado para eliminar esquinas poligonales
-  const rawPts: Array<{ x: number; y: number }> = [];
-  const N = 64;
+  // Muestreo de alta resolución preservando la geometría real de curvas/chicanes (sin deformación de esquinas)
+  const smoothPts: Array<{ x: number; y: number }> = [];
+  const N = poly && poly.length >= 48 ? 160 : 96;
   for (let i = 0; i < N; i++) {
     const pct = i / N;
     if (poly) {
-      rawPts.push(samplePolygonAtPct(poly, pct, w, h));
+      smoothPts.push(samplePolygonAtPct(poly, pct, w, h));
     } else {
       const a = pct * Math.PI * 2 - Math.PI / 2;
-      rawPts.push({
-        x: cx + rx * Math.cos(a) + 5 * Math.sin(a * 3),
-        y: cy + ry * Math.sin(a) + 3 * Math.cos(a * 2),
+      smoothPts.push({
+        x: cx + rx * Math.cos(a),
+        y: cy + ry * Math.sin(a),
       });
-    }
-  }
-
-  const smoothPts: Array<{ x: number; y: number }> = [];
-  const SUB = 6; // 64 * 6 = 384 puntos ultra suaves
-  for (let i = 0; i < N; i++) {
-    const p0 = rawPts[(i - 1 + N) % N];
-    const p1 = rawPts[i];
-    const p2 = rawPts[(i + 1) % N];
-    const p3 = rawPts[(i + 2) % N];
-    for (let s = 0; s < SUB; s++) {
-      const t = s / SUB;
-      const t2 = t * t;
-      const t3 = t2 * t;
-      const x = 0.5 * ((2 * p1.x) + (-p0.x + p2.x) * t + (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * t2 + (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * t3);
-      const y = 0.5 * ((2 * p1.y) + (-p0.y + p2.y) * t + (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * t2 + (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * t3);
-      smoothPts.push({ x, y });
     }
   }
 
