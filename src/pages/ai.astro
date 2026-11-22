@@ -36,6 +36,11 @@ const aiJsonLd = {
 <Layout title={pageTitle} description={pageDescription} canonical="https://ai.muntru.me/" hideFooter>
   <script type="application/ld+json" set:html={JSON.stringify(aiJsonLd)} />
   <div class="ai-shell" id="aiWorkspace">
+    <script is:inline>
+      if (window.innerWidth <= 900) {
+        document.getElementById("aiWorkspace")?.classList.add("is-side-collapsed");
+      }
+    </script>
     <!-- TEAM SECURITY GATE (Blocks models & menus for unauthenticated external visitors; Docs remain 100% public) -->
     <div id="aiTeamGate" class="ai-team-gate" hidden role="region" aria-label="Acceso restringido al equipo Muntrume Motorsport">
       <div class="ai-team-gate__card">

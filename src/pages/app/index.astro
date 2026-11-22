@@ -617,19 +617,20 @@ const appSchema = {
 </Layout>
 
 <style>
-  .app-page { width: min(1040px, calc(100% - 2 * var(--r-gutter))); margin: 0 auto; padding: clamp(28px, 5vw, 64px) 0 80px; display: grid; gap: 20px; }
-  .app-hero { display: grid; gap: 14px; justify-items: center; text-align: center; padding: clamp(24px, 4vw, 40px); border-radius: 20px; border: 1px solid var(--r-line); background: var(--r-surface); }
+  .app-page { width: min(1040px, calc(100% - 2 * var(--r-gutter))); max-width: 100%; margin: 0 auto; padding: clamp(24px, 5vw, 64px) 0 80px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .app-page > * { min-width: 0; max-width: 100%; }
+  .app-hero { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; justify-items: center; text-align: center; padding: clamp(18px, 4vw, 40px); border-radius: 20px; border: 1px solid var(--r-line); background: var(--r-surface); }
   .app-hero__pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
   .g-chip-accent, .g-chip-muted { padding: 4px 10px; border-radius: 999px; font: 700 10.5px/1.1 var(--r-mono); letter-spacing: .05em; text-transform: uppercase; }
   .g-chip-accent { background: color-mix(in srgb, var(--r-accent) 14%, transparent); border: 1px solid color-mix(in srgb, var(--r-accent) 42%, transparent); color: var(--r-accent); }
   .g-chip-muted { background: var(--r-bg); border: 1px solid var(--r-line); color: var(--r-muted); }
   .app-hero .r-kicker { justify-content: center; }
-  .app-hero h1 { margin: 0; font: 800 clamp(56px, 10vw, 96px)/.9 var(--r-display); letter-spacing: .02em; text-transform: uppercase; }
-  .app-hero .r-lead { margin: 0 auto; }
-  .app-cta { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
-  .app-winget-box { margin-top: 4px; display: inline-flex; flex-direction: column; align-items: center; gap: 6px; }
+  .app-hero h1 { margin: 0; font: 800 clamp(44px, 10vw, 96px)/.92 var(--r-display); letter-spacing: .02em; text-transform: uppercase; }
+  .app-hero .r-lead { margin: 0 auto; max-width: 64ch; }
+  .app-cta { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; max-width: 100%; }
+  .app-winget-box { margin-top: 4px; display: inline-flex; flex-direction: column; align-items: center; gap: 6px; max-width: 100%; }
   .app-winget-label { font-size: 11px; color: var(--r-muted); font-family: var(--r-mono); font-weight: 500; }
-  .app-winget-copy { display: inline-flex; align-items: center; gap: 8px; background: color-mix(in srgb, var(--r-surface) 90%, transparent); border: 1px solid var(--r-line); border-radius: 999px; padding: 6px 14px; cursor: pointer; transition: border-color .15s ease, background-color .15s ease, transform .1s ease; }
+  .app-winget-copy { display: inline-flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; max-width: 100%; background: color-mix(in srgb, var(--r-surface) 90%, transparent); border: 1px solid var(--r-line); border-radius: 999px; padding: 6px 14px; cursor: pointer; transition: border-color .15s ease, background-color .15s ease, transform .1s ease; }
   .app-winget-copy:hover { border-color: var(--r-accent); background: var(--r-surface); transform: translateY(-1px); }
   .app-winget-copy:active { transform: translateY(0); }
   .app-winget-copy code { color: var(--r-accent); font-family: var(--r-mono); font-size: 12px; font-weight: 600; letter-spacing: 0.02em; }
@@ -646,7 +647,8 @@ const appSchema = {
   .app-modal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .app-modal-head h3 { margin: 0; font-size: 18px; }
   .app-modal-close { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--r-line); background: var(--r-bg); color: var(--r-muted); cursor: pointer; }
-  .app-card { padding: 22px; border: 1px solid var(--r-line); border-radius: 16px; background: var(--r-surface); display: grid; gap: 10px; transition: border-color .2s ease, transform .2s ease; }
+  .app-card { padding: clamp(16px, 3vw, 22px); border: 1px solid var(--r-line); border-radius: 16px; background: var(--r-surface); display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; min-width: 0; max-width: 100%; transition: border-color .2s ease, transform .2s ease; }
+  .app-card > * { min-width: 0; max-width: 100%; }
   .app-card:hover { border-color: var(--r-accent); }
   .app-card h2, .app-card h3 { margin: 0; }
   .app-card p { margin: 0; color: var(--r-muted); font-size: 14px; line-height: 1.55; }
@@ -832,7 +834,10 @@ const appSchema = {
 
 <style is:global>
   .app-comp-debrief { padding: 14px 16px; border-radius: 12px; background: var(--r-bg); border: 1px solid var(--r-line); border-left: 3px solid var(--r-accent, #10b981); }
-  .app-comp-shell { display: flex; flex-direction: column; gap: 16px; }
+  .app-comp-shell { display: flex; flex-direction: column; gap: 16px; min-width: 0; max-width: 100%; }
+  .app-comp-panel, .app-comp-shell .r-scroll { min-width: 0; max-width: 100%; }
+  .app-comp-shell .r-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .app-comp-setupbadge { max-width: 100%; overflow-wrap: anywhere; }
   .app-comp-top-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
   .app-comp-msg { padding: 10px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; }
   .app-comp-msg.is-ok { background: rgba(16,185,129,.12); border: 1px solid rgba(16,185,129,.4); color: #34d399; }

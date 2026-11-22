@@ -296,9 +296,10 @@ const fullLd = jsonLd ? (Array.isArray(jsonLd) ? [defaultLd, ...jsonLd] : [defau
   .mdoc-bullets { margin: 0; padding-left: 20px; display: grid; gap: 10px; font-size: 14.5px; line-height: 1.65; color: var(--r-muted); }
   .mdoc-bullets strong { color: var(--r-text); }
 
-  .mdoc-table-wrap { overflow-x: auto; border: 1px solid var(--r-line); border-radius: 14px; background: var(--r-surface); }
-  .mdoc-table { width: 100%; border-collapse: collapse; font-size: 13.8px; }
+  .mdoc-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--r-line); border-radius: 14px; background: var(--r-surface); }
+  .mdoc-table { width: 100%; min-width: 520px; border-collapse: collapse; font-size: 13.8px; }
   .mdoc-table th, .mdoc-table td { padding: 12px 15px; border-bottom: 1px solid var(--r-line); text-align: left; vertical-align: top; }
+  .mdoc-table td:first-child { white-space: nowrap; }
   .mdoc-table tbody tr:last-child td { border-bottom: 0; }
   .mdoc-table tbody tr:hover { background: color-mix(in srgb, var(--r-text) 3%, transparent); }
   .mdoc-table th { font: 700 11px/1 var(--r-mono, ui-monospace, monospace); text-transform: uppercase; letter-spacing: 0.06em; color: var(--r-muted); background: color-mix(in srgb, var(--r-text) 3%, var(--r-surface)); }

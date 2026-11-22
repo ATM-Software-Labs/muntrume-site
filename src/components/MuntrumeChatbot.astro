@@ -3,12 +3,12 @@
 const isAiPage = Astro.url.pathname.startsWith('/ai');
 ---
 <div id="muntrumeChatbot" class:list={["fixed z-50 font-sans", isAiPage && "hidden"]} style="right:max(1rem,env(safe-area-inset-right));bottom:max(1rem,env(safe-area-inset-bottom))" data-no-i18n>
-  <button type="button" id="chatbotLaunchBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="mmChatPanel"
-    class="flex items-center gap-2.5 px-4 py-3 rounded-full bg-[var(--r-surface)] hover:bg-[var(--r-bg-2)] text-[var(--r-text)] border border-[var(--r-line)] hover:border-[var(--r-accent)] shadow-[0_8px_30px_rgba(0,0,0,0.15)] transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--r-accent)]">
+  <button type="button" id="chatbotLaunchBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="mmChatPanel" aria-label="Abrir Muntrume AI Copilot"
+    class="flex items-center justify-center gap-2.5 p-2.5 sm:px-4 sm:py-3 rounded-full bg-[var(--r-surface)] hover:bg-[var(--r-bg-2)] text-[var(--r-text)] border border-[var(--r-line)] hover:border-[var(--r-accent)] shadow-[0_8px_30px_rgba(0,0,0,0.18)] transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--r-accent)]">
     <span class="relative flex items-center justify-center w-6 h-6 rounded-full bg-[var(--r-accent)]/15" aria-hidden="true">
       <svg class="w-4 h-4 text-[var(--r-accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
     </span>
-    <span class="text-left">
+    <span class="hidden sm:block text-left">
       <span class="block text-xs font-mono font-bold leading-tight">MUNTRUME AI</span>
       <span class="block text-[10px] font-mono text-[var(--r-muted)] leading-tight"> Copilot</span>
     </span>
