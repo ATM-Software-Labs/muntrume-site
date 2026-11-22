@@ -8,10 +8,15 @@ const STUDIO_URL = "https://ai.muntru.me/";
 const HANDOFF_KEY = "muntrume_ai_handoff";
 
 const TIERS = [
+  { id: "open", label: "1.0 Open (Gratis)" },
   { id: "lite", label: "1.0 Lite" },
   { id: "pro", label: "1.0 Pro" },
   { id: "ultra_max", label: "1.0 Ultra Max" }
 ];
+function getAuthToken() {
+  try { return localStorage.getItem("mrt_vault_token") || localStorage.getItem("mm_token") || ""; }
+  catch { return ""; }
+}
 
 const CSS = `
 #mmChat{--bg:#0f1114;--hd:#0a0c0e;--sf:#171a1f;--bd:rgba(255,255,255,.1);--tx:#f3f5f8;--mu:#8b94a3;--ac:#10b981;--acTx:#04130d;position:fixed;z-index:60;right:max(1rem,env(safe-area-inset-right));bottom:max(1rem,env(safe-area-inset-bottom));width:min(440px,calc(100vw - 2rem));height:min(640px,calc(100dvh - 2rem));display:flex;flex-direction:column;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:18px;box-shadow:0 24px 64px rgba(0,0,0,.52);overflow:hidden;font:13.5px/1.6 system-ui,-apple-system,sans-serif;transition:width .2s ease,height .2s ease}
@@ -26,6 +31,9 @@ html.light #mmChat,html[data-theme="light"] #mmChat{--bg:#f9fafb;--hd:#f1f3f6;--
 #mmChat .mm-ic{margin-left:auto;display:flex;align-items:center;gap:3px}
 #mmChat .mm-ib{width:30px;height:30px;border:0;border-radius:8px;background:transparent;color:var(--mu);display:grid;place-items:center;cursor:pointer}
 #mmChat .mm-ib:hover{background:var(--sf);color:var(--tx)}
+#mmChat .mm-qnav{display:flex;flex-wrap:wrap;gap:5px;padding:7px 12px;border-bottom:1px solid var(--bd);background:color-mix(in srgb,var(--sf) 55%,transparent)}
+#mmChat .mm-qnav a{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:999px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);font-size:11px;font-weight:700;text-decoration:none;transition:border-color .14s,color .14s}
+#mmChat .mm-qnav a:hover{border-color:var(--ac);color:var(--ac)}
 #mmChat .mm-log{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:13px;overscroll-behavior:contain}
 #mmChat .mm-m{max-width:92%;padding:10px 13px;border-radius:14px;word-break:break-word;animation:mmIn .22s ease}
 @keyframes mmIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
@@ -71,7 +79,7 @@ html.light #mmChat,html[data-theme="light"] #mmChat{--bg:#f9fafb;--hd:#f1f3f6;--
 
 let root, log, input, sendBtn, chips, attBar, attLbl, fileInput, tierSelect, webBtn, launcher;
 let messages = [];
-let tier = "pro";
+let tier = getAuthToken() ? "pro" : "open";
 let webOn = true;
 let streaming = false;
 let pendingAtt = null;
@@ -323,23 +331,41 @@ async function send(raw) {
   const kick = () => { if (!rafId) { lastTs = performance.now(); rafId = requestAnimationFrame(tick); } };
 
   try {
-    const res = await fetch(API, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      signal: ctrl.signal,
-      body: JSON.stringify({
-        prompt: txt || "Analiza esta captura de pantalla.",
-        tier,
-        mode: "team",
-        web_search: webOn,
-        chat_history: messages.slice(0, -2).slice(-6).map((m) => ({ role: m.role, content: m.content })),
-        stream: true,
-        image: att?.kind === "image" ? att.dataUrl : undefined,
-        attachment_name: att?.kind === "text" ? att.name : undefined,
-        attachment_text: att?.kind === "text" ? att.text : undefined
-      })
+    const tok = getAuthToken();
+    const effectiveTier = tok ? tier : "open";
+    const reqPayload = (useTier) => ({
+      prompt: txt || "Analiza esta captura de pantalla.",
+      tier: useTier,
+      mode: "team",
+      web_search: useTier === "open" ? false : webOn,
+      chat_history: messages.slice(0, -2).slice(-6).map((m) => ({ role: m.role, content: m.content })),
+      stream: true,
+      image: useTier !== "open" && att?.kind === "image" ? att.dataUrl : undefined,
+      attachment_name: att?.kind === "text" ? att.name : undefined,
+      attachment_text: att?.kind === "text" ? att.text : undefined
     });
-    if (!res.ok) throw new Error("err");
+    const reqHeaders = { "Content-Type": "application/json" };
+    if (tok) reqHeaders["Authorization"] = `Bearer ${tok}`;
+    let res = await fetch(API, {
+      method: "POST",
+      headers: reqHeaders,
+      signal: ctrl.signal,
+      body: JSON.stringify(reqPayload(effectiveTier))
+    });
+    if ((res.status === 401 || res.status === 403) && effectiveTier !== "open") {
+      tier = "open";
+      if (tierSelect) tierSelect.value = "open";
+      res = await fetch(API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: ctrl.signal,
+        body: JSON.stringify(reqPayload("open"))
+      });
+    }
+    if (!res.ok) {
+      const errJ = await res.json().catch(() => ({}));
+      throw new Error(errJ.error || "No pude conectar ahora mismo.");
+    }
     const cType = (res.headers.get("content-type") || "").toLowerCase();
     if (cType.includes("event-stream") && res.body) {
       const reader = res.body.getReader(), dec = new TextDecoder();
@@ -403,11 +429,21 @@ function build() {
         <button type="button" id="mmCloseBtn" class="mm-ib" title="Cerrar"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
     </header>
+    <nav class="mm-qnav" aria-label="Accesos rápidos Muntrume">
+      <a href="https://support.muntru.me/" target="_blank" rel="noopener">Soporte</a>
+      <a href="https://support.muntru.me/requests/new" target="_blank" rel="noopener">Abrir ticket</a>
+      <a href="https://docs.muntru.me/" target="_blank" rel="noopener">Docs</a>
+      <a href="https://muntru.me/garage/">Garage</a>
+      <a href="https://muntru.me/app/">MMT Sync</a>
+      <a href="https://muntru.me/contact/">Contacto</a>
+    </nav>
     <div id="mmLog" class="mm-log" role="log" aria-live="polite"></div>
     <div id="mmChips" class="mm-chips">
       <button type="button" data-chip="Dame ajustes rápidos en tabla para reducir subviraje en GT3.">Setup GT3</button>
       <button type="button" data-chip="Calcula combustible para 45 min GT3 (2.9 L/vuelta, 2:17).">Estrategia</button>
-      <button type="button" data-chip="¿Quiénes son los pilotos y qué incluye MMT Sync?">Equipo MMT</button>
+      <button type="button" data-chip="¿Cómo funciona Smart Auto-Fuel Pro en MMT Sync?">Auto-Fuel Pro</button>
+      <button type="button" data-chip="¿Cómo abro un ticket de soporte o recupero mi cuenta con Muntrume Guard?">Soporte</button>
+      <button type="button" data-chip="¿Qué guías hay en docs.muntru.me y qué incluye el calendario 2026?">Docs y Calendario</button>
     </div>
     <div id="mmAttBar" class="mm-attbar" hidden><span id="mmAttLbl"></span><button type="button" id="mmAttClear">×</button></div>
     <form id="mmForm" autocomplete="off">
