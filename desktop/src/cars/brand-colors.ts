@@ -38,7 +38,7 @@ export const BRAND_COLORS: Record<string, BrandColor> = {
   "logo-holden": { hex: "#E11D48", kind: "brand" },
   "logo-buick": { hex: "#C0C0C0", kind: "neutral" },
   "logo-pontiac": { hex: "#E31C23", kind: "brand" },
-  "logo-tatuus": { hex: NEUTRAL_BRAND_HEX, kind: "neutral" },
+  "logo-tatuus": { hex: "#DC2626", kind: "brand" },
   "logo-neutral": { hex: NEUTRAL_BRAND_HEX, kind: "neutral" },
   "logo-kia": { hex: "#94A3B8", kind: "neutral" },
   "logo-subaru": { hex: "#2563EB", kind: "brand" },
