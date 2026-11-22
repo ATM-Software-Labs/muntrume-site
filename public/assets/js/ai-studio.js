@@ -2615,11 +2615,16 @@
             try { localStorage.setItem("mrt_vault_user", decodeURIComponent(escape(atob(ub)))); } catch {}
           }
           history.replaceState(null, "", location.pathname + location.search);
+          window.dispatchEvent(new Event("muntrume-auth-change"));
         }
       }
     } catch {}
 
     $("aiGateLoginBtn")?.addEventListener("click", () => {
+      if (location.hostname === "ai.muntru.me") {
+        location.href = "https://muntru.me/login/?next=" + encodeURIComponent(location.origin + location.pathname);
+        return;
+      }
       if ($("aiTeamGate")) $("aiTeamGate").hidden = true;
       openModal("aiLoginModal");
       $("aiLoginEmail")?.focus();

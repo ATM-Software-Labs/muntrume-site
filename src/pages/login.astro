@@ -229,11 +229,15 @@ import Layout from '../layouts/Layout.astro';
         return target;
       }
 
-      // Check existing active session
+      // Check existing active session (instant SSO bounce when coming from ai.muntru.me)
       try {
         var existingTk = localStorage.getItem("mrt_vault_token") || localStorage.getItem("mm_token") || "";
         var existingUser = JSON.parse(localStorage.getItem("mrt_vault_user") || "null");
         if (existingTk && existingUser && existingUser.email) {
+          if (/^https:\/\/ai\.muntru\.me(\/|$)/i.test(nextUrl) && params.get("switch") !== "1") {
+            location.replace(buildTarget(existingTk, existingUser));
+            return;
+          }
           var box = document.getElementById("activeSessionBox");
           var nm = existingUser.name || existingUser.email.split("@")[0];
           document.getElementById("activeName").textContent = "Sesión activa · " + nm;

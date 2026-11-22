@@ -619,6 +619,21 @@ const finalSchema = {
       } else {
         syncPwaButtons();
       }
+      // Seamless SSO handoff from muntru.me -> ai.muntru.me on any link click
+      document.addEventListener("click", function (ev) {
+        if (location.hostname !== "muntru.me" && location.hostname !== "www.muntru.me") return;
+        var a = ev.target && ev.target.closest ? ev.target.closest("a[href]") : null;
+        if (!a || a.target === "_blank") return;
+        var href = a.getAttribute("href") || "";
+        if (!/^https:\/\/ai\.muntru\.me(\/|$)/i.test(href) || href.indexOf("#mm_auth=") !== -1) return;
+        try {
+          var tk = localStorage.getItem("mrt_vault_token") || localStorage.getItem("mm_token") || "";
+          if (!tk) return;
+          var uRaw = localStorage.getItem("mrt_vault_user") || "";
+          var uEnc = uRaw ? "&mm_user=" + encodeURIComponent(btoa(unescape(encodeURIComponent(uRaw)))) : "";
+          a.href = href.split("#")[0] + "#mm_auth=" + encodeURIComponent(tk) + uEnc;
+        } catch (e) {}
+      }, true);
     })();
   </script>
 </body>
