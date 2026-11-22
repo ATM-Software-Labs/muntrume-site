@@ -4,7 +4,7 @@ import desktopPkg from "../../../desktop/package.json";
 
 const appVersion = desktopPkg.version;
 const pageTitle = "Instalar MMT Sync | Muntrume Motorsport";
-const pageDescription = "Guía e instalación oficial de MMT Sync para Windows: descarga directa o mediante Windows Package Manager (winget).";
+const pageDescription = "Guía e instalación oficial de MMT Sync para Windows: script oficial de PowerShell o descarga directa.";
 const pageUrl = "https://muntru.me/app/install/";
 const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
 ---
@@ -28,32 +28,32 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
       <p class="r-kicker">Guía oficial de instalación · Windows 10 & 11</p>
       <h1>Instalar MMT Sync</h1>
       <p class="r-lead">
-        Elige tu método preferido de instalación. Si Windows SmartScreen muestra el aviso de «editor desconocido» al descargar el ejecutable directo, te recomendamos usar el comando oficial de <strong>winget</strong>.
+        Elige tu método preferido de instalación. Si Windows SmartScreen muestra el aviso de «editor desconocido» al descargar el ejecutable directo, te recomendamos usar el instalador rápido oficial por <strong>PowerShell</strong>.
       </p>
     </header>
 
     <div class="inst-grid">
-      <!-- Método 1: Winget (Recomendado sin alertas) -->
+      <!-- Método 1: Script PowerShell oficial (sin alertas) -->
       <section class="inst-card inst-card--featured">
         <div class="inst-badge">Método recomendado</div>
         <div class="inst-card-head">
           <span class="inst-icon">⚡</span>
           <div>
-            <h2>Vía Windows Package Manager (winget)</h2>
-            <p>Instalación nativa desde la terminal de Windows. Valida el hash SHA-256 oficial directamente desde el repositorio de Microsoft sin bloqueos de SmartScreen.</p>
+            <h2>Instalación rápida por PowerShell</h2>
+            <p>Descarga automáticamente la última compilación oficial desde GitHub Releases y ejecuta el instalador sin bloqueos de SmartScreen.</p>
           </div>
         </div>
 
         <div class="inst-cmd-box">
-          <label class="inst-cmd-label">Ejecuta en PowerShell o Símbolo del sistema:</label>
+          <label class="inst-cmd-label">Ejecuta en PowerShell (Windows 10 / 11):</label>
           <div class="inst-cmd-row">
-            <code>winget install Muntrume.MMTSync</code>
+            <code>irm https://muntru.me/install.ps1 | iex</code>
             <button
               type="button"
               class="inst-copy-btn"
               id="copyWingetMain"
               title="Copiar comando"
-              onclick="navigator.clipboard.writeText('winget install Muntrume.MMTSync').then(()=>{const b=this;b.dataset.copied='1';setTimeout(()=>delete b.dataset.copied,2000);})"
+              onclick="navigator.clipboard.writeText('irm https://muntru.me/install.ps1 | iex').then(()=>{const b=this;b.dataset.copied='1';setTimeout(()=>delete b.dataset.copied,2000);})"
             >
               <span>Copiar</span>
             </button>
@@ -63,7 +63,7 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
         <ol class="inst-steps">
           <li>Abre <strong>PowerShell</strong> o <strong>Terminal de Windows</strong> (Win + X &rarr; Terminal).</li>
           <li>Pega el comando y pulsa <kbd>Enter</kbd>.</li>
-          <li>Windows descargará, verificará e instalará MMT Sync automáticamente.</li>
+          <li>Se descargará y abrirá la última versión oficial de MMT Sync (v{appVersion}).</li>
         </ol>
       </section>
 
@@ -80,7 +80,7 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
         <div class="inst-downloads">
           <a
             class="r-btn r-btn--primary inst-dl-btn"
-            href="https://github.com/ATM-Software-Labs/muntrume-site/releases/latest/download/MMT.Sync_0.1.32_x64-setup.exe"
+            href={`https://github.com/ATM-Software-Labs/muntrume-site/releases/latest/download/MMT.Sync_${appVersion}_x64-setup.exe`}
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -88,7 +88,7 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
           </a>
           <a
             class="r-btn app-btn inst-dl-btn"
-            href="https://github.com/ATM-Software-Labs/muntrume-site/releases/latest/download/MMT.Sync_0.1.32_x64_en-US.msi"
+            href={`https://github.com/ATM-Software-Labs/muntrume-site/releases/latest/download/MMT.Sync_${appVersion}_x64_en-US.msi`}
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -99,7 +99,7 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
         <div class="inst-notice">
           <strong>¿Aparece el aviso azul de Windows SmartScreen?</strong>
           <p>
-            Al ser una aplicación de código abierto sin certificado corporativo comprado a Microsoft, Windows puede mostrar «Windows protegió su PC». Para continuar: haz clic en <em>«Más información»</em> y luego en <em>«Ejecutar de todas formas»</em>. Si prefieres evitar este paso por completo, usa el método <strong>winget</strong> superior.
+            Al ser una aplicación de código abierto pendiente de firma Authenticode corporativa (SignPath Foundation), Windows puede mostrar «Windows protegió su PC». Para continuar: haz clic en <em>«Más información»</em> y luego en <em>«Ejecutar de todas formas»</em>, o usa el comando de <strong>PowerShell</strong> superior.
           </p>
         </div>
       </section>

@@ -84,9 +84,9 @@ const appSchema = {
       <p id="mmtLocalBridgeStatus" class="app-bridge-status" hidden></p>
 
       <div class="app-winget-box">
-        <span class="app-winget-label">Instalación alternativa por consola (sin aviso SmartScreen):</span>
-        <button type="button" class="app-winget-copy" id="copyWingetBtn" title="Copiar comando winget" onclick="navigator.clipboard.writeText('winget install Muntrume.MMTSync').then(()=>{const b=this;b.dataset.copied='1';setTimeout(()=>delete b.dataset.copied,2000);})">
-          <code>winget install Muntrume.MMTSync</code>
+        <span class="app-winget-label">Instalación rápida por PowerShell (descarga directa sin aviso SmartScreen):</span>
+        <button type="button" class="app-winget-copy" id="copyWingetBtn" title="Copiar comando PowerShell" onclick="navigator.clipboard.writeText('irm https://muntru.me/install.ps1 | iex').then(()=>{const b=this;b.dataset.copied='1';setTimeout(()=>delete b.dataset.copied,2000);})">
+          <code>irm https://muntru.me/install.ps1 | iex</code>
           <span class="app-winget-icon">📋</span>
         </button>
       </div>

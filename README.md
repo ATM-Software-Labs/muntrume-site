@@ -127,12 +127,11 @@ Las plantillas de issue y de pull request están en `.github/`. Antes del PR, ej
 
 Puedes instalar MMT Sync de dos formas:
 
-1. **Instalación recomendada mediante Windows Package Manager (winget):**
-   Si al descargar el instalador directo te aparece el aviso de Windows SmartScreen («editor desconocido») y no estás seguro de ejecutarlo, la alternativa oficial y segura es instalarlo desde la terminal mediante **winget**:
+1. **Instalación rápida por PowerShell (recomendada):**
+   Descarga la última release oficial desde GitHub y ejecuta el instalador sin bloqueos de SmartScreen:
    ```powershell
-   winget install Muntrume.MMTSync
+   irm https://muntru.me/install.ps1 | iex
    ```
-   *(Valida automáticamente el hash SHA-256 oficial del paquete).*
 
 2. **Descarga directa:**
    Descarga el instalador ejecutable `.exe` o paquete `.msi` desde [muntru.me/app/](https://muntru.me/app/) o desde [Releases](https://github.com/ATM-Software-Labs/muntrume-site/releases/latest).
