@@ -29,7 +29,9 @@ export type VisibilityWidgetId =
   | "pitbox"
   | "digiflag"
   | "waveform"
-  | "trackmap";
+  | "trackmap"
+  | "flatmap"
+  | "traffic";
 
 export interface TelemetryContextState {
   isReplayPlaying: boolean;
@@ -112,6 +114,22 @@ export const DEFAULT_VISIBILITY_RULES: Record<VisibilityWidgetId, WidgetVisibili
     hideInQualy: false,
     hideInRaceLap1: false,
     hideInPitLane: false,
+    lap1SectorThreshold: 0.33,
+  },
+  flatmap: {
+    hideInTrack: false,
+    hideInReplay: false,
+    hideInQualy: false,
+    hideInRaceLap1: false,
+    hideInPitLane: false,
+    lap1SectorThreshold: 0.33,
+  },
+  traffic: {
+    hideInTrack: false,
+    hideInReplay: true,
+    hideInQualy: false,
+    hideInRaceLap1: false,
+    hideInPitLane: true,
     lap1SectorThreshold: 0.33,
   },
 };

@@ -93,6 +93,32 @@ function normalizePoints(raw: Array<[number, number]>): TrackPoint[] {
   ]);
 }
 
+function resampleArcLength(raw: Array<[number, number]>, targetCount: number): TrackPoint[] {
+  if (raw.length < 4) return [];
+  const closed = [...raw, raw[0]];
+  const dists = [0];
+  let total = 0;
+  for (let i = 1; i < closed.length; i++) {
+    total += Math.hypot(closed[i][0] - closed[i - 1][0], closed[i][1] - closed[i - 1][1]);
+    dists.push(total);
+  }
+  if (total <= 1e-6) return [];
+  const out: TrackPoint[] = [];
+  let j = 0;
+  for (let k = 0; k < targetCount; k++) {
+    const d = (k / targetCount) * total;
+    while (j < dists.length - 2 && dists[j + 1] < d) j++;
+    const segLen = Math.max(1e-9, dists[j + 1] - dists[j]);
+    const t = (d - dists[j]) / segLen;
+    out.push([
+      Math.round(closed[j][0] + (closed[j + 1][0] - closed[j][0]) * t),
+      Math.round(closed[j][1] + (closed[j + 1][1] - closed[j][1]) * t),
+    ]);
+  }
+  out.push(out[0]);
+  return out;
+}
+
 export function observeTrackAutoMap(
   trackName: string,
   lap: number,
@@ -100,35 +126,54 @@ export function observeTrackAutoMap(
   vx = 0,
   vy = 0,
   nowMs = performance.now(),
+  opts?: { trackId?: number; lat?: number; lon?: number; yaw?: number },
 ): void {
-  const key = trackName.toLowerCase().replace(/[^a-z0-9]+/g, "_");
-  if (!key || getPresetTrackPolygon(trackName)) return;
-  if (typeof localStorage !== "undefined" && localStorage.getItem(`mmt_track_poly_${key}`)) return;
-  if (vx === 0 && vy === 0) return;
+  const trackId = opts?.trackId && opts.trackId > 0 ? opts.trackId : 0;
+  const key = trackId ? `id_${trackId}` : trackName.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+  if (!key) return;
+  if (!trackId && getPresetTrackPolygon(trackName)) return;
+  const storageKey = `mmt_track_poly_${key}`;
+  if (typeof localStorage !== "undefined" && localStorage.getItem(storageKey)) return;
+
+  const hasGps = typeof opts?.lat === "number" && typeof opts?.lon === "number" && (Math.abs(opts.lat) > 0.001 || Math.abs(opts.lon) > 0.001);
+  if (!hasGps && vx === 0 && vy === 0) return;
 
   if (!recorder || recorder.trackKey !== key) {
     recorder = { trackKey: key, lastLap: lap, points: [], x: 0, y: 0, lastTs: nowMs };
     return;
   }
-  const dt = Math.min(0.25, Math.max(0.01, (nowMs - recorder.lastTs) / 1000));
-  recorder.lastTs = nowMs;
-  recorder.x += vx * dt;
-  recorder.y += vy * dt;
 
-  if (lap > recorder.lastLap && recorder.points.length >= 24) {
+  let curX: number;
+  let curY: number;
+  if (hasGps) {
+    const lat = opts!.lat!;
+    const lon = opts!.lon!;
+    curX = lon * Math.cos((lat * Math.PI) / 180);
+    curY = -lat;
+  } else {
+    const dt = Math.min(0.25, Math.max(0.01, (nowMs - recorder.lastTs) / 1000));
+    recorder.lastTs = nowMs;
+    const yaw = opts?.yaw ?? 0;
+    const worldVx = Math.cos(yaw) * vx - Math.sin(yaw) * vy;
+    const worldVy = Math.sin(yaw) * vx + Math.cos(yaw) * vy;
+    recorder.x += worldVx * dt;
+    recorder.y += worldVy * dt;
+    curX = recorder.x;
+    curY = recorder.y;
+  }
+
+  if (lap > recorder.lastLap && recorder.points.length >= 32) {
     const sorted = [...recorder.points].sort((a, b) => a.pct - b.pct);
-    const poly = normalizePoints(sorted.map((p) => [p.x, p.y]));
-    if (poly.length >= 12) {
-      poly.push(poly[0]);
-      if (typeof localStorage !== "undefined") {
-        localStorage.setItem(`mmt_track_poly_${key}`, JSON.stringify(poly));
-      }
+    const norm = normalizePoints(sorted.map((p) => [p.x, p.y]));
+    const poly = resampleArcLength(norm.map((p) => [p[0], p[1]]), 96);
+    if (poly.length >= 24 && typeof localStorage !== "undefined") {
+      try { localStorage.setItem(storageKey, JSON.stringify(poly)); } catch {}
     }
     recorder.points = [];
   }
   recorder.lastLap = lap;
-  if (pct >= 0 && pct <= 1 && (recorder.points.length === 0 || Math.abs(pct - recorder.points[recorder.points.length - 1].pct) >= 0.015)) {
-    recorder.points.push({ pct, x: recorder.x, y: recorder.y });
+  if (pct >= 0 && pct <= 1 && (recorder.points.length === 0 || Math.abs(pct - recorder.points[recorder.points.length - 1].pct) >= 0.008)) {
+    recorder.points.push({ pct, x: curX, y: curY });
   }
 }
 
@@ -139,7 +184,16 @@ export function getPresetTrackPolygon(trackName: string): readonly TrackPoint[] 
   return null;
 }
 
-export function resolveTrackPolygon(trackName: string): readonly TrackPoint[] | null {
+export function resolveTrackPolygon(trackName: string, trackId?: number): readonly TrackPoint[] | null {
+  if (trackId && trackId > 0 && typeof localStorage !== "undefined") {
+    try {
+      const rawById = localStorage.getItem(`mmt_track_poly_id_${trackId}`);
+      if (rawById) {
+        const parsed = JSON.parse(rawById);
+        if (Array.isArray(parsed) && parsed.length >= 12) return parsed;
+      }
+    } catch {}
+  }
   const preset = getPresetTrackPolygon(trackName);
   if (preset) return preset;
   const key = trackName.toLowerCase().replace(/[^a-z0-9]+/g, "_");

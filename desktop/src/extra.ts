@@ -38,6 +38,8 @@ import {
   renderBroadcastDirectorWidget,
 } from "./irsdk";
 import { renderLiveTrackMapCanvas } from "./irsdk/proximity-radar";
+import { renderFlatTrackMapCanvas } from "./irsdk/flat-track-map";
+import { renderTrafficIndicator } from "./irsdk/traffic-indicator";
 import { renderPitStrategyWidget } from "./irsdk/pit-exit-predictor";
 import { renderHelicorsaRadar } from "./irsdk/radar-360";
 import { observeTrackAutoMap } from "./irsdk/track-paths";
@@ -1802,12 +1804,76 @@ function renderStandbyWidgets(): void {
         irsdkState.session.weekendInfo?.trackName || "",
         irsdkState.frame.carIdxLap[irsdkState.camCarIdx] ?? 0,
         irsdkState.frame.carIdxLapDistPct[irsdkState.camCarIdx] ?? -1,
-        0,
-        0,
+        irsdkState.frame.velocityX ?? 0,
+        irsdkState.frame.velocityY ?? 0,
+        performance.now(),
+        {
+          trackId: irsdkState.session.weekendInfo?.trackId,
+          lat: irsdkState.frame.lat,
+          lon: irsdkState.frame.lon,
+          yaw: irsdkState.frame.yaw,
+        },
       );
     }
     renderLiveTrackMapCanvas(trackMapCanvas, irsdkState);
   });
+  document.querySelectorAll<HTMLCanvasElement>("#ovFlatMap, #ovFlatMapFloat").forEach((flatCanvas) => {
+    renderFlatTrackMapCanvas(flatCanvas, irsdkState);
+  });
+  document.querySelectorAll<HTMLElement>("#ovTraffic, #ovTrafficFloat").forEach((trafficEl) => {
+    renderTrafficIndicator(trafficEl, irsdkState, false);
+  });
+  // Push lightweight live snapshot to Rust OBS Single-Canvas bridge (127.0.0.1:38421/stream) at ~6 Hz
+  if (irsdkState) {
+    const wObs = window as unknown as { __mmtObsPushTs?: number };
+    const nowObs = performance.now();
+    if (!wObs.__mmtObsPushTs || nowObs - wObs.__mmtObsPushTs >= 160) {
+      wObs.__mmtObsPushTs = nowObs;
+      const myIdx = irsdkState.camCarIdx ?? 0;
+      const pcts = irsdkState.frame.carIdxLapDistPct || [];
+      const drivers = irsdkState.session.driverInfo?.drivers || {};
+      const flatDots = pcts
+        .map((pct, idx) => {
+          const drv = drivers[idx];
+          if (!drv || drv.isSpectator || drv.isPaceCar || pct < 0 || pct > 1) return null;
+          return { pct, me: idx === myIdx, color: drv.carClassColor || "#38bdf8" };
+        })
+        .filter(Boolean);
+      void fetch("http://127.0.0.1:38421/stream-state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          track: irsdkState.session.weekendInfo?.trackName || "iRacing",
+          sessionType: irsdkState.session.sessionType || "LIVE",
+          speedKmh: irsdkState.frame.speedKmh ?? 0,
+          gear: irsdkState.frame.gear ?? 0,
+          throttle: irsdkState.frame.throttle ?? 0,
+          brake: irsdkState.frame.brake ?? 0,
+          fuelL: irsdkState.frame.fuelLevel ?? 0,
+          fuelLaps: irsdkState.fuel?.lapsRemaining ?? 0,
+          fuelPerLap: irsdkState.fuel?.avgBurnPerLap ?? 0,
+          standings: irsdkState.leaderboard.slice(0, 10).map((r) => ({
+            pos: r.position,
+            num: r.carNumber,
+            name: r.abbrevName || r.driverName,
+            ir: r.iRatingStr,
+            last: r.lastLapStr,
+            me: r.carIdx === myIdx,
+          })),
+          relative: irsdkState.relative.entries.slice(0, 7).map((r) => ({
+            pos: r.position,
+            num: r.carNumber,
+            name: r.abbrevName || r.driverName,
+            ir: r.iRatingStr,
+            gap: r.deltaStr,
+            ahead: r.isAhead,
+            me: r.isActiveCam,
+          })),
+          flatDots,
+        }),
+      }).catch(() => {});
+    }
+  }
 
   // Update minimalist Pro Live Metrics Strip in main app
   const proStrip = document.getElementById("proLiveMetricsStrip");

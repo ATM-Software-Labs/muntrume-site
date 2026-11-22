@@ -190,7 +190,8 @@ export function renderLiveTrackMapCanvas(canvas: HTMLCanvasElement, state: Irsdk
   const ry = h * 0.37;
 
   const trackName = state?.session.weekendInfo?.trackName || "";
-  const poly = resolveTrackPolygon(trackName);
+  const trackId = state?.session.weekendInfo?.trackId || 0;
+  const poly = resolveTrackPolygon(trackName, trackId);
 
   // Muestreo de alta resolución preservando la geometría real de curvas/chicanes (sin deformación de esquinas)
   const smoothPts: Array<{ x: number; y: number }> = [];

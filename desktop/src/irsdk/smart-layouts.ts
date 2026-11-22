@@ -14,7 +14,38 @@ export type OverlayWidgetId =
   | "radar"
   | "pitbox"
   | "digiflag"
-  | "trackmap";
+  | "trackmap"
+  | "flatmap"
+  | "traffic";
+
+export type SessionColumnKey =
+  | "position"
+  | "classBadge"
+  | "carNumber"
+  | "brandLogo"
+  | "posGained"
+  | "iRating"
+  | "license"
+  | "gap"
+  | "lastLap"
+  | "pitStatus";
+
+export type SessionColumnMatrix = Record<SessionColumnKey, Record<SessionMode, boolean>>;
+
+export const DEFAULT_COLUMN_MATRIX: SessionColumnMatrix = {
+  position:   { race: true,  qualy: true,  practice: true  },
+  classBadge: { race: true,  qualy: true,  practice: true  },
+  carNumber:  { race: true,  qualy: true,  practice: true  },
+  brandLogo:  { race: true,  qualy: true,  practice: true  },
+  posGained:  { race: true,  qualy: false, practice: false },
+  iRating:    { race: true,  qualy: true,  practice: true  },
+  license:    { race: true,  qualy: true,  practice: false },
+  gap:        { race: true,  qualy: true,  practice: true  },
+  lastLap:    { race: true,  qualy: true,  practice: true  },
+  pitStatus:  { race: true,  qualy: false, practice: true  },
+};
+
+const COLUMN_MATRIX_KEY = "mmt_column_matrix_v1";
 
 export interface WidgetLayoutConfig {
   visible: boolean;
@@ -55,6 +86,10 @@ export const DEFAULT_WIDGET_CONFIGS: Record<OverlayWidgetId, WidgetLayoutConfig>
   fuel: { visible: true, x: 1450, y: 640, scale: 1.0, opacity: 0.95 },
   // Top-right: Track Map
   trackmap: { visible: true, x: 1450, y: 16, scale: 1.0, opacity: 0.9 },
+  // Top-center: Flat Linear Track Map (iOverlay Pro-Free)
+  flatmap: { visible: true, x: 560, y: 14, scale: 1.0, opacity: 0.92 },
+  // Center-upper: Multiclass Traffic Indicator (iOverlay Pro-Free)
+  traffic: { visible: true, x: 820, y: 110, scale: 1.0, opacity: 0.96 },
 };
 
 export function createDefaultProfile(category: DisciplineCategory, session: SessionMode): SmartLayoutProfile {
@@ -97,7 +132,9 @@ export class SmartLayoutManager {
   private profiles: Map<string, SmartLayoutProfile> = new Map();
   private activeProfileId = "general_race";
   private streamerMode = false;
+  private focusMode = false;
   private autoProfileSwitching = true;
+  private columnMatrix: SessionColumnMatrix = JSON.parse(JSON.stringify(DEFAULT_COLUMN_MATRIX));
   private listeners: Array<() => void> = [];
 
   private constructor() {
@@ -136,10 +173,26 @@ export class SmartLayoutManager {
           }
         }
       }
+      const rawCols = localStorage.getItem(COLUMN_MATRIX_KEY);
+      if (rawCols) {
+        const parsedCols = JSON.parse(rawCols);
+        if (parsedCols && typeof parsedCols === "object") {
+          for (const k of Object.keys(DEFAULT_COLUMN_MATRIX) as SessionColumnKey[]) {
+            if (parsedCols[k] && typeof parsedCols[k] === "object") {
+              this.columnMatrix[k] = {
+                race: Boolean(parsedCols[k].race ?? DEFAULT_COLUMN_MATRIX[k].race),
+                qualy: Boolean(parsedCols[k].qualy ?? DEFAULT_COLUMN_MATRIX[k].qualy),
+                practice: Boolean(parsedCols[k].practice ?? DEFAULT_COLUMN_MATRIX[k].practice),
+              };
+            }
+          }
+        }
+      }
       const rawSettings = localStorage.getItem(SETTINGS_KEY);
       if (rawSettings) {
         const s = JSON.parse(rawSettings);
         if (typeof s.streamerMode === "boolean") this.streamerMode = s.streamerMode;
+        if (typeof s.focusMode === "boolean") this.focusMode = s.focusMode;
         if (typeof s.autoProfileSwitching === "boolean") this.autoProfileSwitching = s.autoProfileSwitching;
         if (s.activeProfileId && this.profiles.has(s.activeProfileId)) this.activeProfileId = s.activeProfileId;
       }
@@ -156,11 +209,13 @@ export class SmartLayoutManager {
         obj[k] = p;
       });
       localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+      localStorage.setItem(COLUMN_MATRIX_KEY, JSON.stringify(this.columnMatrix));
       localStorage.setItem(
         SETTINGS_KEY,
         JSON.stringify({
           activeProfileId: this.activeProfileId,
           streamerMode: this.streamerMode,
+          focusMode: this.focusMode,
           autoProfileSwitching: this.autoProfileSwitching,
         })
       );
@@ -261,6 +316,31 @@ export class SmartLayoutManager {
 
   public isAutoProfileSwitching(): boolean {
     return this.autoProfileSwitching;
+  }
+
+  public setFocusMode(enabled: boolean): void {
+    this.focusMode = enabled;
+    this.saveToStorage();
+  }
+
+  public isFocusMode(): boolean {
+    return this.focusMode;
+  }
+
+  public getColumnMatrix(): SessionColumnMatrix {
+    return this.columnMatrix;
+  }
+
+  public setColumnVisible(col: SessionColumnKey, session: SessionMode, visible: boolean): void {
+    if (!this.columnMatrix[col]) return;
+    this.columnMatrix[col][session] = visible;
+    this.saveToStorage();
+  }
+
+  public isColumnVisibleForSession(col: SessionColumnKey, rawSessionType: string): boolean {
+    const s = (rawSessionType || "").toLowerCase();
+    const mode: SessionMode = s.includes("qual") ? "qualy" : s.includes("prac") || s.includes("test") ? "practice" : "race";
+    return Boolean(this.columnMatrix[col]?.[mode] ?? true);
   }
 
   /**

@@ -126,6 +126,11 @@ export interface IrsdkTelemetryFrame {
   dcTractionControl?: number;
   dcABS?: number;
   dcFuelMixture?: number;
+  lat?: number;
+  lon?: number;
+  yaw?: number;
+  velocityX?: number;
+  velocityY?: number;
 }
 
 export interface RelativeEntry {

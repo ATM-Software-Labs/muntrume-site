@@ -806,7 +806,7 @@ fn spawn_local_bridge(app: AppHandle) {
                 let mut stream = stream;
                 let _ = stream.set_read_timeout(Some(Duration::from_millis(400)));
                 let _ = stream.set_write_timeout(Some(Duration::from_millis(400)));
-                let mut buf = [0u8; 2048];
+                let mut buf = vec![0u8; 65536];
                 let Ok(n) = stream.read(&mut buf) else {
                     continue;
                 };
@@ -898,12 +898,104 @@ fn spawn_local_bridge(app: AppHandle) {
                     continue;
                 }
 
+                if first_line.starts_with("POST /stream-state") {
+                    let body_part = req.split("\r\n\r\n").nth(1).unwrap_or("{}");
+                    if let Ok(mut guard) = stream_state_store().lock() {
+                        *guard = body_part.to_string();
+                    }
+                    let resp_body = "{\"ok\":true}";
+                    let resp = format!(
+                        "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\n{cors_headers}\r\n{resp_body}",
+                        resp_body.len()
+                    );
+                    let _ = stream.write_all(resp.as_bytes());
+                    continue;
+                }
+
+                if first_line.starts_with("GET /api/stream-state") {
+                    let body = stream_state_store()
+                        .lock()
+                        .map(|g| g.clone())
+                        .unwrap_or_else(|_| "{}".to_string());
+                    let resp = format!(
+                        "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nCache-Control: no-store\r\nContent-Length: {}\r\n{cors_headers}\r\n{body}",
+                        body.len()
+                    );
+                    let _ = stream.write_all(resp.as_bytes());
+                    continue;
+                }
+
+                if first_line.starts_with("GET /stream") {
+                    let html = OBS_STREAM_CANVAS_HTML;
+                    let resp = format!(
+                        "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nCache-Control: no-store\r\nContent-Length: {}\r\n{cors_headers}\r\n{html}",
+                        html.len()
+                    );
+                    let _ = stream.write_all(resp.as_bytes());
+                    continue;
+                }
+
                 let not_found = format!("HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n{cors_headers}\r\n");
                 let _ = stream.write_all(not_found.as_bytes());
             }
         })
         .ok();
 }
+
+fn stream_state_store() -> &'static std::sync::Mutex<String> {
+    static STORE: std::sync::OnceLock<std::sync::Mutex<String>> = std::sync::OnceLock::new();
+    STORE.get_or_init(|| std::sync::Mutex::new("{}".to_string()))
+}
+
+const OBS_STREAM_CANVAS_HTML: &str = r#"<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>MMT Sync 2.0 · OBS Stream Canvas</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1080px;overflow:hidden;background:transparent;font-family:ui-monospace,Consolas,monospace;color:#f8fafc}
+.pod{position:absolute;background:rgba(9,11,15,.88);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px 12px;backdrop-filter:blur(8px)}
+.hdr{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#10b981;font-weight:800;margin-bottom:6px;display:flex;justify-content:space-between}
+.row{display:grid;grid-template-columns:22px 34px 1fr 56px 56px;gap:6px;align-items:center;font-size:11px;padding:2px 4px;border-radius:4px}
+.row.me{background:rgba(16,185,129,.18);color:#6ee7b7;font-weight:800}
+.bar{height:8px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden}
+.bar>i{display:block;height:100%}
+#podStandings{top:20px;left:20px;width:360px}
+#podFlat{top:20px;left:560px;width:800px;height:52px;display:flex;align-items:center}
+#podFuel{top:20px;right:20px;width:270px}
+#podRelative{bottom:20px;left:20px;width:360px}
+#podInputs{bottom:20px;left:760px;width:400px}
+</style></head><body>
+<div id="podStandings" class="pod"><div class="hdr"><span>Standings</span><span id="stTrack">MMT Sync 2.0</span></div><div id="stRows"></div></div>
+<div id="podFlat" class="pod"><canvas id="flatCv" width="776" height="34"></canvas></div>
+<div id="podFuel" class="pod"><div class="hdr"><span>Fuel & Telemetry</span><span id="flSession">LIVE</span></div><div id="flBody" style="font-size:12px;display:grid;gap:4px"></div></div>
+<div id="podRelative" class="pod"><div class="hdr"><span>Relative</span><span id="rlSoF"></span></div><div id="rlRows"></div></div>
+<div id="podInputs" class="pod"><div class="hdr"><span>Inputs 60Hz</span><span id="inGear">N · 0 km/h</span></div>
+  <div style="display:grid;gap:6px">
+    <div class="bar"><i id="inThr" style="background:#10b981;width:0%"></i></div>
+    <div class="bar"><i id="inBrk" style="background:#ef4444;width:0%"></i></div>
+  </div>
+</div>
+<script>
+async function tick(){
+  try{
+    const r=await fetch('/api/stream-state',{cache:'no-store'});
+    const d=await r.json();
+    if(!d||!d.track)return;
+    document.getElementById('stTrack').textContent=d.track;
+    document.getElementById('flSession').textContent=d.sessionType||'LIVE';
+    document.getElementById('stRows').innerHTML=(d.standings||[]).slice(0,10).map(x=>`<div class="row ${x.me?'me':''}"><span>${x.pos}</span><span>#${x.num}</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${x.name}</span><span style="text-align:right;color:#94a3b8">${x.ir||''}</span><span style="text-align:right">${x.last||''}</span></div>`).join('');
+    document.getElementById('rlRows').innerHTML=(d.relative||[]).slice(0,7).map(x=>`<div class="row ${x.me?'me':''}"><span>${x.pos||''}</span><span>#${x.num}</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${x.name}</span><span style="text-align:right;color:#94a3b8">${x.ir||''}</span><span style="text-align:right;color:${x.ahead?'#f87171':'#34d399'}">${x.gap||''}</span></div>`).join('');
+    document.getElementById('flBody').innerHTML=`<div>Combustible: <b>${(d.fuelL||0).toFixed(2)} L</b></div><div>Vueltas rest.: <b>${(d.fuelLaps||0).toFixed(1)}</b></div><div>Consumo/vta: <b>${(d.fuelPerLap||0).toFixed(2)} L</b></div>`;
+    document.getElementById('inGear').textContent=`${d.gear>0?d.gear:d.gear===0?'N':'R'} · ${Math.round(d.speedKmh||0)} km/h`;
+    document.getElementById('inThr').style.width=Math.round((d.throttle||0)*100)+'%';
+    document.getElementById('inBrk').style.width=Math.round((d.brake||0)*100)+'%';
+    const cv=document.getElementById('flatCv'),ctx=cv.getContext('2d');
+    ctx.clearRect(0,0,cv.width,cv.height);
+    ctx.strokeStyle='rgba(148,163,184,.45)';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(14,17);ctx.lineTo(cv.width-14,17);ctx.stroke();
+    (d.flatDots||[]).forEach(p=>{const x=14+p.pct*(cv.width-28);ctx.fillStyle=p.me?'#10b981':(p.color||'#38bdf8');ctx.beginPath();ctx.arc(x,17,p.me?7:5,0,Math.PI*2);ctx.fill();});
+  }catch{}
+}
+setInterval(tick,120);tick();
+</script></body></html>"#;
 
 fn apply_overlay_edit_state(app: &AppHandle, window: &tauri::WebviewWindow, editing: bool) {
     OVERLAY_EDITING.store(editing, std::sync::atomic::Ordering::Relaxed);

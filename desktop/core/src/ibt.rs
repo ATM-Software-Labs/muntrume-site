@@ -184,6 +184,11 @@ pub struct IrsdkFrame {
     pub dc_traction_control: f64,
     pub dc_abs: f64,
     pub dc_fuel_mixture: f64,
+    pub lat: f64,
+    pub lon: f64,
+    pub yaw: f64,
+    pub velocity_x: f64,
+    pub velocity_y: f64,
 }
 
 pub fn decode_irsdk_text(raw: &[u8]) -> String {
@@ -339,6 +344,11 @@ pub fn read_live_irsdk_frame_with(bytes: &[u8], table: &VarTable) -> Result<Irsd
         dc_traction_control: val_f("dcTractionControl"),
         dc_abs: val_f("dcABS"),
         dc_fuel_mixture: val_f("dcFuelMixture"),
+        lat: val_f("Lat"),
+        lon: val_f("Lon"),
+        yaw: val_f("Yaw"),
+        velocity_x: val_f("VelocityX"),
+        velocity_y: val_f("VelocityY"),
     })
 }
 
