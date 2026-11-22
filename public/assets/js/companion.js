@@ -112,6 +112,34 @@
     const netPos = Number(st.net_positions_gained_10) || 0;
     setTxt("compStreakGain", `${netPos >= 0 ? "+" : ""}${netPos} pos.`);
 
+    // Auto Engineer Debrief
+    const deb = compState.engineer_debrief || {};
+    setTxt("compDebriefTitle", deb.headline || `Diagnóstico automático en ${lr.circuito || "pista"}`);
+    const debList = document.getElementById("compDebriefList");
+    if (debList && Array.isArray(deb.notes)) {
+      debList.innerHTML = deb.notes.map((n) => `<li>${esc(n)}</li>`).join("");
+    }
+
+    // Strategy & Pressures (auto-calculated from cached car/track/lap)
+    renderStrategyPanel();
+
+    // Current Week Series Radar
+    const radarBox = document.getElementById("compWeekRadarList");
+    const radar = compState.week_radar || [];
+    if (radarBox && radar.length) {
+      radarBox.innerHTML = radar
+        .map(
+          (w) => `<div class="app-comp-qitem">
+            <div>
+              <strong>${esc(w.series)}</strong>
+              <span>${esc(w.track)} · ${esc(w.car)} · <code style="color:var(--r-accent)">${esc(w.setup)}</code></span>
+            </div>
+            <span class="g-chip-accent">${w.pc_cached ? "✓ En caché de tu PC" : "Listo para sincronizar"}</span>
+          </div>`
+        )
+        .join("");
+    }
+
     // Recent sessions table
     const tbody = document.getElementById("compSessionsTbody");
     if (tbody) {
@@ -178,6 +206,33 @@
     }
 
     drawTelemetryChart();
+  }
+
+  function renderStrategyPanel() {
+    if (!compState) return;
+    const strat = compState.stint_strategy || {};
+    const lr = compState.last_race || {};
+    const durMin = Number(document.getElementById("compStratDuration")?.value) || 40;
+    const bestLapS = Math.max(45, Number(strat.best_lap_s) || Number(lr.mejor_vuelta) || 115);
+    const fuelLap = Number(strat.fuel_per_lap_l) || 2.75;
+    const tankCap = Number(strat.tank_capacity_l) || 104;
+    const maxLaps = Number(strat.max_stint_laps) || Math.floor((tankCap - 1.8) / fuelLap);
+    const totalLaps = Math.ceil((durMin * 60) / bestLapS);
+    const totalFuel = Math.ceil(totalLaps * fuelLap + 1.8);
+    const startFuel = Math.min(tankCap, totalFuel);
+    const pitAdd = Math.max(0, totalFuel - startFuel);
+
+    const setTxt = (id, v) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = v;
+    };
+    setTxt("compStratTitle", `${strat.car || lr.coche || "GT3"} · ${strat.track || lr.circuito || "Spa"}`);
+    setTxt("compStFuelLap", `${fuelLap.toFixed(2)} L`);
+    setTxt("compStMaxLaps", `${maxLaps} vueltas (${strat.stint_minutes || 45} min)`);
+    setTxt("compStTotalFuel", `${totalFuel} L (${totalLaps} v.)`);
+    setTxt("compStPitAdd", pitAdd > 0 ? `+${pitAdd} L (1 parada)` : "0 L (Sin parar)");
+    setTxt("compStPress", `${strat.cold_pressure_kpa || 148} → ${strat.hot_target_kpa || 168} kPa`);
+    setTxt("compStBias", strat.brake_bias_pct || "54.2%");
   }
 
   function drawTelemetryChart() {
@@ -406,8 +461,14 @@
       }, { passive: true });
     }
 
-    // Refresh button
+    // Refresh button & duration selector
     document.getElementById("btnCompRefresh")?.addEventListener("click", () => loadCompanionState(true));
+    document.getElementById("compStratDuration")?.addEventListener("change", renderStrategyPanel);
+
+    // Auto-poll cache every 30s when page is visible (zero manual action needed after finishing a race)
+    setInterval(() => {
+      if (!document.hidden && getToken()) loadCompanionState(false);
+    }, 30000);
 
     // Upload .ibt file
     document.getElementById("compIbtInput")?.addEventListener("change", async (e) => {

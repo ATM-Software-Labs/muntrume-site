@@ -106,14 +106,12 @@ const appSchema = {
     <section class="app-card g-bento-card app-comp-shell" data-g-reveal aria-label="MMT Companion Cloud & Mobile">
       <div class="app-cmd-head">
         <div>
-          <span class="g-chip-accent">Cloud Companion · iOS / Android PWA + PC</span>
-          <h2 style="margin-top:8px">MMT Companion en Vivo · Telemetría, Última Carrera y Setups</h2>
-          <p class="app-sub">Lleva tu telemetría <code>.ibt</code>, tu última carrera de iRacing, tus rachas y la cola remota de setups en el bolsillo al instalar la app en tu móvil.</p>
+          <span class="g-chip-accent">Auto-Caché IRSDK RAM + lapfiles/*.blap · 0 Archivos Manuales</span>
+          <h2 style="margin-top:8px">MMT Companion en Vivo · Telemetría, Última Carrera, Estrategia y Setups</h2>
+          <p class="app-sub">No necesitas pulsar <code>Alt+L</code> ni guardar ningún archivo al terminar de correr. <strong>MMT Sync</strong> captura automáticamente desde la memoria RAM de iRacing y la caché de vueltas (<code>lapfiles/*.blap</code>) y lo sincroniza con tu móvil.</p>
         </div>
         <div class="app-comp-top-actions">
-          <input type="file" id="compIbtInput" accept=".ibt" hidden />
-          <button type="button" class="r-btn app-btn" onclick="document.getElementById('compIbtInput')?.click()">📊 Subir .IBT iRacing</button>
-          <button type="button" id="btnCompRefresh" class="r-btn r-btn--primary">↻ Sincronizar Cloud</button>
+          <button type="button" id="btnCompRefresh" class="r-btn r-btn--primary">↻ Escanear Caché &amp; Cloud</button>
         </div>
       </div>
 
@@ -138,16 +136,17 @@ const appSchema = {
         </div>
 
         <div class="app-comp-tabs" role="tablist">
-          <button type="button" class="app-comp-tab is-active" data-comp-tab="race">1. Última Carrera y Rachas</button>
-          <button type="button" class="app-comp-tab" data-comp-tab="telemetry">2. Telemetría .IBT (60 Hz)</button>
-          <button type="button" class="app-comp-tab" data-comp-tab="queue">3. Enviar Setup a mi PC</button>
+          <button type="button" class="app-comp-tab is-active" data-comp-tab="race">1. Última Carrera y Debrief</button>
+          <button type="button" class="app-comp-tab" data-comp-tab="telemetry">2. Telemetría en Caché (60 Hz)</button>
+          <button type="button" class="app-comp-tab" data-comp-tab="strategy">3. Combustible, Stints y Presiones</button>
+          <button type="button" class="app-comp-tab" data-comp-tab="queue">4. Radar Semanal y Enviar al PC</button>
         </div>
 
-        <!-- PANEL 1: LAST RACE & STREAKS -->
+        <!-- PANEL 1: LAST RACE, STREAKS & AUTO ENGINEER DEBRIEF -->
         <div class="app-comp-panel" data-comp-panel="race">
           <div class="app-comp-racehero">
             <div>
-              <span class="app-cmd-kicker">ÚLTIMA SESIÓN SINCRONIZADA</span>
+              <span class="app-cmd-kicker">DETECTADO AUTOMÁTICAMENTE EN CACHÉ DE IRACING</span>
               <h3 id="compLrTrack" style="margin:4px 0;font-size:20px">Circuit de Spa-Francorchamps</h3>
               <p id="compLrMeta" style="margin:0;color:var(--r-muted);font-size:13px">Ferrari 296 GT3 · Official Race</p>
             </div>
@@ -170,38 +169,30 @@ const appSchema = {
             <div class="app-comp-streak"><span>BALANCE 10 CARR.</span><strong id="compStreakGain">+14 pos.</strong></div>
           </div>
 
+          <!-- AUTO ENGINEER DEBRIEF -->
+          <div class="app-comp-debrief" style="margin-top:14px">
+            <div class="app-cmd-kicker">INGENIERO DE PISTA · DIAGNÓSTICO AUTOMÁTICO POST-CARRERA</div>
+            <strong id="compDebriefTitle" style="display:block;margin:4px 0 8px;font-size:15px">Analizando caché de la última tanda…</strong>
+            <ul id="compDebriefList" style="margin:0;padding-left:18px;font-size:13px;line-height:1.65;color:var(--r-muted)"></ul>
+          </div>
+
           <div class="r-scroll" style="margin-top:14px">
             <table class="r-table">
-              <thead><tr><th>Circuito / Sesión</th><th>Coche / Setup .sto</th><th>Posición</th><th>Inc.</th><th>iR Δ</th><th>Mejor Vuelta</th></tr></thead>
+              <thead><tr><th>Circuito / Origen Caché</th><th>Coche / Setup .sto</th><th>Posición</th><th>Inc.</th><th>iR Δ</th><th>Mejor Vuelta</th></tr></thead>
               <tbody id="compSessionsTbody"></tbody>
             </table>
           </div>
-
-          <details class="app-comp-details">
-            <summary>+ Registrar carrera / tanda manualmente desde el móvil</summary>
-            <form id="formCompAddRace" class="app-comp-formgrid">
-              <input type="text" id="compRaceTrack" placeholder="Circuito (ej. Sebring International)" required />
-              <input type="text" id="compRaceCar" placeholder="Coche (ej. Ferrari 296 GT3)" required />
-              <input type="number" id="compRaceStart" placeholder="P. Salida (ej. 5)" min="1" max="60" value="5" />
-              <input type="number" id="compRaceFinish" placeholder="P. Final (ej. 2)" min="1" max="60" value="2" />
-              <input type="number" id="compRaceInc" placeholder="Incidentes (ej. 0)" min="0" max="30" value="0" />
-              <input type="number" id="compRaceIr" placeholder="Delta iR (ej. 45)" value="45" />
-              <input type="number" step="0.001" id="compRaceLap" placeholder="Mejor vuelta seg (ej. 118.420)" value="118.420" />
-              <input type="text" id="compRaceSetup" placeholder="Setup .sto usado" value="MMT_26S4_R.sto" />
-              <button type="submit" class="r-btn r-btn--primary">Guardar en Cloud</button>
-            </form>
-          </details>
         </div>
 
-        <!-- PANEL 2: 60 HZ TELEMETRY TRACE -->
+        <!-- PANEL 2: 60 HZ TELEMETRY TRACE FROM CACHE -->
         <div class="app-comp-panel" data-comp-panel="telemetry" hidden>
           <div class="app-comp-racehero">
             <div>
-              <span class="app-cmd-kicker">TELEMETRÍA DE MEJOR VUELTA (.IBT / IRSDK)</span>
+              <span class="app-cmd-kicker">MEMORIA COMPARTIDA IRSDK &amp; CACHÉ .BLAP (SIN ARCHIVOS MANUALES)</span>
               <h3 id="compTelTitle" style="margin:4px 0;font-size:19px">Circuit de Spa-Francorchamps · Ferrari 296 GT3</h3>
-              <p id="compTelSub" style="margin:0;color:var(--r-muted);font-size:12.5px">Cargando canales…</p>
+              <p id="compTelSub" style="margin:0;color:var(--r-muted);font-size:12.5px">Cargando canales desde caché…</p>
             </div>
-            <button type="button" class="r-btn app-btn" onclick="document.getElementById('compIbtInput')?.click()">Subir archivo .IBT</button>
+            <span class="g-chip-accent">60 Hz Auto-Capture</span>
           </div>
 
           <div class="app-comp-canvasbox">
@@ -216,15 +207,49 @@ const appSchema = {
 
           <div class="r-scroll" style="margin-top:14px">
             <table class="r-table">
-              <thead><tr><th>Vuelta</th><th>Tiempo</th><th>Delta</th><th>Vel. Punta</th><th>Estado</th></tr></thead>
+              <thead><tr><th>Vuelta en Caché</th><th>Tiempo</th><th>Delta</th><th>Vel. Punta</th><th>Estado</th></tr></thead>
               <tbody id="compTelLapsTbody"></tbody>
             </table>
           </div>
         </div>
 
-        <!-- PANEL 3: REMOTE SETUP QUEUE TO PC -->
+        <!-- PANEL 3: AUTO FUEL, STINT & TIRE PRESSURES CALCULATOR -->
+        <div class="app-comp-panel" data-comp-panel="strategy" hidden>
+          <div class="app-comp-racehero">
+            <div>
+              <span class="app-cmd-kicker">ESTRATEGIA PRE-CALCULADA DESDE TU ÚLTIMA SESIÓN EN CACHÉ</span>
+              <h3 id="compStratTitle" style="margin:4px 0;font-size:19px">Ferrari 296 GT3 · Circuit de Spa-Francorchamps</h3>
+              <p style="margin:0;color:var(--r-muted);font-size:13px">Ajustada automáticamente con tu tiempo por vuelta y consumo real en pista.</p>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <label for="compStratDuration" style="font-size:12.5px;font-weight:700">Duración carrera:</label>
+              <select id="compStratDuration" style="padding:7px 12px;border-radius:10px;border:1px solid var(--r-line);background:var(--r-bg);color:var(--r-text);font-weight:700">
+                <option value="20">20 min (Fixed / Sprint)</option>
+                <option value="35">35 min (IMSA Fixed)</option>
+                <option value="40" selected>40 min (GT Sprint)</option>
+                <option value="45">45 min (IMSA Open)</option>
+                <option value="60">60 min (Endurance 1h)</option>
+                <option value="180">180 min (GT Endurance 3h)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="app-comp-kpis">
+            <div class="app-comp-kpi"><span>CONSUMO / VUELTA</span><strong id="compStFuelLap">2.78 L</strong></div>
+            <div class="app-comp-kpi"><span>AUTONOMÍA DEPÓSITO</span><strong id="compStMaxLaps">35 vueltas</strong></div>
+            <div class="app-comp-kpi"><span>LITROS TOTALES CARRERA</span><strong id="compStTotalFuel" style="color:#10b981">52 L</strong></div>
+            <div class="app-comp-kpi"><span>REPOSTAR EN BOXES</span><strong id="compStPitAdd">24 L</strong></div>
+            <div class="app-comp-kpi"><span>PRESIÓN FRÍO / CALIENTE</span><strong id="compStPress">148 → 168 kPa</strong></div>
+            <div class="app-comp-kpi"><span>BRAKE BIAS BASE</span><strong id="compStBias">54.2%</strong></div>
+          </div>
+        </div>
+
+        <!-- PANEL 4: WEEK RADAR & REMOTE SETUP QUEUE TO PC -->
         <div class="app-comp-panel" data-comp-panel="queue" hidden>
-          <p style="margin:0 0 12px;color:var(--r-muted);font-size:13.5px">Elige desde el móvil qué setup quieres tener listo en tu simulador. <strong>MMT Sync</strong> lo descargará directamente en <code>Documents\iRacing\setups\</code> al encender tu PC.</p>
+          <div class="app-cmd-kicker" style="margin-bottom:8px">RADAR DE SERIES ESTA SEMANA · ESTADO EN LA CACHÉ DE TU PC</div>
+          <div id="compWeekRadarList" class="app-comp-qlist" style="margin-bottom:18px"></div>
+
+          <p style="margin:0 0 10px;color:var(--r-muted);font-size:13.5px">¿Quieres preparar otro coche o circuito desde el teléfono? Envíalo a la cola y <strong>MMT Sync</strong> lo dejará listo en <code>Documents\iRacing\setups\</code>:</p>
           <form id="formCompQueueSetup" class="app-comp-formgrid">
             <select id="compQueueCar">
               <option value="ferrari296gt3">Ferrari 296 GT3</option>
@@ -803,9 +828,10 @@ const appSchema = {
     requestAnimationFrame(step);
   })();
 </script>
-<script is:inline src="/assets/js/companion.js?v=t360"></script>
+<script is:inline src="/assets/js/companion.js?v=t361"></script>
 
 <style is:global>
+  .app-comp-debrief { padding: 14px 16px; border-radius: 12px; background: var(--r-bg); border: 1px solid var(--r-line); border-left: 3px solid var(--r-accent, #10b981); }
   .app-comp-shell { display: flex; flex-direction: column; gap: 16px; }
   .app-comp-top-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
   .app-comp-msg { padding: 10px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; }

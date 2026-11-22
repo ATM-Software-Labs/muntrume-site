@@ -424,6 +424,7 @@ fn windows_loop(app: AppHandle) {
                         if (frame.session_state == 5 || left_track) && !tracker.saved_on_finish && !tracker.valid_laps.is_empty() {
                             tracker.flush_to_history();
                             tracker.saved_on_finish = true;
+                            crate::syncer::spawn_companion_push(&app);
                         }
 
                         if crate::HIDE_OFF_TRACK.load(Ordering::Relaxed) {
@@ -469,6 +470,7 @@ fn windows_loop(app: AppHandle) {
             }
         }
         recorder.flush_on_disconnect(&app);
+        crate::syncer::spawn_companion_push(&app);
         drop(mapped);
         std::thread::sleep(Duration::from_millis(1000));
     }
