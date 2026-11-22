@@ -11,11 +11,11 @@
   <a href="https://muntru.me"><b>muntru.me</b></a> ·
   <a href="https://muntru.me/app/">MMT Sync</a> ·
   <a href="https://muntru.me/overlay/">HUD 60Hz</a> ·
+  <a href="https://muntru.me/overlay/brands/">Logos SVG</a> ·
   <a href="https://muntru.me/garage/">Garage (.sto)</a> ·
-  <a href="https://muntru.me/ai/">Muntrume AI</a> ·
-  <a href="https://muntru.me/calendar/">Calendario S4</a> ·
-  <a href="https://muntru.me/pilotos/">Pilotos</a> ·
-  <a href="https://muntru.me/paddock/">Paddock</a>
+  <a href="https://ai.muntru.me/">Muntrume AI</a> ·
+  <a href="https://support.muntru.me/">Soporte</a> ·
+  <a href="https://docs.muntru.me/">Docs</a>
 </p>
 
 <p align="center">
@@ -46,7 +46,7 @@ Tomadas en [muntru.me](https://muntru.me).
 ## Ecosistema Muntrume Motorsport
 
 - **Landing & Experiencia Visual:** Diseño estilo lanzamiento de hardware con pod de telemetría iRSDK en vivo a 60 FPS, Bento Grid interactivo, decodificador oficial de nomenclatura `.sto` (`MMT_COCHE_CIRCUITO_SESION_V#.sto`), motor de animaciones `motion.js` (`IntersectionObserver` con física spring + spotlight radial) y soporte completo para temas claro/oscuro y dispositivos móviles.
-- **MMT Sync Desktop (`desktop/`):** Aplicación nativa para Windows en **Tauri v2 + Rust** (`< 15 MB RAM`, `0% GPU idle`) que sincroniza por SHA-256 más de **42.654 setups `.sto`** en `Documents\iRacing\setups\`, analiza telemetría `.ibt` en local, calcula estrategia de combustible/stints, detecta hardware DirectInput/XAudio2 y renderiza **9 módulos de Overlays transparentes a 60 Hz** (`FILE_MAP_READ`).
+- **MMT Sync Desktop & Companion (`desktop/`, `/app/`):** Aplicación nativa para Windows en **Tauri v2 + Rust** (`< 15 MB RAM`, `0% GPU idle`, 100 % gratuita y MIT) que sincroniza por SHA-256 más de **42.654 setups `.sto`** en `Documents\iRacing\setups\`, analiza telemetría `.ibt` en local, sincroniza perfil iRacing y tiempo en pista con **MMT Companion** (móvil/tablet PWA) y renderiza **overlays transparentes a 60 Hz** (`FILE_MAP_READ`) con **22+ circuitos GPS reales** y **37 emblemas minimalistas** reutilizables en [muntru.me/overlay/brands/](https://muntru.me/overlay/brands/).
 - **Garage & Setup Builder (`/garage/`, `/setup-builder/`):** Catálogo completo de archivos `.sto` por coche, circuito y temporada con diagnóstico interactivo de subviraje/sobreviraje.
 - **Simulador Web de Overlays (`/overlay/`):** Previsualización interactiva en el navegador de los 9 widgets del HUD (Standings, Relative, Mapa Catmull-Rom, Pedales, Radar 360°, Fuel Calculator, Neumáticos, Delta y Spotter).
 - **Muntrume AI (`/ai/` · [ai.muntru.me](https://ai.muntru.me/)):** Estudio de IA 100 % Open Source (MIT) con motores **Muntrume 1.0 Lite, Pro y Ultra Max**, comandos rápidos (`/setup`, `/strategy`, `/code`, `/slides`, `/doc`, `/mermaid`), visión por imagen, exportación de conversaciones `.md` y *Artifacts Studio* en pantalla dividida (HTML, SVG, Mermaid, Slides 16:9, CSV, Word `.doc` y PDF) con publicación permanente en `ai.muntru.me/a/<slug>`.
@@ -114,10 +114,21 @@ Cada push a `main` lanza [Deploy Static Site to GitHub Pages](.github/workflows/
 
 Para volver atrás: `git revert <commit>` y push a `main`, que vuelve a desplegar. También se puede restaurar un despliegue anterior del entorno `github-pages`.
 
-## Enlaces
+## Soporte, Contacto y Canales Oficiales
 
-- [Discord](https://discord.gg/ehX6B8JUtE)
-- [Garage 61](https://garage61.net/app/teams/muntrume-motorsport)
+| Departamento | Correo oficial | Portal web |
+|---|---|---|
+| Soporte Técnico e Incidencias | `support@muntru.me` | [support.muntru.me](https://support.muntru.me/) |
+| Información General y Consultas | `info@muntru.me` | [muntru.me/contact/](https://muntru.me/contact/) |
+| Seguridad y Vulnerabilidades | `security@muntru.me` | [GitHub Security Advisories](https://github.com/ATM-Software-Labs/muntrume-site/security/advisories/new) |
+| Departamento Legal y Privacidad (RGPD) | `legal@muntru.me` | [muntru.me/aviso-legal/](https://muntru.me/aviso-legal/) |
+| Administración y Race Control | `admin@muntru.me` | [muntru.me/paddock/](https://muntru.me/paddock/) |
+
+### Comunidad
+- **Discord oficial:** [discord.gg/ehX6B8JUtE](https://discord.gg/ehX6B8JUtE)
+- **Garage 61:** [garage61.net/app/teams/muntrume-motorsport](https://garage61.net/app/teams/muntrume-motorsport)
+- **Documentación:** [docs.muntru.me](https://docs.muntru.me/)
+- **Centro de Ayuda y Tickets:** [support.muntru.me](https://support.muntru.me/)
 
 ## Contribuir
 

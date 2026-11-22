@@ -6,7 +6,9 @@
 <p align="center">
   <a href="https://muntru.me/app/"><b>muntru.me/app</b></a> ·
   <a href="https://muntru.me/overlay/">Simulador HUD</a> ·
+  <a href="https://muntru.me/overlay/brands/">Logos SVG Open-Source</a> ·
   <a href="https://muntru.me/garage/">Setup Vault</a> ·
+  <a href="https://support.muntru.me/">Soporte</a> ·
   <a href="docs/feature-parity.md">Arquitectura y Paridad</a>
 </p>
 
@@ -24,7 +26,22 @@
 
 - **Centro de Mando & Vinculación Segura:** Vincula el ordenador con `muntru.me` mediante OAuth Device Flow. El token se almacena cifrado en el **Administrador de credenciales de Windows** (nunca en texto plano).
 - **Sincronización Diferencial SHA-256:** Descarga únicamente los reglajes `.sto` nuevos o modificados en `Documents\iRacing\setups\<coche>\MMT\<temporada>\`, filtrando automáticamente las series Fixed.
-- **Overlays Flotantes 60 Hz (`FILE_MAP_READ`):** Ventana única transparente `Always-On-Top` y `Click-Through` con 9 widgets modulares (Standings multiclase, Relative, Mapa GPS Catmull-Rom, Pedales + FFB, Radar 360°, Calculadora de Combustible, Neumáticos, Delta y Spotter).
+- **Overlays Flotantes 60 Hz (`FILE_MAP_READ`):** Ventana única transparente `Always-On-Top` y `Click-Through` 100 % gratuita (MIT) con widgets modulares: Standings multiclase con 37 emblemas minimalistas de fabricantes (incluyendo FIA F4 y NASCAR), Relative, TrackMap con 22+ circuitos GPS reales, Pedales + FFB, Radar 360°, Calculadora de Combustible, Neumáticos, Delta y Spotter.
+- **Sincronización en Vivo con MMT Companion (`/app/`):** Envía cada 60 s tu tiempo efectivo en pista, vueltas y sesión en vivo a tu perfil de iRacing en móvil/tablet PWA.
+
+## Instalación rápida (Windows 10 / 11)
+
+```powershell
+irm https://muntru.me/install.ps1 | iex
+```
+
+También puedes descargar directamente el `.exe` o `.msi` desde [muntru.me/app/install/](https://muntru.me/app/install/) o [GitHub Releases](https://github.com/ATM-Software-Labs/muntrume-site/releases/latest).
+
+## Soporte y Seguridad
+
+- **Soporte técnico e incidencias:** `support@muntru.me` · [support.muntru.me](https://support.muntru.me/)
+- **Reportar vulnerabilidad:** `security@muntru.me` · [Security Advisories](https://github.com/ATM-Software-Labs/muntrume-site/security/advisories/new)
+- **Contacto general:** `info@muntru.me` · [muntru.me/contact/](https://muntru.me/contact/)
 - **Puente Local (`127.0.0.1:38421`) y Protocolo `mmtsync://`:** Permite activar los overlays, desbloquear el modo edición (`F9`) o lanzar una sincronización directamente desde [muntru.me](https://muntru.me) o [muntru.me/app/](https://muntru.me/app/).
 - **Analizador Local `.ibt` y Diagnóstico de Hardware:** Parseo de telemetría de iRacing en disco sin subir datos privados, calculadora de estrategia con envío `IRSDK_BROADCAST_MSG` de auto-repostaje e inspección sin parpadeos (`CREATE_NO_WINDOW`) de periféricos DirectInput y audio XAudio2.
 
