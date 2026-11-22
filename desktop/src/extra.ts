@@ -4060,24 +4060,54 @@ function safeRenderWidget(el: HTMLElement | null, fn: () => void): void {
         }
       }
 
-      // Prompt 100: Auto-Fuel on Pit Road entry when enabled
+      // Smart Auto-Fuel Pro: Leader-pace laps + telemetry burn + guaranteed >= +0.2/+0.4L safety margin above iRacing
       const pitNow = Boolean(irsdkState.onPitRoad);
-      if (pitNow && !lastAutoFuelPitRoad) {
-        lastAutoFuelPitRoad = true;
-        if (
-          typeof localStorage !== "undefined" &&
-          localStorage.getItem("mmt-auto-fuel-pit") === "1" &&
-          irsdkState.fuel.isValid &&
-          irsdkState.fuel.fuelToAdd > 0
-        ) {
-          const liters = Math.ceil(irsdkState.fuel.fuelToAdd);
+      const autoFuelEnabled = typeof localStorage !== "undefined" && localStorage.getItem("mmt-auto-fuel-pit") === "1";
+      if (autoFuelEnabled && irsdkState.fuel.isValid) {
+        const marginRaw = Number(localStorage.getItem("mmt-auto-fuel-margin-l") || "0.4");
+        const safetyMarginL = Number.isFinite(marginRaw) ? Math.max(0.2, Math.min(3.0, marginRaw)) : 0.4;
+
+        // Leader pace calculation (P1 best/last lap time -> worst-case remaining laps so we never run dry)
+        let leaderLapSec = 0;
+        const posArr = frame.carIdxPosition || [];
+        for (let i = 0; i < posArr.length; i++) {
+          if (posArr[i] === 1) {
+            const lb = frame.carIdxBestLapTime?.[i] ?? 0;
+            const ll = frame.carIdxLastLapTime?.[i] ?? 0;
+            leaderLapSec = lb > 10 ? lb : (ll > 10 ? ll : 0);
+            break;
+          }
+        }
+        const myBest = frame.carIdxBestLapTime?.[irsdkState.camCarIdx] ?? 0;
+        const refLapSec = leaderLapSec > 10 ? leaderLapSec : (myBest > 10 ? myBest : 0);
+        const sessRemainSec = Number(frame.sessionTimeRemain ?? 0);
+        const avgBurn = Number(irsdkState.fuel.avgBurnPerLap ?? 0);
+        const curFuel = Number(irsdkState.fuel.fuelRemainingL ?? frame.fuelLevel ?? 0);
+
+        let leaderCalcAdd = 0;
+        if (refLapSec > 10 && sessRemainSec > 0 && avgBurn > 0.05) {
+          const leaderLapsRem = Math.ceil(sessRemainSec / refLapSec) + 0.25;
+          leaderCalcAdd = Math.max(0, leaderLapsRem * avgBurn - curFuel + safetyMarginL);
+        }
+
+        // Always enforce at least +0.2L / +0.4L over iRacing's own fuelToAdd estimate
+        const iracingEstWithBuffer = irsdkState.fuel.fuelToAdd > 0 ? (irsdkState.fuel.fuelToAdd + safetyMarginL) : 0;
+        const targetLiters = Math.ceil(Math.max(leaderCalcAdd, iracingEstWithBuffer));
+
+        const curLapForFuel = frame.carIdxLap?.[irsdkState.camCarIdx] ?? 0;
+        const winAny = window as unknown as { __mmtLastFuelLap?: number; __mmtLastFuelSent?: number };
+        const lapChanged = curLapForFuel > 0 && winAny.__mmtLastFuelLap !== curLapForFuel;
+        const enteredPit = pitNow && !lastAutoFuelPitRoad;
+
+        if (targetLiters > 0 && (enteredPit || (lapChanged && winAny.__mmtLastFuelSent !== targetLiters))) {
+          winAny.__mmtLastFuelLap = curLapForFuel;
+          winAny.__mmtLastFuelSent = targetLiters;
           void import("@tauri-apps/api/core")
-            .then(({ invoke }) => invoke("send_iracing_pit_fuel", { liters }))
+            .then(({ invoke }) => invoke("send_iracing_pit_fuel", { liters: targetLiters }))
             .catch(() => {});
         }
-      } else if (!pitNow) {
-        lastAutoFuelPitRoad = false;
       }
+      lastAutoFuelPitRoad = pitNow;
     }
 
     if (shouldRenderSlowHud) {
