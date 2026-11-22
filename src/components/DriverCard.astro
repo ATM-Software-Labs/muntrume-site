@@ -67,11 +67,11 @@ const sparklines: Record<string, string> = {
 };
 const sparkPath = sparklines[driver.slug] || "M2,20 Q30,16 65,12 T126,5";
 
-const DRIVER_EMAILS: Record<string, string> = {
-  albertot: "alberto@muntru.me",
-  mateob: "mateo@muntru.me",
+const DRIVER_RECIPIENT_IDS: Record<string, string> = {
+  albertot: "alberto",
+  mateob: "mateo",
 };
-const driverEmail = DRIVER_EMAILS[driver.slug] || "admin@muntru.me";
+const driverRecipientId = DRIVER_RECIPIENT_IDS[driver.slug] || "admin";
 
 function safeUrl(url: string) {
   const value = url.trim();
@@ -130,13 +130,10 @@ const socials = (
               {driver.specialty && <span class="d-specialty-pill" data-f="specialty" data-i18n={specKey}>{specText}</span>}
             </div>
             <div class="d-email-bar" aria-label="Contacto directo del piloto">
-              <a href={`mailto:${driverEmail}`} class="d-email-link">
+              <a href={`/contact/?to=${driverRecipientId}`} class="d-email-link">
                 <span aria-hidden="true">✉</span>
-                <span>{driverEmail}</span>
+                <span>Contactar con {driver.name} →</span>
               </a>
-              <button type="button" data-copy-email={driverEmail} class="d-email-copy">
-                Copiar email
-              </button>
             </div>
           </div>
 
@@ -435,13 +432,10 @@ const socials = (
           </details>
 
           <div class="d-email-bar d-email-bar--compact">
-            <a href={`mailto:${driverEmail}`} class="d-email-link">
+            <a href={`/contact/?to=${driverRecipientId}`} class="d-email-link">
               <span aria-hidden="true">✉</span>
-              <span>{driverEmail}</span>
+              <span>Contactar con {driver.name} →</span>
             </a>
-            <button type="button" data-copy-email={driverEmail} class="d-email-copy">
-              Copiar email
-            </button>
           </div>
 
           <div class="d-actions-row">

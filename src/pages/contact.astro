@@ -1,16 +1,19 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-const contacts = [
-  { name: "Alberto Trujillo (#16)", role: "Fundador y piloto", roleKey: "contact.role.alberto", email: "alberto@muntru.me" },
-  { name: "Mateo Berbis (#1)", role: "Piloto oficial", roleKey: "contact.role.mateo", email: "mateo@muntru.me" },
-  { name: "Muntrume Motorsport", role: "Administración, soporte y prensa", roleKey: "contact.role.admin", email: "admin@muntru.me" },
-  { name: "Departamento legal", role: "Legal, privacidad y DMCA", roleKey: "contact.role.legal", email: "legal@muntru.me" },
+const RECIPIENTS = [
+  { id: "soporte", name: "Soporte Técnico e Incidencias", role: "Cuentas, Passkeys, MMT Sync, Overlays y fallos técnicos" },
+  { id: "info", name: "Información General y Consultas", role: "Dudas generales, comunidad y calendario" },
+  { id: "alberto", name: "Alberto Trujillo (#16)", role: "Fundador, Team Principal y piloto" },
+  { id: "mateo", name: "Mateo Berbis (#1)", role: "Piloto oficial e ingeniería" },
+  { id: "admin", name: "Administración y Race Control", role: "Acceso de pilotos, tryouts y gestión del equipo" },
+  { id: "legal", name: "Departamento Legal y Privacidad", role: "RGPD, privacidad y solicitudes de retirada" },
+  { id: "prensa", name: "Prensa, Patrocinios y Colaboraciones", role: "Medios, acuerdos comerciales y eventos" },
 ];
 ---
 <Layout
   title="Contact & Team Inquiries · Muntrume Motorsport"
-  description="Contact Muntrume Motorsport (MMT): driver applications, race control, administration, and legal inquiries."
+  description="Contact Muntrume Motorsport (MMT): driver applications, race control, technical support, and legal inquiries via secure department routing."
   canonical="https://muntru.me/contact/"
   ogImage="https://muntru.me/assets/img/og-contact.jpg"
   ogImageAlt="Contacto de Muntrume Motorsport"
@@ -23,66 +26,255 @@ const contacts = [
       <nav class="r-meta" aria-label="Breadcrumb"><a href="/" style="color:inherit" data-i18n="nav.home">Inicio</a> / <span data-i18n="footer.contact">Contacto</span></nav>
       <p class="r-kicker" data-i18n="contact.kicker">El equipo</p>
       <h1 id="contactTitle" class="r-h1 lg-title" data-i18n="contact.title">Contacto</h1>
-      <p class="r-lead" data-i18n="contact.lead">Escribe a un piloto, a la administración del equipo o al departamento legal.</p>
+      <p class="r-lead" data-i18n="contact.lead">Selecciona el departamento o piloto destinatario. Tu mensaje se enruta de forma privada y segura sin exponer correos internos.</p>
+
       <nav class="lg-tabs" aria-label="Información legal" data-i18n-aria="footer.legal">
         <a href="/aviso-legal/" data-i18n="footer.aviso">Aviso legal</a>
         <a href="/privacy/" data-i18n="footer.privacy">Privacidad</a>
         <a href="/cookies/" data-i18n="footer.cookies">Cookies</a>
         <a href="/contact/" aria-current="page" data-i18n="footer.contact">Contacto</a>
+        <a href="https://support.muntru.me/requests/new">Centro de Soporte ↗</a>
       </nav>
-      <ul class="contact-list">
-        {contacts.map((person) => (
-          <li>
-            <p class="contact-name">{person.name}</p>
-            <p class="contact-role" data-i18n={person.roleKey}>{person.role}</p>
-            <a class="contact-mail" href={`mailto:${person.email}`}>{person.email}</a>
-          </li>
-        ))}
-      </ul>
+
+      <div class="ct-layout">
+        <div class="ct-card">
+          <form id="ct-form" class="ct-form" novalidate>
+            <input type="text" name="website" id="ct-hp" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;opacity:0;height:0;width:0;" aria-hidden="true" />
+
+            <div class="ct-field">
+              <label for="ct-recipient">Destinatario / Departamento <span class="req">*</span></label>
+              <select id="ct-recipient" name="recipient_id" required>
+                {RECIPIENTS.map((r) => (
+                  <option value={r.id}>{r.name} — {r.role}</option>
+                ))}
+              </select>
+            </div>
+
+            <div class="ct-grid-2">
+              <div class="ct-field">
+                <label for="ct-name">Tu nombre <span class="req">*</span></label>
+                <input id="ct-name" name="name" type="text" required minlength="2" maxlength="100" placeholder="Nombre o piloto" autocomplete="name" />
+              </div>
+              <div class="ct-field">
+                <label for="ct-email">Tu correo electrónico <span class="req">*</span></label>
+                <input id="ct-email" name="email" type="email" required maxlength="254" placeholder="tu@correo.com" autocomplete="email" />
+              </div>
+            </div>
+
+            <div class="ct-field">
+              <label for="ct-subject">Asunto <span class="req">*</span></label>
+              <input id="ct-subject" name="subject" type="text" required minlength="3" maxlength="150" placeholder="Resumen breve de tu consulta o incidencia" />
+            </div>
+
+            <div class="ct-field">
+              <label for="ct-message">Mensaje completo <span class="req">*</span></label>
+              <textarea id="ct-message" name="message" rows="6" required minlength="15" maxlength="5000" placeholder="Explícanos todos los detalles..."></textarea>
+              <span class="ct-hint">Recibirás una confirmación en tu correo con el resumen completo y número de referencia.</span>
+            </div>
+
+            <div id="ct-err" class="ct-alert ct-alert-err" role="alert" hidden></div>
+            <div id="ct-ok" class="ct-alert ct-alert-ok" role="status" hidden></div>
+
+            <div class="ct-actions">
+              <button type="submit" id="ct-submit" class="ct-btn">Enviar mensaje</button>
+            </div>
+          </form>
+        </div>
+
+        <aside class="ct-side">
+          <h2 class="ct-side-title">Departamentos disponibles</h2>
+          <ul class="contact-list">
+            {RECIPIENTS.map((r) => (
+              <li>
+                <button type="button" class="ct-pick" data-pick-recipient={r.id}>
+                  <span class="contact-name">{r.name}</span>
+                  <span class="contact-role">{r.role}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <div class="ct-support-callout">
+            <strong>¿Incidencia técnica con seguimiento?</strong>
+            <p>Abre un ticket con historial y adjuntos en nuestro Centro de Soporte.</p>
+            <a href="https://support.muntru.me/requests/new" class="ct-callout-link">Abrir ticket de soporte →</a>
+          </div>
+        </aside>
+      </div>
     </div>
   </section>
 </Layout>
 
+<script is:inline>
+(() => {
+  const API = "https://muntrume.atrumin16.workers.dev";
+  const form = document.getElementById("ct-form");
+  const recSel = document.getElementById("ct-recipient");
+  const nameInp = document.getElementById("ct-name");
+  const emailInp = document.getElementById("ct-email");
+  const subjInp = document.getElementById("ct-subject");
+  const msgInp = document.getElementById("ct-message");
+  const hpInp = document.getElementById("ct-hp");
+  const errBox = document.getElementById("ct-err");
+  const okBox = document.getElementById("ct-ok");
+  const submitBtn = document.getElementById("ct-submit");
+
+  let formToken = "";
+  async function fetchToken() {
+    try {
+      const r = await fetch(`${API}/api/contact/token`);
+      const d = await r.json();
+      if (d?.token) formToken = d.token;
+    } catch {}
+  }
+  fetchToken();
+
+  try {
+    const u = JSON.parse(localStorage.getItem("mrt_vault_user") || "null");
+    if (u?.email && emailInp) emailInp.value = u.email;
+    if (u?.name && nameInp) nameInp.value = u.name;
+  } catch {}
+
+  const qTo = (new URLSearchParams(location.search).get("to") || "").trim().toLowerCase();
+  if (qTo && Array.from(recSel.options).some((o) => o.value === qTo)) {
+    recSel.value = qTo;
+  }
+
+  document.querySelectorAll("[data-pick-recipient]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      recSel.value = btn.getAttribute("data-pick-recipient");
+      recSel.focus();
+      form.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errBox.hidden = true;
+    okBox.hidden = true;
+    const payload = {
+      recipient_id: recSel.value,
+      name: nameInp.value.trim(),
+      email: emailInp.value.trim(),
+      subject: subjInp.value.trim(),
+      message: msgInp.value.trim(),
+      website: hpInp.value,
+      token: formToken,
+    };
+    if (payload.name.length < 2) { errBox.textContent = "Introduce tu nombre (mínimo 2 caracteres)."; errBox.hidden = false; return; }
+    if (!payload.email.includes("@")) { errBox.textContent = "Introduce un correo electrónico válido."; errBox.hidden = false; return; }
+    if (payload.subject.length < 3) { errBox.textContent = "Escribe un asunto breve."; errBox.hidden = false; return; }
+    if (payload.message.length < 15) { errBox.textContent = "Escribe al menos 15 caracteres en tu mensaje."; errBox.hidden = false; return; }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Enviando...";
+    try {
+      if (!formToken) await fetchToken();
+      payload.token = formToken;
+      const res = await fetch(`${API}/api/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) throw new Error(data.error || "No se pudo enviar tu mensaje.");
+      okBox.textContent = `Mensaje enviado a ${data.recipient_label} (Ref. #${data.ref}). Hemos enviado una copia con el resumen completo a tu correo.`;
+      okBox.hidden = false;
+      subjInp.value = "";
+      msgInp.value = "";
+      await fetchToken();
+    } catch (err) {
+      errBox.textContent = err.message || "Error de conexión. Inténtalo de nuevo.";
+      errBox.hidden = false;
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Enviar mensaje";
+    }
+  });
+})();
+</script>
+
 <style>
-  .contact-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  .ct-layout {
     display: grid;
-    gap: 12px;
+    grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.85fr);
+    gap: 24px;
+    align-items: start;
+    margin-top: 20px;
   }
-  .contact-list li {
-    display: grid;
-    gap: 4px;
-    padding: 16px 18px;
+  .ct-card {
+    padding: 26px;
     border: 1px solid var(--r-line);
-    border-radius: var(--r-radius, 12px);
-    background: var(--r-surface, transparent);
+    border-radius: 16px;
+    background: var(--r-surface);
   }
-  .contact-name {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 700;
+  .ct-form { display: flex; flex-direction: column; gap: 15px; }
+  .ct-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .ct-field { display: flex; flex-direction: column; gap: 6px; }
+  .ct-field label { font-size: 0.86rem; font-weight: 700; color: var(--r-text); }
+  .ct-field .req { color: #ef4444; }
+  .ct-field input, .ct-field select, .ct-field textarea {
+    width: 100%;
+    padding: 11px 13px;
+    border-radius: 10px;
+    border: 1px solid var(--r-line);
+    background: var(--r-bg);
     color: var(--r-text);
+    font: inherit;
+    font-size: 0.93rem;
+    outline: none;
   }
-  .contact-role {
-    margin: 0;
-    font-size: 13px;
-    color: var(--r-muted);
+  .ct-field input:focus, .ct-field select:focus, .ct-field textarea:focus {
+    border-color: var(--r-accent);
   }
-  .contact-mail {
-    width: fit-content;
-    max-width: 100%;
-    overflow-wrap: anywhere;
-    color: var(--r-text);
-    font: 600 14px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
-    letter-spacing: 0;
-    text-transform: none;
-    text-decoration: none;
-    border-bottom: 2px solid var(--r-accent, #00e699);
-    padding-bottom: 2px;
+  .ct-hint { font-size: 0.8rem; color: var(--r-muted); }
+  .ct-alert { padding: 11px 14px; border-radius: 10px; font-size: 0.88rem; font-weight: 600; }
+  .ct-alert-err { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.35); color: #ef4444; }
+  .ct-alert-ok { background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4); color: var(--r-accent); }
+  .ct-actions { display: flex; justify-content: flex-end; }
+  .ct-btn {
+    padding: 11px 22px;
+    border-radius: 10px;
+    border: 0;
+    background: var(--r-accent);
+    color: var(--r-accent-ink, #06130d);
+    font-weight: 800;
+    font-size: 0.92rem;
+    cursor: pointer;
   }
-  .contact-mail:hover {
-    color: var(--r-accent, #00e699);
+  .ct-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .ct-side-title { font-size: 0.95rem; font-weight: 800; margin: 0 0 12px; color: var(--r-text); }
+  .contact-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .ct-pick {
+    width: 100%;
+    text-align: left;
+    display: grid;
+    gap: 3px;
+    padding: 12px 14px;
+    border: 1px solid var(--r-line);
+    border-radius: 12px;
+    background: var(--r-surface);
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+  }
+  .ct-pick:hover { border-color: var(--r-accent); }
+  .contact-name { font-size: 0.9rem; font-weight: 700; color: var(--r-text); }
+  .contact-role { font-size: 0.78rem; color: var(--r-muted); }
+
+  .ct-support-callout {
+    margin-top: 14px;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    background: rgba(16, 185, 129, 0.08);
+    font-size: 0.85rem;
+  }
+  .ct-support-callout p { margin: 6px 0 10px; color: var(--r-muted); }
+  .ct-callout-link { color: var(--r-accent); font-weight: 800; text-decoration: none; }
+  .ct-callout-link:hover { text-decoration: underline; }
+
+  @media (max-width: 820px) {
+    .ct-layout, .ct-grid-2 { grid-template-columns: 1fr; }
+    .ct-card { padding: 18px 16px; }
   }
 </style>

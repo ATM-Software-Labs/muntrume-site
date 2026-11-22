@@ -1,0 +1,318 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import "../../styles/support.css";
+
+const title = "Detalle de solicitud · Muntrume Support";
+const description = "Conversación, adjuntos y seguimiento de tu ticket en Muntrume Support.";
+const canonical = "https://support.muntru.me/requests";
+---
+
+<Layout title={title} description={description} canonical={canonical} noindex={true}>
+  <main class="sup-page">
+    <nav class="sup-subnav" aria-label="Navegación de Soporte">
+      <div class="sup-subnav-inner">
+        <div class="sup-crumbs">
+          <a href="https://support.muntru.me/">Muntrume Support</a>
+          <span>›</span>
+          <a href="https://support.muntru.me/requests">Mis solicitudes</a>
+          <span>›</span>
+          <span id="sup-crumb-id">#MMT</span>
+        </div>
+        <div class="sup-subnav-links">
+          <a href="https://support.muntru.me/">Centro de Ayuda</a>
+          <a href="https://support.muntru.me/requests/new">Enviar una solicitud</a>
+          <a href="https://support.muntru.me/requests" class="is-active">Mis solicitudes</a>
+        </div>
+      </div>
+    </nav>
+
+    <section class="sup-section sup-section-last">
+      <div class="sup-wrap">
+        <div class="sup-card">
+          <div id="sup-tk-anon" class="sup-anon-box" hidden>
+            <p>Inicia sesión con tu cuenta de Muntrume para ver y responder a esta solicitud.</p>
+            <a id="sup-tk-login-btn" href="https://muntru.me/login/?next=https%3A%2F%2Fsupport.muntru.me%2Frequests" class="sup-btn sup-btn-primary">Iniciar sesión</a>
+          </div>
+
+          <div id="sup-tk-loading" class="sup-muted-state">Cargando conversación...</div>
+
+          <div id="sup-tk-view" class="sup-detail-grid" hidden>
+            <div class="sup-detail-main">
+              <h1 id="sup-detail-subject" class="sup-detail-subject"></h1>
+              <div id="sup-detail-thread" class="sup-thread"></div>
+
+              <form id="sup-reply-form" class="sup-reply-box" novalidate>
+                <div class="sup-reply-row">
+                  <div class="sup-avatar" id="sup-reply-avatar" aria-hidden="true">U</div>
+                  <div class="sup-reply-fields">
+                    <textarea id="sup-reply-text" rows="3" maxlength="4000" placeholder="Añadir a la conversación..."></textarea>
+                    <div class="sup-reply-bar">
+                      <label class="sup-file-chip">
+                        <span>📎 Adjuntar archivo</span>
+                        <input id="sup-reply-files" type="file" multiple accept=".pdf,.png,.jpg,.jpeg,.webp,.txt" hidden />
+                      </label>
+                      <span id="sup-reply-file-names" class="sup-reply-file-names"></span>
+                      <button type="submit" id="sup-reply-submit" class="sup-btn sup-btn-primary sup-btn-sm">Enviar respuesta</button>
+                    </div>
+                    <div id="sup-reply-err" class="sup-alert sup-alert-err" hidden></div>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <aside class="sup-detail-side">
+              <dl class="sup-meta-list">
+                <div class="sup-meta-row"><dt>Solicitante</dt><dd id="sup-meta-requester">—</dd></div>
+                <div class="sup-meta-row"><dt>Creado</dt><dd id="sup-meta-created">—</dd></div>
+                <div class="sup-meta-row"><dt>Última actividad</dt><dd id="sup-meta-updated">—</dd></div>
+              </dl>
+
+              <hr class="sup-meta-hr" />
+
+              <dl class="sup-meta-list">
+                <div class="sup-meta-row"><dt>ID</dt><dd><code id="sup-meta-id">#MMT</code></dd></div>
+                <div class="sup-meta-row"><dt>Estado</dt><dd id="sup-meta-status"></dd></div>
+                <div class="sup-meta-row"><dt>Departamento</dt><dd id="sup-meta-inbox">—</dd></div>
+                <div class="sup-meta-row"><dt>Categoría</dt><dd id="sup-meta-cat">—</dd></div>
+              </dl>
+
+              <div id="sup-meta-att-wrap" class="sup-meta-att" hidden>
+                <hr class="sup-meta-hr" />
+                <div class="sup-meta-att-title">Adjuntos</div>
+                <div id="sup-meta-att-list" class="sup-meta-att-list"></div>
+              </div>
+
+              <div class="sup-meta-actions">
+                <button type="button" id="sup-toggle-status-btn" class="sup-btn sup-btn-ghost sup-btn-sm" style="width:100%;">Marcar como resuelto</button>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<script is:inline>
+(() => {
+  try {
+    if (location.hash && location.hash.includes("mm_auth=")) {
+      const hp = new URLSearchParams(location.hash.slice(1));
+      const tk = hp.get("mm_auth");
+      const uRaw = hp.get("mm_user");
+      if (tk) { localStorage.setItem("mrt_vault_token", tk); localStorage.setItem("mm_token", tk); }
+      if (uRaw) { localStorage.setItem("mrt_vault_user", decodeURIComponent(escape(atob(uRaw)))); }
+      history.replaceState(null, "", location.pathname + location.search);
+    }
+  } catch {}
+
+  const API = "https://muntrume.atrumin16.workers.dev";
+  const STATUS_META = {
+    open: { label: "Abierto", cls: "sup-st-open" },
+    in_progress: { label: "En curso", cls: "sup-st-prog" },
+    solved: { label: "Resuelto", cls: "sup-st-solved" },
+    closed: { label: "Cerrado", cls: "sup-st-solved" },
+  };
+  function getToken() { try { return localStorage.getItem("mrt_vault_token") || localStorage.getItem("mm_token") || ""; } catch { return ""; } }
+  function getUser() { try { return JSON.parse(localStorage.getItem("mrt_vault_user") || "null"); } catch { return null; } }
+  function esc(s) { return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+  function relDate(iso) {
+    if (!iso) return "—";
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
+    const mins = Math.floor((Date.now() - d.getTime()) / 60000);
+    if (mins < 1) return "Hace un momento";
+    if (mins < 60) return `Hace ${mins} min`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `Hace ${hrs} h`;
+    const days = Math.floor(hrs / 24);
+    if (days < 30) return `Hace ${days} d`;
+    return d.toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" });
+  }
+  function fmtFullDate(iso) {
+    if (!iso) return "—";
+    const d = new Date(iso);
+    return isNaN(d.getTime()) ? iso : d.toLocaleString("es-ES", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  }
+  function fmtBytes(n) {
+    const b = Number(n || 0);
+    return b >= 1024 * 1024 ? `${(b / (1024 * 1024)).toFixed(1)} MB` : `${Math.max(1, Math.round(b / 1024))} KB`;
+  }
+  function initialsOf(name) {
+    const parts = String(name || "U").trim().split(/\s+/).filter(Boolean);
+    return ((parts[0]?.[0] || "U") + (parts[1]?.[0] || "")).toUpperCase();
+  }
+  async function readAttachments(inputEl) {
+    const files = Array.from(inputEl?.files || []).slice(0, 2);
+    const out = [];
+    for (const f of files) {
+      if (f.size > 350 * 1024) throw new Error(`El archivo "${f.name}" supera el límite de 350 KB.`);
+      const dataUrl = await new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(String(r.result || ""));
+        r.onerror = () => reject(new Error(`No se pudo leer ${f.name}`));
+        r.readAsDataURL(f);
+      });
+      out.push({ name: f.name, size: f.size, dataUrl });
+    }
+    return out;
+  }
+  function renderAttachmentsHtml(list) {
+    if (!Array.isArray(list) || !list.length) return "";
+    return `<div class="sup-att-list">${list.map((a) => `
+      <div class="sup-att-item">
+        <span aria-hidden="true">📎</span>
+        <div>
+          <div class="sup-att-name">${esc(a.name)}</div>
+          <div class="sup-att-meta">${esc(fmtBytes(a.size))} · <a href="${esc(a.dataUrl)}" download="${esc(a.name)}" class="sup-att-dl">Descargar</a></div>
+        </div>
+      </div>
+    `).join("")}</div>`;
+  }
+
+  const m = location.pathname.match(/\/requests\/(MMT-\d{6})/i);
+  const ticketId = m ? m[1].toUpperCase() : (new URLSearchParams(location.search).get("id") || "").toUpperCase();
+  const loginBtn = document.getElementById("sup-tk-login-btn");
+  if (loginBtn) loginBtn.href = `https://muntru.me/login/?next=${encodeURIComponent(location.href)}`;
+  document.getElementById("sup-crumb-id").textContent = ticketId ? `#${ticketId}` : "Ticket";
+
+  const anonBox = document.getElementById("sup-tk-anon");
+  const loadingBox = document.getElementById("sup-tk-loading");
+  const viewBox = document.getElementById("sup-tk-view");
+  const replyForm = document.getElementById("sup-reply-form");
+  const replyText = document.getElementById("sup-reply-text");
+  const replyFiles = document.getElementById("sup-reply-files");
+  const replyFileNames = document.getElementById("sup-reply-file-names");
+  const replyErr = document.getElementById("sup-reply-err");
+  const replySubmit = document.getElementById("sup-reply-submit");
+  const toggleStatusBtn = document.getElementById("sup-toggle-status-btn");
+  const currentUser = getUser();
+  let activeTicket = null;
+
+  async function loadTicket() {
+    if (!/^MMT-\d{6}$/.test(ticketId)) {
+      loadingBox.textContent = "ID de solicitud no válido.";
+      return;
+    }
+    const tok = getToken();
+    if (!tok) {
+      loadingBox.hidden = true;
+      anonBox.hidden = false;
+      return;
+    }
+    try {
+      const res = await fetch(`${API}/api/support/tickets/get?id=${encodeURIComponent(ticketId)}`, {
+        headers: { Authorization: `Bearer ${tok}` },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401) { loadingBox.hidden = true; anonBox.hidden = false; return; }
+      if (!res.ok || !data.success) throw new Error(data.error || "No se pudo cargar la solicitud.");
+      const t = data.ticket;
+      const msgs = Array.isArray(data.messages) ? data.messages : [];
+      activeTicket = t;
+      document.title = `#${t.id} · ${t.subject} · Muntrume Support`;
+
+      document.getElementById("sup-detail-subject").textContent = t.subject;
+      document.getElementById("sup-meta-requester").textContent = t.user_name || t.user_email;
+      document.getElementById("sup-meta-created").textContent = fmtFullDate(t.created_at);
+      document.getElementById("sup-meta-updated").textContent = fmtFullDate(t.updated_at);
+      document.getElementById("sup-meta-id").textContent = `#${t.id}`;
+      const stMeta = STATUS_META[t.status] || { label: t.status || "Abierto", cls: "sup-st-open" };
+      document.getElementById("sup-meta-status").innerHTML = `<span class="sup-st-pill ${stMeta.cls}">${esc(stMeta.label)}</span>`;
+      document.getElementById("sup-meta-inbox").textContent = t.routing_department || "Soporte Técnico";
+      document.getElementById("sup-meta-cat").textContent = t.category_label || t.category;
+
+      const allAtts = [...(t.attachments || [])];
+      msgs.forEach((x) => { if (Array.isArray(x.attachments)) allAtts.push(...x.attachments); });
+      const attWrap = document.getElementById("sup-meta-att-wrap");
+      if (allAtts.length) {
+        attWrap.hidden = false;
+        document.getElementById("sup-meta-att-list").innerHTML = renderAttachmentsHtml(allAtts);
+      } else {
+        attWrap.hidden = true;
+      }
+
+      toggleStatusBtn.textContent = t.status === "solved" ? "Reabrir solicitud" : "Marcar como resuelto";
+      document.getElementById("sup-reply-avatar").textContent = initialsOf(currentUser?.name || t.user_name);
+
+      const threadItems = [
+        { author_name: t.user_name || t.user_email, author_role: "user", body: t.description, created_at: t.created_at, attachments: t.attachments || [] },
+        ...msgs,
+      ];
+      document.getElementById("sup-detail-thread").innerHTML = threadItems.map((msg) => `
+        <article class="sup-msg ${msg.author_role === "staff" ? "is-staff" : ""}">
+          <div class="sup-msg-head">
+            <div class="sup-avatar ${msg.author_role === "staff" ? "is-staff" : ""}" aria-hidden="true">${esc(initialsOf(msg.author_name))}</div>
+            <div>
+              <div class="sup-msg-author">
+                ${esc(msg.author_name)}
+                ${msg.author_role === "staff" ? `<span class="sup-staff-badge">Muntrume Support</span>` : ""}
+              </div>
+              <div class="sup-msg-time">${esc(relDate(msg.created_at))}</div>
+            </div>
+          </div>
+          <div class="sup-msg-body">${esc(msg.body)}</div>
+          ${renderAttachmentsHtml(msg.attachments)}
+        </article>
+      `).join("");
+
+      loadingBox.hidden = true;
+      viewBox.hidden = false;
+    } catch (err) {
+      loadingBox.textContent = err.message || "Error al cargar la solicitud.";
+    }
+  }
+
+  replyFiles.addEventListener("change", () => {
+    replyFileNames.textContent = Array.from(replyFiles.files || []).slice(0, 2).map((f) => f.name).join(", ");
+  });
+
+  replyForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!activeTicket) return;
+    replyErr.hidden = true;
+    const message = replyText.value.trim();
+    if (!message) { replyErr.textContent = "Escribe un mensaje para enviar."; replyErr.hidden = false; return; }
+    replySubmit.disabled = true;
+    replySubmit.textContent = "Enviando...";
+    try {
+      const attachments = await readAttachments(replyFiles);
+      const res = await fetch(`${API}/api/support/tickets/reply`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+        body: JSON.stringify({ ticket_id: activeTicket.id, message, attachments }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) throw new Error(data.error || "No se pudo enviar la respuesta.");
+      replyText.value = "";
+      replyFiles.value = "";
+      replyFileNames.textContent = "";
+      await loadTicket();
+    } catch (err) {
+      replyErr.textContent = err.message || "Error al enviar.";
+      replyErr.hidden = false;
+    } finally {
+      replySubmit.disabled = false;
+      replySubmit.textContent = "Enviar respuesta";
+    }
+  });
+
+  toggleStatusBtn.addEventListener("click", async () => {
+    if (!activeTicket) return;
+    const nextStatus = activeTicket.status === "solved" ? "open" : "solved";
+    toggleStatusBtn.disabled = true;
+    try {
+      const res = await fetch(`${API}/api/support/tickets/reply`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+        body: JSON.stringify({ ticket_id: activeTicket.id, status: nextStatus }),
+      });
+      if (res.ok) await loadTicket();
+    } finally {
+      toggleStatusBtn.disabled = false;
+    }
+  });
+
+  loadTicket();
+})();
+</script>

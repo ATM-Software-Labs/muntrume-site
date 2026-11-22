@@ -90,11 +90,11 @@ const driverSetups = (driver.topCars || []).slice(0, 3).map((carItem) => {
   };
 });
 
-const DRIVER_EMAILS: Record<string, string> = {
-  albertot: "alberto@muntru.me",
-  mateob: "mateo@muntru.me",
+const DRIVER_RECIPIENT_IDS: Record<string, string> = {
+  albertot: "alberto",
+  mateob: "mateo",
 };
-const driverEmail = DRIVER_EMAILS[driver.slug] || "admin@muntru.me";
+const driverRecipientId = DRIVER_RECIPIENT_IDS[driver.slug] || "admin";
 
 const personSchema = {
   "@context": "https://schema.org",
@@ -112,7 +112,6 @@ const personSchema = {
       "@id": `${pageUrl}#person`,
       "name": driver.fullName,
       "jobTitle": driver.role,
-      "email": driverEmail,
       "url": pageUrl,
       "memberOf": {
         "@type": "SportsTeam",
@@ -138,10 +137,9 @@ const personSchema = {
       "alternateName": ["MMT", "Muntrume", "MMT Motorsport"],
       "sport": "Sim Racing (iRacing)",
       "url": "https://muntru.me/",
-      "email": "admin@muntru.me",
       "contactPoint": [
-        { "@type": "ContactPoint", "contactType": "customer support", "email": "admin@muntru.me" },
-        { "@type": "ContactPoint", "contactType": "legal", "email": "legal@muntru.me" }
+        { "@type": "ContactPoint", "contactType": "customer support", "url": "https://support.muntru.me/requests/new" },
+        { "@type": "ContactPoint", "contactType": "legal", "url": "https://muntru.me/contact/?to=legal" }
       ],
       "athlete": { "@id": `${pageUrl}#person` }
     }
@@ -170,7 +168,7 @@ const personSchema = {
         <a href="#bio">Perfil</a>
         <a href="#logros">Logros</a>
         <a href="#redes">Redes</a>
-        <a href="#contacto">Contacto</a>
+        <a href={`/contact/?to=${driverRecipientId}`}>Contacto</a>
         <a href="#setups">Setups</a>
         <a href="#comparativa">Equipo</a>
         <a href="#eventos" id="eventosTab">Calendario</a>
@@ -202,22 +200,19 @@ const personSchema = {
           <div class="d-contact-item d-contact-item--primary">
             <span class="d-contact-item__label">Piloto · {driver.fullName}</span>
             <div class="d-contact-item__row">
-              <a href={`mailto:${driverEmail}`} class="d-contact-item__mail">{driverEmail}</a>
-              <button type="button" data-copy-email={driverEmail} class="d-email-copy">Copiar</button>
+              <a href={`/contact/?to=${driverRecipientId}`} class="d-contact-item__mail">Enviar mensaje directo →</a>
             </div>
           </div>
           <div class="d-contact-item">
-            <span class="d-contact-item__label">Administración / Soporte / Prensa</span>
+            <span class="d-contact-item__label">Soporte Técnico / Incidencias</span>
             <div class="d-contact-item__row">
-              <a href="mailto:admin@muntru.me" class="d-contact-item__mail">admin@muntru.me</a>
-              <button type="button" data-copy-email="admin@muntru.me" class="d-email-copy">Copiar</button>
+              <a href="https://support.muntru.me/requests/new" class="d-contact-item__mail">Abrir ticket en Soporte →</a>
             </div>
           </div>
           <div class="d-contact-item">
-            <span class="d-contact-item__label">Legal / Privacidad / DMCA</span>
+            <span class="d-contact-item__label">Legal / Privacidad / Administración</span>
             <div class="d-contact-item__row">
-              <a href="mailto:legal@muntru.me" class="d-contact-item__mail">legal@muntru.me</a>
-              <button type="button" data-copy-email="legal@muntru.me" class="d-email-copy">Copiar</button>
+              <a href="/contact/?to=legal" class="d-contact-item__mail">Contactar con Departamento Legal →</a>
             </div>
           </div>
         </div>

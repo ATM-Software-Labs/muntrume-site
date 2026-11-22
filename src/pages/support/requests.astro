@@ -1,0 +1,194 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import "../../styles/support.css";
+
+const title = "Mis solicitudes · Muntrume Support";
+const description = "Consulta el estado y el historial de tus solicitudes abiertas en Muntrume Support.";
+const canonical = "https://support.muntru.me/requests";
+---
+
+<Layout title={title} description={description} canonical={canonical} noindex={true}>
+  <main class="sup-page">
+    <nav class="sup-subnav" aria-label="Navegación de Soporte">
+      <div class="sup-subnav-inner">
+        <div class="sup-crumbs">
+          <a href="https://support.muntru.me/">Muntrume Support</a>
+          <span>›</span>
+          <span>Mis solicitudes</span>
+        </div>
+        <div class="sup-subnav-links">
+          <a href="https://support.muntru.me/">Centro de Ayuda</a>
+          <a href="https://support.muntru.me/requests/new">Enviar una solicitud</a>
+          <a href="https://support.muntru.me/requests" class="is-active">Mis solicitudes</a>
+        </div>
+      </div>
+    </nav>
+
+    <section class="sup-section sup-section-last">
+      <div class="sup-wrap">
+        <div class="sup-card">
+          <div class="sup-req-head">
+            <div>
+              <span class="sup-kicker">Historial de tickets</span>
+              <h1>Mis solicitudes</h1>
+            </div>
+            <div class="sup-req-tools" id="sup-req-tools" hidden>
+              <div class="sup-req-search">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <circle cx="11" cy="11" r="7"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input id="sup-req-filter-q" type="search" placeholder="Buscar por asunto o #MMT..." aria-label="Buscar solicitudes" />
+              </div>
+              <select id="sup-req-filter-status" aria-label="Filtrar por estado">
+                <option value="all">Estado: Todos</option>
+                <option value="open">Abierto</option>
+                <option value="in_progress">En curso</option>
+                <option value="solved">Resuelto</option>
+              </select>
+              <a href="https://support.muntru.me/requests/new" class="sup-btn sup-btn-primary sup-btn-sm">+ Nueva solicitud</a>
+            </div>
+          </div>
+
+          <div id="sup-req-anon" class="sup-anon-box" hidden>
+            <p>Inicia sesión con tu cuenta de Muntrume para consultar el estado y el historial de tus solicitudes.</p>
+            <a href="https://muntru.me/login/?next=https%3A%2F%2Fsupport.muntru.me%2Frequests" class="sup-btn sup-btn-primary">Iniciar sesión</a>
+          </div>
+
+          <div id="sup-req-loading" class="sup-muted-state">Comprobando sesión...</div>
+
+          <div id="sup-req-table-wrap" class="sup-table-wrap" hidden>
+            <table class="sup-table">
+              <thead>
+                <tr>
+                  <th>Asunto</th>
+                  <th>ID</th>
+                  <th>Departamento</th>
+                  <th>Última actividad</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody id="sup-req-tbody"></tbody>
+            </table>
+          </div>
+
+          <div id="sup-req-empty" class="sup-muted-state" hidden>
+            Aún no tienes solicitudes registradas con esta cuenta.
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<script is:inline>
+(() => {
+  try {
+    if (location.hash && location.hash.includes("mm_auth=")) {
+      const hp = new URLSearchParams(location.hash.slice(1));
+      const tk = hp.get("mm_auth");
+      const uRaw = hp.get("mm_user");
+      if (tk) { localStorage.setItem("mrt_vault_token", tk); localStorage.setItem("mm_token", tk); }
+      if (uRaw) { localStorage.setItem("mrt_vault_user", decodeURIComponent(escape(atob(uRaw)))); }
+      history.replaceState(null, "", location.pathname + location.search);
+    }
+  } catch {}
+
+  const API = "https://muntrume.atrumin16.workers.dev";
+  const STATUS_META = {
+    open: { label: "Abierto", cls: "sup-st-open" },
+    in_progress: { label: "En curso", cls: "sup-st-prog" },
+    solved: { label: "Resuelto", cls: "sup-st-solved" },
+    closed: { label: "Cerrado", cls: "sup-st-solved" },
+  };
+  function getToken() { try { return localStorage.getItem("mrt_vault_token") || localStorage.getItem("mm_token") || ""; } catch { return ""; } }
+  function esc(s) { return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+  function relDate(iso) {
+    if (!iso) return "—";
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
+    const mins = Math.floor((Date.now() - d.getTime()) / 60000);
+    if (mins < 1) return "Hace un momento";
+    if (mins < 60) return `Hace ${mins} min`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `Hace ${hrs} h`;
+    const days = Math.floor(hrs / 24);
+    if (days < 30) return `Hace ${days} d`;
+    return d.toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" });
+  }
+
+  const reqTools = document.getElementById("sup-req-tools");
+  const reqAnon = document.getElementById("sup-req-anon");
+  const reqLoading = document.getElementById("sup-req-loading");
+  const reqTableWrap = document.getElementById("sup-req-table-wrap");
+  const reqTbody = document.getElementById("sup-req-tbody");
+  const reqEmpty = document.getElementById("sup-req-empty");
+  const filterQ = document.getElementById("sup-req-filter-q");
+  const filterStatus = document.getElementById("sup-req-filter-status");
+  let allTickets = [];
+
+  function renderTickets() {
+    const q = (filterQ?.value || "").trim().toLowerCase();
+    const st = filterStatus?.value || "all";
+    const rows = allTickets.filter((t) => {
+      if (st !== "all" && t.status !== st) return false;
+      if (q && !(`${t.id} ${t.subject} ${t.routing_inbox} ${t.category}`).toLowerCase().includes(q)) return false;
+      return true;
+    });
+    if (!rows.length) {
+      reqTableWrap.hidden = true;
+      reqEmpty.textContent = allTickets.length
+        ? "No hay solicitudes que coincidan con tu filtro."
+        : "Aún no tienes solicitudes registradas con esta cuenta.";
+      reqEmpty.hidden = false;
+      return;
+    }
+    reqEmpty.hidden = true;
+    reqTableWrap.hidden = false;
+    reqTbody.innerHTML = rows.map((t) => {
+      const meta = STATUS_META[t.status] || { label: t.status || "Abierto", cls: "sup-st-open" };
+      const isInc = !!t.is_incident;
+      const href = `https://support.muntru.me/requests/${encodeURIComponent(t.id)}`;
+      return `<tr class="sup-row-clickable" data-href="${href}">
+        <td class="sup-td-subj">
+          <a href="${href}" class="sup-subj-link">${esc(t.subject)}</a>
+          <div class="sup-subj-sub">${esc(t.category_label || t.category)}</div>
+        </td>
+        <td class="sup-td-id"><code>#${esc(t.id)}</code></td>
+        <td><span class="sup-inbox-tag ${isInc ? "is-inc" : "is-info"}">${esc(t.routing_department || "Soporte")}</span></td>
+        <td class="sup-td-date">${esc(relDate(t.updated_at || t.created_at))}</td>
+        <td><span class="sup-st-pill ${meta.cls}">${esc(meta.label)}</span></td>
+      </tr>`;
+    }).join("");
+  }
+
+  reqTbody.addEventListener("click", (e) => {
+    if (e.target.closest("a")) return;
+    const tr = e.target.closest("tr[data-href]");
+    if (tr) location.href = tr.getAttribute("data-href");
+  });
+  filterQ.addEventListener("input", renderTickets);
+  filterStatus.addEventListener("change", renderTickets);
+
+  async function load() {
+    const tok = getToken();
+    if (!tok) {
+      reqLoading.hidden = true;
+      reqAnon.hidden = false;
+      return;
+    }
+    try {
+      const res = await fetch(`${API}/api/support/tickets/mine`, { headers: { Authorization: `Bearer ${tok}` } });
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401) { reqLoading.hidden = true; reqAnon.hidden = false; return; }
+      allTickets = Array.isArray(data.tickets) ? data.tickets : [];
+      reqLoading.hidden = true;
+      reqTools.hidden = false;
+      renderTickets();
+    } catch {
+      reqLoading.textContent = "No se pudieron cargar tus solicitudes ahora mismo.";
+    }
+  }
+  load();
+})();
+</script>

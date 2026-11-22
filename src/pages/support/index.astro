@@ -1,0 +1,160 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import "../../styles/support.css";
+
+const title = "Centro de Ayuda y Soporte · Muntrume Motorsport";
+const description = "Centro de Ayuda de Muntrume Motorsport (MMT): guías rápidas, envío seguro de solicitudes por departamento y seguimiento de tickets.";
+const canonical = "https://support.muntru.me/";
+
+const HELP_CARDS = [
+  {
+    title: "Cuenta, Passkeys y Muntrume Guard",
+    desc: "Acceso sin contraseña, códigos OTP, autenticación 2FA (TOTP), aprobación móvil y recuperación de cuenta.",
+    href: "https://muntru.me/settings/",
+    cta: "Ir a Ajustes de cuenta",
+    tags: "cuenta passkey guard mfa 2fa totp contraseña login recuperar acceso bloqueado",
+  },
+  {
+    title: "MMT Sync, Overlays 60 FPS y Auto-Fuel",
+    desc: "Instalación en Windows, sincronización de setups .sto, telemetría HUD y cálculo automático de gasolina en iRacing.",
+    href: "https://docs.muntru.me/mmt-sync/",
+    cta: "Abrir guía de MMT Sync",
+    tags: "mmt sync app windows overlay hud telemetria auto fuel gasolina combustible iracing",
+  },
+  {
+    title: "Setups .STO y Garage Vault",
+    desc: "Cómo descargar, sincronizar y cargar archivos .sto, vueltas fantasma .blap/.olap y paquetes de temporada.",
+    href: "https://muntru.me/garage/",
+    cta: "Abrir Garage Vault",
+    tags: "setups sto garage vault descargas blap olap coche circuito temporada",
+  },
+  {
+    title: "Muntrume AI y Documentación Técnica",
+    desc: "Guías oficiales de la escudería, API técnica, Copiloto de ingeniería IA y preguntas frecuentes.",
+    href: "https://docs.muntru.me/",
+    cta: "Explorar docs.muntru.me",
+    tags: "ia ai copiloto docs documentacion api guias preguntas frecuentes faq",
+  },
+];
+---
+
+<Layout title={title} description={description} canonical={canonical}>
+  <main class="sup-page">
+    <nav class="sup-subnav" aria-label="Navegación de Soporte">
+      <div class="sup-subnav-inner">
+        <div class="sup-crumbs">
+          <strong>Muntrume Support</strong>
+        </div>
+        <div class="sup-subnav-links">
+          <a href="https://support.muntru.me/" class="is-active">Centro de Ayuda</a>
+          <a href="https://support.muntru.me/requests/new">Enviar una solicitud</a>
+          <a href="https://support.muntru.me/requests">Mis solicitudes</a>
+        </div>
+      </div>
+    </nav>
+
+    <section class="sup-hero">
+      <div class="sup-wrap">
+        <div class="sup-hero-inner">
+          <span class="sup-eyebrow">Centro de Ayuda · Muntrume Motorsport</span>
+          <h1 class="sup-title">¿Necesitas ayuda? Estamos aquí para ayudarte.</h1>
+          <p class="sup-subtitle">
+            Busca una guía rápida, abre una solicitud ordenada a nuestro equipo técnico o revisa el estado de tus tickets en páginas dedicadas.
+          </p>
+
+          <div class="sup-search-box">
+            <svg class="sup-search-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input
+              id="sup-hero-search"
+              type="search"
+              placeholder="Buscar ayuda sobre cuentas, MMT Sync, Auto-Fuel, setups..."
+              autocomplete="off"
+              aria-label="Buscar en el Centro de Ayuda"
+            />
+          </div>
+
+          <div class="sup-hero-actions">
+            <a href="https://support.muntru.me/requests/new" class="sup-btn sup-btn-primary">Enviar una solicitud</a>
+            <a href="https://support.muntru.me/requests" class="sup-btn sup-btn-ghost">Mis solicitudes</a>
+            <a href="https://docs.muntru.me/" target="_blank" rel="noopener" class="sup-btn sup-btn-ghost">Docs oficiales ↗</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sup-section">
+      <div class="sup-wrap">
+        <div class="sup-topics-grid">
+          {HELP_CARDS.map((card) => (
+            <a
+              href={card.href}
+              target={card.href.includes("docs.muntru.me") ? "_blank" : undefined}
+              rel={card.href.includes("docs.muntru.me") ? "noopener" : undefined}
+              class="sup-topic-card"
+              data-tags={card.tags}
+            >
+              <h3>{card.title}</h3>
+              <p>{card.desc}</p>
+              <span class="sup-topic-cta">{card.cta} →</span>
+            </a>
+          ))}
+        </div>
+        <p id="sup-topics-empty" class="sup-empty-inline" hidden>
+          No encontramos una guía exacta. Puedes <a href="https://support.muntru.me/requests/new" style="color:var(--r-accent);font-weight:700;">enviar una solicitud directa aquí →</a>
+        </p>
+      </div>
+    </section>
+
+    <section class="sup-section sup-section-last">
+      <div class="sup-wrap">
+        <div class="sup-routing-grid">
+          <div class="sup-routing-card">
+            <span class="sup-pill sup-pill-inc">Incidencias y Seguridad</span>
+            <h3>Soporte Técnico</h3>
+            <p>Cuentas comprometidas, Passkeys, 2FA, fallos en MMT Sync, Overlays, Auto-Fuel, Garage Vault o solicitudes RGPD.</p>
+          </div>
+          <div class="sup-routing-card">
+            <span class="sup-pill sup-pill-info">Consultas y Escudería</span>
+            <h3>Información y Equipo</h3>
+            <p>Información general, ingreso al equipo Muntrume Motorsport, sugerencias de producto, prensa y colaboraciones.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<script is:inline>
+(() => {
+  try {
+    if (location.hash && location.hash.includes("mm_auth=")) {
+      const hp = new URLSearchParams(location.hash.slice(1));
+      const tk = hp.get("mm_auth");
+      const uRaw = hp.get("mm_user");
+      if (tk) { localStorage.setItem("mrt_vault_token", tk); localStorage.setItem("mm_token", tk); }
+      if (uRaw) { localStorage.setItem("mrt_vault_user", decodeURIComponent(escape(atob(uRaw)))); }
+      history.replaceState(null, "", location.pathname + location.search);
+    }
+  } catch {}
+
+  const heroSearch = document.getElementById("sup-hero-search");
+  const topicCards = Array.from(document.querySelectorAll(".sup-topic-card"));
+  const topicsEmpty = document.getElementById("sup-topics-empty");
+  if (heroSearch) {
+    heroSearch.addEventListener("input", () => {
+      const q = heroSearch.value.trim().toLowerCase();
+      let visible = 0;
+      topicCards.forEach((card) => {
+        const hay = (card.textContent + " " + (card.getAttribute("data-tags") || "")).toLowerCase();
+        const show = !q || hay.includes(q);
+        card.hidden = !show;
+        if (show) visible++;
+      });
+      if (topicsEmpty) topicsEmpty.hidden = visible > 0;
+    });
+  }
+})();
+</script>

@@ -1,0 +1,271 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import "../../styles/support.css";
+
+const title = "Enviar una solicitud · Muntrume Support";
+const description = "Abre una solicitud técnica o consulta general en Muntrume Support con enrutado privado por departamento.";
+const canonical = "https://support.muntru.me/requests/new";
+---
+
+<Layout title={title} description={description} canonical={canonical}>
+  <main class="sup-page">
+    <nav class="sup-subnav" aria-label="Navegación de Soporte">
+      <div class="sup-subnav-inner">
+        <div class="sup-crumbs">
+          <a href="https://support.muntru.me/">Muntrume Support</a>
+          <span>›</span>
+          <span>Enviar una solicitud</span>
+        </div>
+        <div class="sup-subnav-links">
+          <a href="https://support.muntru.me/">Centro de Ayuda</a>
+          <a href="https://support.muntru.me/requests/new" class="is-active">Enviar una solicitud</a>
+          <a href="https://support.muntru.me/requests">Mis solicitudes</a>
+        </div>
+      </div>
+    </nav>
+
+    <section class="sup-section sup-section-last">
+      <div class="sup-wrap sup-narrow">
+        <div class="sup-card">
+          <span class="sup-kicker">Formulario ordenado de soporte</span>
+          <h1>Enviar una solicitud</h1>
+          <p class="sup-lead">
+            Elige el motivo de tu solicitud. El sistema la clasifica automáticamente por departamento (Soporte Técnico, Legal o Información) y te envía una copia con el resumen completo.
+          </p>
+
+          <form id="sup-form" class="sup-form" novalidate>
+            <div class="sup-field">
+              <label for="sup-category">¿En qué podemos ayudarte? <span class="req">*</span></label>
+              <select id="sup-category" name="category" required>
+                <option value="">— Selecciona un tipo de solicitud —</option>
+                <optgroup label="Incidencias técnicas y seguridad (Depto. Soporte)">
+                  <option value="cuenta_comprometida">Cuenta comprometida / Robo de acceso (Urgente)</option>
+                  <option value="acceso_mfa">Problema de acceso, Passkey, 2FA o Muntrume Guard</option>
+                  <option value="bug_mmt_sync">Fallo en MMT Sync, Overlays o Auto-Fuel</option>
+                  <option value="bug_web_overlay">Error en la web muntru.me / docs / Muntrume AI</option>
+                  <option value="error_setup">Problema con un setup .STO o Garage Vault</option>
+                  <option value="retirada_privacidad">Privacidad, RGPD o retirada de contenido</option>
+                </optgroup>
+                <optgroup label="Consultas generales y escudería (Depto. Información)">
+                  <option value="consulta_general">Consulta general</option>
+                  <option value="acceso_equipo">Solicitud / Información para entrar al equipo</option>
+                  <option value="sugerencia">Sugerencia o nueva función</option>
+                  <option value="colaboracion_prensa">Prensa, patrocinios o colaboraciones</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <div id="sup-route-banner" class="sup-route-banner" hidden>
+              <span class="sup-route-dot" aria-hidden="true"></span>
+              <span id="sup-route-text"></span>
+            </div>
+
+            <div id="sup-form-body" class="sup-form-body" hidden>
+              <div class="sup-grid-2">
+                <div class="sup-field">
+                  <label for="sup-email">Tu correo electrónico <span class="req">*</span></label>
+                  <input id="sup-email" name="email" type="email" required placeholder="tu@correo.com" autocomplete="email" />
+                </div>
+                <div class="sup-field">
+                  <label for="sup-name">Nombre o piloto</label>
+                  <input id="sup-name" name="name" type="text" maxlength="80" placeholder="Ej. Alberto Trujillo" autocomplete="name" />
+                </div>
+              </div>
+
+              <div class="sup-grid-2" id="sup-dynamic-row" hidden>
+                <div class="sup-field" id="sup-wrap-appver" hidden>
+                  <label for="sup-app-version">Versión de MMT Sync (opcional)</label>
+                  <input id="sup-app-version" name="app_version" type="text" maxlength="40" placeholder="Ej. v1.4.2 · Windows 11" />
+                </div>
+                <div class="sup-field" id="sup-wrap-pageurl" hidden>
+                  <label for="sup-page-url">URL afectada (opcional)</label>
+                  <input id="sup-page-url" name="page_url" type="url" maxlength="240" placeholder="https://muntru.me/..." />
+                </div>
+                <div class="sup-field" id="sup-wrap-iracing" hidden>
+                  <label for="sup-iracing-id">iRacing Customer ID (opcional)</label>
+                  <input id="sup-iracing-id" name="iracing_id" type="text" maxlength="40" placeholder="Ej. 842190" />
+                </div>
+                <div class="sup-field" id="sup-wrap-priority" hidden>
+                  <label for="sup-priority">Prioridad</label>
+                  <select id="sup-priority" name="priority">
+                    <option value="normal">Normal</option>
+                    <option value="high">Alta (bloquea carrera o acceso)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="sup-field">
+                <label for="sup-subject">Asunto <span class="req">*</span></label>
+                <input id="sup-subject" name="subject" type="text" required minlength="4" maxlength="160" placeholder="Resumen breve del problema o consulta" />
+              </div>
+
+              <div class="sup-field">
+                <label for="sup-description">Descripción detallada <span class="req">*</span></label>
+                <textarea id="sup-description" name="description" rows="6" required minlength="15" maxlength="4000" placeholder="Explícanos qué ocurre, pasos para reproducirlo, mensajes de error o detalles relevantes..."></textarea>
+                <span class="sup-hint">Recibirás un correo con el resumen completo y tu ticket <code>#MMT-XXXXXX</code>.</span>
+              </div>
+
+              <div class="sup-field">
+                <label for="sup-files">Adjuntos (opcional · máx. 2 archivos PDF/PNG/JPG/TXT, 350 KB c/u)</label>
+                <input id="sup-files" type="file" multiple accept=".pdf,.png,.jpg,.jpeg,.webp,.txt" />
+              </div>
+
+              <div id="sup-form-error" class="sup-alert sup-alert-err" role="alert" hidden></div>
+
+              <div class="sup-form-footer">
+                <button type="submit" id="sup-submit-btn" class="sup-btn sup-btn-primary">Enviar solicitud</button>
+              </div>
+            </div>
+          </form>
+
+          <div id="sup-success-box" class="sup-success-box" hidden>
+            <div class="sup-success-badge">Solicitud registrada</div>
+            <h3>Hemos creado tu ticket <code id="sup-created-id">#MMT-000000</code></h3>
+            <p id="sup-created-desc"></p>
+            <div class="sup-hero-actions" style="justify-content:flex-start;margin-top:16px;">
+              <a id="sup-open-created-link" href="https://support.muntru.me/requests" class="sup-btn sup-btn-primary">Abrir ticket →</a>
+              <a href="https://support.muntru.me/requests" class="sup-btn sup-btn-ghost">Ver Mis solicitudes</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<script is:inline>
+(() => {
+  try {
+    if (location.hash && location.hash.includes("mm_auth=")) {
+      const hp = new URLSearchParams(location.hash.slice(1));
+      const tk = hp.get("mm_auth");
+      const uRaw = hp.get("mm_user");
+      if (tk) { localStorage.setItem("mrt_vault_token", tk); localStorage.setItem("mm_token", tk); }
+      if (uRaw) { localStorage.setItem("mrt_vault_user", decodeURIComponent(escape(atob(uRaw)))); }
+      history.replaceState(null, "", location.pathname + location.search);
+    }
+  } catch {}
+
+  const API = "https://muntrume.atrumin16.workers.dev";
+  const INCIDENT_CATS = new Set(["cuenta_comprometida", "acceso_mfa", "bug_mmt_sync", "bug_web_overlay", "error_setup", "retirada_privacidad"]);
+  function getToken() { try { return localStorage.getItem("mrt_vault_token") || localStorage.getItem("mm_token") || ""; } catch { return ""; } }
+  function getUser() { try { return JSON.parse(localStorage.getItem("mrt_vault_user") || "null"); } catch { return null; } }
+  function esc(s) { return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+  async function readAttachments(inputEl) {
+    const files = Array.from(inputEl?.files || []).slice(0, 2);
+    const out = [];
+    for (const f of files) {
+      if (f.size > 350 * 1024) throw new Error(`El archivo "${f.name}" supera el límite de 350 KB.`);
+      const dataUrl = await new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(String(r.result || ""));
+        r.onerror = () => reject(new Error(`No se pudo leer ${f.name}`));
+        r.readAsDataURL(f);
+      });
+      out.push({ name: f.name, size: f.size, dataUrl });
+    }
+    return out;
+  }
+
+  const catSel = document.getElementById("sup-category");
+  const formBody = document.getElementById("sup-form-body");
+  const routeBanner = document.getElementById("sup-route-banner");
+  const routeText = document.getElementById("sup-route-text");
+  const dynRow = document.getElementById("sup-dynamic-row");
+  const emailInp = document.getElementById("sup-email");
+  const nameInp = document.getElementById("sup-name");
+  const form = document.getElementById("sup-form");
+  const errBox = document.getElementById("sup-form-error");
+  const submitBtn = document.getElementById("sup-submit-btn");
+  const successBox = document.getElementById("sup-success-box");
+
+  const currentUser = getUser();
+  if (currentUser) {
+    if (emailInp && currentUser.email) emailInp.value = currentUser.email;
+    if (nameInp && currentUser.name) nameInp.value = currentUser.name;
+  }
+
+  function updateCategoryUI() {
+    const cat = catSel ? catSel.value : "";
+    if (!cat) {
+      formBody.hidden = true;
+      routeBanner.hidden = true;
+      return;
+    }
+    const isInc = INCIDENT_CATS.has(cat);
+    const deptLabel = cat === "retirada_privacidad"
+      ? "Departamento Legal y Privacidad"
+      : (isInc ? "Soporte Técnico e Incidencias" : (cat === "colaboracion_prensa" ? "Prensa y Colaboraciones" : "Información General y Consultas"));
+    routeBanner.hidden = false;
+    routeBanner.className = "sup-route-banner " + (isInc ? "is-inc" : "is-info");
+    routeText.innerHTML = cat === "cuenta_comprometida"
+      ? `Prioridad <strong>CRÍTICA</strong> · Se derivará de forma inmediata al departamento <strong>${deptLabel}</strong>.`
+      : `Se derivará ordenadamente a <strong>${deptLabel}</strong> con resumen completo enviado a tu correo.`;
+    formBody.hidden = false;
+
+    const showApp = cat === "bug_mmt_sync";
+    const showUrl = cat === "bug_web_overlay" || cat === "retirada_privacidad";
+    const showIr = ["cuenta_comprometida", "acceso_mfa", "error_setup", "acceso_equipo"].includes(cat);
+    const showPrio = isInc && cat !== "cuenta_comprometida";
+
+    document.getElementById("sup-wrap-appver").hidden = !showApp;
+    document.getElementById("sup-wrap-pageurl").hidden = !showUrl;
+    document.getElementById("sup-wrap-iracing").hidden = !showIr;
+    document.getElementById("sup-wrap-priority").hidden = !showPrio;
+    dynRow.hidden = !(showApp || showUrl || showIr || showPrio);
+  }
+
+  catSel.addEventListener("change", updateCategoryUI);
+  const pre = new URLSearchParams(location.search).get("category");
+  if (pre && Array.from(catSel.options).some((o) => o.value === pre)) {
+    catSel.value = pre;
+    updateCategoryUI();
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errBox.hidden = true;
+    const payload = {
+      category: catSel.value,
+      email: emailInp.value.trim(),
+      name: nameInp.value.trim(),
+      subject: document.getElementById("sup-subject").value.trim(),
+      description: document.getElementById("sup-description").value.trim(),
+      app_version: document.getElementById("sup-app-version").value.trim(),
+      page_url: document.getElementById("sup-page-url").value.trim(),
+      iracing_id: document.getElementById("sup-iracing-id").value.trim(),
+      priority: document.getElementById("sup-priority").value,
+    };
+    if (!payload.category) { errBox.textContent = "Selecciona el tipo de solicitud."; errBox.hidden = false; return; }
+    if (!payload.email.includes("@")) { errBox.textContent = "Introduce un correo electrónico válido."; errBox.hidden = false; return; }
+    if (payload.subject.length < 4) { errBox.textContent = "Escribe un asunto breve (mínimo 4 caracteres)."; errBox.hidden = false; return; }
+    if (payload.description.length < 15) { errBox.textContent = "Describe el caso con más detalle (mínimo 15 caracteres)."; errBox.hidden = false; return; }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Enviando...";
+    try {
+      const isInc = INCIDENT_CATS.has(catSel.value);
+      payload.recipient_id = catSel.value === "retirada_privacidad" ? "legal" : (isInc ? "soporte" : (catSel.value === "colaboracion_prensa" ? "prensa" : "info"));
+      payload.attachments = await readAttachments(document.getElementById("sup-files"));
+      const headers = { "Content-Type": "application/json" };
+      const tok = getToken();
+      if (tok) headers["Authorization"] = `Bearer ${tok}`;
+      const res = await fetch(`${API}/api/support/tickets`, { method: "POST", headers, body: JSON.stringify(payload) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) throw new Error(data.error || "No se pudo registrar la solicitud.");
+      const t = data.ticket;
+      document.getElementById("sup-created-id").textContent = `#${t.id}`;
+      document.getElementById("sup-created-desc").innerHTML = `Derivado a <strong>${esc(t.routing_department || "Soporte Técnico")}</strong> (${esc(t.category_label)}). Hemos enviado el resumen completo de tu incidencia a <strong>${esc(payload.email)}</strong>.`;
+      document.getElementById("sup-open-created-link").href = `https://support.muntru.me/requests/${t.id}`;
+      form.hidden = true;
+      successBox.hidden = false;
+    } catch (err) {
+      errBox.textContent = err.message || "Error de conexión.";
+      errBox.hidden = false;
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Enviar solicitud";
+    }
+  });
+})();
+</script>
