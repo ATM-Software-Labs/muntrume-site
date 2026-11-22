@@ -1363,8 +1363,15 @@ async function analyzeG61Screenshot() {
       if (favEl && data.top_tracks[0]?.name) favEl.value = data.top_tracks[0].name;
     }
     const inferredHours = Number(data.total_track_hours) || 0;
+    const existingTrackSum = Number((umState.topTracks || []).reduce((a, t) => a + (Number(t.hours) || 0), 0).toFixed(1));
     const hoursEl = document.getElementById("umTotalHours");
-    if (hoursEl && inferredHours > 0) hoursEl.value = String(inferredHours);
+    const bestHours = existingTrackSum > 0 ? existingTrackSum : inferredHours;
+    if (hoursEl && bestHours > 0) {
+      const currentVal = Number(hoursEl.value) || 0;
+      if (existingTrackSum > 0 || bestHours >= currentVal || currentVal <= 0) {
+        hoursEl.value = String(bestHours);
+      }
+    }
     if (Array.isArray(data.licenses) && data.licenses.length > 0) {
       data.licenses.forEach((l) => {
         const clsEl = document.getElementById(`umLicClass-${l.category}`);
@@ -1381,8 +1388,11 @@ async function analyzeG61Screenshot() {
     recalcUnifiedPilotStats();
 
     if (foundSummary.length > 0) {
-      if (msg) msg.textContent = `✓ Extraído: ${foundSummary.join(" · ")} (${data.engine || "Vision AI"}). Media MTI recalculada.`;
-      showRcNotice("Captura analizada", `Se extrajeron ${foundSummary.join(", ")} y se recalculó la media del piloto.`, "success");
+      const unitInfo = data.unit_detected && data.unit_detected !== "unknown"
+        ? ` · unidad: ${data.unit_detected}${data.x_axis_max ? ` (eje máx ${data.x_axis_max})` : ""}`
+        : "";
+      if (msg) msg.textContent = `✓ Extraído: ${foundSummary.join(" · ")}${unitInfo} (${data.engine || "Vision AI"}). Revisa las horas/vueltas abajo antes de guardar.`;
+      showRcNotice("Captura analizada", `Se extrajeron ${foundSummary.join(", ")}${unitInfo}. Verifica las cifras y pulsa Guardar.`, "success");
     } else {
       if (msg) msg.textContent = "No se detectaron filas numéricas en la foto. Puedes añadirlas manualmente abajo.";
     }
