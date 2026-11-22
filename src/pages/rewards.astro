@@ -1,0 +1,685 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const title = "Muntrume Rewards (Beta) · Puntos y Acceso Anticipado";
+const description = "Programa de recompensas en fase Beta privada de Muntrume Motorsport (MMT): suma puntos en Discord y redes sociales para desbloquear pases Beta y reservas de descuento.";
+const canonical = "https://muntru.me/rewards/";
+---
+
+<Layout title={title} description={description} canonical={canonical} noindex={true}>
+  <main class="rw-page">
+    <!-- Hero Beta -->
+    <section class="rw-hero">
+      <div class="rw-wrap">
+        <div class="rw-beta-banner">
+          <span class="rw-beta-dot" aria-hidden="true"></span>
+          <span><strong>PRUEBAS BETA PRIVADAS</strong> · Este programa aún no está lanzado al mercado. De momento te da acceso anticipado a funciones Beta y reservas de prueba.</span>
+        </div>
+
+        <div class="rw-hero-grid">
+          <div>
+            <span class="rw-eyebrow">Muntrume Paddock Rewards · Beta</span>
+            <h1 class="rw-title">Suma puntos en la comunidad y desbloquea accesos Beta.</h1>
+            <p class="rw-subtitle">
+              Únete al Discord, sigue nuestras redes sociales, completa acciones en tu cuenta o haz check-in diario para acumular puntos y canjear días o meses de prueba, acceso a Garage Vault y reservas de descuento de lanzamiento.
+            </p>
+          </div>
+
+          <div class="rw-wallet-card" id="rw-wallet">
+            <div class="rw-wallet-label">Tu saldo Beta</div>
+            <div class="rw-wallet-pts"><span id="rw-balance">—</span> <small>pts</small></div>
+            <div class="rw-wallet-meta">
+              <span>Acumulados: <strong id="rw-earned">0</strong></span>
+              <span>Canjeados: <strong id="rw-spent">0</strong></span>
+            </div>
+            <div class="rw-wallet-ref" id="rw-ref-wrap" hidden>
+              <span>Tu código Beta:</span>
+              <code id="rw-ref-code">MMT-000000</code>
+              <button type="button" id="rw-copy-ref" class="rw-mini-btn">Copiar</button>
+            </div>
+            <div id="rw-anon-cta" class="rw-anon-cta" hidden>
+              <p>Inicia sesión para guardar tus puntos y canjear accesos Beta.</p>
+              <a href="/login/?next=/rewards/" class="rw-btn rw-btn-primary">Iniciar sesión</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="rw-wrap rw-main">
+      <!-- Feedback toast -->
+      <div id="rw-toast" class="rw-toast" role="status" hidden></div>
+
+      <!-- Misiones para ganar puntos -->
+      <section class="rw-section" id="misiones">
+        <div class="rw-sec-head">
+          <div>
+            <span class="rw-kicker">Cómo ganar puntos</span>
+            <h2>Misiones disponibles</h2>
+          </div>
+          <div class="rw-tabs" role="tablist" aria-label="Filtrar misiones">
+            <button type="button" class="rw-tab is-active" data-group="all">Todas</button>
+            <button type="button" class="rw-tab" data-group="social">Discord y Redes</button>
+            <button type="button" class="rw-tab" data-group="ecosystem">Ecosistema MMT</button>
+            <button type="button" class="rw-tab" data-group="daily">Diario</button>
+          </div>
+        </div>
+
+        <div id="rw-missions-grid" class="rw-missions-grid">
+          <div class="rw-skeleton">Cargando misiones Beta...</div>
+        </div>
+      </section>
+
+      <!-- Catálogo de recompensas Beta -->
+      <section class="rw-section" id="recompensas">
+        <div class="rw-sec-head">
+          <div>
+            <span class="rw-kicker">Canje anticipado</span>
+            <h2>Recompensas y pases de prueba Beta</h2>
+          </div>
+        </div>
+
+        <div id="rw-catalog-grid" class="rw-catalog-grid">
+          <div class="rw-skeleton">Cargando catálogo Beta...</div>
+        </div>
+      </section>
+
+      <!-- Mis canjes / pases activos -->
+      <section class="rw-section rw-section-last" id="mis-pases">
+        <div class="rw-sec-head">
+          <div>
+            <span class="rw-kicker">Tu inventario</span>
+            <h2>Mis pases y cupones Beta</h2>
+          </div>
+        </div>
+
+        <div id="rw-redemptions-wrap" class="rw-redemptions-wrap">
+          <div class="rw-empty">Todavía no has canjeado ninguna recompensa Beta.</div>
+        </div>
+      </section>
+    </div>
+  </main>
+</Layout>
+
+<script is:inline>
+(() => {
+  const API = "https://muntrume.atrumin16.workers.dev";
+  const FALLBACK_MISSIONS = [
+    { id: "join_discord", group: "social", title: "Unirse al Discord oficial de Muntrume", desc: "Entra al servidor de la escudería, conoce al equipo y recibe avisos de pruebas Beta.", points: 250, url: "https://discord.gg/ehX6B8JUtE", needsHandle: true, handlePlaceholder: "Tu usuario de Discord" },
+    { id: "follow_garage61", group: "social", title: "Seguir al equipo en Garage 61", desc: "Únete o sigue el perfil de telemetría de Muntrume Motorsport en Garage 61.", points: 200, url: "https://garage61.net/app/teams/muntrume-motorsport", needsHandle: true, handlePlaceholder: "Tu nombre en Garage 61" },
+    { id: "follow_instagram", group: "social", title: "Seguir en Instagram", desc: "Sigue nuestra cuenta oficial para novedades, setups y carreras de resistencia.", points: 150, url: "https://instagram.com/muntrumemotorsport", needsHandle: true, handlePlaceholder: "Tu @usuario de Instagram" },
+    { id: "follow_x", group: "social", title: "Seguir en X (Twitter)", desc: "Sigue las actualizaciones de iRacing, MMT Sync y directos del equipo.", points: 150, url: "https://x.com/muntrumemmt", needsHandle: true, handlePlaceholder: "Tu @usuario en X" },
+    { id: "follow_youtube", group: "social", title: "Suscribirse en YouTube", desc: "Suscríbete al canal para vueltas rápidas, guías de circuitos y onboards.", points: 150, url: "https://youtube.com/@muntrumemotorsport", needsHandle: true, handlePlaceholder: "Tu canal o @usuario" },
+    { id: "follow_tiktok", group: "social", title: "Seguir en TikTok / Twitch", desc: "Apoya los clips de carrera y retransmisiones en directo.", points: 150, url: "https://twitch.tv/muntrumemotorsport", needsHandle: true, handlePlaceholder: "Tu @usuario de TikTok o Twitch" },
+    { id: "star_github", group: "social", title: "Apoyar en GitHub", desc: "Sigue el repositorio público de Muntrume Motorsport / ATM Software Labs.", points: 100, url: "https://github.com/ATM-Software-Labs/muntrume-site", needsHandle: false },
+    { id: "subscribe_newsletter", group: "ecosystem", title: "Suscribirse a la Newsletter", desc: "Activa el boletín de noticias SimRacing y actualizaciones de MMT Sync.", points: 150, url: "/noticias/#newsletter", needsHandle: false },
+    { id: "enable_security", group: "ecosystem", title: "Blindar cuenta (Passkey, 2FA o Guard)", desc: "Configura un método de acceso seguro en Ajustes de tu cuenta.", points: 200, url: "/settings/", needsHandle: false },
+    { id: "install_mmt_sync", group: "ecosystem", title: "Instalar y vincular MMT Sync", desc: "Descarga la app de escritorio o móvil para sincronizar setups y Auto-Fuel.", points: 300, url: "/app/", needsHandle: false },
+    { id: "daily_checkin", group: "daily", title: "Check-in diario en el Paddock", desc: "Pásate cada día por el programa Beta para sumar puntos extra.", points: 50, url: "", repeatableDaily: true, needsHandle: false },
+  ];
+  const FALLBACK_CATALOG = [
+    { id: "beta_trial_7d", title: "Pase Beta 7 días · Garage Vault & Setups", desc: "Desbloquea acceso de prueba durante 7 días a la bóveda de setups .STO y sincronización.", cost: 300, days: 7, badge: "Acceso Beta inmediato", grantsVault: true, type: "trial" },
+    { id: "beta_discord_vip", title: "Rol Beta Tester & Pioneer en Discord", desc: "Recibe un código para reclamar el rol exclusivo de pruebas Beta en nuestro Discord.", cost: 400, days: 90, badge: "Comunidad Beta", grantsVault: false, type: "perk" },
+    { id: "beta_ai_access", title: "Acceso Beta 14 días · Muntrume AI & Auto-Fuel Pro", desc: "Prueba anticipada del copiloto de ingeniería IA y funciones avanzadas de MMT Sync.", cost: 500, days: 14, badge: "Pruebas Beta", grantsVault: true, type: "trial" },
+    { id: "beta_discount_20", title: "Cupón 20% dto. lanzamiento (Reserva Beta)", desc: "Reserva tu cupón personal de 20% para cuando el programa salga oficialmente al mercado.", cost: 700, days: 180, badge: "Reserva lanzamiento", grantsVault: false, type: "discount" },
+    { id: "beta_trial_30d", title: "Pase Beta 30 días · Full Access Escudería", desc: "1 mes completo de acceso Beta a Garage Vault, telemetría y herramientas de prueba.", cost: 900, days: 30, badge: "1 Mes Beta", grantsVault: true, type: "trial" },
+    { id: "beta_discount_50", title: "Cupón 50% dto. primer mes (Founder Beta)", desc: "Descuento exclusivo de fundador para testers tempranos cuando se abra al público.", cost: 1400, days: 180, badge: "Founder Beta", grantsVault: false, type: "discount" },
+  ];
+
+  let state = {
+    signedIn: false,
+    balance: 0,
+    earned_total: 0,
+    spent_total: 0,
+    checked_in_today: false,
+    claimed_ids: [],
+    referral_code: "",
+    missions: FALLBACK_MISSIONS,
+    catalog: FALLBACK_CATALOG,
+    redemptions: [],
+  };
+  let activeGroup = "all";
+
+  function getToken() {
+    try { return localStorage.getItem("mrt_vault_token") || localStorage.getItem("mm_token") || ""; }
+    catch { return ""; }
+  }
+  function esc(s) {
+    return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  function fmtDate(iso) {
+    if (!iso) return "—";
+    const d = new Date(iso);
+    return isNaN(d.getTime()) ? iso : d.toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" });
+  }
+  let toastTimer = null;
+  function showToast(msg, isErr = false) {
+    const el = document.getElementById("rw-toast");
+    if (!el) return;
+    el.textContent = msg;
+    el.className = "rw-toast " + (isErr ? "is-err" : "is-ok");
+    el.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.hidden = true; }, 4800);
+  }
+
+  function renderAll() {
+    document.getElementById("rw-balance").textContent = state.signedIn ? String(state.balance) : "0";
+    document.getElementById("rw-earned").textContent = String(state.earned_total || 0);
+    document.getElementById("rw-spent").textContent = String(state.spent_total || 0);
+    const refWrap = document.getElementById("rw-ref-wrap");
+    const anonCta = document.getElementById("rw-anon-cta");
+    if (state.signedIn) {
+      if (anonCta) anonCta.hidden = true;
+      if (refWrap && state.referral_code) {
+        refWrap.hidden = false;
+        document.getElementById("rw-ref-code").textContent = state.referral_code;
+      }
+    } else {
+      if (anonCta) anonCta.hidden = false;
+      if (refWrap) refWrap.hidden = true;
+    }
+    renderMissions();
+    renderCatalog();
+    renderRedemptions();
+  }
+
+  function renderMissions() {
+    const grid = document.getElementById("rw-missions-grid");
+    if (!grid) return;
+    const claimedSet = new Set(state.claimed_ids || []);
+    const list = (state.missions || []).filter((m) => activeGroup === "all" || m.group === activeGroup);
+    grid.innerHTML = list.map((m) => {
+      const done = m.repeatableDaily ? state.checked_in_today : claimedSet.has(m.id);
+      const isExt = m.url && m.url.startsWith("http");
+      return `<article class="rw-mission-card ${done ? "is-done" : ""}" data-mid="${esc(m.id)}">
+        <div class="rw-m-top">
+          <span class="rw-pts-badge">+${Number(m.points)} pts</span>
+          ${done ? `<span class="rw-done-tag">Completada ✓</span>` : `<span class="rw-group-tag">${m.group === "social" ? "Comunidad" : m.group === "daily" ? "Diario" : "Ecosistema"}</span>`}
+        </div>
+        <h3>${esc(m.title)}</h3>
+        <p>${esc(m.desc)}</p>
+        ${(!done && m.needsHandle) ? `<input class="rw-handle-input" type="text" maxlength="100" placeholder="${esc(m.handlePlaceholder || "Tu @usuario")}" data-proof-for="${esc(m.id)}" />` : ""}
+        <div class="rw-m-actions">
+          ${m.url ? `<a href="${esc(m.url)}" ${isExt ? 'target="_blank" rel="noopener noreferrer"' : ""} class="rw-btn rw-btn-ghost rw-btn-sm">Abrir ${isExt ? "↗" : "→"}</a>` : ""}
+          ${done
+            ? `<button type="button" class="rw-btn rw-btn-done rw-btn-sm" disabled>${m.repeatableDaily ? "Hecho hoy ✓" : "Reclamada ✓"}</button>`
+            : `<button type="button" class="rw-btn rw-btn-primary rw-btn-sm" data-claim-id="${esc(m.id)}">Reclamar +${Number(m.points)}</button>`
+          }
+        </div>
+      </article>`;
+    }).join("");
+  }
+
+  function renderCatalog() {
+    const grid = document.getElementById("rw-catalog-grid");
+    if (!grid) return;
+    grid.innerHTML = (state.catalog || []).map((r) => {
+      const pct = Math.min(100, Math.round((state.balance / Math.max(1, r.cost)) * 100));
+      const canRedeem = state.signedIn && state.balance >= r.cost;
+      const missing = Math.max(0, r.cost - state.balance);
+      return `<article class="rw-cat-card">
+        <div class="rw-m-top">
+          <span class="rw-cat-badge">${esc(r.badge)}</span>
+          <span class="rw-cost-tag">${Number(r.cost)} pts</span>
+        </div>
+        <h3>${esc(r.title)}</h3>
+        <p>${esc(r.desc)}</p>
+        <div class="rw-prog-wrap" aria-label="Progreso ${pct}%">
+          <div class="rw-prog-bar" style="width:${pct}%"></div>
+        </div>
+        <div class="rw-cat-foot">
+          <span class="rw-cat-hint">${!state.signedIn ? "Inicia sesión para canjear" : canRedeem ? "Disponible para canjear" : `Te faltan ${missing} pts`}</span>
+          <button type="button" class="rw-btn ${canRedeem ? "rw-btn-primary" : "rw-btn-ghost"} rw-btn-sm" data-redeem-id="${esc(r.id)}" ${canRedeem ? "" : "disabled"}>
+            Canjear
+          </button>
+        </div>
+      </article>`;
+    }).join("");
+  }
+
+  function renderRedemptions() {
+    const wrap = document.getElementById("rw-redemptions-wrap");
+    if (!wrap) return;
+    const list = state.redemptions || [];
+    if (!list.length) {
+      wrap.innerHTML = `<div class="rw-empty">${state.signedIn ? "Todavía no has canjeado ninguna recompensa Beta." : "Inicia sesión para ver tus pases y cupones Beta."}</div>`;
+      return;
+    }
+    wrap.innerHTML = `<div class="rw-red-list">${list.map((x) => `
+      <div class="rw-red-item">
+        <div>
+          <div class="rw-red-title">${esc(x.reward_title)}</div>
+          <div class="rw-red-meta">Canjeado el ${esc(fmtDate(x.created_at))} · Válido hasta ${esc(fmtDate(x.expires_at))} · −${Number(x.points_spent)} pts</div>
+        </div>
+        <div class="rw-red-right">
+          <code class="rw-red-code">${esc(x.id)}</code>
+          <button type="button" class="rw-mini-btn" data-copy-code="${esc(x.id)}">Copiar</button>
+        </div>
+      </div>
+    `).join("")}</div>`;
+  }
+
+  async function loadState() {
+    const tok = getToken();
+    if (!tok) {
+      state.signedIn = false;
+      renderAll();
+      return;
+    }
+    try {
+      const res = await fetch(`${API}/api/rewards/me`, {
+        headers: { Authorization: `Bearer ${tok}` },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401 || !data.success) {
+        state.signedIn = false;
+        renderAll();
+        return;
+      }
+      state = { ...state, ...data, signedIn: true };
+      renderAll();
+    } catch {
+      renderAll();
+    }
+  }
+
+  async function claimMission(missionId, btn) {
+    const tok = getToken();
+    if (!tok) {
+      location.href = "/login/?next=/rewards/";
+      return;
+    }
+    const proofEl = document.querySelector(`[data-proof-for="${missionId}"]`);
+    const proof = proofEl ? proofEl.value.trim() : "";
+    if (proofEl && proof.length < 2) {
+      proofEl.focus();
+      showToast("Indica tu @usuario antes de reclamar esta misión.", true);
+      return;
+    }
+    btn.disabled = true;
+    try {
+      const res = await fetch(`${API}/api/rewards/claim`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${tok}` },
+        body: JSON.stringify({ mission_id: missionId, proof }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) throw new Error(data.error || "No se pudo reclamar la misión.");
+      state = { ...state, ...data, signedIn: true };
+      renderAll();
+      showToast(`+${data.awarded} puntos añadidos a tu saldo Beta.`);
+    } catch (err) {
+      showToast(err.message || "Error al reclamar.", true);
+      btn.disabled = false;
+    }
+  }
+
+  async function redeemReward(rewardId, btn) {
+    const tok = getToken();
+    if (!tok) {
+      location.href = "/login/?next=/rewards/";
+      return;
+    }
+    btn.disabled = true;
+    try {
+      const res = await fetch(`${API}/api/rewards/redeem`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${tok}` },
+        body: JSON.stringify({ reward_id: rewardId }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) throw new Error(data.error || "No se pudo canjear la recompensa.");
+      state = { ...state, ...data, signedIn: true };
+      renderAll();
+      const extra = data.redemption?.grants_vault ? " Acceso a Garage Vault activado." : "";
+      showToast(`Recompensa canjeada (${data.redemption?.id}).${extra}`);
+    } catch (err) {
+      showToast(err.message || "Error al canjear.", true);
+      btn.disabled = false;
+    }
+  }
+
+  document.addEventListener("click", (e) => {
+    const tab = e.target.closest(".rw-tab");
+    if (tab) {
+      activeGroup = tab.getAttribute("data-group") || "all";
+      document.querySelectorAll(".rw-tab").forEach((t) => t.classList.toggle("is-active", t === tab));
+      renderMissions();
+      return;
+    }
+    const claimBtn = e.target.closest("[data-claim-id]");
+    if (claimBtn) {
+      claimMission(claimBtn.getAttribute("data-claim-id"), claimBtn);
+      return;
+    }
+    const redeemBtn = e.target.closest("[data-redeem-id]");
+    if (redeemBtn) {
+      redeemReward(redeemBtn.getAttribute("data-redeem-id"), redeemBtn);
+      return;
+    }
+    const copyBtn = e.target.closest("[data-copy-code]");
+    if (copyBtn) {
+      const code = copyBtn.getAttribute("data-copy-code");
+      navigator.clipboard?.writeText(code).then(() => showToast(`Código ${code} copiado.`));
+      return;
+    }
+    if (e.target.id === "rw-copy-ref") {
+      navigator.clipboard?.writeText(state.referral_code).then(() => showToast(`Código ${state.referral_code} copiado.`));
+    }
+  });
+
+  loadState();
+})();
+</script>
+
+<style>
+  .rw-page { background: var(--r-bg); color: var(--r-text); min-height: 80vh; }
+  .rw-wrap { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+  .rw-hero {
+    padding: 40px 0 42px;
+    border-bottom: 1px solid var(--r-line);
+    background: radial-gradient(760px 320px at 80% 0%, rgba(16, 185, 129, 0.12), transparent 72%);
+  }
+  .rw-beta-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    background: rgba(245, 158, 11, 0.1);
+    font-size: 0.85rem;
+    margin-bottom: 24px;
+  }
+  .rw-beta-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #f59e0b;
+    flex-shrink: 0;
+  }
+  .rw-hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.85fr);
+    gap: 28px;
+    align-items: center;
+  }
+  .rw-eyebrow, .rw-kicker {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--r-accent);
+    margin-bottom: 8px;
+  }
+  .rw-title {
+    font-size: clamp(1.85rem, 3.8vw, 2.7rem);
+    line-height: 1.1;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    margin: 0 0 12px;
+  }
+  .rw-subtitle {
+    font-size: 0.98rem;
+    line-height: 1.6;
+    color: var(--r-muted);
+    margin: 0;
+  }
+
+  .rw-wallet-card {
+    background: var(--r-surface);
+    border: 1px solid var(--r-line);
+    border-radius: 16px;
+    padding: 22px;
+  }
+  .rw-wallet-label { font-size: 0.82rem; font-weight: 700; color: var(--r-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  .rw-wallet-pts { font-size: 2.6rem; font-weight: 800; line-height: 1.1; margin: 6px 0 12px; color: var(--r-accent); }
+  .rw-wallet-pts small { font-size: 1rem; color: var(--r-muted); font-weight: 700; }
+  .rw-wallet-meta { display: flex; gap: 18px; font-size: 0.85rem; color: var(--r-muted); padding-bottom: 12px; border-bottom: 1px solid var(--r-line); }
+  .rw-wallet-ref {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    font-size: 0.83rem;
+    color: var(--r-muted);
+  }
+  .rw-wallet-ref code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-weight: 700;
+    color: var(--r-text);
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: var(--r-bg);
+    border: 1px solid var(--r-line);
+  }
+  .rw-anon-cta { margin-top: 12px; }
+  .rw-anon-cta p { margin: 0 0 10px; font-size: 0.86rem; color: var(--r-muted); }
+
+  .rw-main { padding-top: 24px; padding-bottom: 64px; }
+  .rw-toast {
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 18px;
+    border: 1px solid var(--r-line);
+  }
+  .rw-toast.is-ok { background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.4); color: var(--r-accent); }
+  .rw-toast.is-err { background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.4); color: #ef4444; }
+
+  .rw-section { padding-top: 28px; }
+  .rw-sec-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  .rw-sec-head h2 { margin: 0; font-size: 1.45rem; font-weight: 800; }
+
+  .rw-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .rw-tab {
+    padding: 7px 13px;
+    border-radius: 999px;
+    border: 1px solid var(--r-line);
+    background: var(--r-surface);
+    color: var(--r-muted);
+    font-size: 0.83rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .rw-tab.is-active { background: var(--r-accent); color: var(--r-accent-ink, #06130d); border-color: var(--r-accent); }
+
+  .rw-missions-grid, .rw-catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .rw-missions-grid :global(.rw-mission-card),
+  .rw-catalog-grid :global(.rw-cat-card) {
+    display: flex;
+    flex-direction: column;
+    background: var(--r-surface);
+    border: 1px solid var(--r-line);
+    border-radius: 14px;
+    padding: 18px;
+  }
+  .rw-missions-grid :global(.rw-mission-card.is-done) {
+    border-color: rgba(16, 185, 129, 0.35);
+    opacity: 0.88;
+  }
+  .rw-missions-grid :global(.rw-m-top),
+  .rw-catalog-grid :global(.rw-m-top) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .rw-missions-grid :global(.rw-pts-badge),
+  .rw-catalog-grid :global(.rw-cost-tag) {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.82rem;
+    font-weight: 800;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: rgba(16, 185, 129, 0.14);
+    color: var(--r-accent);
+  }
+  .rw-missions-grid :global(.rw-done-tag) {
+    font-size: 0.76rem;
+    font-weight: 800;
+    color: var(--r-accent);
+  }
+  .rw-missions-grid :global(.rw-group-tag),
+  .rw-catalog-grid :global(.rw-cat-badge) {
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--r-muted);
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: var(--r-bg);
+    border: 1px solid var(--r-line);
+  }
+  .rw-missions-grid :global(h3),
+  .rw-catalog-grid :global(h3) {
+    margin: 0 0 6px;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  .rw-missions-grid :global(p),
+  .rw-catalog-grid :global(p) {
+    margin: 0 0 14px;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--r-muted);
+    flex: 1;
+  }
+  .rw-missions-grid :global(.rw-handle-input) {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--r-line);
+    background: var(--r-bg);
+    color: var(--r-text);
+    font-size: 0.84rem;
+    margin-bottom: 10px;
+  }
+  .rw-missions-grid :global(.rw-m-actions) {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .rw-catalog-grid :global(.rw-prog-wrap) {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--r-bg);
+    border: 1px solid var(--r-line);
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .rw-catalog-grid :global(.rw-prog-bar) {
+    height: 100%;
+    background: var(--r-accent);
+    transition: width 0.25s ease;
+  }
+  .rw-catalog-grid :global(.rw-cat-foot) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .rw-catalog-grid :global(.rw-cat-hint) {
+    font-size: 0.78rem;
+    color: var(--r-muted);
+  }
+
+  .rw-btn, .rw-missions-grid :global(.rw-btn), .rw-catalog-grid :global(.rw-btn) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9px 14px;
+    border-radius: 9px;
+    font-size: 0.84rem;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .rw-btn-sm, .rw-missions-grid :global(.rw-btn-sm), .rw-catalog-grid :global(.rw-btn-sm) { padding: 7px 12px; font-size: 0.82rem; }
+  .rw-btn-primary, .rw-missions-grid :global(.rw-btn-primary), .rw-catalog-grid :global(.rw-btn-primary) {
+    background: var(--r-accent);
+    color: var(--r-accent-ink, #06130d);
+  }
+  .rw-btn-ghost, .rw-missions-grid :global(.rw-btn-ghost), .rw-catalog-grid :global(.rw-btn-ghost) {
+    background: var(--r-bg);
+    color: var(--r-text);
+    border-color: var(--r-line);
+  }
+  .rw-missions-grid :global(.rw-btn-done) {
+    background: transparent;
+    color: var(--r-accent);
+    border-color: rgba(16, 185, 129, 0.35);
+    cursor: default;
+  }
+  .rw-btn:disabled, .rw-catalog-grid :global(.rw-btn:disabled) { opacity: 0.5; cursor: not-allowed; }
+  .rw-mini-btn, .rw-redemptions-wrap :global(.rw-mini-btn) {
+    padding: 4px 9px;
+    border-radius: 7px;
+    border: 1px solid var(--r-line);
+    background: var(--r-bg);
+    color: var(--r-text);
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .rw-empty, .rw-skeleton {
+    padding: 24px;
+    text-align: center;
+    border-radius: 12px;
+    border: 1px dashed var(--r-line);
+    background: var(--r-surface);
+    color: var(--r-muted);
+    font-size: 0.9rem;
+  }
+  .rw-redemptions-wrap :global(.rw-red-list) { display: flex; flex-direction: column; gap: 10px; }
+  .rw-redemptions-wrap :global(.rw-red-item) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    background: var(--r-surface);
+    border: 1px solid var(--r-line);
+  }
+  .rw-redemptions-wrap :global(.rw-red-title) { font-weight: 700; font-size: 0.95rem; }
+  .rw-redemptions-wrap :global(.rw-red-meta) { font-size: 0.8rem; color: var(--r-muted); margin-top: 2px; }
+  .rw-redemptions-wrap :global(.rw-red-right) { display: flex; align-items: center; gap: 8px; }
+  .rw-redemptions-wrap :global(.rw-red-code) {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-weight: 800;
+    font-size: 0.85rem;
+    padding: 4px 10px;
+    border-radius: 7px;
+    background: var(--r-bg);
+    border: 1px solid var(--r-line);
+  }
+
+  @media (max-width: 960px) {
+    .rw-missions-grid, .rw-catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 720px) {
+    .rw-hero-grid { grid-template-columns: 1fr; }
+    .rw-missions-grid, .rw-catalog-grid { grid-template-columns: 1fr; }
+  }
+</style>
