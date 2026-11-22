@@ -30,13 +30,13 @@ interface Props {
 const siteOrigin = Astro.site ? Astro.site.origin : (Astro.url ? Astro.url.origin : "https://muntru.me");
 
 const {
-  title = "Muntrume Motorsport (MMT) · Equipo iRacing",
-  description = "Muntrume Motorsport (MMT) es el equipo de iRacing de Sant Andreu, Barcelona. Pilotos, telemetría y setups .sto.",
-  keywords = "muntrume motorsport, official simracing team, iracing team, endurance sim racing, gt3 endurance, sim racing engineering, garage 61 telemetry, alberto trujillo, escuderia simracing, equipo iracing",
+  title = "Muntrume Motorsport (MMT) · iRacing Endurance Team & Setups",
+  description = "Muntrume Motorsport (MMT) is an official iRacing endurance team from Barcelona. Verified .sto setups, MMT Sync telemetry, overlays, and Garage 61 data.",
+  keywords = "muntrume motorsport, iracing team, iracing setups, gt3 setups, iracing endurance team, sim racing engineering, mmt sync, garage 61 telemetry, iracing overlays, alberto trujillo",
   canonical = Astro.url.href,
   ogImage = `${siteOrigin}/assets/img/og-home.jpg`,
   ogType = "website",
-  ogLocale = "es_ES",
+  ogLocale = "en_US",
   ogImageAlt = "Muntrume Motorsport",
   ogImageWidth,
   ogImageHeight,
@@ -71,7 +71,7 @@ const canon = absoluteCanonical(canonical);
 const canonUrl = new URL(canon);
 const isHome = canonUrl.hostname === "muntru.me" && canonUrl.pathname === "/";
 const BRAND = "Muntrume Motorsport";
-const HOME_TITLE = "Muntrume Motorsport (MMT) · Equipo iRacing";
+const HOME_TITLE = "Muntrume Motorsport (MMT) · iRacing Team & .STO Setups";
 
 function fitTitle(raw: string): string {
   if (isHome) return HOME_TITLE;

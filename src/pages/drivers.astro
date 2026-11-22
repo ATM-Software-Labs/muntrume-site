@@ -4,8 +4,8 @@ import DriverCard from '../components/DriverCard.astro';
 import TeamBand from '../components/TeamBand.astro';
 import { PILOTOS, LICENCE_UPDATED_LABEL } from '../lib/pilotos';
 
-const pageTitle = "Pilotos Oficiales iRacing | Muntrume Motorsport";
-const pageDescription = `Plantilla de Muntrume Motorsport: ${PILOTOS.map((p) => p.fullName).join(", ")}. Licencia Sports Car, horas en pista e índice MTI.`;
+const pageTitle = "Official iRacing Drivers Roster | Muntrume Motorsport";
+const pageDescription = `Meet the Muntrume Motorsport (MMT) iRacing roster: ${PILOTOS.map((p) => p.fullName).join(", ")}. Live Sports Car iRating, track hours, and MTI rating.`;
 ---
 
 <Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/drivers/" ogImage="https://muntru.me/assets/img/og-team.jpg" ogImageAlt="Pilotos de Muntrume Motorsport" translated i18nTitle="pilots.meta.title" i18nDescription="pilots.meta.desc">

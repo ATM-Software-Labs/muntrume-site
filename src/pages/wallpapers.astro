@@ -54,8 +54,8 @@ const packs = [
 ];
 
 const brandsList = [...new Set(allWallpapers.map((item) => item.brand).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
-const pageTitle = "Wallpapers iRacing por serie";
-const pageDescription = `${allWallpapers.length} wallpapers de iRacing agrupados por serie, en JPG 16:9 y móvil 9:16. Equipo MMT.`;
+const pageTitle = "iRacing Wallpapers by Series (16:9 & Mobile)";
+const pageDescription = `Download ${allWallpapers.length} high-resolution iRacing wallpapers grouped by official series, available in 16:9 desktop and 9:16 mobile formats. MMT Team.`;
 const pageUrl = "https://muntru.me/wallpapers/";
 const ogImage = absoluteWallpaperUrl(allWallpapers[0]?.img || "/assets/img/coche2.webp");
 const pageSchema = {
