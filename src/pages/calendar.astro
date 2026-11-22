@@ -3,6 +3,7 @@ import Layout from "../layouts/Layout.astro";
 import schedule from "../../desktop/src/season_schedule_2026_s4.json";
 import catalog from "../../public/assets/data/catalog_index.json";
 import { TAX_PROFILES } from "../lib/iracing-store-planner";
+import { buildTrackHistoricalCatalog } from "../data/iracing-track-roi";
 
 const SEASON_START_MS = Date.UTC(2026, 8, 15);
 const buildWeek = Math.max(1, Math.min(12, Math.floor((Date.now() - SEASON_START_MS) / 604_800_000) + 1));
@@ -262,6 +263,8 @@ const cleanSeries = schedule.series
   })
   .sort((a, b) => a.pop - b.pop || a.name.localeCompare(b.name));
 
+const trackCatalog = buildTrackHistoricalCatalog(cleanSeries);
+
 const catOrder = ["SPORTS CAR", "FORMULA CAR", "OVAL", "DIRT OVAL", "DIRT ROAD"];
 
 const pageTitle = "Official iRacing 2026 Season 4 Schedule Planner";
@@ -342,7 +345,7 @@ const canonical = "https://muntru.me/calendar/";
             <h2 class="text-xl font-extrabold text-[var(--r-text)] font-display">Qué comprar y qué podrás correr</h2>
           </div>
           <div class="flex flex-wrap items-center gap-2 font-mono text-xs">
-            <button type="button" id="plannerMarkBaseBtn" class="h-8 px-2.5 rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 font-bold cursor-pointer transition" title="Marca automáticamente circuitos y coches gratuitos incluidos en la suscripción base de iRacing">✔ Base Gratis iRacing</button>
+            <button type="button" id="plannerMarkBaseBtn" class="h-8 px-2.5 rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-[var(--r-accent)] hover:bg-emerald-500/20 font-bold cursor-pointer transition" title="Marca automáticamente circuitos y coches gratuitos incluidos en la suscripción base de iRacing">✔ Base Gratis iRacing</button>
             <button type="button" id="plannerDetectMmtBtn" class="h-8 px-2.5 rounded-lg border border-[var(--r-line)] bg-[var(--r-bg)] hover:border-[var(--r-accent)] text-[var(--r-text)] cursor-pointer transition" title="Comprueba si MMT Sync está abierto localmente">⚡ Detectar MMT Sync</button>
             <label class="flex items-center gap-1.5 text-[var(--r-muted)]">
               <span>🌍</span>
@@ -368,7 +371,7 @@ const canonical = "https://muntru.me/calendar/";
           <div class="lg:col-span-2 space-y-4">
             <div id="plannerPlayableBox" class="p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-500/[0.06] space-y-1.5 font-mono text-xs">
               <div class="flex items-center justify-between gap-2">
-                <strong class="text-emerald-300">🏁 Qué podrás correr con tu contenido + carrito</strong>
+                <strong class="text-[var(--r-accent)]">🏁 Qué podrás correr con tu contenido + carrito</strong>
                 <span id="plannerPlayableCount" class="text-[var(--r-accent)] font-bold">0 series esta semana</span>
               </div>
               <div id="plannerPlayableList" class="flex flex-wrap gap-1.5 text-[11px]"></div>
@@ -383,11 +386,30 @@ const canonical = "https://muntru.me/calendar/";
             </div>
 
             <div class="space-y-2">
-              <div class="flex items-center justify-between text-xs font-mono">
-                <strong class="text-[var(--r-text)]">🏁 Top Circuitos Recomendados ($14.95)</strong>
-                <span class="text-[var(--r-muted)]">Mayor ROI por semanas</span>
+              <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
+                <div>
+                  <strong class="text-[var(--r-text)]">🏁 Circuitos Más Recomendables ($14.95)</strong>
+                  <p id="plannerRoiMode" class="text-[10px] text-[var(--r-muted)] mt-0.5">Historial 2026 S3 + S4 · Special Events</p>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <select id="plannerTrackScope" class="h-7 rounded-lg border border-[var(--r-line)] bg-[var(--r-bg)] px-2 text-[11px] text-[var(--r-text)] cursor-pointer" title="Filtrar recomendaciones por disciplina">
+                    <option value="AUTO">Disciplina: Auto</option>
+                    <option value="ROAD">Road (GT + Fórmula)</option>
+                    <option value="SPORTS CAR">Sports Car</option>
+                    <option value="FORMULA CAR">Formula Car</option>
+                    <option value="OVAL">Oval</option>
+                    <option value="DIRT OVAL">Dirt Oval</option>
+                    <option value="DIRT ROAD">Dirt Road</option>
+                    <option value="ALL">Todas las disciplinas</option>
+                  </select>
+                  <button type="button" id="plannerResetOwnedBtn" hidden class="h-7 px-2 rounded-lg border border-[var(--r-line)] text-[10px] text-[var(--r-muted)] hover:text-rose-500 cursor-pointer" title="Restablecer circuitos marcados como 'Tengo'">↺ Reset Tengo</button>
+                </div>
               </div>
               <div id="plannerRoiList" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+              <div id="plannerRoiMoreWrap" hidden class="flex items-center justify-between pt-1 font-mono text-[11px]">
+                <span id="plannerRoiCountInfo" class="text-[var(--r-muted)]"></span>
+                <button type="button" id="plannerRoiMoreBtn" class="px-3 py-1.5 rounded-lg border border-[var(--r-line)] bg-[var(--r-bg)] hover:border-[var(--r-accent)] text-[var(--r-text)] font-bold cursor-pointer transition">Ver más circuitos recomendados ↓</button>
+              </div>
             </div>
 
             <div class="space-y-2 pt-2 border-t border-[var(--r-line)]/50">
@@ -404,10 +426,10 @@ const canonical = "https://muntru.me/calendar/";
             <div class="space-y-3">
               <div class="flex items-center justify-between border-b border-[var(--r-line)] pb-2">
                 <strong class="text-sm text-[var(--r-text)]">Carrito Simulado</strong>
-                <button type="button" id="plannerClearCart" class="text-[11px] text-[var(--r-muted)] hover:text-rose-400 cursor-pointer">Vaciar</button>
+                <button type="button" id="plannerClearCart" class="text-[11px] text-[var(--r-muted)] hover:text-rose-500 cursor-pointer">Vaciar</button>
               </div>
               <div id="plannerCartItems" class="space-y-1.5 max-h-40 overflow-y-auto text-[11px]"></div>
-              <p id="plannerUpsellHint" hidden class="p-2 rounded-lg bg-amber-500/10 border border-amber-400/30 text-amber-300 text-[11px] leading-snug"></p>
+              <p id="plannerUpsellHint" hidden class="p-2 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-600 dark:text-amber-300 text-[11px] leading-snug"></p>
             </div>
 
             <div id="plannerTicket" class="space-y-1.5 pt-3 border-t border-[var(--r-line)] tabular-nums"></div>
@@ -733,6 +755,7 @@ const canonical = "https://muntru.me/calendar/";
         activeCat = btn.dataset.cat || "ALL";
         document.querySelectorAll("#calCatPills .cal-pill").forEach((b) => b.classList.toggle("is-on", b === btn));
         applyFilter();
+        window.dispatchEvent(new CustomEvent("mmt-planner-refresh", { detail: { cat: activeCat } }));
       });
 
       document.getElementById("calSetupPills")?.addEventListener("click", (e) => {
@@ -783,8 +806,11 @@ const canonical = "https://muntru.me/calendar/";
     })();
   </script>
 
+  <script id="calTrackCatalogData" type="application/json" set:html={JSON.stringify(trackCatalog)}></script>
+
   <script>
     import { calculateCheckout, detectDefaultTaxProfileId } from "../lib/iracing-store-planner";
+    import type { TrackHistoricalMeta } from "../data/iracing-track-roi";
 
     const panel = document.getElementById("calPlannerPanel");
     const toggleBtn = document.getElementById("btnPlannerToggle");
@@ -794,10 +820,26 @@ const canonical = "https://muntru.me/calendar/";
     const matrixEl = document.getElementById("plannerMatrix");
     const weeksCoveredEl = document.getElementById("plannerWeeksCovered");
     const roiListEl = document.getElementById("plannerRoiList");
+    const roiModeEl = document.getElementById("plannerRoiMode");
+    const roiMoreWrap = document.getElementById("plannerRoiMoreWrap");
+    const roiCountInfoEl = document.getElementById("plannerRoiCountInfo");
+    const roiMoreBtn = document.getElementById("plannerRoiMoreBtn");
+    const scopeSelect = document.getElementById("plannerTrackScope") as HTMLSelectElement | null;
+    const resetOwnedBtn = document.getElementById("plannerResetOwnedBtn");
     const carRoiListEl = document.getElementById("plannerCarRoiList");
     const cartItemsEl = document.getElementById("plannerCartItems");
     const upsellEl = document.getElementById("plannerUpsellHint");
     const ticketEl = document.getElementById("plannerTicket");
+
+    let trackCatalog: TrackHistoricalMeta[] = [];
+    try {
+      const raw = document.getElementById("calTrackCatalogData")?.textContent || "[]";
+      trackCatalog = JSON.parse(raw);
+    } catch { /* ignore */ }
+
+    const freeTrackSet = new Set(
+      trackCatalog.filter((t) => t.isFree).map((t) => t.track.toLowerCase())
+    );
 
     if (panel && toggleBtn) {
       const OWNED_KEY = "mmt-owned-tracks-v1";
@@ -805,16 +847,21 @@ const canonical = "https://muntru.me/calendar/";
       const CART_KEY = "mmt-planner-cart-v1";
       const CART_CARS_KEY = "mmt-planner-cart-cars-v1";
       const FAV_KEY = "mmt_cal_favs_v1";
+      const SCOPE_KEY = "mmt-planner-scope-v1";
 
       let owned = new Set<string>();
       let ownedCars = new Set<string>();
       let cart = new Set<string>();
       let cartCars = new Set<string>();
+      let roiLimit = 8;
+      let activeCalendarCat = "ALL";
       try {
         owned = new Set(JSON.parse(localStorage.getItem(OWNED_KEY) || "[]"));
         ownedCars = new Set(JSON.parse(localStorage.getItem(OWNED_CARS_KEY) || "[]"));
         cart = new Set(JSON.parse(localStorage.getItem(CART_KEY) || "[]"));
         cartCars = new Set(JSON.parse(localStorage.getItem(CART_CARS_KEY) || "[]"));
+        const savedScope = localStorage.getItem(SCOPE_KEY);
+        if (scopeSelect && savedScope) scopeSelect.value = savedScope;
       } catch { /* ignore */ }
 
       const params = new URLSearchParams(window.location.search);
@@ -835,6 +882,21 @@ const canonical = "https://muntru.me/calendar/";
           renderPlanner();
         });
       }
+      scopeSelect?.addEventListener("change", () => {
+        roiLimit = 8;
+        try { localStorage.setItem(SCOPE_KEY, scopeSelect.value); } catch {}
+        renderPlanner();
+      });
+      roiMoreBtn?.addEventListener("click", () => {
+        roiLimit += 8;
+        renderPlanner();
+      });
+      resetOwnedBtn?.addEventListener("click", () => {
+        owned.clear();
+        localStorage.setItem(OWNED_KEY, "[]");
+        roiLimit = 8;
+        renderPlanner();
+      });
       club40Chk?.addEventListener("change", renderPlanner);
       creditsInput?.addEventListener("input", renderPlanner);
       document.getElementById("plannerClearCart")?.addEventListener("click", () => {
@@ -845,20 +907,7 @@ const canonical = "https://muntru.me/calendar/";
         renderPlanner();
       });
 
-      const BASE_FREE_TRACKS = [
-        "Summit Point Raceway",
-        "Lime Rock Park",
-        "WeatherTech Raceway Laguna Seca",
-        "Okayama International Circuit",
-        "Oulton Park Circuit",
-        "Tsukuba Circuit",
-        "Charlotte Motor Speedway",
-        "Rudskogen Motorsenter",
-        "Virginia International Raceway",
-        "Motorsport Arena Oschersleben",
-        "Circuito de Navarra",
-        "Oran Park Raceway",
-      ];
+      const BASE_FREE_TRACKS = trackCatalog.filter((t) => t.isFree).map((t) => t.track);
       const BASE_FREE_CARS = [
         "Global Mazda MX-5 Cup",
         "Formula Vee",
@@ -905,6 +954,14 @@ const canonical = "https://muntru.me/calendar/";
         if (!nextHidden) renderPlanner();
       });
 
+      function matchesScope(cats: string[], scope: string): boolean {
+        if (scope === "ALL") return true;
+        if (scope === "ROAD" || scope === "ENDURANCE") {
+          return cats.includes("SPORTS CAR") || cats.includes("FORMULA CAR");
+        }
+        return cats.includes(scope);
+      }
+
       function renderPlanner() {
         const cards = Array.from(document.querySelectorAll<HTMLElement>("#calGrid .cal-card"));
         let favIds = new Set<string>();
@@ -912,12 +969,29 @@ const canonical = "https://muntru.me/calendar/";
           favIds = new Set(JSON.parse(localStorage.getItem(FAV_KEY) || "[]").map(String));
         } catch { /* ignore */ }
 
+        const ownedLower = new Set(Array.from(owned).map((t) => t.toLowerCase()));
+        const isTrackOwned = (name: string) => ownedLower.has(name.toLowerCase());
+        const isTrackFree = (name: string) => freeTrackSet.has(name.toLowerCase());
+
         const targetCards = favIds.size > 0
           ? cards.filter((c) => favIds.has(c.dataset.id || ""))
           : cards.slice(0, 6);
 
+        // Resolve discipline scope for historical recommendations
+        let effectiveScope = scopeSelect?.value || "AUTO";
+        if (effectiveScope === "AUTO") {
+          if (activeCalendarCat !== "ALL") {
+            effectiveScope = activeCalendarCat;
+          } else if (favIds.size > 0) {
+            const favCats = new Set(targetCards.map((c) => c.dataset.cat || "SPORTS CAR"));
+            effectiveScope = favCats.size === 1 ? Array.from(favCats)[0] : "ALL";
+          } else {
+            effectiveScope = "ROAD";
+          }
+        }
+
         const weekCoverage = new Array<boolean>(12).fill(false);
-        const roiMap = new Map<string, { track: string; weeksUnlocked: number; isSpecial: boolean }>();
+        const selectedWeeksMap = new Map<string, number>();
         const carRoiMap = new Map<string, { car: string; seriesCount: number; isSpecial: boolean }>();
 
         targetCards.forEach((card) => {
@@ -939,16 +1013,31 @@ const canonical = "https://muntru.me/calendar/";
             const w = Number(li.dataset.weekNum || 0);
             const trackName = (li.querySelector(".cal-week__track")?.textContent || "").trim();
             if (!trackName || w < 1 || w > 12) return;
-            const hasIt = owned.has(trackName) || cart.has(trackName);
+            const hasIt = isTrackOwned(trackName) || isTrackFree(trackName) || cart.has(trackName);
             if (hasIt) weekCoverage[w - 1] = true;
-            if (!owned.has(trackName)) {
-              const cur = roiMap.get(trackName) ?? { track: trackName, weeksUnlocked: 0, isSpecial: isEndu };
-              cur.weeksUnlocked += 1;
-              if (isEndu) cur.isSpecial = true;
-              roiMap.set(trackName, cur);
+            if (!isTrackOwned(trackName) && !isTrackFree(trackName)) {
+              const key = trackName.toLowerCase();
+              selectedWeeksMap.set(key, (selectedWeeksMap.get(key) ?? 0) + 1);
             }
           });
         });
+
+        // If all favorite cars are owned, fall back to popular multi-series cars across all S4 series
+        if (carRoiMap.size < 4) {
+          cards.slice(0, 40).forEach((card) => {
+            const isEndu = card.dataset.endurance === "1";
+            let cardCars: string[] = [];
+            try { cardCars = JSON.parse(card.dataset.cars || "[]"); } catch {}
+            cardCars.forEach((carName) => {
+              const cleanCar = String(carName || "").trim();
+              if (!cleanCar || ownedCars.has(cleanCar) || BASE_FREE_CARS.includes(cleanCar)) return;
+              const curCar = carRoiMap.get(cleanCar) ?? { car: cleanCar, seriesCount: 0, isSpecial: isEndu };
+              curCar.seriesCount += 1;
+              if (isEndu) curCar.isSpecial = true;
+              carRoiMap.set(cleanCar, curCar);
+            });
+          });
+        }
 
         const coveredCount = weekCoverage.filter(Boolean).length;
         if (weeksCoveredEl) {
@@ -956,50 +1045,112 @@ const canonical = "https://muntru.me/calendar/";
         }
         if (matrixEl) {
           matrixEl.innerHTML = weekCoverage
-            .map((ok, idx) => `<div class="h-7 rounded flex items-center justify-center font-bold border ${ok ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-300" : "bg-rose-500/10 border-rose-500/25 text-rose-300"}">S${idx + 1}</div>`)
+            .map((ok, idx) => `<div class="h-7 rounded flex items-center justify-center font-bold border ${ok ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-600 dark:text-emerald-300" : "bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-300"}">S${idx + 1}</div>`)
             .join("");
         }
 
-        const topRoi = Array.from(roiMap.values())
-          .sort((a, b) => (b.weeksUnlocked + (b.isSpecial ? 2 : 0)) - (a.weeksUnlocked + (a.isSpecial ? 2 : 0)))
-          .slice(0, 8);
+        // Build unified multi-season paid track recommendations (never runs dry!)
+        interface RecommendedTrack {
+          track: string;
+          selectedWeeks: number;
+          s4Series: number;
+          s3Series: number;
+          specialEvents: string[];
+          score: number;
+        }
+
+        const allCandidates: RecommendedTrack[] = [];
+        for (const meta of trackCatalog) {
+          if (meta.isFree || isTrackOwned(meta.track)) continue;
+          const selW = selectedWeeksMap.get(meta.track.toLowerCase()) ?? 0;
+          if (selW === 0 && !matchesScope(meta.cats, effectiveScope)) continue;
+          const totalMultiSeason = meta.s4Series + meta.s3Series;
+          const specialBonus = meta.specialEvents.length * 10;
+          const score = selW * 16 + totalMultiSeason * 1.5 + specialBonus;
+          allCandidates.push({
+            track: meta.track,
+            selectedWeeks: selW,
+            s4Series: meta.s4Series,
+            s3Series: meta.s3Series,
+            specialEvents: meta.specialEvents,
+            score,
+          });
+        }
+
+        allCandidates.sort((a, b) => b.score - a.score || (b.s4Series + b.s3Series) - (a.s4Series + a.s3Series));
+        const hasSelectedNeeds = allCandidates.some((c) => c.selectedWeeks > 0);
+        const shownRoi = allCandidates.slice(0, roiLimit);
+
+        if (resetOwnedBtn) {
+          const paidOwnedCount = Array.from(owned).filter((t) => !isTrackFree(t)).length;
+          resetOwnedBtn.hidden = paidOwnedCount === 0;
+        }
+
+        if (roiModeEl) {
+          const scopeLabel = effectiveScope === "ROAD" ? "Road (GT + Fórmula)" : effectiveScope === "ALL" ? "Todas las disciplinas" : effectiveScope;
+          roiModeEl.textContent = hasSelectedNeeds
+            ? `Priorizando tus series + historial 2026 S3/S4 (${scopeLabel})`
+            : `📈 Tus series cubiertas · Recomendando mejores compras históricas 2026 S3 + S4 + Special Events (${scopeLabel})`;
+        }
 
         if (roiListEl) {
-          roiListEl.innerHTML = topRoi.map((item, i) => {
-            const inCart = cart.has(item.track);
-            return `
-              <div class="p-2.5 rounded-xl border border-[var(--r-line)] bg-[var(--r-bg)] flex items-center justify-between gap-2 text-xs font-mono">
-                <div class="min-w-0">
-                  <div class="font-bold text-[var(--r-text)] truncate">${i + 1}º ${item.track}</div>
-                  <div class="text-[10px] text-[var(--r-muted)]">Desbloquea ${item.weeksUnlocked} sem.${item.isSpecial ? " · Special Event" : ""}</div>
+          if (shownRoi.length === 0) {
+            roiListEl.innerHTML = `<div class="sm:col-span-2 p-3 rounded-xl border border-[var(--r-line)] bg-[var(--r-bg)] text-xs font-mono text-[var(--r-muted)]">¡Increíble! Ya tienes marcados todos los circuitos de pago de esta disciplina. Cambia el filtro a "Todas las disciplinas" para ver más recomendaciones.</div>`;
+          } else {
+            roiListEl.innerHTML = shownRoi.map((item, i) => {
+              const inCart = cart.has(item.track);
+              const esc = item.track.replace(/"/g, "&quot;");
+              const parts: string[] = [];
+              if (item.selectedWeeks > 0) parts.push(`<span class="text-[var(--r-accent)] font-bold">+${item.selectedWeeks} sem. ahora</span>`);
+              parts.push(`S4: ${item.s4Series} · S3: ${item.s3Series} series`);
+              const evBadge = item.specialEvents.length > 0
+                ? `<div class="text-[10px] text-amber-600 dark:text-amber-300 font-bold truncate mt-0.5">🏆 ${item.specialEvents.slice(0, 2).join(" · ")}</div>`
+                : "";
+              return `
+                <div class="p-2.5 rounded-xl border border-[var(--r-line)] bg-[var(--r-bg)] flex items-center justify-between gap-2 text-xs font-mono">
+                  <div class="min-w-0">
+                    <div class="font-bold text-[var(--r-text)] truncate">${i + 1}º ${item.track}</div>
+                    <div class="text-[10px] text-[var(--r-muted)] truncate">${parts.join(" · ")}</div>
+                    ${evBadge}
+                  </div>
+                  <div class="flex items-center gap-1 shrink-0">
+                    <button type="button" data-own-track="${esc}" class="px-2 py-1 rounded border border-[var(--r-line)] text-[10px] text-[var(--r-muted)] hover:text-[var(--r-accent)] hover:border-[var(--r-accent)] cursor-pointer">Tengo</button>
+                    <button type="button" data-cart-track="${esc}" class="px-2 py-1 rounded border text-[10px] font-bold cursor-pointer ${inCart ? "border-rose-500/50 text-rose-500" : "border-[var(--r-accent)] text-[var(--r-accent)]"}">${inCart ? "Quitar" : "+ Carrito"}</button>
+                  </div>
                 </div>
-                <div class="flex items-center gap-1 shrink-0">
-                  <button type="button" data-own-track="${item.track.replace(/"/g, "&quot;")}" class="px-2 py-1 rounded border border-[var(--r-line)] text-[10px] text-[var(--r-muted)] hover:text-emerald-300 cursor-pointer">Tengo</button>
-                  <button type="button" data-cart-track="${item.track.replace(/"/g, "&quot;")}" class="px-2 py-1 rounded border text-[10px] font-bold cursor-pointer ${inCart ? "border-rose-400/50 text-rose-300" : "border-[var(--r-accent)] text-[var(--r-accent)]"}">${inCart ? "Quitar" : "+ Carrito"}</button>
-                </div>
-              </div>
-            `;
-          }).join("");
+              `;
+            }).join("");
 
-          roiListEl.querySelectorAll<HTMLButtonElement>("[data-cart-track]").forEach((btn) => {
-            btn.addEventListener("click", () => {
-              const t = btn.dataset.cartTrack || "";
-              if (cart.has(t)) cart.delete(t);
-              else cart.add(t);
-              localStorage.setItem(CART_KEY, JSON.stringify(Array.from(cart)));
-              renderPlanner();
+            roiListEl.querySelectorAll<HTMLButtonElement>("[data-cart-track]").forEach((btn) => {
+              btn.addEventListener("click", () => {
+                const t = btn.dataset.cartTrack || "";
+                if (cart.has(t)) cart.delete(t);
+                else cart.add(t);
+                localStorage.setItem(CART_KEY, JSON.stringify(Array.from(cart)));
+                renderPlanner();
+              });
             });
-          });
-          roiListEl.querySelectorAll<HTMLButtonElement>("[data-own-track]").forEach((btn) => {
-            btn.addEventListener("click", () => {
-              const t = btn.dataset.ownTrack || "";
-              owned.add(t);
-              cart.delete(t);
-              localStorage.setItem(OWNED_KEY, JSON.stringify(Array.from(owned)));
-              localStorage.setItem(CART_KEY, JSON.stringify(Array.from(cart)));
-              renderPlanner();
+            roiListEl.querySelectorAll<HTMLButtonElement>("[data-own-track]").forEach((btn) => {
+              btn.addEventListener("click", () => {
+                const t = btn.dataset.ownTrack || "";
+                owned.add(t);
+                cart.delete(t);
+                localStorage.setItem(OWNED_KEY, JSON.stringify(Array.from(owned)));
+                localStorage.setItem(CART_KEY, JSON.stringify(Array.from(cart)));
+                renderPlanner();
+              });
             });
-          });
+          }
+        }
+
+        if (roiMoreWrap && roiCountInfoEl && roiMoreBtn) {
+          const remaining = Math.max(0, allCandidates.length - shownRoi.length);
+          roiMoreWrap.hidden = allCandidates.length <= 8;
+          roiCountInfoEl.textContent = `Mostrando ${shownRoi.length} de ${allCandidates.length} circuitos de pago recomendables`;
+          roiMoreBtn.hidden = remaining === 0;
+          if (remaining > 0) {
+            roiMoreBtn.textContent = `Ver +${Math.min(8, remaining)} circuitos (${remaining} restantes) ↓`;
+          }
         }
 
         if (carRoiListEl) {
@@ -1016,8 +1167,8 @@ const canonical = "https://muntru.me/calendar/";
                   <div class="text-[10px] text-[var(--r-muted)]">Válido en ${item.seriesCount} ${item.seriesCount === 1 ? "serie" : "series"}${item.isSpecial ? " · Special Event" : ""}</div>
                 </div>
                 <div class="flex items-center gap-1 shrink-0">
-                  <button type="button" data-own-car="${esc}" class="px-2 py-1 rounded border border-[var(--r-line)] text-[10px] text-[var(--r-muted)] hover:text-emerald-300 cursor-pointer">Tengo</button>
-                  <button type="button" data-cart-car="${esc}" class="px-2 py-1 rounded border text-[10px] font-bold cursor-pointer ${inCart ? "border-rose-400/50 text-rose-300" : "border-[var(--r-accent)] text-[var(--r-accent)]"}">${inCart ? "Quitar" : "+ Carrito"}</button>
+                  <button type="button" data-own-car="${esc}" class="px-2 py-1 rounded border border-[var(--r-line)] text-[10px] text-[var(--r-muted)] hover:text-[var(--r-accent)] cursor-pointer">Tengo</button>
+                  <button type="button" data-cart-car="${esc}" class="px-2 py-1 rounded border text-[10px] font-bold cursor-pointer ${inCart ? "border-rose-500/50 text-rose-500" : "border-[var(--r-accent)] text-[var(--r-accent)]"}">${inCart ? "Quitar" : "+ Carrito"}</button>
                 </div>
               </div>
             `;
@@ -1049,7 +1200,7 @@ const canonical = "https://muntru.me/calendar/";
         // "Qué podrás correr con tu contenido + carrito"
         const playableCountEl = document.getElementById("plannerPlayableCount");
         const playableListEl = document.getElementById("plannerPlayableList");
-        const ownedPlusCartTracks = new Set([...owned, ...cart]);
+        const ownedPlusCartTracks = new Set([...owned, ...cart, ...BASE_FREE_TRACKS]);
         const ownedPlusCartCars = new Set([...ownedCars, ...cartCars]);
         const playableSeries: Array<{ name: string; weeksReady: number }> = [];
         cards.forEach((card) => {
@@ -1074,7 +1225,7 @@ const canonical = "https://muntru.me/calendar/";
           playableListEl.innerHTML = playableSeries.length === 0
             ? `<span class="text-[var(--r-muted)]">Pulsa "✔ Base Gratis iRacing" o añade 1 coche y 1 circuito al carrito para ver qué series puedes correr.</span>`
             : playableSeries.slice(0, 8).map((s) =>
-                `<span class="px-2 py-1 rounded-lg border border-emerald-500/35 bg-emerald-500/10 text-emerald-200">✓ ${s.name} (${s.weeksReady}/12 sem.)</span>`
+                `<span class="px-2 py-1 rounded-lg border border-emerald-500/35 bg-emerald-500/10 text-[var(--r-text)] font-semibold">✓ ${s.name} (${s.weeksReady}/12 sem.)</span>`
               ).join("");
         }
         if (cartItemsEl) {
@@ -1110,19 +1261,21 @@ const canonical = "https://muntru.me/calendar/";
         if (ticketEl) {
           ticketEl.innerHTML = `
             <div class="flex justify-between text-[var(--r-muted)]"><span>Subtotal (${totalCartItems} piezas)</span><span>$${ck.subtotalUsd.toFixed(2)}</span></div>
-            <div class="flex justify-between text-emerald-400"><span>Dto. Volumen (${ck.discountLabel})</span><span>-$${ck.discountUsd.toFixed(2)}</span></div>
-            ${ck.creditsUsedUsd > 0 ? `<div class="flex justify-between text-sky-400"><span>Participation Credits</span><span>-$${ck.creditsUsedUsd.toFixed(2)}</span></div>` : ""}
+            <div class="flex justify-between text-emerald-600 dark:text-emerald-400"><span>Dto. Volumen (${ck.discountLabel})</span><span>-$${ck.discountUsd.toFixed(2)}</span></div>
+            ${ck.creditsUsedUsd > 0 ? `<div class="flex justify-between text-sky-600 dark:text-sky-400"><span>Participation Credits</span><span>-$${ck.creditsUsedUsd.toFixed(2)}</span></div>` : ""}
             <div class="flex justify-between text-[var(--r-muted)]"><span>Base Imponible</span><span>$${ck.taxableBaseUsd.toFixed(2)}</span></div>
             <div class="flex justify-between text-[var(--r-muted)]"><span>${ck.taxName}</span><span>+$${ck.taxUsd.toFixed(2)}</span></div>
             <div class="flex justify-between text-sm font-black text-[var(--r-text)] pt-1 border-t border-[var(--r-line)]"><span>TOTAL REAL (USD)</span><span class="text-[var(--r-accent)]">$${ck.totalUsd.toFixed(2)}</span></div>
-            <div class="text-right text-[11px] font-bold text-white/80">≈ ${ck.localAmountFormatted} ${ck.localCurrency}</div>
+            <div class="text-right text-[11px] font-bold text-[var(--r-text)]">≈ ${ck.localAmountFormatted} ${ck.localCurrency}</div>
             <p class="text-[9.5px] text-[var(--r-muted)] leading-tight pt-1">Conversión orientativa; el tipo de cambio final depende de Steam o de tu tarjeta/PayPal.</p>
           `;
         }
       }
 
       if (!panel.hidden) renderPlanner();
-      window.addEventListener("mmt-planner-refresh", () => {
+      window.addEventListener("mmt-planner-refresh", (ev: Event) => {
+        const custom = ev as CustomEvent<{ cat?: string }>;
+        if (custom?.detail?.cat) activeCalendarCat = custom.detail.cat;
         if (!panel.hidden) renderPlanner();
       });
     }
