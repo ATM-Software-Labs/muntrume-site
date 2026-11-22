@@ -268,8 +268,16 @@ export const BRAND_LOGO_ASSETS: Record<string, BrandLogoAsset> = {
   }
 };
 
-export function brandLogoSvg(id: string, size = 32): string | null {
+export type BrandLogoTheme = "original" | "white" | "black";
+
+export function brandLogoSvg(id: string, size = 32, theme: BrandLogoTheme = "original"): string | null {
   const asset = BRAND_LOGO_ASSETS[id];
   if (!asset) return null;
+  if (theme === "white") {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${asset.viewBox}" width="${size}" height="${size}" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><defs><filter id="mmt-w"><feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/></filter></defs><g filter="url(#mmt-w)">${asset.inner}</g></svg>`;
+  }
+  if (theme === "black") {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${asset.viewBox}" width="${size}" height="${size}" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><defs><filter id="mmt-b"><feColorMatrix type="matrix" values="0 0 0 0 0.06 0 0 0 0 0.09 0 0 0 0 0.16 0 0 0 1 0"/></filter></defs><g filter="url(#mmt-b)">${asset.inner}</g></svg>`;
+  }
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${asset.viewBox}" width="${size}" height="${size}" preserveAspectRatio="xMidYMid meet" aria-hidden="true">${asset.inner}</svg>`;
 }

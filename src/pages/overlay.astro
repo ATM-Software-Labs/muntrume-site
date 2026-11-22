@@ -8,8 +8,8 @@ const appVersion = desktopPkg.version;
 const releaseUrl = "https://github.com/ATM-Software-Labs/muntrume-site/releases/latest";
 const repoUrl = "https://github.com/ATM-Software-Labs/muntrume-site/tree/main/desktop";
 
-const pageTitle = "MMT Sync Overlays · 60 FPS iRacing Telemetry HUD";
-const pageDescription = `MMT Sync Overlays v${appVersion}: lightweight native 60 FPS iRacing HUD with multiclass Standings, Relative, Catmull-Rom Track Map, Fuel calculator, and Radar. MMT.`;
+const pageTitle = "Free iRacing Overlays · MMT Sync 60 FPS Overlay for iRacing";
+const pageDescription = `Free open-source overlay for iRacing (MMT Sync v${appVersion}): 60 FPS native Rust HUD with Standings, Relative, GPS Track Map, Flat Track Map, Multiclass Traffic Indicator, Fuel Calculator, 60Hz Inputs, Radar & OBS single browser source. 100% free alternative to iOverlay, Racelab & Kapps.`;
 const pageUrl = "https://muntru.me/overlay/";
 const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
 
@@ -59,13 +59,25 @@ const overlaySchema = {
     {
       "@type": "SoftwareApplication",
       "@id": `${pageUrl}#software`,
-      name: "MMT Sync Overlays",
-      applicationCategory: "UtilitiesApplication",
+      name: "MMT Sync — Free iRacing Overlays",
+      alternateName: ["MMT Sync Overlays", "Overlay for iRacing", "iRacing Overlays Free"],
+      applicationCategory: "GameApplication",
       operatingSystem: "Windows 10, Windows 11",
       softwareVersion: appVersion,
+      license: "https://opensource.org/licenses/MIT",
       url: pageUrl,
       downloadUrl: releaseUrl,
       description: pageDescription,
+      featureList: [
+        "Multiclass Standings with 37 manufacturer logos",
+        "Live Relative & iRating calculator",
+        "Real GPS Track Map & Flat Track Map",
+        "Multiclass Traffic Indicator & 360 Proximity Radar",
+        "Fuel Calculator & Pit Exit Predictor",
+        "60 Hz Pedals, Steering & Inputs Telemetry",
+        "Single-Canvas OBS Browser Source (1920x1080)",
+        "100% Free & Open Source (MIT)",
+      ],
       offers: {
         "@type": "Offer",
         price: "0",
@@ -78,7 +90,7 @@ const overlaySchema = {
       "@id": `${pageUrl}#breadcrumb`,
       itemListElement: [
         { "@type": "ListItem", position: 1, name: "Inicio", item: "https://muntru.me/" },
-        { "@type": "ListItem", position: 2, name: "Overlay HUD", item: pageUrl },
+        { "@type": "ListItem", position: 2, name: "iRacing Overlays", item: pageUrl },
       ],
     },
   ],
@@ -88,7 +100,7 @@ const overlaySchema = {
 <Layout
   title={pageTitle}
   description={pageDescription}
-  keywords="mmt sync overlays, iracing hud, iracing overlay gratis, kapps alternativa, racelab alternativa, iracing telemetry hud, standings multiclase iracing, track map iracing, radar helicorsa iracing, muntrume motorsport"
+  keywords="overlay for iracing, iracing overlays, free iracing overlay, iracing hud, iracing overlay gratis, ioverlay alternative, racelab alternative, kapps alternative, open source iracing overlay, iracing track map, iracing standings overlay, iracing relative overlay, iracing obs overlay, mmt sync"
   canonical={pageUrl}
   ogImage={ogImage}
   ogImageAlt="MMT Sync Overlays — Telemetría HUD de baja latencia para iRacing"

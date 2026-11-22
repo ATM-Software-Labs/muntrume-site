@@ -64,11 +64,20 @@ const IRACING_PARTNERS = [
   { name: "Spa-Francorchamps", kind: "Circuito", halo: false, img: "https://s100.iracing.com/wp-content/uploads/2023/05/iR_Partners-10-400x200.png", href: "https://www.spa-francorchamps.be/" },
 ];
 
-const pageTitle = "Fabricantes y colores HUD";
+const pageTitle = "iRacing Car Brand Logos SVG (Original, Blanco & Negro) · Free iRacing Overlays";
 const withLogo = brands.filter((b) => b.logoVerified).length;
-const pageDescription = `${withLogo} fabricantes del catálogo iRacing con su emblema real y ${IRACING_PARTNERS.length} partners oficiales de iRacing. Equipo MMT.`;
+const pageDescription = `Free open-source iRacing overlay manufacturer logos in SVG (${withLogo} brands + ${IRACING_PARTNERS.length} iRacing partners). Export in original color, monochrome white or black for iRacing overlays, Standings, Relative & OBS HUDs.`;
 const pageUrl = "https://muntru.me/overlay/brands/";
 const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
+const brandsSchema = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: pageTitle,
+  description: pageDescription,
+  url: pageUrl,
+  keywords: "overlay for iRacing, iRacing overlays, free iRacing overlay, iRacing car brand logos SVG, open source iRacing HUD",
+  isPartOf: { "@id": "https://muntru.me/#website" },
+};
 ---
 
 <Layout
@@ -76,6 +85,7 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
   description={pageDescription}
   canonical={pageUrl}
   ogImage={ogImage}
+  schemaJson={brandsSchema}
 >
   <main class="brand-hud min-h-screen bg-[var(--r-bg)] text-[var(--r-text)] py-12 px-4 sm:px-6">
     <div class="r-wrap space-y-6">
@@ -96,10 +106,15 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
           </p>
         </div>
 
-        <!-- Instant Filter -->
-        <div class="w-full lg:w-80 lg:shrink-0">
-          <label for="brandSearchInput" class="sr-only">Buscar marca, CarPath o color hex</label>
-          <div class="relative">
+        <!-- Instant Filter + Logo Color Mode (Original / Blanco / Negro) -->
+        <div class="w-full lg:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2 lg:shrink-0">
+          <div class="inline-flex items-center rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] p-1 font-mono text-[11px]" role="group" aria-label="Estilo de color de los logos">
+            <button type="button" class="logo-tone-btn px-2.5 py-1 rounded-lg font-bold cursor-pointer transition" data-tone="original" aria-pressed="true">Original</button>
+            <button type="button" class="logo-tone-btn px-2.5 py-1 rounded-lg font-bold cursor-pointer transition" data-tone="white" aria-pressed="false">Blanco</button>
+            <button type="button" class="logo-tone-btn px-2.5 py-1 rounded-lg font-bold cursor-pointer transition" data-tone="black" aria-pressed="false">Negro</button>
+          </div>
+          <div class="relative sm:w-64">
+            <label for="brandSearchInput" class="sr-only">Buscar marca, CarPath o color hex</label>
             <input
               id="brandSearchInput"
               type="search"
@@ -352,8 +367,17 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
   </dialog>
 
   <style is:global>
-    .brand-mark > svg { width: 100%; height: 100%; }
+    .brand-mark > svg { width: 100%; height: 100%; transition: filter .18s ease; }
     .brand-kit-dialog:not([open]) { display: none; }
+    .logo-tone-btn { color: var(--r-muted); }
+    .logo-tone-btn[aria-pressed="true"] { background: var(--r-accent); color: #04140d; }
+    main.brand-hud[data-logo-tone="white"] .brand-mark > svg,
+    main.brand-hud[data-logo-tone="white"] .brand-standings-row svg { filter: brightness(0) invert(1); }
+    main.brand-hud[data-logo-tone="black"] .brand-mark { background-color: #f1f5f9 !important; border-color: rgba(15, 23, 42, 0.16) !important; }
+    main.brand-hud[data-logo-tone="black"] .brand-mark > svg { filter: brightness(0); }
+    main.brand-hud[data-logo-tone="black"] .brand-standings-row { background-color: #f1f5f9 !important; color: #0f172a !important; border-color: rgba(15, 23, 42, 0.16) !important; }
+    main.brand-hud[data-logo-tone="black"] .brand-standings-row span { color: #0f172a !important; }
+    main.brand-hud[data-logo-tone="black"] .brand-standings-row svg { filter: brightness(0); }
   </style>
   <script is:inline>
     (() => {
@@ -379,6 +403,29 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
           if (badge) badge.textContent = `${shown}/${cards.length}`;
         });
       }
+
+      const mainHud = document.querySelector("main.brand-hud");
+      let activeTone = "original";
+      const toneBtns = Array.from(document.querySelectorAll(".logo-tone-btn"));
+      const applyTone = (tone) => {
+        activeTone = tone;
+        if (mainHud) mainHud.setAttribute("data-logo-tone", tone);
+        toneBtns.forEach((b) => b.setAttribute("aria-pressed", b.getAttribute("data-tone") === tone ? "true" : "false"));
+      };
+      toneBtns.forEach((b) => {
+        b.addEventListener("click", () => applyTone(b.getAttribute("data-tone") || "original"));
+      });
+
+      const themedSvg = (rawSvg, tone) => {
+        if (!rawSvg || tone === "original") return rawSvg;
+        const m = rawSvg.match(/^(<svg[^>]*>)([\s\S]*)(<\/svg>)$/i);
+        if (!m) return rawSvg;
+        const matrix = tone === "white"
+          ? "0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"
+          : "0 0 0 0 0.06 0 0 0 0 0.09 0 0 0 0 0.16 0 0 0 1 0";
+        const fid = tone === "white" ? "mmt-mono-w" : "mmt-mono-b";
+        return `${m[1]}<defs><filter id="${fid}"><feColorMatrix type="matrix" values="${matrix}"/></filter></defs><g filter="url(#${fid})">${m[2]}</g>${m[3]}`;
+      };
 
       const dlg = document.getElementById("brandKitDialog");
       if (!dlg) return;
@@ -416,9 +463,9 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
           const note = btn.getAttribute("data-brand-note") || "";
 
           current = { name, slug, color, svg: rawSvg };
-          if (elName) elName.textContent = name;
-          if (elDark) elDark.innerHTML = rawSvg;
-          if (elLight) elLight.innerHTML = rawSvg;
+          if (elName) elName.textContent = `${name} (${activeTone === "white" ? "Blanco" : activeTone === "black" ? "Negro" : "Original"})`;
+          if (elDark) elDark.innerHTML = themedSvg(rawSvg, activeTone === "black" ? "white" : activeTone);
+          if (elLight) elLight.innerHTML = themedSvg(rawSvg, activeTone === "white" ? "black" : activeTone);
           if (elAlbumBtn) elAlbumBtn.setAttribute("href", album);
           if (elAlbumLabel) elAlbumLabel.textContent = hasAlbum ? `Abrir álbum de ${name} (${album}) →` : "Ver todos los álbumes de marcas →";
           if (elCopyHex) elCopyHex.textContent = `Copiar ${color}`;
@@ -447,22 +494,23 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
 
       document.getElementById("bkCopySvg")?.addEventListener("click", async () => {
         try {
-          await navigator.clipboard.writeText(current.svg);
-          flash(`✓ SVG de ${current.name} copiado al portapapeles`);
+          await navigator.clipboard.writeText(themedSvg(current.svg, activeTone));
+          flash(`✓ SVG (${activeTone}) de ${current.name} copiado al portapapeles`);
         } catch { flash("No se pudo copiar automáticamente"); }
       });
 
       document.getElementById("bkDownloadSvg")?.addEventListener("click", () => {
-        const blob = new Blob([current.svg], { type: "image/svg+xml;charset=utf-8" });
+        const outSvg = themedSvg(current.svg, activeTone);
+        const blob = new Blob([outSvg], { type: "image/svg+xml;charset=utf-8" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `${current.slug}-mmt-logo.svg`;
+        a.download = `${current.slug}-mmt-${activeTone}.svg`;
         document.body.appendChild(a);
         a.click();
         a.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
-        flash(`✓ Descargando ${current.slug}-mmt-logo.svg`);
+        flash(`✓ Descargando ${current.slug}-mmt-${activeTone}.svg`);
       });
 
       document.getElementById("bkCopyHex")?.addEventListener("click", async () => {
@@ -473,11 +521,12 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
       });
 
       document.getElementById("bkCopyDataUri")?.addEventListener("click", async () => {
-        const encoded = encodeURIComponent(current.svg).replace(/'/g, "%27").replace(/"/g, "%22");
+        const outSvg = themedSvg(current.svg, activeTone);
+        const encoded = encodeURIComponent(outSvg).replace(/'/g, "%27").replace(/"/g, "%22");
         const snippet = `<img src="data:image/svg+xml;utf8,${encoded}" alt="${current.name}" width="32" height="32" />`;
         try {
           await navigator.clipboard.writeText(snippet);
-          flash(`✓ Snippet <img> Data URI de ${current.name} copiado`);
+          flash(`✓ Snippet <img> Data URI (${activeTone}) de ${current.name} copiado`);
         } catch { flash("No se pudo copiar automáticamente"); }
       });
     })();

@@ -47,3 +47,13 @@ Los setups distribuidos bajo el sello **MTM Megasetup™** se estructuran en tre
 - **🔴 Modo Esport [E] (Nivel Pro):** Calibración agresiva de baja resistencia aerodinámica (*low drag*), alturas al límite reglamentario y diferencial de respuesta inmediata para clasificación (*hotlap*) y top-split.
 - **🟡 Modo Normal (Nivel Avanzado - Estándar MTM):** El mejor ratio velocidad/seguridad. Alturas con margen de escrutinio, ventana térmica estable en 170 kPa calientes y control ágil de *trail-braking*.
 - **🟢 Modo Safe [S] (Nivel Principiante / Iniciación):** Alturas sobreelevadas (+1.5 mm Del / +2.0 mm Tras), amortiguadores de alta velocidad suavizados para absorber bordillos y diferencial progresivo para eliminar trompos.
+
+---
+
+## 5. MMT Sync 2.0, Overlays, Telemetría Local y Recursos Open Source
+
+- **Lectura exclusivamente pasiva (`FILE_MAP_READ`):** MMT Sync lee la memoria compartida oficial del SDK de iRacing (IRSDK) únicamente en modo lectura, sin inyección de DLL ni modificación del simulador, cumpliendo íntegramente el *iRacing Sporting Code*.
+- **Privacidad local de GPS y OBS Bridge:** El auto-mapeo de circuitos (`Lat`, `Lon`, `Yaw`, `VelocityX/Y`) se calcula y almacena exclusivamente en local (`localStorage`). El puente OBS (`http://127.0.0.1:38421/stream`) escucha únicamente en la interfaz loopback local (`127.0.0.1`) y no expone datos a internet.
+- **Mapas de circuitos (MIT / OpenStreetMap):** Los trazados GPS preinstalados proceden de geometría abierta OpenStreetMap (`bacinger/f1-circuits`, licencia MIT).
+- **Emblemas de fabricantes y partners (`/overlay/brands/`):** Los logotipos minimalistas SVG y referencias de partners se incluyen únicamente con fines de identificación nominativa en overlays de sim racing (*nominative fair use*). Las marcas registradas pertenecen a sus respectivos propietarios.
+- **Contacto legal oficial:** `legal@muntru.me` · [muntru.me/contact/?to=legal](https://muntru.me/contact/?to=legal) · [Retirada de contenido (DMCA)](https://muntru.me/legal/retirada).
