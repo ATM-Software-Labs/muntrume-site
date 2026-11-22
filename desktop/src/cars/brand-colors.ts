@@ -47,6 +47,8 @@ export const BRAND_COLORS: Record<string, BrandColor> = {
   "logo-riley": { hex: "#64748B", kind: "neutral" },
   "logo-ram": { hex: "#94A3B8", kind: "neutral" },
   "logo-skip": { hex: "#EC2028", kind: "brand" },
+  "logo-fia": { hex: "#1D4ED8", kind: "brand" },
+  "logo-nascar": { hex: "#FACC15", kind: "brand" },
 };
 
 export function colorForLogo(logoId: string): BrandColor {

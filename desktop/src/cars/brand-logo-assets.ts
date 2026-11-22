@@ -251,6 +251,20 @@ export const BRAND_LOGO_ASSETS: Record<string, BrandLogoAsset> = {
     "sourceUrl": "https://www.tatuus.it/",
     "license": "Tatuus Racing emblem badge",
     "note": "Escudo Tatuus Racing con tricolor italiano y T de competición."
+  },
+  "logo-fia": {
+    "viewBox": "0 0 64 64",
+    "inner": "<ellipse cx=\"32\" cy=\"32\" rx=\"28\" ry=\"20\" fill=\"#002F6C\" stroke=\"#F8FAFC\" stroke-width=\"2.6\"/><ellipse cx=\"32\" cy=\"32\" rx=\"14\" ry=\"20\" fill=\"none\" stroke=\"#93C5FD\" stroke-width=\"1.4\" stroke-opacity=\"0.65\"/><line x1=\"4.5\" y1=\"32\" x2=\"59.5\" y2=\"32\" stroke=\"#93C5FD\" stroke-width=\"1.4\" stroke-opacity=\"0.55\"/><path fill=\"#FFFFFF\" d=\"M15 24 H27 V28 H19.5 V31 H25.5 V34.8 H19.5 V41 H15 Z M30 24 H34.5 V41 H30 Z M43 24 L49.5 41 H44.8 L43.6 37.5 H38.8 L37.6 41 H33.2 L39.7 24 Z M40 34 H42.5 L41.25 29.8 Z\"/>",
+    "sourceUrl": "https://www.fia.com/",
+    "license": "FIA minimalist globe emblem for iRacing FIA F4 & FIA Cross Car HUD.",
+    "note": "Emblema minimalista FIA (globo azul marino y siglas FIA) aplicado en FIA F4 y FIA Cross Car."
+  },
+  "logo-nascar": {
+    "viewBox": "0 0 64 64",
+    "inner": "<path fill=\"#FACC15\" d=\"M16 14 H26 L18 50 H8 Z\"/><path fill=\"#EF4444\" d=\"M29 14 H39 L31 50 H21 Z\"/><path fill=\"#2563EB\" d=\"M42 14 H52 L44 50 H34 Z\"/>",
+    "sourceUrl": "https://www.nascar.com/",
+    "license": "NASCAR minimalist 3-bar emblem without wordmark for dark HUD.",
+    "note": "Barras diagonales minimalistas NASCAR (amarillo, rojo y azul) sin texto largo."
   }
 };
 

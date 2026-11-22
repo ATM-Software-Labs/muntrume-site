@@ -34,34 +34,34 @@ const brands = getSupportedBrandsCatalog().map((b) => {
 });
 
 const IRACING_PARTNERS = [
-  { name: "FIA", kind: "Federación", darkBg: true, img: "https://s100.iracing.com/wp-content/uploads/2023/05/partner-fia-v2-400x200.png", href: "https://www.fia.com/" },
-  { name: "IMSA", kind: "Campeonato", darkBg: false, img: "https://s100.iracing.com/wp-content/uploads/2023/05/iR_Partners-04-400x200.png", href: "https://www.imsa.com/" },
-  { name: "NASCAR", kind: "Campeonato", darkBg: true, img: "https://s100.iracing.com/wp-content/uploads/2023/05/iR_Partners-02-400x200.png", href: "https://www.nascar.com/" },
-  { name: "IndyCar", kind: "Campeonato", darkBg: false, img: "https://s100.iracing.com/wp-content/uploads/2024/01/iR_Partners__IndyCar-400x200.png", href: "https://www.iracing.com/partners/" },
-  { name: "DTM", kind: "Campeonato", darkBg: false, img: "https://s100.iracing.com/wp-content/uploads/2026/09/iR-Partners-DTM-400x200.png", href: "https://www.dtm.com/" },
-  { name: "Supercars", kind: "Campeonato", darkBg: false, img: "https://s100.iracing.com/wp-content/uploads/2023/05/iR_Partners-06-400x200.png", href: "https://www.supercars.com/" },
-  { name: "TCR", kind: "Campeonato", darkBg: true, img: "https://s100.iracing.com/wp-content/uploads/2024/02/iR_Partners_TCR-400x200.png", href: "https://www.iracing.com/partners/" },
-  { name: "Cosworth", kind: "Ingeniería", darkBg: true, img: "https://s100.iracing.com/wp-content/uploads/2025/09/iR_Partners_Cosworth-400x200.png", href: "https://www.iracing.com/partners/" },
-  { name: "Aston Martin", kind: "Fabricante", darkBg: true, img: "https://s100.iracing.com/wp-content/uploads/2015/12/iR-Partners-AstonMartin-400x200.png", href: "https://www.astonmartin.com/racing" },
-  { name: "Audi Motorsport", kind: "Fabricante", darkBg: false, img: "https://s100.iracing.com/wp-content/uploads/2023/09/iR_Partners-15-400x200.png", href: "https://www.audi-motorsport.com/" },
-  { name: "BMW Motorsport", kind: "Fabricante", darkBg: true, img: "https://s100.iracing.com/wp-content/uploads/2023/05/iR_Partners-12-400x200.png", href: "https://www.bmw-motorsport.com/" },
-  { name: "Cadillac V-Series", kind: "Fabricante", darkBg: true, img: "https://s100.iracing.com/wp-content/uploads/2012/10/iR_Partners__Cadillac-400x200.png", href: "https://www.cadillac.com/" },
-  { name: "Dallara", kind: "Chasis", darkBg: false, img: "https://s100.iracing.com/wp-content/uploads/2023/09/iR_Partners-18-400x200.png", href: "https://www.dallara.it/" },
-  { name: "Ford Performance", kind: "Fabricante", darkBg: false, img: "https://s100.iracing.com/wp-content/uploads/2023/09/iR_Partners-17-400x200.png", href: "https://www.ford.com/" },
-  { name: "General Motors", kind: "Fabricante", darkBg: false, img: "https://s100.iracing.com/wp-content/uploads/2023/05/iR_Partners-11-400x200.png", href: "https://www.gm.com/" },
-  { name: "Classic Team Lotus", kind: "Fabricante", darkBg: false, img: "https://s100.iracing.com/wp-content/uploads/2023/09/iR_Partners-29-400x200.png", href: "https://www.classicteamlotus.co.uk/" },
-  { name: "Mazda", kind: "Fabricante", darkBg: true, img: "https://s100.iracing.com/wp-content/uploads/2026/09/ir-partners-mazda-400x200.png", href: "https://www.mazda.com/" },
-  { name: "McLaren", kind: "Fabricante", darkBg: true, img: "https://s100.iracing.com/wp-content/uploads/2026/09/iR-Partners-McLaren-400x200.png", href: "https://www.mclaren.com/" },
-  { name: "Mercedes-AMG", kind: "Fabricante", darkBg: true, img: "https://s100.iracing.com/wp-content/uploads/2023/05/iR_Partners-13-400x200.png", href: "https://www.mercedes-amg.com/" },
-  { name: "Mercedes-AMG F1", kind: "Equipo F1", darkBg: false, img: "https://s100.iracing.com/wp-content/uploads/2023/05/iR_Partners-03-400x200.png", href: "https://www.mercedesamgf1.com/" },
-  { name: "Radical Sportscars", kind: "Fabricante", darkBg: true, img: "https://s100.iracing.com/wp-content/uploads/2023/09/iR_Partners-27-400x200.png", href: "https://www.radicalsportscars.com/" },
-  { name: "RUF Automobile", kind: "Fabricante", darkBg: true, img: "https://s100.iracing.com/wp-content/uploads/2023/09/iR_Partners-32-400x200.png", href: "https://www.ruf-automobile.de/" },
-  { name: "Skip Barber", kind: "Escuela", darkBg: false, img: "https://s100.iracing.com/wp-content/uploads/2023/09/iR_Partners-30-400x200.png", href: "https://skipbarber.com/" },
-  { name: "Toyota Racing", kind: "Fabricante", darkBg: true, img: "https://s100.iracing.com/wp-content/uploads/2015/03/iR_Partners__Toyota-400x200.png", href: "https://www.toyotaracing.com/" },
-  { name: "Volkswagen", kind: "Fabricante", darkBg: true, img: "https://s100.iracing.com/wp-content/uploads/2023/09/iR_Partners-25-400x200.png", href: "https://www.vw.com/" },
-  { name: "Williams F1", kind: "Equipo F1", darkBg: true, img: "https://s100.iracing.com/wp-content/uploads/2012/10/iR_Partners__Williams-400x200.png", href: "https://www.williamsf1.com/" },
-  { name: "Nürburgring", kind: "Circuito", darkBg: false, img: "https://s100.iracing.com/wp-content/uploads/2023/05/iR_Partners-09-400x200.png", href: "https://www.nuerburgring.de/" },
-  { name: "Spa-Francorchamps", kind: "Circuito", darkBg: true, img: "https://s100.iracing.com/wp-content/uploads/2023/05/iR_Partners-10-400x200.png", href: "https://www.spa-francorchamps.be/" },
+  { name: "FIA", kind: "Federación", halo: false, img: "https://s100.iracing.com/wp-content/uploads/2023/05/partner-fia-v2-400x200.png", href: "https://www.fia.com/" },
+  { name: "IMSA", kind: "Campeonato", halo: true, img: "https://s100.iracing.com/wp-content/uploads/2023/05/iR_Partners-04-400x200.png", href: "https://www.imsa.com/" },
+  { name: "NASCAR", kind: "Campeonato", halo: false, img: "https://s100.iracing.com/wp-content/uploads/2023/05/iR_Partners-02-400x200.png", href: "https://www.nascar.com/" },
+  { name: "IndyCar", kind: "Campeonato", halo: true, img: "https://s100.iracing.com/wp-content/uploads/2024/01/iR_Partners__IndyCar-400x200.png", href: "https://www.iracing.com/partners/" },
+  { name: "DTM", kind: "Campeonato", halo: false, img: "https://s100.iracing.com/wp-content/uploads/2026/09/iR-Partners-DTM-400x200.png", href: "https://www.dtm.com/" },
+  { name: "Supercars", kind: "Campeonato", halo: false, img: "https://s100.iracing.com/wp-content/uploads/2023/05/iR_Partners-06-400x200.png", href: "https://www.supercars.com/" },
+  { name: "TCR", kind: "Campeonato", halo: false, img: "https://s100.iracing.com/wp-content/uploads/2024/02/iR_Partners_TCR-400x200.png", href: "https://www.iracing.com/partners/" },
+  { name: "Cosworth", kind: "Ingeniería", halo: false, img: "https://s100.iracing.com/wp-content/uploads/2025/09/iR_Partners_Cosworth-400x200.png", href: "https://www.iracing.com/partners/" },
+  { name: "Aston Martin", kind: "Fabricante", halo: false, img: "https://s100.iracing.com/wp-content/uploads/2015/12/iR-Partners-AstonMartin-400x200.png", href: "https://www.astonmartin.com/racing" },
+  { name: "Audi Motorsport", kind: "Fabricante", halo: false, img: "https://s100.iracing.com/wp-content/uploads/2023/09/iR_Partners-15-400x200.png", href: "https://www.audi-motorsport.com/" },
+  { name: "BMW Motorsport", kind: "Fabricante", halo: false, img: "https://s100.iracing.com/wp-content/uploads/2023/05/iR_Partners-12-400x200.png", href: "https://www.bmw-motorsport.com/" },
+  { name: "Cadillac V-Series", kind: "Fabricante", halo: false, img: "https://s100.iracing.com/wp-content/uploads/2012/10/iR_Partners__Cadillac-400x200.png", href: "https://www.cadillac.com/" },
+  { name: "Dallara", kind: "Chasis", halo: false, img: "https://s100.iracing.com/wp-content/uploads/2023/09/iR_Partners-18-400x200.png", href: "https://www.dallara.it/" },
+  { name: "Ford Performance", kind: "Fabricante", halo: false, img: "https://s100.iracing.com/wp-content/uploads/2023/09/iR_Partners-17-400x200.png", href: "https://www.ford.com/" },
+  { name: "General Motors", kind: "Fabricante", halo: false, img: "https://s100.iracing.com/wp-content/uploads/2023/05/iR_Partners-11-400x200.png", href: "https://www.gm.com/" },
+  { name: "Classic Team Lotus", kind: "Fabricante", halo: false, img: "https://s100.iracing.com/wp-content/uploads/2023/09/iR_Partners-29-400x200.png", href: "https://www.classicteamlotus.co.uk/" },
+  { name: "Mazda", kind: "Fabricante", halo: false, img: "https://s100.iracing.com/wp-content/uploads/2026/09/ir-partners-mazda-400x200.png", href: "https://www.mazda.com/" },
+  { name: "McLaren", kind: "Fabricante", halo: false, img: "https://s100.iracing.com/wp-content/uploads/2026/09/iR-Partners-McLaren-400x200.png", href: "https://www.mclaren.com/" },
+  { name: "Mercedes-AMG", kind: "Fabricante", halo: false, img: "https://s100.iracing.com/wp-content/uploads/2023/05/iR_Partners-13-400x200.png", href: "https://www.mercedes-amg.com/" },
+  { name: "Mercedes-AMG F1", kind: "Equipo F1", halo: false, img: "https://s100.iracing.com/wp-content/uploads/2023/05/iR_Partners-03-400x200.png", href: "https://www.mercedesamgf1.com/" },
+  { name: "Radical Sportscars", kind: "Fabricante", halo: false, img: "https://s100.iracing.com/wp-content/uploads/2023/09/iR_Partners-27-400x200.png", href: "https://www.radicalsportscars.com/" },
+  { name: "RUF Automobile", kind: "Fabricante", halo: false, img: "https://s100.iracing.com/wp-content/uploads/2023/09/iR_Partners-32-400x200.png", href: "https://www.ruf-automobile.de/" },
+  { name: "Skip Barber", kind: "Escuela", halo: true, img: "https://s100.iracing.com/wp-content/uploads/2023/09/iR_Partners-30-400x200.png", href: "https://skipbarber.com/" },
+  { name: "Toyota Racing", kind: "Fabricante", halo: false, img: "https://s100.iracing.com/wp-content/uploads/2015/03/iR_Partners__Toyota-400x200.png", href: "https://www.toyotaracing.com/" },
+  { name: "Volkswagen", kind: "Fabricante", halo: false, img: "https://s100.iracing.com/wp-content/uploads/2023/09/iR_Partners-25-400x200.png", href: "https://www.vw.com/" },
+  { name: "Williams F1", kind: "Equipo F1", halo: false, img: "https://s100.iracing.com/wp-content/uploads/2012/10/iR_Partners__Williams-400x200.png", href: "https://www.williamsf1.com/" },
+  { name: "Nürburgring", kind: "Circuito", halo: false, img: "https://s100.iracing.com/wp-content/uploads/2023/05/iR_Partners-09-400x200.png", href: "https://www.nuerburgring.de/" },
+  { name: "Spa-Francorchamps", kind: "Circuito", halo: false, img: "https://s100.iracing.com/wp-content/uploads/2023/05/iR_Partners-10-400x200.png", href: "https://www.spa-francorchamps.be/" },
 ];
 
 const pageTitle = "Fabricantes y colores HUD";
@@ -233,10 +233,17 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
               data-partner-search={`${p.name} ${p.kind}`.toLowerCase()}
             >
               <div
-                class={`h-16 rounded-lg flex items-center justify-center p-2 overflow-hidden border ${p.darkBg ? "bg-[#0d1117] border-white/15" : "bg-white border-black/10"}`}
-                style={p.darkBg ? "background-color:#0d1117;border-color:rgba(255,255,255,0.15)" : "background-color:#ffffff;border-color:rgba(0,0,0,0.10)"}
+                class="h-16 rounded-lg flex items-center justify-center p-2 overflow-hidden border bg-[#0d1117] border-white/10"
+                style="background-color:#0d1117;border-color:rgba(255,255,255,0.12)"
               >
-                <img src={p.img} alt={p.name} loading="lazy" decoding="async" class="max-h-full max-w-full object-contain" />
+                <img
+                  src={p.img}
+                  alt={p.name}
+                  loading="lazy"
+                  decoding="async"
+                  class="max-h-full max-w-full object-contain"
+                  style={p.halo ? "filter:drop-shadow(0 0 1.4px rgba(255,255,255,0.92)) brightness(1.08)" : undefined}
+                />
               </div>
               <div class="flex items-center justify-between gap-1 font-mono">
                 <span class="text-xs font-bold text-[var(--r-text)] truncate">{p.name}</span>

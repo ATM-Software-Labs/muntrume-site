@@ -482,7 +482,7 @@ const RAW_CAR_CATALOG: readonly RawCarEntry[] = [
   { carFolder: "dallarair01", brand: "Dallara", model: "iR-01", carClass: "Formula", svgLogoId: "logo-dallara", accentColor: "#00E699" },
   { carFolder: "indypropm18", brand: "Tatuus", model: "PM-18", carClass: "Formula", svgLogoId: "logo-tatuus", accentColor: "#C0C0C0" },
   { carFolder: "mercedesw13", brand: "Mercedes-AMG", model: "F1 W13 E Performance", carClass: "Formula", svgLogoId: "logo-mercedes", accentColor: "#00D2BE" },
-  { carFolder: "formulair04", brand: "Dallara", model: "iR-04", carClass: "Formula", svgLogoId: "logo-dallara", accentColor: "#C0C0C0" },
+  { carFolder: "formulair04", brand: "FIA", model: "FIA F4", carClass: "Formula", svgLogoId: "logo-fia", accentColor: "#1D4ED8" },
   { carFolder: "raygr22", brand: "Ford", model: "Ray GR22 FF1600", carClass: "Formula", svgLogoId: "logo-ford", accentColor: "#003478" },
   { carFolder: "formulavee", brand: "Volkswagen", model: "Formula Vee", carClass: "Formula", svgLogoId: "logo-vw", accentColor: "#001E50" },
   { carFolder: "formulaveeformulavee2", brand: "Volkswagen", model: "Formula Vee (Spec 2)", carClass: "Formula", svgLogoId: "logo-vw", accentColor: "#001E50" },
@@ -515,7 +515,7 @@ const RAW_CAR_CATALOG: readonly RawCarEntry[] = [
   { carFolder: "skmodified", brand: "Sin fabricante único", model: "SK Modified", carClass: "Oval", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
   { carFolder: "skmodifiedtour", brand: "Sin fabricante único", model: "Whelen Tour Modified", carClass: "Oval", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
   { carFolder: "ministock", brand: "Sin fabricante único", model: "Mini Stock", carClass: "Oval", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
-  { carFolder: "euronascar", brand: "Sin fabricante único", model: "EuroNASCAR", carClass: "Oval", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
+  { carFolder: "euronascar", brand: "NASCAR", model: "EuroNASCAR", carClass: "Oval", svgLogoId: "logo-nascar", accentColor: "#FACC15" },
   // Dirt: DIRTcar es un organismo de competición, no el constructor del chasis.
   { carFolder: "dirtlatemodel358", brand: "Sin fabricante único", model: "Dirt Late Model 358", carClass: "Dirt", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
   { carFolder: "dirtlatemodel438", brand: "Sin fabricante único", model: "Dirt Late Model Pro / 438", carClass: "Dirt", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
