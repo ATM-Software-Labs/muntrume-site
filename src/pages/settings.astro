@@ -139,23 +139,81 @@ import Layout from '../layouts/Layout.astro';
             <div class="ms-card">
               <div class="ms-card-head">
                 <div>
-                  <h2>App Authenticator (TOTP)</h2>
-                  <p>Compatible con Google Authenticator, Microsoft Authenticator, Ente Auth, Aegis o Bitwarden.</p>
+                  <h2>App Authenticator (QR · TOTP)</h2>
+                  <p>Escanea un código QR con Microsoft Authenticator, Google Authenticator, Oracle Mobile Authenticator, Ente Auth, Aegis o Bitwarden.</p>
                 </div>
                 <span id="totpStateBadge" class="ms-badge">Inactivo</span>
               </div>
               <div class="ms-btn-row">
-                <button type="button" id="btnTotpSetup" class="ms-btn ms-btn--primary">Configurar Authenticator</button>
+                <button type="button" id="btnTotpSetup" class="ms-btn ms-btn--primary">Configurar con código QR</button>
                 <button type="button" id="btnTotpDisable" class="ms-btn ms-btn--danger" hidden>Desactivar</button>
               </div>
               <div id="totpSetupBox" class="ms-subbox" hidden>
-                <p><strong>1.</strong> Añade esta clave secreta en tu app Authenticator:</p>
-                <code id="totpSecretVal" class="ms-secret"></code>
-                <p style="margin-top:12px"><strong>2.</strong> Guarda tus <strong>8 códigos de recuperación</strong> de un solo uso:</p>
-                <pre id="totpRecoveryVal" class="ms-recovery"></pre>
-                <div class="ms-inline-add" style="margin-top:12px">
-                  <input type="text" id="totpConfirmCode" inputmode="numeric" maxlength="6" placeholder="Código de 6 dígitos" />
-                  <button type="button" id="btnTotpConfirm" class="ms-btn ms-btn--primary">Activar Authenticator</button>
+                <div class="ms-totp-step">
+                  <p class="ms-step-title"><strong>Paso 1 · Instala tu app Authenticator</strong> (si aún no la tienes)</p>
+                  <div class="ms-app-grid">
+                    <div class="ms-app-card">
+                      <strong>Microsoft Authenticator</strong>
+                      <div class="ms-app-links">
+                        <a href="https://play.google.com/store/apps/details?id=com.azure.authenticator" target="_blank" rel="noopener noreferrer">Android</a> ·
+                        <a href="https://apps.apple.com/app/microsoft-authenticator/id983156458" target="_blank" rel="noopener noreferrer">iOS</a>
+                      </div>
+                    </div>
+                    <div class="ms-app-card">
+                      <strong>Google Authenticator</strong>
+                      <div class="ms-app-links">
+                        <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2" target="_blank" rel="noopener noreferrer">Android</a> ·
+                        <a href="https://apps.apple.com/app/google-authenticator/id388497605" target="_blank" rel="noopener noreferrer">iOS</a>
+                      </div>
+                    </div>
+                    <div class="ms-app-card">
+                      <strong>Oracle Mobile Authenticator</strong>
+                      <div class="ms-app-links">
+                        <a href="https://play.google.com/store/apps/details?id=com.oracle.idm.mobile.authenticator" target="_blank" rel="noopener noreferrer">Android</a> ·
+                        <a href="https://apps.apple.com/app/oracle-mobile-authenticator/id785809430" target="_blank" rel="noopener noreferrer">iOS</a>
+                      </div>
+                    </div>
+                    <div class="ms-app-card">
+                      <strong>Ente Auth / Aegis (Open Source)</strong>
+                      <div class="ms-app-links">
+                        <a href="https://ente.io/auth/" target="_blank" rel="noopener noreferrer">Ente Auth</a> ·
+                        <a href="https://getaegis.app/" target="_blank" rel="noopener noreferrer">Aegis</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="ms-totp-step">
+                  <p class="ms-step-title"><strong>Paso 2 · Escanea el código QR</strong> — Abre la app, pulsa <code>+</code> → <em>Escanear código QR</em></p>
+                  <div class="ms-qr-row">
+                    <div id="totpQrBox" class="ms-qr-frame" aria-label="Código QR de Authenticator"></div>
+                    <div class="ms-qr-side">
+                      <p class="ms-qr-note">El QR se genera 100 % en local en tu navegador (la clave nunca se envía a terceros).</p>
+                      <details class="ms-manual-key">
+                        <summary>¿No puedes escanear? Introducir clave manual</summary>
+                        <div class="ms-inline-add" style="margin-top:8px">
+                          <code id="totpSecretVal" class="ms-secret"></code>
+                          <button type="button" id="btnCopyTotpSecret" class="ms-btn ms-btn--ghost">Copiar</button>
+                        </div>
+                      </details>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="ms-totp-step">
+                  <div class="ms-step-head">
+                    <p class="ms-step-title"><strong>Paso 3 · Guarda tus 8 códigos de recuperación</strong> (un solo uso)</p>
+                    <button type="button" id="btnCopyRecovery" class="ms-btn ms-btn--ghost" style="padding:5px 12px;font-size:12px">Copiar códigos</button>
+                  </div>
+                  <pre id="totpRecoveryVal" class="ms-recovery"></pre>
+                </div>
+
+                <div class="ms-totp-step">
+                  <p class="ms-step-title"><strong>Paso 4 · Confirma con el código de 6 dígitos</strong> que muestra tu app</p>
+                  <div class="ms-inline-add">
+                    <input type="text" id="totpConfirmCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" />
+                    <button type="button" id="btnTotpConfirm" class="ms-btn ms-btn--primary">Activar Authenticator</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -575,6 +633,34 @@ import Layout from '../layouts/Layout.astro';
         });
       });
 
+      var qrLibPromise = null;
+      function loadQrLib() {
+        if (window.QRCode) return Promise.resolve(window.QRCode);
+        if (qrLibPromise) return qrLibPromise;
+        qrLibPromise = new Promise(function (resolve, reject) {
+          var sc = document.createElement("script");
+          sc.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
+          sc.async = true;
+          sc.onload = function () { window.QRCode ? resolve(window.QRCode) : reject(new Error("QRCode no disponible")); };
+          sc.onerror = function () { qrLibPromise = null; reject(new Error("No se pudo cargar el generador QR.")); };
+          document.head.appendChild(sc);
+        });
+        return qrLibPromise;
+      }
+
+      async function renderTotpQr(uri) {
+        var box = document.getElementById("totpQrBox");
+        if (!box || !uri) return;
+        box.innerHTML = '<span style="font-size:12px;color:#52525b">Generando QR…</span>';
+        try {
+          var QR = await loadQrLib();
+          box.innerHTML = "";
+          new QR(box, { text: uri, width: 184, height: 184, colorDark: "#09090b", colorLight: "#ffffff", correctLevel: QR.CorrectLevel.M });
+        } catch (err) {
+          box.innerHTML = '<span style="font-size:12px;color:#dc2626">Usa la clave manual abajo.</span>';
+        }
+      }
+
       // TOTP Setup / Confirm / Disable
       document.getElementById("btnTotpSetup")?.addEventListener("click", function () {
         withStepup(async function () {
@@ -583,9 +669,25 @@ import Layout from '../layouts/Layout.astro';
             document.getElementById("totpSecretVal").textContent = r.secret;
             document.getElementById("totpRecoveryVal").textContent = (r.recovery_codes || []).join("\n");
             document.getElementById("totpSetupBox").hidden = false;
-            notify("Añade la clave en tu app Authenticator y confirma con el código de 6 dígitos.", "info");
+            var uri = r.otpauth_uri || ("otpauth://totp/" + encodeURIComponent("Muntrume Motorsport:" + accountEmail) + "?secret=" + encodeURIComponent(r.secret) + "&issuer=Muntrume%20Motorsport&algorithm=SHA1&digits=6&period=30");
+            renderTotpQr(uri);
+            notify("Escanea el código QR con tu app Authenticator y confirma con el código de 6 dígitos.", "info");
           } catch (err) { notify(err.message, "error"); }
         });
+      });
+
+      document.getElementById("btnCopyTotpSecret")?.addEventListener("click", function () {
+        var txt = (document.getElementById("totpSecretVal")?.textContent || "").trim();
+        if (txt && navigator.clipboard) {
+          navigator.clipboard.writeText(txt).then(function () { notify("Clave secreta copiada al portapapeles.", "ok"); }).catch(function () {});
+        }
+      });
+
+      document.getElementById("btnCopyRecovery")?.addEventListener("click", function () {
+        var txt = (document.getElementById("totpRecoveryVal")?.textContent || "").trim();
+        if (txt && navigator.clipboard) {
+          navigator.clipboard.writeText(txt).then(function () { notify("Códigos de recuperación copiados. Guárdalos en un lugar seguro.", "ok"); }).catch(function () {});
+        }
       });
 
       document.getElementById("btnTotpConfirm")?.addEventListener("click", async function () {
@@ -739,9 +841,24 @@ import Layout from '../layouts/Layout.astro';
   .ms-pk-item span { font-size: 12px; color: var(--r-muted); }
   .ms-empty { font-size: 13px; color: var(--r-muted); padding: 12px 14px; border-radius: 12px; border: 1px dashed var(--r-line); }
 
-  .ms-subbox { margin-top: 14px; padding: 16px; border-radius: 12px; background: var(--r-bg); border: 1px solid var(--r-line); font-size: 13px; }
-  .ms-secret { display: block; padding: 10px 12px; border-radius: 8px; background: var(--r-surface); border: 1px solid var(--r-line); font-family: var(--r-mono, monospace); font-size: 14px; letter-spacing: 0.08em; word-break: break-all; }
-  .ms-recovery { margin: 6px 0 0; padding: 10px 12px; border-radius: 8px; background: var(--r-surface); border: 1px solid var(--r-line); font-family: var(--r-mono, monospace); font-size: 12.5px; columns: 2; }
+  .ms-subbox { margin-top: 16px; padding: 18px; border-radius: 14px; background: var(--r-bg); border: 1px solid var(--r-line); font-size: 13px; display: flex; flex-direction: column; gap: 18px; }
+  .ms-totp-step { display: flex; flex-direction: column; gap: 10px; }
+  .ms-step-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .ms-step-title { margin: 0; font-size: 13.5px; color: var(--r-text); }
+  .ms-app-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .ms-app-card { padding: 10px 12px; border-radius: 10px; background: var(--r-surface); border: 1px solid var(--r-line); }
+  .ms-app-card strong { display: block; font-size: 12.5px; color: var(--r-text); margin-bottom: 4px; }
+  .ms-app-links { font-size: 12px; color: var(--r-muted); }
+  .ms-app-links a { color: var(--r-accent, #10b981); text-decoration: none; font-weight: 600; }
+  .ms-app-links a:hover { text-decoration: underline; }
+  .ms-qr-row { display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap; }
+  .ms-qr-frame { width: 204px; height: 204px; padding: 10px; border-radius: 14px; background: #ffffff; border: 1px solid var(--r-line); display: grid; place-items: center; flex-shrink: 0; }
+  .ms-qr-frame img, .ms-qr-frame canvas { display: block; width: 184px !important; height: 184px !important; }
+  .ms-qr-side { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 10px; }
+  .ms-qr-note { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--r-muted); }
+  .ms-manual-key summary { cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--r-accent, #10b981); }
+  .ms-secret { display: block; padding: 10px 12px; border-radius: 8px; background: var(--r-surface); border: 1px solid var(--r-line); font-family: var(--r-mono, monospace); font-size: 13px; letter-spacing: 0.08em; word-break: break-all; }
+  .ms-recovery { margin: 0; padding: 10px 12px; border-radius: 8px; background: var(--r-surface); border: 1px solid var(--r-line); font-family: var(--r-mono, monospace); font-size: 12.5px; columns: 2; }
   .ms-pw-grid { display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: end; }
   .ms-field { display: grid; gap: 6px; }
   .ms-field span { font-size: 12.5px; font-weight: 600; color: var(--r-text); }
@@ -776,6 +893,7 @@ import Layout from '../layouts/Layout.astro';
     .ms-nav-item { width: auto; white-space: nowrap; }
     .ms-row { grid-template-columns: 1fr; gap: 8px; }
     .ms-pw-grid { grid-template-columns: 1fr; }
+    .ms-app-grid { grid-template-columns: 1fr; }
     .ms-inline-add { flex-direction: column; align-items: stretch; }
   }
 </style>
