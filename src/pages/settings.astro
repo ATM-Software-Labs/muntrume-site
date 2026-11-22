@@ -497,6 +497,42 @@ import Layout from '../layouts/Layout.astro';
         return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
       }
 
+      function escText(v) {
+        return String(v == null ? "" : v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      }
+
+      function detectDeviceMeta(rawName) {
+        var n = String(rawName || "").toLowerCase();
+        if (/ipad|tablet|\btab\b|surface|galaxy tab/i.test(n)) {
+          return {
+            kind: "Tablet",
+            svg: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>',
+          };
+        }
+        if (/samsung|iphone|pixel|android|xiaomi|redmi|oneplus|huawei|oppo|realme|motorola|m[oó]vil|phone|galaxy|s2[0-9]|z\s?(fold|flip)/i.test(n)) {
+          return {
+            kind: "Móvil",
+            svg: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>',
+          };
+        }
+        if (/yubi|titan|fido|usb|llave|security key|\bkey\b/i.test(n)) {
+          return {
+            kind: "Llave de seguridad",
+            svg: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg>',
+          };
+        }
+        if (/macbook|laptop|port[aá]til|thinkpad|notebook|xps|chromebook/i.test(n)) {
+          return {
+            kind: "Portátil",
+            svg: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><line x1="2" y1="20" x2="22" y2="20"/></svg>',
+          };
+        }
+        return {
+          kind: "PC",
+          svg: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
+        };
+      }
+
       function renderPasskeys(list) {
         var box = document.getElementById("passkeysList");
         var badge = document.getElementById("pkCountBadge");
@@ -508,7 +544,17 @@ import Layout from '../layouts/Layout.astro';
         }
         box.innerHTML = list.map(function (pk) {
           var created = (pk.created_at || "").slice(0, 10);
-          return '<div class="ms-pk-item"><div><strong>' + (pk.device_name || "Passkey") + '</strong><span>Registrada el ' + created + '</span></div><button type="button" class="ms-btn ms-btn--xs" data-del-pk="' + pk.credential_id + '">Eliminar</button></div>';
+          var devName = pk.device_name || "Passkey";
+          var meta = detectDeviceMeta(devName);
+          return '<div class="ms-pk-item">'
+            + '<div class="ms-pk-left">'
+            + '<span class="ms-pk-icon" aria-hidden="true">' + meta.svg + '</span>'
+            + '<div class="ms-pk-meta">'
+            + '<div class="ms-pk-title-row"><strong>' + escText(devName) + '</strong><span class="ms-pk-kind">' + meta.kind + '</span></div>'
+            + '<span class="ms-pk-date">Registrada el ' + escText(created) + '</span>'
+            + '</div></div>'
+            + '<button type="button" class="ms-pk-del" data-del-pk="' + escText(pk.credential_id) + '">Eliminar</button>'
+            + '</div>';
         }).join("");
         box.querySelectorAll("[data-del-pk]").forEach(function (btn) {
           btn.addEventListener("click", function () {
@@ -827,20 +873,47 @@ import Layout from '../layouts/Layout.astro';
 
   .ms-btn { border: 1px solid transparent; border-radius: 999px; padding: 9px 18px; font-size: 13.5px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; transition: opacity .15s, background .15s; }
   .ms-btn--primary { background: var(--r-accent, #10b981); color: #04130d; }
+  :global(html.light) .ms-btn--primary, :global(html[data-theme="light"]) .ms-btn--primary { color: #ffffff; }
   .ms-btn--primary:hover { opacity: .92; }
   .ms-btn--ghost { background: var(--r-bg); border-color: var(--r-line); color: var(--r-text); }
   .ms-btn--ghost:hover { background: var(--r-surface); }
-  .ms-btn--danger { background: rgba(239,68,68,.1); border-color: rgba(239,68,68,.35); color: #f87171; }
-  .ms-btn--xs { padding: 5px 12px; font-size: 12px; background: transparent; border-color: rgba(239,68,68,.35); color: #f87171; }
+  .ms-btn--danger { background: rgba(239,68,68,.1); border-color: rgba(239,68,68,.35); color: #ef4444; }
   .ms-btn-row { display: flex; flex-wrap: wrap; gap: 8px; }
 
   .ms-inline-add { display: flex; gap: 8px; align-items: center; }
   .ms-inline-add input, .ms-inline-add select { flex: 1; }
-  .ms-pk-list { display: grid; gap: 8px; margin-bottom: 14px; }
-  .ms-pk-item { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 11px 14px; border-radius: 12px; background: var(--r-bg); border: 1px solid var(--r-line); }
-  .ms-pk-item strong { display: block; font-size: 13.5px; }
-  .ms-pk-item span { font-size: 12px; color: var(--r-muted); }
-  .ms-empty { font-size: 13px; color: var(--r-muted); padding: 12px 14px; border-radius: 12px; border: 1px dashed var(--r-line); }
+  .ms-pk-list { display: grid; gap: 10px; margin-bottom: 16px; }
+  :global(.ms-pk-item) {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    padding: 12px 14px; border-radius: 12px;
+    background: var(--r-bg); border: 1px solid var(--r-line);
+    transition: border-color .15s ease;
+  }
+  :global(.ms-pk-item:hover) { border-color: color-mix(in srgb, var(--r-accent, #10b981) 45%, var(--r-line)); }
+  :global(.ms-pk-left) { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  :global(.ms-pk-icon) {
+    width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: color-mix(in srgb, var(--r-accent, #10b981) 12%, var(--r-surface));
+    border: 1px solid color-mix(in srgb, var(--r-accent, #10b981) 28%, var(--r-line));
+    color: var(--r-accent, #10b981);
+  }
+  :global(.ms-pk-meta) { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  :global(.ms-pk-title-row) { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  :global(.ms-pk-title-row strong) { font-size: 14px; font-weight: 700; color: var(--r-text); line-height: 1.25; }
+  :global(.ms-pk-kind) {
+    font: 700 10px/1.2 var(--r-mono, ui-monospace, monospace); text-transform: uppercase; letter-spacing: .04em;
+    padding: 2px 7px; border-radius: 999px;
+    background: var(--r-surface); border: 1px solid var(--r-line); color: var(--r-muted);
+  }
+  :global(.ms-pk-date) { font-size: 12px; color: var(--r-muted); line-height: 1.3; }
+  :global(.ms-pk-del) {
+    flex-shrink: 0; padding: 6px 13px; border-radius: 999px; font-size: 12px; font-weight: 700; cursor: pointer;
+    background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.35); color: #ef4444;
+    transition: background .15s ease, border-color .15s ease;
+  }
+  :global(.ms-pk-del:hover) { background: rgba(239,68,68,.16); border-color: rgba(239,68,68,.6); }
+  :global(.ms-empty) { font-size: 13px; color: var(--r-muted); padding: 12px 14px; border-radius: 12px; border: 1px dashed var(--r-line); }
 
   .ms-subbox { margin-top: 16px; padding: 18px; border-radius: 14px; background: var(--r-bg); border: 1px solid var(--r-line); font-size: 13px; display: flex; flex-direction: column; gap: 18px; }
   .ms-totp-step { display: flex; flex-direction: column; gap: 10px; }
