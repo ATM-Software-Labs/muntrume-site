@@ -1,12 +1,44 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { getSupportedBrandsCatalog } from "../../../desktop/src/brand-logos";
+import { BRAND_LOGO_ASSETS } from "../../../desktop/src/cars/brand-logo-assets";
 
 const brands = getSupportedBrandsCatalog();
 
+const IRACING_PARTNERS = [
+  { name: "FIA", kind: "Federación", img: "https://s100.iracing.com/wp-content/uploads/2023/05/partner-fia-v2-400x200.png", href: "https://www.fia.com/" },
+  { name: "IMSA", kind: "Campeonato", img: "https://s100.iracing.com/wp-content/uploads/2023/05/iR_Partners-04-400x200.png", href: "https://www.imsa.com/" },
+  { name: "NASCAR", kind: "Campeonato", img: "https://s100.iracing.com/wp-content/uploads/2023/05/iR_Partners-02-400x200.png", href: "https://www.nascar.com/" },
+  { name: "IndyCar", kind: "Campeonato", img: "https://s100.iracing.com/wp-content/uploads/2024/01/iR_Partners__IndyCar-400x200.png", href: "https://www.iracing.com/partners/" },
+  { name: "DTM", kind: "Campeonato", img: "https://s100.iracing.com/wp-content/uploads/2026/09/iR-Partners-DTM-400x200.png", href: "https://www.dtm.com/" },
+  { name: "Supercars", kind: "Campeonato", img: "https://s100.iracing.com/wp-content/uploads/2023/05/iR_Partners-06-400x200.png", href: "https://www.supercars.com/" },
+  { name: "TCR", kind: "Campeonato", img: "https://s100.iracing.com/wp-content/uploads/2024/02/iR_Partners_TCR-400x200.png", href: "https://www.iracing.com/partners/" },
+  { name: "Cosworth", kind: "Ingeniería", img: "https://s100.iracing.com/wp-content/uploads/2025/09/iR_Partners_Cosworth-400x200.png", href: "https://www.iracing.com/partners/" },
+  { name: "Aston Martin", kind: "Fabricante", img: "https://s100.iracing.com/wp-content/uploads/2015/12/iR-Partners-AstonMartin-400x200.png", href: "https://www.astonmartin.com/racing" },
+  { name: "Audi Motorsport", kind: "Fabricante", img: "https://s100.iracing.com/wp-content/uploads/2023/09/iR_Partners-15-400x200.png", href: "https://www.audi-motorsport.com/" },
+  { name: "BMW Motorsport", kind: "Fabricante", img: "https://s100.iracing.com/wp-content/uploads/2023/05/iR_Partners-12-400x200.png", href: "https://www.bmw-motorsport.com/" },
+  { name: "Cadillac V-Series", kind: "Fabricante", img: "https://s100.iracing.com/wp-content/uploads/2012/10/iR_Partners__Cadillac-400x200.png", href: "https://www.cadillac.com/" },
+  { name: "Dallara", kind: "Chasis", img: "https://s100.iracing.com/wp-content/uploads/2023/09/iR_Partners-18-400x200.png", href: "https://www.dallara.it/" },
+  { name: "Ford Performance", kind: "Fabricante", img: "https://s100.iracing.com/wp-content/uploads/2023/09/iR_Partners-17-400x200.png", href: "https://www.ford.com/" },
+  { name: "General Motors", kind: "Fabricante", img: "https://s100.iracing.com/wp-content/uploads/2023/05/iR_Partners-11-400x200.png", href: "https://www.gm.com/" },
+  { name: "Classic Team Lotus", kind: "Fabricante", img: "https://s100.iracing.com/wp-content/uploads/2023/09/iR_Partners-29-400x200.png", href: "https://www.classicteamlotus.co.uk/" },
+  { name: "Mazda", kind: "Fabricante", img: "https://s100.iracing.com/wp-content/uploads/2026/09/ir-partners-mazda-400x200.png", href: "https://www.mazda.com/" },
+  { name: "McLaren", kind: "Fabricante", img: "https://s100.iracing.com/wp-content/uploads/2026/09/iR-Partners-McLaren-400x200.png", href: "https://www.mclaren.com/" },
+  { name: "Mercedes-AMG", kind: "Fabricante", img: "https://s100.iracing.com/wp-content/uploads/2023/05/iR_Partners-13-400x200.png", href: "https://www.mercedes-amg.com/" },
+  { name: "Mercedes-AMG F1", kind: "Equipo F1", img: "https://s100.iracing.com/wp-content/uploads/2023/05/iR_Partners-03-400x200.png", href: "https://www.mercedesamgf1.com/" },
+  { name: "Radical Sportscars", kind: "Fabricante", img: "https://s100.iracing.com/wp-content/uploads/2023/09/iR_Partners-27-400x200.png", href: "https://www.radicalsportscars.com/" },
+  { name: "RUF Automobile", kind: "Fabricante", img: "https://s100.iracing.com/wp-content/uploads/2023/09/iR_Partners-32-400x200.png", href: "https://www.ruf-automobile.de/" },
+  { name: "Skip Barber", kind: "Escuela", img: "https://s100.iracing.com/wp-content/uploads/2023/09/iR_Partners-30-400x200.png", href: "https://skipbarber.com/" },
+  { name: "Toyota Racing", kind: "Fabricante", img: "https://s100.iracing.com/wp-content/uploads/2015/03/iR_Partners__Toyota-400x200.png", href: "https://www.toyotaracing.com/" },
+  { name: "Volkswagen", kind: "Fabricante", img: "https://s100.iracing.com/wp-content/uploads/2023/09/iR_Partners-25-400x200.png", href: "https://www.vw.com/" },
+  { name: "Williams F1", kind: "Equipo F1", img: "https://s100.iracing.com/wp-content/uploads/2012/10/iR_Partners__Williams-400x200.png", href: "https://www.williamsf1.com/" },
+  { name: "Nürburgring", kind: "Circuito", img: "https://s100.iracing.com/wp-content/uploads/2023/05/iR_Partners-09-400x200.png", href: "https://www.nuerburgring.de/" },
+  { name: "Spa-Francorchamps", kind: "Circuito", img: "https://s100.iracing.com/wp-content/uploads/2023/05/iR_Partners-10-400x200.png", href: "https://www.spa-francorchamps.be/" },
+];
+
 const pageTitle = "Fabricantes y colores HUD";
 const withLogo = brands.filter((b) => b.logoVerified).length;
-const pageDescription = `${withLogo} fabricantes del catálogo iRacing con su emblema real, adaptado al fondo oscuro. Equipo MMT.`;
+const pageDescription = `${withLogo} fabricantes del catálogo iRacing con su emblema real y ${IRACING_PARTNERS.length} partners oficiales de iRacing. Equipo MMT.`;
 const pageUrl = "https://muntru.me/overlay/brands/";
 const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
 ---
@@ -79,7 +111,20 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
             </div>
 
             <div>
-              <h2 data-no-translate class="text-sm font-bold text-[var(--r-text)]">{b.name}</h2>
+              <div class="flex items-center justify-between gap-2">
+                <h2 data-no-translate class="text-sm font-bold text-[var(--r-text)]">{b.name}</h2>
+                {BRAND_LOGO_ASSETS[b.logoId]?.sourceUrl && (
+                  <a
+                    href={BRAND_LOGO_ASSETS[b.logoId].sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-[9px] text-[var(--r-muted)] hover:text-[var(--r-accent)] underline shrink-0"
+                    title="Fuente oficial del emblema"
+                  >
+                    Fuente ↗
+                  </a>
+                )}
+              </div>
               <p class="text-[10px] text-[var(--r-muted)]" data-i18n={b.logoVerified ? "brands.logo" : "brands.nologo"}>{b.logoVerified ? "Emblema oficial HUD" : "Marca neutra HUD"}</p>
               <ul data-no-translate class="mt-1.5 space-y-0.5 max-h-40 overflow-y-auto pr-1">
                 {b.cars.map((car) => (
@@ -114,6 +159,41 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
           </article>
         ))}
       </section>
+
+      <!-- Official iRacing Partners Gallery -->
+      <section class="pt-8 border-t border-[var(--r-line)] space-y-4" aria-labelledby="partnersHeading">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+          <div>
+            <p class="font-mono text-[11px] uppercase tracking-widest text-[var(--r-accent)] font-bold">Referencias oficiales · iracing.com/partners</p>
+            <h2 id="partnersHeading" class="text-xl font-extrabold font-display tracking-tight text-[var(--r-text)]">
+              Partners, fabricantes y campeonatos oficiales ({IRACING_PARTNERS.length})
+            </h2>
+          </div>
+          <a href="https://www.iracing.com/partners/" target="_blank" rel="noopener noreferrer" class="text-xs font-mono text-[var(--r-accent)] hover:underline">
+            Ver directorio oficial en iRacing.com ↗
+          </a>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          {IRACING_PARTNERS.map((p) => (
+            <a
+              href={p.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="partner-card rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] p-3 flex flex-col gap-2 hover:border-[var(--r-accent)] transition"
+              data-partner-search={`${p.name} ${p.kind}`.toLowerCase()}
+            >
+              <div class="h-16 rounded-lg bg-white flex items-center justify-center p-2 overflow-hidden border border-black/10">
+                <img src={p.img} alt={p.name} loading="lazy" decoding="async" class="max-h-full max-w-full object-contain" />
+              </div>
+              <div class="flex items-center justify-between gap-1 font-mono">
+                <span class="text-xs font-bold text-[var(--r-text)] truncate">{p.name}</span>
+                <span class="text-[9px] text-[var(--r-muted)] shrink-0">{p.kind}</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
     </div>
   </main>
 
@@ -125,6 +205,7 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
       const input = document.getElementById("brandSearchInput");
       const badge = document.getElementById("brandCountBadge");
       const cards = Array.from(document.querySelectorAll(".brand-card"));
+      const partnerCards = Array.from(document.querySelectorAll(".partner-card"));
       if (!input) return;
 
       input.addEventListener("input", () => {
@@ -135,6 +216,10 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
           const match = !q || hay.includes(q);
           card.style.display = match ? "" : "none";
           if (match) shown++;
+        });
+        partnerCards.forEach((card) => {
+          const hay = card.getAttribute("data-partner-search") || "";
+          card.style.display = !q || hay.includes(q) ? "" : "none";
         });
         if (badge) badge.textContent = `${shown}/${cards.length}`;
       });
