@@ -121,7 +121,7 @@ Para volver atrás: `git revert <commit>` y push a `main`, que vuelve a desplega
 
 ## Contribuir
 
-Las plantillas de issue y de pull request están en `.github/`. Antes del PR, ejecuta `npm run check` y `npm run build`. Si encuentras una vulnerabilidad, sigue [SECURITY.md](SECURITY.md) en lugar de abrir un issue público.
+Las plantillas de issue y de pull request están en `.github/`. Antes del PR, ejecuta `npm run check` y `npm run build`. Si encuentras una vulnerabilidad, sigue [.github/SECURITY.md](.github/SECURITY.md) en lugar de abrir un issue público.
 
 ## Instalación de MMT Sync (Windows)
 
@@ -139,4 +139,4 @@ Puedes instalar MMT Sync de dos formas:
 
 ## Licencia
 
-[MIT](LICENSE) © 2026 Alberto Trujillo Mingorance / Muntrume Motorsport · [Marcas registradas](TRADEMARKS.md). Fuentes autoalojadas bajo [SIL OFL 1.1](public/assets/fonts/OFL.txt).
+[MIT](LICENSE) © 2026 Alberto Trujillo Mingorance / Muntrume Motorsport · [Aviso Legal](docs/LEGAL.md) · [Marcas registradas](docs/TRADEMARKS.md). Fuentes autoalojadas bajo [SIL OFL 1.1](public/assets/fonts/OFL.txt).
