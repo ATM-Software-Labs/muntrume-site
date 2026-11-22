@@ -1737,7 +1737,8 @@ async function issuePilotCredentials({ request_id = null, name, email, role = "d
     appendAuditEvent("admin", "atrumin16@gmail.com", `Credenciales emitidas: ${cleanName} (${cleanEmail})`, data.email_sent ? "ENVIADO" : "LISTO");
     await refreshRaceControlData();
     if (data.email_sent) {
-      showRcNotice("Acceso enviado", `Correo seguro enviado a ${cleanEmail}.`, "success");
+      const via = data.email_provider ? ` vía ${data.email_provider}` : "";
+      showRcNotice("Correo de bienvenida enviado", `Enviado a ${cleanEmail}${via} con enlace de primer acceso y métodos Passkey/2FA.`, "success");
     } else if (secret) {
       openCredentialsResultModal({ name: data.pilot?.name || cleanName, email: data.pilot?.email || cleanEmail, secret, isTempPass });
       showRcNotice("Acceso creado", data.email_error ? `Correo pendiente (${data.email_error}). Usa el modal de respaldo.` : "Credenciales listas.", "warn");
@@ -1768,17 +1769,18 @@ async function generateDriverAccessFromBtn(btn, method = "link") {
   }
   const alwaysOpenModal = method === "copy_link";
   try {
-    const data = await rcAdminFetch("/api/setups/admin/resend-invite", { email, kind: "reset" });
+    const data = await rcAdminFetch("/api/setups/admin/resend-invite", { email, kind: "auto" });
     const secret = data.set_password_link || "";
-    appendAuditEvent("admin", "atrumin16@gmail.com", `Reset 72h emitido para ${email}`, "RESET");
+    const kindLbl = data.kind === "invite" ? "Bienvenida / Primer acceso 72h" : "Reset 72h";
+    appendAuditEvent("admin", "atrumin16@gmail.com", `${kindLbl} emitido para ${email}`, data.kind === "invite" ? "INVITE" : "RESET");
     await refreshRaceControlData();
     if (secret && (alwaysOpenModal || !data.email_sent)) {
       openCredentialsResultModal({ name, email, secret, isTempPass: false });
       try { await navigator.clipboard.writeText(secret); } catch {}
     }
     showRcNotice(
-      alwaysOpenModal ? "Enlace 72h copiado" : (data.email_sent ? "Correo de reseteo enviado" : "Correo pendiente"),
-      alwaysOpenModal ? `Enlace copiado al portapapeles para ${email}.` : (data.email_sent ? `Correo enviado a ${email}.` : `Copia el enlace desde el modal.`),
+      alwaysOpenModal ? "Enlace 72h copiado" : (data.email_sent ? `Correo (${kindLbl}) enviado` : "Correo pendiente"),
+      alwaysOpenModal ? `Enlace copiado al portapapeles para ${email}.` : (data.email_sent ? `Enviado a ${email}.` : `${data.email_error || "Copia el enlace desde el modal."}`),
       data.email_sent || alwaysOpenModal ? "success" : "warn"
     );
   } catch (err) {

@@ -805,8 +805,9 @@ const LICENSE_CATEGORIES = [
           <div class="g-field">
             <label for="newDriverMethod">Método de Credencial</label>
             <select id="newDriverMethod">
-              <option value="link">Enlace único (72 h)</option>
-              <option value="temp_password">Contraseña temporal</option>
+              <option value="link">Bienvenida + Enlace crear contraseña (72 h)</option>
+              <option value="passwordless">Bienvenida + Código OTP + Passkey + Enlace (72 h)</option>
+              <option value="temp_password">Bienvenida + Contraseña temporal</option>
             </select>
           </div>
         </div>
@@ -832,7 +833,7 @@ const LICENSE_CATEGORIES = [
       <p id="credModalSub" class="rc-muted">Copia el enlace o el mensaje para enviárselo por Discord o WhatsApp.</p>
       <div class="rc-cred-box">
         <div class="rc-kpi-tag" id="credSecretLabel">ENLACE PERSONAL DE ACCESO (72H)</div>
-        <code id="credSecretCode" class="rc-cred-secret">https://muntru.me/garage?set_password=...</code>
+        <code id="credSecretCode" class="rc-cred-secret">https://muntru.me/garage/?setpw=...</code>
       </div>
       <div class="g-field" style="margin-top:10px">
         <label for="credWelcomeTemplate">Mensaje de Bienvenida</label>
