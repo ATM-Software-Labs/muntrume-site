@@ -2,8 +2,36 @@
 import Layout from "../../layouts/Layout.astro";
 import { getSupportedBrandsCatalog } from "../../../desktop/src/brand-logos";
 import { BRAND_LOGO_ASSETS } from "../../../desktop/src/cars/brand-logo-assets";
+import { CAR_CATALOG_LIST } from "../../../desktop/src/cars/catalog";
 
-const brands = getSupportedBrandsCatalog();
+const slugifyBrand = (brand: string) =>
+  brand
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+const validAlbumSlugs = new Set(
+  CAR_CATALOG_LIST.filter((c) => Boolean(c.previewImg))
+    .map((c) => slugifyBrand(c.brand))
+    .filter((s) => s && s !== "sin-fabricante-unico")
+);
+
+const brands = getSupportedBrandsCatalog().map((b) => {
+  const slug = slugifyBrand(b.name);
+  const albumHref = validAlbumSlugs.has(slug) ? `/${slug}/` : "/albums/";
+  const asset = BRAND_LOGO_ASSETS[b.logoId];
+  return {
+    ...b,
+    slug,
+    albumHref,
+    hasDedicatedAlbum: validAlbumSlugs.has(slug),
+    sourceUrl: asset?.sourceUrl || "",
+    license: asset?.license || "MIT · ATM Software Labs / Muntrume Motorsport",
+    note: asset?.note || "",
+  };
+});
 
 const IRACING_PARTNERS = [
   { name: "FIA", kind: "Federación", darkBg: true, img: "https://s100.iracing.com/wp-content/uploads/2023/05/partner-fia-v2-400x200.png", href: "https://www.fia.com/" },
@@ -92,15 +120,25 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
             class="brand-card rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] p-3.5 flex flex-col gap-3 font-mono tabular-nums hover:border-[var(--r-accent)] transition"
             data-search={`${b.name} ${b.carPaths.join(" ")} ${b.color}`.toLowerCase()}
           >
-            <!-- Top: 48x48 Official SVG + HEX Badge -->
+            <!-- Top: 48x48 Official SVG (click -> Open Source SVG Kit & Album) + HEX Badge -->
             <div class="flex items-start justify-between gap-2">
-              <span
-                class="brand-mark w-12 h-12 rounded-xl border border-white/15 bg-[#090b0f] shadow-inner flex items-center justify-center shrink-0 p-1.5"
+              <button
+                type="button"
+                class="brand-mark brand-open-kit w-12 h-12 rounded-xl border border-white/15 bg-[#090b0f] shadow-inner flex items-center justify-center shrink-0 p-1.5 cursor-pointer hover:border-[var(--r-accent)] hover:scale-105 transition"
                 style="background-color:#090b0f;border-color:rgba(255,255,255,0.15)"
-                title={b.logoVerified ? b.name : `${b.name}: sin emblema verificable`}
+                title={`Abrir kit Open Source SVG y álbum de ${b.name}`}
+                aria-label={`Exportar logo SVG open-source o abrir álbum de ${b.name}`}
+                data-brand-name={b.name}
+                data-brand-slug={b.slug}
+                data-brand-color={b.color}
+                data-brand-album={b.albumHref}
+                data-brand-has-album={b.hasDedicatedAlbum ? "1" : "0"}
+                data-brand-source={b.sourceUrl}
+                data-brand-license={b.license}
+                data-brand-note={b.note}
               >
                 <Fragment set:html={b.svg} />
-              </span>
+              </button>
               <span
                 data-no-translate
                 class="inline-flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-md border border-[var(--r-line)] bg-[var(--r-bg-2)] font-bold tracking-wide text-[var(--r-text)]"
@@ -112,20 +150,31 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
 
             <div>
               <div class="flex items-center justify-between gap-2">
-                <h2 data-no-translate class="text-sm font-bold text-[var(--r-text)]">{b.name}</h2>
-                {BRAND_LOGO_ASSETS[b.logoId]?.sourceUrl && (
+                <a href={b.albumHref} data-no-translate class="text-sm font-bold text-[var(--r-text)] hover:text-[var(--r-accent)] transition truncate">
+                  {b.name}
+                </a>
+                <div class="flex items-center gap-2 shrink-0">
                   <a
-                    href={BRAND_LOGO_ASSETS[b.logoId].sourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="text-[9px] text-[var(--r-muted)] hover:text-[var(--r-accent)] underline shrink-0"
-                    title="Fuente oficial del emblema"
+                    href={b.albumHref}
+                    class="text-[9px] font-bold text-[var(--r-accent)] hover:underline"
+                    title={`Ir al álbum de ${b.name}`}
                   >
-                    Fuente ↗
+                    Álbum →
                   </a>
-                )}
+                  {b.sourceUrl && (
+                    <a
+                      href={b.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="text-[9px] text-[var(--r-muted)] hover:text-[var(--r-accent)] underline"
+                      title="Fuente oficial del emblema"
+                    >
+                      Fuente ↗
+                    </a>
+                  )}
+                </div>
               </div>
-              <p class="text-[10px] text-[var(--r-muted)]" data-i18n={b.logoVerified ? "brands.logo" : "brands.nologo"}>{b.logoVerified ? "Emblema oficial HUD" : "Marca neutra HUD"}</p>
+              <p class="text-[10px] text-[var(--r-muted)]" data-i18n={b.logoVerified ? "brands.logo" : "brands.nologo"}>{b.logoVerified ? "Emblema oficial HUD · Clic en el logo para SVG" : "Marca neutra HUD · Clic en el logo para SVG"}</p>
               <ul data-no-translate class="mt-1.5 space-y-0.5 max-h-40 overflow-y-auto pr-1">
                 {b.cars.map((car) => (
                   <li class="text-[10px] text-[var(--r-muted)] break-all flex items-baseline gap-1.5">
@@ -200,8 +249,104 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
     </div>
   </main>
 
+  <!-- Open-Source Logo Kit & Brand Album Modal -->
+  <dialog
+    id="brandKitDialog"
+    class="brand-kit-dialog fixed inset-0 m-auto w-[min(560px,calc(100vw-24px))] rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] text-[var(--r-text)] p-0 shadow-2xl backdrop:bg-black/75 backdrop:backdrop-blur-sm"
+  >
+    <div class="p-5 space-y-4 font-mono">
+      <div class="flex items-start justify-between gap-3 border-b border-[var(--r-line)] pb-3">
+        <div>
+          <p class="text-[10px] uppercase tracking-widest text-[var(--r-accent)] font-bold">Open-Source SVG Kit · HUD Minimalista</p>
+          <h3 id="bkName" class="text-lg font-extrabold font-display text-[var(--r-text)] mt-0.5">Marca</h3>
+        </div>
+        <button
+          type="button"
+          id="bkClose"
+          class="w-8 h-8 rounded-lg border border-[var(--r-line)] bg-[var(--r-bg-2)] text-[var(--r-muted)] hover:text-[var(--r-text)] hover:border-[var(--r-accent)] flex items-center justify-center cursor-pointer"
+          aria-label="Cerrar"
+        >
+          ✕
+        </button>
+      </div>
+
+      <!-- Dual preview: Dark HUD + Light -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="rounded-xl border border-white/15 bg-[#090b0f] p-4 flex flex-col items-center justify-center gap-2" style="background-color:#090b0f">
+          <div id="bkPreviewDark" class="w-16 h-16 flex items-center justify-center [&>svg]:w-full [&>svg]:h-full"></div>
+          <span class="text-[10px] text-slate-400">HUD Oscuro (#090B0F)</span>
+        </div>
+        <div class="rounded-xl border border-black/15 bg-[#f1f5f9] p-4 flex flex-col items-center justify-center gap-2" style="background-color:#f1f5f9">
+          <div id="bkPreviewLight" class="w-16 h-16 flex items-center justify-center [&>svg]:w-full [&>svg]:h-full"></div>
+          <span class="text-[10px] text-slate-600">Fondo Claro (#F1F5F9)</span>
+        </div>
+      </div>
+
+      <!-- Primary Album CTA + Open-Source Export Buttons -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <a
+          id="bkAlbumBtn"
+          href="/albums/"
+          class="sm:col-span-2 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold bg-[var(--r-accent)] text-[#04140d] hover:opacity-90 transition"
+        >
+          <span id="bkAlbumLabel">Ir al álbum de la marca →</span>
+        </a>
+        <button
+          type="button"
+          id="bkCopySvg"
+          class="rounded-xl border border-[var(--r-line)] bg-[var(--r-bg-2)] hover:border-[var(--r-accent)] px-3 py-2 text-xs font-bold text-[var(--r-text)] cursor-pointer transition"
+        >
+          Copiar SVG
+        </button>
+        <button
+          type="button"
+          id="bkDownloadSvg"
+          class="rounded-xl border border-[var(--r-line)] bg-[var(--r-bg-2)] hover:border-[var(--r-accent)] px-3 py-2 text-xs font-bold text-[var(--r-text)] cursor-pointer transition"
+        >
+          Descargar .svg
+        </button>
+        <button
+          type="button"
+          id="bkCopyHex"
+          class="rounded-xl border border-[var(--r-line)] bg-[var(--r-bg-2)] hover:border-[var(--r-accent)] px-3 py-2 text-xs font-bold text-[var(--r-text)] cursor-pointer transition"
+        >
+          Copiar color HEX
+        </button>
+        <button
+          type="button"
+          id="bkCopyDataUri"
+          class="rounded-xl border border-[var(--r-line)] bg-[var(--r-bg-2)] hover:border-[var(--r-accent)] px-3 py-2 text-xs font-bold text-[var(--r-text)] cursor-pointer transition"
+        >
+          Copiar &lt;img&gt; Data URI
+        </button>
+      </div>
+
+      <p id="bkFeedback" class="text-[11px] text-[var(--r-accent)] font-bold min-h-[16px]" aria-live="polite"></p>
+
+      <!-- Open-Source License & Source -->
+      <div class="rounded-xl border border-[var(--r-line)] bg-[var(--r-bg-2)] p-3 space-y-1.5 text-[10px] text-[var(--r-muted)]">
+        <p id="bkNote" class="text-[var(--r-text)]"></p>
+        <p id="bkLicense"></p>
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-[var(--r-line)]">
+          <a id="bkSourceLink" href="#" target="_blank" rel="noopener noreferrer" class="text-[var(--r-accent)] hover:underline">
+            Fuente del emblema ↗
+          </a>
+          <a
+            href="https://github.com/ATM-Software-Labs/muntrume-site/blob/main/desktop/src/cars/brand-logo-assets.ts"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-[var(--r-accent)] hover:underline"
+          >
+            Catálogo Open Source (MIT) en GitHub ↗
+          </a>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
   <style is:global>
     .brand-mark > svg { width: 100%; height: 100%; }
+    .brand-kit-dialog:not([open]) { display: none; }
   </style>
   <script is:inline>
     (() => {
@@ -209,22 +354,124 @@ const ogImage = "https://muntru.me/assets/img/og-setups.jpg";
       const badge = document.getElementById("brandCountBadge");
       const cards = Array.from(document.querySelectorAll(".brand-card"));
       const partnerCards = Array.from(document.querySelectorAll(".partner-card"));
-      if (!input) return;
 
-      input.addEventListener("input", () => {
-        const q = input.value.trim().toLowerCase();
-        let shown = 0;
-        cards.forEach((card) => {
-          const hay = card.getAttribute("data-search") || "";
-          const match = !q || hay.includes(q);
-          card.style.display = match ? "" : "none";
-          if (match) shown++;
+      if (input) {
+        input.addEventListener("input", () => {
+          const q = input.value.trim().toLowerCase();
+          let shown = 0;
+          cards.forEach((card) => {
+            const hay = card.getAttribute("data-search") || "";
+            const match = !q || hay.includes(q);
+            card.style.display = match ? "" : "none";
+            if (match) shown++;
+          });
+          partnerCards.forEach((card) => {
+            const hay = card.getAttribute("data-partner-search") || "";
+            card.style.display = !q || hay.includes(q) ? "" : "none";
+          });
+          if (badge) badge.textContent = `${shown}/${cards.length}`;
         });
-        partnerCards.forEach((card) => {
-          const hay = card.getAttribute("data-partner-search") || "";
-          card.style.display = !q || hay.includes(q) ? "" : "none";
+      }
+
+      const dlg = document.getElementById("brandKitDialog");
+      if (!dlg) return;
+      const elName = document.getElementById("bkName");
+      const elDark = document.getElementById("bkPreviewDark");
+      const elLight = document.getElementById("bkPreviewLight");
+      const elAlbumBtn = document.getElementById("bkAlbumBtn");
+      const elAlbumLabel = document.getElementById("bkAlbumLabel");
+      const elNote = document.getElementById("bkNote");
+      const elLicense = document.getElementById("bkLicense");
+      const elSource = document.getElementById("bkSourceLink");
+      const elFeedback = document.getElementById("bkFeedback");
+      const elCopyHex = document.getElementById("bkCopyHex");
+
+      let current = { name: "", slug: "", color: "", svg: "" };
+
+      const flash = (msg) => {
+        if (!elFeedback) return;
+        elFeedback.textContent = msg;
+        clearTimeout(elFeedback._t);
+        elFeedback._t = setTimeout(() => { elFeedback.textContent = ""; }, 2400);
+      };
+
+      document.querySelectorAll(".brand-open-kit").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const svgEl = btn.querySelector("svg");
+          const rawSvg = svgEl ? svgEl.outerHTML : "";
+          const name = btn.getAttribute("data-brand-name") || "";
+          const slug = btn.getAttribute("data-brand-slug") || "brand";
+          const color = (btn.getAttribute("data-brand-color") || "#C0C0C0").toUpperCase();
+          const album = btn.getAttribute("data-brand-album") || "/albums/";
+          const hasAlbum = btn.getAttribute("data-brand-has-album") === "1";
+          const source = btn.getAttribute("data-brand-source") || "";
+          const license = btn.getAttribute("data-brand-license") || "";
+          const note = btn.getAttribute("data-brand-note") || "";
+
+          current = { name, slug, color, svg: rawSvg };
+          if (elName) elName.textContent = name;
+          if (elDark) elDark.innerHTML = rawSvg;
+          if (elLight) elLight.innerHTML = rawSvg;
+          if (elAlbumBtn) elAlbumBtn.setAttribute("href", album);
+          if (elAlbumLabel) elAlbumLabel.textContent = hasAlbum ? `Abrir álbum de ${name} (${album}) →` : "Ver todos los álbumes de marcas →";
+          if (elCopyHex) elCopyHex.textContent = `Copiar ${color}`;
+          if (elNote) elNote.textContent = note || `Emblema vectorial minimalista de ${name} optimizado para HUD y proyectos open source.`;
+          if (elLicense) elLicense.textContent = license;
+          if (elSource) {
+            if (source) {
+              elSource.setAttribute("href", source);
+              elSource.style.display = "";
+            } else {
+              elSource.style.display = "none";
+            }
+          }
+          if (elFeedback) elFeedback.textContent = "";
+          if (typeof dlg.showModal === "function") dlg.showModal();
+          else dlg.setAttribute("open", "");
         });
-        if (badge) badge.textContent = `${shown}/${cards.length}`;
+      });
+
+      const closeDlg = () => {
+        if (typeof dlg.close === "function") dlg.close();
+        else dlg.removeAttribute("open");
+      };
+      document.getElementById("bkClose")?.addEventListener("click", closeDlg);
+      dlg.addEventListener("click", (e) => { if (e.target === dlg) closeDlg(); });
+
+      document.getElementById("bkCopySvg")?.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(current.svg);
+          flash(`✓ SVG de ${current.name} copiado al portapapeles`);
+        } catch { flash("No se pudo copiar automáticamente"); }
+      });
+
+      document.getElementById("bkDownloadSvg")?.addEventListener("click", () => {
+        const blob = new Blob([current.svg], { type: "image/svg+xml;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${current.slug}-mmt-logo.svg`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        flash(`✓ Descargando ${current.slug}-mmt-logo.svg`);
+      });
+
+      document.getElementById("bkCopyHex")?.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(current.color);
+          flash(`✓ Color ${current.color} copiado`);
+        } catch { flash("No se pudo copiar automáticamente"); }
+      });
+
+      document.getElementById("bkCopyDataUri")?.addEventListener("click", async () => {
+        const encoded = encodeURIComponent(current.svg).replace(/'/g, "%27").replace(/"/g, "%22");
+        const snippet = `<img src="data:image/svg+xml;utf8,${encoded}" alt="${current.name}" width="32" height="32" />`;
+        try {
+          await navigator.clipboard.writeText(snippet);
+          flash(`✓ Snippet <img> Data URI de ${current.name} copiado`);
+        } catch { flash("No se pudo copiar automáticamente"); }
       });
     })();
   </script>
