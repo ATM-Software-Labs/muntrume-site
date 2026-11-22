@@ -50,15 +50,15 @@ const faqLd = {
 
 <AiDocsShell
   title="SEO, LLMs, OpenAPI y FAQ"
-  description="Cómo indexar y enseñar Muntrume AI a buscadores e IAs externas (ChatGPT, Claude, Gemini, Perplexity) mediante llms.txt, ai-knowledge.json, OpenAPI 3.1, JSON-LD y preguntas frecuentes."
+  description="Cómo indexar y enseñar Muntrume a buscadores e IAs externas (ChatGPT, Claude, Gemini, Perplexity) mediante docs.muntru.me, llms.txt, ai-knowledge.json, OpenAPI 3.1, JSON-LD y preguntas frecuentes."
   slug="seo-llms"
   toc={toc}
-  prev={{ href: "/ai-docs/api/", label: "Referencia API REST & SSE" }}
+  prev={{ href: "https://docs.muntru.me/api/", label: "Referencia API REST & SSE" }}
   jsonLd={faqLd}
 >
   <h1 id="descubrimiento" data-doc-section="descubrimiento">SEO, Descubrimiento para LLMs y OpenAPI</h1>
   <p class="mdoc-lead">
-    Para que buscadores clásicos (Google, Bing) y asistentes externos (ChatGPT, Claude, Gemini, Perplexity) conozcan con precisión qué ofrece <strong>Muntrume AI</strong> sin exponer ningún recurso privado del equipo, servimos un conjunto completo de manifiestos legibles por máquina tanto en <code>muntru.me</code> como en <code>ai.muntru.me</code>.
+    Para que buscadores clásicos (Google, Bing) y asistentes externos (ChatGPT, Claude, Gemini, Perplexity) conozcan con precisión qué ofrece <strong>Muntrume</strong> sin exponer ningún recurso privado del equipo, servimos la documentación canónica en <code>https://docs.muntru.me/</code> junto con manifiestos legibles por máquina.
   </p>
 
   <div class="mdoc-table-wrap">
@@ -72,34 +72,34 @@ const faqLd = {
       </thead>
       <tbody>
         <tr>
-          <td><a href="/llms.txt">/llms.txt</a></td>
+          <td><a href="https://docs.muntru.me/llms.txt">/llms.txt</a></td>
           <td>Markdown estructurado</td>
-          <td>Índice oficial estándar <code>llms.txt</code> con resumen de Muntrume Motorsport, Muntrume AI, todas las subpáginas de <code>/ai-docs/*</code> y enlaces canónicos.</td>
+          <td>Índice oficial estándar <code>llms.txt</code> con resumen de Muntrume Motorsport, Muntrume AI, todas las subpáginas de <code>docs.muntru.me/*</code> y enlaces canónicos.</td>
         </tr>
         <tr>
-          <td><a href="/llms-full.txt">/llms-full.txt</a></td>
+          <td><a href="https://docs.muntru.me/llms-full.txt">/llms-full.txt</a></td>
           <td>Markdown extendido</td>
           <td>Contexto técnico completo en un único archivo para ingesta directa en RAG, asistentes de código y crawlers de LLMs.</td>
         </tr>
         <tr>
-          <td><a href="/ai-knowledge.json">/ai-knowledge.json</a></td>
+          <td><a href="https://docs.muntru.me/ai-knowledge.json">/ai-knowledge.json</a></td>
           <td>JSON estructurado</td>
-          <td>Base de conocimiento declarativa (modelos 1.0, formatos de artefactos, comandos slash, seguridad Zero-Trust y ecosistema iRacing).</td>
+          <td>Base de conocimiento declarativa (modelos 1.0, MMT Sync, formatos de artefactos, comandos slash, seguridad Zero-Trust y ecosistema iRacing).</td>
         </tr>
         <tr>
-          <td><a href="/ai-openapi.json">/ai-openapi.json</a></td>
+          <td><a href="https://docs.muntru.me/ai-openapi.json">/ai-openapi.json</a></td>
           <td>OpenAPI 3.1</td>
           <td>Contrato formal de los endpoints REST y SSE de Muntrume AI para agentes con tool-calling y generadores de SDK.</td>
         </tr>
         <tr>
-          <td><a href="/.well-known/ai-plugin.json">/.well-known/ai-plugin.json</a></td>
+          <td><a href="https://docs.muntru.me/.well-known/ai-plugin.json">/.well-known/ai-plugin.json</a></td>
           <td>AI Plugin Manifest</td>
-          <td>Metadatos de descubrimiento estándar en <code>/.well-known/</code> apuntando al esquema OpenAPI y a la documentación pública.</td>
+          <td>Metadatos de descubrimiento estándar en <code>/.well-known/</code> apuntando al esquema OpenAPI y a <code>https://docs.muntru.me/</code>.</td>
         </tr>
         <tr>
-          <td><a href="/sitemap.xml">/sitemap.xml</a></td>
+          <td><a href="https://muntru.me/sitemap.xml">/sitemap.xml</a></td>
           <td>XML Sitemap</td>
-          <td>Incluye todas las páginas principales, las 6 subpáginas de <code>/ai-docs/*</code> y las rutas programáticas de setups por coche y circuito.</td>
+          <td>Incluye todas las páginas principales del portal, las 7 guías de <code>docs.muntru.me/*</code> y las rutas programáticas de setups por coche y circuito.</td>
         </tr>
       </tbody>
     </table>
@@ -110,7 +110,7 @@ const faqLd = {
     <p class="mdoc-sub">Configuración equilibrada que maximiza la visibilidad pública y bloquea áreas privadas.</p>
 
     <ul class="mdoc-bullets">
-      <li><strong>Permitido explícitamente:</strong> <code>/ai-docs/</code> y todas sus subpáginas, <code>/llms.txt</code>, <code>/llms-full.txt</code>, <code>/ai-knowledge.json</code>, <code>/ai-openapi.json</code>, <code>/.well-known/ai-plugin.json</code> y artefactos publicados <code>/a/*</code> para Googlebot, Bingbot, OAI-SearchBot, GPTBot, ClaudeBot, PerplexityBot y Applebot.</li>
+      <li><strong>Permitido explícitamente:</strong> <code>https://docs.muntru.me/</code> y todas sus subpáginas, <code>/llms.txt</code>, <code>/llms-full.txt</code>, <code>/ai-knowledge.json</code>, <code>/ai-openapi.json</code>, <code>/.well-known/ai-plugin.json</code> y artefactos publicados <code>/a/*</code> para Googlebot, Bingbot, OAI-SearchBot, GPTBot, ClaudeBot, PerplexityBot y Applebot.</li>
       <li><strong>Bloqueado en rastreo y en capa API:</strong> <code>/admin/</code>, <code>/api/</code>, <code>/login/</code> y las rutas privadas del panel de equipo. Incluso si un agente intenta llamar a <code>POST /api/ai</code>, la capa Zero-Trust rechaza la petición con <code>401 Unauthorized</code>.</li>
     </ul>
   </section>
@@ -122,7 +122,7 @@ const faqLd = {
     <div class="mdoc-cards mdoc-cards--3">
       <div class="mdoc-card">
         <h3><code>TechArticle</code></h3>
-        <p>Presente en las 6 subpáginas de <code>/ai-docs/*</code> con autoría de Muntrume Motorsport, idioma y URL canónica.</p>
+        <p>Presente en las 7 guías de <code>docs.muntru.me/*</code> con autoría de Muntrume Motorsport, idioma y URL canónica.</p>
       </div>
       <div class="mdoc-card">
         <h3><code>SoftwareApplication</code></h3>

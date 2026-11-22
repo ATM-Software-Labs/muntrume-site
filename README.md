@@ -61,7 +61,7 @@ Tomadas en [muntru.me](https://muntru.me).
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Arquitectura del ecosistema (`muntru.me`, `ai.muntru.me`, D1 y MMT Sync) |
 | [docs/AI_STUDIO.md](docs/AI_STUDIO.md) | Referencia interna de Muntrume AI Studio, Markdown y Artifacts |
 | [docs/SEO_AND_LLMS.md](docs/SEO_AND_LLMS.md) | Guía de SEO, JSON-LD y ficheros para IAs externas |
-| [muntru.me/ai-docs/](https://muntru.me/ai-docs/) | Documentación pública oficial de Muntrume AI |
+| [docs.muntru.me](https://docs.muntru.me/) | Documentación pública oficial de Muntrume |
 | [llms.txt](public/llms.txt) · [ai-knowledge.json](public/ai-knowledge.json) · [ai-openapi.json](public/ai-openapi.json) | Especificaciones legibles por buscadores, agentes RAG e IAs externas |
 
 ## Stack

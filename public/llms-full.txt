@@ -32,8 +32,8 @@ Muntrume Motorsport (MMT) is a competitive sim racing team and sim racing engine
 - **Coverage**: 108 iRacing cars grouped by manufacturer (`/porsche/`, `/ferrari/`, `/bmw/`, `/aston-martin/`, `/mercedes-amg/`, `/audi/`, `/mclaren/`, `/lamborghini/`, `/acura/`, `/cadillac/`, `/chevrolet/`, `/ford/`, `/dallara/`, `/ligier/`, `/lotus/`, `/mazda/`, `/toyota/`, etc.) with individual `/car/<id>/` pages, official PDF user manuals, and setup counts.
 
 ## 6. Muntrume AI Studio (`ai.muntru.me`) — Open Source (MIT)
-- **Web App**: https://ai.muntru.me/ (mirrored at https://muntru.me/ai/)
-- **Public Technical Docs**: https://muntru.me/ai-docs/ (mirrored at https://ai.muntru.me/docs/)
+- **Web App**: https://ai.muntru.me/
+- **Public Technical Docs**: https://docs.muntru.me/
 - **License**: 100% Open Source (MIT License)
 - **Inference Tiers**:
   - `lite` (**Muntrume 1.0 Lite**): ultra-low latency pit-lane answers and quick lookups.

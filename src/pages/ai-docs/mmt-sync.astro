@@ -1,0 +1,94 @@
+---
+import AiDocsShell from '../../components/AiDocsShell.astro';
+
+const toc = [
+  { id: 'que-es', label: 'Qué es MMT Sync' },
+  { id: 'zero-file', label: 'Sincronización automática (Zero-File)' },
+  { id: 'overlays', label: 'Overlays HUD 60 FPS y Marcas' },
+  { id: 'calendario', label: 'Planificador Multi-Temporada' },
+  { id: 'movil-pwa', label: 'App Móvil (PWA) y Puente Local' },
+];
+---
+
+<AiDocsShell
+  title="MMT Sync, Overlays 60 FPS y Calendario"
+  description="Guía oficial de MMT Sync para Windows y móvil: sincronización automática de setups .sto, telemetría y última carrera desde caché iRacing sin guardar archivos, Overlays HUD 60 FPS y planificador multi-temporada."
+  slug="mmt-sync"
+  toc={toc}
+  prev={{ href: "https://docs.muntru.me/modelos/", label: "Motores 1.0, Skills y Slash" }}
+  next={{ href: "https://docs.muntru.me/artefactos/", label: "Artifacts Studio y Hosting" }}
+>
+  <h1 id="que-es" data-doc-section="que-es">MMT Sync, Overlays 60 FPS y Planificador</h1>
+  <p class="mdoc-lead">
+    <strong>MMT Sync</strong> (<a href="https://muntru.me/app/">muntru.me/app</a>) es el cliente nativo Open Source (Tauri 2 + Rust + TypeScript) que conecta tu simulador <strong>iRacing</strong> con el Vault de setups <code>.sto</code>, tu perfil en el Paddock, los <strong>Overlays HUD a 60 FPS</strong> y tu móvil mediante la PWA oficial.
+  </p>
+
+  <div class="mdoc-hero-actions">
+    <a href="https://muntru.me/app/" class="mm-btn mm-btn-primary">Descargar MMT Sync ↗</a>
+    <a href="https://muntru.me/overlay/" class="mm-btn mm-btn-ghost">Simulador HUD 60 FPS →</a>
+    <a href="https://muntru.me/calendar/" class="mm-btn mm-btn-ghost">Planificador 2026 S4</a>
+  </div>
+
+  <section id="zero-file" data-doc-section="zero-file" class="mdoc-section">
+    <h2>Sincronización automática sin guardar archivos (Zero-File)</h2>
+    <p class="mdoc-sub">No necesitas guardar repeticiones ni activar ficheros <code>.ibt</code> manualmente tras cada carrera: MMT Sync lee directamente la memoria compartida y la caché viva de iRacing.</p>
+
+    <div class="mdoc-feature-list">
+      <div class="mdoc-feature">
+        <div class="mdoc-feature__k">Memoria compartida iRSDK</div>
+        <div class="mdoc-feature__v">Lee a <strong>60 Hz</strong> la telemetría viva (vuelta rápida, delta, combustible por vuelta, presiones, temperatura de pista, bandera y posiciones) mientras conduces, y guarda un resumen automático de tu última sesión al salir de pista.</div>
+      </div>
+      <div class="mdoc-feature">
+        <div class="mdoc-feature__k">Caché local y última carrera</div>
+        <div class="mdoc-feature__v">Inspecciona automáticamente los archivos de caché, sesiones recientes y metadatos en <code>Documents\iRacing\</code> y sincroniza el historial de tu última carrera con tu perfil en <code>muntru.me</code> sin intervención manual.</div>
+      </div>
+      <div class="mdoc-feature">
+        <div class="mdoc-feature__k">Sincronización de Setups <code>.sto</code></div>
+        <div class="mdoc-feature__v">Descarga en 1 clic los setups verificados del Vault (+42.654 archivos) directamente a <code>Documents\iRacing\setups\MMT\</code>, organizados por coche, circuito y variante (<code>Race</code>, <code>Qualy</code>, <code>Wet</code>, <code>Endurance</code>).</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="overlays" data-doc-section="overlays" class="mdoc-section">
+    <h2>Overlays HUD 60 FPS y Catálogo de Marcas</h2>
+    <p class="mdoc-sub">Superposiciones nativas transparentes <code>click-through</code> diseñadas con <strong>0 % de CPU</strong> en módulos inactivos. Pruébalas en tiempo real en <a href="https://muntru.me/overlay/">muntru.me/overlay</a>.</p>
+
+    <div class="mdoc-cards mdoc-cards--2">
+      <div class="mdoc-card">
+        <h3>8 Módulos independientes</h3>
+        <p><strong>Standings</strong> multiclasificación, <strong>Relative</strong> en vivo, <strong>Track Map</strong>, <strong>Fuel Calculator</strong>, <strong>Pit Strategy</strong>, <strong>Tire &amp; Track Temp</strong>, <strong>Inputs &amp; Delta</strong> y <strong>Radar 3-Wide</strong>.</p>
+      </div>
+      <div class="mdoc-card">
+        <h3>Emblemas vectoriales SVG</h3>
+        <p>Más de 30 escudos de fabricante optimizados para alta legibilidad en tamaños pequeños (14–20 px) en el HUD. Consulta el catálogo completo en <a href="https://muntru.me/overlay/brands/">muntru.me/overlay/brands</a>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="calendario" data-doc-section="calendario" class="mdoc-section">
+    <h2>Planificador Multi-Temporada y Compras</h2>
+    <p class="mdoc-sub">Disponible en <a href="https://muntru.me/calendar/">muntru.me/calendar</a> con cobertura completa de las 154 series de 2026 Season 4.</p>
+
+    <ul class="mdoc-bullets">
+      <li><strong>Recomendador histórico continuo (2026 S3 + S4 + Special Events):</strong> Aunque ya tengas todos los circuitos de tus series favoritas actuales, el motor analiza la recurrencia histórica de 125 circuitos de pago entre temporadas y eventos especiales (Spa 24, Daytona 24, Sebring 12, Bathurst 12, Petit Le Mans, Indy 500) para recomendar tu siguiente compra más rentable.</li>
+      <li><strong>Exclusión automática de contenido gratuito:</strong> Detecta los 31 circuitos base gratuitos / Legacy incluidos en la suscripción para que nunca aparezcan como compra de pago.</li>
+      <li><strong>Simulador fiscal y descuentos por volumen:</strong> Calcula automáticamente el 10 % (3–5 piezas), 15 % (6+ piezas), 20 % (Club 40), Participation Credits e IVA/VAT por país.</li>
+    </ul>
+  </section>
+
+  <section id="movil-pwa" data-doc-section="movil-pwa" class="mdoc-section">
+    <h2>App Móvil (PWA) y Puente Local</h2>
+    <p class="mdoc-sub">Instala Muntrume en iOS o Android desde <a href="https://muntru.me/app/install/">muntru.me/app/install</a> o desde el menú de usuario para consultar tus datos lejos del rig.</p>
+
+    <div class="mdoc-feature-list">
+      <div class="mdoc-feature">
+        <div class="mdoc-feature__k">Puente local HTTP</div>
+        <div class="mdoc-feature__v">MMT Sync expone <code>http://127.0.0.1:38421/ping</code> para que <code>muntru.me</code> detecte automáticamente si el cliente de escritorio está activo y sincronice tu inventario local.</div>
+      </div>
+      <div class="mdoc-feature">
+        <div class="mdoc-feature__k">Acompañamiento móvil</div>
+        <div class="mdoc-feature__v">Consulta tu última carrera sincronizada, telemetría resumida, setups favoritos, calendario semanal y estado del equipo directamente desde el teléfono con inicio de sesión unificado.</div>
+      </div>
+    </div>
+  </section>
+</AiDocsShell>

@@ -19,6 +19,7 @@ export const GET: APIRoute = async () => {
     { path: "/ai/", priority: "0.95", changefreq: "daily" },
     { path: "/ai-docs/", priority: "0.9", changefreq: "weekly" },
     { path: "/ai-docs/modelos/", priority: "0.85", changefreq: "weekly" },
+    { path: "/ai-docs/mmt-sync/", priority: "0.85", changefreq: "weekly" },
     { path: "/ai-docs/artefactos/", priority: "0.85", changefreq: "weekly" },
     { path: "/ai-docs/seguridad/", priority: "0.85", changefreq: "weekly" },
     { path: "/ai-docs/api/", priority: "0.85", changefreq: "weekly" },

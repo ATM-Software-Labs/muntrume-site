@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "description": "Technical assistant, vision analysis, and published Artifacts API for Muntrume AI Studio (https://ai.muntru.me/). Inference endpoints require verified Muntrume Motorsport team JWT authentication; documentation and public artifacts are openly accessible.",
     "license": { "name": "MIT", "url": "https://opensource.org/licenses/MIT" },
-    "contact": { "name": "Muntrume Motorsport", "email": "admin@muntru.me", "url": "https://muntru.me/ai-docs/" }
+    "contact": { "name": "Muntrume Motorsport", "email": "admin@muntru.me", "url": "https://docs.muntru.me/" }
   },
   "servers": [
     { "url": "https://ai.muntru.me", "description": "Production Edge Custom Domain" },

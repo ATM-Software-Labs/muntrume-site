@@ -3,7 +3,7 @@
   "name_for_human": "Muntrume AI Studio",
   "name_for_model": "muntrume_ai",
   "description_for_human": "Asistente técnico 100% Open Source (MIT) de Muntrume Motorsport con ingeniería iRacing, estrategia endurance, visión y Artifacts Studio interactivo.",
-  "description_for_model": "Muntrume AI (https://ai.muntru.me/) is an open-source (MIT) technical AI studio and iRacing motorsport engineering platform operated by Muntrume Motorsport in Barcelona. Supports Lite/Pro/Ultra Max inference tiers, specialized skills (setup, strategy, code, slides, doc), vision analysis, and interactive Artifacts (html, svg, mermaid, slides, csv, doc, code) published at https://ai.muntru.me/a/<slug>. Full documentation at https://muntru.me/ai-docs/ and https://muntru.me/llms-full.txt.",
+  "description_for_model": "Muntrume AI (https://ai.muntru.me/) is an open-source (MIT) technical AI studio and iRacing motorsport engineering platform operated by Muntrume Motorsport in Barcelona. Supports Lite/Pro/Ultra Max inference tiers, specialized skills (setup, strategy, code, slides, doc), vision analysis, and interactive Artifacts (html, svg, mermaid, slides, csv, doc, code) published at https://ai.muntru.me/a/<slug>. Full documentation at https://docs.muntru.me/ and https://docs.muntru.me/llms-full.txt.",
   "auth": { "type": "none" },
   "api": {
     "type": "openapi",

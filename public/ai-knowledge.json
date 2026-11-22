@@ -8,7 +8,7 @@
     "location": "Sant Andreu, Barcelona, Catalonia, Spain",
     "website": "https://muntru.me/",
     "ai_studio": "https://ai.muntru.me/",
-    "docs": "https://muntru.me/ai-docs/",
+    "docs": "https://docs.muntru.me/",
     "github": "https://github.com/ATM-Software-Labs/muntrume-site",
     "license": "MIT",
     "languages": ["es", "ca", "en", "fr"],
@@ -21,10 +21,10 @@
   "muntrume_ai": {
     "name": "Muntrume AI",
     "url": "https://ai.muntru.me/",
-    "docs_url": "https://muntru.me/ai-docs/",
-    "openapi_url": "https://muntru.me/ai-openapi.json",
-    "llms_txt": "https://muntru.me/llms.txt",
-    "llms_full_txt": "https://muntru.me/llms-full.txt",
+    "docs_url": "https://docs.muntru.me/",
+    "openapi_url": "https://docs.muntru.me/ai-openapi.json",
+    "llms_txt": "https://docs.muntru.me/llms.txt",
+    "llms_full_txt": "https://docs.muntru.me/llms-full.txt",
     "tiers": [
       { "id": "lite", "brand": "Muntrume 1.0 Lite", "use_case": "Ultra-low latency pit-lane answers and quick lookups" },
       { "id": "pro", "brand": "Muntrume 1.0 Pro", "use_case": "iRacing setup engineering, software architecture, tables, and interactive artifacts" },
@@ -52,7 +52,7 @@
     "api": {
       "endpoint": "POST https://ai.muntru.me/api/ai",
       "authentication": "Team-only Bearer JWT (verified active Muntrume Motorsport members via Cloudflare D1); unauthenticated requests receive HTTP 401",
-      "public_access": "Documentation (/ai-docs/, ai.muntru.me/docs/), public artifacts (/a/<slug>), and discovery manifests (llms.txt, ai-knowledge.json, ai-openapi.json, .well-known/ai-plugin.json) are openly accessible without login",
+      "public_access": "Documentation (https://docs.muntru.me/), public artifacts (https://ai.muntru.me/a/<slug>), and discovery manifests (llms.txt, ai-knowledge.json, ai-openapi.json, .well-known/ai-plugin.json) are openly accessible without login",
       "security_controls": ["JWT HMAC-SHA256", "PBKDF2-SHA256 (100k iterations)", "Strict Content-Security-Policy", "Sandboxed artifact iframes", "Edge rate limiting"],
       "response_modes": ["application/json", "text/event-stream"],
       "capabilities": ["chat", "sse_streaming", "image_vision", "github_context", "web_search", "file_attachments"]

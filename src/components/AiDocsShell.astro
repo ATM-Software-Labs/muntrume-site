@@ -28,28 +28,29 @@ const {
   jsonLd = null,
 } = Astro.props;
 
-const canonical = slug ? `https://muntru.me/ai-docs/${slug}/` : "https://muntru.me/ai-docs/";
+const canonical = slug ? `https://docs.muntru.me/${slug}/` : "https://docs.muntru.me/";
 
 const NAV_GROUPS = [
   {
     title: "Primeros pasos",
     items: [
-      { slug: "", href: "/ai-docs/", label: "Introducción y Arquitectura" },
-      { slug: "modelos", href: "/ai-docs/modelos/", label: "Motores 1.0, Skills y Slash" },
+      { slug: "", href: "https://docs.muntru.me/", label: "Introducción y Arquitectura" },
+      { slug: "modelos", href: "https://docs.muntru.me/modelos/", label: "Motores 1.0, Skills y Slash" },
     ],
   },
   {
-    title: "Plataforma y Estudio",
+    title: "Plataforma y Ecosistema",
     items: [
-      { slug: "artefactos", href: "/ai-docs/artefactos/", label: "Artifacts Studio y Hosting" },
-      { slug: "seguridad", href: "/ai-docs/seguridad/", label: "Seguridad, Passkeys y MFA" },
+      { slug: "mmt-sync", href: "https://docs.muntru.me/mmt-sync/", label: "MMT Sync, Overlays & Calendario" },
+      { slug: "artefactos", href: "https://docs.muntru.me/artefactos/", label: "Artifacts Studio y Hosting" },
+      { slug: "seguridad", href: "https://docs.muntru.me/seguridad/", label: "Seguridad, Passkeys y MFA" },
     ],
   },
   {
     title: "Desarrolladores e IAs",
     items: [
-      { slug: "api", href: "/ai-docs/api/", label: "Referencia API REST & SSE" },
-      { slug: "seo-llms", href: "/ai-docs/seo-llms/", label: "SEO, LLMs y OpenAPI" },
+      { slug: "api", href: "https://docs.muntru.me/api/", label: "Referencia API REST & SSE" },
+      { slug: "seo-llms", href: "https://docs.muntru.me/seo-llms/", label: "SEO, LLMs y OpenAPI" },
     ],
   },
 ];
@@ -83,20 +84,24 @@ const fullLd = jsonLd ? (Array.isArray(jsonLd) ? [defaultLd, ...jsonLd] : [defau
 
     <div class="mdoc-grid">
       <!-- LEFT SIDEBAR -->
-      <aside class="mdoc-sidebar" aria-label="Navegación de Muntrume AI Docs">
+      <aside class="mdoc-sidebar" aria-label="Navegación de Muntrume Docs">
         <div class="mdoc-sidebar__brand">
           <span class="mdoc-brand-dot" aria-hidden="true"></span>
           <div>
-            <strong>Muntrume AI</strong>
-            <span>Documentación v1.0</span>
+            <strong>docs.muntru.me</strong>
+            <span>Documentación v1.2 · 2026 S4</span>
           </div>
         </div>
 
+        <label class="mdoc-search" aria-label="Filtrar guías de documentación">
+          <input id="mdocFilterInput" type="search" placeholder="Filtrar guías…" autocomplete="off" />
+        </label>
+
         {NAV_GROUPS.map((group) => (
-          <div class="mdoc-nav-group">
+          <div class="mdoc-nav-group" data-doc-group>
             <div class="mdoc-nav-group__title">{group.title}</div>
             {group.items.map((it) => (
-              <a href={it.href} class:list={["mdoc-nav-link", { "is-active": it.slug === slug }]} aria-current={it.slug === slug ? "page" : undefined}>
+              <a href={it.href} data-doc-nav-item class:list={["mdoc-nav-link", { "is-active": it.slug === slug }]} aria-current={it.slug === slug ? "page" : undefined}>
                 {it.label}
               </a>
             ))}
@@ -105,15 +110,16 @@ const fullLd = jsonLd ? (Array.isArray(jsonLd) ? [defaultLd, ...jsonLd] : [defau
 
         <div class="mdoc-sidebar__foot">
           <a href="https://ai.muntru.me/" class="mdoc-cta-mini">Abrir Muntrume AI Studio ↗</a>
+          <a href="https://muntru.me/app/" class="mdoc-cta-mini mdoc-cta-mini--sub">Descargar MMT Sync ↗</a>
         </div>
       </aside>
 
       <!-- CENTER CONTENT -->
       <article class="mdoc-article">
         <div class="mdoc-crumb">
-          <a href="https://muntru.me/">Muntrume</a>
+          <a href="https://muntru.me/">muntru.me</a>
           <span aria-hidden="true">/</span>
-          <a href="/ai-docs/">AI Docs</a>
+          <a href="https://docs.muntru.me/">docs.muntru.me</a>
           {slug && (
             <>
               <span aria-hidden="true">/</span>
@@ -161,11 +167,11 @@ const fullLd = jsonLd ? (Array.isArray(jsonLd) ? [defaultLd, ...jsonLd] : [defau
 
         <div class="mdoc-rail__box">
           <div class="mdoc-rail__title">Especificaciones</div>
-          <a href="/llms.txt">llms.txt ↗</a>
-          <a href="/llms-full.txt">llms-full.txt ↗</a>
-          <a href="/ai-knowledge.json">ai-knowledge.json ↗</a>
-          <a href="/ai-openapi.json">ai-openapi.json ↗</a>
-          <a href="/.well-known/ai-plugin.json">ai-plugin.json ↗</a>
+          <a href="https://docs.muntru.me/llms.txt">llms.txt ↗</a>
+          <a href="https://docs.muntru.me/llms-full.txt">llms-full.txt ↗</a>
+          <a href="https://docs.muntru.me/ai-knowledge.json">ai-knowledge.json ↗</a>
+          <a href="https://docs.muntru.me/ai-openapi.json">ai-openapi.json ↗</a>
+          <a href="https://docs.muntru.me/.well-known/ai-plugin.json">ai-plugin.json ↗</a>
         </div>
       </aside>
     </div>
@@ -173,6 +179,31 @@ const fullLd = jsonLd ? (Array.isArray(jsonLd) ? [defaultLd, ...jsonLd] : [defau
 
   <script is:inline>
     (function () {
+      // Canonical redirect: keep all docs served under docs.muntru.me
+      var host = location.hostname.toLowerCase();
+      if (host === 'muntru.me' || host === 'www.muntru.me' || host === 'ai.muntru.me') {
+        var sub = location.pathname.replace(/^\/(?:ai-docs|docs)\/?/i, '').replace(/\/+$/, '');
+        var dest = 'https://docs.muntru.me/' + (sub ? sub + '/' : '') + location.search + location.hash;
+        location.replace(dest);
+        return;
+      }
+
+      var filterInput = document.getElementById('mdocFilterInput');
+      if (filterInput) {
+        filterInput.addEventListener('input', function () {
+          var q = (filterInput.value || '').trim().toLowerCase();
+          document.querySelectorAll('[data-doc-group]').forEach(function (group) {
+            var any = false;
+            group.querySelectorAll('[data-doc-nav-item]').forEach(function (link) {
+              var match = !q || (link.textContent || '').toLowerCase().indexOf(q) !== -1;
+              link.hidden = !match;
+              if (match) any = true;
+            });
+            group.hidden = !any;
+          });
+        });
+      }
+
       var sections = document.querySelectorAll('[data-doc-section]');
       if ('IntersectionObserver' in window && sections.length) {
         var spy = new IntersectionObserver(function (entries) {
@@ -204,14 +235,19 @@ const fullLd = jsonLd ? (Array.isArray(jsonLd) ? [defaultLd, ...jsonLd] : [defau
   .mdoc-sidebar__brand strong { display: block; font-size: 14px; color: var(--r-text); }
   .mdoc-sidebar__brand span { display: block; font: 600 11px/1.3 var(--r-mono, ui-monospace, monospace); color: var(--r-muted); }
   .mdoc-brand-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--r-accent, #10b981); box-shadow: 0 0 0 4px color-mix(in srgb, var(--r-accent, #10b981) 18%, transparent); flex-shrink: 0; }
+  .mdoc-search { display: block; margin-bottom: 16px; }
+  .mdoc-search input { width: 100%; padding: 8px 11px; border-radius: 9px; border: 1px solid var(--r-line); background: var(--r-surface); color: var(--r-text); font-size: 12.5px; outline: none; transition: border-color .15s ease; }
+  .mdoc-search input:focus { border-color: var(--r-accent, #10b981); }
   .mdoc-nav-group { margin-bottom: 20px; }
   .mdoc-nav-group__title { font: 700 11px/1 var(--r-mono, ui-monospace, monospace); text-transform: uppercase; letter-spacing: 0.08em; color: var(--r-muted); padding: 0 10px 8px; }
   .mdoc-nav-link { display: block; padding: 8px 10px; margin-bottom: 2px; border-radius: 8px; font-size: 13.5px; font-weight: 500; color: var(--r-muted); text-decoration: none; border-left: 2px solid transparent; transition: background .15s ease, color .15s ease, border-color .15s ease; }
   .mdoc-nav-link:hover { color: var(--r-text); background: color-mix(in srgb, var(--r-text) 5%, transparent); }
   .mdoc-nav-link.is-active { color: var(--r-accent, #10b981); font-weight: 600; background: color-mix(in srgb, var(--r-accent, #10b981) 10%, transparent); border-left-color: var(--r-accent, #10b981); }
-  .mdoc-sidebar__foot { padding-top: 12px; border-top: 1px solid var(--r-line); }
+  .mdoc-sidebar__foot { padding-top: 12px; border-top: 1px solid var(--r-line); display: grid; gap: 8px; }
   .mdoc-cta-mini { display: flex; align-items: center; justify-content: center; padding: 9px 12px; border-radius: 10px; background: color-mix(in srgb, var(--r-accent, #10b981) 12%, var(--r-surface)); border: 1px solid color-mix(in srgb, var(--r-accent, #10b981) 30%, transparent); color: var(--r-accent, #10b981); font-size: 13px; font-weight: 600; text-decoration: none; }
   .mdoc-cta-mini:hover { background: color-mix(in srgb, var(--r-accent, #10b981) 18%, var(--r-surface)); }
+  .mdoc-cta-mini--sub { background: var(--r-surface); border-color: var(--r-line); color: var(--r-text); font-size: 12.5px; }
+  .mdoc-cta-mini--sub:hover { border-color: var(--r-accent, #10b981); color: var(--r-accent, #10b981); background: var(--r-surface); }
 
   .mdoc-article { min-width: 0; max-width: 820px; padding-top: 24px; }
   .mdoc-crumb { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--r-muted); margin-bottom: 14px; }
