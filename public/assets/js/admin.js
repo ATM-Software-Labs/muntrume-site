@@ -749,15 +749,405 @@ function toggleUnifiedStatsAuto() {
 }
 
 // ============================================================================
-// NEW SEASON AUTO-SETUPS GENERATOR (MMT SYNC + GARAGE)
+// NEW SEASON AUTO-SETUPS GENERATOR (MMT SYNC + GARAGE) + IRACING PDF PARSER
 // ============================================================================
 const SEASON_CAR_PRESETS = {
   gt3: "porsche992rgt3, ferrari296gt3, bmwm4gt3, mercedesamgevogt3, audir8lmsevo2gt3, mclaren720sgt3, lamborghinievogt3, fordmustanggt3, chevyvettez06rgt3, acuransxevo22gt3, amvantageevogt3",
+  imsa: "porsche963gtp, ferrari499p, bmwmhybridv8, cadillacvseriesrgtp, acuraarx06gtp, astonmartinvalkyriegtp, dallarap217, porsche992rgt3, ferrari296gt3, bmwm4gt3, mercedesamgevogt3, mclaren720sgt3, lamborghinievogt3, fordmustanggt3, chevyvettez06rgt3, acuransxevo22gt3, amvantageevogt3",
   gtp: "porsche963gtp, ferrari499p, bmwmhybridv8, cadillacvseriesrgtp, acuraarx06gtp, astonmartinvalkyriegtp",
   pcup: "porsche992cup",
   lmp2: "dallarap217",
   gt4: "porsche718gt4, bmwm4evogt4, mercedesamggt4, amvantagegt4, mclaren570sgt4, fordmustanggt4"
 };
+
+const IRACING_PDF_CAR_MAP = [
+  [/porsche\s*911\s*gt3\s*r\s*\(992\)/i, "porsche992rgt3"],
+  [/ferrari\s*296\s*gt3/i, "ferrari296gt3"],
+  [/bmw\s*m4\s*gt3/i, "bmwm4gt3"],
+  [/mercedes[-\s]*amg\s*gt3/i, "mercedesamgevogt3"],
+  [/audi\s*r8\s*lms.*gt3/i, "audir8lmsevo2gt3"],
+  [/mclaren\s*720s\s*gt3/i, "mclaren720sgt3"],
+  [/lamborghini\s*hurac[aá]n\s*gt3/i, "lamborghinievogt3"],
+  [/ford\s*mustang\s*gt3/i, "fordmustanggt3"],
+  [/corvette\s*z06\s*gt3/i, "chevyvettez06rgt3"],
+  [/acura\s*nsx\s*gt3/i, "acuransxevo22gt3"],
+  [/aston\s*martin\s*vantage\s*gt3/i, "amvantageevogt3"],
+  [/porsche\s*963/i, "porsche963gtp"],
+  [/ferrari\s*499p/i, "ferrari499p"],
+  [/bmw\s*m\s*hybrid\s*v8/i, "bmwmhybridv8"],
+  [/cadillac\s*v-?series\.?r/i, "cadillacvseriesrgtp"],
+  [/acura\s*arx-?06/i, "acuraarx06gtp"],
+  [/aston\s*martin\s*valkyrie/i, "astonmartinvalkyriegtp"],
+  [/dallara\s*p217/i, "dallarap217"],
+  [/porsche\s*911\s*(?:gt3\s*)?cup/i, "porsche992cup"],
+  [/porsche\s*718\s*cayman\s*gt4/i, "porsche718gt4"],
+  [/bmw\s*m4.*gt4/i, "bmwm4evogt4"],
+  [/mercedes[-\s]*amg\s*gt4/i, "mercedesamggt4"],
+  [/aston\s*martin\s*vantage\s*gt4/i, "amvantagegt4"],
+  [/mclaren\s*570s\s*gt4/i, "mclaren570sgt4"],
+  [/ford\s*mustang\s*gt4/i, "fordmustanggt4"],
+  [/ligier\s*js\s*p320/i, "ligierjsp320"]
+];
+
+let _rcPdfParsedSeries = [];
+let _rcPdfSeasonCode = "";
+let _rcPdfSeasonStatus = "official";
+let _rcPdfJsPromise = null;
+
+function loadPdfJsLib() {
+  if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+  if (_rcPdfJsPromise) return _rcPdfJsPromise;
+  _rcPdfJsPromise = new Promise((resolve, reject) => {
+    const sc = document.createElement("script");
+    sc.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+    sc.async = true;
+    sc.onload = () => {
+      if (window.pdfjsLib) resolve(window.pdfjsLib);
+      else reject(new Error("pdf.js cargado pero pdfjsLib no disponible."));
+    };
+    sc.onerror = () => {
+      _rcPdfJsPromise = null;
+      reject(new Error("No se pudo cargar el lector PDF (cdnjs)."));
+    };
+    document.head.appendChild(sc);
+  });
+  return _rcPdfJsPromise;
+}
+
+function mapIRacingCarsToSlugs(carsText) {
+  const txt = String(carsText || "");
+  const slugs = [];
+  const seen = new Set();
+  for (const [re, slug] of IRACING_PDF_CAR_MAP) {
+    if (re.test(txt) && !seen.has(slug)) {
+      seen.add(slug);
+      slugs.push(slug);
+    }
+  }
+  return slugs;
+}
+
+function detectPresetFromSlugs(slugs) {
+  if (!slugs.length) return null;
+  const set = new Set(slugs);
+  const hasGtp = slugs.some((s) => /gtp|499p|hybridv8/.test(s));
+  const hasGt3 = slugs.some((s) => /gt3$/.test(s));
+  const hasLmp2 = set.has("dallarap217");
+  if (hasGtp && hasGt3) return "imsa";
+  if (hasGtp && !hasGt3) return "gtp";
+  if (hasGt3 && !hasGtp) return "gt3";
+  if (set.size === 1 && set.has("porsche992cup")) return "pcup";
+  if (set.size === 1 && hasLmp2) return "lmp2";
+  if (slugs.every((s) => /gt4$/.test(s))) return "gt4";
+  return "custom";
+}
+
+function cleanIRacingTrackLine(raw) {
+  let s = String(raw || "")
+    .replace(/\(\s*20\d{2}-\d{2}-\d{2}[\s\S]*$/i, "")
+    .replace(/\b(?:Rain possible|All dry events?|Dynamic sky|Constant weather|Default weather|Rolling start|Standing start|Grid by class|Local enforced cautions|Qual scrutiny|Fixed setup|Open setup)\b[\s\S]*$/i, "")
+    .replace(/\b\d+\s*°\s*F\s*\/[\s\S]*$/i, "")
+    .replace(/\b\d+\s*(?:mins?|minutes?|laps?)\b[\s\S]*$/i, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  s = s.replace(/[,;:.]+$/, "").trim();
+  return s;
+}
+
+function isIRacingTrackMetaLine(line) {
+  return /^(?:\(20\d{2}-\d{2}-\d{2}|Rain possible|All dry|Dynamic|Constant|Default weather|Rolling start|Standing start|Grid by class|Local enforced|Qual scrutiny|Fixed|Open|Night|Afternoon|Morning|Late Afternoon|Sunset|Sunrise|Forecast|Penalty|Min entries|Races |IMSA rule|Week\s+\d|Class\s+[A-D]\b|Rookie\b|\d+\s*°F|\d+\s*(?:mins?|laps?)\b|[A-Z0-9]{2,8}:\s*fuel:)/i.test(line);
+}
+
+function parseIRacingSchedulePdfLines(allLines, filename) {
+  let seasonCode = "";
+  let isProvisional = /prelim|provisional|prov/i.test(String(filename || ""));
+
+  for (let i = 0; i < Math.min(allLines.length, 400); i++) {
+    const l = allLines[i];
+    if (!isProvisional && i < 40 && /preliminary|provisional/i.test(l)) isProvisional = true;
+    if (!seasonCode) {
+      const sm = l.match(/\b(20\d{2})\s+Season\s+([1-4])\b/i);
+      if (sm) seasonCode = `${sm[1].slice(-2)}S${sm[2]}`;
+    }
+  }
+
+  const seriesMap = new Map();
+  let current = null;
+  let collectingCars = false;
+
+  for (let i = 0; i < allLines.length; i++) {
+    const line = allLines[i].trim();
+    if (!line) continue;
+    // Skip TOC dotted leaders and lone page numbers
+    if (/\.\s*\.\s*\./.test(line) || /^\d{1,3}$/.test(line)) continue;
+
+    // Detect series header: "<Series Name> - 2026 Season 4"
+    const hm = line.match(/^(.{4,110}?)\s+-\s+(20\d{2})\s+Season(?:\s+([1-4]))?(?:\s*-\s*(.+))?$/i);
+    if (hm && !/^Week\s+\d/i.test(line)) {
+      const fullTitle = line;
+      if (!seasonCode && hm[2] && hm[3]) seasonCode = `${hm[2].slice(-2)}S${hm[3]}`;
+      if (!seriesMap.has(fullTitle)) {
+        seriesMap.set(fullTitle, {
+          name: fullTitle,
+          shortName: hm[1].trim(),
+          carLines: [],
+          weeks: [],
+          weekSet: new Set()
+        });
+      }
+      current = seriesMap.get(fullTitle);
+      collectingCars = true;
+      continue;
+    }
+
+    if (!current) continue;
+
+    if (collectingCars) {
+      if (/^(?:Rookie|Class\s+[A-D])\b.*-->/i.test(line) || /^Week\s+\d/i.test(line)) {
+        collectingCars = false;
+      } else if (current.carLines.length < 12) {
+        current.carLines.push(line);
+        continue;
+      }
+    }
+
+    const wm = line.match(/^Week\s+(\d{1,2})\s*\((\d{4}-\d{2}-\d{2})\)\s*(.*)$/i);
+    if (wm) {
+      collectingCars = false;
+      const weekNum = Number(wm[1]);
+      const date = wm[2];
+      let trackRaw = (wm[3] || "").trim();
+
+      // Handle track names wrapped across 2 lines (when next line is not metadata/timestamp)
+      if (!/\(\s*20\d{2}-\d{2}-\d{2}/.test(wm[3] || "") && i + 1 < allLines.length) {
+        const nextLine = allLines[i + 1].trim();
+        if (nextLine && !isIRacingTrackMetaLine(nextLine) && !/\.\s*\.\s*\./.test(nextLine) && !/^\d{1,3}$/.test(nextLine)) {
+          trackRaw = trackRaw ? `${trackRaw} ${nextLine}` : nextLine;
+        }
+      }
+
+      const circuit = cleanIRacingTrackLine(trackRaw);
+      if (circuit && !current.weekSet.has(weekNum)) {
+        current.weekSet.add(weekNum);
+        current.weeks.push({ weekNum, date, circuit });
+      }
+    }
+  }
+
+  const priorityRe = /\b(GT Sprint|IMSA|GT Endurance|GT4|Porsche Cup|LMP2|LMP3|Global Endurance|Endurance|GT3|Production Car|Ferrari GT3)\b/i;
+  const list = Array.from(seriesMap.values())
+    .filter((s) => s.weeks.length > 0)
+    .map((s) => {
+      s.weeks.sort((a, b) => a.weekNum - b.weekNum);
+      const carsText = s.carLines.join(" ").replace(/\s+/g, " ").trim();
+      const slugs = mapIRacingCarsToSlugs(carsText);
+      return {
+        name: s.name,
+        shortName: s.shortName,
+        carsText,
+        slugs,
+        preset: detectPresetFromSlugs(slugs),
+        priority: priorityRe.test(s.name) ? 0 : 1,
+        weeks: s.weeks
+      };
+    })
+    .sort((a, b) => a.priority - b.priority || a.name.localeCompare(b.name));
+
+  return {
+    seasonCode,
+    status: isProvisional ? "provisional" : "official",
+    series: list
+  };
+}
+
+async function extractPdfLines(pdfDoc, onProgress) {
+  const allLines = [];
+  const total = pdfDoc.numPages;
+  for (let p = 1; p <= total; p++) {
+    const page = await pdfDoc.getPage(p);
+    const content = await page.getTextContent();
+    const rows = [];
+    for (const item of content.items || []) {
+      const str = String(item.str || "").trim();
+      if (!str) continue;
+      const x = item.transform ? item.transform[4] : 0;
+      const y = item.transform ? item.transform[5] : 0;
+      let row = rows.find((r) => Math.abs(r.y - y) <= 2.5);
+      if (!row) {
+        row = { y, items: [] };
+        rows.push(row);
+      }
+      row.items.push({ x, str });
+    }
+    rows.sort((a, b) => b.y - a.y);
+    for (const row of rows) {
+      row.items.sort((a, b) => a.x - b.x);
+      const line = row.items.map((it) => it.str).join(" ").replace(/\s+/g, " ").trim();
+      if (line) allLines.push(line);
+    }
+    if (p % 10 === 0 || p === total) {
+      if (onProgress) onProgress(p, total);
+      await new Promise((r) => setTimeout(r, 0));
+    }
+  }
+  return allLines;
+}
+
+function renderSeasonPdfSeriesSelect(filterQuery) {
+  const sel = document.getElementById("rcSeasonPdfSeries");
+  if (!sel) return;
+  const q = String(filterQuery || "").trim().toLowerCase();
+  const filtered = q
+    ? _rcPdfParsedSeries.filter((s) => s.name.toLowerCase().includes(q) || s.carsText.toLowerCase().includes(q))
+    : _rcPdfParsedSeries;
+
+  if (!filtered.length) {
+    sel.innerHTML = `<option value="">Sin coincidencias para "${escRc(q)}"</option>`;
+    return;
+  }
+
+  sel.innerHTML = filtered.map((s) => {
+    const idx = _rcPdfParsedSeries.indexOf(s);
+    const star = s.priority === 0 ? "★ " : "";
+    return `<option value="${idx}">${escRc(star + s.shortName)} (${s.weeks.length} sem.)</option>`;
+  }).join("");
+}
+
+function filterSeasonPdfSeries() {
+  const q = document.getElementById("rcSeasonPdfSearch")?.value || "";
+  renderSeasonPdfSeriesSelect(q);
+  applySelectedPdfSeries();
+}
+
+function applySelectedPdfSeries() {
+  const sel = document.getElementById("rcSeasonPdfSeries");
+  const idx = Number(sel?.value);
+  const series = Number.isInteger(idx) && idx >= 0 ? _rcPdfParsedSeries[idx] : null;
+  const metaEl = document.getElementById("rcSeasonPdfSeriesMeta");
+  if (!series) {
+    if (metaEl) metaEl.textContent = "";
+    return;
+  }
+
+  const codeEl = document.getElementById("rcSeasonCode");
+  const statusEl = document.getElementById("rcSeasonStatus");
+  const presetEl = document.getElementById("rcSeasonPreset");
+  const carsEl = document.getElementById("rcSeasonCars");
+  const schedEl = document.getElementById("rcSeasonSchedule");
+
+  if (codeEl && _rcPdfSeasonCode) codeEl.value = _rcPdfSeasonCode;
+  if (statusEl) statusEl.value = _rcPdfSeasonStatus;
+
+  if (series.slugs.length) {
+    if (presetEl && series.preset) presetEl.value = series.preset;
+    if (carsEl) carsEl.value = series.slugs.join(", ");
+  }
+
+  if (schedEl) {
+    schedEl.value = series.weeks.map((w) => `Week ${w.weekNum} - ${w.circuit}`).join("\n");
+  }
+
+  if (metaEl) {
+    const carsInfo = series.slugs.length
+      ? `${series.slugs.length} coches mapeados al Vault`
+      : "Coches no mapeados (elige flota manualmente)";
+    metaEl.textContent = `${series.name} · ${series.weeks.length} semanas · ${carsInfo}`;
+  }
+}
+
+async function handleSeasonPdfFile(file) {
+  if (!file) return;
+  if (!/\.pdf$/i.test(file.name) && file.type !== "application/pdf") {
+    showRcNotice("Formato no válido", "Sube un archivo PDF oficial o provisional de iRacing (.pdf).", "warn");
+    return;
+  }
+
+  const statusEl = document.getElementById("rcSeasonPdfStatus");
+  const btnEl = document.getElementById("rcSeasonPdfBtn");
+  const pickerEl = document.getElementById("rcSeasonPdfPicker");
+  const inputEl = document.getElementById("rcSeasonPdfInput");
+
+  if (btnEl) btnEl.disabled = true;
+  if (statusEl) statusEl.textContent = `Cargando motor PDF para leer ${file.name}…`;
+
+  try {
+    const pdfjsLib = await loadPdfJsLib();
+    const buf = await file.arrayBuffer();
+    const loadingTask = pdfjsLib.getDocument({ data: buf, disableWorker: true });
+    const pdfDoc = await loadingTask.promise;
+
+    if (statusEl) statusEl.textContent = `Leyendo ${file.name} (0 / ${pdfDoc.numPages} páginas)…`;
+    const lines = await extractPdfLines(pdfDoc, (cur, tot) => {
+      if (statusEl) statusEl.textContent = `Analizando ${file.name} (${cur} / ${tot} páginas)…`;
+    });
+
+    const parsed = parseIRacingSchedulePdfLines(lines, file.name);
+    if (!parsed.series.length) {
+      throw new Error("No se detectaron bloques 'Week N (YYYY-MM-DD)' en el PDF.");
+    }
+
+    _rcPdfParsedSeries = parsed.series;
+    _rcPdfSeasonCode = parsed.seasonCode;
+    _rcPdfSeasonStatus = parsed.status;
+
+    const searchEl = document.getElementById("rcSeasonPdfSearch");
+    if (searchEl) searchEl.value = "";
+    renderSeasonPdfSeriesSelect("");
+    if (pickerEl) pickerEl.classList.remove("hidden");
+
+    // Auto-select GT Sprint Series if present, otherwise first priority series
+    const sel = document.getElementById("rcSeasonPdfSeries");
+    const gtSprintIdx = _rcPdfParsedSeries.findIndex((s) => /GT Sprint Series/i.test(s.name));
+    if (sel && gtSprintIdx >= 0) sel.value = String(gtSprintIdx);
+    applySelectedPdfSeries();
+
+    const seasonLabel = parsed.seasonCode ? ` · Temporada ${parsed.seasonCode} (${parsed.status})` : "";
+    if (statusEl) {
+      statusEl.textContent = `✓ ${file.name} procesado (${pdfDoc.numPages} págs)${seasonLabel} · ${parsed.series.length} series detectadas.`;
+    }
+    showRcNotice(
+      "PDF de iRacing importado",
+      `${parsed.series.length} series extraídas${seasonLabel}. Elige la serie en el desplegable y pulsa Dry-Run o Publicar.`,
+      "success"
+    );
+  } catch (err) {
+    if (statusEl) statusEl.textContent = `Error al leer PDF: ${err?.message || "archivo no compatible"}`;
+    showRcNotice("Error leyendo PDF", err?.message || "No se pudo analizar el PDF de iRacing.", "warn");
+  } finally {
+    if (btnEl) btnEl.disabled = false;
+    if (inputEl) inputEl.value = "";
+  }
+}
+
+function initSeasonPdfDropzone() {
+  const box = document.getElementById("rcSeasonPdfBox");
+  if (!box || box.dataset.bound) return;
+  box.dataset.bound = "1";
+  ["dragenter", "dragover"].forEach((ev) => {
+    box.addEventListener(ev, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      box.classList.add("is-dragover");
+    });
+  });
+  ["dragleave", "drop"].forEach((ev) => {
+    box.addEventListener(ev, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      box.classList.remove("is-dragover");
+    });
+  });
+  box.addEventListener("drop", (e) => {
+    const file = e.dataTransfer?.files?.[0];
+    if (file) handleSeasonPdfFile(file);
+  });
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initSeasonPdfDropzone);
+} else {
+  initSeasonPdfDropzone();
+}
 
 function applySeasonCarPreset() {
   const sel = document.getElementById("rcSeasonPreset")?.value || "gt3";
@@ -886,6 +1276,9 @@ async function runSeasonAutoGenerate(dryRun) {
 
 window.applySeasonCarPreset = applySeasonCarPreset;
 window.runSeasonAutoGenerate = runSeasonAutoGenerate;
+window.handleSeasonPdfFile = handleSeasonPdfFile;
+window.filterSeasonPdfSeries = filterSeasonPdfSeries;
+window.applySelectedPdfSeries = applySelectedPdfSeries;
 
 // ============================================================================
 // GARAGE 61 SCREENSHOT UPLOAD, PASTE, VISION AI PARSING & LIST EDITOR

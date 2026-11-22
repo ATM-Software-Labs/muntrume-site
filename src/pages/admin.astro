@@ -419,14 +419,41 @@ const LICENSE_CATEGORIES = [
             <div class="rc-card__head">
               <div>
                 <h2>Generador de Nueva Season · MMT Sync &amp; Garage</h2>
-                <p class="rc-muted">Pega el calendario <strong>provisional u oficial</strong> de iRacing y Race Control emparejará automáticamente los <code>.sto</code> verificados del Vault por coche, circuito y semana, dejándolos listos al instante en <strong>MMT Sync</strong> y <code>/garage/</code>.</p>
+                <p class="rc-muted">Sube el <strong>PDF oficial o provisional de iRacing</strong> (<code>SeasonSchedule.pdf</code>) o pega el calendario manualmente. Race Control detecta la temporada, las series, los coches y las semanas, y empareja automáticamente los <code>.sto</code> verificados del Vault en <strong>MMT Sync</strong> y <code>/garage/</code>.</p>
+              </div>
+            </div>
+
+            <div id="rcSeasonPdfBox" class="rc-pdf-drop" style="margin-bottom:14px">
+              <input type="file" id="rcSeasonPdfInput" accept="application/pdf,.pdf" hidden onchange="handleSeasonPdfFile(this.files && this.files[0])" />
+              <div class="rc-pdf-drop__top">
+                <div>
+                  <strong style="font-size:13.5px">Importar calendario desde PDF de iRacing</strong>
+                  <p class="rc-muted" id="rcSeasonPdfStatus" style="margin:3px 0 0;font-size:12px">Arrastra aquí el <code>SeasonSchedule.pdf</code> oficial de iRacing o selecciónalo. Se procesa 100% en tu navegador.</p>
+                </div>
+                <button type="button" id="rcSeasonPdfBtn" class="r-btn r-btn--sm" onclick="document.getElementById('rcSeasonPdfInput')?.click()">📄 Subir PDF iRacing</button>
+              </div>
+              <div id="rcSeasonPdfPicker" class="rc-pdf-picker hidden">
+                <div class="rc-two-col" style="gap:10px;align-items:end">
+                  <div class="g-field">
+                    <label for="rcSeasonPdfSearch">Filtrar serie del PDF</label>
+                    <input type="text" id="rcSeasonPdfSearch" placeholder="Ej. GT Sprint, IMSA, GT4, Porsche Cup, Endurance..." oninput="filterSeasonPdfSeries()" />
+                  </div>
+                  <div class="g-field">
+                    <label for="rcSeasonPdfSeries">Serie detectada</label>
+                    <select id="rcSeasonPdfSeries" onchange="applySelectedPdfSeries()"></select>
+                  </div>
+                </div>
+                <div class="rc-pdf-picker__meta">
+                  <span id="rcSeasonPdfSeriesMeta" class="rc-muted" style="font-size:12px"></span>
+                  <button type="button" class="r-btn r-btn--sm r-btn--primary" onclick="applySelectedPdfSeries()">Cargar serie en el calendario</button>
+                </div>
               </div>
             </div>
 
             <div class="rc-two-col" style="gap:12px;margin-bottom:12px">
               <div class="g-field">
                 <label for="rcSeasonCode">Código de Temporada *</label>
-                <input type="text" id="rcSeasonCode" value="27S1" maxlength="12" placeholder="Ej. 27S1" />
+                <input type="text" id="rcSeasonCode" value="27S1" maxlength="12" placeholder="Ej. 26S4" />
               </div>
               <div class="g-field">
                 <label for="rcSeasonStatus">Estado del calendario</label>
@@ -442,6 +469,7 @@ const LICENSE_CATEGORIES = [
                 <label for="rcSeasonPreset">Flota de coches objetivo</label>
                 <select id="rcSeasonPreset" onchange="applySeasonCarPreset()">
                   <option value="gt3">GT3 Oficial (11 coches)</option>
+                  <option value="imsa">IMSA Multicategoría (GTP + LMP2 + GT3)</option>
                   <option value="gtp">GTP / Hypercar (6 coches)</option>
                   <option value="pcup">Porsche 911 GT3 Cup (992)</option>
                   <option value="lmp2">LMP2 Dallara P217</option>
@@ -1176,6 +1204,30 @@ const LICENSE_CATEGORIES = [
     .rc-email-visual-card { padding: 18px; background: #0b0f17; color: #e2e8f0; border-bottom: 1px solid var(--r-line); }
     .rc-email-raw-details summary { cursor: pointer; padding: 10px 16px; font: 700 11px/1.2 var(--r-mono); color: var(--r-muted); background: var(--r-surface); user-select: none; }
 
+    /* iRacing Schedule PDF Dropzone */
+    .rc-pdf-drop {
+      padding: 14px 16px; border-radius: 12px;
+      border: 1.5px dashed var(--r-line);
+      background: var(--r-bg-2);
+      display: flex; flex-direction: column; gap: 12px;
+      transition: border-color 140ms ease, background 140ms ease;
+    }
+    .rc-pdf-drop.is-dragover {
+      border-color: var(--r-accent);
+      background: color-mix(in srgb, var(--r-accent) 10%, var(--r-bg-2));
+    }
+    .rc-pdf-drop__top {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    }
+    .rc-pdf-picker {
+      padding-top: 12px; border-top: 1px solid var(--r-line);
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .rc-pdf-picker.hidden { display: none !important; }
+    .rc-pdf-picker__meta {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+    }
+
     @media (max-width: 1200px) {
       .rc-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .rc-two-col { grid-template-columns: 1fr; }
@@ -1196,5 +1248,5 @@ const LICENSE_CATEGORIES = [
     }
   </style>
 
-  <script is:inline src="/assets/js/admin.js?v=t355"></script>
+  <script is:inline src="/assets/js/admin.js?v=t356"></script>
 </Layout>
