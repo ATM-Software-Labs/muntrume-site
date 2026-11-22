@@ -150,23 +150,23 @@ html.light .border-white\/15:not(:where(.brand-standings-row, .brand-standings-r
   border-color: #E2E8E5 !important;
 }
 
-html.light .text-slate-100:not(:where(.brand-standings-row *, .brand-mini-card *, .brand-mark *, .sim-stage *, .sim-toolbar *, .ov-code-pod *)),
-[data-theme="light"] .text-slate-100:not(:where(.brand-standings-row *, .brand-mini-card *, .brand-mark *, .sim-stage *, .sim-toolbar *, .ov-code-pod *)),
-html.light .text-slate-200:not(:where(.brand-standings-row *, .brand-mini-card *, .brand-mark *, .sim-stage *, .sim-toolbar *, .ov-code-pod *)),
-[data-theme="light"] .text-slate-200:not(:where(.brand-standings-row *, .brand-mini-card *, .brand-mark *, .sim-stage *, .sim-toolbar *, .ov-code-pod *)) {
+html.light .text-slate-100:not(:where(.brand-standings-row *, .brand-mini-card *, .brand-mark *, .sim-stage *, .sim-toolbar *, .ov-code-pod *, .wp-modal-dark, .wp-modal-dark *, [class*="bg-black/"], [class*="bg-black/"] *)),
+[data-theme="light"] .text-slate-100:not(:where(.brand-standings-row *, .brand-mini-card *, .brand-mark *, .sim-stage *, .sim-toolbar *, .ov-code-pod *, .wp-modal-dark, .wp-modal-dark *, [class*="bg-black/"], [class*="bg-black/"] *)),
+html.light .text-slate-200:not(:where(.brand-standings-row *, .brand-mini-card *, .brand-mark *, .sim-stage *, .sim-toolbar *, .ov-code-pod *, .wp-modal-dark, .wp-modal-dark *, [class*="bg-black/"], [class*="bg-black/"] *)),
+[data-theme="light"] .text-slate-200:not(:where(.brand-standings-row *, .brand-mini-card *, .brand-mark *, .sim-stage *, .sim-toolbar *, .ov-code-pod *, .wp-modal-dark, .wp-modal-dark *, [class*="bg-black/"], [class*="bg-black/"] *)) {
   color: #0E1412 !important;
 }
-html.light .text-slate-300:not(:where(.brand-standings-row *, .brand-mini-card *, .brand-mark *, .sim-stage *, .sim-toolbar *, .ov-code-pod *)),
-[data-theme="light"] .text-slate-300:not(:where(.brand-standings-row *, .brand-mini-card *, .brand-mark *, .sim-stage *, .sim-toolbar *, .ov-code-pod *)),
-html.light .text-slate-400:not(:where(.brand-standings-row *, .brand-mini-card *, .brand-mark *, .sim-stage *, .sim-toolbar *, .ov-code-pod *)),
-[data-theme="light"] .text-slate-400:not(:where(.brand-standings-row *, .brand-mini-card *, .brand-mark *, .sim-stage *, .sim-toolbar *, .ov-code-pod *)) {
+html.light .text-slate-300:not(:where(.brand-standings-row *, .brand-mini-card *, .brand-mark *, .sim-stage *, .sim-toolbar *, .ov-code-pod *, .wp-modal-dark, .wp-modal-dark *, [class*="bg-black/"], [class*="bg-black/"] *)),
+[data-theme="light"] .text-slate-300:not(:where(.brand-standings-row *, .brand-mini-card *, .brand-mark *, .sim-stage *, .sim-toolbar *, .ov-code-pod *, .wp-modal-dark, .wp-modal-dark *, [class*="bg-black/"], [class*="bg-black/"] *)),
+html.light .text-slate-400:not(:where(.brand-standings-row *, .brand-mini-card *, .brand-mark *, .sim-stage *, .sim-toolbar *, .ov-code-pod *, .wp-modal-dark, .wp-modal-dark *, [class*="bg-black/"], [class*="bg-black/"] *)),
+[data-theme="light"] .text-slate-400:not(:where(.brand-standings-row *, .brand-mini-card *, .brand-mark *, .sim-stage *, .sim-toolbar *, .ov-code-pod *, .wp-modal-dark, .wp-modal-dark *, [class*="bg-black/"], [class*="bg-black/"] *)) {
   color: #4A5854 !important;
 }
 
-html.light :not(footer):not(.r-footer):not(.r-hero):not(.race-control-console):not(.race-control-console *):not(.brand-hud):not(.brand-hud *) > .text-white,
-[data-theme="light"] :not(footer):not(.r-footer):not(.r-hero):not(.race-control-console):not(.race-control-console *):not(.brand-hud):not(.brand-hud *) > .text-white,
-html.light :not(.race-control-console):not(.race-control-console *) .text-\[\#F5F5F5\], [data-theme="light"] :not(.race-control-console):not(.race-control-console *) .text-\[\#F5F5F5\],
-html.light :not(.race-control-console):not(.race-control-console *) .text-\[\#E0E6E4\], [data-theme="light"] :not(.race-control-console):not(.race-control-console *) .text-\[\#E0E6E4\] {
+html.light :not(:where(footer, .r-footer, .r-hero, .race-control-console, .race-control-console *, .brand-hud, .brand-hud *, .wp-modal-dark, .wp-modal-dark *)) > .text-white:not(:where([class*="bg-black/"], [class*="bg-black/"] *)),
+[data-theme="light"] :not(:where(footer, .r-footer, .r-hero, .race-control-console, .race-control-console *, .brand-hud, .brand-hud *, .wp-modal-dark, .wp-modal-dark *)) > .text-white:not(:where([class*="bg-black/"], [class*="bg-black/"] *)),
+html.light :not(:where(.race-control-console, .race-control-console *, .wp-modal-dark, .wp-modal-dark *)) .text-\[\#F5F5F5\], [data-theme="light"] :not(:where(.race-control-console, .race-control-console *, .wp-modal-dark, .wp-modal-dark *)) .text-\[\#F5F5F5\],
+html.light :not(:where(.race-control-console, .race-control-console *, .wp-modal-dark, .wp-modal-dark *)) .text-\[\#E0E6E4\], [data-theme="light"] :not(:where(.race-control-console, .race-control-console *, .wp-modal-dark, .wp-modal-dark *)) .text-\[\#E0E6E4\] {
   color: #0E1412 !important;
 }
 

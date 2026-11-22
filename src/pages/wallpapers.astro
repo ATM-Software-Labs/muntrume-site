@@ -116,71 +116,71 @@ const pageSchema = {
       </header>
 
       <!-- PROGRESS BAR -->
-      <section id="zipProgressBarWrap" hidden class="rounded-lg border border-emerald-500/40 bg-[#0d1118] p-4 space-y-2 font-mono">
+      <section id="zipProgressBarWrap" hidden class="rounded-lg border border-emerald-500/40 bg-[var(--r-surface)] p-4 space-y-2 font-mono">
         <div class="flex items-center justify-between text-xs">
-          <span id="zipProgressLabel" class="text-emerald-400 font-bold">Convirtiendo a .JPG...</span>
-          <span id="zipProgressPct" class="tabular-nums text-white font-bold">0%</span>
+          <span id="zipProgressLabel" class="text-[var(--r-accent)] font-bold">Convirtiendo a .JPG...</span>
+          <span id="zipProgressPct" class="tabular-nums text-[var(--r-text)] font-bold">0%</span>
         </div>
-        <div class="w-full h-2 rounded-full bg-black/60 overflow-hidden border border-white/10">
+        <div class="w-full h-2 rounded-full bg-[var(--r-bg-2)] overflow-hidden border border-[var(--r-line)]">
           <div id="zipProgressFill" class="h-full bg-emerald-500 transition-all duration-150" style="width:0%"></div>
         </div>
       </section>
 
       <!-- SECTION TABS + WINDOWS SLIDESHOW INTERVAL -->
-      <div class="flex flex-wrap items-center justify-between gap-3 font-mono text-xs border-b border-white/10 pb-3">
+      <div class="flex flex-wrap items-center justify-between gap-3 font-mono text-xs border-b border-[var(--r-line)] pb-3">
         <div class="flex flex-wrap items-center gap-2">
           <button type="button" data-view-tab="categories" class="wp-tab px-3.5 py-2 rounded-md bg-emerald-500 text-[#04130d] font-extrabold cursor-pointer">
             Por serie ({seriesGroups.length})
           </button>
-          <button type="button" data-view-tab="cars" class="wp-tab px-3.5 py-2 rounded-md bg-[#0d1118] border border-white/10 text-slate-300 hover:text-white font-bold cursor-pointer">
+          <button type="button" data-view-tab="cars" class="wp-tab px-3.5 py-2 rounded-md bg-[var(--r-surface)] border border-[var(--r-line)] text-[var(--r-muted)] hover:text-[var(--r-text)] font-bold cursor-pointer">
             Por Coche ({carPacks.length})
           </button>
-          <button type="button" data-view-tab="albums" class="wp-tab px-3.5 py-2 rounded-md bg-[#0d1118] border border-white/10 text-slate-300 hover:text-white font-bold cursor-pointer">
+          <button type="button" data-view-tab="albums" class="wp-tab px-3.5 py-2 rounded-md bg-[var(--r-surface)] border border-[var(--r-line)] text-[var(--r-muted)] hover:text-[var(--r-text)] font-bold cursor-pointer">
             Álbumes / Eventos ({apiAlbums.length})
           </button>
         </div>
 
-        <div class="flex items-center gap-2 bg-[#0d1118] border border-white/10 rounded-lg px-2.5 py-1.5">
-          <span class="text-[10px] uppercase tracking-wider text-slate-400">Slideshow Windows:</span>
+        <div class="flex items-center gap-2 bg-[var(--r-surface)] border border-[var(--r-line)] rounded-lg px-2.5 py-1.5">
+          <span class="text-[10px] uppercase tracking-wider text-[var(--r-muted)]">Slideshow Windows:</span>
           <div class="inline-flex items-center gap-1" id="wpIntervalGroup" role="group" aria-label="Intervalo de slideshow">
-            <button type="button" data-interval-sec="15" class="wp-int-btn px-2 py-0.5 rounded text-[11px] font-bold text-slate-300 hover:text-white cursor-pointer" aria-pressed="false">15s</button>
+            <button type="button" data-interval-sec="15" class="wp-int-btn px-2 py-0.5 rounded text-[11px] font-bold text-[var(--r-muted)] hover:text-[var(--r-text)] cursor-pointer" aria-pressed="false">15s</button>
             <button type="button" data-interval-sec="20" class="wp-int-btn px-2 py-0.5 rounded text-[11px] font-extrabold bg-emerald-500 text-[#04130d] cursor-pointer" aria-pressed="true">20s</button>
-            <button type="button" data-interval-sec="30" class="wp-int-btn px-2 py-0.5 rounded text-[11px] font-bold text-slate-300 hover:text-white cursor-pointer" aria-pressed="false">30s</button>
-            <button type="button" data-interval-sec="60" class="wp-int-btn px-2 py-0.5 rounded text-[11px] font-bold text-slate-300 hover:text-white cursor-pointer" aria-pressed="false">60s</button>
+            <button type="button" data-interval-sec="30" class="wp-int-btn px-2 py-0.5 rounded text-[11px] font-bold text-[var(--r-muted)] hover:text-[var(--r-text)] cursor-pointer" aria-pressed="false">30s</button>
+            <button type="button" data-interval-sec="60" class="wp-int-btn px-2 py-0.5 rounded text-[11px] font-bold text-[var(--r-muted)] hover:text-[var(--r-text)] cursor-pointer" aria-pressed="false">60s</button>
           </div>
         </div>
       </div>
 
       <!-- MULTI-MONITOR ZERO-DELAY SYNC GUIDE + QUICK DOWNLOAD -->
-      <div class="rounded-lg border border-emerald-500/25 bg-[#0d1118]/90 px-4 py-3 flex flex-col lg:flex-row lg:items-center justify-between gap-3 font-mono text-xs">
+      <div class="rounded-lg border border-emerald-500/30 bg-[var(--r-surface)] px-4 py-3 flex flex-col lg:flex-row lg:items-center justify-between gap-3 font-mono text-xs">
         <div class="space-y-1">
-          <p class="text-emerald-300 font-bold">⚡ Sincronización Exacta Multi-Monitor Windows (0 ms de desfase · Sin Admin HKCU)</p>
-          <p class="text-[11px] text-slate-300 leading-relaxed">
-            El modo <em>Presentación</em> nativo de Windows cambia cada monitor por separado con desfase. Nuestro script <code class="text-emerald-300">Sincronizar_Monitores_<span class="wp-sec-lbl">20s</span>.bat</code> usa <code class="text-white/90">SystemParametersInfo</code> (<code class="text-white/90">user32.dll</code>) en segundo plano (&lt; 5 MB RAM) con <code class="text-white/90">JPEGImportQuality = 100</code> para aplicar la misma imagen 4K simultáneamente en todas las pantallas.
+          <p class="text-[var(--r-accent)] font-bold">⚡ Sincronización Exacta Multi-Monitor Windows (0 ms de desfase · Sin Admin HKCU)</p>
+          <p class="text-[11px] text-[var(--r-muted)] leading-relaxed">
+            El modo <em>Presentación</em> nativo de Windows cambia cada monitor por separado con desfase. Nuestro script <code class="text-[var(--r-accent)] font-semibold">Sincronizar_Monitores_<span class="wp-sec-lbl">20s</span>.bat</code> usa <code class="text-[var(--r-text)]">SystemParametersInfo</code> (<code class="text-[var(--r-text)]">user32.dll</code>) en segundo plano (&lt; 5 MB RAM) con <code class="text-[var(--r-text)]">JPEGImportQuality = 100</code> para aplicar la misma imagen 4K simultáneamente en todas las pantallas.
           </p>
         </div>
         <div class="flex flex-wrap items-center gap-2 shrink-0">
           <button type="button" id="wpDownloadSyncBatBtn" class="px-3 py-1.5 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-extrabold text-[11px] transition cursor-pointer">
             ⬇ Sincronizar_Monitores_<span class="wp-sec-lbl">20s</span>.bat
           </button>
-          <button type="button" id="wpDownloadStopBatBtn" class="px-3 py-1.5 rounded border border-white/15 hover:border-rose-400/60 text-slate-200 hover:text-rose-300 font-bold text-[11px] transition cursor-pointer">
+          <button type="button" id="wpDownloadStopBatBtn" class="px-3 py-1.5 rounded border border-[var(--r-line)] hover:border-rose-500/60 text-[var(--r-text)] hover:text-rose-500 font-bold text-[11px] transition cursor-pointer">
             ⏹ Detener_Sync_Wallpapers.bat
           </button>
         </div>
       </div>
 
-      <nav id="tab-categories" class="wp-tab-panel grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2" aria-label="Series">
+      <nav id="tab-categories" class="wp-tab-panel grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5" aria-label="Series">
         {seriesGroups.map((group) => (
-          <div class="rounded-lg border border-white/10 bg-[#0d1118] px-3 py-2.5 flex flex-col gap-2">
+          <div class="rounded-lg border border-[var(--r-line)] bg-[var(--r-surface)] px-3.5 py-3 flex flex-col gap-2 hover:border-[var(--r-accent)]/50 transition">
             <div class="flex items-start justify-between gap-2">
-              <a href={`/wallpapers/${group.slug}/`} class="text-sm font-extrabold text-white hover:text-emerald-300">{group.name}</a>
-              <span class="font-mono text-[10px] text-slate-400 tabular-nums shrink-0">{group.items.length}</span>
+              <a href={`/wallpapers/${group.slug}/`} class="text-sm font-extrabold text-[var(--r-text)] hover:text-[var(--r-accent)]">{group.name}</a>
+              <span class="font-mono text-[10px] text-[var(--r-muted)] tabular-nums shrink-0">{group.items.length}</span>
             </div>
-            <p class="font-mono text-[10px] uppercase tracking-wider text-slate-500">{group.kind === "series" ? "Serie del calendario" : "Categoría del archivo"}</p>
+            <p class="font-mono text-[10px] uppercase tracking-wider text-[var(--r-muted)]">{group.kind === "series" ? "Serie del calendario" : "Categoría del archivo"}</p>
             <div class="flex flex-wrap gap-1.5 font-mono text-[11px]">
-              <button type="button" data-pack-download={group.id} class="px-2 py-1 rounded bg-emerald-500 text-[#04130d] font-extrabold cursor-pointer">.ZIP</button>
-              <button type="button" data-pack-slideshow={group.id} class="px-2 py-1 rounded border border-emerald-500/40 text-emerald-300 cursor-pointer">Slideshow</button>
-              <button type="button" data-pack-filter={group.id} class="px-2 py-1 rounded border border-white/15 text-slate-200 cursor-pointer">Ver aquí</button>
+              <button type="button" data-pack-download={group.id} class="px-2.5 py-1 rounded bg-emerald-500 text-[#04130d] font-extrabold cursor-pointer">.ZIP</button>
+              <button type="button" data-pack-slideshow={group.id} class="px-2.5 py-1 rounded border border-emerald-500/40 text-[var(--r-accent)] font-bold cursor-pointer">▶ Slideshow</button>
+              <button type="button" data-pack-filter={group.id} class="px-2.5 py-1 rounded border border-[var(--r-line)] text-[var(--r-text)] cursor-pointer">Ver aquí</button>
             </div>
           </div>
         ))}
@@ -192,28 +192,28 @@ const pageSchema = {
           const thumbs = pack.items.slice(0, 1);
           const gridCols = thumbs.length === 1 ? "grid-cols-1" : thumbs.length === 3 ? "grid-cols-3" : "grid-cols-2";
           return (
-            <article class="rounded-lg border border-white/10 bg-[#0d1118] overflow-hidden flex flex-col justify-between hover:border-white/25 transition">
+            <article class="rounded-lg border border-[var(--r-line)] bg-[var(--r-surface)] overflow-hidden flex flex-col justify-between hover:border-[var(--r-accent)]/60 transition">
               <div class={`grid ${gridCols} gap-0.5 bg-[var(--r-bg-2)] p-1`}>
                 {thumbs.map((t) => (
-                  <div class="aspect-video bg-[var(--r-bg-2)] overflow-hidden rounded-[2px]">
-                    <img src={t.img} alt={t.model} loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('article')?.remove()" class="w-full h-full object-cover object-center" />
+                  <div class="aspect-video bg-[#090b0f] overflow-hidden rounded-[2px]">
+                    <img src={t.img} alt={t.model} loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://muntrume.atrumin16.workers.dev/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}" class="w-full h-full object-cover object-center cursor-zoom-in" data-preview-id={t.id} />
                   </div>
                 ))}
               </div>
               <div class="p-3 space-y-2 flex-1 flex flex-col justify-between font-mono">
                 <div class="flex items-center justify-between gap-2">
-                  <span class="text-[9.5px] font-extrabold px-1.5 py-0.5 rounded border border-white/10" style={`color:${pack.accent}`}>{pack.badge}</span>
-                  <span class="text-[10px] text-slate-400 tabular-nums">{pack.items.length} fotos</span>
+                  <span class="text-[9.5px] font-extrabold px-1.5 py-0.5 rounded border border-[var(--r-line)] bg-[var(--r-bg-2)]" style={`color:${pack.accent}`}>{pack.badge}</span>
+                  <span class="text-[10px] text-[var(--r-muted)] tabular-nums">{pack.items.length} fotos</span>
                 </div>
-                <h3 class="text-xs font-extrabold text-white truncate">{pack.title}</h3>
+                <h3 class="text-xs font-extrabold text-[var(--r-text)] truncate">{pack.title}</h3>
                 <div class="flex items-center gap-1.5 pt-1 text-[11px]">
                   <button type="button" data-pack-download={pack.id} class="flex-1 px-2.5 py-1.5 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-extrabold cursor-pointer">
                     .ZIP (.JPG)
                   </button>
-                  <button type="button" data-pack-slideshow={pack.id} class="px-2 py-1.5 rounded border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 font-bold cursor-pointer" title="Previsualizar Slideshow">
+                  <button type="button" data-pack-slideshow={pack.id} class="px-2 py-1.5 rounded border border-emerald-500/40 bg-emerald-500/10 text-[var(--r-accent)] font-bold cursor-pointer" title="Previsualizar Slideshow">
                     ▶
                   </button>
-                  <button type="button" data-pack-filter={pack.id} class="px-2.5 py-1.5 rounded border border-white/15 text-slate-200 cursor-pointer">
+                  <button type="button" data-pack-filter={pack.id} class="px-2.5 py-1.5 rounded border border-[var(--r-line)] text-[var(--r-text)] cursor-pointer">
                     Ver
                   </button>
                 </div>
@@ -226,43 +226,48 @@ const pageSchema = {
       <!-- TAB 3: ALBUMS -->
       <section id="tab-albums" hidden class="wp-tab-panel grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {apiAlbums.map((alb) => (
-          <article class="rounded-lg border border-white/10 bg-[#0d1118] overflow-hidden flex flex-col justify-between hover:border-white/25 transition">
+          <article class="rounded-lg border border-[var(--r-line)] bg-[var(--r-surface)] overflow-hidden flex flex-col justify-between hover:border-[var(--r-accent)]/60 transition">
             <div class="aspect-video bg-[#090b0f] overflow-hidden">
-              <img src={alb.cover} alt={alb.title} loading="lazy" decoding="async" referrerpolicy="no-referrer" class="w-full h-full object-cover" />
+              <img src={alb.cover} alt={alb.title} loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://muntrume.atrumin16.workers.dev/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}" class="w-full h-full object-cover" />
             </div>
             <div class="p-4 space-y-2.5 font-mono">
               <div class="flex items-center justify-between text-[10px]">
-                <span class="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-bold">{alb.carClass}</span>
-                <span class="text-slate-400 tabular-nums">{alb.count} fotos reales</span>
+                <span class="px-2 py-0.5 rounded bg-emerald-500/15 text-[var(--r-accent)] font-bold">{alb.carClass}</span>
+                <span class="text-[var(--r-muted)] tabular-nums">{alb.count} fotos reales</span>
               </div>
-              <h3 class="text-sm font-extrabold text-white truncate">{alb.title}</h3>
-              <button type="button" data-pack-download={`album-${alb.slug}`} class="w-full py-2 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-extrabold text-xs cursor-pointer">
-                Descargar Álbum .ZIP (.JPG)
-              </button>
+              <h3 class="text-sm font-extrabold text-[var(--r-text)] truncate">{alb.title}</h3>
+              <div class="flex items-center gap-2">
+                <button type="button" data-pack-download={`album-${alb.slug}`} class="flex-1 py-2 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-extrabold text-xs cursor-pointer">
+                  Descargar Álbum .ZIP (.JPG)
+                </button>
+                <button type="button" data-pack-slideshow={`album-${alb.slug}`} class="px-3 py-2 rounded border border-emerald-500/40 bg-emerald-500/10 text-[var(--r-accent)] font-bold text-xs cursor-pointer" title="Previsualizar Slideshow">
+                  ▶
+                </button>
+              </div>
             </div>
           </article>
         ))}
       </section>
 
       <!-- GALLERY + INDIVIDUAL SELECTION -->
-      <section aria-labelledby="galleryHeading" class="space-y-4 pt-4 border-t border-white/10">
+      <section aria-labelledby="galleryHeading" class="space-y-4 pt-4 border-t border-[var(--r-line)]">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           <div>
-            <h2 id="galleryHeading" class="font-mono text-xs uppercase tracking-widest text-slate-300 font-bold">
+            <h2 id="galleryHeading" class="font-mono text-xs uppercase tracking-widest text-[var(--r-text)] font-bold">
               Wallpapers por serie ({allWallpapers.length})
             </h2>
-            <p class="text-xs text-slate-400 font-mono mt-0.5">
-              Descarga individual en .JPG o marca varias capturas para crear tu propio .ZIP.
+            <p class="text-xs text-[var(--r-muted)] font-mono mt-0.5">
+              Haz clic en cualquier imagen para verla en grande, descargarla en .JPG o marcar varias para crear tu propio .ZIP.
             </p>
           </div>
           <div class="flex flex-wrap items-center gap-2 font-mono text-xs">
-            <select id="wpBrandFilter" class="bg-[#0d1118] border border-white/15 rounded px-2.5 py-1.5 text-slate-200 outline-none">
+            <select id="wpBrandFilter" class="bg-[var(--r-surface)] border border-[var(--r-line)] rounded px-2.5 py-1.5 text-[var(--r-text)] outline-none">
               <option value="all">Todas las marcas ({allWallpapers.length})</option>
               {brandsList.map((brand) => <option value={brand}>{brand}</option>)}
             </select>
-            <input id="wpSearchInput" type="search" placeholder="Buscar coche o circuito..." class="bg-[#0d1118] border border-white/15 rounded px-3 py-1.5 text-slate-100 placeholder-slate-500 outline-none w-full sm:w-52 max-w-full" />
-            <button type="button" id="wpClearSelBtn" class="px-2.5 py-1.5 rounded border border-white/15 text-slate-400 hover:text-white cursor-pointer">Limpiar</button>
-            <button type="button" id="wpDownloadSelBtn" disabled class="px-3.5 py-1.5 rounded bg-emerald-500 disabled:bg-white/10 disabled:text-slate-500 text-[#04130d] font-extrabold cursor-pointer tabular-nums">
+            <input id="wpSearchInput" type="search" placeholder="Buscar coche o circuito..." class="bg-[var(--r-surface)] border border-[var(--r-line)] rounded px-3 py-1.5 text-[var(--r-text)] placeholder:text-[var(--r-muted)] outline-none w-full sm:w-52 max-w-full" />
+            <button type="button" id="wpClearSelBtn" class="px-2.5 py-1.5 rounded border border-[var(--r-line)] text-[var(--r-muted)] hover:text-[var(--r-text)] cursor-pointer">Limpiar</button>
+            <button type="button" id="wpDownloadSelBtn" disabled class="px-3.5 py-1.5 rounded bg-emerald-500 disabled:bg-[var(--r-line)] disabled:text-[var(--r-muted)] text-[#04130d] font-extrabold cursor-pointer tabular-nums">
               Descargar Selección (<span id="wpSelCount">0</span>)
             </button>
           </div>
@@ -271,22 +276,22 @@ const pageSchema = {
         <div id="wpGrid" class="space-y-8">
           {seriesGroups.map((group) => (
             <section class="wp-series space-y-3" data-series={group.id}>
-              <div class="flex items-end justify-between gap-3 border-b border-white/10 pb-2">
-                <h3 id={`serie-${group.slug}`} class="text-lg font-extrabold text-white">
-                  <a href={`/wallpapers/${group.slug}/`} class="hover:text-emerald-300">{group.name}</a>
+              <div class="flex items-end justify-between gap-3 border-b border-[var(--r-line)] pb-2">
+                <h3 id={`serie-${group.slug}`} class="text-lg font-extrabold text-[var(--r-text)]">
+                  <a href={`/wallpapers/${group.slug}/`} class="hover:text-[var(--r-accent)]">{group.name}</a>
                 </h3>
-                <span class="font-mono text-[11px] text-slate-400 tabular-nums">{group.items.length}</span>
+                <span class="font-mono text-[11px] text-[var(--r-muted)] tabular-nums">{group.items.length}</span>
               </div>
               <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {group.items.map((w) => (
-                  <article class="wp-card group rounded-lg border border-white/10 bg-[#0d1118] overflow-hidden flex flex-col hover:border-emerald-500/40 transition" data-id={w.id} data-brand={w.brand} data-search={`${w.brand} ${w.model} ${w.title} ${w.seriesName} ${w.carClass} ${w.circuit}`.toLowerCase()}>
+                  <article class="wp-card group rounded-lg border border-[var(--r-line)] bg-[var(--r-surface)] overflow-hidden flex flex-col hover:border-emerald-500/60 transition shadow-sm" data-id={w.id} data-brand={w.brand} data-search={`${w.brand} ${w.model} ${w.title} ${w.seriesName} ${w.carClass} ${w.circuit}`.toLowerCase()}>
                     <div class="wp-thumb-wrap relative aspect-video bg-[#090b0f] overflow-hidden">
-                      <img src={w.img} alt={w.alt} width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="w-full h-full object-cover" />
-                      <label class="absolute top-2 left-2 z-10 inline-flex items-center gap-1.5 px-2 py-1 rounded bg-black/75 border border-white/15 text-[10px] font-mono text-white cursor-pointer select-none">
+                      <img src={w.img} alt={w.alt} width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://muntrume.atrumin16.workers.dev/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}" data-preview-id={w.id} class="w-full h-full object-cover cursor-zoom-in transition-transform duration-300 group-hover:scale-105" />
+                      <label class="absolute top-2 left-2 z-10 inline-flex items-center gap-1.5 px-2 py-1 rounded bg-black/80 border border-white/20 text-[10px] font-mono cursor-pointer select-none" style="color:#ffffff;">
                         <input type="checkbox" class="wp-chk accent-emerald-500" value={w.id} />
                         <span>Elegir</span>
                       </label>
-                      <button type="button" data-preview-id={w.id} class="absolute bottom-2 left-2 px-2 py-1 rounded bg-black/80 border border-white/15 text-[10px] font-mono text-slate-200 font-bold cursor-pointer">
+                      <button type="button" data-preview-id={w.id} class="absolute bottom-2 left-2 px-2 py-1 rounded bg-black/85 border border-white/20 text-[10px] font-mono font-bold cursor-pointer hover:border-emerald-400" style="color:#f8fafc;">
                         Vista Previa
                       </button>
                       <button type="button" data-direct-dl={w.id} class="absolute bottom-2 right-2 px-2.5 py-1 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] text-[10px] font-mono font-extrabold cursor-pointer shadow">
@@ -294,8 +299,8 @@ const pageSchema = {
                       </button>
                     </div>
                     <div class="p-3 font-mono">
-                      <div class="text-xs font-bold text-white">{w.title || w.model}</div>
-                      <div class="text-[10px] text-slate-400">{w.model}{w.circuit ? ` · ${w.circuit}` : ""}</div>
+                      <div class="text-xs font-bold text-[var(--r-text)] truncate">{w.title || w.model}</div>
+                      <div class="text-[10px] text-[var(--r-muted)] truncate">{w.model}{w.circuit ? ` · ${w.circuit}` : ""}</div>
                     </div>
                   </article>
                 ))}
@@ -307,59 +312,44 @@ const pageSchema = {
     </div>
 
     <!-- PREVIEW & SLIDESHOW MODAL (Crossfade + Ken Burns GPU) -->
-    <div id="wpModal" hidden class="fixed inset-0 z-50 bg-black/92 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true">
-      <div class="w-full max-w-5xl rounded-xl border border-white/15 bg-[#0d1118] overflow-hidden shadow-2xl">
+    <div id="wpModal" hidden class="wp-modal-dark fixed inset-0 z-50 bg-black/92 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true">
+      <div class="w-full max-w-5xl rounded-xl border border-white/15 bg-[#0d1118] overflow-hidden shadow-2xl" style="background-color:#0d1118;color:#f8fafc;">
         <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-white/10 font-mono">
           <div class="min-w-0">
-            <h3 id="wpModalTitle" class="text-sm font-bold text-white truncate"></h3>
-            <p id="wpModalSub" class="text-[11px] text-slate-400 truncate"></p>
+            <h3 id="wpModalTitle" class="text-sm font-bold truncate" style="color:#ffffff;"></h3>
+            <p id="wpModalSub" class="text-[11px] truncate" style="color:#94a3b8;"></p>
           </div>
           <div class="flex items-center gap-2 shrink-0 text-xs">
-            <button type="button" id="wpSlidePrev" class="px-2 py-1 rounded border border-white/15 text-slate-300 hover:text-white cursor-pointer" aria-label="Anterior">‹</button>
-            <button type="button" id="wpSlideToggle" class="px-2.5 py-1 rounded border border-emerald-500/45 bg-emerald-500/15 text-emerald-300 font-bold cursor-pointer">
+            <button type="button" id="wpSlidePrev" class="px-2 py-1 rounded border border-white/15 hover:border-emerald-400 cursor-pointer" style="color:#e2e8f0;" aria-label="Anterior">‹</button>
+            <button type="button" id="wpSlideToggle" class="px-2.5 py-1 rounded border border-emerald-500/45 bg-emerald-500/15 font-bold cursor-pointer" style="color:#34d399;">
               ▶ Slideshow (<span class="wp-sec-lbl">20s</span>)
             </button>
-            <button type="button" id="wpSlideNext" class="px-2 py-1 rounded border border-white/15 text-slate-300 hover:text-white cursor-pointer" aria-label="Siguiente">›</button>
-            <span id="wpSlideCounter" class="text-[11px] text-slate-400 tabular-nums px-1">1/1</span>
-            <button type="button" id="wpModalClose" class="px-2.5 py-1 rounded border border-white/15 text-slate-300 hover:text-white cursor-pointer">Cerrar ✕</button>
+            <button type="button" id="wpSlideNext" class="px-2 py-1 rounded border border-white/15 hover:border-emerald-400 cursor-pointer" style="color:#e2e8f0;" aria-label="Siguiente">›</button>
+            <span id="wpSlideCounter" class="text-[11px] tabular-nums px-1" style="color:#94a3b8;">1/1</span>
+            <button type="button" id="wpModalClose" class="px-2.5 py-1 rounded border border-white/15 hover:border-rose-400 cursor-pointer" style="color:#e2e8f0;">Cerrar ✕</button>
           </div>
         </div>
         <div class="relative w-full aspect-video max-h-[68vh] bg-[#05070b] overflow-hidden flex items-center justify-center">
-          <img id="wpModalImgA" src="" alt="" referrerpolicy="no-referrer" class="wp-kb-layer absolute inset-0 w-full h-full object-cover opacity-0" />
-          <img id="wpModalImgB" src="" alt="" referrerpolicy="no-referrer" class="wp-kb-layer absolute inset-0 w-full h-full object-cover opacity-0" />
+          <img id="wpModalImgA" src="" alt="" referrerpolicy="no-referrer" class="wp-kb-layer absolute inset-0 w-full h-full object-contain opacity-0" />
+          <img id="wpModalImgB" src="" alt="" referrerpolicy="no-referrer" class="wp-kb-layer absolute inset-0 w-full h-full object-contain opacity-0" />
           <div class="absolute inset-x-0 bottom-0 h-[3px] bg-white/10 z-20 pointer-events-none">
             <div id="wpSlideProgress" class="h-full bg-emerald-500 origin-left" style="width: 0%;"></div>
           </div>
         </div>
         <div class="px-4 py-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 font-mono text-xs">
-          <span class="text-slate-400">Transición Crossfade 900ms + Ken Burns (GPU) · Exportado a .JPG estándar para Windows/Móvil.</span>
+          <span style="color:#94a3b8;">Transición Crossfade 900ms + Ken Burns (GPU) · Exportado a .JPG estándar para Windows/Móvil.</span>
           <div class="flex items-center gap-2">
-            <button type="button" id="wpModalDownloadDesktop" class="px-3.5 py-2 rounded border border-white/20 hover:border-emerald-500 text-white font-bold cursor-pointer">Descargar 16:9 (.JPG)</button>
+            <button type="button" id="wpModalDownloadDesktop" class="px-3.5 py-2 rounded border border-white/20 hover:border-emerald-500 font-bold cursor-pointer" style="color:#ffffff;">Descargar 16:9 (.JPG)</button>
             <button type="button" id="wpModalDownloadMobile" class="px-3.5 py-2 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-extrabold cursor-pointer">Descargar Foto Móvil (9:16 4K .JPG)</button>
           </div>
-        </div>
-      </div>
-
-      <!-- MULTI-MONITOR ZERO-DELAY SYNC GUIDE + QUICK DOWNLOAD -->
-      <div class="rounded-lg border border-emerald-500/25 bg-[#0d1118]/90 px-4 py-3 flex flex-col lg:flex-row lg:items-center justify-between gap-3 font-mono text-xs">
-        <div class="space-y-1">
-          <p class="text-emerald-300 font-bold">⚡ Sincronización Exacta Multi-Monitor Windows (0 ms de desfase · Sin Admin HKCU)</p>
-          <p class="text-[11px] text-slate-300 leading-relaxed">
-            El modo <em>Presentación</em> nativo de Windows cambia cada monitor por separado con desfase. Nuestro script <code class="text-emerald-300">Sincronizar_Monitores_<span class="wp-sec-lbl">20s</span>.bat</code> usa <code class="text-white/90">SystemParametersInfo</code> (<code class="text-white/90">user32.dll</code>) en segundo plano (&lt; 5 MB RAM) con <code class="text-white/90">JPEGImportQuality = 100</code> para aplicar la misma imagen 4K simultáneamente en todas las pantallas.
-          </p>
-        </div>
-        <div class="flex flex-wrap items-center gap-2 shrink-0">
-          <button type="button" id="wpDownloadSyncBatBtn" class="px-3 py-1.5 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-extrabold text-[11px] transition cursor-pointer">
-            ⬇ Sincronizar_Monitores_<span class="wp-sec-lbl">20s</span>.bat
-          </button>
-          <button type="button" id="wpDownloadStopBatBtn" class="px-3 py-1.5 rounded border border-white/15 hover:border-rose-400/60 text-slate-200 hover:text-rose-300 font-bold text-[11px] transition cursor-pointer">
-            ⏹ Detener_Sync_Wallpapers.bat
-          </button>
         </div>
       </div>
     </div>
 
     <style>
+      [hidden] {
+        display: none !important;
+      }
       .wp-kb-layer {
         transition: opacity 900ms cubic-bezier(0.22, 1, 0.36, 1);
         will-change: transform, opacity;
@@ -375,8 +365,8 @@ const pageSchema = {
     </style>
 
     <!-- SUBMIT / SUGGEST MODAL -->
-    <div id="wpSubmitModal" hidden class="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true">
-      <div class="w-full max-w-lg rounded-xl border border-white/15 bg-[#0d1118] overflow-hidden shadow-2xl font-mono">
+    <div id="wpSubmitModal" hidden class="wp-modal-dark fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true">
+      <div class="w-full max-w-lg rounded-xl border border-white/15 bg-[#0d1118] overflow-hidden shadow-2xl font-mono" style="background-color:#0d1118;color:#f8fafc;">
         <div class="flex items-center justify-between px-4 py-3 border-b border-white/10">
           <div>
             <h3 class="text-sm font-extrabold text-white">Subir / Sugerir Wallpaper</h3>
@@ -442,7 +432,7 @@ const pageSchema = {
         document.querySelectorAll<HTMLButtonElement>(".wp-int-btn").forEach((b) => {
           const on = b === btn;
           b.setAttribute("aria-pressed", String(on));
-          b.className = `wp-int-btn px-2 py-0.5 rounded text-[11px] cursor-pointer ${on ? "font-extrabold bg-emerald-500 text-[#04130d]" : "font-bold text-slate-300 hover:text-white"}`;
+          b.className = `wp-int-btn px-2 py-0.5 rounded text-[11px] cursor-pointer ${on ? "font-extrabold bg-emerald-500 text-[#04130d]" : "font-bold text-[var(--r-muted)] hover:text-[var(--r-text)]"}`;
         });
         document.querySelectorAll(".wp-sec-lbl").forEach((el) => {
           el.textContent = `${slideshowSec}s`;
@@ -469,7 +459,7 @@ const pageSchema = {
         const target = btn.dataset.viewTab;
         document.querySelectorAll<HTMLButtonElement>("[data-view-tab]").forEach((b) => {
           const on = b === btn;
-          b.className = `wp-tab px-3.5 py-2 rounded-md cursor-pointer ${on ? "bg-emerald-500 text-[#04130d] font-extrabold" : "bg-[#0d1118] border border-white/10 text-slate-300 hover:text-white font-bold"}`;
+          b.className = `wp-tab px-3.5 py-2 rounded-md cursor-pointer ${on ? "bg-emerald-500 text-[#04130d] font-extrabold" : "bg-[var(--r-surface)] border border-[var(--r-line)] text-[var(--r-muted)] hover:text-[var(--r-text)] font-bold"}`;
         });
         document.querySelectorAll<HTMLElement>(".wp-tab-panel").forEach((p) => {
           p.hidden = p.id !== `tab-${target}`;
@@ -484,8 +474,8 @@ const pageSchema = {
       outputFormat = fmt;
       const isMob = fmt === "mobile";
       if (fmtDesktopBtn && fmtMobileBtn) {
-        fmtDesktopBtn.className = `px-3.5 py-2 rounded-md font-bold transition cursor-pointer ${!isMob ? "bg-emerald-500 text-[#04130d]" : "text-slate-300 hover:text-white"}`;
-        fmtMobileBtn.className = `px-3.5 py-2 rounded-md font-bold transition cursor-pointer ${isMob ? "bg-emerald-500 text-[#04130d]" : "text-slate-300 hover:text-white"}`;
+        fmtDesktopBtn.className = `px-3.5 py-2 rounded-md font-bold transition cursor-pointer ${!isMob ? "bg-emerald-500 text-[#04130d]" : "text-[var(--r-muted)] hover:text-[var(--r-text)]"}`;
+        fmtMobileBtn.className = `px-3.5 py-2 rounded-md font-bold transition cursor-pointer ${isMob ? "bg-emerald-500 text-[#04130d]" : "text-[var(--r-muted)] hover:text-[var(--r-text)]"}`;
       }
       document.querySelectorAll(".wp-thumb-wrap").forEach((el) => {
         el.classList.toggle("aspect-video", !isMob);
@@ -712,8 +702,8 @@ const pageSchema = {
 
       incoming.classList.remove("wp-kb-active");
       incoming.style.setProperty("--wp-kb-dur", `${slideshowSec}s`);
-      incoming.src = item.img;
       incoming.alt = item.model;
+      delete incoming.dataset.proxied;
 
       const reveal = () => {
         if (animateKenBurns) {
@@ -726,8 +716,17 @@ const pageSchema = {
         outgoing.style.zIndex = "1";
       };
 
-      if (incoming.complete) reveal();
-      else incoming.onload = reveal;
+      incoming.onload = reveal;
+      incoming.onerror = () => {
+        if (!incoming.dataset.proxied && item.img.startsWith("http")) {
+          incoming.dataset.proxied = "1";
+          incoming.src = `${PROXY_BASE}${encodeURIComponent(item.img)}`;
+        } else {
+          reveal();
+        }
+      };
+      incoming.src = item.img;
+      if (incoming.complete && incoming.naturalWidth > 0) reveal();
 
       if (slideProgress) {
         slideProgress.style.transition = "none";
@@ -775,12 +774,19 @@ const pageSchema = {
       if (modalEl) modalEl.hidden = true;
     }
 
-    document.querySelectorAll<HTMLButtonElement>("[data-preview-id]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const id = btn.dataset.previewId || "";
+    document.querySelectorAll<HTMLElement>("[data-preview-id]").forEach((el) => {
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const id = el.dataset.previewId || "";
         const idx = allItems.findIndex((i) => i.id === id);
         if (idx >= 0) openPreviewModal(allItems, idx, false);
       });
+    });
+    document.addEventListener("keydown", (e) => {
+      if (!modalEl || modalEl.hidden) return;
+      if (e.key === "Escape") closePreviewModal();
+      else if (e.key === "ArrowLeft") { showSlideAt(slideIndex - 1, slidePlaying); if (slidePlaying) scheduleNextSlide(); }
+      else if (e.key === "ArrowRight") { showSlideAt(slideIndex + 1, slidePlaying); if (slidePlaying) scheduleNextSlide(); }
     });
     document.querySelectorAll<HTMLButtonElement>("[data-pack-slideshow]").forEach((btn) => {
       btn.addEventListener("click", () => {

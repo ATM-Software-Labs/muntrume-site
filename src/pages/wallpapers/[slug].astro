@@ -64,20 +64,28 @@ const pageSchema = {
       </header>
       <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {series.items.map((item, index) => (
-          <li class="rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] overflow-hidden hover:border-[var(--r-accent)] transition">
-            <img
-              src={item.img}
-              alt={item.alt}
-              width="640"
-              height="360"
-              loading={index === 0 ? "eager" : "lazy"}
-              decoding="async"
-              onerror="this.closest('li')?.remove()"
-              class="w-full aspect-video object-cover object-center bg-[var(--r-bg-2)]"
-            />
-            <div class="p-3 font-mono">
-              <p class="text-xs font-bold text-[var(--r-text)]">{item.title || item.model}</p>
-              {item.circuit && <p class="text-[10px] text-[var(--r-muted)]">{item.circuit}</p>}
+          <li class="group rounded-xl border border-[var(--r-line)] bg-[var(--r-surface)] overflow-hidden hover:border-[var(--r-accent)] transition shadow-sm">
+            <a href={item.img} target="_blank" rel="noopener noreferrer" class="block aspect-video bg-[#090b0f] overflow-hidden">
+              <img
+                src={item.img}
+                alt={item.alt}
+                width="640"
+                height="360"
+                loading={index === 0 ? "eager" : "lazy"}
+                decoding="async"
+                referrerpolicy="no-referrer"
+                onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://muntrume.atrumin16.workers.dev/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}"
+                class="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
+              />
+            </a>
+            <div class="p-3 font-mono flex items-center justify-between gap-2">
+              <div class="min-w-0">
+                <p class="text-xs font-bold text-[var(--r-text)] truncate">{item.title || item.model}</p>
+                {item.circuit && <p class="text-[10px] text-[var(--r-muted)] truncate">{item.circuit}</p>}
+              </div>
+              <a href={item.img} target="_blank" rel="noopener noreferrer" class="shrink-0 px-2.5 py-1 rounded bg-emerald-500 hover:bg-emerald-400 text-[#04130d] text-[10px] font-extrabold">
+                Ver HD ↗
+              </a>
             </div>
           </li>
         ))}

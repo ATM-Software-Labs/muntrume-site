@@ -951,11 +951,32 @@ html.light .ov-page, html[data-theme="light"] .ov-page {
   background: var(--r-bg) !important; color: var(--r-text) !important;
 }
 html.light .ov-hero, html[data-theme="light"] .ov-hero {
-  background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(16, 185, 129, 0.12), transparent 70%), var(--r-bg-2) !important;
+  background-color: var(--r-bg-2) !important;
+  background-image: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(0, 122, 80, 0.10), transparent 70%) !important;
   border-bottom-color: var(--r-line) !important;
 }
-html.light .ov-pill:not(.ov-pill--live), html[data-theme="light"] .ov-pill:not(.ov-pill--live) {
+html.light .ov-pill:not(.ov-pill--live):not(.ov-pill--oss), html[data-theme="light"] .ov-pill:not(.ov-pill--live):not(.ov-pill--oss) {
   background: var(--r-surface) !important; border-color: var(--r-line) !important; color: var(--r-muted) !important;
+}
+html.light .ov-pill--live, html[data-theme="light"] .ov-pill--live,
+html.light .ov-pill--oss, html[data-theme="light"] .ov-pill--oss {
+  background: rgba(0, 122, 80, 0.08) !important;
+  border-color: rgba(0, 122, 80, 0.32) !important;
+  color: #007A50 !important;
+}
+html.light .ov-accent, html[data-theme="light"] .ov-accent,
+html.light .ov-kicker, html[data-theme="light"] .ov-kicker,
+html.light .ov-spec__val, html[data-theme="light"] .ov-spec__val,
+html.light .ov-arch-tag, html[data-theme="light"] .ov-arch-tag {
+  color: #007A50 !important;
+}
+html.light .ov-hero__lead code, html[data-theme="light"] .ov-hero__lead code,
+html.light .ov-section__sub code, html[data-theme="light"] .ov-section__sub code,
+html.light .ov-card code, html[data-theme="light"] .ov-card code,
+html.light .ov-arch-card code, html[data-theme="light"] .ov-arch-card code,
+html.light .ov-step code, html[data-theme="light"] .ov-step code {
+  color: #007A50 !important;
+  background: rgba(0, 122, 80, 0.08) !important;
 }
 html.light .ov-btn--secondary, html[data-theme="light"] .ov-btn--secondary {
   background: var(--r-surface) !important; border-color: var(--r-line-2) !important; color: var(--r-text) !important;
@@ -971,8 +992,8 @@ html[data-theme="light"] .ov-card, html[data-theme="light"] .ov-arch-card, html[
   background: var(--r-surface) !important; border-color: var(--r-line) !important; color: var(--r-text) !important;
 }
 html.light .ov-cta-band, html[data-theme="light"] .ov-cta-band {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.14), var(--r-surface) 60%) !important;
-  border-color: rgba(16, 185, 129, 0.35) !important;
+  background: linear-gradient(135deg, rgba(0, 122, 80, 0.10), var(--r-surface) 60%) !important;
+  border-color: rgba(0, 122, 80, 0.30) !important;
 }
 html.light .ov-card h3, html.light .ov-arch-card h3, html.light .ov-step h3, html.light .ov-cta-band h3, html.light .ov-section__title, html.light .ov-hero__title,
 html[data-theme="light"] .ov-card h3, html[data-theme="light"] .ov-arch-card h3, html[data-theme="light"] .ov-step h3, html[data-theme="light"] .ov-cta-band h3, html[data-theme="light"] .ov-section__title, html[data-theme="light"] .ov-hero__title {

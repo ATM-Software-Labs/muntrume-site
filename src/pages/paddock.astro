@@ -1073,9 +1073,9 @@ const topHistoricTracks = allTracksWithPop.slice(0, 8);
                 return `
                   <a href="/albums/?car=${encodeURIComponent(a.slug)}" class="group rounded-xl overflow-hidden bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-300 flex flex-col justify-between">
                     <div class="relative w-full aspect-video overflow-hidden bg-[#090d12]">
-                      <img src="${a.cover}" alt="${a.car}" width="640" height="360" loading="lazy" decoding="async" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                      <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">${a.category}</span>
-                      <span class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded bg-black/75 border border-white/15 text-white text-[10px] font-mono font-bold">${a.count} ${a.count === 1 ? "foto" : "fotos"} · ${a.views} ${a.views === 1 ? "vista" : "vistas"}</span>
+                      <img src="${a.cover}" alt="${a.car}" width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://muntrume.atrumin16.workers.dev/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded bg-black/80 border border-white/15 text-[10px] font-mono font-bold uppercase" style="color:#34d399;">${a.category}</span>
+                      <span class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded bg-black/75 border border-white/15 text-[10px] font-mono font-bold" style="color:#ffffff;">${a.count} ${a.count === 1 ? "foto" : "fotos"} · ${a.views} ${a.views === 1 ? "vista" : "vistas"}</span>
                     </div>
                     <div class="p-3.5 flex items-center justify-between gap-2">
                       <h4 class="text-sm font-bold text-[var(--r-text)] group-hover:text-[var(--r-accent)] truncate">${a.car}</h4>
