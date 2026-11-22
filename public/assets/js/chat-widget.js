@@ -194,10 +194,32 @@ async function attachFile(file) {
 function renderLog() {
   log.innerHTML = "";
   if (!messages.length) {
-    const hello = document.createElement("div");
-    hello.className = "mm-m mm-a";
-    hello.innerHTML = "<p><strong>Muntrume AI</strong> · Pregunta sobre setups iRacing, estrategia de combustible, código o pega una captura con <code>Ctrl+V</code>.</p>";
-    log.appendChild(hello);
+    const b1 = document.createElement("div");
+    b1.className = "mm-m mm-a";
+    b1.style.cssText = "background:var(--sf);border:1px solid var(--bd);padding:9px 14px;border-radius:16px;border-top-left-radius:5px;width:fit-content;";
+    b1.innerHTML = "Hola 👋";
+    const b2 = document.createElement("div");
+    b2.className = "mm-m mm-a";
+    b2.style.cssText = "background:var(--sf);border:1px solid var(--bd);padding:10px 14px;border-radius:16px;border-top-left-radius:5px;max-width:88%;";
+    b2.innerHTML = "¿En qué puedo ayudarte hoy? Pregúntame sobre <strong>setups iRacing</strong>, <strong>estrategia de carrera</strong>, <strong>MMT Sync</strong> o pega una captura con <code>Ctrl+V</code>.";
+    const quick = document.createElement("div");
+    quick.className = "mm-acts";
+    quick.style.cssText = "margin-top:4px;gap:6px;";
+    [
+      { label: "Setups GT3 esta semana", prompt: "¿Qué setups GT3 recomiendas para esta semana de 2026 Season 4?" },
+      { label: "Instalar MMT Sync", prompt: "¿Cómo instalo y vinculo MMT Sync para sincronizar setups y overlays 60 FPS?" },
+      { label: "Special Events 2026", prompt: "¿Cuáles son los próximos iRacing Special Events de 2026?" },
+    ].forEach((q) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = q.label;
+      btn.style.cssText = "padding:6px 11px;border-radius:999px;font-size:12px;";
+      btn.addEventListener("click", () => send(q.prompt));
+      quick.appendChild(btn);
+    });
+    log.appendChild(b1);
+    log.appendChild(b2);
+    log.appendChild(quick);
     return;
   }
   messages.forEach((m, idx) => {

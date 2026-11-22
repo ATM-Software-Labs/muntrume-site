@@ -206,6 +206,55 @@ const pageDescription = "Official Muntrume Motorsport (MMT) race dispatches, iRa
 
       <!-- SIDEBAR WIDGETS COLUMN (4 Cols) -->
       <aside class="lg:col-span-4 space-y-6">
+
+        <!-- WIDGET 0: NEWSLETTER SIMRACING & MMT SYNC -->
+        <section id="newsletter" class="rounded-2xl border border-emerald-500/35 bg-[var(--r-surface)] p-6 shadow-lg relative overflow-hidden">
+          <div class="space-y-2.5">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/35 text-[var(--r-accent)] font-mono text-[10px] font-bold uppercase tracking-widest">
+              Newsletter Oficial MMT
+            </span>
+            <h3 class="text-lg font-extrabold text-[var(--r-text)] leading-snug">
+              Noticias de simracing y actualizaciones de MMT Sync
+            </h3>
+            <p class="text-xs text-[var(--r-muted)] leading-relaxed">
+              Recibe el resumen de iRacing, Special Events, nuevos setups <code>.STO</code> y lanzamientos de <strong>MMT Sync &amp; Overlays</strong> directo en tu correo. Sin spam.
+            </p>
+          </div>
+          <form id="mmtNewsletterForm" class="mt-4 space-y-3">
+            <div class="flex flex-wrap gap-3 text-[11px] font-mono text-[var(--r-muted)]">
+              <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                <input type="checkbox" name="nlTopic" value="simracing" checked class="accent-emerald-500" />
+                <span>SimRacing &amp; iRacing</span>
+              </label>
+              <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                <input type="checkbox" name="nlTopic" value="mmt_sync" checked class="accent-emerald-500" />
+                <span>Updates MMT Sync</span>
+              </label>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-2">
+              <input
+                type="email"
+                id="nlEmailInput"
+                required
+                autocomplete="email"
+                placeholder="tu@correo.com"
+                class="flex-1 min-w-0 bg-[var(--r-bg)] border border-[var(--r-line)] focus:border-[var(--r-accent)] rounded-xl px-3.5 py-2.5 text-xs text-[var(--r-text)] placeholder-[var(--r-muted)] outline-none transition"
+              />
+              <button
+                type="submit"
+                id="nlSubmitBtn"
+                class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-[#04130d] font-mono text-xs font-extrabold uppercase tracking-wider cursor-pointer transition shrink-0"
+              >
+                Suscribir
+              </button>
+            </div>
+            <label class="flex items-start gap-2 text-[11px] text-[var(--r-muted)] cursor-pointer leading-snug">
+              <input type="checkbox" id="nlPrivacyChk" required class="mt-0.5 accent-emerald-500" />
+              <span>He leído y acepto la <a href="/privacy/" class="text-[var(--r-accent)] underline">Política de privacidad</a>. Baja en 1 clic.</span>
+            </label>
+            <p id="nlStatusMsg" hidden class="text-xs font-mono p-2.5 rounded-lg border"></p>
+          </form>
+        </section>
         
         <!-- WIDGET 1: AI DAILY BRIEF -->
         <div class="bg-[var(--r-surface)] border border-[var(--r-line)] rounded-2xl p-6 relative overflow-hidden shadow-lg">
@@ -640,6 +689,50 @@ const pageDescription = "Official Muntrume Motorsport (MMT) race dispatches, iRa
       box-shadow: 0 0 15px var(--r-accent-glow);
     }
   </style>
+
+  <script is:inline>
+    (function () {
+      var form = document.getElementById("mmtNewsletterForm");
+      if (!form) return;
+      var emailEl = document.getElementById("nlEmailInput");
+      var btn = document.getElementById("nlSubmitBtn");
+      var msg = document.getElementById("nlStatusMsg");
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        var email = (emailEl && emailEl.value || "").trim();
+        if (!email) return;
+        var topics = Array.from(form.querySelectorAll('input[name="nlTopic"]:checked')).map(function (el) { return el.value; });
+        if (btn) btn.disabled = true;
+        if (msg) {
+          msg.hidden = false;
+          msg.className = "text-xs font-mono p-2.5 rounded-lg border border-[var(--r-line)] bg-[var(--r-bg)] text-[var(--r-muted)]";
+          msg.textContent = "Confirmando suscripción…";
+        }
+        try {
+          var r = await fetch("https://muntrume.atrumin16.workers.dev/api/newsletter/subscribe", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: email, topics: topics, source: "noticias" })
+          });
+          var d = await r.json().catch(function () { return {}; });
+          if (!r.ok || !d.success) throw new Error(d.error || "No se pudo completar la suscripción.");
+          if (msg) {
+            msg.className = "text-xs font-mono p-2.5 rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-[var(--r-accent)] font-bold";
+            msg.textContent = "✓ " + (d.message || "¡Suscripción confirmada!");
+          }
+          form.reset();
+          form.querySelectorAll('input[name="nlTopic"]').forEach(function (el) { el.checked = true; });
+        } catch (err) {
+          if (msg) {
+            msg.className = "text-xs font-mono p-2.5 rounded-lg border border-rose-500/40 bg-rose-500/10 text-rose-500 font-bold";
+            msg.textContent = "✕ " + (err.message || "Error de conexión.");
+          }
+        } finally {
+          if (btn) btn.disabled = false;
+        }
+      });
+    })();
+  </script>
 
   <script is:inline src="/assets/js/news.js?v=t330"></script>
 </Layout>
