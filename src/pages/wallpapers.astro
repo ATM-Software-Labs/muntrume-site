@@ -54,6 +54,24 @@ const packs = [
 ];
 
 const brandsList = [...new Set(allWallpapers.map((item) => item.brand).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
+
+// Group the main gallery by unique car class (each wallpaper appears once, zero duplicates in DOM)
+const CLASS_ORDER = ["GT3", "GTP", "LMP2", "LMP3", "GT4", "GTE", "CUP", "TCR", "FORMULA", "OVAL", "DIRT", "ROAD"];
+const classMap = new Map<string, typeof allWallpapers>();
+for (const w of allWallpapers) {
+  const cls = (w.carClass || "ROAD").toUpperCase();
+  const arr = classMap.get(cls) || [];
+  arr.push(w);
+  classMap.set(cls, arr);
+}
+const gallerySections = [...classMap.entries()]
+  .map(([cls, items]) => ({
+    id: `cls-${cls.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+    name: cls,
+    order: CLASS_ORDER.includes(cls) ? CLASS_ORDER.indexOf(cls) : 99,
+    items,
+  }))
+  .sort((a, b) => a.order - b.order || b.items.length - a.items.length);
 const pageTitle = "iRacing Wallpapers by Series (16:9 & Mobile)";
 const pageDescription = `Download ${allWallpapers.length} high-resolution iRacing wallpapers grouped by official series, available in 16:9 desktop and 9:16 mobile formats. MMT Team.`;
 const pageUrl = "https://muntru.me/wallpapers/";
@@ -174,9 +192,9 @@ const pageSchema = {
           <div class="rounded-lg border border-[var(--r-line)] bg-[var(--r-surface)] px-3.5 py-3 flex flex-col gap-2 hover:border-[var(--r-accent)]/50 transition">
             <div class="flex items-start justify-between gap-2">
               <a href={`/wallpapers/${group.slug}/`} class="text-sm font-extrabold text-[var(--r-text)] hover:text-[var(--r-accent)]">{group.name}</a>
-              <span class="font-mono text-[10px] text-[var(--r-muted)] tabular-nums shrink-0">{group.items.length}</span>
+              <span class="font-mono text-[10px] text-[var(--r-accent)] font-bold tabular-nums shrink-0">{group.items.length} fotos</span>
             </div>
-            <p class="font-mono text-[10px] uppercase tracking-wider text-[var(--r-muted)]">{group.kind === "series" ? "Serie del calendario" : "Categoría del archivo"}</p>
+            <p class="font-mono text-[10px] uppercase tracking-wider text-[var(--r-muted)]">{group.carCount} {group.carCount === 1 ? "coche" : "coches"} · Serie oficial iRacing</p>
             <div class="flex flex-wrap gap-1.5 font-mono text-[11px]">
               <button type="button" data-pack-download={group.id} class="px-2.5 py-1 rounded bg-emerald-500 text-[#04130d] font-extrabold cursor-pointer">.ZIP</button>
               <button type="button" data-pack-slideshow={group.id} class="px-2.5 py-1 rounded border border-emerald-500/40 text-[var(--r-accent)] font-bold cursor-pointer">▶ Slideshow</button>
@@ -274,13 +292,13 @@ const pageSchema = {
         </div>
 
         <div id="wpGrid" class="space-y-8">
-          {seriesGroups.map((group) => (
+          {gallerySections.map((group) => (
             <section class="wp-series space-y-3" data-series={group.id}>
               <div class="flex items-end justify-between gap-3 border-b border-[var(--r-line)] pb-2">
-                <h3 id={`serie-${group.slug}`} class="text-lg font-extrabold text-[var(--r-text)]">
-                  <a href={`/wallpapers/${group.slug}/`} class="hover:text-[var(--r-accent)]">{group.name}</a>
+                <h3 id={`clase-${group.id}`} class="text-lg font-extrabold text-[var(--r-text)]">
+                  {group.name}
                 </h3>
-                <span class="font-mono text-[11px] text-[var(--r-muted)] tabular-nums">{group.items.length}</span>
+                <span class="font-mono text-[11px] text-[var(--r-muted)] tabular-nums">{group.items.length} wallpapers</span>
               </div>
               <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {group.items.map((w) => (

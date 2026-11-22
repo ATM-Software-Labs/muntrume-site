@@ -41,6 +41,7 @@ export interface WallpaperSeries {
   kind: "series" | "category";
   order: number;
   accent: string;
+  carCount: number;
   items: WallpaperItem[];
 }
 
@@ -455,24 +456,79 @@ async function buildWallpaperCatalog(): Promise<WallpaperCatalog> {
 
   items.sort(compareItems);
 
-  const seriesMap = new Map<string, WallpaperSeries>();
-  for (const item of items) {
-    let group = seriesMap.get(item.seriesId);
-    if (!group) {
-      group = {
-        id: item.seriesId,
-        slug: item.seriesSlug,
-        name: item.seriesName,
-        kind: item.seriesKind,
-        order: item.seriesOrder,
-        accent: item.accentColor,
-        items: [],
-      };
-      seriesMap.set(item.seriesId, group);
+  // Build Many-to-Many official 2026 S4 series groups: every official series receives ALL wallpapers of ALL eligible cars.
+  const allScheduleSeries = (schedule as { series?: ScheduleSeries[] }).series ?? [];
+  const itemMetaCache = items.map((item) => {
+    const car = findCatalogCar(item.model);
+    const officialIds = new Set(car ? getCarOfficialSeries(car).map((s) => s.id) : []);
+    const norms = new Set<string>([
+      norm(item.model),
+      car ? norm(`${car.brand} ${car.model}`) : "",
+      car ? norm(car.model) : "",
+    ].filter((x) => x.length >= 4));
+    return { item, car, officialIds, norms };
+  });
+
+  const seriesByName = new Map<string, WallpaperSeries>();
+  allScheduleSeries.forEach((sched, idx) => {
+    const displayName = cleanSeriesName(sched.name);
+    if (!displayName) return;
+    const schedCarNorms = (sched.cars ?? []).map((c) => norm(c)).filter((x) => x.length >= 4);
+    const matchedItems: WallpaperItem[] = [];
+    const seenItemIds = new Set<string>();
+
+    for (const entry of itemMetaCache) {
+      let match = entry.officialIds.has(sched.id);
+      if (!match && schedCarNorms.length > 0) {
+        for (const sn of schedCarNorms) {
+          for (const cn of entry.norms) {
+            if (cn === sn || (cn.length >= 7 && sn.includes(cn)) || (sn.length >= 7 && cn.includes(sn))) {
+              match = true;
+              break;
+            }
+          }
+          if (match) break;
+        }
+      }
+      if (match && !seenItemIds.has(entry.item.id)) {
+        seenItemIds.add(entry.item.id);
+        matchedItems.push(entry.item);
+      }
     }
-    group.items.push(item);
-  }
-  const series = [...seriesMap.values()].sort((a, b) => a.order - b.order || a.name.localeCompare(b.name, "es"));
+
+    if (matchedItems.length < 3) return;
+    matchedItems.sort(compareItems);
+
+    const nameKey = norm(displayName);
+    const existing = seriesByName.get(nameKey);
+    if (existing) {
+      const mergedMap = new Map(existing.items.map((it) => [it.id, it]));
+      for (const it of matchedItems) mergedMap.set(it.id, it);
+      const merged = [...mergedMap.values()].sort(compareItems);
+      existing.items = merged;
+      existing.carCount = new Set(merged.map((it) => it.carSlug || it.model)).size;
+      return;
+    }
+
+    const carCount = new Set(matchedItems.map((it) => it.carSlug || it.model)).size;
+    seriesByName.set(nameKey, {
+      id: sched.id,
+      slug: sched.id,
+      name: displayName,
+      kind: "series",
+      order: idx,
+      accent: matchedItems[0].accentColor,
+      carCount,
+      items: matchedItems,
+    });
+  });
+
+  // Sort official series: most complete / flagship multi-car series first, then schedule order
+  const series = [...seriesByName.values()].sort((a, b) => {
+    const scoreA = a.items.length + a.carCount * 3;
+    const scoreB = b.items.length + b.carCount * 3;
+    return scoreB - scoreA || a.order - b.order || a.name.localeCompare(b.name, "es");
+  });
 
   const byId = new Map(items.map((item) => [item.id, item]));
   const albums: WallpaperAlbum[] = [];
