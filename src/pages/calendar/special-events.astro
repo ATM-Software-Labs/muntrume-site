@@ -24,13 +24,73 @@ const events = (eventsData as SpecialEvent[])
   .slice()
   .sort((a, b) => Date.parse(a.startUtc) - Date.parse(b.startUtc));
 
-const pageTitle = "Special Events iRacing 2026 | Calendario y Cuenta Atrás | Muntrume Motorsport";
+const nowBuild = Date.now();
+const featuredEvent = events.find((e) => Date.parse(e.endUtc) >= nowBuild) ?? events[events.length - 1];
+
+const pageTitle = "Special Events iRacing 2026 · Calendario y Cuenta Atrás";
 const pageDescription =
-  "Calendario completo de iRacing Special Events 2026 con contador en tiempo real, eventos de resistencia por equipos, coches, circuitos y pósters oficiales.";
+  "Calendario oficial de los 29 iRacing Special Events 2026 con cuenta atrás en vivo, resistencia 24h/12h/6h, coches, circuitos, pósters y setups .STO. MMT.";
 const canonical = "https://muntru.me/calendar/special-events/";
+const ogImage = featuredEvent?.poster || "https://muntru.me/assets/img/og-setups.jpg";
+const ogImageAlt = `iRacing Special Events 2026 · Próximo: ${featuredEvent?.title || "Calendario Oficial"} · Muntrume Motorsport`;
+
+const specialEventsSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "CollectionPage",
+      "@id": `${canonical}#webpage`,
+      "url": canonical,
+      "name": pageTitle,
+      "description": pageDescription,
+      "inLanguage": "es",
+      "isPartOf": { "@id": "https://muntru.me/#website" },
+      "primaryImageOfPage": ogImage,
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": `${canonical}#breadcrumb`,
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://muntru.me/" },
+        { "@type": "ListItem", "position": 2, "name": "Calendario iRacing", "item": "https://muntru.me/calendar/" },
+        { "@type": "ListItem", "position": 3, "name": "Special Events 2026", "item": canonical },
+      ],
+    },
+    {
+      "@type": "ItemList",
+      "name": "iRacing Special Events 2026",
+      "numberOfItems": events.length,
+      "itemListElement": events.map((ev, idx) => ({
+        "@type": "ListItem",
+        "position": idx + 1,
+        "item": {
+          "@type": "SportsEvent",
+          "name": `${ev.title} ${ev.year}`,
+          "startDate": ev.startUtc,
+          "endDate": ev.endUtc,
+          "eventAttendanceMode": "https://schema.org/OnlineEventAttendanceMode",
+          "eventStatus": "https://schema.org/EventScheduled",
+          "image": ev.poster || ev.logo,
+          "url": `https://muntru.me/calendar/special-events/${ev.slug}/`,
+          "location": { "@type": "VirtualLocation", "name": ev.track, "url": `https://muntru.me/calendar/special-events/${ev.slug}/` },
+        },
+      })),
+    },
+  ],
+};
 ---
 
-<Layout title={pageTitle} description={pageDescription} canonical={canonical}>
+<Layout
+  title={pageTitle}
+  description={pageDescription}
+  canonical={canonical}
+  ogImage={ogImage}
+  ogImageAlt={ogImageAlt}
+  ogImageWidth={1200}
+  ogImageHeight={630}
+  ogLocale="es_ES"
+  schemaJson={specialEventsSchema}
+>
   <section class="r-section se-page" aria-labelledby="seTitle">
     <div class="r-wrap">
       <header class="se-head">
@@ -148,7 +208,7 @@ const canonical = "https://muntru.me/calendar/special-events/";
     .se-sub {
       margin-top: 0.5rem;
       max-width: 62ch;
-      color: var(--r-muted, #94a3b8);
+      color: var(--r-muted);
       font-size: 0.92rem;
       line-height: 1.5;
     }
@@ -162,45 +222,53 @@ const canonical = "https://muntru.me/calendar/special-events/";
       align-items: center;
       padding: 0.55rem 0.9rem;
       border-radius: 0.65rem;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      background: rgba(255, 255, 255, 0.04);
-      font-family: var(--font-mono, monospace);
+      border: 1px solid var(--r-line);
+      background: var(--r-surface);
+      font-family: var(--r-mono, monospace);
       font-size: 0.78rem;
-      color: inherit;
+      font-weight: 600;
+      color: var(--r-text);
       text-decoration: none;
-      transition: border-color 140ms, background 140ms;
+      transition: border-color 140ms, background 140ms, color 140ms;
     }
     .se-nav-btn:hover {
-      border-color: rgba(16, 185, 129, 0.55);
-      background: rgba(16, 185, 129, 0.1);
+      border-color: var(--r-accent);
+      background: color-mix(in srgb, var(--r-accent) 10%, var(--r-surface));
+      color: var(--r-accent);
     }
     .se-nav-btn--accent {
-      background: #10b981;
-      color: #052e16;
-      border-color: #10b981;
+      background: var(--r-accent);
+      color: #04150e;
+      border-color: var(--r-accent);
       font-weight: 700;
     }
+    :global(html.light) .se-nav-btn--accent,
+    :global(html[data-theme="light"]) .se-nav-btn--accent { color: #ffffff; }
     .se-nav-btn--accent:hover {
-      background: #34d399;
-      color: #052e16;
+      opacity: 0.92;
+      color: #04150e;
     }
+    :global(html.light) .se-nav-btn--accent:hover,
+    :global(html[data-theme="light"]) .se-nav-btn--accent:hover { color: #ffffff; }
+
     .se-hero {
       display: grid;
       grid-template-columns: minmax(220px, 320px) 1fr;
       gap: 1.5rem;
-      padding: 1.4rem;
+      padding: clamp(1rem, 3vw, 1.5rem);
       border-radius: 1rem;
-      border: 1px solid rgba(16, 185, 129, 0.35);
-      background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.14), rgba(15, 23, 42, 0.85) 55%);
+      border: 1px solid color-mix(in srgb, var(--r-accent) 38%, var(--r-line));
+      background: radial-gradient(circle at top right, color-mix(in srgb, var(--r-accent) 14%, transparent), var(--r-surface) 60%);
       margin-bottom: 1.75rem;
       align-items: center;
+      box-shadow: 0 12px 32px -20px rgba(0, 0, 0, 0.25);
     }
     @media (max-width: 780px) {
       .se-hero { grid-template-columns: 1fr; }
     }
     .se-hero__media {
-      background: rgba(2, 6, 23, 0.75);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #0b1016;
+      border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 0.75rem;
       padding: 0.9rem;
       display: flex;
@@ -221,36 +289,40 @@ const canonical = "https://muntru.me/calendar/special-events/";
       margin-bottom: 0.55rem;
     }
     .se-badge {
-      font-family: var(--font-mono, monospace);
+      font-family: var(--r-mono, monospace);
       font-size: 0.68rem;
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      padding: 0.22rem 0.55rem;
+      padding: 0.22rem 0.58rem;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.08);
-      color: #e2e8f0;
+      background: var(--r-bg);
+      border: 1px solid var(--r-line);
+      color: var(--r-text);
     }
     .se-badge--live {
-      background: rgba(16, 185, 129, 0.22);
-      color: #34d399;
-      border: 1px solid rgba(16, 185, 129, 0.45);
+      background: color-mix(in srgb, var(--r-accent) 16%, var(--r-bg));
+      color: var(--r-accent);
+      border-color: color-mix(in srgb, var(--r-accent) 45%, transparent);
     }
     .se-date-pill {
-      font-family: var(--font-mono, monospace);
+      font-family: var(--r-mono, monospace);
       font-size: 0.76rem;
-      color: #94a3b8;
+      font-weight: 600;
+      color: var(--r-muted);
     }
     .se-hero__title {
-      font-size: clamp(1.5rem, 3vw, 2.2rem);
+      font-size: clamp(1.45rem, 3vw, 2.2rem);
       font-weight: 800;
       letter-spacing: -0.02em;
       margin: 0;
+      color: var(--r-text);
     }
     .se-hero__meta {
       margin: 0.4rem 0 1rem;
-      color: #cbd5e1;
+      color: var(--r-muted);
       font-size: 0.9rem;
+      line-height: 1.5;
     }
     .se-countdown {
       display: inline-flex;
@@ -258,21 +330,22 @@ const canonical = "https://muntru.me/calendar/special-events/";
       gap: 0.45rem;
       padding: 0.65rem 0.9rem;
       border-radius: 0.75rem;
-      background: rgba(2, 6, 23, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--r-bg);
+      border: 1px solid var(--r-line);
       margin-bottom: 1rem;
+      max-width: 100%;
     }
     .se-cd-box {
-      min-width: 3.1rem;
+      min-width: 2.85rem;
       text-align: center;
     }
     .se-cd-box span {
       display: block;
-      font-family: var(--font-mono, monospace);
-      font-size: 1.55rem;
+      font-family: var(--r-mono, monospace);
+      font-size: 1.5rem;
       font-weight: 800;
       line-height: 1.1;
-      color: #34d399;
+      color: var(--r-accent);
       font-variant-numeric: tabular-nums;
     }
     .se-cd-box small {
@@ -280,14 +353,15 @@ const canonical = "https://muntru.me/calendar/special-events/";
       font-size: 0.64rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: #94a3b8;
+      color: var(--r-muted);
       margin-top: 0.15rem;
     }
     .se-cd-sep {
-      font-family: var(--font-mono, monospace);
-      font-size: 1.3rem;
+      font-family: var(--r-mono, monospace);
+      font-size: 1.25rem;
       font-weight: 700;
-      color: rgba(255, 255, 255, 0.35);
+      color: var(--r-muted);
+      opacity: 0.5;
       padding-bottom: 0.8rem;
     }
     .se-hero__cta {
@@ -303,18 +377,22 @@ const canonical = "https://muntru.me/calendar/special-events/";
       font-size: 0.82rem;
       font-weight: 700;
       text-decoration: none;
+      transition: opacity 140ms, border-color 140ms, background 140ms;
     }
     .se-btn--primary {
-      background: #10b981;
-      color: #052e16;
+      background: var(--r-accent);
+      color: #04150e;
     }
-    .se-btn--primary:hover { background: #34d399; }
+    :global(html.light) .se-btn--primary,
+    :global(html[data-theme="light"]) .se-btn--primary { color: #ffffff; }
+    .se-btn--primary:hover { opacity: 0.92; }
     .se-btn--ghost {
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      color: #e2e8f0;
-      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--r-line);
+      color: var(--r-text);
+      background: var(--r-bg);
     }
-    .se-btn--ghost:hover { border-color: rgba(255, 255, 255, 0.4); }
+    .se-btn--ghost:hover { border-color: var(--r-accent); color: var(--r-accent); }
+
     .se-filters {
       display: flex;
       flex-wrap: wrap;
@@ -329,56 +407,64 @@ const canonical = "https://muntru.me/calendar/special-events/";
       gap: 0.45rem;
     }
     .se-pill {
-      padding: 0.42rem 0.85rem;
+      padding: 0.45rem 0.9rem;
       border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      background: rgba(255, 255, 255, 0.03);
-      color: #cbd5e1;
+      border: 1px solid var(--r-line);
+      background: var(--r-surface);
+      color: var(--r-muted);
       font-size: 0.78rem;
       font-weight: 600;
       cursor: pointer;
+      transition: border-color 140ms, color 140ms, background 140ms;
+    }
+    .se-pill:hover {
+      border-color: var(--r-accent);
+      color: var(--r-text);
     }
     .se-pill.is-on {
-      background: #10b981;
-      border-color: #10b981;
-      color: #052e16;
+      background: var(--r-accent);
+      border-color: var(--r-accent);
+      color: #04150e;
       font-weight: 700;
     }
+    :global(html.light) .se-pill.is-on,
+    :global(html[data-theme="light"]) .se-pill.is-on { color: #ffffff; }
     .se-count {
-      font-family: var(--font-mono, monospace);
+      font-family: var(--r-mono, monospace);
       font-size: 0.78rem;
-      color: #94a3b8;
+      color: var(--r-muted);
     }
     .se-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 1rem;
     }
     .se-card {
-      border-radius: 0.9rem;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(15, 23, 42, 0.65);
+      border-radius: 0.95rem;
+      border: 1px solid var(--r-line);
+      background: var(--r-surface);
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      transition: transform 150ms, border-color 150ms;
+      transition: transform 150ms, border-color 150ms, box-shadow 150ms;
     }
     .se-card:hover {
       transform: translateY(-2px);
-      border-color: rgba(16, 185, 129, 0.45);
+      border-color: color-mix(in srgb, var(--r-accent) 55%, var(--r-line));
+      box-shadow: 0 12px 26px -18px rgba(0, 0, 0, 0.3);
     }
     .se-card[data-state="past"] {
-      opacity: 0.72;
+      opacity: 0.78;
     }
     .se-card__img {
       position: relative;
       height: 150px;
-      background: rgba(2, 6, 23, 0.85);
+      background: #0b1016;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 0.75rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      padding: 0.8rem;
+      border-bottom: 1px solid var(--r-line);
     }
     .se-card__img img {
       max-height: 100%;
@@ -389,15 +475,15 @@ const canonical = "https://muntru.me/calendar/special-events/";
       position: absolute;
       top: 0.6rem;
       right: 0.6rem;
-      font-family: var(--font-mono, monospace);
+      font-family: var(--r-mono, monospace);
       font-size: 0.65rem;
       font-weight: 700;
       text-transform: uppercase;
-      padding: 0.18rem 0.5rem;
+      padding: 0.18rem 0.55rem;
       border-radius: 999px;
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      color: #cbd5e1;
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #e2e8f0;
     }
     .se-card[data-state="live"] .se-card__status {
       background: rgba(16, 185, 129, 0.25);
@@ -405,8 +491,8 @@ const canonical = "https://muntru.me/calendar/special-events/";
       color: #34d399;
     }
     .se-card[data-state="upcoming"] .se-card__status {
-      background: rgba(56, 189, 248, 0.18);
-      border-color: rgba(56, 189, 248, 0.5);
+      background: rgba(56, 189, 248, 0.2);
+      border-color: rgba(56, 189, 248, 0.55);
       color: #7dd3fc;
     }
     .se-card__body {
@@ -414,7 +500,7 @@ const canonical = "https://muntru.me/calendar/special-events/";
       display: flex;
       flex-direction: column;
       flex: 1;
-      gap: 0.4rem;
+      gap: 0.42rem;
     }
     .se-card__top {
       display: flex;
@@ -422,35 +508,38 @@ const canonical = "https://muntru.me/calendar/special-events/";
       flex-wrap: wrap;
     }
     .se-tag {
-      font-family: var(--font-mono, monospace);
+      font-family: var(--r-mono, monospace);
       font-size: 0.66rem;
       text-transform: uppercase;
-      padding: 0.14rem 0.45rem;
+      padding: 0.16rem 0.48rem;
       border-radius: 0.35rem;
-      background: rgba(16, 185, 129, 0.14);
-      color: #34d399;
+      background: color-mix(in srgb, var(--r-accent) 14%, var(--r-bg));
+      color: var(--r-accent);
       font-weight: 700;
     }
     .se-tag--muted {
-      background: rgba(255, 255, 255, 0.07);
-      color: #cbd5e1;
+      background: var(--r-bg);
+      border: 1px solid var(--r-line);
+      color: var(--r-muted);
     }
     .se-card__title {
       margin: 0.15rem 0 0;
       font-size: 1.05rem;
       font-weight: 800;
       line-height: 1.25;
+      color: var(--r-text);
     }
     .se-card__date {
       margin: 0;
-      font-family: var(--font-mono, monospace);
+      font-family: var(--r-mono, monospace);
       font-size: 0.78rem;
-      color: #34d399;
+      font-weight: 700;
+      color: var(--r-accent);
     }
     .se-card__specs {
       margin: 0.4rem 0 0;
       display: grid;
-      gap: 0.25rem;
+      gap: 0.28rem;
       font-size: 0.8rem;
     }
     .se-card__specs div {
@@ -458,29 +547,29 @@ const canonical = "https://muntru.me/calendar/special-events/";
       justify-content: space-between;
       gap: 0.6rem;
     }
-    .se-card__specs dt { color: #94a3b8; }
+    .se-card__specs dt { color: var(--r-muted); flex-shrink: 0; }
     .se-card__specs dd {
       margin: 0;
       text-align: right;
-      color: #e2e8f0;
-      font-weight: 500;
+      color: var(--r-text);
+      font-weight: 600;
     }
     .se-card__foot {
       margin-top: auto;
       padding-top: 0.65rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      border-top: 1px solid var(--r-line);
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 0.5rem;
-      font-family: var(--font-mono, monospace);
+      font-family: var(--r-mono, monospace);
       font-size: 0.74rem;
     }
     .se-card__mini-cd {
-      color: #94a3b8;
+      color: var(--r-muted);
     }
     .se-poster-link {
-      color: #34d399;
+      color: var(--r-accent);
       text-decoration: none;
       font-weight: 700;
     }

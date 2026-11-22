@@ -41,9 +41,55 @@ const others = (eventsData as SpecialEvent[])
   .sort((a, b) => Date.parse(a.startUtc) - Date.parse(b.startUtc))
   .slice(0, 6);
 
-const pageTitle = `${event.title} ${event.year} · Special Event iRacing | Muntrume Motorsport`;
-const pageDescription = `${event.title} (${event.dateLabel}) en ${event.track}: ${event.duration}, coches ${event.cars}, horarios UTC y cuenta atrás en Muntrume Motorsport.`;
+const pageTitle = `${event.title} ${event.year} · Special Event iRacing`;
+const pageDescription = `${event.title} (${event.dateLabel}) en ${event.track}: ${event.duration}, coches ${event.cars}, licencia ${event.license}, horarios UTC y setups .STO. MMT.`;
 const canonical = `https://muntru.me/calendar/special-events/${event.slug}/`;
+const ogImage = event.poster || event.logo || "https://muntru.me/assets/img/og-setups.jpg";
+const ogImageAlt = `${event.title} ${event.year} · ${event.dateLabel} en ${event.track} · Muntrume Motorsport`;
+
+const eventSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SportsEvent",
+      "@id": `${canonical}#event`,
+      "name": `${event.title} ${event.year} (iRacing Special Event)`,
+      "description": event.description,
+      "startDate": event.startUtc,
+      "endDate": event.endUtc,
+      "eventAttendanceMode": "https://schema.org/OnlineEventAttendanceMode",
+      "eventStatus": "https://schema.org/EventScheduled",
+      "image": [event.poster, event.logo].filter(Boolean),
+      "url": canonical,
+      "inLanguage": "es",
+      "location": {
+        "@type": "VirtualLocation",
+        "name": event.track,
+        "url": canonical,
+      },
+      "organizer": {
+        "@type": "Organization",
+        "name": "iRacing",
+        "url": "https://www.iracing.com/special-events/",
+      },
+      "competitor": {
+        "@type": "SportsTeam",
+        "name": "Muntrume Motorsport",
+        "url": "https://muntru.me/",
+      },
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": `${canonical}#breadcrumb`,
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://muntru.me/" },
+        { "@type": "ListItem", "position": 2, "name": "Calendario iRacing", "item": "https://muntru.me/calendar/" },
+        { "@type": "ListItem", "position": 3, "name": `Special Events ${event.year}`, "item": "https://muntru.me/calendar/special-events/" },
+        { "@type": "ListItem", "position": 4, "name": event.title, "item": canonical },
+      ],
+    },
+  ],
+};
 
 function resolveTrackQuery(trackName: string): string {
   const t = trackName.toLowerCase();
@@ -91,7 +137,18 @@ if (singleCar) setupParams.set("car", singleCar);
 const setupUrl = `/garage/?${setupParams.toString()}`;
 ---
 
-<Layout title={pageTitle} description={pageDescription} canonical={canonical} ogImage={event.poster || event.logo} ogImageAlt={event.title}>
+<Layout
+  title={pageTitle}
+  description={pageDescription}
+  canonical={canonical}
+  ogType="article"
+  ogLocale="es_ES"
+  ogImage={ogImage}
+  ogImageAlt={ogImageAlt}
+  ogImageWidth={1200}
+  ogImageHeight={630}
+  schemaJson={eventSchema}
+>
   <section class="r-section sed-page" aria-labelledby="sedTitle">
     <div class="r-wrap">
       <nav class="sed-crumb" aria-label="Ruta">
@@ -127,6 +184,7 @@ const setupUrl = `/garage/?${setupParams.toString()}`;
 
           <div class="sed-actions">
             <a href={setupUrl} class="sed-btn sed-btn--primary">Setups .STO para este evento →</a>
+            <button type="button" id="sedShareBtn" class="sed-btn" data-share-title={`${event.title} ${event.year} · iRacing`} data-share-text={`${event.title} (${event.dateLabel}) en ${event.track} · ${event.duration}`}>Compartir</button>
             <a href="https://discord.gg/ehX6B8JUtE" target="_blank" rel="noreferrer noopener" class="sed-btn">Apuntarme en Discord</a>
             <a href="https://www.iracing.com/special-events/" target="_blank" rel="noreferrer noopener" class="sed-btn">Web oficial iRacing ↗</a>
           </div>
@@ -180,28 +238,31 @@ const setupUrl = `/garage/?${setupParams.toString()}`;
   <style>
     .sed-crumb {
       display: flex;
+      flex-wrap: wrap;
       gap: 0.5rem;
-      font-family: var(--font-mono, monospace);
+      font-family: var(--r-mono, monospace);
       font-size: 0.78rem;
-      color: #94a3b8;
+      color: var(--r-muted);
       margin-bottom: 1.1rem;
     }
-    .sed-crumb a { color: #34d399; text-decoration: none; }
+    .sed-crumb a { color: var(--r-accent); text-decoration: none; font-weight: 700; }
+    .sed-crumb a:hover { text-decoration: underline; }
     .sed-hero {
       display: grid;
       grid-template-columns: minmax(220px, 340px) 1fr;
       gap: 1.5rem;
-      padding: 1.4rem;
+      padding: clamp(1rem, 3vw, 1.5rem);
       border-radius: 1rem;
-      border: 1px solid rgba(16, 185, 129, 0.35);
-      background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.14), rgba(15, 23, 42, 0.85) 55%);
+      border: 1px solid color-mix(in srgb, var(--r-accent) 38%, var(--r-line));
+      background: radial-gradient(circle at top right, color-mix(in srgb, var(--r-accent) 14%, transparent), var(--r-surface) 60%);
       align-items: center;
       margin-bottom: 1.75rem;
+      box-shadow: 0 12px 32px -20px rgba(0, 0, 0, 0.25);
     }
     @media (max-width: 780px) { .sed-hero { grid-template-columns: 1fr; } }
     .sed-hero__logo {
-      background: rgba(2, 6, 23, 0.75);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: #0b1016;
+      border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 0.75rem;
       padding: 1rem;
       display: flex;
@@ -212,32 +273,33 @@ const setupUrl = `/garage/?${setupParams.toString()}`;
     .sed-hero__logo img { max-height: 170px; width: auto; object-fit: contain; }
     .sed-badges { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-bottom: 0.6rem; }
     .sed-badge {
-      font-family: var(--font-mono, monospace);
+      font-family: var(--r-mono, monospace);
       font-size: 0.68rem;
       font-weight: 700;
-      padding: 0.2rem 0.55rem;
+      padding: 0.22rem 0.58rem;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.08);
-      color: #e2e8f0;
+      background: var(--r-bg);
+      border: 1px solid var(--r-line);
+      color: var(--r-text);
       text-transform: uppercase;
     }
     .sed-badge--live {
-      background: rgba(16, 185, 129, 0.22);
-      color: #34d399;
-      border: 1px solid rgba(16, 185, 129, 0.45);
+      background: color-mix(in srgb, var(--r-accent) 16%, var(--r-bg));
+      color: var(--r-accent);
+      border-color: color-mix(in srgb, var(--r-accent) 45%, transparent);
     }
     .sed-date {
       margin: 0.35rem 0 0.6rem;
-      font-family: var(--font-mono, monospace);
+      font-family: var(--r-mono, monospace);
       font-size: 0.85rem;
-      color: #34d399;
+      color: var(--r-accent);
       font-weight: 700;
     }
     .sed-desc {
       margin: 0 0 1rem;
-      color: #cbd5e1;
+      color: var(--r-muted);
       font-size: 0.92rem;
-      line-height: 1.55;
+      line-height: 1.58;
       max-width: 65ch;
     }
     .sed-cd {
@@ -246,31 +308,33 @@ const setupUrl = `/garage/?${setupParams.toString()}`;
       gap: 0.45rem;
       padding: 0.65rem 0.9rem;
       border-radius: 0.75rem;
-      background: rgba(2, 6, 23, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--r-bg);
+      border: 1px solid var(--r-line);
       margin-bottom: 1rem;
+      max-width: 100%;
     }
-    .sed-cd-box { min-width: 3rem; text-align: center; }
+    .sed-cd-box { min-width: 2.85rem; text-align: center; }
     .sed-cd-box span {
       display: block;
-      font-family: var(--font-mono, monospace);
+      font-family: var(--r-mono, monospace);
       font-size: 1.5rem;
       font-weight: 800;
       line-height: 1.1;
-      color: #34d399;
+      color: var(--r-accent);
       font-variant-numeric: tabular-nums;
     }
     .sed-cd-box small {
       display: block;
       font-size: 0.62rem;
       text-transform: uppercase;
-      color: #94a3b8;
+      color: var(--r-muted);
       margin-top: 0.15rem;
     }
     .sed-cd-sep {
-      font-family: var(--font-mono, monospace);
+      font-family: var(--r-mono, monospace);
       font-size: 1.2rem;
-      color: rgba(255, 255, 255, 0.35);
+      color: var(--r-muted);
+      opacity: 0.5;
       padding-bottom: 0.75rem;
     }
     .sed-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
@@ -279,38 +343,53 @@ const setupUrl = `/garage/?${setupParams.toString()}`;
       align-items: center;
       padding: 0.55rem 0.95rem;
       border-radius: 0.6rem;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      background: rgba(255, 255, 255, 0.04);
-      color: #e2e8f0;
+      border: 1px solid var(--r-line);
+      background: var(--r-bg);
+      color: var(--r-text);
       font-size: 0.8rem;
       font-weight: 700;
       text-decoration: none;
+      cursor: pointer;
+      transition: opacity 140ms, border-color 140ms, color 140ms;
     }
-    .sed-btn--primary { background: #10b981; border-color: #10b981; color: #052e16; }
+    .sed-btn:hover { border-color: var(--r-accent); color: var(--r-accent); }
+    .sed-btn--primary { background: var(--r-accent); border-color: var(--r-accent); color: #04150e; }
+    :global(html.light) .sed-btn--primary,
+    :global(html[data-theme="light"]) .sed-btn--primary { color: #ffffff; }
+    .sed-btn--primary:hover { opacity: 0.92; color: #04150e; }
+    :global(html.light) .sed-btn--primary:hover,
+    :global(html[data-theme="light"]) .sed-btn--primary:hover { color: #ffffff; }
+
     .sed-layout { display: grid; grid-template-columns: 1.3fr 1fr; gap: 1.25rem; margin-bottom: 2rem; }
     @media (max-width: 820px) { .sed-layout { grid-template-columns: 1fr; } }
     .sed-panel {
       padding: 1.25rem;
-      border-radius: 0.9rem;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(15, 23, 42, 0.65);
+      border-radius: 0.95rem;
+      border: 1px solid var(--r-line);
+      background: var(--r-surface);
     }
-    .sed-h2 { margin: 0 0 0.95rem; font-size: 1.05rem; font-weight: 800; }
+    .sed-h2 { margin: 0 0 0.95rem; font-size: 1.05rem; font-weight: 800; color: var(--r-text); }
     .sed-specs { margin: 0; display: grid; gap: 0.65rem; }
     .sed-specs div {
       display: flex;
       justify-content: space-between;
       gap: 1rem;
       padding-bottom: 0.55rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      border-bottom: 1px solid var(--r-line);
       font-size: 0.86rem;
     }
-    .sed-specs dt { color: #94a3b8; }
-    .sed-specs dd { margin: 0; text-align: right; color: #f8fafc; font-weight: 600; }
-    .sed-poster { display: block; border-radius: 0.65rem; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); }
+    .sed-specs div:last-child { border-bottom: 0; padding-bottom: 0; }
+    @media (max-width: 520px) {
+      .sed-specs div { flex-direction: column; gap: 0.2rem; }
+      .sed-specs dd { text-align: left !important; }
+    }
+    .sed-specs dt { color: var(--r-muted); flex-shrink: 0; }
+    .sed-specs dd { margin: 0; text-align: right; color: var(--r-text); font-weight: 600; }
+    .sed-poster { display: block; border-radius: 0.65rem; overflow: hidden; border: 1px solid var(--r-line); }
     .sed-poster img { width: 100%; height: auto; display: block; }
     .sed-more__head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
-    .sed-link { color: #34d399; text-decoration: none; font-family: var(--font-mono, monospace); font-size: 0.8rem; font-weight: 700; }
+    .sed-link { color: var(--r-accent); text-decoration: none; font-family: var(--r-mono, monospace); font-size: 0.8rem; font-weight: 700; }
+    .sed-link:hover { text-decoration: underline; }
     .sed-more__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 0.75rem; }
     .sed-mini {
       display: flex;
@@ -318,19 +397,36 @@ const setupUrl = `/garage/?${setupParams.toString()}`;
       gap: 0.75rem;
       padding: 0.65rem;
       border-radius: 0.75rem;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid var(--r-line);
+      background: var(--r-surface);
       text-decoration: none;
-      color: inherit;
+      color: var(--r-text);
+      transition: border-color 140ms, transform 140ms;
     }
-    .sed-mini:hover { border-color: rgba(16, 185, 129, 0.5); }
-    .sed-mini img { width: 64px; height: 42px; object-fit: contain; background: #020617; border-radius: 0.45rem; padding: 0.2rem; }
-    .sed-mini strong { display: block; font-size: 0.84rem; }
-    .sed-mini span { display: block; font-size: 0.72rem; color: #94a3b8; }
+    .sed-mini:hover { border-color: var(--r-accent); transform: translateY(-1px); }
+    .sed-mini img { width: 64px; height: 42px; object-fit: contain; background: #0b1016; border-radius: 0.45rem; padding: 0.2rem; flex-shrink: 0; }
+    .sed-mini strong { display: block; font-size: 0.84rem; color: var(--r-text); }
+    .sed-mini span { display: block; font-size: 0.72rem; color: var(--r-muted); }
   </style>
 
   <script>
     (() => {
+      const shareBtn = document.getElementById("sedShareBtn");
+      shareBtn?.addEventListener("click", async () => {
+        const title = shareBtn.dataset.shareTitle || document.title;
+        const text = shareBtn.dataset.shareText || "";
+        const url = window.location.href;
+        if (navigator.share) {
+          try { await navigator.share({ title, text, url }); return; } catch {}
+        }
+        try {
+          await navigator.clipboard.writeText(url);
+          const prev = shareBtn.textContent;
+          shareBtn.textContent = "✓ Enlace copiado";
+          setTimeout(() => { shareBtn.textContent = prev || "Compartir"; }, 1800);
+        } catch {}
+      });
+
       const hero = document.querySelector<HTMLElement>(".sed-hero");
       const stateEl = document.getElementById("sedState");
       const cdD = document.getElementById("cdD");
