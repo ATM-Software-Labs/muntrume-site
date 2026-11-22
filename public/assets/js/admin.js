@@ -753,11 +753,11 @@ function toggleUnifiedStatsAuto() {
 // ============================================================================
 const SEASON_CAR_PRESETS = {
   gt3: "porsche992rgt3, ferrari296gt3, bmwm4gt3, mercedesamgevogt3, audir8lmsevo2gt3, mclaren720sgt3, lamborghinievogt3, fordmustanggt3, chevyvettez06rgt3, acuransxevo22gt3, amvantageevogt3",
-  imsa: "porsche963gtp, ferrari499p, bmwmhybridv8, cadillacvseriesrgtp, acuraarx06gtp, astonmartinvalkyriegtp, dallarap217, porsche992rgt3, ferrari296gt3, bmwm4gt3, mercedesamgevogt3, mclaren720sgt3, lamborghinievogt3, fordmustanggt3, chevyvettez06rgt3, acuransxevo22gt3, amvantageevogt3",
-  gtp: "porsche963gtp, ferrari499p, bmwmhybridv8, cadillacvseriesrgtp, acuraarx06gtp, astonmartinvalkyriegtp",
-  pcup: "porsche992cup",
+  imsa: "porsche963gtp, ferrari499p, bmwlmdh, cadillacvseriesrgtp, acuraarx06gtp, amvalkyriegtp, dallarap217, porsche992rgt3, ferrari296gt3, bmwm4gt3, mercedesamgevogt3, mclaren720sgt3, lamborghinievogt3, fordmustanggt3, chevyvettez06rgt3, acuransxevo22gt3, amvantageevogt3",
+  gtp: "porsche963gtp, ferrari499p, bmwlmdh, cadillacvseriesrgtp, acuraarx06gtp, amvalkyriegtp",
+  pcup: "porsche9922cup, porsche992cup",
   lmp2: "dallarap217",
-  gt4: "porsche718gt4, bmwm4evogt4, mercedesamggt4, amvantagegt4, mclaren570sgt4, fordmustanggt4"
+  gt4: "porsche718gt4, bmwm4evogt4, bmwm4gt4, mercedesamggt4, amvantagegt4, mclaren570sgt4, fordmustanggt4"
 };
 
 const IRACING_PDF_CAR_MAP = [
@@ -774,19 +774,41 @@ const IRACING_PDF_CAR_MAP = [
   [/aston\s*martin\s*vantage\s*gt3/i, "amvantageevogt3"],
   [/porsche\s*963/i, "porsche963gtp"],
   [/ferrari\s*499p/i, "ferrari499p"],
-  [/bmw\s*m\s*hybrid\s*v8/i, "bmwmhybridv8"],
+  [/bmw\s*m\s*hybrid\s*v8/i, "bmwlmdh"],
   [/cadillac\s*v-?series\.?r/i, "cadillacvseriesrgtp"],
   [/acura\s*arx-?06/i, "acuraarx06gtp"],
-  [/aston\s*martin\s*valkyrie/i, "astonmartinvalkyriegtp"],
+  [/aston\s*martin\s*valkyrie/i, "amvalkyriegtp"],
   [/dallara\s*p217/i, "dallarap217"],
+  [/porsche\s*911.*cup.*992\.2/i, "porsche9922cup"],
   [/porsche\s*911\s*(?:gt3\s*)?cup/i, "porsche992cup"],
   [/porsche\s*718\s*cayman\s*gt4/i, "porsche718gt4"],
-  [/bmw\s*m4.*gt4/i, "bmwm4evogt4"],
+  [/bmw\s*m4\s*g82\s*gt4/i, "bmwm4evogt4"],
+  [/bmw\s*m4.*gt4/i, "bmwm4gt4"],
   [/mercedes[-\s]*amg\s*gt4/i, "mercedesamggt4"],
   [/aston\s*martin\s*vantage\s*gt4/i, "amvantagegt4"],
   [/mclaren\s*570s\s*gt4/i, "mclaren570sgt4"],
   [/ford\s*mustang\s*gt4/i, "fordmustanggt4"],
-  [/ligier\s*js\s*p320/i, "ligierjsp320"]
+  [/ligier\s*js\s*p320/i, "ligierjsp320"],
+  [/bmw\s*m2\s*cs/i, "bmwm2g87"],
+  [/toyota\s*gr86/i, "toyotagr86"],
+  [/global\s*mazda\s*mx-?5/i, "mx5 cup"],
+  [/renault\s*clio/i, "renaultcliocup"],
+  [/audi\s*rs\s*3\s*lms/i, "audirs3lmsgen2"],
+  [/honda\s*civic\s*type\s*r/i, "hondacivictyper"],
+  [/hyundai\s*elantra\s*n/i, "hyundaielantracn7"],
+  [/hyundai\s*veloster\s*n/i, "hyundaivelostern"],
+  [/fia\s*f4|ir-?04/i, "formulair04"],
+  [/dallara\s*f3/i, "dallaraf3"],
+  [/dallara\s*ir18/i, "dallarair18"],
+  [/ray\s*ff1600/i, "raygr22"],
+  [/formula\s*vee/i, "formulavee"],
+  [/super\s*formula\s*sf23/i, "superformulasf23 honda"],
+  [/bmw\s*m8\s*gte/i, "bmwm8gte"],
+  [/ferrari\s*488\s*gte/i, "ferrari488gte"],
+  [/corvette\s*c8\.?r\s*gte/i, "c8rvettegte"],
+  [/ford\s*gt\s*gte|ford\s*gt\s*2017/i, "fordgt2017"],
+  [/radical\s*sr/i, "radical sr8"],
+  [/scca\s*spec\s*racer/i, "specracer"]
 ];
 
 let _rcPdfParsedSeries = [];
@@ -995,8 +1017,15 @@ async function extractPdfLines(pdfDoc, onProgress) {
 
 function renderSeasonPdfSeriesSelect(filterQuery) {
   const sel = document.getElementById("rcSeasonPdfSeries");
+  const dl = document.getElementById("rcSeasonPdfDatalist");
   if (!sel) return;
   const q = String(filterQuery || "").trim().toLowerCase();
+
+  if (dl && !dl.dataset.filled) {
+    dl.innerHTML = _rcPdfParsedSeries.map((s) => `<option value="${rcEscape(s.shortName)}"></option>`).join("");
+    dl.dataset.filled = "1";
+  }
+
   const filtered = q
     ? _rcPdfParsedSeries.filter((s) => s.name.toLowerCase().includes(q) || s.carsText.toLowerCase().includes(q))
     : _rcPdfParsedSeries;
@@ -1006,11 +1035,21 @@ function renderSeasonPdfSeriesSelect(filterQuery) {
     return;
   }
 
-  sel.innerHTML = filtered.map((s) => {
+  const vaultMatched = _rcPdfParsedSeries.filter((s) => s.slugs.length > 0);
+  const allHeaderOpts = !q
+    ? `<option value="ALL_VAULT">★ TODAS las series con coches en el Vault (${vaultMatched.length} series autocompletadas)</option>`
+    : (filtered.length > 1 ? `<option value="ALL_FILTERED">★ Autocompletar las ${filtered.length} series filtradas</option>` : "");
+
+  sel.innerHTML = allHeaderOpts + filtered.map((s) => {
     const idx = _rcPdfParsedSeries.indexOf(s);
-    const star = s.priority === 0 ? "★ " : "";
-    return `<option value="${idx}">${rcEscape(star + s.shortName)} (${s.weeks.length} sem.)</option>`;
+    const star = s.priority === 0 ? "★ " : (s.slugs.length ? "• " : "");
+    return `<option value="${idx}">${rcEscape(star + s.shortName)} (${s.weeks.length} sem.${s.slugs.length ? ` · ${s.slugs.length} coches` : ""})</option>`;
   }).join("");
+
+  // If query matches a single series (e.g. chosen from datalist autocomplete), select it directly
+  if (filtered.length === 1) {
+    sel.value = String(_rcPdfParsedSeries.indexOf(filtered[0]));
+  }
 }
 
 function filterSeasonPdfSeries() {
@@ -1021,14 +1060,8 @@ function filterSeasonPdfSeries() {
 
 function applySelectedPdfSeries() {
   const sel = document.getElementById("rcSeasonPdfSeries");
-  const idx = Number(sel?.value);
-  const series = Number.isInteger(idx) && idx >= 0 ? _rcPdfParsedSeries[idx] : null;
+  const val = sel?.value || "";
   const metaEl = document.getElementById("rcSeasonPdfSeriesMeta");
-  if (!series) {
-    if (metaEl) metaEl.textContent = "";
-    return;
-  }
-
   const codeEl = document.getElementById("rcSeasonCode");
   const statusEl = document.getElementById("rcSeasonStatus");
   const presetEl = document.getElementById("rcSeasonPreset");
@@ -1038,13 +1071,58 @@ function applySelectedPdfSeries() {
   if (codeEl && _rcPdfSeasonCode) codeEl.value = _rcPdfSeasonCode;
   if (statusEl) statusEl.value = _rcPdfSeasonStatus;
 
+  if (val === "ALL_VAULT" || val === "ALL_FILTERED") {
+    const q = (document.getElementById("rcSeasonPdfSearch")?.value || "").trim().toLowerCase();
+    const targetList = val === "ALL_FILTERED" && q
+      ? _rcPdfParsedSeries.filter((s) => s.name.toLowerCase().includes(q) || s.carsText.toLowerCase().includes(q))
+      : _rcPdfParsedSeries.filter((s) => s.slugs.length > 0);
+
+    const allSlugs = [];
+    const seenSlugs = new Set();
+    const blocks = [];
+    let totalWeeks = 0;
+
+    for (const s of targetList) {
+      const rowCars = s.slugs.length ? s.slugs : (carsEl?.value || "").split(",").map((c) => c.trim()).filter(Boolean);
+      for (const sl of rowCars) {
+        if (sl && !seenSlugs.has(sl)) { seenSlugs.add(sl); allSlugs.push(sl); }
+      }
+      const carsCsv = rowCars.join(", ");
+      const lines = [`# === ${s.shortName} (${rowCars.length} coches) ===`];
+      for (const w of s.weeks) {
+        lines.push(`W${String(w.weekNum).padStart(2, "0")} | ${w.circuit} | ${carsCsv}`);
+        totalWeeks++;
+      }
+      blocks.push(lines.join("\n"));
+    }
+
+    if (presetEl) presetEl.value = "custom";
+    if (carsEl && allSlugs.length) carsEl.value = allSlugs.join(", ");
+    if (schedEl) schedEl.value = blocks.join("\n\n");
+    if (metaEl) {
+      metaEl.textContent = `✓ ${targetList.length} series autocompletadas · ${totalWeeks} semanas totales · ${allSlugs.length} coches únicos del Vault`;
+    }
+    return;
+  }
+
+  const idx = Number(val);
+  const series = Number.isInteger(idx) && idx >= 0 ? _rcPdfParsedSeries[idx] : null;
+  if (!series) {
+    if (metaEl) metaEl.textContent = "";
+    return;
+  }
+
   if (series.slugs.length) {
     if (presetEl && series.preset) presetEl.value = series.preset;
     if (carsEl) carsEl.value = series.slugs.join(", ");
   }
 
+  const rowCarsCsv = (series.slugs.length ? series.slugs : (carsEl?.value || "").split(",").map((c) => c.trim()).filter(Boolean)).join(", ");
   if (schedEl) {
-    schedEl.value = series.weeks.map((w) => `Week ${w.weekNum} - ${w.circuit}`).join("\n");
+    schedEl.value = [
+      `# === ${series.shortName} ===`,
+      ...series.weeks.map((w) => `W${String(w.weekNum).padStart(2, "0")} | ${w.circuit}${rowCarsCsv ? ` | ${rowCarsCsv}` : ""}`)
+    ].join("\n");
   }
 
   if (metaEl) {
@@ -1091,14 +1169,15 @@ async function handleSeasonPdfFile(file) {
     _rcPdfSeasonStatus = parsed.status;
 
     const searchEl = document.getElementById("rcSeasonPdfSearch");
+    const dlEl = document.getElementById("rcSeasonPdfDatalist");
     if (searchEl) searchEl.value = "";
+    if (dlEl) delete dlEl.dataset.filled;
     renderSeasonPdfSeriesSelect("");
     if (pickerEl) pickerEl.classList.remove("hidden");
 
-    // Auto-select GT Sprint Series if present, otherwise first priority series
+    // Default to ALL_VAULT so every Vault-matched series is autocompleted at once
     const sel = document.getElementById("rcSeasonPdfSeries");
-    const gtSprintIdx = _rcPdfParsedSeries.findIndex((s) => /GT Sprint Series/i.test(s.name));
-    if (sel && gtSprintIdx >= 0) sel.value = String(gtSprintIdx);
+    if (sel) sel.value = "ALL_VAULT";
     applySelectedPdfSeries();
 
     const seasonLabel = parsed.seasonCode ? ` · Temporada ${parsed.seasonCode} (${parsed.status})` : "";
@@ -1169,25 +1248,45 @@ function parseSeasonScheduleText(raw, defaultCars) {
       })).filter((e) => e.circuit);
     } catch {}
   }
-  const lines = s.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-  const out = [];
-  lines.forEach((line, idx) => {
+  const lines = s.split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith("#") && !l.startsWith("//"));
+  const mergedMap = new Map();
+  let autoIdx = 0;
+  lines.forEach((line) => {
+    autoIdx++;
+    let week = "";
+    let circuit = "";
+    let cars = defaultCars;
     const parts = line.split("|").map((p) => p.trim());
     if (parts.length >= 2) {
-      const week = parts[0];
-      const circuit = parts[1];
-      const cars = parts[2] ? parts[2].split(",").map((c) => c.trim()).filter(Boolean) : defaultCars;
-      if (circuit) out.push({ week, circuit, cars });
-      return;
-    }
-    const m = line.match(/^(?:week|semana|w)\s*(\d{1,2})\s*[:\-–—.]?\s*(.+)$/i);
-    if (m) {
-      out.push({ week: `W${String(Number(m[1])).padStart(2, "0")}`, circuit: m[2].trim(), cars: defaultCars });
+      const wm = parts[0].match(/(\d{1,2})/);
+      week = wm ? `W${String(Number(wm[1])).padStart(2, "0")}` : parts[0];
+      circuit = parts[1];
+      cars = parts[2] ? parts[2].split(",").map((c) => c.trim().toLowerCase()).filter(Boolean) : defaultCars;
     } else {
-      out.push({ week: `W${String(idx + 1).padStart(2, "0")}`, circuit: line, cars: defaultCars });
+      const m = line.match(/^(?:week|semana|w)\s*(\d{1,2})\s*[:\-–—.]?\s*(.+)$/i);
+      if (m) {
+        week = `W${String(Number(m[1])).padStart(2, "0")}`;
+        circuit = m[2].trim();
+      } else {
+        week = `W${String(autoIdx).padStart(2, "0")}`;
+        circuit = line;
+      }
+    }
+    if (!circuit) return;
+    const key = `${week.toUpperCase()}::${circuit.toLowerCase()}`;
+    if (!mergedMap.has(key)) {
+      mergedMap.set(key, { week, circuit, cars: [...cars], carSet: new Set(cars) });
+    } else {
+      const entry = mergedMap.get(key);
+      for (const c of cars) {
+        if (c && !entry.carSet.has(c)) {
+          entry.carSet.add(c);
+          entry.cars.push(c);
+        }
+      }
     }
   });
-  return out;
+  return Array.from(mergedMap.values()).map(({ week, circuit, cars }) => ({ week, circuit, cars }));
 }
 
 async function runSeasonAutoGenerate(dryRun) {

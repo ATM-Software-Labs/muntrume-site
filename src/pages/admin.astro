@@ -435,11 +435,12 @@ const LICENSE_CATEGORIES = [
               <div id="rcSeasonPdfPicker" class="rc-pdf-picker hidden">
                 <div class="rc-two-col" style="gap:10px;align-items:end">
                   <div class="g-field">
-                    <label for="rcSeasonPdfSearch">Filtrar serie del PDF</label>
-                    <input type="text" id="rcSeasonPdfSearch" placeholder="Ej. GT Sprint, IMSA, GT4, Porsche Cup, Endurance..." oninput="filterSeasonPdfSeries()" />
+                    <label for="rcSeasonPdfSearch">Buscar / autocompletar serie</label>
+                    <input type="text" id="rcSeasonPdfSearch" list="rcSeasonPdfDatalist" placeholder="Escribe para autocompletar (ej. GT Sprint, IMSA, GT4, Porsche Cup)..." oninput="filterSeasonPdfSeries()" />
+                    <datalist id="rcSeasonPdfDatalist"></datalist>
                   </div>
                   <div class="g-field">
-                    <label for="rcSeasonPdfSeries">Serie detectada</label>
+                    <label for="rcSeasonPdfSeries">Modo / Serie detectada</label>
                     <select id="rcSeasonPdfSeries" onchange="applySelectedPdfSeries()"></select>
                   </div>
                 </div>
@@ -1248,5 +1249,5 @@ const LICENSE_CATEGORIES = [
     }
   </style>
 
-  <script is:inline src="/assets/js/admin.js?v=t358"></script>
+  <script is:inline src="/assets/js/admin.js?v=t359"></script>
 </Layout>
