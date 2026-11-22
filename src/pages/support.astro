@@ -3,7 +3,7 @@ import Layout from "../layouts/Layout.astro";
 
 const title = "Centro de Ayuda y Soporte · Muntrume Motorsport";
 const description = "Centro de Ayuda de Muntrume Motorsport (MMT): soporte técnico para incidencias en support@muntru.me, consultas en info@muntru.me y seguimiento de tus solicitudes.";
-const canonical = "https://muntru.me/support/";
+const canonical = "https://support.muntru.me/";
 
 const HELP_CARDS = [
   {
@@ -239,7 +239,7 @@ const HELP_CARDS = [
           <!-- No autenticado -->
           <div id="sup-req-anon" class="sup-anon-box" hidden>
             <p>Inicia sesión con tu cuenta de Muntrume para consultar el estado y el historial de tus solicitudes.</p>
-            <a href="/login/?next=/support/%23mis-solicitudes" class="sup-btn sup-btn-primary">Iniciar sesión</a>
+            <a href="https://muntru.me/login/?next=https%3A%2F%2Fsupport.muntru.me%2F" class="sup-btn sup-btn-primary">Iniciar sesión</a>
           </div>
 
           <!-- Cargando -->
@@ -290,6 +290,24 @@ const HELP_CARDS = [
 
 <script is:inline>
 (() => {
+  // Consume SSO handoff from muntru.me/login/ when arriving on support.muntru.me
+  try {
+    if (location.hash && location.hash.includes("mm_auth=")) {
+      const hp = new URLSearchParams(location.hash.slice(1));
+      const tk = hp.get("mm_auth");
+      const uRaw = hp.get("mm_user");
+      if (tk) {
+        localStorage.setItem("mrt_vault_token", tk);
+        localStorage.setItem("mm_token", tk);
+      }
+      if (uRaw) {
+        const uJson = decodeURIComponent(escape(atob(uRaw)));
+        localStorage.setItem("mrt_vault_user", uJson);
+      }
+      history.replaceState(null, "", location.pathname + location.search + "#mis-solicitudes");
+    }
+  } catch {}
+
   const API = "https://muntrume.atrumin16.workers.dev";
   const INCIDENT_CATS = new Set([
     "cuenta_comprometida",
