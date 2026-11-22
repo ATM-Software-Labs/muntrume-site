@@ -759,6 +759,7 @@ import Layout from '../layouts/Layout.astro';
           localStorage.removeItem("mrt_vault_token");
           localStorage.removeItem("mm_token");
           localStorage.removeItem("mrt_vault_user");
+          if (window.__mmtClearSsoCookie) window.__mmtClearSsoCookie();
         } catch (e) {}
         location.href = "/login/";
       }

@@ -219,11 +219,18 @@ import Layout from '../layouts/Layout.astro';
         ? nextRaw
         : (nextRaw.startsWith("/") && !nextRaw.startsWith("//") && !nextRaw.includes("\\") ? nextRaw : "/garage/");
 
+      function sanitizeUser(u) {
+        if (!u || !u.email) return null;
+        return { id: u.id, email: u.email, name: u.name || u.email.split("@")[0], role: u.role || "driver", has_setup_access: u.has_setup_access ? 1 : 0 };
+      }
+
       function buildTarget(token, user) {
         var target = nextUrl;
+        var cleanUser = sanitizeUser(user);
+        if (window.__mmtSyncSsoCookie) window.__mmtSyncSsoCookie(token, cleanUser);
         if (/^https:\/\/ai\.muntru\.me(\/|$)/i.test(target) && token) {
           var uEnc = "";
-          try { if (user) uEnc = "&mm_user=" + encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(user))))); } catch (e) {}
+          try { if (cleanUser) uEnc = "&mm_user=" + encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(cleanUser))))); } catch (e) {}
           target = target.split("#")[0] + "#mm_auth=" + encodeURIComponent(token) + uEnc;
         }
         return target;
@@ -251,6 +258,7 @@ import Layout from '../layouts/Layout.astro';
             localStorage.removeItem("mrt_vault_token");
             localStorage.removeItem("mm_token");
             localStorage.removeItem("mrt_vault_user");
+            if (window.__mmtClearSsoCookie) window.__mmtClearSsoCookie();
             box.hidden = true;
           });
         }
@@ -280,9 +288,11 @@ import Layout from '../layouts/Layout.astro';
           return;
         }
         try {
+          var cleanUser = sanitizeUser(data.user);
           localStorage.setItem("mrt_vault_token", data.token);
           localStorage.setItem("mm_token", data.token);
-          if (data.user) localStorage.setItem("mrt_vault_user", JSON.stringify(data.user));
+          if (cleanUser) localStorage.setItem("mrt_vault_user", JSON.stringify(cleanUser));
+          if (window.__mmtSyncSsoCookie) window.__mmtSyncSsoCookie(data.token, cleanUser);
         } catch (e) {}
         setStatus("Sesión verificada (activa 30 días). Redirigiendo…", "ok");
         setTimeout(function () { location.href = buildTarget(data.token, data.user); }, 320);

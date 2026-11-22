@@ -405,6 +405,52 @@ const finalSchema = {
           document.head.appendChild(preload);
         }
       } catch (e) {}
+      // Zero-redirect cross-subdomain SSO via first-party .muntru.me cookie (muntru.me <-> ai.muntru.me <-> docs.muntru.me)
+      try {
+        var isMuntru = /(^|\.)muntru\.me$/i.test(location.hostname);
+        var getCk = function (k) {
+          var m = document.cookie.match(new RegExp('(?:^|;\\s*)' + k + '=([^;]*)'));
+          return m ? decodeURIComponent(m[1]) : '';
+        };
+        var setCk = function (k, v, maxAge) {
+          if (!isMuntru) return;
+          document.cookie = k + '=' + encodeURIComponent(v) + '; domain=.muntru.me; path=/; max-age=' + maxAge + '; SameSite=Lax; Secure';
+        };
+        var cleanU = function (raw) {
+          if (!raw) return null;
+          var u = typeof raw === 'string' ? JSON.parse(raw) : raw;
+          if (!u || !u.email) return null;
+          return { id: u.id, email: u.email, name: u.name || u.email.split('@')[0], role: u.role || 'driver', has_setup_access: u.has_setup_access ? 1 : 0 };
+        };
+        var tk = localStorage.getItem('mrt_vault_token') || localStorage.getItem('mm_token') || '';
+        var uObj = cleanU(localStorage.getItem('mrt_vault_user'));
+        if (uObj) localStorage.setItem('mrt_vault_user', JSON.stringify(uObj));
+        if (tk) {
+          setCk('mm_sso_tk', tk, 2592000);
+          if (uObj) setCk('mm_sso_u', JSON.stringify(uObj), 2592000);
+        } else if (isMuntru) {
+          var ckTk = getCk('mm_sso_tk');
+          if (ckTk) {
+            localStorage.setItem('mrt_vault_token', ckTk);
+            localStorage.setItem('mm_token', ckTk);
+            var ckU = cleanU(getCk('mm_sso_u'));
+            if (ckU) localStorage.setItem('mrt_vault_user', JSON.stringify(ckU));
+          }
+        }
+        window.__mmtClearSsoCookie = function () {
+          setCk('mm_sso_tk', '', 0);
+          setCk('mm_sso_u', '', 0);
+        };
+        window.__mmtSyncSsoCookie = function (newTk, newUser) {
+          if (!newTk) return;
+          setCk('mm_sso_tk', newTk, 2592000);
+          var cu = cleanU(newUser);
+          if (cu) {
+            localStorage.setItem('mrt_vault_user', JSON.stringify(cu));
+            setCk('mm_sso_u', JSON.stringify(cu), 2592000);
+          }
+        };
+      } catch (e) {}
     })();
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -630,7 +676,12 @@ const finalSchema = {
           var tk = localStorage.getItem("mrt_vault_token") || localStorage.getItem("mm_token") || "";
           if (!tk) return;
           var uRaw = localStorage.getItem("mrt_vault_user") || "";
-          var uEnc = uRaw ? "&mm_user=" + encodeURIComponent(btoa(unescape(encodeURIComponent(uRaw)))) : "";
+          var uClean = "";
+          try {
+            var p = JSON.parse(uRaw);
+            if (p && p.email) uClean = JSON.stringify({ id: p.id, email: p.email, name: p.name, role: p.role, has_setup_access: p.has_setup_access ? 1 : 0 });
+          } catch (e) {}
+          var uEnc = uClean ? "&mm_user=" + encodeURIComponent(btoa(unescape(encodeURIComponent(uClean)))) : "";
           a.href = href.split("#")[0] + "#mm_auth=" + encodeURIComponent(tk) + uEnc;
         } catch (e) {}
       }, true);

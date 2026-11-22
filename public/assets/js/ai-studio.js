@@ -2621,10 +2621,6 @@
     } catch {}
 
     $("aiGateLoginBtn")?.addEventListener("click", () => {
-      if (location.hostname === "ai.muntru.me") {
-        location.href = "https://muntru.me/login/?next=" + encodeURIComponent(location.origin + location.pathname);
-        return;
-      }
       if ($("aiTeamGate")) $("aiTeamGate").hidden = true;
       openModal("aiLoginModal");
       $("aiLoginEmail")?.focus();
