@@ -950,6 +950,19 @@ html.r-motion [data-g-reveal].is-in {
 html.light .ov-page, html[data-theme="light"] .ov-page {
   background: var(--r-bg) !important; color: var(--r-text) !important;
 }
+html.light .ov-hero, html[data-theme="light"] .ov-hero {
+  background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(16, 185, 129, 0.12), transparent 70%), var(--r-bg-2) !important;
+  border-bottom-color: var(--r-line) !important;
+}
+html.light .ov-pill:not(.ov-pill--live), html[data-theme="light"] .ov-pill:not(.ov-pill--live) {
+  background: var(--r-surface) !important; border-color: var(--r-line) !important; color: var(--r-muted) !important;
+}
+html.light .ov-btn--secondary, html[data-theme="light"] .ov-btn--secondary {
+  background: var(--r-surface) !important; border-color: var(--r-line-2) !important; color: var(--r-text) !important;
+}
+html.light .ov-btn--ghost, html[data-theme="light"] .ov-btn--ghost {
+  border-color: var(--r-line-2) !important; color: var(--r-text) !important;
+}
 html.light .ov-section--alt, html[data-theme="light"] .ov-section--alt {
   background: var(--r-bg-2) !important; border-color: var(--r-line) !important;
 }
@@ -957,12 +970,16 @@ html.light .ov-card, html.light .ov-arch-card, html.light .ov-step, html.light .
 html[data-theme="light"] .ov-card, html[data-theme="light"] .ov-arch-card, html[data-theme="light"] .ov-step, html[data-theme="light"] .ov-spec {
   background: var(--r-surface) !important; border-color: var(--r-line) !important; color: var(--r-text) !important;
 }
-html.light .ov-card h3, html.light .ov-arch-card h3, html.light .ov-step h3, html.light .ov-section__title, html.light .ov-hero__title,
-html[data-theme="light"] .ov-card h3, html[data-theme="light"] .ov-arch-card h3, html[data-theme="light"] .ov-step h3, html[data-theme="light"] .ov-section__title, html[data-theme="light"] .ov-hero__title {
+html.light .ov-cta-band, html[data-theme="light"] .ov-cta-band {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.14), var(--r-surface) 60%) !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
+}
+html.light .ov-card h3, html.light .ov-arch-card h3, html.light .ov-step h3, html.light .ov-cta-band h3, html.light .ov-section__title, html.light .ov-hero__title,
+html[data-theme="light"] .ov-card h3, html[data-theme="light"] .ov-arch-card h3, html[data-theme="light"] .ov-step h3, html[data-theme="light"] .ov-cta-band h3, html[data-theme="light"] .ov-section__title, html[data-theme="light"] .ov-hero__title {
   color: var(--r-text) !important;
 }
-html.light .ov-card p, html.light .ov-arch-card p, html.light .ov-step p, html.light .ov-section__sub, html.light .ov-hero__lead, html.light .ov-spec__lbl,
-html[data-theme="light"] .ov-card p, html[data-theme="light"] .ov-arch-card p, html[data-theme="light"] .ov-step p, html[data-theme="light"] .ov-section__sub, html[data-theme="light"] .ov-hero__lead, html[data-theme="light"] .ov-spec__lbl {
+html.light .ov-card p, html.light .ov-arch-card p, html.light .ov-step p, html.light .ov-cta-band p, html.light .ov-section__sub, html.light .ov-hero__lead, html.light .ov-spec__lbl,
+html[data-theme="light"] .ov-card p, html[data-theme="light"] .ov-arch-card p, html[data-theme="light"] .ov-step p, html[data-theme="light"] .ov-cta-band p, html[data-theme="light"] .ov-section__sub, html[data-theme="light"] .ov-hero__lead, html[data-theme="light"] .ov-spec__lbl {
   color: var(--r-muted) !important;
 }
 

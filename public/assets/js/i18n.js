@@ -146,10 +146,12 @@
   }
   function isTranslatableText(str) {
     var s = String(str || "").trim();
-    if (s.length < 2 || s.length > 580) return false;
+    if (s.length < 3 || s.length > 580) return false;
     if (/^[\d\s.,:%+\-–—/()[\]<>→←↗·•|]+$/.test(s)) return false;
     if (/^(https?:\/\/|mailto:|\/[a-z0-9/_-]+$)/i.test(s)) return false;
-    if (/^(ES|EN|CA|FR|MIT|API|SSE|JWT|MFA|TOTP|HTTP|CSV|SVG|HTML|JSON|DNS|CSP|URL|PC|PDF|XML|OK)$/i.test(s)) return false;
+    if (/^(ES|EN|CA|FR|MIT|API|SSE|JWT|MFA|TOTP|HTTP|CSV|SVG|HTML|JSON|DNS|CSP|URL|PC|PDF|XML|OK|HUD|STO|IBT|RAM|CPU|GPU|FPS|SDK|iRSDK|IRSDK)$/i.test(s)) return false;
+    // Skip technical specs, version tags, and product proper nouns so m2m100 doesn't mangle "60 Hz" or "Tauri v2"
+    if (/^(\d+(\.\d+)?\s*(%|Hz|FPS|MB|GB|KB|ms|s|min|h|x|kPa|PSI|L|iR|RPM)(\s+(CPU|RAM|GPU))?|SHA-\d+|Tauri\s*v?\d+(\.\d+)?|WebView2|Cloudflare(\s+D1)?|D1(\s+Online)?|MMT(\s+(Sync|HUD|Companion|Motorsport|Steward\s+Bot))?|Muntrume(\s+(Motorsport|AI|Security|Admin|ID))?|Garage\s*61|iRacing(\s+SDK)?|Standings|Relative|Track\s*Map|Fuel\s*Calc|Pit\s*Strategy|Inputs\s*&\s*Delta|Radar|Sprint\s*GT3|Endurance|Minimalist\s*Qualy|Replay\s*\(R\))$/i.test(s)) return false;
     return /[a-zA-ZáéíóúÁÉÍÓÚñÑüÜçÇ]{2,}/.test(s);
   }
   function collectAutoNodes() {
@@ -167,7 +169,7 @@
         if (seen.has(node)) continue;
         var p = node.parentElement;
         if (!p || skipTags[p.tagName]) continue;
-        if (p.closest("code, pre, script, style, svg, [data-i18n], [data-no-translate], [data-lang-root]")) continue;
+        if (p.closest("code, pre, script, style, svg, [data-i18n], [data-no-translate], [data-lang-root], .ov-spec__val, .rc-brand")) continue;
         var raw = node.nodeValue || "";
         if (!isTranslatableText(raw)) continue;
         seen.add(node);
@@ -177,7 +179,7 @@
     return out;
   }
   function cacheKey(code, txt) {
-    return "mm_tr_" + code + "_" + txt.slice(0, 120) + "_" + txt.length;
+    return "mm_tr2_" + code + "_" + txt.slice(0, 120) + "_" + txt.length;
   }
   function applyEdgeTranslation(entries) {
     if (!entries.length) return;
