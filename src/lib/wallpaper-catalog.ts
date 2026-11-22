@@ -169,12 +169,38 @@ function cleanFileBase(brand: string, model: string, id: string): string {
   return base || id;
 }
 
+const BROKEN_REMOTE_URL_PATTERNS: readonly RegExp[] = [
+  /carid_139\/shot_ss_[23]_screen_full\.jpg$/i,
+  /next-gen-camry-2024-2\.jpg$/i,
+  /street-stocks-eagle-01\.jpg$/i,
+  /street-stocks-0[28]\.jpg$/i,
+  /2021-06-04-1[01]-(?:08-56|59-58)_0\.jpg$/i,
+];
+
+function isBrokenRemoteWallpaper(img: string): boolean {
+  return BROKEN_REMOTE_URL_PATTERNS.some((rx) => rx.test(img));
+}
+
 function cleanSeriesName(name: string): string {
   return name
     .replace(/\s*-\s*2026 Season(?:\s*\d+)?(?:\s*-?\s*Fixed)?\s*$/i, "")
     .replace(/\s+2026 Season(?:\s*\d+)?(?:\s*-?\s*Fixed)?\s*$/i, "")
+    .replace(/\bSeries\s+Series\b/gi, "Series")
     .replace(/\s{2,}/g, " ")
     .trim();
+}
+
+function normalizeCarClass(rawClass: string, carName: string, category: string): string {
+  const blob = `${carName} ${category}`.toLowerCase();
+  if (/\b(dirt|sprint car|midget|rallycross|pro 2|pro 4|ump modified|358 modified|big block|late model.*dirt|micro sprint)\b/i.test(blob)) {
+    return "DIRT";
+  }
+  const c = (rawClass || category || "ROAD").trim().toUpperCase();
+  if (c === "PROTOTYPE" || c === "GTP" || c === "LMP2" || c === "LMP3") return c;
+  if (c.includes("DIRT")) return "DIRT";
+  if (c.includes("OVAL") || c.includes("NASCAR") || c.includes("STOCK")) return "OVAL";
+  if (c.includes("FORMULA") || c.includes("OPEN WHEEL") || c.includes("INDY")) return "FORMULA";
+  return c;
 }
 
 function seriesListedInSchedule(carName: string): { id: string; name: string; order: number } | undefined {
@@ -196,8 +222,34 @@ function categorySlug(category: string): string {
 }
 
 function displayBrand(car: CarMetadata | undefined, carName: string): string {
-  if (car && car.brand !== "Sin fabricante único") return car.brand;
-  return carName.split(" ")[0] || "";
+  if (car && car.brand && car.brand !== "Sin fabricante único") return car.brand;
+  const n = (carName || "").toLowerCase();
+  if (n.includes("ford")) return "Ford";
+  if (n.includes("chevrolet") || n.includes("chevy") || n.includes("camaro") || n.includes("corvette") || n.includes("silverado")) return "Chevrolet";
+  if (n.includes("toyota") || n.includes("camry") || n.includes("tundra") || n.includes("gr86")) return "Toyota";
+  if (n.includes("mazda")) return "Mazda";
+  if (n.includes("porsche")) return "Porsche";
+  if (n.includes("ferrari")) return "Ferrari";
+  if (n.includes("bmw")) return "BMW";
+  if (n.includes("mercedes")) return "Mercedes-AMG";
+  if (n.includes("audi")) return "Audi";
+  if (n.includes("acura")) return "Acura";
+  if (n.includes("honda")) return "Honda";
+  if (n.includes("hyundai")) return "Hyundai";
+  if (n.includes("lamborghini")) return "Lamborghini";
+  if (n.includes("mclaren")) return "McLaren";
+  if (n.includes("aston martin")) return "Aston Martin";
+  if (n.includes("cadillac")) return "Cadillac";
+  if (n.includes("dallara") || n.includes("indy") || n.includes("usf") || n.includes("super formula")) return "Dallara";
+  if (n.includes("renault")) return "Renault";
+  if (n.includes("subaru")) return "Subaru";
+  if (n.includes("volkswagen") || n.includes("vw ")) return "Volkswagen";
+  if (n.includes("pontiac")) return "Pontiac";
+  if (n.includes("buick")) return "Buick";
+  if (n.includes("lotus")) return "Lotus";
+  if (n.includes("ligier")) return "Ligier";
+  if (n.includes("radical")) return "Radical";
+  return "Monomarca / Otros";
 }
 
 function displayModel(car: CarMetadata | undefined, carName: string): string {
@@ -231,7 +283,7 @@ function assignSeries(carName: string, category: string): {
       accent: car?.accentColor || "#C0C0C0",
       brand: displayBrand(car, carName),
       model: displayModel(car, carName),
-      carClass: car?.carClass || category.toUpperCase(),
+      carClass: normalizeCarClass(car?.carClass || "", carName, category),
       carSlug: car?.carFolder || norm(carName),
     };
   }
@@ -245,7 +297,7 @@ function assignSeries(carName: string, category: string): {
       accent: car?.accentColor || "#C0C0C0",
       brand: displayBrand(car, carName),
       model: displayModel(car, carName),
-      carClass: car?.carClass || category.toUpperCase(),
+      carClass: normalizeCarClass(car?.carClass || "", carName, category),
       carSlug: car?.carFolder || norm(carName),
     };
   }
@@ -259,7 +311,7 @@ function assignSeries(carName: string, category: string): {
     accent: car?.accentColor || "#C0C0C0",
     brand: displayBrand(car, carName),
     model: displayModel(car, carName) || key.toUpperCase(),
-    carClass: car?.carClass || key.toUpperCase(),
+    carClass: normalizeCarClass(car?.carClass || "", carName, key),
     carSlug: car?.carFolder || norm(carName || key),
   };
 }
@@ -339,11 +391,13 @@ async function buildWallpaperCatalog(): Promise<WallpaperCatalog> {
   for (const photo of photos) {
     const img = String(photo.imageUrl || photo.url || "");
     const id = String(photo.id || img);
-    if (!isAllowedRemoteWallpaper(img, photo)) {
+    if (!isAllowedRemoteWallpaper(img, photo) || isBrokenRemoteWallpaper(img)) {
       rejected.push({
         img: img || id,
         id,
-        reason: "Fuera del prefijo de media oficial iRacing o sin sourceType official_press.",
+        reason: isBrokenRemoteWallpaper(img)
+          ? "URL oficial rota / 404 detectada en auditoría."
+          : "Fuera del prefijo de media oficial iRacing o sin sourceType official_press.",
       });
       continue;
     }

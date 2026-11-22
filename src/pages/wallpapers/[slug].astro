@@ -52,7 +52,7 @@ const pageSchema = {
   ogImageAlt={series.items[0]?.alt || series.name}
   schemaJson={pageSchema}
 >
-  <main class="min-h-screen bg-[var(--r-bg)] text-[var(--r-text)] py-12 px-4 sm:px-6">
+  <div class="min-h-screen bg-[var(--r-bg)] text-[var(--r-text)] py-12 px-4 sm:px-6">
     <div class="r-wrap space-y-6">
       <header class="border-b border-[var(--r-line)] pb-5 space-y-2">
         <p class="font-mono text-[11px] uppercase tracking-widest text-[var(--r-accent)] font-bold">
@@ -74,7 +74,7 @@ const pageSchema = {
                 loading={index === 0 ? "eager" : "lazy"}
                 decoding="async"
                 referrerpolicy="no-referrer"
-                onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://muntrume.atrumin16.workers.dev/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}"
+                onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://muntrume.atrumin16.workers.dev/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}else{var li=this.closest('li');if(li)li.style.display='none';}"
                 class="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
               />
             </a>
@@ -91,5 +91,5 @@ const pageSchema = {
         ))}
       </ul>
     </div>
-  </main>
+  </div>
 </Layout>

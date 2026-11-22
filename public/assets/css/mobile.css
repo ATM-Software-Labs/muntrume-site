@@ -86,7 +86,8 @@ html.light .bg-\[\#0A0E0D\], [data-theme="light"] .bg-\[\#0A0E0D\],
 html.light .bg-\[\#0C1210\], [data-theme="light"] .bg-\[\#0C1210\],
 html.light .bg-\[\#0E1513\], [data-theme="light"] .bg-\[\#0E1513\],
 html.light .bg-\[\#0A0F0D\], [data-theme="light"] .bg-\[\#0A0F0D\],
-html.light .bg-\[\#090b0f\], [data-theme="light"] .bg-\[\#090b0f\] {
+html.light :not(:where(.wp-modal-dark, .wp-modal-dark *)) > .bg-\[\#090b0f\]:not(.wp-modal-dark),
+[data-theme="light"] :not(:where(.wp-modal-dark, .wp-modal-dark *)) > .bg-\[\#090b0f\]:not(.wp-modal-dark) {
   background-color: #FFFFFF !important;
 }
 /* /overlay/brands/ adapts to Light/Dark theme, while its HUD preview pods (.brand-mark, .brand-standings-row, .brand-mini-card) stay dark (#090b0f). */
@@ -132,7 +133,7 @@ html.light .bg-\[\#16201C\], [data-theme="light"] .bg-\[\#16201C\],
 html.light .bg-\[\#1E2A26\], [data-theme="light"] .bg-\[\#1E2A26\],
 html.light .bg-\[\#161c24\], [data-theme="light"] .bg-\[\#161c24\],
 html.light .bg-\[\#0e1217\], [data-theme="light"] .bg-\[\#0e1217\],
-html.light .bg-\[\#0d1118\], [data-theme="light"] .bg-\[\#0d1118\],
+html.light .bg-\[\#0d1118\]:not(:where(.wp-modal-dark, .wp-modal-dark *)), [data-theme="light"] .bg-\[\#0d1118\]:not(:where(.wp-modal-dark, .wp-modal-dark *)),
 html.light .bg-\[\#0d1117\], [data-theme="light"] .bg-\[\#0d1117\] {
   background-color: #F8FAF9 !important;
 }

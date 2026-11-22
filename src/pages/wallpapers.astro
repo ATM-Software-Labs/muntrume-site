@@ -79,7 +79,7 @@ const pageSchema = {
 ---
 
 <Layout title={pageTitle} description={pageDescription} canonical={pageUrl} ogImage={ogImage} ogImageAlt={allWallpapers[0]?.alt || pageTitle} schemaJson={pageSchema}>
-  <main class="min-h-screen bg-[var(--r-bg)] text-[var(--r-text)] py-10 px-4 sm:px-6">
+  <div class="min-h-screen bg-[var(--r-bg)] text-[var(--r-text)] py-10 px-4 sm:px-6">
     <div class="max-w-7xl mx-auto space-y-8">
       <!-- HERO + FORMAT SWITCHER -->
       <header class="border-b border-[var(--r-line)] pb-6 flex flex-col lg:flex-row lg:items-end justify-between gap-6">
@@ -130,13 +130,13 @@ const pageSchema = {
       <div class="flex flex-wrap items-center justify-between gap-3 font-mono text-xs border-b border-[var(--r-line)] pb-3">
         <div class="flex flex-wrap items-center gap-2">
           <button type="button" data-view-tab="categories" class="wp-tab px-3.5 py-2 rounded-md bg-emerald-500 text-[#04130d] font-extrabold cursor-pointer">
-            Por serie ({seriesGroups.length})
+            Por Serie ({seriesGroups.length})
           </button>
           <button type="button" data-view-tab="cars" class="wp-tab px-3.5 py-2 rounded-md bg-[var(--r-surface)] border border-[var(--r-line)] text-[var(--r-muted)] hover:text-[var(--r-text)] font-bold cursor-pointer">
             Por Coche ({carPacks.length})
           </button>
           <button type="button" data-view-tab="albums" class="wp-tab px-3.5 py-2 rounded-md bg-[var(--r-surface)] border border-[var(--r-line)] text-[var(--r-muted)] hover:text-[var(--r-text)] font-bold cursor-pointer">
-            Álbumes / Eventos ({apiAlbums.length})
+            Álbumes y Eventos ({apiAlbums.length})
           </button>
         </div>
 
@@ -286,7 +286,7 @@ const pageSchema = {
                 {group.items.map((w) => (
                   <article class="wp-card group rounded-lg border border-[var(--r-line)] bg-[var(--r-surface)] overflow-hidden flex flex-col hover:border-emerald-500/60 transition shadow-sm" data-id={w.id} data-brand={w.brand} data-search={`${w.brand} ${w.model} ${w.title} ${w.seriesName} ${w.carClass} ${w.circuit}`.toLowerCase()}>
                     <div class="wp-thumb-wrap relative aspect-video bg-[#090b0f] overflow-hidden">
-                      <img src={w.img} alt={w.alt} width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://muntrume.atrumin16.workers.dev/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}" data-preview-id={w.id} class="w-full h-full object-cover cursor-zoom-in transition-transform duration-300 group-hover:scale-105" />
+                      <img src={w.img} alt={w.alt} width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://muntrume.atrumin16.workers.dev/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}else{var c=this.closest('.wp-card');if(c)c.style.display='none';}" data-preview-id={w.id} class="w-full h-full object-cover cursor-zoom-in transition-transform duration-300 group-hover:scale-105" />
                       <label class="absolute top-2 left-2 z-10 inline-flex items-center gap-1.5 px-2 py-1 rounded bg-black/80 border border-white/20 text-[10px] font-mono cursor-pointer select-none" style="color:#ffffff;">
                         <input type="checkbox" class="wp-chk accent-emerald-500" value={w.id} />
                         <span>Elegir</span>
@@ -400,7 +400,7 @@ const pageSchema = {
         </form>
       </div>
     </div>
-  </main>
+  </div>
 
   <script
     type="application/json"
@@ -522,7 +522,11 @@ const pageSchema = {
     });
     clearSelBtn?.addEventListener("click", () => {
       selectedIds.clear();
+      activePackFilter = null;
+      if (brandSelect) brandSelect.value = "all";
+      if (searchInput) searchInput.value = "";
       document.querySelectorAll<HTMLInputElement>(".wp-chk").forEach((c) => (c.checked = false));
+      applyFilters();
       syncSelectionUi();
     });
 
@@ -693,7 +697,7 @@ const pageSchema = {
       const item = slideItems[slideIndex];
       activeModalItem = item;
       if (modalTitle) modalTitle.textContent = item.model;
-      if (modalSub) modalSub.textContent = `${item.carClass} · ${item.circuit}`;
+      if (modalSub) modalSub.textContent = [item.carClass, item.circuit].filter(Boolean).join(" · ");
       if (slideCounter) slideCounter.textContent = `${slideIndex + 1}/${slideItems.length}`;
 
       const incoming = activeLayerA ? modalImgA : modalImgB;
@@ -783,6 +787,11 @@ const pageSchema = {
       });
     });
     document.addEventListener("keydown", (e) => {
+      const submitModal = document.getElementById("wpSubmitModal");
+      if (e.key === "Escape" && submitModal && !submitModal.hidden) {
+        submitModal.hidden = true;
+        return;
+      }
       if (!modalEl || modalEl.hidden) return;
       if (e.key === "Escape") closePreviewModal();
       else if (e.key === "ArrowLeft") { showSlideAt(slideIndex - 1, slidePlaying); if (slidePlaying) scheduleNextSlide(); }
