@@ -1,0 +1,920 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import schedule from "../../../desktop/src/season_schedule_2026_s4.json";
+import { buildTrackHistoricalCatalog } from "../../data/iracing-track-roi";
+
+const CAT_LABELS: Record<string, string> = {
+  "SPORTS CAR": "Sports Car",
+  "FORMULA CAR": "Formula Car",
+  "OVAL": "Oval",
+  "DIRT OVAL": "Dirt Oval",
+  "DIRT ROAD": "Dirt Road",
+};
+
+const BASE_FREE_CARS_SET = new Set([
+  "global mazda mx-5 cup",
+  "formula vee",
+  "ray ff1600",
+  "bmw m2 cs racing",
+  "toyota gr86",
+  "street stock",
+  "legends ford '34 coupe",
+  "dallara dw12",
+  "pontiac solstice",
+  "spec racer ford",
+  "radical sr8",
+  "cadillac cts-v racecar",
+  "kia optima",
+  "vw jetta tdi cup",
+  "mini stock",
+  "dirt street stock",
+  "dirt legends ford '34 coupe",
+  "dirt micro sprint",
+  "vw beetle lite",
+  "pro 2 lite off-road truck",
+]);
+
+const rawSeries = (schedule as any).series ?? [];
+
+const cleanSeries = rawSeries.map((s: any) => ({
+  id: s.id,
+  name: String(s.name || "").replace(/\s*-\s*2026 Season 4.*$/i, "").trim(),
+  category: s.category || "SPORTS CAR",
+  cars: Array.isArray(s.cars) ? s.cars : [],
+  weeks: (s.weeks ?? []).map((w: any) => ({
+    track: w.track_name || "",
+  })),
+}));
+
+// Build Track Catalog
+const trackCatalog = buildTrackHistoricalCatalog(cleanSeries).sort((a, b) =>
+  Number(a.isFree) - Number(b.isFree) || (b.s4Series + b.s3Series) - (a.s4Series + a.s3Series) || a.track.localeCompare(b.track)
+);
+
+// Build Car Catalog
+interface CarItem {
+  name: string;
+  cats: string[];
+  s4Series: number;
+  isFree: boolean;
+  seriesSample: string[];
+}
+const carMap = new Map<string, { name: string; cats: Set<string>; s4Series: number; seriesSample: string[] }>();
+for (const s of cleanSeries) {
+  for (const rawCar of s.cars) {
+    const name = String(rawCar || "").trim();
+    if (!name) continue;
+    const key = name.toLowerCase();
+    const cur = carMap.get(key) || { name, cats: new Set<string>(), s4Series: 0, seriesSample: [] };
+    cur.cats.add(s.category);
+    cur.s4Series += 1;
+    if (cur.seriesSample.length < 3 && !cur.seriesSample.includes(s.name)) {
+      cur.seriesSample.push(s.name);
+    }
+    carMap.set(key, cur);
+  }
+}
+
+const carCatalog: CarItem[] = Array.from(carMap.values())
+  .map((c) => ({
+    name: c.name,
+    cats: Array.from(c.cats),
+    s4Series: c.s4Series,
+    isFree: BASE_FREE_CARS_SET.has(c.name.toLowerCase()),
+    seriesSample: c.seriesSample,
+  }))
+  .sort((a, b) => Number(a.isFree) - Number(b.isFree) || b.s4Series - a.s4Series || a.name.localeCompare(b.name));
+
+const catOrder = ["SPORTS CAR", "FORMULA CAR", "OVAL", "DIRT OVAL", "DIRT ROAD"];
+---
+
+<Layout
+  title="Mi Contenido iRacing (Coches y Circuitos) · Muntrume Motorsport"
+  description="Gestiona visualmente los coches y circuitos de iRacing que ya tienes comprados, controla tu progreso Club 40 y sincroniza automáticamente el calendario 2026 S4."
+  canonical="https://muntru.me/calendar/content/"
+>
+  <section class="mc-wrap">
+    <!-- Top Navigation & Hero -->
+    <header class="mc-hero">
+      <div class="mc-hero__left">
+        <a href="/calendar/" class="mc-back">← Volver al Calendario 2026 S4</a>
+        <span class="mc-kicker">GESTOR DE CONTENIDO IRACING · SINCRONIZADO CON /CALENDAR</span>
+        <h1 class="mc-title">Mi Garaje de Coches &amp; Circuitos</h1>
+        <p class="mc-sub">
+          Marca con <strong>1 clic</strong> los coches y circuitos que ya tienes en tu cuenta (o vuelve a pulsar para quitar los que marcaste sin querer).
+          Todo se sincroniza al instante con el <a href="/calendar/">Calendario 2026 S4</a> y el planificador de compras.
+        </p>
+      </div>
+
+      <div class="mc-hero__actions">
+        <button type="button" id="mcMarkBaseBtn" class="mc-btn mc-btn--accent">
+          <span>✔ Activar Base Gratis</span>
+        </button>
+        <button type="button" id="mcClearPaidBtn" class="mc-btn mc-btn--ghost">
+          <span>↺ Limpiar compras</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Live KPI Dashboard + Club 40 Progress -->
+    <div class="mc-kpis">
+      <div class="mc-kpi">
+        <span class="mc-kpi__k">MIS COCHES</span>
+        <strong id="mcKpiCars" class="mc-kpi__v">0</strong>
+        <span class="mc-kpi__sub">de {carCatalog.length} en temporada</span>
+      </div>
+      <div class="mc-kpi">
+        <span class="mc-kpi__k">MIS CIRCUITOS</span>
+        <strong id="mcKpiTracks" class="mc-kpi__v">0</strong>
+        <span class="mc-kpi__sub">de {trackCatalog.length} en temporada</span>
+      </div>
+      <div class="mc-kpi">
+        <span class="mc-kpi__k">EN CARRITO</span>
+        <strong id="mcKpiCart" class="mc-kpi__v mc-kpi__v--amber">0</strong>
+        <span class="mc-kpi__sub"><a href="/calendar/?planner=1" class="mc-link">Ver pack con IVA →</a></span>
+      </div>
+      <div class="mc-kpi mc-kpi--club40">
+        <div class="mc-club-top">
+          <span class="mc-kpi__k">🏆 PROGRESO CLUB 40 (20% DTO.)</span>
+          <strong id="mcClubCount" class="mc-club-num">0 / 40</strong>
+        </div>
+        <div class="mc-club-bar" aria-hidden="true">
+          <span id="mcClubFill" style="width:0%"></span>
+        </div>
+        <span id="mcClubSub" class="mc-kpi__sub">Piezas de pago compradas (coches + circuitos)</span>
+      </div>
+    </div>
+
+    <!-- Primary Tabs & Search Toolbar -->
+    <div class="mc-toolbar">
+      <div class="mc-tabs" role="tablist" aria-label="Tipo de contenido">
+        <button type="button" class="mc-tab is-active" data-tab="cars" role="tab" aria-selected="true">
+          🏎 Coches <span class="mc-tab__n">{carCatalog.length}</span>
+        </button>
+        <button type="button" class="mc-tab" data-tab="tracks" role="tab" aria-selected="false">
+          🏁 Circuitos <span class="mc-tab__n">{trackCatalog.length}</span>
+        </button>
+        <button type="button" class="mc-tab" data-tab="owned" role="tab" aria-selected="false">
+          ✓ Solo lo que tengo <span class="mc-tab__n" id="mcOwnedTabCount">0</span>
+        </button>
+        <button type="button" class="mc-tab" data-tab="cart" role="tab" aria-selected="false">
+          🛒 En carrito <span class="mc-tab__n" id="mcCartTabCount">0</span>
+        </button>
+      </div>
+
+      <div class="mc-filters-row">
+        <div class="mc-pills" aria-label="Disciplina">
+          <button type="button" class="mc-pill is-active" data-cat="ALL">Todas</button>
+          {catOrder.map((c) => (
+            <button type="button" class="mc-pill" data-cat={c}>{CAT_LABELS[c]}</button>
+          ))}
+        </div>
+
+        <div class="mc-pills" aria-label="Estado">
+          <button type="button" class="mc-pill is-active" data-status="ALL">Todos</button>
+          <button type="button" class="mc-pill" data-status="OWNED">✓ Tengo</button>
+          <button type="button" class="mc-pill" data-status="MISSING">○ Me faltan</button>
+          <button type="button" class="mc-pill" data-status="PAID">$ De pago</button>
+          <button type="button" class="mc-pill" data-status="FREE">Gratis</button>
+        </div>
+
+        <label class="mc-search">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input type="search" id="mcSearchInput" placeholder="Buscar coche o circuito…" autocomplete="off" />
+        </label>
+      </div>
+    </div>
+
+    <!-- Result count & quick feedback toast -->
+    <div class="mc-meta-bar">
+      <span id="mcShowingCount" class="mc-showing">Mostrando {carCatalog.length} elementos</span>
+      <span id="mcToast" class="mc-toast" role="status" aria-live="polite"></span>
+    </div>
+
+    <!-- Visual Cards Grid -->
+    <div id="mcGrid" class="mc-grid">
+      {carCatalog.map((car) => (
+        <article
+          class="mc-card"
+          data-kind="car"
+          data-name={car.name}
+          data-free={car.isFree ? "1" : "0"}
+          data-cats={car.cats.join("|")}
+          data-search={`${car.name} ${car.cats.join(" ")} ${car.seriesSample.join(" ")}`.toLowerCase()}
+        >
+          <div class="mc-card__top">
+            <span class="mc-kind-tag">🏎 COCHE</span>
+            <span class:list={["mc-price", car.isFree && "mc-price--free"]}>
+              {car.isFree ? "BASE GRATIS" : "$11.95"}
+            </span>
+          </div>
+
+          <h2 class="mc-card__title">{car.name}</h2>
+
+          <div class="mc-card__cats">
+            {car.cats.map((c) => <span class="mc-cat-chip">{CAT_LABELS[c] || c}</span>)}
+            <span class="mc-series-cnt">{car.s4Series} {car.s4Series === 1 ? "serie" : "series"} S4</span>
+          </div>
+
+          {car.seriesSample.length > 0 && (
+            <p class="mc-card__sample" title={car.seriesSample.join(" · ")}>
+              {car.seriesSample.slice(0, 2).join(" · ")}
+            </p>
+          )}
+
+          <div class="mc-card__foot">
+            <button type="button" class="mc-own-btn" data-toggle-own="car" data-item={car.name}>
+              <span class="mc-dot"></span>
+              <span data-own-lbl>Me falta</span>
+            </button>
+            {!car.isFree && (
+              <button type="button" class="mc-cart-btn" data-toggle-cart="car" data-item={car.name}>
+                + Carrito
+              </button>
+            )}
+          </div>
+        </article>
+      ))}
+
+      {trackCatalog.map((trk) => (
+        <article
+          class="mc-card"
+          data-kind="track"
+          data-name={trk.track}
+          data-free={trk.isFree ? "1" : "0"}
+          data-cats={trk.cats.join("|")}
+          data-search={`${trk.track} ${trk.cats.join(" ")} ${trk.specialEvents.join(" ")}`.toLowerCase()}
+          hidden
+        >
+          <div class="mc-card__top">
+            <span class="mc-kind-tag mc-kind-tag--track">🏁 CIRCUITO</span>
+            <span class:list={["mc-price", trk.isFree && "mc-price--free"]}>
+              {trk.isFree ? "BASE GRATIS" : "$14.95"}
+            </span>
+          </div>
+
+          <h2 class="mc-card__title">{trk.track}</h2>
+
+          <div class="mc-card__cats">
+            {trk.cats.slice(0, 3).map((c) => <span class="mc-cat-chip">{CAT_LABELS[c] || c}</span>)}
+            <span class="mc-series-cnt">S4: {trk.s4Series} · S3: {trk.s3Series}</span>
+          </div>
+
+          {trk.specialEvents.length > 0 && (
+            <p class="mc-card__event">🏆 {trk.specialEvents.slice(0, 2).join(" · ")}</p>
+          )}
+
+          <div class="mc-card__foot">
+            <button type="button" class="mc-own-btn" data-toggle-own="track" data-item={trk.track}>
+              <span class="mc-dot"></span>
+              <span data-own-lbl>Me falta</span>
+            </button>
+            {!trk.isFree && (
+              <button type="button" class="mc-cart-btn" data-toggle-cart="track" data-item={trk.track}>
+                + Carrito
+              </button>
+            )}
+          </div>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <script is:inline>
+    (function () {
+      const OWNED_KEY = "mmt-owned-tracks-v1";
+      const OWNED_CARS_KEY = "mmt-owned-cars-v1";
+      const CART_KEY = "mmt-planner-cart-v1";
+      const CART_CARS_KEY = "mmt-planner-cart-cars-v1";
+
+      function loadSet(key) {
+        try { return new Set(JSON.parse(localStorage.getItem(key) || "[]")); }
+        catch { return new Set(); }
+      }
+      function saveSet(key, set) {
+        try { localStorage.setItem(key, JSON.stringify(Array.from(set))); } catch {}
+      }
+
+      const ownedTracks = loadSet(OWNED_KEY);
+      const ownedCars = loadSet(OWNED_CARS_KEY);
+      const cartTracks = loadSet(CART_KEY);
+      const cartCars = loadSet(CART_CARS_KEY);
+
+      const cards = Array.from(document.querySelectorAll("#mcGrid .mc-card"));
+      const kpiCars = document.getElementById("mcKpiCars");
+      const kpiTracks = document.getElementById("mcKpiTracks");
+      const kpiCart = document.getElementById("mcKpiCart");
+      const clubCount = document.getElementById("mcClubCount");
+      const clubFill = document.getElementById("mcClubFill");
+      const clubSub = document.getElementById("mcClubSub");
+      const ownedTabCount = document.getElementById("mcOwnedTabCount");
+      const cartTabCount = document.getElementById("mcCartTabCount");
+      const showingEl = document.getElementById("mcShowingCount");
+      const toastEl = document.getElementById("mcToast");
+      const searchInput = document.getElementById("mcSearchInput");
+
+      let activeTab = "cars"; // cars | tracks | owned | cart
+      let activeCat = "ALL";
+      let activeStatus = "ALL";
+      let query = "";
+      let toastTimer = null;
+
+      function showToast(msg) {
+        if (!toastEl) return;
+        toastEl.textContent = msg;
+        toastEl.classList.add("is-show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toastEl.classList.remove("is-show"), 2200);
+      }
+
+      function hasIgnoreCase(set, name) {
+        const low = name.toLowerCase();
+        for (const v of set) if (String(v).toLowerCase() === low) return true;
+        return false;
+      }
+      function deleteIgnoreCase(set, name) {
+        const low = name.toLowerCase();
+        for (const v of Array.from(set)) if (String(v).toLowerCase() === low) set.delete(v);
+      }
+
+      function syncAll() {
+        let totalOwnedCars = 0;
+        let totalOwnedTracks = 0;
+        let paidOwnedCount = 0;
+        let visibleCount = 0;
+        const needle = query.trim().toLowerCase();
+
+        cards.forEach((card) => {
+          const kind = card.getAttribute("data-kind"); // car | track
+          const name = card.getAttribute("data-name") || "";
+          const isFree = card.getAttribute("data-free") === "1";
+          const cats = (card.getAttribute("data-cats") || "").split("|");
+          const hay = card.getAttribute("data-search") || "";
+
+          const setOwn = kind === "car" ? ownedCars : ownedTracks;
+          const setCart = kind === "car" ? cartCars : cartTracks;
+          const isOwned = isFree || hasIgnoreCase(setOwn, name);
+          const inCart = !isOwned && hasIgnoreCase(setCart, name);
+
+          if (isOwned) {
+            if (kind === "car") totalOwnedCars++; else totalOwnedTracks++;
+            if (!isFree) paidOwnedCount++;
+          }
+
+          card.classList.toggle("is-owned", isOwned);
+          card.classList.toggle("is-in-cart", inCart);
+
+          const ownBtn = card.querySelector("[data-toggle-own]");
+          const ownLbl = card.querySelector("[data-own-lbl]");
+          if (ownBtn && ownLbl) {
+            ownBtn.classList.toggle("is-owned", isOwned);
+            ownLbl.textContent = isFree ? "Incluido (Base)" : (isOwned ? "Lo tengo ✓ (Quitar)" : "Marcar como tengo");
+            ownBtn.disabled = isFree;
+          }
+          const cartBtn = card.querySelector("[data-toggle-cart]");
+          if (cartBtn) {
+            cartBtn.hidden = isOwned;
+            cartBtn.classList.toggle("is-in-cart", inCart);
+            cartBtn.textContent = inCart ? "Quitar carrito" : "+ Carrito";
+          }
+
+          // Filter visibility
+          let show = true;
+          if (activeTab === "cars" && kind !== "car") show = false;
+          if (activeTab === "tracks" && kind !== "track") show = false;
+          if (activeTab === "owned" && !isOwned) show = false;
+          if (activeTab === "cart" && !inCart) show = false;
+          if (show && activeCat !== "ALL" && !cats.includes(activeCat)) show = false;
+          if (show && activeStatus === "OWNED" && !isOwned) show = false;
+          if (show && activeStatus === "MISSING" && isOwned) show = false;
+          if (show && activeStatus === "PAID" && isFree) show = false;
+          if (show && activeStatus === "FREE" && !isFree) show = false;
+          if (show && needle && !hay.includes(needle)) show = false;
+
+          card.hidden = !show;
+          if (show) visibleCount++;
+        });
+
+        const totalCart = cartCars.size + cartTracks.size;
+        if (kpiCars) kpiCars.textContent = String(totalOwnedCars);
+        if (kpiTracks) kpiTracks.textContent = String(totalOwnedTracks);
+        if (kpiCart) kpiCart.textContent = String(totalCart);
+        if (ownedTabCount) ownedTabCount.textContent = String(totalOwnedCars + totalOwnedTracks);
+        if (cartTabCount) cartTabCount.textContent = String(totalCart);
+        if (clubCount) clubCount.textContent = `${paidOwnedCount} / 40`;
+        if (clubFill) clubFill.style.width = `${Math.min(100, Math.round((paidOwnedCount / 40) * 100))}%`;
+        if (clubSub) {
+          clubSub.textContent = paidOwnedCount >= 40
+            ? "¡Club 40 desbloqueado! Tienes 20% dto. permanente en iRacing."
+            : `Te faltan ${40 - paidOwnedCount} piezas de pago para el 20% permanente.`;
+        }
+        if (showingEl) {
+          showingEl.textContent = `Mostrando ${visibleCount} ${visibleCount === 1 ? "elemento" : "elementos"}`;
+        }
+      }
+
+      document.addEventListener("click", (e) => {
+        const ownBtn = e.target?.closest?.("[data-toggle-own]");
+        if (ownBtn && !ownBtn.disabled) {
+          const kind = ownBtn.getAttribute("data-toggle-own");
+          const item = ownBtn.getAttribute("data-item") || "";
+          const setOwn = kind === "car" ? ownedCars : ownedTracks;
+          const setCart = kind === "car" ? cartCars : cartTracks;
+          const keyOwn = kind === "car" ? OWNED_CARS_KEY : OWNED_KEY;
+          const keyCart = kind === "car" ? CART_CARS_KEY : CART_KEY;
+          if (hasIgnoreCase(setOwn, item)) {
+            deleteIgnoreCase(setOwn, item);
+            showToast(`Quitado: ${item}`);
+          } else {
+            setOwn.add(item);
+            deleteIgnoreCase(setCart, item);
+            showToast(`Añadido a tu garaje: ${item}`);
+          }
+          saveSet(keyOwn, setOwn);
+          saveSet(keyCart, setCart);
+          syncAll();
+          return;
+        }
+
+        const cartBtn = e.target?.closest?.("[data-toggle-cart]");
+        if (cartBtn) {
+          const kind = cartBtn.getAttribute("data-toggle-cart");
+          const item = cartBtn.getAttribute("data-item") || "";
+          const setCart = kind === "car" ? cartCars : cartTracks;
+          const keyCart = kind === "car" ? CART_CARS_KEY : CART_KEY;
+          if (hasIgnoreCase(setCart, item)) {
+            deleteIgnoreCase(setCart, item);
+            showToast(`Quitado del carrito: ${item}`);
+          } else {
+            setCart.add(item);
+            showToast(`Añadido al carrito: ${item}`);
+          }
+          saveSet(keyCart, setCart);
+          syncAll();
+        }
+      });
+
+      document.querySelectorAll("[data-tab]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          activeTab = btn.getAttribute("data-tab") || "cars";
+          document.querySelectorAll("[data-tab]").forEach((b) => {
+            b.classList.toggle("is-active", b === btn);
+            b.setAttribute("aria-selected", b === btn ? "true" : "false");
+          });
+          syncAll();
+        });
+      });
+
+      document.querySelectorAll("[data-cat]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          activeCat = btn.getAttribute("data-cat") || "ALL";
+          document.querySelectorAll("[data-cat]").forEach((b) => b.classList.toggle("is-active", b === btn));
+          syncAll();
+        });
+      });
+
+      document.querySelectorAll("[data-status]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          activeStatus = btn.getAttribute("data-status") || "ALL";
+          document.querySelectorAll("[data-status]").forEach((b) => b.classList.toggle("is-active", b === btn));
+          syncAll();
+        });
+      });
+
+      searchInput?.addEventListener("input", () => {
+        query = searchInput.value || "";
+        syncAll();
+      });
+
+      document.getElementById("mcMarkBaseBtn")?.addEventListener("click", () => {
+        cards.forEach((c) => {
+          if (c.getAttribute("data-free") !== "1") return;
+          const name = c.getAttribute("data-name") || "";
+          if (c.getAttribute("data-kind") === "car") ownedCars.add(name);
+          else ownedTracks.add(name);
+        });
+        saveSet(OWNED_CARS_KEY, ownedCars);
+        saveSet(OWNED_KEY, ownedTracks);
+        showToast("✔ Contenido base gratuito sincronizado");
+        syncAll();
+      });
+
+      document.getElementById("mcClearPaidBtn")?.addEventListener("click", () => {
+        if (!window.confirm("¿Quitar todos los coches y circuitos de pago que habías marcado?")) return;
+        ownedCars.clear();
+        ownedTracks.clear();
+        saveSet(OWNED_CARS_KEY, ownedCars);
+        saveSet(OWNED_KEY, ownedTracks);
+        showToast("↺ Compras restablecidas");
+        syncAll();
+      });
+
+      // Allow deep-linking via ?tab=tracks or ?tab=cars
+      const tabParam = new URLSearchParams(window.location.search).get("tab");
+      if (tabParam && ["cars", "tracks", "owned", "cart"].includes(tabParam)) {
+        activeTab = tabParam;
+        document.querySelectorAll("[data-tab]").forEach((b) => {
+          const on = b.getAttribute("data-tab") === activeTab;
+          b.classList.toggle("is-active", on);
+          b.setAttribute("aria-selected", on ? "true" : "false");
+        });
+      }
+
+      syncAll();
+    })();
+  </script>
+</Layout>
+
+<style>
+  .mc-wrap {
+    max-width: 1260px;
+    margin: 0 auto;
+    padding: 28px 20px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .mc-hero {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
+  }
+  .mc-back {
+    display: inline-block;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--r-accent, #00e699);
+    text-decoration: none;
+    margin-bottom: 8px;
+  }
+  .mc-back:hover { text-decoration: underline; }
+  .mc-kicker {
+    display: block;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    color: var(--r-muted, #94a3b8);
+  }
+  .mc-title {
+    margin: 4px 0 0;
+    font-size: clamp(1.65rem, 3vw, 2.3rem);
+    font-weight: 800;
+    color: var(--r-text, #f8fafc);
+  }
+  .mc-sub {
+    margin: 6px 0 0;
+    max-width: 650px;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--r-muted, #94a3b8);
+  }
+  .mc-sub a { color: var(--r-accent, #00e699); text-decoration: underline; }
+  .mc-hero__actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .mc-btn {
+    padding: 9px 14px;
+    border-radius: 10px;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.14s ease;
+  }
+  .mc-btn--accent {
+    background: rgba(0, 230, 153, 0.14);
+    border-color: rgba(0, 230, 153, 0.45);
+    color: var(--r-accent, #00e699);
+  }
+  .mc-btn--accent:hover { background: rgba(0, 230, 153, 0.22); }
+  .mc-btn--ghost {
+    background: var(--r-surface, #11161d);
+    border-color: var(--r-line, rgba(148, 163, 184, 0.24));
+    color: var(--r-muted, #94a3b8);
+  }
+  .mc-btn--ghost:hover { color: #f43f5e; border-color: rgba(244, 63, 94, 0.45); }
+
+  /* KPIs */
+  .mc-kpis {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(140px, 1fr)) minmax(260px, 1.6fr);
+    gap: 12px;
+  }
+  .mc-kpi {
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: var(--r-surface, #11161d);
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .mc-kpi__k {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: var(--r-muted, #94a3b8);
+  }
+  .mc-kpi__v {
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--r-accent, #00e699);
+  }
+  .mc-kpi__v--amber { color: #f59e0b; }
+  .mc-kpi__sub { font-size: 11.5px; color: var(--r-muted, #94a3b8); }
+  .mc-link { color: var(--r-accent, #00e699); text-decoration: none; font-weight: 700; }
+  .mc-club-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .mc-club-num { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; color: var(--r-accent, #00e699); }
+  .mc-club-bar {
+    height: 8px;
+    border-radius: 999px;
+    background: var(--r-bg, #090b0f);
+    overflow: hidden;
+    margin: 4px 0;
+  }
+  .mc-club-bar > span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #00c482, #00e699);
+    transition: width 0.25s ease;
+  }
+
+  /* Toolbar */
+  .mc-toolbar {
+    background: var(--r-surface, #11161d);
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
+    border-radius: 16px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .mc-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .mc-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
+    background: var(--r-bg, #090b0f);
+    color: var(--r-muted, #94a3b8);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.14s ease;
+  }
+  .mc-tab.is-active {
+    background: rgba(0, 230, 153, 0.14);
+    border-color: rgba(0, 230, 153, 0.5);
+    color: var(--r-accent, #00e699);
+  }
+  .mc-tab__n {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: rgba(148, 163, 184, 0.16);
+  }
+  .mc-filters-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    justify-content: space-between;
+  }
+  .mc-pills { display: flex; flex-wrap: wrap; gap: 5px; }
+  .mc-pill {
+    padding: 5px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
+    background: transparent;
+    color: var(--r-muted, #94a3b8);
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .mc-pill.is-active {
+    background: rgba(0, 230, 153, 0.14);
+    border-color: rgba(0, 230, 153, 0.45);
+    color: var(--r-accent, #00e699);
+  }
+  .mc-search {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.24));
+    background: var(--r-bg, #090b0f);
+    color: var(--r-muted, #94a3b8);
+    min-width: 220px;
+  }
+  .mc-search input {
+    border: none;
+    background: transparent;
+    color: var(--r-text, #f8fafc);
+    font-size: 12.5px;
+    width: 100%;
+    outline: none;
+  }
+
+  .mc-meta-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 22px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11.5px;
+    color: var(--r-muted, #94a3b8);
+  }
+  .mc-toast {
+    color: var(--r-accent, #00e699);
+    font-weight: 700;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+  .mc-toast.is-show { opacity: 1; }
+
+  /* Grid & Cards */
+  .mc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(275px, 1fr));
+    gap: 12px;
+  }
+  .mc-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 15px;
+    border-radius: 14px;
+    background: var(--r-surface, #11161d);
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
+    transition: border-color 0.14s ease, transform 0.14s ease, box-shadow 0.14s ease;
+  }
+  .mc-card:hover {
+    transform: translateY(-1px);
+    border-color: rgba(148, 163, 184, 0.42);
+  }
+  .mc-card.is-owned {
+    border-color: rgba(16, 185, 129, 0.55);
+    box-shadow: inset 0 2px 0 0 #10b981;
+  }
+  .mc-card.is-in-cart {
+    border-color: rgba(245, 158, 11, 0.55);
+    box-shadow: inset 0 2px 0 0 #f59e0b;
+  }
+  .mc-card__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .mc-kind-tag {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    color: var(--r-muted, #94a3b8);
+  }
+  .mc-price {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10.5px;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: var(--r-bg, #090b0f);
+    color: var(--r-muted, #94a3b8);
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
+  }
+  .mc-price--free {
+    background: rgba(16, 185, 129, 0.14);
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.35);
+  }
+  .mc-card__title {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.25;
+    color: var(--r-text, #f8fafc);
+  }
+  .mc-card__cats {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+  }
+  .mc-cat-chip {
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: var(--r-bg, #090b0f);
+    color: var(--r-muted, #94a3b8);
+  }
+  .mc-series-cnt {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10.5px;
+    color: var(--r-muted, #94a3b8);
+    margin-left: auto;
+  }
+  .mc-card__sample {
+    margin: 0;
+    font-size: 11.5px;
+    color: var(--r-muted, #94a3b8);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mc-card__event {
+    margin: 0;
+    font-size: 11px;
+    font-weight: 700;
+    color: #f59e0b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mc-card__foot {
+    margin-top: auto;
+    padding-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .mc-own-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 10px;
+    border-radius: 9px;
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.24));
+    background: var(--r-bg, #090b0f);
+    color: var(--r-text, #f1f5f9);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.14s ease;
+  }
+  .mc-own-btn:hover:not(:disabled) {
+    border-color: var(--r-accent, #00e699);
+  }
+  .mc-own-btn.is-owned {
+    background: rgba(16, 185, 129, 0.16);
+    border-color: rgba(16, 185, 129, 0.5);
+    color: #10b981;
+  }
+  .mc-own-btn:disabled {
+    opacity: 0.8;
+    cursor: default;
+  }
+  .mc-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #f97316;
+    flex-shrink: 0;
+  }
+  .mc-own-btn.is-owned .mc-dot {
+    background: #10b981;
+  }
+  .mc-cart-btn {
+    padding: 7px 10px;
+    border-radius: 9px;
+    border: 1px solid rgba(245, 158, 11, 0.45);
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .mc-cart-btn.is-in-cart {
+    border-color: rgba(244, 63, 94, 0.45);
+    background: rgba(244, 63, 94, 0.12);
+    color: #f43f5e;
+  }
+
+  @media (max-width: 900px) {
+    .mc-kpis { grid-template-columns: repeat(2, 1fr); }
+    .mc-kpi--club40 { grid-column: 1 / -1; }
+  }
+</style>
