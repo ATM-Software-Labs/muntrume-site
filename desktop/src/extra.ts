@@ -581,6 +581,14 @@ function paintCaptureStatusBadge(status: CaptureStatusPayload): void {
   }
 }
 
+interface IbtDiskSessionMeta {
+  filePath: string;
+  fileName: string;
+  trackName: string;
+  carScreenName: string;
+  modifiedEpochMs?: number;
+}
+
 async function populateIbtSessionSelectors(autoLoadLatest = false): Promise<void> {
   const sel = document.getElementById("capturedSessionsSelect") as HTMLSelectElement | null;
   if (!sel) return;
@@ -588,40 +596,67 @@ async function populateIbtSessionSelectors(autoLoadLatest = false): Promise<void
     const { inTauri } = await import("./env");
     if (!inTauri()) return;
     const { invoke } = await import("@tauri-apps/api/core");
-    const sessions = await withTimeout(
-      invoke<CapturedSessionMeta[]>("list_captured_sessions"),
-      1500,
-      [],
-    );
+    const [capturedSessions, ibtSessions] = await Promise.all([
+      withTimeout(invoke<CapturedSessionMeta[]>("list_captured_sessions"), 1500, []),
+      withTimeout(invoke<IbtDiskSessionMeta[]>("list_ibt_sessions"), 3500, []),
+    ]);
     const retentionDays = Number(localStorage.getItem(TELEMETRY_RETENTION_KEY) || "0");
     const nowMs = Date.now();
-    const filtered = (sessions || []).filter((s) => {
+    const filteredCaptured = (capturedSessions || []).filter((s) => {
       if (retentionDays > 0 && s.capturedEpochMs > 0) {
         const ageDays = (nowMs - s.capturedEpochMs) / (24 * 3600 * 1000);
         if (ageDays > retentionDays) return false;
       }
       return true;
     });
+    const diskIbt = (ibtSessions || []).slice(0, 30);
+    const totalCount = diskIbt.length + filteredCaptured.length;
 
     const previousValue = sel.value;
     sel.innerHTML = `<option value="">${
-      filtered.length
-        ? `Sesiones capturadas automáticamente (${filtered.length})…`
-        : "Sesiones capturadas automáticamente (esperando tanda…)"
+      totalCount
+        ? `Mis telemetrías iRacing (${totalCount} sesiones)…`
+        : "Sin telemetrías .ibt encontradas (activa Alt+L en iRacing)"
     }</option>`;
 
-    for (const s of filtered) {
-      const opt = document.createElement("option");
-      opt.value = s.filePath;
-      const bestStr = s.bestLapS > 0 ? formatLapSec(s.bestLapS) : "--:--.---";
-      opt.textContent = `${formatEpochShort(s.capturedEpochMs)} · ${s.trackName} · ${s.carScreenName} · ${bestStr}`;
-      sel.appendChild(opt);
+    if (diskIbt.length > 0) {
+      const grp = document.createElement("optgroup");
+      grp.label = `Archivos .ibt de iRacing (${diskIbt.length})`;
+      for (const s of diskIbt) {
+        const opt = document.createElement("option");
+        opt.value = s.filePath;
+        const when = s.modifiedEpochMs ? `${formatEpochShort(s.modifiedEpochMs)} · ` : "";
+        const track = s.trackName || s.fileName.replace(/\.ibt$/i, "");
+        const car = s.carScreenName ? ` · ${s.carScreenName}` : "";
+        opt.textContent = `${when}${track}${car}`;
+        grp.appendChild(opt);
+      }
+      sel.appendChild(grp);
     }
 
-    if (autoLoadLatest && filtered.length > 0) {
-      sel.value = filtered[0].filePath;
-      await loadSelectedIbtSession(filtered[0].filePath);
-    } else if (previousValue && filtered.some((s) => s.filePath === previousValue)) {
+    if (filteredCaptured.length > 0) {
+      const grp = document.createElement("optgroup");
+      grp.label = `Auto-captura IRSDK (${filteredCaptured.length})`;
+      for (const s of filteredCaptured) {
+        const opt = document.createElement("option");
+        opt.value = s.filePath;
+        const bestStr = s.bestLapS > 0 ? formatLapSec(s.bestLapS) : "--:--.---";
+        opt.textContent = `${formatEpochShort(s.capturedEpochMs)} · ${s.trackName} · ${s.carScreenName} · ${bestStr}`;
+        grp.appendChild(opt);
+      }
+      sel.appendChild(grp);
+    }
+
+    const firstPath = diskIbt[0]?.filePath || filteredCaptured[0]?.filePath || "";
+    const allPaths = new Set([
+      ...diskIbt.map((s) => s.filePath),
+      ...filteredCaptured.map((s) => s.filePath),
+    ]);
+
+    if (autoLoadLatest && firstPath) {
+      sel.value = firstPath;
+      await loadSelectedIbtSession(firstPath);
+    } else if (previousValue && allPaths.has(previousValue)) {
       sel.value = previousValue;
     }
   } catch {
@@ -635,7 +670,10 @@ async function loadSelectedIbtSession(path: string): Promise<void> {
     const { inTauri } = await import("./env");
     if (!inTauri()) return;
     const { invoke } = await import("@tauri-apps/api/core");
-    const report = await invoke<IbtSessionReport | null>("read_captured_session", { path });
+    const cmd = path.toLowerCase().endsWith(".ibt") ? "read_ibt_file" : "read_captured_session";
+    const metaBadge = document.getElementById("ibtSessionMetaBadge");
+    if (metaBadge) metaBadge.textContent = "Analizando telemetría .ibt…";
+    const report = await invoke<IbtSessionReport | null>(cmd, { path });
     if (report) {
       paintLastSession(report);
       renderTelemetryStudio();

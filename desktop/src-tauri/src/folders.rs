@@ -3,14 +3,22 @@ use std::path::PathBuf;
 pub fn detect_setups_dir() -> Option<PathBuf> {
     #[cfg(windows)]
     {
-        if let Some(docs) = known_folders::get_known_folder_path(known_folders::KnownFolder::Documents)
-        {
-            return Some(docs.join("iRacing").join("setups"));
-        }
+        let mut candidates: Vec<PathBuf> = Vec::new();
         if let Ok(profile) = std::env::var("USERPROFILE") {
-            return Some(PathBuf::from(profile).join("Documents").join("iRacing").join("setups"));
+            let p = PathBuf::from(&profile);
+            candidates.push(p.join("Documents").join("iRacing").join("setups"));
+            candidates.push(p.join("OneDrive").join("Documents").join("iRacing").join("setups"));
         }
-        None
+        if let Some(docs) = known_folders::get_known_folder_path(known_folders::KnownFolder::Documents) {
+            let c = docs.join("iRacing").join("setups");
+            if !candidates.contains(&c) {
+                candidates.push(c);
+            }
+        }
+        if let Some(found) = candidates.iter().find(|p| p.exists()) {
+            return Some(found.clone());
+        }
+        candidates.into_iter().next()
     }
     #[cfg(not(windows))]
     {
@@ -19,7 +27,37 @@ pub fn detect_setups_dir() -> Option<PathBuf> {
 }
 
 pub fn detect_telemetry_dir() -> Option<PathBuf> {
-    detect_setups_dir().and_then(|p| p.parent().map(|root| root.join("telemetry")))
+    #[cfg(windows)]
+    {
+        let mut candidates: Vec<PathBuf> = Vec::new();
+        if let Ok(profile) = std::env::var("USERPROFILE") {
+            let p = PathBuf::from(&profile);
+            candidates.push(p.join("Documents").join("iRacing").join("telemetry"));
+            candidates.push(p.join("OneDrive").join("Documents").join("iRacing").join("telemetry"));
+        }
+        if let Some(docs) = known_folders::get_known_folder_path(known_folders::KnownFolder::Documents) {
+            let c = docs.join("iRacing").join("telemetry");
+            if !candidates.contains(&c) {
+                candidates.push(c);
+            }
+        }
+        if let Some(setups) = detect_setups_dir() {
+            if let Some(root) = setups.parent() {
+                let c = root.join("telemetry");
+                if !candidates.contains(&c) {
+                    candidates.push(c);
+                }
+            }
+        }
+        if let Some(found) = candidates.iter().find(|p| p.exists()) {
+            return Some(found.clone());
+        }
+        candidates.into_iter().next()
+    }
+    #[cfg(not(windows))]
+    {
+        detect_setups_dir().and_then(|p| p.parent().map(|root| root.join("telemetry")))
+    }
 }
 
 pub fn app_data_dir() -> PathBuf {
