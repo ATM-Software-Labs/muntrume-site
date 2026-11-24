@@ -53,7 +53,6 @@ const FALLBACK_BRAND_RULES: Array<[RegExp, BrandRule]> = [
   [/dirtsprintwinged|dirtsprint305|\bsprint\b|worldofoutlaws/i, { logo: "logo-woo", name: "World of Outlaws" }],
   [/protruckpro|lucasoil/i, { logo: "logo-lucasoil", name: "Lucas Oil" }],
   [/latemodel2023|superlatemodel|carstour/i, { logo: "logo-carstour", name: "CARS Tour" }],
-  [/\bsrx\b/i, { logo: "logo-srx", name: "SRX" }],
   [/dallara|superformula|sfl|sf23|p217|ir18|ir01|dw12/i, { logo: "logo-dallara", name: "Dallara" }],
   [/tatuus|usf2000|indypro|pm18/i, { logo: "logo-tatuus", name: "Tatuus" }],
   [/ligier|jsp320/i, { logo: "logo-ligier", name: "Ligier" }],

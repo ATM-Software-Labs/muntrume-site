@@ -54,7 +54,6 @@ export const BRAND_COLORS: Record<string, BrandColor> = {
   "logo-woo": { hex: "#EF4444", kind: "brand" },
   "logo-lucasoil": { hex: "#1D4ED8", kind: "brand" },
   "logo-carstour": { hex: "#EF4444", kind: "brand" },
-  "logo-srx": { hex: "#F59E0B", kind: "brand" },
 };
 
 export function colorForLogo(logoId: string): BrandColor {

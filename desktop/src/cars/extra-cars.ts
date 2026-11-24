@@ -91,7 +91,6 @@ export const EXTRA_IRACING_CARS: readonly RawCarEntry[] = [
   { carFolder: "streetstockeagle", brand: "Ford", model: "Street Stock – Eagle T3", carClass: "Oval", svgLogoId: "logo-ford", accentColor: "#2563EB", specs: "Street Stock Eagle T3 (Ford)" },
   { carFolder: "silvercrown", brand: "USAC", model: "Silver Crown", carClass: "Oval", svgLogoId: "logo-usac", accentColor: "#EF4444", specs: "USAC Silver Crown · C&R Racing" },
   { carFolder: "sprint", brand: "World of Outlaws", model: "Sprint Car", carClass: "Oval", svgLogoId: "logo-woo", accentColor: "#EF4444", specs: "Asphalt Winged Sprint Car" },
-  { carFolder: "srx", brand: "SRX", model: "SRX", carClass: "Oval", svgLogoId: "logo-srx", accentColor: "#F59E0B", specs: "Superstar Racing Experience" },
   { carFolder: "gen4grandnational", brand: "NASCAR", model: "Gen 4 Grand National", carClass: "Oval", svgLogoId: "logo-nascar", accentColor: "#FACC15", specs: "NASCAR Gen 4 Grand National" },
 
   { carFolder: "dirtmodified358", brand: "DIRTcar", model: "Dirt 358 Modified", carClass: "Dirt", svgLogoId: "logo-dirtcar", accentColor: "#F59E0B" },
