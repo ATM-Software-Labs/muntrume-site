@@ -512,19 +512,19 @@ const RAW_CAR_CATALOG: readonly RawCarEntry[] = [
   { carFolder: "legendsford34c", brand: "Ford", model: "Legends Ford '34 Coupe", carClass: "Oval", svgLogoId: "logo-ford", accentColor: "#3b82f6" },
   { carFolder: "latemodel2023", brand: "Sin fabricante único", model: "Late Model Stock", carClass: "Oval", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
   { carFolder: "superlatemodel", brand: "Sin fabricante único", model: "Super Late Model", carClass: "Oval", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
-  { carFolder: "skmodified", brand: "Sin fabricante único", model: "SK Modified", carClass: "Oval", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
-  { carFolder: "skmodifiedtour", brand: "Sin fabricante único", model: "Whelen Tour Modified", carClass: "Oval", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
+  { carFolder: "skmodified", brand: "NASCAR", model: "SK Modified", carClass: "Oval", svgLogoId: "logo-nascar", accentColor: "#FACC15" },
+  { carFolder: "skmodifiedtour", brand: "NASCAR", model: "Whelen Tour Modified", carClass: "Oval", svgLogoId: "logo-nascar", accentColor: "#FACC15" },
   { carFolder: "ministock", brand: "Sin fabricante único", model: "Mini Stock", carClass: "Oval", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
   { carFolder: "euronascar", brand: "NASCAR", model: "EuroNASCAR", carClass: "Oval", svgLogoId: "logo-nascar", accentColor: "#FACC15" },
-  // Dirt: DIRTcar es un organismo de competición, no el constructor del chasis.
-  { carFolder: "dirtlatemodel358", brand: "Sin fabricante único", model: "Dirt Late Model 358", carClass: "Dirt", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
-  { carFolder: "dirtlatemodel438", brand: "Sin fabricante único", model: "Dirt Late Model Pro / 438", carClass: "Dirt", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
+  // Dirt: series oficiales licenciadas (DIRTcar, World of Outlaws) y chasis genéricos.
+  { carFolder: "dirtlatemodel358", brand: "DIRTcar", model: "Dirt Late Model 358", carClass: "Dirt", svgLogoId: "logo-dirtcar", accentColor: "#F59E0B" },
+  { carFolder: "dirtlatemodel438", brand: "DIRTcar", model: "Dirt Late Model Pro / 438", carClass: "Dirt", svgLogoId: "logo-dirtcar", accentColor: "#F59E0B" },
   { carFolder: "dirtmicrosprintnonwinged", brand: "Sin fabricante único", model: "Micro Sprint Non-Winged", carClass: "Dirt", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
   { carFolder: "dirtmicrosprintwinged", brand: "Sin fabricante único", model: "Micro Sprint Winged", carClass: "Dirt", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
-  { carFolder: "dirtmodifiedbigblock", brand: "Sin fabricante único", model: "Big Block Modified", carClass: "Dirt", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
-  { carFolder: "dirtsprintwinged360", brand: "Sin fabricante único", model: "360 Winged Sprint Car", carClass: "Dirt", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
-  { carFolder: "dirtsprintwinged410", brand: "Sin fabricante único", model: "410 Winged Sprint Car", carClass: "Dirt", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
-  { carFolder: "dirtumpmod", brand: "Sin fabricante único", model: "Dirt UMP Modified", carClass: "Dirt", svgLogoId: "logo-neutral", accentColor: "#C0C0C0" },
+  { carFolder: "dirtmodifiedbigblock", brand: "DIRTcar", model: "Big Block Modified", carClass: "Dirt", svgLogoId: "logo-dirtcar", accentColor: "#F59E0B" },
+  { carFolder: "dirtsprintwinged360", brand: "World of Outlaws", model: "360 Winged Sprint Car", carClass: "Dirt", svgLogoId: "logo-woo", accentColor: "#EF4444" },
+  { carFolder: "dirtsprintwinged410", brand: "World of Outlaws", model: "410 Winged Sprint Car", carClass: "Dirt", svgLogoId: "logo-woo", accentColor: "#EF4444" },
+  { carFolder: "dirtumpmod", brand: "DIRTcar", model: "Dirt UMP Modified", carClass: "Dirt", svgLogoId: "logo-dirtcar", accentColor: "#F59E0B" },
   ...EXTRA_IRACING_CARS,
 ];
 

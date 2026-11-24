@@ -90,10 +90,10 @@
     "viewBox": "0 0 100 25"
   },
   "logo-lambo": {
-    "sourceUrl": "https://es.wikipedia.org/wiki/Lamborghini",
-    "license": "CC0-1.0, Simple Icons (lamborghini) charging bull inside flat 2024 Lamborghini heraldic shield.",
-    "note": "Escudo oficial plano Lamborghini 2024 (negro y oro #D4AF37) con el toro y texto LAMBORGHINI, compatible con modo Original, Blanco y Negro.",
-    "viewBox": "0 0 120 136"
+    "sourceUrl": "https://www.lamborghini.com/",
+    "license": "CC0-1.0, Simple Icons (lamborghini) charging bull inside minimalist 2024 heraldic shield (no tiny lettering).",
+    "note": "Escudo minimalista Lamborghini 2024 sin texto pequeño (toro en oro #D4AF37 sobre escudo negro) para lectura ultra-limpia en HUD 16px.",
+    "viewBox": "0 0 120 130"
   },
   "logo-ligier": {
     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Logo_Ligier.svg",
@@ -202,5 +202,29 @@
     "license": "Wikimedia Commons, File:Atlassian Williams F1 Team logo.svg. Only the Williams wordmark is used; the Atlassian sponsor line is omitted. Lettering white.",
     "note": "Wordmark WILLIAMS en blanco. Se omite la línea ATLASSIAN del lockup de 2025: es un patrocinador, no el fabricante del FW31.",
     "viewBox": "0 0 500 257"
+  },
+  "logo-dirtcar": {
+    "sourceUrl": "https://www.dirtcar.com/",
+    "license": "MIT · ATM Software Labs / Muntrume Motorsport (emblema minimalista HUD).",
+    "note": "Emblema minimalista DIRTcar Racing para categorías Dirt Late Model, Modified y Dirt Street Stock.",
+    "viewBox": "0 0 120 120"
+  },
+  "logo-usac": {
+    "sourceUrl": "https://www.usacracing.com/",
+    "license": "MIT · ATM Software Labs / Muntrume Motorsport (emblema minimalista HUD).",
+    "note": "Emblema minimalista USAC Racing para Silver Crown, Dirt Midget y Sprint Cars Non-Winged.",
+    "viewBox": "0 0 120 120"
+  },
+  "logo-woo": {
+    "sourceUrl": "https://worldofoutlaws.com/",
+    "license": "MIT · ATM Software Labs / Muntrume Motorsport (emblema minimalista HUD).",
+    "note": "Silueta minimalista World of Outlaws para Winged Sprint Cars 305/360/410.",
+    "viewBox": "0 0 120 120"
+  },
+  "logo-lucasoil": {
+    "sourceUrl": "https://www.lucasoil.com/",
+    "license": "MIT · ATM Software Labs / Muntrume Motorsport (emblema minimalista HUD).",
+    "note": "Escudo minimalista Lucas Oil Off Road para Pro 2 Lite, Pro 2 y Pro 4 Trucks.",
+    "viewBox": "0 0 120 120"
   }
 }

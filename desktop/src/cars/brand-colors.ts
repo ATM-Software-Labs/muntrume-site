@@ -49,6 +49,10 @@ export const BRAND_COLORS: Record<string, BrandColor> = {
   "logo-skip": { hex: "#EC2028", kind: "brand" },
   "logo-fia": { hex: "#1D4ED8", kind: "brand" },
   "logo-nascar": { hex: "#FACC15", kind: "brand" },
+  "logo-dirtcar": { hex: "#F59E0B", kind: "brand" },
+  "logo-usac": { hex: "#EF4444", kind: "brand" },
+  "logo-woo": { hex: "#EF4444", kind: "brand" },
+  "logo-lucasoil": { hex: "#1D4ED8", kind: "brand" },
 };
 
 export function colorForLogo(logoId: string): BrandColor {
