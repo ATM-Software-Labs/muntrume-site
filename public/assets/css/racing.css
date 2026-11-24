@@ -303,7 +303,8 @@ a.sc-card .driver-helmet{max-height:220px;margin:0 auto}
 .sto-path p{margin:0 0 8px;overflow-wrap:anywhere;font:500 12px/1.4 var(--r-mono)}
 #setupsContainer{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
 @media (max-width:700px){.sto-label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}}
-.d-grid{display:grid;gap:24px;grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;width:100%}
+.d-grid{display:grid;gap:18px;grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch;width:100%}
+@media (min-width:1280px){.d-grid .d-card__body{padding:18px 18px 20px}.d-grid .d-stats dd{font-size:15.5px}.d-grid .d-name{font-size:clamp(18px,1.45vw,21px)}}
 .d-card{display:flex;flex-direction:column;justify-content:space-between;height:100%;width:100%;background:var(--r-surface);border:1px solid var(--r-line);border-radius:12px;color:var(--r-text);overflow:hidden;transition:transform .2s,border-color .2s;box-sizing:border-box}
 .d-card:hover{transform:translateY(-3px);border-color:rgba(0,230,153,.55);box-shadow:0 14px 36px rgba(0,0,0,.28)}
 .d-stage{--team:rgba(0,230,153,.2);position:relative;display:flex;align-items:center;justify-content:center;height:168px;padding:16px;background:radial-gradient(ellipse at 50% 42%, var(--team), transparent 70%);border-bottom:1px solid var(--r-line)}
@@ -311,6 +312,7 @@ a.sc-card .driver-helmet{max-height:220px;margin:0 auto}
 .d-stage[data-team="albertot"]{--team:rgba(94,214,176,.38)}
 .d-stage[data-team="mateob"]{--team:rgba(230,48,128,.34)}
 .d-stage[data-team="eduardoc"]{--team:rgba(196,220,48,.3)}
+.d-stage[data-team="juanluc"]{--team:rgba(56,189,248,.36)}
 .driver-helmet-picture{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;margin:0}
 .driver-helmet{width:auto;height:auto;max-width:100%;max-height:134px;display:block;margin:0 auto}
 .d-card__body{display:flex;flex-direction:column;justify-content:space-between;gap:16px;flex:1;padding:24px}
@@ -411,14 +413,17 @@ html,body,main,.r-section,.d-grid,.d-card,.d-hero-wrap,.d-setups__grid,.d-vs-gri
 .d-band > div{border:1px solid var(--r-line);background:var(--r-surface);border-radius:12px;padding:18px 20px;min-height:76px;display:grid;align-content:center;gap:4px}
 .d-band strong{display:block;font:700 22px/1.1 var(--r-mono);font-variant-numeric:tabular-nums}
 .d-band span,.d-band time{color:var(--r-muted);font-size:11px;font-family:var(--r-mono)}
+@media (max-width:1279px){
+  .d-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+}
 @media (max-width:960px){
-  .d-grid{grid-template-columns:1fr}
   .d-hero-card{grid-template-columns:1fr;gap:20px}
   .d-hero-card .d-stage{min-height:190px}
   .d-info-grid{grid-template-columns:1fr}
   .d-band{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media (max-width:700px){
+  .d-grid{grid-template-columns:1fr;gap:18px}
   .d-stats dd{font-size:16px}
   .d-stats--hero{grid-template-columns:repeat(2,minmax(0,1fr))}
   .d-track-cards{grid-template-columns:1fr}
