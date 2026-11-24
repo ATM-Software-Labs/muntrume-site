@@ -77,10 +77,25 @@ const canonical = "https://support.muntru.me/requests";
                 <div class="sup-meta-row"><dt>Categoría</dt><dd id="sup-meta-cat">—</dd></div>
               </dl>
 
+              <div id="sup-meta-tech-wrap" class="sup-meta-att" hidden>
+                <hr class="sup-meta-hr" />
+                <div class="sup-meta-att-title">Contexto técnico</div>
+                <dl class="sup-meta-list" id="sup-meta-tech-list"></dl>
+              </div>
+
               <div id="sup-meta-att-wrap" class="sup-meta-att" hidden>
                 <hr class="sup-meta-hr" />
                 <div class="sup-meta-att-title">Adjuntos</div>
                 <div id="sup-meta-att-list" class="sup-meta-att-list"></div>
+              </div>
+
+              <div id="sup-staff-status-wrap" class="sup-meta-actions" hidden>
+                <label for="sup-staff-status-sel" style="display:block;font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--r-muted);margin-bottom:6px;">Estado (Técnico)</label>
+                <select id="sup-staff-status-sel" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--r-line);background:var(--r-bg);color:var(--r-text);font-size:.86rem;">
+                  <option value="open">Abierto</option>
+                  <option value="in_progress">En curso</option>
+                  <option value="solved">Resuelto</option>
+                </select>
               </div>
 
               <div class="sup-meta-actions">
@@ -239,6 +254,42 @@ const canonical = "https://support.muntru.me/requests";
 
       const allAtts = [...(t.attachments || [])];
       msgs.forEach((x) => { if (Array.isArray(x.attachments)) allAtts.push(...x.attachments); });
+      const techWrap = document.getElementById("sup-meta-tech-wrap");
+      const techList = document.getElementById("sup-meta-tech-list");
+      const md = t.metadata || {};
+      const techRows = [
+        ["Entorno", md.platform],
+        ["MMT Sync", md.app_version],
+        ["URL", md.page_url],
+        ["iRacing ID", md.iracing_id],
+      ].filter(([, v]) => v);
+      if (techWrap && techList && techRows.length) {
+        techWrap.hidden = false;
+        techList.innerHTML = techRows.map(([k, v]) => `<div class="sup-meta-row"><dt>${esc(k)}</dt><dd style="word-break:break-word;">${esc(v)}</dd></div>`).join("");
+      } else if (techWrap) {
+        techWrap.hidden = true;
+      }
+
+      const staffWrap = document.getElementById("sup-staff-status-wrap");
+      const staffSel = document.getElementById("sup-staff-status-sel");
+      if (staffWrap && staffSel && data.is_staff) {
+        staffWrap.hidden = false;
+        staffSel.value = t.status || "open";
+        staffSel.onchange = async () => {
+          staffSel.disabled = true;
+          try {
+            const r2 = await fetch(`${API}/api/support/tickets/reply`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${tok}` },
+              body: JSON.stringify({ ticket_id: t.id, status: staffSel.value, message: "" }),
+            });
+            if (r2.ok) await loadTicket();
+          } finally {
+            staffSel.disabled = false;
+          }
+        };
+      }
+
       const attWrap = document.getElementById("sup-meta-att-wrap");
       if (allAtts.length) {
         attWrap.hidden = false;

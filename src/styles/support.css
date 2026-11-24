@@ -332,6 +332,97 @@
 @media (max-width: 680px) {
   .sup-ctx-grid { grid-template-columns: 1fr; }
 }
+
+/* Panel de Técnicos · Cola unificada */
+.sup-staff-panel {
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--r-line);
+  background: var(--r-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.sup-staff-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.sup-scope-tabs { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+.sup-scope-tab {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--r-line);
+  background: var(--r-surface);
+  color: var(--r-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.sup-scope-tab.is-active {
+  border-color: var(--r-accent);
+  color: var(--r-accent);
+  background: rgba(16, 185, 129, 0.08);
+}
+.sup-staff-pill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(16, 185, 129, 0.14);
+  color: var(--r-accent);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+.sup-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+.sup-kpi-card {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--r-line);
+  background: var(--r-surface);
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transition: border-color 0.14s ease;
+}
+.sup-kpi-card:hover { border-color: var(--r-accent); }
+.sup-kpi-card span { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--r-muted); }
+.sup-kpi-card strong { font-size: 1.2rem; color: var(--r-text); }
+.sup-kpi-card.is-crit strong { color: #dc2626; }
+.sup-prio-pill {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.sup-prio-pill.is-crit { background: rgba(220, 38, 38, 0.14); color: #dc2626; }
+.sup-prio-pill.is-high { background: rgba(217, 119, 6, 0.14); color: #d97706; }
+.sup-prio-pill.is-norm { background: rgba(100, 116, 139, 0.14); color: var(--r-muted); }
+.sup-inline-status {
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 0;
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.sup-td-req strong { font-size: 0.85rem; color: var(--r-text); }
+@media (max-width: 720px) {
+  .sup-kpi-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 .sup-detail-subject {
   font-size: clamp(1.35rem, 2.5vw, 1.9rem);
   line-height: 1.2;

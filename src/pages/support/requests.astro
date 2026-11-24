@@ -29,8 +29,8 @@ const canonical = "https://support.muntru.me/requests";
         <div class="sup-card">
           <div class="sup-req-head">
             <div>
-              <span class="sup-kicker">Historial de tickets</span>
-              <h1>Mis solicitudes</h1>
+              <span class="sup-kicker" id="sup-req-kicker">Historial de tickets</span>
+              <h1 id="sup-req-title">Mis solicitudes</h1>
             </div>
             <div class="sup-req-tools" id="sup-req-tools" hidden>
               <div class="sup-req-search">
@@ -38,7 +38,7 @@ const canonical = "https://support.muntru.me/requests";
                   <circle cx="11" cy="11" r="7"></circle>
                   <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
-                <input id="sup-req-filter-q" type="search" placeholder="Buscar por asunto o #MMT..." aria-label="Buscar solicitudes" />
+                <input id="sup-req-filter-q" type="search" placeholder="Buscar por asunto, piloto o #MMT..." aria-label="Buscar solicitudes" />
               </div>
               <select id="sup-req-filter-status" aria-label="Filtrar por estado">
                 <option value="all">Estado: Todos</option>
@@ -46,7 +46,38 @@ const canonical = "https://support.muntru.me/requests";
                 <option value="in_progress">En curso</option>
                 <option value="solved">Resuelto</option>
               </select>
+              <select id="sup-req-filter-prio" aria-label="Filtrar por prioridad" hidden>
+                <option value="all">Prioridad: Todas</option>
+                <option value="critical">Crítica</option>
+                <option value="high">Alta</option>
+                <option value="normal">Normal</option>
+              </select>
+              <select id="sup-req-filter-dept" aria-label="Filtrar por departamento" hidden>
+                <option value="all">Depto: Todos</option>
+                <option value="Soporte">Soporte Técnico</option>
+                <option value="Legal">Legal y Privacidad</option>
+                <option value="Prensa">Prensa</option>
+                <option value="Información">Información</option>
+              </select>
+              <button type="button" id="sup-req-refresh" class="sup-btn sup-btn-ghost sup-btn-sm" title="Actualizar cola">↻</button>
               <a href="https://support.muntru.me/requests/new" class="sup-btn sup-btn-primary sup-btn-sm">+ Nueva solicitud</a>
+            </div>
+          </div>
+
+          <div id="sup-staff-panel" class="sup-staff-panel" hidden>
+            <div class="sup-staff-bar">
+              <div class="sup-scope-tabs" role="tablist" aria-label="Vista de tickets">
+                <button type="button" class="sup-scope-tab is-active" data-scope="all">Cola de Técnicos (Todos)</button>
+                <button type="button" class="sup-scope-tab" data-scope="mine">Solo mis tickets</button>
+              </div>
+              <span class="sup-staff-pill">Modo Técnico · Race Control</span>
+            </div>
+            <div class="sup-kpi-row" id="sup-kpi-row">
+              <button type="button" class="sup-kpi-card" data-kpi-status="open"><span>Abiertos</span><strong id="kpi-open">0</strong></button>
+              <button type="button" class="sup-kpi-card" data-kpi-status="in_progress"><span>En curso</span><strong id="kpi-prog">0</strong></button>
+              <button type="button" class="sup-kpi-card is-crit" data-kpi-prio="critical"><span>Críticos</span><strong id="kpi-crit">0</strong></button>
+              <button type="button" class="sup-kpi-card" data-kpi-status="solved"><span>Resueltos</span><strong id="kpi-solved">0</strong></button>
+              <button type="button" class="sup-kpi-card" data-kpi-status="all"><span>Total</span><strong id="kpi-total">0</strong></button>
             </div>
           </div>
 
@@ -62,7 +93,9 @@ const canonical = "https://support.muntru.me/requests";
               <thead>
                 <tr>
                   <th>Asunto</th>
+                  <th id="sup-th-requester" hidden>Solicitante</th>
                   <th>ID</th>
+                  <th>Prioridad</th>
                   <th>Departamento</th>
                   <th>Última actividad</th>
                   <th>Estado</th>
@@ -123,23 +156,54 @@ const canonical = "https://support.muntru.me/requests";
   const reqTableWrap = document.getElementById("sup-req-table-wrap");
   const reqTbody = document.getElementById("sup-req-tbody");
   const reqEmpty = document.getElementById("sup-req-empty");
+  const reqKicker = document.getElementById("sup-req-kicker");
+  const reqTitle = document.getElementById("sup-req-title");
+  const staffPanel = document.getElementById("sup-staff-panel");
+  const thRequester = document.getElementById("sup-th-requester");
   const filterQ = document.getElementById("sup-req-filter-q");
   const filterStatus = document.getElementById("sup-req-filter-status");
+  const filterPrio = document.getElementById("sup-req-filter-prio");
+  const filterDept = document.getElementById("sup-req-filter-dept");
+  const refreshBtn = document.getElementById("sup-req-refresh");
   let allTickets = [];
+  let isStaff = false;
+  let currentScope = "all";
+
+  const PRIO_META = {
+    critical: { label: "Crítica", cls: "is-crit" },
+    high: { label: "Alta", cls: "is-high" },
+    normal: { label: "Normal", cls: "is-norm" },
+  };
+
+  function updateKpis(stats) {
+    if (!stats) return;
+    document.getElementById("kpi-open").textContent = String(stats.open ?? 0);
+    document.getElementById("kpi-prog").textContent = String(stats.in_progress ?? 0);
+    document.getElementById("kpi-crit").textContent = String(stats.critical ?? 0);
+    document.getElementById("kpi-solved").textContent = String(stats.solved ?? 0);
+    document.getElementById("kpi-total").textContent = String(stats.total ?? 0);
+  }
 
   function renderTickets() {
     const q = (filterQ?.value || "").trim().toLowerCase();
     const st = filterStatus?.value || "all";
+    const pr = filterPrio?.value || "all";
+    const dp = filterDept?.value || "all";
+    const showReqCol = isStaff && currentScope === "all";
+    if (thRequester) thRequester.hidden = !showReqCol;
+
     const rows = allTickets.filter((t) => {
       if (st !== "all" && t.status !== st) return false;
-      if (q && !(`${t.id} ${t.subject} ${t.routing_inbox} ${t.category}`).toLowerCase().includes(q)) return false;
+      if (pr !== "all" && (t.priority || "normal") !== pr) return false;
+      if (dp !== "all" && !String(t.routing_department || "").toLowerCase().includes(dp.toLowerCase())) return false;
+      if (q && !(`${t.id} ${t.subject} ${t.routing_department || ""} ${t.category_label || t.category} ${t.user_name || ""} ${t.user_email || ""}`).toLowerCase().includes(q)) return false;
       return true;
     });
     if (!rows.length) {
       reqTableWrap.hidden = true;
       reqEmpty.textContent = allTickets.length
-        ? "No hay solicitudes que coincidan con tu filtro."
-        : "Aún no tienes solicitudes registradas con esta cuenta.";
+        ? "No hay solicitudes que coincidan con los filtros seleccionados."
+        : (showReqCol ? "No hay tickets registrados en la cola de soporte." : "Aún no tienes solicitudes registradas con esta cuenta.");
       reqEmpty.hidden = false;
       return;
     }
@@ -147,30 +211,94 @@ const canonical = "https://support.muntru.me/requests";
     reqTableWrap.hidden = false;
     reqTbody.innerHTML = rows.map((t) => {
       const meta = STATUS_META[t.status] || { label: t.status || "Abierto", cls: "sup-st-open" };
+      const pMeta = PRIO_META[t.priority || "normal"] || PRIO_META.normal;
       const isInc = !!t.is_incident;
       const href = `https://support.muntru.me/requests/${encodeURIComponent(t.id)}`;
+      const replies = Number(t.reply_count || 0);
+      const reqCell = showReqCol
+        ? `<td class="sup-td-req"><strong>${esc(t.user_name || "Piloto")}</strong><div class="sup-subj-sub">${esc(t.user_email || "")}</div></td>`
+        : "";
+      const statusCell = showReqCol
+        ? `<td>
+            <select class="sup-inline-status ${meta.cls}" data-quick-status="${esc(t.id)}" aria-label="Cambiar estado de ${esc(t.id)}">
+              <option value="open" ${t.status === "open" ? "selected" : ""}>Abierto</option>
+              <option value="in_progress" ${t.status === "in_progress" ? "selected" : ""}>En curso</option>
+              <option value="solved" ${t.status === "solved" ? "selected" : ""}>Resuelto</option>
+            </select>
+          </td>`
+        : `<td><span class="sup-st-pill ${meta.cls}">${esc(meta.label)}</span></td>`;
       return `<tr class="sup-row-clickable" data-href="${href}">
         <td class="sup-td-subj">
           <a href="${href}" class="sup-subj-link">${esc(t.subject)}</a>
-          <div class="sup-subj-sub">${esc(t.category_label || t.category)}</div>
+          <div class="sup-subj-sub">${esc(t.category_label || t.category)}${replies ? ` · ${replies} ${replies === 1 ? "respuesta" : "respuestas"}` : ""}</div>
         </td>
+        ${reqCell}
         <td class="sup-td-id"><code>#${esc(t.id)}</code></td>
+        <td><span class="sup-prio-pill ${pMeta.cls}">${esc(pMeta.label)}</span></td>
         <td><span class="sup-inbox-tag ${isInc ? "is-inc" : "is-info"}">${esc(t.routing_department || "Soporte")}</span></td>
         <td class="sup-td-date">${esc(relDate(t.updated_at || t.created_at))}</td>
-        <td><span class="sup-st-pill ${meta.cls}">${esc(meta.label)}</span></td>
+        ${statusCell}
       </tr>`;
     }).join("");
   }
 
   reqTbody.addEventListener("click", (e) => {
-    if (e.target.closest("a")) return;
+    if (e.target.closest("a, select, option, button")) return;
     const tr = e.target.closest("tr[data-href]");
     if (tr) location.href = tr.getAttribute("data-href");
   });
+
+  reqTbody.addEventListener("change", async (e) => {
+    const sel = e.target.closest("select[data-quick-status]");
+    if (!sel) return;
+    const id = sel.getAttribute("data-quick-status");
+    const nextStatus = sel.value;
+    const tok = getToken();
+    if (!tok || !id) return;
+    sel.disabled = true;
+    try {
+      const res = await fetch(`${API}/api/support/tickets/reply`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${tok}` },
+        body: JSON.stringify({ ticket_id: id, status: nextStatus, message: "" }),
+      });
+      if (res.ok) {
+        await load(currentScope);
+      } else {
+        sel.disabled = false;
+      }
+    } catch {
+      sel.disabled = false;
+    }
+  });
+
   filterQ.addEventListener("input", renderTickets);
   filterStatus.addEventListener("change", renderTickets);
+  filterPrio.addEventListener("change", renderTickets);
+  filterDept.addEventListener("change", renderTickets);
+  refreshBtn.addEventListener("click", () => load(currentScope));
 
-  async function load() {
+  document.querySelectorAll("[data-scope]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const sc = btn.getAttribute("data-scope") || "all";
+      if (sc === currentScope) return;
+      currentScope = sc;
+      document.querySelectorAll("[data-scope]").forEach((b) => b.classList.toggle("is-active", b === btn));
+      load(currentScope);
+    });
+  });
+
+  document.querySelectorAll("[data-kpi-status], [data-kpi-prio]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const st = btn.getAttribute("data-kpi-status");
+      const pr = btn.getAttribute("data-kpi-prio");
+      if (st) { filterStatus.value = st; filterPrio.value = "all"; }
+      if (pr) { filterPrio.value = pr; filterStatus.value = "all"; }
+      renderTickets();
+    });
+  });
+
+  async function load(scope) {
     const tok = getToken();
     if (!tok) {
       reqLoading.hidden = true;
@@ -178,15 +306,27 @@ const canonical = "https://support.muntru.me/requests";
       return;
     }
     try {
-      const res = await fetch(`${API}/api/support/tickets/mine`, { headers: { Authorization: `Bearer ${tok}` } });
+      const qs = scope ? `?scope=${encodeURIComponent(scope)}` : "";
+      const res = await fetch(`${API}/api/support/tickets/mine${qs}`, { headers: { Authorization: `Bearer ${tok}` } });
       const data = await res.json().catch(() => ({}));
       if (res.status === 401) { reqLoading.hidden = true; reqAnon.hidden = false; return; }
+      isStaff = !!data.is_staff;
+      currentScope = data.scope || (isStaff ? "all" : "mine");
       allTickets = Array.isArray(data.tickets) ? data.tickets : [];
       reqLoading.hidden = true;
       reqTools.hidden = false;
+      if (isStaff) {
+        staffPanel.hidden = false;
+        filterPrio.hidden = false;
+        filterDept.hidden = false;
+        reqKicker.textContent = "Race Control · Panel de Técnicos";
+        reqTitle.textContent = currentScope === "all" ? "Todos los tickets de soporte" : "Mis solicitudes";
+        document.querySelectorAll("[data-scope]").forEach((b) => b.classList.toggle("is-active", b.getAttribute("data-scope") === currentScope));
+        updateKpis(data.stats);
+      }
       renderTickets();
     } catch {
-      reqLoading.textContent = "No se pudieron cargar tus solicitudes ahora mismo.";
+      reqLoading.textContent = "No se pudieron cargar las solicitudes ahora mismo.";
     }
   }
   load();
