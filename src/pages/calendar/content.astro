@@ -286,6 +286,33 @@ const catOrder = ["SPORTS CAR", "FORMULA CAR", "OVAL", "DIRT OVAL", "DIRT ROAD"]
       const OWNED_CARS_KEY = "mmt-owned-cars-v1";
       const CART_KEY = "mmt-planner-cart-v1";
       const CART_CARS_KEY = "mmt-planner-cart-cars-v1";
+      const API = "https://api.muntru.me";
+
+      function getPilotToken() {
+        try {
+          return localStorage.getItem("mrt_vault_token") || localStorage.getItem("mmt_session_token") || sessionStorage.getItem("mrt_vault_token") || "";
+        } catch { return ""; }
+      }
+      let cloudSaveTimer = null;
+      function scheduleCloudSync() {
+        const tok = getPilotToken();
+        if (!tok || tok === "guest_token") return;
+        clearTimeout(cloudSaveTimer);
+        cloudSaveTimer = setTimeout(() => {
+          fetch(`${API}/api/user/content`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${tok}` },
+            body: JSON.stringify({
+              owned_tracks: Array.from(ownedTracks),
+              owned_cars: Array.from(ownedCars),
+              cart_tracks: Array.from(cartTracks),
+              cart_cars: Array.from(cartCars),
+            }),
+          })
+            .then((r) => r.ok ? showToast("☁ Guardado en tu perfil de piloto") : null)
+            .catch(() => {});
+        }, 1500);
+      }
 
       function loadSet(key) {
         try { return new Set(JSON.parse(localStorage.getItem(key) || "[]")); }
@@ -293,6 +320,7 @@ const catOrder = ["SPORTS CAR", "FORMULA CAR", "OVAL", "DIRT OVAL", "DIRT ROAD"]
       }
       function saveSet(key, set) {
         try { localStorage.setItem(key, JSON.stringify(Array.from(set))); } catch {}
+        scheduleCloudSync();
       }
 
       const ownedTracks = loadSet(OWNED_KEY);
@@ -521,6 +549,33 @@ const catOrder = ["SPORTS CAR", "FORMULA CAR", "OVAL", "DIRT OVAL", "DIRT ROAD"]
       }
 
       syncAll();
+
+      // Hydrate pilot's saved cars & tracks from D1 once per session (0 extra requests on repeat visits)
+      const pilotTok = getPilotToken();
+      if (pilotTok && pilotTok !== "guest_token" && !sessionStorage.getItem("mmt_content_hydrated_v1")) {
+        fetch(`${API}/api/user/content`, { headers: { Authorization: `Bearer ${pilotTok}` } })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((data) => {
+            if (!data || !data.success) return;
+            sessionStorage.setItem("mmt_content_hydrated_v1", "1");
+            const hasCloud = (data.owned_tracks?.length || 0) + (data.owned_cars?.length || 0) + (data.cart_tracks?.length || 0) + (data.cart_cars?.length || 0) > 0;
+            if (hasCloud) {
+              (data.owned_tracks || []).forEach((t) => ownedTracks.add(t));
+              (data.owned_cars || []).forEach((c) => ownedCars.add(c));
+              (data.cart_tracks || []).forEach((t) => cartTracks.add(t));
+              (data.cart_cars || []).forEach((c) => cartCars.add(c));
+              localStorage.setItem(OWNED_KEY, JSON.stringify(Array.from(ownedTracks)));
+              localStorage.setItem(OWNED_CARS_KEY, JSON.stringify(Array.from(ownedCars)));
+              localStorage.setItem(CART_KEY, JSON.stringify(Array.from(cartTracks)));
+              localStorage.setItem(CART_CARS_KEY, JSON.stringify(Array.from(cartCars)));
+              syncAll();
+              showToast("☁ Contenido restaurado de tu cuenta");
+            } else if (ownedTracks.size + ownedCars.size > 0) {
+              scheduleCloudSync();
+            }
+          })
+          .catch(() => {});
+      }
     })();
   </script>
 </Layout>

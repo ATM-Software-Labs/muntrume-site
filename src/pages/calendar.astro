@@ -1032,6 +1032,7 @@ const canonical = "https://muntru.me/calendar/";
         cart.delete(canonical);
         localStorage.setItem(OWNED_KEY, JSON.stringify(Array.from(owned)));
         localStorage.setItem(CART_KEY, JSON.stringify(Array.from(cart)));
+        scheduleCalCloudSync();
         if (addTrackInput) addTrackInput.value = "";
         renderPlanner();
       }
@@ -1220,6 +1221,7 @@ const canonical = "https://muntru.me/calendar/";
                   if (item.toLowerCase() === target) owned.delete(item);
                 }
                 localStorage.setItem(OWNED_KEY, JSON.stringify(Array.from(owned)));
+                scheduleCalCloudSync();
                 renderPlanner();
               });
             });
@@ -1444,9 +1446,60 @@ const canonical = "https://muntru.me/calendar/";
         }
         localStorage.setItem(OWNED_KEY, JSON.stringify(Array.from(owned)));
         localStorage.setItem(CART_KEY, JSON.stringify(Array.from(cart)));
+        scheduleCalCloudSync();
         syncCalendarOwnershipColors();
         if (!panel.hidden) renderPlanner();
       });
+
+      let calCloudTimer: number | null = null;
+      function getCalPilotToken(): string {
+        try {
+          return localStorage.getItem("mrt_vault_token") || localStorage.getItem("mmt_session_token") || sessionStorage.getItem("mrt_vault_token") || "";
+        } catch { return ""; }
+      }
+      function scheduleCalCloudSync() {
+        const tok = getCalPilotToken();
+        if (!tok || tok === "guest_token") return;
+        if (calCloudTimer) window.clearTimeout(calCloudTimer);
+        calCloudTimer = window.setTimeout(() => {
+          fetch("https://api.muntru.me/api/user/content", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${tok}` },
+            body: JSON.stringify({
+              owned_tracks: Array.from(owned),
+              owned_cars: Array.from(ownedCars),
+              cart_tracks: Array.from(cart),
+              cart_cars: Array.from(cartCars),
+            }),
+          }).catch(() => {});
+        }, 1500);
+      }
+
+      const initTok = getCalPilotToken();
+      if (initTok && initTok !== "guest_token" && !sessionStorage.getItem("mmt_content_hydrated_v1")) {
+        fetch("https://api.muntru.me/api/user/content", { headers: { Authorization: `Bearer ${initTok}` } })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((data) => {
+            if (!data || !data.success) return;
+            sessionStorage.setItem("mmt_content_hydrated_v1", "1");
+            const hasCloud = (data.owned_tracks?.length || 0) + (data.owned_cars?.length || 0) + (data.cart_tracks?.length || 0) + (data.cart_cars?.length || 0) > 0;
+            if (hasCloud) {
+              (data.owned_tracks || []).forEach((t: string) => owned.add(t));
+              (data.owned_cars || []).forEach((c: string) => ownedCars.add(c));
+              (data.cart_tracks || []).forEach((t: string) => cart.add(t));
+              (data.cart_cars || []).forEach((c: string) => cartCars.add(c));
+              localStorage.setItem(OWNED_KEY, JSON.stringify(Array.from(owned)));
+              localStorage.setItem(OWNED_CARS_KEY, JSON.stringify(Array.from(ownedCars)));
+              localStorage.setItem(CART_KEY, JSON.stringify(Array.from(cart)));
+              localStorage.setItem(CART_CARS_KEY, JSON.stringify(Array.from(cartCars)));
+              syncCalendarOwnershipColors();
+              if (!panel.hidden) renderPlanner();
+            } else if (owned.size + ownedCars.size > 0) {
+              scheduleCalCloudSync();
+            }
+          })
+          .catch(() => {});
+      }
 
       syncCalendarOwnershipColors();
       if (!panel.hidden) renderPlanner();

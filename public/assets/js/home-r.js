@@ -128,7 +128,23 @@
     return art;
   }
 
-  fetch(API + '/api/drivers').then(function (r) { return r.ok ? r.json() : []; }).then(function (list) {
+  function cachedJson(url, cacheKey, ttlMs) {
+    try {
+      var raw = sessionStorage.getItem(cacheKey);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (parsed && (Date.now() - parsed.ts) < ttlMs) return Promise.resolve(parsed.data);
+      }
+    } catch (e) {}
+    return fetch(url).then(function (r) { return r.ok ? r.json() : null; }).then(function (data) {
+      if (data) {
+        try { sessionStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data: data })); } catch (e) {}
+      }
+      return data;
+    });
+  }
+
+  cachedJson(API + '/api/drivers', 'mmt_cache_drivers_v2', 300000).then(function (list) {
     var latest = null;
     var irSum = 0, irCount = 0;
     var grid = document.querySelector(".d-grid");
@@ -200,7 +216,7 @@
       }
     }
   }).catch(function () {});
-  fetch(API + '/api/events').then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+  cachedJson(API + '/api/events', 'mmt_cache_events_v2', 300000).then(function (d) {
     var now = Date.now();
     var ev = (d && Array.isArray(d.events) ? d.events : []).filter(function (e) { return new Date(e.starts_at).getTime() >= now - 36e5 * 6; })
       .sort(function (a, b) { return new Date(a.starts_at) - new Date(b.starts_at); }).slice(0, 5);
