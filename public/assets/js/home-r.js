@@ -199,8 +199,26 @@
       }
       if (d.helmet_style && HELMET_STYLES[d.helmet_style]) {
         card.querySelectorAll('[data-helmet-img="custom"]').forEach(function (img) {
-          img.style.filter = HELMET_STYLES[d.helmet_style];
+          img.style.filter = HELMET_STYLES[d.helmet_style].filter || "none";
         });
+      }
+      if (Array.isArray(d.sims) && d.sims.length) {
+        var simsRow = card.querySelector('.d-sims-row');
+        if (simsRow) {
+          var achPill = simsRow.querySelector('.d-ach-pill');
+          var pillsHtml = d.sims.map(function (id) {
+            var s = SIM_META[id];
+            if (!s) return '';
+            var ico = id === 'staff'
+              ? STAFF_HEADSET_SVG
+              : '<img src="' + s.logo + '" alt="' + esc(s.name) + '" loading="lazy" decoding="async" style="height:13px;width:auto;max-width:46px;object-fit:contain;display:block;" />';
+            return '<span class="d-sim-pill" title="' + esc(s.name) + '"><span class="d-sim-pill__ico">' + ico + '</span>' + (id === 'staff' ? '<span>STAFF</span>' : '') + '</span>';
+          }).filter(Boolean).join('');
+          if (pillsHtml) {
+            simsRow.innerHTML = pillsHtml;
+            if (achPill) simsRow.appendChild(achPill);
+          }
+        }
       }
       if (d.irating > 0) {
         approx(card.querySelector('[data-f="irating"]'), "k", d.irating);
