@@ -26,18 +26,22 @@ function pngSize(file: string) {
   return { w: b.readUInt32BE(16), h: b.readUInt32BE(20) };
 }
 
-const chosen = existsSync(join(dir, `${slug}.webp`)) || existsSync(join(dir, `${slug}.png`)) ? slug : "albertot";
+const hasOwnHelmet = existsSync(join(dir, `${slug}.webp`)) || existsSync(join(dir, `${slug}.png`));
+const chosen = hasOwnHelmet ? slug : "albertot";
 const pngFile = join(dir, `${chosen}.png`);
 const webpFile = join(dir, `${chosen}.webp`);
 const hasPng = existsSync(pngFile);
 const dim = hasPng ? pngSize(pngFile) : webpSize(webpFile);
 const webp = `/img/helmets/${chosen}.webp`;
 const png = `/img/helmets/${chosen}.png`;
+const defaultFilter = !hasOwnHelmet && slug === "juanluc" ? "hue-rotate(85deg) saturate(1.25) brightness(1.04)" : undefined;
 ---
 <picture class="driver-helmet-picture">
   {hasPng && <source type="image/png" srcset={`${png} ${dim.w}w`} sizes="168px" />}
   <img
     class="driver-helmet"
+    data-helmet-img={hasOwnHelmet ? "own" : "custom"}
+    style={defaultFilter ? `filter:${defaultFilter}` : undefined}
     src={webp}
     srcset={`${webp} ${dim.w}w`}
     sizes="168px"

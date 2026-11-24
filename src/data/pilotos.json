@@ -135,6 +135,31 @@
         { "name": "Mercedes-AMG GT3 2020", "laps": 680 },
         { "name": "Aston Martin Vantage GT4", "laps": 510 }
       ]
+    },
+    {
+      "slug": "juanluc",
+      "custId": null,
+      "number": "#04",
+      "shortName": "Juanlu C",
+      "fullName": "Juanlu Carrillo",
+      "role": "Co-Fundador & Staff Multi-Sim",
+      "specialty": "Assetto Corsa · ACC & Gestión",
+      "badge": "STAFF",
+      "memberType": "staff",
+      "sims": ["ac", "acc", "staff"],
+      "country": "Spain",
+      "countryCode": "ES",
+      "flag": "🇪🇸",
+      "bio": "Co-fundador y miembro del equipo oficial Muntrume Motorsport, especializado en Assetto Corsa, Assetto Corsa Competizione y coordinación interna de la escudería.",
+      "favouriteCars": ["Ferrari 296 GT3", "Porsche 911 GT3 R"],
+      "favouriteSeries": ["Assetto Corsa", "Assetto Corsa Competizione"],
+      "achievements": ["Co-Fundador de Muntrume Motorsport"],
+      "socials": { "twitch": "", "youtube": "", "instagram": "", "x": "" },
+      "memberSince": "2024",
+      "club": "Iberia",
+      "favoriteTrack": "Circuit de Barcelona-Catalunya",
+      "topTracks": [],
+      "topCars": []
     }
   ]
 }

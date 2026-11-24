@@ -104,7 +104,7 @@ export const SIM_BADGES: Record<SimId, SimBadgeMeta> = {
     community: "m/Ingenieria",
     color: "#10B981",
     logoUrl: "/assets/img/logo-64.webp",
-    svg: `<img src="/assets/img/logo-64.webp" alt="Muntrume Staff" class="sim-real-logo sim-real-logo--sq" loading="lazy" decoding="async" />`,
+    svg: `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" aria-hidden="true"><path d="M4 13a8 8 0 0 1 16 0" stroke="#34D399" stroke-width="2" stroke-linecap="round"/><rect x="2.5" y="12.5" width="3.8" height="6" rx="1.6" fill="#10B981"/><rect x="17.7" y="12.5" width="3.8" height="6" rx="1.6" fill="#10B981"/><path d="M18 18.5c0 1.8-1.4 3-3.5 3H12" stroke="#34D399" stroke-width="1.8" stroke-linecap="round"/><circle cx="11.5" cy="21.5" r="1.3" fill="#FFFFFF"/></svg>`,
   },
 };
 

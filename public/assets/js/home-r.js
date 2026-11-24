@@ -80,32 +80,20 @@
     staff: { name: "Staff", short: "STAFF", logo: "/assets/img/logo-64.webp" },
   };
 
+  var STAFF_HEADSET_SVG = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" aria-hidden="true"><path d="M4 13a8 8 0 0 1 16 0" stroke="#34D399" stroke-width="2" stroke-linecap="round"/><rect x="2.5" y="12.5" width="3.8" height="6" rx="1.6" fill="#10B981"/><rect x="17.7" y="12.5" width="3.8" height="6" rx="1.6" fill="#10B981"/><path d="M18 18.5c0 1.8-1.4 3-3.5 3H12" stroke="#34D399" stroke-width="1.8" stroke-linecap="round"/><circle cx="11.5" cy="21.5" r="1.3" fill="#FFFFFF"/></svg>';
+
   var HELMET_STYLES = {
-    mmt_green: { primary: "#10b981", secondary: "#064e3b", accent: "#34d399", glow: "rgba(16,185,129,0.22)" },
-    carbon_red: { primary: "#ef4444", secondary: "#450a0a", accent: "#fca5a5", glow: "rgba(239,68,68,0.24)" },
-    electric_blue: { primary: "#3b82f6", secondary: "#172554", accent: "#93c5fd", glow: "rgba(59,130,246,0.24)" },
-    gold_pro: { primary: "#f59e0b", secondary: "#451a03", accent: "#fde047", glow: "rgba(245,158,11,0.24)" },
-    stealth_white: { primary: "#e2e8f0", secondary: "#1e293b", accent: "#ffffff", glow: "rgba(226,232,240,0.18)" },
-    cyber_purple: { primary: "#d946ef", secondary: "#3b0764", accent: "#f0abfc", glow: "rgba(217,70,239,0.24)" },
+    mmt_green: { filter: "none", glow: "rgba(16,185,129,0.22)" },
+    carbon_red: { filter: "hue-rotate(-140deg) saturate(1.35) brightness(0.98)", glow: "rgba(239,68,68,0.24)" },
+    electric_blue: { filter: "hue-rotate(85deg) saturate(1.25) brightness(1.04)", glow: "rgba(59,130,246,0.24)" },
+    gold_pro: { filter: "hue-rotate(-92deg) saturate(1.3) brightness(1.08)", glow: "rgba(245,158,11,0.24)" },
+    stealth_white: { filter: "saturate(0.12) brightness(1.18) contrast(1.06)", glow: "rgba(226,232,240,0.18)" },
+    cyber_purple: { filter: "hue-rotate(155deg) saturate(1.3) brightness(1.02)", glow: "rgba(217,70,239,0.24)" },
   };
 
-  function buildHelmetSvg(styleKey, slug) {
+  function buildHelmetHtml(styleKey, name) {
     var h = HELMET_STYLES[styleKey] || HELMET_STYLES.mmt_green;
-    var uid = "hm-" + String(slug || "x").replace(/[^a-z0-9]/gi, "");
-    return '<svg viewBox="0 0 180 150" width="144" height="120" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 16px 22px rgba(0,0,0,.55));">' +
-      '<defs>' +
-        '<linearGradient id="' + uid + '-shell" x1="28" y1="18" x2="150" y2="128" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="' + h.primary + '"/><stop offset="55%" stop-color="' + h.secondary + '"/><stop offset="100%" stop-color="#0b0f17"/></linearGradient>' +
-        '<linearGradient id="' + uid + '-visor" x1="24" y1="62" x2="96" y2="86" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#0f172a"/><stop offset="45%" stop-color="' + h.accent + '" stop-opacity="0.48"/><stop offset="100%" stop-color="#020617"/></linearGradient>' +
-      '</defs>' +
-      '<ellipse cx="92" cy="134" rx="54" ry="8" fill="rgba(0,0,0,0.45)"/>' +
-      '<path d="M138 38C124 20 96 16 68 24C40 32 24 54 22 82C21 98 28 114 44 121C62 128 108 130 132 120C148 113 156 96 156 76C156 58 148 48 138 38Z" fill="url(#' + uid + '-shell)" stroke="' + h.accent + '" stroke-opacity="0.45" stroke-width="2"/>' +
-      '<path d="M132 42L158 48L152 62L134 56Z" fill="' + h.primary + '" opacity="0.9"/>' +
-      '<path d="M36 48C56 32 96 26 126 36" stroke="' + h.accent + '" stroke-width="4" stroke-linecap="round" opacity="0.75"/>' +
-      '<path d="M23 64C34 56 66 56 92 64C98 66 100 76 96 84C92 92 78 96 54 96C34 96 22 90 22 78C22 72 22 67 23 64Z" fill="url(#' + uid + '-visor)" stroke="#94a3b8" stroke-opacity="0.5" stroke-width="1.8"/>' +
-      '<path d="M30 68C48 63 72 64 88 70" stroke="#ffffff" stroke-opacity="0.45" stroke-width="2" stroke-linecap="round"/>' +
-      '<circle cx="102" cy="78" r="5" fill="#1e293b" stroke="' + h.accent + '" stroke-width="1.5"/>' +
-      '<path d="M40 112C66 118 106 118 134 109" stroke="' + h.primary + '" stroke-width="3" stroke-linecap="round" opacity="0.85"/>' +
-    '</svg>';
+    return '<img class="driver-helmet" src="/img/helmets/albertot.webp" alt="Casco de ' + esc(name) + '" width="168" height="180" loading="lazy" style="filter:' + h.filter + ';" />';
   }
 
   function buildDynamicDriverCard(d) {
@@ -114,9 +102,11 @@
     var simPills = sims.map(function (id) {
       var m = SIM_META[id];
       if (!m) return "";
+      var ico = id === "staff"
+        ? STAFF_HEADSET_SVG
+        : '<img src="' + m.logo + '" alt="' + esc(m.name) + '" style="height:14px;max-width:68px;object-fit:contain;display:block;" loading="lazy" />';
       return '<span title="' + esc(m.name) + '" style="display:inline-flex;align-items:center;gap:5px;padding:3px 7px;border-radius:999px;border:1px solid var(--r-line,rgba(255,255,255,.14));background:#0b0f17;color:#f1f5f9;font:600 10.5px/1 ui-monospace,monospace;">' +
-        '<img src="' + m.logo + '" alt="' + esc(m.name) + '" style="height:14px;max-width:68px;object-fit:contain;display:block;" loading="lazy" />' +
-        (id === "staff" ? '<span>STAFF</span>' : '') + '</span>';
+        ico + (id === "staff" ? '<span>STAFF</span>' : '') + '</span>';
     }).join("");
 
     var dorsal = d.dorsal || (isStaff ? "STAFF" : "MMT");
@@ -132,9 +122,9 @@
     art.setAttribute("data-driver", d.slug);
     art.setAttribute("data-dynamic", "1");
     art.innerHTML =
-      '<div class="d-stage" style="display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 45%, ' + hStyle.glow + ', transparent 68%);">' +
+      '<div class="d-stage" style="background:radial-gradient(circle at 50% 45%, ' + hStyle.glow + ', transparent 68%);">' +
         '<span class="d-stage-dorsal">' + esc(dorsal) + '</span>' +
-        buildHelmetSvg(d.helmet_style || "mmt_green", d.slug) +
+        buildHelmetHtml(d.helmet_style || "mmt_green", d.fullName || d.name) +
       '</div>' +
       '<div class="d-card__body">' +
         '<div class="d-card__top">' +
@@ -154,7 +144,7 @@
             (d.favorite_track ? '<p class="d-fav"><span class="d-fav__k">Circuito favorito</span> <span class="d-fav__n">' + esc(d.favorite_track) + '</span></p>' : '') +
             (d.bio ? '<p style="font-size:12px;line-height:1.45;color:var(--r-muted);margin:4px 0 0;">' + esc(d.bio) + '</p>' : '') +
           '</div>' +
-          '<div class="d-email-bar d-email-bar--compact"><a href="/contact/?to=admin" class="d-email-link"><span>✉</span><span>Contactar con ' + esc(d.name || d.fullName) + ' →</span></a></div>' +
+          '<div style="display:flex;align-items:center;margin:4px 0 6px;"><a href="/contact/?to=admin" style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;border:1px solid var(--r-line,rgba(255,255,255,.14));background:var(--r-bg,#090b0f);color:var(--r-accent,#00e699);font:700 12.5px/1.3 ui-monospace,monospace;text-decoration:none;"><span>✉</span><span>Contactar con ' + esc(d.name || d.fullName) + ' →</span></a></div>' +
           '<div class="d-actions-row"><a class="d-card__link" href="/contact/?to=admin"><span>Ver contacto</span><span aria-hidden="true">→</span></a></div>' +
         '</div>' +
       '</div>';
@@ -206,6 +196,11 @@
       }
       if (d.country) {
         card.querySelectorAll('[data-f="country"]').forEach(function (el) { el.textContent = d.country; });
+      }
+      if (d.helmet_style && HELMET_STYLES[d.helmet_style]) {
+        card.querySelectorAll('[data-helmet-img="custom"]').forEach(function (img) {
+          img.style.filter = HELMET_STYLES[d.helmet_style];
+        });
       }
       if (d.irating > 0) {
         approx(card.querySelector('[data-f="irating"]'), "k", d.irating);
