@@ -154,8 +154,8 @@ const simList = Object.values(SIM_BADGES);
   title="Foro Técnico y Análisis · Muntrume Motorsport (forum.muntru.me)"
   description="Foro oficial de análisis de carrera, setups, telemetría y debates multi-sim (iRacing, Le Mans Ultimate, Assetto Corsa EVO) de Muntrume Motorsport."
   canonical="https://forum.muntru.me/"
-  schema={forumSchema}
 >
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(forumSchema)} />
   <section class="mf-wrap">
     <!-- Hero Header -->
     <header class="mf-hero">
