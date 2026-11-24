@@ -103,15 +103,18 @@ const totalXp = ALL_ACHIEVEMENTS.reduce((s, a) => s + a.points, 0);
         const count = unlockCounts[a.slug] || 0;
         const rate = Math.round((count / totalDrivers) * 100);
         const tm = TIER_META[a.tier];
+        const isLocked = count === 0;
         return (
           <a
             href={`/logros/${a.slug}/`}
-            class={`lg-card lg-card--${a.tier}`}
+            class:list={[`lg-card lg-card--${a.tier}`, isLocked && "is-locked"]}
+            data-slug={a.slug}
             data-cat={a.category}
             data-tier={a.tier}
+            data-locked={isLocked ? "1" : "0"}
             data-text={`${a.title} ${a.desc} ${a.category} ${tm.label}`.toLowerCase()}
           >
-            <div class="lg-card__medal" set:html={renderAchievementBadgeSvg(a.slug, a.tier, a.icon, 60, false)} />
+            <div class="lg-card__medal" set:html={renderAchievementBadgeSvg(a.slug, a.tier, a.icon, 60, isLocked)} />
             <div class="lg-card__body">
               <div class="lg-card__top">
                 <span class={`lg-tier lg-tier--${a.tier}`}>{tm.label}</span>
@@ -120,7 +123,7 @@ const totalXp = ALL_ACHIEVEMENTS.reduce((s, a) => s + a.points, 0);
               <h2 class="lg-card__title">{a.title}</h2>
               <p class="lg-card__desc">{a.desc}</p>
               <div class="lg-card__foot">
-                <span>{count > 0 ? `${count}/${totalDrivers} pilotos (${rate}%)` : "Sin desbloquear aún"}</span>
+                <span data-lock-lbl>{count > 0 ? `${count}/${totalDrivers} pilotos (${rate}%)` : "🔒 Bloqueado"}</span>
                 <span class="lg-card__go">Ver detalle →</span>
               </div>
             </div>
@@ -163,6 +166,34 @@ const totalXp = ALL_ACHIEVEMENTS.reduce((s, a) => s + a.points, 0);
         q = e.target.value || "";
         apply();
       });
+
+      // Live D1 sync: update unlocked/locked state from /api/drivers (reflects G61 uploads & MMT Sync telemetry)
+      fetch("https://api.muntru.me/api/drivers")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((drivers) => {
+          if (!Array.isArray(drivers) || !drivers.length) return;
+          const maxHours = Math.max(...drivers.map((d) => Number(d.total_track_hours || 0)), 0);
+          const maxIr = Math.max(...drivers.map((d) => Number(d.irating || 0)), 0);
+          const allTracks = drivers.flatMap((d) => (d.top_tracks || []).map((t) => String(t.name || "").toLowerCase()));
+          const allSims = new Set(drivers.flatMap((d) => Array.isArray(d.sims) ? d.sims : []));
+          cards.forEach((card) => {
+            const slug = card.getAttribute("data-slug") || "";
+            let liveUnlocked = card.getAttribute("data-locked") === "0";
+            const hm = slug.match(/^horas-(\d+)$/);
+            if (hm && maxHours >= Number(hm[1])) liveUnlocked = true;
+            const im = slug.match(/^ir-(\d+)$/);
+            if (im && maxIr >= Number(im[1])) liveUnlocked = true;
+            if (slug.startsWith("sim-") && allSims.has(slug.slice(4).replace(/-/g, "_"))) liveUnlocked = true;
+            if (slug === "circuito-bathurst" && allTracks.some((t) => t.includes("bathurst"))) liveUnlocked = true;
+            if (liveUnlocked && card.classList.contains("is-locked")) {
+              card.classList.remove("is-locked");
+              card.setAttribute("data-locked", "0");
+              const lbl = card.querySelector("[data-lock-lbl]");
+              if (lbl) lbl.textContent = "✓ Desbloqueado (en vivo)";
+            }
+          });
+        })
+        .catch(() => {});
     })();
   </script>
 </Layout>
@@ -362,6 +393,16 @@ const totalXp = ALL_ACHIEVEMENTS.reduce((s, a) => s + a.points, 0);
   .lg-card:hover {
     transform: translateY(-2px);
     border-color: var(--r-accent, #00e699);
+  }
+  .lg-card.is-locked {
+    filter: grayscale(1);
+    opacity: 0.56;
+    border-style: dashed;
+    border-color: var(--r-line, rgba(148, 163, 184, 0.22));
+  }
+  .lg-card.is-locked:hover {
+    opacity: 0.85;
+    filter: grayscale(0.45);
   }
   .lg-card--mythic { border-color: rgba(0, 230, 153, 0.42); }
   .lg-card--platinum { border-color: rgba(56, 189, 248, 0.36); }

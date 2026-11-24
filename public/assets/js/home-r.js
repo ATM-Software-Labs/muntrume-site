@@ -80,6 +80,34 @@
     staff: { name: "Staff", short: "STAFF", logo: "/assets/img/logo-64.webp" },
   };
 
+  var HELMET_STYLES = {
+    mmt_green: { primary: "#10b981", secondary: "#064e3b", accent: "#34d399", glow: "rgba(16,185,129,0.22)" },
+    carbon_red: { primary: "#ef4444", secondary: "#450a0a", accent: "#fca5a5", glow: "rgba(239,68,68,0.24)" },
+    electric_blue: { primary: "#3b82f6", secondary: "#172554", accent: "#93c5fd", glow: "rgba(59,130,246,0.24)" },
+    gold_pro: { primary: "#f59e0b", secondary: "#451a03", accent: "#fde047", glow: "rgba(245,158,11,0.24)" },
+    stealth_white: { primary: "#e2e8f0", secondary: "#1e293b", accent: "#ffffff", glow: "rgba(226,232,240,0.18)" },
+    cyber_purple: { primary: "#d946ef", secondary: "#3b0764", accent: "#f0abfc", glow: "rgba(217,70,239,0.24)" },
+  };
+
+  function buildHelmetSvg(styleKey, slug) {
+    var h = HELMET_STYLES[styleKey] || HELMET_STYLES.mmt_green;
+    var uid = "hm-" + String(slug || "x").replace(/[^a-z0-9]/gi, "");
+    return '<svg viewBox="0 0 180 150" width="144" height="120" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 16px 22px rgba(0,0,0,.55));">' +
+      '<defs>' +
+        '<linearGradient id="' + uid + '-shell" x1="28" y1="18" x2="150" y2="128" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="' + h.primary + '"/><stop offset="55%" stop-color="' + h.secondary + '"/><stop offset="100%" stop-color="#0b0f17"/></linearGradient>' +
+        '<linearGradient id="' + uid + '-visor" x1="24" y1="62" x2="96" y2="86" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#0f172a"/><stop offset="45%" stop-color="' + h.accent + '" stop-opacity="0.48"/><stop offset="100%" stop-color="#020617"/></linearGradient>' +
+      '</defs>' +
+      '<ellipse cx="92" cy="134" rx="54" ry="8" fill="rgba(0,0,0,0.45)"/>' +
+      '<path d="M138 38C124 20 96 16 68 24C40 32 24 54 22 82C21 98 28 114 44 121C62 128 108 130 132 120C148 113 156 96 156 76C156 58 148 48 138 38Z" fill="url(#' + uid + '-shell)" stroke="' + h.accent + '" stroke-opacity="0.45" stroke-width="2"/>' +
+      '<path d="M132 42L158 48L152 62L134 56Z" fill="' + h.primary + '" opacity="0.9"/>' +
+      '<path d="M36 48C56 32 96 26 126 36" stroke="' + h.accent + '" stroke-width="4" stroke-linecap="round" opacity="0.75"/>' +
+      '<path d="M23 64C34 56 66 56 92 64C98 66 100 76 96 84C92 92 78 96 54 96C34 96 22 90 22 78C22 72 22 67 23 64Z" fill="url(#' + uid + '-visor)" stroke="#94a3b8" stroke-opacity="0.5" stroke-width="1.8"/>' +
+      '<path d="M30 68C48 63 72 64 88 70" stroke="#ffffff" stroke-opacity="0.45" stroke-width="2" stroke-linecap="round"/>' +
+      '<circle cx="102" cy="78" r="5" fill="#1e293b" stroke="' + h.accent + '" stroke-width="1.5"/>' +
+      '<path d="M40 112C66 118 106 118 134 109" stroke="' + h.primary + '" stroke-width="3" stroke-linecap="round" opacity="0.85"/>' +
+    '</svg>';
+  }
+
   function buildDynamicDriverCard(d) {
     var isStaff = d.kind === "staff" && !d.irating && !d.cust_id;
     var sims = Array.isArray(d.sims) && d.sims.length ? d.sims : [isStaff ? "staff" : "iracing"];
@@ -98,14 +126,15 @@
       ? '<dl class="d-stats"><div><dt>Rol</dt><dd style="font-size:0.82rem;">' + esc(isStaff ? "STAFF" : "MULTI-SIM") + '</dd></div><div><dt>Plataformas</dt><dd>' + sims.length + '</dd></div><div><dt>Desde</dt><dd>' + esc(d.member_since || "2026") + '</dd></div></dl>'
       : '<dl class="d-stats"><div><dt>SR</dt><dd>' + esc(lic && lic.sr != null ? Number(lic.sr).toFixed(2) : "—") + '</dd></div><div><dt>iRating</dt><dd>' + esc(d.irating ? (d.irating >= 1000 ? (d.irating / 1000).toFixed(1) + "k" : d.irating) : "—") + '</dd></div><div><dt>Horas</dt><dd>' + esc(d.total_track_hours ? Math.round(d.total_track_hours) + " h" : "—") + '</dd></div></dl>';
 
+    var hStyle = HELMET_STYLES[d.helmet_style] || HELMET_STYLES.mmt_green;
     var art = document.createElement("article");
     art.className = "d-card d-reveal";
     art.setAttribute("data-driver", d.slug);
     art.setAttribute("data-dynamic", "1");
     art.innerHTML =
-      '<div class="d-stage" style="display:flex;align-items:center;justify-content:center;min-height:176px;position:relative;">' +
+      '<div class="d-stage" style="display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 45%, ' + hStyle.glow + ', transparent 68%);">' +
         '<span class="d-stage-dorsal">' + esc(dorsal) + '</span>' +
-        '<img src="/assets/img/logo-64.webp" alt="' + esc(d.fullName || d.name) + '" width="88" height="88" style="border-radius:18px;opacity:0.92;filter:drop-shadow(0 10px 24px rgba(0,230,153,.22));" />' +
+        buildHelmetSvg(d.helmet_style || "mmt_green", d.slug) +
       '</div>' +
       '<div class="d-card__body">' +
         '<div class="d-card__top">' +
@@ -121,9 +150,12 @@
           statsHtml +
         '</div>' +
         '<div class="d-card__bottom">' +
-          (d.bio ? '<p style="font-size:12.5px;line-height:1.5;color:var(--r-muted);margin:0 0 8px;">' + esc(d.bio) + '</p>' : '') +
-          (d.favorite_track ? '<p class="d-fav"><span class="d-fav__k">Circuito favorito</span> <span class="d-fav__n">' + esc(d.favorite_track) + '</span></p>' : '') +
-          '<div class="d-actions-row"><a class="d-card__link" href="/contact/?to=admin"><span>Contactar</span><span aria-hidden="true">→</span></a></div>' +
+          '<div class="d-compact-tracks">' +
+            (d.favorite_track ? '<p class="d-fav"><span class="d-fav__k">Circuito favorito</span> <span class="d-fav__n">' + esc(d.favorite_track) + '</span></p>' : '') +
+            (d.bio ? '<p style="font-size:12px;line-height:1.45;color:var(--r-muted);margin:4px 0 0;">' + esc(d.bio) + '</p>' : '') +
+          '</div>' +
+          '<div class="d-email-bar d-email-bar--compact"><a href="/contact/?to=admin" class="d-email-link"><span>✉</span><span>Contactar con ' + esc(d.name || d.fullName) + ' →</span></a></div>' +
+          '<div class="d-actions-row"><a class="d-card__link" href="/contact/?to=admin"><span>Ver contacto</span><span aria-hidden="true">→</span></a></div>' +
         '</div>' +
       '</div>';
     return art;

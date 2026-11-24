@@ -1856,6 +1856,48 @@ function renderStandbyWidgets(): void {
   document.querySelectorAll<HTMLElement>("#ovLapTimer, #ovLapTimerFloat").forEach((el) => {
     renderLapTimerWidget(el, irsdkState);
   });
+  // Background telemetry sync for achievements & D1 profile (at most once every 10 min when driving)
+  if (irsdkState && irsdkState.frame && (irsdkState.frame.speedKmh ?? 0) > 25) {
+    const wSync = window as unknown as {
+      __mmtTelLastTick?: number;
+      __mmtTelAccumSec?: number;
+      __mmtTelLastLap?: number;
+      __mmtTelAccumLaps?: number;
+      __mmtTelLastPush?: number;
+    };
+    const nowMs = Date.now();
+    const dtSec = wSync.__mmtTelLastTick ? Math.min(5, Math.max(0, (nowMs - wSync.__mmtTelLastTick) / 1000)) : 0;
+    wSync.__mmtTelLastTick = nowMs;
+    wSync.__mmtTelAccumSec = (wSync.__mmtTelAccumSec || 0) + dtSec;
+    const curLap = Number((irsdkState.frame as any)?.lap ?? 0);
+    if (wSync.__mmtTelLastLap !== undefined && curLap > wSync.__mmtTelLastLap && curLap - wSync.__mmtTelLastLap <= 2) {
+      wSync.__mmtTelAccumLaps = (wSync.__mmtTelAccumLaps || 0) + (curLap - wSync.__mmtTelLastLap);
+    }
+    wSync.__mmtTelLastLap = curLap;
+    const sincePush = nowMs - (wSync.__mmtTelLastPush || 0);
+    if (sincePush >= 600_000 && (wSync.__mmtTelAccumSec || 0) >= 60) {
+      const tok = (() => { try { return localStorage.getItem("mrt_vault_token") || localStorage.getItem("mmt_session_token") || ""; } catch { return ""; } })();
+      if (tok && tok !== "guest_token") {
+        const addHours = Number(((wSync.__mmtTelAccumSec || 0) / 3600).toFixed(3));
+        const addLaps = wSync.__mmtTelAccumLaps || 0;
+        wSync.__mmtTelLastPush = nowMs;
+        wSync.__mmtTelAccumSec = 0;
+        wSync.__mmtTelAccumLaps = 0;
+        const myIdx = irsdkState.camCarIdx ?? 0;
+        const myDriver = irsdkState.session.driverInfo?.drivers?.[myIdx];
+        fetch("https://api.muntru.me/api/desktop/telemetry-sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${tok}` },
+          body: JSON.stringify({
+            track_name: irsdkState.session.weekendInfo?.trackName || "",
+            car_name: (myDriver as any)?.carScreenName || "",
+            add_hours: addHours,
+            add_laps: addLaps,
+          }),
+        }).catch(() => {});
+      }
+    }
+  }
   // Push lightweight live snapshot to Rust OBS Single-Canvas bridge (127.0.0.1:38421/stream) at ~6 Hz
   if (irsdkState) {
     const wObs = window as unknown as { __mmtObsPushTs?: number };

@@ -673,6 +673,7 @@ function openUnifiedPilotModal({ slug = "", email = "", isNew = false } = {}) {
   setVal("umClub", prof?.club || "");
   setVal("umCountry", prof?.country || "Spain");
   setVal("umMemberSince", prof?.member_since || "2026");
+  setVal("umHelmetStyle", prof?.helmet_style || "mmt_green");
   setVal("umTeam", member?.team || "Muntrume Motorsport");
   setVal("umCarClass", member?.car_class || "");
   setVal("umBio", prof?.bio || member?.public_bio || "");
@@ -1666,6 +1667,7 @@ async function submitUnifiedPilotForm(e) {
       const scLic = licenses.find((l) => l.category === "sports_car") || licenses[0] || null;
       const sims = Array.from(document.querySelectorAll('#umSimsGrid input[name="umSim"]:checked')).map((cb) => cb.value);
       const member_since = document.getElementById("umMemberSince")?.value.trim() || "2026";
+      const helmet_style = document.getElementById("umHelmetStyle")?.value || "mmt_green";
       const show_public = Boolean(document.getElementById("umShowPublic")?.checked);
 
       await rcAdminFetch("/api/setups/admin/driver/profile", {
@@ -1676,6 +1678,7 @@ async function submitUnifiedPilotForm(e) {
         kind,
         sims: sims.length ? sims : [kind === "staff" ? "staff" : "iracing"],
         member_since,
+        helmet_style,
         show_public,
         role: roleTitle || null,
         specialty: specialty || null,
