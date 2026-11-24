@@ -434,9 +434,11 @@ html,body,main,.r-section,.d-grid,.d-card,.d-hero-wrap,.d-setups__grid,.d-vs-gri
   .d-bars__share{grid-column:2;grid-row:2;justify-self:end}
   .d-bars__val,.d-bars__share{white-space:normal;text-align:right}
 }
-.d-tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:0 0 24px;padding:6px;border:1px solid var(--r-line);border-radius:14px;background:var(--r-bg)}
-.d-tabs a{min-height:38px;display:inline-flex;align-items:center;justify-content:center;padding:0 12px;border:1px solid var(--r-line);border-radius:10px;background:var(--r-surface);color:var(--r-muted);text-decoration:none;font:700 11px/1.1 var(--r-mono);letter-spacing:.05em;text-transform:uppercase;text-align:center;white-space:nowrap;transition:border-color .2s,color .2s,background-color .2s,transform .15s;box-shadow:0 1px 2px rgba(0,0,0,0.03)}
-.d-tabs a:hover,.d-tabs a:focus-visible{border-color:var(--r-accent);color:var(--r-text);background:var(--r-bg-2);transform:translateY(-1px)}
+.d-tabs{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 22px;padding:6px;border:1px solid var(--r-line);border-radius:14px;background:var(--r-surface)}
+.d-tabs a{position:relative;width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;padding:0;border:1px solid transparent;border-radius:10px;background:transparent;color:var(--r-muted);text-decoration:none;transition:border-color .18s,color .18s,background-color .18s,transform .15s}
+.d-tabs a:hover,.d-tabs a:focus-visible{border-color:rgba(0,230,153,.35);color:var(--r-accent);background:rgba(0,230,153,.09);transform:translateY(-1px)}
+.d-tabs a[data-tip]::after{content:attr(data-tip);position:absolute;left:50%;top:calc(100% + 8px);transform:translateX(-50%) translateY(-4px);padding:4px 9px;border-radius:7px;background:#090d14;border:1px solid rgba(255,255,255,.14);color:#f8fafc;font:600 11px/1.2 var(--r-sans,system-ui);white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;z-index:40;box-shadow:0 8px 20px rgba(0,0,0,.35)}
+.d-tabs a[data-tip]:hover::after,.d-tabs a[data-tip]:focus-visible::after{opacity:1;transform:translateX(-50%) translateY(0)}
 .d-tools{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;margin-top:24px;align-items:center}
 .d-pager{display:flex;flex-wrap:wrap;gap:16px}
 .d-pager a{min-height:44px;display:inline-flex;align-items:center;color:var(--r-text);text-decoration:none;font-weight:600}

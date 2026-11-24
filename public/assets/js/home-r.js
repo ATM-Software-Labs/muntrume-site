@@ -80,7 +80,7 @@
     staff: { name: "Staff", short: "STAFF", logo: "/assets/img/logo-64.webp" },
   };
 
-  var STAFF_HEADSET_SVG = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" aria-hidden="true"><path d="M4 13a8 8 0 0 1 16 0" stroke="#34D399" stroke-width="2" stroke-linecap="round"/><rect x="2.5" y="12.5" width="3.8" height="6" rx="1.6" fill="#10B981"/><rect x="17.7" y="12.5" width="3.8" height="6" rx="1.6" fill="#10B981"/><path d="M18 18.5c0 1.8-1.4 3-3.5 3H12" stroke="#34D399" stroke-width="1.8" stroke-linecap="round"/><circle cx="11.5" cy="21.5" r="1.3" fill="#FFFFFF"/></svg>';
+  var STAFF_HEADSET_SVG = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" aria-hidden="true"><path d="M12 2L4 5.4V11.6C4 16.7 7.4 21.3 12 22.8C16.6 21.3 20 16.7 20 11.6V5.4L12 2Z" fill="#10B981" stroke="#A7F3D0" stroke-width="1.1"/><path d="M12 6.8L13.45 9.75L16.7 10.22L14.35 12.51L14.9 15.75L12 14.22L9.1 15.75L9.65 12.51L7.3 10.22L10.55 9.75L12 6.8Z" fill="#052E16"/></svg>';
 
   var HELMET_STYLES = {
     mmt_green: { filter: "none", glow: "rgba(16,185,129,0.22)" },
@@ -211,8 +211,8 @@
             if (!s) return '';
             var ico = id === 'staff'
               ? STAFF_HEADSET_SVG
-              : '<img src="' + s.logo + '" alt="' + esc(s.name) + '" loading="lazy" decoding="async" style="height:13px;width:auto;max-width:46px;object-fit:contain;display:block;" />';
-            return '<span class="d-sim-pill" title="' + esc(s.name) + '"><span class="d-sim-pill__ico">' + ico + '</span>' + (id === 'staff' ? '<span>STAFF</span>' : '') + '</span>';
+              : '<img src="' + s.logo + '" alt="' + esc(s.name) + '" loading="lazy" decoding="async" style="height:14px;width:auto;max-width:50px;object-fit:contain;display:block;" />';
+            return '<span class="d-sim-pill" title="' + esc(s.name) + '" style="display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:999px;border:1px solid var(--r-line,rgba(255,255,255,.12));background:#0b0f17;color:#e2e8f0;font:700 10.5px/1 var(--r-mono,monospace);letter-spacing:.04em;text-transform:uppercase;"><span class="d-sim-pill__ico" style="display:inline-flex;align-items:center;justify-content:center;">' + ico + '</span>' + (id === 'staff' ? '<span>STAFF</span>' : '') + '</span>';
           }).filter(Boolean).join('');
           if (pillsHtml) {
             simsRow.innerHTML = pillsHtml;

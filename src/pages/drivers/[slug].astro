@@ -158,20 +158,36 @@ const personSchema = {
         <span class="text-[var(--r-accent)] font-bold">{driver.fullName}</span>
       </nav>
       <nav class="d-tabs" aria-label="Secciones de la ficha">
-        <a href="#resumen">Resumen</a>
-        <a href="#stats">Cifras</a>
-        <a href="#licencia">Licencia</a>
-        <a href="#favorito">Circuito favorito</a>
-        <a href="#vueltas">Vueltas</a>
-        <a href="#circuitos">Circuitos</a>
-        <a href="#coches">Coches</a>
-        <a href="#bio">Perfil</a>
-        <a href="#logros">Logros</a>
-        <a href="#redes">Redes</a>
-        <a href={`/contact/?to=${driverRecipientId}`}>Contacto</a>
-        <a href="#setups">Setups</a>
-        <a href="#comparativa">Equipo</a>
-        <a href="#eventos" id="eventosTab">Calendario</a>
+        <a href="#resumen" data-tip="Resumen" aria-label="Resumen">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
+        </a>
+        <a href="#stats" data-tip="Estadísticas" aria-label="Estadísticas">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 3 5-6"/></svg>
+        </a>
+        <a href="#favorito" data-tip="Circuitos" aria-label="Circuitos">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+        </a>
+        <a href="#vueltas" data-tip="Vueltas" aria-label="Vueltas">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 1.5"/><path d="M9 2h6"/></svg>
+        </a>
+        <a href="#coches" data-tip="Coches" aria-label="Coches">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17H3a1 1 0 0 1-1-1v-4l2.5-5h15L22 12v4a1 1 0 0 1-1 1h-2"/><circle cx="7.5" cy="17" r="2.2"/><circle cx="16.5" cy="17" r="2.2"/><path d="M10 17h4"/></svg>
+        </a>
+        <a href="#logros" data-tip="Logros" aria-label="Logros">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+        </a>
+        <a href="#setups" data-tip="Setups" aria-label="Setups">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        </a>
+        <a href="#comparativa" data-tip="Equipo" aria-label="Equipo">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </a>
+        <a href="#eventos" id="eventosTab" data-tip="Calendario" aria-label="Calendario">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </a>
+        <a href={`/contact/?to=${driverRecipientId}`} data-tip="Contacto" aria-label="Contacto">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg>
+        </a>
       </nav>
       <DriverCard driver={driver} heading="h1" headingId="dTitle" hero />
       <DriverF1Stats driver={driver} />
@@ -466,5 +482,5 @@ const personSchema = {
     }
     .d-contact-item__mail:hover { text-decoration: underline; }
   </style>
-  <script is:inline src="/assets/js/home-r.js?v=t335" defer></script>
+  <script is:inline src="/assets/js/home-r.js?v=t336" defer></script>
 </Layout>
