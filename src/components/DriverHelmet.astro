@@ -32,8 +32,8 @@ const pngFile = join(dir, `${chosen}.png`);
 const webpFile = join(dir, `${chosen}.webp`);
 const hasPng = existsSync(pngFile);
 const dim = hasPng ? pngSize(pngFile) : webpSize(webpFile);
-const webp = `/img/helmets/${chosen}.webp`;
-const png = `/img/helmets/${chosen}.png`;
+const webp = `/img/helmets/${chosen}.webp?v=ir2`;
+const png = `/img/helmets/${chosen}.png?v=ir2`;
 const defaultFilter = !hasOwnHelmet && slug === "juanluc" ? "hue-rotate(85deg) saturate(1.25) brightness(1.04)" : undefined;
 ---
 <picture class="driver-helmet-picture">
