@@ -27,11 +27,43 @@ const canonical = "https://support.muntru.me/requests/new";
     <section class="sup-section sup-section-last">
       <div class="sup-wrap sup-narrow">
         <div class="sup-card">
-          <span class="sup-kicker">Formulario ordenado de soporte</span>
+          <div class="sup-ctx-bar" aria-label="Estado y contexto de soporte">
+            <div class="sup-ctx-status">
+              <span class="sup-ctx-dot" aria-hidden="true"></span>
+              <strong>Sistemas operativos</strong>
+              <span class="sup-ctx-sep">·</span>
+              <span>api.muntru.me · Vault · MMT Sync v0.6.6</span>
+            </div>
+            <div class="sup-ctx-links">
+              <a href="https://docs.muntru.me/" target="_blank" rel="noopener">Guías y Docs ↗</a>
+              <a href="https://ai.muntru.me/" target="_blank" rel="noopener">Muntrume AI ↗</a>
+              <a href="https://support.muntru.me/requests">Mis solicitudes</a>
+            </div>
+          </div>
+
+          <span class="sup-kicker">Race Control · Centro de Incidencias y Soporte</span>
           <h1>Enviar una solicitud</h1>
           <p class="sup-lead">
-            Elige el motivo de tu solicitud. El sistema la clasifica automáticamente por departamento (Soporte Técnico, Legal o Información) y te envía una copia con el resumen completo.
+            Cada solicitud genera un ticket trazable <code>#MMT-XXXXXX</code>, se enruta de forma privada al departamento correspondiente y te envía una confirmación oficial por correo con el resumen técnico y seguimiento en tiempo real.
           </p>
+
+          <div class="sup-ctx-grid">
+            <div class="sup-ctx-item">
+              <span class="sup-ctx-lbl">SLA Crítica / Seguridad</span>
+              <strong>&lt; 2 horas</strong>
+              <span>Robo de cuenta, 2FA o bloqueo</span>
+            </div>
+            <div class="sup-ctx-item">
+              <span class="sup-ctx-lbl">SLA Técnica / MMT Sync</span>
+              <strong>&lt; 12 horas</strong>
+              <span>Overlays, setups .STO o web</span>
+            </div>
+            <div class="sup-ctx-item">
+              <span class="sup-ctx-lbl">SLA Consultas / Prensa</span>
+              <strong>&lt; 24 horas</strong>
+              <span>Escudería, RGPD o general (CET)</span>
+            </div>
+          </div>
 
           <form id="sup-form" class="sup-form" novalidate>
             <div class="sup-field">
@@ -73,9 +105,20 @@ const canonical = "https://support.muntru.me/requests/new";
               </div>
 
               <div class="sup-grid-2" id="sup-dynamic-row" hidden>
+                <div class="sup-field" id="sup-wrap-platform" hidden>
+                  <label for="sup-platform">Entorno afectado (opcional)</label>
+                  <select id="sup-platform" name="platform">
+                    <option value="">— Selecciona entorno —</option>
+                    <option value="MMT Sync Desktop (Windows)">MMT Sync Desktop (Windows)</option>
+                    <option value="Web muntru.me / Navegador">Web muntru.me / Navegador</option>
+                    <option value="App Móvil / Companion PWA">App Móvil / Companion PWA</option>
+                    <option value="iRacing / Trading Paints / Overlays">iRacing / Trading Paints / Overlays</option>
+                    <option value="Muntrume AI / Documentación">Muntrume AI / Documentación</option>
+                  </select>
+                </div>
                 <div class="sup-field" id="sup-wrap-appver" hidden>
                   <label for="sup-app-version">Versión de MMT Sync (opcional)</label>
-                  <input id="sup-app-version" name="app_version" type="text" maxlength="40" placeholder="Ej. v1.4.2 · Windows 11" />
+                  <input id="sup-app-version" name="app_version" type="text" maxlength="40" placeholder="Ej. v0.6.6 · Windows 11" />
                 </div>
                 <div class="sup-field" id="sup-wrap-pageurl" hidden>
                   <label for="sup-page-url">URL afectada (opcional)</label>
@@ -83,7 +126,7 @@ const canonical = "https://support.muntru.me/requests/new";
                 </div>
                 <div class="sup-field" id="sup-wrap-iracing" hidden>
                   <label for="sup-iracing-id">iRacing Customer ID (opcional)</label>
-                  <input id="sup-iracing-id" name="iracing_id" type="text" maxlength="40" placeholder="Ej. 842190" />
+                  <input id="sup-iracing-id" name="iracing_id" type="text" maxlength="40" placeholder="Ej. 993381" />
                 </div>
                 <div class="sup-field" id="sup-wrap-priority" hidden>
                   <label for="sup-priority">Prioridad</label>
@@ -196,23 +239,35 @@ const canonical = "https://support.muntru.me/requests/new";
     const deptLabel = cat === "retirada_privacidad"
       ? "Departamento Legal y Privacidad"
       : (isInc ? "Soporte Técnico e Incidencias" : (cat === "colaboracion_prensa" ? "Prensa y Colaboraciones" : "Información General y Consultas"));
+    const sla = cat === "cuenta_comprometida" ? "< 2 horas" : (isInc ? "< 12 horas" : "< 24 horas");
+    const tipByCat = {
+      cuenta_comprometida: "Indica la última vez que accediste con normalidad y si recibiste algún correo de inicio de sesión desconocido.",
+      acceso_mfa: "Indica si falló Passkey, Authenticator TOTP, código OTP o Muntrume Guard y el navegador/dispositivo usado.",
+      bug_mmt_sync: "Indica la versión de MMT Sync (ej. v0.6.6), si ocurre con iRacing abierto y qué módulo o overlay falla.",
+      bug_web_overlay: "Pega la URL exacta y, si puedes, adjunta una captura de pantalla del problema.",
+      error_setup: "Indica el coche, circuito, semana (ej. 26S4 W08) y el nombre del archivo .sto si lo conoces.",
+      retirada_privacidad: "Indica la URL exacta o los datos sobre los que ejerces tus derechos RGPD.",
+    };
     routeBanner.hidden = false;
     routeBanner.className = "sup-route-banner " + (isInc ? "is-inc" : "is-info");
-    routeText.innerHTML = cat === "cuenta_comprometida"
-      ? `Prioridad <strong>CRÍTICA</strong> · Se derivará de forma inmediata al departamento <strong>${deptLabel}</strong>.`
-      : `Se derivará ordenadamente a <strong>${deptLabel}</strong> con resumen completo enviado a tu correo.`;
+    routeText.innerHTML = (cat === "cuenta_comprometida"
+      ? `Prioridad <strong>CRÍTICA</strong> · Derivación inmediata a <strong>${deptLabel}</strong> (SLA ${sla}).`
+      : `Destino: <strong>${deptLabel}</strong> · SLA estimado: <strong>${sla}</strong> · Confirmación oficial por correo.`)
+      + (tipByCat[cat] ? `<br><span style="opacity:.85;font-size:.82rem;">Consejo: ${tipByCat[cat]}</span>` : "");
     formBody.hidden = false;
 
+    const showPlatform = isInc;
     const showApp = cat === "bug_mmt_sync";
     const showUrl = cat === "bug_web_overlay" || cat === "retirada_privacidad";
     const showIr = ["cuenta_comprometida", "acceso_mfa", "error_setup", "acceso_equipo"].includes(cat);
     const showPrio = isInc && cat !== "cuenta_comprometida";
 
+    document.getElementById("sup-wrap-platform").hidden = !showPlatform;
     document.getElementById("sup-wrap-appver").hidden = !showApp;
     document.getElementById("sup-wrap-pageurl").hidden = !showUrl;
     document.getElementById("sup-wrap-iracing").hidden = !showIr;
     document.getElementById("sup-wrap-priority").hidden = !showPrio;
-    dynRow.hidden = !(showApp || showUrl || showIr || showPrio);
+    dynRow.hidden = !(showPlatform || showApp || showUrl || showIr || showPrio);
   }
 
   catSel.addEventListener("change", updateCategoryUI);
@@ -231,6 +286,7 @@ const canonical = "https://support.muntru.me/requests/new";
       name: nameInp.value.trim(),
       subject: document.getElementById("sup-subject").value.trim(),
       description: document.getElementById("sup-description").value.trim(),
+      platform: document.getElementById("sup-platform").value.trim(),
       app_version: document.getElementById("sup-app-version").value.trim(),
       page_url: document.getElementById("sup-page-url").value.trim(),
       iracing_id: document.getElementById("sup-iracing-id").value.trim(),

@@ -266,6 +266,72 @@
 
 /* Detalle 2 columnas */
 .sup-detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) 295px; gap: 28px; align-items: start; }
+.sup-ctx-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  margin-bottom: 18px;
+  border-radius: 10px;
+  border: 1px solid var(--r-line);
+  background: var(--r-bg);
+  font-size: 0.8rem;
+  color: var(--r-muted);
+}
+.sup-ctx-status { display: inline-flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.sup-ctx-status strong { color: var(--r-text); }
+.sup-ctx-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+.sup-ctx-links { display: inline-flex; flex-wrap: wrap; gap: 12px; }
+.sup-ctx-links a { color: var(--r-accent); font-weight: 700; text-decoration: none; }
+.sup-ctx-links a:hover { text-decoration: underline; }
+.sup-ctx-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0 22px;
+}
+.sup-ctx-item {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--r-line);
+  background: var(--r-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sup-ctx-lbl { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--r-muted); }
+.sup-ctx-item strong { font-size: 0.98rem; color: var(--r-text); }
+.sup-ctx-item span:last-child { font-size: 0.76rem; color: var(--r-muted); }
+.sup-tk-top-ctx {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.sup-tk-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--r-line);
+  background: var(--r-bg);
+  font-size: 0.76rem;
+  color: var(--r-muted);
+}
+.sup-tk-chip strong, .sup-tk-chip code { color: var(--r-text); }
+@media (max-width: 680px) {
+  .sup-ctx-grid { grid-template-columns: 1fr; }
+}
 .sup-detail-subject {
   font-size: clamp(1.35rem, 2.5vw, 1.9rem);
   line-height: 1.2;

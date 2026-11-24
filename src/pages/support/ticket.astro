@@ -38,6 +38,7 @@ const canonical = "https://support.muntru.me/requests";
 
           <div id="sup-tk-view" class="sup-detail-grid" hidden>
             <div class="sup-detail-main">
+              <div id="sup-tk-top-ctx" class="sup-tk-top-ctx"></div>
               <h1 id="sup-detail-subject" class="sup-detail-subject"></h1>
               <div id="sup-detail-thread" class="sup-thread"></div>
 
@@ -221,6 +222,20 @@ const canonical = "https://support.muntru.me/requests";
       document.getElementById("sup-meta-status").innerHTML = `<span class="sup-st-pill ${stMeta.cls}">${esc(stMeta.label)}</span>`;
       document.getElementById("sup-meta-inbox").textContent = t.routing_department || "Soporte Técnico";
       document.getElementById("sup-meta-cat").textContent = t.category_label || t.category;
+
+      const prioTxt = t.priority === "critical" ? "CRÍTICA" : (t.priority === "high" ? "ALTA" : "NORMAL");
+      const slaTxt = t.priority === "critical" ? "SLA < 2 h" : (t.priority === "high" ? "SLA < 12 h" : "SLA < 24 h");
+      const topCtx = document.getElementById("sup-tk-top-ctx");
+      if (topCtx) {
+        topCtx.innerHTML = `
+          <span class="sup-st-pill ${stMeta.cls}">${esc(stMeta.label)}</span>
+          <span class="sup-tk-chip"><code>#${esc(t.id)}</code></span>
+          <span class="sup-tk-chip">Prioridad <strong>${esc(prioTxt)}</strong></span>
+          <span class="sup-tk-chip">${esc(t.routing_department || "Soporte Técnico")}</span>
+          <span class="sup-tk-chip">${esc(slaTxt)}</span>
+          <span class="sup-tk-chip">Actualizado ${esc(relDate(t.updated_at))}</span>
+        `;
+      }
 
       const allAtts = [...(t.attachments || [])];
       msgs.forEach((x) => { if (Array.isArray(x.attachments)) allAtts.push(...x.attachments); });
