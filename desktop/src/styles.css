@@ -20,16 +20,16 @@
 }
 
 :root {
-  --r-bg: #070a09;
-  --r-bg-2: #0c1110;
-  --r-surface: #111816;
-  --r-line: rgba(255, 255, 255, 0.09);
+  --r-bg: #090c12;
+  --r-bg-2: #0e131c;
+  --r-surface: #131a26;
+  --r-line: rgba(255, 255, 255, 0.08);
   --r-line-2: rgba(255, 255, 255, 0.16);
-  --r-text: #f3f6f5;
-  --r-muted: #98a8a2;
-  --r-accent: #00e699;
+  --r-text: #f3f6f9;
+  --r-muted: #94a3b8;
+  --r-accent: #10b981;
   --r-accent-ink: #04120c;
-  --r-accent-glow: rgba(0, 230, 153, 0.2);
+  --r-accent-glow: rgba(16, 185, 129, 0.22);
   color-scheme: dark;
 
   /* MMT Theme Engine Variables (Bloque 16) */

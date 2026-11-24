@@ -2041,23 +2041,24 @@ export function updateOverlayBrandBadge(carFolder?: string): void {
   });
 }
 
+const DEFAULT_SECONDARY_DISABLED = [
+  "radar", "pit", "tires", "flatmap", "traffic",
+  "weather", "spotter", "electronics", "flagMatrix", "tachometer", "lapTimer",
+];
+
 function loadDisabledWidgets(): Set<string> {
   try {
-    if (localStorage.getItem("mmt-hud-layout-version") !== "3") {
-      localStorage.setItem("mmt-hud-layout-version", "3");
+    if (localStorage.getItem("mmt-hud-layout-version") !== "4") {
+      localStorage.setItem("mmt-hud-layout-version", "4");
       localStorage.removeItem("mmt-hud-positions");
-      const rawPrev = localStorage.getItem("mmt-hud-disabled-widgets");
-      if (rawPrev) {
-        const s = new Set(JSON.parse(rawPrev) as string[]);
-        s.delete("trackmap");
-        localStorage.setItem("mmt-hud-disabled-widgets", JSON.stringify(Array.from(s)));
-        return s;
-      }
+      const cleanDefault = new Set<string>(DEFAULT_SECONDARY_DISABLED);
+      localStorage.setItem("mmt-hud-disabled-widgets", JSON.stringify(Array.from(cleanDefault)));
+      return cleanDefault;
     }
     const raw = localStorage.getItem("mmt-hud-disabled-widgets");
     if (raw) return new Set(JSON.parse(raw) as string[]);
   } catch {}
-  return new Set();
+  return new Set(DEFAULT_SECONDARY_DISABLED);
 }
 
 function saveDisabledWidgets(set: Set<string>): void {
@@ -2069,14 +2070,20 @@ function saveDisabledWidgets(set: Set<string>): void {
 function applyHudCustomAppearance(): void {
   const vars = ThemeEngine.getInstance().getActiveVariables();
   const disabled = loadDisabledWidgets();
-  document.querySelectorAll<HTMLElement>(".mmt-float-widget").forEach((el) => {
+  document.querySelectorAll<HTMLElement>(".mmt-float-widget, .mmt-hud-widget").forEach((el) => {
     const key = el.dataset.widget || "";
     if (key) {
       el.hidden = disabled.has(key);
     }
     el.style.opacity = String(vars.opacity);
-    (el.style as CSSStyleDeclaration & { zoom?: string }).zoom = String(vars.scale);
+    if (el.classList.contains("mmt-float-widget")) {
+      (el.style as CSSStyleDeclaration & { zoom?: string }).zoom = String(vars.scale);
+    }
   });
+  const totalWidgets = document.querySelectorAll("#mmtCompactWidgetList [data-widget-toggle]").length || 18;
+  const activeCount = Math.max(0, totalWidgets - Array.from(document.querySelectorAll<HTMLElement>("#mmtCompactWidgetList [data-widget-toggle]")).filter((b) => disabled.has(b.dataset.widgetToggle || "")).length);
+  const countBadge = document.getElementById("mmtActiveWidgetsCount");
+  if (countBadge) countBadge.textContent = `${activeCount}/${totalWidgets} activos`;
   const panel = document.getElementById("floatLayersControlPanel");
   if (panel) {
     const visRules = VisibilityRulesEngine.getInstance().getRules();
@@ -2550,18 +2557,26 @@ function ensureLayoutSchemaV2(force = false): void {
 
     const paintWidgetBtns = () => {
       const disabled = loadDisabledWidgets();
-      studio.querySelectorAll<HTMLButtonElement>("[data-widget-toggle]").forEach((btn) => {
+      document.querySelectorAll<HTMLButtonElement>("[data-widget-toggle]").forEach((btn) => {
         const k = btn.dataset.widgetToggle || "";
         const active = !disabled.has(k);
-        btn.className = active
-          ? "h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition"
-          : "h-7 px-2.5 rounded-lg border border-r-line bg-r-bg text-r-muted transition";
+        btn.setAttribute("aria-pressed", String(active));
+        if (btn.classList.contains("mmt-shell-toggle")) {
+          btn.classList.toggle("is-on", active);
+        } else {
+          btn.className = active
+            ? "h-7 px-2.5 rounded-lg border border-r-accent bg-r-accent/15 text-r-accent font-semibold transition"
+            : "h-7 px-2.5 rounded-lg border border-r-line bg-r-bg text-r-muted transition";
+        }
       });
     };
     paintWidgetBtns();
 
-    studio.querySelectorAll<HTMLButtonElement>("[data-widget-toggle]").forEach((btn) => {
-      btn.addEventListener("click", () => {
+    document.querySelectorAll<HTMLButtonElement>("[data-widget-toggle]").forEach((btn) => {
+      if (btn.dataset.toggleWired === "1") return;
+      btn.dataset.toggleWired = "1";
+      btn.addEventListener("click", (ev) => {
+        ev.stopPropagation();
         const k = btn.dataset.widgetToggle || "";
         if (!k) return;
         const disabled = loadDisabledWidgets();

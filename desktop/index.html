@@ -49,26 +49,44 @@
   </style>
   </head>
   <body class="w-screen h-screen overflow-hidden bg-[#0b0e14] text-r-text antialiased">
-    <div id="mainAppWrapper" class="w-screen h-screen overflow-hidden grid grid-rows-[40px_minmax(0,1fr)] bg-[#0b0e14]">
-      <header class="h-[40px] shrink-0 w-full border-b border-white/[0.08] bg-[#0d1118] flex items-center justify-between gap-2 px-3 select-none">
-        <div class="flex items-center gap-2.5 shrink-0">
-          <img src="./favicon.svg" width="22" height="22" alt="Muntrume Motorsport" class="h-[22px] w-[22px] rounded border border-white/15 bg-[#090b0f] shrink-0" />
-          <span class="font-display font-extrabold text-[14px] tracking-wider text-white whitespace-nowrap">MMT <span class="text-[#10b981]">SYNC</span></span>
-          <span id="irBadge" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono tracking-wider uppercase border border-white/10 bg-[#090b0f] text-r-muted whitespace-nowrap shrink-0">
-            <span id="irDot" class="w-1.5 h-1.5 rounded-full bg-r-muted"></span>
+    <div id="mainAppWrapper" class="w-screen h-screen overflow-hidden grid grid-rows-[48px_minmax(0,1fr)] bg-[#090c12]">
+      <header class="h-[48px] shrink-0 w-full border-b border-white/[0.08] bg-[#0e131c]/95 backdrop-blur flex items-center justify-between gap-3 px-4 select-none">
+        <div class="flex items-center gap-3 shrink-0">
+          <img src="./favicon.svg" width="24" height="24" alt="Muntrume Motorsport" class="h-[24px] w-[24px] rounded-lg border border-white/15 bg-[#090b0f] shrink-0 shadow-sm" />
+          <div class="flex items-baseline gap-1.5">
+            <span class="font-display font-extrabold text-[15px] tracking-wider text-white whitespace-nowrap">MMT <span class="text-[#10b981]">SYNC</span></span>
+            <span class="text-[10px] font-mono text-white/35">v0.6.9</span>
+          </div>
+          <span id="irBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-medium border border-white/10 bg-[#090c12] text-r-muted whitespace-nowrap shrink-0">
+            <span id="irDot" class="w-2 h-2 rounded-full bg-r-muted"></span>
             <span id="irText">Esperando iRacing</span>
           </span>
           <span id="pilotLine" class="hidden font-mono text-[10px] text-r-muted">Muntrume Motorsport</span>
         </div>
 
-        <nav id="appNav" class="flex items-center gap-1 bg-[#090b0f] p-0.5 rounded-lg border border-white/[0.08]" aria-label="Secciones">
-          <button type="button" data-nav="overlays" class="mmt-chip px-3 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Overlays</button>
-          <button type="button" data-nav="library" class="mmt-chip px-3 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Setups</button>
-          <button type="button" data-nav="analysis" class="mmt-chip px-3 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Telemetría</button>
-          <button type="button" data-nav="strategy" class="mmt-chip px-3 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Estrategia</button>
-          <button type="button" data-nav="settings" class="mmt-chip px-3 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Ajustes</button>
+        <nav id="appNav" class="flex items-center gap-1 bg-[#090c12] p-1 rounded-xl border border-white/[0.08]" aria-label="Secciones">
+          <button type="button" data-nav="overlays" class="mmt-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+            <span>Overlays</span>
+          </button>
+          <button type="button" data-nav="library" class="mmt-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            <span>Setups</span>
+          </button>
+          <button type="button" data-nav="analysis" class="mmt-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <span>Telemetría</span>
+          </button>
+          <button type="button" data-nav="strategy" class="mmt-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+            <span>Estrategia</span>
+          </button>
+          <button type="button" data-nav="settings" class="mmt-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.85 1 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span>Ajustes</span>
+          </button>
           <details id="appNavMore" class="relative">
-            <summary class="list-none px-2.5 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer select-none">Más ▾</summary>
+            <summary class="list-none px-2.5 py-1.5 rounded-lg text-[12px] font-semibold text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer select-none">Más ▾</summary>
             <div class="absolute right-0 mt-1.5 w-48 rounded-lg border border-white/15 bg-[#0d1118] shadow-xl p-1 flex flex-col gap-0.5 z-50">
               <button type="button" data-nav="week" onclick="document.getElementById('appNavMore')?.removeAttribute('open')" class="mmt-chip w-full text-left px-2.5 py-1.5 rounded-md font-mono text-[11px] font-semibold text-r-muted hover:text-white hover:bg-white/[0.06] whitespace-nowrap transition cursor-pointer">Semana S4</button>
               <button type="button" data-nav="hardware" onclick="document.getElementById('appNavMore')?.removeAttribute('open')" class="mmt-chip w-full text-left px-2.5 py-1.5 rounded-md font-mono text-[11px] font-semibold text-r-muted hover:text-white hover:bg-white/[0.06] whitespace-nowrap transition cursor-pointer">Hardware</button>
@@ -1103,86 +1121,96 @@
               </div>
             </div>
 
-            <!-- Unified 3-Column Full-Height Studio (210px | flex-1 | 210px) — 100% Zero Scroll -->
-            <div class="flex-1 min-h-0 grid grid-cols-[210px_minmax(0,1fr)_210px] rounded-xl border border-white/[0.08] bg-[#090b0f] overflow-hidden">
-              <!-- COLUMNA IZQUIERDA (210px): Lista compacta de los 9 widgets + Export/Import JSON -->
-              <aside class="border-r border-white/[0.08] bg-[#0c0f15] flex flex-col min-h-0 overflow-hidden">
-                <div class="h-[36px] shrink-0 px-2.5 border-b border-white/[0.08] flex items-center justify-between font-mono text-[10px] font-bold uppercase tracking-wider text-white/60">
-                  <span>Widgets HUD</span>
-                  <span class="text-[#10b981]">18 Módulos</span>
+            <!-- Unified 3-Column Full-Height Studio (238px | flex-1 | 228px) — Modern irDashies-inspired layout -->
+            <div class="flex-1 min-h-0 grid grid-cols-[238px_minmax(0,1fr)_228px] rounded-xl border border-white/[0.08] bg-[#090c12] overflow-hidden">
+              <!-- COLUMNA IZQUIERDA (236px): Sidebar estilo irDashies con buscador, categorías y switches reales -->
+              <aside class="border-r border-white/[0.08] bg-[#0e131c] flex flex-col min-h-0 overflow-hidden">
+                <div class="shrink-0 p-2.5 border-b border-white/[0.08] space-y-2">
+                  <div class="flex items-center justify-between text-[11px] font-semibold">
+                    <span class="text-white">Widgets HUD</span>
+                    <span id="mmtActiveWidgetsCount" class="px-2 py-0.5 rounded-full bg-[#10b981]/15 text-[#10b981] font-mono text-[10px] font-bold">7/18 activos</span>
+                  </div>
+                  <input id="mmtWidgetSearch" type="search" placeholder="Filtrar widgets..." oninput="const q=this.value.trim().toLowerCase();document.querySelectorAll('#mmtCompactWidgetList [data-compact-mod]').forEach(el=>{el.hidden=Boolean(q && !el.textContent.toLowerCase().includes(q));});" class="w-full h-7 px-2.5 rounded-lg border border-white/10 bg-[#090c12] text-[11.5px] text-white placeholder:text-white/35 outline-none focus:border-[#10b981]/60" />
                 </div>
-                <div id="mmtCompactWidgetList" class="flex-1 min-h-0 overflow-y-auto p-1.5 space-y-0.5 font-mono text-[10.5px]">
+                <div id="mmtCompactWidgetList" class="flex-1 min-h-0 overflow-y-auto p-2 space-y-1 text-[12px]">
+                  <p class="px-2 pt-1 pb-0.5 text-[9.5px] font-mono font-bold uppercase tracking-widest text-white/40">Carrera &amp; Clasificación</p>
                   <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-[#10b981]/40 bg-[#10b981]/10 cursor-pointer transition" data-compact-mod="standings">
-                    <span class="font-semibold text-white truncate">Standings</span>
+                    <div class="min-w-0"><span class="block font-semibold text-white truncate leading-tight">Standings</span><span class="block text-[10px] text-white/45 truncate">Multiclase + SOF + iR</span></div>
                     <button type="button" data-widget-toggle="standings" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Standings"></button>
                   </div>
-                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="relative">
-                    <span class="font-semibold text-white/85 truncate">Relative</span>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.05] cursor-pointer transition" data-compact-mod="relative">
+                    <div class="min-w-0"><span class="block font-semibold text-white/90 truncate leading-tight">Relative</span><span class="block text-[10px] text-white/45 truncate">Gaps en vivo + doblados</span></div>
                     <button type="button" data-widget-toggle="relative" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Relative"></button>
                   </div>
-                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="trackmap">
-                    <span class="font-semibold text-white/85 truncate">Track Map</span>
-                    <button type="button" data-widget-toggle="trackmap" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Track Map"></button>
-                  </div>
-                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="fuel">
-                    <span class="font-semibold text-white/85 truncate">Fuel Calculator</span>
-                    <button type="button" data-widget-toggle="fuel" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Fuel Calculator"></button>
-                  </div>
-                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="inputs">
-                    <span class="font-semibold text-white/85 truncate">Pedales &amp; Marcha</span>
-                    <button type="button" data-widget-toggle="inputs" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Pedales & Marcha"></button>
-                  </div>
-                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="delta">
-                    <span class="font-semibold text-white/85 truncate">Delta Bar</span>
-                    <button type="button" data-widget-toggle="delta" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Delta Bar"></button>
-                  </div>
-                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="radar">
-                    <span class="font-semibold text-white/85 truncate">Radar Proximidad</span>
-                    <button type="button" data-widget-toggle="radar" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Radar Proximidad"></button>
-                  </div>
-                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="pit">
-                    <span class="font-semibold text-white/85 truncate">Pit &amp; Strategy</span>
-                    <button type="button" data-widget-toggle="pit" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Pit & Strategy"></button>
-                  </div>
-                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="tires">
-                    <span class="font-semibold text-white/85 truncate">Tire &amp; Track Temp</span>
-                    <button type="button" data-widget-toggle="tires" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Tire & Track Temp"></button>
-                  </div>
-                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="flatmap">
-                    <span class="font-semibold text-white/85 truncate">Flat Track Map</span>
-                    <button type="button" data-widget-toggle="flatmap" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Flat Track Map"></button>
-                  </div>
-                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="traffic">
-                    <span class="font-semibold text-white/85 truncate">Traffic Indicator</span>
-                    <button type="button" data-widget-toggle="traffic" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Traffic Indicator"></button>
-                  </div>
-                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="weather">
-                    <span class="font-semibold text-white/85 truncate">Tempest Weather</span>
-                    <button type="button" data-widget-toggle="weather" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Tempest Weather"></button>
-                  </div>
-                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="spotter">
-                    <span class="font-semibold text-white/85 truncate">Blind Spot / Spotter</span>
-                    <button type="button" data-widget-toggle="spotter" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Spotter"></button>
-                  </div>
-                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="sessionBar">
-                    <span class="font-semibold text-white/85 truncate">Session &amp; Incidents</span>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.05] cursor-pointer transition" data-compact-mod="sessionBar">
+                    <div class="min-w-0"><span class="block font-semibold text-white/90 truncate leading-tight">Session &amp; Incidents</span><span class="block text-[10px] text-white/45 truncate">Tiempo, SOF y límite x</span></div>
                     <button type="button" data-widget-toggle="sessionBar" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Session Bar"></button>
                   </div>
-                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="electronics">
-                    <span class="font-semibold text-white/85 truncate">In-Car Electronics</span>
-                    <button type="button" data-widget-toggle="electronics" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle In-Car Electronics"></button>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.05] cursor-pointer transition" data-compact-mod="trackmap">
+                    <div class="min-w-0"><span class="block font-semibold text-white/90 truncate leading-tight">Track Map</span><span class="block text-[10px] text-white/45 truncate">Mapa 2D con coches</span></div>
+                    <button type="button" data-widget-toggle="trackmap" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Track Map"></button>
                   </div>
-                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="flagMatrix">
-                    <span class="font-semibold text-white/85 truncate">Flag Matrix LED</span>
-                    <button type="button" data-widget-toggle="flagMatrix" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Flag Matrix LED"></button>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.05] cursor-pointer transition" data-compact-mod="flatmap">
+                    <div class="min-w-0"><span class="block font-semibold text-white/90 truncate leading-tight">Flat Track Map</span><span class="block text-[10px] text-white/45 truncate">Barra lineal de pista</span></div>
+                    <button type="button" data-widget-toggle="flatmap" class="mmt-shell-toggle" aria-pressed="false" aria-label="Toggle Flat Track Map"></button>
                   </div>
-                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="tachometer">
-                    <span class="font-semibold text-white/85 truncate">Tachometer + FFB</span>
-                    <button type="button" data-widget-toggle="tachometer" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Tachometer"></button>
+
+                  <p class="px-2 pt-2.5 pb-0.5 text-[9.5px] font-mono font-bold uppercase tracking-widest text-white/40">Conducción &amp; Ritmo</p>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.05] cursor-pointer transition" data-compact-mod="inputs">
+                    <div class="min-w-0"><span class="block font-semibold text-white/90 truncate leading-tight">Pedales &amp; Marcha</span><span class="block text-[10px] text-white/45 truncate">Telemetría gas/freno</span></div>
+                    <button type="button" data-widget-toggle="inputs" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Pedales & Marcha"></button>
                   </div>
-                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="lapTimer">
-                    <span class="font-semibold text-white/85 truncate">Lap Timer &amp; Delta</span>
-                    <button type="button" data-widget-toggle="lapTimer" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Lap Timer"></button>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.05] cursor-pointer transition" data-compact-mod="delta">
+                    <div class="min-w-0"><span class="block font-semibold text-white/90 truncate leading-tight">Delta Bar</span><span class="block text-[10px] text-white/45 truncate">Comparativa vs mejor</span></div>
+                    <button type="button" data-widget-toggle="delta" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Delta Bar"></button>
+                  </div>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.05] cursor-pointer transition" data-compact-mod="tachometer">
+                    <div class="min-w-0"><span class="block font-semibold text-white/90 truncate leading-tight">Tachometer + FFB</span><span class="block text-[10px] text-white/45 truncate">Shift LEDs + Clip FFB</span></div>
+                    <button type="button" data-widget-toggle="tachometer" class="mmt-shell-toggle" aria-pressed="false" aria-label="Toggle Tachometer"></button>
+                  </div>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.05] cursor-pointer transition" data-compact-mod="lapTimer">
+                    <div class="min-w-0"><span class="block font-semibold text-white/90 truncate leading-tight">Lap Timer &amp; Delta</span><span class="block text-[10px] text-white/45 truncate">Cur / Best / Last</span></div>
+                    <button type="button" data-widget-toggle="lapTimer" class="mmt-shell-toggle" aria-pressed="false" aria-label="Toggle Lap Timer"></button>
+                  </div>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.05] cursor-pointer transition" data-compact-mod="electronics">
+                    <div class="min-w-0"><span class="block font-semibold text-white/90 truncate leading-tight">In-Car Electronics</span><span class="block text-[10px] text-white/45 truncate">BB · TC · ABS · MAP</span></div>
+                    <button type="button" data-widget-toggle="electronics" class="mmt-shell-toggle" aria-pressed="false" aria-label="Toggle In-Car Electronics"></button>
+                  </div>
+
+                  <p class="px-2 pt-2.5 pb-0.5 text-[9.5px] font-mono font-bold uppercase tracking-widest text-white/40">Seguridad &amp; Clima</p>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.05] cursor-pointer transition" data-compact-mod="flagMatrix">
+                    <div class="min-w-0"><span class="block font-semibold text-white/90 truncate leading-tight">Flag Matrix LED</span><span class="block text-[10px] text-white/45 truncate">Banderas oficiales LED</span></div>
+                    <button type="button" data-widget-toggle="flagMatrix" class="mmt-shell-toggle" aria-pressed="false" aria-label="Toggle Flag Matrix LED"></button>
+                  </div>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.05] cursor-pointer transition" data-compact-mod="spotter">
+                    <div class="min-w-0"><span class="block font-semibold text-white/90 truncate leading-tight">Blind Spot / Spotter</span><span class="block text-[10px] text-white/45 truncate">Barras izquierda/derecha</span></div>
+                    <button type="button" data-widget-toggle="spotter" class="mmt-shell-toggle" aria-pressed="false" aria-label="Toggle Spotter"></button>
+                  </div>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.05] cursor-pointer transition" data-compact-mod="radar">
+                    <div class="min-w-0"><span class="block font-semibold text-white/90 truncate leading-tight">Radar Proximidad</span><span class="block text-[10px] text-white/45 truncate">Radar 360° de coches</span></div>
+                    <button type="button" data-widget-toggle="radar" class="mmt-shell-toggle" aria-pressed="false" aria-label="Toggle Radar Proximidad"></button>
+                  </div>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.05] cursor-pointer transition" data-compact-mod="traffic">
+                    <div class="min-w-0"><span class="block font-semibold text-white/90 truncate leading-tight">Traffic Indicator</span><span class="block text-[10px] text-white/45 truncate">Aviso coche más rápido</span></div>
+                    <button type="button" data-widget-toggle="traffic" class="mmt-shell-toggle" aria-pressed="false" aria-label="Toggle Traffic Indicator"></button>
+                  </div>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.05] cursor-pointer transition" data-compact-mod="weather">
+                    <div class="min-w-0"><span class="block font-semibold text-white/90 truncate leading-tight">Tempest Weather</span><span class="block text-[10px] text-white/45 truncate">Lluvia, pista y viento</span></div>
+                    <button type="button" data-widget-toggle="weather" class="mmt-shell-toggle" aria-pressed="false" aria-label="Toggle Tempest Weather"></button>
+                  </div>
+
+                  <p class="px-2 pt-2.5 pb-0.5 text-[9.5px] font-mono font-bold uppercase tracking-widest text-white/40">Estrategia &amp; Boxes</p>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.05] cursor-pointer transition" data-compact-mod="fuel">
+                    <div class="min-w-0"><span class="block font-semibold text-white/90 truncate leading-tight">Fuel Calculator</span><span class="block text-[10px] text-white/45 truncate">Auto-Fuel Pro + margen</span></div>
+                    <button type="button" data-widget-toggle="fuel" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Fuel Calculator"></button>
+                  </div>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.05] cursor-pointer transition" data-compact-mod="pit">
+                    <div class="min-w-0"><span class="block font-semibold text-white/90 truncate leading-tight">Pit &amp; Strategy</span><span class="block text-[10px] text-white/45 truncate">Salida de boxes en vivo</span></div>
+                    <button type="button" data-widget-toggle="pit" class="mmt-shell-toggle" aria-pressed="false" aria-label="Toggle Pit & Strategy"></button>
+                  </div>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.05] cursor-pointer transition" data-compact-mod="tires">
+                    <div class="min-w-0"><span class="block font-semibold text-white/90 truncate leading-tight">Tire &amp; Track Temp</span><span class="block text-[10px] text-white/45 truncate">Presiones y °C goma</span></div>
+                    <button type="button" data-widget-toggle="tires" class="mmt-shell-toggle" aria-pressed="false" aria-label="Toggle Tire & Track Temp"></button>
                   </div>
                 </div>
                 <div class="shrink-0 p-1.5 border-t border-white/[0.08] space-y-1 font-mono text-[9.5px]">
