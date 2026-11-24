@@ -146,7 +146,7 @@ const canonical = "https://support.muntru.me/requests/new";
     }
   } catch {}
 
-  const API = "https://muntrume.atrumin16.workers.dev";
+  const API = "https://api.muntru.me";
   const INCIDENT_CATS = new Set(["cuenta_comprometida", "acceso_mfa", "bug_mmt_sync", "bug_web_overlay", "error_setup", "retirada_privacidad"]);
   function getToken() { try { return localStorage.getItem("mrt_vault_token") || localStorage.getItem("mm_token") || ""; } catch { return ""; } }
   function getUser() { try { return JSON.parse(localStorage.getItem("mrt_vault_user") || "null"); } catch { return null; } }

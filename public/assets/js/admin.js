@@ -4,7 +4,7 @@
  * Garage 61 Vision AI screenshot importer + live MTI/F1 stats recalculator.
  */
 
-const RC_API_BASE = "https://muntrume.atrumin16.workers.dev";
+const RC_API_BASE = "https://api.muntru.me";
 
 const LICENSE_META = [
   { key: "sports_car", short: "SC", label: "Sports Car" },

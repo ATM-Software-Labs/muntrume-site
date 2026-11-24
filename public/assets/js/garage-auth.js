@@ -1,6 +1,6 @@
 (function () {
   "use strict";
-  var API = "https://muntrume.atrumin16.workers.dev";
+  var API = "https://api.muntru.me";
   var ADMIN = "atrumin16@gmail.com";
   var token = null;
   var setPwToken = null;

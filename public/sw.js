@@ -1,10 +1,12 @@
 // Muntrume Motorsport — Ultra-Lightweight PWA Service Worker (Prompt 79)
 // Shell-only cache + strict Network-First for HTML/API; never caches telemetry, .sto, .ibt, or localhost bridge.
 
-const CACHE_NAME = "mmt-shell-v1";
+const CACHE_NAME = "mmt-shell-v2";
 const SHELL_ASSETS = [
   "/favicon.svg",
   "/manifest.webmanifest",
+  "/manifest-mobile.webmanifest",
+  "/app/mobile/",
   "/assets/img/icon-192.png",
   "/assets/img/icon-512.png",
 ];

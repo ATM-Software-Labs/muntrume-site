@@ -8,7 +8,7 @@ function isMobileDevice() {
  * Direct iRacing File System Sync & Cloudflare D1 Catalog
  */
 
-const API_BASE = "https://muntrume.atrumin16.workers.dev";
+const API_BASE = "https://api.muntru.me";
 let currentToken = null;
 let currentUser = null;
 let allSetups = [];

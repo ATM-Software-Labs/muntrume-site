@@ -7,7 +7,7 @@
 
   const API_ORIGIN = (typeof location !== "undefined" && location.hostname === "ai.muntru.me")
     ? ""
-    : "https://muntrume.atrumin16.workers.dev";
+    : "https://api.muntru.me";
   const API_URL = `${API_ORIGIN}/api/ai`;
   const STORAGE_KEY = "muntrume_ai_studio_v3";
   const HANDOFF_KEY = "muntrume_ai_handoff";

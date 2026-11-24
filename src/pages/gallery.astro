@@ -126,7 +126,7 @@ const gallerySchema = {
         >
           &larr;
         </button>
-        <img id="glLbImg" src="" alt="" referrerpolicy="no-referrer" onerror="if(!this.dataset.proxied&&this.src&&this.src.startsWith('http')){this.dataset.proxied='1';this.src='https://muntrume.atrumin16.workers.dev/api/media/proxy?url='+encodeURIComponent(this.src);}" class="w-full h-full object-contain transition-transform duration-200 cursor-zoom-in" />
+        <img id="glLbImg" src="" alt="" referrerpolicy="no-referrer" onerror="if(!this.dataset.proxied&&this.src&&this.src.startsWith('http')){this.dataset.proxied='1';this.src='https://api.muntru.me/api/media/proxy?url='+encodeURIComponent(this.src);}" class="w-full h-full object-contain transition-transform duration-200 cursor-zoom-in" />
         <button
           id="glLbNext"
           type="button"
@@ -256,7 +256,7 @@ const gallerySchema = {
     if (nextBtn?.dataset.src) { const im = new Image(); im.src = nextBtn.dataset.src; }
     if (prevBtn?.dataset.src) { const im = new Image(); im.src = prevBtn.dataset.src; }
     if (btn.dataset.photoId) {
-      fetch('https://muntrume.atrumin16.workers.dev/api/gallery/view', {
+      fetch('https://api.muntru.me/api/gallery/view', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: btn.dataset.photoId }),
@@ -317,7 +317,7 @@ const gallerySchema = {
     const id = tdModal?.dataset.photoId || tdModal?.dataset.photoTitle || 'galeria';
     if (tdSubmit) { tdSubmit.disabled = true; tdSubmit.textContent = 'Enviando…'; }
     try {
-      const resp = await fetch('https://muntrume.atrumin16.workers.dev/api/gallery/takedown', {
+      const resp = await fetch('https://api.muntru.me/api/gallery/takedown', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -387,7 +387,7 @@ const gallerySchema = {
     return `
     <article data-category="${p.category}" data-index="${idx}" class="galeria-card group rounded-xl overflow-hidden bg-[var(--r-surface)] transition-all duration-200" style="border: 1px solid rgba(255, 255, 255, 0.08);">
       <button type="button" class="galeria-open-btn relative block w-full aspect-video overflow-hidden bg-[#090d12] cursor-zoom-in text-left" data-photo-id="${p.id}" data-likes="${p.likes || 0}" data-src="${p.imageUrl}" data-title="${p.title}" data-sub="${p.car || ''} · ${p.track || 'iRacing'}" data-author="${p.authorName}" data-source-url="${p.sourceUrl || ''}" data-car-slug="${p.carSlug || ''}" data-track-slug="${p.trackSlug || ''}" data-clean-crop="${useCrop ? '1' : '0'}">
-        <img src="${p.imageUrl}" alt="${p.title}" width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://muntrume.atrumin16.workers.dev/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}else{this.closest('article')?.remove();}" class="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105" style="filter: contrast(1.04) saturate(1.06);${cropStyle}" />
+        <img src="${p.imageUrl}" alt="${p.title}" width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://api.muntru.me/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}else{this.closest('article')?.remove();}" class="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105" style="filter: contrast(1.04) saturate(1.06);${cropStyle}" />
         <div class="absolute inset-0 pointer-events-none" style="background: linear-gradient(to top, rgba(9,11,15,0.88) 0%, transparent 55%);"></div>
         <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded bg-black/80 border border-white/15 text-[var(--r-accent)] text-[10px] font-mono font-bold uppercase">${p.category}</span>
         <span class="absolute bottom-2.5 left-2.5 text-[10px] font-mono text-white/85">📸 ${p.authorName}</span>
@@ -426,7 +426,7 @@ const gallerySchema = {
     const curVal = Number(btn.querySelector('span')?.textContent || '0') + 1;
     btn.setAttribute('style', likeBtnStyle(true));
     btn.innerHTML = `${thumbSvg(true)}<span>${curVal}</span>`;
-    await fetch(`https://muntrume.atrumin16.workers.dev/api/gallery/${encodeURIComponent(id)}/like`, { method: 'POST' }).catch(() => {});
+    await fetch(`https://api.muntru.me/api/gallery/${encodeURIComponent(id)}/like`, { method: 'POST' }).catch(() => {});
   });
 
   const SLUG_GROUPS: string[][] = [
@@ -451,7 +451,7 @@ const gallerySchema = {
       }
     }
     const carParam = initCar ? `&car=${encodeURIComponent(initCar)}` : '';
-    const primary = await fetch(`https://muntrume.atrumin16.workers.dev/api/gallery?status=published&sort=${encodeURIComponent(sort)}&limit=200&offset=0${carParam}`)
+    const primary = await fetch(`https://api.muntru.me/api/gallery?status=published&sort=${encodeURIComponent(sort)}&limit=200&offset=0${carParam}`)
       .then((r) => (r.ok ? r.json() : null));
     if (!primary || !Array.isArray(primary.photos)) return primary;
     if (!initCar) {
@@ -471,7 +471,7 @@ const gallerySchema = {
     const seen = new Set(primary.photos.map((p: any) => p.imageUrl || p.id));
     const extras = await Promise.all(
       extraSlugs.map((slug) =>
-        fetch(`https://muntrume.atrumin16.workers.dev/api/gallery?status=published&sort=${encodeURIComponent(sort)}&limit=200&offset=0&car=${encodeURIComponent(slug)}`)
+        fetch(`https://api.muntru.me/api/gallery?status=published&sort=${encodeURIComponent(sort)}&limit=200&offset=0&car=${encodeURIComponent(slug)}`)
           .then((r) => (r.ok ? r.json() : null))
           .catch(() => null)
       )
@@ -531,7 +531,7 @@ const gallerySchema = {
         loadMoreBtn.textContent = 'Cargando…';
         try {
           const carParam = initCar ? `&car=${encodeURIComponent(initCar)}` : '';
-          const more = await fetch(`https://muntrume.atrumin16.workers.dev/api/gallery?status=published&sort=${encodeURIComponent(currentSort)}&limit=200&offset=${nextOffset}${carParam}`).then((r) => (r.ok ? r.json() : null));
+          const more = await fetch(`https://api.muntru.me/api/gallery?status=published&sort=${encodeURIComponent(currentSort)}&limit=200&offset=${nextOffset}${carParam}`).then((r) => (r.ok ? r.json() : null));
           if (more && Array.isArray(more.photos) && more.photos.length > 0) {
             const startIdx = cards.length;
             grid.insertAdjacentHTML('beforeend', more.photos.map((p: any, i: number) => renderCardHtml(p, startIdx + i)).join(''));
@@ -695,7 +695,7 @@ const gallerySchema = {
       cardLike.setAttribute('style', likeBtnStyle(true));
       cardLike.innerHTML = `${thumbSvg(true)}<span>${nextN}</span>`;
     }
-    await fetch(`https://muntrume.atrumin16.workers.dev/api/gallery/${encodeURIComponent(pid)}/like`, { method: 'POST' }).catch(() => {});
+    await fetch(`https://api.muntru.me/api/gallery/${encodeURIComponent(pid)}/like`, { method: 'POST' }).catch(() => {});
   });
 
   document.getElementById('glLbClose')?.addEventListener('click', closeLb);

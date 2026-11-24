@@ -4273,7 +4273,7 @@ function safeRenderWidget(el: HTMLElement | null, fn: () => void): void {
             wComp.__mmtPtLapsDelta = 0;
             const liveTrack = session.weekendInfo?.trackName || "";
             const liveCar = session.driverInfo?.drivers?.[irsdkState.camCarIdx]?.carScreenName || "";
-            void fetch("https://muntrume.atrumin16.workers.dev/api/desktop/companion/push", {
+            void fetch("https://api.muntru.me/api/desktop/companion/push", {
               method: "POST",
               headers: { "Content-Type": "application/json", Authorization: `Bearer ${tk}` },
               body: JSON.stringify({
@@ -4783,7 +4783,7 @@ function initPaddockCenter(): void {
     }
 
     try {
-      paddockSocket = new WebSocket("wss://muntrume.atrumin16.workers.dev/api/paddock/ws");
+      paddockSocket = new WebSocket("wss://api.muntru.me/api/paddock/ws");
       paddockSocket.addEventListener("open", () => {
         if (liveBadge) {
           liveBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-r-accent animate-pulse"></span> Paddock en Vivo`;

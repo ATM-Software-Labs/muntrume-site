@@ -58,7 +58,7 @@
     ];
 
     // Live external news: server-side RSS proxy on the Muntrume Worker + extra public RSS feeds
-    const NEWS_API = 'https://muntrume.atrumin16.workers.dev/api/news';
+    const NEWS_API = 'https://api.muntru.me/api/news';
     const EXTRA_RSS_FEEDS = [
       { name: 'Overtake.gg', url: 'https://www.overtake.gg/news/index.rss', category: 'simracing' },
       { name: 'BSimRacing', url: 'https://www.bsimracing.com/feed/', category: 'simracing' },

@@ -1,11 +1,11 @@
 /* Montador de setups. POST JSON con el mismo Bearer que el vault.
-   El Worker (muntrume.atrumin16.workers.dev) ya no responde «Ruta no encontrada»:
+   El Worker (api.muntru.me) ya no responde «Ruta no encontrada»:
    sin sesión devuelve 401 {success:false, error}. 400, 429 y 5xx se muestran
    con el texto del servidor si viene en error/message. El cuerpo sigue
    mode, car, track, sessions y también circuit / setup_types. */
 (function () {
   "use strict";
-  var API = "https://muntrume.atrumin16.workers.dev";
+  var API = "https://api.muntru.me";
   var SESSIONS = [
     { id: "qualy", type: "Qualy" },
     { id: "race", type: "Race" },

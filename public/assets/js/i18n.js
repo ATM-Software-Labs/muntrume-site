@@ -6,7 +6,7 @@
   var V = "t350";
   var dict = null;
   var lang = "es";
-  var TRANSLATE_API = "https://muntrume.atrumin16.workers.dev/api/i18n/translate";
+  var TRANSLATE_API = "https://api.muntru.me/api/i18n/translate";
 
   function allowed(code) {
     code = String(code || "").toLowerCase();

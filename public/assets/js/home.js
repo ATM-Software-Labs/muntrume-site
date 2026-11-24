@@ -8,7 +8,7 @@
     let EVENTS = [];
     const escHtml = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     function loadTeamEvents() {
-      fetch('https://muntrume.atrumin16.workers.dev/api/events', { cache: 'no-store' })
+      fetch('https://api.muntru.me/api/events', { cache: 'no-store' })
         .then((r) => r.ok ? r.json() : null)
         .then((d) => {
           if (!d || !Array.isArray(d.events) || !d.events.length) return;

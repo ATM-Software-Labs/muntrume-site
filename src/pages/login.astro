@@ -238,7 +238,7 @@ import Layout from '../layouts/Layout.astro';
 
   <script is:inline>
     (function () {
-      var API = "https://muntrume.atrumin16.workers.dev";
+      var API = "https://api.muntru.me";
       var params = new URLSearchParams(location.search);
       var nextRaw = params.get("next") || params.get("redirect") || "/garage/";
       var nextUrl = /^https:\/\/(ai|docs|support|muntru)\.muntru\.me(\/|$)/i.test(nextRaw)

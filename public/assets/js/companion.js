@@ -3,7 +3,7 @@
  * Bidirectional sync between Phone PWA <-> Cloudflare D1 <-> MMT Sync (Rust) <-> iRacing (.ibt / .sto / Last Race)
  */
 (function () {
-  const API = "https://muntrume.atrumin16.workers.dev";
+  const API = "https://api.muntru.me";
   let compState = null;
   let hoverSampleIdx = -1;
 

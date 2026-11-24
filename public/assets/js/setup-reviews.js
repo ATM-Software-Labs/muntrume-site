@@ -2,7 +2,7 @@
 (function () {
   "use strict";
 
-  var API = "https://muntrume.atrumin16.workers.dev/api/setups/reviews";
+  var API = "https://api.muntru.me/api/setups/reviews";
   var MOODS = {
     1: { emoji: "😤", label: "Intratable" },
     2: { emoji: "😕", label: "Difícil" },

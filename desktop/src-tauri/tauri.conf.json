@@ -12,7 +12,7 @@
   "app": {
     "withGlobalTauri": false,
     "security": {
-      "csp": "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://i.ytimg.com; media-src 'self' asset: https://asset.localhost; frame-src https://www.youtube-nocookie.com; font-src 'self'; connect-src 'ipc:' 'http://ipc.localhost' 'https://ipc.localhost'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://i.ytimg.com; media-src 'self' asset: https://asset.localhost; frame-src https://www.youtube-nocookie.com; font-src 'self'; connect-src 'ipc:' 'http://ipc.localhost' 'https://ipc.localhost' http://127.0.0.1:38421 https://api.muntru.me; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
     },
     "windows": [
       {

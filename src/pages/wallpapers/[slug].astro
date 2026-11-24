@@ -74,7 +74,7 @@ const pageSchema = {
                 loading={index === 0 ? "eager" : "lazy"}
                 decoding="async"
                 referrerpolicy="no-referrer"
-                onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://muntrume.atrumin16.workers.dev/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}else{var li=this.closest('li');if(li)li.style.display='none';}"
+                onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://api.muntru.me/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}else{var li=this.closest('li');if(li)li.style.display='none';}"
                 class="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
               />
             </a>

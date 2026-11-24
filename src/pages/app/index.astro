@@ -74,8 +74,9 @@ const appSchema = {
       <p class="r-lead" data-i18n="app.lead">La aplicación de escritorio oficial de Muntrume Motorsport. Sincroniza los setups de carrera, clasificación y lluvia en tus carpetas de iRacing y muestra en pista barras en directo de acelerador, freno, dirección, marcha y velocidad.</p>
       <div class="app-cta">
         <button type="button" id="btnLaunchOverlaysWeb" class="r-btn r-btn--primary">Lanzar Overlays en iRacing</button>
+        <a class="r-btn app-btn" href="/app/mobile/">📱 Web App Móvil (iPhone / Android)</a>
         <button type="button" id="btnInstallPwaWeb" data-mmt-install-pwa class="r-btn app-btn">Instalar como App</button>
-        <a id="mmtAppDownloadBtn" class="r-btn app-btn" href="https://muntrume.atrumin16.workers.dev/api/download/latest" target="_blank" rel="noopener noreferrer" data-i18n="app.download">Descargar MMT Sync (.exe)</a>
+        <a id="mmtAppDownloadBtn" class="r-btn app-btn" href="https://api.muntru.me/api/download/latest" target="_blank" rel="noopener noreferrer" data-i18n="app.download">Descargar MMT Sync (.exe)</a>
         <a class="r-btn app-btn" href="/overlay/">Simulador HUD en vivo</a>
         <a class="r-btn app-btn" href="/app/install/">Guía de instalación</a>
         <a class="r-btn app-btn" href="/garage/" data-i18n="app.catalog">Ver catálogo web</a>
@@ -660,7 +661,7 @@ const appSchema = {
 
       // Muntrume Guard: poll pending mobile login / account recovery approvals
       (function initMuntrumeGuard() {
-        const API = "https://muntrume.atrumin16.workers.dev";
+        const API = "https://api.muntru.me";
         const guardBox = document.getElementById("compGuardBox");
         const guardList = document.getElementById("compGuardList");
         if (!guardBox || !guardList) return;
@@ -856,7 +857,7 @@ const appSchema = {
   (() => {
     const btn = document.getElementById("mmtAppDownloadBtn");
     if (btn) {
-      fetch("https://muntrume.atrumin16.workers.dev/api/download/latest?info=1")
+      fetch("https://api.muntru.me/api/download/latest?info=1")
         .then((r) => (r.ok ? r.json() : null))
         .then((d) => {
           if (d && d.version) btn.textContent = `Descargar MMT Sync v${d.version} (.exe)`;

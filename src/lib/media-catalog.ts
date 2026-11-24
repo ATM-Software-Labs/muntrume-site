@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { TRACK_GALLERY_PHOTOS, PADDOCK_ALBUMS } from "../data/paddock-gallery";
 
-export const MEDIA_API_BASE = "https://muntrume.atrumin16.workers.dev";
+export const MEDIA_API_BASE = "https://api.muntru.me";
 
 export const CANONICAL_ALBUM_MAP: Record<string, { slug: string; car: string }> = {
   "chevrolet-corvette-z06-gt3r": { slug: "chevrolet-corvette-z06-gt3-r", car: "Chevrolet Corvette Z06 GT3.R" },

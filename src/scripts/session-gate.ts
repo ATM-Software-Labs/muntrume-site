@@ -1,4 +1,4 @@
-const API = "https://muntrume.atrumin16.workers.dev";
+const API = "https://api.muntru.me";
 const PAGE_SIZE = 6;
 
 interface VaultUser {

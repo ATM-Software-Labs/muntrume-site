@@ -109,7 +109,7 @@
     if (ir && lic.irating > 0) approx(ir, "k", lic.irating);
     if (lic.tt_rating > 0 || lic.ttRating > 0) approx(card.querySelector('[data-lic-f="tt"]'), "k", lic.tt_rating || lic.ttRating);
   }
-  fetch('https://muntrume.atrumin16.workers.dev/api/drivers?slug=' + encodeURIComponent(slug)).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+  fetch('https://api.muntru.me/api/drivers?slug=' + encodeURIComponent(slug)).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
     if (!d) return;
     var licenses = Array.isArray(d.licenses) ? d.licenses.slice() : [];
     if (!licenses.length && (d.irating > 0 || d.license)) {
@@ -258,7 +258,7 @@
     var wrap = document.getElementById('racesWrap');
     if (wrap) wrap.hidden = false;
   }).catch(function () {});
-  fetch('https://muntrume.atrumin16.workers.dev/api/events').then(function (r) { return r.ok ? r.json() : null; }).then(function (payload) {
+  fetch('https://api.muntru.me/api/events').then(function (r) { return r.ok ? r.json() : null; }).then(function (payload) {
     var now = Date.now();
     var ev = (payload && Array.isArray(payload.events) ? payload.events : []).filter(function (e) { return e && e.starts_at && new Date(e.starts_at).getTime() >= now - 36e5 * 6; })
       .sort(function (a, b) { return new Date(a.starts_at) - new Date(b.starts_at); }).slice(0, 5);

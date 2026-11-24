@@ -2,7 +2,7 @@
 (function () {
   "use strict";
 
-  var API_URL = "https://muntrume.atrumin16.workers.dev/api/ai";
+  var API_URL = "https://api.muntru.me/api/ai";
   var STORAGE_KEY = "muntrume_ai_pluma_chats_v1";
   var PREFS_KEY = "muntrume_ai_pluma_prefs_v1";
 

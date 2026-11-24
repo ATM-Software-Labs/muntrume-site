@@ -1,0 +1,615 @@
+---
+import desktopPkg from "../../../desktop/package.json";
+const appVersion = desktopPkg.version;
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>MMT Sync Mobile · Web App para iPhone y Android</title>
+    <meta name="description" content="Web App instalable de MMT Sync para iPhone (iOS) y Android sin descargar APK. Consulta tu telemetría, sesiones de iRacing, setups en cola y controles HUD en tiempo real vía api.muntru.me." />
+    <meta name="theme-color" content="#090b0f" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="MMT Sync" />
+    <link rel="manifest" href="/manifest-mobile.webmanifest" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/assets/img/icon-192.png" />
+    <style>
+      :root {
+        --bg: #090b0f;
+        --surface: #11151d;
+        --surface-2: #171c27;
+        --line: rgba(255, 255, 255, 0.09);
+        --text: #f8fafc;
+        --muted: #94a3b8;
+        --accent: #10b981;
+        --accent-ink: #04140d;
+        --danger: #ef4444;
+        --mono: ui-monospace, "JetBrains Mono", Consolas, monospace;
+        --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+      * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+      html, body {
+        margin: 0; padding: 0; height: 100%; background: var(--bg); color: var(--text);
+        font-family: var(--sans); overscroll-behavior-y: none;
+      }
+      .shell {
+        display: flex; flex-direction: column; height: 100dvh; max-width: 560px; margin: 0 auto;
+        background: var(--bg); position: relative;
+      }
+      .topbar {
+        display: flex; align-items: center; justify-content: space-between; gap: 10px;
+        padding: calc(10px + env(safe-area-inset-top)) 14px 10px;
+        background: rgba(17, 21, 29, 0.92); backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--line); shrink: 0;
+      }
+      .brand { display: flex; align-items: center; gap: 9px; text-decoration: none; color: var(--text); }
+      .brand img { width: 26px; height: 26px; border-radius: 7px; border: 1px solid var(--line); }
+      .brand strong { font-size: 14px; letter-spacing: 0.04em; text-transform: uppercase; }
+      .brand strong span { color: var(--accent); }
+      .top-actions { display: flex; align-items: center; gap: 6px; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 999px;
+        font: 700 10.5px/1 var(--mono); border: 1px solid var(--line); background: var(--surface-2); color: var(--muted);
+        white-space: nowrap;
+      }
+      .pill.is-live { border-color: rgba(16, 185, 129, 0.55); background: rgba(16, 185, 129, 0.14); color: var(--accent); }
+      .icon-btn {
+        width: 32px; height: 32px; border-radius: 9px; border: 1px solid var(--line); background: var(--surface-2);
+        color: var(--text); font-size: 14px; display: grid; place-items: center; cursor: pointer;
+      }
+      .content {
+        flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
+        padding: 14px 14px calc(82px + env(safe-area-inset-bottom));
+        display: flex; flex-direction: column; gap: 12px;
+      }
+      .card {
+        background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+        padding: 14px; display: grid; gap: 10px;
+      }
+      .kicker { font: 800 10px/1.1 var(--mono); letter-spacing: 0.09em; text-transform: uppercase; color: var(--accent); }
+      .h2 { margin: 0; font-size: 17px; font-weight: 800; letter-spacing: -0.01em; }
+      .muted { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+      .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+      .kpi {
+        background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; min-width: 0;
+      }
+      .kpi span { display: block; font: 700 9.5px/1 var(--mono); color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+      .kpi strong { display: block; margin-top: 5px; font: 800 16px/1.15 var(--mono); color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .kpi small { display: block; margin-top: 3px; font-size: 10.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+        height: 40px; padding: 0 14px; border-radius: 11px; border: 1px solid var(--line);
+        background: var(--surface-2); color: var(--text); font: 700 12.5px/1 var(--sans);
+        cursor: pointer; text-decoration: none;
+      }
+      .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 800; }
+      .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+      .seg button {
+        height: 36px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg);
+        color: var(--muted); font: 700 11.5px/1 var(--mono); cursor: pointer;
+      }
+      .seg button[aria-pressed="true"] {
+        border-color: rgba(16, 185, 129, 0.55); background: rgba(16, 185, 129, 0.16); color: var(--accent);
+      }
+      .list { display: grid; gap: 8px; }
+      .row {
+        display: flex; align-items: center; justify-content: space-between; gap: 10px;
+        padding: 11px 12px; border-radius: 12px; background: var(--bg); border: 1px solid var(--line);
+      }
+      .row strong { display: block; font-size: 13px; }
+      .row small { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; }
+      .row code { font: 700 12px/1 var(--mono); color: var(--accent); }
+      .input, .select {
+        width: 100%; height: 42px; padding: 0 12px; border-radius: 11px;
+        border: 1px solid var(--line); background: var(--bg); color: var(--text); font-size: 13.5px;
+      }
+      .tabbar {
+        position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 560px;
+        display: grid; grid-template-columns: repeat(5, 1fr);
+        padding: 6px 6px calc(8px + env(safe-area-inset-bottom));
+        background: rgba(17, 21, 29, 0.96); backdrop-filter: blur(14px);
+        border-top: 1px solid var(--line); z-index: 40;
+      }
+      .tab {
+        display: flex; flex-direction: column; align-items: center; gap: 3px;
+        padding: 5px 2px; border: 0; background: transparent; color: var(--muted);
+        font: 700 10px/1 var(--sans); cursor: pointer;
+      }
+      .tab svg { width: 20px; height: 20px; }
+      .tab.is-active { color: var(--accent); }
+      .banner {
+        padding: 10px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;
+        background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); color: #34d399;
+      }
+      .banner.is-err { background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.35); color: #fca5a5; }
+      [hidden] { display: none !important; }
+      canvas { width: 100%; height: 180px; display: block; border-radius: 10px; background: #070a0f; border: 1px solid var(--line); }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <a href="/app/" class="brand" aria-label="MMT Sync">
+          <img src="/favicon.svg" alt="" />
+          <strong>MMT <span>SYNC</span></strong>
+        </a>
+        <div class="top-actions">
+          <span id="mLivePill" class="pill">● Conectando…</span>
+          <button type="button" id="mBtnInstall" class="icon-btn" title="Guardar en pantalla de inicio">＋</button>
+          <button type="button" id="mBtnRefresh" class="icon-btn" title="Actualizar">↻</button>
+        </div>
+      </header>
+
+      <main class="content">
+        <div id="mBanner" class="banner" hidden></div>
+
+        <!-- Zero-Download Install Tip (iOS & Android) -->
+        <section id="mInstallTip" class="card" hidden>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+            <span class="kicker">APP SIN DESCARGAS · IPHONE Y ANDROID</span>
+            <button type="button" id="mCloseInstallTip" style="border:0;background:transparent;color:var(--muted);font-size:15px;cursor:pointer">✕</button>
+          </div>
+          <p class="muted" id="mInstallText">
+            <strong>iPhone (Safari):</strong> pulsa <strong>Compartir (⬆)</strong> → <strong>Añadir a pantalla de inicio</strong>.<br />
+            <strong>Android (Chrome / Brave):</strong> pulsa <strong>Instalar aplicación</strong> (sin necesidad de descargar ningún APK).
+          </p>
+          <button type="button" id="mNativeInstallBtn" class="btn btn-primary" hidden>Instalar MMT Sync en este móvil</button>
+        </section>
+
+        <!-- Auth Gate -->
+        <section id="mAuthGate" class="card" hidden>
+          <span class="kicker">CUENTA DE PILOTO</span>
+          <h1 class="h2">Inicia sesión para sincronizar con tu PC</h1>
+          <p class="muted">Todo lo que hagas en MMT Sync (Windows) — sesiones de iRacing, telemetría, setups y ajustes del HUD — aparece aquí en tiempo real vía <code>api.muntru.me</code>.</p>
+          <a href="/login/?next=/app/mobile/" class="btn btn-primary">Iniciar sesión →</a>
+        </section>
+
+        <!-- VIEW 1: INICIO / EN VIVO -->
+        <section data-mview="home" class="list">
+          <div id="mGuardCard" class="card" hidden>
+            <span class="kicker">🛡 MUNTRUME GUARD · APROBACIÓN PENDIENTE</span>
+            <div id="mGuardList" class="list"></div>
+          </div>
+
+          <div class="card">
+            <span class="kicker">PILOTO &amp; PERFIL IRACING</span>
+            <h1 id="mPilotName" class="h2">Cargando piloto…</h1>
+            <p id="mPilotSub" class="muted">Sincronizando con api.muntru.me…</p>
+            <div class="grid2">
+              <div class="kpi"><span>TIEMPO HOY</span><strong id="mPtToday">0m</strong><small id="mPtHb">—</small></div>
+              <div class="kpi"><span>ESTA SEMANA</span><strong id="mPtWeek">0m</strong><small>Capturado en PC</small></div>
+              <div class="kpi"><span>TOTAL EN PISTA</span><strong id="mPtTotal" style="color:var(--accent)">—</strong><small id="mPtLaps">0 vueltas</small></div>
+              <div class="kpi"><span>VAULT .STO</span><strong id="mVaultCount">—</strong><small id="mDeviceName">PC vinculado</small></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <span class="kicker">CONTROL HUD SINCRONIZADO CON TU PC</span>
+            <p class="muted">Los cambios se sincronizan con MMT Sync Desktop (v{appVersion}) y el overlay en pista.</p>
+            <div>
+              <small class="muted" style="display:block;margin-bottom:6px">Color de logos de marcas</small>
+              <div class="seg" role="group" aria-label="Color de logos">
+                <button type="button" data-mlogo="original" aria-pressed="true">Original</button>
+                <button type="button" data-mlogo="white" aria-pressed="false">Blanco</button>
+                <button type="button" data-mlogo="black" aria-pressed="false">Negro</button>
+              </div>
+            </div>
+            <div class="row" style="margin-top:2px">
+              <div><strong>🎯 Focus Mode</strong><small>Oculta widgets secundarios en carrera</small></div>
+              <button type="button" id="mFocusToggle" class="btn" style="height:34px;padding:0 12px;font-size:11.5px">Off</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 2: CARRERAS / SESIONES -->
+        <section data-mview="races" class="list" hidden>
+          <div class="card">
+            <span class="kicker">ÚLTIMA SESIÓN REAL EN CACHÉ</span>
+            <h2 id="mLrTrack" class="h2">—</h2>
+            <p id="mLrMeta" class="muted">—</p>
+            <div class="grid2">
+              <div class="kpi"><span>MEJOR VUELTA</span><strong id="mLrBest" style="color:var(--accent)">—</strong></div>
+              <div class="kpi"><span>VUELTA MEDIA</span><strong id="mLrAvg">—</strong></div>
+              <div class="kpi"><span>INCIDENTES</span><strong id="mLrInc">—</strong></div>
+              <div class="kpi"><span>CONSISTENCIA</span><strong id="mLrCons">—</strong></div>
+            </div>
+          </div>
+          <div class="card">
+            <span class="kicker">HISTORIAL SINCRONIZADO</span>
+            <div id="mSessionsList" class="list"></div>
+          </div>
+        </section>
+
+        <!-- VIEW 3: TELEMETRÍA -->
+        <section data-mview="telemetry" class="list" hidden>
+          <div class="card">
+            <span class="kicker">TRAZA 60 HZ · CACHÉ IRSDK</span>
+            <h2 id="mTelTitle" class="h2">—</h2>
+            <p id="mTelReadout" class="muted">Desliza el dedo sobre la gráfica para ver velocidad, gas y freno</p>
+            <canvas id="mTelCanvas" width="500" height="180"></canvas>
+          </div>
+          <div class="card">
+            <span class="kicker">VUELTAS DE LA ÚLTIMA SESIÓN</span>
+            <div id="mLapsList" class="list"></div>
+          </div>
+        </section>
+
+        <!-- VIEW 4: SETUPS -> PC -->
+        <section data-mview="setups" class="list" hidden>
+          <div class="card">
+            <span class="kicker">ENVIAR SETUP AL PC (MMT SYNC)</span>
+            <p class="muted">Envía cualquier combinación a la cola remota: tu PC la instala en <code>Documents\iRacing\setups\</code>.</p>
+            <form id="mQueueForm" class="list">
+              <select id="mQCar" class="select">
+                <option value="porsche963gtp">Porsche 963 GTP</option>
+                <option value="bmwm4gt3">BMW M4 GT3 EVO</option>
+                <option value="ferrari296gt3">Ferrari 296 GT3</option>
+                <option value="porsche992rgt3">Porsche 911 GT3 R (992)</option>
+                <option value="amvalkyriegtp">Aston Martin Valkyrie LMH</option>
+                <option value="mercedesamgevogt3">Mercedes-AMG GT3 2020</option>
+                <option value="mclaren720sgt3">McLaren 720S GT3 EVO</option>
+                <option value="fordmustanggt3">Ford Mustang GT3</option>
+                <option value="lamborghinievogt3">Lamborghini Huracán GT3 EVO</option>
+                <option value="ferrari499p">Ferrari 499P</option>
+                <option value="dallarap217">Dallara P217 LMP2</option>
+                <option value="formulair04">FIA F4</option>
+              </select>
+              <input id="mQTrack" class="input" type="text" value="Silverstone Circuit" placeholder="Circuito (ej. Silverstone, Spa, Fuji)" required />
+              <select id="mQType" class="select">
+                <option value="race">Race (Carrera)</option>
+                <option value="quali">Qualy (Clasificación)</option>
+                <option value="endurance">Endurance (Resistencia)</option>
+                <option value="wet">Wet (Lluvia)</option>
+              </select>
+              <button type="submit" class="btn btn-primary">📲 Enviar a mi PC</button>
+            </form>
+          </div>
+          <div class="card">
+            <span class="kicker">COLA REMOTA</span>
+            <div id="mQueueList" class="list"></div>
+          </div>
+        </section>
+
+        <!-- VIEW 5: MÁS / GUARD -->
+        <section data-mview="more" class="list" hidden>
+          <div class="card">
+            <span class="kicker">ECOSISTEMA MUNTRUME · API.MUNTRU.ME</span>
+            <a href="/app/vincular/" class="row" style="text-decoration:none;color:inherit">
+              <div><strong>Vincular nuevo PC</strong><small>Autoriza MMT Sync con código de 8 caracteres</small></div>
+              <code>→</code>
+            </a>
+            <a href="/overlay/brands/" class="row" style="text-decoration:none;color:inherit">
+              <div><strong>Logos SVG de Marcas</strong><small>Original, Blanco y Negro (Open Source)</small></div>
+              <code>→</code>
+            </a>
+            <a href="/garage/" class="row" style="text-decoration:none;color:inherit">
+              <div><strong>Garage &amp; Setups .sto</strong><small>Catálogo completo del equipo</small></div>
+              <code>→</code>
+            </a>
+            <a href="/app/" class="row" style="text-decoration:none;color:inherit">
+              <div><strong>Versión Escritorio / Windows</strong><small>MMT Sync v{appVersion} + Bridge Local</small></div>
+              <code>→</code>
+            </a>
+          </div>
+          <div class="card">
+            <span class="kicker">INSTALACIÓN SIN DESCARGAS (PWA)</span>
+            <p class="muted">Esta página funciona como app nativa en <strong>iPhone (Safari)</strong> y <strong>Android (Chrome / Brave)</strong> sin instalar ningún APK externo. Todos los datos viajan cifrados vía <code>https://api.muntru.me</code>.</p>
+            <button type="button" id="mShowInstallAgain" class="btn">Ver cómo guardar en pantalla de inicio</button>
+          </div>
+        </section>
+      </main>
+
+      <nav class="tabbar" aria-label="Navegación móvil">
+        <button type="button" class="tab is-active" data-mtab="home">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+          <span>Inicio</span>
+        </button>
+        <button type="button" class="tab" data-mtab="races">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+          <span>Carreras</span>
+        </button>
+        <button type="button" class="tab" data-mtab="telemetry">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <span>60 Hz</span>
+        </button>
+        <button type="button" class="tab" data-mtab="setups">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>Setups</span>
+        </button>
+        <button type="button" class="tab" data-mtab="more">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Más</span>
+        </button>
+      </nav>
+    </div>
+
+    <script is:inline>
+      (() => {
+        const API = "https://api.muntru.me";
+        let state = null;
+        let deferredInstall = null;
+        let hoverIdx = -1;
+
+        if ("serviceWorker" in navigator) {
+          navigator.serviceWorker.register("/sw.js").catch(() => {});
+        }
+
+        const $ = (id) => document.getElementById(id);
+        const getTk = () => {
+          try {
+            const t = localStorage.getItem("mrt_vault_token") || localStorage.getItem("mm_token") || "";
+            if (t) return t;
+            const m = document.cookie.match(/(?:^|;\s*)mm_sso_tk=([^;]*)/);
+            return m ? decodeURIComponent(m[1]) : "";
+          } catch { return ""; }
+        };
+        const esc = (v) => String(v ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+        const fmtLap = (s) => {
+          const n = Number(s) || 0;
+          if (n <= 0) return "—";
+          const m = Math.floor(n / 60);
+          const r = (n - m * 60).toFixed(3).padStart(6, "0");
+          return m > 0 ? `${m}:${r}` : `${r}s`;
+        };
+        const fmtDur = (sec) => {
+          const s = Math.max(0, Math.round(Number(sec) || 0));
+          if (s < 60) return s > 0 ? `${s}s` : "0m";
+          const h = Math.floor(s / 3600);
+          const m = Math.floor((s % 3600) / 60);
+          return h > 0 ? `${h}h ${String(m).padStart(2, "0")}m` : `${m}m`;
+        };
+        const fmtAgo = (iso) => {
+          if (!iso) return "Reciente";
+          const d = Date.parse(iso);
+          if (!Number.isFinite(d)) return "";
+          const m = Math.max(0, Math.round((Date.now() - d) / 60000));
+          if (m < 2) return "Ahora";
+          if (m < 60) return `Hace ${m}m`;
+          const h = Math.round(m / 60);
+          return h < 24 ? `Hace ${h}h` : `Hace ${Math.round(h / 24)}d`;
+        };
+        const flash = (msg, err) => {
+          const b = $("mBanner");
+          if (!b) return;
+          b.textContent = msg;
+          b.className = err ? "banner is-err" : "banner";
+          b.hidden = !msg;
+          if (msg) setTimeout(() => { b.hidden = true; }, 3000);
+        };
+
+        async function api(path, method, body) {
+          const tk = getTk();
+          const headers = { "Content-Type": "application/json" };
+          if (tk) headers.Authorization = `Bearer ${tk}`;
+          const r = await fetch(API + path, {
+            method: method || "GET",
+            headers,
+            body: method === "POST" ? JSON.stringify(body || {}) : undefined,
+          });
+          const d = await r.json().catch(() => ({}));
+          if (!r.ok || d.error) throw new Error(d.error || `HTTP ${r.status}`);
+          return d;
+        }
+
+        function drawTrace() {
+          const canvas = $("mTelCanvas");
+          const samples = state?.latest_telemetry?.best_lap_samples || [];
+          if (!canvas || !samples.length) return;
+          const ctx = canvas.getContext("2d");
+          const w = canvas.width, h = canvas.height;
+          ctx.clearRect(0, 0, w, h);
+          const maxS = Math.max(240, ...samples.map((s) => Number(s.speed_kmh) || 0));
+          const n = samples.length;
+          const line = (color, fn) => {
+            ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath();
+            samples.forEach((s, i) => {
+              const x = (i / Math.max(1, n - 1)) * w;
+              const y = h - 10 - fn(s) * (h - 20);
+              if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+          };
+          line("#38bdf8", (s) => (Number(s.speed_kmh) || 0) / maxS);
+          line("#10b981", (s) => Math.max(0, Math.min(1, Number(s.throttle) || 0)));
+          line("#ef4444", (s) => Math.max(0, Math.min(1, Number(s.brake) || 0)));
+          const idx = hoverIdx >= 0 && hoverIdx < n ? hoverIdx : Math.floor(n * 0.5);
+          const cur = samples[idx];
+          if (cur) {
+            const cx = (idx / Math.max(1, n - 1)) * w;
+            ctx.strokeStyle = "rgba(255,255,255,0.4)"; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, h); ctx.stroke();
+            $("mTelReadout").textContent = `${Math.round(cur.dist_m || 0)}m · ${Math.round(cur.speed_kmh || 0)} km/h · THR ${Math.round((cur.throttle || 0) * 100)}% · BRK ${Math.round((cur.brake || 0) * 100)}%`;
+          }
+        }
+
+        function render() {
+          if (!state) return;
+          const p = state.pilot || {};
+          const ir = state.iracing_profile || {};
+          const pt = state.playtime || {};
+          const sync = state.sync_status || {};
+          const lr = state.last_race;
+          const hud = state.hud_settings || {};
+          const sessions = state.recent_sessions || [];
+          const tel = state.latest_telemetry || {};
+          const queue = state.remote_queue || [];
+
+          $("mPilotName").textContent = `${p.name || "Piloto MMT"}${p.dorsal ? " " + p.dorsal : ""}`;
+          $("mPilotSub").textContent = ir.cust_id
+            ? `iRacing ID #${ir.cust_id} · ${ir.top_car || ir.favorite_car || "Sports Car"}`
+            : `${ir.favorite_car || "iRacing"} · ${sync.device_name || "MMT Sync"}`;
+          $("mPtToday").textContent = fmtDur(pt.today_sec || 0);
+          $("mPtHb").textContent = pt.last_heartbeat ? `Sync ${fmtAgo(pt.last_heartbeat)}` : "Listo";
+          $("mPtWeek").textContent = fmtDur(pt.week_sec || 0);
+          $("mPtTotal").textContent = pt.combined_hours > 0 ? `${Number(pt.combined_hours).toLocaleString("es-ES")} h` : fmtDur(pt.total_sec || 0);
+          $("mPtLaps").textContent = `${Number(pt.laps_recorded || 0).toLocaleString("es-ES")} vueltas`;
+          $("mVaultCount").textContent = sync.synced_setups_count ? Number(sync.synced_setups_count).toLocaleString("es-ES") : "—";
+          $("mDeviceName").textContent = sync.device_name || "PC";
+
+          const pill = $("mLivePill");
+          if (pt.live_now && pt.live_session) {
+            pill.className = "pill is-live";
+            pill.textContent = `● EN PISTA · V${pt.live_session.lap || 1}`;
+          } else {
+            pill.className = "pill";
+            pill.textContent = `● ${sync.device_name || "MMT Sync"}`;
+          }
+
+          // HUD settings sync UI
+          const logoMode = hud.brand_logo_mode || "original";
+          document.querySelectorAll("[data-mlogo]").forEach((b) => {
+            b.setAttribute("aria-pressed", b.getAttribute("data-mlogo") === logoMode ? "true" : "false");
+          });
+          const fBtn = $("mFocusToggle");
+          if (fBtn) {
+            fBtn.textContent = hud.focus_mode ? "ON" : "Off";
+            fBtn.className = hud.focus_mode ? "btn btn-primary" : "btn";
+            fBtn.style.height = "34px";
+          }
+
+          // Last race & sessions
+          if (lr) {
+            $("mLrTrack").textContent = lr.circuito;
+            $("mLrMeta").textContent = `${lr.coche} · ${lr.tipo_sesion} · ${lr.vueltas_validas} v. · ${fmtAgo(lr.fecha)}`;
+            $("mLrBest").textContent = fmtLap(lr.mejor_vuelta);
+            $("mLrAvg").textContent = fmtLap(lr.vuelta_media);
+            $("mLrInc").textContent = `${lr.incidentes ?? 0}x`;
+            $("mLrCons").textContent = lr.consistencia_pct ? `${Number(lr.consistencia_pct).toFixed(1)}%` : "—";
+          } else {
+            $("mLrTrack").textContent = "Sin sesiones registradas";
+            $("mLrMeta").textContent = "Abre MMT Sync en tu PC mientras ruedas en iRacing.";
+          }
+
+          $("mSessionsList").innerHTML = sessions.length
+            ? sessions.slice(0, 12).map((s) => `<div class="row"><div><strong>${esc(s.circuito)}</strong><small>${esc(s.coche)} · ${esc(s.tipo_sesion)} · ${esc(fmtAgo(s.fecha))}</small></div><div style="text-align:right"><code>${esc(fmtLap(s.mejor_vuelta))}</code><small>${esc(s.vueltas_validas || 0)}v · ${esc(s.incidentes ?? 0)}x</small></div></div>`).join("")
+            : `<p class="muted">Todavía no hay sesiones sincronizadas.</p>`;
+
+          $("mTelTitle").textContent = tel.track_name ? `${tel.track_name} · ${tel.car_screen_name || ""}` : "Sin telemetría en caché";
+          $("mLapsList").innerHTML = Array.isArray(tel.laps) && tel.laps.length
+            ? tel.laps.slice(0, 15).map((l) => `<div class="row"><div><strong>Vuelta ${esc(l.lap_num)}</strong><small>${l.delta_s === 0 ? "★ Mejor vuelta" : `+${Number(l.delta_s || 0).toFixed(3)}s`}</small></div><code>${esc(fmtLap(l.lap_time_s))}</code></div>`).join("")
+            : `<p class="muted">Sin vueltas en caché todavía.</p>`;
+          drawTrace();
+
+          $("mQueueList").innerHTML = queue.length
+            ? queue.slice(0, 10).map((q) => `<div class="row"><div><strong>${esc(q.car)} · ${esc(q.track)}</strong><small>${esc((q.setup_type || "race").toUpperCase())} · ${esc(fmtAgo(q.queued_at))}</small></div><code>${q.status === "installed" ? "✓ PC" : "Cola"}</code></div>`).join("")
+            : `<p class="muted">No hay setups en cola.</p>`;
+        }
+
+        async function load(toast) {
+          const tk = getTk();
+          $("mAuthGate").hidden = Boolean(tk);
+          if (!tk) return;
+          try {
+            state = await api("/api/desktop/companion/state", "GET");
+            render();
+            if (toast) flash("✓ Sincronizado con api.muntru.me");
+          } catch (e) {
+            if (toast) flash(e.message || "Error de conexión", true);
+          }
+          // Poll Muntrume Guard
+          try {
+            const g = await api("/api/auth/app-approve/pending", "GET");
+            const list = Array.isArray(g.pending) ? g.pending : [];
+            $("mGuardCard").hidden = !list.length;
+            if (list.length) {
+              $("mGuardList").innerHTML = list.map((it) => `<div class="row"><div><strong>Código ${esc(it.match_code)}</strong><small>${esc(it.requester_ua || "Solicitud de acceso")}</small></div><div style="display:flex;gap:6px"><button type="button" class="btn btn-primary" style="height:32px;padding:0 10px" data-gok="${esc(it.id)}">✔</button><button type="button" class="btn" style="height:32px;padding:0 10px;color:#ef4444" data-gno="${esc(it.id)}">✕</button></div></div>`).join("");
+              document.querySelectorAll("[data-gok]").forEach((b) => b.addEventListener("click", async () => {
+                await api("/api/auth/app-approve/respond", "POST", { challenge_id: b.getAttribute("data-gok"), action: "approve" });
+                flash("✓ Acceso aprobado"); load(false);
+              }));
+              document.querySelectorAll("[data-gno]").forEach((b) => b.addEventListener("click", async () => {
+                await api("/api/auth/app-approve/respond", "POST", { challenge_id: b.getAttribute("data-gno"), action: "deny" });
+                flash("Solicitud rechazada"); load(false);
+              }));
+            }
+          } catch {}
+        }
+
+        // Bottom tabs
+        document.querySelectorAll("[data-mtab]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const id = btn.getAttribute("data-mtab");
+            document.querySelectorAll("[data-mtab]").forEach((b) => b.classList.toggle("is-active", b === btn));
+            document.querySelectorAll("[data-mview]").forEach((v) => { v.hidden = v.getAttribute("data-mview") !== id; });
+            if (id === "telemetry") drawTrace();
+          });
+        });
+
+        // HUD Logo mode sync from phone -> D1 -> PC
+        document.querySelectorAll("[data-mlogo]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const mode = btn.getAttribute("data-mlogo");
+            try {
+              await api("/api/desktop/companion/push", "POST", { hud_settings: { brand_logo_mode: mode } });
+              if (state) state.hud_settings = { ...(state.hud_settings || {}), brand_logo_mode: mode };
+              render();
+              flash(`✓ Logos del HUD cambiados a ${mode}`);
+            } catch (e) { flash(e.message, true); }
+          });
+        });
+
+        $("mFocusToggle")?.addEventListener("click", async () => {
+          const next = !(state?.hud_settings?.focus_mode);
+          try {
+            await api("/api/desktop/companion/push", "POST", { hud_settings: { focus_mode: next } });
+            if (state) state.hud_settings = { ...(state.hud_settings || {}), focus_mode: next };
+            render();
+            flash(next ? "✓ Focus Mode activado en tu PC" : "Focus Mode desactivado");
+          } catch (e) { flash(e.message, true); }
+        });
+
+        $("mQueueForm")?.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          try {
+            await api("/api/desktop/companion/queue", "POST", {
+              action: "install_setup",
+              car: $("mQCar").value,
+              track: $("mQTrack").value.trim(),
+              setup_type: $("mQType").value,
+            });
+            flash("✓ Setup enviado a la cola de tu PC");
+            load(false);
+          } catch (err) { flash(err.message, true); }
+        });
+
+        // Telemetry touch scrubber
+        const cv = $("mTelCanvas");
+        if (cv) {
+          const scrub = (x) => {
+            const samples = state?.latest_telemetry?.best_lap_samples || [];
+            if (!samples.length) return;
+            const r = cv.getBoundingClientRect();
+            hoverIdx = Math.round(Math.max(0, Math.min(1, (x - r.left) / Math.max(1, r.width))) * (samples.length - 1));
+            drawTrace();
+          };
+          cv.addEventListener("mousemove", (e) => scrub(e.clientX));
+          cv.addEventListener("touchmove", (e) => { if (e.touches?.[0]) scrub(e.touches[0].clientX); }, { passive: true });
+        }
+
+        // PWA Install prompt (Android) + iPhone instructions
+        window.addEventListener("beforeinstallprompt", (e) => {
+          e.preventDefault();
+          deferredInstall = e;
+          $("mNativeInstallBtn").hidden = false;
+        });
+        $("mNativeInstallBtn")?.addEventListener("click", async () => {
+          if (!deferredInstall) return;
+          deferredInstall.prompt();
+          await deferredInstall.userChoice;
+          deferredInstall = null;
+          $("mInstallTip").hidden = true;
+        });
+        $("mBtnInstall")?.addEventListener("click", () => { $("mInstallTip").hidden = !$("mInstallTip").hidden; });
+        $("mShowInstallAgain")?.addEventListener("click", () => { $("mInstallTip").hidden = false; });
+        $("mCloseInstallTip")?.addEventListener("click", () => { $("mInstallTip").hidden = true; });
+        $("mBtnRefresh")?.addEventListener("click", () => load(true));
+
+        load(false);
+        setInterval(() => { if (!document.hidden) load(false); }, 30000);
+      })();
+    </script>
+  </body>
+</html>

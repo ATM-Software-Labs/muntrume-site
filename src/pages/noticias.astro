@@ -709,7 +709,7 @@ const pageDescription = "Official Muntrume Motorsport (MMT) race dispatches, iRa
           msg.textContent = "Confirmando suscripción…";
         }
         try {
-          var r = await fetch("https://muntrume.atrumin16.workers.dev/api/newsletter/subscribe", {
+          var r = await fetch("https://api.muntru.me/api/newsletter/subscribe", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: email, topics: topics, source: "noticias" })

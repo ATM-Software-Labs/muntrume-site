@@ -4,7 +4,7 @@
  * average stint lap time, and driver notes) and submits to muntru.me moderated by MMT Steward Bot.
  */
 
-const REVIEWS_API = "https://muntrume.atrumin16.workers.dev/api/setups/reviews";
+const REVIEWS_API = "https://api.muntru.me/api/setups/reviews";
 
 const MOODS = [
   { val: 1, emoji: "😤", label: "Intratable" },

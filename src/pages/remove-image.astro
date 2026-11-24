@@ -61,7 +61,7 @@ import Layout from "../layouts/Layout.astro";
         const fd = new FormData(form);
         if (btn) { btn.disabled = true; btn.textContent = "Enviando…"; }
         try {
-          const r = await fetch("https://muntrume.atrumin16.workers.dev/api/gallery/takedown", {
+          const r = await fetch("https://api.muntru.me/api/gallery/takedown", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

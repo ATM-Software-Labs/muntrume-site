@@ -1,7 +1,7 @@
 /* t273 · Home y plantilla: la instantánea de licencias ya está en el HTML.
    /api/drivers la sustituye solo cuando trae cifras. Coche favorito y carreras siguen en «Sin datos» si no vienen. */
 (function () {
-  var API = 'https://muntrume.atrumin16.workers.dev';
+  var API = 'https://api.muntru.me';
   var esc = function (v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   function uiLang() { return document.documentElement.lang || "es"; }
   function loc() { return window.muntruLocale ? window.muntruLocale(uiLang()) : "es-ES"; }

@@ -141,7 +141,7 @@ export async function getStaticPaths() {
 
   // 2. Cargar despachos externos desde el Worker API
   try {
-    const res = await fetch('https://muntrume.atrumin16.workers.dev/api/dispatches');
+    const res = await fetch('https://api.muntru.me/api/dispatches');
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data.dispatches) && data.dispatches.length > 0) {
@@ -483,7 +483,7 @@ const readTimeMinutes = Math.max(1, Math.ceil(wordCount / 200));
   {!isTeam && (
     <script define:vars={{ slug }}>
       if (slug) {
-        fetch('https://muntrume.atrumin16.workers.dev/api/dispatches/' + slug)
+        fetch('https://api.muntru.me/api/dispatches/' + slug)
           .then(function(r) {
             if (r.status === 410) {
               var c = document.getElementById('dispatchContainer');

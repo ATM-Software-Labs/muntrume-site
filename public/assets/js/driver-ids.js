@@ -1,6 +1,6 @@
 /* t266 · Vincular el ID de iRacing (cust_id) de cada piloto. Admin: todos (con código de verificación). Piloto: solo su ficha. */
 (function () {
-  var API = "https://muntrume.atrumin16.workers.dev/api/setups/";
+  var API = "https://api.muntru.me/api/setups/";
   var box = document.getElementById("driverIdsPanel");
   if (!box) return;
   var esc = function (v) { return String(v == null ? "" : v).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); };

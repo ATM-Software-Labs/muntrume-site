@@ -1,5 +1,5 @@
 (function () {
-  var API = "https://muntrume.atrumin16.workers.dev";
+  var API = "https://api.muntru.me";
   var params = new URLSearchParams(location.search);
   var code = params.get("code") || "";
   var codeEl = document.getElementById("vincularCode");

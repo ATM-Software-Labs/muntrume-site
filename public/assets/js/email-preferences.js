@@ -3,7 +3,7 @@
  * Pilot and subscriber email preferences controller (works via email link, logged-in session, or direct visit)
  */
 (() => {
-  const API = "https://muntrume.atrumin16.workers.dev/api/email/prefs";
+  const API = "https://api.muntru.me/api/email/prefs";
   const STORAGE_KEY = "mmt_email_prefs_v1";
   const LINK_KEY = "mmt_email_prefs_link";
 

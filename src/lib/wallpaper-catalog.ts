@@ -11,7 +11,7 @@ import {
   pathnameOf,
 } from "./wallpaper-allowlist";
 
-const API_BASE = "https://muntrume.atrumin16.workers.dev";
+const API_BASE = "https://api.muntru.me";
 
 export interface WallpaperItem {
   id: string;

@@ -1,4 +1,4 @@
-const WS_URL = "wss://muntrume.atrumin16.workers.dev/api/paddock/ws";
+const WS_URL = "wss://api.muntru.me/api/paddock/ws";
 
 interface PaddockMessage {
   t?: string;
@@ -109,7 +109,7 @@ async function hasSession(): Promise<boolean> {
     /* sigue el intento remoto */
   }
   try {
-    const res = await fetch("https://muntrume.atrumin16.workers.dev/api/session", { credentials: "include" });
+    const res = await fetch("https://api.muntru.me/api/session", { credentials: "include" });
     return res.ok;
   } catch {
     return false;

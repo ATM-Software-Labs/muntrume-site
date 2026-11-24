@@ -1,7 +1,7 @@
 /* Perfiles públicos de piloto (solo los que un admin ha marcado como visibles). Datos de /api/pilots. */
 (function () {
   "use strict";
-  var API = "https://muntrume.atrumin16.workers.dev/api/pilots";
+  var API = "https://api.muntru.me/api/pilots";
   var grid = document.getElementById("pilotGrid");
   var list = document.getElementById("pilotList");
   var detail = document.getElementById("pilotDetail");

@@ -214,7 +214,7 @@ const pageSchema = {
               <div class={`grid ${gridCols} gap-0.5 bg-[var(--r-bg-2)] p-1`}>
                 {thumbs.map((t) => (
                   <div class="aspect-video bg-[#090b0f] overflow-hidden rounded-[2px]">
-                    <img src={t.img} alt={t.model} loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://muntrume.atrumin16.workers.dev/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}" class="w-full h-full object-cover object-center cursor-zoom-in" data-preview-id={t.id} />
+                    <img src={t.img} alt={t.model} loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://api.muntru.me/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}" class="w-full h-full object-cover object-center cursor-zoom-in" data-preview-id={t.id} />
                   </div>
                 ))}
               </div>
@@ -246,7 +246,7 @@ const pageSchema = {
         {apiAlbums.map((alb) => (
           <article class="rounded-lg border border-[var(--r-line)] bg-[var(--r-surface)] overflow-hidden flex flex-col justify-between hover:border-[var(--r-accent)]/60 transition">
             <div class="aspect-video bg-[#090b0f] overflow-hidden">
-              <img src={alb.cover} alt={alb.title} loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://muntrume.atrumin16.workers.dev/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}" class="w-full h-full object-cover" />
+              <img src={alb.cover} alt={alb.title} loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://api.muntru.me/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}" class="w-full h-full object-cover" />
             </div>
             <div class="p-4 space-y-2.5 font-mono">
               <div class="flex items-center justify-between text-[10px]">
@@ -304,7 +304,7 @@ const pageSchema = {
                 {group.items.map((w) => (
                   <article class="wp-card group rounded-lg border border-[var(--r-line)] bg-[var(--r-surface)] overflow-hidden flex flex-col hover:border-emerald-500/60 transition shadow-sm" data-id={w.id} data-brand={w.brand} data-search={`${w.brand} ${w.model} ${w.title} ${w.seriesName} ${w.carClass} ${w.circuit}`.toLowerCase()}>
                     <div class="wp-thumb-wrap relative aspect-video bg-[#090b0f] overflow-hidden">
-                      <img src={w.img} alt={w.alt} width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://muntrume.atrumin16.workers.dev/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}else{var c=this.closest('.wp-card');if(c)c.style.display='none';}" data-preview-id={w.id} class="w-full h-full object-cover cursor-zoom-in transition-transform duration-300 group-hover:scale-105" />
+                      <img src={w.img} alt={w.alt} width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://api.muntru.me/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}else{var c=this.closest('.wp-card');if(c)c.style.display='none';}" data-preview-id={w.id} class="w-full h-full object-cover cursor-zoom-in transition-transform duration-300 group-hover:scale-105" />
                       <label class="absolute top-2 left-2 z-10 inline-flex items-center gap-1.5 px-2 py-1 rounded bg-black/80 border border-white/20 text-[10px] font-mono cursor-pointer select-none" style="color:#ffffff;">
                         <input type="checkbox" class="wp-chk accent-emerald-500" value={w.id} />
                         <span>Elegir</span>
@@ -432,7 +432,7 @@ const pageSchema = {
   <script>
     import JSZip from "jszip";
 
-    const PROXY_BASE = "https://muntrume.atrumin16.workers.dev/api/media/proxy?url=";
+    const PROXY_BASE = "https://api.muntru.me/api/media/proxy?url=";
     const payload = JSON.parse(document.getElementById("wpCatalogData")?.textContent || "{}");
     const allItems: Array<{ id: string; brand: string; model: string; carClass: string; circuit: string; img: string; cleanFileBase: string }> = payload.allWallpapers || [];
     const packsMeta: Array<{ id: string; slug: string; title: string; itemIds: string[] }> = payload.packs || [];

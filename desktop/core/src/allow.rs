@@ -3,7 +3,7 @@
 use thiserror::Error;
 use url::Url;
 
-pub const API_ORIGIN: &str = "https://muntrume.atrumin16.workers.dev";
+pub const API_ORIGIN: &str = "https://api.muntru.me";
 
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum ApiUrlError {
@@ -22,7 +22,7 @@ pub fn api_url(path: &str) -> Result<Url, ApiUrlError> {
         return Err(ApiUrlError::Path);
     }
     let url = Url::parse(&format!("{API_ORIGIN}{path}")).map_err(|_| ApiUrlError::Path)?;
-    if url.scheme() != "https" || url.host_str() != Some("muntrume.atrumin16.workers.dev") {
+    if url.scheme() != "https" || url.host_str() != Some("api.muntru.me") {
         return Err(ApiUrlError::Host);
     }
     if !url.username().is_empty() || url.password().is_some() {
@@ -67,7 +67,7 @@ mod tests {
     fn api_url_stays_on_the_workers_host() {
         let url = api_url("/api/desktop/manifest").unwrap();
         assert_eq!(url.scheme(), "https");
-        assert_eq!(url.host_str(), Some("muntrume.atrumin16.workers.dev"));
+        assert_eq!(url.host_str(), Some("api.muntru.me"));
         assert_eq!(url.path(), "/api/desktop/manifest");
         assert!(api_url("/api/desktop/setups/abc_1/file").is_ok());
     }
@@ -91,7 +91,7 @@ mod tests {
         assert!(allowed_verify_url("https://evil.com/muntru.me").is_none());
         assert!(allowed_verify_url("https://user:pass@muntru.me/").is_none());
         assert!(allowed_verify_url("javascript:alert(1)").is_none());
-        assert!(allowed_verify_url("https://muntrume.atrumin16.workers.dev/").is_none());
+        assert!(allowed_verify_url("https://api.muntru.me/").is_none());
     }
 
     #[test]

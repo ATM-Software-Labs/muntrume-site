@@ -31,7 +31,7 @@
 
     // 3. Contact Form Submission → Worker /api/contact (sends via Resend; "sent" only when the Worker confirms)
     (() => {
-      const API = 'https://muntrume.atrumin16.workers.dev/api/contact';
+      const API = 'https://api.muntru.me/api/contact';
       const form = document.getElementById('contactForm');
       const btn = document.getElementById('submitBtn');
       const btnText = document.getElementById('submitText');

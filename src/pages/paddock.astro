@@ -1030,7 +1030,7 @@ const topHistoricTracks = allTracksWithPop.slice(0, 8);
         else usedImgs.add(src);
       });
 
-      fetch("https://muntrume.atrumin16.workers.dev/api/gallery?status=published")
+      fetch("https://api.muntru.me/api/gallery?status=published")
         .then((r) => (r.ok ? r.json() : null))
         .then((data) => {
           if (!data || !Array.isArray(data.photos)) return;
@@ -1073,7 +1073,7 @@ const topHistoricTracks = allTracksWithPop.slice(0, 8);
                 return `
                   <a href="/albums/?car=${encodeURIComponent(a.slug)}" class="group rounded-xl overflow-hidden bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-300 flex flex-col justify-between">
                     <div class="relative w-full aspect-video overflow-hidden bg-[#090d12]">
-                      <img src="${a.cover}" alt="${a.car}" width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://muntrume.atrumin16.workers.dev/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      <img src="${a.cover}" alt="${a.car}" width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://api.muntru.me/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                       <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded bg-black/80 border border-white/15 text-[10px] font-mono font-bold uppercase" style="color:#34d399;">${a.category}</span>
                       <span class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded bg-black/75 border border-white/15 text-[10px] font-mono font-bold" style="color:#ffffff;">${a.count} ${a.count === 1 ? "foto" : "fotos"} · ${a.views} ${a.views === 1 ? "vista" : "vistas"}</span>
                     </div>
@@ -1293,7 +1293,7 @@ const topHistoricTracks = allTracksWithPop.slice(0, 8);
       });
 
       if (!res.ok && res.status === 404) {
-        res = await fetch('https://muntrume.atrumin16.workers.dev/api/paddock-pass', {
+        res = await fetch('https://api.muntru.me/api/paddock-pass', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)

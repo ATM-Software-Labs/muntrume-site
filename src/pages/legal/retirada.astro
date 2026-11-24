@@ -146,7 +146,7 @@ const pageUrl = "https://muntru.me/legal/retirada";
         if (match) slug = match[1];
 
         try {
-          const res = await fetch('https://muntrume.atrumin16.workers.dev/api/dispatches/takedown', {
+          const res = await fetch('https://api.muntru.me/api/dispatches/takedown', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

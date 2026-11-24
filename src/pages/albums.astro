@@ -110,7 +110,7 @@ const pageDescription =
           return `
             <a href="/gallery/?car=${encodeURIComponent(album.slug)}${altsParam}" data-brand="${album.car}" data-class="${album.category}" class="album-card group rounded-2xl overflow-hidden bg-[var(--r-surface)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition-all duration-300 flex flex-col justify-between">
               <div class="relative w-full aspect-video overflow-hidden bg-[var(--r-bg-2)]">
-                <img src="${album.cover}" alt="${album.car}" width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://muntrume.atrumin16.workers.dev/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}else{this.closest('.album-card')?.remove();}" class="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105" style="${cropStyle}" />
+                <img src="${album.cover}" alt="${album.car}" width="640" height="360" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="if(!this.dataset.proxied){this.dataset.proxied='1';this.src='https://api.muntru.me/api/media/proxy?url='+encodeURIComponent(this.getAttribute('src')||'');}else{this.closest('.album-card')?.remove();}" class="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105" style="${cropStyle}" />
                 <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded bg-black/80 border border-white/15 text-[10px] font-mono font-bold uppercase" style="color:#34d399;">${LABELS[album.category] || album.category}</span>
                 <span class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded bg-black/75 border border-white/15 text-[10px] font-mono font-bold" style="color:#ffffff;">${album.count} ${photoLabel} · ${album.views} ${viewLabel}</span>
               </div>
@@ -185,7 +185,7 @@ const pageDescription =
         "dirt-outlaw-micro-sprint-non-winged": { slug: "dirt-micro-sprint-non-winged", car: "Dirt Outlaw Micro Sprint (Non-Winged)" },
       };
 
-      fetch("https://muntrume.atrumin16.workers.dev/v1/albums")
+      fetch("https://api.muntru.me/v1/albums")
         .then((r) => (r.ok ? r.json() : null))
         .then((data) => {
           if (!data || !Array.isArray(data.albums)) return;

@@ -9,7 +9,7 @@
   },
   "servers": [
     { "url": "https://ai.muntru.me", "description": "Production Edge Custom Domain" },
-    { "url": "https://muntrume.atrumin16.workers.dev", "description": "Cloudflare Workers Origin" }
+    { "url": "https://api.muntru.me", "description": "Cloudflare Workers Origin" }
   ],
   "components": {
     "securitySchemes": {
