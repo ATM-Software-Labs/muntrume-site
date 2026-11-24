@@ -225,6 +225,18 @@
     "sourceUrl": "https://www.lucasoil.com/",
     "license": "MIT · ATM Software Labs / Muntrume Motorsport (emblema minimalista HUD).",
     "note": "Escudo minimalista Lucas Oil Off Road para Pro 2 Lite, Pro 2 y Pro 4 Trucks.",
-    "viewBox": "0 0 120 120"
+    "viewBox": "0 0 64 64"
+  },
+  "logo-carstour": {
+    "sourceUrl": "https://www.carsracingtour.com/",
+    "license": "MIT · ATM Software Labs / Muntrume Motorsport (emblema minimalista HUD).",
+    "note": "Emblema minimalista CARS Tour para Late Model Stock y Super Late Model.",
+    "viewBox": "0 0 64 64"
+  },
+  "logo-srx": {
+    "sourceUrl": "https://www.srxracing.com/",
+    "license": "MIT · ATM Software Labs / Muntrume Motorsport (emblema minimalista HUD).",
+    "note": "Monograma minimalista SRX (Superstar Racing Experience).",
+    "viewBox": "0 0 64 64"
   }
 }

@@ -8,9 +8,6 @@ import type { RawCarEntry } from "./catalog";
  * A car with no single verified constructor stays under "Sin fabricante único"
  * and off the public brand pages.
  */
-const U = "Sin fabricante único";
-const N = "logo-neutral";
-
 export const EXTRA_IRACING_CARS: readonly RawCarEntry[] = [
   // Prototypes and GT that the filepath lists and this catalog did not.
   { carFolder: "audir18", brand: "Audi", model: "R18", carClass: "Prototype", svgLogoId: "logo-audi", accentColor: "#C0C0C0", specs: "LMP1 hybrid · Audi Sport" },
@@ -88,19 +85,19 @@ export const EXTRA_IRACING_CARS: readonly RawCarEntry[] = [
   { carFolder: "porsche991cup", brand: "Porsche", model: "911 GT3 Cup (991)", carClass: "GT3", svgLogoId: "logo-porsche", accentColor: "#D4AF37", specs: "4.0L Flat-6 · Single-Make Cup", legacy: true },
   { carFolder: "porsche911gt3r", brand: "Porsche", model: "911 GT3 R (991)", carClass: "GT3", svgLogoId: "logo-porsche", accentColor: "#D4AF37", specs: "4.0L Flat-6 · GT3", legacy: true },
 
-  // Licensed series cars (NASCAR, USAC, DIRTcar, World of Outlaws, Lucas Oil) & spec cars.
-  { carFolder: "streetstock", brand: U, model: "Street Stock", carClass: "Oval", svgLogoId: N, accentColor: "#C0C0C0" },
-  { carFolder: "streetstockcasino", brand: U, model: "Street Stock Casino", carClass: "Oval", svgLogoId: N, accentColor: "#C0C0C0" },
-  { carFolder: "streetstockeagle", brand: U, model: "Street Stock Eagle", carClass: "Oval", svgLogoId: N, accentColor: "#C0C0C0", specs: "iRacing page: Street Stock – Eagle" },
+  // Street Stocks (GM/Chevy Panther C1 & Casino M2, Ford Eagle T3), SRX & Dirt series.
+  { carFolder: "streetstock", brand: "Chevrolet", model: "Street Stock – Panther C1", carClass: "Oval", svgLogoId: "logo-chevy", accentColor: "#FACC15", specs: "Street Stock Panther C1 (GM/Chevy)" },
+  { carFolder: "streetstockcasino", brand: "Chevrolet", model: "Street Stock – Casino M2", carClass: "Oval", svgLogoId: "logo-chevy", accentColor: "#FACC15", specs: "Street Stock Casino M2 (GM/Chevy)" },
+  { carFolder: "streetstockeagle", brand: "Ford", model: "Street Stock – Eagle T3", carClass: "Oval", svgLogoId: "logo-ford", accentColor: "#2563EB", specs: "Street Stock Eagle T3 (Ford)" },
   { carFolder: "silvercrown", brand: "USAC", model: "Silver Crown", carClass: "Oval", svgLogoId: "logo-usac", accentColor: "#EF4444", specs: "USAC Silver Crown · C&R Racing" },
   { carFolder: "sprint", brand: "World of Outlaws", model: "Sprint Car", carClass: "Oval", svgLogoId: "logo-woo", accentColor: "#EF4444", specs: "Asphalt Winged Sprint Car" },
-  { carFolder: "srx", brand: U, model: "SRX", carClass: "Oval", svgLogoId: N, accentColor: "#C0C0C0", specs: "Superstar Racing Experience" },
+  { carFolder: "srx", brand: "SRX", model: "SRX", carClass: "Oval", svgLogoId: "logo-srx", accentColor: "#F59E0B", specs: "Superstar Racing Experience" },
   { carFolder: "gen4grandnational", brand: "NASCAR", model: "Gen 4 Grand National", carClass: "Oval", svgLogoId: "logo-nascar", accentColor: "#FACC15", specs: "NASCAR Gen 4 Grand National" },
 
   { carFolder: "dirtmodified358", brand: "DIRTcar", model: "Dirt 358 Modified", carClass: "Dirt", svgLogoId: "logo-dirtcar", accentColor: "#F59E0B" },
   { carFolder: "dirtlatemodel350", brand: "DIRTcar", model: "Limited Dirt Late Model", carClass: "Dirt", svgLogoId: "logo-dirtcar", accentColor: "#F59E0B" },
   { carFolder: "dirtmidget", brand: "USAC", model: "Dirt Midget", carClass: "Dirt", svgLogoId: "logo-usac", accentColor: "#EF4444" },
-  { carFolder: "dirtministock", brand: U, model: "Dirt Mini Stock", carClass: "Dirt", svgLogoId: N, accentColor: "#C0C0C0" },
+  { carFolder: "dirtministock", brand: "Ford", model: "Dirt Mini Stock", carClass: "Dirt", svgLogoId: "logo-ford", accentColor: "#2563EB", specs: "4-cyl Mini Stock (Ford Pinto/Mustang)" },
   { carFolder: "dirtsprint305", brand: "World of Outlaws", model: "Dirt Sprint 305", carClass: "Dirt", svgLogoId: "logo-woo", accentColor: "#EF4444" },
   { carFolder: "dirtsprintnonwinged360", brand: "USAC", model: "Dirt Sprint Non-Winged 360", carClass: "Dirt", svgLogoId: "logo-usac", accentColor: "#EF4444" },
   { carFolder: "dirtsprintnonwinged410", brand: "USAC", model: "Dirt Sprint Non-Winged 410", carClass: "Dirt", svgLogoId: "logo-usac", accentColor: "#EF4444" },

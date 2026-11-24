@@ -293,6 +293,20 @@ export const BRAND_LOGO_ASSETS: Record<string, BrandLogoAsset> = {
     "sourceUrl": "https://www.lucasoil.com/",
     "license": "Lucas Oil Off Road minimalist emblem for iRacing Pro 2 / Pro 4 Trucks HUD.",
     "note": "Emblema minimalista Lucas Oil Off Road para Pro 2, Pro 2 Lite y Pro 4 Trucks."
+  },
+  "logo-carstour": {
+    "viewBox": "0 0 64 64",
+    "inner": "<path fill=\"#0F172A\" stroke=\"#EF4444\" stroke-width=\"3\" d=\"M10 16 H54 L48 48 H16 Z\"/><path fill=\"#FFFFFF\" d=\"M20 25 H30 V29.5 H24.5 V34.5 H30 V39 H20 Z M33 25 H46 V29.5 H42 V39 H37 V29.5 H33 Z\"/>",
+    "sourceUrl": "https://www.carsracingtour.com/",
+    "license": "CARS Tour minimalist emblem for iRacing Late Model Stock & Super Late Model HUD.",
+    "note": "Emblema minimalista CARS Tour (rojo y blanco) para Late Model Stock y Super Late Model."
+  },
+  "logo-srx": {
+    "viewBox": "0 0 64 64",
+    "inner": "<path fill=\"#F59E0B\" d=\"M10 22 H24 V27 H15 V30 H24 V42 H10 V37 H19 V34 H10 Z M27 22 H39 C42 22 44 24 44 27.5 C44 30.2 42.5 32 40 32.8 L44.5 42 H39 L35 33.5 H32 V42 H27 Z M32 26.5 V29.5 H37.5 C38.5 29.5 39 28.8 39 28 C39 27.2 38.5 26.5 37.5 26.5 Z M46 22 H51.5 L54 28.5 L56.5 22 H62 L57 32 L62 42 H56.5 L54 35.5 L51.5 42 H46 L51 32 Z\"/>",
+    "sourceUrl": "https://www.srxracing.com/",
+    "license": "SRX (Superstar Racing Experience) minimalist monogram for iRacing SRX HUD.",
+    "note": "Monograma minimalista SRX (Superstar Racing Experience) en ámbar/oro."
   }
 };
 
@@ -306,6 +320,7 @@ export type BrandLogoTheme = "original" | "white" | "black";
  */
 export const DARK_BODY_BADGE_IDS = new Set<string>([
   "logo-bmw",
+  "logo-carstour",
   "logo-caterham",
   "logo-dirtcar",
   "logo-fia",
