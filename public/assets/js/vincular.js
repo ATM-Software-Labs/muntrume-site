@@ -117,11 +117,12 @@
     var headers = { "Content-Type": "application/json" };
     var bearer = token();
     if (bearer) headers.Authorization = "Bearer " + bearer;
+    var payload = JSON.stringify(bearer ? { user_code: code, token: bearer } : { user_code: code });
     fetch(API + "/api/desktop/auth/approve", {
       method: "POST",
-      credentials: "include",
+      credentials: bearer ? "omit" : "include",
       headers: headers,
-      body: JSON.stringify({ user_code: code })
+      body: payload
     }).then(function (res) {
       if (res.status === 401 || res.status === 403) {
         if (status) status.textContent = "La sesión no vale. Entra otra vez.";
@@ -129,11 +130,12 @@
         return;
       }
       if (!res.ok) {
-        if (status) status.textContent = "No se pudo autorizar el dispositivo.";
-        return;
+        return res.json().catch(function () { return {}; }).then(function (err) {
+          if (status) status.textContent = (err && err.error) || "No se pudo autorizar el dispositivo (código caducado o inválido).";
+        });
       }
       if (lead) lead.textContent = "Dispositivo autorizado. Ya puedes volver a MMT Sync.";
-      if (status) status.textContent = "";
+      if (status) status.textContent = "✓ Vinculado correctamente.";
       approve.hidden = true;
     }).catch(function () {
       if (status) status.textContent = "Sin conexión con el API.";
