@@ -14,22 +14,26 @@ const SEED_POSTS = [
     summary: "Puntos clave de frenada en Sunset Bend y Tower Turn, presiones en caliente para stints de 45 min y dónde evitar los baches de hormigón para no sobrecalentar el neumático delantero derecho.",
     body: "Resumen técnico tras las tandas de entrenamiento en Sebring International Raceway (Semana 11):\n\n1. Sunset Bend (T17): entrar ligeramente abierto sobre el hormigón para esquivar el bache central y aplicar gas progresivo al pasar el ápice interior. Un toque de brake bias +0.4% hacia delante estabiliza el tren trasero.\n2. Presiones GT3: objetivo 165–168 kPa en caliente tras 4 vueltas. En el Mustang GT3 y McLaren 720S GT3 EVO el delantero izquierdo sufre en T1 y Bishop Bend.\n3. Tráfico multiclase IMSA: en las eses rápidas (T3-T5) mantener siempre línea predecible; los GTP pierden menos tiempo pasando por exterior a la salida de T5.\n\nDejad vuestras notas de telemetría de Garage 61 o sensaciones de setup en los comentarios.",
     tags: ["Sebring", "IMSA", "GT3", "2026-S4"],
-    likes: 12,
+    likes: 24,
     comment_count: 2,
     pinned: 1,
     created_at: "2026-11-23T18:30:00.000Z",
     seedComments: [
       {
         id: "sc-1",
+        parent_id: "",
         author_name: "Mateo B.",
         author_role: "DRIVER",
+        likes: 6,
         body: "Confirmo lo de T17: subiendo 0.5% el brake bias a partir de mitad de stint el coche deja de rebotar en la entrada.",
         created_at: "2026-11-23T20:10:00.000Z",
       },
       {
         id: "sc-2",
+        parent_id: "sc-1",
         author_name: "Eduardo C.",
         author_role: "DRIVER",
+        likes: 4,
         body: "Con el 720S GT3 EVO bajar 1 click el ala trasera ayuda muchísimo en la recta de Ullman sin perder estabilidad en T1.",
         created_at: "2026-11-24T09:15:00.000Z",
       },
@@ -46,15 +50,17 @@ const SEED_POSTS = [
     summary: "Comparativa práctica para pilotos del equipo que alternan entre iRacing y Le Mans Ultimate: curva de freno, gestión de temperatura de neumáticos y perfiles Direct Drive.",
     body: "Cada vez más pilotos de Muntrume Motorsport alternan iRacing con Le Mans Ultimate (LMU) para preparar resistencia WEC.\n\nDiferencias clave a tener en cuenta al cambiar de simulador:\n- Frenada y ABS: en LMGT3 de LMU el ABS permite entrar más profundo con trail-braking; en iRacing un bloqueo prolongado dispara la temperatura superficial y te penaliza las 2 vueltas siguientes.\n- Force Feedback: recomendamos bajar ligeramente el smoothing en LMU (1–2) para sentir el límite de deslizamiento lateral en los pianos de Le Mans y Spa.\n- Gestión de energía (Hypercar): mapear en el volante el botón de motor map y regeneración desde el primer entrenamiento.\n\nSi alguien quiere compartir su perfil de volante para LMU o montar sala de equipo, comentad aquí.",
     tags: ["LMU", "iRacing", "LMGT3", "Hypercar"],
-    likes: 9,
+    likes: 18,
     comment_count: 1,
     pinned: 0,
     created_at: "2026-11-22T15:00:00.000Z",
     seedComments: [
       {
         id: "sc-3",
+        parent_id: "",
         author_name: "Mateo B.",
         author_role: "DRIVER",
+        likes: 5,
         body: "Buenísima guía. En LMU noté muchísimo la diferencia bajando la sensibilidad del pedal al 100% lineal sin curvas.",
         created_at: "2026-11-22T18:45:00.000Z",
       },
@@ -71,7 +77,7 @@ const SEED_POSTS = [
     summary: "Evaluación técnica de Assetto Corsa EVO para futuras ligas y eventos internos del equipo, incluyendo compatibilidad de periféricos y objetivos de telemetría.",
     body: "Abrimos hilo oficial para recopilar sensaciones, benchmarks de rendimiento y configuraciones de volante en Assetto Corsa EVO.\n\nPuntos que estamos probando desde Ingeniería MMT:\n1. Modelo de neumáticos y transferencia de pesos en curvas enlazadas (Imola / Brands Hatch).\n2. Rendimiento en triple screen y VR con el motor propio de Kunos.\n3. Futura integración de telemetría para que los pilotos multi-sim también sumen estadísticas y logros en su ficha oficial de muntru.me.\n\n¿Qué coches y circuitos os gustaría ver en las pachangas internas de AC EVO?",
     tags: ["AC EVO", "Multi-Sim", "Ingeniería"],
-    likes: 7,
+    likes: 14,
     comment_count: 0,
     pinned: 0,
     created_at: "2026-11-20T12:00:00.000Z",
@@ -88,7 +94,7 @@ const SEED_POSTS = [
     summary: "Cómo colocar Tempest Weather, Radar/Spotter, Relative y Calculadora de Fuel sin saturar la pantalla y sincronizar tu preset con la nube de Muntrume.",
     body: "Con MMT Sync v0.6.7 hemos añadido 4 nuevos módulos Pro-Free basados en estándares open-source: Tempest Weather, Blind Spot / Spotter, Session & Incidents e In-Car Electronics.\n\nLayout recomendado para 1440p / 1080p:\n- Superior izquierda: Session & Incidents + Tempest Weather compacto.\n- Inferior izquierda: Relative (7 filas) con emblemas oficiales de fabricante.\n- Centro inferior: Input Telemetry + In-Car Electronics (TC / ABS / BB).\n- Inferior derecha: Calculadora de Fuel + Blind Spot lateral.\n\nRecuerda que puedes guardar tu layout en la nube desde el botón de sincronización y recuperarlo en cualquier PC.",
     tags: ["MMT Sync", "Overlays", "HUD", "Open Source"],
-    likes: 15,
+    likes: 31,
     comment_count: 0,
     pinned: 0,
     created_at: "2026-11-24T11:00:00.000Z",
@@ -96,20 +102,20 @@ const SEED_POSTS = [
   },
 ];
 
-const CATEGORIES = [
-  { id: "all", label: "Todos" },
-  { id: "analisis", label: "Análisis de Carrera" },
-  { id: "setups", label: "Setups & Telemetría" },
-  { id: "multisim", label: "Multi-Sim (LMU / AC EVO)" },
-  { id: "overlays", label: "Hardware & Overlays" },
-];
+const FLAIRS: Record<string, { label: string; color: string; bg: string }> = {
+  analisis: { label: "Análisis de Carrera", color: "#00e699", bg: "rgba(0, 230, 153, 0.14)" },
+  setups: { label: "Setups & Telemetría", color: "#38bdf8", bg: "rgba(56, 189, 248, 0.14)" },
+  multisim: { label: "Multi-Sim", color: "#f43f5e", bg: "rgba(244, 63, 94, 0.14)" },
+  overlays: { label: "Hardware & Overlays", color: "#f59e0b", bg: "rgba(245, 158, 11, 0.14)" },
+  debate: { label: "Debate", color: "#a78bfa", bg: "rgba(167, 139, 250, 0.14)" },
+};
 
 const forumSchema = {
   "@context": "https://schema.org",
   "@type": "CollectionPage",
-  name: "Foro Técnico y Análisis · Muntrume Motorsport",
+  name: "Foro Técnico y Comunidad · Muntrume Motorsport",
   url: "https://forum.muntru.me/",
-  description: "Foro oficial de Muntrume Motorsport: análisis de carreras, debriefs de resistencia, setups, telemetría de iRacing, Le Mans Ultimate y Assetto Corsa EVO.",
+  description: "Foro estilo comunidad de Muntrume Motorsport: análisis de carreras, setups, telemetría y debates de iRacing, Le Mans Ultimate, Assetto Corsa EVO, ACC, rFactor 2, AMS2 y F1.",
   publisher: {
     "@type": "SportsTeam",
     name: "Muntrume Motorsport",
@@ -126,21 +132,10 @@ const forumSchema = {
         text: p.summary,
         datePublished: p.created_at,
         url: `https://forum.muntru.me/#${p.slug}`,
-        author: {
-          "@type": "Person",
-          name: p.author_name,
-        },
+        author: { "@type": "Person", name: p.author_name },
         interactionStatistic: [
-          {
-            "@type": "InteractionCounter",
-            interactionType: "https://schema.org/LikeAction",
-            userInteractionCount: p.likes,
-          },
-          {
-            "@type": "InteractionCounter",
-            interactionType: "https://schema.org/CommentAction",
-            userInteractionCount: p.comment_count,
-          },
+          { "@type": "InteractionCounter", interactionType: "https://schema.org/LikeAction", userInteractionCount: p.likes },
+          { "@type": "InteractionCounter", interactionType: "https://schema.org/CommentAction", userInteractionCount: p.comment_count },
         ],
       },
     })),
@@ -151,309 +146,627 @@ const simList = Object.values(SIM_BADGES);
 ---
 
 <Layout
-  title="Foro Técnico y Análisis · Muntrume Motorsport (forum.muntru.me)"
-  description="Foro oficial de análisis de carrera, setups, telemetría y debates multi-sim (iRacing, Le Mans Ultimate, Assetto Corsa EVO) de Muntrume Motorsport."
+  title="Muntrume Forum · Comunidad Sim Racing (forum.muntru.me)"
+  description="Foro oficial de Muntrume Motorsport al estilo comunidad: análisis de carrera, setups, telemetría y debates de iRacing, Le Mans Ultimate, Assetto Corsa EVO, ACC, rFactor 2 y AMS2."
   canonical="https://forum.muntru.me/"
 >
   <script type="application/ld+json" is:inline set:html={JSON.stringify(forumSchema)} />
-  <section class="mf-wrap">
-    <!-- Hero Header -->
-    <header class="mf-hero">
-      <div class="mf-hero__copy">
-        <span class="mf-kicker">FORUM.MUNTRU.ME · COMUNIDAD &amp; INGENIERÍA</span>
-        <h1 class="mf-title">Foro Técnico &amp; Análisis de Carrera</h1>
-        <p class="mf-sub">
-          Debriefs de resistencia, guías de circuito, telemetría de Garage 61, setups y debates multi-sim en
-          <strong>iRacing</strong>, <strong>Le Mans Ultimate</strong> y <strong>Assetto Corsa EVO</strong>.
-          Indexado para toda la comunidad de sim racing.
-        </p>
-      </div>
-      <div class="mf-hero__actions">
-        <button type="button" id="mfNewBtn" class="mf-btn mf-btn--primary">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
-          <span>Nuevo análisis</span>
-        </button>
-        <a href="https://muntru.me/pilotos/" class="mf-btn mf-btn--ghost">Ver pilotos y staff →</a>
-      </div>
-    </header>
 
-    <!-- Category + Sim Filter Bar -->
-    <div class="mf-toolbar">
-      <div class="mf-cats" role="tablist" aria-label="Categorías del foro">
-        {CATEGORIES.map((c, idx) => (
-          <button
-            type="button"
-            class:list={["mf-cat-pill", idx === 0 && "is-active"]}
-            data-cat={c.id}
-            role="tab"
-            aria-selected={idx === 0 ? "true" : "false"}
-          >
-            {c.label}
+  <div class="rd-shell">
+    <!-- LEFT SIDEBAR: Feeds & Game Communities with Real Official Logos -->
+    <aside class="rd-left" aria-label="Comunidades y feeds">
+      <div class="rd-nav-group">
+        <span class="rd-nav-label">FEEDS</span>
+        <button type="button" class="rd-nav-item is-active" data-feed="all">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span>Inicio</span>
+        </button>
+        <button type="button" class="rd-nav-item" data-feed="popular">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2c.5 4-2 6-2 9a4 4 0 0 0 8 0c0-3-2-5-3-9-1 2-2 3-3 0z"/><path d="M8.5 14.5A2.5 2.5 0 0 0 11 17c1.4 0 2.5-1.1 2.5-2.5"/></svg>
+          <span>Populares</span>
+        </button>
+        <button type="button" class="rd-nav-item" data-feed="saved">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          <span>Guardados</span>
+          <span class="rd-nav-badge" id="rdSavedCount">0</span>
+        </button>
+      </div>
+
+      <div class="rd-nav-group">
+        <span class="rd-nav-label">COMUNIDADES (SIMS)</span>
+        {simList.map((s) => (
+          <button type="button" class="rd-comm-item" data-sim={s.id} title={s.name}>
+            <span class="rd-logo-box">
+              <img src={s.logoUrl} alt={s.name} class="rd-real-logo" loading="lazy" decoding="async" />
+            </span>
+            <span class="rd-comm-meta">
+              <strong>{s.community}</strong>
+              <small>{s.name}</small>
+            </span>
           </button>
         ))}
       </div>
-      <div class="mf-sims" aria-label="Filtrar por simulador">
-        <button type="button" class="mf-sim-btn is-active" data-sim="all">Todos</button>
-        {simList.slice(0, 6).map((s) => (
-          <button type="button" class="mf-sim-btn" data-sim={s.id} title={s.name}>
-            <span class="mf-sim-ico" set:html={s.svg} />
+    </aside>
+
+    <!-- CENTER COLUMN: Quick Composer, Search/Sort Bar, Reddit Post Cards -->
+    <main class="rd-main">
+      <!-- Quick Create Post Bar (Reddit-style) -->
+      <div class="rd-create-bar">
+        <img src="/assets/img/logo-64.webp" alt="Muntrume" width="34" height="34" class="rd-create-avatar" />
+        <button type="button" id="rdQuickCreate" class="rd-create-input">
+          Publicar análisis de carrera, setup, telemetría o debate...
+        </button>
+        <button type="button" id="rdNewBtn" class="rd-btn rd-btn--primary">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+          <span>Crear</span>
+        </button>
+      </div>
+
+      <!-- Full Composer (Collapsible) -->
+      <section id="rdComposer" class="rd-composer" hidden aria-label="Crear nueva publicación">
+        <div class="rd-composer__head">
+          <h2>Crear publicación en Muntrume Forum</h2>
+          <button type="button" id="rdCloseComposer" class="rd-icon-btn" aria-label="Cerrar">✕</button>
+        </div>
+        <form id="rdPostForm" class="rd-form">
+          <div class="rd-form-row">
+            <label class="rd-field">
+              <span>Comunidad (Simulador)</span>
+              <select name="sim">
+                {simList.map((s) => <option value={s.id}>{s.community} — {s.name}</option>)}
+              </select>
+            </label>
+            <label class="rd-field">
+              <span>Flair / Categoría</span>
+              <select name="category">
+                <option value="analisis">Análisis de Carrera</option>
+                <option value="setups">Setups &amp; Telemetría</option>
+                <option value="multisim">Multi-Sim</option>
+                <option value="overlays">Hardware &amp; Overlays</option>
+                <option value="debate">Debate</option>
+              </select>
+            </label>
+          </div>
+          <label class="rd-field">
+            <span>Título</span>
+            <input type="text" name="title" required minlength="4" maxlength="140" placeholder="Ej: Telemetría Spa 24h con Porsche 992 GT3 R — dónde ganamos 0.4s en el sector 2" />
+          </label>
+          <label class="rd-field">
+            <span>Contenido del análisis</span>
+            <textarea name="body" required minlength="12" rows="6" placeholder="Comparte tiempos, presiones, configuraciones de FFB/setup o preguntas para la comunidad..."></textarea>
+          </label>
+          <label class="rd-field">
+            <span>Etiquetas (separadas por coma)</span>
+            <input type="text" name="tags" placeholder="Spa, GT3, Telemetría, Setup" />
+          </label>
+          <div class="rd-form-foot">
+            <p id="rdPostMsg" class="rd-msg" role="status"></p>
+            <div class="rd-form-btns">
+              <button type="button" id="rdCancelPost" class="rd-btn rd-btn--ghost">Cancelar</button>
+              <button type="submit" class="rd-btn rd-btn--primary">Publicar hilo</button>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <!-- Sort + Search Toolbar -->
+      <div class="rd-toolbar">
+        <div class="rd-sorts" role="tablist" aria-label="Ordenar publicaciones">
+          <button type="button" class="rd-sort-btn is-active" data-sort="hot" role="tab" aria-selected="true">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2c.5 4-2 6-2 9a4 4 0 0 0 8 0c0-3-2-5-3-9-1 2-2 3-3 0z"/></svg>
+            <span>Destacados</span>
+          </button>
+          <button type="button" class="rd-sort-btn" data-sort="new" role="tab" aria-selected="false">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            <span>Nuevos</span>
+          </button>
+          <button type="button" class="rd-sort-btn" data-sort="top" role="tab" aria-selected="false">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+            <span>Top</span>
+          </button>
+          <button type="button" class="rd-sort-btn" data-sort="discussed" role="tab" aria-selected="false">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span>Más debatidos</span>
+          </button>
+        </div>
+
+        <label class="rd-search">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input type="search" id="rdSearchInput" placeholder="Buscar hilos, circuitos, coches..." />
+        </label>
+      </div>
+
+      <!-- Active Filter Banner (shown when filtering by sim/flair/saved) -->
+      <div id="rdActiveFilter" class="rd-active-filter" hidden>
+        <span id="rdActiveFilterText"></span>
+        <button type="button" id="rdClearFilter" class="rd-clear-btn">Limpiar filtro ✕</button>
+      </div>
+
+      <!-- Mobile Horizontal Game Logos Strip -->
+      <div class="rd-mobile-sims" aria-label="Simuladores">
+        <button type="button" class="rd-msim is-active" data-sim="all">Todos</button>
+        {simList.map((s) => (
+          <button type="button" class="rd-msim" data-sim={s.id} title={s.name}>
+            <span class="rd-logo-box rd-logo-box--xs">
+              <img src={s.logoUrl} alt={s.name} class="rd-real-logo" loading="lazy" decoding="async" />
+            </span>
             <span>{s.short}</span>
           </button>
         ))}
       </div>
-    </div>
 
-    <!-- New Post Composer (hidden by default) -->
-    <section id="mfComposer" class="mf-composer" hidden aria-label="Publicar nuevo análisis">
-      <div class="mf-composer__head">
-        <h2>Publicar nuevo análisis o debate</h2>
-        <button type="button" id="mfCloseComposer" class="mf-icon-btn" aria-label="Cerrar">✕</button>
+      <!-- Feed List -->
+      <div id="rdFeed" class="rd-feed">
+        {SEED_POSTS.map((post) => {
+          const simMeta = SIM_BADGES[post.sim as keyof typeof SIM_BADGES] || SIM_BADGES.iracing;
+          const flair = FLAIRS[post.category] || FLAIRS.analisis;
+          return (
+            <article
+              id={post.slug}
+              class="rd-post"
+              data-post-slug={post.slug}
+              data-cat={post.category}
+              data-sim={post.sim}
+              data-likes={post.likes}
+              data-comments={post.comment_count}
+              data-date={post.created_at}
+              data-pinned={post.pinned}
+              itemscope
+              itemtype="https://schema.org/DiscussionForumPosting"
+            >
+              <!-- Reddit Left Vote Rail -->
+              <div class="rd-vote-rail" aria-label="Votar publicación">
+                <button type="button" class="rd-vote-btn" data-vote={post.slug} data-dir="1" aria-label="Voto positivo">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5l7 8H5l7-8z"/></svg>
+                </button>
+                <span class="rd-score" data-score={post.slug}>{post.likes}</span>
+                <button type="button" class="rd-vote-btn" data-vote={post.slug} data-dir="-1" aria-label="Voto negativo">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 19l-7-8h14l-7 8z"/></svg>
+                </button>
+              </div>
+
+              <!-- Post Body -->
+              <div class="rd-post-body">
+                <div class="rd-post-meta">
+                  <button type="button" class="rd-comm-pill" data-sim={post.sim} title={`Filtrar por ${simMeta.name}`}>
+                    <span class="rd-logo-box rd-logo-box--xs">
+                      <img src={simMeta.logoUrl} alt={simMeta.name} class="rd-real-logo" loading="lazy" decoding="async" />
+                    </span>
+                    <strong>{simMeta.community}</strong>
+                  </button>
+                  <span class="rd-dot">·</span>
+                  <span class="rd-by" itemprop="author" itemscope itemtype="https://schema.org/Person">
+                    u/<strong itemprop="name">{post.author_name}</strong>
+                  </span>
+                  <span class="rd-role-badge">{post.author_role}</span>
+                  <span class="rd-dot">·</span>
+                  <time datetime={post.created_at} itemprop="datePublished">
+                    {new Date(post.created_at).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" })}
+                  </time>
+                  {post.pinned === 1 && <span class="rd-pin">FIJADO</span>}
+                </div>
+
+                <div class="rd-post-headline-row">
+                  <button
+                    type="button"
+                    class="rd-flair"
+                    data-cat={post.category}
+                    style={`color:${flair.color};background:${flair.bg};border-color:${flair.color}44;`}
+                  >
+                    {flair.label}
+                  </button>
+                  <h2 class="rd-post-title" itemprop="headline">
+                    <button type="button" class="rd-title-btn" data-open-thread={post.slug}>{post.title}</button>
+                  </h2>
+                </div>
+
+                <p class="rd-post-summary" itemprop="text">{post.summary}</p>
+
+                <div class="rd-post-tags">
+                  {post.tags.map((t) => <span class="rd-tag">#{t}</span>)}
+                </div>
+
+                <!-- Reddit Action Footer -->
+                <div class="rd-actions">
+                  <button type="button" class="rd-act-btn rd-act-btn--accent" data-open-thread={post.slug}>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <span data-comment-count={post.slug}>{post.comment_count}</span>
+                    <span>Comentarios</span>
+                  </button>
+                  <button type="button" class="rd-act-btn" data-share={post.slug}>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                    <span data-share-lbl={post.slug}>Compartir</span>
+                  </button>
+                  <button type="button" class="rd-act-btn" data-save={post.slug}>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    <span data-save-lbl={post.slug}>Guardar</span>
+                  </button>
+                </div>
+
+                <!-- Expandable Full Thread & Reddit-Style Nested Comments -->
+                <div class="rd-thread" data-thread-body={post.slug} hidden>
+                  <div class="rd-thread-full">{post.body}</div>
+
+                  <div class="rd-comments-sec">
+                    <form class="rd-comment-form" data-comment-form={post.slug} data-parent-id="">
+                      <textarea name="body" rows="2" required minlength="2" placeholder="¿Qué opinas? Comparte tu telemetría, setup o experiencia..."></textarea>
+                      <div class="rd-comment-bar">
+                        <span class="rd-msg" data-comment-msg={post.slug}></span>
+                        <button type="submit" class="rd-btn rd-btn--primary rd-btn--sm">Comentar</button>
+                      </div>
+                    </form>
+
+                    <div class="rd-comments-tree" data-comments-for={post.slug}>
+                      {post.seedComments.length > 0 ? (
+                        post.seedComments.map((c) => (
+                          <div class:list={["rd-comment", c.parent_id && "rd-comment--nested"]} data-cid={c.id}>
+                            <div class="rd-comment__line" aria-hidden="true"></div>
+                            <div class="rd-comment__box">
+                              <div class="rd-comment__head">
+                                <strong>u/{c.author_name}</strong>
+                                <span class="rd-role-badge">{c.author_role}</span>
+                                <span class="rd-dot">·</span>
+                                <time datetime={c.created_at}>
+                                  {new Date(c.created_at).toLocaleDateString("es-ES", { day: "2-digit", month: "short" })}
+                                </time>
+                              </div>
+                              <p class="rd-comment__text">{c.body}</p>
+                              <div class="rd-comment__acts">
+                                <button type="button" class="rd-cact" data-cvote={c.id} data-dir="1">▲ <span data-cscore={c.id}>{c.likes}</span></button>
+                                <button type="button" class="rd-cact" data-reply-btn={c.id} data-reply-slug={post.slug} data-reply-user={c.author_name}>Responder</button>
+                              </div>
+                              <div class="rd-reply-slot" data-reply-slot={c.id}></div>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <p class="rd-empty-c">Sin comentarios todavía. Abre el debate técnico arriba.</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+          );
+        })}
       </div>
-      <form id="mfPostForm" class="mf-form">
-        <div class="mf-form-row">
-          <label class="mf-field mf-field--grow">
-            <span>Título</span>
-            <input type="text" name="title" required minlength="4" maxlength="140" placeholder="Ej: Análisis de desgaste en Spa 24h con Porsche 992 GT3 R" />
-          </label>
-          <label class="mf-field">
-            <span>Categoría</span>
-            <select name="category">
-              <option value="analisis">Análisis de Carrera</option>
-              <option value="setups">Setups &amp; Telemetría</option>
-              <option value="multisim">Multi-Sim (LMU / AC EVO)</option>
-              <option value="overlays">Hardware &amp; Overlays</option>
-            </select>
-          </label>
-          <label class="mf-field">
-            <span>Simulador</span>
-            <select name="sim">
-              {simList.map((s) => <option value={s.id}>{s.name}</option>)}
-            </select>
-          </label>
-        </div>
-        <label class="mf-field">
-          <span>Etiquetas (separadas por coma)</span>
-          <input type="text" name="tags" placeholder="Sebring, GT3, Telemetría, LMU" />
-        </label>
-        <label class="mf-field">
-          <span>Análisis completo</span>
-          <textarea name="body" required minlength="12" rows="6" placeholder="Comparte telemetría, presiones, puntos de frenada, conclusiones del stint o preguntas para el equipo..."></textarea>
-        </label>
-        <div class="mf-form-foot">
-          <p id="mfPostMsg" class="mf-msg" role="status"></p>
-          <div class="mf-form-btns">
-            <button type="button" id="mfCancelPost" class="mf-btn mf-btn--ghost">Cancelar</button>
-            <button type="submit" id="mfSubmitPost" class="mf-btn mf-btn--primary">Publicar análisis</button>
+    </main>
+
+    <!-- RIGHT SIDEBAR: About Community, Stats, Flairs & Rules -->
+    <aside class="rd-right" aria-label="Información de la comunidad">
+      <div class="rd-side-card rd-about-card">
+        <div class="rd-about-banner">
+          <img src="/assets/img/logo-64.webp" alt="Muntrume Motorsport" width="38" height="38" />
+          <div>
+            <strong>m/muntrume</strong>
+            <span>Foro Oficial · Sim Racing</span>
           </div>
         </div>
-      </form>
-    </section>
+        <p class="rd-about-desc">
+          Comunidad técnica de <strong>Muntrume Motorsport</strong>. Debriefs de resistencia, telemetría de Garage 61, setups, overlays open-source y debates multi-sim.
+        </p>
+        <div class="rd-about-stats">
+          <div>
+            <strong id="rdStatPosts">{SEED_POSTS.length}</strong>
+            <span>Hilos</span>
+          </div>
+          <div>
+            <strong>{simList.length}</strong>
+            <span>Simuladores</span>
+          </div>
+          <div>
+            <strong class="rd-online-dot">Online</strong>
+            <span>Indexado SEO</span>
+          </div>
+        </div>
+        <div class="rd-about-btns">
+          <button type="button" id="rdSideCreateBtn" class="rd-btn rd-btn--primary rd-btn--full">Crear publicación</button>
+          <a href="https://muntru.me/pilotos/" class="rd-btn rd-btn--ghost rd-btn--full">Roster y Logros →</a>
+        </div>
+      </div>
 
-    <!-- Thread List (Pre-rendered for SEO + hydrated with D1) -->
-    <div id="mfList" class="mf-list">
-      {SEED_POSTS.map((post) => {
-        const simMeta = SIM_BADGES[post.sim as keyof typeof SIM_BADGES] || SIM_BADGES.iracing;
-        return (
-          <article
-            id={post.slug}
-            class="mf-card"
-            data-post-slug={post.slug}
-            data-cat={post.category}
-            data-sim={post.sim}
-            itemscope
-            itemtype="https://schema.org/DiscussionForumPosting"
-          >
-            <div class="mf-card__top">
-              <div class="mf-card__badges">
-                {post.pinned === 1 && <span class="mf-pin">FIJADO</span>}
-                <span class="mf-sim-tag" style={`--sim-color:${simMeta.color}`}>
-                  <span class="mf-sim-ico" set:html={simMeta.svg} />
-                  <span>{simMeta.name}</span>
-                </span>
-                <span class="mf-cat-tag">{post.category}</span>
-              </div>
-              <time class="mf-date" datetime={post.created_at} itemprop="datePublished">
-                {new Date(post.created_at).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" })}
-              </time>
-            </div>
+      <div class="rd-side-card">
+        <h3 class="rd-side-title">Filtrar por Flair</h3>
+        <div class="rd-flair-cloud">
+          {Object.entries(FLAIRS).map(([id, f]) => (
+            <button
+              type="button"
+              class="rd-flair"
+              data-cat={id}
+              style={`color:${f.color};background:${f.bg};border-color:${f.color}44;`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
-            <h2 class="mf-card__title" itemprop="headline">{post.title}</h2>
-            <p class="mf-card__summary" itemprop="text">{post.summary}</p>
+      <div class="rd-side-card">
+        <h3 class="rd-side-title">Reglas del Paddock</h3>
+        <ol class="rd-rules">
+          <li>
+            <details>
+              <summary>1. Respeto en pista y en el foro</summary>
+              <p>Debates técnicos y constructivos. Cero ataques personales o toxicidad hacia pilotos o equipos.</p>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary>2. Selecciona el simulador correcto</summary>
+              <p>Usa la comunidad exacta (<code>m/iRacing</code>, <code>m/LeMansUltimate</code>, <code>m/AssettoCorsaEVO</code>...) para que los demás encuentren rápido tu análisis.</p>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary>3. Aporta contexto técnico</summary>
+              <p>Al comentar un setup o debrief, indica coche, circuito, combustible aproximado y versión/temporada.</p>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary>4. Contenido indexable y útil</summary>
+              <p>Los hilos públicos se indexan en Google y Brave Search para ayudar a toda la comunidad de sim racing.</p>
+            </details>
+          </li>
+        </ol>
+      </div>
+    </aside>
+  </div>
 
-            <div class="mf-card__tags">
-              {post.tags.map((t) => <span class="mf-tag">#{t}</span>)}
-            </div>
-
-            <div class="mf-card__foot">
-              <div class="mf-author" itemprop="author" itemscope itemtype="https://schema.org/Person">
-                <span class="mf-avatar">{post.author_name.slice(0, 2).toUpperCase()}</span>
-                <strong itemprop="name">{post.author_name}</strong>
-                <span class="mf-role">{post.author_role}</span>
-              </div>
-              <div class="mf-card__stats">
-                <button type="button" class="mf-stat-btn" data-like={post.slug} title="Me gusta">
-                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
-                  <span data-like-count={post.slug}>{post.likes}</span>
-                </button>
-                <button type="button" class="mf-stat-btn mf-stat-btn--open" data-open-thread={post.slug}>
-                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                  <span data-comment-count={post.slug}>{post.comment_count}</span>
-                  <span>Leer y comentar →</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Collapsible Thread Body & Comments (SEO-indexable in DOM) -->
-            <div class="mf-thread-detail" data-thread-body={post.slug} hidden>
-              <div class="mf-thread-content">{post.body}</div>
-              <div class="mf-comments-wrap">
-                <h3>Comentarios</h3>
-                <div class="mf-comments-list" data-comments-for={post.slug}>
-                  {post.seedComments.length > 0 ? (
-                    post.seedComments.map((c) => (
-                      <div class="mf-comment">
-                        <div class="mf-comment__head">
-                          <strong>{c.author_name}</strong>
-                          <span class="mf-role">{c.author_role}</span>
-                          <time datetime={c.created_at}>
-                            {new Date(c.created_at).toLocaleDateString("es-ES", { day: "2-digit", month: "short" })}
-                          </time>
-                        </div>
-                        <p>{c.body}</p>
-                      </div>
-                    ))
-                  ) : (
-                    <p class="mf-empty-c">Sé el primero en añadir tu análisis o comentario.</p>
-                  )}
-                </div>
-                <form class="mf-comment-form" data-comment-form={post.slug}>
-                  <textarea name="body" rows="2" required minlength="2" placeholder="Añade tu opinión técnica, tiempos o pregunta..."></textarea>
-                  <div class="mf-comment-form__bar">
-                    <span class="mf-msg" data-comment-msg={post.slug}></span>
-                    <button type="submit" class="mf-btn mf-btn--primary mf-btn--sm">Comentar</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </article>
-        );
-      })}
-    </div>
-  </section>
-
-  <script is:inline define:vars={{ SEED_POSTS, SIM_BADGES }}>
+  <script is:inline define:vars={{ SIM_BADGES, FLAIRS }}>
     (function () {
       const API = "https://api.muntru.me";
-      const listEl = document.getElementById("mfList");
-      const composer = document.getElementById("mfComposer");
-      const postForm = document.getElementById("mfPostForm");
-      const postMsg = document.getElementById("mfPostMsg");
-      let activeCat = "all";
+      const feedEl = document.getElementById("rdFeed");
+      const composer = document.getElementById("rdComposer");
+      const postForm = document.getElementById("rdPostForm");
+      const postMsg = document.getElementById("rdPostMsg");
+      const searchInput = document.getElementById("rdSearchInput");
+      const activeFilterBar = document.getElementById("rdActiveFilter");
+      const activeFilterText = document.getElementById("rdActiveFilterText");
+      const savedCountEl = document.getElementById("rdSavedCount");
+      const statPostsEl = document.getElementById("rdStatPosts");
+
+      let activeFeed = "all"; // all | popular | saved
       let activeSim = "all";
+      let activeCat = "all";
+      let activeSort = "hot"; // hot | new | top | discussed
+      let query = "";
 
       function getToken() {
-        try {
-          return localStorage.getItem("mmt_session_token") || localStorage.getItem("mmt_token") || "";
-        } catch { return ""; }
+        try { return localStorage.getItem("mmt_session_token") || localStorage.getItem("mmt_token") || ""; }
+        catch { return ""; }
       }
+      function readStore(key, fallback) {
+        try { return JSON.parse(localStorage.getItem(key) || "null") ?? fallback; }
+        catch { return fallback; }
+      }
+      function writeStore(key, val) {
+        try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+      }
+
+      const votes = readStore("mmt_forum_votes", {});
+      const saved = new Set(readStore("mmt_forum_saved", []));
 
       function esc(s) {
         return String(s || "").replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
       }
 
-      function applyFilters() {
-        document.querySelectorAll(".mf-card").forEach((card) => {
-          const c = (card.getAttribute("data-cat") || "").toLowerCase();
-          const s = (card.getAttribute("data-sim") || "").toLowerCase();
-          const okCat = activeCat === "all" || c === activeCat;
-          const okSim = activeSim === "all" || s === activeSim;
-          card.hidden = !(okCat && okSim);
+      function syncSavedUI() {
+        if (savedCountEl) savedCountEl.textContent = String(saved.size);
+        document.querySelectorAll("[data-save]").forEach((btn) => {
+          const slug = btn.getAttribute("data-save");
+          const isSaved = saved.has(slug);
+          btn.classList.toggle("is-saved", isSaved);
+          const lbl = document.querySelector(`[data-save-lbl="${CSS.escape(slug)}"]`);
+          if (lbl) lbl.textContent = isSaved ? "Guardado" : "Guardar";
         });
       }
 
-      document.querySelectorAll("[data-cat]").forEach((btn) => {
+      function syncVoteUI() {
+        document.querySelectorAll("[data-vote]").forEach((btn) => {
+          const slug = btn.getAttribute("data-vote");
+          const dir = Number(btn.getAttribute("data-dir"));
+          const cur = Number(votes[slug] || 0);
+          btn.classList.toggle("is-up", cur === 1 && dir === 1);
+          btn.classList.toggle("is-down", cur === -1 && dir === -1);
+        });
+      }
+
+      function applyView() {
+        if (!feedEl) return;
+        const cards = Array.from(feedEl.querySelectorAll(".rd-post"));
+        const q = query.trim().toLowerCase();
+
+        // Sort cards in DOM
+        cards.sort((a, b) => {
+          const pinA = Number(a.getAttribute("data-pinned") || 0);
+          const pinB = Number(b.getAttribute("data-pinned") || 0);
+          if (activeSort === "hot" && pinA !== pinB) return pinB - pinA;
+          const likesA = Number(a.getAttribute("data-likes") || 0);
+          const likesB = Number(b.getAttribute("data-likes") || 0);
+          const comA = Number(a.getAttribute("data-comments") || 0);
+          const comB = Number(b.getAttribute("data-comments") || 0);
+          const dateA = new Date(a.getAttribute("data-date") || 0).getTime();
+          const dateB = new Date(b.getAttribute("data-date") || 0).getTime();
+          if (activeSort === "new") return dateB - dateA;
+          if (activeSort === "top") return likesB - likesA;
+          if (activeSort === "discussed") return comB - comA;
+          // hot score
+          return (likesB * 2 + comB * 3) - (likesA * 2 + comA * 3);
+        });
+        cards.forEach((c) => feedEl.appendChild(c));
+
+        // Filter visibility
+        cards.forEach((card) => {
+          const slug = card.getAttribute("data-post-slug") || "";
+          const sim = (card.getAttribute("data-sim") || "").toLowerCase();
+          const cat = (card.getAttribute("data-cat") || "").toLowerCase();
+          const text = (card.textContent || "").toLowerCase();
+          const okSim = activeSim === "all" || sim === activeSim;
+          const okCat = activeCat === "all" || cat === activeCat;
+          const okSaved = activeFeed !== "saved" || saved.has(slug);
+          const okQuery = !q || text.includes(q);
+          card.hidden = !(okSim && okCat && okSaved && okQuery);
+        });
+
+        // Update active filter indicator
+        const parts = [];
+        if (activeFeed === "saved") parts.push("Guardados");
+        if (activeSim !== "all") parts.push(SIM_BADGES[activeSim]?.community || activeSim);
+        if (activeCat !== "all") parts.push(FLAIRS[activeCat]?.label || activeCat);
+        if (q) parts.push(`"${query.trim()}"`);
+        if (activeFilterBar && activeFilterText) {
+          activeFilterBar.hidden = parts.length === 0;
+          activeFilterText.textContent = parts.length ? `Mostrando: ${parts.join(" · ")}` : "";
+        }
+        if (statPostsEl) statPostsEl.textContent = String(cards.length);
+      }
+
+      function openComposer() {
+        if (!composer) return;
+        composer.hidden = false;
+        composer.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        composer.querySelector('input[name="title"]')?.focus();
+      }
+
+      document.getElementById("rdQuickCreate")?.addEventListener("click", openComposer);
+      document.getElementById("rdNewBtn")?.addEventListener("click", openComposer);
+      document.getElementById("rdSideCreateBtn")?.addEventListener("click", openComposer);
+      document.getElementById("rdCloseComposer")?.addEventListener("click", () => { if (composer) composer.hidden = true; });
+      document.getElementById("rdCancelPost")?.addEventListener("click", () => { if (composer) composer.hidden = true; });
+
+      document.getElementById("rdClearFilter")?.addEventListener("click", () => {
+        activeFeed = "all"; activeSim = "all"; activeCat = "all"; query = "";
+        if (searchInput) searchInput.value = "";
+        document.querySelectorAll(".rd-nav-item").forEach((b) => b.classList.toggle("is-active", b.getAttribute("data-feed") === "all"));
+        document.querySelectorAll(".rd-comm-item, .rd-msim").forEach((b) => b.classList.toggle("is-active", b.getAttribute("data-sim") === "all"));
+        applyView();
+      });
+
+      document.querySelectorAll("[data-feed]").forEach((btn) => {
         btn.addEventListener("click", () => {
-          activeCat = btn.getAttribute("data-cat") || "all";
-          document.querySelectorAll("[data-cat]").forEach((b) => {
+          activeFeed = btn.getAttribute("data-feed") || "all";
+          if (activeFeed === "popular") activeSort = "top";
+          if (activeFeed === "all") { activeSim = "all"; activeCat = "all"; }
+          document.querySelectorAll("[data-feed]").forEach((b) => b.classList.toggle("is-active", b === btn));
+          document.querySelectorAll("[data-sort]").forEach((b) => {
+            const on = b.getAttribute("data-sort") === activeSort;
+            b.classList.toggle("is-active", on);
+            b.setAttribute("aria-selected", on ? "true" : "false");
+          });
+          applyView();
+        });
+      });
+
+      document.querySelectorAll("[data-sort]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          activeSort = btn.getAttribute("data-sort") || "hot";
+          document.querySelectorAll("[data-sort]").forEach((b) => {
             b.classList.toggle("is-active", b === btn);
             b.setAttribute("aria-selected", b === btn ? "true" : "false");
           });
-          applyFilters();
+          applyView();
         });
       });
 
-      document.querySelectorAll("[data-sim]").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          activeSim = btn.getAttribute("data-sim") || "all";
-          document.querySelectorAll("[data-sim]").forEach((b) => b.classList.toggle("is-active", b === btn));
-          applyFilters();
-        });
+      searchInput?.addEventListener("input", () => {
+        query = searchInput.value || "";
+        applyView();
       });
 
-      document.getElementById("mfNewBtn")?.addEventListener("click", () => {
-        if (composer) {
-          composer.hidden = !composer.hidden;
-          if (!composer.hidden) composer.scrollIntoView({ behavior: "smooth", block: "nearest" });
-        }
-      });
-      document.getElementById("mfCloseComposer")?.addEventListener("click", () => { if (composer) composer.hidden = true; });
-      document.getElementById("mfCancelPost")?.addEventListener("click", () => { if (composer) composer.hidden = true; });
+      function renderCommentHtml(c, slug) {
+        const isNested = Boolean(c.parent_id);
+        return `
+          <div class="rd-comment ${isNested ? "rd-comment--nested" : ""}" data-cid="${esc(c.id)}">
+            <div class="rd-comment__line" aria-hidden="true"></div>
+            <div class="rd-comment__box">
+              <div class="rd-comment__head">
+                <strong>u/${esc(c.author_name)}</strong>
+                <span class="rd-role-badge">${esc(c.author_role || "DRIVER")}</span>
+                <span class="rd-dot">·</span>
+                <time>${new Date(c.created_at || Date.now()).toLocaleDateString("es-ES", { day: "2-digit", month: "short" })}</time>
+              </div>
+              <p class="rd-comment__text">${esc(c.body)}</p>
+              <div class="rd-comment__acts">
+                <button type="button" class="rd-cact" data-cvote="${esc(c.id)}" data-dir="1">▲ <span data-cscore="${esc(c.id)}">${Number(c.likes || 0)}</span></button>
+                <button type="button" class="rd-cact" data-reply-btn="${esc(c.id)}" data-reply-slug="${esc(slug)}" data-reply-user="${esc(c.author_name)}">Responder</button>
+              </div>
+              <div class="rd-reply-slot" data-reply-slot="${esc(c.id)}"></div>
+            </div>
+          </div>
+        `;
+      }
 
-      function renderCard(p) {
+      function renderPostCard(p) {
         const simMeta = SIM_BADGES[p.sim] || SIM_BADGES.iracing;
+        const flair = FLAIRS[p.category] || FLAIRS.analisis;
         const dateStr = new Date(p.created_at || Date.now()).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" });
-        const tagsHtml = (p.tags || []).map((t) => `<span class="mf-tag">#${esc(t)}</span>`).join("");
+        const tagsHtml = (p.tags || []).map((t) => `<span class="rd-tag">#${esc(t)}</span>`).join("");
         const el = document.createElement("article");
         el.id = p.slug;
-        el.className = "mf-card";
+        el.className = "rd-post";
         el.setAttribute("data-post-slug", p.slug);
         el.setAttribute("data-cat", p.category || "analisis");
         el.setAttribute("data-sim", p.sim || "iracing");
+        el.setAttribute("data-likes", String(Number(p.likes || 0)));
+        el.setAttribute("data-comments", String(Number(p.comment_count || 0)));
+        el.setAttribute("data-date", p.created_at || new Date().toISOString());
+        el.setAttribute("data-pinned", String(Number(p.pinned || 0)));
         el.innerHTML = `
-          <div class="mf-card__top">
-            <div class="mf-card__badges">
-              ${p.pinned ? '<span class="mf-pin">FIJADO</span>' : ""}
-              <span class="mf-sim-tag" style="--sim-color:${simMeta.color}">
-                <span class="mf-sim-ico">${simMeta.svg}</span>
-                <span>${esc(simMeta.name)}</span>
-              </span>
-              <span class="mf-cat-tag">${esc(p.category || "analisis")}</span>
-            </div>
-            <time class="mf-date">${dateStr}</time>
+          <div class="rd-vote-rail">
+            <button type="button" class="rd-vote-btn" data-vote="${esc(p.slug)}" data-dir="1" aria-label="Voto positivo">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5l7 8H5l7-8z"/></svg>
+            </button>
+            <span class="rd-score" data-score="${esc(p.slug)}">${Number(p.likes || 0)}</span>
+            <button type="button" class="rd-vote-btn" data-vote="${esc(p.slug)}" data-dir="-1" aria-label="Voto negativo">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 19l-7-8h14l-7 8z"/></svg>
+            </button>
           </div>
-          <h2 class="mf-card__title">${esc(p.title)}</h2>
-          <p class="mf-card__summary">${esc(p.summary || "")}</p>
-          <div class="mf-card__tags">${tagsHtml}</div>
-          <div class="mf-card__foot">
-            <div class="mf-author">
-              <span class="mf-avatar">${esc((p.author_name || "MM").slice(0, 2).toUpperCase())}</span>
-              <strong>${esc(p.author_name || "Piloto MMT")}</strong>
-              <span class="mf-role">${esc(p.author_role || "DRIVER")}</span>
-            </div>
-            <div class="mf-card__stats">
-              <button type="button" class="mf-stat-btn" data-like="${esc(p.slug)}">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
-                <span data-like-count="${esc(p.slug)}">${Number(p.likes || 0)}</span>
+          <div class="rd-post-body">
+            <div class="rd-post-meta">
+              <button type="button" class="rd-comm-pill" data-sim="${esc(p.sim || "iracing")}">
+                <span class="rd-logo-box rd-logo-box--xs"><img src="${simMeta.logoUrl}" alt="${esc(simMeta.name)}" class="rd-real-logo" /></span>
+                <strong>${esc(simMeta.community)}</strong>
               </button>
-              <button type="button" class="mf-stat-btn mf-stat-btn--open" data-open-thread="${esc(p.slug)}">
+              <span class="rd-dot">·</span>
+              <span class="rd-by">u/<strong>${esc(p.author_name || "Piloto MMT")}</strong></span>
+              <span class="rd-role-badge">${esc(p.author_role || "DRIVER")}</span>
+              <span class="rd-dot">·</span>
+              <time>${dateStr}</time>
+            </div>
+            <div class="rd-post-headline-row">
+              <button type="button" class="rd-flair" data-cat="${esc(p.category || "analisis")}" style="color:${flair.color};background:${flair.bg};border-color:${flair.color}44;">${esc(flair.label)}</button>
+              <h2 class="rd-post-title"><button type="button" class="rd-title-btn" data-open-thread="${esc(p.slug)}">${esc(p.title)}</button></h2>
+            </div>
+            <p class="rd-post-summary">${esc(p.summary || "")}</p>
+            <div class="rd-post-tags">${tagsHtml}</div>
+            <div class="rd-actions">
+              <button type="button" class="rd-act-btn rd-act-btn--accent" data-open-thread="${esc(p.slug)}">
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                 <span data-comment-count="${esc(p.slug)}">${Number(p.comment_count || 0)}</span>
-                <span>Leer y comentar →</span>
+                <span>Comentarios</span>
+              </button>
+              <button type="button" class="rd-act-btn" data-share="${esc(p.slug)}">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                <span data-share-lbl="${esc(p.slug)}">Compartir</span>
+              </button>
+              <button type="button" class="rd-act-btn" data-save="${esc(p.slug)}">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                <span data-save-lbl="${esc(p.slug)}">Guardar</span>
               </button>
             </div>
-          </div>
-          <div class="mf-thread-detail" data-thread-body="${esc(p.slug)}" hidden>
-            <div class="mf-thread-content">${esc(p.body || "")}</div>
-            <div class="mf-comments-wrap">
-              <h3>Comentarios</h3>
-              <div class="mf-comments-list" data-comments-for="${esc(p.slug)}"><p class="mf-empty-c">Cargando comentarios...</p></div>
-              <form class="mf-comment-form" data-comment-form="${esc(p.slug)}">
-                <textarea name="body" rows="2" required minlength="2" placeholder="Añade tu opinión técnica, tiempos o pregunta..."></textarea>
-                <div class="mf-comment-form__bar">
-                  <span class="mf-msg" data-comment-msg="${esc(p.slug)}"></span>
-                  <button type="submit" class="mf-btn mf-btn--primary mf-btn--sm">Comentar</button>
-                </div>
-              </form>
+            <div class="rd-thread" data-thread-body="${esc(p.slug)}" hidden>
+              <div class="rd-thread-full">${esc(p.body || "")}</div>
+              <div class="rd-comments-sec">
+                <form class="rd-comment-form" data-comment-form="${esc(p.slug)}" data-parent-id="">
+                  <textarea name="body" rows="2" required minlength="2" placeholder="¿Qué opinas? Comparte tu telemetría, setup o experiencia..."></textarea>
+                  <div class="rd-comment-bar">
+                    <span class="rd-msg" data-comment-msg="${esc(p.slug)}"></span>
+                    <button type="submit" class="rd-btn rd-btn--primary rd-btn--sm">Comentar</button>
+                  </div>
+                </form>
+                <div class="rd-comments-tree" data-comments-for="${esc(p.slug)}"><p class="rd-empty-c">Cargando comentarios...</p></div>
+              </div>
             </div>
           </div>
         `;
@@ -466,31 +779,44 @@ const simList = Object.values(SIM_BADGES);
         try {
           const res = await fetch(`${API}/api/forum/post?slug=${encodeURIComponent(slug)}`);
           const data = await res.json();
-          if (data.success && Array.isArray(data.comments) && data.comments.length > 0) {
+          if (data.success && Array.isArray(data.comments)) {
+            if (data.comments.length === 0 && box.querySelector(".rd-empty-c")) {
+              box.innerHTML = '<p class="rd-empty-c">Sin comentarios todavía. Abre el debate técnico arriba.</p>';
+              return;
+            }
             const existingIds = new Set(Array.from(box.querySelectorAll("[data-cid]")).map((n) => n.getAttribute("data-cid")));
-            if (box.querySelector(".mf-empty-c")) box.innerHTML = "";
+            if (data.comments.length > 0 && box.querySelector(".rd-empty-c")) box.innerHTML = "";
             data.comments.forEach((c) => {
               if (existingIds.has(c.id)) return;
-              const div = document.createElement("div");
-              div.className = "mf-comment";
-              div.setAttribute("data-cid", c.id);
-              div.innerHTML = `
-                <div class="mf-comment__head">
-                  <strong>${esc(c.author_name)}</strong>
-                  <span class="mf-role">${esc(c.author_role || "DRIVER")}</span>
-                  <time>${new Date(c.created_at).toLocaleDateString("es-ES", { day: "2-digit", month: "short" })}</time>
-                </div>
-                <p>${esc(c.body)}</p>
-              `;
-              box.appendChild(div);
+              box.insertAdjacentHTML("beforeend", renderCommentHtml(c, slug));
             });
+            const total = box.querySelectorAll("[data-cid]").length;
             const cnt = document.querySelector(`[data-comment-count="${CSS.escape(slug)}"]`);
-            if (cnt) cnt.textContent = String(box.querySelectorAll(".mf-comment").length);
+            if (cnt) cnt.textContent = String(total);
+            const card = document.querySelector(`[data-post-slug="${CSS.escape(slug)}"]`);
+            if (card) card.setAttribute("data-comments", String(total));
           }
         } catch {}
       }
 
       document.addEventListener("click", async (e) => {
+        const simBtn = e.target?.closest?.("[data-sim]");
+        if (simBtn && !simBtn.closest("form")) {
+          const s = simBtn.getAttribute("data-sim") || "all";
+          activeSim = (activeSim === s && s !== "all") ? "all" : s;
+          document.querySelectorAll(".rd-comm-item, .rd-msim").forEach((b) => b.classList.toggle("is-active", b.getAttribute("data-sim") === activeSim));
+          applyView();
+          return;
+        }
+
+        const catBtn = e.target?.closest?.("[data-cat]");
+        if (catBtn && catBtn.tagName === "BUTTON") {
+          const c = catBtn.getAttribute("data-cat") || "all";
+          activeCat = activeCat === c ? "all" : c;
+          applyView();
+          return;
+        }
+
         const openBtn = e.target?.closest?.("[data-open-thread]");
         if (openBtn) {
           const slug = openBtn.getAttribute("data-open-thread");
@@ -501,21 +827,94 @@ const simList = Object.values(SIM_BADGES);
           }
           return;
         }
-        const likeBtn = e.target?.closest?.("[data-like]");
-        if (likeBtn) {
-          const slug = likeBtn.getAttribute("data-like");
-          const cnt = document.querySelector(`[data-like-count="${CSS.escape(slug)}"]`);
-          if (cnt) cnt.textContent = String(Number(cnt.textContent || "0") + 1);
-          likeBtn.disabled = true;
+
+        const voteBtn = e.target?.closest?.("[data-vote]");
+        if (voteBtn) {
+          const slug = voteBtn.getAttribute("data-vote");
+          const dir = Number(voteBtn.getAttribute("data-dir") || 1);
+          const prev = Number(votes[slug] || 0);
+          const next = prev === dir ? 0 : dir;
+          const delta = next - prev;
+          votes[slug] = next;
+          writeStore("mmt_forum_votes", votes);
+          syncVoteUI();
+          const scoreEl = document.querySelector(`[data-score="${CSS.escape(slug)}"]`);
+          const card = document.querySelector(`[data-post-slug="${CSS.escape(slug)}"]`);
+          if (scoreEl) {
+            const val = Number(scoreEl.textContent || "0") + delta;
+            scoreEl.textContent = String(val);
+            if (card) card.setAttribute("data-likes", String(val));
+          }
           try {
-            const res = await fetch(`${API}/api/forum/like`, {
+            await fetch(`${API}/api/forum/vote`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ slug }),
+              body: JSON.stringify({ slug, delta }),
             });
-            const data = await res.json();
-            if (data.success && cnt && data.likes) cnt.textContent = String(data.likes);
           } catch {}
+          return;
+        }
+
+        const cvoteBtn = e.target?.closest?.("[data-cvote]");
+        if (cvoteBtn) {
+          const cid = cvoteBtn.getAttribute("data-cvote");
+          const cscore = document.querySelector(`[data-cscore="${CSS.escape(cid)}"]`);
+          if (cscore && !cvoteBtn.classList.contains("is-up")) {
+            cvoteBtn.classList.add("is-up");
+            cscore.textContent = String(Number(cscore.textContent || "0") + 1);
+            try {
+              await fetch(`${API}/api/forum/vote`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ comment_id: cid, delta: 1 }),
+              });
+            } catch {}
+          }
+          return;
+        }
+
+        const replyBtn = e.target?.closest?.("[data-reply-btn]");
+        if (replyBtn) {
+          const cid = replyBtn.getAttribute("data-reply-btn");
+          const slug = replyBtn.getAttribute("data-reply-slug");
+          const user = replyBtn.getAttribute("data-reply-user");
+          const slot = document.querySelector(`[data-reply-slot="${CSS.escape(cid)}"]`);
+          if (slot) {
+            if (slot.innerHTML) { slot.innerHTML = ""; return; }
+            slot.innerHTML = `
+              <form class="rd-comment-form rd-comment-form--reply" data-comment-form="${esc(slug)}" data-parent-id="${esc(cid)}">
+                <textarea name="body" rows="2" required minlength="2" placeholder="Responder a u/${esc(user)}..."></textarea>
+                <div class="rd-comment-bar">
+                  <span class="rd-msg" data-comment-msg="${esc(slug)}-${esc(cid)}"></span>
+                  <button type="submit" class="rd-btn rd-btn--primary rd-btn--sm">Responder</button>
+                </div>
+              </form>
+            `;
+            slot.querySelector("textarea")?.focus();
+          }
+          return;
+        }
+
+        const shareBtn = e.target?.closest?.("[data-share]");
+        if (shareBtn) {
+          const slug = shareBtn.getAttribute("data-share");
+          const url = `https://forum.muntru.me/#${slug}`;
+          navigator.clipboard?.writeText(url).catch(() => {});
+          const lbl = document.querySelector(`[data-share-lbl="${CSS.escape(slug)}"]`);
+          if (lbl) {
+            lbl.textContent = "¡Copiado!";
+            setTimeout(() => { lbl.textContent = "Compartir"; }, 1800);
+          }
+          return;
+        }
+
+        const saveBtn = e.target?.closest?.("[data-save]");
+        if (saveBtn) {
+          const slug = saveBtn.getAttribute("data-save");
+          if (saved.has(slug)) saved.delete(slug); else saved.add(slug);
+          writeStore("mmt_forum_saved", Array.from(saved));
+          syncSavedUI();
+          if (activeFeed === "saved") applyView();
         }
       });
 
@@ -524,8 +923,10 @@ const simList = Object.values(SIM_BADGES);
         if (cForm) {
           e.preventDefault();
           const slug = cForm.getAttribute("data-comment-form");
+          const parentId = cForm.getAttribute("data-parent-id") || "";
           const ta = cForm.querySelector("textarea");
-          const msg = document.querySelector(`[data-comment-msg="${CSS.escape(slug)}"]`);
+          const msgKey = parentId ? `${slug}-${parentId}` : slug;
+          const msg = document.querySelector(`[data-comment-msg="${CSS.escape(msgKey)}"]`);
           const token = getToken();
           if (!token) {
             if (msg) msg.innerHTML = 'Inicia sesión en <a href="https://muntru.me/login/" style="color:var(--r-accent);text-decoration:underline;">muntru.me/login</a> para comentar.';
@@ -536,15 +937,20 @@ const simList = Object.values(SIM_BADGES);
             const res = await fetch(`${API}/api/forum/comment`, {
               method: "POST",
               headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-              body: JSON.stringify({ post_slug: slug, body: ta.value.trim() }),
+              body: JSON.stringify({ post_slug: slug, parent_id: parentId, body: ta.value.trim() }),
             });
             const data = await res.json();
             if (!data.success) {
-              if (msg) msg.textContent = data.error || "No se pudo publicar el comentario.";
+              if (msg) msg.textContent = data.error || "No se pudo publicar.";
               return;
             }
             ta.value = "";
-            if (msg) msg.textContent = "¡Comentario publicado!";
+            if (parentId) {
+              const slot = cForm.closest(".rd-reply-slot");
+              if (slot) slot.innerHTML = "";
+            } else if (msg) {
+              msg.textContent = "¡Publicado!";
+            }
             loadComments(slug);
           } catch {
             if (msg) msg.textContent = "Error de conexión.";
@@ -579,8 +985,11 @@ const simList = Object.values(SIM_BADGES);
             if (postMsg) postMsg.textContent = data.error || "Error al publicar.";
             return;
           }
-          if (listEl && data.post) {
-            listEl.prepend(renderCard(data.post));
+          if (feedEl && data.post) {
+            feedEl.prepend(renderPostCard(data.post));
+            syncVoteUI();
+            syncSavedUI();
+            applyView();
           }
           postForm.reset();
           if (postMsg) postMsg.textContent = "";
@@ -590,22 +999,25 @@ const simList = Object.values(SIM_BADGES);
         }
       });
 
-      // Hydrate live D1 posts above/alongside pre-rendered seed threads
+      // Hydrate live D1 posts
       fetch(`${API}/api/forum/posts`)
         .then((r) => r.json())
         .then((data) => {
-          if (!data.success || !Array.isArray(data.posts) || !listEl) return;
+          if (!data.success || !Array.isArray(data.posts) || !feedEl) return;
           const existing = new Set(Array.from(document.querySelectorAll("[data-post-slug]")).map((el) => el.getAttribute("data-post-slug")));
           data.posts.forEach((p) => {
-            if (!existing.has(p.slug)) {
-              listEl.prepend(renderCard(p));
-            }
+            if (!existing.has(p.slug)) feedEl.prepend(renderPostCard(p));
           });
-          applyFilters();
+          syncVoteUI();
+          syncSavedUI();
+          applyView();
         })
         .catch(() => {});
 
-      // Auto-open thread if URL hash matches a slug
+      syncVoteUI();
+      syncSavedUI();
+      applyView();
+
       if (location.hash && location.hash.length > 1) {
         const targetSlug = decodeURIComponent(location.hash.slice(1));
         const detail = document.querySelector(`[data-thread-body="${CSS.escape(targetSlug)}"]`);
@@ -619,169 +1031,492 @@ const simList = Object.values(SIM_BADGES);
 </Layout>
 
 <style>
-  .mf-wrap {
-    max-width: 1040px;
+  .rd-shell {
+    max-width: 1340px;
     margin: 0 auto;
-    padding: 36px 20px 80px;
+    padding: 24px 18px 80px;
+    display: grid;
+    grid-template-columns: 236px minmax(0, 1fr) 290px;
+    gap: 20px;
+    align-items: start;
+  }
+
+  /* Left Sidebar */
+  .rd-left {
+    position: sticky;
+    top: 82px;
     display: flex;
     flex-direction: column;
-    gap: 22px;
+    gap: 16px;
   }
-  .mf-hero {
+  .rd-nav-group {
+    background: var(--r-surface, #11161d);
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
+    border-radius: 14px;
+    padding: 10px;
     display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 20px;
-    flex-wrap: wrap;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
+    flex-direction: column;
+    gap: 3px;
   }
-  .mf-kicker {
-    display: inline-block;
+  .rd-nav-label {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: var(--r-muted, #94a3b8);
+    padding: 4px 8px 6px;
+  }
+  .rd-nav-item, .rd-comm-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 9px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--r-text, #f1f5f9);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.14s ease, border-color 0.14s ease;
+  }
+  .rd-nav-item:hover, .rd-comm-item:hover {
+    background: var(--r-bg, rgba(148, 163, 184, 0.1));
+  }
+  .rd-nav-item.is-active, .rd-comm-item.is-active {
+    background: rgba(0, 230, 153, 0.12);
+    border-color: rgba(0, 230, 153, 0.35);
+    color: var(--r-accent, #00e699);
+  }
+  .rd-nav-badge {
+    margin-left: auto;
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.12em;
-    color: var(--r-accent, #00e699);
-    margin-bottom: 6px;
-  }
-  .mf-title {
-    margin: 0;
-    font-size: clamp(1.75rem, 3.2vw, 2.4rem);
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    color: var(--r-text, #f8fafc);
-  }
-  .mf-sub {
-    margin: 8px 0 0;
-    max-width: 640px;
-    font-size: 14.5px;
-    line-height: 1.55;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: var(--r-bg, #090b0f);
     color: var(--r-muted, #94a3b8);
   }
-  .mf-hero__actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-  .mf-btn {
+  .rd-logo-box {
     display: inline-flex;
     align-items: center;
-    gap: 7px;
-    padding: 9px 15px;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    text-decoration: none;
-    border: 1px solid transparent;
-    transition: all 0.15s ease;
+    justify-content: center;
+    width: 46px;
+    height: 24px;
+    padding: 2px 5px;
+    border-radius: 6px;
+    background: #0b0f17;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
   }
-  .mf-btn--primary {
-    background: #00c482;
-    color: #04130d;
+  .rd-logo-box--xs {
+    width: auto;
+    min-width: 24px;
+    height: 19px;
+    padding: 2px 5px;
   }
-  .mf-btn--primary:hover {
-    background: #00e699;
+  .rd-real-logo {
+    max-height: 16px;
+    max-width: 38px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
   }
-  .mf-btn--ghost {
-    background: var(--r-surface, #11161d);
-    color: var(--r-text, #f1f5f9);
-    border-color: var(--r-line, rgba(148, 163, 184, 0.22));
+  .rd-logo-box--xs .rd-real-logo {
+    max-height: 13px;
+    max-width: 44px;
   }
-  .mf-btn--ghost:hover {
-    border-color: var(--r-accent, #00e699);
-  }
-  .mf-btn--sm {
-    padding: 6px 12px;
-    font-size: 12px;
-  }
-  .mf-toolbar {
+  .rd-comm-meta {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    min-width: 0;
   }
-  .mf-cats, .mf-sims {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 7px;
-    align-items: center;
+  .rd-comm-meta strong {
+    font-size: 12.5px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-  .mf-cat-pill, .mf-sim-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 6px 12px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    background: var(--r-surface, #11161d);
+  .rd-comm-meta small {
+    font-size: 10.5px;
+    font-weight: 500;
     color: var(--r-muted, #94a3b8);
-    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
-    transition: all 0.15s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-  .mf-cat-pill.is-active, .mf-sim-btn.is-active {
-    background: rgba(0, 230, 153, 0.14);
-    border-color: rgba(0, 230, 153, 0.5);
-    color: var(--r-accent, #00e699);
+
+  /* Center Feed */
+  .rd-main {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
   }
-  .mf-sim-ico {
-    display: inline-flex;
-    width: 14px;
-    height: 14px;
-  }
-  .mf-composer {
+  .rd-create-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 14px;
     background: var(--r-surface, #11161d);
-    border: 1px solid rgba(0, 230, 153, 0.35);
-    border-radius: 16px;
-    padding: 20px;
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
   }
-  .mf-composer__head {
+  .rd-create-avatar {
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+  .rd-create-input {
+    flex: 1;
+    text-align: left;
+    padding: 9px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.22));
+    background: var(--r-bg, #090b0f);
+    color: var(--r-muted, #94a3b8);
+    font-size: 13.5px;
+    cursor: text;
+    transition: border-color 0.15s ease;
+  }
+  .rd-create-input:hover {
+    border-color: var(--r-accent, #00e699);
+  }
+  .rd-toolbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 14px;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 8px 10px;
+    border-radius: 14px;
+    background: var(--r-surface, #11161d);
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
   }
-  .mf-composer__head h2 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--r-text, #f8fafc);
+  .rd-sorts {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
   }
-  .mf-icon-btn {
+  .rd-sort-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 11px;
+    border-radius: 999px;
+    border: 1px solid transparent;
     background: transparent;
-    border: none;
     color: var(--r-muted, #94a3b8);
-    font-size: 16px;
+    font-size: 12.5px;
+    font-weight: 700;
     cursor: pointer;
   }
-  .mf-form {
+  .rd-sort-btn:hover {
+    color: var(--r-text, #f1f5f9);
+  }
+  .rd-sort-btn.is-active {
+    background: rgba(0, 230, 153, 0.14);
+    border-color: rgba(0, 230, 153, 0.35);
+    color: var(--r-accent, #00e699);
+  }
+  .rd-search {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.22));
+    background: var(--r-bg, #090b0f);
+    color: var(--r-muted, #94a3b8);
+    min-width: 210px;
+    flex: 0 1 260px;
+  }
+  .rd-search input {
+    border: none;
+    background: transparent;
+    color: var(--r-text, #f8fafc);
+    font-size: 12.5px;
+    width: 100%;
+    outline: none;
+  }
+  .rd-active-filter {
     display: flex;
-    flex-direction: column;
-    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: rgba(0, 230, 153, 0.1);
+    border: 1px solid rgba(0, 230, 153, 0.3);
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--r-text, #f1f5f9);
   }
-  .mf-form-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .mf-field {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    min-width: 170px;
-  }
-  .mf-field--grow {
-    flex: 1 1 300px;
-  }
-  .mf-field span {
-    font-size: 11.5px;
+  .rd-clear-btn {
+    border: none;
+    background: transparent;
+    color: var(--r-accent, #00e699);
     font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .rd-mobile-sims {
+    display: none;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .rd-msim {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: var(--r-surface, #11161d);
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
+    color: var(--r-text, #f1f5f9);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .rd-msim.is-active {
+    border-color: var(--r-accent, #00e699);
+    color: var(--r-accent, #00e699);
+  }
+
+  /* Reddit Post Card */
+  .rd-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .rd-post {
+    display: grid;
+    grid-template-columns: 46px minmax(0, 1fr);
+    border-radius: 14px;
+    background: var(--r-surface, #11161d);
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
+    overflow: hidden;
+    transition: border-color 0.15s ease;
+  }
+  .rd-post:hover {
+    border-color: rgba(148, 163, 184, 0.42);
+  }
+  .rd-vote-rail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 12px 4px;
+    background: var(--r-bg, rgba(0, 0, 0, 0.18));
+    border-right: 1px solid var(--r-line, rgba(148, 163, 184, 0.12));
+  }
+  .rd-vote-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--r-muted, #94a3b8);
+    cursor: pointer;
+    transition: all 0.12s ease;
+  }
+  .rd-vote-btn:hover {
+    background: rgba(148, 163, 184, 0.14);
+    color: var(--r-text, #f8fafc);
+  }
+  .rd-vote-btn.is-up {
+    color: #00e699;
+    background: rgba(0, 230, 153, 0.14);
+  }
+  .rd-vote-btn.is-down {
+    color: #f97316;
+    background: rgba(249, 115, 22, 0.14);
+  }
+  .rd-score {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12.5px;
+    font-weight: 800;
+    color: var(--r-text, #f1f5f9);
+  }
+
+  .rd-post-body {
+    padding: 13px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+  }
+  .rd-post-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 12px;
     color: var(--r-muted, #94a3b8);
   }
-  .mf-field input, .mf-field select, .mf-field textarea, .mf-comment-form textarea {
+  .rd-comm-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: none;
+    background: transparent;
+    padding: 0;
+    color: var(--r-text, #f8fafc);
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .rd-comm-pill:hover strong {
+    text-decoration: underline;
+    color: var(--r-accent, #00e699);
+  }
+  .rd-dot { opacity: 0.5; }
+  .rd-by strong { color: var(--r-text, #e2e8f0); font-weight: 600; }
+  .rd-role-badge {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 9.5px;
+    font-weight: 800;
+    padding: 1px 6px;
+    border-radius: 5px;
+    background: rgba(0, 230, 153, 0.12);
+    color: var(--r-accent, #00e699);
+  }
+  .rd-pin {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 9.5px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 5px;
+    background: rgba(245, 158, 11, 0.16);
+    color: #f59e0b;
+  }
+
+  .rd-post-headline-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .rd-flair {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 9px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    line-height: 1.4;
+  }
+  .rd-post-title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1.3;
+  }
+  .rd-title-btn {
+    border: none;
+    background: transparent;
+    padding: 0;
+    text-align: left;
+    font: inherit;
+    color: var(--r-text, #f8fafc);
+    cursor: pointer;
+  }
+  .rd-title-btn:hover {
+    color: var(--r-accent, #00e699);
+  }
+  .rd-post-summary {
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--r-muted, #94a3b8);
+  }
+  .rd-post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .rd-tag {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: var(--r-bg, #090b0f);
+    color: var(--r-muted, #94a3b8);
+  }
+
+  .rd-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 2px;
+  }
+  .rd-act-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--r-muted, #94a3b8);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.12s ease;
+  }
+  .rd-act-btn:hover {
+    background: var(--r-bg, rgba(148, 163, 184, 0.12));
+    color: var(--r-text, #f8fafc);
+  }
+  .rd-act-btn--accent {
+    color: var(--r-accent, #00e699);
+  }
+  .rd-act-btn.is-saved {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.12);
+  }
+
+  /* Thread & Nested Comments */
+  .rd-thread {
+    margin-top: 8px;
+    padding-top: 14px;
+    border-top: 1px solid var(--r-line, rgba(148, 163, 184, 0.18));
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .rd-thread-full {
+    white-space: pre-line;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--r-text, #e2e8f0);
+  }
+  .rd-comments-sec {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .rd-comment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .rd-comment-form--reply {
+    margin-top: 8px;
+  }
+  .rd-comment-form textarea, .rd-field input, .rd-field select, .rd-field textarea {
     padding: 9px 12px;
     border-radius: 10px;
     border: 1px solid var(--r-line, rgba(148, 163, 184, 0.24));
@@ -790,236 +1525,217 @@ const simList = Object.values(SIM_BADGES);
     font-size: 13.5px;
     font-family: inherit;
   }
-  .mf-form-foot {
+  .rd-comment-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
+    gap: 10px;
   }
-  .mf-form-btns {
+  .rd-comments-tree {
     display: flex;
-    gap: 8px;
+    flex-direction: column;
+    gap: 10px;
   }
-  .mf-msg {
-    margin: 0;
-    font-size: 12.5px;
+  .rd-comment {
+    display: flex;
+    gap: 10px;
+  }
+  .rd-comment--nested {
+    margin-left: 24px;
+  }
+  .rd-comment__line {
+    width: 2px;
+    border-radius: 999px;
+    background: var(--r-line, rgba(148, 163, 184, 0.28));
+    flex-shrink: 0;
+  }
+  .rd-comment__box {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .rd-comment__head {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 12px;
     color: var(--r-muted, #94a3b8);
   }
-  .mf-list {
+  .rd-comment__head strong {
+    color: var(--r-text, #f1f5f9);
+  }
+  .rd-comment__text {
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--r-text, #e2e8f0);
+  }
+  .rd-comment__acts {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 2px;
+  }
+  .rd-cact {
+    border: none;
+    background: transparent;
+    padding: 2px 5px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--r-muted, #94a3b8);
+    cursor: pointer;
+  }
+  .rd-cact:hover, .rd-cact.is-up {
+    color: var(--r-accent, #00e699);
+  }
+  .rd-empty-c {
+    margin: 0;
+    font-size: 13px;
+    color: var(--r-muted, #94a3b8);
+  }
+
+  /* Composer */
+  .rd-composer {
+    background: var(--r-surface, #11161d);
+    border: 1px solid rgba(0, 230, 153, 0.4);
+    border-radius: 14px;
+    padding: 18px;
+  }
+  .rd-composer__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .rd-composer__head h2 {
+    margin: 0;
+    font-size: 15.5px;
+    font-weight: 800;
+    color: var(--r-text, #f8fafc);
+  }
+  .rd-icon-btn {
+    border: none;
+    background: transparent;
+    color: var(--r-muted, #94a3b8);
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .rd-form { display: flex; flex-direction: column; gap: 11px; }
+  .rd-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .rd-field { display: flex; flex-direction: column; gap: 4px; }
+  .rd-field span { font-size: 11.5px; font-weight: 700; color: var(--r-muted, #94a3b8); }
+  .rd-form-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .rd-form-btns { display: flex; gap: 8px; }
+  .rd-msg { margin: 0; font-size: 12px; color: var(--r-muted, #94a3b8); }
+
+  /* Right Sidebar */
+  .rd-right {
+    position: sticky;
+    top: 82px;
     display: flex;
     flex-direction: column;
     gap: 14px;
   }
-  .mf-card {
+  .rd-side-card {
     background: var(--r-surface, #11161d);
     border: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
-    border-radius: 16px;
-    padding: 20px;
+    border-radius: 14px;
+    padding: 15px;
     display: flex;
     flex-direction: column;
+    gap: 12px;
+  }
+  .rd-about-banner {
+    display: flex;
+    align-items: center;
     gap: 10px;
   }
-  .mf-card__top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    flex-wrap: wrap;
+  .rd-about-banner img { border-radius: 10px; }
+  .rd-about-banner strong { display: block; font-size: 15px; color: var(--r-text, #f8fafc); }
+  .rd-about-banner span { font-size: 11.5px; color: var(--r-muted, #94a3b8); }
+  .rd-about-desc { margin: 0; font-size: 13px; line-height: 1.5; color: var(--r-muted, #94a3b8); }
+  .rd-about-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 10px 0;
+    border-top: 1px solid var(--r-line, rgba(148, 163, 184, 0.15));
+    border-bottom: 1px solid var(--r-line, rgba(148, 163, 184, 0.15));
   }
-  .mf-card__badges {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    flex-wrap: wrap;
-  }
-  .mf-pin {
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 10px;
-    font-weight: 800;
-    padding: 3px 7px;
-    border-radius: 6px;
-    background: rgba(245, 158, 11, 0.16);
-    color: #f59e0b;
-    letter-spacing: 0.06em;
-  }
-  .mf-sim-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 3px 8px 3px 5px;
-    border-radius: 999px;
-    background: var(--r-bg, #090b0f);
-    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.22));
-    font-size: 11.5px;
-    font-weight: 600;
-    color: var(--r-text, #f1f5f9);
-  }
-  .mf-cat-tag {
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 10.5px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--r-muted, #94a3b8);
-  }
-  .mf-date {
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 11.5px;
-    color: var(--r-muted, #94a3b8);
-  }
-  .mf-card__title {
+  .rd-about-stats strong { display: block; font-size: 14px; color: var(--r-text, #f8fafc); }
+  .rd-about-stats span { font-size: 10.5px; color: var(--r-muted, #94a3b8); }
+  .rd-online-dot { color: var(--r-accent, #00e699) !important; }
+  .rd-about-btns { display: flex; flex-direction: column; gap: 7px; }
+  .rd-side-title {
     margin: 0;
-    font-size: 18px;
-    font-weight: 800;
-    line-height: 1.3;
-    color: var(--r-text, #f8fafc);
-  }
-  .mf-card__summary {
-    margin: 0;
-    font-size: 14px;
-    line-height: 1.55;
-    color: var(--r-muted, #94a3b8);
-  }
-  .mf-card__tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .mf-tag {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 6px;
-    background: var(--r-bg, #090b0f);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
     color: var(--r-muted, #94a3b8);
   }
-  .mf-card__foot {
+  .rd-flair-cloud { display: flex; flex-wrap: wrap; gap: 6px; }
+  .rd-rules {
+    list-style: none;
+    margin: 0;
+    padding: 0;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
-    padding-top: 10px;
-    border-top: 1px solid var(--r-line, rgba(148, 163, 184, 0.14));
-  }
-  .mf-author {
-    display: inline-flex;
-    align-items: center;
+    flex-direction: column;
     gap: 8px;
-    font-size: 13px;
-    color: var(--r-text, #f1f5f9);
   }
-  .mf-avatar {
-    width: 26px;
-    height: 26px;
-    border-radius: 999px;
-    background: rgba(0, 230, 153, 0.16);
-    color: var(--r-accent, #00e699);
+  .rd-rules summary {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--r-text, #f1f5f9);
+    cursor: pointer;
+  }
+  .rd-rules p {
+    margin: 5px 0 0;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--r-muted, #94a3b8);
+  }
+
+  /* Buttons */
+  .rd-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 10.5px;
-    font-weight: 800;
-  }
-  .mf-role {
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 10px;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 12.5px;
     font-weight: 700;
-    padding: 2px 6px;
-    border-radius: 6px;
-    background: rgba(0, 230, 153, 0.12);
-    color: var(--r-accent, #00e699);
-  }
-  .mf-card__stats {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .mf-stat-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 6px 10px;
-    border-radius: 8px;
-    background: var(--r-bg, #090b0f);
-    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
-    color: var(--r-text, #f1f5f9);
-    font-size: 12px;
-    font-weight: 600;
     cursor: pointer;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: all 0.14s ease;
   }
-  .mf-stat-btn--open {
-    color: var(--r-accent, #00e699);
-  }
-  .mf-thread-detail {
-    margin-top: 8px;
-    padding-top: 14px;
-    border-top: 1px dashed var(--r-line, rgba(148, 163, 184, 0.24));
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  .mf-thread-content {
-    white-space: pre-line;
-    font-size: 14px;
-    line-height: 1.65;
-    color: var(--r-text, #e2e8f0);
-  }
-  .mf-comments-wrap h3 {
-    margin: 0 0 10px;
-    font-size: 13px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--r-muted, #94a3b8);
-  }
-  .mf-comments-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-  .mf-comment {
-    padding: 10px 12px;
-    border-radius: 10px;
+  .rd-btn--primary { background: #00c482; color: #04130d; }
+  .rd-btn--primary:hover { background: #00e699; }
+  .rd-btn--ghost {
     background: var(--r-bg, #090b0f);
-    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.14));
-  }
-  .mf-comment__head {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    font-size: 12px;
-    margin-bottom: 4px;
     color: var(--r-text, #f1f5f9);
+    border-color: var(--r-line, rgba(148, 163, 184, 0.24));
   }
-  .mf-comment__head time {
-    margin-left: auto;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 11px;
-    color: var(--r-muted, #94a3b8);
+  .rd-btn--ghost:hover { border-color: var(--r-accent, #00e699); }
+  .rd-btn--sm { padding: 6px 12px; font-size: 12px; }
+  .rd-btn--full { width: 100%; }
+
+  /* Responsive */
+  @media (max-width: 1120px) {
+    .rd-shell { grid-template-columns: 220px minmax(0, 1fr); }
+    .rd-right { display: none; }
   }
-  .mf-comment p {
-    margin: 0;
-    font-size: 13.5px;
-    line-height: 1.5;
-    color: var(--r-muted, #cbd5e1);
-  }
-  .mf-empty-c {
-    margin: 0;
-    font-size: 13px;
-    color: var(--r-muted, #94a3b8);
-  }
-  .mf-comment-form {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .mf-comment-form__bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
+  @media (max-width: 820px) {
+    .rd-shell { grid-template-columns: 1fr; padding-top: 16px; }
+    .rd-left { display: none; }
+    .rd-mobile-sims { display: flex; }
+    .rd-form-row { grid-template-columns: 1fr; }
   }
 </style>

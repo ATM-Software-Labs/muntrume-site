@@ -687,9 +687,26 @@ const achData = computeDriverAchievements(
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 15px;
-    height: 15px;
+    height: 18px;
+    padding: 2px 5px;
+    border-radius: 5px;
+    background: #0b0f17;
     flex-shrink: 0;
+  }
+  .d-sim-pill__ico :global(.sim-real-logo) {
+    height: 13px;
+    width: auto;
+    max-width: 46px;
+    object-fit: contain;
+    display: block;
+  }
+  .d-sim-pill--sm .d-sim-pill__ico {
+    height: 16px;
+    padding: 1px 4px;
+  }
+  .d-sim-pill--sm .d-sim-pill__ico :global(.sim-real-logo) {
+    height: 11px;
+    max-width: 36px;
   }
   .d-ach-mini-pill {
     display: inline-flex;
