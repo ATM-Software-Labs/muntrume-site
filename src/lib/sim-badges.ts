@@ -6,6 +6,7 @@
 export type SimId =
   | "iracing"
   | "lmu"
+  | "ac"
   | "ac_evo"
   | "acc"
   | "rf2"
@@ -41,6 +42,15 @@ export const SIM_BADGES: Record<SimId, SimBadgeMeta> = {
     color: "#E11D48",
     logoUrl: "/assets/img/sims/lmu.png",
     svg: `<img src="/assets/img/sims/lmu.png" alt="Le Mans Ultimate" class="sim-real-logo" loading="lazy" decoding="async" />`,
+  },
+  ac: {
+    id: "ac",
+    name: "Assetto Corsa",
+    short: "AC",
+    community: "m/AssettoCorsa",
+    color: "#E11D48",
+    logoUrl: "/assets/img/sims/ac.png",
+    svg: `<img src="/assets/img/sims/ac.png" alt="Assetto Corsa" class="sim-real-logo" loading="lazy" decoding="async" />`,
   },
   ac_evo: {
     id: "ac_evo",

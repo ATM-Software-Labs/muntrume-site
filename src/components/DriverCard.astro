@@ -150,7 +150,7 @@ const achData = computeDriverAchievements(
                 {simBadges.map((sim) => (
                   <span class="d-sim-pill" style={`--sim-color:${sim.color}`} title={sim.name}>
                     <span class="d-sim-pill__ico" set:html={sim.svg} />
-                    <span>{sim.name}</span>
+                    {sim.id === "staff" && <span>{sim.name}</span>}
                   </span>
                 ))}
               </div>
@@ -510,7 +510,7 @@ const achData = computeDriverAchievements(
               {simBadges.map((sim) => (
                 <span class="d-sim-pill d-sim-pill--sm" style={`--sim-color:${sim.color}`} title={sim.name}>
                   <span class="d-sim-pill__ico" set:html={sim.svg} />
-                  <span>{sim.short}</span>
+                  {sim.id === "staff" && <span>{sim.short}</span>}
                 </span>
               ))}
               {achData.unlocked.length > 0 && (
@@ -715,26 +715,26 @@ const achData = computeDriverAchievements(
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: 18px;
-    padding: 2px 5px;
-    border-radius: 5px;
+    height: 22px;
+    padding: 3px 6px;
+    border-radius: 6px;
     background: #0b0f17;
     flex-shrink: 0;
   }
   .d-sim-pill__ico :global(.sim-real-logo) {
-    height: 13px;
+    height: 15px;
     width: auto;
-    max-width: 46px;
+    max-width: 76px;
     object-fit: contain;
     display: block;
   }
   .d-sim-pill--sm .d-sim-pill__ico {
-    height: 16px;
-    padding: 1px 4px;
+    height: 20px;
+    padding: 2px 6px;
   }
   .d-sim-pill--sm .d-sim-pill__ico :global(.sim-real-logo) {
-    height: 11px;
-    max-width: 36px;
+    height: 14px;
+    max-width: 68px;
   }
   .d-ach-mini-pill {
     display: inline-flex;

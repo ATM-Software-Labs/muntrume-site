@@ -71,6 +71,7 @@
   var SIM_META = {
     iracing: { name: "iRacing", short: "iR", logo: "/assets/img/sims/iracing.png" },
     lmu: { name: "Le Mans Ultimate", short: "LMU", logo: "/assets/img/sims/lmu.png" },
+    ac: { name: "Assetto Corsa", short: "AC", logo: "/assets/img/sims/ac.png" },
     ac_evo: { name: "Assetto Corsa EVO", short: "AC EVO", logo: "/assets/img/sims/ac_evo.png" },
     acc: { name: "ACC", short: "ACC", logo: "/assets/img/sims/acc.png" },
     rf2: { name: "rFactor 2", short: "rF2", logo: "/assets/img/sims/rf2.png" },
@@ -85,9 +86,9 @@
     var simPills = sims.map(function (id) {
       var m = SIM_META[id];
       if (!m) return "";
-      return '<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 8px 3px 5px;border-radius:999px;border:1px solid var(--r-line,rgba(255,255,255,.14));background:var(--r-bg,#090b0f);color:var(--r-text,#f1f5f9);font:600 10.5px/1 ui-monospace,monospace;">' +
-        '<span style="display:inline-flex;align-items:center;justify-content:center;height:16px;padding:1px 4px;border-radius:5px;background:#0b0f17;"><img src="' + m.logo + '" alt="' + esc(m.name) + '" style="height:11px;max-width:36px;object-fit:contain;display:block;" loading="lazy" /></span>' +
-        '<span>' + esc(m.short) + '</span></span>';
+      return '<span title="' + esc(m.name) + '" style="display:inline-flex;align-items:center;gap:5px;padding:3px 7px;border-radius:999px;border:1px solid var(--r-line,rgba(255,255,255,.14));background:#0b0f17;color:#f1f5f9;font:600 10.5px/1 ui-monospace,monospace;">' +
+        '<img src="' + m.logo + '" alt="' + esc(m.name) + '" style="height:14px;max-width:68px;object-fit:contain;display:block;" loading="lazy" />' +
+        (id === "staff" ? '<span>STAFF</span>' : '') + '</span>';
     }).join("");
 
     var dorsal = d.dorsal || (isStaff ? "STAFF" : "MMT");
@@ -144,7 +145,8 @@
     });
   }
 
-  cachedJson(API + '/api/drivers', 'mmt_cache_drivers_v2', 300000).then(function (list) {
+  var isRosterPage = /^\/(drivers|pilotos)\/?$/i.test(location.pathname);
+  cachedJson(API + '/api/drivers', 'mmt_cache_drivers_v3', isRosterPage ? 20000 : 300000).then(function (list) {
     var latest = null;
     var irSum = 0, irCount = 0;
     var grid = document.querySelector(".d-grid");
@@ -152,7 +154,7 @@
     (Array.isArray(list) ? list : []).forEach(function (d) {
       var card = document.querySelector('[data-driver="' + d.slug + '"]');
       if (!card) {
-        if (grid && d && d.slug && d.is_dynamic) {
+        if (grid && d && d.slug) {
           grid.appendChild(buildDynamicDriverCard(d));
           totalRendered += 1;
         }
@@ -202,6 +204,11 @@
       showMeta(card, "club", d.club || d.club_name);
       if (d.updated_at && (!latest || d.updated_at > latest)) latest = d.updated_at;
     });
+    if (totalRendered > 0) {
+      document.querySelectorAll('[data-i18n-num]').forEach(function (el) {
+        if (el.closest && el.closest('#plTitle, .r-head, .r-lead')) el.textContent = String(totalRendered);
+      });
+    }
     if (irCount > 0) {
       approx(document.getElementById('teamAvgIr'), 'k', Math.round(irSum / irCount));
     }
