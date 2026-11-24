@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 160" fill="none">
-  <rect x="4" y="4" width="632" height="152" rx="24" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="4"/>
+  <rect x="4" y="4" width="632" height="152" rx="24" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="4"/>
   <!-- Emblem -->
   <rect x="28" y="28" width="104" height="104" rx="20" fill="#090D12"/>
   <path d="M46 108 V52 H62 L78 82 L94 52 H110 V108 H96 V74 L82 98 H74 L60 74 V108 Z" fill="#F8FAFC"/>

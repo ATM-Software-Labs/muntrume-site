@@ -95,7 +95,7 @@ const futuristicAssets = [
     fmt: "SVG · 640×160",
     desc: "Logotipo completo para carrocerías claras, dosieres de prensa, documentos PDF y patrocinadores.",
     src: "/assets/brand/muntrume-wordmark-light.svg",
-    bg: "bg-slate-100",
+    bg: "bg-white",
     file: "muntrume-wordmark-light.svg",
     badge: "Futurista SVG"
   },
@@ -125,12 +125,96 @@ const colorPalette = [
   { name: "Heraldic Gold", hex: "#EAB308", rgb: "234, 179, 8", role: "Barras cruzadas heráldicas y trofeos." },
   { name: "Carbon Pitch", hex: "#090D12", rgb: "9, 13, 18", role: "Fondo principal oscuro y fibra de carbono." },
   { name: "Surface Slate", hex: "#111827", rgb: "17, 24, 39", role: "Tarjetas de interfaz, paddock y paneles HUD." },
-  { name: "Pure White", hex: "#F8FAFC", rgb: "248, 250, 252", role: "Tipografía principal, emblemas monocromos y dorsal." }
+  { name: "Pure White", hex: "#FFFFFF", rgb: "255, 255, 255", role: "Fondos claros puros, emblemas monocromos y dorsal." }
+];
+
+const ecosystemReferences = [
+  {
+    tag: "Escudería Principal",
+    name: "Muntrume Motorsport™",
+    desc: "Portal oficial de ingeniería, telemetría 60 Hz, calendario iRacing y noticias de competición.",
+    href: "/",
+    cta: "Ir a muntru.me"
+  },
+  {
+    tag: "Ingeniería .STO",
+    name: "MTM Megasetup™",
+    desc: "Catálogo de setups verificados Pass Tech para GT3, GTP, Fórmula, Turismo y Óvalos.",
+    href: "/setups/",
+    cta: "Ver Setups"
+  },
+  {
+    tag: "Catálogo SVG",
+    name: "Marcas & Partners iRacing",
+    desc: "Repositorio open-source de emblemas vectoriales de fabricantes y campeonatos en Original, Blanco y Negro.",
+    href: "/overlay/brands/",
+    cta: "Abrir Catálogo SVG"
+  },
+  {
+    tag: "App & HUD 60 Hz",
+    name: "MMT Sync Desktop & Mobile",
+    desc: "Cliente nativo Rust/Tauri, overlays Click-Through sobre iRacing y Companion web móvil sin descargas.",
+    href: "/app/",
+    cta: "Explorar MMT Sync"
+  },
+  {
+    tag: "Ingeniero IA",
+    name: "Muntrume AI",
+    desc: "Asistente inteligente de estrategia de stint, análisis de telemetría .IBT y diagnóstico post-carrera.",
+    href: "/ai/",
+    cta: "Abrir Muntrume AI"
+  },
+  {
+    tag: "Open Source",
+    name: "ATM Software Labs",
+    desc: "Organización de desarrollo detrás de la arquitectura web, API unificada (api.muntru.me) y kits open-source.",
+    href: "https://github.com/ATM-Software-Labs",
+    cta: "GitHub Oficial ↗",
+    external: true
+  }
+];
+
+const applicationSpecs = [
+  {
+    channel: "Trading Paints & iRacing Liveries",
+    asset: "Escudo Vectorial / Monocromo Blanco",
+    specs: "2048×2048 TGA · Spec Map .mip · Margen 15%",
+    bgNote: "Sobre fibra de carbono o carrocería oscura usar Emblema Monocromo Blanco; sobre blanco usar Wordmark Light."
+  },
+  {
+    channel: "OBS, Twitch & YouTube Broadcast",
+    asset: "Wordmark Dark / Monograma MTM",
+    specs: "1920×1080 / 2560×1440 · HUD /stream",
+    bgNote: "Altura mínima 28 px en faldones inferiores. Compatible con selector Original, Blanco y Negro en MMT Sync."
+  },
+  {
+    channel: "Apps, PWA, Discord & Perfiles",
+    asset: "Icono App 512px / Maskable 512px",
+    specs: "PNG 512×512 · Zona segura circular 80%",
+    bgNote: "Usar versión Maskable en Android/iOS para evitar recortes en esquinas redondeadas o máscaras circulares."
+  },
+  {
+    channel: "Prensa, Patrocinadores & Dosieres",
+    asset: "Escudo Heráldico / Wordmark Light",
+    specs: "SVG vectorial o JPG alta resolución · Mín. 18 mm",
+    bgNote: "Siempre sobre fondo blanco puro (#FFFFFF) o negro carbón (#090D12), evitando fondos grises de bajo contraste."
+  }
 ];
 ---
 
 <Layout title={pageTitle} description={pageDescription} canonical="https://muntru.me/paddock/marca/">
-  <main class="r-wrap py-12 sm:py-16 space-y-12">
+  <style is:inline>
+    /* Eliminar cualquier fondo gris en modo claro y unificar superficies a blanco puro (#FFFFFF) */
+    html:not(.dark) body,
+    html:not(.dark) .marca-page {
+      background-color: #ffffff !important;
+    }
+    html:not(.dark) .marca-card,
+    html:not(.dark) .marca-box {
+      background-color: #ffffff !important;
+    }
+  </style>
+  <main class="marca-page r-wrap py-12 sm:py-16 space-y-12">
     <!-- BREADCRUMB & HERO -->
     <header class="pb-6 border-b border-[var(--r-line)] flex flex-col lg:flex-row lg:items-end justify-between gap-6">
       <div class="space-y-3">
@@ -144,10 +228,13 @@ const colorPalette = [
         </h1>
         <p class="r-lead max-w-2xl">
           Manual completo de marca de <strong class="text-[var(--r-text)]">Muntrume Motorsport™</strong> y <strong class="text-[var(--r-text)]">MTM Megasetup™</strong>:
-          branding original, variantes futuristas vectoriales, paleta cromática y normativa legal de uso.
+          branding original, variantes futuristas vectoriales, paleta cromática, referencias técnicas y normativa legal de uso.
         </p>
       </div>
       <div class="flex flex-wrap items-center gap-2">
+        <a href="/overlay/brands/" class="r-btn r-btn--ghost">
+          Catálogo Logos iRacing SVG
+        </a>
         <a href="/aviso-legal/" class="r-btn r-btn--ghost">
           Marco Legal
         </a>
@@ -158,9 +245,9 @@ const colorPalette = [
     </header>
 
     <!-- FEATURED HERALDIC CREST -->
-    <section class="rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+    <section class="marca-card rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
       <div class="lg:col-span-5 flex flex-col sm:flex-row lg:flex-col gap-4">
-        <div class="rounded-2xl bg-white p-6 border border-white/10 flex items-center justify-center aspect-square max-h-64">
+        <div class="rounded-2xl bg-white p-6 border border-[var(--r-line)] flex items-center justify-center aspect-square max-h-64">
           <img src="/assets/brand/muntrume-escudo-heraldico.jpg" alt="Escudo Heráldico Muntrume Motorsport" class="max-h-full max-w-full object-contain" />
         </div>
       </div>
@@ -175,19 +262,19 @@ const colorPalette = [
           El nuevo emblema fusiona la tradición heráldica con la competición GT3 y Prototipos moderna:
         </p>
         <ul class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-[var(--r-muted)]">
-          <li class="p-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)]">
+          <li class="marca-box p-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)]">
             <strong class="text-[var(--r-text)] block mb-0.5">Casco Verde Esmeralda</strong>
             Enfoque en pista, precisión telemétrica y seguridad del piloto.
           </li>
-          <li class="p-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)]">
+          <li class="marca-box p-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)]">
             <strong class="text-[var(--r-text)] block mb-0.5">Torre Almenada</strong>
             Solidez estructural, defensa de posición y consistencia en resistencia.
           </li>
-          <li class="p-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)]">
+          <li class="marca-box p-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)]">
             <strong class="text-[var(--r-text)] block mb-0.5">Paloma y Mano Abierta</strong>
             Juego limpio (Fair Play), deportividad y espíritu de equipo en pista.
           </li>
-          <li class="p-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)]">
+          <li class="marca-box p-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)]">
             <strong class="text-[var(--r-text)] block mb-0.5">Aspa Dorada y Estrella</strong>
             Ambición competitiva en top-split y sello de calidad MTM.
           </li>
@@ -211,7 +298,7 @@ const colorPalette = [
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {originalAssets.map((asset) => (
-          <article class="rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-5 flex flex-col justify-between gap-4 hover:border-[var(--r-accent)] transition-colors">
+          <article class="marca-card rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-5 flex flex-col justify-between gap-4 hover:border-[var(--r-accent)] transition-colors">
             <div class="space-y-3">
               <button
                 type="button"
@@ -220,7 +307,7 @@ const colorPalette = [
                 data-preview-sub={asset.fmt}
                 data-preview-id={`brand:${asset.file}`}
                 data-preview-download={asset.file}
-                class={`relative w-full h-36 rounded-xl ${asset.bg} border border-white/10 flex items-center justify-center p-4 overflow-hidden cursor-zoom-in group`}
+                class={`relative w-full h-36 rounded-xl ${asset.bg} border border-[var(--r-line)] flex items-center justify-center p-4 overflow-hidden cursor-zoom-in group`}
                 title="Ver imagen completa"
               >
                 <img src={asset.src} alt={asset.name} loading="lazy" decoding="async" class="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105" />
@@ -242,7 +329,7 @@ const colorPalette = [
                 type="button"
                 data-like-btn
                 data-like-id={`brand:${asset.file}`}
-                class="px-3 py-2 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-rose-500/60 text-xs font-mono font-bold text-[var(--r-muted)] inline-flex items-center gap-1.5 transition cursor-pointer shrink-0"
+                class="marca-box px-3 py-2 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-rose-500/60 text-xs font-mono font-bold text-[var(--r-muted)] inline-flex items-center gap-1.5 transition cursor-pointer shrink-0"
                 title="Me gusta"
               >
                 <span data-heart>♡</span>
@@ -251,7 +338,7 @@ const colorPalette = [
               <a
                 href={asset.src}
                 download={asset.file}
-                class="flex-1 py-2 px-3 rounded-xl bg-[var(--r-bg-2)] hover:bg-[var(--r-accent)]/15 border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono font-bold text-[var(--r-text)] hover:text-[var(--r-accent)] text-center transition-colors"
+                class="marca-box flex-1 py-2 px-3 rounded-xl bg-[var(--r-bg-2)] hover:bg-[var(--r-accent)]/15 border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono font-bold text-[var(--r-text)] hover:text-[var(--r-accent)] text-center transition-colors"
               >
                 Descargar {asset.file.split('.').pop()?.toUpperCase()}
               </a>
@@ -277,7 +364,7 @@ const colorPalette = [
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {futuristicAssets.map((asset) => (
-          <article class="rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-5 flex flex-col justify-between gap-4 hover:border-[var(--r-accent)] transition-colors">
+          <article class="marca-card rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-5 flex flex-col justify-between gap-4 hover:border-[var(--r-accent)] transition-colors">
             <div class="space-y-3">
               <button
                 type="button"
@@ -286,7 +373,7 @@ const colorPalette = [
                 data-preview-sub={asset.fmt}
                 data-preview-id={`brand:${asset.file}`}
                 data-preview-download={asset.file}
-                class={`relative w-full h-36 rounded-xl ${asset.bg} border border-white/10 flex items-center justify-center p-4 overflow-hidden cursor-zoom-in group`}
+                class={`relative w-full h-36 rounded-xl ${asset.bg} border border-[var(--r-line)] flex items-center justify-center p-4 overflow-hidden cursor-zoom-in group`}
                 title="Ver imagen completa"
               >
                 <img src={asset.src} alt={asset.name} loading="lazy" decoding="async" class="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105" />
@@ -308,7 +395,7 @@ const colorPalette = [
                 type="button"
                 data-like-btn
                 data-like-id={`brand:${asset.file}`}
-                class="px-3 py-2 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-rose-500/60 text-xs font-mono font-bold text-[var(--r-muted)] inline-flex items-center gap-1.5 transition cursor-pointer shrink-0"
+                class="marca-box px-3 py-2 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-rose-500/60 text-xs font-mono font-bold text-[var(--r-muted)] inline-flex items-center gap-1.5 transition cursor-pointer shrink-0"
                 title="Me gusta"
               >
                 <span data-heart>♡</span>
@@ -317,7 +404,7 @@ const colorPalette = [
               <a
                 href={asset.src}
                 download={asset.file}
-                class="flex-1 py-2 px-3 rounded-xl bg-[var(--r-bg-2)] hover:bg-[var(--r-accent)]/15 border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono font-bold text-[var(--r-text)] hover:text-[var(--r-accent)] text-center transition-colors"
+                class="marca-box flex-1 py-2 px-3 rounded-xl bg-[var(--r-bg-2)] hover:bg-[var(--r-accent)]/15 border border-[var(--r-line)] hover:border-[var(--r-accent)] text-xs font-mono font-bold text-[var(--r-text)] hover:text-[var(--r-accent)] text-center transition-colors"
               >
                 Descargar {asset.file.split('.').pop()?.toUpperCase()}
               </a>
@@ -329,17 +416,17 @@ const colorPalette = [
 
     <!-- COLOR PALETTE & TYPOGRAPHY -->
     <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      <div class="lg:col-span-7 rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-6 space-y-5">
+      <div class="marca-card lg:col-span-7 rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-6 space-y-5">
         <h2 class="text-xl font-extrabold text-[var(--r-text)] font-display">Paleta Cromática Oficial</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {colorPalette.map((c) => (
             <button
               type="button"
               data-copy-hex={c.hex}
-              class="text-left p-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition flex items-start gap-3 group"
+              class="marca-box text-left p-3 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] hover:border-[var(--r-accent)] transition flex items-start gap-3 group"
               title={`Copiar ${c.hex}`}
             >
-              <span class="w-10 h-10 rounded-lg shrink-0 border border-white/15" style={`background:${c.hex};`}></span>
+              <span class="w-10 h-10 rounded-lg shrink-0 border border-[var(--r-line)]" style={`background:${c.hex};`}></span>
               <div class="min-w-0">
                 <div class="flex items-center gap-2">
                   <span class="text-xs font-bold text-[var(--r-text)]">{c.name}</span>
@@ -353,20 +440,20 @@ const colorPalette = [
         </div>
       </div>
 
-      <div class="lg:col-span-5 rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-6 space-y-5">
+      <div class="marca-card lg:col-span-5 rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-6 space-y-5">
         <h2 class="text-xl font-extrabold text-[var(--r-text)] font-display">Tipografías Corporativas</h2>
         <div class="space-y-3 text-xs">
-          <div class="p-3.5 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)]">
+          <div class="marca-box p-3.5 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)]">
             <span class="font-mono text-[10px] uppercase text-[var(--r-accent)]">Display &amp; Titulares</span>
             <div class="text-2xl font-extrabold font-display tracking-tight text-[var(--r-text)] mt-0.5">Barlow Condensed (700/800)</div>
             <p class="text-[var(--r-muted)] mt-1">Cabeceras, dorsales y títulos de sección.</p>
           </div>
-          <div class="p-3.5 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)]">
+          <div class="marca-box p-3.5 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)]">
             <span class="font-mono text-[10px] uppercase text-[var(--r-accent)]">Interfaz &amp; Lectura</span>
             <div class="text-lg font-semibold text-[var(--r-text)] mt-0.5">Inter (400 / 600)</div>
             <p class="text-[var(--r-muted)] mt-1">Textos descriptivos, tarjetas y menús web/app.</p>
           </div>
-          <div class="p-3.5 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)]">
+          <div class="marca-box p-3.5 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)]">
             <span class="font-mono text-[10px] uppercase text-[var(--r-accent)]">Telemetría &amp; Datos</span>
             <div class="text-base font-mono font-bold text-[var(--r-text)] mt-0.5">JetBrains Mono (500 / 700)</div>
             <p class="text-[var(--r-muted)] mt-1">Tiempos por vuelta, deltas, presiones kPa y hashes .sto.</p>
@@ -375,8 +462,93 @@ const colorPalette = [
       </div>
     </section>
 
+    <!-- ECOSYSTEM & SUB-BRAND REFERENCES -->
+    <section class="space-y-6">
+      <div class="pb-3 border-b border-[var(--r-line)] flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <span class="r-kicker">Línea 03 · Ecosistema &amp; Referencias</span>
+          <h2 class="text-2xl font-extrabold text-[var(--r-text)] font-display mt-1">
+            Referencias Oficiales del Ecosistema ({ecosystemReferences.length} plataformas)
+          </h2>
+          <p class="text-xs text-[var(--r-muted)] mt-1">
+            Submarcas, catálogos vectoriales, herramientas de telemetría y repositorios oficiales vinculados a Muntrume Motorsport™.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {ecosystemReferences.map((ref) => (
+          <a
+            href={ref.href}
+            target={ref.external ? "_blank" : undefined}
+            rel={ref.external ? "noopener noreferrer" : undefined}
+            class="marca-card rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-5 flex flex-col justify-between gap-4 hover:border-[var(--r-accent)] transition-colors group"
+          >
+            <div class="space-y-2">
+              <span class="inline-block px-2.5 py-0.5 rounded-full bg-[var(--r-accent)]/10 border border-[var(--r-accent)]/30 text-[10px] font-mono font-bold text-[var(--r-accent)] uppercase tracking-wider">
+                {ref.tag}
+              </span>
+              <h3 class="text-base font-extrabold text-[var(--r-text)] font-display group-hover:text-[var(--r-accent)] transition-colors">
+                {ref.name}
+              </h3>
+              <p class="text-xs text-[var(--r-muted)] leading-relaxed">{ref.desc}</p>
+            </div>
+            <span class="text-xs font-mono font-bold text-[var(--r-accent)] group-hover:underline">
+              {ref.cta} &rarr;
+            </span>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <!-- TECHNICAL APPLICATION REFERENCES -->
+    <section class="marca-card rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-6 sm:p-8 space-y-6">
+      <div class="pb-4 border-b border-[var(--r-line)]">
+        <span class="r-kicker">Línea 04 · Especificaciones de Aplicación</span>
+        <h2 class="text-2xl font-extrabold text-[var(--r-text)] font-display mt-1">
+          Referencias Técnicas por Soporte (Liveries, OBS, App y Prensa)
+        </h2>
+        <p class="text-xs text-[var(--r-muted)] mt-1">
+          Guía rápida de formato, tamaño mínimo y contraste recomendado para aplicar la marca sin pérdida de legibilidad.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {applicationSpecs.map((item) => (
+          <div class="marca-box p-4 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)] space-y-2">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h3 class="text-sm font-bold text-[var(--r-text)]">{item.channel}</h3>
+              <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-[var(--r-accent)]/10 text-[var(--r-accent)] border border-[var(--r-accent)]/30">
+                {item.asset}
+              </span>
+            </div>
+            <div class="text-[11px] font-mono text-[var(--r-text)]">{item.specs}</div>
+            <p class="text-xs text-[var(--r-muted)] leading-relaxed">{item.bgNote}</p>
+          </div>
+        ))}
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+        <div class="marca-box p-3.5 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)]">
+          <span class="font-mono text-[10px] uppercase text-[var(--r-accent)] block">Zona de Seguridad</span>
+          <strong class="text-sm text-[var(--r-text)]">15% del ancho total</strong>
+          <p class="text-[var(--r-muted)] mt-0.5">Margen libre obligatorio alrededor del escudo o wordmark.</p>
+        </div>
+        <div class="marca-box p-3.5 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)]">
+          <span class="font-mono text-[10px] uppercase text-[var(--r-accent)] block">Tamaño Mínimo</span>
+          <strong class="text-sm text-[var(--r-text)]">24 px digital · 18 mm impreso</strong>
+          <p class="text-[var(--r-muted)] mt-0.5">Por debajo de 24 px usar exclusivamente el Monograma MTM.</p>
+        </div>
+        <div class="marca-box p-3.5 rounded-xl bg-[var(--r-bg-2)] border border-[var(--r-line)]">
+          <span class="font-mono text-[10px] uppercase text-[var(--r-accent)] block">Fondos Oficiales</span>
+          <strong class="text-sm text-[var(--r-text)]">#FFFFFF · #090D12</strong>
+          <p class="text-[var(--r-muted)] mt-0.5">Blanco puro en soportes claros o negro carbón en HUD/liveries.</p>
+        </div>
+      </div>
+    </section>
+
     <!-- GUIDELINES & LEGAL COMPLIANCE -->
-    <section class="rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-6 sm:p-8 space-y-6">
+    <section class="marca-card rounded-2xl border border-[var(--r-line)] bg-[var(--r-surface)] p-6 sm:p-8 space-y-6">
       <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[var(--r-line)]">
         <div>
           <span class="text-xs font-mono uppercase tracking-widest text-[var(--r-accent)]">Normativa &amp; Propiedad Intelectual</span>
@@ -384,22 +556,22 @@ const colorPalette = [
             Guía de Uso y Cumplimiento Legal
           </h2>
         </div>
-        <span class="px-3 py-1 rounded-full bg-[var(--r-bg-2)] border border-[var(--r-line)] text-xs font-mono text-[var(--r-muted)]">
+        <span class="marca-box px-3 py-1 rounded-full bg-[var(--r-bg-2)] border border-[var(--r-line)] text-xs font-mono text-[var(--r-muted)]">
           [MTM-PRO-SEC-26S4]
         </span>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs leading-relaxed">
-        <div class="p-4 rounded-xl bg-[var(--r-bg-2)] border border-emerald-500/30 space-y-2">
-          <h3 class="text-sm font-bold text-emerald-400 font-mono uppercase">Usos Permitidos</h3>
+        <div class="marca-box p-4 rounded-xl bg-[var(--r-bg-2)] border border-emerald-500/30 space-y-2">
+          <h3 class="text-sm font-bold text-emerald-500 font-mono uppercase">Usos Permitidos</h3>
           <ul class="list-disc pl-4 space-y-1.5 text-[var(--r-muted)]">
             <li>Liveries oficiales del equipo en <strong>Trading Paints</strong> e <strong>iRacing</strong> para pilotos autorizados.</li>
             <li>Retransmisiones de carreras, overlays de Twitch/YouTube y notas de prensa acreditadas.</li>
             <li>Respetar siempre un margen de seguridad mínimo equivalente al 15% del ancho del emblema.</li>
           </ul>
         </div>
-        <div class="p-4 rounded-xl bg-[var(--r-bg-2)] border border-rose-500/30 space-y-2">
-          <h3 class="text-sm font-bold text-rose-400 font-mono uppercase">Usos Prohibidos</h3>
+        <div class="marca-box p-4 rounded-xl bg-[var(--r-bg-2)] border border-rose-500/30 space-y-2">
+          <h3 class="text-sm font-bold text-rose-500 font-mono uppercase">Usos Prohibidos</h3>
           <ul class="list-disc pl-4 space-y-1.5 text-[var(--r-muted)]">
             <li>Deformar, estirar, rotar o alterar los colores oficiales fuera de las variantes suministradas.</li>
             <li>Utilizar el logotipo para suplantar al equipo, vender setups ajenos o fines comerciales sin licencia escrita.</li>
@@ -408,7 +580,7 @@ const colorPalette = [
         </div>
       </div>
 
-      <div class="p-4 rounded-xl bg-[var(--r-bg)] border border-[var(--r-line)] text-xs text-[var(--r-muted)] space-y-2 leading-relaxed">
+      <div class="marca-box p-4 rounded-xl bg-[var(--r-bg)] border border-[var(--r-line)] text-xs text-[var(--r-muted)] space-y-2 leading-relaxed">
         <p>
           <strong class="text-[var(--r-text)]">Titularidad de Marca:</strong>
           <strong>Muntrume Motorsport™</strong>, <strong>MTM Megasetup™</strong>, sus escudos, monogramas y archivos vectoriales son propiedad intelectual de Alberto Trujillo Mingorance (#16).
