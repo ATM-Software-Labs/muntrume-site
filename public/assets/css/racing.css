@@ -327,7 +327,7 @@ a.sc-card .driver-helmet{max-height:220px;margin:0 auto}
 .d-num-pill{display:inline-flex;align-items:center;justify-content:center;padding:3px 10px;border-radius:8px;background:var(--r-bg-2);border:1px solid var(--r-line);color:var(--r-accent);font:700 .72em/1 var(--r-mono);letter-spacing:.04em;box-shadow:0 0 16px var(--r-accent-glow)}
 .d-num-pill--sm{padding:2px 8px;border-radius:6px;font-size:.75em}
 .d-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:4px 0 0;padding:12px 0;border-top:1px solid var(--r-line);border-bottom:1px solid var(--r-line);align-items:end}
-.d-stats div{min-height:42px}
+.d-stats div{min-height:42px;min-width:0;overflow:hidden}
 .d-stats dt{margin:0;color:var(--r-muted);font:600 12px/1.2 var(--r-mono);letter-spacing:.04em;text-transform:uppercase}
 .d-stats dd{margin:4px 0 0;font:700 17px/1.1 var(--r-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
 .d-stats__dorsal{color:var(--r-accent)}
@@ -406,6 +406,7 @@ html,body,main,.r-section,.d-grid,.d-card,.d-hero-wrap,.d-setups__grid,.d-vs-gri
 .d-fav__k{color:var(--r-muted);font:600 10px/1.2 var(--r-mono);letter-spacing:.06em;text-transform:uppercase}
 .d-fav__n{font-weight:700}
 .d-track-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin:0;width:100%}
+.d-track-cards:has(> :only-child){grid-template-columns:1fr}
 .d-track-card{border:1px solid var(--r-line);background:var(--r-surface);border-radius:14px;padding:22px 24px;display:flex;flex-direction:column;justify-content:space-between;gap:8px;box-sizing:border-box;transition:border-color .2s,transform .2s,box-shadow .2s}
 .d-track-card:hover{border-color:var(--r-accent);transform:translateY(-2px);box-shadow:0 8px 24px -10px rgba(0,0,0,0.06)}
 .d-track-card--fav{border-color:var(--r-line);background:var(--r-surface)}
