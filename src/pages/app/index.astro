@@ -141,8 +141,8 @@ const appSchema = {
 
         <div class="app-comp-statusbar">
           <div><span class="app-cmd-kicker">PILOTO CONECTADO</span><strong id="compPilotBadge">Cargando piloto…</strong></div>
-          <div><span class="app-cmd-kicker">PC VINCULADO (MMT SYNC)</span><strong id="compDeviceStatus">Desktop PC · Online</strong></div>
-          <div><span class="app-cmd-kicker">SETUPS .STO EN VAULT</span><strong id="compSetupsCount">42.654</strong></div>
+          <div><span class="app-cmd-kicker">PC VINCULADO (MMT SYNC)</span><strong id="compDeviceStatus">Verificando dispositivo…</strong></div>
+          <div><span class="app-cmd-kicker">SETUPS .STO EN VAULT</span><strong id="compSetupsCount">—</strong></div>
           <div><a href="/app/vincular/" class="r-btn app-btn" style="padding:7px 14px;font-size:12.5px">+ Vincular otro PC</a></div>
         </div>
 
@@ -192,26 +192,26 @@ const appSchema = {
           <div class="app-comp-racehero">
             <div>
               <span class="app-cmd-kicker">DETECTADO AUTOMÁTICAMENTE EN CACHÉ DE IRACING</span>
-              <h3 id="compLrTrack" style="margin:4px 0;font-size:20px">Circuit de Spa-Francorchamps</h3>
-              <p id="compLrMeta" style="margin:0;color:var(--r-muted);font-size:13px">Ferrari 296 GT3 · Official Race</p>
+              <h3 id="compLrTrack" style="margin:4px 0;font-size:20px">Sincronizando última sesión…</h3>
+              <p id="compLrMeta" style="margin:0;color:var(--r-muted);font-size:13px">Leyendo telemetría sincronizada desde MMT Sync…</p>
             </div>
-            <code id="compLrSetup" class="app-comp-setupbadge">MMT_26S4_W08_SPA_R.sto</code>
+            <code id="compLrSetup" class="app-comp-setupbadge">—</code>
           </div>
 
           <div class="app-comp-kpis">
-            <div class="app-comp-kpi"><span>RESULTADO</span><strong id="compLrPos">P4 → P2 (+2)</strong></div>
-            <div class="app-comp-kpi"><span>DELTA iRATING</span><strong id="compLrIrDelta" style="color:#10b981">+48 iR</strong></div>
-            <div class="app-comp-kpi"><span>INCIDENTES</span><strong id="compLrInc">0x</strong></div>
-            <div class="app-comp-kpi"><span>MEJOR VUELTA</span><strong id="compLrBestLap">2:16.412</strong></div>
-            <div class="app-comp-kpi"><span>VUELTA MEDIA</span><strong id="compLrAvgLap">2:17.185</strong></div>
-            <div class="app-comp-kpi"><span>CONSISTENCIA</span><strong id="compLrCons">98.6%</strong></div>
+            <div class="app-comp-kpi"><span>RESULTADO / TANDA</span><strong id="compLrPos">—</strong></div>
+            <div class="app-comp-kpi"><span>DELTA iRATING</span><strong id="compLrIrDelta" style="color:#10b981">—</strong></div>
+            <div class="app-comp-kpi"><span>INCIDENTES</span><strong id="compLrInc">—</strong></div>
+            <div class="app-comp-kpi"><span>MEJOR VUELTA</span><strong id="compLrBestLap">—</strong></div>
+            <div class="app-comp-kpi"><span>VUELTA MEDIA</span><strong id="compLrAvgLap">—</strong></div>
+            <div class="app-comp-kpi"><span>CONSISTENCIA</span><strong id="compLrCons">—</strong></div>
           </div>
 
           <div class="app-comp-streaks">
-            <div class="app-comp-streak"><span>RACHA LIMPIA (&lt;4x)</span><strong id="compStreakClean">4 seguidas</strong></div>
-            <div class="app-comp-streak"><span>RACHA TOP 5</span><strong id="compStreakTop5">3 podios/Top 5</strong></div>
-            <div class="app-comp-streak"><span>VUELTAS 0x</span><strong id="compStreakLaps">89 vueltas 0x</strong></div>
-            <div class="app-comp-streak"><span>BALANCE 10 CARR.</span><strong id="compStreakGain">+14 pos.</strong></div>
+            <div class="app-comp-streak"><span>TANDAS LIMPIAS (&lt;4x)</span><strong id="compStreakClean">—</strong></div>
+            <div class="app-comp-streak"><span>SESIONES TOP 5</span><strong id="compStreakTop5">—</strong></div>
+            <div class="app-comp-streak"><span>VUELTAS VÁLIDAS</span><strong id="compStreakLaps">—</strong></div>
+            <div class="app-comp-streak"><span>SESIONES EN CACHÉ</span><strong id="compStreakGain">—</strong></div>
           </div>
 
           <!-- AUTO ENGINEER DEBRIEF -->
@@ -353,7 +353,7 @@ const appSchema = {
         <button type="button" data-bridge-cmd="edit-hud" class="app-cmd-tile">
           <span class="app-cmd-kicker">02 · LAYOUT STUDIO</span>
           <strong>Editar Posición HUD</strong>
-          <small>Desbloquea los 9 widgets para arrastrarlos con el ratón (F9)</small>
+          <small>Desbloquea los 11 widgets para arrastrarlos con el ratón (F9)</small>
         </button>
         <button type="button" data-bridge-cmd="sync-week" class="app-cmd-tile">
           <span class="app-cmd-kicker">03 · SHA-256 VAULT</span>
@@ -957,7 +957,7 @@ const appSchema = {
     requestAnimationFrame(step);
   })();
 </script>
-<script is:inline src="/assets/js/companion.js?v=t373"></script>
+<script is:inline src="/assets/js/companion.js?v=t375"></script>
 
 <style is:global>
   .app-comp-irpanel { padding: 14px 16px; border-radius: 14px; background: var(--r-bg); border: 1px solid var(--r-line); margin-bottom: 14px; display: flex; flex-direction: column; gap: 12px; }

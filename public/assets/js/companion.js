@@ -97,22 +97,38 @@
       if (el) el.textContent = v;
     };
 
-    setTxt("compPilotBadge", `${p.name || "Piloto MMT"} · ${ir.irating || p.irating || 8235} iR (${ir.safety_rating || p.sr || "A 4.99"})`);
-    setTxt("compDeviceStatus", `${sync.device_name || "Desktop PC"} · Sync ${fmtAgo(sync.last_sync_at)}`);
-    setTxt("compSetupsCount", Number(sync.synced_setups_count || 42654).toLocaleString("es-ES"));
-
-    // iRacing Profile & Synced Playtime card
     const irVal = ir.irating || p.irating;
     const srVal = ir.safety_rating || p.sr;
-    setTxt("compIrRating", irVal ? `${Number(irVal).toLocaleString("es-ES")} iR · ${srVal || "SR"}` : "Sincronizar iRacing");
-    setTxt("compIrCust", ir.cust_id ? `iRacing ID #${ir.cust_id}` : `Perfil ${ir.slug || p.slug || "MMT"}`);
+    const custStr = ir.cust_id ? `iRacing #${ir.cust_id}` : (ir.license_category || "Sports Car");
+    const dorsalStr = p.dorsal || ir.dorsal ? ` ${p.dorsal || ir.dorsal}` : "";
+    const ratingSummary = irVal
+      ? `${Number(irVal).toLocaleString("es-ES")} iR${srVal ? ` (${srVal})` : ""}`
+      : custStr;
+
+    setTxt("compPilotBadge", `${p.name || "Piloto MMT"}${dorsalStr} · ${ratingSummary}`);
+    setTxt("compDeviceStatus", sync.last_sync_at ? `${sync.device_name || "Desktop PC"} · Sync ${fmtAgo(sync.last_sync_at)}` : (sync.device_name || "Esperando MMT Sync"));
+    setTxt("compSetupsCount", sync.synced_setups_count ? Number(sync.synced_setups_count).toLocaleString("es-ES") : "—");
+
+    // iRacing Profile & Synced Playtime card
+    setTxt(
+      "compIrRating",
+      irVal
+        ? `${Number(irVal).toLocaleString("es-ES")} iR${srVal ? ` · ${srVal}` : ""}`
+        : (ir.top_car || ir.favorite_car || custStr)
+    );
+    setTxt("compIrCust", ir.cust_id ? `iRacing ID #${ir.cust_id} · ${ir.license_category || "Sports Car"}` : `Perfil ${ir.slug || p.slug || "MMT"}`);
     setTxt("compPtToday", fmtDuration(pt.today_sec || 0));
     setTxt("compPtLastHb", pt.last_heartbeat ? `Sync ${fmtAgo(pt.last_heartbeat)}` : "Esperando sesión");
     setTxt("compPtWeek", fmtDuration(pt.week_sec || 0));
     const totalHours = Number(pt.combined_hours || 0);
     setTxt("compPtTotal", totalHours > 0 ? `${totalHours.toLocaleString("es-ES")} h` : fmtDuration(pt.total_sec || 0));
     setTxt("compPtLaps", `${Number(pt.laps_recorded || 0).toLocaleString("es-ES")} vueltas registradas`);
-    setTxt("compIrFavs", `${ir.favorite_car || lr.coche || "GT3"} · ${ir.favorite_track || lr.circuito || "Spa-Francorchamps"}`);
+    setTxt(
+      "compIrFavs",
+      lr && lr.circuito
+        ? `Última sesión: ${lr.coche || ir.favorite_car || "iRacing"} · ${lr.circuito}`
+        : `${ir.top_car || ir.favorite_car || "iRacing"} · ${ir.favorite_track || "Sincronizado con MMT Sync"}`
+    );
 
     const livePill = document.getElementById("compLivePill");
     if (livePill) {
@@ -137,26 +153,58 @@
       }).join("");
     }
 
-    // Last Race KPIs
-    setTxt("compLrTrack", lr.circuito || "Circuit de Spa-Francorchamps");
-    setTxt("compLrMeta", `${lr.coche || "Ferrari 296 GT3"} · ${lr.tipo_sesion || "Official Race"} · ${fmtAgo(lr.fecha)}`);
-    setTxt("compLrSetup", lr.setup_name || tel.driver_setup_name || "MMT_26S4_R.sto");
-    const posGain = (Number(lr.pos_salida) || 0) - (Number(lr.pos_final) || 0);
-    const posSign = posGain > 0 ? `+${posGain}` : String(posGain);
-    setTxt("compLrPos", `P${lr.pos_salida || 4} → P${lr.pos_final || 2} (${posSign})`);
-    const irDelta = Number(lr.delta_i_rating) || 0;
-    setTxt("compLrIrDelta", `${irDelta >= 0 ? "+" : ""}${irDelta} iR`);
-    setTxt("compLrInc", `${lr.incidentes ?? 0}x`);
-    setTxt("compLrBestLap", fmtLap(lr.mejor_vuelta));
-    setTxt("compLrAvgLap", fmtLap(lr.vuelta_media));
-    setTxt("compLrCons", `${Number(lr.consistencia_pct || 98.5).toFixed(1)}%`);
+    // Last Session / Race KPIs (100% real from D1 / MMT Sync)
+    if (lr && lr.circuito) {
+      const sType = lr.tipo_sesion || lr.tipoSesion || "Practice";
+      const bLap = Number(lr.mejor_vuelta ?? lr.mejorVuelta ?? 0);
+      const aLap = Number(lr.vuelta_media ?? lr.vueltaMedia ?? 0);
+      const pOut = Number(lr.pos_salida ?? lr.posSalida ?? 0);
+      const pFin = Number(lr.pos_final ?? lr.posFinal ?? 0);
+      const vLaps = Number(lr.vueltas_validas ?? lr.vueltasValidas ?? 0);
+      const inc = Number(lr.incidentes ?? 0);
+      const irDelta = Number(lr.delta_i_rating ?? lr.deltaIRating ?? 0);
+      const consPct = Number(lr.consistencia_pct ?? lr.consistenciaPct ?? 0);
 
-    // Streaks
-    setTxt("compStreakClean", `${st.clean_race_streak ?? 4} seguidas`);
-    setTxt("compStreakTop5", `${st.top5_podium_streak ?? 3} podios/Top 5`);
-    setTxt("compStreakLaps", `${st.valid_laps_streak ?? 89} vueltas 0x`);
-    const netPos = Number(st.net_positions_gained_10) || 0;
-    setTxt("compStreakGain", `${netPos >= 0 ? "+" : ""}${netPos} pos.`);
+      setTxt("compLrTrack", lr.circuito);
+      setTxt("compLrMeta", `${lr.coche || "iRacing"} · ${sType} · ${vLaps} vueltas · ${fmtAgo(lr.fecha)}`);
+      setTxt("compLrSetup", lr.setup_name || tel.driver_setup_name || `${sType} · #${lr.sub_session_id || lr.subSessionId || "IRSDK"}`);
+
+      if (/practice|práctica|test/i.test(sType)) {
+        setTxt("compLrPos", pFin > 0 ? `P${pFin} (${vLaps} v.)` : `${vLaps} vueltas`);
+      } else if (pOut > 0 && pFin > 0) {
+        const posGain = pOut - pFin;
+        const posSign = posGain > 0 ? `+${posGain}` : String(posGain);
+        setTxt("compLrPos", `P${pOut} → P${pFin} (${posSign})`);
+      } else {
+        setTxt("compLrPos", pFin > 0 ? `P${pFin}` : `${vLaps} vueltas`);
+      }
+
+      setTxt("compLrIrDelta", irDelta !== 0 ? `${irDelta > 0 ? "+" : ""}${irDelta} iR` : (/practice|práctica|test/i.test(sType) ? "Practice (0 iR)" : "0 iR"));
+      setTxt("compLrInc", `${inc}x`);
+      setTxt("compLrBestLap", fmtLap(bLap));
+      setTxt("compLrAvgLap", fmtLap(aLap));
+      setTxt("compLrCons", consPct > 0 ? `${consPct.toFixed(1)}%` : "—");
+    } else {
+      setTxt("compLrTrack", "Sin sesiones en caché todavía");
+      setTxt("compLrMeta", "Abre iRacing con MMT Sync activo para capturar vueltas automáticamente");
+      setTxt("compLrSetup", "Esperando IRSDK");
+      setTxt("compLrPos", "—");
+      setTxt("compLrIrDelta", "—");
+      setTxt("compLrInc", "0x");
+      setTxt("compLrBestLap", "—");
+      setTxt("compLrAvgLap", "—");
+      setTxt("compLrCons", "—");
+    }
+
+    // Streaks (100% real from D1 / MMT Sync)
+    const cleanSt = Number(st.clean_race_streak ?? st.cleanRaceStreak ?? 0);
+    const top5St = Number(st.top5_podium_streak ?? st.top5PodiumStreak ?? 0);
+    const lapsSt = Number(st.valid_laps_streak ?? st.validLapsStreak ?? 0);
+    const totalSess = Number(st.total_races ?? st.totalRaces ?? sessions.length ?? 0);
+    setTxt("compStreakClean", `${cleanSt} tandas limpias`);
+    setTxt("compStreakTop5", `${top5St} en Top 5`);
+    setTxt("compStreakLaps", `${lapsSt} vueltas 0x`);
+    setTxt("compStreakGain", `${totalSess} sesiones sync`);
 
     // Auto Engineer Debrief
     const deb = compState.engineer_debrief || {};
@@ -189,21 +237,35 @@
     // Recent sessions table
     const tbody = document.getElementById("compSessionsTbody");
     if (tbody) {
-      tbody.innerHTML = sessions
-        .slice(0, 10)
-        .map((s) => {
-          const dIr = Number(s.delta_i_rating) || 0;
-          const dCls = dIr >= 0 ? "color:#10b981" : "color:#f87171";
-          return `<tr>
-            <td><strong>${esc(s.circuito)}</strong><br><small style="color:var(--r-muted)">${esc(s.tipo_sesion || "Race")} · ${esc(fmtAgo(s.fecha))}</small></td>
-            <td>${esc(s.coche)}<br><code style="font-size:11px;color:var(--r-accent)">${esc(s.setup_name || "MMT.sto")}</code></td>
-            <td>P${esc(s.pos_salida)} → <strong>P${esc(s.pos_final)}</strong></td>
-            <td><code>${esc(s.incidentes)}x</code></td>
-            <td style="font-weight:700;${dCls}">${dIr >= 0 ? "+" : ""}${dIr}</td>
-            <td><code>${esc(fmtLap(s.mejor_vuelta))}</code><br><small style="color:var(--r-muted)">${Number(s.consistencia_pct || 98).toFixed(1)}%</small></td>
-          </tr>`;
-        })
-        .join("");
+      if (!sessions.length) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--r-muted);padding:16px">Todavía no hay sesiones registradas en la caché de MMT Sync.</td></tr>`;
+      } else {
+        tbody.innerHTML = sessions
+          .slice(0, 10)
+          .map((s) => {
+            const sType = s.tipo_sesion || s.tipoSesion || "Practice";
+            const dIr = Number(s.delta_i_rating ?? s.deltaIRating ?? 0);
+            const dCls = dIr > 0 ? "color:#10b981" : dIr < 0 ? "color:#f87171" : "color:var(--r-muted)";
+            const bLap = Number(s.mejor_vuelta ?? s.mejorVuelta ?? 0);
+            const cons = Number(s.consistencia_pct ?? s.consistenciaPct ?? 0);
+            const vLaps = Number(s.vueltas_validas ?? s.vueltasValidas ?? 0);
+            const pOut = Number(s.pos_salida ?? s.posSalida ?? 0);
+            const pFin = Number(s.pos_final ?? s.posFinal ?? 0);
+            const posText = /practice|práctica|test/i.test(sType)
+              ? (pFin > 0 ? `P${pFin} <small style="color:var(--r-muted)">(${vLaps}v)</small>` : `${vLaps} vueltas`)
+              : `P${pOut || "—"} → <strong>P${pFin || "—"}</strong>`;
+            const subId = s.sub_session_id || s.subSessionId;
+            return `<tr>
+              <td><strong>${esc(s.circuito)}</strong><br><small style="color:var(--r-muted)">${esc(sType)} · ${esc(fmtAgo(s.fecha))}</small></td>
+              <td>${esc(s.coche)}<br><code style="font-size:11px;color:var(--r-accent)">${esc(s.setup_name || (subId ? `#${subId}` : `${vLaps} vueltas`))}</code></td>
+              <td>${posText}</td>
+              <td><code>${esc(s.incidentes ?? 0)}x</code></td>
+              <td style="font-weight:700;${dCls}">${dIr !== 0 ? `${dIr > 0 ? "+" : ""}${dIr}` : "—"}</td>
+              <td><code>${esc(fmtLap(bLap))}</code><br><small style="color:var(--r-muted)">${cons > 0 ? `${cons.toFixed(1)}%` : ""}</small></td>
+            </tr>`;
+          })
+          .join("");
+      }
     }
 
     // Telemetry header & laps
