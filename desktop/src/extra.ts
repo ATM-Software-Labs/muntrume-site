@@ -40,7 +40,15 @@ import {
 import { renderLiveTrackMapCanvas } from "./irsdk/proximity-radar";
 import { renderFlatTrackMapCanvas } from "./irsdk/flat-track-map";
 import { renderTrafficIndicator } from "./irsdk/traffic-indicator";
-import { renderWeatherWidget, renderSpotterWidget, renderSessionBarWidget, renderElectronicsWidget } from "./irsdk/pro-essentials";
+import {
+  renderWeatherWidget,
+  renderSpotterWidget,
+  renderSessionBarWidget,
+  renderElectronicsWidget,
+  renderFlagMatrixWidget,
+  renderTachometerWidget,
+  renderLapTimerWidget,
+} from "./irsdk/pro-essentials";
 import { renderPitStrategyWidget } from "./irsdk/pit-exit-predictor";
 import { renderHelicorsaRadar } from "./irsdk/radar-360";
 import { observeTrackAutoMap } from "./irsdk/track-paths";
@@ -1837,6 +1845,16 @@ function renderStandbyWidgets(): void {
   });
   document.querySelectorAll<HTMLElement>("#ovElectronics, #ovElectronicsFloat").forEach((el) => {
     renderElectronicsWidget(el, irsdkState);
+  });
+  document.querySelectorAll<HTMLElement>("#ovFlagMatrix, #ovFlagMatrixFloat").forEach((el) => {
+    const isPreview = el.id === "ovFlagMatrix" || document.documentElement.classList.contains("overlay-editing");
+    renderFlagMatrixWidget(el, irsdkState, isPreview);
+  });
+  document.querySelectorAll<HTMLElement>("#ovTachometer, #ovTachometerFloat").forEach((el) => {
+    renderTachometerWidget(el, irsdkState);
+  });
+  document.querySelectorAll<HTMLElement>("#ovLapTimer, #ovLapTimerFloat").forEach((el) => {
+    renderLapTimerWidget(el, irsdkState);
   });
   // Push lightweight live snapshot to Rust OBS Single-Canvas bridge (127.0.0.1:38421/stream) at ~6 Hz
   if (irsdkState) {
@@ -5553,8 +5571,16 @@ export function paintHardware(report?: HardwareReport): void {
     audioName.textContent = devices;
   }
 
-  if (fwState && report?.firmwareRecommendation) {
-    fwState.textContent = report.firmwareRecommendation;
+  if (fwState) {
+    const detectedBrand = report?.wheelbaseBrand && BRAND_PROFILES[report.wheelbaseBrand] ? report.wheelbaseBrand : "";
+    const rec = report?.firmwareRecommendation || "";
+    const mismatchLogitech = detectedBrand && detectedBrand !== "logitech" && /logitech|g\s*hub/i.test(rec);
+    if (mismatchLogitech) {
+      const prof = BRAND_PROFILES[detectedBrand];
+      fwState.textContent = `Software recomendado para tu base: ${prof.panelName} (firmware oficial actualizado).`;
+    } else if (rec) {
+      fwState.textContent = rec;
+    }
   }
 
   if (report?.wheelbaseBrand && BRAND_PROFILES[report.wheelbaseBrand]) {

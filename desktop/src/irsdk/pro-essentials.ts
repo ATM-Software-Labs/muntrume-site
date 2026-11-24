@@ -198,3 +198,155 @@ export function renderElectronicsWidget(container: HTMLElement, state: IrsdkComp
   `;
   patchHtml(container, html);
 }
+
+function fmtLap(sec: number | undefined): string {
+  if (typeof sec !== "number" || !Number.isFinite(sec) || sec <= 0 || sec > 3600) return "--:--.---";
+  const m = Math.floor(sec / 60);
+  const rem = sec % 60;
+  return `${m}:${rem < 10 ? "0" : ""}${rem.toFixed(3)}`;
+}
+
+/**
+ * 5) Flag Matrix LED (Yellow / Blue / Green / White / Checkered / Meatball)
+ */
+export function renderFlagMatrixWidget(container: HTMLElement, state: IrsdkComputedState | null, isPreview = false): void {
+  const flags = state?.frame?.sessionFlags ?? 0;
+  let label = "GREEN FLAG";
+  let color = "#10b981";
+  let bg = "rgba(16, 185, 129, 0.16)";
+  let active = false;
+
+  if (flags & 0x00100000) { // repair / meatball
+    label = "MEATBALL · PIT";
+    color = "#f97316";
+    bg = "rgba(249, 115, 22, 0.24)";
+    active = true;
+  } else if ((flags & 0x00000008) || (flags & 0x00004000)) { // yellow / caution
+    label = "YELLOW FLAG";
+    color = "#facc15";
+    bg = "rgba(250, 204, 21, 0.22)";
+    active = true;
+  } else if (flags & 0x00000020) { // blue
+    label = "BLUE FLAG";
+    color = "#38bdf8";
+    bg = "rgba(56, 189, 248, 0.24)";
+    active = true;
+  } else if (flags & 0x00000001) { // checkered
+    label = "CHECKERED";
+    color = "#f8fafc";
+    bg = "rgba(248, 250, 252, 0.18)";
+    active = true;
+  } else if (flags & 0x00000002) { // white
+    label = "FINAL LAP";
+    color = "#e2e8f0";
+    bg = "rgba(226, 232, 240, 0.18)";
+    active = true;
+  } else if (flags & 0x00000004) { // green
+    label = "GREEN FLAG";
+    color = "#10b981";
+    bg = "rgba(16, 185, 129, 0.18)";
+    active = true;
+  }
+
+  if (!active && !isPreview) {
+    patchHtml(container, "");
+    return;
+  }
+
+  const dots = Array.from({ length: 15 })
+    .map(() => `<span class="w-1.5 h-1.5 rounded-full" style="background:${color};box-shadow:0 0 6px ${color};"></span>`)
+    .join("");
+
+  const html = `
+    <div class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[4px] border font-mono text-[10px] font-black tracking-widest uppercase" style="background:${bg};border-color:${color}88;color:${color};">
+      <div class="grid grid-cols-5 gap-0.5 shrink-0">${dots}</div>
+      <span>${label}</span>
+    </div>
+  `;
+  patchHtml(container, html);
+}
+
+/**
+ * 6) Tachometer Shift Lights + FFB Clipping Meter
+ */
+export function renderTachometerWidget(container: HTMLElement, state: IrsdkComputedState | null): void {
+  const f = state?.frame;
+  const rpm = typeof f?.rpm === "number" && Number.isFinite(f.rpm) ? f.rpm : 7150;
+  const redline = 8200;
+  const ratio = Math.max(0, Math.min(1, rpm / redline));
+  const speed = typeof f?.speedKmh === "number" && Number.isFinite(f.speedKmh) ? Math.round(f.speedKmh) : 214;
+  const gearRaw = typeof f?.gear === "number" ? f.gear : 4;
+  const gearStr = gearRaw === -1 ? "R" : gearRaw === 0 ? "N" : String(gearRaw);
+
+  // Estimate FFB load from steering torque or lateral load (0-100%)
+  const torque = Math.abs(Number((f as any)?.steeringWheelTorque ?? 0));
+  const ffbPct = torque > 0 ? Math.min(100, Math.round((torque / 16) * 100)) : Math.min(100, Math.round(ratio * 72));
+  const isClip = ffbPct >= 92;
+
+  const leds = Array.from({ length: 14 })
+    .map((_, i) => {
+      const thresh = (i + 1) / 14;
+      const lit = ratio >= thresh - 0.04;
+      const col = i >= 10 ? "#ef4444" : i >= 6 ? "#f59e0b" : "#10b981";
+      return `<span class="h-2 flex-1 rounded-[2px] transition-all" style="background:${lit ? col : "rgba(255,255,255,0.08)"};${lit ? `box-shadow:0 0 6px ${col}aa;` : ""}"></span>`;
+    })
+    .join("");
+
+  const html = `
+    <div class="w-[244px] px-2.5 py-1.5 font-mono tabular-nums space-y-1.5">
+      <div class="flex items-center gap-0.5">${leds}</div>
+      <div class="flex items-center justify-between gap-2 text-[10.5px]">
+        <div class="flex items-baseline gap-1.5">
+          <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-black text-xs leading-none">${gearStr}</span>
+          <strong class="text-white text-sm leading-none">${speed}</strong>
+          <span class="text-[9px] text-white/45">KM/H</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="text-[9px] ${isClip ? "text-rose-400 font-black" : "text-white/50"}">FFB</span>
+          <div class="w-16 h-1.5 rounded-full bg-white/10 overflow-hidden">
+            <div class="h-full rounded-full ${isClip ? "bg-rose-500" : "bg-sky-400"}" style="width:${ffbPct}%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  patchHtml(container, html);
+}
+
+/**
+ * 7) Lap Timer & Sector Delta
+ */
+export function renderLapTimerWidget(container: HTMLElement, state: IrsdkComputedState | null): void {
+  const f = state?.frame;
+  const cur = fmtLap((f as any)?.lapCurrentLapTime ?? 68.412);
+  const last = fmtLap((f as any)?.lapLastLapTime ?? 108.934);
+  const best = fmtLap((f as any)?.lapBestLapTime ?? 108.412);
+  const rawDelta = (f as any)?.lapDeltaToBestLap ?? (f as any)?.deltaBestSec;
+  const delta = typeof rawDelta === "number" && Number.isFinite(rawDelta) ? rawDelta : -0.18;
+  const deltaCls = delta <= 0 ? "text-emerald-400" : "text-rose-400";
+  const deltaStr = `${delta <= 0 ? "" : "+"}${delta.toFixed(2)}s`;
+
+  const html = `
+    <div class="w-[236px] px-2.5 py-1.5 font-mono text-[10px] tabular-nums space-y-1">
+      <div class="flex items-center justify-between">
+        <span class="text-white/50 text-[9px] font-bold">LAP TIMER</span>
+        <strong class="${deltaCls} font-black">${deltaStr}</strong>
+      </div>
+      <div class="grid grid-cols-3 gap-1 text-center">
+        <div class="px-1 py-0.5 rounded bg-white/[0.04]">
+          <span class="block text-[8px] text-white/45">CUR</span>
+          <strong class="text-white">${cur}</strong>
+        </div>
+        <div class="px-1 py-0.5 rounded bg-white/[0.04]">
+          <span class="block text-[8px] text-white/45">BEST</span>
+          <strong class="text-purple-300">${best}</strong>
+        </div>
+        <div class="px-1 py-0.5 rounded bg-white/[0.04]">
+          <span class="block text-[8px] text-white/45">LAST</span>
+          <strong class="text-white/80">${last}</strong>
+        </div>
+      </div>
+    </div>
+  `;
+  patchHtml(container, html);
+}

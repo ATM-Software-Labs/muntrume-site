@@ -77,6 +77,9 @@
               <a href="https://muntru.me/overlay/brands/" target="_blank" rel="noopener" onclick="document.getElementById('appNavMore')?.removeAttribute('open')" class="w-full text-left px-2.5 py-1.5 rounded-md font-mono text-[11px] font-semibold text-r-muted hover:text-white hover:bg-white/[0.06] whitespace-nowrap transition">🏷️ Logos iRacing SVG ↗</a>
               <a href="https://ai.muntru.me/" target="_blank" rel="noopener" onclick="document.getElementById('appNavMore')?.removeAttribute('open')" class="w-full text-left px-2.5 py-1.5 rounded-md font-mono text-[11px] font-semibold text-r-muted hover:text-white hover:bg-white/[0.06] whitespace-nowrap transition">⚡ Muntrume AI ↗</a>
               <a href="https://support.muntru.me/requests" target="_blank" rel="noopener" onclick="document.getElementById('appNavMore')?.removeAttribute('open')" class="w-full text-left px-2.5 py-1.5 rounded-md font-mono text-[11px] font-semibold text-r-muted hover:text-white hover:bg-white/[0.06] whitespace-nowrap transition">🛟 Soporte &amp; Tickets ↗</a>
+              <a href="https://forum.muntru.me/" target="_blank" rel="noopener" onclick="document.getElementById('appNavMore')?.removeAttribute('open')" class="w-full text-left px-2.5 py-1.5 rounded-md font-mono text-[11px] font-semibold text-r-muted hover:text-white hover:bg-white/[0.06] whitespace-nowrap transition">💬 Foro Técnico ↗</a>
+              <a href="https://muntru.me/calendar/content/" target="_blank" rel="noopener" onclick="document.getElementById('appNavMore')?.removeAttribute('open')" class="w-full text-left px-2.5 py-1.5 rounded-md font-mono text-[11px] font-semibold text-r-muted hover:text-white hover:bg-white/[0.06] whitespace-nowrap transition">📦 Mi Contenido iRacing ↗</a>
+              <a href="https://muntru.me/logros/" target="_blank" rel="noopener" onclick="document.getElementById('appNavMore')?.removeAttribute('open')" class="w-full text-left px-2.5 py-1.5 rounded-md font-mono text-[11px] font-semibold text-r-muted hover:text-white hover:bg-white/[0.06] whitespace-nowrap transition">🏆 Logros (108) ↗</a>
               <a href="https://docs.muntru.me/mmt-sync/" target="_blank" rel="noopener" onclick="document.getElementById('appNavMore')?.removeAttribute('open')" class="w-full text-left px-2.5 py-1.5 rounded-md font-mono text-[11px] font-semibold text-r-muted hover:text-white hover:bg-white/[0.06] whitespace-nowrap transition">📚 Documentación ↗</a>
             </div>
           </details>
@@ -493,15 +496,15 @@
 
             <!-- Quick Series Filter Chips focusing on OPEN Competition (where MMT Setups Apply) -->
             <div id="weekSeriesPresets" class="mt-3 flex flex-wrap items-center gap-2">
-              <span class="text-xs font-mono uppercase text-r-muted mr-1 font-bold">Series Open MMT:</span>
+              <span class="text-xs font-mono uppercase text-r-muted mr-1 font-bold">Series Open MMT (S11):</span>
               <button type="button" data-preset="gt3open" class="px-3.5 py-1.5 rounded-xl border border-r-accent bg-r-accent/20 text-r-accent font-mono text-xs font-bold hover:scale-[1.02] transition shadow-sm">
-                ⚡ GT3 Open / Sprint · Fuji W9
+                ⚡ GT3 Open / Sprint · Sebring S11
               </button>
               <button type="button" data-preset="imsa" class="px-3.5 py-1.5 rounded-xl border border-r-line bg-r-surface text-r-text hover:border-r-accent font-mono text-xs font-semibold transition">
-                ⚡ IMSA SportsCar Open · Suzuka W9
+                ⚡ IMSA SportsCar Open · Sebring S11
               </button>
               <button type="button" data-preset="formula" class="px-3.5 py-1.5 rounded-xl border border-r-line bg-r-surface text-r-text hover:border-r-accent font-mono text-xs font-semibold transition">
-                ⚡ Super Formula SF23 Open · Fuji W9
+                ⚡ Super Formula / SFL · Mugello S11
               </button>
               <button type="button" data-preset="onlyopen" class="px-3 py-1.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 font-mono text-xs font-bold transition">
                 Solo Series Open (Admiten Setups MMT)
@@ -1106,7 +1109,7 @@
               <aside class="border-r border-white/[0.08] bg-[#0c0f15] flex flex-col min-h-0 overflow-hidden">
                 <div class="h-[36px] shrink-0 px-2.5 border-b border-white/[0.08] flex items-center justify-between font-mono text-[10px] font-bold uppercase tracking-wider text-white/60">
                   <span>Widgets HUD</span>
-                  <span class="text-[#10b981]">15 Módulos</span>
+                  <span class="text-[#10b981]">18 Módulos</span>
                 </div>
                 <div id="mmtCompactWidgetList" class="flex-1 min-h-0 overflow-y-auto p-1.5 space-y-0.5 font-mono text-[10.5px]">
                   <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-[#10b981]/40 bg-[#10b981]/10 cursor-pointer transition" data-compact-mod="standings">
@@ -1168,6 +1171,18 @@
                   <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="electronics">
                     <span class="font-semibold text-white/85 truncate">In-Car Electronics</span>
                     <button type="button" data-widget-toggle="electronics" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle In-Car Electronics"></button>
+                  </div>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="flagMatrix">
+                    <span class="font-semibold text-white/85 truncate">Flag Matrix LED</span>
+                    <button type="button" data-widget-toggle="flagMatrix" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Flag Matrix LED"></button>
+                  </div>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="tachometer">
+                    <span class="font-semibold text-white/85 truncate">Tachometer + FFB</span>
+                    <button type="button" data-widget-toggle="tachometer" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Tachometer"></button>
+                  </div>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="lapTimer">
+                    <span class="font-semibold text-white/85 truncate">Lap Timer &amp; Delta</span>
+                    <button type="button" data-widget-toggle="lapTimer" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Lap Timer"></button>
                   </div>
                 </div>
                 <div class="shrink-0 p-1.5 border-t border-white/[0.08] space-y-1 font-mono text-[9.5px]">
@@ -1321,6 +1336,18 @@
                       <div id="widgetElectronics" class="mmt-hud-widget absolute bottom-[148px] left-3 w-[236px] rounded-[3px] border border-white/[0.08] cursor-move" style="background: rgba(9, 11, 15, 0.86);" data-widget="electronics">
                         <div id="ovElectronics"></div>
                       </div>
+
+                      <div id="widgetFlagMatrix" class="mmt-hud-widget absolute top-[94px] left-1/2 -translate-x-1/2 cursor-move" data-widget="flagMatrix">
+                        <div id="ovFlagMatrix"></div>
+                      </div>
+
+                      <div id="widgetTachometer" class="mmt-hud-widget absolute bottom-[112px] left-1/2 -translate-x-1/2 rounded-[4px] border border-white/[0.1] cursor-move" style="background: rgba(9, 11, 15, 0.88);" data-widget="tachometer">
+                        <div id="ovTachometer"></div>
+                      </div>
+
+                      <div id="widgetLapTimer" class="mmt-hud-widget absolute bottom-[198px] right-3 rounded-[4px] border border-white/[0.08] cursor-move" style="background: rgba(9, 11, 15, 0.86);" data-widget="lapTimer">
+                        <div id="ovLapTimer"></div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1398,7 +1425,10 @@
                 weather: "Tempest Weather",
                 spotter: "Blind Spot / Spotter",
                 sessionBar: "Session & Incidents",
-                electronics: "In-Car Electronics"
+                electronics: "In-Car Electronics",
+                flagMatrix: "Flag Matrix LED",
+                tachometer: "Tachometer + FFB",
+                lapTimer: "Lap Timer & Delta"
               };
               list.addEventListener("click", (e) => {
                 const toggleBtn = e.target.closest("[data-widget-toggle]");
@@ -1698,9 +1728,9 @@
                 <button type="button" id="quitBtn" class="mmt-btn-ghost h-7 px-2.5 rounded-lg border border-r-line font-mono uppercase tracking-wider text-[10px] cursor-pointer">Salir</button>
               </div>
             </div>
-            <div class="flex-1 min-h-0 grid grid-cols-3 gap-2.5 overflow-hidden">
-              <div class="flex flex-col gap-2 min-h-0 overflow-hidden">
-                <div class="rounded-xl border border-r-line bg-r-surface p-3 grid gap-2 shrink-0">
+            <div class="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 gap-3 items-start overflow-y-auto pr-1 pb-4">
+              <div class="flex flex-col gap-3">
+                <div class="rounded-xl border border-r-line bg-r-surface p-3.5 grid gap-2">
                   <p class="font-mono text-[10px] uppercase tracking-[0.14em] text-r-muted">Carpeta de iRacing</p>
                   <p id="folderPath" class="font-mono text-[11px] truncate text-white">Sin carpeta</p>
                   <p id="folderWarn" hidden class="text-[10px] text-amber-300">Esa carpeta todavía no existe. iRacing la crea al guardar un setup.</p>
@@ -1717,7 +1747,7 @@
                     <button type="button" id="pickVideosDirBtn" class="mmt-btn-ghost h-7 px-2.5 rounded-lg border border-r-line font-mono uppercase text-[10px] cursor-pointer">Seleccionar clips</button>
                   </div>
                 </div>
-                <div class="rounded-xl border border-r-line bg-r-surface p-3 flex-1 min-h-0 flex flex-col gap-1.5 overflow-hidden">
+                <div class="rounded-xl border border-r-line bg-r-surface p-3.5 flex flex-col gap-2">
                   <h3 class="font-display uppercase tracking-wide text-xs text-r-text">Mis Categorías en iRacing</h3>
                   <div id="settingsCatToggles" class="grid grid-cols-2 gap-1.5 font-mono text-[10px]">
                     <label class="flex items-center gap-2 p-2 rounded-lg border border-r-line bg-r-bg cursor-pointer hover:border-r-accent/50 transition">
@@ -1740,7 +1770,7 @@
                 </div>
               </div>
 
-              <div class="rounded-xl border border-r-line bg-r-surface p-3 flex flex-col justify-between gap-2 min-h-0 overflow-hidden">
+              <div class="rounded-xl border border-r-line bg-r-surface p-3.5 flex flex-col gap-3">
                 <div class="grid gap-2.5">
                   <p class="font-mono text-[10px] uppercase tracking-[0.14em] text-r-muted">Sincronización y Sistema</p>
                   <label class="flex items-center justify-between gap-2">
@@ -1786,8 +1816,8 @@
                 </div>
               </div>
 
-              <div class="flex flex-col gap-2 min-h-0 overflow-hidden">
-                <div class="rounded-xl border border-r-line bg-r-surface p-3 grid gap-2 shrink-0">
+              <div class="flex flex-col gap-3">
+                <div class="rounded-xl border border-r-line bg-r-surface p-3.5 grid gap-2">
                   <h3 class="font-display uppercase tracking-wide text-xs text-r-text">Combustible y Auto-Repostaje</h3>
                   <label class="flex items-center gap-2 p-2 rounded-lg border border-r-line bg-r-bg cursor-pointer">
                     <input type="checkbox" id="toggleAutoFuelPit" class="w-3.5 h-3.5 rounded text-r-accent bg-r-surface border-r-line" />
@@ -1802,7 +1832,7 @@
                     </select>
                   </label>
                 </div>
-                <div id="cloudProfileSyncCard" class="rounded-xl border border-r-line bg-r-surface p-3 flex-1 min-h-0 flex flex-col justify-between gap-2 overflow-hidden">
+                <div id="cloudProfileSyncCard" class="rounded-xl border border-r-line bg-r-surface p-3.5 flex flex-col gap-2.5">
                   <div class="flex items-center justify-between gap-2">
                     <h3 class="font-display uppercase tracking-wide text-xs text-r-text">Perfil en la Nube</h3>
                     <span id="cloudProfileSizeBadge" class="px-2 py-0.5 rounded border border-r-line bg-r-bg font-mono text-[10px] text-r-accent">— KB / 50 KB</span>
@@ -2225,6 +2255,18 @@
 
       <div id="floatElectronicsCard" class="mmt-float-widget fixed bottom-[152px] left-[22px] w-[236px] rounded-[3px] pointer-events-auto" style="background: rgba(9, 11, 15, 0.88); border: 1px solid rgba(255, 255, 255, 0.08);" data-widget="electronics">
         <div id="ovElectronicsFloat"></div>
+      </div>
+
+      <div id="floatFlagMatrixCard" class="mmt-float-widget fixed top-[156px] left-1/2 -translate-x-1/2 pointer-events-auto" data-widget="flagMatrix">
+        <div id="ovFlagMatrixFloat"></div>
+      </div>
+
+      <div id="floatTachometerCard" class="mmt-float-widget fixed bottom-[132px] left-1/2 -translate-x-1/2 rounded-[4px] pointer-events-auto" style="background: rgba(9, 11, 15, 0.9); border: 1px solid rgba(255, 255, 255, 0.1);" data-widget="tachometer">
+        <div id="ovTachometerFloat"></div>
+      </div>
+
+      <div id="floatLapTimerCard" class="mmt-float-widget fixed bottom-[398px] right-[18px] rounded-[4px] pointer-events-auto" style="background: rgba(9, 11, 15, 0.88); border: 1px solid rgba(255, 255, 255, 0.08);" data-widget="lapTimer">
+        <div id="ovLapTimerFloat"></div>
       </div>
 
       <!-- 6. Bottom-Center Pedals (280x82px scaled 1.15x left of wheel) + Centered Steering Wheel (46x46px at left: 50%) -->
