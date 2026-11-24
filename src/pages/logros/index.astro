@@ -1,0 +1,437 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { PILOTOS } from "../../lib/pilotos";
+import { licenciaPrincipal } from "../../lib/licencias";
+import {
+  ALL_ACHIEVEMENTS,
+  ACHIEVEMENT_CATEGORIES,
+  TIER_META,
+  computeDriverAchievements,
+  renderAchievementBadgeSvg,
+} from "../../lib/achievements";
+
+const rosterStats = PILOTOS.map((p) => {
+  const lic = licenciaPrincipal(p.slug);
+  const res = computeDriverAchievements(p, lic?.irating ?? null, lic?.sr != null ? Number(lic.sr) : null, lic?.classLabel ?? null);
+  return { driver: p, ...res };
+});
+
+const unlockCounts: Record<string, number> = {};
+for (const a of ALL_ACHIEVEMENTS) {
+  unlockCounts[a.slug] = rosterStats.filter((r) => r.unlocked.some((u) => u.slug === a.slug)).length;
+}
+const totalDrivers = Math.max(PILOTOS.length, 1);
+const totalXp = ALL_ACHIEVEMENTS.reduce((s, a) => s + a.points, 0);
+---
+
+<Layout
+  title="Logros e Insignias (108) · Muntrume Motorsport"
+  description="Catálogo completo de los 108 logros e insignias estilo GitHub de Muntrume Motorsport: horas en pista, iRating, licencias, circuitos legendarios, resistencia y multi-sim."
+  canonical="https://muntru.me/logros/"
+>
+  <section class="lg-wrap">
+    <header class="lg-hero">
+      <div>
+        <span class="lg-kicker">MUNTRUME ACHIEVEMENTS · {ALL_ACHIEVEMENTS.length} INSIGNIAS</span>
+        <h1 class="lg-title">Catálogo de Logros e Insignias</h1>
+        <p class="lg-sub">
+          Sistema de progresión estilo GitHub para motivar a nuestros pilotos y staff en <strong>iRacing</strong>,
+          <strong>Le Mans Ultimate</strong> y <strong>Assetto Corsa EVO</strong>. Haz clic en cualquier insignia para ver cómo desbloquearla y qué pilotos ya la tienen.
+        </p>
+      </div>
+      <div class="lg-kpis">
+        <div class="lg-kpi">
+          <strong>{ALL_ACHIEVEMENTS.length}</strong>
+          <span>Logros totales</span>
+        </div>
+        <div class="lg-kpi">
+          <strong>{ACHIEVEMENT_CATEGORIES.length}</strong>
+          <span>Categorías</span>
+        </div>
+        <div class="lg-kpi">
+          <strong>{totalXp.toLocaleString("es-ES")}</strong>
+          <span>XP disponibles</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Leaderboard strip -->
+    <section class="lg-leaders" aria-label="Ranking de logros del equipo">
+      <span class="lg-leaders__k">Ranking de Trofeos MMT</span>
+      <div class="lg-leaders__grid">
+        {rosterStats
+          .slice()
+          .sort((a, b) => b.totalPoints - a.totalPoints)
+          .map((r, i) => (
+            <a href={`/drivers/${r.driver.slug}/#logros`} class="lg-leader-card">
+              <span class="lg-leader-pos">#{i + 1}</span>
+              <div class="lg-leader-info">
+                <strong>{r.driver.fullName}</strong>
+                <span>{r.rankLabel} · {r.unlocked.length}/{r.totalCount} logros</span>
+              </div>
+              <span class="lg-leader-xp">{r.totalPoints.toLocaleString("es-ES")} XP</span>
+            </a>
+          ))}
+      </div>
+    </section>
+
+    <!-- Filters -->
+    <div class="lg-toolbar">
+      <div class="lg-cats" role="tablist" aria-label="Categorías de logros">
+        <button type="button" class="lg-pill is-active" data-lcat="all">Todos ({ALL_ACHIEVEMENTS.length})</button>
+        {ACHIEVEMENT_CATEGORIES.map((c) => (
+          <button type="button" class="lg-pill" data-lcat={c.id}>{c.label}</button>
+        ))}
+      </div>
+      <div class="lg-subbar">
+        <div class="lg-tiers">
+          <button type="button" class="lg-tpill is-active" data-ltier="all">Todas las rarezas</button>
+          {(["mythic", "platinum", "gold", "silver", "bronze"] as const).map((t) => (
+            <button type="button" class={`lg-tpill lg-tpill--${t}`} data-ltier={t}>{TIER_META[t].label}</button>
+          ))}
+        </div>
+        <label class="lg-search">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input type="search" id="lgSearch" placeholder="Buscar logro, circuito, coche..." />
+        </label>
+      </div>
+    </div>
+
+    <!-- 108 Achievements Grid -->
+    <div id="lgGrid" class="lg-grid">
+      {ALL_ACHIEVEMENTS.map((a) => {
+        const count = unlockCounts[a.slug] || 0;
+        const rate = Math.round((count / totalDrivers) * 100);
+        const tm = TIER_META[a.tier];
+        return (
+          <a
+            href={`/logros/${a.slug}/`}
+            class={`lg-card lg-card--${a.tier}`}
+            data-cat={a.category}
+            data-tier={a.tier}
+            data-text={`${a.title} ${a.desc} ${a.category} ${tm.label}`.toLowerCase()}
+          >
+            <div class="lg-card__medal" set:html={renderAchievementBadgeSvg(a.slug, a.tier, a.icon, 60, false)} />
+            <div class="lg-card__body">
+              <div class="lg-card__top">
+                <span class={`lg-tier lg-tier--${a.tier}`}>{tm.label}</span>
+                <span class="lg-xp">+{a.points} XP</span>
+              </div>
+              <h2 class="lg-card__title">{a.title}</h2>
+              <p class="lg-card__desc">{a.desc}</p>
+              <div class="lg-card__foot">
+                <span>{count > 0 ? `${count}/${totalDrivers} pilotos (${rate}%)` : "Sin desbloquear aún"}</span>
+                <span class="lg-card__go">Ver detalle →</span>
+              </div>
+            </div>
+          </a>
+        );
+      })}
+    </div>
+  </section>
+
+  <script is:inline>
+    (function () {
+      let cat = "all";
+      let tier = "all";
+      let q = "";
+      const cards = Array.from(document.querySelectorAll("#lgGrid .lg-card"));
+      function apply() {
+        const needle = q.trim().toLowerCase();
+        cards.forEach((c) => {
+          const okCat = cat === "all" || c.getAttribute("data-cat") === cat;
+          const okTier = tier === "all" || c.getAttribute("data-tier") === tier;
+          const okQ = !needle || (c.getAttribute("data-text") || "").includes(needle);
+          c.hidden = !(okCat && okTier && okQ);
+        });
+      }
+      document.querySelectorAll("[data-lcat]").forEach((b) => {
+        b.addEventListener("click", () => {
+          cat = b.getAttribute("data-lcat") || "all";
+          document.querySelectorAll("[data-lcat]").forEach((x) => x.classList.toggle("is-active", x === b));
+          apply();
+        });
+      });
+      document.querySelectorAll("[data-ltier]").forEach((b) => {
+        b.addEventListener("click", () => {
+          tier = b.getAttribute("data-ltier") || "all";
+          document.querySelectorAll("[data-ltier]").forEach((x) => x.classList.toggle("is-active", x === b));
+          apply();
+        });
+      });
+      document.getElementById("lgSearch")?.addEventListener("input", (e) => {
+        q = e.target.value || "";
+        apply();
+      });
+    })();
+  </script>
+</Layout>
+
+<style>
+  .lg-wrap {
+    max-width: 1220px;
+    margin: 0 auto;
+    padding: 34px 20px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+  .lg-hero {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
+  }
+  .lg-kicker {
+    display: inline-block;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    color: var(--r-accent, #00e699);
+    margin-bottom: 6px;
+  }
+  .lg-title {
+    margin: 0;
+    font-size: clamp(1.75rem, 3.2vw, 2.4rem);
+    font-weight: 800;
+    color: var(--r-text, #f8fafc);
+  }
+  .lg-sub {
+    margin: 8px 0 0;
+    max-width: 660px;
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--r-muted, #94a3b8);
+  }
+  .lg-kpis {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .lg-kpi {
+    padding: 10px 16px;
+    border-radius: 12px;
+    background: var(--r-surface, #11161d);
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
+    text-align: center;
+    min-width: 106px;
+  }
+  .lg-kpi strong {
+    display: block;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--r-accent, #00e699);
+  }
+  .lg-kpi span {
+    font-size: 11px;
+    color: var(--r-muted, #94a3b8);
+  }
+  .lg-leaders {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .lg-leaders__k {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--r-muted, #94a3b8);
+  }
+  .lg-leaders__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 10px;
+  }
+  .lg-leader-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--r-surface, #11161d);
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
+    text-decoration: none;
+    transition: border-color 0.14s ease, transform 0.14s ease;
+  }
+  .lg-leader-card:hover {
+    border-color: var(--r-accent, #00e699);
+    transform: translateY(-1px);
+  }
+  .lg-leader-pos {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--r-accent, #00e699);
+  }
+  .lg-leader-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+  }
+  .lg-leader-info strong {
+    font-size: 14px;
+    color: var(--r-text, #f8fafc);
+  }
+  .lg-leader-info span {
+    font-size: 11.5px;
+    color: var(--r-muted, #94a3b8);
+  }
+  .lg-leader-xp {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    font-weight: 800;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: rgba(0, 230, 153, 0.12);
+    color: var(--r-accent, #00e699);
+  }
+  .lg-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .lg-cats, .lg-tiers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .lg-subbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .lg-pill, .lg-tpill {
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
+    background: var(--r-surface, #11161d);
+    color: var(--r-muted, #94a3b8);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .lg-pill.is-active, .lg-tpill.is-active {
+    background: rgba(0, 230, 153, 0.14);
+    border-color: rgba(0, 230, 153, 0.45);
+    color: var(--r-accent, #00e699);
+  }
+  .lg-search {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.24));
+    background: var(--r-surface, #11161d);
+    color: var(--r-muted, #94a3b8);
+    min-width: 240px;
+  }
+  .lg-search input {
+    border: none;
+    background: transparent;
+    color: var(--r-text, #f8fafc);
+    font-size: 13px;
+    width: 100%;
+    outline: none;
+  }
+  .lg-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+    gap: 12px;
+  }
+  .lg-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 15px;
+    border-radius: 14px;
+    background: var(--r-surface, #11161d);
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
+    text-decoration: none;
+    transition: transform 0.14s ease, border-color 0.14s ease;
+  }
+  .lg-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--r-accent, #00e699);
+  }
+  .lg-card--mythic { border-color: rgba(0, 230, 153, 0.42); }
+  .lg-card--platinum { border-color: rgba(56, 189, 248, 0.36); }
+  .lg-card--gold { border-color: rgba(251, 191, 36, 0.34); }
+  .lg-card__medal {
+    flex-shrink: 0;
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35));
+  }
+  .lg-card__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .lg-card__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .lg-tier {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 2px 7px;
+    border-radius: 999px;
+  }
+  .lg-tier--mythic { background: rgba(0, 230, 153, 0.16); color: #059669; }
+  .lg-tier--platinum { background: rgba(56, 189, 248, 0.16); color: #0284c7; }
+  .lg-tier--gold { background: rgba(251, 191, 36, 0.18); color: #b45309; }
+  .lg-tier--silver { background: rgba(148, 163, 184, 0.18); color: #64748b; }
+  .lg-tier--bronze { background: rgba(217, 119, 6, 0.16); color: #92400e; }
+  :global(.dark) .lg-tier--mythic { color: #34d399; }
+  :global(.dark) .lg-tier--platinum { color: #38bdf8; }
+  :global(.dark) .lg-tier--gold { color: #fbbf24; }
+  :global(.dark) .lg-tier--silver { color: #cbd5e1; }
+  :global(.dark) .lg-tier--bronze { color: #f59e0b; }
+  .lg-xp {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--r-muted, #94a3b8);
+  }
+  .lg-card__title {
+    margin: 0;
+    font-size: 14.5px;
+    font-weight: 800;
+    color: var(--r-text, #f8fafc);
+    line-height: 1.25;
+  }
+  .lg-card__desc {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--r-muted, #94a3b8);
+  }
+  .lg-card__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-size: 11px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--r-muted, #94a3b8);
+  }
+  .lg-card__go {
+    color: var(--r-accent, #00e699);
+    font-weight: 700;
+  }
+</style>

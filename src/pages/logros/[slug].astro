@@ -1,0 +1,416 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { PILOTOS } from "../../lib/pilotos";
+import { licenciaPrincipal } from "../../lib/licencias";
+import {
+  ALL_ACHIEVEMENTS,
+  ACHIEVEMENT_CATEGORIES,
+  TIER_META,
+  buildDriverMetrics,
+  renderAchievementBadgeSvg,
+  type AchievementDef,
+} from "../../lib/achievements";
+
+export function getStaticPaths() {
+  return ALL_ACHIEVEMENTS.map((ach) => ({
+    params: { slug: ach.slug },
+    props: { ach },
+  }));
+}
+
+interface Props {
+  ach: AchievementDef;
+}
+
+const { ach } = Astro.props;
+const tierMeta = TIER_META[ach.tier];
+const catMeta = ACHIEVEMENT_CATEGORIES.find((c) => c.id === ach.category) || ACHIEVEMENT_CATEGORIES[0];
+
+const evaluatedDrivers = PILOTOS.map((driver) => {
+  const lic = licenciaPrincipal(driver.slug);
+  const metrics = buildDriverMetrics(
+    driver,
+    lic?.irating ?? null,
+    lic?.sr != null ? Number(lic.sr) : null,
+    lic?.classLabel ?? null,
+  );
+  const res = ach.eval(metrics);
+  return { driver, ...res };
+});
+
+const unlockedBy = evaluatedDrivers.filter((d) => d.unlocked);
+const inProgress = evaluatedDrivers
+  .filter((d) => !d.unlocked)
+  .sort((a, b) => b.pct - a.pct);
+
+const related = ALL_ACHIEVEMENTS.filter((a) => a.category === ach.category && a.slug !== ach.slug).slice(0, 6);
+const unlockRate = Math.round((unlockedBy.length / Math.max(PILOTOS.length, 1)) * 100);
+---
+
+<Layout
+  title={`${ach.title} · Logros Muntrume Motorsport`}
+  description={`${ach.desc} Rareza ${tierMeta.label} (+${ach.points} XP). Descubre cómo desbloquear el logro ${ach.title} en Muntrume Motorsport.`}
+  canonical={`https://muntru.me/logros/${ach.slug}/`}
+>
+  <article class="ld-wrap">
+    <nav class="ld-crumb" aria-label="Ruta">
+      <a href="/logros/">← Todos los logros ({ALL_ACHIEVEMENTS.length})</a>
+      <span>/</span>
+      <span>{catMeta.label}</span>
+    </nav>
+
+    <!-- Main Badge Showcase Hero -->
+    <header class={`ld-hero ld-hero--${ach.tier}`}>
+      <div class="ld-medal-stage">
+        <div class="ld-medal-glow" style={`background:radial-gradient(circle, ${tierMeta.ring}44 0%, transparent 70%);`}></div>
+        <div class="ld-medal-svg" set:html={renderAchievementBadgeSvg(ach.slug, ach.tier, ach.icon, 136, false)} />
+      </div>
+
+      <div class="ld-hero-info">
+        <div class="ld-badges">
+          <span class={`ld-tier ld-tier--${ach.tier}`}>{tierMeta.label}</span>
+          <span class="ld-cat">{catMeta.label}</span>
+          <span class="ld-xp">+{ach.points} XP</span>
+        </div>
+        <h1 class="ld-title">{ach.title}</h1>
+        <p class="ld-desc">{ach.desc}</p>
+
+        <div class="ld-howto">
+          <strong>Cómo desbloquearlo</strong>
+          <p>{ach.howTo}</p>
+        </div>
+
+        <div class="ld-stats-row">
+          <div>
+            <strong>{unlockedBy.length} / {PILOTOS.length}</strong>
+            <span>Pilotos con esta insignia ({unlockRate}%)</span>
+          </div>
+          <div>
+            <strong>{tierMeta.stars} / 5 ★</strong>
+            <span>Nivel de rareza</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Drivers who unlocked it + In Progress -->
+    <div class="ld-cols">
+      <section class="ld-panel">
+        <h2 class="ld-panel-title">Pilotos que lo han desbloqueado ({unlockedBy.length})</h2>
+        {unlockedBy.length > 0 ? (
+          <ul class="ld-driver-list">
+            {unlockedBy.map((item) => (
+              <li>
+                <a href={`/drivers/${item.driver.slug}/#logros`} class="ld-driver-row">
+                  <span class="ld-dorsal">{item.driver.dorsal}</span>
+                  <div class="ld-dinfo">
+                    <strong>{item.driver.fullName}</strong>
+                    <span>{item.driver.role}</span>
+                  </div>
+                  <span class="ld-status ld-status--ok">✓ {item.label}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p class="ld-empty">Ningún piloto del equipo lo ha desbloqueado todavía. ¡Sé el primero en conseguirlo!</p>
+        )}
+      </section>
+
+      <section class="ld-panel">
+        <h2 class="ld-panel-title">En camino de conseguirlo ({inProgress.length})</h2>
+        {inProgress.length > 0 ? (
+          <ul class="ld-driver-list">
+            {inProgress.map((item) => (
+              <li>
+                <a href={`/drivers/${item.driver.slug}/#logros`} class="ld-driver-row ld-driver-row--prog">
+                  <span class="ld-dorsal">{item.driver.dorsal}</span>
+                  <div class="ld-dinfo">
+                    <strong>{item.driver.fullName}</strong>
+                    <div class="ld-bar"><span style={`width:${Math.max(4, item.pct)}%`}></span></div>
+                  </div>
+                  <span class="ld-status">{item.label}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p class="ld-empty">¡Todo el equipo actual ya ha desbloqueado este logro!</p>
+        )}
+      </section>
+    </div>
+
+    <!-- Related Achievements in Same Category -->
+    <section class="ld-related">
+      <div class="ld-related-head">
+        <h2>Más logros en {catMeta.label}</h2>
+        <a href="/logros/">Explorar los {ALL_ACHIEVEMENTS.length} logros →</a>
+      </div>
+      <div class="ld-rel-grid">
+        {related.map((r) => (
+          <a href={`/logros/${r.slug}/`} class="ld-rel-card">
+            <div set:html={renderAchievementBadgeSvg(r.slug, r.tier, r.icon, 48, false)} />
+            <div>
+              <strong>{r.title}</strong>
+              <span>{TIER_META[r.tier].label} · +{r.points} XP</span>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+  </article>
+</Layout>
+
+<style>
+  .ld-wrap {
+    max-width: 1020px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+  .ld-crumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    color: var(--r-muted, #94a3b8);
+  }
+  .ld-crumb a {
+    color: var(--r-accent, #00e699);
+    text-decoration: none;
+    font-weight: 700;
+  }
+  .ld-crumb a:hover { text-decoration: underline; }
+  .ld-hero {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 28px;
+    align-items: center;
+    padding: 28px;
+    border-radius: 18px;
+    background: var(--r-surface, #11161d);
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.24));
+  }
+  .ld-hero--mythic { border-color: rgba(0, 230, 153, 0.5); }
+  .ld-hero--platinum { border-color: rgba(56, 189, 248, 0.45); }
+  .ld-hero--gold { border-color: rgba(251, 191, 36, 0.45); }
+  .ld-medal-stage {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 170px;
+  }
+  .ld-medal-glow {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    pointer-events: none;
+  }
+  .ld-medal-svg {
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.45));
+  }
+  .ld-hero-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .ld-badges {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+  .ld-tier, .ld-cat, .ld-xp {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 3px 9px;
+    border-radius: 999px;
+  }
+  .ld-tier--mythic { background: rgba(0, 230, 153, 0.16); color: #059669; }
+  .ld-tier--platinum { background: rgba(56, 189, 248, 0.16); color: #0284c7; }
+  .ld-tier--gold { background: rgba(251, 191, 36, 0.18); color: #b45309; }
+  .ld-tier--silver { background: rgba(148, 163, 184, 0.18); color: #64748b; }
+  .ld-tier--bronze { background: rgba(217, 119, 6, 0.16); color: #92400e; }
+  :global(.dark) .ld-tier--mythic { color: #34d399; }
+  :global(.dark) .ld-tier--platinum { color: #38bdf8; }
+  :global(.dark) .ld-tier--gold { color: #fbbf24; }
+  :global(.dark) .ld-tier--silver { color: #cbd5e1; }
+  :global(.dark) .ld-tier--bronze { color: #f59e0b; }
+  .ld-cat {
+    background: var(--r-bg, #090b0f);
+    color: var(--r-muted, #94a3b8);
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
+  }
+  .ld-xp {
+    background: rgba(0, 230, 153, 0.12);
+    color: var(--r-accent, #00e699);
+  }
+  .ld-title {
+    margin: 0;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 800;
+    color: var(--r-text, #f8fafc);
+  }
+  .ld-desc {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--r-muted, #94a3b8);
+  }
+  .ld-howto {
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--r-bg, #090b0f);
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
+  }
+  .ld-howto strong {
+    display: block;
+    font-size: 11px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--r-accent, #00e699);
+    margin-bottom: 4px;
+  }
+  .ld-howto p {
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--r-text, #e2e8f0);
+  }
+  .ld-stats-row {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    padding-top: 6px;
+  }
+  .ld-stats-row strong {
+    display: block;
+    font-size: 16px;
+    color: var(--r-text, #f8fafc);
+  }
+  .ld-stats-row span {
+    font-size: 12px;
+    color: var(--r-muted, #94a3b8);
+  }
+  .ld-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .ld-panel {
+    padding: 20px;
+    border-radius: 16px;
+    background: var(--r-surface, #11161d);
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
+  }
+  .ld-panel-title {
+    margin: 0 0 12px;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--r-text, #f8fafc);
+  }
+  .ld-driver-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .ld-driver-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--r-bg, #090b0f);
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.16));
+    text-decoration: none;
+  }
+  .ld-driver-row:hover { border-color: var(--r-accent, #00e699); }
+  .ld-dorsal {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    font-weight: 800;
+    padding: 3px 7px;
+    border-radius: 7px;
+    background: rgba(0, 230, 153, 0.14);
+    color: var(--r-accent, #00e699);
+  }
+  .ld-dinfo {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .ld-dinfo strong { font-size: 13.5px; color: var(--r-text, #f8fafc); }
+  .ld-dinfo span { font-size: 11.5px; color: var(--r-muted, #94a3b8); }
+  .ld-bar {
+    width: 100%;
+    height: 5px;
+    border-radius: 999px;
+    background: var(--r-surface, #11161d);
+    overflow: hidden;
+  }
+  .ld-bar > span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #00c482, #00e699);
+  }
+  .ld-status {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--r-muted, #94a3b8);
+    white-space: nowrap;
+  }
+  .ld-status--ok { color: var(--r-accent, #00e699); }
+  .ld-empty { margin: 0; font-size: 13px; color: var(--r-muted, #94a3b8); }
+  .ld-related {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .ld-related-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .ld-related-head h2 { margin: 0; font-size: 16px; font-weight: 800; color: var(--r-text, #f8fafc); }
+  .ld-related-head a { font-size: 12.5px; font-weight: 700; color: var(--r-accent, #00e699); text-decoration: none; }
+  .ld-rel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 10px;
+  }
+  .ld-rel-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    background: var(--r-surface, #11161d);
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
+    text-decoration: none;
+  }
+  .ld-rel-card:hover { border-color: var(--r-accent, #00e699); }
+  .ld-rel-card strong { display: block; font-size: 13.5px; color: var(--r-text, #f8fafc); }
+  .ld-rel-card span { font-size: 11px; color: var(--r-muted, #94a3b8); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  @media (max-width: 760px) {
+    .ld-hero { grid-template-columns: 1fr; text-align: center; }
+    .ld-badges, .ld-stats-row { justify-content: center; }
+    .ld-cols { grid-template-columns: 1fr; }
+  }
+</style>

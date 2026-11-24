@@ -4,7 +4,7 @@ import { formatoAprox, localeDeIdioma } from "../lib/formato-licencia.js";
 import { licenciaPrincipal } from "../lib/licencias";
 import { LICENCE_UPDATED_LABEL, computeAsymptoticRating, type Piloto } from "../lib/pilotos";
 import { resolveSimBadges } from "../lib/sim-badges";
-import { computeDriverAchievements } from "../lib/achievements";
+import { computeDriverAchievements, renderAchievementBadgeSvg } from "../lib/achievements";
 
 interface Props {
   driver: Piloto;
@@ -278,41 +278,69 @@ const achData = computeDriverAchievements(
         )}
       </div>
 
-      <!-- 2B. GITHUB-STYLE ACHIEVEMENTS & TROPHIES SHOWCASE -->
+      <!-- 2B. GITHUB-STYLE ACHIEVEMENTS & TROPHIES SHOWCASE (108 LOGROS) -->
       <section class="d-ach-section" id="logros" aria-label="Logros e insignias del piloto">
         <div class="d-ach-head">
           <div class="d-ach-head__title">
             <span class="d-ach-head__ico" aria-hidden="true">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
             </span>
-            <BlockTag class="d-block__title" style="margin:0;">Logros e Insignias</BlockTag>
+            <div>
+              <BlockTag class="d-block__title" style="margin:0;">Logros e Insignias</BlockTag>
+              <span class="d-ach-submeta">{achData.rankLabel} · {achData.totalPoints.toLocaleString("es-ES")} XP · {achData.completionPct}% completado</span>
+            </div>
           </div>
-          <span class="d-ach-count">{achData.unlocked.length} desbloqueados</span>
+          <div class="d-ach-head__right">
+            <span class="d-ach-count">{achData.unlocked.length} / {achData.totalCount}</span>
+            <a href="/logros/" class="d-ach-all-link">Ver los {achData.totalCount} logros →</a>
+          </div>
         </div>
 
         <div class="d-ach-grid">
-          {achData.unlocked.map((a) => (
-            <div class={`d-ach-card d-ach-card--${a.tier}`}>
-              <div class="d-ach-medal" set:html={a.iconSvg} />
+          {achData.unlocked.slice(0, 12).map((a) => (
+            <a href={`/logros/${a.slug}/`} class={`d-ach-card d-ach-card--${a.tier}`}>
+              <div class="d-ach-medal-svg" set:html={renderAchievementBadgeSvg(a.slug, a.tier, a.icon, 48, false)} />
               <div class="d-ach-body">
                 <div class="d-ach-top">
                   <strong class="d-ach-title">{a.title}</strong>
                   <span class={`d-ach-tier d-ach-tier--${a.tier}`}>{a.tierLabel}</span>
                 </div>
                 <p class="d-ach-desc">{a.desc}</p>
+                <span class="d-ach-xp">+{a.points} XP</span>
               </div>
-            </div>
+            </a>
           ))}
         </div>
+
+        {achData.unlocked.length > 12 && (
+          <details class="d-ach-more">
+            <summary class="d-ach-more__btn">Ver los {achData.unlocked.length - 12} logros desbloqueados restantes ▾</summary>
+            <div class="d-ach-grid" style="margin-top:10px;">
+              {achData.unlocked.slice(12).map((a) => (
+                <a href={`/logros/${a.slug}/`} class={`d-ach-card d-ach-card--${a.tier}`}>
+                  <div class="d-ach-medal-svg" set:html={renderAchievementBadgeSvg(a.slug, a.tier, a.icon, 48, false)} />
+                  <div class="d-ach-body">
+                    <div class="d-ach-top">
+                      <strong class="d-ach-title">{a.title}</strong>
+                      <span class={`d-ach-tier d-ach-tier--${a.tier}`}>{a.tierLabel}</span>
+                    </div>
+                    <p class="d-ach-desc">{a.desc}</p>
+                    <span class="d-ach-xp">+{a.points} XP</span>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </details>
+        )}
 
         {achData.nextMilestones.length > 0 && (
           <div class="d-ach-next">
             <span class="d-ach-next__k">Próximos objetivos</span>
             <div class="d-ach-next__grid">
               {achData.nextMilestones.map((m) => (
-                <div class="d-ach-mile">
+                <a href={`/logros/${m.slug}/`} class="d-ach-mile">
                   <div class="d-ach-mile__top">
-                    <span class="d-ach-mile__ico" set:html={m.iconSvg} />
+                    <span class="d-ach-mile__badge" set:html={renderAchievementBadgeSvg(m.slug, m.tier, m.icon, 28, true)} />
                     <strong class="d-ach-mile__title">{m.title}</strong>
                     <span class="d-ach-mile__pct">{m.progressLabel}</span>
                   </div>
@@ -320,7 +348,7 @@ const achData = computeDriverAchievements(
                     <span style={`width:${Math.max(4, Math.min(100, m.progressPct ?? 0))}%`}></span>
                   </div>
                   <p class="d-ach-mile__desc">{m.desc}</p>
-                </div>
+                </a>
               ))}
             </div>
           </div>
@@ -781,15 +809,73 @@ const achData = computeDriverAchievements(
     border-radius: 12px;
     background: var(--r-bg, #090b0f);
     border: 1px solid var(--r-line, rgba(255, 255, 255, 0.1));
+    text-decoration: none;
     transition: border-color 0.15s ease, transform 0.15s ease;
   }
   .d-ach-card:hover {
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    border-color: var(--r-accent, #00e699);
   }
+  .d-ach-card--mythic { border-color: rgba(0, 230, 153, 0.48); }
   .d-ach-card--platinum { border-color: rgba(56, 189, 248, 0.42); }
   .d-ach-card--gold { border-color: rgba(245, 158, 11, 0.42); }
   .d-ach-card--silver { border-color: rgba(148, 163, 184, 0.38); }
   .d-ach-card--bronze { border-color: rgba(217, 119, 6, 0.38); }
+  .d-ach-medal-svg {
+    flex-shrink: 0;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35));
+  }
+  .d-ach-submeta {
+    display: block;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    color: var(--r-muted, #94a3b8);
+    margin-top: 2px;
+  }
+  .d-ach-head__right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .d-ach-all-link {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--r-accent, #00e699);
+    text-decoration: none;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(0, 230, 153, 0.35);
+    background: rgba(0, 230, 153, 0.08);
+  }
+  .d-ach-all-link:hover { background: rgba(0, 230, 153, 0.16); }
+  .d-ach-xp {
+    display: inline-block;
+    margin-top: 4px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--r-accent, #00e699);
+  }
+  .d-ach-more__btn {
+    cursor: pointer;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--r-accent, #00e699);
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: var(--r-bg, #090b0f);
+    border: 1px solid var(--r-line, rgba(255, 255, 255, 0.12));
+    display: inline-block;
+  }
+  .d-ach-tier--mythic { background: rgba(0, 230, 153, 0.16); color: #059669; }
+  :global(.dark) .d-ach-tier--mythic { color: #34d399; }
+  .d-ach-mile__badge {
+    display: inline-flex;
+    flex-shrink: 0;
+  }
 
   .d-ach-medal {
     width: 40px;
@@ -876,6 +962,12 @@ const achData = computeDriverAchievements(
     display: flex;
     flex-direction: column;
     gap: 6px;
+    text-decoration: none;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  .d-ach-mile:hover {
+    border-color: var(--r-accent, #00e699);
+    transform: translateY(-1px);
   }
   .d-ach-mile__top {
     display: flex;
