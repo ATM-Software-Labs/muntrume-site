@@ -69,9 +69,15 @@
           <button type="button" data-nav="settings" class="mmt-chip px-3 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer">Ajustes</button>
           <details id="appNavMore" class="relative">
             <summary class="list-none px-2.5 py-1 rounded-md font-mono text-[11px] font-bold tracking-wide text-r-muted hover:text-white whitespace-nowrap transition cursor-pointer select-none">Más ▾</summary>
-            <div class="absolute right-0 mt-1.5 w-36 rounded-lg border border-white/15 bg-[#0d1118] shadow-xl p-1 flex flex-col gap-0.5 z-50">
+            <div class="absolute right-0 mt-1.5 w-48 rounded-lg border border-white/15 bg-[#0d1118] shadow-xl p-1 flex flex-col gap-0.5 z-50">
               <button type="button" data-nav="week" onclick="document.getElementById('appNavMore')?.removeAttribute('open')" class="mmt-chip w-full text-left px-2.5 py-1.5 rounded-md font-mono text-[11px] font-semibold text-r-muted hover:text-white hover:bg-white/[0.06] whitespace-nowrap transition cursor-pointer">Semana S4</button>
               <button type="button" data-nav="hardware" onclick="document.getElementById('appNavMore')?.removeAttribute('open')" class="mmt-chip w-full text-left px-2.5 py-1.5 rounded-md font-mono text-[11px] font-semibold text-r-muted hover:text-white hover:bg-white/[0.06] whitespace-nowrap transition cursor-pointer">Hardware</button>
+              <div class="my-1 border-t border-white/10"></div>
+              <a href="https://muntru.me/app/mobile/" target="_blank" rel="noopener" onclick="document.getElementById('appNavMore')?.removeAttribute('open')" class="w-full text-left px-2.5 py-1.5 rounded-md font-mono text-[11px] font-semibold text-emerald-400 hover:bg-white/[0.06] whitespace-nowrap transition">📱 Companion Móvil ↗</a>
+              <a href="https://muntru.me/overlay/brands/" target="_blank" rel="noopener" onclick="document.getElementById('appNavMore')?.removeAttribute('open')" class="w-full text-left px-2.5 py-1.5 rounded-md font-mono text-[11px] font-semibold text-r-muted hover:text-white hover:bg-white/[0.06] whitespace-nowrap transition">🏷️ Logos iRacing SVG ↗</a>
+              <a href="https://ai.muntru.me/" target="_blank" rel="noopener" onclick="document.getElementById('appNavMore')?.removeAttribute('open')" class="w-full text-left px-2.5 py-1.5 rounded-md font-mono text-[11px] font-semibold text-r-muted hover:text-white hover:bg-white/[0.06] whitespace-nowrap transition">⚡ Muntrume AI ↗</a>
+              <a href="https://support.muntru.me/requests" target="_blank" rel="noopener" onclick="document.getElementById('appNavMore')?.removeAttribute('open')" class="w-full text-left px-2.5 py-1.5 rounded-md font-mono text-[11px] font-semibold text-r-muted hover:text-white hover:bg-white/[0.06] whitespace-nowrap transition">🛟 Soporte &amp; Tickets ↗</a>
+              <a href="https://docs.muntru.me/mmt-sync/" target="_blank" rel="noopener" onclick="document.getElementById('appNavMore')?.removeAttribute('open')" class="w-full text-left px-2.5 py-1.5 rounded-md font-mono text-[11px] font-semibold text-r-muted hover:text-white hover:bg-white/[0.06] whitespace-nowrap transition">📚 Documentación ↗</a>
             </div>
           </details>
         </nav>
@@ -125,7 +131,7 @@
                     <img src="./favicon.svg" width="44" height="44" alt="Muntrume Motorsport" class="h-11 w-11 rounded-xl shadow-md border border-r-line bg-r-surface" />
                     <div>
                       <div class="mmt-display text-2xl leading-tight text-white">Muntrume Motorsport</div>
-                      <div class="font-mono text-[10px] uppercase tracking-widest text-r-accent font-bold">MMT Sync v0.6.5 · Native Rust Engine</div>
+                      <div class="font-mono text-[10px] uppercase tracking-widest text-r-accent font-bold">MMT Sync v0.6.7 · Native Rust Engine</div>
                     </div>
                   </div>
                   <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-r-accent/15 border border-r-accent/40 font-mono text-[10px] font-bold uppercase tracking-wider text-r-accent">
@@ -1100,7 +1106,7 @@
               <aside class="border-r border-white/[0.08] bg-[#0c0f15] flex flex-col min-h-0 overflow-hidden">
                 <div class="h-[36px] shrink-0 px-2.5 border-b border-white/[0.08] flex items-center justify-between font-mono text-[10px] font-bold uppercase tracking-wider text-white/60">
                   <span>Widgets HUD</span>
-                  <span class="text-[#10b981]">11 Módulos</span>
+                  <span class="text-[#10b981]">15 Módulos</span>
                 </div>
                 <div id="mmtCompactWidgetList" class="flex-1 min-h-0 overflow-y-auto p-1.5 space-y-0.5 font-mono text-[10.5px]">
                   <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-[#10b981]/40 bg-[#10b981]/10 cursor-pointer transition" data-compact-mod="standings">
@@ -1146,6 +1152,22 @@
                   <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="traffic">
                     <span class="font-semibold text-white/85 truncate">Traffic Indicator</span>
                     <button type="button" data-widget-toggle="traffic" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Traffic Indicator"></button>
+                  </div>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="weather">
+                    <span class="font-semibold text-white/85 truncate">Tempest Weather</span>
+                    <button type="button" data-widget-toggle="weather" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Tempest Weather"></button>
+                  </div>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="spotter">
+                    <span class="font-semibold text-white/85 truncate">Blind Spot / Spotter</span>
+                    <button type="button" data-widget-toggle="spotter" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Spotter"></button>
+                  </div>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="sessionBar">
+                    <span class="font-semibold text-white/85 truncate">Session &amp; Incidents</span>
+                    <button type="button" data-widget-toggle="sessionBar" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle Session Bar"></button>
+                  </div>
+                  <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:bg-white/[0.04] cursor-pointer transition" data-compact-mod="electronics">
+                    <span class="font-semibold text-white/85 truncate">In-Car Electronics</span>
+                    <button type="button" data-widget-toggle="electronics" class="mmt-shell-toggle is-on" aria-pressed="true" aria-label="Toggle In-Car Electronics"></button>
                   </div>
                 </div>
                 <div class="shrink-0 p-1.5 border-t border-white/[0.08] space-y-1 font-mono text-[9.5px]">
@@ -1283,6 +1305,22 @@
                       <div id="widgetTraffic" class="mmt-hud-widget absolute top-[198px] left-1/2 -translate-x-1/2 cursor-move" data-widget="traffic">
                         <div id="ovTraffic"></div>
                       </div>
+
+                      <div id="widgetSessionBar" class="mmt-hud-widget absolute top-3 left-[600px] rounded-[3px] border border-white/[0.08] cursor-move" style="background: rgba(9, 11, 15, 0.86);" data-widget="sessionBar">
+                        <div id="ovSessionBar"></div>
+                      </div>
+
+                      <div id="widgetWeather" class="mmt-hud-widget absolute top-[46px] right-3 rounded-[3px] border border-white/[0.08] cursor-move" style="background: rgba(9, 11, 15, 0.86);" data-widget="weather">
+                        <div id="ovWeather"></div>
+                      </div>
+
+                      <div id="widgetSpotter" class="mmt-hud-widget absolute top-[244px] left-1/2 -translate-x-1/2 cursor-move" data-widget="spotter">
+                        <div id="ovSpotter"></div>
+                      </div>
+
+                      <div id="widgetElectronics" class="mmt-hud-widget absolute bottom-[148px] left-3 w-[236px] rounded-[3px] border border-white/[0.08] cursor-move" style="background: rgba(9, 11, 15, 0.86);" data-widget="electronics">
+                        <div id="ovElectronics"></div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1356,7 +1394,11 @@
                 pit: "Pit & Strategy",
                 tires: "Tire & Track Temp",
                 flatmap: "Flat Track Map",
-                traffic: "Traffic Indicator"
+                traffic: "Traffic Indicator",
+                weather: "Tempest Weather",
+                spotter: "Blind Spot / Spotter",
+                sessionBar: "Session & Incidents",
+                electronics: "In-Car Electronics"
               };
               list.addEventListener("click", (e) => {
                 const toggleBtn = e.target.closest("[data-widget-toggle]");
@@ -2167,6 +2209,22 @@
 
       <div id="floatTrafficCard" class="mmt-float-widget fixed top-[68px] left-1/2 -translate-x-1/2 pointer-events-auto" data-widget="traffic">
         <div id="ovTrafficFloat"></div>
+      </div>
+
+      <div id="floatSessionBarCard" class="mmt-float-widget fixed top-[14px] left-[22px] rounded-[3px] pointer-events-auto" style="background: rgba(9, 11, 15, 0.88); border: 1px solid rgba(255, 255, 255, 0.08);" data-widget="sessionBar">
+        <div id="ovSessionBarFloat"></div>
+      </div>
+
+      <div id="floatWeatherCard" class="mmt-float-widget fixed top-[14px] right-[22px] rounded-[3px] pointer-events-auto" style="background: rgba(9, 11, 15, 0.88); border: 1px solid rgba(255, 255, 255, 0.08);" data-widget="weather">
+        <div id="ovWeatherFloat"></div>
+      </div>
+
+      <div id="floatSpotterCard" class="mmt-float-widget fixed top-[116px] left-1/2 -translate-x-1/2 pointer-events-auto" data-widget="spotter">
+        <div id="ovSpotterFloat"></div>
+      </div>
+
+      <div id="floatElectronicsCard" class="mmt-float-widget fixed bottom-[152px] left-[22px] w-[236px] rounded-[3px] pointer-events-auto" style="background: rgba(9, 11, 15, 0.88); border: 1px solid rgba(255, 255, 255, 0.08);" data-widget="electronics">
+        <div id="ovElectronicsFloat"></div>
       </div>
 
       <!-- 6. Bottom-Center Pedals (280x82px scaled 1.15x left of wheel) + Centered Steering Wheel (46x46px at left: 50%) -->

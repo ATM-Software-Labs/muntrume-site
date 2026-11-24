@@ -40,6 +40,7 @@ import {
 import { renderLiveTrackMapCanvas } from "./irsdk/proximity-radar";
 import { renderFlatTrackMapCanvas } from "./irsdk/flat-track-map";
 import { renderTrafficIndicator } from "./irsdk/traffic-indicator";
+import { renderWeatherWidget, renderSpotterWidget, renderSessionBarWidget, renderElectronicsWidget } from "./irsdk/pro-essentials";
 import { renderPitStrategyWidget } from "./irsdk/pit-exit-predictor";
 import { renderHelicorsaRadar } from "./irsdk/radar-360";
 import { observeTrackAutoMap } from "./irsdk/track-paths";
@@ -1824,6 +1825,19 @@ function renderStandbyWidgets(): void {
     const isPreview = trafficEl.id === "ovTraffic" || document.documentElement.classList.contains("overlay-editing");
     renderTrafficIndicator(trafficEl, irsdkState, isPreview);
   });
+  document.querySelectorAll<HTMLElement>("#ovWeather, #ovWeatherFloat").forEach((el) => {
+    renderWeatherWidget(el, irsdkState);
+  });
+  document.querySelectorAll<HTMLElement>("#ovSpotter, #ovSpotterFloat").forEach((el) => {
+    const isPreview = el.id === "ovSpotter" || document.documentElement.classList.contains("overlay-editing");
+    renderSpotterWidget(el, irsdkState, isPreview);
+  });
+  document.querySelectorAll<HTMLElement>("#ovSessionBar, #ovSessionBarFloat").forEach((el) => {
+    renderSessionBarWidget(el, irsdkState);
+  });
+  document.querySelectorAll<HTMLElement>("#ovElectronics, #ovElectronicsFloat").forEach((el) => {
+    renderElectronicsWidget(el, irsdkState);
+  });
   // Push lightweight live snapshot to Rust OBS Single-Canvas bridge (127.0.0.1:38421/stream) at ~6 Hz
   if (irsdkState) {
     const wObs = window as unknown as { __mmtObsPushTs?: number };
@@ -2253,6 +2267,25 @@ function ensureLayoutSchemaV2(force = false): void {
       });
     }
 
+    let cloudHudTimer: number | null = null;
+    const pushHudSettingsToCloud = (): void => {
+      if (cloudHudTimer) window.clearTimeout(cloudHudTimer);
+      cloudHudTimer = window.setTimeout(() => {
+        try {
+          const tok = localStorage.getItem("mrt_vault_token") || localStorage.getItem("mm_token") || localStorage.getItem("mmt_token") || "";
+          if (!tok) return;
+          fetch("https://api.muntru.me/api/desktop/hud-settings", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${tok}` },
+            body: JSON.stringify({
+              brand_logo_mode: theme.getBrandLogoMode(),
+              focus_mode: layout.isFocusMode(),
+            }),
+          }).catch(() => {});
+        } catch {}
+      }, 450);
+    };
+
     const syncBrandLogoModeBtns = (): void => {
       const activeMode = theme.getBrandLogoMode();
       document.querySelectorAll<HTMLButtonElement>("[data-brand-logo-mode-btn]").forEach((btn) => {
@@ -2278,6 +2311,7 @@ function ensureLayoutSchemaV2(force = false): void {
         if (mode === "original" || mode === "white" || mode === "black") {
           theme.setBrandLogoMode(mode);
           syncBrandLogoModeBtns();
+          pushHudSettingsToCloud();
         }
       });
     });
@@ -2301,8 +2335,37 @@ function ensureLayoutSchemaV2(force = false): void {
         layout.setFocusMode(!layout.isFocusMode());
         syncFocusUi();
         applyHudCustomAppearance();
+        pushHudSettingsToCloud();
       });
     }
+
+    // Pull cloud HUD settings on startup if signed in so desktop, web & mobile stay in sync
+    try {
+      const tok = localStorage.getItem("mrt_vault_token") || localStorage.getItem("mm_token") || localStorage.getItem("mmt_token") || "";
+      if (tok) {
+        fetch("https://api.muntru.me/api/desktop/hud-settings", {
+          headers: { Authorization: `Bearer ${tok}` },
+        })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((data) => {
+            const s = data?.settings;
+            if (!s) return;
+            if (s.brand_logo_mode === "original" || s.brand_logo_mode === "white" || s.brand_logo_mode === "black") {
+              theme.setBrandLogoMode(s.brand_logo_mode);
+              syncBrandLogoModeBtns();
+            }
+            if (typeof s.focus_mode === "boolean") {
+              layout.setFocusMode(s.focus_mode);
+              if (focusBtn) {
+                focusBtn.setAttribute("aria-pressed", s.focus_mode ? "true" : "false");
+                focusBtn.textContent = s.focus_mode ? "🎯 Focus: ON" : "🎯 Focus";
+              }
+              applyHudCustomAppearance();
+            }
+          })
+          .catch(() => {});
+      }
+    } catch {}
 
     const obsUrlBtn = document.getElementById("btnShellCopyObsUrl") as HTMLButtonElement | null;
     if (obsUrlBtn) {
