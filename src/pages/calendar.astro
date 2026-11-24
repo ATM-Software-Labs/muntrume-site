@@ -437,6 +437,13 @@ const canonical = "https://muntru.me/calendar/";
         </div>
       </section>
 
+      <div class="cal-legend" aria-label="Leyenda de propiedad y semana actual">
+        <span class="cal-legend__item"><span class="cal-legend__pill">HOY · S{buildWeek}</span> Semana actual</span>
+        <span class="cal-legend__item"><span class="cal-legend__dot is-owned"></span> Comprado / Base</span>
+        <span class="cal-legend__item"><span class="cal-legend__dot is-missing"></span> Falta comprar</span>
+        <span class="cal-legend__hint">Clic en el punto de cualquier circuito para marcarlo como comprado</span>
+      </div>
+
       <div id="calGrid" class="cal-grid">
         {cleanSeries.map((s) => {
           const cur = s.weeks.find((w) => w.w === buildWeek) ?? s.weeks[0];
@@ -477,9 +484,12 @@ const canonical = "https://muntru.me/calendar/";
                 {s.weeks.map((w) => {
                   const state = w.w < buildWeek ? "past" : w.w === buildWeek ? "now" : "next";
                   return (
-                    <li class={`cal-week is-${state}`} data-week-num={w.w}>
+                    <li class={`cal-week is-${state}`} data-week-num={w.w} data-track={w.track}>
                       <a href={w.href} title={`Setups en ${w.track}`}>
-                        <span class="cal-week__num">{w.w}</span>
+                        <span class="cal-week__num">
+                          <span class="cal-own-dot" data-toggle-track={w.track} role="button" tabindex="0" title="Marcar / desmarcar circuito comprado"></span>
+                          {w.w}
+                        </span>
                         <span class="cal-week__track">{w.track}</span>
                         <span class="cal-week__cfg">{w.config}</span>
                       </a>
@@ -585,26 +595,85 @@ const canonical = "https://muntru.me/calendar/";
     .cal-tag--tier { border-color: var(--tier); color: var(--tier); }
     .cal-tag--dur { color: var(--r-accent, #00e699); border-color: rgba(0, 230, 153, 0.3); }
 
-    .cal-weeks { list-style: none; margin: 0; padding: 0 8px 8px; display: grid; gap: 2px; }
-    .cal-week a {
-      display: grid; grid-template-columns: 20px 1fr auto; align-items: center; gap: 6px;
-      padding: 4px 7px; border-radius: 6px; text-decoration: none; font-size: 11px; line-height: 1.25;
-      color: var(--r-text); transition: background .12s ease;
+    .cal-legend {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 14px;
+      margin: 0 0 12px; padding: 8px 12px; border-radius: 10px;
+      border: 1px solid var(--r-line); background: var(--r-surface);
+      font: 600 11px/1.3 ui-monospace, monospace; color: var(--r-muted);
     }
-    .cal-week a:hover { background: rgba(255, 255, 255, 0.06); }
-    .cal-week__num { font: 700 10px/1 ui-monospace, monospace; color: var(--r-muted); text-align: right; }
+    .cal-legend__item { display: inline-flex; align-items: center; gap: 6px; color: var(--r-text); }
+    .cal-legend__dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+    .cal-legend__dot.is-owned { background: #10b981; }
+    .cal-legend__dot.is-missing { background: #f97316; }
+    .cal-legend__pill {
+      padding: 2px 6px; border-radius: 4px; background: #059669; color: #fff;
+      font-size: 9.5px; font-weight: 800; letter-spacing: 0.04em;
+    }
+    .cal-legend__hint { margin-left: auto; font-size: 10.5px; color: var(--r-muted); font-family: inherit; }
+
+    .cal-weeks { list-style: none; margin: 0; padding: 0 8px 8px; display: grid; gap: 2.5px; }
+    .cal-week a {
+      display: grid; grid-template-columns: 32px 1fr auto; align-items: center; gap: 6px;
+      padding: 4px 7px; border-radius: 6px; text-decoration: none; font-size: 11px; line-height: 1.25;
+      color: var(--r-text); border-left: 3px solid transparent; transition: background .12s ease;
+    }
+    .cal-week a:hover { background: rgba(127, 127, 127, 0.1); }
+    .cal-week__num {
+      display: inline-flex; align-items: center; justify-content: flex-end; gap: 5px;
+      font: 700 10px/1 ui-monospace, monospace; color: var(--r-muted);
+    }
+    .cal-own-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: rgba(148, 163, 184, 0.45);
+      flex-shrink: 0; cursor: pointer; transition: transform .12s ease, background .12s ease;
+    }
+    .cal-own-dot:hover { transform: scale(1.45); }
     .cal-week__track { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .cal-week__cfg {
       font-size: 10px; color: var(--r-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 82px;
     }
 
-    .cal-week.is-past a { opacity: 0.42; }
-    .cal-week.is-now a {
-      border: 1px solid var(--r-accent, #00e699);
-      background: rgba(0, 230, 153, 0.12);
+    /* Propiedad: Comprado/Base (verde esmeralda) vs Falta comprar (naranja) en TODAS las semanas */
+    .cal-week.is-owned a {
+      background: rgba(16, 185, 129, 0.09);
+      border-left-color: #10b981;
     }
-    .cal-week.is-now .cal-week__num,
-    .cal-week.is-now .cal-week__track { color: var(--r-accent, #00e699); }
+    .cal-week.is-owned .cal-own-dot { background: #10b981; }
+    .cal-week.is-missing a {
+      background: rgba(249, 115, 22, 0.11);
+      border-left-color: #f97316;
+    }
+    .cal-week.is-missing .cal-own-dot { background: #f97316; }
+    .cal-week.is-missing .cal-week__track { color: #c2410c; }
+    html.dark .cal-week.is-missing .cal-week__track,
+    html[data-theme="dark"] .cal-week.is-missing .cal-week__track { color: #fb923c; }
+
+    /* Semanas pasadas: ligeramente atenuadas pero manteniendo visible el verde/naranja */
+    .cal-week.is-past a { opacity: 0.7; }
+
+    /* Semana actual: destaque inconfundible para que nadie se pierda */
+    .cal-week.is-now a {
+      opacity: 1 !important;
+      border: 2px solid #059669;
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.16);
+      background: rgba(16, 185, 129, 0.16);
+      font-weight: 700;
+    }
+    .cal-week.is-now.is-missing a {
+      background: linear-gradient(90deg, rgba(249, 115, 22, 0.18), rgba(16, 185, 129, 0.12));
+      border-color: #059669;
+    }
+    .cal-week.is-now .cal-week__num { color: #059669; font-weight: 800; }
+    .cal-week.is-now .cal-week__track::before {
+      content: "HOY ";
+      display: inline-block;
+      margin-right: 4px;
+      padding: 1px 4px;
+      border-radius: 3px;
+      background: #059669;
+      color: #ffffff;
+      font: 800 8.5px/1.2 ui-monospace, monospace;
+      vertical-align: 1px;
+    }
 
     .cal-card__foot {
       margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 8px;
@@ -963,6 +1032,7 @@ const canonical = "https://muntru.me/calendar/";
       }
 
       function renderPlanner() {
+        syncCalendarOwnershipColors();
         const cards = Array.from(document.querySelectorAll<HTMLElement>("#calGrid .cal-card"));
         let favIds = new Set<string>();
         try {
@@ -1272,10 +1342,48 @@ const canonical = "https://muntru.me/calendar/";
         }
       }
 
+      function syncCalendarOwnershipColors() {
+        const ownedLower = new Set(Array.from(owned).map((t) => t.toLowerCase()));
+        document.querySelectorAll<HTMLLIElement>("#calGrid .cal-week[data-track]").forEach((li) => {
+          const trk = (li.dataset.track || "").trim();
+          if (!trk) return;
+          const low = trk.toLowerCase();
+          const has = ownedLower.has(low) || freeTrackSet.has(low);
+          li.classList.toggle("is-owned", has);
+          li.classList.toggle("is-missing", !has);
+          const dot = li.querySelector<HTMLElement>(".cal-own-dot");
+          if (dot) dot.title = has ? `${trk}: Comprado / Base (clic para cambiar)` : `${trk}: Falta comprar (clic para marcar como comprado)`;
+        });
+      }
+
+      document.getElementById("calGrid")?.addEventListener("click", (e) => {
+        const dot = (e.target as HTMLElement | null)?.closest<HTMLElement>("[data-toggle-track]");
+        if (!dot) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const trk = (dot.dataset.toggleTrack || "").trim();
+        if (!trk) return;
+        const low = trk.toLowerCase();
+        let existingKey: string | null = null;
+        owned.forEach((v) => { if (v.toLowerCase() === low) existingKey = v; });
+        if (existingKey) {
+          owned.delete(existingKey);
+        } else {
+          owned.add(trk);
+          cart.delete(trk);
+        }
+        localStorage.setItem(OWNED_KEY, JSON.stringify(Array.from(owned)));
+        localStorage.setItem(CART_KEY, JSON.stringify(Array.from(cart)));
+        syncCalendarOwnershipColors();
+        if (!panel.hidden) renderPlanner();
+      });
+
+      syncCalendarOwnershipColors();
       if (!panel.hidden) renderPlanner();
       window.addEventListener("mmt-planner-refresh", (ev: Event) => {
         const custom = ev as CustomEvent<{ cat?: string }>;
         if (custom?.detail?.cat) activeCalendarCat = custom.detail.cat;
+        syncCalendarOwnershipColors();
         if (!panel.hidden) renderPlanner();
       });
     }

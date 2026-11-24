@@ -14,12 +14,21 @@ const IMSA_CARS = `acuraarx06gtp,amvalkyriegtp,bmwlmdh,cadillacvseriesrgtp,dalla
 const PCC_CARS = 'mx5 cup,toyotagr86,bmwm2csr,bmwm2g87,renaultcliocup';
 
 const FEATURED = [
-  { prefix: 'IMSA iRacing Series by GO Fast', schedule: '45 min · Cada 2h (:45 UTC)', img: '/assets/img/series/imsa.jpg', cars: IMSA_CARS, badge: 'MULTICLASS · GTP/LMP2/GT3' },
-  { prefix: 'GT Sprint Series by Simucube', schedule: '40 min · Cada 2h (:00 UTC)', img: '/assets/img/series/gt-sprint.jpg', cars: GT3_CARS, badge: 'GT3 OPEN · SPRINT' },
-  { prefix: 'Production Car Challenge by Sim-Lab', schedule: '25 min · Cada 1h (:30 UTC)', img: '/assets/img/series/pcc.jpg', cars: PCC_CARS, badge: 'MULTICLASS · TOURING' },
-  { prefix: 'iRacing Porsche Cup by CONSPIT', schedule: '19 vueltas · Cada 2h (:45 UTC)', img: '/assets/img/series/porsche-cup.jpg', car: 'porsche992cup', badge: '992 GT3 CUP · OPEN' },
-  { prefix: 'Formula C - Super Formula Lights by RSS', schedule: '30 min · Cada 2h (:15 UTC)', img: '/assets/img/series/sfl.jpg', car: 'superformulalights324', badge: 'SFL 324 · OPEN' },
+  { prefix: 'GT Sprint Series by Simucube', schedule: '40 min · Cada 2h (:00 UTC)', img: '/assets/img/series/gt-sprint.jpg', cars: GT3_CARS, badge: 'GT3 OPEN · SPRINT', basePart: 100 },
+  { prefix: 'IMSA iRacing Series by GO Fast', schedule: '45 min · Cada 2h (:45 UTC)', img: '/assets/img/series/imsa.jpg', cars: IMSA_CARS, badge: 'MULTICLASS · GTP/LMP2/GT3', basePart: 96 },
+  { prefix: 'Production Car Challenge by Sim-Lab', schedule: '25 min · Cada 1h (:30 UTC)', img: '/assets/img/series/pcc.jpg', cars: PCC_CARS, badge: 'MULTICLASS · TOURING', basePart: 91 },
+  { prefix: 'iRacing Porsche Cup by CONSPIT', schedule: '19 vueltas · Cada 2h (:45 UTC)', img: '/assets/img/series/porsche-cup.jpg', car: 'porsche992cup', badge: '992 GT3 CUP · OPEN', basePart: 88 },
+  { prefix: 'Formula C - Super Formula Lights by RSS', schedule: '30 min · Cada 2h (:15 UTC)', img: '/assets/img/series/sfl.jpg', car: 'superformulalights324', badge: 'SFL 324 · OPEN', basePart: 84 },
 ];
+
+function trackPopularityFactor(rawTrack: string): number {
+  const t = (rawTrack || '').toLowerCase();
+  if (/spa-francorchamps|monza|daytona|nürburgring|nurburgring/.test(t)) return 1.32;
+  if (/watkins glen|sebring|road atlanta|road america|suzuka|interlagos|mugello|silverstone|imola|le mans|mans/.test(t)) return 1.24;
+  if (/okayama|laguna seca|tsukuba|charlotte|lime rock|summit point|oulton|virginia|rudskogen|navarra/.test(t)) return 1.18;
+  if (/barcelona|red bull ring|fuji|bathurst|panorama|long beach|cota|americas|zandvoort|hockenheim|portimao|algarve/.test(t)) return 1.14;
+  return 0.96;
+}
 
 const SHOWCASE_BRANDS = [
   { name: 'Porsche', code: 'P911 / P963', color: '#D5001C', path: OFFICIAL_BRAND_PATHS['logo-porsche'] },
@@ -70,10 +79,18 @@ function garageHref(item: (typeof FEATURED)[number], trackName: string): string 
   return `/garage/?${p.toString()}`;
 }
 
-const weekly = FEATURED
+const SEASON_START_MS = Date.UTC(2026, 8, 15);
+const buildWeek = Math.max(1, Math.min(12, Math.floor((Date.now() - SEASON_START_MS) / 604_800_000) + 1));
+
+const weeklyAll = FEATURED
   .map((item) => {
     const s = schedule.series.find((x) => x.name.startsWith(item.prefix));
     if (!s) return undefined;
+    const weeks = s.weeks.map((w) => {
+      const score = Math.round(item.basePart * trackPopularityFactor(w.track_name));
+      return [w.week_num, w.track_name, w.config ?? '', garageHref(item, w.track_name), score] as [number, string, string, string, number];
+    });
+    const cur = weeks.find((w) => w[0] === buildWeek);
     return {
       name: s.name.replace(/\s*-?\s*2026 Season.*$/i, '').trim(),
       schedule: item.schedule,
@@ -81,12 +98,14 @@ const weekly = FEATURED
       img: item.img,
       car: item.car ?? '',
       cars: item.cars ?? '',
-      weeks: s.weeks.map((w) => [w.week_num, w.track_name, w.config ?? '', garageHref(item, w.track_name)] as [number, string, string, string]),
+      basePart: item.basePart,
+      curScore: cur ? cur[4] : item.basePart,
+      weeks,
     };
   })
-  .filter((s) => s !== undefined);
-const SEASON_START_MS = Date.UTC(2026, 8, 15);
-const buildWeek = Math.max(1, Math.min(12, Math.floor((Date.now() - SEASON_START_MS) / 604_800_000) + 1));
+  .filter((s) => s !== undefined)
+  .sort((a, b) => b.curScore - a.curScore);
+const weekly = weeklyAll.slice(0, 4);
 
 const pageTitle = "Muntrume Motorsport (MMT) · iRacing Team & .STO Setups";
 const pageDescription = "Muntrume Motorsport (MMT) is an iRacing endurance team from Barcelona. Official drivers, Garage 61 telemetry, MMT Sync app, and 42,600+ .sto setups.";
@@ -351,21 +370,21 @@ const appVersion = desktopPkg.version;
         </div>
         <a href="/garage/" class="r-link">Ver todos los setups →</a>
       </div>
-      <div id="weekGrid" class="mmt-week-grid" data-weeks={JSON.stringify(weekly)}>
-        {weekly.map((s) => {
+      <div id="weekGrid" class="mmt-week-grid" data-weeks={JSON.stringify(weeklyAll)}>
+        {weekly.map((s, idx) => {
           const w = s.weeks.find((x) => x[0] === buildWeek);
           return (
             <a href={w?.[3] ?? '/garage/'} class="mmt-week-card" data-g-reveal>
               <div class="mmt-week-card__media">
                 <img src={s.img} alt={s.name} loading="lazy" decoding="async" />
-                <span class="mmt-week-card__pill">{s.badge}</span>
+                <span class="mmt-week-card__pill" data-pill>#{idx + 1} · {s.badge}</span>
               </div>
               <div class="mmt-week-card__body">
-                <span class="mmt-week-card__series">{s.name}</span>
+                <span class="mmt-week-card__series" data-series>{s.name}</span>
                 <strong class="mmt-week-card__track" data-track>{w?.[1] ?? '—'}</strong>
                 <span class="mmt-week-card__config" data-config>{w?.[2] ?? ''}</span>
                 <div class="mmt-week-card__foot">
-                  <span class="mmt-week-card__time">{s.schedule}</span>
+                  <span class="mmt-week-card__time" data-time>{s.schedule}</span>
                   <span class="mmt-week-card__go">Setups →</span>
                 </div>
               </div>
@@ -374,7 +393,7 @@ const appVersion = desktopPkg.version;
         })}
       </div>
       <div class="mmt-week-foot">
-        <p class="r-meta">Top 5 series Open por participación semanal (incluyendo GT Sprint GT3). Las series Fixed (ej. GT3 Regional Tour) usan setup oficial de iRacing.</p>
+        <p class="r-meta">Top 4 combos semanales ordenados dinámicamente por índice de participación (<strong>serie × circuito</strong>) en iRacing 2026 S4.</p>
         <div class="mmt-week-links">
           <a href="/calendar/" class="r-link">Calendario completo ({schedule.series.length} series) →</a>
           <a href="https://www.iracing.com/series/" target="_blank" rel="noopener noreferrer" class="r-link">Series oficiales en iRacing.com ↗</a>
@@ -394,12 +413,31 @@ const appVersion = desktopPkg.version;
       if (label) label.textContent = 'Semana ' + week;
       const badge = document.getElementById('weekNumBadge');
       if (badge) badge.textContent = 'Semana ' + week;
+      const ranked = data
+        .map((s) => {
+          const hit = (s.weeks || []).find((e) => e[0] === week);
+          return hit ? { s, hit, score: hit[4] || s.basePart || 80 } : null;
+        })
+        .filter(Boolean)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 4);
       grid.querySelectorAll('.mmt-week-card').forEach((card, i) => {
-        const hit = ((data[i] && data[i].weeks) || []).find((e) => e[0] === week);
-        card.hidden = !hit;
-        if (!hit) return;
-        card.querySelector('[data-track]').textContent = hit[1];
-        card.querySelector('[data-config]').textContent = hit[2];
+        const entry = ranked[i];
+        card.hidden = !entry;
+        if (!entry) return;
+        const { s, hit } = entry;
+        const img = card.querySelector('img');
+        if (img) { img.src = s.img; img.alt = s.name; }
+        const pill = card.querySelector('[data-pill]');
+        if (pill) pill.textContent = '#' + (i + 1) + ' · ' + s.badge;
+        const ser = card.querySelector('[data-series]');
+        if (ser) ser.textContent = s.name;
+        const trk = card.querySelector('[data-track]');
+        if (trk) trk.textContent = hit[1];
+        const cfg = card.querySelector('[data-config]');
+        if (cfg) cfg.textContent = hit[2];
+        const tm = card.querySelector('[data-time]');
+        if (tm) tm.textContent = s.schedule;
         if (hit[3]) card.setAttribute('href', hit[3]);
       });
     })();

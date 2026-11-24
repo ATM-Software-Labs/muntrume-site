@@ -19,23 +19,24 @@ function getAuthToken() {
 }
 
 const CSS = `
-#mmChat{--bg:#0f1114;--hd:#0a0c0e;--sf:#171a1f;--bd:rgba(255,255,255,.1);--tx:#f3f5f8;--mu:#8b94a3;--ac:#10b981;--acTx:#04130d;position:fixed;z-index:60;right:max(1rem,env(safe-area-inset-right));bottom:max(1rem,env(safe-area-inset-bottom));width:min(440px,calc(100vw - 2rem));height:min(640px,calc(100dvh - 2rem));display:flex;flex-direction:column;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:18px;box-shadow:0 24px 64px rgba(0,0,0,.52);overflow:hidden;font:13.5px/1.6 system-ui,-apple-system,sans-serif;transition:width .2s ease,height .2s ease}
-#mmChat.is-wide{width:min(680px,calc(100vw - 2rem));height:min(760px,calc(100dvh - 2rem))}
-html.light #mmChat,html[data-theme="light"] #mmChat{--bg:#f9fafb;--hd:#f1f3f6;--sf:#ffffff;--bd:rgba(15,23,42,.12);--tx:#0f172a;--mu:#64748b;--ac:#059669;--acTx:#fff}
+#mmChat{--bg:#0f1114;--hd:#0a0c0e;--sf:#171a1f;--bd:rgba(255,255,255,.1);--tx:#f3f5f8;--mu:#8b94a3;--ac:#10b981;--acTx:#04130d;position:fixed;z-index:60;right:max(.9rem,env(safe-area-inset-right));bottom:max(.9rem,env(safe-area-inset-bottom));width:min(404px,calc(100vw - 1.8rem));height:min(576px,calc(100dvh - 1.8rem));display:flex;flex-direction:column;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:16px;box-shadow:0 20px 54px rgba(0,0,0,.44);overflow:hidden;font:13px/1.52 system-ui,-apple-system,sans-serif;transition:width .18s ease,height .18s ease}
+#mmChat.is-wide{width:min(660px,calc(100vw - 2rem));height:min(740px,calc(100dvh - 2rem))}
+html.light #mmChat,html[data-theme="light"] #mmChat{--bg:#ffffff;--hd:#ffffff;--sf:#f8fafc;--bd:rgba(15,23,42,.11);--tx:#0f172a;--mu:#64748b;--ac:#059669;--acTx:#fff}
 #mmChat[hidden]{display:none}
-#mmChat header{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--hd);border-bottom:1px solid var(--bd)}
-#mmChat .mm-mark{width:27px;height:27px;border-radius:8px;background:rgba(16,185,129,.14);color:var(--ac);display:grid;place-items:center;flex-shrink:0}
+#mmChat header{display:flex;align-items:center;gap:7px;padding:8px 11px;background:var(--hd);border-bottom:1px solid var(--bd)}
+#mmChat .mm-mark{width:25px;height:25px;border-radius:7px;background:rgba(16,185,129,.14);color:var(--ac);display:grid;place-items:center;flex-shrink:0}
 #mmChat .mm-ttl{min-width:0}
-#mmChat .mm-ttl b{display:block;font-size:13px;line-height:1.2;color:var(--tx)}
-#mmChat .mm-tier{border:0;background:transparent;color:var(--ac);font:600 11px/1.2 system-ui,sans-serif;padding:0;cursor:pointer}
-#mmChat .mm-ic{margin-left:auto;display:flex;align-items:center;gap:3px}
-#mmChat .mm-ib{width:30px;height:30px;border:0;border-radius:8px;background:transparent;color:var(--mu);display:grid;place-items:center;cursor:pointer}
+#mmChat .mm-ttl b{display:block;font-size:12.5px;line-height:1.15;color:var(--tx)}
+#mmChat .mm-tier{border:0;background:transparent;color:var(--ac);font:600 10.5px/1.15 system-ui,sans-serif;padding:0;cursor:pointer}
+#mmChat .mm-ic{margin-left:auto;display:flex;align-items:center;gap:2px}
+#mmChat .mm-ib{width:28px;height:28px;border:0;border-radius:7px;background:transparent;color:var(--mu);display:grid;place-items:center;cursor:pointer}
 #mmChat .mm-ib:hover{background:var(--sf);color:var(--tx)}
-#mmChat .mm-qnav{display:flex;flex-wrap:wrap;gap:5px;padding:7px 12px;border-bottom:1px solid var(--bd);background:color-mix(in srgb,var(--sf) 55%,transparent)}
-#mmChat .mm-qnav a{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:999px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);font-size:11px;font-weight:700;text-decoration:none;transition:border-color .14s,color .14s}
+#mmChat .mm-qnav{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:4px;padding:6px 10px;border-bottom:1px solid var(--bd);background:var(--hd)}
+#mmChat .mm-qnav::-webkit-scrollbar{display:none}
+#mmChat .mm-qnav a{display:inline-flex;align-items:center;white-space:nowrap;padding:3px 8px;border-radius:999px;border:1px solid var(--bd);background:var(--sf);color:var(--tx);font-size:10.5px;font-weight:700;text-decoration:none;transition:border-color .14s,color .14s}
 #mmChat .mm-qnav a:hover{border-color:var(--ac);color:var(--ac)}
-#mmChat .mm-log{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:13px;overscroll-behavior:contain}
-#mmChat .mm-m{max-width:92%;padding:10px 13px;border-radius:14px;word-break:break-word;animation:mmIn .22s ease}
+#mmChat .mm-log{flex:1;overflow-y:auto;padding:11px 12px;display:flex;flex-direction:column;gap:10px;overscroll-behavior:contain}
+#mmChat .mm-m{max-width:94%;padding:8px 11px;border-radius:12px;word-break:break-word;animation:mmIn .16s ease}
 @keyframes mmIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 #mmChat .mm-u{align-self:flex-end;background:var(--sf);border:1px solid var(--bd);border-top-right-radius:4px;color:var(--tx)}
 #mmChat .mm-a{align-self:flex-start;background:transparent;padding:4px 2px;max-width:100%;color:var(--tx)}
