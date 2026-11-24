@@ -1,0 +1,1025 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { SIM_BADGES } from "../../lib/sim-badges";
+
+const SEED_POSTS = [
+  {
+    id: "seed-sebring-w11",
+    slug: "sebring-2026-s4-w11-guia-baches-degradacion-gt3-imsa",
+    title: "Sebring 2026 S4 W11 — Guía de trazada, baches y degradación GT3 / IMSA",
+    category: "analisis",
+    sim: "iracing",
+    author_name: "Alberto Trujillo",
+    author_role: "FOUNDER",
+    summary: "Puntos clave de frenada en Sunset Bend y Tower Turn, presiones en caliente para stints de 45 min y dónde evitar los baches de hormigón para no sobrecalentar el neumático delantero derecho.",
+    body: "Resumen técnico tras las tandas de entrenamiento en Sebring International Raceway (Semana 11):\n\n1. Sunset Bend (T17): entrar ligeramente abierto sobre el hormigón para esquivar el bache central y aplicar gas progresivo al pasar el ápice interior. Un toque de brake bias +0.4% hacia delante estabiliza el tren trasero.\n2. Presiones GT3: objetivo 165–168 kPa en caliente tras 4 vueltas. En el Mustang GT3 y McLaren 720S GT3 EVO el delantero izquierdo sufre en T1 y Bishop Bend.\n3. Tráfico multiclase IMSA: en las eses rápidas (T3-T5) mantener siempre línea predecible; los GTP pierden menos tiempo pasando por exterior a la salida de T5.\n\nDejad vuestras notas de telemetría de Garage 61 o sensaciones de setup en los comentarios.",
+    tags: ["Sebring", "IMSA", "GT3", "2026-S4"],
+    likes: 12,
+    comment_count: 2,
+    pinned: 1,
+    created_at: "2026-11-23T18:30:00.000Z",
+    seedComments: [
+      {
+        id: "sc-1",
+        author_name: "Mateo B.",
+        author_role: "DRIVER",
+        body: "Confirmo lo de T17: subiendo 0.5% el brake bias a partir de mitad de stint el coche deja de rebotar en la entrada.",
+        created_at: "2026-11-23T20:10:00.000Z",
+      },
+      {
+        id: "sc-2",
+        author_name: "Eduardo C.",
+        author_role: "DRIVER",
+        body: "Con el 720S GT3 EVO bajar 1 click el ala trasera ayuda muchísimo en la recta de Ullman sin perder estabilidad en T1.",
+        created_at: "2026-11-24T09:15:00.000Z",
+      },
+    ],
+  },
+  {
+    id: "seed-lmu-ffb-braking",
+    slug: "le-mans-ultimate-vs-iracing-configuracion-ffb-frenada-lmgt3",
+    title: "Le Mans Ultimate vs iRacing — Ajuste de FFB, ABS y frenada en Hypercar y LMGT3",
+    category: "multisim",
+    sim: "lmu",
+    author_name: "Alberto Trujillo",
+    author_role: "FOUNDER",
+    summary: "Comparativa práctica para pilotos del equipo que alternan entre iRacing y Le Mans Ultimate: curva de freno, gestión de temperatura de neumáticos y perfiles Direct Drive.",
+    body: "Cada vez más pilotos de Muntrume Motorsport alternan iRacing con Le Mans Ultimate (LMU) para preparar resistencia WEC.\n\nDiferencias clave a tener en cuenta al cambiar de simulador:\n- Frenada y ABS: en LMGT3 de LMU el ABS permite entrar más profundo con trail-braking; en iRacing un bloqueo prolongado dispara la temperatura superficial y te penaliza las 2 vueltas siguientes.\n- Force Feedback: recomendamos bajar ligeramente el smoothing en LMU (1–2) para sentir el límite de deslizamiento lateral en los pianos de Le Mans y Spa.\n- Gestión de energía (Hypercar): mapear en el volante el botón de motor map y regeneración desde el primer entrenamiento.\n\nSi alguien quiere compartir su perfil de volante para LMU o montar sala de equipo, comentad aquí.",
+    tags: ["LMU", "iRacing", "LMGT3", "Hypercar"],
+    likes: 9,
+    comment_count: 1,
+    pinned: 0,
+    created_at: "2026-11-22T15:00:00.000Z",
+    seedComments: [
+      {
+        id: "sc-3",
+        author_name: "Mateo B.",
+        author_role: "DRIVER",
+        body: "Buenísima guía. En LMU noté muchísimo la diferencia bajando la sensibilidad del pedal al 100% lineal sin curvas.",
+        created_at: "2026-11-22T18:45:00.000Z",
+      },
+    ],
+  },
+  {
+    id: "seed-ac-evo-impresiones",
+    slug: "assetto-corsa-evo-primeras-impresiones-fisicas-telemetria-equipo",
+    title: "Assetto Corsa EVO — Primeras impresiones de físicas, neumáticos y planes del equipo",
+    category: "multisim",
+    sim: "ac_evo",
+    author_name: "Muntrume Engineering",
+    author_role: "STAFF",
+    summary: "Evaluación técnica de Assetto Corsa EVO para futuras ligas y eventos internos del equipo, incluyendo compatibilidad de periféricos y objetivos de telemetría.",
+    body: "Abrimos hilo oficial para recopilar sensaciones, benchmarks de rendimiento y configuraciones de volante en Assetto Corsa EVO.\n\nPuntos que estamos probando desde Ingeniería MMT:\n1. Modelo de neumáticos y transferencia de pesos en curvas enlazadas (Imola / Brands Hatch).\n2. Rendimiento en triple screen y VR con el motor propio de Kunos.\n3. Futura integración de telemetría para que los pilotos multi-sim también sumen estadísticas y logros en su ficha oficial de muntru.me.\n\n¿Qué coches y circuitos os gustaría ver en las pachangas internas de AC EVO?",
+    tags: ["AC EVO", "Multi-Sim", "Ingeniería"],
+    likes: 7,
+    comment_count: 0,
+    pinned: 0,
+    created_at: "2026-11-20T12:00:00.000Z",
+    seedComments: [],
+  },
+  {
+    id: "seed-mmt-sync-overlays",
+    slug: "mmt-sync-v067-configuracion-15-overlays-hud-abiertos",
+    title: "MMT Sync v0.6.7 — Configuración recomendada de los 15 overlays HUD abiertos",
+    category: "overlays",
+    sim: "staff",
+    author_name: "Alberto Trujillo",
+    author_role: "FOUNDER",
+    summary: "Cómo colocar Tempest Weather, Radar/Spotter, Relative y Calculadora de Fuel sin saturar la pantalla y sincronizar tu preset con la nube de Muntrume.",
+    body: "Con MMT Sync v0.6.7 hemos añadido 4 nuevos módulos Pro-Free basados en estándares open-source: Tempest Weather, Blind Spot / Spotter, Session & Incidents e In-Car Electronics.\n\nLayout recomendado para 1440p / 1080p:\n- Superior izquierda: Session & Incidents + Tempest Weather compacto.\n- Inferior izquierda: Relative (7 filas) con emblemas oficiales de fabricante.\n- Centro inferior: Input Telemetry + In-Car Electronics (TC / ABS / BB).\n- Inferior derecha: Calculadora de Fuel + Blind Spot lateral.\n\nRecuerda que puedes guardar tu layout en la nube desde el botón de sincronización y recuperarlo en cualquier PC.",
+    tags: ["MMT Sync", "Overlays", "HUD", "Open Source"],
+    likes: 15,
+    comment_count: 0,
+    pinned: 0,
+    created_at: "2026-11-24T11:00:00.000Z",
+    seedComments: [],
+  },
+];
+
+const CATEGORIES = [
+  { id: "all", label: "Todos" },
+  { id: "analisis", label: "Análisis de Carrera" },
+  { id: "setups", label: "Setups & Telemetría" },
+  { id: "multisim", label: "Multi-Sim (LMU / AC EVO)" },
+  { id: "overlays", label: "Hardware & Overlays" },
+];
+
+const forumSchema = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: "Foro Técnico y Análisis · Muntrume Motorsport",
+  url: "https://forum.muntru.me/",
+  description: "Foro oficial de Muntrume Motorsport: análisis de carreras, debriefs de resistencia, setups, telemetría de iRacing, Le Mans Ultimate y Assetto Corsa EVO.",
+  publisher: {
+    "@type": "SportsTeam",
+    name: "Muntrume Motorsport",
+    url: "https://muntru.me/",
+  },
+  mainEntity: {
+    "@type": "ItemList",
+    itemListElement: SEED_POSTS.map((p, idx) => ({
+      "@type": "ListItem",
+      position: idx + 1,
+      item: {
+        "@type": "DiscussionForumPosting",
+        headline: p.title,
+        text: p.summary,
+        datePublished: p.created_at,
+        url: `https://forum.muntru.me/#${p.slug}`,
+        author: {
+          "@type": "Person",
+          name: p.author_name,
+        },
+        interactionStatistic: [
+          {
+            "@type": "InteractionCounter",
+            interactionType: "https://schema.org/LikeAction",
+            userInteractionCount: p.likes,
+          },
+          {
+            "@type": "InteractionCounter",
+            interactionType: "https://schema.org/CommentAction",
+            userInteractionCount: p.comment_count,
+          },
+        ],
+      },
+    })),
+  },
+};
+
+const simList = Object.values(SIM_BADGES);
+---
+
+<Layout
+  title="Foro Técnico y Análisis · Muntrume Motorsport (forum.muntru.me)"
+  description="Foro oficial de análisis de carrera, setups, telemetría y debates multi-sim (iRacing, Le Mans Ultimate, Assetto Corsa EVO) de Muntrume Motorsport."
+  canonical="https://forum.muntru.me/"
+  schema={forumSchema}
+>
+  <section class="mf-wrap">
+    <!-- Hero Header -->
+    <header class="mf-hero">
+      <div class="mf-hero__copy">
+        <span class="mf-kicker">FORUM.MUNTRU.ME · COMUNIDAD &amp; INGENIERÍA</span>
+        <h1 class="mf-title">Foro Técnico &amp; Análisis de Carrera</h1>
+        <p class="mf-sub">
+          Debriefs de resistencia, guías de circuito, telemetría de Garage 61, setups y debates multi-sim en
+          <strong>iRacing</strong>, <strong>Le Mans Ultimate</strong> y <strong>Assetto Corsa EVO</strong>.
+          Indexado para toda la comunidad de sim racing.
+        </p>
+      </div>
+      <div class="mf-hero__actions">
+        <button type="button" id="mfNewBtn" class="mf-btn mf-btn--primary">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+          <span>Nuevo análisis</span>
+        </button>
+        <a href="https://muntru.me/pilotos/" class="mf-btn mf-btn--ghost">Ver pilotos y staff →</a>
+      </div>
+    </header>
+
+    <!-- Category + Sim Filter Bar -->
+    <div class="mf-toolbar">
+      <div class="mf-cats" role="tablist" aria-label="Categorías del foro">
+        {CATEGORIES.map((c, idx) => (
+          <button
+            type="button"
+            class:list={["mf-cat-pill", idx === 0 && "is-active"]}
+            data-cat={c.id}
+            role="tab"
+            aria-selected={idx === 0 ? "true" : "false"}
+          >
+            {c.label}
+          </button>
+        ))}
+      </div>
+      <div class="mf-sims" aria-label="Filtrar por simulador">
+        <button type="button" class="mf-sim-btn is-active" data-sim="all">Todos</button>
+        {simList.slice(0, 6).map((s) => (
+          <button type="button" class="mf-sim-btn" data-sim={s.id} title={s.name}>
+            <span class="mf-sim-ico" set:html={s.svg} />
+            <span>{s.short}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <!-- New Post Composer (hidden by default) -->
+    <section id="mfComposer" class="mf-composer" hidden aria-label="Publicar nuevo análisis">
+      <div class="mf-composer__head">
+        <h2>Publicar nuevo análisis o debate</h2>
+        <button type="button" id="mfCloseComposer" class="mf-icon-btn" aria-label="Cerrar">✕</button>
+      </div>
+      <form id="mfPostForm" class="mf-form">
+        <div class="mf-form-row">
+          <label class="mf-field mf-field--grow">
+            <span>Título</span>
+            <input type="text" name="title" required minlength="4" maxlength="140" placeholder="Ej: Análisis de desgaste en Spa 24h con Porsche 992 GT3 R" />
+          </label>
+          <label class="mf-field">
+            <span>Categoría</span>
+            <select name="category">
+              <option value="analisis">Análisis de Carrera</option>
+              <option value="setups">Setups &amp; Telemetría</option>
+              <option value="multisim">Multi-Sim (LMU / AC EVO)</option>
+              <option value="overlays">Hardware &amp; Overlays</option>
+            </select>
+          </label>
+          <label class="mf-field">
+            <span>Simulador</span>
+            <select name="sim">
+              {simList.map((s) => <option value={s.id}>{s.name}</option>)}
+            </select>
+          </label>
+        </div>
+        <label class="mf-field">
+          <span>Etiquetas (separadas por coma)</span>
+          <input type="text" name="tags" placeholder="Sebring, GT3, Telemetría, LMU" />
+        </label>
+        <label class="mf-field">
+          <span>Análisis completo</span>
+          <textarea name="body" required minlength="12" rows="6" placeholder="Comparte telemetría, presiones, puntos de frenada, conclusiones del stint o preguntas para el equipo..."></textarea>
+        </label>
+        <div class="mf-form-foot">
+          <p id="mfPostMsg" class="mf-msg" role="status"></p>
+          <div class="mf-form-btns">
+            <button type="button" id="mfCancelPost" class="mf-btn mf-btn--ghost">Cancelar</button>
+            <button type="submit" id="mfSubmitPost" class="mf-btn mf-btn--primary">Publicar análisis</button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- Thread List (Pre-rendered for SEO + hydrated with D1) -->
+    <div id="mfList" class="mf-list">
+      {SEED_POSTS.map((post) => {
+        const simMeta = SIM_BADGES[post.sim as keyof typeof SIM_BADGES] || SIM_BADGES.iracing;
+        return (
+          <article
+            id={post.slug}
+            class="mf-card"
+            data-post-slug={post.slug}
+            data-cat={post.category}
+            data-sim={post.sim}
+            itemscope
+            itemtype="https://schema.org/DiscussionForumPosting"
+          >
+            <div class="mf-card__top">
+              <div class="mf-card__badges">
+                {post.pinned === 1 && <span class="mf-pin">FIJADO</span>}
+                <span class="mf-sim-tag" style={`--sim-color:${simMeta.color}`}>
+                  <span class="mf-sim-ico" set:html={simMeta.svg} />
+                  <span>{simMeta.name}</span>
+                </span>
+                <span class="mf-cat-tag">{post.category}</span>
+              </div>
+              <time class="mf-date" datetime={post.created_at} itemprop="datePublished">
+                {new Date(post.created_at).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" })}
+              </time>
+            </div>
+
+            <h2 class="mf-card__title" itemprop="headline">{post.title}</h2>
+            <p class="mf-card__summary" itemprop="text">{post.summary}</p>
+
+            <div class="mf-card__tags">
+              {post.tags.map((t) => <span class="mf-tag">#{t}</span>)}
+            </div>
+
+            <div class="mf-card__foot">
+              <div class="mf-author" itemprop="author" itemscope itemtype="https://schema.org/Person">
+                <span class="mf-avatar">{post.author_name.slice(0, 2).toUpperCase()}</span>
+                <strong itemprop="name">{post.author_name}</strong>
+                <span class="mf-role">{post.author_role}</span>
+              </div>
+              <div class="mf-card__stats">
+                <button type="button" class="mf-stat-btn" data-like={post.slug} title="Me gusta">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+                  <span data-like-count={post.slug}>{post.likes}</span>
+                </button>
+                <button type="button" class="mf-stat-btn mf-stat-btn--open" data-open-thread={post.slug}>
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  <span data-comment-count={post.slug}>{post.comment_count}</span>
+                  <span>Leer y comentar →</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Collapsible Thread Body & Comments (SEO-indexable in DOM) -->
+            <div class="mf-thread-detail" data-thread-body={post.slug} hidden>
+              <div class="mf-thread-content">{post.body}</div>
+              <div class="mf-comments-wrap">
+                <h3>Comentarios</h3>
+                <div class="mf-comments-list" data-comments-for={post.slug}>
+                  {post.seedComments.length > 0 ? (
+                    post.seedComments.map((c) => (
+                      <div class="mf-comment">
+                        <div class="mf-comment__head">
+                          <strong>{c.author_name}</strong>
+                          <span class="mf-role">{c.author_role}</span>
+                          <time datetime={c.created_at}>
+                            {new Date(c.created_at).toLocaleDateString("es-ES", { day: "2-digit", month: "short" })}
+                          </time>
+                        </div>
+                        <p>{c.body}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <p class="mf-empty-c">Sé el primero en añadir tu análisis o comentario.</p>
+                  )}
+                </div>
+                <form class="mf-comment-form" data-comment-form={post.slug}>
+                  <textarea name="body" rows="2" required minlength="2" placeholder="Añade tu opinión técnica, tiempos o pregunta..."></textarea>
+                  <div class="mf-comment-form__bar">
+                    <span class="mf-msg" data-comment-msg={post.slug}></span>
+                    <button type="submit" class="mf-btn mf-btn--primary mf-btn--sm">Comentar</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  </section>
+
+  <script is:inline define:vars={{ SEED_POSTS, SIM_BADGES }}>
+    (function () {
+      const API = "https://api.muntru.me";
+      const listEl = document.getElementById("mfList");
+      const composer = document.getElementById("mfComposer");
+      const postForm = document.getElementById("mfPostForm");
+      const postMsg = document.getElementById("mfPostMsg");
+      let activeCat = "all";
+      let activeSim = "all";
+
+      function getToken() {
+        try {
+          return localStorage.getItem("mmt_session_token") || localStorage.getItem("mmt_token") || "";
+        } catch { return ""; }
+      }
+
+      function esc(s) {
+        return String(s || "").replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
+      }
+
+      function applyFilters() {
+        document.querySelectorAll(".mf-card").forEach((card) => {
+          const c = (card.getAttribute("data-cat") || "").toLowerCase();
+          const s = (card.getAttribute("data-sim") || "").toLowerCase();
+          const okCat = activeCat === "all" || c === activeCat;
+          const okSim = activeSim === "all" || s === activeSim;
+          card.hidden = !(okCat && okSim);
+        });
+      }
+
+      document.querySelectorAll("[data-cat]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          activeCat = btn.getAttribute("data-cat") || "all";
+          document.querySelectorAll("[data-cat]").forEach((b) => {
+            b.classList.toggle("is-active", b === btn);
+            b.setAttribute("aria-selected", b === btn ? "true" : "false");
+          });
+          applyFilters();
+        });
+      });
+
+      document.querySelectorAll("[data-sim]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          activeSim = btn.getAttribute("data-sim") || "all";
+          document.querySelectorAll("[data-sim]").forEach((b) => b.classList.toggle("is-active", b === btn));
+          applyFilters();
+        });
+      });
+
+      document.getElementById("mfNewBtn")?.addEventListener("click", () => {
+        if (composer) {
+          composer.hidden = !composer.hidden;
+          if (!composer.hidden) composer.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+      });
+      document.getElementById("mfCloseComposer")?.addEventListener("click", () => { if (composer) composer.hidden = true; });
+      document.getElementById("mfCancelPost")?.addEventListener("click", () => { if (composer) composer.hidden = true; });
+
+      function renderCard(p) {
+        const simMeta = SIM_BADGES[p.sim] || SIM_BADGES.iracing;
+        const dateStr = new Date(p.created_at || Date.now()).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" });
+        const tagsHtml = (p.tags || []).map((t) => `<span class="mf-tag">#${esc(t)}</span>`).join("");
+        const el = document.createElement("article");
+        el.id = p.slug;
+        el.className = "mf-card";
+        el.setAttribute("data-post-slug", p.slug);
+        el.setAttribute("data-cat", p.category || "analisis");
+        el.setAttribute("data-sim", p.sim || "iracing");
+        el.innerHTML = `
+          <div class="mf-card__top">
+            <div class="mf-card__badges">
+              ${p.pinned ? '<span class="mf-pin">FIJADO</span>' : ""}
+              <span class="mf-sim-tag" style="--sim-color:${simMeta.color}">
+                <span class="mf-sim-ico">${simMeta.svg}</span>
+                <span>${esc(simMeta.name)}</span>
+              </span>
+              <span class="mf-cat-tag">${esc(p.category || "analisis")}</span>
+            </div>
+            <time class="mf-date">${dateStr}</time>
+          </div>
+          <h2 class="mf-card__title">${esc(p.title)}</h2>
+          <p class="mf-card__summary">${esc(p.summary || "")}</p>
+          <div class="mf-card__tags">${tagsHtml}</div>
+          <div class="mf-card__foot">
+            <div class="mf-author">
+              <span class="mf-avatar">${esc((p.author_name || "MM").slice(0, 2).toUpperCase())}</span>
+              <strong>${esc(p.author_name || "Piloto MMT")}</strong>
+              <span class="mf-role">${esc(p.author_role || "DRIVER")}</span>
+            </div>
+            <div class="mf-card__stats">
+              <button type="button" class="mf-stat-btn" data-like="${esc(p.slug)}">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+                <span data-like-count="${esc(p.slug)}">${Number(p.likes || 0)}</span>
+              </button>
+              <button type="button" class="mf-stat-btn mf-stat-btn--open" data-open-thread="${esc(p.slug)}">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <span data-comment-count="${esc(p.slug)}">${Number(p.comment_count || 0)}</span>
+                <span>Leer y comentar →</span>
+              </button>
+            </div>
+          </div>
+          <div class="mf-thread-detail" data-thread-body="${esc(p.slug)}" hidden>
+            <div class="mf-thread-content">${esc(p.body || "")}</div>
+            <div class="mf-comments-wrap">
+              <h3>Comentarios</h3>
+              <div class="mf-comments-list" data-comments-for="${esc(p.slug)}"><p class="mf-empty-c">Cargando comentarios...</p></div>
+              <form class="mf-comment-form" data-comment-form="${esc(p.slug)}">
+                <textarea name="body" rows="2" required minlength="2" placeholder="Añade tu opinión técnica, tiempos o pregunta..."></textarea>
+                <div class="mf-comment-form__bar">
+                  <span class="mf-msg" data-comment-msg="${esc(p.slug)}"></span>
+                  <button type="submit" class="mf-btn mf-btn--primary mf-btn--sm">Comentar</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        `;
+        return el;
+      }
+
+      async function loadComments(slug) {
+        const box = document.querySelector(`[data-comments-for="${CSS.escape(slug)}"]`);
+        if (!box) return;
+        try {
+          const res = await fetch(`${API}/api/forum/post?slug=${encodeURIComponent(slug)}`);
+          const data = await res.json();
+          if (data.success && Array.isArray(data.comments) && data.comments.length > 0) {
+            const existingIds = new Set(Array.from(box.querySelectorAll("[data-cid]")).map((n) => n.getAttribute("data-cid")));
+            if (box.querySelector(".mf-empty-c")) box.innerHTML = "";
+            data.comments.forEach((c) => {
+              if (existingIds.has(c.id)) return;
+              const div = document.createElement("div");
+              div.className = "mf-comment";
+              div.setAttribute("data-cid", c.id);
+              div.innerHTML = `
+                <div class="mf-comment__head">
+                  <strong>${esc(c.author_name)}</strong>
+                  <span class="mf-role">${esc(c.author_role || "DRIVER")}</span>
+                  <time>${new Date(c.created_at).toLocaleDateString("es-ES", { day: "2-digit", month: "short" })}</time>
+                </div>
+                <p>${esc(c.body)}</p>
+              `;
+              box.appendChild(div);
+            });
+            const cnt = document.querySelector(`[data-comment-count="${CSS.escape(slug)}"]`);
+            if (cnt) cnt.textContent = String(box.querySelectorAll(".mf-comment").length);
+          }
+        } catch {}
+      }
+
+      document.addEventListener("click", async (e) => {
+        const openBtn = e.target?.closest?.("[data-open-thread]");
+        if (openBtn) {
+          const slug = openBtn.getAttribute("data-open-thread");
+          const detail = document.querySelector(`[data-thread-body="${CSS.escape(slug)}"]`);
+          if (detail) {
+            detail.hidden = !detail.hidden;
+            if (!detail.hidden) loadComments(slug);
+          }
+          return;
+        }
+        const likeBtn = e.target?.closest?.("[data-like]");
+        if (likeBtn) {
+          const slug = likeBtn.getAttribute("data-like");
+          const cnt = document.querySelector(`[data-like-count="${CSS.escape(slug)}"]`);
+          if (cnt) cnt.textContent = String(Number(cnt.textContent || "0") + 1);
+          likeBtn.disabled = true;
+          try {
+            const res = await fetch(`${API}/api/forum/like`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ slug }),
+            });
+            const data = await res.json();
+            if (data.success && cnt && data.likes) cnt.textContent = String(data.likes);
+          } catch {}
+        }
+      });
+
+      document.addEventListener("submit", async (e) => {
+        const cForm = e.target?.closest?.("[data-comment-form]");
+        if (cForm) {
+          e.preventDefault();
+          const slug = cForm.getAttribute("data-comment-form");
+          const ta = cForm.querySelector("textarea");
+          const msg = document.querySelector(`[data-comment-msg="${CSS.escape(slug)}"]`);
+          const token = getToken();
+          if (!token) {
+            if (msg) msg.innerHTML = 'Inicia sesión en <a href="https://muntru.me/login/" style="color:var(--r-accent);text-decoration:underline;">muntru.me/login</a> para comentar.';
+            return;
+          }
+          if (msg) msg.textContent = "Enviando...";
+          try {
+            const res = await fetch(`${API}/api/forum/comment`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+              body: JSON.stringify({ post_slug: slug, body: ta.value.trim() }),
+            });
+            const data = await res.json();
+            if (!data.success) {
+              if (msg) msg.textContent = data.error || "No se pudo publicar el comentario.";
+              return;
+            }
+            ta.value = "";
+            if (msg) msg.textContent = "¡Comentario publicado!";
+            loadComments(slug);
+          } catch {
+            if (msg) msg.textContent = "Error de conexión.";
+          }
+        }
+      });
+
+      postForm?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const token = getToken();
+        if (!token) {
+          if (postMsg) postMsg.innerHTML = 'Necesitas iniciar sesión en <a href="https://muntru.me/login/" style="color:var(--r-accent);text-decoration:underline;">muntru.me/login</a> para publicar.';
+          return;
+        }
+        const fd = new FormData(postForm);
+        const tags = String(fd.get("tags") || "").split(",").map((s) => s.trim()).filter(Boolean);
+        if (postMsg) postMsg.textContent = "Publicando...";
+        try {
+          const res = await fetch(`${API}/api/forum/posts`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({
+              title: fd.get("title"),
+              category: fd.get("category"),
+              sim: fd.get("sim"),
+              tags,
+              body: fd.get("body"),
+            }),
+          });
+          const data = await res.json();
+          if (!data.success) {
+            if (postMsg) postMsg.textContent = data.error || "Error al publicar.";
+            return;
+          }
+          if (listEl && data.post) {
+            listEl.prepend(renderCard(data.post));
+          }
+          postForm.reset();
+          if (postMsg) postMsg.textContent = "";
+          if (composer) composer.hidden = true;
+        } catch {
+          if (postMsg) postMsg.textContent = "Error de conexión con api.muntru.me.";
+        }
+      });
+
+      // Hydrate live D1 posts above/alongside pre-rendered seed threads
+      fetch(`${API}/api/forum/posts`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (!data.success || !Array.isArray(data.posts) || !listEl) return;
+          const existing = new Set(Array.from(document.querySelectorAll("[data-post-slug]")).map((el) => el.getAttribute("data-post-slug")));
+          data.posts.forEach((p) => {
+            if (!existing.has(p.slug)) {
+              listEl.prepend(renderCard(p));
+            }
+          });
+          applyFilters();
+        })
+        .catch(() => {});
+
+      // Auto-open thread if URL hash matches a slug
+      if (location.hash && location.hash.length > 1) {
+        const targetSlug = decodeURIComponent(location.hash.slice(1));
+        const detail = document.querySelector(`[data-thread-body="${CSS.escape(targetSlug)}"]`);
+        if (detail) {
+          detail.hidden = false;
+          loadComments(targetSlug);
+        }
+      }
+    })();
+  </script>
+</Layout>
+
+<style>
+  .mf-wrap {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 36px 20px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+  .mf-hero {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
+  }
+  .mf-kicker {
+    display: inline-block;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--r-accent, #00e699);
+    margin-bottom: 6px;
+  }
+  .mf-title {
+    margin: 0;
+    font-size: clamp(1.75rem, 3.2vw, 2.4rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--r-text, #f8fafc);
+  }
+  .mf-sub {
+    margin: 8px 0 0;
+    max-width: 640px;
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--r-muted, #94a3b8);
+  }
+  .mf-hero__actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .mf-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 15px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+  }
+  .mf-btn--primary {
+    background: #00c482;
+    color: #04130d;
+  }
+  .mf-btn--primary:hover {
+    background: #00e699;
+  }
+  .mf-btn--ghost {
+    background: var(--r-surface, #11161d);
+    color: var(--r-text, #f1f5f9);
+    border-color: var(--r-line, rgba(148, 163, 184, 0.22));
+  }
+  .mf-btn--ghost:hover {
+    border-color: var(--r-accent, #00e699);
+  }
+  .mf-btn--sm {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  .mf-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .mf-cats, .mf-sims {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    align-items: center;
+  }
+  .mf-cat-pill, .mf-sim-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--r-surface, #11161d);
+    color: var(--r-muted, #94a3b8);
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
+    transition: all 0.15s ease;
+  }
+  .mf-cat-pill.is-active, .mf-sim-btn.is-active {
+    background: rgba(0, 230, 153, 0.14);
+    border-color: rgba(0, 230, 153, 0.5);
+    color: var(--r-accent, #00e699);
+  }
+  .mf-sim-ico {
+    display: inline-flex;
+    width: 14px;
+    height: 14px;
+  }
+  .mf-composer {
+    background: var(--r-surface, #11161d);
+    border: 1px solid rgba(0, 230, 153, 0.35);
+    border-radius: 16px;
+    padding: 20px;
+  }
+  .mf-composer__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .mf-composer__head h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--r-text, #f8fafc);
+  }
+  .mf-icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--r-muted, #94a3b8);
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .mf-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .mf-form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .mf-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 170px;
+  }
+  .mf-field--grow {
+    flex: 1 1 300px;
+  }
+  .mf-field span {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--r-muted, #94a3b8);
+  }
+  .mf-field input, .mf-field select, .mf-field textarea, .mf-comment-form textarea {
+    padding: 9px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.24));
+    background: var(--r-bg, #090b0f);
+    color: var(--r-text, #f8fafc);
+    font-size: 13.5px;
+    font-family: inherit;
+  }
+  .mf-form-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .mf-form-btns {
+    display: flex;
+    gap: 8px;
+  }
+  .mf-msg {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--r-muted, #94a3b8);
+  }
+  .mf-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .mf-card {
+    background: var(--r-surface, #11161d);
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .mf-card__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .mf-card__badges {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+  }
+  .mf-pin {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 7px;
+    border-radius: 6px;
+    background: rgba(245, 158, 11, 0.16);
+    color: #f59e0b;
+    letter-spacing: 0.06em;
+  }
+  .mf-sim-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px 3px 5px;
+    border-radius: 999px;
+    background: var(--r-bg, #090b0f);
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.22));
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--r-text, #f1f5f9);
+  }
+  .mf-cat-tag {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--r-muted, #94a3b8);
+  }
+  .mf-date {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11.5px;
+    color: var(--r-muted, #94a3b8);
+  }
+  .mf-card__title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1.3;
+    color: var(--r-text, #f8fafc);
+  }
+  .mf-card__summary {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--r-muted, #94a3b8);
+  }
+  .mf-card__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .mf-tag {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: var(--r-bg, #090b0f);
+    color: var(--r-muted, #94a3b8);
+  }
+  .mf-card__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding-top: 10px;
+    border-top: 1px solid var(--r-line, rgba(148, 163, 184, 0.14));
+  }
+  .mf-author {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--r-text, #f1f5f9);
+  }
+  .mf-avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 999px;
+    background: rgba(0, 230, 153, 0.16);
+    color: var(--r-accent, #00e699);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10.5px;
+    font-weight: 800;
+  }
+  .mf-role {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: rgba(0, 230, 153, 0.12);
+    color: var(--r-accent, #00e699);
+  }
+  .mf-card__stats {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .mf-stat-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: var(--r-bg, #090b0f);
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.2));
+    color: var(--r-text, #f1f5f9);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .mf-stat-btn--open {
+    color: var(--r-accent, #00e699);
+  }
+  .mf-thread-detail {
+    margin-top: 8px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--r-line, rgba(148, 163, 184, 0.24));
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .mf-thread-content {
+    white-space: pre-line;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--r-text, #e2e8f0);
+  }
+  .mf-comments-wrap h3 {
+    margin: 0 0 10px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--r-muted, #94a3b8);
+  }
+  .mf-comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .mf-comment {
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--r-bg, #090b0f);
+    border: 1px solid var(--r-line, rgba(148, 163, 184, 0.14));
+  }
+  .mf-comment__head {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    margin-bottom: 4px;
+    color: var(--r-text, #f1f5f9);
+  }
+  .mf-comment__head time {
+    margin-left: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    color: var(--r-muted, #94a3b8);
+  }
+  .mf-comment p {
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--r-muted, #cbd5e1);
+  }
+  .mf-empty-c {
+    margin: 0;
+    font-size: 13px;
+    color: var(--r-muted, #94a3b8);
+  }
+  .mf-comment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .mf-comment-form__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+</style>

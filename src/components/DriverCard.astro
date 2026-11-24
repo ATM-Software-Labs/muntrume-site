@@ -3,6 +3,8 @@ import DriverHelmet from "./DriverHelmet.astro";
 import { formatoAprox, localeDeIdioma } from "../lib/formato-licencia.js";
 import { licenciaPrincipal } from "../lib/licencias";
 import { LICENCE_UPDATED_LABEL, computeAsymptoticRating, type Piloto } from "../lib/pilotos";
+import { resolveSimBadges } from "../lib/sim-badges";
+import { computeDriverAchievements } from "../lib/achievements";
 
 interface Props {
   driver: Piloto;
@@ -90,6 +92,15 @@ const socials = (
     ["x", "X"],
   ] as const
 ).map(([key, label]) => ({ key, label, href: safeUrl(driver.socials[key]) })).filter((s) => s.href);
+
+const simBadges = resolveSimBadges(driver.sims, driver.memberType, Boolean(lic || driver.cust_id));
+const isStaffOnly = driver.memberType === "staff" && !lic && !driver.cust_id;
+const achData = computeDriverAchievements(
+  driver,
+  lic?.irating ?? null,
+  lic?.sr != null ? Number(lic.sr) : null,
+  lic?.classLabel ?? null,
+);
 ---
 <article
   class:list={[
@@ -124,43 +135,83 @@ const socials = (
             </Tag>
             <div class="d-badges-row">
               {lic && <p class="sc-badge"><span data-lic-f="class">{lic.classLabel}</span></p>}
-              <span class="d-ovr-pill" title="Muntrume Telemetry Index (MTI)">
-                OVR <strong data-f="ovr">{ovrScore}</strong>
-              </span>
+              {isStaffOnly && (
+                <span class="d-staff-pill">STAFF &amp; INGENIERÍA</span>
+              )}
+              {!isStaffOnly && (
+                <span class="d-ovr-pill" title="Muntrume Telemetry Index (MTI)">
+                  OVR <strong data-f="ovr">{ovrScore}</strong>
+                </span>
+              )}
               {driver.specialty && <span class="d-specialty-pill" data-f="specialty" data-i18n={specKey}>{specText}</span>}
             </div>
+            {simBadges.length > 0 && (
+              <div class="d-sims-row" aria-label="Simuladores y plataformas">
+                {simBadges.map((sim) => (
+                  <span class="d-sim-pill" style={`--sim-color:${sim.color}`} title={sim.name}>
+                    <span class="d-sim-pill__ico" set:html={sim.svg} />
+                    <span>{sim.name}</span>
+                  </span>
+                ))}
+              </div>
+            )}
             <div class="d-email-bar" aria-label="Contacto directo del piloto">
               <a href={`/contact/?to=${driverRecipientId}`} class="d-email-link">
-                <span aria-hidden="true">✉</span>
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg>
                 <span>Contactar con {driver.name} →</span>
               </a>
             </div>
           </div>
 
-          <dl class="d-stats d-stats--hero" id="stats">
-            <div>
-              <dt data-i18n="card.dorsal">Dorsal</dt>
-              <dd class="d-stats__dorsal" data-f="dorsal">{driver.dorsal}</dd>
-              <span class="d-stats__sub">Muntrume Roster</span>
-            </div>
-            <div>
-              <dt id="licencia">SR Sports Car</dt>
-              <dd data-approx="sr" data-n={lic?.sr ?? ""} data-lic-f="sr">{lic ? formatoAprox(Number(lic.sr), "sr", loc) : ""}</dd>
-              <span class="d-sr-bar" aria-hidden="true"><span class="d-sr-fill" style={`width:${srProgress}%`}></span></span>
-            </div>
-            <div>
-              <dt>iRating</dt>
-              <dd data-approx="k" data-n={lic?.irating ?? ""} data-f="irating" data-lic-f="irating">{lic?.irating != null ? formatoAprox(lic.irating, "k", loc) : ""}</dd>
-              <svg class="d-sparkline" viewBox="0 0 130 24" width="68" height="12" fill="none" preserveAspectRatio="none" aria-hidden="true">
-                <path d={sparkPath} stroke="#00E699" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <div>
-              <dt data-i18n="card.trackHours">Horas en pista</dt>
-              <dd data-approx="h" data-n={sumTrackHours} data-f="total_track_hours">{hoursText(sumTrackHours)}</dd>
-              <span class="d-stats__sub">Garage 61</span>
-            </div>
-          </dl>
+          {isStaffOnly ? (
+            <dl class="d-stats d-stats--hero" id="stats">
+              <div>
+                <dt>Rol</dt>
+                <dd class="d-stats__dorsal" style="font-size:1rem;">{roleText}</dd>
+                <span class="d-stats__sub">Muntrume Staff</span>
+              </div>
+              <div>
+                <dt>Plataformas</dt>
+                <dd>{simBadges.length}</dd>
+                <span class="d-stats__sub">{simBadges.map((s) => s.short).join(" · ")}</span>
+              </div>
+              <div>
+                <dt>Logros</dt>
+                <dd>{achData.unlocked.length}</dd>
+                <span class="d-stats__sub">Insignias MMT</span>
+              </div>
+              <div>
+                <dt>En el equipo</dt>
+                <dd>{since || "2026"}</dd>
+                <span class="d-stats__sub">{club || "Muntrume"}</span>
+              </div>
+            </dl>
+          ) : (
+            <dl class="d-stats d-stats--hero" id="stats">
+              <div>
+                <dt data-i18n="card.dorsal">Dorsal</dt>
+                <dd class="d-stats__dorsal" data-f="dorsal">{driver.dorsal}</dd>
+                <span class="d-stats__sub">Muntrume Roster</span>
+              </div>
+              <div>
+                <dt id="licencia">SR Sports Car</dt>
+                <dd data-approx="sr" data-n={lic?.sr ?? ""} data-lic-f="sr">{lic ? formatoAprox(Number(lic.sr), "sr", loc) : "—"}</dd>
+                <span class="d-sr-bar" aria-hidden="true"><span class="d-sr-fill" style={`width:${srProgress}%`}></span></span>
+              </div>
+              <div>
+                <dt>iRating</dt>
+                <dd data-approx="k" data-n={lic?.irating ?? ""} data-f="irating" data-lic-f="irating">{lic?.irating != null ? formatoAprox(lic.irating, "k", loc) : "—"}</dd>
+                <svg class="d-sparkline" viewBox="0 0 130 24" width="68" height="12" fill="none" preserveAspectRatio="none" aria-hidden="true">
+                  <path d={sparkPath} stroke="#00E699" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div>
+                <dt data-i18n="card.trackHours">Horas en pista</dt>
+                <dd data-approx="h" data-n={sumTrackHours} data-f="total_track_hours">{hoursText(sumTrackHours)}</dd>
+                <span class="d-stats__sub">Garage 61</span>
+              </div>
+            </dl>
+          )}
 
           <div id="driverAllLicenses" class="flex flex-wrap gap-2 mt-2" hidden></div>
 
@@ -227,21 +278,68 @@ const socials = (
         )}
       </div>
 
+      <!-- 2B. GITHUB-STYLE ACHIEVEMENTS & TROPHIES SHOWCASE -->
+      <section class="d-ach-section" id="logros" aria-label="Logros e insignias del piloto">
+        <div class="d-ach-head">
+          <div class="d-ach-head__title">
+            <span class="d-ach-head__ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
+            </span>
+            <BlockTag class="d-block__title" style="margin:0;">Logros e Insignias</BlockTag>
+          </div>
+          <span class="d-ach-count">{achData.unlocked.length} desbloqueados</span>
+        </div>
+
+        <div class="d-ach-grid">
+          {achData.unlocked.map((a) => (
+            <div class={`d-ach-card d-ach-card--${a.tier}`}>
+              <div class="d-ach-medal" set:html={a.iconSvg} />
+              <div class="d-ach-body">
+                <div class="d-ach-top">
+                  <strong class="d-ach-title">{a.title}</strong>
+                  <span class={`d-ach-tier d-ach-tier--${a.tier}`}>{a.tierLabel}</span>
+                </div>
+                <p class="d-ach-desc">{a.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {achData.nextMilestones.length > 0 && (
+          <div class="d-ach-next">
+            <span class="d-ach-next__k">Próximos objetivos</span>
+            <div class="d-ach-next__grid">
+              {achData.nextMilestones.map((m) => (
+                <div class="d-ach-mile">
+                  <div class="d-ach-mile__top">
+                    <span class="d-ach-mile__ico" set:html={m.iconSvg} />
+                    <strong class="d-ach-mile__title">{m.title}</strong>
+                    <span class="d-ach-mile__pct">{m.progressLabel}</span>
+                  </div>
+                  <div class="d-ach-mile__bar" aria-hidden="true">
+                    <span style={`width:${Math.max(4, Math.min(100, m.progressPct ?? 0))}%`}></span>
+                  </div>
+                  <p class="d-ach-mile__desc">{m.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
+
       <!-- 3. BIO, SPORTS CARS & SERIES: Symmetrical 3-Column Grid -->
       <div class="d-info-grid">
         <div class="d-block d-info-card" id="bio" data-block="bio">
           <BlockTag class="d-block__title">Perfil</BlockTag>
           {bio ? <p class="d-bio" data-f="bio" data-i18n={bioKey}>{bioText}</p> : <p class="d-pending" data-i18n="card.bioPending">Pendiente de publicación. La biografía todavía no está escrita.</p>}
-          <div class="d-info-card__sub" id="logros" data-block="achievements">
-            <span class="r-kicker">Logros</span>
-            {achievements.length > 0 ? (
+          {achievements.length > 0 && (
+            <div class="d-info-card__sub" data-block="achievements">
+              <span class="r-kicker">Palmarés destacado</span>
               <ul data-list="achievements">
                 {achievements.map((item) => <li>{item}</li>)}
               </ul>
-            ) : (
-              <p class="d-pending">Pendiente. No hay logros publicados.</p>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         <div class="d-block d-info-card" data-block="cars" hidden={!cars.length}>
@@ -370,30 +468,67 @@ const socials = (
           </Tag>
           <div class="d-badges-row">
             {lic && <p class="sc-badge"><span data-lic-f="class">{lic.classLabel}</span></p>}
-            <span class="d-ovr-pill" title="Muntrume Telemetry Index (MTI)">
-              OVR <strong data-f="ovr">{ovrScore}</strong>
-            </span>
+            {isStaffOnly && <span class="d-staff-pill">STAFF</span>}
+            {!isStaffOnly && (
+              <span class="d-ovr-pill" title="Muntrume Telemetry Index (MTI)">
+                OVR <strong data-f="ovr">{ovrScore}</strong>
+              </span>
+            )}
             {driver.specialty && <span class="d-specialty-pill" data-f="specialty" data-i18n={specKey}>{specText}</span>}
           </div>
 
-          <dl class="d-stats">
-            <div>
-              <dt>SR</dt>
-              <dd data-approx="sr" data-n={lic?.sr ?? ""} data-lic-f="sr">{lic ? formatoAprox(Number(lic.sr), "sr", loc) : ""}</dd>
-              <span class="d-sr-bar" aria-hidden="true"><span class="d-sr-fill" style={`width:${srProgress}%`}></span></span>
+          {simBadges.length > 0 && (
+            <div class="d-sims-row d-sims-row--sm" aria-label="Simuladores">
+              {simBadges.map((sim) => (
+                <span class="d-sim-pill d-sim-pill--sm" style={`--sim-color:${sim.color}`} title={sim.name}>
+                  <span class="d-sim-pill__ico" set:html={sim.svg} />
+                  <span>{sim.short}</span>
+                </span>
+              ))}
+              {achData.unlocked.length > 0 && (
+                <span class="d-ach-mini-pill" title={achData.unlocked.map((a) => `${a.title} (${a.tierLabel})`).join(" · ")}>
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
+                  <span>{achData.unlocked.length}</span>
+                </span>
+              )}
             </div>
-            <div>
-              <dt>iRating</dt>
-              <dd data-approx="k" data-n={lic?.irating ?? ""} data-f="irating" data-lic-f="irating">{lic?.irating != null ? formatoAprox(lic.irating, "k", loc) : ""}</dd>
-              <svg class="d-sparkline" viewBox="0 0 130 24" width="68" height="12" fill="none" preserveAspectRatio="none" aria-hidden="true">
-                <path d={sparkPath} stroke="#00E699" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <div>
-              <dt data-i18n="card.hours">Horas</dt>
-              <dd data-approx="h" data-n={sumTrackHours}>{hoursText(sumTrackHours)}</dd>
-            </div>
-          </dl>
+          )}
+
+          {isStaffOnly ? (
+            <dl class="d-stats">
+              <div>
+                <dt>Rol</dt>
+                <dd style="font-size:0.82rem;">{driver.badge}</dd>
+              </div>
+              <div>
+                <dt>Plataformas</dt>
+                <dd>{simBadges.length}</dd>
+              </div>
+              <div>
+                <dt>Desde</dt>
+                <dd>{since || "2026"}</dd>
+              </div>
+            </dl>
+          ) : (
+            <dl class="d-stats">
+              <div>
+                <dt>SR</dt>
+                <dd data-approx="sr" data-n={lic?.sr ?? ""} data-lic-f="sr">{lic ? formatoAprox(Number(lic.sr), "sr", loc) : "—"}</dd>
+                <span class="d-sr-bar" aria-hidden="true"><span class="d-sr-fill" style={`width:${srProgress}%`}></span></span>
+              </div>
+              <div>
+                <dt>iRating</dt>
+                <dd data-approx="k" data-n={lic?.irating ?? ""} data-f="irating" data-lic-f="irating">{lic?.irating != null ? formatoAprox(lic.irating, "k", loc) : "—"}</dd>
+                <svg class="d-sparkline" viewBox="0 0 130 24" width="68" height="12" fill="none" preserveAspectRatio="none" aria-hidden="true">
+                  <path d={sparkPath} stroke="#00E699" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div>
+                <dt data-i18n="card.hours">Horas</dt>
+                <dd data-approx="h" data-n={sumTrackHours}>{hoursText(sumTrackHours)}</dd>
+              </div>
+            </dl>
+          )}
         </div>
 
         <!-- Bottom Group: Compact Tracks + Expandable Circuits + Aligned Full Profile Button -->
@@ -497,6 +632,278 @@ const socials = (
   .d-email-copy:hover {
     border-color: var(--r-accent, #00e699);
     color: var(--r-accent, #00e699);
+  }
+
+  /* Staff & Multi-Sim Platform Pills */
+  .d-staff-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #059669;
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+  }
+  .d-sims-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .d-sims-row--sm {
+    margin-top: 6px;
+    gap: 5px;
+  }
+  .d-sim-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 9px 4px 6px;
+    border-radius: 999px;
+    border: 1px solid var(--r-line, rgba(255, 255, 255, 0.12));
+    background: var(--r-bg, #090b0f);
+    color: var(--r-text, #f1f5f9);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11.5px;
+    font-weight: 600;
+    line-height: 1;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  .d-sim-pill:hover {
+    border-color: var(--sim-color, #00e699);
+    transform: translateY(-1px);
+  }
+  .d-sim-pill--sm {
+    padding: 3px 7px 3px 4px;
+    font-size: 10.5px;
+    gap: 4px;
+  }
+  .d-sim-pill__ico {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+  }
+  .d-ach-mini-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 7px;
+    border-radius: 999px;
+    border: 1px solid rgba(245, 158, 11, 0.38);
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10.5px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  /* GitHub-Style Achievements Showcase */
+  .d-ach-section {
+    background: var(--r-surface, #11161d);
+    border: 1px solid var(--r-line, rgba(255, 255, 255, 0.1));
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .d-ach-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .d-ach-head__title {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .d-ach-head__ico {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: rgba(0, 230, 153, 0.12);
+    border: 1px solid rgba(0, 230, 153, 0.3);
+    color: var(--r-accent, #00e699);
+  }
+  .d-ach-count {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--r-bg, #090b0f);
+    border: 1px solid var(--r-line, rgba(255, 255, 255, 0.12));
+    color: var(--r-muted, #94a3b8);
+  }
+  .d-ach-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 10px;
+  }
+  .d-ach-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 13px;
+    border-radius: 12px;
+    background: var(--r-bg, #090b0f);
+    border: 1px solid var(--r-line, rgba(255, 255, 255, 0.1));
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  .d-ach-card:hover {
+    transform: translateY(-1px);
+  }
+  .d-ach-card--platinum { border-color: rgba(56, 189, 248, 0.42); }
+  .d-ach-card--gold { border-color: rgba(245, 158, 11, 0.42); }
+  .d-ach-card--silver { border-color: rgba(148, 163, 184, 0.38); }
+  .d-ach-card--bronze { border-color: rgba(217, 119, 6, 0.38); }
+
+  .d-ach-medal {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .d-ach-card--platinum .d-ach-medal { background: rgba(56, 189, 248, 0.14); color: #38bdf8; }
+  .d-ach-card--gold .d-ach-medal { background: rgba(245, 158, 11, 0.14); color: #f59e0b; }
+  .d-ach-card--silver .d-ach-medal { background: rgba(148, 163, 184, 0.16); color: #94a3b8; }
+  .d-ach-card--bronze .d-ach-medal { background: rgba(217, 119, 6, 0.14); color: #d97706; }
+
+  .d-ach-body {
+    min-width: 0;
+    flex: 1;
+  }
+  .d-ach-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    margin-bottom: 3px;
+  }
+  .d-ach-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--r-text, #f1f5f9);
+    line-height: 1.2;
+  }
+  .d-ach-tier {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 9.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 6px;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+  .d-ach-tier--platinum { background: rgba(56, 189, 248, 0.14); color: #0284c7; }
+  .d-ach-tier--gold { background: rgba(245, 158, 11, 0.16); color: #d97706; }
+  .d-ach-tier--silver { background: rgba(148, 163, 184, 0.18); color: #64748b; }
+  .d-ach-tier--bronze { background: rgba(217, 119, 6, 0.15); color: #b45309; }
+  :global(.dark) .d-ach-tier--platinum { color: #38bdf8; }
+  :global(.dark) .d-ach-tier--gold { color: #fbbf24; }
+  :global(.dark) .d-ach-tier--silver { color: #cbd5e1; }
+  :global(.dark) .d-ach-tier--bronze { color: #f59e0b; }
+
+  .d-ach-desc {
+    margin: 0;
+    font-size: 11.5px;
+    line-height: 1.4;
+    color: var(--r-muted, #94a3b8);
+  }
+
+  .d-ach-next {
+    border-top: 1px solid var(--r-line, rgba(255, 255, 255, 0.1));
+    padding-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .d-ach-next__k {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--r-muted, #94a3b8);
+  }
+  .d-ach-next__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 10px;
+  }
+  .d-ach-mile {
+    padding: 11px 12px;
+    border-radius: 10px;
+    background: var(--r-bg, #090b0f);
+    border: 1px dashed var(--r-line, rgba(255, 255, 255, 0.16));
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .d-ach-mile__top {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .d-ach-mile__ico {
+    display: inline-flex;
+    color: var(--r-muted, #94a3b8);
+    width: 16px;
+    height: 16px;
+  }
+  .d-ach-mile__ico :global(svg) {
+    width: 16px;
+    height: 16px;
+  }
+  .d-ach-mile__title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--r-text, #f1f5f9);
+    flex: 1;
+  }
+  .d-ach-mile__pct {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--r-accent, #00e699);
+  }
+  .d-ach-mile__bar {
+    width: 100%;
+    height: 5px;
+    border-radius: 999px;
+    background: var(--r-surface, #11161d);
+    overflow: hidden;
+  }
+  .d-ach-mile__bar > span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #00c482, #00e699);
+  }
+  .d-ach-mile__desc {
+    margin: 0;
+    font-size: 11px;
+    color: var(--r-muted, #94a3b8);
   }
 </style>
 

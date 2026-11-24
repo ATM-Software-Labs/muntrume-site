@@ -42,7 +42,9 @@ export interface Piloto {
   fullName: string;
   role: string;
   specialty: string;
-  badge: "FOUNDER" | "DRIVER";
+  badge: "FOUNDER" | "DRIVER" | "STAFF";
+  memberType?: "driver" | "staff";
+  sims?: string[];
   country: string;
   flag: string;
   flag_code: string;
@@ -304,7 +306,9 @@ export const PILOTOS: Piloto[] = data.drivers.map((d) => {
     fullName: d.fullName,
     role: dynamicRole,
     specialty: dynamicSpecialty,
-    badge: d.badge === "FOUNDER" ? "FOUNDER" : "DRIVER",
+    badge: d.badge === "FOUNDER" ? "FOUNDER" : (d.badge === "STAFF" ? "STAFF" : "DRIVER"),
+    memberType: (d as any).memberType === "staff" ? "staff" : "driver",
+    sims: Array.isArray((d as any).sims) ? (d as any).sims : (d.custId ? ["iracing"] : ["staff"]),
     country: d.country,
     flag: d.flag,
     flag_code: d.countryCode,

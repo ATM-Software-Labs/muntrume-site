@@ -22,7 +22,17 @@ Disallow: /paddock/sala/
 Disallow: /app/vincular
 Disallow: /app/vincular/
 
-# Explicit welcome for AI search & documentation crawlers
+# Explicit welcome for Brave Search, Bing, DuckDuckGo, Apple & AI crawlers
+User-agent: Bravebot
+Allow: /
+User-agent: Bingbot
+Allow: /
+User-agent: DuckDuckBot
+Allow: /
+User-agent: Applebot
+Allow: /
+User-agent: YandexBot
+Allow: /
 User-agent: GPTBot
 Allow: /
 User-agent: OAI-SearchBot
