@@ -385,6 +385,32 @@ const canonical = "https://muntru.me/calendar/";
               <div id="plannerMatrix" class="grid grid-cols-6 sm:grid-cols-12 gap-1.5 font-mono text-[10px]"></div>
             </div>
 
+            <!-- Gestor de Mis Circuitos Comprados (Agregar / Quitar uno a uno) -->
+            <div class="p-3.5 rounded-xl border border-[var(--r-line)] bg-[var(--r-bg)] space-y-2.5 font-mono text-xs">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <strong class="text-[var(--r-text)]">✓ Mis Circuitos Comprados (<span id="plannerOwnedCount">0</span>)</strong>
+                  <p class="text-[10px] text-[var(--r-muted)] mt-0.5">Agrega circuitos que ya tienes o pulsa <strong>×</strong> para quitar alguno marcado sin querer (los gratuitos base siempre están incluidos).</p>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <input
+                    id="plannerAddTrackInput"
+                    list="plannerAllPaidTracks"
+                    type="search"
+                    placeholder="Buscar circuito para agregar…"
+                    class="h-7 w-48 sm:w-56 rounded-lg border border-[var(--r-line)] bg-[var(--r-surface)] px-2 text-[11px] text-[var(--r-text)]"
+                  />
+                  <datalist id="plannerAllPaidTracks">
+                    {trackCatalog.filter((t) => !t.isFree).sort((a, b) => a.track.localeCompare(b.track)).map((t) => (
+                      <option value={t.track} />
+                    ))}
+                  </datalist>
+                  <button type="button" id="plannerAddTrackBtn" class="h-7 px-2.5 rounded-lg border border-emerald-500/45 bg-emerald-500/15 text-[var(--r-accent)] hover:bg-emerald-500/25 font-bold text-[11px] cursor-pointer transition">+ Agregar</button>
+                </div>
+              </div>
+              <div id="plannerOwnedChips" class="flex flex-wrap gap-1.5"></div>
+            </div>
+
             <div class="space-y-2">
               <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
                 <div>
@@ -990,6 +1016,32 @@ const canonical = "https://muntru.me/calendar/";
       });
 
       const detectMmtBtn = document.getElementById("plannerDetectMmtBtn");
+      const addTrackInput = document.getElementById("plannerAddTrackInput") as HTMLInputElement | null;
+      const addTrackBtn = document.getElementById("plannerAddTrackBtn");
+      const ownedCountEl = document.getElementById("plannerOwnedCount");
+      const ownedChipsEl = document.getElementById("plannerOwnedChips");
+
+      function addOwnedTrackByName(rawName: string) {
+        const clean = rawName.trim();
+        if (!clean) return;
+        const match = trackCatalog.find((t) => t.track.toLowerCase() === clean.toLowerCase())
+          || trackCatalog.find((t) => t.track.toLowerCase().includes(clean.toLowerCase()));
+        const canonical = match ? match.track : clean;
+        owned.add(canonical);
+        cart.delete(canonical);
+        localStorage.setItem(OWNED_KEY, JSON.stringify(Array.from(owned)));
+        localStorage.setItem(CART_KEY, JSON.stringify(Array.from(cart)));
+        if (addTrackInput) addTrackInput.value = "";
+        renderPlanner();
+      }
+
+      addTrackBtn?.addEventListener("click", () => addOwnedTrackByName(addTrackInput?.value || ""));
+      addTrackInput?.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter") {
+          ev.preventDefault();
+          addOwnedTrackByName(addTrackInput.value || "");
+        }
+      });
       detectMmtBtn?.addEventListener("click", async () => {
         detectMmtBtn.textContent = "⏳ Detectando...";
         try {
@@ -1143,9 +1195,34 @@ const canonical = "https://muntru.me/calendar/";
         const hasSelectedNeeds = allCandidates.some((c) => c.selectedWeeks > 0);
         const shownRoi = allCandidates.slice(0, roiLimit);
 
+        const paidOwnedList = Array.from(owned)
+          .filter((t) => !isTrackFree(t))
+          .sort((a, b) => a.localeCompare(b));
         if (resetOwnedBtn) {
-          const paidOwnedCount = Array.from(owned).filter((t) => !isTrackFree(t)).length;
-          resetOwnedBtn.hidden = paidOwnedCount === 0;
+          resetOwnedBtn.hidden = paidOwnedList.length === 0;
+        }
+        if (ownedCountEl) {
+          ownedCountEl.textContent = String(paidOwnedList.length);
+        }
+        if (ownedChipsEl) {
+          if (paidOwnedList.length === 0) {
+            ownedChipsEl.innerHTML = `<span class="text-[11px] text-[var(--r-muted)]">Aún no has marcado circuitos de pago. Usa el buscador de arriba o haz clic en el punto naranja de cualquier semana.</span>`;
+          } else {
+            ownedChipsEl.innerHTML = paidOwnedList.map((t) => {
+              const esc = t.replace(/"/g, "&quot;");
+              return `<span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border border-emerald-500/40 bg-emerald-500/12 text-[11px] text-[var(--r-text)] font-semibold"><span>${t}</span><button type="button" data-remove-owned="${esc}" class="text-rose-500 hover:text-rose-400 font-extrabold leading-none cursor-pointer px-0.5" title="Quitar ${esc} de mis circuitos" aria-label="Quitar ${esc}">×</button></span>`;
+            }).join("");
+            ownedChipsEl.querySelectorAll<HTMLButtonElement>("[data-remove-owned]").forEach((btn) => {
+              btn.addEventListener("click", () => {
+                const target = (btn.dataset.removeOwned || "").toLowerCase();
+                for (const item of Array.from(owned)) {
+                  if (item.toLowerCase() === target) owned.delete(item);
+                }
+                localStorage.setItem(OWNED_KEY, JSON.stringify(Array.from(owned)));
+                renderPlanner();
+              });
+            });
+          }
         }
 
         if (roiModeEl) {

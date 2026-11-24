@@ -218,7 +218,10 @@ const LICENSE_CATEGORIES = [
                 <h3 class="rc-card__title">Plantilla Oficial · Perfiles, Licencias &amp; Stats en Vivo</h3>
                 <p class="rc-muted">Pulsa <strong>Editar todo</strong> en cualquier piloto para cambiar nombre, dorsal, rol, las 5 licencias iRacing, subir foto de Garage 61 y recalcular su media MTI.</p>
               </div>
-              <a href="/drivers/" class="r-btn r-btn--sm">Ver Roster Público ↗</a>
+              <div class="rc-btn-row">
+                <button type="button" class="r-btn r-btn--primary r-btn--sm" onclick="openUnifiedPilotModal({ isNew: true })">+ Nuevo Piloto / Staff en /drivers</button>
+                <a href="/drivers/" class="r-btn r-btn--sm">Ver Roster Público ↗</a>
+              </div>
             </div>
             <div class="r-scroll">
               <table class="r-table">
@@ -524,7 +527,6 @@ const LICENSE_CATEGORIES = [
       </div>
 
       <form id="unifiedPilotForm" class="rc-modal-form" onsubmit="submitUnifiedPilotForm(event)">
-        <input type="hidden" id="umSlug" />
         <input type="hidden" id="umOrigEmail" />
 
         <!-- SUBTAB 1: IDENTIDAD, ROL & CUENTA -->
@@ -532,20 +534,58 @@ const LICENSE_CATEGORIES = [
           <div class="rc-two-col" style="gap:12px">
             <div class="g-field">
               <label for="umFullName">Nombre visible *</label>
-              <input type="text" id="umFullName" required maxlength="80" placeholder="Ej. Alberto Trujillo" />
+              <input type="text" id="umFullName" required maxlength="80" placeholder="Ej. Carlos Martínez" />
+            </div>
+            <div class="g-field">
+              <label for="umSlug">Slug público (/drivers/slug) *</label>
+              <input type="text" id="umSlug" required maxlength="32" placeholder="Ej. carlosm" />
+            </div>
+          </div>
+
+          <div class="rc-two-col" style="gap:12px">
+            <div class="rc-two-col" style="gap:10px">
+              <div class="g-field">
+                <label for="umDorsal">Dorsal (opcional)</label>
+                <input type="text" id="umDorsal" maxlength="8" placeholder="#24 o STAFF" />
+              </div>
+              <div class="g-field">
+                <label for="umKind">Tipo de perfil</label>
+                <select id="umKind">
+                  <option value="driver">Piloto (iRacing / Multi-Sim)</option>
+                  <option value="staff">Staff / Ingeniería / Media</option>
+                </select>
+              </div>
             </div>
             <div class="rc-two-col" style="gap:10px">
               <div class="g-field">
-                <label for="umDorsal">Dorsal</label>
-                <input type="text" id="umDorsal" maxlength="8" placeholder="#16" />
+                <label for="umCountry">País</label>
+                <input type="text" id="umCountry" list="rcCountryList" maxlength="60" placeholder="Spain, Costa Rica, Argentina…" />
+                <datalist id="rcCountryList">
+                  <option value="Spain" /><option value="Costa Rica" /><option value="Argentina" /><option value="Mexico" />
+                  <option value="Colombia" /><option value="Chile" /><option value="Portugal" /><option value="France" />
+                  <option value="Italy" /><option value="Germany" /><option value="United Kingdom" /><option value="United States" />
+                  <option value="Brazil" /><option value="Andorra" /><option value="Uruguay" /><option value="Peru" />
+                </datalist>
               </div>
               <div class="g-field">
-                <label for="umKind">En parrilla</label>
-                <select id="umKind">
-                  <option value="driver">Piloto oficial</option>
-                  <option value="staff">Staff interno</option>
-                </select>
+                <label for="umMemberSince">En el equipo desde</label>
+                <input type="text" id="umMemberSince" maxlength="10" placeholder="2026" />
               </div>
+            </div>
+          </div>
+
+          <!-- Multi-Sim Selector -->
+          <div class="g-field">
+            <label>Simuladores y plataformas (no hace falta iRacing)</label>
+            <div id="umSimsGrid" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;">
+              <label class="g-check" style="margin:0;padding:4px 9px;border:1px solid var(--r-line);border-radius:8px;"><input type="checkbox" name="umSim" value="iracing" /> iRacing</label>
+              <label class="g-check" style="margin:0;padding:4px 9px;border:1px solid var(--r-line);border-radius:8px;"><input type="checkbox" name="umSim" value="lmu" /> Le Mans Ultimate</label>
+              <label class="g-check" style="margin:0;padding:4px 9px;border:1px solid var(--r-line);border-radius:8px;"><input type="checkbox" name="umSim" value="ac_evo" /> Assetto Corsa EVO</label>
+              <label class="g-check" style="margin:0;padding:4px 9px;border:1px solid var(--r-line);border-radius:8px;"><input type="checkbox" name="umSim" value="acc" /> ACC</label>
+              <label class="g-check" style="margin:0;padding:4px 9px;border:1px solid var(--r-line);border-radius:8px;"><input type="checkbox" name="umSim" value="rf2" /> rFactor 2</label>
+              <label class="g-check" style="margin:0;padding:4px 9px;border:1px solid var(--r-line);border-radius:8px;"><input type="checkbox" name="umSim" value="ams2" /> AMS2</label>
+              <label class="g-check" style="margin:0;padding:4px 9px;border:1px solid var(--r-line);border-radius:8px;"><input type="checkbox" name="umSim" value="f1" /> F1</label>
+              <label class="g-check" style="margin:0;padding:4px 9px;border:1px solid var(--r-line);border-radius:8px;"><input type="checkbox" name="umSim" value="staff" /> Staff &amp; Ingeniería</label>
             </div>
           </div>
 
@@ -563,35 +603,29 @@ const LICENSE_CATEGORIES = [
             </div>
             <div class="g-field">
               <label for="umRoleTitle">Cargo visible en la ficha</label>
-              <input type="text" id="umRoleTitle" maxlength="80" placeholder="Ej. Team Principal &amp; Lead Telemetry" />
+              <input type="text" id="umRoleTitle" maxlength="80" placeholder="Ej. Piloto LMU &amp; Estrategia / Ingeniero Media" />
             </div>
           </div>
 
           <div class="rc-two-col" style="gap:12px">
             <div class="g-field">
-              <label for="umEmail">Correo de acceso / vinculado</label>
+              <label for="umEmail">Correo de acceso / vinculado (opcional)</label>
               <input type="email" id="umEmail" placeholder="piloto@muntru.me" />
             </div>
             <div class="g-field">
-              <label for="umCustId">iRacing cust_id</label>
-              <input type="text" id="umCustId" inputmode="numeric" maxlength="10" placeholder="Ej. 993381" />
+              <label for="umCustId">iRacing cust_id (solo si usa iRacing)</label>
+              <input type="text" id="umCustId" inputmode="numeric" maxlength="10" placeholder="Dejar vacío si no juega iRacing" />
             </div>
           </div>
 
           <div class="rc-two-col" style="gap:12px">
             <div class="g-field">
               <label for="umSpecialty">Especialidad</label>
-              <input type="text" id="umSpecialty" maxlength="120" placeholder="Ej. GT3 &amp; Multiclass Endurance" />
+              <input type="text" id="umSpecialty" maxlength="120" placeholder="Ej. Resistencia LMGT3 / Fotografía &amp; Media" />
             </div>
-            <div class="rc-two-col" style="gap:10px">
-              <div class="g-field">
-                <label for="umClub">Club iRacing</label>
-                <input type="text" id="umClub" maxlength="80" placeholder="Iberia" />
-              </div>
-              <div class="g-field">
-                <label for="umCountry">País</label>
-                <input type="text" id="umCountry" maxlength="60" placeholder="Spain" />
-              </div>
+            <div class="g-field">
+              <label for="umClub">Club / Base</label>
+              <input type="text" id="umClub" maxlength="80" placeholder="Iberia / Barcelona" />
             </div>
           </div>
 
@@ -602,19 +636,25 @@ const LICENSE_CATEGORIES = [
             </div>
             <div class="g-field">
               <label for="umCarClass">Categoría principal</label>
-              <input type="text" id="umCarClass" maxlength="80" placeholder="GT3 · IMSA &amp; NEC" />
+              <input type="text" id="umCarClass" maxlength="80" placeholder="GT3 · LMU · AC EVO" />
             </div>
           </div>
 
           <div class="g-field">
             <label for="umBio">Biografía pública</label>
-            <textarea id="umBio" rows="2" maxlength="400" placeholder="Resumen deportivo del piloto…"></textarea>
+            <textarea id="umBio" rows="2" maxlength="400" placeholder="Resumen deportivo o técnico del piloto / miembro del staff…"></textarea>
           </div>
 
-          <label class="g-check" for="umSetupAccess">
-            <input type="checkbox" id="umSetupAccess" checked />
-            Permitir descarga y sincronización de setups (.sto) en Setup Vault y MMT Sync
-          </label>
+          <div style="display:flex;flex-wrap:wrap;gap:14px;">
+            <label class="g-check" for="umShowPublic">
+              <input type="checkbox" id="umShowPublic" checked />
+              Mostrar públicamente en <strong>/drivers</strong> y <strong>/pilotos</strong>
+            </label>
+            <label class="g-check" for="umSetupAccess">
+              <input type="checkbox" id="umSetupAccess" checked />
+              Permitir descarga de setups (.sto) si tiene cuenta D1
+            </label>
+          </div>
         </div>
 
         <!-- SUBTAB 2: LAS 5 LICENCIAS DE IRACING -->
@@ -765,6 +805,7 @@ const LICENSE_CATEGORIES = [
         <div class="rc-modal-foot">
           <div class="rc-mono-sub" id="umLiveSummary">iRating: — · Horas: — · OVR: —</div>
           <div class="rc-btn-row">
+            <button type="button" id="umDeleteProfileBtn" class="r-btn r-btn--sm hidden" style="color:#ef4444;border-color:rgba(239,68,68,.4)" onclick="deleteUnifiedPilotProfile()">Eliminar de /drivers</button>
             <button type="button" class="r-btn r-btn--sm" onclick="closeUnifiedPilotModal()">Cancelar</button>
             <button type="submit" id="umSubmitBtn" class="r-btn r-btn--primary r-btn--sm">Guardar todo en D1</button>
           </div>
@@ -1250,5 +1291,5 @@ const LICENSE_CATEGORIES = [
     }
   </style>
 
-  <script is:inline src="/assets/js/admin.js?v=t359"></script>
+  <script is:inline src="/assets/js/admin.js?v=t360"></script>
 </Layout>

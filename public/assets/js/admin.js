@@ -575,9 +575,9 @@ function switchUnifiedModalTab(tab) {
   });
 }
 
-function openUnifiedPilotModal({ slug = "", email = "" } = {}) {
-  const cleanSlug = String(slug || "").trim().toLowerCase();
-  const cleanEmail = String(email || "").trim().toLowerCase();
+function openUnifiedPilotModal({ slug = "", email = "", isNew = false } = {}) {
+  const cleanSlug = isNew ? "" : String(slug || "").trim().toLowerCase();
+  const cleanEmail = isNew ? "" : String(email || "").trim().toLowerCase();
 
   const prof = cleanSlug
     ? (rcState.profiles || []).find((p) => p.slug === cleanSlug)
@@ -591,6 +591,8 @@ function openUnifiedPilotModal({ slug = "", email = "" } = {}) {
   const tInfo = prof ? (rcState.liveTelemetryBySlug[prof.slug] || {}) : {};
 
   umState = {
+    isNew: Boolean(isNew),
+    isDynamic: Boolean(prof?.is_dynamic),
     slug: prof?.slug || "",
     email: member?.email || prof?.email || cleanEmail || "",
     topCars: Array.isArray(prof?.top_cars) ? prof.top_cars.map((x) => ({ ...x })) : [],
@@ -604,38 +606,84 @@ function openUnifiedPilotModal({ slug = "", email = "" } = {}) {
 
   const titleEl = document.getElementById("unifiedPilotTitle");
   const subEl = document.getElementById("unifiedPilotSub");
-  const displayName = prof?.fullName || member?.name || umState.email || "Piloto";
-  if (titleEl) titleEl.textContent = `Editar · ${displayName}`;
+  const displayName = prof?.fullName || member?.name || umState.email || "Nuevo Miembro";
+  if (titleEl) titleEl.textContent = isNew ? "Añadir Piloto / Staff a /drivers" : `Editar · ${displayName}`;
   if (subEl) {
-    subEl.textContent = prof
-      ? `Ficha oficial /drivers/${prof.slug}/ + cuenta D1. Edita licencias, sube captura Garage 61 y recalcula la media OVR.`
-      : `Cuenta de usuario en Cloudflare D1 (${umState.email}).`;
+    subEl.textContent = isNew
+      ? "Crea un perfil público en /drivers para cualquier piloto (iRacing, LMU, AC EVO, ACC, rF2, AMS2, F1) o miembro del Staff."
+      : prof
+        ? `Ficha oficial /drivers/${prof.slug}/ + cuenta D1. Edita identidad, simuladores, licencias opcionales y stats.`
+        : `Cuenta de usuario en Cloudflare D1 (${umState.email}).`;
   }
 
-  // Show/hide official profile tabs if account has no roster slug
-  const hasProfile = Boolean(prof);
+  // Always show all tabs when creating a new profile or editing an existing profile
+  const hasProfile = Boolean(isNew || prof);
   ["licenses", "g61", "stats"].forEach((t) => {
     const b = document.getElementById(`umTabBtn-${t}`);
     if (b) b.style.display = hasProfile ? "" : "none";
   });
 
+  // Delete button only for dynamic profiles created via Race Control
+  const delBtn = document.getElementById("umDeleteProfileBtn");
+  if (delBtn) delBtn.classList.toggle("hidden", !prof?.is_dynamic);
+
+  // Slug input editable only when creating new profile
+  const slugEl = document.getElementById("umSlug");
+  if (slugEl) {
+    slugEl.value = umState.slug;
+    slugEl.readOnly = !isNew;
+    slugEl.required = hasProfile;
+  }
+
+  // Auto-generate slug from full name when creating new
+  const fullNameEl = document.getElementById("umFullName");
+  if (fullNameEl && !fullNameEl.dataset.slugBound) {
+    fullNameEl.dataset.slugBound = "1";
+    fullNameEl.addEventListener("input", () => {
+      if (!umState.isNew) return;
+      const se = document.getElementById("umSlug");
+      if (se && !se.dataset.manual) {
+        se.value = fullNameEl.value
+          .toLowerCase()
+          .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "")
+          .slice(0, 28);
+      }
+    });
+  }
+  if (slugEl) {
+    delete slugEl.dataset.manual;
+    if (!slugEl.dataset.manualBound) {
+      slugEl.dataset.manualBound = "1";
+      slugEl.addEventListener("input", () => { if (umState.isNew) slugEl.dataset.manual = "1"; });
+    }
+  }
+
   // Identity & Role fields
-  setVal("umSlug", umState.slug);
   setVal("umOrigEmail", umState.email);
   setVal("umFullName", prof?.fullName || member?.name || "");
   setVal("umDorsal", prof?.dorsal || "");
   setVal("umKind", prof?.kind || "driver");
-  setVal("umAccountRole", member?.role || "driver");
+  setVal("umAccountRole", member?.role || (prof?.kind === "staff" ? "staff" : "driver"));
   setVal("umRoleTitle", prof?.role || "");
   setVal("umEmail", member?.email || prof?.email || "");
   setVal("umCustId", prof?.cust_id || tInfo.cust_id || "");
   setVal("umSpecialty", prof?.specialty || "");
   setVal("umClub", prof?.club || "");
   setVal("umCountry", prof?.country || "Spain");
-  setVal("umTeam", member?.team || "");
+  setVal("umMemberSince", prof?.member_since || "2026");
+  setVal("umTeam", member?.team || "Muntrume Motorsport");
   setVal("umCarClass", member?.car_class || "");
   setVal("umBio", prof?.bio || member?.public_bio || "");
+  setChk("umShowPublic", prof ? prof.show_public !== false : true);
   setChk("umSetupAccess", member ? member.has_setup_access : true);
+
+  // Multi-sim checkboxes
+  const activeSims = new Set(Array.isArray(prof?.sims) && prof.sims.length ? prof.sims : (isNew ? ["lmu"] : ["iracing"]));
+  document.querySelectorAll('#umSimsGrid input[name="umSim"]').forEach((cb) => {
+    cb.checked = activeSims.has(cb.value);
+  });
 
   // 5 iRacing Licenses
   const licMap = {};
@@ -1616,12 +1664,19 @@ async function submitUnifiedPilotForm(e) {
           };
 
       const scLic = licenses.find((l) => l.category === "sports_car") || licenses[0] || null;
+      const sims = Array.from(document.querySelectorAll('#umSimsGrid input[name="umSim"]:checked')).map((cb) => cb.value);
+      const member_since = document.getElementById("umMemberSince")?.value.trim() || "2026";
+      const show_public = Boolean(document.getElementById("umShowPublic")?.checked);
+
       await rcAdminFetch("/api/setups/admin/driver/profile", {
         slug,
         fullName,
         name: fullName,
         dorsal: dorsal || null,
         kind,
+        sims: sims.length ? sims : [kind === "staff" ? "staff" : "iracing"],
+        member_since,
+        show_public,
         role: roleTitle || null,
         specialty: specialty || null,
         club: club || null,
@@ -1642,13 +1697,29 @@ async function submitUnifiedPilotForm(e) {
     }
 
     closeUnifiedPilotModal();
-    appendAuditEvent("admin", "atrumin16@gmail.com", `Actualizado todo-en-uno: ${fullName} (${slug || targetEmail})`, "GUARDADO");
+    appendAuditEvent("admin", "atrumin16@gmail.com", `${umState.isNew ? "Creado" : "Actualizado"} en /drivers: ${fullName} (${slug || targetEmail})`, "GUARDADO");
     await refreshRaceControlData();
-    showRcNotice("Cambios guardados en vivo", `${fullName} actualizado en Cloudflare D1, /drivers y /api/drivers.`, "success");
+    showRcNotice("Cambios guardados en vivo", `${fullName} publicado en Cloudflare D1, /drivers y /api/drivers.`, "success");
   } catch (err) {
     showRcNotice("Error al guardar", err?.message || "No se pudo actualizar en D1.", "err");
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = "Guardar todo en D1"; }
+  }
+}
+
+async function deleteUnifiedPilotProfile() {
+  const slug = document.getElementById("umSlug")?.value.trim() || "";
+  const fullName = document.getElementById("umFullName")?.value.trim() || slug;
+  if (!slug || !umState.isDynamic) return;
+  if (!window.confirm(`¿Eliminar el perfil "${fullName}" (${slug}) de /drivers y Cloudflare D1?`)) return;
+  try {
+    await rcAdminFetch("/api/setups/admin/driver/profile", { slug, delete_profile: true });
+    closeUnifiedPilotModal();
+    appendAuditEvent("admin", "atrumin16@gmail.com", `Eliminado perfil dinámico: ${fullName} (${slug})`, "ELIMINADO");
+    await refreshRaceControlData();
+    showRcNotice("Perfil eliminado", `${fullName} ha sido retirado de /drivers.`, "info");
+  } catch (err) {
+    showRcNotice("Error al eliminar", err?.message || "No se pudo eliminar el perfil.", "err");
   }
 }
 

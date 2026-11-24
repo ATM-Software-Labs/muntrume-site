@@ -68,12 +68,80 @@
     if (lic.irating > 0) approx(card.querySelector('[data-lic-f="irating"]'), "k", lic.irating);
     if (lic.tt_rating > 0 || lic.ttRating > 0) approx(card.querySelector('[data-lic-f="tt"]'), "k", lic.tt_rating || lic.ttRating);
   }
+  var SIM_META = {
+    iracing: { name: "iRacing", short: "iR", logo: "/assets/img/sims/iracing.png" },
+    lmu: { name: "Le Mans Ultimate", short: "LMU", logo: "/assets/img/sims/lmu.png" },
+    ac_evo: { name: "Assetto Corsa EVO", short: "AC EVO", logo: "/assets/img/sims/ac_evo.png" },
+    acc: { name: "ACC", short: "ACC", logo: "/assets/img/sims/acc.png" },
+    rf2: { name: "rFactor 2", short: "rF2", logo: "/assets/img/sims/rf2.png" },
+    ams2: { name: "AMS2", short: "AMS2", logo: "/assets/img/sims/ams2.png" },
+    f1: { name: "F1", short: "F1", logo: "/assets/img/sims/f1.png" },
+    staff: { name: "Staff", short: "STAFF", logo: "/assets/img/logo-64.webp" },
+  };
+
+  function buildDynamicDriverCard(d) {
+    var isStaff = d.kind === "staff" && !d.irating && !d.cust_id;
+    var sims = Array.isArray(d.sims) && d.sims.length ? d.sims : [isStaff ? "staff" : "iracing"];
+    var simPills = sims.map(function (id) {
+      var m = SIM_META[id];
+      if (!m) return "";
+      return '<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 8px 3px 5px;border-radius:999px;border:1px solid var(--r-line,rgba(255,255,255,.14));background:var(--r-bg,#090b0f);color:var(--r-text,#f1f5f9);font:600 10.5px/1 ui-monospace,monospace;">' +
+        '<span style="display:inline-flex;align-items:center;justify-content:center;height:16px;padding:1px 4px;border-radius:5px;background:#0b0f17;"><img src="' + m.logo + '" alt="' + esc(m.name) + '" style="height:11px;max-width:36px;object-fit:contain;display:block;" loading="lazy" /></span>' +
+        '<span>' + esc(m.short) + '</span></span>';
+    }).join("");
+
+    var dorsal = d.dorsal || (isStaff ? "STAFF" : "MMT");
+    var lic = (Array.isArray(d.licenses) && d.licenses[0]) || null;
+    var ovr = (d.f1_stats && d.f1_stats.overall) ? d.f1_stats.overall : (d.irating ? Math.min(98, Math.max(40, Math.round(54 + 43 * (Math.log(Math.max(1500, d.irating) / 1500) / Math.log(12000 / 1500))))) : null);
+    var statsHtml = isStaff || (!d.irating && !lic)
+      ? '<dl class="d-stats"><div><dt>Rol</dt><dd style="font-size:0.82rem;">' + esc(isStaff ? "STAFF" : "MULTI-SIM") + '</dd></div><div><dt>Plataformas</dt><dd>' + sims.length + '</dd></div><div><dt>Desde</dt><dd>' + esc(d.member_since || "2026") + '</dd></div></dl>'
+      : '<dl class="d-stats"><div><dt>SR</dt><dd>' + esc(lic && lic.sr != null ? Number(lic.sr).toFixed(2) : "—") + '</dd></div><div><dt>iRating</dt><dd>' + esc(d.irating ? (d.irating >= 1000 ? (d.irating / 1000).toFixed(1) + "k" : d.irating) : "—") + '</dd></div><div><dt>Horas</dt><dd>' + esc(d.total_track_hours ? Math.round(d.total_track_hours) + " h" : "—") + '</dd></div></dl>';
+
+    var art = document.createElement("article");
+    art.className = "d-card d-reveal";
+    art.setAttribute("data-driver", d.slug);
+    art.setAttribute("data-dynamic", "1");
+    art.innerHTML =
+      '<div class="d-stage" style="display:flex;align-items:center;justify-content:center;min-height:176px;position:relative;">' +
+        '<span class="d-stage-dorsal">' + esc(dorsal) + '</span>' +
+        '<img src="/assets/img/logo-64.webp" alt="' + esc(d.fullName || d.name) + '" width="88" height="88" style="border-radius:18px;opacity:0.92;filter:drop-shadow(0 10px 24px rgba(0,230,153,.22));" />' +
+      '</div>' +
+      '<div class="d-card__body">' +
+        '<div class="d-card__top">' +
+          '<p class="d-kicker"><span class="d-flag">' + esc(d.flag || "🏁") + '</span> <span>' + esc(d.country || "International") + '</span> · <span>' + esc(d.role || (isStaff ? "Staff & Ingeniería" : "Piloto Oficial")) + '</span></p>' +
+          '<h2 class="d-name"><span class="d-num-pill d-num-pill--sm">' + esc(dorsal) + '</span> <span>' + esc(d.fullName || d.name) + '</span></h2>' +
+          '<div class="d-badges-row">' +
+            (lic && lic.class_label ? '<p class="sc-badge"><span>' + esc(lic.class_label) + '</span></p>' : '') +
+            (isStaff ? '<span style="padding:3px 9px;border-radius:999px;font:700 10.5px ui-monospace,monospace;color:#059669;background:rgba(16,185,129,.14);border:1px solid rgba(16,185,129,.35);">STAFF</span>' : '') +
+            (ovr ? '<span class="d-ovr-pill">OVR <strong>' + esc(ovr) + '</strong></span>' : '') +
+            (d.specialty ? '<span class="d-specialty-pill">' + esc(d.specialty) + '</span>' : '') +
+          '</div>' +
+          '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;">' + simPills + '</div>' +
+          statsHtml +
+        '</div>' +
+        '<div class="d-card__bottom">' +
+          (d.bio ? '<p style="font-size:12.5px;line-height:1.5;color:var(--r-muted);margin:0 0 8px;">' + esc(d.bio) + '</p>' : '') +
+          (d.favorite_track ? '<p class="d-fav"><span class="d-fav__k">Circuito favorito</span> <span class="d-fav__n">' + esc(d.favorite_track) + '</span></p>' : '') +
+          '<div class="d-actions-row"><a class="d-card__link" href="/contact/?to=admin"><span>Contactar</span><span aria-hidden="true">→</span></a></div>' +
+        '</div>' +
+      '</div>';
+    return art;
+  }
+
   fetch(API + '/api/drivers').then(function (r) { return r.ok ? r.json() : []; }).then(function (list) {
     var latest = null;
     var irSum = 0, irCount = 0;
+    var grid = document.querySelector(".d-grid");
+    var totalRendered = document.querySelectorAll(".d-grid [data-driver]").length;
     (Array.isArray(list) ? list : []).forEach(function (d) {
       var card = document.querySelector('[data-driver="' + d.slug + '"]');
-      if (!card) return;
+      if (!card) {
+        if (grid && d && d.slug && d.is_dynamic) {
+          grid.appendChild(buildDynamicDriverCard(d));
+          totalRendered += 1;
+        }
+        return;
+      }
       var licenses = Array.isArray(d.licenses) ? d.licenses.slice() : [];
       if (!licenses.length && (d.irating > 0 || d.license)) {
         var parsed = parseLic(d.license);
