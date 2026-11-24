@@ -43,9 +43,15 @@ html.light #mmChat,html[data-theme="light"] #mmChat{--bg:#f9fafb;--hd:#f1f3f6;--
 #mmChat .mm-a h1,#mmChat .mm-a h2,#mmChat .mm-a h3{margin:10px 0 4px;font-size:14px;font-weight:700;color:var(--tx)}
 #mmChat .mm-a ul,#mmChat .mm-a ol{padding-left:18px;margin:5px 0}
 #mmChat .mm-a blockquote{margin:6px 0;padding:6px 10px;border-left:2.5px solid var(--ac);background:var(--sf);border-radius:0 8px 8px 0;color:var(--mu)}
-#mmChat .mm-a table{width:100%;border-collapse:collapse;margin:8px 0;font-size:12px;border:1px solid var(--bd)}
-#mmChat .mm-a th,#mmChat .mm-a td{padding:5px 8px;border-bottom:1px solid var(--bd);text-align:left}
-#mmChat .mm-a th{background:var(--sf);color:var(--ac);font-size:11px;text-transform:uppercase}
+#mmChat .mm-a a{color:var(--ac);font-weight:600;text-decoration:underline;text-underline-offset:2px}
+#mmChat .mm-a a:hover{opacity:.85}
+#mmChat .mm-tbl-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:8px 0;border:1px solid var(--bd);border-radius:10px;background:var(--sf)}
+#mmChat .mm-a table{width:100%;border-collapse:collapse;margin:0;font-size:11.5px;line-height:1.45;border:0;word-break:normal}
+#mmChat .mm-a th,#mmChat .mm-a td{padding:6px 9px;border-bottom:1px solid var(--bd);text-align:left;vertical-align:top;word-break:normal;overflow-wrap:break-word}
+#mmChat .mm-a th{background:color-mix(in srgb,var(--ac) 9%,var(--sf));color:var(--ac);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap}
+#mmChat .mm-a td:first-child{font-weight:600;white-space:nowrap}
+#mmChat .mm-a tbody tr:last-child td{border-bottom:0}
+#mmChat .mm-a td a{white-space:nowrap}
 #mmChat .mm-a pre{margin:8px 0;padding:10px;border-radius:10px;background:#0c0e12;color:#e5e7eb;overflow-x:auto;font:400 12px/1.5 ui-monospace,monospace}
 #mmChat .mm-a code{font-family:ui-monospace,monospace;font-size:12px;background:var(--sf);color:var(--ac);padding:1px 5px;border-radius:4px}
 #mmChat .mm-a pre code{background:transparent;color:inherit;padding:0}
@@ -87,12 +93,48 @@ let ctrl = null;
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
+function shortUrlLabel(url) {
+  try {
+    const u = new URL(url);
+    const p = u.pathname.replace(/\/+$/, "");
+    const label = u.hostname.replace(/^www\./, "") + (p && p !== "/" ? p : "");
+    return label.length > 34 ? label.slice(0, 31) + "…" : label;
+  } catch {
+    return url.replace(/^https?:\/\//, "").replace(/\/+$/, "");
+  }
+}
+
 function inlineMd(s) {
-  return esc(s)
-    .replace(/`([^`]+)`/g, "<code>$1</code>")
+  const stash = [];
+  const hold = (html) => { const idx = stash.length; stash.push(html); return `@@MM_${idx}@@`; };
+  let out = String(s ?? "");
+  // 1. Inline code first so URLs inside backticks stay literal
+  out = out.replace(/`([^`]+)`/g, (_, code) => hold(`<code>${esc(code)}</code>`));
+  // 2. Markdown links [label](https://... or /internal)
+  out = out.replace(/\[([^\]]+)\]\(((?:https?:\/\/|\/)[^\s)]+)\)/g, (_, label, href) => {
+    const isExt = /^https?:\/\//i.test(href);
+    const attrs = isExt ? ' target="_blank" rel="noopener noreferrer"' : "";
+    return hold(`<a href="${esc(href)}"${attrs}>${esc(label)}</a>`);
+  });
+  // 3. Angle-bracket autolinks <https://...>
+  out = out.replace(/<(https?:\/\/[^\s<>]+)>/g, (_, href) =>
+    hold(`<a href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(shortUrlLabel(href))}</a>`)
+  );
+  // Escape remaining raw HTML
+  out = esc(out);
+  // Allow safe <br> inside cells
+  out = out.replace(/&lt;br\s*\/?&gt;/gi, "<br>");
+  // 4. Bare URLs
+  out = out.replace(/(^|[\s(])(https?:\/\/[^\s<>"')]+)/g, (_, pre, raw) => {
+    const clean = raw.replace(/[.,;:!?]+$/, "");
+    const trail = raw.slice(clean.length);
+    return `${pre}${hold(`<a href="${esc(clean)}" target="_blank" rel="noopener noreferrer">${esc(shortUrlLabel(clean))}</a>`)}${trail}`;
+  });
+  // 5. Bold & italic
+  out = out
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/(^|[^\w*])\*([^*\n]+?)\*(?!\*)/g, "$1<em>$2</em>")
-    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color:var(--ac)">$1</a>');
+    .replace(/(^|[^\w*])\*([^*\n]+?)\*(?!\*)/g, "$1<em>$2</em>");
+  return out.replace(/@@MM_(\d+)@@/g, (_, i) => stash[Number(i)] || "");
 }
 
 function mdToHtml(md, showCaret = false) {
@@ -119,7 +161,7 @@ function mdToHtml(md, showCaret = false) {
         i++;
       }
       i--;
-      out.push(`<table><thead><tr>${hdr}</tr></thead><tbody>${rows.join("")}</tbody></table>`);
+      out.push(`<div class="mm-tbl-wrap"><table><thead><tr>${hdr}</tr></thead><tbody>${rows.join("")}</tbody></table></div>`);
       continue;
     }
     if (/^#{1,3}\s+/.test(ln)) { out.push(`<h3>${inlineMd(ln.replace(/^#{1,3}\s+/, ""))}</h3>`); continue; }

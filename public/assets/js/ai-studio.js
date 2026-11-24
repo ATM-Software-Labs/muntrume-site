@@ -222,6 +222,14 @@
       return stash(`<a href="${esc(safeUrl)}"${rel}>${esc(label)}</a>`);
     });
 
+    // 4b. Angle-bracket autolinks <https://...>
+    s = s.replace(/<(https?:\/\/[^\s<>]+)>/g, (_, url) => {
+      const safeUrl = sanitizeUrl(url);
+      if (!safeUrl) return esc(url);
+      const label = safeUrl.replace(/^https?:\/\/(?:www\.)?/i, "").replace(/\/+$/, "");
+      return stash(`<a href="${esc(safeUrl)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`);
+    });
+
     // Escape remaining raw HTML
     s = esc(s);
 
