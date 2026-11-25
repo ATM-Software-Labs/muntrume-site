@@ -640,15 +640,38 @@ export function initSkinsStudio(): void {
 
   function updateExportValidation(): void {
     const box = byId<HTMLElement>("skExportValidation");
-    if (!box) return;
     const car = getCarById(state.carId);
     const cid = sanitizeCustomerId(state.customerId);
+    const diffName = byId<HTMLElement>("skExportDiffuseName");
+    if (diffName) diffName.textContent = `car_${cid}.tga`;
+    const specName = byId<HTMLElement>("skExportSpecName");
+    if (specName) specName.textContent = `car_spec_${cid}.tga`;
+
+    // Render live export previews so the user sees EXACTLY what Trading Paints will receive
+    const diffPrev = byId<HTMLCanvasElement>("skExportDiffusePreview");
+    if (diffPrev) {
+      void renderSkinToCanvas(diffPrev, state, {
+        size: 128,
+        partsOverlayCanvas: loadedTemplate?.partsOverlayCanvas ?? null,
+        forExport: true,
+      });
+    }
+    const specPrev = byId<HTMLCanvasElement>("skExportSpecPreview");
+    if (specPrev) {
+      renderSpecMapToCanvas(specPrev, state, 128);
+    }
+
+    if (!box) return;
     const mbEstimate = state.resolution === 4096 ? "~48 MB por TGA (4K)" : "~12 MB por TGA (2K)";
     const cAccent = contrastRatio(state.palette.accent, state.palette.primary);
+    const isSolidOnly =
+      state.pattern === "freeform" &&
+      state.decals.length === 0 &&
+      (!state.strokes || state.strokes.length === 0);
     box.innerHTML = `
       <div>Ruta iRacing: <code style="color:var(--sk-accent)">Documents\\iRacing\\paint\\${escapeHtml(car.iracingFolder)}\\</code></div>
-      <div>Archivos: <code>car_${cid}.tga</code> + <code>car_spec_${cid}.tga</code> (${state.resolution}×${state.resolution}px · ${mbEstimate})</div>
-      <div>Contraste Acento/Base: <strong style="color:${cAccent >= 3 ? "#00e699" : "#fbbf24"}">${cAccent}:1</strong> ${cAccent < 3 ? "(recomendado subir contraste)" : "(óptimo para pista)"}</div>
+      <div>Resolución: <strong>${state.resolution}×${state.resolution}px</strong> (${mbEstimate}) · Contraste: <strong style="color:${cAccent >= 3 ? "#00e699" : "#fbbf24"}">${cAccent}:1</strong></div>
+      ${isSolidOnly ? `<div style="margin-top:6px;padding:6px 8px;border-radius:6px;background:rgba(245,158,11,0.14);border:1px solid rgba(245,158,11,0.4);color:#fcd34d;">Aviso: el lienzo está en color sólido sin patrón ni decals. Elige un patrón en <strong>Diseño</strong> o pulsa <strong>Muntrume AI</strong> para pintar el coche completo antes de subirlo.</div>` : ""}
     `;
   }
 
@@ -1378,9 +1401,10 @@ export function initSkinsStudio(): void {
       const plan = aiRes.design_plan;
       const car = getCarById(state.carId);
 
-      // AUTO-APLICAR TODO LIMPIO (cero cajas rotas, cero configuración manual para no expertos)
+      // AUTO-APLICAR TODO LIMPIO (aplica el patrón real de pintura + paleta + acabado + logos en Sponsor Blocks)
       state.name = `${plan.title} · #${state.customNumber}`;
-      state.pattern = plan.pattern === "freeform" ? "freeform" : "freeform";
+      const allowedPatterns = new Set(["freeform", "endurance", "sprint", "carbon-stealth", "tricolor", "clean-minimal"]);
+      state.pattern = (allowedPatterns.has(plan.pattern) ? plan.pattern : "endurance") as SkinDesignState["pattern"];
       state.strokes = [];
       state.palette = {
         ...state.palette,

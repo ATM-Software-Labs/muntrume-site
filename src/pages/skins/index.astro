@@ -426,23 +426,47 @@ const canonical = "https://skins.muntru.me/";
           <h2 class="sk-card-title">Exportar para iRacing y Trading Paints</h2>
           <div id="skExportValidation" class="sk-shot-card"></div>
 
-          <button type="button" id="skExportZipBtn" class="sk-btn sk-btn-primary">
-            Descargar Pack .ZIP listo para iRacing
-          </button>
-          <div class="sk-grid-2">
-            <button type="button" id="skExportTgaBtn" class="sk-btn sk-btn-sm">Solo car_&lt;id&gt;.tga</button>
-            <button type="button" id="skExportSpecBtn" class="sk-btn sk-btn-sm">Solo car_spec.tga</button>
+          <!-- PASO 1: PINTURA PRINCIPAL (DIFFUSE) -->
+          <div class="sk-shot-card" style="border-color:rgba(0,230,153,0.45);">
+            <div style="display:flex;gap:10px;align-items:center;">
+              <canvas id="skExportDiffusePreview" width="96" height="96" style="width:68px;height:68px;border-radius:6px;border:1px solid rgba(255,255,255,0.18);background:#090d14;flex-shrink:0;"></canvas>
+              <div style="flex:1;min-width:0;">
+                <span class="sk-tag" style="background:rgba(0,230,153,0.16);color:var(--sk-accent);border-color:rgba(0,230,153,0.4);">1 · SUBIR DIRECTO (PINTURA)</span>
+                <strong id="skExportDiffuseName" style="display:block;margin-top:4px;font-size:13px;">car_994512.tga</strong>
+                <p class="sk-help" style="margin:2px 0 0;">Archivo principal de color y logos. En Trading Paints se sube primero en <strong>Upload a paint</strong>.</p>
+              </div>
+            </div>
+            <button type="button" id="skExportTgaBtn" class="sk-btn sk-btn-primary sk-btn-sm" style="margin-top:8px;width:100%;">
+              Descargar Pintura Principal (car_&lt;id&gt;.tga)
+            </button>
           </div>
 
+          <!-- PASO 2: SPEC MAP (ACABADO METÁLICO / MATE / BRILLO) -->
+          <div class="sk-shot-card" style="border-color:rgba(56,189,248,0.4);">
+            <div style="display:flex;gap:10px;align-items:center;">
+              <canvas id="skExportSpecPreview" width="96" height="96" style="width:68px;height:68px;border-radius:6px;border:1px solid rgba(255,255,255,0.18);background:#090d14;flex-shrink:0;"></canvas>
+              <div style="flex:1;min-width:0;">
+                <span class="sk-tag" style="background:rgba(56,189,248,0.14);color:#38bdf8;border-color:rgba(56,189,248,0.4);">2 · SPEC MAP (OPCIONAL)</span>
+                <strong id="skExportSpecName" style="display:block;margin-top:4px;font-size:13px;">car_spec_994512.tga</strong>
+                <p class="sk-help" style="margin:2px 0 0;">Define brillo, mate y metálico (RGB). En Trading Paints súbelo pulsando <strong>"Add spec map or decal layer ↓"</strong>.</p>
+              </div>
+            </div>
+            <button type="button" id="skExportSpecBtn" class="sk-btn sk-btn-sm" style="margin-top:8px;width:100%;">
+              Descargar Spec Map (car_spec_&lt;id&gt;.tga)
+            </button>
+          </div>
+
+          <!-- PACK COMPLETO ZIP -->
+          <button type="button" id="skExportZipBtn" class="sk-btn sk-btn-sm" style="width:100%;">
+            Descargar Pack .ZIP completo (Pintura + Spec Map + Carpeta iRacing)
+          </button>
+
           <div class="sk-shot-card">
-            <strong>Flujo Trading Paints (pasos manuales)</strong>
-            <p class="sk-help">
-              Trading Paints no dispone de API pública de subida automática. Sigue este checklist tras exportar:
-            </p>
+            <strong>Resumen rápido Trading Paints</strong>
             <ul>
-              <li>1. Descomprime el ZIP en <code>Documents\iRacing\paint\&lt;coche&gt;\</code> y pulsa <code>Ctrl+R</code> en iRacing.</li>
-              <li>2. Sube <code>car_&lt;id&gt;.tga</code> y <code>car_spec_&lt;id&gt;.tga</code> en <a href="https://www.tradingpaints.com/my-paints" target="_blank" rel="noopener noreferrer" style="color:var(--sk-accent);">Trading Paints → My Paints</a>.</li>
-              <li>3. Haz las 4 fotos recomendadas abajo para Showroom y <code>muntru.me</code>.</li>
+              <li>1. Sube <code>car_&lt;id&gt;.tga</code> arriba en <a href="https://www.tradingpaints.com/my-paints" target="_blank" rel="noopener noreferrer" style="color:var(--sk-accent);">Trading Paints → Upload a paint</a>.</li>
+              <li>2. Pulsa <strong>"Add spec map or decal layer ↓"</strong> y sube <code>car_spec_&lt;id&gt;.tga</code> (para ver mate/satinado/metálico).</li>
+              <li>3. Para probar local en iRacing: copia ambos en <code>Documents\iRacing\paint\&lt;coche&gt;\</code> y pulsa <code>Ctrl+R</code>.</li>
             </ul>
           </div>
 
