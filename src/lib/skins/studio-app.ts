@@ -86,15 +86,15 @@ export function initSkinsStudio(): void {
   if (!root) return;
 
   let state: SkinDesignState = loadActiveDesign();
-  let viewMode: ViewMode = "showroom";
+  let viewMode: ViewMode = "uv";
   let showroomAngle: ShowroomAngle = "side";
   let rightTab: RightTab = "design";
   let loadedTemplate: LoadedTemplate | null = null;
   let workerWireframeCanvas: HTMLCanvasElement | null = null;
   let workerCarsCatalog: Array<{ car_slug: string; name: string; brand: string; category?: string; iracing_folder: string; uv_status: string }> = [];
   let showTemplateOverlay = true;
-  let templateOpacity = 0.72;
-  let showZonesOverlay = true;
+  let templateOpacity = 0.85;
+  let showZonesOverlay = false;
   let selectedZone: ZoneKey | null = "hood";
   let selectedDecalId: string | null = state.decals[0]?.id ?? null;
   let customPhotoShots: PhotoGuideShot[] | null = null;

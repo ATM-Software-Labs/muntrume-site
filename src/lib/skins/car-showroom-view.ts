@@ -344,11 +344,14 @@ async function drawSideView(ctx: CanvasRenderingContext2D, w: number, h: number,
   ctx.fillText(state.customNumber || "16", plateX + plateW / 2, plateY + plateH / 2 + 2);
   ctx.restore();
 
-  // Side sponsors projected onto door/rear quarter
-  const sideDecals = decalsForZone(state, ["leftSide", "rightSide"]);
+  // Side sponsors clipped cleanly inside the car body (never spilling onto floor)
+  const sideDecals = decalsForZone(state, ["leftSide", "rightSide"]).slice(0, 2);
+  ctx.save();
+  ctx.clip(bodyPath);
   for (let i = 0; i < sideDecals.length; i++) {
-    await drawDecalInBox(ctx, sideDecals[i], w * 0.515, h * (0.48 + i * 0.075), w * 0.23, h * 0.095, fontFam);
+    await drawDecalInBox(ctx, sideDecals[i], w * 0.515, h * (0.48 + i * 0.072), w * 0.21, h * 0.075, fontFam);
   }
+  ctx.restore();
 
   // Wheels
   drawWheel(ctx, w * 0.255, h * 0.64, h * 0.115, palette.accent);

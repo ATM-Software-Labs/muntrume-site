@@ -181,12 +181,12 @@ const canonical = "https://skins.muntru.me/";
               <input id="skToggleWireframe" type="checkbox" checked /> Guía plantilla
             </label>
             <label class="sk-row" style="font-size:11px;cursor:pointer;">
-              <input id="skToggleZones" type="checkbox" checked /> Cajas de zona
+              <input id="skToggleZones" type="checkbox" /> Cajas de zona
             </label>
           </div>
           <label class="sk-label">
             Opacidad guía de plantilla
-            <input id="skWireOpacity" type="range" min="10" max="90" value="45" />
+            <input id="skWireOpacity" type="range" min="10" max="100" value="85" />
           </label>
           <div id="skZoneList" class="sk-zone-list"></div>
         </section>
@@ -210,13 +210,13 @@ const canonical = "https://skins.muntru.me/";
       <section class="sk-stage-col">
         <div class="sk-stage-bar">
           <div class="sk-seg" role="tablist" aria-label="Modo de previsualización">
-            <button type="button" data-view-mode="showroom" class="is-active">Pintor GT / iRacing</button>
-            <button type="button" data-view-mode="uv">Mapa UV 2D</button>
+            <button type="button" data-view-mode="uv" class="is-active">Mapa UV 2D</button>
+            <button type="button" data-view-mode="showroom">Pintor GT / iRacing</button>
             <button type="button" data-view-mode="3d">Visor 3D WebGL</button>
             <button type="button" data-view-mode="spec">Spec Map (RGB)</button>
           </div>
 
-          <div id="skShowroomControls" class="sk-row">
+          <div id="skShowroomControls" class="sk-row sk-hidden">
             <div class="sk-seg" role="group" aria-label="Ángulo de cámara GT">
               <button type="button" data-showroom-angle="side" class="is-active">Lateral</button>
               <button type="button" data-showroom-angle="top">Superior</button>
@@ -225,7 +225,7 @@ const canonical = "https://skins.muntru.me/";
             </div>
           </div>
 
-          <div id="skUvControls" class="sk-row sk-hidden">
+          <div id="skUvControls" class="sk-row">
             <button type="button" id="skZoomOut" class="sk-btn sk-btn-sm" aria-label="Alejar">−</button>
             <span id="skZoomLabel" style="font-size:11px;font-family:monospace;min-width:40px;text-align:center;">100%</span>
             <button type="button" id="skZoomIn" class="sk-btn sk-btn-sm" aria-label="Acercar">+</button>
@@ -234,8 +234,8 @@ const canonical = "https://skins.muntru.me/";
         </div>
 
         <div id="skCanvasWrap" class="sk-canvas-wrap">
-          <canvas id="skShowroomCanvas" width="1024" height="640" style="width:100%;max-width:960px;height:auto;border-radius:10px;border:1px solid rgba(255,255,255,0.08);box-shadow:0 20px 54px rgba(0,0,0,0.65);"></canvas>
-          <canvas id="skUvCanvas" class="sk-uv-canvas sk-hidden" width="1024" height="1024"></canvas>
+          <canvas id="skShowroomCanvas" class="sk-hidden" width="1024" height="640" style="width:100%;max-width:960px;height:auto;border-radius:10px;border:1px solid rgba(255,255,255,0.08);box-shadow:0 20px 54px rgba(0,0,0,0.65);"></canvas>
+          <canvas id="skUvCanvas" class="sk-uv-canvas" width="1024" height="1024"></canvas>
           <canvas id="skGlCanvas" class="sk-gl-canvas sk-hidden"></canvas>
 
           <div id="skGlOverlay" class="sk-gl-overlay sk-hidden">
