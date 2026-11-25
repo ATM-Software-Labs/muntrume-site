@@ -1,9 +1,9 @@
 {
-  "name": "MMT Sync Mobile",
-  "short_name": "MMT Sync",
-  "description": "App móvil oficial de Muntrume Motorsport: telemetría en vivo, últimas sesiones de iRacing, setups al PC y Muntrume Guard sin descargar nada.",
+  "name": "MMT Pocket · Muntrume Motorsport",
+  "short_name": "MMT Pocket",
+  "description": "App móvil oficial de Muntrume Motorsport: sincronización bidireccional con MMT Sync PC, telemetría 60 Hz, historial real de carreras, setups con 1 toque y Muntrume Guard.",
   "start_url": "/app/mobile/",
-  "scope": "/app/",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#090b0f",

@@ -173,6 +173,7 @@ export function paintExtras(data: Snapshot): void {
   paintTeam(data.settings);
   paintFlags(data.settings);
   paintStrategy();
+  startCompanionBidirectionalSync(data);
 }
 
 // -------------------------------------------------------------
@@ -6123,5 +6124,165 @@ export function paintLastSession(report?: IbtSessionReport | null): void {
       }
     }
   }
+}
+
+// -------------------------------------------------------------
+// BIDIRECTIONAL PC <-> MMT POCKET (MOBILE) CLOUD SYNC
+// -------------------------------------------------------------
+let companionSyncTimer: number | null = null;
+let lastAppliedPocketTs = "";
+let lastPushedPcCacheTs = 0;
+
+function getCompanionToken(): string {
+  try {
+    return (
+      localStorage.getItem("mmt_desktop_token") ||
+      localStorage.getItem("mrt_vault_token") ||
+      localStorage.getItem("mm_token") ||
+      ""
+    );
+  } catch {
+    return "";
+  }
+}
+
+async function runCompanionBidirectionalCycle(snapshot?: Snapshot): Promise<void> {
+  const tk = getCompanionToken();
+  if (!tk) return;
+  const API = "https://api.muntru.me";
+
+  // 1. PULL from MMT Pocket (Phone -> PC): apply HUD settings & install queued setups
+  try {
+    const r = await fetch(`${API}/api/desktop/companion/state`, {
+      headers: { Authorization: `Bearer ${tk}` },
+    });
+    if (r.ok) {
+      const state = await r.json();
+      const remoteTs = String(state?.updated_at || "");
+      const hud = state?.hud_settings || {};
+
+      if (remoteTs && remoteTs !== lastAppliedPocketTs && state?.via !== "desktop") {
+        lastAppliedPocketTs = remoteTs;
+        if (hud.brand_logo_mode) {
+          const btn = document.querySelector<HTMLButtonElement>(
+            `[data-brand-logo-mode-btn="${hud.brand_logo_mode}"]`,
+          );
+          if (btn && btn.getAttribute("aria-pressed") !== "true") btn.click();
+        }
+        if (typeof hud.focus_mode === "boolean") {
+          const fBtn = document.getElementById("btnShellFocusMode");
+          const curOn = fBtn?.getAttribute("aria-pressed") === "true";
+          if (fBtn && curOn !== hud.focus_mode) fBtn.click();
+        }
+        if (hud.preset) {
+          const pBtn = document.querySelector<HTMLButtonElement>(
+            `[data-hud-factory-preset="${hud.preset}"]`,
+          );
+          if (pBtn) pBtn.click();
+        }
+      }
+
+      const queued = Array.isArray(state?.remote_queue)
+        ? state.remote_queue.filter((q: any) => q && q.status === "queued" && q.id)
+        : [];
+      if (queued.length > 0) {
+        const syncBtn = document.getElementById("syncBtn") as HTMLButtonElement | null;
+        if (syncBtn && !syncBtn.disabled) syncBtn.click();
+        await fetch(`${API}/api/desktop/companion/push`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${tk}` },
+          body: JSON.stringify({ consume_queue_ids: queued.map((q: any) => String(q.id)) }),
+        }).catch(() => {});
+      }
+    }
+  } catch {
+    // Offline or non-fatal
+  }
+
+  // 2. PUSH PC cache -> MMT Pocket (PC -> Phone) at most once every 90s
+  const now = Date.now();
+  if (now - lastPushedPcCacheTs < 90_000) return;
+  lastPushedPcCacheTs = now;
+
+  try {
+    const { inTauri } = await import("./env");
+    let recentSessions: any[] = [];
+    let latestTel: any = null;
+
+    if (inTauri()) {
+      const { invoke } = await import("@tauri-apps/api/core");
+      const hist = await withTimeout(
+        invoke<{ sessions?: any[] }>("get_race_history"),
+        1500,
+        { sessions: [] },
+      );
+      if (Array.isArray(hist?.sessions)) {
+        recentSessions = hist.sessions.slice(0, 12);
+      }
+      const rep = lastIbtReport || (await withTimeout(invoke<IbtSessionReport | null>("read_latest_ibt"), 2500, null));
+      if (rep && rep.trackName) {
+        const pts = rep.bestLapSamples || [];
+        const step = Math.max(1, Math.floor(pts.length / 90));
+        const sampled = [];
+        for (let i = 0; i < pts.length; i += step) {
+          const p = pts[i];
+          sampled.push({
+            dist_m: Math.round(p.distM || 0),
+            speed_kmh: Math.round(p.speedKmh || 0),
+            throttle: Number((p.throttle || 0).toFixed(2)),
+            brake: Number((p.brake || 0).toFixed(2)),
+          });
+        }
+        latestTel = {
+          track_name: rep.trackName,
+          car_screen_name: rep.carScreenName,
+          best_lap_s: rep.bestLapS,
+          laps: (rep.laps || []).slice(0, 15).map((l) => ({
+            lap_num: l.lapNum,
+            lap_time_s: l.lapTimeS,
+            delta_s: l.deltaS,
+          })),
+          best_lap_samples: sampled,
+        };
+      }
+    }
+
+    const syncedCount = Array.isArray((snapshot as any)?.entries)
+      ? (snapshot as any).entries.length
+      : Array.isArray((snapshot as any)?.items)
+        ? (snapshot as any).items.length
+        : 0;
+    const logoMode =
+      document.querySelector('[data-brand-logo-mode-btn][aria-pressed="true"]')?.getAttribute("data-brand-logo-mode-btn") ||
+      "original";
+    const focusMode = document.getElementById("btnShellFocusMode")?.getAttribute("aria-pressed") === "true";
+
+    await fetch(`${API}/api/desktop/companion/push`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${tk}` },
+      body: JSON.stringify({
+        sync_status: {
+          synced_setups_count: syncedCount,
+          device_name: "MMT Sync PC",
+        },
+        hud_settings: {
+          brand_logo_mode: logoMode,
+          focus_mode: focusMode,
+        },
+        ...(recentSessions.length ? { recent_sessions: recentSessions, last_race: recentSessions[0] } : {}),
+        ...(latestTel ? { latest_telemetry: latestTel } : {}),
+      }),
+    }).catch(() => {});
+  } catch {
+    // Non-fatal
+  }
+}
+
+export function startCompanionBidirectionalSync(snapshot?: Snapshot): void {
+  if (companionSyncTimer !== null) return;
+  void runCompanionBidirectionalCycle(snapshot);
+  companionSyncTimer = window.setInterval(() => {
+    void runCompanionBidirectionalCycle(snapshot);
+  }, 45_000);
 }
 
