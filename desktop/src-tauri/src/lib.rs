@@ -1299,15 +1299,15 @@ async fn list_ibt_sessions() -> Result<Vec<ibt_parser::IbtSessionMeta>, String> 
         }
         files.sort_by_key(|entry| std::cmp::Reverse(entry.0));
         let mut out = Vec::new();
-        // Only scan the 5 most recent .ibt files (64 KB header + YAML only)
-        for (_, p) in files.into_iter().take(5) {
+        // Scan the 15 most recent .ibt files (header + YAML only)
+        for (_, p) in files.into_iter().take(15) {
             if let Ok(meta) = ibt_parser::read_ibt_meta(&p) {
                 out.push(meta);
             }
         }
         Ok(out)
     });
-    match tokio::time::timeout(std::time::Duration::from_millis(2000), task).await {
+    match tokio::time::timeout(std::time::Duration::from_millis(10_000), task).await {
         Ok(Ok(res)) => res,
         Ok(Err(e)) => Err(format!("Error listando sesiones .ibt: {e}")),
         Err(_) => Ok(Vec::new()),
@@ -1321,10 +1321,10 @@ async fn read_ibt_file(path: String) -> Result<Option<ibt_parser::IbtSessionRepo
         return Ok(None);
     }
     let task = tauri::async_runtime::spawn_blocking(move || ibt_parser::parse_ibt_report(&pb).map(Some));
-    match tokio::time::timeout(std::time::Duration::from_millis(2000), task).await {
+    match tokio::time::timeout(std::time::Duration::from_millis(15_000), task).await {
         Ok(Ok(res)) => res,
         Ok(Err(e)) => Err(format!("Error leyendo .ibt: {e}")),
-        Err(_) => Err("Tiempo de espera agotado (2000 ms) al leer .ibt".into()),
+        Err(_) => Err("Tiempo de espera agotado al leer .ibt".into()),
     }
 }
 
@@ -1340,16 +1340,13 @@ async fn read_latest_ibt() -> Result<Option<ibt_parser::IbtSessionReport>, Strin
         let Ok(entries) = fs::read_dir(&dir) else {
             return Ok(None);
         };
-        let now = std::time::SystemTime::now();
-        let cutoff = std::time::Duration::from_secs(48 * 3600);
         let mut newest: Option<(std::time::SystemTime, std::path::PathBuf)> = None;
         for entry in entries.flatten() {
             let p = entry.path();
             if p.extension().and_then(|e| e.to_str()).is_some_and(|e| e.eq_ignore_ascii_case("ibt")) {
                 if let Ok(meta) = entry.metadata() {
                     if let Ok(modified) = meta.modified() {
-                        let is_recent = now.duration_since(modified).is_ok_and(|d| d <= cutoff);
-                        if is_recent && newest.as_ref().is_none_or(|(t, _)| modified > *t) {
+                        if newest.as_ref().is_none_or(|(t, _)| modified > *t) {
                             newest = Some((modified, p));
                         }
                     }
@@ -1361,7 +1358,7 @@ async fn read_latest_ibt() -> Result<Option<ibt_parser::IbtSessionReport>, Strin
             None => Ok(None),
         }
     });
-    match tokio::time::timeout(std::time::Duration::from_millis(2000), task).await {
+    match tokio::time::timeout(std::time::Duration::from_millis(15_000), task).await {
         Ok(Ok(res)) => res,
         Ok(Err(e)) => Err(format!("Error leyendo último .ibt: {e}")),
         Err(_) => Ok(None),

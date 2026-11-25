@@ -334,8 +334,28 @@ function updateCalendarWeeksBar(): void {
 
 function isFixedSeries(s: ScheduleSeries): boolean {
   const n = s.name.toLowerCase();
-  const t = s.tier.toLowerCase();
-  return n.includes("fixed") || t.includes("fixed") || n.includes("gt3 regional tour");
+  const t = s.tier.toLowerCase().trim();
+  const isRookie = t === "r" || t.startsWith("r ") || t.includes("rookie") || n.includes("rookie");
+  if (isRookie) return true;
+  const fixedKeywords = [
+    "fixed",
+    "draft master",
+    "gt3 regional tour",
+    "ferrari 296 challenge",
+    "bmw m2",
+    "global mazda",
+    "formula vee",
+    "mini stock",
+    "legends cup",
+    "buttkicker",
+    "carburetor cup",
+    "dallara dash",
+    "pickup cup",
+    "ring meister",
+    "street stock",
+    "clio cup",
+  ];
+  return fixedKeywords.some((kw) => n.includes(kw) || t.includes(kw));
 }
 
 function renderWeekItems(data: Snapshot): void {
@@ -599,7 +619,7 @@ async function populateIbtSessionSelectors(autoLoadLatest = false): Promise<void
     const { invoke } = await import("@tauri-apps/api/core");
     const [capturedSessions, ibtSessions] = await Promise.all([
       withTimeout(invoke<CapturedSessionMeta[]>("list_captured_sessions"), 1500, []),
-      withTimeout(invoke<IbtDiskSessionMeta[]>("list_ibt_sessions"), 3500, []),
+      withTimeout(invoke<IbtDiskSessionMeta[]>("list_ibt_sessions"), 10_000, []),
     ]);
     const retentionDays = Number(localStorage.getItem(TELEMETRY_RETENTION_KEY) || "0");
     const nowMs = Date.now();
@@ -966,14 +986,14 @@ function renderTelemetryStudio(): void {
     : 0;
   const maxDist = Math.max(1, finiteOr(effectiveTrack.samples[effectiveTrack.samples.length - 1]?.dist, 1));
 
-  if (alienTimeNode) alienTimeNode.textContent = effectiveTrack.bestFormatted;
-  if (userTimeNode) userTimeNode.textContent = effectiveTrack.avgFormatted || effectiveTrack.bestFormatted;
+  if (alienTimeNode) alienTimeNode.textContent = lastIbtReport ? effectiveTrack.bestFormatted : "--:--.---";
+  if (userTimeNode) userTimeNode.textContent = lastIbtReport ? (effectiveTrack.avgFormatted || effectiveTrack.bestFormatted) : "--:--.---";
   if (countBadge) {
     if (lastIbtReport && lastIbtReport.bestLapSamples.length > 0) {
       const tbScore = Math.round(computeTrailBrakingScore(lastIbtReport.bestLapSamples));
       countBadge.textContent = `${lastIbtReport.totalLaps} vueltas válidas · Trail Braking ${tbScore}%`;
     } else {
-      countBadge.textContent = `${effectiveTrack.lapCount} vueltas analizadas`;
+      countBadge.textContent = "Sin sesión .ibt cargada (referencia)";
     }
   }
 

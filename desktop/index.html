@@ -55,7 +55,7 @@
           <img src="./favicon.svg" width="24" height="24" alt="Muntrume Motorsport" class="h-[24px] w-[24px] rounded-lg border border-white/15 bg-[#090b0f] shrink-0 shadow-sm" />
           <div class="flex items-baseline gap-1.5">
             <span class="font-display font-extrabold text-[15px] tracking-wider text-white whitespace-nowrap">MMT <span class="text-[#10b981]">SYNC</span></span>
-            <span class="text-[10px] font-mono text-white/35">v0.7.4</span>
+            <span class="text-[10px] font-mono text-white/35">v0.7.5</span>
           </div>
           <span id="irBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-medium border border-white/10 bg-[#090c12] text-r-muted whitespace-nowrap shrink-0">
             <span id="irDot" class="w-2 h-2 rounded-full bg-r-muted"></span>
@@ -1150,9 +1150,9 @@
                   <div class="flex items-center gap-2 min-w-0">
                     <div class="inline-flex items-center gap-0.5 rounded-lg border border-white/[0.08] bg-[#090c12] p-0.5 shrink-0">
                       <button type="button" data-hud-factory-preset="esports_pro" class="px-2.5 py-1 rounded-md bg-[#10b981]/15 text-[#10b981] font-semibold cursor-pointer whitespace-nowrap transition">Esports Pro</button>
-                      <button type="button" onclick="document.querySelector('[data-hud-factory-preset=sprint_gt3]')?.click()" class="px-2.5 py-1 rounded-md text-white/75 hover:text-white hover:bg-white/[0.06] font-medium cursor-pointer whitespace-nowrap transition">Sprint</button>
-                      <button type="button" onclick="document.querySelector('[data-hud-factory-preset=endurance_multi]')?.click()" class="px-2.5 py-1 rounded-md text-white/75 hover:text-white hover:bg-white/[0.06] font-medium cursor-pointer whitespace-nowrap transition">Endurance</button>
-                      <button type="button" onclick="document.querySelector('[data-hud-factory-preset=stream_minimal]')?.click()" class="px-2.5 py-1 rounded-md text-white/75 hover:text-white hover:bg-white/[0.06] font-medium cursor-pointer whitespace-nowrap transition">Qualy</button>
+                      <button type="button" data-hud-factory-preset="sprint_gt3" class="px-2.5 py-1 rounded-md text-white/75 hover:text-white hover:bg-white/[0.06] font-medium cursor-pointer whitespace-nowrap transition">Sprint</button>
+                      <button type="button" data-hud-factory-preset="endurance_multi" class="px-2.5 py-1 rounded-md text-white/75 hover:text-white hover:bg-white/[0.06] font-medium cursor-pointer whitespace-nowrap transition">Endurance</button>
+                      <button type="button" data-hud-factory-preset="stream_minimal" class="px-2.5 py-1 rounded-md text-white/75 hover:text-white hover:bg-white/[0.06] font-medium cursor-pointer whitespace-nowrap transition">Qualy</button>
                     </div>
                     <div id="mmtStudioSceneBar" class="inline-flex items-center gap-0.5 rounded-lg border border-white/[0.08] bg-[#090c12] p-0.5 shrink-0">
                       <button type="button" data-scene="cockpit" aria-pressed="true" class="px-2.5 py-1 rounded-md bg-[#10b981]/15 text-[#10b981] font-semibold cursor-pointer whitespace-nowrap transition">Cockpit</button>
@@ -1217,7 +1217,7 @@
                         <div id="ovRelative"></div>
                       </div>
 
-                      <div id="widgetCluster" class="mmt-hud-widget absolute right-3 bottom-[206px] flex flex-col items-end gap-1" data-widget="cluster">
+                      <div id="widgetCluster" class="mmt-hud-widget absolute right-3 bottom-[246px] flex flex-col items-end gap-1" data-widget="cluster">
                         <div class="flex items-center gap-2">
                           <div id="ovClusterBrandPreview" class="flex items-center gap-1.5 px-2 py-0.5 rounded-[3px] border border-white/[0.08] text-[10px] font-mono text-white/90" style="background: rgba(9, 11, 15, 0.78);"></div>
                           <div id="ovDelta" class="px-3 py-0.5 rounded-[3px] border border-emerald-500/40 bg-emerald-950/75 text-emerald-400 font-mono text-[11px] font-bold tabular-nums">-0.34s</div>
@@ -1298,7 +1298,18 @@
                 </div>
 
                 <div class="p-3 rounded-xl border border-white/[0.07] bg-[#090c12] space-y-3">
-                  <span class="block text-[10.5px] font-semibold uppercase tracking-wider text-white/45">Posición y tamaño</span>
+                  <span class="block text-[10.5px] font-semibold uppercase tracking-wider text-white/45">Posición rápida (3×3)</span>
+                  <div id="mmtSnapGrid9" class="grid grid-cols-3 gap-1.5" role="group" aria-label="Mover widget a esquina o borde">
+                    <button type="button" data-snap-pos="tl" title="Arriba izquierda" class="h-7 rounded-lg border border-white/10 bg-white/[0.03] hover:border-[#10b981]/60 hover:text-[#10b981] text-white/75 text-[12px] cursor-pointer transition">↖</button>
+                    <button type="button" data-snap-pos="tc" title="Arriba centro" class="h-7 rounded-lg border border-white/10 bg-white/[0.03] hover:border-[#10b981]/60 hover:text-[#10b981] text-white/75 text-[12px] cursor-pointer transition">↑</button>
+                    <button type="button" data-snap-pos="tr" title="Arriba derecha" class="h-7 rounded-lg border border-white/10 bg-white/[0.03] hover:border-[#10b981]/60 hover:text-[#10b981] text-white/75 text-[12px] cursor-pointer transition">↗</button>
+                    <button type="button" data-snap-pos="ml" title="Centro izquierda" class="h-7 rounded-lg border border-white/10 bg-white/[0.03] hover:border-[#10b981]/60 hover:text-[#10b981] text-white/75 text-[12px] cursor-pointer transition">←</button>
+                    <button type="button" data-snap-pos="mc" title="Centro" class="h-7 rounded-lg border border-white/10 bg-white/[0.03] hover:border-[#10b981]/60 hover:text-[#10b981] text-white/75 text-[12px] cursor-pointer transition">·</button>
+                    <button type="button" data-snap-pos="mr" title="Centro derecha" class="h-7 rounded-lg border border-white/10 bg-white/[0.03] hover:border-[#10b981]/60 hover:text-[#10b981] text-white/75 text-[12px] cursor-pointer transition">→</button>
+                    <button type="button" data-snap-pos="bl" title="Abajo izquierda" class="h-7 rounded-lg border border-white/10 bg-white/[0.03] hover:border-[#10b981]/60 hover:text-[#10b981] text-white/75 text-[12px] cursor-pointer transition">↙</button>
+                    <button type="button" data-snap-pos="bc" title="Abajo centro" class="h-7 rounded-lg border border-white/10 bg-white/[0.03] hover:border-[#10b981]/60 hover:text-[#10b981] text-white/75 text-[12px] cursor-pointer transition">↓</button>
+                    <button type="button" data-snap-pos="br" title="Abajo derecha" class="h-7 rounded-lg border border-white/10 bg-white/[0.03] hover:border-[#10b981]/60 hover:text-[#10b981] text-white/75 text-[12px] cursor-pointer transition">↘</button>
+                  </div>
                   <div class="grid grid-cols-2 gap-2 text-[11.5px] font-mono text-white/60">
                     <div class="px-2.5 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.06] flex justify-between"><span>X</span><strong id="mmtInspX" class="text-white">12px</strong></div>
                     <div class="px-2.5 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.06] flex justify-between"><span>Y</span><strong id="mmtInspY" class="text-white">12px</strong></div>
@@ -1394,7 +1405,154 @@
                 if (radarBtn) radarBtn.classList.toggle("hidden", mod !== "radar" && mod !== "spotter");
                 const hiddenSel = document.querySelector('#mmtStudioCatalogList [data-mod-select="' + mod + '"]');
                 if (hiddenSel) hiddenSel.click();
+                window.__mmtActiveMod = mod;
+                syncInspectorXY(mod);
               });
+
+              const POS_KEY = "mmt_studio_positions_v2";
+              const MOD_TO_WIDGET = {
+                standings: "widgetStandings",
+                relative: "widgetRelative",
+                trackmap: "widgetTrackMap",
+                fuel: "widgetFuel",
+                inputs: "widgetCluster",
+                delta: "widgetCluster",
+                radar: "widgetRadar",
+                pit: "widgetPitStrategy",
+                tires: "widgetTireMonitor",
+                flatmap: "widgetFlatMap",
+                traffic: "widgetTraffic",
+                weather: "widgetWeather",
+                spotter: "widgetSpotter",
+                sessionBar: "widgetSessionBar",
+                electronics: "widgetElectronics",
+                flagMatrix: "widgetFlagMatrix",
+                tachometer: "widgetTachometer",
+                lapTimer: "widgetLapTimer",
+              };
+              window.__mmtActiveMod = "standings";
+
+              function loadPosMap() {
+                try { return JSON.parse(localStorage.getItem(POS_KEY) || "{}"); } catch { return {}; }
+              }
+              function savePos(mod, x, y) {
+                const map = loadPosMap();
+                map[mod] = { x: Math.round(x), y: Math.round(y) };
+                try { localStorage.setItem(POS_KEY, JSON.stringify(map)); } catch {}
+              }
+              function getWidgetEl(mod) {
+                const id = MOD_TO_WIDGET[mod];
+                return id ? document.getElementById(id) : null;
+              }
+              function syncInspectorXY(mod) {
+                const el = getWidgetEl(mod);
+                const stage = document.getElementById("overlayStage");
+                if (!el || !stage) return;
+                const sr = stage.getBoundingClientRect();
+                const er = el.getBoundingClientRect();
+                const x = Math.max(0, Math.round(er.left - sr.left));
+                const y = Math.max(0, Math.round(er.top - sr.top));
+                const ix = document.getElementById("mmtInspX");
+                const iy = document.getElementById("mmtInspY");
+                if (ix) ix.textContent = x + "px";
+                if (iy) iy.textContent = y + "px";
+              }
+              function placeWidgetAt(mod, x, y) {
+                const el = getWidgetEl(mod);
+                if (!el) return;
+                el.style.left = Math.round(x) + "px";
+                el.style.top = Math.round(y) + "px";
+                el.style.right = "auto";
+                el.style.bottom = "auto";
+                el.style.transform = el.style.transform.replace(/translateX\([^)]*\)/g, "").trim();
+                savePos(mod, x, y);
+                syncInspectorXY(mod);
+              }
+
+              // Restore saved positions on load
+              const savedMap = loadPosMap();
+              Object.keys(savedMap).forEach((m) => {
+                const p = savedMap[m];
+                if (p && Number.isFinite(p.x) && Number.isFinite(p.y)) placeWidgetAt(m, p.x, p.y);
+              });
+
+              // 3x3 Quick Position Snap Grid
+              document.getElementById("mmtSnapGrid9")?.addEventListener("click", (e) => {
+                const btn = e.target.closest("[data-snap-pos]");
+                if (!btn) return;
+                const pos = btn.getAttribute("data-snap-pos");
+                const mod = window.__mmtActiveMod || "standings";
+                const el = getWidgetEl(mod);
+                const stage = document.getElementById("overlayStage");
+                if (!el || !stage) return;
+                const sw = stage.clientWidth || 1280;
+                const sh = stage.clientHeight || 720;
+                const ew = el.offsetWidth || 260;
+                const eh = el.offsetHeight || 120;
+                const pad = 12;
+                const col = pos[1];
+                const row = pos[0];
+                const x = col === "l" ? pad : col === "r" ? Math.max(pad, sw - ew - pad) : Math.max(pad, (sw - ew) / 2);
+                const y = row === "t" ? pad : row === "b" ? Math.max(pad, sh - eh - pad) : Math.max(pad, (sh - eh) / 2);
+                placeWidgetAt(mod, x, y);
+              });
+
+              // Center horizontally button
+              document.getElementById("mmtInspCenterX")?.addEventListener("click", () => {
+                const mod = window.__mmtActiveMod || "standings";
+                const el = getWidgetEl(mod);
+                const stage = document.getElementById("overlayStage");
+                if (!el || !stage) return;
+                const sr = stage.getBoundingClientRect();
+                const er = el.getBoundingClientRect();
+                const x = Math.max(12, ((stage.clientWidth || 1280) - (el.offsetWidth || 260)) / 2);
+                const y = Math.max(12, er.top - sr.top);
+                placeWidgetAt(mod, x, y);
+              });
+
+              // Direct drag-and-drop on any HUD widget in the stage
+              const stageEl = document.getElementById("overlayStage");
+              if (stageEl) {
+                let dragMod = null, dragEl = null, offX = 0, offY = 0;
+                stageEl.addEventListener("pointerdown", (e) => {
+                  const w = e.target.closest(".mmt-hud-widget");
+                  if (!w) return;
+                  const mod = Object.keys(MOD_TO_WIDGET).find((k) => MOD_TO_WIDGET[k] === w.id);
+                  if (!mod) return;
+                  dragMod = mod;
+                  dragEl = w;
+                  window.__mmtActiveMod = mod;
+                  const titleEl = document.getElementById("mmtInspTitle");
+                  if (titleEl) titleEl.textContent = LABELS[mod] || mod;
+                  const wr = w.getBoundingClientRect();
+                  offX = e.clientX - wr.left;
+                  offY = e.clientY - wr.top;
+                  w.style.cursor = "grabbing";
+                  w.setPointerCapture?.(e.pointerId);
+                });
+                stageEl.addEventListener("pointermove", (e) => {
+                  if (!dragEl || !dragMod) return;
+                  const sr = stageEl.getBoundingClientRect();
+                  const scaleX = (stageEl.clientWidth || 1) / Math.max(1, sr.width);
+                  const scaleY = (stageEl.clientHeight || 1) / Math.max(1, sr.height);
+                  const nx = Math.max(4, Math.min((stageEl.clientWidth || 1280) - dragEl.offsetWidth - 4, (e.clientX - sr.left - offX) * scaleX));
+                  const ny = Math.max(4, Math.min((stageEl.clientHeight || 720) - dragEl.offsetHeight - 4, (e.clientY - sr.top - offY) * scaleY));
+                  placeWidgetAt(dragMod, nx, ny);
+                });
+                const endDrag = () => {
+                  if (dragEl) dragEl.style.cursor = "grab";
+                  dragEl = null;
+                  dragMod = null;
+                };
+                stageEl.addEventListener("pointerup", endDrag);
+                stageEl.addEventListener("pointercancel", endDrag);
+              }
+
+              // Reset saved positions when clicking Reset / Restaurar
+              document.getElementById("btnTopReset")?.addEventListener("click", () => {
+                try { localStorage.removeItem(POS_KEY); } catch {}
+              });
+
               document.addEventListener("click", (e) => {
                 const more = document.getElementById("appNavMore");
                 if (more && more.hasAttribute("open") && !more.contains(e.target)) {
