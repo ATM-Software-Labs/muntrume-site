@@ -1,5 +1,4 @@
 import {
-  BUILTIN_DECALS,
   CAR_CATEGORY_ORDER,
   CAR_PROFILES,
   DRIVER_PROFILES,
@@ -11,6 +10,7 @@ import {
 } from "./catalog";
 import { renderSkinToCanvas, renderSpecMapToCanvas } from "./compositor";
 import { renderShowroomCarView, type ShowroomAngle } from "./car-showroom-view";
+import { BRAND_DECALS, SERIES_DECALS, TEAM_DECALS, type LibraryDecalItem } from "./decals-library";
 import {
   exportIracingZipBundle,
   exportPresetJson,
@@ -18,12 +18,6 @@ import {
   exportSingleSpecTga,
   sanitizeCustomerId,
 } from "./exporter";
-import {
-  getSavedGeminiKey,
-  requestGeminiDesignReview,
-  requestGeminiPhotoAdaptation,
-  saveGeminiKey,
-} from "./gemini-copilot";
 import { buildDefaultPhotoGuide, contrastRatio } from "./photo-guide";
 import { WebGLPreviewEngine } from "./preview-3d";
 import { analyzeTemplateZones, loadTemplateFile, type LoadedTemplate } from "./template-analyzer";
@@ -1054,6 +1048,16 @@ export function initSkinsStudio(): void {
     });
   }
 
+  byId<HTMLButtonElement>("skCleanCanvasBtn")?.addEventListener("click", () => {
+    state.pattern = "freeform";
+    state.decals = [];
+    state.strokes = [];
+    selectedDecalId = null;
+    syncControlsFromState();
+    scheduleRender();
+    setStatus("Lienzo limpio en modo Diseño Libre listo para pintar o usar Muntrume AI.", "ok");
+  });
+
   byId<HTMLButtonElement>("skSaveLocalBtn")?.addEventListener("click", () => {
     saveToLibrary(state);
     setStatus(`Guardado en biblioteca local: ${state.name}`, "ok");
@@ -1193,37 +1197,46 @@ export function initSkinsStudio(): void {
     });
   });
 
-  // Decals Tab Bindings
-  const builtinHost = byId<HTMLElement>("skBuiltinDecals");
-  if (builtinHost) {
-    builtinHost.innerHTML = BUILTIN_DECALS.map(
-      (b) => `<button type="button" class="sk-btn sk-btn-sm" data-add-builtin="${b.id}">+ ${escapeHtml(b.label)}</button>`,
-    ).join("");
-    builtinHost.querySelectorAll<HTMLButtonElement>("[data-add-builtin]").forEach((btn) => {
+  // Decals Tab Bindings (Escudería MMT + Series iRacing + Marcas)
+  const mountLibraryDecals = (containerId: string, items: LibraryDecalItem[], defaultMirror = false) => {
+    const host = byId<HTMLElement>(containerId);
+    if (!host) return;
+    host.innerHTML = items
+      .map(
+        (item) =>
+          `<button type="button" class="sk-btn sk-btn-sm" data-lib-decal="${item.id}" style="gap:5px;"><img src="${item.src}" alt="" width="14" height="14" style="object-fit:contain;" /><span>${escapeHtml(item.label)}</span></button>`,
+      )
+      .join("");
+    host.querySelectorAll<HTMLButtonElement>("[data-lib-decal]").forEach((btn) => {
       btn.addEventListener("click", () => {
-        const asset = BUILTIN_DECALS.find((b) => b.id === btn.dataset.addBuiltin);
-        if (!asset) return;
+        const item = items.find((i) => i.id === btn.dataset.libDecal);
+        if (!item) return;
         const layer: DecalLayer = {
-          id: `decal-${Date.now()}`,
-          name: asset.label,
-          kind: "builtin",
-          assetId: asset.id,
+          id: `decal-lib-${Date.now()}`,
+          name: item.label,
+          kind: "custom",
+          dataUrl: item.src,
           color: "#ffffff",
-          x: 0.5,
-          y: 0.20,
-          scale: 0.22,
+          x: defaultMirror ? 0.22 : 0.5,
+          y: item.group === "series" ? 0.42 : 0.22,
+          scale: item.defaultScale ?? 0.16,
           rotation: 0,
           opacity: 1,
-          mirrorX: false,
+          mirrorX: defaultMirror,
         };
         state.decals.push(layer);
         selectedDecalId = layer.id;
         renderDecalList();
         renderDecalEditor();
         scheduleRender();
+        setStatus(`Decal añadido: ${item.label} (arrástralo en el mapa UV)`, "ok");
       });
     });
-  }
+  };
+
+  mountLibraryDecals("skTeamDecals", TEAM_DECALS, false);
+  mountLibraryDecals("skSeriesDecals", SERIES_DECALS, true);
+  mountLibraryDecals("skBrandDecals", BRAND_DECALS, false);
 
   byId<HTMLButtonElement>("skAddTextDecal")?.addEventListener("click", () => {
     const txtInput = byId<HTMLInputElement>("skCustomTextInput");
@@ -1276,25 +1289,48 @@ export function initSkinsStudio(): void {
     reader.readAsDataURL(file);
   });
 
-  // Gemini Copilot Bindings
-  const keyInput = byId<HTMLInputElement>("skGeminiKey");
-  if (keyInput) keyInput.value = getSavedGeminiKey();
-
-  byId<HTMLButtonElement>("skSaveGeminiKey")?.addEventListener("click", () => {
-    saveGeminiKey(keyInput?.value || "");
-    setStatus(keyInput?.value.trim() ? "API key de Gemini guardada solo en tu navegador." : "API key de Gemini eliminada.", "ok");
+  // Muntrume AI Full-Auto Designer (1-click complete design for non-experts)
+  document.querySelectorAll<HTMLButtonElement>("[data-ai-quick]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const promptEl = byId<HTMLTextAreaElement>("skGeminiPrompt");
+      if (promptEl && btn.dataset.aiQuick) {
+        promptEl.value = btn.dataset.aiQuick;
+      }
+      byId<HTMLButtonElement>("skGeminiDesignBtn")?.click();
+    });
   });
+
+  function resolveAiDecalAsset(hint: string | undefined, kind: string | undefined, carBrand: string): { kind: DecalLayer["kind"]; dataUrl?: string; shapeType?: "stripe" | "triangle" | "circle"; label: string } {
+    const h = String(hint || "").toLowerCase();
+    if (kind === "shape" || h === "stripe" || h === "triangle" || h === "circle") {
+      const st = h === "triangle" ? "triangle" : h === "circle" ? "circle" : "stripe";
+      return { kind: "shape", shapeType: st, label: st === "stripe" ? "Franja Muntrume AI" : st === "triangle" ? "Acento Triangular" : "Círculo" };
+    }
+    const allLib = [...TEAM_DECALS, ...SERIES_DECALS, ...BRAND_DECALS];
+    const exact = allLib.find((i) => i.id === h);
+    if (exact) return { kind: "custom", dataUrl: exact.src, label: exact.label };
+    if (kind === "brand") {
+      const bMatch = BRAND_DECALS.find((b) => b.label.toLowerCase().includes(carBrand.toLowerCase()) || carBrand.toLowerCase().includes(b.label.toLowerCase()));
+      if (bMatch) return { kind: "custom", dataUrl: bMatch.src, label: bMatch.label };
+    }
+    if (kind === "series") {
+      return { kind: "custom", dataUrl: SERIES_DECALS[0].src, label: SERIES_DECALS[0].label };
+    }
+    return { kind: "custom", dataUrl: TEAM_DECALS[0].src, label: TEAM_DECALS[0].label };
+  }
 
   byId<HTMLButtonElement>("skGeminiDesignBtn")?.addEventListener("click", async () => {
     const btn = byId<HTMLButtonElement>("skGeminiDesignBtn")!;
     const out = byId<HTMLElement>("skGeminiOutput")!;
     const promptText = byId<HTMLTextAreaElement>("skGeminiPrompt")?.value || "";
+    const seriesVal = byId<HTMLSelectElement>("skAiSeriesSelect")?.value || "IMSA Endurance";
     btn.disabled = true;
-    setStatus("Consultando Worker privado (POST /api/skins/ai-assist)...");
+    setStatus("Muntrume AI diseñando tu coche completo...");
     try {
       const aiRes = await fetchWorkerAiAssist({
         car_slug: state.carId,
-        style: promptText || "MMT Endurance agresivo y legible",
+        series: seriesVal,
+        style: promptText || "MMT Endurance agresivo y limpio",
         driver_number: state.customNumber,
         colors: {
           primary: state.palette.primary,
@@ -1303,102 +1339,87 @@ export function initSkinsStudio(): void {
         },
       });
       const plan = aiRes.design_plan;
+      const car = getCarById(state.carId);
+
+      // AUTO-APLICAR TODO LIMPIO (cero cajas rotas, cero configuración manual para no expertos)
+      state.name = `${plan.title} · #${state.customNumber}`;
+      state.pattern = plan.pattern === "freeform" ? "freeform" : "freeform";
+      state.strokes = [];
+      state.palette = {
+        ...state.palette,
+        primary: plan.palette.primary || state.palette.primary,
+        secondary: plan.palette.secondary || state.palette.secondary,
+        accent: plan.palette.accent || state.palette.accent,
+        detail: plan.palette.detail || state.palette.detail,
+      };
+      state.spec = { finish: plan.finish || "satin", ...finishDefaults(plan.finish || "satin") };
+
+      const newDecals: DecalLayer[] = [];
+      const rawLayers = Array.isArray(plan.layers) ? plan.layers.slice(0, 8) : [];
+      for (let i = 0; i < rawLayers.length; i++) {
+        const l = rawLayers[i];
+        const nx = l.x > 1 ? l.x / 2048 : l.x;
+        const ny = l.y > 1 ? l.y / 2048 : l.y;
+        const asset = resolveAiDecalAsset(l.asset_hint, l.kind, car.brand);
+        newDecals.push({
+          id: `ai-layer-${Date.now()}-${i}`,
+          name: l.element || asset.label,
+          kind: asset.kind,
+          dataUrl: asset.dataUrl,
+          shapeType: asset.shapeType,
+          color: l.color || state.palette.accent,
+          x: Math.max(0.06, Math.min(0.94, Number.isFinite(nx) ? nx : 0.5)),
+          y: Math.max(0.06, Math.min(0.94, Number.isFinite(ny) ? ny : 0.5)),
+          scale: Math.max(0.06, Math.min(0.45, Number.isFinite(l.scale) ? l.scale : 0.16)),
+          rotation: Number.isFinite(l.rotation) ? l.rotation : 0,
+          opacity: 1,
+          mirrorX: Boolean(l.mirror_x),
+        });
+      }
+
+      // Si Muntrume AI no devolvió capas, colocar un kit limpio MMT + Marca + Serie automáticamente
+      if (newDecals.length === 0) {
+        const brandMatch = BRAND_DECALS.find((b) => car.brand.toLowerCase().includes(b.label.toLowerCase()));
+        const seriesMatch = SERIES_DECALS.find((s) => s.label.toLowerCase().includes(seriesVal.toLowerCase().split(" ")[0])) || SERIES_DECALS[0];
+        newDecals.push(
+          { id: `ai-def-1-${Date.now()}`, name: "Escudo MMT", kind: "custom", dataUrl: TEAM_DECALS[0].src, color: "#ffffff", x: 0.5, y: 0.18, scale: 0.14, rotation: 0, opacity: 1, mirrorX: false },
+          { id: `ai-def-2-${Date.now()}`, name: "Muntrume Lateral", kind: "custom", dataUrl: TEAM_DECALS[1].src, color: "#ffffff", x: 0.22, y: 0.56, scale: 0.22, rotation: 0, opacity: 1, mirrorX: true },
+          { id: `ai-def-3-${Date.now()}`, name: seriesMatch.label, kind: "custom", dataUrl: seriesMatch.src, color: "#ffffff", x: 0.22, y: 0.42, scale: 0.13, rotation: 0, opacity: 1, mirrorX: true },
+        );
+        if (brandMatch) {
+          newDecals.push({ id: `ai-def-4-${Date.now()}`, name: brandMatch.label, kind: "custom", dataUrl: brandMatch.src, color: "#ffffff", x: 0.5, y: 0.09, scale: 0.08, rotation: 0, opacity: 1, mirrorX: false });
+        }
+      }
+
+      state.decals = newDecals;
+      selectedDecalId = newDecals[0]?.id ?? null;
       customPhotoShots = mapWorkerPhotoGuideToShots(state.carId, state.customNumber, aiRes.photo_guide);
+      syncControlsFromState();
       renderPhotoGuide();
+      scheduleRender();
 
       out.innerHTML = `
         <div class="sk-shot-card">
-          <strong>${escapeHtml(plan.title)}</strong>
+          <strong>✓ Aplicado automáticamente: ${escapeHtml(plan.title)}</strong>
           <p class="sk-help">${escapeHtml(plan.rationale)}</p>
           <div class="sk-row">
             ${Object.values(plan.palette)
               .slice(0, 4)
               .map((hex) => `<span style="width:20px;height:20px;border-radius:4px;background:${hex};border:1px solid rgba(255,255,255,0.2);"></span>`)
               .join("")}
-            <span class="sk-tag">${escapeHtml(plan.pattern)} · ${escapeHtml(plan.finish)}</span>
+            <span class="sk-tag">${escapeHtml(plan.finish)} · ${newDecals.length} capas</span>
           </div>
-          <ul>${(plan.layers || []).slice(0, 4).map((l) => `<li><strong>${escapeHtml(l.zone)}:</strong> ${escapeHtml(l.element)} (${l.x}, ${l.y})</li>`).join("")}</ul>
-          <p class="sk-help" style="color:var(--sk-accent);">Guía de fotos Trading Paints actualizada (${escapeHtml(aiRes.photo_guide.circuit)}).</p>
-          <button type="button" id="skApplyGeminiBtn" class="sk-btn sk-btn-primary sk-btn-sm">Aplicar propuesta al editor</button>
+          <p class="sk-help" style="color:var(--sk-accent);">Ya está listo en el lienzo. Ve a <strong>Exportar</strong> para descargar tu <code>car_&lt;id&gt;.tga</code> y el pack ZIP.</p>
         </div>
       `;
-      byId<HTMLButtonElement>("skApplyGeminiBtn")?.addEventListener("click", () => {
-        state.pattern = plan.pattern;
-        state.palette = {
-          ...state.palette,
-          primary: plan.palette.primary || state.palette.primary,
-          secondary: plan.palette.secondary || state.palette.secondary,
-          accent: plan.palette.accent || state.palette.accent,
-          detail: plan.palette.detail || state.palette.detail,
-        };
-        state.spec = { finish: plan.finish, ...finishDefaults(plan.finish) };
-        syncControlsFromState();
-        scheduleRender();
-        setStatus(`Propuesta IA aplicada: ${plan.title}`, "ok");
-      });
-      setStatus("Plan UV + Guía de fotos generados por Worker IA.", "ok");
+      setStatus(`Muntrume AI aplicó "${plan.title}" (${newDecals.length} capas limpias).`, "ok");
     } catch (err) {
       if (err instanceof SkinsApiError && err.status === 401) {
         lockStudio(err.message);
         return;
       }
-      out.innerHTML = `<p class="sk-help" style="color:#fca5a5;">${escapeHtml(err instanceof Error ? err.message : "Error al consultar Worker IA")}</p>`;
-      setStatus(err instanceof Error ? err.message : "Error en Worker IA", "err");
-    } finally {
-      btn.disabled = false;
-    }
-  });
-
-  byId<HTMLButtonElement>("skGeminiReviewBtn")?.addEventListener("click", async () => {
-    const btn = byId<HTMLButtonElement>("skGeminiReviewBtn")!;
-    const out = byId<HTMLElement>("skGeminiOutput")!;
-    btn.disabled = true;
-    setStatus("Auditando contraste y legibilidad con Gemini...");
-    try {
-      const car = getCarById(state.carId);
-      const review = await requestGeminiDesignReview(keyInput?.value || getSavedGeminiKey(), car, state);
-      out.innerHTML = `
-        <div class="sk-shot-card">
-          <strong>Auditoría Pre-Exportación · ${review.score}/100</strong>
-          <p class="sk-help">${escapeHtml(review.verdict)}</p>
-          <ul>
-            ${review.contrastNotes.map((n) => `<li><strong>Contraste:</strong> ${escapeHtml(n)}</li>`).join("")}
-            ${review.legibilityNotes.map((n) => `<li><strong>Legibilidad:</strong> ${escapeHtml(n)}</li>`).join("")}
-            ${review.exportChecklist.map((n) => `<li><strong>Export:</strong> ${escapeHtml(n)}</li>`).join("")}
-          </ul>
-        </div>
-      `;
-      setStatus(`Revisión completada (${review.score}/100)`, "ok");
-    } catch (err) {
-      out.innerHTML = `<p class="sk-help" style="color:#fca5a5;">${escapeHtml(err instanceof Error ? err.message : "Error de Gemini")}</p>`;
-      setStatus("Error en auditoría Gemini", "err");
-    } finally {
-      btn.disabled = false;
-    }
-  });
-
-  byId<HTMLButtonElement>("skGeminiPhotoBtn")?.addEventListener("click", async () => {
-    const btn = byId<HTMLButtonElement>("skGeminiPhotoBtn")!;
-    const out = byId<HTMLElement>("skGeminiOutput")!;
-    btn.disabled = true;
-    setStatus("Adaptando circuito e iluminación para Trading Paints con Gemini...");
-    try {
-      const car = getCarById(state.carId);
-      const base = buildDefaultPhotoGuide(car, state);
-      const adapted = await requestGeminiPhotoAdaptation(keyInput?.value || getSavedGeminiKey(), car, state, base);
-      customPhotoShots = adapted.shots;
-      renderPhotoGuide();
-      out.innerHTML = `
-        <div class="sk-shot-card">
-          <strong>Guía de Fotos Adaptada (${escapeHtml(adapted.recommendedCircuit)})</strong>
-          <p class="sk-help">${escapeHtml(adapted.summary)} · ${escapeHtml(adapted.lightingNote)}</p>
-          <p class="sk-help" style="color:var(--sk-accent);">Actualizada en la pestaña "Exportar & Fotos".</p>
-        </div>
-      `;
-      setStatus("Guía de fotos adaptada por Gemini.", "ok");
-    } catch (err) {
-      out.innerHTML = `<p class="sk-help" style="color:#fca5a5;">${escapeHtml(err instanceof Error ? err.message : "Error de Gemini")}</p>`;
-      setStatus("Error adaptando guía de fotos", "err");
+      out.innerHTML = `<p class="sk-help" style="color:#fca5a5;">${escapeHtml(err instanceof Error ? err.message : "Error en Muntrume AI")}</p>`;
+      setStatus(err instanceof Error ? err.message : "Error en Muntrume AI", "err");
     } finally {
       btn.disabled = false;
     }

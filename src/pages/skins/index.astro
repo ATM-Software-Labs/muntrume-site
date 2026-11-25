@@ -116,7 +116,7 @@ const canonical = "https://skins.muntru.me/";
         <span class="sk-brand-badge">MMT SKINS STUDIO</span>
         <div>
           <h1 class="sk-title">skins.muntru.me</h1>
-          <div class="sk-subtitle">Compositor iRacing 2K/4K · Detección de zonas · Copiloto Gemini · Trading Paints</div>
+          <div class="sk-subtitle">Compositor iRacing 2K/4K · Siluetas UV sin copy · Muntrume AI · Trading Paints</div>
         </div>
       </div>
 
@@ -126,6 +126,7 @@ const canonical = "https://skins.muntru.me/";
           <button type="button" data-res-mode="2048" class="is-active">2048 px</button>
           <button type="button" data-res-mode="4096">4096 px (4K)</button>
         </div>
+        <button type="button" id="skCleanCanvasBtn" class="sk-btn sk-btn-sm">Limpiar lienzo</button>
         <button type="button" id="skSaveLocalBtn" class="sk-btn sk-btn-sm">Guardar preset</button>
       </div>
     </header>
@@ -273,8 +274,8 @@ const canonical = "https://skins.muntru.me/";
       <aside class="sk-inspector">
         <div class="sk-tabs" role="tablist" aria-label="Paneles del editor">
           <button type="button" class="sk-tab is-active" data-right-tab="design">Diseño</button>
-          <button type="button" class="sk-tab" data-right-tab="decals">Logos</button>
-          <button type="button" class="sk-tab" data-right-tab="gemini">Gemini IA</button>
+          <button type="button" class="sk-tab" data-right-tab="decals">Decals</button>
+          <button type="button" class="sk-tab" data-right-tab="gemini">Muntrume AI</button>
           <button type="button" class="sk-tab" data-right-tab="export">Exportar</button>
         </div>
 
@@ -355,12 +356,20 @@ const canonical = "https://skins.muntru.me/";
           </div>
         </div>
 
-        <!-- TAB 2: DECALS & SPONSORS -->
+        <!-- TAB 2: DECALS & SPONSORS (TEAM + SERIES + BRANDS) -->
         <div id="skTab-decals" class="sk-card sk-hidden">
-          <h2 class="sk-card-title">Añadir Logos MMT y Sponsors</h2>
-          <div id="skBuiltinDecals" class="sk-row" style="flex-wrap:wrap;"></div>
+          <h2 class="sk-card-title">Escudería Muntrume (MMT)</h2>
+          <div id="skTeamDecals" class="sk-row" style="flex-wrap:wrap;"></div>
 
-          <div class="sk-row">
+          <h2 class="sk-card-title" style="margin-top:4px;">Series de iRacing</h2>
+          <div id="skSeriesDecals" class="sk-row" style="flex-wrap:wrap;"></div>
+
+          <h2 class="sk-card-title" style="margin-top:4px;">Marcas / Fabricantes</h2>
+          <div id="skBrandDecals" class="sk-row" style="flex-wrap:wrap;"></div>
+
+          <div id="skBuiltinDecals" class="sk-hidden"></div>
+
+          <div class="sk-row" style="margin-top:4px;">
             <input id="skCustomTextInput" type="text" class="sk-input" placeholder="Texto sponsor o piloto..." />
             <button type="button" id="skAddTextDecal" class="sk-btn sk-btn-sm">+ Texto</button>
           </div>
@@ -377,33 +386,37 @@ const canonical = "https://skins.muntru.me/";
           <div id="skDecalEditor"></div>
         </div>
 
-        <!-- TAB 3: GEMINI COPILOT (VIA WORKER) -->
+        <!-- TAB 3: MUNTRUME AI AUTO-DESIGNER -->
         <div id="skTab-gemini" class="sk-card sk-hidden">
-          <h2 class="sk-card-title">Copiloto Gemini API (Worker Privado)</h2>
+          <h2 class="sk-card-title">Muntrume AI · Diseñador Automático</h2>
           <p class="sk-help">
-            Conectado de forma segura a <code>POST api.muntru.me/api/skins/ai-assist</code> con tu sesión de <code>muntru.me</code> y las coordenadas UV reales del coche (sin exponer API keys en el navegador).
+            ¿No quieres complicarte con capas? Elige serie y estilo y <strong>Muntrume AI limpia el lienzo y diseña el coche completo automáticamente</strong> (colores, acabado, logos MMT, marca y serie) listo para exportar.
           </p>
 
           <label class="sk-label">
-            Idea o estilo de diseño
+            Serie / Campeonato iRacing
+            <select id="skAiSeriesSelect" class="sk-select">
+              <option value="IMSA Endurance">IMSA Endurance</option>
+              <option value="GT Sprint">GT Sprint Series</option>
+              <option value="Porsche Cup">Porsche Cup 992</option>
+              <option value="PCC">Production Car Challenge (PCC)</option>
+              <option value="SFL">Super Formula Lights</option>
+              <option value="24H Special Event">24H Special Event</option>
+            </select>
+          </label>
+
+          <div class="sk-row" style="flex-wrap:wrap;">
+            <button type="button" class="sk-btn sk-btn-sm" data-ai-quick="Endurance oscuro carbono y verde esmeralda MMT elegante">Carbono MMT</button>
+            <button type="button" class="sk-btn sk-btn-sm" data-ai-quick="Sprint blanco agresivo con franjas negras y acento esmeralda">Sprint Blanco</button>
+            <button type="button" class="sk-btn sk-btn-sm" data-ai-quick="Estilo oficial de fábrica minimalista metálico de alta legibilidad">Fábrica Pro</button>
+          </div>
+
+          <label class="sk-label">
+            O describe tu idea libremente
             <textarea id="skGeminiPrompt" class="sk-textarea" placeholder="Ej: Livery 24h de Spa agresiva con carbono expuesto, verde esmeralda eléctrico y detalles blancos muy visibles de noche..."></textarea>
           </label>
 
-          <button type="button" id="skGeminiDesignBtn" class="sk-btn sk-btn-primary">Generar plan UV + Guía de fotos (Worker IA)</button>
-
-          <details style="font-size:11px;color:var(--sk-muted);">
-            <summary style="cursor:pointer;">Modo alternativo con API key local (opcional)</summary>
-            <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
-              <div class="sk-row">
-                <input id="skGeminiKey" type="password" class="sk-input" placeholder="AIza... (solo navegador)" autocomplete="off" />
-                <button type="button" id="skSaveGeminiKey" class="sk-btn sk-btn-sm">Guardar</button>
-              </div>
-              <div class="sk-grid-2">
-                <button type="button" id="skGeminiReviewBtn" class="sk-btn sk-btn-sm">Auditar contraste</button>
-                <button type="button" id="skGeminiPhotoBtn" class="sk-btn sk-btn-sm">Adaptar fotos local</button>
-              </div>
-            </div>
-          </details>
+          <button type="button" id="skGeminiDesignBtn" class="sk-btn sk-btn-primary">Diseñar coche completo con Muntrume AI</button>
 
           <div id="skGeminiOutput"></div>
         </div>

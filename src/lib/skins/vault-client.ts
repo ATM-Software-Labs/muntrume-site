@@ -203,11 +203,14 @@ export interface WorkerAiAssistResponse {
     palette: { primary: string; secondary: string; accent: string; detail: string };
     layers: Array<{
       zone: string;
+      kind?: "team" | "brand" | "series" | "shape";
+      asset_hint?: string;
       element: string;
       x: number;
       y: number;
       scale: number;
       rotation: number;
+      color?: string;
       mirror_x: boolean;
     }>;
   };
@@ -234,6 +237,7 @@ export async function fetchWorkerUvMap(carSlug: string): Promise<WorkerUvRespons
 export async function fetchWorkerAiAssist(params: {
   car_slug: string;
   style: string;
+  series?: string;
   driver_number: string;
   colors: { primary: string; secondary: string; accent: string };
 }): Promise<WorkerAiAssistResponse> {
