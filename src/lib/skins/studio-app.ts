@@ -90,6 +90,7 @@ export function initSkinsStudio(): void {
   let showroomAngle: ShowroomAngle = "side";
   let rightTab: RightTab = "design";
   let loadedTemplate: LoadedTemplate | null = null;
+  let workerWireframeCanvas: HTMLCanvasElement | null = null;
   let showTemplateOverlay = true;
   let templateOpacity = 0.45;
   let showZonesOverlay = true;
@@ -116,15 +117,33 @@ export function initSkinsStudio(): void {
     studioShell?.classList.remove("sk-hidden");
   }
 
+  function renderSvgStringToCanvas(svgMarkup: string): Promise<HTMLCanvasElement | null> {
+    if (!svgMarkup || !svgMarkup.trim().startsWith("<svg")) return Promise.resolve(null);
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement("canvas");
+        c.width = 1024;
+        c.height = 1024;
+        const ctx = c.getContext("2d");
+        if (ctx) ctx.drawImage(img, 0, 0, 1024, 1024);
+        resolve(c);
+      };
+      img.onerror = () => resolve(null);
+      img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgMarkup)}`;
+    });
+  }
+
   async function syncCarUvFromWorker(carSlug: string): Promise<void> {
     if (!vaultAuthenticated) return;
     try {
       const uv = await fetchWorkerUvMap(carSlug);
       const car = getCarById(carSlug);
       state.zones = mapWorkerUvToZones(uv, car.defaultZones);
+      workerWireframeCanvas = await renderSvgStringToCanvas(uv.wireframe_svg || "");
       renderZoneList();
       scheduleRender();
-      setStatus(`UV cargado desde Worker (${uv.car_slug} · ${uv.uv_status})`, "ok");
+      setStatus(`UV limpio sin copy cargado (${uv.car_slug} · ${uv.uv_status})`, "ok");
     } catch (err) {
       if (err instanceof SkinsApiError && err.status === 401) {
         lockStudio(err.message);
@@ -252,7 +271,7 @@ export function initSkinsStudio(): void {
         } else if (viewMode === "uv") {
           await renderSkinToCanvas(uvCanvas, state, {
             size: 1024,
-            templateCanvas: loadedTemplate?.wireframeCanvas ?? loadedTemplate?.canvas ?? null,
+            templateCanvas: loadedTemplate?.wireframeCanvas ?? loadedTemplate?.canvas ?? workerWireframeCanvas,
             partsOverlayCanvas: loadedTemplate?.partsOverlayCanvas ?? null,
             showTemplateOverlay,
             templateOpacity,
