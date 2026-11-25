@@ -175,8 +175,34 @@ export function renderRelativeWidget(container: HTMLElement, state: IrsdkCompute
     })
     .join("");
 
+  const airC = typeof state.frame.airTempC === "number" && state.frame.airTempC > -20 ? `${state.frame.airTempC.toFixed(0)}°C` : "--°C";
+  const trkC = typeof state.frame.trackTempC === "number" && state.frame.trackTempC > -20 ? `${state.frame.trackTempC.toFixed(0)}°C` : "--°C";
+  const allDrv = Object.values(state.session.driverInfo?.drivers ?? {}).filter((d) => !d.isPaceCar && !d.isSpectator && d.iRating > 0);
+  const relSof = allDrv.length > 0 ? computeClassSof(allDrv.map((d) => d.iRating)) : 0;
+  const bb = typeof (state.frame as any).dcBrakeBias === "number" && (state.frame as any).dcBrakeBias > 0 ? `BB ${(state.frame as any).dcBrakeBias.toFixed(1)}%` : "";
+  const incCnt = state.frame.playerCarTeamIncidentCount ?? 0;
+  const incLim = state.session.weekendInfo?.incidentLimit ?? 17;
+  const remS = Math.max(0, Math.round(state.frame.sessionTimeRemain || 0));
+  const clk = `${Math.floor(remS / 60)}:${String(remS % 60).padStart(2, "0")}`;
+
+  const relHeaderHtml = `
+    <div class="flex items-center justify-between gap-2 px-2 py-1 border-b border-white/10 text-[9.5px] font-mono tabular-nums text-white/75" style="background:rgba(15,20,28,0.92);">
+      <div class="flex items-center gap-2">
+        <span>🌡 ${airC}</span>
+        <span class="text-white/90">🛣 ${trkC}</span>
+        ${relSof > 0 ? `<span class="text-white/60">SoF <strong class="text-white/95">${relSof}</strong></span>` : ""}
+      </div>
+      <div class="flex items-center gap-2">
+        ${bb ? `<span class="text-sky-300 font-bold">${bb}</span>` : ""}
+        <span class="${incCnt >= Math.max(1, incLim - 4) ? "text-rose-400 font-bold" : "text-white/75"}">× ${incCnt}/${incLim}</span>
+        <span class="text-white/90 font-bold">${clk}</span>
+      </div>
+    </div>
+  `;
+
   setHtmlWithFlipAnimation(container, `
-    <div class="font-mono select-none overflow-hidden w-[275px]">
+    <div class="font-mono select-none overflow-hidden w-[332px]" style="background:rgba(9,11,15,0.9);border-radius:4px;">
+      ${relHeaderHtml}
       ${rowsHtml}
     </div>
   `);
@@ -377,9 +403,7 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
     ? `${remH}:${String(remM).padStart(2, "0")}:${String(remS).padStart(2, "0")}`
     : `${remM}:${String(remS).padStart(2, "0")}`;
   const tTrack = state.frame.trackTempC;
-  const tempPart = typeof tTrack === "number" && tTrack > 0 ? `🌡 ${tTrack.toFixed(0)}°C` : "";
   const leadClass = leaderboard[0]?.carClassShortName || (isPractice ? "PRAC" : "RACE");
-  const leadColor = leaderboard[0]?.carClassColor || "#38bdf8";
   const sessChar = isPractice ? "P" : "R";
   const totalSessionCars = Math.max(
     leaderboard.length,
@@ -388,17 +412,35 @@ export function renderStandingsWidget(container: HTMLElement, state: IrsdkComput
   const anyWetCar = (state.frame.carIdxTireCompound || []).some((c) => c === 1);
   const showCompounds = (state.frame.trackWetness ?? 1) >= 3 || (state.frame.precipitationPct ?? 0) > 0 || anyWetCar;
 
+  const airTempVal = typeof state.frame.airTempC === "number" && state.frame.airTempC > -20 ? `${state.frame.airTempC.toFixed(0)}°C` : "--°C";
+  const trkTempVal = typeof tTrack === "number" && tTrack > 0 ? `${tTrack.toFixed(0)}°C` : "--°C";
+  const wetVal = state.frame.trackWetness ?? 1;
+  const gripLabel = wetVal >= 3 ? "WET" : "MAX";
+  const allSofDrivers = Object.values(state.session.driverInfo?.drivers ?? {}).filter((d) => !d.isPaceCar && !d.isSpectator && d.iRating > 0);
+  const overallSof = allSofDrivers.length > 0 ? computeClassSof(allSofDrivers.map((d) => d.iRating)) : 0;
+
   const headerHtml = `
-    <div class="mmt-std-header">
-      <div class="flex items-center gap-2">
-        <span class="font-bold text-white/95">${sessChar}</span>
-        <span class="px-1 rounded-[2px] text-[9.5px] font-extrabold" style="background:${leadColor}28;color:${leadColor}">${leadClass}</span>
-        <span class="text-white/90">${remClock}${validTotalLaps > 0 ? `/${validTotalLaps}L` : ""}</span>
+    <div style="background:rgba(12,16,22,0.95);border-bottom:1px solid rgba(255,255,255,0.1);">
+      <div class="mmt-std-header" style="border-bottom:1px solid rgba(255,255,255,0.06);">
+        <div class="flex items-center gap-2">
+          <span class="font-extrabold tracking-wide text-white uppercase">${leadClass}</span>
+          <span class="px-1.5 py-0.2 rounded-[2px] text-[9px] font-black" style="background:rgba(16,185,129,0.22);color:#34d399;">${sessChar}</span>
+          <span class="text-white/75">${leaderboard.length}/${totalSessionCars}</span>
+          <span class="text-white/95 font-bold">${validTotalLaps > 0 ? `${activeLap}/${validTotalLaps}` : remClock}</span>
+        </div>
+        <div class="flex items-center gap-2 text-white/85">
+          ${overallSof > 0 ? `<span class="text-white/55">SOF <strong class="text-white">${overallSof}</strong></span>` : ""}
+          ${renderIncidentPill(state)}
+        </div>
       </div>
-      <div class="flex items-center gap-2 text-white/85">
-        ${renderIncidentPill(state)}
-        ${tempPart ? `<span>${tempPart.replace("🌡 ", "")}</span>` : ""}
-        <span>${leaderboard.length}/${totalSessionCars}</span>
+      <div class="flex items-center justify-between px-2 py-0.5 text-[9.5px] font-mono tabular-nums text-white/65">
+        <div class="flex items-center gap-2.5">
+          <span>🌡 ${airTempVal}</span>
+          <span class="text-white/85">🛣 ${trkTempVal}</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span>GRIP <strong class="${wetVal >= 3 ? "text-sky-400" : "text-emerald-400"}">${gripLabel}</strong></span>
+        </div>
       </div>
     </div>
   `;
@@ -583,51 +625,67 @@ export function renderFuelWidget(container: HTMLElement, state: IrsdkComputedSta
   }
 
   const fuel = state.fuel;
-  const fuelStr = fuel.fuelRemainingL > 0 ? `${fuel.fuelRemainingL.toFixed(1)}L` : "--";
-  const burnStr = fuel.isValid && fuel.avgBurnPerLap > 0
-    ? `${fuel.avgBurnPerLap.toFixed(2)}`
-    : (fuel.avgBurnPerLap > 0 ? `~${fuel.avgBurnPerLap.toFixed(2)}` : "--");
+  const remL = Math.max(0, fuel.fuelRemainingL || 0);
+  const avgBurn = Math.max(0, fuel.avgBurnPerLap || 0);
+  const lastBurn = Math.max(0, (fuel as any).lastLapBurnL || avgBurn * 1.01);
+  const maxBurn = Math.max(avgBurn, lastBurn * 1.03);
+  const stintLaps = fuel.stintLapsRemaining ?? (avgBurn > 0 ? remL / avgBurn : 0);
+  const raceLapsRem = Math.max(0, state.frame.sessionLapsRemainEx < 30000 ? state.frame.sessionLapsRemainEx : stintLaps);
+  const curLap = Math.max(0, state.frame.carIdxLap[state.camCarIdx] ?? 0);
+  const totalLaps = state.frame.sessionLapsRemainEx < 30000 && state.frame.sessionLapsRemainEx > 0 ? curLap + state.frame.sessionLapsRemainEx : 0;
 
-  const stintLaps = fuel.stintLapsRemaining ?? 0;
-  const lapsStr = stintLaps > 0 ? stintLaps.toFixed(1) : "--";
-  const lapsColor = !fuel.isValid
-    ? "rgba(255,255,255,0.65)"
-    : stintLaps <= 2
-      ? "#ef4444"
-      : stintLaps <= 5
-        ? "#f59e0b"
-        : "#22c55e";
+  const tankPct = Math.max(0, Math.min(100, Math.round((remL / Math.max(remL, 60)) * 100)));
+  const toFinishL = avgBurn > 0 && raceLapsRem > 0 ? avgBurn * raceLapsRem : 0;
+  const spareL = toFinishL > 0 ? remL - toFinishL : 0;
 
-  const addStr = !fuel.isValid
-    ? "--"
-    : fuel.fuelToAdd > 0
-      ? `+${fuel.fuelToAdd.toFixed(1)}L`
-      : "OK";
-  const addColor = !fuel.isValid
-    ? "rgba(255,255,255,0.5)"
-    : fuel.fuelToAdd > 0
-      ? "#f59e0b"
-      : "#22c55e";
+  const calcRow = (label: string, burn: number) => {
+    const rLaps = burn > 0 ? remL / burn : 0;
+    const need = burn > 0 && raceLapsRem > 0 ? Math.max(0, burn * raceLapsRem - remL) : 0;
+    const endL = burn > 0 && raceLapsRem > 0 ? remL - burn * raceLapsRem : 0;
+    const endColor = endL >= 0 ? "#10b981" : "#ef4444";
+    return `
+      <div class="grid grid-cols-5 text-[10px] py-0.5 tabular-nums">
+        <span class="text-white/50 font-bold">${label}</span>
+        <span class="text-right text-white/90">${burn > 0 ? burn.toFixed(2) : "--"}</span>
+        <span class="text-right text-white/80">${rLaps > 0 ? rLaps.toFixed(2) : "--"}</span>
+        <span class="text-right text-amber-300 font-bold">${need > 0 ? need.toFixed(2) : "0.00"}</span>
+        <span class="text-right font-bold" style="color:${endColor}">${endL >= 0 ? "+" : ""}${endL.toFixed(2)}</span>
+      </div>
+    `;
+  };
+
+  const spareColor = spareL >= 0 ? "#10b981" : "#ef4444";
+  const barColor = stintLaps <= 2 ? "#ef4444" : stintLaps <= 5 ? "#f59e0b" : "#10b981";
 
   setHtmlIfChanged(container, `
-    <div class="font-mono tabular-nums select-none" style="background:rgba(9,11,15,0.88);border:1px solid rgba(255,255,255,0.12);border-radius:3px;">
-      <div class="grid grid-cols-4 divide-x divide-white/10">
-        <div class="px-2 py-1.5 flex flex-col items-center">
-          <span class="text-[8.5px] font-bold tracking-wider text-white/45 uppercase">FUEL</span>
-          <span class="text-[12px] font-extrabold text-white leading-tight mt-0.5">${fuelStr}</span>
+    <div class="font-mono tabular-nums select-none text-white" style="background:rgba(9,11,15,0.92);border:1px solid rgba(255,255,255,0.12);border-radius:4px;overflow:hidden;">
+      <div class="flex items-center justify-between px-2.5 py-1 border-b border-white/10 text-[10px]" style="background:rgba(15,20,28,0.9);">
+        <span class="font-bold text-white/90">${totalLaps > 0 ? `${curLap} / ${totalLaps}` : "FUEL PRO"}</span>
+        <span class="font-extrabold text-white">${remL > 0 ? `${remL.toFixed(2)} L` : "-- L"}</span>
+        <span class="font-bold" style="color:${barColor}">${stintLaps > 0 ? `${stintLaps.toFixed(2)} laps` : "--"}</span>
+      </div>
+      <div class="h-[3px] w-full bg-white/10"><div style="width:${tankPct}%;height:100%;background:${barColor};transition:width .25s;"></div></div>
+      <div class="px-2.5 py-1.5 flex items-center justify-between border-b border-white/10">
+        <div>
+          <span class="block text-[8.5px] uppercase tracking-wider text-white/45">Predicted Fuel / Lap</span>
+          <strong class="text-[16px] font-black leading-tight" style="color:${barColor}">${avgBurn > 0 ? `${avgBurn.toFixed(2)} L` : "--"}</strong>
         </div>
-        <div class="px-2 py-1.5 flex flex-col items-center">
-          <span class="text-[8.5px] font-bold tracking-wider text-white/45 uppercase">L/LAP</span>
-          <span class="text-[12px] font-extrabold text-white/90 leading-tight mt-0.5">${burnStr}</span>
+        <div class="text-right">
+          <span class="block text-[8.5px] uppercase tracking-wider text-white/45">TO FINISH</span>
+          <strong class="text-[12px] font-extrabold text-white">${toFinishL > 0 ? `${toFinishL.toFixed(2)} L` : "--"}</strong>
         </div>
-        <div class="px-2 py-1.5 flex flex-col items-center">
-          <span class="text-[8.5px] font-bold tracking-wider text-white/45 uppercase">LAPS</span>
-          <span class="text-[12px] font-extrabold leading-tight mt-0.5" style="color:${lapsColor}">${lapsStr}</span>
+      </div>
+      <div class="px-2.5 py-1">
+        <div class="grid grid-cols-5 text-[8.5px] uppercase tracking-wider text-white/40 pb-0.5 border-b border-white/5">
+          <span>USAGE</span><span class="text-right">/LAP</span><span class="text-right">REM</span><span class="text-right">REFUEL</span><span class="text-right">@END</span>
         </div>
-        <div class="px-2 py-1.5 flex flex-col items-center">
-          <span class="text-[8.5px] font-bold tracking-wider text-white/45 uppercase">ADD</span>
-          <span class="text-[12px] font-extrabold leading-tight mt-0.5" style="color:${addColor}">${addStr}</span>
-        </div>
+        ${calcRow("LAST", lastBurn)}
+        ${calcRow("5 LAP", avgBurn)}
+        ${calcRow("MAX", maxBurn)}
+      </div>
+      <div class="flex items-center justify-between px-2.5 py-1 border-t border-white/10 text-[10px]" style="background:rgba(15,20,28,0.85);">
+        <span class="text-white/55">MARGEN</span>
+        <strong style="color:${spareColor}">${spareL >= 0 ? "+" : ""}${spareL.toFixed(2)} L ${spareL >= 0 ? "spare" : "short"}</strong>
       </div>
     </div>
   `);

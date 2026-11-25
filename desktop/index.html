@@ -55,7 +55,7 @@
           <img src="./favicon.svg" width="24" height="24" alt="Muntrume Motorsport" class="h-[24px] w-[24px] rounded-lg border border-white/15 bg-[#090b0f] shrink-0 shadow-sm" />
           <div class="flex items-baseline gap-1.5">
             <span class="font-display font-extrabold text-[15px] tracking-wider text-white whitespace-nowrap">MMT <span class="text-[#10b981]">SYNC</span></span>
-            <span class="text-[10px] font-mono text-white/35">v0.7.2</span>
+            <span class="text-[10px] font-mono text-white/35">v0.7.3</span>
           </div>
           <span id="irBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-medium border border-white/10 bg-[#090c12] text-r-muted whitespace-nowrap shrink-0">
             <span id="irDot" class="w-2 h-2 rounded-full bg-r-muted"></span>
@@ -1149,6 +1149,7 @@
                 <div class="h-[40px] shrink-0 px-3 border-b border-white/[0.07] bg-[#0c1018] flex items-center justify-between gap-2 text-[11px] overflow-hidden">
                   <div class="flex items-center gap-2 min-w-0">
                     <div class="inline-flex items-center gap-0.5 rounded-lg border border-white/[0.08] bg-[#090c12] p-0.5 shrink-0">
+                      <button type="button" data-hud-factory-preset="esports_pro" class="px-2.5 py-1 rounded-md bg-[#10b981]/15 text-[#10b981] font-semibold cursor-pointer whitespace-nowrap transition">Esports Pro</button>
                       <button type="button" onclick="document.querySelector('[data-hud-factory-preset=sprint_gt3]')?.click()" class="px-2.5 py-1 rounded-md text-white/75 hover:text-white hover:bg-white/[0.06] font-medium cursor-pointer whitespace-nowrap transition">Sprint</button>
                       <button type="button" onclick="document.querySelector('[data-hud-factory-preset=endurance_multi]')?.click()" class="px-2.5 py-1 rounded-md text-white/75 hover:text-white hover:bg-white/[0.06] font-medium cursor-pointer whitespace-nowrap transition">Endurance</button>
                       <button type="button" onclick="document.querySelector('[data-hud-factory-preset=stream_minimal]')?.click()" class="px-2.5 py-1 rounded-md text-white/75 hover:text-white hover:bg-white/[0.06] font-medium cursor-pointer whitespace-nowrap transition">Qualy</button>
@@ -1212,16 +1213,16 @@
                         <div id="ovPitbox" class="mt-1"></div>
                       </div>
 
-                      <div id="widgetRelative" class="mmt-hud-widget absolute right-3 top-3 w-[340px] rounded-[3px] border border-white/[0.08] text-white p-1 text-[11px] font-mono tabular-nums overflow-hidden" style="background: rgba(9, 11, 15, 0.88);" data-widget="relative">
+                      <div id="widgetRelative" class="mmt-hud-widget absolute right-3 bottom-3 w-[340px] rounded-[4px] border border-white/[0.08] text-white p-0.5 text-[11px] font-mono tabular-nums overflow-hidden" style="background: rgba(9, 11, 15, 0.9);" data-widget="relative">
                         <div id="ovRelative"></div>
                       </div>
 
-                      <div id="widgetCluster" class="mmt-hud-widget absolute left-1/2 bottom-3 -translate-x-1/2 flex flex-col items-center gap-1.5" data-widget="cluster">
+                      <div id="widgetCluster" class="mmt-hud-widget absolute right-3 bottom-[206px] flex flex-col items-end gap-1" data-widget="cluster">
                         <div class="flex items-center gap-2">
-                          <div id="ovClusterBrandPreview" class="flex items-center gap-1.5 px-2 py-0.5 rounded-[3px] border border-white/[0.08] text-[10px] font-mono text-white/90" style="background: rgba(9, 11, 15, 0.72);"></div>
+                          <div id="ovClusterBrandPreview" class="flex items-center gap-1.5 px-2 py-0.5 rounded-[3px] border border-white/[0.08] text-[10px] font-mono text-white/90" style="background: rgba(9, 11, 15, 0.78);"></div>
                           <div id="ovDelta" class="px-3 py-0.5 rounded-[3px] border border-emerald-500/40 bg-emerald-950/75 text-emerald-400 font-mono text-[11px] font-bold tabular-nums">-0.34s</div>
                         </div>
-                        <div id="ovGpuPedals" class="w-[280px] h-[38px]"></div>
+                        <div id="ovGpuPedals" class="w-[332px] h-[42px]"></div>
                         <canvas id="ovWaveformCanvas" width="110" height="36" class="hidden"></canvas>
                         <strong id="ovGear" class="hidden">4</strong>
                         <strong id="ovSpeed" class="hidden">198</strong>
@@ -1230,7 +1231,7 @@
                         <div id="ovTyres" class="hidden"></div>
                       </div>
 
-                      <div id="widgetFuel" class="mmt-hud-widget absolute left-3 bottom-3 w-[236px] rounded-[3px] border border-white/[0.08] text-white p-1.5 text-xs font-mono" style="background: rgba(9, 11, 15, 0.88);" data-widget="fuel">
+                      <div id="widgetFuel" class="mmt-hud-widget absolute right-3 top-3 w-[256px] rounded-[4px] border border-white/[0.08] text-white text-xs font-mono" style="background: rgba(9, 11, 15, 0.9);" data-widget="fuel">
                         <div id="ovFuel"></div>
                       </div>
 
@@ -1242,7 +1243,7 @@
                         <div id="ovTireMonitor"></div>
                       </div>
 
-                      <div id="widgetTrackMap" class="mmt-hud-widget absolute bottom-3 right-3 w-[176px] h-[126px] rounded-[3px] border border-white/[0.12] overflow-hidden cursor-move" style="bottom: 12px; right: 12px; background: rgba(9, 11, 15, 0.86);" data-widget="trackmap">
+                      <div id="widgetTrackMap" class="mmt-hud-widget absolute top-3 right-[278px] w-[176px] h-[126px] rounded-[4px] border border-white/[0.1] overflow-hidden cursor-move" style="top: 12px; right: 278px; background: rgba(9, 11, 15, 0.72);" data-widget="trackmap">
                         <canvas id="ovTrackMap" width="180" height="132"></canvas>
                       </div>
 

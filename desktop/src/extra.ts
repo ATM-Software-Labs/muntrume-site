@@ -2671,6 +2671,10 @@ function ensureLayoutSchemaV2(force = false): void {
 
     // Prompt 105 & 163: Factory Presets, Custom Profiles & JSON Export/Import
     const FACTORY_PRESETS: Record<string, { disabled: string[]; ghost: boolean }> = {
+      esports_pro: {
+        disabled: ["pit", "tires", "flatmap", "traffic", "weather", "spotter", "electronics", "flagMatrix", "tachometer", "lapTimer", "radar", "sessionBar", "delta", "lights", "conditions"],
+        ghost: false,
+      },
       sprint_gt3: {
         disabled: ["standings", "trackmap", "fuel", "pit", "laptimes", "conditions", "fastercar", "cluster", "lights"],
         ghost: false,
