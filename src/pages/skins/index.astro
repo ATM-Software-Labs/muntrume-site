@@ -441,18 +441,18 @@ const canonical = "https://skins.muntru.me/";
             </button>
           </div>
 
-          <!-- PASO 2: SPEC MAP (ACABADO METÁLICO / MATE / BRILLO) -->
+          <!-- PASO 2: SPEC MAP (ACABADO METÁLICO / MATE / BRILLO -> .MIP DE iRACING) -->
           <div class="sk-shot-card" style="border-color:rgba(56,189,248,0.4);">
             <div style="display:flex;gap:10px;align-items:center;">
               <canvas id="skExportSpecPreview" width="96" height="96" style="width:68px;height:68px;border-radius:6px;border:1px solid rgba(255,255,255,0.18);background:#090d14;flex-shrink:0;"></canvas>
               <div style="flex:1;min-width:0;">
-                <span class="sk-tag" style="background:rgba(56,189,248,0.14);color:#38bdf8;border-color:rgba(56,189,248,0.4);">2 · SPEC MAP (OPCIONAL)</span>
+                <span class="sk-tag" style="background:rgba(56,189,248,0.14);color:#38bdf8;border-color:rgba(56,189,248,0.4);">2 · SPEC MAP (.TGA → .MIP)</span>
                 <strong id="skExportSpecName" style="display:block;margin-top:4px;font-size:13px;">car_spec_994512.tga</strong>
-                <p class="sk-help" style="margin:2px 0 0;">Define brillo, mate y metálico (RGB). En Trading Paints súbelo pulsando <strong>"Add spec map or decal layer ↓"</strong>.</p>
+                <p class="sk-help" style="margin:2px 0 0;">Trading Paints pide el <code>.mip</code> generado por iRacing: copia este <code>.tga</code> en tu carpeta <code>paint\&lt;coche&gt;\</code>, abre el coche en iRacing (crea <code>car_spec_&lt;id&gt;.mip</code>) y sube ese <strong>.mip</strong> en <em>"Add spec map or decal layer ↓"</em>.</p>
               </div>
             </div>
             <button type="button" id="skExportSpecBtn" class="sk-btn sk-btn-sm" style="margin-top:8px;width:100%;">
-              Descargar Spec Map (car_spec_&lt;id&gt;.tga)
+              Descargar Spec Map (car_spec_&lt;id&gt;.tga para iRacing)
             </button>
           </div>
 
@@ -464,9 +464,8 @@ const canonical = "https://skins.muntru.me/";
           <div class="sk-shot-card">
             <strong>Resumen rápido Trading Paints</strong>
             <ul>
-              <li>1. Sube <code>car_&lt;id&gt;.tga</code> arriba en <a href="https://www.tradingpaints.com/my-paints" target="_blank" rel="noopener noreferrer" style="color:var(--sk-accent);">Trading Paints → Upload a paint</a>.</li>
-              <li>2. Pulsa <strong>"Add spec map or decal layer ↓"</strong> y sube <code>car_spec_&lt;id&gt;.tga</code> (para ver mate/satinado/metálico).</li>
-              <li>3. Para probar local en iRacing: copia ambos en <code>Documents\iRacing\paint\&lt;coche&gt;\</code> y pulsa <code>Ctrl+R</code>.</li>
+              <li>1. Sube <code>car_&lt;id&gt;.tga</code> directo en <a href="https://www.tradingpaints.com/my-paints" target="_blank" rel="noopener noreferrer" style="color:var(--sk-accent);">Trading Paints → Upload a paint</a>.</li>
+              <li>2. Para el acabado (mate/satinado/metálico): pon <code>car_spec_&lt;id&gt;.tga</code> en <code>Documents\iRacing\paint\&lt;coche&gt;\</code>, abre el coche en iRacing para que genere <code>car_spec_&lt;id&gt;.mip</code>, y sube ese <code>.mip</code> en <strong>"Add spec map or decal layer ↓"</strong>.</li>
             </ul>
           </div>
 
