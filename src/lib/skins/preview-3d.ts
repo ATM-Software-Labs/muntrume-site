@@ -53,48 +53,82 @@ varying float vMat;
 void main() {
   vec3 N = normalize(vNormal);
   vec3 V = normalize(uCamPos - vWorldPos);
+  vec3 R = reflect(-V, N);
 
-  vec3 L1 = normalize(vec3(2.8, 4.6, 3.2));
-  vec3 L2 = normalize(vec3(-3.2, 2.2, -2.6));
-
-  float diff1 = max(dot(N, L1), 0.0);
-  float diff2 = max(dot(N, L2), 0.0) * 0.42;
-  float hemi = 0.26 + 0.20 * (N.y * 0.5 + 0.5);
+  // Studio floor with soft contact shadow under the car
+  if (vMat > 4.5) {
+    float distCar = length(vWorldPos.xz * vec2(0.82, 0.44));
+    float shadow = smoothstep(0.65, 1.55, distCar);
+    float fade = 1.0 - smoothstep(1.8, 5.2, length(vWorldPos.xz));
+    float gridX = smoothstep(0.96, 1.0, abs(cos(vWorldPos.x * 3.14159 * 2.0)));
+    float gridZ = smoothstep(0.96, 1.0, abs(cos(vWorldPos.z * 3.14159 * 2.0)));
+    float grid = max(gridX, gridZ) * 0.06 * fade;
+    vec3 floorCol = mix(vec3(0.025, 0.032, 0.045), vec3(0.065, 0.08, 0.105), shadow * fade) + vec3(0.0, 0.9, 0.6) * grid;
+    gl_FragColor = vec4(floorCol, 1.0);
+    return;
+  }
 
   vec3 base = texture2D(uDiffuse, vUv).rgb;
   float met = clamp(uMetallic, 0.0, 1.0);
   float rough = clamp(uRoughness, 0.0, 1.0);
+  float clearcoat = 0.85;
 
   if (vMat > 0.5 && vMat < 1.5) {
-    // Tinted cockpit glass
-    base = vec3(0.05, 0.08, 0.12);
-    met = 0.15;
-    rough = 0.08;
+    // Deep glossy tinted cockpit glass
+    base = vec3(0.03, 0.05, 0.08);
+    met = 0.1;
+    rough = 0.06;
+    clearcoat = 1.0;
   } else if (vMat >= 1.5 && vMat < 2.5) {
-    // Matte carbon / rubber tire
-    base = vec3(0.06, 0.07, 0.085);
-    met = 0.05;
-    rough = 0.85;
+    // Satin carbon fiber / rubber tire
+    base = vec3(0.055, 0.062, 0.075);
+    met = 0.08;
+    rough = 0.72;
+    clearcoat = 0.15;
   } else if (vMat >= 2.5 && vMat < 3.5) {
-    // Alloy wheel rim
-    base = vec3(0.62, 0.66, 0.72);
-    met = 0.85;
-    rough = 0.22;
-  } else if (vMat >= 3.5) {
-    // Headlight / taillight accent
-    base = vWorldPos.z > 0.0 ? vec3(0.95, 0.98, 1.0) : vec3(0.92, 0.12, 0.15);
-    gl_FragColor = vec4(base, 1.0);
+    // Machined satin gunmetal alloy rim
+    base = vec3(0.55, 0.60, 0.66);
+    met = 0.88;
+    rough = 0.24;
+    clearcoat = 0.6;
+  } else if (vMat >= 3.5 && vMat < 4.5) {
+    // Emissive LED headlights / taillights
+    vec3 led = vWorldPos.z > 0.0 ? vec3(0.95, 0.99, 1.0) : vec3(0.98, 0.12, 0.14);
+    gl_FragColor = vec4(led, 1.0);
     return;
   }
 
+  // Showroom procedural IBL studio environment (overhead softboxes + horizon rim)
+  float stripTop = smoothstep(0.72, 0.96, R.y) * smoothstep(0.65, 0.0, abs(R.x));
+  float stripSideL = smoothstep(0.55, 0.92, dot(R, normalize(vec3(0.75, 0.58, 0.25))));
+  float stripSideR = smoothstep(0.55, 0.92, dot(R, normalize(vec3(-0.75, 0.55, -0.25))));
+  float horizon = smoothstep(-0.15, 0.12, R.y) * (1.0 - smoothstep(0.12, 0.55, R.y));
+  vec3 envLight =
+    vec3(0.14, 0.18, 0.24) * (0.45 + 0.55 * max(N.y, 0.0)) +
+    vec3(0.85, 0.92, 1.0) * (stripTop * 0.72 + stripSideL * 0.42 + stripSideR * 0.30) +
+    vec3(0.32, 0.42, 0.52) * horizon * 0.32;
+
+  vec3 L1 = normalize(vec3(2.4, 5.2, 3.0));
+  vec3 L2 = normalize(vec3(-3.0, 2.8, -2.5));
+  float diff1 = max(dot(N, L1), 0.0);
+  float diff2 = max(dot(N, L2), 0.0) * 0.45;
+  float hemi = 0.28 + 0.22 * (N.y * 0.5 + 0.5);
+
   vec3 H1 = normalize(L1 + V);
-  float shininess = mix(112.0, 10.0, rough);
-  float spec1 = pow(max(dot(N, H1), 0.0), shininess) * mix(0.28, 1.0, 1.0 - rough);
+  float shininess = mix(140.0, 14.0, rough);
+  float spec1 = pow(max(dot(N, H1), 0.0), shininess) * mix(0.25, 1.0, 1.0 - rough);
+  float coatSpec = pow(max(dot(N, H1), 0.0), 180.0) * clearcoat * 0.55;
 
+  float ndv = max(dot(N, V), 0.0);
+  float fresnel = pow(1.0 - ndv, 3.6);
   vec3 specTint = mix(vec3(1.0), base, met);
-  float fresnel = pow(1.0 - max(dot(N, V), 0.0), 3.0) * (0.18 + 0.38 * (1.0 - rough));
 
-  vec3 color = base * (hemi + diff1 * 0.80 + diff2) + specTint * (spec1 + fresnel * 0.55);
+  vec3 diffuseTerm = base * (1.0 - met * 0.45) * (hemi + diff1 * 0.76 + diff2);
+  vec3 reflectTerm = mix(specTint, vec3(1.0), 0.35) * envLight * (0.16 + 0.65 * fresnel) * (1.0 - rough * 0.65);
+  vec3 color = diffuseTerm + reflectTerm + specTint * spec1 + vec3(1.0) * coatSpec;
+
+  // Subtle tone mapping so bright studio highlights stay crisp
+  color = color / (color + vec3(0.88));
   gl_FragColor = vec4(color, 1.0);
 }
 `;
@@ -114,9 +148,32 @@ const DEFAULT_CAR_ZONES: Record<ZoneKey, UvRect> = {
   numberPlateRight: { x: 0.76, y: 0.47, w: 0.14, h: 0.14 },
 };
 
+function saneZone(z: UvRect | undefined, fallback: UvRect): UvRect {
+  if (!z || z.w < 0.08 || z.h < 0.08) return fallback;
+  return z;
+}
+
+/**
+ * Smooth high-poly lofted GT3 showroom race car mesh (~4,500 smooth-normal triangles):
+ * - Parametric sculpted GT3 body with flared wheel arches, curved hood, swept greenhouse,
+ *   fastback rear deck, cambered rear wing, 32-segment wheels + alloy spokes, and studio floor.
+ */
 function buildGt3CarMesh(
-  zones: Record<ZoneKey, UvRect> = DEFAULT_CAR_ZONES,
+  rawZones: Record<ZoneKey, UvRect> = DEFAULT_CAR_ZONES,
 ): { positions: Float32Array; uvs: Float32Array; normals: Float32Array; mats: Float32Array } {
+  const zones: Record<ZoneKey, UvRect> = {
+    hood: saneZone(rawZones.hood, DEFAULT_CAR_ZONES.hood),
+    roof: saneZone(rawZones.roof, DEFAULT_CAR_ZONES.roof),
+    leftSide: saneZone(rawZones.leftSide, DEFAULT_CAR_ZONES.leftSide),
+    rightSide: saneZone(rawZones.rightSide, DEFAULT_CAR_ZONES.rightSide),
+    rearWing: saneZone(rawZones.rearWing, DEFAULT_CAR_ZONES.rearWing),
+    mirrors: saneZone(rawZones.mirrors, DEFAULT_CAR_ZONES.mirrors),
+    frontBumper: saneZone(rawZones.frontBumper, DEFAULT_CAR_ZONES.frontBumper),
+    rearBumper: saneZone(rawZones.rearBumper, DEFAULT_CAR_ZONES.rearBumper),
+    numberPlateLeft: rawZones.numberPlateLeft ?? DEFAULT_CAR_ZONES.numberPlateLeft,
+    numberPlateRight: rawZones.numberPlateRight ?? DEFAULT_CAR_ZONES.numberPlateRight,
+  };
+
   const pos: number[] = [];
   const uvs: number[] = [];
   const norms: number[] = [];
@@ -125,7 +182,169 @@ function buildGt3CarMesh(
   type Vec3 = [number, number, number];
   type Vec2 = [number, number];
 
-  const pushTri = (a: Vec3, b: Vec3, c: Vec3, ua: Vec2, ub: Vec2, uc: Vec2, mat = 0) => {
+  const smoothstep = (e0: number, e1: number, x: number): number => {
+    const t = Math.max(0, Math.min(1, (x - e0) / (e1 - e0)));
+    return t * t * (3 - 2 * t);
+  };
+
+  // Evaluate smooth GT3 body surface:
+  // s in [0..1] goes front nose (+1.92) -> rear tail (-1.88)
+  // t in [-1..+1] goes left rocker (-1) -> left fender -> roof center (0) -> right fender -> right rocker (+1)
+  const evalBody = (s: number, t: number): Vec3 => {
+    const z = 1.92 - s * 3.80;
+    const at = Math.abs(t);
+    const sign = t < 0 ? -1 : 1;
+
+    // Longitudinal half-width with muscular GT3 front/rear fender flares
+    const noseTaper = smoothstep(0.0, 0.16, s);
+    const tailTaper = 1.0 - smoothstep(0.86, 1.0, s) * 0.14;
+    const frontFlare = Math.exp(-Math.pow((s - 0.21) / 0.11, 2)) * 0.085;
+    const rearFlare = Math.exp(-Math.pow((s - 0.78) / 0.13, 2)) * 0.105;
+    const halfW = (0.64 + 0.24 * noseTaper + frontFlare + rearFlare) * tailTaper;
+
+    // Beltline height along length (low nose, rises over front fenders, high muscular rear haunches)
+    const yFloor = -0.24;
+    const beltY =
+      -0.02 +
+      smoothstep(0.0, 0.18, s) * 0.18 +
+      smoothstep(0.25, 0.78, s) * 0.12 -
+      smoothstep(0.92, 1.0, s) * 0.06;
+
+    // Greenhouse cabin dome (windshield s=0.33..0.48, roof s=0.48..0.68, fastback s=0.68..0.88)
+    const cabRise = smoothstep(0.32, 0.49, s);
+    const cabFall = 1.0 - smoothstep(0.66, 0.90, s);
+    const cabHeight = cabRise * cabFall * 0.34;
+
+    // Cross-section shaping:
+    // at in [0..0.42] = center hood / roof / deck
+    // at in [0.42..0.78] = greenhouse tumblehome / shoulder curve
+    // at in [0.78..1.0] = vertical sculpted side body down to rocker
+    let xNorm: number;
+    let y: number;
+
+    if (at < 0.72) {
+      const u = at / 0.72; // 0 = centerline, 1 = fender shoulder
+      // Smooth curved crown + greenhouse inward tumblehome
+      const greenhouseMask = cabHeight / 0.34;
+      const cabTuck = smoothstep(0.28, 0.68, u) * greenhouseMask * 0.22;
+      xNorm = u * (1.0 - cabTuck * 0.45);
+
+      const hoodCrown = Math.cos(u * Math.PI * 0.5) * 0.045;
+      const fenderBump = Math.exp(-Math.pow((u - 0.76) / 0.22, 2)) * (frontFlare + rearFlare) * 0.55;
+      const cabProfile = Math.cos(Math.min(1, u / 0.78) * Math.PI * 0.5);
+      const cabY = cabHeight * Math.pow(Math.max(0, cabProfile), 0.75);
+      y = beltY + hoodCrown + fenderBump + cabY;
+    } else {
+      // Side panel curving smoothly from fender shoulder down to rocker
+      const u = (at - 0.72) / 0.28; // 0 = shoulder, 1 = rocker bottom
+      const tuck = 1.0 - Math.pow(u, 2.2) * 0.07;
+      xNorm = tuck;
+      const shoulderY = beltY + (frontFlare + rearFlare) * 0.22;
+      y = shoulderY * (1.0 - smoothstep(0, 1, u)) + yFloor * smoothstep(0, 1, u);
+    }
+
+    // Round nose tip & tail cleanly
+    const noseCurve = s < 0.06 ? (1.0 - s / 0.06) * Math.pow(at, 2) * 0.14 : 0;
+    const tailCurve = s > 0.94 ? ((s - 0.94) / 0.06) * Math.pow(at, 2) * 0.08 : 0;
+
+    return [sign * halfW * xNorm, y, z - noseCurve + tailCurve];
+  };
+
+  const evalBodyNormal = (s: number, t: number): Vec3 => {
+    const es = 0.004;
+    const et = 0.008;
+    const p0 = evalBody(s, t);
+    const ps = evalBody(Math.min(1, s + es), t);
+    const pt = evalBody(s, Math.min(1, t + et));
+    const ds: Vec3 = [ps[0] - p0[0], ps[1] - p0[1], ps[2] - p0[2]];
+    const dt: Vec3 = [pt[0] - p0[0], pt[1] - p0[1], pt[2] - p0[2]];
+    // cross(ds, dt) points outward/upward
+    let nx = ds[1] * dt[2] - ds[2] * dt[1];
+    let ny = ds[2] * dt[0] - ds[0] * dt[2];
+    let nz = ds[0] * dt[1] - ds[1] * dt[0];
+    const len = Math.hypot(nx, ny, nz) || 1;
+    nx /= len; ny /= len; nz /= len;
+    return [nx, ny, nz];
+  };
+
+  const evalBodyUvAndMat = (s: number, t: number): { uv: Vec2; mat: number } => {
+    const at = Math.abs(t);
+    // Windshield, side windows, rear glass
+    const isWindshield = s >= 0.34 && s <= 0.48 && at < 0.56;
+    const isRearGlass = s >= 0.67 && s <= 0.84 && at < 0.50;
+    const isSideGlass = s >= 0.44 && s <= 0.72 && at >= 0.48 && at <= 0.69;
+    if (isWindshield || isRearGlass || isSideGlass) {
+      return { uv: [0.5, 0.5], mat: 1 };
+    }
+    // Sides (doors / fenders)
+    if (at >= 0.68) {
+      const zRect = t < 0 ? zones.leftSide : zones.rightSide;
+      const uFrac = t < 0 ? s : 1 - s;
+      const vFrac = (at - 0.68) / 0.32;
+      return {
+        uv: [zRect.x + uFrac * zRect.w, zRect.y + vFrac * zRect.h],
+        mat: 0,
+      };
+    }
+    // Front nose / hood
+    if (s < 0.36) {
+      const zRect = s < 0.08 ? zones.frontBumper : zones.hood;
+      const uFrac = (t / 0.68) * 0.5 + 0.5;
+      const vFrac = s < 0.08 ? s / 0.08 : (s - 0.08) / 0.28;
+      return {
+        uv: [zRect.x + uFrac * zRect.w, zRect.y + vFrac * zRect.h],
+        mat: 0,
+      };
+    }
+    // Roof
+    if (s < 0.70) {
+      const uFrac = (t / 0.68) * 0.5 + 0.5;
+      const vFrac = (s - 0.36) / 0.34;
+      return {
+        uv: [zones.roof.x + uFrac * zones.roof.w, zones.roof.y + vFrac * zones.roof.h],
+        mat: 0,
+      };
+    }
+    // Rear deck & bumper
+    const uFrac = (t / 0.68) * 0.5 + 0.5;
+    const vFrac = (s - 0.70) / 0.30;
+    return {
+      uv: [zones.rearBumper.x + uFrac * zones.rearBumper.w, zones.rearBumper.y + vFrac * zones.rearBumper.h],
+      mat: 0,
+    };
+  };
+
+  // 1. LOFTED SMOOTH GT3 BODY SHELL (48 x 32 grid)
+  const segS = 48;
+  const segT = 32;
+  for (let is = 0; is < segS; is++) {
+    const s0 = is / segS;
+    const s1 = (is + 1) / segS;
+    for (let it = 0; it < segT; it++) {
+      const t0 = -1 + (2 * it) / segT;
+      const t1 = -1 + (2 * (it + 1)) / segT;
+      const sm = (s0 + s1) * 0.5;
+      const tm = (t0 + t1) * 0.5;
+      const cellMat = evalBodyUvAndMat(sm, tm).mat;
+
+      const corners: Array<[number, number]> = [
+        [s0, t0], [s1, t0], [s1, t1],
+        [s0, t0], [s1, t1], [s0, t1],
+      ];
+      for (const [cs, ct] of corners) {
+        const p = evalBody(cs, ct);
+        const n = evalBodyNormal(cs, ct);
+        const { uv } = evalBodyUvAndMat(cs, ct);
+        pos.push(...p);
+        norms.push(...n);
+        uvs.push(...uv);
+        mats.push(cellMat);
+      }
+    }
+  }
+
+  // Helper for crisp mechanical parts (wing, splitter, diffuser, lights, wheels, floor)
+  const pushFlatTri = (a: Vec3, b: Vec3, c: Vec3, ua: Vec2, ub: Vec2, uc: Vec2, mat = 0) => {
     const ab: Vec3 = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
     const ac: Vec3 = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
     let nx = ab[1] * ac[2] - ab[2] * ac[1];
@@ -139,181 +358,102 @@ function buildGt3CarMesh(
     mats.push(mat, mat, mat);
   };
 
-  const pushQuad = (a: Vec3, b: Vec3, c: Vec3, d: Vec3, zRect: UvRect, mat = 0, flipU = false) => {
-    const u0 = flipU ? zRect.x + zRect.w : zRect.x;
-    const u1 = flipU ? zRect.x : zRect.x + zRect.w;
-    const v0 = zRect.y;
-    const v1 = zRect.y + zRect.h;
-    pushTri(a, b, c, [u0, v0], [u1, v0], [u1, v1], mat);
-    pushTri(a, c, d, [u0, v0], [u1, v1], [u0, v1], mat);
+  const pushQuad = (a: Vec3, b: Vec3, c: Vec3, d: Vec3, zRect: UvRect, mat = 0) => {
+    const u0 = zRect.x, u1 = zRect.x + zRect.w;
+    const v0 = zRect.y, v1 = zRect.y + zRect.h;
+    pushFlatTri(a, b, c, [u0, v0], [u1, v0], [u1, v1], mat);
+    pushFlatTri(a, c, d, [u0, v0], [u1, v1], [u0, v1], mat);
   };
 
-  const pushBox = (
-    cx: number, cy: number, cz: number,
-    sx: number, sy: number, sz: number,
-    zRect: UvRect, mat = 0,
-  ) => {
+  const pushBox = (cx: number, cy: number, cz: number, sx: number, sy: number, sz: number, zRect: UvRect, mat = 0) => {
     const x0 = cx - sx / 2, x1 = cx + sx / 2;
     const y0 = cy - sy / 2, y1 = cy + sy / 2;
     const z0 = cz - sz / 2, z1 = cz + sz / 2;
-    // Top
     pushQuad([x0, y1, z0], [x1, y1, z0], [x1, y1, z1], [x0, y1, z1], zRect, mat);
-    // Bottom
     pushQuad([x0, y0, z1], [x1, y0, z1], [x1, y0, z0], [x0, y0, z0], zRect, mat);
-    // Front (+Z)
     pushQuad([x0, y1, z1], [x1, y1, z1], [x1, y0, z1], [x0, y0, z1], zRect, mat);
-    // Back (-Z)
     pushQuad([x1, y1, z0], [x0, y1, z0], [x0, y0, z0], [x1, y0, z0], zRect, mat);
-    // Left (-X)
     pushQuad([x0, y1, z0], [x0, y1, z1], [x0, y0, z1], [x0, y0, z0], zRect, mat);
-    // Right (+X)
     pushQuad([x1, y1, z1], [x1, y1, z0], [x1, y0, z0], [x1, y0, z1], zRect, mat);
   };
 
   const pushWheel = (wx: number, wy: number, wz: number) => {
-    const segs = 18;
-    const r = 0.27;
-    const rimR = 0.175;
-    const halfW = 0.115;
+    const segs = 32;
+    const r = 0.285;
+    const rimR = 0.195;
+    const hubR = 0.065;
+    const halfW = 0.13;
     const dummy: UvRect = { x: 0, y: 0, w: 0.01, h: 0.01 };
     const xIn = wx < 0 ? wx + halfW : wx - halfW;
     const xOut = wx < 0 ? wx - halfW : wx + halfW;
+    const outDir = wx < 0 ? -1 : 1;
+
     for (let i = 0; i < segs; i++) {
       const a0 = (i / segs) * Math.PI * 2;
       const a1 = ((i + 1) / segs) * Math.PI * 2;
       const c0 = Math.cos(a0), s0 = Math.sin(a0);
       const c1 = Math.cos(a1), s1 = Math.sin(a1);
-      // Tread
+
+      // Smooth tire tread
       const p0: Vec3 = [xIn, wy + s0 * r, wz + c0 * r];
       const p1: Vec3 = [xOut, wy + s0 * r, wz + c0 * r];
       const p2: Vec3 = [xOut, wy + s1 * r, wz + c1 * r];
       const p3: Vec3 = [xIn, wy + s1 * r, wz + c1 * r];
       if (wx < 0) pushQuad(p0, p1, p2, p3, dummy, 2);
       else pushQuad(p3, p2, p1, p0, dummy, 2);
-      // Outer tire sidewall
+
+      // Sidewall
       const r0: Vec3 = [xOut, wy + s0 * rimR, wz + c0 * rimR];
       const r1: Vec3 = [xOut, wy + s1 * rimR, wz + c1 * rimR];
       if (wx < 0) pushQuad(p1, r0, r1, p2, dummy, 2);
       else pushQuad(p2, r1, r0, p1, dummy, 2);
-      // Outer alloy rim disc
-      const center: Vec3 = [xOut + (wx < 0 ? -0.01 : 0.01), wy, wz];
-      if (wx < 0) pushTri(center, r1, r0, [0, 0], [0, 0], [0, 0], 3);
-      else pushTri(center, r0, r1, [0, 0], [0, 0], [0, 0], 3);
+
+      // Recessed alloy rim barrel + alternating spokes
+      const isSpoke = i % 3 === 0;
+      const h0: Vec3 = [xOut - outDir * 0.03, wy + s0 * hubR, wz + c0 * hubR];
+      const h1: Vec3 = [xOut - outDir * 0.03, wy + s1 * hubR, wz + c1 * hubR];
+      if (wx < 0) pushQuad(r0, h0, h1, r1, dummy, isSpoke ? 3 : 2);
+      else pushQuad(r1, h1, h0, r0, dummy, isSpoke ? 3 : 2);
+
+      // Center lock nut
+      const center: Vec3 = [xOut - outDir * 0.02, wy, wz];
+      if (wx < 0) pushFlatTri(center, h1, h0, [0, 0], [0, 0], [0, 0], 3);
+      else pushFlatTri(center, h0, h1, [0, 0], [0, 0], [0, 0], 3);
     }
   };
 
-  // Sculpted GT3 dimensions (car faces +Z, width ~1.64, length ~3.56, height ~0.88)
-  const wBody = 0.82;
-  const wNose = 0.72;
-  const wCab = 0.56;
-  const yFloor = -0.26;
-  const yBeltFront = 0.04;
-  const yBeltMid = 0.16;
-  const yBeltRear = 0.22;
-  const yRoof = 0.52;
+  // 2. CARBON FRONT SPLITTER, REAR DIFFUSER & UNDERBODY
+  pushBox(0, -0.25, 1.84, 1.72, 0.035, 0.32, zones.frontBumper, 2);
+  pushBox(0, -0.22, -1.78, 1.62, 0.12, 0.24, zones.rearBumper, 2);
+  pushBox(0, -0.25, 0.0, 1.68, 0.04, 3.45, zones.frontBumper, 2);
 
-  // 1. HOOD (mapped to zones.hood)
-  pushQuad(
-    [-wNose, yBeltFront, 1.66], [wNose, yBeltFront, 1.66],
-    [wBody * 0.94, yBeltMid + 0.02, 0.58], [-wBody * 0.94, yBeltMid + 0.02, 0.58],
-    zones.hood, 0,
-  );
+  // 3. SLEEK LED HEADLIGHTS & TAILLIGHTS
+  pushBox(-0.56, 0.08, 1.82, 0.28, 0.045, 0.14, zones.frontBumper, 4);
+  pushBox(0.56, 0.08, 1.82, 0.28, 0.045, 0.14, zones.frontBumper, 4);
+  pushBox(-0.56, 0.16, -1.84, 0.38, 0.045, 0.06, zones.rearBumper, 4);
+  pushBox(0.56, 0.16, -1.84, 0.38, 0.045, 0.06, zones.rearBumper, 4);
 
-  // 2. FRONT BUMPER & SPLITTER (mapped to zones.frontBumper)
-  pushQuad(
-    [-wNose, yBeltFront, 1.66], [wNose, yBeltFront, 1.66],
-    [wNose * 1.02, yFloor + 0.06, 1.76], [-wNose * 1.02, yFloor + 0.06, 1.76],
-    zones.frontBumper, 0,
-  );
-  // Carbon front splitter
-  pushBox(0, yFloor + 0.03, 1.72, 1.66, 0.04, 0.24, zones.frontBumper, 2);
-  // LED Headlights
-  pushBox(-0.56, yBeltFront - 0.04, 1.68, 0.26, 0.07, 0.08, zones.frontBumper, 4);
-  pushBox(0.56, yBeltFront - 0.04, 1.68, 0.26, 0.07, 0.08, zones.frontBumper, 4);
+  // 4. AERODYNAMIC SIDE MIRRORS
+  pushBox(-0.92, 0.27, 0.44, 0.16, 0.065, 0.11, zones.mirrors, 0);
+  pushBox(0.92, 0.27, 0.44, 0.16, 0.065, 0.11, zones.mirrors, 0);
 
-  // 3. WINDSHIELD (tinted glass)
-  pushQuad(
-    [-wBody * 0.84, yBeltMid + 0.02, 0.58], [wBody * 0.84, yBeltMid + 0.02, 0.58],
-    [wCab, yRoof, 0.06], [-wCab, yRoof, 0.06],
-    zones.roof, 1,
-  );
+  // 5. GT3 SWAN-NECK REAR WING + ENDPLATES
+  pushBox(0, 0.56, -1.74, 1.72, 0.04, 0.30, zones.rearWing, 0);
+  pushBox(-0.87, 0.54, -1.74, 0.03, 0.24, 0.36, zones.rearWing, 2);
+  pushBox(0.87, 0.54, -1.74, 0.03, 0.24, 0.36, zones.rearWing, 2);
+  pushBox(-0.34, 0.38, -1.68, 0.035, 0.34, 0.12, zones.rearWing, 2);
+  pushBox(0.34, 0.38, -1.68, 0.035, 0.34, 0.12, zones.rearWing, 2);
 
-  // 4. ROOF (mapped to zones.roof)
-  pushQuad(
-    [-wCab, yRoof, 0.06], [wCab, yRoof, 0.06],
-    [wCab * 0.92, yRoof - 0.03, -0.78], [-wCab * 0.92, yRoof - 0.03, -0.78],
-    zones.roof, 0,
-  );
+  // 6. 4 HIGH-DETAIL 3D WHEELS
+  pushWheel(-0.82, -0.04, 1.12);
+  pushWheel(0.82, -0.04, 1.12);
+  pushWheel(-0.85, -0.04, -1.06);
+  pushWheel(0.85, -0.04, -1.06);
 
-  // 5. REAR WINDOW & ENGINE DECK
-  pushQuad(
-    [-wCab * 0.92, yRoof - 0.03, -0.78], [wCab * 0.92, yRoof - 0.03, -0.78],
-    [wBody * 0.86, yBeltRear, -1.48], [-wBody * 0.86, yBeltRear, -1.48],
-    zones.roof, 1,
-  );
-  pushQuad(
-    [-wBody * 0.86, yBeltRear, -1.48], [wBody * 0.86, yBeltRear, -1.48],
-    [wBody * 0.82, yBeltRear - 0.04, -1.72], [-wBody * 0.82, yBeltRear - 0.04, -1.72],
-    zones.rearBumper, 0,
-  );
-
-  // 6. LEFT SIDE BODY & DOOR (mapped to zones.leftSide)
-  pushQuad(
-    [-wBody, yBeltRear, -1.72], [-wNose, yBeltFront, 1.66],
-    [-wNose * 1.02, yFloor + 0.06, 1.72], [-wBody, yFloor + 0.06, -1.72],
-    zones.leftSide, 0,
-  );
-  // Left side window
-  pushQuad(
-    [-wCab * 0.92, yRoof - 0.03, -0.78], [-wCab, yRoof, 0.06],
-    [-wBody * 0.88, yBeltMid + 0.02, 0.56], [-wBody * 0.9, yBeltRear, -1.15],
-    zones.leftSide, 1,
-  );
-
-  // 7. RIGHT SIDE BODY & DOOR (mapped to zones.rightSide)
-  pushQuad(
-    [wNose, yBeltFront, 1.66], [wBody, yBeltRear, -1.72],
-    [wBody, yFloor + 0.06, -1.72], [wNose * 1.02, yFloor + 0.06, 1.72],
-    zones.rightSide, 0, true,
-  );
-  // Right side window
-  pushQuad(
-    [wCab, yRoof, 0.06], [wCab * 0.92, yRoof - 0.03, -0.78],
-    [wBody * 0.9, yBeltRear, -1.15], [wBody * 0.88, yBeltMid + 0.02, 0.56],
-    zones.rightSide, 1,
-  );
-
-  // 8. REAR BUMPER, TAILLIGHTS & DIFFUSER (mapped to zones.rearBumper)
-  pushQuad(
-    [wBody * 0.84, yBeltRear - 0.04, -1.72], [-wBody * 0.84, yBeltRear - 0.04, -1.72],
-    [-wBody * 0.84, yFloor + 0.14, -1.74], [wBody * 0.84, yFloor + 0.14, -1.74],
-    zones.rearBumper, 0,
-  );
-  pushBox(0, yFloor + 0.07, -1.72, 1.56, 0.14, 0.16, zones.rearBumper, 2);
-  pushBox(-0.56, yBeltRear - 0.11, -1.74, 0.34, 0.06, 0.04, zones.rearBumper, 4);
-  pushBox(0.56, yBeltRear - 0.11, -1.74, 0.34, 0.06, 0.04, zones.rearBumper, 4);
-
-  // 9. SIDE MIRRORS (mapped to zones.mirrors)
-  pushBox(-0.88, yBeltMid + 0.12, 0.34, 0.16, 0.08, 0.12, zones.mirrors, 0);
-  pushBox(0.88, yBeltMid + 0.12, 0.34, 0.16, 0.08, 0.12, zones.mirrors, 0);
-
-  // 10. GT3 REAR WING + SWAN-NECK PYLONS + ENDPLATES (mapped to zones.rearWing)
-  pushBox(0, yRoof + 0.04, -1.58, 1.62, 0.045, 0.28, zones.rearWing, 0);
-  // Endplates
-  pushBox(-0.82, yRoof + 0.02, -1.58, 0.03, 0.22, 0.34, zones.rearWing, 2);
-  pushBox(0.82, yRoof + 0.02, -1.58, 0.03, 0.22, 0.34, zones.rearWing, 2);
-  // Swan-neck uprights
-  pushBox(-0.32, yBeltRear + 0.15, -1.54, 0.04, 0.34, 0.12, zones.rearWing, 2);
-  pushBox(0.32, yBeltRear + 0.15, -1.54, 0.04, 0.34, 0.12, zones.rearWing, 2);
-
-  // 11. UNDERBODY FLOOR & SIDE SKIRTS
-  pushBox(0, yFloor + 0.03, 0, 1.64, 0.05, 3.36, zones.frontBumper, 2);
-
-  // 12. 4 3D WHEELS (front & rear)
-  pushWheel(-0.78, yFloor + 0.22, 1.06);
-  pushWheel(0.78, yFloor + 0.22, 1.06);
-  pushWheel(-0.8, yFloor + 0.22, -1.04);
-  pushWheel(0.8, yFloor + 0.22, -1.04);
+  // 7. SHOWROOM STUDIO FLOOR WITH SOFT SHADOW & GRID
+  const fy = -0.325;
+  const fs = 5.5;
+  pushQuad([-fs, fy, -fs], [fs, fy, -fs], [fs, fy, fs], [-fs, fy, fs], zones.hood, 5);
 
   return {
     positions: new Float32Array(pos),
