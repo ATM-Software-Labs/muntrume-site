@@ -495,42 +495,283 @@
   display: none !important;
 }
 
-/* Vault Authentication Gate */
-.sk-auth-gate {
+/* Pro Landing & Vault Access Gate */
+.sk-landing {
   flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 32px 16px;
-  background: radial-gradient(circle at 50% 25%, rgba(0, 230, 153, 0.08) 0%, #070a0f 65%);
+  padding: clamp(32px, 5vw, 64px) 20px;
+  background:
+    radial-gradient(640px circle at 18% 12%, rgba(0, 230, 153, 0.12), transparent 60%),
+    radial-gradient(520px circle at 84% 28%, rgba(56, 189, 248, 0.09), transparent 60%),
+    #070a0f;
 }
 
-.sk-auth-card {
-  width: 100%;
-  max-width: 460px;
-  background: var(--sk-panel);
+.sk-landing-wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.sk-landing-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.95fr);
+  gap: 32px;
+  align-items: center;
+}
+
+@media (max-width: 960px) {
+  .sk-landing-hero {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sk-landing-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sk-landing-title {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.08;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: #f8fafc;
+}
+
+.sk-landing-title span {
+  color: var(--sk-accent);
+}
+
+.sk-landing-lead {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--sk-muted);
+  max-width: 56ch;
+}
+
+.sk-landing-status {
+  padding: 10px 14px;
+  border-radius: 9px;
+  background: rgba(15, 23, 42, 0.72);
   border: 1px solid var(--sk-border-strong);
-  border-radius: 14px;
-  padding: 24px;
+  color: #cbd5e1;
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.sk-landing-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.sk-btn-lg {
+  padding: 11px 18px;
+  font-size: 13.5px;
+  border-radius: 9px;
+}
+
+.sk-token-details {
+  font-size: 12px;
+  color: var(--sk-muted);
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--sk-border);
+}
+
+.sk-token-details summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* Visual Preview Card */
+.sk-landing-visual {
+  background: #0c121b;
+  border: 1px solid var(--sk-border-strong);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 28px 70px -20px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(0, 230, 153, 0.1);
+}
+
+.sk-visual-chrome {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 14px;
+  background: #080c12;
+  border-bottom: 1px solid var(--sk-border);
+}
+
+.sk-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.sk-visual-url {
+  margin-left: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  color: var(--sk-muted);
+}
+
+.sk-visual-grid {
+  padding: 18px;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
 }
 
-.sk-auth-card h2 {
-  margin: 0;
-  font-size: 18px;
+.sk-visual-uv {
+  position: relative;
+  height: 220px;
+  border-radius: 10px;
+  background:
+    linear-gradient(135deg, rgba(0, 230, 153, 0.12) 0%, rgba(13, 19, 26, 0.95) 55%, rgba(56, 189, 248, 0.1) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: grid;
+  grid-template-columns: 1fr 1.3fr 1fr;
+  grid-template-rows: 1fr 1fr 0.65fr;
+  gap: 8px;
+  padding: 12px;
+}
+
+.sk-uv-zone {
+  border-radius: 6px;
+  border: 1px dashed rgba(0, 230, 153, 0.55);
+  background: rgba(0, 230, 153, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: ui-monospace, monospace;
+  font-size: 9.5px;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.05em;
+  color: #e2e8f0;
+  text-align: center;
+  padding: 4px;
 }
 
-.sk-auth-error {
-  padding: 10px 12px;
+.sk-uv-hood { grid-column: 2; grid-row: 1; border-color: rgba(56, 189, 248, 0.65); background: rgba(56, 189, 248, 0.08); }
+.sk-uv-roof { grid-column: 2; grid-row: 2; }
+.sk-uv-left { grid-column: 1; grid-row: 1 / span 2; }
+.sk-uv-right { grid-column: 3; grid-row: 1 / span 2; }
+.sk-uv-wing { grid-column: 1 / span 3; grid-row: 3; border-color: rgba(167, 139, 250, 0.65); background: rgba(167, 139, 250, 0.08); }
+
+.sk-visual-specs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.sk-spec-chip {
+  padding: 9px 11px;
   border-radius: 8px;
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.35);
-  color: #fca5a5;
+  background: #080c12;
+  border: 1px solid var(--sk-border);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sk-spec-chip strong {
   font-size: 12px;
-  line-height: 1.45;
+  color: var(--sk-accent);
+}
+
+.sk-spec-chip span {
+  font-size: 10.5px;
+  color: var(--sk-muted);
+}
+
+/* Fleet Strip */
+.sk-fleet-strip {
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: rgba(17, 24, 34, 0.85);
+  border: 1px solid var(--sk-border);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sk-fleet-label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--sk-muted);
+}
+
+.sk-fleet-logos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.sk-fleet-logos span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 7px;
+  background: #080c12;
+  border: 1px solid var(--sk-border);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+/* Feature Bento */
+.sk-bento {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+@media (max-width: 860px) {
+  .sk-bento {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sk-bento-card {
+  padding: 18px;
+  border-radius: 12px;
+  background: var(--sk-panel);
+  border: 1px solid var(--sk-border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sk-bento-kicker {
+  font-family: ui-monospace, monospace;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  color: var(--sk-accent);
+}
+
+.sk-bento-card h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.sk-bento-card p {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--sk-muted);
 }

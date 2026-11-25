@@ -10,28 +10,101 @@ const canonical = "https://skins.muntru.me/";
 
 <Layout title={title} description={description} canonical={canonical}>
   <main id="mmtSkinsStudio" class="sk-root">
-    <!-- Vault Authentication Gate (Blocks Studio until active muntru.me session is verified) -->
-    <section id="skAuthGate" class="sk-auth-gate">
-      <div class="sk-auth-card">
-        <span class="sk-brand-badge" style="align-self:flex-start;">ACCESO RESTRINGIDO · MUNTRUME VAULT</span>
-        <h2>skins.muntru.me · Solo miembros de Muntrume Motorsport</h2>
-        <p class="sk-help">
-          El estudio de skins y el copiloto IA están protegidos por tu sesión del Vault de <code>muntru.me</code>. Inicia sesión para desbloquear los mapas UV, los presets oficiales de MMT y la exportación 2K/4K.
-        </p>
-        <div id="skAuthError" class="sk-auth-error">Verificando sesión activa de muntru.me...</div>
-        <a
-          href="https://muntru.me/login/?next=https%3A%2F%2Fskins.muntru.me%2F"
-          class="sk-btn sk-btn-primary"
-          style="text-decoration:none;"
-        >
-          Iniciar sesión en muntru.me
-        </a>
-        <div class="sk-card" style="background:#080c12;">
-          <label class="sk-label">
-            ¿Vienes desde la app o ya tienes tu token de sesión (<code>mrt_vault_token</code>)?
-            <input id="skAuthTokenInput" type="password" class="sk-input" placeholder="Pega aquí tu token JWT del Vault..." autocomplete="off" />
-          </label>
-          <button type="button" id="skAuthVerifyBtn" class="sk-btn sk-btn-sm">Validar sesión y entrar</button>
+    <!-- Pro Landing & Vault Access Gate (shown when unauthenticated; unlocks straight into Studio when signed in) -->
+    <section id="skAuthGate" class="sk-landing">
+      <div class="sk-landing-wrap">
+        <div class="sk-landing-hero">
+          <div class="sk-landing-copy">
+            <span class="sk-brand-badge">MUNTRUME MOTORSPORT · SKINS STUDIO</span>
+            <h1 class="sk-landing-title">
+              Diseña, previsualiza en 3D y exporta liveries <span>4K para iRacing</span>.
+            </h1>
+            <p class="sk-landing-lead">
+              Estudio oficial local-first de la escudería Muntrume Motorsport. Mapeo UV asistido de precisión, Spec Maps PBR, copiloto Gemini IA y exportación directa <code>car_&lt;id&gt;.tga</code> + paquete ZIP listo para Trading Paints.
+            </p>
+
+            <div id="skAuthError" class="sk-landing-status">Verificando tu sesión activa de muntru.me...</div>
+
+            <div class="sk-landing-cta">
+              <a
+                href="https://muntru.me/login/?next=https%3A%2F%2Fskins.muntru.me%2F"
+                class="sk-btn sk-btn-primary sk-btn-lg"
+                style="text-decoration:none;"
+              >
+                Entrar con mi cuenta de muntru.me →
+              </a>
+              <a
+                href="https://muntru.me/garage/"
+                class="sk-btn sk-btn-lg"
+                style="text-decoration:none;"
+              >
+                Volver al Garage
+              </a>
+            </div>
+
+            <details class="sk-token-details">
+              <summary>Acceso alternativo con token de sesión (<code>mrt_vault_token</code>)</summary>
+              <div class="sk-row" style="margin-top:10px;">
+                <input id="skAuthTokenInput" type="password" class="sk-input" placeholder="Pega aquí tu token JWT del Vault..." autocomplete="off" />
+                <button type="button" id="skAuthVerifyBtn" class="sk-btn sk-btn-sm">Validar</button>
+              </div>
+            </details>
+          </div>
+
+          <!-- Live Visual Studio Preview Mockup -->
+          <div class="sk-landing-visual" aria-hidden="true">
+            <div class="sk-visual-chrome">
+              <span class="sk-dot"></span><span class="sk-dot"></span><span class="sk-dot"></span>
+              <span class="sk-visual-url">skins.muntru.me · Porsche 911 GT3 R (992) · 4096×4096 TGA</span>
+            </div>
+            <div class="sk-visual-grid">
+              <div class="sk-visual-uv">
+                <div class="sk-uv-zone sk-uv-hood"><span>CAPÓ · MMT CREST</span></div>
+                <div class="sk-uv-zone sk-uv-roof"><span>TECHO · #16</span></div>
+                <div class="sk-uv-zone sk-uv-left"><span>LATERAL IZQ.</span></div>
+                <div class="sk-uv-zone sk-uv-right"><span>LATERAL DER. (L↔R)</span></div>
+                <div class="sk-uv-zone sk-uv-wing"><span>ALERÓN · MUNTRU.ME</span></div>
+              </div>
+              <div class="sk-visual-specs">
+                <div class="sk-spec-chip"><strong>2048 / 4096 px</strong><span>TGA 24-bit sin RLE</span></div>
+                <div class="sk-spec-chip"><strong>Spec Map RGB</strong><span>Metallic · Rough · Coat</span></div>
+                <div class="sk-spec-chip"><strong>Gemini IA</strong><span>Paleta + Guía Ctrl+F12</span></div>
+                <div class="sk-spec-chip"><strong>Aislamiento UV</strong><span>0 archivos fuente expuestos</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Supported GT3 Fleet Strip -->
+        <div class="sk-fleet-strip">
+          <span class="sk-fleet-label">Flota GT3 con coordenadas UV calibradas</span>
+          <div class="sk-fleet-logos">
+            <span><img src="/assets/brand/logos/logo-porsche.svg" alt="Porsche" width="18" height="18" /> Porsche 992 GT3 R</span>
+            <span><img src="/assets/brand/logos/logo-ford.svg" alt="Ford" width="18" height="18" /> Ford Mustang GT3</span>
+            <span><img src="/assets/brand/logos/logo-mclaren.svg" alt="McLaren" width="18" height="18" /> McLaren 720S EVO</span>
+            <span><img src="/assets/brand/logos/logo-ferrari.svg" alt="Ferrari" width="18" height="18" /> Ferrari 296 GT3</span>
+            <span><img src="/assets/brand/logos/logo-audi.svg" alt="Audi" width="18" height="18" /> Audi R8 LMS EVO II</span>
+            <span><img src="/assets/brand/logos/logo-bmw.svg" alt="BMW" width="18" height="18" /> BMW M4 GT3</span>
+          </div>
+        </div>
+
+        <!-- Feature Bento Grid -->
+        <div class="sk-bento">
+          <article class="sk-bento-card">
+            <span class="sk-bento-kicker">01 · PRECISIÓN UV</span>
+            <h3>Zonas calibradas y simetría automática</h3>
+            <p>Capó, techo, laterales L↔R con espejo inteligente, alerón, retrovisores y protección de placas de dorsal oficiales de iRacing.</p>
+          </article>
+          <article class="sk-bento-card">
+            <span class="sk-bento-kicker">02 · COPILOTO GEMINI IA</span>
+            <h3>Diseño y sesión de fotos asistidos</h3>
+            <p>Genera paletas, distribución de capas sobre las coordenadas reales de cada coche y ficha exacta de circuito, clima y ángulos <code>Ctrl+F12</code>.</p>
+          </article>
+          <article class="sk-bento-card">
+            <span class="sk-bento-kicker">03 · EXPORTACIÓN DIRECTA</span>
+            <h3>Listo para iRacing y Trading Paints</h3>
+            <p>Renderizado 100 % en tu navegador a 2K o 4K: descarga <code>car_&lt;id&gt;.tga</code>, <code>car_spec_&lt;id&gt;.tga</code> y un <code>.ZIP</code> listo para descomprimir.</p>
+          </article>
         </div>
       </div>
     </section>
