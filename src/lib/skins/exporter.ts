@@ -22,6 +22,7 @@ export function sanitizeCustomerId(raw: string): string {
 async function renderTgaBuffers(
   state: SkinDesignState,
   onProgress?: (msg: string) => void,
+  partsOverlayCanvas?: HTMLCanvasElement | null,
 ): Promise<{ diffuseTga: Uint8Array; specTga: Uint8Array; size: number }> {
   const size = state.resolution;
   onProgress?.(`Renderizando textura base ${size}×${size}px...`);
@@ -29,7 +30,7 @@ async function renderTgaBuffers(
   const workCanvas = document.createElement("canvas");
   workCanvas.width = size;
   workCanvas.height = size;
-  await renderSkinToCanvas(workCanvas, state, { size, forExport: true });
+  await renderSkinToCanvas(workCanvas, state, { size, partsOverlayCanvas, forExport: true });
 
   const ctx = workCanvas.getContext("2d", { willReadFrequently: true });
   if (!ctx) throw new Error("No se pudo leer el lienzo de exportación.");
@@ -53,6 +54,7 @@ async function renderTgaBuffers(
 export async function exportSingleDiffuseTga(
   state: SkinDesignState,
   onProgress?: (msg: string) => void,
+  partsOverlayCanvas?: HTMLCanvasElement | null,
 ): Promise<string> {
   const cid = sanitizeCustomerId(state.customerId);
   const size = state.resolution;
@@ -61,7 +63,7 @@ export async function exportSingleDiffuseTga(
   const workCanvas = document.createElement("canvas");
   workCanvas.width = size;
   workCanvas.height = size;
-  await renderSkinToCanvas(workCanvas, state, { size, forExport: true });
+  await renderSkinToCanvas(workCanvas, state, { size, partsOverlayCanvas, forExport: true });
   const ctx = workCanvas.getContext("2d", { willReadFrequently: true });
   if (!ctx) throw new Error("No se pudo leer el lienzo.");
   const tga = encodeTgaFromImageData(ctx.getImageData(0, 0, size, size), false);
@@ -143,9 +145,10 @@ export async function exportIracingZipBundle(
   state: SkinDesignState,
   shots: PhotoGuideShot[],
   onProgress?: (msg: string) => void,
+  partsOverlayCanvas?: HTMLCanvasElement | null,
 ): Promise<string> {
   const cid = sanitizeCustomerId(state.customerId);
-  const { diffuseTga, specTga } = await renderTgaBuffers(state, onProgress);
+  const { diffuseTga, specTga } = await renderTgaBuffers(state, onProgress, partsOverlayCanvas);
 
   onProgress?.("Empaquetando archivo .ZIP listo para iRacing...");
   const zip = new JSZip();

@@ -4,6 +4,7 @@ import type { DecalLayer, SkinDesignState, ZoneKey, ZoneRect } from "./types";
 export interface CompositeOptions {
   size: number;
   templateCanvas?: HTMLCanvasElement | null;
+  partsOverlayCanvas?: HTMLCanvasElement | null;
   showTemplateOverlay?: boolean;
   templateOpacity?: number;
   showZonesOverlay?: boolean;
@@ -432,6 +433,13 @@ export async function renderSkinToCanvas(
   drawPatternGeometry(ctx, state, size);
   drawDriverNumbers(ctx, state, size);
   await drawDecals(ctx, state, size, opts.selectedDecalId, opts.forExport);
+
+  // Official iRacing Parts / Decals / Lights / Contingencies layer from local PSD (preserved on export!)
+  if (opts.partsOverlayCanvas) {
+    ctx.save();
+    ctx.drawImage(opts.partsOverlayCanvas, 0, 0, size, size);
+    ctx.restore();
+  }
 
   if (!opts.forExport && opts.showTemplateOverlay && opts.templateCanvas) {
     ctx.save();

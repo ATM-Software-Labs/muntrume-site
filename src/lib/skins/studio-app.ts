@@ -252,7 +252,8 @@ export function initSkinsStudio(): void {
         } else if (viewMode === "uv") {
           await renderSkinToCanvas(uvCanvas, state, {
             size: 1024,
-            templateCanvas: loadedTemplate?.canvas ?? null,
+            templateCanvas: loadedTemplate?.wireframeCanvas ?? loadedTemplate?.canvas ?? null,
+            partsOverlayCanvas: loadedTemplate?.partsOverlayCanvas ?? null,
             showTemplateOverlay,
             templateOpacity,
             showZonesOverlay,
@@ -265,7 +266,11 @@ export function initSkinsStudio(): void {
           renderSpecMapToCanvas(uvCanvas, state, 1024);
           applyUvTransform();
         } else if (viewMode === "3d") {
-          await renderSkinToCanvas(offscreenTexture, state, { size: 1024, forExport: true });
+          await renderSkinToCanvas(offscreenTexture, state, {
+            size: 1024,
+            partsOverlayCanvas: loadedTemplate?.partsOverlayCanvas ?? null,
+            forExport: true,
+          });
           glEngine.updateTexture(offscreenTexture, state.spec.metallic, state.spec.roughness);
           const meshStatus = glEngine.getMeshStatus();
           const notice = byId<HTMLElement>("skGlNotice");
@@ -898,10 +903,17 @@ export function initSkinsStudio(): void {
       const zChk = byId<HTMLInputElement>("skToggleZones");
       if (zChk) zChk.checked = true;
       const infoEl = byId<HTMLElement>("skTemplateSummary");
-      if (infoEl) infoEl.textContent = analysis.summary;
+      if (infoEl) {
+        const extra = loadedTemplate.format === "PSD"
+          ? ` · PSD nativo (${loadedTemplate.layerCount ?? 0} capas; ${loadedTemplate.partsOverlayCanvas ? "piezas/stickers oficiales preservados" : "guía wireframe lista"})`
+          : "";
+        infoEl.textContent = analysis.summary + extra;
+      }
+      viewMode = "uv";
+      updateViewModeUI();
       renderZoneList();
       scheduleRender();
-      setStatus(`Plantilla cargada (${analysis.width}×${analysis.height} ${analysis.format})`, "ok");
+      setStatus(`Plantilla real de iRacing cargada (${analysis.width}×${analysis.height} ${analysis.format})`, "ok");
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Error cargando plantilla", "err");
     }
@@ -1239,7 +1251,7 @@ export function initSkinsStudio(): void {
     const btn = byId<HTMLButtonElement>("skExportTgaBtn")!;
     btn.disabled = true;
     try {
-      const fn = await exportSingleDiffuseTga(state, (m) => setStatus(m));
+      const fn = await exportSingleDiffuseTga(state, (m) => setStatus(m), loadedTemplate?.partsOverlayCanvas);
       setStatus(`Exportado ${fn} (${state.resolution}px)`, "ok");
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Error exportando TGA", "err");
@@ -1267,7 +1279,7 @@ export function initSkinsStudio(): void {
     try {
       const car = getCarById(state.carId);
       const shots = customPhotoShots ?? buildDefaultPhotoGuide(car, state);
-      const fn = await exportIracingZipBundle(car, state, shots, (m) => setStatus(m));
+      const fn = await exportIracingZipBundle(car, state, shots, (m) => setStatus(m), loadedTemplate?.partsOverlayCanvas);
       setStatus(`Paquete listo: ${fn}`, "ok");
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Error generando ZIP", "err");

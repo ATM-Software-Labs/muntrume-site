@@ -169,12 +169,12 @@ const canonical = "https://skins.muntru.me/";
             <span>Plantilla iRacing y Zonas</span>
             <button type="button" id="skResetZones" class="sk-btn sk-btn-sm">Restaurar</button>
           </h2>
-          <label class="sk-btn sk-btn-sm" style="cursor:pointer;">
-            Cargar plantilla oficial (PNG / TGA)
-            <input id="skTemplateInput" type="file" accept=".png,.tga,.webp,.jpg,.jpeg,.psd" class="sk-hidden" />
+          <label class="sk-btn sk-btn-sm sk-btn-primary" style="cursor:pointer;">
+            Cargar plantilla oficial iRacing (.PSD / .PNG / .TGA)
+            <input id="skTemplateInput" type="file" accept=".psd,.png,.tga,.webp,.jpg,.jpeg" class="sk-hidden" />
           </label>
           <p id="skTemplateSummary" class="sk-help">
-            Sube tu plantilla oficial de iRacing (PSD exportado a PNG o TGA con wireframe/máscara) para detectar zonas y evitar placas de número oficiales.
+            Suelta directamente el archivo <code>.PSD</code> oficial de iRacing (o PNG/TGA) en local: separa automáticamente el wireframe (guía) y las piezas/stickers del coche para pintar 1:1 sin Photoshop.
           </p>
           <div class="sk-row" style="justify-content:space-between;">
             <label class="sk-row" style="font-size:11px;cursor:pointer;">

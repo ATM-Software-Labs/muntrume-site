@@ -1,20 +1,108 @@
+import { readPsd, type Layer } from "ag-psd";
 import { decodeTgaToImageData } from "./tga-codec";
 import type { TemplateAnalysisResult, ZoneKey, ZoneRect } from "./types";
 
 export interface LoadedTemplate {
   canvas: HTMLCanvasElement;
+  /** Official iRacing Wireframe / Turn Off Before Exporting guide layer (never exported) */
+  wireframeCanvas?: HTMLCanvasElement | null;
+  /** Official iRacing Parts / Decals / Contingencies / Lights layer (composited above paint) */
+  partsOverlayCanvas?: HTMLCanvasElement | null;
   width: number;
   height: number;
   filename: string;
   format: string;
+  layerCount?: number;
+}
+
+const GUIDE_LAYER_RE = /turn\s*off|wireframe|wire|uv\s*grid|mask|guide|number.*block|car\s*mandatory/i;
+const PARTS_LAYER_RE = /decal|part|contig|sponsor|light|grille|vent|shade|shadow|window|banner|wheel|carbon|detail|trim|logo/i;
+
+function drawPsdBranch(
+  ctx: CanvasRenderingContext2D,
+  layers: Layer[] | undefined,
+  predicate: (name: string, ancestorMatched: boolean) => boolean,
+  ancestorMatched = false,
+): number {
+  if (!Array.isArray(layers)) return 0;
+  let drawn = 0;
+  for (const layer of layers) {
+    const name = String(layer.name || "");
+    const matched = predicate(name, ancestorMatched);
+    if (Array.isArray(layer.children) && layer.children.length > 0) {
+      drawn += drawPsdBranch(ctx, layer.children, predicate, matched);
+    } else if (matched && layer.canvas && !layer.hidden) {
+      ctx.save();
+      ctx.globalAlpha = typeof layer.opacity === "number" ? Math.max(0, Math.min(1, layer.opacity)) : 1;
+      ctx.drawImage(layer.canvas, layer.left ?? 0, layer.top ?? 0);
+      ctx.restore();
+      drawn++;
+    }
+  }
+  return drawn;
+}
+
+function countPsdLayers(layers: Layer[] | undefined): number {
+  if (!Array.isArray(layers)) return 0;
+  let total = 0;
+  for (const l of layers) {
+    total += 1 + countPsdLayers(l.children);
+  }
+  return total;
 }
 
 export async function loadTemplateFile(file: File): Promise<LoadedTemplate> {
   const lower = file.name.toLowerCase();
   if (lower.endsWith(".psd")) {
-    throw new Error(
-      "Los archivos .PSD deben exportarse primero como PNG o TGA (capa Wireframe/Mask o plantilla aplanada) desde Photoshop/Photopea para analizarlos localmente sin servidor.",
-    );
+    const buf = await file.arrayBuffer();
+    const psd = readPsd(buf, {
+      skipThumbnail: true,
+      skipCompositeImageData: false,
+      skipLayerImageData: false,
+    });
+    const w = psd.width || 2048;
+    const h = psd.height || 2048;
+
+    const fullCanvas = document.createElement("canvas");
+    fullCanvas.width = w;
+    fullCanvas.height = h;
+    const fctx = fullCanvas.getContext("2d");
+    if (!fctx) throw new Error("No se pudo inicializar Canvas 2D para PSD.");
+    if (psd.canvas) {
+      fctx.drawImage(psd.canvas, 0, 0, w, h);
+    } else {
+      drawPsdBranch(fctx, psd.children, () => true);
+    }
+
+    const wfCanvas = document.createElement("canvas");
+    wfCanvas.width = w;
+    wfCanvas.height = h;
+    const wfCtx = wfCanvas.getContext("2d");
+    const wfCount = wfCtx
+      ? drawPsdBranch(wfCtx, psd.children, (name, anc) => anc || GUIDE_LAYER_RE.test(name))
+      : 0;
+
+    const partsCanvas = document.createElement("canvas");
+    partsCanvas.width = w;
+    partsCanvas.height = h;
+    const pCtx = partsCanvas.getContext("2d");
+    const partsCount = pCtx
+      ? drawPsdBranch(pCtx, psd.children, (name, anc) => {
+          if (GUIDE_LAYER_RE.test(name)) return false;
+          return anc || PARTS_LAYER_RE.test(name);
+        })
+      : 0;
+
+    return {
+      canvas: fullCanvas,
+      wireframeCanvas: wfCount > 0 ? wfCanvas : fullCanvas,
+      partsOverlayCanvas: partsCount > 0 ? partsCanvas : null,
+      width: w,
+      height: h,
+      filename: file.name,
+      format: "PSD",
+      layerCount: countPsdLayers(psd.children),
+    };
   }
 
   if (lower.endsWith(".tga")) {
